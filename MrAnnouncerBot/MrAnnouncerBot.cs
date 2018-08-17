@@ -152,7 +152,7 @@ namespace MrAnnouncerBot
 			SceneDto foundScene = scenes.FirstOrDefault(m => m.ChatShortcut == "!" + command);
 			if (foundScene != null)
 				return foundScene;
-			return scenes.FirstOrDefault(m => m.AlternateShortcut == "!" + command);
+			return scenes.FirstOrDefault(m => string.Compare(m.AlternateShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0);
 		}
 
 		void InvokeScene(SceneDto scene)
