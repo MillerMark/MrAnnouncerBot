@@ -13,12 +13,6 @@ namespace MrAnnouncerBot
 {
 	public class MrAnnouncerBot
 	{
-		// client
-		// api
-		// channel name 
-		// oAuth token
-		// twitch username
-
 		const string STR_CodeRushed = "CodeRushed";
 		OBSWebsocket obsWebsocket = new OBSWebsocket();
 		static List<SceneDto> scenes = new List<SceneDto>();
