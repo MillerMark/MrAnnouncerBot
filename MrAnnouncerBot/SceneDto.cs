@@ -11,7 +11,6 @@ namespace MrAnnouncerBot
 		public string SceneName { get; set; }
 		public string LevelStr { get; set; }
 		public string MinSpanToSameStr { get; set; }
-		public string MinSpanToAnyPreviousStr { get; set; }
 		public string LimitToUser { get; set; }
 		public SceneDto()
 		{
