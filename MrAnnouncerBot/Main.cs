@@ -1,28 +1,23 @@
-﻿using CsvHelper;
-using OBSWebsocketDotNet;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TwitchLib.Client;
-using TwitchLib.Client.Events;
-using TwitchLib.Client.Models;
+﻿using System;
 
 namespace MrAnnouncerBot
 {
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			var mrAnnouncerBot = new MrAnnouncerBot();
-			mrAnnouncerBot.Run();
-			Console.ReadLine();
-			// TODO: async, task, etc.
-			mrAnnouncerBot.Disconnect();
-		}
-	}
+    internal class Program
+    {
+        private static void Main(string[] args)
+        {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            var mrAnnouncerBot = new MrAnnouncerBot();
+            mrAnnouncerBot.Run();
+            Console.ReadLine();
+            // TODO: async, task, etc.
+            mrAnnouncerBot.Disconnect();
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.WriteLine(e.ExceptionObject);
+            Environment.Exit(1);
+        }
+    }
 }
