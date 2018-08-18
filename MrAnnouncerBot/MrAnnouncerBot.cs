@@ -13,10 +13,18 @@ namespace MrAnnouncerBot
 {
 	public class MrAnnouncerBot
 	{
-		const string STR_CodeRushed = "CodeRushed";
+		// client
+		// api
+		// channel name 
+		// oAuth token
+		// twitch username
+
+		const string STR_ChannelName = "CodeRushed";
+		const string STR_WebSocketPort = "ws://127.0.0.1:4444";
 		OBSWebsocket obsWebsocket = new OBSWebsocket();
 		static List<SceneDto> scenes = new List<SceneDto>();
 		string activeSceneName;
+		bool logging;
 		public TwitchClient TwitchClient { get; set; }
 		public MrAnnouncerBot()
 		{
@@ -32,7 +40,8 @@ namespace MrAnnouncerBot
 
 		void TwitchClientLog(object sender, OnLogArgs e)
 		{
-			Console.WriteLine(e.Data);
+			if (logging)
+				Console.WriteLine(e.Data);
 		}
 
 		void GetCredentials()
@@ -42,7 +51,7 @@ namespace MrAnnouncerBot
 			string oAuthToken = Properties.Settings.Default.TwitchBotOAuthToken;
 			ConnectionCredentials connectionCredentials = new ConnectionCredentials("MrAnnouncerGuy", oAuthToken);
 			TwitchClient = new TwitchClient();
-			TwitchClient.Initialize(connectionCredentials, STR_CodeRushed);
+			TwitchClient.Initialize(connectionCredentials, STR_ChannelName);
 
 			TwitchClient.OnLog += TwitchClientLog;
 			TwitchClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
@@ -56,7 +65,7 @@ namespace MrAnnouncerBot
 			{
 				try
 				{
-					obsWebsocket.Connect("ws://127.0.0.1:4444", Properties.Settings.Default.ObsPassword);
+					obsWebsocket.Connect(STR_WebSocketPort, Properties.Settings.Default.ObsPassword);
 				}
 				catch (AuthFailureException)
 				{
@@ -77,13 +86,13 @@ namespace MrAnnouncerBot
 			obsWebsocket.Disconnected += ObsWebsocket_Disconnected;
 
 			obsWebsocket.SceneChanged += ObsWebsocket_SceneChanged;
-			obsWebsocket.SceneCollectionChanged += ObsWebsocket_SceneCollectionChanged;
 			obsWebsocket.ProfileChanged += ObsWebsocket_ProfileChanged;
-			obsWebsocket.TransitionChanged += ObsWebsocket_TransitionChanged;
-			obsWebsocket.TransitionDurationChanged += ObsWebsocket_TransitionDurationChanged;
 
-			obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
-			obsWebsocket.RecordingStateChanged += ObsWebsocket_RecordingStateChanged;
+			//obsWebsocket.SceneCollectionChanged += ObsWebsocket_SceneCollectionChanged;
+			//obsWebsocket.TransitionChanged += ObsWebsocket_TransitionChanged;
+			//obsWebsocket.TransitionDurationChanged += ObsWebsocket_TransitionDurationChanged;
+			//obsWebsocket.StreamingStateChanged += ObsWebsocket_StreamingStateChanged;
+			//obsWebsocket.RecordingStateChanged += ObsWebsocket_RecordingStateChanged;
 
 			obsWebsocket.StreamStatus += ObsWebsocket_StreamStatus;
 
@@ -95,34 +104,9 @@ namespace MrAnnouncerBot
 			Console.WriteLine("ObsWebsocket_StreamStatus");
 		}
 
-		private void ObsWebsocket_RecordingStateChanged(OBSWebsocket sender, OutputState type)
-		{
-			Console.WriteLine("ObsWebsocket_RecordingStateChanged");
-		}
-
-		private void ObsWebsocket_StreamingStateChanged(OBSWebsocket sender, OutputState type)
-		{
-			Console.WriteLine("ObsWebsocket_StreamingStateChanged");
-		}
-
-		private void ObsWebsocket_TransitionDurationChanged(OBSWebsocket sender, int newDuration)
-		{
-			Console.WriteLine("ObsWebsocket_TransitionDurationChanged");
-		}
-
-		private void ObsWebsocket_TransitionChanged(OBSWebsocket sender, string newTransitionName)
-		{
-			Console.WriteLine("ObsWebsocket_TransitionChanged");
-		}
-
 		private void ObsWebsocket_ProfileChanged(object sender, EventArgs e)
 		{
 			Console.WriteLine("ObsWebsocket_ProfileChanged");
-		}
-
-		private void ObsWebsocket_SceneCollectionChanged(object sender, EventArgs e)
-		{
-			Console.WriteLine("ObsWebsocket_SceneCollectionChanged");
 		}
 
 		private void ObsWebsocket_SceneChanged(OBSWebsocket sender, string newSceneName)
@@ -139,19 +123,6 @@ namespace MrAnnouncerBot
 		private void ObsWebsocket_Connected(object sender, EventArgs e)
 		{
 			Console.WriteLine("ObsWebsocket_Connected");
-		}
-
-		SceneDto GetScene(string command)
-		{
-			SceneDto foundScene = scenes.FirstOrDefault(m => string.Compare(m.ChatShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0);
-			if (foundScene != null)
-				return foundScene;
-			return scenes.FirstOrDefault(m => string.Compare(m.AlternateShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0);
-		}
-
-		void InvokeScene(SceneDto scene)
-		{
-			obsWebsocket.SetCurrentScene(scene.SceneName);
 		}
 
 		private void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
@@ -180,7 +151,7 @@ namespace MrAnnouncerBot
 
 		private void Chat(string msg)
 		{
-			TwitchClient.SendMessage(STR_CodeRushed, msg);
+			TwitchClient.SendMessage(STR_ChannelName, msg);
 		}
 
 		public void Run()
@@ -195,5 +166,17 @@ namespace MrAnnouncerBot
 			obsWebsocket.Disconnect();
 		}
 
+		SceneDto GetScene(string command)
+		{
+			SceneDto foundScene = scenes.FirstOrDefault(m => string.Compare(m.ChatShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0);
+			if (foundScene != null)
+				return foundScene;
+			return scenes.FirstOrDefault(m => string.Compare(m.AlternateShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0);
+		}
+
+		void InvokeScene(SceneDto scene)
+		{
+			obsWebsocket.SetCurrentScene(scene.SceneName);
+		}
 	}
 }
