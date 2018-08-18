@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CsvHelper;
+using MrAnnouncerBot.Games.Zork;
 using MrAnnouncerBot.Properties;
 using OBSWebsocketDotNet;
 using TwitchLib.Client;
@@ -20,17 +21,33 @@ namespace MrAnnouncerBot
 
         private static List<SceneDto> scenes = new List<SceneDto>();
         private string activeSceneName;
-        private bool logging;
         private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
+        private ZorkGame zork;
+
+        private bool logging = false;
+        private bool useObs = true;
+        private bool zorkEnabled = true;
 
         public MrAnnouncerBot()
         {
-            GetSceneData();
+            InitTwitchClient();
+            InitSceneData();
+            InitZork();
+        }
+
+        private void InitTwitchClient()
+        {
+            TwitchClient = new TwitchClient();
+        }
+
+        private void InitZork()
+        {
+            zork = new ZorkGame(TwitchClient, STR_ChannelName);
         }
 
         public TwitchClient TwitchClient { get; set; }
 
-        private static void GetSceneData()
+        private static void InitSceneData()
         {
             if (!File.Exists(STR_SceneDataFile)) return;
             var textReader = File.OpenText(STR_SceneDataFile);
@@ -46,11 +63,11 @@ namespace MrAnnouncerBot
 
         private void GetCredentials()
         {
-            InitializeObsWebSocket();
+            if(useObs)
+                InitializeObsWebSocket();
 
             var oAuthToken = Settings.Default.TwitchBotOAuthToken;
             var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
-            TwitchClient = new TwitchClient();
             TwitchClient.Initialize(connectionCredentials, STR_ChannelName);
 
             TwitchClient.OnLog += TwitchClientLog;
@@ -129,15 +146,28 @@ namespace MrAnnouncerBot
         private void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
             var command = e.Command.CommandText;
-            if (command == "zork")
+
+            if (command == "zork" && zorkEnabled)
             {
-                Chat($"{e.Command.ChatMessage.DisplayName} is standing in an open field west of a white house, with a boarded front door.");
+                zork.HandleCommand(e);
                 return;
             }
+            else
+            {
+                Whisper(e.Command.ChatMessage.Username, "I beg your pardon?");
+            }
 
-            var scene = GetScene(command);
-            if (scene != null)
-                InvokeScene(scene);
+            if (useObs)
+            {
+                var scene = GetScene(command);
+                if (scene != null)
+                    InvokeScene(scene);
+            }
+        }
+
+        private void Whisper(string userName, string msg)
+        {
+            TwitchClient.SendWhisper(userName, msg);
         }
 
         private void TwitchClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
