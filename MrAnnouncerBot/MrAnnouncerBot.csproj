@@ -143,6 +143,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AllViewers.cs" />
+    <Content Include="Data\AllViewers.json" />
     <Compile Include="Games\Zork\ZorkGame.cs" />
     <Compile Include="Games\Zork\ZorkItem.cs" />
     <Compile Include="Games\Zork\ZorkLocation.cs" />
@@ -157,18 +159,19 @@
     </Compile>
     <Compile Include="RestrictedSceneDto.cs" />
     <Compile Include="SceneDto.cs" />
+    <Compile Include="Viewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <Content Include="Scene Data\Mr. Announcer Guy - Scenes.csv">
+    <Content Include="Data\Mr. Announcer Guy - Scenes.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Content Include="Scene Data\Mr. Announcer Guy - Restrictions.csv">
+    <Content Include="Data\Mr. Announcer Guy - Restrictions.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

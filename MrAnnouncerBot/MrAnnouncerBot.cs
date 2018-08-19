@@ -15,14 +15,15 @@ namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
+		AllViewers allViewers = new AllViewers();
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_WebSocketPort = "ws://127.0.0.1:4444";
-		private const string STR_SceneDataFile = "Scene Data\\Mr. Announcer Guy - Scenes.csv";
-		private const string STR_SceneRestrictions = "Scene Data\\Mr. Announcer Guy - Restrictions.csv";
+		private const string STR_SceneDataFile = "Data\\Mr. Announcer Guy - Scenes.csv";
+		private const string STR_SceneRestrictions = "Data\\Mr. Announcer Guy - Restrictions.csv";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 
 		private static List<SceneDto> scenes = new List<SceneDto>();
-		private static List<string> restrictedScenes = new List<string>();
+		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
 		private string activeSceneName;
 		private Timer checkChatRoomTimer;
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
@@ -38,13 +39,22 @@ namespace MrAnnouncerBot
 		{
 			InitChatRoomTimer();
 			InitTwitchClient();
-			InitSceneData();
+			LoadPersistentData();
 			InitZork();
 			live = true;
+			
 		}
 
 		public void Disconnect()
 		{
+			try
+			{
+				allViewers.Save();
+			}
+			catch (Exception ex)
+			{
+				// TODO: Alert and offer to try again.
+			}
 			live = false;
 			checkChatRoomTimer.Dispose();
 			TwitchClient.Disconnect();
@@ -76,13 +86,18 @@ namespace MrAnnouncerBot
 
 		public TwitchClient TwitchClient { get; set; }
 
-		private void InitSceneData()
+		private void LoadPersistentData()
 		{
 			scenes = GetCsvData<SceneDto>(STR_SceneDataFile);
-			var localRestrictedScenes = GetCsvData<RestrictedSceneDto>(STR_SceneRestrictions);
-			restrictedScenes.Clear();
-			foreach (RestrictedSceneDto restrictedSceneDto in localRestrictedScenes)
-				restrictedScenes.Add(restrictedSceneDto.SceneName);
+			restrictedScenes = GetCsvData<RestrictedSceneDto>(STR_SceneRestrictions);
+			try
+			{
+				allViewers.Load();
+			}
+			catch (Exception ex)
+			{
+				//Chat("Exception loading allViewers data: " + ex.Message);
+			}
 		}
 
 		private List<T> GetCsvData<T>(string dataFileName)
@@ -121,6 +136,12 @@ namespace MrAnnouncerBot
 			TwitchClient.OnConnectionError += TwitchClient_OnConnectionError;
 			TwitchClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			TwitchClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+			TwitchClient.OnMessageReceived += TwitchClient_OnMessageReceived;
+		}
+
+		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+		{
+			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
 		private void TwitchClient_OnConnectionError(object sender, OnConnectionErrorArgs e)
@@ -283,7 +304,7 @@ namespace MrAnnouncerBot
 		}
 		private void InvokeScene(SceneDto scene)
 		{
-			if (restrictedScenes.IndexOf(activeSceneName) >= 0)
+			if (restrictedScenes.Any(x => x.SceneName == activeSceneName))
 			{
 				Chat(GetBreakMessage());
 				return;
