@@ -9,6 +9,7 @@ using OBSWebsocketDotNet;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
+using System.Threading;
 
 namespace MrAnnouncerBot
 {
@@ -23,18 +24,44 @@ namespace MrAnnouncerBot
 		private static List<SceneDto> scenes = new List<SceneDto>();
 		private static List<string> restrictedScenes = new List<string>();
 		private string activeSceneName;
+		private Timer checkChatRoomTimer;
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		private ZorkGame zork;
+		private Random random = new Random((int)DateTime.Now.Ticks);
 
 		private bool logging = false;
 		private bool useObs = true;
 		private bool zorkEnabled = true;
+		private bool live;
 
 		public MrAnnouncerBot()
 		{
+			InitChatRoomTimer();
 			InitTwitchClient();
 			InitSceneData();
 			InitZork();
+			live = true;
+		}
+
+		public void Disconnect()
+		{
+			live = false;
+			checkChatRoomTimer.Dispose();
+			TwitchClient.Disconnect();
+			obsWebsocket.Disconnect();
+		}
+
+		void InitChatRoomTimer()
+		{
+			checkChatRoomTimer = new Timer(CheckChatRoom, null, 0, 5000);
+		}
+
+		void CheckChatRoom(Object obj)
+		{
+			if (!live)
+				return;
+
+			//TwitchClient.SendMessage();
 		}
 
 		private void InitTwitchClient()
@@ -206,19 +233,9 @@ namespace MrAnnouncerBot
 			TwitchClient.Connect();
 		}
 
-		public void Disconnect()
-		{
-			TwitchClient.Disconnect();
-			obsWebsocket.Disconnect();
-		}
-
 		private SceneDto GetScene(string command)
 		{
-			return scenes.FirstOrDefault(m =>
-					string.Compare(m.ChatShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0) 
-					?? 
-					scenes.FirstOrDefault(m =>
-					string.Compare(m.AlternateShortcut, "!" + command, StringComparison.OrdinalIgnoreCase) == 0);
+			return scenes.FirstOrDefault(m => m.Matches(command)) ?? scenes.FirstOrDefault(m => m.Matches(command));
 		}
 
 		string SelectRandomScene(string sceneName)
@@ -231,26 +248,44 @@ namespace MrAnnouncerBot
 
 			foundNames = currentSceneCollection.Where(x => x.Name.StartsWith(filter)).Select(x => x.Name).ToList();
 
-			//foreach (var scene in currentSceneCollection)
-			//{
-			//	if (scene.Name.StartsWith(filter))
-			//		foundNames.Add(scene.Name);
-			//}
-
 			if (foundNames.Count == 0)
 				return null;
 
-			int index = (int)(new Random().Next(foundNames.Count));
+			int index = RandomInt(foundNames.Count);
 			return foundNames[index];
 		}
 
+		private int RandomInt(int maxValue)
+		{
+			return random.Next(maxValue);
+		}
+
+		string GetBreakMessage()
+		{
+			switch (RandomInt(6))
+			{
+				case 0:
+					return "I'm on a break right now.";
+				case 1:
+					return "On a break. Ask me later.";
+				case 2:
+					return "Consuming coffee. Back in a bit.";
+				case 3:
+					return "I'm sorry. What?";
+				case 4:
+					return "I say we let Mark talk.";
+				case 5:
+					return "Maybe later.";
+				default:
+					return "Gimme a sec...";
+			}
+
+		}
 		private void InvokeScene(SceneDto scene)
 		{
 			if (restrictedScenes.IndexOf(activeSceneName) >= 0)
 			{
-				// TODO: Make my bot a moderator.
-				// Change up these messages to see if they appear more responsive.
-				Chat("I'm on a break right now.");
+				Chat(GetBreakMessage());
 				return;
 			}
 
