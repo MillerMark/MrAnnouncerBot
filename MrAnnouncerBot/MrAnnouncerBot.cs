@@ -15,6 +15,8 @@ namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
+		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
+		Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();
 		AllViewers allViewers = new AllViewers();
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_WebSocketPort = "ws://127.0.0.1:4444";
@@ -55,6 +57,7 @@ namespace MrAnnouncerBot
 			{
 				// TODO: Alert and offer to try again.
 			}
+			Chat("MrAnnouncerBot has left the building!");
 			live = false;
 			checkChatRoomTimer.Dispose();
 			TwitchClient.Disconnect();
@@ -229,7 +232,7 @@ namespace MrAnnouncerBot
 			{
 				var scene = GetScene(command);
 				if (scene != null)
-					InvokeScene(scene);
+					ActivateSceneIfPermitted(scene, e.Command.ChatMessage.DisplayName, allViewers.GetUserLevel(e.Command.ChatMessage));
 			}
 		}
 
@@ -302,21 +305,89 @@ namespace MrAnnouncerBot
 			}
 
 		}
-		private void InvokeScene(SceneDto scene)
+		TimeSpan GetTimeSinceLastSceneActivation(SceneDto scene)
 		{
-			if (restrictedScenes.Any(x => x.SceneName == activeSceneName))
+			if (lastScenePlayTime.ContainsKey(scene.SceneName))
+				return DateTime.Now - lastScenePlayTime[scene.SceneName];
+			return TimeSpan.MaxValue;
+		}
+		TimeSpan GetTimeSinceLastCategoryActivation(SceneDto scene)
+		{
+			if (lastCategoryPlayTime.ContainsKey(scene.Category))
+				return DateTime.Now - lastCategoryPlayTime[scene.Category];
+			return TimeSpan.MaxValue;
+		}
+		void ActivatingScene(SceneDto scene)
+		{
+			DateTime now = DateTime.Now;
+
+			if (!lastScenePlayTime.ContainsKey(scene.SceneName))
+				lastScenePlayTime.Add(scene.SceneName, now);
+			else
+				lastScenePlayTime[scene.SceneName] = now;
+
+			if (!lastCategoryPlayTime.ContainsKey(scene.Category))
+				lastCategoryPlayTime.Add(scene.Category, now);
+			else
+				lastCategoryPlayTime[scene.Category] = now;
+		}
+
+		double GetSpanWaitAdjust(int userLevel)
+		{
+			if (userLevel < 0)
+				return 2;
+
+			if (userLevel < 5)
+				return 1;
+
+			if (userLevel < 10)
+				return 0.75;
+
+			if (userLevel < 15)
+				return 0.5;
+
+			return 0.25;
+		}
+
+		void ActivateScene(SceneDto scene, string displayName, int userLevel)
+		{
+			string sceneName = GetSceneName(scene);
+			if (sceneName == null)
+				return;
+
+			double minutesSinceLastSceneActivation = GetTimeSinceLastSceneActivation(scene).TotalMinutes;
+			double minutesSinceLastCategoryActivation = GetTimeSinceLastCategoryActivation(scene).TotalMinutes;
+
+			var adjustedMinutesToSame = GetSpanWaitAdjust(userLevel) * scene.MinMinutesToSame;
+			if (adjustedMinutesToSame > minutesSinceLastSceneActivation)
 			{
-				Chat(GetBreakMessage());
+				double minutesToWait = scene.MinMinutesToSame - minutesSinceLastSceneActivation;
+				Chat($"I already said that @{displayName}. You'll have to wait another {minutesToWait:0.#} minutes until I can say that again.");
 				return;
 			}
+			ActivatingScene(scene);
+			obsWebsocket.SetCurrentScene(sceneName);
+		}
 
+		private void ActivateSceneIfPermitted(SceneDto scene, string displayName, int userLevel)
+		{
+			if (restrictedSceneIsActive())
+				Chat(GetBreakMessage());
+			else
+				ActivateScene(scene, displayName, userLevel);
+		}
+
+		private string GetSceneName(SceneDto scene)
+		{
 			string sceneName = scene.SceneName;
 			if (sceneName.EndsWith("*"))
 				sceneName = SelectRandomScene(sceneName);
+			return sceneName;
+		}
 
-			if (sceneName == null)
-				return;
-			obsWebsocket.SetCurrentScene(sceneName);
+		private bool restrictedSceneIsActive()
+		{
+			return restrictedScenes.Any(x => x.SceneName == activeSceneName);
 		}
 	}
 }

@@ -59,5 +59,19 @@ namespace MrAnnouncerBot
 
 			existingUser.NumberOfChatMessagesSent++;
 		}
+
+		public int GetUserLevel(ChatMessage chatMessage)
+		{
+			var subscriberBonus = 0;
+			if (chatMessage.IsSubscriber)
+				subscriberBonus = chatMessage.SubscribedMonthCount;
+
+			Viewer existingUser = viewers.FirstOrDefault(x => x.UserId == chatMessage.UserId);
+			if (existingUser == null)
+				return subscriberBonus;
+
+			
+			return existingUser.GetLevel() + subscriberBonus;
+		}
 	}
 }
