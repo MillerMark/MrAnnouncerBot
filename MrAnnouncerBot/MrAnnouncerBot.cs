@@ -259,7 +259,7 @@ namespace MrAnnouncerBot
 
 		private SceneDto GetScene(string command)
 		{
-			return scenes.FirstOrDefault(m => m.Matches(command)) ?? scenes.FirstOrDefault(m => m.Matches(command));
+			return scenes.FirstOrDefault(m => m.Matches(command));
 		}
 
 		string SelectRandomScene(string sceneName)

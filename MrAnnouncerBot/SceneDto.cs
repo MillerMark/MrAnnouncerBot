@@ -30,7 +30,8 @@ namespace MrAnnouncerBot
 
 		public bool Matches(string command)
 		{
-			return string.Compare(ChatShortcut, command, StringComparison.OrdinalIgnoreCase) == 0;
+			return string.Compare(ChatShortcut, command, StringComparison.OrdinalIgnoreCase) == 0 ||
+						string.Compare(AlternateShortcut, command, StringComparison.OrdinalIgnoreCase) == 0;
 		}
 	}
 }
