@@ -12,6 +12,7 @@ namespace MrAnnouncerBot
 		public DateTime LastShowWatched { get; set; }
 		public int NumberOfChatMessagesSent { get; set; }
 		public int ModeratorOffset { get; set; }
+		public string UserName { get; set; }
 		public int GetLevel()
 		{
 			return ModeratorOffset + NumberOfShowsWatched / 12 + NumberOfChatMessagesSent / 100;

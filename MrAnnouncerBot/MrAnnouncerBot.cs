@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Net.Http;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,11 +11,15 @@ using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
+		public TwitchClient TwitchClient { get; set; }
+		public static readonly HttpClient httpClient = new HttpClient();
+
 		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
 		Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();
 		AllViewers allViewers = new AllViewers();
@@ -23,6 +28,7 @@ namespace MrAnnouncerBot
 		private const string STR_SceneDataFile = "Data\\Mr. Announcer Guy - Scenes.csv";
 		private const string STR_SceneRestrictions = "Data\\Mr. Announcer Guy - Restrictions.csv";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
+		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
 
 		private static List<SceneDto> scenes = new List<SceneDto>();
 		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
@@ -40,11 +46,10 @@ namespace MrAnnouncerBot
 		public MrAnnouncerBot()
 		{
 			InitChatRoomTimer();
-			InitTwitchClient();
+			TwitchClient = new TwitchClient();
 			LoadPersistentData();
 			InitZork();
 			live = true;
-			
 		}
 
 		public void Disconnect()
@@ -66,28 +71,13 @@ namespace MrAnnouncerBot
 
 		void InitChatRoomTimer()
 		{
-			checkChatRoomTimer = new Timer(CheckChatRoom, null, 0, 5000);
-		}
-
-		void CheckChatRoom(Object obj)
-		{
-			if (!live)
-				return;
-
-			//TwitchClient.SendMessage();
-		}
-
-		private void InitTwitchClient()
-		{
-			TwitchClient = new TwitchClient();
+			checkChatRoomTimer = new Timer(CheckViewers, null, 0, 5);
 		}
 
 		private void InitZork()
 		{
 			zork = new ZorkGame(TwitchClient, STR_ChannelName);
 		}
-
-		public TwitchClient TwitchClient { get; set; }
 
 		private void LoadPersistentData()
 		{
@@ -126,7 +116,7 @@ namespace MrAnnouncerBot
 				Console.WriteLine(e.Data);
 		}
 
-		private void GetCredentials()
+		private void InitializeTwitchClient()
 		{
 			if (useObs)
 				InitializeObsWebSocket();
@@ -134,12 +124,40 @@ namespace MrAnnouncerBot
 			var oAuthToken = Settings.Default.TwitchBotOAuthToken;
 			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
 			TwitchClient.Initialize(connectionCredentials, STR_ChannelName);
+			HookupTwitchEvents();
+		}
 
+		private void HookupTwitchEvents()
+		{
 			TwitchClient.OnLog += TwitchClientLog;
 			TwitchClient.OnConnectionError += TwitchClient_OnConnectionError;
 			TwitchClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			TwitchClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
 			TwitchClient.OnMessageReceived += TwitchClient_OnMessageReceived;
+			TwitchClient.OnUserJoined += TwitchClient_OnUserJoined;
+			TwitchClient.OnUserLeft += TwitchClient_OnUserLeft;
+		}
+
+		async void CheckViewers(object obj)
+		{
+			var response = await httpClient.PostAsync(STR_GetChattersApi, null);
+			var responseString = await response.Content.ReadAsStringAsync();
+			if (responseString == null)
+				return;
+
+			LiveViewers liveViewers = JsonConvert.DeserializeObject<LiveViewers>(responseString);
+			if (liveViewers != null)
+				allViewers.UpdateLiveViewers(liveViewers.chatters.viewers);
+		}
+
+		private void TwitchClient_OnUserLeft(object sender, OnUserLeftArgs e)
+		{
+			allViewers.UserLeft(e.Username);
+		}
+
+		private void TwitchClient_OnUserJoined(object sender, OnUserJoinedArgs e)
+		{
+			allViewers.UserJoined(e.Username);
 		}
 
 		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
@@ -253,7 +271,7 @@ namespace MrAnnouncerBot
 
 		public void Run()
 		{
-			GetCredentials();
+			InitializeTwitchClient();
 			TwitchClient.Connect();
 		}
 

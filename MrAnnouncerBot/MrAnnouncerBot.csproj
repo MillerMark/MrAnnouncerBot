@@ -144,11 +144,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllViewers.cs" />
+    <Compile Include="_Links.cs" />
     <Content Include="Data\AllViewers.json" />
+    <Compile Include="Chatters.cs" />
     <Compile Include="Games\Zork\ZorkGame.cs" />
     <Compile Include="Games\Zork\ZorkItem.cs" />
     <Compile Include="Games\Zork\ZorkLocation.cs" />
     <Compile Include="Games\Zork\ZorkPlayer.cs" />
+    <Compile Include="LiveViewers.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="MrAnnouncerBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
