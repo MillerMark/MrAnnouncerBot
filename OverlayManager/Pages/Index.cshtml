@@ -1,0 +1,12 @@
+﻿@page
+@model IndexModel
+@{
+  Layout = null;
+}
+<canvas id="myCanvas" width="1920" height="1080"></canvas>
+<script>
+  var canvas = document.getElementById("myCanvas");
+  var context = canvas.getContext("2d");
+  context.fillStyle = "#0000ff";
+  context.fillRect(200, 0, 100, 100);
+</script>

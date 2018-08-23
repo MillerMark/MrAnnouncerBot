@@ -88,7 +88,6 @@ namespace MrAnnouncerBot
 		}
 		public void UserLeft(string username)
 		{
-
 		}
 		public void UserJoined(string username)
 		{
