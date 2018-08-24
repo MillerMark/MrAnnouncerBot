@@ -13,7 +13,9 @@ namespace MrAnnouncerBot
 		public string MinSpanToSameStr { get; set; }
 		public string LimitToUser { get; set; }
 
-		public double MinMinutesToSame { get
+		public double MinMinutesToSame
+		{
+			get
 			{
 				if (minMinutesToSame.HasValue)
 					return minMinutesToSame.Value;
@@ -27,11 +29,23 @@ namespace MrAnnouncerBot
 				return 0.5;
 			}
 		}
+		int level = -1;
+		public int Level
+		{
+			get
+			{
+				if (level < 0)
+					if (!int.TryParse(LevelStr, out level))
+						level = 0;
+
+				return level;
+			}
+		}
 
 		public bool Matches(string command)
-		{
-			return string.Compare(ChatShortcut, command, StringComparison.OrdinalIgnoreCase) == 0 ||
-						string.Compare(AlternateShortcut, command, StringComparison.OrdinalIgnoreCase) == 0;
-		}
+{
+	return string.Compare(ChatShortcut, command, StringComparison.OrdinalIgnoreCase) == 0 ||
+				string.Compare(AlternateShortcut, command, StringComparison.OrdinalIgnoreCase) == 0;
+}
 	}
 }

@@ -114,7 +114,8 @@ namespace MrAnnouncerBot
 			Viewer existingViewer = GetViewer(chatMessage);
 			if (existingViewer == null)
 				return subscriberBonus;
-
+			if (existingViewer.UserName == "coderushed")
+				return 99;
 
 			return existingViewer.GetLevel() + subscriberBonus;
 		}
@@ -174,6 +175,14 @@ namespace MrAnnouncerBot
 		private bool WatchingNewShow(Viewer viewer)
 		{
 			return DateTime.Now - viewer.LastShowWatched > fourHours;
+		}
+
+		public Viewer LevelChange(string userName, int value)
+		{
+			Viewer viewer = GetViewerByUserName(userName);
+			if (viewer != null)
+				viewer.ModeratorOffset += value;
+			return viewer;
 		}
 	}
 }

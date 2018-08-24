@@ -14,6 +14,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using TwitchLib.Api;
 using System.Reflection;
+using System.Text;
 using BotCore;
 
 namespace MrAnnouncerBot
@@ -48,6 +49,8 @@ namespace MrAnnouncerBot
 			InitChatRoomTimer();
 			LoadPersistentData();
 			InitZork();
+			new BotCommand("?", HandleQuestionCommand);
+			new BotCommand("+", HandleLevelUp);
 		}
 
 		public void Disconnect()
@@ -195,7 +198,7 @@ namespace MrAnnouncerBot
 
 		private void ObsWebsocket_StreamStatus(OBSWebsocket sender, StreamStatus status)
 		{
-			Console.WriteLine("ObsWebsocket_StreamStatus");
+			//Console.WriteLine("ObsWebsocket_StreamStatus");
 		}
 
 		private void ObsWebsocket_ProfileChanged(object sender, EventArgs e)
@@ -406,7 +409,7 @@ namespace MrAnnouncerBot
 			double minutesSinceLastCategoryActivation = GetTimeSinceLastCategoryActivation(scene).TotalMinutes;
 
 			var adjustedMinutesToSame = GetSpanWaitAdjust(userLevel) * scene.MinMinutesToSame;
-			if (adjustedMinutesToSame > minutesSinceLastSceneActivation)
+			if (adjustedMinutesToSame > minutesSinceLastSceneActivation && userLevel < 99)
 			{
 				double minutesToWait = scene.MinMinutesToSame - minutesSinceLastSceneActivation;
 				Chat($"I already said that @{displayName}. You'll have to wait another {minutesToWait:0.#} minutes until I can say that again.");
@@ -449,6 +452,44 @@ namespace MrAnnouncerBot
 				ActivateSceneIfPermitted(scene, e.Command.ChatMessage.DisplayName, allViewers.GetUserLevel(e.Command.ChatMessage));
 			else
 				Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
+		}
+
+
+		void HandleQuestionCommand(OnChatCommandReceivedArgs obj)
+		{
+			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
+
+			List<string> accessibleScenes = scenes.Where(m => m.Level <= userLevel)
+																						.Select(m => { 
+																							if (m.ChatShortcut.IndexOf(' ') >= 0)
+																								return $"\"{m.ChatShortcut}\"";
+																							else
+																								return m.ChatShortcut;
+																						}
+																						).ToList();
+
+			string sceneList = string.Join(", ", accessibleScenes);
+			
+			Chat($"Your user level is: {userLevel}. You can say any of these: " + sceneList);
+		}
+
+		void HandleLevelUp(OnChatCommandReceivedArgs obj)
+		{
+			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
+			if (userLevel < 99)
+				return;
+
+			if (obj.Command.ArgumentsAsString != null)
+			{
+				string userName = obj.Command.ArgumentsAsString.TrimStart('@');
+				if (allViewers.LevelChange(userName, 1) is Viewer viewer)
+				{
+					int newUserLevel = viewer.GetLevel();
+					Chat($"{userName} is now at level {newUserLevel}.");
+				}
+				else
+					Chat($"{userName} not found.");
+			}
 		}
 	}
 }

@@ -31,6 +31,8 @@ namespace BotCore
 
 		public void Execute(OnChatCommandReceivedArgs e)
 		{
+			if (!Enabled)
+				return;
 			try
 			{
 				Action(e);
