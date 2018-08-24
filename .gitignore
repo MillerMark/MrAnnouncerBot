@@ -340,3 +340,5 @@ OverlayManager/appsettings.json
 OverlayManager/wwwroot/lib/bootstrap/dist/js/npm.js
 OverlayManager/wwwroot/
 OverlayManager/appsettings.Development.json
+MrAnnouncerBot-old/
+MrAnnouncerBot/appsettings.json

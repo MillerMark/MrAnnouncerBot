@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CsvHelper;
+using Microsoft.Extensions.Configuration;
 using MrAnnouncerBot.Games.Zork;
-using MrAnnouncerBot.Properties;
 using OBSWebsocketDotNet;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -13,13 +13,13 @@ using TwitchLib.Client.Models;
 using System.Threading;
 using Newtonsoft.Json;
 using TwitchLib.Api;
+using System.Reflection;
+using BotCore;
 
 namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
-		TwitchAPI twitchApi;
-		public TwitchClient TwitchClient { get; set; }
 		public static readonly HttpClient httpClient = new HttpClient();
 
 		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
@@ -36,49 +36,45 @@ namespace MrAnnouncerBot
 		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
 		private string activeSceneName;
 		private Timer checkChatRoomTimer;
+		private Timer autoSaveTimer;
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		private ZorkGame zork;
 		private Random random = new Random((int)DateTime.Now.Ticks);
 
-		private bool logging = false;
 		private bool useObs = true;
-		private bool zorkEnabled = true;
-		private bool live;
 
 		public MrAnnouncerBot()
 		{
 			InitChatRoomTimer();
-			TwitchClient = new TwitchClient();
 			LoadPersistentData();
 			InitZork();
-			live = true;
 		}
 
 		public void Disconnect()
 		{
-			try
-			{
-				allViewers.Save();
-			}
-			catch (Exception ex)
-			{
-				// TODO: Alert and offer to try again.
-			}
-			Chat("MrAnnouncerBot has left the building!");
-			live = false;
-			checkChatRoomTimer.Dispose();
-			TwitchClient.Disconnect();
+			Chat(GetExitMessage());
+			Twitch.Disconnect();
+			if (checkChatRoomTimer != null)
+				checkChatRoomTimer.Dispose();
+			if (autoSaveTimer != null)
+				autoSaveTimer.Dispose();
+			allViewers.Save();
 			obsWebsocket.Disconnect();
 		}
 
 		void InitChatRoomTimer()
 		{
-			//checkChatRoomTimer = new Timer(CheckViewers, null, 0, 500000);
+			int oneMinute = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
+			int fiveMinutes = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
+
+			checkChatRoomTimer = new Timer(CheckViewers, null, oneMinute, oneMinute);
+			autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
 		}
 
 		private void InitZork()
 		{
-			zork = new ZorkGame(TwitchClient, STR_ChannelName);
+			zork = new ZorkGame(Twitch.Client, STR_ChannelName);
+			new BotCommand("zork", zork.HandleCommand);
 		}
 
 		private void LoadPersistentData()
@@ -112,44 +108,26 @@ namespace MrAnnouncerBot
 			return result;
 		}
 
-		private void TwitchClientLog(object sender, OnLogArgs e)
-		{
-			if (logging)
-				Console.WriteLine(e.Data);
-		}
-
-		void InitializeApiClient()
-		{
-			twitchApi = new TwitchAPI();
-			twitchApi.Settings.ClientId = Settings.Default.TwitchApiClientId;
-			twitchApi.Settings.AccessToken = Settings.Default.TwitchBotOAuthToken;
-		}
 		private void InitializeConnections()
 		{
-			InitializeApiClient();
 			if (useObs)
 				InitializeObsWebSocket();
-			ConnectTwitchClient();
 			HookupTwitchEvents();
-			TwitchClient.Connect();
 		}
 
-		private void ConnectTwitchClient()
+		void HookupTwitchEvents()
 		{
-			var oAuthToken = Settings.Default.TwitchBotOAuthToken;
-			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
-			TwitchClient.Initialize(connectionCredentials, STR_ChannelName);
+			Twitch.Client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
+			Twitch.Client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+			Twitch.Client.OnMessageReceived += TwitchClient_OnMessageReceived;
+			Twitch.Client.OnUserJoined += TwitchClient_OnUserJoined;
+			Twitch.Client.OnUserLeft += TwitchClient_OnUserLeft;
 		}
 
-		private void HookupTwitchEvents()
+		void AutoSaveViewers(object obj)
 		{
-      TwitchClient.OnLog += TwitchClientLog;
-			TwitchClient.OnConnectionError += TwitchClient_OnConnectionError;
-			TwitchClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
-			TwitchClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
-			TwitchClient.OnMessageReceived += TwitchClient_OnMessageReceived;
-			TwitchClient.OnUserJoined += TwitchClient_OnUserJoined;
-			TwitchClient.OnUserLeft += TwitchClient_OnUserLeft;
+			Console.WriteLine("Saving viewer data....");
+			allViewers.Save();
 		}
 
 		async void CheckViewers(object obj)
@@ -179,17 +157,12 @@ namespace MrAnnouncerBot
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
-		private void TwitchClient_OnConnectionError(object sender, OnConnectionErrorArgs e)
-		{
-			Console.WriteLine(e.Error.Message);
-		}
-
 		private void ConnectToObs()
 		{
 			if (obsWebsocket.IsConnected) return;
 			try
 			{
-				obsWebsocket.Connect(STR_WebSocketPort, Settings.Default.ObsPassword);
+				obsWebsocket.Connect(STR_WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
 			}
 			catch (AuthFailureException)
 			{
@@ -248,21 +221,22 @@ namespace MrAnnouncerBot
 
 		private void Whisper(string userName, string msg)
 		{
-			TwitchClient.SendWhisper(userName, msg);
+			Twitch.Client.SendWhisper(userName, msg);
 		}
 
 		private void TwitchClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
 		{
-			Chat("Mr. Announcer Bot is in da House!");
+			Chat(GetEntranceMessage());
 		}
 
 		private void Chat(string msg)
 		{
-			TwitchClient.SendMessage(STR_ChannelName, msg);
+			Twitch.Chat(msg);
 		}
 
 		public void Run()
 		{
+			Twitch.InitializeConnections();
 			InitializeConnections();
 		}
 
@@ -312,20 +286,84 @@ namespace MrAnnouncerBot
 				default:
 					return "Gimme a sec...";
 			}
-
 		}
+
+		string GetWhatMessage()
+		{
+			switch (RandomInt(6))
+			{
+				case 0:
+					return "Sorry?";
+				case 1:
+					return "Didn't get that.";
+				case 2:
+					return "Unknown command.";
+				case 3:
+					return "You talking to me?";
+				case 4:
+					return "That's not gonna work.";
+				case 5:
+					return "Nobody understands what you're saying.";
+				default:
+					return "I don't think so.";
+			}
+		}
+
+		string GetEntranceMessage()
+		{
+			switch (RandomInt(6))
+			{
+				case 0:
+					return "Mr. Announcer Bot is in da House!";
+				case 1:
+					return "Mr. Announcer Bot has arrived!";
+				case 2:
+					return "You called? Mr. Announcer Bot at your service!";
+				case 3:
+					return "Mr. Announcer Bot is here to take care of all your chatting needs!";
+				case 4:
+					return "LET'S DO THIS!!! (in the house).";
+				case 5:
+					return "Mr. Announcer Bot greets you: Good day!";
+				default:
+					return "Mr. Announcer Bot is ready to ROCK!!!";
+			}
+		}
+		string GetExitMessage()
+		{
+			switch (RandomInt(6))
+			{
+				case 0:
+					return "MrAnnouncerBot has left the building!";
+				case 1:
+					return "Mr. Announcer Bot has departed! (the chat room)";
+				case 2:
+					return "Mr. Announcer Bot is off to another PARTY!";
+				case 3:
+					return "Mr. Announcer Bot is gone! You're on your own!";
+				case 4:
+					return "I'm outta here!";
+				case 5:
+					return "Good day! Goodbye! And good luck!";
+				default:
+					return "Like Schrödinger's cat, am I in the box? Or am I out? Don't look!";
+			}
+		}
+
 		TimeSpan GetTimeSinceLastSceneActivation(SceneDto scene)
 		{
 			if (lastScenePlayTime.ContainsKey(scene.SceneName))
 				return DateTime.Now - lastScenePlayTime[scene.SceneName];
 			return TimeSpan.MaxValue;
 		}
+
 		TimeSpan GetTimeSinceLastCategoryActivation(SceneDto scene)
 		{
 			if (lastCategoryPlayTime.ContainsKey(scene.Category))
 				return DateTime.Now - lastCategoryPlayTime[scene.Category];
 			return TimeSpan.MaxValue;
 		}
+
 		void ActivatingScene(SceneDto scene)
 		{
 			DateTime now = DateTime.Now;
@@ -403,19 +441,14 @@ namespace MrAnnouncerBot
 		{
 			var command = e.Command.CommandText;
 
-			if (command == "zork" && zorkEnabled)
-			{
-				zork.HandleCommand(e);
+			if (BotCommands.Execute(e.Command.CommandText, e) > 0)
 				return;
-			}
-			else
-			{
-				Whisper(e.Command.ChatMessage.Username, "I beg your pardon?");
-			}
 
 			var scene = GetScene(command);
 			if (scene != null)
 				ActivateSceneIfPermitted(scene, e.Command.ChatMessage.DisplayName, allViewers.GetUserLevel(e.Command.ChatMessage));
+			else
+				Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
 		}
 	}
 }

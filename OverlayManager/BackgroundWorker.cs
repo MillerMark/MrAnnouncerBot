@@ -61,12 +61,49 @@ namespace OverlayManager
 			
 		}
 
+		void MoveLeft()
+		{
+			Chat("Moving Left");
+		}
+		void MoveRight()
+		{
+			Chat("Moving Right");
+		}
+		void MoveUp()
+		{
+			Chat("Moving Up");
+		}
+		void MoveDown()
+		{
+			Chat("Moving Down");
+		}
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
-			//if (e.Command.CommandText == "cmd" || e.Command.CommandText == "?")
-			//{
-			//	twitchClient.SendMessage(STR_ChannelName, "Here's what you can say: up, down, left, right, center");
-			//}
+			string cmdText = e.Command.CommandText;
+			switch (cmdText)
+			{
+				case "cmd":
+				case "?":
+					Chat($"Here's what you can say: up, down, left, right, center");
+					break;
+				case "left":
+					MoveLeft();
+					break;
+				case "right":
+					MoveRight();
+					break;
+				case "up":
+					MoveUp();
+					break;
+				case "down":
+					MoveDown();
+					break;
+			}
+		}
+
+		private void Chat(string message)
+		{
+			twitchClient.SendMessage(STR_ChannelName, message);
 		}
 
 		private void TwitchClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
