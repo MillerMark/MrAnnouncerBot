@@ -26,7 +26,7 @@ namespace MrAnnouncerBot
 			var scenes = CsvData.Get<SceneDto>(FileName.SceneData);
 			foreach (var level in levels)
 			{
-				List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level).ToList();
+				List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level && x.LimitToUser == "").ToList();
 				if (filteredScenes.Count == 0)
 					continue;
 

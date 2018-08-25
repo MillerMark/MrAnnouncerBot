@@ -67,8 +67,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | niceFunc | That's a nice function! | Good | 
 | bfi | Brute Force and Ignorance! | Gung Ho | 
 | coding | Coding! | Gung Ho | 
-| bilsimser | Bil Simser rocks! | Rocks | 
-| wilbennett | wilbennettRocks!.avi | Rocks | 
 | sadP | Sad Panda! | Sad | 
 | b2code | Back to the Code! | Transition | 
 
