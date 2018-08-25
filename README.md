@@ -24,7 +24,6 @@ Anyone in the chat room who is not yet following the CodeRushed channel is a Lev
 | dx | DevExpress! | Branding | 
 | ex | Excellent! | Good | 
 | mark | Mark->* | Alert | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 1
 
@@ -72,7 +71,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | wilbennett | wilbennettRocks!.avi | Rocks | 
 | sadP | Sad Panda! | Sad | 
 | b2code | Back to the Code! | Transition | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 2
 
@@ -85,7 +83,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | askChat | Ask the chat room! | Chat | 
 | codeDance | Let's make this code dance! | Gung Ho | 
 | knowWhatHappen | Does Anybody Know What's Happening? | Mystery | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 3
 
@@ -99,7 +96,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | airbags | Check your airbags! | Gung Ho | 
 | whatHappen | What happened? | Mystery | 
 | funny | That was funny! | Good | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 4
 
@@ -113,7 +109,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | unb | Unbelievable! | Mystery | 
 | mop | Mother of Pearl! | Swear | 
 | toobad | Too Bad! | Sad | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 5
 
@@ -126,7 +121,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | wheelsOff | The Training Wheels Are Off! | Gung Ho | 
 | evenWork | Does This Even Work? | Mystery | 
 | aye | Aye Aye Aye Yikesters! | Swear | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 6
 
@@ -139,7 +133,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | danceBattle | Dance Battle! | Crazy | 
 | buttercup | Buckle Up Buttercup! | Gung Ho | 
 | face | Excuse your face sir! | Swear | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 7
 
@@ -149,7 +142,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 |---|---|---|
 | fail | Fail! | Bad | 
 | marksick | Mark is sick! | Bad | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 8
 
@@ -157,7 +149,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 9
 
@@ -165,7 +156,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 10
 
@@ -173,7 +163,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 11
 
@@ -181,7 +170,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 12
 
@@ -189,7 +177,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 13
 
@@ -197,7 +184,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 14
 
@@ -205,7 +191,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 15
 
@@ -215,7 +200,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 |---|---|---|
 | noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
 | mdkwhd | Disclaimer - Mark doesn't know what he's doing! | Disclaimer | 
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 16
 
@@ -223,7 +207,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 17
 
@@ -231,7 +214,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 18
 
@@ -239,7 +221,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 19
 
@@ -247,7 +228,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 20
 
@@ -255,7 +235,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 21
 
@@ -263,7 +242,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 22
 
@@ -271,7 +249,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 23
 
@@ -279,7 +256,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 24
 
@@ -287,7 +263,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 25
 
@@ -295,7 +270,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 26
 
@@ -303,7 +277,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 27
 
@@ -311,7 +284,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 28
 
@@ -319,7 +291,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 29
 
@@ -327,7 +298,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 30
 
@@ -335,7 +305,6 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
 ### Level 31
 
@@ -343,5 +312,4 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| $Shortcut$ | $Scene$ | $Category$ | 
 
