@@ -1,5 +1,6 @@
 # MrAnnouncerBot
 A Twitch bot written in C#
+
 # Overview
 This bot runs during the live twitch.tv/CodeRushed stream and its primary function is to allow people in the chat room to control Mark's electronic co-host, during the show.
 
@@ -9,7 +10,7 @@ Mr. Announcer Bot has a vocabulary of over 100 phrases that include pre-rendered
 For example, to get Mr. Announcer Bot to say "**Excellent!**", send the text "**!ex**" to the chat window.
 
 ## Levels
-For the purposes of determining what you can say, Mr. Announcer Bot tracks viewer "levels". Levels are determined by past contributions, total time spent in the chat room (across all the episodes), and whether you are following/subscribing to the channel or not. It's a lot like one of thos dungeon adventuring games. A level-72 wizard can smite you with a side eye glance, while a level-0 wizard may be stuck fumbling with the spell casting book just to cast magic missiles.
+For the purposes of determining what you can say, Mr. Announcer Bot tracks viewer "levels". Levels are determined by past contributions, total time spent in the chat room (across all the episodes), and whether you are following/subscribing to the channel or not. It's a lot like one of those dungeon adventuring games. A level-72 wizard can smite you with a side-eye glance, while a level-0 wizard may be stuck fumbling with the spell casting book just to cast magic missiles.
 
 Here is more about level qualifications and what you can say based on your level:
 
@@ -17,4 +18,330 @@ Here is more about level qualifications and what you can say based on your level
 
 Anyone in the chat room who is not yet following the CodeRushed channel is a Level 0 botcaster. Level 0 botcasters can say any of these phrases:
 
-(more documentation to come)
+| Shortcut | Scene | Category |
+|---|---|---|
+| cr | CodeRush!* | Branding | 
+| dx | DevExpress! | Branding | 
+| ex | Excellent! | Good | 
+| mark | Mark->* | Alert | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 1
+
+Want to jump start your levels in the chat room? Follow us on Twitch at:
+
+http://twitch.tv/CodeRushed
+
+This will instantly take you to Level 1 and you gain these botcasting skills:
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| aweCon | Awesome Contribution! | Chat | 
+| goodQ | Good Question! | Chat | 
+| greatQ | Great Question! | Chat | 
+| greatSug | Great Suggestion! | Chat | 
+| heAwe | He's Awesome! | Chat | 
+| sheAwe | She's Awesome! | Chat | 
+| theyAwe | They're Awesome! | Chat | 
+| constants | Constants! | Code | 
+| constructors | Constructors! | Code | 
+| handlers | Event Handlers! | Code | 
+| js | Javascript! | Code | 
+| niceClassName | Nice Class Name! | Code | 
+| bugsCode | Bugs in My Code! | Debug | 
+| debugIt | Debug It! | Debug | 
+| debugger | Debugger! | !c | 
+| fixIt | Fix It! | Debug | 
+| inspect | Inspect It! | Debug | 
+| setBreak | Set Breakpoint | Debug | 
+| bug | That's a BUG! | Debug | 
+| awe | Awesome! | Good | 
+| fixed | Fixed! | Good | 
+| getClose | Getting Closer! | Good | 
+| goodDesign | Good Design | Good | 
+| compShip | It compiles - let's ship it! | Good | 
+| letsDoThis | Let's Do This! | Good | 
+| niceVarName | Nice Variable Name! | Good | 
+| phew | Phew - That was close! | Good | 
+| close1 | That was a close one! | Good | 
+| worked | That Worked! | Good | 
+| niceFunc | That's a nice function! | Good | 
+| bfi | Brute Force and Ignorance! | Gung Ho | 
+| coding | Coding! | Gung Ho | 
+| bilsimser | Bil Simser rocks! | Rocks | 
+| wilbennett | wilbennettRocks!.avi | Rocks | 
+| sadP | Sad Panda! | Sad | 
+| b2code | Back to the Code! | Transition | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 2
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| bro | Cool Story Bro! | Bad | 
+| forgot | Forgot Something! | Bad | 
+| askChat | Ask the chat room! | Chat | 
+| codeDance | Let's make this code dance! | Gung Ho | 
+| knowWhatHappen | Does Anybody Know What's Happening? | Mystery | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 3
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| hack | Hacked! | Bad | 
+| notPretty | Won't be pretty! | Bad | 
+| wow | Wow. Just Wow. | Bad | 
+| airbags | Check your airbags! | Gung Ho | 
+| whatHappen | What happened? | Mystery | 
+| funny | That was funny! | Good | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 4
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| exactly | Exactly! | Good | 
+| offRails | Going Off Rails! | Gung Ho | 
+| noSense | this doesn't make any sense | Mystery | 
+| unb | Unbelievable! | Mystery | 
+| mop | Mother of Pearl! | Swear | 
+| toobad | Too Bad! | Sad | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 5
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| ugly | Getting Ugly! | Bad | 
+| noo | Nooooo! | Bad | 
+| wheelsOff | The Training Wheels Are Off! | Gung Ho | 
+| evenWork | Does This Even Work? | Mystery | 
+| aye | Aye Aye Aye Yikesters! | Swear | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 6
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| sickBurn | Sick Burn! | Bad | 
+| stinks | This Stinks! | Bad | 
+| danceBattle | Dance Battle! | Crazy | 
+| buttercup | Buckle Up Buttercup! | Gung Ho | 
+| face | Excuse your face sir! | Swear | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 7
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| fail | Fail! | Bad | 
+| marksick | Mark is sick! | Bad | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 8
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 9
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 10
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 11
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 12
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 13
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 14
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 15
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
+| mdkwhd | Disclaimer - Mark doesn't know what he's doing! | Disclaimer | 
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 16
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 17
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 18
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 19
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 20
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 21
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 22
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 23
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 24
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 25
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 26
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 27
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 28
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 29
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 30
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
+### Level 31
+
+
+
+| Shortcut | Scene | Category |
+|---|---|---|
+| $Shortcut$ | $Scene$ | $Category$ | 
+
