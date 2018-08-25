@@ -5,12 +5,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TwitchLib.Api.Models.v5.Users;
 using TwitchLib.Client.Models;
 
 namespace MrAnnouncerBot
 {
 	public class AllViewers
 	{
+		TimeSpan fourHours = TimeSpan.FromHours(4);
+
 		List<Viewer> viewers = new List<Viewer>();
 		public AllViewers()
 		{
@@ -27,14 +30,37 @@ namespace MrAnnouncerBot
 			return path;
 		}
 
+		async void CheckData()
+		{
+			foreach (Viewer viewer in viewers)
+			{
+				if (string.IsNullOrEmpty(viewer.UserId) || string.IsNullOrEmpty(viewer.DisplayName))
+				{
+					User user = await Twitch.GetUser(viewer.UserName);
+					if (user != null)
+					{
+						viewer.UserId = user.Id;
+						viewer.DisplayName = user.DisplayName;
+					}
+				}
+			}
+		}
 		public void Load()
 		{
 			viewers = JsonConvert.DeserializeObject<List<Viewer>>(File.ReadAllText(GetDataFileName()));
+			CheckData();
 		}
 
 		public void Save()
 		{
-			File.WriteAllText(GetDataFileName(), JsonConvert.SerializeObject(viewers));
+			try
+			{
+				File.WriteAllText(GetDataFileName(), JsonConvert.SerializeObject(viewers));
+			}
+			catch (Exception ex)
+			{
+				// TODO: Alert and offer to try again.
+			}
 		}
 
 		private string GetDataFileName()
@@ -60,7 +86,8 @@ namespace MrAnnouncerBot
 				viewers.Add(existingUser);
 			}
 
-			existingUser.NumberOfChatMessagesSent++;
+			if (!chatMessage.Message.StartsWith("!"))
+				existingUser.NumberOfChatMessagesSent++;
 		}
 
 		private Viewer GetViewer(ChatMessage chatMessage)
@@ -68,9 +95,14 @@ namespace MrAnnouncerBot
 			return viewers.FirstOrDefault(x => x.UserId == chatMessage.UserId);
 		}
 
-		private Viewer GetViewer(string userName)
+		private Viewer GetViewerByUserName(string userName)
 		{
 			return viewers.FirstOrDefault(x => string.Compare(x.UserName, userName, StringComparison.InvariantCultureIgnoreCase) == 0);
+		}
+
+		private Viewer GetViewerById(string userId)
+		{
+			return viewers.FirstOrDefault(x => x.UserId == userId);
 		}
 
 		public int GetUserLevel(ChatMessage chatMessage)
@@ -82,57 +114,78 @@ namespace MrAnnouncerBot
 			Viewer existingViewer = GetViewer(chatMessage);
 			if (existingViewer == null)
 				return subscriberBonus;
-
+			if (existingViewer.UserName == "coderushed")
+				return 99;
 
 			return existingViewer.GetLevel() + subscriberBonus;
 		}
-		public void UserLeft(string username)
-		{
 
+		public void UserLeft(string userName)
+		{
 		}
-		public void UserJoined(string username)
-		{
-			//Viewer existingViewer = viewers.FirstOrDefault(x => x.UserName == username);
-			//if (existingViewer == null)
-			//{
-			//	existingUser = CreateNewViewer(username);
-			//}
 
-			//if (DateTime.Now)
-			//	existingViewer.LastShowWatched = ;
+		async public void UserJoined(string userName)
+		{
+			User user = await Twitch.GetUser(userName);
+			CheckViewer(user);
+
 		}
 
 		async Task<Viewer> CreateNewViewerFromUserName(string userName)
 		{
-			var response = await MrAnnouncerBot.httpClient.GetAsync("https://api.twitch.tv/helix/users");
-			var responseString = await response.Content.ReadAsStringAsync();
-			if (responseString == null)
-				return null;
 			Viewer viewer = new Viewer();
 			viewer.UserName = userName;
+			viewer.UserId = await Twitch.GetUserId(userName);
+			return viewer;
+		}
+
+		Viewer CreateNewViewer(string id, string name, string displayName)
+		{
+			Viewer viewer = new Viewer();
+			viewer.UserName = name;
+			viewer.UserId = id;
+			viewer.DisplayName = displayName;
 			return viewer;
 		}
 
 		async public void UpdateLiveViewers(string[] viewers)
 		{
-			foreach (string userName in viewers)
-			{
-				Viewer viewer = GetViewer(userName);
-				if (viewer == null)
-					viewer = await CreateNewViewerFromUserName(userName);
+			var results = await Twitch.Api.Users.v5.GetUsersByNameAsync(viewers.ToList());
+			var userList = results.Matches;
 
-				if (viewer != null)
-				{
-					if (DateTime.Now - viewer.LastShowWatched > TimeSpan.FromHours(4))
-					{
-						viewer.LastShowWatched = DateTime.Now;
-						viewer.NumberOfShowsWatched++;
-						Console.WriteLine($"{viewer.DisplayName} shows watched: {viewer.NumberOfShowsWatched}");
-					}
-					else
-						viewer.LastShowWatched = DateTime.Now;
-				}
+			foreach (User user in userList)
+				CheckViewer(user);
+		}
+
+		private void CheckViewer(User user)
+		{
+			if (user == null)
+				return;
+			Viewer viewer = GetViewerById(user.Id);
+			if (viewer == null)
+				viewer = CreateNewViewer(user.Id, user.Name, user.DisplayName);
+
+			if (WatchingNewShow(viewer))
+			{
+				viewer.LastShowWatched = DateTime.Now;
+				viewer.NumberOfShowsWatched++;
+				Console.WriteLine($"{viewer.DisplayName} shows watched: {viewer.NumberOfShowsWatched}");
 			}
+			else
+				viewer.LastShowWatched = DateTime.Now;
+		}
+
+		private bool WatchingNewShow(Viewer viewer)
+		{
+			return DateTime.Now - viewer.LastShowWatched > fourHours;
+		}
+
+		public Viewer LevelChange(string userName, int value)
+		{
+			Viewer viewer = GetViewerByUserName(userName);
+			if (viewer != null)
+				viewer.ModeratorOffset += value;
+			return viewer;
 		}
 	}
 }

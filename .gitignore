@@ -336,3 +336,11 @@ MrAnnouncerBot/App.config
 MrAnnouncerBot/Properties/Settings.settings
 MrAnnouncerBot/Properties/Settings.Designer.cs
 MrAnnouncerBot/.cr/personal/
+OverlayManager/appsettings.json
+OverlayManager/wwwroot/lib/bootstrap/dist/js/npm.js
+OverlayManager/wwwroot/
+OverlayManager/appsettings.Development.json
+MrAnnouncerBot-old/
+MrAnnouncerBot/appsettings.json
+Docs/README_Template.md
+Docs/LevelTemplate.md

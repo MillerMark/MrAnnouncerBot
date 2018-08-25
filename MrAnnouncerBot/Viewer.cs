@@ -6,12 +6,17 @@ namespace MrAnnouncerBot
 {
 	public class Viewer
 	{
+		public Viewer()
+		{
+			NumberOfShowsWatched = 1;
+			LastShowWatched = DateTime.Now;
+		}
 		public string UserId { get; set; }
-		public string DisplayName { get; set; }
 		public int NumberOfShowsWatched { get; set; }
 		public DateTime LastShowWatched { get; set; }
 		public int NumberOfChatMessagesSent { get; set; }
 		public int ModeratorOffset { get; set; }
+		public string DisplayName { get; set; }
 		public string UserName { get; set; }
 		public int GetLevel()
 		{
