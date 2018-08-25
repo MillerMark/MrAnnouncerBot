@@ -128,6 +128,7 @@ namespace MrAnnouncerBot
 		{
 			User user = await Twitch.GetUser(userName);
 			CheckViewer(user);
+
 		}
 
 		async Task<Viewer> CreateNewViewerFromUserName(string userName)
@@ -158,6 +159,8 @@ namespace MrAnnouncerBot
 
 		private void CheckViewer(User user)
 		{
+			if (user == null)
+				return;
 			Viewer viewer = GetViewerById(user.Id);
 			if (viewer == null)
 				viewer = CreateNewViewer(user.Id, user.Name, user.DisplayName);

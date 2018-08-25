@@ -28,8 +28,6 @@ namespace MrAnnouncerBot
 		AllViewers allViewers = new AllViewers();
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_WebSocketPort = "ws://127.0.0.1:4444";
-		private const string STR_SceneDataFile = "Data\\Mr. Announcer Guy - Scenes.csv";
-		private const string STR_SceneRestrictions = "Data\\Mr. Announcer Guy - Restrictions.csv";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
 
@@ -46,11 +44,13 @@ namespace MrAnnouncerBot
 
 		public MrAnnouncerBot()
 		{
+			CheckDocs();
 			InitChatRoomTimer();
 			LoadPersistentData();
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
 			new BotCommand("+", HandleLevelUp);
+
 		}
 
 		public void Disconnect()
@@ -82,8 +82,8 @@ namespace MrAnnouncerBot
 
 		private void LoadPersistentData()
 		{
-			scenes = GetCsvData<SceneDto>(STR_SceneDataFile);
-			restrictedScenes = GetCsvData<RestrictedSceneDto>(STR_SceneRestrictions);
+			scenes = CsvData.Get<SceneDto>(FileName.SceneData);
+			restrictedScenes = CsvData.Get<RestrictedSceneDto>(FileName.SceneRestrictions);
 			try
 			{
 				allViewers.Load();
@@ -92,23 +92,6 @@ namespace MrAnnouncerBot
 			{
 				//Chat("Exception loading allViewers data: " + ex.Message);
 			}
-		}
-
-		private List<T> GetCsvData<T>(string dataFileName)
-		{
-			List<T> result = new List<T>();
-			try
-			{
-				var textReader = File.OpenText(dataFileName);
-
-				using (var csvReader = new CsvReader(textReader))
-					result = csvReader.GetRecords<T>().ToList();
-			}
-			catch (Exception ex)
-			{
-				Chat("Error reading scene data file (" + dataFileName + "): " + ex.Message);
-			}
-			return result;
 		}
 
 		private void InitializeConnections()
@@ -135,14 +118,21 @@ namespace MrAnnouncerBot
 
 		async void CheckViewers(object obj)
 		{
-			var response = await httpClient.PostAsync(STR_GetChattersApi, null);
-			var responseString = await response.Content.ReadAsStringAsync();
-			if (responseString == null)
-				return;
+			try
+			{
+				var response = await httpClient.PostAsync(STR_GetChattersApi, null);
+				var responseString = await response.Content.ReadAsStringAsync();
+				if (responseString == null)
+					return;
 
-			LiveViewers liveViewers = JsonConvert.DeserializeObject<LiveViewers>(responseString);
-			if (liveViewers != null)
-				allViewers.UpdateLiveViewers(liveViewers.chatters.viewers);
+				LiveViewers liveViewers = JsonConvert.DeserializeObject<LiveViewers>(responseString);
+				if (liveViewers != null)
+					allViewers.UpdateLiveViewers(liveViewers.chatters.viewers);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Exception in CheckViewers: " + ex.Message);
+			}
 		}
 
 		private void TwitchClient_OnUserLeft(object sender, OnUserLeftArgs e)
@@ -229,11 +219,20 @@ namespace MrAnnouncerBot
 
 		private void TwitchClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
 		{
-			Chat(GetEntranceMessage());
+			try
+			{
+				Chat(GetEntranceMessage());
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Exception thrown in TwitchClient_OnJoinedChannel: " + ex);
+			}
 		}
 
 		private void Chat(string msg)
 		{
+			if (msg.Length > 512)
+				msg = msg.Substring(0, 512);
 			Twitch.Chat(msg);
 		}
 
@@ -470,7 +469,8 @@ namespace MrAnnouncerBot
 
 			string sceneList = string.Join(", ", accessibleScenes);
 			
-			Chat($"Your user level is: {userLevel}. You can say any of these: " + sceneList);
+			Chat($"@{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
+			Chat($"See https://github.com/MillerMark/MrAnnouncerBot/blob/master/README.md for more info.");
 		}
 
 		void HandleLevelUp(OnChatCommandReceivedArgs obj)
@@ -490,6 +490,12 @@ namespace MrAnnouncerBot
 				else
 					Chat($"{userName} not found.");
 			}
+		}
+
+		void CheckDocs()
+		{
+			DocChecker.GenerateIfNecessary();
+			// TODO: Implement this!
 		}
 	}
 }
