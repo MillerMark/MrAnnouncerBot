@@ -15,6 +15,7 @@ namespace MrAnnouncerBot
 				return sceneName.Substring(STR_GuyPrefix.Length);
 			return sceneName;
 		}
+
 		static void AddLevelDocs(StringBuilder finalReadme)
 		{
 			var levels = CsvData.Get<LevelDto>(FileName.SceneLevels);
@@ -25,13 +26,16 @@ namespace MrAnnouncerBot
 			var scenes = CsvData.Get<SceneDto>(FileName.SceneData);
 			foreach (var level in levels)
 			{
+				List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level).ToList();
+				if (filteredScenes.Count == 0)
+					continue;
+
 				foreach (string line in levelTemplate)
 				{
 					string replacedLine = line.Replace("$LevelNumber$", level.Level)
 																		.Replace("$LevelDoc$", level.Doc);
 					if (needToAddScenes)
 					{
-						List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level).ToList();
 						foreach (SceneDto scene in filteredScenes)
 						{
 							string sceneLine = replacedLine.Replace("$Shortcut$", scene.ChatShortcut)
