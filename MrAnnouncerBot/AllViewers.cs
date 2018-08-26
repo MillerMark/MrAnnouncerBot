@@ -22,13 +22,6 @@ namespace MrAnnouncerBot
 
 		public List<Viewer> Viewers { get => viewers; }
 
-		string GetDataFolder()
-		{
-			string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MrAnnouncerBot");
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
-			return path;
-		}
 
 		async void CheckData()
 		{
@@ -47,25 +40,13 @@ namespace MrAnnouncerBot
 		}
 		public void Load()
 		{
-			viewers = JsonConvert.DeserializeObject<List<Viewer>>(File.ReadAllText(GetDataFileName()));
+			viewers = AppData.Load<List<Viewer>>("AllViewers.json");
 			CheckData();
 		}
 
 		public void Save()
 		{
-			try
-			{
-				File.WriteAllText(GetDataFileName(), JsonConvert.SerializeObject(viewers));
-			}
-			catch (Exception ex)
-			{
-				// TODO: Alert and offer to try again.
-			}
-		}
-
-		private string GetDataFileName()
-		{
-			return Path.Combine(GetDataFolder(), "AllViewers.json");
+			AppData.Save("AllViewers.json", viewers);
 		}
 
 		Viewer CreateNewViewer(ChatMessage chatMessage)

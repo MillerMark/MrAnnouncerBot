@@ -231,8 +231,8 @@ namespace MrAnnouncerBot
 
 		private void Chat(string msg)
 		{
-			if (msg.Length > 512)
-				msg = msg.Substring(0, 512);
+			if (msg.Length > 509)
+				msg = msg.Substring(0, 509) + "...";
 			Twitch.Chat(msg);
 		}
 
@@ -494,8 +494,11 @@ namespace MrAnnouncerBot
 
 		void CheckDocs()
 		{
-			DocChecker.GenerateIfNecessary();
-			// TODO: Implement this!
+			if (DocChecker.NeedToGenerateNewReadme())
+			{
+				Console.WriteLine("Generating updated readme...");
+				DocChecker.GenerateNewReadme();
+			}
 		}
 	}
 }
