@@ -17,6 +17,7 @@ Here is more about level qualifications and what you can say based on your level
 ### Level 0
 
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level0.png)
+
 Anyone in the chat room who is not yet following the CodeRushed channel is a Level 0 botcaster. Level 0 botcasters can say any of these phrases:
 
 | Shortcut | Scene | Category |
@@ -29,6 +30,7 @@ Anyone in the chat room who is not yet following the CodeRushed channel is a Lev
 ### Level 1
 
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level1.png)
+
 Want to jump-start your levels in the chat room? Follow us on Twitch at:
 
 http://twitch.tv/CodeRushed
@@ -77,6 +79,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level2.png)
 
 
+
 | Shortcut | Scene | Category |
 |---|---|---|
 | askChat | Ask the chat room! | Chat | 
@@ -88,6 +91,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 ### Level 3
 
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level3.png)
+
 
 
 | Shortcut | Scene | Category |
@@ -104,6 +108,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level4.png)
 
 
+
 | Shortcut | Scene | Category |
 |---|---|---|
 | exactly | Exactly! | Good | 
@@ -116,6 +121,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 ### Level 5
 
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level5.png)
+
 
 
 | Shortcut | Scene | Category |
@@ -131,6 +137,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level6.png)
 
 
+
 | Shortcut | Scene | Category |
 |---|---|---|
 | buttercup | Buckle Up Buttercup! | Gung Ho | 
@@ -142,6 +149,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 ### Level 7
 
 ![](https://community.devexpress.com/blogs/markmiller/TwitchLevels/Level7.png)
+
 
 
 | Shortcut | Scene | Category |
