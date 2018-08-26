@@ -27,7 +27,7 @@ Anyone in the chat room who is not yet following the CodeRushed channel is a Lev
 
 ### Level 1
 
-Want to jump start your levels in the chat room? Follow us on Twitch at:
+Want to jump-start your levels in the chat room? Follow us on Twitch at:
 
 http://twitch.tv/CodeRushed
 
@@ -35,40 +35,40 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
+| awe | Awesome! | Good | 
 | aweCon | Awesome Contribution! | Chat | 
+| b2code | Back to the Code! | Transition | 
+| bfi | Brute Force and Ignorance! | Gung Ho | 
+| bug | That's a BUG! | Debug | 
+| bugsCode | Bugs in My Code! | Debug | 
+| close1 | That was a close one! | Good | 
+| coding | Coding! | Gung Ho | 
+| compShip | It compiles - let's ship it! | Good | 
+| constants | Constants! | Code | 
+| constructors | Constructors! | Code | 
+| debugger | Debugger! | Debug | 
+| debugIt | Debug It! | Debug | 
+| fixed | Fixed! | Good | 
+| fixIt | Fix It! | Debug | 
+| getClose | Getting Closer! | Good | 
+| goodDesign | Good Design | Good | 
 | goodQ | Good Question! | Chat | 
 | greatQ | Great Question! | Chat | 
 | greatSug | Great Suggestion! | Chat | 
-| heAwe | He's Awesome! | Chat | 
-| sheAwe | She's Awesome! | Chat | 
-| theyAwe | They're Awesome! | Chat | 
-| constants | Constants! | Code | 
-| constructors | Constructors! | Code | 
 | handlers | Event Handlers! | Code | 
-| js | Javascript! | Code | 
-| niceClassName | Nice Class Name! | Code | 
-| bugsCode | Bugs in My Code! | Debug | 
-| debugIt | Debug It! | Debug | 
-| debugger | Debugger! | !c | 
-| fixIt | Fix It! | Debug | 
+| heAwe | He's Awesome! | Chat | 
 | inspect | Inspect It! | Debug | 
-| setBreak | Set Breakpoint | Debug | 
-| bug | That's a BUG! | Debug | 
-| awe | Awesome! | Good | 
-| fixed | Fixed! | Good | 
-| getClose | Getting Closer! | Good | 
-| goodDesign | Good Design | Good | 
-| compShip | It compiles - let's ship it! | Good | 
+| js | Javascript! | Code | 
 | letsDoThis | Let's Do This! | Good | 
+| niceClassName | Nice Class Name! | Code | 
+| niceFunc | That's a nice function! | Good | 
 | niceVarName | Nice Variable Name! | Good | 
 | phew | Phew - That was close! | Good | 
-| close1 | That was a close one! | Good | 
-| worked | That Worked! | Good | 
-| niceFunc | That's a nice function! | Good | 
-| bfi | Brute Force and Ignorance! | Gung Ho | 
-| coding | Coding! | Gung Ho | 
 | sadP | Sad Panda! | Sad | 
-| b2code | Back to the Code! | Transition | 
+| setBreak | Set Breakpoint | Debug | 
+| sheAwe | She's Awesome! | Chat | 
+| theyAwe | They're Awesome! | Chat | 
+| worked | That Worked! | Good | 
 
 ### Level 2
 
@@ -76,10 +76,10 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| bro | Cool Story Bro! | Bad | 
-| forgot | Forgot Something! | Bad | 
 | askChat | Ask the chat room! | Chat | 
+| bro | Cool Story Bro! | Bad | 
 | codeDance | Let's make this code dance! | Gung Ho | 
+| forgot | Forgot Something! | Bad | 
 | knowWhatHappen | Does Anybody Know What's Happening? | Mystery | 
 
 ### Level 3
@@ -88,12 +88,12 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
+| airbags | Check your airbags! | Gung Ho | 
+| funny | That was funny! | Good | 
 | hack | Hacked! | Bad | 
 | notPretty | Won't be pretty! | Bad | 
-| wow | Wow. Just Wow. | Bad | 
-| airbags | Check your airbags! | Gung Ho | 
 | whatHappen | What happened? | Mystery | 
-| funny | That was funny! | Good | 
+| wow | Wow. Just Wow. | Bad | 
 
 ### Level 4
 
@@ -102,11 +102,11 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | Shortcut | Scene | Category |
 |---|---|---|
 | exactly | Exactly! | Good | 
-| offRails | Going Off Rails! | Gung Ho | 
-| noSense | this doesn't make any sense | Mystery | 
-| unb | Unbelievable! | Mystery | 
 | mop | Mother of Pearl! | Swear | 
+| noSense | this doesn't make any sense | Mystery | 
+| offRails | Going Off Rails! | Gung Ho | 
 | toobad | Too Bad! | Sad | 
+| unb | Unbelievable! | Mystery | 
 
 ### Level 5
 
@@ -114,11 +114,11 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
-| ugly | Getting Ugly! | Bad | 
-| noo | Nooooo! | Bad | 
-| wheelsOff | The Training Wheels Are Off! | Gung Ho | 
-| evenWork | Does This Even Work? | Mystery | 
 | aye | Aye Aye Aye Yikesters! | Swear | 
+| evenWork | Does This Even Work? | Mystery | 
+| noo | Nooooo! | Bad | 
+| ugly | Getting Ugly! | Bad | 
+| wheelsOff | The Training Wheels Are Off! | Gung Ho | 
 
 ### Level 6
 
@@ -126,11 +126,11 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
+| buttercup | Buckle Up Buttercup! | Gung Ho | 
+| danceBattle | Dance Battle! | Crazy | 
+| face | Excuse your face sir! | Swear | 
 | sickBurn | Sick Burn! | Bad | 
 | stinks | This Stinks! | Bad | 
-| danceBattle | Dance Battle! | Crazy | 
-| buttercup | Buckle Up Buttercup! | Gung Ho | 
-| face | Excuse your face sir! | Swear | 
 
 ### Level 7
 
@@ -138,15 +138,9 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 
 | Shortcut | Scene | Category |
 |---|---|---|
+| chatRoomOnFire | Chat Room On Fire | Good | 
 | fail | Fail! | Bad | 
 | marksick | Mark is sick! | Bad | 
-
-### Level 15
-
-
-
-| Shortcut | Scene | Category |
-|---|---|---|
-| noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
 | mdkwhd | Disclaimer - Mark doesn't know what he's doing! | Disclaimer | 
+| noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
 
