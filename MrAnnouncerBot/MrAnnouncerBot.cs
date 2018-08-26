@@ -331,6 +331,37 @@ namespace MrAnnouncerBot
 					return "Mr. Announcer Bot is ready to ROCK!!!";
 			}
 		}
+
+		object GetLevelName(int userLevel)
+		{
+			if (userLevel == 0)
+				return "padawan";
+			if (userLevel == 1)
+				return "wizardling";
+			if (userLevel == 2)
+				return "apprentice";
+			if (userLevel == 3)
+				return "student";
+			if (userLevel == 4)
+				return "magician";
+			return "wizard";
+		}
+
+		string GetNeedToLevelUpMessage(SceneDto scene, string displayName, int userLevel)
+		{
+			string learnMore = "You can learn about botcasting levels here: https://github.com/MillerMark/MrAnnouncerBot";
+			switch (RandomInt(4))
+			{
+				case 0:
+					return $"{displayName}, that's a level {scene.Level} spell, but alas, you are a level {userLevel} {GetLevelName(userLevel)}. " + learnMore;
+				case 1:
+					return $"Unfortunately {displayName}, there's no way a level {userLevel} {GetLevelName(userLevel)} can botcast level {scene.Level} spell! " + learnMore;
+				case 2:
+					return $"{displayName}, you'll need to level-up to {scene.Level} before you botcast that spell! " + learnMore;
+				default:
+					return $"{displayName} that's a level {scene.Level} spell! You need to level-up first! " + learnMore;
+			}
+		}
 		string GetExitMessage()
 		{
 			switch (RandomInt(6))
@@ -400,6 +431,11 @@ namespace MrAnnouncerBot
 
 		void ActivateScene(SceneDto scene, string displayName, int userLevel)
 		{
+			if (scene.Level >= userLevel)
+			{
+				Chat(GetNeedToLevelUpMessage(scene, displayName, userLevel));
+				return;
+			}
 			string sceneName = GetSceneName(scene);
 			if (sceneName == null)
 				return;
@@ -476,7 +512,7 @@ namespace MrAnnouncerBot
 		void HandleLevelUp(OnChatCommandReceivedArgs obj)
 		{
 			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
-			if (userLevel < 99)
+			if (userLevel < AllViewers.ModeratorLevel)
 				return;
 
 			if (obj.Command.ArgumentsAsString != null)
@@ -489,6 +525,9 @@ namespace MrAnnouncerBot
 				}
 				else
 					Chat($"{userName} not found.");
+				var scene = GetScene("levelup");
+				if (scene != null)
+					ActivateSceneIfPermitted(scene, "CodeRushed", AllViewers.ModeratorLevel);
 			}
 		}
 

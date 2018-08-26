@@ -12,6 +12,8 @@ namespace MrAnnouncerBot
 {
 	public class AllViewers
 	{
+		public const int ModeratorLevel = 999999;
+
 		TimeSpan fourHours = TimeSpan.FromHours(4);
 
 		List<Viewer> viewers = new List<Viewer>();
@@ -88,17 +90,20 @@ namespace MrAnnouncerBot
 
 		public int GetUserLevel(ChatMessage chatMessage)
 		{
-			var subscriberBonus = 0;
+			var bonus = 0;
 			if (chatMessage.IsSubscriber)
-				subscriberBonus = chatMessage.SubscribedMonthCount;
+				bonus += chatMessage.SubscribedMonthCount;
+
+			if (chatMessage.IsModerator)
+				bonus += 5;
 
 			Viewer existingViewer = GetViewer(chatMessage);
 			if (existingViewer == null)
-				return subscriberBonus;
-			if (existingViewer.UserName == "coderushed")
-				return 99;
+				return bonus;
+			if (existingViewer.UserName == "coderushed" || existingViewer.UserName == "rorybeckercoderush")
+				return ModeratorLevel;
 
-			return existingViewer.GetLevel() + subscriberBonus;
+			return existingViewer.GetLevel() + bonus;
 		}
 
 		public void UserLeft(string userName)

@@ -7,37 +7,6 @@ using System.Text;
 
 namespace MrAnnouncerBot
 {
-	public class TimeStampChecker
-	{
-		const string STR_TimeStampsStorage = "TimeStamps.json";
-		Dictionary<string, DateTime> timeStamps = new Dictionary<string, DateTime>();
-
-		public Dictionary<string, DateTime> TimeStamps { get => timeStamps; set => timeStamps = value; }
-
-		public void Add(string fileName)
-		{
-			timeStamps.Add(fileName, File.GetLastWriteTime(fileName));
-		}
-
-		public void Save()
-		{
-			AppData.Save(STR_TimeStampsStorage, this);
-		}
-
-		public static TimeStampChecker Load()
-		{
-			TimeStampChecker timeStamps = AppData.Load<TimeStampChecker>(STR_TimeStampsStorage);
-			return timeStamps;
-		}
-
-		public bool NoChanges()
-		{
-			foreach (string key in timeStamps.Keys)
-				if (timeStamps[key] != File.GetLastWriteTime(key))
-					return false;
-			return true;
-		}
-	}
 	public static class DocChecker
 	{
 		const string STR_GuyPrefix = "Guy - ";
@@ -58,7 +27,9 @@ namespace MrAnnouncerBot
 			var scenes = CsvData.Get<SceneDto>(FileName.SceneData);
 			foreach (var level in levels)
 			{
-				List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level && x.LimitToUser == "").ToList();
+				List<SceneDto> filteredScenes = scenes.Where(x => x.LevelStr == level.Level && x.LimitToUser == "")
+					.OrderBy(x => x.ChatShortcut)
+					.ToList();
 				if (filteredScenes.Count == 0)
 					continue;
 
