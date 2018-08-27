@@ -8,15 +8,32 @@ function updateScreen() {
 
 function handleKeyDown(evt) {
   const Key_C = 67;
+  const Key_Up = 38;
+  const Key_Right = 39;
+  const Key_Left = 37;
   evt = evt || window.event;
   if (evt.keyCode == 13) {
     myRocket.move(1, -3);
+    return false;
+  }
+  else if (evt.keyCode == Key_Up) {
+    myRocket.fireMainThrusters();
+    return false;
+  }
+  else if (evt.keyCode == Key_Right) {
+    myRocket.fireLeftThruster();
+    return false;
+  }
+  else if (evt.keyCode == Key_Left) {
+    myRocket.fireRightThruster();
+    return false;
   }
   else if (evt.keyCode == Key_C) {
     if (myRocket.chuteDeployed)
       myRocket.retractChutes();
     else 
       myRocket.deployChute();
+    return false;
   }
 }
 

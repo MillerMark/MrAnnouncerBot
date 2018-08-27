@@ -41,11 +41,23 @@ const BottomLeftFlameY = 228 - CodeRushedPosY;
 const BottomLeftFlameJiggleX = 0;
 const BottomLeftFlameJiggleY = 2;
 
+const MiniBottomLeftFlameX = 149 - CodeRushedPosX;
+const MiniBottomLeftFlameY = 240 - CodeRushedPosY;
+const MiniBottomLeftFlameJiggleX = 0;
+const MiniBottomLeftFlameJiggleY = 2;
+
+
 
 const BottomRightFlameX = 284 - CodeRushedPosX;
 const BottomRightFlameY = 228 - CodeRushedPosY;
 const BottomRightFlameJiggleX = 0;
 const BottomRightFlameJiggleY = 2;
+
+const MiniBottomRightFlameX = 296 - CodeRushedPosX;
+const MiniBottomRightFlameY = 240 - CodeRushedPosY;
+const MiniBottomRightFlameJiggleX = 0;
+const MiniBottomRightFlameJiggleY = 1;
+
 
 
 const ChuteExtendX = 144 - CodeRushedPosX;
@@ -61,17 +73,21 @@ class Rocket {
 
     this.x = x;
     this.y = y;
-    const flameFrameDuration = 60;
+    const flameFrameInterval = 60;
     this.codeRushedBody = new Part("CodeRushed", 1, PartStyle.Static, x, y);
     this.leftEngine = new Part("LeftEngine", 1, PartStyle.Static, LeftEngineX + x, LeftEngineY + y);
     this.rightEngine = new Part("RightEngine", 1, PartStyle.Static, RightEngineX + x, RightEngineY + y);
     this.bottomLeftEngine = new Part("BottomEngine", 1, PartStyle.Static, BottomLeftEngineX + x, BottomLeftEngineY + y);
     this.bottomRightEngine = new Part("BottomEngine", 1, PartStyle.Static, BottomRightEngineX + x, BottomRightEngineY + y);
 
-    this.bottomLeftFlame = new Part("FlameBottom", 6, PartStyle.Random, BottomLeftFlameX + x, BottomLeftFlameY + y, flameFrameDuration, BottomLeftFlameJiggleX, BottomLeftFlameJiggleY);
-    this.bottomRightFlame = new Part("FlameBottom", 6, PartStyle.Random, BottomRightFlameX + x, BottomRightFlameY + y, flameFrameDuration, BottomRightFlameJiggleX, BottomRightFlameJiggleY);
-    this.leftFlame = new Part("FlameLeft", 6, PartStyle.Random, LeftFlameX + x, LeftFlameY + y, flameFrameDuration * 0.6, LeftFlameJiggleX, LeftFlameJiggleY);
-    this.rightFlame = new Part("FlameRight", 6, PartStyle.Random, RightFlameX + x, RightFlameY + y, flameFrameDuration * 0.6, RightFlameJiggleX, RightFlameJiggleY);
+    this.bottomLeftFlame = new Part("FlameBottom", 6, PartStyle.Random, BottomLeftFlameX + x, BottomLeftFlameY + y, flameFrameInterval, BottomLeftFlameJiggleX, BottomLeftFlameJiggleY);
+    this.bottomRightFlame = new Part("FlameBottom", 6, PartStyle.Random, BottomRightFlameX + x, BottomRightFlameY + y, flameFrameInterval, BottomRightFlameJiggleX, BottomRightFlameJiggleY);
+
+    this.bottomLeftMiniFlame = new Part("MiniFlameBottom", 6, PartStyle.Random, MiniBottomLeftFlameX + x, MiniBottomLeftFlameY + y, flameFrameInterval, MiniBottomLeftFlameJiggleX, MiniBottomLeftFlameJiggleY);
+    this.bottomRightMiniFlame = new Part("MiniFlameBottom", 6, PartStyle.Random, MiniBottomRightFlameX + x, MiniBottomRightFlameY + y, flameFrameInterval, MiniBottomRightFlameJiggleX, MiniBottomRightFlameJiggleY);
+
+    this.leftFlame = new Part("FlameLeft", 6, PartStyle.Random, LeftFlameX + x, LeftFlameY + y, flameFrameInterval * 0.6, LeftFlameJiggleX, LeftFlameJiggleY);
+    this.rightFlame = new Part("FlameRight", 6, PartStyle.Random, RightFlameX + x, RightFlameY + y, flameFrameInterval * 0.6, RightFlameJiggleX, RightFlameJiggleY);
 
     const chuteFrameInterval = 200;
     this.chute = new Part("ChuteExtend", 5, PartStyle.Sequential, ChuteExtendX + x, ChuteExtendY + y, chuteFrameInterval);
@@ -150,6 +166,24 @@ class Rocket {
       return;
   }
 
+  fireMainThrusters() {
+    var t = new Date();
+    t.setSeconds(t.getSeconds() + 1);
+    this.mainThrusterOfftime = t;
+  }
+
+  fireLeftThruster() {
+    var t = new Date();
+    t.setSeconds(t.getSeconds() + 1);
+    this.leftThrusterOfftime = t;
+  }
+
+  fireRightThruster() {
+    var t = new Date();
+    t.setSeconds(t.getSeconds() + 1);
+    this.rightThrusterOfftime = t;
+  }
+
   move(velocityX, velocityY) {
     this.velocityX = velocityX;
     this.velocityY = velocityY;
@@ -175,10 +209,25 @@ class Rocket {
   }
 
   draw(context) {
-    this.bottomRightFlame.draw(context, this.x, this.y);
-    this.bottomLeftFlame.draw(context, this.x, this.y);
-    this.rightFlame.draw(context, this.x, this.y);
-    this.leftFlame.draw(context, this.x, this.y);
+    var now = new Date();
+    if (this.mainThrusterOfftime > now) {
+      this.bottomRightFlame.draw(context, this.x, this.y);
+      this.bottomLeftFlame.draw(context, this.x, this.y);
+    }
+    else {
+      context.globalAlpha = 0.5;
+      this.bottomRightMiniFlame.draw(context, this.x, this.y);
+      this.bottomLeftMiniFlame.draw(context, this.x, this.y);
+      context.globalAlpha = 1;      
+    }
+
+    // TODO: Add "Nice Function Name" to Mr. Announcer Guy.
+
+    if (this.rightThrusterOfftime > now)
+      this.rightFlame.draw(context, this.x, this.y);
+
+    if (this.leftThrusterOfftime > now)
+      this.leftFlame.draw(context, this.x, this.y);
 
     this.leftEngine.draw(context, this.x, this.y);
     this.rightEngine.draw(context, this.x, this.y);
