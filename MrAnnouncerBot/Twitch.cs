@@ -98,6 +98,11 @@ namespace MrAnnouncerBot
 			twitchClient.SendMessage(STR_ChannelName, msg);
 		}
 
+		public static void Whisper(string userName, string msg)
+		{
+			twitchClient.SendWhisper(userName, msg);
+		}
+
 		static void HookEvents()
 		{
 			twitchClient.OnLog += TwitchClientLog;

@@ -30,6 +30,7 @@ namespace MrAnnouncerBot
 		private const string STR_WebSocketPort = "ws://127.0.0.1:4444";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
+		const string STR_Ellipsis = "...";
 
 		private static List<SceneDto> scenes = new List<SceneDto>();
 		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
@@ -212,11 +213,6 @@ namespace MrAnnouncerBot
 			Console.WriteLine("ObsWebsocket_Connected");
 		}
 
-		private void Whisper(string userName, string msg)
-		{
-			Twitch.Client.SendWhisper(userName, msg);
-		}
-
 		private void TwitchClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
 		{
 			try
@@ -229,11 +225,23 @@ namespace MrAnnouncerBot
 			}
 		}
 
+		private static string TruncateForTwitch(string msg)
+		{
+			const int maxLength = 410;//  500;
+			if (msg.Length > maxLength)
+				msg = msg.Substring(0, maxLength - STR_Ellipsis.Length) + STR_Ellipsis;
+			return msg;
+		}
+
 		private void Chat(string msg)
 		{
-			if (msg.Length > 509)
-				msg = msg.Substring(0, 509) + "...";
-			Twitch.Chat(msg);
+			Twitch.Chat(TruncateForTwitch(msg));
+		}
+
+		private void Whisper(string userName, string msg)
+		{
+			//Twitch.Whisper(userName, "yo");
+			Twitch.Whisper(userName, TruncateForTwitch(msg));
 		}
 
 		public void Run()
@@ -490,22 +498,25 @@ namespace MrAnnouncerBot
 		}
 
 
+		string QuotedIfSpace(string chatShortcut)
+		{
+			if (chatShortcut.IndexOf(' ') >= 0)
+				return $"\"{chatShortcut}\"";
+			else
+				return chatShortcut;
+		}
+
 		void HandleQuestionCommand(OnChatCommandReceivedArgs obj)
 		{
 			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
 
 			List<string> accessibleScenes = scenes.Where(m => m.Level <= userLevel)
-																						.Select(m => { 
-																							if (m.ChatShortcut.IndexOf(' ') >= 0)
-																								return $"\"{m.ChatShortcut}\"";
-																							else
-																								return m.ChatShortcut;
-																						}
-																						).ToList();
+																						.Select(m => QuotedIfSpace(m.ChatShortcut))
+																						.ToList();
 
 			string sceneList = string.Join(", ", accessibleScenes);
 			
-			Chat($"@{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
+			Whisper(obj.Command.ChatMessage.Username, $"@{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
 			Chat($"See https://github.com/MillerMark/MrAnnouncerBot/blob/master/README.md for more info.");
 		}
 
@@ -533,10 +544,10 @@ namespace MrAnnouncerBot
 
 		void CheckDocs()
 		{
-			if (DocChecker.NeedToGenerateNewReadme())
+			if (ReadmeManager.NeedToGenerateNewReadme())
 			{
 				Console.WriteLine("Generating updated readme...");
-				DocChecker.GenerateNewReadme();
+				ReadmeManager.GenerateNewReadme();
 			}
 		}
 	}

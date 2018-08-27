@@ -7,7 +7,7 @@ using System.Text;
 
 namespace MrAnnouncerBot
 {
-	public static class DocChecker
+	public static class ReadmeManager
 	{
 		const string STR_GuyPrefix = "Guy - ";
 		static string GetSceneName(string sceneName)
@@ -15,6 +15,14 @@ namespace MrAnnouncerBot
 			if (sceneName.StartsWith(STR_GuyPrefix))
 				return sceneName.Substring(STR_GuyPrefix.Length);
 			return sceneName;
+		}
+
+		static string GetPicMarkDown(string pic)
+		{
+			if (string.IsNullOrEmpty(pic))
+				return "";
+
+			return $"![]({pic})" + Environment.NewLine + Environment.NewLine;
 		}
 
 		static void AddLevelDocs(StringBuilder finalReadme)
@@ -36,7 +44,8 @@ namespace MrAnnouncerBot
 				foreach (string line in levelTemplate)
 				{
 					string replacedLine = line.Replace("$LevelNumber$", level.Level)
-																		.Replace("$LevelDoc$", level.Doc);
+																		.Replace("$LevelDoc$", level.Doc)
+																		.Replace("$LevelPic$", GetPicMarkDown(level.Pic));
 					if (needToAddScenes)
 					{
 						foreach (SceneDto scene in filteredScenes)
