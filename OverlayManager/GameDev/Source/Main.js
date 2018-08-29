@@ -2,7 +2,7 @@
 function updateScreen() {
   myContext.clearRect(0, 0, 1920, 1080);
   myRocket.updatePosition();
-  myRocket.bounce(0, -10000, 1920, 1080);
+  myRocket.bounce(0, 0, 1920, 1080);
   myRocket.draw(myContext);
 }
 
@@ -11,13 +11,19 @@ function handleKeyDown(evt) {
   const Key_Up = 38;
   const Key_Right = 39;
   const Key_Left = 37;
+  const Key_Down = 40;
+
   evt = evt || window.event;
   if (evt.keyCode == 13) {
-    myRocket.move(1, -3);
+    myRocket.changeVelocity(0, 0);
     return false;
   }
   else if (evt.keyCode == Key_Up) {
     myRocket.fireMainThrusters();
+    return false;
+  }
+  else if (evt.keyCode == Key_Down) {
+    myRocket.killHoverThrusters();
     return false;
   }
   else if (evt.keyCode == Key_Right) {
@@ -40,5 +46,5 @@ function handleKeyDown(evt) {
 document.onkeydown = handleKeyDown;
 var myCanvas = document.getElementById("myCanvas");
 var myContext = myCanvas.getContext("2d");
-var myRocket = new Rocket(200, 100);
+var myRocket = new Rocket(0, 0);
 setInterval(updateScreen, 5);
