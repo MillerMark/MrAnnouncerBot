@@ -3,8 +3,9 @@ function updateScreen() {
   myContext.clearRect(0, 0, 1820, 980);
   myRocket.updatePosition();
   myRocket.bounce(0, 0, 1820, 980);
+  coins.collect(myRocket.x, myRocket.y, 310, 70);
+  coins.draw(myContext);
   myRocket.draw(myContext);
-  spinningCoin.draw(myContext, 0, 0);
 }
 
 function handleKeyDown(evt) {
@@ -55,13 +56,12 @@ function handleKeyDown(evt) {
   }
 }
 
-spinningCoin = new Part("Spinning Coin/SpinningCoin", 165, PartStyle.Loop, 960 - 32, 640 - 32, 5);
-
 document.onkeydown = handleKeyDown;
 var myCanvas = document.getElementById("myCanvas");
+var coins = new Coins(400, 200, myCanvas.clientWidth - 400, myCanvas.clientHeight - 200);
 var myContext = myCanvas.getContext("2d");
 var myRocket = new Rocket(0, 0);
 var started = false;
 myRocket.x = 0;
 myRocket.y = 0;
-setInterval(updateScreen, 5);
+setInterval(updateScreen, 10);

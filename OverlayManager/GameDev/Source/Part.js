@@ -70,7 +70,11 @@
 
   draw(context, x, y) {
     this.advanceFrameIfNecessary();
-    context.drawImage(this.images[this.frameIndex],
+    this.drawByIndex(context, x, y, this.frameIndex);
+  }
+
+  drawByIndex(context, x, y, frameIndex) {
+    context.drawImage(this.images[frameIndex],
       x + this.offsetX + this.getJiggle(this.jiggleX),
       y + this.offsetY + this.getJiggle(this.jiggleY));
 
