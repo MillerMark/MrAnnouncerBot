@@ -41,8 +41,7 @@ class Coins {
     }
   }
 
-  advanceFrame() {
-    var now = new Date();
+  advanceFrame(now) {
     var msPassed = now - this.lastTimeWeAdvancedTheFrame;
     if (msPassed < 5)
       return;
@@ -63,13 +62,16 @@ class Coins {
       var coin = this.coins[i];
       var centerX = coin.x + this.coinSize / 2;
       var centerY = coin.y + this.coinSize / 2;
-      if (centerX > left && centerX < right && centerY > top & centerY < bottom)
+      if (centerX > left && centerX < right && centerY > top & centerY < bottom) {
         this.coins.splice(i, 1);
+        new Audio('Assets/Sound Effects/CollectCoin.wav').play();
+      }
+      
     }
   }
 
-  draw(context) {
-    this.advanceFrame();
+  draw(context, now) {
+    this.advanceFrame(now);
     var self = this;
     this.coins.forEach(function (coin) {
       self.spinningCoin.drawByIndex(context, coin.x, coin.y, coin.frameIndex);

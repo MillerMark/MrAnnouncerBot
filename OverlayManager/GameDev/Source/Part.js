@@ -59,7 +59,7 @@
           this.frameIndex = 0;
     }
 
-    this.lastUpdateTime = new Date();
+    this.lastUpdateTime = performance.now();
   }
 
   getJiggle(amount) {
