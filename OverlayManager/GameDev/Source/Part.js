@@ -9,13 +9,22 @@
     this.images = [];
     this.frameIndex = 0;
     this.reverse = false;
-    this.frameCount = frameCount;
     this.lastUpdateTime = null;
+    var actualFrameCount = 0;
     for (var i = 0; i < frameCount; i++) {
       var image = new Image();
-      image.src = "Assets/" + fileName + i + '.png';
+      image.src = 'Assets/' + fileName + i + '.png';
       this.images.push(image);
+      actualFrameCount++;
     }
+    this.frameCount = actualFrameCount;
+  }
+
+  fileExists(url) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status != 404;
   }
 
   isOnLastFrame() {
@@ -37,15 +46,15 @@
     if (msPassed < this.frameRate)
       return;
 
-    if (this.partStyle == PartStyle.Static)
+    if (this.partStyle == AnimationStyle.Static)
       return;
-    if (this.partStyle == PartStyle.Random)
+    if (this.partStyle == AnimationStyle.Random)
       this.frameIndex = Random.getInt(this.frameCount);
 
     if (this.reverse) {
       this.frameIndex--;
       if (this.frameIndex < 0)
-        if (this.partStyle == PartStyle.Sequential)
+        if (this.partStyle == AnimationStyle.Sequential)
           this.frameIndex = 0;
         else // PartStyle.Loop
           this.frameIndex = this.frameCount - 1;
@@ -53,7 +62,7 @@
     else {
       this.frameIndex++;
       if (this.frameIndex >= this.frameCount)
-        if (this.partStyle == PartStyle.Sequential)
+        if (this.partStyle == AnimationStyle.Sequential)
           this.frameIndex = this.frameCount - 1;
         else // PartStyle.Loop
           this.frameIndex = 0;
@@ -81,10 +90,10 @@
   }
 }
 
-var PartStyle = {
+var AnimationStyle = {
   'Static': 1,
   'Random': 2,
   'Sequential': 3,
   'Loop': 4,
 }
-Object.freeze(PartStyle);
+Object.freeze(AnimationStyle);

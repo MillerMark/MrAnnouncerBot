@@ -87,6 +87,7 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | codeDance | Let's make this code dance! | Gung Ho | 
 | forgot | Forgot Something! | Bad | 
 | knowWhatHappen | Does Anybody Know What's Happening? | Mystery | 
+| nfn | Nice Function Name! | Code | 
 
 ### Level 3
 

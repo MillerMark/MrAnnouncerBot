@@ -136,6 +136,8 @@ namespace MrAnnouncerBot
 
 		async public void UpdateLiveViewers(string[] viewers)
 		{
+			if (viewers.Length == 0)
+				return;
 			var results = await Twitch.Api.Users.v5.GetUsersByNameAsync(viewers.ToList());
 			var userList = results.Matches;
 

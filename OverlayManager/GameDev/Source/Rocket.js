@@ -1,4 +1,4 @@
-﻿CodeRushedPosX = 86;
+﻿const CodeRushedPosX = 86;
 const CodeRushedPosY = 159;
 
 const LeftEngineX = 58 - CodeRushedPosX;
@@ -99,27 +99,27 @@ class Rocket {
     this.motorExtendAudio = new Audio('Assets/Sound Effects/EngineExtend4.wav');
     this.motorRetractAudio = new Audio('Assets/Sound Effects/EngineRetract.wav');
 
-    this.codeRushedBody = new Part("CodeRushed", 1, PartStyle.Static, x, y);
+    this.codeRushedBody = new Part("CodeRushed", 1, AnimationStyle.Static, x, y);
 
-    this.leftEngine = new Part("LeftEngine", 1, PartStyle.Static, LeftEngineX + x, LeftEngineY + y);
+    this.leftEngine = new Part("LeftEngine", 1, AnimationStyle.Static, LeftEngineX + x, LeftEngineY + y);
 
-    this.rightEngine = new Part("RightEngine", 1, PartStyle.Static, RightEngineX + x, RightEngineY + y);
+    this.rightEngine = new Part("RightEngine", 1, AnimationStyle.Static, RightEngineX + x, RightEngineY + y);
 
-    this.bottomLeftEngine = new Part("BottomEngine", 1, PartStyle.Static, BottomLeftEngineX + x, BottomLeftEngineY + y);
-    this.bottomRightEngine = new Part("BottomEngine", 1, PartStyle.Static, BottomRightEngineX + x, BottomRightEngineY + y);
+    this.bottomLeftEngine = new Part("BottomEngine", 1, AnimationStyle.Static, BottomLeftEngineX + x, BottomLeftEngineY + y);
+    this.bottomRightEngine = new Part("BottomEngine", 1, AnimationStyle.Static, BottomRightEngineX + x, BottomRightEngineY + y);
 
 
-    this.bottomLeftFlame = new Part("FlameBottom", 6, PartStyle.Random, BottomLeftFlameX + x, BottomLeftFlameY + y, flameFrameInterval, BottomLeftFlameJiggleX, BottomLeftFlameJiggleY);
-    this.bottomRightFlame = new Part("FlameBottom", 6, PartStyle.Random, BottomRightFlameX + x, BottomRightFlameY + y, flameFrameInterval, BottomRightFlameJiggleX, BottomRightFlameJiggleY);
+    this.bottomLeftFlame = new Part("FlameBottom", 6, AnimationStyle.Random, BottomLeftFlameX + x, BottomLeftFlameY + y, flameFrameInterval, BottomLeftFlameJiggleX, BottomLeftFlameJiggleY);
+    this.bottomRightFlame = new Part("FlameBottom", 6, AnimationStyle.Random, BottomRightFlameX + x, BottomRightFlameY + y, flameFrameInterval, BottomRightFlameJiggleX, BottomRightFlameJiggleY);
 
-    this.bottomLeftMiniFlame = new Part("MiniFlameBottom", 6, PartStyle.Random, MiniBottomLeftFlameX + x, MiniBottomLeftFlameY + y, flameFrameInterval, MiniBottomLeftFlameJiggleX, MiniBottomLeftFlameJiggleY);
-    this.bottomRightMiniFlame = new Part("MiniFlameBottom", 6, PartStyle.Random, MiniBottomRightFlameX + x, MiniBottomRightFlameY + y, flameFrameInterval, MiniBottomRightFlameJiggleX, MiniBottomRightFlameJiggleY);
+    this.bottomLeftMiniFlame = new Part("MiniFlameBottom", 6, AnimationStyle.Random, MiniBottomLeftFlameX + x, MiniBottomLeftFlameY + y, flameFrameInterval, MiniBottomLeftFlameJiggleX, MiniBottomLeftFlameJiggleY);
+    this.bottomRightMiniFlame = new Part("MiniFlameBottom", 6, AnimationStyle.Random, MiniBottomRightFlameX + x, MiniBottomRightFlameY + y, flameFrameInterval, MiniBottomRightFlameJiggleX, MiniBottomRightFlameJiggleY);
 
-    this.leftFlame = new Part("FlameLeft", 6, PartStyle.Random, LeftFlameX + x, LeftFlameY + y, flameFrameInterval * 0.6, LeftFlameJiggleX, LeftFlameJiggleY);
-    this.rightFlame = new Part("FlameRight", 6, PartStyle.Random, RightFlameX + x, RightFlameY + y, flameFrameInterval * 0.6, RightFlameJiggleX, RightFlameJiggleY);
+    this.leftFlame = new Part("FlameLeft", 6, AnimationStyle.Random, LeftFlameX + x, LeftFlameY + y, flameFrameInterval * 0.6, LeftFlameJiggleX, LeftFlameJiggleY);
+    this.rightFlame = new Part("FlameRight", 6, AnimationStyle.Random, RightFlameX + x, RightFlameY + y, flameFrameInterval * 0.6, RightFlameJiggleX, RightFlameJiggleY);
 
     const chuteFrameInterval = 100;
-    this.chute = new Part("ChuteExtend", 5, PartStyle.Sequential, ChuteExtendX + x, ChuteExtendY + y, chuteFrameInterval);
+    this.chute = new Part("ChuteExtend", 5, AnimationStyle.Sequential, ChuteExtendX + x, ChuteExtendY + y, chuteFrameInterval);
     this.chuteDeployed = false;
     this.chuteSailsAreFull = false;
     this.chuteRetracting = false;
@@ -440,26 +440,13 @@ class Rocket {
     var hAccel = this.getHorizontalAcceleration(now);
     var vAccel = this.getVerticalAcceleration(now);
 
-    //console.log('hAccel: ' + hAccel + ', vAccel: ' + vAccel);
-    //console.log('secondsPassed: ' + secondsPassed);
-
     var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, hAccel);
-
-    //console.log('hAccel: ' + hAccel + ', this.startX: ' + this.startX + ', this.x: ' + this.x + ', this.lastX: ' + this.lastX);
 
     if ((this.wasFiringLeftThruster && this.leftThrusterOfftime <= now) || (this.wasFiringRightThruster && this.rightThrusterOfftime <= now)) {
       this.startX = this.x;
     }
 
     var newX = this.startX + Physics.metersToPixels(xDisplacement);
-
-    //console.log('this.velocityX: ' + this.velocityX + ', xDisplacement: ' + xDisplacement + ', hAccel: ' + hAccel + ', this.startX: ' + this.startX + ', this.x: ' + this.x + ', secondsPassed: ' + secondsPassed);
-    //if (Math.abs(this.saveX - newX) > 10) {
-    //  //console.log('hAccel: ' + hAccel + ', this.startX: ' + this.startX + ', this.x: ' + this.x + ', this.lastX: ' + this.lastX);
-    //  //debugger;
-    //}
-    //this.saveX = newX;
-
     this.x = newX;
 
 
@@ -474,13 +461,7 @@ class Rocket {
 
     var newY = this.startY + Physics.metersToPixels(yDisplacement);
 
-    //if (Math.abs(this.saveY - newY) > 10)
-    //  debugger;
-    //this.saveY = newY;
-
     this.y = newY;
-
-    //console.log('Displacement: (' + xDisplacement + ', ' + yDisplacement + ')');
   }
 
   thrustersOff(now) {
@@ -703,5 +684,18 @@ class Rocket {
   logState(message) {
     if (this.loggingState)
       console.log(message);
+  }
+
+  dropMeteor(now) {
+    var x = this.x + this.width / 2 - 40;
+    var y = this.y;
+
+    var secondsPassed = (new Date() - this.timeStart) / 1000;
+    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    var newMeteor = new SpriteProxy(Random.getInt(redMeteors.baseAnimation.frameCount), x, y);
+
+    newMeteor.changeVelocity(velocityX, velocityY, now);
+    redMeteors.sprites.push(newMeteor);
   }
 }
