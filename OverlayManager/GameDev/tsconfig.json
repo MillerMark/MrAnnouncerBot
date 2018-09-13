@@ -7,7 +7,6 @@
 		"sourceMap": true,
 		"module": "none",
 		"target": "es5",
-//		"outFile": "./bin/bundle.js",
 		"outDir": "./Source"
 	},
 	"include": [
