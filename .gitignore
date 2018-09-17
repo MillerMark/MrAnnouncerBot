@@ -290,9 +290,6 @@ paket-files/
 .idea/
 *.sln.iml
 
-# CodeRush
-.cr/
-
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
@@ -891,3 +888,5 @@ OverlayManager/GameDev/Assets/Numbers/BackgroundMockup.pspimage
 OverlayManager/GameDev/Assets/Numbers/AllBlueLed104pxTall.pspimage
 OverlayManager/GameDev/Assets/Numbers/AllBlueLed.pspimage
 OverlayManager/GameDev/Assets/Numbers/All.pspimage
+.cr/personal/Editor/IntelliRush.xml
+.cr/personal/
