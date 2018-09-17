@@ -34,10 +34,10 @@ var Part = (function () {
     };
     Part.prototype.advanceFrameIfNecessary = function () {
         if (!this.lastUpdateTime) {
-            this.lastUpdateTime = new Date();
+            this.lastUpdateTime = performance.now();
             return;
         }
-        var now = new Date();
+        var now = performance.now();
         var msPassed = now - this.lastUpdateTime;
         if (msPassed < this.frameRate)
             return;

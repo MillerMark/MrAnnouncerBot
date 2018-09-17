@@ -1,16 +1,20 @@
 ﻿class SpriteProxy {
-  constructor(startingFrameNumber, x, y) {
-    this.x = x;
-    this.y = y;
+    frameIndex: any;
+    timeStart: number;
+    velocityX: number;
+    velocityY: number;
+    startX: any;
+    startY: any;
+  constructor(startingFrameNumber, private x, private y) {
     this.frameIndex = startingFrameNumber;
-    this.timeStart = new Date();
+    this.timeStart = performance.now();
     this.velocityX = 0;
     this.velocityY = 0;
     this.startX = x;
     this.startY = y;
   }
 
-  bounce(left, top, right, bottom, width, height, now) {
+  bounce(left: number, top: number, right: number, bottom: number, width: number, height: number, now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
     var horizontalBounceDecay = 1;
     var verticalBounceDecay = 1;

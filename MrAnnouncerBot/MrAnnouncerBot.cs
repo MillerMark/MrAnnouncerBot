@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CsvHelper;
@@ -91,7 +92,8 @@ namespace MrAnnouncerBot
 			}
 			catch (Exception ex)
 			{
-				//Chat("Exception loading allViewers data: " + ex.Message);
+				Console.WriteLine("Exception loading allViewers data: " + ex.Message);
+				Debugger.Break();
 			}
 		}
 

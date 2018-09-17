@@ -1,6 +1,6 @@
 function updateScreen() {
     myContext.clearRect(0, 0, 1820, 980);
-    var now = new Date();
+    var now = performance.now();
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, 1820, 980, now);
     if (coins.collect(myRocket.x, myRocket.y, 310, 70) > 0)
@@ -24,7 +24,7 @@ function handleKeyDown(evt) {
     var Key_Right = 39;
     var Key_Left = 37;
     var Key_Down = 40;
-    var now = new Date();
+    var now = performance.now();
     evt = evt || window.event;
     if (evt.keyCode == 13) {
         if (!started || myRocket.isDocked) {

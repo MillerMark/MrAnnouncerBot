@@ -5,7 +5,7 @@
     spriteHeight: number;
     loaded: boolean;
     moves: boolean;
-    lastTimeWeAdvancedTheFrame: Date;
+    lastTimeWeAdvancedTheFrame: number;
   constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, onLoadedFunc?) {
     this.sprites = [];
     this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5);
@@ -22,7 +22,7 @@
         onLoadedFunc(self);
     };
 
-    this.lastTimeWeAdvancedTheFrame = new Date();
+    this.lastTimeWeAdvancedTheFrame = performance.now();
   }
 
   fillRect(left, top, right, bottom, margin) {
@@ -121,10 +121,10 @@
     }
   }
 
-  advanceFrames(now: Date) {
+  advanceFrames(now: number) {
     if (this.sprites.length == 0)
       return;
-    var msPassed = now.getTime() - this.lastTimeWeAdvancedTheFrame.getTime();
+    var msPassed = now - this.lastTimeWeAdvancedTheFrame;
     if (msPassed < this.frameInterval)
       return;
     this.lastTimeWeAdvancedTheFrame = now;
@@ -187,6 +187,7 @@
   }
 }
 
+// TODO: Convert to enum...
 var rectangleDrawingSegment = {
   'top': 1,
   'right': 2,

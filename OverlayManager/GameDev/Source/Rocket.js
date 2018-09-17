@@ -7,7 +7,7 @@ var Rocket = (function () {
         this.x = x;
         this.y = y;
         var flameFrameInterval = 60;
-        var now = new Date();
+        var now = performance.now();
         this.hoverThrusterRestoreTime = now;
         this.mainThrusterOfftime = now;
         this.leftThrusterOfftime = now;
@@ -21,8 +21,8 @@ var Rocket = (function () {
         this.hoverDropThrustersAudio.loop = true;
         this.mainThrustersAudio = new Audio('Assets/Sound Effects/MainThrustersLoop.wav');
         this.mainThrustersAudio.loop = true;
-        this.mainThrustersAudio = new Audio('Assets/Sound Effects/HorizontalRocketLoop.wav');
-        this.mainThrustersAudio.loop = true;
+        this.sideThrustersAudio = new Audio('Assets/Sound Effects/HorizontalRocketLoop.wav');
+        this.sideThrustersAudio.loop = true;
         this.motorExtendAudio = new Audio('Assets/Sound Effects/EngineExtend4.wav');
         this.motorRetractAudio = new Audio('Assets/Sound Effects/EngineRetract.wav');
         this.codeRushedBody = new Part("CodeRushed", 1, AnimationStyle.Static, x, y);
@@ -45,7 +45,7 @@ var Rocket = (function () {
         this.isDocked = true;
         this.worldAcceleration = Gravity.earth;
         this.stopped = true;
-        this.timeStart = now;
+        this.timeStart = performance.now();
         this.width = 298;
         this.height = 52;
         this.enginesRetracted = true;
@@ -59,7 +59,7 @@ var Rocket = (function () {
         this.retractEngines(now);
     };
     Rocket.prototype.onChutesFullyOpen = function (now) {
-        var secondsPassed = (now.getTime() - this.timeStart.getTime()) / 1000;
+        var secondsPassed = (now - this.timeStart) / 1000;
         var newVelocity = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
         if (newVelocity > ChuteMaxVelocity)
             newVelocity > ChuteMaxVelocity;
@@ -108,6 +108,10 @@ var Rocket = (function () {
             acceleration -= horizontalThrust;
         return acceleration;
     };
+    Rocket.prototype.showHit = function (wallHit, wallName) {
+        if (wallHit)
+            console.log('Hit ' + wallName + ' wall.');
+    };
     Rocket.prototype.bounce = function (left, top, right, bottom, now) {
         var secondsPassed = (now - this.timeStart) / 1000;
         var horizontalBounceDecay = 0.74;
@@ -149,13 +153,13 @@ var Rocket = (function () {
             this.isDocked = true;
             this.retractEngines(now);
         }
+        if (hitBottomWall && Math.abs(newVelocityY) < 0.1) {
+            newVelocityY = 0;
+            newVelocityX = newVelocityX * 0.99;
+            this.y = bottom - this.height;
+        }
         if (hitLeftWall || hitRightWall || hitTopWall || hitBottomWall)
             this.changeVelocity(newVelocityX, newVelocityY, now);
-    };
-    Rocket.prototype.getNowPlus = function (seconds) {
-        var t = new Date();
-        t.setMilliseconds(t.getMilliseconds() + seconds * 1000);
-        return t;
     };
     Rocket.prototype.changingDirection = function (now) {
         var secondsPassed = (now - this.timeStart) / 1000;
@@ -175,7 +179,7 @@ var Rocket = (function () {
         this.logState('Extending engines...');
         this.extendingEngines = true;
         this.extensionStartTime = now;
-        this.extensionEndTime = this.getNowPlus(0.4);
+        this.extensionEndTime = now + 400;
         this.motorExtendAudio.play();
     };
     Rocket.prototype.retractEngines = function (now) {
@@ -189,7 +193,7 @@ var Rocket = (function () {
         this.logState('Retracting engines...');
         this.retractingEngines = true;
         this.retractionStartTime = now;
-        this.retractionEndTime = this.getNowPlus(0.4);
+        this.retractionEndTime = now + 400;
         this.killInProgressVerticalDrop(now);
         this.killInProgressVerticalThrust(now);
         this.killInProgressHorizontalThrust(now);
@@ -217,7 +221,7 @@ var Rocket = (function () {
         this.changingDirection(now);
         this.logState('Shutting off hover thrusters...');
         this.wasKillingThrusters = true;
-        this.hoverThrusterRestoreTime = this.getNowPlus(1);
+        this.hoverThrusterRestoreTime = now + 1000;
         this.killInProgressVerticalThrust(now);
         this.hoverThrustersAudio.pause();
         this.hoverDropThrustersAudio.play();
@@ -234,21 +238,21 @@ var Rocket = (function () {
         this.changingDirection(now);
         this.logState('Firing main thrusters...');
         this.wasFiringMainThrusters = true;
-        this.mainThrusterOfftime = this.getNowPlus(1);
+        this.mainThrusterOfftime = now + 1000;
         this.killInProgressVerticalDrop(now);
         this.mainThrustersAudio.play();
     };
     Rocket.prototype.fireRightQuick = function () {
-        var now = new Date();
+        var now = performance.now();
         myRocket.fireRightThruster(now);
-        myRocket.rightThrusterOfftime = myRocket.getNowPlus(0.4);
+        myRocket.rightThrusterOfftime = now + 400;
     };
     Rocket.prototype.fireMainQuick = function () {
-        var now = new Date();
+        var now = performance.now();
         myRocket.mainThrustersAudio.play();
         myRocket.wasFiringMainThrusters = true;
         myRocket.fireMainThrusters(now);
-        myRocket.mainThrusterOfftime = myRocket.getNowPlus(0.6);
+        myRocket.mainThrusterOfftime = now + 600;
     };
     Rocket.prototype.fireLeftThruster = function (now) {
         if (this.retractingEngines || this.enginesRetracted || this.docking)
@@ -256,7 +260,7 @@ var Rocket = (function () {
         this.changingDirection(now);
         this.logState('Firing left thruster...');
         this.wasFiringLeftThruster = true;
-        this.leftThrusterOfftime = this.getNowPlus(1);
+        this.leftThrusterOfftime = now + 1000;
         this.sideThrustersAudio.play();
         if (this.wasFiringRightThruster) {
             this.wasFiringRightThruster = false;
@@ -269,7 +273,7 @@ var Rocket = (function () {
         this.changingDirection(now);
         this.logState('Firing right thruster...');
         this.wasFiringRightThruster = true;
-        this.rightThrusterOfftime = this.getNowPlus(1);
+        this.rightThrusterOfftime = now + 1000;
         this.sideThrustersAudio.play();
         if (this.wasFiringLeftThruster) {
             this.wasFiringLeftThruster = false;
@@ -285,7 +289,7 @@ var Rocket = (function () {
         this.stopped = false;
     };
     Rocket.prototype.changeVelocityBy = function (deltaVelocityX, deltaVelocityY, now) {
-        var secondsPassed = (now.getTime() - this.timeStart.getTime()) / 1000;
+        var secondsPassed = (now - this.timeStart) / 1000;
         var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
         var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
         var newVelocityX = velocityX * deltaVelocityX;
@@ -302,7 +306,7 @@ var Rocket = (function () {
         if (this.stopped) {
             return;
         }
-        var secondsPassed = (now.getTime() - this.timeStart.getTime()) / 1000;
+        var secondsPassed = (now - this.timeStart) / 1000;
         var hAccel = this.getHorizontalAcceleration(now);
         var vAccel = this.getVerticalAcceleration(now);
         var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, hAccel);
@@ -366,6 +370,7 @@ var Rocket = (function () {
     Rocket.prototype.draw = function (context, now) {
         if (this.drawing)
             return;
+        var secondsPassed = (now - this.timeStart) / 1000;
         this.drawing = true;
         var bottomLeftEngineRetractionOffsetX = 0;
         var bottomLeftEngineRetractionOffsetY = 0;
@@ -386,7 +391,6 @@ var Rocket = (function () {
                 if (percentageOut > 1) {
                     if (this.isUndocking) {
                         this.isUndocking = false;
-                        var secondsPassed = (now - this.timeStart) / 1000;
                         this.velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
                         this.velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
                     }
@@ -469,7 +473,6 @@ var Rocket = (function () {
                 this.changeVelocityBy(horizontalVelocityDecay, verticalVelocityDecay, now);
             }
         }
-        var secondsPassed = (now - this.timeStart) / 1000;
         this.lastVelocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
         this.lastVelocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
         this.lastX = this.x;
@@ -513,7 +516,7 @@ var Rocket = (function () {
     Rocket.prototype.dropMeteor = function (now) {
         var x = this.x + this.width / 2 - 40;
         var y = this.y;
-        var secondsPassed = (new Date().getTime() - this.timeStart.getTime()) / 1000;
+        var secondsPassed = (now - this.timeStart) / 1000;
         var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
         var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
         var newMeteor = new SpriteProxy(Random.getInt(redMeteors.baseAnimation.frameCount), x, y);

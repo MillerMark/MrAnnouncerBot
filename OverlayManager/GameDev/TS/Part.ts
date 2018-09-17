@@ -44,11 +44,11 @@
 
   advanceFrameIfNecessary() {
     if (!this.lastUpdateTime) {
-      this.lastUpdateTime = new Date();
+      this.lastUpdateTime = performance.now();
       return;
     }
 
-    var now: any = new Date();
+    var now: number = performance.now();
     var msPassed = now - this.lastUpdateTime;
     if (msPassed < this.frameRate)
       return;

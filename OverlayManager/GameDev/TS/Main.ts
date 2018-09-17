@@ -1,6 +1,6 @@
 ﻿function updateScreen() {
   myContext.clearRect(0, 0, 1820, 980);
-  var now = new Date();
+  var now = performance.now();
   myRocket.updatePosition(now);
   myRocket.bounce(0, 0, 1820, 980, now);
 
@@ -29,7 +29,7 @@ function handleKeyDown(evt) {
   const Key_Left = 37;
   const Key_Down = 40;
 
-  var now = new Date();
+  var now = performance.now();
   evt = evt || window.event;
   if (evt.keyCode == 13) {
     if (!started || myRocket.isDocked) {
@@ -115,7 +115,7 @@ function addExplosion(x) {
 }
 
 document.onkeydown = handleKeyDown;
-var myCanvas: HTMLCanvasElement = document.getElementById("myCanvas");
+var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
 var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, fillScreenRectMinusTwitchBanner);
 
 

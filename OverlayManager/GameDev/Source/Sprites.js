@@ -16,7 +16,7 @@ var Sprites = (function () {
             if (onLoadedFunc != null)
                 onLoadedFunc(self);
         };
-        this.lastTimeWeAdvancedTheFrame = new Date();
+        this.lastTimeWeAdvancedTheFrame = performance.now();
     }
     Sprites.prototype.fillRect = function (left, top, right, bottom, margin) {
         var x = left;
@@ -109,7 +109,7 @@ var Sprites = (function () {
     Sprites.prototype.advanceFrames = function (now) {
         if (this.sprites.length == 0)
             return;
-        var msPassed = now.getTime() - this.lastTimeWeAdvancedTheFrame.getTime();
+        var msPassed = now - this.lastTimeWeAdvancedTheFrame;
         if (msPassed < this.frameInterval)
             return;
         this.lastTimeWeAdvancedTheFrame = now;

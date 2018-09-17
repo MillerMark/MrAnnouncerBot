@@ -6,9 +6,11 @@
   <ItemGroup>
     <None Remove="GameDev\TS\AnimationStyle.ts" />
     <None Remove="GameDev\TS\Gravity.ts" />
+    <None Remove="GameDev\TS\GravityGames.ts" />
     <None Remove="GameDev\TS\Main.ts" />
     <None Remove="GameDev\TS\Part.ts" />
     <None Remove="GameDev\TS\Physics.ts" />
+    <None Remove="GameDev\TS\Planet.ts" />
     <None Remove="GameDev\TS\Random.ts" />
     <None Remove="GameDev\TS\Rocket.ts" />
     <None Remove="GameDev\TS\SpriteProxy.ts" />
@@ -30,9 +32,11 @@
   <ItemGroup>
     <TypeScriptCompile Include="GameDev\TS\AnimationStyle.ts" />
     <TypeScriptCompile Include="GameDev\TS\Gravity.ts" />
+    <TypeScriptCompile Include="GameDev\TS\GravityGames.ts" />
     <TypeScriptCompile Include="GameDev\TS\Main.ts" />
     <TypeScriptCompile Include="GameDev\TS\Part.ts" />
     <TypeScriptCompile Include="GameDev\TS\Physics.ts" />
+    <TypeScriptCompile Include="GameDev\TS\Planet.ts" />
     <TypeScriptCompile Include="GameDev\TS\Random.ts" />
     <TypeScriptCompile Include="GameDev\TS\Rocket.ts" />
     <TypeScriptCompile Include="GameDev\TS\SpriteProxy.ts" />
