@@ -1,7 +1,7 @@
 ﻿class GravityGames {
   planets: Planet[] = [];
+  
   constructor() {
-    
     //`![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
     var earth: Planet = new Planet('Earth', 9.8, 149.6, 5.97, 12756, 5514, 11.2, 23.9, 24, 365.2, 29.8, 0, 0.017, 23.4, 15, 1, 1, false, true, 'earth.png');
     //`![](2EA5331AC1B69756EDB184EB5997EFAF.png;;;0.00872,0.00872)
