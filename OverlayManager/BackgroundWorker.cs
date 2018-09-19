@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TwitchLib.Client;
+using Microsoft.AspNetCore.SignalR;
+using OverlayManager.Hubs;
 
 namespace OverlayManager
 {
@@ -14,8 +16,10 @@ namespace OverlayManager
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		TwitchClient twitchClient = new TwitchClient();
-		public BackgroundWorker(IConfiguration configuration)
+		readonly IHubContext<CodeRushedHub, IOverlayCommands> hub;
+		public BackgroundWorker(IConfiguration configuration, IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{
+			this.hub = hub;
 			Configuration = configuration;
 			// TODO: Talk to browser using SignalR.
 		}
@@ -61,43 +65,67 @@ namespace OverlayManager
 			
 		}
 
-		void MoveLeft()
+		void Launch()
 		{
-			Chat("Moving Left");
+			hub.Clients.All.ExecuteCommand("Launch", "");
 		}
-		void MoveRight()
+		void Right(string args)
 		{
-			Chat("Moving Right");
+			hub.Clients.All.ExecuteCommand("Right", args);
 		}
-		void MoveUp()
+		void Left(string args)
 		{
-			Chat("Moving Up");
+			hub.Clients.All.ExecuteCommand("Left", args);
 		}
-		void MoveDown()
+		void Up(string args)
 		{
-			Chat("Moving Down");
+			hub.Clients.All.ExecuteCommand("Up", args);
 		}
+		void Drop()
+		{
+			hub.Clients.All.ExecuteCommand("Drop", "");
+		}
+		void Dock()
+		{
+			hub.Clients.All.ExecuteCommand("Dock", "");
+		}
+		void Down(string args)
+		{
+			hub.Clients.All.ExecuteCommand("Down", args);
+		}
+		void Chutes()
+		{
+			hub.Clients.All.ExecuteCommand("Chutes", "");
+		}
+		void Extend()
+		{
+			hub.Clients.All.ExecuteCommand("Extend", "");
+		}
+		void Retract()
+		{
+			hub.Clients.All.ExecuteCommand("Retract", "");
+		}
+
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
 			string cmdText = e.Command.CommandText;
+			string args = e.Command.ArgumentsAsString;
 			switch (cmdText)
 			{
 				case "cmd":
 				case "?":
-					Chat($"Here's what you can say: up, down, left, right, center");
+					Chat($"To control the CodeRushed Rocket use: launch, dock, retract, extend, drop, up, down, left, & right.");
 					break;
-				case "left":
-					MoveLeft();
-					break;
-				case "right":
-					MoveRight();
-					break;
-				case "up":
-					MoveUp();
-					break;
-				case "down":
-					MoveDown();
-					break;
+				case "launch": Launch(); break;
+				case "up": Up(args); break;
+				case "down": Down(args); break;
+				case "left": Left(args); break;
+				case "right": Right(args); break;
+				case "dock": Dock(); break;
+				case "drop": Drop(); break;
+				case "extend": Extend(); break;
+				case "retract": Retract(); break;
+				case "chutes": Chutes(); break;
 			}
 		}
 

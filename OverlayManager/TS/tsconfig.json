@@ -1,0 +1,15 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"allowJs": true,
+		"noImplicitAny": false,
+		"removeComments": true,
+		"sourceMap": true,
+		"module": "none",
+		"target": "es5",
+		"outDir": "./../wwwroot/GameDev/Source"
+	},
+	"include": [
+		"./**/*.ts"
+	]
+}

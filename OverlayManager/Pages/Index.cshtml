@@ -4,12 +4,76 @@
   Layout = null;
 }
 <canvas id="myCanvas" width="1920" height="1080"></canvas>
+
+<script src="~/lib/signalr/signalr.js"></script>
+<script src="~/GameDev/Source/Folders.js"></script>
 <script>
-  var canvas = document.getElementById("myCanvas");
-  var context = canvas.getContext("2d");
-  context.strokeStyle = "#9b76ee";
-  context.lineWidth = 4;
-  context.fillStyle = "#fb6db0";
-  context.fillRect(300, 0, 50, 50);
-  context.strokeRect(300, 0, 50, 50);
+  Folders.assets = 'GameDev/Assets/';
+</script>
+<script src="~/GameDev/Source/Physics.js"></script>
+<script src="~/GameDev/Source/Planet.js"></script>
+<script src="~/GameDev/Source/GravityGames.js"></script>
+ <script src="~/GameDev/Source/AnimationStyle.js"></script>
+<script src="~/GameDev/Source/Part.js"></script>
+<script src="~/GameDev/Source/Sprites.js"></script>
+<script src="~/GameDev/Source/SpriteProxy.js"></script>
+<script src="~/GameDev/Source/Random.js"></script>
+<script src="~/GameDev/Source/Gravity.js"></script>
+<script src="~/GameDev/Source/Rocket.js"></script>
+<script src="~/GameDev/Source/Physics.js"></script>
+<script src="~/GameDev/Source/Main.js"></script>
+
+<script>
+  function executeCommand(command, params) {
+    var now = performance.now();
+    if (command === "Launch") {
+      if (!started || myRocket.isDocked) {
+        started = true;
+        myRocket.launch(now);
+      }
+    }
+    else if (command === "Dock") {
+      myRocket.dock(now);
+    }
+    else if (command === "Left") {
+      myRocket.fireRightThruster(now, params);
+    }
+    else if (command === "Right") {
+      myRocket.fireLeftThruster(now, params);
+    }
+    else if (command === "Up") {
+      myRocket.fireMainThrusters(now, params);
+    }
+    else if (command === "Down") {
+      myRocket.killHoverThrusters(now, params);
+    }
+    else if (command === "Drop") {
+      myRocket.dropMeteor(now);
+    }
+    else if (command === "Chutes") {
+      if (myRocket.chuteDeployed)
+        myRocket.retractChutes(now);
+      else
+        myRocket.deployChute(now);
+    }
+    else if (command === "Retract") {
+      myRocket.retractEngines(now);
+    }
+    else if (command === "Extend") {
+      myRocket.extendEngines(now);
+    }
+  }
+
+  window.onload = function () {
+    const connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
+    connection.start().catch(err => console.error(err.toString()));
+    connection.on("ExecuteCommand", executeCommand);
+  };
+//  var canvas = document.getElementById("myCanvas");
+//  var context = canvas.getContext("2d");
+//  context.strokeStyle = "#9b76ee";
+//  context.lineWidth = 4;
+//  context.fillStyle = "#fb6db0";
+//  context.fillRect(300, 0, 50, 50);
+//  context.strokeRect(300, 0, 50, 50);
 </script>
