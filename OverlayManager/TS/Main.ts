@@ -7,8 +7,12 @@
   myRocket.updatePosition(now);
   myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
-  if (coins.collect(myRocket.x, myRocket.y, 310, 70) > 0)
+  var coinsCollected: number = coins.collect(myRocket.x, myRocket.y, 310, 70);
+  if (coinsCollected > 0) {
     new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
+    gravityGames.activeGame.score += coinsCollected;
+  }
+
 
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -25,6 +29,8 @@
   purpleMeteors.draw(myContext, now);
   myRocket.draw(myContext, now);
   redExplosions.draw(myContext, now);
+  blueExplosions.draw(myContext, now);
+  purpleExplosions.draw(myContext, now);
   //explosion.draw(myContext, 0, 0);
 }
 
@@ -79,7 +85,7 @@ function handleKeyDown(evt) {
   else if (evt.keyCode == Key_C) {
     if (myRocket.chuteDeployed)
       myRocket.retractChutes(now);
-    else 
+    else
       myRocket.deployChute(now);
     return false;
   }
@@ -216,8 +222,13 @@ function outlineSmallRect(sprites) {
 
 
 
-function addExplosion(x) {
-  redExplosions.sprites.push(new SpriteProxy(0, x - redExplosions.spriteWidth / 2 + 50, 0));
+function addExplosion(meteors, x) {
+  if (meteors === redMeteors)
+    redExplosions.sprites.push(new SpriteProxy(0, x - redExplosions.spriteWidth / 2 + 50, 0));
+  if (meteors === blueMeteors)
+    blueExplosions.sprites.push(new SpriteProxy(0, x - blueExplosions.spriteWidth / 2 + 50, 0));
+  if (meteors === purpleMeteors)
+    purpleExplosions.sprites.push(new SpriteProxy(0, x - purpleExplosions.spriteWidth / 2 + 50, 0));
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }
 
@@ -225,7 +236,7 @@ var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
-var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, allButMark /* outlineCodeEditor  */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, outlineChatRoom /* allButMark  */ /* outlineCodeEditor  */ /* fillChatRoom */);
 
 
 var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop);
@@ -238,6 +249,8 @@ var purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, Animation
 purpleMeteors.moves = true;
 
 var redExplosions = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
+var blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
+var purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
 var backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 var myRocket = new Rocket(0, 0);

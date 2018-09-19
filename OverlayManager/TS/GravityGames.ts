@@ -1,7 +1,34 @@
-﻿class GravityGames {
+﻿class Game {
+  startTime: Date;
+  digits: Sprites = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
+  constructor() {
+    this.startTime = new Date();
+    this.digits.sprites = [];
+    this.digits.sprites.push(new SpriteProxy(0, 1000, 0));  }
+  private _score: number;
+
+  get score(): number {
+    return this._score;
+  }
+
+  set score(newValue: number) {
+    if (this._score != newValue) {
+      this._score = newValue;
+      this.digits.sprites = [];
+      this.digits.sprites.push(new SpriteProxy(1, 1000, 0));
+    }
+  }
+
+  draw(context: CanvasRenderingContext2D) {
+    this.digits.draw(context, performance.now());
+  }
+}
+
+class GravityGames {
   activePlanet: Planet = null;
   planets: Planet[] = [];
   planetSurface: Part;
+  activeGame = new Game();
 
   constructor() {
     //`![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
@@ -46,7 +73,7 @@
       if (this.planets[i] == this.activePlanet) {
         if (i < this.planets.length - 1)
           this.setActivePlanet(this.planets[i + 1]);
-        else 
+        else
           this.setActivePlanet(this.planets[0]);
         return;
       }
@@ -58,6 +85,7 @@
     const planetHeight: number = 246;
 
     this.planetSurface.draw(context, 1920 - planetWidth, 1080 - planetHeight);
+    gravityGames.activeGame.draw(context);
   }
 
   setActivePlanet(planet: Planet) {
@@ -70,13 +98,14 @@
     this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
   }
 
-  selectPlanet(planetName: string) {
+  selectPlanet(planetName: string): boolean {
     var self = this;
     this.planets.forEach(function (planet) {
-      if (planet.name === planetName) {
+      if (planet.name.toLowerCase() === planetName.toLowerCase()) {
         self.setActivePlanet(planet);
-        return;
+        return true;
       }
     });
+    return false;
   }
 }

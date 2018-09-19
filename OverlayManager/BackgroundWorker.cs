@@ -81,6 +81,10 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("Up", args);
 		}
+		void ChangePlanet(string args)
+		{
+			hub.Clients.All.ExecuteCommand("ChangePlanet", args);
+		}
 		void Drop()
 		{
 			hub.Clients.All.ExecuteCommand("Drop", "");
@@ -126,6 +130,7 @@ namespace OverlayManager
 				case "extend": Extend(); break;
 				case "retract": Retract(); break;
 				case "chutes": Chutes(); break;
+				case "planet": ChangePlanet(args); break;
 			}
 		}
 

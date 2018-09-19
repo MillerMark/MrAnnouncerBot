@@ -35,6 +35,9 @@
     else if (command === "Dock") {
       myRocket.dock(now);
     }
+    else if (command === "ChangePlanet") {
+      gravityGames.selectPlanet(params);
+    }
     else if (command === "Left") {
       myRocket.fireRightThruster(now, params);
     }

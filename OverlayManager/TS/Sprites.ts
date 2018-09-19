@@ -137,7 +137,7 @@
   }
 
   advanceFrames(now: number) {
-    if (this.sprites.length == 0)
+    if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
       return;
     var msPassed = now - this.lastTimeWeAdvancedTheFrame;
     if (msPassed < this.frameInterval)
@@ -201,7 +201,7 @@
       var hitFloor = sprite.bounce(left, top, right, bottom, this.spriteWidth, this.spriteHeight, now);
       if (hitFloor) {
         this.sprites.splice(i, 1);
-        addExplosion(sprite.x - this.spriteWidth / 2);
+        addExplosion(this, sprite.x - this.spriteWidth / 2);
       }
     }
   }

@@ -383,6 +383,10 @@
   }
 
   fireLeftThruster(now, duration?) {
+    if (gravityGames.selectPlanet(duration)) {
+      return;
+    }
+
     if (this.retractingEngines || this.enginesRetracted || this.docking)
       return;
     this.changingDirection(now);
@@ -728,10 +732,19 @@
     var secondsPassed = (now - this.timeStart) / 1000;
     var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
     var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
-    var newMeteor = new SpriteProxy(Random.getInt(redMeteors.baseAnimation.frameCount), x, y);
+    var meteors = null;
+    var randomNumber: number = Math.random() * 3;
+    if (randomNumber < 1)
+      meteors = redMeteors;
+    else if (randomNumber < 2)
+      meteors = blueMeteors;
+    else 
+      meteors = purpleMeteors;
+
+    var newMeteor = new SpriteProxy(Random.getInt(meteors.baseAnimation.frameCount), x, y);
 
     newMeteor.changeVelocity(velocityX, velocityY, now);
-    redMeteors.sprites.push(newMeteor);
+    meteors.sprites.push(newMeteor);
   }
 }
 
