@@ -40,10 +40,10 @@
     return hitBottomWall;
   }
 
-  advanceFrame(frameCount) {
+  advanceFrame(frameCount: number, returnFrameIndex: number = 0) {
     this.frameIndex++;
     if (this.frameIndex >= frameCount)
-      this.frameIndex = 0;
+      this.frameIndex = returnFrameIndex;
   }
 
   changingDirection(now: number): void {

@@ -383,10 +383,6 @@
   }
 
   fireLeftThruster(now, duration?) {
-    if (gravityGames.selectPlanet(duration)) {
-      return;
-    }
-
     if (this.retractingEngines || this.enginesRetracted || this.docking)
       return;
     this.changingDirection(now);
@@ -725,26 +721,49 @@
       console.log(message);
   }
 
-  dropMeteor(now) {
+  dropFromOne(now, sprites1, sprites2, sprites3, sprites4?) {
     var x = this.x + this.width / 2 - 40;
     var y = this.y;
 
     var secondsPassed = (now - this.timeStart) / 1000;
     var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
     var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
-    var meteors = null;
-    var randomNumber: number = Math.random() * 3;
-    if (randomNumber < 1)
-      meteors = redMeteors;
-    else if (randomNumber < 2)
-      meteors = blueMeteors;
-    else 
-      meteors = purpleMeteors;
+    var spriteArray = null;
+    var randomNumber: number;
+    if (sprites4) {
+      randomNumber = Math.random() * 4;
+      if (randomNumber < 1)
+        spriteArray = sprites1;
+      else if (randomNumber < 2)
+        spriteArray = sprites2;
+      else if (randomNumber < 3)
+        spriteArray = sprites3;
+      else
+        spriteArray = sprites4;
 
-    var newMeteor = new SpriteProxy(Random.getInt(meteors.baseAnimation.frameCount), x, y);
+    }
+    else {
+      randomNumber = Math.random() * 3;
+      if (randomNumber < 1)
+        spriteArray = sprites1;
+      else if (randomNumber < 2)
+        spriteArray = sprites2;
+      else
+        spriteArray = sprites3;
+    }
 
-    newMeteor.changeVelocity(velocityX, velocityY, now);
-    meteors.sprites.push(newMeteor);
+    var newSprite = new SpriteProxy(Random.getInt(spriteArray.baseAnimation.frameCount), x, y);
+
+    newSprite.changeVelocity(velocityX, velocityY, now);
+    spriteArray.sprites.push(newSprite);
+  }
+
+  dropMeteor(now) {
+    this.dropFromOne(now, redMeteors, blueMeteors, purpleMeteors);
+  }
+
+  dropSeed(now) {
+    this.dropFromOne(now, pinkSeeds, blueSeeds, purpleSeeds, yellowSeeds);
   }
 }
 

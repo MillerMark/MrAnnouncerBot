@@ -10,17 +10,31 @@
     private offsetX: number,
     private offsetY: number,
     private frameRate = 100,
-    private jiggleX?: number,
-    private jiggleY?: number) {
+    private jiggleX: number = 0,
+    private jiggleY: number = 0,
+    padFileIndex: boolean = false) {
 
     this.images = [];
     this.frameIndex = 0;
     this.reverse = false;
     this.lastUpdateTime = null;
     var actualFrameCount = 0;
+    var numDigits: number;
+    if (frameCount > 999)
+      numDigits = 4;
+    else if (frameCount > 99)
+      numDigits = 3;
+    else if (frameCount > 9)
+      numDigits = 2;
+    else 
+      numDigits = 1;
+
     for (var i = 0; i < frameCount; i++) {
       var image = new Image();
-      image.src = Folders.assets + fileName + i + '.png';
+      var indexStr: string = i.toString();
+      while (padFileIndex && indexStr.length < numDigits)
+        indexStr = '0' + indexStr;
+      image.src = Folders.assets + fileName + indexStr + '.png';
       this.images.push(image);
       actualFrameCount++;
     }

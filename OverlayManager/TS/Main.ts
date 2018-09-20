@@ -13,7 +13,10 @@
     gravityGames.activeGame.score += coinsCollected;
   }
 
-
+  pinkSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  blueSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  yellowSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   purpleMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -24,6 +27,16 @@
     gravityGames.draw(myContext);
 
   coins.draw(myContext, now);
+  grass1.draw(myContext, now);
+  grass2.draw(myContext, now);
+  grass3.draw(myContext, now);
+  grass4.draw(myContext, now);
+
+  pinkSeeds.draw(myContext, now);
+  blueSeeds.draw(myContext, now);
+  yellowSeeds.draw(myContext, now);
+  purpleSeeds.draw(myContext, now);
+
   redMeteors.draw(myContext, now);
   blueMeteors.draw(myContext, now);
   purpleMeteors.draw(myContext, now);
@@ -31,6 +44,12 @@
   redExplosions.draw(myContext, now);
   blueExplosions.draw(myContext, now);
   purpleExplosions.draw(myContext, now);
+  purpleFlowers.draw(myContext, now);
+  blueFlowers.draw(myContext, now);
+  redFlowers.draw(myContext, now);
+  yellowFlowers1.draw(myContext, now);
+  yellowFlowers2.draw(myContext, now);
+  yellowFlowers3.draw(myContext, now);
   //explosion.draw(myContext, 0, 0);
 }
 
@@ -39,6 +58,7 @@ function handleKeyDown(evt) {
   const Key_D = 68;
   const Key_M = 77;
   const Key_P = 80;
+  const Key_S = 83;
   const Key_Up = 38;
   const Key_Right = 39;
   const Key_Left = 37;
@@ -78,6 +98,9 @@ function handleKeyDown(evt) {
   }
   else if (evt.keyCode == Key_M) {
     myRocket.dropMeteor(now);
+  }
+  else if (evt.keyCode == Key_S) {
+    myRocket.dropSeed(now);
   }
   else if (evt.keyCode == Key_P) {
     gravityGames.cyclePlanet();
@@ -220,7 +243,41 @@ function outlineSmallRect(sprites) {
   outlineMargin(sprites, 300);
 }
 
+function plantSeed(spriteArray, x, y) {
+  spriteArray.sprites.push(new SpriteProxy(0, x - spriteArray.spriteWidth / 2, 1080 - spriteArray.spriteHeight + y));
+}
 
+function plantSeeds(seeds, x) {
+  let randomGrass: number = Math.random() * 10;
+  if (randomGrass < 1)
+    plantSeed(grass1, x + 50, 0);
+  else if (randomGrass < 2)
+    plantSeed(grass2, x + 50, 0);
+  else if (randomGrass < 3)
+    plantSeed(grass3, x + 50, 0);
+  else if (randomGrass < 4)
+    plantSeed(grass4, x + 50, 0);
+  else {
+    if (seeds === pinkSeeds)
+      plantSeed(redFlowers, x + 50, 0);
+    else if (seeds === blueSeeds)
+      plantSeed(blueFlowers, x + 50, 5);
+    else if (seeds === purpleSeeds)
+      plantSeed(purpleFlowers, x + 50, 5);
+    else if (seeds === yellowSeeds) {
+      let randomYellow: number = Math.random() * 3;
+      if (randomYellow < 1)
+        plantSeed(yellowFlowers1, x + 50, 5);
+      else if (randomYellow < 2)
+        plantSeed(yellowFlowers2, x + 50, 0);
+      else
+        plantSeed(yellowFlowers3, x + 50, 0);
+    }
+  }
+  
+
+  new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
+}
 
 function addExplosion(meteors, x) {
   if (meteors === redMeteors)
@@ -232,25 +289,104 @@ function addExplosion(meteors, x) {
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }
 
+function executeCommand(command, params) {
+  var now = performance.now();
+  if (command === "Launch") {
+    if (!started || myRocket.isDocked) {
+      started = true;
+      myRocket.launch(now);
+    }
+  }
+  else if (command === "Dock") {
+    myRocket.dock(now);
+  }
+  else if (command === "ChangePlanet") {
+    gravityGames.selectPlanet(params);
+  }
+  else if (command === "Left") {
+    myRocket.fireRightThruster(now, params);
+  }
+  else if (command === "Right") {
+    myRocket.fireLeftThruster(now, params);
+  }
+  else if (command === "Up") {
+    myRocket.fireMainThrusters(now, params);
+  }
+  else if (command === "Down") {
+    myRocket.killHoverThrusters(now, params);
+  }
+  else if (command === "Drop") {
+    myRocket.dropMeteor(now);
+  }
+  else if (command === "Chutes") {
+    if (myRocket.chuteDeployed)
+      myRocket.retractChutes(now);
+    else
+      myRocket.deployChute(now);
+  }
+  else if (command === "Retract") {
+    myRocket.retractEngines(now);
+  }
+  else if (command === "Extend") {
+    myRocket.extendEngines(now);
+  }
+}
+
 var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
-var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, outlineChatRoom /* allButMark  */ /* outlineCodeEditor  */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, outlineChatRoom /* allButMark  */ /* outlineCodeEditor  */ /* fillChatRoom */);
 
+var pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+pinkSeeds.moves = true;
 
-var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop);
+var blueSeeds = new Sprites("Seeds/Blue/BlueSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+blueSeeds.moves = true;
+
+var yellowSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+yellowSeeds.moves = true;
+
+var purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+purpleSeeds.moves = true;
+
+var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 redMeteors.moves = true;
 
-var blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop);
+var blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 blueMeteors.moves = true;
 
-var purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop);
+var purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 purpleMeteors.moves = true;
 
 var redExplosions = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
 var blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
 var purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
+
+var redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
+redFlowers.returnFrameIndex = 128;
+
+const flowerFrameRate: number = 20;
+const grassFrameRate: number = 25;
+
+var yellowFlowers1 = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+yellowFlowers1.returnFrameIndex = 64;
+var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+yellowFlowers2.returnFrameIndex = 64;
+var yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
+yellowFlowers3.returnFrameIndex = 45;
+
+var blueFlowers = new Sprites("Flowers/Blue/BlueFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
+blueFlowers.returnFrameIndex = 151;
+
+var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
+purpleFlowers.returnFrameIndex = 151;
+
+var grass1 = new Sprites("Grass/1/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
+var grass2 = new Sprites("Grass/2/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
+var grass3 = new Sprites("Grass/3/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
+var grass4 = new Sprites("Grass/4/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
+
 var backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 var myRocket = new Rocket(0, 0);

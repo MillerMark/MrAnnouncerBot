@@ -1,8 +1,8 @@
 ﻿var pixelsPerMeter = 50;
 
-// ![Fix this code! It stinks!](4A0040990165BFD31A48E912DC8569F7.png;;;0.02010,0.02010)
-// Class is awesome, but duplicated!!! 
-// Consolidate it.
+//` ![](B0F27E859A79813CD50EFC3F4592B199.png;;;0.02904,0.02904)
+ // Class is awesome, but **duplicated**!!! 
+ // **Consolidate it.**
 
 class Physics {
   constructor() {

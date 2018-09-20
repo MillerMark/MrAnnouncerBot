@@ -6,9 +6,11 @@
   loaded: boolean;
   moves: boolean;
   lastTimeWeAdvancedTheFrame: number;
-  constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, onLoadedFunc?) {
+  returnFrameIndex: number;
+  constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
     this.sprites = [];
-    this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5);
+    this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
+    this.returnFrameIndex = 0;
     this.spriteWidth = 10;
     this.spriteHeight = 10;
     this.loaded = false;
@@ -144,10 +146,14 @@
       return;
     this.lastTimeWeAdvancedTheFrame = now;
     var frameCount = this.baseAnimation.frameCount;
+    var returnFrameIndex = this.returnFrameIndex;
+    if (this.animationStyle == AnimationStyle.SequentialStop)
+      returnFrameIndex = frameCount - 1;
+
 
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite = this.sprites[i];
-      sprite.advanceFrame(frameCount);
+      sprite.advanceFrame(frameCount, returnFrameIndex);
       if (this.animationStyle == AnimationStyle.Sequential && sprite.frameIndex == 0) {
         this.sprites.splice(i, 1);
       }
@@ -201,7 +207,7 @@
       var hitFloor = sprite.bounce(left, top, right, bottom, this.spriteWidth, this.spriteHeight, now);
       if (hitFloor) {
         this.sprites.splice(i, 1);
-        addExplosion(this, sprite.x - this.spriteWidth / 2);
+        this.hitFloorFunc(this, sprite.x - this.spriteWidth / 2);
       }
     }
   }

@@ -495,8 +495,8 @@ namespace MrAnnouncerBot
 			var scene = GetScene(command);
 			if (scene != null)
 				ActivateSceneIfPermitted(scene, e.Command.ChatMessage.DisplayName, allViewers.GetUserLevel(e.Command.ChatMessage));
-			else
-				Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
+			//else
+			//	Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
 		}
 
 

@@ -94,6 +94,10 @@ class GravityGames {
     redMeteors.changingDirection(now);
     blueMeteors.changingDirection(now);
     purpleMeteors.changingDirection(now);
+    pinkSeeds.changingDirection(now);
+    blueSeeds.changingDirection(now);
+    purpleSeeds.changingDirection(now);
+    yellowSeeds.changingDirection(now);
     this.activePlanet = planet;
     this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
   }

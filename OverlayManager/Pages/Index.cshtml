@@ -24,49 +24,6 @@
 <script src="~/GameDev/Source/Main.js"></script>
 
 <script>
-  function executeCommand(command, params) {
-    var now = performance.now();
-    if (command === "Launch") {
-      if (!started || myRocket.isDocked) {
-        started = true;
-        myRocket.launch(now);
-      }
-    }
-    else if (command === "Dock") {
-      myRocket.dock(now);
-    }
-    else if (command === "ChangePlanet") {
-      gravityGames.selectPlanet(params);
-    }
-    else if (command === "Left") {
-      myRocket.fireRightThruster(now, params);
-    }
-    else if (command === "Right") {
-      myRocket.fireLeftThruster(now, params);
-    }
-    else if (command === "Up") {
-      myRocket.fireMainThrusters(now, params);
-    }
-    else if (command === "Down") {
-      myRocket.killHoverThrusters(now, params);
-    }
-    else if (command === "Drop") {
-      myRocket.dropMeteor(now);
-    }
-    else if (command === "Chutes") {
-      if (myRocket.chuteDeployed)
-        myRocket.retractChutes(now);
-      else
-        myRocket.deployChute(now);
-    }
-    else if (command === "Retract") {
-      myRocket.retractEngines(now);
-    }
-    else if (command === "Extend") {
-      myRocket.extendEngines(now);
-    }
-  }
-
   window.onload = function () {
     const connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
     connection.start().catch(err => console.error(err.toString()));
