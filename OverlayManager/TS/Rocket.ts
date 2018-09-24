@@ -716,6 +716,11 @@
     this.drawing = false;
   }
 
+  releaseBee(now: number): any {
+    this.createSprite(beesYellow, now);
+  }
+
+
   logState(message) {
     if (this.loggingState)
       console.log(message);
@@ -775,8 +780,8 @@
       this.createSprite(yellowSeeds, now);
     else if (args && args.toLowerCase() === 'purple')
       this.createSprite(purpleSeeds, now);
-    else if (args && args.toLowerCase() === 'grass')
-      this.createSprite(greenSeeds, now);
+    //else if (args && args.toLowerCase() === 'grass')
+    //  this.createSprite(greenSeeds, now);
     else 
       this.dropFromOne(now, pinkSeeds, blueSeeds, purpleSeeds, yellowSeeds);
   }

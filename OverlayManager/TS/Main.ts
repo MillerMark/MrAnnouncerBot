@@ -17,7 +17,7 @@
   blueSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   yellowSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-  greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   purpleMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -37,8 +37,8 @@
   blueSeeds.draw(myContext, now);
   yellowSeeds.draw(myContext, now);
   purpleSeeds.draw(myContext, now);
-  greenSeeds.draw(myContext, now);
-
+  //greenSeeds.draw(myContext, now);
+  beesYellow.draw(myContext, now);
   redMeteors.draw(myContext, now);
   blueMeteors.draw(myContext, now);
   purpleMeteors.draw(myContext, now);
@@ -56,6 +56,7 @@
 }
 
 function handleKeyDown(evt) {
+  const Key_B = 66;
   const Key_C = 67;
   const Key_D = 68;
   const Key_G = 71;
@@ -110,6 +111,9 @@ function handleKeyDown(evt) {
   }
   else if (evt.keyCode == Key_P) {
     gravityGames.cyclePlanet();
+  }
+  else if (evt.keyCode == Key_B) {
+    myRocket.releaseBee(now);      	
   }
   else if (evt.keyCode == Key_C) {
     if (myRocket.chuteDeployed)
@@ -344,7 +348,7 @@ var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
-var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, allButMark /* outlineChatRoom */ /* outlineCodeEditor  */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, outlineChatRoom /* allButMark */ /* outlineCodeEditor  */ /* fillChatRoom */);
 
 var pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
 pinkSeeds.moves = true;
@@ -358,9 +362,12 @@ yellowSeeds.moves = true;
 var purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
 purpleSeeds.moves = true;
 
-var greenSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-greenSeeds.moves = true;
+//var greenSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+//greenSeeds.moves = true;
 
+var beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
+beesYellow.segmentSize = 2;
+beesYellow.moves = true;
 
 
 var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);

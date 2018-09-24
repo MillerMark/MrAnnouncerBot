@@ -40,9 +40,13 @@
     return hitBottomWall;
   }
 
-  advanceFrame(frameCount: number, returnFrameIndex: number = 0) {
+  advanceFrame(frameCount: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
     this.frameIndex++;
-    if (this.frameIndex >= frameCount)
+    if (startIndex != 0 && endBounds != 0) {
+      if (this.frameIndex >= endBounds)
+        this.frameIndex = startIndex;
+    }
+    else if (this.frameIndex >= frameCount)
       this.frameIndex = returnFrameIndex;
   }
 

@@ -7,6 +7,7 @@
   moves: boolean;
   lastTimeWeAdvancedTheFrame: number;
   returnFrameIndex: number;
+  segmentSize: number;
   constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
     this.sprites = [];
     this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
@@ -144,19 +145,31 @@
     var msPassed = now - this.lastTimeWeAdvancedTheFrame;
     if (msPassed < this.frameInterval)
       return;
+
     this.lastTimeWeAdvancedTheFrame = now;
     var frameCount = this.baseAnimation.frameCount;
     var returnFrameIndex = this.returnFrameIndex;
     if (this.animationStyle == AnimationStyle.SequentialStop)
       returnFrameIndex = frameCount - 1;
 
-
     for (var i = this.sprites.length - 1; i >= 0; i--) {
-      var sprite = this.sprites[i];
-      sprite.advanceFrame(frameCount, returnFrameIndex);
-      if (this.animationStyle == AnimationStyle.Sequential && sprite.frameIndex == 0) {
-        this.sprites.splice(i, 1);
+      var sprite: SpriteProxy = this.sprites[i];
+
+      if (this.segmentSize > 0) {
+        let startIndex: number = sprite.frameIndex - sprite.frameIndex % this.segmentSize;
+        let endBounds: number = startIndex + this.segmentSize;
+        sprite.advanceFrame(frameCount, returnFrameIndex, startIndex, endBounds);
       }
+      else
+        sprite.advanceFrame(frameCount, returnFrameIndex);
+      this.cleanupFinishedAnimations(i, sprite);
+
+    }
+  }
+
+  cleanupFinishedAnimations(i: number, sprite: SpriteProxy): any {
+    if (this.animationStyle == AnimationStyle.Sequential && sprite.frameIndex == 0) {
+      this.sprites.splice(i, 1);
     }
   }
 
