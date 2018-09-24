@@ -17,6 +17,7 @@
   blueSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   yellowSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   purpleMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -27,15 +28,16 @@
     gravityGames.draw(myContext);
 
   coins.draw(myContext, now);
-  grass1.draw(myContext, now);
-  grass2.draw(myContext, now);
-  grass3.draw(myContext, now);
-  grass4.draw(myContext, now);
+  //grass1.draw(myContext, now);
+  //grass2.draw(myContext, now);
+  //grass3.draw(myContext, now);
+  //grass4.draw(myContext, now);
 
   pinkSeeds.draw(myContext, now);
   blueSeeds.draw(myContext, now);
   yellowSeeds.draw(myContext, now);
   purpleSeeds.draw(myContext, now);
+  greenSeeds.draw(myContext, now);
 
   redMeteors.draw(myContext, now);
   blueMeteors.draw(myContext, now);
@@ -56,6 +58,7 @@
 function handleKeyDown(evt) {
   const Key_C = 67;
   const Key_D = 68;
+  const Key_G = 71;
   const Key_M = 77;
   const Key_P = 80;
   const Key_S = 83;
@@ -95,6 +98,9 @@ function handleKeyDown(evt) {
   }
   else if (evt.keyCode == Key_D) {
     myRocket.dock(now);
+  }
+  else if (evt.keyCode == Key_G) {
+    myRocket.dropSeed(now, 'grass');
   }
   else if (evt.keyCode == Key_M) {
     myRocket.dropMeteor(now);
@@ -248,34 +254,32 @@ function plantSeed(spriteArray, x, y) {
 }
 
 function plantSeeds(seeds, x) {
-  let randomGrass: number = Math.random() * 10;
-  if (randomGrass < 1)
-    plantSeed(grass1, x + 50, 0);
-  else if (randomGrass < 2)
-    plantSeed(grass2, x + 50, 0);
-  else if (randomGrass < 3)
-    plantSeed(grass3, x + 50, 0);
-  else if (randomGrass < 4)
-    plantSeed(grass4, x + 50, 0);
-  else {
-    if (seeds === pinkSeeds)
-      plantSeed(redFlowers, x + 50, 0);
-    else if (seeds === blueSeeds)
-      plantSeed(blueFlowers, x + 50, 5);
-    else if (seeds === purpleSeeds)
-      plantSeed(purpleFlowers, x + 50, 5);
-    else if (seeds === yellowSeeds) {
-      let randomYellow: number = Math.random() * 3;
-      if (randomYellow < 1)
-        plantSeed(yellowFlowers1, x + 50, 5);
-      else if (randomYellow < 2)
-        plantSeed(yellowFlowers2, x + 50, 0);
-      else
-        plantSeed(yellowFlowers3, x + 50, 0);
-    }
+  if (seeds === pinkSeeds)
+    plantSeed(redFlowers, x + 50, 0);
+  else if (seeds === blueSeeds)
+    plantSeed(blueFlowers, x + 50, 5);
+  else if (seeds === purpleSeeds)
+    plantSeed(purpleFlowers, x + 50, 5);
+  //else if (seeds === greenSeeds) {
+  //  let randomGrass: number = Math.random() * 10;
+  //  if (randomGrass < 1)
+  //    plantSeed(grass1, x + 50, 0);
+  //  else if (randomGrass < 2)
+  //    plantSeed(grass2, x + 50, 0);
+  //  else if (randomGrass < 3)
+  //    plantSeed(grass3, x + 50, 0);
+  //  else
+  //    plantSeed(grass4, x + 50, 0);
+  //}
+  else if (seeds === yellowSeeds) {
+    let randomYellow: number = Math.random() * 3;
+    if (randomYellow < 1)
+      plantSeed(yellowFlowers1, x + 50, 5);
+    else if (randomYellow < 2)
+      plantSeed(yellowFlowers2, x + 50, 0);
+    else
+      plantSeed(yellowFlowers3, x + 50, 0);
   }
-  
-
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }
 
@@ -289,7 +293,7 @@ function addExplosion(meteors, x) {
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }
 
-function executeCommand(command, params) {
+function executeCommand(command: string, params: string, userId: string, displayName: string, color: string) {
   var now = performance.now();
   if (command === "Launch") {
     if (!started || myRocket.isDocked) {
@@ -330,13 +334,17 @@ function executeCommand(command, params) {
   else if (command === "Extend") {
     myRocket.extendEngines(now);
   }
+  else if (command === "Seed") {
+    myRocket.dropSeed(now, params);
+  }
+
 }
 
 var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
-var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, outlineChatRoom /* allButMark  */ /* outlineCodeEditor  */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, allButMark /* outlineChatRoom */ /* outlineCodeEditor  */ /* fillChatRoom */);
 
 var pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
 pinkSeeds.moves = true;
@@ -349,6 +357,11 @@ yellowSeeds.moves = true;
 
 var purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
 purpleSeeds.moves = true;
+
+var greenSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+greenSeeds.moves = true;
+
+
 
 var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 redMeteors.moves = true;
@@ -382,10 +395,10 @@ blueFlowers.returnFrameIndex = 151;
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
 
-var grass1 = new Sprites("Grass/1/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
-var grass2 = new Sprites("Grass/2/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
-var grass3 = new Sprites("Grass/3/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
-var grass4 = new Sprites("Grass/4/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
+//var grass1 = new Sprites("Grass/1/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
+//var grass2 = new Sprites("Grass/2/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
+//var grass3 = new Sprites("Grass/3/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
+//var grass4 = new Sprites("Grass/4/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
 
 var backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");

@@ -722,12 +722,6 @@
   }
 
   dropFromOne(now, sprites1, sprites2, sprites3, sprites4?) {
-    var x = this.x + this.width / 2 - 40;
-    var y = this.y;
-
-    var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
     var spriteArray = null;
     var randomNumber: number;
     if (sprites4) {
@@ -740,7 +734,6 @@
         spriteArray = sprites3;
       else
         spriteArray = sprites4;
-
     }
     else {
       randomNumber = Math.random() * 3;
@@ -752,6 +745,17 @@
         spriteArray = sprites3;
     }
 
+    this.createSprite(spriteArray, now);
+  }
+
+  createSprite(spriteArray, now) {
+    var x = this.x + this.width / 2 - 40;
+    var y = this.y;
+
+    var secondsPassed = (now - this.timeStart) / 1000;
+    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+
     var newSprite = new SpriteProxy(Random.getInt(spriteArray.baseAnimation.frameCount), x, y);
 
     newSprite.changeVelocity(velocityX, velocityY, now);
@@ -762,8 +766,19 @@
     this.dropFromOne(now, redMeteors, blueMeteors, purpleMeteors);
   }
 
-  dropSeed(now) {
-    this.dropFromOne(now, pinkSeeds, blueSeeds, purpleSeeds, yellowSeeds);
+  dropSeed(now: number, args?: string) {
+    if (args && args.toLowerCase() === 'pink')
+      this.createSprite(pinkSeeds, now);
+    else if (args && args.toLowerCase() === 'blue')
+      this.createSprite(blueSeeds, now);
+    else if (args && args.toLowerCase() === 'yellow')
+      this.createSprite(yellowSeeds, now);
+    else if (args && args.toLowerCase() === 'purple')
+      this.createSprite(purpleSeeds, now);
+    else if (args && args.toLowerCase() === 'grass')
+      this.createSprite(greenSeeds, now);
+    else 
+      this.dropFromOne(now, pinkSeeds, blueSeeds, purpleSeeds, yellowSeeds);
   }
 }
 

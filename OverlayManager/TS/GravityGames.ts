@@ -4,7 +4,10 @@
   constructor() {
     this.startTime = new Date();
     this.digits.sprites = [];
-    this.digits.sprites.push(new SpriteProxy(0, 1000, 0));  }
+    this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
+    this._score = 0;
+  }
+
   private _score: number;
 
   get score(): number {
@@ -12,10 +15,23 @@
   }
 
   set score(newValue: number) {
+    const GroupingSeparatorIndex: number = 11;
     if (this._score != newValue) {
       this._score = newValue;
       this.digits.sprites = [];
-      this.digits.sprites.push(new SpriteProxy(1, 1000, 0));
+      const margin: number = -20;
+      var digitStr: string = this._score.toString();
+      var x = 1000;
+      var digitWidth = this.digits.spriteWidth;
+      var digitPlace = 1;
+      for (var i = digitStr.length - 1; i >= 0; i--) {
+        var thisDigit: number = +digitStr.charAt(i);
+        this.digits.sprites.push(new SpriteProxy(thisDigit, x, 0));
+        if (digitPlace % 4 == 0)
+          this.digits.sprites.push(new SpriteProxy(GroupingSeparatorIndex, x, 0));
+        x -= (digitWidth + margin);
+        digitPlace++;
+      }
     }
   }
 
@@ -97,6 +113,7 @@ class GravityGames {
     pinkSeeds.changingDirection(now);
     blueSeeds.changingDirection(now);
     purpleSeeds.changingDirection(now);
+    greenSeeds.changingDirection(now);
     yellowSeeds.changingDirection(now);
     this.activePlanet = planet;
     this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);

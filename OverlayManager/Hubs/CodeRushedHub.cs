@@ -8,11 +8,14 @@ namespace OverlayManager.Hubs
 {
 	public interface IOverlayCommands
 	{
-		Task ExecuteCommand(string command, string args);
+		Task ExecuteCommand(string command, string args, string userId, string displayName, string color);
 	}
 
 	public class CodeRushedHub: Hub<IOverlayCommands>
 	{
-
+		public void Chat(string message)
+		{
+			// TODO: Implement this!
+		}
 	}
 }

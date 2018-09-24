@@ -21,7 +21,6 @@ namespace OverlayManager
 		{
 			this.hub = hub;
 			Configuration = configuration;
-			// TODO: Talk to browser using SignalR.
 		}
 
 		private void ConnectTwitchClient()
@@ -65,72 +64,84 @@ namespace OverlayManager
 			
 		}
 
-		void Launch()
+		void Launch(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Launch", "");
+			hub.Clients.All.ExecuteCommand("Launch", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Right(string args)
+		void Right(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Right", args);
+			hub.Clients.All.ExecuteCommand("Right", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Left(string args)
+		void Bee(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Left", args);
+			hub.Clients.All.ExecuteCommand("Bee", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Up(string args)
+		void Left(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Up", args);
+			hub.Clients.All.ExecuteCommand("Left", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void ChangePlanet(string args)
+		void Up(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("ChangePlanet", args);
+			hub.Clients.All.ExecuteCommand("Up", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Drop()
+		void ChangePlanet(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Drop", "");
+			hub.Clients.All.ExecuteCommand("ChangePlanet", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Dock()
+		void Drop(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Dock", "");
+			hub.Clients.All.ExecuteCommand("Drop", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Down(string args)
+		void Dock(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Down", args);
+			hub.Clients.All.ExecuteCommand("Dock", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Chutes()
+		void Down(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Chutes", "");
+			hub.Clients.All.ExecuteCommand("Down", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Extend()
+		void Chutes(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Extend", "");
+			hub.Clients.All.ExecuteCommand("Chutes", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		void Retract()
+		void Extend(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Retract", "");
+			hub.Clients.All.ExecuteCommand("Extend", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void Retract(ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("Retract", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+
+		void PlantSeed(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("Seed", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
 			string cmdText = e.Command.CommandText;
 			string args = e.Command.ArgumentsAsString;
+			ChatMessage chatMessage = e.Command.ChatMessage;
 			switch (cmdText)
 			{
 				case "cmd":
 				case "?":
-					Chat($"To control the CodeRushed Rocket use: launch, dock, retract, extend, drop, up, down, left, & right.");
+					Chat($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, & right. Bee controls: \"bee me\", splat {{color}}, say {{message}}, and \"fly x, y\", where x and y are relative coordinates to your bee, in bee units.");
 					break;
-				case "launch": Launch(); break;
-				case "up": Up(args); break;
-				case "down": Down(args); break;
-				case "left": Left(args); break;
-				case "right": Right(args); break;
-				case "dock": Dock(); break;
-				case "drop": Drop(); break;
-				case "extend": Extend(); break;
-				case "retract": Retract(); break;
-				case "chutes": Chutes(); break;
-				case "planet": ChangePlanet(args); break;
+				case "launch": Launch(chatMessage); break;
+				case "up": Up(args, chatMessage); break;
+				case "down": Down(args, chatMessage); break;
+				case "left": Left(args, chatMessage); break;
+				case "right": Right(args, chatMessage); break;
+				case "bee": Bee(args, chatMessage); break;
+				case "dock": Dock(chatMessage); break;
+				case "drop": Drop(args, chatMessage); break;
+				case "extend": Extend(chatMessage); break;
+				case "retract": Retract(chatMessage); break;
+				case "chutes": Chutes(chatMessage); break;
+				case "seed": PlantSeed(args, chatMessage); break;
+				case "planet": ChangePlanet(args, chatMessage); break;
 			}
 		}
 

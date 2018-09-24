@@ -1009,7 +1009,7 @@
     <TypeScriptCompile Include="TS\Rocket.ts" />
     <TypeScriptCompile Include="TS\SpriteProxy.ts" />
     <TypeScriptCompile Include="TS\Sprites.ts" />
-    <TypeScriptCompile Include="TS\Folders.ts" />
+    <TypeScriptCompile Include="TS\BumbleBee.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\lib\signalr\" />
