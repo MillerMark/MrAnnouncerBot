@@ -1,4 +1,77 @@
-﻿function updateScreen() {
+﻿var quiz: Quiz;
+
+class Vote {
+  constructor(public userId: string, public vote: string) {
+
+  }
+}
+
+class Quiz {
+  votes: Array<Vote>;
+  startTime: number;
+
+  constructor(private mainQuestion: string, private choices: Array<string>) {
+    this.startTime = performance.now();
+    quiz = this;
+  }
+
+  vote(userId: string, vote: string) {
+    var existingVote: Vote = this.getVote(userId);
+    if (existingVote)
+      existingVote.vote = vote;
+    else
+      this.votes.push(new Vote(userId, vote));
+  }
+
+  getVote(userId: string): Vote {
+    for (var i = 0; i < this.votes.length; i++) {
+      var thisVote: Vote = this.votes[i];
+      if (thisVote.userId === userId) 
+        return thisVote;
+    }
+    return null;
+  }
+
+  draw(context: CanvasRenderingContext2D) {
+    let now = performance.now();
+    let secondsPassed: number = (now - this.startTime) / 1000;
+    if (secondsPassed > 60)
+      return;
+    const x: number = 1404;
+    const y: number = 88;
+    const width: number = 511;
+    const height: number = 431;
+    context.fillStyle = '#cfd6e5';
+    const margin: number = 10;
+    context.textBaseline = 'top'; 
+    context.fillRect(x, y, width, height);
+    const questionFontSize: number = 30;
+    const choiceFontSize: number = 24;
+    context.font = questionFontSize + 'px Arial';
+    context.fillStyle = '#000';
+    context.fillText(this.mainQuestion, x + margin, y + margin);
+    const verticalResultTopMargin: number = 20;
+    const verticalResultBottomMargin: number = 10;
+    const verticalInnerMargin: number = 20;
+    const barLeft: number = 10;
+    const choiceTextBarMargin: number = 10;
+    let barTop: number = y + questionFontSize + verticalResultTopMargin;
+    let resultHeight: number = height - questionFontSize - verticalResultTopMargin - verticalResultBottomMargin;
+    let availableBarHeight: number = resultHeight - (this.choices.length - 1) * verticalInnerMargin;
+    let choiceHeight: number = availableBarHeight / this.choices.length;
+    let barHeight: number = choiceHeight - choiceFontSize - choiceTextBarMargin;
+    
+    context.font = choiceFontSize + 'px Arial';
+
+    this.choices.forEach(function (item) {
+      context.fillText(item, x, barTop);
+      context.fillRect(x + barLeft, barTop + choiceFontSize + choiceTextBarMargin, 100, barHeight);
+      barTop += choiceHeight + verticalInnerMargin;
+    });
+  }
+}
+
+function updateScreen() {
   const screenWidth: number = 1920;
   const screenHeight: number = 1080;
 
@@ -55,6 +128,8 @@
   yellowFlowers1.draw(myContext, now);
   yellowFlowers2.draw(myContext, now);
   yellowFlowers3.draw(myContext, now);
+  if (quiz)
+    quiz.draw(myContext);
   //explosion.draw(myContext, 0, 0);
 }
 
@@ -120,7 +195,7 @@ function handleKeyDown(evt) {
     gravityGames.cyclePlanet();
   }
   else if (evt.keyCode == Key_B) {
-    myRocket.releaseBee(now, '', '', '', '');      	
+    myRocket.releaseBee(now, '', '', '', '');
   }
   else if (evt.keyCode == Key_C) {
     if (myRocket.chuteDeployed)
@@ -378,7 +453,7 @@ function executeCommand(command: string, params: string, userId: string, display
     moveAbsolute(now, params, userId);
   }
   else if (command === "StartQuiz") {
-    startQuiz(now, params);
+    startQuiz(now, params, userId);
   }
   else if (command === "ShowLastQuizResults") {
     showLastQuizResults(now, params);
@@ -389,6 +464,7 @@ function executeCommand(command: string, params: string, userId: string, display
   else if (command === "ClearQuiz") {
     clearQuiz(now, params, userId);
   }
+  // TODO: Support !vote x
 }
 
 function clearQuiz(now: number, params: string, userId: string) {
@@ -404,10 +480,18 @@ function showLastQuizResults(now: number, params: string) {
 
 }
 
-function startQuiz(now: number, params: string) {
-  // params are expected to be in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
+// params are expected to be in the form of "!quiz What would you rather be?, 1. Bee, 2. Drone"
+function startQuiz(now: number, cmd: string, userId: string) {
+  let lines: Array<string> = cmd.split(',');
+  let choices: Array<string> = lines.slice(1);
+  if (choices.length < 2) {
+    chat('Quizzes must have at least two comma-separated choices.');
+    return;
+  }
+  new Quiz(lines[0], choices);
+  
   chat('Starting Quiz');
-  myRocket.releaseBee(now, params, '', '', '');
+  //myRocket.releaseBee(now, params, '', '', '');
 }
 
 function moveAbsolute(now: number, params: string, userId: string) {
