@@ -5,6 +5,7 @@
   spriteHeight: number;
   loaded: boolean;
   moves: boolean;
+  removeOnHitFloor: boolean = true;
   lastTimeWeAdvancedTheFrame: number;
   returnFrameIndex: number;
   segmentSize: number;
@@ -208,19 +209,20 @@
     });
   }
 
-  updatePositions(now) {
+  updatePositions(now: number) {
     this.sprites.forEach(function (sprite) {
       sprite.updatePosition(now);
     });
   }
 
-  bounce(left, top, right, bottom, now) {
+  bounce(left: number, top: number, right: number, bottom: number, now: number) {
     for (var i = this.sprites.length - 1; i >= 0; i--) {
-      var sprite = this.sprites[i];
+      var sprite: SpriteProxy = this.sprites[i];
       var hitFloor = sprite.bounce(left, top, right, bottom, this.spriteWidth, this.spriteHeight, now);
-      if (hitFloor) {
+      if (hitFloor && this.removeOnHitFloor) {
         this.sprites.splice(i, 1);
-        this.hitFloorFunc(this, sprite.x - this.spriteWidth / 2);
+        if (this.hitFloorFunc)
+          this.hitFloorFunc(this, sprite.x - this.spriteWidth / 2);
       }
     }
   }

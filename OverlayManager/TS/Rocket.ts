@@ -239,8 +239,8 @@
     if (hitBottomWall && myRocket.chuteDeployed)
       this.retractChutes(now);
 
-    var newVelocityX = this.velocityX;
-    var newVelocityY = this.velocityY;
+    var newVelocityX = velocityX;
+    var newVelocityY = velocityY;
     if (hitLeftWall || hitRightWall)
       newVelocityX = -velocityX * horizontalBounceDecay;
     if (hitTopWall || hitBottomWall)
@@ -716,10 +716,13 @@
     this.drawing = false;
   }
 
-  releaseBee(now: number): any {
+  releaseBee(now: number, params: string, userId: string, displayName: string, color: string): any {
     this.createSprite(beesYellow, now);
   }
 
+  releaseDrone(now: number, params: string, userId: string, displayName: string, color: string): any {
+    this.createSprite(dronesRed, now);
+  }
 
   logState(message) {
     if (this.loggingState)

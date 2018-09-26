@@ -17,6 +17,8 @@
   blueSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   yellowSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
+  dronesRed.bounce(0, 0, screenWidth, screenHeight, now);
   //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -39,6 +41,7 @@
   purpleSeeds.draw(myContext, now);
   //greenSeeds.draw(myContext, now);
   beesYellow.draw(myContext, now);
+  dronesRed.draw(myContext, now);
   redMeteors.draw(myContext, now);
   blueMeteors.draw(myContext, now);
   purpleMeteors.draw(myContext, now);
@@ -61,6 +64,7 @@ function handleKeyDown(evt) {
   const Key_D = 68;
   const Key_G = 71;
   const Key_M = 77;
+  const Key_O = 79;
   const Key_P = 80;
   const Key_S = 83;
   const Key_Up = 38;
@@ -106,6 +110,9 @@ function handleKeyDown(evt) {
   else if (evt.keyCode == Key_M) {
     myRocket.dropMeteor(now);
   }
+  else if (evt.keyCode == Key_O) {
+    myRocket.releaseDrone(now, '', '', '', '');
+  }
   else if (evt.keyCode == Key_S) {
     myRocket.dropSeed(now);
   }
@@ -113,7 +120,7 @@ function handleKeyDown(evt) {
     gravityGames.cyclePlanet();
   }
   else if (evt.keyCode == Key_B) {
-    myRocket.releaseBee(now);      	
+    myRocket.releaseBee(now, '', '', '', '');      	
   }
   else if (evt.keyCode == Key_C) {
     if (myRocket.chuteDeployed)
@@ -297,15 +304,32 @@ function addExplosion(meteors, x) {
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }
 
+var connection;
+
+function connectToSignalR(signalR) {
+  connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
+  window.onload = function () {
+    connection.start().catch(err => console.error(err.toString()));
+    connection.on("ExecuteCommand", executeCommand);
+  };
+}
+
+function chat(message: string) {
+  connection.invoke("Chat", message);
+}
+
 function executeCommand(command: string, params: string, userId: string, displayName: string, color: string) {
   var now = performance.now();
   if (command === "Launch") {
     if (!started || myRocket.isDocked) {
       started = true;
       myRocket.launch(now);
+      chat('Launching...');
     }
   }
   else if (command === "Dock") {
+    if (started && !myRocket.isDocked)
+      chat('docking...');
     myRocket.dock(now);
   }
   else if (command === "ChangePlanet") {
@@ -341,7 +365,55 @@ function executeCommand(command: string, params: string, userId: string, display
   else if (command === "Seed") {
     myRocket.dropSeed(now, params);
   }
+  else if (command === "Bee") {
+    myRocket.releaseBee(now, params, userId, displayName, color);
+  }
+  else if (command === "Drone") {
+    myRocket.releaseDrone(now, params, userId, displayName, color);
+  }
+  else if (command === "MoveRelative") {
+    moveRelative(now, params, userId);
+  }
+  else if (command === "MoveAbsolute") {
+    moveAbsolute(now, params, userId);
+  }
+  else if (command === "StartQuiz") {
+    startQuiz(now, params);
+  }
+  else if (command === "ShowLastQuizResults") {
+    showLastQuizResults(now, params);
+  }
+  else if (command === "AnswerQuiz") {
+    answerQuiz(now, params, userId);
+  }
+  else if (command === "ClearQuiz") {
+    clearQuiz(now, params, userId);
+  }
+}
 
+function clearQuiz(now: number, params: string, userId: string) {
+
+}
+
+
+function answerQuiz(now: number, params: string, userId: string) {
+
+}
+
+function showLastQuizResults(now: number, params: string) {
+
+}
+
+function startQuiz(now: number, params: string) {
+  // params are expected to be in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
+  chat('Starting Quiz');
+  myRocket.releaseBee(now, params, '', '', '');
+}
+
+function moveAbsolute(now: number, params: string, userId: string) {
+}
+
+function moveRelative(now: number, params: string, userId: string) {
 }
 
 var gravityGames = new GravityGames();
@@ -367,8 +439,13 @@ purpleSeeds.moves = true;
 
 var beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
 beesYellow.segmentSize = 2;
+beesYellow.removeOnHitFloor = false;
 beesYellow.moves = true;
 
+var dronesRed = new Sprites("Drones/Red/Drone", 30, 15, AnimationStyle.Loop);
+dronesRed.segmentSize = 2;
+dronesRed.removeOnHitFloor = false;
+dronesRed.moves = true;
 
 var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 redMeteors.moves = true;

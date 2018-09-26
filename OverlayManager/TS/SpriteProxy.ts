@@ -5,7 +5,7 @@
     velocityY: number;
     startX: any;
     startY: any;
-  constructor(startingFrameNumber, private x, private y) {
+  constructor(startingFrameNumber: number, public x: number, public y: number) {
     this.frameIndex = startingFrameNumber;
     this.timeStart = performance.now();
     this.velocityX = 0;
@@ -28,15 +28,18 @@
     var hitTopWall = velocityY < 0 && this.y < top;
     var hitBottomWall = velocityY > 0 && this.y + height > bottom;
 
-    var newVelocityX = this.velocityX;
-    var newVelocityY = this.velocityY;
+    var newVelocityX = velocityX;
+    var newVelocityY = velocityY;
     if (hitLeftWall || hitRightWall)
       newVelocityX = -velocityX * horizontalBounceDecay;
     if (hitTopWall || hitBottomWall)
       newVelocityY = -velocityY * verticalBounceDecay;
 
-    if (hitLeftWall || hitRightWall || hitTopWall || hitBottomWall)
+    if (hitLeftWall || hitRightWall || hitTopWall || hitBottomWall) {
+      this.x = this.startX + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityX, 0));
+      this.y = this.startY + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityY, gravityGames.activePlanet.gravity));
       this.changeVelocity(newVelocityX, newVelocityY, now);
+    }
     return hitBottomWall;
   }
 
@@ -74,6 +77,4 @@
     var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, gravityGames.activePlanet.gravity);
     this.y = this.startY + Physics.metersToPixels(yDisplacement);
   }
-
-
 }

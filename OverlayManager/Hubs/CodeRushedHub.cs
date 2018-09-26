@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
+using BotCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TwitchLib.Client;
+using TwitchLib.Client.Models;
 
 namespace OverlayManager.Hubs
 {
@@ -15,7 +18,12 @@ namespace OverlayManager.Hubs
 	{
 		public void Chat(string message)
 		{
-			// TODO: Implement this!
+			Twitch.Chat(message);
+		}
+
+		public void Whisper(string userName, string message)
+		{
+			Twitch.Whisper(userName, message);
 		}
 	}
 }

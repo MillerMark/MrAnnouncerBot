@@ -11,7 +11,7 @@ using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 
-namespace MrAnnouncerBot
+namespace BotCore
 {
 	public static class Twitch
 	{

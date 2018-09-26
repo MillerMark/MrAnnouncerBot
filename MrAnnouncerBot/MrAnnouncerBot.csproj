@@ -19,8 +19,8 @@
 
   <ItemGroup>
     <Content Include="appsettings.json">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Include="Data\AllViewers.json" />
     <Content Include="Docs\LevelTemplate.md">

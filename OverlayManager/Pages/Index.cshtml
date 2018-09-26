@@ -24,9 +24,5 @@
 <script src="~/GameDev/Source/Main.js"></script>
 
 <script>
-  window.onload = function () {
-    const connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
-    connection.start().catch(err => console.error(err.toString()));
-    connection.on("ExecuteCommand", executeCommand);
-  };
+  connectToSignalR(signalR);
 </script>

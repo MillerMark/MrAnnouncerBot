@@ -35,6 +35,7 @@ namespace OverlayManager
 			ConnectTwitchClient();
 			HookEvents();
 			twitchClient.Connect();
+			BotCore.Twitch.InitializeConnections();
 			return Task.CompletedTask;
 		}
 
@@ -72,9 +73,21 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("Right", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
+		void Drone(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("Drone", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
 		void Bee(string args, ChatMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("Bee", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void MoveAbsolute(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("MoveAbsolute", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void MoveRelative(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("MoveRelative", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Left(string args, ChatMessage chatMessage)
 		{
@@ -87,6 +100,22 @@ namespace OverlayManager
 		void ChangePlanet(string args, ChatMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("ChangePlanet", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void ClearQuiz(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("ClearQuiz", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void StartQuiz(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("StartQuiz", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void ShowLastQuizResults(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("ShowLastQuizResults", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void AnswerQuiz(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Drop(string args, ChatMessage chatMessage)
 		{
@@ -120,7 +149,7 @@ namespace OverlayManager
 
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
-			string cmdText = e.Command.CommandText;
+			string cmdText = e.Command.CommandText.ToLower();
 			string args = e.Command.ArgumentsAsString;
 			ChatMessage chatMessage = e.Command.ChatMessage;
 			switch (cmdText)
@@ -135,6 +164,13 @@ namespace OverlayManager
 				case "left": Left(args, chatMessage); break;
 				case "right": Right(args, chatMessage); break;
 				case "bee": Bee(args, chatMessage); break;
+				case "moverel":
+				case "mr":
+					MoveRelative(args, chatMessage); break;
+				case "moveabs":
+				case "ma":
+					MoveAbsolute(args, chatMessage); break;
+				case "drone": Drone(args, chatMessage); break;
 				case "dock": Dock(chatMessage); break;
 				case "drop": Drop(args, chatMessage); break;
 				case "extend": Extend(chatMessage); break;
@@ -142,6 +178,18 @@ namespace OverlayManager
 				case "chutes": Chutes(chatMessage); break;
 				case "seed": PlantSeed(args, chatMessage); break;
 				case "planet": ChangePlanet(args, chatMessage); break;
+				case "quiz": StartQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
+				case "clearquiz": ClearQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
+				case "1":
+				case "2":
+				case "3":
+				case "4":
+				case "5":
+				case "6":
+				case "7":
+				case "8":
+				case "9":
+					AnswerQuiz(args, chatMessage); break;
 			}
 		}
 
