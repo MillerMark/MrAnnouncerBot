@@ -14,10 +14,12 @@
     <None Remove="TS\Part.ts" />
     <None Remove="TS\Physics.ts" />
     <None Remove="TS\Planet.ts" />
+    <None Remove="TS\Quiz.ts" />
     <None Remove="TS\Random.ts" />
     <None Remove="TS\Rocket.ts" />
     <None Remove="TS\SpriteProxy.ts" />
     <None Remove="TS\Sprites.ts" />
+    <None Remove="TS\Vote.ts" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -1002,6 +1004,7 @@
     <TypeScriptCompile Include="TS\Gravity.ts" />
     <TypeScriptCompile Include="TS\GravityGames.ts" />
     <TypeScriptCompile Include="TS\Main.ts" />
+    <TypeScriptCompile Include="TS\Quiz.ts" />
     <TypeScriptCompile Include="TS\Part.ts" />
     <TypeScriptCompile Include="TS\Physics.ts" />
     <TypeScriptCompile Include="TS\Planet.ts" />
@@ -1010,6 +1013,7 @@
     <TypeScriptCompile Include="TS\SpriteProxy.ts" />
     <TypeScriptCompile Include="TS\Sprites.ts" />
     <TypeScriptCompile Include="TS\BumbleBee.ts" />
+    <TypeScriptCompile Include="TS\Vote.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\lib\signalr\" />

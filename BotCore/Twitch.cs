@@ -17,23 +17,21 @@ namespace BotCore
 	{
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
-		static TwitchClient twitchClient;
-		static TwitchAPI twitchApi;
-		static IConfigurationRoot configuration;
+		static readonly IConfigurationRoot configuration;
 
 		public static void InitializeConnections()
 		{
-			var oAuthToken = Twitch.Configuration["Secrets:TwitchBotOAuthToken"];  // Settings.Default.TwitchBotOAuthToken;
+			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];  // Settings.Default.TwitchBotOAuthToken;
 			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
-			twitchClient.Initialize(connectionCredentials, STR_ChannelName);
-			twitchClient.Connect();
+			Client.Initialize(connectionCredentials, STR_ChannelName);
+			Client.Connect();
 			HookEvents();
 		}
 
 		static Twitch()
 		{
 			//Logging = true;
-			twitchClient = new TwitchClient();
+			Client = new TwitchClient();
 			var builder = new ConfigurationBuilder()
 				 .SetBasePath(Directory.GetCurrentDirectory())
 				 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
@@ -43,15 +41,15 @@ namespace BotCore
 		}
 
 		public static IConfigurationRoot Configuration { get => configuration; }
-		public static TwitchAPI Api { get => twitchApi; }
-		public static TwitchClient Client { get => twitchClient; }
+		public static TwitchAPI Api { get; private set; }
+		public static TwitchClient Client { get; private set; }
 		public static bool Logging { get; set; }
 
 		async public static Task<User> GetUser(string userName)
 		{
 			List<string> userNames = new List<string>();
 			userNames.Add(userName);
-			var results = await twitchApi.Users.v5.GetUsersByNameAsync(userNames);
+			var results = await Api.Users.v5.GetUsersByNameAsync(userNames);
 			var userList = results.Matches;
 			if (userList.Length > 0)
 				return userList[0];
@@ -70,16 +68,16 @@ namespace BotCore
 
 		static void InitializeApiClient()
 		{
-			twitchApi = new TwitchAPI();
-			twitchApi.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];  // Settings.Default.TwitchApiClientId;
-			twitchApi.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];  // Settings.Default.TwitchBotOAuthToken;
+			Api = new TwitchAPI();
+			Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];  // Settings.Default.TwitchApiClientId;
+			Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];  // Settings.Default.TwitchBotOAuthToken;
 		}
 
 		public static void Disconnect()
 		{
 			try
 			{
-				twitchClient.Disconnect();
+				Client.Disconnect();
 			}
 			catch (Exception ex)
 			{
@@ -95,18 +93,18 @@ namespace BotCore
 
 		public static void Chat(string msg)
 		{
-			twitchClient.SendMessage(STR_ChannelName, msg);
+			Client.SendMessage(STR_ChannelName, msg);
 		}
 
 		public static void Whisper(string userName, string msg)
 		{
-			twitchClient.SendWhisper(userName, msg);
+			Client.SendWhisper(userName, msg);
 		}
 
 		static void HookEvents()
 		{
-			twitchClient.OnLog += TwitchClientLog;
-			twitchClient.OnConnectionError += TwitchClient_OnConnectionError;
+			Client.OnLog += TwitchClientLog;
+			Client.OnConnectionError += TwitchClient_OnConnectionError;
 		}
 
 		static void TwitchClientLog(object sender, OnLogArgs e)
