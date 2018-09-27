@@ -10,7 +10,7 @@
   var coinsCollected: number = coins.collect(myRocket.x, myRocket.y, 310, 70);
   if (coinsCollected > 0) {
     new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
-    gravityGames.activeGame.score += coinsCollected;
+    gravityGames.activeGame.score.value += coinsCollected;
   }
 
   pinkSeeds.bounce(0, 0, screenWidth, screenHeight, now);

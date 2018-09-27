@@ -8,6 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="TS\AnimationStyle.ts" />
+    <None Remove="TS\Digits.ts" />
     <None Remove="TS\Gravity.ts" />
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\Main.ts" />
@@ -1001,6 +1002,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="TS\AnimationStyle.ts" />
+    <TypeScriptCompile Include="TS\Digits.ts" />
     <TypeScriptCompile Include="TS\Gravity.ts" />
     <TypeScriptCompile Include="TS\GravityGames.ts" />
     <TypeScriptCompile Include="TS\Main.ts" />

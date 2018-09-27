@@ -1,42 +1,16 @@
 ﻿class Game {
   startTime: Date;
   digits: Sprites = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
+  public score: Digits;
   constructor() {
     this.startTime = new Date();
     this.digits.sprites = [];
     this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
-    this._score = 0;
-  }
-
-  private _score: number;
-
-  get score(): number {
-    return this._score;
-  }
-
-  set score(newValue: number) {
-    const GroupingSeparatorIndex: number = 11;
-    if (this._score != newValue) {
-      this._score = newValue;
-      this.digits.sprites = [];
-      const margin: number = -20;
-      var digitStr: string = this._score.toString();
-      var x = 1000;
-      var digitWidth = this.digits.spriteWidth;
-      var digitPlace = 1;
-      for (var i = digitStr.length - 1; i >= 0; i--) {
-        var thisDigit: number = +digitStr.charAt(i);
-        this.digits.sprites.push(new SpriteProxy(thisDigit, x, 0));
-        if (digitPlace % 4 == 0)
-          this.digits.sprites.push(new SpriteProxy(GroupingSeparatorIndex, x, 0));
-        x -= (digitWidth + margin);
-        digitPlace++;
-      }
-    }
+    this.score = new Digits(DigitSize.small, 1000, 0);
   }
 
   draw(context: CanvasRenderingContext2D) {
-    this.digits.draw(context, performance.now());
+    this.score.draw(context);
   }
 }
 
@@ -47,7 +21,7 @@ class GravityGames {
   activeGame = new Game();
 
   constructor() {
-    //`![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
+    // `![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
     var earth: Planet = new Planet('Earth', 9.8, 149.6, 5.97, 12756, 5514, 11.2, 23.9, 24, 365.2, 29.8, 0, 0.017, 23.4, 15, 1, 1, false, true, 'earth');
     //`![](2EA5331AC1B69756EDB184EB5997EFAF.png;;;0.00872,0.00872)
     var mercury: Planet = new Planet('Mercury', 3.7, 57.9, 0.33, 4879, 5427, 4.3, 1407.6, 4222.6, 88, 47.4, 7, 0.205, 0.034, 167, 0, 0, false, true, 'mercury');
