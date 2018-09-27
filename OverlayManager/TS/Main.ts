@@ -326,6 +326,7 @@ function executeCommand(command: string, params: string, userId: string, display
     if (!started || myRocket.isDocked) {
       started = true;
       myRocket.launch(now);
+      gravityGames.newGame();
       chat('Launching...');
     }
   }
@@ -386,7 +387,7 @@ function executeCommand(command: string, params: string, userId: string, display
     showLastQuizResults(now, params);
   }
   else if (command === "AnswerQuiz") {
-    answerQuiz(now, params, userId);
+    answerQuiz(params, userId);
   }
   else if (command === "ClearQuiz") {
     clearQuiz(now, params, userId);
@@ -398,9 +399,13 @@ function clearQuiz(now: number, params: string, userId: string) {
 
 }
 
+function vote(userId: string, choice: string) {
+  if (quiz)
+    quiz.vote(userId, choice);
+}
 
-function answerQuiz(now: number, params: string, userId: string) {
-
+function answerQuiz(params: string, userId: string) {
+  vote(userId, params);
 }
 
 function showLastQuizResults(now: number, params: string) {

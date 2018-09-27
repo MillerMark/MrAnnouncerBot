@@ -6,11 +6,16 @@ const quizRight: number = 1915;
 class Quiz {
   votes: Array<Vote>;
   colors: Array<string>;
+  results: Array<number>;
   startTime: number;
   countdownTimer: Digits = new Digits(DigitSize.small, quizRight, quizTop);
+  votesChanged: boolean;
 
   constructor(private mainQuestion: string, private choices: Array<string>) {
     this.startTime = performance.now();
+    this.votes = new Array<Vote>();
+    this.clearResults();
+
     quiz = this;
     this.colors = new Array<string>();
     this.colors.push('#3069b2'); // ![](D79731789B2110AD05A22E06227B155A.png)
@@ -19,14 +24,16 @@ class Quiz {
     this.colors.push('#9b6565'); // ![](68936B4B9356D4CF499EF690B9FD81E9.png)
     this.colors.push('#826aa6'); // ![](B5142450560091386AD03C978AE461CC.png)
     this.colors.push('#766a54'); // ![](E8D0F5D2182624D03E8869EF9C13E6DA.png)
+    this.votesChanged = false;
   }
 
-  vote(userId: string, vote: string) {
+  vote(userId: string, choice: string) {
     var existingVote: Vote = this.getVote(userId);
     if (existingVote)
-      existingVote.vote = vote;
+      existingVote.choice = choice;
     else
-      this.votes.push(new Vote(userId, vote));
+      this.votes.push(new Vote(userId, choice));
+    this.votesChanged = true;
   }
 
   getVote(userId: string): Vote {
@@ -43,6 +50,9 @@ class Quiz {
     let secondsPassed: number = (now - this.startTime) / 1000;
     if (secondsPassed > 60)
       return;
+
+    if (this.votesChanged)
+      this.tabulateNewResults();
     const x: number = 1404;
     const width: number = 511;
     const height: number = 431;
@@ -74,19 +84,41 @@ class Quiz {
 
     context.font = choiceFontSize + 'px Arial';
 
-    var colorIndex: number = 0;
     var self = this;
+    var resultIndex: number = 0;
     this.choices.forEach(function (item) {
-      context.fillStyle = self.colors[colorIndex];
+      context.fillStyle = self.colors[resultIndex];
       context.fillText(item, x + barTextLeft, barTop);
-      context.fillRect(x + barLeft, barTop + choiceFontSize + choiceTextBarMargin, 100, barHeight);
+      context.fillRect(x + barLeft, barTop + choiceFontSize + choiceTextBarMargin, this.results[resultIndex] * 10, barHeight);
       barTop += choiceHeight + verticalInnerMargin;
-      colorIndex++;
-      if (colorIndex >= self.colors.length)
-        colorIndex = 0;
-    });
+      resultIndex++;
+      if (resultIndex >= self.colors.length)
+        resultIndex = 0;
+    }, this);
 
     this.countdownTimer.value = Math.round(60 - secondsPassed);
     this.countdownTimer.draw(context);
+  }
+
+  clearResults(): any {
+    this.results = new Array<number>(this.choices.length);
+    for (var i = 0; i < this.choices.length; i++) {
+      this.results[i] = 0;
+    }
+  }
+
+  tabulateNewResults(): any {
+    this.clearResults();
+    this.votes.forEach(function (vote) {
+      var resultIndex: number = 0;
+      this.choices.forEach(function (choice) {
+        if (choice.trim().substring(0, vote.choice.length).toLowerCase() === vote.choice.toLowerCase()) {
+          this.results[resultIndex]++;
+          return;
+        }
+        else
+          resultIndex++;
+      }, this);
+    }, this);
   }
 }

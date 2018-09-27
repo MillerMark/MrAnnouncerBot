@@ -7,6 +7,7 @@
     this.digits.sprites = [];
     this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
     this.score = new Digits(DigitSize.small, 1000, 0);
+    this.score.value = 0;
   }
 
   draw(context: CanvasRenderingContext2D) {
@@ -18,16 +19,22 @@ class GravityGames {
   activePlanet: Planet = null;
   planets: Planet[] = [];
   planetSurface: Part;
-  activeGame = new Game();
+  activeGame: Game;
+
+
+  newGame() {
+    this.activeGame = new Game();
+  }
 
   constructor() {
-    // `![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
+    
+    //` ![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
     var earth: Planet = new Planet('Earth', 9.8, 149.6, 5.97, 12756, 5514, 11.2, 23.9, 24, 365.2, 29.8, 0, 0.017, 23.4, 15, 1, 1, false, true, 'earth');
-    //`![](2EA5331AC1B69756EDB184EB5997EFAF.png;;;0.00872,0.00872)
+    //` ![](2EA5331AC1B69756EDB184EB5997EFAF.png;;;0.00872,0.00872)
     var mercury: Planet = new Planet('Mercury', 3.7, 57.9, 0.33, 4879, 5427, 4.3, 1407.6, 4222.6, 88, 47.4, 7, 0.205, 0.034, 167, 0, 0, false, true, 'mercury');
-    //`![](BB492F653A571E63E425D56AA5512DD3.png;;;0.00872,0.00872)
+    //` ![](BB492F653A571E63E425D56AA5512DD3.png;;;0.00872,0.00872)
     var venus: Planet = new Planet('Venus', 8.9, 108.2, 4.87, 12104, 5243, 10.4, -5832.5, 2802, 224.7, 35, 3.4, 0.007, 177.4, 464, 92, 0, false, false, 'venus');
-    //`![](A96C922E7566C724B375C5D2F7A895E9.png;;;0.00872,0.00872)
+    //` ![](A96C922E7566C724B375C5D2F7A895E9.png;;;0.00872,0.00872)
     var mars: Planet = new Planet('Mars', 3.7, 227.9, 0.642, 6792, 3933, 5, 24.6, 24.7, 687, 24.1, 1.9, 0.094, 25.2, -65, 0.01, 2, false, false, 'mars');
     //`![](64417F2A450A7A56419E229A49E378CD.png;;;0.00872,0.00872)
     var neptune: Planet = new Planet('Neptune', 11, 4495.1, 102, 49528, 1638, 23.5, 16.1, 16.1, 59800, 5.4, 1.8, 0.011, 28.3, -200, undefined, 14, true, true, 'neptune');

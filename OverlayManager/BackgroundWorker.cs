@@ -189,7 +189,7 @@ namespace OverlayManager
 				case "7":
 				case "8":
 				case "9":
-					AnswerQuiz(args, chatMessage); break;
+					AnswerQuiz(cmdText, chatMessage); break;
 			}
 		}
 

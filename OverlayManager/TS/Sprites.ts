@@ -13,8 +13,8 @@
     this.sprites = [];
     this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
     this.returnFrameIndex = 0;
-    this.spriteWidth = 10;
-    this.spriteHeight = 10;
+    this.spriteWidth = -1;
+    this.spriteHeight = -1;
     this.loaded = false;
     this.moves = false;
     var self = this;
