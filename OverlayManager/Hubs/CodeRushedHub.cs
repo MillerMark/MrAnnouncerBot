@@ -11,7 +11,7 @@ namespace OverlayManager.Hubs
 {
 	public interface IOverlayCommands
 	{
-		Task ExecuteCommand(string command, string args, string userId, string displayName, string color);
+		Task ExecuteCommand(string command, string args, string userId, string userName, string displayName, string color);
 	}
 
 	public class CodeRushedHub: Hub<IOverlayCommands>

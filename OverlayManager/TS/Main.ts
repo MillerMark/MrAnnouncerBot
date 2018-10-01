@@ -320,7 +320,11 @@ function chat(message: string) {
   connection.invoke("Chat", message);
 }
 
-function executeCommand(command: string, params: string, userId: string, displayName: string, color: string) {
+function whisper(message: string) {
+  connection.invoke("Chat", message);
+}
+
+function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {
   var now = performance.now();
   if (command === "Launch") {
     if (!started || myRocket.isDocked) {
@@ -389,6 +393,9 @@ function executeCommand(command: string, params: string, userId: string, display
   else if (command === "AnswerQuiz") {
     answerQuiz(params, userId);
   }
+  else if (command === "SilentAnswerQuiz") {
+    silentAnswerQuiz(params, userId, userName);
+  }
   else if (command === "ClearQuiz") {
     clearQuiz(now, params, userId);
   }
@@ -396,16 +403,19 @@ function executeCommand(command: string, params: string, userId: string, display
 }
 
 function clearQuiz(now: number, params: string, userId: string) {
-
+  if (quiz)
+    quiz = null;
 }
 
-function vote(userId: string, choice: string) {
+function answerQuiz(choice: string, userId: string) {
   if (quiz)
     quiz.vote(userId, choice);
 }
 
-function answerQuiz(params: string, userId: string) {
-  vote(userId, params);
+function silentAnswerQuiz(choice: string, userId: string, userName: string) {
+  if (!quiz)
+    return;
+  quiz.vote(userId, choice);
 }
 
 function showLastQuizResults(now: number, params: string) {

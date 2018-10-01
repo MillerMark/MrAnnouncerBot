@@ -4,12 +4,20 @@
   large
 }
 
+enum DigitAlign {
+  left,
+  right
+}
+
 class Digits {
   private _value: number = -1;
 
   digits: Sprites;
   margin: number;
+  digitAlign: DigitAlign;
+
   constructor(public size: DigitSize, public right: number, public top: number) {
+    this.digitAlign = DigitAlign.right;
     if (size === DigitSize.large)
       this.digits = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static, false, null, this.digitsLoaded.bind(this));
     else if (size === DigitSize.medium)
@@ -44,15 +52,18 @@ class Digits {
       return;
 
     var digitStr: string = this._value.toString();
+    var digitWidth: number = this.digits.spriteWidth + this.margin;
     var x = this.right - this.digits.spriteWidth;
-    var digitWidth: number = this.digits.spriteWidth;
+    if (this.digitAlign == DigitAlign.left)
+      x += digitStr.length * digitWidth;
+
     var digitPlace: number = 1;
     for (var i = digitStr.length - 1; i >= 0; i--) {
       var thisDigit: number = +digitStr.charAt(i);
       this.digits.sprites.push(new SpriteProxy(thisDigit, x, this.top));
       if (digitPlace % 4 == 0)
         this.digits.sprites.push(new SpriteProxy(GroupingSeparatorIndex, x, this.top));
-      x -= (digitWidth + this.margin);
+      x -= digitWidth;
       digitPlace++;
     }
   }

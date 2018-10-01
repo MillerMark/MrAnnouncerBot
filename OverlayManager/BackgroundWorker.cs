@@ -46,6 +46,7 @@ namespace OverlayManager
 			twitchClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
 			twitchClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
 			twitchClient.OnMessageReceived += TwitchClient_OnMessageReceived;
+			twitchClient.OnWhisperReceived += TwitchClient_OnWhisperReceived;
 			twitchClient.OnUserJoined += TwitchClient_OnUserJoined;
 			twitchClient.OnUserLeft += TwitchClient_OnUserLeft;
 		}
@@ -62,89 +63,127 @@ namespace OverlayManager
 
 		private void TwitchClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
-			
+			string msg = e.ChatMessage.Message;
+			switch (msg)
+			{
+				case "1":
+				case "2":
+				case "3":
+				case "4":
+				case "5":
+				case "6":
+				case "7":
+				case "8":
+				case "9":
+					AnswerQuiz(msg, e.ChatMessage); break;
+			}
 		}
+
+		private void TwitchClient_OnWhisperReceived(object sender, TwitchLib.Client.Events.OnWhisperReceivedArgs e)
+		{
+			WhisperMessage whisperMessage = e.WhisperMessage;
+			string msg = whisperMessage.Message;
+			switch (msg)
+			{
+				case "1":
+				case "2":
+				case "3":
+				case "4":
+				case "5":
+				case "6":
+				case "7":
+				case "8":
+				case "9":
+					SilentAnswerQuiz(msg, whisperMessage); break;
+			}
+		}
+
+
 
 		void Launch(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Launch", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Launch", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Right(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Right", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Right", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Drone(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Drone", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Drone", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Bee(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Bee", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Bee", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void MoveAbsolute(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("MoveAbsolute", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("MoveAbsolute", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void MoveRelative(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("MoveRelative", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("MoveRelative", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Left(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Left", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Left", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Up(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Up", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Up", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void ChangePlanet(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("ChangePlanet", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("ChangePlanet", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void ClearQuiz(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("ClearQuiz", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("ClearQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void StartQuiz(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("StartQuiz", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("StartQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void ShowLastQuizResults(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("ShowLastQuizResults", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("ShowLastQuizResults", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void AnswerQuiz(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Drop(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Drop", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Drop", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Dock(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Dock", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Dock", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Down(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Down", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Down", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Chutes(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Chutes", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Chutes", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Extend(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Extend", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Extend", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 		void Retract(ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Retract", "", chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Retract", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 
 		void PlantSeed(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("Seed", args, chatMessage.UserId, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("Seed", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
