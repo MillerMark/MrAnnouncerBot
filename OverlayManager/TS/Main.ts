@@ -385,7 +385,7 @@ function executeCommand(command: string, params: string, userId: string, userNam
     moveAbsolute(now, params, userId);
   }
   else if (command === "StartQuiz") {
-    startQuiz(now, params, userId);
+    startQuiz(now, params, userId, userName);
   }
   else if (command === "ShowLastQuizResults") {
     showLastQuizResults(now, params);
@@ -397,12 +397,16 @@ function executeCommand(command: string, params: string, userId: string, userNam
     silentAnswerQuiz(params, userId, userName);
   }
   else if (command === "ClearQuiz") {
-    clearQuiz(now, params, userId);
+    clearQuiz(now, params, userId, userName);
   }
   // TODO: Support !vote x
 }
 
-function clearQuiz(now: number, params: string, userId: string) {
+function clearQuiz(now: number, params: string, userId: string, userName: string) {
+  if (userName != "coderushed" && userName != "rorybeckercoderush") {
+    chat('Only Rory and Mark can clear a quiz.');
+    return;
+  }
   if (quiz)
     quiz = null;
 }
@@ -423,7 +427,12 @@ function showLastQuizResults(now: number, params: string) {
 }
 
 // params are expected to be in the form of "!quiz What would you rather be?, 1. Bee, 2. Drone"
-function startQuiz(now: number, cmd: string, userId: string) {
+function startQuiz(now: number, cmd: string, userId: string, userName: string) {
+  if (userName != "coderushed" && userName != "rorybeckercoderush") {
+    chat('Only Rory and Mark can start a quiz.');
+    return;
+  }
+    
   let lines: Array<string> = cmd.split(',');
   let choices: Array<string> = lines.slice(1);
   if (choices.length < 2) {

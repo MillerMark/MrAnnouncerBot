@@ -1,3 +1,4 @@
+using BotCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -15,7 +16,7 @@ namespace OverlayManager
 	{
 		private const string STR_ChannelName = "CodeRushed";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
-		TwitchClient twitchClient = new TwitchClient();
+		//TwitchClient twitchClient = new TwitchClient();
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> hub;
 		public BackgroundWorker(IConfiguration configuration, IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{
@@ -23,32 +24,33 @@ namespace OverlayManager
 			Configuration = configuration;
 		}
 
-		private void ConnectTwitchClient()
-		{
-			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
-			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
-			twitchClient.Initialize(connectionCredentials, STR_ChannelName);
-		}
+		//private void ConnectTwitchClient()
+		//{
+		//	var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
+		//	var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
+		//	twitchClient.Initialize(connectionCredentials, STR_ChannelName);
+		//}
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			ConnectTwitchClient();
+			//ConnectTwitchClient();
 			HookEvents();
-			twitchClient.Connect();
-			BotCore.Twitch.InitializeConnections();
+			//twitchClient.Connect();
+			Twitch.InitializeConnections();
 			return Task.CompletedTask;
 		}
 
 		public void HookEvents()
 		{
-			twitchClient.OnLog += TwitchClient_OnLog;
-			twitchClient.OnConnectionError += TwitchClient_OnConnectionError;
-			twitchClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
-			twitchClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
-			twitchClient.OnMessageReceived += TwitchClient_OnMessageReceived;
-			twitchClient.OnWhisperReceived += TwitchClient_OnWhisperReceived;
-			twitchClient.OnUserJoined += TwitchClient_OnUserJoined;
-			twitchClient.OnUserLeft += TwitchClient_OnUserLeft;
+			
+			Twitch.Client.OnLog += TwitchClient_OnLog;
+			Twitch.Client.OnConnectionError += TwitchClient_OnConnectionError;
+			Twitch.Client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
+			Twitch.Client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+			Twitch.Client.OnMessageReceived += TwitchClient_OnMessageReceived;
+			Twitch.Client.OnWhisperReceived += TwitchClient_OnWhisperReceived;
+			Twitch.Client.OnUserJoined += TwitchClient_OnUserJoined;
+			Twitch.Client.OnUserLeft += TwitchClient_OnUserLeft;
 		}
 
 		private void TwitchClient_OnUserLeft(object sender, TwitchLib.Client.Events.OnUserLeftArgs e)
@@ -97,8 +99,6 @@ namespace OverlayManager
 					SilentAnswerQuiz(msg, whisperMessage); break;
 			}
 		}
-
-
 
 		void Launch(ChatMessage chatMessage)
 		{
@@ -195,7 +195,7 @@ namespace OverlayManager
 			{
 				case "cmd":
 				case "?":
-					Chat($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, & right. Bee controls: \"bee me\", splat {{color}}, say {{message}}, and \"fly x, y\", where x and y are relative coordinates to your bee, in bee units.");
+					Twitch.Chat($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, & right. Bee controls: \"bee me\", splat {{color}}, say {{message}}, and \"fly x, y\", where x and y are relative coordinates to your bee, in bee units.");
 					break;
 				case "launch": Launch(chatMessage); break;
 				case "up": Up(args, chatMessage); break;
@@ -217,6 +217,7 @@ namespace OverlayManager
 				case "chutes": Chutes(chatMessage); break;
 				case "seed": PlantSeed(args, chatMessage); break;
 				case "planet": ChangePlanet(args, chatMessage); break;
+				case "poll":
 				case "quiz": StartQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
 				case "clearquiz": ClearQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
 				case "1":
@@ -229,12 +230,9 @@ namespace OverlayManager
 				case "8":
 				case "9":
 					AnswerQuiz(cmdText, chatMessage); break;
+				case "vote":
+					AnswerQuiz(args, chatMessage); break;
 			}
-		}
-
-		private void Chat(string message)
-		{
-			twitchClient.SendMessage(STR_ChannelName, message);
 		}
 
 		private void TwitchClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
@@ -254,7 +252,7 @@ namespace OverlayManager
 
 		public Task StopAsync(CancellationToken cancellationToken)
 		{
-			twitchClient.Disconnect();
+			//twitchClient.Disconnect();
 			return null;
 		}
 		public IConfiguration Configuration { get; set; }
