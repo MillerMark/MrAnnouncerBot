@@ -320,8 +320,8 @@ function chat(message: string) {
   connection.invoke("Chat", message);
 }
 
-function whisper(message: string) {
-  connection.invoke("Chat", message);
+function whisper(userName: string, message: string) {
+  connection.invoke("Whisper", userName, message);
 }
 
 function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {
@@ -397,12 +397,12 @@ function executeCommand(command: string, params: string, userId: string, userNam
     silentAnswerQuiz(params, userId, userName);
   }
   else if (command === "ClearQuiz") {
-    clearQuiz(now, params, userId, userName);
+    clearQuiz(userName);
   }
   // TODO: Support !vote x
 }
 
-function clearQuiz(now: number, params: string, userId: string, userName: string) {
+function clearQuiz(userName: string) {
   if (userName != "coderushed" && userName != "rorybeckercoderush") {
     chat('Only Rory and Mark can clear a quiz.');
     return;
@@ -419,7 +419,13 @@ function answerQuiz(choice: string, userId: string) {
 function silentAnswerQuiz(choice: string, userId: string, userName: string) {
   if (!quiz)
     return;
+  if (quiz.getChoiceIndex(choice) < 0) {
+    whisper(userName, 'We could not find that choice "' + choice + '".');
+    return;
+  }
+    
   quiz.vote(userId, choice);
+  whisper(userName, 'Your vote has been recorded. Nice job participating in democracy!');
 }
 
 function showLastQuizResults(now: number, params: string) {
@@ -429,20 +435,24 @@ function showLastQuizResults(now: number, params: string) {
 // params are expected to be in the form of "!quiz What would you rather be?, 1. Bee, 2. Drone"
 function startQuiz(now: number, cmd: string, userId: string, userName: string) {
   if (userName != "coderushed" && userName != "rorybeckercoderush") {
-    chat('Only Rory and Mark can start a quiz.');
+    chat('Only Rory and Mark can start a poll.');
     return;
   }
     
   let lines: Array<string> = cmd.split(',');
   let choices: Array<string> = lines.slice(1);
   if (choices.length < 2) {
-    chat('Quizzes must have at least two comma-separated choices.');
+    chat('Polls must include at least two comma-separated choices.');
     return;
   }
-  new Quiz(lines[0], choices);
+  const question = lines[0];
+  new Quiz(question, choices);
   
-  chat('Starting Quiz');
-  //myRocket.releaseBee(now, params, '', '', '');
+  chat(`Polls are open - ${lines[0]}`);
+  for (var i = 0; i < choices.length; i++) {
+    chat(choices[i]);
+  }
+  chat('Enter your choice here in the chat window or in a separate DM whisper to me.');
 }
 
 function moveAbsolute(now: number, params: string, userId: string) {

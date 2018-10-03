@@ -199,7 +199,7 @@
     });
   }
 
-  draw(context, now) {
+  draw(context: CanvasRenderingContext2D, now: number) {
     if (this.moves)
       this.updatePositions(now);
     this.advanceFrames(now);
@@ -210,7 +210,7 @@
   }
 
   updatePositions(now: number) {
-    this.sprites.forEach(function (sprite) {
+    this.sprites.forEach(function (sprite: SpriteProxy) {
       sprite.updatePosition(now);
     });
   }

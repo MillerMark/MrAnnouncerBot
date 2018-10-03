@@ -42,7 +42,6 @@ namespace OverlayManager
 
 		public void HookEvents()
 		{
-			
 			Twitch.Client.OnLog += TwitchClient_OnLog;
 			Twitch.Client.OnConnectionError += TwitchClient_OnConnectionError;
 			Twitch.Client.OnJoinedChannel += TwitchClient_OnJoinedChannel;

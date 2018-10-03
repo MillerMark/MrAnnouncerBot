@@ -1,10 +1,11 @@
 ﻿class SpriteProxy {
-    frameIndex: any;
-    timeStart: number;
-    velocityX: number;
-    velocityY: number;
-    startX: any;
-    startY: any;
+  frameIndex: any;
+  timeStart: number;
+  velocityX: number;
+  velocityY: number;
+  startX: any;
+  startY: any;
+
   constructor(startingFrameNumber: number, public x: number, public y: number) {
     this.frameIndex = startingFrameNumber;
     this.timeStart = performance.now();

@@ -6,7 +6,7 @@
 		"removeComments": true,
 		"sourceMap": true,
 		"module": "none",
-		"target": "es5",
+		"target": "es6",
 		"outDir": "./../wwwroot/GameDev/Source",
 		"inlineSources": true
 	},
