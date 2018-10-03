@@ -204,8 +204,9 @@
       this.updatePositions(now);
     this.advanceFrames(now);
     var self = this;
-    this.sprites.forEach(function (sprite) {
+    this.sprites.forEach(function (sprite: SpriteProxy) {
       self.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
+      sprite.drawAdornments(context, now);
     });
   }
 

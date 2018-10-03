@@ -1,4 +1,6 @@
-﻿function updateScreen() {
+﻿let loadCopyrightedContent: boolean = true;
+
+function updateScreen() {
   const screenWidth: number = 1920;
   const screenHeight: number = 1080;
 
@@ -19,6 +21,7 @@
   purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
   dronesRed.bounce(0, 0, screenWidth, screenHeight, now);
+  dronesBlue.bounce(0, 0, screenWidth, screenHeight, now);
   //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -42,6 +45,7 @@
   //greenSeeds.draw(myContext, now);
   beesYellow.draw(myContext, now);
   dronesRed.draw(myContext, now);
+  dronesBlue.draw(myContext, now);
   redMeteors.draw(myContext, now);
   blueMeteors.draw(myContext, now);
   purpleMeteors.draw(myContext, now);
@@ -464,6 +468,9 @@ function moveRelative(now: number, params: string, userId: string) {
 var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
+
+let globalLoadSprites: boolean = loadCopyrightedContent;
+
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
 var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, outlineChatRoom /* allButMark */ /* outlineCodeEditor  */ /* fillChatRoom */);
 
@@ -491,6 +498,11 @@ var dronesRed = new Sprites("Drones/Red/Drone", 30, 15, AnimationStyle.Loop);
 dronesRed.segmentSize = 2;
 dronesRed.removeOnHitFloor = false;
 dronesRed.moves = true;
+
+var dronesBlue = new Sprites("Drones/Blue/Drone", 30, 15, AnimationStyle.Loop);
+dronesBlue.segmentSize = 2;
+dronesBlue.removeOnHitFloor = false;
+dronesBlue.moves = true;
 
 var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 redMeteors.moves = true;
@@ -523,6 +535,8 @@ blueFlowers.returnFrameIndex = 151;
 
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
+
+globalLoadSprites = true;
 
 //var grass1 = new Sprites("Grass/1/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
 //var grass2 = new Sprites("Grass/2/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);

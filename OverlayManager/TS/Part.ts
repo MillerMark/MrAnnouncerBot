@@ -26,18 +26,25 @@
       numDigits = 3;
     else if (frameCount > 9)
       numDigits = 2;
-    else 
+    else
       numDigits = 1;
 
-    for (var i = 0; i < frameCount; i++) {
-      var image = new Image();
-      var indexStr: string = i.toString();
-      while (padFileIndex && indexStr.length < numDigits)
-        indexStr = '0' + indexStr;
-      image.src = Folders.assets + fileName + indexStr + '.png';
-      this.images.push(image);
-      actualFrameCount++;
+    if (globalLoadSprites) {
+      for (var i = 0; i < frameCount; i++) {
+        var image = new Image();
+        var indexStr: string = i.toString();
+        while (padFileIndex && indexStr.length < numDigits)
+          indexStr = '0' + indexStr;
+        image.src = Folders.assets + fileName + indexStr + '.png';
+        this.images.push(image);
+        actualFrameCount++;
+      }
     }
+    else {
+      var image = new Image();
+      this.images.push(image);
+    }
+
     this.frameCount = actualFrameCount;
   }
 

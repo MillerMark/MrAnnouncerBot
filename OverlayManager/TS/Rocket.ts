@@ -720,8 +720,18 @@
     this.createSprite(beesYellow, now);
   }
 
+  createDrone(x: number, y: number, frameCount: number) {
+    return new Drone(Random.getInt(frameCount), x, y);
+  }
+
   releaseDrone(now: number, params: string, userId: string, displayName: string, color: string): any {
-    this.createSprite(dronesRed, now);
+    let drones: Sprites = dronesRed;
+    if (params === 'blue')
+      drones = dronesBlue;
+    let myDrone: Drone = <Drone>this.createSprite(dronesRed, now, this.createDrone);
+    myDrone.displayName = displayName;
+    myDrone.userId = userId;
+    myDrone.color = color;
   }
 
   logState(message) {
@@ -756,18 +766,23 @@
     this.createSprite(spriteArray, now);
   }
 
-  createSprite(spriteArray, now) {
-    var x = this.x + this.width / 2 - 40;
-    var y = this.y;
+  createSprite(spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy): SpriteProxy {
+    let x = this.x + this.width / 2 - 40;
+    let y = this.y;
 
-    var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    let secondsPassed = (now - this.timeStart) / 1000;
+    let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
 
-    var newSprite = new SpriteProxy(Random.getInt(spriteArray.baseAnimation.frameCount), x, y);
+    let newSprite;
+    if (createSpriteFunc)
+      newSprite = createSpriteFunc(x, y, spriteArray.baseAnimation.frameCount);
+    else 
+      newSprite = new SpriteProxy(Random.getInt(spriteArray.baseAnimation.frameCount), x, y);
 
     newSprite.changeVelocity(velocityX, velocityY, now);
     spriteArray.sprites.push(newSprite);
+    return newSprite;
   }
 
   dropMeteor(now) {
@@ -790,8 +805,8 @@
   }
 }
 
-const VerticalThrust: number = 3;
-const HorizontalThrust: number = 3;
+const VerticalThrust: number = 3;    // meters per seconds squared
+const HorizontalThrust: number = 3;  // meters per seconds squared
 const CodeRushedPosX = 86;
 const CodeRushedPosY = 159;
 

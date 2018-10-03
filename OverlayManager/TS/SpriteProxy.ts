@@ -15,13 +15,21 @@
     this.startY = y;
   }
 
+  getHorizontalThrust(): number {
+  	return 0;
+  }
+
+  getVerticalThrust(): number {
+    return gravityGames.activePlanet.gravity;
+  }
+
   bounce(left: number, top: number, right: number, bottom: number, width: number, height: number, now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
     var horizontalBounceDecay = 1;
     var verticalBounceDecay = 1;
 
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, 0);
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, gravityGames.activePlanet.gravity);
+    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust());
+    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust());
 
     var hitLeftWall = velocityX < 0 && this.x < left;
     var hitRightWall = velocityX > 0 && this.x + width > right;
@@ -37,8 +45,8 @@
       newVelocityY = -velocityY * verticalBounceDecay;
 
     if (hitLeftWall || hitRightWall || hitTopWall || hitBottomWall) {
-      this.x = this.startX + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityX, 0));
-      this.y = this.startY + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityY, gravityGames.activePlanet.gravity));
+      this.x = this.startX + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityX, this.getHorizontalThrust()));
+      this.y = this.startY + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust()));
       this.changeVelocity(newVelocityX, newVelocityY, now);
     }
     return hitBottomWall;
@@ -56,8 +64,8 @@
 
   changingDirection(now: number): void {
     var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, 0);
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, gravityGames.activePlanet.gravity);
+    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust());
+    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust());
     this.changeVelocity(velocityX, velocityY, now);
   }
 
@@ -69,13 +77,17 @@
     this.startY = this.y;
   }
 
+  drawAdornments(context: CanvasRenderingContext2D, now: number): void {
+    // Descendants can override if they want to draw...
+  }
+
   updatePosition(now) {
     var secondsPassed = (now - this.timeStart) / 1000;
 
-    var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, 0);
+    var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, this.getHorizontalThrust());
     this.x = this.startX + Physics.metersToPixels(xDisplacement);
 
-    var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, gravityGames.activePlanet.gravity);
+    var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust());
     this.y = this.startY + Physics.metersToPixels(yDisplacement);
   }
 }
