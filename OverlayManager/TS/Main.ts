@@ -20,8 +20,7 @@ function updateScreen() {
   yellowSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
-  dronesRed.bounce(0, 0, screenWidth, screenHeight, now);
-  dronesBlue.bounce(0, 0, screenWidth, screenHeight, now);
+  allDrones.bounce(0, 0, screenWidth, screenHeight, now);
   //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
   redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
@@ -44,8 +43,7 @@ function updateScreen() {
   purpleSeeds.draw(myContext, now);
   //greenSeeds.draw(myContext, now);
   beesYellow.draw(myContext, now);
-  dronesRed.draw(myContext, now);
-  dronesBlue.draw(myContext, now);
+  allDrones.draw(myContext, now);
   redMeteors.draw(myContext, now);
   blueMeteors.draw(myContext, now);
   purpleMeteors.draw(myContext, now);
@@ -465,6 +463,25 @@ function moveAbsolute(now: number, params: string, userId: string) {
 function moveRelative(now: number, params: string, userId: string) {
 }
 
+var dronesRed: Sprites;
+var dronesBlue: Sprites;
+var allDrones: SpriteCollection
+
+function loadDrones(color: string): Sprites {
+  let drones = new Sprites(`Drones/${color}/Drone`, 30, 15, AnimationStyle.Loop);
+  drones.segmentSize = 2;
+  drones.removeOnHitFloor = false;
+  drones.moves = true;
+  allDrones.add(drones);
+  return drones;
+}
+
+function addDrones() {
+  allDrones = new SpriteCollection();
+  dronesRed = loadDrones('Red');
+  dronesBlue = loadDrones('Blue');
+}
+
 var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
@@ -494,15 +511,7 @@ beesYellow.segmentSize = 2;
 beesYellow.removeOnHitFloor = false;
 beesYellow.moves = true;
 
-var dronesRed = new Sprites("Drones/Red/Drone", 30, 15, AnimationStyle.Loop);
-dronesRed.segmentSize = 2;
-dronesRed.removeOnHitFloor = false;
-dronesRed.moves = true;
-
-var dronesBlue = new Sprites("Drones/Blue/Drone", 30, 15, AnimationStyle.Loop);
-dronesBlue.segmentSize = 2;
-dronesBlue.removeOnHitFloor = false;
-dronesBlue.moves = true;
+addDrones();
 
 var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
 redMeteors.moves = true;

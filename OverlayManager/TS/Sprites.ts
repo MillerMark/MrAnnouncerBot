@@ -1,4 +1,28 @@
-﻿class Sprites {
+﻿class SpriteCollection {
+  allSprites: Sprites[];
+
+  bounce(left: number, top: number, right: number, bottom: number, now: number): void {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.bounce(left, top, right, bottom, now) });
+  }
+  
+  constructor() {
+    this.allSprites = new Array<Sprites>();
+  }
+
+  add(sprites: Sprites): void{
+    this.allSprites.push(sprites);
+  }
+
+  draw(context: CanvasRenderingContext2D, now: number): void {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.draw(context, now) });
+  }
+
+  destroy(userId: string): any {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.destroy(userId) });
+  }
+}
+
+class Sprites {
   sprites: any[];
   baseAnimation: Part;
   spriteWidth: number;
@@ -28,6 +52,24 @@
 
     this.lastTimeWeAdvancedTheFrame = performance.now();
   }
+
+  indexOf(matchData: string): number {
+    return this.sprites.findIndex(sprite => sprite.matches(matchData))
+  }
+
+  find(matchData: string): SpriteProxy {
+    let index: number = this.indexOf(matchData);
+    if (index >= 0)
+      return this.sprites[index];
+    return null;
+  }
+
+  destroy(matchData: string): any {
+    let index: number = this.indexOf(matchData);
+    if (index >= 0)
+      this.sprites.splice(index, 1);
+  }
+
 
   layout(lines: string, margin): void {
     var allLines = lines.split('\n');

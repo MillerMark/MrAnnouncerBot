@@ -81,6 +81,10 @@
     // Descendants can override if they want to draw...
   }
 
+  matches(matchData: string): boolean {
+    return false; // Descendants can override if they want to implement a custom search/find functionality...
+  }
+
   updatePosition(now) {
     var secondsPassed = (now - this.timeStart) / 1000;
 

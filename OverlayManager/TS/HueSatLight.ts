@@ -5,6 +5,14 @@ class HueSatLight {
 
   }
 
+  isBright(): boolean {
+    return this.light > 0.5;
+  }
+
+  isDark(): boolean {
+    return this.light < 0.5;
+  }
+
   toHex(): string {
     var red, green, blue;
 
@@ -41,6 +49,10 @@ class HueSatLight {
     var blueHex: string = int2hex(blue);
 
     return '#' + redHex + greenHex + blueHex;
+  }
+
+  static clone(hsl: HueSatLight): HueSatLight {
+    return new HueSatLight(hsl.hue, hsl.saturation, hsl.light);
   }
 
   static fromRGB(red: number, green: number, blue: number): HueSatLight {

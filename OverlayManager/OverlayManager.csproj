@@ -12,6 +12,7 @@
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\Gravity.ts" />
     <None Remove="TS\GravityGames.ts" />
+    <None Remove="TS\HueSatLight.ts" />
     <None Remove="TS\Main.ts" />
     <None Remove="TS\Part.ts" />
     <None Remove="TS\Physics.ts" />
@@ -1002,6 +1003,7 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\HueSatLight.ts" />
     <TypeScriptCompile Include="TS\AnimationStyle.ts" />
     <TypeScriptCompile Include="TS\Digits.ts" />
     <TypeScriptCompile Include="TS\Drone.ts" />
