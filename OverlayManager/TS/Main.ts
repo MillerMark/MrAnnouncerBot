@@ -551,3 +551,14 @@ myRocket.x = 0;
 myRocket.y = 0;
 setInterval(updateScreen, 10);
 gravityGames.selectPlanet('Earth');
+var red: HueSatLight = HueSatLight.fromHex('#ff3329');
+var orange: HueSatLight = HueSatLight.fromHex('#ff9229');
+var yellow: HueSatLight = HueSatLight.fromHex('#ffd929');
+var limeGreen: HueSatLight = HueSatLight.fromHex('#76ff29');
+var teal: HueSatLight = HueSatLight.fromHex('#29ffc3');
+var blue: HueSatLight = HueSatLight.fromHex('#296dff');
+var violet: HueSatLight = HueSatLight.fromHex('#9e29ff');
+var pink: HueSatLight = HueSatLight.fromHex('#ff2965');
+var redRight: HueSatLight = HueSatLight.fromHex('#ff2933');
+
+var toHex: string = redRight.toHex();

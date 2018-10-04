@@ -728,7 +728,7 @@
     let drones: Sprites = dronesRed;
     if (params === 'blue')
       drones = dronesBlue;
-    let myDrone: Drone = <Drone>this.createSprite(dronesRed, now, this.createDrone);
+    let myDrone: Drone = <Drone>this.createSprite(drones, now, this.createDrone);
     myDrone.displayName = displayName;
     myDrone.userId = userId;
     myDrone.color = color;
