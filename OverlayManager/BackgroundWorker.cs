@@ -76,6 +76,10 @@ namespace OverlayManager
 				case "7":
 				case "8":
 				case "9":
+				case "y":
+				case "Y":
+				case "n":
+				case "N":
 					AnswerQuiz(msg, e.ChatMessage); break;
 			}
 		}
@@ -95,6 +99,10 @@ namespace OverlayManager
 				case "7":
 				case "8":
 				case "9":
+				case "y":
+				case "Y":
+				case "n":
+				case "N":
 					SilentAnswerQuiz(msg, whisperMessage); break;
 			}
 		}
@@ -185,6 +193,10 @@ namespace OverlayManager
 			hub.Clients.All.ExecuteCommand("Seed", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
 
+		void Paint(string cmdText, string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand(cmdText, args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
 			string cmdText = e.Command.CommandText.ToLower();
@@ -209,6 +221,14 @@ namespace OverlayManager
 				case "ma":
 					MoveAbsolute(args, chatMessage); break;
 				case "drone": Drone(args, chatMessage); break;
+				case "red":
+				case "orange":
+				case "yellow":
+				case "green":
+				case "blue":
+				case "indigo":
+				case "violet":
+					Paint(cmdText, args, chatMessage); break;
 				case "dock": Dock(chatMessage); break;
 				case "drop": Drop(args, chatMessage); break;
 				case "extend": Extend(chatMessage); break;
@@ -228,6 +248,10 @@ namespace OverlayManager
 				case "7":
 				case "8":
 				case "9":
+				case "y":
+				case "Y":
+				case "n":
+				case "N":
 					AnswerQuiz(cmdText, chatMessage); break;
 				case "vote":
 					AnswerQuiz(args, chatMessage); break;

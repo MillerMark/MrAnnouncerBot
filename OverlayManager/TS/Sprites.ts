@@ -1,24 +1,55 @@
 ﻿class SpriteCollection {
   allSprites: Sprites[];
+  childCollections: SpriteCollection[];
+
+  constructor() {
+    this.allSprites = new Array<Sprites>();
+    this.childCollections = new Array<SpriteCollection>();
+  }
+
+  add(sprites: Sprites): void {
+    this.allSprites.push(sprites);
+  }
+
+  addCollection(spriteCollection: SpriteCollection): void {
+    this.childCollections.push(spriteCollection);
+  }
 
   bounce(left: number, top: number, right: number, bottom: number, now: number): void {
     this.allSprites.forEach(function (sprites: Sprites) { sprites.bounce(left, top, right, bottom, now) });
-  }
-  
-  constructor() {
-    this.allSprites = new Array<Sprites>();
-  }
-
-  add(sprites: Sprites): void{
-    this.allSprites.push(sprites);
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.bounce(left, top, right, bottom, now) });
   }
 
   draw(context: CanvasRenderingContext2D, now: number): void {
     this.allSprites.forEach(function (sprites: Sprites) { sprites.draw(context, now) });
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.draw(context, now); });
   }
 
-  destroy(userId: string): any {
-    this.allSprites.forEach(function (sprites: Sprites) { sprites.destroy(userId) });
+  destroy(userId: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): any {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.destroy(userId, destroyFunc) });
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.destroy(userId, destroyFunc) });
+  }
+
+  changingDirection(now: number): any {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.changingDirection(now) });
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.changingDirection(now) });
+  }
+
+  find(matchData: string): SpriteProxy {
+    for (var i = 0; i < this.allSprites.length; i++) {
+      let sprites: Sprites = this.allSprites[i];
+      let foundSprite: SpriteProxy = sprites.find(matchData);
+      if (foundSprite)
+        return foundSprite;
+    }
+
+    for (var i = 0; i < this.childCollections.length; i++) {
+      let spriteCollection: SpriteCollection = this.childCollections[i];
+      let foundSprite: SpriteProxy = spriteCollection.find(matchData);
+      if (foundSprite)
+        return foundSprite;
+    }
+    return null;
   }
 }
 
@@ -33,6 +64,7 @@ class Sprites {
   lastTimeWeAdvancedTheFrame: number;
   returnFrameIndex: number;
   segmentSize: number;
+
   constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
     this.sprites = [];
     this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
@@ -64,12 +96,14 @@ class Sprites {
     return null;
   }
 
-  destroy(matchData: string): any {
+  destroy(matchData: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): void {
     let index: number = this.indexOf(matchData);
-    if (index >= 0)
+    if (index >= 0) {
+      if (destroyFunc)
+        destroyFunc(this.sprites[index], this.spriteWidth, this.spriteHeight);
       this.sprites.splice(index, 1);
+    }
   }
-
 
   layout(lines: string, margin): void {
     var allLines = lines.split('\n');

@@ -725,7 +725,7 @@
   }
 
   releaseDrone(now: number, params: string, userId: string, displayName: string, color: string): any {
-    allDrones.destroy(userId);
+    allDrones.destroy(userId, addDroneExplosion);
     let drones: Sprites = dronesRed;
     if (params === 'blue')
       drones = dronesBlue;

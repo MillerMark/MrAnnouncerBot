@@ -1,4 +1,4 @@
-﻿ //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
+﻿//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 class Drone extends SpriteProxy {
   displayName: string;
   userId: string;
@@ -9,29 +9,34 @@ class Drone extends SpriteProxy {
 
 
   private _color: string;
-  
+
   get color(): string {
-  	return this._color;
+    return this._color;
   }
-  
+
   set color(newValue: string) {
     if (this._color === newValue)
       return;
 
-    let hsl: HueSatLight = HueSatLight.fromHex(newValue);
-    let outlineHsl: HueSatLight = HueSatLight.clone(hsl);
-    if (hsl.isBright()) {
-      hsl.light = 0.02;
-      outlineHsl.light = 0.08;
+    let textHsl: HueSatLight = HueSatLight.fromHex(newValue);
+    let backgroundHsl: HueSatLight = HueSatLight.clone(textHsl);
+    let outlineHsl: HueSatLight = HueSatLight.clone(textHsl);
+    if (backgroundHsl.isBright()) {
+      backgroundHsl.light = 0.02;
+      if (textHsl.getPerceivedBrightness() < 0.7)
+        textHsl.light += 0.15;
+      outlineHsl.light = 0.3;
     }
     else {
-      hsl.light = 0.98;
+      if (textHsl.getPerceivedBrightness() > 0.3)
+        textHsl.light -= 0.15;
+      backgroundHsl.light = 0.98;
       outlineHsl.light = 0.92;
     }
 
-    this.backgroundColor = hsl.toHex();
+    this.backgroundColor = backgroundHsl.toHex();
     this.outlineColor = outlineHsl.toHex();
-  	this._color = newValue;
+    this._color = textHsl.toHex();
   }
   constructor(startingFrameNumber: number, public x: number, public y: number) {
     super(startingFrameNumber, x, y);
@@ -48,9 +53,9 @@ class Drone extends SpriteProxy {
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
     const fontSize: number = 14;
     context.font = fontSize + 'px Arial';
-    
+
+    context.textBaseline = 'top'; //` ![](774083667316C80C98D43F9C370CC1C8.png;;0,68,400,130;0.02510,0.02510)
     context.textAlign = 'center';
-    context.textBaseline = 'top'; //` ![](774083667316C80C98D43F9C370CC1C8.png;;0,68,400,130)
 
     let centerX: number = this.x + this.width / 2;
     let yTop: number = this.y + this.height * 1;
@@ -68,6 +73,57 @@ class Drone extends SpriteProxy {
     context.fillStyle = this.color;
     context.fillText(this.displayName, centerX, yTop);
   }
+
+  getWatercolorSplotchCollection(command: string): SpriteCollection {
+    if (command === 'red')
+      return redSplotches;
+    else if (command === 'orange')
+      return orangeSplotches;
+    else if (command === 'yellow')
+      return yellowSplotches;
+    else if (command === 'green')
+      return greenSplotches;
+    else if (command === 'blue')
+      return blueSplotches;
+    else if (command === 'indigo')
+      return indigoSplotches;
+    else if (command === 'violet')
+      return violetSplotches;
+    return null;
+  }
+
+  paint(command: string, params: string): any {
+    const numPaintSplotches: number = 9;
+    let splotches: SpriteCollection = this.getWatercolorSplotchCollection(command);
+    const splotchCount: number = 3;
+    let picks: number[] = this.pick(splotchCount, numPaintSplotches);
+    picks.forEach(function (splotchIndex: number) {
+      let splotch: Sprites = splotches.allSprites[splotchIndex];
+      splotch.sprites.push(new SpriteProxy(0, this.x - splotch.spriteWidth / 2 + this.width / 2, this.y - splotch.spriteHeight / 2 + this.height / 2));
+    }, this);
+
+    //yellowSplotches
+    //orangeSplotches.draw(myContext, now);
+    //greenSplotches.draw(myContext, now);
+    //redSplotches.draw(myContext, now);
+    //violetSplotches.draw(myContext, now);
+    //blueSplotches.draw(myContext, now);
+    //indigoSplotches.draw(myContext, now);
+  }
+
+  pick(pickCount: number, maxBounds: number): number[] {
+    let result: number[] = [];
+    let attempts: number = 0;
+    while (result.length < pickCount && pickCount < maxBounds && attempts < 1000)
+    {
+      attempts++;
+      let thisPick: number = Math.floor(Math.random() * maxBounds);
+      if (result.indexOf(thisPick) === -1)
+        result.push(thisPick);
+    }
+    return result;
+  }
+
 
   matches(matchData: string): boolean {
     return this.userId == matchData;

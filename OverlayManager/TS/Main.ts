@@ -15,10 +15,8 @@ function updateScreen() {
     gravityGames.activeGame.score.value += coinsCollected;
   }
 
-  pinkSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-  blueSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-  yellowSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-  purpleSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+  allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+
   beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
   allDrones.bounce(0, 0, screenWidth, screenHeight, now);
   //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
@@ -31,17 +29,16 @@ function updateScreen() {
   if (!myRocket.isDocked)
     gravityGames.draw(myContext);
 
+  allSplotches.draw(myContext, now);
+
   coins.draw(myContext, now);
   //grass1.draw(myContext, now);
   //grass2.draw(myContext, now);
   //grass3.draw(myContext, now);
   //grass4.draw(myContext, now);
 
-  pinkSeeds.draw(myContext, now);
-  blueSeeds.draw(myContext, now);
-  yellowSeeds.draw(myContext, now);
-  purpleSeeds.draw(myContext, now);
-  //greenSeeds.draw(myContext, now);
+  allSeeds.draw(myContext, now);
+
   beesYellow.draw(myContext, now);
   allDrones.draw(myContext, now);
   redMeteors.draw(myContext, now);
@@ -57,10 +54,14 @@ function updateScreen() {
   yellowFlowers1.draw(myContext, now);
   yellowFlowers2.draw(myContext, now);
   yellowFlowers3.draw(myContext, now);
+
+  droneExplosions.draw(myContext, now);
   if (quiz)
     quiz.draw(myContext);
   //explosion.draw(myContext, 0, 0);
 }
+
+var allSplotches = new SpriteCollection();
 
 function handleKeyDown(evt) {
   const Key_B = 66;
@@ -298,7 +299,7 @@ function plantSeeds(seeds, x) {
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }
 
-function addExplosion(meteors, x) {
+function addMeteorExplosion(meteors: Sprites, x: number) {
   if (meteors === redMeteors)
     redExplosions.sprites.push(new SpriteProxy(0, x - redExplosions.spriteWidth / 2 + 50, 0));
   if (meteors === blueMeteors)
@@ -306,6 +307,14 @@ function addExplosion(meteors, x) {
   if (meteors === purpleMeteors)
     purpleExplosions.sprites.push(new SpriteProxy(0, x - purpleExplosions.spriteWidth / 2 + 50, 0));
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
+}
+
+function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {
+  let x: number = drone.x + spriteWidth / 2;
+  let y: number = drone.y + spriteHeight / 2;
+  let thisDroneExplosion: Sprites = droneExplosions.allSprites[Math.round(Math.random() * droneExplosions.allSprites.length)];
+  thisDroneExplosion.sprites.push(new SpriteProxy(0, x - thisDroneExplosion.spriteWidth / 2, y - thisDroneExplosion.spriteHeight / 2));
+  new Audio(Folders.assets + 'Sound Effects/DroneGoBoom.wav').play();
 }
 
 var connection;
@@ -401,7 +410,19 @@ function executeCommand(command: string, params: string, userId: string, userNam
   else if (command === "ClearQuiz") {
     clearQuiz(userName);
   }
+  else if (command === "red" || command === "orange" || command === "yellow" ||
+    command === "green" || command === "blue" || command === "indigo" || command === "violet") {
+    paint(userId, command, params);
+  }
   // TODO: Support !vote x
+}
+
+function paint(userId: string, command: string, params: string) {
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+
+  userDrone.paint(command, params);
 }
 
 function clearQuiz(userName: string) {
@@ -425,7 +446,7 @@ function silentAnswerQuiz(choice: string, userId: string, userName: string) {
     whisper(userName, 'We could not find that choice "' + choice + '".');
     return;
   }
-    
+
   quiz.vote(userId, choice);
   whisper(userName, 'Your vote has been recorded. Nice job participating in democracy!');
 }
@@ -440,7 +461,7 @@ function startQuiz(now: number, cmd: string, userId: string, userName: string) {
     chat('Only Rory and Mark can start a poll.');
     return;
   }
-    
+
   let lines: Array<string> = cmd.split(',');
   let choices: Array<string> = lines.slice(1);
   if (choices.length < 2) {
@@ -449,7 +470,7 @@ function startQuiz(now: number, cmd: string, userId: string, userName: string) {
   }
   const question = lines[0];
   new Quiz(question, choices);
-  
+
   chat(`Polls are open - ${lines[0]}`);
   for (var i = 0; i < choices.length; i++) {
     chat(choices[i]);
@@ -463,9 +484,23 @@ function moveAbsolute(now: number, params: string, userId: string) {
 function moveRelative(now: number, params: string, userId: string) {
 }
 
+var pinkSeeds: Sprites;
+var blueSeeds: Sprites;
+var yellowSeeds: Sprites;
+var purpleSeeds: Sprites;
+
 var dronesRed: Sprites;
 var dronesBlue: Sprites;
-var allDrones: SpriteCollection
+var allDrones: SpriteCollection;
+var allSeeds: SpriteCollection;
+
+var redSplotches: SpriteCollection;
+var orangeSplotches: SpriteCollection;
+var yellowSplotches: SpriteCollection;
+var greenSplotches: SpriteCollection;
+var blueSplotches: SpriteCollection;
+var indigoSplotches: SpriteCollection;
+var violetSplotches: SpriteCollection;
 
 function loadDrones(color: string): Sprites {
   let drones = new Sprites(`Drones/${color}/Drone`, 30, 15, AnimationStyle.Loop);
@@ -476,10 +511,71 @@ function loadDrones(color: string): Sprites {
   return drones;
 }
 
+function loadWatercolors(color: string): SpriteCollection {
+  const numFolders: number = 9;
+  var spriteCollection: SpriteCollection = new SpriteCollection();
+  for (var folderIndex = 1; folderIndex <= numFolders; folderIndex++) {
+    let watercolors = new Sprites(`Paint/Watercolors/${color}/${folderIndex}/WaterColor`, 142, 15, AnimationStyle.SequentialStop, true);
+    spriteCollection.add(watercolors);
+  }
+
+  return spriteCollection;
+}
+
+function addWatercolors() {
+  redSplotches = loadWatercolors('Red');
+  orangeSplotches = loadWatercolors('Orange');
+  //yellowSplotches = loadWatercolors('Yellow');
+  //greenSplotches = loadWatercolors('Green');
+  blueSplotches = loadWatercolors('Blue');
+  //indigoSplotches = loadWatercolors('Indigo');
+  //violetSplotches = loadWatercolors('Violet');
+
+  allSplotches.addCollection(redSplotches);
+  allSplotches.addCollection(orangeSplotches);
+  //allSplotches.addCollection(yellowSplotches);
+  //allSplotches.addCollection(greenSplotches);
+  allSplotches.addCollection(blueSplotches);
+  //allSplotches.addCollection(indigoSplotches);
+  //allSplotches.addCollection(violetSplotches);
+}
+
+
 function addDrones() {
   allDrones = new SpriteCollection();
+
   dronesRed = loadDrones('Red');
   dronesBlue = loadDrones('Blue');
+}
+
+function addSeeds() {
+  allSeeds = new SpriteCollection();
+
+  pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+  pinkSeeds.moves = true;
+  allSeeds.add(pinkSeeds);
+
+  blueSeeds = new Sprites("Seeds/Blue/BlueSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+  blueSeeds.moves = true;
+  allSeeds.add(blueSeeds);
+
+  yellowSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+  yellowSeeds.moves = true;
+  allSeeds.add(yellowSeeds);
+
+  purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+  purpleSeeds.moves = true;
+  allSeeds.add(purpleSeeds);
+}
+
+var droneExplosions: SpriteCollection;
+
+function loadDroneExplosions() {
+  droneExplosions = new SpriteCollection();
+  const numDroneExplosions: number = 11;
+  for (var i = 1; i <= numDroneExplosions; i++) {
+    droneExplosions.add(new Sprites('Drones/Explosions/' + i + '/Explosion', 53, 5, AnimationStyle.Sequential, true));
+  }
 }
 
 var gravityGames = new GravityGames();
@@ -489,19 +585,15 @@ document.onkeydown = handleKeyDown;
 let globalLoadSprites: boolean = loadCopyrightedContent;
 
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+
+var myRocket = new Rocket(0, 0);
+var started = false;
+myRocket.x = 0;
+myRocket.y = 0;
+
 var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, outlineChatRoom /* allButMark */ /* outlineCodeEditor  */ /* fillChatRoom */);
 
-var pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-pinkSeeds.moves = true;
-
-var blueSeeds = new Sprites("Seeds/Blue/BlueSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-blueSeeds.moves = true;
-
-var yellowSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-yellowSeeds.moves = true;
-
-var purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-purpleSeeds.moves = true;
+addSeeds();
 
 //var greenSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
 //greenSeeds.moves = true;
@@ -513,18 +605,22 @@ beesYellow.moves = true;
 
 addDrones();
 
-var redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
+addWatercolors();
+
+var redMeteors: Sprites = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
 redMeteors.moves = true;
 
-var blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
+var blueMeteors: Sprites = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
 blueMeteors.moves = true;
 
-var purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop, false, addExplosion);
+var purpleMeteors: Sprites = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
 purpleMeteors.moves = true;
 
-var redExplosions = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
-var blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
-var purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
+var redExplosions: Sprites = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
+var blueExplosions: Sprites = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
+var purpleExplosions: Sprites = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
+
+loadDroneExplosions();
 
 var redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
 redFlowers.returnFrameIndex = 128;
@@ -554,10 +650,6 @@ globalLoadSprites = true;
 
 var backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
-var myRocket = new Rocket(0, 0);
-var started = false;
-myRocket.x = 0;
-myRocket.y = 0;
 setInterval(updateScreen, 10);
 gravityGames.selectPlanet('Earth');
 var red: HueSatLight = HueSatLight.fromHex('#ff3329');

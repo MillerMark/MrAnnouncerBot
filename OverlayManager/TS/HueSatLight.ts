@@ -5,15 +5,24 @@ class HueSatLight {
 
   }
 
+  getPerceivedBrightness(): number {
+    let rgb = this.toRgb();
+    let red: number = rgb[0];
+    let green: number = rgb[1];
+    let blue: number = rgb[2];
+
+    return Math.sqrt(red * red * 0.241 + green * green * .691 + blue * blue * .068);
+  }
+
   isBright(): boolean {
-    return this.light > 0.5;
+    return this.getPerceivedBrightness() > 0.5;
   }
 
   isDark(): boolean {
-    return this.light < 0.5;
+    return this.getPerceivedBrightness() < 0.5;
   }
 
-  toHex(): string {
+  toRgb(): [number, number, number] {
     var red, green, blue;
 
     if (this.saturation == 0) {
@@ -36,6 +45,15 @@ class HueSatLight {
       green = hue2rgb(p, q, this.hue);
       blue = hue2rgb(p, q, this.hue - 1 / 3);
     }
+
+    return [red, green, blue];
+  }
+
+  toHex(): string {
+    let rgb = this.toRgb();
+    let red: number = rgb[0];
+    let green: number = rgb[1];
+    let blue: number = rgb[2];
 
     function int2hex(value: number) {
       let hex: string = Math.round(value * 255).toString(16);
