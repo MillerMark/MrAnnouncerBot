@@ -29,7 +29,7 @@ function updateScreen() {
   if (!myRocket.isDocked)
     gravityGames.draw(myContext);
 
-  allSplotches.draw(myContext, now);
+  allSplats.draw(myContext, now);
 
   coins.draw(myContext, now);
   //grass1.draw(myContext, now);
@@ -61,7 +61,7 @@ function updateScreen() {
   //explosion.draw(myContext, 0, 0);
 }
 
-var allSplotches = new SpriteCollection();
+var allSplats = new SpriteCollection();
 
 function handleKeyDown(evt) {
   const Key_B = 66;
@@ -410,8 +410,9 @@ function executeCommand(command: string, params: string, userId: string, userNam
   else if (command === "ClearQuiz") {
     clearQuiz(userName);
   }
-  else if (command === "red" || command === "orange" || command === "yellow" ||
-    command === "green" || command === "blue" || command === "indigo" || command === "violet") {
+  else if (command === "red" || command === "orange" || command === "amber" || command === "yellow" ||
+    command === "green" || command === "cyan" || command === "blue" || command === "indigo"
+    || command === "violet" || command === "magenta" || command === "black" || command === "white") {
     paint(userId, command, params);
   }
   // TODO: Support !vote x
@@ -422,7 +423,7 @@ function paint(userId: string, command: string, params: string) {
   if (!userDrone)
     return;
 
-  userDrone.paint(command, params);
+  userDrone.dropPaint(command, params);
 }
 
 function clearQuiz(userName: string) {
@@ -494,13 +495,18 @@ var dronesBlue: Sprites;
 var allDrones: SpriteCollection;
 var allSeeds: SpriteCollection;
 
-var redSplotches: SpriteCollection;
-var orangeSplotches: SpriteCollection;
-var yellowSplotches: SpriteCollection;
-var greenSplotches: SpriteCollection;
-var blueSplotches: SpriteCollection;
-var indigoSplotches: SpriteCollection;
-var violetSplotches: SpriteCollection;
+var redSplotches: SplatSprites;
+var blackSplotches: SplatSprites;
+var whiteSplotches: SplatSprites;
+var orangeSplotches: SplatSprites;
+var amberSplotches: SplatSprites;
+var yellowSplotches: SplatSprites;
+var greenSplotches: SplatSprites;
+var blueSplotches: SplatSprites;
+var cyanSplotches: SplatSprites;
+var indigoSplotches: SplatSprites;
+var violetSplotches: SplatSprites;
+var magentaSplotches: SplatSprites;
 
 function loadDrones(color: string): Sprites {
   let drones = new Sprites(`Drones/${color}/Drone`, 30, 15, AnimationStyle.Loop);
@@ -522,22 +528,36 @@ function loadWatercolors(color: string): SpriteCollection {
   return spriteCollection;
 }
 
-function addWatercolors() {
-  redSplotches = loadWatercolors('Red');
-  orangeSplotches = loadWatercolors('Orange');
-  //yellowSplotches = loadWatercolors('Yellow');
-  //greenSplotches = loadWatercolors('Green');
-  blueSplotches = loadWatercolors('Blue');
-  //indigoSplotches = loadWatercolors('Indigo');
-  //violetSplotches = loadWatercolors('Violet');
+function loadSplat(color: string): SplatSprites {
+  return new SplatSprites(`Paint/Splats/${color}/Splat`, 39, 15, AnimationStyle.SequentialStop, true);
+}
 
-  allSplotches.addCollection(redSplotches);
-  allSplotches.addCollection(orangeSplotches);
-  //allSplotches.addCollection(yellowSplotches);
-  //allSplotches.addCollection(greenSplotches);
-  allSplotches.addCollection(blueSplotches);
-  //allSplotches.addCollection(indigoSplotches);
-  //allSplotches.addCollection(violetSplotches);
+function addSplats() {
+  redSplotches = loadSplat('Red');
+  blackSplotches = loadSplat('Black');
+  whiteSplotches = loadSplat('White');
+  orangeSplotches = loadSplat('Orange');
+  amberSplotches = loadSplat('Amber');
+  yellowSplotches = loadSplat('Yellow');
+  greenSplotches = loadSplat('Green');
+  blueSplotches = loadSplat('Blue');
+  cyanSplotches = loadSplat('Cyan');
+  indigoSplotches = loadSplat('Indigo');
+  violetSplotches = loadSplat('Violet');
+  magentaSplotches = loadSplat('Magenta');
+
+  allSplats.add(blackSplotches);
+  allSplats.add(redSplotches);
+  allSplats.add(orangeSplotches);
+  allSplats.add(amberSplotches);
+  allSplats.add(yellowSplotches);
+  allSplats.add(greenSplotches);
+  allSplats.add(cyanSplotches);
+  allSplats.add(blueSplotches);
+  allSplats.add(indigoSplotches);
+  allSplats.add(violetSplotches);
+  allSplats.add(magentaSplotches);
+  allSplats.add(whiteSplotches);
 }
 
 
@@ -605,7 +625,7 @@ beesYellow.moves = true;
 
 addDrones();
 
-addWatercolors();
+addSplats();
 
 var redMeteors: Sprites = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
 redMeteors.moves = true;

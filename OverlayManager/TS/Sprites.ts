@@ -305,6 +305,15 @@ class Sprites {
   }
 }
 
+class SplatSprites extends Sprites {
+  constructor(baseAnimationName, expectedFrameCount, frameInterval: number, animationStyle: AnimationStyle, padFileIndex: boolean = false, hitFloorFunc?, onLoadedFunc?) {
+    super(baseAnimationName, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
+
+  }
+}
+
+
+
 // TODO: Convert to enum...
 var rectangleDrawingSegment = {
   'top': 1,

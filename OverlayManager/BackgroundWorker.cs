@@ -222,12 +222,17 @@ namespace OverlayManager
 					MoveAbsolute(args, chatMessage); break;
 				case "drone": Drone(args, chatMessage); break;
 				case "red":
+				case "black":
+				case "white":
 				case "orange":
+				case "amber":
 				case "yellow":
 				case "green":
+				case "cyan":
 				case "blue":
 				case "indigo":
 				case "violet":
+				case "magenta":
 					Paint(cmdText, args, chatMessage); break;
 				case "dock": Dock(chatMessage); break;
 				case "drop": Drop(args, chatMessage); break;

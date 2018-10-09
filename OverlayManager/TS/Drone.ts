@@ -1,4 +1,7 @@
 ﻿//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
+
+var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
+
 class Drone extends SpriteProxy {
   displayName: string;
   userId: string;
@@ -74,43 +77,41 @@ class Drone extends SpriteProxy {
     context.fillText(this.displayName, centerX, yTop);
   }
 
-  getWatercolorSplotchCollection(command: string): SpriteCollection {
+  getSplats(command: string): SplatSprites {
     if (command === 'red')
       return redSplotches;
+    else if (command === 'black')
+      return blackSplotches;
+    else if (command === 'white')
+      return whiteSplotches;
     else if (command === 'orange')
       return orangeSplotches;
+    else if (command === 'amber')
+      return amberSplotches;
     else if (command === 'yellow')
       return yellowSplotches;
     else if (command === 'green')
       return greenSplotches;
     else if (command === 'blue')
       return blueSplotches;
+    else if (command === 'cyan')
+      return cyanSplotches;
     else if (command === 'indigo')
       return indigoSplotches;
+    else if (command === 'magenta')
+      return magentaSplotches;
     else if (command === 'violet')
       return violetSplotches;
     return null;
   }
 
-  paint(command: string, params: string): any {
-    const numPaintSplotches: number = 9;
-    let splotches: SpriteCollection = this.getWatercolorSplotchCollection(command);
-    const splotchCount: number = 3;
-    let picks: number[] = this.pick(splotchCount, numPaintSplotches);
-    picks.forEach(function (splotchIndex: number) {
-      let splotch: Sprites = splotches.allSprites[splotchIndex];
-      splotch.sprites.push(new SpriteProxy(0, this.x - splotch.spriteWidth / 2 + this.width / 2, this.y - splotch.spriteHeight / 2 + this.height / 2));
-    }, this);
-
-    //yellowSplotches
-    //orangeSplotches.draw(myContext, now);
-    //greenSplotches.draw(myContext, now);
-    //redSplotches.draw(myContext, now);
-    //violetSplotches.draw(myContext, now);
-    //blueSplotches.draw(myContext, now);
-    //indigoSplotches.draw(myContext, now);
+  dropPaint(command: string, params: string): any {
+    let splats: SplatSprites = this.getSplats(command);
+    splats.sprites.push(new SpriteProxy(0, this.x - splats.spriteWidth / 2 + this.width / 2, this.y - splats.spriteHeight / 2 + this.height / 2));
+    splatSoundEffect.play();
   }
 
+  // Picks a sequence of random numbers between 0 and maxBounds. pickCount is the number of random numbers selected.
   pick(pickCount: number, maxBounds: number): number[] {
     let result: number[] = [];
     let attempts: number = 0;
