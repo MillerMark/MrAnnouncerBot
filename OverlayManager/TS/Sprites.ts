@@ -289,7 +289,7 @@ class Sprites {
   updatePositions(now: number) {
     this.sprites.forEach(function (sprite: SpriteProxy) {
       sprite.updatePosition(now);
-    });
+    }, this);
   }
 
   bounce(left: number, top: number, right: number, bottom: number, now: number) {
@@ -306,8 +306,8 @@ class Sprites {
 }
 
 class SplatSprites extends Sprites {
-  constructor(baseAnimationName, expectedFrameCount, frameInterval: number, animationStyle: AnimationStyle, padFileIndex: boolean = false, hitFloorFunc?, onLoadedFunc?) {
-    super(baseAnimationName, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
+  constructor(color: string, expectedFrameCount: number, frameInterval: number, animationStyle: AnimationStyle, padFileIndex: boolean = false, hitFloorFunc?, onLoadedFunc?) {
+    super(`Paint/Splats/${color}/Splat`, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
 
   }
 }

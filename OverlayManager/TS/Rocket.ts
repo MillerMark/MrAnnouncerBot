@@ -484,7 +484,6 @@
       yDisplacement = ChuteMaxVelocity * secondsPassed;
 
     if ((this.wasFiringMainThrusters && this.mainThrusterOfftime <= now) || (this.wasKillingThrusters && this.hoverThrusterRestoreTime <= now)) {
-      console.log('this.startY = this.y;');
       this.startY = this.y;
     }
 
@@ -733,7 +732,19 @@
     myDrone.height = drones.spriteHeight;
     myDrone.width = drones.spriteWidth;
     myDrone.displayName = displayName;
+    if (this.x < 960)
+      myDrone.rightThrustOffTime = now + 800;
+    else 
+      myDrone.leftThrustOffTime = now + 800;
+
+    if (this.y > 540)
+      myDrone.velocityY = -2;
+    else 
+      myDrone.velocityY = 1;
+
     myDrone.userId = userId;
+    if (color === '')
+      color = '#49357b';
     myDrone.color = color;
   }
 

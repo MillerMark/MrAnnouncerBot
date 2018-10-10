@@ -11,7 +11,7 @@ class HueSatLight {
     let green: number = rgb[1];
     let blue: number = rgb[2];
 
-    return Math.sqrt(red * red * 0.241 + green * green * .691 + blue * blue * .068);
+    return Math.sqrt(red * red * 0.241 + green * green * 0.691 + blue * blue * 0.068);
   }
 
   isBright(): boolean {

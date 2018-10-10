@@ -179,6 +179,12 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("Chutes", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
+
+		void ChangeDroneVelocity(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("ChangeDroneVelocity", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+
 		void Extend(ChatMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("Extend", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
@@ -197,6 +203,22 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand(cmdText, args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
+		void DroneRight(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("DroneRight", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void DroneUp(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("DroneUp", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void DroneDown(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("DroneDown", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
+		void DroneLeft(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("DroneLeft", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
 			string cmdText = e.Command.CommandText.ToLower();
@@ -213,10 +235,17 @@ namespace OverlayManager
 				case "down": Down(args, chatMessage); break;
 				case "left": Left(args, chatMessage); break;
 				case "right": Right(args, chatMessage); break;
+				case "u": DroneUp(args, chatMessage); break;
+				case "d": DroneDown(args, chatMessage); break;
+				case "l": DroneLeft(args, chatMessage); break;
+				case "r": DroneRight(args, chatMessage); break;
 				case "bee": Bee(args, chatMessage); break;
 				case "moverel":
 				case "mr":
 					MoveRelative(args, chatMessage); break;
+				case "changevel":
+				case "cv":
+					ChangeDroneVelocity(args, chatMessage); break;
 				case "moveabs":
 				case "ma":
 					MoveAbsolute(args, chatMessage); break;

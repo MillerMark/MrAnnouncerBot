@@ -415,7 +415,67 @@ function executeCommand(command: string, params: string, userId: string, userNam
     || command === "violet" || command === "magenta" || command === "black" || command === "white") {
     paint(userId, command, params);
   }
+  else if (command === "ChangeDroneVelocity") {
+    changeDroneVelocity(userId, params);
+  }
+  else if (command === "DroneUp") {
+    droneUp(userId, params);
+  }
+  else if (command === "DroneDown") {
+    droneDown(userId, params);
+  }
+  else if (command === "DroneLeft") {
+    droneLeft(userId, params);
+  }
+  else if (command === "DroneRight") {
+    droneRight(userId, params);
+  }
+  
   // TODO: Support !vote x
+}
+
+function droneRight(userId: string, params: string) {
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+
+  userDrone.droneRight(params);
+}
+
+function droneLeft(userId: string, params: string) {
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+
+  userDrone.droneLeft(params);
+}
+
+function droneUp(userId: string, params: string) {
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+
+  userDrone.droneUp(params);
+}
+
+function droneDown(userId: string, params: string) {
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+
+  userDrone.droneDown(params);
+}
+function changeDroneVelocity(userId: string, params: string) {
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+
+  let parameters: string[] = params.split(',');
+  if (parameters.length < 2)
+    return;
+  let now: number = performance.now();
+  userDrone.changingDirection(now);
+  userDrone.changeVelocity(+parameters[0], +parameters[1], now);
 }
 
 function paint(userId: string, command: string, params: string) {
@@ -529,7 +589,7 @@ function loadWatercolors(color: string): SpriteCollection {
 }
 
 function loadSplat(color: string): SplatSprites {
-  return new SplatSprites(`Paint/Splats/${color}/Splat`, 39, 15, AnimationStyle.SequentialStop, true);
+  return new SplatSprites(color, 39, 15, AnimationStyle.SequentialStop, true);
 }
 
 function addSplats() {
