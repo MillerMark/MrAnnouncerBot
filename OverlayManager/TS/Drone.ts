@@ -136,14 +136,14 @@ class Drone extends SpriteProxy {
     if (hAccel < 0)
       if (now - this.leftThrustOnTime > highRollSwitchMs && this.leftThrustOffTime - now > highRollSwitchMs)
         rollIndex = 9;
-      else 
+      else
         rollIndex = 7;
     else if (hAccel > 0)
       if (now - this.rightThrustOnTime > highRollSwitchMs && this.rightThrustOffTime - now > highRollSwitchMs)
         rollIndex = 1;
-      else 
+      else
         rollIndex = 3;
-    else 
+    else
       rollIndex = 5;
     this.frameIndex = pitchIndex * 10 + rollIndex;
   }
@@ -244,7 +244,30 @@ class Drone extends SpriteProxy {
 
   dropPaint(command: string, params: string): any {
     let splats: SplatSprites = this.getSplats(command);
-    splats.sprites.push(new SpriteProxy(0, this.x - splats.spriteWidth / 2 + this.width / 2, this.y - splats.spriteHeight / 2 + this.height / 2));
+    var droneCenterX: number = this.x + this.width / 2;
+    var droneCenterY: number = this.y + this.height / 2;
+    const leftRightAdjust: number = 40;
+    const upDownAdjust: number = 20;
+    var yAdjust: number = Math.random() * upDownAdjust + 15;
+    var xAdjust: number = Math.random() * leftRightAdjust - leftRightAdjust / 2;
+    splats.sprites.push(new SpriteProxy(0, droneCenterX - splats.spriteWidth / 2, droneCenterY - splats.spriteHeight / 2));
+    let random: number = Math.random() * 100;
+    if (random < 15) {
+      splats.longDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+    }
+    else if (random < 30) {
+      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+      yAdjust = Math.random() * upDownAdjust;
+      xAdjust = Math.random() * leftRightAdjust - leftRightAdjust / 2;
+      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+    }
+    else if (random < 65) { // 35%
+      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+    }
+    else if (random < 85) { // 20%
+      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+    }
+
     splatSoundEffect.play();
   }
 
@@ -332,9 +355,5 @@ class Drone extends SpriteProxy {
     this.rightThrustOffTime = now + durationMs;
     this.wasThrustingRight = true;
     this.checkFrameIndexAfterThrust(durationMs);
-  }
-
-  setFrameFromThrust() {
-
   }
 }

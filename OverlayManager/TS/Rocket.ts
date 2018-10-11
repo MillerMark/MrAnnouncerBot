@@ -723,6 +723,7 @@
     return new Drone(Random.getInt(frameCount), x, y);
   }
 
+
   releaseDrone(now: number, params: string, userId: string, displayName: string, color: string): any {
     allDrones.destroy(userId, addDroneExplosion);
     let drones: Sprites = dronesRed;
@@ -732,10 +733,11 @@
     myDrone.height = drones.spriteHeight;
     myDrone.width = drones.spriteWidth;
     myDrone.displayName = displayName;
+    const initialBurnTime: number = 800;
     if (this.x < 960)
-      myDrone.rightThrustOffTime = now + 800;
+      myDrone.rightThrustOffTime = now + initialBurnTime;
     else 
-      myDrone.leftThrustOffTime = now + 800;
+      myDrone.leftThrustOffTime = now + initialBurnTime;
 
     if (this.y > 540)
       myDrone.velocityY = -2;
