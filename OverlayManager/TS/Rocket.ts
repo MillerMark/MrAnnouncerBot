@@ -755,7 +755,7 @@
       console.log(message);
   }
 
-  dropFromOne(now, sprites1, sprites2, sprites3, sprites4?) {
+  dropFromOne(now, sprites1, sprites2, sprites3, sprites4?, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) {
     var spriteArray = null;
     var randomNumber: number;
     if (sprites4) {
@@ -802,7 +802,11 @@
   }
 
   dropMeteor(now) {
-    this.dropFromOne(now, redMeteors, blueMeteors, purpleMeteors);
+    this.dropFromOne(now, redMeteors, blueMeteors, purpleMeteors, null, this.createMeteor);
+  }
+
+  createMeteor(x: number, y: number, frameCount: number): SpriteProxy {
+    return new Meteor(Random.getInt(frameCount), x, y);
   }
 
   dropSeed(now: number, args?: string) {

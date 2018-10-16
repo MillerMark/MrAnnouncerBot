@@ -1,5 +1,13 @@
 ﻿let loadCopyrightedContent: boolean = true;
 
+function putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy) {
+  let drone: Drone = <Drone>droneProxy;
+  let meteor: Meteor = <Meteor>meteorProxy;
+  if (drone && meteor) {
+    drone.addMeteor(meteor);
+  }
+}
+
 function updateScreen() {
   const screenWidth: number = 1920;
   const screenHeight: number = 1080;
@@ -20,9 +28,9 @@ function updateScreen() {
   beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
   allDrones.bounce(0, 0, screenWidth, screenHeight, now);
   //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-  redMeteors.bounce(0, 0, screenWidth, screenHeight, now);
-  blueMeteors.bounce(0, 0, screenWidth, screenHeight, now);
-  purpleMeteors.bounce(0, 0, screenWidth, screenHeight, now);
+
+  allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
+  allMeteors.checkCollisionAgainst(allDrones, putMeteorOnDrone);
 
   //backgroundBanner.draw(myContext, 0, 0);
 
@@ -41,9 +49,7 @@ function updateScreen() {
 
   beesYellow.draw(myContext, now);
   allDrones.draw(myContext, now);
-  redMeteors.draw(myContext, now);
-  blueMeteors.draw(myContext, now);
-  purpleMeteors.draw(myContext, now);
+  allMeteors.draw(myContext, now);
   myRocket.draw(myContext, now);
   redExplosions.draw(myContext, now);
   blueExplosions.draw(myContext, now);
@@ -266,7 +272,8 @@ function outlineSmallRect(sprites) {
 }
 
 function plantSeed(spriteArray, x, y) {
-  spriteArray.sprites.push(new SpriteProxy(0, x - spriteArray.spriteWidth / 2, 1080 - spriteArray.spriteHeight + y));
+  const flowerLifeSpan: number = 120 * 1000;
+  spriteArray.sprites.push(new SpriteProxy(0, x - spriteArray.spriteWidth / 2, 1080 - spriteArray.spriteHeight + y, flowerLifeSpan));
 }
 
 function plantSeeds(seeds, x) {
@@ -658,6 +665,28 @@ function loadDroneExplosions() {
   }
 }
 
+var allMeteors: SpriteCollection;
+var redMeteors: Sprites;
+var blueMeteors: Sprites;
+var purpleMeteors: Sprites;
+
+function addMeteors() {
+  allMeteors = new SpriteCollection();
+
+  redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
+  redMeteors.moves = true;
+
+  blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
+  blueMeteors.moves = true;
+
+  purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
+  purpleMeteors.moves = true;
+
+  allMeteors.add(redMeteors);
+  allMeteors.add(blueMeteors);
+  allMeteors.add(purpleMeteors);
+}
+
 var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
@@ -687,21 +716,13 @@ addDrones();
 
 addSplats();
 
-var redMeteors: Sprites = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
-redMeteors.moves = true;
-
-var blueMeteors: Sprites = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
-blueMeteors.moves = true;
-
-var purpleMeteors: Sprites = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
-purpleMeteors.moves = true;
+addMeteors();
 
 var redExplosions: Sprites = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
 var blueExplosions: Sprites = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
 var purpleExplosions: Sprites = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
 
 loadDroneExplosions();
-
 globalBypassFrameSkip = true;
 var redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
 redFlowers.returnFrameIndex = 128;

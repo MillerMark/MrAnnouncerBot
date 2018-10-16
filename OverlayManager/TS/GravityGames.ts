@@ -88,10 +88,7 @@ class GravityGames {
   setActivePlanet(planet: Planet) {
     let now: number = performance.now();
     myRocket.changingDirection(now);
-    redMeteors.changingDirection(now);
-    blueMeteors.changingDirection(now);
-    purpleMeteors.changingDirection(now);
-
+    allMeteors.changingDirection(now);
     allSeeds.changingDirection(now);
     
     beesYellow.changingDirection(now);

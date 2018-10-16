@@ -1,22 +1,27 @@
 ﻿class SpriteProxy {
   frameIndex: number;
+  expirationDate: number;
   timeStart: number;
   velocityX: number;
   velocityY: number;
   startX: any;
   startY: any;
 
-  constructor(startingFrameNumber: number, public x: number, public y: number) {
+  constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
     this.frameIndex = startingFrameNumber;
     this.timeStart = performance.now();
     this.velocityX = 0;
     this.velocityY = 0;
     this.startX = x;
     this.startY = y;
+    if (lifeSpanMs > 0)
+      this.expirationDate = this.timeStart + lifeSpanMs;
+    else
+      this.expirationDate = null;
   }
 
   getHorizontalThrust(now: number): number {
-  	return 0;
+    return 0;
   }
 
   getVerticalThrust(now: number): number {
@@ -62,6 +67,17 @@
       this.frameIndex = returnFrameIndex;
   }
 
+  isHitBy(thisSprite: SpriteProxy): boolean {
+    const minDistanceForHit: number = 80;
+    return this.getDistanceTo(thisSprite) < minDistanceForHit;
+  }
+
+  getDistanceTo(otherSprite: SpriteProxy): number {
+    let deltaX: number = this.x - otherSprite.x;
+    let deltaY: number = this.y - otherSprite.y;
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  }
+
   changingDirection(now: number): void {
     var secondsPassed = (now - this.timeStart) / 1000;
     var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
@@ -93,5 +109,12 @@
 
     var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust(now));
     this.y = this.startY + Physics.metersToPixels(yDisplacement);
+  }
+}
+
+class Meteor extends SpriteProxy {
+  owner: Drone;
+  constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
+    super(startingFrameNumber, x, y, lifeSpanMs);
   }
 }

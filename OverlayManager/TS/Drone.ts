@@ -3,6 +3,7 @@
 var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
 
 class Drone extends SpriteProxy {
+  meteor: Meteor;
   displayName: string;
   userId: string;
   backgroundColor: string = '#fff';
@@ -73,6 +74,11 @@ class Drone extends SpriteProxy {
     this.backgroundColor = backgroundHsl.toHex();
     this.outlineColor = outlineHsl.toHex();
     this._color = textHsl.toHex();
+  }
+
+  addMeteor(meteor: Meteor): void {
+    //this.meteor = meteor;
+    allDrones.destroy(this.userId, addDroneExplosion);
   }
 
   updatePosition(now: number) {
@@ -250,22 +256,24 @@ class Drone extends SpriteProxy {
     const upDownAdjust: number = 20;
     var yAdjust: number = Math.random() * upDownAdjust + 15;
     var xAdjust: number = Math.random() * leftRightAdjust - leftRightAdjust / 2;
-    splats.sprites.push(new SpriteProxy(0, droneCenterX - splats.spriteWidth / 2, droneCenterY - splats.spriteHeight / 2));
+    const paintLifeSpan: number = 15 * 1000;
+    splats.sprites.push(new SpriteProxy(0, droneCenterX - splats.spriteWidth / 2, droneCenterY - splats.spriteHeight / 2, paintLifeSpan));
+    let yPos: number = droneCenterY - yAdjust;
     let random: number = Math.random() * 100;
     if (random < 15) {
-      splats.longDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+      splats.longDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
     else if (random < 30) {
-      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
       yAdjust = Math.random() * upDownAdjust;
       xAdjust = Math.random() * leftRightAdjust - leftRightAdjust / 2;
-      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.mediumDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
     else if (random < 65) { // 35%
-      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.mediumDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
     else if (random < 85) { // 20%
-      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, droneCenterY - yAdjust));
+      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
 
     splatSoundEffect.play();

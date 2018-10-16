@@ -20,6 +20,14 @@
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.bounce(left, top, right, bottom, now) });
   }
 
+  checkCollisionAgainst(compareCollection: SpriteCollection, collisionFoundFunction: (meteor: SpriteProxy, sprite: SpriteProxy) => void): void {
+    this.allSprites.forEach(function (theseSprites: Sprites) {
+      compareCollection.allSprites.forEach(function (compareSprites: Sprites) {
+        theseSprites.checkCollisionAgainst(compareSprites, collisionFoundFunction);
+      });
+    });
+  }
+
   draw(context: CanvasRenderingContext2D, now: number): void {
     this.allSprites.forEach(function (sprites: Sprites) { sprites.draw(context, now) });
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.draw(context, now); });
@@ -94,6 +102,15 @@ class Sprites {
     if (index >= 0)
       return this.sprites[index];
     return null;
+  }
+
+  checkCollisionAgainst(compareSprites: Sprites, collisionFoundFunction: (thisSprite: SpriteProxy, testSprite: SpriteProxy) => void): any {
+    this.sprites.forEach(function (thisSprite: SpriteProxy) {
+      compareSprites.sprites.forEach(function (testSprite: SpriteProxy) {
+        if (testSprite.isHitBy(thisSprite))
+          collisionFoundFunction(thisSprite, testSprite);
+      });
+    });
   }
 
   destroy(matchData: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): void {
@@ -281,9 +298,36 @@ class Sprites {
       this.updatePositions(now);
     this.advanceFrames(now);
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      this.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
-      sprite.drawAdornments(context, now);
+      let lifeRemaining: number = 0;
+      context.globalAlpha = 1.0;
+      if (sprite.expirationDate) {
+        lifeRemaining = sprite.expirationDate - now;
+        const fadeOutTime: number = 4000;
+        if (lifeRemaining < fadeOutTime) {
+          context.globalAlpha = lifeRemaining / fadeOutTime;
+        }
+      }
+
+      if (lifeRemaining >= 0) {
+        this.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
+        sprite.drawAdornments(context, now);
+      }
+      
     }, this);
+
+    context.globalAlpha = 1.0;
+    this.removeExpiredSprites(now);
+  }
+
+  removeExpiredSprites(now: number): void {
+    for (var i = this.sprites.length - 1; i >= 0; i--) {
+      let sprite: SpriteProxy = this.sprites[i];
+      if (sprite.expirationDate) {
+        let lifeRemaining: number = sprite.expirationDate - now;
+        if (lifeRemaining < 0)
+          this.sprites.splice(i, 1);
+      }
+    }
   }
 
   updatePositions(now: number) {
