@@ -1,5 +1,5 @@
 ﻿class SpriteProxy {
-  frameIndex: any;
+  frameIndex: number;
   timeStart: number;
   velocityX: number;
   velocityY: number;

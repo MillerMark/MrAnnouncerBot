@@ -197,29 +197,29 @@ class Drone extends SpriteProxy {
 
   getSplats(command: string): SplatSprites {
     if (command === 'red')
-      return redSplotches;
+      return redSplats;
     else if (command === 'black')
-      return blackSplotches;
+      return blackSplats;
     else if (command === 'white')
-      return whiteSplotches;
+      return whiteSplats;
     else if (command === 'orange')
-      return orangeSplotches;
+      return orangeSplats;
     else if (command === 'amber')
-      return amberSplotches;
+      return amberSplats;
     else if (command === 'yellow')
-      return yellowSplotches;
+      return yellowSplats;
     else if (command === 'green')
-      return greenSplotches;
+      return greenSplats;
     else if (command === 'blue')
-      return blueSplotches;
+      return blueSplats;
     else if (command === 'cyan')
-      return cyanSplotches;
+      return cyanSplats;
     else if (command === 'indigo')
-      return indigoSplotches;
+      return indigoSplats;
     else if (command === 'magenta')
-      return magentaSplotches;
+      return magentaSplats;
     else if (command === 'violet')
-      return violetSplotches;
+      return violetSplats;
     return null;
   }
 

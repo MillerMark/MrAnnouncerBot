@@ -555,18 +555,18 @@ var dronesBlue: Sprites;
 var allDrones: SpriteCollection;
 var allSeeds: SpriteCollection;
 
-var redSplotches: SplatSprites;
-var blackSplotches: SplatSprites;
-var whiteSplotches: SplatSprites;
-var orangeSplotches: SplatSprites;
-var amberSplotches: SplatSprites;
-var yellowSplotches: SplatSprites;
-var greenSplotches: SplatSprites;
-var blueSplotches: SplatSprites;
-var cyanSplotches: SplatSprites;
-var indigoSplotches: SplatSprites;
-var violetSplotches: SplatSprites;
-var magentaSplotches: SplatSprites;
+var redSplats: SplatSprites;
+var blackSplats: SplatSprites;
+var whiteSplats: SplatSprites;
+var orangeSplats: SplatSprites;
+var amberSplats: SplatSprites;
+var yellowSplats: SplatSprites;
+var greenSplats: SplatSprites;
+var blueSplats: SplatSprites;
+var cyanSplats: SplatSprites;
+var indigoSplats: SplatSprites;
+var violetSplats: SplatSprites;
+var magentaSplats: SplatSprites;
 
 function loadDrones(color: string): Sprites {
   let drones = new Sprites(`Drones/${color}/Drone`, 30, 15, AnimationStyle.Loop);
@@ -593,31 +593,31 @@ function loadSplat(color: string): SplatSprites {
 }
 
 function addSplats() {
-  redSplotches = loadSplat('Red');
-  blackSplotches = loadSplat('Black');
-  whiteSplotches = loadSplat('White');
-  orangeSplotches = loadSplat('Orange');
-  amberSplotches = loadSplat('Amber');
-  yellowSplotches = loadSplat('Yellow');
-  greenSplotches = loadSplat('Green');
-  blueSplotches = loadSplat('Blue');
-  cyanSplotches = loadSplat('Cyan');
-  indigoSplotches = loadSplat('Indigo');
-  violetSplotches = loadSplat('Violet');
-  magentaSplotches = loadSplat('Magenta');
+  redSplats = loadSplat('Red');
+  blackSplats = loadSplat('Black');
+  whiteSplats = loadSplat('White');
+  orangeSplats = loadSplat('Orange');
+  amberSplats = loadSplat('Amber');
+  yellowSplats = loadSplat('Yellow');
+  greenSplats = loadSplat('Green');
+  blueSplats = loadSplat('Blue');
+  cyanSplats = loadSplat('Cyan');
+  indigoSplats = loadSplat('Indigo');
+  violetSplats = loadSplat('Violet');
+  magentaSplats = loadSplat('Magenta');
 
-  allSplats.add(blackSplotches);
-  allSplats.add(redSplotches);
-  allSplats.add(orangeSplotches);
-  allSplats.add(amberSplotches);
-  allSplats.add(yellowSplotches);
-  allSplats.add(greenSplotches);
-  allSplats.add(cyanSplotches);
-  allSplats.add(blueSplotches);
-  allSplats.add(indigoSplotches);
-  allSplats.add(violetSplotches);
-  allSplats.add(magentaSplotches);
-  allSplats.add(whiteSplotches);
+  allSplats.add(blackSplats);
+  allSplats.add(redSplats);
+  allSplats.add(orangeSplats);
+  allSplats.add(amberSplats);
+  allSplats.add(yellowSplats);
+  allSplats.add(greenSplats);
+  allSplats.add(cyanSplats);
+  allSplats.add(blueSplats);
+  allSplats.add(indigoSplats);
+  allSplats.add(violetSplats);
+  allSplats.add(magentaSplats);
+  allSplats.add(whiteSplats);
 }
 
 
@@ -702,6 +702,7 @@ var purpleExplosions: Sprites = new Sprites("Explosion/Purple/Explosion", 179, 5
 
 loadDroneExplosions();
 
+globalBypassFrameSkip = true;
 var redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
 redFlowers.returnFrameIndex = 128;
 
@@ -720,6 +721,7 @@ blueFlowers.returnFrameIndex = 151;
 
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
+globalBypassFrameSkip = false;
 
 globalLoadSprites = true;
 

@@ -216,6 +216,38 @@ class Sprites {
     }
   }
 
+  cleanupFinishedAnimations(i: number, sprite: SpriteProxy): any {
+    if (this.animationStyle == AnimationStyle.Sequential && sprite.frameIndex == 0) {
+      this.sprites.splice(i, 1);
+    }
+  }
+
+  // Removes all sprites with center points falling inside the specified rectangle.
+  collect(left, top, width, height) {
+    const margin = 10;
+    left -= margin;
+    top -= margin;
+    var right = left + width + margin;
+    var bottom = top + height + margin;
+    var numCollected = 0;
+    for (var i = this.sprites.length - 1; i >= 0; i--) {
+      var sprite = this.sprites[i];
+      var centerX = sprite.x + this.spriteWidth / 2;
+      var centerY = sprite.y + this.spriteHeight / 2;
+      if (centerX > left && centerX < right && centerY > top && centerY < bottom) {
+        this.sprites.splice(i, 1);
+        numCollected++;
+      }
+    }
+    return numCollected;
+  }
+
+  changingDirection(now: number): void {
+    this.sprites.forEach(function (sprite: SpriteProxy) {
+      sprite.changingDirection(now);
+    });
+  }
+
   advanceFrames(now: number) {
     if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
       return;
@@ -244,46 +276,14 @@ class Sprites {
     }
   }
 
-  cleanupFinishedAnimations(i: number, sprite: SpriteProxy): any {
-    if (this.animationStyle == AnimationStyle.Sequential && sprite.frameIndex == 0) {
-      this.sprites.splice(i, 1);
-    }
-  }
-
-  collect(left, top, width, height) {
-    const margin = 10;
-    left -= margin;
-    top -= margin;
-    var right = left + width + margin;
-    var bottom = top + height + margin;
-    var numCollected = 0;
-    for (var i = this.sprites.length - 1; i >= 0; i--) {
-      var sprite = this.sprites[i];
-      var centerX = sprite.x + this.spriteWidth / 2;
-      var centerY = sprite.y + this.spriteHeight / 2;
-      if (centerX > left && centerX < right && centerY > top && centerY < bottom) {
-        this.sprites.splice(i, 1);
-        numCollected++;
-      }
-    }
-    return numCollected;
-  }
-
-  changingDirection(now: number): void {
-    this.sprites.forEach(function (sprite) {
-      sprite.changingDirection(now);
-    });
-  }
-
   draw(context: CanvasRenderingContext2D, now: number) {
     if (this.moves)
       this.updatePositions(now);
     this.advanceFrames(now);
-    var self = this;
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      self.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
+      this.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
       sprite.drawAdornments(context, now);
-    });
+    }, this);
   }
 
   updatePositions(now: number) {

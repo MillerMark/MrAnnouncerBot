@@ -1,4 +1,8 @@
-﻿class Part {
+﻿const globalFramesToLoad: number = 1;
+const globalFramesToCount: number = 2;
+var globalBypassFrameSkip: boolean = false;
+
+class Part {
   images: any[];
   frameIndex: number;
   reverse: boolean;
@@ -29,16 +33,40 @@
     else
       numDigits = 1;
 
+    let framesToLoad: number = 1;
+    let framesToCount: number = 1;
+
+    if (frameCount > 50 && !globalBypassFrameSkip) {
+      framesToLoad = globalFramesToLoad;
+      framesToCount = globalFramesToCount;
+      frameRate = framesToCount / framesToLoad;
+    }
+
     if (globalLoadSprites) {
-      for (var i = 0; i < frameCount; i++) {
+      let totalFramesToLoad = frameCount * framesToLoad / framesToCount;
+      let frameIncrementor = frameCount / totalFramesToLoad;
+      let absoluteIndex = 0;
+
+      for (var i = 0; i < totalFramesToLoad; i++) {
         var image = new Image();
-        var indexStr: string = i.toString();
+        var indexStr: string = Math.round(absoluteIndex).toString();
         while (padFileIndex && indexStr.length < numDigits)
           indexStr = '0' + indexStr;
         image.src = Folders.assets + fileName + indexStr + '.png';
         this.images.push(image);
+
         actualFrameCount++;
+        absoluteIndex += frameIncrementor;
       }
+      //for (var i = 0; i < frameCount; i++) {
+      //  var image = new Image();
+      //  var indexStr: string = i.toString();
+      //  while (padFileIndex && indexStr.length < numDigits)
+      //    indexStr = '0' + indexStr;
+      //  image.src = Folders.assets + fileName + indexStr + '.png';
+      //  this.images.push(image);
+      //  actualFrameCount++;
+      //}
     }
     else {
       var image = new Image();
