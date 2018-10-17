@@ -14,12 +14,15 @@
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\HueSatLight.ts" />
     <None Remove="TS\Main.ts" />
+    <None Remove="TS\Meteor.ts" />
     <None Remove="TS\Part.ts" />
     <None Remove="TS\Physics.ts" />
     <None Remove="TS\Planet.ts" />
     <None Remove="TS\Quiz.ts" />
     <None Remove="TS\Random.ts" />
     <None Remove="TS\Rocket.ts" />
+    <None Remove="TS\SplatSprites.ts" />
+    <None Remove="TS\SpriteCollection.ts" />
     <None Remove="TS\SpriteProxy.ts" />
     <None Remove="TS\Sprites.ts" />
     <None Remove="TS\Vote.ts" />
@@ -1016,7 +1019,10 @@
     <TypeScriptCompile Include="TS\Planet.ts" />
     <TypeScriptCompile Include="TS\Random.ts" />
     <TypeScriptCompile Include="TS\Rocket.ts" />
+    <TypeScriptCompile Include="TS\Meteor.ts" />
     <TypeScriptCompile Include="TS\SpriteProxy.ts" />
+    <TypeScriptCompile Include="TS\SpriteCollection.ts" />
+    <TypeScriptCompile Include="TS\SplatSprites.ts" />
     <TypeScriptCompile Include="TS\Sprites.ts" />
     <TypeScriptCompile Include="TS\BumbleBee.ts" />
     <TypeScriptCompile Include="TS\Vote.ts" />

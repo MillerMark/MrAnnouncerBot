@@ -92,7 +92,7 @@
     this.startX = this.x;
     this.startY = this.y;
   }
-
+  
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
     // Descendants can override if they want to draw...
   }
@@ -109,12 +109,5 @@
 
     var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust(now));
     this.y = this.startY + Physics.metersToPixels(yDisplacement);
-  }
-}
-
-class Meteor extends SpriteProxy {
-  owner: Drone;
-  constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
-    super(startingFrameNumber, x, y, lifeSpanMs);
   }
 }

@@ -89,6 +89,7 @@ function handleKeyDown(evt) {
     if (!started || myRocket.isDocked) {
       started = true;
       myRocket.launch(now);
+      gravityGames.newGame();
     }
     else if (myRocket.enginesRetracted)
       myRocket.extendEngines(now);

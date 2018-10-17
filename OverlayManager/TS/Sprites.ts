@@ -1,67 +1,4 @@
-﻿class SpriteCollection {
-  allSprites: Sprites[];
-  childCollections: SpriteCollection[];
-
-  constructor() {
-    this.allSprites = new Array<Sprites>();
-    this.childCollections = new Array<SpriteCollection>();
-  }
-
-  add(sprites: Sprites): void {
-    this.allSprites.push(sprites);
-  }
-
-  addCollection(spriteCollection: SpriteCollection): void {
-    this.childCollections.push(spriteCollection);
-  }
-
-  bounce(left: number, top: number, right: number, bottom: number, now: number): void {
-    this.allSprites.forEach(function (sprites: Sprites) { sprites.bounce(left, top, right, bottom, now) });
-    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.bounce(left, top, right, bottom, now) });
-  }
-
-  checkCollisionAgainst(compareCollection: SpriteCollection, collisionFoundFunction: (meteor: SpriteProxy, sprite: SpriteProxy) => void): void {
-    this.allSprites.forEach(function (theseSprites: Sprites) {
-      compareCollection.allSprites.forEach(function (compareSprites: Sprites) {
-        theseSprites.checkCollisionAgainst(compareSprites, collisionFoundFunction);
-      });
-    });
-  }
-
-  draw(context: CanvasRenderingContext2D, now: number): void {
-    this.allSprites.forEach(function (sprites: Sprites) { sprites.draw(context, now) });
-    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.draw(context, now); });
-  }
-
-  destroy(userId: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): any {
-    this.allSprites.forEach(function (sprites: Sprites) { sprites.destroy(userId, destroyFunc) });
-    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.destroy(userId, destroyFunc) });
-  }
-
-  changingDirection(now: number): any {
-    this.allSprites.forEach(function (sprites: Sprites) { sprites.changingDirection(now) });
-    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.changingDirection(now) });
-  }
-
-  find(matchData: string): SpriteProxy {
-    for (var i = 0; i < this.allSprites.length; i++) {
-      let sprites: Sprites = this.allSprites[i];
-      let foundSprite: SpriteProxy = sprites.find(matchData);
-      if (foundSprite)
-        return foundSprite;
-    }
-
-    for (var i = 0; i < this.childCollections.length; i++) {
-      let spriteCollection: SpriteCollection = this.childCollections[i];
-      let foundSprite: SpriteProxy = spriteCollection.find(matchData);
-      if (foundSprite)
-        return foundSprite;
-    }
-    return null;
-  }
-}
-
-class Sprites {
+﻿class Sprites {
   sprites: any[];
   baseAnimation: Part;
   spriteWidth: number;
@@ -348,27 +285,6 @@ class Sprites {
     }
   }
 }
-
-class SplatSprites extends Sprites {
-  longDrips: Sprites;
-  mediumDrips: Sprites;
-  shortDrips: Sprites;
-
-  constructor(color: string, expectedFrameCount: number, frameInterval: number, animationStyle: AnimationStyle, padFileIndex: boolean = false, hitFloorFunc?, onLoadedFunc?) {
-    super(`Paint/Splats/${color}/Splat`, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
-    this.longDrips = new Sprites(`Paint/Drips/Long/${color}/Drip`, 153, 15, AnimationStyle.SequentialStop, true);
-    this.mediumDrips = new Sprites(`Paint/Drips/Medium/${color}/Drip`, 138, 15, AnimationStyle.SequentialStop, true);
-    this.shortDrips = new Sprites(`Paint/Drips/Short/${color}/Drip`, 119, 15, AnimationStyle.SequentialStop, true);
-  }
-
-  draw(context: CanvasRenderingContext2D, now: number) {
-    super.draw(context, now);
-    this.longDrips.draw(context, now);
-    this.mediumDrips.draw(context, now);
-    this.shortDrips.draw(context, now);
-  }
-}
-
 
 
 // TODO: Convert to enum...
