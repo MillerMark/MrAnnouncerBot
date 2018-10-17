@@ -1,4 +1,5 @@
 ﻿class SpriteProxy {
+  owned: boolean;
   frameIndex: number;
   expirationDate: number;
   timeStart: number;
@@ -57,9 +58,13 @@
     return hitBottomWall;
   }
 
+  destroying(): void {
+    
+  }
+
   advanceFrame(frameCount: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
     this.frameIndex++;
-    if (startIndex != 0 && endBounds != 0) {
+    if (endBounds != 0) {
       if (this.frameIndex >= endBounds)
         this.frameIndex = startIndex;
     }
@@ -68,11 +73,12 @@
   }
 
   isHitBy(thisSprite: SpriteProxy): boolean {
-    const minDistanceForHit: number = 80;
+    const minDistanceForHit: number = 70;
     return this.getDistanceTo(thisSprite) < minDistanceForHit;
   }
 
   getDistanceTo(otherSprite: SpriteProxy): number {
+    // TODO: Consider measuring from the middle of the sprites.
     let deltaX: number = this.x - otherSprite.x;
     let deltaY: number = this.y - otherSprite.y;
     return Math.sqrt(deltaX * deltaX + deltaY * deltaY);

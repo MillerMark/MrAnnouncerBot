@@ -44,6 +44,7 @@
   checkCollisionAgainst(compareSprites: Sprites, collisionFoundFunction: (thisSprite: SpriteProxy, testSprite: SpriteProxy) => void): any {
     this.sprites.forEach(function (thisSprite: SpriteProxy) {
       compareSprites.sprites.forEach(function (testSprite: SpriteProxy) {
+        // testSprite is the drone.
         if (testSprite.isHitBy(thisSprite))
           collisionFoundFunction(thisSprite, testSprite);
       });
@@ -53,8 +54,10 @@
   destroy(matchData: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): void {
     let index: number = this.indexOf(matchData);
     if (index >= 0) {
+      var thisSprite: SpriteProxy = this.sprites[index];
+      thisSprite.destroying();
       if (destroyFunc)
-        destroyFunc(this.sprites[index], this.spriteWidth, this.spriteHeight);
+        destroyFunc(thisSprite, this.spriteWidth, this.spriteHeight);
       this.sprites.splice(index, 1);
     }
   }
@@ -198,7 +201,8 @@
 
   changingDirection(now: number): void {
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      sprite.changingDirection(now);
+      if (!sprite.owned)
+        sprite.changingDirection(now);
     });
   }
 
@@ -269,13 +273,16 @@
 
   updatePositions(now: number) {
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      sprite.updatePosition(now);
+      if (!sprite.owned)
+        sprite.updatePosition(now);
     }, this);
   }
 
   bounce(left: number, top: number, right: number, bottom: number, now: number) {
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite: SpriteProxy = this.sprites[i];
+      if (sprite.owned)
+        continue;
       var hitFloor = sprite.bounce(left, top, right, bottom, this.spriteWidth, this.spriteHeight, now);
       if (hitFloor && this.removeOnHitFloor) {
         this.sprites.splice(i, 1);

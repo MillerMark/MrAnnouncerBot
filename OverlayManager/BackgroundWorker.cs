@@ -131,6 +131,10 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("MoveRelative", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
+		void Toss(string args, ChatMessage chatMessage)
+		{
+			hub.Clients.All.ExecuteCommand("Toss", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+		}
 		void Left(string args, ChatMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("Left", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
@@ -243,6 +247,8 @@ namespace OverlayManager
 				case "moverel":
 				case "mr":
 					MoveRelative(args, chatMessage); break;
+				case "toss":
+					Toss(args, chatMessage); break;
 				case "changevel":
 				case "cv":
 					ChangeDroneVelocity(args, chatMessage); break;

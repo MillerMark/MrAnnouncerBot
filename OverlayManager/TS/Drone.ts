@@ -2,6 +2,11 @@
 
 var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
 
+const meteorWidth: number = 80;
+const meteorHeight: number = 80;
+const droneWidth: number = 128;
+const droneHeight: number = 60;
+
 class Drone extends SpriteProxy {
   meteor: Meteor;
   displayName: string;
@@ -28,7 +33,8 @@ class Drone extends SpriteProxy {
   private lastVelocityY: number;
   private lastVelocityX: number;
   private lastNow: number;
-
+  meteorJustThrown: Meteor;
+  meteorThrowTime: number;
 
   constructor(startingFrameNumber: number, public x: number, public y: number) {
     super(startingFrameNumber, x, y);
@@ -76,8 +82,26 @@ class Drone extends SpriteProxy {
     this._color = textHsl.toHex();
   }
 
+  tossMeteor(velocityX: string, velocityY: string): any {
+    if (!this.meteor)
+      return;
+    let now: number = performance.now();
+    this.changingDirection(now);
+    this.meteor.changeVelocity(+velocityX + this.velocityX, +velocityY + this.velocityY, now);
+    this.meteor.owned = false;
+    this.meteor.owner = null;
+    this.meteorJustThrown = this.meteor;
+    this.meteorThrowTime = now;
+    this.meteor = null;
+  }
+
   addMeteor(meteor: Meteor): void {
-    //this.meteor = meteor;
+    this.meteor = meteor;
+    this.meteor.owner = this;
+    this.meteor.owned = true;
+  }
+
+  selfDestruct() {
     allDrones.destroy(this.userId, addDroneExplosion);
   }
 
@@ -132,6 +156,11 @@ class Drone extends SpriteProxy {
     this.lastVelocityX = finalVelocityX;
     this.lastVelocityY = finalVelocityY;
     this.lastNow = now;
+    if (this.meteor) {
+      // TODO: Adjust height based on pitch.
+      this.meteor.x = this.x + droneWidth / 2 - meteorWidth / 2;
+      this.meteor.y = this.y + droneHeight / 2 - meteorHeight;
+    }
   }
 
   updateFrameIndex(now: number, hAccel: number, vAccel: number): any {
@@ -184,17 +213,19 @@ class Drone extends SpriteProxy {
 
     let centerX: number = this.x + this.width / 2;
     let yTop: number = this.y + this.height;
+    const horizontalTextPadding: number = 4;
     let size = context.measureText(this.displayName);
-    let halfWidth: number = size.width / 2;
+    let textWidth: number = size.width + horizontalTextPadding;
+    let halfWidth: number = textWidth / 2;
     context.fillStyle = this.backgroundColor;
     const outlineSize: number = 3;
     context.globalAlpha = 0.7;
-    context.fillRect(centerX - halfWidth - outlineSize, yTop - outlineSize, size.width + outlineSize * 2, fontSize + outlineSize * 2);
+    context.fillRect(centerX - halfWidth - outlineSize, yTop - outlineSize, textWidth + outlineSize * 2, fontSize + outlineSize * 2);
     context.globalAlpha = 1;
 
     context.strokeStyle = this.outlineColor;
     context.lineWidth = 2;
-    context.strokeRect(centerX - halfWidth - outlineSize, yTop - outlineSize, size.width + outlineSize * 2, fontSize + outlineSize * 2);
+    context.strokeRect(centerX - halfWidth - outlineSize, yTop - outlineSize, textWidth + outlineSize * 2, fontSize + outlineSize * 2);
 
 
     context.fillStyle = this.color;
@@ -364,4 +395,45 @@ class Drone extends SpriteProxy {
     this.wasThrustingRight = true;
     this.checkFrameIndexAfterThrust(durationMs);
   }
+
+  isHitBy(thisSprite: SpriteProxy): boolean {
+    //! this code fails: "thisSprite instanceof Meteor"
+    // Why aren't we seeing meteors???
+    if (this.meteor || thisSprite.owned)
+      return false;
+    if (thisSprite == this.meteorJustThrown) {
+      const minAirTimeForCatch: number = 500;
+      if (performance.now() - this.meteorThrowTime < minAirTimeForCatch)
+        return false;
+      else
+        this.meteorJustThrown = null;
+    }
+    // TODO: Only catch when meteor is falling.
+    return super.isHitBy(thisSprite);
+  }
+
+  getDistanceTo(otherSprite: SpriteProxy): number {
+    let centerDroneX: number = this.x + droneWidth / 2;
+    let centerDroneY: number = this.y + droneHeight / 2;
+
+    let centerMeteorX: number = otherSprite.x + meteorWidth / 2;
+    let centerMeteorY: number = otherSprite.y + meteorHeight / 2;
+
+    let deltaX: number = centerDroneX - centerMeteorX;
+    let deltaY: number = centerDroneY - centerMeteorY;
+
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  }
+
+  destroying(): void {
+    if (this.meteor) {
+      let now: number = performance.now();
+      this.changingDirection(now);
+      this.meteor.changeVelocity(this.velocityX, this.velocityY, now);
+      this.meteor.owned = false;
+      this.meteor.owner = null;
+    }
+  }
+
+
 }

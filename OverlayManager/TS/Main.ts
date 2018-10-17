@@ -438,8 +438,21 @@ function executeCommand(command: string, params: string, userId: string, userNam
   else if (command === "DroneRight") {
     droneRight(userId, params);
   }
-  
+  else if (command === "Toss") {
+    tossMeteor(userId, params);
+  }
   // TODO: Support !vote x
+}
+
+function tossMeteor(userId: string, params: string) {
+  let numbers: string[] = params.split(',');
+  if (!numbers || numbers.length < 2) {
+    numbers = ['0', '0'];
+  }
+  let userDrone: Drone = <Drone>allDrones.find(userId);
+  if (!userDrone)
+    return;
+  userDrone.tossMeteor(numbers[0], numbers[1]);
 }
 
 function droneRight(userId: string, params: string) {
