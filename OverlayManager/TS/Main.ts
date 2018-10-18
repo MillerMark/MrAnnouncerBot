@@ -449,6 +449,7 @@ function tossMeteor(userId: string, params: string) {
   if (!numbers || numbers.length < 2) {
     numbers = ['0', '0'];
   }
+  // TODO: If third parameter is "x", kill all thrusters as we toss the meteor.
   let userDrone: Drone = <Drone>allDrones.find(userId);
   if (!userDrone)
     return;
