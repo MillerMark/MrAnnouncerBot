@@ -61,10 +61,15 @@ function updateScreen() {
   //yellowFlowers2.draw(myContext, now);
   yellowFlowers3.draw(myContext, now);
 
+  allWalls.draw(myContext, now);
+  endCaps.draw(myContext, now);
+
   droneExplosions.draw(myContext, now);
   if (quiz)
     quiz.draw(myContext);
   //explosion.draw(myContext, 0, 0);
+
+  drawCrossHairs(myContext, crossX, crossY);
 }
 
 var allSplats = new SpriteCollection();
@@ -661,24 +666,34 @@ var magentaSplats: SplatSprites;
 
 //` ![](2B073D0DC3C289F9E5723CAB5FD45014.png;;;0.02717,0.02717)
 
+var endCaps: Sprites;
+
 function loadWall(orientation: string, style: string, expectedFrameCount: number): Sprites {
-  let wall = new Sprites(`FireWall/${orientation}/${style}/Wall`, expectedFrameCount, 15, AnimationStyle.Loop, true);
+  let wall = new Sprites(`FireWall/${orientation}/${style}/Wall`, expectedFrameCount, 45, AnimationStyle.Loop, true);
   return wall;
 }
 
 function loadWalls() {
+  endCaps = new Sprites(`FireWall/EndCaps/Cap`, 4, 0, AnimationStyle.Static);
+  endCaps.baseAnimation.jiggleX = 1;
+  endCaps.baseAnimation.jiggleY = 1;
+
   allWalls = new SpriteCollection();
 
   horizontalDashedWall = loadWall('Horizontal', 'Dashed/Right', 100);
+  horizontalDashedWall.moves = true;
   allWalls.add(horizontalDashedWall);
 
   verticalDashedWall = loadWall('Vertical', 'Dashed/Up', 100);
+  verticalDashedWall.moves = true;
   allWalls.add(verticalDashedWall);
 
   horizontalSolidWall = loadWall('Horizontal', 'Solid', 94);
+  horizontalSolidWall.moves = true;
   allWalls.add(horizontalSolidWall);
 
   verticalSolidWall = loadWall('Vertical', 'Solid', 90);
+  verticalSolidWall.moves = true;
   allWalls.add(verticalSolidWall);
 }
 
@@ -777,12 +792,22 @@ function loadDroneExplosions() {
   }
 }
 
+function drawCrossHairs(context: CanvasRenderingContext2D, x: number, y: number) {
+  const crossHalfSize: number = 8;
+  context.strokeStyle = '#f00';
+  context.moveTo(x - crossHalfSize, y);
+  context.lineTo(x + crossHalfSize, y);
+  context.moveTo(x, y - crossHalfSize);
+  context.lineTo(x, y + crossHalfSize);
+  context.stroke();
+}
+
 var allMeteors: SpriteCollection;
 var redMeteors: Sprites;
 var blueMeteors: Sprites;
 var purpleMeteors: Sprites;
 
-// ![](5F8B49E97A5F459E6434A11E7FD272BE.png)
+//`![](5F8B49E97A5F459E6434A11E7FD272BE.png)
 function addMeteors() {
   allMeteors = new SpriteCollection();
 
@@ -836,6 +861,7 @@ var redExplosions: Sprites = new Sprites("Explosion/Red/Explosion", 179, 5, Anim
 var blueExplosions: Sprites = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
 var purpleExplosions: Sprites = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
 
+loadWalls();
 loadDroneExplosions();
 globalBypassFrameSkip = true;
 var redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
@@ -865,8 +891,14 @@ var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 setInterval(updateScreen, 10);
 gravityGames.selectPlanet('Earth');
 
+var crossX: number = 1920 / 2 - 80;
+var crossY: number = 1080 / 2 + 190;
 
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
-
+  horizontalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Solid, 500));
+  //verticalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Solid, 400));
+  verticalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Dashed, 400));
+  //horizontalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Dashed, 600));
 }
+
 

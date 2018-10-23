@@ -1,11 +1,17 @@
 ﻿class SpriteProxy {
   owned: boolean;
+  cropped: boolean;
   fadeOnDestroy: boolean = true;
   frameIndex: number;
   expirationDate: number;
   timeStart: number;
   velocityX: number;
   velocityY: number;
+  cropTop: number;
+  cropLeft: number;
+  cropRight: number;
+  cropBottom: number;
+
   startX: any;
   startY: any;
 
@@ -92,6 +98,7 @@
 
   }
 
+
   advanceFrame(frameCount: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
     this.frameIndex++;
     if (endBounds != 0) {
@@ -129,6 +136,11 @@
     this.startY = this.y;
   }
 
+  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {
+    baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex);
+  }
+
+  
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
     // Descendants can override if they want to draw...
   }
@@ -137,7 +149,7 @@
     return false; // Descendants can override if they want to implement a custom search/find functionality...
   }
 
-  updatePosition(now) {
+  updatePosition(now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
 
     var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, this.getHorizontalThrust(now));

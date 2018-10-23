@@ -20,8 +20,8 @@
     this.moves = false;
     var self = this;
     this.baseAnimation.images[0].onload = function () {
-      self.spriteWidth = this.width;
-      self.spriteHeight = this.height;
+      self.spriteWidth = (<HTMLImageElement>this).width;
+      self.spriteHeight = (<HTMLImageElement>this).height;
       self.loaded = true;
       if (onLoadedFunc != null)
         onLoadedFunc(self);
@@ -234,15 +234,16 @@
     }
   }
 
-  draw(context: CanvasRenderingContext2D, now: number) {
+  draw(context: CanvasRenderingContext2D, now: number): void {
     if (this.moves)
       this.updatePositions(now);
     this.advanceFrames(now);
+    let self: Sprites = this;
     this.sprites.forEach(function (sprite: SpriteProxy) {
       context.globalAlpha = sprite.getAlpha(now);
 
       if (sprite.stillAlive(now)) {
-        this.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
+        sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
         sprite.drawAdornments(context, now);
       }
       

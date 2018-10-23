@@ -3,7 +3,7 @@ const globalFramesToCount: number = 2;
 var globalBypassFrameSkip: boolean = false;
 
 class Part {
-  images: any[];
+  images: HTMLImageElement[];
   frameIndex: number;
   reverse: boolean;
   lastUpdateTime: any;
@@ -14,8 +14,8 @@ class Part {
     private offsetX: number,
     private offsetY: number,
     private frameRate = 100,
-    private jiggleX: number = 0,
-    private jiggleY: number = 0,
+    public jiggleX: number = 0,
+    public jiggleY: number = 0,
     padFileIndex: boolean = false) {
 
     this.images = [];
@@ -138,10 +138,18 @@ class Part {
     this.drawByIndex(context, x, y, this.frameIndex);
   }
 
-  drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number) {
+  drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number): void {
     context.drawImage(this.images[frameIndex],
       x + this.offsetX + this.getJiggle(this.jiggleX),
       y + this.offsetY + this.getJiggle(this.jiggleY));
 
+  }
+
+  // ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+  drawCroppedByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number,
+    sx: number, sy: number, sw: number, sh: number, dw: number, dh: number): void {
+    let dx: number = x + this.offsetX + this.getJiggle(this.jiggleX);
+    let dy: number = y + this.offsetY + this.getJiggle(this.jiggleY);
+    context.drawImage(this.images[frameIndex], sx, sy, sw, sh, dx, dy, dw, dh);
   }
 }
