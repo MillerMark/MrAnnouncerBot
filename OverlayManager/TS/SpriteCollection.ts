@@ -20,12 +20,24 @@
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.bounce(left, top, right, bottom, now) });
   }
 
-  checkCollisionAgainst(compareCollection: SpriteCollection, collisionFoundFunction: (meteor: SpriteProxy, sprite: SpriteProxy) => void): void {
+  checkCollisionAgainst(compareCollection: SpriteCollection, collisionFoundFunction: (meteor: SpriteProxy, sprite: SpriteProxy, now: number) => void, now: number): void {
     this.allSprites.forEach(function (theseSprites: Sprites) {
       compareCollection.allSprites.forEach(function (compareSprites: Sprites) {
-        theseSprites.checkCollisionAgainst(compareSprites, collisionFoundFunction);
+        theseSprites.checkCollisionAgainst(compareSprites, collisionFoundFunction, now);
       });
     });
+  }
+
+  destroyAllBy(lifeTimeMs: number): any {
+    this.allSprites.forEach(function (theseSprites: Sprites) {
+      theseSprites.sprites.forEach(function (sprite: SpriteProxy) {
+        sprite.destroyBy(lifeTimeMs);
+      });
+    });
+
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) {
+        spriteCollection.destroyAllBy(lifeTimeMs);
+      });
   }
 
   draw(context: CanvasRenderingContext2D, now: number): void {

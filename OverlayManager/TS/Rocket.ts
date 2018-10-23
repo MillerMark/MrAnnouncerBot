@@ -813,7 +813,7 @@
     if (args && args.toLowerCase() === 'pink')
       this.createSprite(pinkSeeds, now);
     else if (args && args.toLowerCase() === 'blue')
-      this.createSprite(blueSeeds, now);
+      this.createSprite(purpleSeeds, now); //this.createSprite(blueSeeds, now);
     else if (args && args.toLowerCase() === 'yellow')
       this.createSprite(yellowSeeds, now);
     else if (args && args.toLowerCase() === 'purple')
@@ -821,7 +821,7 @@
     //else if (args && args.toLowerCase() === 'grass')
     //  this.createSprite(greenSeeds, now);
     else 
-      this.dropFromOne(now, pinkSeeds, blueSeeds, purpleSeeds, yellowSeeds);
+      this.dropFromOne(now, pinkSeeds, /* blueSeeds, */ purpleSeeds, yellowSeeds);
   }
 }
 

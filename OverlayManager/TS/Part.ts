@@ -36,7 +36,7 @@ class Part {
     let framesToLoad: number = 1;
     let framesToCount: number = 1;
 
-    if (frameCount > 50 && !globalBypassFrameSkip) {
+    if (frameCount > 60 && !globalBypassFrameSkip) {
       framesToLoad = globalFramesToLoad;
       framesToCount = globalFramesToCount;
       frameRate = framesToCount / framesToLoad;

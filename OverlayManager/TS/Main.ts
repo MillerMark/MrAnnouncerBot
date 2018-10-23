@@ -1,10 +1,10 @@
 ﻿let loadCopyrightedContent: boolean = true;
 
-function putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy) {
+function putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy, now: number): void {
   let drone: Drone = <Drone>droneProxy;
   let meteor: Meteor = <Meteor>meteorProxy;
   if (drone && meteor) {
-    drone.addMeteor(meteor);
+    drone.addMeteor(meteor, now);
   }
 }
 
@@ -30,7 +30,7 @@ function updateScreen() {
   //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
   allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
-  allMeteors.checkCollisionAgainst(allDrones, putMeteorOnDrone);
+  allMeteors.checkCollisionAgainst(allDrones, putMeteorOnDrone, now);
 
   //backgroundBanner.draw(myContext, 0, 0);
 
@@ -55,10 +55,10 @@ function updateScreen() {
   blueExplosions.draw(myContext, now);
   purpleExplosions.draw(myContext, now);
   purpleFlowers.draw(myContext, now);
-  blueFlowers.draw(myContext, now);
+  //blueFlowers.draw(myContext, now);
   redFlowers.draw(myContext, now);
   yellowFlowers1.draw(myContext, now);
-  yellowFlowers2.draw(myContext, now);
+  //yellowFlowers2.draw(myContext, now);
   yellowFlowers3.draw(myContext, now);
 
   droneExplosions.draw(myContext, now);
@@ -116,9 +116,9 @@ function handleKeyDown(evt) {
   else if (evt.keyCode == Key_D) {
     myRocket.dock(now);
   }
-  else if (evt.keyCode == Key_G) {
-    myRocket.dropSeed(now, 'grass');
-  }
+  //else if (evt.keyCode == Key_G) {
+  //  myRocket.dropSeed(now, 'grass');
+  //}
   else if (evt.keyCode == Key_M) {
     myRocket.dropMeteor(now);
   }
@@ -171,92 +171,142 @@ function outlineMargin(sprites, margin) {
 const coinMargin = 12;
 function outlineGameSurface(sprites: Sprites) {
   sprites.layout(
-    '*************************' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' + // 10
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*                       *' + '\n' +
-    '*************************', coinMargin);
+    '*******************************************' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' + // 10
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' + // 20
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*******************************************', coinMargin);
 }
 
 function fillChatRoom(sprites: Sprites) {
   sprites.layout(
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                  *******' + '\n' +
-    '                  *******' + '\n' +
-    '                  *******' + '\n' + // 10
-    '                  *******' + '\n' +
-    '                  *******' + '\n' +
-    '                  *******' + '\n' +
-    '                  *******', coinMargin);
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' + // 10
+    '                                           ' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' + // 20
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************' + '\n' +
+    '                               ************', coinMargin);
 }
 
 function outlineChatRoom(sprites: Sprites) {
   sprites.layout(
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                         ' + '\n' +
-    '                  *******' + '\n' +
-    '                  *     *' + '\n' +
-    '                  *     *' + '\n' + // 10
-    '                  *     *' + '\n' +
-    '                  *     *' + '\n' +
-    '                  *     *' + '\n' +
-    '                  *******', coinMargin);
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' +
+    '                                           ' + '\n' + // 10
+    '                                           ' + '\n' +
+    '                               ************' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' + // 20
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               *          *' + '\n' +
+    '                               ************', coinMargin);
 }
 
 function outlineCodeEditor(sprites: Sprites) {
   sprites.layout(
-    '                         ' + '\n' +
-    '******************       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' + // 10
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '*                *       ' + '\n' +
-    '***********     **       ', coinMargin);
+    '********************************           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' + // 10
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' + // 20
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '*                              *           ' + '\n' +
+    '********************************           ', coinMargin);
 }
 
 function allButMark(sprites: Sprites) {
   sprites.layout(
-    '                         ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '******************       ' + '\n' +
-    '************* ****       ' + '\n' + // 10
-    '************   ***       ' + '\n' +
-    '************   ***       ' + '\n' +
-    '************   ***       ' + '\n' +
-    '***********     **       ', coinMargin);
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' + // 10
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '********************************           ' + '\n' +
+    '*********************** ********           ' + '\n' +
+    '**********************   *******           ' + '\n' +
+    '*********************     ******           ' + '\n' +
+    '********************       *****           ' + '\n' +
+    '********************       *****           ' + '\n' +
+    '********************       *****           ' + '\n' + // 20
+    '********************       *****           ' + '\n' +
+    '*******************         ****           ' + '\n' +
+    '******************           ***           ' + '\n' +
+    '******************           ***           ', coinMargin);
 }
 
 
@@ -280,8 +330,8 @@ function plantSeed(spriteArray, x, y) {
 function plantSeeds(seeds, x) {
   if (seeds === pinkSeeds)
     plantSeed(redFlowers, x + 50, 0);
-  else if (seeds === blueSeeds)
-    plantSeed(blueFlowers, x + 50, 5);
+  //else if (seeds === blueSeeds)
+  //  plantSeed(blueFlowers, x + 50, 5);
   else if (seeds === purpleSeeds)
     plantSeed(purpleFlowers, x + 50, 5);
   //else if (seeds === greenSeeds) {
@@ -296,11 +346,11 @@ function plantSeeds(seeds, x) {
   //    plantSeed(grass4, x + 50, 0);
   //}
   else if (seeds === yellowSeeds) {
-    let randomYellow: number = Math.random() * 3;
-    if (randomYellow < 1)
+    let randomYellow: number = Math.random() * 4;
+    if (randomYellow < 2)
       plantSeed(yellowFlowers1, x + 50, 5);
-    else if (randomYellow < 2)
-      plantSeed(yellowFlowers2, x + 50, 0);
+    //else if (randomYellow < 2)
+    //  plantSeed(yellowFlowers2, x + 50, 0);
     else
       plantSeed(yellowFlowers3, x + 50, 0);
   }
@@ -354,6 +404,8 @@ function executeCommand(command: string, params: string, userId: string, userNam
     }
   }
   else if (command === "Dock") {
+    if (isSuperUser(userName))
+      selfDestructAllDrones();
     if (started && !myRocket.isDocked)
       chat('docking...');
     myRocket.dock(now);
@@ -441,6 +493,9 @@ function executeCommand(command: string, params: string, userId: string, userNam
   else if (command === "Toss") {
     tossMeteor(userId, params);
   }
+  else if (command === "TestCommand") {
+    test(params, userId, userName, displayName, color);
+  }
   // TODO: Support !vote x
 }
 
@@ -454,6 +509,10 @@ function tossMeteor(userId: string, params: string) {
   if (!userDrone)
     return;
   userDrone.tossMeteor(numbers[0], numbers[1]);
+}
+
+function selfDestructAllDrones() {
+  allDrones.destroyAllBy(3000);
 }
 
 function droneRight(userId: string, params: string) {
@@ -508,8 +567,12 @@ function paint(userId: string, command: string, params: string) {
   userDrone.dropPaint(command, params);
 }
 
+function isSuperUser(userName: string) {
+  return userName === "coderushed" || userName === "rorybeckercoderush";
+}
+
 function clearQuiz(userName: string) {
-  if (userName != "coderushed" && userName != "rorybeckercoderush") {
+  if (!isSuperUser(userName)) {
     chat('Only Rory and Mark can clear a quiz.');
     return;
   }
@@ -568,9 +631,15 @@ function moveRelative(now: number, params: string, userId: string) {
 }
 
 var pinkSeeds: Sprites;
-var blueSeeds: Sprites;
+//var blueSeeds: Sprites;
 var yellowSeeds: Sprites;
 var purpleSeeds: Sprites;
+
+var allWalls: SpriteCollection;
+var horizontalSolidWall: Sprites;
+var verticalSolidWall: Sprites;
+var horizontalDashedWall: Sprites;
+var verticalDashedWall: Sprites;
 
 var dronesRed: Sprites;
 var dronesBlue: Sprites;
@@ -590,6 +659,30 @@ var indigoSplats: SplatSprites;
 var violetSplats: SplatSprites;
 var magentaSplats: SplatSprites;
 
+//` ![](2B073D0DC3C289F9E5723CAB5FD45014.png;;;0.02717,0.02717)
+
+function loadWall(orientation: string, style: string, expectedFrameCount: number): Sprites {
+  let wall = new Sprites(`FireWall/${orientation}/${style}/Wall`, expectedFrameCount, 15, AnimationStyle.Loop, true);
+  return wall;
+}
+
+function loadWalls() {
+  allWalls = new SpriteCollection();
+
+  horizontalDashedWall = loadWall('Horizontal', 'Dashed/Right', 100);
+  allWalls.add(horizontalDashedWall);
+
+  verticalDashedWall = loadWall('Vertical', 'Dashed/Up', 100);
+  allWalls.add(verticalDashedWall);
+
+  horizontalSolidWall = loadWall('Horizontal', 'Solid', 94);
+  allWalls.add(horizontalSolidWall);
+
+  verticalSolidWall = loadWall('Vertical', 'Solid', 90);
+  allWalls.add(verticalSolidWall);
+}
+
+//` ![](F8F205C07F3FCE8EEA5341ED98A92B36.png)  ![](77833405FDDE3ACB175756288F7BE0F8.png)
 function loadDrones(color: string): Sprites {
   let drones = new Sprites(`Drones/${color}/Drone`, 30, 15, AnimationStyle.Loop);
   drones.segmentSize = 2;
@@ -599,17 +692,27 @@ function loadDrones(color: string): Sprites {
   return drones;
 }
 
-function loadWatercolors(color: string): SpriteCollection {
-  const numFolders: number = 9;
-  var spriteCollection: SpriteCollection = new SpriteCollection();
-  for (var folderIndex = 1; folderIndex <= numFolders; folderIndex++) {
-    let watercolors = new Sprites(`Paint/Watercolors/${color}/${folderIndex}/WaterColor`, 142, 15, AnimationStyle.SequentialStop, true);
-    spriteCollection.add(watercolors);
-  }
 
-  return spriteCollection;
+function addDrones() {
+  allDrones = new SpriteCollection();
+
+  dronesRed = loadDrones('Red');
+  dronesBlue = loadDrones('Blue');
 }
 
+//function loadWatercolors(color: string): SpriteCollection {
+//  const numFolders: number = 9;
+//  var spriteCollection: SpriteCollection = new SpriteCollection();
+//  for (var folderIndex = 1; folderIndex <= numFolders; folderIndex++) {
+//    let watercolors = new Sprites(`Paint/Watercolors/${color}/${folderIndex}/WaterColor`, 142, 15, AnimationStyle.SequentialStop, true);
+//    spriteCollection.add(watercolors);
+//  }
+
+//  return spriteCollection;
+//}
+
+
+//` ![](147F1DE74025D1BED9947B18C213853F.png)
 function loadSplat(color: string): SplatSprites {
   return new SplatSprites(color, 39, 15, AnimationStyle.SequentialStop, true);
 }
@@ -643,13 +746,7 @@ function addSplats() {
 }
 
 
-function addDrones() {
-  allDrones = new SpriteCollection();
-
-  dronesRed = loadDrones('Red');
-  dronesBlue = loadDrones('Blue');
-}
-
+//` ![](7582E2608FC840A8A6D3CC61B5A58CB6.png)
 function addSeeds() {
   allSeeds = new SpriteCollection();
 
@@ -657,9 +754,9 @@ function addSeeds() {
   pinkSeeds.moves = true;
   allSeeds.add(pinkSeeds);
 
-  blueSeeds = new Sprites("Seeds/Blue/BlueSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-  blueSeeds.moves = true;
-  allSeeds.add(blueSeeds);
+  //blueSeeds = new Sprites("Seeds/Blue/BlueSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+  //blueSeeds.moves = true;
+  //allSeeds.add(blueSeeds);
 
   yellowSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
   yellowSeeds.moves = true;
@@ -685,16 +782,18 @@ var redMeteors: Sprites;
 var blueMeteors: Sprites;
 var purpleMeteors: Sprites;
 
+// ![](5F8B49E97A5F459E6434A11E7FD272BE.png)
 function addMeteors() {
   allMeteors = new SpriteCollection();
 
-  redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
+  const meteorFrameInterval: number = 38;
+  redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
   redMeteors.moves = true;
 
-  blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
+  blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
   blueMeteors.moves = true;
 
-  purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, 50, AnimationStyle.Loop, false, addMeteorExplosion);
+  purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
   purpleMeteors.moves = true;
 
   allMeteors.add(redMeteors);
@@ -715,7 +814,7 @@ var started = false;
 myRocket.x = 0;
 myRocket.y = 0;
 
-var coins = new Sprites("Spinning Coin/SpinningCoin", 165, 5, AnimationStyle.Loop, false, null, outlineChatRoom /* allButMark */ /* outlineCodeEditor  */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, outlineChatRoom /* allButMark outlineCodeEditor */ /* fillChatRoom */);
 
 addSeeds();
 
@@ -747,13 +846,13 @@ const grassFrameRate: number = 25;
 
 var yellowFlowers1 = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
 yellowFlowers1.returnFrameIndex = 64;
-var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
-yellowFlowers2.returnFrameIndex = 64;
+//var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+//yellowFlowers2.returnFrameIndex = 64;
 var yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
 yellowFlowers3.returnFrameIndex = 45;
 
-var blueFlowers = new Sprites("Flowers/Blue/BlueFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
-blueFlowers.returnFrameIndex = 151;
+//var blueFlowers = new Sprites("Flowers/Blue/BlueFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
+//blueFlowers.returnFrameIndex = 151;
 
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
@@ -761,23 +860,13 @@ globalBypassFrameSkip = false;
 
 globalLoadSprites = true;
 
-//var grass1 = new Sprites("Grass/1/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
-//var grass2 = new Sprites("Grass/2/Grass", 513, grassFrameRate, AnimationStyle.SequentialStop, true);
-//var grass3 = new Sprites("Grass/3/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
-//var grass4 = new Sprites("Grass/4/Grass", 589, grassFrameRate, AnimationStyle.SequentialStop, true);
-
 var backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 setInterval(updateScreen, 10);
 gravityGames.selectPlanet('Earth');
-var red: HueSatLight = HueSatLight.fromHex('#ff3329');
-var orange: HueSatLight = HueSatLight.fromHex('#ff9229');
-var yellow: HueSatLight = HueSatLight.fromHex('#ffd929');
-var limeGreen: HueSatLight = HueSatLight.fromHex('#76ff29');
-var teal: HueSatLight = HueSatLight.fromHex('#29ffc3');
-var blue: HueSatLight = HueSatLight.fromHex('#296dff');
-var violet: HueSatLight = HueSatLight.fromHex('#9e29ff');
-var pink: HueSatLight = HueSatLight.fromHex('#ff2965');
-var redRight: HueSatLight = HueSatLight.fromHex('#ff2933');
 
-var toHex: string = redRight.toHex();
+
+function test(params: string, userId: string, userName: string, displayName: string, color: string) {
+
+}
+

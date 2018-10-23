@@ -1,5 +1,6 @@
 ﻿class SpriteProxy {
   owned: boolean;
+  fadeOnDestroy: boolean = true;
   frameIndex: number;
   expirationDate: number;
   timeStart: number;
@@ -21,6 +22,14 @@
       this.expirationDate = null;
   }
 
+  destroyBy(lifeTimeMs: number): any {
+    this.expirationDate = performance.now() + Math.round(Math.random() * lifeTimeMs);
+  }
+
+  removing(): void {
+  	
+  }
+
   getHorizontalThrust(now: number): number {
     return 0;
   }
@@ -28,6 +37,27 @@
   getVerticalThrust(now: number): number {
     return gravityGames.activePlanet.gravity;
   }
+
+  stillAlive(now: number): boolean {
+    let lifeRemaining: number = 0;
+    if (this.expirationDate) {
+      lifeRemaining = this.expirationDate - now;
+    }
+    return lifeRemaining >= 0;
+  }
+
+  getAlpha(now: number): number {
+    if (!this.expirationDate)
+      return 1;
+
+    let lifeRemaining: number = this.expirationDate - now;
+    const fadeOutTime: number = 4000;
+    if (lifeRemaining < fadeOutTime && this.fadeOnDestroy) {
+      return lifeRemaining / fadeOutTime;
+    }
+    return 1;
+  }
+
 
   bounce(left: number, top: number, right: number, bottom: number, width: number, height: number, now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
@@ -59,7 +89,7 @@
   }
 
   destroying(): void {
-    
+
   }
 
   advanceFrame(frameCount: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
@@ -98,7 +128,7 @@
     this.startX = this.x;
     this.startY = this.y;
   }
-  
+
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
     // Descendants can override if they want to draw...
   }

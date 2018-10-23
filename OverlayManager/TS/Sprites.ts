@@ -1,5 +1,5 @@
 ﻿class Sprites {
-  sprites: any[];
+  sprites: SpriteProxy[];
   baseAnimation: Part;
   spriteWidth: number;
   spriteHeight: number;
@@ -41,12 +41,12 @@
     return null;
   }
 
-  checkCollisionAgainst(compareSprites: Sprites, collisionFoundFunction: (thisSprite: SpriteProxy, testSprite: SpriteProxy) => void): any {
+  checkCollisionAgainst(compareSprites: Sprites, collisionFoundFunction: (thisSprite: SpriteProxy, testSprite: SpriteProxy, now: number) => void, now: number): any {
     this.sprites.forEach(function (thisSprite: SpriteProxy) {
       compareSprites.sprites.forEach(function (testSprite: SpriteProxy) {
         // testSprite is the drone.
         if (testSprite.isHitBy(thisSprite))
-          collisionFoundFunction(thisSprite, testSprite);
+          collisionFoundFunction(thisSprite, testSprite, now);
       });
     });
   }
@@ -239,17 +239,9 @@
       this.updatePositions(now);
     this.advanceFrames(now);
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      let lifeRemaining: number = 0;
-      context.globalAlpha = 1.0;
-      if (sprite.expirationDate) {
-        lifeRemaining = sprite.expirationDate - now;
-        const fadeOutTime: number = 4000;
-        if (lifeRemaining < fadeOutTime) {
-          context.globalAlpha = lifeRemaining / fadeOutTime;
-        }
-      }
+      context.globalAlpha = sprite.getAlpha(now);
 
-      if (lifeRemaining >= 0) {
+      if (sprite.stillAlive(now)) {
         this.baseAnimation.drawByIndex(context, sprite.x, sprite.y, sprite.frameIndex);
         sprite.drawAdornments(context, now);
       }
@@ -264,9 +256,11 @@
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       let sprite: SpriteProxy = this.sprites[i];
       if (sprite.expirationDate) {
-        let lifeRemaining: number = sprite.expirationDate - now;
-        if (lifeRemaining < 0)
+        if (!sprite.stillAlive(now)) {
+          console.log('sprite.removing();');
+          sprite.removing();
           this.sprites.splice(i, 1);
+        }
       }
     }
   }

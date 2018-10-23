@@ -38,6 +38,7 @@ class Drone extends SpriteProxy {
 
   constructor(startingFrameNumber: number, public x: number, public y: number) {
     super(startingFrameNumber, x, y);
+    this.fadeOnDestroy = false;
     let now: number = performance.now();
     this.leftThrustOffTime = now;
     this.leftThrustOnTime = now;
@@ -51,6 +52,10 @@ class Drone extends SpriteProxy {
     this.lastVelocityX = 0;
     this.lastVelocityY = 0;
     this.lastNow = now;
+  }
+
+  getAlpha(now: number): number {
+  	return 1;
   }
 
   get color(): string {
@@ -82,12 +87,20 @@ class Drone extends SpriteProxy {
     this._color = textHsl.toHex();
   }
 
-  tossMeteor(velocityX: string, velocityY: string): any {
+  tossMeteor(velocityXStr: string, velocityYStr: string): any {
     if (!this.meteor)
       return;
+
+    const maxVelocity: number = 50;
+    let velocityX: number = +velocityXStr;
+    velocityX = (Math.min(Math.abs(velocityX), maxVelocity) * Math.sign(velocityX));
+
+    let velocityY: number = +velocityYStr;
+    velocityY = (Math.min(Math.abs(velocityY), maxVelocity) * Math.sign(velocityY));
+
     let now: number = performance.now();
     this.changingDirection(now);
-    this.meteor.changeVelocity(+velocityX + this.velocityX, +velocityY + this.velocityY, now);
+    this.meteor.changeVelocity(velocityX + this.velocityX, -velocityY + this.velocityY, now);
     this.meteor.owned = false;
     this.meteor.owner = null;
     this.meteorJustThrown = this.meteor;
@@ -95,10 +108,20 @@ class Drone extends SpriteProxy {
     this.meteor = null;
   }
 
-  addMeteor(meteor: Meteor): void {
+  addMeteor(meteor: Meteor, now: number): void {
     this.meteor = meteor;
-    this.meteor.owner = this;
-    this.meteor.owned = true;
+    meteor.owner = this;
+    meteor.owned = true;
+    meteor.changingDirection(now);
+    const velocityDegradeFactor: number = 0.3;
+    this.changeVelocity(this.velocityX + meteor.velocityX * velocityDegradeFactor,
+      this.velocityY + meteor.velocityY * velocityDegradeFactor, now);
+    // HACK: We need to use Physics to calculate thrust durations to counteract momentum transfer of meteor catch.
+    var thrustDuration: number = Math.max(meteor.velocityY) / 5;
+    if (meteor.velocityY > 0)
+      this.droneUp(thrustDuration.toString());
+    else if (meteor.velocityY < 0)
+      this.droneDown(thrustDuration.toString());
   }
 
   selfDestruct() {
@@ -158,9 +181,16 @@ class Drone extends SpriteProxy {
     this.lastNow = now;
     if (this.meteor) {
       // TODO: Adjust height based on pitch.
+      let pitch: number = Math.floor(this.frameIndex / 10);
+      let meteorAdjustY: number = 0;
+      if (pitch == 0)
+        meteorAdjustY = -6;
+      else if (pitch == 2)
+        meteorAdjustY = 8;
       this.meteor.x = this.x + droneWidth / 2 - meteorWidth / 2;
-      this.meteor.y = this.y + droneHeight / 2 - meteorHeight;
+      this.meteor.y = this.y + droneHeight / 2 - meteorHeight + meteorAdjustY;
     }
+    
   }
 
   updateFrameIndex(now: number, hAccel: number, vAccel: number): any {
@@ -423,6 +453,11 @@ class Drone extends SpriteProxy {
     let deltaY: number = centerDroneY - centerMeteorY;
 
     return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  }
+
+  removing(): void {
+    console.log('this.selfDestruct();');
+    this.selfDestruct();
   }
 
   destroying(): void {
