@@ -71,7 +71,7 @@ function updateScreen() {
 
   allSparks.draw(myContext, now);
 
-  //drawCrossHairs(myContext, crossX, crossY);
+  drawCrossHairs(myContext, crossX, crossY);
 }
 
 var allSplats = new SpriteCollection();
@@ -411,11 +411,15 @@ function executeCommand(command: string, params: string, userId: string, userNam
     }
   }
   else if (command === "Dock") {
-    if (isSuperUser(userName))
+    if (isSuperUser(userName)) {
       selfDestructAllDrones();
-    if (started && !myRocket.isDocked)
+      removeAllWalls();
+    }
+
+    if (started && !myRocket.isDocked) {
       chat('docking...');
-    myRocket.dock(now);
+      myRocket.dock(now);
+    }
   }
   else if (command === "ChangePlanet") {
     gravityGames.selectPlanet(params);
@@ -520,6 +524,10 @@ function tossMeteor(userId: string, params: string) {
 
 function selfDestructAllDrones() {
   allDrones.destroyAllBy(3000);
+}
+
+function removeAllWalls() {
+  allWalls.destroyAllBy(4000);
 }
 
 function droneRight(userId: string, params: string) {
@@ -815,9 +823,11 @@ var right2Sparks: Sprites;
 var upAndRightSparks: Sprites;
 var upAndLeftSparks: Sprites;
 
-function loadSparks(folder: string, frameCount: number, startX: number, startY: number): Sprites {
-  const sparkFrameInterval: number = 15;
-  let sparks: Sprites = new Sprites(`FireWall/Sparks/${folder}`, 63, sparkFrameInterval, AnimationStyle.SequentialStop, true);
+function loadSparks(folder: string, frameCount: number, originX: number, originY: number): Sprites {
+  const sparkFrameInterval: number = 40;
+  let sparks: Sprites = new Sprites(`FireWall/Sparks/${folder}/Spark`, frameCount, sparkFrameInterval, AnimationStyle.Sequential, true);
+  sparks.originX = originX;
+  sparks.originY = originY;
   return sparks;
 }
 
@@ -834,7 +844,7 @@ function loadAllSparks() {
 
   allSparks.add(downAndLeftSparks);
   allSparks.add(downAndRightSparks);
-  allSparks.add(left1Sparks);
+  allSparks.add(left1Sparks);                     // Here ->
   allSparks.add(right1Sparks);
   allSparks.add(left2Sparks);
   allSparks.add(right2Sparks);
@@ -898,6 +908,8 @@ addSplats();
 
 addMeteors();
 
+loadAllSparks();
+
 var redExplosions: Sprites = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
 var blueExplosions: Sprites = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
 var purpleExplosions: Sprites = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
@@ -936,10 +948,29 @@ var crossX: number = 1920 / 2 - 80;
 var crossY: number = 1080 / 2 + 190;
 
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
-  horizontalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Solid, 500));
-  //verticalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Solid, 400));
-  verticalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Dashed, 400));
-  //horizontalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Dashed, 600));
+  if (params === 'wall') {
+    horizontalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Solid, 500));
+    //verticalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Solid, 400));
+    verticalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Dashed, 400));
+    //horizontalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Dashed, 600));
+  }
+
+  if (params === 'sparks 1')
+    downAndRightSparks.add(crossX, crossY);
+  else if (params === 'sparks 2')
+    downAndLeftSparks.add(crossX, crossY);
+  else if (params === 'sparks 3')
+    left1Sparks.add(crossX, crossY);
+  else if (params === 'sparks 4')
+    left2Sparks.add(crossX, crossY);
+  else if (params === 'sparks 5')
+    right1Sparks.add(crossX, crossY);
+  else if (params === 'sparks 6')
+    right2Sparks.add(crossX, crossY);
+  else if (params === 'sparks 7')
+    upAndRightSparks.add(crossX, crossY);
+  else if (params === 'sparks 8')
+    upAndLeftSparks.add(crossX, crossY);
 }
 
 

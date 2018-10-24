@@ -13,31 +13,79 @@ class Wall extends SpriteProxy {
   endCap2: SpriteProxy;
   actualLength: number;
   halfActualLength: number;
+  finalCapLeft: number;
+  finalCapTop: number;
+  airTime: number;
+  capX: number;
+  capY: number;
+  stillFlying: boolean;
 
   constructor(startingFrameNumber: number, x: number, y: number,
-              public orientation: Orientation, public wallType: WallType,
-              public length: number) {
+    public orientation: Orientation, public wallType: WallType,
+    public length: number) {
     super(startingFrameNumber, x, y, -1);
     this.actualLength = 0;
+
+    let capIndex: number;
+
+    this.finalCapLeft = x - endCaps.spriteWidth / 2;
+    this.finalCapTop = y - endCaps.spriteHeight / 2;
     if (orientation === Orientation.Horizontal) {
-      let capLeft: number = x - endCaps.spriteWidth / 2;
-      this.endCap1 = new SpriteProxy(0, capLeft, y);
-      this.endCap2 = new SpriteProxy(1, capLeft, y);
+      capIndex = 0;  // ![](AADF5C4D211EE772BCCD9F0A76FC3D5F.png;;;0.01824,0.01824)
     }
-    else {
-      let capTop: number = y - endCaps.spriteHeight / 2;
-      this.endCap1 = new SpriteProxy(2, x, capTop);
-      this.endCap2 = new SpriteProxy(3, x, capTop);
+    else { // Orientation.Vertical
+      capIndex = 2;  // ![](F159D9E3D6CFB1F0529BA74BF477DE15.png;;0,0,68,48;0.02000,0.02000)
     }
+
+    let ySafetyDrop: number = endCaps.spriteHeight;
+    let heightMeters: number = Physics.pixelsToMeters(1080 - this.finalCapTop + ySafetyDrop);
+    this.airTime = Physics.getDropTime(heightMeters, gravityGames.activePlanet.gravity);
+    let initialVelocityY: number = Physics.getFinalVelocity(this.airTime, 0, gravityGames.activePlanet.gravity);
+    let initialVelocityX: number = 3;
+    this.capX = this.finalCapLeft - Physics.metersToPixels(Physics.getDisplacement(this.airTime, initialVelocityX, 0));
+    this.capY = 1080 + ySafetyDrop;
+
+    // TODO: Figure out starting point for cap...
+    this.endCap1 = new SpriteProxy(capIndex, this.capX, this.capY);
+    this.endCap2 = new SpriteProxy(capIndex + 1, this.capX, this.capY);
+    let now: number = performance.now();
+    this.endCap1.changeVelocity(initialVelocityX, -initialVelocityY, now);
+    this.endCap2.changeVelocity(initialVelocityX, -initialVelocityY, now);
+    this.stillFlying = true;
+
     endCaps.sprites.push(this.endCap1);
     endCaps.sprites.push(this.endCap2);
     super.cropped = true;
   }
 
+  destroyBy(lifeTimeMs: number): any {
+    super.destroyBy(lifeTimeMs);
+    this.endCap1.expirationDate = this.expirationDate;
+    this.endCap2.expirationDate = this.expirationDate;
+  }
+
   updatePosition(now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
+    if (secondsPassed < this.airTime) {
+      this.endCap1.updatePosition(now);
+      this.endCap2.updatePosition(now);
+    }
+    else if (this.stillFlying) {
+      this.stillFlying = false;
+      this.endCap1.changeVelocity(0, 0, now);
+      this.endCap2.changeVelocity(0, 0, now);
+      this.endCap1.x = this.finalCapLeft;
+      this.endCap2.x = this.finalCapLeft;
+      this.endCap1.y = this.finalCapTop;
+      this.endCap2.y = this.finalCapTop;
+    }
+
+    secondsPassed -= this.airTime;
+    if (secondsPassed < 0)
+      return;
+
     const extendTime: number = 2;
-    
+
     if (secondsPassed < extendTime)
       this.halfActualLength = this.length * (secondsPassed / extendTime) / 2;
     else
@@ -56,6 +104,14 @@ class Wall extends SpriteProxy {
       this.endCap2.x = this.x - halfCapLength;
       this.endCap2.y = this.y + this.halfActualLength - halfCapLength;
     }
+  }
+
+  removing(): void {
+    var now: number = performance.now();
+    this.endCap1.expirationDate = now;
+    this.endCap2.expirationDate = now;
+    endCaps.removeExpiredSprites(now + 1);
+    super.removing();
   }
 
   draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {

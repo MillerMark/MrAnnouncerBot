@@ -9,6 +9,8 @@
   lastTimeWeAdvancedTheFrame: number;
   returnFrameIndex: number;
   segmentSize: number;
+  originX: number;
+  originY: number;
 
   constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
     this.sprites = [];
@@ -39,6 +41,10 @@
     if (index >= 0)
       return this.sprites[index];
     return null;
+  }
+
+  add(x: number, y: number, startingFrameIndex: number = 0): any {
+    this.sprites.push(new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY));
   }
 
   checkCollisionAgainst(compareSprites: Sprites, collisionFoundFunction: (thisSprite: SpriteProxy, testSprite: SpriteProxy, now: number) => void, now: number): any {
@@ -258,7 +264,6 @@
       let sprite: SpriteProxy = this.sprites[i];
       if (sprite.expirationDate) {
         if (!sprite.stillAlive(now)) {
-          console.log('sprite.removing();');
           sprite.removing();
           this.sprites.splice(i, 1);
         }
