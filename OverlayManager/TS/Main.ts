@@ -69,7 +69,9 @@ function updateScreen() {
     quiz.draw(myContext);
   //explosion.draw(myContext, 0, 0);
 
-  drawCrossHairs(myContext, crossX, crossY);
+  allSparks.draw(myContext, now);
+
+  //drawCrossHairs(myContext, crossX, crossY);
 }
 
 var allSplats = new SpriteCollection();
@@ -801,6 +803,45 @@ function drawCrossHairs(context: CanvasRenderingContext2D, x: number, y: number)
   context.lineTo(x, y + crossHalfSize);
   context.stroke();
 }
+
+//` ![](D4E24ABDF6E5B9F063E242EBB0ADA55E.png;;0,35,173,210)
+var allSparks: SpriteCollection;
+var downAndRightSparks: Sprites;
+var downAndLeftSparks: Sprites;
+var left1Sparks: Sprites;
+var left2Sparks: Sprites;
+var right1Sparks: Sprites;
+var right2Sparks: Sprites;
+var upAndRightSparks: Sprites;
+var upAndLeftSparks: Sprites;
+
+function loadSparks(folder: string, frameCount: number, startX: number, startY: number): Sprites {
+  const sparkFrameInterval: number = 15;
+  let sparks: Sprites = new Sprites(`FireWall/Sparks/${folder}`, 63, sparkFrameInterval, AnimationStyle.SequentialStop, true);
+  return sparks;
+}
+
+function loadAllSparks() {
+  allSparks = new SpriteCollection();
+  downAndLeftSparks = loadSparks('Down and Left', 13, 180, 4);
+  downAndRightSparks = loadSparks('Down and Right', 13, 10, 1);
+  left1Sparks = loadSparks('Left', 8, 355, 38);
+  left2Sparks = loadSparks('Left 2', 9, 242, 132);
+  right1Sparks = loadSparks('Right', 8, 9, 45);
+  right2Sparks = loadSparks('Right 2', 9, 6, 135);
+  upAndRightSparks = loadSparks('Up and Left', 9, 177, 352);
+  upAndLeftSparks = loadSparks('Up and Right', 9, 12, 355);
+
+  allSparks.add(downAndLeftSparks);
+  allSparks.add(downAndRightSparks);
+  allSparks.add(left1Sparks);
+  allSparks.add(right1Sparks);
+  allSparks.add(left2Sparks);
+  allSparks.add(right2Sparks);
+  allSparks.add(upAndRightSparks);
+  allSparks.add(upAndLeftSparks);
+}
+
 
 var allMeteors: SpriteCollection;
 var redMeteors: Sprites;
