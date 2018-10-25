@@ -58,19 +58,27 @@ var chatOutlineCoins: string[] = [
   '                               *          *',
   '                               ************'];
 
+/* 
+     ¦  Dashed vertical line
+     ═  Solid horizontal line
+     ║  Solid vertical line
+     -  Dashed horizontal line
+     +  Intersection
+ * */
+
 var wallTest: string[] = [
   '                                           ',
-  '            |                              ',
-  '            |                              ',
-  '            |                              ',
-  '            |                              ',
+  '            ¦                              ',
+  '            ¦                              ',
+  '            ¦                              ',
+  '            ¦                              ',
   '   ---------+                              ',
-  '            |                              ',
-  '            |                              ',
-  '            |                              ',
-  '            |                              ', // 10
-  '            |                              ',
-  '            |                  ************',
+  '            ¦                              ',
+  '            ¦                              ',
+  '            ¦                              ',
+  '            ¦                              ', // 10
+  '            ¦                              ',
+  '            ¦                  ************',
   '                               ************',
   '                               ************',
   '                               ************',
