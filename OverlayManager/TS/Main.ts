@@ -944,14 +944,14 @@ var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 setInterval(updateScreen, 10);
 gravityGames.selectPlanet('Earth');
 
-var crossX: number = 1920 / 2 - 80;
-var crossY: number = 1080 / 2 + 190;
+var crossX: number = 1920 / 2;
+var crossY: number = 1080 / 2;
 
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
   if (params === 'wall') {
-    horizontalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Solid, 500));
+    horizontalSolidWall.sprites.push(new Wall(0, crossX - 300, crossY - 300, Orientation.Horizontal, WallType.Solid, 500));
     //verticalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Solid, 400));
-    verticalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Dashed, 400));
+    verticalDashedWall.sprites.push(new Wall(0, crossX + 300, crossY + 300, Orientation.Vertical, WallType.Dashed, 400));
     //horizontalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Dashed, 600));
   }
 

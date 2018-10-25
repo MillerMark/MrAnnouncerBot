@@ -8,9 +8,28 @@ enum WallType {
   Dashed
 }
 
+class EndCap extends SpriteProxy{
+  constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
+    super(startingFrameNumber, x, y, lifeSpanMs);
+  }
+
+  static readonly suction: number = 30;
+  static readonly gravity: number = 20;
+  static readonly initialExpansionVelocity: number = 6; // m/s
+  static readonly expansionTime: number = 1.25;  // sec
+  static readonly totalCapDisplacement: number = Physics.getDisplacement(EndCap.expansionTime,
+                                                                         EndCap.initialExpansionVelocity,
+                                                                         EndCap.suction);
+
+
+  getVerticalThrust(now: number): number {
+    return EndCap.gravity;
+  }
+}
+
 class Wall extends SpriteProxy {
-  endCap1: SpriteProxy;
-  endCap2: SpriteProxy;
+  endCap1: EndCap;
+  endCap2: EndCap;
   actualLength: number;
   halfActualLength: number;
   finalCapLeft: number;
@@ -39,15 +58,15 @@ class Wall extends SpriteProxy {
 
     let ySafetyDrop: number = endCaps.spriteHeight;
     let heightMeters: number = Physics.pixelsToMeters(1080 - this.finalCapTop + ySafetyDrop);
-    this.airTime = Physics.getDropTime(heightMeters, gravityGames.activePlanet.gravity);
-    let initialVelocityY: number = Physics.getFinalVelocity(this.airTime, 0, gravityGames.activePlanet.gravity);
+    this.airTime = Physics.getDropTime(heightMeters, EndCap.gravity);
+    let initialVelocityY: number = Physics.getFinalVelocity(this.airTime, 0, EndCap.gravity);
     let initialVelocityX: number = 3;
     this.capX = this.finalCapLeft - Physics.metersToPixels(Physics.getDisplacement(this.airTime, initialVelocityX, 0));
     this.capY = 1080 + ySafetyDrop;
 
     // TODO: Figure out starting point for cap...
-    this.endCap1 = new SpriteProxy(capIndex, this.capX, this.capY);
-    this.endCap2 = new SpriteProxy(capIndex + 1, this.capX, this.capY);
+    this.endCap1 = new EndCap(capIndex, this.capX, this.capY);
+    this.endCap2 = new EndCap(capIndex + 1, this.capX, this.capY);
     let now: number = performance.now();
     this.endCap1.changeVelocity(initialVelocityX, -initialVelocityY, now);
     this.endCap2.changeVelocity(initialVelocityX, -initialVelocityY, now);
@@ -84,12 +103,12 @@ class Wall extends SpriteProxy {
     if (secondsPassed < 0)
       return;
 
-    const extendTime: number = 2;
-
-    if (secondsPassed < extendTime)
-      this.halfActualLength = this.length * (secondsPassed / extendTime) / 2;
-    else
-      this.halfActualLength = this.length / 2;
+    this.halfActualLength = this.length / 2;
+    if (secondsPassed < EndCap.expansionTime) {
+      //this.halfActualLength = this.length * (secondsPassed / extendTime) / 2;                                    	
+      var currentCapDisplacement: number = Physics.getDisplacement(EndCap.expansionTime - secondsPassed, EndCap.initialExpansionVelocity, EndCap.suction);
+      this.halfActualLength *= (EndCap.totalCapDisplacement - currentCapDisplacement) / EndCap.totalCapDisplacement;
+    }
 
     let halfCapLength: number = endCaps.spriteHeight / 2;
     if (this.orientation === Orientation.Horizontal) {
