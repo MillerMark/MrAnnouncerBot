@@ -293,6 +293,36 @@
   }
 }
 
+class WallSprites extends Sprites {
+  orientation: Orientation;
+  constructor(baseAnimationName, expectedFrameCount, frameInterval: number, animationStyle: AnimationStyle, padFileIndex: boolean = false, hitFloorFunc?, onLoadedFunc?) {
+    super(baseAnimationName, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
+  }
+
+  horizontalWallBounce(sprite: Drone | Meteor, now: number) {
+    // TODO: do no checks if this wall is dashed & it's a meteor.
+    this.sprites.forEach(function (wallSprite: Wall) {
+      let left: number = wallSprite.x - wallSprite.halfActualLength;
+      let right: number = wallSprite.x + wallSprite.halfActualLength;
+      if (sprite.x > left && sprite.x < right) {
+        sprite.destroyBy(200);
+      }
+    });
+  }
+
+  verticalWallBounce(sprite: Drone | Meteor, now: number) {
+    
+  }
+
+  wallBounce(sprite: Drone | Meteor, now: number) {
+    // TODO: transmit damage to drones, blow up meteors unless it's a pass through wall.
+    //sprite.changingDirection(now);
+    if (this.orientation === Orientation.Horizontal)
+      this.horizontalWallBounce(sprite, now);
+    else 
+      this.verticalWallBounce(sprite, now);
+  }
+}
 
 // TODO: Convert to enum...
 var rectangleDrawingSegment = {

@@ -31,6 +31,7 @@ function updateScreen() {
 
   allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   allMeteors.checkCollisionAgainst(allDrones, putMeteorOnDrone, now);
+  wallBounce(now);
 
   //backgroundBanner.draw(myContext, 0, 0);
 
@@ -71,7 +72,7 @@ function updateScreen() {
 
   allSparks.draw(myContext, now);
 
-  drawCrossHairs(myContext, crossX, crossY);
+  //drawCrossHairs(myContext, crossX, crossY);
 }
 
 var allSplats = new SpriteCollection();
@@ -650,11 +651,22 @@ var pinkSeeds: Sprites;
 var yellowSeeds: Sprites;
 var purpleSeeds: Sprites;
 
+function wallBounce(now: number): void {
+  allDrones.allSprites.forEach(function (drones: Sprites) {
+    drones.sprites.forEach(function (drone: Drone) {
+      horizontalSolidWall.wallBounce(drone, now);
+      verticalSolidWall.wallBounce(drone, now);
+      horizontalDashedWall.wallBounce(drone, now);
+      verticalDashedWall.wallBounce(drone, now);
+    });
+  });
+}
+
 var allWalls: SpriteCollection;
-var horizontalSolidWall: Sprites;
-var verticalSolidWall: Sprites;
-var horizontalDashedWall: Sprites;
-var verticalDashedWall: Sprites;
+var horizontalSolidWall: WallSprites;
+var verticalSolidWall: WallSprites;
+var horizontalDashedWall: WallSprites;
+var verticalDashedWall: WallSprites;
 
 var dronesRed: Sprites;
 var dronesBlue: Sprites;
@@ -678,8 +690,14 @@ var magentaSplats: SplatSprites;
 
 var endCaps: Sprites;
 
-function loadWall(orientation: string, style: string, expectedFrameCount: number): Sprites {
-  let wall = new Sprites(`FireWall/${orientation}/${style}/Wall`, expectedFrameCount, 45, AnimationStyle.Loop, true);
+function loadWall(orientation: Orientation, style: string, expectedFrameCount: number): WallSprites {
+  var orientationStr: string;
+  if (orientation === Orientation.Horizontal)
+    orientationStr = 'Horizontal';
+  else
+    orientationStr = 'Vertical';
+  let wall = new WallSprites(`FireWall/${orientationStr}/${style}/Wall`, expectedFrameCount, 45, AnimationStyle.Loop, true);
+  wall.orientation = orientation;
   return wall;
 }
 
@@ -690,19 +708,19 @@ function loadWalls() {
 
   allWalls = new SpriteCollection();
 
-  horizontalDashedWall = loadWall('Horizontal', 'Dashed/Right', 100);
+  horizontalDashedWall = loadWall(Orientation.Horizontal, 'Dashed/Right', 100);
   horizontalDashedWall.moves = true;
   allWalls.add(horizontalDashedWall);
 
-  verticalDashedWall = loadWall('Vertical', 'Dashed/Up', 100);
+  verticalDashedWall = loadWall(Orientation.Vertical, 'Dashed/Up', 100);
   verticalDashedWall.moves = true;
   allWalls.add(verticalDashedWall);
 
-  horizontalSolidWall = loadWall('Horizontal', 'Solid', 94);
+  horizontalSolidWall = loadWall(Orientation.Horizontal, 'Solid', 94);
   horizontalSolidWall.moves = true;
   allWalls.add(horizontalSolidWall);
 
-  verticalSolidWall = loadWall('Vertical', 'Solid', 90);
+  verticalSolidWall = loadWall(Orientation.Vertical, 'Solid', 90);
   verticalSolidWall.moves = true;
   allWalls.add(verticalSolidWall);
 }
@@ -949,9 +967,9 @@ var crossY: number = 1080 / 2;
 
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
   if (params === 'wall') {
-    horizontalSolidWall.sprites.push(new Wall(0, crossX - 300, crossY - 300, Orientation.Horizontal, WallType.Solid, 500));
+    horizontalSolidWall.sprites.push(new Wall(0, crossX - 300, crossY - 300, Orientation.Horizontal, WallStyle.Solid, 500));
     //verticalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Solid, 400));
-    verticalDashedWall.sprites.push(new Wall(0, crossX + 300, crossY + 300, Orientation.Vertical, WallType.Dashed, 400));
+    verticalDashedWall.sprites.push(new Wall(0, crossX + 300, crossY + 300, Orientation.Vertical, WallStyle.Dashed, 400));
     //horizontalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Dashed, 600));
   }
 

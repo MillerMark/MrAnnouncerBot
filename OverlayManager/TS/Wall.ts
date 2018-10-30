@@ -3,7 +3,7 @@
   Vertical
 }
 
-enum WallType {
+enum WallStyle {
   Solid,
   Dashed
 }
@@ -40,7 +40,7 @@ class Wall extends SpriteProxy {
   stillFlying: boolean;
 
   constructor(startingFrameNumber: number, x: number, y: number,
-    public orientation: Orientation, public wallType: WallType,
+    public orientation: Orientation, public wallType: WallStyle,
     public length: number) {
     super(startingFrameNumber, x, y, -1);
     this.actualLength = 0;

@@ -283,6 +283,18 @@ namespace OverlayManager
 				case "chutes": Chutes(chatMessage); break;
 				case "seed": PlantSeed(args, chatMessage); break;
 				case "planet": ChangePlanet(args, chatMessage); break;
+				case "earth": 
+				case "jupiter": 
+				case "mars": 
+				case "mercury": 
+				case "moon": 
+				case "neptune": 
+				case "pluto": 
+				case "saturn": 
+				case "sun": 
+				case "uranus": 
+				case "venus": 
+					ChangePlanet(cmdText, chatMessage); break;
 				case "poll":
 				case "quiz": StartQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
 				case "clearquiz": ClearQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
