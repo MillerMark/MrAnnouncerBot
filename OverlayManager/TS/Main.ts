@@ -31,7 +31,6 @@ function updateScreen() {
 
   allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
   allMeteors.checkCollisionAgainst(allDrones, putMeteorOnDrone, now);
-  wallBounce(now);
 
   //backgroundBanner.draw(myContext, 0, 0);
 
@@ -46,9 +45,19 @@ function updateScreen() {
   //grass3.draw(myContext, now);
   //grass4.draw(myContext, now);
 
-  allSeeds.draw(myContext, now);
+  beesYellow.updatePositions(now);
+  allDrones.updatePositions(now);
+  allMeteors.updatePositions(now);
+  allWalls.updatePositions(now);
+  endCaps.updatePositions(now);
+  allSeeds.updatePositions(now);
+  allSparks.updatePositions(now);
 
+  wallBounce(now);
+
+  allSeeds.draw(myContext, now);
   beesYellow.draw(myContext, now);
+  allWalls.draw(myContext, now);
   allDrones.draw(myContext, now);
   allMeteors.draw(myContext, now);
   myRocket.draw(myContext, now);
@@ -62,7 +71,6 @@ function updateScreen() {
   //yellowFlowers2.draw(myContext, now);
   yellowFlowers3.draw(myContext, now);
 
-  allWalls.draw(myContext, now);
   endCaps.draw(myContext, now);
 
   droneExplosions.draw(myContext, now);
@@ -654,12 +662,13 @@ var purpleSeeds: Sprites;
 function wallBounce(now: number): void {
   allDrones.allSprites.forEach(function (drones: Sprites) {
     drones.sprites.forEach(function (drone: Drone) {
-      horizontalSolidWall.wallBounce(drone, now);
-      verticalSolidWall.wallBounce(drone, now);
-      horizontalDashedWall.wallBounce(drone, now);
-      verticalDashedWall.wallBounce(drone, now);
+      horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+      verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+      horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+      verticalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
     });
   });
+  // TODO: Check for meteors as well.
 }
 
 var allWalls: SpriteCollection;
@@ -844,6 +853,7 @@ var upAndLeftSparks: Sprites;
 function loadSparks(folder: string, frameCount: number, originX: number, originY: number): Sprites {
   const sparkFrameInterval: number = 40;
   let sparks: Sprites = new Sprites(`FireWall/Sparks/${folder}/Spark`, frameCount, sparkFrameInterval, AnimationStyle.Sequential, true);
+  sparks.moves = true;
   sparks.originX = originX;
   sparks.originY = originY;
   return sparks;

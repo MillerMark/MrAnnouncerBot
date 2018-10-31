@@ -1,4 +1,5 @@
 ﻿class SpriteProxy {
+  isRemoving: boolean;
   owned: boolean;
   cropped: boolean;
   fadeOnDestroy: boolean = true;
@@ -14,6 +15,8 @@
 
   startX: any;
   startY: any;
+    lastX: number;
+    lastY: number;
 
   constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
     this.frameIndex = startingFrameNumber;
@@ -29,7 +32,8 @@
   }
 
   destroyBy(lifeTimeMs: number): any {
-    this.expirationDate = performance.now() + Math.round(Math.random() * lifeTimeMs);
+    if (!this.expirationDate)
+      this.expirationDate = performance.now() + Math.round(Math.random() * lifeTimeMs);
   }
 
   removing(): void {
@@ -149,7 +153,13 @@
     return false; // Descendants can override if they want to implement a custom search/find functionality...
   }
 
+  storeLastPosition() {
+    this.lastX = this.x;
+    this.lastY = this.y;
+  }
+
   updatePosition(now: number) {
+    this.storeLastPosition();
     var secondsPassed = (now - this.timeStart) / 1000;
 
     var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, this.getHorizontalThrust(now));

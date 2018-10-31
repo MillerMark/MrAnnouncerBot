@@ -71,4 +71,9 @@
     }
     return null;
   }
+
+  updatePositions(now: number): any {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.updatePositions(now) });
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.updatePositions(now) });
+  }
 }

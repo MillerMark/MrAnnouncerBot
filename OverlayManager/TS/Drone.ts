@@ -125,10 +125,12 @@ class Drone extends SpriteProxy {
   }
 
   selfDestruct() {
+    this.isRemoving = true;
     allDrones.destroy(this.userId, addDroneExplosion);
   }
 
   updatePosition(now: number) {
+    this.storeLastPosition();
     var secondsPassed = (now - this.timeStart) / 1000;
 
     var hAccel = this.getHorizontalThrust(now);
@@ -469,6 +471,21 @@ class Drone extends SpriteProxy {
       this.meteor.owner = null;
     }
   }
+}
 
+class Sparks extends SpriteProxy {
+  verticalThrust: any;
+  horizontalThrust: any;
+  constructor(startingFrameNumber: number, public x: number, public y: number) {
+    super(startingFrameNumber, x, y);
+  }
+
+  getHorizontalThrust(now: number): number {
+    return this.horizontalThrust;
+  }
+
+  getVerticalThrust(now: number): number {
+    return this.verticalThrust;
+  }
 
 }
