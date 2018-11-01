@@ -23,6 +23,8 @@ class Drone extends SpriteProxy {
   upThrustOnTime: number;
   downThrustOffTime: number;
   downThrustOnTime: number;
+  lastTimeWeAdvancedTheSparksFrame: number;
+  sparkFrameInterval: number = 40;
 
   private _color: string;
   private lastUpdateTime: number;
@@ -35,6 +37,11 @@ class Drone extends SpriteProxy {
   private lastNow: number;
   meteorJustThrown: Meteor;
   meteorThrowTime: number;
+  parentSparkSprites: Sprites;
+  sparkFrameIndex: number;
+  sparkX: number;
+  sparkY: number;
+  sparkCreationTime: number;
 
   constructor(startingFrameNumber: number, public x: number, public y: number) {
     super(startingFrameNumber, x, y);
@@ -52,10 +59,11 @@ class Drone extends SpriteProxy {
     this.lastVelocityX = 0;
     this.lastVelocityY = 0;
     this.lastNow = now;
+    this.lastTimeWeAdvancedTheSparksFrame = now;
   }
 
   getAlpha(now: number): number {
-  	return 1;
+    return 1;
   }
 
   get color(): string {
@@ -192,7 +200,28 @@ class Drone extends SpriteProxy {
       this.meteor.x = this.x + droneWidth / 2 - meteorWidth / 2;
       this.meteor.y = this.y + droneHeight / 2 - meteorHeight + meteorAdjustY;
     }
+
+    if (this.parentSparkSprites != undefined) {
+      let sparkAge: number = now - this.sparkCreationTime;
+      if (sparkAge > 1000) {
+        console.log('spark out.');
+        this.parentSparkSprites = null;
+      }
+      else {
+        this.sparkX = this.x + droneWidth / 2 - this.parentSparkSprites.originX;
+        this.sparkY = this.y + droneHeight / 2 - this.parentSparkSprites.originY;
+      }
+    }
   }
+
+  setSparks(parentSparkSprites: Sprites): any {
+    this.parentSparkSprites = parentSparkSprites;
+    this.sparkCreationTime = performance.now();
+    this.sparkFrameIndex = 0;
+    this.sparkX = this.x + droneWidth / 2 - this.parentSparkSprites.originX;
+    this.sparkY = this.y + droneHeight / 2 - this.parentSparkSprites.originY;
+  }
+
 
   updateFrameIndex(now: number, hAccel: number, vAccel: number): any {
     var pitchIndex: number = 0;
@@ -261,6 +290,21 @@ class Drone extends SpriteProxy {
 
     context.fillStyle = this.color;
     context.fillText(this.displayName, centerX, yTop);
+
+    if (this.parentSparkSprites) {
+      var msPassed = now - this.lastTimeWeAdvancedTheSparksFrame;
+      if (msPassed > this.sparkFrameInterval) {
+        this.lastTimeWeAdvancedTheSparksFrame = now;
+        this.sparkFrameIndex++;
+        if (this.sparkFrameIndex > this.parentSparkSprites.baseAnimation.frameCount)
+          this.parentSparkSprites = null;
+      }
+
+      if (this.parentSparkSprites) {
+        this.parentSparkSprites.baseAnimation.frameIndex = this.sparkFrameIndex;
+        this.parentSparkSprites.baseAnimation.draw(context, this.sparkX, this.sparkY);
+      }
+    }
   }
 
   getSplats(command: string): SplatSprites {

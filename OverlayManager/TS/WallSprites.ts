@@ -29,38 +29,40 @@
 
   horizontalWallBounce(testSprite: Drone | Meteor, spriteWidth: number, spriteHeight: number, now: number) {
     // TODO: do no checks if this wall is dashed & it's a meteor.
-
-    this.sprites.forEach(function (wallSprite: Wall) {
-      let droneCenterX: number = testSprite.x + spriteWidth / 2;
-      let droneCenterY: number = testSprite.y + spriteHeight / 2;
-      if (this.intersects(testSprite.lastX + spriteWidth / 2, testSprite.lastY + spriteHeight / 2, 
-        droneCenterX, droneCenterY,
-        wallSprite.endCap1.x + endCaps.spriteWidth / 2, wallSprite.endCap1.y + endCaps.spriteHeight / 2,
-        wallSprite.endCap2.x + endCaps.spriteWidth / 2, wallSprite.endCap2.y + endCaps.spriteHeight / 2)) {
-        testSprite.destroyBy(200);
-        // TODO: Get appropriate spark animation based on drone velocity and wall.
-        //let sparks: SpriteProxy = right2Sparks.add(droneCenterX, droneCenterY);
-        if (testSprite instanceof Drone) {
-          let sparks: Sparks = new Sparks(0, droneCenterX - right2Sparks.originX, droneCenterY - right2Sparks.originY);
-          sparks.verticalThrust = testSprite.getVerticalThrust(now);
-          sparks.horizontalThrust = testSprite.getHorizontalThrust(now);
-          sparks.changeVelocity(testSprite.velocityX, testSprite.velocityY, now);
-          right2Sparks.sprites.push(sparks);
-        }
-      }
-    }, this);
   }
 
   verticalWallBounce(sprite: Drone | Meteor, spriteWidth: number, spriteHeight: number, now: number) {
 
   }
 
-  wallBounce(sprite: Drone | Meteor, spriteWidth: number, spriteHeight: number, now: number) {
+  wallBounce(testSprite: Drone | Meteor, spriteWidth: number, spriteHeight: number, now: number) {
     // TODO: transmit damage to drones, blow up meteors unless it's a pass through wall.
+
+    this.sprites.forEach(function (wallSprite: Wall) {
+      let droneCenterX: number = testSprite.x + spriteWidth / 2;
+      let droneCenterY: number = testSprite.y + spriteHeight / 2;
+      if (this.intersects(testSprite.lastX + spriteWidth / 2, testSprite.lastY + spriteHeight / 2,
+        droneCenterX, droneCenterY,
+        wallSprite.endCap1.x + endCaps.spriteWidth / 2, wallSprite.endCap1.y + endCaps.spriteHeight / 2,
+        wallSprite.endCap2.x + endCaps.spriteWidth / 2, wallSprite.endCap2.y + endCaps.spriteHeight / 2)) {
+
+        testSprite.changingDirection(now);
+        testSprite.x = testSprite.lastX;
+        testSprite.y = testSprite.lastY;
+
+        if (this.orientation === Orientation.Horizontal)
+          testSprite.velocityY = -testSprite.velocityY;
+        else
+          testSprite.velocityX = -testSprite.velocityX;
+        
+        if (testSprite instanceof Drone) {
+        // TODO: Get appropriate spark animation based on drone velocity and wall.
+          testSprite.setSparks(upAndLeftSparks);
+        }
+      }
+    }, this);
+
     //sprite.changingDirection(now);
-    if (this.orientation === Orientation.Horizontal)
-      this.horizontalWallBounce(sprite, spriteWidth, spriteHeight, now);
-    else
-      this.verticalWallBounce(sprite, spriteWidth, spriteHeight, now);
+    
   }
 }

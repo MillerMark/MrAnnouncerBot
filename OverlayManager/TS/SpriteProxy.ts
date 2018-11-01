@@ -1,5 +1,6 @@
 ﻿class SpriteProxy {
   isRemoving: boolean;
+  systemDrawn: boolean = true;
   owned: boolean;
   cropped: boolean;
   fadeOnDestroy: boolean = true;
@@ -15,8 +16,8 @@
 
   startX: any;
   startY: any;
-    lastX: number;
-    lastY: number;
+  lastX: number;
+  lastY: number;
 
   constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
     this.frameIndex = startingFrameNumber;
@@ -159,6 +160,9 @@
   }
 
   updatePosition(now: number) {
+    if (this instanceof Sparks)
+      debugger;
+
     this.storeLastPosition();
     var secondsPassed = (now - this.timeStart) / 1000;
 

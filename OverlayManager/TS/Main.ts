@@ -853,7 +853,7 @@ var upAndLeftSparks: Sprites;
 function loadSparks(folder: string, frameCount: number, originX: number, originY: number): Sprites {
   const sparkFrameInterval: number = 40;
   let sparks: Sprites = new Sprites(`FireWall/Sparks/${folder}/Spark`, frameCount, sparkFrameInterval, AnimationStyle.Sequential, true);
-  sparks.moves = true;
+  //sparks.moves = true;
   sparks.originX = originX;
   sparks.originY = originY;
   return sparks;

@@ -253,7 +253,7 @@
     this.sprites.forEach(function (sprite: SpriteProxy) {
       context.globalAlpha = sprite.getAlpha(now);
 
-      if (sprite.stillAlive(now)) {
+      if (sprite.stillAlive(now) && sprite.systemDrawn) {
         sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
         sprite.drawAdornments(context, now);
       }
