@@ -116,7 +116,7 @@ class Drone extends SpriteProxy {
     const velocityDegradeFactor: number = 0.3;
     this.changeVelocity(this.velocityX + meteor.velocityX * velocityDegradeFactor,
       this.velocityY + meteor.velocityY * velocityDegradeFactor, now);
-    // HACK: We need to use Physics to calculate thrust durations to counteract momentum transfer of meteor catch.
+    // HACK: Consider using Physics to calculate thrust durations to counteract momentum transfer of meteor catch (so drone returns to original catching position after a catch).
     var thrustDuration: number = Math.max(meteor.velocityY) / 5;
     if (meteor.velocityY > 0)
       this.droneUp(thrustDuration.toString());
@@ -192,7 +192,6 @@ class Drone extends SpriteProxy {
       this.meteor.x = this.x + droneWidth / 2 - meteorWidth / 2;
       this.meteor.y = this.y + droneHeight / 2 - meteorHeight + meteorAdjustY;
     }
-    
   }
 
   updateFrameIndex(now: number, hAccel: number, vAccel: number): any {
@@ -429,8 +428,6 @@ class Drone extends SpriteProxy {
   }
 
   isHitBy(thisSprite: SpriteProxy): boolean {
-    //! this code fails: "thisSprite instanceof Meteor"
-    // Why aren't we seeing meteors???
     if (this.meteor || thisSprite.owned)
       return false;
     if (thisSprite == this.meteorJustThrown) {
@@ -440,7 +437,6 @@ class Drone extends SpriteProxy {
       else
         this.meteorJustThrown = null;
     }
-    // TODO: Only catch when meteor is falling.
     return super.isHitBy(thisSprite);
   }
 
@@ -471,21 +467,4 @@ class Drone extends SpriteProxy {
       this.meteor.owner = null;
     }
   }
-}
-
-class Sparks extends SpriteProxy {
-  verticalThrust: any;
-  horizontalThrust: any;
-  constructor(startingFrameNumber: number, public x: number, public y: number) {
-    super(startingFrameNumber, x, y);
-  }
-
-  getHorizontalThrust(now: number): number {
-    return this.horizontalThrust;
-  }
-
-  getVerticalThrust(now: number): number {
-    return this.verticalThrust;
-  }
-
 }

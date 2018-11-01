@@ -22,12 +22,14 @@
     <None Remove="TS\Quiz.ts" />
     <None Remove="TS\Random.ts" />
     <None Remove="TS\Rocket.ts" />
+    <None Remove="TS\Sparks.ts" />
     <None Remove="TS\SplatSprites.ts" />
     <None Remove="TS\SpriteCollection.ts" />
     <None Remove="TS\SpriteProxy.ts" />
     <None Remove="TS\Sprites.ts" />
     <None Remove="TS\Vote.ts" />
     <None Remove="TS\Wall.ts" />
+    <None Remove="TS\WallSprites.ts" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -1008,6 +1010,7 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\Sparks.ts" />
     <TypeScriptCompile Include="TS\Layouts.ts" />
     <TypeScriptCompile Include="TS\HueSatLight.ts" />
     <TypeScriptCompile Include="TS\AnimationStyle.ts" />
@@ -1016,6 +1019,7 @@
     <TypeScriptCompile Include="TS\Gravity.ts" />
     <TypeScriptCompile Include="TS\GravityGames.ts" />
     <TypeScriptCompile Include="TS\Main.ts" />
+    <TypeScriptCompile Include="TS\WallSprites.ts" />
     <TypeScriptCompile Include="TS\Wall.ts" />
     <TypeScriptCompile Include="TS\Quiz.ts" />
     <TypeScriptCompile Include="TS\Part.ts" />

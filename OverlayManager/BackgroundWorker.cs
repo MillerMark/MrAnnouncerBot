@@ -62,6 +62,34 @@ namespace OverlayManager
 			
 		}
 
+		CommandExpansion GetCommandExpansion(string msg)
+		{
+			string message = msg.ToLower();
+			if (message.StartsWith('!'))
+				message = message.Substring(1);
+			if (message.Length == 0)
+				return null;
+
+			bool secondCharIsNumberOrSpaceOrNull = (message.Length == 1 || message[1] == ' ' || int.TryParse(message[1].ToString(), out int number));
+
+			if (secondCharIsNumberOrSpaceOrNull)
+			{
+				char firstChar = message[0];
+
+				switch (firstChar)
+				{
+					case 'd':
+					case 'u':
+					case 'l':
+					case 'r':
+					case 't':
+						return new CommandExpansion(firstChar.ToString(), message.Substring(1));
+				}
+			}
+
+			return null;
+		}
+
 		private void TwitchClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
 			string msg = e.ChatMessage.Message;
@@ -82,6 +110,9 @@ namespace OverlayManager
 				case "N":
 					AnswerQuiz(msg, e.ChatMessage); break;
 			}
+			CommandExpansion commandExpansion = GetCommandExpansion(msg);
+			if (commandExpansion != null)
+				HandleCommand(commandExpansion.Command, commandExpansion.Arguments, e.ChatMessage);
 		}
 
 		private void TwitchClient_OnWhisperReceived(object sender, TwitchLib.Client.Events.OnWhisperReceivedArgs e)
@@ -232,37 +263,68 @@ namespace OverlayManager
 			string cmdText = e.Command.CommandText.ToLower();
 			string args = e.Command.ArgumentsAsString;
 			ChatMessage chatMessage = e.Command.ChatMessage;
+			HandleCommand(cmdText, args, chatMessage);
+		}
+
+		private void HandleCommand(string cmdText, string args, ChatMessage chatMessage)
+		{
+			if (cmdText == "test")
+			{
+				TestCommand(args, chatMessage);
+				return;
+			}
+
+			// Main commands...
 			switch (cmdText)
 			{
 				case "cmd":
 				case "?":
-					Twitch.Chat($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, & right. Bee controls: \"bee me\", splat {{color}}, say {{message}}, and \"fly x, y\", where x and y are relative coordinates to your bee, in bee units.");
+					Twitch.Chat($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, right, & drone. Drone controls: u, d, l, r, t {{x,y}}. Paint splat: {{color}}.");
 					break;
+			}
+
+			// Rocket commands...
+			switch (cmdText)
+			{
 				case "launch": Launch(chatMessage); break;
 				case "up": Up(args, chatMessage); break;
 				case "down": Down(args, chatMessage); break;
 				case "left": Left(args, chatMessage); break;
 				case "right": Right(args, chatMessage); break;
+				case "dock": Dock(chatMessage); break;
+				case "drop": Drop(args, chatMessage); break;
+				case "extend": Extend(chatMessage); break;
+				case "retract": Retract(chatMessage); break;
+				case "chutes": Chutes(chatMessage); break;
+				case "seed": PlantSeed(args, chatMessage); break;
+				case "drone": Drone(args, chatMessage); break;
+			}
+
+			// Drone commands...
+			switch (cmdText)
+			{
+				case "t":
+				case "toss":
+					Toss(args, chatMessage); break;
 				case "u": DroneUp(args, chatMessage); break;
 				case "d": DroneDown(args, chatMessage); break;
 				case "l": DroneLeft(args, chatMessage); break;
 				case "r": DroneRight(args, chatMessage); break;
-				case "bee": Bee(args, chatMessage); break;
-				case "moverel":
-				case "mr":
-					MoveRelative(args, chatMessage); break;
-				case "test":
-					TestCommand(args, chatMessage); break;
-				case "t":
-				case "toss":
-					Toss(args, chatMessage); break;
-				case "changevel":
-				case "cv":
-					ChangeDroneVelocity(args, chatMessage); break;
-				case "moveabs":
-				case "ma":
-					MoveAbsolute(args, chatMessage); break;
-				case "drone": Drone(args, chatMessage); break;
+				//case "bee": Bee(args, chatMessage); break;
+				//case "moverel":
+				//case "mr":
+				//	MoveRelative(args, chatMessage); break;
+				//case "changevel":
+				//case "cv":
+				//	ChangeDroneVelocity(args, chatMessage); break;
+				//case "moveabs":
+				//case "ma":
+				//	MoveAbsolute(args, chatMessage); break;
+			}
+
+			// Paint splat commands...
+			switch (cmdText)
+			{
 				case "red":
 				case "black":
 				case "white":
@@ -276,25 +338,25 @@ namespace OverlayManager
 				case "violet":
 				case "magenta":
 					Paint(cmdText, args, chatMessage); break;
-				case "dock": Dock(chatMessage); break;
-				case "drop": Drop(args, chatMessage); break;
-				case "extend": Extend(chatMessage); break;
-				case "retract": Retract(chatMessage); break;
-				case "chutes": Chutes(chatMessage); break;
-				case "seed": PlantSeed(args, chatMessage); break;
+			}
+			switch (cmdText)
+			{
 				case "planet": ChangePlanet(args, chatMessage); break;
-				case "earth": 
-				case "jupiter": 
-				case "mars": 
-				case "mercury": 
-				case "moon": 
-				case "neptune": 
-				case "pluto": 
-				case "saturn": 
-				case "sun": 
-				case "uranus": 
-				case "venus": 
+				case "earth":
+				case "jupiter":
+				case "mars":
+				case "mercury":
+				case "moon":
+				case "neptune":
+				case "pluto":
+				case "saturn":
+				case "sun":
+				case "uranus":
+				case "venus":
 					ChangePlanet(cmdText, chatMessage); break;
+			}
+			switch (cmdText)
+			{
 				case "poll":
 				case "quiz": StartQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
 				case "clearquiz": ClearQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
