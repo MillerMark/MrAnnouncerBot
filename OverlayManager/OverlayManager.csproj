@@ -14,11 +14,13 @@
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\HueSatLight.ts" />
     <None Remove="TS\Layouts.ts" />
+    <None Remove="TS\Line.ts" />
     <None Remove="TS\Main.ts" />
     <None Remove="TS\Meteor.ts" />
     <None Remove="TS\Part.ts" />
     <None Remove="TS\Physics.ts" />
     <None Remove="TS\Planet.ts" />
+    <None Remove="TS\Point.ts" />
     <None Remove="TS\Quiz.ts" />
     <None Remove="TS\Random.ts" />
     <None Remove="TS\Rocket.ts" />
@@ -1010,6 +1012,8 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\Point.ts" />
+    <TypeScriptCompile Include="TS\Line.ts" />
     <TypeScriptCompile Include="TS\Sparks.ts" />
     <TypeScriptCompile Include="TS\Layouts.ts" />
     <TypeScriptCompile Include="TS\HueSatLight.ts" />

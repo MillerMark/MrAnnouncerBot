@@ -727,8 +727,8 @@
   releaseDrone(now: number, params: string, userId: string, displayName: string, color: string): any {
     allDrones.destroy(userId, addDroneExplosion);
     let drones: Sprites = dronesRed;
-    if (params === 'blue')
-      drones = dronesBlue;
+    //if (params === 'blue')
+    //  drones = dronesBlue;
     let myDrone: Drone = <Drone>this.createSprite(drones, now, this.createDrone);
     myDrone.height = drones.spriteHeight;
     myDrone.width = drones.spriteWidth;

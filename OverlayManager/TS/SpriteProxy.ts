@@ -126,6 +126,13 @@
     return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   }
 
+  pathVector(spriteWidth: number, spriteHeight: number): Line {
+    let halfWidth: number = spriteWidth / 2;
+    let halfHeight: number = spriteHeight / 2;
+    return Line.fromCoordinates(this.lastX + halfWidth, this.lastY + halfHeight,
+      this.x + halfWidth, this.y + halfHeight);
+  }
+
   changingDirection(now: number): void {
     var secondsPassed = (now - this.timeStart) / 1000;
     var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));

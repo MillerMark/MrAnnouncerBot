@@ -21,6 +21,8 @@
     this.loaded = false;
     this.moves = false;
     var self = this;
+    this.originX = 0;
+    this.originY = 0;
     this.baseAnimation.images[0].onload = function () {
       self.spriteWidth = (<HTMLImageElement>this).width;
       self.spriteHeight = (<HTMLImageElement>this).height;

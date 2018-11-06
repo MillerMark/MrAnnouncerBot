@@ -79,6 +79,7 @@ function updateScreen() {
   //explosion.draw(myContext, 0, 0);
 
   allSparks.draw(myContext, now);
+  sparkSmoke.draw(myContext, now);
 
   //drawCrossHairs(myContext, crossX, crossY);
 }
@@ -678,7 +679,7 @@ var horizontalDashedWall: WallSprites;
 var verticalDashedWall: WallSprites;
 
 var dronesRed: Sprites;
-var dronesBlue: Sprites;
+//var dronesBlue: Sprites;
 var allDrones: SpriteCollection;
 var allSeeds: SpriteCollection;
 
@@ -744,12 +745,15 @@ function loadDrones(color: string): Sprites {
   return drones;
 }
 
+var droneHealthLights: Sprites;
+
 
 function addDrones() {
   allDrones = new SpriteCollection();
 
-  dronesRed = loadDrones('Red');
-  dronesBlue = loadDrones('Blue');
+  //dronesRed = loadDrones('Red');
+  //dronesBlue = loadDrones('Blue');
+  dronesRed = loadDrones('192x90');
 }
 
 //function loadWatercolors(color: string): SpriteCollection {
@@ -861,14 +865,14 @@ function loadSparks(folder: string, frameCount: number, originX: number, originY
 
 function loadAllSparks() {
   allSparks = new SpriteCollection();
-  downAndLeftSparks = loadSparks('Down and Left', 13, 180, 4);
-  downAndRightSparks = loadSparks('Down and Right', 13, 10, 1);
-  left1Sparks = loadSparks('Left', 8, 355, 38);
-  left2Sparks = loadSparks('Left 2', 9, 242, 132);
-  right1Sparks = loadSparks('Right', 8, 9, 45);
+  downAndLeftSparks = loadSparks('Down and Left', 13, 90, 2);
+  downAndRightSparks = loadSparks('Down and Right', 13, 5, 1);
+  left1Sparks = loadSparks('Left', 8, 178, 19);
+  left2Sparks = loadSparks('Left 2', 9, 121, 66);
+  right1Sparks = loadSparks('Right', 8, 4, 23);
   right2Sparks = loadSparks('Right 2', 9, 6, 135);
-  upAndRightSparks = loadSparks('Up and Left', 9, 177, 352);
-  upAndLeftSparks = loadSparks('Up and Right', 9, 12, 355);
+  upAndRightSparks = loadSparks('Up and Right', 9, 6, 178);
+  upAndLeftSparks = loadSparks('Up and Left', 9, 88, 176);
 
   allSparks.add(downAndLeftSparks);
   allSparks.add(downAndRightSparks);
@@ -879,6 +883,8 @@ function loadAllSparks() {
   allSparks.add(upAndRightSparks);
   allSparks.add(upAndLeftSparks);
 }
+
+var sparkSmoke: Sprites;
 
 
 var allMeteors: SpriteCollection;
@@ -922,6 +928,8 @@ var coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationSty
 
 addSeeds();
 
+loadZaps();
+
 //var greenSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
 //greenSeeds.moves = true;
 
@@ -944,6 +952,13 @@ var purpleExplosions: Sprites = new Sprites("Explosion/Purple/Explosion", 179, 5
 
 loadWalls();
 loadDroneExplosions();
+droneHealthLights = new Sprites('Drones/192x90/Indicator', 60, 0, AnimationStyle.Static);
+
+const smokeFrameInterval: number = 40;
+sparkSmoke = new Sprites(`FireWall/Smoke/Smoke`, 45, smokeFrameInterval, AnimationStyle.Sequential, true);
+sparkSmoke.originX = 121;
+sparkSmoke.originY = 170;
+
 globalBypassFrameSkip = true;
 var redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
 redFlowers.returnFrameIndex = 128;
@@ -978,10 +993,13 @@ var crossY: number = 1080 / 2;
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
   if (params === 'wall') {
     horizontalSolidWall.sprites.push(new Wall(0, crossX - 300, crossY - 300, Orientation.Horizontal, WallStyle.Solid, 500));
-    //verticalSolidWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Vertical, WallType.Solid, 400));
-    verticalDashedWall.sprites.push(new Wall(0, crossX + 300, crossY + 300, Orientation.Vertical, WallStyle.Dashed, 400));
-    //horizontalDashedWall.sprites.push(new Wall(0, crossX, crossY, Orientation.Horizontal, WallType.Dashed, 600));
+    verticalSolidWall.sprites.push(new Wall(0, crossX + 200, crossY, Orientation.Vertical, WallStyle.Solid, 400));
+    verticalDashedWall.sprites.push(new Wall(0, crossX - 780, crossY, Orientation.Vertical, WallStyle.Dashed, 400));
+    horizontalDashedWall.sprites.push(new Wall(0, crossX - 300, crossY + 300, Orientation.Horizontal, WallStyle.Dashed, 500));
   }
+
+  if (params === 'smoke')
+    sparkSmoke.add(crossX, crossY);
 
   if (params === 'sparks 1')
     downAndRightSparks.add(crossX, crossY);
@@ -1000,5 +1018,3 @@ function test(params: string, userId: string, userName: string, displayName: str
   else if (params === 'sparks 8')
     upAndLeftSparks.add(crossX, crossY);
 }
-
-

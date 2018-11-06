@@ -4,10 +4,13 @@ var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
 
 const meteorWidth: number = 80;
 const meteorHeight: number = 80;
-const droneWidth: number = 128;
-const droneHeight: number = 60;
+const droneWidth: number = 192;
+const droneHeight: number = 90;
+//const droneWidth: number = 128;
+//const droneHeight: number = 60;
 
 class Drone extends SpriteProxy {
+  health: number = 4;
   meteor: Meteor;
   displayName: string;
   userId: string;
@@ -24,7 +27,7 @@ class Drone extends SpriteProxy {
   downThrustOffTime: number;
   downThrustOnTime: number;
   lastTimeWeAdvancedTheSparksFrame: number;
-  sparkFrameInterval: number = 40;
+  sparkFrameInterval: number = 20;
 
   private _color: string;
   private lastUpdateTime: number;
@@ -265,6 +268,22 @@ class Drone extends SpriteProxy {
   }
 
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
+    let pitch: number;
+    if (this.frameIndex < 10) { // Up
+      pitch = 0;
+    }
+    else if (this.frameIndex < 20) { // Flat
+      pitch = 1;
+    }
+    else { // Down 
+      pitch = 2;
+    }
+    let roll: number = Math.floor((this.frameIndex % 10) / 2);
+
+    let healthIndex: number = pitch * 20 + roll * 4 + 4 - this.health;
+
+    droneHealthLights.baseAnimation.drawByIndex(context, this.x, this.y, healthIndex);
+
     const fontSize: number = 14;
     context.font = fontSize + 'px Arial';
 
@@ -296,7 +315,7 @@ class Drone extends SpriteProxy {
       if (msPassed > this.sparkFrameInterval) {
         this.lastTimeWeAdvancedTheSparksFrame = now;
         this.sparkFrameIndex++;
-        if (this.sparkFrameIndex > this.parentSparkSprites.baseAnimation.frameCount)
+        if (this.sparkFrameIndex >= this.parentSparkSprites.baseAnimation.frameCount)
           this.parentSparkSprites = null;
       }
 

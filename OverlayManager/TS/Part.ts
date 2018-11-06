@@ -9,7 +9,7 @@ class Part {
   lastUpdateTime: any;
   frameCount: number;
 
-  constructor(fileName: string, frameCount: number,
+  constructor(private fileName: string, frameCount: number,
     private animationStyle: AnimationStyle,
     private offsetX: number,
     private offsetY: number,
@@ -139,10 +139,12 @@ class Part {
   }
 
   drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number): void {
-    context.drawImage(this.images[frameIndex],
+    if (!this.images[frameIndex]) {
+      console.log('frameIndex: ' + frameIndex + ', fileName: ' + this.fileName);
+    }
+    else context.drawImage(this.images[frameIndex],
       x + this.offsetX + this.getJiggle(this.jiggleX),
       y + this.offsetY + this.getJiggle(this.jiggleY));
-
   }
 
   // ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)

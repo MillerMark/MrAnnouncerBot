@@ -169,4 +169,10 @@ class Wall extends SpriteProxy {
 
     baseAnimation.drawCroppedByIndex(context, this.x + xOffset, this.y + yOffset, this.frameIndex, sx, sy, width, height, width, height);
   }
+
+  getLine(): any {
+    return Line.fromCoordinates(this.endCap1.x + endCaps.spriteWidth / 2, this.endCap1.y + endCaps.spriteHeight / 2,
+      this.endCap2.x + endCaps.spriteWidth / 2, this.endCap2.y + endCaps.spriteHeight / 2);
+  }
+
 }
