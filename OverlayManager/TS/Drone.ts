@@ -1,4 +1,18 @@
-﻿//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
+﻿// TODO: Consider refactoring this to a Zap class or a SoundEffects class.
+var zapSoundEffects: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
+const numZapSoundEffects: number = 5;
+
+function loadZaps() {
+  for (var i = 0; i < numZapSoundEffects; i++) {
+    zapSoundEffects.push(new Audio(Folders.assets + `Sound Effects/ElectricZap${i}.wav`))
+  }
+}
+
+function playZap() {
+  let zapIndex: number = Math.floor(Math.random() * numZapSoundEffects);
+  zapSoundEffects[zapIndex].play();
+}
+
 
 var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
 
@@ -8,6 +22,8 @@ const droneWidth: number = 192;
 const droneHeight: number = 90;
 //const droneWidth: number = 128;
 //const droneHeight: number = 60;
+
+//` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 
 class Drone extends SpriteProxy {
   health: number = 4;
@@ -63,6 +79,44 @@ class Drone extends SpriteProxy {
     this.lastVelocityY = 0;
     this.lastNow = now;
     this.lastTimeWeAdvancedTheSparksFrame = now;
+  }
+
+  hitWall(now: number) {
+    if (this.health > 1) {
+      const minTimeBetweenExplosions: number = 250;
+      if (!this.sparkCreationTime || now - this.sparkCreationTime > minTimeBetweenExplosions) {
+        this.health--;
+        playZap();
+      }
+      switch (Math.floor(Math.random() * 8)) {
+        case 0:
+          this.setSparks(downAndRightSparks);
+          break;
+        case 1:
+          this.setSparks(downAndLeftSparks);
+          break;
+        case 2:
+          this.setSparks(left1Sparks);
+          break;
+        case 3:
+          this.setSparks(left2Sparks);
+          break;
+        case 4:
+          this.setSparks(right1Sparks);
+          break;
+        case 5:
+          this.setSparks(right2Sparks);
+          break;
+        case 6:
+          this.setSparks(upAndRightSparks);
+          break;
+        case 7:
+          this.setSparks(upAndLeftSparks);
+          break;
+      }
+    }
+    else
+      this.selfDestruct();
   }
 
   getAlpha(now: number): number {
@@ -200,6 +254,7 @@ class Drone extends SpriteProxy {
         meteorAdjustY = -6;
       else if (pitch == 2)
         meteorAdjustY = 8;
+      this.meteor.storeLastPosition();
       this.meteor.x = this.x + droneWidth / 2 - meteorWidth / 2;
       this.meteor.y = this.y + droneHeight / 2 - meteorHeight + meteorAdjustY;
     }
@@ -418,7 +473,7 @@ class Drone extends SpriteProxy {
   }
 
 
-  matches(matchData: string): boolean {
+  matches(matchData: any): boolean {
     return this.userId == matchData;
   }
 

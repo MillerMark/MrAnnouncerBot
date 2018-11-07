@@ -5,7 +5,8 @@
 
 enum WallStyle {
   Solid,
-  Dashed
+  Dashed,
+  Double
 }
 
 class EndCap extends SpriteProxy{
@@ -20,7 +21,6 @@ class EndCap extends SpriteProxy{
   static readonly totalCapDisplacement: number = Physics.getDisplacement(EndCap.expansionTime,
                                                                          EndCap.initialExpansionVelocity,
                                                                          EndCap.suction);
-
 
   getVerticalThrust(now: number): number {
     return EndCap.gravity;
@@ -40,7 +40,7 @@ class Wall extends SpriteProxy {
   stillFlying: boolean;
 
   constructor(startingFrameNumber: number, x: number, y: number,
-    public orientation: Orientation, public wallType: WallStyle,
+    public orientation: Orientation, public wallStyle: WallStyle,
     public length: number) {
     super(startingFrameNumber, x, y, -1);
     this.actualLength = 0;

@@ -34,7 +34,7 @@
     this.lastTimeWeAdvancedTheFrame = performance.now();
   }
 
-  indexOf(matchData: string): number {
+  indexOf(matchData: any): number {
     return this.sprites.findIndex(sprite => sprite.matches(matchData))
   }
 
@@ -61,7 +61,7 @@
     });
   }
 
-  destroy(matchData: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): void {
+  destroy(matchData: any, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): void {
     let index: number = this.indexOf(matchData);
     if (index >= 0) {
       var thisSprite: SpriteProxy = this.sprites[index];

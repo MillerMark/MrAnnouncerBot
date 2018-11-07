@@ -45,9 +45,9 @@
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.draw(context, now); });
   }
 
-  destroy(userId: string, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): any {
-    this.allSprites.forEach(function (sprites: Sprites) { sprites.destroy(userId, destroyFunc) });
-    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.destroy(userId, destroyFunc) });
+  destroy(matchData: any, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): any {
+    this.allSprites.forEach(function (sprites: Sprites) { sprites.destroy(matchData, destroyFunc) });
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.destroy(matchData, destroyFunc) });
   }
 
   changingDirection(now: number): any {

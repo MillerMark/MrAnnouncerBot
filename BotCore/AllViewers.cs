@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using BotCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 using TwitchLib.Api.Models.v5.Users;
 using TwitchLib.Client.Models;
 
-namespace MrAnnouncerBot
+namespace BotCore
 {
 	public class AllViewers
 	{

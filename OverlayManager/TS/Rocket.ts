@@ -779,7 +779,7 @@
         spriteArray = sprites3;
     }
 
-    this.createSprite(spriteArray, now);
+    this.createSprite(spriteArray, now, createSpriteFunc);
   }
 
   createSprite(spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy): SpriteProxy {

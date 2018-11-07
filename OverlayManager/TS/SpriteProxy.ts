@@ -157,7 +157,7 @@
     // Descendants can override if they want to draw...
   }
 
-  matches(matchData: string): boolean {
+  matches(matchData: any): boolean {
     return false; // Descendants can override if they want to implement a custom search/find functionality...
   }
 
