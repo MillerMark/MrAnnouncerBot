@@ -1,4 +1,9 @@
-﻿class Game {
+﻿const blockMargin: number = 12;
+const blockSize: number = 44;
+const topMargin: number = 12;
+const leftMargin: number = 12;
+
+class Game {
   startTime: Date;
   digits: Sprites = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
   public score: Digits;
@@ -12,6 +17,12 @@
 
   draw(context: CanvasRenderingContext2D) {
     this.score.draw(context);
+  }
+
+  end(): any {
+    allWalls.destroyAll();
+    endCaps.destroyAll();
+    coins.destroyAll();
   }
 }
 
@@ -27,7 +38,7 @@ class GravityGames {
   }
 
   constructor() {
-    
+
     //` ![](ADA02D1B4E37D1836A73BE11024DE9AD.png;;;0.00872,0.00872)
     var earth: Planet = new Planet('Earth', 9.8, 149.6, 5.97, 12756, 5514, 11.2, 23.9, 24, 365.2, 29.8, 0, 0.017, 23.4, 15, 1, 1, false, true, 'earth');
     //` ![](2EA5331AC1B69756EDB184EB5997EFAF.png;;;0.00872,0.00872)
@@ -65,6 +76,192 @@ class GravityGames {
     this.activePlanet = earth;
   }
 
+  startGame(layout: string[]): any {
+    if (this.activeGame)
+      this.activeGame.end();
+    this.newGame();
+    this.addGameWalls(layout);
+    this.addCoins(layout);
+  }
+
+  addCoins(layout: string[]): any {
+    for (var row = 0; row < layout.length; row++) {
+      let line: string = layout[row];
+      for (var column = 0; column < line.length; column++) {
+        let char: string = line[column];
+        if (char === '*')  // Coin!
+          this.addCoin(column, row);
+      }
+    }
+  }
+
+  addCoin(column: number, row: number): any {
+    const blockWidth: number = 32;
+    const margin: number = 12;
+    let x: number = margin + column * (blockWidth + margin);
+    let y: number = margin + row * (blockWidth + margin);
+    coins.sprites.push(new SpriteProxy(Random.getInt(coins.baseAnimation.frameCount), x, y));
+  }
+
+  addHorizontalWall(wallStyle: WallStyle, startColumn: number, endColumn: number, row: number) {
+    if (startColumn === 0 && endColumn === 0)
+      return;
+
+    endColumn++;
+
+    let wallSprites: SpriteProxy[] = null;
+    switch (wallStyle) {
+      case WallStyle.Dashed: {
+        wallSprites = horizontalDashedWall.sprites;
+        break;
+      }
+      case WallStyle.Solid: {
+        wallSprites = horizontalSolidWall.sprites;
+        break;
+      }
+      case WallStyle.Double: {
+        wallSprites = horizontalDoubleWall.sprites;
+        break;
+      }
+      default:
+        return;
+    }
+    if (!wallSprites)
+      return;
+
+    let centerX: number = blockSize * (startColumn + endColumn) / 2 - blockMargin / 2;
+    let centerY: number = row * blockSize + endCaps.spriteHeight / 2 - blockSize / 2 + topMargin / 2;
+    let length: number = (endColumn - startColumn) * blockSize - 2 * leftMargin;
+    wallSprites.push(new Wall(0, centerX + leftMargin, centerY + topMargin, Orientation.Horizontal, wallStyle, length));
+  }
+
+  addVerticalWall(wallStyle: WallStyle, column: number, startRow: number, endRow: number): any {
+    if (startRow === 0 && endRow === 0)
+      return;
+
+    endRow++;
+
+    let wallSprites: SpriteProxy[] = null;
+    switch (wallStyle) {
+      case WallStyle.Dashed: {
+        wallSprites = verticalDashedWall.sprites;
+        break;
+      }
+      case WallStyle.Solid: {
+        wallSprites = verticalSolidWall.sprites;
+        break;
+      }
+      case WallStyle.Double: {
+        wallSprites = verticalDoubleWall.sprites;
+        break;
+      }
+      default:
+        return;
+    }
+    if (!wallSprites)
+      return;
+
+    let centerY: number = blockSize * (startRow + endRow) / 2 - blockMargin / 2;
+    let centerX: number = column * 44 + endCaps.spriteWidth / 2 - blockSize / 2 + topMargin / 2;
+    let length: number = (endRow - startRow) * blockSize - 2 * leftMargin;
+
+    wallSprites.push(new Wall(0, centerX + leftMargin, centerY + topMargin, Orientation.Vertical, wallStyle, length));
+  }
+
+
+  /* 
+     ¦  Dashed vertical line
+     -  Dashed horizontal line
+     ═  Bouncy horizontal line
+     ║  Bouncy vertical line
+     |  Solid vertical line
+     ─  Solid horizontal line
+     +  Intersection
+  */
+
+  addHorizontalGameWalls(layout: string[]): void {
+    // Process horizontally...
+    let collectingWallStyle: WallStyle = WallStyle.None;
+    for (var row = 0; row < layout.length; row++) {
+      let line: string = layout[row];
+      let wallStartColumn: number = 0;
+      let wallEndColumn: number = 0;
+
+      let addBrickToWall = (wallStyle: WallStyle) => {
+        if (collectingWallStyle !== wallStyle) {
+          this.addHorizontalWall(collectingWallStyle, wallStartColumn, wallEndColumn, row);
+          wallStartColumn = column;
+        }
+        wallEndColumn = column;
+        collectingWallStyle = wallStyle;
+      }
+
+      for (var column = 0; column < line.length; column++) {
+        let char: string = line[column];
+
+        // TODO: Handle "+" intersections.
+
+        if (char === '-') {
+          addBrickToWall(WallStyle.Dashed);
+        }
+        else if (char === '═') {
+          addBrickToWall(WallStyle.Double);
+        }
+        else if (char === '─') {
+          addBrickToWall(WallStyle.Solid);
+        }
+        else if (collectingWallStyle != WallStyle.None) {
+          this.addHorizontalWall(collectingWallStyle, wallStartColumn, wallEndColumn, row);
+          collectingWallStyle = WallStyle.None;
+        }
+      }
+    }
+  }
+
+  addVerticalGameWalls(layout: string[]): any {
+    let collectingWallStyle: WallStyle = WallStyle.None;
+
+    let wallStartRow: number = 0;
+    let wallEndRow: number = 0;
+
+    let addBrickToWall = (wallStyle: WallStyle) => {
+      if (collectingWallStyle !== wallStyle) {
+        this.addVerticalWall(collectingWallStyle, column, wallStartRow, wallEndRow);
+        wallStartRow = row;
+      }
+      wallEndRow = row;
+      collectingWallStyle = wallStyle;
+    }
+
+    for (var column = 0; column < layout[0].length; column++) {
+      for (var row = 0; row < layout.length; row++) {
+        let line: string = layout[row];
+        let char: string = line[column];
+
+        // TODO: Handle "+" intersections.
+
+        if (char === '¦') {
+          addBrickToWall(WallStyle.Dashed);
+        }
+        else if (char === '║') {
+          addBrickToWall(WallStyle.Double);
+        }
+        else if (char === '|') {
+          addBrickToWall(WallStyle.Solid);
+        }
+        else if (collectingWallStyle != WallStyle.None) {
+          this.addVerticalWall(collectingWallStyle, column, wallStartRow, wallEndRow);
+          collectingWallStyle = WallStyle.None;
+        }
+      }
+    }
+  }
+
+  addGameWalls(layout: string[]): void {
+    this.addHorizontalGameWalls(layout);
+    this.addVerticalGameWalls(layout);
+  }
+
   cyclePlanet() {
     for (var i = 0; i < this.planets.length; i++) {
       if (this.planets[i] == this.activePlanet) {
@@ -90,7 +287,7 @@ class GravityGames {
     myRocket.changingDirection(now);
     allMeteors.changingDirection(now);
     allSeeds.changingDirection(now);
-    
+
     beesYellow.changingDirection(now);
     this.activePlanet = planet;
     this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);

@@ -20,7 +20,8 @@ function updateScreen() {
   var coinsCollected: number = coins.collect(myRocket.x, myRocket.y, 310, 70);
   if (coinsCollected > 0) {
     new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
-    gravityGames.activeGame.score.value += coinsCollected;
+    if (gravityGames.activeGame.score)
+      gravityGames.activeGame.score.value += coinsCollected;
   }
 
   allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
@@ -39,7 +40,6 @@ function updateScreen() {
 
   allSplats.draw(myContext, now);
 
-  coins.draw(myContext, now);
   //grass1.draw(myContext, now);
   //grass2.draw(myContext, now);
   //grass3.draw(myContext, now);
@@ -60,10 +60,10 @@ function updateScreen() {
   allWalls.draw(myContext, now);
   allDrones.draw(myContext, now);
   allMeteors.draw(myContext, now);
+
+  endCaps.draw(myContext, now);
+
   myRocket.draw(myContext, now);
-  redExplosions.draw(myContext, now);
-  blueExplosions.draw(myContext, now);
-  purpleExplosions.draw(myContext, now);
   purpleFlowers.draw(myContext, now);
   //blueFlowers.draw(myContext, now);
   redFlowers.draw(myContext, now);
@@ -71,16 +71,19 @@ function updateScreen() {
   //yellowFlowers2.draw(myContext, now);
   yellowFlowers3.draw(myContext, now);
 
-  endCaps.draw(myContext, now);
-
+  redExplosions.draw(myContext, now);
+  blueExplosions.draw(myContext, now);
+  purpleExplosions.draw(myContext, now);
   droneExplosions.draw(myContext, now);
-  if (quiz)
-    quiz.draw(myContext);
   //explosion.draw(myContext, 0, 0);
 
   allSparks.draw(myContext, now);
   sparkSmoke.draw(myContext, now);
 
+  coins.draw(myContext, now);
+
+  if (quiz)
+    quiz.draw(myContext);
   //drawCrossHairs(myContext, crossX, crossY);
 }
 
@@ -90,7 +93,7 @@ function handleKeyDown(evt) {
   const Key_B = 66;
   const Key_C = 67;
   const Key_D = 68;
-  const Key_G = 71;
+  //const Key_G = 71;
   const Key_M = 77;
   const Key_O = 79;
   const Key_P = 80;
@@ -388,7 +391,7 @@ function addMeteorExplosion(meteors: Sprites, x: number) {
 function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {
   let x: number = drone.x + spriteWidth / 2;
   let y: number = drone.y + spriteHeight / 2;
-  let thisDroneExplosion: Sprites = droneExplosions.allSprites[Math.round(Math.random() * droneExplosions.allSprites.length)];
+  let thisDroneExplosion: Sprites = droneExplosions.allSprites[Math.floor(Math.random() * droneExplosions.allSprites.length)];
   thisDroneExplosion.sprites.push(new SpriteProxy(0, x - thisDroneExplosion.spriteWidth / 2, y - thisDroneExplosion.spriteHeight / 2));
   new Audio(Folders.assets + 'Sound Effects/DroneGoBoom.wav').play();
 }
@@ -935,6 +938,12 @@ function addMeteors() {
   allMeteors.add(purpleMeteors);
 }
 
+function runStartupTests() {
+  Line.runTests();
+}
+
+//runStartupTests();
+
 var gravityGames = new GravityGames();
 
 document.onkeydown = handleKeyDown;
@@ -948,7 +957,7 @@ var started = false;
 myRocket.x = 0;
 myRocket.y = 0;
 
-var coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, outlineChatRoom /* allButMark outlineCodeEditor */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, outlineGameSurface /* outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
 
 addSeeds();
 
@@ -1008,13 +1017,19 @@ globalLoadSprites = true;
 
 var backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
-setInterval(updateScreen, 10);
 gravityGames.selectPlanet('Earth');
+gravityGames.newGame();
+
+setInterval(updateScreen, 10);
+
 
 var crossX: number = 1920 / 2;
 var crossY: number = 1080 / 2;
 
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
+  if (params === 'game') {
+    gravityGames.startGame(wallBoxesTest);
+  }
   if (params === 'drop') {
     horizontalDashedWall.sprites.push(new Wall(0, 200 + endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
     horizontalSolidWall.sprites.push(new Wall(0, 200 + endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));

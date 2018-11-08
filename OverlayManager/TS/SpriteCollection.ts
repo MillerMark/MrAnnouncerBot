@@ -28,6 +28,11 @@
     });
   }
 
+  destroyAll(): void{
+    this.allSprites.forEach(function (theseSprites: Sprites) { theseSprites.destroyAll(); });
+    this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.destroyAll(); });
+  }
+
   destroyAllBy(lifeTimeMs: number): any {
     this.allSprites.forEach(function (theseSprites: Sprites) {
       theseSprites.sprites.forEach(function (sprite: SpriteProxy) {

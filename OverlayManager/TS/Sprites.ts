@@ -11,8 +11,10 @@
   segmentSize: number;
   originX: number;
   originY: number;
+  opacity: number;
 
   constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, private animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
+    this.opacity = 1;
     this.sprites = [];
     this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
     this.returnFrameIndex = 0;
@@ -33,6 +35,11 @@
 
     this.lastTimeWeAdvancedTheFrame = performance.now();
   }
+
+  destroyAll(): any {
+    this.sprites = [];
+  }
+
 
   indexOf(matchData: any): number {
     return this.sprites.findIndex(sprite => sprite.matches(matchData))
@@ -253,7 +260,7 @@
     this.advanceFrames(now);
     let self: Sprites = this;
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      context.globalAlpha = sprite.getAlpha(now);
+      context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
       if (sprite.stillAlive(now) && sprite.systemDrawn) {
         sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);

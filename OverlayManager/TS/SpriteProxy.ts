@@ -13,6 +13,7 @@
   cropLeft: number;
   cropRight: number;
   cropBottom: number;
+  opacity: number;
 
   startX: any;
   startY: any;
@@ -20,6 +21,7 @@
   lastY: number;
 
   constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
+    this.opacity = 1;
     this.frameIndex = startingFrameNumber;
     this.timeStart = performance.now();
     this.velocityX = 0;
@@ -59,14 +61,14 @@
 
   getAlpha(now: number): number {
     if (!this.expirationDate)
-      return 1;
+      return this.opacity;
 
     let lifeRemaining: number = this.expirationDate - now;
     const fadeOutTime: number = 4000;
     if (lifeRemaining < fadeOutTime && this.fadeOnDestroy) {
-      return lifeRemaining / fadeOutTime;
+      return this.opacity * lifeRemaining / fadeOutTime;
     }
-    return 1;
+    return this.opacity;
   }
 
 
@@ -158,7 +160,7 @@
   }
 
   matches(matchData: any): boolean {
-    return false; // Descendants can override if they want to implement a custom search/find functionality...
+    return matchData === null;   // Descendants can override if they want to implement a custom search/find functionality...
   }
 
   storeLastPosition() {

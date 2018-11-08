@@ -35,4 +35,80 @@
   run(): number {
     return this.p2.x - this.p1.x;
   }
+
+  slope() {
+    return this.rise() / this.run();
+  }
+
+  extend(length: number): any {
+    /* 
+     
+     x*x + y*y = length*length
+
+     y/x = this.slope()
+     y = this.slope() * x;
+
+     x*x + (this.slope() * x)*(this.slope() * x) = length*length
+
+     x*x*(this.slope() * this.slope() + 1) = length*length
+
+     x = Math.sqrt(length*length/(this.slope() * this.slope() + 1))
+
+     */
+
+    if (this.run() === 0)
+      return new Line(this.p1, new Point(this.p2.x, this.p2.y + length * Math.sign(this.rise())));
+
+    let slope: number = this.slope();
+
+    let extendX: number = Math.sqrt(length * length / (slope * slope + 1)) * Math.sign(this.run());
+    let extendY: number = slope * extendX; // * Math.sign(this.rise())
+    
+    let newLine: Line = new Line(this.p1, new Point(this.p2.x + extendX, this.p2.y + extendY));
+    if (Math.round(10000 * newLine.slope()) !== Math.round(10000 * this.slope()))
+      console.log('slopeMisMatch: ' + newLine.slope() + ' != ' + this.slope());
+    return newLine;
+  }
+
+  static assertTrue(test: boolean) {
+    if (!test)
+      throw new DOMException();
+  }
+
+  static testMatchingSlopes() {
+    let line1: Line = Line.fromCoordinates(0, 0, 8, 6);
+    let line2: Line = Line.fromCoordinates(0, 0, 16, 12);
+    this.assertTrue(line1.slope() === line2.slope());
+  }
+
+  static testExtension() {
+    let line1: Line = Line.fromCoordinates(0, 0, 8, 6);
+    let line2: Line = line1.extend(5);
+    this.assertTrue(line2.matchesCoordinates(0, 0, 12, 9));
+
+    line1 = Line.fromCoordinates(0, 0, -8, 6);
+    line2 = line1.extend(5);
+    this.assertTrue(line2.matchesCoordinates(0, 0, -12, 9));
+
+    line1 = Line.fromCoordinates(0, 0, 8, -6);
+    line2 = line1.extend(5);
+    this.assertTrue(line2.matchesCoordinates(0, 0, 12, -9));
+
+    line1 = Line.fromCoordinates(0, 0, -8, -6);
+    line2 = line1.extend(5);
+    this.assertTrue(line2.matchesCoordinates(0, 0, -12, -9));
+  }
+
+  static runTests() {
+    this.testMatchingSlopes();
+    this.testExtension();
+  }
+
+  equals(line: Line): boolean {
+    return this.p1.equals(line.p1) && this.p2.equals(line.p2);
+  }
+
+  matchesCoordinates(x1: number, y1: number, x2: number, y2: number): boolean {
+    return this.p1.x === x1 && this.p1.y === y1 && this.p2.x === x2 && this.p2.y === y2;
+  }
 }

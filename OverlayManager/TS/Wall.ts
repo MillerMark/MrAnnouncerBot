@@ -4,6 +4,7 @@
 }
 
 enum WallStyle {
+  None,
   Solid,
   Dashed,
   Double

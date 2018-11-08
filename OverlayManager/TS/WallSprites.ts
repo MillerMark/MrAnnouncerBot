@@ -16,17 +16,19 @@
           testSprite.changingDirection(now);
           testSprite.x = testSprite.lastX;
           testSprite.y = testSprite.lastY;
+          testSprite.startX = testSprite.lastX;
+          testSprite.startY = testSprite.lastY;
 
           let bounceAmplification: number = 1;
           if (wallSprite.wallStyle === WallStyle.Double)
             bounceAmplification = 1.05;
 
           const minBounceBackVelocity: number = 1.2; // meters/second
-          const maxBounceVelocity: number = 25; // meters/second
-          if (this.orientation === Orientation.Horizontal)
+          const maxBounceVelocity: number = 15; // meters/second
+          if (this.orientation === Orientation.Horizontal) 
             testSprite.velocityY = -Math.max(minBounceBackVelocity, Math.min(bounceAmplification * Math.abs(testSprite.velocityY), maxBounceVelocity)) * Math.sign(testSprite.velocityY);
           else
-            testSprite.velocityX = -Math.max(minBounceBackVelocity, Math.min(bounceAmplification * Math.abs(testSprite.velocityX), maxBounceVelocity)) * Math.sign(testSprite.velocityX);;
+            testSprite.velocityX = -Math.max(minBounceBackVelocity, Math.min(bounceAmplification * Math.abs(testSprite.velocityX), maxBounceVelocity)) * Math.sign(testSprite.velocityX);
         }
 
 
@@ -39,7 +41,8 @@
             testSprite.hitWall(now);
         }
         else if (testSprite instanceof Meteor) {
-          sparkSmoke.add(testSprite.x + meteorWidth / 2, testSprite.y + meteorHeight / 2, 0);
+          let smoke: SpriteProxy = sparkSmoke.add(testSprite.x + meteorWidth / 2, testSprite.y + meteorHeight / 2, 0);
+          smoke.opacity = 0.5;
 
           if (wallSprite.wallStyle === WallStyle.Solid)
             testSprite.blowUp();

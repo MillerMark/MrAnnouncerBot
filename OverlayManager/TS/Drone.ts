@@ -16,10 +16,9 @@ function playZap() {
 
 var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
 
-const meteorWidth: number = 80;
-const meteorHeight: number = 80;
 const droneWidth: number = 192;
 const droneHeight: number = 90;
+const dronePathExtension: number = 18;
 //const droneWidth: number = 128;
 //const droneHeight: number = 60;
 
@@ -115,8 +114,11 @@ class Drone extends SpriteProxy {
           break;
       }
     }
-    else
+    else {
+
       this.selfDestruct();
+    }
+      
   }
 
   getAlpha(now: number): number {
@@ -584,5 +586,9 @@ class Drone extends SpriteProxy {
       this.meteor.owned = false;
       this.meteor.owner = null;
     }
+  }
+
+  pathVector(spriteWidth: number, spriteHeight: number): Line {
+    return super.pathVector(spriteWidth, spriteHeight).extend(dronePathExtension);
   }
 }
