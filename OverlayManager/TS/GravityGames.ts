@@ -210,10 +210,18 @@ class GravityGames {
         else if (char === '─') {
           addBrickToWall(WallStyle.Solid);
         }
+        else if (char === '+') {
+          addBrickToWall(collectingWallStyle);
+        }
         else if (collectingWallStyle != WallStyle.None) {
           this.addHorizontalWall(collectingWallStyle, wallStartColumn, wallEndColumn, row);
           collectingWallStyle = WallStyle.None;
         }
+      }
+
+      if (collectingWallStyle != WallStyle.None) {
+        this.addHorizontalWall(collectingWallStyle, wallStartColumn, wallEndColumn, row);
+        collectingWallStyle = WallStyle.None;
       }
     }
   }
@@ -249,10 +257,18 @@ class GravityGames {
         else if (char === '|') {
           addBrickToWall(WallStyle.Solid);
         }
+        else if (char === '+') {
+          addBrickToWall(collectingWallStyle);
+        }
         else if (collectingWallStyle != WallStyle.None) {
           this.addVerticalWall(collectingWallStyle, column, wallStartRow, wallEndRow);
           collectingWallStyle = WallStyle.None;
         }
+      }
+
+      if (collectingWallStyle != WallStyle.None) {
+        this.addVerticalWall(collectingWallStyle, column, wallStartRow, wallEndRow);
+        collectingWallStyle = WallStyle.None;
       }
     }
   }

@@ -1030,6 +1030,19 @@ function test(params: string, userId: string, userName: string, displayName: str
   if (params === 'game') {
     gravityGames.startGame(wallBoxesTest);
   }
+
+  if (params === '+') {
+    gravityGames.startGame(wallIntersectionTest);
+  }
+
+  if (params === 'delta') {
+    gravityGames.startGame(wallChangeTest);
+  }
+
+  if (params === 'edge') {
+    gravityGames.startGame(wallEdgeTest);
+  }
+
   if (params === 'drop') {
     horizontalDashedWall.sprites.push(new Wall(0, 200 + endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
     horizontalSolidWall.sprites.push(new Wall(0, 200 + endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));
