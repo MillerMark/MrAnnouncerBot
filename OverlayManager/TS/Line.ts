@@ -1,4 +1,6 @@
-﻿class Line {
+﻿
+
+class Line {
   constructor(public p1: Point, public p2: Point) {
   }
 
@@ -41,39 +43,48 @@
   }
 
   extend(length: number): any {
-    /* 
-     
-     x*x + y*y = length*length
 
-     y/x = this.slope()
-     y = this.slope() * x;
+    //`+Extending vector (0,0 → 8,6) by length 5:
+        //`![](31C4E7169A9C932DA136CC38CA674B88.png;;;0.01434,0.01434)
 
-     x*x + (this.slope() * x)*(this.slope() * x) = length*length
+     //`Challenge: determine the **x** and **y** **offsets** to extend this vector by the given *length*.
 
-     x*x*(this.slope() * this.slope() + 1) = length*length
+     //`-Pythagorean Theorem:
+     //`  x² + y² = length²
 
-     x = Math.sqrt(length*length/(this.slope() * this.slope() + 1))
+     //`-Slope equation:
+     //`  y/x = rise/run = slope
+     //`  y = slope * x;
 
-     */
+     //`-Substituting y:
+     //`  x² + (slope * x)² = length²
+
+     //`-Solve for x:
+     //`  x²(slope² + 1) = length²
+     //`  x = Math.sqrt(length²/(slope² + 1))
 
     if (this.run() === 0)
-      return new Line(this.p1, new Point(this.p2.x, this.p2.y + length * Math.sign(this.rise())));
+      return new Line(this.p1,
+        new Point(this.p2.x, this.p2.y + length * Math.sign(this.rise())));
 
     let slope: number = this.slope();
 
     let extendX: number = Math.sqrt(length * length / (slope * slope + 1)) * Math.sign(this.run());
-    let extendY: number = slope * extendX; // * Math.sign(this.rise())
+    let extendY: number = slope * extendX;
     
-    let newLine: Line = new Line(this.p1, new Point(this.p2.x + extendX, this.p2.y + extendY));
-    if (Math.round(10000 * newLine.slope()) !== Math.round(10000 * this.slope()))
-      console.log('slopeMisMatch: ' + newLine.slope() + ' != ' + this.slope());
-    return newLine;
+    return new Line(this.p1, new Point(this.p2.x + extendX, this.p2.y + extendY));
   }
 
-  static assertTrue(test: boolean) {
-    if (!test)
-      throw new DOMException();
+  equals(line: Line): boolean {
+    return this.p1.equals(line.p1) && this.p2.equals(line.p2);
   }
+
+  matchesCoordinates(x1: number, y1: number, x2: number, y2: number): boolean {
+    return this.p1.x === x1 && this.p1.y === y1 && this.p2.x === x2 && this.p2.y === y2;
+  }
+
+  //`!────────────────────────────────────────────────────────────────────────────────────
+  //`!────────────────────────────────────────────────────────────────────────────────────
 
   static testMatchingSlopes() {
     let line1: Line = Line.fromCoordinates(0, 0, 8, 6);
@@ -104,11 +115,8 @@
     this.testExtension();
   }
 
-  equals(line: Line): boolean {
-    return this.p1.equals(line.p1) && this.p2.equals(line.p2);
-  }
-
-  matchesCoordinates(x1: number, y1: number, x2: number, y2: number): boolean {
-    return this.p1.x === x1 && this.p1.y === y1 && this.p2.x === x2 && this.p2.y === y2;
+  static assertTrue(test: boolean) {
+    if (!test)
+      throw new DOMException();
   }
 }

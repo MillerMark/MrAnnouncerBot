@@ -774,7 +774,6 @@ function loadDrones(color: string): Sprites {
 
 var droneHealthLights: Sprites;
 
-
 function addDrones() {
   allDrones = new SpriteCollection();
 
@@ -919,7 +918,7 @@ var redMeteors: Sprites;
 var blueMeteors: Sprites;
 var purpleMeteors: Sprites;
 
-//`![](5F8B49E97A5F459E6434A11E7FD272BE.png)
+//`![Meteor](5F8B49E97A5F459E6434A11E7FD272BE.png)
 function addMeteors() {
   allMeteors = new SpriteCollection();
 
@@ -1041,6 +1040,26 @@ function test(params: string, userId: string, userName: string, displayName: str
 
   if (params === 'edge') {
     gravityGames.startGame(wallEdgeTest);
+  }
+
+  if (params === 'simple') {
+    gravityGames.startGame(simpleWallChangeTest);
+  }
+
+  if (params === 'corner') {
+    gravityGames.startGame(wallCornerTest);
+  }
+
+  if (params === 'top') {
+    gravityGames.startGame(startTopTest);
+  }
+
+  if (params === 'sample') {
+    gravityGames.startGame(sampleGame);
+  }
+
+  if (params === 'sample2') {
+    gravityGames.startGame(sampleGame2);
   }
 
   if (params === 'drop') {

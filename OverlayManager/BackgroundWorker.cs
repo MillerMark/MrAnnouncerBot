@@ -242,6 +242,7 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand(cmdText, args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
+
 		void DroneRight(string args, ChatMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("DroneRight", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
@@ -338,6 +339,8 @@ namespace OverlayManager
 				case "violet":
 				case "magenta":
 					Paint(cmdText, args, chatMessage); break;
+				case "purple":
+					Paint("violet", args, chatMessage); break;
 			}
 			switch (cmdText)
 			{
