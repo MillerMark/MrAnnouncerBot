@@ -58,12 +58,12 @@ class Wall extends SpriteProxy {
     }
 
     let ySafetyDrop: number = endCaps.spriteHeight;
-    let heightMeters: number = Physics.pixelsToMeters(1080 - this.finalCapTop + ySafetyDrop);
+    let heightMeters: number = Physics.pixelsToMeters(screenHeight - this.finalCapTop + ySafetyDrop);
     this.airTime = Physics.getDropTime(heightMeters, EndCap.gravity);
     let initialVelocityY: number = Physics.getFinalVelocity(this.airTime, 0, EndCap.gravity);
     let initialVelocityX: number = 3;
     this.capX = this.finalCapLeft - Physics.metersToPixels(Physics.getDisplacement(this.airTime, initialVelocityX, 0));
-    this.capY = 1080 + ySafetyDrop;
+    this.capY = screenHeight + ySafetyDrop;
 
     // TODO: Figure out starting point for cap...
     this.endCap1 = new EndCap(capIndex, this.capX, this.capY);

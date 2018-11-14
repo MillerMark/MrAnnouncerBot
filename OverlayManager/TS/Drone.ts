@@ -591,4 +591,30 @@ class Drone extends SpriteProxy {
   pathVector(spriteWidth: number, spriteHeight: number): Line {
     return super.pathVector(spriteWidth, spriteHeight).extend(dronePathExtension);
   }
+
+  getFuturePoint(x: number, now: number): FuturePoint {
+    let secondsPassed = (now - this.timeStart) / 1000;
+    let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+    let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+    let deltaX = x - (this.x + droneWidth / 2);
+    if (deltaX === 0) {
+      return new FuturePoint(x, this.y + droneHeight / 2, now);
+    }
+    if (Math.sign(deltaX) != Math.sign(velocityX))
+      return null;
+
+    let secondsToCrossover: number = Physics.pixelsToMeters(deltaX) / velocityX;
+
+    let yAtCrossover: number = this.y + velocityY * secondsToCrossover + droneHeight / 2;
+    if (yAtCrossover < 0 || yAtCrossover > screenHeight)
+      return null;
+
+    return new FuturePoint(x, yAtCrossover, now + secondsToCrossover);
+  }
+}
+
+class FuturePoint {
+  constructor(public x: number, public y: number, public time: number) {
+		
+	}
 }

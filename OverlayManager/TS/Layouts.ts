@@ -278,7 +278,7 @@ var sampleGame3: string[] = [
   '                 ¦             ¦           ', // 24
 ];
 
-var sampleGame4: string[] = [
+var portalTest: string[] = [
   '      o           o          o             ',
   '                                           ',
   '            o                               ',
@@ -294,4 +294,31 @@ var sampleGame4: string[] = [
   '                                           ',
   '              o                  o           ',
   '                 ',
+];
+
+var sampleGame4: string[] = [
+  '                                           ',
+  '                             o             ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ', // 10
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ', // 20
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ',
+  '                                           ', // 24
 ];

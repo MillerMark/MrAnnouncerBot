@@ -1,4 +1,7 @@
-﻿let loadCopyrightedContent: boolean = true;
+﻿const screenWidth: number = 1920;
+const screenHeight: number = 1080;
+
+let loadCopyrightedContent: boolean = true;
 
 function putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy, now: number): void {
   let drone: Drone = <Drone>droneProxy;
@@ -9,11 +12,15 @@ function putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy, now
 }
 
 function updateScreen() {
-  const screenWidth: number = 1920;
-  const screenHeight: number = 1080;
-
   myContext.clearRect(0, 0, screenWidth, screenHeight);
   var now = performance.now();
+
+  purplePortals.sprites.forEach((portal: SpriteProxy) => {
+    if (portal instanceof Portal) {
+      portal.checkApproaching(allDrones, now);
+    }
+  })
+
   myRocket.updatePosition(now);
   myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -40,7 +47,7 @@ function updateScreen() {
 
   allSplats.draw(myContext, now);
   portalBackground.draw(myContext, now);
-  portals.draw(myContext, now);
+  purplePortals.draw(myContext, now);
 
   //grass1.draw(myContext, now);
   //grass2.draw(myContext, now);
@@ -220,8 +227,8 @@ function outlineGameSurface(sprites: Sprites) {
 
 function outlineGameSurfaceNoAdsNoMark(sprites: Sprites) {
   sprites.layout(
-    '*****************************              ' + '\n' +
-    '*                                          ' + '\n' +
+    '*******************************************' + '\n' +
+    '*                                         *' + '\n' +
     '*                                         *' + '\n' +
     '*                                         *' + '\n' +
     '*                                         *' + '\n' +
@@ -243,7 +250,7 @@ function outlineGameSurfaceNoAdsNoMark(sprites: Sprites) {
     '*                                         *' + '\n' +
     '*                                         *' + '\n' +
     '*                                         *' + '\n' +
-    '******************            *************', coinMargin);
+    '*****************             *************', coinMargin);
 }
 
 function fillChatRoom(sprites: Sprites) {
@@ -373,7 +380,7 @@ function outlineSmallRect(sprites) {
 
 function plantSeed(spriteArray, x, y) {
   const flowerLifeSpan: number = 120 * 1000;
-  spriteArray.sprites.push(new SpriteProxy(0, x - spriteArray.spriteWidth / 2, 1080 - spriteArray.spriteHeight + y, flowerLifeSpan));
+  spriteArray.sprites.push(new SpriteProxy(0, x - spriteArray.spriteWidth / 2, screenHeight - spriteArray.spriteHeight + y, flowerLifeSpan));
 }
 
 function plantSeeds(seeds, x) {
@@ -572,7 +579,7 @@ function selfDestructAllDrones() {
 function removeAllGameElements() {
   allWalls.destroyAllBy(4000);
   portalBackground.destroyAllBy(0);
-  portals.destroyAllBy(4000);
+  purplePortals.destroyAllBy(4000);
 }
 
 function droneRight(userId: string, params: string) {
@@ -1043,9 +1050,9 @@ var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameR
 purpleFlowers.returnFrameIndex = 151;
 
 const portalFrameRate: number = 40;
-var portals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
+var purplePortals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
 var portalBackground = new Sprites("Portal/Black Back/Back", 13, portalFrameRate, AnimationStyle.SequentialStop, true);
-portals.returnFrameIndex = 13;
+purplePortals.returnFrameIndex = 13;
 
 globalBypassFrameSkip = false;
 
@@ -1059,8 +1066,8 @@ gravityGames.newGame();
 setInterval(updateScreen, 10);
 
 
-var crossX: number = 1920 / 2;
-var crossY: number = 1080 / 2;
+var crossX: number = screenWidth / 2;
+var crossY: number = screenHeight / 2;
 
 function test(params: string, userId: string, userName: string, displayName: string, color: string) {
   if (params === 'game') {
@@ -1108,7 +1115,7 @@ function test(params: string, userId: string, userName: string, displayName: str
   }
 
   if (params === 'portal drop') {
-    portals.sprites.forEach((portal: SpriteProxy) => {
+    purplePortals.sprites.forEach((portal: SpriteProxy) => {
       if (portal instanceof Portal) {
         portal.drop();
       }

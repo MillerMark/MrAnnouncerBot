@@ -109,7 +109,7 @@ class GravityGames {
     let y: number = coinMargin + row * (coinBlockWidth + coinMargin) + coinBlockWidth / 2;
     let portal: Portal = new Portal(0, x - Portal.size / 2, y - Portal.size / 2);
     portal.delayStart = Math.random() * 900;
-    portals.sprites.push(portal);
+    purplePortals.sprites.push(portal);
   }
 
   addHorizontalWall(wallStyle: WallStyle, startColumn: number, endColumn: number, row: number) {
@@ -338,7 +338,7 @@ class GravityGames {
     const planetWidth: number = 552;
     const planetHeight: number = 246;
 
-    this.planetSurface.draw(context, 1920 - planetWidth, 1080 - planetHeight);
+    this.planetSurface.draw(context, screenWidth - planetWidth, screenHeight - planetHeight);
     gravityGames.activeGame.draw(context);
   }
 
