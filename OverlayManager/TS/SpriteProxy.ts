@@ -14,7 +14,6 @@
   cropRight: number;
   cropBottom: number;
   opacity: number;
-
   startX: any;
   startY: any;
   lastX: number;
@@ -32,6 +31,10 @@
       this.expirationDate = this.timeStart + lifeSpanMs;
     else
       this.expirationDate = null;
+  }
+
+  set delayStart(delayMs: number) {
+    this.timeStart = performance.now() + delayMs;
   }
 
   destroyBy(lifeTimeMs: number): any {
@@ -106,7 +109,9 @@
   }
 
 
-  advanceFrame(frameCount: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
+  advanceFrame(frameCount: number, now: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
+    if (now < this.timeStart)
+      return;
     this.frameIndex++;
     if (endBounds != 0) {
       if (this.frameIndex >= endBounds)
@@ -156,7 +161,11 @@
 
   
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
-    // Descendants can override if they want to draw...
+    // Descendants can override if they want to draw on top of the sprite...
+  }
+
+  drawBackground(context: CanvasRenderingContext2D, now: number): void {
+    // Descendants can override if they want to draw the background...
   }
 
   matches(matchData: any): boolean {

@@ -21,6 +21,7 @@
     <None Remove="TS\Physics.ts" />
     <None Remove="TS\Planet.ts" />
     <None Remove="TS\Point.ts" />
+    <None Remove="TS\Portal.ts" />
     <None Remove="TS\Quiz.ts" />
     <None Remove="TS\Random.ts" />
     <None Remove="TS\Rocket.ts" />
@@ -847,6 +848,7 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\Portal.ts" />
     <TypeScriptCompile Include="TS\Point.ts" />
     <TypeScriptCompile Include="TS\Line.ts" />
     <TypeScriptCompile Include="TS\Sparks.ts" />

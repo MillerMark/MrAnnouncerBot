@@ -35,9 +35,7 @@
 
   destroyAllBy(lifeTimeMs: number): any {
     this.allSprites.forEach(function (theseSprites: Sprites) {
-      theseSprites.sprites.forEach(function (sprite: SpriteProxy) {
-        sprite.destroyBy(lifeTimeMs);
-      });
+      theseSprites.destroyAllBy(lifeTimeMs);
     });
 
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) {

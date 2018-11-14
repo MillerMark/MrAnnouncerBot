@@ -1,4 +1,6 @@
-﻿const blockMargin: number = 12;
+﻿const coinBlockWidth: number = 32;
+const coinMargin: number = 12;
+const blockMargin: number = 12;
 const blockSize: number = 44;
 const topMargin: number = 12;
 const leftMargin: number = 12;
@@ -76,31 +78,38 @@ class GravityGames {
     this.activePlanet = earth;
   }
 
-  startGame(layout: string[]): any {
+  startGame(layout: string[]): void {
     if (this.activeGame)
       this.activeGame.end();
     this.newGame();
     this.addGameWalls(layout);
-    this.addCoins(layout);
+    this.addElements(layout, 'o', this.addPortal);
+    this.addElements(layout, '*', this.addCoin);
   }
 
-  addCoins(layout: string[]): any {
+  addElements(layout: string[], charToMatch: string, addElement: (column: number, row: number) => void): void {
     for (var row = 0; row < layout.length; row++) {
       let line: string = layout[row];
       for (var column = 0; column < line.length; column++) {
         let char: string = line[column];
-        if (char === '*')  // Coin!
-          this.addCoin(column, row);
+        if (char === charToMatch)  // Match!
+          addElement(column, row);
       }
     }
   }
 
-  addCoin(column: number, row: number): any {
-    const blockWidth: number = 32;
-    const margin: number = 12;
-    let x: number = margin + column * (blockWidth + margin);
-    let y: number = margin + row * (blockWidth + margin);
+  addCoin(column: number, row: number): void {
+    let x: number = coinMargin + column * (coinBlockWidth + coinMargin);
+    let y: number = coinMargin + row * (coinBlockWidth + coinMargin);
     coins.sprites.push(new SpriteProxy(Random.getInt(coins.baseAnimation.frameCount), x, y));
+  }
+
+  addPortal(column: number, row: number): void {
+    let x: number = coinMargin + column * (coinBlockWidth + coinMargin) + coinBlockWidth / 2;
+    let y: number = coinMargin + row * (coinBlockWidth + coinMargin) + coinBlockWidth / 2;
+    let portal: Portal = new Portal(0, x - Portal.size / 2, y - Portal.size / 2);
+    portal.delayStart = Math.random() * 900;
+    portals.sprites.push(portal);
   }
 
   addHorizontalWall(wallStyle: WallStyle, startColumn: number, endColumn: number, row: number) {

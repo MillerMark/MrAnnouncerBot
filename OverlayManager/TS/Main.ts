@@ -39,6 +39,8 @@ function updateScreen() {
     gravityGames.draw(myContext);
 
   allSplats.draw(myContext, now);
+  portalBackground.draw(myContext, now);
+  portals.draw(myContext, now);
 
   //grass1.draw(myContext, now);
   //grass2.draw(myContext, now);
@@ -188,7 +190,6 @@ function outlineMargin(sprites, margin) {
   sprites.outlineRect(2 * margin, margin, myCanvas.clientWidth - 2 * margin, myCanvas.clientHeight - margin, 12);
 }
 
-const coinMargin = 12;
 function outlineGameSurface(sprites: Sprites) {
   sprites.layout(
     '*******************************************' + '\n' +
@@ -215,6 +216,34 @@ function outlineGameSurface(sprites: Sprites) {
     '*                                         *' + '\n' +
     '*                                         *' + '\n' +
     '*******************************************', coinMargin);
+}
+
+function outlineGameSurfaceNoAdsNoMark(sprites: Sprites) {
+  sprites.layout(
+    '*****************************              ' + '\n' +
+    '*                                          ' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' + // 10
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' + // 20
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '*                                         *' + '\n' +
+    '******************            *************', coinMargin);
 }
 
 function fillChatRoom(sprites: Sprites) {
@@ -427,7 +456,7 @@ function executeCommand(command: string, params: string, userId: string, userNam
   else if (command === "Dock") {
     if (isSuperUser(userName)) {
       selfDestructAllDrones();
-      removeAllWalls();
+      removeAllGameElements();
     }
 
     if (started && !myRocket.isDocked) {
@@ -540,8 +569,10 @@ function selfDestructAllDrones() {
   allDrones.destroyAllBy(3000);
 }
 
-function removeAllWalls() {
+function removeAllGameElements() {
   allWalls.destroyAllBy(4000);
+  portalBackground.destroyAllBy(0);
+  portals.destroyAllBy(4000);
 }
 
 function droneRight(userId: string, params: string) {
@@ -956,7 +987,7 @@ var started = false;
 myRocket.x = 0;
 myRocket.y = 0;
 
-var coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, outlineGameSurface /* outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
+var coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, outlineGameSurfaceNoAdsNoMark/* outlineGameSurface outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
 
 addSeeds();
 
@@ -1010,6 +1041,12 @@ yellowFlowers3.returnFrameIndex = 45;
 
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
+
+const portalFrameRate: number = 40;
+var portals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
+var portalBackground = new Sprites("Portal/Black Back/Back", 13, portalFrameRate, AnimationStyle.SequentialStop, true);
+portals.returnFrameIndex = 13;
+
 globalBypassFrameSkip = false;
 
 globalLoadSprites = true;
@@ -1060,6 +1097,22 @@ function test(params: string, userId: string, userName: string, displayName: str
 
   if (params === 'sample2') {
     gravityGames.startGame(sampleGame2);
+  }
+
+  if (params === 'sample3') {
+    gravityGames.startGame(sampleGame3);
+  }
+
+  if (params === 'sample4') {
+    gravityGames.startGame(sampleGame4);
+  }
+
+  if (params === 'portal drop') {
+    portals.sprites.forEach((portal: SpriteProxy) => {
+      if (portal instanceof Portal) {
+        portal.drop();
+      }
+    })
   }
 
   if (params === 'drop') {

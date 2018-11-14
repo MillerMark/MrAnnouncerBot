@@ -79,6 +79,12 @@
     }
   }
 
+  destroyAllBy(lifeTimeMs: number): any {
+    this.sprites.forEach(function (sprite: SpriteProxy) {
+      sprite.destroyBy(lifeTimeMs);
+    });
+  }
+
   layout(lines: string, margin): void {
     var allLines = lines.split('\n');
     for (var lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
@@ -242,10 +248,10 @@
       if (this.segmentSize > 0) {
         let startIndex: number = sprite.frameIndex - sprite.frameIndex % this.segmentSize;
         let endBounds: number = startIndex + this.segmentSize;
-        sprite.advanceFrame(frameCount, returnFrameIndex, startIndex, endBounds);
+        sprite.advanceFrame(frameCount, now, returnFrameIndex, startIndex, endBounds);
       }
       else
-        sprite.advanceFrame(frameCount, returnFrameIndex);
+        sprite.advanceFrame(frameCount, now, returnFrameIndex);
       this.cleanupFinishedAnimations(i, sprite);
 
     }
@@ -263,8 +269,11 @@
       context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
       if (sprite.stillAlive(now) && sprite.systemDrawn) {
-        sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
-        sprite.drawAdornments(context, now);
+        if (now >= sprite.timeStart) {
+          sprite.drawBackground(context, now);
+          sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
+          sprite.drawAdornments(context, now);
+        }
       }
 
     }, this);

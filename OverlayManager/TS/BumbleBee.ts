@@ -4,6 +4,3 @@ class BumbleBee extends SpriteProxy {
     super(startingFrameNumber, x, y);
   }
 }
-
-
-
