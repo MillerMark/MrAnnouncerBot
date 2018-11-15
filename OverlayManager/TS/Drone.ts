@@ -605,16 +605,18 @@ class Drone extends SpriteProxy {
 
     let secondsToCrossover: number = Physics.pixelsToMeters(deltaX) / velocityX;
 
-    let yAtCrossover: number = this.y + velocityY * secondsToCrossover + droneHeight / 2;
+    console.log('secondsToCrossover: ' + secondsToCrossover);
+
+    let yAtCrossover: number = this.y + Physics.metersToPixels(velocityY * secondsToCrossover) + droneHeight / 2;
     if (yAtCrossover < 0 || yAtCrossover > screenHeight)
       return null;
 
-    return new FuturePoint(x, yAtCrossover, now + secondsToCrossover);
+    return new FuturePoint(x, yAtCrossover, now + secondsToCrossover * 1000);
   }
 }
 
 class FuturePoint {
-  constructor(public x: number, public y: number, public time: number) {
+  constructor(public x: number, public y: number, public timeMs: number) {
 		
 	}
 }

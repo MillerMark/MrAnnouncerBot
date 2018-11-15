@@ -19,8 +19,10 @@
 
   queueMeteor(meteorDrop: MeteorDrop) {
     for (var i = 0; i < this.meteorsToDrop.length; i++) {
-      if (this.meteorsToDrop[i].owner === meteorDrop.owner)
-        return;
+      if (this.meteorsToDrop[i].owner === meteorDrop.owner) {
+        this.meteorsToDrop.splice(i, 1);
+        break;
+      }
     }
     console.log('this.meteorsToDrop.push(meteorDrop);');
     this.meteorsToDrop.push(meteorDrop);
@@ -33,7 +35,11 @@
       if (drone instanceof Drone) {
         let futurePoint: FuturePoint = drone.getFuturePoint(centerX, now);
         if (futurePoint != null) {
-          this.queueMeteor(new MeteorDrop(futurePoint.time, drone.userId));
+          let distanceToDrop: number = futurePoint.y - this.y + Portal.size / 2;
+          if (distanceToDrop > 0) {
+            let dropTimeMs: number = Physics.getDropTime(Physics.pixelsToMeters(distanceToDrop), gravityGames.activePlanet.gravity) * 1000;
+            this.queueMeteor(new MeteorDrop(futurePoint.timeMs - dropTimeMs, drone.userId));
+          }
         }
       }
     }
