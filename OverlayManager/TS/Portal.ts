@@ -17,6 +17,42 @@
     this.background.timeStart = performance.now() + delayMs;
   }
 
+  drawAdornments(context: CanvasRenderingContext2D, now: number): void {
+    // Descendants can override if they want to draw on top of the sprite...
+    for (var i = 0; i < this.meteorsToDrop.length; i++) {
+      let futurePoint: FuturePoint = this.meteorsToDrop[i].futurePoint;
+      drawCrossHairs(context, futurePoint.x, futurePoint.y);
+      //let futureDropTime = this.meteorsToDrop[i].futureDropTime;
+      //let secondsToDrop: number = (futureDropTime - now) / 1000;
+      context.font = '20px Arial';
+
+      //if (secondsToDrop >= 0) {
+      //  context.fillStyle = '#000';
+      //  context.fillText(secondsToDrop.toFixed(2), futurePoint.x, futurePoint.y + 30);
+      //}
+
+      let secondsToIntersect: number = (futurePoint.timeMs - now) / 1000;
+      if (secondsToIntersect < 0) {
+        context.fillStyle = '#F60';
+        const rectSize: number = 100;
+        context.fillRect(futurePoint.x - rectSize / 2, futurePoint.y - rectSize / 2, rectSize, rectSize);
+      }
+      else {
+        context.fillStyle = '#000';
+        context.fillText(secondsToIntersect.toFixed(2), futurePoint.x, futurePoint.y);
+      }
+
+    }
+  }
+
+  removeMeteor(userId: string) {
+    for (var i = 0; i < this.meteorsToDrop.length; i++) {
+      if (this.meteorsToDrop[i].owner === userId) {
+        this.meteorsToDrop.splice(i, 1);
+      }
+    }
+  }
+
   queueMeteor(meteorDrop: MeteorDrop) {
     for (var i = 0; i < this.meteorsToDrop.length; i++) {
       if (this.meteorsToDrop[i].owner === meteorDrop.owner) {
@@ -35,10 +71,15 @@
       if (drone instanceof Drone) {
         let futurePoint: FuturePoint = drone.getFuturePoint(centerX, now);
         if (futurePoint != null) {
-          let distanceToDrop: number = futurePoint.y - this.y + Portal.size / 2;
+          let distanceToDrop: number = futurePoint.y - (this.y + Portal.size / 2);
           if (distanceToDrop > 0) {
             let dropTimeMs: number = Physics.getDropTime(Physics.pixelsToMeters(distanceToDrop), gravityGames.activePlanet.gravity) * 1000;
-            this.queueMeteor(new MeteorDrop(futurePoint.timeMs - dropTimeMs, drone.userId));
+            let futureDropTime: number = futurePoint.timeMs - dropTimeMs;
+            if (futureDropTime > now)
+              if (futureDropTime - now < 10000)
+                this.queueMeteor(new MeteorDrop(futureDropTime, drone.userId, futurePoint));
+              else
+                this.removeMeteor(drone.userId);
           }
         }
       }
@@ -60,10 +101,16 @@
   dropReadyMeteors(now: number): any {
     for (var i = this.meteorsToDrop.length - 1; i >= 0; i--) {
       let meteorDrop: MeteorDrop = this.meteorsToDrop[i];
-      if (meteorDrop.dropTime - now < 0) {
-        this.drop();
-        this.meteorsToDrop.splice(i, 1);
-        console.log('this.meteorsToDrop.splice(i, 1);');
+      if (meteorDrop.futureDropTime - now < 0) {
+        if (!meteorDrop.dropped) {
+          this.drop();
+          meteorDrop.dropped = true;
+        }
+
+        if (meteorDrop.beyondLandTime - now < 0) {
+          this.meteorsToDrop.splice(i, 1);
+          console.log('this.meteorsToDrop.splice(i, 1);');
+        }
       }
     }
   }
@@ -85,7 +132,9 @@
 }
 
 class MeteorDrop {
-  constructor(public dropTime: number, public owner: string) {
-
+  dropped: boolean;
+  beyondLandTime: number;
+  constructor(public futureDropTime: number, public owner: string, public futurePoint: FuturePoint) {
+    this.beyondLandTime = futurePoint.timeMs + 5000;
   }
 }

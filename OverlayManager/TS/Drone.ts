@@ -381,6 +381,7 @@ class Drone extends SpriteProxy {
         this.parentSparkSprites.baseAnimation.draw(context, this.sparkX, this.sparkY);
       }
     }
+
   }
 
   getSplats(command: string): SplatSprites {
@@ -593,21 +594,25 @@ class Drone extends SpriteProxy {
   }
 
   getFuturePoint(x: number, now: number): FuturePoint {
+    //`<formula white;transparent;4;\int_0^{\infty}{x^{2n}}/>
+
     let secondsPassed = (now - this.timeStart) / 1000;
     let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
     let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
-    let deltaX = x - (this.x + droneWidth / 2);
+    let centerX: number = this.x + droneWidth / 2;
+    let centerY: number = this.y + droneHeight / 2;
+    let deltaX = x - centerX;
     if (deltaX === 0) {
-      return new FuturePoint(x, this.y + droneHeight / 2, now);
+      return new FuturePoint(x, centerY, now);
     }
     if (Math.sign(deltaX) != Math.sign(velocityX))
       return null;
 
-    let secondsToCrossover: number = Physics.pixelsToMeters(deltaX) / velocityX;
+    let metersToCrossover: number = Physics.pixelsToMeters(deltaX);
+    let secondsToCrossover: number = metersToCrossover / velocityX;
+    console.log('metersToCrossover: ' + metersToCrossover + ', velocityX: ' + velocityX + ', secondsToCrossover: ' + secondsToCrossover);
 
-    console.log('secondsToCrossover: ' + secondsToCrossover);
-
-    let yAtCrossover: number = this.y + Physics.metersToPixels(velocityY * secondsToCrossover) + droneHeight / 2;
+    let yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
     if (yAtCrossover < 0 || yAtCrossover > screenHeight)
       return null;
 
