@@ -316,8 +316,7 @@ namespace OverlayManager
 				//case "mr":
 				//	MoveRelative(args, chatMessage); break;
 				//case "changevel":
-				//case "cv":
-				//	ChangeDroneVelocity(args, chatMessage); break;
+				case "cv": ChangeDroneVelocity(args, chatMessage); break;
 				//case "moveabs":
 				//case "ma":
 				//	MoveAbsolute(args, chatMessage); break;

@@ -240,7 +240,8 @@ class Drone extends SpriteProxy {
     if (!this.wasThrustingUp && !this.wasThrustingDown && !this.wasThrustingLeft && !this.wasThrustingRight) {
       let timeSinceLastUpdate: number = performance.now() - this.lastUpdateTime;
       if (timeSinceLastUpdate > 10) {
-        this.changeVelocityBy(0.99, 0.99, now);
+        const decay: number = 0.99;
+        this.changeVelocityBy(decay, decay, now);
         this.lastUpdateTime = now;
       }
     }
@@ -601,16 +602,16 @@ class Drone extends SpriteProxy {
     let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
     let centerX: number = this.x + droneWidth / 2;
     let centerY: number = this.y + droneHeight / 2;
-    let deltaX = x - centerX;
-    if (deltaX === 0) {
+    let deltaXPixels = x - centerX;
+    if (deltaXPixels === 0) {
       return new FuturePoint(x, centerY, now);
     }
-    if (Math.sign(deltaX) != Math.sign(velocityX))
+    if (Math.sign(deltaXPixels) != Math.sign(velocityX))
       return null;
 
-    let metersToCrossover: number = Physics.pixelsToMeters(deltaX);
+    let metersToCrossover: number = Physics.pixelsToMeters(deltaXPixels);
     let secondsToCrossover: number = metersToCrossover / velocityX;
-    console.log('metersToCrossover: ' + metersToCrossover + ', velocityX: ' + velocityX + ', secondsToCrossover: ' + secondsToCrossover);
+    console.log('metersToCrossover: ' + metersToCrossover.toFixed(2) + ', velocityX: ' + velocityX.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
 
     let yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
     if (yAtCrossover < 0 || yAtCrossover > screenHeight)
@@ -621,7 +622,7 @@ class Drone extends SpriteProxy {
 }
 
 class FuturePoint {
-  constructor(public x: number, public y: number, public timeMs: number) {
+  constructor(public x: number, public y: number, public absoluteTimeMs: number) {
 		
 	}
 }

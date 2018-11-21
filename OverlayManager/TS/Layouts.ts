@@ -298,7 +298,7 @@ var portalTest: string[] = [
 
 var sampleGame4: string[] = [
   '                                           ',
-  '                           o               ',
+  '             o             o              o',
   '                                           ',
   '                                           ',
   '                                           ',

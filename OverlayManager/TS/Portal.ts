@@ -31,7 +31,7 @@
       //  context.fillText(secondsToDrop.toFixed(2), futurePoint.x, futurePoint.y + 30);
       //}
 
-      let secondsToIntersect: number = (futurePoint.timeMs - now) / 1000;
+      let secondsToIntersect: number = (futurePoint.absoluteTimeMs - now) / 1000;
       if (secondsToIntersect < 0) {
         context.fillStyle = '#F60';
         const rectSize: number = 100;
@@ -54,12 +54,7 @@
   }
 
   queueMeteor(meteorDrop: MeteorDrop) {
-    for (var i = 0; i < this.meteorsToDrop.length; i++) {
-      if (this.meteorsToDrop[i].owner === meteorDrop.owner) {
-        this.meteorsToDrop.splice(i, 1);
-        break;
-      }
-    }
+    this.removeMeteor(meteorDrop.owner);
     console.log('this.meteorsToDrop.push(meteorDrop);');
     this.meteorsToDrop.push(meteorDrop);
   }
@@ -73,11 +68,21 @@
         if (futurePoint != null) {
           let distanceToDrop: number = futurePoint.y - (this.y + Portal.size / 2);
           if (distanceToDrop > 0) {
+            let secondsToCrossover = (futurePoint.absoluteTimeMs - now) / 1000;
             let dropTimeMs: number = Physics.getDropTime(Physics.pixelsToMeters(distanceToDrop), gravityGames.activePlanet.gravity) * 1000;
-            let futureDropTime: number = futurePoint.timeMs - dropTimeMs;
-            if (futureDropTime > now)
-              if (futureDropTime - now < 10000)
-                this.queueMeteor(new MeteorDrop(futureDropTime, drone.userId, futurePoint));
+            let dropTimeSeconds: number = dropTimeMs / 1000;
+
+            console.log('dropTimeSeconds: ' + dropTimeSeconds.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
+            if (dropTimeSeconds > secondsToCrossover) {
+              console.log('not enough time to drop!');
+              //this.removeMeteor(drone.userId);
+              return;
+            }
+
+            let absoluteDropTime: number = futurePoint.absoluteTimeMs - dropTimeMs;
+            if (absoluteDropTime > now)
+              if (absoluteDropTime - now < 10000)
+                this.queueMeteor(new MeteorDrop(absoluteDropTime, drone.userId, futurePoint));
               else
                 this.removeMeteor(drone.userId);
           }
@@ -135,6 +140,6 @@ class MeteorDrop {
   dropped: boolean;
   beyondLandTime: number;
   constructor(public futureDropTime: number, public owner: string, public futurePoint: FuturePoint) {
-    this.beyondLandTime = futurePoint.timeMs + 5000;
+    this.beyondLandTime = futurePoint.absoluteTimeMs + 5000;
   }
 }
