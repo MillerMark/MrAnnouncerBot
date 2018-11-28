@@ -26,4 +26,11 @@ class Physics {
   static getDropTime(heightMeters: number, acceleration: number) {
     return Math.sqrt(2 * heightMeters / acceleration)
   }
+
+  static getDropTimeWithVelocity(heightMeters: number, initialVelocity: number, acceleration: number) {
+    //     [−vi ± √(        vi2     + 2   g              y)           ] / g
+    return (-initialVelocity + Math.sqrt(initialVelocity * initialVelocity + 2 * heightMeters * acceleration)) / acceleration;
+  }
+
+  
 }

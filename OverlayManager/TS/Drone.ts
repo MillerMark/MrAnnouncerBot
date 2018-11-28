@@ -238,8 +238,9 @@ class Drone extends SpriteProxy {
     }
 
     if (!this.wasThrustingUp && !this.wasThrustingDown && !this.wasThrustingLeft && !this.wasThrustingRight) {
-      let timeSinceLastUpdate: number = performance.now() - this.lastUpdateTime;
-      if (timeSinceLastUpdate > 10) {
+      let timeSinceLastUpdateMs: number = performance.now() - this.lastUpdateTime;
+      if (timeSinceLastUpdateMs > 10) {
+        //const decay: number = 1;
         const decay: number = 0.99;
         this.changeVelocityBy(decay, decay, now);
         this.lastUpdateTime = now;
@@ -598,8 +599,19 @@ class Drone extends SpriteProxy {
     //`<formula white;transparent;4;\int_0^{\infty}{x^{2n}}/>
 
     let secondsPassed = (now - this.timeStart) / 1000;
+
+    /* 
+     * 
+     * this.rightThrustOffTime, this.leftThrustOffTime
+     * if thrusters are on, figure out if we cross the given x before thrusters go off. 
+     * 
+     * If so, then we can incorporate accelleration into the equation.
+     * */
+
+
     let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
     let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+
     let centerX: number = this.x + droneWidth / 2;
     let centerY: number = this.y + droneHeight / 2;
     let deltaXPixels = x - centerX;
@@ -610,7 +622,30 @@ class Drone extends SpriteProxy {
       return null;
 
     let metersToCrossover: number = Physics.pixelsToMeters(deltaXPixels);
-    let secondsToCrossover: number = metersToCrossover / velocityX;
+
+    let secondsToCrossover: number;
+
+    secondsToCrossover = metersToCrossover / velocityX;
+
+    if (this.rightThrustOffTime > now || this.leftThrustOffTime > now) {
+      let secondsOfRightThrustRemaining: number = Infinity;
+      let secondsOfLeftThrustRemaining: number = Infinity;
+      if (this.rightThrustOffTime > now)
+        secondsOfRightThrustRemaining = (this.rightThrustOffTime - now) / 1000;
+      if (this.leftThrustOffTime > now)
+        secondsOfLeftThrustRemaining = (this.leftThrustOffTime - now) / 1000;
+
+      let fewestSecondsOfThrust: number = Math.min(secondsOfRightThrustRemaining, secondsOfLeftThrustRemaining);
+
+      let secondsToAcceleratedCrossover: number = Physics.getDropTimeWithVelocity(metersToCrossover, velocityX, this.getHorizontalThrust(now));
+
+      if (fewestSecondsOfThrust >= secondsToAcceleratedCrossover)
+        secondsToCrossover = secondsToAcceleratedCrossover;
+      else  {
+        // TODO: Blend the two predictions?
+      }
+    }
+    
     console.log('metersToCrossover: ' + metersToCrossover.toFixed(2) + ', velocityX: ' + velocityX.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
 
     let yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
