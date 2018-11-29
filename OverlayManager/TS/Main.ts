@@ -61,12 +61,13 @@ function updateScreen() {
   endCaps.updatePositions(now);
   allSeeds.updatePositions(now);
   allSparks.updatePositions(now);
-
+  
   wallBounce(now);
 
   allSeeds.draw(myContext, now);
   beesYellow.draw(myContext, now);
   allWalls.draw(myContext, now);
+  droneGateways.draw(myContext, now);
   allDrones.draw(myContext, now);
   allMeteors.draw(myContext, now);
 
@@ -728,6 +729,7 @@ function wallBounce(now: number): void {
 }
 
 var dronesRed: Sprites;
+var droneGateways: Sprites;
 //var dronesBlue: Sprites;
 var allDrones: SpriteCollection;
 var allSeeds: SpriteCollection;
@@ -1050,6 +1052,8 @@ yellowFlowers3.returnFrameIndex = 45;
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
 
+droneGateways = new Sprites("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
+
 const portalFrameRate: number = 40;
 var purplePortals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
 var portalBackground = new Sprites("Portal/Black Back/Back", 13, portalFrameRate, AnimationStyle.SequentialStop, true);
@@ -1113,6 +1117,10 @@ function test(params: string, userId: string, userName: string, displayName: str
 
   if (params === 'sample4') {
     gravityGames.startGame(sampleGame4);
+  }
+
+  if ((params === 'gate') {
+    gravityGames.startGame(gatewayTest);
   }
 
   if (params === 'portal drop') {

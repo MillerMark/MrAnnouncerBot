@@ -85,6 +85,7 @@ class GravityGames {
     this.addGameWalls(layout);
     this.addElements(layout, 'o', this.addPortal);
     this.addElements(layout, '*', this.addCoin);
+    this.addElements(layout, 'G', this.addGateway);
   }
 
   addElements(layout: string[], charToMatch: string, addElement: (column: number, row: number) => void): void {
@@ -102,6 +103,17 @@ class GravityGames {
     let x: number = coinMargin + column * (coinBlockWidth + coinMargin);
     let y: number = coinMargin + row * (coinBlockWidth + coinMargin);
     coins.sprites.push(new SpriteProxy(Random.getInt(coins.baseAnimation.frameCount), x, y));
+  }
+
+  addGateway(column: number, row: number): void {
+    let x: number = coinMargin + column * (coinBlockWidth + coinMargin) + coinBlockWidth / 2;
+    let y: number = coinMargin + row * (coinBlockWidth + coinMargin) + coinBlockWidth / 2;
+
+    const gatewaySize: number = 195;
+
+    let gateway: SpriteProxy = new SpriteProxy(Random.getInt(droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
+    gateway.delayStart = Math.random() * 900;
+    droneGateways.sprites.push(gateway);
   }
 
   addPortal(column: number, row: number): void {
