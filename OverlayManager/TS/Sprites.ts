@@ -197,7 +197,7 @@
   }
 
   cleanupFinishedAnimations(i: number, sprite: SpriteProxy): any {
-    if (this.animationStyle == AnimationStyle.Sequential && sprite.frameIndex == 0) {
+    if (this.animationStyle == AnimationStyle.Sequential && sprite.haveCycledOnce) {
       this.sprites.splice(i, 1);
     }
   }

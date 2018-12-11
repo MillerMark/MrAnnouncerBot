@@ -1,5 +1,12 @@
-﻿class SpriteProxy {
+﻿class GameTime {
+  static now(): number {
+    return performance.now();
+  }
+}
+
+class SpriteProxy {
   isRemoving: boolean;
+  haveCycledOnce: boolean;
   systemDrawn: boolean = true;
   owned: boolean;
   cropped: boolean;
@@ -108,17 +115,20 @@
 
   }
 
-
   advanceFrame(frameCount: number, now: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
     if (now < this.timeStart)
       return;
     this.frameIndex++;
     if (endBounds != 0) {
-      if (this.frameIndex >= endBounds)
+      if (this.frameIndex >= endBounds) {
         this.frameIndex = startIndex;
+        this.haveCycledOnce = true;
+      }
     }
-    else if (this.frameIndex >= frameCount)
+    else if (this.frameIndex >= frameCount) {
       this.frameIndex = returnFrameIndex;
+      this.haveCycledOnce = true;
+    }
   }
 
   isHitBy(thisSprite: SpriteProxy): boolean {

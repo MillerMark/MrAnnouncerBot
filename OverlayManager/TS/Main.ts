@@ -937,13 +937,13 @@ function loadAllSparks() {
   left1Sparks = loadSparks('Left', 8, 178, 19);
   left2Sparks = loadSparks('Left 2', 9, 121, 66);
   right1Sparks = loadSparks('Right', 8, 4, 23);
-  right2Sparks = loadSparks('Right 2', 9, 6, 135);
+  right2Sparks = loadSparks('Right 2', 9, 2, 68);
   upAndRightSparks = loadSparks('Up and Right', 9, 6, 178);
   upAndLeftSparks = loadSparks('Up and Left', 9, 88, 176);
 
   allSparks.add(downAndLeftSparks);
   allSparks.add(downAndRightSparks);
-  allSparks.add(left1Sparks);                     // Here ->
+  allSparks.add(left1Sparks);
   allSparks.add(right1Sparks);
   allSparks.add(left2Sparks);
   allSparks.add(right2Sparks);
@@ -1119,7 +1119,7 @@ function test(params: string, userId: string, userName: string, displayName: str
     gravityGames.startGame(sampleGame4);
   }
 
-  if ((params === 'gate') {
+  if (params === 'gate') {
     gravityGames.startGame(gatewayTest);
   }
 
