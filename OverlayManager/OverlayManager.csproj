@@ -10,6 +10,8 @@
     <None Remove="TS\AnimationStyle.ts" />
     <None Remove="TS\Digits.ts" />
     <None Remove="TS\Drone.ts" />
+    <None Remove="TS\DroneProxy.ts" />
+    <None Remove="TS\Gateway.ts" />
     <None Remove="TS\Gravity.ts" />
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\HueSatLight.ts" />
@@ -848,6 +850,8 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\DroneProxy.ts" />
+    <TypeScriptCompile Include="TS\Gateway.ts" />
     <TypeScriptCompile Include="TS\Portal.ts" />
     <TypeScriptCompile Include="TS\Point.ts" />
     <TypeScriptCompile Include="TS\Line.ts" />

@@ -115,6 +115,10 @@ class SpriteProxy {
 
   }
 
+  cycled(now: number) {
+    this.haveCycledOnce = true;
+  }
+
   advanceFrame(frameCount: number, now: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
     if (now < this.timeStart)
       return;
@@ -122,12 +126,12 @@ class SpriteProxy {
     if (endBounds != 0) {
       if (this.frameIndex >= endBounds) {
         this.frameIndex = startIndex;
-        this.haveCycledOnce = true;
+        this.cycled(now);
       }
     }
     else if (this.frameIndex >= frameCount) {
       this.frameIndex = returnFrameIndex;
-      this.haveCycledOnce = true;
+      this.cycled(now);
     }
   }
 

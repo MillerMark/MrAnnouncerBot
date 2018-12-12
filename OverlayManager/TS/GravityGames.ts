@@ -111,7 +111,9 @@ class GravityGames {
 
     const gatewaySize: number = 195;
 
-    let gateway: SpriteProxy = new SpriteProxy(Random.getInt(droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
+    let gateway: Gateway = new Gateway(Random.getInt(droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
+    gateway.ID = droneGateways.sprites.length + 1;
+    
     gateway.delayStart = Math.random() * 900;
     droneGateways.sprites.push(gateway);
   }

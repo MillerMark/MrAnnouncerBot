@@ -68,6 +68,7 @@ function updateScreen() {
   beesYellow.draw(myContext, now);
   allWalls.draw(myContext, now);
   droneGateways.draw(myContext, now);
+  warpIns.draw(myContext, now);
   allDrones.draw(myContext, now);
   allMeteors.draw(myContext, now);
 
@@ -94,7 +95,7 @@ function updateScreen() {
 
   if (quiz)
     quiz.draw(myContext);
-  //drawCrossHairs(myContext, crossX, crossY);
+  drawCrossHairs(myContext, crossX, crossY);
 }
 
 var allSplats = new SpriteCollection();
@@ -153,7 +154,7 @@ function handleKeyDown(evt) {
     myRocket.dropMeteor(now);
   }
   else if (evt.keyCode == Key_O) {
-    myRocket.releaseDrone(now, '', '', '', '');
+    myRocket.releaseDrone(now, '', '', '');
   }
   else if (evt.keyCode == Key_S) {
     myRocket.dropSeed(now);
@@ -509,7 +510,11 @@ function executeCommand(command: string, params: string, userId: string, userNam
     myRocket.releaseBee(now, params, userId, displayName, color);
   }
   else if (command === "Drone") {
-    myRocket.releaseDrone(now, params, userId, displayName, color);
+    let gatewayNum: number = +params;
+    if (gatewayNum)
+      droneGateways.releaseDrone(now, userId, displayName, color, gatewayNum);
+    else 
+      myRocket.releaseDrone(now, userId, displayName, color);
   }
   else if (command === "MoveRelative") {
     moveRelative(now, params, userId);
@@ -581,6 +586,7 @@ function removeAllGameElements() {
   allWalls.destroyAllBy(4000);
   portalBackground.destroyAllBy(0);
   purplePortals.destroyAllBy(4000);
+  droneGateways.destroyAllBy(4000);
 }
 
 function droneRight(userId: string, params: string) {
@@ -729,7 +735,7 @@ function wallBounce(now: number): void {
 }
 
 var dronesRed: Sprites;
-var droneGateways: Sprites;
+var droneGateways: Gateways;
 //var dronesBlue: Sprites;
 var allDrones: SpriteCollection;
 var allSeeds: SpriteCollection;
@@ -810,6 +816,15 @@ function loadDrones(color: string): Sprites {
   drones.moves = true;
   allDrones.add(drones);
   return drones;
+}
+
+
+var warpIns: Sprites;
+
+function loadWarpInAnimation() {
+  warpIns = new Sprites(`Drones/Warp In/DroneWarpIn`, 15, 30, AnimationStyle.SequentialStop);
+  warpIns.originX = 96;
+  warpIns.originY = 45;
 }
 
 var droneHealthLights: Sprites;
@@ -1011,6 +1026,8 @@ beesYellow.segmentSize = 2;
 beesYellow.removeOnHitFloor = false;
 beesYellow.moves = true;
 
+loadWarpInAnimation();
+
 addDrones();
 
 addSplats();
@@ -1052,7 +1069,7 @@ yellowFlowers3.returnFrameIndex = 45;
 var purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
 purpleFlowers.returnFrameIndex = 151;
 
-droneGateways = new Sprites("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
+droneGateways = new Gateways("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
 
 const portalFrameRate: number = 40;
 var purplePortals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
@@ -1150,6 +1167,12 @@ function test(params: string, userId: string, userName: string, displayName: str
 
   if (params === 'smoke')
     sparkSmoke.add(crossX, crossY);
+
+  if (params === 'mix')
+    gravityGames.startGame(mixedTest);
+
+  if (params === 'wi')
+    warpIns.add(crossX, crossY, 0);
 
   if (params === 'sparks 1')
     downAndRightSparks.add(crossX, crossY);

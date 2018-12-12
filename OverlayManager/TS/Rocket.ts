@@ -719,35 +719,9 @@
     this.createSprite(beesYellow, now);
   }
 
-  createDrone(x: number, y: number, frameCount: number) {
-    return new Drone(Random.getInt(frameCount), x, y);
-  }
-
-
-  releaseDrone(now: number, params: string, userId: string, displayName: string, color: string): any {
+  releaseDrone(now: number, userId: string, displayName: string, color: string): any {
     allDrones.destroy(userId, addDroneExplosion);
-    let drones: Sprites = dronesRed;
-    //if (params === 'blue')
-    //  drones = dronesBlue;
-    let myDrone: Drone = <Drone>this.createSprite(drones, now, this.createDrone);
-    myDrone.height = drones.spriteHeight;
-    myDrone.width = drones.spriteWidth;
-    myDrone.displayName = displayName;
-    const initialBurnTime: number = 800;
-    if (this.x < 960)
-      myDrone.rightThrustOffTime = now + initialBurnTime;
-    else 
-      myDrone.leftThrustOffTime = now + initialBurnTime;
-
-    if (this.y > 540)
-      myDrone.velocityY = -2;
-    else 
-      myDrone.velocityY = 1;
-
-    myDrone.userId = userId;
-    if (color === '')
-      color = '#49357b';
-    myDrone.color = color;
+    Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), Drone.create, userId, displayName, color);
   }
 
   logState(message) {
@@ -790,7 +764,7 @@
     let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
     let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
 
-    let newSprite;
+    let newSprite: SpriteProxy;
     if (createSpriteFunc)
       newSprite = createSpriteFunc(x, y, spriteArray.baseAnimation.frameCount);
     else 

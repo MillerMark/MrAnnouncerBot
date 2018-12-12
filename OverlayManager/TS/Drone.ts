@@ -16,15 +16,42 @@ function playZap() {
 
 var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
 
-const droneWidth: number = 192;
-const droneHeight: number = 90;
 const dronePathExtension: number = 18;
 //const droneWidth: number = 128;
 //const droneHeight: number = 60;
 
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 
+
 class Drone extends SpriteProxy {
+  static readonly width: number = 192;
+  static readonly height: number = 90;
+
+  static createAt(x: number, y: number, now: number,
+    createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy, createDrone: (x: number, y: number, frameCount: number) => Drone, userId: string, displayName: string, color: string): any {
+    let drones: Sprites = dronesRed;
+    //if (params === 'blue')
+    //  drones = dronesBlue;
+    let myDrone: Drone = <Drone>createSprite(drones, now, createDrone);
+    myDrone.height = drones.spriteHeight;
+    myDrone.width = drones.spriteWidth;
+    myDrone.displayName = displayName;
+    const initialBurnTime: number = 800;
+    if (x < 960)
+      myDrone.rightThrustOffTime = now + initialBurnTime;
+    else
+      myDrone.leftThrustOffTime = now + initialBurnTime;
+
+    if (y > 540)
+      myDrone.velocityY = -2;
+    else
+      myDrone.velocityY = 1;
+
+    myDrone.userId = userId;
+    if (color === '')
+      color = '#49357b';
+    myDrone.color = color;
+  }
   health: number = 4;
   meteor: Meteor;
   displayName: string;
@@ -79,6 +106,11 @@ class Drone extends SpriteProxy {
     this.lastNow = now;
     this.lastTimeWeAdvancedTheSparksFrame = now;
   }
+
+  static create(x: number, y: number, frameCount: number) {
+    return new Drone(Random.getInt(frameCount), x, y);
+  }
+
 
   hitWall(now: number) {
     if (this.health > 1) {
@@ -259,8 +291,8 @@ class Drone extends SpriteProxy {
       else if (pitch == 2)
         meteorAdjustY = 8;
       this.meteor.storeLastPosition();
-      this.meteor.x = this.x + droneWidth / 2 - meteorWidth / 2;
-      this.meteor.y = this.y + droneHeight / 2 - meteorHeight + meteorAdjustY;
+      this.meteor.x = this.x + Drone.width / 2 - meteorWidth / 2;
+      this.meteor.y = this.y + Drone.height / 2 - meteorHeight + meteorAdjustY;
     }
 
     if (this.parentSparkSprites != undefined) {
@@ -270,8 +302,8 @@ class Drone extends SpriteProxy {
         this.parentSparkSprites = null;
       }
       else {
-        this.sparkX = this.x + droneWidth / 2 - this.parentSparkSprites.originX;
-        this.sparkY = this.y + droneHeight / 2 - this.parentSparkSprites.originY;
+        this.sparkX = this.x + Drone.width / 2 - this.parentSparkSprites.originX;
+        this.sparkY = this.y + Drone.height / 2 - this.parentSparkSprites.originY;
       }
     }
   }
@@ -280,8 +312,8 @@ class Drone extends SpriteProxy {
     this.parentSparkSprites = parentSparkSprites;
     this.sparkCreationTime = performance.now();
     this.sparkFrameIndex = 0;
-    this.sparkX = this.x + droneWidth / 2 - this.parentSparkSprites.originX;
-    this.sparkY = this.y + droneHeight / 2 - this.parentSparkSprites.originY;
+    this.sparkX = this.x + Drone.width / 2 - this.parentSparkSprites.originX;
+    this.sparkY = this.y + Drone.height / 2 - this.parentSparkSprites.originY;
   }
 
 
@@ -564,8 +596,8 @@ class Drone extends SpriteProxy {
   }
 
   getDistanceTo(otherSprite: SpriteProxy): number {
-    let centerDroneX: number = this.x + droneWidth / 2;
-    let centerDroneY: number = this.y + droneHeight / 2;
+    let centerDroneX: number = this.x + Drone.width / 2;
+    let centerDroneY: number = this.y + Drone.height / 2;
 
     let centerMeteorX: number = otherSprite.x + meteorWidth / 2;
     let centerMeteorY: number = otherSprite.y + meteorHeight / 2;
@@ -612,8 +644,8 @@ class Drone extends SpriteProxy {
     let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
     let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
-    let centerX: number = this.x + droneWidth / 2;
-    let centerY: number = this.y + droneHeight / 2;
+    let centerX: number = this.x + Drone.width / 2;
+    let centerY: number = this.y + Drone.height / 2;
     let deltaXPixels = x - centerX;
     if (deltaXPixels === 0) {
       return new FuturePoint(x, centerY, now);
