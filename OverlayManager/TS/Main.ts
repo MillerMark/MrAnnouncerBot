@@ -11,6 +11,31 @@ function putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy, now
   }
 }
 
+function collectCoinsInRect(x: number, y: number, width: number, height: number): number {
+  var coinsCollected: number = coins.collect(x, y, width, height);
+  if (coinsCollected > 0) {
+    new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
+    if (gravityGames.activeGame.score)
+      gravityGames.activeGame.score.value += coinsCollected;
+  }
+  return coinsCollected;
+}
+
+function collectCoins() {
+  collectCoinsInRect(myRocket.x, myRocket.y, 310, 70);
+
+  allDrones.allSprites.forEach(function (drones: Sprites) {
+    drones.sprites.forEach(function (drone: Drone) {
+      let coinsFound = collectCoinsInRect(drone.x, drone.y, Drone.width, Drone.height);
+      if (coinsFound > 0) {
+        // TODO: Tell the console app this player collected some coins.
+      }
+    });
+  });
+
+  //dronesRed.sprites.forEach
+}
+
 function updateScreen() {
   myContext.clearRect(0, 0, screenWidth, screenHeight);
   var now = performance.now();
@@ -24,12 +49,7 @@ function updateScreen() {
   myRocket.updatePosition(now);
   myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
-  var coinsCollected: number = coins.collect(myRocket.x, myRocket.y, 310, 70);
-  if (coinsCollected > 0) {
-    new Audio(Folders.assets + 'Sound Effects/CollectCoin.wav').play();
-    if (gravityGames.activeGame.score)
-      gravityGames.activeGame.score.value += coinsCollected;
-  }
+  collectCoins();
 
   allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -61,7 +81,7 @@ function updateScreen() {
   endCaps.updatePositions(now);
   allSeeds.updatePositions(now);
   allSparks.updatePositions(now);
-  
+
   wallBounce(now);
 
   allSeeds.draw(myContext, now);
@@ -513,7 +533,7 @@ function executeCommand(command: string, params: string, userId: string, userNam
     let gatewayNum: number = +params;
     if (gatewayNum)
       droneGateways.releaseDrone(now, userId, displayName, color, gatewayNum);
-    else 
+    else
       myRocket.releaseDrone(now, userId, displayName, color);
   }
   else if (command === "MoveRelative") {
