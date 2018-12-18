@@ -57,6 +57,7 @@ namespace OverlayManager
 
 			app.UseSignalR(x => {
 				// Browser connects here.
+				x.MapHub<MrAnnouncerBotHub>("/MrAnnouncerBotHub");
 				x.MapHub<CodeRushedHub>("/CodeRushedHub");
 			});
 			app.UseMvc();

@@ -9,11 +9,6 @@ using TwitchLib.Client.Models;
 
 namespace OverlayManager.Hubs
 {
-	public interface IOverlayCommands
-	{
-		Task ExecuteCommand(string command, string args, string userId, string userName, string displayName, string color);
-	}
-
 	public class CodeRushedHub: Hub<IOverlayCommands>
 	{
 		public void Chat(string message)
@@ -24,6 +19,18 @@ namespace OverlayManager.Hubs
 		public void Whisper(string userName, string message)
 		{
 			Twitch.Whisper(userName, message);
+		}
+
+		public void AddCoins(string userId, int count) {
+			//Twitch.Chat($"{userId} got {count} coins.");
+			mrAnnouncerBotHub.Clients.All.AddCoins(userId, count);
+		}
+
+		
+		readonly IHubContext<MrAnnouncerBotHub, IAnnouncerBotCommands> mrAnnouncerBotHub;
+		public CodeRushedHub(IHubContext<MrAnnouncerBotHub, IAnnouncerBotCommands> hub)
+		{
+			mrAnnouncerBotHub = hub;
 		}
 	}
 }

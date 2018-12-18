@@ -28,6 +28,7 @@ function collectCoins() {
     drones.sprites.forEach(function (drone: Drone) {
       let coinsFound = collectCoinsInRect(drone.x, drone.y, Drone.width, Drone.height);
       if (coinsFound > 0) {
+        connection.invoke("AddCoins", drone.userId, coinsFound);
         // TODO: Tell the console app this player collected some coins.
       }
     });
@@ -115,7 +116,7 @@ function updateScreen() {
 
   if (quiz)
     quiz.draw(myContext);
-  drawCrossHairs(myContext, crossX, crossY);
+  //drawCrossHairs(myContext, crossX, crossY);
 }
 
 var allSplats = new SpriteCollection();
@@ -640,6 +641,7 @@ function droneDown(userId: string, params: string) {
 
   userDrone.droneDown(params);
 }
+
 function changeDroneVelocity(userId: string, params: string) {
   let userDrone: Drone = <Drone>allDrones.find(userId);
   if (!userDrone)

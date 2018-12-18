@@ -18,20 +18,19 @@
   }
 
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
-    // Descendants can override if they want to draw on top of the sprite...
+    //this.drawDiagnostics(context, now);
+  }
+
+  drawDiagnostics(context: CanvasRenderingContext2D, now: number): void {
     for (var i = 0; i < this.meteorsToDrop.length; i++) {
       let futurePoint: FuturePoint = this.meteorsToDrop[i].futurePoint;
+
       drawCrossHairs(context, futurePoint.x, futurePoint.y);
-      //let futureDropTime = this.meteorsToDrop[i].futureDropTime;
-      //let secondsToDrop: number = (futureDropTime - now) / 1000;
+
       context.font = '20px Arial';
 
-      //if (secondsToDrop >= 0) {
-      //  context.fillStyle = '#000';
-      //  context.fillText(secondsToDrop.toFixed(2), futurePoint.x, futurePoint.y + 30);
-      //}
-
       let secondsToIntersect: number = (futurePoint.absoluteTimeMs - now) / 1000;
+
       if (secondsToIntersect < 0) {
         context.fillStyle = '#F60';
         const rectSize: number = 100;
@@ -41,7 +40,6 @@
         context.fillStyle = '#000';
         context.fillText(secondsToIntersect.toFixed(2), futurePoint.x, futurePoint.y);
       }
-
     }
   }
 

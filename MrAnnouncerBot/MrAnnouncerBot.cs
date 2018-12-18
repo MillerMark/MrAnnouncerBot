@@ -17,6 +17,7 @@ using TwitchLib.Api;
 using System.Reflection;
 using System.Text;
 using BotCore;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MrAnnouncerBot
 {
@@ -43,6 +44,7 @@ namespace MrAnnouncerBot
 		private Random random = new Random((int)DateTime.Now.Ticks);
 
 		private bool useObs = true;
+		HubConnection hubConnection;
 
 		public MrAnnouncerBot()
 		{
@@ -52,7 +54,24 @@ namespace MrAnnouncerBot
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
 			new BotCommand("+", HandleLevelUp);
+			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
+			if (hubConnection != null)
+			{
+				hubConnection.Closed += HubConnection_Closed;
+				hubConnection.On<string, int>("AddCoins", AddCoins);
+				// TODO: Check out benefits of stopping gracefully with a cancellation token.
+				hubConnection.StartAsync();
+			}
+		}
 
+		void AddCoins(string userID, int amount)
+		{
+			Console.WriteLine($"{userID} got {amount} coins.");
+		}
+
+		private System.Threading.Tasks.Task HubConnection_Closed(Exception arg)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void Disconnect()
