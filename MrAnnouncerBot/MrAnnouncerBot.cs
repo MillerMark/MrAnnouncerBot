@@ -59,9 +59,17 @@ namespace MrAnnouncerBot
 			{
 				hubConnection.Closed += HubConnection_Closed;
 				hubConnection.On<string, int>("AddCoins", AddCoins);
+				hubConnection.On<string>("NeedToGetCoins", NeedToGetCoins);
 				// TODO: Check out benefits of stopping gracefully with a cancellation token.
 				hubConnection.StartAsync();
 			}
+		}
+
+		void NeedToGetCoins(string userId)
+		{
+			Viewer viewerById = allViewers.GetViewerById(userId);
+			if (viewerById != null)
+				hubConnection.InvokeAsync("UserHasCoins", userId, viewerById.CoinsCollected);
 		}
 
 		void AddCoins(string userID, int amount)

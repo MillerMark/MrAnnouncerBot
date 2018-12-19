@@ -22,11 +22,15 @@ namespace OverlayManager.Hubs
 		}
 
 		public void AddCoins(string userId, int count) {
-			//Twitch.Chat($"{userId} got {count} coins.");
 			mrAnnouncerBotHub.Clients.All.AddCoins(userId, count);
 		}
 
-		
+		public void NeedToGetCoins(string userId)
+		{
+			mrAnnouncerBotHub.Clients.All.NeedToGetCoins(userId);
+		}
+
+
 		readonly IHubContext<MrAnnouncerBotHub, IAnnouncerBotCommands> mrAnnouncerBotHub;
 		public CodeRushedHub(IHubContext<MrAnnouncerBotHub, IAnnouncerBotCommands> hub)
 		{

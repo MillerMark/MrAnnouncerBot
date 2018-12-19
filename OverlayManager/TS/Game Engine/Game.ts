@@ -22,6 +22,10 @@ class Game {
 
   }
 
+  start() {
+  	
+  }
+
   initialize(): void {
     Part.loadSprites = loadCopyrightedContent;
   }

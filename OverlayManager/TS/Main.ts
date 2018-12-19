@@ -19,6 +19,7 @@ var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 
 activeGame.initialize();
 activeGame.loadResources();
+activeGame.start();
 
 // TODO: Consider having a startGame function in Game (setInterval call).
 setInterval(updateScreen, 10);

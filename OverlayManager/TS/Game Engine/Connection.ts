@@ -5,7 +5,12 @@ function connectToSignalR(signalR) {
   window.onload = function () {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
+    connection.on("UserHasCoins", userHasCoins);
   };
+}
+
+function userHasCoins(userId: string, amount: number) {
+  console.log('userId: ' + userId + ', propName: ' + amount);
 }
 
 function chat(message: string) {
@@ -14,4 +19,8 @@ function chat(message: string) {
 
 function whisper(userName: string, message: string) {
   connection.invoke("Whisper", userName, message);
+}
+
+function needToGetCoins(userId: string) {
+  connection.invoke("NeedToGetCoins", userId);
 }

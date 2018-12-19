@@ -6,9 +6,553 @@ class DroneGame extends GamePlusQuiz {
   yellowSeeds: Sprites;
   purpleSeeds: Sprites;
   sparkSmoke: Sprites;
+  beesYellow: Sprites;
+  redExplosions: Sprites;
+  blueExplosions: Sprites;
+  purpleExplosions: Sprites;
+  redFlowers: Sprites;
+  yellowFlowers1: Sprites;
+  yellowFlowers3: Sprites;
+  purpleFlowers: Sprites;
+  purplePortals: Sprites;
+  portalBackground: Sprites;
+  backgroundBanner: Part;
+  coins: Sprites;
+
 
   constructor() {
     super();
+  }
+
+  updateScreen(context: CanvasRenderingContext2D, now: number) {
+    super.updateScreen(context, now);
+    this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
+      if (portal instanceof Portal) {
+        portal.checkApproaching(this.allDrones, now);
+      }
+    });
+
+    myRocket.updatePosition(now);
+    myRocket.bounce(0, 0, screenWidth, screenHeight, now);
+
+    this.collectCoins();
+
+    this.allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+
+    this.beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
+    this.allDrones.bounce(0, 0, screenWidth, screenHeight, now);
+    //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+
+    this.allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
+    this.allMeteors.checkCollisionAgainst(this.allDrones, this.putMeteorOnDrone, now);
+
+    //backgroundBanner.draw(myContext, 0, 0);
+
+    if (!myRocket.isDocked)
+      gravityGames.draw(myContext);
+
+    this.allSplats.draw(myContext, now);
+    this.portalBackground.draw(myContext, now);
+    this.purplePortals.draw(myContext, now);
+
+    //grass1.draw(myContext, now);
+    //grass2.draw(myContext, now);
+    //grass3.draw(myContext, now);
+    //grass4.draw(myContext, now);
+
+    this.beesYellow.updatePositions(now);
+    this.allDrones.updatePositions(now);
+    this.allMeteors.updatePositions(now);
+    this.allWalls.updatePositions(now);
+    this.endCaps.updatePositions(now);
+    this.allSeeds.updatePositions(now);
+    this.allSparks.updatePositions(now);
+
+    this.wallBounce(now);
+
+    this.allSeeds.draw(myContext, now);
+    this.beesYellow.draw(myContext, now);
+    this.allWalls.draw(myContext, now);
+    this.droneGateways.draw(myContext, now);
+    this.warpIns.draw(myContext, now);
+    this.allDrones.draw(myContext, now);
+    this.allMeteors.draw(myContext, now);
+
+    this.endCaps.draw(myContext, now);
+
+    myRocket.draw(myContext, now);
+    this.purpleFlowers.draw(myContext, now);
+    //blueFlowers.draw(myContext, now);
+    this.redFlowers.draw(myContext, now);
+    this.yellowFlowers1.draw(myContext, now);
+    //yellowFlowers2.draw(myContext, now);
+    this.yellowFlowers3.draw(myContext, now);
+    this.redExplosions.draw(myContext, now);
+    this.blueExplosions.draw(myContext, now);
+    this.purpleExplosions.draw(myContext, now);
+    this.droneExplosions.draw(myContext, now);
+    //explosion.draw(myContext, 0, 0);
+    this.allSparks.draw(myContext, now);
+    this.sparkSmoke.draw(myContext, now);
+    this.coins.draw(myContext, now);
+    //drawCrossHairs(myContext, crossX, crossY);
+  }
+
+  removeAllGameElements(now: number): void {
+    super.removeAllGameElements(now);
+    this.allWalls.destroyAllBy(4000);
+    this.portalBackground.destroyAllBy(0);
+    this.purplePortals.destroyAllBy(4000);
+    this.droneGateways.destroyAllBy(4000);
+  }
+
+  initialize() {
+    super.initialize();
+    Folders.assets = 'GameDev/Assets/DroneGame/';
+
+    myRocket = new Rocket(0, 0);
+    myRocket.x = 0;
+    myRocket.y = 0;
+
+    gravityGames = new GravityGames();
+  }
+
+  start() {
+    super.start();
+    gravityGames.selectPlanet('Earth');
+    gravityGames.newGame();
+  }
+
+  loadResources(): void {
+    super.loadResources();
+    
+    this.coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, this.outlineGameSurfaceNoAdsNoMark/* outlineGameSurface outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
+
+    this.addSeeds();
+
+    loadZaps();
+
+    this.beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
+    this.beesYellow.segmentSize = 2;
+    this.beesYellow.removeOnHitFloor = false;
+    this.beesYellow.moves = true;
+
+    this.loadWarpInAnimation();
+
+    this.addDrones();
+
+    this.addSplats();
+
+    this.addMeteors();
+
+    this.loadAllSparks();
+
+    this.redExplosions = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
+    this.blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
+    this.purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
+
+    this.loadWalls();
+    this.loadDroneExplosions();
+    this.droneHealthLights = new Sprites('Drones/192x90/Indicator', 60, 0, AnimationStyle.Static);
+
+    const smokeFrameInterval: number = 40;
+    this.sparkSmoke = new Sprites(`FireWall/Smoke/Smoke`, 45, smokeFrameInterval, AnimationStyle.Sequential, true);
+    this.sparkSmoke.originX = 121;
+    this.sparkSmoke.originY = 170;
+
+    globalBypassFrameSkip = true;
+    this.redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
+    this.redFlowers.returnFrameIndex = 128;
+
+    const flowerFrameRate: number = 20;
+    //const grassFrameRate: number = 25;
+
+    this.yellowFlowers1 = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+    this.yellowFlowers1.returnFrameIndex = 64;
+    //var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+    //yellowFlowers2.returnFrameIndex = 64;
+    this.yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
+    this.yellowFlowers3.returnFrameIndex = 45;
+
+    this.purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
+    this.purpleFlowers.returnFrameIndex = 151;
+
+    this.droneGateways = new Gateways("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
+
+    const portalFrameRate: number = 40;
+    this.purplePortals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
+    this.portalBackground = new Sprites("Portal/Black Back/Back", 13, portalFrameRate, AnimationStyle.SequentialStop, true);
+    this.purplePortals.returnFrameIndex = 13;
+
+    globalBypassFrameSkip = false;
+
+    Part.loadSprites = true;
+
+    this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
+  }
+
+  executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
+    if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+      return true;
+    if (command === "Launch") {
+      if (!myRocket.started || myRocket.isDocked) {
+        myRocket.started = true;
+        myRocket.launch(now);
+        gravityGames.newGame();
+        chat('Launching...');
+      }
+    }
+    else if (command === "Dock") {
+      if (this.isSuperUser(userName)) {
+        this.selfDestructAllDrones();
+        this.removeAllGameElements(now);
+      }
+
+      if (myRocket.started && !myRocket.isDocked) {
+        chat('docking...');
+        myRocket.dock(now);
+      }
+    }
+    else if (command === "ChangePlanet") {
+      gravityGames.selectPlanet(params);
+    }
+    else if (command === "Left") {
+      myRocket.fireRightThruster(now, params);
+    }
+    else if (command === "Right") {
+      myRocket.fireLeftThruster(now, params);
+    }
+    else if (command === "Up") {
+      myRocket.fireMainThrusters(now, params);
+    }
+    else if (command === "Down") {
+      myRocket.killHoverThrusters(now, params);
+    }
+    else if (command === "Drop") {
+      myRocket.dropMeteor(now);
+    }
+    else if (command === "Chutes") {
+      if (myRocket.chuteDeployed)
+        myRocket.retractChutes(now);
+      else
+        myRocket.deployChute(now);
+    }
+    else if (command === "Retract") {
+      myRocket.retractEngines(now);
+    }
+    else if (command === "Extend") {
+      myRocket.extendEngines(now);
+    }
+    else if (command === "Seed") {
+      myRocket.dropSeed(now, params);
+    }
+    else if (command === "Bee") {
+      myRocket.releaseBee(now, params, userId, displayName, color);
+    }
+    else if (command === "Drone") {
+      let gatewayNum: number = +params;
+      needToGetCoins(userId);
+      if (gatewayNum)
+        this.droneGateways.releaseDrone(now, userId, displayName, color, gatewayNum);
+      else
+        myRocket.releaseDrone(now, userId, displayName, color);
+    }
+    else if (command === "MoveRelative") {
+      this.moveRelative(now, params, userId);
+    }
+    else if (command === "MoveAbsolute") {
+      this.moveAbsolute(now, params, userId);
+    }
+    else if (command === "red" || command === "orange" || command === "amber" || command === "yellow" ||
+      command === "green" || command === "cyan" || command === "blue" || command === "indigo"
+      || command === "violet" || command === "magenta" || command === "black" || command === "white") {
+      this.paint(userId, command, params);
+    }
+    else if (command === "ChangeDroneVelocity") {
+      this.changeDroneVelocity(userId, params);
+    }
+    else if (command === "DroneUp") {
+      this.droneUp(userId, params);
+    }
+    else if (command === "DroneDown") {
+      this.droneDown(userId, params);
+    }
+    else if (command === "DroneLeft") {
+      this.droneLeft(userId, params);
+    }
+    else if (command === "DroneRight") {
+      this.droneRight(userId, params);
+    }
+    else if (command === "Toss") {
+      this.tossMeteor(userId, params);
+    }
+  }
+
+  test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
+    if (super.test(testCommand, userId, userName, displayName, color, now))
+      return true;
+
+    if (testCommand === 'game') {
+      gravityGames.startGame(wallBoxesTest);
+      return true;
+    }
+
+    if (testCommand === '+') {
+      gravityGames.startGame(wallIntersectionTest);
+      return true;
+    }
+
+    if (testCommand === 'delta') {
+      gravityGames.startGame(wallChangeTest);
+      return true;
+    }
+
+    if (testCommand === 'edge') {
+      gravityGames.startGame(wallEdgeTest);
+      return true;
+    }
+
+    if (testCommand === 'simple') {
+      gravityGames.startGame(simpleWallChangeTest);
+      return true;
+    }
+
+    if (testCommand === 'corner') {
+      gravityGames.startGame(wallCornerTest);
+      return true;
+    }
+
+    if (testCommand === 'top') {
+      gravityGames.startGame(startTopTest);
+      return true;
+    }
+
+    if (testCommand === 'sample') {
+      gravityGames.startGame(sampleGame);
+      return true;
+    }
+
+    if (testCommand === 'sample2') {
+      gravityGames.startGame(sampleGame2);
+      return true;
+    }
+
+    if (testCommand === 'sample3') {
+      gravityGames.startGame(sampleGame3);
+      return true;
+    }
+
+    if (testCommand === 'sample4') {
+      gravityGames.startGame(sampleGame4);
+      return true;
+    }
+
+    if (testCommand === 'gate') {
+      gravityGames.startGame(gatewayTest);
+      return true;
+    }
+
+    if (testCommand === 'portal drop') {
+      this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
+        if (portal instanceof Portal) {
+          portal.drop();
+        }
+      });
+      return true;
+    }
+
+    if (testCommand === 'drop') {
+      this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
+      this.horizontalSolidWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));
+      return true;
+    }
+
+    if (testCommand === 'bounce') {
+      this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
+      this.horizontalDoubleWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 800, Orientation.Horizontal, WallStyle.Double, 400));
+      return true;
+    }
+
+    if (testCommand === 'rect') {
+      this.horizontalSolidWall.sprites.push(new Wall(0, screenCenterX - 300, screenCenterY - 300, Orientation.Horizontal, WallStyle.Solid, 500));
+      this.verticalSolidWall.sprites.push(new Wall(0, screenCenterX + 200, screenCenterY, Orientation.Vertical, WallStyle.Solid, 400));
+      this.verticalDashedWall.sprites.push(new Wall(0, screenCenterX - 780, screenCenterY, Orientation.Vertical, WallStyle.Dashed, 400));
+      this.horizontalDashedWall.sprites.push(new Wall(0, screenCenterX - 300, screenCenterY + 300, Orientation.Horizontal, WallStyle.Dashed, 500));
+      return true;
+    }
+
+    if (testCommand === 'smoke') {
+      this.sparkSmoke.add(screenCenterX, screenCenterY);
+      return true;
+    }
+
+    if (testCommand === 'mix') {
+      gravityGames.startGame(mixedTest);
+      return true;
+    }
+
+    if (testCommand === 'wi') {
+      this.warpIns.add(screenCenterX, screenCenterY, 0);
+      return true;
+    }
+
+    if (testCommand === 'sparks 1') {
+      this.downAndRightSparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 2') {
+      this.downAndLeftSparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 3') {
+      this.left1Sparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 4') {
+      this.left2Sparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 5') {
+      this.right1Sparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 6') {
+      this.right2Sparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 7') {
+      this.upAndRightSparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+    else if (testCommand === 'sparks 8') {
+      this.upAndLeftSparks.add(screenCenterX, screenCenterY);
+      return true;
+    }
+
+    return false;
+  }
+
+  tossMeteor(userId: string, params: string) {
+    let numbers: string[] = params.split(',');
+    if (!numbers || numbers.length < 2) {
+      numbers = ['0', '0'];
+    }
+    // TODO: If third parameter is "x", kill all thrusters as we toss the meteor.
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+    userDrone.tossMeteor(numbers[0], numbers[1]);
+  }
+
+  selfDestructAllDrones() {
+    this.allDrones.destroyAllBy(3000);
+  }
+
+  droneRight(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+
+    userDrone.droneRight(params);
+  }
+
+  droneLeft(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+
+    userDrone.droneLeft(params);
+  }
+
+  droneUp(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+
+    userDrone.droneUp(params);
+  }
+
+  droneDown(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+
+    userDrone.droneDown(params);
+  }
+
+  changeDroneVelocity(userId: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+
+    let parameters: string[] = params.split(',');
+    if (parameters.length < 2)
+      return;
+    let now: number = performance.now();
+    userDrone.changingDirection(now);
+    userDrone.changeVelocity(+parameters[0], +parameters[1], now);
+  }
+
+  paint(userId: string, command: string, params: string) {
+    let userDrone: Drone = <Drone>this.allDrones.find(userId);
+    if (!userDrone)
+      return;
+
+    userDrone.dropPaint(command, params);
+  }
+
+  moveAbsolute(now: number, params: string, userId: string) {
+  }
+
+  moveRelative(now: number, params: string, userId: string) {
+  }
+
+  wallBounce(now: number): void {
+    this.allDrones.allSprites.forEach(function (drones: Sprites) {
+      drones.sprites.forEach(function (drone: Drone) {
+        this.horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+        this.verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+        this.horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+        this.verticalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+        this.horizontalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+        this.verticalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
+      }, this);
+    }, this);
+
+    this.allMeteors.allSprites.forEach(function (meteors: Sprites) {
+      meteors.sprites.forEach(function (meteor: Meteor) {
+        this.horizontalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+        this.verticalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+        this.horizontalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+        this.verticalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+        this.horizontalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+        this.verticalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
+      }, this);
+    }, this);
+    // TODO: Check for meteors as well.
+  }
+  allMeteors: SpriteCollection;
+  redMeteors: Sprites;
+  blueMeteors: Sprites;
+  purpleMeteors: Sprites;
+
+  //`![Meteor](5F8B49E97A5F459E6434A11E7FD272BE.png)
+  addMeteors() {
+    this.allMeteors = new SpriteCollection();
+
+    const meteorFrameInterval: number = 38;
+    this.redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
+    this.redMeteors.moves = true;
+
+    this.blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
+    this.blueMeteors.moves = true;
+
+    this.purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
+    this.purpleMeteors.moves = true;
+
+    this.allMeteors.add(this.redMeteors);
+    this.allMeteors.add(this.blueMeteors);
+    this.allMeteors.add(this.purpleMeteors);
   }
 
   buildCenterRect(sprites) {
@@ -502,546 +1046,4 @@ class DroneGame extends GamePlusQuiz {
 
     //dronesRed.sprites.forEach
   }
-
-
-  updateScreen(context: CanvasRenderingContext2D, now: number) {
-    super.updateScreen(context, now);
-    this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
-      if (portal instanceof Portal) {
-        portal.checkApproaching(this.allDrones, now);
-      }
-    });
-
-    myRocket.updatePosition(now);
-    myRocket.bounce(0, 0, screenWidth, screenHeight, now);
-
-    this.collectCoins();
-
-    this.allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-
-    this.beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
-    this.allDrones.bounce(0, 0, screenWidth, screenHeight, now);
-    //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
-
-    this.allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
-    this.allMeteors.checkCollisionAgainst(this.allDrones, this.putMeteorOnDrone, now);
-
-    //backgroundBanner.draw(myContext, 0, 0);
-
-    if (!myRocket.isDocked)
-      gravityGames.draw(myContext);
-
-    this.allSplats.draw(myContext, now);
-    this.portalBackground.draw(myContext, now);
-    this.purplePortals.draw(myContext, now);
-
-    //grass1.draw(myContext, now);
-    //grass2.draw(myContext, now);
-    //grass3.draw(myContext, now);
-    //grass4.draw(myContext, now);
-
-    this.beesYellow.updatePositions(now);
-    this.allDrones.updatePositions(now);
-    this.allMeteors.updatePositions(now);
-    this.allWalls.updatePositions(now);
-    this.endCaps.updatePositions(now);
-    this.allSeeds.updatePositions(now);
-    this.allSparks.updatePositions(now);
-
-    this.wallBounce(now);
-
-    this.allSeeds.draw(myContext, now);
-    this.beesYellow.draw(myContext, now);
-    this.allWalls.draw(myContext, now);
-    this.droneGateways.draw(myContext, now);
-    this.warpIns.draw(myContext, now);
-    this.allDrones.draw(myContext, now);
-    this.allMeteors.draw(myContext, now);
-
-    this.endCaps.draw(myContext, now);
-
-    myRocket.draw(myContext, now);
-    this.purpleFlowers.draw(myContext, now);
-    //blueFlowers.draw(myContext, now);
-    this.redFlowers.draw(myContext, now);
-    this.yellowFlowers1.draw(myContext, now);
-    //yellowFlowers2.draw(myContext, now);
-    this.yellowFlowers3.draw(myContext, now);
-    this.redExplosions.draw(myContext, now);
-    this.blueExplosions.draw(myContext, now);
-    this.purpleExplosions.draw(myContext, now);
-    this.droneExplosions.draw(myContext, now);
-    //explosion.draw(myContext, 0, 0);
-    this.allSparks.draw(myContext, now);
-    this.sparkSmoke.draw(myContext, now);
-    this.coins.draw(myContext, now);
-    //drawCrossHairs(myContext, crossX, crossY);
-  }
-
-  removeAllGameElements(now: number): void {
-    super.removeAllGameElements(now);
-    this.allWalls.destroyAllBy(4000);
-    this.portalBackground.destroyAllBy(0);
-    this.purplePortals.destroyAllBy(4000);
-    this.droneGateways.destroyAllBy(4000);
-  }
-
-  initialize() {
-    super.initialize();
-    Folders.assets = 'GameDev/Assets/DroneGame/';
-    gravityGames = new GravityGames();
-    gravityGames.selectPlanet('Earth');
-    gravityGames.newGame();
-
-    myRocket = new Rocket(0, 0);
-    myRocket.x = 0;
-    myRocket.y = 0;
-  }
-
-  beesYellow: Sprites;
-  redExplosions: Sprites;
-  blueExplosions: Sprites;
-  purpleExplosions: Sprites;
-  redFlowers: Sprites;
-  yellowFlowers1: Sprites;
-  yellowFlowers3: Sprites;
-  purpleFlowers: Sprites;
-  purplePortals: Sprites;
-  portalBackground: Sprites;
-  backgroundBanner: Part;
-  coins: Sprites;
-
-  loadResources(): void {
-    super.loadResources();
-    
-    this.coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, this.outlineGameSurfaceNoAdsNoMark/* outlineGameSurface outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
-
-    this.addSeeds();
-
-    loadZaps();
-
-    this.beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
-    this.beesYellow.segmentSize = 2;
-    this.beesYellow.removeOnHitFloor = false;
-    this.beesYellow.moves = true;
-
-    this.loadWarpInAnimation();
-
-    this.addDrones();
-
-    this.addSplats();
-
-    this.addMeteors();
-
-    this.loadAllSparks();
-
-    this.redExplosions = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
-    this.blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
-    this.purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
-
-    this.loadWalls();
-    this.loadDroneExplosions();
-    this.droneHealthLights = new Sprites('Drones/192x90/Indicator', 60, 0, AnimationStyle.Static);
-
-    const smokeFrameInterval: number = 40;
-    this.sparkSmoke = new Sprites(`FireWall/Smoke/Smoke`, 45, smokeFrameInterval, AnimationStyle.Sequential, true);
-    this.sparkSmoke.originX = 121;
-    this.sparkSmoke.originY = 170;
-
-    globalBypassFrameSkip = true;
-    this.redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
-    this.redFlowers.returnFrameIndex = 128;
-
-    const flowerFrameRate: number = 20;
-    //const grassFrameRate: number = 25;
-
-    this.yellowFlowers1 = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
-    this.yellowFlowers1.returnFrameIndex = 64;
-    //var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
-    //yellowFlowers2.returnFrameIndex = 64;
-    this.yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
-    this.yellowFlowers3.returnFrameIndex = 45;
-
-    this.purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
-    this.purpleFlowers.returnFrameIndex = 151;
-
-    this.droneGateways = new Gateways("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
-
-    const portalFrameRate: number = 40;
-    this.purplePortals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
-    this.portalBackground = new Sprites("Portal/Black Back/Back", 13, portalFrameRate, AnimationStyle.SequentialStop, true);
-    this.purplePortals.returnFrameIndex = 13;
-
-    globalBypassFrameSkip = false;
-
-    Part.loadSprites = true;
-
-    this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
-  }
-
-  executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-    if (super.executeCommand(command, params, userId, userName, displayName, color, now))
-      return true;
-    if (command === "Launch") {
-      if (!myRocket.started || myRocket.isDocked) {
-        myRocket.started = true;
-        myRocket.launch(now);
-        gravityGames.newGame();
-        chat('Launching...');
-      }
-    }
-    else if (command === "Dock") {
-      if (this.isSuperUser(userName)) {
-        this.selfDestructAllDrones();
-        this.removeAllGameElements(now);
-      }
-
-      if (myRocket.started && !myRocket.isDocked) {
-        chat('docking...');
-        myRocket.dock(now);
-      }
-    }
-    else if (command === "ChangePlanet") {
-      gravityGames.selectPlanet(params);
-    }
-    else if (command === "Left") {
-      myRocket.fireRightThruster(now, params);
-    }
-    else if (command === "Right") {
-      myRocket.fireLeftThruster(now, params);
-    }
-    else if (command === "Up") {
-      myRocket.fireMainThrusters(now, params);
-    }
-    else if (command === "Down") {
-      myRocket.killHoverThrusters(now, params);
-    }
-    else if (command === "Drop") {
-      myRocket.dropMeteor(now);
-    }
-    else if (command === "Chutes") {
-      if (myRocket.chuteDeployed)
-        myRocket.retractChutes(now);
-      else
-        myRocket.deployChute(now);
-    }
-    else if (command === "Retract") {
-      myRocket.retractEngines(now);
-    }
-    else if (command === "Extend") {
-      myRocket.extendEngines(now);
-    }
-    else if (command === "Seed") {
-      myRocket.dropSeed(now, params);
-    }
-    else if (command === "Bee") {
-      myRocket.releaseBee(now, params, userId, displayName, color);
-    }
-    else if (command === "Drone") {
-      let gatewayNum: number = +params;
-      if (gatewayNum)
-        this.droneGateways.releaseDrone(now, userId, displayName, color, gatewayNum);
-      else
-        myRocket.releaseDrone(now, userId, displayName, color);
-    }
-    else if (command === "MoveRelative") {
-      this.moveRelative(now, params, userId);
-    }
-    else if (command === "MoveAbsolute") {
-      this.moveAbsolute(now, params, userId);
-    }
-    else if (command === "red" || command === "orange" || command === "amber" || command === "yellow" ||
-      command === "green" || command === "cyan" || command === "blue" || command === "indigo"
-      || command === "violet" || command === "magenta" || command === "black" || command === "white") {
-      this.paint(userId, command, params);
-    }
-    else if (command === "ChangeDroneVelocity") {
-      this.changeDroneVelocity(userId, params);
-    }
-    else if (command === "DroneUp") {
-      this.droneUp(userId, params);
-    }
-    else if (command === "DroneDown") {
-      this.droneDown(userId, params);
-    }
-    else if (command === "DroneLeft") {
-      this.droneLeft(userId, params);
-    }
-    else if (command === "DroneRight") {
-      this.droneRight(userId, params);
-    }
-    else if (command === "Toss") {
-      this.tossMeteor(userId, params);
-    }
-  }
-
-  test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-    if (super.test(testCommand, userId, userName, displayName, color, now))
-      return true;
-
-    if (testCommand === 'game') {
-      gravityGames.startGame(wallBoxesTest);
-      return true;
-    }
-
-    if (testCommand === '+') {
-      gravityGames.startGame(wallIntersectionTest);
-      return true;
-    }
-
-    if (testCommand === 'delta') {
-      gravityGames.startGame(wallChangeTest);
-      return true;
-    }
-
-    if (testCommand === 'edge') {
-      gravityGames.startGame(wallEdgeTest);
-      return true;
-    }
-
-    if (testCommand === 'simple') {
-      gravityGames.startGame(simpleWallChangeTest);
-      return true;
-    }
-
-    if (testCommand === 'corner') {
-      gravityGames.startGame(wallCornerTest);
-      return true;
-    }
-
-    if (testCommand === 'top') {
-      gravityGames.startGame(startTopTest);
-      return true;
-    }
-
-    if (testCommand === 'sample') {
-      gravityGames.startGame(sampleGame);
-      return true;
-    }
-
-    if (testCommand === 'sample2') {
-      gravityGames.startGame(sampleGame2);
-      return true;
-    }
-
-    if (testCommand === 'sample3') {
-      gravityGames.startGame(sampleGame3);
-      return true;
-    }
-
-    if (testCommand === 'sample4') {
-      gravityGames.startGame(sampleGame4);
-      return true;
-    }
-
-    if (testCommand === 'gate') {
-      gravityGames.startGame(gatewayTest);
-      return true;
-    }
-
-    if (testCommand === 'portal drop') {
-      this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
-        if (portal instanceof Portal) {
-          portal.drop();
-        }
-      });
-      return true;
-    }
-
-    if (testCommand === 'drop') {
-      this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
-      this.horizontalSolidWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));
-      return true;
-    }
-
-    if (testCommand === 'bounce') {
-      this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
-      this.horizontalDoubleWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 800, Orientation.Horizontal, WallStyle.Double, 400));
-      return true;
-    }
-
-    if (testCommand === 'rect') {
-      this.horizontalSolidWall.sprites.push(new Wall(0, screenCenterX - 300, screenCenterY - 300, Orientation.Horizontal, WallStyle.Solid, 500));
-      this.verticalSolidWall.sprites.push(new Wall(0, screenCenterX + 200, screenCenterY, Orientation.Vertical, WallStyle.Solid, 400));
-      this.verticalDashedWall.sprites.push(new Wall(0, screenCenterX - 780, screenCenterY, Orientation.Vertical, WallStyle.Dashed, 400));
-      this.horizontalDashedWall.sprites.push(new Wall(0, screenCenterX - 300, screenCenterY + 300, Orientation.Horizontal, WallStyle.Dashed, 500));
-      return true;
-    }
-
-    if (testCommand === 'smoke') {
-      this.sparkSmoke.add(screenCenterX, screenCenterY);
-      return true;
-    }
-
-    if (testCommand === 'mix') {
-      gravityGames.startGame(mixedTest);
-      return true;
-    }
-
-    if (testCommand === 'wi') {
-      this.warpIns.add(screenCenterX, screenCenterY, 0);
-      return true;
-    }
-
-    if (testCommand === 'sparks 1') {
-      this.downAndRightSparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 2') {
-      this.downAndLeftSparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 3') {
-      this.left1Sparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 4') {
-      this.left2Sparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 5') {
-      this.right1Sparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 6') {
-      this.right2Sparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 7') {
-      this.upAndRightSparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-    else if (testCommand === 'sparks 8') {
-      this.upAndLeftSparks.add(screenCenterX, screenCenterY);
-      return true;
-    }
-
-    return false;
-  }
-
-  tossMeteor(userId: string, params: string) {
-    let numbers: string[] = params.split(',');
-    if (!numbers || numbers.length < 2) {
-      numbers = ['0', '0'];
-    }
-    // TODO: If third parameter is "x", kill all thrusters as we toss the meteor.
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-    userDrone.tossMeteor(numbers[0], numbers[1]);
-  }
-
-  selfDestructAllDrones() {
-    this.allDrones.destroyAllBy(3000);
-  }
-
-  droneRight(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-
-    userDrone.droneRight(params);
-  }
-
-  droneLeft(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-
-    userDrone.droneLeft(params);
-  }
-
-  droneUp(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-
-    userDrone.droneUp(params);
-  }
-
-  droneDown(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-
-    userDrone.droneDown(params);
-  }
-
-  changeDroneVelocity(userId: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-
-    let parameters: string[] = params.split(',');
-    if (parameters.length < 2)
-      return;
-    let now: number = performance.now();
-    userDrone.changingDirection(now);
-    userDrone.changeVelocity(+parameters[0], +parameters[1], now);
-  }
-
-  paint(userId: string, command: string, params: string) {
-    let userDrone: Drone = <Drone>this.allDrones.find(userId);
-    if (!userDrone)
-      return;
-
-    userDrone.dropPaint(command, params);
-  }
-
-  moveAbsolute(now: number, params: string, userId: string) {
-  }
-
-  moveRelative(now: number, params: string, userId: string) {
-  }
-
-  wallBounce(now: number): void {
-    this.allDrones.allSprites.forEach(function (drones: Sprites) {
-      drones.sprites.forEach(function (drone: Drone) {
-        this.horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-        this.verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-        this.horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-        this.verticalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-        this.horizontalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-        this.verticalDoubleWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
-      }, this);
-    }, this);
-
-    this.allMeteors.allSprites.forEach(function (meteors: Sprites) {
-      meteors.sprites.forEach(function (meteor: Meteor) {
-        this.horizontalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-        this.verticalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-        this.horizontalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-        this.verticalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-        this.horizontalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-        this.verticalDoubleWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
-      }, this);
-    }, this);
-    // TODO: Check for meteors as well.
-  }
-  allMeteors: SpriteCollection;
-  redMeteors: Sprites;
-  blueMeteors: Sprites;
-  purpleMeteors: Sprites;
-
-  //`![Meteor](5F8B49E97A5F459E6434A11E7FD272BE.png)
-  addMeteors() {
-    this.allMeteors = new SpriteCollection();
-
-    const meteorFrameInterval: number = 38;
-    this.redMeteors = new Sprites("Spinning Rock/Red/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
-    this.redMeteors.moves = true;
-
-    this.blueMeteors = new Sprites("Spinning Rock/Blue/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
-    this.blueMeteors.moves = true;
-
-    this.purpleMeteors = new Sprites("Spinning Rock/Purple/Meteor", 63, meteorFrameInterval, AnimationStyle.Loop, false, addMeteorExplosion);
-    this.purpleMeteors.moves = true;
-
-    this.allMeteors.add(this.redMeteors);
-    this.allMeteors.add(this.blueMeteors);
-    this.allMeteors.add(this.purpleMeteors);
-  }
-
-
-
 } 

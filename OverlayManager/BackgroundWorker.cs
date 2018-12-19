@@ -131,63 +131,7 @@ namespace OverlayManager
 					SilentAnswerQuiz(msg, whisperMessage); break;
 			}
 		}
-
-		//void Launch(ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Launch", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Right(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Right", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Drone(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Drone", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Bee(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Bee", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void MoveAbsolute(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("MoveAbsolute", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void MoveRelative(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("MoveRelative", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Toss(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Toss", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void TestCommand(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("TestCommand", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Left(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Left", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Up(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Up", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void ChangePlanet(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("ChangePlanet", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void ClearQuiz(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("ClearQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void StartQuiz(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("StartQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void ShowLastQuizResults(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("ShowLastQuizResults", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
+		
 		void AnswerQuiz(string args, ChatMessage chatMessage)
 		{
 			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
@@ -196,63 +140,7 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
 		}
-		//void Drop(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Drop", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Dock(ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Dock", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Down(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Down", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Chutes(ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Chutes", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-
-		//void ChangeDroneVelocity(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("ChangeDroneVelocity", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-
-		//void Extend(ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Extend", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void Retract(ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Retract", "", chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-
-		//void PlantSeed(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("Seed", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-
-		//void Paint(string cmdText, string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand(cmdText, args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-
-		//void DroneRight(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("DroneRight", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void DroneUp(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("DroneUp", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void DroneDown(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("DroneDown", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
-		//void DroneLeft(string args, ChatMessage chatMessage)
-		//{
-		//	hub.Clients.All.ExecuteCommand("DroneLeft", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
-		//}
+		
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
 			string cmdText = e.Command.CommandText.ToLower();
@@ -269,91 +157,6 @@ namespace OverlayManager
 				command.Execute(hub, chatMessage, cmdText, args);
 				return;
 			}
-
-			// Main commands...
-			//switch (cmdText)
-			//{
-			//	case "cmd":
-			//	case "?":
-			//		Twitch.Chat($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, right, & drone. Drone controls: u, d, l, r, t {{x,y}}. Paint splat: {{color}}.");
-			//		break;
-			//}
-
-			// Rocket commands...
-			//switch (cmdText)
-			//{
-			//	case "launch": Launch(chatMessage); break;
-			//	case "up": Up(args, chatMessage); break;
-			//	case "down": Down(args, chatMessage); break;
-			//	case "left": Left(args, chatMessage); break;
-			//	case "right": Right(args, chatMessage); break;
-			//	case "dock": Dock(chatMessage); break;
-			//	case "drop": Drop(args, chatMessage); break;
-			//	case "extend": Extend(chatMessage); break;
-			//	case "retract": Retract(chatMessage); break;
-			//	case "chutes": Chutes(chatMessage); break;
-			//	case "seed": PlantSeed(args, chatMessage); break;
-			//	case "drone": Drone(args, chatMessage); break;
-			//}
-
-			// Drone commands...
-			//switch (cmdText)
-			//{
-			//	case "t":
-			//	case "toss":
-			//		Toss(args, chatMessage); break;
-			//	case "u": DroneUp(args, chatMessage); break;
-			//	case "d": DroneDown(args, chatMessage); break;
-			//	case "l": DroneLeft(args, chatMessage); break;
-			//	case "r": DroneRight(args, chatMessage); break;
-			//	case "cv": ChangeDroneVelocity(args, chatMessage); break;
-			//}
-
-			// Paint splat commands...
-			//switch (cmdText)
-			//{
-			//	case "red":
-			//	case "black":
-			//	case "white":
-			//	case "orange":
-			//	case "amber":
-			//	case "yellow":
-			//	case "green":
-			//	case "cyan":
-			//	case "blue":
-			//	case "indigo":
-			//	case "violet":
-			//	case "magenta":
-			//		Paint(cmdText, args, chatMessage); break;
-			//	case "purple":
-			//		Paint("violet", args, chatMessage); break;
-			//}
-			//switch (cmdText)
-			//{
-			//	case "planet": ChangePlanet(args, chatMessage); break;
-			//}
-			//switch (cmdText)
-			//{
-				//case "poll":
-				//case "quiz": StartQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
-				//case "clearquiz": ClearQuiz(args, chatMessage); break; // Posed in the form of "!quiz What would you rather be? 1. Bee, 2. Drone"
-				//case "1":
-				//case "2":
-				//case "3":
-				//case "4":
-				//case "5":
-				//case "6":
-				//case "7":
-				//case "8":
-				//case "9":
-				//case "y":
-				//case "Y":
-				//case "n":
-				//case "N":
-				//	AnswerQuiz(cmdText, chatMessage); break;
-				//case "vote":
-				//	AnswerQuiz(args, chatMessage); break;
-//			}
 		}
 
 		private void TwitchClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
