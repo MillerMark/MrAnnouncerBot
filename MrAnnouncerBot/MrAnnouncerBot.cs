@@ -66,7 +66,9 @@ namespace MrAnnouncerBot
 
 		void AddCoins(string userID, int amount)
 		{
-			Console.WriteLine($"{userID} got {amount} coins.");
+			Viewer viewerById = allViewers.GetViewerById(userID);
+			if (viewerById != null)
+				viewerById.CoinsCollected += amount;
 		}
 
 		private System.Threading.Tasks.Task HubConnection_Closed(Exception arg)
@@ -90,9 +92,11 @@ namespace MrAnnouncerBot
 		{
 			int oneMinute = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
 			int fiveMinutes = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
+			int thirtySeconds = (int)TimeSpan.FromMinutes(0.5).TotalMilliseconds;
 
 			checkChatRoomTimer = new Timer(CheckViewers, null, oneMinute, oneMinute);
-			autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
+			//autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
+			autoSaveTimer = new Timer(AutoSaveViewers, null, thirtySeconds, thirtySeconds);
 		}
 
 		private void InitZork()

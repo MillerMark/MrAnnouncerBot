@@ -79,10 +79,4 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="AllViewers.cs" />
-    <None Include="AppData.cs" />
-    <None Include="Viewer.cs" />
-  </ItemGroup>
-
 </Project>

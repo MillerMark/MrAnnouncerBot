@@ -38,6 +38,7 @@ namespace BotCore
 						viewer.DisplayName = user.DisplayName;
 					}
 				}
+				Console.WriteLine($"{viewer.DisplayName} has {viewer.CoinsCollected} coins.");
 			}
 		}
 		public void Load()
@@ -73,17 +74,17 @@ namespace BotCore
 				existingUser.NumberOfChatMessagesSent++;
 		}
 
-		private Viewer GetViewer(ChatMessage chatMessage)
+		public Viewer GetViewer(ChatMessage chatMessage)
 		{
 			return viewers.FirstOrDefault(x => x.UserId == chatMessage.UserId);
 		}
 
-		private Viewer GetViewerByUserName(string userName)
+		public Viewer GetViewerByUserName(string userName)
 		{
 			return viewers.FirstOrDefault(x => string.Compare(x.UserName, userName, StringComparison.InvariantCultureIgnoreCase) == 0);
 		}
 
-		private Viewer GetViewerById(string userId)
+		public Viewer GetViewerById(string userId)
 		{
 			return viewers.FirstOrDefault(x => x.UserId == userId);
 		}

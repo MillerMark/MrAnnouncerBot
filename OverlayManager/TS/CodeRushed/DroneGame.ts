@@ -588,8 +588,11 @@ class DroneGame extends GamePlusQuiz {
 
   initialize() {
     super.initialize();
-    Folders.assets = 'Assets/DroneGame/';
+    Folders.assets = 'GameDev/Assets/DroneGame/';
     gravityGames = new GravityGames();
+    gravityGames.selectPlanet('Earth');
+    gravityGames.newGame();
+
     myRocket = new Rocket(0, 0);
     myRocket.x = 0;
     myRocket.y = 0;

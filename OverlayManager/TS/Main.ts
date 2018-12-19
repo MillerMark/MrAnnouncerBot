@@ -12,22 +12,13 @@ function executeCommand(command: string, params: string, userId: string, userNam
   }
 }
 
-//function removeAllGameElements() {
-//  if (activeGame) {
-//    activeGame.removeAllGameElements(performance.now());
-//  }
-//}
-
 activeGame = new DroneGame();
 
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 
 activeGame.initialize();
 activeGame.loadResources();
-
-var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
-gravityGames.selectPlanet('Earth');
-gravityGames.newGame();
 
 // TODO: Consider having a startGame function in Game (setInterval call).
 setInterval(updateScreen, 10);
