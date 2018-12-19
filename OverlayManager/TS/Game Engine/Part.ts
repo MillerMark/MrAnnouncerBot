@@ -3,6 +3,7 @@ const globalFramesToCount: number = 2;
 var globalBypassFrameSkip: boolean = false;
 
 class Part {
+  static loadSprites: boolean; // Was globalLoadSprites
   images: HTMLImageElement[];
   frameIndex: number;
   reverse: boolean;
@@ -42,7 +43,7 @@ class Part {
       frameRate = framesToCount / framesToLoad;
     }
 
-    if (globalLoadSprites) {
+    if (Part.loadSprites) {
       let totalFramesToLoad = frameCount * framesToLoad / framesToCount;
       let frameIncrementor = frameCount / totalFramesToLoad;
       let absoluteIndex = 0;

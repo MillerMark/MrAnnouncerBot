@@ -8,6 +8,7 @@
   lastHorizontalAcceleration: number;
   lastVerticalAcceleration: number;
   loggingState: boolean;
+  started: boolean;
   hoverThrustersAudio: HTMLAudioElement;
   hoverDropThrustersAudio: HTMLAudioElement;
   mainThrustersAudio: HTMLAudioElement;
@@ -68,6 +69,7 @@
     x -= upperLeftOffsetX;
     y -= upperLeftOffsetY;
 
+    this.started = false;
     this.x = x;
     this.y = y;
     const flameFrameInterval = 60;
@@ -716,11 +718,15 @@
   }
 
   releaseBee(now: number, params: string, userId: string, displayName: string, color: string): any {
-    this.createSprite(beesYellow, now);
+    if (!(activeGame instanceof DroneGame))
+      return;
+    this.createSprite(activeGame.beesYellow, now);
   }
 
   releaseDrone(now: number, userId: string, displayName: string, color: string): any {
-    allDrones.destroy(userId, addDroneExplosion);
+    if (!(activeGame instanceof DroneGame))
+      return;
+    activeGame.allDrones.destroy(userId, addDroneExplosion);
     Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), Drone.create, userId, displayName, color);
   }
 
@@ -776,7 +782,10 @@
   }
 
   dropMeteor(now) {
-    this.dropFromOne(now, redMeteors, blueMeteors, purpleMeteors, null, this.createMeteor);
+    if (!(activeGame instanceof DroneGame))
+      return;
+    
+    this.dropFromOne(now, activeGame.redMeteors, activeGame.blueMeteors, activeGame.purpleMeteors, null, this.createMeteor);
   }
 
   createMeteor(x: number, y: number, frameCount: number): SpriteProxy {
@@ -784,18 +793,21 @@
   }
 
   dropSeed(now: number, args?: string) {
+    if (!(activeGame instanceof DroneGame))
+      return;
+
     if (args && args.toLowerCase() === 'pink')
-      this.createSprite(pinkSeeds, now);
+      this.createSprite(activeGame.pinkSeeds, now);
     else if (args && args.toLowerCase() === 'blue')
-      this.createSprite(purpleSeeds, now); //this.createSprite(blueSeeds, now);
+      this.createSprite(activeGame.purpleSeeds, now); //this.createSprite(blueSeeds, now);
     else if (args && args.toLowerCase() === 'yellow')
-      this.createSprite(yellowSeeds, now);
+      this.createSprite(activeGame.yellowSeeds, now);
     else if (args && args.toLowerCase() === 'purple')
-      this.createSprite(purpleSeeds, now);
+      this.createSprite(activeGame.purpleSeeds, now);
     //else if (args && args.toLowerCase() === 'grass')
     //  this.createSprite(greenSeeds, now);
     else 
-      this.dropFromOne(now, pinkSeeds, /* blueSeeds, */ purpleSeeds, yellowSeeds);
+      this.dropFromOne(now, activeGame.pinkSeeds, /* blueSeeds, */ activeGame.purpleSeeds, activeGame.yellowSeeds);
   }
 }
 

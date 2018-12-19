@@ -7,9 +7,22 @@
     <Content Remove="wwwroot\GameDev\Source\Folders.ts" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="TS\CodeRushed\DroneGame.ts" />
+    <None Remove="TS\CodeRushed\FuturePoint.ts" />
+    <None Remove="TS\CodeRushed\GravityGame.ts" />
+    <None Remove="TS\DH\Adventurer.ts" />
+    <None Remove="TS\DH\Attack.ts" />
+    <None Remove="TS\DH\Monster.ts" />
+    <None Remove="TS\DH\Treasure.ts" />
     <None Remove="TS\Digits.ts" />
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\DroneProxy.ts" />
+    <None Remove="TS\Game Engine\Connection.ts" />
+    <None Remove="TS\Game Engine\Diagnostics.ts" />
+    <None Remove="TS\Game Engine\Game.ts" />
+    <None Remove="TS\Game Engine\GamePlusQuiz.ts" />
+    <None Remove="TS\Game Engine\Keyboard.ts" />
+    <None Remove="TS\Game Engine\Tests.ts" />
     <None Remove="TS\Gateway.ts" />
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\HueSatLight.ts" />

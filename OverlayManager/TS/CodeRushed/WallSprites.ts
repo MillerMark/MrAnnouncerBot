@@ -31,17 +31,19 @@
             testSprite.velocityX = -Math.max(minBounceBackVelocity, Math.min(bounceAmplification * Math.abs(testSprite.velocityX), maxBounceVelocity)) * Math.sign(testSprite.velocityX);
         }
 
+        if (!(activeGame instanceof DroneGame))
+          return;
 
         if (testSprite instanceof Drone) {
           // smoke..
-          sparkSmoke.add(testSprite.x + Drone.width / 2, testSprite.y + Drone.height / 2, 0);
+          activeGame.sparkSmoke.add(testSprite.x + Drone.width / 2, testSprite.y + Drone.height / 2, 0);
 
           // sparks...
           if (wallSprite.wallStyle !== WallStyle.Double)
             testSprite.hitWall(now);
         }
         else if (testSprite instanceof Meteor) {
-          let smoke: SpriteProxy = sparkSmoke.add(testSprite.x + meteorWidth / 2, testSprite.y + meteorHeight / 2, 0);
+          let smoke: SpriteProxy = activeGame.sparkSmoke.add(testSprite.x + meteorWidth / 2, testSprite.y + meteorHeight / 2, 0);
           smoke.opacity = 0.5;
 
           if (wallSprite.wallStyle === WallStyle.Solid)
@@ -53,5 +55,4 @@
     //sprite.changingDirection(now);
 
   }
-
 }

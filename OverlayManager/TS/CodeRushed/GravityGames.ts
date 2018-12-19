@@ -5,38 +5,15 @@ const blockSize: number = 44;
 const topMargin: number = 12;
 const leftMargin: number = 12;
 
-class Game {
-  startTime: Date;
-  digits: Sprites = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
-  public score: Digits;
-  constructor() {
-    this.startTime = new Date();
-    this.digits.sprites = [];
-    this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
-    this.score = new Digits(DigitSize.small, 1000, 0);
-    this.score.value = 0;
-  }
-
-  draw(context: CanvasRenderingContext2D) {
-    this.score.draw(context);
-  }
-
-  end(): any {
-    allWalls.destroyAll();
-    endCaps.destroyAll();
-    coins.destroyAll();
-  }
-}
-
 class GravityGames {
   activePlanet: Planet = null;
   planets: Planet[] = [];
   planetSurface: Part;
-  activeGame: Game;
+  activeGame: GravityGame;
 
 
   newGame() {
-    this.activeGame = new Game();
+    this.activeGame = new GravityGame();
   }
 
   constructor() {
@@ -102,7 +79,9 @@ class GravityGames {
   addCoin(column: number, row: number): void {
     let x: number = coinMargin + column * (coinBlockWidth + coinMargin);
     let y: number = coinMargin + row * (coinBlockWidth + coinMargin);
-    coins.sprites.push(new SpriteProxy(Random.getInt(coins.baseAnimation.frameCount), x, y));
+    if (!(activeGame instanceof DroneGame))
+      return;
+    activeGame.coins.sprites.push(new SpriteProxy(Random.getInt(activeGame.coins.baseAnimation.frameCount), x, y));
   }
 
   addGateway(column: number, row: number): void {
@@ -111,11 +90,14 @@ class GravityGames {
 
     const gatewaySize: number = 195;
 
-    let gateway: Gateway = new Gateway(Random.getInt(droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
-    gateway.ID = droneGateways.sprites.length + 1;
+    if (!(activeGame instanceof DroneGame))
+      return;
+
+    let gateway: Gateway = new Gateway(Random.getInt(activeGame.droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
+    gateway.ID = activeGame.droneGateways.sprites.length + 1;
     
     gateway.delayStart = Math.random() * 900;
-    droneGateways.sprites.push(gateway);
+    activeGame.droneGateways.sprites.push(gateway);
   }
 
   addPortal(column: number, row: number): void {
@@ -123,7 +105,9 @@ class GravityGames {
     let y: number = coinMargin + row * (coinBlockWidth + coinMargin) + coinBlockWidth / 2;
     let portal: Portal = new Portal(0, x - Portal.size / 2, y - Portal.size / 2);
     portal.delayStart = Math.random() * 900;
-    purplePortals.sprites.push(portal);
+    if (!(activeGame instanceof DroneGame))
+      return;
+    activeGame.purplePortals.sprites.push(portal);
   }
 
   addHorizontalWall(wallStyle: WallStyle, startColumn: number, endColumn: number, row: number) {
@@ -132,18 +116,21 @@ class GravityGames {
 
     endColumn++;
 
+    if (!(activeGame instanceof DroneGame))
+      return;
+
     let wallSprites: SpriteProxy[] = null;
     switch (wallStyle) {
       case WallStyle.Dashed: {
-        wallSprites = horizontalDashedWall.sprites;
+        wallSprites = activeGame.horizontalDashedWall.sprites;
         break;
       }
       case WallStyle.Solid: {
-        wallSprites = horizontalSolidWall.sprites;
+        wallSprites = activeGame.horizontalSolidWall.sprites;
         break;
       }
       case WallStyle.Double: {
-        wallSprites = horizontalDoubleWall.sprites;
+        wallSprites = activeGame.horizontalDoubleWall.sprites;
         break;
       }
       default:
@@ -153,7 +140,7 @@ class GravityGames {
       return;
 
     let centerX: number = blockSize * (startColumn + endColumn) / 2 - blockMargin / 2;
-    let centerY: number = row * blockSize + endCaps.spriteHeight / 2 - blockSize / 2 + topMargin / 2;
+    let centerY: number = row * blockSize + activeGame.endCaps.spriteHeight / 2 - blockSize / 2 + topMargin / 2;
     let length: number = (endColumn - startColumn) * blockSize - 2 * leftMargin;
     wallSprites.push(new Wall(0, centerX + leftMargin, centerY + topMargin, Orientation.Horizontal, wallStyle, length));
   }
@@ -164,18 +151,21 @@ class GravityGames {
 
     endRow++;
 
+    if (!(activeGame instanceof DroneGame))
+      return;
+
     let wallSprites: SpriteProxy[] = null;
     switch (wallStyle) {
       case WallStyle.Dashed: {
-        wallSprites = verticalDashedWall.sprites;
+        wallSprites = activeGame.verticalDashedWall.sprites;
         break;
       }
       case WallStyle.Solid: {
-        wallSprites = verticalSolidWall.sprites;
+        wallSprites = activeGame.verticalSolidWall.sprites;
         break;
       }
       case WallStyle.Double: {
-        wallSprites = verticalDoubleWall.sprites;
+        wallSprites = activeGame.verticalDoubleWall.sprites;
         break;
       }
       default:
@@ -185,7 +175,7 @@ class GravityGames {
       return;
 
     let centerY: number = blockSize * (startRow + endRow) / 2 - blockMargin / 2;
-    let centerX: number = column * 44 + endCaps.spriteWidth / 2 - blockSize / 2 + topMargin / 2;
+    let centerX: number = column * 44 + activeGame.endCaps.spriteWidth / 2 - blockSize / 2 + topMargin / 2;
     let length: number = (endRow - startRow) * blockSize - 2 * leftMargin;
 
     wallSprites.push(new Wall(0, centerX + leftMargin, centerY + topMargin, Orientation.Vertical, wallStyle, length));
@@ -359,10 +349,13 @@ class GravityGames {
   setActivePlanet(planet: Planet) {
     let now: number = performance.now();
     myRocket.changingDirection(now);
-    allMeteors.changingDirection(now);
-    allSeeds.changingDirection(now);
+    if (!(activeGame instanceof DroneGame))
+      return;
 
-    beesYellow.changingDirection(now);
+    activeGame.allMeteors.changingDirection(now);
+    activeGame.allSeeds.changingDirection(now);
+    activeGame.beesYellow.changingDirection(now);
+
     this.activePlanet = planet;
     this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
   }
