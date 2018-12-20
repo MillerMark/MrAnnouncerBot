@@ -35,7 +35,7 @@ class DroneGame extends GamePlusQuiz {
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
-    this.collectCoins();
+    this.collectCoins(now);
 
     this.allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -1036,15 +1036,17 @@ class DroneGame extends GamePlusQuiz {
     return coinsCollected;
   }
 
-  collectCoins() {
+  collectCoins(now: number) {
     this.collectCoinsInRect(myRocket.x, myRocket.y, 310, 70);
 
     this.allDrones.allSprites.forEach(function (drones: Sprites) {
       drones.sprites.forEach(function (drone: Drone) {
-        let coinsFound = this.collectCoinsInRect(drone.x, drone.y, Drone.width, Drone.height);
+        const margin: number = 8;
+        let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, Drone.width - margin / 2, Drone.height - margin / 2);
         if (coinsFound > 0) {
           connection.invoke("AddCoins", drone.userId, coinsFound);
-          // TODO: Tell the console app this player collected some coins.
+          drone.coinCount += coinsFound;
+          drone.justCollectedCoins(now);
         }
       }, this);
     }, this);

@@ -26,6 +26,8 @@ const dronePathExtension: number = 18;
 class Drone extends SpriteProxy {
   static readonly width: number = 192;
   static readonly height: number = 90;
+  firstCoinCollection: number;
+  mostRecentCoinCollection: number;
 
   static createAt(x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy, createDrone: (x: number, y: number, frameCount: number) => Drone, userId: string, displayName: string, color: string): any {
@@ -54,6 +56,7 @@ class Drone extends SpriteProxy {
       color = '#49357b';
     myDrone.color = color;
   }
+  coinCount: number = 0;
   health: number = 4;
   meteor: Meteor;
   displayName: string;
@@ -155,7 +158,7 @@ class Drone extends SpriteProxy {
 
       this.selfDestruct();
     }
-      
+
   }
 
   getAlpha(now: number): number {
@@ -384,31 +387,8 @@ class Drone extends SpriteProxy {
       return;
     activeGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x, this.y, healthIndex);
 
-    const fontSize: number = 14;
-    context.font = fontSize + 'px Arial';
-
-    context.textBaseline = 'top'; //` ![](774083667316C80C98D43F9C370CC1C8.png;;0,68,400,130;0.02510,0.02510)
-    context.textAlign = 'center';
-
-    let centerX: number = this.x + this.width / 2;
-    let yTop: number = this.y + this.height;
-    const horizontalTextPadding: number = 4;
-    let size = context.measureText(this.displayName);
-    let textWidth: number = size.width + horizontalTextPadding;
-    let halfWidth: number = textWidth / 2;
-    context.fillStyle = this.backgroundColor;
-    const outlineSize: number = 3;
-    context.globalAlpha = 0.7;
-    context.fillRect(centerX - halfWidth - outlineSize, yTop - outlineSize, textWidth + outlineSize * 2, fontSize + outlineSize * 2);
-    context.globalAlpha = 1;
-
-    context.strokeStyle = this.outlineColor;
-    context.lineWidth = 2;
-    context.strokeRect(centerX - halfWidth - outlineSize, yTop - outlineSize, textWidth + outlineSize * 2, fontSize + outlineSize * 2);
-
-
-    context.fillStyle = this.color;
-    context.fillText(this.displayName, centerX, yTop);
+    this.drawUserName(context);
+    this.drawCoinsCollected(context, now);
 
     if (this.parentSparkSprites) {
       var msPassed = now - this.lastTimeWeAdvancedTheSparksFrame;
@@ -425,6 +405,61 @@ class Drone extends SpriteProxy {
       }
     }
 
+  }
+
+  private centerTextInRect(context: CanvasRenderingContext2D, text: string, yTop: number, fontSize: number, alpha: number) {
+    let centerX: number = this.x + this.width / 2;
+    context.textBaseline = 'top';
+    context.font = fontSize + 'px Arial';
+    context.textAlign = 'center';
+    const horizontalTextPadding: number = 4;
+    let size = context.measureText(text);
+    let textWidth: number = size.width + horizontalTextPadding;
+    let halfWidth: number = textWidth / 2;
+    context.fillStyle = this.backgroundColor;
+    const outlineSize: number = 3;
+    context.globalAlpha = 0.7 * alpha;
+    context.fillRect(centerX - halfWidth - outlineSize, yTop - outlineSize, textWidth + outlineSize * 2, fontSize + outlineSize * 2);
+    context.globalAlpha = 1 * alpha;
+    context.strokeStyle = this.outlineColor;
+    context.lineWidth = 2;
+    context.strokeRect(centerX - halfWidth - outlineSize, yTop - outlineSize, textWidth + outlineSize * 2, fontSize + outlineSize * 2);
+    context.fillStyle = this.color;
+    context.fillText(text, centerX, yTop);
+    context.globalAlpha = 1;
+  }
+
+  static readonly coinFadeTime: number = 0.5;
+  static readonly coinDuration: number = 2.5;
+
+  private drawCoinsCollected(context: CanvasRenderingContext2D, now: number) {
+    var secondsSinceFirstCollection: number = (now - this.firstCoinCollection || 0) / 1000;
+    var secondsSinceMostRecentCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
+    console.log('secondsSinceFirstCollection: ' + secondsSinceFirstCollection);
+    console.log('secondsSinceMostRecentCollection: ' + secondsSinceMostRecentCollection);
+
+    if (secondsSinceMostRecentCollection > (Drone.coinFadeTime * 2 + Drone.coinDuration))
+      return;
+
+    var alpha: number = 1;
+
+    if (secondsSinceFirstCollection < Drone.coinFadeTime) {
+      // Fade in...
+      alpha = secondsSinceFirstCollection / Drone.coinFadeTime;
+    }
+
+    if (secondsSinceMostRecentCollection > Drone.coinFadeTime + Drone.coinDuration) {
+      alpha = 1 - (secondsSinceMostRecentCollection - (Drone.coinFadeTime + Drone.coinDuration)) / Drone.coinFadeTime;
+    }
+      
+    const fontSize: number = 14;
+    this.centerTextInRect(context, 'Coins: ' + this.coinCount.toString(), this.y, fontSize, alpha);
+  }
+
+  private drawUserName(context: CanvasRenderingContext2D) {
+    const fontSize: number = 14;
+    let yTop: number = this.y + this.height;
+    this.centerTextInRect(context, this.displayName, yTop, fontSize, 1);
   }
 
   getSplats(command: string): SplatSprites {
@@ -684,11 +719,11 @@ class Drone extends SpriteProxy {
 
       if (fewestSecondsOfThrust >= secondsToAcceleratedCrossover)
         secondsToCrossover = secondsToAcceleratedCrossover;
-      else  {
+      else {
         // TODO: Blend the two predictions?
       }
     }
-    
+
     console.log('metersToCrossover: ' + metersToCrossover.toFixed(2) + ', velocityX: ' + velocityX.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
 
     let yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
@@ -696,6 +731,17 @@ class Drone extends SpriteProxy {
       return null;
 
     return new FuturePoint(x, yAtCrossover, now + secondsToCrossover * 1000);
+  }
+
+  justCollectedCoins(now: number): any {
+    var secondsSinceFirstCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
+
+    if (secondsSinceFirstCollection > Drone.coinFadeTime * 2 + Drone.coinDuration) {
+      this.firstCoinCollection = now;
+      this.mostRecentCoinCollection = now;
+    }
+    else
+      this.mostRecentCoinCollection = now;
   }
 }
 

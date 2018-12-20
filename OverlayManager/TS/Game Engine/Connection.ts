@@ -10,7 +10,11 @@ function connectToSignalR(signalR) {
 }
 
 function userHasCoins(userId: string, amount: number) {
-  console.log('userId: ' + userId + ', propName: ' + amount);
+  if (activeGame instanceof DroneGame) {
+    let userDrone: Drone = <Drone>activeGame.allDrones.find(userId);
+    if (userDrone)
+      userDrone.coinCount += amount;
+  }
 }
 
 function chat(message: string) {
