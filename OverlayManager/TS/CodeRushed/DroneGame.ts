@@ -125,7 +125,7 @@ class DroneGame extends GamePlusQuiz {
 
   loadResources(): void {
     super.loadResources();
-    
+
     this.coins = new Sprites("Spinning Coin/32x32/SpinningCoin", 59, 15, AnimationStyle.Loop, true, null, this.outlineGameSurfaceNoAdsNoMark/* outlineGameSurface outlineChatRoom allButMark outlineCodeEditor */ /* fillChatRoom */);
 
     this.addSeeds();
@@ -294,6 +294,11 @@ class DroneGame extends GamePlusQuiz {
 
     if (testCommand === 'game') {
       gravityGames.startGame(wallBoxesTest);
+      return true;
+    }
+
+    if (testCommand === 'cg1') {
+      gravityGames.startGame(coinGame1);
       return true;
     }
 
