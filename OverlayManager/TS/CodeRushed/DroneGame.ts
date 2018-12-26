@@ -302,6 +302,11 @@ class DroneGame extends GamePlusQuiz {
       return true;
     }
 
+    if (testCommand === 'cg2') {
+      gravityGames.startGame(coinGame2);
+      return true;
+    }
+
     if (testCommand === '+') {
       gravityGames.startGame(wallIntersectionTest);
       return true;

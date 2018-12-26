@@ -14,7 +14,10 @@
     <None Remove="TS\Digits.ts" />
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\DroneProxy.ts" />
+    <None Remove="TS\Game Engine\Emitter.ts" />
+    <None Remove="TS\Game Engine\Particle.ts" />
     <None Remove="TS\Game Engine\Tests.ts" />
+    <None Remove="TS\Game Engine\Vector.ts" />
     <None Remove="TS\Gateway.ts" />
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\HueSatLight.ts" />
@@ -852,6 +855,9 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\Game Engine\Emitter.ts" />
+    <TypeScriptCompile Include="TS\Game Engine\Particle.ts" />
+    <TypeScriptCompile Include="TS\Game Engine\Vector.ts" />
     <TypeScriptCompile Include="TS\Main.ts" />
   </ItemGroup>
   <ItemGroup>

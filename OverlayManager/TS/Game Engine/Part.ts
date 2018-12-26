@@ -3,7 +3,7 @@ const globalFramesToCount: number = 2;
 var globalBypassFrameSkip: boolean = false;
 
 class Part {
-  static loadSprites: boolean; // Was globalLoadSprites
+  static loadSprites: boolean;
   images: HTMLImageElement[];
   frameIndex: number;
   reverse: boolean;
