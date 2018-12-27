@@ -12,8 +12,8 @@ function executeCommand(command: string, params: string, userId: string, userNam
   }
 }
 
-activeGame = new DroneGame();
-//activeGame = new DragonGame();
+//activeGame = new DroneGame();
+activeGame = new DragonGame();
 
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");

@@ -2,7 +2,7 @@
 var myRocket: Rocket;
 
 class DroneGame extends GamePlusQuiz {
-  emitter: Emitter;
+  //emitter: Emitter;
   pinkSeeds: Sprites;
   yellowSeeds: Sprites;
   purpleSeeds: Sprites;
@@ -33,7 +33,7 @@ class DroneGame extends GamePlusQuiz {
       }
     });
 
-    this.emitter.updatePosition(now);
+    //this.emitter.update(now);
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -97,7 +97,7 @@ class DroneGame extends GamePlusQuiz {
     this.allSparks.draw(myContext, now);
     this.sparkSmoke.draw(myContext, now);
     this.coins.draw(myContext, now);
-    this.emitter.draw(myContext, now);
+    //this.emitter.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
   }
 
@@ -127,11 +127,11 @@ class DroneGame extends GamePlusQuiz {
   }
 
   loadResources(): void {
-    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
-    this.emitter.radius = 80;
-    this.emitter.particleRadius = 10;
-    this.emitter.particleRadiusVariance = 0.5;
-    this.emitter.addParticles(20);
+    //this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
+    //this.emitter.radius = 80;
+    //this.emitter.particleRadius = 10;
+    //this.emitter.particleRadiusVariance = 0.5;
+    //this.emitter.addParticles(20);
 
     super.loadResources();
 

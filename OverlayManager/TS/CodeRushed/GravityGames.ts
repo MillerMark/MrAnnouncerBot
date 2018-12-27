@@ -349,12 +349,14 @@ class GravityGames {
   setActivePlanet(planet: Planet) {
     let now: number = performance.now();
     myRocket.changingDirection(now);
-    if (!(activeGame instanceof DroneGame))
-      return;
-
-    activeGame.allMeteors.changingDirection(now);
-    activeGame.allSeeds.changingDirection(now);
-    activeGame.beesYellow.changingDirection(now);
+    if (activeGame instanceof DroneGame) {
+      activeGame.allMeteors.changingDirection(now);
+      activeGame.allSeeds.changingDirection(now);
+      activeGame.beesYellow.changingDirection(now);
+    }
+    else if (activeGame instanceof DragonGame) {
+      activeGame.allSeeds.changingDirection(now);
+    }
 
     this.activePlanet = planet;
     this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);

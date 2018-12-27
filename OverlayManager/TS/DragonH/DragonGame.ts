@@ -1,12 +1,8 @@
-﻿var gravityGames2: GravityGames;
-var myRocket2: Rocket;
-
-class DragonGame extends GamePlusQuiz {
+﻿class DragonGame extends GamePlusQuiz {
   emitter: Emitter;
   yellowSeeds: Sprites;
-  yellowFlowers1: Sprites;
-  portalBackground: Sprites;
-  backgroundBanner: Part;
+  yellowFlowers: Sprites;
+  lastUpdateTime: number;
 
   constructor() {
     super();
@@ -15,16 +11,18 @@ class DragonGame extends GamePlusQuiz {
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
 
-    this.emitter.updatePosition(now);
-    myRocket2.updatePosition(now);
-    myRocket2.bounce(0, 0, screenWidth, screenHeight, now);
+    var secondsSinceLastUpdate: number = (now - this.lastUpdateTime) / 1000;
+
+    this.emitter.update(now, secondsSinceLastUpdate);
+    myRocket.updatePosition(now);
+    myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
     this.allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
     //backgroundBanner.draw(myContext, 0, 0);
 
-    if (!myRocket2.isDocked)
-      gravityGames2.draw(myContext);
+    if (!myRocket.isDocked)
+      gravityGames.draw(myContext);
 
     this.allSeeds.updatePositions(now);
     
@@ -32,10 +30,12 @@ class DragonGame extends GamePlusQuiz {
 
     this.allSeeds.draw(myContext, now);
 
-    myRocket2.draw(myContext, now);
-    this.yellowFlowers1.draw(myContext, now);
+    myRocket.draw(myContext, now);
+    this.yellowFlowers.draw(myContext, now);
     this.emitter.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
+
+    this.lastUpdateTime = now;
   }
 
   removeAllGameElements(now: number): void {
@@ -46,25 +46,28 @@ class DragonGame extends GamePlusQuiz {
     super.initialize();
     Folders.assets = 'GameDev/Assets/DroneGame/';
 
-    myRocket2 = new Rocket(0, 0);
-    myRocket2.x = 0;
-    myRocket2.y = 0;
+    myRocket = new Rocket(0, 0);
+    myRocket.x = 0;
+    myRocket.y = 0;
 
-    gravityGames2 = new GravityGames();
+    gravityGames = new GravityGames();
   }
 
   start() {
     super.start();
-    gravityGames2.selectPlanet('Earth');
-    gravityGames2.newGame();
+    gravityGames.selectPlanet('Earth');
+    gravityGames.newGame();
+    this.lastUpdateTime = performance.now();
   }
 
   loadResources(): void {
-    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
-    this.emitter.radius = 80;
+    this.emitter = new Emitter(new Vector(1250, 180));
+    this.emitter.radius = 40;
     this.emitter.particleRadius = 10;
     this.emitter.particleRadiusVariance = 0.5;
-    this.emitter.addParticles(20);
+    this.emitter.particlesPerSecond = 20;
+    this.emitter.particleLifeSpanSeconds = 8;
+    //this.emitter.addParticles(20);
 
     super.loadResources();
 
@@ -75,24 +78,24 @@ class DragonGame extends GamePlusQuiz {
     const flowerFrameRate: number = 20;
     //const grassFrameRate: number = 25;
 
-    this.yellowFlowers1 = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
-    this.yellowFlowers1.returnFrameIndex = 64;
+    this.yellowFlowers = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+    this.yellowFlowers.returnFrameIndex = 64;
 
     globalBypassFrameSkip = false;
 
     Part.loadSprites = true;
 
-    this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
+    //this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
   }
 
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
     if (super.executeCommand(command, params, userId, userName, displayName, color, now))
       return true;
     if (command === "Launch") {
-      if (!myRocket2.started || myRocket2.isDocked) {
-        myRocket2.started = true;
-        myRocket2.launch(now);
-        gravityGames2.newGame();
+      if (!myRocket.started || myRocket.isDocked) {
+        myRocket.started = true;
+        myRocket.launch(now);
+        gravityGames.newGame();
         chat('Launching...');
       }
     }
@@ -101,43 +104,43 @@ class DragonGame extends GamePlusQuiz {
         this.removeAllGameElements(now);
       }
 
-      if (myRocket2.started && !myRocket2.isDocked) {
+      if (myRocket.started && !myRocket.isDocked) {
         chat('docking...');
-        myRocket2.dock(now);
+        myRocket.dock(now);
       }
     }
     else if (command === "ChangePlanet") {
-      gravityGames2.selectPlanet(params);
+      gravityGames.selectPlanet(params);
     }
     else if (command === "Left") {
-      myRocket2.fireRightThruster(now, params);
+      myRocket.fireRightThruster(now, params);
     }
     else if (command === "Right") {
-      myRocket2.fireLeftThruster(now, params);
+      myRocket.fireLeftThruster(now, params);
     }
     else if (command === "Up") {
-      myRocket2.fireMainThrusters(now, params);
+      myRocket.fireMainThrusters(now, params);
     }
     else if (command === "Down") {
-      myRocket2.killHoverThrusters(now, params);
+      myRocket.killHoverThrusters(now, params);
     }
     else if (command === "Drop") {
-      myRocket2.dropMeteor(now);
+      myRocket.dropMeteor(now);
     }
     else if (command === "Chutes") {
-      if (myRocket2.chuteDeployed)
-        myRocket2.retractChutes(now);
+      if (myRocket.chuteDeployed)
+        myRocket.retractChutes(now);
       else
-        myRocket2.deployChute(now);
+        myRocket.deployChute(now);
     }
     else if (command === "Retract") {
-      myRocket2.retractEngines(now);
+      myRocket.retractEngines(now);
     }
     else if (command === "Extend") {
-      myRocket2.extendEngines(now);
+      myRocket.extendEngines(now);
     }
     else if (command === "Seed") {
-      myRocket2.dropSeed(now, params);
+      myRocket.dropSeed(now, params);
     }
     
   }
@@ -153,7 +156,7 @@ class DragonGame extends GamePlusQuiz {
   }
 
   plantSeeds(seeds, x) {
-    this.plantSeed(this.yellowFlowers1, x + 50, 5);
+    this.plantSeed(this.yellowFlowers, x + 50, 5);
     new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
   }
 
