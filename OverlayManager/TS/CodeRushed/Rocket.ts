@@ -773,8 +773,8 @@
     let newSprite: SpriteProxy;
     if (createSpriteFunc)
       newSprite = createSpriteFunc(x, y, spriteArray.baseAnimation.frameCount);
-    else 
-      newSprite = new SpriteProxy(Random.getInt(spriteArray.baseAnimation.frameCount), x, y);
+    else
+      newSprite = new SpriteProxy(Random.intMax(spriteArray.baseAnimation.frameCount), x, y);
 
     newSprite.changeVelocity(velocityX, velocityY, now);
     spriteArray.sprites.push(newSprite);
@@ -784,15 +784,21 @@
   dropMeteor(now) {
     if (!(activeGame instanceof DroneGame))
       return;
-    
+
     this.dropFromOne(now, activeGame.redMeteors, activeGame.blueMeteors, activeGame.purpleMeteors, null, this.createMeteor);
   }
 
   createMeteor(x: number, y: number, frameCount: number): SpriteProxy {
-    return new Meteor(Random.getInt(frameCount), x, y);
+    return new Meteor(Random.intMax(frameCount), x, y);
   }
 
   dropSeed(now: number, args?: string) {
+    if (activeGame instanceof DragonGame) {
+      this.createSprite(activeGame.yellowSeeds, now);
+      return;
+    }
+
+
     if (!(activeGame instanceof DroneGame))
       return;
 
@@ -806,7 +812,7 @@
       this.createSprite(activeGame.purpleSeeds, now);
     //else if (args && args.toLowerCase() === 'grass')
     //  this.createSprite(greenSeeds, now);
-    else 
+    else
       this.dropFromOne(now, activeGame.pinkSeeds, /* blueSeeds, */ activeGame.purpleSeeds, activeGame.yellowSeeds);
   }
 }

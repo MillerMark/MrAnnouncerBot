@@ -94,7 +94,7 @@
         if (char === '*') {
           let x: number = margin + charIndex * (this.spriteWidth + margin);
           let y: number = margin + lineIndex * (this.spriteHeight + margin);
-          this.sprites.push(new SpriteProxy(Random.getInt(this.baseAnimation.frameCount), x, y));
+          this.sprites.push(new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y));
         }
       }
     }
@@ -107,7 +107,7 @@
     var spriteCount = 0;
     while (spriteCount < 10000) {
       spriteCount++;
-      this.sprites.push(new SpriteProxy(Random.getInt(this.baseAnimation.frameCount), x, y));
+      this.sprites.push(new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y));
       x += this.spriteWidth + margin;
       if (x > right - this.spriteWidth) {
         x = left;
@@ -153,7 +153,7 @@
 
     while (spriteCount < 10000) {
       spriteCount++;
-      this.sprites.push(new SpriteProxy(Random.getInt(this.baseAnimation.frameCount), x, y));
+      this.sprites.push(new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y));
       if (segment == rectangleDrawingSegment.top) {
         x += this.spriteWidth + margin;
         if (x > right - this.spriteWidth) {

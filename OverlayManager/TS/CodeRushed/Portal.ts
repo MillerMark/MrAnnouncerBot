@@ -14,7 +14,7 @@
   drop(): void {
     if (!(activeGame instanceof DroneGame))
       return;
-    activeGame.purpleMeteors.sprites.push(new Meteor(Random.getInt(activeGame.purpleMeteors.baseAnimation.frameCount), this.x + (Portal.size - meteorWidth) / 2, this.y + (Portal.size - meteorHeight) / 2));
+    activeGame.purpleMeteors.sprites.push(new Meteor(Random.intMax(activeGame.purpleMeteors.baseAnimation.frameCount), this.x + (Portal.size - meteorWidth) / 2, this.y + (Portal.size - meteorHeight) / 2));
   }
 
   set delayStart(delayMs: number) {
@@ -58,7 +58,6 @@
 
   queueMeteor(meteorDrop: MeteorDrop) {
     this.removeMeteor(meteorDrop.owner);
-    console.log('this.meteorsToDrop.push(meteorDrop);');
     this.meteorsToDrop.push(meteorDrop);
   }
 
@@ -75,9 +74,9 @@
             let dropTimeMs: number = Physics.getDropTime(Physics.pixelsToMeters(distanceToDrop), gravityGames.activePlanet.gravity) * 1000;
             let dropTimeSeconds: number = dropTimeMs / 1000;
 
-            console.log('dropTimeSeconds: ' + dropTimeSeconds.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
+            //console.log('dropTimeSeconds: ' + dropTimeSeconds.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
             if (dropTimeSeconds > secondsToCrossover) {
-              console.log('not enough time to drop!');
+              //console.log('not enough time to drop!');
               //this.removeMeteor(drone.userId);
               return;
             }
@@ -117,7 +116,6 @@
 
         if (meteorDrop.beyondLandTime - now < 0) {
           this.meteorsToDrop.splice(i, 1);
-          console.log('this.meteorsToDrop.splice(i, 1);');
         }
       }
     }

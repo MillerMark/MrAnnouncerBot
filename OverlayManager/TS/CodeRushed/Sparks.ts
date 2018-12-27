@@ -11,7 +11,7 @@
   }
 
   draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {
-    console.log('draw(' + this.x + ', ' + this.y + ')');
+    //console.log('draw(' + this.x + ', ' + this.y + ')');
     baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex);
   }
 

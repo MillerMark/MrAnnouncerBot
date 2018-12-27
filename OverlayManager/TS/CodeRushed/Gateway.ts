@@ -36,7 +36,7 @@ class WarpInSprite extends SpriteProxy {
     if (createSpriteFunc)
       newSprite = createSpriteFunc(x, y, spriteArray.baseAnimation.frameCount);
     else
-      newSprite = new SpriteProxy(Random.getInt(spriteArray.baseAnimation.frameCount), x, y);
+      newSprite = new SpriteProxy(Random.intMax(spriteArray.baseAnimation.frameCount), x, y);
 
     spriteArray.sprites.push(newSprite);
     return newSprite;

@@ -106,7 +106,7 @@ class Part {
     if (this.animationStyle == AnimationStyle.Static)
       return;
     if (this.animationStyle == AnimationStyle.Random)
-      this.frameIndex = Random.getInt(this.frameCount);
+      this.frameIndex = Random.intMax(this.frameCount);
 
     if (this.reverse) {
       this.frameIndex--;
@@ -131,7 +131,7 @@ class Part {
   getJiggle(amount: number) {
     if (amount == 0 || !amount)
       return 0;
-    return Random.between(-amount, amount + 1);
+    return Random.intBetween(-amount, amount + 1);
   }
 
   draw(context: CanvasRenderingContext2D, x: number, y: number) {

@@ -81,7 +81,7 @@ class GravityGames {
     let y: number = coinMargin + row * (coinBlockWidth + coinMargin);
     if (!(activeGame instanceof DroneGame))
       return;
-    activeGame.coins.sprites.push(new SpriteProxy(Random.getInt(activeGame.coins.baseAnimation.frameCount), x, y));
+    activeGame.coins.sprites.push(new SpriteProxy(Random.intMax(activeGame.coins.baseAnimation.frameCount), x, y));
   }
 
   addGateway(column: number, row: number): void {
@@ -93,7 +93,7 @@ class GravityGames {
     if (!(activeGame instanceof DroneGame))
       return;
 
-    let gateway: Gateway = new Gateway(Random.getInt(activeGame.droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
+    let gateway: Gateway = new Gateway(Random.intMax(activeGame.droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
     gateway.ID = activeGame.droneGateways.sprites.length + 1;
     
     gateway.delayStart = Math.random() * 900;

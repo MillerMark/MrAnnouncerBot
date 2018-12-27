@@ -113,7 +113,7 @@ class Drone extends SpriteProxy {
   }
 
   static create(x: number, y: number, frameCount: number) {
-    return new Drone(Random.getInt(frameCount), x, y);
+    return new Drone(Random.intMax(frameCount), x, y);
   }
 
 
@@ -435,8 +435,6 @@ class Drone extends SpriteProxy {
   private drawCoinsCollected(context: CanvasRenderingContext2D, now: number) {
     var secondsSinceFirstCollection: number = (now - this.firstCoinCollection || 0) / 1000;
     var secondsSinceMostRecentCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
-    console.log('secondsSinceFirstCollection: ' + secondsSinceFirstCollection);
-    console.log('secondsSinceMostRecentCollection: ' + secondsSinceMostRecentCollection);
 
     if (secondsSinceMostRecentCollection > (Drone.coinFadeTime * 2 + Drone.coinDuration))
       return;
@@ -655,7 +653,6 @@ class Drone extends SpriteProxy {
   }
 
   removing(): void {
-    console.log('this.selfDestruct();');
     this.selfDestruct();
   }
 
@@ -724,7 +721,7 @@ class Drone extends SpriteProxy {
       }
     }
 
-    console.log('metersToCrossover: ' + metersToCrossover.toFixed(2) + ', velocityX: ' + velocityX.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
+    //console.log('metersToCrossover: ' + metersToCrossover.toFixed(2) + ', velocityX: ' + velocityX.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
 
     let yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
     if (yAtCrossover < 0 || yAtCrossover > screenHeight)
