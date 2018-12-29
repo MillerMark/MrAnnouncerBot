@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CsvHelper;
@@ -16,6 +17,7 @@ using TwitchLib.Api;
 using System.Reflection;
 using System.Text;
 using BotCore;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MrAnnouncerBot
 {
@@ -30,6 +32,7 @@ namespace MrAnnouncerBot
 		private const string STR_WebSocketPort = "ws://127.0.0.1:4444";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
+		const string STR_Ellipsis = "...";
 
 		private static List<SceneDto> scenes = new List<SceneDto>();
 		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
@@ -41,6 +44,7 @@ namespace MrAnnouncerBot
 		private Random random = new Random((int)DateTime.Now.Ticks);
 
 		private bool useObs = true;
+		HubConnection hubConnection;
 
 		public MrAnnouncerBot()
 		{
@@ -50,7 +54,34 @@ namespace MrAnnouncerBot
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
 			new BotCommand("+", HandleLevelUp);
+			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
+			if (hubConnection != null)
+			{
+				hubConnection.Closed += HubConnection_Closed;
+				hubConnection.On<string, int>("AddCoins", AddCoins);
+				hubConnection.On<string>("NeedToGetCoins", NeedToGetCoins);
+				// TODO: Check out benefits of stopping gracefully with a cancellation token.
+				hubConnection.StartAsync();
+			}
+		}
 
+		void NeedToGetCoins(string userId)
+		{
+			Viewer viewerById = allViewers.GetViewerById(userId);
+			if (viewerById != null)
+				hubConnection.InvokeAsync("UserHasCoins", userId, viewerById.CoinsCollected);
+		}
+
+		void AddCoins(string userID, int amount)
+		{
+			Viewer viewerById = allViewers.GetViewerById(userID);
+			if (viewerById != null)
+				viewerById.CoinsCollected += amount;
+		}
+
+		private System.Threading.Tasks.Task HubConnection_Closed(Exception arg)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void Disconnect()
@@ -69,9 +100,11 @@ namespace MrAnnouncerBot
 		{
 			int oneMinute = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
 			int fiveMinutes = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
+			int thirtySeconds = (int)TimeSpan.FromMinutes(0.5).TotalMilliseconds;
 
 			checkChatRoomTimer = new Timer(CheckViewers, null, oneMinute, oneMinute);
-			autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
+			//autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
+			autoSaveTimer = new Timer(AutoSaveViewers, null, thirtySeconds, thirtySeconds);
 		}
 
 		private void InitZork()
@@ -90,7 +123,8 @@ namespace MrAnnouncerBot
 			}
 			catch (Exception ex)
 			{
-				//Chat("Exception loading allViewers data: " + ex.Message);
+				Console.WriteLine("Exception loading allViewers data: " + ex.Message);
+				Debugger.Break();
 			}
 		}
 
@@ -212,11 +246,6 @@ namespace MrAnnouncerBot
 			Console.WriteLine("ObsWebsocket_Connected");
 		}
 
-		private void Whisper(string userName, string msg)
-		{
-			Twitch.Client.SendWhisper(userName, msg);
-		}
-
 		private void TwitchClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
 		{
 			try
@@ -229,11 +258,23 @@ namespace MrAnnouncerBot
 			}
 		}
 
+		private static string TruncateForTwitch(string msg)
+		{
+			const int maxLength = 410;//  500;
+			if (msg.Length > maxLength)
+				msg = msg.Substring(0, maxLength - STR_Ellipsis.Length) + STR_Ellipsis;
+			return msg;
+		}
+
 		private void Chat(string msg)
 		{
-			if (msg.Length > 512)
-				msg = msg.Substring(0, 512);
-			Twitch.Chat(msg);
+			Twitch.Chat(TruncateForTwitch(msg));
+		}
+
+		private void Whisper(string userName, string msg)
+		{
+			//Twitch.Whisper(userName, "yo");
+			Twitch.Whisper(userName, TruncateForTwitch(msg));
 		}
 
 		public void Run()
@@ -331,6 +372,37 @@ namespace MrAnnouncerBot
 					return "Mr. Announcer Bot is ready to ROCK!!!";
 			}
 		}
+
+		object GetLevelName(int userLevel)
+		{
+			if (userLevel == 0)
+				return "padawan";
+			if (userLevel == 1)
+				return "wizardling";
+			if (userLevel == 2)
+				return "apprentice";
+			if (userLevel == 3)
+				return "student";
+			if (userLevel == 4)
+				return "magician";
+			return "wizard";
+		}
+
+		string GetNeedToLevelUpMessage(SceneDto scene, string displayName, int userLevel)
+		{
+			string learnMore = "You can learn about botcasting levels here: https://github.com/MillerMark/MrAnnouncerBot";
+			switch (RandomInt(4))
+			{
+				case 0:
+					return $"{displayName}, that's a level {scene.Level} spell, but alas, you are a level {userLevel} {GetLevelName(userLevel)}. " + learnMore;
+				case 1:
+					return $"Unfortunately {displayName}, there's no way a level {userLevel} {GetLevelName(userLevel)} can botcast level {scene.Level} spell! " + learnMore;
+				case 2:
+					return $"{displayName}, you'll need to level-up to {scene.Level} before you botcast that spell! " + learnMore;
+				default:
+					return $"{displayName} that's a level {scene.Level} spell! You need to level-up first! " + learnMore;
+			}
+		}
 		string GetExitMessage()
 		{
 			switch (RandomInt(6))
@@ -400,6 +472,11 @@ namespace MrAnnouncerBot
 
 		void ActivateScene(SceneDto scene, string displayName, int userLevel)
 		{
+			if (scene.Level >= userLevel)
+			{
+				Chat(GetNeedToLevelUpMessage(scene, displayName, userLevel));
+				return;
+			}
 			string sceneName = GetSceneName(scene);
 			if (sceneName == null)
 				return;
@@ -449,34 +526,37 @@ namespace MrAnnouncerBot
 			var scene = GetScene(command);
 			if (scene != null)
 				ActivateSceneIfPermitted(scene, e.Command.ChatMessage.DisplayName, allViewers.GetUserLevel(e.Command.ChatMessage));
-			else
-				Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
+			//else
+			//	Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
 		}
 
+
+		string QuotedIfSpace(string chatShortcut)
+		{
+			if (chatShortcut.IndexOf(' ') >= 0)
+				return $"\"{chatShortcut}\"";
+			else
+				return chatShortcut;
+		}
 
 		void HandleQuestionCommand(OnChatCommandReceivedArgs obj)
 		{
 			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
 
 			List<string> accessibleScenes = scenes.Where(m => m.Level <= userLevel)
-																						.Select(m => { 
-																							if (m.ChatShortcut.IndexOf(' ') >= 0)
-																								return $"\"{m.ChatShortcut}\"";
-																							else
-																								return m.ChatShortcut;
-																						}
-																						).ToList();
+																						.Select(m => QuotedIfSpace(m.ChatShortcut))
+																						.ToList();
 
 			string sceneList = string.Join(", ", accessibleScenes);
 			
-			Chat($"@{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
+			Whisper(obj.Command.ChatMessage.Username, $"@{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
 			Chat($"See https://github.com/MillerMark/MrAnnouncerBot/blob/master/README.md for more info.");
 		}
 
 		void HandleLevelUp(OnChatCommandReceivedArgs obj)
 		{
 			int userLevel = allViewers.GetUserLevel(obj.Command.ChatMessage);
-			if (userLevel < 99)
+			if (userLevel < AllViewers.ModeratorLevel)
 				return;
 
 			if (obj.Command.ArgumentsAsString != null)
@@ -489,13 +569,19 @@ namespace MrAnnouncerBot
 				}
 				else
 					Chat($"{userName} not found.");
+				var scene = GetScene("levelup");
+				if (scene != null)
+					ActivateSceneIfPermitted(scene, "CodeRushed", AllViewers.ModeratorLevel);
 			}
 		}
 
 		void CheckDocs()
 		{
-			DocChecker.GenerateIfNecessary();
-			// TODO: Implement this!
+			if (ReadmeManager.NeedToGenerateNewReadme())
+			{
+				Console.WriteLine("Generating updated readme...");
+				ReadmeManager.GenerateNewReadme();
+			}
 		}
 	}
 }

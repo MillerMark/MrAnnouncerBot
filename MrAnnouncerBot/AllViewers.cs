@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using BotCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +13,8 @@ namespace MrAnnouncerBot
 {
 	public class AllViewers
 	{
+		public const int ModeratorLevel = 999999;
+
 		TimeSpan fourHours = TimeSpan.FromHours(4);
 
 		List<Viewer> viewers = new List<Viewer>();
@@ -22,13 +25,6 @@ namespace MrAnnouncerBot
 
 		public List<Viewer> Viewers { get => viewers; }
 
-		string GetDataFolder()
-		{
-			string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MrAnnouncerBot");
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
-			return path;
-		}
 
 		async void CheckData()
 		{
@@ -47,25 +43,13 @@ namespace MrAnnouncerBot
 		}
 		public void Load()
 		{
-			viewers = JsonConvert.DeserializeObject<List<Viewer>>(File.ReadAllText(GetDataFileName()));
+			viewers = AppData.Load<List<Viewer>>("AllViewers.json");
 			CheckData();
 		}
 
 		public void Save()
 		{
-			try
-			{
-				File.WriteAllText(GetDataFileName(), JsonConvert.SerializeObject(viewers));
-			}
-			catch (Exception ex)
-			{
-				// TODO: Alert and offer to try again.
-			}
-		}
-
-		private string GetDataFileName()
-		{
-			return Path.Combine(GetDataFolder(), "AllViewers.json");
+			AppData.Save("AllViewers.json", viewers);
 		}
 
 		Viewer CreateNewViewer(ChatMessage chatMessage)
@@ -107,17 +91,20 @@ namespace MrAnnouncerBot
 
 		public int GetUserLevel(ChatMessage chatMessage)
 		{
-			var subscriberBonus = 0;
+			var bonus = 0;
 			if (chatMessage.IsSubscriber)
-				subscriberBonus = chatMessage.SubscribedMonthCount;
+				bonus += chatMessage.SubscribedMonthCount;
+
+			if (chatMessage.IsModerator)
+				bonus += 5;
 
 			Viewer existingViewer = GetViewer(chatMessage);
 			if (existingViewer == null)
-				return subscriberBonus;
-			if (existingViewer.UserName == "coderushed")
-				return 99;
+				return bonus;
+			if (existingViewer.UserName == "coderushed" || existingViewer.UserName == "rorybeckercoderush")
+				return ModeratorLevel;
 
-			return existingViewer.GetLevel() + subscriberBonus;
+			return existingViewer.GetLevel() + bonus;
 		}
 
 		public void UserLeft(string userName)
@@ -150,6 +137,8 @@ namespace MrAnnouncerBot
 
 		async public void UpdateLiveViewers(string[] viewers)
 		{
+			if (viewers.Length == 0)
+				return;
 			var results = await Twitch.Api.Users.v5.GetUsersByNameAsync(viewers.ToList());
 			var userList = results.Matches;
 

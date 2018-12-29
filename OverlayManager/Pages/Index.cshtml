@@ -3,13 +3,63 @@
 @{
   Layout = null;
 }
+<link rel="icon" href="data:,">
 <canvas id="myCanvas" width="1920" height="1080"></canvas>
+
+<script src="~/lib/signalr/signalr.js"></script>
+
+<!-- Order is important! -->
+
+<script src="~/GameDev/Source/Game Engine/Folders.js"></script>
+
 <script>
-  var canvas = document.getElementById("myCanvas");
-  var context = canvas.getContext("2d");
-  context.strokeStyle = "#9b76ee";
-  context.lineWidth = 4;
-  context.fillStyle = "#fb6db0";
-  context.fillRect(300, 0, 50, 50);
-  context.strokeRect(300, 0, 50, 50);
+  Folders.assets = 'GameDev/Assets/';
+</script>
+
+<script src="~/GameDev/Source/Game Engine/Vector.js"></script>
+<script src="~/GameDev/Source/Game Engine/Particle.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter.js"></script>
+<script src="~/GameDev/Source/Game Engine/Connection.js"></script>
+<script src="~/GameDev/Source/Game Engine/AnimationStyle.js"></script>
+<script src="~/GameDev/Source/Game Engine/Point.js"></script>
+<script src="~/GameDev/Source/Game Engine/Line.js"></script>
+<script src="~/GameDev/Source/Game Engine/Physics.js"></script>
+<script src="~/GameDev/Source/Game Engine/HueSatLight.js"></script>
+<script src="~/GameDev/Source/Game Engine/SpriteProxy.js"></script>
+<script src="~/GameDev/Source/Game Engine/Sprites.js"></script>
+<script src="~/GameDev/Source/Game Engine/Game.js"></script>
+<script src="~/GameDev/Source/Game Engine/Diagnostics.js"></script>
+<script src="~/GameDev/Source/Game Engine/GamePlusQuiz.js"></script>
+<script src="~/GameDev/Source/Game Engine/SpriteCollection.js"></script>
+<script src="~/GameDev/Source/Game Engine/Part.js"></script>
+<script src="~/GameDev/Source/Game Engine/Random.js"></script>
+<script src="~/GameDev/Source/Game Engine/Digits.js"></script>
+<script src="~/GameDev/Source/Game Engine/Gravity.js"></script>
+<script src="~/GameDev/Source/Game Engine/Tests/Tests.js"></script>
+
+<script src="~/GameDev/Source/Polls/Quiz.js"></script>
+<script src="~/GameDev/Source/Polls/Vote.js"></script>
+
+<script src="~/GameDev/Source/CodeRushed/FuturePoint.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Wall.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Sparks.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Layouts.js"></script>
+<script src="~/GameDev/Source/CodeRushed/BumbleBee.js"></script>
+<script src="~/GameDev/Source/CodeRushed/SplatSprites.js"></script>
+<script src="~/GameDev/Source/CodeRushed/WallSprites.js"></script>
+<script src="~/GameDev/Source/CodeRushed/DroneProxy.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Drone.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Gateway.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Portal.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Meteor.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Planet.js"></script>
+<script src="~/GameDev/Source/CodeRushed/GravityGame.js"></script>
+<script src="~/GameDev/Source/CodeRushed/GravityGames.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Rocket.js"></script>
+<script src="~/GameDev/Source/CodeRushed/DroneGame.js"></script>
+<script src="~/GameDev/Source/DragonH/DragonGame.js"></script>
+<script src="~/GameDev/Source/Main.js"></script>
+
+<script>
+  connectToSignalR(signalR);
 </script>

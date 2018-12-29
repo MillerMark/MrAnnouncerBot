@@ -8,6 +8,7 @@ namespace BotCore
 	public static class BotCommands
 	{
 		static List<BotCommand> allChatCommands = new List<BotCommand>();
+
 		public static void Register(BotCommand chatCommand)
 		{
 			allChatCommands.Add(chatCommand);

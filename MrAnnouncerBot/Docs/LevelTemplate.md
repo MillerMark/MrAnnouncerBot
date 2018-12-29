@@ -1,6 +1,6 @@
 ### Level $LevelNumber$
 
-$LevelDoc$
+$LevelPic$$LevelDoc$
 
 | Shortcut | Scene | Category |
 |---|---|---|
