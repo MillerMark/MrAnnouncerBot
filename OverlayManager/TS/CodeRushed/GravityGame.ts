@@ -1,13 +1,17 @@
 ﻿class GravityGame {
   startTime: Date;
-  digits: Sprites = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
+  digits: Sprites ;
   public score: Digits;
   constructor() {
     this.startTime = new Date();
-    this.digits.sprites = [];
-    this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
-    this.score = new Digits(DigitSize.small, 1000, 0);
-    this.score.value = 0;
+
+    if (loadCopyrightedContent) {
+        this.digits = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
+        this.digits.sprites = [];
+        this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
+        this.score = new Digits(DigitSize.small, 1000, 0);
+        this.score.value = 0;
+    }
   }
 
   draw(context: CanvasRenderingContext2D) {
