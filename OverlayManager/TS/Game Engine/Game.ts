@@ -1,4 +1,4 @@
-﻿let loadCopyrightedContent: boolean = false;
+﻿let loadCopyrightedContent: boolean = true;
 
 const screenWidth: number = 1920;
 const screenHeight: number = 1080;
