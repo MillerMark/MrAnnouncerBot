@@ -2,18 +2,19 @@
   emitter: Emitter;
   yellowSeeds: Sprites;
   yellowFlowers: Sprites;
-  lastUpdateTime: number;
 
-  constructor() {
-    super();
+  constructor(context: CanvasRenderingContext2D) {
+    super(context);
+  }
+
+  update(timestamp: number) {
+    this.updateGravity();
+    super.update(timestamp);
   }
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
 
-    var secondsSinceLastUpdate: number = (now - this.lastUpdateTime) / 1000;
-
-    this.emitter.update(now, secondsSinceLastUpdate);
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -32,10 +33,7 @@
 
     myRocket.draw(myContext, now);
     this.yellowFlowers.draw(myContext, now);
-    this.emitter.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
-
-    this.lastUpdateTime = now;
   }
 
   removeAllGameElements(now: number): void {
@@ -57,7 +55,11 @@
     super.start();
     gravityGames.selectPlanet('Earth');
     gravityGames.newGame();
-    this.lastUpdateTime = performance.now();
+
+    this.updateGravity();
+    // If all characters were WorldObject descendants, this would be all that
+    // is needed per game... just add the characters and let the world do the rest :)
+    this.world.addCharacter(this.emitter);
   }
 
   loadResources(): void {

@@ -1,36 +1,25 @@
-﻿class Particle {
+﻿class Particle extends WorldObject {
   birthTime: number;
   displacement: Vector;
 
-  constructor(public emitter: Emitter, now: number, public position: Vector, public velocity: Vector = Vector.fromPolar(0, 0), public radius: number = 1, public opacity: number = 1,
+  constructor(public emitter: Emitter, now: number, position: Vector, velocity: Vector = Vector.fromPolar(0, 0), public radius: number = 1, public opacity: number = 1,
     public color: HueSatLight = HueSatLight.fromHex('f00')) {
+    super(position, velocity, 1);
     this.birthTime = now;
   }
 
-  update(now: number, secondsSinceLastUpdate: number) {
-    // TODO: Implement this...
-    let relativeGravity = this.emitter.particleGravityCenter.subtract(this.position);
-    let gravityX: number = relativeGravity.getXComponent(this.emitter.particleGravity);
-    let gravityY: number = relativeGravity.getYComponent(this.emitter.particleGravity);
+  // Most descendants would only need to override render! No physics logic here :)
+  // Would also need to add bouncing and moved off screen logic in the base.
+  render(now: number, timeScale: number, world: World) {
+    super.update(now, timeScale, world);
 
-    let displacementX: number = Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.x, gravityX);
-    let displacementY: number = Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.y, gravityY);
-
-    this.position = new Vector(this.position.x + displacementX, this.position.y + displacementY);
-
-    let newVelocityX: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.x, gravityX);
-    let newVelocityY: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.y, gravityY);
-    this.velocity = new Vector(newVelocityX, newVelocityY);
-  }
-
-  draw(context: CanvasRenderingContext2D, now: number) {
     if (this.hasExpired(now))
       return;
 
     if (now < this.birthTime)
       return;
 
-
+    const context = world.ctx;
     this.calculateOpacity(context, now);
 
     context.beginPath();
@@ -42,21 +31,20 @@
   }
 
   private calculateOpacity(context: CanvasRenderingContext2D, now: number) {
-    let timeAliveMs: number = now - this.birthTime;
-    let timeAliveSeconds: number = timeAliveMs / 1000;
+    let timeAliveSeconds: number = now - this.birthTime;
     if (timeAliveSeconds < this.emitter.particleFadeInTime) {
       let percentageBorn: number = timeAliveSeconds / this.emitter.particleFadeInTime;
       context.globalAlpha = percentageBorn;
     }
     else {
-      let lifeSpanSeconds: number = timeAliveMs / 1000;
+        let lifeSpanSeconds: number = timeAliveSeconds;
       let percentageLived: number = lifeSpanSeconds / this.emitter.particleLifeSpanSeconds;
       context.globalAlpha = 1 - percentageLived;
     }
   }
 
   hasExpired(now: number): boolean {
-    let lifeSpanSeconds: number = (now - this.birthTime) / 1000;
+    let lifeSpanSeconds: number = now - this.birthTime;
     return lifeSpanSeconds > this.emitter.particleLifeSpanSeconds;
   }
 }
