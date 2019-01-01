@@ -1,20 +1,20 @@
 ﻿class Particle {
   birthTime: number;
   displacement: Vector;
+  color: HueSatLight;
 
-  constructor(public emitter: Emitter, now: number, public position: Vector, public velocity: Vector = Vector.fromPolar(0, 0), public radius: number = 1, public opacity: number = 1,
-    public color: HueSatLight = HueSatLight.fromHex('f00')) {
+  constructor(public emitter: Emitter, now: number, public position: Vector, public velocity: Vector = Vector.fromPolar(0, 0), public radius: number = 1, public opacity: number = 1) {
     this.birthTime = now;
+    this.color = emitter.getParticleColor();
   }
 
-  update(now: number, secondsSinceLastUpdate: number) {
-    // TODO: Implement this...
+  update(now: number, secondsSinceLastUpdate: number): void {
     let relativeGravity = this.emitter.particleGravityCenter.subtract(this.position);
-    let gravityX: number = relativeGravity.getXComponent(this.emitter.particleGravity);
-    let gravityY: number = relativeGravity.getYComponent(this.emitter.particleGravity);
+    let gravityX: number = relativeGravity.getRatioX(this.emitter.particleGravity);
+    let gravityY: number = relativeGravity.getRatioY(this.emitter.particleGravity);
 
-    let displacementX: number = Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.x, gravityX);
-    let displacementY: number = Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.y, gravityY);
+    let displacementX: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.x - this.emitter.velocity.x + this.emitter.particleWind.x, gravityX));
+    let displacementY: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.y - this.emitter.velocity.y + this.emitter.particleWind.y, gravityY));
 
     this.position = new Vector(this.position.x + displacementX, this.position.y + displacementY);
 
@@ -29,7 +29,6 @@
 
     if (now < this.birthTime)
       return;
-
 
     this.calculateOpacity(context, now);
 

@@ -18,11 +18,11 @@
     return new Vector(this.x * factor, this.y * factor);
   }
 
-  getXComponent(amount: number): number {
+  getRatioX(amount: number): number {
     return amount * this.x / this.length;
   }
 
-  getYComponent(amount: number): number {
+  getRatioY(amount: number): number {
     return amount * this.y / this.length;
   }
 

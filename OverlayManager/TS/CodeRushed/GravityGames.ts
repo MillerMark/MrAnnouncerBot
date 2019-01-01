@@ -359,7 +359,10 @@ class GravityGames {
     }
 
     this.activePlanet = planet;
-    this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+
+    if (loadCopyrightedContent) {
+        this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+    }
   }
 
   selectPlanet(planetName: string): boolean {

@@ -1,11 +1,15 @@
 ﻿// TODO: Consider refactoring this to a Zap class or a SoundEffects class.
 var zapSoundEffects: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
 const numZapSoundEffects: number = 5;
+var splatSoundEffect: HTMLAudioElement;
 
 function loadZaps() {
-  for (var i = 0; i < numZapSoundEffects; i++) {
-    zapSoundEffects.push(new Audio(Folders.assets + `Sound Effects/ElectricZap${i}.wav`))
-  }
+    if (loadCopyrightedContent) {
+        for (var i = 0; i < numZapSoundEffects; i++) {
+            zapSoundEffects.push(new Audio(Folders.assets + `Sound Effects/ElectricZap${i}.wav`))
+        }
+        splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
+    }
 }
 
 function playZap() {
@@ -14,7 +18,7 @@ function playZap() {
 }
 
 
-var splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
+var splatSoundEffect = loadCopyrightedContent ? new Audio(Folders.assets + 'Sound Effects/Splat.mp3') : null;
 
 const dronePathExtension: number = 18;
 //const droneWidth: number = 128;
@@ -537,7 +541,9 @@ class Drone extends SpriteProxy {
       splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
 
-    splatSoundEffect.play();
+    if (loadCopyrightedContent) {
+        splatSoundEffect.play();
+    }
   }
 
   // Picks a sequence of random numbers between 0 and maxBounds. pickCount is the number of random numbers selected.
