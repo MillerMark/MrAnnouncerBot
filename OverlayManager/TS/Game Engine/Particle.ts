@@ -3,8 +3,7 @@
   displacement: Vector;
   color: HueSatLight;
 
-  constructor(public emitter: Emitter, now: number, position: Vector, velocity: Vector = Vector.fromPolar(0, 0), public radius: number = 1, public opacity: number = 1,
-    public color: HueSatLight = HueSatLight.fromHex('f00')) {
+  constructor(public emitter: Emitter, now: number, position: Vector, velocity: Vector = Vector.fromPolar(0, 0), public radius: number = 1, public opacity: number = 1) {
     super(position, velocity, 1);
     this.birthTime = now;
     this.color = emitter.getParticleColor();
