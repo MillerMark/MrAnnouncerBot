@@ -1,12 +1,14 @@
 ﻿// TODO: Consider refactoring this to a Zap class or a SoundEffects class.
 var zapSoundEffects: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
 const numZapSoundEffects: number = 5;
+var splatSoundEffect: HTMLAudioElement;
 
 function loadZaps() {
     if (loadCopyrightedContent) {
         for (var i = 0; i < numZapSoundEffects; i++) {
             zapSoundEffects.push(new Audio(Folders.assets + `Sound Effects/ElectricZap${i}.wav`))
         }
+        splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
     }
 }
 
