@@ -1,4 +1,4 @@
-﻿enum TargetBinding {
+enum TargetBinding {
   truncate,
   wrap
 }
@@ -21,7 +21,7 @@ class TargetValue {
   }
 }
 
-class Emitter {
+class Emitter extends WorldObject {
   particles: Array<Particle> = new Array<Particle>();
   radius: number;
   opacity: number;
@@ -44,7 +44,8 @@ class Emitter {
   particlesCreatedSoFar: number = 0;
   maxParticles: number = Infinity;
 
-  constructor(public position: Vector, public velocity: Vector = Vector.fromPolar(0, 0)) {
+  constructor(position: Vector, velocity: Vector = Vector.zero) {
+    super(position, velocity);
     this.particleFadeInTime = 0.4;
     this.radius = 10;
     this.particleRadius = new TargetValue(1);
@@ -81,7 +82,7 @@ class Emitter {
     this.particles.push(new Particle(this, now, particlePosition, initialVelocity, particleRadius));
   }
 
-  addParticles(now: number, secondsSinceLastUpdate: number, amount: number) {
+  addParticles(now: number, amount: number) {
     let particlesToCreate: number = Math.floor(amount);
     if (particlesToCreate === 0)
       return;
@@ -98,24 +99,51 @@ class Emitter {
     }
   }
 
+  //updateVelocity(now: number): void {
+  //  // TODO: Implement this based on now.
+  //}
 
-  update(now: number, secondsSinceLastUpdate: number): void {
-    let relativeGravity = this.gravityCenter.subtract(this.position);
-    let gravityX: number = relativeGravity.getRatioX(this.gravity);
-    let gravityY: number = relativeGravity.getRatioY(this.gravity);
+  applyForce(force: Force) {
+    // Temporarily disable movement (gravity).
+    //super.applyForce(force);
+    this.particles.forEach(particle => particle.applyForce(force));
+  }
 
-    let displacementX: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.x + this.wind.x, gravityX));
-    let displacementY: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.y + this.wind.y, gravityY));
+  preUpdate(now: number, timeScale: number, world: World): void {
+    super.update(now, timeScale, world);
+    this.particles.forEach(particle => particle.preUpdate(now, timeScale, world));
+  }
 
-    this.position = new Vector(this.position.x + displacementX, this.position.y + displacementY);
+  // No physics logic here :) Descendants can just focus on what they do!
+  update(now: number, timeScale: number, world: World): void {
+    let secondsSinceLastParticleCreation: number = now - this.lastParticleCreationTime || now;
+    let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
+    this.addParticles(now, particlesToCreate);
+
+    this.particles.forEach(function (particle: Particle) {
+      particle.update(now, timeScale, world);
+    });
+
+//  update(now: number, secondsSinceLastUpdate: number): void {
+//    let relativeGravity = this.gravityCenter.subtract(this.position);
+//    let gravityX: number = relativeGravity.getRatioX(this.gravity);
+//    let gravityY: number = relativeGravity.getRatioY(this.gravity);
+
+//    let displacementX: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.x + this.wind.x, gravityX));
+//    let displacementY: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.y + this.wind.y, gravityY));
+
+//    this.position = new Vector(this.position.x + displacementX, this.position.y + displacementY);
 
     let newVelocityX: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.x, gravityX);
     let newVelocityY: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.y, gravityY);
     this.velocity = new Vector(newVelocityX, newVelocityY);
 
-    let secondsSinceLastParticleCreation: number = (now - this.lastParticleCreationTime || now) / 1000;
-    let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
-    this.addParticles(now, secondsSinceLastUpdate, particlesToCreate);
+    this.removeExpiredParticles(now);
+    super.update(now, timeScale, world);
+  }
+//    let secondsSinceLastParticleCreation: number = (now - this.lastParticleCreationTime || now) / 1000;
+//    let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
+//    this.addParticles(now, secondsSinceLastUpdate, particlesToCreate);
 
     //this.particles.forEach(function (particle: Particle) {
     //  particle.update(now, secondsSinceLastUpdate);
@@ -132,6 +160,9 @@ class Emitter {
     //this.removeExpiredParticles(now);
   }
 
+  render(now: number, timeScale: number, world: World): void {
+    super.render(now, timeScale, world);
+
   //private removeExpiredParticles(now: number) {
   //  for (var i = this.particles.length - 1; i >= 0; i--) {
   //    let particle: Particle = this.particles[i];
@@ -140,9 +171,9 @@ class Emitter {
   //  }
   //}
 
-  draw(context: CanvasRenderingContext2D, now: number): void {
+//  draw(context: CanvasRenderingContext2D, now: number): void {
     this.particles.forEach(function (particle: Particle) {
-      particle.draw(context, now);
-    }, this);
+      particle.render(now, timeScale, world);
+    });
   }
 }

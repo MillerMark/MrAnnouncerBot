@@ -361,7 +361,7 @@ class GravityGames {
     this.activePlanet = planet;
 
     if (loadCopyrightedContent) {
-      this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+        this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
     }
   }
 

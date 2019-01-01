@@ -7,8 +7,13 @@
   scrollSlamlastUpdateTime: number;
   lastUpdateTime: number;
 
-  constructor() {
-    super();
+  constructor(context: CanvasRenderingContext2D) {
+    super(context);
+  }
+
+  update(timestamp: number) {
+    this.updateGravity();
+    super.update(timestamp);
   }
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
@@ -19,6 +24,7 @@
 
     var secondsSinceLastUpdate: number = (now - this.lastUpdateTime || now) / 1000;
     this.emitter.update(now, secondsSinceLastUpdate);
+
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -37,7 +43,6 @@
 
     myRocket.draw(myContext, now);
     this.yellowFlowers.draw(myContext, now);
-    this.emitter.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
 
     this.scrollSlam.draw(context, now);
@@ -64,6 +69,11 @@
     super.start();
     gravityGames.selectPlanet('Earth');
     gravityGames.newGame();
+
+    this.updateGravity();
+    // If all characters were WorldObject descendants, this would be all that
+    // is needed per game... just add the characters and let the world do the rest :)
+    this.world.addCharacter(this.emitter);
   }
 
   loadDragonAssets() {

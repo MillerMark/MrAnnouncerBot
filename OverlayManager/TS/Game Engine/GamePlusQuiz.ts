@@ -1,6 +1,6 @@
 ﻿class GamePlusQuiz extends Game {
-  constructor() {
-    super();
+    constructor(context: CanvasRenderingContext2D) {
+    super(context);
   }
 
   removeAllGameElements(now: number): void {
