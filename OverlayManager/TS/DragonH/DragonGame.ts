@@ -23,7 +23,7 @@
     this.scrollSlam.draw(context, now);
 
     var secondsSinceLastUpdate: number = (now - this.lastUpdateTime || now) / 1000;
-    this.emitter.update(now, secondsSinceLastUpdate);
+    this.emitter.update(now, secondsSinceLastUpdate, this.world);
 
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
@@ -91,10 +91,10 @@
   }
 
   loadResources(): void {
-    //this.buildBlueParticleBall();
+    this.buildBlueParticleBall();
     //this.purpleMagic();
     //this.purpleBurst();
-    this.orbital();
+    //this.orbital();
     //this.buildSmoke();
     
     super.loadResources();
@@ -134,7 +134,7 @@
   }
 
   orbital() {
-    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY));
+    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
     this.emitter.radius = 11;
     this.emitter.hue.target = 145;
     this.emitter.hue.absoluteVariance = 35;
@@ -151,11 +151,10 @@
     this.emitter.particleFadeInTime = 0.05;
     this.emitter.gravity = 9;
     this.emitter.gravityCenter = new Vector(screenCenterX, screenCenterY);
-    this.emitter.velocity = new Vector(0, -6);
   }
 
   purpleMagic() {
-    this.emitter = new Emitter(new Vector(1920, 1200));
+    this.emitter = new Emitter(new Vector(1920, 1200), new Vector(-6, -9));
     this.emitter.radius = 3;
     this.emitter.hue.target = 270;
     this.emitter.hue.absoluteVariance = 75;
@@ -171,7 +170,6 @@
     this.emitter.particleGravity = 4;
     this.emitter.particleFadeInTime = 0.05;
     this.emitter.gravity = 3;
-    this.emitter.velocity = new Vector(-6, -9);
   }
 
   purpleBurst() {

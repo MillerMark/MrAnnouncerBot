@@ -134,12 +134,18 @@ class Emitter extends WorldObject {
 
 //    this.position = new Vector(this.position.x + displacementX, this.position.y + displacementY);
 
-    let newVelocityX: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.x, gravityX);
-    let newVelocityY: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.y, gravityY);
-    this.velocity = new Vector(newVelocityX, newVelocityY);
+    //let newVelocityX: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.x, gravityX);
+    //let newVelocityY: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.y, gravityY);
+    //this.velocity = new Vector(newVelocityX, newVelocityY);
 
-    this.removeExpiredParticles(now);
+    //this.removeExpiredParticles(now);
     super.update(now, timeScale, world);
+
+    for (var i = this.particles.length - 1; i >= 0; i--) {
+      let particle: Particle = this.particles[i];
+      if (particle.hasExpired(now))
+        this.particles.splice(i, 1);
+    }
   }
 //    let secondsSinceLastParticleCreation: number = (now - this.lastParticleCreationTime || now) / 1000;
 //    let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
@@ -149,16 +155,7 @@ class Emitter extends WorldObject {
     //  particle.update(now, secondsSinceLastUpdate);
     //}, this);
 
-    for (var i = this.particles.length - 1; i >= 0; i--) {
-      let particle: Particle = this.particles[i];
-      if (particle.hasExpired(now))
-        this.particles.splice(i, 1);
-      else 
-        particle.update(now, secondsSinceLastUpdate);
-    }
-
     //this.removeExpiredParticles(now);
-  }
 
   render(now: number, timeScale: number, world: World): void {
     super.render(now, timeScale, world);
