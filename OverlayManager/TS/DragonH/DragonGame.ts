@@ -2,17 +2,29 @@
   emitter: Emitter;
   yellowSeeds: Sprites;
   yellowFlowers: Sprites;
+  scrollRolls: Sprites;
+  scrollSlam: Sprites;
+  scrollSlamlastUpdateTime: number;
   lastUpdateTime: number;
 
-  constructor() {
-    super();
+  constructor(context: CanvasRenderingContext2D) {
+    super(context);
+  }
+
+  update(timestamp: number) {
+    this.updateGravity();
+    super.update(timestamp);
   }
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
 
+    this.scrollRolls.draw(context, now);
+    this.scrollSlam.draw(context, now);
+
     var secondsSinceLastUpdate: number = (now - this.lastUpdateTime || now) / 1000;
     this.emitter.update(now, secondsSinceLastUpdate);
+
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -31,8 +43,9 @@
 
     myRocket.draw(myContext, now);
     this.yellowFlowers.draw(myContext, now);
-    this.emitter.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
+
+    this.scrollSlam.draw(context, now);
 
     this.lastUpdateTime = now;
   }
@@ -56,6 +69,25 @@
     super.start();
     gravityGames.selectPlanet('Earth');
     gravityGames.newGame();
+
+    this.updateGravity();
+    // If all characters were WorldObject descendants, this would be all that
+    // is needed per game... just add the characters and let the world do the rest :)
+    this.world.addCharacter(this.emitter);
+  }
+
+  loadDragonAssets() {
+    var assetFolderName: string = Folders.assets;
+    Folders.assets = 'GameDev/Assets/DragonH/';
+
+    const fps30: number = 33; // 33 milliseconds == 30 fps
+    this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, fps30, AnimationStyle.SequentialStop, true);
+    this.scrollRolls.add(0, 0, 0);
+
+    this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, fps30, AnimationStyle.Sequential, true);
+    this.scrollSlam.add(0, 0, 0);
+
+    Folders.assets = assetFolderName;
   }
 
   loadResources(): void {
@@ -63,11 +95,11 @@
     //this.purpleMagic();
     //this.purpleBurst();
     this.orbital();
-    //this.emitter.velocity = new Vector(3, 5);
     //this.buildSmoke();
-    //this.emitter.addParticles(20);
-
+    
     super.loadResources();
+
+    this.loadDragonAssets();
 
     this.addSeeds();
 

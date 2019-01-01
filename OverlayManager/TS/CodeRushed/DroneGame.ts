@@ -21,8 +21,8 @@ class DroneGame extends GamePlusQuiz {
   coins: Sprites;
 
 
-  constructor() {
-    super();
+  constructor(context: CanvasRenderingContext2D) {
+    super(context);
   }
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
