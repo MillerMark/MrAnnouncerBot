@@ -95,7 +95,7 @@ class GravityGames {
 
     let gateway: Gateway = new Gateway(Random.intMax(activeGame.droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
     gateway.ID = activeGame.droneGateways.sprites.length + 1;
-    
+
     gateway.delayStart = Math.random() * 900;
     activeGame.droneGateways.sprites.push(gateway);
   }
@@ -246,7 +246,7 @@ class GravityGames {
           intersectionCount = 0;
           collectingWallStyle = WallStyle.None;
         }
-        else 
+        else
           intersectionCount = 0;
       }
 
@@ -310,7 +310,7 @@ class GravityGames {
           intersectionCount = 0;
           collectingWallStyle = WallStyle.None;
         }
-        else 
+        else
           intersectionCount = 0;
       }
 
@@ -359,7 +359,10 @@ class GravityGames {
     }
 
     this.activePlanet = planet;
-    this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+
+    if (loadCopyrightedContent) {
+      this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+    }
   }
 
   selectPlanet(planetName: string): boolean {

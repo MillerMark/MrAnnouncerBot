@@ -84,20 +84,22 @@
 
     this.loggingState = true;
 
-    this.hoverThrustersAudio = new Audio(Folders.assets + 'Sound Effects/Hover Thruster Loop.wav');
-    this.hoverThrustersAudio.loop = true;
+    if (loadCopyrightedContent) {
+      this.hoverThrustersAudio = new Audio(Folders.assets + 'Sound Effects/Hover Thruster Loop.wav');
+      this.hoverThrustersAudio.loop = true;
 
-    this.hoverDropThrustersAudio = new Audio(Folders.assets + 'Sound Effects/Hover Thruster Drop Loop.wav');
-    this.hoverDropThrustersAudio.loop = true;
+      this.hoverDropThrustersAudio = new Audio(Folders.assets + 'Sound Effects/Hover Thruster Drop Loop.wav');
+      this.hoverDropThrustersAudio.loop = true;
 
-    this.mainThrustersAudio = new Audio(Folders.assets + 'Sound Effects/MainThrustersLoop.wav');
-    this.mainThrustersAudio.loop = true;
+      this.mainThrustersAudio = new Audio(Folders.assets + 'Sound Effects/MainThrustersLoop.wav');
+      this.mainThrustersAudio.loop = true;
 
-    this.sideThrustersAudio = new Audio(Folders.assets + 'Sound Effects/HorizontalRocketLoop.wav');
-    this.sideThrustersAudio.loop = true;
+      this.sideThrustersAudio = new Audio(Folders.assets + 'Sound Effects/HorizontalRocketLoop.wav');
+      this.sideThrustersAudio.loop = true;
 
-    this.motorExtendAudio = new Audio(Folders.assets + 'Sound Effects/EngineExtend4.wav');
-    this.motorRetractAudio = new Audio(Folders.assets + 'Sound Effects/EngineRetract.wav');
+      this.motorExtendAudio = new Audio(Folders.assets + 'Sound Effects/EngineExtend4.wav');
+      this.motorRetractAudio = new Audio(Folders.assets + 'Sound Effects/EngineRetract.wav');
+    }
 
     this.codeRushedBody = new Part("CodeRushed", 1, AnimationStyle.Static, x, y);
 

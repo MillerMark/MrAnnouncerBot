@@ -23,7 +23,7 @@ class Game {
   }
 
   start() {
-  	
+
   }
 
   initialize(): void {
@@ -45,6 +45,6 @@ class Game {
   }
 
   loadResources(): void {
-  	
+
   }
 }
