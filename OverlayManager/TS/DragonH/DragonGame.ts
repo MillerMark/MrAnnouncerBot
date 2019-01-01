@@ -2,6 +2,10 @@
   emitter: Emitter;
   yellowSeeds: Sprites;
   yellowFlowers: Sprites;
+  scrollRolls: Sprites;
+  scrollSlam: Sprites;
+  scrollSlamlastUpdateTime: number;
+  lastUpdateTime: number;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -15,6 +19,12 @@
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
 
+    this.scrollRolls.draw(context, now);
+    this.scrollSlam.draw(context, now);
+
+    var secondsSinceLastUpdate: number = (now - this.lastUpdateTime || now) / 1000;
+    this.emitter.update(now, secondsSinceLastUpdate);
+
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -26,7 +36,7 @@
       gravityGames.draw(myContext);
 
     this.allSeeds.updatePositions(now);
-    
+
     this.wallBounce(now);
 
     this.allSeeds.draw(myContext, now);
@@ -34,6 +44,10 @@
     myRocket.draw(myContext, now);
     this.yellowFlowers.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
+
+    this.scrollSlam.draw(context, now);
+
+    this.lastUpdateTime = now;
   }
 
   removeAllGameElements(now: number): void {
@@ -62,16 +76,30 @@
     this.world.addCharacter(this.emitter);
   }
 
-  loadResources(): void {
-    this.emitter = new Emitter(new Vector(1250, 180));
-    this.emitter.radius = 40;
-    this.emitter.particleRadius = 10;
-    this.emitter.particleRadiusVariance = 0.5;
-    this.emitter.particlesPerSecond = 20;
-    this.emitter.particleLifeSpanSeconds = 8;
-    //this.emitter.addParticles(20);
+  loadDragonAssets() {
+    var assetFolderName: string = Folders.assets;
+    Folders.assets = 'GameDev/Assets/DragonH/';
 
+    const fps30: number = 33; // 33 milliseconds == 30 fps
+    this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, fps30, AnimationStyle.SequentialStop, true);
+    this.scrollRolls.add(0, 0, 0);
+
+    this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, fps30, AnimationStyle.Sequential, true);
+    this.scrollSlam.add(0, 0, 0);
+
+    Folders.assets = assetFolderName;
+  }
+
+  loadResources(): void {
+    //this.buildBlueParticleBall();
+    //this.purpleMagic();
+    //this.purpleBurst();
+    this.orbital();
+    //this.buildSmoke();
+    
     super.loadResources();
+
+    this.loadDragonAssets();
 
     this.addSeeds();
 
@@ -88,6 +116,101 @@
     Part.loadSprites = true;
 
     //this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
+  }
+
+  buildSmoke() {
+    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
+    this.emitter.radius = 99;
+    this.emitter.saturation.target = 0;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.particleRadius.target = 11;
+    this.emitter.particleRadius.relativeVariance = 1;
+    this.emitter.particlesPerSecond = 100;
+    this.emitter.particleLifeSpanSeconds = 3;
+    this.emitter.particleInitialVelocity.target = 0;
+    this.emitter.particleGravity = 0.4;
+    this.emitter.particleWind = Vector.fromPolar(270, 2);
+  }
+
+  orbital() {
+    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY));
+    this.emitter.radius = 11;
+    this.emitter.hue.target = 145;
+    this.emitter.hue.absoluteVariance = 35;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.particleRadius.target = 2.2;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+    this.emitter.particlesPerSecond = 800;
+    this.emitter.particleLifeSpanSeconds = 1.5;
+    this.emitter.particleInitialVelocity.target = 0.8;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.5;
+    this.emitter.particleGravity = 1;
+    this.emitter.particleFadeInTime = 0.05;
+    this.emitter.gravity = 9;
+    this.emitter.gravityCenter = new Vector(screenCenterX, screenCenterY);
+    this.emitter.velocity = new Vector(0, -6);
+  }
+
+  purpleMagic() {
+    this.emitter = new Emitter(new Vector(1920, 1200));
+    this.emitter.radius = 3;
+    this.emitter.hue.target = 270;
+    this.emitter.hue.absoluteVariance = 75;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.particleRadius.target = 1.2;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+    this.emitter.particlesPerSecond = 800;
+    this.emitter.particleLifeSpanSeconds = 1.5;
+    this.emitter.particleInitialVelocity.target = 0.8;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.5;
+    this.emitter.particleGravity = 4;
+    this.emitter.particleFadeInTime = 0.05;
+    this.emitter.gravity = 3;
+    this.emitter.velocity = new Vector(-6, -9);
+  }
+
+  purpleBurst() {
+    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
+    this.emitter.radius = 3;
+    this.emitter.hue.target = 270;
+    this.emitter.hue.absoluteVariance = 75;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.particleRadius.target = 2;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+    this.emitter.particlesPerSecond = 600;
+    this.emitter.particleLifeSpanSeconds = 2;
+    this.emitter.particleInitialVelocity.target = 3.4;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.5;
+    this.emitter.particleGravity = 0;
+    this.emitter.particleFadeInTime = 0.1;
+    this.emitter.gravity = 0;
+    this.emitter.maxParticles = 300;
+  }
+
+  buildBlueParticleBall() {
+    this.emitter = new Emitter(new Vector(1250, 180));
+    this.emitter.radius = 0;
+    this.emitter.hue.target = 220;
+    this.emitter.hue.absoluteVariance = 25;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.particleRadius.target = 4;
+    this.emitter.particleRadius.relativeVariance = 3;
+    this.emitter.particlesPerSecond = 200;
+    this.emitter.particleLifeSpanSeconds = 24;
+    this.emitter.particleInitialVelocity.target = 1.3;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.3;
+    this.emitter.particleGravityCenter = new Vector(screenCenterX, screenCenterY);
+    this.emitter.particleGravity = 3;
   }
 
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
@@ -144,7 +267,7 @@
     else if (command === "Seed") {
       myRocket.dropSeed(now, params);
     }
-    
+
   }
 
   test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
@@ -163,7 +286,7 @@
   }
 
   allSeeds: SpriteCollection;
-    
+
   //` ![](7582E2608FC840A8A6D3CC61B5A58CB6.png)
   addSeeds() {
     this.allSeeds = new SpriteCollection();

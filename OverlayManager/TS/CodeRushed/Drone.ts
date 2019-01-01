@@ -1,13 +1,15 @@
 ﻿// TODO: Consider refactoring this to a Zap class or a SoundEffects class.
 var zapSoundEffects: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
 const numZapSoundEffects: number = 5;
+var splatSoundEffect: HTMLAudioElement;
 
-function loadZaps() {
-    if (loadCopyrightedContent) {
-        for (var i = 0; i < numZapSoundEffects; i++) {
-            zapSoundEffects.push(new Audio(Folders.assets + `Sound Effects/ElectricZap${i}.wav`))
-        }
+function loadSoundEffects() {
+  if (loadCopyrightedContent) {
+    for (var i = 0; i < numZapSoundEffects; i++) {
+      zapSoundEffects.push(new Audio(Folders.assets + `Sound Effects/ElectricZap${i}.wav`))
     }
+    splatSoundEffect = new Audio(Folders.assets + 'Sound Effects/Splat.mp3');
+  }
 }
 
 function playZap() {
@@ -451,7 +453,7 @@ class Drone extends SpriteProxy {
     if (secondsSinceMostRecentCollection > Drone.coinFadeTime + Drone.coinDuration) {
       alpha = 1 - (secondsSinceMostRecentCollection - (Drone.coinFadeTime + Drone.coinDuration)) / Drone.coinFadeTime;
     }
-      
+
     const fontSize: number = 14;
     this.centerTextInRect(context, 'Coins: ' + this.coinCount.toString(), this.y, fontSize, alpha);
   }
@@ -540,7 +542,7 @@ class Drone extends SpriteProxy {
     }
 
     if (loadCopyrightedContent) {
-        splatSoundEffect.play();
+      splatSoundEffect.play();
     }
   }
 

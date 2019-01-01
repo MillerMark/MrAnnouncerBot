@@ -139,7 +139,7 @@ class DroneGame extends GamePlusQuiz {
 
     this.addSeeds();
 
-    loadZaps();
+    loadSoundEffects();
 
     this.beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
     this.beesYellow.segmentSize = 2;

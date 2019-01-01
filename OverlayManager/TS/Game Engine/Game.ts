@@ -91,9 +91,9 @@ class Game {
   }
 
   loadResources(): void {
-  	
-  }
 
+  }
+  
   protected updateGravity() {
     if (this.gravity) {
         if (this.planetName === gravityGames.activePlanet.name)

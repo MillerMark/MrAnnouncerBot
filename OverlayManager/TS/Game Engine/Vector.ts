@@ -34,11 +34,11 @@
   // This is another key operation of vectors.  A lot of formulas call for adjusting the magnitude.
   // As before, it is probably best to stick with accepted conventions to make it easier to get
   // help on the web.
-  getXComponent(amount: number): number {
+  getRatioX(amount: number): number {
     return amount * this.x / this.length;
   }
 
-  getYComponent(amount: number): number {
+  getRatioY(amount: number): number {
     return amount * this.y / this.length;
   }
 

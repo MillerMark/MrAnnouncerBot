@@ -12,6 +12,7 @@
     <None Remove="TS\DH\Monster.ts" />
     <None Remove="TS\DH\Treasure.ts" />
     <None Remove="TS\Digits.ts" />
+    <None Remove="TS\DragonH\Scroll.ts" />
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\DroneProxy.ts" />
     <None Remove="TS\Game Engine\Emitter.ts" />
@@ -859,6 +860,7 @@
     <None Include="wwwroot\GameDev\RocketRnD.html" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\DragonH\Scroll.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Emitter.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Force.ts" />
     <TypeScriptCompile Include="TS\Game Engine\GravityForce.ts" />
