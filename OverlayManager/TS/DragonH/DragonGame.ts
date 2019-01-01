@@ -2,6 +2,9 @@
   emitter: Emitter;
   yellowSeeds: Sprites;
   yellowFlowers: Sprites;
+  scrollRolls: Sprites;
+  scrollSlam: Sprites;
+  scrollSlamlastUpdateTime: number;
   lastUpdateTime: number;
 
   constructor() {
@@ -10,6 +13,9 @@
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
+
+    this.scrollRolls.draw(context, now);
+    this.scrollSlam.draw(context, now);
 
     var secondsSinceLastUpdate: number = (now - this.lastUpdateTime || now) / 1000;
     this.emitter.update(now, secondsSinceLastUpdate);
@@ -33,6 +39,8 @@
     this.yellowFlowers.draw(myContext, now);
     this.emitter.draw(myContext, now);
     //drawCrossHairs(myContext, crossX, crossY);
+
+    this.scrollSlam.draw(context, now);
 
     this.lastUpdateTime = now;
   }
@@ -58,16 +66,30 @@
     gravityGames.newGame();
   }
 
+  loadDragonAssets() {
+    var assetFolderName: string = Folders.assets;
+    Folders.assets = 'GameDev/Assets/DragonH/';
+
+    const fps30: number = 33; // 33 milliseconds == 30 fps
+    this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, fps30, AnimationStyle.SequentialStop, true);
+    this.scrollRolls.add(0, 0, 0);
+
+    this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, fps30, AnimationStyle.Sequential, true);
+    this.scrollSlam.add(0, 0, 0);
+
+    Folders.assets = assetFolderName;
+  }
+
   loadResources(): void {
     //this.buildBlueParticleBall();
     //this.purpleMagic();
     //this.purpleBurst();
     this.orbital();
-    //this.emitter.velocity = new Vector(3, 5);
     //this.buildSmoke();
-    //this.emitter.addParticles(20);
-
+    
     super.loadResources();
+
+    this.loadDragonAssets();
 
     this.addSeeds();
 
