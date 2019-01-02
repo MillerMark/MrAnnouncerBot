@@ -8,8 +8,8 @@
     quiz = null;
   }
 
-  updateForeground(context: CanvasRenderingContext2D, now: number) {
-    super.updateForeground(context, now)
+  updateScreen(context: CanvasRenderingContext2D, now: number) {
+    super.updateScreen(context, now)
     if (quiz)
       quiz.draw(myContext);
   }
