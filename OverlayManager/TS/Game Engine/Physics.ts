@@ -32,5 +32,16 @@ class Physics {
     return (-initialVelocity + Math.sqrt(initialVelocity * initialVelocity + 2 * heightMeters * acceleration)) / acceleration;
   }
 
-  
+  static calcWindForce(density: number, area: number, velocity: Vector) {
+    // ref: https://sciencing.com/convert-wind-speed-force-5985528.html
+    // air mass (Am) = density * area
+    // acceleration (a) = windspeed * windspeed
+    // F = Am * a
+    let airMass = density * area;
+    let acceleration = velocity.length * velocity.length;
+    let magnitude = airMass * acceleration;
+    let force = velocity.normalize(magnitude);
+
+    return force;
+  }
 }

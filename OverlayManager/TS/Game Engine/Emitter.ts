@@ -16,7 +16,7 @@ class Emitter extends WorldObject {
   hue: TargetValue;
   saturation: TargetValue;
   brightness: TargetValue;
-  wind: Vector;
+  _wind: Vector;
   particleWind: Vector;
   particlesCreatedSoFar: number = 0;
   maxTotalParticles: number = Infinity;
@@ -24,6 +24,7 @@ class Emitter extends WorldObject {
   particleMass: number = 1;
   particleVelocityDegrade: number = 0.5;
   minParticleSize: number = 0.5;
+  windForce: SimpleWind;
 
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
@@ -44,6 +45,15 @@ class Emitter extends WorldObject {
     this.particleGravity = gravityGames.activePlanet.gravity;
     this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
     this.particleGravityCenter = this.gravityCenter;
+    this.windForce = new SimpleWind(this.position, this.wind);
+  }
+
+  get wind() { return this._wind; }
+  set wind(value) {
+    this._wind = value;
+
+    if (this.windForce)
+      this.windForce.windVelocity = this._wind; 
   }
 
   getParticleColor(): HueSatLight {
@@ -106,16 +116,7 @@ class Emitter extends WorldObject {
       super.applyForce(new Force(relativeGravity, this.gravityCenter));
     }
 
-    if (this.wind != Vector.zero) {
-      const airMass: number = 1;
-
-      super.update(now, timeScale, world);
-      let relativeVelocity: Vector = this.wind.subtract(this.velocity);
-      let acceleration = relativeVelocity.length * relativeVelocity.length;
-      let magnitude = airMass * acceleration;
-      let force = this.wind.normalize(magnitude);
-      super.applyForce(new Force(force));
-    }
+    this.applyForce(this.windForce);
 
     super.update(now, timeScale, world);
 

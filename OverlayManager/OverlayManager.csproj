@@ -19,6 +19,7 @@
     <None Remove="TS\Game Engine\Force.ts" />
     <None Remove="TS\Game Engine\GravityForce.ts" />
     <None Remove="TS\Game Engine\Particle.ts" />
+    <None Remove="TS\Game Engine\SimpleWind.ts" />
     <None Remove="TS\Game Engine\TargetValue.ts" />
     <None Remove="TS\Game Engine\Tests.ts" />
     <None Remove="TS\Game Engine\Vector.ts" />
@@ -865,6 +866,7 @@
     <TypeScriptCompile Include="TS\Game Engine\Emitter.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Force.ts" />
     <TypeScriptCompile Include="TS\Game Engine\GravityForce.ts" />
+    <TypeScriptCompile Include="TS\Game Engine\SimpleWind.ts" />
     <TypeScriptCompile Include="TS\Game Engine\TargetValue.ts" />
     <TypeScriptCompile Include="TS\Game Engine\WorldObject.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Particle.ts" />
