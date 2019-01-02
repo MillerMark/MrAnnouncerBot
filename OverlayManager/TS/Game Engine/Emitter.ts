@@ -1,26 +1,3 @@
-enum TargetBinding {
-  truncate,
-  wrap
-}
-class TargetValue {
-  absoluteVariance: number;
-  binding: TargetBinding = TargetBinding.truncate;
-  constructor(public target: number, public relativeVariance: number = 0, public lowBounds: number = 0, public highBounds: number = Infinity) {
-
-  }
-  getValue(): number {
-    var result: number;
-    if (this.absoluteVariance)
-      result = Random.getVarianceAbsolute(this.target, this.absoluteVariance);
-    else
-      result = Random.getVarianceRelative(this.target, this.relativeVariance);
-    if (this.binding === TargetBinding.truncate)
-      return MathEx.truncate(result, this.lowBounds, this.highBounds);
-    else 
-      return MathEx.wrap(result, this.lowBounds, this.highBounds);
-  }
-}
-
 class Emitter extends WorldObject {
   particles: Array<Particle> = new Array<Particle>();
   radius: number;
@@ -42,7 +19,8 @@ class Emitter extends WorldObject {
   wind: Vector;
   particleWind: Vector;
   particlesCreatedSoFar: number = 0;
-  maxParticles: number = Infinity;
+  maxTotalParticles: number = Infinity;
+  maxConcurrentParticles: number = 5000;
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
     super(position, velocity);
@@ -84,12 +62,15 @@ class Emitter extends WorldObject {
 
   addParticles(now: number, amount: number) {
     let particlesToCreate: number = Math.floor(amount);
+    if (this.particles.length + particlesToCreate > this.maxConcurrentParticles)
+      particlesToCreate = this.maxConcurrentParticles - this.particles.length;
+
     if (particlesToCreate === 0)
       return;
 
     try {
       for (var i = 0; i < particlesToCreate; i++) {
-        if (this.particlesCreatedSoFar >= this.maxParticles)
+        if (this.particlesCreatedSoFar >= this.maxTotalParticles)
           return;
         this.addParticle(now);
       }
@@ -104,8 +85,7 @@ class Emitter extends WorldObject {
   //}
 
   applyForce(force: Force) {
-    // Temporarily disable movement (gravity).
-    //super.applyForce(force);
+    super.applyForce(force);
     this.particles.forEach(particle => particle.applyForce(force));
   }
 

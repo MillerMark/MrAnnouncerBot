@@ -85,10 +85,10 @@
   }
 
   loadResources(): void {
-    this.buildBlueParticleBall();
+    //this.buildBlueParticleBall();
     //this.purpleMagic();
     //this.purpleBurst();
-    //this.orbital();
+    this.orbital();
     //this.buildSmoke();
     
     super.loadResources();
@@ -183,7 +183,7 @@
     this.emitter.particleGravity = 0;
     this.emitter.particleFadeInTime = 0.1;
     this.emitter.gravity = 0;
-    this.emitter.maxParticles = 300;
+    this.emitter.maxTotalParticles = 300;
   }
 
   buildBlueParticleBall() {
