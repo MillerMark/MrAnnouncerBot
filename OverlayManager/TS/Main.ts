@@ -3,7 +3,7 @@
 var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 
-//activeGame = new DroneGame();
+//activeGame = new DroneGame(myContext);
 activeGame = new DragonGame(myContext);
 
 // Suggestion: This is too much outside knowledge of inner workings... Should just call start().

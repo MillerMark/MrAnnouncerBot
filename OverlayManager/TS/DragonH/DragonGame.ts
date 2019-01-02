@@ -76,10 +76,8 @@
 
     const fps30: number = 33; // 33 milliseconds == 30 fps
     this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, fps30, AnimationStyle.SequentialStop, true);
-    this.scrollRolls.add(0, 0, 0);
 
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, fps30, AnimationStyle.Sequential, true);
-    this.scrollSlam.add(0, 0, 0);
 
     Folders.assets = assetFolderName;
   }
@@ -90,7 +88,7 @@
     //this.purpleBurst();
     this.orbital();
     //this.buildSmoke();
-    
+
     super.loadResources();
 
     this.loadDragonAssets();
@@ -267,6 +265,17 @@
   test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
     if (super.test(testCommand, userId, userName, displayName, color, now))
       return true;
+
+    if (testCommand === 'slam') {
+      this.scrollSlam.add(0, 0, 0);
+      return true;
+    }
+
+    if (testCommand === 'open') {
+      this.scrollRolls.sprites = [];
+      this.scrollRolls.add(0, 0, 0);
+      return true;
+    }
 
     return false;
   }
