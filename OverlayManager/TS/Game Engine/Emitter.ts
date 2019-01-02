@@ -110,7 +110,7 @@ class Emitter extends WorldObject {
   }
 
   preUpdate(now: number, timeScale: number, world: World): void {
-    super.update(now, timeScale, world);
+    super.preUpdate(now, timeScale, world);
     this.particles.forEach(particle => particle.preUpdate(now, timeScale, world));
   }
 
