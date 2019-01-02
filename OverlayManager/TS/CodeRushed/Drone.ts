@@ -18,11 +18,7 @@ function playZap() {
 }
 
 
-var splatSoundEffect = loadCopyrightedContent ? new Audio(Folders.assets + 'Sound Effects/Splat.mp3') : null;
-
 const dronePathExtension: number = 18;
-//const droneWidth: number = 128;
-//const droneHeight: number = 60;
 
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
 

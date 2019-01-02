@@ -17,6 +17,11 @@
     this.color = emitter.getParticleColor();
   }
 
+  applyForce(force: Force) {
+    if (!(force instanceof GravityForce))
+      super.applyForce(force);
+  }
+
   // Most descendants would only need to override render! No physics logic here :)
   // Would also need to add bouncing and moved off screen logic in the base.
   render(now: number, timeScale: number, world: World) {
@@ -36,6 +41,15 @@
     context.fill();
 
     context.globalAlpha = 1;
+  }
+
+  update(now: number, timeScale: number, world: World): void {
+    if (this.emitter.particleGravity != undefined) {
+      let relativeGravity: Vector = this.emitter.particleGravityCenter.subtract(this.position).normalize(this.emitter.particleGravity);
+      this.applyForce(new Force(relativeGravity, this.emitter.particleGravityCenter));
+    }
+
+    super.update(now, timeScale, world);
   }
 
   private calculateOpacity(context: CanvasRenderingContext2D, now: number) {

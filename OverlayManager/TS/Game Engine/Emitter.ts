@@ -20,11 +20,14 @@ class Emitter extends WorldObject {
   particleWind: Vector;
   particlesCreatedSoFar: number = 0;
   maxTotalParticles: number = Infinity;
-  maxConcurrentParticles: number = 5000;
+  maxConcurrentParticles: number = 4000;
   particleMass: number = 1;
+  particleVelocityDegrade: number = 0.5;
+  minParticleSize: number = 0.5;
+
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
-    super(position, velocity, 0);
+    super(position, velocity);
     this.particleFadeInTime = 0.4;
     this.radius = 10;
     this.particleRadius = new TargetValue(1);
@@ -39,9 +42,8 @@ class Emitter extends WorldObject {
     this.particleLifeSpanSeconds = 5;
     this.particleInitialVelocity = new TargetValue(1);
     this.particleGravity = gravityGames.activePlanet.gravity;
-    this.particleGravityCenter = new Vector(screenCenterX, 999999);
-    this.gravity = gravityGames.activePlanet.gravity;
-    this.gravityCenter = new Vector(screenCenterX, 999999);
+    this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
+    this.particleGravityCenter = this.gravityCenter;
   }
 
   getParticleColor(): HueSatLight {
@@ -50,14 +52,14 @@ class Emitter extends WorldObject {
 
   addParticle(now: number): void {
     this.particlesCreatedSoFar++;
-    var particleRadius: number = this.particleRadius.getValue();
+    var particleRadius: number = Math.max(this.particleRadius.getValue(), this.minParticleSize);
 
     const nonZeroOffset: number = 0.0001;
     let offset: Vector = Vector.fromPolar(Random.max(360), Random.max(this.radius) + nonZeroOffset);
 
     let particlePosition: Vector = this.position.add(offset);
 
-    let initialVelocity: Vector = this.velocity.add(offset.multiply(this.particleInitialVelocity.getValue() / offset.length));
+    let initialVelocity: Vector = this.velocity.multiply(this.particleVelocityDegrade).add(offset.multiply(this.particleInitialVelocity.getValue() / offset.length));
     this.particles.push(new Particle(this, now, particlePosition, initialVelocity, particleRadius, this.particleMass));
   }
 
@@ -82,7 +84,8 @@ class Emitter extends WorldObject {
   }
 
   applyForce(force: Force) {
-    super.applyForce(force);
+    if (!(force instanceof GravityForce))
+      super.applyForce(force);
     this.particles.forEach(particle => particle.applyForce(force));
   }
 
@@ -92,9 +95,16 @@ class Emitter extends WorldObject {
   }
 
   update(now: number, timeScale: number, world: World): void {
-    let secondsSinceLastParticleCreation: number = now - this.lastParticleCreationTime || now;
+    if (this.lastParticleCreationTime === undefined)
+      this.lastParticleCreationTime = now;
+    let secondsSinceLastParticleCreation: number = now - this.lastParticleCreationTime;
     let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
     this.addParticles(now, particlesToCreate);
+
+    if (this.gravity != undefined) {
+      let relativeGravity: Vector = this.gravityCenter.subtract(this.position).normalize(this.gravity);
+      super.applyForce(new Force(relativeGravity, this.gravityCenter));
+    }
 
     this.particles.forEach(function (particle: Particle) {
       particle.update(now, timeScale, world);
