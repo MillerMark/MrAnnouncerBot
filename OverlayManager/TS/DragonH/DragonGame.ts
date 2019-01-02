@@ -128,7 +128,8 @@
   }
 
   orbital() {
-    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
+    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, 0));
+    //this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
     this.emitter.radius = 11;
     this.emitter.hue.target = 145;
     this.emitter.hue.absoluteVariance = 35;
@@ -142,6 +143,7 @@
     this.emitter.particleInitialVelocity.target = 0.8;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;
     this.emitter.particleGravity = 1;
+    this.emitter.particleMass = 0;
     this.emitter.particleFadeInTime = 0.05;
     this.emitter.gravity = 9;
     this.emitter.gravityCenter = new Vector(screenCenterX, screenCenterY);

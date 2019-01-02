@@ -21,9 +21,10 @@ class Emitter extends WorldObject {
   particlesCreatedSoFar: number = 0;
   maxTotalParticles: number = Infinity;
   maxConcurrentParticles: number = 5000;
+  particleMass: number = 1;
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
-    super(position, velocity);
+    super(position, velocity, 0);
     this.particleFadeInTime = 0.4;
     this.radius = 10;
     this.particleRadius = new TargetValue(1);
@@ -57,7 +58,7 @@ class Emitter extends WorldObject {
     let particlePosition: Vector = this.position.add(offset);
 
     let initialVelocity: Vector = this.velocity.add(offset.multiply(this.particleInitialVelocity.getValue() / offset.length));
-    this.particles.push(new Particle(this, now, particlePosition, initialVelocity, particleRadius));
+    this.particles.push(new Particle(this, now, particlePosition, initialVelocity, particleRadius, this.particleMass));
   }
 
   addParticles(now: number, amount: number) {
@@ -65,7 +66,7 @@ class Emitter extends WorldObject {
     if (this.particles.length + particlesToCreate > this.maxConcurrentParticles)
       particlesToCreate = this.maxConcurrentParticles - this.particles.length;
 
-    if (particlesToCreate === 0)
+    if (particlesToCreate <= 0)
       return;
 
     try {
@@ -80,10 +81,6 @@ class Emitter extends WorldObject {
     }
   }
 
-  //updateVelocity(now: number): void {
-  //  // TODO: Implement this based on now.
-  //}
-
   applyForce(force: Force) {
     super.applyForce(force);
     this.particles.forEach(particle => particle.applyForce(force));
@@ -94,7 +91,6 @@ class Emitter extends WorldObject {
     this.particles.forEach(particle => particle.preUpdate(now, timeScale, world));
   }
 
-  // No physics logic here :) Descendants can just focus on what they do!
   update(now: number, timeScale: number, world: World): void {
     let secondsSinceLastParticleCreation: number = now - this.lastParticleCreationTime || now;
     let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
@@ -104,21 +100,6 @@ class Emitter extends WorldObject {
       particle.update(now, timeScale, world);
     });
 
-//  update(now: number, secondsSinceLastUpdate: number): void {
-//    let relativeGravity = this.gravityCenter.subtract(this.position);
-//    let gravityX: number = relativeGravity.getRatioX(this.gravity);
-//    let gravityY: number = relativeGravity.getRatioY(this.gravity);
-
-//    let displacementX: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.x + this.wind.x, gravityX));
-//    let displacementY: number = Physics.metersToPixels(Physics.getDisplacement(secondsSinceLastUpdate, this.velocity.y + this.wind.y, gravityY));
-
-//    this.position = new Vector(this.position.x + displacementX, this.position.y + displacementY);
-
-    //let newVelocityX: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.x, gravityX);
-    //let newVelocityY: number = Physics.getFinalVelocity(secondsSinceLastUpdate, this.velocity.y, gravityY);
-    //this.velocity = new Vector(newVelocityX, newVelocityY);
-
-    //this.removeExpiredParticles(now);
     super.update(now, timeScale, world);
 
     for (var i = this.particles.length - 1; i >= 0; i--) {
@@ -127,28 +108,10 @@ class Emitter extends WorldObject {
         this.particles.splice(i, 1);
     }
   }
-//    let secondsSinceLastParticleCreation: number = (now - this.lastParticleCreationTime || now) / 1000;
-//    let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
-//    this.addParticles(now, secondsSinceLastUpdate, particlesToCreate);
-
-    //this.particles.forEach(function (particle: Particle) {
-    //  particle.update(now, secondsSinceLastUpdate);
-    //}, this);
-
-    //this.removeExpiredParticles(now);
 
   render(now: number, timeScale: number, world: World): void {
     super.render(now, timeScale, world);
 
-  //private removeExpiredParticles(now: number) {
-  //  for (var i = this.particles.length - 1; i >= 0; i--) {
-  //    let particle: Particle = this.particles[i];
-  //    if (particle.hasExpired(now))
-  //      this.particles.splice(i, 1);
-  //  }
-  //}
-
-//  draw(context: CanvasRenderingContext2D, now: number): void {
     this.particles.forEach(function (particle: Particle) {
       particle.render(now, timeScale, world);
     });
