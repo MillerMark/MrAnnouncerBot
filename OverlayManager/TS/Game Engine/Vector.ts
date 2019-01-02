@@ -28,12 +28,16 @@
     return factor !== 0 ? new Vector(this.x / factor, this.y / factor) : this;
   }
 
-  // Suggestion: The term for this is "normalize" (and mult).  Typically, this is separated into two
-  // operations. The first gets a normalized vector (the this.x, this.y / magnitude portion) and
-  // the second is the multiplication. You can combine the operations but you should return a vector.
-  // This is another key operation of vectors.  A lot of formulas call for adjusting the magnitude.
-  // As before, it is probably best to stick with accepted conventions to make it easier to get
-  // help on the web.
+  squaredKeepSign(): Vector {
+    return new Vector(this.x * this.x * Math.sign(this.x), this.y * this.y * Math.sign(this.y));
+  }
+
+  normalize(length: number): Vector {
+    let newX: number = this.getRatioX(length);
+    let newY: number = this.getRatioY(length);
+    return new Vector(newX, newY);
+  }
+
   getRatioX(amount: number): number {
     return amount * this.x / this.length;
   }

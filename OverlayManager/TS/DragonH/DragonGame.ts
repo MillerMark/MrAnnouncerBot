@@ -5,6 +5,7 @@
   scrollRolls: Sprites;
   scrollSlam: Sprites;
   scrollSlamlastUpdateTime: number;
+  shouldDrawCenterCrossHairs: boolean = false;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -39,7 +40,9 @@
 
     myRocket.draw(myContext, now);
     this.yellowFlowers.draw(myContext, now);
-    //drawCrossHairs(myContext, crossX, crossY);
+
+    if (this.shouldDrawCenterCrossHairs)
+      drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
     this.scrollSlam.draw(context, now);
   }
@@ -76,21 +79,20 @@
 
     const fps30: number = 33; // 33 milliseconds == 30 fps
     this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, fps30, AnimationStyle.SequentialStop, true);
-    this.scrollRolls.add(0, 0, 0);
 
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, fps30, AnimationStyle.Sequential, true);
-    this.scrollSlam.add(0, 0, 0);
 
     Folders.assets = assetFolderName;
   }
 
   loadResources(): void {
-    //this.buildBlueParticleBall();
+    //this.blueBall();
     //this.purpleMagic();
     //this.purpleBurst();
-    this.orbital();
+    //this.orbital();
     //this.buildSmoke();
-    
+    this.buildTestParticle();
+
     super.loadResources();
 
     this.loadDragonAssets();
@@ -112,24 +114,42 @@
     //this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
   }
 
-  buildSmoke() {
-    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
-    this.emitter.radius = 99;
-    this.emitter.saturation.target = 0;
+  buildTestParticle(): any {
+    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY), new Vector(0, -100));
+    this.emitter.radius = 1;
+    this.emitter.saturation.target = 1;
+    this.emitter.hue.target = 240;
+    this.emitter.hue.drift = 0.6;
+    this.emitter.hue.absoluteVariance = 25;
     this.emitter.brightness.target = 0.5;
-    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.brightness.relativeVariance = 0;
+    this.emitter.particlesPerSecond = 200;
+    this.emitter.particleRadius = new TargetValue(2, 0.3);
+    this.emitter.particleLifeSpanSeconds = 7;
+    this.emitter.particleGravity = 0;
+    this.emitter.particleInitialVelocity.target = 2;
+    //this.emitter.gravity = 0;
+    this.emitter.wind = new Vector(0, 1);
+    //this.emitter.particleWind = new Vector(1, -1);
+  }
+
+  buildSmoke() {
+    this.emitter = new Emitter(new Vector(screenCenterX + 90, screenCenterY + 160));
+    this.emitter.radius = 66;
+    this.emitter.saturation.target = 0;
+    this.emitter.brightness.target = 0.8;
+    this.emitter.brightness.relativeVariance = 0.1;
     this.emitter.particleRadius.target = 11;
-    this.emitter.particleRadius.relativeVariance = 1;
-    this.emitter.particlesPerSecond = 100;
-    this.emitter.particleLifeSpanSeconds = 3;
-    this.emitter.particleInitialVelocity.target = 0;
-    this.emitter.particleGravity = 0.4;
+    this.emitter.particleRadius.relativeVariance = 0.7;
+    this.emitter.particlesPerSecond = 20;
+    this.emitter.particleLifeSpanSeconds = 5;
+    this.emitter.particleInitialVelocity.target = 0.15;
+    this.emitter.particleGravity = -0.3;
     this.emitter.particleWind = Vector.fromPolar(270, 2);
   }
 
   orbital() {
-    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, 0));
-    //this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
+    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
     this.emitter.radius = 11;
     this.emitter.hue.target = 145;
     this.emitter.hue.absoluteVariance = 35;
@@ -142,7 +162,7 @@
     this.emitter.particleLifeSpanSeconds = 1.5;
     this.emitter.particleInitialVelocity.target = 0.8;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;
-    this.emitter.particleGravity = 1;
+    this.emitter.particleGravity = -5;
     this.emitter.particleMass = 0;
     this.emitter.particleFadeInTime = 0.05;
     this.emitter.gravity = 9;
@@ -188,7 +208,7 @@
     this.emitter.maxTotalParticles = 300;
   }
 
-  buildBlueParticleBall() {
+  blueBall() {
     this.emitter = new Emitter(new Vector(1250, 180));
     this.emitter.radius = 0;
     this.emitter.hue.target = 220;
@@ -205,6 +225,23 @@
     this.emitter.particleInitialVelocity.relativeVariance = 0.3;
     this.emitter.particleGravityCenter = new Vector(screenCenterX, screenCenterY);
     this.emitter.particleGravity = 3;
+  }
+
+  solo() {
+    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
+    this.emitter.radius = 0;
+    this.emitter.hue.target = 0;
+    this.emitter.hue.absoluteVariance = 25;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.particleRadius.target = 4;
+    this.emitter.particlesPerSecond = 1;
+    this.emitter.particleLifeSpanSeconds = 1;
+    this.emitter.particleInitialVelocity.target = 10;
+    this.emitter.particleGravityCenter = new Vector(screenCenterX, screenCenterY);
+    this.emitter.particleGravity = 20;
   }
 
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
@@ -246,6 +283,9 @@
     else if (command === "Drop") {
       myRocket.dropMeteor(now);
     }
+    else if (command === "Cross") {
+      this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
+    }
     else if (command === "Chutes") {
       if (myRocket.chuteDeployed)
         myRocket.retractChutes(now);
@@ -267,6 +307,70 @@
   test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
     if (super.test(testCommand, userId, userName, displayName, color, now))
       return true;
+
+    if (testCommand === 'slam') {
+      this.scrollSlam.add(0, 0, 0);
+      return true;
+    }
+
+    if (testCommand === 'open') {
+      this.scrollRolls.sprites = [];
+      this.scrollRolls.add(0, 0, 0);
+      return true;
+    }
+
+    if (testCommand === 'smoke') {
+      this.world.removeCharacter(this.emitter);
+      this.buildSmoke();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'orbit') {
+      this.world.removeCharacter(this.emitter);
+      this.orbital();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'wind') {
+      this.world.removeCharacter(this.emitter);
+      this.buildTestParticle();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    
+
+    if (testCommand === 'solo') {
+      this.world.removeCharacter(this.emitter);
+      this.solo();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'purpleMagic') {
+      this.world.removeCharacter(this.emitter);
+      this.purpleMagic();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'purpleBurst') {
+      this.world.removeCharacter(this.emitter);
+      this.purpleBurst();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'blueBall') {
+      this.world.removeCharacter(this.emitter);
+      this.blueBall();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+
 
     return false;
   }

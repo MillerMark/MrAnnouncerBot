@@ -221,6 +221,10 @@ namespace OverlayManager
 
 			// Get chat commands:
 			chatCommands.Add(new ChatCommand("cmd", null).AddAliases("?").ChatBack($"CodeRushed Rocket controls: launch, dock, retract, extend, drop, up, down, left, right, & drone. Drone controls: u, d, l, r, t {{x,y}}. Paint splat: {{color}}."));
+
+			// Diagnostics:
+			chatCommands.Add(new ChatCommand("cross", "Cross"));
+
 		}
 
 		ChatCommand FindCommand(string cmdText)
