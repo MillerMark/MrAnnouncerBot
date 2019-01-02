@@ -5,7 +5,6 @@
   scrollRolls: Sprites;
   scrollSlam: Sprites;
   scrollSlamlastUpdateTime: number;
-  lastUpdateTime: number;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -21,9 +20,6 @@
 
     this.scrollRolls.draw(context, now);
     this.scrollSlam.draw(context, now);
-
-    var secondsSinceLastUpdate: number = (now - this.lastUpdateTime || now) / 1000;
-    this.emitter.update(now, secondsSinceLastUpdate, this.world);
 
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
@@ -46,8 +42,6 @@
     //drawCrossHairs(myContext, crossX, crossY);
 
     this.scrollSlam.draw(context, now);
-
-    this.lastUpdateTime = now;
   }
 
   removeAllGameElements(now: number): void {
