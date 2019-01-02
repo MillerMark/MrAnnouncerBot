@@ -140,10 +140,14 @@ class Part {
   }
 
   drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number): void {
+    if (frameIndex < 0)
+      return;
     if (!this.images[frameIndex]) {
       console.error('frameIndex: ' + frameIndex + ', fileName: ' + this.fileName);
+      return;
     }
-    else context.drawImage(this.images[frameIndex],
+
+    context.drawImage(this.images[frameIndex],
       x + this.offsetX + this.getJiggle(this.jiggleX),
       y + this.offsetY + this.getJiggle(this.jiggleY));
   }
