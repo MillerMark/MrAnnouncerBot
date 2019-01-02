@@ -85,10 +85,10 @@
   }
 
   loadResources(): void {
-    this.buildBlueParticleBall();
+    //this.buildBlueParticleBall();
     //this.purpleMagic();
     //this.purpleBurst();
-    //this.orbital();
+    this.orbital();
     //this.buildSmoke();
     
     super.loadResources();
@@ -128,7 +128,8 @@
   }
 
   orbital() {
-    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
+    this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, 0));
+    //this.emitter = new Emitter(new Vector(1.1 * screenCenterX, screenCenterY), new Vector(0, -6));
     this.emitter.radius = 11;
     this.emitter.hue.target = 145;
     this.emitter.hue.absoluteVariance = 35;
@@ -142,6 +143,7 @@
     this.emitter.particleInitialVelocity.target = 0.8;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;
     this.emitter.particleGravity = 1;
+    this.emitter.particleMass = 0;
     this.emitter.particleFadeInTime = 0.05;
     this.emitter.gravity = 9;
     this.emitter.gravityCenter = new Vector(screenCenterX, screenCenterY);
@@ -183,7 +185,7 @@
     this.emitter.particleGravity = 0;
     this.emitter.particleFadeInTime = 0.1;
     this.emitter.gravity = 0;
-    this.emitter.maxParticles = 300;
+    this.emitter.maxTotalParticles = 300;
   }
 
   buildBlueParticleBall() {

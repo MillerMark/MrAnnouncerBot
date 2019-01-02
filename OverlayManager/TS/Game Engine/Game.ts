@@ -1,4 +1,4 @@
-﻿let loadCopyrightedContent: boolean = true;
+﻿﻿let loadCopyrightedContent: boolean = true;
 
 const screenWidth: number = 1920;
 const screenHeight: number = 1080;
@@ -17,6 +17,8 @@ class Game {
   constructor(protected readonly context: CanvasRenderingContext2D) {
 
   }
+
+  public nowMs: number = 0;
 
   // Suggestion: This should be using requestAnimationFrame and should be registered from start().
   // Each game should have its own timer.  Eventually there are going to be some adverse graphic effects
