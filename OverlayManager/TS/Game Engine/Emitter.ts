@@ -13,7 +13,7 @@
   particleGravityCenter: Vector;
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
-    super(position, velocity);
+    super(position, velocity, 5);
     this.particleFadeInTime = 0.4;
     this.radius = 10;
     this.particleRadius = 1;
@@ -59,13 +59,21 @@
   //}
 
   applyForce(force: Force) {
-    // Temporarily disable movement (gravity).
-    //super.applyForce(force);
-    this.particles.forEach(particle => particle.applyForce(force));
+    // Don't apply gravity force to emitter.
+    const canApplyToEmitter = !(force instanceof GravityForce);
+    // Don't apply orbit to particles.
+    const canApplyToParticles = !(force instanceof OrbitForce);
+
+
+    if (canApplyToEmitter)
+        super.applyForce(force);
+
+    if (canApplyToParticles)
+        this.particles.forEach(particle => particle.applyForce(force));
   }
 
   preUpdate(now: number, timeScale: number, world: World): void {
-    super.update(now, timeScale, world);
+    super.preUpdate(now, timeScale, world);
     this.particles.forEach(particle => particle.preUpdate(now, timeScale, world));
   }
 
@@ -94,6 +102,12 @@
 
   render(now: number, timeScale: number, world: World): void {
     super.render(now, timeScale, world);
+
+    const context = world.ctx;
+    context.beginPath();
+    context.strokeStyle = "blue";
+    context.arc(this.position.x, this.position.y, this.radius, 0, MathEx.TWO_PI);
+    context.stroke();
 
     this.particles.forEach(function (particle: Particle) {
       particle.render(now, timeScale, world);

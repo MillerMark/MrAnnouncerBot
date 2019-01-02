@@ -24,6 +24,12 @@ activeGame.loadResources();
 activeGame.start();
 
 // TODO: Consider having a startGame function in Game (setInterval call).
-setInterval(updateScreen, 10);
+//setInterval(updateScreen, 10);
+requestAnimationFrame(loop);
 
+function loop(now: number) {
+    requestAnimationFrame(loop);
 
+    if (activeGame)
+        activeGame.updateScreen(myContext, now);
+}

@@ -42,6 +42,10 @@
     return amount * this.y / this.length;
   }
 
+  normalize() {
+    return this.divide(this.length);
+  }
+
   // Feels icky putting this here... oh well :)
   metersToPixels() {
     return new Vector(Physics.metersToPixels(this.x), Physics.metersToPixels(this.y));
@@ -63,7 +67,7 @@
     return new Vector(distance * Math.cos(radians), distance * Math.sin(radians));
   }
 
-  toString() {
+   toString() {
     return `(${this.x.toFixed(3)}, ${this.y.toFixed(3)})`;
   }
 }

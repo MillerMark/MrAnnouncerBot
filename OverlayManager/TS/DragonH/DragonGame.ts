@@ -15,6 +15,11 @@
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
 
+    context.beginPath();
+    context.strokeStyle = "black";
+    context.arc(screenCenterX, screenCenterY, 10, 0, MathEx.TWO_PI);
+    context.stroke();
+
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -60,10 +65,11 @@
     // If all characters were WorldObject descendants, this would be all that
     // is needed per game... just add the characters and let the world do the rest :)
     this.world.addCharacter(this.emitter);
+    this.world.addForce(new OrbitForce(new Vector(screenCenterX, screenCenterY), 500, 5, 10));
   }
 
   loadResources(): void {
-    this.emitter = new Emitter(new Vector(1250, 180));
+    this.emitter = new Emitter(new Vector(screenWidth * 0.5, screenHeight * 0.3), new Vector(2, 1));
     this.emitter.radius = 40;
     this.emitter.particleRadius = 10;
     this.emitter.particleRadiusVariance = 0.5;
