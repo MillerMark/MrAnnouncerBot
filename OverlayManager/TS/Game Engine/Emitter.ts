@@ -106,11 +106,22 @@ class Emitter extends WorldObject {
       super.applyForce(new Force(relativeGravity, this.gravityCenter));
     }
 
+    if (this.wind != Vector.zero) {
+      const airMass: number = 1;
+
+      super.update(now, timeScale, world);
+      let relativeVelocity: Vector = this.wind.subtract(this.velocity);
+      let acceleration = relativeVelocity.length * relativeVelocity.length;
+      let magnitude = airMass * acceleration;
+      let force = this.wind.normalize(magnitude);
+      super.applyForce(new Force(force));
+    }
+
+    super.update(now, timeScale, world);
+
     this.particles.forEach(function (particle: Particle) {
       particle.update(now, timeScale, world);
     });
-
-    super.update(now, timeScale, world);
 
     for (var i = this.particles.length - 1; i >= 0; i--) {
       let particle: Particle = this.particles[i];

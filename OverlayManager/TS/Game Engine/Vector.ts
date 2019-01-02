@@ -28,6 +28,10 @@
     return factor !== 0 ? new Vector(this.x / factor, this.y / factor) : this;
   }
 
+  squaredKeepSign(): Vector {
+    return new Vector(this.x * this.x * Math.sign(this.x), this.y * this.y * Math.sign(this.y));
+  }
+
   normalize(length: number): Vector {
     let newX: number = this.getRatioX(length);
     let newY: number = this.getRatioY(length);

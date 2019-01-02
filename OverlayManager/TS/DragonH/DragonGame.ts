@@ -90,7 +90,8 @@
     //this.purpleMagic();
     //this.purpleBurst();
     //this.orbital();
-    this.buildSmoke();
+    //this.buildSmoke();
+    this.buildTestParticle();
 
     super.loadResources();
 
@@ -113,6 +114,25 @@
     //this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
   }
 
+  buildTestParticle(): any {
+    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY), new Vector(0, -100));
+    this.emitter.radius = 1;
+    this.emitter.saturation.target = 1;
+    this.emitter.hue.target = 240;
+    this.emitter.hue.drift = 0.6;
+    this.emitter.hue.absoluteVariance = 25;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.brightness.relativeVariance = 0;
+    this.emitter.particlesPerSecond = 200;
+    this.emitter.particleRadius = new TargetValue(2, 0.3);
+    this.emitter.particleLifeSpanSeconds = 7;
+    this.emitter.particleGravity = 0;
+    this.emitter.particleInitialVelocity.target = 2;
+    //this.emitter.gravity = 0;
+    this.emitter.wind = new Vector(0, 1);
+    //this.emitter.particleWind = new Vector(1, -1);
+  }
+
   buildSmoke() {
     this.emitter = new Emitter(new Vector(screenCenterX + 90, screenCenterY + 160));
     this.emitter.radius = 66;
@@ -121,7 +141,7 @@
     this.emitter.brightness.relativeVariance = 0.1;
     this.emitter.particleRadius.target = 11;
     this.emitter.particleRadius.relativeVariance = 0.7;
-    this.emitter.particlesPerSecond = 200;
+    this.emitter.particlesPerSecond = 20;
     this.emitter.particleLifeSpanSeconds = 5;
     this.emitter.particleInitialVelocity.target = 0.15;
     this.emitter.particleGravity = -0.3;
@@ -313,6 +333,15 @@
       return true;
     }
 
+    if (testCommand === 'wind') {
+      this.world.removeCharacter(this.emitter);
+      this.buildTestParticle();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    
+
     if (testCommand === 'solo') {
       this.world.removeCharacter(this.emitter);
       this.solo();
@@ -341,7 +370,7 @@
       return true;
     }
 
-    
+
 
     return false;
   }

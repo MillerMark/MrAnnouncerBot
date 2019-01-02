@@ -47,6 +47,8 @@ class Random {
 
 
   static getVarianceAbsolute(target: number, absoluteVariance: number) {
+    if (absoluteVariance === 0)
+      return target;
     let low: number = target - absoluteVariance;
     let high: number = target + absoluteVariance;
     return Random.between(low, high);

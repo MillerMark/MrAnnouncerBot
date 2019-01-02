@@ -49,6 +49,17 @@
       this.applyForce(new Force(relativeGravity, this.emitter.particleGravityCenter));
     }
 
+    if (this.emitter.particleWind != Vector.zero) {
+      const airMass: number = 1;
+      super.update(now, timeScale, world);
+
+      let relativeVelocity: Vector = this.emitter.particleWind.subtract(this.velocity);
+      let acceleration = relativeVelocity.length * relativeVelocity.length;
+      let magnitude = airMass * acceleration;
+      let force = this.emitter.particleWind.normalize(magnitude);
+      super.applyForce(new Force(force));
+    }
+
     super.update(now, timeScale, world);
   }
 
