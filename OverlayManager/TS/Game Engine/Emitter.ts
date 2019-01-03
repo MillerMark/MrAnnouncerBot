@@ -24,7 +24,8 @@ class Emitter extends WorldObject {
   particleMass: number = 1;
   particleVelocityDegrade: number = 0.5;
   minParticleSize: number = 0.5;
-
+  airMass: number = 0.025;
+  particleAirMass: number = 1;
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
     super(position, velocity);
@@ -106,14 +107,13 @@ class Emitter extends WorldObject {
       super.applyForce(new Force(relativeGravity, this.gravityCenter));
     }
 
-    if (this.wind != Vector.zero) {
-      const airMass: number = 0.025;
-
+    if (this.wind)
+    {
       super.update(now, timeScale, world);
       let relativeVelocity: Vector = this.wind.subtract(this.velocity);
 
       let acceleration = relativeVelocity.length * relativeVelocity.length;
-      let magnitude = airMass * acceleration;
+      let magnitude = this.airMass * acceleration;
       let force = relativeVelocity.normalize(magnitude);
       super.applyForce(new Force(force));
     }
