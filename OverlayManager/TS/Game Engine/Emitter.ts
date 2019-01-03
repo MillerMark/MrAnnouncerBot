@@ -10,8 +10,8 @@ class Emitter extends WorldObject {
   lastParticleCreationTime: number;
   particleGravity: number;
   particleGravityCenter: Vector;
-  gravity: number;
-  gravityCenter: Vector;
+  _gravity: number;
+  _gravityCenter: Vector;
   particleInitialVelocity: TargetValue;
   hue: TargetValue;
   saturation: TargetValue;
@@ -25,6 +25,7 @@ class Emitter extends WorldObject {
   particleVelocityDegrade: number = 0.5;
   minParticleSize: number = 0.5;
   windForce: SimpleWind;
+  relativeGravityForce: RelativeGravity;
 
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
@@ -43,9 +44,13 @@ class Emitter extends WorldObject {
     this.particleLifeSpanSeconds = 5;
     this.particleInitialVelocity = new TargetValue(1);
     this.particleGravity = gravityGames.activePlanet.gravity;
-    this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
+    this._gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
     this.particleGravityCenter = this.gravityCenter;
     this.windForce = new SimpleWind(this.position, this.wind);
+    this.relativeGravityForce = new RelativeGravity(this.gravityCenter, 0);
+    this.relativeGravityForce.isActive = false;
+    this.addLocalForce(this.windForce);
+    this.addLocalForce(this.relativeGravityForce);
   }
 
   get wind() { return this._wind; }
@@ -54,6 +59,19 @@ class Emitter extends WorldObject {
 
     if (this.windForce)
       this.windForce.windVelocity = this._wind; 
+  }
+
+  get gravity() { return this._gravity; }
+  set gravity(value) {
+    this._gravity = value;
+    this.relativeGravityForce.gravity = this._gravity;
+    this.relativeGravityForce.isActive = true;
+  }
+
+  get gravityCenter() { return this._gravityCenter; }
+  set gravityCenter(value) {
+    this._gravityCenter = value;
+    this.relativeGravityForce.position = this._gravityCenter;
   }
 
   getParticleColor(): HueSatLight {
@@ -111,24 +129,19 @@ class Emitter extends WorldObject {
     let particlesToCreate: number = this.particlesPerSecond * secondsSinceLastParticleCreation;
     this.addParticles(now, particlesToCreate);
 
-    if (this.gravity != undefined) {
-      let relativeGravity: Vector = this.gravityCenter.subtract(this.position).normalize(this.gravity);
-      super.applyForce(new Force(relativeGravity, this.gravityCenter));
-    }
-
-    this.applyForce(this.windForce);
-
-    super.update(now, timeScale, world);
-
-    this.particles.forEach(function (particle: Particle) {
-      particle.update(now, timeScale, world);
-    });
-
     for (var i = this.particles.length - 1; i >= 0; i--) {
       let particle: Particle = this.particles[i];
       if (particle.hasExpired(now))
         this.particles.splice(i, 1);
     }
+
+    // These should happen after expired particles are removed.
+    // No need to update particles that are about to be removed.
+    this.particles.forEach(function (particle: Particle) {
+      particle.update(now, timeScale, world);
+    });
+
+    super.update(now, timeScale, world);
   }
 
   render(now: number, timeScale: number, world: World): void {

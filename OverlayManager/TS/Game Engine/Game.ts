@@ -4,7 +4,7 @@ const screenWidth: number = 1920;
 const screenHeight: number = 1080;
 
 class Game {
-  protected framesPerSecond: number = 100; // Defaulting to 100 because main is hardcoded to 10ms;
+  protected framesPerSecond: number = 60;
   protected secondsPerFrame: number;
   protected world: World;
   protected gravity: GravityForce;
@@ -17,7 +17,7 @@ class Game {
   public nowMs: number = 0;
 
   constructor(protected readonly context: CanvasRenderingContext2D) {
-
+    this.world = new World(this.context);
   }
 
   run(): void {
@@ -63,7 +63,6 @@ class Game {
 
   start() {
     this.secondsPerFrame = 1 / this.framesPerSecond;
-    this.world = new World(this.context);
   }
 
   initialize(): void {
@@ -89,15 +88,16 @@ class Game {
   }
 
   protected updateGravity() {
-    if (this.gravity) {
-      if (this.planetName === gravityGames.activePlanet.name)
-        return;
-
-      this.world.removeForce(this.gravity);
+    if (!this.gravity) {
+      this.gravity = new GravityForce(gravityGames.activePlanet.gravity);
+      this.planetName = gravityGames.activePlanet.name;
+      this.world.addForce(this.gravity);
+      return;
     }
 
-    this.gravity = new GravityForce(gravityGames.activePlanet.gravity);
-    this.planetName = gravityGames.activePlanet.name;
-    this.world.addForce(this.gravity);
+    if (this.planetName !== gravityGames.activePlanet.name) {
+      this.gravity.gravityConstant = gravityGames.activePlanet.gravity;
+      this.planetName = gravityGames.activePlanet.name;
+    }
   }
 }

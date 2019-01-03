@@ -7,6 +7,7 @@ class WorldObject {
   private readonly _inverseMass: number;
   private _priorPosition: Vector;
   private _priorVelocity: Vector;
+  private _localForces: Force[];
 
   constructor(
     protected _position: Vector = Vector.zero,
@@ -30,6 +31,20 @@ class WorldObject {
   get priorPosition() { return this._priorPosition; }
   get velocity() { return this._velocity; }
   get priorVelocity() { return this._priorVelocity; }
+  get localForces(): ReadonlyArray<Force> { return this._localForces || []; }
+
+  addLocalForce(force: Force) {
+    if (!this._localForces)
+      this._localForces = [];
+
+    this._localForces.push(force);
+  }
+
+  removeLocalForce(force: Force) {
+    if (!this._localForces) return;
+
+    this._localForces.remove(force);
+  }
 
   // Adds to the currently applied force.
   // Physics: Acceleration is the sum of all forces applied to an object.
@@ -72,6 +87,9 @@ class WorldObject {
   preUpdate(now: number, timeScale: number, world: World) { this.resetParams(); }
 
   update(now: number, timeScale: number, world: World) {
+    if (this._localForces)
+      this._localForces.forEach(force => force.applyForceTo(this));
+
     // This process is called integration. There are other ways to integrate but this is the simplest.
     this.updateAcceleration(now);
     // Using the simple, straightforward translation from physics to update position by calculating

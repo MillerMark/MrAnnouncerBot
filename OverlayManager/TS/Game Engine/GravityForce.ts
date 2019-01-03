@@ -4,4 +4,5 @@
     }
 
     get gravityConstant() { return this.acceleration.y; }
+    set gravityConstant(value) { this._acceleration = new Vector(0, value); }
 }
