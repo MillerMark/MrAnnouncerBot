@@ -17,7 +17,7 @@ class Game {
   public nowMs: number = 0;
 
   constructor(protected readonly context: CanvasRenderingContext2D) {
-
+    this.world = new World(this.context);
   }
 
   run(): void {
@@ -63,7 +63,6 @@ class Game {
 
   start() {
     this.secondsPerFrame = 1 / this.framesPerSecond;
-    this.world = new World(this.context);
   }
 
   initialize(): void {

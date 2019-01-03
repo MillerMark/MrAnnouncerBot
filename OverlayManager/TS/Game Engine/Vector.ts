@@ -39,10 +39,14 @@
   }
 
   getRatioX(amount: number): number {
+    if (this.length == 0)
+      return 0;
     return amount * this.x / this.length;
   }
 
   getRatioY(amount: number): number {
+    if (this.length == 0)
+      return 0;
     return amount * this.y / this.length;
   }
 

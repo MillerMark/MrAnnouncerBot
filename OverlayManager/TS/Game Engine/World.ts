@@ -59,7 +59,7 @@
 
         this.characters.forEach(character => {
             // Apply ALL forces to A character first.
-            this.forces.forEach(force => force.applyForceTo(character));
+            world.forces.forEach(force => force.applyForceTo(character));
             // Update character after all forces applied.
             character.update(now, timeScale, world);
         });

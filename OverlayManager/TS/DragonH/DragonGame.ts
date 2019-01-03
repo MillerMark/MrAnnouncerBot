@@ -2,10 +2,9 @@
   emitter: Emitter;
   yellowSeeds: Sprites;
   yellowFlowers: Sprites;
-  scrollRolls: Sprites;
-  scrollSlam: Sprites;
   scrollSlamlastUpdateTime: number;
   shouldDrawCenterCrossHairs: boolean = false;
+  characterStatsScroll: CharacterStatsScroll;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -18,9 +17,6 @@
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
     super.updateScreen(context, now);
-
-    this.scrollRolls.draw(context, now);
-    this.scrollSlam.draw(context, now);
 
     myRocket.updatePosition(now);
     myRocket.bounce(0, 0, screenWidth, screenHeight, now);
@@ -38,13 +34,11 @@
 
     this.allSeeds.draw(myContext, now);
 
-    myRocket.draw(myContext, now);
+    //myRocket.draw(myContext, now);
     this.yellowFlowers.draw(myContext, now);
 
     if (this.shouldDrawCenterCrossHairs)
       drawCrossHairs(myContext, screenCenterX, screenCenterY);
-
-    this.scrollSlam.draw(context, now);
   }
 
   removeAllGameElements(now: number): void {
@@ -60,6 +54,8 @@
     myRocket.y = 0;
 
     gravityGames = new GravityGames();
+    this.characterStatsScroll = new CharacterStatsScroll();
+    this.world.addCharacter(this.characterStatsScroll);
   }
 
   start() {
@@ -70,19 +66,11 @@
     this.updateGravity();
     // If all characters were WorldObject descendants, this would be all that
     // is needed per game... just add the characters and let the world do the rest :)
-    this.world.addCharacter(this.emitter);
+    if (this.emitter)
+      this.world.addCharacter(this.emitter);
   }
 
   loadDragonAssets() {
-    var assetFolderName: string = Folders.assets;
-    Folders.assets = 'GameDev/Assets/DragonH/';
-
-    const fps30: number = 33; // 33 milliseconds == 30 fps
-    this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, fps30, AnimationStyle.SequentialStop, true);
-
-    this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, fps30, AnimationStyle.Sequential, true);
-
-    Folders.assets = assetFolderName;
   }
 
   loadResources(): void {
@@ -91,9 +79,12 @@
     //this.purpleBurst();
     //this.orbital();
     //this.buildSmoke();
-    this.buildTestParticle();
+    //this.buildTestParticle();
 
     super.loadResources();
+
+
+    this.characterStatsScroll.loadResources();
 
     this.loadDragonAssets();
 
@@ -115,31 +106,33 @@
   }
 
   buildTestParticle(): any {
-    this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -14));
-    this.emitter.radius = 1;
-    this.emitter.saturation.target = 1;
-    this.emitter.hue = new TargetValue(30, 0, 0, 60);
-    this.emitter.hue.binding = TargetBinding.rock;
-    this.emitter.hue.absoluteVariance = 30;
+    //this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -14));
+    var scrollLength: number = 370;
+    this.emitter = new Emitter(new Vector(scrollLength / 2, 460));
+    this.emitter.setRectShape(scrollLength, 1);
+    this.emitter.saturation.target = 0.9;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.hue = new TargetValue(40, 0, 0, 60);
+    //this.emitter.hue.binding = TargetBinding.rock;
+    this.emitter.hue.absoluteVariance = 10;
     //this.emitter.hue.target = 240;
-    this.emitter.hue.drift = 0.6;
-    this.emitter.hue.absoluteVariance = 25;
-    this.emitter.brightness.target = 0.5;
-    this.emitter.brightness.relativeVariance = 0;
-    this.emitter.particlesPerSecond = 400;
+    //this.emitter.hue.drift = 0.6;
+    this.emitter.brightness.target = 0.7;
+    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.particlesPerSecond = 600;
 
-    this.emitter.particleRadius.target = 3.5;
-    this.emitter.particleRadius.relativeVariance = 0.4;
+    this.emitter.particleRadius.target = 2.5;
+    this.emitter.particleRadius.relativeVariance = 0.8;
 
-    this.emitter.particleLifeSpanSeconds = 3;
+    this.emitter.particleLifeSpanSeconds = 1.4;
     this.emitter.particleGravity = 0;
-    this.emitter.particleInitialVelocity.target = 2;
+    this.emitter.particleInitialVelocity.target = 0;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;
-    this.emitter.gravity = 0.75;
-    this.emitter.airMass = 0.1; // 0 == vaccuum.
-    this.emitter.particleAirMass = 2.75;  // 0 == vaccuum.
-    this.emitter.wind = new Vector(0, -1);
-    this.emitter.particleWind = new Vector(0.2, -2);
+    this.emitter.gravity = 4;
+    this.emitter.airDensity = 0.2; // 0 == vaccuum.
+    this.emitter.particleAirDensity = 1;  // 0 == vaccuum.
+    //this.emitter.wind = new Vector(0, 0);
+    this.emitter.particleWind = new Vector(0, -3);
   }
 
   buildSmoke() {
@@ -174,6 +167,7 @@
     this.emitter.particleGravity = -5;
     this.emitter.particleMass = 0;
     this.emitter.particleFadeInTime = 0.05;
+    this.emitter.airDensity = 0;
     this.emitter.gravity = 9;
     this.emitter.gravityCenter = new Vector(screenCenterX, screenCenterY);
   }
@@ -318,13 +312,12 @@
       return true;
 
     if (testCommand === 'slam') {
-      this.scrollSlam.add(0, 0, 0);
+      this.characterStatsScroll.slam();
       return true;
     }
 
     if (testCommand === 'open') {
-      this.scrollRolls.sprites = [];
-      this.scrollRolls.add(0, 0, 0);
+      this.characterStatsScroll.open(this.now);
       return true;
     }
 
@@ -348,8 +341,6 @@
       this.world.addCharacter(this.emitter);
       return true;
     }
-
-    
 
     if (testCommand === 'solo') {
       this.world.removeCharacter(this.emitter);
@@ -378,8 +369,6 @@
       this.world.addCharacter(this.emitter);
       return true;
     }
-
-
 
     return false;
   }

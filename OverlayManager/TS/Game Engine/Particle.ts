@@ -55,7 +55,7 @@
 
       let relativeVelocity: Vector = this.emitter.particleWind.subtract(this.velocity);
       let acceleration = relativeVelocity.length * relativeVelocity.length;
-      let magnitude = this.emitter.particleAirMass * acceleration;
+      let magnitude = this.emitter.particleAirDensity * acceleration;
       let force = relativeVelocity.normalize(magnitude);
       super.applyForce(new Force(force));
     }
@@ -64,15 +64,20 @@
   }
 
   private calculateOpacity(context: CanvasRenderingContext2D, now: number) {
+    let multiplier: number = 1;
+    if (this.emitter.stopping) {
+      multiplier = this.emitter.percentParticlesToCreate;
+    }
+
     let timeAliveSeconds: number = now - this.birthTime;
     if (timeAliveSeconds < this.emitter.particleFadeInTime) {
       let percentageBorn: number = timeAliveSeconds / this.emitter.particleFadeInTime;
-      context.globalAlpha = percentageBorn;
+      context.globalAlpha = percentageBorn * multiplier;
     }
     else {
         let lifeSpanSeconds: number = timeAliveSeconds;
       let percentageLived: number = lifeSpanSeconds / this.emitter.particleLifeSpanSeconds;
-      context.globalAlpha = 1 - percentageLived;
+      context.globalAlpha = (1 - percentageLived) * multiplier;
     }
   }
 
