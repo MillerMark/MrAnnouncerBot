@@ -107,13 +107,14 @@ class Emitter extends WorldObject {
     }
 
     if (this.wind != Vector.zero) {
-      const airMass: number = 1;
+      const airMass: number = 0.025;
 
       super.update(now, timeScale, world);
       let relativeVelocity: Vector = this.wind.subtract(this.velocity);
+
       let acceleration = relativeVelocity.length * relativeVelocity.length;
       let magnitude = airMass * acceleration;
-      let force = this.wind.normalize(magnitude);
+      let force = relativeVelocity.normalize(magnitude);
       super.applyForce(new Force(force));
     }
 

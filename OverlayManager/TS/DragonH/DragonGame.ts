@@ -115,7 +115,7 @@
   }
 
   buildTestParticle(): any {
-    this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY), new Vector(0, -100));
+    this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-5, -4));
     this.emitter.radius = 1;
     this.emitter.saturation.target = 1;
     this.emitter.hue.target = 240;
@@ -123,14 +123,16 @@
     this.emitter.hue.absoluteVariance = 25;
     this.emitter.brightness.target = 0.5;
     this.emitter.brightness.relativeVariance = 0;
-    this.emitter.particlesPerSecond = 200;
-    this.emitter.particleRadius = new TargetValue(2, 0.3);
-    this.emitter.particleLifeSpanSeconds = 7;
+    this.emitter.particlesPerSecond = 400;
+    this.emitter.particleRadius.target = 1.5;
+    this.emitter.particleRadius.relativeVariance = 0.3;
+    this.emitter.particleLifeSpanSeconds = 3;
     this.emitter.particleGravity = 0;
     this.emitter.particleInitialVelocity.target = 2;
-    //this.emitter.gravity = 0;
-    this.emitter.wind = new Vector(0, 1);
-    //this.emitter.particleWind = new Vector(1, -1);
+    this.emitter.particleInitialVelocity.relativeVariance = 0.5;
+    this.emitter.gravity = 1;
+    this.emitter.wind = new Vector(-8, -1);
+    this.emitter.particleWind = new Vector(4, -0.4);
   }
 
   buildSmoke() {

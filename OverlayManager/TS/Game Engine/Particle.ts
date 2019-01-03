@@ -56,7 +56,7 @@
       let relativeVelocity: Vector = this.emitter.particleWind.subtract(this.velocity);
       let acceleration = relativeVelocity.length * relativeVelocity.length;
       let magnitude = airMass * acceleration;
-      let force = this.emitter.particleWind.normalize(magnitude);
+      let force = relativeVelocity.normalize(magnitude);
       super.applyForce(new Force(force));
     }
 
