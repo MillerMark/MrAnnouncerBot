@@ -87,8 +87,10 @@ class WorldObject {
   preUpdate(now: number, timeScale: number, world: World) { this.resetParams(); }
 
   update(now: number, timeScale: number, world: World) {
+    const thisObject = this;
+
     if (this._localForces)
-      this._localForces.forEach(force => force.applyForceTo(this));
+      this._localForces.forEach(force => force.applyForceTo(thisObject));
 
     // This process is called integration. There are other ways to integrate but this is the simplest.
     this.updateAcceleration(now);
