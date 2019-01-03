@@ -115,27 +115,31 @@
   }
 
   buildTestParticle(): any {
-    this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -4));
+    this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -14));
     this.emitter.radius = 1;
     this.emitter.saturation.target = 1;
-    this.emitter.hue.target = 240;
+    this.emitter.hue = new TargetValue(30, 0, 0, 60);
+    this.emitter.hue.binding = TargetBinding.rock;
+    this.emitter.hue.absoluteVariance = 30;
+    //this.emitter.hue.target = 240;
     this.emitter.hue.drift = 0.6;
     this.emitter.hue.absoluteVariance = 25;
     this.emitter.brightness.target = 0.5;
     this.emitter.brightness.relativeVariance = 0;
     this.emitter.particlesPerSecond = 400;
-    this.emitter.particleRadius.target = 2.5;
-    this.emitter.particleRadius.relativeVariance = 0.3;
+
+    this.emitter.particleRadius.target = 3.5;
+    this.emitter.particleRadius.relativeVariance = 0.4;
+
     this.emitter.particleLifeSpanSeconds = 3;
     this.emitter.particleGravity = 0;
     this.emitter.particleInitialVelocity.target = 2;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;
-    this.emitter.gravity = 1;
-    this.emitter.airMass = 0; // vaccuum.
-    //this.emitter.particleAirMass = 0.0; // vaccuum.
-    this.emitter.particleAirMass = 0.75;
-    //this.emitter.wind = new Vector(0, 0);
-    //this.emitter.particleWind = new Vector(4, -0.4);
+    this.emitter.gravity = 0.75;
+    this.emitter.airMass = 0.1; // 0 == vaccuum.
+    this.emitter.particleAirMass = 2.75;  // 0 == vaccuum.
+    this.emitter.wind = new Vector(0, -1);
+    this.emitter.particleWind = new Vector(0.2, -2);
   }
 
   buildSmoke() {
