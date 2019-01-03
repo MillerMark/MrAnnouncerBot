@@ -1,5 +1,5 @@
 ﻿class CharacterStatsScroll extends WorldObject {
-  static readonly centerY: number = 440;
+  static readonly centerY: number = 414;
   static readonly centerX: number = 174;
 
   scrollRolls: Sprites;
@@ -48,19 +48,26 @@
   render(now: number, timeScale: number, world: World) {
     super.render(now, timeScale, world);
 
-    if (!this.openStart) {
+    if (!this.openStart || this.scrollRolls.sprites.length == 0) {
       return;
     }
 
-    //console.log(this.scrollBacks);
-    let elapsedTime: number = now - this.openStart;
-    let frameIndexPrecise: number = elapsedTime / (this.framerateMs / 1000);
-    let frameIndex: number = Math.floor(frameIndexPrecise);
-    console.log('frameIndex: ' + frameIndex);
+    let elapsedTime: number = now - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
+    let frameIndex: number = this.scrollRolls.sprites[0].frameIndex;
+    let frameFraction: number = elapsedTime / (this.framerateMs / 1000);
+    const maxFrameFraction: number = 0.99999999;
+    if (frameFraction > maxFrameFraction) {
+      frameFraction = maxFrameFraction;
+    }
+
+    let frameIndexPrecise: number = frameIndex + frameFraction;
+
+    //let frameIndexPrecise: number = frameIndex;
+    //console.log('frameIndex: ' + frameIndex);
 
     // ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 
-    if (frameIndex < 23) {
+    if (frameIndex < 22) {
       let offset: number = CharacterStatsScroll.scrollOpenOffsets[frameIndex];
 
       let decimalOffset: number = frameIndexPrecise - frameIndex;
@@ -98,7 +105,7 @@
   }
 
   buildGoldDust(): any {
-    let windSpeed: number = 3;
+    let windSpeed: number = 0.8;
 
     this.topEmitter = this.getMagicDustEmitter(windSpeed);
     this.bottomEmitter = this.getMagicDustEmitter(-windSpeed);
@@ -118,10 +125,10 @@
     emitter.hue.absoluteVariance = 10;
     emitter.brightness.target = 0.7;
     emitter.brightness.relativeVariance = 0.5;
-    emitter.particlesPerSecond = 2400;
-    emitter.particleRadius.target = 1.5;
-    emitter.particleRadius.relativeVariance = 0.8;
-    emitter.particleLifeSpanSeconds = 0.7;
+    emitter.particlesPerSecond = 2500;
+    emitter.particleRadius.target = 0.8;
+    emitter.particleRadius.relativeVariance = 2;
+    emitter.particleLifeSpanSeconds = 1.5;
     emitter.particleGravity = 0;
     emitter.particleInitialVelocity.target = 0;
     emitter.particleInitialVelocity.relativeVariance = 0.5;

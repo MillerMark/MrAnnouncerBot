@@ -207,7 +207,7 @@ class Emitter extends WorldObject {
 
   update(now: number, timeScale: number, world: World): void {
     if (this.stopping) {
-      this.percentParticlesToCreate -= 0.01;
+      this.percentParticlesToCreate -= 0.005;
       if (this.percentParticlesToCreate <= 0) {
         this.percentParticlesToCreate = 0;
         this.stopped = true;
