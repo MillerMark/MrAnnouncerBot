@@ -50,7 +50,7 @@ class SpriteProxy {
   }
 
   removing(): void {
-  	
+
   }
 
   getHorizontalThrust(now: number): number {
@@ -119,20 +119,36 @@ class SpriteProxy {
     this.haveCycledOnce = true;
   }
 
-  advanceFrame(frameCount: number, now: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0) {
+  advanceFrame(frameCount: number, now: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false) {
     if (now < this.timeStart)
       return;
-    this.frameIndex++;
+
+    if (reverse) {
+      this.frameIndex--;
+    }
+    else {
+      this.frameIndex++;
+    }
+
     if (endBounds != 0) {
       if (this.frameIndex >= endBounds) {
         this.frameIndex = startIndex;
         this.cycled(now);
       }
     }
-    else if (this.frameIndex >= frameCount) {
-      this.frameIndex = returnFrameIndex;
-      this.cycled(now);
+    else if (!reverse) {
+      if (this.frameIndex >= frameCount) {
+        this.frameIndex = returnFrameIndex;
+        this.cycled(now);
+      }
     }
+    else {
+      if (this.frameIndex <= 0) {
+        this.frameIndex = returnFrameIndex;
+        this.cycled(now);
+      }
+    }
+
   }
 
   isHitBy(thisSprite: SpriteProxy): boolean {
@@ -173,7 +189,7 @@ class SpriteProxy {
     baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex);
   }
 
-  
+
   drawAdornments(context: CanvasRenderingContext2D, now: number): void {
     // Descendants can override if they want to draw on top of the sprite...
   }

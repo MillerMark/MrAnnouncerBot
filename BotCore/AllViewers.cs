@@ -27,6 +27,9 @@ namespace BotCore
 
 		async void CheckData()
 		{
+			if (viewers == null)
+				return;
+
 			foreach (Viewer viewer in viewers)
 			{
 				if (string.IsNullOrEmpty(viewer.UserId) || string.IsNullOrEmpty(viewer.DisplayName))
@@ -86,6 +89,8 @@ namespace BotCore
 
 		public Viewer GetViewerById(string userId)
 		{
+			if (viewers == null)
+				return null;
 			return viewers.FirstOrDefault(x => x.UserId == userId);
 		}
 

@@ -9,7 +9,17 @@ abstract class ParticleGenerator {
 
   }
 
-  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue): PositionPlusVelocity;
+  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity;
+
+  protected getInitialVelocity(offset: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector = Vector.zero) {
+    let velocityOffset: Vector = initialParticleDirection;
+
+    if (velocityOffset.length == 0)
+      velocityOffset = offset;
+    let initialVelocity: Vector = emitterVelocity.add(velocityOffset.multiply(particleInitialVelocity.getValue() / velocityOffset.length));
+
+    return initialVelocity;
+  }
 }
 
 class CircleParticleGenerator extends ParticleGenerator {
@@ -17,10 +27,11 @@ class CircleParticleGenerator extends ParticleGenerator {
     super();
   }
 
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue): PositionPlusVelocity {
+  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
     const nonZeroOffset: number = 0.0001;
     let offset: Vector = Vector.fromPolar(Random.max(360), Random.max(this.radius) + nonZeroOffset);
-    let initialVelocity: Vector = emitterVelocity.add(offset.multiply(particleInitialVelocity.getValue() / offset.length));
+
+    let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
 
     return new PositionPlusVelocity(position.add(offset), initialVelocity);
   }
@@ -58,12 +69,11 @@ class RectangularParticleGenerator extends ParticleGenerator {
     this.halfHeight = this._height / 2;
   }
 
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue): PositionPlusVelocity {
+  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
     let offset: Vector = new Vector(Random.max(this.width) - this.halfWidth,
       Random.max(this.height) - this.halfHeight);
 
-    let initialVelocity: Vector = emitterVelocity.add(
-      offset.multiply(particleInitialVelocity.getValue() / offset.length));
+    let initialVelocity: Vector = super.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
 
     return new PositionPlusVelocity(position.add(offset), initialVelocity);
   }
@@ -85,6 +95,7 @@ class Emitter extends WorldObject {
   gravity: number;
   gravityCenter: Vector;
   particleInitialVelocity: TargetValue;
+  initialParticleDirection: Vector;
   hue: TargetValue;
   saturation: TargetValue;
   brightness: TargetValue;
@@ -119,6 +130,7 @@ class Emitter extends WorldObject {
     this.particleGravity = gravityGames.activePlanet.gravity;
     this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
     this.particleGravityCenter = this.gravityCenter;
+    //this.initialParticleDirection = Vector.zero;
   }
 
   private _radius: number;
@@ -165,7 +177,7 @@ class Emitter extends WorldObject {
     this.particlesCreatedSoFar++;
     var particleRadius: number = Math.max(this.particleRadius.getValue(), this.minParticleSize);
 
-    let particleStart: PositionPlusVelocity = this.particleGenerator.getNewParticlePosition(this.position, this.velocity, this.particleInitialVelocity);
+    let particleStart: PositionPlusVelocity = this.particleGenerator.getNewParticlePosition(this.position, this.velocity, this.particleInitialVelocity, this.initialParticleDirection);
 
     this.particles.push(new Particle(this, now, particleStart.position, particleStart.velocity, particleRadius, this.particleMass));
   }
@@ -173,7 +185,7 @@ class Emitter extends WorldObject {
   addParticles(now: number, amount: number) {
     if (this.stopped) {
       return;
-    }   
+    }
 
     let particlesToCreate: number = Math.floor(amount);
     if (this.particles.length + particlesToCreate > this.maxConcurrentParticles)
@@ -205,7 +217,11 @@ class Emitter extends WorldObject {
     this.particles.forEach(particle => particle.preUpdate(now, timeScale, world));
   }
 
+  // TODO: clean up emitter so no code called when no particles exist.
   update(now: number, timeScale: number, world: World): void {
+    if (this.stopped)
+      return;
+
     if (this.stopping) {
       this.percentParticlesToCreate -= 0.005;
       if (this.percentParticlesToCreate <= 0) {

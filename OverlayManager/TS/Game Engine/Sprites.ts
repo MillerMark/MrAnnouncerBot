@@ -240,7 +240,12 @@
     var frameCount = this.baseAnimation.frameCount;
     var returnFrameIndex = this.returnFrameIndex;
     if (this.animationStyle == AnimationStyle.SequentialStop)
-      returnFrameIndex = frameCount - 1;
+      if (this.baseAnimation.reverse) {
+        returnFrameIndex = 0;
+      }
+      else {
+        returnFrameIndex = frameCount - 1;
+      }
 
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite: SpriteProxy = this.sprites[i];
@@ -251,7 +256,7 @@
         sprite.advanceFrame(frameCount, now, returnFrameIndex, startIndex, endBounds);
       }
       else
-        sprite.advanceFrame(frameCount, now, returnFrameIndex);
+        sprite.advanceFrame(frameCount, now, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse);
       this.cleanupFinishedAnimations(i, sprite);
 
     }

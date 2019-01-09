@@ -228,6 +228,8 @@
     this.emitter.particleInitialVelocity.relativeVariance = 0.3;
     this.emitter.particleGravityCenter = new Vector(screenCenterX, screenCenterY);
     this.emitter.particleGravity = 3;
+    this.emitter.airDensity = 0; // 0 == vaccuum.
+    this.emitter.particleAirDensity = 0;  // 0 == vaccuum.
   }
 
   solo() {
@@ -311,13 +313,29 @@
     if (super.test(testCommand, userId, userName, displayName, color, now))
       return true;
 
-    if (testCommand === 'slam') {
-      this.characterStatsScroll.slam();
+    //if (testCommand === 'slam') {
+    //  this.characterStatsScroll.slam();
+    //  return true;
+    //}
+
+    if (testCommand === 'scroll') {
+      this.characterStatsScroll.state = ScrollState.none;
+      this.characterStatsScroll.open(this.now);
       return true;
     }
 
     if (testCommand === 'open') {
       this.characterStatsScroll.open(this.now);
+      return true;
+    }
+
+    if (testCommand === 'page1') {
+      this.characterStatsScroll.page = ScrollPage.main;
+      return true;
+    }
+
+    if (testCommand === 'page2') {
+      this.characterStatsScroll.page = ScrollPage.skills;
       return true;
     }
 
