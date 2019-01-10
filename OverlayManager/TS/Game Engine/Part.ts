@@ -11,7 +11,7 @@ class Part {
   frameCount: number;
 
   constructor(private fileName: string, frameCount: number,
-    private animationStyle: AnimationStyle,
+    public animationStyle: AnimationStyle,
     private offsetX: number,
     private offsetY: number,
     private frameRate = 100,

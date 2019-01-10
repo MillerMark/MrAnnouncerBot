@@ -1,4 +1,76 @@
-﻿enum ScrollPage {
+﻿/* 
+
+('', x, y, fontSize, TextAlign.Left);
+('', x, y, fontSize, TextAlign.Center, TextDisplay.PlusMinus);
+
+
+const attributeTop: number = 203;
+const attributeLeft: number = 44;
+const attributeDistanceY: number = 91;
+const modOffset: number = 32;
+const raceClassAlignmentX: number = 135;
+const levelInspXpY: number = 74;
+const nameFontSize: number = 10.5;
+const tempHpFontSize: number = 10.5;
+const hitDiceFontSize: number = 11;
+const bigNumberFontSize: number = 16;
+const raceClassAlignmentFontSize: number = 9;
+const levelInspXpFontSize: number = 14;
+const acInitSpeedY: number = 187;
+const hpTempHpX: number = 138;
+const deathSave1X: number = 228;
+const deathSave2X: number = 255;
+const deathSave3X: number = 280;
+const deathSaveLifeY: number = 253;
+const deathSaveDeathY: number = 284;
+
+
+('name', 68, 127, nameFontSize);
+('level', 157, levelInspXpY, levelInspXpFontSize);
+('inspiration', 224, levelInspXpY, levelInspXpFontSize);
+('experience', 290, levelInspXpY, levelInspXpFontSize);
+('raceClass', raceClassAlignmentX, 36, raceClassAlignmentFontSize, TextAlign.Left);
+('alignment', raceClassAlignmentX, 129, raceClassAlignmentFontSize, TextAlign.Left);
+('strength', attributeLeft, attributeTop, bigNumberFontSize);
+('strengthMod', attributeLeft, attributeTop + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
+('dexterity', attributeLeft, attributeTop + attributeDistanceY, bigNumberFontSize);
+('dexterityMod', attributeLeft, attributeTop + attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
+('constitution', attributeLeft, attributeTop + 2 * attributeDistanceY, bigNumberFontSize);
+('constitutionMod', attributeLeft, attributeTop + 2 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
+('intelligence', attributeLeft, attributeTop + 3 * attributeDistanceY, bigNumberFontSize);
+('intelligenceMod', attributeLeft, attributeTop + 3 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
+('wisdom', attributeLeft, attributeTop + 4 * attributeDistanceY, bigNumberFontSize);
+('wisdomMod', attributeLeft, attributeTop + 4 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
+('charisma', attributeLeft, attributeTop + 5 * attributeDistanceY, bigNumberFontSize);
+('charismaMod', attributeLeft, attributeTop + 5 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
+
+('armorClass', 135, acInitSpeedY, bigNumberFontSize);
+('initiative', 203, acInitSpeedY, bigNumberFontSize);
+('speed', 272, acInitSpeedY, bigNumberFontSize);
+('hitPoints', hpTempHpX, 251, bigNumberFontSize);
+('tempHitPoints', hpTempHpX, 299, tempHpFontSize);
+('hitDice', 183, 349, hitDiceFontSize);
+
+
+const deathSave1X: number = 228;
+const deathSave2X: number = 255;
+const deathSave3X: number = 280;
+const deathSaveLifeY: number = 253;
+const deathSaveDeathY: number = 284;
+const deathSaveRadius: number = 10;
+// booleans...
+('deathSaveLife1', deathSave1X, deathSaveLifeY, deathSaveRadius);
+('deathSaveLife2', deathSave2X, deathSaveLifeY, deathSaveRadius);
+('deathSaveLife3', deathSave3X, deathSaveLifeY, deathSaveRadius);
+
+('deathSaveDeath1', deathSave1X, deathSaveDeathY, deathSaveRadius);
+('deathSaveDeath2', deathSave2X, deathSaveDeathY, deathSaveRadius);
+('deathSaveDeath3', deathSave3X, deathSaveDeathY, deathSaveRadius);
+
+
+*/
+
+enum ScrollPage {
   main,
   skills
 }
@@ -10,11 +82,12 @@ enum ScrollState {
   unrolling,
   unrolled,
   closing,
-  closed
+  closed,
+  paused
 }
 
 class CharacterStatsScroll extends WorldObject {
-  static readonly centerY: number = 414;
+  static readonly centerY: number = 424;
   static readonly centerX: number = 174;
 
   state: ScrollState = ScrollState.none;
@@ -31,6 +104,10 @@ class CharacterStatsScroll extends WorldObject {
   private readonly framerateMs: number = 33; // 33 milliseconds == 30 fps
   topEmitter: Emitter;
   bottomEmitter: Emitter;
+
+  // diagnostics:
+  lastFrameIndex: number;
+  lastElapsedTime: number;
 
   constructor() {
     super();
@@ -63,7 +140,7 @@ class CharacterStatsScroll extends WorldObject {
         this.slam();
         break;
       case ScrollState.closed:
-        this.unroll(now);
+        this.unroll();
         break;
       //case ScrollState.unrolled:
       //  this.close(now);
@@ -76,7 +153,7 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollRolls.baseAnimation.reverse = true;
   }
 
-  private unroll(now: number) {
+  private unroll(): void {
     this.state = ScrollState.unrolling;
     this.scrollRolls.baseAnimation.reverse = false;
     this.scrollRolls.sprites = [];
@@ -88,33 +165,42 @@ class CharacterStatsScroll extends WorldObject {
     this.bottomEmitter.start();
   }
 
-  preUpdate(now: number, timeScale: number, world: World) {
+  preUpdate(now: number, timeScale: number, world: World): void {
     super.preUpdate(now, timeScale, world);
     this.topEmitter.preUpdate(now, timeScale, world);
     this.bottomEmitter.preUpdate(now, timeScale, world);
   }
 
-  update(now: number, timeScale: number, world: World) {
+  update(now: number, timeScale: number, world: World): void {
     super.update(now, timeScale, world);
     this.topEmitter.update(now, timeScale, world);
     this.bottomEmitter.update(now, timeScale, world);
 
     if (this.state === ScrollState.slammed) {
-      this.unroll(now); // do we queue?
+      this.unroll(); // do we queue?
     }
   }
 
-  scrollIsVisible() {
+  scrollIsVisible(): boolean {
     return this.state === ScrollState.unrolling || this.state === ScrollState.unrolled ||
-      this.state === ScrollState.closing || this.state === ScrollState.closed;
+      this.state === ScrollState.closing || this.state === ScrollState.closed ||
+      this.state === ScrollState.paused;
   }
 
-  render(now: number, timeScale: number, world: World) {
+  render(now: number, timeScale: number, world: World): void {
     super.render(now, timeScale, world);
+
+    let justClosed: boolean = false;
 
     if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
       let elapsedTime: number = now - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
       let frameIndex: number = this.scrollRolls.sprites[0].frameIndex;
+
+      if (this.state === ScrollState.paused) {
+        frameIndex = this.lastFrameIndex;
+        elapsedTime = this.lastElapsedTime;
+      }
+
       let nextFrameIndex: number;
 
       let stillAnimating: boolean;
@@ -134,6 +220,9 @@ class CharacterStatsScroll extends WorldObject {
         frameFraction = maxFrameFraction;
       }
 
+      if (this.state === ScrollState.closing)
+        frameFraction = 1 - frameFraction;
+
       let frameIndexPrecise: number = frameIndex + frameFraction;
 
       if (stillAnimating || this.state === ScrollState.closing || this.state === ScrollState.closed) {
@@ -141,15 +230,23 @@ class CharacterStatsScroll extends WorldObject {
 
         let decimalOffset: number = frameIndexPrecise - frameIndex;
         let distanceBetweenOffsets: number = CharacterStatsScroll.scrollOpenOffsets[nextFrameIndex + 1] - offset;
+
         let superPreciseOffset: number = offset + distanceBetweenOffsets * decimalOffset;
-        //console.log('offset: ' + offset);
+
         let baseAnim: Part = this.scrollBacks.baseAnimation;
         let sw = this.scrollBacks.spriteWidth;
         let dx: number = 0;
-        let dh: number = superPreciseOffset * 2;
-        let dy = CharacterStatsScroll.centerY - superPreciseOffset;
+        let dh: number = offset * 2;
+        let dy = CharacterStatsScroll.centerY - offset;
         let sh = dh;
         baseAnim.drawCroppedByIndex(world.ctx, dx, dy, this.pageIndex, dx, dy, sw, sh, sw, dh);
+
+        //if (this.state === ScrollState.closing && frameIndex <= 7) {
+        //  this.state = ScrollState.paused;
+        //  this.scrollRolls.animationStyle = AnimationStyle.Static;
+        //  this.lastFrameIndex = frameIndex;
+        //  this.lastElapsedTime = elapsedTime;
+        //}
 
         if (frameIndex === 0 && this.state === ScrollState.unrolling) {
           this.topEmitter.start();
@@ -157,8 +254,7 @@ class CharacterStatsScroll extends WorldObject {
         }
 
         if (frameIndex === 0 && this.state === ScrollState.closing) {
-          this.state = ScrollState.closed;
-          this.open(now);
+          justClosed = true;
         }
 
         this.topEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY - superPreciseOffset);
@@ -176,7 +272,7 @@ class CharacterStatsScroll extends WorldObject {
 
       this.scrollRolls.draw(world.ctx, now * 1000);
     }
-    else 
+    else
       console.log('Scroll is not visible!');
 
     if (this.state === ScrollState.slamming) {
@@ -184,6 +280,11 @@ class CharacterStatsScroll extends WorldObject {
       if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
         this.state = ScrollState.slammed;
       }
+    }
+
+    if (justClosed) {
+      this.state = ScrollState.closed;
+      this.open(now);
     }
   }
 
