@@ -70,7 +70,8 @@ namespace BotCore
 			if (existingUser == null)
 			{
 				existingUser = CreateNewViewer(chatMessage);
-				viewers.Add(existingUser);
+				if (viewers != null)
+					viewers.Add(existingUser);
 			}
 
 			if (!chatMessage.Message.StartsWith("!"))
@@ -79,11 +80,15 @@ namespace BotCore
 
 		public Viewer GetViewer(ChatMessage chatMessage)
 		{
+			if (viewers == null)
+				return null;
 			return viewers.FirstOrDefault(x => x.UserId == chatMessage.UserId);
 		}
 
 		public Viewer GetViewerByUserName(string userName)
 		{
+			if (viewers == null)
+				return null;
 			return viewers.FirstOrDefault(x => string.Compare(x.UserName, userName, StringComparison.InvariantCultureIgnoreCase) == 0);
 		}
 

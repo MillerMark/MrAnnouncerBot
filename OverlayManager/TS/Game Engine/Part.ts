@@ -131,7 +131,7 @@ class Part {
   getJiggle(amount: number) {
     if (amount == 0 || !amount)
       return 0;
-    return Random.intBetween(-amount, amount + 1);
+    return Random.intBetween(-amount, amount);
   }
 
   draw(context: CanvasRenderingContext2D, x: number, y: number) {

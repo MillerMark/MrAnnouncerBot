@@ -25,8 +25,9 @@ class Random {
     return Math.floor(Math.random() * upperBound);
   }
 
+  // inclusive:
   static intBetween(lowerBound, upperBound) {
-    return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
+    return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound + 1));
   }
 
   static between(min: number, max: number): number {

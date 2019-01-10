@@ -1,74 +1,12 @@
-﻿/* 
+﻿enum TextAlign {
+  center,
+  left
+}
 
-('', x, y, fontSize, TextAlign.Left);
-('', x, y, fontSize, TextAlign.Center, TextDisplay.PlusMinus);
-
-
-const attributeTop: number = 203;
-const attributeLeft: number = 44;
-const attributeDistanceY: number = 91;
-const modOffset: number = 32;
-const raceClassAlignmentX: number = 135;
-const levelInspXpY: number = 74;
-const nameFontSize: number = 10.5;
-const tempHpFontSize: number = 10.5;
-const hitDiceFontSize: number = 11;
-const bigNumberFontSize: number = 16;
-const raceClassAlignmentFontSize: number = 9;
-const levelInspXpFontSize: number = 14;
-const acInitSpeedY: number = 187;
-const hpTempHpX: number = 138;
-const deathSave1X: number = 228;
-const deathSave2X: number = 255;
-const deathSave3X: number = 280;
-const deathSaveLifeY: number = 253;
-const deathSaveDeathY: number = 284;
-
-
-('name', 68, 127, nameFontSize);
-('level', 157, levelInspXpY, levelInspXpFontSize);
-('inspiration', 224, levelInspXpY, levelInspXpFontSize);
-('experience', 290, levelInspXpY, levelInspXpFontSize);
-('raceClass', raceClassAlignmentX, 36, raceClassAlignmentFontSize, TextAlign.Left);
-('alignment', raceClassAlignmentX, 129, raceClassAlignmentFontSize, TextAlign.Left);
-('strength', attributeLeft, attributeTop, bigNumberFontSize);
-('strengthMod', attributeLeft, attributeTop + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
-('dexterity', attributeLeft, attributeTop + attributeDistanceY, bigNumberFontSize);
-('dexterityMod', attributeLeft, attributeTop + attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
-('constitution', attributeLeft, attributeTop + 2 * attributeDistanceY, bigNumberFontSize);
-('constitutionMod', attributeLeft, attributeTop + 2 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
-('intelligence', attributeLeft, attributeTop + 3 * attributeDistanceY, bigNumberFontSize);
-('intelligenceMod', attributeLeft, attributeTop + 3 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
-('wisdom', attributeLeft, attributeTop + 4 * attributeDistanceY, bigNumberFontSize);
-('wisdomMod', attributeLeft, attributeTop + 4 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
-('charisma', attributeLeft, attributeTop + 5 * attributeDistanceY, bigNumberFontSize);
-('charismaMod', attributeLeft, attributeTop + 5 * attributeDistanceY + modOffset, modFontSize, TextAlign.Center, TextDisplay.PlusMinus);
-
-('armorClass', 135, acInitSpeedY, bigNumberFontSize);
-('initiative', 203, acInitSpeedY, bigNumberFontSize);
-('speed', 272, acInitSpeedY, bigNumberFontSize);
-('hitPoints', hpTempHpX, 251, bigNumberFontSize);
-('tempHitPoints', hpTempHpX, 299, tempHpFontSize);
-('hitDice', 183, 349, hitDiceFontSize);
-
-
-const deathSave1X: number = 228;
-const deathSave2X: number = 255;
-const deathSave3X: number = 280;
-const deathSaveLifeY: number = 253;
-const deathSaveDeathY: number = 284;
-const deathSaveRadius: number = 10;
-// booleans...
-('deathSaveLife1', deathSave1X, deathSaveLifeY, deathSaveRadius);
-('deathSaveLife2', deathSave2X, deathSaveLifeY, deathSaveRadius);
-('deathSaveLife3', deathSave3X, deathSaveLifeY, deathSaveRadius);
-
-('deathSaveDeath1', deathSave1X, deathSaveDeathY, deathSaveRadius);
-('deathSaveDeath2', deathSave2X, deathSaveDeathY, deathSaveRadius);
-('deathSaveDeath3', deathSave3X, deathSaveDeathY, deathSaveRadius);
-
-
-*/
+enum TextDisplay {
+  normal,
+  plusMinus
+}
 
 enum ScrollPage {
   main,
@@ -87,6 +25,20 @@ enum ScrollState {
 }
 
 class CharacterStatsScroll extends WorldObject {
+  characters: Array<Character> = new Array<Character>();
+  pages: Array<StatPage> = new Array<StatPage>();
+
+  selectedCharacterIndex: number = -1;
+  selectedStatPageIndex: number = -1;
+
+  clear(): any {
+    this.characters = [];
+    this.pages = [];
+    this.selectedCharacterIndex = -1;
+    this.selectedStatPageIndex = -1;
+    this.state = ScrollState.none;
+  }
+
   static readonly centerY: number = 424;
   static readonly centerX: number = 174;
 
@@ -223,6 +175,9 @@ class CharacterStatsScroll extends WorldObject {
       if (this.state === ScrollState.closing)
         frameFraction = 1 - frameFraction;
 
+      let topData: number = 0;
+      let bottomData: number = Infinity;
+
       let frameIndexPrecise: number = frameIndex + frameFraction;
 
       if (stillAnimating || this.state === ScrollState.closing || this.state === ScrollState.closed) {
@@ -238,6 +193,8 @@ class CharacterStatsScroll extends WorldObject {
         let dx: number = 0;
         let dh: number = offset * 2;
         let dy = CharacterStatsScroll.centerY - offset;
+        topData = dy;
+        bottomData = dy + dh;
         let sh = dh;
         baseAnim.drawCroppedByIndex(world.ctx, dx, dy, this.pageIndex, dx, dy, sw, sh, sw, dh);
 
@@ -270,10 +227,13 @@ class CharacterStatsScroll extends WorldObject {
       this.topEmitter.render(now, timeScale, world);
       this.bottomEmitter.render(now, timeScale, world);
 
+      this.drawCharacterStats(world.ctx, topData, bottomData);
+
       this.scrollRolls.draw(world.ctx, now * 1000);
     }
-    else
-      console.log('Scroll is not visible!');
+    else {
+      // console.log('Scroll is not visible!');
+    }
 
     if (this.state === ScrollState.slamming) {
       this.scrollSlam.draw(world.ctx, now * 1000);
@@ -334,5 +294,53 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollBacks = new Sprites("Scroll/Backs/Back", 2, this.framerateMs, AnimationStyle.Static);
 
     Folders.assets = assetFolderName;
+  }
+
+  drawCharacterStats(context: CanvasRenderingContext2D, topData: number, bottomData: number): void {
+    if (this.selectedCharacterIndex < 0)
+      return;
+
+    if (this.selectedStatPageIndex < 0)
+      return;
+    let activeCharacter: Character = this.characters[this.selectedCharacterIndex];
+    let activePage: StatPage = this.pages[this.selectedStatPageIndex];
+
+    activePage.characterStats.forEach(function (stat: CharacterStat) {
+      if (stat.y > topData && stat.y < bottomData) {
+        let value: number | string | boolean = activeCharacter.getPropValue(stat.name);
+
+        if (value !== undefined) {
+          if (stat.textAlign === TextAlign.center) {
+            context.textAlign = 'center';
+          }
+          else {
+            context.textAlign = 'left';
+          }
+          let fontSize: number = stat.size * 2;
+          context.font = fontSize + 'px Calibri';
+          //console.log('context.font: ' + context.font);
+          //console.log('typeof value: ' + typeof value);
+          context.textBaseline = 'middle';
+
+          let valueStr: string;
+          if (stat.textDisplay === TextDisplay.plusMinus) {
+            if (value > 0) {
+              valueStr = '+' + value.toString();
+              context.fillStyle = '#0073c0';
+            }
+            else {
+              valueStr = value.toString();
+              context.fillStyle = '#c00000';
+            }
+          }
+          else {
+            valueStr = value.toString();
+            context.fillStyle = '#3a1f0c';
+          }
+
+          context.fillText(valueStr, stat.x, stat.y);
+        }
+      }
+    });
   }
 }

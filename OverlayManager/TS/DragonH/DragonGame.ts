@@ -319,6 +319,12 @@
     //}
 
     if (testCommand === 'scroll') {
+      this.characterStatsScroll.clear();
+      this.characterStatsScroll.characters.push(Character.newRoryTestElf());
+      this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
+      this.characterStatsScroll.selectedCharacterIndex = 0;
+      this.characterStatsScroll.selectedStatPageIndex = 0;
+
       this.characterStatsScroll.state = ScrollState.none;
       this.characterStatsScroll.open(this.now);
       return true;
