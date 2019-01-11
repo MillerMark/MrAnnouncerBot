@@ -315,13 +315,36 @@
 
     if (testCommand === 'scroll') {
       this.characterStatsScroll.clear();
-      this.characterStatsScroll.characters.push(Character.newRoryTestElf());
+      this.characterStatsScroll.characters.push(Character.newTestElf());
+      this.characterStatsScroll.characters.push(Character.newTestBarbarian());
+      this.characterStatsScroll.characters.push(Character.newTestWizard());
       this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
       this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
       this.characterStatsScroll.selectedCharacterIndex = 0;
       this.characterStatsScroll.selectedStatPageIndex = 0;
 
       this.characterStatsScroll.state = ScrollState.none;
+      this.characterStatsScroll.open(this.now);
+      return true;
+    }
+
+    if (testCommand === '2') {
+      this.characterStatsScroll.state = ScrollState.none;
+      this.characterStatsScroll.selectedCharacterIndex = 2;
+      this.characterStatsScroll.open(this.now);
+      return true;
+    }
+
+    if (testCommand === '1') {
+      this.characterStatsScroll.state = ScrollState.none;
+      this.characterStatsScroll.selectedCharacterIndex = 1;
+      this.characterStatsScroll.open(this.now);
+      return true;
+    }
+
+    if (testCommand === '0') {
+      this.characterStatsScroll.state = ScrollState.none;
+      this.characterStatsScroll.selectedCharacterIndex = 0;
       this.characterStatsScroll.open(this.now);
       return true;
     }

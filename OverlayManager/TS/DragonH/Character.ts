@@ -264,7 +264,7 @@ class Character {
 
 
 
-  
+
 
 
 
@@ -462,44 +462,101 @@ class Character {
     return this[name];
   }
 
-  static newRoryTestElf(): Character {
+  static newTestElf(): Character {
     let elf: Character = new Character();
-    elf.name = 'Rorificent';
+    elf.name = 'Taragon';
     elf.raceClass = 'Wood Elf Barbarian';
-    elf.alignment = 'Lawful Good';
+    elf.alignment = 'Chaotic Good';
     elf.armorClass = 12;
-    elf.charisma = Character.getAbilityScore();
-    elf.constitution = Character.getAbilityScore();
-    elf.dexterity = Character.getAbilityScore();
-    elf.wisdom = Character.getAbilityScore();
-    elf.intelligence = Character.getAbilityScore();
-    elf.strength = Character.getAbilityScore();
+    Character.generateRandomAttributes(elf);
     elf.hitDice = '1 d10';
     elf.level = 1;
     elf.inspiration = 0;
-    elf.experiencePoints = Random.intBetween(0, 9);
-    for (var i = 0; i < 5; i++) {
-      if (Random.intMax(100) > 20)
-        elf.experiencePoints = elf.experiencePoints * 10 + Random.intBetween(0, 9);
-      else
-        break;
-    }
+
     elf.initiative = 2;
     elf.speed = 30;
-    elf.hitPoints = 127;
-    elf.tempHitPoints = 3;
-    elf.maxHitPoints = 127;
+    elf.hitPoints = 47;
+    elf.tempHitPoints = 0;
+    elf.maxHitPoints = 55;
     elf.proficiencyBonus = 2;
-    elf.goldPieces = Random.intBetween(0, 9);
     elf.savingThrowProficiency = Ability.intelligence + Ability.charisma;
     elf.proficientSkills = Skills.acrobatics + Skills.deception + Skills.slightOfHand;
-    for (var i = 0; i < 5; i++) {
-      if (Random.intMax(100) > 20)
-        elf.goldPieces = elf.goldPieces * 10 + Random.intBetween(0, 9);
-      else
-        break;
-    }
+    elf.deathSaveLife1 = true;
+    //elf.deathSaveLife2 = true;
+    //elf.deathSaveLife3 = true;
+    elf.deathSaveDeath1 = true;
+    elf.deathSaveDeath2 = true;
+    //elf.deathSaveDeath3 = true;
 
     return elf;
+  }
+
+  private static generateRandomAttributes(character: Character) {
+    character.charisma = Character.getAbilityScore();
+    character.constitution = Character.getAbilityScore();
+    character.dexterity = Character.getAbilityScore();
+    character.wisdom = Character.getAbilityScore();
+    character.intelligence = Character.getAbilityScore();
+    character.strength = Character.getAbilityScore();
+    character.experiencePoints = Random.intMaxDigitCount(6);
+    character.goldPieces = Random.intMaxDigitCount(6);
+  }
+
+  static newTestBarbarian(): Character {
+    let barbarian: Character = new Character();
+    barbarian.name = 'Ava';
+    barbarian.raceClass = 'Dragonborn Barbarian';
+    barbarian.alignment = 'Chaotic Evil';
+    barbarian.armorClass = 14;
+    Character.generateRandomAttributes(barbarian);
+    barbarian.hitDice = '1 d10';
+    barbarian.level = 1;
+    barbarian.inspiration = 0;
+
+    barbarian.initiative = 2;
+    barbarian.speed = 30;
+    barbarian.hitPoints = 127;
+    barbarian.tempHitPoints = 3;
+    barbarian.maxHitPoints = 127;
+    barbarian.proficiencyBonus = 2;
+    barbarian.savingThrowProficiency = Ability.strength + Ability.dexterity;
+    barbarian.proficientSkills = Skills.acrobatics + Skills.intimidation + Skills.athletics;
+    barbarian.deathSaveLife1 = true;
+    barbarian.deathSaveLife2 = true;
+    //elf.deathSaveLife3 = true;
+    barbarian.deathSaveDeath1 = true;
+    barbarian.deathSaveDeath2 = true;
+    //elf.deathSaveDeath3 = true;
+
+    return barbarian;
+  }
+
+  static newTestWizard(): Character {
+    let wizard: Character = new Character();
+    wizard.name = 'Morkin';
+    wizard.raceClass = 'Human Wizard';
+    wizard.alignment = 'Chaotic Neutral';
+    wizard.armorClass = 10;
+    Character.generateRandomAttributes(wizard);
+    wizard.hitDice = '1 d8';
+    wizard.level = 1;
+    wizard.inspiration = 0;
+
+    wizard.initiative = 2;
+    wizard.speed = 30;
+    wizard.hitPoints = 33;
+    wizard.tempHitPoints = 0;
+    wizard.maxHitPoints = 127;
+    wizard.proficiencyBonus = 2;
+    wizard.savingThrowProficiency = Ability.intelligence + Ability.charisma;
+    wizard.proficientSkills = Skills.arcana + Skills.slightOfHand + Skills.deception;
+    //barbarian.deathSaveLife1 = true;
+    //barbarian.deathSaveLife2 = true;
+    //elf.deathSaveLife3 = true;
+    //barbarian.deathSaveDeath1 = true;
+    //barbarian.deathSaveDeath2 = true;
+    //elf.deathSaveDeath3 = true;
+
+    return wizard;
   }
 }

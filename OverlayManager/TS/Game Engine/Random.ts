@@ -21,6 +21,20 @@
 }
 
 class Random {
+
+  static intBetweenDigitCount(lowerBounds: number, upperBounds: number): number {
+    let result: number = Random.intBetween(0, 9);
+    let numDigits: number = Random.intBetween(lowerBounds, upperBounds);
+    for (var i = 0; i < numDigits; i++) {
+      result = result * 10 + Random.intBetween(0, 9);
+    }
+    return result;
+  }
+
+  static intMaxDigitCount(upperBounds: number): number {
+    return Random.intBetweenDigitCount(1, upperBounds);
+  }
+
   static intMax(upperBound) {
     return Math.floor(Math.random() * upperBound);
   }

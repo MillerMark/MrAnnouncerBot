@@ -1,4 +1,9 @@
 ﻿class StatPage {
+  render(context: CanvasRenderingContext2D, activeCharacter: Character, topData: number = 0, bottomData: number = Infinity): any {
+    this.characterStats.forEach(function (stat: CharacterStat) {
+      stat.render(context, activeCharacter, topData, bottomData);
+      });
+    }
   characterStats: Array<CharacterStat> = new Array<CharacterStat>();
   static readonly bigNumberFontSize: number = 16;
 

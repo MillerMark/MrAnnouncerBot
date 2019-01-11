@@ -29,15 +29,16 @@ class CharacterStatsScroll extends WorldObject {
   characters: Array<Character> = new Array<Character>();
   pages: Array<StatPage> = new Array<StatPage>();
 
-  selectedCharacterIndex: number = -1;
   selectedStatPageIndex: number = -1;
 
-  clear(): any {
-    this.characters = [];
-    this.pages = [];
-    this.selectedCharacterIndex = -1;
-    this.selectedStatPageIndex = -1;
-    this.state = ScrollState.none;
+  private _selectedCharacterIndex: number;
+  
+  get selectedCharacterIndex(): number {
+  	return this._selectedCharacterIndex;
+  }
+  
+  set selectedCharacterIndex(newValue: number) {
+  	this._selectedCharacterIndex = newValue;
   }
 
   static readonly centerY: number = 424;
@@ -47,6 +48,8 @@ class CharacterStatsScroll extends WorldObject {
   scrollRolls: Sprites;
   scrollSlam: Sprites;
   scrollBacks: Sprites;
+  players: Sprites;
+
   pageIndex: number;
 
   static readonly scrollOpenOffsets: number[] = [47, 47,  // one extra at the beginning
@@ -67,6 +70,7 @@ class CharacterStatsScroll extends WorldObject {
     this._page = ScrollPage.main;
     this.buildGoldDust();
     this.pageIndex = 0;
+    this._selectedCharacterIndex = -1;
   }
 
   private _page: ScrollPage;
@@ -111,8 +115,10 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollRolls.baseAnimation.reverse = false;
     this.scrollRolls.sprites = [];
     this.scrollBacks.sprites = [];
+    this.players.sprites = [];
     this.scrollRolls.add(0, 0, 0);
     this.scrollBacks.add(0, 0, this._page);
+    this.players.add(0, 0, this.selectedCharacterIndex);
     this.pageIndex = this._page;
     this.selectedStatPageIndex = this._page;
     this.topEmitter.start();
@@ -145,6 +151,11 @@ class CharacterStatsScroll extends WorldObject {
     super.render(now, timeScale, world);
 
     let justClosed: boolean = false;
+
+    const picX: number = 17;
+    const picWidth: number = 104;
+    const picY: number = 24;
+    const picHeight: number = 90;
 
     if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
       let elapsedTime: number = now - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
@@ -198,7 +209,17 @@ class CharacterStatsScroll extends WorldObject {
         topData = dy;
         bottomData = dy + dh;
         let sh = dh;
+
         baseAnim.drawCroppedByIndex(world.ctx, dx, dy, this.pageIndex, dx, dy, sw, sh, sw, dh);
+
+        let picOffsetY: number = topData - picY;
+        let picCroppedHeight: number = picY + picHeight - topData;
+
+        if (picCroppedHeight > 0) {
+          // ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+
+          this.players.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.selectedCharacterIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
+        }
 
         //if (this.state === ScrollState.closing && frameIndex <= 7) {
         //  this.state = ScrollState.paused;
@@ -221,6 +242,7 @@ class CharacterStatsScroll extends WorldObject {
       }
       else {
         this.scrollBacks.draw(world.ctx, now * 1000);
+        this.players.baseAnimation.drawByIndex(world.ctx, picX, picY, this.selectedCharacterIndex);
         this.topEmitter.stop();
         this.bottomEmitter.stop();
         this.state = ScrollState.unrolled;
@@ -294,6 +316,7 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
     this.scrollBacks = new Sprites("Scroll/Backs/Back", 2, this.framerateMs, AnimationStyle.Static);
+    this.players = new Sprites("Scroll/Players/Player", 3, this.framerateMs, AnimationStyle.Static);
 
     Folders.assets = assetFolderName;
   }
@@ -307,75 +330,14 @@ class CharacterStatsScroll extends WorldObject {
     let activeCharacter: Character = this.characters[this.selectedCharacterIndex];
     let activePage: StatPage = this.pages[this.selectedStatPageIndex];
 
-    activePage.characterStats.forEach(function (stat: CharacterStat) {
-      if (stat.y > topData && stat.y < bottomData) {
-        let value: number | string | boolean = activeCharacter.getPropValue(stat.name);
+    activePage.render(context, activeCharacter, topData, bottomData);
+  }
 
-        if (typeof value === "boolean") {
-          if (value) {
-            context.beginPath();
-            context.arc(stat.x, stat.y, stat.size, 0, MathEx.TWO_PI);
-            context.fillStyle = '#714b1f';
-            context.fill();
-          }
-
-          return;
-        }
-
-        if (value !== undefined) {
-          if (stat.textAlign === TextAlign.center) {
-            context.textAlign = 'center';
-          }
-          else {
-            context.textAlign = 'left';
-          }
-          let fontSize: number;
-          if (stat.textDisplay === TextDisplay.autoSize) {
-            fontSize = 32;
-          }
-          else {
-            fontSize = stat.size * 2;
-          }
-          context.font = fontSize + 'px Calibri';
-          context.textBaseline = 'middle';
-
-          let valueStr: string;
-          if (stat.textDisplay === TextDisplay.plusMinus) {
-            if (value > 0) {
-              valueStr = '+' + value.toString();
-              context.fillStyle = '#0073c0';
-            }
-            else if (value < 0) {
-              valueStr = value.toString();
-              context.fillStyle = '#c00000';
-            }
-            else {
-              valueStr = '0';
-              context.fillStyle = '#ad8557';
-            }
-          }
-          else {
-            if (typeof value === "number") {
-              valueStr = value.toLocaleString();
-            }
-            else {
-              valueStr = value.toString();
-            }
-            context.fillStyle = '#3a1f0c';
-
-            if (stat.textDisplay === TextDisplay.autoSize) {
-              while (context.measureText(valueStr).width > stat.size && fontSize > 7) {
-                fontSize--;
-                context.font = fontSize + 'px Calibri';
-              }
-            }
-          }
-
-          if (valueStr !== null) {
-            context.fillText(valueStr, stat.x, stat.y);
-          }
-        }
-      }
-    });
+  clear(): any {
+    this.characters = [];
+    this.pages = [];
+    this.selectedCharacterIndex = -1;
+    this.selectedStatPageIndex = -1;
+    this.state = ScrollState.none;
   }
 }
