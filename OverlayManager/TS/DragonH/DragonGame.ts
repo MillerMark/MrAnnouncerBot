@@ -313,15 +313,11 @@
     if (super.test(testCommand, userId, userName, displayName, color, now))
       return true;
 
-    //if (testCommand === 'slam') {
-    //  this.characterStatsScroll.slam();
-    //  return true;
-    //}
-
     if (testCommand === 'scroll') {
       this.characterStatsScroll.clear();
       this.characterStatsScroll.characters.push(Character.newRoryTestElf());
       this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
+      this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
       this.characterStatsScroll.selectedCharacterIndex = 0;
       this.characterStatsScroll.selectedStatPageIndex = 0;
 

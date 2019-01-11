@@ -5,12 +5,13 @@
 
 enum TextDisplay {
   normal,
-  plusMinus
+  plusMinus,
+  autoSize
 }
 
 enum ScrollPage {
-  main,
-  skills
+  main = 0,
+  skills = 1
 }
 
 enum ScrollState {
@@ -113,6 +114,7 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollRolls.add(0, 0, 0);
     this.scrollBacks.add(0, 0, this._page);
     this.pageIndex = this._page;
+    this.selectedStatPageIndex = this._page;
     this.topEmitter.start();
     this.bottomEmitter.start();
   }
@@ -309,6 +311,17 @@ class CharacterStatsScroll extends WorldObject {
       if (stat.y > topData && stat.y < bottomData) {
         let value: number | string | boolean = activeCharacter.getPropValue(stat.name);
 
+        if (typeof value === "boolean") {
+          if (value) {
+            context.beginPath();
+            context.arc(stat.x, stat.y, stat.size, 0, MathEx.TWO_PI);
+            context.fillStyle = '#714b1f';
+            context.fill();
+          }
+
+          return;
+        }
+
         if (value !== undefined) {
           if (stat.textAlign === TextAlign.center) {
             context.textAlign = 'center';
@@ -316,10 +329,14 @@ class CharacterStatsScroll extends WorldObject {
           else {
             context.textAlign = 'left';
           }
-          let fontSize: number = stat.size * 2;
+          let fontSize: number;
+          if (stat.textDisplay === TextDisplay.autoSize) {
+            fontSize = 32;
+          }
+          else {
+            fontSize = stat.size * 2;
+          }
           context.font = fontSize + 'px Calibri';
-          //console.log('context.font: ' + context.font);
-          //console.log('typeof value: ' + typeof value);
           context.textBaseline = 'middle';
 
           let valueStr: string;
@@ -328,17 +345,35 @@ class CharacterStatsScroll extends WorldObject {
               valueStr = '+' + value.toString();
               context.fillStyle = '#0073c0';
             }
-            else {
+            else if (value < 0) {
               valueStr = value.toString();
               context.fillStyle = '#c00000';
             }
+            else {
+              valueStr = '0';
+              context.fillStyle = '#ad8557';
+            }
           }
           else {
-            valueStr = value.toString();
+            if (typeof value === "number") {
+              valueStr = value.toLocaleString();
+            }
+            else {
+              valueStr = value.toString();
+            }
             context.fillStyle = '#3a1f0c';
+
+            if (stat.textDisplay === TextDisplay.autoSize) {
+              while (context.measureText(valueStr).width > stat.size && fontSize > 7) {
+                fontSize--;
+                context.font = fontSize + 'px Calibri';
+              }
+            }
           }
 
-          context.fillText(valueStr, stat.x, stat.y);
+          if (valueStr !== null) {
+            context.fillText(valueStr, stat.x, stat.y);
+          }
         }
       }
     });
