@@ -6,7 +6,21 @@ function connectToSignalR(signalR) {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
     connection.on("UserHasCoins", userHasCoins);
+    connection.on("PlayerPageChanged", playerPageChanged);
+    connection.on("FocusItem", focusItem);
   };
+}
+
+function focusItem(playerID: number, pageID: number, itemID: string) {
+  if (activeGame instanceof DragonGame) {
+    activeGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
+  }
+}
+
+function playerPageChanged(playerID: number, pageID: number, playerData: string) {
+  if (activeGame instanceof DragonGame) {
+    activeGame.characterStatsScroll.playerPageChanged(playerID, pageID, playerData);
+  }
 }
 
 function userHasCoins(userId: string, amount: number) {

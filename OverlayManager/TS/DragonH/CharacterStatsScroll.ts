@@ -340,4 +340,12 @@ class CharacterStatsScroll extends WorldObject {
     this.selectedStatPageIndex = -1;
     this.state = ScrollState.none;
   }
+
+  playerPageChanged(playerID: number, pageID: number, playerData: string): any {
+    console.log(`playerPageChanged(${playerID}, ${pageID}, ${playerData})`);
+  }
+
+  focusItem(playerID: number, pageID: number, itemID: string): any {
+    console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
+  }
 }

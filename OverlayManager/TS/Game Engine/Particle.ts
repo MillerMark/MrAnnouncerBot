@@ -64,9 +64,9 @@
   }
 
   private calculateOpacity(context: CanvasRenderingContext2D, now: number) {
-    let multiplier: number = 1;
+    let multiplier: number = this.emitter.particleMaxOpacity;
     if (this.emitter.stopping) {
-      multiplier = this.emitter.percentParticlesToCreate;
+      multiplier *= this.emitter.percentParticlesToCreate;
     }
 
     let timeAliveSeconds: number = now - this.birthTime;

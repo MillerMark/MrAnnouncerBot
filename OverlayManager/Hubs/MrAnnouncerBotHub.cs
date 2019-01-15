@@ -11,6 +11,16 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.UserHasCoins(userId, amount);
 		}
 
+		public void PlayerPageChanged(int playerID, int pageID, string playerData)
+		{
+			coderushedHub.Clients.All.PlayerPageChanged(playerID, pageID, playerData);
+		}
+
+		public void FocusItem(int playerID, int pageID, string itemID)
+		{
+			coderushedHub.Clients.All.FocusItem(playerID, pageID, itemID);
+		}
+
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{

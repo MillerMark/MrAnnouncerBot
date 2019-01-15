@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,19 +21,38 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		HubConnection hubConnection;
 		public MainWindow()
 		{
 			InitializeComponent();
+			ConnectToHub();
 		}
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-
+			PlayerPageChanged(tabPlayers.SelectedIndex, 0, string.Empty);
 		}
 
-		private void CharacterSheets_PageChanged(object sender, PageChangedEventArgs e)
+		void ConnectToHub()
 		{
-
+			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
+			if (hubConnection != null)
+			{
+				//hubConnection.Closed += HubConnection_Closed;
+				// TODO: Check out benefits of stopping gracefully with a cancellation token.
+				hubConnection.StartAsync();
+			}
 		}
+
+		void PlayerPageChanged(int playerID, int pageID, string playerData)
+		{
+			hubConnection.InvokeAsync("PlayerPageChanged", playerID, pageID, playerData);
+		}
+
+		void FocusItem(int playerID, int pageID, string itemID)
+		{
+			hubConnection.InvokeAsync("FocusItem", playerID, pageID, itemID);
+		}
+		
 	}
 }

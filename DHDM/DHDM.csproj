@@ -263,7 +263,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PageChangedEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

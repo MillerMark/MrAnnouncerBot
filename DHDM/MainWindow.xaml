@@ -12,7 +12,7 @@
 			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-		<TabControl SelectionChanged="TabControl_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
+		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
 					<local:CharacterSheets x:Name="characterSheetsKent"></local:CharacterSheets>

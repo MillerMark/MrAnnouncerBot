@@ -75,6 +75,36 @@ class Line {
     return new Line(this.p1, new Point(this.p2.x + extendX, this.p2.y + extendY));
   }
 
+  getClosestPointOnLine(testPoint: Point): Point {
+    let cx: number;
+    let cy: number;
+    // edge cases
+
+    if (this.p1.x === this.p2.x) {
+      // AB is vertical
+      cx = this.p1.x;
+      cy = testPoint.y;
+    }
+    else if (this.p1.y === this.p2.y) {
+      // AB is horizontal
+      cx = testPoint.x;
+      cy = this.p1.y;
+    }
+    else {
+      // linear function of AB
+      var m1 = (this.p2.y - this.p1.y) / (this.p2.x - this.p1.x);
+      var t1 = this.p1.y - m1 * this.p1.x;
+      // linear function of PC
+      var m2 = -1 / m1; // perpendicular
+      var t2 = testPoint.y - m2 * testPoint.x;
+      // c.x * m1 + t1 === c.x * m2 + t2
+      cx = (t2 - t1) / (m1 - m2);
+      cy = m1 * cx + t1;
+    }
+
+    return new Point(cx, cy);
+  }
+
   equals(line: Line): boolean {
     return this.p1.equals(line.p1) && this.p2.equals(line.p2);
   }

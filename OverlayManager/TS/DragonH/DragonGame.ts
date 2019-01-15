@@ -191,6 +191,28 @@
     this.emitter.gravity = 3;
   }
 
+  edgeTest() {
+    this.emitter = new Emitter(new Vector(1920 * 0.7, 1080 / 2));
+    //this.emitter.radius = 120;
+    this.emitter.setRectShape(200, 200);
+    this.emitter.emitterEdgeSpread.target = 0;
+    this.emitter.hue.target = 270;
+    this.emitter.hue.absoluteVariance = 75;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.particleRadius.target = 1.2;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+    this.emitter.particlesPerSecond = 1000;
+    this.emitter.particleLifeSpanSeconds = 1.5;
+    this.emitter.particleInitialVelocity.target = 0.8;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.5;
+    this.emitter.particleGravity = 0;
+    this.emitter.particleFadeInTime = 0.05;
+    this.emitter.gravity = 0;
+    this.emitter.particleMaxOpacity = 1;
+  }
+
   purpleBurst() {
     this.emitter = new Emitter(new Vector(screenCenterX, screenCenterY));
     this.emitter.radius = 3;
@@ -373,6 +395,13 @@
     if (testCommand === 'orbit') {
       this.world.removeCharacter(this.emitter);
       this.orbital();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'edge') {
+      this.world.removeCharacter(this.emitter);
+      this.edgeTest();
       this.world.addCharacter(this.emitter);
       return true;
     }

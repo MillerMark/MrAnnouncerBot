@@ -50,6 +50,10 @@
     return amount * this.y / this.length;
   }
 
+  dot(other: Vector): number {
+    return this.x * other.x + this.y * other.y;
+  }
+
   // Feels icky putting this here... oh well :)
   metersToPixels() {
     return new Vector(Physics.metersToPixels(this.x), Physics.metersToPixels(this.y));
@@ -74,4 +78,17 @@
   toString() {
     return `(${this.x.toFixed(3)}, ${this.y.toFixed(3)})`;
   }
+
+  toPoint(): Point{
+    return new Point(this.x, this.y);
+  }
+ 
+
+  /* It's hard to explain but simple to implement. 
+    
+   if you sub line end from line start... you get a vector from start to end... 
+   you then do a new vector with (-vy, vx) and normalize it... which is the normal 
+   to the line... you then need the distance to the origin which is normal.dot(start)... 
+   the distance to point P is then p.dot(normal) - distance to origin
+   point on line is then P.sub(normal.mult(distance)) */
 }

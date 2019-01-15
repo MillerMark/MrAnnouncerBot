@@ -57,7 +57,7 @@ namespace MrAnnouncerBot
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
-				hubConnection.Closed += HubConnection_Closed;
+				//hubConnection.Closed += HubConnection_Closed;
 				hubConnection.On<string, int>("AddCoins", AddCoins);
 				hubConnection.On<string>("NeedToGetCoins", NeedToGetCoins);
 				// TODO: Check out benefits of stopping gracefully with a cancellation token.
@@ -79,10 +79,10 @@ namespace MrAnnouncerBot
 				viewerById.CoinsCollected += amount;
 		}
 
-		private System.Threading.Tasks.Task HubConnection_Closed(Exception arg)
-		{
-			throw new NotImplementedException();
-		}
+		//private System.Threading.Tasks.Task HubConnection_Closed(Exception arg)
+		//{
+		//	
+		//}
 
 		public void Disconnect()
 		{

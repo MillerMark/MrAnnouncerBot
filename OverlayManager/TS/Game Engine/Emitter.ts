@@ -9,7 +9,7 @@ abstract class ParticleGenerator {
 
   }
 
-  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity;
+  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector, emitterEdgeSpread: TargetValue): PositionPlusVelocity;
 
   protected getInitialVelocity(offset: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector = Vector.zero) {
     let velocityOffset: Vector = initialParticleDirection;
@@ -27,9 +27,11 @@ class CircleParticleGenerator extends ParticleGenerator {
     super();
   }
 
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
+  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector, emitterEdgeSpread: TargetValue): PositionPlusVelocity {
     const nonZeroOffset: number = 0.0001;
-    let offset: Vector = Vector.fromPolar(Random.max(360), Random.max(this.radius) + nonZeroOffset);
+
+    let particleDistance: number = Random.between(this.radius * (1 - emitterEdgeSpread.getValue()), this.radius) + nonZeroOffset;
+    let offset: Vector = Vector.fromPolar(Random.max(360), particleDistance);
 
     let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
 
@@ -40,6 +42,10 @@ class CircleParticleGenerator extends ParticleGenerator {
 class RectangularParticleGenerator extends ParticleGenerator {
   private halfWidth: number;
   private halfHeight: number;
+  smallerPt: Point;
+  largerPt: Point;
+  innerLine: Line;
+  smallestDistanceIn: number;
 
   constructor(width: number, height: number) {
     super();
@@ -55,10 +61,38 @@ class RectangularParticleGenerator extends ParticleGenerator {
 
   set width(newValue: number) {
     this._width = newValue;
-    this.halfWidth = this._width / 2;
+    this.calculateFields();
   }
 
   private _height: number;
+
+  private calculateFields() {
+    this.halfWidth = this._width / 2;
+    this.halfHeight = this._height / 2;
+
+    let yDistance: number = 0;
+    let xDistance: number = 0;
+
+    if (this.height < this.width) {
+      // Short and fat.
+      xDistance = this.halfWidth - this.halfHeight;
+      this.smallestDistanceIn = this.halfHeight;
+    }
+    else if (this.height > this.width) {
+      // Tall and thin.
+      yDistance = this.halfHeight - this.halfWidth;
+      this.smallestDistanceIn = this.halfWidth;
+    }
+    else {
+      // square
+      this.smallestDistanceIn = this.halfHeight;
+    }
+
+    this.smallerPt = new Point(-xDistance, -yDistance);
+    this.largerPt = new Point(xDistance, yDistance);
+
+    this.innerLine = new Line(this.smallerPt, this.largerPt);
+  }
 
   get height(): number {
     return this._height;
@@ -66,14 +100,37 @@ class RectangularParticleGenerator extends ParticleGenerator {
 
   set height(newValue: number) {
     this._height = newValue;
-    this.halfHeight = this._height / 2;
+    this.calculateFields();
   }
 
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
+  protected getInitialVelocity(offset: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector = Vector.zero) {
+    let velocityOffset: Vector = initialParticleDirection;
+
+    if (velocityOffset.length == 0) {
+      let closestPointOnLine: Point = this.innerLine.getClosestPointOnLine(offset.toPoint())
+      if (closestPointOnLine.x < this.smallerPt.x || closestPointOnLine.y < this.smallerPt.y)
+        closestPointOnLine = this.smallerPt;
+
+      if (closestPointOnLine.x > this.largerPt.x || closestPointOnLine.y > this.largerPt.y)
+        closestPointOnLine = this.largerPt;
+
+      velocityOffset = offset.subtract(closestPointOnLine.toVector());
+    }
+
+    let initialVelocity: Vector = emitterVelocity.add(velocityOffset.multiply(particleInitialVelocity.getValue() / velocityOffset.length));
+
+    return initialVelocity;
+  }
+
+  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector, emitterEdgeSpread: TargetValue): PositionPlusVelocity {
+    let innerMargin: number = Random.max(this.smallestDistanceIn * emitterEdgeSpread.getValue());
+
+    // TODO: Create 4 rects based on emitterEdgeSpread, randomly select one (weighted by area), and pick a random spot there.
+
     let offset: Vector = new Vector(Random.max(this.width) - this.halfWidth,
       Random.max(this.height) - this.halfHeight);
 
-    let initialVelocity: Vector = super.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
+    let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
 
     return new PositionPlusVelocity(position.add(offset), initialVelocity);
   }
@@ -89,12 +146,14 @@ class Emitter extends WorldObject {
   particleLifeSpanSeconds: number;
   particleRadiusVariance: number;
   particlesPerSecond: number;
+  particleMaxOpacity: number;
   lastParticleCreationTime: number;
   particleGravity: number;
   particleGravityCenter: Vector;
   gravity: number;
   gravityCenter: Vector;
   particleInitialVelocity: TargetValue;
+  emitterEdgeSpread: TargetValue;
   initialParticleDirection: Vector;
   hue: TargetValue;
   saturation: TargetValue;
@@ -114,6 +173,7 @@ class Emitter extends WorldObject {
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
     super(position, velocity);
+    this.particleMaxOpacity = 1;
     this.particleFadeInTime = 0.4;
     this.particleGenerator = new CircleParticleGenerator(10);
     this.particleRadius = new TargetValue(1);
@@ -130,6 +190,7 @@ class Emitter extends WorldObject {
     this.particleGravity = gravityGames.activePlanet.gravity;
     this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
     this.particleGravityCenter = this.gravityCenter;
+    this.emitterEdgeSpread = new TargetValue(1, 0, 0, 1);
     //this.initialParticleDirection = Vector.zero;
   }
 
@@ -177,7 +238,9 @@ class Emitter extends WorldObject {
     this.particlesCreatedSoFar++;
     var particleRadius: number = Math.max(this.particleRadius.getValue(), this.minParticleSize);
 
-    let particleStart: PositionPlusVelocity = this.particleGenerator.getNewParticlePosition(this.position, this.velocity, this.particleInitialVelocity, this.initialParticleDirection);
+    let particleStart: PositionPlusVelocity = this.particleGenerator.getNewParticlePosition(
+      this.position, this.velocity, this.particleInitialVelocity, this.initialParticleDirection,
+      this.emitterEdgeSpread);
 
     this.particles.push(new Particle(this, now, particleStart.position, particleStart.velocity, particleRadius, this.particleMass));
   }
@@ -274,5 +337,19 @@ class Emitter extends WorldObject {
     this.particles.forEach(function (particle: Particle) {
       particle.render(now, timeScale, world);
     });
+
+    //this.showparticleGeneratorDiagnostics(world);
+  }
+
+  private showparticleGeneratorDiagnostics(world: World) {
+    if (this.particleGenerator instanceof RectangularParticleGenerator && this.particleGenerator.smallerPt) {
+      world.ctx.beginPath();
+      world.ctx.moveTo(this.position.x + this.particleGenerator.smallerPt.x, this.position.y + this.particleGenerator.smallerPt.y);
+      world.ctx.lineTo(this.position.x + this.particleGenerator.largerPt.x, this.position.y + this.particleGenerator.largerPt.y);
+      world.ctx.strokeStyle = '#f00';
+      world.ctx.stroke();
+      world.ctx.strokeStyle = '#00f';
+      world.ctx.strokeRect(this.position.x - this.particleGenerator.width / 2, this.position.y - this.particleGenerator.height / 2, this.particleGenerator.width, this.particleGenerator.height);
+    }
   }
 }
