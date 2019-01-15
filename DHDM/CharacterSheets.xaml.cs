@@ -16,23 +16,25 @@ using System.Windows.Shapes;
 namespace DHDM
 {
 	/// <summary>
-	/// Interaction logic for MainWindow.xaml
+	/// Interaction logic for CharacterSheets.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class CharacterSheets : UserControl
 	{
-		public MainWindow()
+		public CharacterSheets()
 		{
 			InitializeComponent();
 		}
 
-		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void PageMain_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-
 		}
 
-		private void CharacterSheets_PageChanged(object sender, PageChangedEventArgs e)
+		private void PageSkills_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+		}
 
+		private void PageEquipment_MouseDown(object sender, MouseButtonEventArgs e)
+		{
 		}
 	}
 }

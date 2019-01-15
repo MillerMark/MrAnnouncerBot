@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="DHDM.CharacterSheets"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DHDM"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="800">
+    <Grid>
+		<Image Name="pageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back0.png" Stretch="None" Height="555" MouseDown="PageMain_MouseDown"/>
+		<Image Name="pageSkills" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="None" Height="555" Margin="250, 0, 0, 0" MouseDown="PageSkills_MouseDown"/>
+		<Image Name="pageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" Margin="500, 0, 0, 0" MouseDown="PageEquipment_MouseDown"/>
+
+	</Grid>
+</UserControl>

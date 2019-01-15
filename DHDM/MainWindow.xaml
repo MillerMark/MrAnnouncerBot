@@ -5,28 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="650" Width="1200">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="2*" />
 			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-		<TabControl Height="419" Width="525" SelectionChanged="TabControl_SelectionChanged">
+		<TabControl SelectionChanged="TabControl_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
 			<TabItem Header="Kent">
-				<Grid Background="#FFE5E5E5" Margin="0,0,206,0"/>
+				<Grid Background="#FFE5E5E5">
+					<local:CharacterSheets x:Name="characterSheetsKent"></local:CharacterSheets>
+				</Grid>
 			</TabItem>
 			<TabItem Header="Karen">
-				<Grid Background="#FFE5E5E5"/>
+				<Grid Background="#FFE5E5E5">
+					<local:CharacterSheets x:Name="characterSheetsKaren"></local:CharacterSheets>
+				</Grid>
 			</TabItem>
-			<TabItem Header="Mark" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="54">
-				<Grid Background="#FFE5E5E5"/>
+			<TabItem Header="Mark">
+				<Grid Background="#FFE5E5E5">
+					<local:CharacterSheets x:Name="characterSheetsMark"></local:CharacterSheets>
+				</Grid>
 			</TabItem>
-			<TabItem Header="Kayla" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="54">
-				<Grid Background="#FFE5E5E5"/>
+			<TabItem Header="Kayla">
+				<Grid Background="#FFE5E5E5">
+					<local:CharacterSheets x:Name="characterSheetsKayla"></local:CharacterSheets>
+				</Grid>
 			</TabItem>
 		</TabControl>
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-		<TextBlock Grid.Column="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Right side</TextBlock>
+		<TabControl Grid.Column="2" Height="613" Width="390" HorizontalAlignment="Left" VerticalAlignment="Top">
+			<TabItem Header="Dungeon">
+				<Grid Background="#FFE5E5E5"/>
+			</TabItem>
+			<TabItem Header="Log">
+				<Grid Background="#FFE5E5E5"/>
+			</TabItem>
+		</TabControl>
 	</Grid>
 </Window>

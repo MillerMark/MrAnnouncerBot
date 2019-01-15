@@ -306,7 +306,6 @@
     else if (command === "Seed") {
       myRocket.dropSeed(now, params);
     }
-
   }
 
   test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
