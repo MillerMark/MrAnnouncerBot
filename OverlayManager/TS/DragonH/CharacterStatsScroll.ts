@@ -118,9 +118,9 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollRolls.baseAnimation.reverse = false;
     this.scrollRolls.sprites = [];
     this.scrollBacks.sprites = [];
-    this.players.sprites = [];
     this.scrollRolls.add(0, 0, 0);
     this.scrollBacks.add(0, 0, this._page);
+    this.players.sprites = [];
     this.players.add(0, 0, this.selectedCharacterIndex);
     this.pageIndex = this._page;
     this.selectedStatPageIndex = this._page - 1;
@@ -348,12 +348,12 @@ class CharacterStatsScroll extends WorldObject {
 
     console.log(`playerPageChanged(${playerID}, ${pageID}, ${playerData})`);
     if (this.selectedCharacterIndex !== playerID) {
-      this.state = ScrollState.none;
       this.selectedCharacterIndex = playerID;
       this.page = pageID;
+      this.state = ScrollState.none;
       this.open(performance.now());
     }
-    else if (this.selectedCharacterIndex != pageID) {
+    else if (this.page != pageID) {
       this.state = ScrollState.none;
       this.page = pageID;
       this.open(performance.now());
