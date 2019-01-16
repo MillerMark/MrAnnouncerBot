@@ -18,6 +18,14 @@
   static truncate(value: number, lowBounds: number, highBounds: number): number {
     return Math.max(Math.min(value, highBounds), lowBounds);
   }
+
+  static clamp(value: number, lowBounds: number, highBounds: number): any {
+    if (value < lowBounds)
+      value = lowBounds;
+    if (value > highBounds)
+      value = highBounds;
+    return value;
+  }
 }
 
 class Random {

@@ -16,6 +16,7 @@ abstract class ParticleGenerator {
   }
 
   set edgeSpread(newValue: number) {
+    newValue = MathEx.clamp(newValue, 0, 1);
     if (this._edgeSpread === newValue)
       return;
     this._edgeSpread = newValue;
@@ -63,6 +64,15 @@ class RectangularParticleGenerator extends ParticleGenerator {
   largerPt: Point;
   innerLine: Line;
   smallestDistanceIn: number;
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  upperRect: Rect;
+  leftRect: Rect;
+  rightRect: Rect;
+  bottomRect: Rect;
+  totalArea: number;
 
   constructor(width: number, height: number) {
     super();
@@ -109,6 +119,11 @@ class RectangularParticleGenerator extends ParticleGenerator {
     this.largerPt = new Point(xDistance, yDistance);
 
     this.innerLine = new Line(this.smallerPt, this.largerPt);
+
+    this.top = 0 - this.halfHeight;
+    this.bottom = this.halfHeight;
+    this.left = 0 - this.halfWidth;
+    this.right = this.halfWidth;
   }
 
   get height(): number {
@@ -138,18 +153,46 @@ class RectangularParticleGenerator extends ParticleGenerator {
 
     return initialVelocity;
   }
+  // ![](98B88E81F7520BB924CDC62EBC1DDF87.png)
 
   edgeSpreadChanged() {
-    // TODO: Create 4 rects based on emitterEdgeSpread to represent the area where we can add particles
+    let border: number = this.edgeSpread * this.smallestDistanceIn;
+    let innerTop: number = this.top + border;
+    let innerLeft: number = this.left + border;
+    let innerBottom: number = this.bottom - border;
+    let innerRight: number = this.right - border;
+
+    this.upperRect = new Rect(this.left, this.top, this.right, innerTop);
+    this.leftRect = new Rect(this.left, innerTop, innerLeft, innerBottom);
+    this.rightRect = new Rect(innerRight, innerTop, this.right, innerBottom);
+    this.bottomRect = new Rect(this.left, innerBottom, this.right, this.bottom);
+
+    this.totalArea = this.upperRect.area + this.leftRect.area + this.rightRect.area + this.bottomRect.area;
   }
 
   getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
-    //let innerMargin: number = Random.max(this.smallestDistanceIn * this.edgeSpread);
+    let rectIndexer: number = Random.max(this.totalArea);
+    let rectToGenerateIn: Rect;
+    if (rectIndexer < this.upperRect.area)
+      rectToGenerateIn = this.upperRect;
+    else {
+      rectIndexer -= this.upperRect.area;
 
-    // TODO: Randomly select one of the 4 rects (weighted by area), and pick a random spot there.
+      if (rectIndexer < this.leftRect.area)
+        rectToGenerateIn = this.leftRect;
+      else {
+        rectIndexer -= this.leftRect.area;
 
-    let offset: Vector = new Vector(Random.max(this.width) - this.halfWidth,
-      Random.max(this.height) - this.halfHeight);
+        if (rectIndexer < this.rightRect.area)
+          rectToGenerateIn = this.rightRect;
+        else {
+          rectToGenerateIn = this.bottomRect;
+        }
+      }
+    }
+
+    let offset: Vector = new Vector(Random.between(rectToGenerateIn.left, rectToGenerateIn.right),
+      Random.between(rectToGenerateIn.top, rectToGenerateIn.bottom));
 
     let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
 

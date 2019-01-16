@@ -30,7 +30,7 @@ namespace DHDM
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			PlayerPageChanged(tabPlayers.SelectedIndex, 0, string.Empty);
+			PlayerPageChanged(tabPlayers.SelectedIndex, (int)ScrollPage.main, string.Empty);
 		}
 
 		void ConnectToHub()
@@ -44,6 +44,8 @@ namespace DHDM
 			}
 		}
 
+
+
 		void PlayerPageChanged(int playerID, int pageID, string playerData)
 		{
 			hubConnection.InvokeAsync("PlayerPageChanged", playerID, pageID, playerData);
@@ -53,6 +55,12 @@ namespace DHDM
 		{
 			hubConnection.InvokeAsync("FocusItem", playerID, pageID, itemID);
 		}
-		
+
+		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
+		{
+			CharacterSheets characterSheets = sender as CharacterSheets;
+			if (characterSheets != null)
+				PlayerPageChanged(tabPlayers.SelectedIndex, (int)characterSheets.Page, string.Empty);
+		}
 	}
 }

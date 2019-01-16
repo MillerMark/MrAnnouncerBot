@@ -10,8 +10,10 @@ enum TextDisplay {
 }
 
 enum ScrollPage {
-  main = 0,
-  skills = 1
+  deEmphasis = 0,
+  main = 1,
+  skills = 2,
+  equipment = 3
 }
 
 enum ScrollState {
@@ -32,13 +34,13 @@ class CharacterStatsScroll extends WorldObject {
   selectedStatPageIndex: number = -1;
 
   private _selectedCharacterIndex: number;
-  
+
   get selectedCharacterIndex(): number {
-  	return this._selectedCharacterIndex;
+    return this._selectedCharacterIndex;
   }
-  
+
   set selectedCharacterIndex(newValue: number) {
-  	this._selectedCharacterIndex = newValue;
+    this._selectedCharacterIndex = newValue;
   }
 
   static readonly centerY: number = 424;
@@ -50,7 +52,8 @@ class CharacterStatsScroll extends WorldObject {
   scrollBacks: Sprites;
   players: Sprites;
 
-  pageIndex: number;
+  // TODO: consolidate with page, if possible.
+  pageIndex: number; 
 
   static readonly scrollOpenOffsets: number[] = [47, 47,  // one extra at the beginning
     48, 75, 106, 143, 215, 243, 267, 292, 315,  // 0-9
@@ -69,7 +72,7 @@ class CharacterStatsScroll extends WorldObject {
     super();
     this._page = ScrollPage.main;
     this.buildGoldDust();
-    this.pageIndex = 0;
+    this.pageIndex = this._page;
     this._selectedCharacterIndex = -1;
   }
 
@@ -120,7 +123,7 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollBacks.add(0, 0, this._page);
     this.players.add(0, 0, this.selectedCharacterIndex);
     this.pageIndex = this._page;
-    this.selectedStatPageIndex = this._page;
+    this.selectedStatPageIndex = this._page - 1;
     this.topEmitter.start();
     this.bottomEmitter.start();
   }
@@ -315,7 +318,7 @@ class CharacterStatsScroll extends WorldObject {
 
     this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
-    this.scrollBacks = new Sprites("Scroll/Backs/Back", 2, this.framerateMs, AnimationStyle.Static);
+    this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
     this.players = new Sprites("Scroll/Players/Player", 3, this.framerateMs, AnimationStyle.Static);
 
     Folders.assets = assetFolderName;
@@ -342,7 +345,20 @@ class CharacterStatsScroll extends WorldObject {
   }
 
   playerPageChanged(playerID: number, pageID: number, playerData: string): any {
+
     console.log(`playerPageChanged(${playerID}, ${pageID}, ${playerData})`);
+    if (this.selectedCharacterIndex !== playerID) {
+      this.state = ScrollState.none;
+      this.selectedCharacterIndex = playerID;
+      this.page = pageID;
+      this.open(performance.now());
+    }
+    else if (this.selectedCharacterIndex != pageID) {
+      this.state = ScrollState.none;
+      this.page = pageID;
+      this.open(performance.now());
+    }
+    
   }
 
   focusItem(playerID: number, pageID: number, itemID: string): any {

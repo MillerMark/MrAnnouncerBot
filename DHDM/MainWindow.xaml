@@ -15,22 +15,22 @@
 		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKent"></local:CharacterSheets>
+					<local:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Karen">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKaren"></local:CharacterSheets>
+					<local:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Mark">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsMark"></local:CharacterSheets>
+					<local:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Kayla">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKayla"></local:CharacterSheets>
+					<local:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
 				</Grid>
 			</TabItem>
 		</TabControl>

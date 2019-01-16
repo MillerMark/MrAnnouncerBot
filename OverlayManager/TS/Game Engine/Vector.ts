@@ -1,4 +1,13 @@
-﻿class Vector {
+﻿class Rect {
+  area: number;
+  constructor(public left: number, public top: number, public right: number, public bottom: number) {
+    let width: number = Math.max(this.right - this.left, 1);
+    let height: number = Math.max(this.bottom - this.top, 1);
+    this.area = width * height;
+	}
+}
+
+class Vector {
   static readonly zero: Vector = new Vector(0, 0);
   // Suggestion: The term for this is magnitude. Probably best to use that or mag.
   // The magnitude is typically calculated using the dot product. That is one of

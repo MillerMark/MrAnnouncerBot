@@ -54,8 +54,24 @@
     myRocket.y = 0;
 
     gravityGames = new GravityGames();
+
+    this.initializeScroll();
+  }
+
+  initializeScroll(): any {
     this.characterStatsScroll = new CharacterStatsScroll();
     this.world.addCharacter(this.characterStatsScroll);
+
+    this.characterStatsScroll.characters.push(Character.newTestElf());
+    this.characterStatsScroll.characters.push(Character.newTestBarbarian());
+    this.characterStatsScroll.characters.push(Character.newTestWizard());
+    this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
+    this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
+    this.characterStatsScroll.pages.push(StatPage.createEquipmentPage());
+    this.characterStatsScroll.selectedCharacterIndex = 0;
+    this.characterStatsScroll.selectedStatPageIndex = 0;
+
+    this.characterStatsScroll.state = ScrollState.none;
   }
 
   start() {
@@ -192,11 +208,11 @@
   }
 
   edgeTest() {
-    this.emitter = new Emitter(new Vector(1046, 790));
-    //this.emitter = new Emitter(new Vector(1920 * 0.5, 1080 / 2));
-    this.emitter.radius = 160;
-    //this.emitter.setRectShape(300, 100);
-    this.emitter.emitterEdgeSpread = 0;
+    //this.emitter = new Emitter(new Vector(1046, 790));
+    this.emitter = new Emitter(new Vector(1920 * 0.5, 1080 / 2));
+    //this.emitter.radius = 160;
+    this.emitter.setRectShape(300, 100);
+    this.emitter.emitterEdgeSpread = 1;
     this.emitter.hue.target = 270;
     this.emitter.hue.absoluteVariance = 75;
     this.emitter.saturation.target = 0.8;
@@ -337,15 +353,7 @@
 
     if (testCommand === 'scroll') {
       this.characterStatsScroll.clear();
-      this.characterStatsScroll.characters.push(Character.newTestElf());
-      this.characterStatsScroll.characters.push(Character.newTestBarbarian());
-      this.characterStatsScroll.characters.push(Character.newTestWizard());
-      this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
-      this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
-      this.characterStatsScroll.selectedCharacterIndex = 0;
-      this.characterStatsScroll.selectedStatPageIndex = 0;
-
-      this.characterStatsScroll.state = ScrollState.none;
+      this.initializeScroll();
       this.characterStatsScroll.open(this.now);
       return true;
     }
