@@ -192,10 +192,11 @@
   }
 
   edgeTest() {
-    this.emitter = new Emitter(new Vector(1920 * 0.7, 1080 / 2));
-    //this.emitter.radius = 120;
-    this.emitter.setRectShape(200, 200);
-    this.emitter.emitterEdgeSpread.target = 0;
+    this.emitter = new Emitter(new Vector(1046, 790));
+    //this.emitter = new Emitter(new Vector(1920 * 0.5, 1080 / 2));
+    this.emitter.radius = 160;
+    //this.emitter.setRectShape(300, 100);
+    this.emitter.emitterEdgeSpread = 0;
     this.emitter.hue.target = 270;
     this.emitter.hue.absoluteVariance = 75;
     this.emitter.saturation.target = 0.8;
@@ -203,7 +204,7 @@
     this.emitter.brightness.target = 0.5;
     this.emitter.particleRadius.target = 1.2;
     this.emitter.particleRadius.relativeVariance = 0.8;
-    this.emitter.particlesPerSecond = 1000;
+    this.emitter.particlesPerSecond = 2000;
     this.emitter.particleLifeSpanSeconds = 1.5;
     this.emitter.particleInitialVelocity.target = 0.8;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;

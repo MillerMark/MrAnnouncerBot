@@ -9,7 +9,24 @@ abstract class ParticleGenerator {
 
   }
 
-  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector, emitterEdgeSpread: TargetValue): PositionPlusVelocity;
+  private _edgeSpread: number;
+
+  get edgeSpread(): number {
+    return this._edgeSpread;
+  }
+
+  set edgeSpread(newValue: number) {
+    if (this._edgeSpread === newValue)
+      return;
+    this._edgeSpread = newValue;
+    this.edgeSpreadChanged();
+  }
+
+  edgeSpreadChanged() {
+    // Do nothing. Let descendants override.
+  }
+
+  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity;
 
   protected getInitialVelocity(offset: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector = Vector.zero) {
     let velocityOffset: Vector = initialParticleDirection;
@@ -27,10 +44,10 @@ class CircleParticleGenerator extends ParticleGenerator {
     super();
   }
 
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector, emitterEdgeSpread: TargetValue): PositionPlusVelocity {
+  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
     const nonZeroOffset: number = 0.0001;
 
-    let particleDistance: number = Random.between(this.radius * (1 - emitterEdgeSpread.getValue()), this.radius) + nonZeroOffset;
+    let particleDistance: number = Random.between(this.radius * (1 - this.edgeSpread), this.radius) + nonZeroOffset;
     let offset: Vector = Vector.fromPolar(Random.max(360), particleDistance);
 
     let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
@@ -122,10 +139,14 @@ class RectangularParticleGenerator extends ParticleGenerator {
     return initialVelocity;
   }
 
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector, emitterEdgeSpread: TargetValue): PositionPlusVelocity {
-    let innerMargin: number = Random.max(this.smallestDistanceIn * emitterEdgeSpread.getValue());
+  edgeSpreadChanged() {
+    // TODO: Create 4 rects based on emitterEdgeSpread to represent the area where we can add particles
+  }
 
-    // TODO: Create 4 rects based on emitterEdgeSpread, randomly select one (weighted by area), and pick a random spot there.
+  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
+    //let innerMargin: number = Random.max(this.smallestDistanceIn * this.edgeSpread);
+
+    // TODO: Randomly select one of the 4 rects (weighted by area), and pick a random spot there.
 
     let offset: Vector = new Vector(Random.max(this.width) - this.halfWidth,
       Random.max(this.height) - this.halfHeight);
@@ -153,7 +174,6 @@ class Emitter extends WorldObject {
   gravity: number;
   gravityCenter: Vector;
   particleInitialVelocity: TargetValue;
-  emitterEdgeSpread: TargetValue;
   initialParticleDirection: Vector;
   hue: TargetValue;
   saturation: TargetValue;
@@ -190,7 +210,7 @@ class Emitter extends WorldObject {
     this.particleGravity = gravityGames.activePlanet.gravity;
     this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
     this.particleGravityCenter = this.gravityCenter;
-    this.emitterEdgeSpread = new TargetValue(1, 0, 0, 1);
+    this.emitterEdgeSpread = 1;
     //this.initialParticleDirection = Vector.zero;
   }
 
@@ -204,8 +224,25 @@ class Emitter extends WorldObject {
     this._radius = newValue;
     if (this.particleGenerator instanceof CircleParticleGenerator)
       this.particleGenerator.radius = this._radius;
-    else
+    else {
       this.particleGenerator = new CircleParticleGenerator(this._radius);
+      this.particleGenerator.edgeSpread = this.emitterEdgeSpread;
+    }
+  }
+
+  private _emitterEdgeSpread: number;
+
+  get emitterEdgeSpread(): number {
+    return this._emitterEdgeSpread;
+  }
+
+  set emitterEdgeSpread(newValue: number) {
+    if (this._emitterEdgeSpread === newValue) {
+      return;
+    }
+
+    this._emitterEdgeSpread = newValue;
+    this.particleGenerator.edgeSpread = newValue;
   }
 
   start(): any {
@@ -225,8 +262,10 @@ class Emitter extends WorldObject {
       this.particleGenerator.width = width;
       this.particleGenerator.height = height;
     }
-    else
+    else {
       this.particleGenerator = new RectangularParticleGenerator(width, height);
+      this.particleGenerator.edgeSpread = this.emitterEdgeSpread;
+    }
   }
 
 
@@ -239,8 +278,7 @@ class Emitter extends WorldObject {
     var particleRadius: number = Math.max(this.particleRadius.getValue(), this.minParticleSize);
 
     let particleStart: PositionPlusVelocity = this.particleGenerator.getNewParticlePosition(
-      this.position, this.velocity, this.particleInitialVelocity, this.initialParticleDirection,
-      this.emitterEdgeSpread);
+      this.position, this.velocity, this.particleInitialVelocity, this.initialParticleDirection);
 
     this.particles.push(new Particle(this, now, particleStart.position, particleStart.velocity, particleRadius, this.particleMass));
   }
