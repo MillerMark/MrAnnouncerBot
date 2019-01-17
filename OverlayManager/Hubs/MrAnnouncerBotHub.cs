@@ -21,6 +21,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.FocusItem(playerID, pageID, itemID);
 		}
 
+		public void UnfocusItem(int playerID, int pageID, string itemID)
+		{
+			coderushedHub.Clients.All.UnfocusItem(playerID, pageID, itemID);
+		}
+
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{

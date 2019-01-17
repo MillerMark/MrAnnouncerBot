@@ -531,6 +531,35 @@ class Character {
     return barbarian;
   }
 
+  static newTestDruid(): Character {
+    let druid: Character = new Character();
+    druid.name = 'Kylee';
+    druid.raceClass = 'Wood Elf Druid';
+    druid.alignment = 'Lawful Good';
+    druid.armorClass = 10;
+    Character.generateRandomAttributes(druid);
+    druid.hitDice = '1 d8';
+    druid.level = 1;
+    druid.inspiration = 0;
+
+    druid.initiative = 2;
+    druid.speed = 30;
+    druid.hitPoints = 27;
+    druid.tempHitPoints = 0;
+    druid.maxHitPoints = 44;
+    druid.proficiencyBonus = 2;
+    druid.savingThrowProficiency = Ability.wisdom + Ability.dexterity;
+    druid.proficientSkills = Skills.animalHandling + Skills.nature + Skills.medicine;
+    //barbarian.deathSaveLife1 = true;
+    //barbarian.deathSaveLife2 = true;
+    //elf.deathSaveLife3 = true;
+    //barbarian.deathSaveDeath1 = true;
+    //barbarian.deathSaveDeath2 = true;
+    //elf.deathSaveDeath3 = true;
+
+    return druid;
+  }
+
   static newTestWizard(): Character {
     let wizard: Character = new Character();
     wizard.name = 'Morkin';

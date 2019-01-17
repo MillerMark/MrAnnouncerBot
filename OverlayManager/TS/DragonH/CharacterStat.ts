@@ -9,6 +9,10 @@
       return;
     }
 
+    if (!activeCharacter) {
+      return;
+    }
+
     let value: number | string | boolean = activeCharacter.getPropValue(this.name);
 
     if (value === undefined) {

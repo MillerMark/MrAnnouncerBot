@@ -27,7 +27,42 @@ enum ScrollState {
   paused
 }
 
+enum emphasisMain {
+  NameHeadshot = 0,
+  RaceClass = 1,
+  Level = 2,
+  Inspiration = 3,
+  ExperiencePoints = 4,
+  Alignment = 5,
+  Strength = 6,
+  Dexterity = 7,
+  Constitution = 8,
+  Intelligence = 9,
+  Wisdom = 10,
+  Charisma = 11,
+  ArmorClass = 12,
+  Initiative = 13,
+  Speed = 14,
+  HitPointsTempHitPoints = 15,
+  DeathSaves = 16,
+  HitDice = 17,
+  Proficiency = 18,
+  Perception = 19,
+  GoldPieces = 20,
+  SavingStrength = 21,
+  SavingDexterity = 22,
+  SavingConstitution = 23,
+  SavingIntelligence = 24,
+  SavingWisdom = 25,
+  SavingCharisma = 26
+}
+
 class CharacterStatsScroll extends WorldObject {
+  scrollOpenSfx: HTMLAudioElement;
+  scrollWooshSfx: HTMLAudioElement;
+  scrollCloseSfx: HTMLAudioElement;
+  scrollSlamSfx: HTMLAudioElement;
+
   characters: Array<Character> = new Array<Character>();
   pages: Array<StatPage> = new Array<StatPage>();
 
@@ -53,7 +88,7 @@ class CharacterStatsScroll extends WorldObject {
   players: Sprites;
 
   // TODO: consolidate with page, if possible.
-  pageIndex: number; 
+  pageIndex: number;
 
   static readonly scrollOpenOffsets: number[] = [47, 47,  // one extra at the beginning
     48, 75, 106, 143, 215, 243, 267, 292, 315,  // 0-9
@@ -90,6 +125,7 @@ class CharacterStatsScroll extends WorldObject {
   }
 
   slam(): void {
+    this.play(this.scrollWooshSfx);
     this.scrollSlam.add(0, 0, 0);
     this.state = ScrollState.slamming;
   }
@@ -111,6 +147,7 @@ class CharacterStatsScroll extends WorldObject {
   close(): any {
     this.state = ScrollState.closing;
     this.scrollRolls.baseAnimation.reverse = true;
+    this.play(this.scrollCloseSfx);
   }
 
   private unroll(): void {
@@ -126,6 +163,14 @@ class CharacterStatsScroll extends WorldObject {
     this.selectedStatPageIndex = this._page - 1;
     this.topEmitter.start();
     this.bottomEmitter.start();
+    this.play(this.scrollOpenSfx);
+  }
+
+  play(audio: HTMLAudioElement): any {
+    const playPromise = audio.play();
+    if (playPromise["[[PromiseStatus]]"] === 'rejected') {
+      console.log(playPromise["[[PromiseValue]]"].message);
+    }
   }
 
   preUpdate(now: number, timeScale: number, world: World): void {
@@ -266,6 +311,8 @@ class CharacterStatsScroll extends WorldObject {
       this.scrollSlam.draw(world.ctx, now * 1000);
       if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
         this.state = ScrollState.slammed;
+
+        this.play(this.scrollSlamSfx);
       }
     }
 
@@ -319,7 +366,12 @@ class CharacterStatsScroll extends WorldObject {
     this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
     this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
-    this.players = new Sprites("Scroll/Players/Player", 3, this.framerateMs, AnimationStyle.Static);
+    this.players = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
+
+    this.scrollWooshSfx = new Audio(Folders.assets + 'SoundEffects/scrollWoosh.mp3');
+    this.scrollOpenSfx = new Audio(Folders.assets + 'SoundEffects/scrollOpen.mp3');
+    this.scrollCloseSfx = new Audio(Folders.assets + 'SoundEffects/scrollClose.mp3');
+    this.scrollSlamSfx = new Audio(Folders.assets + 'SoundEffects/scrollSlam.mp3');
 
     Folders.assets = assetFolderName;
   }
@@ -349,7 +401,7 @@ class CharacterStatsScroll extends WorldObject {
     console.log(`playerPageChanged(${playerID}, ${pageID}, ${playerData})`);
     if (this.selectedCharacterIndex !== playerID) {
       this.selectedCharacterIndex = playerID;
-      this.page = pageID;
+      this._page = pageID;
       this.state = ScrollState.none;
       this.open(performance.now());
     }
@@ -358,10 +410,15 @@ class CharacterStatsScroll extends WorldObject {
       this.page = pageID;
       this.open(performance.now());
     }
-    
+
   }
 
   focusItem(playerID: number, pageID: number, itemID: string): any {
     console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
   }
+
+  unfocusItem(playerID: number, pageID: number, itemID: string): any {
+    console.log(`unfocusItem(${playerID}, ${pageID}, ${itemID})`);
+  }
+
 }

@@ -8,12 +8,19 @@ function connectToSignalR(signalR) {
     connection.on("UserHasCoins", userHasCoins);
     connection.on("PlayerPageChanged", playerPageChanged);
     connection.on("FocusItem", focusItem);
+    connection.on("UnfocusItem", unfocusItem);
   };
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
   if (activeGame instanceof DragonGame) {
     activeGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
+  }
+}
+
+function unfocusItem(playerID: number, pageID: number, itemID: string) {
+  if (activeGame instanceof DragonGame) {
+    activeGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
   }
 }
 

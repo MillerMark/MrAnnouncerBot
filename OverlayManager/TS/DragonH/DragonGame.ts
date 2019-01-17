@@ -47,6 +47,7 @@
 
   initialize() {
     super.initialize();
+
     Folders.assets = 'GameDev/Assets/DroneGame/';
 
     myRocket = new Rocket(0, 0);
@@ -65,6 +66,7 @@
     this.characterStatsScroll.characters.push(Character.newTestElf());
     this.characterStatsScroll.characters.push(Character.newTestBarbarian());
     this.characterStatsScroll.characters.push(Character.newTestWizard());
+    this.characterStatsScroll.characters.push(Character.newTestDruid());
     this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
     this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
     this.characterStatsScroll.pages.push(StatPage.createEquipmentPage());
@@ -101,6 +103,8 @@
 
 
     this.characterStatsScroll.loadResources();
+
+    Folders.assets = 'GameDev/Assets/DroneGame/';
 
     this.loadDragonAssets();
 
