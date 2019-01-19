@@ -85,6 +85,5 @@ namespace DHDM
 		{
 			OnPageChanged(ScrollPage.equipment);
 		}
-
 	}
 }

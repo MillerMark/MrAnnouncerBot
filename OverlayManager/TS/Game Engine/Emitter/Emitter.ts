@@ -1,207 +1,4 @@
-class PositionPlusVelocity {
-  constructor(public readonly position: Vector, public readonly velocity: Vector) {
-
-  }
-}
-
-abstract class ParticleGenerator {
-  constructor() {
-
-  }
-
-  private _edgeSpread: number;
-
-  get edgeSpread(): number {
-    return this._edgeSpread;
-  }
-
-  set edgeSpread(newValue: number) {
-    newValue = MathEx.clamp(newValue, 0, 1);
-    if (this._edgeSpread === newValue)
-      return;
-    this._edgeSpread = newValue;
-    this.edgeSpreadChanged();
-  }
-
-  edgeSpreadChanged() {
-    // Do nothing. Let descendants override.
-  }
-
-  abstract getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity;
-
-  protected getInitialVelocity(offset: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector = Vector.zero) {
-    let velocityOffset: Vector = initialParticleDirection;
-
-    if (velocityOffset.length == 0)
-      velocityOffset = offset;
-    let initialVelocity: Vector = emitterVelocity.add(velocityOffset.multiply(particleInitialVelocity.getValue() / velocityOffset.length));
-
-    return initialVelocity;
-  }
-}
-
-class CircleParticleGenerator extends ParticleGenerator {
-  constructor(public radius: number) {
-    super();
-  }
-
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
-    const nonZeroOffset: number = 0.0001;
-
-    let particleDistance: number = Random.between(this.radius * (1 - this.edgeSpread), this.radius) + nonZeroOffset;
-    let offset: Vector = Vector.fromPolar(Random.max(360), particleDistance);
-
-    let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
-
-    return new PositionPlusVelocity(position.add(offset), initialVelocity);
-  }
-}
-
-class RectangularParticleGenerator extends ParticleGenerator {
-  private halfWidth: number;
-  private halfHeight: number;
-  smallerPt: Point;
-  largerPt: Point;
-  innerLine: Line;
-  smallestDistanceIn: number;
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-  upperRect: Rect;
-  leftRect: Rect;
-  rightRect: Rect;
-  bottomRect: Rect;
-  totalArea: number;
-
-  constructor(width: number, height: number) {
-    super();
-    this.width = width;
-    this.height = height;
-  }
-
-  private _width: number;
-
-  get width(): number {
-    return this._width;
-  }
-
-  set width(newValue: number) {
-    this._width = newValue;
-    this.calculateFields();
-  }
-
-  private _height: number;
-
-  private calculateFields() {
-    this.halfWidth = this._width / 2;
-    this.halfHeight = this._height / 2;
-
-    let yDistance: number = 0;
-    let xDistance: number = 0;
-
-    if (this.height < this.width) {
-      // Short and fat.
-      xDistance = this.halfWidth - this.halfHeight;
-      this.smallestDistanceIn = this.halfHeight;
-    }
-    else if (this.height > this.width) {
-      // Tall and thin.
-      yDistance = this.halfHeight - this.halfWidth;
-      this.smallestDistanceIn = this.halfWidth;
-    }
-    else {
-      // square
-      this.smallestDistanceIn = this.halfHeight;
-    }
-
-    this.smallerPt = new Point(-xDistance, -yDistance);
-    this.largerPt = new Point(xDistance, yDistance);
-
-    this.innerLine = new Line(this.smallerPt, this.largerPt);
-
-    this.top = 0 - this.halfHeight;
-    this.bottom = this.halfHeight;
-    this.left = 0 - this.halfWidth;
-    this.right = this.halfWidth;
-  }
-
-  get height(): number {
-    return this._height;
-  }
-
-  set height(newValue: number) {
-    this._height = newValue;
-    this.calculateFields();
-  }
-
-  protected getInitialVelocity(offset: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector = Vector.zero) {
-    let velocityOffset: Vector = initialParticleDirection;
-
-    if (velocityOffset.length == 0) {
-      let closestPointOnLine: Point = this.innerLine.getClosestPointOnLine(offset.toPoint())
-      if (closestPointOnLine.x < this.smallerPt.x || closestPointOnLine.y < this.smallerPt.y)
-        closestPointOnLine = this.smallerPt;
-
-      if (closestPointOnLine.x > this.largerPt.x || closestPointOnLine.y > this.largerPt.y)
-        closestPointOnLine = this.largerPt;
-
-      velocityOffset = offset.subtract(closestPointOnLine.toVector());
-    }
-
-    let initialVelocity: Vector = emitterVelocity.add(velocityOffset.multiply(particleInitialVelocity.getValue() / velocityOffset.length));
-
-    return initialVelocity;
-  }
-  // ![](98B88E81F7520BB924CDC62EBC1DDF87.png)
-
-  edgeSpreadChanged() {
-    let border: number = this.edgeSpread * this.smallestDistanceIn;
-    let innerTop: number = this.top + border;
-    let innerLeft: number = this.left + border;
-    let innerBottom: number = this.bottom - border;
-    let innerRight: number = this.right - border;
-
-    this.upperRect = new Rect(this.left, this.top, this.right, innerTop);
-    this.leftRect = new Rect(this.left, innerTop, innerLeft, innerBottom);
-    this.rightRect = new Rect(innerRight, innerTop, this.right, innerBottom);
-    this.bottomRect = new Rect(this.left, innerBottom, this.right, this.bottom);
-
-    this.totalArea = this.upperRect.area + this.leftRect.area + this.rightRect.area + this.bottomRect.area;
-  }
-
-  getNewParticlePosition(position: Vector, emitterVelocity: Vector, particleInitialVelocity: TargetValue, initialParticleDirection: Vector): PositionPlusVelocity {
-    let rectIndexer: number = Random.max(this.totalArea);
-    let rectToGenerateIn: Rect;
-    if (rectIndexer < this.upperRect.area)
-      rectToGenerateIn = this.upperRect;
-    else {
-      rectIndexer -= this.upperRect.area;
-
-      if (rectIndexer < this.leftRect.area)
-        rectToGenerateIn = this.leftRect;
-      else {
-        rectIndexer -= this.leftRect.area;
-
-        if (rectIndexer < this.rightRect.area)
-          rectToGenerateIn = this.rightRect;
-        else {
-          rectToGenerateIn = this.bottomRect;
-        }
-      }
-    }
-
-    let offset: Vector = new Vector(Random.between(rectToGenerateIn.left, rectToGenerateIn.right),
-      Random.between(rectToGenerateIn.top, rectToGenerateIn.bottom));
-
-    let initialVelocity: Vector = this.getInitialVelocity(offset, emitterVelocity, particleInitialVelocity, initialParticleDirection);
-
-    return new PositionPlusVelocity(position.add(offset), initialVelocity);
-  }
-}
-
-
-class Emitter extends WorldObject {
+﻿class Emitter extends WorldObject {
   particleGenerator: ParticleGenerator;
   particles: Array<Particle> = new Array<Particle>();
   opacity: number;
@@ -238,7 +35,7 @@ class Emitter extends WorldObject {
     super(position, velocity);
     this.particleMaxOpacity = 1;
     this.particleFadeInTime = 0.4;
-    this.particleGenerator = new CircleParticleGenerator(10);
+    this.particleGenerator = new CircularParticleGenerator(10);
     this.particleRadius = new TargetValue(1);
     this.particlesPerSecond = 500;
     this.opacity = 1;
@@ -265,10 +62,10 @@ class Emitter extends WorldObject {
 
   set radius(newValue: number) {
     this._radius = newValue;
-    if (this.particleGenerator instanceof CircleParticleGenerator)
+    if (this.particleGenerator instanceof CircularParticleGenerator)
       this.particleGenerator.radius = this._radius;
     else {
-      this.particleGenerator = new CircleParticleGenerator(this._radius);
+      this.particleGenerator = new CircularParticleGenerator(this._radius);
       this.particleGenerator.edgeSpread = this.emitterEdgeSpread;
     }
   }

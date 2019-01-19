@@ -125,7 +125,7 @@
     //this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
   }
 
-  buildTestParticle(): any {
+  buildTestGoldParticle(): any {
     //this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -14));
     var scrollLength: number = 370;
     this.emitter = new Emitter(new Vector(scrollLength / 2, 460));
@@ -153,6 +153,31 @@
     this.emitter.particleAirDensity = 1;  // 0 == vaccuum.
     //this.emitter.wind = new Vector(0, 0);
     this.emitter.particleWind = new Vector(0, -3);
+  }
+
+  wind(): any {
+    this.emitter = new Emitter(new Vector(1920 / 2, 1080 / 2));
+    this.emitter.setRectShape(400, 1);
+    this.emitter.saturation.target = 0.9;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.hue.absoluteVariance = 10;
+    this.emitter.hue.target = 240;
+    this.emitter.hue.drift = 0.6;
+    this.emitter.brightness.target = 0.7;
+    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.particlesPerSecond = 100;
+
+    this.emitter.particleRadius.target = 2.5;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+
+    this.emitter.particleLifeSpanSeconds = 12;
+    this.emitter.particleGravity = -0.2;
+    this.emitter.particleInitialVelocity.target = 0;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.5;
+    this.emitter.gravity = 0;
+    this.emitter.airDensity = 0; // 0 == vaccuum.
+    this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
+    this.emitter.particleWind = new Vector(2, -0.1);
   }
 
   buildSmoke() {
@@ -216,7 +241,7 @@
     this.emitter = new Emitter(new Vector(1920 * 0.5, 1080 / 2));
     //this.emitter.radius = 160;
     this.emitter.setRectShape(300, 100);
-    this.emitter.emitterEdgeSpread = 1;
+    this.emitter.emitterEdgeSpread = 0;
     this.emitter.hue.target = 270;
     this.emitter.hue.absoluteVariance = 75;
     this.emitter.saturation.target = 0.8;
@@ -231,7 +256,7 @@
     this.emitter.particleGravity = 0;
     this.emitter.particleFadeInTime = 0.05;
     this.emitter.gravity = 0;
-    this.emitter.particleMaxOpacity = 1;
+    this.emitter.particleMaxOpacity = 0.4;
   }
 
   purpleBurst() {
@@ -290,6 +315,28 @@
     this.emitter.particleInitialVelocity.target = 10;
     this.emitter.particleGravityCenter = new Vector(screenCenterX, screenCenterY);
     this.emitter.particleGravity = 20;
+  }
+
+  rainbow() {
+    this.emitter = new Emitter(new Vector(2000, 1350), new Vector(-10, -18));
+    this.emitter.radius = 20;
+    this.emitter.hue.absoluteVariance = 10;
+    this.emitter.hue.target = 240;
+    this.emitter.hue.drift = 0.06;
+    this.emitter.saturation.target = 0.8;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.brightness.target = 0.5;
+    this.emitter.brightness.relativeVariance = 0.5;
+    this.emitter.particleRadius.target = 3;
+    this.emitter.particleRadius.relativeVariance = 0.3;
+    this.emitter.particlesPerSecond = 600;
+    this.emitter.particleLifeSpanSeconds = 4.5;
+    this.emitter.particleInitialVelocity.target = 0.5;
+    //this.emitter.particleGravityCenter = new Vector(screenCenterX, screenCenterY);
+    this.emitter.gravity = 3;
+    this.emitter.particleGravity = 2;
+    this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
+    this.emitter.particleWind = new Vector(2, -0.1);
   }
 
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
@@ -421,7 +468,7 @@
 
     if (testCommand === 'wind') {
       this.world.removeCharacter(this.emitter);
-      this.buildTestParticle();
+      this.wind();
       this.world.addCharacter(this.emitter);
       return true;
     }
@@ -429,6 +476,12 @@
     if (testCommand === 'solo') {
       this.world.removeCharacter(this.emitter);
       this.solo();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+    if (testCommand === 'rainbow') {
+      this.world.removeCharacter(this.emitter);
+      this.rainbow();
       this.world.addCharacter(this.emitter);
       return true;
     }

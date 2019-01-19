@@ -42,6 +42,8 @@ class Character {
   tempHitPoints: number;
   maxHitPoints: number;
   goldPieces: number;
+  load: number;
+  weight: number;
   proficiencyBonus: number;
   savingThrowProficiency: number;
   hitDice: string;
@@ -500,6 +502,8 @@ class Character {
     character.strength = Character.getAbilityScore();
     character.experiencePoints = Random.intMaxDigitCount(6);
     character.goldPieces = Random.intMaxDigitCount(6);
+    character.weight = Random.intBetween(80, 275);
+    character.load = Random.intBetween(15, 88);
   }
 
   static newTestBarbarian(): Character {

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using BotCore;
+using Microsoft.AspNetCore.SignalR;
+using OBSWebsocketDotNet;
 using System;
 using System.Linq;
 
@@ -13,6 +15,9 @@ namespace OverlayManager.Hubs
 
 		public void PlayerPageChanged(int playerID, int pageID, string playerData)
 		{
+			string[] sceneNames = { "Kent's Turn", "Karen's Turn", "Mark's Turn", "Kayla's Turn" };
+			if (playerID >= 0 && playerID < sceneNames.Length)
+				Clients.All.ChangeScene(sceneNames[playerID]);
 			coderushedHub.Clients.All.PlayerPageChanged(playerID, pageID, playerData);
 		}
 

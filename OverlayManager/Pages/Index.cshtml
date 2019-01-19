@@ -1,7 +1,7 @@
 ﻿@page
 @model IndexModel
 @{
-    Layout = null;
+  Layout = null;
 }
 <link rel="icon" href="data:,">
 <canvas id="myCanvas" width="1920" height="1080"></canvas>
@@ -13,7 +13,7 @@
 <script src="~/GameDev/Source/Game Engine/Folders.js"></script>
 
 <script>
-    Folders.assets = 'GameDev/Assets/';
+  Folders.assets = 'GameDev/Assets/';
 </script>
 
 <script src="~/GameDev/Source/Game Engine/Vector.js"></script>
@@ -22,8 +22,12 @@
 <script src="~/GameDev/Source/Game Engine/WorldObject.js"></script>
 <script src="~/GameDev/Source/Game Engine/World.js"></script>
 <script src="~/GameDev/Source/Game Engine/GravityForce.js"></script>
-<script src="~/GameDev/Source/Game Engine/Particle.js"></script>
-<script src="~/GameDev/Source/Game Engine/Emitter.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/Particle.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/PositionPlusVelocity.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/ParticleGenerator.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/CircularParticleGenerator.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/RectangularParticleGenerator.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/Emitter.js"></script>
 <script src="~/GameDev/Source/Game Engine/Connection.js"></script>
 <script src="~/GameDev/Source/Game Engine/AnimationStyle.js"></script>
 <script src="~/GameDev/Source/Game Engine/Point.js"></script>
@@ -63,6 +67,7 @@
 <script src="~/GameDev/Source/CodeRushed/Rocket.js"></script>
 <script src="~/GameDev/Source/CodeRushed/DroneGame.js"></script>
 
+<script src="~/GameDev/Source/DragonH/CharacterEnums.js"></script>
 <script src="~/GameDev/Source/DragonH/Character.js"></script>
 <script src="~/GameDev/Source/DragonH/CharacterStat.js"></script>
 <script src="~/GameDev/Source/DragonH/StatPage.js"></script>
@@ -72,5 +77,5 @@
 <script src="~/GameDev/Source/Main.js"></script>
 
 <script>
-    connectToSignalR(signalR);
+  connectToSignalR(signalR);
 </script>

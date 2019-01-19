@@ -29,7 +29,6 @@ namespace MrAnnouncerBot
 		Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();
 		AllViewers allViewers = new AllViewers();
 		private const string STR_ChannelName = "CodeRushed";
-		private const string STR_WebSocketPort = "ws://127.0.0.1:4444";
 		private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
 		const string STR_Ellipsis = "...";
@@ -60,9 +59,15 @@ namespace MrAnnouncerBot
 				//hubConnection.Closed += HubConnection_Closed;
 				hubConnection.On<string, int>("AddCoins", AddCoins);
 				hubConnection.On<string>("NeedToGetCoins", NeedToGetCoins);
+				hubConnection.On<string>("ChangeScene", ChangeScene);
 				// TODO: Check out benefits of stopping gracefully with a cancellation token.
 				hubConnection.StartAsync();
 			}
+		}
+
+		void ChangeScene(string sceneName)
+		{
+			obsWebsocket.SetCurrentScene(sceneName);
 		}
 
 		void NeedToGetCoins(string userId)
@@ -189,7 +194,7 @@ namespace MrAnnouncerBot
 			if (obsWebsocket.IsConnected) return;
 			try
 			{
-				obsWebsocket.Connect(STR_WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
+				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
 			}
 			catch (AuthFailureException)
 			{

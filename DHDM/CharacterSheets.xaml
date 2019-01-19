@@ -10,5 +10,7 @@
 		<Image Name="pageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="None" Height="555" MouseDown="PageMain_MouseDown"/>
 		<Image Name="pageSkills" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" Margin="250, 0, 0, 0" MouseDown="PageSkills_MouseDown"/>
 		<Image Name="pageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back3.png" Stretch="None" Height="555" Margin="500, 0, 0, 0" MouseDown="PageEquipment_MouseDown"/>
+		<local:StatBox Margin="10,73,0,0" Width="67" Height="18" Text="Yo" StatBoxState="DisplayOnly"/>
+		<local:StatBox Margin="82,73,0,0" Width="121" Height="18" Text="Yo" StatBoxState="DisplayOnly"/>
 	</Grid>
 </UserControl>

@@ -86,10 +86,10 @@
     statPage.addStat('passivePerception', percProfX, 44, StatPage.bigNumberFontSize);
     statPage.addStat('proficiencyBonus', percProfX, 110, StatPage.bigNumberFontSize, TextAlign.center, TextDisplay.plusMinus);
     
-    const distanceBetweenSkills: number = 28.88;
+    const distanceBetweenSkills: number = 29;
     const skillRadioX: number = 124;
     const skillBonusX: number = 157;
-    const skillStartY: number = 188;
+    const skillStartY: number = 189;
     const skillRadius: number = 8;
     const skillModOffset: number = 1;
     const skillModFontSize: number = 10;
@@ -114,6 +114,16 @@
   static createEquipmentPage(): any {
     let statPage: StatPage = new StatPage();
 
+    const goldPiecesLoadY: number = 47;
+    const loadWeightX: number = 261;
+    const speedWeightY: number = 106;
+    const goldPiecesSpeedX: number = 172;
+
+    StatPage.addName(statPage);
+    statPage.addStat('goldPieces', goldPiecesSpeedX, goldPiecesLoadY, 70, TextAlign.center, TextDisplay.autoSize);
+    statPage.addStat('load', loadWeightX, goldPiecesLoadY, 58, TextAlign.center, TextDisplay.autoSize);
+    statPage.addStat('speed', goldPiecesSpeedX, speedWeightY, StatPage.bigNumberFontSize);
+    statPage.addStat('weight', loadWeightX, speedWeightY, StatPage.bigNumberFontSize);
     return statPage;
   }
 

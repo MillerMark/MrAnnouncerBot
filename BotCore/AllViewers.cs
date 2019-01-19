@@ -47,12 +47,15 @@ namespace BotCore
 		public void Load()
 		{
 			viewers = AppData.Load<List<Viewer>>("AllViewers.json");
+			if (viewers == null)
+				viewers = new List<Viewer>();
 			CheckData();
 		}
 
 		public void Save()
 		{
-			AppData.Save("AllViewers.json", viewers);
+			if (viewers != null)
+				AppData.Save("AllViewers.json", viewers);
 		}
 
 		Viewer CreateNewViewer(ChatMessage chatMessage)
