@@ -15,31 +15,27 @@ using System.Windows.Shapes;
 
 namespace DHDM
 {
-	public enum StatBoxState
-	{
-		DisplayOnly,
-		Focused,
-		Editing
-	}
-
 	/// <summary>
 	/// Interaction logic for StatBox.xaml
 	/// </summary>
 	public partial class StatBox : UserControl
 	{
+		public static readonly DependencyProperty FocusItemProperty = DependencyProperty.Register("FocusItem", typeof(string), typeof(StatBox), new FrameworkPropertyMetadata(string.Empty));
+		
+
 		//TextBox txtEdit;
 		public static readonly DependencyProperty StatBoxStateProperty = DependencyProperty.Register(
-			nameof(StatBoxState), typeof(StatBoxState), typeof(StatBox), 
+			nameof(StatBoxState), typeof(StatBoxState), typeof(StatBox),
 			new FrameworkPropertyMetadata(StatBoxState.DisplayOnly, new PropertyChangedCallback(OnStatBoxStateChanged)));
 
 		public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-			nameof(Text), typeof(string), typeof(StatBox), 
+			nameof(Text), typeof(string), typeof(StatBox),
 			new FrameworkPropertyMetadata("stat", new PropertyChangedCallback(OnStatBoxTextChanged)));
 
 		public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
-			nameof(TextAlignment), typeof(TextAlignment), typeof(StatBox), 
+			nameof(TextAlignment), typeof(TextAlignment), typeof(StatBox),
 			new FrameworkPropertyMetadata(TextAlignment.Center, new PropertyChangedCallback(OnStatBoxTextAlignmentChanged)));
-		
+
 
 		static StatBox()
 		{
@@ -60,6 +56,18 @@ namespace DHDM
 			StatBoxState = StatBoxState.DisplayOnly;
 		}
 
+		public string FocusItem
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (string)GetValue(FocusItemProperty);
+			}
+			set
+			{
+				SetValue(FocusItemProperty, value);
+			}
+		}
 		public StatBoxState StatBoxState
 		{
 			get => (StatBoxState)GetValue(StatBoxStateProperty);
@@ -116,14 +124,19 @@ namespace DHDM
 			switch (StatBoxState)
 			{
 				case StatBoxState.DisplayOnly:
+					FocusHelper.Remove(this);
 					txtDisplay.Background = Brushes.Transparent;
 					txtDisplay.Visibility = Visibility.Visible;
 					txtEdit.Visibility = Visibility.Hidden;
 					break;
 				case StatBoxState.Focused:
+					if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+						FocusHelper.ClearActiveStatBoxes();
+					FocusHelper.Add(this);
 					txtDisplay.Background = Brushes.LightGoldenrodYellow;
 					txtDisplay.Visibility = Visibility.Visible;
 					txtEdit.Visibility = Visibility.Hidden;
+					// TODO: Update the overlay via SignalR.
 					break;
 				case StatBoxState.Editing:
 					txtDisplay.Visibility = Visibility.Hidden;

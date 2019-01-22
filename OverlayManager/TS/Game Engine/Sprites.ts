@@ -342,6 +342,14 @@
       }
     }
   }
+
+  removeByFrameIndex(frameIndex: number): any {
+    for (var i = this.sprites.length - 1; i >= 0; i--) {
+      var sprite: SpriteProxy = this.sprites[i];
+      if (sprite.frameIndex === frameIndex)
+        this.sprites.splice(i, 1);
+    }
+  }
 }
 
 // TODO: Convert to enum...

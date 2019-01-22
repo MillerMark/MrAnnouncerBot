@@ -21,16 +21,42 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		ScrollPage activePage = ScrollPage.main;
 		HubConnection hubConnection;
 		public MainWindow()
 		{
 			InitializeComponent();
 			ConnectToHub();
+			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
 		}
 
-		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		public int PlayerID
 		{
-			PlayerPageChanged(tabPlayers.SelectedIndex, (int)ScrollPage.main, string.Empty);
+			get
+			{
+				return tabPlayers.SelectedIndex;
+			}
+		}
+		
+
+		private void FocusHelper_FocusedControlsChanged(object sender, FocusedControlsChangedEventArgs e)
+		{
+			foreach (StatBox statBox in e.Active)
+			{
+				FocusItem(PlayerID, activePage, statBox.FocusItem);
+			}
+
+			foreach (StatBox statBox in e.Deactivated)
+			{
+				UnfocusItem(PlayerID, activePage, statBox.FocusItem);
+			}
+		}
+
+		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
+		{
+			activePage = ScrollPage.main;
+			FocusHelper.ClearActiveStatBoxes();
+			PlayerPageChanged(PlayerID, activePage, string.Empty);
 		}
 
 		void ConnectToHub()
@@ -44,28 +70,29 @@ namespace DHDM
 			}
 		}
 
-
-
-		void PlayerPageChanged(int playerID, int pageID, string playerData)
+		void PlayerPageChanged(int playerID, ScrollPage pageID, string playerData)
 		{
-			hubConnection.InvokeAsync("PlayerPageChanged", playerID, pageID, playerData);
+			hubConnection.InvokeAsync("PlayerPageChanged", playerID, (int)pageID, playerData);
 		}
 
-		void FocusItem(int playerID, int pageID, string itemID)
+		void FocusItem(int playerID, ScrollPage pageID, string itemID)
 		{
-			hubConnection.InvokeAsync("FocusItem", playerID, pageID, itemID);
+			hubConnection.InvokeAsync("FocusItem", playerID, (int)pageID, itemID);
 		}
 
-		void UnfocusItem(int playerID, int pageID, string itemID)
+		void UnfocusItem(int playerID, ScrollPage pageID, string itemID)
 		{
-			hubConnection.InvokeAsync("UnfocusItem", playerID, pageID, itemID);
+			hubConnection.InvokeAsync("UnfocusItem", playerID, (int)pageID, itemID);
 		}
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
 		{
 			CharacterSheets characterSheets = sender as CharacterSheets;
 			if (characterSheets != null)
-				PlayerPageChanged(tabPlayers.SelectedIndex, (int)characterSheets.Page, string.Empty);
+			{
+				activePage = characterSheets.Page;
+				PlayerPageChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
+			}
 		}
 	}
 }

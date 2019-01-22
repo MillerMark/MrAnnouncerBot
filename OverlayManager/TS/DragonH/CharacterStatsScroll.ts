@@ -402,12 +402,28 @@
   }
 
 
-  focusItem(playerID: number, pageID: number, itemID: string): any {
-    console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
+  focusItem(playerID: number, pageID: number, itemID: string): void {
+    if (pageID === ScrollPage.main) {
+      let emphasisIndex: number = emphasisMain[itemID];
+      this.scrollEmphasisMain.add(0, 0, emphasisIndex);
+    }
+    else if (pageID === ScrollPage.skills) {
+      let emphasisIndex: number = emphasisSkills[itemID];
+      this.scrollEmphasisSkills.add(0, 0, emphasisIndex);
+    }
+    //console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
   }
 
-  unfocusItem(playerID: number, pageID: number, itemID: string): any {
+  unfocusItem(playerID: number, pageID: number, itemID: string): void {
     console.log(`unfocusItem(${playerID}, ${pageID}, ${itemID})`);
+    if (pageID === ScrollPage.main) {
+      let emphasisIndex: number = emphasisMain[itemID];
+      this.scrollEmphasisMain.removeByFrameIndex(emphasisIndex);
+    }
+    else if (pageID === ScrollPage.skills) {
+      let emphasisIndex: number = emphasisSkills[itemID];
+      this.scrollEmphasisSkills.removeByFrameIndex(emphasisIndex);
+    }
   }
 
 }
