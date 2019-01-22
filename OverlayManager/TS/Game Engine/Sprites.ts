@@ -267,6 +267,27 @@
       this.updatePositionsForFreeElements(now);
   }
 
+  drawCropped(context: CanvasRenderingContext2D, now: number, dx: number, dy: number, sx: number, sy: number, sw: number, sh: number, dw: number, dh: number) {
+    this.advanceFrames(now);
+    let self: Sprites = this;
+    this.sprites.forEach(function (sprite: SpriteProxy) {
+      context.globalAlpha = sprite.getAlpha(now) * this.opacity;
+
+      if (sprite.stillAlive(now) && sprite.systemDrawn) {
+        if (now >= sprite.timeStart) {
+          //sprite.drawBackground(context, now);
+          self.baseAnimation.drawCroppedByIndex(context, dx, dy, sprite.frameIndex, sx, sy, sw, sh, dw, dh);
+          //sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
+          //sprite.drawAdornments(context, now);
+        }
+      }
+
+    }, this);
+
+    context.globalAlpha = 1.0;
+    this.removeExpiredSprites(now);
+  }
+
   draw(context: CanvasRenderingContext2D, now: number): void {
     this.advanceFrames(now);
     let self: Sprites = this;

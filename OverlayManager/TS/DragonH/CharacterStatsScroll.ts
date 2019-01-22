@@ -24,6 +24,8 @@
 
   state: ScrollState = ScrollState.none;
   scrollRolls: Sprites;
+  scrollEmphasisMain: Sprites;
+  scrollEmphasisSkills: Sprites;
   scrollSlam: Sprites;
   scrollBacks: Sprites;
   players: Sprites;
@@ -31,10 +33,11 @@
   // TODO: consolidate with page, if possible.
   pageIndex: number;
 
-  static readonly scrollOpenOffsets: number[] = [47, 47,  // one extra at the beginning
-    48, 75, 106, 143, 215, 243, 267, 292, 315,  // 0-9
-    333, 347, 360, 367, 380, 385, 395, 411, 415, 420,  // 10-19
-    424, 428, 432, 432]; // One extra...
+  static readonly scrollOpenOffsets: number[] = [47,  // one extra at the beginning (to simplify code that looks at the previous/next offset)
+    47, 48, 75, 106, 143, 215, 243, 267, 292, 315,  // 1-10
+    333, 347, 360, 367, 380, 385, 395, 411, 415, 420,  // 11-20
+    424, 428, 432,  // 21-23
+    432]; // One extra at the end (to simplify code that looks at the previous/next offset)...
 
   private readonly framerateMs: number = 33; // 33 milliseconds == 30 fps
   topEmitter: Emitter;
@@ -197,9 +200,13 @@
         let dy = CharacterStatsScroll.centerY - offset;
         topData = dy;
         bottomData = dy + dh;
-        let sh = dh;
+        let sh: number = dh;
+        let dw: number = sw;
+        let sx: number = dx;
+        let sy: number = dy;
 
-        baseAnim.drawCroppedByIndex(world.ctx, dx, dy, this.pageIndex, dx, dy, sw, sh, sw, dh);
+        baseAnim.drawCroppedByIndex(world.ctx, sx, sy, this.pageIndex, dx, dy, sw, sh, sw, dh);
+        this.drawHighlighting(now, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
 
         let picOffsetY: number = topData - picY;
         let picCroppedHeight: number = picY + picHeight - topData;
@@ -235,7 +242,10 @@
         this.topEmitter.stop();
         this.bottomEmitter.stop();
         this.state = ScrollState.unrolled;
+        this.drawHighlighting(now, timeScale, world);
       }
+
+
 
       this.topEmitter.render(now, timeScale, world);
       this.bottomEmitter.render(now, timeScale, world);
@@ -261,6 +271,34 @@
       this.state = ScrollState.closed;
       this.open(now);
     }
+  }
+
+  drawHighlighting(now: number, timeScale: number, world: World, sx: number = 0, sy: number = 0, dx: number = 0, dy: number = 0, sw: number = 0, sh: number = 0, dw: number = 0, dh: number = 0): void {
+    if (!this.weAreHighlighting())
+      return;
+
+    this.drawDeEmphasisLayer(world, now, sx, sy, dx, dy, sw, sh, dw, dh);
+    if (dh > 0) {
+      this.scrollEmphasisMain.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+      this.scrollEmphasisSkills.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+    }
+    else {
+      this.scrollEmphasisMain.draw(world.ctx, now * 1000);
+      this.scrollEmphasisSkills.draw(world.ctx, now * 1000);
+    }
+  }
+
+  drawDeEmphasisLayer(world: World, now: number, sx: number = 0, sy: number = 0, dx: number = 0, dy: number = 0, sw: number = 0, sh: number = 0, dw: number = 0, dh: number = 0): void {
+    if (dh > 0) {
+      this.scrollBacks.baseAnimation.drawCroppedByIndex(world.ctx, dx, dy, 0, sx, sy, sw, sh, dw, dh);
+    }
+    else {
+      this.scrollBacks.baseAnimation.drawByIndex(world.ctx, 0, 0, 0);
+    }
+  }
+
+  weAreHighlighting(): any {
+    return this.scrollEmphasisMain.sprites.length > 0 || this.scrollEmphasisSkills.sprites.length > 0;
   }
 
   buildGoldDust(): any {
@@ -308,6 +346,8 @@
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
     this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
     this.players = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
+    this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
+    this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);
 
     this.scrollWooshSfx = new Audio(Folders.assets + 'SoundEffects/scrollWoosh.mp3');
     this.scrollOpenSfx = new Audio(Folders.assets + 'SoundEffects/scrollOpen.mp3');
@@ -353,6 +393,14 @@
     }
 
   }
+
+  addEmphasis(emphasisIndex: number): void {
+    if (this.page === ScrollPage.main)
+      this.scrollEmphasisMain.add(0, 0, emphasisIndex);
+    else if (this.page === ScrollPage.skills)
+      this.scrollEmphasisSkills.add(0, 0, emphasisIndex);
+  }
+
 
   focusItem(playerID: number, pageID: number, itemID: string): any {
     console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);

@@ -7,6 +7,102 @@
   charisma = 32
 }
 
+enum ExhaustionLevels {
+  level1DisadvantageOnAbilityChecks = 1,
+  level2SpeedHalved = 2,
+  level3DisadvantageOnAttackRollsAndSavingThrows = 3,
+  level4HitPointMaximumHalved = 4,
+  level5SpeedReducedToZero = 5,
+  level6Death = 6
+}
+
+enum Conditions {
+  none = 0,
+  blinded = 1,
+  charmed = 2,
+  deafened = 4,
+  fatigued = 8,
+  frightened = 16,
+  grappled = 32,
+  incapacitated = 64,
+  invisible = 128,
+  paralyzed = 256,
+  petrified = 512,
+  poisoned = 1024,
+  prone = 2048,
+  restrained = 4096,
+  stunned = 8192,
+  unconscious = 16384
+}
+
+/* Blinded
+A blinded creature can’t see and automatically fails any ability check that requires sight.
+Attack rolls against the creature have advantage, and the creature’s Attack rolls have disadvantage.
+Charmed
+A charmed creature can’t Attack the charmer or target the charmer with harmful Abilities or magical Effects.
+The charmer has advantage on any ability check to interact socially with the creature.
+Deafened
+A deafened creature can’t hear and automatically fails any ability check that requires hearing.
+Fatigued
+See Exhaustion (below).
+
+Frightened
+A frightened creature has disadvantage on Ability Checks and Attack rolls while the source of its fear is within line of sight.
+The creature can’t willingly move closer to the source of its fear.
+Grappled
+A grappled creature’s speed becomes 0, and it can’t benefit from any bonus to its speed.
+The condition ends if the Grappler is incapacitated (see the condition).
+The condition also ends if an effect removes the grappled creature from the reach of the Grappler or Grappling effect, such as when a creature is hurled away by the Thunderwave spell.
+Incapacitated
+An incapacitated creature can’t take Actions or reactions.
+Invisible
+An invisible creature is impossible to see without the aid of magic or a Special sense. For the purpose of Hiding, the creature is heavily obscured. The creature’s location can be detected by any noise it makes or any tracks it leaves.
+Attack rolls against the creature have disadvantage, and the creature’s Attack rolls have advantage.
+Paralyzed
+A paralyzed creature is incapacitated (see the condition) and can’t move or speak.
+The creature automatically fails Strength and Dexterity Saving Throws.
+Attack rolls against the creature have advantage.
+Any Attack that hits the creature is a critical hit if the attacker is within 5 feet of the creature.
+Petrified
+A petrified creature is transformed, along with any nonmagical object it is wearing or carrying, into a solid inanimate substance (usually stone). Its weight increases by a factor of ten, and it ceases aging.
+The creature is incapacitated (see the condition), can’t move or speak, and is unaware of its surroundings.
+Attack rolls against the creature have advantage.
+The creature automatically fails Strength and Dexterity Saving Throws.
+The creature has Resistance to all damage.
+The creature is immune to poison and disease, although a poison or disease already in its system is suspended, not neutralized.
+Poisoned
+A poisoned creature has disadvantage on Attack rolls and Ability Checks.
+Prone
+A prone creature’s only Movement option is to crawl, unless it stands up and thereby ends the condition.
+The creature has disadvantage on Attack rolls.
+An Attack roll against the creature has advantage if the attacker is within 5 feet of the creature. Otherwise, the Attack roll has disadvantage.
+Restrained
+A restrained creature’s speed becomes 0, and it can’t benefit from any bonus to its speed.
+Attack rolls against the creature have advantage, and the creature’s Attack rolls have disadvantage.
+The creature has disadvantage on Dexterity Saving Throws.
+Stunned
+A stunned creature is incapacitated (see the condition), can’t move, and can speak only falteringly.
+The creature automatically fails Strength and Dexterity Saving Throws.
+Attack rolls against the creature have advantage.
+Unconscious
+An unconscious creature is incapacitated (see the condition), can’t move or speak, and is unaware of its surroundings
+The creature drops whatever it’s holding and falls prone.
+The creature automatically fails Strength and Dexterity Saving Throws.
+Attack rolls against the creature have advantage.
+Any Attack that hits the creature is a critical hit if the attacker is within 5 feet of the creature.
+
+Exhaustion
+Some Special Abilities and environmental hazards, such as starvation and the long-­term Effects of freezing or scorching temperatures, can lead to a Special condition called exhaustion. Exhaustion is measured in six levels. An effect can give a creature one or more levels of exhaustion, as specified in the effect’s description.
+
+Exhaustion Effects
+Level	Effect
+1	Disadvantage on Ability Checks
+2	Speed halved
+3	Disadvantage on Attack rolls and Saving Throws
+4	Hit point maximum halved
+5	Speed reduced to 0
+6	Death */
+
 enum Skills {
   acrobatics = 1,
   animalHandling = 2,
@@ -29,8 +125,13 @@ enum Skills {
 }
 
 class Character {
+  equipment: Array<Item> = new Array<Item>();
+  cursesAndBlessings: Array<CurseOrBlessing> = new Array<CurseOrBlessing>();
   name: string;
   level: number;
+  conditions: Conditions = Conditions.none;
+  onTurnActions: number = 1;
+  offTurnActions: number = 0;
   inspiration: number;
   experiencePoints: number;
   raceClass: string;
@@ -46,7 +147,8 @@ class Character {
   weight: number;
   proficiencyBonus: number;
   savingThrowProficiency: number;
-  hitDice: string;
+  remainingHitDice: string;
+  totalHitDice: string;
   deathSaveLife1: boolean;
   deathSaveLife2: boolean;
   deathSaveLife3: boolean;
@@ -61,7 +163,6 @@ class Character {
   tempSavingThrowModIntelligence: number = 0;
   tempSavingThrowModWisdom: number = 0;
   tempSavingThrowModCharisma: number = 0;
-
 
   tempAcrobaticsMod: number = 0;
   tempAnimalHandlingMod: number = 0;
@@ -264,12 +365,6 @@ class Character {
     return this.getProficiencyBonusForSkill(Skills.survival) + this.wisdomMod + this.tempSurvivalMod;
   }
 
-
-
-
-
-
-
   get savingThrowModStrength(): number {
     return this.getProficiencyBonusForSavingThrow(Ability.strength) + this.strengthMod + this.tempSavingThrowModStrength;
   }
@@ -471,7 +566,7 @@ class Character {
     elf.alignment = 'Chaotic Good';
     elf.armorClass = 12;
     Character.generateRandomAttributes(elf);
-    elf.hitDice = '1 d10';
+    elf.remainingHitDice = '1 d10';
     elf.level = 1;
     elf.inspiration = 0;
 
@@ -513,7 +608,7 @@ class Character {
     barbarian.alignment = 'Chaotic Evil';
     barbarian.armorClass = 14;
     Character.generateRandomAttributes(barbarian);
-    barbarian.hitDice = '1 d10';
+    barbarian.remainingHitDice = '1 d10';
     barbarian.level = 1;
     barbarian.inspiration = 0;
 
@@ -542,7 +637,7 @@ class Character {
     druid.alignment = 'Lawful Good';
     druid.armorClass = 10;
     Character.generateRandomAttributes(druid);
-    druid.hitDice = '1 d8';
+    druid.remainingHitDice = '1 d8';
     druid.level = 1;
     druid.inspiration = 0;
 
@@ -571,7 +666,7 @@ class Character {
     wizard.alignment = 'Chaotic Neutral';
     wizard.armorClass = 10;
     Character.generateRandomAttributes(wizard);
-    wizard.hitDice = '1 d8';
+    wizard.remainingHitDice = '1 d8';
     wizard.level = 1;
     wizard.inspiration = 0;
 
@@ -583,13 +678,37 @@ class Character {
     wizard.proficiencyBonus = 2;
     wizard.savingThrowProficiency = Ability.intelligence + Ability.charisma;
     wizard.proficientSkills = Skills.arcana + Skills.slightOfHand + Skills.deception;
-    //barbarian.deathSaveLife1 = true;
-    //barbarian.deathSaveLife2 = true;
-    //elf.deathSaveLife3 = true;
-    //barbarian.deathSaveDeath1 = true;
-    //barbarian.deathSaveDeath2 = true;
-    //elf.deathSaveDeath3 = true;
+    wizard.equip(Weapon.buildShortSword());
+    wizard.pack(Weapon.buildBlowgun());
+    wizard.pack(Ammunition.buildBlowgunNeedlePack());
 
     return wizard;
+  }
+
+  pack(item: Item): void {
+    this.equipment.push(item);
+  }
+
+  unpack(item: Item, count: number = 1): void {
+    let index: number = this.equipment.indexOf(item);
+    if (index >= 0) {
+      let thisItem: Item = this.equipment[index];
+      if (thisItem.count > 0)
+        if (count === Infinity) {
+          thisItem.count = 0;
+        }
+        else {
+          thisItem.count -= count;
+        }
+
+      if (thisItem.count <= 0) {
+        this.equipment.splice(index, 1);
+      }
+    }
+  }
+
+  equip(item: Item): void {
+    this.equipment.push(item);
+    item.equipped = true;
   }
 }

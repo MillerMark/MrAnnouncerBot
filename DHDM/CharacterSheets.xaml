@@ -6,11 +6,180 @@
              xmlns:local="clr-namespace:DHDM"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="800">
+	<UserControl.Resources>
+		<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+			<Style TargetType="CheckBox">
+				<Setter Property="Cursor" Value="Hand"></Setter>
+				<Setter Property="VerticalAlignment" Value="Top"></Setter>
+				<Setter Property="HorizontalAlignment" Value="Left"></Setter>
+				<Setter Property="Content" Value=""></Setter>
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type CheckBox}">
+							<Grid>
+								<Ellipse x:Name="outerEllipse" Fill="#FFF0DDBC" Margin="1" Stroke="#FF996D37">
+								</Ellipse>
+								<Ellipse Margin="8" x:Name="highlightCircle" Fill="#FF714D21">
+								</Ellipse>
+								<ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+							</Grid>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsChecked" Value="True">
+									<Setter TargetName="highlightCircle" Property="Fill" Value="#FF000000">
+									</Setter>
+									<Setter TargetName="outerEllipse" Property="Fill" Value="#FF714D21">
+									</Setter>
+								</Trigger>
+								<Trigger Property="IsChecked" Value="False">
+									<Setter TargetName="highlightCircle" Property="Fill" Value="#FF714D21">
+									</Setter>
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+		</ResourceDictionary>
+	</UserControl.Resources>
 	<Grid>
 		<Image Name="pageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="None" Height="555" MouseDown="PageMain_MouseDown"/>
 		<Image Name="pageSkills" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" Margin="250, 0, 0, 0" MouseDown="PageSkills_MouseDown"/>
 		<Image Name="pageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back3.png" Stretch="None" Height="555" Margin="500, 0, 0, 0" MouseDown="PageEquipment_MouseDown"/>
-		<local:StatBox Margin="10,73,0,0" Width="67" Height="18" Text="Yo" StatBoxState="DisplayOnly"/>
-		<local:StatBox Margin="82,73,0,0" Width="121" Height="18" Text="Yo" StatBoxState="DisplayOnly"/>
+		<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="64,147,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
+													 StatBox2="{Binding ElementName=statTempHitPoints, Mode=OneWay}"/>
+		<local:StatBox x:Name="statName" Margin="10,73,0,0" Width="67" Height="18" Text="Name"/>
+		<local:StatBox x:Name="statRaceClass" Margin="82,14,0,0" Width="121" Height="18" Text="Race/Class"/>
+		<local:StatBox x:Name="statLevel" Margin="84,38,0,0" Width="34" Height="18" Text="1"/>
+		<local:StatBox x:Name="statInspiration" Margin="127,38,0,0" Width="34" Height="18" Text="0"/>
+		<local:StatBox x:Name="statExperiencePoints" Margin="169,38,0,0" Width="34" Height="18" Text="100"/>
+		<local:StatBox x:Name="statAlignment" Margin="82,73,0,0" Width="121" Height="18" Text="Alignment"/>
+		<local:StatBox x:Name="statStrength" Margin="10,122,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatStrengthModifier" Margin="21,142,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statDexterity" Margin="10,180,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatDexterityModifier" Margin="21,200,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statConstitution" Margin="10,238,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatConstitutionModifier" Margin="21,258,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statIntelligence" Margin="10,296,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatIntelligenceModifier" Margin="21,316,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statWisdom" Margin="10,354,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatWisdomModifier" Margin="21,374,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statCharisma" Margin="10,412,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatCharismaModifier" Margin="21,432,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+		<local:StatBox x:Name="statArmorClass" Margin="67,112,0,0" Width="37" Height="18" Text="10"/>
+		<local:StatBox x:Name="statInitiative" Margin="112,112,0,0" Width="37" Height="18" Text="+2"/>
+		<local:StatBox x:Name="statSpeed" Margin="156,112,0,0" Width="37" Height="18" Text="30"/>
+
+		<local:StatBox x:Name="statHitPoints" Margin="70,152,0,0" Width="37" Height="18" Text="22"/>
+		<local:StatBox x:Name="statTempHitPoints" Margin="70,184,0,0" Width="37" Height="18" Text="3"/>
+
+		<CheckBox x:Name="statDeathSaveHeart1" Margin="139,155,0,0"/>
+		<CheckBox x:Name="statDeathSaveHeart2" Margin="155,155,0,0"/>
+		<CheckBox x:Name="statDeathSaveHeart3" Margin="171,155,0,0"/>
+		<CheckBox x:Name="statDeathSaveSkull1" Margin="139,175,0,0"/>
+		<CheckBox x:Name="statDeathSaveSkull2" Margin="155,175,0,0"/>
+		<CheckBox x:Name="statDeathSaveSkull3" Margin="171,175,0,0"/>
+
+		<local:StatBox x:Name="statHitDice" Margin="118,216,0,0" Width="75" Height="18" Text="1d4" TextAlignment="Left"/>
+
+		<local:StatBox x:Name="statProficiencyBonus" Margin="60,252,0,0" Width="37" Height="18" Text="+2"/>
+		<local:StatBox x:Name="statPassivePerception" Margin="111,252,0,0" Width="37" Height="18" Text="12"/>
+		<local:StatBox x:Name="statGoldPieces" Margin="161,252,0,0" Width="48" Height="18" Text="222"/>
+
+		<CheckBox x:Name="statSavingStrengthProficient" Margin="68,301,0,0" IsEnabled="False"/>
+		<local:StatBox x:Name="statSavingStrength" Margin="90,300,0,0" Width="22" Height="18" Text="+2"/>
+
+		<CheckBox x:Name="statSavingDexterityProficient" Margin="68,324,0,0" IsEnabled="False"/>
+		<local:StatBox x:Name="statSavingDexterity" Margin="90,322,0,0" Width="22" Height="18" Text="+2"/>
+
+		<CheckBox x:Name="statSavingConstitutionProficient" Margin="68,346,0,0" IsEnabled="False"/>
+		<local:StatBox x:Name="statSavingConstitution" Margin="90,345,0,0" Width="22" Height="18" Text="+2"/>
+
+		<CheckBox x:Name="statSavingIntelligenceProficient" Margin="68,368,0,0" IsEnabled="False"/>
+		<local:StatBox x:Name="statSavingIntelligence" Margin="90,367,0,0" Width="22" Height="18" Text="+2"/>
+
+		<CheckBox x:Name="statSavingWisdomProficient" Margin="68,391,0,0" IsEnabled="False"/>
+		<local:StatBox x:Name="statSavingWisdom" Margin="90,390,0,0" Width="22" Height="18" Text="+2"/>
+
+		<CheckBox x:Name="statSavingCharismaProficient" Margin="68,413,0,0" IsEnabled="False"/>
+		<local:StatBox x:Name="statSavingCharisma" Margin="90,412,0,0" Width="22" Height="18" Text="+2"/>
+
+		<local:StatBox x:Name="statName2" Margin="260,73,0,0" Width="67" Height="18" Text="Name"/>
+		<local:StatBox x:Name="statPassivePerception2" Margin="366,18,0,0" Width="54" Height="18" Text="12"/>
+		<local:StatBox x:Name="statProficiencyBonus2" Margin="348,58,0,0" Width="88" Height="18" Text="+2"/>
+		<local:StatBox x:Name="statStrength2" Margin="260,122,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatStrengthModifier2" Margin="271,142,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statDexterity2" Margin="260,180,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatDexterityModifier2" Margin="271,200,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statConstitution2" Margin="260,238,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatConstitutionModifier2" Margin="271,258,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statIntelligence2" Margin="260,296,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatIntelligenceModifier2" Margin="271,316,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statWisdom2" Margin="260,354,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatWisdomModifier2" Margin="271,374,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+		<local:StatBox x:Name="statCharisma2" Margin="260,412,0,0" Width="37" Height="18" Text="15"/>
+		<TextBlock x:Name="calcStatCharismaModifier2" Margin="271,432,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+		<CheckBox x:Name="statSkillAcrobaticsProficient" Margin="322,114,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillAcrobatics" Margin="339,112,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillAnimalHandlingProficient" Margin="322,132,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillAnimalHandling" Margin="339,131,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillArcanaProficient" Margin="322,151,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillArcana" Margin="339,150,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillAthleticsProficient" Margin="322,170,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillAthletics" Margin="339,168,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillDeceptionProficient" Margin="322,188,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillDeception" Margin="339,187,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillHistoryProficient" Margin="322,207,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillHistory" Margin="339,206,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillInsightProficient" Margin="322,225,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillInsight" Margin="339,224,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillIntimidationProficient" Margin="322,244,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillIntimidation" Margin="339,243,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillInvestigationProficient" Margin="322,263,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillInvestigation" Margin="339,261,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillMedicineProficient" Margin="322,281,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillMedicine" Margin="339,280,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillNatureProficient" Margin="322,300,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillNature" Margin="339,298,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillPerceptionProficient" Margin="322,318,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillPerception" Margin="339,317,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillPerformanceProficient" Margin="322,336,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillPerformance" Margin="339,335,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillPersuasionProficient" Margin="322,355,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillPersuasion" Margin="339,354,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillReligionProficient" Margin="322,374,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillReligion" Margin="339,373,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillSlightOfHandProficient" Margin="322,392,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillSlightOfHand" Margin="339,391,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillStealthProficient" Margin="322,411,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillStealth" Margin="339,410,0,0" Width="24" Height="16" Text="+2"/>
+
+		<CheckBox x:Name="statSkillSurvivalProficient" Margin="322,430,0,0" IsEnabled="False" Height="14" Width="14"/>
+		<local:StatBox x:Name="statSkillSurvival" Margin="339,428,0,0" Width="24" Height="16" Text="+2"/>
+
+		<local:StatBox x:Name="statName3" Margin="510,73,0,0" Width="67" Height="18" Text="Name"/>
+		<local:StatBox x:Name="statSpeed3" Margin="592,59,0,0" Width="37" Height="18" Text="30"/>
+		<local:StatBox x:Name="statWeight" Margin="642,59,0,0" Width="50" Height="18" Text="143"/>
+		<local:StatBox x:Name="statLoad" Margin="642,20,0,0" Width="50" Height="18" Text="143"/>
+		<local:StatBox x:Name="statGoldPieces3" Margin="585,20,0,0" Width="51" Height="18" Text="1,143"/>
+		
 	</Grid>
 </UserControl>

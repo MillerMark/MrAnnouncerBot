@@ -409,6 +409,24 @@
       return true;
     }
 
+    if (testCommand === 'Emphasis1') {
+      this.characterStatsScroll.page = ScrollPage.main;
+      this.characterStatsScroll.addEmphasis(emphasisMain.Strength);
+      return true;
+    }
+
+    if (testCommand === 'Emphasis2') {
+      this.characterStatsScroll.page = ScrollPage.main;
+      this.characterStatsScroll.addEmphasis(emphasisMain.HitPointsTempHitPoints);
+      return true;
+    }
+
+    if (testCommand === 'Emphasis3') {
+      this.characterStatsScroll.page = ScrollPage.skills;
+      this.characterStatsScroll.addEmphasis(emphasisSkills.SkillsAnimalHandling);
+      return true;
+    }
+
     if (testCommand === '2') {
       this.characterStatsScroll.state = ScrollState.none;
       this.characterStatsScroll.selectedCharacterIndex = 2;

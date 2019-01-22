@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="1200">
+        Title="MainWindow" Height="680" Width="1200">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="2*" />
@@ -35,13 +35,52 @@
 			</TabItem>
 		</TabControl>
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-		<TabControl Grid.Column="2" Height="613" Width="390" HorizontalAlignment="Left" VerticalAlignment="Top">
-			<TabItem Header="Dungeon">
-				<Grid Background="#FFE5E5E5"/>
-			</TabItem>
-			<TabItem Header="Log">
-				<Grid Background="#FFE5E5E5"/>
-			</TabItem>
-		</TabControl>
+		<StackPanel x:Name="spTimeManagement" Grid.Column="2" Orientation="Vertical" >
+			<StackPanel x:Name="spTime" Orientation="Vertical">
+				<StackPanel x:Name="spTimeSegments" Orientation="Horizontal" Margin="3" >
+					<TextBlock Text="Year:" Width="Auto" Height="Auto" Margin="4"/>
+					<TextBox x:Name="txtYear" Text="1" Margin="0, 4, 4, 4"/>
+					<TextBlock Text="Month:" Width="Auto" Height="Auto" Margin="4"/>
+					<TextBox x:Name="txtMonth" Text="1" Margin="0, 4, 4, 4"/>
+					<TextBlock Text="Day:" Width="Auto" Height="Auto" Margin="4"/>
+					<TextBox x:Name="txtDay" Text="1" Margin="0, 4, 4, 4"/>
+					<TextBlock Text="Hour:" Width="Auto" Height="Auto" Margin="16, 4, 4, 4"/>
+					<TextBox x:Name="txtHour" Text="0" Margin="0, 4, 4, 4"/>
+					<TextBlock Text="Minute:" Width="Auto" Height="Auto" Margin="4"/>
+					<TextBox x:Name="txtMinute" Text="0" Margin="0, 4, 4, 4"/>
+					<TextBlock Text="Second:" Width="Auto" Height="Auto" Margin="4"/>
+					<TextBox x:Name="txtSecond" Text="0" Margin="0, 4, 4, 4"/>
+				</StackPanel>
+				<StackPanel x:Name="spTimeModifiers" Orientation="Horizontal" Margin="4, 0, 4, 16" >
+					<Button x:Name="btnAddLongRest" Margin="4" Padding="8, 4, 8, 4">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+							<TextBlock Text="Long " Width="Auto" Height="Auto" FontWeight="Bold"/>
+							<TextBlock Text="Rest" Width="Auto" Height="Auto"/>
+						</StackPanel>
+					</Button>
+
+					<Button x:Name="btnAddShortRest" Margin="4" Padding="8, 4, 8, 4">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+							<TextBlock Text="Short " Width="Auto" Height="Auto" FontWeight="Bold"/>
+							<TextBlock Text="Rest" Width="Auto" Height="Auto"/>
+						</StackPanel>
+					</Button>
+
+					<Button x:Name="btnAddCustom" Margin="4" Padding="8, 4, 8, 4">
+						Add Custom...
+					</Button>
+				</StackPanel>
+			</StackPanel>
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="390" >
+				<TabItem Header="Dungeon">
+					<Grid Background="#FFE5E5E5"/>
+				</TabItem>
+				<TabItem Header="History">
+					<Grid Background="#FFE5E5E5"/>
+				</TabItem>
+			</TabControl>
+		</StackPanel>
 	</Grid>
 </Window>

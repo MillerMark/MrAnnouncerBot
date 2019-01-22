@@ -242,10 +242,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GroupBackground.xaml.cs">
+      <DependentUpon>GroupBackground.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>
     </Compile>
     <Page Include="CharacterSheets.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GroupBackground.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

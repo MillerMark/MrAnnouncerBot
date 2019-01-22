@@ -43,7 +43,7 @@
     statPage.addStat('speed', 272, acInitSpeedY, StatPage.bigNumberFontSize);
     statPage.addStat('hitPoints', hpTempHpX, 251, StatPage.bigNumberFontSize);
     statPage.addStat('tempHitPoints', hpTempHpX, 299, tempHpFontSize);
-    statPage.addStat('hitDice', 183, 351, hitDiceFontSize, TextAlign.left);
+    statPage.addStat('remainingHitDice', 183, 351, hitDiceFontSize, TextAlign.left);
     statPage.addStat('deathSaveLife1', deathSave1X, deathSaveLifeY, deathSaveRadius);
     statPage.addStat('deathSaveLife2', deathSave2X, deathSaveLifeY, deathSaveRadius);
     statPage.addStat('deathSaveLife3', deathSave3X, deathSaveLifeY, deathSaveRadius);

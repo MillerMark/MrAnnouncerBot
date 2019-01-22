@@ -57,6 +57,7 @@ namespace DHDM
 			TextAlignment = TextAlignment.Center;
 			HorizontalAlignment = HorizontalAlignment.Left;
 			VerticalAlignment = VerticalAlignment.Top;
+			StatBoxState = StatBoxState.DisplayOnly;
 		}
 
 		public StatBoxState StatBoxState

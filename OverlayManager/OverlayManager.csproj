@@ -16,6 +16,7 @@
     <None Remove="TS\DragonH\CharacterEnums.ts" />
     <None Remove="TS\DragonH\CharacterStat.ts" />
     <None Remove="TS\DragonH\CharacterStatsScroll.ts" />
+    <None Remove="TS\DragonH\Item.ts" />
     <None Remove="TS\DragonH\StatPage.ts" />
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\DroneProxy.ts" />
@@ -872,6 +873,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="TS\DragonH\Character.ts" />
     <TypeScriptCompile Include="TS\DragonH\CharacterEnums.ts" />
+    <TypeScriptCompile Include="TS\DragonH\Item.ts" />
     <TypeScriptCompile Include="TS\DragonH\StatPage.ts" />
     <TypeScriptCompile Include="TS\DragonH\CharacterStat.ts" />
     <TypeScriptCompile Include="TS\DragonH\CharacterStatsScroll.ts" />
