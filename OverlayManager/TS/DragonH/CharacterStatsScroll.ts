@@ -26,9 +26,10 @@
   scrollRolls: Sprites;
   scrollEmphasisMain: Sprites;
   scrollEmphasisSkills: Sprites;
+  scrollEmphasisEquipment: Sprites;
   scrollSlam: Sprites;
   scrollBacks: Sprites;
-  players: Sprites;
+  playerHeadshots: Sprites;
 
   // TODO: consolidate with page, if possible.
   pageIndex: number;
@@ -101,8 +102,8 @@
     this.scrollBacks.sprites = [];
     this.scrollRolls.add(0, 0, 0);
     this.scrollBacks.add(0, 0, this._page);
-    this.players.sprites = [];
-    this.players.add(0, 0, this.selectedCharacterIndex);
+    this.playerHeadshots.sprites = [];
+    this.playerHeadshots.add(0, 0, this.selectedCharacterIndex);
     this.pageIndex = this._page;
     this.selectedStatPageIndex = this._page - 1;
     this.topEmitter.start();
@@ -206,7 +207,6 @@
         let sy: number = dy;
 
         baseAnim.drawCroppedByIndex(world.ctx, sx, sy, this.pageIndex, dx, dy, sw, sh, sw, dh);
-        this.drawHighlighting(now, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
 
         let picOffsetY: number = topData - picY;
         let picCroppedHeight: number = picY + picHeight - topData;
@@ -214,8 +214,9 @@
         if (picCroppedHeight > 0) {
           // ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 
-          this.players.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.selectedCharacterIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
+          this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.selectedCharacterIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
         }
+        this.drawHighlighting(now, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
 
         //if (this.state === ScrollState.closing && frameIndex <= 7) {
         //  this.state = ScrollState.paused;
@@ -238,14 +239,12 @@
       }
       else {
         this.scrollBacks.draw(world.ctx, now * 1000);
-        this.players.baseAnimation.drawByIndex(world.ctx, picX, picY, this.selectedCharacterIndex);
+        this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.selectedCharacterIndex);
+        this.drawHighlighting(now, timeScale, world);
         this.topEmitter.stop();
         this.bottomEmitter.stop();
         this.state = ScrollState.unrolled;
-        this.drawHighlighting(now, timeScale, world);
       }
-
-
 
       this.topEmitter.render(now, timeScale, world);
       this.bottomEmitter.render(now, timeScale, world);
@@ -281,10 +280,12 @@
     if (dh > 0) {
       this.scrollEmphasisMain.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
       this.scrollEmphasisSkills.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+      this.scrollEmphasisEquipment.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
     }
     else {
       this.scrollEmphasisMain.draw(world.ctx, now * 1000);
       this.scrollEmphasisSkills.draw(world.ctx, now * 1000);
+      this.scrollEmphasisEquipment.draw(world.ctx, now * 1000);
     }
   }
 
@@ -298,7 +299,7 @@
   }
 
   weAreHighlighting(): any {
-    return this.scrollEmphasisMain.sprites.length > 0 || this.scrollEmphasisSkills.sprites.length > 0;
+    return this.scrollEmphasisMain.sprites.length > 0 || this.scrollEmphasisSkills.sprites.length > 0 || this.scrollEmphasisEquipment.sprites.length > 0;
   }
 
   buildGoldDust(): any {
@@ -345,9 +346,10 @@
     this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
     this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
     this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
-    this.players = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
+    this.playerHeadshots = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
     this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
     this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);
+    this.scrollEmphasisEquipment = new Sprites("Scroll/Emphasis/Equipment/EmphasisEquipment", 5, this.framerateMs, AnimationStyle.Static);
 
     this.scrollWooshSfx = new Audio(Folders.assets + 'SoundEffects/scrollWoosh.mp3');
     this.scrollOpenSfx = new Audio(Folders.assets + 'SoundEffects/scrollOpen.mp3');
@@ -378,15 +380,19 @@
   }
 
   playerPageChanged(playerID: number, pageID: number, playerData: string): any {
-
     console.log(`playerPageChanged(${playerID}, ${pageID}, ${playerData})`);
+
     if (this.selectedCharacterIndex !== playerID) {
+      this.clearEmphasis();
+
       this.selectedCharacterIndex = playerID;
       this._page = pageID;
       this.state = ScrollState.none;
       this.open(performance.now());
     }
     else if (this.page != pageID) {
+      this.clearEmphasis();
+
       this.state = ScrollState.none;
       this.page = pageID;
       this.open(performance.now());
@@ -394,23 +400,38 @@
 
   }
 
+  private clearEmphasis() {
+    this.scrollEmphasisMain.sprites = [];
+    this.scrollEmphasisSkills.sprites = [];
+    this.scrollEmphasisEquipment.sprites = [];
+  }
+
   addEmphasis(emphasisIndex: number): void {
     if (this.page === ScrollPage.main)
       this.scrollEmphasisMain.add(0, 0, emphasisIndex);
     else if (this.page === ScrollPage.skills)
       this.scrollEmphasisSkills.add(0, 0, emphasisIndex);
+    else if (this.page === ScrollPage.equipment)
+      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex);
   }
 
 
   focusItem(playerID: number, pageID: number, itemID: string): void {
+    let emphasisIndex: number;
+
     if (pageID === ScrollPage.main) {
-      let emphasisIndex: number = emphasisMain[itemID];
+      emphasisIndex = emphasisMain[itemID];
       this.scrollEmphasisMain.add(0, 0, emphasisIndex);
     }
     else if (pageID === ScrollPage.skills) {
-      let emphasisIndex: number = emphasisSkills[itemID];
+      emphasisIndex = emphasisSkills[itemID];
       this.scrollEmphasisSkills.add(0, 0, emphasisIndex);
     }
+    else if (pageID === ScrollPage.equipment) {
+      emphasisIndex = emphasisEquipment[itemID];
+      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex);
+    }
+
     //console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
   }
 
@@ -419,11 +440,20 @@
     if (pageID === ScrollPage.main) {
       let emphasisIndex: number = emphasisMain[itemID];
       this.scrollEmphasisMain.removeByFrameIndex(emphasisIndex);
+      this.scrollEmphasisSkills.sprites = [];
+      this.scrollEmphasisEquipment.sprites = [];
     }
     else if (pageID === ScrollPage.skills) {
       let emphasisIndex: number = emphasisSkills[itemID];
       this.scrollEmphasisSkills.removeByFrameIndex(emphasisIndex);
+      this.scrollEmphasisMain.sprites = [];
+      this.scrollEmphasisEquipment.sprites = [];
+    }
+    else if (pageID === ScrollPage.equipment) {
+      let emphasisIndex: number = emphasisEquipment[itemID];
+      this.scrollEmphasisEquipment.removeByFrameIndex(emphasisIndex);
+      this.scrollEmphasisMain.sprites = [];
+      this.scrollEmphasisSkills.sprites = [];
     }
   }
-
 }

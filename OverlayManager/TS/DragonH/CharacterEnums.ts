@@ -86,3 +86,11 @@ enum emphasisSkills {
   SkillsStealth = 25,
   SkillsSurvival = 26
 }
+
+enum emphasisEquipment {
+  NameHeadshot = 0,
+  GoldPieces = 1,
+  Load = 2,
+  Speed = 3,
+  Weight = 4
+}

@@ -247,6 +247,7 @@
     <Compile Include="GroupBackground.xaml.cs">
       <DependentUpon>GroupBackground.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RoundCheck.cs" />
     <Compile Include="StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>
     </Compile>

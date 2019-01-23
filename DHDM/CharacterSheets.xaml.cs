@@ -57,6 +57,7 @@ namespace DHDM
 		protected virtual void OnPageChanged(ScrollPage newPage)
 		{
 			scrollPage = newPage;
+			FocusHelper.ClearActiveStatBoxes();
 
 			RoutedEventArgs previewEventArgs = new RoutedEventArgs(PreviewPageChangedEvent);
 			RaiseEvent(previewEventArgs);
