@@ -101,6 +101,14 @@
 		<local:StatBox x:Name="statHitPoints" Margin="70,152,0,0" Width="37" Height="18" Text="22" FocusItem="HitPointsTempHitPoints"/>
 		<local:StatBox x:Name="statTempHitPoints" Margin="70,184,0,0" Width="37" Height="18" Text="3" FocusItem="HitPointsTempHitPoints"/>
 
+		<local:GroupBackground Height="62" Margin="119,148,0,0" Width="74" 
+													 StatBox1="{Binding ElementName=statDeathSaveHeart1, Mode=OneWay}"
+													 StatBox2="{Binding ElementName=statDeathSaveHeart2, Mode=OneWay}"
+													 StatBox3="{Binding ElementName=statDeathSaveHeart3, Mode=OneWay}"
+													 StatBox4="{Binding ElementName=statDeathSaveSkull1, Mode=OneWay}"
+													 StatBox5="{Binding ElementName=statDeathSaveSkull2, Mode=OneWay}"
+													 StatBox6="{Binding ElementName=statDeathSaveSkull3, Mode=OneWay}"
+													 />
 		<local:RoundCheck x:Name="statDeathSaveHeart1" Margin="139,155,0,0" FocusItem="DeathSaves"/>
 		<local:RoundCheck x:Name="statDeathSaveHeart2" Margin="155,155,0,0" FocusItem="DeathSaves"/>
 		<local:RoundCheck x:Name="statDeathSaveHeart3" Margin="171,155,0,0" FocusItem="DeathSaves"/>

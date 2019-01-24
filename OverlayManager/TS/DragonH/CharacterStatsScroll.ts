@@ -1,6 +1,18 @@
 ﻿enum HighlightEmitterType {
-  radial,
+  circular,
   rectangular
+}
+
+enum DistributionOrientation {
+  Horizontal,
+  Vertical
+}
+
+class EmitterDistribution {
+  orientation: DistributionOrientation;
+	constructor(public centerX: number, public centerY: number, public width: number, public height: number, public spread: number) {
+    this.orientation = DistributionOrientation.Vertical;
+	}
 }
 
 class HighlightEmitter {
@@ -11,7 +23,7 @@ class HighlightEmitter {
   emitter: Emitter;
 
   constructor(public name: string, public center: Vector) {
-    this.type = HighlightEmitterType.radial;
+    this.type = HighlightEmitterType.circular;
     this.radius = 3;
   }
 
@@ -40,18 +52,37 @@ class HighlightEmitter {
     return this;
   }
 
+  setCircular(radius: number): HighlightEmitter {
+    this.type = HighlightEmitterType.circular;
+    this.radius = radius;
+    return this;
+  }
+
   start(): void {
     if (!this.emitter)
       this.emitter = HighlightEmitter.createBaseEmitter(this.center);
 
-    if (this.type === HighlightEmitterType.radial) {
+    if (this.type === HighlightEmitterType.circular) {
       this.emitter.radius = this.radius;
     }
-    else
+    else {
       this.emitter.setRectShape(this.width, this.height);
+    }
+
+    const standardLength: number = 290;
+    const idealParticlesPerSecond: number = 200;
+    this.emitter.particlesPerSecond = idealParticlesPerSecond * this.getPerimeter() / standardLength;
 
     this.emitter.start();
   }
+    getPerimeter(): number {
+      if (this.type === HighlightEmitterType.circular) {
+        return this.radius * MathEx.TWO_PI;
+      }
+      else {
+        return 2 * this.width + 2 * this.height;
+      }
+    }
 
   static createBaseEmitter(center: Vector): Emitter {
     var emitter: Emitter;
@@ -63,18 +94,17 @@ class HighlightEmitter {
     emitter.brightness.target = 0.7;
     emitter.brightness.relativeVariance = 0.5;
     emitter.particlesPerSecond = 300;
-    emitter.particleRadius.target = 1.2;
+    emitter.particleRadius.target = 1;
     emitter.particleRadius.relativeVariance = 0.3;
-    emitter.particleLifeSpanSeconds = 2.4;
+    emitter.particleLifeSpanSeconds = 1.7;
     emitter.particleGravity = 0;
     emitter.particleInitialVelocity.target = 0.1;
     emitter.particleInitialVelocity.relativeVariance = 0.5;
     emitter.particleMaxOpacity = 0.8;
     emitter.particleAirDensity = 0;
+    emitter.emitterEdgeSpread = 0.2;
     return emitter;
   }
-
-
 }
 
 class HighlightEmitterPages {
@@ -161,8 +191,91 @@ class CharacterStatsScroll extends WorldObject {
     for (var i = 0; i < 4; i++) {
       this.highlightEmitterPages.push(new HighlightEmitterPages());
     }
-    this.highlightEmitterPages[ScrollPage.main].emitters.push(new HighlightEmitter('Strength', new Vector(44, 204)).setRectangular(37, 69));
+    this.addHighlightEmitters();
   }
+
+  private addHighlightEmitters() {
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.NameHeadshot], new Vector(68, 127)).setRectangular(104, 28));
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.RaceClass], new Vector(227, 37)).setRectangular(189, 24));
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.Level], new Vector(157, 79)).setRectangular(51, 51));
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.Inspiration], new Vector(225, 80)).setRectangular(51, 51));
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.ExperiencePoints], new Vector(289, 80)).setRectangular(51, 51));
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.Alignment], new Vector(225, 130)).setRectangular(189, 24));
+
+
+    const acInitSpeedY: number = 196;
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.ArmorClass], new Vector(134, acInitSpeedY)).setCircular(28));
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.Initiative], new Vector(203, acInitSpeedY)).setRectangular(51, 51));
+
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.Speed], new Vector(273, acInitSpeedY)).setRectangular(60, 53));
+
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.HitPointsTempHitPoints], new Vector(139, 280)).setRectangular(67, 95));
+
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.DeathSaves], new Vector(241, 277)).setRectangular(111, 90));
+
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.HitDice], new Vector(204, 350)).setRectangular(197, 26));
+
+    const profPercepGoldCenterY: number = 413;
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.ProficiencyBonus], new Vector(123, profPercepGoldCenterY)).setCircular(31));
+
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.Perception], new Vector(201, profPercepGoldCenterY)).setRectangular(77, 53));
+
+
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.GoldPieces], new Vector(288, profPercepGoldCenterY)).setRectangular(72, 58));
+
+    const abilityDistribution: EmitterDistribution = new EmitterDistribution(45, 207, 54, 84, 91);
+    this.addDistribution(ScrollPage.main, emphasisMain.Strength, emphasisMain.Charisma, abilityDistribution);
+
+    const savingThrowDistribution: EmitterDistribution = new EmitterDistribution(210, 481, 211, 36, 35);
+    this.addDistribution(ScrollPage.main, emphasisMain.SavingStrength, emphasisMain.SavingCharisma, savingThrowDistribution);
+  }
+
+  private addDistribution(page: ScrollPage, first: number, last: number, dist: EmitterDistribution) {
+    let x: number = dist.centerX;
+    let y: number = dist.centerY;
+    for (var i = first; i <= last; i++) {
+      this.addRectangularHighlight(page, i, x, y, dist.width, dist.height);
+      if (dist.orientation === DistributionOrientation.Vertical)
+        y += dist.spread;
+      else
+        x += dist.spread;
+    }
+  }
+
+  addRectangularHighlight(scrollPage: ScrollPage, enumIndex: number, centerX: number, centerY: number, width: number, height: number): any {
+    let name: string = this.getNameFromIndex(scrollPage, enumIndex);
+    if (name === null)
+      return;
+    this.highlightEmitterPages[scrollPage].emitters.push(new HighlightEmitter(name, new Vector(centerX, centerY)).setRectangular(width, height));
+  }
+
+
 
   private _page: ScrollPage;
 
@@ -175,6 +288,16 @@ class CharacterStatsScroll extends WorldObject {
       this.close();
       this._page = newValue;
     }
+  }
+
+  private getNameFromIndex(scrollPage: ScrollPage, enumIndex: number): any {
+    if (scrollPage === ScrollPage.main)
+      return emphasisMain[enumIndex];
+    else if (scrollPage === ScrollPage.skills)
+      return emphasisSkills[enumIndex];
+    else if (scrollPage === ScrollPage.equipment)
+      return emphasisEquipment[enumIndex];
+    return null;
   }
 
   slam(): void {
