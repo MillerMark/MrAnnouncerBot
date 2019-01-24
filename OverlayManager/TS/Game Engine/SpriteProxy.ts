@@ -25,6 +25,8 @@ class SpriteProxy {
   startY: any;
   lastX: number;
   lastY: number;
+  fadeInTime: number = 0;
+  fadeOutTime: number = 4000;
 
   constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
     this.opacity = 1;
@@ -70,13 +72,17 @@ class SpriteProxy {
   }
 
   getAlpha(now: number): number {
+    let msAlive: number = now - this.timeStart;
+
+    if (msAlive < this.fadeInTime)
+      return this.opacity * msAlive / this.fadeInTime;
+
     if (!this.expirationDate)
       return this.opacity;
 
     let lifeRemaining: number = this.expirationDate - now;
-    const fadeOutTime: number = 4000;
-    if (lifeRemaining < fadeOutTime && this.fadeOnDestroy) {
-      return this.opacity * lifeRemaining / fadeOutTime;
+    if (lifeRemaining < this.fadeOutTime && this.fadeOnDestroy) {
+      return this.opacity * lifeRemaining / this.fadeOutTime;
     }
     return this.opacity;
   }
@@ -219,5 +225,11 @@ class SpriteProxy {
 
     var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust(now));
     this.y = this.startY + Physics.metersToPixels(yDisplacement);
+  }
+
+  setFadeTimes(fadeInTime: number, fadeOutTime: number): SpriteProxy {
+    this.fadeInTime = fadeInTime;
+    this.fadeOutTime = fadeOutTime;
+    return this;
   }
 }

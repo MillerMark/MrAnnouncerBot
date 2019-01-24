@@ -35,6 +35,7 @@ namespace DHDM
 		public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
 			nameof(TextAlignment), typeof(TextAlignment), typeof(StatBox),
 			new FrameworkPropertyMetadata(TextAlignment.Center, new PropertyChangedCallback(OnStatBoxTextAlignmentChanged)));
+		string saveText;
 
 
 		static StatBox()
@@ -139,6 +140,7 @@ namespace DHDM
 					// TODO: Update the overlay via SignalR.
 					break;
 				case StatBoxState.Editing:
+					saveText = txtEdit.Text;
 					txtDisplay.Visibility = Visibility.Hidden;
 					txtEdit.Visibility = Visibility.Visible;
 					if (oldValue == StatBoxState.Focused)
@@ -157,8 +159,14 @@ namespace DHDM
 
 		private void TxtEdit_PreviewKeyUp(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Enter)
-				StatBoxState = StatBoxState.Focused;
+			if (e.Key == Key.Escape)
+			{
+				Text = saveText;
+				StatBoxState = StatBoxState.DisplayOnly;
+			}
+			else if (e.Key == Key.Enter)
+				StatBoxState = StatBoxState.DisplayOnly;
+			//StatBoxState = StatBoxState.Focused;
 		}
 
 		private void TxtDisplay_PreviewKeyUp(object sender, KeyEventArgs e)

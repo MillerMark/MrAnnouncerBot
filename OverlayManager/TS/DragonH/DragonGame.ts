@@ -127,9 +127,10 @@
 
   buildTestGoldParticle(): any {
     //this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -14));
-    var scrollLength: number = 370;
-    this.emitter = new Emitter(new Vector(scrollLength / 2, 460));
-    this.emitter.setRectShape(scrollLength, 1);
+    let width: number = 37;
+    let height: number = 69;
+    this.emitter = new Emitter(new Vector(800, 460));
+    this.emitter.setRectShape(width, height);
     this.emitter.saturation.target = 0.9;
     this.emitter.saturation.relativeVariance = 0.2;
     this.emitter.hue = new TargetValue(40, 0, 0, 60);
@@ -139,20 +140,20 @@
     //this.emitter.hue.drift = 0.6;
     this.emitter.brightness.target = 0.7;
     this.emitter.brightness.relativeVariance = 0.5;
-    this.emitter.particlesPerSecond = 600;
+    this.emitter.particlesPerSecond = 300;
 
-    this.emitter.particleRadius.target = 2.5;
-    this.emitter.particleRadius.relativeVariance = 0.8;
+    this.emitter.particleRadius.target = 1.5;
+    this.emitter.particleRadius.relativeVariance = 0.3;
 
-    this.emitter.particleLifeSpanSeconds = 1.4;
+    this.emitter.particleLifeSpanSeconds = 1.7;
     this.emitter.particleGravity = 0;
-    this.emitter.particleInitialVelocity.target = 0;
+    this.emitter.particleInitialVelocity.target = 0.2;
     this.emitter.particleInitialVelocity.relativeVariance = 0.5;
-    this.emitter.gravity = 4;
-    this.emitter.airDensity = 0.2; // 0 == vaccuum.
-    this.emitter.particleAirDensity = 1;  // 0 == vaccuum.
+    this.emitter.particleMaxOpacity = 0.5;
+    //this.emitter.airDensity = 0.2; // 0 == vaccuum.
+    this.emitter.particleAirDensity = 0;  // 0 == vaccuum.
     //this.emitter.wind = new Vector(0, 0);
-    this.emitter.particleWind = new Vector(0, -3);
+    //this.emitter.particleWind = new Vector(0, -3);
   }
 
   wind(): any {
@@ -487,6 +488,13 @@
     if (testCommand === 'wind') {
       this.world.removeCharacter(this.emitter);
       this.wind();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'gold') {
+      this.world.removeCharacter(this.emitter);
+      this.buildTestGoldParticle();
       this.world.addCharacter(this.emitter);
       return true;
     }

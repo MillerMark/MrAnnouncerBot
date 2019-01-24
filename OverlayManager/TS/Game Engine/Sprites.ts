@@ -350,6 +350,33 @@
         this.sprites.splice(i, 1);
     }
   }
+
+  killByFrameIndex(frameIndex: number, nowMs: number): void{
+    for (var i = this.sprites.length - 1; i >= 0; i--) {
+      var sprite: SpriteProxy = this.sprites[i];
+      if (sprite.frameIndex === frameIndex)
+        sprite.expirationDate = nowMs + sprite.fadeOutTime;
+    }
+  }
+
+  hasAny(): boolean {
+    return this.sprites.length > 0;
+  }
+
+  hasAnyAlive(nowMs: number): boolean {
+    if (this.sprites.length == 0)
+      return false;
+
+
+    //return this.sprites.some(s => s.expirationDate > nowMs);
+    for (var i = 0; i < this.sprites.length; i++) {
+      var sprite: SpriteProxy = this.sprites[i];
+      if (sprite.expirationDate == null || sprite.expirationDate > nowMs + sprite.fadeOutTime)
+        return true;
+    }
+
+    return false;
+  }
 }
 
 // TODO: Convert to enum...

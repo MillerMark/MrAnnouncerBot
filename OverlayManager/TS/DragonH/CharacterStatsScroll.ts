@@ -1,4 +1,102 @@
-﻿class CharacterStatsScroll extends WorldObject {
+﻿enum HighlightEmitterType {
+  radial,
+  rectangular
+}
+
+class HighlightEmitter {
+  width: number;
+  height: number;
+  radius: number;
+  type: HighlightEmitterType;
+  emitter: Emitter;
+
+  constructor(public name: string, public center: Vector) {
+    this.type = HighlightEmitterType.radial;
+    this.radius = 3;
+  }
+
+  preUpdate(now: number, timeScale: number, world: World): any {
+    if (this.emitter) {
+      this.emitter.preUpdate(now, timeScale, world);
+    }
+  }
+
+  update(now: number, timeScale: number, world: World): any {
+    if (this.emitter) {
+      this.emitter.update(now, timeScale, world);
+    }
+  }
+
+  render(now: number, timeScale: number, world: World): void {
+    if (this.emitter) {
+      this.emitter.render(now, timeScale, world);
+    }
+  }
+
+  setRectangular(width: number, height: number): HighlightEmitter {
+    this.type = HighlightEmitterType.rectangular;
+    this.width = width;
+    this.height = height;
+    return this;
+  }
+
+  start(): void {
+    if (!this.emitter)
+      this.emitter = HighlightEmitter.createBaseEmitter(this.center);
+
+    if (this.type === HighlightEmitterType.radial) {
+      this.emitter.radius = this.radius;
+    }
+    else
+      this.emitter.setRectShape(this.width, this.height);
+
+    this.emitter.start();
+  }
+
+  static createBaseEmitter(center: Vector): Emitter {
+    var emitter: Emitter;
+    emitter = new Emitter(center);
+    emitter.saturation.target = 0.9;
+    emitter.saturation.relativeVariance = 0.2;
+    emitter.hue = new TargetValue(40, 0, 0, 60);
+    emitter.hue.absoluteVariance = 10;
+    emitter.brightness.target = 0.7;
+    emitter.brightness.relativeVariance = 0.5;
+    emitter.particlesPerSecond = 300;
+    emitter.particleRadius.target = 1.2;
+    emitter.particleRadius.relativeVariance = 0.3;
+    emitter.particleLifeSpanSeconds = 2.4;
+    emitter.particleGravity = 0;
+    emitter.particleInitialVelocity.target = 0.1;
+    emitter.particleInitialVelocity.relativeVariance = 0.5;
+    emitter.particleMaxOpacity = 0.8;
+    emitter.particleAirDensity = 0;
+    return emitter;
+  }
+
+
+}
+
+class HighlightEmitterPages {
+  emitters: Array<HighlightEmitter> = new Array<HighlightEmitter>();
+  constructor() {
+
+  }
+
+  render(now: number, timeScale: number, world: World) {
+    this.emitters.forEach(function (emitter: HighlightEmitter) {
+      emitter.render(now, timeScale, world);
+    });
+  }
+
+  find(itemID: string): HighlightEmitter {
+    return this.emitters.find(s => s.name === itemID);
+  }
+}
+
+class CharacterStatsScroll extends WorldObject {
+
+
   scrollOpenSfx: HTMLAudioElement;
   scrollWooshSfx: HTMLAudioElement;
   scrollCloseSfx: HTMLAudioElement;
@@ -6,10 +104,12 @@
 
   characters: Array<Character> = new Array<Character>();
   pages: Array<StatPage> = new Array<StatPage>();
+  highlightEmitterPages: Array<HighlightEmitterPages> = new Array<HighlightEmitterPages>();
 
   selectedStatPageIndex: number = -1;
 
   private _selectedCharacterIndex: number;
+  deEmphasisSprite: SpriteProxy;
 
   get selectedCharacterIndex(): number {
     return this._selectedCharacterIndex;
@@ -54,6 +154,14 @@
     this.buildGoldDust();
     this.pageIndex = this._page;
     this._selectedCharacterIndex = -1;
+    this.deEmphasisSprite = new SpriteProxy(0, 0, 0);
+    this.deEmphasisSprite.fadeInTime = 700;
+    this.deEmphasisSprite.fadeOutTime = 700;
+    this.deEmphasisSprite.expirationDate = activeGame.nowMs;
+    for (var i = 0; i < 4; i++) {
+      this.highlightEmitterPages.push(new HighlightEmitterPages());
+    }
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(new HighlightEmitter('Strength', new Vector(44, 204)).setRectangular(37, 69));
   }
 
   private _page: ScrollPage;
@@ -122,6 +230,9 @@
     super.preUpdate(now, timeScale, world);
     this.topEmitter.preUpdate(now, timeScale, world);
     this.bottomEmitter.preUpdate(now, timeScale, world);
+    this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
+      highlightEmitter.preUpdate(now, timeScale, world);
+    });
   }
 
   update(now: number, timeScale: number, world: World): void {
@@ -132,6 +243,10 @@
     if (this.state === ScrollState.slammed) {
       this.unroll(); // do we queue?
     }
+
+    this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
+      highlightEmitter.update(now, timeScale, world);
+    });
   }
 
   scrollIsVisible(): boolean {
@@ -273,10 +388,15 @@
   }
 
   drawHighlighting(now: number, timeScale: number, world: World, sx: number = 0, sy: number = 0, dx: number = 0, dy: number = 0, sw: number = 0, sh: number = 0, dw: number = 0, dh: number = 0): void {
-    if (!this.weAreHighlighting())
+    if (!this.weAreHighlighting(now))
       return;
 
     this.drawDeEmphasisLayer(world, now, sx, sy, dx, dy, sw, sh, dw, dh);
+
+    this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
+      highlightEmitter.render(now, timeScale, world);
+    });
+
     if (dh > 0) {
       this.scrollEmphasisMain.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
       this.scrollEmphasisSkills.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
@@ -290,19 +410,22 @@
   }
 
   drawDeEmphasisLayer(world: World, now: number, sx: number = 0, sy: number = 0, dx: number = 0, dy: number = 0, sw: number = 0, sh: number = 0, dw: number = 0, dh: number = 0): void {
+    let newAlpha: number = this.deEmphasisSprite.getAlpha(now * 1000);
+    world.ctx.globalAlpha = newAlpha;
     if (dh > 0) {
       this.scrollBacks.baseAnimation.drawCroppedByIndex(world.ctx, dx, dy, 0, sx, sy, sw, sh, dw, dh);
     }
     else {
       this.scrollBacks.baseAnimation.drawByIndex(world.ctx, 0, 0, 0);
     }
+    world.ctx.globalAlpha = 1;
   }
 
-  weAreHighlighting(): any {
-    return this.scrollEmphasisMain.sprites.length > 0 || this.scrollEmphasisSkills.sprites.length > 0 || this.scrollEmphasisEquipment.sprites.length > 0;
+  weAreHighlighting(now: number): boolean {
+    return this.currentlyEmphasizing() || this.deEmphasisSprite.expirationDate > now * 1000;
   }
 
-  buildGoldDust(): any {
+  buildGoldDust(): void {
     let windSpeed: number = 0.8;
 
     this.topEmitter = this.getMagicDustEmitter(windSpeed);
@@ -400,6 +523,8 @@
 
   }
 
+  readonly fadeTime: number = 300;
+
   private clearEmphasis() {
     this.scrollEmphasisMain.sprites = [];
     this.scrollEmphasisSkills.sprites = [];
@@ -408,52 +533,95 @@
 
   addEmphasis(emphasisIndex: number): void {
     if (this.page === ScrollPage.main)
-      this.scrollEmphasisMain.add(0, 0, emphasisIndex);
+      this.scrollEmphasisMain.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
     else if (this.page === ScrollPage.skills)
-      this.scrollEmphasisSkills.add(0, 0, emphasisIndex);
+      this.scrollEmphasisSkills.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
     else if (this.page === ScrollPage.equipment)
-      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex);
+      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);;
   }
 
 
   focusItem(playerID: number, pageID: number, itemID: string): void {
     let emphasisIndex: number;
 
+    let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
+    this.addParticleEmphasis(itemID);
+
     if (pageID === ScrollPage.main) {
       emphasisIndex = emphasisMain[itemID];
-      this.scrollEmphasisMain.add(0, 0, emphasisIndex);
+      this.scrollEmphasisMain.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
     }
     else if (pageID === ScrollPage.skills) {
       emphasisIndex = emphasisSkills[itemID];
-      this.scrollEmphasisSkills.add(0, 0, emphasisIndex);
+      this.scrollEmphasisSkills.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
     }
     else if (pageID === ScrollPage.equipment) {
       emphasisIndex = emphasisEquipment[itemID];
-      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex);
+      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
+    }
+
+    let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
+
+    if (currentlyEmphasizing && !previouslyEmphasizing && activeGame) {
+      if (this.deEmphasisSprite.expirationDate > activeGame.nowMs) {
+        this.deEmphasisSprite.expirationDate = activeGame.nowMs;
+      }
+      else {
+        this.deEmphasisSprite.timeStart = activeGame.nowMs;
+      }
     }
 
     //console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
   }
+  addParticleEmphasis(itemID: string): void {
+    console.log(`addParticleEmphasis(${itemID});`);
+    let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
+    if (emitter) {
+      console.log('emitter.start();');
+      emitter.start();
+    }
+  }
+
+  currentlyEmphasizing(): boolean {
+    let now: number = activeGame.nowMs;
+    return this.scrollEmphasisMain.hasAnyAlive(now) ||
+      this.scrollEmphasisSkills.hasAnyAlive(now) ||
+      this.scrollEmphasisEquipment.hasAnyAlive(now);
+  }
 
   unfocusItem(playerID: number, pageID: number, itemID: string): void {
     console.log(`unfocusItem(${playerID}, ${pageID}, ${itemID})`);
+    let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
+
+    //this.removeParticleEmphasis(itemID);
+
     if (pageID === ScrollPage.main) {
       let emphasisIndex: number = emphasisMain[itemID];
-      this.scrollEmphasisMain.removeByFrameIndex(emphasisIndex);
+      this.scrollEmphasisMain.killByFrameIndex(emphasisIndex, activeGame.nowMs);
       this.scrollEmphasisSkills.sprites = [];
       this.scrollEmphasisEquipment.sprites = [];
     }
     else if (pageID === ScrollPage.skills) {
       let emphasisIndex: number = emphasisSkills[itemID];
-      this.scrollEmphasisSkills.removeByFrameIndex(emphasisIndex);
+      this.scrollEmphasisSkills.killByFrameIndex(emphasisIndex, activeGame.nowMs);
       this.scrollEmphasisMain.sprites = [];
       this.scrollEmphasisEquipment.sprites = [];
     }
     else if (pageID === ScrollPage.equipment) {
       let emphasisIndex: number = emphasisEquipment[itemID];
-      this.scrollEmphasisEquipment.removeByFrameIndex(emphasisIndex);
+      this.scrollEmphasisEquipment.killByFrameIndex(emphasisIndex, activeGame.nowMs);
       this.scrollEmphasisMain.sprites = [];
       this.scrollEmphasisSkills.sprites = [];
     }
+
+    let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
+
+    console.log('currentlyEmphasizing: ' + currentlyEmphasizing);
+    console.log('previouslyEmphasizing: ' + previouslyEmphasizing);
+
+    if (!currentlyEmphasizing && previouslyEmphasizing && activeGame) {
+      this.deEmphasisSprite.expirationDate = activeGame.nowMs + this.deEmphasisSprite.fadeOutTime;
+    }
+
   }
-}
+} 
