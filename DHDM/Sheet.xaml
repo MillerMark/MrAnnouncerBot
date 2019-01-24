@@ -1,0 +1,12 @@
+﻿<UserControl x:Class="DHDM.Sheet"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DHDM"
+             mc:Ignorable="d" 
+             d:DesignHeight="868" d:DesignWidth="367" Width="367" Height="868" HorizontalAlignment="Left" VerticalAlignment="Top" Initialized="UserControl_Initialized" >
+  <Grid x:Name="container">
+		<Image x:Name="imageBack" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="UniformToFill" PreviewMouseDown="ImageBack_PreviewMouseDown"/>
+	</Grid>
+</UserControl>

@@ -10,9 +10,9 @@ enum DistributionOrientation {
 
 class EmitterDistribution {
   orientation: DistributionOrientation;
-	constructor(public centerX: number, public centerY: number, public width: number, public height: number, public spread: number) {
+  constructor(public centerX: number, public centerY: number, public width: number, public height: number, public spread: number) {
     this.orientation = DistributionOrientation.Vertical;
-	}
+  }
 }
 
 class HighlightEmitter {
@@ -75,14 +75,21 @@ class HighlightEmitter {
 
     this.emitter.start();
   }
-    getPerimeter(): number {
-      if (this.type === HighlightEmitterType.circular) {
-        return this.radius * MathEx.TWO_PI;
-      }
-      else {
-        return 2 * this.width + 2 * this.height;
-      }
+
+  stop() {
+    if (this.emitter) {
+      this.emitter.stop();
     }
+  }
+
+  getPerimeter(): number {
+    if (this.type === HighlightEmitterType.circular) {
+      return this.radius * MathEx.TWO_PI;
+    }
+    else {
+      return 2 * this.width + 2 * this.height;
+    }
+  }
 
   static createBaseEmitter(center: Vector): Emitter {
     var emitter: Emitter;
@@ -664,6 +671,31 @@ class CharacterStatsScroll extends WorldObject {
   }
 
 
+  addParticleEmphasis(itemID: string): void {
+    console.log(`addParticleEmphasis(${itemID});`);
+    let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
+    if (emitter) {
+      emitter.start();
+    }
+  }
+
+  removeParticleEmphasis(itemID: string): void {
+    console.log(`removeParticleEmphasis(${itemID});`);
+    let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
+    if (emitter) {
+      emitter.stop();
+    }
+  }
+
+
+
+  currentlyEmphasizing(): boolean {
+    let now: number = activeGame.nowMs;
+    return this.scrollEmphasisMain.hasAnyAlive(now) ||
+      this.scrollEmphasisSkills.hasAnyAlive(now) ||
+      this.scrollEmphasisEquipment.hasAnyAlive(now);
+  }
+
   focusItem(playerID: number, pageID: number, itemID: string): void {
     let emphasisIndex: number;
 
@@ -696,27 +728,12 @@ class CharacterStatsScroll extends WorldObject {
 
     //console.log(`focusItem(${playerID}, ${pageID}, ${itemID})`);
   }
-  addParticleEmphasis(itemID: string): void {
-    console.log(`addParticleEmphasis(${itemID});`);
-    let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
-    if (emitter) {
-      console.log('emitter.start();');
-      emitter.start();
-    }
-  }
-
-  currentlyEmphasizing(): boolean {
-    let now: number = activeGame.nowMs;
-    return this.scrollEmphasisMain.hasAnyAlive(now) ||
-      this.scrollEmphasisSkills.hasAnyAlive(now) ||
-      this.scrollEmphasisEquipment.hasAnyAlive(now);
-  }
 
   unfocusItem(playerID: number, pageID: number, itemID: string): void {
-    console.log(`unfocusItem(${playerID}, ${pageID}, ${itemID})`);
+    //console.log(`unfocusItem(${playerID}, ${pageID}, ${itemID})`);
     let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
 
-    //this.removeParticleEmphasis(itemID);
+    this.removeParticleEmphasis(itemID);
 
     if (pageID === ScrollPage.main) {
       let emphasisIndex: number = emphasisMain[itemID];
@@ -738,9 +755,6 @@ class CharacterStatsScroll extends WorldObject {
     }
 
     let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
-
-    console.log('currentlyEmphasizing: ' + currentlyEmphasizing);
-    console.log('previouslyEmphasizing: ' + previouslyEmphasizing);
 
     if (!currentlyEmphasizing && previouslyEmphasizing && activeGame) {
       this.deEmphasisSprite.expirationDate = activeGame.nowMs + this.deEmphasisSprite.fadeOutTime;

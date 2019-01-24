@@ -124,7 +124,7 @@
   }
 
   addParticles(now: number, amount: number) {
-    if (this.stopped) {
+    if (this.stopped || this.stopping) {
       return;
     }
 

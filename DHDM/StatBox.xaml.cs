@@ -20,6 +20,32 @@ namespace DHDM
 	/// </summary>
 	public partial class StatBox : UserControl
 	{
+		public static readonly RoutedEvent ActivatedEvent = EventManager.RegisterRoutedEvent("Activated", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(StatBox));
+		public static readonly RoutedEvent PreviewActivatedEvent = EventManager.RegisterRoutedEvent("PreviewActivated", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(StatBox));
+
+		public event RoutedEventHandler Activated
+		{
+			add { AddHandler(ActivatedEvent, value); }
+			remove { RemoveHandler(ActivatedEvent, value); }
+		}
+
+		public event RoutedEventHandler PreviewActivated
+		{
+			add { AddHandler(PreviewActivatedEvent, value); }
+			remove { RemoveHandler(PreviewActivatedEvent, value); }
+		}
+
+		protected virtual void OnActivated()
+		{
+			RoutedEventArgs previewEventArgs = new RoutedEventArgs(PreviewActivatedEvent);
+			RaiseEvent(previewEventArgs);
+			if (previewEventArgs.Handled)
+				return;
+			RoutedEventArgs eventArgs = new RoutedEventArgs(ActivatedEvent);
+			RaiseEvent(eventArgs);
+		}
+		
+
 		public static readonly DependencyProperty FocusItemProperty = DependencyProperty.Register("FocusItem", typeof(string), typeof(StatBox), new FrameworkPropertyMetadata(string.Empty));
 		
 
@@ -137,6 +163,7 @@ namespace DHDM
 					txtDisplay.Background = Brushes.LightGoldenrodYellow;
 					txtDisplay.Visibility = Visibility.Visible;
 					txtEdit.Visibility = Visibility.Hidden;
+					OnActivated();
 					// TODO: Update the overlay via SignalR.
 					break;
 				case StatBoxState.Editing:
@@ -145,6 +172,7 @@ namespace DHDM
 					txtEdit.Visibility = Visibility.Visible;
 					if (oldValue == StatBoxState.Focused)
 						txtEdit.Focus();
+					OnActivated();
 					break;
 			}
 		}

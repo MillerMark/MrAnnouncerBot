@@ -40,7 +40,10 @@ namespace DHDM
 		
 
 		ScrollPage scrollPage;
-		public static readonly RoutedEvent PageChangedEvent = EventManager.RegisterRoutedEvent("PageChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(CharacterSheets));
+		public static readonly RoutedEvent PageChangedEvent = 
+			EventManager.RegisterRoutedEvent("PageChanged", RoutingStrategy.Bubble, 
+				typeof(RoutedEventHandler), typeof(CharacterSheets));
+
 		public static readonly RoutedEvent PreviewPageChangedEvent = EventManager.RegisterRoutedEvent("PreviewPageChanged", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(CharacterSheets));
 
 		public event RoutedEventHandler PageChanged
@@ -72,11 +75,6 @@ namespace DHDM
 			InitializeComponent();
 		}
 
-		private void PageMain_MouseDown(object sender, MouseButtonEventArgs e)
-		{
-			OnPageChanged(ScrollPage.main);
-		}
-
 		private void PageSkills_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageChanged(ScrollPage.skills);
@@ -85,6 +83,11 @@ namespace DHDM
 		private void PageEquipment_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageChanged(ScrollPage.equipment);
+		}
+
+		private void PageMain_Activated(object sender, RoutedEventArgs e)
+		{
+			OnPageChanged(ScrollPage.main);
 		}
 	}
 }
