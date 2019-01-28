@@ -5,9 +5,6 @@ namespace OverlayManager
 {
 	public class CommandExpansion
 	{
-		private char firstChar;
-		private string v;
-
 		public string Command { get; set; }
 		public string Arguments { get; set; }
 		public CommandExpansion()

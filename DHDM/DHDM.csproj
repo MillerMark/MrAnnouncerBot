@@ -244,13 +244,11 @@
     </ApplicationDefinition>
     <Compile Include="FocusedControlsChangedEventArgs.cs" />
     <Compile Include="FocusHelper.cs" />
+    <Compile Include="GridSheet.cs" />
     <Compile Include="GroupBackground.xaml.cs">
       <DependentUpon>GroupBackground.xaml</DependentUpon>
     </Compile>
     <Compile Include="RoundCheck.cs" />
-    <Compile Include="Sheet.xaml.cs">
-      <DependentUpon>Sheet.xaml</DependentUpon>
-    </Compile>
     <Compile Include="StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>
     </Compile>
@@ -278,10 +276,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Sheet.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="StatBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

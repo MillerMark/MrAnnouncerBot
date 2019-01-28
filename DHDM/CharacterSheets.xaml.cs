@@ -59,6 +59,8 @@ namespace DHDM
 
 		protected virtual void OnPageChanged(ScrollPage newPage)
 		{
+			if (scrollPage == newPage)
+				return;
 			scrollPage = newPage;
 			FocusHelper.ClearActiveStatBoxes();
 
@@ -69,7 +71,7 @@ namespace DHDM
 			RoutedEventArgs eventArgs = new RoutedEventArgs(PageChangedEvent);
 			RaiseEvent(eventArgs);
 		}
-		
+
 		public CharacterSheets()
 		{
 			InitializeComponent();
@@ -88,6 +90,21 @@ namespace DHDM
 		private void PageMain_Activated(object sender, RoutedEventArgs e)
 		{
 			OnPageChanged(ScrollPage.main);
+		}
+
+		private void PageMain_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			OnPageChanged(ScrollPage.main);
+		}
+
+		private void PageSkills_Activated(object sender, RoutedEventArgs e)
+		{
+			OnPageChanged(ScrollPage.skills);
+		}
+
+		private void PageEquipment_Activated(object sender, RoutedEventArgs e)
+		{
+			OnPageChanged(ScrollPage.equipment);
 		}
 	}
 }

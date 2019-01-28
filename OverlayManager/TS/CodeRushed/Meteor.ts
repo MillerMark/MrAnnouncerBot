@@ -8,9 +8,9 @@ class Meteor extends SpriteProxy {
   }
 
   blowUp(): any {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    activeGame.allMeteors.destroy(this, addDroneExplosion);
+    activeBackGame.allMeteors.destroy(this, addDroneExplosion);
   }
 
   matches(matchData: any): boolean {
@@ -24,14 +24,14 @@ class Meteor extends SpriteProxy {
 
 // TODO: consider moving to the meteor class.
 function addMeteorExplosion(meteors: Sprites, x: number) {
-  if (!(activeGame instanceof DroneGame))
+  if (!(activeBackGame instanceof DroneGame))
     return;
   
-  if (meteors === activeGame.redMeteors)
-    activeGame.redExplosions.sprites.push(new SpriteProxy(0, x - activeGame.redExplosions.spriteWidth / 2 + 50, 0));
-  if (meteors === activeGame.blueMeteors)
-    activeGame.blueExplosions.sprites.push(new SpriteProxy(0, x - activeGame.blueExplosions.spriteWidth / 2 + 50, 0));
-  if (meteors === activeGame.purpleMeteors)
-    activeGame.purpleExplosions.sprites.push(new SpriteProxy(0, x - activeGame.purpleExplosions.spriteWidth / 2 + 50, 0));
+  if (meteors === activeBackGame.redMeteors)
+    activeBackGame.redExplosions.sprites.push(new SpriteProxy(0, x - activeBackGame.redExplosions.spriteWidth / 2 + 50, 0));
+  if (meteors === activeBackGame.blueMeteors)
+    activeBackGame.blueExplosions.sprites.push(new SpriteProxy(0, x - activeBackGame.blueExplosions.spriteWidth / 2 + 50, 0));
+  if (meteors === activeBackGame.purpleMeteors)
+    activeBackGame.purpleExplosions.sprites.push(new SpriteProxy(0, x - activeBackGame.purpleExplosions.spriteWidth / 2 + 50, 0));
   new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 }

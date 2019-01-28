@@ -48,8 +48,10 @@ namespace BotCore
 
 		async public static Task<User> GetUser(string userName)
 		{
-			List<string> userNames = new List<string>();
-			userNames.Add(userName);
+			List<string> userNames = new List<string>
+			{
+				userName
+			};
 			var results = await Api.Users.v5.GetUsersByNameAsync(userNames);
 			var userList = results.Matches;
 			if (userList.Length > 0)

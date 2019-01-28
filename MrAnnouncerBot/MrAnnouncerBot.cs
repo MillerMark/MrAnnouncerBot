@@ -502,7 +502,7 @@ namespace MrAnnouncerBot
 
 		private void ActivateSceneIfPermitted(SceneDto scene, string displayName, int userLevel)
 		{
-			if (restrictedSceneIsActive())
+			if (RestrictedSceneIsActive())
 				Chat(GetBreakMessage());
 			else
 				ActivateScene(scene, displayName, userLevel);
@@ -516,7 +516,7 @@ namespace MrAnnouncerBot
 			return sceneName;
 		}
 
-		private bool restrictedSceneIsActive()
+		private bool RestrictedSceneIsActive()
 		{
 			return restrictedScenes.Any(x => x.SceneName == activeSceneName);
 		}

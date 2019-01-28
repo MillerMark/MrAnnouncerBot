@@ -11,6 +11,7 @@
   lastParticleCreationTime: number;
   particleGravity: number;
   particleGravityCenter: Vector;
+  bonusParticleVelocityVector: Vector;
   gravity: number;
   gravityCenter: Vector;
   particleInitialVelocity: TargetValue;
@@ -30,6 +31,7 @@
   private stopped: boolean = false;
   stopping: boolean;
   percentParticlesToCreate: number = 1;
+  renderOldestParticlesLast: boolean = false;
 
   constructor(position: Vector, velocity: Vector = Vector.zero) {
     super(position, velocity);
@@ -51,6 +53,7 @@
     this.gravityCenter = new Vector(screenCenterX, Physics.metersToPixels(gravityGames.activePlanet.diameter / 2));
     this.particleGravityCenter = this.gravityCenter;
     this.emitterEdgeSpread = 1;
+    this.bonusParticleVelocityVector = Vector.zero;
     //this.initialParticleDirection = Vector.zero;
   }
 
@@ -120,7 +123,7 @@
     let particleStart: PositionPlusVelocity = this.particleGenerator.getNewParticlePosition(
       this.position, this.velocity, this.particleInitialVelocity, this.initialParticleDirection);
 
-    this.particles.push(new Particle(this, now, particleStart.position, particleStart.velocity, particleRadius, this.particleMass));
+    this.particles.push(new Particle(this, now, particleStart.position, particleStart.velocity.add(this.bonusParticleVelocityVector), particleRadius, this.particleMass));
   }
 
   addParticles(now: number, amount: number) {
@@ -212,10 +215,17 @@
   render(now: number, timeScale: number, world: World): void {
     super.render(now, timeScale, world);
 
-    this.particles.forEach(function (particle: Particle) {
-      particle.render(now, timeScale, world);
-    });
-
+    if (this.renderOldestParticlesLast) {
+      for (var i = this.particles.length - 1; i >= 0; i--) {
+        let particle: Particle = this.particles[i];
+        particle.render(now, timeScale, world);
+      }
+    }
+    else {
+      this.particles.forEach(function (particle: Particle) {
+        particle.render(now, timeScale, world);
+      });
+    }
     //this.showparticleGeneratorDiagnostics(world);
   }
 

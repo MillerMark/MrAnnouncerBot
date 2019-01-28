@@ -5,16 +5,16 @@
 
   constructor(startingFrameNumber: number, public x: number, public y: number) {
     super(startingFrameNumber, x, y);
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
     
-    this.background = activeGame.portalBackground.add(x, y);
+    this.background = activeBackGame.portalBackground.add(x, y);
   }
 
   drop(): void {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    activeGame.purpleMeteors.sprites.push(new Meteor(Random.intMax(activeGame.purpleMeteors.baseAnimation.frameCount), this.x + (Portal.size - meteorWidth) / 2, this.y + (Portal.size - meteorHeight) / 2));
+    activeBackGame.purpleMeteors.sprites.push(new Meteor(Random.intMax(activeBackGame.purpleMeteors.baseAnimation.frameCount), this.x + (Portal.size - meteorWidth) / 2, this.y + (Portal.size - meteorHeight) / 2));
   }
 
   set delayStart(delayMs: number) {

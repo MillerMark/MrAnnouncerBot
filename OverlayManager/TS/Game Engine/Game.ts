@@ -88,6 +88,9 @@ class Game {
   }
 
   protected updateGravity() {
+    if (!gravityGames || !gravityGames.activePlanet)
+      return;
+
     if (this.gravity) {
       if (this.planetName === gravityGames.activePlanet.name)
         return;

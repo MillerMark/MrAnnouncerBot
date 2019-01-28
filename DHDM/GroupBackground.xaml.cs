@@ -118,8 +118,7 @@ namespace DHDM
 
 		private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			GroupBackground groupBackground = sender as GroupBackground;
-			if (groupBackground == null)
+			if (!(sender is GroupBackground groupBackground))
 				return;
 
 			if (groupBackground.StatBox1 != null)

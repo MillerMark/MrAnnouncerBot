@@ -14,7 +14,7 @@ namespace BotCore
 	{
 		public const int ModeratorLevel = 999999;
 
-		TimeSpan fourHours = TimeSpan.FromHours(4);
+		readonly TimeSpan fourHours = TimeSpan.FromHours(4);
 
 		List<Viewer> viewers = new List<Viewer>();
 		public AllViewers()
@@ -60,10 +60,7 @@ namespace BotCore
 
 		Viewer CreateNewViewer(ChatMessage chatMessage)
 		{
-			Viewer viewer = new Viewer();
-			viewer.UserId = chatMessage.UserId;
-			viewer.UserName = chatMessage.Username;
-			viewer.DisplayName = chatMessage.DisplayName;
+			Viewer viewer = new Viewer() { UserId = chatMessage.UserId, UserName = chatMessage.Username, DisplayName = chatMessage.DisplayName };
 			return viewer;
 		}
 
@@ -133,18 +130,13 @@ namespace BotCore
 
 		async Task<Viewer> CreateNewViewerFromUserName(string userName)
 		{
-			Viewer viewer = new Viewer();
-			viewer.UserName = userName;
-			viewer.UserId = await Twitch.GetUserId(userName);
+			Viewer viewer = new Viewer() { UserName = userName, UserId = await Twitch.GetUserId(userName) };
 			return viewer;
 		}
 
 		Viewer CreateNewViewer(string id, string name, string displayName)
 		{
-			Viewer viewer = new Viewer();
-			viewer.UserName = name;
-			viewer.UserId = id;
-			viewer.DisplayName = displayName;
+			Viewer viewer = new Viewer() { UserName = name, UserId = id, DisplayName = displayName };
 			return viewer;
 		}
 

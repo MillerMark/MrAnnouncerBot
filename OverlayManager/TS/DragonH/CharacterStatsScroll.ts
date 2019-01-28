@@ -194,7 +194,7 @@ class CharacterStatsScroll extends WorldObject {
     this.deEmphasisSprite = new SpriteProxy(0, 0, 0);
     this.deEmphasisSprite.fadeInTime = 700;
     this.deEmphasisSprite.fadeOutTime = 700;
-    this.deEmphasisSprite.expirationDate = activeGame.nowMs;
+    this.deEmphasisSprite.expirationDate = activeBackGame.nowMs;
     for (var i = 0; i < 4; i++) {
       this.highlightEmitterPages.push(new HighlightEmitterPages());
     }
@@ -690,7 +690,7 @@ class CharacterStatsScroll extends WorldObject {
 
 
   currentlyEmphasizing(): boolean {
-    let now: number = activeGame.nowMs;
+    let now: number = activeBackGame.nowMs;
     return this.scrollEmphasisMain.hasAnyAlive(now) ||
       this.scrollEmphasisSkills.hasAnyAlive(now) ||
       this.scrollEmphasisEquipment.hasAnyAlive(now);
@@ -717,12 +717,12 @@ class CharacterStatsScroll extends WorldObject {
 
     let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
 
-    if (currentlyEmphasizing && !previouslyEmphasizing && activeGame) {
-      if (this.deEmphasisSprite.expirationDate > activeGame.nowMs) {
-        this.deEmphasisSprite.expirationDate = activeGame.nowMs;
+    if (currentlyEmphasizing && !previouslyEmphasizing && activeBackGame) {
+      if (this.deEmphasisSprite.expirationDate > activeBackGame.nowMs) {
+        this.deEmphasisSprite.expirationDate = activeBackGame.nowMs;
       }
       else {
-        this.deEmphasisSprite.timeStart = activeGame.nowMs;
+        this.deEmphasisSprite.timeStart = activeBackGame.nowMs;
       }
     }
 
@@ -737,27 +737,27 @@ class CharacterStatsScroll extends WorldObject {
 
     if (pageID === ScrollPage.main) {
       let emphasisIndex: number = emphasisMain[itemID];
-      this.scrollEmphasisMain.killByFrameIndex(emphasisIndex, activeGame.nowMs);
+      this.scrollEmphasisMain.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
       this.scrollEmphasisSkills.sprites = [];
       this.scrollEmphasisEquipment.sprites = [];
     }
     else if (pageID === ScrollPage.skills) {
       let emphasisIndex: number = emphasisSkills[itemID];
-      this.scrollEmphasisSkills.killByFrameIndex(emphasisIndex, activeGame.nowMs);
+      this.scrollEmphasisSkills.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
       this.scrollEmphasisMain.sprites = [];
       this.scrollEmphasisEquipment.sprites = [];
     }
     else if (pageID === ScrollPage.equipment) {
       let emphasisIndex: number = emphasisEquipment[itemID];
-      this.scrollEmphasisEquipment.killByFrameIndex(emphasisIndex, activeGame.nowMs);
+      this.scrollEmphasisEquipment.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
       this.scrollEmphasisMain.sprites = [];
       this.scrollEmphasisSkills.sprites = [];
     }
 
     let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
 
-    if (!currentlyEmphasizing && previouslyEmphasizing && activeGame) {
-      this.deEmphasisSprite.expirationDate = activeGame.nowMs + this.deEmphasisSprite.fadeOutTime;
+    if (!currentlyEmphasizing && previouslyEmphasizing && activeBackGame) {
+      this.deEmphasisSprite.expirationDate = activeBackGame.nowMs + this.deEmphasisSprite.fadeOutTime;
     }
 
   }

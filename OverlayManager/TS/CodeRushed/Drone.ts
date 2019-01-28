@@ -31,9 +31,9 @@ class Drone extends SpriteProxy {
 
   static createAt(x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy, createDrone: (x: number, y: number, frameCount: number) => Drone, userId: string, displayName: string, color: string): any {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    let drones: Sprites = activeGame.dronesRed;
+    let drones: Sprites = activeBackGame.dronesRed;
     //if (params === 'blue')
     //  drones = dronesBlue;
     let myDrone: Drone = <Drone>createSprite(drones, now, createDrone);
@@ -124,33 +124,33 @@ class Drone extends SpriteProxy {
         this.health--;
         playZap();
       }
-      if (!(activeGame instanceof DroneGame))
+      if (!(activeBackGame instanceof DroneGame))
         return;
 
       switch (Math.floor(Math.random() * 8)) {
         case 0:
-          this.setSparks(activeGame.downAndRightSparks);
+          this.setSparks(activeBackGame.downAndRightSparks);
           break;
         case 1:
-          this.setSparks(activeGame.downAndLeftSparks);
+          this.setSparks(activeBackGame.downAndLeftSparks);
           break;
         case 2:
-          this.setSparks(activeGame.left1Sparks);
+          this.setSparks(activeBackGame.left1Sparks);
           break;
         case 3:
-          this.setSparks(activeGame.left2Sparks);
+          this.setSparks(activeBackGame.left2Sparks);
           break;
         case 4:
-          this.setSparks(activeGame.right1Sparks);
+          this.setSparks(activeBackGame.right1Sparks);
           break;
         case 5:
-          this.setSparks(activeGame.right2Sparks);
+          this.setSparks(activeBackGame.right2Sparks);
           break;
         case 6:
-          this.setSparks(activeGame.upAndRightSparks);
+          this.setSparks(activeBackGame.upAndRightSparks);
           break;
         case 7:
-          this.setSparks(activeGame.upAndLeftSparks);
+          this.setSparks(activeBackGame.upAndLeftSparks);
           break;
       }
     }
@@ -233,9 +233,9 @@ class Drone extends SpriteProxy {
 
   selfDestruct() {
     this.isRemoving = true;
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    activeGame.allDrones.destroy(this.userId, addDroneExplosion);
+    activeBackGame.allDrones.destroy(this.userId, addDroneExplosion);
   }
 
   updatePosition(now: number) {
@@ -383,9 +383,9 @@ class Drone extends SpriteProxy {
 
     let healthIndex: number = pitch * 20 + roll * 4 + 4 - this.health;
 
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    activeGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x, this.y, healthIndex);
+    activeBackGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x, this.y, healthIndex);
 
     this.drawUserName(context);
     this.drawCoinsCollected(context, now);
@@ -461,32 +461,32 @@ class Drone extends SpriteProxy {
   }
 
   getSplats(command: string): SplatSprites {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
     if (command === 'red')
-      return activeGame.redSplats;
+      return activeBackGame.redSplats;
     else if (command === 'black')
-      return activeGame.blackSplats;
+      return activeBackGame.blackSplats;
     else if (command === 'white')
-      return activeGame.whiteSplats;
+      return activeBackGame.whiteSplats;
     else if (command === 'orange')
-      return activeGame.orangeSplats;
+      return activeBackGame.orangeSplats;
     else if (command === 'amber')
-      return activeGame.amberSplats;
+      return activeBackGame.amberSplats;
     else if (command === 'yellow')
-      return activeGame.yellowSplats;
+      return activeBackGame.yellowSplats;
     else if (command === 'green')
-      return activeGame.greenSplats;
+      return activeBackGame.greenSplats;
     else if (command === 'blue')
-      return activeGame.blueSplats;
+      return activeBackGame.blueSplats;
     else if (command === 'cyan')
-      return activeGame.cyanSplats;
+      return activeBackGame.cyanSplats;
     else if (command === 'indigo')
-      return activeGame.indigoSplats;
+      return activeBackGame.indigoSplats;
     else if (command === 'magenta')
-      return activeGame.magentaSplats;
+      return activeBackGame.magentaSplats;
     else if (command === 'violet')
-      return activeGame.violetSplats;
+      return activeBackGame.violetSplats;
     return null;
   }
 
@@ -747,9 +747,9 @@ class Drone extends SpriteProxy {
 function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {
   let x: number = drone.x + spriteWidth / 2;
   let y: number = drone.y + spriteHeight / 2;
-  if (!(activeGame instanceof DroneGame))
+  if (!(activeBackGame instanceof DroneGame))
     return;
-  let thisDroneExplosion: Sprites = activeGame.droneExplosions.allSprites[Math.floor(Math.random() * activeGame.droneExplosions.allSprites.length)];
+  let thisDroneExplosion: Sprites = activeBackGame.droneExplosions.allSprites[Math.floor(Math.random() * activeBackGame.droneExplosions.allSprites.length)];
   thisDroneExplosion.sprites.push(new SpriteProxy(0, x - thisDroneExplosion.spriteWidth / 2, y - thisDroneExplosion.spriteHeight / 2));
   new Audio(Folders.assets + 'Sound Effects/DroneGoBoom.wav').play();
 }

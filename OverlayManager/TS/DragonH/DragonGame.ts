@@ -156,7 +156,7 @@
     //this.emitter.particleWind = new Vector(0, -3);
   }
 
-  wind(): any {
+  wind(): void {
     this.emitter = new Emitter(new Vector(1920 / 2, 1080 / 2));
     this.emitter.setRectShape(400, 1);
     this.emitter.saturation.target = 0.9;
@@ -179,6 +179,42 @@
     this.emitter.airDensity = 0; // 0 == vaccuum.
     this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
     this.emitter.particleWind = new Vector(2, -0.1);
+  }
+
+  blood(): void {
+    this.emitter = new Emitter(new Vector(1050, 1080));
+    this.emitter.radius = 1;
+    this.emitter.saturation.target = 0.9;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.hue.absoluteVariance = 10;
+    this.emitter.hue.target = 0;
+    this.emitter.brightness.target = 0.4;
+    this.emitter.brightness.relativeVariance = 0.3;
+    this.emitter.particlesPerSecond = 1400;
+
+    this.emitter.particleRadius.target = 2.5;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+
+    this.emitter.particleLifeSpanSeconds = 2;
+    this.emitter.particleGravity = 9.8;
+    this.emitter.particleInitialVelocity.target = 0.8;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.25;
+    this.emitter.gravity = 0;
+    this.emitter.airDensity = 0; // 0 == vaccuum.
+    this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
+    let sprayAngle: number = Random.intBetween(270 - 45, 270 + 45);
+    let minVelocity: number = 9;
+    let maxVelocity: number = 16;
+    let angleAwayFromUp: number = Math.abs(sprayAngle - 270);
+    if (angleAwayFromUp < 15)
+      maxVelocity = 10;
+    else if (angleAwayFromUp > 35)
+      minVelocity = 13;
+    else
+      maxVelocity = 18;
+    this.emitter.bonusParticleVelocityVector = Vector.fromPolar(sprayAngle, Random.intBetween(minVelocity, maxVelocity));
+    this.emitter.renderOldestParticlesLast = true;
+    //this.emitter.particleWind = new Vector(2, -0.1);
   }
 
   buildSmoke() {
@@ -488,6 +524,13 @@
     if (testCommand === 'wind') {
       this.world.removeCharacter(this.emitter);
       this.wind();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'blood') {
+      this.world.removeCharacter(this.emitter);
+      this.blood();
       this.world.addCharacter(this.emitter);
       return true;
     }

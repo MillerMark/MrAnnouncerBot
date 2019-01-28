@@ -720,15 +720,15 @@
   }
 
   releaseBee(now: number, params: string, userId: string, displayName: string, color: string): any {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    this.createSprite(activeGame.beesYellow, now);
+    this.createSprite(activeBackGame.beesYellow, now);
   }
 
   releaseDrone(now: number, userId: string, displayName: string, color: string): any {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
-    activeGame.allDrones.destroy(userId, addDroneExplosion);
+    activeBackGame.allDrones.destroy(userId, addDroneExplosion);
     Drone.createAt(this.x, this.y, now, this.createSprite.bind(this), Drone.create, userId, displayName, color);
   }
 
@@ -784,10 +784,10 @@
   }
 
   dropMeteor(now) {
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
 
-    this.dropFromOne(now, activeGame.redMeteors, activeGame.blueMeteors, activeGame.purpleMeteors, null, this.createMeteor);
+    this.dropFromOne(now, activeBackGame.redMeteors, activeBackGame.blueMeteors, activeBackGame.purpleMeteors, null, this.createMeteor);
   }
 
   createMeteor(x: number, y: number, frameCount: number): SpriteProxy {
@@ -795,27 +795,27 @@
   }
 
   dropSeed(now: number, args?: string) {
-    if (activeGame instanceof DragonGame) {
-      this.createSprite(activeGame.yellowSeeds, now);
+    if (activeBackGame instanceof DragonGame) {
+      this.createSprite(activeBackGame.yellowSeeds, now);
       return;
     }
 
 
-    if (!(activeGame instanceof DroneGame))
+    if (!(activeBackGame instanceof DroneGame))
       return;
 
     if (args && args.toLowerCase() === 'pink')
-      this.createSprite(activeGame.pinkSeeds, now);
+      this.createSprite(activeBackGame.pinkSeeds, now);
     else if (args && args.toLowerCase() === 'blue')
-      this.createSprite(activeGame.purpleSeeds, now); //this.createSprite(blueSeeds, now);
+      this.createSprite(activeBackGame.purpleSeeds, now); //this.createSprite(blueSeeds, now);
     else if (args && args.toLowerCase() === 'yellow')
-      this.createSprite(activeGame.yellowSeeds, now);
+      this.createSprite(activeBackGame.yellowSeeds, now);
     else if (args && args.toLowerCase() === 'purple')
-      this.createSprite(activeGame.purpleSeeds, now);
+      this.createSprite(activeBackGame.purpleSeeds, now);
     //else if (args && args.toLowerCase() === 'grass')
     //  this.createSprite(greenSeeds, now);
     else
-      this.dropFromOne(now, activeGame.pinkSeeds, /* blueSeeds, */ activeGame.purpleSeeds, activeGame.yellowSeeds);
+      this.dropFromOne(now, activeBackGame.pinkSeeds, /* blueSeeds, */ activeBackGame.purpleSeeds, activeBackGame.yellowSeeds);
   }
 }
 

@@ -88,7 +88,7 @@ namespace DHDM
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
 		{
 			CharacterSheets characterSheets = sender as CharacterSheets;
-			if (characterSheets != null)
+			if (characterSheets != null && activePage != characterSheets.Page)
 			{
 				activePage = characterSheets.Page;
 				PlayerPageChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
