@@ -233,3 +233,49 @@ class SpriteProxy {
     return this;
   }
 }
+
+class ColorShiftingSpriteProxy extends SpriteProxy {
+  hueShift: number = 0;
+  saturationPercent: number = 100;
+  brightness: number;
+
+  constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
+    super(startingFrameNumber, x, y, lifeSpanMs);
+  }
+
+  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {
+    if (this.hueShift != 0) {
+      // step 1: draw in original image
+      context.globalCompositeOperation = "source-over";
+      super.draw(baseAnimation, context, now, spriteWidth, spriteHeight);
+
+      // step 2: adjust saturation (chroma, intensity)
+      context.globalCompositeOperation = "saturation";
+      context.fillStyle = "hsl(0," + this.saturationPercent + "%, 50%)";  // hue doesn't matter here
+      context.fillRect(this.x, this.y, spriteWidth, spriteHeight);
+
+      // step 3: adjust hue, preserve luma and chroma
+      context.globalCompositeOperation = "hue";
+      context.fillStyle = "hsl(" + this.hueShift + ",1%, 50%)";  // sat must be > 0, otherwise won't matter
+      context.fillRect(this.x, this.y, spriteWidth, spriteHeight);
+
+      // step 4: in our case, we need to clip as we filled the entire area
+      context.globalCompositeOperation = "destination-in";
+      super.draw(baseAnimation, context, now, spriteWidth, spriteHeight);
+
+      // step 5: reset comp mode to default
+      context.globalCompositeOperation = "source-over";
+    }
+    else
+      super.draw(baseAnimation, context, now, spriteWidth, spriteHeight);
+  }
+
+  setHueSatBrightness(hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
+    this.hueShift = hueShift;
+    if (saturationPercent >= 0)
+      this.saturationPercent = saturationPercent;
+    if (brightness >= 0)
+      this.brightness = brightness;
+    return this;
+  }
+}

@@ -182,7 +182,7 @@
   }
 
   blood(): void {
-    this.emitter = new Emitter(new Vector(1050, 880));
+    this.emitter = new Emitter(new Vector(1050, 1080));
     this.emitter.radius = 1;
     this.emitter.saturation.target = 0.9;
     this.emitter.saturation.relativeVariance = 0.2;
@@ -215,7 +215,7 @@
       maxVelocity = 18;
     this.emitter.bonusParticleVelocityVector = Vector.fromPolar(sprayAngle, Random.intBetween(minVelocity, maxVelocity));
 
-    //this.emitter.renderOldestParticlesLast = true;
+    this.emitter.renderOldestParticlesLast = true;
   }
 
   buildSmoke() {

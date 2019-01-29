@@ -28,45 +28,45 @@ enum WeaponProperties {
                       ammunition property to make a melee attack, you treat the weapon as an 
                       improvised weapon (see “Improvised Weapons” later in the section). A 
                       sling must be loaded to deal any damage when used in this way. */
-                
+
   finesse = 2,     /* When making an attack with a finesse weapon, you use your choice of your 
                       Strength or Dexterity modifier for the attack and damage rolls. You must 
                       use the same modifier for both rolls.*/
-                
+
   heavy = 4,       /* Small creatures have disadvantage on attack rolls with heavy weapons. A 
                       heavy weapon's size and bulk make it too large for a Small creature to 
                       use effectively. */
-                
+
   light = 8,       /* A light weapon is small and easy to handle, making it ideal for use when 
                       fighting with two weapons. */
-                
+
   loading = 16,    /* Because of the time required to load this weapon, you can fire only one 
                       piece of ammunition from it when you use an action, bonus action, or 
                       reaction to fire it, regardless of the number of attacks you can normally 
                       make. */
-                
+
   range = 32,      /* A weapon that can be used to make a ranged attack has a range in parentheses 
                       after the ammunition or thrown property. The range lists two numbers. The 
                       first is the weapon's normal range in feet, and the second indicates the 
                       weapon's long range. When attacking a target beyond normal range, you have 
                       disadvantage on the attack roll. You can't attack a target beyond the weapon's 
                       long range. */
-                
+
   reach = 64,      /* This weapon adds 5 feet to your reach when you attack with it, as well as 
                       when determining your reach for opportunity attacks with it. */
-                
+
   special = 128,   /* A weapon with the special property has unusual rules governing its use, 
                       explained in the weapon's description. */
-                
+
   thrown = 256,    /* If a weapon has the thrown property, you can throw the weapon to make a ranged 
                       attack. If the weapon is a melee weapon, you use the same ability modifier for 
                       that attack roll and damage roll that you would use for a melee attack with 
                       the weapon. For example, if you throw a handaxe, you use your Strength, but if 
                       you throw a dagger, you can use either your Strength or your Dexterity, since 
                       the dagger has the finesse property. */
-                
+
   twoHanded = 512, /* This weapon requires two hands when you attack with it. */
-                
+
   versatile = 1024 /* This weapon can be used with one or two hands. A damage value in parentheses 
                       appears with the property–the damage when the weapon is used with two hands to 
                       make a melee attack. */
@@ -82,14 +82,14 @@ enum WeaponType {
 
 class SavingThrow {
   constructor(public success: number, public ability: Ability) {
-		
-	}
+
+  }
 }
 
 class Damage {
   constructor(public damageType: DamageType, public damageRoll: string) {
-		
-	}
+
+  }
 }
 
 enum HealthDescriptorCutoffs { // (as a percentage of max hit points)
@@ -151,31 +151,48 @@ enum EffectTarget {
   scrollData
 }
 
-enum VisualEffectType {
-  emitter,
-  animation
-}
-
-class Visual {
-  effectType: VisualEffectType;
-  effectName: string;
-  data: string;  // e.g., emitter properties to set.
-  constructor() {
-
-  }
-}
-
-class Effect {
-  target: EffectTarget = EffectTarget.player;
-  audioFileName: string;
-  visual: Visual;
+abstract class Effect {
+  // TODO: add a time offset...
   constructor() {
 
   }
 
-  trigger(): any {
-    // TODO: play audio file, initiate visual effect.
-    throw new Error("Method not implemented.");
+  start(): void {
+  }
+}
+
+abstract class VisualEffectTarget {
+  constructor() {
+
+  }
+  abstract getCenter(): Vector;
+}
+
+class ScreenPosTarget extends VisualEffectTarget {
+  center: Vector;
+  constructor(centerX: number, centerY: number) {
+    super();
+    this.center = new Vector(centerX, centerY);
+  }
+
+  getCenter(): Vector {
+    return this.center;
+  }
+}
+
+abstract class VisualEffect extends Effect {
+  abstract start(): void;
+}
+
+
+class SpritesEffect extends VisualEffect {
+  constructor(private sprites: Sprites, private visualEffectTarget: VisualEffectTarget, private startFrameIndex: number) {
+    super();
+  }
+
+  start(): void {
+    let center: Vector = this.visualEffectTarget.getCenter();
+    this.sprites.add(center.x, center.y, this.startFrameIndex);
   }
 }
 
@@ -219,7 +236,7 @@ enum TimeMeasure {
 
 class TimeSpan {
   constructor(public timeMeasure: TimeMeasure, public count: number) {
-		
+
   }
 
   static readonly zero: TimeSpan = TimeSpan.fromActions(0);
@@ -292,7 +309,7 @@ class Item {
 
   triggerEffect(effect: Effect): void {
     if (effect)
-      effect.trigger();
+      effect.start();
   }
 
   consume() {
@@ -304,7 +321,7 @@ class Item {
 }
 
 class Ammunition extends Item {
-	constructor() {
+  constructor() {
     super();
   }
 

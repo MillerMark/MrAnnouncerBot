@@ -13,7 +13,7 @@
   originY: number;
   opacity: number;
 
-  constructor(baseAnimationName, expectedFrameCount, private frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
+  constructor(baseAnimationName: string, expectedFrameCount: number, private frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
     this.opacity = 1;
     this.sprites = [];
     this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);
@@ -289,6 +289,10 @@
   }
 
   draw(context: CanvasRenderingContext2D, now: number): void {
+    if (this.sprites.length == 0) {
+      return;
+    }
+
     this.advanceFrames(now);
     let self: Sprites = this;
     this.sprites.forEach(function (sprite: SpriteProxy) {
@@ -351,7 +355,7 @@
     }
   }
 
-  killByFrameIndex(frameIndex: number, nowMs: number): void{
+  killByFrameIndex(frameIndex: number, nowMs: number): void {
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite: SpriteProxy = this.sprites[i];
       if (sprite.frameIndex === frameIndex)
