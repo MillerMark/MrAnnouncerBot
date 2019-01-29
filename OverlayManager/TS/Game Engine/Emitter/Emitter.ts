@@ -88,14 +88,17 @@
     this.particleGenerator.edgeSpread = newValue;
   }
 
-  start(): any {
+  start(): void {
     this.particles = new Array<Particle>();
+    if (this.stopped || this.stopping) {
+      this.lastParticleCreationTime = undefined;
+    }
     this.stopped = false;
     this.stopping = false;
     this.percentParticlesToCreate = 1;
   }
 
-  stop(): any {
+  stop(): void {
     this.stopping = true;
   }
 

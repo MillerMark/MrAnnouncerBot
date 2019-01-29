@@ -1,4 +1,5 @@
 ﻿enum Ability {
+  none = 0,
   strength = 1,
   dexterity = 2,
   constitution = 4,

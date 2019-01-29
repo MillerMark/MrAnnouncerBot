@@ -161,6 +161,10 @@ class CharacterStatsScroll extends WorldObject {
 
   state: ScrollState = ScrollState.none;
   scrollRolls: Sprites;
+  emphasisSprites: Sprites;
+  emphasisIndices: Array<number> = [];
+  emitterIndices: Array<string> = [];
+
   scrollEmphasisMain: Sprites;
   scrollEmphasisSkills: Sprites;
   scrollEmphasisEquipment: Sprites;
@@ -202,8 +206,14 @@ class CharacterStatsScroll extends WorldObject {
   }
 
   private addHighlightEmitters() {
+    const nameCenterX: number = 68;
+    const nameCenterY: number = 127;
+    const nameWidth: number = 104;
+    const nameHeight: number = 28;
+
+    // main page...
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
-      new HighlightEmitter(emphasisMain[emphasisMain.NameHeadshot], new Vector(68, 127)).setRectangular(104, 28));
+      new HighlightEmitter(emphasisMain[emphasisMain.NameHeadshot], new Vector(nameCenterX, nameCenterY)).setRectangular(nameWidth, nameHeight));
 
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
       new HighlightEmitter(emphasisMain[emphasisMain.RaceClass], new Vector(227, 37)).setRectangular(189, 24));
@@ -228,9 +238,10 @@ class CharacterStatsScroll extends WorldObject {
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
       new HighlightEmitter(emphasisMain[emphasisMain.Initiative], new Vector(203, acInitSpeedY)).setRectangular(51, 51));
 
-
+    const speedWidth: number = 60;
+    const speedHeight: number = 53;
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
-      new HighlightEmitter(emphasisMain[emphasisMain.Speed], new Vector(273, acInitSpeedY)).setRectangular(60, 53));
+      new HighlightEmitter(emphasisMain[emphasisMain.Speed], new Vector(273, acInitSpeedY)).setRectangular(speedWidth, speedHeight));
 
 
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
@@ -253,14 +264,54 @@ class CharacterStatsScroll extends WorldObject {
       new HighlightEmitter(emphasisMain[emphasisMain.Perception], new Vector(201, profPercepGoldCenterY)).setRectangular(77, 53));
 
 
+    const goldWidth: number = 72;
+    const goldHeight: number = 58;
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
-      new HighlightEmitter(emphasisMain[emphasisMain.GoldPieces], new Vector(288, profPercepGoldCenterY)).setRectangular(72, 58));
+      new HighlightEmitter(emphasisMain[emphasisMain.GoldPieces], new Vector(288, profPercepGoldCenterY)).setRectangular(goldWidth, goldHeight));
 
     const abilityDistribution: EmitterDistribution = new EmitterDistribution(45, 207, 54, 84, 91);
     this.addDistribution(ScrollPage.main, emphasisMain.Strength, emphasisMain.Charisma, abilityDistribution);
 
     const savingThrowDistribution: EmitterDistribution = new EmitterDistribution(210, 481, 211, 36, 35);
     this.addDistribution(ScrollPage.main, emphasisMain.SavingStrength, emphasisMain.SavingCharisma, savingThrowDistribution);
+
+
+    // skills page...
+
+    this.highlightEmitterPages[ScrollPage.skills].emitters.push(
+      new HighlightEmitter(emphasisSkills[emphasisSkills.NameHeadshot], new Vector(nameCenterX, nameCenterY)).setRectangular(nameWidth, nameHeight));
+
+    this.highlightEmitterPages[ScrollPage.skills].emitters.push(
+      new HighlightEmitter(emphasisSkills[emphasisSkills.Perception], new Vector(224, 50)).setRectangular(102, 54));
+
+    this.highlightEmitterPages[ScrollPage.skills].emitters.push(
+      new HighlightEmitter(emphasisSkills[emphasisSkills.ProficiencyBonus], new Vector(224, 115)).setRectangular(159, 54));
+
+    this.addDistribution(ScrollPage.skills, emphasisSkills.Strength, emphasisSkills.Charisma, abilityDistribution);
+
+    const skillsDistribution: EmitterDistribution = new EmitterDistribution(210, 188, 211, 29, 29);
+    this.addDistribution(ScrollPage.skills, emphasisSkills.SkillsAcrobatics, emphasisSkills.SkillsSurvival, skillsDistribution);
+
+
+    // equipment page...
+
+    this.highlightEmitterPages[ScrollPage.equipment].emitters.push(
+      new HighlightEmitter(emphasisEquipment[emphasisEquipment.NameHeadshot], new Vector(nameCenterX, nameCenterY)).setRectangular(nameWidth, nameHeight));
+
+    const goldSpeedX: number = 172;
+    this.highlightEmitterPages[ScrollPage.equipment].emitters.push(
+      new HighlightEmitter(emphasisEquipment[emphasisEquipment.GoldPieces], new Vector(goldSpeedX, 52)).setRectangular(goldWidth, goldHeight));
+
+
+    this.highlightEmitterPages[ScrollPage.equipment].emitters.push(
+      new HighlightEmitter(emphasisEquipment[emphasisEquipment.Load], new Vector(262, 55)).setRectangular(71, 54));
+
+    const speedWeightY: number = 113;
+    this.highlightEmitterPages[ScrollPage.equipment].emitters.push(
+      new HighlightEmitter(emphasisEquipment[emphasisEquipment.Speed], new Vector(goldSpeedX, speedWeightY)).setRectangular(speedWidth, speedHeight));
+
+    this.highlightEmitterPages[ScrollPage.equipment].emitters.push(
+      new HighlightEmitter(emphasisEquipment[emphasisEquipment.Weight], new Vector(261, speedWeightY)).setRectangular(80, 51));
   }
 
   private addDistribution(page: ScrollPage, first: number, last: number, dist: EmitterDistribution) {
@@ -347,6 +398,12 @@ class CharacterStatsScroll extends WorldObject {
     this.topEmitter.start();
     this.bottomEmitter.start();
     this.play(this.scrollOpenSfx);
+
+    if (this.emphasisSprites) {
+      while (this.emphasisIndices.length > 0) {
+        this.emphasisSprites.add(0, 0, this.emphasisIndices.pop()).setFadeTimes(this.fadeTime, this.fadeTime);
+      }
+    }
   }
 
   play(audio: HTMLAudioElement): any {
@@ -489,6 +546,8 @@ class CharacterStatsScroll extends WorldObject {
         this.topEmitter.stop();
         this.bottomEmitter.stop();
         this.state = ScrollState.unrolled;
+
+        this.startQueuedEmitters();
       }
 
       this.topEmitter.render(now, timeScale, world);
@@ -517,6 +576,15 @@ class CharacterStatsScroll extends WorldObject {
     }
   }
 
+  startQueuedEmitters(): void {
+    while (this.emitterIndices.length > 0) {
+      let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(this.emitterIndices.pop());
+      if (emitter) {
+        emitter.start();
+      }
+    }
+  }
+
   drawHighlighting(now: number, timeScale: number, world: World, sx: number = 0, sy: number = 0, dx: number = 0, dy: number = 0, sw: number = 0, sh: number = 0, dw: number = 0, dh: number = 0): void {
     if (!this.weAreHighlighting(now))
       return;
@@ -528,14 +596,20 @@ class CharacterStatsScroll extends WorldObject {
     });
 
     if (dh > 0) {
-      this.scrollEmphasisMain.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
-      this.scrollEmphasisSkills.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
-      this.scrollEmphasisEquipment.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+      if (this.page === ScrollPage.main)
+        this.scrollEmphasisMain.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+      if (this.page === ScrollPage.skills)
+        this.scrollEmphasisSkills.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+      if (this.page === ScrollPage.equipment)
+        this.scrollEmphasisEquipment.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
     }
     else {
-      this.scrollEmphasisMain.draw(world.ctx, now * 1000);
-      this.scrollEmphasisSkills.draw(world.ctx, now * 1000);
-      this.scrollEmphasisEquipment.draw(world.ctx, now * 1000);
+      if (this.page === ScrollPage.main)
+        this.scrollEmphasisMain.draw(world.ctx, now * 1000);
+      if (this.page === ScrollPage.skills)
+        this.scrollEmphasisSkills.draw(world.ctx, now * 1000);
+      if (this.page === ScrollPage.equipment)
+        this.scrollEmphasisEquipment.draw(world.ctx, now * 1000);
     }
   }
 
@@ -672,15 +746,19 @@ class CharacterStatsScroll extends WorldObject {
 
 
   addParticleEmphasis(itemID: string): void {
-    console.log(`addParticleEmphasis(${itemID});`);
     let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
     if (emitter) {
       emitter.start();
     }
   }
 
+  queueParticleEmphasis(itemID: string): void {
+    this.emitterIndices.push(itemID);
+  }
+
+
+
   removeParticleEmphasis(itemID: string): void {
-    console.log(`removeParticleEmphasis(${itemID});`);
     let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
     if (emitter) {
       emitter.stop();
@@ -697,23 +775,30 @@ class CharacterStatsScroll extends WorldObject {
   }
 
   focusItem(playerID: number, pageID: number, itemID: string): void {
-    let emphasisIndex: number;
-
     let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
-    this.addParticleEmphasis(itemID);
+    if (pageID === this.pageIndex)
+      this.addParticleEmphasis(itemID);
+    else
+      this.queueParticleEmphasis(itemID);
+
+    this.emphasisSprites = null;
 
     if (pageID === ScrollPage.main) {
-      emphasisIndex = emphasisMain[itemID];
-      this.scrollEmphasisMain.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
+      this.emphasisSprites = this.scrollEmphasisMain;
+      this.emphasisIndices.push(emphasisMain[itemID]);
     }
     else if (pageID === ScrollPage.skills) {
-      emphasisIndex = emphasisSkills[itemID];
-      this.scrollEmphasisSkills.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
+      this.emphasisSprites = this.scrollEmphasisSkills;
+      this.emphasisIndices.push(emphasisSkills[itemID]);
     }
     else if (pageID === ScrollPage.equipment) {
-      emphasisIndex = emphasisEquipment[itemID];
-      this.scrollEmphasisEquipment.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
+      this.emphasisSprites = this.scrollEmphasisEquipment;
+      this.emphasisIndices.push(emphasisEquipment[itemID]);
     }
+
+    if (this.emphasisSprites)
+      if (pageID === this.pageIndex)
+        this.emphasisSprites.add(0, 0, this.emphasisIndices.pop()).setFadeTimes(this.fadeTime, this.fadeTime);
 
     let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
 

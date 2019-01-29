@@ -80,12 +80,69 @@ enum WeaponType {
   none
 }
 
+class SavingThrow {
+  constructor(public success: number, public ability: Ability) {
+		
+	}
+}
+
+class Damage {
+  constructor(public damageType: DamageType, public damageRoll: string) {
+		
+	}
+}
+
+enum HealthDescriptorCutoffs { // (as a percentage of max hit points)
+  Healthy = 100,
+  Bruised = 90,
+  Scratched = 80,
+  BarelyInjured = 65,
+  Injured = 50,
+  BadlyInjured = 30,
+  BadlyBloodied = 20,
+  NearDeath = 10,
+  HangingOnByAThread = 1,
+  Dead = 0
+}
+
+enum CreatureTypes {
+  None = 0,
+  Aberration = 1,
+  Beast = 2,
+  Celestial = 4,
+  Construct = 8,
+  Dragon = 16,
+  Elemental = 32,
+  Fey = 64,
+  Fiend = 128,
+  Giant = 256,
+  Humanoid = 512,
+  Monstrosity = 1024,
+  Ooze = 2048,
+  Plant = 4096,
+  Undead = 8192
+}
+
 class Attack {
   description: string;
+  reach: number;
   range: number;
-  constructor(public name: string, public damageType: DamageType, public damageRoll: string) {
+  plusToHit: number = 0;
+  numTargets: number = 1;
+  mods: Array<Mod> = Array<Mod>();
+  damage: Array<Damage> = Array<Damage>();
+  savingThrow: SavingThrow;
+  successfulSaveDamage: Array<Damage> = Array<Damage>();
+  constructor(public name: string) {
 
   }
+
+  addDamage(damageType: DamageType, damageRoll: string): any {
+    let damage: Damage = new Damage(damageType, damageRoll);
+    this.damage.push(damage);
+    return damage;
+  }
+
 }
 
 enum EffectTarget {
@@ -124,6 +181,7 @@ class Effect {
 
 enum ModType {
   playerProperty,
+  condition,
   incomingAttack,
   outgoingAttack
 }
@@ -134,9 +192,11 @@ class Mod {
   requiresEquipped: boolean = false;
   requiresConsumption: boolean = false;
   damageTypeFilter: DamageType = DamageType.None;
+  condition: Conditions = Conditions.none;
   offset: number = 0;
   multiplier: number = 1; // < 1 for resistance, > 1 for vulnerability
-
+  repeats: TimeSpan = TimeSpan.zero;
+  lastApplied: Date;
   constructor() {
 
   }
@@ -146,7 +206,7 @@ class CurseOrBlessing {
   name: string;
   description: string;
   mods: Array<Mod> = Array<Mod>();
-  durationTurns: number = Infinity;
+  duration: TimeSpan = TimeSpan.infinity;
   constructor() {
 
   }
@@ -163,6 +223,7 @@ class TimeSpan {
   }
 
   static readonly zero: TimeSpan = TimeSpan.fromActions(0);
+  static readonly infinity: TimeSpan = TimeSpan.fromActions(Infinity);
 
   static fromActions(actionCount: number): TimeSpan {
     return new TimeSpan(TimeMeasure.actions, actionCount);
@@ -273,7 +334,7 @@ class Weapon extends Item {
     shortSword.weaponType = WeaponType.melee;
     shortSword.name = 'Shortsword';
     shortSword.costValue = 10;
-    shortSword.attacks.push(new Attack('Stab', DamageType.Piercing, '1d6'));
+    shortSword.attacks.push(new Attack('Stab').addDamage(DamageType.Piercing, '1d6'));
     shortSword.weaponProperties = WeaponProperties.finesse + WeaponProperties.light;
     shortSword.weight = 2;
     return shortSword;
@@ -286,7 +347,7 @@ class Weapon extends Item {
     blowGun.normalRange = 25;
     blowGun.longRange = 100;
     blowGun.costValue = 10;
-    blowGun.attacks.push(new Attack('Blow Dart', DamageType.Piercing, '1'));
+    blowGun.attacks.push(new Attack('Blow Dart').addDamage(DamageType.Piercing, '1'));
     blowGun.weaponProperties = WeaponProperties.ammunition + WeaponProperties.loading + WeaponProperties.range;
     blowGun.weight = 1;
     return blowGun;
