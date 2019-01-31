@@ -251,6 +251,7 @@
     </Compile>
     <Compile Include="Item.cs" />
     <Compile Include="RoundCheck.cs" />
+    <Compile Include="SpritesEffectDto.cs" />
     <Compile Include="StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>
     </Compile>

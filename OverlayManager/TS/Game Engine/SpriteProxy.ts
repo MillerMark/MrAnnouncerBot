@@ -237,10 +237,10 @@ class SpriteProxy {
 class ColorShiftingSpriteProxy extends SpriteProxy {
   hueShift: number = 0;
   saturationPercent: number = 100;
-  brightness: number;
+  brightness: number = 50;
 
-  constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
-    super(startingFrameNumber, x, y, lifeSpanMs);
+  constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
+    super(startingFrameNumber, center.x, center.y, lifeSpanMs);
   }
 
   draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {

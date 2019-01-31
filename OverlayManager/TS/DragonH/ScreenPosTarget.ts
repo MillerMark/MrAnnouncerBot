@@ -1,8 +1,8 @@
 ﻿class ScreenPosTarget extends VisualEffectTarget {
   center: Vector;
-  constructor(centerX: number, centerY: number) {
+  constructor(center: Vector) {
     super();
-    this.center = new Vector(centerX, centerY);
+    this.center = center;
   }
 
   getCenter(): Vector {

@@ -1,6 +1,7 @@
 ﻿class DragonFrontGame extends GamePlusQuiz {
   shouldDrawCenterCrossHairs: boolean = false;
   denseSmoke: Sprites;
+  puff: Sprites;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
@@ -18,6 +19,7 @@
       drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
     this.denseSmoke.draw(context, now);
+    this.puff.draw(context, now);
   }
 
   removeAllGameElements(now: number): void {
@@ -40,8 +42,14 @@
     Folders.assets = 'GameDev/Assets/DragonH/';
     const fps30: number = 33;
     this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
+    this.denseSmoke.name = 'DenseSmoke';
     this.denseSmoke.originX = 309;
     this.denseSmoke.originY = 723;
+
+    this.puff = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
+    this.puff.name = 'Puff';
+    this.puff.originX = 229;
+    this.puff.originY = 698;
   }
 
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
@@ -82,10 +90,23 @@
         brightness = +split[3];
       }
 
-      //this.denseSmoke.add(1050, 1080);
-      this.denseSmoke.sprites.push(new ColorShiftingSpriteProxy(0, 1050 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY).setHueSatBrightness(hue, saturation, brightness));
+      this.denseSmoke.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(1050 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY)).setHueSatBrightness(hue, saturation, brightness));
     }
 
     return false;
   }
+
+  triggerEffect(effectData: string): void {
+    let dto: any = JSON.parse(effectData);
+    let center: Vector = new Vector(dto.center.x, dto.center.y);
+    let sprites: Sprites;
+    if (dto.spriteName === 'DenseSmoke')
+      sprites = this.denseSmoke;
+    else if (dto.spriteName === 'Puff')
+      sprites = this.puff;
+
+    let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness);
+    spritesEffect.start();
+  }
+
 } 

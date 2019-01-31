@@ -71,6 +71,7 @@
 					<Button x:Name="btnAddCustom" Margin="4" Padding="8, 4, 8, 4">
 						Add Custom...
 					</Button>
+					<Button x:Name="btnTestEffect" Margin="4" Padding="8, 4, 8, 4" Content="Effect" Click="BtnTestEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="390" >

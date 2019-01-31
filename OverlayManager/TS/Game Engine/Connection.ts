@@ -14,7 +14,9 @@ function connectToSignalR(signalR) {
 }
 
 function triggerEffect(effectData: string) {
-  console.log(effectData);
+  if (activeFrontGame instanceof DragonFrontGame) {
+    activeFrontGame.triggerEffect(effectData);
+  }
 }
 
 function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {

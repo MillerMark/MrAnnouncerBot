@@ -1,4 +1,5 @@
 ﻿class Sprites {
+  name: string;
   sprites: SpriteProxy[];
   baseAnimation: Part;
   spriteWidth: number;

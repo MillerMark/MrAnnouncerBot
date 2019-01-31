@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,6 +99,13 @@ namespace DHDM
 				activePage = characterSheets.Page;
 				PlayerPageChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
 			}
+		}
+
+		private void BtnTestEffect_Click(object sender, RoutedEventArgs e)
+		{
+			SpritesEffectDto spritesEffectDto = new SpritesEffectDto("DenseSmoke", new Vector(960, 1080), 0, 220, 100, 100);
+			string serializedObject = JsonConvert.SerializeObject(spritesEffectDto);
+			TriggerEffect(serializedObject);
 		}
 	}
 }
