@@ -127,7 +127,7 @@ enum Skills {
 
 class Character {
   equipment: Array<Item> = new Array<Item>();
-  cursesAndBlessings: Array<CurseOrBlessing> = new Array<CurseOrBlessing>();
+  cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
   name: string;
   level: number;
   conditions: Conditions = Conditions.none;

@@ -244,7 +244,7 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
   }
 
   draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {
-    context.filter = "hue-rotate(" + this.hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
+    (context as any).filter = "hue-rotate(" + this.hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
     super.draw(baseAnimation, context, now, spriteWidth, spriteHeight);
   }
 

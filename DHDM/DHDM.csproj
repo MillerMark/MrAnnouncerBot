@@ -242,12 +242,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DndTimeSpan.cs" />
     <Compile Include="FocusedControlsChangedEventArgs.cs" />
     <Compile Include="FocusHelper.cs" />
     <Compile Include="GridSheet.cs" />
     <Compile Include="GroupBackground.xaml.cs">
       <DependentUpon>GroupBackground.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Item.cs" />
     <Compile Include="RoundCheck.cs" />
     <Compile Include="StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>

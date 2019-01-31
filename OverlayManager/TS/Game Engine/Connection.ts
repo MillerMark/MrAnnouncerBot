@@ -9,7 +9,12 @@ function connectToSignalR(signalR) {
     connection.on("PlayerPageChanged", playerPageChanged);
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
+    connection.on("TriggerEffect", triggerEffect);
   };
+}
+
+function triggerEffect(effectData: string) {
+  console.log(effectData);
 }
 
 function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {

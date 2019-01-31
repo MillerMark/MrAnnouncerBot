@@ -31,6 +31,12 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.UnfocusItem(playerID, pageID, itemID);
 		}
 
+		public void TriggerEffect(string effectData)
+		{
+			coderushedHub.Clients.All.TriggerEffect(effectData);
+		}
+
+
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)
 		{

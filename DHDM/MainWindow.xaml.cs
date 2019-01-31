@@ -85,6 +85,11 @@ namespace DHDM
 			hubConnection.InvokeAsync("UnfocusItem", playerID, (int)pageID, itemID);
 		}
 
+		void TriggerEffect(string effectData)
+		{
+			hubConnection.InvokeAsync("TriggerEffect", effectData);
+		}
+
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
 		{
 			CharacterSheets characterSheets = sender as CharacterSheets;
