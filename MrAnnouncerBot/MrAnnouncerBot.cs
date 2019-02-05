@@ -23,7 +23,7 @@ namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
-		public static readonly HttpClient httpClient = new HttpClient();
+		public static readonly HttpClient httpClient = new HttpClient(); 
 
 		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
 		Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();

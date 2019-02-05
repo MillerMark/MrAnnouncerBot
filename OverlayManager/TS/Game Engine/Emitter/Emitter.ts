@@ -1,11 +1,11 @@
 ﻿class Emitter extends WorldObject {
   particleGenerator: ParticleGenerator;
   particles: Array<Particle> = new Array<Particle>();
-  opacity: number;
+  //opacity: number;
   particleFadeInTime: number;
   particleRadius: TargetValue;
   particleLifeSpanSeconds: number;
-  particleRadiusVariance: number;
+  //particleRadiusVariance: number;
   particlesPerSecond: number;
   particleMaxOpacity: number;
   lastParticleCreationTime: number;
@@ -40,7 +40,7 @@
     this.particleGenerator = new CircularParticleGenerator(10);
     this.particleRadius = new TargetValue(1);
     this.particlesPerSecond = 500;
-    this.opacity = 1;
+    //this.opacity = 1;
     this.hue = new TargetValue(0, 0, 0, 360);
     this.hue.binding = TargetBinding.wrap;
     this.saturation = new TargetValue(1, 0, 0, 1);

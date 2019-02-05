@@ -121,8 +121,7 @@ namespace DHDM
 
 		private static void OnStatBoxTextChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
-			StatBox statBox = o as StatBox;
-			if (statBox != null)
+			if (o is StatBox statBox)
 				statBox.OnTextChanged((string)e.OldValue, (string)e.NewValue);
 		}
 
@@ -134,15 +133,13 @@ namespace DHDM
 
 		private static void OnStatBoxTextAlignmentChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
-			StatBox statBox = o as StatBox;
-			if (statBox != null)
+			if (o is StatBox statBox)
 				statBox.OnTextAlignmentChanged((TextAlignment)e.OldValue, (TextAlignment)e.NewValue);
 		}
 
 		private static void OnStatBoxStateChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
-			StatBox statBox = o as StatBox;
-			if (statBox != null)
+			if (o is StatBox statBox)
 				statBox.OnStatBoxStateChanged((StatBoxState)e.OldValue, (StatBoxState)e.NewValue);
 		}
 

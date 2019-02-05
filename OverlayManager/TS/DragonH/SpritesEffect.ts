@@ -5,6 +5,7 @@
 }
 
 class SpritesEffect extends VisualEffect {
+  lifeSpanMs: number;
   constructor(private spritesRef: Sprites, private visualEffectTarget: VisualEffectTarget, private startFrameIndex: number,
     private hueShift: number, private saturation: number, private brightness) {
     super();
@@ -15,7 +16,7 @@ class SpritesEffect extends VisualEffect {
     if (this.hueShift !== 0 || this.saturation >= 0 || this.brightness >= 0) {
       this.spritesRef.sprites.push(
         new ColorShiftingSpriteProxy(this.startFrameIndex, this.visualEffectTarget.getCenter().add(
-          new Vector(-this.spritesRef.originX, -this.spritesRef.originY)))
+          new Vector(-this.spritesRef.originX, -this.spritesRef.originY)), this.lifeSpanMs)
           .setHueSatBrightness(this.hueShift, this.saturation, this.brightness));
     }
     else {

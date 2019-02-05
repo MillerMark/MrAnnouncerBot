@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="680" Width="1200">
+        Title="MainWindow" Height="680" Width="1387.175">
 	<Grid>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="2*" />
+			<ColumnDefinition Width="1.2*" />
 			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
@@ -71,15 +71,21 @@
 					<Button x:Name="btnAddCustom" Margin="4" Padding="8, 4, 8, 4">
 						Add Custom...
 					</Button>
-					<Button x:Name="btnTestEffect" Margin="4" Padding="8, 4, 8, 4" Content="Effect" Click="BtnTestEffect_Click"/>
+					<Button x:Name="btnSampleEffect" Margin="4" Padding="8, 4, 8, 4" Content="Sample" Click="btnSampleEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="390" >
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="625" >
 				<TabItem Header="Dungeon">
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
 				<TabItem Header="History">
 					<Grid Background="#FFE5E5E5"/>
+				</TabItem>
+				<TabItem Header="Effect Builder" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<Grid Background="#FFE5E5E5">
+						<local:EffectBuilder x:Name="effectBuilder" Width="Auto" Height="Auto"></local:EffectBuilder>
+						<Button x:Name="btnTestEffect" Margin="475,326,10,219" Padding="8, 4, 8, 4" Content="Test Effect" FontSize="20" FontWeight="Bold" Click="BtnTestEffect_Click"/>
+					</Grid>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

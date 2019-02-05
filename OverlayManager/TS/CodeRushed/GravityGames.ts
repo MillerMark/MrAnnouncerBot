@@ -348,7 +348,10 @@ class GravityGames {
 
   setActivePlanet(planet: Planet) {
     let now: number = performance.now();
-    myRocket.changingDirection(now);
+    if (myRocket) {
+      myRocket.changingDirection(now);
+    }
+
     if (activeBackGame instanceof DroneGame) {
       activeBackGame.allMeteors.changingDirection(now);
       activeBackGame.allSeeds.changingDirection(now);
@@ -361,7 +364,10 @@ class GravityGames {
     this.activePlanet = planet;
 
     if (loadCopyrightedContent) {
-        this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+      let saveFolder: string = Folders.assets;
+      Folders.assets = 'GameDev/Assets/DroneGame/';
+      this.planetSurface = new Part('Planets/' + planet.imageFileName, 1, AnimationStyle.Static, 0, 0);
+      Folders.assets = saveFolder;
     }
   }
 

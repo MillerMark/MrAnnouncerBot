@@ -6,30 +6,19 @@ using System.Threading.Tasks;
 
 namespace DHDM
 {
-	public struct Vector
-	{
-		public double x;
-		public double y;
-		public Vector(double x, double y)
-		{
-			this.x = x;
-			this.y = y;
-		}
-	}
-
-	class SpritesEffectDto
+	public class AnimationEffect : Effect
 	{
 		public string spriteName;
-		public Vector center;
+		public VisualEffectTarget target;
 		public int startFrameIndex;
 		public double hueShift;
 		public double saturation;
 		public double brightness;
 
-		public SpritesEffectDto(string spriteName, Vector center, int startFrameIndex, double hueShift = 0, double saturation = -1, double brightness = -1)
+		public AnimationEffect(string spriteName, VisualEffectTarget target, int startFrameIndex, double hueShift = 0, double saturation = -1, double brightness = -1)
 		{
 			this.spriteName = spriteName;
-			this.center = center;
+			this.target = target;
 			this.startFrameIndex = startFrameIndex;
 			this.hueShift = hueShift;
 			this.saturation = saturation;

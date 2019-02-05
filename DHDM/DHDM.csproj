@@ -242,25 +242,55 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DndTimeSpan.cs" />
-    <Compile Include="FocusedControlsChangedEventArgs.cs" />
+    <Compile Include="Ability.cs" />
+    <Compile Include="DnD Model\Attack.cs" />
+    <Compile Include="DnD Model\Conditions.cs" />
+    <Compile Include="DnD Model\CurseBlessingDisease.cs" />
+    <Compile Include="DnD Model\Damage.cs" />
+    <Compile Include="DnD Model\DamageType.cs" />
+    <Compile Include="DnD Model\DndTimeSpan.cs" />
+    <Compile Include="DnD Model\Effects\Effect.cs" />
+    <Compile Include="DnD Model\Effects\EffectKind.cs" />
+    <Compile Include="DnD Model\Effects\SoundEffect.cs" />
+    <Compile Include="DnD Model\Effects\TargetType.cs" />
+    <Compile Include="DnD Model\Effects\VisualEffectTarget.cs" />
+    <Compile Include="DnD Model\Vector.cs" />
+    <Compile Include="User Controls\EffectBuilder.xaml.cs">
+      <DependentUpon>EffectBuilder.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Event Args\FocusedControlsChangedEventArgs.cs" />
     <Compile Include="FocusHelper.cs" />
-    <Compile Include="GridSheet.cs" />
-    <Compile Include="GroupBackground.xaml.cs">
+    <Compile Include="User Controls\GridSheet.cs" />
+    <Compile Include="User Controls\GroupBackground.xaml.cs">
       <DependentUpon>GroupBackground.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Item.cs" />
-    <Compile Include="RoundCheck.cs" />
-    <Compile Include="SpritesEffectDto.cs" />
-    <Compile Include="StatBox.xaml.cs">
+    <Compile Include="DnD Model\Item.cs" />
+    <Compile Include="DnD Model\Mod.cs" />
+    <Compile Include="DnD Model\ModType.cs" />
+    <Compile Include="DnD Model\ReleaseTrigger.cs" />
+    <Compile Include="User Controls\NumEdit.xaml.cs">
+      <DependentUpon>NumEdit.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="User Controls\RoundCheck.cs" />
+    <Compile Include="DnD Model\SavingThrow.cs" />
+    <Compile Include="DnD Model\Effects\AnimationEffect.cs" />
+    <Compile Include="User Controls\StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StatBoxState.cs" />
-    <Page Include="CharacterSheets.xaml">
+    <Compile Include="User Controls\StatBoxState.cs" />
+    <Compile Include="DnD Model\TimeMeasure.cs" />
+    <Compile Include="User Controls\TargetValueEdit.xaml.cs">
+      <DependentUpon>TargetValueEdit.xaml</DependentUpon>
+    </Compile>
+    <Page Include="User Controls\CharacterSheets.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GroupBackground.xaml">
+    <Page Include="User Controls\EffectBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\GroupBackground.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -272,20 +302,28 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CharacterSheets.xaml.cs">
+    <Compile Include="User Controls\CharacterSheets.xaml.cs">
       <DependentUpon>CharacterSheets.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="StatBox.xaml">
+    <Page Include="User Controls\NumEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\StatBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\TargetValueEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PageChangeEventArgs.cs" />
+    <Compile Include="Event Args\PageChangeEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

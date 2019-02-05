@@ -18,6 +18,8 @@ class Digits {
 
   constructor(public size: DigitSize, public right: number, public top: number) {
     this.digitAlign = DigitAlign.right;
+    let saveFolder: string = Folders.assets;
+    Folders.assets = 'GameDev/Assets/DroneGame/';
     if (size === DigitSize.large)
       this.digits = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static, false, null, this.digitsLoaded.bind(this));
     else if (size === DigitSize.medium)
@@ -33,6 +35,8 @@ class Digits {
       this.margin = -10;
     else
       this.margin = -5;
+
+    Folders.assets = saveFolder;
   }
 
   digitsLoaded(sprites: Sprites) {

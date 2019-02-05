@@ -182,7 +182,7 @@
   }
 
   blood(): void {
-    this.emitter = new Emitter(new Vector(1050, 1080));
+    this.emitter = new Emitter(new Vector(450, 1080));
     this.emitter.radius = 1;
     this.emitter.saturation.target = 0.9;
     this.emitter.saturation.relativeVariance = 0.2;
@@ -529,12 +529,12 @@
       return true;
     }
 
-    if (testCommand === 'blood') {
-      this.world.removeCharacter(this.emitter);
-      this.blood();
-      this.world.addCharacter(this.emitter);
-      return true;
-    }
+    //if (testCommand === 'blood') {
+    //  this.world.removeCharacter(this.emitter);
+    //  this.blood();
+    //  this.world.addCharacter(this.emitter);
+    //  return true;
+    //}
 
     if (testCommand === 'gold') {
       this.world.removeCharacter(this.emitter);

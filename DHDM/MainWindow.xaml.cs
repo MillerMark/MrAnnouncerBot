@@ -38,7 +38,6 @@ namespace DHDM
 				return tabPlayers.SelectedIndex;
 			}
 		}
-		
 
 		private void FocusHelper_FocusedControlsChanged(object sender, FocusedControlsChangedEventArgs e)
 		{
@@ -93,18 +92,26 @@ namespace DHDM
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
 		{
-			CharacterSheets characterSheets = sender as CharacterSheets;
-			if (characterSheets != null && activePage != characterSheets.Page)
+			if (sender is CharacterSheets characterSheets && activePage != characterSheets.Page)
 			{
 				activePage = characterSheets.Page;
 				PlayerPageChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
 			}
 		}
 
+		private void btnSampleEffect_Click(object sender, RoutedEventArgs e)
+		{
+			AnimationEffect animationEffect = new AnimationEffect("DenseSmoke", new VisualEffectTarget(960, 1080), 0, 220, 100, 100);
+			string serializedObject = JsonConvert.SerializeObject(animationEffect);
+			TriggerEffect(serializedObject);
+		}
+
 		private void BtnTestEffect_Click(object sender, RoutedEventArgs e)
 		{
-			SpritesEffectDto spritesEffectDto = new SpritesEffectDto("DenseSmoke", new Vector(960, 1080), 0, 220, 100, 100);
-			string serializedObject = JsonConvert.SerializeObject(spritesEffectDto);
+			Effect activeEffect = effectBuilder.GetEffect();
+			if (activeEffect == null)
+				return;
+			string serializedObject = JsonConvert.SerializeObject(activeEffect);
 			TriggerEffect(serializedObject);
 		}
 	}

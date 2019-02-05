@@ -1,8 +1,31 @@
-﻿class DragonFrontGame extends GamePlusQuiz {
+﻿enum TargetType {
+  ActivePlayer = 0,
+  ActiveEnemy = 1,
+  ScrollPosition = 2,
+  ScreenPosition = 3
+}
+
+class DragonFrontGame extends GamePlusQuiz {
+  emitter: Emitter;
   shouldDrawCenterCrossHairs: boolean = false;
   denseSmoke: Sprites;
-  puff: Sprites;
-
+  poof: Sprites;
+  bloodGush: Sprites;
+  bloodLarger: Sprites;
+  bloodLarge: Sprites;
+  bloodMedium: Sprites;
+  bloodSmall: Sprites;
+  bloodSmaller: Sprites;
+  bloodSmallest: Sprites;
+  charmed: Sprites;
+  restrained: Sprites;
+  sparkShower: Sprites;
+  embersLarge: Sprites;
+  embersMedium: Sprites;
+  stars: Sprites;
+  fumes: Sprites;
+  allEffects: SpriteCollection;
+  
   constructor(context: CanvasRenderingContext2D) {
     super(context);
   }
@@ -18,8 +41,7 @@
     if (this.shouldDrawCenterCrossHairs)
       drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
-    this.denseSmoke.draw(context, now);
-    this.puff.draw(context, now);
+    this.allEffects.draw(context, now);
   }
 
   removeAllGameElements(now: number): void {
@@ -28,36 +50,168 @@
 
   initialize() {
     super.initialize();
-
+    gravityGames = new GravityGames();
     //Folders.assets = 'GameDev/Assets/DroneGame/';
   }
 
   start() {
     super.start();
+    gravityGames.selectPlanet('Earth');
+    gravityGames.newGame();
+
     this.updateGravity();
+    if (this.emitter)
+      this.world.addCharacter(this.emitter);
   }
 
   loadResources(): void {
     super.loadResources();
     Folders.assets = 'GameDev/Assets/DragonH/';
     const fps30: number = 33;
+    const fps20: number = 50;
+    const fps15: number = 67;
     this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
     this.denseSmoke.name = 'DenseSmoke';
     this.denseSmoke.originX = 309;
     this.denseSmoke.originY = 723;
 
-    this.puff = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
-    this.puff.name = 'Puff';
-    this.puff.originX = 229;
-    this.puff.originY = 698;
-  }
+    this.poof = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
+    this.poof.name = 'Puff';
+    this.poof.originX = 229;
+    this.poof.originY = 698;
 
+    this.sparkShower = new Sprites('Sparks/Big/BigSparks', 64, fps30, AnimationStyle.Sequential, true);
+    this.sparkShower.name = 'SparkShower';
+    this.sparkShower.originX = 443;
+    this.sparkShower.originY = 595;
+
+    this.embersLarge = new Sprites('Embers/Large/EmberLarge', 93, fps30, AnimationStyle.Sequential, true);
+    this.embersLarge.name = 'EmbersLarge';
+    this.embersLarge.originX = 504;
+    this.embersLarge.originY = 501;
+
+    this.embersMedium = new Sprites('Embers/Medium/EmberMedium', 91, fps30, AnimationStyle.Sequential, true);
+    this.embersMedium.name = 'EmbersMedium';
+    this.embersMedium.originX = 431;
+    this.embersMedium.originY = 570;
+
+    this.stars = new Sprites('SpinningStars/SpinningStars', 120, fps20, AnimationStyle.Loop, true);
+    this.stars.name = 'Stars';
+    this.stars.originX = 155;
+    this.stars.originY = 495;
+
+    this.fumes = new Sprites('Fumes/Fumes', 112, fps30, AnimationStyle.Loop, true);
+    this.fumes.name = 'Fumes';
+    this.fumes.originX = 281;
+    this.fumes.originY = 137;
+
+    this.bloodGush = new Sprites('Blood/BloodGush/BloodGush', 77, fps30, AnimationStyle.Sequential, true);
+    this.bloodGush.name = 'BloodGush';
+    this.bloodGush.originX = 39;
+    this.bloodGush.originY = 1075;
+
+    this.bloodLarger = new Sprites('Blood/BloodLarger/BloodLarger', 49, fps15, AnimationStyle.Sequential, true);
+    this.bloodLarger.name = 'BloodLarger';
+    this.bloodLarger.originX = 471;
+    this.bloodLarger.originY = 678;
+
+    this.bloodLarge = new Sprites('Blood/BloodLarge/BloodLarge', 49, fps15, AnimationStyle.Sequential, true);
+    this.bloodLarge.name = 'BloodLarge';
+    this.bloodLarge.originX = 378;
+    this.bloodLarge.originY = 547;
+
+    this.bloodMedium = new Sprites('Blood/BloodMedium/BloodMedium', 49, fps15, AnimationStyle.Sequential, true);
+    this.bloodMedium.name = 'BloodMedium';
+    this.bloodMedium.originX = 328;
+    this.bloodMedium.originY = 647;
+
+    this.bloodSmall = new Sprites('Blood/BloodSmall/BloodSmall', 49, fps15, AnimationStyle.Sequential, true);
+    this.bloodSmall.name = 'BloodSmall';
+    this.bloodSmall.originX = 246;
+    this.bloodSmall.originY = 498;
+
+    this.bloodSmaller = new Sprites('Blood/BloodSmaller/BloodSmaller', 49, fps15, AnimationStyle.Sequential, true);
+    this.bloodSmaller.name = 'BloodSmaller';
+    this.bloodSmaller.originX = 191;
+    this.bloodSmaller.originY = 348;
+
+    this.bloodSmallest = new Sprites('Blood/BloodSmallest/BloodSmallest', 49, fps15, AnimationStyle.Sequential, true);
+    this.bloodSmallest.name = 'BloodSmallest';
+    this.bloodSmallest.originX = 150;
+    this.bloodSmallest.originY = 300;
+
+    this.charmed = new Sprites('Charmed/Charmed', 179, fps30, AnimationStyle.Loop, true);
+    this.charmed.name = 'Heart';
+    this.charmed.originX = 155;
+    this.charmed.originY = 269;
+
+    this.restrained = new Sprites('Restrained/Chains', 20, fps30, AnimationStyle.Loop, true);
+    this.restrained.name = 'Restrained';
+    this.restrained.originX = 213;
+    this.restrained.originY = 299;
+
+    this.allEffects = new SpriteCollection();
+    this.allEffects.add(this.stars);
+    this.allEffects.add(this.fumes);
+    this.allEffects.add(this.sparkShower);
+    this.allEffects.add(this.embersLarge);
+    this.allEffects.add(this.embersMedium);
+    this.allEffects.add(this.denseSmoke);
+    this.allEffects.add(this.poof);
+    this.allEffects.add(this.bloodGush);
+    this.allEffects.add(this.bloodLarger);
+    this.allEffects.add(this.bloodLarge);
+    this.allEffects.add(this.bloodMedium);
+    this.allEffects.add(this.bloodSmall);
+    this.allEffects.add(this.bloodSmaller);
+    this.allEffects.add(this.bloodSmallest);
+    this.allEffects.add(this.charmed);
+    this.allEffects.add(this.restrained);
+  }                          
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
     if (super.executeCommand(command, params, userId, userName, displayName, color, now))
       return true;
     if (command === "Cross2") {
       this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
     }
+  }
+
+  testBloodEmitter(): void {
+    this.emitter = new Emitter(new Vector(450, 1080));
+    this.emitter.radius = 1;
+    this.emitter.saturation.target = 0.9;
+    this.emitter.saturation.relativeVariance = 0.2;
+    this.emitter.hue.absoluteVariance = 10;
+    this.emitter.hue.target = 0;
+    this.emitter.brightness.target = 0.4;
+    this.emitter.brightness.relativeVariance = 0.3;
+    this.emitter.particlesPerSecond = 1400;
+
+    this.emitter.particleRadius.target = 2.5;
+    this.emitter.particleRadius.relativeVariance = 0.8;
+
+    this.emitter.particleLifeSpanSeconds = 2;
+    this.emitter.maxTotalParticles = 2000;
+    this.emitter.particleGravity = 9.8;
+    this.emitter.particleInitialVelocity.target = 0.8;
+    this.emitter.particleInitialVelocity.relativeVariance = 0.25;
+    this.emitter.gravity = 0;
+    this.emitter.airDensity = 0; // 0 == vaccuum.
+    this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
+
+    let sprayAngle: number = Random.intBetween(270 - 45, 270 + 45);
+    let minVelocity: number = 9;
+    let maxVelocity: number = 16;
+    let angleAwayFromUp: number = Math.abs(sprayAngle - 270);
+    if (angleAwayFromUp < 15)
+      maxVelocity = 10;
+    else if (angleAwayFromUp > 35)
+      minVelocity = 13;
+    else
+      maxVelocity = 18;
+    this.emitter.bonusParticleVelocityVector = Vector.fromPolar(sprayAngle, Random.intBetween(minVelocity, maxVelocity));
+
+    this.emitter.renderOldestParticlesLast = true;
   }
 
   test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
@@ -67,6 +221,21 @@
     if (testCommand === "Cross2") {
       console.log('draw Cross Hairs');
       this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
+    }
+
+    if (testCommand === 'clear') {
+      this.world.removeCharacter(this.emitter);
+      this.testBloodEmitter();
+      this.world.addCharacter(this.emitter);
+      return true;
+    }
+
+    if (testCommand === 'blood') {
+      console.log('Blood');
+      this.world.removeCharacter(this.emitter);
+      this.testBloodEmitter();
+      this.world.addCharacter(this.emitter);
+      return true;
     }
 
     // poof 40 50
@@ -90,20 +259,65 @@
         brightness = +split[3];
       }
 
-      this.denseSmoke.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(1050 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY)).setHueSatBrightness(hue, saturation, brightness));
+      this.denseSmoke.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY)).setHueSatBrightness(hue, saturation, brightness));
     }
 
     return false;
   }
 
+  getCenter(target: any): Vector {
+    let result: Vector;
+    if (target.targetType === TargetType.ScreenPosition)
+      result = new Vector(target.screenPosition.x, target.screenPosition.y);
+    else if (target.targetType === TargetType.ActivePlayer)
+      result = new Vector(660, 1080);
+    else if (target.targetType === TargetType.ActiveEnemy)
+      result = new Vector(1260, 1080);
+    else if (target.targetType === TargetType.ScrollPosition)
+      result = new Vector(150, 400);
+    else 
+      result = new Vector(960, 540);
+
+    return result.add(new Vector(target.targetOffset.x, target.targetOffset.y));
+  }
+
   triggerEffect(effectData: string): void {
     let dto: any = JSON.parse(effectData);
-    let center: Vector = new Vector(dto.center.x, dto.center.y);
+    let center: Vector = this.getCenter(dto.target);
+
     let sprites: Sprites;
     if (dto.spriteName === 'DenseSmoke')
       sprites = this.denseSmoke;
-    else if (dto.spriteName === 'Puff')
-      sprites = this.puff;
+    else if (dto.spriteName === 'Poof')
+      sprites = this.poof;
+    else if (dto.spriteName === 'BloodGush')
+      sprites = this.bloodGush;
+    else if (dto.spriteName === 'BloodLarger')
+      sprites = this.bloodLarger;
+    else if (dto.spriteName === 'BloodLarge')
+      sprites = this.bloodLarge;
+    else if (dto.spriteName === 'BloodMedium')
+      sprites = this.bloodMedium;
+    else if (dto.spriteName === 'BloodSmall')
+      sprites = this.bloodSmall;
+    else if (dto.spriteName === 'BloodSmaller')
+      sprites = this.bloodSmaller;
+    else if (dto.spriteName === 'BloodSmallest')
+      sprites = this.bloodSmallest;
+    else if (dto.spriteName === 'Heart')
+      sprites = this.charmed;
+    else if (dto.spriteName === 'Restrained')
+      sprites = this.restrained;
+    else if (dto.spriteName === 'SparkShower')
+      sprites = this.sparkShower;
+    else if (dto.spriteName === 'EmbersLarge')
+      sprites = this.embersLarge;
+    else if (dto.spriteName === 'EmbersMedium')
+      sprites = this.embersMedium;
+    else if (dto.spriteName === 'Stars')
+      sprites = this.stars;
+    else if (dto.spriteName === 'Fumes')
+      sprites = this.fumes;
 
     let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness);
     spritesEffect.start();
