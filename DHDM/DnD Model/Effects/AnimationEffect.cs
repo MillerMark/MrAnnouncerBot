@@ -8,6 +8,7 @@ namespace DHDM
 {
 	public class AnimationEffect : Effect
 	{
+		public string name;
 		public string spriteName;
 		public VisualEffectTarget target;
 		public int startFrameIndex;

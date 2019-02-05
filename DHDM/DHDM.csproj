@@ -251,8 +251,10 @@
     <Compile Include="DnD Model\DndTimeSpan.cs" />
     <Compile Include="DnD Model\Effects\Effect.cs" />
     <Compile Include="DnD Model\Effects\EffectKind.cs" />
+    <Compile Include="DnD Model\Effects\EmitterEffect.cs" />
     <Compile Include="DnD Model\Effects\SoundEffect.cs" />
     <Compile Include="DnD Model\Effects\TargetType.cs" />
+    <Compile Include="DnD Model\Effects\TargetValue.cs" />
     <Compile Include="DnD Model\Effects\VisualEffectTarget.cs" />
     <Compile Include="DnD Model\Vector.cs" />
     <Compile Include="User Controls\EffectBuilder.xaml.cs">

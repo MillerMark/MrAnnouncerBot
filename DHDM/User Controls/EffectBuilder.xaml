@@ -182,7 +182,7 @@
 			</StackPanel>
 			<StackPanel x:Name="spParticleMass" Orientation="Horizontal" Margin="4, 2, 0, 0">
 				<local:TargetValueEdit x:Name="tvParticleRadius"  Label="Particle Radius: " Value="1" Units="px" Changed="AnyTargetValue_Changed" ></local:TargetValueEdit>
-				<local:NumEdit Label="Min Particle Size: " Value="0.5" Units="px" Margin="14,0,0,0" TextChanged="AnyNumEdit_Changed"></local:NumEdit>
+				<local:NumEdit x:Name="nedMinParticleSize" Label="Min Particle Size: " Value="0.5" Units="px" Margin="14,0,0,0" TextChanged="AnyNumEdit_Changed"></local:NumEdit>
 			</StackPanel>
 			<StackPanel x:Name="spParticleDetail1" Orientation="Horizontal" Margin="4, 2, 0, 0">
 				<TextBlock Text="Particle Initial Direction: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0" />
@@ -217,9 +217,9 @@
 
 			<TextBlock x:Name="spParticleColor" Text="Particle Color: " Width="Auto" Height="Auto" Margin="4, 16, 0, 0"/>
 			<StackPanel x:Name="spParticleHueSatBright" Orientation="Vertical" Margin="16,0,0,0">
-				<local:TargetValueEdit x:Name="nedParticleHue" Label="Hue: " Units="deg" Value="0" Margin="4, 2, 0, 0" ShowDrift="True" ShowBinding="True" Max="360" Binding="wrap" Changed="AnyTargetValue_Changed"></local:TargetValueEdit>
-				<local:TargetValueEdit x:Name="nedParticleSaturation" Label="Saturation: " Units="%" Value="100" Max="100" Margin="4, 0, 0, 0" Changed="AnyTargetValue_Changed"></local:TargetValueEdit>
-				<local:TargetValueEdit x:Name="nedBrightness" Label="Brightness: " Units="%" Value="100" Max="100" Margin="4, 0, 0, 0" Changed="AnyTargetValue_Changed"></local:TargetValueEdit>
+				<local:TargetValueEdit x:Name="tvParticleHue" Label="Hue: " Units="deg" Value="0" Margin="4, 2, 0, 0" ShowDrift="True" ShowBinding="True" Max="360" Binding="wrap" Changed="AnyTargetValue_Changed"></local:TargetValueEdit>
+				<local:TargetValueEdit x:Name="tvParticleSaturation" Label="Saturation: " Units="%" Value="100" Max="100" Margin="4, 0, 0, 0" Changed="AnyTargetValue_Changed"></local:TargetValueEdit>
+				<local:TargetValueEdit x:Name="tvBrightness" Label="Brightness: " Units="%" Value="100" Max="100" Margin="4, 0, 0, 0" Changed="AnyTargetValue_Changed"></local:TargetValueEdit>
 			</StackPanel>
 		</StackPanel>
 

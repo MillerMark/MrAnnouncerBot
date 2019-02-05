@@ -59,7 +59,7 @@ namespace DHDM
 
 		void SettingsChanged()
 		{
-			
+
 		}
 		private void RbActivePlayer_Checked(object sender, RoutedEventArgs e)
 		{
@@ -344,9 +344,58 @@ namespace DHDM
 			return new AnimationEffect(GetAnimationName(), GetTarget(), 0, nedAdjustHue.ValueAsDouble, nedAdjustSaturation.ValueAsDouble, nedAdjustBrightness.ValueAsDouble);
 		}
 
+		TargetValue ToTargetValue(TargetValueEdit tve)
+		{
+			double relativeVariance = 0;
+			double absoluteVariance = 0;
+			string varianceStr = tve.Variance.Trim();
+			if (varianceStr.EndsWith("%"))          // "0%" <- relative
+				relativeVariance = GetNum(varianceStr.Substring(0, varianceStr.Length - 1));
+			else // "1" <- absolute
+				absoluteVariance = GetNum(varianceStr);
+			return new TargetValue(GetNum(tve.Value), relativeVariance, absoluteVariance, GetNum(tve.Min),
+				GetNum(tve.Max), GetNum(tve.Drift), tve.GetTargetBinding());
+		}
 		Effect GetEmitterEffect()
 		{
-			return null;
+			EmitterEffect emitterEffect = new EmitterEffect();
+
+			emitterEffect.bonusVelocityVector = ToVector(tbxBonusVelocity.Text);
+			emitterEffect.brightness = ToTargetValue(tvBrightness);
+			emitterEffect.edgeSpread = nedEdgeSpread.ValueAsDouble;
+			emitterEffect.effectKind = EffectKind.Emitter;
+			emitterEffect.emitterAirDensity = nedAirDensity.ValueAsDouble;
+			emitterEffect.emitterGravity = nedEmitterGravity.ValueAsDouble;
+			if (rbEmitterRound.IsChecked ?? false)
+				emitterEffect.emitterShape = EmitterShape.Circular;
+			else
+				emitterEffect.emitterShape = EmitterShape.Rectangular;
+
+			emitterEffect.emitterWindDirection = ToVector(tbxWindDirection.Text);
+			emitterEffect.fadeInTime = nedParticleFadeInTime.ValueAsDouble;
+			emitterEffect.gravityCenter = ToVector(tbxEmitterGravityCenter.Text);
+			emitterEffect.height = nedEmitterHeight.ValueAsDouble;
+			emitterEffect.hue = ToTargetValue(tvParticleHue);
+			emitterEffect.lifeSpan = nedParticleLifeSpan.ValueAsDouble;
+			emitterEffect.maxConcurrentParticles = nedMaxConcurrentParticles.ValueAsDouble;
+			emitterEffect.maxOpacity = nedParticleMaxOpacity.ValueAsDouble;
+			emitterEffect.maxTotalParticles = nedMaxTotalParticles.ValueAsDouble;
+			emitterEffect.minParticleSize = nedMinParticleSize.ValueAsDouble;
+			emitterEffect.particleAirDensity = nedParticleAirDensity.ValueAsDouble;
+			emitterEffect.particleGravity = nedParticleGravity.ValueAsDouble;
+			emitterEffect.particleInitialDirection = ToVector(tbxParticleInitialDirection.Text);
+			emitterEffect.particleInitialVelocity = ToTargetValue(tvInitialVelocity);
+			emitterEffect.particleMass = nedParticleMass.ValueAsDouble;
+			emitterEffect.particleRadius = ToTargetValue(tvParticleRadius);
+			emitterEffect.particlesPerSecond = nedParticlesPerSecond.ValueAsDouble;
+			emitterEffect.particleWindDirection = ToVector(tbxParticleWindDirection.Text);
+			emitterEffect.radius = nedEmitterRadius.ValueAsDouble;
+			emitterEffect.renderOldestParticlesLast = ckbRenderOldestParticlesLast.IsChecked ?? false;
+			emitterEffect.saturation = ToTargetValue(tvParticleSaturation);
+			emitterEffect.target = GetTarget();
+			emitterEffect.timeOffsetMs = 0;
+			emitterEffect.width = nedEmitterWidth.ValueAsDouble;
+			return emitterEffect;
 		}
 
 		public Effect GetEffect()

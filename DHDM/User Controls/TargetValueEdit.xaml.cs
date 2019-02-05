@@ -182,6 +182,7 @@ namespace DHDM
 				targetValueEdit.tbxMin.Text = (string)e.NewValue;
 		}
 
+
 		public static readonly DependencyProperty MaxProperty = DependencyProperty.Register("Max", typeof(string), typeof(TargetValueEdit), new FrameworkPropertyMetadata("Inf.", new PropertyChangedCallback(MaxChanged)));
 
 		public string Max
@@ -201,6 +202,27 @@ namespace DHDM
 		{
 			if (d is TargetValueEdit targetValueEdit)
 				targetValueEdit.tbxMax.Text = (string)e.NewValue;
+		}
+
+		public static readonly DependencyProperty DriftProperty = DependencyProperty.Register("Drift", typeof(string), typeof(TargetValueEdit), new FrameworkPropertyMetadata("0", new PropertyChangedCallback(DriftChanged)));
+
+		public string Drift
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (string)GetValue(DriftProperty);
+			}
+			set
+			{
+				SetValue(DriftProperty, value);
+			}
+		}
+
+		static void DriftChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (d is TargetValueEdit targetValueEdit)
+				targetValueEdit.tbxDrift.Text = (string)e.NewValue;
 		}
 
 		public static readonly DependencyProperty LabelProperty = DependencyProperty.Register("Label", typeof(string), typeof(TargetValueEdit), new FrameworkPropertyMetadata("Label: ", new PropertyChangedCallback(LabelChanged)));
@@ -345,6 +367,19 @@ namespace DHDM
 				ShowDrift = shouldShow;
 				ShowBinding = shouldShow;
 			}
+		}
+		public TargetBinding GetTargetBinding()
+		{
+			if (!(cmbBinding.SelectedValue is ComboBoxItem cbi))
+				return TargetBinding.truncate;
+
+			string content = cbi.Content.ToString();
+
+			if (content == "wrap")
+				return TargetBinding.wrap;
+			if (content == "rock")
+				return TargetBinding.rock;
+			return TargetBinding.truncate;
 		}
 	}
 }
