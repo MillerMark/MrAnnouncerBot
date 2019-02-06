@@ -247,7 +247,27 @@ namespace DHDM
 
 		private void BtnNavSoundFile_Click(object sender, RoutedEventArgs e)
 		{
+			// Create OpenFileDialog 
+			Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
+			// Set filter for file extension and default file extension 
+			dlg.DefaultExt = ".mp3";
+			dlg.Filter = "MP3 Files (*.mp3)|*.mp3|WAV Files (*.wav)|*.wav";
+			const string soundFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\SoundEffects";
+			dlg.InitialDirectory = soundFolder;
+
+			// Display OpenFileDialog by calling ShowDialog method 
+			Nullable<bool> result = dlg.ShowDialog();
+
+			// Get the selected file name and display in a TextBox 
+			if (result == true)
+			{
+				// Open document 
+				string filename = dlg.FileName;
+				if (filename.StartsWith(soundFolder + "\\"))
+					filename = filename.Substring(soundFolder.Length + 1);
+				tbxSoundFileName.Text = filename;
+			}
 		}
 
 		private void AnyRadioButton_Checked(object sender, RoutedEventArgs e)
@@ -350,10 +370,14 @@ namespace DHDM
 			double absoluteVariance = 0;
 			string varianceStr = tve.Variance.Trim();
 			if (varianceStr.EndsWith("%"))          // "0%" <- relative
-				relativeVariance = GetNum(varianceStr.Substring(0, varianceStr.Length - 1));
+				relativeVariance = GetNum(varianceStr.Substring(0, varianceStr.Length - 1)) / 100.0;
 			else // "1" <- absolute
 				absoluteVariance = GetNum(varianceStr);
-			return new TargetValue(GetNum(tve.Value), relativeVariance, absoluteVariance, GetNum(tve.Min),
+
+			double divisor = 1;
+			if (tve.Units == "%")
+				divisor = 100.0;
+			return new TargetValue(GetNum(tve.Value) / divisor, relativeVariance, absoluteVariance, GetNum(tve.Min),
 				GetNum(tve.Max), GetNum(tve.Drift), tve.GetTargetBinding());
 		}
 		Effect GetEmitterEffect()
@@ -362,7 +386,7 @@ namespace DHDM
 
 			emitterEffect.bonusVelocityVector = ToVector(tbxBonusVelocity.Text);
 			emitterEffect.brightness = ToTargetValue(tvBrightness);
-			emitterEffect.edgeSpread = nedEdgeSpread.ValueAsDouble;
+			emitterEffect.edgeSpread = nedEdgeSpread.ValueAsDouble / 100.0;
 			emitterEffect.effectKind = EffectKind.Emitter;
 			emitterEffect.emitterAirDensity = nedAirDensity.ValueAsDouble;
 			emitterEffect.emitterGravity = nedEmitterGravity.ValueAsDouble;
@@ -372,13 +396,14 @@ namespace DHDM
 				emitterEffect.emitterShape = EmitterShape.Rectangular;
 
 			emitterEffect.emitterWindDirection = ToVector(tbxWindDirection.Text);
+			emitterEffect.emitterInitialVelocity = ToVector(tbxEmitterInitialVelocity.Text);
 			emitterEffect.fadeInTime = nedParticleFadeInTime.ValueAsDouble;
 			emitterEffect.gravityCenter = ToVector(tbxEmitterGravityCenter.Text);
 			emitterEffect.height = nedEmitterHeight.ValueAsDouble;
 			emitterEffect.hue = ToTargetValue(tvParticleHue);
 			emitterEffect.lifeSpan = nedParticleLifeSpan.ValueAsDouble;
 			emitterEffect.maxConcurrentParticles = nedMaxConcurrentParticles.ValueAsDouble;
-			emitterEffect.maxOpacity = nedParticleMaxOpacity.ValueAsDouble;
+			emitterEffect.maxOpacity = nedParticleMaxOpacity.ValueAsDouble / 100.0;
 			emitterEffect.maxTotalParticles = nedMaxTotalParticles.ValueAsDouble;
 			emitterEffect.minParticleSize = nedMinParticleSize.ValueAsDouble;
 			emitterEffect.particleAirDensity = nedParticleAirDensity.ValueAsDouble;

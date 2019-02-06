@@ -5,8 +5,8 @@ namespace DHDM
 {
 	public enum EffectKind
 	{
-		Animation,
-		Emitter,
-		SoundEffect
+		Animation = 0,
+		Emitter = 1,
+		SoundEffect = 2
 	}
 }

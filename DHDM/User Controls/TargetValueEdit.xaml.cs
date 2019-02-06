@@ -327,11 +327,13 @@ namespace DHDM
 
 		private void TbxNumber_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			Value = tbxValue.Text;
 			OnChanged();
 		}
 
 		private void TbxVariance_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			Variance = tbxVariance.Text;
 			ShowMinMaxBasedOnVariance();
 
 			OnChanged();
@@ -339,16 +341,19 @@ namespace DHDM
 
 		private void TbxMin_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			Min = tbxMin.Text;
 			OnChanged();
 		}
 
 		private void TbxMax_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			Max = tbxMax.Text;
 			OnChanged();
 		}
 
 		private void TbxDrift_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			Drift = tbxDrift.Text;
 			OnChanged();
 		}
 

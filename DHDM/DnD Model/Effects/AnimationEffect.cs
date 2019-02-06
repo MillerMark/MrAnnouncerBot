@@ -24,6 +24,7 @@ namespace DHDM
 			this.hueShift = hueShift;
 			this.saturation = saturation;
 			this.brightness = brightness;
+			effectKind = EffectKind.Animation;
 		}
 	}
 }

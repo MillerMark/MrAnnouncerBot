@@ -1,8 +1,19 @@
-﻿enum TargetType {
+﻿enum EmitterShape {
+  Circular = 1,
+  Rectangular = 2
+}
+
+enum TargetType {
   ActivePlayer = 0,
   ActiveEnemy = 1,
   ScrollPosition = 2,
   ScreenPosition = 3
+}
+
+enum EffectKind {
+  Animation = 0,
+  Emitter = 1,
+  SoundEffect = 2
 }
 
 class DragonFrontGame extends GamePlusQuiz {
@@ -285,84 +296,103 @@ class DragonFrontGame extends GamePlusQuiz {
     let dto: any = JSON.parse(effectData);
     console.log(dto);
 
+    if (dto.effectKind === EffectKind.SoundEffect) {
+      this.triggerSoundEffect(dto);
+      return;
+    }
+
     let center: Vector = this.getCenter(dto.target);
 
-    this.triggerEmitter(dto, center);
-    this.triggerAnimation(dto, center);
+    if (dto.effectKind === EffectKind.Animation)
+      this.triggerAnimation(dto, center);
+    else if (dto.effectKind === EffectKind.Emitter)
+      this.triggerEmitter(dto, center);
   }
 
-  triggerEmitter(dto: any, center: Vector): any {
+  triggerSoundEffect(dto: any): void {
+    console.log(dto);
+  }
+
+  triggerEmitter(dto: any, center: Vector): void {
     this.world.removeCharacter(this.emitter);
 
-    //edgeSpread: 100
-    //effectKind: 1
-    //emitterAirDensity: 0
-    //emitterGravity: 0
-    //emitterShape: 1
-    //emitterWindDirection: { x: 0, y: 0 }
-    //fadeInTime: 0.4
-    //gravityCenter: { x: 960, y: 999999 }
-    //height: 100
-    //hue:
-    //absoluteVariance: 0
-    //drift: 0
-    //max: 360
-    //min: 0
-    //relativeVariance: 0
-    //targetBinding: 1
     //value: 0
-    //__proto__: Object
-    //lifeSpan: 3
-    //maxConcurrentParticles: 4000
-    //maxOpacity: 100
-    //maxTotalParticles: 0
-    //minParticleSize: 0.5
-    //particleAirDensity: 1
-    //particleGravity: 0
-    //particleInitialDirection: { x: 0, y: 0 }
-    //particleInitialVelocity: { value: 1, relativeVariance: 0, absoluteVariance: 0, min: 0, max: 0, … }
-    //particleMass: 1
-    //particleRadius: { value: 1, relativeVariance: 0, absoluteVariance: 0, min: 0, max: 0, … }
-    //particleWindDirection: { x: 0, y: 0 }
-    
-    //saturation: { value: 100, relativeVariance: 0, absoluteVariance: 0, min: 0, max: 100, … }
-    //target: { targetType: 0, screenPosition: { … }, targetOffset: { … } }
     //timeOffsetMs: 0
 
+    console.log('emitter: ' + dto);
 
-    this.emitter = new Emitter(new Vector(450, 1080));
-    this.emitter.radius = dto.radius;
-    this.emitter.brightness.target = dto.brightness.target;
-    this.emitter.brightness.relativeVariance = dto.brightness.relativeVariance;
-    this.emitter.brightness.absoluteVariance = dto.brightness.absoluteVariance;
-    this.emitter.hue.target = dto.hue.target;
-    this.emitter.hue.relativeVariance = dto.hue.relativeVariance;
-    this.emitter.hue.absoluteVariance = dto.hue.absoluteVariance;
-    this.emitter.saturation.target = dto.saturation.target;
-    this.emitter.saturation.relativeVariance = dto.saturation.relativeVariance;
-    this.emitter.saturation.absoluteVariance = dto.saturation.absoluteVariance;
+    this.emitter = new Emitter(new Vector(center.x, center.y), new Vector(dto.emitterInitialVelocity.x, dto.emitterInitialVelocity.y));
+    if (dto.emitterShape === EmitterShape.Circular) {
+      this.emitter.radius = dto.radius;
+    }
+    else {
+      this.emitter.setRectShape(dto.width, dto.height);
+    }
+
+    this.emitter.particleMass = dto.particleMass;
+    this.emitter.initialParticleDirection = new Vector(dto.particleInitialDirection.x, dto.particleInitialDirection.y);
+    this.emitter.particleWind = new Vector(dto.particleWindDirection.x, dto.particleWindDirection.y);
+    this.emitter.minParticleSize = dto.minParticleSize;
+    this.emitter.gravityCenter = new Vector(dto.gravityCenter.x, dto.gravityCenter.y);
+    this.emitter.particleFadeInTime = dto.fadeInTime;
+    this.emitter.wind = new Vector(dto.emitterWindDirection.x, dto.emitterWindDirection.y);
+
+    this.transferTargetValue(this.emitter.brightness, dto.brightness);
+    this.transferTargetValue(this.emitter.hue, dto.hue);
+    this.transferTargetValue(this.emitter.saturation, dto.saturation);
+
+    this.emitter.maxConcurrentParticles = dto.maxConcurrentParticles;
+    this.emitter.particleMaxOpacity = dto.maxOpacity;
+
+    //this.emitter.hue.target = dto.hue.target;
+    //this.emitter.hue.relativeVariance = dto.hue.relativeVariance;
+    //this.emitter.hue.absoluteVariance = dto.hue.absoluteVariance;
+    //this.emitter.hue.drift = dto.hue.drift;
+    //this.emitter.hue.binding = dto.hue.targetBinding;
+
+    //this.emitter.saturation.target = dto.saturation.target;
+    //this.emitter.saturation.relativeVariance = dto.saturation.relativeVariance;
+    //this.emitter.saturation.absoluteVariance = dto.saturation.absoluteVariance;
+    //this.emitter.saturation.drift = dto.saturation.drift;
+    //this.emitter.saturation.binding = dto.saturation.targetBinding;
 
     this.emitter.particlesPerSecond = dto.particlesPerSecond;
 
-    this.emitter.particleRadius.target = 2.5;
-    this.emitter.particleRadius.relativeVariance = 0.8;
+    this.transferTargetValue(this.emitter.particleRadius, dto.particleRadius);
 
-    this.emitter.particleLifeSpanSeconds = 2;
-    this.emitter.maxTotalParticles = 2000;
-    this.emitter.particleGravity = 9.8;
-    this.emitter.particleInitialVelocity.target = 0.8;
-    this.emitter.particleInitialVelocity.relativeVariance = 0.25;
-    this.emitter.gravity = 0;
-    this.emitter.airDensity = 0; // 0 == vaccuum.
-    this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
+    this.emitter.emitterEdgeSpread = dto.edgeSpread;
+
+    this.emitter.particleLifeSpanSeconds = dto.lifeSpan;
+    if (dto.maxTotalParticles === 'Infinity') {
+      this.emitter.maxTotalParticles = Infinity;
+    }
+    else {
+      this.emitter.maxTotalParticles = dto.maxTotalParticles;
+    }
+
+    this.emitter.particleGravity = dto.particleGravity;
+    this.transferTargetValue(this.emitter.particleInitialVelocity, dto.particleInitialVelocity);
+
+    this.emitter.gravity = dto.emitterGravity;
+    this.emitter.airDensity = dto.emitterAirDensity;
+    this.emitter.particleAirDensity = dto.particleAirDensity;
 
     this.emitter.bonusParticleVelocityVector = new Vector(dto.bonusVelocityVector.x, dto.bonusVelocityVector.y);
 
     this.emitter.renderOldestParticlesLast = dto.renderOldestParticlesLast;
 
     this.world.addCharacter(this.emitter);
+    console.log(this.emitter);
   }
 
+
+  private transferTargetValue(brightness: TargetValue, anyTargetValue: any): void {
+    brightness.target = anyTargetValue.value;
+    brightness.relativeVariance = anyTargetValue.relativeVariance;
+    brightness.absoluteVariance = anyTargetValue.absoluteVariance;
+    brightness.drift = anyTargetValue.drift;
+    brightness.binding = anyTargetValue.targetBinding;
+  }
 
   private triggerAnimation(dto: any, center: Vector) {
     let sprites: Sprites;

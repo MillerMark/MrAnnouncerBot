@@ -102,6 +102,8 @@ namespace DHDM
 		{
 			get
 			{
+				if (Value.StartsWith("Inf"))
+					return double.PositiveInfinity;
 				if (double.TryParse(Value, out double result))
 					return result;
 				return 0d;

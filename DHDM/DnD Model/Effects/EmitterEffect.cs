@@ -39,6 +39,7 @@ namespace DHDM
 		public TargetValue particleInitialVelocity = new TargetValue(1, 0, 0, 0, 100, 0, TargetBinding.truncate);
 		public Vector particleWindDirection = Vector.zero;
 		public Vector bonusVelocityVector = Vector.zero;
+		public Vector emitterInitialVelocity = Vector.zero;
 		public bool renderOldestParticlesLast = false;
 		public double particlesPerSecond = 500;
 		public double fadeInTime = 0.4;
