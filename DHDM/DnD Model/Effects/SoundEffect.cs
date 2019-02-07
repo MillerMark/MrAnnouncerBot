@@ -7,6 +7,11 @@ namespace DHDM
 	{
 		public string soundFileName;
 
+		public SoundEffect()
+		{
+			this.soundFileName = string.Empty;
+		}
+
 		public SoundEffect(string soundFileName)
 		{
 			this.soundFileName = soundFileName;

@@ -371,6 +371,7 @@ class DragonFrontGame extends GamePlusQuiz {
     }
 
     this.emitter.particleGravity = dto.particleGravity;
+    this.emitter.particleGravityCenter = new Vector(dto.particleGravityCenter.x, dto.particleGravityCenter.y);
     this.transferTargetValue(this.emitter.particleInitialVelocity, dto.particleInitialVelocity);
 
     this.emitter.gravity = dto.emitterGravity;

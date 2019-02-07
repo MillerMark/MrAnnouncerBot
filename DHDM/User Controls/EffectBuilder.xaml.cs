@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -257,7 +258,7 @@ namespace DHDM
 			dlg.InitialDirectory = soundFolder;
 
 			// Display OpenFileDialog by calling ShowDialog method 
-			Nullable<bool> result = dlg.ShowDialog();
+			bool? result = dlg.ShowDialog();
 
 			// Get the selected file name and display in a TextBox 
 			if (result == true)
@@ -408,6 +409,7 @@ namespace DHDM
 			emitterEffect.minParticleSize = nedMinParticleSize.ValueAsDouble;
 			emitterEffect.particleAirDensity = nedParticleAirDensity.ValueAsDouble;
 			emitterEffect.particleGravity = nedParticleGravity.ValueAsDouble;
+			emitterEffect.particleGravityCenter = ToVector(tbxParticleGravityCenter.Text);
 			emitterEffect.particleInitialDirection = ToVector(tbxParticleInitialDirection.Text);
 			emitterEffect.particleInitialVelocity = ToTargetValue(tvInitialVelocity);
 			emitterEffect.particleMass = nedParticleMass.ValueAsDouble;
@@ -432,6 +434,17 @@ namespace DHDM
 			else if (rbEmitter.IsChecked ?? false)
 				return GetEmitterEffect();
 			return null;
+		}
+
+		public void LoadFromItem(EffectEntry effectEntry)
+		{
+			if (effectEntry.EffectKind == EffectKind.Animation)
+				rbAnimation.IsChecked = true;
+			else if (effectEntry.EffectKind == EffectKind.Emitter)
+				rbEmitter.IsChecked = true;
+			else if (effectEntry.EffectKind == EffectKind.SoundEffect)
+				rbSoundEffect.IsChecked = true;
+
 		}
 	}
 }

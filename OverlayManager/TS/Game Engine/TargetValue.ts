@@ -15,7 +15,7 @@ class TargetValue {
   getValue(): number {
     var result: number;
 
-    if (this.absoluteVariance != undefined)
+    if (this.absoluteVariance != undefined && this.absoluteVariance != 0)
       result = Random.getVarianceAbsolute(this.target, this.absoluteVariance);
     else
       result = Random.getVarianceRelative(this.target, this.relativeVariance);

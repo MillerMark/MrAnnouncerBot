@@ -250,6 +250,7 @@
     <Compile Include="DnD Model\DamageType.cs" />
     <Compile Include="DnD Model\DndTimeSpan.cs" />
     <Compile Include="DnD Model\Effects\Effect.cs" />
+    <Compile Include="DnD Model\Effects\EffectEntry.cs" />
     <Compile Include="DnD Model\Effects\EffectKind.cs" />
     <Compile Include="DnD Model\Effects\EmitterEffect.cs" />
     <Compile Include="DnD Model\Effects\SoundEffect.cs" />

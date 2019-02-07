@@ -114,5 +114,22 @@ namespace DHDM
 			string serializedObject = JsonConvert.SerializeObject(activeEffect);
 			TriggerEffect(serializedObject);
 		}
+
+		private void BtnAdd_Click(object sender, RoutedEventArgs e)
+		{
+			lbEffectsComposite.Items.Add(new EffectEntry(EffectKind.Animation, "New Effect"));
+		}
+
+		private void BtnDelete_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void LbEffectsComposite_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (sender is ListBox listBox)
+				if (listBox.SelectedItem is EffectEntry effectEntry)
+					effectBuilder.LoadFromItem(effectEntry);
+		}
 	}
 }

@@ -15,12 +15,11 @@ namespace DHDM
 		Circular = 1,
 		Rectangular = 2
 	}
-	
 	public class EmitterEffect : Effect
 	{
 		public VisualEffectTarget target;
 
-		// ![](8AB6F03C5C27C36A9CD817A9F4DCD645.png;;830,167,1347,560;0.04000,0.04000)
+		// ![](8AB6F03C5C27C36A9CD817A9F4DCD645.png;;830,138,1347,560)
 
 		public EmitterShape emitterShape;
 		public double radius = 10;
@@ -40,6 +39,7 @@ namespace DHDM
 		public Vector particleWindDirection = Vector.zero;
 		public Vector bonusVelocityVector = Vector.zero;
 		public Vector emitterInitialVelocity = Vector.zero;
+		public Vector particleGravityCenter = Vector.zero;
 		public bool renderOldestParticlesLast = false;
 		public double particlesPerSecond = 500;
 		public double fadeInTime = 0.4;

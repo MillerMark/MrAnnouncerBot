@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="680" Width="1521.175">
+        Title="MainWindow" Height="680" Width="1672.675">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1.2*" />
@@ -74,7 +74,7 @@
 					<Button x:Name="btnSampleEffect" Margin="4" Padding="8, 4, 8, 4" Content="Sample" Click="btnSampleEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="675" >
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="755" >
 				<TabItem Header="Dungeon">
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
@@ -82,10 +82,26 @@
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
 				<TabItem Header="Effect Builder" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<Grid Background="#FFE5E5E5">
+						<StackPanel x:Name="spListBoxes" Orientation="Horizontal" Margin="4">
+							<StackPanel x:Name="spEffectsComposite" Orientation="Vertical" Margin="0, 0, 8, 0">
+								<TextBlock Text="Effects:" Width="Auto" Height="Auto"/>
+								<ListBox x:Name="lbEffectsComposite" SelectionChanged="LbEffectsComposite_SelectionChanged">
+									<ListBoxItem x:Name="sample" >
+										Sample
+									</ListBoxItem>
+								</ListBox>
+								<StackPanel x:Name="spEffectButtons" Orientation="Horizontal" Margin="0, 4, 0, 0">
+									<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" Width="55" >
+										Add
+									</Button>
+									<Button x:Name="btnDelete" Margin="4, 0, 0, 0" Width="55" Click="BtnDelete_Click" >
+										Delete
+									</Button>
+								</StackPanel>
+							</StackPanel>
 						<local:EffectBuilder x:Name="effectBuilder" Width="Auto" Height="Auto"></local:EffectBuilder>
 						<Button x:Name="btnTestEffect" Margin="475,326,10,219" Padding="8, 4, 8, 4" Content="Test Effect" FontSize="20" FontWeight="Bold" Click="BtnTestEffect_Click"/>
-					</Grid>
+					</StackPanel>
 				</TabItem>
 			</TabControl>
 		</StackPanel>
