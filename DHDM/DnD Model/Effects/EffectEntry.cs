@@ -28,7 +28,7 @@ namespace DHDM
 
 		public EffectEntry(EffectKind effectKind, string name)
 		{
-			this.Name = name;
+			Name = name;
 			this.effectKind = effectKind;
 			emitterEffect = new EmitterEffect()
 			{

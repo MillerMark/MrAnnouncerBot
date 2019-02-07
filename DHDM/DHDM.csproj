@@ -258,11 +258,15 @@
     <Compile Include="DnD Model\Effects\TargetValue.cs" />
     <Compile Include="DnD Model\Effects\VisualEffectTarget.cs" />
     <Compile Include="DnD Model\Vector.cs" />
+    <Compile Include="HubtasticBaseStation.cs" />
     <Compile Include="User Controls\EffectBuilder.xaml.cs">
       <DependentUpon>EffectBuilder.xaml</DependentUpon>
     </Compile>
     <Compile Include="Event Args\FocusedControlsChangedEventArgs.cs" />
     <Compile Include="FocusHelper.cs" />
+    <Compile Include="User Controls\EffectsList.xaml.cs">
+      <DependentUpon>EffectsList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\GridSheet.cs" />
     <Compile Include="User Controls\GroupBackground.xaml.cs">
       <DependentUpon>GroupBackground.xaml</DependentUpon>
@@ -290,6 +294,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="User Controls\EffectBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\EffectsList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
