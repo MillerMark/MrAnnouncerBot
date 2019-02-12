@@ -56,7 +56,7 @@ namespace DHDM
 
 		public EmitterEffect()
 		{
-
+			target = new VisualEffectTarget();
 		}
 	}
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,8 +21,100 @@ namespace DHDM
 	/// <summary>
 	/// Interaction logic for EffectBuilder.xaml
 	/// </summary>
-	public partial class EffectBuilder : UserControl
+	public partial class EffectBuilder : UserControl, INotifyPropertyChanged
 	{
+		//private fields...
+
+		public EffectKind EffectKind
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (EffectKind)GetValue(EffectKindProperty);
+			}
+			set
+			{
+				SetValue(EffectKindProperty, value);
+			}
+		}
+		public string ScreenPosCoordinates
+		{
+			get
+			{
+				return txtCoordinates.Text;
+			}
+			set
+			{
+				if (value == txtCoordinates.Text)
+					return;
+				txtCoordinates.Text = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public static readonly DependencyProperty EffectKindProperty = DependencyProperty.Register("EffectKind", typeof(EffectKind), typeof(EffectBuilder), new FrameworkPropertyMetadata(EffectKind.Animation, new PropertyChangedCallback(OnEffectKindChanged)));
+
+		public TargetType TargetType
+		{
+			get
+			{
+				return GetVisualEffectTarget();
+			}
+			set
+			{
+				TargetType activeTargetType = GetVisualEffectTarget();
+				if (value == activeTargetType)
+					return;
+				if (value == TargetType.ActiveEnemy)
+					rbActiveEnemy.IsChecked = true;
+				else if (value == TargetType.ActivePlayer)
+					rbActivePlayer.IsChecked = true;
+				else if (value == TargetType.ScreenPosition)
+					rbScreenPos.IsChecked = true;
+				else
+					rbScrollPos.IsChecked = true;
+
+				OnPropertyChanged();
+			}
+		}
+
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private static void OnEffectKindChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+		{
+			EffectBuilder effectBuilder = o as EffectBuilder;
+			if (effectBuilder != null)
+				effectBuilder.OnEffectKindChanged((EffectKind)e.OldValue, (EffectKind)e.NewValue);
+		}
+
+		protected virtual void OnEffectKindChanged(EffectKind oldValue, EffectKind newValue)
+		{
+			EffectKind activeEffect = GetActiveEffect();
+			if (newValue == activeEffect)
+				return;
+			if (newValue == EffectKind.Animation)
+				rbAnimation.IsChecked = true;
+			else if (newValue == EffectKind.Emitter)
+				rbEmitter.IsChecked = true;
+			else
+				rbSoundEffect.IsChecked = true;
+		}
+
+		protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		private EffectKind GetActiveEffect()
+		{
+			if (rbAnimation.IsChecked ?? false)
+				return EffectKind.Animation;
+			if (rbSoundEffect.IsChecked ?? false)
+				return EffectKind.SoundEffect;
+			return EffectKind.Emitter;
+		}
+
 		public EffectBuilder()
 		{
 			InitializeComponent();
@@ -37,6 +131,7 @@ namespace DHDM
 			if (spSoundOptions != null)
 				spSoundOptions.Visibility = Visibility.Collapsed;
 			SettingsChanged();
+			OnPropertyChanged("EffectKind");
 		}
 
 		private void RbEmitter_Checked(object sender, RoutedEventArgs e)
@@ -46,6 +141,7 @@ namespace DHDM
 			spAnimationOptions.Visibility = Visibility.Collapsed;
 			spSoundOptions.Visibility = Visibility.Collapsed;
 			SettingsChanged();
+			OnPropertyChanged("EffectKind");
 		}
 
 		private void RbSoundEffect_Checked(object sender, RoutedEventArgs e)
@@ -56,6 +152,7 @@ namespace DHDM
 			spSoundOptions.Visibility = Visibility.Visible;
 			tbxSoundFileName.Focus();
 			SettingsChanged();
+			OnPropertyChanged("EffectKind");
 		}
 
 		void SettingsChanged()
@@ -67,18 +164,21 @@ namespace DHDM
 			if (spScrollTarget != null)
 				spScrollTarget.Visibility = Visibility.Collapsed;
 			SettingsChanged();
+			OnPropertyChanged("TargetType");
 		}
 
 		private void RbActiveEnemy_Checked(object sender, RoutedEventArgs e)
 		{
 			spScrollTarget.Visibility = Visibility.Collapsed;
 			SettingsChanged();
+			OnPropertyChanged("TargetType");
 		}
 
 		private void RbScrollPos_Checked(object sender, RoutedEventArgs e)
 		{
 			spScrollTarget.Visibility = Visibility.Visible;
 			SettingsChanged();
+			OnPropertyChanged("TargetType");
 		}
 
 		// TODO: Add an event handler for txtCoordinates mouse down to check RbScreenPos if not checked.
@@ -86,11 +186,13 @@ namespace DHDM
 		{
 			spScrollTarget.Visibility = Visibility.Collapsed;
 			SettingsChanged();
+			OnPropertyChanged("TargetType");
 		}
 
-		private void Any_TextChanged(object sender, TextChangedEventArgs e)
+		private void Any_TextChanged(object sender = null, TextChangedEventArgs e = null)
 		{
 			SettingsChanged();
+			OnPropertyChanged("AnyText");
 		}
 
 		private void RbnPageMain_Checked(object sender, RoutedEventArgs e)
@@ -122,6 +224,7 @@ namespace DHDM
 
 		private void AnyCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			OnPropertyChanged("AnyCombo");
 			SettingsChanged();
 		}
 
@@ -143,7 +246,7 @@ namespace DHDM
 			SettingsChanged();
 		}
 
-		private void AnyNumEdit_Changed(object sender, RoutedEventArgs e)
+		private void AnyNumEdit_Changed(object sender = null, RoutedEventArgs e = null)
 		{
 			SettingsChanged();
 		}
@@ -190,12 +293,136 @@ namespace DHDM
 				spParticleGravityCenter.Visibility = Visibility.Visible;
 		}
 
+
+		public AnimationSprites AnimationSprites
+		{
+			get
+			{
+				return GetActiveAnimation();
+			}
+			set
+			{
+				AnimationSprites activeAnimation = GetActiveAnimation();
+				if (activeAnimation == value)
+					return;
+
+				OnPropertyChanged();
+
+				if (value == AnimationSprites.Smoke)
+					rbDenseSmoke.IsChecked = true;
+				else if (value == AnimationSprites.Poof)
+					rbPoof.IsChecked = true;
+				else if (value == AnimationSprites.EmbersLarge)
+				{
+					rbEmbers.IsChecked = true;
+					rbEmbersLarge.IsChecked = true;
+				}
+				else if (value == AnimationSprites.EmbersMedium)
+				{
+					rbEmbers.IsChecked = true;
+					rbEmbersMedium.IsChecked = true;
+				}
+				else if (value == AnimationSprites.Sparks)
+					rbSparkShower.IsChecked = true;
+				else if (value == AnimationSprites.BloodGush)
+				{
+					rbBloodGush.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.BloodLarger)
+				{
+					rbBloodLarger.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.BloodLarge)
+				{
+					rbBloodLarge.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.BloodMedium)
+				{
+					rbBloodMedium.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.BloodSmall)
+				{
+					rbBloodSmall.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.BloodSmaller)
+				{
+					rbBloodSmaller.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.BloodSmallest)
+				{
+					rbBloodSmallest.IsChecked = true;
+					rbBloodSplatter.IsChecked = true;
+				}
+				else if (value == AnimationSprites.Fumes)
+					rbFumes.IsChecked = true;
+				else if (value == AnimationSprites.Stars)
+					rbStars.IsChecked = true;
+				else if (value == AnimationSprites.Restrained)
+					rbRestrained.IsChecked = true;
+				else if (value == AnimationSprites.Heart)
+					rbHeart.IsChecked = true;
+				else
+					return;
+				OnPropertyChanged("AnimationSprites");
+			}
+		}
+
+		private AnimationSprites GetActiveAnimation()
+		{
+			if (rbDenseSmoke.IsChecked ?? false)
+				return AnimationSprites.Smoke;
+			if (rbPoof.IsChecked ?? false)
+				return AnimationSprites.Poof;
+			if (rbEmbers.IsChecked ?? false)
+				if (rbEmbersLarge.IsChecked ?? false)
+					return AnimationSprites.EmbersLarge;
+				else
+					return AnimationSprites.EmbersMedium;
+
+			if (rbSparkShower.IsChecked ?? false)
+				return AnimationSprites.Sparks;
+
+			if (rbBloodSplatter.IsChecked ?? false)
+				if (rbBloodGush.IsChecked ?? false)
+					return AnimationSprites.BloodGush;
+				else if (rbBloodLarger.IsChecked ?? false)
+					return AnimationSprites.BloodLarger;
+				else if (rbBloodLarge.IsChecked ?? false)
+					return AnimationSprites.BloodLarge;
+				else if (rbBloodMedium.IsChecked ?? false)
+					return AnimationSprites.BloodMedium;
+				else if (rbBloodSmall.IsChecked ?? false)
+					return AnimationSprites.BloodSmall;
+				else if (rbBloodSmaller.IsChecked ?? false)
+					return AnimationSprites.BloodSmaller;
+				else if (rbBloodSmallest.IsChecked ?? false)
+					return AnimationSprites.BloodSmallest;
+
+			if (rbFumes.IsChecked ?? false)
+				return AnimationSprites.Fumes;
+			if (rbStars.IsChecked ?? false)
+				return AnimationSprites.Stars;
+			if (rbRestrained.IsChecked ?? false)
+				return AnimationSprites.Restrained;
+			if (rbHeart.IsChecked ?? false)
+				return AnimationSprites.Heart;
+
+			return AnimationSprites.Unknown;
+		}
+
 		private void RbDenseSmoke_Checked(object sender, RoutedEventArgs e)
 		{
 			if (spEmbersSelector != null)
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbPoof_Checked(object sender, RoutedEventArgs e)
@@ -204,6 +431,7 @@ namespace DHDM
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbSparkle_Checked(object sender, RoutedEventArgs e)
@@ -212,6 +440,7 @@ namespace DHDM
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbEmbers_Checked(object sender, RoutedEventArgs e)
@@ -220,6 +449,7 @@ namespace DHDM
 				spEmbersSelector.Visibility = Visibility.Visible;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbBloodSplatter_Checked(object sender, RoutedEventArgs e)
@@ -228,6 +458,7 @@ namespace DHDM
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Visible;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbFumes_Checked(object sender, RoutedEventArgs e)
@@ -236,6 +467,7 @@ namespace DHDM
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbStars_Checked(object sender, RoutedEventArgs e)
@@ -244,6 +476,7 @@ namespace DHDM
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void BtnNavSoundFile_Click(object sender, RoutedEventArgs e)
@@ -322,6 +555,54 @@ namespace DHDM
 			return string.Empty;
 		}
 
+		void SetFromAnimationName(string spriteName)
+		{
+			if (spriteName == "DenseSmoke" || spriteName == "")
+				rbDenseSmoke.IsChecked = true;
+			else if (spriteName == "Poof")
+				rbPoof.IsChecked = true;
+			else if (spriteName == "EmbersLarge")
+			{
+				rbEmbers.IsChecked = true;
+				rbEmbersLarge.IsChecked = true;
+			}
+			else if (spriteName == "EmbersMedium")
+			{
+				rbEmbers.IsChecked = true;
+				rbEmbersMedium.IsChecked = true;
+			}
+			else if (spriteName == "SparkShower")
+				rbSparkShower.IsChecked = true;
+			else if (spriteName.StartsWith("Blood"))
+			{
+				rbBloodSplatter.IsChecked = true;
+				if (spriteName == "BloodGush")
+					rbBloodGush.IsChecked = true;
+				else if (spriteName == "BloodLarger")
+					rbBloodLarger.IsChecked = true;
+				else if (spriteName == "BloodLarge")
+					rbBloodLarge.IsChecked = true;
+				else if (spriteName == "BloodMedium")
+					rbBloodMedium.IsChecked = true;
+				else if (spriteName == "BloodSmall")
+					rbBloodSmall.IsChecked = true;
+				else if (spriteName == "BloodSmaller")
+					rbBloodSmaller.IsChecked = true;
+				else if (spriteName == "BloodSmallest")
+					rbBloodSmallest.IsChecked = true;
+			}
+			else if (spriteName == "Fumes")
+				rbFumes.IsChecked = true;
+
+			else if (spriteName == "Stars")
+				rbStars.IsChecked = true;
+
+			else if (spriteName == "Restrained")
+				rbRestrained.IsChecked = true;
+			else if (spriteName == "rbHeart")
+				rbHeart.IsChecked = true;
+		}
+
 		double GetNum(string str)
 		{
 			if (double.TryParse(str.Trim(), out double result))
@@ -338,6 +619,18 @@ namespace DHDM
 				return Vector.zero;
 		}
 
+		TargetType GetVisualEffectTarget()
+		{
+			if (rbActivePlayer.IsChecked ?? false)
+				return TargetType.ActivePlayer;
+			else if (rbActiveEnemy.IsChecked ?? false)
+				return TargetType.ActiveEnemy;
+			else if (rbScrollPos.IsChecked ?? false)
+				return TargetType.ScrollPosition;
+			else
+				return TargetType.ScreenPosition;
+		}
+
 		VisualEffectTarget GetTarget()
 		{
 			VisualEffectTarget visualEffectTarget;
@@ -346,15 +639,7 @@ namespace DHDM
 			else
 				visualEffectTarget = new VisualEffectTarget();
 
-			if (rbActivePlayer.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ActivePlayer;
-			else if (rbActiveEnemy.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ActiveEnemy;
-			else if (rbScrollPos.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ScrollPosition;
-			else
-				visualEffectTarget.targetType = TargetType.ScreenPosition;
-
+			visualEffectTarget.targetType = GetVisualEffectTarget();
 			visualEffectTarget.targetOffset = ToVector(tbxTargetOffset.Text);
 
 			return visualEffectTarget;
@@ -436,6 +721,75 @@ namespace DHDM
 			return null;
 		}
 
+		string ToVectorString(Vector vector)
+		{
+			return vector.x + ", " + vector.y;
+		}
+
+		void LoadFromTarget(VisualEffectTarget visualEffectTarget)
+		{
+			if (visualEffectTarget == null)
+				return;
+
+			switch (visualEffectTarget.targetType)
+			{
+				case TargetType.ActivePlayer:
+					rbActivePlayer.IsChecked = true;
+					break;
+
+				case TargetType.ActiveEnemy:
+					rbActiveEnemy.IsChecked = true;
+					break;
+
+				case TargetType.ScrollPosition:
+					rbScrollPos.IsChecked = true;
+					break;
+
+				case TargetType.ScreenPosition:
+					rbScreenPos.IsChecked = true;
+					break;
+			}
+
+			switch (visualEffectTarget.targetPage)
+			{
+				case TargetPage.Main:
+					rbnPageMain.IsChecked = true;
+					cmbMainItems.SelectedValue = visualEffectTarget.entryName;
+					break;
+
+				case TargetPage.Skills:
+					rbnPageSkills.IsChecked = true;
+					cmbSkillItems.SelectedValue = visualEffectTarget.entryName;
+					break;
+
+				case TargetPage.Equipment:
+					rbnPageEquipment.IsChecked = true;
+					cmbEquipmentItems.SelectedValue = visualEffectTarget.entryName;
+					break;
+			}
+
+			txtCoordinates.Text = ToVectorString(visualEffectTarget.screenPosition);
+			tbxTargetOffset.Text = ToVectorString(visualEffectTarget.targetOffset);
+		}
+
+		void LoadFromAnimation(AnimationEffect animationEffect)
+		{
+			LoadFromTarget(animationEffect.target);
+			SetFromAnimationName(animationEffect.spriteName);
+			nedAdjustHue.Value = animationEffect.hueShift.ToString();
+			nedAdjustBrightness.Value = animationEffect.brightness.ToString();
+			nedAdjustSaturation.Value = animationEffect.saturation.ToString();
+			//animationEffect.startFrameIndex;
+		}
+
+		void LoadFromEmitter(EmitterEffect emitterEffect)
+		{
+			LoadFromTarget(emitterEffect.target);
+		}
+		void LoadFromSoundEffect(SoundEffect soundEffect)
+		{
+			tbxSoundFileName.Text = soundEffect.soundFileName;
+		}
 		public void LoadFromItem(EffectEntry effectEntry)
 		{
 			if (effectEntry.EffectKind == EffectKind.Animation)
@@ -445,6 +799,182 @@ namespace DHDM
 			else if (effectEntry.EffectKind == EffectKind.SoundEffect)
 				rbSoundEffect.IsChecked = true;
 
+			LoadFromAnimation(effectEntry.AnimationEffect);
+			LoadFromEmitter(effectEntry.EmitterEffect);
+			LoadFromSoundEffect(effectEntry.SoundEffect);
+		}
+
+		void SaveToTarget(VisualEffectTarget visualEffectTarget)
+		{
+			if (rbActivePlayer.IsChecked ?? false)
+				visualEffectTarget.targetType = TargetType.ActivePlayer;
+			if (rbActiveEnemy.IsChecked ?? false)
+				visualEffectTarget.targetType = TargetType.ActiveEnemy;
+			if (rbScrollPos.IsChecked ?? false)
+				visualEffectTarget.targetType = TargetType.ScrollPosition;
+			if (rbScreenPos.IsChecked ?? false)
+				visualEffectTarget.targetType = TargetType.ScreenPosition;
+
+
+			if (rbnPageMain.IsChecked ?? false)
+			{
+				visualEffectTarget.targetPage = TargetPage.Main;
+				visualEffectTarget.entryName = cmbMainItems.SelectedValue?.ToString();
+			}
+
+			if (rbnPageEquipment.IsChecked ?? false)
+			{
+				visualEffectTarget.targetPage = TargetPage.Equipment;
+				visualEffectTarget.entryName = cmbEquipmentItems.SelectedValue?.ToString();
+			}
+
+			if (rbnPageSkills.IsChecked ?? false)
+			{
+				visualEffectTarget.targetPage = TargetPage.Skills;
+				visualEffectTarget.entryName = cmbSkillItems.SelectedValue?.ToString();
+			}
+
+			visualEffectTarget.screenPosition = ToVector(txtCoordinates.Text);
+			visualEffectTarget.targetOffset = ToVector(tbxTargetOffset.Text);
+		}
+		void SaveToAnimation(AnimationEffect animationEffect)
+		{
+			animationEffect.spriteName = GetAnimationName();
+			animationEffect.hueShift = nedAdjustHue.ValueAsDouble;
+			animationEffect.brightness = nedAdjustBrightness.ValueAsDouble;
+			animationEffect.saturation = nedAdjustSaturation.ValueAsDouble;
+			animationEffect.startFrameIndex = 0;
+			SaveToTarget(animationEffect.target);
+		}
+		void SaveToEmitter(EmitterEffect emitterEffect)
+		{
+			SaveToTarget(emitterEffect.target);
+		}
+		void SaveToSound(SoundEffect soundEffect)
+		{
+			soundEffect.soundFileName = tbxSoundFileName.Text;
+		}
+		public void SaveToItem(EffectEntry effectEntry)
+		{
+			if (rbAnimation.IsChecked ?? false)
+			{
+				effectEntry.EffectKind = EffectKind.Animation;
+			}
+
+			if (rbEmitter.IsChecked ?? false)
+			{
+				effectEntry.EffectKind = EffectKind.Emitter;
+			}
+
+			if (rbSoundEffect.IsChecked ?? false)
+			{
+				effectEntry.EffectKind = EffectKind.SoundEffect;
+			}
+			SaveToSound(effectEntry.SoundEffect);
+			SaveToAnimation(effectEntry.AnimationEffect);
+			SaveToEmitter(effectEntry.EmitterEffect);
+		}
+
+		private void TxtCoordinates_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			OnPropertyChanged("ScreenPosCoordinates");
+			Any_TextChanged();
+		}
+
+		private void TbxTargetOffset_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			OnPropertyChanged("TargetOffset");
+			Any_TextChanged();
+		}
+
+		public string TargetOffset
+		{
+			get
+			{
+				return tbxTargetOffset.Text;
+			}
+			set
+			{
+				if (tbxTargetOffset.Text == value)
+					return;
+				tbxTargetOffset.Text = value;
+				OnPropertyChanged();
+			}
+		}
+
+		private void RbHeart_Checked(object sender, RoutedEventArgs e)
+		{
+			if (spEmbersSelector != null)
+				spEmbersSelector.Visibility = Visibility.Collapsed;
+			if (spBloodSelector != null)
+				spBloodSelector.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("AnimationSprites");
+		}
+
+		public string Hue
+		{
+			get
+			{
+				return nedAdjustHue.Value;
+			}
+			set
+			{
+				if (value == nedAdjustHue.Value)
+					return;
+
+				nedAdjustHue.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string Saturation
+		{
+			get
+			{
+				return nedAdjustSaturation.Value;
+			}
+			set
+			{
+				if (value == nedAdjustSaturation.Value)
+					return;
+
+				nedAdjustSaturation.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public string Brightness
+		{
+			get
+			{
+				return nedAdjustBrightness.Value;
+			}
+			set
+			{
+				if (value == nedAdjustBrightness.Value)
+					return;
+
+				nedAdjustBrightness.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		private void NedAdjustHue_TextChanged(object sender, RoutedEventArgs e)
+		{
+			AnyNumEdit_Changed();
+			OnPropertyChanged("Hue");
+		}
+
+		private void NedAdjustSaturation_TextChanged(object sender, RoutedEventArgs e)
+		{
+			AnyNumEdit_Changed();
+			OnPropertyChanged("Saturation");
+		}
+
+		private void NedAdjustBrightness_TextChanged(object sender, RoutedEventArgs e)
+		{
+			AnyNumEdit_Changed();
+			OnPropertyChanged("Brightness");
 		}
 	}
 }

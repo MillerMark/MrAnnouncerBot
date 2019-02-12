@@ -83,7 +83,7 @@
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
 				<TabItem Header="Effect Builder" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<uc:EffectsList></uc:EffectsList>
+					<uc:EffectsList/>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

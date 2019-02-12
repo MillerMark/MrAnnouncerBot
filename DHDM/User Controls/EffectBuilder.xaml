@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DHDM"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="654" Background="AliceBlue">
+             d:DesignHeight="600" d:DesignWidth="654" Background="AliceBlue">
 	<StackPanel x:Name="spMain" Orientation="Vertical">
 		<StackPanel x:Name="spEffectType" Orientation="Horizontal" Margin="0,4,0,4">
 			<TextBlock x:Name="tbType" Text="Effect Type: " Width="Auto" Height="Auto" Margin="4, 1, 4, 1" />
@@ -34,7 +34,7 @@
 				<RadioButton x:Name="rbScreenPos" Margin="4, 3, 4, 1" Checked="RbScreenPos_Checked">
 					Screen Position:
 				</RadioButton>
-				<TextBox x:Name="txtCoordinates" Height="18" VerticalAlignment="Top" Margin="0, 1, 12, 0" TextChanged="Any_TextChanged">
+				<TextBox x:Name="txtCoordinates" Height="18" VerticalAlignment="Top" Margin="0, 1, 12, 0" TextChanged="TxtCoordinates_TextChanged">
 					960,540
 				</TextBox>
 			</StackPanel>
@@ -51,7 +51,7 @@
 						Equipment
 					</RadioButton>
 					<TextBlock Text="Item:" Width="Auto" Height="Auto" Margin="2, 1, 4, 1" />
-					<ComboBox x:Name="cmbMainItems" SelectionChanged="AnyCombo_SelectionChanged">
+					<ComboBox x:Name="cmbMainItems" SelectedValuePath="Content" SelectionChanged="AnyCombo_SelectionChanged">
 						<ComboBoxItem>NameHeadshot</ComboBoxItem>
 						<ComboBoxItem>RaceClass</ComboBoxItem>
 						<ComboBoxItem>Level</ComboBoxItem>
@@ -80,7 +80,7 @@
 						<ComboBoxItem>SavingWisdom</ComboBoxItem>
 						<ComboBoxItem>SavingCharisma</ComboBoxItem>
 					</ComboBox>
-					<ComboBox x:Name="cmbSkillItems" SelectionChanged="AnyCombo_SelectionChanged" Visibility="Collapsed">
+					<ComboBox x:Name="cmbSkillItems" SelectionChanged="AnyCombo_SelectionChanged" SelectedValuePath="Content" Visibility="Collapsed">
 						<ComboBoxItem>NameHeadshot</ComboBoxItem>
 						<ComboBoxItem>Perception</ComboBoxItem>
 						<ComboBoxItem>ProficiencyBonus</ComboBoxItem>
@@ -109,7 +109,7 @@
 						<ComboBoxItem>SkillsStealth</ComboBoxItem>
 						<ComboBoxItem>SkillsSurvival</ComboBoxItem>
 					</ComboBox>
-					<ComboBox x:Name="cmbEquipmentItems" SelectionChanged="AnyCombo_SelectionChanged" Visibility="Collapsed">
+					<ComboBox x:Name="cmbEquipmentItems" SelectionChanged="AnyCombo_SelectionChanged" SelectedValuePath="Content" Visibility="Collapsed">
 						<ComboBoxItem>NameHeadshot</ComboBoxItem>
 						<ComboBoxItem>GoldPieces</ComboBoxItem>
 						<ComboBoxItem>Load</ComboBoxItem>
@@ -119,7 +119,7 @@
 				</StackPanel>
 				<StackPanel x:Name="spOffset" Orientation="Horizontal" Margin="4, 0, 4, 12">
 					<TextBlock Text="Target Offset: " Width="Auto" Height="Auto" Margin="0, 1, 0, 1" />
-					<TextBox x:Name="tbxTargetOffset" Height="18" TextChanged="Any_TextChanged">
+					<TextBox x:Name="tbxTargetOffset" Height="18" TextChanged="TbxTargetOffset_TextChanged">
 						0,0
 					</TextBox>
 				</StackPanel>
@@ -241,9 +241,7 @@
 		<StackPanel x:Name="spAnimationOptions" Orientation="Vertical" Margin="4">
 			<StackPanel x:Name="spAnimationSelector" Orientation="Horizontal" >
 				<TextBlock Text="Animation: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0" />
-				<RadioButton x:Name="rbDenseSmoke" Margin="8, 3, 4, 1" IsChecked="True" Checked="RbDenseSmoke_Checked">
-					Smoke
-				</RadioButton>
+				<RadioButton x:Name="rbDenseSmoke" Margin="8, 3, 4, 1" IsChecked="True" Checked="RbDenseSmoke_Checked" Content="Smoke"/>
 				<RadioButton x:Name="rbPoof" Margin="8, 3, 4, 1" Checked="RbPoof_Checked">
 					Poof
 				</RadioButton>
@@ -265,7 +263,7 @@
 				<RadioButton x:Name="rbRestrained" Margin="8, 3, 4, 1" Checked="RbStars_Checked">
 					Restrained
 				</RadioButton>
-				<RadioButton x:Name="rbHeart" Margin="8, 3, 4, 1" Checked="RbStars_Checked">
+				<RadioButton x:Name="rbHeart" Margin="8, 3, 4, 1" Checked="RbHeart_Checked">
 					Heart
 				</RadioButton>
 			</StackPanel>
@@ -306,9 +304,9 @@
 			</StackPanel>
 
 			<StackPanel x:Name="spAnimationColorShiftOptions" Orientation="Horizontal" Margin="8,8,0,0">
-				<local:NumEdit x:Name="nedAdjustHue" Label="Adjust Hue: " Units="deg" Value="0" Margin="0, 0, 0, 0" TextChanged="AnyNumEdit_Changed"></local:NumEdit>
-				<local:NumEdit x:Name="nedAdjustSaturation" Label="Saturation: " Units="%" Value="100" TextChanged="AnyNumEdit_Changed"></local:NumEdit>
-				<local:NumEdit x:Name="nedAdjustBrightness" Label="Brightness: " Units="%" Value="100" TextChanged="AnyNumEdit_Changed"></local:NumEdit>
+				<local:NumEdit x:Name="nedAdjustHue" Label="Adjust Hue: " Units="deg" Value="0" Margin="0, 0, 0, 0" TextChanged="NedAdjustHue_TextChanged"></local:NumEdit>
+				<local:NumEdit x:Name="nedAdjustSaturation" Label="Saturation: " Units="%" Value="100" TextChanged="NedAdjustSaturation_TextChanged"></local:NumEdit>
+				<local:NumEdit x:Name="nedAdjustBrightness" Label="Brightness: " Units="%" Value="100" TextChanged="NedAdjustBrightness_TextChanged"></local:NumEdit>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

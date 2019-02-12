@@ -3,11 +3,21 @@ using System.Linq;
 
 namespace DHDM
 {
+	public enum TargetPage
+	{
+		None,
+		Main,
+		Skills,
+		Equipment
+	}
+	
 	public class VisualEffectTarget
 	{
 		public TargetType targetType;
 		public Vector screenPosition;
 		public Vector targetOffset;
+		public TargetPage targetPage = TargetPage.None;
+		public string entryName = string.Empty;
 
 		public VisualEffectTarget()
 		{

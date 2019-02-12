@@ -24,6 +24,7 @@ namespace DHDM.User_Controls
 	{
 		ObservableCollection<EffectEntry> effects = new ObservableCollection<EffectEntry>();
 		int entriesCreated = 0;
+		bool loading;
 		public EffectsList()
 		{
 			InitializeComponent();
@@ -45,16 +46,31 @@ namespace DHDM.User_Controls
 		{
 			if (sender is ListBox listBox)
 				if (listBox.SelectedItem is EffectEntry effectEntry)
-					effectBuilder.LoadFromItem(effectEntry);
+				{
+					//EffectBuilder effectBuilder = spControls.FindVisualChild<EffectBuilder>("effectBuilder");
+					if (effectBuilder != null)
+					{
+						loading = true;
+						try
+						{
+							effectBuilder.LoadFromItem(effectEntry);
+						}
+						finally
+						{
+							loading = false;
+						}
+					}
+				}
+
 		}
 
 		private void BtnTestEffect_Click(object sender, RoutedEventArgs e)
 		{
-			Effect activeEffect = effectBuilder.GetEffect();
-			if (activeEffect == null)
-				return;
-			string serializedObject = JsonConvert.SerializeObject(activeEffect);
-			HubtasticBaseStation.TriggerEffect(serializedObject);
+			//Effect activeEffect = effectBuilder.GetEffect();
+			//if (activeEffect == null)
+			//	return;
+			//string serializedObject = JsonConvert.SerializeObject(activeEffect);
+			//HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
 		private void TextBox_LostFocus(object sender, RoutedEventArgs e)
@@ -69,6 +85,20 @@ namespace DHDM.User_Controls
 			TextBox txt = (TextBox)((Grid)((TextBlock)sender).Parent).Children[1];
 			txt.Visibility = Visibility.Visible;
 			((TextBlock)sender).Visibility = Visibility.Collapsed;
+		}
+
+		private void EffectBuilder_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (loading)
+				return;
+			if (lbEffectsComposite.SelectedItem is EffectEntry effectEntry)
+			{
+				//EffectBuilder effectBuilder = spControls.FindVisualChild<EffectBuilder>("effectBuilder");
+				if (effectBuilder != null)
+				{
+					effectBuilder.SaveToItem(effectEntry);
+				}
+			}
 		}
 	}
 }

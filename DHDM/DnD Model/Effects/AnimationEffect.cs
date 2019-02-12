@@ -25,6 +25,7 @@ namespace DHDM
 			saturation = 1;
 			brightness = 0.5;
 			effectKind = EffectKind.Animation;
+			target = new VisualEffectTarget();
 		}
 
 		public AnimationEffect(string spriteName, VisualEffectTarget target, int startFrameIndex, double hueShift = 0, double saturation = -1, double brightness = -1)
