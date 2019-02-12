@@ -25,6 +25,7 @@ namespace DHDM
 	{
 		//private fields...
 
+		const string STR_EffectKind = "EffectKind";
 		public EffectKind EffectKind
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
@@ -52,7 +53,7 @@ namespace DHDM
 			}
 		}
 
-		public static readonly DependencyProperty EffectKindProperty = DependencyProperty.Register("EffectKind", typeof(EffectKind), typeof(EffectBuilder), new FrameworkPropertyMetadata(EffectKind.Animation, new PropertyChangedCallback(OnEffectKindChanged)));
+		public static readonly DependencyProperty EffectKindProperty = DependencyProperty.Register(STR_EffectKind, typeof(EffectKind), typeof(EffectBuilder), new FrameworkPropertyMetadata(EffectKind.Animation, new PropertyChangedCallback(OnEffectKindChanged)));
 
 		public TargetType TargetType
 		{
@@ -131,7 +132,7 @@ namespace DHDM
 			if (spSoundOptions != null)
 				spSoundOptions.Visibility = Visibility.Collapsed;
 			SettingsChanged();
-			OnPropertyChanged("EffectKind");
+			OnPropertyChanged(STR_EffectKind);
 		}
 
 		private void RbEmitter_Checked(object sender, RoutedEventArgs e)
@@ -141,7 +142,7 @@ namespace DHDM
 			spAnimationOptions.Visibility = Visibility.Collapsed;
 			spSoundOptions.Visibility = Visibility.Collapsed;
 			SettingsChanged();
-			OnPropertyChanged("EffectKind");
+			OnPropertyChanged(STR_EffectKind);
 		}
 
 		private void RbSoundEffect_Checked(object sender, RoutedEventArgs e)
@@ -152,7 +153,7 @@ namespace DHDM
 			spSoundOptions.Visibility = Visibility.Visible;
 			tbxSoundFileName.Focus();
 			SettingsChanged();
-			OnPropertyChanged("EffectKind");
+			OnPropertyChanged(STR_EffectKind);
 		}
 
 		void SettingsChanged()
@@ -234,6 +235,7 @@ namespace DHDM
 				spCircularOptions.Visibility = Visibility.Visible;
 			if (spRectangularOptions != null)
 				spRectangularOptions.Visibility = Visibility.Collapsed;
+			OnPropertyChanged("EmitterKind");
 			SettingsChanged();
 		}
 
@@ -243,32 +245,37 @@ namespace DHDM
 				spCircularOptions.Visibility = Visibility.Collapsed;
 			if (spRectangularOptions != null)
 				spRectangularOptions.Visibility = Visibility.Visible;
+			OnPropertyChanged("EmitterKind");
 			SettingsChanged();
 		}
 
 		private void AnyNumEdit_Changed(object sender = null, RoutedEventArgs e = null)
 		{
+			OnPropertyChanged("AnyNumEdit");
 			SettingsChanged();
 		}
 
 		private void CkbRenderOldestParticlesLast_Checked(object sender, RoutedEventArgs e)
 		{
+			OnPropertyChanged("RenderOldestParticlesLast");
 			SettingsChanged();
 		}
 
 		private void CkbRenderOldestParticlesLast_Unchecked(object sender, RoutedEventArgs e)
 		{
+			OnPropertyChanged("RenderOldestParticlesLast");
 			SettingsChanged();
 		}
 
 		private void AnyTargetValue_Changed(object sender, RoutedEventArgs e)
 		{
+			OnPropertyChanged("AnyTargetValue");
 			SettingsChanged();
 		}
 
 		private void NedEmitterGravity_TextChanged(object sender, RoutedEventArgs e)
 		{
-			// 
+			OnPropertyChanged("EmitterGravity");
 			if (spEmitterGravityCenter == null)
 				return;
 			string emitterGravity = nedEmitterGravity.Value.Trim();
@@ -282,6 +289,7 @@ namespace DHDM
 
 		private void NedParticleGravity_TextChanged(object sender, RoutedEventArgs e)
 		{
+			OnPropertyChanged("ParticleGravity");
 			if (spParticleGravityCenter == null)
 				return;
 			string particleGravity = nedParticleGravity.Value.Trim();
@@ -506,6 +514,7 @@ namespace DHDM
 
 		private void AnyRadioButton_Checked(object sender, RoutedEventArgs e)
 		{
+			OnPropertyChanged("AnyRadioButton");
 			SettingsChanged();
 		}
 		Effect GetSoundEffect()
@@ -774,7 +783,6 @@ namespace DHDM
 
 		void LoadFromAnimation(AnimationEffect animationEffect)
 		{
-			LoadFromTarget(animationEffect.target);
 			SetFromAnimationName(animationEffect.spriteName);
 			nedAdjustHue.Value = animationEffect.hueShift.ToString();
 			nedAdjustBrightness.Value = animationEffect.brightness.ToString();
@@ -782,20 +790,22 @@ namespace DHDM
 			//animationEffect.startFrameIndex;
 		}
 
-		void LoadFromEmitter(EmitterEffect emitterEffect)
-		{
-			LoadFromTarget(emitterEffect.target);
-		}
-		void LoadFromSoundEffect(SoundEffect soundEffect)
+	void LoadFromSoundEffect(SoundEffect soundEffect)
 		{
 			tbxSoundFileName.Text = soundEffect.soundFileName;
 		}
 		public void LoadFromItem(EffectEntry effectEntry)
 		{
 			if (effectEntry.EffectKind == EffectKind.Animation)
+			{
 				rbAnimation.IsChecked = true;
+				LoadFromTarget(effectEntry.AnimationEffect.target);
+			}
 			else if (effectEntry.EffectKind == EffectKind.Emitter)
+			{
 				rbEmitter.IsChecked = true;
+				LoadFromTarget(effectEntry.EmitterEffect.target);
+			}
 			else if (effectEntry.EffectKind == EffectKind.SoundEffect)
 				rbSoundEffect.IsChecked = true;
 
@@ -844,26 +854,102 @@ namespace DHDM
 			animationEffect.brightness = nedAdjustBrightness.ValueAsDouble;
 			animationEffect.saturation = nedAdjustSaturation.ValueAsDouble;
 			animationEffect.startFrameIndex = 0;
-			SaveToTarget(animationEffect.target);
 		}
+
+		void SetTargetValueEdit(TargetValueEdit targetValueEdit, TargetValue targetValue)
+		{
+			targetValueEdit.Value = targetValue.value.ToString();
+			if (targetValue.absoluteVariance != 0)
+			{
+				targetValueEdit.Variance = targetValue.absoluteVariance.ToString();
+			}
+			else
+			{
+				targetValueEdit.Variance = (100 * targetValue.relativeVariance).ToString() + "%";
+			}
+			targetValueEdit.Binding = targetValue.targetBinding.ToString();
+			targetValueEdit.Drift = targetValue.drift.ToString();
+			targetValueEdit.Min = targetValue.min.ToString();
+			targetValueEdit.Max = targetValue.max.ToString();
+		}
+
+		void LoadFromEmitter(EmitterEffect emitterEffect)
+		{
+			if (emitterEffect.emitterShape == EmitterShape.Circular)
+			{
+				rbEmitterRound.IsChecked = true;
+				nedEmitterRadius.ValueAsDouble = emitterEffect.radius;
+			}
+			else
+			{
+				rbEmitterRectangular.IsChecked = true;
+				nedEmitterWidth.ValueAsDouble = emitterEffect.width;
+				nedEmitterHeight.ValueAsDouble = emitterEffect.height;
+			}
+			nedEdgeSpread.ValueAsDouble = emitterEffect.edgeSpread;
+			tbxEmitterInitialVelocity.Text = ToVectorString(emitterEffect.emitterInitialVelocity);
+			nedEmitterGravity.ValueAsDouble = emitterEffect.emitterGravity;
+			tbxEmitterGravityCenter.Text = ToVectorString(emitterEffect.gravityCenter);
+
+			tbxWindDirection.Text = ToVectorString(emitterEffect.emitterWindDirection);
+			nedAirDensity.ValueAsDouble = emitterEffect.emitterAirDensity;
+			nedParticlesPerSecond.ValueAsDouble = emitterEffect.particlesPerSecond;
+			nedMaxConcurrentParticles.ValueAsDouble = emitterEffect.maxConcurrentParticles;
+			nedMaxTotalParticles.ValueAsDouble = emitterEffect.maxTotalParticles;
+			nedParticleGravity.ValueAsDouble = emitterEffect.particleGravity;
+			tbxParticleGravityCenter.Text = ToVectorString(emitterEffect.particleGravityCenter);
+			nedParticleMass.ValueAsDouble = emitterEffect.particleMass;
+			SetTargetValueEdit(tvParticleRadius, emitterEffect.particleRadius);
+		}
+
 		void SaveToEmitter(EmitterEffect emitterEffect)
 		{
-			SaveToTarget(emitterEffect.target);
+			if (rbEmitterRound.IsChecked ?? false)
+			{
+				emitterEffect.emitterShape = EmitterShape.Circular;
+				emitterEffect.radius = nedEmitterRadius.ValueAsDouble;
+			}
+			else
+			{
+				emitterEffect.emitterShape = EmitterShape.Rectangular;
+				emitterEffect.width = nedEmitterWidth.ValueAsDouble;
+				emitterEffect.height = nedEmitterHeight.ValueAsDouble;
+			}
+			emitterEffect.edgeSpread = nedEdgeSpread.ValueAsDouble;
+			emitterEffect.emitterInitialVelocity = ToVector(tbxEmitterInitialVelocity.Text);
+			emitterEffect.emitterGravity = nedEmitterGravity.ValueAsDouble;
+			emitterEffect.gravityCenter = ToVector(tbxEmitterGravityCenter.Text);
+			emitterEffect.emitterWindDirection = ToVector(tbxWindDirection.Text);
+			emitterEffect.emitterAirDensity = nedAirDensity.ValueAsDouble;
+			emitterEffect.particlesPerSecond = nedParticlesPerSecond.ValueAsDouble;
+			emitterEffect.maxConcurrentParticles = nedMaxConcurrentParticles.ValueAsDouble;
+			emitterEffect.maxTotalParticles = nedMaxTotalParticles.ValueAsDouble;
+			emitterEffect.particleGravity = nedParticleGravity.ValueAsDouble;
+			emitterEffect.particleMass = nedParticleMass.ValueAsDouble;
+			emitterEffect.particleRadius = ToTargetValue(tvParticleRadius);
 		}
 		void SaveToSound(SoundEffect soundEffect)
 		{
 			soundEffect.soundFileName = tbxSoundFileName.Text;
 		}
-		public void SaveToItem(EffectEntry effectEntry)
+		public void SaveToItem(EffectEntry effectEntry, string propertyName)
 		{
 			if (rbAnimation.IsChecked ?? false)
 			{
 				effectEntry.EffectKind = EffectKind.Animation;
+				if (propertyName != STR_EffectKind)
+					SaveToTarget(effectEntry.AnimationEffect.target);
+				else
+					LoadFromTarget(effectEntry.AnimationEffect.target);
 			}
 
 			if (rbEmitter.IsChecked ?? false)
 			{
 				effectEntry.EffectKind = EffectKind.Emitter;
+				if (propertyName != STR_EffectKind)
+					SaveToTarget(effectEntry.EmitterEffect.target);
+				else
+					LoadFromTarget(effectEntry.EmitterEffect.target);
 			}
 
 			if (rbSoundEffect.IsChecked ?? false)

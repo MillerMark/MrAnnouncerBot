@@ -108,6 +108,10 @@ namespace DHDM
 					return result;
 				return 0d;
 			}
+			set
+			{
+				Value = value.ToString();
+			}
 		}
 		static void LabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{

@@ -66,11 +66,11 @@ namespace DHDM.User_Controls
 
 		private void BtnTestEffect_Click(object sender, RoutedEventArgs e)
 		{
-			//Effect activeEffect = effectBuilder.GetEffect();
-			//if (activeEffect == null)
-			//	return;
-			//string serializedObject = JsonConvert.SerializeObject(activeEffect);
-			//HubtasticBaseStation.TriggerEffect(serializedObject);
+			Effect activeEffect = effectBuilder.GetEffect();
+			if (activeEffect == null)
+				return;
+			string serializedObject = JsonConvert.SerializeObject(activeEffect);
+			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
 		private void TextBox_LostFocus(object sender, RoutedEventArgs e)
@@ -96,7 +96,7 @@ namespace DHDM.User_Controls
 				//EffectBuilder effectBuilder = spControls.FindVisualChild<EffectBuilder>("effectBuilder");
 				if (effectBuilder != null)
 				{
-					effectBuilder.SaveToItem(effectEntry);
+					effectBuilder.SaveToItem(effectEntry, e.PropertyName);
 				}
 			}
 		}

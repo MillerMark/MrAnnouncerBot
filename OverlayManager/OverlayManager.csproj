@@ -924,4 +924,9 @@
   <ItemGroup>
     <Folder Include="wwwroot\lib\signalr\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="Pages\DroneOverlay.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
 </Project>
