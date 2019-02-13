@@ -22,8 +22,8 @@ namespace DHDM
 			target = new VisualEffectTarget(960, 540);
 			startFrameIndex = 0;
 			hueShift = 0;
-			saturation = 1;
-			brightness = 0.5;
+			saturation = 100;
+			brightness = 100;
 			effectKind = EffectKind.Animation;
 			target = new VisualEffectTarget();
 		}

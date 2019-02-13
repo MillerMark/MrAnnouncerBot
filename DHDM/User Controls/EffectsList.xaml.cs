@@ -100,5 +100,34 @@ namespace DHDM.User_Controls
 				}
 			}
 		}
+
+		Dictionary<object, string> savedNames = new Dictionary<object, string>();
+
+		private void TextBox_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+				if (sender is TextBox tb)
+				{
+					tb.Visibility = Visibility.Collapsed;
+					return;
+				}
+
+			if (e.Key == Key.Escape)
+				if (sender is TextBox tb)
+				{
+					if (savedNames.ContainsKey(tb))
+						tb.Text = savedNames[tb];
+					tb.Visibility = Visibility.Collapsed;
+				}
+		}
+
+		private void TextBox_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			if (sender is TextBox tb)
+				if ((bool)e.NewValue)
+					savedNames.Add(tb, tb.Text);
+				else if (savedNames.ContainsKey(tb))
+					savedNames.Remove(tb);
+		}
 	}
 }

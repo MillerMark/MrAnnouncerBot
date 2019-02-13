@@ -12,7 +12,13 @@ namespace DHDM
 			get { return name; }
 			set
 			{
+				if (name == value)
+				{
+					return;
+				}
+
 				name = value;
+				OnPropertyChanged();
 			}
 		}
 

@@ -33,7 +33,7 @@ namespace DHDM
 		public TargetValue particleRadius = new TargetValue(1, 0, 0, 0, 100, 0, TargetBinding.truncate);
 		public TargetValue hue = new TargetValue(0, 0, 0, 0, 360, 0, TargetBinding.wrap);
 		public TargetValue saturation = new TargetValue(1, 0, 0, 0, 100, 0, TargetBinding.truncate);
-		public TargetValue brightness = new TargetValue(1, 0, 0, 0, 100, 0, TargetBinding.truncate);
+		public TargetValue brightness = new TargetValue(0.5, 0, 0, 0, 100, 0, TargetBinding.truncate);
 		public double emitterAirDensity = 0;
 		public TargetValue particleInitialVelocity = new TargetValue(1, 0, 0, 0, 100, 0, TargetBinding.truncate);
 		public Vector particleWindDirection = Vector.zero;
@@ -44,7 +44,7 @@ namespace DHDM
 		public double particlesPerSecond = 500;
 		public double fadeInTime = 0.4;
 		public double lifeSpan = 3;
-		public double maxOpacity = 1;
+		public double maxOpacity = 100;
 		public double particleAirDensity = 1;
 		public double maxConcurrentParticles = 4000;
 		public double maxTotalParticles = double.PositiveInfinity;  // "Stop after" in UI

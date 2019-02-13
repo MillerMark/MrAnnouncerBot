@@ -858,7 +858,10 @@ namespace DHDM
 
 		void SetTargetValueEdit(TargetValueEdit targetValueEdit, TargetValue targetValue)
 		{
-			targetValueEdit.Value = targetValue.value.ToString();
+			double multiplier = 1;
+			if (targetValueEdit.Units == "%")
+				multiplier = 100.0;
+			targetValueEdit.Value = (targetValue.value * multiplier).ToString();
 			if (targetValue.absoluteVariance != 0)
 			{
 				targetValueEdit.Variance = targetValue.absoluteVariance.ToString();
@@ -900,6 +903,20 @@ namespace DHDM
 			tbxParticleGravityCenter.Text = ToVectorString(emitterEffect.particleGravityCenter);
 			nedParticleMass.ValueAsDouble = emitterEffect.particleMass;
 			SetTargetValueEdit(tvParticleRadius, emitterEffect.particleRadius);
+			nedMinParticleSize.ValueAsDouble = emitterEffect.minParticleSize;
+			tbxParticleInitialDirection.Text = ToVectorString(emitterEffect.particleInitialDirection);
+			SetTargetValueEdit(tvInitialVelocity, emitterEffect.particleInitialVelocity);
+			tbxParticleWindDirection.Text = ToVectorString(emitterEffect.particleWindDirection);
+			nedParticleAirDensity.ValueAsDouble = emitterEffect.particleAirDensity;
+			tbxBonusVelocity.Text = ToVectorString(emitterEffect.bonusVelocityVector);
+			ckbRenderOldestParticlesLast.IsChecked = emitterEffect.renderOldestParticlesLast;
+			nedParticleFadeInTime.ValueAsDouble = emitterEffect.fadeInTime;
+			nedParticleMaxOpacity.ValueAsDouble = emitterEffect.maxOpacity;
+			nedParticleLifeSpan.ValueAsDouble = emitterEffect.lifeSpan;
+
+			SetTargetValueEdit(tvParticleHue, emitterEffect.hue);
+			SetTargetValueEdit(tvParticleSaturation, emitterEffect.saturation);
+			SetTargetValueEdit(tvBrightness, emitterEffect.brightness);
 		}
 
 		void SaveToEmitter(EmitterEffect emitterEffect)
@@ -925,8 +942,22 @@ namespace DHDM
 			emitterEffect.maxConcurrentParticles = nedMaxConcurrentParticles.ValueAsDouble;
 			emitterEffect.maxTotalParticles = nedMaxTotalParticles.ValueAsDouble;
 			emitterEffect.particleGravity = nedParticleGravity.ValueAsDouble;
+			emitterEffect.particleGravityCenter = ToVector(tbxParticleGravityCenter.Text);
 			emitterEffect.particleMass = nedParticleMass.ValueAsDouble;
 			emitterEffect.particleRadius = ToTargetValue(tvParticleRadius);
+			emitterEffect.minParticleSize = nedMinParticleSize.ValueAsDouble;
+			emitterEffect.particleInitialDirection = ToVector(tbxParticleInitialDirection.Text);
+			emitterEffect.particleInitialVelocity = ToTargetValue(tvInitialVelocity);
+			emitterEffect.particleWindDirection = ToVector(tbxParticleWindDirection.Text);
+			emitterEffect.particleAirDensity = nedParticleAirDensity.ValueAsDouble;
+			emitterEffect.bonusVelocityVector = ToVector(tbxBonusVelocity.Text);
+			emitterEffect.renderOldestParticlesLast = ckbRenderOldestParticlesLast.IsChecked ?? false;
+			emitterEffect.fadeInTime = nedParticleFadeInTime.ValueAsDouble;
+			emitterEffect.maxOpacity = nedParticleMaxOpacity.ValueAsDouble;
+			emitterEffect.lifeSpan = nedParticleLifeSpan.ValueAsDouble;
+			emitterEffect.hue = ToTargetValue(tvParticleHue);
+			emitterEffect.saturation = ToTargetValue(tvParticleSaturation);
+			emitterEffect.brightness = ToTargetValue(tvBrightness);
 		}
 		void SaveToSound(SoundEffect soundEffect)
 		{
