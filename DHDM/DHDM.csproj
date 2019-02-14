@@ -250,6 +250,7 @@
     <Compile Include="DnD Model\DamageType.cs" />
     <Compile Include="DnD Model\DndTimeSpan.cs" />
     <Compile Include="DnD Model\Effects\Effect.cs" />
+    <Compile Include="User Controls\Storage.cs" />
     <Compile Include="ViewModels\Support\VisualHelper.cs" />
     <Compile Include="ViewModels\EffectEntry.cs" />
     <Compile Include="DnD Model\Effects\EffectKind.cs" />
@@ -366,6 +367,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="DnD Model\Character.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

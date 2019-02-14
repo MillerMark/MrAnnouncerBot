@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,13 +23,18 @@ namespace DHDM.User_Controls
 	/// </summary>
 	public partial class EffectsList : UserControl
 	{
-		ObservableCollection<EffectEntry> effects = new ObservableCollection<EffectEntry>();
+		private Timer autoSaveTimer;
+		ObservableCollection<EffectEntry> effects;
 		int entriesCreated = 0;
 		bool loading;
 		public EffectsList()
 		{
 			InitializeComponent();
-			lbEffectsComposite.ItemsSource = effects;
+			LoadEffects();
+			Loaded += (s, e) => { // only at this point the control is ready
+				Window.GetWindow(this) // get the parent window
+							.Closing += (s1, e1) => Disposing(); //disposing logic here
+			};
 		}
 
 		private void BtnAdd_Click(object sender, RoutedEventArgs e)
@@ -39,15 +45,28 @@ namespace DHDM.User_Controls
 
 		private void BtnDelete_Click(object sender, RoutedEventArgs e)
 		{
+			
+		}
 
+		private void BtnDuplicate_Click(object sender, RoutedEventArgs e)
+		{
+			if (lbEffectsComposite.SelectedValue is EffectEntry effectEntry)
+			{
+				EffectEntry item = JsonConvert.DeserializeObject<EffectEntry>(JsonConvert.SerializeObject(effectEntry));
+				item.Name += " - Copy";
+				effects.Add(item);
+			}
 		}
 
 		private void LbEffectsComposite_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			List<TextBox> list = savedNames.Keys.ToList();
+			foreach (object textBox in list)
+				TextBox_LostFocus(textBox, null);
+
 			if (sender is ListBox listBox)
 				if (listBox.SelectedItem is EffectEntry effectEntry)
 				{
-					//EffectBuilder effectBuilder = spControls.FindVisualChild<EffectBuilder>("effectBuilder");
 					if (effectBuilder != null)
 					{
 						loading = true;
@@ -61,7 +80,6 @@ namespace DHDM.User_Controls
 						}
 					}
 				}
-
 		}
 
 		private void BtnTestEffect_Click(object sender, RoutedEventArgs e)
@@ -82,9 +100,11 @@ namespace DHDM.User_Controls
 
 		private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			TextBox txt = (TextBox)((Grid)((TextBlock)sender).Parent).Children[1];
-			txt.Visibility = Visibility.Visible;
+			TextBox tb = (TextBox)((Grid)((TextBlock)sender).Parent).Children[1];
+			tb.Visibility = Visibility.Visible;
 			((TextBlock)sender).Visibility = Visibility.Collapsed;
+			if (!savedNames.ContainsKey(tb))
+				savedNames.Add(tb, tb.Text);
 		}
 
 		private void EffectBuilder_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -101,7 +121,8 @@ namespace DHDM.User_Controls
 			}
 		}
 
-		Dictionary<object, string> savedNames = new Dictionary<object, string>();
+		Dictionary<TextBox, string> savedNames = new Dictionary<TextBox, string>();
+		bool isDirty;
 
 		private void TextBox_KeyDown(object sender, KeyEventArgs e)
 		{
@@ -127,7 +148,43 @@ namespace DHDM.User_Controls
 				if ((bool)e.NewValue)
 					savedNames.Add(tb, tb.Text);
 				else if (savedNames.ContainsKey(tb))
+				{
+					tb.Visibility = Visibility.Collapsed;
 					savedNames.Remove(tb);
+				}
+		}
+
+		void LoadEffects()
+		{
+			List<EffectEntry> loadedEffects = Storage.Load<List<EffectEntry>>("AllEffects.json");
+			if (loadedEffects != null)
+				effects = new ObservableCollection<EffectEntry>(loadedEffects);
+			else
+				effects = new ObservableCollection<EffectEntry>();
+
+			effects.CollectionChanged += Effects_CollectionChanged;
+			lbEffectsComposite.ItemsSource = effects;
+			isDirty = false;
+		}
+
+		private void Effects_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			isDirty = true;
+		}
+
+		void SaveEffects()
+		{
+			if (!isDirty)
+				return;
+			// TODO: Only really do this if dirty/changed.
+			Storage.Save("AllEffects.json", effects.ToList<EffectEntry>());
+			isDirty = false;
+		}
+
+		object Disposing()
+		{
+			SaveEffects();
+			return null;
 		}
 	}
 }

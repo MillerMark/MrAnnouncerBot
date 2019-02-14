@@ -18,13 +18,14 @@ namespace DHDM
 		public int weight = 0;
 		public int costValue;
 		public bool magic;
+		public bool equipped;
 		public bool silvered;
 		public bool adamantine;
 		public int count = 1;
 		public string description = string.Empty;
-		public Effect consumedEffect;
-		public Effect equippedEffect;
-		public Effect unequippedEffect;
-		public Effect discardedEffect;
+		public List<Effect> consumedEffects;
+		public List<Effect> equippedEffects;
+		public List<Effect> unequippedEffects;
+		public List<Effect> discardedEffects;
 	}
 }

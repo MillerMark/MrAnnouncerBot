@@ -9,7 +9,7 @@
         Title="MainWindow" Height="680" Width="1672.675">
 	<Grid>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1.2*" />
+			<ColumnDefinition Width="1*" />
 			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
@@ -75,7 +75,7 @@
 					<Button x:Name="btnSampleEffect" Margin="4" Padding="8, 4, 8, 4" Content="Sample" Click="btnSampleEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="755" >
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="825" >
 				<TabItem Header="Dungeon">
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>

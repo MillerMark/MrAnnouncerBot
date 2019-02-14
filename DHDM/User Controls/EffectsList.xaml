@@ -22,13 +22,21 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
-			<StackPanel x:Name="spEffectButtons" Orientation="Horizontal" Margin="0, 4, 0, 0">
-				<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" Width="55" >
-					Add
-				</Button>
-				<Button x:Name="btnDelete" Margin="4, 0, 0, 0" Width="55" Click="BtnDelete_Click" >
-					Delete
-				</Button>
+			<StackPanel x:Name="spButtons" Orientation="Vertical">
+				<StackPanel x:Name="spEffectButtons" Orientation="Horizontal" Margin="0, 4, 0, 0">
+					<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" Width="55" >
+						Add
+					</Button>
+					<Button x:Name="btnDelete" Margin="4, 0, 0, 0" Width="55" Click="BtnDelete_Click" >
+						Delete
+					</Button>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Margin="0, 4, 0, 0">
+					<Button x:Name="btnDuplicate" Margin="0, 0, 4, 0" Click="BtnDuplicate_Click" Width="55" >
+						Duplicate
+					</Button>
+					
+				</StackPanel>
 			</StackPanel>
 		</StackPanel>
 		<StackPanel x:Name="spControls" Orientation="Vertical">
