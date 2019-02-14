@@ -546,13 +546,13 @@ namespace DHDM
 			get
 			{
 				if (this._passivePerception == int.MinValue)
-					this._passivePerception = 10 + this._wisdomMod + this.getProficiencyBonusForSkill(Skills.perception);
+					this._passivePerception = 10 + this.wisdomMod + this.getProficiencyBonusForSkill(Skills.perception);
 				return this._passivePerception;
 			}
 		}
 
 		private double _wisdom;
-		private double _wisdomMod;
+		private double wisdomMod;
 
 		double wisdom
 		{
@@ -563,13 +563,13 @@ namespace DHDM
 			set
 			{
 				this._wisdom = value;
-				this._wisdomMod = this.getModFromAbility(this._wisdom);
+				this.wisdomMod = this.getModFromAbility(this._wisdom);
 			}
 		}
 
 
 		private double _charisma;
-		private double _charismaMod;
+		private double charismaMod;
 
 		double charisma
 		{
@@ -580,12 +580,12 @@ namespace DHDM
 			set
 			{
 				this._charisma = value;
-				this._charismaMod = this.getModFromAbility(this._charisma);
+				this.charismaMod = this.getModFromAbility(this._charisma);
 			}
 		}
 
 		private double _intelligence;
-		private double _intelligenceMod;
+		private double intelligenceMod;
 
 		double intelligence
 		{
@@ -596,7 +596,7 @@ namespace DHDM
 			set
 			{
 				this._intelligence = value;
-				this._intelligenceMod = this.getModFromAbility(this._intelligence);
+				this.intelligenceMod = this.getModFromAbility(this._intelligence);
 			}
 		}
 
@@ -651,12 +651,12 @@ namespace DHDM
 
 		int getModFromAbility(double abilityScore)
 		{
-			return Math.floor((abilityScore - 10) / 2);
+			return (int)Math.Floor((abilityScore - 10) / 2);
 		}
 
 		static int rollDie(int sides)
 		{
-			return Random.intBetween(1, sides);
+			return (int)Math.Floor((double)new Random().Next(sides)) + 1;
 		}
 
 		static int getAbilityScore()
@@ -827,3 +827,4 @@ namespace DHDM
 		//    return wizard;
 		//  }
 	}
+}
