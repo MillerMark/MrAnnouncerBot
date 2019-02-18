@@ -11,6 +11,6 @@
 		"inlineSources": true
 	},
 	"include": [
-		"./**/*.ts", "../../DHDM/DnD Model/Attack.cs", "../../DHDM/DnD Model/ModType.cs", "../../DHDM/User Controls/EffectBuilder.xaml.cs", "../../DHDM/User Controls/CharacterSheets.xaml.cs", "../../DHDM/User Controls/NumEdit.xaml.cs", "../../DHDM/User Controls/TargetValueEdit.xaml.cs", "../../DHDM/User Controls/GroupBackground.xaml.cs", "../../DHDM/Event Args/FocusedControlsChangedEventArgs.cs", "../../DHDM/Event Args/PageChangeEventArgs.cs", "../../DHDM/User Controls/StatBoxState.cs", "../../DHDM/User Controls/GridSheet.cs", "../../DHDM/DnD Model/AnimationEffect.cs", "../../DHDM/DnD Model/Effects/EffectKind.cs"
+		"./**/*.ts", "../../DHDM/DnD Model/Attack.cs", "../../DHDM/DnD Model/ModType.cs", "../../DHDM/User Controls/EffectBuilder.xaml.cs", "../../DHDM/User Controls/CharacterSheets.xaml.cs", "../../DHDM/User Controls/NumEdit.xaml.cs", "../../DHDM/User Controls/TargetValueEdit.xaml.cs", "../../DHDM/User Controls/GroupBackground.xaml.cs", "../../DHDM/Event Args/FocusedControlsChangedEventArgs.cs", "../../DHDM/Event Args/PageChangeEventArgs.cs", "../../DHDM/User Controls/StatBoxState.cs", "../../DHDM/User Controls/GridSheet.cs", "../../DHDM/DnD Model/AnimationEffect.cs", "../../DHDM/DnD Model/Effects/EffectKind.cs", "../../DndCore/Filters/CreaturesChoice.cs"
 	]
 }

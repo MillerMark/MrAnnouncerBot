@@ -48,11 +48,11 @@ class Wall extends SpriteProxy {
 
     let capIndex: number;
 
-    if (!(activeBackGame instanceof DroneGame))
+    if (!(activeDroneGame instanceof DroneGame))
       return;
 
-    this.finalCapLeft = x - activeBackGame.endCaps.spriteWidth / 2;
-    this.finalCapTop = y - activeBackGame.endCaps.spriteHeight / 2;
+    this.finalCapLeft = x - activeDroneGame.endCaps.spriteWidth / 2;
+    this.finalCapTop = y - activeDroneGame.endCaps.spriteHeight / 2;
     if (orientation === Orientation.Horizontal) {
       capIndex = 0;  // ![](AADF5C4D211EE772BCCD9F0A76FC3D5F.png;;;0.01824,0.01824)
     }
@@ -60,7 +60,7 @@ class Wall extends SpriteProxy {
       capIndex = 2;  // ![](F159D9E3D6CFB1F0529BA74BF477DE15.png;;0,0,68,48;0.02000,0.02000)
     }
 
-    let ySafetyDrop: number = activeBackGame.endCaps.spriteHeight;
+    let ySafetyDrop: number = activeDroneGame.endCaps.spriteHeight;
     let heightMeters: number = Physics.pixelsToMeters(screenHeight - this.finalCapTop + ySafetyDrop);
     this.airTime = Physics.getDropTime(heightMeters, EndCap.gravity);
     let initialVelocityY: number = Physics.getFinalVelocity(this.airTime, 0, EndCap.gravity);
@@ -76,8 +76,8 @@ class Wall extends SpriteProxy {
     this.endCap2.changeVelocity(initialVelocityX, -initialVelocityY, now);
     this.stillFlying = true;
 
-    activeBackGame.endCaps.sprites.push(this.endCap1);
-    activeBackGame.endCaps.sprites.push(this.endCap2);
+    activeDroneGame.endCaps.sprites.push(this.endCap1);
+    activeDroneGame.endCaps.sprites.push(this.endCap2);
     super.cropped = true;
   }
 
@@ -115,10 +115,10 @@ class Wall extends SpriteProxy {
       this.halfActualLength *= (EndCap.totalCapDisplacement - currentCapDisplacement) / EndCap.totalCapDisplacement;
     }
 
-    if (!(activeBackGame instanceof DroneGame))
+    if (!(activeDroneGame instanceof DroneGame))
       return;
 
-    let halfCapLength: number = activeBackGame.endCaps.spriteHeight / 2;
+    let halfCapLength: number = activeDroneGame.endCaps.spriteHeight / 2;
     if (this.orientation === Orientation.Horizontal) {
       this.endCap1.x = this.x - this.halfActualLength - halfCapLength;
       this.endCap1.y = this.y - halfCapLength;
@@ -137,9 +137,9 @@ class Wall extends SpriteProxy {
     var now: number = performance.now();
     this.endCap1.expirationDate = now;
     this.endCap2.expirationDate = now;
-    if (!(activeBackGame instanceof DroneGame))
+    if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeBackGame.endCaps.removeExpiredSprites(now + 1);
+    activeDroneGame.endCaps.removeExpiredSprites(now + 1);
     super.removing();
   }
 
@@ -180,11 +180,11 @@ class Wall extends SpriteProxy {
   }
 
   getLine(): any {
-    if (!(activeBackGame instanceof DroneGame))
+    if (!(activeDroneGame instanceof DroneGame))
       return;
     
-    return Line.fromCoordinates(this.endCap1.x + activeBackGame.endCaps.spriteWidth / 2, this.endCap1.y + activeBackGame.endCaps.spriteHeight / 2,
-      this.endCap2.x + activeBackGame.endCaps.spriteWidth / 2, this.endCap2.y + activeBackGame.endCaps.spriteHeight / 2);
+    return Line.fromCoordinates(this.endCap1.x + activeDroneGame.endCaps.spriteWidth / 2, this.endCap1.y + activeDroneGame.endCaps.spriteHeight / 2,
+      this.endCap2.x + activeDroneGame.endCaps.spriteWidth / 2, this.endCap2.y + activeDroneGame.endCaps.spriteHeight / 2);
   }
 
 }

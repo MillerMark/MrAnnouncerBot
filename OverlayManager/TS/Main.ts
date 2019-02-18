@@ -1,10 +1,6 @@
-﻿var activeBackGame: Game;
-var activeFrontGame: Game;
-
-var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+﻿var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 
-//activeGame = new DroneGame(myContext);
 activeBackGame = new DragonGame(myContext);
 
 // Suggestion: This is too much outside knowledge of inner workings... Should just call start().

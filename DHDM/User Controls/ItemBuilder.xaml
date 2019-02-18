@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="DHDM.User_Controls.ItemBuilder"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DHDM.User_Controls"
+             xmlns:dh="clr-namespace:DHDM"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="300"
+						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
+						 Background="AliceBlue"
+						 >
+	<StackPanel x:Name="spMain" Orientation="Vertical">
+		<StackPanel x:Name="spName" Orientation="Horizontal">
+			<TextBlock Text="Name: " Width="Auto" Height="Auto"/>
+			<TextBox x:Name="tbxName" MinWidth="120">
+			</TextBox>
+		</StackPanel>
+		<TextBlock Text="Description: " Width="Auto" Height="Auto"/>
+		<TextBox x:Name="tbxDescription" MinWidth="120" MinHeight="50" TextWrapping="Wrap" AcceptsReturn="True">
+		</TextBox>
+		<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" Measure="1"></local:TimeSpanEditor>
+		<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" Measure="1"></local:TimeSpanEditor>
+		<StackPanel x:Name="spBools1" Orientation="Horizontal" Margin="0,8,0,0" >
+			<CheckBox x:Name="ckbConsumable" Margin="0, 0, 0, 0"  >
+				Consumable
+			</CheckBox>
+			<CheckBox x:Name="ckbMagic" Margin="10, 0, 0, 0"  >
+				Magic
+			</CheckBox>
+			<CheckBox x:Name="ckbSilvered" Margin="10, 0, 0, 0"  >
+				Silvered
+			</CheckBox>
+		</StackPanel>
+		<StackPanel x:Name="spBools2" Orientation="Horizontal" Margin="0,8,0,0" >
+			<CheckBox x:Name="ckbAdamantine" Margin="0, 0, 0, 0"  >
+				Adamantine
+			</CheckBox>
+			<CheckBox x:Name="ckbEquipped" Margin="10, 0, 0, 0"  >
+				Equipped
+			</CheckBox>
+		</StackPanel>
+		<StackPanel x:Name="spDetails" Orientation="Horizontal" Margin="0,4,0,0">
+			<dh:NumEdit Label="Weight: " Units="lbs" Value="0"></dh:NumEdit>
+			<dh:NumEdit Label="Cost/Value: " Units="gp" Value="0"></dh:NumEdit>
+			<dh:NumEdit Label="Quantity: " Units="cnt" Value="1"></dh:NumEdit>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

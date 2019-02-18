@@ -3,18 +3,18 @@ var myRocket: Rocket;
 
 class DroneGame extends GamePlusQuiz {
   //emitter: Emitter;
-  pinkSeeds: Sprites;
+  //pinkSeeds: Sprites;
   yellowSeeds: Sprites;
-  purpleSeeds: Sprites;
+  //purpleSeeds: Sprites;
   sparkSmoke: Sprites;
-  beesYellow: Sprites;
+  //beesYellow: Sprites;
   redExplosions: Sprites;
-  blueExplosions: Sprites;
-  purpleExplosions: Sprites;
-  redFlowers: Sprites;
+  //blueExplosions: Sprites;
+  //purpleExplosions: Sprites;
+  //redFlowers: Sprites;
   yellowFlowers1: Sprites;
-  yellowFlowers3: Sprites;
-  purpleFlowers: Sprites;
+  //yellowFlowers3: Sprites;
+  //purpleFlowers: Sprites;
   purplePortals: Sprites;
   portalBackground: Sprites;
   backgroundBanner: Part;
@@ -41,7 +41,7 @@ class DroneGame extends GamePlusQuiz {
 
     this.allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
-    this.beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
+    //this.beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
     this.allDrones.bounce(0, 0, screenWidth, screenHeight, now);
     //greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
@@ -62,7 +62,7 @@ class DroneGame extends GamePlusQuiz {
     //grass3.draw(myContext, now);
     //grass4.draw(myContext, now);
 
-    this.beesYellow.updatePositions(now);
+    //this.beesYellow.updatePositions(now);
     this.allDrones.updatePositions(now);
     this.allMeteors.updatePositions(now);
     this.allWalls.updatePositions(now);
@@ -73,7 +73,7 @@ class DroneGame extends GamePlusQuiz {
     this.wallBounce(now);
 
     this.allSeeds.draw(myContext, now);
-    this.beesYellow.draw(myContext, now);
+    //this.beesYellow.draw(myContext, now);
     this.allWalls.draw(myContext, now);
     this.droneGateways.draw(myContext, now);
     this.warpIns.draw(myContext, now);
@@ -83,15 +83,15 @@ class DroneGame extends GamePlusQuiz {
     this.endCaps.draw(myContext, now);
 
     myRocket.draw(myContext, now);
-    this.purpleFlowers.draw(myContext, now);
+    //this.purpleFlowers.draw(myContext, now);
     //blueFlowers.draw(myContext, now);
-    this.redFlowers.draw(myContext, now);
+    //this.redFlowers.draw(myContext, now);
     this.yellowFlowers1.draw(myContext, now);
     //yellowFlowers2.draw(myContext, now);
-    this.yellowFlowers3.draw(myContext, now);
+    //this.yellowFlowers3.draw(myContext, now);
     this.redExplosions.draw(myContext, now);
-    this.blueExplosions.draw(myContext, now);
-    this.purpleExplosions.draw(myContext, now);
+    //this.blueExplosions.draw(myContext, now);
+    //this.purpleExplosions.draw(myContext, now);
     this.droneExplosions.draw(myContext, now);
     //explosion.draw(myContext, 0, 0);
     this.allSparks.draw(myContext, now);
@@ -141,10 +141,10 @@ class DroneGame extends GamePlusQuiz {
 
     loadSoundEffects();
 
-    this.beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
-    this.beesYellow.segmentSize = 2;
-    this.beesYellow.removeOnHitFloor = false;
-    this.beesYellow.moves = true;
+    //this.beesYellow = new Sprites("Bees/Yellow/BeeYellow", 18, 15, AnimationStyle.Loop);
+    //this.beesYellow.segmentSize = 2;
+    //this.beesYellow.removeOnHitFloor = false;
+    //this.beesYellow.moves = true;
 
     this.loadWarpInAnimation();
 
@@ -157,8 +157,8 @@ class DroneGame extends GamePlusQuiz {
     this.loadAllSparks();
 
     this.redExplosions = new Sprites("Explosion/Red/Explosion", 179, 5, AnimationStyle.Sequential);
-    this.blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
-    this.purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
+    //this.blueExplosions = new Sprites("Explosion/Blue/Explosion", 179, 5, AnimationStyle.Sequential);
+    //this.purpleExplosions = new Sprites("Explosion/Purple/Explosion", 179, 5, AnimationStyle.Sequential);
 
     this.loadWalls();
     this.loadDroneExplosions();
@@ -170,8 +170,8 @@ class DroneGame extends GamePlusQuiz {
     this.sparkSmoke.originY = 170;
 
     globalBypassFrameSkip = true;
-    this.redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
-    this.redFlowers.returnFrameIndex = 128;
+    //this.redFlowers = new Sprites("Flowers/Red/RedFlower", 293, 15, AnimationStyle.Loop, true);
+    //this.redFlowers.returnFrameIndex = 128;
 
     const flowerFrameRate: number = 20;
     //const grassFrameRate: number = 25;
@@ -180,11 +180,11 @@ class DroneGame extends GamePlusQuiz {
     this.yellowFlowers1.returnFrameIndex = 64;
     //var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
     //yellowFlowers2.returnFrameIndex = 64;
-    this.yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
-    this.yellowFlowers3.returnFrameIndex = 45;
+    //this.yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
+    //this.yellowFlowers3.returnFrameIndex = 45;
 
-    this.purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
-    this.purpleFlowers.returnFrameIndex = 151;
+    //this.purpleFlowers = new Sprites("Flowers/Purple/PurpleFlower", 320, flowerFrameRate, AnimationStyle.Loop, true);
+    //this.purpleFlowers.returnFrameIndex = 151;
 
     this.droneGateways = new Gateways("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
 
@@ -780,31 +780,32 @@ class DroneGame extends GamePlusQuiz {
   }
 
   plantSeeds(seeds, x) {
-    if (seeds === this.pinkSeeds)
-      this.plantSeed(this.redFlowers, x + 50, 0);
-    //else if (seeds === blueSeeds)
-    //  plantSeed(blueFlowers, x + 50, 5);
-    else if (seeds === this.purpleSeeds)
-      this.plantSeed(this.purpleFlowers, x + 50, 5);
-    //else if (seeds === greenSeeds) {
-    //  let randomGrass: number = Math.random() * 10;
-    //  if (randomGrass < 1)
-    //    plantSeed(grass1, x + 50, 0);
-    //  else if (randomGrass < 2)
-    //    plantSeed(grass2, x + 50, 0);
-    //  else if (randomGrass < 3)
-    //    plantSeed(grass3, x + 50, 0);
-    //  else
-    //    plantSeed(grass4, x + 50, 0);
-    //}
-    else if (seeds === this.yellowSeeds) {
-      let randomYellow: number = Math.random() * 4;
-      if (randomYellow < 2)
+    //if (seeds === this.pinkSeeds)
+    //  this.plantSeed(this.redFlowers, x + 50, 0);
+    ////else if (seeds === blueSeeds)
+    ////  plantSeed(blueFlowers, x + 50, 5);
+    //else if (seeds === this.purpleSeeds)
+    //  this.plantSeed(this.purpleFlowers, x + 50, 5);
+    ////else if (seeds === greenSeeds) {
+    ////  let randomGrass: number = Math.random() * 10;
+    ////  if (randomGrass < 1)
+    ////    plantSeed(grass1, x + 50, 0);
+    ////  else if (randomGrass < 2)
+    ////    plantSeed(grass2, x + 50, 0);
+    ////  else if (randomGrass < 3)
+    ////    plantSeed(grass3, x + 50, 0);
+    ////  else
+    ////    plantSeed(grass4, x + 50, 0);
+    ////}
+    //else
+      if (seeds === this.yellowSeeds) {
+      //let randomYellow: number = Math.random() * 4;
+      //if (randomYellow < 2)
         this.plantSeed(this.yellowFlowers1, x + 50, 5);
-      //else if (randomYellow < 2)
-      //  plantSeed(yellowFlowers2, x + 50, 0);
-      else
-        this.plantSeed(this.yellowFlowers3, x + 50, 0);
+      ////else if (randomYellow < 2)
+      ////  plantSeed(yellowFlowers2, x + 50, 0);
+      //else
+      //  this.plantSeed(this.yellowFlowers3, x + 50, 0);
     }
     new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
   }
@@ -973,17 +974,17 @@ class DroneGame extends GamePlusQuiz {
 
     let plantSeeds = this.plantSeeds.bind(this);
 
-    this.pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-    this.pinkSeeds.moves = true;
-    this.allSeeds.add(this.pinkSeeds);
+    //this.pinkSeeds = new Sprites("Seeds/Pink/PinkSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+    //this.pinkSeeds.moves = true;
+    //this.allSeeds.add(this.pinkSeeds);
 
     this.yellowSeeds = new Sprites("Seeds/Yellow/YellowSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
     this.yellowSeeds.moves = true;
     this.allSeeds.add(this.yellowSeeds);
 
-    this.purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
-    this.purpleSeeds.moves = true;
-    this.allSeeds.add(this.purpleSeeds);
+    //this.purpleSeeds = new Sprites("Seeds/Purple/PurpleSeed", 16, 75, AnimationStyle.Loop, true, plantSeeds);
+    //this.purpleSeeds.moves = true;
+    //this.allSeeds.add(this.purpleSeeds);
   }
 
   //` ![](D4E24ABDF6E5B9F063E242EBB0ADA55E.png;;0,35,173,210)

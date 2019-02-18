@@ -1,7 +1,4 @@
-﻿var activeBackGame: Game;
-var activeFrontGame: Game;
-
-var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myFrontCanvas");
+﻿var myCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myFrontCanvas");
 var myContext: CanvasRenderingContext2D = myCanvas.getContext("2d");
 
 //activeGame = new DroneGame(myContext);

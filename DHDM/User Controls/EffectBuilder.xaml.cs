@@ -1,4 +1,5 @@
 ﻿using System;
+using DndCore;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -619,13 +620,13 @@ namespace DHDM
 			return 0;
 		}
 
-		Vector ToVector(string text)
+		DndCore.Vector ToVector(string text)
 		{
 			string[] split = text.Split(',');
 			if (split.Length >= 2)
-				return new Vector(GetNum(split[0]), GetNum(split[1]));
+				return new DndCore.Vector(GetNum(split[0]), GetNum(split[1]));
 			else
-				return Vector.zero;
+				return DndCore.Vector.zero;
 		}
 
 		TargetType GetVisualEffectTarget()
@@ -730,7 +731,7 @@ namespace DHDM
 			return null;
 		}
 
-		string ToVectorString(Vector vector)
+		string ToVectorString(DndCore.Vector vector)
 		{
 			return vector.x + ", " + vector.y;
 		}

@@ -27,6 +27,9 @@ function executeCommand(command: string, params: string, userId: string, userNam
   if (activeFrontGame) {
     activeFrontGame.executeCommand(command, params, userId, userName, displayName, color, activeFrontGame.nowMs);
   }
+  if (activeDroneGame) {
+    activeDroneGame.executeCommand(command, params, userId, userName, displayName, color, activeDroneGame.nowMs);
+  }
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
@@ -48,8 +51,8 @@ function playerPageChanged(playerID: number, pageID: number, playerData: string)
 }
 
 function userHasCoins(userId: string, amount: number) {
-  if (activeBackGame instanceof DroneGame) {
-    let userDrone: Drone = <Drone>activeBackGame.allDrones.find(userId);
+  if (activeDroneGame instanceof DroneGame) {
+    let userDrone: Drone = <Drone>activeDroneGame.allDrones.find(userId);
     if (userDrone)
       userDrone.coinCount += amount;
   }

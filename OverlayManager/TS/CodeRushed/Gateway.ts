@@ -4,9 +4,9 @@
   }
 
   releaseDrone(now: number, userId: string, displayName: string, color: string, gatewayNum: number): any {
-    if (!(activeBackGame instanceof DroneGame))
+    if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeBackGame.allDrones.destroy(userId, addDroneExplosion);
+    activeDroneGame.allDrones.destroy(userId, addDroneExplosion);
     let foundGateway = this.find(gatewayNum.toString());
     if (foundGateway instanceof Gateway)
       foundGateway.releaseDrone(now, userId, displayName, color);
@@ -63,9 +63,9 @@ class Gateway extends SpriteProxy {
     warpInSprite.userId = userId;
     warpInSprite.displayName = displayName;
     warpInSprite.color = color;
-    if (!(activeBackGame instanceof DroneGame))
+    if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeBackGame.warpIns.sprites.push(warpInSprite);
+    activeDroneGame.warpIns.sprites.push(warpInSprite);
   }
 
   drawBackground(context: CanvasRenderingContext2D, now: number): void {

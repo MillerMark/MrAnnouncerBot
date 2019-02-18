@@ -1,9 +1,15 @@
 ﻿<Application x:Class="DHDM.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DHDM"
+             xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
+             xmlns:uc="clr-namespace:DHDM.User_Controls"
+						 xmlns:System="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
-    <Application.Resources>
-         
-    </Application.Resources>
+	<Application.Resources>
+		<ObjectDataProvider x:Key="enumTimeMeasure" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+			<ObjectDataProvider.MethodParameters>
+				<x:Type TypeName="dndCore:TimeMeasure"></x:Type>
+			</ObjectDataProvider.MethodParameters>
+		</ObjectDataProvider>
+	</Application.Resources>
 </Application>

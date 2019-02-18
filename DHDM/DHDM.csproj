@@ -242,24 +242,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Ability.cs" />
-    <Compile Include="DnD Model\Attack.cs" />
-    <Compile Include="DnD Model\Conditions.cs" />
-    <Compile Include="DnD Model\CurseBlessingDisease.cs" />
-    <Compile Include="DnD Model\Damage.cs" />
-    <Compile Include="DnD Model\DamageType.cs" />
-    <Compile Include="DnD Model\DndTimeSpan.cs" />
-    <Compile Include="DnD Model\Effects\Effect.cs" />
+    <Compile Include="User Controls\ItemBuilder.xaml.cs">
+      <DependentUpon>ItemBuilder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\Storage.cs" />
+    <Compile Include="User Controls\TimeSpanEditor.xaml.cs">
+      <DependentUpon>TimeSpanEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="User Controls\WeaponBuilder.xaml.cs">
+      <DependentUpon>WeaponBuilder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\Support\VisualHelper.cs" />
     <Compile Include="ViewModels\EffectEntry.cs" />
-    <Compile Include="DnD Model\Effects\EffectKind.cs" />
-    <Compile Include="DnD Model\Effects\EmitterEffect.cs" />
-    <Compile Include="DnD Model\Effects\SoundEffect.cs" />
-    <Compile Include="DnD Model\Effects\TargetType.cs" />
-    <Compile Include="DnD Model\Effects\TargetValue.cs" />
-    <Compile Include="DnD Model\Effects\VisualEffectTarget.cs" />
-    <Compile Include="DnD Model\Vector.cs" />
     <Compile Include="HubtasticBaseStation.cs" />
     <Compile Include="User Controls\AnimationSprites.cs" />
     <Compile Include="User Controls\EffectBuilder.xaml.cs">
@@ -274,21 +268,14 @@
     <Compile Include="User Controls\GroupBackground.xaml.cs">
       <DependentUpon>GroupBackground.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DnD Model\Item.cs" />
-    <Compile Include="DnD Model\Mod.cs" />
-    <Compile Include="DnD Model\ModType.cs" />
-    <Compile Include="DnD Model\ReleaseTrigger.cs" />
     <Compile Include="User Controls\NumEdit.xaml.cs">
       <DependentUpon>NumEdit.xaml</DependentUpon>
     </Compile>
     <Compile Include="User Controls\RoundCheck.cs" />
-    <Compile Include="DnD Model\SavingThrow.cs" />
-    <Compile Include="DnD Model\Effects\AnimationEffect.cs" />
     <Compile Include="User Controls\StatBox.xaml.cs">
       <DependentUpon>StatBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="User Controls\StatBoxState.cs" />
-    <Compile Include="DnD Model\TimeMeasure.cs" />
     <Compile Include="User Controls\TargetValueEdit.xaml.cs">
       <DependentUpon>TargetValueEdit.xaml</DependentUpon>
     </Compile>
@@ -325,6 +312,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="User Controls\ItemBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\NumEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -334,6 +325,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="User Controls\TargetValueEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\TimeSpanEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\WeaponBuilder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -368,7 +367,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DnD Model\Character.cs" />
+    <ProjectReference Include="..\DndCore\DndCore.csproj">
+      <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
+      <Name>DndCore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DnD Model\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

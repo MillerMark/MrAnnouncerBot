@@ -22,10 +22,10 @@
   }
 
   end(): any {
-    if (!(activeBackGame instanceof DroneGame))
-      return;
-    activeBackGame.allWalls.destroyAll();
-    activeBackGame.endCaps.destroyAll();
-    activeBackGame.coins.destroyAll();
+    if (activeDroneGame instanceof DroneGame) {
+      activeDroneGame.allWalls.destroyAll();
+      activeDroneGame.endCaps.destroyAll();
+      activeDroneGame.coins.destroyAll();
+    }
   }
 }

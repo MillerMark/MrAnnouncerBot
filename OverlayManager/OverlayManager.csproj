@@ -49,6 +49,7 @@
     <None Remove="TS\Game Engine\World.ts" />
     <None Remove="TS\Game Engine\WorldObject.ts" />
     <None Remove="TS\Gateway.ts" />
+    <None Remove="TS\Globals.ts" />
     <None Remove="TS\GravityGames.ts" />
     <None Remove="TS\HueSatLight.ts" />
     <None Remove="TS\Layouts.ts" />
@@ -59,6 +60,7 @@
     <None Remove="TS\Physics.ts" />
     <None Remove="TS\Planet.ts" />
     <None Remove="TS\Point.ts" />
+    <None Remove="TS\Polls\DroneMain.ts" />
     <None Remove="TS\Portal.ts" />
     <None Remove="TS\Quiz.ts" />
     <None Remove="TS\Random.ts" />
@@ -919,7 +921,9 @@
     <TypeScriptCompile Include="TS\Game Engine\Vector.ts" />
     <TypeScriptCompile Include="TS\Game Engine\World.ts" />
     <TypeScriptCompile Include="TS\FrontMain.ts" />
+    <TypeScriptCompile Include="TS\Globals.ts" />
     <TypeScriptCompile Include="TS\Main.ts" />
+    <TypeScriptCompile Include="TS\DroneMain.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\lib\signalr\" />
