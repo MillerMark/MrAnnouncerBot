@@ -56,7 +56,7 @@ namespace DHDM
 		{
 			activePage = ScrollPage.main;
 			FocusHelper.ClearActiveStatBoxes();
-			HubtasticBaseStation.PlayerPageChanged(PlayerID, activePage, string.Empty);
+			HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
 		}
 
 		void ConnectToHub()
@@ -69,7 +69,7 @@ namespace DHDM
 			if (sender is CharacterSheets characterSheets && activePage != characterSheets.Page)
 			{
 				activePage = characterSheets.Page;
-				HubtasticBaseStation.PlayerPageChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
+				HubtasticBaseStation.PlayerDataChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
 			}
 		}
 

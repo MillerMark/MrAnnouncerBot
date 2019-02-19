@@ -117,7 +117,7 @@ namespace DndCore
 
 			foreach (DamageConditions damageCondition in filteredConditions)
 			{
-				if (damageCondition.ComparisonFilter.IsTrue(creature))
+				if (damageCondition.ComparisonFilter.IsTrue(creature) && savingThrow < damageCondition.EscapeDC)
 					damageResult.conditionsAdded |= damageCondition.Conditions;
 			}
 

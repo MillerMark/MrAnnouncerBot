@@ -6,7 +6,7 @@ function connectToSignalR(signalR) {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
     connection.on("UserHasCoins", userHasCoins);
-    connection.on("PlayerPageChanged", playerPageChanged);
+    connection.on("PlayerDataChanged", playerDataChanged);
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
     connection.on("TriggerEffect", triggerEffect);
@@ -44,9 +44,9 @@ function unfocusItem(playerID: number, pageID: number, itemID: string) {
   }
 }
 
-function playerPageChanged(playerID: number, pageID: number, playerData: string) {
+function playerDataChanged(playerID: number, pageID: number, playerData: string) {
   if (activeBackGame instanceof DragonGame) {
-    activeBackGame.characterStatsScroll.playerPageChanged(playerID, pageID, playerData);
+    activeBackGame.characterStatsScroll.playerDataChanged(playerID, pageID, playerData);
   }
 }
 

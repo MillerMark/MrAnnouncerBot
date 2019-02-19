@@ -12,7 +12,7 @@ namespace OverlayManager.Hubs
 
 		Task UserHasCoins(string userID, int amount);  // A -> B -> C
 
-		Task PlayerPageChanged(int playerID, int pageID, string playerData);
+		Task PlayerDataChanged(int playerID, int pageID, string playerData);
 		Task FocusItem(int playerID, int pageID, string itemID);
 		Task UnfocusItem(int playerID, int pageID, string itemID);
 		Task TriggerEffect(string effectData);

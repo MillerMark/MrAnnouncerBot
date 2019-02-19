@@ -706,8 +706,8 @@ class CharacterStatsScroll extends WorldObject {
     this.state = ScrollState.none;
   }
 
-  playerPageChanged(playerID: number, pageID: number, playerData: string): any {
-    console.log(`playerPageChanged(${playerID}, ${pageID}, ${playerData})`);
+  playerDataChanged(playerID: number, pageID: number, playerData: string): any {
+    console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
     if (this.selectedCharacterIndex !== playerID) {
       this.clearEmphasis();

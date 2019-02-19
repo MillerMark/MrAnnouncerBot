@@ -30,18 +30,24 @@ namespace DndTests
 			Monster vineBlight = MonsterBuilder.BuildVineBlight();
 			Character barbarian = CharacterBuilder.BuildTestBarbarian();
 			Character elf = CharacterBuilder.BuildTestElf();
+			Character druid = CharacterBuilder.BuildTestDruid();
 			elf.creatureSize = CreatureSize.Small;
 			barbarian.creatureSize = CreatureSize.Huge;
 			Assert.IsFalse(barbarian.HasCondition(Conditions.grappled));
 			Assert.IsFalse(elf.HasCondition(Conditions.grappled));
+			Assert.IsFalse(druid.HasCondition(Conditions.grappled));
 			DamageResult elfResults = vineBlight.Attack(elf, "Constrict", 10);
 			DamageResult barbarianResults = vineBlight.Attack(barbarian, "Constrict", 10);
+			DamageResult druidResults = vineBlight.Attack(druid, "Constrict", 12);
 			Assert.IsFalse(barbarianResults.HasCondition(Conditions.grappled));
 			Assert.IsTrue(elfResults.HasCondition(Conditions.grappled));
+			Assert.IsFalse(druidResults.HasCondition(Conditions.grappled));  // druid saving throw avoids the grapple.
 			Assert.AreEqual(-9, elfResults.hitPointChange);
 			Assert.AreEqual(-9, barbarianResults.hitPointChange);
+			Assert.AreEqual(-9, druidResults.hitPointChange);
 			Assert.AreEqual(DamageType.Bludgeoning, elfResults.damageTypes);
 			Assert.AreEqual(DamageType.Bludgeoning, barbarianResults.damageTypes);
+			Assert.AreEqual(DamageType.Bludgeoning, druidResults.damageTypes);
 		}
 	}
 

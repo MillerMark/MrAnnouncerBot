@@ -33,9 +33,9 @@ namespace DHDM
 			}
 		}
 
-		public static void PlayerPageChanged(int playerID, ScrollPage pageID, string playerData)
+		public static void PlayerDataChanged(int playerID, ScrollPage pageID, string playerData)
 		{
-			HubConnection.InvokeAsync("PlayerPageChanged", playerID, (int)pageID, playerData);
+			HubConnection.InvokeAsync("PlayerDataChanged", playerID, (int)pageID, playerData);
 		}
 
 		public static void FocusItem(int playerID, ScrollPage pageID, string itemID)

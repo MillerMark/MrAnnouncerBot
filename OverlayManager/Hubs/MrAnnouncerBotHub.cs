@@ -13,12 +13,12 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.UserHasCoins(userId, amount);
 		}
 
-		public void PlayerPageChanged(int playerID, int pageID, string playerData)
+		public void PlayerDataChanged(int playerID, int pageID, string playerData)
 		{
 			string[] sceneNames = { "Kent's Turn", "Karen's Turn", "Mark's Turn", "Kayla's Turn" };
 			if (playerID >= 0 && playerID < sceneNames.Length)
 				Clients.All.ChangeScene(sceneNames[playerID]);
-			coderushedHub.Clients.All.PlayerPageChanged(playerID, pageID, playerData);
+			coderushedHub.Clients.All.PlayerDataChanged(playerID, pageID, playerData);
 		}
 
 		public void FocusItem(int playerID, int pageID, string itemID)
