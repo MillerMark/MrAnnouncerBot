@@ -24,30 +24,25 @@ namespace DHDM.User_Controls
 		{
 			Label = "TimeSpan: ";
 			Amount = 0.0;
-			Measure = 0;
+			MeasureIndex = 0;
 			InitializeComponent();
 		}
 
-		public static readonly DependencyProperty MeasureProperty = DependencyProperty.Register("Measure", typeof(int), typeof(TimeSpanEditor), new FrameworkPropertyMetadata(0));
-		
-		
-
+		public static readonly DependencyProperty MeasureIndexProperty = DependencyProperty.Register("MeasureIndex", typeof(int), typeof(TimeSpanEditor), new FrameworkPropertyMetadata(0));
 		public static readonly DependencyProperty AmountProperty = DependencyProperty.Register("Amount", typeof(double), typeof(TimeSpanEditor), new FrameworkPropertyMetadata(0.0));
-
-
 		public static readonly DependencyProperty LabelProperty = DependencyProperty.Register("Label", typeof(string), typeof(TimeSpanEditor), new FrameworkPropertyMetadata("Time Span:"));
 
 
-		public int Measure
+		public int MeasureIndex
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
 			get
 			{
-				return (int)GetValue(MeasureProperty);
+				return (int)GetValue(MeasureIndexProperty);
 			}
 			set
 			{
-				SetValue(MeasureProperty, value);
+				SetValue(MeasureIndexProperty, value);
 			}
 		}
 		public double Amount

@@ -33,8 +33,9 @@ namespace DHDM.User_Controls
 			InitializeComponent();
 			LoadEffects();
 			Loaded += (s, e) => { // only at this point the control is ready
-				Window.GetWindow(this) // get the parent window
-							.Closing += (s1, e1) => Disposing(); //disposing logic here
+				Window window = Window.GetWindow(this);  // get the parent window
+				if (window != null)
+					window.Closing += (s1, e1) => Disposing(); //disposing logic here
 			};
 		}
 
@@ -178,7 +179,8 @@ namespace DHDM.User_Controls
 			if (!isDirty)
 				return;
 			// TODO: Only really do this if dirty/changed.
-			Storage.Save("AllEffects.json", effects.ToList<EffectEntry>());
+			if (effects != null)
+				Storage.Save("AllEffects.json", effects.ToList<EffectEntry>());
 			isDirty = false;
 		}
 

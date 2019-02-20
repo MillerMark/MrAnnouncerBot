@@ -64,7 +64,7 @@
 			<local:StatBox x:Name="statLevel" Margin="84,38,0,0" Width="34" Height="18" Text="1" FocusItem="Level"/>
 			<local:StatBox x:Name="statInspiration" Margin="127,38,0,0" Width="34" Height="18" Text="0" FocusItem="Inspiration"/>
 			<local:StatBox x:Name="statExperiencePoints" Margin="169,38,0,0" Width="34" Height="18" Text="100" FocusItem="ExperiencePoints"/>
-			<local:StatBox x:Name="statAlignment" Margin="82,73,0,0" Width="121" Height="18" Text="Alignment" FocusItem="Alignment"/>
+			<local:StatBox x:Name="statAlignment" Margin="82,73,0,0" Width="121" Height="18" Text="Alignment" FocusItem="Alignment" StatChanged="AnyStatChanged"/>
 			<local:StatBox x:Name="statStrength" Margin="10,122,0,0" Width="37" Height="18" Text="15" FocusItem="Strength"/>
 			<TextBlock x:Name="calcStatStrengthModifier" Margin="21,142,0,0" Text="+2" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 			<local:StatBox x:Name="statDexterity" Margin="10,180,0,0" Width="37" Height="18" Text="15" FocusItem="Dexterity"/>

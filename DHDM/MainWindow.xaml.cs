@@ -79,5 +79,14 @@ namespace DHDM
 			string serializedObject = JsonConvert.SerializeObject(animationEffect);
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
+
+		private void CharacterSheetsKent_CharacterChanged(object sender, RoutedEventArgs e)
+		{
+			if (sender is CharacterSheets characterSheets)
+			{
+				string character = characterSheets.GetCharacter();
+				HubtasticBaseStation.PlayerDataChanged(tabPlayers.SelectedIndex, activePage, character);
+			}
+		}
 	}
 }

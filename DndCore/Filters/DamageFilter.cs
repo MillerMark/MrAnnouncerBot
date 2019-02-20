@@ -5,16 +5,14 @@ namespace DndCore
 {
 	public class DamageFilter
 	{
-		public DamageFilter(DamageType damageType, AttackKind attackKind, FilterType filterType)
+		public DamageFilter(DamageType damageType, AttackKind attackKind)
 		{
-			FilterType = filterType;
 			AttackKind = attackKind;
 			DamageType = damageType;
 		}
 
 		public AttackKind AttackKind { get; set; }
 		public DamageType DamageType { get; set; }
-		public FilterType FilterType { get; set; }
 
 		public bool Catches(DamageType damageType, AttackKind attackKind)
 		{

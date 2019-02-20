@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="DHDM.User_Controls.DamageEdit"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DHDM.User_Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="100" Background="AliceBlue">
+    <StackPanel x:Name="spMain" Orientation="Vertical">
+		<CheckBox x:Name="ckbAcid" >
+			Acid
+		</CheckBox>
+		<CheckBox x:Name="ckbBludgeoning" >
+			Bludgeoning
+		</CheckBox>
+		<CheckBox x:Name="ckbCold" >
+			Cold
+		</CheckBox>
+		<CheckBox x:Name="ckbFire" >
+			Fire
+		</CheckBox>
+		<CheckBox x:Name="ckbForce" >
+			Force
+		</CheckBox>
+		<CheckBox x:Name="ckbLightning" >
+			Lightning
+		</CheckBox>
+		<CheckBox x:Name="ckbNecrotic" >
+			Necrotic
+		</CheckBox>
+		<CheckBox x:Name="ckbPiercing" >
+			Piercing
+		</CheckBox>
+		<CheckBox x:Name="ckbPoison" >
+			Poison
+		</CheckBox>
+		<CheckBox x:Name="ckbPsychic" >
+			Psychic
+		</CheckBox>
+		<CheckBox x:Name="ckbRadiant" >
+			Radiant
+		</CheckBox>
+		<CheckBox x:Name="ckbSlashing" >
+			Slashing
+		</CheckBox>
+		<CheckBox x:Name="ckbThunder" >
+			Thunder
+		</CheckBox>
+	</StackPanel>
+</UserControl>

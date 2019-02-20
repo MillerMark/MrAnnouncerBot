@@ -11,6 +11,7 @@ namespace DndCore
 		minutes = 3,
 		hours = 4,
 		days = 5,
-		forever = 6
+		forever = 6,
+		never = 7
 	}
 }

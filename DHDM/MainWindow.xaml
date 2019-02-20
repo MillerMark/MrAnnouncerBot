@@ -16,7 +16,7 @@
 		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
+					<local:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="CharacterSheetsKent_CharacterChanged"></local:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Karen">

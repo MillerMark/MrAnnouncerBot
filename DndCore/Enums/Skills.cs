@@ -5,6 +5,7 @@ namespace DndCore
 {
 	public enum Skills
 	{
+		none = 0,
 		acrobatics = 1,
 		animalHandling = 2,
 		arcana = 4,

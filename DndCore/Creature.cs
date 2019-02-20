@@ -59,17 +59,17 @@ namespace DndCore
 
 		public void AddDamageResistance(DamageType damageType, AttackKind attackKind)
 		{
-			damageResistance.Add(new DamageFilter(damageType, attackKind, FilterType.Include));
+			damageResistance.Add(new DamageFilter(damageType, attackKind));
 		}
 
 		public void AddDamageImmunity(DamageType damageType, AttackKind attackKind = AttackKind.Any)
 		{
-			damageImmunities.Add(new DamageFilter(damageType, attackKind, FilterType.Include));
+			damageImmunities.Add(new DamageFilter(damageType, attackKind));
 		}
 
 		public void AddDamageVulnerability(DamageType damageType, AttackKind attackKind = AttackKind.Any)
 		{
-			damageVulnerability.Add(new DamageFilter(damageType, attackKind, FilterType.Include));
+			damageVulnerability.Add(new DamageFilter(damageType, attackKind));
 		}
 
 		bool FilterCatches(List<DamageFilter> filter, DamageType damageType, AttackKind attackKind)

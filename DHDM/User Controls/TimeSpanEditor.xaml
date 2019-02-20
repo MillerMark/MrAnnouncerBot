@@ -14,7 +14,7 @@
 			<TextBlock x:Name="tbLabel" Text="{Binding Path=Label, ElementName=uc}" Width="Auto" Height="24" Margin="0,5,0,0" />
 			<TextBox x:Name="tbxAmount" Height="22" Margin="6,2,8,0" Text="{Binding Path=Amount, ElementName=uc}" >
 			</TextBox>
-			<ComboBox x:Name="cmbMeasure" Height="24" SelectedIndex="{Binding Path=Measure, ElementName=uc}" ItemsSource="{Binding Source={StaticResource enumTimeMeasure}}">
+			<ComboBox x:Name="cmbMeasure" Height="24" SelectedIndex="{Binding Path=MeasureIndex, ElementName=uc}" ItemsSource="{Binding Source={StaticResource enumTimeMeasure}}">
 			</ComboBox>
 		</StackPanel>
 	</Grid>

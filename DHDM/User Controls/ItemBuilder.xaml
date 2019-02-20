@@ -19,8 +19,8 @@
 		<TextBlock Text="Description: " Width="Auto" Height="Auto"/>
 		<TextBox x:Name="tbxDescription" MinWidth="120" MinHeight="50" TextWrapping="Wrap" AcceptsReturn="True">
 		</TextBox>
-		<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" Measure="1"></local:TimeSpanEditor>
-		<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" Measure="1"></local:TimeSpanEditor>
+		<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" MeasureIndex="1"></local:TimeSpanEditor>
+		<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" MeasureIndex="1"></local:TimeSpanEditor>
 		<StackPanel x:Name="spBools1" Orientation="Horizontal" Margin="0,8,0,0" >
 			<CheckBox x:Name="ckbConsumable" Margin="0, 0, 0, 0"  >
 				Consumable
@@ -36,7 +36,7 @@
 			<CheckBox x:Name="ckbAdamantine" Margin="0, 0, 0, 0"  >
 				Adamantine
 			</CheckBox>
-			<CheckBox x:Name="ckbEquipped" Margin="10, 0, 0, 0"  >
+			<CheckBox x:Name="ckbEquipped" Margin="10, 0, 0, 0" Visibility="Collapsed" >
 				Equipped
 			</CheckBox>
 		</StackPanel>

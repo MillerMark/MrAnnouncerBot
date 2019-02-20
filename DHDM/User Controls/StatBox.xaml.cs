@@ -1,4 +1,5 @@
 ﻿using System;
+using DndCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,29 @@ namespace DHDM
 	/// </summary>
 	public partial class StatBox : UserControl
 	{
+		public static readonly RoutedEvent StatChangedEvent = EventManager.RegisterRoutedEvent("StatChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(StatBox));
+		public static readonly RoutedEvent PreviewStatChangedEvent = EventManager.RegisterRoutedEvent("PreviewStatChanged", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(StatBox));
+
+		public event RoutedEventHandler StatChanged
+		{
+			add { AddHandler(StatChangedEvent, value); }
+			remove { RemoveHandler(StatChangedEvent, value); }
+		}
+		public event RoutedEventHandler PreviewStatChanged
+		{
+			add { AddHandler(PreviewStatChangedEvent, value); }
+			remove { RemoveHandler(PreviewStatChangedEvent, value); }
+		}
+		protected virtual void OnStatChanged()
+		{
+			RoutedEventArgs previewEventArgs = new RoutedEventArgs(PreviewStatChangedEvent);
+			RaiseEvent(previewEventArgs);
+			if (previewEventArgs.Handled)
+				return;
+			RoutedEventArgs eventArgs = new RoutedEventArgs(StatChangedEvent);
+			RaiseEvent(eventArgs);
+		}
+		
 		public static readonly RoutedEvent ActivatedEvent = EventManager.RegisterRoutedEvent("Activated", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(StatBox));
 		public static readonly RoutedEvent PreviewActivatedEvent = EventManager.RegisterRoutedEvent("PreviewActivated", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(StatBox));
 
@@ -203,6 +227,16 @@ namespace DHDM
 		private void TxtEdit_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			Text = txtEdit.Text;
+			OnStatChanged();
+		}
+		public int ToInt()
+		{
+			return Text.ToInt();
+		}
+
+		public double ToDouble()
+		{
+			return Text.ToDouble();
 		}
 	}
 }

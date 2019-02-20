@@ -242,8 +242,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="User Controls\ConditionEdit.xaml.cs">
+      <DependentUpon>ConditionEdit.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="User Controls\DamageEdit.xaml.cs">
+      <DependentUpon>DamageEdit.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\ItemBuilder.xaml.cs">
       <DependentUpon>ItemBuilder.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="User Controls\ModBuilder.xaml.cs">
+      <DependentUpon>ModBuilder.xaml</DependentUpon>
     </Compile>
     <Compile Include="User Controls\Storage.cs" />
     <Compile Include="User Controls\TimeSpanEditor.xaml.cs">
@@ -285,6 +294,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="User Controls\ConditionEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\DamageEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\EffectBuilder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -313,6 +330,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="User Controls\ItemBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\ModBuilder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -371,9 +392,6 @@
       <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
       <Name>DndCore</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DnD Model\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

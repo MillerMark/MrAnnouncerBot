@@ -613,18 +613,11 @@ namespace DHDM
 				rbHeart.IsChecked = true;
 		}
 
-		double GetNum(string str)
-		{
-			if (double.TryParse(str.Trim(), out double result))
-				return result;
-			return 0;
-		}
-
 		DndCore.Vector ToVector(string text)
 		{
 			string[] split = text.Split(',');
 			if (split.Length >= 2)
-				return new DndCore.Vector(GetNum(split[0]), GetNum(split[1]));
+				return new DndCore.Vector(split[0].ToDouble(), split[1].ToDouble());
 			else
 				return DndCore.Vector.zero;
 		}
@@ -666,15 +659,15 @@ namespace DHDM
 			double absoluteVariance = 0;
 			string varianceStr = tve.Variance.Trim();
 			if (varianceStr.EndsWith("%"))          // "0%" <- relative
-				relativeVariance = GetNum(varianceStr.Substring(0, varianceStr.Length - 1)) / 100.0;
+				relativeVariance = varianceStr.Substring(0, varianceStr.Length - 1).ToDouble() / 100.0;
 			else // "1" <- absolute
-				absoluteVariance = GetNum(varianceStr);
+				absoluteVariance = varianceStr.ToDouble();
 
 			double divisor = 1;
 			if (tve.Units == "%")
 				divisor = 100.0;
-			return new TargetValue(GetNum(tve.Value) / divisor, relativeVariance, absoluteVariance, GetNum(tve.Min),
-				GetNum(tve.Max), GetNum(tve.Drift), tve.GetTargetBinding());
+			return new TargetValue(tve.Value.ToDouble() / divisor, relativeVariance, absoluteVariance, tve.Min.ToDouble(),
+				tve.Max.ToDouble(), tve.Drift.ToDouble(), tve.GetTargetBinding());
 		}
 		Effect GetEmitterEffect()
 		{

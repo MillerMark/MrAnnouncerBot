@@ -64,21 +64,14 @@ namespace DndCore
 			}
 		}
 
-		double GetNum(string str)
-		{
-			if (double.TryParse(str, out double result))
-				return result;
-			return 0d;
-		}
-
 		void SetAbilityFromStr(string str, ref double ability, ref double abilityMod)
 		{
 			int openParen = str.IndexOf("(");
 			int closeParen = str.IndexOf(")");
 			string abilityStr = str.Substring(0, openParen).Trim();
 			string abilityModStr = str.Substring(openParen + 1, closeParen - openParen - 1).Trim();
-			ability = GetNum(abilityStr);
-			abilityMod = GetNum(abilityModStr);
+			ability = abilityStr.ToDouble();
+			abilityMod = abilityModStr.ToDouble();
 		}
 
 		// ![](36C54F2C5F48AF603559DA1AFB31DAF9.png;https://www.dndbeyond.com/monsters/vine-blight )

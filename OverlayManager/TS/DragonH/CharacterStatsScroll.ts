@@ -725,6 +725,75 @@ class CharacterStatsScroll extends WorldObject {
       this.open(performance.now());
     }
 
+    if (playerData != '')
+      this.updatePlayerData(playerData);
+  }
+
+  updatePlayerData(playerData: string): void {
+    let sentChar: any = JSON.parse(playerData);
+    let thisChar = this.characters[this.selectedCharacterIndex];
+
+    thisChar.alignment = sentChar.alignment;
+    thisChar.armorClass = sentChar.armorClass;
+    thisChar.charisma = sentChar.charisma;
+    thisChar.conditions = sentChar.conditions;
+    thisChar.constitution = sentChar.constitution;
+    //thisChar.cursesAndBlessings = sentChar.cursesAndBlessings;
+    thisChar.deathSaveDeath1 = sentChar.deathSaveDeath1;
+    thisChar.deathSaveDeath2 = sentChar.deathSaveDeath2;
+    thisChar.deathSaveDeath3 = sentChar.deathSaveDeath3;
+    thisChar.deathSaveLife1 = sentChar.deathSaveLife1;
+    thisChar.deathSaveLife2 = sentChar.deathSaveLife2;
+    thisChar.deathSaveLife3 = sentChar.deathSaveLife3;
+    thisChar.dexterity = sentChar.dexterity;
+    //thisChar.equipment = sentChar.equipment;
+    thisChar.experiencePoints = sentChar.experiencePoints;
+    thisChar.goldPieces = sentChar.goldPieces;
+    thisChar.hitPoints = sentChar.hitPoints;
+    thisChar.initiative = sentChar.initiative;
+    thisChar.inspiration = sentChar.inspiration;
+    thisChar.inspiration = sentChar.inspiration;
+    thisChar.intelligence = sentChar.intelligence;
+    thisChar.level = sentChar.level;
+    thisChar.load = sentChar.load;
+    thisChar.maxHitPoints = sentChar.maxHitPoints;
+    thisChar.name = sentChar.name;
+    //thisChar.offTurnActions = sentChar.offTurnActions;
+    //thisChar.onTurnActions = sentChar.onTurnActions;
+    thisChar.proficiencyBonus = sentChar.proficiencyBonus;
+    thisChar.proficientSkills = sentChar.proficientSkills;
+    thisChar.raceClass = sentChar.raceClass;
+    thisChar.remainingHitDice = sentChar.remainingHitDice;
+    thisChar.speed = sentChar.speed;
+    thisChar.strength = sentChar.strength;
+    thisChar.tempAcrobaticsMod = sentChar.tempAcrobaticsMod;
+    thisChar.tempAnimalHandlingMod = sentChar.tempAnimalHandlingMod;
+    thisChar.tempArcanaMod = sentChar.tempArcanaMod;
+    thisChar.tempAthleticsMod = sentChar.tempAthleticsMod;
+    thisChar.tempDeceptionMod = sentChar.tempDeceptionMod;
+    thisChar.tempHistoryMod = sentChar.tempHistoryMod;
+    thisChar.tempHitPoints = sentChar.tempHitPoints;
+    thisChar.tempInsightMod = sentChar.tempInsightMod;
+    thisChar.tempIntimidationMod = sentChar.tempIntimidationMod;
+    thisChar.tempInvestigationMod = sentChar.tempInvestigationMod;
+    thisChar.tempMedicineMod = sentChar.tempMedicineMod;
+    thisChar.tempNatureMod = sentChar.tempNatureMod;
+    thisChar.tempPerceptionMod = sentChar.tempPerceptionMod;
+    thisChar.tempPerformanceMod = sentChar.tempPerformanceMod;
+    thisChar.tempPersuasionMod = sentChar.tempPersuasionMod;
+    thisChar.tempReligionMod = sentChar.tempReligionMod;
+    thisChar.tempSavingThrowModCharisma = sentChar.tempSavingThrowModCharisma;
+    thisChar.tempSavingThrowModConstitution = sentChar.tempSavingThrowModConstitution;
+    thisChar.tempSavingThrowModDexterity= sentChar.tempSavingThrowModDexterity;
+    thisChar.tempSavingThrowModIntelligence= sentChar.tempSavingThrowModIntelligence;
+    thisChar.tempSavingThrowModStrength= sentChar.tempSavingThrowModStrength;
+    thisChar.tempSavingThrowModWisdom= sentChar.tempSavingThrowModWisdom;
+    thisChar.tempSlightOfHandMod= sentChar.tempSlightOfHandMod;
+    thisChar.tempStealthMod= sentChar.tempStealthMod;
+    thisChar.tempSurvivalMod= sentChar.tempSurvivalMod;
+    thisChar.totalHitDice= sentChar.totalHitDice;
+    thisChar.weight= sentChar.weight;
+    thisChar.wisdom= sentChar.wisdom;
   }
 
   readonly fadeTime: number = 300;
