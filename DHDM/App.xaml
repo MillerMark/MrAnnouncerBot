@@ -6,6 +6,49 @@
 						 xmlns:System="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
 	<Application.Resources>
+		<ControlTemplate x:Key="keyNumTextBox" TargetType="uc:NumTextBox">
+			<Border BorderThickness="1" BorderBrush="Gray" 
+              Background="#E0FFFFFF"
+              >
+				<VisualStateManager.VisualStateGroups>
+					<VisualStateGroup Name="ValueStates">
+
+						<!--Make the Value property red when it is negative.-->
+						<VisualState Name="CanEdit">
+							<Storyboard>
+								<ObjectAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="TextBox" Storyboard.TargetProperty="(UIElement.Visibility)">
+									<DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
+								</ObjectAnimationUsingKeyFrames>
+								<ObjectAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="TextBlock" Storyboard.TargetProperty="(UIElement.Visibility)">
+									<DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
+								</ObjectAnimationUsingKeyFrames>
+							</Storyboard>
+						</VisualState>
+
+						<!--Return the TextBlock's Foreground to its 
+            original color.-->
+						<VisualState Name="CanDrag">
+							<Storyboard>
+								<ObjectAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="TextBox" Storyboard.TargetProperty="(UIElement.Visibility)">
+									<DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
+								</ObjectAnimationUsingKeyFrames>
+								<ObjectAnimationUsingKeyFrames BeginTime="00:00:00" Storyboard.TargetName="TextBlock" Storyboard.TargetProperty="(UIElement.Visibility)">
+									<DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Visible}"/>
+								</ObjectAnimationUsingKeyFrames>
+							</Storyboard>
+						</VisualState>
+					</VisualStateGroup>
+				</VisualStateManager.VisualStateGroups>
+
+				<StackPanel x:Name="spContainer" Orientation="Horizontal">
+					<TextBlock Name="TextBlock" Cursor="ScrollWE" Margin="3,1,3,1" 
+                   Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type uc:NumTextBox}}, Path=Text}"/>
+					<TextBox x:Name="TextBox" Height="18" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type uc:NumTextBox}}, Path=Text}"
+									 Visibility="Collapsed"/>
+				</StackPanel>
+			</Border>
+		</ControlTemplate>
+
 		<ObjectDataProvider x:Key="enumTimeMeasure" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
 			<ObjectDataProvider.MethodParameters>
 				<x:Type TypeName="dndCore:TimeMeasure"></x:Type>

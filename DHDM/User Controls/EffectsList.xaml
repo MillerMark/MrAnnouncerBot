@@ -42,6 +42,9 @@
 		<StackPanel x:Name="spControls" Orientation="Vertical">
 			<dhdm:EffectBuilder x:Name="effectBuilder" Width="Auto" Height="Auto" PropertyChanged="EffectBuilder_PropertyChanged" ></dhdm:EffectBuilder>
 			<Button x:Name="btnTestEffect" Height="100" Width="300" Margin="22" Padding="8, 4, 8, 4" Content="Test Effect" FontSize="40" FontWeight="Bold" Click="BtnTestEffect_Click"/>
+			<local:NumTextBox Template="{StaticResource keyNumTextBox}" IsActive="False">
+				0
+			</local:NumTextBox>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

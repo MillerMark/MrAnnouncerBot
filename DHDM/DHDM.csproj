@@ -254,6 +254,7 @@
     <Compile Include="User Controls\ModBuilder.xaml.cs">
       <DependentUpon>ModBuilder.xaml</DependentUpon>
     </Compile>
+    <Compile Include="User Controls\NumTextBox.cs" />
     <Compile Include="User Controls\Storage.cs" />
     <Compile Include="User Controls\TimeSpanEditor.xaml.cs">
       <DependentUpon>TimeSpanEditor.xaml</DependentUpon>
