@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace DHDM.User_Controls
 {
 	class NumTextBox : TextBox
 	{
-		public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("IsActive", typeof(bool), typeof(NumTextBox), new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsActiveChanged), new CoerceValueCallback(OnCoerceIsActive)));
+		public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("IsActive", typeof(bool), typeof(NumTextBox), new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsActiveChanged)));
 
 
 		public bool IsActive
@@ -34,28 +35,22 @@ namespace DHDM.User_Controls
 			Loaded += NumTextBox_Loaded;
 			PreviewMouseMove += NumTextBox_PreviewMouseMove;
 			PreviewMouseUp += NumTextBox_PreviewMouseUp;
-			LostFocus += NumTextBox_LostFocus;
+			//LostFocus += NumTextBox_LostFocus;
 			//Cursor = Cursors.ScrollWE;
-		}
-
-		private void NumTextBox_LostFocus(object sender, RoutedEventArgs e)
-		{
-			IsActive = false;
 		}
 
 		private void NumTextBox_Loaded(object sender, RoutedEventArgs e)
 		{
 			SetAppearanceBasedOnState(IsActive);
+			TextBox textBox = this.FindVisualChild<TextBox>("TextBox");
+			if (textBox != null)
+				textBox.LostFocus += TextBox_LostFocus;
 			//VisualStateManager.GoToState(this, "CanDrag", false);
 		}
 
-		private static object OnCoerceIsActive(DependencyObject o, object value)
+		private void TextBox_LostFocus(object sender, RoutedEventArgs e)
 		{
-			NumTextBox numTextBox = o as NumTextBox;
-			if (numTextBox != null)
-				return numTextBox.OnCoerceIsActive((bool)value);
-			else
-				return value;
+			//IsActive = false;
 		}
 
 		private static void OnIsActiveChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
@@ -63,12 +58,6 @@ namespace DHDM.User_Controls
 			NumTextBox numTextBox = o as NumTextBox;
 			if (numTextBox != null)
 				numTextBox.OnIsActiveChanged((bool)e.OldValue, (bool)e.NewValue);
-		}
-
-		protected virtual bool OnCoerceIsActive(bool value)
-		{
-			// TODO: Keep the proposed value within the desired range.
-			return value;
 		}
 
 		protected virtual void OnIsActiveChanged(bool oldValue, bool newValue)
@@ -82,6 +71,9 @@ namespace DHDM.User_Controls
 			if (active)
 			{
 				VisualStateManager.GoToState(this, "CanEdit", useTransitions);
+				TextBox textBox = this.FindVisualChild<TextBox>("TextBox");
+				if (textBox != null)
+					textBox.Focus();
 			}
 			else
 			{
@@ -100,23 +92,21 @@ namespace DHDM.User_Controls
 			if (double.TryParse(text, out startValue))
 			{
 				haveMoved = false;
-				moving = CaptureMouse();
+				CaptureMouse();
 				mouseDownX = e.GetPosition(this).X;
 			}
 		}
 
 		bool haveMoved;
-		bool moving;
 		double mouseDownX;
 		double startValue;
 		bool isPercent;
 
 		private void NumTextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
-			if (moving)
+			if (IsMouseCaptured)
 			{
 				ReleaseMouseCapture();
-				moving = false;
 				if (haveMoved)
 				{
 					haveMoved = false;
@@ -128,11 +118,38 @@ namespace DHDM.User_Controls
 				return;
 
 			IsActive = true;
+
+			TextBox textBox = this.FindVisualChild<TextBox>("TextBox");
+			if (textBox != null)
+			{
+				Focus();
+				//if (textBox.InputHitTest(e.GetPosition(this)) != null)
+				//MouseButtonEventArgs mouseButtonEventArgs = new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, e.ChangedButton);
+				//mouseButtonEventArgs.RoutedEvent = TextBox.PreviewMouseDownEvent;
+				//textBox.RaiseEvent(mouseButtonEventArgs);
+
+				//mouseButtonEventArgs = new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, e.ChangedButton);
+				//mouseButtonEventArgs.RoutedEvent = TextBox.MouseDownEvent;
+				//textBox.RaiseEvent(mouseButtonEventArgs);
+
+				//mouseButtonEventArgs = new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, e.ChangedButton);
+				//mouseButtonEventArgs.RoutedEvent = TextBox.MouseUpEvent;
+				//textBox.RaiseEvent(mouseButtonEventArgs);
+
+				//mouseButtonEventArgs = new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, e.ChangedButton);
+				//mouseButtonEventArgs.RoutedEvent = TextBox.PreviewMouseUpEvent;
+				//textBox.RaiseEvent(mouseButtonEventArgs);
+
+				//textBox.Focus();
+				textBox.SelectAll();
+				e.Handled = true;
+			}
+			//textBox.mousedown();
 		}
 
 		private void NumTextBox_PreviewMouseMove(object sender, MouseEventArgs e)
 		{
-			if (IsActive || (!moving))
+			if (IsActive || (!IsMouseCaptured))
 				return;
 
 			double x = e.GetPosition(this).X;
