@@ -6,44 +6,44 @@
              xmlns:local="clr-namespace:DHDM.User_Controls"
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="100" Background="AliceBlue">
-    <StackPanel x:Name="spMain" Orientation="Vertical">
-		<CheckBox x:Name="ckbAcid" >
+	<StackPanel x:Name="spMain" Orientation="Vertical">
+		<CheckBox x:Name="ckbAcid" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Acid
 		</CheckBox>
-		<CheckBox x:Name="ckbBludgeoning" >
+		<CheckBox x:Name="ckbBludgeoning" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Bludgeoning
 		</CheckBox>
-		<CheckBox x:Name="ckbCold" >
+		<CheckBox x:Name="ckbCold" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Cold
 		</CheckBox>
-		<CheckBox x:Name="ckbFire" >
+		<CheckBox x:Name="ckbFire" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Fire
 		</CheckBox>
-		<CheckBox x:Name="ckbForce" >
+		<CheckBox x:Name="ckbForce" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Force
 		</CheckBox>
-		<CheckBox x:Name="ckbLightning" >
+		<CheckBox x:Name="ckbLightning" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Lightning
 		</CheckBox>
-		<CheckBox x:Name="ckbNecrotic" >
+		<CheckBox x:Name="ckbNecrotic" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Necrotic
 		</CheckBox>
-		<CheckBox x:Name="ckbPiercing" >
+		<CheckBox x:Name="ckbPiercing" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Piercing
 		</CheckBox>
-		<CheckBox x:Name="ckbPoison" >
+		<CheckBox x:Name="ckbPoison" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Poison
 		</CheckBox>
-		<CheckBox x:Name="ckbPsychic" >
+		<CheckBox x:Name="ckbPsychic" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Psychic
 		</CheckBox>
-		<CheckBox x:Name="ckbRadiant" >
+		<CheckBox x:Name="ckbRadiant" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Radiant
 		</CheckBox>
-		<CheckBox x:Name="ckbSlashing" >
+		<CheckBox x:Name="ckbSlashing" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Slashing
 		</CheckBox>
-		<CheckBox x:Name="ckbThunder" >
+		<CheckBox x:Name="ckbThunder" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Thunder
 		</CheckBox>
 	</StackPanel>

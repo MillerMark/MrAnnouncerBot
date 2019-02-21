@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
+	[Flags]
 	public enum DamageType
 	{
 		None = 0,

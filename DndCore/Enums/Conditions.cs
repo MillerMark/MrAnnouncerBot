@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
+	[Flags]
 	public enum Conditions
 	{
 		none = 0,

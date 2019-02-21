@@ -248,6 +248,7 @@
     <Compile Include="User Controls\DamageEdit.xaml.cs">
       <DependentUpon>DamageEdit.xaml</DependentUpon>
     </Compile>
+    <Compile Include="User Controls\EnumCheckBox.cs" />
     <Compile Include="User Controls\ItemBuilder.xaml.cs">
       <DependentUpon>ItemBuilder.xaml</DependentUpon>
     </Compile>

@@ -45,9 +45,10 @@
 			
 			<!--Template="{StaticResource keyNumTextBox}"-->
 			<!--Style="{StaticResource NumTextBoxStyle}"-->
-			<local:NumTextBox Template="{StaticResource keyNumTextBox}" IsActive="False" IsTabStop="True">
-				0
+			<local:NumTextBox Style="{StaticResource NumTextBoxStyle}" IsActive="False" IsTabStop="True">
+				100%
 			</local:NumTextBox>
+			
 		</StackPanel>
 	</StackPanel>
 </UserControl>
