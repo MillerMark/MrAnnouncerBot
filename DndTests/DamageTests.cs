@@ -33,15 +33,15 @@ namespace DndTests
 			Character druid = CharacterBuilder.BuildTestDruid();
 			elf.creatureSize = CreatureSize.Small;
 			barbarian.creatureSize = CreatureSize.Huge;
-			Assert.IsFalse(barbarian.HasCondition(Conditions.grappled));
-			Assert.IsFalse(elf.HasCondition(Conditions.grappled));
-			Assert.IsFalse(druid.HasCondition(Conditions.grappled));
+			Assert.IsFalse(barbarian.HasCondition(Conditions.Grappled));
+			Assert.IsFalse(elf.HasCondition(Conditions.Grappled));
+			Assert.IsFalse(druid.HasCondition(Conditions.Grappled));
 			DamageResult elfResults = vineBlight.Attack(elf, "Constrict", 10);
 			DamageResult barbarianResults = vineBlight.Attack(barbarian, "Constrict", 10);
 			DamageResult druidResults = vineBlight.Attack(druid, "Constrict", 12);
-			Assert.IsFalse(barbarianResults.HasCondition(Conditions.grappled));
-			Assert.IsTrue(elfResults.HasCondition(Conditions.grappled));
-			Assert.IsFalse(druidResults.HasCondition(Conditions.grappled));  // druid saving throw avoids the grapple.
+			Assert.IsFalse(barbarianResults.HasCondition(Conditions.Grappled));
+			Assert.IsTrue(elfResults.HasCondition(Conditions.Grappled));
+			Assert.IsFalse(druidResults.HasCondition(Conditions.Grappled));  // druid saving throw avoids the grapple.
 			Assert.AreEqual(-9, elfResults.hitPointChange);
 			Assert.AreEqual(-9, barbarianResults.hitPointChange);
 			Assert.AreEqual(-9, druidResults.hitPointChange);

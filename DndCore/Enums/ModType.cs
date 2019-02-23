@@ -1,13 +1,19 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 
 namespace DndCore
 {
+	[TypeConverter("DndCore.EnumDescriptionTypeConverter")]
 	public enum ModType
 	{
-		playerProperty,
-		condition,
+		[Description("Incoming Attack")]
 		incomingAttack,
-		outgoingAttack
+		[Description("Outgoing Attack")]
+		outgoingAttack,
+		[Description("Condition")]
+		condition,
+		[Description("Player Property")]
+		playerProperty
 	}
 }

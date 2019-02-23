@@ -10,9 +10,9 @@ namespace DndCore
 		public bool requiresEquipped;
 		public bool requiresConsumption;
 		public DamageFilter damageTypeFilter = null;
-		public Conditions condition = Conditions.none;
-		public int offset = 0;
-		public int multiplier = 1; // < 1 for resistance, > 1 for vulnerability
+		public Conditions condition = Conditions.None;
+		public double offset = 0;
+		public double multiplier = 1; // < 1 for resistance, > 1 for vulnerability
 		public DndTimeSpan repeats = DndTimeSpan.Never;
 		public DateTime lastApplied = DateTime.MinValue;
 

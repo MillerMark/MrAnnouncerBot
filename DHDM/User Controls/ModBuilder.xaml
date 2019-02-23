@@ -4,75 +4,76 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DHDM.User_Controls"
+						 xmlns:dh="clr-namespace:DHDM"
+						 xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
              mc:Ignorable="d" 
 						 x:Name="uc"
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             d:DesignHeight="350" d:DesignWidth="500" Background="AliceBlue">
-	<StackPanel x:Name="spModBuilder" Orientation="Vertical">
+             d:DesignHeight="350" d:DesignWidth="465" Background="AliceBlue">
+	<UserControl.Resources>
+		<dh:ModViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">
+			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type dh:RadioEnumViewModel}">
+			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
+		</DataTemplate>
+	</UserControl.Resources>
+	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
 		<StackPanel x:Name="spModType" Orientation="Horizontal" Margin="0,0,0,4">
 			<TextBlock Text="Type: " Width="Auto" Height="Auto" />
-			<RadioButton x:Name="rbplayerProperty" Margin="0,1,14,0">
-				Player Property
-			</RadioButton>
-			<RadioButton x:Name="rbIncomingAttack" Margin="0,1,14,0">
-				Incoming Attack
-			</RadioButton>
-			<RadioButton x:Name="rbOutgoingAttack" Margin="0,1,14,0">
-				Outgoing Attack
-			</RadioButton>
-			<RadioButton x:Name="rbCondition" Margin="0,1,14,0">
-				Condition
-			</RadioButton>
+			<ListBox x:Name="lbModType" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding ModType.Items}">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel IsItemsHost="True" />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+			</ListBox>
 		</StackPanel>
 		<StackPanel x:Name="spTargetName" Orientation="Horizontal" Margin="0,0,0,4">
-			<TextBlock Text="Target Name: " Width="Auto" Height="Auto" Margin="0,5"/>
-			<ComboBox x:Name="cbTargetName" Height="24" SelectedIndex="{Binding Path=PlayerPropertyIndex, ElementName=uc}" ItemsSource="{Binding Source={StaticResource enumPlayerProperty}}" Margin="0,0,20,0"/>
-			<local:TimeSpanEditor Label="Repeats:" MeasureIndex="7"></local:TimeSpanEditor>
+			<local:TimeSpanEditor Label="Repeats:" Amount="{Binding Repeats.Count}" MeasureIndex="{Binding Repeats.TimeMeasure}"></local:TimeSpanEditor>
+			<TextBlock Text="Target Name: " Width="Auto" Height="Auto" Margin="110,5,0,0"/>
+			<ComboBox x:Name="cbTargetName" Height="24" MinWidth="150" 
+								SelectedValue="{Binding TargetName}"
+								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:PlayerProperty}}}" Margin="0,0,20,0"/>
 		</StackPanel>
 		<StackPanel x:Name="spRequires" Orientation="Horizontal" Margin="0,0,0,4">
-			<CheckBox x:Name="ckRequiresEquipped" Margin="0,0,14,0" >
+			<CheckBox x:Name="ckRequiresEquipped" Margin="0,0,14,0" IsChecked="{Binding RequiresEquipped}" >
 				Requires Equipped
 			</CheckBox>
-			<CheckBox x:Name="ckRequiresConsumed" >
-				Requires Consumed
+			<CheckBox x:Name="ckRequiresConsumed" IsChecked="{Binding RequiresConsumption}">
+				Requires Consumption
 			</CheckBox>
 		</StackPanel>
 		<StackPanel x:Name="spFilter" Orientation="Horizontal" Margin="0,4,0,0">
 			<StackPanel x:Name="spDamageType" Orientation="Vertical">
 				<TextBlock Text="Damage Filter:" Width="Auto" Height="Auto"/>
-				<local:DamageEdit></local:DamageEdit>
+				<ListBox x:Name="lbDamageEdit" ItemsSource="{Binding DamageTypeFilter.DamageType.Items}">
+					
+				</ListBox>
 			</StackPanel>
 			<StackPanel x:Name="spAttackKindFilter" Orientation="Vertical" Margin="20,0,0,0" >
 				<TextBlock Text="Attack Filter:" Width="Auto" Height="Auto"/>
-				<RadioButton x:Name="rbMagical" >
-					Magical
-				</RadioButton>
-				<RadioButton x:Name="rbNonMagical" >
-					Non-magical
-				</RadioButton>
-				<RadioButton x:Name="rbAny" IsChecked="True" >
-					Any
-				</RadioButton>
-
+				<ListBox x:Name="lbAttackFilter" ItemsSource="{Binding DamageTypeFilter.AttackKind.Items}">
+					
+				</ListBox>
 			</StackPanel>
 			<StackPanel x:Name="spModification" Orientation="Vertical" Margin="20,0,0,0">
 				<TextBlock Text="Modification:" Width="Auto" Height="Auto" />
-				<StackPanel x:Name="spOffset" Orientation="Horizontal">
+				<StackPanel x:Name="spOffset" Orientation="Horizontal" Margin="9,3,0,0">
 					<TextBlock Text="Offset (+/-): " Width="Auto" Height="Auto"/>
-					<TextBox x:Name="tbxOffset">
-						0
-					</TextBox>
+					<TextBox x:Name="tbxOffset" Text="{Binding Offset}"/>
 				</StackPanel>
-				<StackPanel x:Name="spMultiplier" Orientation="Horizontal">
+				<StackPanel x:Name="spMultiplier" Orientation="Horizontal" Margin="9,3,0,0" >
 					<TextBlock Text="Multiplier: " Width="Auto" Height="Auto"/>
-					<TextBox x:Name="tbxMultiplier">
-						1
-					</TextBox>
+					<TextBox x:Name="tbxMultiplier" Text="{Binding Multiplier}"/>
 				</StackPanel>
 			</StackPanel>
 			<StackPanel x:Name="spCondition" Orientation="Vertical" Margin="20,0,0,0">
 				<TextBlock Text="Adds Condition(s):" Width="Auto" Height="Auto"/>
-				<local:ConditionEdit></local:ConditionEdit>
+				<ListBox x:Name="lbConditions" ItemsSource="{Binding Conditions.Items}">
+					
+				</ListBox>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

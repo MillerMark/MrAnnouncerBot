@@ -130,7 +130,7 @@ namespace DndCore
 	public class DamageResult
 	{
 		public static readonly DamageResult None = new DamageResult();
-		public Conditions conditionsAdded = Conditions.none;
+		public Conditions conditionsAdded = Conditions.None;
 		public DamageType damageTypes = DamageType.None;
 		public int hitPointChange = 0;
 		public DamageResult()

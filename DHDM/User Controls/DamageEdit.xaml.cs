@@ -21,28 +21,13 @@ namespace DHDM.User_Controls
 	/// </summary>
 	public partial class DamageEdit : UserControl
 	{
-		public static readonly DependencyProperty DamageTypeProperty = DependencyProperty.Register("DamageType", typeof(DamageType), typeof(DamageEdit), new FrameworkPropertyMetadata(DamageType.None, new PropertyChangedCallback(OnDamageTypeChanged), new CoerceValueCallback(OnCoerceDamageType)));
+		public static readonly DependencyProperty DamageTypeProperty = DependencyProperty.Register("DamageType", typeof(DamageType), typeof(DamageEdit), new FrameworkPropertyMetadata(DamageType.None, new PropertyChangedCallback(OnDamageTypeChanged)));
 		
-		private static object OnCoerceDamageType(DependencyObject o, object value)
-		{
-			DamageEdit damageEdit = o as DamageEdit;
-			if (damageEdit != null)
-				return damageEdit.OnCoerceDamageType((DamageType)value);
-			else
-				return value;
-		}
-
 		private static void OnDamageTypeChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
 			DamageEdit damageEdit = o as DamageEdit;
 			if (damageEdit != null)
 				damageEdit.OnDamageTypeChanged((DamageType)e.OldValue, (DamageType)e.NewValue);
-		}
-
-		protected virtual DamageType OnCoerceDamageType(DamageType value)
-		{
-			// TODO: Keep the proposed value within the desired range.
-			return value;
 		}
 
 		protected virtual void OnDamageTypeChanged(DamageType oldValue, DamageType newValue)

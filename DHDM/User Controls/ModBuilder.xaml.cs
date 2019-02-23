@@ -21,21 +21,20 @@ namespace DHDM.User_Controls
 	/// </summary>
 	public partial class ModBuilder : UserControl
 	{
-		PlayerProperty PlayerProperty;
-		public static readonly DependencyProperty PlayerPropertyIndexProperty = DependencyProperty.Register("PlayerPropertyIndex", typeof(int), typeof(ModBuilder), new FrameworkPropertyMetadata(0));
+		//public static readonly DependencyProperty PlayerPropertyIndexProperty = DependencyProperty.Register("PlayerPropertyIndex", typeof(int), typeof(ModBuilder), new FrameworkPropertyMetadata(0));
 
-		public int PlayerPropertyIndex
-		{
-			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
-			get
-			{
-				return (int)GetValue(PlayerPropertyIndexProperty);
-			}
-			set
-			{
-				SetValue(PlayerPropertyIndexProperty, value);
-			}
-		}
+		//public int PlayerPropertyIndex
+		//{
+		//	// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+		//	get
+		//	{
+		//		return (int)GetValue(PlayerPropertyIndexProperty);
+		//	}
+		//	set
+		//	{
+		//		SetValue(PlayerPropertyIndexProperty, value);
+		//	}
+		//}
 
 		public ModBuilder()
 		{

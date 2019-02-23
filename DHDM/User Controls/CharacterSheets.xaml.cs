@@ -326,7 +326,7 @@ namespace DHDM
 			character.charisma = statCharisma.ToInt();
 			//character.climbingSpeed = 
 			// character.conditionImmunities = 
-			character.conditionImmunities = Conditions.none;  // Allow editing of this prop?
+			character.conditionImmunities = Conditions.None;  // Allow editing of this prop?
 			character.constitution = statConstitution.ToInt();
 			//character.creatureSize = 
 			//character.cursesAndBlessings = 

@@ -190,10 +190,10 @@
 				<x:Type TypeName="dndCore:TimeMeasure"></x:Type>
 			</ObjectDataProvider.MethodParameters>
 		</ObjectDataProvider>
-		<ObjectDataProvider x:Key="enumPlayerProperty" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+		<!--<ObjectDataProvider x:Key="enumPlayerProperty" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
 			<ObjectDataProvider.MethodParameters>
 				<x:Type TypeName="dndCore:PlayerProperty"></x:Type>
 			</ObjectDataProvider.MethodParameters>
-		</ObjectDataProvider>
+		</ObjectDataProvider>-->
 	</Application.Resources>
 </Application>

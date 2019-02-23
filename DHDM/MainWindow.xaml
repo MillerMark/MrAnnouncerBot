@@ -77,7 +77,10 @@
 			</StackPanel>
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="825" >
 				<TabItem Header="Dungeon">
-					<Grid Background="#FFE5E5E5"/>
+					<Grid Background="#FFE5E5E5">
+
+						<uc:ModBuilder></uc:ModBuilder>
+					</Grid>
 				</TabItem>
 				<TabItem Header="History">
 					<Grid Background="#FFE5E5E5"/>

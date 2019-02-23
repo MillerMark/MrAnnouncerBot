@@ -1,37 +1,38 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 
 namespace DndCore
 {
+	[TypeConverter("DndCore.EnumDescriptionTypeConverter")]
 	public enum PlayerProperty
 	{
-		NameHeadshot,
-		RaceClass,
-		Level,
-		Inspiration,
-		ExperiencePoints,
 		Alignment,
-		Strength,
-		Dexterity,
-		Constitution,
-		Intelligence,
-		Wisdom,
-		Charisma,
 		ArmorClass,
-		Initiative,
-		Speed,
-		HitPointsTempHitPoints,
+		Charisma,
+		Constitution,
 		DeathSaves,
-		HitDice,
-		ProficiencyBonus,
-		Perception,
+		Dexterity,
+		ExperiencePoints,
 		GoldPieces,
-		SavingStrength,
-		SavingDexterity,
-		SavingConstitution,
-		SavingIntelligence,
-		SavingWisdom,
+		HitDice,
+		HitPointsTempHitPoints,
+		Initiative,
+		Inspiration,
+		Intelligence,
+		Level,
+		Load,
+		[Description("Name/Headshot")]
+		NameHeadshot,
+		Perception,
+		ProficiencyBonus,
+		RaceClass,
 		SavingCharisma,
+		SavingConstitution,
+		SavingDexterity,
+		SavingIntelligence,
+		SavingStrength,
+		SavingWisdom,
 		SkillsAcrobatics,
 		SkillsAnimalHandling,
 		SkillsArcana,
@@ -50,7 +51,9 @@ namespace DndCore
 		SkillsSlightOfHand,
 		SkillsStealth,
 		SkillsSurvival,
-		Load,
-		Weight
+		Speed,
+		Strength,
+		Weight,
+		Wisdom
 	}
 }

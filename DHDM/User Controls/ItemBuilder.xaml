@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:DHDM.User_Controls"
              xmlns:dh="clr-namespace:DHDM"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="300"
+             d:DesignHeight="520" d:DesignWidth="600"
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
 						 Background="AliceBlue"
 						 >
@@ -19,9 +19,7 @@
 		<TextBlock Text="Description: " Width="Auto" Height="Auto"/>
 		<TextBox x:Name="tbxDescription" MinWidth="120" MinHeight="50" TextWrapping="Wrap" AcceptsReturn="True">
 		</TextBox>
-		<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" MeasureIndex="1"></local:TimeSpanEditor>
-		<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" MeasureIndex="1"></local:TimeSpanEditor>
-		<StackPanel x:Name="spBools1" Orientation="Horizontal" Margin="0,8,0,0" >
+		<StackPanel x:Name="spBools" Orientation="Horizontal" Margin="0,8,0,0" >
 			<CheckBox x:Name="ckbConsumable" Margin="0, 0, 0, 0"  >
 				Consumable
 			</CheckBox>
@@ -31,19 +29,41 @@
 			<CheckBox x:Name="ckbSilvered" Margin="10, 0, 0, 0"  >
 				Silvered
 			</CheckBox>
-		</StackPanel>
-		<StackPanel x:Name="spBools2" Orientation="Horizontal" Margin="0,8,0,0" >
-			<CheckBox x:Name="ckbAdamantine" Margin="0, 0, 0, 0"  >
+			<CheckBox x:Name="ckbAdamantine" Margin="10, 0, 0, 0"  >
 				Adamantine
 			</CheckBox>
 			<CheckBox x:Name="ckbEquipped" Margin="10, 0, 0, 0" Visibility="Collapsed" >
 				Equipped
 			</CheckBox>
 		</StackPanel>
+		<StackPanel x:Name="spTimes" Orientation="Horizontal" Margin="0,8,0,0">
+			<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" MeasureIndex="0"></local:TimeSpanEditor>
+			<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" MeasureIndex="0" Margin="14,0,0,0" ></local:TimeSpanEditor>
+		</StackPanel>
+		
 		<StackPanel x:Name="spDetails" Orientation="Horizontal" Margin="0,4,0,0">
 			<dh:NumEdit Label="Weight: " Units="lbs" Value="0"></dh:NumEdit>
 			<dh:NumEdit Label="Cost/Value: " Units="gp" Value="0"></dh:NumEdit>
 			<dh:NumEdit Label="Quantity: " Units="cnt" Value="1"></dh:NumEdit>
+		</StackPanel>
+		<StackPanel x:Name="spMods" Orientation="Horizontal">
+			<StackPanel x:Name="spModsList" Orientation="Vertical">
+				<TextBlock Text="Mods" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbMods" MinWidth="100" MinHeight="300">
+				</ListBox>
+				<StackPanel x:Name="spModButtons" Orientation="Horizontal">
+					<Button x:Name="btnAddMod" Margin="0,0,8,0" Padding="4,0,4,0">
+						Add
+					</Button>
+					<Button x:Name="btnDeleteMod" Margin="0,0,8,0" Padding="4,0,4,0">
+						Delete
+					</Button>
+					<Button x:Name="btnDuplicateMod" Margin="0,0,0,0" Padding="4,0,4,0">
+						Duplicate
+					</Button>
+				</StackPanel>
+			</StackPanel>
+			<local:ModBuilder Margin="4"></local:ModBuilder>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

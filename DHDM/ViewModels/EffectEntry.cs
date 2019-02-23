@@ -7,49 +7,24 @@ using System.Runtime.CompilerServices;
 
 namespace DHDM
 {
-	public class EffectEntry : INotifyPropertyChanged
+	public class EffectEntry : ListEntry, INotifyPropertyChanged
 	{
-		public string Name
-		{
-			get { return name; }
-			set
-			{
-				if (name == value)
-				{
-					return;
-				}
-
-				name = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public EmitterEffect EmitterEffect { get => emitterEffect; set => emitterEffect = value; }
-		public AnimationEffect AnimationEffect { get => animationEffect; set => animationEffect = value; }
-		public SoundEffect SoundEffect { get => soundEffect; set => soundEffect = value; }
-		public EffectKind EffectKind { get => effectKind; set => effectKind = value; }
-
-		string name;
-
-		EmitterEffect emitterEffect;
-		AnimationEffect animationEffect;
-		SoundEffect soundEffect;
-		EffectKind effectKind;
+		public EmitterEffect EmitterEffect { get; set; }
+		public AnimationEffect AnimationEffect { get; set; }
+		public SoundEffect SoundEffect { get; set; }
+		public EffectKind EffectKind { get; set; }
 
 		public EffectEntry(EffectKind effectKind, string name)
 		{
 			Name = name;
-			this.effectKind = effectKind;
-			emitterEffect = new EmitterEffect();
-			animationEffect = new AnimationEffect();
-			soundEffect = new SoundEffect();
+			EffectKind = effectKind;
+			EmitterEffect = new EmitterEffect();
+			AnimationEffect = new AnimationEffect();
+			SoundEffect = new SoundEffect();
 		}
 
 
 		private bool isSelected;
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
 		public bool IsSelected
 		{
 			get => isSelected;
@@ -147,11 +122,6 @@ namespace DHDM
 				}
 			}
 			set => OnPropertyChanged(nameof(Effect));
-		}
-
-		protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }

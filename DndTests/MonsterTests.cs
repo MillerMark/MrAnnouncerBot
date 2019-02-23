@@ -35,7 +35,7 @@ namespace DndTests
 			Assert.IsTrue(vrock.IsResistantTo(DamageType.Piercing, AttackKind.NonMagical));
 			Assert.IsTrue(vrock.IsResistantTo(DamageType.Slashing, AttackKind.NonMagical));
 			Assert.IsTrue(vrock.IsImmuneTo(DamageType.Poison, AttackKind.Any));
-			Assert.IsTrue(vrock.IsImmuneTo(Conditions.poisoned));
+			Assert.IsTrue(vrock.IsImmuneTo(Conditions.Poisoned));
 		}
 	}
 }

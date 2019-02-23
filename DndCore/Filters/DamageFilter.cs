@@ -14,7 +14,7 @@ namespace DndCore
 		public AttackKind AttackKind { get; set; }
 		public DamageType DamageType { get; set; }
 
-		public bool Catches(DamageType damageType, AttackKind attackKind)
+		public bool Matches(DamageType damageType, AttackKind attackKind)
 		{
 			return MatchesDamage(damageType) && MatchesAttackKind(attackKind);
 		}

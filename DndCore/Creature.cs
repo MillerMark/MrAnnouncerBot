@@ -17,8 +17,8 @@ namespace DndCore
 		public List<DamageFilter> damageVulnerability = new List<DamageFilter>();
 		public Against advantages = Against.none;
 		public Against disadvantages = Against.none;
-		public Conditions conditionImmunities = Conditions.none;
-		public Conditions activeConditions = Conditions.none;
+		public Conditions conditionImmunities = Conditions.None;
+		public Conditions activeConditions = Conditions.None;
 		public int onTurnActions = 1;
 		public int offTurnActions = 0;
 		public double initiative = 0;
@@ -75,7 +75,7 @@ namespace DndCore
 		bool FilterCatches(List<DamageFilter> filter, DamageType damageType, AttackKind attackKind)
 		{
 			foreach (DamageFilter damageFilter in filter)
-				if (damageFilter.Catches(damageType, attackKind))
+				if (damageFilter.Matches(damageType, attackKind))
 					return true;
 			return false;
 		}
@@ -165,23 +165,23 @@ namespace DndCore
 
 		public bool HasSense(Senses sense)
 		{
-			if (HasAnyCondition(Conditions.petrified | Conditions.unconscious))
+			if (HasAnyCondition(Conditions.Petrified | Conditions.Unconscious))
 				return false;
 
 			if (sense == Senses.NormalVision)
-				return IsCapableOfSense(Senses.NormalVision) && !HasCondition(Conditions.blinded);
+				return IsCapableOfSense(Senses.NormalVision) && !HasCondition(Conditions.Blinded);
 
 			if (sense == Senses.Blindsight)
-				return blindsightRadius > 0 && !HasCondition(Conditions.blinded);
+				return blindsightRadius > 0 && !HasCondition(Conditions.Blinded);
 
 			if (sense == Senses.Darkvision)
-				return darkvisionRadius > 0 && !HasCondition(Conditions.blinded);
+				return darkvisionRadius > 0 && !HasCondition(Conditions.Blinded);
 
 			if (sense == Senses.Hearing)
-				return IsCapableOfSense(Senses.Hearing) && !HasCondition(Conditions.deafened);
+				return IsCapableOfSense(Senses.Hearing) && !HasCondition(Conditions.Deafened);
 
 			if (sense == Senses.Truesight)
-				return truesightRadius > 0 && !HasCondition(Conditions.blinded);
+				return truesightRadius > 0 && !HasCondition(Conditions.Blinded);
 
 			if (sense == Senses.Tremorsense)
 				return tremorSenseRadius > 0;
@@ -228,7 +228,7 @@ namespace DndCore
 
 		private bool CanBeAffectedBy(Conditions conditions)
 		{
-			if (conditions == Conditions.none)
+			if (conditions == Conditions.None)
 				return false;
 
 			return !IsImmuneTo(conditions);

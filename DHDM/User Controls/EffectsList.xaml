@@ -9,10 +9,11 @@
              d:DesignHeight="450" d:DesignWidth="800" Background="AliceBlue">
 	<StackPanel x:Name="spListBoxes" Orientation="Horizontal" Margin="4">
 		<StackPanel x:Name="spEffectsComposite" Orientation="Vertical" Margin="0, 0, 8, 0">
-			<TextBlock Text="Effects:" Width="Auto" Height="Auto"/>
+			<local:EditableListBox x:Name="lbEffectsList" Title="Effects:" DataFileName="AllEffects.json" SelectionChanged="LbEffectsComposite_SelectionChanged" ClickAdd="LbEffectsList_ClickAdd" Loaded="LbEffectsList_Loaded"></local:EditableListBox>
+			<!--<TextBlock Text="Effects:" Width="Auto" Height="Auto"/>
 			<ListBox x:Name="lbEffectsComposite" SelectionChanged="LbEffectsComposite_SelectionChanged">
 				<ListBox.ItemTemplate>
-					<DataTemplate DataType="{x:Type dhdm:EffectEntry}">
+					<DataTemplate DataType="{x:Type dhdm:ListEntry}">
 						<Grid>
 							<TextBlock Text="{Binding Name}" MouseDown="TextBlock_MouseDown"></TextBlock>
 							<TextBox LostFocus="TextBox_LostFocus" Margin="-3,-1,-3,-1"
@@ -24,20 +25,17 @@
 			</ListBox>
 			<StackPanel x:Name="spButtons" Orientation="Vertical">
 				<StackPanel x:Name="spEffectButtons" Orientation="Horizontal" Margin="0, 4, 0, 0">
-					<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" Width="55" >
+					<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" >
 						Add
 					</Button>
-					<Button x:Name="btnDelete" Margin="4, 0, 0, 0" Width="55" Click="BtnDelete_Click" >
+					<Button x:Name="btnDuplicate" Click="BtnDuplicate_Click" Margin="0, 0, 4, 0">
+						Duplicate
+					</Button>
+					<Button x:Name="btnDelete" Click="BtnDelete_Click" >
 						Delete
 					</Button>
 				</StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="0, 4, 0, 0">
-					<Button x:Name="btnDuplicate" Margin="0, 0, 4, 0" Click="BtnDuplicate_Click" Width="55" >
-						Duplicate
-					</Button>
-					
-				</StackPanel>
-			</StackPanel>
+			</StackPanel>-->
 		</StackPanel>
 		<StackPanel x:Name="spControls" Orientation="Vertical">
 			<dhdm:EffectBuilder x:Name="effectBuilder" Width="Auto" Height="Auto" PropertyChanged="EffectBuilder_PropertyChanged" ></dhdm:EffectBuilder>

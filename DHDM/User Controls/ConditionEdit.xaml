@@ -8,49 +8,49 @@
              mc:Ignorable="d" 
              d:DesignHeight="230" d:DesignWidth="100" Background="AliceBlue">
     <StackPanel Orientation="Vertical">
-		<CheckBox x:Name="ckbBlinded" >
+		<CheckBox x:Name="ckbBlinded" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Blinded
 		</CheckBox>
-		<CheckBox x:Name="ckbCharmed" >
+		<CheckBox x:Name="ckbCharmed" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Charmed
 		</CheckBox>
-		<CheckBox x:Name="ckbDeafened" >
+		<CheckBox x:Name="ckbDeafened" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Deafened
 		</CheckBox>
-		<CheckBox x:Name="ckbFatigued" >
+		<CheckBox x:Name="ckbFatigued" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Fatigued
 		</CheckBox>
-		<CheckBox x:Name="ckbGrappled" >
+		<CheckBox x:Name="ckbGrappled" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Grappled
 		</CheckBox>
-		<CheckBox x:Name="ckbIncapacitated" >
+		<CheckBox x:Name="ckbIncapacitated" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Incapacitated
 		</CheckBox>
-		<CheckBox x:Name="ckbInvisible" >
+		<CheckBox x:Name="ckbInvisible" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Invisible
 		</CheckBox>
-		<CheckBox x:Name="ckbParalyzed" >
+		<CheckBox x:Name="ckbParalyzed" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Paralyzed
 		</CheckBox>
-		<CheckBox x:Name="ckbPetrified" >
+		<CheckBox x:Name="ckbPetrified" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Petrified
 		</CheckBox>
-		<CheckBox x:Name="ckbPoisoned" >
+		<CheckBox x:Name="ckbPoisoned" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Poisoned
 		</CheckBox>
-		<CheckBox x:Name="ckbProne" >
+		<CheckBox x:Name="ckbProne" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Prone
 		</CheckBox>
-		<CheckBox x:Name="ckbRestrained" >
+		<CheckBox x:Name="ckbRestrained" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Restrained
 		</CheckBox>
-		<CheckBox x:Name="ckbStunned" >
+		<CheckBox x:Name="ckbStunned" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Stunned
 		</CheckBox>
-		<CheckBox x:Name="ckbUnconcious" >
+		<CheckBox x:Name="ckbUnconscious" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Unconcious
 		</CheckBox>
-		<CheckBox x:Name="ckbSleep" >
+		<CheckBox x:Name="ckbSleep" Checked="AnyCheckbox_CheckedOrUnchecked" Unchecked="AnyCheckbox_CheckedOrUnchecked">
 			Sleep
 		</CheckBox>
 	</StackPanel>

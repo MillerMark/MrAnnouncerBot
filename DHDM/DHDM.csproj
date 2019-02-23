@@ -248,6 +248,9 @@
     <Compile Include="User Controls\DamageEdit.xaml.cs">
       <DependentUpon>DamageEdit.xaml</DependentUpon>
     </Compile>
+    <Compile Include="User Controls\EditableListBox.xaml.cs">
+      <DependentUpon>EditableListBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\EnumCheckBox.cs" />
     <Compile Include="User Controls\ItemBuilder.xaml.cs">
       <DependentUpon>ItemBuilder.xaml</DependentUpon>
@@ -263,6 +266,15 @@
     <Compile Include="User Controls\WeaponBuilder.xaml.cs">
       <DependentUpon>WeaponBuilder.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\DamageFilterViewModel.cs" />
+    <Compile Include="ViewModels\CheckEnumList.cs" />
+    <Compile Include="ViewModels\ListEntry.cs" />
+    <Compile Include="ViewModels\RadioEnumList.cs" />
+    <Compile Include="ViewModels\RadioEnumViewModel.cs" />
+    <Compile Include="ViewModels\Support\EnumBindingSourceExtension.cs" />
+    <Compile Include="ViewModels\Support\EnumListOption.cs" />
+    <Compile Include="ViewModels\CheckEnumViewModel.cs" />
+    <Compile Include="ViewModels\ModViewModel.cs" />
     <Compile Include="ViewModels\Support\VisualHelper.cs" />
     <Compile Include="ViewModels\EffectEntry.cs" />
     <Compile Include="HubtasticBaseStation.cs" />
@@ -291,6 +303,7 @@
       <DependentUpon>TargetValueEdit.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="ViewModels\VmEffectsList.cs" />
     <Page Include="User Controls\CharacterSheets.xaml">
       <SubType>Designer</SubType>
@@ -301,6 +314,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="User Controls\DamageEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\EditableListBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

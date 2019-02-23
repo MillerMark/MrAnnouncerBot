@@ -19,7 +19,7 @@ namespace DndTests
 			violetFungus.speed = 5;
 
 			violetFungus.SetAbilities(3, -4, 1, -5, 10, 0, 1, -5, 3, -4, 1, -5);
-			violetFungus.conditionImmunities = Conditions.blinded | Conditions.deafened | Conditions.frightened;
+			violetFungus.conditionImmunities = Conditions.Blinded | Conditions.Deafened | Conditions.Frightened;
 			violetFungus.blindsightRadius = 30;
 			violetFungus.passivePerception = 6;
 			violetFungus.challengeRating = 1 / 4;
@@ -59,7 +59,7 @@ namespace DndTests
 																			3 (-4)
 																			");
 			vineBlight.skillsModStealth = +1;
-			vineBlight.conditionImmunities = Conditions.blinded | Conditions.deafened;
+			vineBlight.conditionImmunities = Conditions.Blinded | Conditions.Deafened;
 			vineBlight.blindsightRadius = 60;
 			vineBlight.passivePerception = 10;
 			vineBlight.AddLanguages(Languages.Common);
@@ -68,12 +68,12 @@ namespace DndTests
 
 			vineBlight.AddAttack(Attack.Melee("Constrict", +4, 10, 1)
 				.AddDamage(DamageType.Bludgeoning, "2d6+2", AttackKind.NonMagical)
-				.AddFilteredCondition(Conditions.grappled, new SizeSmallerThan(CreatureSize.Huge), 12 /* escapeDC */, 1 /* concurrentTargets */));
+				.AddFilteredCondition(Conditions.Grappled, new SizeSmallerThan(CreatureSize.Huge), 12 /* escapeDC */, 1 /* concurrentTargets */));
 
 			vineBlight.AddAttack(Attack.Area("Entangling Plants", 15)
 				.AddRecharge(2)
 				.AddDuration(DndTimeSpan.OneMinute)
-				.AddFilteredCondition(Conditions.restrained, new CreaturesChoice(), 12)
+				.AddFilteredCondition(Conditions.Restrained, new CreaturesChoice(), 12)
 				.AddSavingThrow(12, Ability.strength));
 
 			vineBlight.traits.Add("False Appearance. While the blight remains motionless, it is indistinguishable from a tangle of vines.");
@@ -102,7 +102,7 @@ namespace DndTests
 			vrock.advantages = Against.spellsAndMagicalEffects;
 			vrock.AddDamageResistance(DamageType.Cold | DamageType.Fire | DamageType.Lightning | DamageType.Bludgeoning | DamageType.Piercing | DamageType.Slashing, AttackKind.NonMagical);
 			vrock.AddDamageImmunity(DamageType.Poison);
-			vrock.conditionImmunities = Conditions.poisoned;
+			vrock.conditionImmunities = Conditions.Poisoned;
 			vrock.darkvisionRadius = 120;
 			vrock.passivePerception = 11;
 			vrock.AddLanguages(Languages.Abyssal);
@@ -115,13 +115,13 @@ namespace DndTests
 
 			Attack sporesAttack = Attack.Area("Spores", 15).AddDamage(DamageType.Poison, "1d10", AttackKind.NonMagical, TimePoint.startOfTurn, TimePoint.endOfTurn);
 			sporesAttack.description = "A 15­-foot­-radius cloud of toxic spores extends out from the vrock. The spores spread around corners. Each creature in that area must succeed on a DC 14 Constitution saving throw or become poisoned. While poisoned in this way, a target takes 5 (1d10) poison damage at the start of each of its turns. A target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. Emptying a vial of holy water on the target also ends the effect on it.";
-			sporesAttack.conditions = Conditions.poisoned;
+			sporesAttack.conditions = Conditions.Poisoned;
 			//sporesAttack.releaseTrigger = new ReleaseTrigger("Target receives splashes of holy water.");
 			sporesAttack.AddSavingThrow(14, Ability.constitution);
 			vrock.AddAttack(sporesAttack.AddRecharge(1 / 6));
 
 			Attack screech = Attack.Area("Stunning Screech", 20);
-			screech.conditions = Conditions.stunned;
+			screech.conditions = Conditions.Stunned;
 			//screech.releaseTrigger = new EndOfAttackersNextTurn(1);
 			screech.AddSavingThrow(14, Ability.constitution);
 			screech.includeTargetSenses = Senses.Hearing;
