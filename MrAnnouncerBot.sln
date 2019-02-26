@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MrAnnouncerBot", "MrAnnounc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DHDM", "DHDM\DHDM.csproj", "{F5FE9F83-00A9-42DA-B81E-8D64BD456029}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndCore", "DndCore\DndCore.csproj", "{A953618E-82D1-4837-A568-5BB75CC6BCC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DndCore", "DndCore\DndCore.csproj", "{A953618E-82D1-4837-A568-5BB75CC6BCC0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndTests", "DndTests\DndTests.csproj", "{34C708AC-F445-4479-8B66-57CFBF67FD2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteDetonator", "RemoteDetonator\RemoteDetonator.csproj", "{FDBD2C70-F975-45F9-92F8-9634DDBB1627}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{34C708AC-F445-4479-8B66-57CFBF67FD2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34C708AC-F445-4479-8B66-57CFBF67FD2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34C708AC-F445-4479-8B66-57CFBF67FD2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
