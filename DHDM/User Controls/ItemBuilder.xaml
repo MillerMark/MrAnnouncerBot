@@ -6,11 +6,11 @@
              xmlns:local="clr-namespace:DHDM.User_Controls"
              xmlns:dh="clr-namespace:DHDM"
              mc:Ignorable="d" 
-             d:DesignHeight="520" d:DesignWidth="600"
+             d:DesignHeight="770" d:DesignWidth="1920"
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
 						 Background="AliceBlue"
 						 >
-	<StackPanel x:Name="spMain" Orientation="Vertical">
+	<StackPanel x:Name="spMain" Orientation="Vertical" Margin="4">
 		<StackPanel x:Name="spName" Orientation="Horizontal">
 			<TextBlock Text="Name: " Width="Auto" Height="Auto"/>
 			<TextBox x:Name="tbxName" MinWidth="120">
@@ -46,24 +46,11 @@
 			<dh:NumEdit Label="Cost/Value: " Units="gp" Value="0"></dh:NumEdit>
 			<dh:NumEdit Label="Quantity: " Units="cnt" Value="1"></dh:NumEdit>
 		</StackPanel>
-		<StackPanel x:Name="spMods" Orientation="Horizontal">
-			<StackPanel x:Name="spModsList" Orientation="Vertical">
-				<TextBlock Text="Mods" Width="Auto" Height="Auto"/>
-				<ListBox x:Name="lbMods" MinWidth="100" MinHeight="300">
-				</ListBox>
-				<StackPanel x:Name="spModButtons" Orientation="Horizontal">
-					<Button x:Name="btnAddMod" Margin="0,0,8,0" Padding="4,0,4,0">
-						Add
-					</Button>
-					<Button x:Name="btnDeleteMod" Margin="0,0,8,0" Padding="4,0,4,0">
-						Delete
-					</Button>
-					<Button x:Name="btnDuplicateMod" Margin="0,0,0,0" Padding="4,0,4,0">
-						Duplicate
-					</Button>
-				</StackPanel>
-			</StackPanel>
-			<local:ModBuilder Margin="4"></local:ModBuilder>
+		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,4,0,0">
+			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded"></local:EditableListBox>
+			<local:ModBuilder Margin="4" Visibility="Visible"></local:ModBuilder>
+			<local:EditableListBox x:Name="lbAttackList" Title="Attacks:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
+			<local:EditableListBox x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

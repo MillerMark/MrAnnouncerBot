@@ -153,6 +153,8 @@ namespace DHDM.User_Controls
 					savedNames.Add(tb, tb.Text);
 				else if (savedNames.ContainsKey(tb))
 				{
+					if (savedNames[tb] != tb.Text)
+						isDirty = true;
 					tb.Visibility = Visibility.Collapsed;
 					savedNames.Remove(tb);
 				}
@@ -172,7 +174,7 @@ namespace DHDM.User_Controls
 			set { SetValue(TitleProperty, value); }
 		}
 
-		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("TitleProperty", typeof(string), typeof(EditableListBox), null);
+		public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("TitleProperty", typeof(string), typeof(EditableListBox), new PropertyMetadata("", new PropertyChangedCallback(TitleChanged)));
 		bool isDirty;
 
 		private void MenuDeleteClicked(object sender, RoutedEventArgs e)
@@ -250,7 +252,10 @@ namespace DHDM.User_Controls
 			if (fileName == null)
 				fileName = DataFileName;
 
-			List<T> loadedEffects = Storage.Load<List<T>>(fileName);
+			List<T> loadedEffects = null;
+			if (fileName != null)
+				loadedEffects = Storage.Load<List<T>>(fileName);
+
 			ObservableCollection<T> results;
 			if (loadedEffects != null)
 				results = new ObservableCollection<T>(loadedEffects);
@@ -274,7 +279,11 @@ namespace DHDM.User_Controls
 				return;
 
 			if (fileName == null)
+			{
 				fileName = DataFileName;
+				if (fileName == null)
+					return;
+			}
 
 			if (ItemsSource != null)
 			{
@@ -301,6 +310,17 @@ namespace DHDM.User_Controls
 				Storage.Save(fileName, data);
 			}
 			isDirty = false;
+		}
+
+		public void SetDirty()
+		{
+			isDirty = true;
+		}
+
+		static void TitleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (d is EditableListBox lb)
+				lb.TitleLabel.Text = lb.Title;
 		}
 	}
 }

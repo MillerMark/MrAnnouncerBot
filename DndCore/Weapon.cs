@@ -5,7 +5,7 @@ namespace DndCore
 {
 	public class Weapon : Item
 	{
-		public AttackType weaponType = AttackType.none;
+		public AttackType weaponType = AttackType.None;
 		public WeaponProperties weaponProperties = WeaponProperties.none;
 
 		public double normalRange = 0;  // Used if weaponProperties includes WeaponProperties.range.
@@ -15,7 +15,7 @@ namespace DndCore
 		public static Weapon buildShortSword()
 		{
 			Weapon shortSword = new Weapon();
-			shortSword.weaponType = AttackType.melee;
+			shortSword.weaponType = AttackType.Melee;
 			shortSword.name = "Shortsword";
 			shortSword.costValue = 10;
 			shortSword.attacks.Add(new Attack("Stab").AddDamage(DamageType.Piercing, "1d6", AttackKind.NonMagical));
@@ -27,7 +27,7 @@ namespace DndCore
 		public static Weapon buildMagicalShortSword()
 		{
 			Weapon shortSword = new Weapon();
-			shortSword.weaponType = AttackType.melee;
+			shortSword.weaponType = AttackType.Melee;
 			shortSword.magic = true;
 			shortSword.name = "Magical Shortsword";
 			shortSword.costValue = 10;
@@ -40,7 +40,7 @@ namespace DndCore
 		public static Weapon buildBlowgun()
 		{
 			Weapon blowGun = new Weapon();
-			blowGun.weaponType = AttackType.martialRange;
+			blowGun.weaponType = AttackType.MartialRange;
 			blowGun.name = "Blowgun";
 			blowGun.normalRange = 25;
 			blowGun.longRange = 100;

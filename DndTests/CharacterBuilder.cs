@@ -24,7 +24,7 @@ namespace DndTests
 			elf.tempHitPoints = 0;
 			elf.maxHitPoints = 55;
 			elf.proficiencyBonus = 2;
-			elf.savingThrowProficiency = Ability.intelligence | Ability.charisma;
+			elf.savingThrowProficiency = Ability.Intelligence | Ability.Charisma;
 			elf.proficientSkills = Skills.acrobatics | Skills.deception | Skills.slightOfHand;
 			elf.deathSaveLife1 = true;
 			//elf.deathSaveLife2 = true;
@@ -68,7 +68,7 @@ namespace DndTests
 			barbarian.tempHitPoints = 3;
 			barbarian.maxHitPoints = 127;
 			barbarian.proficiencyBonus = 2;
-			barbarian.savingThrowProficiency = Ability.strength | Ability.dexterity;
+			barbarian.savingThrowProficiency = Ability.Strength | Ability.Dexterity;
 			barbarian.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.athletics;
 			barbarian.deathSaveLife1 = true;
 			barbarian.deathSaveLife2 = true;
@@ -101,7 +101,7 @@ namespace DndTests
 			wizard.tempHitPoints = 0;
 			wizard.maxHitPoints = 127;
 			wizard.proficiencyBonus = 2;
-			wizard.savingThrowProficiency = Ability.intelligence | Ability.charisma;
+			wizard.savingThrowProficiency = Ability.Intelligence | Ability.Charisma;
 			wizard.proficientSkills = Skills.arcana | Skills.slightOfHand | Skills.deception;
 			wizard.Equip(Weapon.buildShortSword());
 			wizard.Pack(Weapon.buildBlowgun());
@@ -128,7 +128,7 @@ namespace DndTests
 			druid.tempHitPoints = 0;
 			druid.maxHitPoints = 44;
 			druid.proficiencyBonus = 2;
-			druid.savingThrowProficiency = Ability.wisdom | Ability.dexterity;
+			druid.savingThrowProficiency = Ability.Wisdom | Ability.Dexterity;
 			druid.proficientSkills = Skills.animalHandling | Skills.nature | Skills.medicine;
 
 			return druid;

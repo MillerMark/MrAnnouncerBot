@@ -7,21 +7,20 @@ namespace DndCore
 	public class Attack
 	{
 		public Conditions conditions;
-		public int rechargeOdds = 0;  // Chances out of six that this attack recharges at the start of the creatures turn.
+		public RechargeOdds rechargeOdds = RechargeOdds.ZeroInSix;  // Chances out of six that this attack recharges at the start of the creatures turn.
 		public DndTimeSpan recharges = DndTimeSpan.Never;
 		public DndTimeSpan lasts = DndTimeSpan.OneMinute;
 		public bool needsRecharging = false;
 		public string description;
-		public int reachRange;
-		public int rangeMax;
-		public int plusToHit;
+		public double reachRange;
+		public double rangeMax;
+		public double plusToHit;
 		public int targetLimit = 1;
-		//public List<Mod> mods = new List<Mod>();
 		public List<Damage> damages = new List<Damage>();
 		public List<DamageConditions> filteredConditions = new List<DamageConditions>();
 		public List<Damage> successfulSaveDamages = new List<Damage>();
 		public SavingThrow savingThrow;
-		private AttackType type;
+		public AttackType type;
 		public Senses includeTargetSenses = Senses.None;
 		public Senses excludeTargetSenses = Senses.None;
 		public CreatureKinds includeCreatures = CreatureKinds.None;
@@ -49,7 +48,7 @@ namespace DndCore
 			this.targetLimit = targetLimit;
 		}
 
-		public Attack AddDamage(DamageType damageType, string damageRoll, AttackKind attackKind, TimePoint damageHits = TimePoint.immediately, TimePoint saveOpportunity = TimePoint.none)
+		public Attack AddDamage(DamageType damageType, string damageRoll, AttackKind attackKind, TimePoint damageHits = TimePoint.Immediately, TimePoint saveOpportunity = TimePoint.None)
 		{
 			damages.Add(new Damage(damageType, attackKind, damageRoll, damageHits, saveOpportunity));
 			return this;
@@ -63,20 +62,20 @@ namespace DndCore
 
 		public static Attack Melee(string name, int plusToHit, int reach, int targetLimit = int.MaxValue)
 		{
-			return new Attack(name, AttackType.melee, plusToHit, reach, targetLimit);
+			return new Attack(name, AttackType.Melee, plusToHit, reach, targetLimit);
 		}
 
 		public static Attack Ranged(string name, int plusToHit, int range, int rangeMax, int targetLimit = int.MaxValue)
 		{
-			return new Attack(name, AttackType.range, plusToHit, range, rangeMax, targetLimit);
+			return new Attack(name, AttackType.Range, plusToHit, range, rangeMax, targetLimit);
 		}
 
 		public static Attack Area(string name, int range)
 		{
-			return new Attack(name, AttackType.area, 0 /* plusToHit */, range);
+			return new Attack(name, AttackType.Area, 0 /* plusToHit */, range);
 		}
 
-		public Attack AddRecharge(int rechargeOdds)
+		public Attack AddRecharge(RechargeOdds rechargeOdds)
 		{
 			this.rechargeOdds = rechargeOdds;
 			return this;
@@ -88,9 +87,9 @@ namespace DndCore
 			return this;
 		}
 
-		public Attack AddFilteredCondition(Conditions conditions, ComparisonFilter comparisonFilter, int escapeDC, int concurrentTargets = int.MaxValue)
+		public Attack AddFilteredCondition(Conditions conditions, int escapeDC, ComparisonFilterOption comparisonFilterOption = ComparisonFilterOption.None, CreatureSize creatureSizeFilter = CreatureSize.Medium, int concurrentTargets = int.MaxValue)
 		{
-			filteredConditions.Add(new DamageConditions(conditions, comparisonFilter, escapeDC, concurrentTargets));
+			filteredConditions.Add(new DamageConditions(conditions, comparisonFilterOption, creatureSizeFilter, escapeDC, concurrentTargets));
 			return this;
 		}
 
@@ -117,7 +116,7 @@ namespace DndCore
 
 			foreach (DamageConditions damageCondition in filteredConditions)
 			{
-				if (damageCondition.ComparisonFilter.IsTrue(creature) && savingThrow < damageCondition.EscapeDC)
+				if (damageCondition.CreatureSizeFilter.HasFlag(creature.creatureSize) && savingThrow < damageCondition.EscapeDC)
 					damageResult.conditionsAdded |= damageCondition.Conditions;
 			}
 

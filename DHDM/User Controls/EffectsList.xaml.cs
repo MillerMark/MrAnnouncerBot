@@ -63,8 +63,11 @@ namespace DHDM.User_Controls
 
 		private void EffectBuilder_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
+			// TODO: Set isDirty to true inside lbEffectsList.
 			if (loading)
 				return;
+
+			lbEffectsList.SetDirty();
 
 			if (lbEffectsList.SelectedItem is EffectEntry effectEntry)
 				if (effectBuilder != null)

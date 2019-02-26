@@ -177,19 +177,19 @@ namespace DHDM
 		}
 		Ability GetSavingThrowProficiency()
 		{
-			Ability result = Ability.none;
+			Ability result = Ability.None;
 			if (statSavingCharismaProficient.IsChecked == true)
-				result |= Ability.charisma;
+				result |= Ability.Charisma;
 			if (statSavingConstitutionProficient.IsChecked == true)
-				result |= Ability.constitution;
+				result |= Ability.Constitution;
 			if (statSavingIntelligenceProficient.IsChecked == true)
-				result |= Ability.intelligence;
+				result |= Ability.Intelligence;
 			if (statSavingWisdomProficient.IsChecked == true)
-				result |= Ability.wisdom;
+				result |= Ability.Wisdom;
 			if (statSavingDexterityProficient.IsChecked == true)
-				result |= Ability.dexterity;
+				result |= Ability.Dexterity;
 			if (statSavingStrengthProficient.IsChecked == true)
-				result |= Ability.strength;
+				result |= Ability.Strength;
 			return result;
 		}
 
@@ -216,12 +216,12 @@ namespace DHDM
 
 		void SetSavingThrowProficiency(Ability ability)
 		{
-			statSavingCharismaProficient.IsChecked = (ability & Ability.charisma) == Ability.charisma;
-			statSavingConstitutionProficient.IsChecked = (ability & Ability.constitution) == Ability.constitution;
-			statSavingDexterityProficient.IsChecked = (ability & Ability.dexterity) == Ability.dexterity;
-			statSavingIntelligenceProficient.IsChecked = (ability & Ability.intelligence) == Ability.intelligence;
-			statSavingStrengthProficient.IsChecked = (ability & Ability.strength) == Ability.strength;
-			statSavingWisdomProficient.IsChecked = (ability & Ability.wisdom) == Ability.wisdom;
+			statSavingCharismaProficient.IsChecked = (ability & Ability.Charisma) == Ability.Charisma;
+			statSavingConstitutionProficient.IsChecked = (ability & Ability.Constitution) == Ability.Constitution;
+			statSavingDexterityProficient.IsChecked = (ability & Ability.Dexterity) == Ability.Dexterity;
+			statSavingIntelligenceProficient.IsChecked = (ability & Ability.Intelligence) == Ability.Intelligence;
+			statSavingStrengthProficient.IsChecked = (ability & Ability.Strength) == Ability.Strength;
+			statSavingWisdomProficient.IsChecked = (ability & Ability.Wisdom) == Ability.Wisdom;
 		}
 
 		public void SetFromCharacter(Character character)

@@ -1,6 +1,7 @@
 ﻿using DndCore;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,9 +32,17 @@ namespace DHDM
 		Mod GetMod()
 		{
 			Mod mod = new Mod();
-			mod.condition = (Conditions)conditions.Value;
-			mod.damageTypeFilter = new DamageFilter((DamageType)damageTypeFilter.DamageType.Value,
-				(AttackKind)damageTypeFilter.AttackKind.Value);
+			if (conditions != null)
+				mod.condition = (Conditions)conditions.Value;
+			else
+				mod.condition = DndCore.Conditions.None;
+
+			if (damageTypeFilter != null)
+				mod.damageTypeFilter = new DamageFilter((DamageType)damageTypeFilter.DamageType.Value,
+					(AttackKind)damageTypeFilter.AttackKind.Value);
+			else
+				mod.damageTypeFilter = new DamageFilter(DamageType.None, AttackKind.Any);
+
 			mod.multiplier = multiplier;
 			mod.offset = offset;
 			if (mod.repeats == null)
@@ -174,7 +183,8 @@ namespace DHDM
 			//attackKind = new EnumList(typeof(AttackKind));
 			damageTypeFilter = new DamageFilterViewModel();
 			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			type = new RadioEnumList(typeof(ModType));
+			type = new RadioEnumList(typeof(ModType), "ModType");
+			type.Value = DndCore.ModType.incomingAttack;
 			repeats = DndTimeSpan.Never;
 		}
 

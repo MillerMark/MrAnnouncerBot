@@ -242,6 +242,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="User Controls\AttackBuilder.xaml.cs">
+      <DependentUpon>AttackBuilder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\ConditionEdit.xaml.cs">
       <DependentUpon>ConditionEdit.xaml</DependentUpon>
     </Compile>
@@ -258,6 +261,9 @@
     <Compile Include="User Controls\ModBuilder.xaml.cs">
       <DependentUpon>ModBuilder.xaml</DependentUpon>
     </Compile>
+    <Compile Include="User Controls\ModsList.xaml.cs">
+      <DependentUpon>ModsList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\NumTextBox.cs" />
     <Compile Include="User Controls\Storage.cs" />
     <Compile Include="User Controls\TimeSpanEditor.xaml.cs">
@@ -266,11 +272,15 @@
     <Compile Include="User Controls\WeaponBuilder.xaml.cs">
       <DependentUpon>WeaponBuilder.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\AttackViewModel.cs" />
+    <Compile Include="ViewModels\DamageConditionsViewModel.cs" />
     <Compile Include="ViewModels\DamageFilterViewModel.cs" />
     <Compile Include="ViewModels\CheckEnumList.cs" />
+    <Compile Include="ViewModels\DamageViewModel.cs" />
     <Compile Include="ViewModels\ListEntry.cs" />
     <Compile Include="ViewModels\RadioEnumList.cs" />
     <Compile Include="ViewModels\RadioEnumViewModel.cs" />
+    <Compile Include="ViewModels\SavingThrowViewModel.cs" />
     <Compile Include="ViewModels\Support\EnumBindingSourceExtension.cs" />
     <Compile Include="ViewModels\Support\EnumListOption.cs" />
     <Compile Include="ViewModels\CheckEnumViewModel.cs" />
@@ -305,6 +315,10 @@
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="ViewModels\VmEffectsList.cs" />
+    <Page Include="User Controls\AttackBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\CharacterSheets.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -353,6 +367,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="User Controls\ModBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\ModsList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

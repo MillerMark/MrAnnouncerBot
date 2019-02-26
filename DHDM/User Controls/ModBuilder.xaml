@@ -16,7 +16,7 @@
 			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type dh:RadioEnumViewModel}">
-			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
+			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
 		</DataTemplate>
 	</UserControl.Resources>
 	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">

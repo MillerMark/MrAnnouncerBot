@@ -11,6 +11,23 @@ namespace DHDM
 
 		private bool isChecked;
 
+		private string groupName;
+		public string GroupName
+		{
+			get
+			{
+				return groupName;
+			}
+			set
+			{
+				if (groupName == value)
+					return;
+
+				groupName = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public bool IsChecked
 		{
 			get => isChecked;

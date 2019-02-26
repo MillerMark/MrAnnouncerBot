@@ -24,5 +24,35 @@ namespace DHDM.User_Controls
 		{
 			InitializeComponent();
 		}
+
+		private void LbModsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
+
+		private void LbModsList_ClickAdd(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void LbModsList_Loaded(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void LbAttackList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
+
+		private void LbAttackList_ClickAdd(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void LbAttackList_Loaded(object sender, RoutedEventArgs e)
+		{
+
+		}
 	}
 }

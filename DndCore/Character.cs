@@ -368,7 +368,7 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getProficiencyBonusForSavingThrow(Ability.strength) + this.strengthMod + this.tempSavingThrowModStrength;
+				return this.getProficiencyBonusForSavingThrow(Ability.Strength) + this.strengthMod + this.tempSavingThrowModStrength;
 			}
 		}
 
@@ -376,7 +376,7 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getProficiencyBonusForSavingThrow(Ability.dexterity) + this.dexterityMod + this.tempSavingThrowModDexterity;
+				return this.getProficiencyBonusForSavingThrow(Ability.Dexterity) + this.dexterityMod + this.tempSavingThrowModDexterity;
 			}
 		}
 
@@ -384,7 +384,7 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getProficiencyBonusForSavingThrow(Ability.constitution) + this.constitutionMod + this.tempSavingThrowModConstitution;
+				return this.getProficiencyBonusForSavingThrow(Ability.Constitution) + this.constitutionMod + this.tempSavingThrowModConstitution;
 			}
 		}
 
@@ -392,7 +392,7 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getProficiencyBonusForSavingThrow(Ability.wisdom) + this.wisdomMod + this.tempSavingThrowModWisdom;
+				return this.getProficiencyBonusForSavingThrow(Ability.Wisdom) + this.wisdomMod + this.tempSavingThrowModWisdom;
 			}
 		}
 
@@ -400,7 +400,7 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getProficiencyBonusForSavingThrow(Ability.charisma) + this.charismaMod + this.tempSavingThrowModCharisma;
+				return this.getProficiencyBonusForSavingThrow(Ability.Charisma) + this.charismaMod + this.tempSavingThrowModCharisma;
 			}
 		}
 
@@ -408,7 +408,7 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getProficiencyBonusForSavingThrow(Ability.intelligence) + this.intelligenceMod + this.tempSavingThrowModIntelligence;
+				return this.getProficiencyBonusForSavingThrow(Ability.Intelligence) + this.intelligenceMod + this.tempSavingThrowModIntelligence;
 			}
 		}
 
@@ -421,21 +421,21 @@ namespace DndCore
 		{
 			get
 			{
-				return this.hasSavingThrowProficiency(Ability.intelligence);
+				return this.hasSavingThrowProficiency(Ability.Intelligence);
 			}
 		}
 		bool hasSavingThrowProficiencyStrength
 		{
 			get
 			{
-				return this.hasSavingThrowProficiency(Ability.strength); ;
+				return this.hasSavingThrowProficiency(Ability.Strength); ;
 			}
 		}
 		bool hasSavingThrowProficiencyDexterity
 		{
 			get
 			{
-				return this.hasSavingThrowProficiency(Ability.dexterity);
+				return this.hasSavingThrowProficiency(Ability.Dexterity);
 			}
 
 		}
@@ -444,21 +444,21 @@ namespace DndCore
 		{
 			get
 			{
-				return this.hasSavingThrowProficiency(Ability.constitution);
+				return this.hasSavingThrowProficiency(Ability.Constitution);
 			}
 		}
 		bool hasSavingThrowProficiencyWisdom
 		{
 			get
 			{
-				return this.hasSavingThrowProficiency(Ability.wisdom);
+				return this.hasSavingThrowProficiency(Ability.Wisdom);
 			}
 		}
 		bool hasSavingThrowProficiencyCharisma
 		{
 			get
 			{
-				return this.hasSavingThrowProficiency(Ability.charisma);
+				return this.hasSavingThrowProficiency(Ability.Charisma);
 			}
 		}
 

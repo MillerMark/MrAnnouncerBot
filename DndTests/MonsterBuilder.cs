@@ -68,13 +68,13 @@ namespace DndTests
 
 			vineBlight.AddAttack(Attack.Melee("Constrict", +4, 10, 1)
 				.AddDamage(DamageType.Bludgeoning, "2d6+2", AttackKind.NonMagical)
-				.AddFilteredCondition(Conditions.Grappled, new SizeSmallerThan(CreatureSize.Huge), 12 /* escapeDC */, 1 /* concurrentTargets */));
+				.AddFilteredCondition(Conditions.Grappled, 12 /* escapeDC */, ComparisonFilterOption.TargetSizeLessThan, CreatureSize.Huge, 1 /* concurrentTargets */));
 
 			vineBlight.AddAttack(Attack.Area("Entangling Plants", 15)
-				.AddRecharge(2)
+				.AddRecharge(RechargeOdds.TwoInSix)
 				.AddDuration(DndTimeSpan.OneMinute)
-				.AddFilteredCondition(Conditions.Restrained, new CreaturesChoice(), 12)
-				.AddSavingThrow(12, Ability.strength));
+				.AddFilteredCondition(Conditions.Restrained, 12)
+				.AddSavingThrow(12, Ability.Strength));
 
 			vineBlight.traits.Add("False Appearance. While the blight remains motionless, it is indistinguishable from a tangle of vines.");
 			return vineBlight;
@@ -113,17 +113,17 @@ namespace DndTests
 
 			vrock.AddAttack(Attack.Melee("Talons", +6, 5, 1).AddDamage(DamageType.Slashing, "2d10+3", AttackKind.NonMagical));
 
-			Attack sporesAttack = Attack.Area("Spores", 15).AddDamage(DamageType.Poison, "1d10", AttackKind.NonMagical, TimePoint.startOfTurn, TimePoint.endOfTurn);
+			Attack sporesAttack = Attack.Area("Spores", 15).AddDamage(DamageType.Poison, "1d10", AttackKind.NonMagical, TimePoint.StartOfTurn, TimePoint.EndOfTurn);
 			sporesAttack.description = "A 15­-foot­-radius cloud of toxic spores extends out from the vrock. The spores spread around corners. Each creature in that area must succeed on a DC 14 Constitution saving throw or become poisoned. While poisoned in this way, a target takes 5 (1d10) poison damage at the start of each of its turns. A target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. Emptying a vial of holy water on the target also ends the effect on it.";
 			sporesAttack.conditions = Conditions.Poisoned;
 			//sporesAttack.releaseTrigger = new ReleaseTrigger("Target receives splashes of holy water.");
-			sporesAttack.AddSavingThrow(14, Ability.constitution);
-			vrock.AddAttack(sporesAttack.AddRecharge(1 / 6));
+			sporesAttack.AddSavingThrow(14, Ability.Constitution);
+			vrock.AddAttack(sporesAttack.AddRecharge(RechargeOdds.OneInSix));
 
 			Attack screech = Attack.Area("Stunning Screech", 20);
 			screech.conditions = Conditions.Stunned;
 			//screech.releaseTrigger = new EndOfAttackersNextTurn(1);
-			screech.AddSavingThrow(14, Ability.constitution);
+			screech.AddSavingThrow(14, Ability.Constitution);
 			screech.includeTargetSenses = Senses.Hearing;
 			// TODO: Add test to determine if an attack hits a player using screech.includeTargetSenses.
 			screech.excludeCreatures = CreatureKinds.Fiends;

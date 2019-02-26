@@ -39,7 +39,7 @@ namespace DHDM
 		public DamageFilterViewModel()
 		{
 			damageType = new CheckEnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
-			attackKind = new RadioEnumList(typeof(AttackKind));
+			attackKind = new RadioEnumList(typeof(AttackKind), "AttackKind");
 		}
 	}
 }

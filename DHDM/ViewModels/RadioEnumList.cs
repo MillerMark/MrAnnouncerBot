@@ -10,11 +10,10 @@ namespace DHDM
 		private void Initialize(Type enumType)
 		{
 			_enumType = enumType;
-
 			Items = new ObservableCollection<RadioEnumViewModel>();
 		}
 
-		public RadioEnumList(Type enumType, object filterItems, EnumListOption enumListOption = EnumListOption.Add)
+		public RadioEnumList(Type enumType, string groupName, object filterItems, EnumListOption enumListOption = EnumListOption.Add)
 		{
 			Initialize(enumType);
 
@@ -33,13 +32,14 @@ namespace DHDM
 				if (shouldAddItem)
 				{
 					var item = new RadioEnumViewModel(enumValue);
+					item.GroupName = groupName;
 					item.PropertyChanged += HandleItemPropertyChanged;
 					Items.Add(item);
 				}
 			}
 		}
 
-		public RadioEnumList(Type enumType)
+		public RadioEnumList(Type enumType, string groupName)
 		{
 			Initialize(enumType);
 			foreach (object value in Enum.GetValues(_enumType))

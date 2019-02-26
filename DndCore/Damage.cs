@@ -7,7 +7,7 @@ namespace DndCore
 	{
 		// TODO: add filtering - includeFilter, excludeFilter
 		// for body sizes
-		public Damage(DamageType damageType, AttackKind attackKind, string damageRoll, TimePoint damageHits = TimePoint.immediately, TimePoint saveOpportunity = TimePoint.none)
+		public Damage(DamageType damageType, AttackKind attackKind, string damageRoll, TimePoint damageHits = TimePoint.Immediately, TimePoint saveOpportunity = TimePoint.None)
 		{
 			SaveOpportunity = saveOpportunity;
 			AttackKind = attackKind;

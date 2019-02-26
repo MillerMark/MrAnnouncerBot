@@ -85,8 +85,11 @@
 				<TabItem Header="History">
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
-				<TabItem Header="Effect Builder" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Effects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<uc:EffectsList/>
+				</TabItem>
+				<TabItem Header="Mods" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<uc:ModsList/>
 				</TabItem>
 			</TabControl>
 		</StackPanel>
