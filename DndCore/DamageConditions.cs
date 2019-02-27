@@ -2,11 +2,11 @@
 {
 	public class DamageConditions
 	{
-		public DamageConditions(Conditions conditions, ComparisonFilterOption comparisonFilterOption, CreatureSize sizeFilter, int escapeDC, int concurrentTargets)
+		public DamageConditions(Conditions conditions, CreatureSize creatureSizeFilter, int escapeDC, int concurrentTargets)
 		{
 			ConcurrentTargets = concurrentTargets;
 			EscapeDC = escapeDC;
-			CreatureSizeFilter = sizeFilter;
+			CreatureSizeFilter = creatureSizeFilter;
 			Conditions = conditions;
 		}
 

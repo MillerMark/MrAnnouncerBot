@@ -7,23 +7,10 @@ namespace DHDM
 	public class DamageConditionsViewModel : ViewModelBase
 	{
 		//private fields...
-		RadioEnumList comparisonFilter;
 		CheckEnumList creatureSizeFilter;
 		int concurrentTargets;
 		int escapeDC;
 		CheckEnumList conditions;
-		
-		public RadioEnumList ComparisonFilter
-		{
-			get { return comparisonFilter; }
-			set
-			{
-				if (comparisonFilter == value)
-					return;
-				comparisonFilter = value;
-				OnPropertyChanged();
-			}
-		}
 		
 		public CheckEnumList CreatureSizeFilter
 		{
@@ -87,7 +74,7 @@ namespace DHDM
 		
 		DamageConditions GetDamageCondition()
 		{
-			return new DamageConditions((Conditions)conditions.Value, (ComparisonFilterOption)ComparisonFilter.Value, (CreatureSize)creatureSizeFilter.Value, escapeDC, concurrentTargets);
+			return new DamageConditions((Conditions)conditions.Value, (CreatureSize)creatureSizeFilter.Value, escapeDC, concurrentTargets);
 		}
 
 		void SetFrom(DamageConditions damageConditions)
@@ -102,7 +89,6 @@ namespace DHDM
 		{
 			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
 			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize));
-			comparisonFilter = new RadioEnumList(typeof(ComparisonFilterOption), "ComparisonFilter");
 		}
 	}
 }

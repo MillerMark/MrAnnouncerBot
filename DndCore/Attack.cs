@@ -89,7 +89,7 @@ namespace DndCore
 
 		public Attack AddFilteredCondition(Conditions conditions, int escapeDC, ComparisonFilterOption comparisonFilterOption = ComparisonFilterOption.None, CreatureSize creatureSizeFilter = CreatureSize.Medium, int concurrentTargets = int.MaxValue)
 		{
-			filteredConditions.Add(new DamageConditions(conditions, comparisonFilterOption, creatureSizeFilter, escapeDC, concurrentTargets));
+			filteredConditions.Add(new DamageConditions(conditions, creatureSizeFilter, escapeDC, concurrentTargets));
 			return this;
 		}
 
