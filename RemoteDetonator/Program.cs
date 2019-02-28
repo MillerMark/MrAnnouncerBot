@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UsbRelay8Driver;
 namespace RemoteDetonator
@@ -12,12 +13,13 @@ namespace RemoteDetonator
 		static void Main(string[] args)
 		{
 			Connect();
-			Console.WriteLine("Press any key to set relay 0 to True.");
+			const int msDelay = 200;
+			Console.WriteLine("Press Enter to set relay 1 to True for {0}ms.", msDelay);
 			Console.ReadLine();
-			SetTargetRelay(0, true);
-			Console.WriteLine("Press any key to set relay 0 to False.");
+			SetTargetRelay(1, true);
+			Thread.Sleep(msDelay);
+			SetTargetRelay(1, false);
 			Console.ReadLine();
-			SetTargetRelay(0, false);
 		}
 
 		static UsbRelays _relays;

@@ -71,6 +71,7 @@ class GravityGames {
       for (var column = 0; column < line.length; column++) {
         let char: string = line[column];
         if (char === charToMatch)  // Match!
+
           addElement(column, row);
       }
     }

@@ -97,8 +97,10 @@ class DroneGame extends GamePlusQuiz {
     this.allSparks.draw(myContext, now);
     this.sparkSmoke.draw(myContext, now);
     this.coins.draw(myContext, now);
+
     //this.emitter.draw(myContext, now);
-    //drawCrossHairs(myContext, crossX, crossY);
+    //drawCrossHairs(myContext, 830, 540);
+    //drawCrossHairs(myContext, 830 + 340, 540);
   }
 
   removeAllGameElements(now: number): void {
@@ -336,6 +338,11 @@ class DroneGame extends GamePlusQuiz {
       return true;
     }
 
+    if (testCommand === 'portalTest') {
+      gravityGames.startGame(portalTest);
+      return true;
+    }
+
     if (testCommand === 'corner') {
       gravityGames.startGame(wallCornerTest);
       return true;
@@ -358,6 +365,11 @@ class DroneGame extends GamePlusQuiz {
 
     if (testCommand === 'sample3') {
       gravityGames.startGame(sampleGame3);
+      return true;
+    }
+
+    if (testCommand === 'det1') {
+      gravityGames.startGame(detonationGame1);
       return true;
     }
 
