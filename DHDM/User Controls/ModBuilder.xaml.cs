@@ -40,5 +40,21 @@ namespace DHDM.User_Controls
 		{
 			InitializeComponent();
 		}
+
+		private void BtnTest_Click(object sender, RoutedEventArgs e)
+		{
+			ModViewModel modViewModel = (ModViewModel)TryFindResource("vm");
+			if ((ModType)modViewModel.ModType.Value == ModType.condition)
+				modViewModel.ModType.Value = ModType.incomingAttack;
+			else
+				modViewModel.ModType.Value = ModType.condition;
+
+			if ((Conditions)modViewModel.Conditions.Value == Conditions.Charmed)
+				modViewModel.Conditions.Value = Conditions.Invisible;
+			else 
+				modViewModel.Conditions.Value = Conditions.Charmed;
+
+			modViewModel.RequiresConsumption = !modViewModel.RequiresConsumption;
+		}
 	}
 }

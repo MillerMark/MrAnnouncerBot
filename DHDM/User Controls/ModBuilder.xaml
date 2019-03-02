@@ -13,10 +13,10 @@
 	<UserControl.Resources>
 		<dh:ModViewModel x:Key="vm"/>
 		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">
-			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
+			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}"/>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type dh:RadioEnumViewModel}">
-			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
+			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
 		</DataTemplate>
 	</UserControl.Resources>
 	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
@@ -32,9 +32,11 @@
 		</StackPanel>
 		<StackPanel x:Name="spTargetName" Orientation="Horizontal" Margin="0,0,0,4">
 			<local:TimeSpanEditor Label="Repeats:" Amount="{Binding Repeats.Count}" MeasureIndex="{Binding Repeats.TimeMeasure}"></local:TimeSpanEditor>
+			<Button x:Name="btnTest" Click="BtnTest_Click" Margin="20,0,-20,0" >
+				Test
+			</Button>
 			<TextBlock Text="Target Name: " Width="Auto" Height="Auto" Margin="110,5,0,0"/>
-			<ComboBox x:Name="cbTargetName" Height="24" MinWidth="150" 
-								SelectedValue="{Binding TargetName}"
+			<ComboBox x:Name="cbTargetName" Height="24" MinWidth="150" SelectedValue="{Binding TargetName}"
 								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:PlayerProperty}}}" Margin="0,0,20,0"/>
 		</StackPanel>
 		<StackPanel x:Name="spRequires" Orientation="Horizontal" Margin="0,0,0,4">
