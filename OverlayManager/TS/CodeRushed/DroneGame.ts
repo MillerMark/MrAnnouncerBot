@@ -373,6 +373,11 @@ class DroneGame extends GamePlusQuiz {
       return true;
     }
 
+    if (testCommand === 'det0') {
+      gravityGames.startGame(detonationGame0);
+      return true;
+    }
+
     if (testCommand === 'sample4') {
       gravityGames.startGame(sampleGame4);
       return true;
