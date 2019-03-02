@@ -5,6 +5,13 @@ namespace DHDM
 {
 	public class RadioEnumViewModel : ViewModelBase
 	{
+		public event EventHandler EntryClicked;
+
+		internal void OnEntryClicked(object sender, EventArgs e)
+		{
+			EntryClicked?.Invoke(sender, e);
+		}
+
 		public RadioEnumViewModel(object value) => Value = value;
 
 		public object Value { get; }
@@ -33,7 +40,12 @@ namespace DHDM
 			get => isChecked;
 			set
 			{
+				if (isChecked == value)
+					return;
+
 				isChecked = value;
+				if (isChecked)
+					OnEntryClicked(this, null);
 				OnPropertyChanged();
 			}
 		}

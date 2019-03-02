@@ -33,7 +33,7 @@ namespace DHDM
 				{
 					var item = new RadioEnumViewModel(enumValue);
 					item.GroupName = groupName;
-					item.PropertyChanged += HandleItemPropertyChanged;
+					item.EntryClicked += Item_EntryClicked;
 					Items.Add(item);
 				}
 			}
@@ -45,12 +45,27 @@ namespace DHDM
 			foreach (object value in Enum.GetValues(_enumType))
 			{
 				var item = new RadioEnumViewModel(value);
-				item.PropertyChanged += HandleItemPropertyChanged;
+				item.GroupName = groupName;
+				item.EntryClicked += Item_EntryClicked;
 				Items.Add(item);
 			}
 		}
 
 		private object _value;
+
+		void SetCheckedFromValue(int value)
+		{
+			settingInternally = true;
+			try
+			{
+				foreach (RadioEnumViewModel item in Items)
+					item.IsChecked = Convert.ToInt32(item.Value) == value;
+			}
+			finally
+			{
+				settingInternally = false;
+			}
+		}
 
 		public object Value
 		{
@@ -58,6 +73,10 @@ namespace DHDM
 			set
 			{
 				_value = value;
+				if (_value is RadioEnumViewModel vm)
+					SetCheckedFromValue((int)vm.Value);
+				else
+					SetCheckedFromValue((int)_value);
 				OnPropertyChanged();
 			}
 		}
@@ -65,23 +84,37 @@ namespace DHDM
 		public ObservableCollection<RadioEnumViewModel> Items { get; private set; }
 
 		private Type _enumType;
+		bool settingInternally;
 
-		private object CalcValue()
+		private int CalcValue()
 		{
-			// Assumes the enums are ints.  Can change if needed (can dynamically determine as well).
-			int result = 0;
-
 			foreach (RadioEnumViewModel item in Items)
-			{
 				if (item.IsChecked)
-					result |= Convert.ToInt32(item.Value);
-			}
+					return (int)Enum.ToObject(_enumType, Convert.ToInt32(item.Value));
 
-			return Enum.ToObject(_enumType, result);
+			return (int)Enum.ToObject(_enumType, 0);
+		}
+
+		void ClearAllBut(RadioEnumViewModel radioEnumViewModel)
+		{
+			if (radioEnumViewModel == null)
+				return;
+			foreach (RadioEnumViewModel item in Items)
+				if (item != radioEnumViewModel)
+					item.IsChecked = false;
+		}
+
+		private void Item_EntryClicked(object sender, EventArgs e)
+		{
+			if (settingInternally)
+				return;
+			ClearAllBut(sender as RadioEnumViewModel);
 		}
 
 		private void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			Value = CalcValue();
 		}
 	}

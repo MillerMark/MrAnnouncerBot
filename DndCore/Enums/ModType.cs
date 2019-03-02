@@ -8,12 +8,12 @@ namespace DndCore
 	public enum ModType
 	{
 		[Description("Incoming Attack")]
-		incomingAttack,
+		incomingAttack = 0,
 		[Description("Outgoing Attack")]
-		outgoingAttack,
+		outgoingAttack = 1,
 		[Description("Condition")]
-		condition,
+		condition = 2,
 		[Description("Player Property")]
-		playerProperty
+		playerProperty = 3
 	}
 }

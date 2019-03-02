@@ -183,6 +183,7 @@ namespace DHDM
 			//attackKind = new EnumList(typeof(AttackKind));
 			damageTypeFilter = new DamageFilterViewModel();
 			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
+			conditions.Value = DndCore.Conditions.None;
 			type = new RadioEnumList(typeof(ModType), "ModType");
 			type.Value = DndCore.ModType.incomingAttack;
 			repeats = DndTimeSpan.Never;
