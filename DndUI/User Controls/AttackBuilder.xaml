@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="DndUI.AttackBuilder"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DndUI"
+						 xmlns:dh="clr-namespace:DndUI;assembly=DndUI"
+						 xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
+             mc:Ignorable="d" 
+						 x:Name="uc"
+             d:DesignHeight="750" d:DesignWidth="1070" Background="AliceBlue">
+	<UserControl.Resources>
+		<local:AttackViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type local:CheckEnumViewModel}">
+			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type local:RadioEnumViewModel}">
+			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
+		</DataTemplate>
+	</UserControl.Resources>
+	<StackPanel x:Name="spAttackBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
+		<StackPanel x:Name="spAttackType" Orientation="Horizontal">
+			<TextBlock Text="Attack Type: " Width="Auto" Height="Auto" Margin="0,2,0,0"/>
+			<ListBox x:Name="lbAttackType" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Type.Items}" Height="24">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel IsItemsHost="True" />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+			</ListBox>
+		</StackPanel>
+		<StackPanel x:Name="spDescription" Orientation="Horizontal">
+			<TextBlock Text="Description: " Width="Auto" Height="Auto"/>
+			<TextBox x:Name="tbxDescription" MinWidth="441" MinHeight="60" Text="{Binding Description}" Margin="1,0,0,0" />
+		</StackPanel>
+		<StackPanel x:Name="spRange" Orientation="Horizontal">
+			<local:NumEdit Label="Reach/Range: " Units="ft" Value="{Binding ReachRange}"></local:NumEdit>
+			<local:NumEdit Label="Max Range: " Units="ft" Value="{Binding RangeMax}"></local:NumEdit>
+			<local:NumEdit Label="Plus to Hit: " Units="" Value="{Binding PlusToHit}"></local:NumEdit>
+			<local:NumEdit Label="Targets: " Units="cnt" Value="{Binding TargetLimit}"></local:NumEdit>
+		</StackPanel>
+		<StackPanel x:Name="spDuration" Orientation="Horizontal">
+			<local:TimeSpanEditor x:Name="tseLasts" Label="Lasts:" MeasureIndex="{Binding Lasts.TimeMeasure}" Amount="{Binding Lasts.Count}"></local:TimeSpanEditor>
+			<local:TimeSpanEditor x:Name="tseRecharges" Label="Recharges:" MeasureIndex="{Binding Recharges.TimeMeasure}" Amount="{Binding Recharges.Count}" Margin="14,0,0,0"></local:TimeSpanEditor>
+
+			<TextBlock Text="Recharge Odds: " Width="Auto" Height="Auto" Margin="20,5,0,0"/>
+			<ListBox x:Name="lbRechargeOdds" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding RechargeOdds.Items}" Height="24">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel IsItemsHost="True" />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+			</ListBox>
+		</StackPanel>
+		<StackPanel x:Name="spDamages" Orientation="Horizontal">
+			<StackPanel x:Name="spSavingThrow" Orientation="Vertical" Margin="0,0,0,0">
+				<TextBlock Text="Saving Throw:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbSavingThrows" ItemsSource="{Binding SavingThrow.Ability.Items}">
+
+				</ListBox>
+				<local:NumEdit Label="Success: " Value="{Binding SavingThrow.Success}" Units=""></local:NumEdit>
+			</StackPanel>
+			<StackPanel x:Name="spNormalDamage" Orientation="Vertical" Margin="20,0,0,0">
+				<local:EditableListBox Title="Damage:" ItemsSource="{Binding Damages}"></local:EditableListBox>
+				<local:DamageEdit Margin="0,20,0,0"></local:DamageEdit>
+			</StackPanel>
+			<StackPanel x:Name="spNormalSavedDamage" Orientation="Vertical" Margin="20,0,0,0">
+				<local:EditableListBox Title="Saved Damage:" ItemsSource="{Binding Damages}"></local:EditableListBox>
+				<local:DamageEdit Margin="0,20,0,0"></local:DamageEdit>
+			</StackPanel>
+			<StackPanel x:Name="spCondition" Orientation="Vertical" Margin="20,0,0,0">
+				<TextBlock Text="Adds Condition(s):" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbConditions" ItemsSource="{Binding Conditions.Items}">
+
+				</ListBox>
+			</StackPanel>
+			<local:EditableListBox Title="Filtered Conditions:" ItemsSource="{Binding FilteredConditions}" Margin="20,0,0,0"></local:EditableListBox>
+			<StackPanel Orientation="Vertical"  Margin="20,0,0,0">
+				<StackPanel x:Name="spIncludeCreaturesTitle" Orientation="Horizontal" Margin="0,10,0,0">
+					<TextBlock Text="Include" Width="Auto" Height="Auto" FontWeight="Bold" Foreground="DarkBlue"/>
+					<TextBlock Text=" Creatures:" Width="Auto" Height="Auto"/>
+				</StackPanel>
+				<ListBox x:Name="lbIncludeCreatures" ItemsSource="{Binding IncludeCreatures.Items}">
+
+				</ListBox>
+			</StackPanel>
+			<StackPanel x:Name="spSensesFilter" Orientation="Vertical"  Margin="20,0,0,0">
+				<StackPanel x:Name="spIncludeTitle" Orientation="Horizontal" Margin="0,10,0,0">
+					<TextBlock Text="Include" Width="Auto" Height="Auto" FontWeight="Bold" Foreground="DarkBlue"/>
+					<TextBlock Text=" Target Senses:" Width="Auto" Height="Auto"/>
+				</StackPanel>
+				<ListBox x:Name="lbIncludeTargetSenses" ItemsSource="{Binding IncludeTargetSenses.Items}">
+
+				</ListBox>
+				<StackPanel x:Name="spExcludeTitle" Orientation="Horizontal" Margin="0,10,0,0">
+					<TextBlock Text="Exclude" Width="Auto" Height="Auto" FontWeight="Bold" Foreground="DarkRed"/>
+					<TextBlock Text=" Target Senses:" Width="Auto" Height="Auto"/>
+				</StackPanel>
+				<ListBox x:Name="lbExcludeTargetSenses" ItemsSource="{Binding ExcludeTargetSenses.Items}">
+
+				</ListBox>
+			</StackPanel>
+			
+
+			<StackPanel Orientation="Vertical"  Margin="20,0,0,0">
+				<StackPanel x:Name="spExcludeCreatureTitle" Orientation="Horizontal" Margin="0,10,0,0">
+					<TextBlock Text="Exclude" Width="Auto" Height="Auto" FontWeight="Bold" Foreground="DarkRed"/>
+					<TextBlock Text=" Creatures:" Width="Auto" Height="Auto"/>
+				</StackPanel>
+				<ListBox x:Name="lbExcludeCreatures" ItemsSource="{Binding ExcludeCreatures.Items}">
+
+				</ListBox>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

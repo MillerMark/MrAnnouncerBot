@@ -242,111 +242,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="User Controls\AttackBuilder.xaml.cs">
-      <DependentUpon>AttackBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\ConditionEdit.xaml.cs">
-      <DependentUpon>ConditionEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\DamageEdit.xaml.cs">
-      <DependentUpon>DamageEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\EditableListBox.xaml.cs">
-      <DependentUpon>EditableListBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\EnumCheckBox.cs" />
-    <Compile Include="User Controls\ItemBuilder.xaml.cs">
-      <DependentUpon>ItemBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\ModBuilder.xaml.cs">
-      <DependentUpon>ModBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\ModsList.xaml.cs">
-      <DependentUpon>ModsList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\NumTextBox.cs" />
-    <Compile Include="User Controls\Storage.cs" />
-    <Compile Include="User Controls\TimeSpanEditor.xaml.cs">
-      <DependentUpon>TimeSpanEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\WeaponBuilder.xaml.cs">
-      <DependentUpon>WeaponBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\AttackViewModel.cs" />
-    <Compile Include="ViewModels\DamageConditionsViewModel.cs" />
-    <Compile Include="ViewModels\DamageFilterViewModel.cs" />
-    <Compile Include="ViewModels\CheckEnumList.cs" />
-    <Compile Include="ViewModels\DamageViewModel.cs" />
-    <Compile Include="ViewModels\ListEntry.cs" />
-    <Compile Include="ViewModels\RadioEnumList.cs" />
-    <Compile Include="ViewModels\RadioEnumViewModel.cs" />
-    <Compile Include="ViewModels\SavingThrowViewModel.cs" />
-    <Compile Include="ViewModels\Support\EnumBindingSourceExtension.cs" />
-    <Compile Include="ViewModels\Support\EnumListOption.cs" />
-    <Compile Include="ViewModels\CheckEnumViewModel.cs" />
-    <Compile Include="ViewModels\ModViewModel.cs" />
-    <Compile Include="ViewModels\Support\VisualHelper.cs" />
-    <Compile Include="ViewModels\EffectEntry.cs" />
     <Compile Include="HubtasticBaseStation.cs" />
-    <Compile Include="User Controls\AnimationSprites.cs" />
-    <Compile Include="User Controls\EffectBuilder.xaml.cs">
-      <DependentUpon>EffectBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Event Args\FocusedControlsChangedEventArgs.cs" />
-    <Compile Include="FocusHelper.cs" />
     <Compile Include="User Controls\EffectsList.xaml.cs">
       <DependentUpon>EffectsList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="User Controls\GridSheet.cs" />
-    <Compile Include="User Controls\GroupBackground.xaml.cs">
-      <DependentUpon>GroupBackground.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\NumEdit.xaml.cs">
-      <DependentUpon>NumEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\RoundCheck.cs" />
-    <Compile Include="User Controls\StatBox.xaml.cs">
-      <DependentUpon>StatBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\StatBoxState.cs" />
-    <Compile Include="User Controls\TargetValueEdit.xaml.cs">
-      <DependentUpon>TargetValueEdit.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
-    <Compile Include="ViewModels\VmEffectsList.cs" />
-    <Page Include="User Controls\AttackBuilder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\CharacterSheets.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\ConditionEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\DamageEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\EditableListBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\EffectBuilder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\EffectsList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\GroupBackground.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -355,48 +255,16 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="User Controls\CharacterSheets.xaml.cs">
-      <DependentUpon>CharacterSheets.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="User Controls\ItemBuilder.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="User Controls\EffectsList.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\ModBuilder.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\ModsList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\NumEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\StatBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\TargetValueEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\TimeSpanEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="User Controls\WeaponBuilder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Event Args\PageChangeEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -429,6 +297,11 @@
       <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
       <Name>DndCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DndUI\DndUI.csproj">
+      <Project>{82a18721-edd9-4e9d-b875-da216a82209c}</Project>
+      <Name>DndUI</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

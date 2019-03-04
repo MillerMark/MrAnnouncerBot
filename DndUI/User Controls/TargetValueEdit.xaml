@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="DndUI.TargetValueEdit"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DndUI"
+             mc:Ignorable="d" 
+           d:DesignHeight="25" d:DesignWidth="400" Background="AliceBlue">
+	<StackPanel Orientation="Horizontal" Margin="0, 1, 0, 1" MouseDown="ControlBack_MouseDown">
+		<TextBlock x:Name="tbLabel" Text="Label: " Width="Auto" Height="Auto" Margin="0, 1, 0, 1" MouseDown="ControlBack_MouseDown"/>
+		<TextBox x:Name="tbxValue" TextChanged="TbxNumber_TextChanged">
+			0
+		</TextBox>
+		<TextBlock x:Name="tbUnits" Text="px" Width="Auto" Height="Auto" Margin="1, 1, 5, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+		<TextBlock Text="(" Width="Auto" Height="Auto" Margin="0, 1, 0, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+		<TextBlock Text="±" Width="Auto" Height="Auto" Margin="0, 1, 0, 1" MouseDown="ControlBack_MouseDown"/>
+		<TextBox x:Name="tbxVariance" TextChanged="TbxVariance_TextChanged">
+			0%
+		</TextBox>
+		<StackPanel x:Name="spMin" Orientation="Horizontal" Visibility="Collapsed">
+			<TextBlock Text=", min=" Width="Auto" Height="Auto" Margin="0, 1, 0, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+			<TextBox x:Name="tbxMin" TextChanged="TbxMin_TextChanged" MouseDown="ControlBack_MouseDown">
+				0
+			</TextBox>
+		</StackPanel>
+		<StackPanel x:Name="spMax" Orientation="Horizontal" Visibility="Collapsed">
+			<TextBlock Text=", max=" Width="Auto" Height="Auto" Margin="0, 1, 0, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+			<TextBox x:Name="tbxMax" TextChanged="TbxMax_TextChanged">
+				Inf.
+			</TextBox>
+		</StackPanel>
+		<StackPanel x:Name="spDrift" Orientation="Horizontal" Visibility="Collapsed">
+			<TextBlock Text=", drift=" Width="Auto" Height="Auto" Margin="0, 1, 0, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+			<TextBox x:Name="tbxDrift" TextChanged="TbxDrift_TextChanged">
+				0
+			</TextBox>
+		</StackPanel>
+		<StackPanel x:Name="spBinding" Orientation="Horizontal" Visibility="Collapsed">
+			<TextBlock Text=", " Width="Auto" Height="Auto" Margin="0, 1, 0, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+			<ComboBox x:Name="cmbBinding" SelectedIndex="0" SelectionChanged="CmbBinding_SelectionChanged">
+				<ComboBoxItem>truncate</ComboBoxItem>
+				<ComboBoxItem>wrap</ComboBoxItem>
+				<ComboBoxItem>rock</ComboBoxItem>
+			</ComboBox>
+		</StackPanel>
+
+		<TextBlock Text=")" Width="Auto" Height="Auto" Margin="0, 1, 0, 1" Foreground="Gray" MouseDown="ControlBack_MouseDown"/>
+
+	</StackPanel>
+</UserControl>

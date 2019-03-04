@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="DndUI.DamageEdit"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DndUI"
+             xmlns:dnd="clr-namespace:DndCore;assembly=DndCore"
+             mc:Ignorable="d" 
+             d:DesignHeight="380" d:DesignWidth="130" Background="AliceBlue">
+	<UserControl.Resources>
+		<local:DamageViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type local:CheckEnumViewModel}">
+			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}"/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type local:RadioEnumViewModel}">
+			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
+		</DataTemplate>
+	</UserControl.Resources>
+	<StackPanel DataContext="{StaticResource vm}">
+		<StackPanel x:Name="spDamageRoll" Orientation="Horizontal">
+			<TextBlock Text="Roll: " Width="Auto" Height="Auto"/>
+			<TextBox x:Name="tbxDamageRoll" >
+				1d4
+			</TextBox>
+		</StackPanel>
+		<StackPanel x:Name="spDamageType" Orientation="Vertical" Margin="0,4,0,0" >
+			<TextBlock Text="Type:" Width="Auto" Height="Auto"/>
+			<ListBox x:Name="lbDamageEdit" ItemsSource="{Binding DamageType.Items}">
+			</ListBox>
+		</StackPanel>
+		<StackPanel x:Name="spDamageHits" Orientation="Horizontal" Margin="0,4,0,0">
+			<TextBlock Text="Hits: " Width="Auto" Height="Auto"/>
+			<ComboBox x:Name="cbDamageHits" Height="24" MinWidth="90" SelectedIndex="{Binding DamageHits.Value}"
+								ItemsSource="{Binding Source={local:EnumBindingSource {x:Type dnd:TimePoint}}}" Margin="0,0,20,0"/>
+		</StackPanel>
+		<StackPanel x:Name="spSavingThrowOpportunity" Orientation="Horizontal" Margin="0,4,0,0">
+			<TextBlock Text="Save: " Width="Auto" Height="Auto"/>
+			<ComboBox x:Name="cbSavingThrowOpportunity" Height="24" MinWidth="90" SelectedIndex="{Binding DamageHits.Value}"
+								ItemsSource="{Binding Source={local:EnumBindingSource {x:Type dnd:TimePoint}}}" Margin="0,0,20,0"/>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

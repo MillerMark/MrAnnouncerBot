@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="DndUI.EditableListBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:dhdm="clr-namespace:DndUI"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="250" Background="AliceBlue">
+	<StackPanel x:Name="spMain" Orientation="Vertical">
+		<TextBlock x:Name="TitleLabel" Text="{Binding Title}" Width="Auto" Height="Auto"/>
+		<ListBox x:Name="Box" KeyDown="Box_KeyDown" ItemsSource="{Binding ItemsSource}">
+			<ListBox.Resources>
+				<ContextMenu x:Key="ContextMenuDelete">
+					<MenuItem Header="_Delete" Click="MenuDeleteClicked" />
+				</ContextMenu>
+			</ListBox.Resources>
+			<ListBox.ItemContainerStyle>
+				<Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+					<Setter Property="ContextMenu" Value="{DynamicResource ContextMenuDelete }">
+					</Setter>
+				</Style>
+			</ListBox.ItemContainerStyle>
+			<ListBox.ItemTemplate>
+				<DataTemplate DataType="{x:Type dhdm:ListEntry}">
+					<Grid>
+						<TextBlock Text="{Binding Name}" MouseDown="TextBlock_MouseDown"></TextBlock>
+						<TextBox LostFocus="TextBox_LostFocus" Margin="-3,-1,-3,-1"
+                        Text="{Binding Name, Mode=TwoWay}"
+                        Visibility="Collapsed" KeyDown="TextBox_KeyDown" IsVisibleChanged="TextBox_IsVisibleChanged"/>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		<StackPanel x:Name="spButtons" Orientation="Vertical">
+			<StackPanel x:Name="spEffectButtons" Orientation="Horizontal" Margin="0, 4, 0, 0">
+				<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" >
+					Add
+				</Button>
+				<Button x:Name="btnDuplicate" Click="BtnDuplicate_Click" Margin="0, 0, 4, 0">
+					<Button.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger 
+                     Binding ="{Binding ElementName=Box, Path=SelectedIndex}" 
+                     Value="-1">
+									<Setter Property="Button.IsEnabled" Value="false"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+					Duplicate
+				</Button>
+				<Button x:Name="btnDelete" Click="BtnDelete_Click" >
+					<Button.Style>
+						<Style>
+							<Style.Triggers>
+								<DataTrigger 
+                     Binding ="{Binding ElementName=Box, Path=SelectedIndex}" 
+                     Value="-1">
+									<Setter Property="Button.IsEnabled" Value="false"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+					Delete
+				</Button>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

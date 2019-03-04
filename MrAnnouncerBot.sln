@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndTests", "DndTests\DndTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteDetonator", "RemoteDetonator\RemoteDetonator.csproj", "{FDBD2C70-F975-45F9-92F8-9634DDBB1627}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndUI", "DndUI\DndUI.csproj", "{82A18721-EDD9-4E9D-B875-DA216A82209C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDBD2C70-F975-45F9-92F8-9634DDBB1627}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

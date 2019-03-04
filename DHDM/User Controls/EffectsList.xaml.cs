@@ -16,8 +16,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DndUI;
 
-namespace DHDM.User_Controls
+namespace DHDM
 {
 	/// <summary>
 	/// Interaction logic for EffectsList.xaml

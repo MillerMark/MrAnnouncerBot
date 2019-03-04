@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DndUI.Properties
+namespace DndUserControls.Properties
 {
 
 

@@ -1,12 +1,12 @@
-﻿<Application x:Class="DHDM.App"
+﻿<Application x:Class="DndUI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
-             xmlns:uc="clr-namespace:DHDM.User_Controls"
+						 xmlns:ui="clr-namespace:DndUI;assembly=DndUI"
 						 xmlns:System="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
 	<Application.Resources>
-		<Style x:Key="NumTextBoxStyle" TargetType="uc:NumTextBox">
+		<Style x:Key="NumTextBoxStyle" TargetType="ui:NumTextBox">
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="Background" Value="#FFFFFFFF"/>
 			<Setter Property="Foreground" Value="#FF000000"/>
@@ -121,11 +121,11 @@
 								<Grid>
 									<Border x:Name="ReadOnlyVisualElement" Background="#5EC9C9C9" Opacity="0"/>
 									<Border x:Name="MouseOverBorder" BorderBrush="Transparent" BorderThickness="1">
-										<ScrollViewer x:Name="ContentElement" BorderThickness="0" IsTabStop="False" Padding="{TemplateBinding Padding}" Content="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type uc:NumTextBox}}, Path=Text}"
+										<ScrollViewer x:Name="ContentElement" BorderThickness="0" IsTabStop="False" Padding="{TemplateBinding Padding}" Content="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ui:NumTextBox}}, Path=Text}"
 																	Background="White"/>
 									</Border>
 									<TextBlock Name="TextBlock" Cursor="ScrollWE" Margin="3,1,3,1" Foreground="#FF0000B5" 
-                   Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type uc:NumTextBox}}, Path=Text}"/>
+                   Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ui:NumTextBox}}, Path=Text}"/>
 								</Grid>
 							</Border>
 							<Border x:Name="DisabledVisualElement" BorderBrush="#A5F7F7F7" BorderThickness="{TemplateBinding BorderThickness}" Background="#A5F7F7F7" IsHitTestVisible="False" Opacity="0"/>
@@ -142,7 +142,7 @@
 			</Setter>
 		</Style>
 		
-		<ControlTemplate x:Key="keyNumTextBox" TargetType="uc:NumTextBox">
+		<ControlTemplate x:Key="keyNumTextBox" TargetType="ui:NumTextBox">
 			<Grid>
 				<VisualStateManager.VisualStateGroups>
 					<VisualStateGroup Name="ValueStates">
@@ -173,8 +173,8 @@
 
 				<StackPanel x:Name="spContainer" Orientation="Horizontal">
 					<TextBlock Name="TextBlock" Cursor="ScrollWE" Margin="3,1,3,1" Foreground="#FF0000B5" 
-                   Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type uc:NumTextBox}}, Path=Text}"/>
-					<TextBox x:Name="TextBox" Height="18" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type uc:NumTextBox}}, Path=Text}"
+                   Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ui:NumTextBox}}, Path=Text}"/>
+					<TextBox x:Name="TextBox" Height="18" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ui:NumTextBox}}, Path=Text}"
 									 Visibility="Collapsed" Background="White" />
 				</StackPanel>
 			</Grid>
@@ -185,11 +185,11 @@
 			</ControlTemplate.Triggers>
 		</ControlTemplate>
 
-		<ObjectDataProvider x:Key="enumTimeMeasure" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+		<!--<ObjectDataProvider x:Key="enumTimeMeasure" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
 			<ObjectDataProvider.MethodParameters>
 				<x:Type TypeName="dndCore:TimeMeasure"></x:Type>
 			</ObjectDataProvider.MethodParameters>
-		</ObjectDataProvider>
+		</ObjectDataProvider>-->
 		<!--<ObjectDataProvider x:Key="enumPlayerProperty" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
 			<ObjectDataProvider.MethodParameters>
 				<x:Type TypeName="dndCore:PlayerProperty"></x:Type>

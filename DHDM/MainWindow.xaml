@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
-				xmlns:uc="clr-namespace:DHDM.User_Controls"
+				xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
         mc:Ignorable="d"
         Title="MainWindow" Height="680" Width="1672.675">
 	<Grid>
@@ -16,22 +16,22 @@
 		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="CharacterSheetsKent_CharacterChanged"></local:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="CharacterSheetsKent_CharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Karen">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Mark">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Kayla">
 				<Grid Background="#FFE5E5E5">
-					<local:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged"></local:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 		</TabControl>
@@ -86,7 +86,7 @@
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
 				<TabItem Header="Effects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<uc:EffectsList/>
+					<local:EffectsList/>
 				</TabItem>
 				<TabItem Header="Mods" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<uc:ModsList/>
