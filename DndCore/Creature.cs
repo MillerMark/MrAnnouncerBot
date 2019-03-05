@@ -165,6 +165,9 @@ namespace DndCore
 
 		public bool HasSense(Senses sense)
 		{
+			if (sense == Senses.None)
+				return false;
+
 			if (HasAnyCondition(Conditions.Petrified | Conditions.Unconscious))
 				return false;
 
@@ -192,11 +195,18 @@ namespace DndCore
 			return false;
 		}
 
-		bool MatchesCreature(CreatureKinds creatureKinds)
+		bool MatchesCreatureKind(CreatureKinds creatureKinds)
 		{
 			if (creatureKinds == CreatureKinds.None)
 				return false;
-			return (creatureKinds & kind) == kind;
+			return creatureKinds.HasFlag(kind);
+		}
+
+		bool MatchesSize(CreatureSize size)
+		{
+			if (size == CreatureSize.None)
+				return false;
+			return size.HasFlag(creatureSize);
 		}
 
 		public bool CanBeAffectedBy(Attack attack)
@@ -212,15 +222,15 @@ namespace DndCore
 				return false;
 
 			// Check to see if the attack excludes us...
-			if (attack.includeCreatures != CreatureKinds.None || attack.excludeCreatures != CreatureKinds.None || attack.includeTargetSenses != Senses.None || attack.excludeTargetSenses != Senses.None)
+			if (attack.includeCreatures != CreatureKinds.None || attack.includeTargetSenses != Senses.None || attack.includeCreatureSizes != CreatureSize.None)
 			{
-				bool isNotIncludedCreature = attack.includeCreatures != CreatureKinds.None && !MatchesCreature(attack.includeCreatures);
-				bool isExcludedCreature = attack.excludeCreatures != CreatureKinds.None && MatchesCreature(attack.excludeCreatures);
+				bool missesCreatureKind = !MatchesCreatureKind(attack.includeCreatures);
+				bool missesSense = !HasSense(attack.includeTargetSenses);
+				bool missesCreatureSize = !MatchesSize(attack.includeCreatureSizes);
 
-				bool missingTargetedSense = attack.includeTargetSenses != Senses.None && !HasSense(attack.includeTargetSenses);
-				bool hasExcludedSense = attack.excludeTargetSenses != Senses.None && HasSense(attack.excludeTargetSenses);
+				bool attackMissesCreature = missesCreatureKind || missesSense || missesCreatureSize;
 
-				return !(isExcludedCreature || hasExcludedSense || isNotIncludedCreature || missingTargetedSense);
+				return !attackMissesCreature;
 			}
 
 			return true;

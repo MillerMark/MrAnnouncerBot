@@ -68,12 +68,12 @@ namespace DndTests
 
 			vineBlight.AddAttack(Attack.Melee("Constrict", +4, 10, 1)
 				.AddDamage(DamageType.Bludgeoning, "2d6+2", AttackKind.NonMagical)
-				.AddFilteredCondition(Conditions.Grappled, 12 /* escapeDC */, ComparisonFilterOption.TargetSizeLessThan, CreatureSize.Huge, 1 /* concurrentTargets */));
+				.AddGrapple(12, CreatureSizes.LargeOrSmaller));
 
 			vineBlight.AddAttack(Attack.Area("Entangling Plants", 15)
 				.AddRecharge(RechargeOdds.TwoInSix)
 				.AddDuration(DndTimeSpan.OneMinute)
-				.AddFilteredCondition(Conditions.Restrained, 12)
+				.AddConditions(Conditions.Restrained)
 				.AddSavingThrow(12, Ability.Strength));
 
 			vineBlight.traits.Add("False Appearance. While the blight remains motionless, it is indistinguishable from a tangle of vines.");
@@ -126,7 +126,7 @@ namespace DndTests
 			screech.AddSavingThrow(14, Ability.Constitution);
 			screech.includeTargetSenses = Senses.Hearing;
 			// TODO: Add test to determine if an attack hits a player using screech.includeTargetSenses.
-			screech.excludeCreatures = CreatureKinds.Fiends;
+			screech.ExcludeCreatureKinds(CreatureKinds.Fiends);
 			screech.recharges = DndTimeSpan.FromDays(1);
 			vrock.AddAttack(screech);
 

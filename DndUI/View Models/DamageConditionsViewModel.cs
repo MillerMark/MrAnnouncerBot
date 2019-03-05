@@ -74,7 +74,10 @@ namespace DndUI
 		
 		DamageConditions GetDamageCondition()
 		{
-			return new DamageConditions((Conditions)conditions.Value, (CreatureSize)creatureSizeFilter.Value, escapeDC, concurrentTargets);
+			if (conditions != null && creatureSizeFilter != null)
+				return new DamageConditions((Conditions)conditions.Value, (CreatureSize)creatureSizeFilter.Value, escapeDC, concurrentTargets);
+
+			return new DamageConditions(DndCore.Conditions.None, CreatureSize.Medium, escapeDC, concurrentTargets);
 		}
 
 		void SetFrom(DamageConditions damageConditions)

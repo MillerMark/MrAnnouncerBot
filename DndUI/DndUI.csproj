@@ -32,9 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -52,6 +51,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="User Controls\DamageConditionsEdit.xaml.cs">
+      <DependentUpon>DamageConditionsEdit.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\DamageEdit.xaml.cs">
       <DependentUpon>DamageEdit.xaml</DependentUpon>
     </Compile>
@@ -120,6 +122,10 @@
     <Compile Include="View Models\Support\ViewModelBase.cs" />
     <Compile Include="User Controls\Support\VisualHelper.cs" />
     <Compile Include="View Models\VmEffectsList.cs" />
+    <Page Include="User Controls\DamageConditionsEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\DamageEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

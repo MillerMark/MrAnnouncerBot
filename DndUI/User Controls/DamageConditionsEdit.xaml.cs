@@ -16,17 +16,13 @@ using System.Windows.Shapes;
 namespace DndUI
 {
 	/// <summary>
-	/// Interaction logic for AttackBuilder.xaml
+	/// Interaction logic for DamageConditionsEdit.xaml
 	/// </summary>
-	public partial class AttackBuilder : UserControl
+	public partial class DamageConditionsEdit : UserControl
 	{
-		public AttackBuilder()
+		public DamageConditionsEdit()
 		{
 			InitializeComponent();
-		}
-		public void LoadFromItem(AttackViewModel attackViewModel)
-		{
-			
 		}
 	}
 }

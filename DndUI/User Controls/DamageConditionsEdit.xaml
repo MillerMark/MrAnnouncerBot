@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="DndUI.DamageConditionsEdit"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DndUI"
+             mc:Ignorable="d" 
+             d:DesignHeight="360" d:DesignWidth="230" Background="AliceBlue">
+	<UserControl.Resources>
+		<local:DamageConditionsViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type local:CheckEnumViewModel}">
+			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type local:RadioEnumViewModel}">
+			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
+		</DataTemplate>
+	</UserControl.Resources>
+	<StackPanel DataContext="{StaticResource vm}">
+		<StackPanel Orientation="Horizontal">
+			<local:NumEdit Label="Escape DC: " Value="10" Units=""></local:NumEdit>
+			<local:NumEdit Label="Targets: " Value="1" Units=""></local:NumEdit>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
+			<StackPanel>
+				<TextBlock Text="Adds Condition(s):" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbConditions" ItemsSource="{Binding Conditions.Items}">
+				</ListBox>
+			</StackPanel>
+
+			<StackPanel Margin="20,0,0,0" >
+				<TextBlock Text="For Creatures:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbCreatureSize" ItemsSource="{Binding CreatureSizeFilter.Items}">
+				</ListBox>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

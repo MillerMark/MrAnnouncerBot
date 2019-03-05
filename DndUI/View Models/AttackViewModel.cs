@@ -10,13 +10,14 @@ namespace DndUI
 	{
 		string name;
 		CheckEnumList includeCreatures;
-		CheckEnumList excludeCreatures;
-		CheckEnumList excludeTargetSenses;
+		CheckEnumList creatureSizeFilter;
+		//CheckEnumList excludeCreatures;
+		//CheckEnumList excludeTargetSenses;
 		CheckEnumList includeTargetSenses;
 		RadioEnumList type;
 		SavingThrowViewModel savingThrow;
 		ObservableCollection<DamageViewModel> damages;
-		ObservableCollection<DamageConditionsViewModel> filteredConditions;
+		//ObservableCollection<DamageConditionsViewModel> filteredConditions;
 		ObservableCollection<DamageViewModel> successfulSaveDamages;
 		int targetLimit;
 		double plusToHit;
@@ -181,30 +182,30 @@ namespace DndUI
 			OnPropertyChanged("Damages");
 		}
 
-		public ObservableCollection<DamageConditionsViewModel> FilteredConditions
-		{
-			get { return filteredConditions; }
-			set
-			{
-				if (filteredConditions == value)
-					return;
+		//public ObservableCollection<DamageConditionsViewModel> FilteredConditions
+		//{
+		//	get { return filteredConditions; }
+		//	set
+		//	{
+		//		if (filteredConditions == value)
+		//			return;
 
-				if (filteredConditions != null)
-					filteredConditions.CollectionChanged -= FilteredConditions_CollectionChanged;
+		//		if (filteredConditions != null)
+		//			filteredConditions.CollectionChanged -= FilteredConditions_CollectionChanged;
 
-				filteredConditions = value;
+		//		filteredConditions = value;
 
-				if (filteredConditions != null)
-					filteredConditions.CollectionChanged += FilteredConditions_CollectionChanged;
+		//		if (filteredConditions != null)
+		//			filteredConditions.CollectionChanged += FilteredConditions_CollectionChanged;
 
-				OnPropertyChanged();
-			}
-		}
+		//		OnPropertyChanged();
+		//	}
+		//}
 
-		private void FilteredConditions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
-			OnPropertyChanged("FilteredConditions");
-		}
+		//private void FilteredConditions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		//{
+		//	OnPropertyChanged("FilteredConditions");
+		//}
 
 		public ObservableCollection<DamageViewModel> SuccessfulSaveDamages
 		{
@@ -283,18 +284,17 @@ namespace DndUI
 		}
 
 
-		public CheckEnumList ExcludeTargetSenses
-		{
-			get { return excludeTargetSenses; }
-			set
-			{
-				if (excludeTargetSenses == value)
-					return;
-				excludeTargetSenses = value;
-				OnPropertyChanged();
-			}
-		}
-
+		//public CheckEnumList ExcludeTargetSenses
+		//{
+		//	get { return excludeTargetSenses; }
+		//	set
+		//	{
+		//		if (excludeTargetSenses == value)
+		//			return;
+		//		excludeTargetSenses = value;
+		//		OnPropertyChanged();
+		//	}
+		//}
 
 		public CheckEnumList IncludeCreatures
 		{
@@ -307,18 +307,29 @@ namespace DndUI
 				OnPropertyChanged();
 			}
 		}
-
-		public CheckEnumList ExcludeCreatures
+		public CheckEnumList CreatureSizeFilter
 		{
-			get { return excludeCreatures; }
+			get { return creatureSizeFilter; }
 			set
 			{
-				if (excludeCreatures == value)
+				if (creatureSizeFilter == value)
 					return;
-				excludeCreatures = value;
+				creatureSizeFilter = value;
 				OnPropertyChanged();
 			}
 		}
+
+		//public CheckEnumList ExcludeCreatures
+		//{
+		//	get { return excludeCreatures; }
+		//	set
+		//	{
+		//		if (excludeCreatures == value)
+		//			return;
+		//		excludeCreatures = value;
+		//		OnPropertyChanged();
+		//	}
+		//}
 
 		public Attack Attack
 		{
@@ -332,16 +343,18 @@ namespace DndUI
 		List<Damage> GetListOf(ObservableCollection<DamageViewModel> damages)
 		{
 			List<Damage> results = new List<Damage>();
-			foreach (DamageViewModel damageViewModel in damages)
-				results.Add(damageViewModel.Damage);
+			if (damages != null)
+				foreach (DamageViewModel damageViewModel in damages)
+					results.Add(damageViewModel.Damage);
 			return results;
 		}
 
 		List<DamageConditions> GetListOf(ObservableCollection<DamageConditionsViewModel> damages)
 		{
 			List<DamageConditions> results = new List<DamageConditions>();
-			foreach (DamageConditionsViewModel damageViewModel in damages)
-				results.Add(damageViewModel.DamageConditions);
+			if (damages != null)
+				foreach (DamageConditionsViewModel damageViewModel in damages)
+					results.Add(damageViewModel.DamageConditions);
 			return results;
 		}
 
@@ -354,19 +367,23 @@ namespace DndUI
 			attack.damages = GetListOf(Damages);
 			attack.description = Description;
 
-			if (ExcludeCreatures != null)
-				attack.excludeCreatures = (CreatureKinds)ExcludeCreatures.Value;
+			//if (ExcludeCreatures != null)
+			//	attack.excludeCreatures = (CreatureKinds)ExcludeCreatures.Value;
 
 			if (IncludeCreatures != null)
 				attack.includeCreatures = (CreatureKinds)IncludeCreatures.Value;
 
-			if (ExcludeTargetSenses != null)
-				attack.excludeTargetSenses = (Senses)ExcludeTargetSenses.Value;
+			//if (ExcludeTargetSenses != null)
+			//	attack.excludeTargetSenses = (Senses)ExcludeTargetSenses.Value;
 
 			if (IncludeTargetSenses != null)
 				attack.includeTargetSenses = (Senses)IncludeTargetSenses.Value;
 
-			attack.filteredConditions = GetListOf(FilteredConditions);
+			//attack.filteredConditions = GetListOf(FilteredConditions);
+
+			if (CreatureSizeFilter != null)
+				attack.includeCreatureSizes = (CreatureSize)CreatureSizeFilter.Value;
+
 			attack.lasts = Lasts;
 			attack.needsRecharging = NeedsRecharging;
 			attack.plusToHit = PlusToHit;
@@ -395,16 +412,16 @@ namespace DndUI
 			}
 		}
 
-		void SetFrom(ObservableCollection<DamageConditionsViewModel> targetList, List<DamageConditions> sourceList)
-		{
-			targetList.Clear();
-			foreach (DamageConditions damageConditions in sourceList)
-			{
-				DamageConditionsViewModel damageConditionsViewModel = new DamageConditionsViewModel();
-				damageConditionsViewModel.DamageConditions = damageConditions;
-				targetList.Add(damageConditionsViewModel);
-			}
-		}
+		//void SetFrom(ObservableCollection<DamageConditionsViewModel> targetList, List<DamageConditions> sourceList)
+		//{
+		//	targetList.Clear();
+		//	foreach (DamageConditions damageConditions in sourceList)
+		//	{
+		//		DamageConditionsViewModel damageConditionsViewModel = new DamageConditionsViewModel();
+		//		damageConditionsViewModel.DamageConditions = damageConditions;
+		//		targetList.Add(damageConditionsViewModel);
+		//	}
+		//}
 		public void SetFromAttack(Attack attack)
 		{
 			Name = attack.Name;
@@ -412,12 +429,13 @@ namespace DndUI
 			type.Value = attack.type;
 			SetFrom(Damages, attack.damages);
 			Description = attack.description;
-			ExcludeCreatures.Value = attack.excludeCreatures;
+			//ExcludeCreatures.Value = attack.excludeCreatures;
 			IncludeCreatures.Value = attack.includeCreatures;
-			ExcludeTargetSenses.Value = attack.excludeTargetSenses;
+			//ExcludeTargetSenses.Value = attack.excludeTargetSenses;
 			IncludeTargetSenses.Value = attack.includeTargetSenses;
+			CreatureSizeFilter.Value = attack.includeCreatureSizes;
 
-			SetFrom(FilteredConditions, attack.filteredConditions);
+			//SetFrom(FilteredConditions, attack.filteredConditions);
 			Lasts = attack.lasts;
 			NeedsRecharging = attack.needsRecharging;
 			PlusToHit = attack.plusToHit;
@@ -434,14 +452,16 @@ namespace DndUI
 		public AttackViewModel()
 		{
 			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			excludeTargetSenses = new CheckEnumList(typeof(Senses), DndCore.Senses.None, EnumListOption.Exclude);
+			//excludeTargetSenses = new CheckEnumList(typeof(Senses), DndCore.Senses.None, EnumListOption.Exclude);
 			includeTargetSenses = new CheckEnumList(typeof(Senses), DndCore.Senses.None, EnumListOption.Exclude);
-			excludeCreatures = new CheckEnumList(typeof(CreatureKinds), DndCore.CreatureKinds.None, EnumListOption.Exclude);
+			//excludeCreatures = new CheckEnumList(typeof(CreatureKinds), DndCore.CreatureKinds.None, EnumListOption.Exclude);
 			includeCreatures = new CheckEnumList(typeof(CreatureKinds), DndCore.CreatureKinds.None, EnumListOption.Exclude);
+			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize), DndCore.CreatureSize.None, EnumListOption.Exclude);
+			
 
 			Damages = new ObservableCollection<DamageViewModel>();
 			SuccessfulSaveDamages = new ObservableCollection<DamageViewModel>();
-			FilteredConditions = new ObservableCollection<DamageConditionsViewModel>();
+			//FilteredConditions = new ObservableCollection<DamageConditionsViewModel>();
 
 			type = new RadioEnumList(typeof(AttackType), "AttackType", DndCore.AttackType.None, EnumListOption.Exclude);
 			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), "RechargeOdds", DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);

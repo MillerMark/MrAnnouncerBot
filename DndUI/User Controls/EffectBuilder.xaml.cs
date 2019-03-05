@@ -784,10 +784,11 @@ namespace DndUI
 			//animationEffect.startFrameIndex;
 		}
 
-	void LoadFromSoundEffect(SoundEffect soundEffect)
+		void LoadFromSoundEffect(SoundEffect soundEffect)
 		{
 			tbxSoundFileName.Text = soundEffect.soundFileName;
 		}
+
 		public void LoadFromItem(EffectEntry effectEntry)
 		{
 			if (effectEntry.EffectKind == EffectKind.Animation)

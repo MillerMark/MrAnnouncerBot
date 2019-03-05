@@ -17,15 +17,13 @@ namespace DndCore
 		public double plusToHit;
 		public int targetLimit = 1;
 		public List<Damage> damages = new List<Damage>();
-		public List<DamageConditions> filteredConditions = new List<DamageConditions>();
 		public List<Damage> successfulSaveDamages = new List<Damage>();
 		public SavingThrow savingThrow;
 		public AttackType type;
 		public Senses includeTargetSenses = Senses.None;
-		public Senses excludeTargetSenses = Senses.None;
+		public CreatureSize includeCreatureSizes = CreatureSizes.All;
 		public CreatureKinds includeCreatures = CreatureKinds.None;
-		public CreatureKinds excludeCreatures = CreatureKinds.None;
-
+		
 		public Attack(string name)
 		{
 			Name = name;
@@ -87,9 +85,16 @@ namespace DndCore
 			return this;
 		}
 
-		public Attack AddFilteredCondition(Conditions conditions, int escapeDC, ComparisonFilterOption comparisonFilterOption = ComparisonFilterOption.None, CreatureSize creatureSizeFilter = CreatureSize.Medium, int concurrentTargets = int.MaxValue)
+		//public Attack AddFilteredCondition(Conditions conditions, int escapeDC, CreatureSize creatureSizeFilter = CreatureSize.Medium, int concurrentTargets = int.MaxValue)
+		//{
+		//	filteredConditions.Add(new DamageConditions(conditions, creatureSizeFilter, escapeDC, concurrentTargets));
+		//	return this;
+		//}
+
+		public Attack AddConditions(Conditions conditions, CreatureSize creatureSizeFilter = CreatureSizes.All)
 		{
-			filteredConditions.Add(new DamageConditions(conditions, creatureSizeFilter, escapeDC, concurrentTargets));
+			this.conditions = conditions;
+			this.includeCreatureSizes = creatureSizeFilter;
 			return this;
 		}
 
@@ -114,13 +119,42 @@ namespace DndCore
 
 			damageResult.CollectDamages(creature, damages);
 
-			foreach (DamageConditions damageCondition in filteredConditions)
-			{
-				if (damageCondition.CreatureSizeFilter.HasFlag(creature.creatureSize) && savingThrow < damageCondition.EscapeDC)
-					damageResult.conditionsAdded |= damageCondition.Conditions;
-			}
+			if (includeCreatureSizes.HasFlag(creature.creatureSize))
+				damageResult.conditionsAdded |= conditions;
+
+			//foreach (DamageConditions damageCondition in filteredConditions)
+			//{
+			//	if (damageCondition.CreatureSizeFilter.HasFlag(creature.creatureSize) && savingThrow < damageCondition.EscapeDC)
+			//		damageResult.conditionsAdded |= damageCondition.Conditions;
+			//}
 
 			return damageResult;
+		}
+
+		public Attack AddGrapple(int savingThrow, CreatureSize creatureSizeFilter = CreatureSizes.All)
+		{
+			return AddSavingThrow(savingThrow, Ability.Strength | Ability.Dexterity)
+						.AddConditions(Conditions.Grappled | Conditions.Restrained, creatureSizeFilter);
+		}
+
+		public void ExcludeCreatureKinds(CreatureKinds creatureKinds)
+		{
+			const CreatureKinds allCreatureKinds = CreatureKinds.Aberrations |
+				CreatureKinds.Beasts |
+				CreatureKinds.Celestials |
+				CreatureKinds.Constructs |
+				CreatureKinds.Dragons |
+				CreatureKinds.Elemental |
+				CreatureKinds.Fey |
+				CreatureKinds.Fiends |
+				CreatureKinds.Giants |
+				CreatureKinds.Humanoids |
+				CreatureKinds.Monstrosities |
+				CreatureKinds.Oozes |
+				CreatureKinds.Plants |
+				CreatureKinds.Undead;
+
+			includeCreatures = allCreatureKinds & ~creatureKinds;
 		}
 
 		public string Name { get; set; }
