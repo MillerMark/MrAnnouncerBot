@@ -81,7 +81,7 @@ namespace DHDM
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
-		private void CharacterSheetsKent_CharacterChanged(object sender, RoutedEventArgs e)
+		private void HandleCharacterChanged(object sender, RoutedEventArgs e)
 		{
 			if (sender is CharacterSheets characterSheets)
 			{

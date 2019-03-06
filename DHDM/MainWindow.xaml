@@ -16,22 +16,22 @@
 		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
-					<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="CharacterSheetsKent_CharacterChanged"></uc:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Karen">
 				<Grid Background="#FFE5E5E5">
-					<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged"></uc:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Mark">
 				<Grid Background="#FFE5E5E5">
-					<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged"></uc:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Kayla">
 				<Grid Background="#FFE5E5E5">
-					<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged"></uc:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 		</TabControl>

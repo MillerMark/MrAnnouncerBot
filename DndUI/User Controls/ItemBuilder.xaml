@@ -51,9 +51,9 @@
 
 		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,8,0,0">
 			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded"></local:EditableListBox>
-			<local:ModBuilder Margin="5,0,0,0" Visibility="Visible"></local:ModBuilder>
+			<local:ModBuilder Margin="5,0,0,0" Visibility="Collapsed"></local:ModBuilder>
 			<local:EditableListBox x:Name="lbAttackList" Margin="5,0,0,0" Title="Attacks:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
-			<local:AttackBuilder Margin="5,0,0,0" Visibility="Collapsed"></local:AttackBuilder>
+			<local:AttackBuilder Margin="5,0,0,0" Visibility="Visible"></local:AttackBuilder>
 			<local:EditableListBox Margin="5,0,0,0" x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
 		</StackPanel>
 	</StackPanel>

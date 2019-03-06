@@ -478,7 +478,7 @@ namespace DndCore
 
 		private double _passivePerception = int.MinValue;
 
-		double passivePerception
+		public double PassivePerception
 		{
 			get
 			{

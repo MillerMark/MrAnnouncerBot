@@ -330,7 +330,7 @@ namespace DndUI
 			character.deathSaveDeath2 = statDeathSaveSkull2.IsChecked == true;
 			character.deathSaveDeath3 = statDeathSaveSkull3.IsChecked == true;
 			character.deathSaveLife1 = statDeathSaveHeart1.IsChecked == true;
-			character.deathSaveLife2 = statDeathSaveSkull2.IsChecked == true;
+			character.deathSaveLife2 = statDeathSaveHeart2.IsChecked == true;
 			character.deathSaveLife3 = statDeathSaveHeart3.IsChecked == true;
 			character.dexterity = statDexterity.ToInt();
 			//character.disadvantages = 
@@ -395,6 +395,34 @@ namespace DndUI
 			character.weight = statWeight.ToDouble();
 			character.wisdom = statWisdom.ToInt();
 			return Newtonsoft.Json.JsonConvert.SerializeObject(character);
+		}
+
+		void HookChangedEvents(Visual visual)
+		{
+			int childCount = VisualTreeHelper.GetChildrenCount(visual);
+
+			for (int i = 0; i <= childCount - 1; i++)
+			{
+				Visual child = (Visual)VisualTreeHelper.GetChild(visual, i);
+
+				switch (child)
+				{
+					case StatBox statBox:
+						statBox.StatChanged += AnyStatChanged;
+						break;
+					case CheckBox checkBox:
+						checkBox.Checked += AnyStatChanged;
+						checkBox.Unchecked += AnyStatChanged;
+						break;
+				}
+
+				if (VisualTreeHelper.GetChildrenCount(child) > 0)
+					HookChangedEvents(child);
+			}
+		}
+		private void UserControl_Loaded(object sender, RoutedEventArgs e)
+		{
+			HookChangedEvents(this);
 		}
 	}
 }
