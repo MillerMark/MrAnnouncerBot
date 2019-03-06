@@ -15,6 +15,9 @@ namespace DndCore
 		public double hueShift;
 		public double saturation;
 		public double brightness;
+		public double secondaryHueShift = 0;
+		public double secondarySaturation = 100;
+		public double secondaryBrightness = 100;
 
 		public AnimationEffect()
 		{

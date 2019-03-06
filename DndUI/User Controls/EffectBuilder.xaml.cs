@@ -427,44 +427,33 @@ namespace DndUI
 
 		private void RbDenseSmoke_Checked(object sender, RoutedEventArgs e)
 		{
-			if (spEmbersSelector != null)
-				spEmbersSelector.Visibility = Visibility.Collapsed;
-			if (spBloodSelector != null)
-				spBloodSelector.Visibility = Visibility.Collapsed;
+			CollapseSpecials();
 			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbPoof_Checked(object sender, RoutedEventArgs e)
 		{
-			if (spEmbersSelector != null)
-				spEmbersSelector.Visibility = Visibility.Collapsed;
-			if (spBloodSelector != null)
-				spBloodSelector.Visibility = Visibility.Collapsed;
+			CollapseSpecials();
 			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbSparkle_Checked(object sender, RoutedEventArgs e)
 		{
-			if (spEmbersSelector != null)
-				spEmbersSelector.Visibility = Visibility.Collapsed;
-			if (spBloodSelector != null)
-				spBloodSelector.Visibility = Visibility.Collapsed;
+			CollapseSpecials();
 			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbEmbers_Checked(object sender, RoutedEventArgs e)
 		{
+			CollapseSpecials();
 			if (spEmbersSelector != null)
 				spEmbersSelector.Visibility = Visibility.Visible;
-			if (spBloodSelector != null)
-				spBloodSelector.Visibility = Visibility.Collapsed;
 			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbBloodSplatter_Checked(object sender, RoutedEventArgs e)
 		{
-			if (spEmbersSelector != null)
-				spEmbersSelector.Visibility = Visibility.Collapsed;
+			CollapseSpecials();
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Visible;
 			OnPropertyChanged("AnimationSprites");
@@ -472,20 +461,24 @@ namespace DndUI
 
 		private void RbFumes_Checked(object sender, RoutedEventArgs e)
 		{
-			if (spEmbersSelector != null)
-				spEmbersSelector.Visibility = Visibility.Collapsed;
-			if (spBloodSelector != null)
-				spBloodSelector.Visibility = Visibility.Collapsed;
+			CollapseSpecials();
 			OnPropertyChanged("AnimationSprites");
 		}
 
 		private void RbStars_Checked(object sender, RoutedEventArgs e)
 		{
+			CollapseSpecials();
+			OnPropertyChanged("AnimationSprites");
+		}
+
+		private void CollapseSpecials()
+		{
 			if (spEmbersSelector != null)
 				spEmbersSelector.Visibility = Visibility.Collapsed;
 			if (spBloodSelector != null)
 				spBloodSelector.Visibility = Visibility.Collapsed;
-			OnPropertyChanged("AnimationSprites");
+			if (spSecondaryAnimationColorShiftOptions != null)
+				spSecondaryAnimationColorShiftOptions.Visibility = Visibility.Collapsed;
 		}
 
 		private void BtnNavSoundFile_Click(object sender, RoutedEventArgs e)
@@ -561,6 +554,8 @@ namespace DndUI
 				return "Restrained";
 			if (rbHeart.IsChecked ?? false)
 				return "Heart";
+			if (rbFireBall.IsChecked ?? false)
+				return "FireBall";
 
 			return string.Empty;
 		}
@@ -609,8 +604,10 @@ namespace DndUI
 
 			else if (spriteName == "Restrained")
 				rbRestrained.IsChecked = true;
-			else if (spriteName == "rbHeart")
+			else if (spriteName == "Heart")
 				rbHeart.IsChecked = true;
+			else if (spriteName == "FireBall")
+				rbFireBall.IsChecked = true;
 		}
 
 		DndCore.Vector ToVector(string text)
@@ -650,7 +647,15 @@ namespace DndUI
 
 		Effect GetAnimationEffect()
 		{
-			return new AnimationEffect(GetAnimationName(), GetTarget(), 0, nedAdjustHue.ValueAsDouble, nedAdjustSaturation.ValueAsDouble, nedAdjustBrightness.ValueAsDouble);
+			AnimationEffect animationEffect = new AnimationEffect(GetAnimationName(), GetTarget(), 0, nedAdjustHue.ValueAsDouble, nedAdjustSaturation.ValueAsDouble, nedAdjustBrightness.ValueAsDouble);
+			if (rbFireBall.IsChecked == true)
+			{
+				animationEffect.secondaryHueShift = nedSecondaryAdjustHue.ValueAsDouble;
+				animationEffect.secondarySaturation = nedSecondaryAdjustSaturation.ValueAsDouble;
+				animationEffect.secondaryBrightness = nedSecondaryAdjustBrightness.ValueAsDouble;
+			}
+
+			return animationEffect;
 		}
 
 		TargetValue ToTargetValue(TargetValueEdit tve)
@@ -781,6 +786,9 @@ namespace DndUI
 			nedAdjustHue.Value = animationEffect.hueShift.ToString();
 			nedAdjustBrightness.Value = animationEffect.brightness.ToString();
 			nedAdjustSaturation.Value = animationEffect.saturation.ToString();
+			nedSecondaryAdjustHue.Value = animationEffect.secondaryHueShift.ToString();
+			nedSecondaryAdjustBrightness.Value = animationEffect.secondaryBrightness.ToString();
+			nedSecondaryAdjustSaturation.Value = animationEffect.secondarySaturation.ToString();
 			//animationEffect.startFrameIndex;
 		}
 
@@ -848,6 +856,10 @@ namespace DndUI
 			animationEffect.hueShift = nedAdjustHue.ValueAsDouble;
 			animationEffect.brightness = nedAdjustBrightness.ValueAsDouble;
 			animationEffect.saturation = nedAdjustSaturation.ValueAsDouble;
+
+			animationEffect.secondaryHueShift = nedSecondaryAdjustHue.ValueAsDouble;
+			animationEffect.secondaryBrightness = nedSecondaryAdjustBrightness.ValueAsDouble;
+			animationEffect.secondarySaturation = nedSecondaryAdjustSaturation.ValueAsDouble;
 			animationEffect.startFrameIndex = 0;
 		}
 
@@ -1016,10 +1028,7 @@ namespace DndUI
 
 		private void RbHeart_Checked(object sender, RoutedEventArgs e)
 		{
-			if (spEmbersSelector != null)
-				spEmbersSelector.Visibility = Visibility.Collapsed;
-			if (spBloodSelector != null)
-				spBloodSelector.Visibility = Visibility.Collapsed;
+			CollapseSpecials();
 			OnPropertyChanged("AnimationSprites");
 		}
 
@@ -1087,6 +1096,14 @@ namespace DndUI
 		{
 			AnyNumEdit_Changed();
 			OnPropertyChanged("Brightness");
+		}
+
+		private void RbFireBall_Checked(object sender, RoutedEventArgs e)
+		{
+			CollapseSpecials();
+			if (spSecondaryAnimationColorShiftOptions != null)
+				spSecondaryAnimationColorShiftOptions.Visibility = Visibility.Visible;
+			OnPropertyChanged("AnimationSprites");
 		}
 	}
 }

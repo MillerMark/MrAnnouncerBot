@@ -10,47 +10,51 @@
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
 						 Background="AliceBlue"
 						 >
-	<StackPanel x:Name="spMain" Orientation="Vertical" Margin="4">
-		<StackPanel x:Name="spName" Orientation="Horizontal">
-			<TextBlock Text="Name: " Width="Auto" Height="Auto"/>
-			<TextBox x:Name="tbxName" MinWidth="120">
-			</TextBox>
+	<StackPanel x:Name="spMain" Orientation="Vertical" Margin="0">
+		<StackPanel x:Name="spTwoColumns" Orientation="Horizontal">
+			<StackPanel x:Name="spLeftColumn" Orientation="Vertical">
+				<TextBlock Text="Description: " Width="Auto" Height="Auto" Margin="0,0,0,0"/>
+				<TextBox x:Name="tbxDescription" MinWidth="320" MinHeight="62" TextWrapping="Wrap" AcceptsReturn="True">
+				</TextBox>
+			</StackPanel>
+			<StackPanel x:Name="spRightColumn" Orientation="Vertical" Margin="10,0,0,0" >
+				<StackPanel x:Name="spBools" Orientation="Horizontal" Margin="0,2,0,0" >
+					<CheckBox x:Name="ckbConsumable" Margin="0, 0, 0, 0"  >
+						Consumable
+					</CheckBox>
+					<CheckBox x:Name="ckbMagic" Margin="10, 0, 0, 0"  >
+						Magic
+					</CheckBox>
+					<CheckBox x:Name="ckbSilvered" Margin="10, 0, 0, 0"  >
+						Silvered
+					</CheckBox>
+					<CheckBox x:Name="ckbAdamantine" Margin="10, 0, 0, 0"  >
+						Adamantine
+					</CheckBox>
+					<CheckBox x:Name="ckbEquipped" Margin="10, 0, 0, 0" Visibility="Collapsed" >
+						Equipped
+					</CheckBox>
+				</StackPanel>
+				<StackPanel x:Name="spTimes" Orientation="Horizontal" Margin="0,8,0,0">
+					<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" MeasureIndex="0"></local:TimeSpanEditor>
+					<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" MeasureIndex="0" Margin="14,0,0,0" ></local:TimeSpanEditor>
+				</StackPanel>
+
+				<StackPanel x:Name="spDetails" Orientation="Horizontal" Margin="0,4,0,0">
+					<dh:NumEdit Label="Weight: " Units="lbs" Value="0"></dh:NumEdit>
+					<dh:NumEdit Label="Cost/Value: " Units="gp" Value="0"></dh:NumEdit>
+					<dh:NumEdit Label="Quantity: " Units="cnt" Value="1"></dh:NumEdit>
+				</StackPanel>
+			</StackPanel>
 		</StackPanel>
-		<TextBlock Text="Description: " Width="Auto" Height="Auto"/>
-		<TextBox x:Name="tbxDescription" MinWidth="120" MinHeight="50" TextWrapping="Wrap" AcceptsReturn="True">
-		</TextBox>
-		<StackPanel x:Name="spBools" Orientation="Horizontal" Margin="0,8,0,0" >
-			<CheckBox x:Name="ckbConsumable" Margin="0, 0, 0, 0"  >
-				Consumable
-			</CheckBox>
-			<CheckBox x:Name="ckbMagic" Margin="10, 0, 0, 0"  >
-				Magic
-			</CheckBox>
-			<CheckBox x:Name="ckbSilvered" Margin="10, 0, 0, 0"  >
-				Silvered
-			</CheckBox>
-			<CheckBox x:Name="ckbAdamantine" Margin="10, 0, 0, 0"  >
-				Adamantine
-			</CheckBox>
-			<CheckBox x:Name="ckbEquipped" Margin="10, 0, 0, 0" Visibility="Collapsed" >
-				Equipped
-			</CheckBox>
-		</StackPanel>
-		<StackPanel x:Name="spTimes" Orientation="Horizontal" Margin="0,8,0,0">
-			<local:TimeSpanEditor x:Name="tseEquipTime" Label="Equip Time:" MeasureIndex="0"></local:TimeSpanEditor>
-			<local:TimeSpanEditor x:Name="tseUnequipTime" Label="Unequip Time:" MeasureIndex="0" Margin="14,0,0,0" ></local:TimeSpanEditor>
-		</StackPanel>
-		
-		<StackPanel x:Name="spDetails" Orientation="Horizontal" Margin="0,4,0,0">
-			<dh:NumEdit Label="Weight: " Units="lbs" Value="0"></dh:NumEdit>
-			<dh:NumEdit Label="Cost/Value: " Units="gp" Value="0"></dh:NumEdit>
-			<dh:NumEdit Label="Quantity: " Units="cnt" Value="1"></dh:NumEdit>
-		</StackPanel>
-		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,4,0,0">
+
+
+		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,8,0,0">
 			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded"></local:EditableListBox>
-			<local:ModBuilder Margin="4" Visibility="Visible"></local:ModBuilder>
-			<local:EditableListBox x:Name="lbAttackList" Title="Attacks:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
-			<local:EditableListBox x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
+			<local:ModBuilder Margin="5,0,0,0" Visibility="Visible"></local:ModBuilder>
+			<local:EditableListBox x:Name="lbAttackList" Margin="5,0,0,0" Title="Attacks:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
+			<local:AttackBuilder Margin="5,0,0,0" Visibility="Collapsed"></local:AttackBuilder>
+			<local:EditableListBox Margin="5,0,0,0" x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

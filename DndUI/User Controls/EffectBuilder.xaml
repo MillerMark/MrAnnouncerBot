@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DndUI"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="654" Background="AliceBlue">
+             d:DesignHeight="600" d:DesignWidth="754" Background="AliceBlue">
 	<StackPanel x:Name="spMain" Orientation="Vertical">
 		<StackPanel x:Name="spEffectType" Orientation="Horizontal" Margin="0,4,0,4">
 			<TextBlock x:Name="tbType" Text="Effect Type: " Width="Auto" Height="Auto" Margin="4, 1, 4, 1" />
@@ -266,6 +266,9 @@
 				<RadioButton x:Name="rbHeart" Margin="8, 3, 4, 1" Checked="RbHeart_Checked">
 					Heart
 				</RadioButton>
+				<RadioButton x:Name="rbFireBall" Margin="8, 3, 4, 1" Checked="RbFireBall_Checked">
+					Fire Ball
+				</RadioButton>
 			</StackPanel>
 
 			<StackPanel x:Name="spEmbersSelector" Orientation="Horizontal" Margin="8, 0, 0, 0" Visibility="Collapsed">
@@ -307,6 +310,11 @@
 				<local:NumEdit x:Name="nedAdjustHue" Label="Adjust Hue: " Units="deg" Value="0" Margin="0, 0, 0, 0" TextChanged="NedAdjustHue_TextChanged"></local:NumEdit>
 				<local:NumEdit x:Name="nedAdjustSaturation" Label="Saturation: " Units="%" Value="100" TextChanged="NedAdjustSaturation_TextChanged"></local:NumEdit>
 				<local:NumEdit x:Name="nedAdjustBrightness" Label="Brightness: " Units="%" Value="100" TextChanged="NedAdjustBrightness_TextChanged"></local:NumEdit>
+			</StackPanel>
+			<StackPanel x:Name="spSecondaryAnimationColorShiftOptions" Orientation="Horizontal" Margin="8,8,0,0" Visibility="Collapsed">
+				<local:NumEdit x:Name="nedSecondaryAdjustHue" Label="Secondary Adjust Hue: " Units="deg" Value="0" Margin="0, 0, 0, 0" TextChanged="NedAdjustHue_TextChanged"></local:NumEdit>
+				<local:NumEdit x:Name="nedSecondaryAdjustSaturation" Label="Saturation: " Units="%" Value="100" TextChanged="NedAdjustSaturation_TextChanged"></local:NumEdit>
+				<local:NumEdit x:Name="nedSecondaryAdjustBrightness" Label="Brightness: " Units="%" Value="100" TextChanged="NedAdjustBrightness_TextChanged"></local:NumEdit>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

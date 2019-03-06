@@ -20,6 +20,8 @@ class DragonFrontGame extends GamePlusQuiz {
   emitter: Emitter;
   shouldDrawCenterCrossHairs: boolean = false;
   denseSmoke: Sprites;
+  fireBallBack: Sprites;
+  fireBallFront: Sprites;
   poof: Sprites;
   bloodGush: Sprites;
   bloodLarger: Sprites;
@@ -85,6 +87,16 @@ class DragonFrontGame extends GamePlusQuiz {
     this.denseSmoke.name = 'DenseSmoke';
     this.denseSmoke.originX = 309;
     this.denseSmoke.originY = 723;
+
+    this.fireBallBack = new Sprites('FireBall/Back/BackFireBall', 88, fps30, AnimationStyle.Sequential, true);
+    this.fireBallBack.name = 'FireBallBack';
+    this.fireBallBack.originX = 190;
+    this.fireBallBack.originY = 1080;
+
+    this.fireBallFront = new Sprites('FireBall/Front/FireBallFront', 88, fps30, AnimationStyle.Sequential, true);
+    this.fireBallFront.name = 'FireBallFront';
+    this.fireBallFront.originX = 190;
+    this.fireBallFront.originY = 1080;
 
     this.poof = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
     this.poof.name = 'Puff';
@@ -168,6 +180,8 @@ class DragonFrontGame extends GamePlusQuiz {
     this.allEffects.add(this.embersLarge);
     this.allEffects.add(this.embersMedium);
     this.allEffects.add(this.denseSmoke);
+    this.allEffects.add(this.fireBallBack);
+    this.allEffects.add(this.fireBallFront);
     this.allEffects.add(this.poof);
     this.allEffects.add(this.bloodGush);
     this.allEffects.add(this.bloodLarger);
@@ -271,6 +285,31 @@ class DragonFrontGame extends GamePlusQuiz {
       }
 
       this.denseSmoke.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY)).setHueSatBrightness(hue, saturation, brightness));
+    }
+
+
+    if (testCommand.startsWith("fb")) {
+      let split: string[] = testCommand.split(' ');
+
+      let hue: number = 0;
+      let saturation: number = 100;
+      let brightness: number = 100;
+
+      if (split.length === 2) {
+        hue = +split[1];
+      }
+      else if (split.length === 3) {
+        hue = +split[1];
+        saturation = +split[2];
+      }
+      else if (split.length > 3) {
+        hue = +split[1];
+        saturation = +split[2];
+        brightness = +split[3];
+      }
+
+      this.fireBallBack.sprites.push(new SpriteProxy(0, 450 - this.fireBallBack.originX, 1080 - this.fireBallBack.originY));
+      this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.fireBallFront.originX, 1080 - this.fireBallFront.originY)).setHueSatBrightness(hue, saturation, brightness));
     }
 
     return false;
@@ -397,6 +436,7 @@ class DragonFrontGame extends GamePlusQuiz {
 
   private triggerAnimation(dto: any, center: Vector) {
     let sprites: Sprites;
+    //console.log('dto.spriteName: ' + dto.spriteName);
     if (dto.spriteName === 'DenseSmoke')
       sprites = this.denseSmoke;
     else if (dto.spriteName === 'Poof')
@@ -429,7 +469,16 @@ class DragonFrontGame extends GamePlusQuiz {
       sprites = this.stars;
     else if (dto.spriteName === 'Fumes')
       sprites = this.fumes;
+    else if (dto.spriteName === 'FireBall')
+      sprites = this.fireBallBack;
     let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness);
     spritesEffect.start();
+
+    if (dto.spriteName === 'FireBall') {
+      sprites = this.fireBallFront;
+      let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.secondaryHueShift, dto.secondarySaturation, dto.secondaryBrightness);
+      spritesEffect.start();
+    }
+
   }
 } 
