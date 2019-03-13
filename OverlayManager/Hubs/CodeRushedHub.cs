@@ -30,6 +30,21 @@ namespace OverlayManager.Hubs
 			mrAnnouncerBotHub.Clients.All.NeedToGetCoins(userId);
 		}
 
+		public void Arm(string userId)
+		{
+			mrAnnouncerBotHub.Clients.All.Arm(userId);
+		}
+
+		public void Disarm(string userId)
+		{
+			mrAnnouncerBotHub.Clients.All.Disarm(userId);
+		}
+
+		public void Fire(string userId)
+		{
+			mrAnnouncerBotHub.Clients.All.Fire(userId);
+		}
+
 		public void ChangeScene(string sceneName)
 		{
 			mrAnnouncerBotHub.Clients.All.ChangeScene(sceneName);

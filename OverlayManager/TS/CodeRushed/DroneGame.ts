@@ -318,6 +318,21 @@ class DroneGame extends GamePlusQuiz {
       return true;
     }
 
+    if (testCommand === 'arm') {
+      arm(userId);
+      return true;
+    }
+
+    if (testCommand === 'disarm') {
+      disarm(userId);
+      return true;
+    }
+
+    if (testCommand === 'fire') {
+      fire(userId);
+      return true;
+    }
+
     if (testCommand === '+') {
       gravityGames.startGame(wallIntersectionTest);
       return true;

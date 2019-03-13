@@ -69,3 +69,15 @@ function whisper(userName: string, message: string) {
 function needToGetCoins(userId: string) {
   connection.invoke("NeedToGetCoins", userId);
 }
+
+function arm(userId: string) {
+  connection.invoke("Arm", userId);
+}
+
+function disarm(userId: string) {
+  connection.invoke("Disarm", userId);
+}
+
+function fire(userId: string) {
+  connection.invoke("Fire", userId);
+}

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,22 +11,103 @@ namespace RemoteDetonator
 	class Program
 	{
 		private const string SerialNumber = "A601AYI4";
+
+		static void FireRelay(int relayNum)
+		{
+			try
+			{
+				const int msDelay = 7000;
+				Console.BackgroundColor = ConsoleColor.DarkRed;
+				Console.WriteLine("Firing Relay #" + relayNum);
+				SetTargetRelay(relayNum, true);
+				Thread.Sleep(msDelay);
+			}
+			finally
+			{
+				Console.BackgroundColor = ConsoleColor.Black;
+				Console.WriteLine("Turning Off Relay #" + relayNum);
+				SetTargetRelay(relayNum, false);
+			}
+		}
+
+		static int nextRelayNumToFire = 0;
+
+		static bool IsSuperUser(string userID)
+		{
+			return userID == "237584851";
+		}
+
+		static void Arm(string userID)
+		{
+			if (!IsSuperUser(userID))
+				return;
+			armed = true;
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.BackgroundColor = ConsoleColor.DarkRed;
+			Console.WriteLine("           ");
+			Console.WriteLine(" A R M E D ");
+			Console.WriteLine("           ");
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.BackgroundColor = ConsoleColor.Black;
+			nextRelayNumToFire = 1;
+		}
+
+		static void Disarm(string userID)
+		{
+			if (!IsSuperUser(userID))
+				return;
+			armed = false;
+
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.BackgroundColor = ConsoleColor.DarkBlue;
+			Console.WriteLine("                 ");
+			Console.WriteLine(" D I S A R M E D ");
+			Console.WriteLine("                 ");
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.BackgroundColor = ConsoleColor.Black;
+		}
+
+		static void Fire(string userID)
+		{
+			if (!armed)
+				return;
+			FireRelay(nextRelayNumToFire);
+			nextRelayNumToFire++;
+		}
+
+		static void ConnectToSignalR()
+		{
+			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
+			if (hubConnection != null)
+			{
+				//hubConnection.Closed += HubConnection_Closed;
+				hubConnection.On<string>("Arm", Arm);
+				hubConnection.On<string>("Disarm", Disarm);
+				hubConnection.On<string>("Fire", Fire);
+				// TODO: Check out benefits of stopping gracefully with a cancellation token.
+				hubConnection.StartAsync();
+			}
+		}
 		static void Main(string[] args)
 		{
-			Connect();
-			const int msDelay = 200;
-			Console.WriteLine("Press Enter to set relay 1 to True for {0}ms.", msDelay);
-			Console.ReadLine();
-			SetTargetRelay(1, true);
-			Thread.Sleep(msDelay);
-			SetTargetRelay(1, false);
+			ConnectToSignalR();
+			ConnectToRelays();
+
+			//Console.WriteLine("Press Enter to Blast off #1.");
+			//Console.ReadLine();
+
+			//FireRelay(1);
+
+			//Console.WriteLine("Press Enter to exit.");
 			Console.ReadLine();
 		}
 
 		static UsbRelays _relays;
 		static List<Relay> _relayControls;
+		static HubConnection hubConnection;
+		static bool armed;
 
-		private static void Connect()
+		private static void ConnectToRelays()
 		{
 			_relays = new UsbRelays();
 

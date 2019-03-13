@@ -30,8 +30,11 @@ function addMeteorExplosion(meteors: Sprites, x: number) {
   //if (meteors === activeDroneGame.redMeteors)
   const left: number = 830;
   const width: number = 340;
-  if (x > left && x < left + width)
+  if (x > left && x < left + width) {
     activeDroneGame.redExplosions.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(x - activeDroneGame.redExplosions.spriteWidth / 2 + 50, 0)).setHueSatBrightness(0, 0, 300));
+    // TODO: Get the userID who tossed this meteor.
+    fire("");
+  }
   else 
     activeDroneGame.redExplosions.sprites.push(new SpriteProxy(0, x - activeDroneGame.redExplosions.spriteWidth / 2 + 50, 0));
   //if (meteors === activeDroneGame.blueMeteors)

@@ -8,6 +8,11 @@ namespace OverlayManager.Hubs
 	{
 		Task AddCoins(string userID, int amount);
 		Task NeedToGetCoins(string userID);
+
+		Task Arm(string userID);
+		Task Disarm(string userID);
+		Task Fire(string userID);
+
 		Task ChangeScene(string sceneName);
 
 		Task UserHasCoins(string userID, int amount);  // A -> B -> C
