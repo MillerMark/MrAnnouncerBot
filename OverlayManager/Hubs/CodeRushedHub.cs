@@ -29,6 +29,7 @@ namespace OverlayManager.Hubs
 		{
 			mrAnnouncerBotHub.Clients.All.NeedToGetCoins(userId);
 		}
+
 		public void ChangeScene(string sceneName)
 		{
 			mrAnnouncerBotHub.Clients.All.ChangeScene(sceneName);

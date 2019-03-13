@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+						 xmlns:dnd="clr-namespace:DndCore;assembly=DndCore"
              xmlns:local="clr-namespace:DndUI"
              xmlns:dh="clr-namespace:DndUI"
              mc:Ignorable="d" 
@@ -10,15 +11,18 @@
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
 						 Background="AliceBlue"
 						 >
+	<UserControl.Resources>
+		<!--<local:ItemViewModel x:Key="vm"/>-->
+	</UserControl.Resources>
 	<StackPanel x:Name="spMain" Orientation="Vertical" Margin="0">
-		<StackPanel x:Name="spTwoColumns" Orientation="Horizontal">
+		<StackPanel x:Name="spThreeColumns" Orientation="Horizontal">
 			<StackPanel x:Name="spLeftColumn" Orientation="Vertical">
 				<TextBlock Text="Description: " Width="Auto" Height="Auto" Margin="0,0,0,0"/>
 				<TextBox x:Name="tbxDescription" MinWidth="320" MinHeight="62" TextWrapping="Wrap" AcceptsReturn="True">
 				</TextBox>
 			</StackPanel>
 			<StackPanel x:Name="spRightColumn" Orientation="Vertical" Margin="10,0,0,0" >
-				<StackPanel x:Name="spBools" Orientation="Horizontal" Margin="0,2,0,0" >
+				<StackPanel x:Name="spBools" Orientation="Horizontal" Margin="0,3,0,0" >
 					<CheckBox x:Name="ckbConsumable" Margin="0, 0, 0, 0"  >
 						Consumable
 					</CheckBox>
@@ -46,10 +50,22 @@
 					<dh:NumEdit Label="Quantity: " Units="cnt" Value="1"></dh:NumEdit>
 				</StackPanel>
 			</StackPanel>
+			<StackPanel Orientation="Vertical" Margin="10,0,0,0">
+				<StackPanel x:Name="spWeaponCategory" Orientation="Horizontal">
+					<TextBlock Text="Weapon Category: " Width="Auto" Height="Auto" Margin="0,2,0,0"/>
+					<ComboBox x:Name="cbWeaponCategories" Height="24" MinWidth="130" SelectedIndex="0"
+								ItemsSource="{Binding Source={local:EnumBindingSource {x:Type dnd:WeaponCategories}}}" Margin="0,0,20,0"/>
+				</StackPanel>
+			</StackPanel>
 		</StackPanel>
-
-
+		
 		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,8,0,0">
+			<StackPanel x:Name="spWeaponProperties" Orientation="Vertical" Margin="0,0,4,0">
+					<TextBlock Text="Weapon Properties: " Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbWeaponProperties" ItemsSource="{Binding WeaponProperties.Items}">
+<!--TODO: Get WeaponProperties to fill out a check list.-->
+				</ListBox>
+			</StackPanel>
 			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded"></local:EditableListBox>
 			<local:ModBuilder Margin="5,0,0,0" Visibility="Collapsed"></local:ModBuilder>
 			<local:EditableListBox x:Name="lbAttackList" Margin="5,0,0,0" Title="Attacks:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
