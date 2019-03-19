@@ -111,6 +111,7 @@
     <Compile Include="View Models\DamageConditionsViewModel.cs" />
     <Compile Include="View Models\DamageViewModel.cs" />
     <Compile Include="View Models\EffectEntry.cs" />
+    <Compile Include="View Models\ItemViewModel.cs" />
     <Compile Include="View Models\SavingThrowViewModel.cs" />
     <Compile Include="View Models\Support\IListEntry.cs" />
     <Compile Include="View Models\Support\ListEntry.cs" />

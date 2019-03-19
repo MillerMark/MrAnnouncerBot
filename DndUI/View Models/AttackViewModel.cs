@@ -6,9 +6,8 @@ using System.Linq;
 
 namespace DndUI
 {
-	public class AttackViewModel : ViewModelBase
+	public class AttackViewModel : ListEntry
 	{
-		string name;
 		CheckEnumList includeCreatures;
 		CheckEnumList creatureSizeFilter;
 		//CheckEnumList excludeCreatures;
@@ -47,7 +46,7 @@ namespace DndUI
 			get { return recharges; }
 			set
 			{
-				if (recharges == value)
+				if (recharges.Equals(value))
 					return;
 				recharges = value;
 				OnPropertyChanged();
@@ -59,7 +58,7 @@ namespace DndUI
 			get { return lasts; }
 			set
 			{
-				if (lasts == value)
+				if (lasts.Equals(value))
 					return;
 				lasts = value;
 				OnPropertyChanged();
@@ -77,20 +76,6 @@ namespace DndUI
 				OnPropertyChanged();
 			}
 		}
-
-
-		public string Name
-		{
-			get { return name; }
-			set
-			{
-				if (name == value)
-					return;
-				name = value;
-				OnPropertyChanged();
-			}
-		}
-
 
 		public string Description
 		{

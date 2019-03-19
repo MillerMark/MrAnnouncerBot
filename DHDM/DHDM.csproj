@@ -251,6 +251,12 @@
     <Compile Include="User Controls\EffectsList.xaml.cs">
       <DependentUpon>EffectsList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="User Controls\ItemList.xaml.cs">
+      <DependentUpon>ItemList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="User Controls\WeaponsList.xaml.cs">
+      <DependentUpon>WeaponsList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Page Include="User Controls\AttackList.xaml">
       <SubType>Designer</SubType>
@@ -271,6 +277,14 @@
     <Page Include="User Controls\EffectsList.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="User Controls\ItemList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="User Controls\WeaponsList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

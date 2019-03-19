@@ -85,5 +85,16 @@ namespace DHDM
 		 {
 			effects = lbEffectsList.LoadEntries<EffectEntry>();
 		}
+
+		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e)
+		{
+			EffectGroup effectGroup = new EffectGroup();
+			effectGroup.Add(effectBuilder.GetEffect());
+
+			effectGroup.Add(new SoundEffect("Blood Squirting Weapon Impact.mp3"));
+
+			string serializedObject = JsonConvert.SerializeObject(effectGroup);
+			HubtasticBaseStation.TriggerEffect(serializedObject);
+		}
 	}
 }

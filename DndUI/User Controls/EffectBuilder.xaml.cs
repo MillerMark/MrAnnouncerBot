@@ -513,7 +513,7 @@ namespace DndUI
 		}
 		Effect GetSoundEffect()
 		{
-			return new SoundEffect(tbxSoundFileName.Name);
+			return new SoundEffect(tbxSoundFileName.Text);
 		}
 		string GetAnimationName()
 		{

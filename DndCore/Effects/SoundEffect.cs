@@ -9,12 +9,14 @@ namespace DndCore
 
 		public SoundEffect()
 		{
-			this.soundFileName = string.Empty;
+			soundFileName = string.Empty;
+			effectKind = EffectKind.SoundEffect;
 		}
 
 		public SoundEffect(string soundFileName)
 		{
 			this.soundFileName = soundFileName;
+			effectKind = EffectKind.SoundEffect;
 		}
 	}
 }

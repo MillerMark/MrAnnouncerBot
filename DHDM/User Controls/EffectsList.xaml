@@ -6,12 +6,13 @@
              xmlns:local="clr-namespace:DndUI"
 						 xmlns:ui="clr-namespace:DndUI;assembly=DndUI"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Background="AliceBlue">
+             d:DesignHeight="450" d:DesignWidth="900" Background="AliceBlue">
 	<StackPanel x:Name="spListBoxes" Orientation="Horizontal" Margin="4">
 		<ui:EditableListBox x:Name="lbEffectsList" Title="Effects:" DataFileName="AllEffects.json" SelectionChanged="LbEffectsComposite_SelectionChanged" ClickAdd="LbEffectsList_ClickAdd" Loaded="LbEffectsList_Loaded"></ui:EditableListBox>
 		<StackPanel x:Name="spControls" Orientation="Vertical">
 			<ui:EffectBuilder x:Name="effectBuilder" Width="Auto" Height="Auto" PropertyChanged="EffectBuilder_PropertyChanged" ></ui:EffectBuilder>
-			<Button x:Name="btnTestEffect" Height="100" Width="300" Margin="22" Padding="8, 4, 8, 4" Content="Test Effect" FontSize="40" FontWeight="Bold" Click="BtnTestEffect_Click"/>
+			<Button x:Name="btnTestEffect" Height="80" Width="260" Margin="22" Padding="8, 4, 8, 4" Content="Test Effect" FontSize="40" FontWeight="Bold" Click="BtnTestEffect_Click"/>
+			<Button x:Name="btnTestGroupEffect" Height="80" Width="260" Margin="0,0,0,22" Padding="8, 4, 8, 4" Content="Test Group" FontSize="40" FontWeight="Bold" Click="BtnTestGroupEffect_Click"/>
 			
 			<!--Template="{StaticResource keyNumTextBox}"-->
 			<!--Style="{StaticResource NumTextBoxStyle}"-->

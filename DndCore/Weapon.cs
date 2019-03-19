@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DndCore
@@ -6,11 +7,13 @@ namespace DndCore
 	public class Weapon : Item
 	{
 		public AttackType weaponType = AttackType.None;
-		public WeaponProperties weaponProperties = WeaponProperties.none;
+		public WeaponProperties weaponProperties = WeaponProperties.None;
+		public WeaponCategories weaponCategories = WeaponCategories.None;
 
 		public double normalRange = 0;  // Used if weaponProperties includes WeaponProperties.range.
 		public double longRange = 0;    // Used if weaponProperties includes WeaponProperties.range.
 
+		public List<Attack> attacks = new List<Attack>();
 
 		public static Weapon buildShortSword()
 		{
@@ -19,7 +22,7 @@ namespace DndCore
 			shortSword.name = "Shortsword";
 			shortSword.costValue = 10;
 			shortSword.attacks.Add(new Attack("Stab").AddDamage(DamageType.Piercing, "1d6", AttackKind.NonMagical));
-			shortSword.weaponProperties = WeaponProperties.finesse | WeaponProperties.light;
+			shortSword.weaponProperties = WeaponProperties.Finesse | WeaponProperties.Light;
 			shortSword.weight = 2;
 			return shortSword;
 		}
@@ -32,7 +35,7 @@ namespace DndCore
 			shortSword.name = "Magical Shortsword";
 			shortSword.costValue = 10;
 			shortSword.attacks.Add(new Attack("Stab").AddDamage(DamageType.Piercing, "1d6", AttackKind.Magical));
-			shortSword.weaponProperties = WeaponProperties.finesse | WeaponProperties.light;
+			shortSword.weaponProperties = WeaponProperties.Finesse | WeaponProperties.Light;
 			shortSword.weight = 2;
 			return shortSword;
 		}
@@ -46,7 +49,7 @@ namespace DndCore
 			blowGun.longRange = 100;
 			blowGun.costValue = 10;
 			blowGun.attacks.Add(new Attack("Blow Dart").AddDamage(DamageType.Piercing, "1", AttackKind.NonMagical));
-			blowGun.weaponProperties = WeaponProperties.ammunition | WeaponProperties.loading | WeaponProperties.range;
+			blowGun.weaponProperties = WeaponProperties.Ammunition | WeaponProperties.Loading | WeaponProperties.Range;
 			blowGun.weight = 1;
 			return blowGun;
 		}

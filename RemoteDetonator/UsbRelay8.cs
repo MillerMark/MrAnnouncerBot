@@ -48,7 +48,7 @@ namespace UsbRelay8Driver
 		public UsbRelay8(String serialNumber)
 		{
 			// Open the relay device by serial number
-			//  The serial number is always uniques, so the safest
+			//  The serial number is always unique, so the safest
 			_device = new FTDI();
 			_status = _device.OpenBySerialNumber(serialNumber);
 			if (_status != FTDI.FT_STATUS.FT_OK)

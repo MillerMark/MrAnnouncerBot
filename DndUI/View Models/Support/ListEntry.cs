@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace DndUI
 {
-	public class ListEntry : IListEntry, INotifyPropertyChanged
+	public class ListEntry : ViewModelBase, IListEntry, INotifyPropertyChanged
 	{
 		string name;
 
@@ -24,11 +24,13 @@ namespace DndUI
 			}
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
+		public virtual void AfterLoad()
 		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+		}
+		public virtual void PrepForSerialization()
+		{
+
 		}
 	}
 }

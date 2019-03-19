@@ -76,7 +76,7 @@ namespace DndUI
 				if (_value is RadioEnumViewModel vm)
 					SetCheckedFromValue((int)vm.Value);
 				else
-					SetCheckedFromValue((int)_value);
+					SetCheckedFromValue(Convert.ToInt32(_value));
 				OnPropertyChanged();
 			}
 		}

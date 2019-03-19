@@ -20,13 +20,16 @@ namespace DndCore
 		public bool silvered = false;
 		public bool adamantine = false;
 		public int count = 1;
+		
+		public int minStrengthToCarry = 0;
+
 		public List<Mod> mods = new List<Mod>();
-		public List<Attack> attacks = new List<Attack>();
 		public List<CurseBlessingDisease> cursesBlessingsDiseases = new List<CurseBlessingDisease>();
 		public List<Effect> consumedEffects = new List<Effect>();
 		public List<Effect> equippedEffects = new List<Effect>();
 		public List<Effect> unequippedEffects = new List<Effect>();
 		public List<Effect> discardedEffects = new List<Effect>();
+		public List<Effect> acquiredEffects = new List<Effect>();
 
 		public void Consume(Character owner)
 		{
@@ -38,7 +41,7 @@ namespace DndCore
 					owner.ApplyModPermanently(mod, name);
 		}
 
-		void ApplyAllMods(Character owner)
+		public void ApplyAllMods(Character owner)
 		{
 			foreach (Mod mod in mods)
 				if (!mod.requiresConsumption)

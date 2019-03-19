@@ -13,31 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace DndUI
+namespace DHDM
 {
 	/// <summary>
-	/// Interaction logic for WeaponBuilder.xaml
+	/// Interaction logic for WeaponsList.xaml
 	/// </summary>
-	public partial class WeaponBuilder : UserControl
+	public partial class WeaponsList : UserControl
 	{
-		public WeaponBuilder()
+		public WeaponsList()
 		{
 			InitializeComponent();
-		}
-
-		private void LbAttackList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-
-		}
-
-		private void LbAttackList_ClickAdd(object sender, RoutedEventArgs e)
-		{
-
-		}
-
-		private void LbAttackList_Loaded(object sender, RoutedEventArgs e)
-		{
-
 		}
 	}
 }

@@ -6,14 +6,14 @@
         xmlns:local="clr-namespace:DHDM"
 				xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="680" Width="1672.675">
+        Title="MainWindow" Height="938.188" Width="2419.675">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*" />
 			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Left" VerticalAlignment="Top">
+		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Stretch" VerticalAlignment="Top">
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
 					<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
@@ -75,7 +75,7 @@
 					<Button x:Name="btnSampleEffect" Margin="4" Padding="8, 4, 8, 4" Content="Sample" Click="btnSampleEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="613" Width="825" >
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="814" Width="1195" >
 				<TabItem Header="Dungeon">
 					<Grid Background="#FFE5E5E5">
 
@@ -86,10 +86,16 @@
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
 				<TabItem Header="Effects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<local:EffectsList/>
+					<local:EffectsList Height="585" VerticalAlignment="Bottom"/>
 				</TabItem>
 				<TabItem Header="Mods" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<uc:ModsList/>
+				</TabItem>
+				<TabItem Header="Items" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<local:ItemList/>
+				</TabItem>
+				<TabItem Header="Weapons" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<local:WeaponsList/>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

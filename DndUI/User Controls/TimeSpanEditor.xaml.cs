@@ -1,6 +1,9 @@
-﻿using System;
+﻿using DndCore;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,7 +21,7 @@ namespace DndUI
 	/// <summary>
 	/// Interaction logic for TimeSpanEditor.xaml
 	/// </summary>
-	public partial class TimeSpanEditor : UserControl
+	public partial class TimeSpanEditor : UserControl, INotifyPropertyChanged
 	{
 		public TimeSpanEditor()
 		{
@@ -28,10 +31,21 @@ namespace DndUI
 			InitializeComponent();
 		}
 
-		public static readonly DependencyProperty MeasureIndexProperty = DependencyProperty.Register("MeasureIndex", typeof(int), typeof(TimeSpanEditor), new FrameworkPropertyMetadata(0));
+		public static readonly DependencyProperty MeasureIndexProperty = DependencyProperty.Register("MeasureIndex", typeof(int), typeof(TimeSpanEditor), new FrameworkPropertyMetadata(0, new PropertyChangedCallback(MeasureIndexChanged)));
 		public static readonly DependencyProperty AmountProperty = DependencyProperty.Register("Amount", typeof(double), typeof(TimeSpanEditor), new FrameworkPropertyMetadata(0.0));
 		public static readonly DependencyProperty LabelProperty = DependencyProperty.Register("Label", typeof(string), typeof(TimeSpanEditor), new FrameworkPropertyMetadata("Time Span:"));
 
+		public TimeMeasure TimeMeasure
+		{
+			get
+			{
+				return (TimeMeasure)MeasureIndex;
+			}
+			set
+			{
+				MeasureIndex = (int)value;
+			}
+		}
 
 		public int MeasureIndex
 		{
@@ -70,5 +84,47 @@ namespace DndUI
 			}
 		}
 
+		private void TbxAmount_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (double.TryParse(tbxAmount.Text, out double result))
+				Amount = result;
+			OnPropertyChanged("Amount");
+		}
+
+		private void CmbMeasure_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			MeasureIndex = cmbMeasure.SelectedIndex;
+			OnPropertyChanged("Measure");
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		static void MeasureIndexChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+		{
+			TimeSpanEditor timeSpanEditor = o as TimeSpanEditor;
+			if (timeSpanEditor != null)
+				timeSpanEditor.OnMeasureIndexChanged((int)e.OldValue, (int)e.NewValue);
+		}
+
+		protected virtual void OnMeasureIndexChanged(int oldValue, int newValue)
+		{
+			cmbMeasure.SelectedIndex = newValue;
+		}
+		static void AmountChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+		{
+			TimeSpanEditor timeSpanEditor = o as TimeSpanEditor;
+			if (timeSpanEditor != null)
+				timeSpanEditor.OnAmountChanged((int)e.OldValue, (int)e.NewValue);
+		}
+
+		protected virtual void OnAmountChanged(int oldValue, int newValue)
+		{
+			tbxAmount.Text = newValue.ToString();
+		}
 	}
 }

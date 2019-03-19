@@ -1,4 +1,5 @@
 ﻿using DndCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,19 +9,25 @@ using System.Threading.Tasks;
 
 namespace DndUI
 {
-	public class ModViewModel: ViewModelBase
+	public class ModViewModel : ListEntry
 	{
-		DndTimeSpan repeats;
+		DndTimeSpan repeats = DndTimeSpan.Zero;
 		double multiplier = 1;
+		int modifierLimit = 0;
 		double offset;
-		CheckEnumList conditions;
+		double absolute;
+		CheckEnumList modConditions;
 		DamageFilterViewModel damageTypeFilter;
 		bool requiresConsumption;
 		bool requiresEquipped;
+		bool addsAdvantage;
+		bool addsDisadvantage;
 		string targetName;
-		RadioEnumList type;
+		RadioEnumList modType;
+		RadioEnumList modAddAbilityModifier;
+		Skills vantageSkillFilter;
 
-		
+		[JsonIgnore]
 		public Mod Mod
 		{
 			get { return GetMod(); }
@@ -29,41 +36,50 @@ namespace DndUI
 				SetFromMod(value);
 			}
 		}
+
 		Mod GetMod()
 		{
 			Mod mod = new Mod();
-			if (conditions != null)
-				mod.condition = (Conditions)conditions.Value;
+			if (modConditions != null)
+				mod.condition = (Conditions)Convert.ToInt32(modConditions.Value);
 			else
 				mod.condition = DndCore.Conditions.None;
 
 			if (damageTypeFilter != null && damageTypeFilter.DamageType != null && damageTypeFilter.AttackKind != null)
-				mod.damageTypeFilter = new DamageFilter((DamageType)damageTypeFilter.DamageType.Value,
-					(AttackKind)damageTypeFilter.AttackKind.Value);
+				mod.damageTypeFilter = new DamageFilter((DamageType)Convert.ToInt32(damageTypeFilter.DamageType.Value),
+					(AttackKind)Convert.ToInt32(damageTypeFilter.DamageType.Value));
 			else
 				mod.damageTypeFilter = new DamageFilter(DamageType.None, AttackKind.Any);
 
 			mod.multiplier = multiplier;
+			mod.addModifier = (Ability)Convert.ToInt32(damageTypeFilter.DamageType.Value);
+			mod.modifierLimit = modifierLimit;
+			mod.addsAdvantage = AddsAdvantage;
+			mod.addsDisadvantage = AddsDisadvantage;
+			mod.vantageSkillFilter = VantageSkillFilter;
+			mod.absolute = Absolute;
+
 			mod.offset = offset;
-			if (repeats == null)
-				mod.repeats = DndTimeSpan.Never;
-			else if (mod.repeats == null)
-				mod.repeats = new DndTimeSpan(repeats.TimeMeasure, repeats.Count);
-			else
-			{
-				mod.repeats.TimeMeasure = repeats.TimeMeasure;
-				mod.repeats.Count = repeats.Count;
-			}
+			mod.repeats = new DndTimeSpan(repeats.TimeMeasure, repeats.Count);
+			//if (repeats == null)
+			//	mod.repeats = DndTimeSpan.Never;
+			//else if (mod.repeats == null)
+			//	mod.repeats = new DndTimeSpan(repeats.TimeMeasure, repeats.Count);
+			//else
+			//{
+			//	mod.repeats.TimeMeasure = repeats.TimeMeasure;
+			//	mod.repeats.Count = repeats.Count;
+			//}
 
 			mod.requiresConsumption = requiresConsumption;
 			mod.requiresEquipped = requiresEquipped;
-			mod.targetName = targetName;
+			mod.targetName = TargetName;
 			return mod;
 		}
 
 		void SetFromMod(Mod mod)
 		{
-			conditions.Value = mod.condition;
+			modConditions.Value = mod.condition;
 			damageTypeFilter.DamageType.Value = mod.damageTypeFilter.DamageType;
 			damageTypeFilter.AttackKind.Value = mod.damageTypeFilter.AttackKind;
 
@@ -75,18 +91,68 @@ namespace DndUI
 			RequiresConsumption = mod.requiresConsumption;
 			RequiresEquipped = mod.requiresEquipped;
 			TargetName = mod.targetName;
+
+			damageTypeFilter.DamageType.Value = mod.addModifier;
+			modifierLimit = mod.modifierLimit;
+			AddsAdvantage = mod.addsAdvantage;
+			AddsDisadvantage = mod.addsDisadvantage;
+			VantageSkillFilter = mod.vantageSkillFilter;
+			Absolute = mod.absolute;
 		}
 
 
+		[JsonIgnore]
 		public RadioEnumList ModType
 		{
-			get { return type; }	
+			get { return modType; }
 			set
 			{
-				if (type == value)
+				if (modType == value)
 					return;
 
-				type = value;
+				modType = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public ModType Type
+		{
+			get { return (ModType)modType.Value; }
+			set
+			{
+				ModType existingModType = (ModType)modType.Value;
+				if (existingModType == value)
+					return;
+
+				modType.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		[JsonIgnore]
+		public RadioEnumList ModAddAbilityModifier
+		{
+			get { return modAddAbilityModifier; }
+			set
+			{
+				if (modAddAbilityModifier == value)
+					return;
+
+				modAddAbilityModifier = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public Ability AddAbilityModifier
+		{
+			get { return (Ability)modAddAbilityModifier.Value; }
+			set
+			{
+				Ability existingModType = (Ability)modAddAbilityModifier.Value;
+				if (existingModType == value)
+					return;
+
+				modAddAbilityModifier.Value = value;
 				OnPropertyChanged();
 			}
 		}
@@ -104,7 +170,6 @@ namespace DndUI
 			}
 		}
 
-
 		public bool RequiresEquipped
 		{
 			get { return requiresEquipped; }
@@ -117,6 +182,41 @@ namespace DndUI
 			}
 		}
 
+		public bool AddsDisadvantage
+		{
+			get { return addsDisadvantage; }
+			set
+			{
+				if (addsDisadvantage == value)
+					return;
+				addsDisadvantage = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool AddsAdvantage
+		{
+			get { return addsAdvantage; }
+			set
+			{
+				if (addsAdvantage == value)
+					return;
+				addsAdvantage = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public Skills VantageSkillFilter
+		{
+			get { return vantageSkillFilter; }
+			set
+			{
+				if (vantageSkillFilter == value)
+					return;
+				vantageSkillFilter = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public bool RequiresConsumption
 		{
@@ -129,7 +229,6 @@ namespace DndUI
 				OnPropertyChanged();
 			}
 		}
-
 
 		public DamageFilterViewModel DamageTypeFilter
 		{
@@ -167,14 +266,29 @@ namespace DndUI
 		//	}
 		//}
 
-		public CheckEnumList Conditions
+		[JsonIgnore]
+		public CheckEnumList ModConditions
 		{
-			get { return conditions; }
+			get { return modConditions; }
 			set
 			{
-				if (conditions == value)
+				if (modConditions == value)
 					return;
-				conditions = value;
+				modConditions = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public Conditions Conditions
+		{
+			get { return (Conditions)modConditions.Value; }
+			set
+			{
+				Conditions existingConditions = (Conditions)modConditions.Value;
+				if (existingConditions == value)
+					return;
+
+				modConditions.Value = value;
 				OnPropertyChanged();
 			}
 		}
@@ -184,13 +298,21 @@ namespace DndUI
 			//damageType = new EnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
 			//attackKind = new EnumList(typeof(AttackKind));
 			damageTypeFilter = new DamageFilterViewModel();
-			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			conditions.Value = DndCore.Conditions.None;
-			type = new RadioEnumList(typeof(ModType), "ModType");
-			type.Value = DndCore.ModType.incomingAttack;
+			damageTypeFilter.DamageType.Value = DamageType.None;
+			damageTypeFilter.AttackKind.Value = AttackKind.Any;
+			modConditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
+			modConditions.Value = DndCore.Conditions.None;
+			modType = new RadioEnumList(typeof(ModType), "ModType");
+			modType.Value = DndCore.ModType.incomingAttack;
+			modAddAbilityModifier = new RadioEnumList(typeof(Ability), "AddModifier");
+			modAddAbilityModifier.Value = Skills.none;
 			repeats = DndTimeSpan.Never;
 		}
 
+		public ModViewModel(string name) : this()
+		{
+			Name = name;
+		}
 
 		public double Offset
 		{
@@ -204,6 +326,17 @@ namespace DndUI
 			}
 		}
 
+		public double Absolute
+		{
+			get { return absolute; }
+			set
+			{
+				if (absolute == value)
+					return;
+				absolute = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public double Multiplier  // < 1 for resistance, > 1 for vulnerability
 		{
@@ -216,13 +349,25 @@ namespace DndUI
 				OnPropertyChanged();
 			}
 		}
-		
+
+		public int ModifierLimit  // < 1 for resistance, > 1 for vulnerability
+		{
+			get { return modifierLimit; }
+			set
+			{
+				if (modifierLimit == value)
+					return;
+				modifierLimit = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public DndTimeSpan Repeats
 		{
 			get { return repeats; }
 			set
 			{
-				if (repeats == value)
+				if (repeats.Equals(value))
 					return;
 				repeats = value;
 				OnPropertyChanged();

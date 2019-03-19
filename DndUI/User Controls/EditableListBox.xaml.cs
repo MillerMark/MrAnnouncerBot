@@ -23,6 +23,7 @@ namespace DndUI
 	/// Interaction logic for EditableListBox.xaml. ItemsSource must be an 
 	/// enumerable of IListEntry items.
 	/// </summary>
+
 	public partial class EditableListBox : UserControl
 	{
 		public static readonly DependencyProperty DataFileNameProperty = DependencyProperty.Register("DataFileName", typeof(string), typeof(EditableListBox), new FrameworkPropertyMetadata(null));
@@ -247,18 +248,21 @@ namespace DndUI
 				itemList.Add(item);
 			}
 		}
-		public ObservableCollection<T> LoadEntries<T>(string fileName = null)
+		public ObservableCollection<T> LoadEntries<T>(string fileName = null) where T: ListEntry
 		{
 			if (fileName == null)
 				fileName = DataFileName;
 
-			List<T> loadedEffects = null;
+			List<T> loadedEntries = null;
 			if (fileName != null)
-				loadedEffects = Storage.Load<List<T>>(fileName);
+				loadedEntries = Storage.Load<List<T>>(fileName);
+
+			foreach (T entry in loadedEntries)
+				entry.AfterLoad();
 
 			ObservableCollection<T> results;
-			if (loadedEffects != null)
-				results = new ObservableCollection<T>(loadedEffects);
+			if (loadedEntries != null)
+				results = new ObservableCollection<T>(loadedEntries);
 			else
 				results = new ObservableCollection<T>();
 
@@ -307,6 +311,11 @@ namespace DndUI
 				object[] parameters = { ItemsSource };
 
 				object data = genericMethod.Invoke(ItemsSource, parameters);
+				if (data is List<ItemViewModel> items)
+				{
+					foreach (ItemViewModel itemViewModel in items)
+						itemViewModel.PrepForSerialization();
+				}
 				Storage.Save(fileName, data);
 			}
 			isDirty = false;

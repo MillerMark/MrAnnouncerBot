@@ -85,7 +85,7 @@ namespace DndUI
 			set
 			{
 				_value = value;
-				SetCheckedFromValue((int)_value);
+				SetCheckedFromValue(Convert.ToInt32(_value));
 				OnPropertyChanged();
 			}
 		}

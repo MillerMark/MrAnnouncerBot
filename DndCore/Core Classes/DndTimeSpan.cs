@@ -3,12 +3,24 @@ using System.Linq;
 
 namespace DndCore
 {
-	public class DndTimeSpan
+	public struct DndTimeSpan
 	{
 		public static readonly DndTimeSpan Zero = FromActions(0);
 		public static readonly DndTimeSpan Never = Zero;
 		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
 		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
+
+		public override bool Equals(object obj)
+		{
+			if (obj is DndTimeSpan compareSpan)
+				return EqualsSpan(compareSpan);
+			return base.Equals(obj);
+		}
+
+		public bool EqualsSpan(DndTimeSpan compareSpan)
+		{
+			return TimeMeasure == compareSpan.TimeMeasure && Count == compareSpan.Count;
+		}
 
 		public DndTimeSpan(TimeMeasure timeMeasure, int count)
 		{
@@ -41,7 +53,7 @@ namespace DndCore
 			return new DndTimeSpan(TimeMeasure.days, days);
 		}
 
-		bool IsForever()
+		public bool IsForever()
 		{
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
 		}

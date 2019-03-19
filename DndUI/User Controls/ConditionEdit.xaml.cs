@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace DndUI.User_Controls
+namespace DndUI
 {
 	/// <summary>
 	/// Interaction logic for ConditionEdit.xaml

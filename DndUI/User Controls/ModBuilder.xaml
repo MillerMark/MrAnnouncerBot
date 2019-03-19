@@ -9,19 +9,19 @@
              mc:Ignorable="d" 
 						 x:Name="uc"
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             d:DesignHeight="410" d:DesignWidth="460" Background="AliceBlue">
+             d:DesignHeight="410" d:DesignWidth="490" Background="AliceBlue">
 	<UserControl.Resources>
 		<dh:ModViewModel x:Key="vm"/>
 		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">
-			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}"/>
+			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type dh:RadioEnumViewModel}">
-			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
+			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
 	</UserControl.Resources>
 	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
 		<StackPanel x:Name="spModType" Orientation="Horizontal" Margin="0,0,0,4">
-			<TextBlock Text="Type: " Width="Auto" Height="Auto" />
+			<TextBlock Text="Type: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
 			<ListBox x:Name="lbModType" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding ModType.Items}">
 				<ListBox.ItemsPanel>
 					<ItemsPanelTemplate>
@@ -31,21 +31,29 @@
 			</ListBox>
 		</StackPanel>
 		<StackPanel x:Name="spTargetName" Orientation="Horizontal" Margin="0,0,0,4">
-			<local:TimeSpanEditor Label="Repeats:" Amount="{Binding Repeats.Count}" MeasureIndex="{Binding Repeats.TimeMeasure}"></local:TimeSpanEditor>
-			<Button x:Name="btnTest" Click="BtnTest_Click" Margin="20,0,-20,0" >
+			<local:TimeSpanEditor x:Name="tmRepeats" Label="Repeats:" PropertyChanged="TmRepeats_PropertyChanged"></local:TimeSpanEditor>
+			<!--<Button x:Name="btnTest" Click="BtnTest_Click" Margin="20,0,-20,0" >
 				Test
-			</Button>
+			</Button>-->
 			<TextBlock Text="Target Name: " Width="Auto" Height="Auto" Margin="78,5,0,0"/>
-			<ComboBox x:Name="cbTargetName" Height="24" MinWidth="150" SelectedValue="{Binding TargetName}"
-								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:PlayerProperty}}}" Margin="0,0,20,0"/>
+			<ComboBox x:Name="cbTargetName" MaxHeight="22" MinWidth="150" 
+								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:PlayerProperty}}}" Margin="0,0,20,0" SelectionChanged="CbTargetName_SelectionChanged"/>
 		</StackPanel>
 		<StackPanel x:Name="spRequires" Orientation="Horizontal" Margin="0,0,0,4">
-			<CheckBox x:Name="ckRequiresEquipped" Margin="0,0,14,0" IsChecked="{Binding RequiresEquipped}" >
+			<CheckBox x:Name="ckRequiresEquipped" Margin="0,0,14,0" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged">
 				Requires Equipped
 			</CheckBox>
-			<CheckBox x:Name="ckRequiresConsumed" IsChecked="{Binding RequiresConsumption}">
+			<CheckBox x:Name="ckRequiresConsumed" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged">
 				Requires Consumption
 			</CheckBox>
+		</StackPanel>
+		<StackPanel x:Name="spAdvantageDisadvantage" Orientation="Horizontal" Margin="0,4,0,0">
+			<CheckBox x:Name="ckbAddsAdvantage" Margin="0,3,0,0" Checked="CkbAddsAdvantage_Checked" Unchecked="AnyPropertyChanged">Gives Advantage</CheckBox>
+			<TextBlock Text=" or " Width="Auto" Height="Auto" Margin="9,2,0,0" Foreground="Gray" />
+			<CheckBox x:Name="ckbAddsDisadvantage" Margin="10,3,0,0" Checked="CkbAddsDisadvantage_Checked" Unchecked="AnyPropertyChanged">Gives Disadvantage</CheckBox>
+			<TextBlock Text="on: " Width="Auto" Height="Auto" Margin="9,2,0,0" Foreground="Gray" />
+			<ComboBox x:Name="cbVantageSkillFilter" MaxHeight="22" MinWidth="150" 
+								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:Skills}}}" Margin="0,0,20,4" SelectionChanged="CbVantageSkillFilter_SelectionChanged"/>
 		</StackPanel>
 		<StackPanel x:Name="spFilter" Orientation="Horizontal" Margin="0,4,0,0">
 			<StackPanel x:Name="spDamageType" Orientation="Vertical">
@@ -62,18 +70,28 @@
 			</StackPanel>
 			<StackPanel x:Name="spModification" Orientation="Vertical" Margin="20,0,0,0">
 				<TextBlock Text="Modification:" Width="Auto" Height="Auto" />
+				<StackPanel x:Name="spAbsolute" Orientation="Horizontal" Margin="9,3,0,0">
+					<TextBlock Text="Absolute: " Width="Auto" Height="Auto"/>
+					<TextBox x:Name="tbxAbsolute" TextChanged="AnyTextChanged"/>
+				</StackPanel>
 				<StackPanel x:Name="spOffset" Orientation="Horizontal" Margin="9,3,0,0">
 					<TextBlock Text="Offset (+/-): " Width="Auto" Height="Auto"/>
-					<TextBox x:Name="tbxOffset" Text="{Binding Offset}"/>
+					<TextBox x:Name="tbxOffset" TextChanged="AnyTextChanged"/>
 				</StackPanel>
 				<StackPanel x:Name="spMultiplier" Orientation="Horizontal" Margin="9,3,0,0" >
 					<TextBlock Text="Multiplier: " Width="Auto" Height="Auto"/>
-					<TextBox x:Name="tbxMultiplier" Text="{Binding Multiplier}"/>
+					<TextBox x:Name="tbxMultiplier" TextChanged="AnyTextChanged"/>
+				</StackPanel>
+				<TextBlock Text="Add Modifier:" Width="Auto" Height="Auto" Margin="9, 12, 0, 0" />
+				<ListBox x:Name="lbAddModifier" Margin="9, 0, 0, 0" ItemsSource="{Binding ModAddAbilityModifier.Items}"/>
+				<StackPanel x:Name="spLimit" Orientation="Horizontal">
+					<TextBlock Text="Max: " Margin="15, 4, 0, 0" Width="Auto" Height="Auto"/>
+					<TextBox x:Name="txbModifierLimit" Margin="0, 4, 0, 0" TextChanged="AnyTextChanged"/>
 				</StackPanel>
 			</StackPanel>
 			<StackPanel x:Name="spCondition" Orientation="Vertical" Margin="20,0,0,0">
 				<TextBlock Text="Adds Condition(s):" Width="Auto" Height="Auto"/>
-				<ListBox x:Name="lbConditions" ItemsSource="{Binding Conditions.Items}">
+				<ListBox x:Name="lbConditions" ItemsSource="{Binding ModConditions.Items}">
 					
 				</ListBox>
 			</StackPanel>

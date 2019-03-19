@@ -13,7 +13,8 @@ enum TargetType {
 enum EffectKind {
   Animation = 0,
   Emitter = 1,
-  SoundEffect = 2
+  SoundEffect = 2,
+  GroupEffect = 3
 }
 
 class DragonFrontGame extends GamePlusQuiz {
@@ -331,10 +332,7 @@ class DragonFrontGame extends GamePlusQuiz {
     return result.add(new Vector(target.targetOffset.x, target.targetOffset.y));
   }
 
-  triggerEffect(effectData: string): void {
-    let dto: any = JSON.parse(effectData);
-    console.log(dto);
-
+  triggerSingleEffect(dto: any) {
     if (dto.effectKind === EffectKind.SoundEffect) {
       this.triggerSoundEffect(dto);
       return;
@@ -348,8 +346,23 @@ class DragonFrontGame extends GamePlusQuiz {
       this.triggerEmitter(dto, center);
   }
 
-  triggerSoundEffect(dto: any): void {
+  triggerEffect(effectData: string): void {
+    let dto: any = JSON.parse(effectData);
     console.log(dto);
+
+    if (dto.effectKind === EffectKind.GroupEffect) {
+      for (var i = 0; i < dto.effectsCount; i++) {
+        this.triggerSingleEffect(dto.effects[i]);
+      }
+    }
+    else {
+      this.triggerSingleEffect(dto);
+    }
+  }
+
+  triggerSoundEffect(dto: any): void {
+    console.log("Playing " + Folders.assets + 'SoundEffects/' + dto.soundFileName);
+    new Audio(Folders.assets + 'SoundEffects/' + dto.soundFileName).play();
   }
 
   triggerEmitter(dto: any, center: Vector): void {
