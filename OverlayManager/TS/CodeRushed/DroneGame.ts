@@ -318,6 +318,17 @@ class DroneGame extends GamePlusQuiz {
       return true;
     }
 
+
+    if (testCommand === 'cg3') {
+      gravityGames.startGame(coinGame3);
+      return true;
+    }
+
+    if (testCommand === 'cg4') {
+      gravityGames.startGame(coinGame4);
+      return true;
+    }
+
     if (testCommand === 'arm') {
       arm(userId);
       return true;
