@@ -1,0 +1,166 @@
+﻿@page
+@model DieRollerModel
+@{
+    Layout = null;
+}
+
+@*<link rel="icon" href="data:,">*@
+<!DOCTYPE html>
+
+@*<canvas id="myFrontCanvas" width="1920" height="1080"></canvas>*@
+
+<script src="~/lib/signalr/signalr.js"></script>
+
+<!-- Order is important! -->
+@*<script src="~/GameDev/Source/Game Engine/Folders.js"></script>
+
+  <script>
+    Folders.assets = 'GameDev/Assets/';
+  </script>*@
+
+@*<script src="~/GameDev/Source/Game Engine/Vector.js"></script>*@
+
+<script>
+  //connectToSignalR(signalR);
+</script>
+
+<body style="margin: 0">
+  <div id="container"></div>
+  @*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>*@
+  <script src="~/lib/dice/three.min.js" type="module"></script>
+  <script src="~/lib/dice/cannon.min.js" type="module"></script>
+  <script src="~/lib/dice/dice.js" type="module"></script>
+  @*<script src="source/DiceD4.js"></script>
+    <script src="source/DiceD6.js"></script>
+    <script src="source/DiceD8.js"></script>
+    <script src="source/DiceD10.js"></script>
+    <script src="source/DiceD12.js"></script>
+    <script src="source/DiceD20.js"></script>
+    <script src="source/DiceManagerClass.js"></script>
+    <script src="source/DiceObject.js"></script>*@
+  <!--<script type="text/javascript" src="../teal.js"></script>
+  <script type="text/javascript" src="dice.js"></script>-->
+  <script type="module">
+    //import { DiceManager } from './lib/dice/dice.js'
+    import * as CANNON from './lib/dice/cannon.min.js';
+    console.clear();
+
+    // Set the scene size.
+    const WIDTH = 600;
+    const HEIGHT = 300;
+
+    // Set some camera attributes.
+    const VIEW_ANGLE = 45;
+    const ASPECT = WIDTH / HEIGHT;
+    const NEAR = 0.1;
+    const FAR = 10000;
+
+    // Get the DOM element to attach to
+    const container = document.querySelector('#container');
+
+    // Create a WebGL renderer, camera, and a scene:
+    const renderer = new THREE.WebGLRenderer({ alpha: true }); // new THREE.WebGLRenderer();
+    renderer.setClearColor(0x000000, 0); // the default
+    const camera =
+      new THREE.PerspectiveCamera(
+        VIEW_ANGLE,
+        ASPECT,
+        NEAR,
+        FAR
+      );
+
+    const scene = new THREE.Scene();
+
+    var world = new CANNON.World();
+    DiceManager.setWorld(world);
+
+    var dice = new DiceD6({ backColor: '#ff0000' }); //DiceD6 for six-sided dice; for options see DiceObject
+    scene.add(dice.getObject());
+
+    dice.getObject().position.x = 150;
+    dice.getObject().position.y = 100;
+    dice.getObject().rotation.x = 20 * Math.PI / 180;
+    dice.updateBodyFromMesh();
+
+    DiceManager.prepareValues([{ dice: dice, value: 6 }]);
+
+    function animate() {
+      world.step(1.0 / 60.0);
+
+      dice.updateMeshFromBody(); // Call this after updating the physics world for rearranging the mesh according to the body
+
+      renderer.render(scene, camera);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // Add the camera to the scene.
+    scene.add(camera);
+
+    // Start the renderer.
+    renderer.setSize(WIDTH, HEIGHT);
+
+    // Attach the renderer-supplied
+    // DOM element.
+    container.appendChild(renderer.domElement);
+
+
+    // Set up the sphere vars
+    const RADIUS = 90;
+    const SEGMENTS = 16;
+    const RINGS = 16;
+
+    // create the sphere's material
+    const sphereMaterial =
+      new THREE.MeshLambertMaterial(
+        {
+          color: 0xA00050
+        });
+
+    // Create a new mesh with
+    // sphere geometry - we will cover
+    // the sphereMaterial next!
+    const sphere = new THREE.Mesh(
+
+      new THREE.SphereGeometry(
+        RADIUS,
+        SEGMENTS,
+        RINGS),
+
+      sphereMaterial);
+
+    // Move the Sphere back in Z so we
+    // can see it.
+    sphere.position.z = -300;
+
+    // Finally, add the sphere to the scene.
+    scene.add(sphere);
+
+    // create a point light
+    const pointLight = new THREE.PointLight(0xFFFFFF);
+
+    // set its position
+    pointLight.position.x = 10;
+    pointLight.position.y = 50;
+    pointLight.position.z = 130;
+
+    // add to the scene
+    scene.add(pointLight);
+
+
+    function update() {
+      // Draw!
+      renderer.render(scene, camera);
+
+      // Schedule the next frame.
+      requestAnimationFrame(update);
+    }
+
+    // Schedule the first frame.
+    requestAnimationFrame(update);
+
+    diceInitialize(document.body, window.innerWidth - 1, window.innerHeight - 1);
+                              // ToDo: convert dice.js to a TypeScript class.
+  </script>
+</body>

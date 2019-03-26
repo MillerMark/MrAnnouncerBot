@@ -123,9 +123,15 @@ namespace BotCore
 
 		async public void UserJoined(string userName)
 		{
-			User user = await Twitch.GetUser(userName);
-			CheckViewer(user);
-
+			try
+			{
+				User user = await Twitch.GetUser(userName);
+				CheckViewer(user);
+			}
+			catch (Exception ex)
+			{
+				Debugger.Break();
+			}
 		}
 
 		async Task<Viewer> CreateNewViewerFromUserName(string userName)
