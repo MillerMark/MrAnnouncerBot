@@ -216,5 +216,20 @@ namespace DndUI
 
 			OnPropertyChanged("Mod");
 		}
+
+		private void LbEffectsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
+
+		private void LbEffectsList_ClickAdd(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void LbEffectsList_Loaded(object sender, RoutedEventArgs e)
+		{
+
+		}
 	}
 }

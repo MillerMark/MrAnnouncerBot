@@ -84,6 +84,7 @@
     <ProjectReference Include="..\BotCore\BotCore.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="wwwroot\DieRollTest.js" />
     <None Include="wwwroot\GameDev\Assets\DroneGame\ChuteExtend0.png" />
     <None Include="wwwroot\GameDev\Assets\DroneGame\ChuteExtend1.png" />
     <None Include="wwwroot\GameDev\Assets\DroneGame\ChuteExtend2.png" />
