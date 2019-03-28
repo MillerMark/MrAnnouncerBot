@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="DndUI.GroupEffectBuilder"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DndUI"
+             xmlns:tl="clr-namespace:TimeLineControl;assembly=TimeLineControl"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+	<AdornerDecorator SnapsToDevicePixels="True">
+	
+		<StackPanel Orientation="Vertical">
+			<StackPanel x:Name="spControls" Orientation="Horizontal">
+				<Button x:Name="btnAdd" MinWidth="60" Click="BtnAdd_Click">
+					Add
+				</Button>
+				<Button x:Name="btnDelete" MinWidth="60" Click="BtnDelete_Click" Margin="20, 0, 0, 0">
+					Delete
+				</Button>
+				<!--<Button x:Name="btnDuplicate" MinWidth="60">
+				Duplicate
+			</Button>-->
+
+			</StackPanel>
+			<tl:TimeLine x:Name="tlEffects" TotalDuration="0:0:05" Margin="8"  >
+			</tl:TimeLine>
+
+		<local:EffectBuilder></local:EffectBuilder>
+		</StackPanel>
+	</AdornerDecorator>
+</UserControl>

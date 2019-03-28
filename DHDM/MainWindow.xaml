@@ -97,6 +97,9 @@
 				<TabItem Header="Weapons" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<local:WeaponsList/>
 				</TabItem>
+				<TabItem Header="Effect Group" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<uc:GroupEffectBuilder Padding="5"/>
+				</TabItem>
 			</TabControl>
 		</StackPanel>
 	</Grid>

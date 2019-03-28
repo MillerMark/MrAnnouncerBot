@@ -51,6 +51,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="User Controls\GroupEffectBuilder.xaml.cs">
+      <DependentUpon>GroupEffectBuilder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\DamageConditionsEdit.xaml.cs">
       <DependentUpon>DamageConditionsEdit.xaml</DependentUpon>
     </Compile>
@@ -123,6 +126,10 @@
     <Compile Include="View Models\Support\ViewModelBase.cs" />
     <Compile Include="User Controls\Support\VisualHelper.cs" />
     <Compile Include="View Models\VmEffectsList.cs" />
+    <Page Include="User Controls\GroupEffectBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\DamageConditionsEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -226,6 +233,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj">
+      <Project>{df1e9df3-204a-4dbf-8b8d-60ca5c0a5bc3}</Project>
+      <Name>TimeLineControl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DndCore\DndCore.csproj">
       <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
       <Name>DndCore</Name>

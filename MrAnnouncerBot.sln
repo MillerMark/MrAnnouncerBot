@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2043
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28721.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OverlayManager", "OverlayManager\OverlayManager.csproj", "{59028903-47B5-4377-AEC6-30E12CD531F9}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteDetonator", "RemoteDetonator\RemoteDetonator.csproj", "{FDBD2C70-F975-45F9-92F8-9634DDBB1627}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndUI", "DndUI\DndUI.csproj", "{82A18721-EDD9-4E9D-B875-DA216A82209C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeLineControl", "..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj", "{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82A18721-EDD9-4E9D-B875-DA216A82209C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
