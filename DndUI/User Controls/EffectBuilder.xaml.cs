@@ -24,9 +24,36 @@ namespace DndUI
 	/// </summary>
 	public partial class EffectBuilder : UserControl, INotifyPropertyChanged
 	{
+		// HACK: For goodness sakes kids, don't do this:
+		public static readonly string SoundFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\SoundEffects";
+
 		//private fields...
 
-		const string STR_EffectKind = "EffectKind";
+
+		public EffectEntry EffectEntry
+		{
+			get { return effectEntry; }
+			set
+			{
+				if (effectEntry == value)
+					return;
+				effectEntry = value;
+				loadingInternally = true;
+				try
+				{
+					EffectKind = effectEntry.EffectKind;
+				}
+				finally
+				{
+					loadingInternally = false;
+				}
+				LoadFromItem(effectEntry);
+			}
+		}
+		
+
+		EffectEntry effectEntry;
+			const string STR_EffectKind = "EffectKind";
 		public EffectKind EffectKind
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
@@ -55,6 +82,7 @@ namespace DndUI
 		}
 
 		public static readonly DependencyProperty EffectKindProperty = DependencyProperty.Register(STR_EffectKind, typeof(EffectKind), typeof(EffectBuilder), new FrameworkPropertyMetadata(EffectKind.Animation, new PropertyChangedCallback(OnEffectKindChanged)));
+		bool loadingInternally;
 
 		public TargetType TargetType
 		{
@@ -105,6 +133,10 @@ namespace DndUI
 
 		protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
 		{
+			if (loadingInternally)
+				return;
+			if (effectEntry != null)
+				SaveToItem(effectEntry, null);
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
@@ -489,8 +521,7 @@ namespace DndUI
 			// Set filter for file extension and default file extension 
 			dlg.DefaultExt = ".mp3";
 			dlg.Filter = "MP3 Files (*.mp3)|*.mp3|WAV Files (*.wav)|*.wav";
-			const string soundFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\SoundEffects";
-			dlg.InitialDirectory = soundFolder;
+			dlg.InitialDirectory = SoundFolder;
 
 			// Display OpenFileDialog by calling ShowDialog method 
 			bool? result = dlg.ShowDialog();
@@ -500,8 +531,8 @@ namespace DndUI
 			{
 				// Open document 
 				string filename = dlg.FileName;
-				if (filename.StartsWith(soundFolder + "\\"))
-					filename = filename.Substring(soundFolder.Length + 1);
+				if (filename.StartsWith(SoundFolder + "\\"))
+					filename = filename.Substring(SoundFolder.Length + 1);
 				tbxSoundFileName.Text = filename;
 			}
 		}
@@ -799,22 +830,30 @@ namespace DndUI
 
 		public void LoadFromItem(EffectEntry effectEntry)
 		{
-			if (effectEntry.EffectKind == EffectKind.Animation)
+			loadingInternally = true;
+			try
 			{
-				rbAnimation.IsChecked = true;
-				LoadFromTarget(effectEntry.AnimationEffect.target);
-			}
-			else if (effectEntry.EffectKind == EffectKind.Emitter)
-			{
-				rbEmitter.IsChecked = true;
-				LoadFromTarget(effectEntry.EmitterEffect.target);
-			}
-			else if (effectEntry.EffectKind == EffectKind.SoundEffect)
-				rbSoundEffect.IsChecked = true;
+				if (effectEntry.EffectKind == EffectKind.Animation)
+				{
+					rbAnimation.IsChecked = true;
+					LoadFromTarget(effectEntry.AnimationEffect.target);
+				}
+				else if (effectEntry.EffectKind == EffectKind.Emitter)
+				{
+					rbEmitter.IsChecked = true;
+					LoadFromTarget(effectEntry.EmitterEffect.target);
+				}
+				else if (effectEntry.EffectKind == EffectKind.SoundEffect)
+					rbSoundEffect.IsChecked = true;
 
-			LoadFromAnimation(effectEntry.AnimationEffect);
-			LoadFromEmitter(effectEntry.EmitterEffect);
-			LoadFromSoundEffect(effectEntry.SoundEffect);
+				LoadFromAnimation(effectEntry.AnimationEffect);
+				LoadFromEmitter(effectEntry.EmitterEffect);
+				LoadFromSoundEffect(effectEntry.SoundEffect);
+			}
+			finally
+			{
+				loadingInternally = false;
+			}
 		}
 
 		void SaveToTarget(VisualEffectTarget visualEffectTarget)

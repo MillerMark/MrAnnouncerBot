@@ -253,6 +253,16 @@ namespace DndUI
 			if (fileName == null)
 				fileName = DataFileName;
 
+			ObservableCollection<T> results = LoadEntriesFromFile<T>(fileName);
+
+			results.CollectionChanged += Results_CollectionChanged;
+			ItemsSource = results;
+			isDirty = false;
+			return results;
+		}
+
+		public static ObservableCollection<T> LoadEntriesFromFile<T>(string fileName) where T : ListEntry
+		{
 			List<T> loadedEntries = null;
 			if (fileName != null)
 				loadedEntries = Storage.Load<List<T>>(fileName);
@@ -265,10 +275,6 @@ namespace DndUI
 				results = new ObservableCollection<T>(loadedEntries);
 			else
 				results = new ObservableCollection<T>();
-
-			results.CollectionChanged += Results_CollectionChanged;
-			ItemsSource = results;
-			isDirty = false;
 			return results;
 		}
 

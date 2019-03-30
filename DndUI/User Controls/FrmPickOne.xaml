@@ -1,0 +1,23 @@
+﻿<Window x:Class="DndUI.FrmPickOne"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DndUI"
+        mc:Ignorable="d"
+        Title="Select One" Height="Auto" Width="Auto" ShowInTaskbar="False" d:DesignWidth="400" d:DesignHeight="400" SizeToContent="WidthAndHeight" MinWidth="250" >
+	<StackPanel x:Name="spMain" Orientation="Vertical" Width="Auto" Height="Auto">
+		<ListBox x:Name="lbChoices" MaxHeight="900" Width="Auto" Height="Auto">
+			<ItemsControl.ItemTemplate>
+				<DataTemplate DataType="{x:Type local:EffectEntry}">
+					<Button Click="Button_Click">
+						<TextBlock Text="{Binding Name}" Width="Auto" Height="Auto" IsHitTestVisible="False" Padding="8,0,8,0" />
+					</Button>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ListBox>
+		<Button x:Name="btnCancel" IsCancel="True" Width="80" MinHeight="25">
+			Cancel
+		</Button>
+	</StackPanel>
+</Window>
