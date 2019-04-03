@@ -82,7 +82,7 @@ namespace DndUI
 						loading = true;
 						try
 						{
-							modBuilder.LoadFromItem(entry);
+							modBuilder.LoadFromMod(entry);
 							modBuilder.Visibility = Visibility.Visible;
 						}
 						finally

@@ -19,9 +19,9 @@
 					<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
-			<TabItem Header="Karen">
+			<TabItem Header="Kayla">
 				<Grid Background="#FFE5E5E5">
-					<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Mark">
@@ -29,9 +29,9 @@
 					<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
-			<TabItem Header="Kayla">
+			<TabItem Header="Karen">
 				<Grid Background="#FFE5E5E5">
-					<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
+					<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
 				</Grid>
 			</TabItem>
 		</TabControl>
@@ -75,7 +75,7 @@
 					<Button x:Name="btnSampleEffect" Margin="4" Padding="8, 4, 8, 4" Content="Sample" Click="btnSampleEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="814" Width="1195" >
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Dungeon">
 					<Grid Background="#FFE5E5E5">
 
@@ -85,20 +85,25 @@
 				<TabItem Header="History">
 					<Grid Background="#FFE5E5E5"/>
 				</TabItem>
-				<TabItem Header="Effects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<local:EffectsList Height="585" VerticalAlignment="Bottom"/>
+				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<local:EffectsList x:Name="effectsList" Height="Auto" VerticalAlignment="Stretch"/>
 				</TabItem>
 				<TabItem Header="Mods" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<uc:ModsList/>
 				</TabItem>
 				<TabItem Header="Items" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<local:ItemList/>
+					<local:ItemList Padding="5" />
 				</TabItem>
 				<TabItem Header="Weapons" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<local:WeaponsList/>
 				</TabItem>
 				<TabItem Header="Effect Group" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
-					<uc:GroupEffectBuilder Padding="5"/>
+					<StackPanel x:Name="spEffectGroup" Orientation="Vertical">
+						<uc:GroupEffectBuilder x:Name="groupEffectBuilder" Padding="5"/>
+						<Button x:Name="btnTestGroupEffect" MaxWidth="70" Click="BtnTestGroupEffect_Click">
+							Test Group
+						</Button>
+					</StackPanel>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

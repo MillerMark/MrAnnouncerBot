@@ -53,13 +53,12 @@ namespace DndUI
 
 		private object _value;
 
-		void SetCheckedFromValue(int value)
+		void SetCheckedFromValue(int value, ObservableCollection<RadioEnumViewModel> items)
 		{
 			settingInternally = true;
 			try
 			{
-				foreach (RadioEnumViewModel item in Items)
-					item.IsChecked = Convert.ToInt32(item.Value) == value;
+				SetValue(items, value);
 			}
 			finally
 			{
@@ -74,9 +73,9 @@ namespace DndUI
 			{
 				_value = value;
 				if (_value is RadioEnumViewModel vm)
-					SetCheckedFromValue((int)vm.Value);
+					SetCheckedFromValue((int)vm.Value, Items);
 				else
-					SetCheckedFromValue(Convert.ToInt32(_value));
+					SetCheckedFromValue(Convert.ToInt32(_value), Items);
 				OnPropertyChanged();
 			}
 		}
@@ -85,15 +84,6 @@ namespace DndUI
 
 		private Type _enumType;
 		bool settingInternally;
-
-		private int CalcValue()
-		{
-			foreach (RadioEnumViewModel item in Items)
-				if (item.IsChecked)
-					return (int)Enum.ToObject(_enumType, Convert.ToInt32(item.Value));
-
-			return (int)Enum.ToObject(_enumType, 0);
-		}
 
 		void ClearAllBut(RadioEnumViewModel radioEnumViewModel)
 		{
@@ -115,7 +105,26 @@ namespace DndUI
 		{
 			if (settingInternally)
 				return;
-			Value = CalcValue();
+			Value = CalcValue(Items, _enumType);
+		}
+
+		public static int CalcValue(object itemSource, Type enumType)
+		{
+			if (itemSource is ObservableCollection<RadioEnumViewModel> items)
+				if (items != null)
+					foreach (RadioEnumViewModel item in items)
+						if (item.IsChecked)
+							return (int)Enum.ToObject(enumType, Convert.ToInt32(item.Value));
+
+			return (int)Enum.ToObject(enumType, 0);
+		}
+
+		public static void SetValue(object itemSource, object valueObject)
+		{
+			int value = Convert.ToInt32(valueObject);
+			if (itemSource is ObservableCollection<RadioEnumViewModel> items)
+				foreach (RadioEnumViewModel item in items)
+					item.IsChecked = Convert.ToInt32(item.Value) == value;
 		}
 	}
 }

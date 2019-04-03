@@ -1,4 +1,7 @@
 
+// <formula ( a ), [ b ], | c |, \| d \|, \langle e \rangle, \lfloor f \rfloor, \lceil g \rceil>
+
+
 //  <formula 5; \infty>
 
 // <formula \bigcup_{lower}^{upper}>
@@ -266,11 +269,25 @@ public Tuple<double, double> SolveQuad(double a, double b, double c)
 
 	//! Issues with square roots and nth roots:
 
-	// <formula 8; \sqrt[3/7]{-1}>
+	// <formula \sqrt{2}>
+
+	// <formula \sqrt[3]{27}>
+
+
+	// <formula 8; \sqrt[3/_7]{-1}>
+
+	// <formula 8; \sqrt[2]{-1}>
+
+	// <formula 8; \sqrt[12]{-1}>
+
+	// <formula 8; \sqrt[123]{-1}>
 
 	// <formula 8; \sqrt[1234]{-1}>
 
+	// <formula 8; \sqrt[12345]{-1}>
 
+
+	// <formula 6; \sqrt[5]{-32}>
 
 	double sqrt4ac = Math.Sqrt(4 * a * c);
 
@@ -327,6 +344,8 @@ public Tuple<double, double> SolveQuad(double a, double b, double c)
 
 // <formula \uparrow \downarrow \Uparrow \Downarrow>
 
+
+// https://en.wikibooks.org/wiki/LaTeX/Mathematics
 
 //`!------------------------------------
 // Rendering issues:
@@ -581,8 +600,13 @@ public Tuple<double, double> SolveQuad(double a, double b, double c)
 
 // <formula ( a ), [ b ], \{ c \}, | d |, \| e \|, \langle f \rangle, \lfloor g \rfloor, \lceil h \rceil, \ulcorner i \urcorner>
 
+
 // ![](44F7A0F59F7A29F0AB61B04901703DA3.png)
 
+
+// <formula \ulcorner>
+
+// <formula \urcorner>
 
 
 
@@ -650,7 +674,8 @@ public Tuple<double, double> SolveQuad(double a, double b, double c)
 
 
 
-// <formula {\rightleftarrows}>
+// <formula \rightleftarrows>
+
 
 // ![](BBB7CF03077D2AA8A2E64490D07EE822.png)
 
@@ -692,7 +717,7 @@ public Tuple<double, double> SolveQuad(double a, double b, double c)
 
 
 
-// <formula f(n) = \begin{cases} n/2       & \quad \text{if } n \text{ is even}\\ -(n+1)/2  & \quad \text{if } n \text{ is odd} \end{cases}>
+// <formula f(n) = \begin{cases} n/2 & \quad \text{if } n \text{ is even}\\ -(n+1)/2 & \quad \text{if } n \text{ is odd} \end{cases}>
 
 // ![](5B62B24225EDB52F59E1C29280FE388C.png)
 

@@ -50,12 +50,12 @@ class DragonFrontGame extends GamePlusQuiz {
   }
 
   updateScreen(context: CanvasRenderingContext2D, now: number) {
+    this.allEffects.draw(context, now);
+
     super.updateScreen(context, now);
 
     if (this.shouldDrawCenterCrossHairs)
       drawCrossHairs(myContext, screenCenterX, screenCenterY);
-
-    this.allEffects.draw(context, now);
   }
 
   removeAllGameElements(now: number): void {
@@ -175,15 +175,15 @@ class DragonFrontGame extends GamePlusQuiz {
     this.restrained.originY = 299;
 
     this.allEffects = new SpriteCollection();
+    this.allEffects.add(this.denseSmoke);
+    this.allEffects.add(this.poof);
+    this.allEffects.add(this.fireBallBack);
+    this.allEffects.add(this.fireBallFront);
     this.allEffects.add(this.stars);
     this.allEffects.add(this.fumes);
     this.allEffects.add(this.sparkShower);
     this.allEffects.add(this.embersLarge);
     this.allEffects.add(this.embersMedium);
-    this.allEffects.add(this.denseSmoke);
-    this.allEffects.add(this.fireBallBack);
-    this.allEffects.add(this.fireBallFront);
-    this.allEffects.add(this.poof);
     this.allEffects.add(this.bloodGush);
     this.allEffects.add(this.bloodLarger);
     this.allEffects.add(this.bloodLarge);
@@ -316,12 +316,29 @@ class DragonFrontGame extends GamePlusQuiz {
     return false;
   }
 
+  readonly player1X: number = 246;
+  readonly player2X: number = 562;
+  readonly player3X: number = 879;
+  readonly player4X: number = 1195;
+  activePlayerX: number = this.player1X;
+
+  playerChanged(playerID: number): void {
+    if (playerID === 0)
+      this.activePlayerX = this.player1X;
+    else if (playerID === 1)
+      this.activePlayerX = this.player2X;
+    else if (playerID === 2)
+      this.activePlayerX = this.player3X;
+    else if (playerID === 3)
+      this.activePlayerX = this.player4X;
+  }
+
   getCenter(target: any): Vector {
     let result: Vector;
     if (target.targetType === TargetType.ScreenPosition)
       result = new Vector(target.screenPosition.x, target.screenPosition.y);
     else if (target.targetType === TargetType.ActivePlayer)
-      result = new Vector(660, 1080);
+      result = new Vector(this.activePlayerX, 1080);
     else if (target.targetType === TargetType.ActiveEnemy)
       result = new Vector(1260, 1080);
     else if (target.targetType === TargetType.ScrollPosition)
@@ -333,6 +350,13 @@ class DragonFrontGame extends GamePlusQuiz {
   }
 
   triggerSingleEffect(dto: any) {
+    if (dto.timeOffsetMs > 0) {
+      let offset: number = dto.timeOffsetMs;
+      dto.timeOffsetMs = -1;
+      setTimeout(this.triggerSingleEffect.bind(this), offset, dto);
+      return;
+    }
+
     if (dto.effectKind === EffectKind.SoundEffect) {
       this.triggerSoundEffect(dto);
       return;
@@ -368,9 +392,6 @@ class DragonFrontGame extends GamePlusQuiz {
   triggerEmitter(dto: any, center: Vector): void {
     this.world.removeCharacter(this.emitter);
 
-    //value: 0
-    //timeOffsetMs: 0
-
     console.log('emitter: ' + dto);
 
     this.emitter = new Emitter(new Vector(center.x, center.y), new Vector(dto.emitterInitialVelocity.x, dto.emitterInitialVelocity.y));
@@ -394,19 +415,7 @@ class DragonFrontGame extends GamePlusQuiz {
     this.transferTargetValue(this.emitter.saturation, dto.saturation);
 
     this.emitter.maxConcurrentParticles = dto.maxConcurrentParticles;
-    this.emitter.particleMaxOpacity = dto.maxOpacity;
-
-    //this.emitter.hue.target = dto.hue.target;
-    //this.emitter.hue.relativeVariance = dto.hue.relativeVariance;
-    //this.emitter.hue.absoluteVariance = dto.hue.absoluteVariance;
-    //this.emitter.hue.drift = dto.hue.drift;
-    //this.emitter.hue.binding = dto.hue.targetBinding;
-
-    //this.emitter.saturation.target = dto.saturation.target;
-    //this.emitter.saturation.relativeVariance = dto.saturation.relativeVariance;
-    //this.emitter.saturation.absoluteVariance = dto.saturation.absoluteVariance;
-    //this.emitter.saturation.drift = dto.saturation.drift;
-    //this.emitter.saturation.binding = dto.saturation.targetBinding;
+    this.emitter.particleMaxOpacity = dto.maxOpacity / 100;
 
     this.emitter.particlesPerSecond = dto.particlesPerSecond;
 

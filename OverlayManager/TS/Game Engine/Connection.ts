@@ -48,6 +48,9 @@ function playerDataChanged(playerID: number, pageID: number, playerData: string)
   if (activeBackGame instanceof DragonGame) {
     activeBackGame.characterStatsScroll.playerDataChanged(playerID, pageID, playerData);
   }
+  if (activeFrontGame instanceof DragonFrontGame) {
+    activeFrontGame.playerChanged(playerID);
+  }
 }
 
 function userHasCoins(userId: string, amount: number) {

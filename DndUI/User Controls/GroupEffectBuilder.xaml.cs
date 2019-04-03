@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TimeLineControl;
 using ioPath = System.IO.Path;
 
 namespace DndUI
@@ -30,11 +32,19 @@ namespace DndUI
 		public GroupEffectBuilder()
 		{
 			InitializeComponent();
-			timeLineData = new TimeLineControl.TimeLineData(); ;
+			timeLineData = new TimeLineData(); ;
 			tlEffects.ItemsSource = timeLineData.Entries;
 		}
 
-		TimeLineControl.TimeLineData timeLineData;
+		public ObservableCollection<TimeLineEntry> Entries
+		{
+			get
+			{
+				return timeLineData.Entries;
+			}
+		}
+
+		TimeLineData timeLineData;
 		bool loadingInternally;
 
 		TimeSpan GetEffectDuration(EffectEntry effectEntry)
@@ -67,7 +77,7 @@ namespace DndUI
 				{
 					string entryName = effectEntry.Name;
 
-					TimeLineControl.TimeLineEntry newEntry = timeLineData.AddEntry(TimeSpan.Zero, GetEffectDuration(effectEntry), entryName, effectEntry);
+					TimeLineEntry newEntry = timeLineData.AddEntry(TimeSpan.Zero, GetEffectDuration(effectEntry), entryName, effectEntry);
 					newEntry.PropertyChanged += Entry_PropertyChanged;
 				}
 			}
@@ -77,7 +87,7 @@ namespace DndUI
 		{
 			if (e.PropertyName == "Duration")
 			{
-				if (sender is TimeLineControl.TimeLineEntry entry && entry.Data is EffectEntry effect)
+				if (sender is TimeLineEntry entry && entry.Data is EffectEntry effect)
 				{
 					if (effect.EffectKind == EffectKind.Emitter)
 					{
@@ -111,7 +121,7 @@ namespace DndUI
 		private void CreateNewEffect(EffectKind effectKind)
 		{
 			EffectEntry newEffect = new EffectEntry(effectKind, GetEntryName());
-			TimeLineControl.TimeLineEntry entry = timeLineData.AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), GetEntryName(), newEffect);
+			TimeLineEntry entry = timeLineData.AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), GetEntryName(), newEffect);
 
 			entry.PropertyChanged += Entry_PropertyChanged;
 
@@ -165,7 +175,7 @@ namespace DndUI
 
 		void AdjustSelectedEntryDuration(TimeSpan duration, bool lockTimeline, string newName)
 		{
-			if (tlEffects.SelectedItem is TimeLineControl.TimeLineEntry timeLineEntry)
+			if (tlEffects.SelectedItem is TimeLineEntry timeLineEntry)
 			{
 				timeLineEntry.Duration = duration;
 				timeLineEntry.DurationLocked = lockTimeline;
@@ -221,7 +231,7 @@ namespace DndUI
 		}
 		void SetSelectedColorByEffectType(EffectKind effectKind)
 		{
-			if (tlEffects.SelectedItem is TimeLineControl.TimeLineEntry timeLineEntry)
+			if (tlEffects.SelectedItem is TimeLineEntry timeLineEntry)
 			{
 				switch (effectKind)
 				{
@@ -248,6 +258,8 @@ namespace DndUI
 			if (sender is EffectBuilder effectBuilder)
 			{
 				EffectEntry effectEntry = effectBuilder.EffectEntry;
+				if (effectEntry == null)
+					return;
 				SetSelectedColorByEffectType(effectEntry.EffectKind);
 				if (effectBuilder.EffectKind == EffectKind.SoundEffect)
 				{
@@ -262,7 +274,7 @@ namespace DndUI
 					{
 						AdjustSelectedEntryDuration(duration, false, animationEffect.name);
 					}
-					else 
+					else
 					{
 						AdjustSelectedEntryDuration(duration, false, animationEffect.spriteName);
 					}
@@ -281,7 +293,7 @@ namespace DndUI
 			loadingInternally = true;
 			try
 			{
-				if (sender is TimeLineControl.TimeLine timeLine && timeLine.SelectedItem is TimeLineControl.TimeLineEntry entry && entry.Data is EffectEntry effect)
+				if (sender is TimeLine timeLine && timeLine.SelectedItem is TimeLineEntry entry && entry.Data is EffectEntry effect)
 				{
 					effectBuilder.EffectEntry = effect;
 				}
@@ -290,6 +302,11 @@ namespace DndUI
 			{
 				loadingInternally = false;
 			}
+		}
+
+		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }

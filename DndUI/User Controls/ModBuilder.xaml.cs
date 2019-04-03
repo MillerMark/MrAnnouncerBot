@@ -1,6 +1,7 @@
 ﻿using DndCore;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -38,6 +39,7 @@ namespace DndUI
 		//	}
 		//}
 
+		bool settingInternally;
 		public ModBuilder()
 		{
 			InitializeComponent();
@@ -60,25 +62,7 @@ namespace DndUI
 				}
 			}
 		}
-		public void LoadFromItem(ModViewModel entry)
-		{
-			tbxAbsolute.Text = entry.Absolute.ToString();
-			lbAddModifier.SelectedValue = entry.ModAddAbilityModifier.Value;
-			lbConditions.SelectedValue = entry.ModConditions.Value;
-			lbDamageEdit.SelectedValue = entry.DamageTypeFilter.DamageType.Value;
-			lbAttackFilter.SelectedValue = entry.DamageTypeFilter.AttackKind.Value;
-			lbModType.SelectedValue = entry.ModType.Value;
-			tbxMultiplier.Text = entry.Multiplier.ToString();
-			tbxOffset.Text = entry.Offset.ToString();
-			tmRepeats.TimeMeasure = entry.Repeats.TimeMeasure;
-			tmRepeats.Amount = entry.Repeats.Count;
-			ckRequiresConsumed.IsChecked = entry.RequiresConsumption;
-			ckRequiresEquipped.IsChecked = entry.RequiresEquipped;
-			SelectCombo(cbTargetName, entry.TargetName);
-			SelectCombo(cbVantageSkillFilter, entry.VantageSkillFilter);
-			ckbAddsAdvantage.IsChecked = entry.AddsAdvantage;
-			ckbAddsDisadvantage.IsChecked = entry.AddsDisadvantage;
-		}
+
 		private void BtnTest_Click(object sender, RoutedEventArgs e)
 		{
 			ModViewModel modViewModel = (ModViewModel)TryFindResource("vm");
@@ -104,16 +88,22 @@ namespace DndUI
 
 		private void AnyPropertyChanged(object sender, RoutedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			OnPropertyChanged("AnyProperty");
 		}
 
 		private void AnyTextChanged(object sender, TextChangedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			OnPropertyChanged("AnyText");
 		}
 
 		private void CkbAddsAdvantage_Checked(object sender, RoutedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			ckbAddsDisadvantage.IsChecked = false;
 			OnPropertyChanged("AddsAdvantage");
 		}
@@ -121,45 +111,101 @@ namespace DndUI
 		private void CkbAddsDisadvantage_Checked(object sender, RoutedEventArgs e)
 		{
 			ckbAddsAdvantage.IsChecked = false;
+			if (settingInternally)
+				return;
 			OnPropertyChanged("AddsDisadvantage");
 		}
 
 		private void TmRepeats_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			OnPropertyChanged("Repeats");
 		}
 
 		private void CbTargetName_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			OnPropertyChanged("TargetName");
 		}
 
 		private void CbVantageSkillFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (settingInternally)
+				return;
 			OnPropertyChanged("VantageSkillFilter");
 		}
+
+		double GetDouble(string text, double defaultValue = 0)
+		{
+			if (double.TryParse(text, out double result))
+				return result;
+			return defaultValue;
+		}
+
+		int GetInt(string text, int defaultValue = 0)
+		{
+			if (int.TryParse(text, out int result))
+				return result;
+			return defaultValue;
+		}
+
+		public void LoadFromMod(ModViewModel mod)
+		{
+			settingInternally = true;
+			try
+			{
+				tbxAbsolute.Text = mod.Absolute.ToString();
+				//lbAddModifier.SelectedValue = entry.ModAddAbilityModifier.Value;
+				lbConditions.SelectedValue = mod.ModConditions.Value;
+				CheckEnumList.SetValue(lbDamageEdit.ItemsSource, mod.DamageTypeFilter.DamageType.Value);
+				RadioEnumList.SetValue(lbAttackFilter.ItemsSource, mod.DamageTypeFilter.AttackKind.Value);
+				RadioEnumList.SetValue(lbAddModifier.ItemsSource, mod.ModAddAbilityModifier.Value);
+				lbModType.SelectedValue = mod.ModType.Value;
+				tbxMultiplier.Text = mod.Multiplier.ToString();
+				tbxOffset.Text = mod.Offset.ToString();
+				txbModifierLimit.Text = mod.ModifierLimit.ToString();
+				tmRepeats.TimeMeasure = mod.Repeats.TimeMeasure;
+				tmRepeats.Amount = mod.Repeats.Count;
+				ckRequiresConsumed.IsChecked = mod.RequiresConsumption;
+				ckRequiresEquipped.IsChecked = mod.RequiresEquipped;
+				SelectCombo(cbTargetName, mod.TargetName);
+				SelectCombo(cbVantageSkillFilter, mod.VantageSkillFilter);
+				//SelectCombo(
+				ckbAddsAdvantage.IsChecked = mod.AddsAdvantage;
+				ckbAddsDisadvantage.IsChecked = mod.AddsDisadvantage;
+			}
+			finally
+			{
+				settingInternally = false;
+			}
+		}
+
 		public void SaveToMod(ModViewModel mod, string propertyName)
 		{
+			if (settingInternally)
+				return;
 			ModViewModel vm = FindResource("vm") as ModViewModel;
 			if (vm == null)
 				return;
-			if (double.TryParse(tbxAbsolute.Text, out double result))
-				mod.Absolute = result;
-			//mod.AddModifier.Value = lbAddModifier.
+			mod.Absolute = GetDouble(tbxAbsolute.Text);
 			mod.AddsAdvantage = ckbAddsAdvantage.IsChecked ?? false;
 			mod.AddsDisadvantage = ckbAddsDisadvantage.IsChecked ?? false;
 			if (lbConditions.ItemsSource is ModViewModel)
 				mod.ModConditions.Value = (lbConditions.ItemsSource as ModViewModel).Conditions;
-			mod.DamageTypeFilter.AttackKind = vm.DamageTypeFilter.AttackKind;
-			mod.DamageTypeFilter.DamageType = vm.DamageTypeFilter.DamageType;
-			mod.ModifierLimit = vm.ModifierLimit;
-			mod.ModType = vm.ModType;
-			mod.Multiplier = vm.Multiplier;
+			mod.ModifierLimit = GetInt(txbModifierLimit.Text);
+			mod.Multiplier = GetDouble(tbxMultiplier.Text, 1);
 			//mod.Name = vm.Name;
-			mod.Offset = vm.Offset;
+			mod.Offset = GetDouble(tbxOffset.Text);
 			mod.Repeats = new DndTimeSpan(tmRepeats.TimeMeasure, (int)tmRepeats.Amount);
-			mod.RequiresConsumption = vm.RequiresConsumption;
-			mod.RequiresEquipped = vm.RequiresEquipped;
+			mod.RequiresConsumption = ckRequiresConsumed.IsChecked == true;
+			mod.RequiresEquipped = ckRequiresEquipped.IsChecked == true;
+			mod.DamageTypeFilter.AttackKind.Value = RadioEnumList.CalcValue(lbAttackFilter.ItemsSource, typeof(AttackType));
+			mod.AddAbilityModifier = (Ability)RadioEnumList.CalcValue(lbAddModifier.ItemsSource, typeof(Ability));
+			mod.DamageTypeFilter.DamageType.Value = CheckEnumList.CalcValue(lbDamageEdit.ItemsSource, typeof(DamageType));
+			
+			mod.ModType = vm.ModType;
 			mod.TargetName = vm.TargetName;
 			mod.VantageSkillFilter = vm.VantageSkillFilter;
 		}

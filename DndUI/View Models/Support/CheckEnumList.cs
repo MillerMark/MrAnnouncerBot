@@ -67,16 +67,24 @@ namespace DndUI
 			settingInternally = true;
 			try
 			{
-				foreach (CheckEnumViewModel item in Items)
-				{
-					int itemValue = Convert.ToInt32(item.Value);
-					item.IsChecked = (value & itemValue) == itemValue;
-				}
+				ObservableCollection<CheckEnumViewModel> items = Items;
+				SetValue(items, value);
 			}
 			finally
 			{
 				settingInternally = false;
 			}
+		}
+
+		public static void SetValue(object itemSource, object valueObject)
+		{
+			int value = Convert.ToInt32(valueObject);
+			if (itemSource is ObservableCollection<CheckEnumViewModel> items)
+				foreach (CheckEnumViewModel item in items)
+				{
+					int itemValue = Convert.ToInt32(item.Value);
+					item.IsChecked = (value & itemValue) == itemValue;
+				}
 		}
 
 		public object Value
@@ -98,15 +106,27 @@ namespace DndUI
 		private object CalcValue()
 		{
 			// Assumes the enums are ints.  Can change if needed (can dynamically determine as well).
-			int result = 0;
+			Type enumType = _enumType;
+			ObservableCollection<CheckEnumViewModel> items = Items;
+			return CalcValue(items, enumType);
+		}
 
-			foreach (CheckEnumViewModel item in Items)
+		public static object CalcValue(object itemSource, Type enumType)
+		{
+			if (itemSource is ObservableCollection<CheckEnumViewModel> items)
 			{
-				if (item.IsChecked)
-					result |= Convert.ToInt32(item.Value);
+				int result = 0;
+
+				foreach (CheckEnumViewModel item in items)
+				{
+					if (item.IsChecked)
+						result |= Convert.ToInt32(item.Value);
+				}
+
+				return Enum.ToObject(enumType, result);
 			}
 
-			return Enum.ToObject(_enumType, result);
+			return Enum.ToObject(enumType, 0);
 		}
 
 		private void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)

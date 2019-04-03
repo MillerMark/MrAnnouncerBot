@@ -96,5 +96,10 @@ namespace DHDM
 			string serializedObject = JsonConvert.SerializeObject(effectGroup);
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
+
+		public void Save()
+		{
+			lbEffectsList.SaveEffects();
+		}
 	}
 }

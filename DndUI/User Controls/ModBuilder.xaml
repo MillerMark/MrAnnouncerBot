@@ -86,7 +86,7 @@
 				<ListBox x:Name="lbAddModifier" Margin="9, 0, 0, 0" ItemsSource="{Binding ModAddAbilityModifier.Items}"/>
 				<StackPanel x:Name="spLimit" Orientation="Horizontal">
 					<TextBlock Text="Max: " Margin="15, 4, 0, 0" Width="Auto" Height="Auto"/>
-					<TextBox x:Name="txbModifierLimit" Margin="0, 4, 0, 0" TextChanged="AnyTextChanged"/>
+					<TextBox x:Name="txbModifierLimit" Margin="0, 4, 0, 0" MinWidth="20"  TextChanged="AnyTextChanged"/>
 				</StackPanel>
 			</StackPanel>
 			<StackPanel x:Name="spCondition" Orientation="Vertical" Margin="20,0,0,0">

@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TimeLineControl;
 using DndUI;
 
 namespace DHDM
@@ -62,7 +63,7 @@ namespace DHDM
 
 		void ConnectToHub()
 		{
-			
+
 		}
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
@@ -88,6 +89,41 @@ namespace DHDM
 				string character = characterSheets.GetCharacter();
 				HubtasticBaseStation.PlayerDataChanged(tabPlayers.SelectedIndex, activePage, character);
 			}
+		}
+
+		Effect GetEffect(EffectEntry effectEntry)
+		{
+			if (effectEntry.EffectKind == EffectKind.Animation)
+				return effectEntry.AnimationEffect;
+			if (effectEntry.EffectKind == EffectKind.Emitter)
+				return effectEntry.EmitterEffect;
+			if (effectEntry.EffectKind == EffectKind.SoundEffect)
+				return effectEntry.SoundEffect;
+			return null;
+		}
+
+		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e)
+		{
+			EffectGroup effectGroup = new EffectGroup();
+			foreach (TimeLineEntry timeLineEntry in groupEffectBuilder.Entries)
+			{
+				Effect effect = GetEffect(timeLineEntry.Data as EffectEntry);
+				effect.timeOffsetMs = (int)Math.Round(timeLineEntry.Start.TotalMilliseconds);
+				effectGroup.Add(effect);
+			}
+
+			string serializedObject = JsonConvert.SerializeObject(effectGroup);
+			HubtasticBaseStation.TriggerEffect(serializedObject);
+		}
+
+		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.RemovedItems != null && e.RemovedItems.Count > 0)
+				if (e.RemovedItems[0] is TabItem tabItem)
+					if (tabItem == tbEffects)
+					{
+						effectsList.Save();
+					}
 		}
 	}
 }

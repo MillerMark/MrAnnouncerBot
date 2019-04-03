@@ -57,6 +57,7 @@ namespace DndCore
 		public EmitterEffect()
 		{
 			target = new VisualEffectTarget();
+			effectKind = EffectKind.Emitter;
 		}
 	}
 }

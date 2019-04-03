@@ -520,7 +520,7 @@ namespace DndUI
 
 			// Set filter for file extension and default file extension 
 			dlg.DefaultExt = ".mp3";
-			dlg.Filter = "MP3 Files (*.mp3)|*.mp3|WAV Files (*.wav)|*.wav";
+			dlg.Filter = "Sound Files (*.mp3;*.wav)|*.mp3;*.wav";
 			dlg.InitialDirectory = SoundFolder;
 
 			// Display OpenFileDialog by calling ShowDialog method 
@@ -1023,6 +1023,7 @@ namespace DndUI
 			if (rbEmitter.IsChecked ?? false)
 			{
 				effectEntry.EffectKind = EffectKind.Emitter;
+				effectEntry.EmitterEffect.effectKind = EffectKind.Emitter;
 				if (propertyName != STR_EffectKind)
 					SaveToTarget(effectEntry.EmitterEffect.target);
 				else
