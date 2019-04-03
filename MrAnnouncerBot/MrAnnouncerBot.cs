@@ -29,7 +29,7 @@ namespace MrAnnouncerBot
 		Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();
 		AllViewers allViewers = new AllViewers();
 		private const string STR_ChannelName = "CodeRushed";
-		private const string STR_TwitchUserName = "MrAnnouncerGuy";
+		//private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
 		const string STR_Ellipsis = "...";
 
@@ -53,6 +53,7 @@ namespace MrAnnouncerBot
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
 			new BotCommand("+", HandleLevelUp);
+			new BotCommand("github", HandleGitHubCommand);
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
@@ -477,7 +478,7 @@ namespace MrAnnouncerBot
 
 		void ActivateScene(SceneDto scene, string displayName, int userLevel)
 		{
-			if (scene.Level >= userLevel)
+			if (scene.Level > userLevel)
 			{
 				Chat(GetNeedToLevelUpMessage(scene, displayName, userLevel));
 				return;
@@ -553,10 +554,19 @@ namespace MrAnnouncerBot
 																						.ToList();
 
 			string sceneList = string.Join(", ", accessibleScenes);
-			
-			Whisper(obj.Command.ChatMessage.Username, $"@{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
+
+			//Whisper(obj.Command.ChatMessage.Username, $"{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}." );
+			Chat($"{obj.Command.ChatMessage.DisplayName}, your user level is: {userLevel}. You can say any of these: {sceneList}.");
 			Chat($"See https://github.com/MillerMark/MrAnnouncerBot/blob/master/README.md for more info.");
 		}
+
+		void HandleGitHubCommand(OnChatCommandReceivedArgs obj)
+		{
+			Chat($"Active Projects: ");
+			Chat($"https://github.com/MillerMark/MrAnnouncerBot");
+			Chat($"https://github.com/MillerMark/TimeLine");
+		}
+
 
 		void HandleLevelUp(OnChatCommandReceivedArgs obj)
 		{

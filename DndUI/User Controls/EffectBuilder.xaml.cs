@@ -957,7 +957,7 @@ namespace DndUI
 			tbxBonusVelocity.Text = ToVectorString(emitterEffect.bonusVelocityVector);
 			ckbRenderOldestParticlesLast.IsChecked = emitterEffect.renderOldestParticlesLast;
 			nedParticleFadeInTime.ValueAsDouble = emitterEffect.fadeInTime;
-			nedParticleMaxOpacity.ValueAsDouble = emitterEffect.maxOpacity;
+			nedParticleMaxOpacity.ValueAsDouble = emitterEffect.maxOpacity * 100;
 			nedParticleLifeSpan.ValueAsDouble = emitterEffect.lifeSpan;
 
 			SetTargetValueEdit(tvParticleHue, emitterEffect.hue);
@@ -999,7 +999,7 @@ namespace DndUI
 			emitterEffect.bonusVelocityVector = ToVector(tbxBonusVelocity.Text);
 			emitterEffect.renderOldestParticlesLast = ckbRenderOldestParticlesLast.IsChecked ?? false;
 			emitterEffect.fadeInTime = nedParticleFadeInTime.ValueAsDouble;
-			emitterEffect.maxOpacity = nedParticleMaxOpacity.ValueAsDouble;
+			emitterEffect.maxOpacity = nedParticleMaxOpacity.ValueAsDouble / 100.0;
 			emitterEffect.lifeSpan = nedParticleLifeSpan.ValueAsDouble;
 			emitterEffect.hue = ToTargetValue(tvParticleHue);
 			emitterEffect.saturation = ToTargetValue(tvParticleSaturation);

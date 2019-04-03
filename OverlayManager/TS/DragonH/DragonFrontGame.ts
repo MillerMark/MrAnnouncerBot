@@ -14,7 +14,8 @@ enum EffectKind {
   Animation = 0,
   Emitter = 1,
   SoundEffect = 2,
-  GroupEffect = 3
+  GroupEffect = 3,
+  Placeholder = 4
 }
 
 class DragonFrontGame extends GamePlusQuiz {
@@ -362,12 +363,21 @@ class DragonFrontGame extends GamePlusQuiz {
       return;
     }
 
+    if (dto.effectKind === EffectKind.Placeholder) {
+      this.triggerPlaceholder(dto);
+      return;
+    }
+
     let center: Vector = this.getCenter(dto.target);
 
     if (dto.effectKind === EffectKind.Animation)
       this.triggerAnimation(dto, center);
     else if (dto.effectKind === EffectKind.Emitter)
       this.triggerEmitter(dto, center);
+  }
+
+  triggerPlaceholder(dto: any): any {
+    console.log('triggerPlaceholder - dto: ' + dto);
   }
 
   triggerEffect(effectData: string): void {
@@ -415,7 +425,7 @@ class DragonFrontGame extends GamePlusQuiz {
     this.transferTargetValue(this.emitter.saturation, dto.saturation);
 
     this.emitter.maxConcurrentParticles = dto.maxConcurrentParticles;
-    this.emitter.particleMaxOpacity = dto.maxOpacity / 100;
+    this.emitter.particleMaxOpacity = dto.maxOpacity;
 
     this.emitter.particlesPerSecond = dto.particlesPerSecond;
 

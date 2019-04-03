@@ -26,9 +26,10 @@ namespace DndUI
 	public partial class GroupEffectBuilder : UserControl
 	{
 		static Brush groupBrush = new SolidColorBrush(Color.FromRgb(32, 53, 54));
-		static Brush soundEffectBrush = new SolidColorBrush(Color.FromRgb(76, 62, 44));
-		static Brush emitterBrush = new SolidColorBrush(Color.FromRgb(87, 3, 3));
-		static Brush animationBrush = new SolidColorBrush(Color.FromRgb(53, 48, 87));
+		static Brush placeholderBrush = new SolidColorBrush(Color.FromRgb(156, 83, 47));
+		static Brush soundEffectBrush = new SolidColorBrush(Color.FromRgb(20, 135, 82));
+		static Brush emitterBrush = new SolidColorBrush(Color.FromRgb(150, 33, 33));
+		static Brush animationBrush = new SolidColorBrush(Color.FromRgb(61, 39, 105));
 		public GroupEffectBuilder()
 		{
 			InitializeComponent();
@@ -296,8 +297,11 @@ namespace DndUI
 			{
 				if (sender is TimeLine timeLine && timeLine.SelectedItem is TimeLineEntry entry && entry.Data is EffectEntry effect)
 				{
+					effectBuilder.Visibility = Visibility.Visible;
 					effectBuilder.EffectEntry = effect;
 				}
+				else
+					effectBuilder.Visibility = Visibility.Hidden;
 			}
 			finally
 			{
@@ -308,6 +312,18 @@ namespace DndUI
 		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e)
 		{
 
+		}
+
+		private void BtnAddNewPlaceholder_Click(object sender, RoutedEventArgs e)
+		{
+			EffectPlaceholderEntry newEffect = new EffectPlaceholderEntry();
+			TimeLineEntry entry = timeLineData.AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), "Placeholder", newEffect);
+			entry.PropertyChanged += Entry_PropertyChanged;
+			tlEffects.SelectedItem = entry;
+
+			entry.Fill = placeholderBrush;
+
+			effectBuilder.Visibility = Visibility.Hidden;
 		}
 	}
 }

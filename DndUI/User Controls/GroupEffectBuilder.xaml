@@ -25,6 +25,9 @@
 				<Button x:Name="btnAddNewEmitter" MinWidth="60" Click="BtnAddNewEmitter_Click" Margin="20, 0, 0, 0" Padding="5,0,5,0">
 					Add New Emitter
 				</Button>
+				<Button x:Name="btnAddNewPlaceholder" MinWidth="60" Click="BtnAddNewPlaceholder_Click" Margin="20, 0, 0, 0" Padding="5,0,5,0">
+					Add New Placeholder
+				</Button>
 				<Button x:Name="btnDelete" MinWidth="60" Click="BtnDelete_Click" Margin="20, 0, 0, 0" Padding="5,0,5,0">
 					Delete
 				</Button>
@@ -33,7 +36,7 @@
 			</Button>-->
 
 			</StackPanel>
-			<tl:TimeLine x:Name="tlEffects" TotalDuration="0:0:05" SelectionChanged="TlEffects_SelectionChanged" Margin="8" >
+			<tl:TimeLine x:Name="tlEffects" MinWidth="1000"  TotalDuration="0:0:05" SelectionChanged="TlEffects_SelectionChanged" Margin="8" >
 			</tl:TimeLine>
 
 		<local:EffectBuilder x:Name="effectBuilder" PropertyChanged="EffectBuilder_PropertyChanged"></local:EffectBuilder>

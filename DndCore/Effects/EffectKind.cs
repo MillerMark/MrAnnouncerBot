@@ -8,6 +8,7 @@ namespace DndCore
 		Animation = 0,
 		Emitter = 1,
 		SoundEffect = 2,
-		GroupEffect = 3
+		GroupEffect = 3,
+		Placeholder = 4
 	}
 }

@@ -93,6 +93,8 @@ namespace DHDM
 
 		Effect GetEffect(EffectEntry effectEntry)
 		{
+			if (effectEntry == null)
+				return null;
 			if (effectEntry.EffectKind == EffectKind.Animation)
 				return effectEntry.AnimationEffect;
 			if (effectEntry.EffectKind == EffectKind.Emitter)
@@ -107,9 +109,18 @@ namespace DHDM
 			EffectGroup effectGroup = new EffectGroup();
 			foreach (TimeLineEntry timeLineEntry in groupEffectBuilder.Entries)
 			{
-				Effect effect = GetEffect(timeLineEntry.Data as EffectEntry);
-				effect.timeOffsetMs = (int)Math.Round(timeLineEntry.Start.TotalMilliseconds);
-				effectGroup.Add(effect);
+				Effect effect = null;
+
+				if (timeLineEntry.Data is EffectEntry entry)
+					effect = GetEffect(entry);
+				else if (timeLineEntry.Data is EffectPlaceholderEntry effectPlaceholder)
+					effect = new PlaceholderEffect(effectPlaceholder.Name, effectPlaceholder.Type);
+
+				if (effect != null)
+				{
+					effect.timeOffsetMs = (int)Math.Round(timeLineEntry.Start.TotalMilliseconds);
+					effectGroup.Add(effect);
+				}
 			}
 
 			string serializedObject = JsonConvert.SerializeObject(effectGroup);
