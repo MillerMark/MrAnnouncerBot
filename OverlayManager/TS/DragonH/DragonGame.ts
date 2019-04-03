@@ -455,7 +455,7 @@
 
     if (testCommand === 'Emphasis2') {
       this.characterStatsScroll.page = ScrollPage.main;
-      this.characterStatsScroll.addEmphasis(emphasisMain.HitPointsTempHitPoints);
+      this.characterStatsScroll.addEmphasis(emphasisMain.HitPoints);
       return true;
     }
 

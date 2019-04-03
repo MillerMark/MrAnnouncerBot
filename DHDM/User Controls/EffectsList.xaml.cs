@@ -99,7 +99,7 @@ namespace DHDM
 
 		public void Save()
 		{
-			lbEffectsList.SaveEffects();
+			lbEffectsList.SaveEntries();
 		}
 	}
 }

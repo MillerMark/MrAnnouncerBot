@@ -104,7 +104,7 @@ namespace DndUI
 
 		object Disposing()
 		{
-			SaveEffects();
+			SaveEntries();
 			return null;
 		}
 
@@ -283,7 +283,7 @@ namespace DndUI
 			isDirty = true;
 		}
 
-		public void SaveEffects(string fileName = null)
+		public void SaveEntries(string fileName = null)
 		{
 			if (!isDirty)  // Only really save if dirty/changed.
 				return;

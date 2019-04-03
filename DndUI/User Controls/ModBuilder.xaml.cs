@@ -52,10 +52,11 @@ namespace DndUI
 				comboBox.SelectedIndex = -1;
 				return;
 			}
+			string targetAsString = targetEntry.ToString();
 			for (int i = 0; i < comboBox.Items.Count; i++)
 			{
 				object item = comboBox.Items[i];
-				if (item.Equals(targetEntry))
+				if (item.Equals(targetEntry) || item.ToString() == targetAsString)
 				{
 					comboBox.SelectedIndex = i;
 					return;
@@ -160,8 +161,10 @@ namespace DndUI
 				//lbAddModifier.SelectedValue = entry.ModAddAbilityModifier.Value;
 				lbConditions.SelectedValue = mod.ModConditions.Value;
 				CheckEnumList.SetValue(lbDamageEdit.ItemsSource, mod.DamageTypeFilter.DamageType.Value);
+				CheckEnumList.SetValue(lbConditions.ItemsSource, mod.ModConditions.Value);
 				RadioEnumList.SetValue(lbAttackFilter.ItemsSource, mod.DamageTypeFilter.AttackKind.Value);
 				RadioEnumList.SetValue(lbAddModifier.ItemsSource, mod.ModAddAbilityModifier.Value);
+				RadioEnumList.SetValue(lbModType.ItemsSource, mod.ModType.Value);
 				lbModType.SelectedValue = mod.ModType.Value;
 				tbxMultiplier.Text = mod.Multiplier.ToString();
 				tbxOffset.Text = mod.Offset.ToString();
@@ -172,7 +175,6 @@ namespace DndUI
 				ckRequiresEquipped.IsChecked = mod.RequiresEquipped;
 				SelectCombo(cbTargetName, mod.TargetName);
 				SelectCombo(cbVantageSkillFilter, mod.VantageSkillFilter);
-				//SelectCombo(
 				ckbAddsAdvantage.IsChecked = mod.AddsAdvantage;
 				ckbAddsDisadvantage.IsChecked = mod.AddsDisadvantage;
 			}
@@ -186,14 +188,9 @@ namespace DndUI
 		{
 			if (settingInternally)
 				return;
-			ModViewModel vm = FindResource("vm") as ModViewModel;
-			if (vm == null)
-				return;
 			mod.Absolute = GetDouble(tbxAbsolute.Text);
 			mod.AddsAdvantage = ckbAddsAdvantage.IsChecked ?? false;
 			mod.AddsDisadvantage = ckbAddsDisadvantage.IsChecked ?? false;
-			if (lbConditions.ItemsSource is ModViewModel)
-				mod.ModConditions.Value = (lbConditions.ItemsSource as ModViewModel).Conditions;
 			mod.ModifierLimit = GetInt(txbModifierLimit.Text);
 			mod.Multiplier = GetDouble(tbxMultiplier.Text, 1);
 			//mod.Name = vm.Name;
@@ -204,10 +201,18 @@ namespace DndUI
 			mod.DamageTypeFilter.AttackKind.Value = RadioEnumList.CalcValue(lbAttackFilter.ItemsSource, typeof(AttackType));
 			mod.AddAbilityModifier = (Ability)RadioEnumList.CalcValue(lbAddModifier.ItemsSource, typeof(Ability));
 			mod.DamageTypeFilter.DamageType.Value = CheckEnumList.CalcValue(lbDamageEdit.ItemsSource, typeof(DamageType));
-			
-			mod.ModType = vm.ModType;
-			mod.TargetName = vm.TargetName;
-			mod.VantageSkillFilter = vm.VantageSkillFilter;
+			mod.ModConditions.Value = CheckEnumList.CalcValue(lbConditions.ItemsSource, typeof(Conditions));
+
+			if (cbTargetName.SelectedValue != null)
+				mod.TargetName = cbTargetName.SelectedValue.ToString();
+			else
+				mod.TargetName = string.Empty;
+
+			mod.ModType.Value = RadioEnumList.CalcValue(lbModType.ItemsSource, typeof(ModType)); ;
+			if (cbVantageSkillFilter.SelectedValue != null)
+				mod.VantageSkillFilter = (Skills)cbVantageSkillFilter.SelectedValue;
+			else
+				mod.VantageSkillFilter = Skills.none;
 		}
 	}
 }

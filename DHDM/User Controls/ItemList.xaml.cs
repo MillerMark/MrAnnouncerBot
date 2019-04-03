@@ -72,5 +72,9 @@ namespace DHDM
 				if (itemBuilder != null)
 					itemBuilder.SaveToItem(item, e.PropertyName);
 		}
+		public void Save()
+		{
+			lbItems.SaveEntries();
+		}
 	}
 }

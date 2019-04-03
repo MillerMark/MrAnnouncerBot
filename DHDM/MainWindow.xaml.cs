@@ -121,9 +121,9 @@ namespace DHDM
 			if (e.RemovedItems != null && e.RemovedItems.Count > 0)
 				if (e.RemovedItems[0] is TabItem tabItem)
 					if (tabItem == tbEffects)
-					{
 						effectsList.Save();
-					}
+					else if (tabItem == tbItems)
+						lstItems.Save();
 		}
 	}
 }

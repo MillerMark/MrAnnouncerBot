@@ -11,7 +11,7 @@
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="410" d:DesignWidth="490" Background="AliceBlue">
 	<UserControl.Resources>
-		<dh:ModViewModel x:Key="vm"/>
+		<!--<dh:ModViewModel x:Key="vm"/>-->
 		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">
 			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
@@ -19,7 +19,8 @@
 			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
 	</UserControl.Resources>
-	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
+	<!--DataContext="{StaticResource vm}"-->
+	<StackPanel x:Name="spModBuilder" Orientation="Vertical" >
 		<StackPanel x:Name="spModType" Orientation="Horizontal" Margin="0,0,0,4">
 			<TextBlock Text="Type: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
 			<ListBox x:Name="lbModType" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding ModType.Items}">
@@ -59,13 +60,13 @@
 			<StackPanel x:Name="spDamageType" Orientation="Vertical">
 				<TextBlock Text="Damage Filter:" Width="Auto" Height="Auto"/>
 				<ListBox x:Name="lbDamageEdit" ItemsSource="{Binding DamageTypeFilter.DamageType.Items}">
-					
+
 				</ListBox>
 			</StackPanel>
 			<StackPanel x:Name="spAttackKindFilter" Orientation="Vertical" Margin="20,0,0,0" >
 				<TextBlock Text="Attack Filter:" Width="Auto" Height="Auto"/>
 				<ListBox x:Name="lbAttackFilter" ItemsSource="{Binding DamageTypeFilter.AttackKind.Items}">
-					
+
 				</ListBox>
 			</StackPanel>
 			<StackPanel x:Name="spModification" Orientation="Vertical" Margin="20,0,0,0">
@@ -92,7 +93,7 @@
 			<StackPanel x:Name="spCondition" Orientation="Vertical" Margin="20,0,0,0">
 				<TextBlock Text="Adds Condition(s):" Width="Auto" Height="Auto"/>
 				<ListBox x:Name="lbConditions" ItemsSource="{Binding ModConditions.Items}">
-					
+
 				</ListBox>
 			</StackPanel>
 		</StackPanel>

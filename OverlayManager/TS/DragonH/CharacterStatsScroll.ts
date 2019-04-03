@@ -245,8 +245,10 @@ class CharacterStatsScroll extends WorldObject {
 
 
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
-      new HighlightEmitter(emphasisMain[emphasisMain.HitPointsTempHitPoints], new Vector(139, 280)).setRectangular(67, 95));
+      new HighlightEmitter(emphasisMain[emphasisMain.HitPoints], new Vector(139, 280)).setRectangular(67, 95));
 
+    this.highlightEmitterPages[ScrollPage.main].emitters.push(
+      new HighlightEmitter(emphasisMain[emphasisMain.TempHitPoints], new Vector(139, 280)).setRectangular(67, 95));
 
     this.highlightEmitterPages[ScrollPage.main].emitters.push(
       new HighlightEmitter(emphasisMain[emphasisMain.DeathSaves], new Vector(241, 277)).setRectangular(111, 90));
