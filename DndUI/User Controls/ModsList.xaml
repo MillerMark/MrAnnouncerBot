@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Background="AliceBlue">
     <StackPanel Orientation="Horizontal">
-		<ui:EditableListBox Title="Mods:" DataFileName="AllMods.json"></ui:EditableListBox>
-		<ui:ModBuilder Margin="8" ></ui:ModBuilder>     
+		<ui:EditableListBox Title="Mods:" DataFileName="AllMods.json" ItemDeleted="EditableListBox_ItemDeleted"></ui:EditableListBox>
+		<ui:ModBuilder Margin="8"></ui:ModBuilder>     
     </StackPanel>
 </UserControl>

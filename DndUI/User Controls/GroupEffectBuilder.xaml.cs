@@ -186,7 +186,8 @@ namespace DndUI
 		TimeSpan GetAnimationDuration(string name)
 		{
 			double fps30 = 33; // ms
-			double fps15 = 66; // ms
+			//double fps20 = 50; // ms
+			double fps15 = 67; // ms
 			if (name == "SparkShower")
 				return TimeSpan.FromMilliseconds(fps30 * 63);
 			if (name == "Poof")
@@ -210,17 +211,17 @@ namespace DndUI
 			if (name == "BloodGush")
 				return TimeSpan.FromMilliseconds(fps30 * 77);
 			if (name == "BloodLarger")
-				return TimeSpan.FromMilliseconds(fps30 * 50);
+				return TimeSpan.FromMilliseconds(fps15 * 50);
 			if (name == "BloodLarge")
-				return TimeSpan.FromMilliseconds(fps30 * 50);
+				return TimeSpan.FromMilliseconds(fps15 * 50);
 			if (name == "BloodMedium")
-				return TimeSpan.FromMilliseconds(fps30 * 50);
+				return TimeSpan.FromMilliseconds(fps15 * 50);
 			if (name == "BloodSmall")
-				return TimeSpan.FromMilliseconds(fps30 * 50);
+				return TimeSpan.FromMilliseconds(fps15 * 50);
 			if (name == "BloodSmaller")
-				return TimeSpan.FromMilliseconds(fps30 * 50);
+				return TimeSpan.FromMilliseconds(fps15 * 50);
 			if (name == "BloodSmallest")
-				return TimeSpan.FromMilliseconds(fps30 * 50);
+				return TimeSpan.FromMilliseconds(fps15 * 50);
 			return TimeSpan.Zero;
 		}
 		TimeSpan GetEmitterDuration(EmitterEffect emitterEffect)

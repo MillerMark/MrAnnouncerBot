@@ -30,6 +30,20 @@ namespace DndUI
 		
 		public static readonly RoutedEvent ClickAddEvent = EventManager.RegisterRoutedEvent("ClickAdd", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EditableListBox));
 
+		public static readonly RoutedEvent ItemDeletedEvent = EventManager.RegisterRoutedEvent("ItemDeleted", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EditableListBox));
+
+		public event RoutedEventHandler ItemDeleted
+		{
+			add { AddHandler(ItemDeletedEvent, value); }
+			remove { RemoveHandler(ItemDeletedEvent, value); }
+		}
+
+		protected virtual void OnItemDeleted()
+		{
+			RoutedEventArgs eventArgs = new RoutedEventArgs(ItemDeletedEvent);
+			RaiseEvent(eventArgs);
+		}
+
 		public event RoutedEventHandler ClickAdd
 		{
 			add { AddHandler(ClickAddEvent, value); }
@@ -237,6 +251,8 @@ namespace DndUI
 
 			object[] parameters = { listEntry };
 			method.Invoke(ItemsSource, parameters);
+
+			OnItemDeleted();
 		}
 
 		public void Duplicate<T>(ObservableCollection<T> itemList) where T : IListEntry
@@ -248,6 +264,7 @@ namespace DndUI
 				itemList.Add(item);
 			}
 		}
+
 		public ObservableCollection<T> LoadEntries<T>(string fileName = null) where T: ListEntry
 		{
 			if (fileName == null)

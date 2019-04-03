@@ -231,5 +231,11 @@ namespace DndUI
 		{
 
 		}
+
+		private void LbModsList_ItemDeleted(object sender, RoutedEventArgs e)
+		{
+			OnPropertyChanged();
+			//lbModsList.SetDirty();
+		}
 	}
 }

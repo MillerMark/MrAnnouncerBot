@@ -24,5 +24,10 @@ namespace DndUI
         {
             InitializeComponent();
         }
-    }
+
+		private void EditableListBox_ItemDeleted(object sender, RoutedEventArgs e)
+		{
+
+		}
+	}
 }

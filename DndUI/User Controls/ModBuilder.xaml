@@ -11,7 +11,7 @@
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="410" d:DesignWidth="490" Background="AliceBlue">
 	<UserControl.Resources>
-		<!--<dh:ModViewModel x:Key="vm"/>-->
+		<dh:ModViewModel x:Key="vm"/>
 		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">
 			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
@@ -19,8 +19,8 @@
 			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
 	</UserControl.Resources>
-	<!--DataContext="{StaticResource vm}"-->
-	<StackPanel x:Name="spModBuilder" Orientation="Vertical" >
+
+	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
 		<StackPanel x:Name="spModType" Orientation="Horizontal" Margin="0,0,0,4">
 			<TextBlock Text="Type: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
 			<ListBox x:Name="lbModType" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding ModType.Items}">

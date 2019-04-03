@@ -52,9 +52,10 @@
 		</StackPanel>
 		
 		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,8,0,0">
-			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded"></local:EditableListBox>
+			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded" ItemDeleted="LbModsList_ItemDeleted"></local:EditableListBox>
 			<local:ModBuilder x:Name="modBuilder" Margin="5,0,0,0" Visibility="Collapsed" PropertyChanged="ModBuilder_PropertyChanged"></local:ModBuilder>
-			<local:EditableListBox x:Name="lbEffectsList" Title="Effects:" SelectionChanged="LbEffectsList_SelectionChanged" ClickAdd="LbEffectsList_ClickAdd" Loaded="LbEffectsList_Loaded"></local:EditableListBox>
+			<local:EditableListBox x:Name="lbEffectsList" Margin="5,0,0,0" Title="Effects:" SelectionChanged="LbEffectsList_SelectionChanged" ClickAdd="LbEffectsList_ClickAdd" Loaded="LbEffectsList_Loaded"></local:EditableListBox>
+			<local:GroupEffectBuilder x:Name="groupEffectBuilder" Margin="5,0,0,0"></local:GroupEffectBuilder>
 			<local:EditableListBox Margin="5,0,0,0" x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
 		</StackPanel>
 	</StackPanel>
