@@ -51,12 +51,23 @@
 			</StackPanel>
 		</StackPanel>
 		
-		<StackPanel x:Name="spMods" Orientation="Horizontal" Margin="0,8,0,0">
-			<local:EditableListBox x:Name="lbModsList" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded" ItemDeleted="LbModsList_ItemDeleted"></local:EditableListBox>
-			<local:ModBuilder x:Name="modBuilder" Margin="5,0,0,0" Visibility="Collapsed" PropertyChanged="ModBuilder_PropertyChanged"></local:ModBuilder>
-			<local:EditableListBox x:Name="lbEffectsList" Margin="5,0,0,0" Title="Effects:" SelectionChanged="LbEffectsList_SelectionChanged" ClickAdd="LbEffectsList_ClickAdd" Loaded="LbEffectsList_Loaded"></local:EditableListBox>
-			<local:GroupEffectBuilder x:Name="groupEffectBuilder" Margin="5,0,0,0"></local:GroupEffectBuilder>
-			<local:EditableListBox Margin="5,0,0,0" x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
+		<StackPanel x:Name="spAdditional" Orientation="Horizontal" Margin="0,8,0,0">
+			<StackPanel x:Name="spMods" Orientation="Horizontal" >
+				<local:EditableListBox x:Name="lbModsList" Margin="6, 6, 0, 6" Title="Mods:" SelectionChanged="LbModsList_SelectionChanged" ClickAdd="LbModsList_ClickAdd" Loaded="LbModsList_Loaded" ItemDeleted="LbModsList_ItemDeleted" GotFocus="LbModsList_GotFocus"></local:EditableListBox>
+				<local:ModBuilder x:Name="modBuilder" Margin="5,6,6,6" Visibility="Collapsed" PropertyChanged="ModBuilder_PropertyChanged"></local:ModBuilder>
+			</StackPanel>
+			<StackPanel x:Name="spCurses" Orientation="Horizontal" >
+				<local:EditableListBox Margin="6, 6, 0, 6" x:Name="lbCursesBlessingsDiseasesList" Title="Curses, Blessings, Diseases:" SelectionChanged="LbAttackList_SelectionChanged" ClickAdd="LbAttackList_ClickAdd" Loaded="LbAttackList_Loaded"></local:EditableListBox>
+			</StackPanel>
+			<StackPanel x:Name="spEffects" Orientation="Horizontal" >
+				<StackPanel Orientation="Vertical">
+					<local:EditableListBox x:Name="lbEffectsList" Margin="6, 6, 0, 6" AllowDuplicate="False" ItemDeleted="LbEffectsList_ItemDeleted" AllowNameEdit="False" Title="Effects:" SelectionChanged="LbEffectsList_SelectionChanged" ClickAdd="LbEffectsList_ClickAdd" Loaded="LbEffectsList_Loaded" GotFocus="LbEffectsList_GotFocus"></local:EditableListBox>
+					<Button x:Name="btnTestEffect" Margin="6,0,0,0" IsEnabled="False" Click="BtnTestEffect_Click">
+						Test Effect
+					</Button>
+				</StackPanel>
+				<local:GroupEffectBuilder x:Name="groupEffectBuilder" Margin="5,6,6,6" Visibility="Hidden" PropertyChanged="GroupEffectBuilder_PropertyChanged"></local:GroupEffectBuilder>
+			</StackPanel>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

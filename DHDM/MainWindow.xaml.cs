@@ -31,6 +31,7 @@ namespace DHDM
 		{
 			InitializeComponent();
 			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
+			groupEffectBuilder.Entries = new ObservableCollection<TimeLineEffect>();
 		}
 
 		public int PlayerID
@@ -91,34 +92,19 @@ namespace DHDM
 			}
 		}
 
-		Effect GetEffect(EffectEntry effectEntry)
-		{
-			if (effectEntry == null)
-				return null;
-			if (effectEntry.EffectKind == EffectKind.Animation)
-				return effectEntry.AnimationEffect;
-			if (effectEntry.EffectKind == EffectKind.Emitter)
-				return effectEntry.EmitterEffect;
-			if (effectEntry.EffectKind == EffectKind.SoundEffect)
-				return effectEntry.SoundEffect;
-			return null;
-		}
-
 		private void BtnTestGroupEffect_Click(object sender, RoutedEventArgs e)
 		{
 			EffectGroup effectGroup = new EffectGroup();
-			foreach (TimeLineEntry timeLineEntry in groupEffectBuilder.Entries)
+			foreach (TimeLineEffect timeLineEffect in groupEffectBuilder.Entries)
 			{
 				Effect effect = null;
 
-				if (timeLineEntry.Data is EffectEntry entry)
-					effect = GetEffect(entry);
-				else if (timeLineEntry.Data is EffectPlaceholderEntry effectPlaceholder)
-					effect = new PlaceholderEffect(effectPlaceholder.Name, effectPlaceholder.Type);
+				if (timeLineEffect.Effect != null)
+					effect = timeLineEffect.Effect.GetPrimaryEffect();
 
 				if (effect != null)
 				{
-					effect.timeOffsetMs = (int)Math.Round(timeLineEntry.Start.TotalMilliseconds);
+					effect.timeOffsetMs = (int)Math.Round(timeLineEffect.Start.TotalMilliseconds);
 					effectGroup.Add(effect);
 				}
 			}

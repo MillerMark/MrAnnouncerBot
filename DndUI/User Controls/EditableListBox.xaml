@@ -5,8 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:dhdm="clr-namespace:DndUI"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="250" Background="AliceBlue">
+             d:DesignHeight="450" d:DesignWidth="250" 
+						 DataContext="{Binding RelativeSource={RelativeSource Self}}">
+	<UserControl.Resources>
+		<BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
+	</UserControl.Resources>
+	
 	<StackPanel x:Name="spMain" Orientation="Vertical">
+		
 		<TextBlock x:Name="TitleLabel" Text="{Binding Title}" Width="Auto" Height="Auto"/>
 		<ListBox x:Name="Box" KeyDown="Box_KeyDown" ItemsSource="{Binding ItemsSource}">
 			<ListBox.Resources>
@@ -36,7 +42,7 @@
 				<Button x:Name="btnAdd" Margin="0, 0, 4, 0" Click="BtnAdd_Click" >
 					Add
 				</Button>
-				<Button x:Name="btnDuplicate" Click="BtnDuplicate_Click" Margin="0, 0, 4, 0">
+				<Button x:Name="btnDuplicate" Click="BtnDuplicate_Click" Visibility="{Binding Path=AllowDuplicate, Converter={StaticResource boolToVisibilityConverter}}" Margin="0, 0, 4, 0">
 					<Button.Style>
 						<Style>
 							<Style.Triggers>

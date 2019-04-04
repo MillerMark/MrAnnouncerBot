@@ -50,10 +50,10 @@ namespace DndUI
 				LoadFromItem(effectEntry);
 			}
 		}
-		
+
 
 		EffectEntry effectEntry;
-			const string STR_EffectKind = "EffectKind";
+		const string STR_EffectKind = "EffectKind";
 		public EffectKind EffectKind
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!

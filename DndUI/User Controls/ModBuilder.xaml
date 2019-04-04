@@ -9,7 +9,7 @@
              mc:Ignorable="d" 
 						 x:Name="uc"
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             d:DesignHeight="410" d:DesignWidth="490" Background="AliceBlue">
+             d:DesignHeight="410" d:DesignWidth="490">
 	<UserControl.Resources>
 		<dh:ModViewModel x:Key="vm"/>
 		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">

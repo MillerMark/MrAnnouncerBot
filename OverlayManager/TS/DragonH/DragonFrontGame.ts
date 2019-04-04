@@ -112,13 +112,17 @@ class DragonFrontGame extends GamePlusQuiz {
 
     this.embersLarge = new Sprites('Embers/Large/EmberLarge', 93, fps30, AnimationStyle.Sequential, true);
     this.embersLarge.name = 'EmbersLarge';
-    this.embersLarge.originX = 504;
-    this.embersLarge.originY = 501;
+    this.embersLarge.originX = 431;
+    this.embersLarge.originY = 570;
+    //this.embersLarge.originX = 504;
+    //this.embersLarge.originY = 501;
 
     this.embersMedium = new Sprites('Embers/Medium/EmberMedium', 91, fps30, AnimationStyle.Sequential, true);
     this.embersMedium.name = 'EmbersMedium';
-    this.embersMedium.originX = 431;
-    this.embersMedium.originY = 570;
+    //this.embersMedium.originX = 431;
+    //this.embersMedium.originY = 570;
+    this.embersMedium.originX = 504;
+    this.embersMedium.originY = 501;
 
     this.stars = new Sprites('SpinningStars/SpinningStars', 120, fps20, AnimationStyle.Loop, true);
     this.stars.name = 'Stars';

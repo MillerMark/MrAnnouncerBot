@@ -21,6 +21,9 @@ namespace DndUI
 		public int minStrengthToCarry = 0;
 		public ObservableCollection<ModViewModel> mods = new ObservableCollection<ModViewModel>();
 		public ObservableCollection<CurseBlessingDisease> cursesBlessingsDiseases = new ObservableCollection<CurseBlessingDisease>();
+		public ObservableCollection<EffectTimeLines> events = new ObservableCollection<EffectTimeLines>();
+
+
 		public ObservableCollection<Effect> consumedEffects = new ObservableCollection<Effect>();
 		public ObservableCollection<Effect> equippedEffects = new ObservableCollection<Effect>();
 		public ObservableCollection<Effect> unequippedEffects = new ObservableCollection<Effect>();
@@ -53,7 +56,6 @@ namespace DndUI
 				SetFromItem(value);
 			}
 		}
-
 		Item GetItem()
 		{
 			Item item = new Item();

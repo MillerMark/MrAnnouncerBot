@@ -26,8 +26,13 @@ namespace DndUI
 
 	public partial class EditableListBox : UserControl
 	{
-		public static readonly DependencyProperty DataFileNameProperty = DependencyProperty.Register("DataFileName", typeof(string), typeof(EditableListBox), new FrameworkPropertyMetadata(null));
+		public static readonly DependencyProperty AllowNameEditProperty = DependencyProperty.Register("AllowNameEdit", typeof(bool), typeof(EditableListBox), new FrameworkPropertyMetadata(true));
+
+		public static readonly DependencyProperty AllowDuplicateProperty = DependencyProperty.Register("AllowDuplicate", typeof(bool), typeof(EditableListBox), new FrameworkPropertyMetadata(true));
 		
+
+		public static readonly DependencyProperty DataFileNameProperty = DependencyProperty.Register("DataFileName", typeof(string), typeof(EditableListBox), new FrameworkPropertyMetadata(null));
+
 		public static readonly RoutedEvent ClickAddEvent = EventManager.RegisterRoutedEvent("ClickAdd", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EditableListBox));
 
 		public static readonly RoutedEvent ItemDeletedEvent = EventManager.RegisterRoutedEvent("ItemDeleted", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(EditableListBox));
@@ -85,6 +90,30 @@ namespace DndUI
 			RaiseEvent(e);
 		}
 
+		public bool AllowDuplicate
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (bool)GetValue(AllowDuplicateProperty);
+			}
+			set
+			{
+				SetValue(AllowDuplicateProperty, value);
+			}
+		}
+		public bool AllowNameEdit
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (bool)GetValue(AllowNameEditProperty);
+			}
+			set
+			{
+				SetValue(AllowNameEditProperty, value);
+			}
+		}
 		public string DataFileName
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
@@ -104,6 +133,8 @@ namespace DndUI
 		public EditableListBox()
 		{
 			InitializeComponent();
+			AllowDuplicate = true;
+			AllowNameEdit = true;
 			Box.DataContext = this;
 			Box.SelectionChanged += Box_SelectionChanged;
 			TitleLabel.DataContext = this;
@@ -129,6 +160,8 @@ namespace DndUI
 
 		private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+			if (!AllowNameEdit)
+				return;
 			TextBox tb = (TextBox)((Grid)((TextBlock)sender).Parent).Children[1];
 			tb.Visibility = Visibility.Visible;
 			((TextBlock)sender).Visibility = Visibility.Collapsed;

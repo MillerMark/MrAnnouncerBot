@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DndUI"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="754" Background="AliceBlue">
+             d:DesignHeight="600" d:DesignWidth="754">
 	<StackPanel x:Name="spMain" Orientation="Vertical">
 		<StackPanel x:Name="spEffectType" Orientation="Horizontal" Margin="0,4,0,4">
 			<TextBlock x:Name="tbType" Text="Effect Type: " Width="Auto" Height="Auto" Margin="4, 1, 4, 1" />

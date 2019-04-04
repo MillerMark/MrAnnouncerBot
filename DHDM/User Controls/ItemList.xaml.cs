@@ -1,4 +1,6 @@
-﻿using DndUI;
+﻿using DndCore;
+using DndUI;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TimeLineControl;
 
 namespace DHDM
 {
@@ -75,6 +78,30 @@ namespace DHDM
 		public void Save()
 		{
 			lbItems.SaveEntries();
+		}
+
+		private void ItemBuilder_TestEffect(object sender, RoutedEffectEventArgs ea)
+		{
+			if (ea.TimeLineData == null)
+				return;
+
+			EffectGroup effectGroup = new EffectGroup();
+			foreach (TimeLineEffect timeLineEffects in ea.TimeLineData.Entries)
+			{
+				Effect effect = null;
+
+				if (timeLineEffects.Effect != null)
+					effect = timeLineEffects.Effect.GetPrimaryEffect();
+
+				if (effect != null)
+				{
+					effect.timeOffsetMs = (int)Math.Round(timeLineEffects.Start.TotalMilliseconds);
+					effectGroup.Add(effect);
+				}
+			}
+
+			string serializedObject = JsonConvert.SerializeObject(effectGroup);
+			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 	}
 }

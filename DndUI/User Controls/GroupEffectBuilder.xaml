@@ -36,7 +36,7 @@
 			</Button>-->
 
 			</StackPanel>
-			<tl:TimeLine x:Name="tlEffects" MinWidth="1000"  TotalDuration="0:0:05" SelectionChanged="TlEffects_SelectionChanged" Margin="8" >
+			<tl:TimeLine x:Name="tlEffects" MinWidth="750" Background="White" TotalDuration="0:0:05" TimeLineChanged="TlEffects_TimeLineChanged" SelectionChanged="TlEffects_SelectionChanged" Margin="8" >
 			</tl:TimeLine>
 
 		<local:EffectBuilder x:Name="effectBuilder" PropertyChanged="EffectBuilder_PropertyChanged"></local:EffectBuilder>

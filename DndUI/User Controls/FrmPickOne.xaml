@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DndUI"
         mc:Ignorable="d"
-        Title="Select One" Height="Auto" Width="Auto" ShowInTaskbar="False" d:DesignWidth="400" d:DesignHeight="400" SizeToContent="WidthAndHeight" MinWidth="250" >
+        Title="Select One" Height="Auto" Width="Auto" ResizeMode="NoResize" ShowInTaskbar="False" d:DesignWidth="400" d:DesignHeight="400" SizeToContent="WidthAndHeight" MinWidth="250" >
 	<StackPanel x:Name="spMain" Orientation="Vertical" Width="Auto" Height="Auto">
 		<ListBox x:Name="lbChoices" MaxHeight="900" Width="Auto" Height="Auto">
 			<ItemsControl.ItemTemplate>

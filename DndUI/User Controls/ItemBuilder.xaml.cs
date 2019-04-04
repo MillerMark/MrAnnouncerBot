@@ -16,14 +16,41 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TimeLineControl;
 
 namespace DndUI
 {
+	public delegate void RoutedEffectEventHandler(object sender, RoutedEffectEventArgs ea);
+	public class RoutedEffectEventArgs: RoutedEventArgs
+	{
+		public RoutedEffectEventArgs(RoutedEvent routedEvent, EffectTimeLines timeLineData): base(routedEvent)
+		{
+			TimeLineData = timeLineData;
+		}
+
+		public EffectTimeLines TimeLineData { get; set; }
+	}
+
 	/// <summary>
 	/// Interaction logic for ItemBuilder.xaml
 	/// </summary>
 	public partial class ItemBuilder : UserControl, INotifyPropertyChanged
 	{
+		public static readonly RoutedEvent TestEffectEvent = EventManager.RegisterRoutedEvent("TestEffect", RoutingStrategy.Bubble, typeof(RoutedEffectEventHandler), typeof(ItemBuilder));
+
+		public event RoutedEffectEventHandler TestEffect
+		{
+			add { AddHandler(TestEffectEvent, value); }
+			remove { RemoveHandler(TestEffectEvent, value); }
+		}
+
+		protected virtual void OnTestEffect(EffectTimeLines timeLineData)
+		{
+			RoutedEffectEventArgs eventArgs = new RoutedEffectEventArgs(TestEffectEvent, timeLineData);
+			RaiseEvent(eventArgs);
+		}
+		
+
 		int modsCreated = 0;
 		public static readonly DependencyProperty WeaponCategoryProperty = DependencyProperty.Register("WeaponCategory", typeof(WeaponCategories), typeof(ItemBuilder), new FrameworkPropertyMetadata(WeaponCategories.None, new PropertyChangedCallback(OnWeaponCategoryChanged), new CoerceValueCallback(OnCoerceWeaponCategory)));
 		bool loading;
@@ -83,7 +110,6 @@ namespace DndUI
 						try
 						{
 							modBuilder.LoadFromMod(entry);
-							modBuilder.Visibility = Visibility.Visible;
 						}
 						finally
 						{
@@ -98,6 +124,7 @@ namespace DndUI
 			{
 				itemsSource.Add(new ModViewModel("New Mod" + modsCreated));
 				modsCreated++;
+				OnPropertyChanged("Mods");
 			}
 		}
 
@@ -141,6 +168,7 @@ namespace DndUI
 		{
 			OnPropertyChanged("AnyProperty");
 		}
+
 		public void SaveToItem(ItemViewModel entry, string propertyName)
 		{
 			entry.adamantine = ckbAdamantine.IsChecked ?? false;
@@ -158,6 +186,8 @@ namespace DndUI
 			entry.description = tbxDescription.Text;
 			if (lbModsList.ItemsSource is ObservableCollection<ModViewModel> mods)
 				entry.mods = mods;
+			if (lbEffectsList.ItemsSource is ObservableCollection<EffectTimeLines> timeLines)
+				entry.events = timeLines;
 
 			// entry.acquiredEffects
 			// entry.equippedEffects
@@ -196,7 +226,9 @@ namespace DndUI
 			tbxDescription.Text = entry.description;
 
 			lbModsList.ItemsSource = entry.mods;
+			lbEffectsList.ItemsSource = entry.events;
 			modBuilder.Visibility = Visibility.Collapsed;
+			groupEffectBuilder.Visibility = Visibility.Collapsed;
 
 			// entry.acquiredEffects
 			// entry.equippedEffects
@@ -204,7 +236,7 @@ namespace DndUI
 			// entry.discardedEffects
 			// entry.unequippedEffects
 
-			
+
 			// entry.cursesBlessingsDiseases
 		}
 
@@ -219,11 +251,76 @@ namespace DndUI
 
 		private void LbEffectsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (!(lbEffectsList.ItemsSource is ObservableCollection<EffectTimeLines> timeLines))
+				return;
+			if (!(lbEffectsList.SelectedItem is EffectTimeLines timeLineData))
+			{
+				groupEffectBuilder.Visibility = Visibility.Collapsed;
+				return;
+			}
 
+			groupEffectBuilder.Visibility = Visibility.Visible;
+
+			groupEffectBuilder.Entries = timeLineData.Entries;
+			btnTestEffect.IsEnabled = true;
+		}
+
+		internal class EffectEvent : ListEntry
+		{
+			public EffectEvent(string name)
+			{
+				Name = name;
+			}
+		}
+
+		System.Collections.IEnumerable GetEffectsList(System.Collections.IEnumerable itemsSource)
+		{
+			ObservableCollection<EffectEvent> effectEvents = new ObservableCollection<EffectEvent>();
+			addEffect(effectEvents, itemsSource, "OnConsume");
+			addEffect(effectEvents, itemsSource, "OnEquip");
+			addEffect(effectEvents, itemsSource, "OnUnequip");
+			addEffect(effectEvents, itemsSource, "OnDiscard");
+			addEffect(effectEvents, itemsSource, "OnAcquire");
+			addEffect(effectEvents, itemsSource, "OnImpact");
+			return effectEvents;
+		}
+
+		private static void addEffect(ObservableCollection<EffectEvent> effectEvents, System.Collections.IEnumerable itemsSource, string eventName)
+		{
+			if (itemsSource != null)
+				foreach (EffectTimeLines effectTimeLines in itemsSource)
+					if (effectTimeLines.Name == eventName)
+						return;
+			effectEvents.Add(new EffectEvent(eventName));
 		}
 
 		private void LbEffectsList_ClickAdd(object sender, RoutedEventArgs e)
 		{
+			if (lbEffectsList.ItemsSource == null)
+				lbEffectsList.ItemsSource = new ObservableCollection<EffectTimeLines>();
+
+			if (!(lbEffectsList.ItemsSource is ObservableCollection<EffectTimeLines> timeLines))
+				return;
+			FrmPickOne frmPickOne = new FrmPickOne();
+			Point screenPos = lbEffectsList.PointToScreen(new Point(0, 0));
+			frmPickOne.Left = screenPos.X;
+			frmPickOne.Top = screenPos.Y;
+			frmPickOne.lbChoices.ItemsSource = GetEffectsList(lbEffectsList.ItemsSource);
+			if (frmPickOne.ShowDialog() == true)
+			{
+				if (frmPickOne.SelectedEntry is EffectEvent effectEvent)
+				{
+					EffectTimeLines effectTimeLines = new EffectTimeLines();
+					effectTimeLines.Name = effectEvent.Name;
+					timeLines.Add(effectTimeLines);
+					groupEffectBuilder.tlEffects.ItemsSource = effectTimeLines.Entries;
+					groupEffectBuilder.Visibility = Visibility.Visible;
+					OnPropertyChanged("Effects");
+
+					//groupEffectBuilder.Entries = null;
+					string entryName = effectEvent.Name;
+				}
+			}
 
 		}
 
@@ -234,8 +331,45 @@ namespace DndUI
 
 		private void LbModsList_ItemDeleted(object sender, RoutedEventArgs e)
 		{
-			OnPropertyChanged();
+			OnPropertyChanged("Mods");
 			//lbModsList.SetDirty();
+		}
+
+		SolidColorBrush focusBrush = new SolidColorBrush(Color.FromRgb(255, 249, 199));
+
+		private void LbEffectsList_GotFocus(object sender, RoutedEventArgs e)
+		{
+			modBuilder.Visibility = Visibility.Collapsed;
+			groupEffectBuilder.Visibility = Visibility.Visible;
+			spEffects.Background = focusBrush;
+			spMods.Background = Brushes.AliceBlue;
+			spCurses.Background = Brushes.AliceBlue;
+		}
+
+		private void LbModsList_GotFocus(object sender, RoutedEventArgs e)
+		{
+			modBuilder.Visibility = Visibility.Visible;
+			groupEffectBuilder.Visibility = Visibility.Collapsed;
+			spMods.Background = focusBrush;
+			spEffects.Background = Brushes.AliceBlue;
+			spCurses.Background = Brushes.AliceBlue;
+		}
+
+		private void BtnTestEffect_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbEffectsList.SelectedItem is EffectTimeLines timeLineData))
+				return;
+			OnTestEffect(timeLineData);
+		}
+
+		private void LbEffectsList_ItemDeleted(object sender, RoutedEventArgs e)
+		{
+			OnPropertyChanged("Effects");
+		}
+
+		private void GroupEffectBuilder_PropertyChanged(object sender, RoutedEventArgs e)
+		{
+			OnPropertyChanged("Effects");
 		}
 	}
 }

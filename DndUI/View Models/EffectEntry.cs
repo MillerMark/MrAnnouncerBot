@@ -23,6 +23,19 @@ namespace DndUI
 			SoundEffect = new SoundEffect();
 		}
 
+		PlaceholderType type = PlaceholderType.None;
+
+		public PlaceholderType PlaceholderType
+		{
+			get { return type; }
+			set
+			{
+				if (type == value)
+					return;
+				type = value;
+				OnPropertyChanged();
+			}
+		}
 
 		private bool isSelected;
 		public bool IsSelected
@@ -122,6 +135,20 @@ namespace DndUI
 				}
 			}
 			set => OnPropertyChanged(nameof(Effect));
+		}
+
+		public Effect GetPrimaryEffect()
+		{
+			if (EffectKind == EffectKind.Animation)
+				return AnimationEffect;
+			if (EffectKind == EffectKind.Emitter)
+				return EmitterEffect;
+			if (EffectKind == EffectKind.SoundEffect)
+				return SoundEffect;
+			if (EffectKind == EffectKind.Placeholder)
+				return new PlaceholderEffect(Name, PlaceholderType);
+
+			return null;
 		}
 	}
 }

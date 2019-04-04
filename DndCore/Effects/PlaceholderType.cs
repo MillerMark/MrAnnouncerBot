@@ -5,6 +5,7 @@ namespace DndCore
 {
 	public enum PlaceholderType
 	{
+		None,
 		Impact,
 		FleshWound
 	}

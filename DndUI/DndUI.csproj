@@ -54,6 +54,8 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="User Controls\EffectEvent.cs" />
+    <Compile Include="User Controls\EffectTimeLines.cs" />
     <Compile Include="User Controls\FrmPickOne.xaml.cs">
       <DependentUpon>FrmPickOne.xaml</DependentUpon>
     </Compile>
@@ -120,7 +122,6 @@
     <Compile Include="View Models\DamageConditionsViewModel.cs" />
     <Compile Include="View Models\DamageViewModel.cs" />
     <Compile Include="View Models\EffectEntry.cs" />
-    <Compile Include="View Models\EffectPlaceholder.cs" />
     <Compile Include="View Models\ItemViewModel.cs" />
     <Compile Include="View Models\SavingThrowViewModel.cs" />
     <Compile Include="View Models\Support\IListEntry.cs" />

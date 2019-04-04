@@ -20,32 +20,72 @@ using ioPath = System.IO.Path;
 
 namespace DndUI
 {
+	public class TimeLineEffect: TimeLineEntry
+	{
+		public EffectEntry Effect
+		{
+			get
+			{
+				return Data as EffectEntry;
+			}
+			set
+			{
+				Data = value;
+			}
+		}
+		
+		public TimeLineEffect()
+		{
+			
+		}
+	}
 	/// <summary>
 	/// Interaction logic for GroupEffectBuilder.xaml
 	/// </summary>
 	public partial class GroupEffectBuilder : UserControl
 	{
+		public static readonly RoutedEvent PropertyChangedEvent = EventManager.RegisterRoutedEvent("PropertyChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(GroupEffectBuilder));
+
+		public event RoutedEventHandler PropertyChanged
+		{
+			add { AddHandler(PropertyChangedEvent, value); }
+			remove { RemoveHandler(PropertyChangedEvent, value); }
+		}
+
+		protected virtual void OnPropertyChanged()
+		{
+			RoutedEventArgs eventArgs = new RoutedEventArgs(PropertyChangedEvent);
+			RaiseEvent(eventArgs);
+		}
+		
 		static Brush groupBrush = new SolidColorBrush(Color.FromRgb(32, 53, 54));
 		static Brush placeholderBrush = new SolidColorBrush(Color.FromRgb(156, 83, 47));
 		static Brush soundEffectBrush = new SolidColorBrush(Color.FromRgb(20, 135, 82));
 		static Brush emitterBrush = new SolidColorBrush(Color.FromRgb(150, 33, 33));
 		static Brush animationBrush = new SolidColorBrush(Color.FromRgb(61, 39, 105));
+
 		public GroupEffectBuilder()
 		{
 			InitializeComponent();
-			timeLineData = new TimeLineData(); ;
-			tlEffects.ItemsSource = timeLineData.Entries;
 		}
 
-		public ObservableCollection<TimeLineEntry> Entries
+		ObservableCollection<TimeLineEffect> entries;
+
+		public ObservableCollection<TimeLineEffect> Entries
 		{
 			get
 			{
-				return timeLineData.Entries;
+				if (entries == null)
+					entries = new ObservableCollection<TimeLineEffect>();
+				return entries;
+			}
+			set
+			{
+				entries = value;
+				tlEffects.ItemsSource = entries;
 			}
 		}
 
-		TimeLineData timeLineData;
 		bool loadingInternally;
 
 		TimeSpan GetEffectDuration(EffectEntry effectEntry)
@@ -60,6 +100,13 @@ namespace DndUI
 					return GetSoundFileDuration(effectEntry.SoundEffect.soundFileName);
 			}
 			return TimeSpan.FromSeconds(1);
+		}
+
+		public TimeLineEffect AddEntry(TimeSpan start, TimeSpan duration, string name, EffectEntry data)
+		{
+			TimeLineEffect timeLineEntry = new TimeLineEffect() { Start = start, Duration = duration, Name = name, Effect = data, Index = Entries.Count };
+			Entries.Add(timeLineEntry);
+			return timeLineEntry;
 		}
 
 		private void BtnAdd_Click(object sender, RoutedEventArgs e)
@@ -78,8 +125,9 @@ namespace DndUI
 				{
 					string entryName = effectEntry.Name;
 
-					TimeLineEntry newEntry = timeLineData.AddEntry(TimeSpan.Zero, GetEffectDuration(effectEntry), entryName, effectEntry);
+					TimeLineEffect newEntry = AddEntry(TimeSpan.Zero, GetEffectDuration(effectEntry), entryName, effectEntry);
 					newEntry.PropertyChanged += Entry_PropertyChanged;
+					OnPropertyChanged();
 				}
 			}
 		}
@@ -102,11 +150,12 @@ namespace DndUI
 					}
 				}
 			}
+			OnPropertyChanged();
 		}
 
 		private string GetEntryName()
 		{
-			return "Effect" + timeLineData.Entries.Count;
+			return "Effect" + Entries.Count;
 		}
 
 		private void BtnAddNewSoundEffect_Click(object sender, RoutedEventArgs e)
@@ -122,7 +171,7 @@ namespace DndUI
 		private void CreateNewEffect(EffectKind effectKind)
 		{
 			EffectEntry newEffect = new EffectEntry(effectKind, GetEntryName());
-			TimeLineEntry entry = timeLineData.AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), GetEntryName(), newEffect);
+			TimeLineEntry entry = AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), GetEntryName(), newEffect);
 
 			entry.PropertyChanged += Entry_PropertyChanged;
 
@@ -138,6 +187,7 @@ namespace DndUI
 			{
 				loadingInternally = false;
 			}
+			OnPropertyChanged();
 		}
 
 		private void BtnDelete_Click(object sender, RoutedEventArgs e)
@@ -184,10 +234,11 @@ namespace DndUI
 					timeLineEntry.Name = newName;
 			}
 		}
+
 		TimeSpan GetAnimationDuration(string name)
 		{
 			double fps30 = 33; // ms
-			//double fps20 = 50; // ms
+												 //double fps20 = 50; // ms
 			double fps15 = 67; // ms
 			if (name == "SparkShower")
 				return TimeSpan.FromMilliseconds(fps30 * 63);
@@ -225,12 +276,14 @@ namespace DndUI
 				return TimeSpan.FromMilliseconds(fps15 * 50);
 			return TimeSpan.Zero;
 		}
+
 		TimeSpan GetEmitterDuration(EmitterEffect emitterEffect)
 		{
 			if (emitterEffect.maxTotalParticles == double.PositiveInfinity)
 				return System.Threading.Timeout.InfiniteTimeSpan;
 			return TimeSpan.FromSeconds(emitterEffect.maxTotalParticles / emitterEffect.particlesPerSecond);
 		}
+
 		void SetSelectedColorByEffectType(EffectKind effectKind)
 		{
 			if (tlEffects.SelectedItem is TimeLineEntry timeLineEntry)
@@ -250,44 +303,47 @@ namespace DndUI
 						timeLineEntry.Fill = groupBrush;
 						break;
 				}
-				
+
 			}
 		}
+
 		private void EffectBuilder_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (loadingInternally)
 				return;
-			if (sender is EffectBuilder effectBuilder)
+			if (!(sender is EffectBuilder effectBuilder))
+				return;
+
+			EffectEntry effectEntry = effectBuilder.EffectEntry;
+			if (effectEntry == null)
+				return;
+			SetSelectedColorByEffectType(effectEntry.EffectKind);
+			if (effectBuilder.EffectKind == EffectKind.SoundEffect)
 			{
-				EffectEntry effectEntry = effectBuilder.EffectEntry;
-				if (effectEntry == null)
-					return;
-				SetSelectedColorByEffectType(effectEntry.EffectKind);
-				if (effectBuilder.EffectKind == EffectKind.SoundEffect)
+				string soundFileName = effectEntry.SoundEffect.soundFileName;
+				AdjustSelectedEntryDuration(GetSoundFileDuration(soundFileName), true, soundFileName);
+			}
+			else if (effectBuilder.EffectKind == EffectKind.Animation)
+			{
+				AnimationEffect animationEffect = effectEntry.AnimationEffect;
+				TimeSpan duration = GetAnimationDuration(animationEffect.spriteName);
+				if (animationEffect.name != "")
 				{
-					string soundFileName = effectEntry.SoundEffect.soundFileName;
-					AdjustSelectedEntryDuration(GetSoundFileDuration(soundFileName), true, soundFileName);
+					AdjustSelectedEntryDuration(duration, false, animationEffect.name);
 				}
-				else if (effectBuilder.EffectKind == EffectKind.Animation)
+				else
 				{
-					AnimationEffect animationEffect = effectEntry.AnimationEffect;
-					TimeSpan duration = GetAnimationDuration(animationEffect.spriteName);
-					if (animationEffect.name != "")
-					{
-						AdjustSelectedEntryDuration(duration, false, animationEffect.name);
-					}
-					else
-					{
-						AdjustSelectedEntryDuration(duration, false, animationEffect.spriteName);
-					}
-				}
-				else if (effectBuilder.EffectKind == EffectKind.Emitter)
-				{
-					EmitterEffect emitterEffect = effectEntry.EmitterEffect;
-					TimeSpan duration = GetEmitterDuration(emitterEffect);
-					AdjustSelectedEntryDuration(duration, false, null);
+					AdjustSelectedEntryDuration(duration, false, animationEffect.spriteName);
 				}
 			}
+			else if (effectBuilder.EffectKind == EffectKind.Emitter)
+			{
+				EmitterEffect emitterEffect = effectEntry.EmitterEffect;
+				TimeSpan duration = GetEmitterDuration(emitterEffect);
+				AdjustSelectedEntryDuration(duration, false, null);
+			}
+
+			OnPropertyChanged();
 		}
 
 		private void TlEffects_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -316,14 +372,19 @@ namespace DndUI
 
 		private void BtnAddNewPlaceholder_Click(object sender, RoutedEventArgs e)
 		{
-			EffectPlaceholderEntry newEffect = new EffectPlaceholderEntry();
-			TimeLineEntry entry = timeLineData.AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), "Placeholder", newEffect);
+			EffectEntry newPlaceholder = new EffectEntry(EffectKind.Animation, "Placeholder");
+			TimeLineEntry entry = AddEntry(TimeSpan.Zero, TimeSpan.FromSeconds(1), "Placeholder", newPlaceholder);
+			entry.Fill = placeholderBrush;
 			entry.PropertyChanged += Entry_PropertyChanged;
 			tlEffects.SelectedItem = entry;
 
-			entry.Fill = placeholderBrush;
-
 			effectBuilder.Visibility = Visibility.Hidden;
+			OnPropertyChanged();
+		}
+
+		private void TlEffects_TimeLineChanged(object sender, RoutedEventArgs e)
+		{
+			OnPropertyChanged();
 		}
 	}
 }
