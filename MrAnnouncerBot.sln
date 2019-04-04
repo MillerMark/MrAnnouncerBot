@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndUI", "DndUI\DndUI.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeLineControl", "..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj", "{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndQuality", "DndQuality\DndQuality.csproj", "{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -23,13 +23,6 @@ namespace DndUI
 		public ObservableCollection<CurseBlessingDisease> cursesBlessingsDiseases = new ObservableCollection<CurseBlessingDisease>();
 		public ObservableCollection<EffectTimeLines> events = new ObservableCollection<EffectTimeLines>();
 
-
-		public ObservableCollection<Effect> consumedEffects = new ObservableCollection<Effect>();
-		public ObservableCollection<Effect> equippedEffects = new ObservableCollection<Effect>();
-		public ObservableCollection<Effect> unequippedEffects = new ObservableCollection<Effect>();
-		public ObservableCollection<Effect> discardedEffects = new ObservableCollection<Effect>();
-		public ObservableCollection<Effect> acquiredEffects = new ObservableCollection<Effect>();
-
 		public ItemViewModel()
 		{
 			equipTime.TimeMeasure = TimeMeasure.actions;

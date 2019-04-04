@@ -57,6 +57,7 @@
     <Compile Include="MonsterBuilder.cs" />
     <Compile Include="MonsterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QualityTests.cs" />
     <Compile Include="SenseTests.cs" />
     <Compile Include="VulnerabilityTests.cs" />
   </ItemGroup>
@@ -67,6 +68,10 @@
     <ProjectReference Include="..\DndCore\DndCore.csproj">
       <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
       <Name>DndCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DndQuality\DndQuality.csproj">
+      <Project>{82f7e2f5-2622-48bc-830c-5dcecb84ec4f}</Project>
+      <Name>DndQuality</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

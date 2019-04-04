@@ -161,6 +161,8 @@ namespace DndUI
 		private void BtnAddNewSoundEffect_Click(object sender, RoutedEventArgs e)
 		{
 			CreateNewEffect(EffectKind.SoundEffect);
+			effectBuilder.PickSoundFile();
+			//effectBuilder.EffectEntry
 		}
 
 		private void BtnAddNewEmitter_Click(object sender, RoutedEventArgs e)

@@ -515,26 +515,7 @@ namespace DndUI
 
 		private void BtnNavSoundFile_Click(object sender, RoutedEventArgs e)
 		{
-			// Create OpenFileDialog 
-			Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-
-			// Set filter for file extension and default file extension 
-			dlg.DefaultExt = ".mp3";
-			dlg.Filter = "Sound Files (*.mp3;*.wav)|*.mp3;*.wav";
-			dlg.InitialDirectory = SoundFolder;
-
-			// Display OpenFileDialog by calling ShowDialog method 
-			bool? result = dlg.ShowDialog();
-
-			// Get the selected file name and display in a TextBox 
-			if (result == true)
-			{
-				// Open document 
-				string filename = dlg.FileName;
-				if (filename.StartsWith(SoundFolder + "\\"))
-					filename = filename.Substring(SoundFolder.Length + 1);
-				tbxSoundFileName.Text = filename;
-			}
+			PickSoundFile();
 		}
 
 		private void AnyRadioButton_Checked(object sender, RoutedEventArgs e)
@@ -1144,6 +1125,29 @@ namespace DndUI
 			if (spSecondaryAnimationColorShiftOptions != null)
 				spSecondaryAnimationColorShiftOptions.Visibility = Visibility.Visible;
 			OnPropertyChanged("AnimationSprites");
+		}
+		public void PickSoundFile()
+		{
+			// Create OpenFileDialog 
+			Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+			// Set filter for file extension and default file extension 
+			dlg.DefaultExt = ".mp3";
+			dlg.Filter = "Sound Files (*.mp3;*.wav)|*.mp3;*.wav";
+			dlg.InitialDirectory = SoundFolder;
+
+			// Display OpenFileDialog by calling ShowDialog method 
+			bool? result = dlg.ShowDialog();
+
+			// Get the selected file name and display in a TextBox 
+			if (result == true)
+			{
+				// Open document 
+				string filename = dlg.FileName;
+				if (filename.StartsWith(SoundFolder + "\\"))
+					filename = filename.Substring(SoundFolder.Length + 1);
+				tbxSoundFileName.Text = filename;
+			}
 		}
 	}
 }
