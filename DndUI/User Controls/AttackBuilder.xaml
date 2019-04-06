@@ -10,11 +10,11 @@
 						 x:Name="uc"
              d:DesignHeight="750" d:DesignWidth="1220" Background="AliceBlue">
 	<UserControl.Resources>
-		<local:AttackViewModel x:Key="vm"/>
-		<DataTemplate DataType="{x:Type local:CheckEnumViewModel}">
+		<dndCore:AttackViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type dndCore:CheckEnumViewModel}">
 			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type local:RadioEnumViewModel}">
+		<DataTemplate DataType="{x:Type dndCore:RadioEnumViewModel}">
 			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
 		</DataTemplate>
 	</UserControl.Resources>

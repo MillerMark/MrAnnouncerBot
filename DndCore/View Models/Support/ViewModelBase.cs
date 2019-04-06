@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DndUI
+namespace DndCore
 {
 	// Base class so we don't have to re-implement INPC in view models.
 	public class ViewModelBase : INotifyPropertyChanged

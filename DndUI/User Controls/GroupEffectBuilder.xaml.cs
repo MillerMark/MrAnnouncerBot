@@ -20,25 +20,6 @@ using ioPath = System.IO.Path;
 
 namespace DndUI
 {
-	public class TimeLineEffect: TimeLineEntry
-	{
-		public EffectEntry Effect
-		{
-			get
-			{
-				return Data as EffectEntry;
-			}
-			set
-			{
-				Data = value;
-			}
-		}
-		
-		public TimeLineEffect()
-		{
-			
-		}
-	}
 	/// <summary>
 	/// Interaction logic for GroupEffectBuilder.xaml
 	/// </summary>

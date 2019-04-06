@@ -11,11 +11,11 @@
 						 DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="410" d:DesignWidth="490">
 	<UserControl.Resources>
-		<dh:ModViewModel x:Key="vm"/>
-		<DataTemplate DataType="{x:Type dh:CheckEnumViewModel}">
+		<dndCore:ModViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type dndCore:CheckEnumViewModel}">
 			<CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type dh:RadioEnumViewModel}">
+		<DataTemplate DataType="{x:Type dndCore:RadioEnumViewModel}">
 			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}" Checked="AnyPropertyChanged" Unchecked="AnyPropertyChanged"/>
 		</DataTemplate>
 	</UserControl.Resources>

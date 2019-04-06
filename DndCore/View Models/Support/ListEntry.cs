@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace DndUI
+namespace DndCore
 {
 	public class ListEntry : ViewModelBase, IListEntry, INotifyPropertyChanged
 	{

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DndUI
+namespace DndCore
 {
 	public class CheckEnumList : ViewModelBase
 	{

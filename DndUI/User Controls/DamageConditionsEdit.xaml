@@ -4,14 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DndUI"
+						 xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
              mc:Ignorable="d" 
              d:DesignHeight="360" d:DesignWidth="230" Background="AliceBlue">
 	<UserControl.Resources>
-		<local:DamageConditionsViewModel x:Key="vm"/>
-		<DataTemplate DataType="{x:Type local:CheckEnumViewModel}">
+		<dndCore:DamageConditionsViewModel x:Key="vm"/>
+		<DataTemplate DataType="{x:Type dndCore:CheckEnumViewModel}">
 			<CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Value}"/>
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type local:RadioEnumViewModel}">
+		<DataTemplate DataType="{x:Type dndCore:RadioEnumViewModel}">
 			<RadioButton IsChecked="{Binding IsChecked}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
 		</DataTemplate>
 	</UserControl.Resources>

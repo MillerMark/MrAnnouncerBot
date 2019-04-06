@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using TimeLineControl;
 
-namespace DndUI
+namespace DndCore
 {
 	public class EffectTimeLines : ListEntry
 	{

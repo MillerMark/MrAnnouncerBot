@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndUI
+namespace DndCore
 {
 	public enum EnumListOption
 	{

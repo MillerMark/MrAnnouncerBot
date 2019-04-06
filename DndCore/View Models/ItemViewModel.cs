@@ -3,7 +3,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace DndUI
+namespace DndCore
 {
 	public class ItemViewModel : ListEntry
 	{
@@ -41,7 +41,7 @@ namespace DndUI
 			Name = name;
 		}
 
-		public Item Item
+		public ItemV Item
 		{
 			get { return GetItem(); }
 			set
@@ -49,9 +49,9 @@ namespace DndUI
 				SetFromItem(value);
 			}
 		}
-		Item GetItem()
+		ItemV GetItem()
 		{
-			Item item = new Item();
+			ItemV item = new ItemV();
 			//if (conditions != null)
 			//	mod.condition = (Conditions)conditions.Value;
 			//else
@@ -60,7 +60,7 @@ namespace DndUI
 			return item;
 		}
 
-		void SetFromItem(Item item)
+		void SetFromItem(ItemV item)
 		{
 			//conditions.Value = item.condition;
 		}

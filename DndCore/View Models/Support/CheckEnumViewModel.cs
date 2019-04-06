@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DndUI
+namespace DndCore
 {
 	// Wraps an enum value so we can expose an IsChecked property.
 	public class CheckEnumViewModel : ViewModelBase

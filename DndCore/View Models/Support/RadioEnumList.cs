@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 
-namespace DndUI
+namespace DndCore
 {
 	public class RadioEnumList : ViewModelBase
 	{
