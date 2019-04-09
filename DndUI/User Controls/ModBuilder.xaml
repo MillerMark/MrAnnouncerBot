@@ -21,7 +21,7 @@
 	</UserControl.Resources>
 
 	<StackPanel x:Name="spModBuilder" Orientation="Vertical" DataContext="{StaticResource vm}">
-		<StackPanel x:Name="spModType" Orientation="Horizontal" Margin="0,0,0,4">
+		<StackPanel x:Name="spModType" Orientation="Horizontal" Margin="0,0,0,4" Visibility="Collapsed">
 			<TextBlock Text="Type: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
 			<ListBox x:Name="lbModType" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding ModType.Items}">
 				<ListBox.ItemsPanel>

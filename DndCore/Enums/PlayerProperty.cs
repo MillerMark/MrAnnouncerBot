@@ -7,6 +7,7 @@ namespace DndCore
 	[TypeConverter("DndCore.EnumDescriptionTypeConverter")]
 	public enum PlayerProperty
 	{
+		None,
 		Alignment,
 		ArmorClass,
 		Charisma,
