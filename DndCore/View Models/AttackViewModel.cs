@@ -8,13 +8,7 @@ namespace DndCore
 {
 	public class AttackViewModel : ListEntry
 	{
-		CheckEnumList includeCreatures;
-		CheckEnumList creatureSizeFilter;
-		//CheckEnumList excludeCreatures;
-		//CheckEnumList excludeTargetSenses;
-		CheckEnumList includeTargetSenses;
 		RadioEnumList type;
-		SavingThrowViewModel savingThrow;
 		ObservableCollection<DamageViewModel> damages;
 		//ObservableCollection<DamageConditionsViewModel> filteredConditions;
 		ObservableCollection<DamageViewModel> successfulSaveDamages;
@@ -27,7 +21,6 @@ namespace DndCore
 		DndTimeSpan lasts;
 		DndTimeSpan recharges;
 		RadioEnumList rechargeOdds;
-		CheckEnumList conditions;
 
 		public RadioEnumList RechargeOdds
 		{
@@ -167,31 +160,6 @@ namespace DndCore
 			OnPropertyChanged("Damages");
 		}
 
-		//public ObservableCollection<DamageConditionsViewModel> FilteredConditions
-		//{
-		//	get { return filteredConditions; }
-		//	set
-		//	{
-		//		if (filteredConditions == value)
-		//			return;
-
-		//		if (filteredConditions != null)
-		//			filteredConditions.CollectionChanged -= FilteredConditions_CollectionChanged;
-
-		//		filteredConditions = value;
-
-		//		if (filteredConditions != null)
-		//			filteredConditions.CollectionChanged += FilteredConditions_CollectionChanged;
-
-		//		OnPropertyChanged();
-		//	}
-		//}
-
-		//private void FilteredConditions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		//{
-		//	OnPropertyChanged("FilteredConditions");
-		//}
-
 		public ObservableCollection<DamageViewModel> SuccessfulSaveDamages
 		{
 			get { return successfulSaveDamages; }
@@ -217,32 +185,6 @@ namespace DndCore
 			OnPropertyChanged("SuccessfulSaveDamages");
 		}
 
-		public CheckEnumList Conditions
-		{
-			get { return conditions; }
-			set
-			{
-				if (conditions == value)
-					return;
-				conditions = value;
-				OnPropertyChanged();
-			}
-		}
-
-
-		public SavingThrowViewModel SavingThrow
-		{
-			get { return savingThrow; }
-			set
-			{
-				if (savingThrow == value)
-					return;
-				savingThrow = value;
-				OnPropertyChanged();
-			}
-		}
-
-
 		public RadioEnumList Type
 		{
 			get { return type; }
@@ -254,67 +196,6 @@ namespace DndCore
 				OnPropertyChanged();
 			}
 		}
-
-
-		public CheckEnumList IncludeTargetSenses
-		{
-			get { return includeTargetSenses; }
-			set
-			{
-				if (includeTargetSenses == value)
-					return;
-				includeTargetSenses = value;
-				OnPropertyChanged();
-			}
-		}
-
-
-		//public CheckEnumList ExcludeTargetSenses
-		//{
-		//	get { return excludeTargetSenses; }
-		//	set
-		//	{
-		//		if (excludeTargetSenses == value)
-		//			return;
-		//		excludeTargetSenses = value;
-		//		OnPropertyChanged();
-		//	}
-		//}
-
-		public CheckEnumList IncludeCreatures
-		{
-			get { return includeCreatures; }
-			set
-			{
-				if (includeCreatures == value)
-					return;
-				includeCreatures = value;
-				OnPropertyChanged();
-			}
-		}
-		public CheckEnumList CreatureSizeFilter
-		{
-			get { return creatureSizeFilter; }
-			set
-			{
-				if (creatureSizeFilter == value)
-					return;
-				creatureSizeFilter = value;
-				OnPropertyChanged();
-			}
-		}
-
-		//public CheckEnumList ExcludeCreatures
-		//{
-		//	get { return excludeCreatures; }
-		//	set
-		//	{
-		//		if (excludeCreatures == value)
-		//			return;
-		//		excludeCreatures = value;
-		//		OnPropertyChanged();
-		//	}
-		//}
 
 		public Attack Attack
 		{
@@ -346,28 +227,10 @@ namespace DndCore
 		public Attack GetAttack()
 		{
 			Attack attack = new Attack(Name);
-			if (Conditions != null)
-				attack.conditions = (Conditions)Conditions.Value;
+
 			
 			attack.damages = GetListOf(Damages);
 			attack.description = Description;
-
-			//if (ExcludeCreatures != null)
-			//	attack.excludeCreatures = (CreatureKinds)ExcludeCreatures.Value;
-
-			if (IncludeCreatures != null)
-				attack.includeCreatures = (CreatureKinds)IncludeCreatures.Value;
-
-			//if (ExcludeTargetSenses != null)
-			//	attack.excludeTargetSenses = (Senses)ExcludeTargetSenses.Value;
-
-			if (IncludeTargetSenses != null)
-				attack.includeTargetSenses = (Senses)IncludeTargetSenses.Value;
-
-			//attack.filteredConditions = GetListOf(FilteredConditions);
-
-			if (CreatureSizeFilter != null)
-				attack.includeCreatureSizes = (CreatureSize)CreatureSizeFilter.Value;
 
 			attack.lasts = Lasts;
 			attack.needsRecharging = NeedsRecharging;
@@ -379,8 +242,6 @@ namespace DndCore
 				attack.rechargeOdds = (RechargeOdds)RechargeOdds.Value;
 
 			attack.recharges = Recharges;
-			if (SavingThrow != null)
-				attack.savingThrow = new SavingThrow(SavingThrow.Success, (Ability)SavingThrow.Ability.Value);
 			attack.successfulSaveDamages = GetListOf(SuccessfulSaveDamages);
 			attack.targetLimit = TargetLimit;
 			return attack;
@@ -410,17 +271,10 @@ namespace DndCore
 		public void SetFromAttack(Attack attack)
 		{
 			Name = attack.Name;
-			conditions.Value = attack.conditions;
 			type.Value = attack.type;
 			SetFrom(Damages, attack.damages);
 			Description = attack.description;
-			//ExcludeCreatures.Value = attack.excludeCreatures;
-			IncludeCreatures.Value = attack.includeCreatures;
-			//ExcludeTargetSenses.Value = attack.excludeTargetSenses;
-			IncludeTargetSenses.Value = attack.includeTargetSenses;
-			CreatureSizeFilter.Value = attack.includeCreatureSizes;
 
-			//SetFrom(FilteredConditions, attack.filteredConditions);
 			Lasts = attack.lasts;
 			NeedsRecharging = attack.needsRecharging;
 			PlusToHit = attack.plusToHit;
@@ -428,30 +282,19 @@ namespace DndCore
 			ReachRange = attack.reachRange;
 			RechargeOdds.Value = attack.rechargeOdds;
 			Recharges = attack.recharges;
-			SavingThrow.Ability.Value = attack.savingThrow.Ability;
-			SavingThrow.Success = attack.savingThrow.Success;
 			SetFrom(SuccessfulSaveDamages, attack.successfulSaveDamages);
 			TargetLimit = attack.targetLimit;
 		}
 
 		public AttackViewModel()
 		{
-			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			//excludeTargetSenses = new CheckEnumList(typeof(Senses), DndCore.Senses.None, EnumListOption.Exclude);
-			includeTargetSenses = new CheckEnumList(typeof(Senses), DndCore.Senses.None, EnumListOption.Exclude);
-			//excludeCreatures = new CheckEnumList(typeof(CreatureKinds), DndCore.CreatureKinds.None, EnumListOption.Exclude);
-			includeCreatures = new CheckEnumList(typeof(CreatureKinds), DndCore.CreatureKinds.None, EnumListOption.Exclude);
-			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize), DndCore.CreatureSize.None, EnumListOption.Exclude);
-			
-
 			Damages = new ObservableCollection<DamageViewModel>();
 			SuccessfulSaveDamages = new ObservableCollection<DamageViewModel>();
-			//FilteredConditions = new ObservableCollection<DamageConditionsViewModel>();
 
-			type = new RadioEnumList(typeof(AttackType), "AttackType", DndCore.AttackType.None, EnumListOption.Exclude);
+
+			type = new RadioEnumList(typeof(AttackType), "AttackType", AttackType.None, EnumListOption.Exclude);
 			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), "RechargeOdds", DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
 			type.Value = AttackType.Melee;
-			savingThrow = new SavingThrowViewModel();
 			targetLimit = 1;
 			reachRange = 5;
 			rangeMax = 30;

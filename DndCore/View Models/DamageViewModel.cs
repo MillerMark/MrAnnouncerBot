@@ -6,11 +6,78 @@ namespace DndCore
 {
 	public class DamageViewModel : ViewModelBase
 	{
+		// TODO: Add conditions and filters recently added to Damage.
 		string damageRoll;
+		int savingThrowSuccess;
 		RadioEnumList saveOpportunity;
 		RadioEnumList damageHits;
 		RadioEnumList attackKind;
 		RadioEnumList damageType;
+		CheckEnumList includeCreatures;
+		CheckEnumList conditions;
+		CheckEnumList creatureSizeFilter;
+		CheckEnumList includeTargetSenses;
+		CheckEnumList savingThrowAbility;
+
+		public CheckEnumList IncludeCreatures
+		{
+			get { return includeCreatures; }
+			set
+			{
+				if (includeCreatures == value)
+					return;
+				includeCreatures = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public CheckEnumList Conditions
+		{
+			get { return conditions; }
+			set
+			{
+				if (conditions == value)
+					return;
+				conditions = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public CheckEnumList CreatureSizeFilter
+		{
+			get { return creatureSizeFilter; }
+			set
+			{
+				if (creatureSizeFilter == value)
+					return;
+				creatureSizeFilter = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public CheckEnumList SavingThrowAbility
+		{
+			get { return savingThrowAbility; }
+			set
+			{
+				if (savingThrowAbility == value)
+					return;
+				savingThrowAbility = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public CheckEnumList IncludeTargetSenses
+		{
+			get { return includeTargetSenses; }
+			set
+			{
+				if (includeTargetSenses == value)
+					return;
+				includeTargetSenses = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public string DamageRoll
 		{
@@ -20,6 +87,18 @@ namespace DndCore
 				if (damageRoll == value)
 					return;
 				damageRoll = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public int SavingThrowSuccess
+		{
+			get { return savingThrowSuccess; }
+			set
+			{
+				if (savingThrowSuccess == value)
+					return;
+				savingThrowSuccess = value;
 				OnPropertyChanged();
 			}
 		}
@@ -91,10 +170,25 @@ namespace DndCore
 
 		public Damage GetDamage()
 		{
+			Damage damage;
 			if (damageType == null || attackKind == null || DamageRoll == null || damageHits == null || saveOpportunity == null)
-				return new Damage(DndCore.DamageType.None, DndCore.AttackKind.Any, "");
+				damage = new Damage(DndCore.DamageType.None, DndCore.AttackKind.Any, "");
 			else
-				return new Damage((DamageType)damageType.Value, (AttackKind)attackKind.Value, DamageRoll, (TimePoint)damageHits.Value, (TimePoint)saveOpportunity.Value);
+				damage = new Damage((DamageType)damageType.Value, (AttackKind)attackKind.Value, DamageRoll, (TimePoint)damageHits.Value, (TimePoint)saveOpportunity.Value);
+
+			damage.SavingThrowSuccess = SavingThrowSuccess;
+			damage.SavingThrowAbility = (Ability)SavingThrowAbility.Value;
+
+			if (Conditions != null)
+				damage.Conditions = (Conditions)Conditions.Value;
+			if (IncludeCreatures != null)
+				damage.IncludeCreatures = (CreatureKinds)IncludeCreatures.Value;
+			if (IncludeTargetSenses != null)
+				damage.IncludeTargetSenses = (Senses)IncludeTargetSenses.Value;
+			if (CreatureSizeFilter != null)
+				damage.IncludeCreatureSizes = (CreatureSize)CreatureSizeFilter.Value;
+
+			return damage;
 		}
 
 		public void SetFromDamage(Damage damage)
@@ -102,8 +196,19 @@ namespace DndCore
 			damageType.Value = damage.DamageType;
 			attackKind.Value = damage.AttackKind;
 			DamageRoll = damage.DamageRoll;
+			SavingThrowSuccess = damage.SavingThrowSuccess;
+			SavingThrowAbility.Value = damage.SavingThrowAbility;
 			damageHits.Value = damage.DamageHits;
 			saveOpportunity.Value = damage.SaveOpportunity;
+
+			if (Conditions != null)
+				Conditions.Value = damage.Conditions;
+			if (IncludeCreatures != null)
+				IncludeCreatures.Value = damage.IncludeCreatures;
+			if (IncludeTargetSenses != null)
+				IncludeTargetSenses.Value = damage.IncludeTargetSenses;
+			if (CreatureSizeFilter != null)
+				CreatureSizeFilter.Value = damage.IncludeCreatureSizes;
 		}
 
 		public DamageViewModel()
@@ -112,6 +217,11 @@ namespace DndCore
 			saveOpportunity = new RadioEnumList(typeof(TimePoint), "SaveOpportunity");
 			damageHits = new RadioEnumList(typeof(TimePoint), "DamageHits");
 			damageType = new RadioEnumList(typeof(DamageType), "DamageType");
+			includeTargetSenses = new CheckEnumList(typeof(Senses));
+			savingThrowAbility = new CheckEnumList(typeof(Ability));
+			includeCreatures = new CheckEnumList(typeof(CreatureKinds));
+			conditions = new CheckEnumList(typeof(Conditions));
+			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize));
 		}
 	}
 }

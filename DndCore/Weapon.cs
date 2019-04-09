@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DndCore
 {
-	public class Weapon : Item
+	public class Weapon : ItemViewModel
 	{
 		public AttackType weaponType = AttackType.None;
 		public WeaponProperties weaponProperties = WeaponProperties.None;
@@ -19,9 +19,9 @@ namespace DndCore
 		{
 			Weapon shortSword = new Weapon();
 			shortSword.weaponType = AttackType.Melee;
-			shortSword.name = "Shortsword";
+			shortSword.Name = "Shortsword";
 			shortSword.costValue = 10;
-			shortSword.attacks.Add(new Attack("Stab").AddDamage(DamageType.Piercing, "1d6", AttackKind.NonMagical));
+			shortSword.attacks.Add(new Attack(AttackNames.Stab).AddDamage(DamageType.Piercing, Dice.d6x1, AttackKind.NonMagical));
 			shortSword.weaponProperties = WeaponProperties.Finesse | WeaponProperties.Light;
 			shortSword.weight = 2;
 			return shortSword;
@@ -32,9 +32,9 @@ namespace DndCore
 			Weapon shortSword = new Weapon();
 			shortSword.weaponType = AttackType.Melee;
 			shortSword.magic = true;
-			shortSword.name = "Magical Shortsword";
+			shortSword.Name = "Magical Shortsword";
 			shortSword.costValue = 10;
-			shortSword.attacks.Add(new Attack("Stab").AddDamage(DamageType.Piercing, "1d6", AttackKind.Magical));
+			shortSword.attacks.Add(new Attack(AttackNames.Stab).AddDamage(DamageType.Piercing, Dice.d6x1, AttackKind.Magical));
 			shortSword.weaponProperties = WeaponProperties.Finesse | WeaponProperties.Light;
 			shortSword.weight = 2;
 			return shortSword;
@@ -44,11 +44,11 @@ namespace DndCore
 		{
 			Weapon blowGun = new Weapon();
 			blowGun.weaponType = AttackType.MartialRange;
-			blowGun.name = "Blowgun";
+			blowGun.Name = "Blowgun";
 			blowGun.normalRange = 25;
 			blowGun.longRange = 100;
 			blowGun.costValue = 10;
-			blowGun.attacks.Add(new Attack("Blow Dart").AddDamage(DamageType.Piercing, "1", AttackKind.NonMagical));
+			blowGun.attacks.Add(new Attack(AttackNames.BlowDart).AddDamage(DamageType.Piercing, "1", AttackKind.NonMagical));
 			blowGun.weaponProperties = WeaponProperties.Ammunition | WeaponProperties.Loading | WeaponProperties.Range;
 			blowGun.weight = 1;
 			return blowGun;

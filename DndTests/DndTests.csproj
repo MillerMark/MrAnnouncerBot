@@ -45,13 +45,18 @@
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.1.3.2\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbilityTests.cs" />
+    <Compile Include="AlignmentNames.cs" />
     <Compile Include="CharacterBuilder.cs" />
     <Compile Include="DamageTests.cs" />
+    <Compile Include="DiceTests.cs" />
     <Compile Include="Die.cs" />
     <Compile Include="ModTests.cs" />
     <Compile Include="MonsterBuilder.cs" />
@@ -59,6 +64,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QualityTests.cs" />
     <Compile Include="SenseTests.cs" />
+    <Compile Include="StorageTests.cs" />
+    <Compile Include="TestStorageHelper.cs" />
     <Compile Include="VulnerabilityTests.cs" />
   </ItemGroup>
   <ItemGroup>

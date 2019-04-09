@@ -36,33 +36,19 @@ namespace DndCore
 			base.AfterLoad();
 		}
 
+		public ModViewModel FindMod(string name)
+		{
+			foreach (ModViewModel modViewModel in mods)
+			{
+				if (modViewModel.Name == name)
+					return modViewModel;
+			}
+			return null;
+		}
+
 		public ItemViewModel(string name)
 		{
 			Name = name;
-		}
-
-		public ItemV Item
-		{
-			get { return GetItem(); }
-			set
-			{
-				SetFromItem(value);
-			}
-		}
-		ItemV GetItem()
-		{
-			ItemV item = new ItemV();
-			//if (conditions != null)
-			//	mod.condition = (Conditions)conditions.Value;
-			//else
-			//	mod.condition = DndCore.Conditions.None;
-
-			return item;
-		}
-
-		void SetFromItem(ItemV item)
-		{
-			//conditions.Value = item.condition;
 		}
 	}
 }

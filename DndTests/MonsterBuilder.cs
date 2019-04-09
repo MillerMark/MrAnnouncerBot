@@ -11,11 +11,11 @@ namespace DndTests
 			violetFungus.name = "Bonnie";
 			violetFungus.raceClass = "Violet Fungus";
 			violetFungus.creatureSize = CreatureSize.Medium;
-			violetFungus.alignment = "unaligned";
+			violetFungus.alignment = AlignmentNames.unaligned;
 			violetFungus.kind = CreatureKinds.Plants;
 			violetFungus.armorClass = 5;
 			violetFungus.hitPoints = 18;
-			violetFungus.hitPointsDice = "4d8";
+			violetFungus.hitPointsDice = Dice.d8x4;
 			violetFungus.speed = 5;
 
 			violetFungus.SetAbilities(3, -4, 1, -5, 10, 0, 1, -5, 3, -4, 1, -5);
@@ -24,8 +24,8 @@ namespace DndTests
 			violetFungus.passivePerception = 6;
 			violetFungus.challengeRating = 1 / 4;
 			violetFungus.experiencePoints = 50;
-			violetFungus.AddAttack(Attack.Melee("Rotting Touch", +2, 10, 1).AddDamage(DamageType.Necrotic, "1d8", AttackKind.NonMagical));
-			violetFungus.AddMultiAttack("Rotting Touch");
+			violetFungus.AddAttack(Attack.Melee(AttackNames.RottingTouch, +2, 10, 1).AddDamage(DamageType.Necrotic, Dice.d8x1, AttackKind.NonMagical));
+			violetFungus.AddMultiAttack(AttackNames.RottingTouch);
 			violetFungus.multiAttackCount = MultiAttackCount.d4x1;
 			violetFungus.traits.Add("False Appearance. While the violet fungus remains motionless, it is indistinguishable from an ordinary fungus.");
 			return violetFungus;
@@ -37,12 +37,12 @@ namespace DndTests
 			vineBlight.name = "Joe";
 			vineBlight.raceClass = "Vine Blight";
 			vineBlight.creatureSize = CreatureSize.Medium;
-			vineBlight.alignment = "Neutral Evil";
+			vineBlight.alignment = AlignmentNames.NeutralEvil;
 			vineBlight.kind = CreatureKinds.Plants;
 			vineBlight.armorClass = 12;
 			vineBlight.naturalArmor = true;
 			vineBlight.hitPoints = 26;
-			vineBlight.hitPointsDice = "4d8+8";
+			vineBlight.hitPointsDice = Dice.d8x4.Plus(8);
 			vineBlight.speed = 10;
 
 			vineBlight.SetAbilitiesFromStr(@"STR
@@ -66,15 +66,14 @@ namespace DndTests
 			vineBlight.challengeRating = 1 / 2;
 			vineBlight.experiencePoints = 100;
 
-			vineBlight.AddAttack(Attack.Melee("Constrict", +4, 10, 1)
-				.AddDamage(DamageType.Bludgeoning, "2d6+2", AttackKind.NonMagical)
+			vineBlight.AddAttack(Attack.Melee(AttackNames.Constrict, +4, 10, 1)
+				.AddDamage(DamageType.Bludgeoning, Dice.d6x2.Plus(2), AttackKind.NonMagical)
 				.AddGrapple(12, CreatureSizes.LargeOrSmaller));
 
-			vineBlight.AddAttack(Attack.Area("Entangling Plants", 15)
+			vineBlight.AddAttack(Attack.Area(AttackNames.EntanglingPlants, 15)
 				.AddRecharge(RechargeOdds.TwoInSix)
 				.AddDuration(DndTimeSpan.OneMinute)
-				.AddConditions(Conditions.Restrained)
-				.AddSavingThrow(12, Ability.Strength));
+				.AddCondition(Conditions.Restrained, 12, Ability.Strength));
 
 			vineBlight.traits.Add("False Appearance. While the blight remains motionless, it is indistinguishable from a tangle of vines.");
 			return vineBlight;
@@ -87,12 +86,12 @@ namespace DndTests
 			vrock.name = "Clyde";
 			vrock.raceClass = "Vrock";
 			vrock.creatureSize = CreatureSize.Large;
-			vrock.alignment = "Chaotic Evil";
+			vrock.alignment = AlignmentNames.ChaoticEvil;
 			vrock.kind = CreatureKinds.Fiends;
 			vrock.armorClass = 15;
 			vrock.naturalArmor = true;
 			vrock.hitPoints = 104;
-			vrock.hitPointsDice = "11d10+44";
+			vrock.hitPointsDice = Dice.d10x11.Plus(44);;
 			vrock.speed = 40;
 			vrock.flyingSpeed = 60;
 			vrock.SetAbilities(17, +3, 15, +2, 18, +4, 8, -1, 13, +1, 8, -1);
@@ -109,28 +108,24 @@ namespace DndTests
 			vrock.telepathyRadius = 120;
 			vrock.challengeRating = 6;
 			vrock.experiencePoints = 2300;
-			vrock.AddAttack(Attack.Melee("Beak", +6, 5, 1).AddDamage(DamageType.Piercing, "2d6+3", AttackKind.NonMagical));
+			vrock.AddAttack(Attack.Melee(AttackNames.Beak, +6, 5, 1).AddDamage(DamageType.Piercing, Dice.d6x2.Plus(3), AttackKind.NonMagical));
 
-			vrock.AddAttack(Attack.Melee("Talons", +6, 5, 1).AddDamage(DamageType.Slashing, "2d10+3", AttackKind.NonMagical));
+			vrock.AddAttack(Attack.Melee(AttackNames.Talons, +6, 5, 1).AddDamage(DamageType.Slashing, Dice.d10x2.Plus(3), AttackKind.NonMagical));
 
-			Attack sporesAttack = Attack.Area("Spores", 15).AddDamage(DamageType.Poison, "1d10", AttackKind.NonMagical, TimePoint.StartOfTurn, TimePoint.EndOfTurn);
+			Attack sporesAttack = Attack.Area(AttackNames.Spores, 15).AddDamage(DamageType.Poison, Dice.d10x1, AttackKind.NonMagical, TimePoint.StartOfTurn, TimePoint.EndOfTurn, Conditions.Poisoned, 14, Ability.Constitution);
 			sporesAttack.description = "A 15­-foot­-radius cloud of toxic spores extends out from the vrock. The spores spread around corners. Each creature in that area must succeed on a DC 14 Constitution saving throw or become poisoned. While poisoned in this way, a target takes 5 (1d10) poison damage at the start of each of its turns. A target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. Emptying a vial of holy water on the target also ends the effect on it.";
-			sporesAttack.conditions = Conditions.Poisoned;
 			//sporesAttack.releaseTrigger = new ReleaseTrigger("Target receives splashes of holy water.");
-			sporesAttack.AddSavingThrow(14, Ability.Constitution);
-			vrock.AddAttack(sporesAttack.AddRecharge(RechargeOdds.OneInSix));
+			sporesAttack.AddRecharge(RechargeOdds.OneInSix);
+			vrock.AddAttack(sporesAttack);
 
-			Attack screech = Attack.Area("Stunning Screech", 20);
-			screech.conditions = Conditions.Stunned;
-			//screech.releaseTrigger = new EndOfAttackersNextTurn(1);
-			screech.AddSavingThrow(14, Ability.Constitution);
-			screech.includeTargetSenses = Senses.Hearing;
+			Attack screech = Attack.Area(AttackNames.StunningScreech, 20).AddCondition(Conditions.Stunned, 14, Ability.Constitution);
+			screech.LastDamage.IncludeTargetSenses = Senses.Hearing;
 			// TODO: Add test to determine if an attack hits a player using screech.includeTargetSenses.
-			screech.ExcludeCreatureKinds(CreatureKinds.Fiends);
+			screech.LastDamage.ExcludeCreatureKinds(CreatureKinds.Fiends);
 			screech.recharges = DndTimeSpan.FromDays(1);
 			vrock.AddAttack(screech);
 
-			vrock.AddMultiAttack("Beak", "Talons");
+			vrock.AddMultiAttack(AttackNames.Beak, AttackNames.Talons);
 
 			vrock.traits.Add("Magic Resistance. The vrock has advantage on saving throws against spells and other magical effects.");
 

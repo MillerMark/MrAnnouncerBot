@@ -72,12 +72,6 @@ namespace DndUI
 
 		protected virtual void OnSelectionChanged(SelectionChangedEventArgs e)
 		{
-			//SelectionChangedEventArgs previewEventArgs = new SelectionChangedEventArgs(PreviewSelectionChangedEvent);
-			//RaiseEvent(previewEventArgs);
-			//if (previewEventArgs.Handled)
-			//	return;
-			//SelectionChangedEventArgs eventArgs = new SelectionChangedEventArgs(SelectionChangedEvent);
-			//RaiseEvent(eventArgs);
 			List<TextBox> list = savedNames.Keys.ToList();
 			foreach (object textBox in list)
 				TextBox_LostFocus(textBox, null);
@@ -304,7 +298,7 @@ namespace DndUI
 			if (fileName == null)
 				fileName = DataFileName;
 
-			ObservableCollection<T> results = LoadEntriesFromFile<T>(fileName);
+			ObservableCollection<T> results = Storage.LoadEntriesFromFile<T>(fileName);
 
 			results.CollectionChanged += Results_CollectionChanged;
 			ItemsSource = results;
@@ -312,69 +306,21 @@ namespace DndUI
 			return results;
 		}
 
-		public static ObservableCollection<T> LoadEntriesFromFile<T>(string fileName) where T : ListEntry
-		{
-			List<T> loadedEntries = null;
-			if (fileName != null)
-				loadedEntries = Storage.Load<List<T>>(fileName);
-
-			foreach (T entry in loadedEntries)
-				entry.AfterLoad();
-
-			ObservableCollection<T> results;
-			if (loadedEntries != null)
-				results = new ObservableCollection<T>(loadedEntries);
-			else
-				results = new ObservableCollection<T>();
-			return results;
-		}
-
 		private void Results_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			isDirty = true;
 		}
-
+		
 		public void SaveEntries(string fileName = null)
 		{
 			if (!isDirty)  // Only really save if dirty/changed.
 				return;
 
 			if (fileName == null)
-			{
 				fileName = DataFileName;
-				if (fileName == null)
-					return;
-			}
 
-			if (ItemsSource != null)
-			{
-				object firstItem = null;
-				IEnumerator enumerator = ItemsSource.GetEnumerator();
-				if (enumerator.MoveNext())
-					firstItem = enumerator.Current;
+			Storage.SaveAllItems(fileName, ItemsSource);
 
-				if (firstItem == null)
-					return;
-
-				Type entryType = firstItem.GetType();
-				MethodInfo method = typeof(Enumerable).GetMethod("ToList");
-				if (method == null)
-					return;
-
-				MethodInfo genericMethod = method.MakeGenericMethod(entryType);
-				if (genericMethod == null)
-					return;
-
-				object[] parameters = { ItemsSource };
-
-				object data = genericMethod.Invoke(ItemsSource, parameters);
-				if (data is List<ItemViewModel> items)
-				{
-					foreach (ItemViewModel itemViewModel in items)
-						itemViewModel.PrepForSerialization();
-				}
-				Storage.Save(fileName, data);
-			}
 			isDirty = false;
 		}
 

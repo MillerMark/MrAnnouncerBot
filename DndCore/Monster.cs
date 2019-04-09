@@ -103,17 +103,47 @@ namespace DndCore
 			SetAbilityFromStr(lines[11], ref charisma, ref charismaMod);
 		}
 
-		public void AddLanguages(Languages languages)
+		public override double GetAttackModifier(Ability modifier)
 		{
+			switch (modifier)
+			{
+				case Ability.Strength:
+					return strengthMod;
+				case Ability.Dexterity:
+					return dexterityMod;
+				case Ability.Constitution:
+					return constitutionMod;
+				case Ability.Intelligence:
+					return intelligenceMod;
+				case Ability.Wisdom:
+					return wisdomMod;
+				case Ability.Charisma:
+					return charismaMod;
+			}
+			return 0;
+		}
+
+		public void AddLanguages(Languages languages)
+        {
 			languagesSpoken |= languages;
 			languagesUnderstood |= languages;
 		}
-		public DamageResult Attack(Creature creature, string attackName, int savingThrow)
+		public DamageResult GetDamageFromAttack(Creature creature, string attackName, int savingThrow, int attackRoll = int.MaxValue)
 		{
+			if (attackRoll < creature.armorClass)
+				return null;
 			Attack attack = attacks.Find(x => x.Name == attackName);
 			if (attack != null)
-				return attack.GetDamageResult(creature, savingThrow);
+				return attack.GetDamage(creature, savingThrow);
 			return null;
+		}
+
+		public int GetAttackRoll(int value, string attackName)
+		{
+			Attack attack = attacks.Find(x => x.Name == attackName);
+			if (attack == null)
+				return 0;
+			return value + (int)Math.Floor(attack.plusToHit);
 		}
 	}
 }

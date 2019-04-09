@@ -7,18 +7,24 @@ namespace DndCore
 	{
 		// TODO: add filtering - includeFilter, excludeFilter
 		// for body sizes
-		public Damage(DamageType damageType, AttackKind attackKind, string damageRoll, TimePoint damageHits = TimePoint.Immediately, TimePoint saveOpportunity = TimePoint.None)
+		public Damage(DamageType damageType, AttackKind attackKind, string damageRoll, TimePoint damageHits = TimePoint.Immediately, TimePoint saveOpportunity = TimePoint.None, Conditions conditions = Conditions.None, int savingThrowSuccess = int.MaxValue, Ability savingThrowAbility = Ability.None)
 		{
+			SavingThrowAbility = savingThrowAbility;
+			SavingThrowSuccess = savingThrowSuccess;
 			SaveOpportunity = saveOpportunity;
 			AttackKind = attackKind;
 			DamageType = damageType;
 			DamageRoll = damageRoll;
 			DamageHits = damageHits;
+			Conditions = conditions;
+			IncludeTargetSenses = Senses.None;
+			IncludeCreatureSizes = CreatureSizes.All;
+			IncludeCreatures = CreatureKinds.None;
 		}
 
 		public void ApplyTo(Character player)
 		{
-			player.TakeDamage(DamageType, AttackKind,  GetDamageRoll());
+			player.TakeDamage(DamageType, AttackKind, GetDamageRoll());
 		}
 
 		public double GetDamageRoll()
@@ -30,10 +36,43 @@ namespace DndCore
 			return 0;
 		}
 
+		public bool Saves(int savingThrow)
+		{
+			return savingThrow >= SavingThrowSuccess;
+		}
+
+		public void ExcludeCreatureKinds(CreatureKinds creatureKinds)
+		{
+			const CreatureKinds allCreatureKinds = CreatureKinds.Aberrations |
+				CreatureKinds.Beasts |
+				CreatureKinds.Celestials |
+				CreatureKinds.Constructs |
+				CreatureKinds.Dragons |
+				CreatureKinds.Elemental |
+				CreatureKinds.Fey |
+				CreatureKinds.Fiends |
+				CreatureKinds.Giants |
+				CreatureKinds.Humanoids |
+				CreatureKinds.Monstrosities |
+				CreatureKinds.Oozes |
+				CreatureKinds.Plants |
+				CreatureKinds.Undead;
+
+			IncludeCreatures = allCreatureKinds & ~creatureKinds;
+		}
+
 		public string DamageRoll { get; set; }
 		public DamageType DamageType { get; set; }
 		public AttackKind AttackKind { get; set; }
 		public TimePoint DamageHits { get; set; }
 		public TimePoint SaveOpportunity { get; set; }
+		public int SavingThrowSuccess { get; set; }
+		public Ability SavingThrowAbility { get; set; }
+		public Conditions Conditions { get; set; }
+
+		public Senses IncludeTargetSenses { get; set; }
+		public CreatureSize IncludeCreatureSizes { get; set; }
+		public CreatureKinds IncludeCreatures { get; set; }
+
 	}
 }

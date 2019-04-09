@@ -10,7 +10,7 @@ namespace DndCore
 		public CreatureKinds kind = CreatureKinds.None;
 		public CreatureSize creatureSize = CreatureSize.Medium;
 		public string raceClass = string.Empty;
-		public List<Item> equipment = new List<Item>();
+		public List<ItemViewModel> equipment = new List<ItemViewModel>();
 		public List<CurseBlessingDisease> cursesAndBlessings = new List<CurseBlessingDisease>();
 		public List<DamageFilter> damageImmunities = new List<DamageFilter>();
 		public List<DamageFilter> damageResistance = new List<DamageFilter>();
@@ -103,17 +103,17 @@ namespace DndCore
 		public DamageType LastDamageTaken { get; protected set; }
 		public double LastDamagePointsTaken { get; protected set; }
 
-		public void Pack(Item item)
+		public void Pack(ItemViewModel item)
 		{
 			equipment.Add(item);
 		}
 
-		public void Unpack(Item item, int count = 1)
+		public void Unpack(ItemViewModel item, int count = 1)
 		{
 			int index = equipment.IndexOf(item);
 			if (index >= 0)
 			{
-				Item thisItem = equipment[index];
+				ItemViewModel thisItem = equipment[index];
 				if (thisItem.count > 0)
 					if (count == int.MaxValue)
 						thisItem.count = 0;
@@ -125,7 +125,7 @@ namespace DndCore
 			}
 		}
 
-		public void Equip(Item item)
+		public void Equip(ItemViewModel item)
 		{
 			this.equipment.Add(item);
 			item.equipped = true;
@@ -211,29 +211,31 @@ namespace DndCore
 
 		public bool CanBeAffectedBy(Attack attack)
 		{
-			bool canBeAffectedByTheAttack = CanBeAffectedBy(attack.conditions);
 			foreach (Damage damage in attack.damages)
-				if (damage.DamageType != DamageType.None && !IsImmuneTo(damage.DamageType, damage.AttackKind))
-				{
-					canBeAffectedByTheAttack = true;
-					break;
-				}
-			if (!canBeAffectedByTheAttack)
-				return false;
-
-			// Check to see if the attack excludes us...
-			if (attack.includeCreatures != CreatureKinds.None || attack.includeTargetSenses != Senses.None || attack.includeCreatureSizes != CreatureSize.None)
 			{
-				bool missesCreatureKind = !MatchesCreatureKind(attack.includeCreatures);
-				bool missesSense = !HasSense(attack.includeTargetSenses);
-				bool missesCreatureSize = !MatchesSize(attack.includeCreatureSizes);
+				bool canBeAffectedByTheAttack = false;
+				if (damage.DamageType == DamageType.Condition && CanBeAffectedBy(damage.Conditions))
+					canBeAffectedByTheAttack = true;
+				else if (damage.DamageType != DamageType.None && damage.DamageType != DamageType.Condition && !IsImmuneTo(damage.DamageType, damage.AttackKind))
+					canBeAffectedByTheAttack = true;
 
-				bool attackMissesCreature = missesCreatureKind || missesSense || missesCreatureSize;
+				if (canBeAffectedByTheAttack)
+				{
+					if (damage.IncludeCreatures != CreatureKinds.None || damage.IncludeTargetSenses != Senses.None || damage.IncludeCreatureSizes != CreatureSize.None)
+					{
+						bool missesCreatureKind = damage.IncludeCreatures != CreatureKinds.None && !MatchesCreatureKind(damage.IncludeCreatures);
+						bool missesSense = damage.IncludeTargetSenses != Senses.None && !HasSense(damage.IncludeTargetSenses);
+						bool missesCreatureSize = damage.IncludeCreatureSizes != CreatureSize.None && !MatchesSize(damage.IncludeCreatureSizes);
 
-				return !attackMissesCreature;
+						bool attackHitsCreature = !(missesCreatureKind || missesSense || missesCreatureSize);
+
+						if (attackHitsCreature)
+							return true;
+					}
+				}
 			}
 
-			return true;
+			return false;
 		}
 
 		private bool CanBeAffectedBy(Conditions conditions)
@@ -244,5 +246,34 @@ namespace DndCore
 			return !IsImmuneTo(conditions);
 		}
 
+		private int CalculateModifier(double ability)
+		{
+			return (int)Math.Floor((ability - 10) / 2.0);
+		}
+
+		public virtual double GetAttackModifier(Ability modifier)
+		{
+			switch (modifier)
+			{
+				case Ability.Strength:
+					return CalculateModifier(strength);
+				case Ability.Dexterity:
+					return CalculateModifier(dexterity);
+				case Ability.Constitution:
+					return CalculateModifier(constitution);
+				case Ability.Intelligence:
+					return CalculateModifier(intelligence);
+				case Ability.Wisdom:
+					return CalculateModifier(wisdom);
+				case Ability.Charisma:
+					return CalculateModifier(charisma);
+			}
+			return 0;
+		}
+
+		public int GetAttackRoll(int basicRoll, Ability modifier)
+		{
+			return basicRoll + (int)Math.Floor(GetAttackModifier(modifier));
+		}
 	}
 }

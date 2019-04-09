@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:DndUI"
 						 xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
              mc:Ignorable="d" 
-             d:DesignHeight="380" d:DesignWidth="130" Background="AliceBlue">
+             d:DesignHeight="400" d:DesignWidth="430" Background="AliceBlue">
 	<UserControl.Resources>
 		<dndCore:DamageViewModel x:Key="vm"/>
 		<DataTemplate DataType="{x:Type dndCore:CheckEnumViewModel}">
@@ -16,27 +16,46 @@
 			<RadioButton IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Value}" GroupName="{Binding GroupName}"/>
 		</DataTemplate>
 	</UserControl.Resources>
-	<StackPanel DataContext="{StaticResource vm}">
-		<StackPanel x:Name="spDamageRoll" Orientation="Horizontal">
-			<TextBlock Text="Roll: " Width="Auto" Height="Auto"/>
-			<TextBox x:Name="tbxDamageRoll" >
-				1d4
-			</TextBox>
+	<StackPanel DataContext="{StaticResource vm}" Orientation="Horizontal">
+		<StackPanel Orientation="Horizontal">
+			<StackPanel Orientation="Vertical"  Margin="0,0,0,0">
+				<TextBlock Text="Include Creatures:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbIncludeCreatures" ItemsSource="{Binding IncludeCreatures.Items}">
+
+				</ListBox>
+			</StackPanel>
+			<StackPanel x:Name="spSensesFilter" Orientation="Vertical"  Margin="20,0,0,0">
+				<TextBlock Text="Include Target Senses:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbIncludeTargetSenses" ItemsSource="{Binding IncludeTargetSenses.Items}">
+
+				</ListBox>
+				<TextBlock Text="Include Size:" Width="Auto" Height="Auto" Margin="0,10,0,0" />
+				<ListBox x:Name="lbCreatureSize" ItemsSource="{Binding CreatureSizeFilter.Items}">
+				</ListBox>
+			</StackPanel>
 		</StackPanel>
-		<StackPanel x:Name="spDamageType" Orientation="Vertical" Margin="0,4,0,0" >
-			<TextBlock Text="Type:" Width="Auto" Height="Auto"/>
-			<ListBox x:Name="lbDamageEdit" ItemsSource="{Binding DamageType.Items}">
-			</ListBox>
-		</StackPanel>
-		<StackPanel x:Name="spDamageHits" Orientation="Horizontal" Margin="0,4,0,0">
-			<TextBlock Text="Hits: " Width="Auto" Height="Auto"/>
-			<ComboBox x:Name="cbDamageHits" Height="24" MinWidth="90" SelectedIndex="{Binding DamageHits.Value}"
+		<StackPanel Orientation="Vertical" Margin="20, 0, 0, 0">
+			<StackPanel x:Name="spDamageRoll" Orientation="Horizontal">
+				<TextBlock Text="Roll: " Width="Auto" Height="Auto"/>
+				<TextBox x:Name="tbxDamageRoll" >
+					1d4
+				</TextBox>
+			</StackPanel>
+			<StackPanel x:Name="spDamageType" Orientation="Vertical" Margin="0,4,0,0" >
+				<TextBlock Text="Type:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbDamageEdit" ItemsSource="{Binding DamageType.Items}">
+				</ListBox>
+			</StackPanel>
+			<StackPanel x:Name="spDamageHits" Orientation="Horizontal" Margin="0,4,0,0">
+				<TextBlock Text="Hits: " Width="Auto" Height="Auto"/>
+				<ComboBox x:Name="cbDamageHits" Height="24" MinWidth="90" SelectedIndex="{Binding DamageHits.Value}"
 								ItemsSource="{Binding Source={local:EnumBindingSource {x:Type dndCore:TimePoint}}}" Margin="0,0,20,0"/>
-		</StackPanel>
-		<StackPanel x:Name="spSavingThrowOpportunity" Orientation="Horizontal" Margin="0,4,0,0">
-			<TextBlock Text="Save: " Width="Auto" Height="Auto"/>
-			<ComboBox x:Name="cbSavingThrowOpportunity" Height="24" MinWidth="90" SelectedIndex="{Binding DamageHits.Value}"
+			</StackPanel>
+			<StackPanel x:Name="spSavingThrowOpportunity" Orientation="Horizontal" Margin="0,4,0,0">
+				<TextBlock Text="Save: " Width="Auto" Height="Auto"/>
+				<ComboBox x:Name="cbSavingThrowOpportunity" Height="24" MinWidth="90" SelectedIndex="{Binding DamageHits.Value}"
 								ItemsSource="{Binding Source={local:EnumBindingSource {x:Type dndCore:TimePoint}}}" Margin="0,0,20,0"/>
+			</StackPanel>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

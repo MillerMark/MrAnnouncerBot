@@ -14,7 +14,7 @@ namespace DndQuality
 			if (string.IsNullOrWhiteSpace(description))
 				results.Issues.Add(new QualityIssue(Severity.Warning, "Description is empty", DescriptionIsEmpty));
 		}
-		public static QualityResults CheckItem(Item item)
+		public static QualityResults CheckItem(ItemViewModel item)
 		{
 			QualityResults results = new QualityResults();
 			CheckDescription(results, item.description);

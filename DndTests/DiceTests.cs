@@ -1,13 +1,11 @@
 ﻿using DndCore;
-using DndQuality;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 
 namespace DndTests
 {
 	[TestClass]
-	public class QualityTests
+	public class DiceTests
 	{
 		private TestContext testContextInstance;
 
@@ -26,16 +24,18 @@ namespace DndTests
 				testContextInstance = value;
 			}
 		}
-
 		[TestMethod]
-		public void TestItemDescription()
+		public void TestStringGeneration()
 		{
-			ItemViewModel item = new ItemViewModel();
-			QualityResults results = QualityEngine.CheckItem(item);
-			Assert.IsNotNull(results);
-			Assert.IsTrue(results.Count > 0);
-			QualityIssue descriptionEmpty = results.FindFirstIssue(QualityEngine.DescriptionIsEmpty);
-			Assert.IsNotNull(descriptionEmpty);
+			Assert.AreEqual("1d8", Dice.d8x1);
+			Assert.AreEqual("1d8", Dice.d8x1.Plus(0));
+			Assert.AreEqual("11d10+44", Dice.d10x11.Plus(44));
+			Assert.AreEqual("2d4+32", Dice.d4x2.Plus(32));
+			Assert.AreEqual("2d6+3", Dice.d6x2.Plus(3));
+			Assert.AreEqual("2d6+2", Dice.d6x2.Plus(2));
+			Assert.AreEqual("2d10+3", Dice.d10x2.Plus(3));
+			Assert.AreEqual("4d8+8", Dice.d8x4.Plus(8));
+
 		}
 	}
 }

@@ -99,7 +99,7 @@ namespace DndUI
 			Point screenPos = button.PointToScreen(new Point(0, 0));
 			frmPickOne.Left = screenPos.X;
 			frmPickOne.Top = screenPos.Y;
-			frmPickOne.lbChoices.ItemsSource = EditableListBox.LoadEntriesFromFile<EffectEntry>("AllEffects.json");
+			frmPickOne.lbChoices.ItemsSource = Storage.LoadEntriesFromFile<EffectEntry>("AllEffects.json");
 			if (frmPickOne.ShowDialog() == true)
 			{
 				if (frmPickOne.SelectedEntry is EffectEntry effectEntry)
