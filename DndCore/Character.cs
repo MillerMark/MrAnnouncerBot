@@ -491,42 +491,42 @@ namespace DndCore
 		{
 			get
 			{
-				return this.getModFromAbility(this.charisma);
+				return this.getModFromAbility(this.Charisma);
 			}
 		}
 		public double wisdomMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.wisdom);
+				return this.getModFromAbility(this.Wisdom);
 			}
 		}
 		public double intelligenceMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.intelligence);
+				return this.getModFromAbility(this.Intelligence);
 			}
 		}
 		public double constitutionMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.constitution);
+				return this.getModFromAbility(this.Constitution);
 			}
 		}
 		public double dexterityMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.dexterity);
+				return this.getModFromAbility(this.Dexterity);
 			}
 		}
 		public double strengthMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.strength);
+				return this.getModFromAbility(this.Strength);
 			}
 		}
 		int getModFromAbility(double abilityScore)
@@ -543,6 +543,12 @@ namespace DndCore
 		public void ApplyModTemporarily(Mod mod, string description)
 		{
 			// TODO: Implement this!
+		}
+
+		public DiceRoll GetSkillCheckDice(Skills skills)
+		{
+			// TODO: Implement this!
+			return DiceRoll.Normal;
 		}
 	}
 }

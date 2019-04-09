@@ -55,6 +55,7 @@
     <Compile Include="AbilityTests.cs" />
     <Compile Include="AlignmentNames.cs" />
     <Compile Include="CharacterBuilder.cs" />
+    <Compile Include="CombatTests.cs" />
     <Compile Include="DamageTests.cs" />
     <Compile Include="DiceTests.cs" />
     <Compile Include="Die.cs" />

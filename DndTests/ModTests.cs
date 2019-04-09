@@ -11,12 +11,12 @@ namespace DndTests
 		public void TestHighMods()
 		{
 			Character player = CharacterBuilder.BuildTestWizard();
-			player.intelligence = 18;
-			player.strength = 17;
-			player.charisma = 16;
-			player.dexterity = 15;
-			player.constitution = 14;
-			player.wisdom = 13;
+			player.baseIntelligence = 18;
+			player.baseStrength = 17;
+			player.baseCharisma = 16;
+			player.baseDexterity = 15;
+			player.baseConstitution = 14;
+			player.baseWisdom = 13;
 			Assert.AreEqual(4, player.intelligenceMod);
 			Assert.AreEqual(3, player.strengthMod);
 			Assert.AreEqual(3, player.charismaMod);
@@ -29,12 +29,12 @@ namespace DndTests
 		public void TestMiddleMods()
 		{
 			Character player = CharacterBuilder.BuildTestWizard();
-			player.intelligence = 12;
-			player.strength = 11;
-			player.charisma = 10;
-			player.dexterity = 9;
-			player.constitution = 8;
-			player.wisdom = 7;
+			player.baseIntelligence = 12;
+			player.baseStrength = 11;
+			player.baseCharisma = 10;
+			player.baseDexterity = 9;
+			player.baseConstitution = 8;
+			player.baseWisdom = 7;
 			Assert.AreEqual(1, player.intelligenceMod);
 			Assert.AreEqual(0, player.strengthMod);
 			Assert.AreEqual(0, player.charismaMod);
@@ -47,18 +47,43 @@ namespace DndTests
 		public void TestLowMods()
 		{
 			Character player = CharacterBuilder.BuildTestWizard();
-			player.intelligence = 6;
-			player.strength = 5;
-			player.charisma = 4;
-			player.dexterity = 3;
-			player.constitution = 2;
-			player.wisdom = 1;
+			player.baseIntelligence = 6;
+			player.baseStrength = 5;
+			player.baseCharisma = 4;
+			player.baseDexterity = 3;
+			player.baseConstitution = 2;
+			player.baseWisdom = 1;
 			Assert.AreEqual(-2, player.intelligenceMod);
 			Assert.AreEqual(-3, player.strengthMod);
 			Assert.AreEqual(-3, player.charismaMod);
 			Assert.AreEqual(-4, player.dexterityMod);
 			Assert.AreEqual(-4, player.constitutionMod);
 			Assert.AreEqual(-5, player.wisdomMod);
+		}
+
+		[TestMethod]
+		public void TestItemEquipMod()
+		{
+			ItemViewModel ringOfLeaping = TestStorageHelper.GetExistingItem("Ring of the Faithful Leap");
+			Character testWizard = CharacterBuilder.BuildTestWizard();
+			const int initialDexterity = 12;
+			const int initialStrength = 11;
+			const int initialSpeed = 30;
+
+			testWizard.baseDexterity = initialDexterity;
+			testWizard.baseStrength = initialStrength;
+			testWizard.speed = initialSpeed;
+			Assert.AreEqual(DiceRoll.Normal, testWizard.GetSkillCheckDice(Skills.athletics));
+			Assert.AreEqual(DiceRoll.Normal, testWizard.GetSkillCheckDice(Skills.acrobatics));
+			Assert.AreEqual(initialDexterity, testWizard.Dexterity);
+			Assert.AreEqual(initialStrength, testWizard.Strength);
+			Assert.AreEqual(initialSpeed, testWizard.speed);
+			testWizard.Equip(ringOfLeaping);
+			Assert.AreEqual(initialDexterity + 1, testWizard.Dexterity);
+			Assert.AreEqual(initialStrength + 1, testWizard.Strength);
+			Assert.AreEqual(initialSpeed + 5, testWizard.speed);
+			Assert.AreEqual(DiceRoll.Advantage, testWizard.GetSkillCheckDice(Skills.athletics));
+			Assert.AreEqual(DiceRoll.Advantage, testWizard.GetSkillCheckDice(Skills.acrobatics));
 		}
 	}
 }

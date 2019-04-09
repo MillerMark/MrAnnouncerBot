@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace DndCore
@@ -10,11 +11,12 @@ namespace DndCore
 		public CreatureKinds kind = CreatureKinds.None;
 		public CreatureSize creatureSize = CreatureSize.Medium;
 		public string raceClass = string.Empty;
-		public List<ItemViewModel> equipment = new List<ItemViewModel>();
-		public List<CurseBlessingDisease> cursesAndBlessings = new List<CurseBlessingDisease>();
-		public List<DamageFilter> damageImmunities = new List<DamageFilter>();
-		public List<DamageFilter> damageResistance = new List<DamageFilter>();
-		public List<DamageFilter> damageVulnerability = new List<DamageFilter>();
+
+		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
+		public ObservableCollection<CurseBlessingDisease> cursesAndBlessings = new ObservableCollection<CurseBlessingDisease>();
+		public ObservableCollection<DamageFilter> damageImmunities = new ObservableCollection<DamageFilter>();
+		public ObservableCollection<DamageFilter> damageResistance = new ObservableCollection<DamageFilter>();
+		public ObservableCollection<DamageFilter> damageVulnerability = new ObservableCollection<DamageFilter>();
 		public Against advantages = Against.none;
 		public Against disadvantages = Against.none;
 		public Conditions conditionImmunities = Conditions.None;
@@ -45,16 +47,92 @@ namespace DndCore
 		public double maxHitPoints = 0;
 		public double goldPieces = 0;
 
-		public double strength;
-		public double dexterity;
-		public double constitution;
-		public double intelligence;
-		public double wisdom;
-		public double charisma;
+		public double baseStrength;
+		public double Strength
+		{
+			get
+			{
+				return baseStrength + GetMods(Ability.Strength);
+			}
+		}
+
+		Dictionary<string, double> calculatedMods = new Dictionary<string, double>();
+
+		public double baseDexterity;
+
+		double GetMods(Ability ability)
+		{
+			RecalculateModsIfNecessary();
+			return calculatedMods[ability.ToString()];
+		}
+
+		public double Dexterity
+		{
+			get
+			{
+				return baseDexterity + GetMods(Ability.Dexterity);
+			}
+		}
+
+		public double baseConstitution;
+		public double Constitution
+		{
+			get
+			{
+				return baseConstitution + GetMods(Ability.Constitution);
+			}
+
+		}
+		public double baseIntelligence;
+		public double Intelligence
+		{
+			get
+			{
+				return baseIntelligence + GetMods(Ability.Intelligence);
+			}
+
+		}
+		public double baseWisdom;
+		public double Wisdom
+		{
+			get
+			{
+				return baseWisdom + GetMods(Ability.Wisdom);
+			}
+
+		}
+		public double baseCharisma;
+		public double Charisma
+		{
+			get
+			{
+				return baseCharisma + GetMods(Ability.Charisma);
+			}
+		}
 
 		public Creature()
 		{
+			equipment.CollectionChanged += ItemCollectionChanged;
+			cursesAndBlessings.CollectionChanged += ItemCollectionChanged;
+			damageImmunities.CollectionChanged += ItemCollectionChanged;
+			damageResistance.CollectionChanged += ItemCollectionChanged;
+			damageVulnerability.CollectionChanged += ItemCollectionChanged;
+		}
 
+		private void ItemCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			needToRecalculateMods = true;
+		}
+
+		protected bool needToRecalculateMods;
+		void RecalculateModsIfNecessary()
+		{
+			if (!needToRecalculateMods)
+				return;
+
+			System.Diagnostics.Debugger.Break();
+
+			needToRecalculateMods = false;
 		}
 
 		public void AddDamageResistance(DamageType damageType, AttackKind attackKind)
@@ -72,7 +150,7 @@ namespace DndCore
 			damageVulnerability.Add(new DamageFilter(damageType, attackKind));
 		}
 
-		bool FilterCatches(List<DamageFilter> filter, DamageType damageType, AttackKind attackKind)
+		bool FilterCatches(ObservableCollection<DamageFilter> filter, DamageType damageType, AttackKind attackKind)
 		{
 			foreach (DamageFilter damageFilter in filter)
 				if (damageFilter.Matches(damageType, attackKind))
@@ -129,6 +207,7 @@ namespace DndCore
 		{
 			this.equipment.Add(item);
 			item.equipped = true;
+			needToRecalculateMods = true;
 		}
 
 		public void TakeDamage(DamageType damageType, AttackKind attackKind, double points)
@@ -256,17 +335,17 @@ namespace DndCore
 			switch (modifier)
 			{
 				case Ability.Strength:
-					return CalculateModifier(strength);
+					return CalculateModifier(Strength);
 				case Ability.Dexterity:
-					return CalculateModifier(dexterity);
+					return CalculateModifier(Dexterity);
 				case Ability.Constitution:
-					return CalculateModifier(constitution);
+					return CalculateModifier(Constitution);
 				case Ability.Intelligence:
-					return CalculateModifier(intelligence);
+					return CalculateModifier(Intelligence);
 				case Ability.Wisdom:
-					return CalculateModifier(wisdom);
+					return CalculateModifier(Wisdom);
 				case Ability.Charisma:
-					return CalculateModifier(charisma);
+					return CalculateModifier(Charisma);
 			}
 			return 0;
 		}

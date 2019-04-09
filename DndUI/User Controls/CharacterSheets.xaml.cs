@@ -224,12 +224,12 @@ namespace DndUI
 			statArmorClass.Text = character.armorClass.ToString();
 			//character.blindsightRadius = 
 			//character.burrowingSpeed = 
-			statCharisma.Text = character.charisma.ToString();
-			statCharisma2.Text = character.charisma.ToString();
+			statCharisma.Text = character.Charisma.ToString();
+			statCharisma2.Text = character.Charisma.ToString();
 			//character.climbingSpeed = 
 			// character.conditionImmunities = 
-			statConstitution.Text = character.constitution.ToString();
-			statConstitution2.Text = character.constitution.ToString();
+			statConstitution.Text = character.Constitution.ToString();
+			statConstitution2.Text = character.Constitution.ToString();
 			//character.creatureSize = 
 			//character.cursesAndBlessings = 
 			//character.damageImmunities = 
@@ -242,7 +242,7 @@ namespace DndUI
 			statDeathSaveHeart1.IsChecked = character.deathSaveLife1;
 			statDeathSaveHeart2.IsChecked = character.deathSaveLife2;
 			statDeathSaveHeart3.IsChecked = character.deathSaveLife3;
-			statDexterity.Text = character.dexterity.ToString();
+			statDexterity.Text = character.Dexterity.ToString();
 			//character.disadvantages = 
 			//character.equipment = 
 			statExperiencePoints.Text = character.experiencePoints.ToString();
@@ -251,9 +251,9 @@ namespace DndUI
 			statHitPoints.Text = character.hitPoints.ToString();
 			statInitiative.Text = character.initiative.ToString();
 			statInspiration.Text = character.inspiration.ToString();
-			statIntelligence.Text = character.intelligence.ToString();
+			statIntelligence.Text = character.Intelligence.ToString();
 			statIntelligence2.Text = statIntelligence.Text;
-			character.intelligence = statIntelligence.ToInt();
+			// character.baseIntelligence = statIntelligence.ToInt();
 			// character.kind = 
 			// character.languagesSpoken = 
 			// character.languagesUnderstood = 
@@ -271,7 +271,7 @@ namespace DndUI
 			SetSavingThrowProficiency(character.savingThrowProficiency);
 			//character.senses = 
 			statSpeed.Text = character.speed.ToString();
-			statStrength.Text = character.strength.ToString();
+			statStrength.Text = character.Strength.ToString();
 			//character.swimmingSpeed = 
 			//character.telepathyRadius = 
 			//character.tempAcrobaticsMod = 
@@ -303,7 +303,7 @@ namespace DndUI
 			//character.tremorSenseRadius =
 			//character.truesightRadius = 
 			statWeight.Text = character.weight.ToString();
-			statWisdom.Text = character.wisdom.ToString();
+			statWisdom.Text = character.Wisdom.ToString();
 		}
 
 		public string GetCharacter()
@@ -315,11 +315,11 @@ namespace DndUI
 			character.armorClass = statArmorClass.ToInt();
 			//character.blindsightRadius = 
 			//character.burrowingSpeed = 
-			character.charisma = statCharisma.ToInt();
+			character.baseCharisma = statCharisma.ToInt();
 			//character.climbingSpeed = 
 			// character.conditionImmunities = 
 			character.conditionImmunities = Conditions.None;  // Allow editing of this prop?
-			character.constitution = statConstitution.ToInt();
+			character.baseConstitution = statConstitution.ToInt();
 			//character.creatureSize = 
 			//character.cursesAndBlessings = 
 			//character.damageImmunities = 
@@ -332,7 +332,7 @@ namespace DndUI
 			character.deathSaveLife1 = statDeathSaveHeart1.IsChecked == true;
 			character.deathSaveLife2 = statDeathSaveHeart2.IsChecked == true;
 			character.deathSaveLife3 = statDeathSaveHeart3.IsChecked == true;
-			character.dexterity = statDexterity.ToInt();
+			character.baseDexterity = statDexterity.ToInt();
 			//character.disadvantages = 
 			//character.equipment = 
 			character.experiencePoints = statExperiencePoints.ToInt();
@@ -341,7 +341,7 @@ namespace DndUI
 			character.hitPoints = statHitPoints.ToInt();
 			character.initiative = statInitiative.ToInt();
 			character.inspiration = statInspiration.ToInt();
-			character.intelligence = statIntelligence.ToInt();
+			character.baseIntelligence = statIntelligence.ToInt();
 			// character.kind = 
 			character.kind = CreatureKinds.Humanoids;   // Allow editing of this prop?
 			// character.languagesSpoken = 
@@ -361,7 +361,7 @@ namespace DndUI
 			character.savingThrowProficiency = GetSavingThrowProficiency();
 			//character.senses = 
 			character.speed = statSpeed.ToDouble();
-			character.strength = statStrength.ToInt();
+			character.baseStrength = statStrength.ToInt();
 			//character.swimmingSpeed = 
 			//character.telepathyRadius = 
 			//character.tempAcrobaticsMod = 
@@ -393,7 +393,7 @@ namespace DndUI
 			//character.tremorSenseRadius =
 			//character.truesightRadius = 
 			character.weight = statWeight.ToDouble();
-			character.wisdom = statWisdom.ToInt();
+			character.baseWisdom = statWisdom.ToInt();
 			return Newtonsoft.Json.JsonConvert.SerializeObject(character);
 		}
 

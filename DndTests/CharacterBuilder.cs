@@ -37,12 +37,12 @@ namespace DndTests
 		}
 		public static void GenerateRandomAttributes(Character character)
 		{
-			character.charisma = Die.getAbilityScore();
-			character.constitution = Die.getAbilityScore();
-			character.dexterity = Die.getAbilityScore();
-			character.wisdom = Die.getAbilityScore();
-			character.intelligence = Die.getAbilityScore();
-			character.strength = Die.getAbilityScore();
+			character.baseCharisma = Die.getAbilityScore();
+			character.baseConstitution = Die.getAbilityScore();
+			character.baseDexterity = Die.getAbilityScore();
+			character.baseWisdom = Die.getAbilityScore();
+			character.baseIntelligence = Die.getAbilityScore();
+			character.baseStrength = Die.getAbilityScore();
 			character.experiencePoints = 1234;
 			character.goldPieces = 4321;
 			character.weight = 144;

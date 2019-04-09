@@ -75,14 +75,14 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.languagesUnderstood, loadedCharacter.languagesUnderstood);
 			Assert.AreEqual(originalTestWizard.languagesSpoken, loadedCharacter.languagesSpoken);
 			Assert.AreEqual(originalTestWizard.kind, loadedCharacter.kind);
-			Assert.AreEqual(originalTestWizard.intelligence, loadedCharacter.intelligence);
+			Assert.AreEqual(originalTestWizard.Intelligence, loadedCharacter.Intelligence);
 			Assert.AreEqual(originalTestWizard.inspiration, loadedCharacter.inspiration);
 			Assert.AreEqual(originalTestWizard.initiative, loadedCharacter.initiative);
 			Assert.AreEqual(originalTestWizard.hitPoints, loadedCharacter.hitPoints);
 			Assert.AreEqual(originalTestWizard.goldPieces, loadedCharacter.goldPieces);
 			Assert.AreEqual(originalTestWizard.flyingSpeed, loadedCharacter.flyingSpeed);
 			Assert.AreEqual(originalTestWizard.experiencePoints, loadedCharacter.experiencePoints);
-			Assert.AreEqual(originalTestWizard.dexterity, loadedCharacter.dexterity);
+			Assert.AreEqual(originalTestWizard.Dexterity, loadedCharacter.Dexterity);
 			Assert.AreEqual(originalTestWizard.deathSaveLife3, loadedCharacter.deathSaveLife3);
 			Assert.AreEqual(originalTestWizard.deathSaveLife2, loadedCharacter.deathSaveLife2);
 			Assert.AreEqual(originalTestWizard.deathSaveLife1, loadedCharacter.deathSaveLife1);
@@ -91,10 +91,10 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.deathSaveDeath1, loadedCharacter.deathSaveDeath1);
 			Assert.AreEqual(originalTestWizard.darkvisionRadius, loadedCharacter.darkvisionRadius);
 			Assert.AreEqual(originalTestWizard.creatureSize, loadedCharacter.creatureSize);
-			Assert.AreEqual(originalTestWizard.constitution, loadedCharacter.constitution);
+			Assert.AreEqual(originalTestWizard.Constitution, loadedCharacter.Constitution);
 			Assert.AreEqual(originalTestWizard.conditionImmunities, loadedCharacter.conditionImmunities);
 			Assert.AreEqual(originalTestWizard.climbingSpeed, loadedCharacter.climbingSpeed);
-			Assert.AreEqual(originalTestWizard.charisma, loadedCharacter.charisma);
+			Assert.AreEqual(originalTestWizard.Charisma, loadedCharacter.Charisma);
 			Assert.AreEqual(originalTestWizard.burrowingSpeed, loadedCharacter.burrowingSpeed);
 			Assert.AreEqual(originalTestWizard.blindsightRadius, loadedCharacter.blindsightRadius);
 			Assert.AreEqual(originalTestWizard.armorClass, loadedCharacter.armorClass);
@@ -107,7 +107,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.savingThrowProficiency, loadedCharacter.savingThrowProficiency);
 			Assert.AreEqual(originalTestWizard.senses, loadedCharacter.senses);
 			Assert.AreEqual(originalTestWizard.speed, loadedCharacter.speed);
-			Assert.AreEqual(originalTestWizard.strength, loadedCharacter.strength);
+			Assert.AreEqual(originalTestWizard.Strength, loadedCharacter.Strength);
 			Assert.AreEqual(originalTestWizard.swimmingSpeed, loadedCharacter.swimmingSpeed);
 			Assert.AreEqual(originalTestWizard.telepathyRadius, loadedCharacter.telepathyRadius);
 			Assert.AreEqual(originalTestWizard.tempAcrobaticsMod, loadedCharacter.tempAcrobaticsMod);
@@ -139,7 +139,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.tremorSenseRadius, loadedCharacter.tremorSenseRadius);
 			Assert.AreEqual(originalTestWizard.truesightRadius, loadedCharacter.truesightRadius);
 			Assert.AreEqual(originalTestWizard.weight, loadedCharacter.weight);
-			Assert.AreEqual(originalTestWizard.wisdom, loadedCharacter.wisdom);
+			Assert.AreEqual(originalTestWizard.Wisdom, loadedCharacter.Wisdom);
 
 			// TODO: Check these lists for equivalency:
 			//Assert.AreEqual(originalTestWizard.equipment, loadedCharacter.equipment);

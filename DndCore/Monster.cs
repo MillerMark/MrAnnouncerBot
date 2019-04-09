@@ -35,17 +35,17 @@ namespace DndCore
 
 		public void SetAbilities(int strength, int strengthMod, int dexterity, int dexterityMod, int constitution, int constitutionMod, int intelligence, int intelligenceMod, int wisdom, int wisdomMod, int charisma, int charismaMod)
 		{
-			this.strength = strength;
+			this.baseStrength = strength;
 			this.strengthMod = strengthMod;
-			this.dexterity = dexterity;
+			this.baseDexterity = dexterity;
 			this.dexterityMod = dexterityMod;
-			this.constitution = constitution;
+			this.baseConstitution = constitution;
 			this.constitutionMod = constitutionMod;
-			this.intelligence = intelligence;
+			this.baseIntelligence = intelligence;
 			this.intelligenceMod = intelligenceMod;
-			this.wisdom = wisdom;
+			this.baseWisdom = wisdom;
 			this.wisdomMod = wisdomMod;
-			this.charisma = charisma;
+			this.baseCharisma = charisma;
 			this.charismaMod = charismaMod;
 		}
 
@@ -95,12 +95,12 @@ namespace DndCore
 		public void SetAbilitiesFromStr(string str)
 		{
 			string[] lines = str.Split('\n');
-			SetAbilityFromStr(lines[1], ref strength, ref strengthMod);
-			SetAbilityFromStr(lines[3], ref dexterity, ref dexterityMod);
-			SetAbilityFromStr(lines[5], ref constitution, ref constitutionMod);
-			SetAbilityFromStr(lines[7], ref intelligence, ref intelligenceMod);
-			SetAbilityFromStr(lines[9], ref wisdom, ref wisdomMod);
-			SetAbilityFromStr(lines[11], ref charisma, ref charismaMod);
+			SetAbilityFromStr(lines[1], ref baseStrength, ref strengthMod);
+			SetAbilityFromStr(lines[3], ref baseDexterity, ref dexterityMod);
+			SetAbilityFromStr(lines[5], ref baseConstitution, ref constitutionMod);
+			SetAbilityFromStr(lines[7], ref baseIntelligence, ref intelligenceMod);
+			SetAbilityFromStr(lines[9], ref baseWisdom, ref wisdomMod);
+			SetAbilityFromStr(lines[11], ref baseCharisma, ref charismaMod);
 		}
 
 		public override double GetAttackModifier(Ability modifier)

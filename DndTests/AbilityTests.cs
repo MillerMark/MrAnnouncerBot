@@ -42,17 +42,17 @@ namespace DndTests
 																				CHA
 																				3 (-4)
 																				");
-			Assert.AreEqual(15, testMonster.strength);
+			Assert.AreEqual(15, testMonster.Strength);
 			Assert.AreEqual(+2, testMonster.strengthMod);
-			Assert.AreEqual(8, testMonster.dexterity);
+			Assert.AreEqual(8, testMonster.Dexterity);
 			Assert.AreEqual(-1, testMonster.dexterityMod);
-			Assert.AreEqual(14, testMonster.constitution);
+			Assert.AreEqual(14, testMonster.Constitution);
 			Assert.AreEqual(+2, testMonster.constitutionMod);
-			Assert.AreEqual(5, testMonster.intelligence);
+			Assert.AreEqual(5, testMonster.Intelligence);
 			Assert.AreEqual(-3, testMonster.intelligenceMod);
-			Assert.AreEqual(10, testMonster.wisdom);
+			Assert.AreEqual(10, testMonster.Wisdom);
 			Assert.AreEqual(+0, testMonster.wisdomMod);
-			Assert.AreEqual(3, testMonster.charisma);
+			Assert.AreEqual(3, testMonster.Charisma);
 			Assert.AreEqual(-4, testMonster.charismaMod);
 		}
 	}
