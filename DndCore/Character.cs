@@ -321,7 +321,6 @@ namespace DndCore
 			}
 		}
 
-
 		double skillModPersuasion
 		{
 			get
@@ -543,12 +542,6 @@ namespace DndCore
 		public void ApplyModTemporarily(Mod mod, string description)
 		{
 			// TODO: Implement this!
-		}
-
-		public DiceRoll GetSkillCheckDice(Skills skills)
-		{
-			// TODO: Implement this!
-			return DiceRoll.Normal;
 		}
 	}
 }

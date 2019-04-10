@@ -21,7 +21,7 @@ namespace BotCore
 		public string UserName { get; set; }
 		public int GetLevel()
 		{
-			return ModeratorOffset + NumberOfShowsWatched / 12 + NumberOfChatMessagesSent / 100 + CoinsCollected / 100;
+			return ModeratorOffset + NumberOfShowsWatched / 12 + NumberOfChatMessagesSent / 100 + CoinsCollected / 100 + 1;
 		}
 	}
 }

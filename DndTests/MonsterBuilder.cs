@@ -16,7 +16,7 @@ namespace DndTests
 			violetFungus.armorClass = 5;
 			violetFungus.hitPoints = 18;
 			violetFungus.hitPointsDice = Dice.d8x4;
-			violetFungus.speed = 5;
+			violetFungus.baseSpeed = 5;
 
 			violetFungus.SetAbilities(3, -4, 1, -5, 10, 0, 1, -5, 3, -4, 1, -5);
 			violetFungus.conditionImmunities = Conditions.Blinded | Conditions.Deafened | Conditions.Frightened;
@@ -43,7 +43,7 @@ namespace DndTests
 			vineBlight.naturalArmor = true;
 			vineBlight.hitPoints = 26;
 			vineBlight.hitPointsDice = Dice.d8x4.Plus(8);
-			vineBlight.speed = 10;
+			vineBlight.baseSpeed = 10;
 
 			vineBlight.SetAbilitiesFromStr(@"STR
 																			15 (+2)
@@ -92,7 +92,7 @@ namespace DndTests
 			vrock.naturalArmor = true;
 			vrock.hitPoints = 104;
 			vrock.hitPointsDice = Dice.d10x11.Plus(44);;
-			vrock.speed = 40;
+			vrock.baseSpeed = 40;
 			vrock.flyingSpeed = 60;
 			vrock.SetAbilities(17, +3, 15, +2, 18, +4, 8, -1, 13, +1, 8, -1);
 			vrock.savingDexterityMod = +5;

@@ -270,7 +270,7 @@ namespace DndUI
 			//character.remainingHitDice = 
 			SetSavingThrowProficiency(character.savingThrowProficiency);
 			//character.senses = 
-			statSpeed.Text = character.speed.ToString();
+			statSpeed.Text = character.baseSpeed.ToString();
 			statStrength.Text = character.Strength.ToString();
 			//character.swimmingSpeed = 
 			//character.telepathyRadius = 
@@ -360,7 +360,7 @@ namespace DndUI
 			//character.remainingHitDice = 
 			character.savingThrowProficiency = GetSavingThrowProficiency();
 			//character.senses = 
-			character.speed = statSpeed.ToDouble();
+			character.baseSpeed = statSpeed.ToDouble();
 			character.baseStrength = statStrength.ToInt();
 			//character.swimmingSpeed = 
 			//character.telepathyRadius = 

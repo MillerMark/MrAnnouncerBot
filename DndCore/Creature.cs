@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace DndCore
 {
 	public class Creature
 	{
+		const string STR_Advantage = ".Advantage";
+		const string STR_Disadvantage = ".Disadvantage";
 		public string name = string.Empty;
 		public CreatureKinds kind = CreatureKinds.None;
 		public CreatureSize creatureSize = CreatureSize.Medium;
@@ -25,7 +28,6 @@ namespace DndCore
 		public int offTurnActions = 0;
 		public double initiative = 0;
 
-		public double speed = 0;
 		public double flyingSpeed = 0;
 		public double burrowingSpeed = 0;
 		public double swimmingSpeed = 0;
@@ -55,6 +57,14 @@ namespace DndCore
 				return baseStrength + GetMods(Ability.Strength);
 			}
 		}
+		public double baseSpeed;
+		public double Speed
+		{
+			get
+			{
+				return baseSpeed + GetMods();
+			}
+		}
 
 		Dictionary<string, double> calculatedMods = new Dictionary<string, double>();
 
@@ -63,8 +73,8 @@ namespace DndCore
 		double GetCalculatedMod(object key)
 		{
 			string keyStr = key.ToString();
-			if (calculatedMods.ContainsKey(keyStr))
-				return calculatedMods[keyStr];
+			if (CalculatedMods.ContainsKey(keyStr))
+				return CalculatedMods[keyStr];
 			return 0;
 		}
 
@@ -73,6 +83,15 @@ namespace DndCore
 			RecalculateModsIfNecessary();
 			return GetCalculatedMod(ability);
 		}
+
+		double GetMods([CallerMemberName] string key = null)
+		{
+			if (key == null)
+				return 0d;
+			RecalculateModsIfNecessary();
+			return GetCalculatedMod(key);
+		}
+
 
 		public double Dexterity
 		{
@@ -133,14 +152,66 @@ namespace DndCore
 		}
 
 		protected bool needToRecalculateMods;
+
+		void AddMod(string key, double value)
+		{
+			if (calculatedMods.ContainsKey(key))
+				CalculatedMods[key] += value;
+			else
+				CalculatedMods.Add(key, value);
+		}
+
+		void CalculateMods(ModViewModel mod, bool equipped)
+		{
+			if (mod.RequiresConsumption)
+				return;
+
+			if (mod.RequiresEquipped && !equipped)
+				return;
+
+			if (!string.IsNullOrWhiteSpace(mod.TargetName) && mod.TargetName != "None")
+			{
+				if (mod.Offset > 0)
+				{
+					AddMod(mod.TargetName, mod.Offset);
+				}
+				else if (mod.Multiplier != 1)
+				{
+					AddMod(mod.TargetName + ".Multiplier", mod.Multiplier);
+				}
+				else if (mod.Absolute != 0)
+				{
+					AddMod(mod.TargetName + ".Absolute", mod.Multiplier);
+				}
+			}
+
+			if (mod.AddsAdvantage)
+			{
+				AddMod(mod.VantageSkillFilter.ToString() + STR_Advantage, 1);
+			}
+			else if (mod.AddsDisadvantage)
+			{
+				AddMod(mod.VantageSkillFilter.ToString() + STR_Disadvantage, 1);
+			}
+		}
+		void CalculateModsForItem(ItemViewModel itemViewModel)
+		{
+			foreach (ModViewModel modViewModel in itemViewModel.mods)
+				CalculateMods(modViewModel, itemViewModel.equipped);
+		}
+
 		void RecalculateModsIfNecessary()
 		{
 			if (!needToRecalculateMods)
 				return;
 
-			System.Diagnostics.Debugger.Break();
-
 			needToRecalculateMods = false;
+
+			calculatedMods.Clear();
+			foreach (ItemViewModel itemViewModel in equipment)
+			{
+				CalculateModsForItem(itemViewModel);
+			}
 		}
 
 		public void AddDamageResistance(DamageType damageType, AttackKind attackKind)
@@ -189,6 +260,15 @@ namespace DndCore
 		public DamageType LastDamageTaken { get; protected set; }
 		public double LastDamagePointsTaken { get; protected set; }
 
+		public Dictionary<string, double> CalculatedMods {
+			get
+			{
+				RecalculateModsIfNecessary();
+				return calculatedMods;
+			}
+			set => calculatedMods = value;
+		}
+
 		public void Pack(ItemViewModel item)
 		{
 			equipment.Add(item);
@@ -209,6 +289,15 @@ namespace DndCore
 				if (thisItem.count <= 0)
 					equipment.RemoveAt(index);
 			}
+		}
+
+		public void Unequip(ItemViewModel item)
+		{
+			ItemViewModel firstItem = equipment.FirstOrDefault(x => x == item);
+			if (firstItem == null)
+				return;
+			firstItem.equipped = false;
+			needToRecalculateMods = true;
 		}
 
 		public void Equip(ItemViewModel item)
@@ -361,6 +450,28 @@ namespace DndCore
 		public int GetAttackRoll(int basicRoll, Ability modifier)
 		{
 			return basicRoll + (int)Math.Floor(GetAttackModifier(modifier));
+		}
+
+		public DiceRoll GetSkillCheckDice(Skills skills)
+		{
+			string baseKey = skills.ToString();
+			int vantageCount = 0;
+			if (CalculatedMods.ContainsKey(baseKey + STR_Advantage))
+			{
+				vantageCount++;
+			}
+			else if (CalculatedMods.ContainsKey(baseKey + STR_Disadvantage))
+			{
+				vantageCount--;
+			}
+
+			if (vantageCount > 0)
+				return DiceRoll.Advantage;
+
+			if (vantageCount < 0)
+				return DiceRoll.Disadvantage;
+
+			return DiceRoll.Normal;
 		}
 	}
 }

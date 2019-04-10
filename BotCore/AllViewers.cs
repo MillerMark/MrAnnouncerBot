@@ -101,6 +101,7 @@ namespace BotCore
 
 		public int GetUserLevel(ChatMessage chatMessage)
 		{
+			// TODO: add a bonus for following...
 			var bonus = 0;
 			if (chatMessage.IsSubscriber)
 				bonus += chatMessage.SubscribedMonthCount;
