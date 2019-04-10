@@ -50,10 +50,17 @@ namespace DndTests
 
 		private static void DeleteIfExists(string fullPathToFile)
 		{
-			if (System.IO.File.Exists(fullPathToFile))
+			try
 			{
-				System.IO.File.Delete(fullPathToFile);
-				Assert.IsFalse(System.IO.File.Exists(fullPathToFile));
+				if (System.IO.File.Exists(fullPathToFile))
+				{
+					System.IO.File.Delete(fullPathToFile);
+					Assert.IsFalse(System.IO.File.Exists(fullPathToFile));
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debugger.Break();
 			}
 		}
 

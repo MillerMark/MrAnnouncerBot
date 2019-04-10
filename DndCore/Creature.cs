@@ -60,10 +60,18 @@ namespace DndCore
 
 		public double baseDexterity;
 
+		double GetCalculatedMod(object key)
+		{
+			string keyStr = key.ToString();
+			if (calculatedMods.ContainsKey(keyStr))
+				return calculatedMods[keyStr];
+			return 0;
+		}
+
 		double GetMods(Ability ability)
 		{
 			RecalculateModsIfNecessary();
-			return calculatedMods[ability.ToString()];
+			return GetCalculatedMod(ability);
 		}
 
 		public double Dexterity

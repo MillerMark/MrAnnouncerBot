@@ -1,6 +1,6 @@
 'use strict';
-import * as CANNON from 'cannon';
-import * as THREE from 'three';
+//import * as CANNON from 'cannon';
+//import * as THREE from 'three';
 
 class DiceManagerClass {
     constructor() {
@@ -15,13 +15,13 @@ class DiceManagerClass {
         this.barrierBodyMaterial = new CANNON.Material();
 
         world.addContactMaterial(
-            new CANNON.ContactMaterial(this.floorBodyMaterial, this.diceBodyMaterial, { friction: 0.01, restitution: 0.5 })
+            new CANNON.ContactMaterial(this.floorBodyMaterial, this.diceBodyMaterial, { friction: 0.01, restitution: 0.5, name: 'floorDice'})
         );
         world.addContactMaterial(
-            new CANNON.ContactMaterial(this.barrierBodyMaterial, this.diceBodyMaterial, { friction: 0, restitution: 1.0 })
+            new CANNON.ContactMaterial(this.barrierBodyMaterial, this.diceBodyMaterial, { friction: 0, restitution: 1.0, name: 'wallDice' })
         );
         world.addContactMaterial(
-            new CANNON.ContactMaterial(this.diceBodyMaterial, this.diceBodyMaterial, { friction: 0, restitution: 0.5 })
+            new CANNON.ContactMaterial(this.diceBodyMaterial, this.diceBodyMaterial, { friction: 0, restitution: 0.5, name: 'diceDice' })
         );
     }
 
@@ -395,7 +395,7 @@ class DiceObject {
     }
 }
 
-export class DiceD4 extends DiceObject {
+class DiceD4 extends DiceObject {
     constructor(options) {
         super(options);
 
@@ -437,7 +437,7 @@ export class DiceD4 extends DiceObject {
     }
 }
 
-export class DiceD6 extends DiceObject {
+class DiceD6 extends DiceObject {
     constructor(options) {
         super(options);
 
@@ -460,7 +460,7 @@ export class DiceD6 extends DiceObject {
     }
 }
 
-export class DiceD8 extends DiceObject {
+class DiceD8 extends DiceObject {
     constructor(options) {
         super(options);
 
@@ -482,7 +482,7 @@ export class DiceD8 extends DiceObject {
     }
 }
 
-export class DiceD10 extends DiceObject {
+class DiceD10 extends DiceObject {
 
     constructor(options) {
         super(options);
@@ -514,7 +514,7 @@ export class DiceD10 extends DiceObject {
     }
 }
 
-export class DiceD12 extends DiceObject {
+class DiceD12 extends DiceObject {
     constructor(options) {
         super(options);
 
@@ -543,7 +543,7 @@ export class DiceD12 extends DiceObject {
     }
 }
 
-export class DiceD20 extends DiceObject {
+class DiceD20 extends DiceObject {
     constructor(options) {
         super(options);
 
@@ -573,7 +573,7 @@ export class DiceD20 extends DiceObject {
 
 //---------------------------------------------//
 
-export const DiceManager = new DiceManagerClass();
+const DiceManager = new DiceManagerClass();
 
 if (typeof define === 'function' && define.amd) {
     define(function () {
