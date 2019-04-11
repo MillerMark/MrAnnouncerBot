@@ -173,10 +173,11 @@ function init() { // From Rolling.html example.
 
   var colors = ['#ff0000', '#ffff00', '#00ff00', '#0000ff', '#ff00ff'];
   var needToHookEvents: boolean = true;
-  var diceToRoll = 8;
+  var diceToRoll = 20;
+  const dieScale = 1.5;
   for (var i = 0; i < diceToRoll; i++) {
     //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
-    var die = new DiceD20({ size: 1.5, backColor: '#D0D0ff' });
+    var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
     scene.add(die.getObject());
     dice.push(die);
   }
@@ -187,9 +188,9 @@ function init() { // From Rolling.html example.
     for (var i = 0; i < dice.length; i++) {
       let yRand = Math.random() * 20
       let die = dice[i].getObject();
-      die.position.x = -15 - (i % 3) * 1.5;
-      die.position.y = 4 + Math.floor(i / 3) * 1.5;
-      die.position.z = -13 + (i % 3) * 1.5;
+      die.position.x = -15 - (i % 3) * dieScale;
+      die.position.y = 4 + Math.floor(i / 3) * dieScale;
+      die.position.z = -13 + (i % 3) * dieScale;
       die.quaternion.x = (Math.random() * 90 - 45) * Math.PI / 180;
       die.quaternion.z = (Math.random() * 90 - 45) * Math.PI / 180;
       dice[i].updateBodyFromMesh();

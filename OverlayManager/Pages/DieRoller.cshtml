@@ -10,17 +10,9 @@
 @*<canvas id="myFrontCanvas" width="1920" height="1080"></canvas>*@
 
 <script src="~/lib/signalr/signalr.js"></script>
-
-<!-- Order is important! -->
-@*
-<script src="~/GameDev/Source/Game Engine/Folders.js"></script>
-
-<script>
-  Folders.assets = 'GameDev/Assets/';
-</script>*@
-
-@*
-<script src="~/GameDev/Source/Game Engine/Vector.js"></script>*@
+@*<style>
+  div { background-color: #00ff00 }
+</style>*@
 
 <script>
   //connectToSignalR(signalR);
@@ -28,29 +20,12 @@
 
 <body style="margin: 0">
   <div id="container"></div>
-  @*
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>*@
   <script src="~/lib/dice/node_modules/three/build/three.js"></script>
   <script src="~/lib/dice/node_modules/cannon/build/cannon.js"></script>
   <script src="~/lib/dice/node_modules/three/examples/js/controls/OrbitControls.js"></script>
   <script src="~/lib/dice/node_modules/three/examples/js/libs/stats.min.js"></script>
   <script src="~/lib/dice/dice.js"></script>
-  <script src="~/GameDev/Source/Game Engine/Folders.js"></script>
-
-  @*
-    <script src="source/DiceD4.js"></script>
-    <script src="source/DiceD6.js"></script>
-    <script src="source/DiceD8.js"></script>
-    <script src="source/DiceD10.js"></script>
-    <script src="source/DiceD12.js"></script>
-    <script src="source/DiceD20.js"></script>
-    <script src="source/DiceManagerClass.js"></script>
-    <script src="source/DiceObject.js"></script>*@
-
-  <!--<script type="text/javascript" src="../teal.js"></script>
-  <script type="text/javascript" src="dice.js"></script>-->
-  <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+  <div id="ThreeJS" style="position: absolute; left:0px; top:0px" ></div>
   <script src="~/GameDev/Source/Dice/DiceSounds.js"></script>
   <script src="~/GameDev/Source/Dice/DiceRoller.js"></script>
-
 </body>
