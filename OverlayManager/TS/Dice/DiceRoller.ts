@@ -1,11 +1,19 @@
+/// <reference path="../../wwwroot/lib/dice/node_modules/three/build/three.js" />
+/// <reference path="../../wwwroot/lib/dice/node_modules/cannon/build/cannon.js" />
+/// <reference path="../../wwwroot/lib/dice/dice.js" />
+/// <reference path="../../wwwroot/lib/dice/node_modules/three/examples/js/controls/OrbitControls.js" />
+
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var diceSounds = new DiceSounds();
-//import * as CANNON from './lib/dice/node_modules/cannon/build/cannon.js';
+import * as CANNON from '../../wwwroot/lib/dice/node_modules/cannon/build/cannon.js';
+import * as THREE from "../../wwwroot/lib/dice/node_modules/three/build/three.js";
+import * as DiceManager from "../../wwwroot/lib/dice/dice.js";
 
 
 function init() { // From Rolling.html example.
   // SCENE
   scene = new THREE.Scene();
+    
   // CAMERA
   //var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
   var SCREEN_WIDTH = 1920, SCREEN_HEIGHT = 1080;
@@ -215,7 +223,7 @@ function init() { // From Rolling.html example.
 
               let v = e.target.velocity;
 
-              // <formula 2.5; targetSpeed = \sqrt{x^2 + y^2 + z^2}>
+              // <formula 1.5; targetSpeed = \sqrt{x^2 + y^2 + z^2}>
               let targetSpeed: number = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 
               //console.log('Target Speed: ' + targetSpeed);
@@ -266,8 +274,18 @@ function update() {
   }
 }
 
+function renderCanvas(): void {
+  var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("diceCanvas");
+  var context: CanvasRenderingContext2D = canvas.getContext("2d");
+  context.beginPath();
+  context.moveTo(0, 0);
+  context.lineTo(1920, 1080);
+  context.stroke();
+}
+
 function render() {
   renderer.render(scene, camera);
+  renderCanvas();
 }
 
 init();
