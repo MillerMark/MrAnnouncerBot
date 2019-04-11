@@ -41,8 +41,8 @@ namespace DndTests
 			Assert.IsFalse(druid.HasCondition(Conditions.Grappled));
 			int attackRoll = vineBlight.GetAttackRoll(12, AttackNames.Constrict);
 			Assert.AreEqual(16, attackRoll);
-			barbarian1.armorClass = 13;
-			barbarian2.armorClass = 17;
+			barbarian1.baseArmorClass = 13;
+			barbarian2.baseArmorClass = 17;
 			DamageResult elfDamage = vineBlight.GetDamageFromAttack(elf, AttackNames.Constrict, 10, attackRoll);
 			DamageResult barbarian1Damage = vineBlight.GetDamageFromAttack(barbarian1, AttackNames.Constrict, 10, attackRoll);
 			DamageResult barbarian2Damage = vineBlight.GetDamageFromAttack(barbarian2, AttackNames.Constrict, 10, attackRoll);

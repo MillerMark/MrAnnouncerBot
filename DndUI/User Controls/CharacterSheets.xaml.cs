@@ -221,7 +221,7 @@ namespace DndUI
 			//character.activeConditions = 
 			//character.advantages = ;
 			statAlignment.Text = character.alignment;
-			statArmorClass.Text = character.armorClass.ToString();
+			statArmorClass.Text = character.baseArmorClass.ToString();
 			//character.blindsightRadius = 
 			//character.burrowingSpeed = 
 			statCharisma.Text = character.Charisma.ToString();
@@ -312,7 +312,7 @@ namespace DndUI
 			//character.activeConditions = 
 			//character.advantages = ;
 			character.alignment = statAlignment.Text;
-			character.armorClass = statArmorClass.ToInt();
+			character.baseArmorClass = statArmorClass.ToInt();
 			//character.blindsightRadius = 
 			//character.burrowingSpeed = 
 			character.baseCharisma = statCharisma.ToInt();

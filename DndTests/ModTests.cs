@@ -92,7 +92,24 @@ namespace DndTests
 			Assert.AreEqual(initialDexterity, testWizard.Dexterity);
 			Assert.AreEqual(initialStrength, testWizard.Strength);
 			Assert.AreEqual(initialSpeed, testWizard.Speed);
+		}
 
+		[TestMethod]
+		public void TestBreastplate()
+		{
+			ItemViewModel breastplate = TestStorageHelper.GetExistingItem("Breastplate");
+			Character testBarbarian = CharacterBuilder.BuildTestBarbarian();
+			const double initialArmorClass = 12;
+
+			testBarbarian.baseDexterity = 12;
+			double dexterityMod = (testBarbarian.Dexterity - 10) / 2;
+			testBarbarian.baseArmorClass = initialArmorClass;
+			Assert.AreEqual(initialArmorClass, testBarbarian.ArmorClass);
+
+			testBarbarian.Equip(breastplate);
+
+			const double breastplateAbsoluteAC = 15;
+			Assert.AreEqual(breastplateAbsoluteAC + Math.Min(dexterityMod, 2), testBarbarian.ArmorClass);
 		}
 	}
 }

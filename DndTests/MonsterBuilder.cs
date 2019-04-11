@@ -13,7 +13,7 @@ namespace DndTests
 			violetFungus.creatureSize = CreatureSize.Medium;
 			violetFungus.alignment = AlignmentNames.unaligned;
 			violetFungus.kind = CreatureKinds.Plants;
-			violetFungus.armorClass = 5;
+			violetFungus.baseArmorClass = 5;
 			violetFungus.hitPoints = 18;
 			violetFungus.hitPointsDice = Dice.d8x4;
 			violetFungus.baseSpeed = 5;
@@ -39,7 +39,7 @@ namespace DndTests
 			vineBlight.creatureSize = CreatureSize.Medium;
 			vineBlight.alignment = AlignmentNames.NeutralEvil;
 			vineBlight.kind = CreatureKinds.Plants;
-			vineBlight.armorClass = 12;
+			vineBlight.baseArmorClass = 12;
 			vineBlight.naturalArmor = true;
 			vineBlight.hitPoints = 26;
 			vineBlight.hitPointsDice = Dice.d8x4.Plus(8);
@@ -88,7 +88,7 @@ namespace DndTests
 			vrock.creatureSize = CreatureSize.Large;
 			vrock.alignment = AlignmentNames.ChaoticEvil;
 			vrock.kind = CreatureKinds.Fiends;
-			vrock.armorClass = 15;
+			vrock.baseArmorClass = 15;
 			vrock.naturalArmor = true;
 			vrock.hitPoints = 104;
 			vrock.hitPointsDice = Dice.d10x11.Plus(44);;

@@ -130,7 +130,7 @@ namespace DndCore
 		}
 		public DamageResult GetDamageFromAttack(Creature creature, string attackName, int savingThrow, int attackRoll = int.MaxValue)
 		{
-			if (attackRoll < creature.armorClass)
+			if (attackRoll < creature.ArmorClass)
 				return null;
 			Attack attack = attacks.Find(x => x.Name == attackName);
 			if (attack != null)

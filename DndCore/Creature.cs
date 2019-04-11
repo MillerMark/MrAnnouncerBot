@@ -10,6 +10,7 @@ namespace DndCore
 	{
 		const string STR_Advantage = ".Advantage";
 		const string STR_Disadvantage = ".Disadvantage";
+		const string STR_Absolute = ".Absolute";
 		public string name = string.Empty;
 		public CreatureKinds kind = CreatureKinds.None;
 		public CreatureSize creatureSize = CreatureSize.Medium;
@@ -32,7 +33,7 @@ namespace DndCore
 		public double burrowingSpeed = 0;
 		public double swimmingSpeed = 0;
 		public double climbingSpeed = 0;
-		public double armorClass = 0;
+		public double baseArmorClass = 0;
 		public Senses senses = Senses.Hearing | Senses.NormalVision | Senses.Smell;
 		public Languages languagesUnderstood = Languages.None;
 		public Languages languagesSpoken = Languages.None;
@@ -66,6 +67,18 @@ namespace DndCore
 			}
 		}
 
+		public double ArmorClass
+		{
+			get
+			{
+				double absolute = GetAbsolute();
+				double thisArmorClass = baseArmorClass;
+				if (absolute > 0)
+					thisArmorClass = absolute;
+				return thisArmorClass + GetMods();
+			}
+		}
+
 		Dictionary<string, double> calculatedMods = new Dictionary<string, double>();
 
 		public double baseDexterity;
@@ -78,12 +91,27 @@ namespace DndCore
 			return 0;
 		}
 
+		double GetAbsoluteMod(object key)
+		{
+			string keyStr = key.ToString() + STR_Absolute;
+			if (CalculatedMods.ContainsKey(keyStr))
+				return CalculatedMods[keyStr];
+			return 0;
+		}
+
 		double GetMods(Ability ability)
 		{
 			RecalculateModsIfNecessary();
 			return GetCalculatedMod(ability);
 		}
 
+		double GetAbsolute([CallerMemberName] string key = null)
+		{
+			if (key == null)
+				return 0d;
+			RecalculateModsIfNecessary();
+			return GetAbsoluteMod(key);
+		}
 		double GetMods([CallerMemberName] string key = null)
 		{
 			if (key == null)
@@ -181,7 +209,7 @@ namespace DndCore
 				}
 				else if (mod.Absolute != 0)
 				{
-					AddMod(mod.TargetName + ".Absolute", mod.Multiplier);
+					AddMod(mod.TargetName + STR_Absolute, mod.Absolute);
 				}
 			}
 

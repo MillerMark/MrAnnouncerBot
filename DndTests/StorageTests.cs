@@ -104,7 +104,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.Charisma, loadedCharacter.Charisma);
 			Assert.AreEqual(originalTestWizard.burrowingSpeed, loadedCharacter.burrowingSpeed);
 			Assert.AreEqual(originalTestWizard.blindsightRadius, loadedCharacter.blindsightRadius);
-			Assert.AreEqual(originalTestWizard.armorClass, loadedCharacter.armorClass);
+			Assert.AreEqual(originalTestWizard.ArmorClass, loadedCharacter.ArmorClass);
 			Assert.AreEqual(originalTestWizard.alignment, loadedCharacter.alignment);
 			Assert.AreEqual(originalTestWizard.advantages, loadedCharacter.advantages);
 			Assert.AreEqual(originalTestWizard.proficiencyBonus, loadedCharacter.proficiencyBonus);
@@ -113,7 +113,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.remainingHitDice, loadedCharacter.remainingHitDice);
 			Assert.AreEqual(originalTestWizard.savingThrowProficiency, loadedCharacter.savingThrowProficiency);
 			Assert.AreEqual(originalTestWizard.senses, loadedCharacter.senses);
-			Assert.AreEqual(originalTestWizard.baseSpeed, loadedCharacter.baseSpeed);
+			Assert.AreEqual(originalTestWizard.Speed, loadedCharacter.Speed);
 			Assert.AreEqual(originalTestWizard.Strength, loadedCharacter.Strength);
 			Assert.AreEqual(originalTestWizard.swimmingSpeed, loadedCharacter.swimmingSpeed);
 			Assert.AreEqual(originalTestWizard.telepathyRadius, loadedCharacter.telepathyRadius);
