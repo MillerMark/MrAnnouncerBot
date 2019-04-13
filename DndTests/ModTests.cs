@@ -110,6 +110,28 @@ namespace DndTests
 
 			const double breastplateAbsoluteAC = 15;
 			Assert.AreEqual(breastplateAbsoluteAC + Math.Min(dexterityMod, 2), testBarbarian.ArmorClass);
+
+			testBarbarian.Unequip(breastplate);
+
+			Assert.AreEqual(initialArmorClass, testBarbarian.ArmorClass);
+
+			testBarbarian.baseDexterity = 14;
+			dexterityMod = (testBarbarian.Dexterity - 10) / 2;
+			testBarbarian.Equip(breastplate);
+
+			Assert.AreEqual(breastplateAbsoluteAC + Math.Min(dexterityMod, 2), testBarbarian.ArmorClass);
+
+
+			testBarbarian.Unequip(breastplate);
+
+			Assert.AreEqual(initialArmorClass, testBarbarian.ArmorClass);
+
+			testBarbarian.baseDexterity = 16;
+			dexterityMod = (testBarbarian.Dexterity - 10) / 2;
+			Assert.IsTrue(dexterityMod >= 3);
+			testBarbarian.Equip(breastplate);
+
+			Assert.AreEqual(breastplateAbsoluteAC + Math.Min(dexterityMod, 2), testBarbarian.ArmorClass);
 		}
 	}
 }

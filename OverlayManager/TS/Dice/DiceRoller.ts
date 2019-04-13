@@ -1,14 +1,5 @@
-///// <reference path="../../wwwroot/lib/dice/node_modules/three/build/three.js" />
-///// <reference path="../../wwwroot/lib/dice/node_modules/cannon/build/cannon.js" />
-///// <reference path="../../wwwroot/lib/dice/dice.js" />
-///// <reference path="../../wwwroot/lib/dice/node_modules/three/examples/js/controls/OrbitControls.js" />
-
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var diceSounds = new DiceSounds();
-//import * as CANNON from '../../wwwroot/lib/dice/node_modules/cannon/build/cannon.js';
-//import * as THREE from "../../wwwroot/lib/dice/node_modules/three/build/three.js";
-//import * as DiceManager from "../../wwwroot/lib/dice/dice.js";
-
 var diceEffects: DiceEffects;
 
 function init() { // From Rolling.html example.
@@ -258,12 +249,11 @@ function init() { // From Rolling.html example.
 
               let v = e.target.velocity;
 
-              //`<formula 1; targetSpeed = \sqrt{v.x^2 + v.y^2 + v.z^2}>  <-- LaTeX
+              // <formula 2; targetSpeed = \sqrt{v.x^2 + v.y^2 + v.z^2}>  <-- LaTeX Formula
               
-
               let targetSpeed: number = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+              console.log('Target Speed: ' + targetSpeed);
 
-              //console.log('Target Speed: ' + targetSpeed);
               
               if (e.target.name === "die" && e.body.name === "die")
                 diceSounds.playDiceHit(relativeVelocity / 10);

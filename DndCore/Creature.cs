@@ -11,6 +11,9 @@ namespace DndCore
 		const string STR_Advantage = ".Advantage";
 		const string STR_Disadvantage = ".Disadvantage";
 		const string STR_Absolute = ".Absolute";
+		const string STR_AddAbilityModifier = ".AddAbilityModifier";
+		const string STR_Multiplier = ".Multiplier";
+		const string STR_LimitAbilityModifier = ".LimitAbilityModifier";
 		public string name = string.Empty;
 		public CreatureKinds kind = CreatureKinds.None;
 		public CreatureSize creatureSize = CreatureSize.Medium;
@@ -86,9 +89,44 @@ namespace DndCore
 		double GetCalculatedMod(object key)
 		{
 			string keyStr = key.ToString();
+			double abilityModifier = 0;
+
+			if (CalculatedMods.ContainsKey(keyStr + STR_AddAbilityModifier))
+			{
+				int abilityIndex = (int)CalculatedMods[keyStr + STR_AddAbilityModifier];
+				Ability ability = (Ability)abilityIndex;
+				switch (ability)
+				{
+					case Ability.Strength:
+						abilityModifier = CalculateAbilityModifier(Strength);
+						break;
+					case Ability.Dexterity:
+						abilityModifier = CalculateAbilityModifier(Dexterity);
+						break;
+					case Ability.Constitution:
+						abilityModifier = CalculateAbilityModifier(Constitution);
+						break;
+					case Ability.Intelligence:
+						abilityModifier = CalculateAbilityModifier(Intelligence);
+						break;
+					case Ability.Wisdom:
+						abilityModifier = CalculateAbilityModifier(Wisdom);
+						break;
+					case Ability.Charisma:
+						abilityModifier = CalculateAbilityModifier(Charisma);
+						break;
+				}
+				double abilityModifierLimit = 0;
+				if (CalculatedMods.ContainsKey(keyStr + STR_LimitAbilityModifier))
+				{
+					abilityModifierLimit = CalculatedMods[keyStr + STR_LimitAbilityModifier];
+				}
+				if (abilityModifierLimit != 0 && abilityModifier > abilityModifierLimit)
+					abilityModifier = abilityModifierLimit;
+			}
 			if (CalculatedMods.ContainsKey(keyStr))
-				return CalculatedMods[keyStr];
-			return 0;
+				return CalculatedMods[keyStr] + abilityModifier;
+			return abilityModifier;
 		}
 
 		double GetAbsoluteMod(object key)
@@ -205,11 +243,17 @@ namespace DndCore
 				}
 				else if (mod.Multiplier != 1)
 				{
-					AddMod(mod.TargetName + ".Multiplier", mod.Multiplier);
+					AddMod(mod.TargetName + STR_Multiplier, mod.Multiplier);
 				}
 				else if (mod.Absolute != 0)
 				{
 					AddMod(mod.TargetName + STR_Absolute, mod.Absolute);
+				}
+
+				if (mod.AddAbilityModifier != Ability.None)
+				{
+					AddMod(mod.TargetName + STR_AddAbilityModifier, (int)mod.AddAbilityModifier);
+					AddMod(mod.TargetName + STR_LimitAbilityModifier, mod.ModifierLimit);
 				}
 			}
 
@@ -330,7 +374,9 @@ namespace DndCore
 
 		public void Equip(ItemViewModel item)
 		{
-			this.equipment.Add(item);
+			ItemViewModel existingItem = equipment.FirstOrDefault(x => x == item);
+			if (existingItem == null)
+				equipment.Add(item);
 			item.equipped = true;
 			needToRecalculateMods = true;
 		}
@@ -450,9 +496,9 @@ namespace DndCore
 			return !IsImmuneTo(conditions);
 		}
 
-		private int CalculateModifier(double ability)
+		private int CalculateAbilityModifier(double abilityScore)
 		{
-			return (int)Math.Floor((ability - 10) / 2.0);
+			return (int)Math.Floor((abilityScore - 10) / 2.0);
 		}
 
 		public virtual double GetAttackModifier(Ability modifier)
@@ -460,17 +506,17 @@ namespace DndCore
 			switch (modifier)
 			{
 				case Ability.Strength:
-					return CalculateModifier(Strength);
+					return CalculateAbilityModifier(Strength);
 				case Ability.Dexterity:
-					return CalculateModifier(Dexterity);
+					return CalculateAbilityModifier(Dexterity);
 				case Ability.Constitution:
-					return CalculateModifier(Constitution);
+					return CalculateAbilityModifier(Constitution);
 				case Ability.Intelligence:
-					return CalculateModifier(Intelligence);
+					return CalculateAbilityModifier(Intelligence);
 				case Ability.Wisdom:
-					return CalculateModifier(Wisdom);
+					return CalculateAbilityModifier(Wisdom);
 				case Ability.Charisma:
-					return CalculateModifier(Charisma);
+					return CalculateAbilityModifier(Charisma);
 			}
 			return 0;
 		}
