@@ -77,11 +77,25 @@
 			</StackPanel>
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Dungeon" x:Name="tbDungeon">
-					<Grid Background="#FFE5E5E5">
-						<Button x:Name="btnTestDieRoll" Click="BtnTestDieRoll_Click" >
-							Roll Dice
-						</Button>
-					</Grid>
+					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
+						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal">
+							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
+							<TextBox x:Name="tbxDamageDice" MinWidth="120">
+
+							</TextBox>
+						</StackPanel>
+						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" >
+							<Button x:Name="btnTestNormalDieRoll" Click="BtnTestNormalDieRoll_Click" MinWidth="85" Margin="0, 0, 10, 0">
+								Normal Roll
+							</Button>
+							<Button x:Name="btnTestAdvantageDieRoll" Click="BtnTestAdvantageDieRoll_Click" MinWidth="85" Margin="0, 0, 10, 0">
+								Advantage Roll
+							</Button>
+							<Button x:Name="btnTestDisadvantageDieRoll" Click="BtnTestDisadvantageDieRoll_Click" MinWidth="85" Margin="0, 0, 10, 0">
+								Disadvantage Roll
+							</Button>
+						</StackPanel>
+					</StackPanel>
 				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
 					<Grid Background="#FFE5E5E5"/>

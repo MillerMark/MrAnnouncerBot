@@ -14,6 +14,8 @@ class DiceLayer {
 
     this.allEffects = new SpriteCollection();
     this.diceFireball = new Sprites("/Dice/Roll20Fireball/DiceFireball", 71, fps30, AnimationStyle.Sequential, true);
+    this.diceFireball.originX = 108;
+    this.diceFireball.originY = 158;
     this.allEffects.add(this.diceFireball);
   }
 
@@ -30,11 +32,6 @@ class DiceLayer {
     var now: number = performance.now();
     this.allEffects.updatePositions(now);
     this.allEffects.draw(this.diceContext, now);
-    //this.diceContext.moveTo(0, 0);
-    //this.diceContext.lineTo(1920, 1080);
-    //this.diceContext.strokeStyle = '#cc00cc';
-    //this.diceContext.lineWidth = 4;
-    //this.diceContext.stroke();
   }
 
   testFireball() {

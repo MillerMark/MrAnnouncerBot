@@ -1,6 +1,15 @@
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var diceSounds = new DiceSounds();
 
+var waitingForSettle = false;
+var diceHaveStoppedRolling = false;
+var firstStopTime: number;
+var diceValues = [];
+
+function setNormalGravity() {
+  world.gravity.set(0, -9.82 * 20, 0);
+}
+
 function init() { // From Rolling.html example.
   diceLayer = new DiceLayer();
   // SCENE
@@ -82,7 +91,7 @@ function init() { // From Rolling.html example.
   // @ts-ignore - CANNON
   world = new CANNON.World();
 
-  world.gravity.set(0, -9.82 * 20, 0);
+  setNormalGravity();
   // @ts-ignore - CANNON
   world.broadphase = new CANNON.NaiveBroadphase();
   world.solver.iterations = 32;
@@ -199,7 +208,6 @@ function init() { // From Rolling.html example.
   //world.add(groundBody);
 
 
-  var colors = ['#ff0000', '#ffff00', '#00ff00', '#0000ff', '#ff00ff'];
   var needToHookEvents: boolean = true;
   var diceToRoll = 4;
   const dieScale = 1.5;
@@ -211,10 +219,10 @@ function init() { // From Rolling.html example.
     dice.push(die);
   }
 
-  var needToTestFireball = true;
-
   function randomDiceThrow() {
-    var diceValues = [];
+    setNormalGravity();
+    waitingForSettle = true;
+    diceValues = [];
 
     for (var i = 0; i < dice.length; i++) {
       let yRand = Math.random() * 20
@@ -236,46 +244,44 @@ function init() { // From Rolling.html example.
     // @ts-ignore - DiceManager
     DiceManager.prepareValues(diceValues);
 
+    diceHaveStoppedRolling = false;
+
     if (needToHookEvents) {
       needToHookEvents = false;
       for (var i = 0; i < dice.length; i++) {
-        let die = dice[i].getObject(); ~
-          die.body.addEventListener("collide", function (e) {
-            // @ts-ignore - DiceManager
-            if (!DiceManager.throwRunning) {
-              let relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
-              //console.log(e.target.name + ' -> ' + e.body.name + ' at ' + relativeVelocity + 'm/s');
+        let die = dice[i].getObject();
 
-              let v = e.target.velocity;
+        die.body.addEventListener("collide", function (e) {
+          // @ts-ignore - DiceManager
+          if (!DiceManager.throwRunning) {
+            let relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
+            //console.log(e.target.name + ' -> ' + e.body.name + ' at ' + relativeVelocity + 'm/s');
 
-              // <formula 2; targetSpeed = \sqrt{v.x^2 + v.y^2 + v.z^2}>  <-- LaTeX Formula
-              
-              let targetSpeed: number = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-              console.log('Target Speed: ' + targetSpeed);
+            let v = e.target.velocity;
 
-              
-              if (e.target.name === "die" && e.body.name === "die")
-                diceSounds.playDiceHit(relativeVelocity / 10);
-              else if (e.target.name === "die" && e.body.name === "floor")
-                if (relativeVelocity < 8) {
-                  diceSounds.playSettle();
-                  if (needToTestFireball) {
-                    diceLayer.testFireball();
-                  }
-                }
-                else
-                  diceSounds.playFloorHit(relativeVelocity / 35);
-              else if (e.target.name === "die" && e.body.name === "wall")
-                diceSounds.playWallHit(relativeVelocity / 40);
-            }
-          });
+            // <formula 2; targetSpeed = \sqrt{v.x^2 + v.y^2 + v.z^2}>  <-- LaTeX Formula
+
+            //let targetSpeed: number = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+            //console.log('Target Speed: ' + targetSpeed);
+
+            if (e.target.name === "die" && e.body.name === "die")
+              diceSounds.playDiceHit(relativeVelocity / 10);
+            else if (e.target.name === "die" && e.body.name === "floor")
+              if (relativeVelocity < 8) {
+                diceSounds.playSettle();
+              }
+              else
+                diceSounds.playFloorHit(relativeVelocity / 35);
+            else if (e.target.name === "die" && e.body.name === "wall")
+              diceSounds.playWallHit(relativeVelocity / 40);
+          }
+        });
       }
     }
   }
 
   setInterval(randomDiceThrow, 5000);
   randomDiceThrow();
-
   requestAnimationFrame(animate);
 }
 
@@ -287,12 +293,68 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+function anyDiceStillRolling(): boolean {
+  for (var i = 0; i < dice.length; i++) {
+    let die = dice[i].getObject();
+    if (die.body.velocity.norm() > 10)
+      return true;
+  }
+  return false;
+}
+
+function checkStillRolling() {
+  if (diceHaveStoppedRolling)
+    return;
+  if (anyDiceStillRolling()) {
+    waitingForSettle = true;
+    return;
+  }
+
+  if (waitingForSettle) {
+    waitingForSettle = false;
+    firstStopTime = performance.now();
+  }
+  else {
+    let thisTime: number = performance.now();
+    if ((thisTime - firstStopTime) / 1000 > 1.5) {
+      onDiceRollStopped();
+    }
+  }
+}
+
+function getDiceValue(dice: any) {
+  for (var i = 0; i < diceValues.length; i++) {
+    let thisDiceValueEntry: any = diceValues[i];
+    if (thisDiceValueEntry.dice == dice)
+      return thisDiceValueEntry.value;
+  }
+  return 0;
+}
+
+function onDiceRollStopped() {
+  diceHaveStoppedRolling = true;
+  console.log('Dice have stopped rolling!');
+  console.log(dice);
+  console.log(diceValues);
+  for (var i = 0; i < dice.length; i++) {
+    let thisDiceValue: number = getDiceValue(dice[i]);
+    if (thisDiceValue == 20) {
+      console.log('Rolled a twenty!');
+      diceLayer.testFireball();
+    }
+    else if (thisDiceValue < 10) {
+      //die.body.collisionResponse = 0;
+    }
+  }
+}
+
 function updatePhysics() {
   world.step(1.0 / 60.0);
 
   for (var i in dice) {
     dice[i].updateMeshFromBody();
   }
+  checkStillRolling();
 }
 
 function update() {

@@ -129,9 +129,19 @@ namespace DHDM
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
 
-		private void BtnTestDieRoll_Click(object sender, RoutedEventArgs e)
+		private void BtnTestNormalDieRoll_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(new DiceRoll(DiceRollKind.Advantage, "2d8"));
+			TestRollDice(new DiceRoll(DiceRollKind.Normal, tbxDamageDice.Text));
+		}
+
+		private void BtnTestAdvantageDieRoll_Click(object sender, RoutedEventArgs e)
+		{
+			TestRollDice(new DiceRoll(DiceRollKind.Advantage, tbxDamageDice.Text));
+		}
+
+		private void BtnTestDisadvantageDieRoll_Click(object sender, RoutedEventArgs e)
+		{
+			TestRollDice(new DiceRoll(DiceRollKind.Disadvantage, tbxDamageDice.Text));
 		}
 	}
 }
