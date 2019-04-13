@@ -423,6 +423,10 @@ class DroneGame extends GamePlusQuiz {
       return true;
     }
 
+    if (testCommand.startsWith("bye ")) {
+      let user: string = testCommand.substring(3);;
+    }
+
     if (testCommand === 'drop') {
       this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
       this.horizontalSolidWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));
@@ -841,10 +845,10 @@ class DroneGame extends GamePlusQuiz {
     ////    plantSeed(grass4, x + 50, 0);
     ////}
     //else
-      if (seeds === this.yellowSeeds) {
+    if (seeds === this.yellowSeeds) {
       //let randomYellow: number = Math.random() * 4;
       //if (randomYellow < 2)
-        this.plantSeed(this.yellowFlowers1, x + 50, 5);
+      this.plantSeed(this.yellowFlowers1, x + 50, 5);
       ////else if (randomYellow < 2)
       ////  plantSeed(yellowFlowers2, x + 50, 0);
       //else

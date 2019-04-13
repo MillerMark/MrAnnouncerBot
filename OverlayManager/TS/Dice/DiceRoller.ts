@@ -1,4 +1,5 @@
 var container, scene, camera, renderer, controls, stats, world, dice = [];
+var scalingDice = [];
 var diceSounds = new DiceSounds();
 
 var waitingForSettle = false;
@@ -19,11 +20,12 @@ function init() { // From Rolling.html example.
   // CAMERA
   //var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
   var SCREEN_WIDTH = 1920, SCREEN_HEIGHT = 1080;
-  var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.01, FAR = 20000;
+  var lensFactor = 5;
+  var VIEW_ANGLE = 45 / lensFactor, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.01, FAR = 20000;
   // @ts-ignore - THREE
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   scene.add(camera);
-  camera.position.set(0, 30, 0);
+  camera.position.set(0, 30 * lensFactor, 0);
   // RENDERER
   // @ts-ignore - THREE
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -209,7 +211,7 @@ function init() { // From Rolling.html example.
 
 
   var needToHookEvents: boolean = true;
-  var diceToRoll = 4;
+  var diceToRoll = 10;
   const dieScale = 1.5;
   for (var i = 0; i < diceToRoll; i++) {
     //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
@@ -219,7 +221,16 @@ function init() { // From Rolling.html example.
     dice.push(die);
   }
 
+  function restoreDieScale() {
+    for (var i = 0; i < dice.length; i++) {
+      let die = dice[i].getObject();
+      die.scale.set(1, 1, 1);
+    }
+  }
+
   function randomDiceThrow() {
+    scalingDice = [];
+    restoreDieScale();
     setNormalGravity();
     waitingForSettle = true;
     diceValues = [];
@@ -239,6 +250,7 @@ function init() { // From Rolling.html example.
 
       diceValues.push({ dice: dice[i], value: Math.floor(Math.random() * 20 + 1) });
       die.body.name = 'die';
+      console.log('die.scale.set(1, 1, 1);');
     }
 
     // @ts-ignore - DiceManager
@@ -280,7 +292,7 @@ function init() { // From Rolling.html example.
     }
   }
 
-  setInterval(randomDiceThrow, 5000);
+  setInterval(randomDiceThrow, 7000);
   randomDiceThrow();
   requestAnimationFrame(animate);
 }
@@ -331,20 +343,101 @@ function getDiceValue(dice: any) {
   return 0;
 }
 
+function getCoordinates(element) {
+  // @ts-ignore - THREE
+  var screenVector = new THREE.Vector3();
+  element.localToWorld(screenVector);
+
+  screenVector.project(camera);
+
+  var x = Math.round((screenVector.x + 1) * renderer.domElement.offsetWidth / 2);
+  var y = Math.round((1 - screenVector.y) * renderer.domElement.offsetHeight / 2);
+
+  return {
+    'x': x,
+    'y': y,
+  };
+}
+
+var diceSettleTime: number = performance.now();
+
 function onDiceRollStopped() {
   diceHaveStoppedRolling = true;
+  diceSettleTime = performance.now();
   console.log('Dice have stopped rolling!');
   console.log(dice);
   console.log(diceValues);
+  scalingDice = [];
   for (var i = 0; i < dice.length; i++) {
     let thisDiceValue: number = getDiceValue(dice[i]);
+    let die: any = dice[i].getObject();
     if (thisDiceValue == 20) {
       console.log('Rolled a twenty!');
-      diceLayer.testFireball();
+      let screenPos = getCoordinates(die);
+      console.log(screenPos);
+      diceLayer.testFireball(screenPos.x, screenPos.y);
     }
     else if (thisDiceValue < 10) {
-      //die.body.collisionResponse = 0;
+      let screenPos = getCoordinates(die);
+      scalingDice.push(die);
+
+      // <formula \omega il>
+
+      //world.gravity.set(0, -9.82 * 1000, 0);
+      die.body.collisionResponse = 0;
+      die.body.mass = 0;
+      //die.position.x = -99999;
+
+      // @ts-ignore - CANNON
+      var localVelocity = new CANNON.Vec3(0, 00, 0);
+      die.body.velocity = localVelocity;
+
+      let factor: number = 5;
+      let xSpin: number = Math.random() * factor - factor / 2;
+      let ySpin: number = Math.random() * factor - factor / 2;
+      let zSpin: number = Math.random() * factor - factor / 2;
+
+      // @ts-ignore - THREE
+      die.body.angularVelocity.set(xSpin, ySpin, zSpin);
+      //setTimeout(spinDie.bind(die), 200);
+
+      diceLayer.testPortal(screenPos.x, screenPos.y);
     }
+  }
+}
+
+function scaleFallingDice() {
+  if (!scalingDice || scalingDice.length == 0)
+    return;
+
+  let totalFrames: number = 28;
+  let fps20: number = 50; // ms
+  let totalScaleDistance: number = 0.7;
+  let totalTimeToScale: number = fps20 * totalFrames;  // ms
+  let elapsedTime: number = performance.now() - diceSettleTime;
+
+  if (elapsedTime > totalTimeToScale)
+    return;
+
+  let percentTraveled: number = elapsedTime / totalTimeToScale;
+
+  let distanceTraveled: number = percentTraveled * totalScaleDistance;
+
+  let newScale: number = 1 - distanceTraveled;
+
+  if (scalingDice && scalingDice.length > 0) {
+    for (var i = 0; i < scalingDice.length; i++) {
+      let die = scalingDice[i];
+      die.scale.set(newScale, newScale, newScale);
+      if (newScale < 0.35) {
+        // @ts-ignore - DiceManager
+        //die.body.collisionResponse = 1;
+        //die.body.mass = 1;
+        //DiceManager.world.remove(die.body);
+      }
+    }
+
+    // <formula s u r l y D \epsilon \nu>
   }
 }
 
@@ -355,6 +448,7 @@ function updatePhysics() {
     dice[i].updateMeshFromBody();
   }
   checkStillRolling();
+  scaleFallingDice();
 }
 
 function update() {
