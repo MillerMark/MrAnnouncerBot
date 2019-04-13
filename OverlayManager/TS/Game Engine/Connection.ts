@@ -10,12 +10,19 @@ function connectToSignalR(signalR) {
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
     connection.on("TriggerEffect", triggerEffect);
+    connection.on("RollDice", rollDice);
   };
 }
 
 function triggerEffect(effectData: string) {
   if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.triggerEffect(effectData);
+  }
+}
+
+function rollDice(diceRollData: string) {
+  if (diceLayer) {
+    diceLayer.rollDice(diceRollData);
   }
 }
 

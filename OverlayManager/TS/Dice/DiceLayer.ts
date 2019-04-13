@@ -1,4 +1,4 @@
-class DiceEffects { 
+class DiceLayer {
   diceCanvas: HTMLCanvasElement;
   diceContext: CanvasRenderingContext2D;
   diceFireball: Sprites;
@@ -40,4 +40,8 @@ class DiceEffects {
   testFireball() {
     this.diceFireball.add(960, 540, 0);
   }
+
+  rollDice(diceRollData: string): any {
+    console.log(diceRollData);
+  } 
 }

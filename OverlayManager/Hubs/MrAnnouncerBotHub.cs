@@ -36,6 +36,10 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.TriggerEffect(effectData);
 		}
 
+		public void RollDice(string diceRollData)
+		{
+			coderushedHub.Clients.All.RollDice(diceRollData);
+		}
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)

@@ -526,7 +526,7 @@ namespace DndCore
 			return basicRoll + (int)Math.Floor(GetAttackModifier(modifier));
 		}
 
-		public DiceRoll GetSkillCheckDice(Skills skills)
+		public DiceRollKind GetSkillCheckDice(Skills skills)
 		{
 			string baseKey = skills.ToString();
 			int vantageCount = 0;
@@ -540,12 +540,12 @@ namespace DndCore
 			}
 
 			if (vantageCount > 0)
-				return DiceRoll.Advantage;
+				return DiceRollKind.Advantage;
 
 			if (vantageCount < 0)
-				return DiceRoll.Disadvantage;
+				return DiceRollKind.Disadvantage;
 
-			return DiceRoll.Normal;
+			return DiceRollKind.Normal;
 		}
 	}
 }

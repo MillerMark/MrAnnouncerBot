@@ -122,5 +122,16 @@ namespace DHDM
 					else if (tabItem == tbItems)
 						lstItems.Save();
 		}
+
+		public void TestRollDice(DiceRoll diceRoll)
+		{
+			string serializedObject = JsonConvert.SerializeObject(diceRoll);
+			HubtasticBaseStation.RollDice(serializedObject);
+		}
+
+		private void BtnTestDieRoll_Click(object sender, RoutedEventArgs e)
+		{
+			TestRollDice(new DiceRoll(DiceRollKind.Advantage, "2d8"));
+		}
 	}
 }

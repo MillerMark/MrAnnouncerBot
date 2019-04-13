@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
-	public enum DiceRoll
+	public enum DiceRollKind
 	{
 		Normal,
 		Advantage,

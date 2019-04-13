@@ -1,9 +1,8 @@
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var diceSounds = new DiceSounds();
-var diceEffects: DiceEffects;
 
 function init() { // From Rolling.html example.
-  diceEffects = new DiceEffects();
+  diceLayer = new DiceLayer();
   // SCENE
   // @ts-ignore - THREE
   scene = new THREE.Scene();
@@ -261,7 +260,7 @@ function init() { // From Rolling.html example.
                 if (relativeVelocity < 8) {
                   diceSounds.playSettle();
                   if (needToTestFireball) {
-                    diceEffects.testFireball();
+                    diceLayer.testFireball();
                   }
                 }
                 else
@@ -305,7 +304,7 @@ function update() {
 
 function render() {
   renderer.render(scene, camera);
-  diceEffects.renderCanvas();
+  diceLayer.renderCanvas();
 }
 
 init();

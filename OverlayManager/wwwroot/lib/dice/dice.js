@@ -27,6 +27,7 @@ class DiceManagerClass {
 
     /**
      *
+     * 
      * @param {array} diceValues
      * @param {DiceObject} [diceValues.dice]
      * @param {number} [diceValues.value]
