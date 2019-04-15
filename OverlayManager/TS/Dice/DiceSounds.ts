@@ -12,6 +12,18 @@ class DiceSounds {
     this.loadSoundEffects(this.settles, "Settles", 7);
   }
 
+  playOpenDiePortal() {
+    new Audio('GameDev/Assets/DragonH/SoundEffects/DiePortal.mp3').play();
+  }
+
+  playFireball() {
+    new Audio('GameDev/Assets/DragonH/SoundEffects/Fireball2.mp3').play();
+  }
+
+  playDiceBlow() {
+    new Audio('GameDev/Assets/DragonH/SoundEffects/DiceBlow.mp3').play();
+  }
+
   loadSoundEffects(sounds: Array<HTMLAudioElement>, baseFileName: string, numSounds: number): void {
     for (var i = 0; i < numSounds; i++) {
       let fileIndex: number = i + 1;

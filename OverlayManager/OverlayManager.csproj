@@ -78,6 +78,9 @@
     <None Remove="TS\WallSprites.ts" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="wwwroot\lib\dice\dice.js" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.2.0-beta3" />

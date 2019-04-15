@@ -53,6 +53,12 @@
     return null;
   }
 
+  addShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
+    let sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
+    this.sprites.push(sprite);
+    return sprite;
+  }
+
   add(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
     let sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
     this.sprites.push(sprite);

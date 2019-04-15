@@ -1,5 +1,8 @@
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var scalingDice = [];
+var specialDice = [];
+var bodiesToRemove = [];
+var bodiesToFree = [];
 var diceSounds = new DiceSounds();
 
 var waitingForSettle = false;
@@ -102,47 +105,90 @@ function init() { // From Rolling.html example.
   DiceManager.setWorld(world);
 
   // create the sphere's material
-  const wallMaterial =
+  const redWallMaterial =
     // @ts-ignore - THREE
     new THREE.MeshLambertMaterial(
       {
         color: 0xA00050
       });
 
+  const blueWallMaterial =
+    // @ts-ignore - THREE
+    new THREE.MeshLambertMaterial(
+      {
+        color: 0x2000C0
+      });
+
+  const wallHeight = 24;
+  const leftWallHeight = 24;
+  const topWallHeight = 48;
+
   const wallThickness = 1;
   const leftWallWidth = 50;
-  const leftWallHeight = 3;
   const leftWallX = -21.5;
 
+  const dmLeftWallWidth = 9;
+  const dmLeftWallX = 13;
+  const dmLeftWallZ = -10;
+
   const topWallWidth = 50;
-  const topWallHeight = 3;
   const topWallZ = -12.5;
 
   const playerTopWallWidth = 30;
-  const playerTopWallHeight = 3;
   const playerTopWallZ = 5;
   const playerTopWallX = -5;
 
+  const playerRightWallWidth = 9;
+  const playerRightWallX = 10;
+  const playerRightWallZ = 9;
+
+  const dmBottomWallWidth = 9;
+  const dmBottomWallZ = -6;
+  const dmBottomWallX = 17;
+
   const showWalls = false;
   const addPlayerWall = true;
+  const addDungeonMasterWalls = true;
   if (showWalls) {
 
     // @ts-ignore - THREE
-    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, leftWallHeight, leftWallWidth), wallMaterial);
+    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, leftWallHeight, leftWallWidth), redWallMaterial);
     leftWall.position.x = leftWallX;
     scene.add(leftWall);
 
     // @ts-ignore - THREE
-    const topWall = new THREE.Mesh(new THREE.BoxGeometry(topWallWidth, topWallHeight, wallThickness), wallMaterial);
+    const topWall = new THREE.Mesh(new THREE.BoxGeometry(topWallWidth, topWallHeight, wallThickness), redWallMaterial);
     topWall.position.z = topWallZ;
+    // @ts-ignore - THREE
+    topWall.rotateOnAxis(new THREE.Vector3(1, 0, 0), -45)
     scene.add(topWall);
 
     if (addPlayerWall) {
       // @ts-ignore - THREE
-      const playerTopWall = new THREE.Mesh(new THREE.BoxGeometry(playerTopWallWidth, playerTopWallHeight, wallThickness), wallMaterial);
+      const playerTopWall = new THREE.Mesh(new THREE.BoxGeometry(playerTopWallWidth, wallHeight, wallThickness), redWallMaterial);
       playerTopWall.position.x = playerTopWallX;
       playerTopWall.position.z = playerTopWallZ;
       scene.add(playerTopWall);
+
+      // @ts-ignore - THREE
+      const playerRightWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, playerRightWallWidth), blueWallMaterial);
+      playerRightWall.position.x = playerRightWallX;
+      playerRightWall.position.z = playerRightWallZ;
+      scene.add(playerRightWall);
+    }
+
+    if (addDungeonMasterWalls) {
+      // @ts-ignore - THREE
+      const dmBottomWall = new THREE.Mesh(new THREE.BoxGeometry(dmBottomWallWidth, wallHeight, wallThickness), redWallMaterial);
+      dmBottomWall.position.x = dmBottomWallX;
+      dmBottomWall.position.z = dmBottomWallZ;
+      scene.add(dmBottomWall);
+
+      // @ts-ignore - THREE
+      const dmLeftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, dmLeftWallWidth), redWallMaterial);
+      dmLeftWall.position.x = dmLeftWallX;
+      dmLeftWall.position.z = dmLeftWallZ;
+      scene.add(dmLeftWall);
     }
   }
 
@@ -181,26 +227,51 @@ function init() { // From Rolling.html example.
   //leftWall.position.x = -20;
   //world.add(leftWall);
 
-  // @ts-ignore - CANNON
-  let topCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(topWallWidth, topWallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+  // @ts-ignore - CANNON & DiceManager
+  let topCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(topWallWidth, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
   topCannonWall.name = 'wall';
   topCannonWall.position.z = topWallZ;
+  // @ts-ignore - CANNON 
+  topCannonWall.quaternion.setFromEuler(-Math.PI / 4, 0, 0);
   world.add(topCannonWall);
 
-  // @ts-ignore - CANNON
-  let leftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, leftWallHeight, leftWallWidth)), material: DiceManager.barrierBodyMaterial });
+  // @ts-ignore - CANNON & DiceManager
+  let leftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, leftWallWidth)), material: DiceManager.barrierBodyMaterial });
   leftCannonWall.name = 'wall';
   leftCannonWall.position.x = leftWallX;
   world.add(leftCannonWall);
 
 
   if (addPlayerWall) {
-    // @ts-ignore - CANNON
-    let playerTopCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(playerTopWallWidth * 0.5, playerTopWallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+    // @ts-ignore - CANNON & DiceManager
+    let playerTopCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(playerTopWallWidth * 0.5, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
     playerTopCannonWall.name = 'wall';
     playerTopCannonWall.position.x = playerTopWallX;
     playerTopCannonWall.position.z = playerTopWallZ;
     world.add(playerTopCannonWall);
+
+    // @ts-ignore - CANNON & DiceManager
+    let playerRightCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, playerRightWallWidth * 0.5)), material: DiceManager.barrierBodyMaterial });
+    playerRightCannonWall.name = 'wall';
+    playerRightCannonWall.position.x = playerRightWallX;
+    playerRightCannonWall.position.z = playerRightWallZ;
+    world.add(playerRightCannonWall);
+  }
+
+  if (addDungeonMasterWalls) {
+    // @ts-ignore - CANNON & DiceManager
+    let dmBottomCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(dmBottomWallWidth * 0.5, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+    dmBottomCannonWall.name = 'wall';
+    dmBottomCannonWall.position.x = dmBottomWallX;
+    dmBottomCannonWall.position.z = dmBottomWallZ;
+    world.add(dmBottomCannonWall);
+
+    // @ts-ignore - CANNON & DiceManager
+    let dmLeftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, dmLeftWallWidth * 0.5)), material: DiceManager.barrierBodyMaterial });
+    dmLeftCannonWall.name = 'wall';
+    dmLeftCannonWall.position.x = dmLeftWallX;
+    dmLeftCannonWall.position.z = dmLeftWallZ;
+    world.add(dmLeftCannonWall);
   }
 
   //var groundShape = new CANNON.Plane();
@@ -211,7 +282,7 @@ function init() { // From Rolling.html example.
 
 
   var needToHookEvents: boolean = true;
-  var diceToRoll = 10;
+  var diceToRoll = 15;
   const dieScale = 1.5;
   for (var i = 0; i < diceToRoll; i++) {
     //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
@@ -229,7 +300,10 @@ function init() { // From Rolling.html example.
   }
 
   function randomDiceThrow() {
+    diceLayer.clearLoopingAnimations();
     scalingDice = [];
+    specialDice = [];
+    bodiesToRemove = [];
     restoreDieScale();
     setNormalGravity();
     waitingForSettle = true;
@@ -292,7 +366,7 @@ function init() { // From Rolling.html example.
     }
   }
 
-  setInterval(randomDiceThrow, 7000);
+  setInterval(randomDiceThrow, 9000);
   randomDiceThrow();
   requestAnimationFrame(animate);
 }
@@ -343,7 +417,7 @@ function getDiceValue(dice: any) {
   return 0;
 }
 
-function getCoordinates(element) {
+function getScreenCoordinates(element) {
   // @ts-ignore - THREE
   var screenVector = new THREE.Vector3();
   element.localToWorld(screenVector);
@@ -361,6 +435,18 @@ function getCoordinates(element) {
 
 var diceSettleTime: number = performance.now();
 
+enum DieEffect {
+  StinkyFumes,
+  Ring,
+  Fireball,
+  Shockwave,
+  ColoredSmoke
+}
+
+function getDieEffectDistance(): number {
+  return Math.round(Math.random() * 5) * 40 + 40;
+}
+
 function onDiceRollStopped() {
   diceHaveStoppedRolling = true;
   diceSettleTime = performance.now();
@@ -368,40 +454,93 @@ function onDiceRollStopped() {
   console.log(dice);
   console.log(diceValues);
   scalingDice = [];
+  specialDice = [];
+  bodiesToRemove = [];
+  let diePortalTimeDistance: number = 0;
   for (var i = 0; i < dice.length; i++) {
     let thisDiceValue: number = getDiceValue(dice[i]);
     let die: any = dice[i].getObject();
-    if (thisDiceValue == 20) {
-      console.log('Rolled a twenty!');
-      let screenPos = getCoordinates(die);
-      console.log(screenPos);
-      diceLayer.testFireball(screenPos.x, screenPos.y);
+
+
+    die.dieValue = thisDiceValue;
+    diePortalTimeDistance += getDieEffectDistance();
+    die.effectStartOffset = diePortalTimeDistance;
+    die.effectKind = DieEffect.ColoredSmoke;
+    die.needToStartEffect = true;
+    specialDice.push(die);
+
+    //// Warp all out:
+    //diePortalTimeDistance += getDieEffectDistance();
+    //die.effectStartOffset = diePortalTimeDistance;
+    //die.needToStartEffect = true;
+    //die.needToDrop = true;
+    //scalingDice.push(die);
+
+    continue;
+
+
+
+
+    if (thisDiceValue == 1) {
+      console.log('Rolled a one!');
+      die.dieValue = thisDiceValue;
+      diePortalTimeDistance += getDieEffectDistance();
+      die.effectStartOffset = diePortalTimeDistance;
+      die.effectKind = DieEffect.StinkyFumes;
+      die.needToStartEffect = true;
+      specialDice.push(die);
     }
-    else if (thisDiceValue < 10) {
-      let screenPos = getCoordinates(die);
+    else if (thisDiceValue == 20) {
+      console.log('Rolled a twenty!');
+      die.dieValue = thisDiceValue;
+      diePortalTimeDistance += getDieEffectDistance();
+      die.effectStartOffset = diePortalTimeDistance;
+      die.effectKind = DieEffect.Fireball;
+      die.needToStartEffect = true;
+      specialDice.push(die);
+    }
+    else if (thisDiceValue < 5) {
+      //let screenPos = getCoordinates(die);
+      diePortalTimeDistance += getDieEffectDistance();
+      die.effectStartOffset = diePortalTimeDistance;
+      die.needToStartEffect = true;
+      die.needToDrop = true;
       scalingDice.push(die);
 
-      // <formula \omega il>
-
-      //world.gravity.set(0, -9.82 * 1000, 0);
-      die.body.collisionResponse = 0;
-      die.body.mass = 0;
+      //console.log('die.body.collisionResponse: ' + die.body.collisionResponse);
+      //die.body.collisionResponse = 0;
+      //die.body.mass = 0;
+      //world.gravity.set(0, -9.82 * 2000, 0);
       //die.position.x = -99999;
 
       // @ts-ignore - CANNON
-      var localVelocity = new CANNON.Vec3(0, 00, 0);
-      die.body.velocity = localVelocity;
+      //var localVelocity = new CANNON.Vec3(0, 00, 0);
+      //die.body.velocity = localVelocity;
 
-      let factor: number = 5;
-      let xSpin: number = Math.random() * factor - factor / 2;
-      let ySpin: number = Math.random() * factor - factor / 2;
-      let zSpin: number = Math.random() * factor - factor / 2;
+      //let factor: number = 5;
+      //let xSpin: number = Math.random() * factor - factor / 2;
+      //let ySpin: number = Math.random() * factor - factor / 2;
+      //let zSpin: number = Math.random() * factor - factor / 2;
 
-      // @ts-ignore - THREE
-      die.body.angularVelocity.set(xSpin, ySpin, zSpin);
+      //// @ts-ignore - THREE
+      //die.body.angularVelocity.set(xSpin, ySpin, zSpin);
       //setTimeout(spinDie.bind(die), 200);
-
-      diceLayer.testPortal(screenPos.x, screenPos.y);
+    }
+    else if (thisDiceValue < 10) {
+      die.dieValue = thisDiceValue;
+      diePortalTimeDistance += getDieEffectDistance();
+      die.effectStartOffset = diePortalTimeDistance;
+      die.effectKind = DieEffect.ColoredSmoke;
+      die.needToStartEffect = true;
+      specialDice.push(die);
+    }
+    else if (thisDiceValue > 13) {
+      die.dieValue = thisDiceValue;
+      diePortalTimeDistance += getDieEffectDistance();
+      die.effectStartOffset = diePortalTimeDistance;
+      die.effectKind = DieEffect.Ring;
+      die.needToStartEffect = true;
+      specialDice.push(die);
     }
   }
 }
@@ -410,38 +549,111 @@ function scaleFallingDice() {
   if (!scalingDice || scalingDice.length == 0)
     return;
 
-  let totalFrames: number = 28;
-  let fps20: number = 50; // ms
-  let totalScaleDistance: number = 0.7;
-  let totalTimeToScale: number = fps20 * totalFrames;  // ms
-  let elapsedTime: number = performance.now() - diceSettleTime;
-
-  if (elapsedTime > totalTimeToScale)
-    return;
-
-  let percentTraveled: number = elapsedTime / totalTimeToScale;
-
-  let distanceTraveled: number = percentTraveled * totalScaleDistance;
-
-  let newScale: number = 1 - distanceTraveled;
+  let totalFrames: number = 20;
+  let waitToFallTime: number = 700;
 
   if (scalingDice && scalingDice.length > 0) {
     for (var i = 0; i < scalingDice.length; i++) {
+
       let die = scalingDice[i];
+      let portalOpenTime: number = diceSettleTime + die.effectStartOffset;
+      let startFallTime: number = diceSettleTime + waitToFallTime + die.effectStartOffset;
+
+      let now: number = performance.now();
+
+      if (now > portalOpenTime && die.needToStartEffect) {
+        die.needToStartEffect = false;
+        let screenPos = getScreenCoordinates(die);
+        diceLayer.testPortal(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+        diceSounds.playOpenDiePortal();
+      }
+
+      if (now < startFallTime)
+        continue;
+
+      let fps20: number = 50; // ms
+      let totalScaleDistance: number = 0.99;
+      let totalTimeToScale: number = fps20 * totalFrames;  // ms
+      let elapsedTime: number = now - startFallTime;
+
+      if (elapsedTime > totalTimeToScale)
+        continue;
+
+      if (die.needToDrop === true) {
+
+        die.needToDrop = false;
+      }
+
+      let percentTraveled: number = elapsedTime / totalTimeToScale;
+
+      let distanceTraveled: number = percentTraveled * totalScaleDistance;
+
+      let newScale: number = 1 - distanceTraveled;
+
       die.scale.set(newScale, newScale, newScale);
-      if (newScale < 0.35) {
-        // @ts-ignore - DiceManager
-        //die.body.collisionResponse = 1;
-        //die.body.mass = 1;
-        //DiceManager.world.remove(die.body);
+      //if (newScale < 0.35) {
+      //  bodiesToRemove.push(die);
+      //  // @ts-ignore - DiceManager
+      //  //die.body.collisionResponse = 1;
+      //  //die.body.mass = 1;
+      //  //DiceManager.world.remove(die.body);
+      //}
+    }
+  }
+}
+
+function highlightSpecialDice() {
+  if (!specialDice || specialDice.length == 0)
+    return;
+
+
+  let now: number = performance.now();
+
+  for (var i = 0; i < specialDice.length; i++) {
+    let die = specialDice[i];
+    if (die.needToStartEffect) {
+      let effectStartTime: number = diceSettleTime + die.effectStartOffset;
+      if (now > effectStartTime && die.needToStartEffect) {
+        die.needToStartEffect = false;
+
+        // die.dieValue is also available.
+        let screenPos: any = getScreenCoordinates(die);
+
+        if (die.effectKind === DieEffect.Ring) {
+          diceLayer.testMagicRing(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+        }
+        else if (die.effectKind === DieEffect.Fireball) {
+          diceLayer.testD20Fire(screenPos.x, screenPos.y);
+          diceLayer.testFireball(screenPos.x, screenPos.y);
+          diceSounds.playFireball();
+        }
+        else if (die.effectKind === DieEffect.StinkyFumes) {
+          diceLayer.testRoll1Stink(screenPos.x, screenPos.y);
+        }
+        else if (die.effectKind === DieEffect.ColoredSmoke) {
+          diceLayer.testDiceBlow(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          let newScale: number = 0.01;
+          die.scale.set(newScale, newScale, newScale);
+          diceSounds.playDiceBlow();
+        }
+
       }
     }
-
-    // <formula s u r l y D \epsilon \nu>
   }
 }
 
 function updatePhysics() {
+  //  if (bodiesToRemove && bodiesToRemove.length > 0) {
+  //    console.log('removing bodies...');
+
+  //    bodiesToRemove.forEach(function (body) {
+  //      body.collisionResponse = true;
+  //      body.mass = 1;
+  //      world.remove(body);
+  //    });
+  //    bodiesToRemove = [];
+  //  }
+
   world.step(1.0 / 60.0);
 
   for (var i in dice) {
@@ -449,6 +661,7 @@ function updatePhysics() {
   }
   checkStillRolling();
   scaleFallingDice();
+  highlightSpecialDice();
 }
 
 function update() {
