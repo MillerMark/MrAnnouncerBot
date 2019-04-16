@@ -1,3 +1,21 @@
+var diceToRoll = 10;
+var secondsBetweenRolls: number = 9;
+
+enum DieEffect {
+  StinkyFumes,
+  Ring,
+  Fireball,
+  Portal,
+  Shockwave,
+  ColoredSmoke,
+  Bomb,
+  SteamPunkTunnel
+}
+
+var effectOverride = DieEffect.Portal;
+
+//`!-------------------------------------------------------
+
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var scalingDice = [];
 var specialDice = [];
@@ -282,7 +300,6 @@ function init() { // From Rolling.html example.
 
 
   var needToHookEvents: boolean = true;
-  var diceToRoll = 15;
   const dieScale = 1.5;
   for (var i = 0; i < diceToRoll; i++) {
     //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
@@ -366,7 +383,7 @@ function init() { // From Rolling.html example.
     }
   }
 
-  setInterval(randomDiceThrow, 9000);
+  setInterval(randomDiceThrow, secondsBetweenRolls * 1000);
   randomDiceThrow();
   requestAnimationFrame(animate);
 }
@@ -435,14 +452,6 @@ function getScreenCoordinates(element) {
 
 var diceSettleTime: number = performance.now();
 
-enum DieEffect {
-  StinkyFumes,
-  Ring,
-  Fireball,
-  Shockwave,
-  ColoredSmoke
-}
-
 function getDieEffectDistance(): number {
   return Math.round(Math.random() * 5) * 40 + 40;
 }
@@ -462,12 +471,15 @@ function onDiceRollStopped() {
     let die: any = dice[i].getObject();
 
 
-    die.dieValue = thisDiceValue;
-    diePortalTimeDistance += getDieEffectDistance();
-    die.effectStartOffset = diePortalTimeDistance;
-    die.effectKind = DieEffect.ColoredSmoke;
-    die.needToStartEffect = true;
-    specialDice.push(die);
+    //die.dieValue = thisDiceValue;
+    //diePortalTimeDistance += getDieEffectDistance();
+    //die.effectStartOffset = diePortalTimeDistance;
+    //die.effectKind = DieEffect.SteamPunkTunnel;
+    //die.hideOnScaleStop = true;
+    //die.needToStartEffect = true;
+    //specialDice.push(die);
+    //die.needToDrop = true;
+    //scalingDice.push(die);
 
     //// Warp all out:
     //diePortalTimeDistance += getDieEffectDistance();
@@ -476,34 +488,47 @@ function onDiceRollStopped() {
     //die.needToDrop = true;
     //scalingDice.push(die);
 
-    continue;
+    //continue;
 
+    if (effectOverride != undefined) {
+      if (effectOverride == DieEffect.Bomb)
+        thisDiceValue = 2;
+      else if (effectOverride == DieEffect.ColoredSmoke)
+        thisDiceValue = 9;
+      else if (effectOverride == DieEffect.Fireball)
+        thisDiceValue = 20;
+      else if (effectOverride == DieEffect.Portal)
+        thisDiceValue = 4;
+      else if (effectOverride == DieEffect.Ring)
+        thisDiceValue = 14;
+      else if (effectOverride == DieEffect.Shockwave)
+        thisDiceValue = 21;
+      else if (effectOverride == DieEffect.SteamPunkTunnel)
+        thisDiceValue = 19;
+      else if (effectOverride == DieEffect.StinkyFumes)
+        thisDiceValue = 1;
+    }
 
-
+    die.dieValue = thisDiceValue;
+    diePortalTimeDistance += getDieEffectDistance();
+    die.effectStartOffset = diePortalTimeDistance;
+    die.needToStartEffect = true;
 
     if (thisDiceValue == 1) {
-      console.log('Rolled a one!');
-      die.dieValue = thisDiceValue;
-      diePortalTimeDistance += getDieEffectDistance();
-      die.effectStartOffset = diePortalTimeDistance;
       die.effectKind = DieEffect.StinkyFumes;
-      die.needToStartEffect = true;
+      specialDice.push(die);
+    }
+    else if (thisDiceValue == 2) {
+      die.effectKind = DieEffect.Bomb;
       specialDice.push(die);
     }
     else if (thisDiceValue == 20) {
-      console.log('Rolled a twenty!');
-      die.dieValue = thisDiceValue;
-      diePortalTimeDistance += getDieEffectDistance();
-      die.effectStartOffset = diePortalTimeDistance;
       die.effectKind = DieEffect.Fireball;
-      die.needToStartEffect = true;
       specialDice.push(die);
     }
     else if (thisDiceValue < 5) {
       //let screenPos = getCoordinates(die);
-      diePortalTimeDistance += getDieEffectDistance();
-      die.effectStartOffset = diePortalTimeDistance;
-      die.needToStartEffect = true;
+      die.effectKind = DieEffect.Portal;
       die.needToDrop = true;
       scalingDice.push(die);
 
@@ -527,20 +552,19 @@ function onDiceRollStopped() {
       //setTimeout(spinDie.bind(die), 200);
     }
     else if (thisDiceValue < 10) {
-      die.dieValue = thisDiceValue;
-      diePortalTimeDistance += getDieEffectDistance();
-      die.effectStartOffset = diePortalTimeDistance;
       die.effectKind = DieEffect.ColoredSmoke;
-      die.needToStartEffect = true;
       specialDice.push(die);
     }
-    else if (thisDiceValue > 13) {
-      die.dieValue = thisDiceValue;
-      diePortalTimeDistance += getDieEffectDistance();
-      die.effectStartOffset = diePortalTimeDistance;
+    else if (thisDiceValue < 15) {
       die.effectKind = DieEffect.Ring;
-      die.needToStartEffect = true;
       specialDice.push(die);
+    }
+    else {
+      die.effectKind = DieEffect.SteamPunkTunnel;
+      die.hideOnScaleStop = true;
+      specialDice.push(die);
+      die.needToDrop = true;
+      scalingDice.push(die);
     }
   }
 }
@@ -549,35 +573,65 @@ function scaleFallingDice() {
   if (!scalingDice || scalingDice.length == 0)
     return;
 
-  let totalFrames: number = 20;
-  let waitToFallTime: number = 700;
-
   if (scalingDice && scalingDice.length > 0) {
     for (var i = 0; i < scalingDice.length; i++) {
 
       let die = scalingDice[i];
       let portalOpenTime: number = diceSettleTime + die.effectStartOffset;
-      let startFallTime: number = diceSettleTime + waitToFallTime + die.effectStartOffset;
 
       let now: number = performance.now();
+      let waitToFallTime: number;
+      if (die.effectKind == DieEffect.SteamPunkTunnel) {
+        waitToFallTime = 35 * 30;
+      }
+      else { // DieEffect.Portal
+        waitToFallTime = 700;
+      }
 
       if (now > portalOpenTime && die.needToStartEffect) {
         die.needToStartEffect = false;
         let screenPos = getScreenCoordinates(die);
-        diceLayer.testPortal(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
-        diceSounds.playOpenDiePortal();
+
+        if (die.effectKind == DieEffect.SteamPunkTunnel) {
+          diceLayer.testSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          diceSounds.playSteampunkTunnel();
+        }
+        else {  // DieEffect.Portal
+          diceLayer.testPortal(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          diceSounds.playOpenDiePortal();
+        }
       }
+
+      let startFallTime: number = diceSettleTime + waitToFallTime + die.effectStartOffset;
 
       if (now < startFallTime)
         continue;
 
-      let fps20: number = 50; // ms
-      let totalScaleDistance: number = 0.99;
-      let totalTimeToScale: number = fps20 * totalFrames;  // ms
+      let totalFrames: number;
+      let fps30: number = 33; // ms
+
+      let totalScaleDistance: number;
+
       let elapsedTime: number = now - startFallTime;
 
-      if (elapsedTime > totalTimeToScale)
+      if (die.effectKind == DieEffect.SteamPunkTunnel) {
+        totalFrames = 60;
+        totalScaleDistance = 0.8;
+      }
+      else {
+        totalFrames = 40;
+        totalScaleDistance = 0.99;
+      }
+
+      let totalTimeToScale: number = fps30 * totalFrames;  // ms
+
+      if (elapsedTime > totalTimeToScale) {
+        if (die.hideOnScaleStop) {
+          die.hideOnScaleStop = false;
+          hideDie(die);
+        }
         continue;
+      }
 
       if (die.needToDrop === true) {
 
@@ -602,6 +656,16 @@ function scaleFallingDice() {
   }
 }
 
+function hideDieIn(die: any, ms: number) {
+  die.hideTime = performance.now() + ms;
+  die.needToHideDie = true;
+}
+
+function hideDie(die: any) {
+  const newScale: number = 0.01;
+  die.scale.set(newScale, newScale, newScale);
+}
+
 function highlightSpecialDice() {
   if (!specialDice || specialDice.length == 0)
     return;
@@ -611,6 +675,14 @@ function highlightSpecialDice() {
 
   for (var i = 0; i < specialDice.length; i++) {
     let die = specialDice[i];
+
+    if (die.needToHideDie) {
+      if (die.hideTime < now) {
+        die.needToHideDie = false;
+        hideDie(die);
+      }
+    }
+
     if (die.needToStartEffect) {
       let effectStartTime: number = diceSettleTime + die.effectStartOffset;
       if (now > effectStartTime && die.needToStartEffect) {
@@ -630,13 +702,41 @@ function highlightSpecialDice() {
         else if (die.effectKind === DieEffect.StinkyFumes) {
           diceLayer.testRoll1Stink(screenPos.x, screenPos.y);
         }
+        else if (die.effectKind === DieEffect.Bomb) {
+          diceLayer.testDiceBomb(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          diceSounds.playDieBomb();
+          hideDieIn(die, 700);
+        }
+        else if (die.effectKind === DieEffect.SteamPunkTunnel) {
+          diceLayer.testSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          //diceLayer.playSteampunkTunnel();
+          //hideDieIn(die, 700);
+        }
         else if (die.effectKind === DieEffect.ColoredSmoke) {
-          diceLayer.testDiceBlow(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
-          let newScale: number = 0.01;
-          die.scale.set(newScale, newScale, newScale);
+          let saturation: number = 100;
+          let brightnessBase: number = 50;
+          let rand: number = Math.random() * 100;
+          if (rand < 5) {
+            saturation = 0;
+            brightnessBase = 110;
+          }
+          else if (rand < 10) {
+            saturation = 25;
+            brightnessBase = 100;
+          }
+          else if (rand < 25) {
+            saturation = 50;
+            brightnessBase = 90;
+          }
+          else if (rand < 75) {
+            saturation = 75;
+            brightnessBase = 70;
+          }
+
+          diceLayer.testDiceBlowColoredSmoke(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
+          hideDie(die);
           diceSounds.playDiceBlow();
         }
-
       }
     }
   }

@@ -16,12 +16,22 @@ class DiceSounds {
     new Audio('GameDev/Assets/DragonH/SoundEffects/DiePortal.mp3').play();
   }
 
+  playSteampunkTunnel() {
+    new Audio('GameDev/Assets/DragonH/SoundEffects/SteampunkTunnel.mp3').play();
+  }
+
   playFireball() {
     new Audio('GameDev/Assets/DragonH/SoundEffects/Fireball2.mp3').play();
   }
 
   playDiceBlow() {
     new Audio('GameDev/Assets/DragonH/SoundEffects/DiceBlow.mp3').play();
+  }
+
+  playDieBomb() {
+    const numDieBombSounds: number = 2;
+    var index: number = Math.floor(Math.random() * numDieBombSounds) + 1;
+    new Audio(`GameDev/Assets/DragonH/SoundEffects/DieBomb${index}.mp3`).play();
   }
 
   loadSoundEffects(sounds: Array<HTMLAudioElement>, baseFileName: string, numSounds: number): void {

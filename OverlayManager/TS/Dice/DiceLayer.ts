@@ -9,18 +9,25 @@ class DiceLayer {
   dicePortal: Sprites;
   dicePortalTop: Sprites;
   magicRing: Sprites;
-  diceBlow: Sprites;
+  diceBlowColoredSmoke: Sprites;
+  diceBombBase: Sprites;
+  diceBombTop: Sprites;
+  dieSteampunkTunnel: Sprites;
   allFrontLayerEffects: SpriteCollection;
   allBackLayerEffects: SpriteCollection;
 
-	constructor() {
+  constructor() {
     this.loadSprites();
   }
 
   loadSprites() {
     Part.loadSprites = true;
+
+    const fps40: number = 1000 / 40;
     const fps30: number = 33;
     const fps20: number = 50;
+
+    globalBypassFrameSkip = true;
 
     this.allFrontLayerEffects = new SpriteCollection();
     this.allBackLayerEffects = new SpriteCollection();
@@ -36,36 +43,63 @@ class DiceLayer {
     this.d20Fire.returnFrameIndex = 72;
     this.allBackLayerEffects.add(this.d20Fire);
 
-    this.dicePortal = new Sprites("/Dice/DiePortal/DiePortal", 73, fps20, AnimationStyle.Sequential, true);
+    this.dicePortal = new Sprites("/Dice/DiePortal/DiePortal", 73, fps30, AnimationStyle.Sequential, true);
     this.dicePortal.originX = 189;
     this.dicePortal.originY = 212;
     this.allBackLayerEffects.add(this.dicePortal);
+
+    this.dicePortalTop = new Sprites("/Dice/DiePortal/DiePortalTop", 73, fps30, AnimationStyle.Sequential, true);
+    this.dicePortalTop.originX = 189;
+    this.dicePortalTop.originY = 212;
+    this.allFrontLayerEffects.add(this.dicePortalTop);
 
     this.roll1Stink = new Sprites("/Dice/Roll1/Roll", 172, fps30, AnimationStyle.Loop, true);
     this.roll1Stink.originX = 150;
     this.roll1Stink.originY = 150;
     this.allBackLayerEffects.add(this.roll1Stink);
 
-    this.magicRing = new Sprites("/Dice/MagicRing/MagicRing", 180, fps30, AnimationStyle.Loop, true);
-    this.magicRing.returnFrameIndex = 30;
+    this.magicRing = new Sprites("/Dice/MagicRing/MagicRing", 180, fps40, AnimationStyle.Loop, true);
+    this.magicRing.returnFrameIndex = 60;
     this.magicRing.originX = 140;
     this.magicRing.originY = 112;
     this.allFrontLayerEffects.add(this.magicRing);
 
-    this.diceBlow = new Sprites("/Dice/Blow/DiceBlow", 41, fps30, AnimationStyle.Sequential, true);
-    this.diceBlow.originX = 178;
-    this.diceBlow.originY = 170;
-    this.allFrontLayerEffects.add(this.diceBlow);
+    this.diceBlowColoredSmoke = new Sprites("/Dice/Blow/DiceBlow", 41, fps40, AnimationStyle.Sequential, true);
+    this.diceBlowColoredSmoke.originX = 178;
+    this.diceBlowColoredSmoke.originY = 170;
+    this.allFrontLayerEffects.add(this.diceBlowColoredSmoke);
 
-    this.dicePortalTop = new Sprites("/Dice/DiePortal/DiePortalTop", 73, fps20, AnimationStyle.Sequential, true);
-    this.dicePortalTop.originX = 189;
-    this.dicePortalTop.originY = 212;
-    this.allFrontLayerEffects.add(this.dicePortalTop);
-    
+    this.diceBombBase = new Sprites("/Dice/DieBomb/DieBombBase", 49, fps30, AnimationStyle.Sequential, true);
+    this.diceBombBase.originX = 295;
+    this.diceBombBase.originY = 316;
+    this.allBackLayerEffects.add(this.diceBombBase);
+
+    this.dieSteampunkTunnel = new Sprites("/Dice/SteampunkTunnel/SteampunkTunnelBack", 178, 28, AnimationStyle.Sequential, true);
+    this.dieSteampunkTunnel.originX = 142;
+    this.dieSteampunkTunnel.originY = 145;
+    this.allBackLayerEffects.add(this.dieSteampunkTunnel);
+
+    this.diceBombTop = new Sprites("/Dice/DieBomb/DieBombTop", 39, fps30, AnimationStyle.Sequential, true);
+    this.diceBombTop.originX = 295;
+    this.diceBombTop.originY = 316;
+    this.allFrontLayerEffects.add(this.diceBombTop);
+  }
+
+  mouseDownInCanvas(e) {
+    if (effectOverride != undefined) {
+      var enumIndex: number = <number>effectOverride;
+      let totalElements: number = Object.keys(DieEffect).length / 2;
+      enumIndex++;
+      if (enumIndex >= totalElements)
+        enumIndex = 0;
+      effectOverride = <DieEffect>enumIndex;
+      console.log('New effect: ' + DieEffect[effectOverride]);
+    }
   }
 
   getContext() {
     this.diceFrontCanvas = <HTMLCanvasElement>document.getElementById("diceFrontCanvas");
+    this.diceFrontCanvas.onmousedown = this.mouseDownInCanvas;
     this.diceBackCanvas = <HTMLCanvasElement>document.getElementById("diceBackCanvas");
     this.diceFrontContext = this.diceFrontCanvas.getContext("2d");
     this.diceBackContext = this.diceBackCanvas.getContext("2d");
@@ -92,8 +126,8 @@ class DiceLayer {
     this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
 
-  testDiceBlow(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-    this.diceBlow.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+  testDiceBlowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
 
   testD20Fire(x: number, y: number) {
@@ -110,6 +144,16 @@ class DiceLayer {
     this.roll1Stink.sprites = [];
   }
 
+
+  testSteampunkTunnel(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+  }
+
+  testDiceBomb(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+  }
+
   testPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
     this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
     this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
@@ -117,5 +161,5 @@ class DiceLayer {
 
   rollDice(diceRollData: string): any {
     console.log(diceRollData);
-  } 
+  }
 }
