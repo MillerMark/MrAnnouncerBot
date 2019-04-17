@@ -78,23 +78,58 @@
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Dungeon" x:Name="tbDungeon">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
-						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal">
+						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
 							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
 							<TextBox x:Name="tbxDamageDice" MinWidth="120">
-
+								2d8+6
 							</TextBox>
 						</StackPanel>
-						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" >
-							<Button x:Name="btnTestNormalDieRoll" Click="BtnTestNormalDieRoll_Click" MinWidth="85" Margin="0, 0, 10, 0">
-								Normal Roll
-							</Button>
-							<Button x:Name="btnTestAdvantageDieRoll" Click="BtnTestAdvantageDieRoll_Click" MinWidth="85" Margin="0, 0, 10, 0">
-								Advantage Roll
-							</Button>
-							<Button x:Name="btnTestDisadvantageDieRoll" Click="BtnTestDisadvantageDieRoll_Click" MinWidth="85" Margin="0, 0, 10, 0">
-								Disadvantage Roll
-							</Button>
+						<StackPanel x:Name="spModifier" Orientation="Horizontal" Margin="0, 0, 0, 8">
+							<TextBlock Text="Modifier: " Width="Auto" Height="Auto"/>
+							<TextBox x:Name="tbxModifier" MinWidth="120">
+								+1
+							</TextBox>
 						</StackPanel>
+						<StackPanel x:Name="spHiddenThreshold" Orientation="Horizontal" Margin="0, 0, 0, 8">
+							<TextBlock Text="Hidden Threshold: " Width="Auto" Height="Auto"/>
+							<TextBox x:Name="tbxHiddenThreshold" MinWidth="120">
+								12
+							</TextBox>
+						</StackPanel>
+						
+						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" >
+							<RadioButton x:Name="rbTestNormalDieRoll" IsChecked="True" MinWidth="85" Margin="0, 0, 10, 0">
+								Normal Roll
+							</RadioButton>
+							<RadioButton x:Name="rbTestAdvantageDieRoll" MinWidth="85" Margin="0, 0, 10, 0">
+								Advantage Roll
+							</RadioButton>
+							<RadioButton x:Name="rbTestDisadvantageDieRoll" MinWidth="85" Margin="0, 0, 10, 0">
+								Disadvantage Roll
+							</RadioButton>
+						</StackPanel>
+						<CheckBox x:Name="ckbUseMagic" >
+							UseMagic
+						</CheckBox>
+						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
+							<Button x:Name="btnSkillCheck" Margin="8" Padding="8" MinWidth="100" Click="BtnSkillCheck_Click" >
+								Skill Check
+							</Button>
+							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
+								Attack
+							</Button>
+							<Button x:Name="btnSavingThrow" Margin="8" Padding="8" MinWidth="100" Click="BtnSavingThrow_Click" >
+								Saving Throw
+							</Button>
+							<Button x:Name="btnFlatD20" Margin="8" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
+								FlatD20
+							</Button>
+							<Button x:Name="btnDeathSavingThrow" Margin="8" Padding="8" Click="BtnDeathSavingThrow_Click" >
+								Death Saving Throw
+							</Button>
+
+						</StackPanel>
+						
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">

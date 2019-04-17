@@ -1,4 +1,4 @@
-var diceToRoll = 10;
+var diceToRoll = 12;
 var secondsBetweenRolls: number = 9;
 
 enum DieEffect {
@@ -301,6 +301,7 @@ function init() { // From Rolling.html example.
 
   var needToHookEvents: boolean = true;
   const dieScale = 1.5;
+
   for (var i = 0; i < diceToRoll; i++) {
     //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
     // @ts-ignore - DiceD20
@@ -316,6 +317,18 @@ function init() { // From Rolling.html example.
     }
   }
 
+  function clearAllDice() {
+    if (!dice || dice.length === 0)
+      return;
+    for (var i = 0; i < dice.length; i++) {
+      let dieObject = dice[i].getObject();
+      scene.remove(dieObject);
+    }
+    dice = [];
+    diceToRoll++;
+    secondsBetweenRolls++;
+  }
+
   function randomDiceThrow() {
     diceLayer.clearLoopingAnimations();
     scalingDice = [];
@@ -325,6 +338,16 @@ function init() { // From Rolling.html example.
     setNormalGravity();
     waitingForSettle = true;
     diceValues = [];
+
+    //clearAllDice();
+
+    //for (var i = 0; i < diceToRoll; i++) {
+    //  //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
+    //  // @ts-ignore - DiceD20
+    //  var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
+    //  scene.add(die.getObject());
+    //  dice.push(die);
+    //}
 
     for (var i = 0; i < dice.length; i++) {
       let yRand = Math.random() * 20

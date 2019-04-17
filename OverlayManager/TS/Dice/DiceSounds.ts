@@ -1,8 +1,20 @@
+class KeyTime {
+  key: string;
+  time: number;
+
+  constructor(key: string, time: number) {
+    this.key = key;
+    this.time = time;
+  }
+}
+
 class DiceSounds {
   hitDice: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
   hitFloor: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
   hitWall: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
   settles: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
+  lastPlayTimes: Array<KeyTime>=  new Array<KeyTime>();
+  
   lastSettleTime: Date;
 
   constructor() {
@@ -13,25 +25,64 @@ class DiceSounds {
   }
 
   playOpenDiePortal() {
-    new Audio('GameDev/Assets/DragonH/SoundEffects/DiePortal.mp3').play();
+    //new Audio('GameDev/Assets/DragonH/SoundEffects/DiePortal.mp3').play();
+    this.safePlay('DiePortal');
   }
 
   playSteampunkTunnel() {
-    new Audio('GameDev/Assets/DragonH/SoundEffects/SteampunkTunnel.mp3').play();
+    //new Audio('GameDev/Assets/DragonH/SoundEffects/SteampunkTunnel.mp3').play();
+    this.safePlay('SteampunkTunnel');
   }
 
   playFireball() {
-    new Audio('GameDev/Assets/DragonH/SoundEffects/Fireball2.mp3').play();
+    //new Audio('GameDev/Assets/DragonH/SoundEffects/Fireball2.mp3').play();
+    this.safePlay('Fireball2');
   }
 
   playDiceBlow() {
-    new Audio('GameDev/Assets/DragonH/SoundEffects/DiceBlow.mp3').play();
+    this.safePlay('DiceBlow');
+  }
+
+  safePlay(fileName: string) {
+    if (this.playedRecently(fileName))
+      return ;
+    new Audio(`GameDev/Assets/DragonH/SoundEffects/${fileName}.mp3`).play();	
+    this.playingNow(fileName);
+  }
+
+  static readonly threshold: number = 50; // ms
+
+  playedRecently(key: string) {
+    for (var i = 0; i < this.lastPlayTimes.length; i++)
+    {
+      let keyTime: KeyTime = <KeyTime>this.lastPlayTimes[i];
+      if (keyTime.key === key)
+      {
+        var now: number = performance.now();
+        return now - keyTime.time < DiceSounds.threshold;
+      }
+    }
+    return false;
+  }
+
+  playingNow(key: string) {
+    var now: number = performance.now();
+    for (var i = 0; i < this.lastPlayTimes.length; i++) {
+      let keyTime: KeyTime = <KeyTime>this.lastPlayTimes[i];
+      if (keyTime.key === key) {
+        keyTime.time = now;
+        return;
+      }
+    }
+
+    this.lastPlayTimes.push(new KeyTime(key, now));
   }
 
   playDieBomb() {
     const numDieBombSounds: number = 2;
     var index: number = Math.floor(Math.random() * numDieBombSounds) + 1;
-    new Audio(`GameDev/Assets/DragonH/SoundEffects/DieBomb${index}.mp3`).play();
+    //new Audio(`GameDev/Assets/DragonH/SoundEffects/DieBomb${index}.mp3`).play();
+    this.safePlay(`DieBomb${index}`);
   }
 
   loadSoundEffects(sounds: Array<HTMLAudioElement>, baseFileName: string, numSounds: number): void {

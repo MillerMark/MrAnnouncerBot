@@ -129,19 +129,51 @@ namespace DHDM
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
 
-		private void BtnTestNormalDieRoll_Click(object sender, RoutedEventArgs e)
+		private void BtnSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(new DiceRoll(DiceRollKind.Normal, tbxDamageDice.Text));
+			TestRollDice(PrepareRoll(DiceRollType.SkillCheck));
 		}
 
-		private void BtnTestAdvantageDieRoll_Click(object sender, RoutedEventArgs e)
+		private void BtnSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(new DiceRoll(DiceRollKind.Advantage, tbxDamageDice.Text));
+			TestRollDice(PrepareRoll(DiceRollType.SavingThrow));
 		}
 
-		private void BtnTestDisadvantageDieRoll_Click(object sender, RoutedEventArgs e)
+		private void BtnDeathSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(new DiceRoll(DiceRollKind.Disadvantage, tbxDamageDice.Text));
+			TestRollDice(PrepareRoll(DiceRollType.DeathSavingThrow));
+		}
+
+		private void BtnAttack_Click(object sender, RoutedEventArgs e)
+		{
+			TestRollDice(PrepareRoll(DiceRollType.Attack));
+		}
+
+		private DiceRoll PrepareRoll(DiceRollType type)
+		{
+			DiceRollKind diceRollKind;
+			if (rbTestAdvantageDieRoll.IsChecked == true)
+				diceRollKind = DiceRollKind.Advantage;
+			else if (rbTestDisadvantageDieRoll.IsChecked == true)
+				diceRollKind = DiceRollKind.Disadvantage;
+			else
+				diceRollKind = DiceRollKind.Normal;
+			DiceRoll diceRoll = new DiceRoll(diceRollKind, tbxDamageDice.Text);
+
+			if (double.TryParse(tbxModifier.Text, out double modifierResult))
+				diceRoll.Modifier = modifierResult;
+
+			if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
+				diceRoll.HiddenThreshold = thresholdResult;
+
+			diceRoll.IsMagic = ckbUseMagic.IsChecked == true;
+			diceRoll.Type = type;
+			return diceRoll;
+		}
+
+		private void BtnFlatD20_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }

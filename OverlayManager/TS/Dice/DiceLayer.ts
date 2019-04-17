@@ -1,3 +1,18 @@
+enum DiceRollKind {
+  Normal,
+  Advantage,
+  Disadvantage
+}
+
+enum DiceRollType {
+  SkillCheck,
+  Attack,
+  SavingThrow,
+  FlatD20,
+  DeathSavingThrow,
+  PercentageRoll
+}
+
 class DiceLayer {
   diceFrontCanvas: HTMLCanvasElement;
   diceBackCanvas: HTMLCanvasElement;
@@ -159,7 +174,33 @@ class DiceLayer {
     this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
 
-  rollDice(diceRollData: string): any {
+  getDiceRollData(diceRollData: string): DiceRollData {
+    let dto: any = JSON.parse(diceRollData);
+    let diceRoll: DiceRollData = new DiceRollData();
+    diceRoll.type = dto.Type;
+    diceRoll.kind = dto.Kind;
+    diceRoll.damageDice = dto.DamageDice;
+    diceRoll.modifier = dto.Modifier;
+    diceRoll.hiddenThreshold = dto.HiddenThreshold;
+    diceRoll.isMagic = dto.IsMagic;
+    return diceRoll;
+  }
+
+  rollDice(diceRollDto: string): any {
+    let diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
     console.log(diceRollData);
+    //  { "Type": 1, "Kind": 0, "DamageDice": "2d8+6", "Modifier": 1.0, "HiddenThreshold": 12.0, "IsMagic": true }
+  }
+}
+
+class DiceRollData {
+  type: DiceRollType;
+  kind: DiceRollKind;
+  damageDice: string;
+  modifier: number;
+  hiddenThreshold: number;
+  isMagic: boolean;
+  constructor() {
+
   }
 }
