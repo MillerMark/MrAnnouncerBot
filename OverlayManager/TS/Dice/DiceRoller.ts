@@ -1,5 +1,5 @@
-var diceToRoll = 12;
-var secondsBetweenRolls: number = 9;
+var diceToRoll = 5;
+var secondsBetweenRolls: number = 8;
 
 enum DieEffect {
   StinkyFumes,
@@ -321,15 +321,20 @@ function init() { // From Rolling.html example.
     if (!dice || dice.length === 0)
       return;
     for (var i = 0; i < dice.length; i++) {
-      let dieObject = dice[i].getObject();
+      let die = dice[i];
+      let dieObject = die.getObject();
       scene.remove(dieObject);
+
+      // @ts-ignore - THREE
+      DiceManager.world.remove(die.object.body);
+      //dieObject.body.removeEventListener("collide", handleDieCollision);
     }
     dice = [];
-    diceToRoll++;
-    secondsBetweenRolls++;
+    //diceToRoll++;
+    //secondsBetweenRolls++;
   }
 
-  function randomDiceThrow() {
+  function randomDiceThrow( ) {
     diceLayer.clearLoopingAnimations();
     scalingDice = [];
     specialDice = [];
@@ -339,15 +344,17 @@ function init() { // From Rolling.html example.
     waitingForSettle = true;
     diceValues = [];
 
-    //clearAllDice();
+    clearAllDice();
 
-    //for (var i = 0; i < diceToRoll; i++) {
-    //  //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
-    //  // @ts-ignore - DiceD20
-    //  var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
-    //  scene.add(die.getObject());
-    //  dice.push(die);
-    //}
+    for (var i = 0; i < diceToRoll; i++) {
+      //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
+      // @ts-ignore - DiceD20
+      var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
+      scene.add(die.getObject());
+      dice.push(die);
+    }
+
+    needToHookEvents = true;
 
     for (var i = 0; i < dice.length; i++) {
       let yRand = Math.random() * 20
@@ -364,7 +371,6 @@ function init() { // From Rolling.html example.
 
       diceValues.push({ dice: dice[i], value: Math.floor(Math.random() * 20 + 1) });
       die.body.name = 'die';
-      console.log('die.scale.set(1, 1, 1);');
     }
 
     // @ts-ignore - DiceManager
@@ -377,31 +383,7 @@ function init() { // From Rolling.html example.
       for (var i = 0; i < dice.length; i++) {
         let die = dice[i].getObject();
 
-        die.body.addEventListener("collide", function (e) {
-          // @ts-ignore - DiceManager
-          if (!DiceManager.throwRunning) {
-            let relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
-            //console.log(e.target.name + ' -> ' + e.body.name + ' at ' + relativeVelocity + 'm/s');
-
-            let v = e.target.velocity;
-
-            // <formula 2; targetSpeed = \sqrt{v.x^2 + v.y^2 + v.z^2}>  <-- LaTeX Formula
-
-            //let targetSpeed: number = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-            //console.log('Target Speed: ' + targetSpeed);
-
-            if (e.target.name === "die" && e.body.name === "die")
-              diceSounds.playDiceHit(relativeVelocity / 10);
-            else if (e.target.name === "die" && e.body.name === "floor")
-              if (relativeVelocity < 8) {
-                diceSounds.playSettle();
-              }
-              else
-                diceSounds.playFloorHit(relativeVelocity / 35);
-            else if (e.target.name === "die" && e.body.name === "wall")
-              diceSounds.playWallHit(relativeVelocity / 40);
-          }
-        });
+        die.body.addEventListener("collide", handleDieCollision);
       }
     }
   }
@@ -409,6 +391,33 @@ function init() { // From Rolling.html example.
   setInterval(randomDiceThrow, secondsBetweenRolls * 1000);
   randomDiceThrow();
   requestAnimationFrame(animate);
+}
+
+function handleDieCollision(e: any) {
+  console.log('Hit!');
+  // @ts-ignore - DiceManager
+  if (!DiceManager.throwRunning) {
+    let relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
+    //console.log(e.target.name + ' -> ' + e.body.name + ' at ' + relativeVelocity + 'm/s');
+
+    let v = e.target.velocity;
+
+    // <formula 2; targetSpeed = \sqrt{v.x^2 + v.y^2 + v.z^2}>  <-- LaTeX Formula
+
+    //let targetSpeed: number = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    //console.log('Target Speed: ' + targetSpeed);
+
+    if (e.target.name === "die" && e.body.name === "die")
+      diceSounds.playDiceHit(relativeVelocity / 10);
+    else if (e.target.name === "die" && e.body.name === "floor")
+      if (relativeVelocity < 8) {
+        diceSounds.playSettle();
+      }
+      else
+        diceSounds.playFloorHit(relativeVelocity / 35);
+    else if (e.target.name === "die" && e.body.name === "wall")
+      diceSounds.playWallHit(relativeVelocity / 40);
+  }
 }
 
 function animate() {
@@ -483,8 +492,8 @@ function onDiceRollStopped() {
   diceHaveStoppedRolling = true;
   diceSettleTime = performance.now();
   console.log('Dice have stopped rolling!');
-  console.log(dice);
-  console.log(diceValues);
+  //console.log(dice);
+  //console.log(diceValues);
   scalingDice = [];
   specialDice = [];
   bodiesToRemove = [];
@@ -785,6 +794,12 @@ function updatePhysics() {
   checkStillRolling();
   scaleFallingDice();
   highlightSpecialDice();
+}
+
+function pleaseRollDice(diceRollData: DiceRollData) {
+  
+  
+  requestAnimationFrame(animate);
 }
 
 function update() {

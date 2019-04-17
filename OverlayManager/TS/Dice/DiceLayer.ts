@@ -189,6 +189,8 @@ class DiceLayer {
   rollDice(diceRollDto: string): any {
     let diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
     console.log(diceRollData);
+    pleaseRollDice(diceRollData);
+
     //  { "Type": 1, "Kind": 0, "DamageDice": "2d8+6", "Modifier": 1.0, "HiddenThreshold": 12.0, "IsMagic": true }
   }
 }
