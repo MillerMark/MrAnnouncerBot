@@ -1,5 +1,6 @@
-var diceToRoll = 5;
-var secondsBetweenRolls: number = 8;
+var diceToRoll = 10;
+var secondsBetweenRolls: number = 9;
+const dieScale = 1.5;
 
 enum DieEffect {
   StinkyFumes,
@@ -19,7 +20,7 @@ var effectOverride = DieEffect.Portal;
 var container, scene, camera, renderer, controls, stats, world, dice = [];
 var scalingDice = [];
 var specialDice = [];
-var bodiesToRemove = [];
+//var bodiesToRemove = [];
 var bodiesToFree = [];
 var diceSounds = new DiceSounds();
 
@@ -31,6 +32,32 @@ var diceValues = [];
 function setNormalGravity() {
   world.gravity.set(0, -9.82 * 20, 0);
 }
+
+function restoreDieScale() {
+  for (var i = 0; i < dice.length; i++) {
+    let die = dice[i].getObject();
+    die.scale.set(1, 1, 1);
+  }
+}
+
+function clearAllDice() {
+  if (!dice || dice.length === 0)
+    return;
+  for (var i = 0; i < dice.length; i++) {
+    let die = dice[i];
+    let dieObject = die.getObject();
+    scene.remove(dieObject);
+
+    // @ts-ignore - THREE
+    DiceManager.world.remove(die.object.body);
+    //dieObject.body.removeEventListener("collide", handleDieCollision);
+  }
+  dice = [];
+  //diceToRoll++;
+  //secondsBetweenRolls++;
+}
+
+
 
 function init() { // From Rolling.html example.
   diceLayer = new DiceLayer();
@@ -300,7 +327,6 @@ function init() { // From Rolling.html example.
 
 
   var needToHookEvents: boolean = true;
-  const dieScale = 1.5;
 
   for (var i = 0; i < diceToRoll; i++) {
     //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
@@ -310,35 +336,11 @@ function init() { // From Rolling.html example.
     dice.push(die);
   }
 
-  function restoreDieScale() {
-    for (var i = 0; i < dice.length; i++) {
-      let die = dice[i].getObject();
-      die.scale.set(1, 1, 1);
-    }
-  }
-
-  function clearAllDice() {
-    if (!dice || dice.length === 0)
-      return;
-    for (var i = 0; i < dice.length; i++) {
-      let die = dice[i];
-      let dieObject = die.getObject();
-      scene.remove(dieObject);
-
-      // @ts-ignore - THREE
-      DiceManager.world.remove(die.object.body);
-      //dieObject.body.removeEventListener("collide", handleDieCollision);
-    }
-    dice = [];
-    //diceToRoll++;
-    //secondsBetweenRolls++;
-  }
-
-  function randomDiceThrow( ) {
+  function randomDiceThrow() {
     diceLayer.clearLoopingAnimations();
     scalingDice = [];
     specialDice = [];
-    bodiesToRemove = [];
+    //bodiesToRemove = [];
     restoreDieScale();
     setNormalGravity();
     waitingForSettle = true;
@@ -394,7 +396,6 @@ function init() { // From Rolling.html example.
 }
 
 function handleDieCollision(e: any) {
-  console.log('Hit!');
   // @ts-ignore - DiceManager
   if (!DiceManager.throwRunning) {
     let relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
@@ -496,7 +497,7 @@ function onDiceRollStopped() {
   //console.log(diceValues);
   scalingDice = [];
   specialDice = [];
-  bodiesToRemove = [];
+  //bodiesToRemove = [];
   let diePortalTimeDistance: number = 0;
   for (var i = 0; i < dice.length; i++) {
     let thisDiceValue: number = getDiceValue(dice[i]);
@@ -796,10 +797,96 @@ function updatePhysics() {
   highlightSpecialDice();
 }
 
+function prepareDie(die: any) {
+  prepareBaseDie(die);
+
+  var newValue: number = Math.floor(Math.random() * die.values + 1);
+  diceValues.push({ dice: die, value: newValue });
+}
+
+function prepareBaseDie(die: any) {
+  dice.push(die);
+  let dieObject = die.getObject();
+  scene.add(dieObject);
+  let index: number = dice.length;
+  let yRand = Math.random() * 20;
+  dieObject.position.x = -15 - (index % 3) * dieScale;
+  dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
+  dieObject.position.z = -13 + (index % 3) * dieScale;
+  dieObject.quaternion.x = (Math.random() * 90 - 45) * Math.PI / 180;
+  dieObject.quaternion.z = (Math.random() * 90 - 45) * Math.PI / 180;
+  die.updateBodyFromMesh();
+  let rand = Math.random() * 5;
+  dieObject.body.velocity.set(35 + rand, 10 + yRand, 25 + rand);
+  dieObject.body.angularVelocity.set(20 * Math.random() - 10, 20 * Math.random() - 10, 20 * Math.random() - 10);
+  dieObject.body.name = 'die';
+  dieObject.body.addEventListener("collide", handleDieCollision);
+}
+
+function prepareD10x10Die(die: any) {
+  prepareBaseDie(die);
+  var newValue: number = Math.floor(Math.random() * die.values) * 10;
+  diceValues.push({ dice: die, value: newValue });
+}
+
+function prepareD10x01Die(die: any) {
+  prepareBaseDie(die);
+  var newValue: number = Math.floor(Math.random() * die.values);
+  diceValues.push({ dice: die, value: newValue });
+}
+
+function clearBeforeRoll() {
+  diceLayer.clearLoopingAnimations();
+  scalingDice = [];
+  specialDice = [];
+  restoreDieScale();
+  setNormalGravity();
+  waitingForSettle = true;
+  diceValues = [];
+
+  clearAllDice();
+  diceHaveStoppedRolling = false;
+}
+
+function queueRoll(diceRollData: DiceRollData) {
+  console.log('queueRoll - TODO');
+  // TODO: queue this roll for later when the current roll has stopped.
+}
+
 function pleaseRollDice(diceRollData: DiceRollData) {
-  
-  
-  requestAnimationFrame(animate);
+  // @ts-ignore - DiceManager
+  if (DiceManager.throwRunning) {
+    queueRoll(diceRollData);
+    return;
+  }
+  clearBeforeRoll();
+  let numD20s: number = 10;
+  if (diceRollData.kind !== DiceRollKind.Normal)
+    numD20s = 2;
+  for (var i = 0; i < numD20s; i++) {
+    // @ts-ignore - DiceD20
+    var die = new DiceD20({ size: dieScale, backColor: '#c0A0ff' });
+    prepareDie(die);
+  }
+
+  // @ts-ignore - DiceD10x10
+  var die = new DiceD10x10({ size: dieScale, backColor: '#ffA0c0' });
+  prepareD10x10Die(die);
+  die.value
+  // @ts-ignore - DiceD10x01
+  die = new DiceD10x01({ size: dieScale, backColor: '#ffA0c0' });
+  prepareD10x01Die(die);
+
+
+  try {
+    // @ts-ignore - DiceManager
+    DiceManager.prepareValues(diceValues);
+  }
+  catch (ex) {
+    console.log('exception on call to DiceManager.prepareValues: ' + ex);
+  }
+
+  //requestAnimationFrame(animate);
 }
 
 function update() {

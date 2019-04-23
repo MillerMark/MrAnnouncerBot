@@ -99,6 +99,7 @@ class DiceObject {
       backColor: '#ffffff'
     });
 
+    this.heightFactor = 1;
     this.object = null;
     this.size = options.size;
     this.invertUpside = false;
@@ -107,7 +108,8 @@ class DiceObject {
       specular: 0x172022,
       color: 0xf0f0f0,
       shininess: 40,
-      shading: THREE.FlatShading,
+      //shading: THREE.FlatShading,
+      flatShading: true
     };
     this.labelColor = options.fontColor;
     this.diceColor = options.backColor;
@@ -331,15 +333,32 @@ class DiceObject {
   createTextTexture(text, color, backColor) {
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("2d");
-    let ts = this.calculateTextureSize(this.size / 2 + this.size * this.textMargin) * 2;
-    canvas.width = canvas.height = ts;
-    context.font = ts / (1 + 2 * this.textMargin) + "pt Arial";
+    let textureSize = this.calculateTextureSize(this.size / 2 + this.size * this.textMargin) * 2;
+    canvas.width = canvas.height = textureSize;
+    let fontSizeFactor = 1;
+    if (text.length > 1)
+      fontSizeFactor = 0.8;  // Reduce font size if number is two digits || more.
+    let fontSize = fontSizeFactor * textureSize / (1 + 2 * this.textMargin);
+    context.font = fontSize + "pt Arial";
     context.fillStyle = backColor;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = color;
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
+    context.fillText(text, canvas.width / 2, canvas.height / 2 * this.heightFactor);
+    let textWidth = context.measureText(text).width;
+    if (text === '6' || text === '9') {
+      let halfWidth = canvas.width / 2;
+      let halfTextWidth = textWidth / 2;
+      let lineY = canvas.height / 2 + fontSize * 0.55;
+      context.moveTo(halfWidth - halfTextWidth, lineY);
+      context.lineTo(halfWidth + halfTextWidth, lineY);
+      context.strokeStyle = color;
+      context.lineWidth = 8;
+      context.globalAlpha = 0.5;
+      context.stroke();
+      context.globalAlpha = 1;
+    }
     let texture = new THREE.Texture(canvas);
     texture.needsUpdate = true;
     return texture;
@@ -368,7 +387,7 @@ class DiceObject {
     if (!DiceManager.world)
       throw new Error('You must call DiceManager.setWorld(world) first.');
 
-    this.object = new THREE.Mesh(this.getGeometry(), new THREE.MultiMaterial(this.getMaterials()));
+    this.object = new THREE.Mesh(this.getGeometry(), this.getMaterials());
 
     this.object.reveiceShadow = true;
     this.object.castShadow = true;
@@ -517,6 +536,71 @@ class DiceD10 extends DiceObject {
   }
 }
 
+class DiceD10x10 extends DiceObject {
+
+  constructor(options) {
+    super(options);
+
+    this.tab = 0;
+    this.af = Math.PI * 6 / 5;
+    this.chamfer = 0.945;
+    this.vertices = [];
+    this.faces = [[5, 7, 11, 0], [4, 2, 10, 1], [1, 3, 11, 2], [0, 8, 10, 3], [7, 9, 11, 4],
+    [8, 6, 10, 5], [9, 1, 11, 6], [2, 0, 10, 7], [3, 5, 11, 8], [6, 4, 10, 9],
+    [1, 0, 2, -1], [1, 2, 3, -1], [3, 2, 4, -1], [3, 4, 5, -1], [5, 4, 6, -1],
+    [5, 6, 7, -1], [7, 6, 8, -1], [7, 8, 9, -1], [9, 8, 0, -1], [9, 0, 1, -1]];
+
+    for (let i = 0, b = 0; i < 10; ++i, b += Math.PI * 2 / 10) {
+      this.vertices.push([Math.cos(b), Math.sin(b), 0.105 * (i % 2 ? 1 : -1)]);
+    }
+    this.vertices.push([0, 0, -1]);
+    this.vertices.push([0, 0, 1]);
+
+    this.scaleFactor = 0.9;
+    this.heightFactor = 1.2;
+    this.values = 10;
+    this.faceTexts = [' ', '00', '00', '10', '20', '30', '40', '50', '60', '70',
+      '80', '90', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+    this.textMargin = 1.0;
+    this.mass = 350;
+    this.inertia = 9;
+
+    this.create();
+  }
+}
+
+class DiceD10x01 extends DiceObject {
+
+  constructor(options) {
+    super(options);
+
+    this.tab = 0;
+    this.af = Math.PI * 6 / 5;
+    this.chamfer = 0.945;
+    this.vertices = [];
+    this.faces = [[5, 7, 11, 0], [4, 2, 10, 1], [1, 3, 11, 2], [0, 8, 10, 3], [7, 9, 11, 4],
+    [8, 6, 10, 5], [9, 1, 11, 6], [2, 0, 10, 7], [3, 5, 11, 8], [6, 4, 10, 9],
+    [1, 0, 2, -1], [1, 2, 3, -1], [3, 2, 4, -1], [3, 4, 5, -1], [5, 4, 6, -1],
+    [5, 6, 7, -1], [7, 6, 8, -1], [7, 8, 9, -1], [9, 8, 0, -1], [9, 0, 1, -1]];
+
+    for (let i = 0, b = 0; i < 10; ++i, b += Math.PI * 2 / 10) {
+      this.vertices.push([Math.cos(b), Math.sin(b), 0.105 * (i % 2 ? 1 : -1)]);
+    }
+    this.vertices.push([0, 0, -1]);
+    this.vertices.push([0, 0, 1]);
+
+    this.scaleFactor = 0.9;
+    this.heightFactor = 1.2;
+    this.values = 10;
+    this.faceTexts = [' ', '0', '0', '1', '2', '3', '4', '5', '6', '7',
+      '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
+    this.textMargin = 1.0;
+    this.mass = 350;
+    this.inertia = 9;
+
+    this.create();
+  }
+}
 class DiceD12 extends DiceObject {
   constructor(options) {
     super(options);

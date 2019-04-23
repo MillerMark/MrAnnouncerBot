@@ -45,8 +45,12 @@ class DiceSounds {
 
   safePlay(fileName: string) {
     if (this.playedRecently(fileName))
-      return ;
-    new Audio(`GameDev/Assets/DragonH/SoundEffects/${fileName}.mp3`).play();	
+      return;
+    let media = new Audio(`GameDev/Assets/DragonH/SoundEffects/${fileName}.mp3`);
+    const playPromise = media.play();	
+    if (playPromise !== null) {
+      playPromise.catch(() => {  })
+    }
     this.playingNow(fileName);
   }
 
@@ -92,7 +96,7 @@ class DiceSounds {
     }
   }
 
-  getAudio(name: string, elements: HTMLAudioElement[], percentage: number): any {
+  getAudio(name: string, elements: HTMLAudioElement[], percentage: number): HTMLAudioElement {
     let index: number = Math.floor(Math.max(Math.min(percentage, 1) * (elements.length - 1), 0));
     //console.log(name + (index + 1).toString());
     return elements[index];
@@ -122,11 +126,9 @@ class DiceSounds {
   }
 
   play(audio: HTMLAudioElement): void {
-    try {
-      audio.play();
-    }
-    catch (ex) {
-      console.log('Exception on play: ' + ex);
+    const playPromise = audio.play();
+    if (playPromise !== null) {
+      playPromise.catch(() => { })
     }
   }
 }
