@@ -16,8 +16,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using TimeLineControl;
 using DndUI;
+using System.Threading;
 
 namespace DHDM
 {
@@ -27,11 +29,19 @@ namespace DHDM
 	public partial class MainWindow : Window
 	{
 		ScrollPage activePage = ScrollPage.main;
+		DndTimeClock dndTimeClock;
+		bool resting = false;
+
 		public MainWindow()
 		{
+			dndTimeClock = new DndTimeClock();
+			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
+			// TODO: Save and retrieve time.
+			dndTimeClock.SetTime(DateTime.Now);
 			InitializeComponent();
 			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
 			groupEffectBuilder.Entries = new ObservableCollection<TimeLineEffect>();
+			spTimeSegments.DataContext = dndTimeClock;
 		}
 
 		public int PlayerID
@@ -74,13 +84,6 @@ namespace DHDM
 				activePage = characterSheets.Page;
 				HubtasticBaseStation.PlayerDataChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
 			}
-		}
-
-		private void btnSampleEffect_Click(object sender, RoutedEventArgs e)
-		{
-			AnimationEffect animationEffect = new AnimationEffect("DenseSmoke", new VisualEffectTarget(960, 1080), 0, 220, 100, 100);
-			string serializedObject = JsonConvert.SerializeObject(animationEffect);
-			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
 
 		private void HandleCharacterChanged(object sender, RoutedEventArgs e)
@@ -174,6 +177,57 @@ namespace DHDM
 		private void BtnFlatD20_Click(object sender, RoutedEventArgs e)
 		{
 
+		}
+
+		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
+		{
+			Rest(8);
+		}
+
+		private void BtnAddShortRest_Click(object sender, RoutedEventArgs e)
+		{
+			Rest(2);
+		}
+
+		private void Rest(int hours)
+		{
+			resting = true;
+			try
+			{
+				dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.hours, hours));
+			}
+			finally
+			{
+				resting = false;
+			}
+		}
+
+		private void DndTimeClock_TimeChanged(object sender, EventArgs e)
+		{
+			UpdateClock();
+
+			// TODO: Update time-based curses, spells, and diseases.
+			if (resting)
+			{
+				// TODO: Update character stats.
+			}
+		}
+
+		private void UpdateClock()
+		{
+			if (txtTime == null)
+				return;
+			txtTime.Text = dndTimeClock.Time.ToLongDateString() + " - " + dndTimeClock.Time.ToLongTimeString();
+		}
+
+		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.seconds, 6));
+		}
+
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			UpdateClock();
 		}
 	}
 }

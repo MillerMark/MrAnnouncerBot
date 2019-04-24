@@ -12,6 +12,7 @@ namespace DndCore
 		hours = 4,
 		days = 5,
 		forever = 6,
-		never = 7
+		never = 7,
+		turns = 8
 	}
 }

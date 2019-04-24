@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DHDM"
 				xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="938.188" Width="2419.675">
+        Title="MainWindow" Height="938.188" Width="2419.675" >
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*" />
@@ -39,21 +39,11 @@
 		<StackPanel x:Name="spTimeManagement" Grid.Column="2" Orientation="Vertical" >
 			<StackPanel x:Name="spTime" Orientation="Vertical">
 				<StackPanel x:Name="spTimeSegments" Orientation="Horizontal" Margin="3" >
-					<TextBlock Text="Year:" Width="Auto" Height="Auto" Margin="4"/>
-					<TextBox x:Name="txtYear" Text="1" Margin="0, 4, 4, 4"/>
-					<TextBlock Text="Month:" Width="Auto" Height="Auto" Margin="4"/>
-					<TextBox x:Name="txtMonth" Text="1" Margin="0, 4, 4, 4"/>
-					<TextBlock Text="Day:" Width="Auto" Height="Auto" Margin="4"/>
-					<TextBox x:Name="txtDay" Text="1" Margin="0, 4, 4, 4"/>
-					<TextBlock Text="Hour:" Width="Auto" Height="Auto" Margin="16, 4, 4, 4"/>
-					<TextBox x:Name="txtHour" Text="0" Margin="0, 4, 4, 4"/>
-					<TextBlock Text="Minute:" Width="Auto" Height="Auto" Margin="4"/>
-					<TextBox x:Name="txtMinute" Text="0" Margin="0, 4, 4, 4"/>
-					<TextBlock Text="Second:" Width="Auto" Height="Auto" Margin="4"/>
-					<TextBox x:Name="txtSecond" Text="0" Margin="0, 4, 4, 4"/>
+					<TextBlock Text="Game Time:" Width="Auto" Height="Auto" Margin="4"/>
+					<TextBlock x:Name="txtTime" Text="-" Margin="0, 4, 4, 4"/>
 				</StackPanel>
 				<StackPanel x:Name="spTimeModifiers" Orientation="Horizontal" Margin="4, 0, 4, 16" >
-					<Button x:Name="btnAddLongRest" Margin="4" Padding="8, 4, 8, 4">
+					<Button x:Name="btnAddLongRest" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddLongRest_Click">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Add " Width="Auto" Height="Auto"/>
 							<TextBlock Text="Long " Width="Auto" Height="Auto" FontWeight="Bold"/>
@@ -61,7 +51,7 @@
 						</StackPanel>
 					</Button>
 
-					<Button x:Name="btnAddShortRest" Margin="4" Padding="8, 4, 8, 4">
+					<Button x:Name="btnAddShortRest" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddShortRest_Click">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Add " Width="Auto" Height="Auto"/>
 							<TextBlock Text="Short " Width="Auto" Height="Auto" FontWeight="Bold"/>
@@ -69,10 +59,16 @@
 						</StackPanel>
 					</Button>
 
+					<Button x:Name="btnAdvanceTurn" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdvanceTurn_Click">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Advance " Width="Auto" Height="Auto"/>
+							<TextBlock Text="Turn" Width="Auto" Height="Auto" FontWeight="Bold"/>
+						</StackPanel>
+					</Button>
+
 					<Button x:Name="btnAddCustom" Margin="4" Padding="8, 4, 8, 4">
 						Add Custom...
 					</Button>
-					<Button x:Name="btnSampleEffect" Margin="4" Padding="8, 4, 8, 4" Content="Sample" Click="btnSampleEffect_Click"/>
 				</StackPanel>
 			</StackPanel>
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">

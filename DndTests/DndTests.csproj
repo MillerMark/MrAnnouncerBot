@@ -67,6 +67,7 @@
     <Compile Include="SenseTests.cs" />
     <Compile Include="StorageTests.cs" />
     <Compile Include="TestStorageHelper.cs" />
+    <Compile Include="TimeClockTests.cs" />
     <Compile Include="VulnerabilityTests.cs" />
   </ItemGroup>
   <ItemGroup>

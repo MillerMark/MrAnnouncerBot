@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 
 namespace DndCore
 {
@@ -10,16 +11,50 @@ namespace DndCore
 		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
 		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
 
+		public TimeSpan GetTimeSpan()
+		{
+			switch (TimeMeasure)
+			{
+				case TimeMeasure.turns:
+					return TimeSpan.FromSeconds(6);
+				case TimeMeasure.seconds:
+					return TimeSpan.FromSeconds(Count);
+				case TimeMeasure.minutes:
+					return TimeSpan.FromMinutes(Count);
+				case TimeMeasure.hours:
+					return TimeSpan.FromHours(Count);
+				case TimeMeasure.days:
+					return TimeSpan.FromDays(Count);
+				case TimeMeasure.forever:
+					return Timeout.InfiniteTimeSpan;
+			}
+			return TimeSpan.Zero;
+		}
+
+		public bool Equals(DndTimeSpan other)
+		{
+			return TimeMeasure.Equals(other.TimeMeasure) && Count.Equals(other.Count);
+		}
+
 		public override bool Equals(object obj)
 		{
-			if (obj is DndTimeSpan compareSpan)
-				return EqualsSpan(compareSpan);
+			if (obj is DndTimeSpan dndTimeSpan)
+			{
+				return Equals(dndTimeSpan);
+			}
+
 			return base.Equals(obj);
 		}
 
-		public bool EqualsSpan(DndTimeSpan compareSpan)
+		public override int GetHashCode()
 		{
-			return TimeMeasure == compareSpan.TimeMeasure && Count == compareSpan.Count;
+			unchecked
+			{
+				int hashCode = 47;
+				hashCode = (hashCode * 53) ^ (int)TimeMeasure;
+				hashCode = (hashCode * 53) ^ Count.GetHashCode();
+				return hashCode;
+			}
 		}
 
 		public DndTimeSpan(TimeMeasure timeMeasure, int count)
