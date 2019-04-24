@@ -40,24 +40,67 @@
 			<StackPanel x:Name="spTime" Orientation="Vertical">
 				<StackPanel x:Name="spTimeSegments" Orientation="Horizontal" Margin="3" >
 					<TextBlock Text="Game Time:" Width="Auto" Height="Auto" Margin="4"/>
-					<TextBlock x:Name="txtTime" Text="-" Margin="0, 4, 4, 4"/>
+					<TextBlock x:Name="txtTime" Text="-" Margin="0, 4, 4, 4" FontWeight="Bold"/>
 				</StackPanel>
 				<StackPanel x:Name="spTimeModifiers" Orientation="Horizontal" Margin="4, 0, 4, 16" >
-					<Button x:Name="btnAddLongRest" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddLongRest_Click">
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Add " Width="Auto" Height="Auto"/>
-							<TextBlock Text="Long " Width="Auto" Height="Auto" FontWeight="Bold"/>
-							<TextBlock Text="Rest" Width="Auto" Height="Auto"/>
-						</StackPanel>
+
+					<StackPanel x:Name="spTimeDirectModifiers" Orientation="Horizontal">
+						<Button x:Name="btnAddMonth" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddMonth_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="Month" Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="btnAddTenDay" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddTenDay_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="Tenday" Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="btnAddDay" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddDay_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="Day" Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="btnAddLongRest" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddLongRest_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="Long " Width="Auto" Height="Auto" FontWeight="Bold"/>
+								<TextBlock Text="Rest" Width="Auto" Height="Auto"/>
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="btnAddShortRest" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddShortRest_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="Short " Width="Auto" Height="Auto" FontWeight="Bold"/>
+								<TextBlock Text="Rest" Width="Auto" Height="Auto"/>
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="btnAddHour" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddHour_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="Hour " Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="btnAdd10Minutes" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdd10Minutes_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="10 Minutes " Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
+					</StackPanel>
+
+					<Button x:Name="btnEnterExitCombat" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitCombat_Click">
+						<TextBlock x:Name="tbEnterExitCombat" Text="Enter Combat" Width="Auto" Height="Auto" FontWeight="Bold"/>
 					</Button>
 
-					<Button x:Name="btnAddShortRest" Margin="4" Padding="8, 4, 8, 4" Click="BtnAddShortRest_Click">
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Add " Width="Auto" Height="Auto"/>
-							<TextBlock Text="Short " Width="Auto" Height="Auto" FontWeight="Bold"/>
-							<TextBlock Text="Rest" Width="Auto" Height="Auto"/>
-						</StackPanel>
-					</Button>
 
 					<Button x:Name="btnAdvanceTurn" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdvanceTurn_Click">
 						<StackPanel Orientation="Horizontal">

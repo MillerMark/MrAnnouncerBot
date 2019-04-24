@@ -15,7 +15,7 @@ namespace DndCore
 		{
 			switch (TimeMeasure)
 			{
-				case TimeMeasure.turns:
+				case TimeMeasure.round:
 					return TimeSpan.FromSeconds(6);
 				case TimeMeasure.seconds:
 					return TimeSpan.FromSeconds(Count);
@@ -88,10 +88,16 @@ namespace DndCore
 			return new DndTimeSpan(TimeMeasure.days, days);
 		}
 
+		public static DndTimeSpan FromRounds(int rounds)
+		{
+			return new DndTimeSpan(TimeMeasure.round, rounds);
+		}
+
 		public bool IsForever()
 		{
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
 		}
+		
 
 		public TimeMeasure TimeMeasure { get; set; }
 		public int Count { get; set; }

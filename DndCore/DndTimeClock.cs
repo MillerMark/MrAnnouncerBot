@@ -32,6 +32,7 @@ namespace DndCore
 		}
 
 		public DateTime Time { get; private set; }
+		public bool InCombat { get; set; }
 
 		public void SetTime(DateTime time)
 		{
@@ -41,12 +42,15 @@ namespace DndCore
 			OnTimeChanged(this, EventArgs.Empty);
 		}
 
-		public void Advance(DndTimeSpan dndTimeSpan)
+		public void Advance(DndTimeSpan dndTimeSpan, bool reverseDirection = false)
 		{
 			TimeSpan timeSpan = dndTimeSpan.GetTimeSpan();
 			if (timeSpan == Timeout.InfiniteTimeSpan)
 				throw new Exception("Cannot add infinity. COME ON!!!");
-			SetTime(Time + timeSpan);
+			if (reverseDirection)
+				SetTime(Time - timeSpan);
+			else
+				SetTime(Time + timeSpan);
 		}
 
 		private const int HammerStart = 1;

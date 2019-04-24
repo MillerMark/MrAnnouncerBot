@@ -13,6 +13,6 @@ namespace DndCore
 		days = 5,
 		forever = 6,
 		never = 7,
-		turns = 8
+		round = 8
 	}
 }

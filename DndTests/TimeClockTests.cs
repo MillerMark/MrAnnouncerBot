@@ -31,7 +31,7 @@ namespace DndTests
 			DndTimeClock dndTimeClock = new DndTimeClock();
 			DateTime now = DateTime.Now;
 			dndTimeClock.SetTime(now);
-			dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.turns, 1));
+			dndTimeClock.Advance(DndTimeSpan.FromRounds(1));
 			TimeSpan difference = dndTimeClock.Time - now;
 			Assert.AreEqual(6, difference.TotalSeconds);
 
@@ -43,23 +43,23 @@ namespace DndTests
 
 
 			dndTimeClock.SetTime(now);
-			dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.minutes, 5));
+			dndTimeClock.Advance(DndTimeSpan.FromMinutes(5));
 			difference = dndTimeClock.Time - now;
 			Assert.AreEqual(5, difference.TotalMinutes);
 
 			dndTimeClock.SetTime(now);
-			dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.hours, 3));
+			dndTimeClock.Advance(DndTimeSpan.FromHours(3));
 			difference = dndTimeClock.Time - now;
 			Assert.AreEqual(3, difference.TotalHours);
 
 			dndTimeClock.SetTime(now);
-			dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.days, 2));
+			dndTimeClock.Advance(DndTimeSpan.FromDays(2));
 			difference = dndTimeClock.Time - now;
 			Assert.AreEqual(2, difference.TotalDays);
 		}
 
 		[TestMethod]
-		public void TestDateStringConversion()
+		public void TestDateStringConversionDayOfYearPlusLeapYears()
 		{
 			DndTimeClock dndTimeClock = new DndTimeClock();
 
@@ -123,6 +123,12 @@ namespace DndTests
 
 			dndTimeClock.SetTime(aNonLeapYear, 365);
 			Assert.IsTrue(dndTimeClock.AsDndDateString().StartsWith("30th of Nightal"));
+
+			dndTimeClock.SetTime(aLeapYear, 365);
+			Assert.IsTrue(dndTimeClock.AsDndDateString().StartsWith("29th of Nightal"));
+
+			dndTimeClock.SetTime(aNonLeapYear, 364);
+			Assert.IsTrue(dndTimeClock.AsDndDateString().StartsWith("29th of Nightal"));
 		}
 	}
 }

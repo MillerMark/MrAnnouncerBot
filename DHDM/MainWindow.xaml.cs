@@ -31,9 +31,14 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		DndTimeClock dndTimeClock;
 		bool resting = false;
+		DispatcherTimer realTimeAdvanceTimer;
 
 		public MainWindow()
 		{
+			realTimeAdvanceTimer = new DispatcherTimer();
+			realTimeAdvanceTimer.Tick += new EventHandler(realTimeClockHandler);
+			realTimeAdvanceTimer.Interval = new TimeSpan(0, 0, 1);
+
 			dndTimeClock = new DndTimeClock();
 			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
 			// TODO: Save and retrieve time.
@@ -194,7 +199,7 @@ namespace DHDM
 			resting = true;
 			try
 			{
-				dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.hours, hours));
+				dndTimeClock.Advance(DndTimeSpan.FromHours(hours));
 			}
 			finally
 			{
@@ -217,17 +222,72 @@ namespace DHDM
 		{
 			if (txtTime == null)
 				return;
-			txtTime.Text = dndTimeClock.Time.ToLongDateString() + " - " + dndTimeClock.Time.ToLongTimeString();
+			txtTime.Text = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
 		}
 
 		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(new DndTimeSpan(TimeMeasure.seconds, 6));
+			dndTimeClock.Advance(DndTimeSpan.FromSeconds(6));
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
+			OnCombatChanged();
 			UpdateClock();
+		}
+
+		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromDays(1));
+		}
+
+		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromDays(10));
+		}
+
+		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromDays(30));
+		}
+
+		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromHours(1));
+		}
+
+		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10));
+		}
+
+		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.InCombat = !dndTimeClock.InCombat;
+			OnCombatChanged();
+		}
+
+		private void OnCombatChanged()
+		{
+			if (dndTimeClock.InCombat)
+			{
+				tbEnterExitCombat.Text = "Exit Combat";
+				realTimeAdvanceTimer.Stop();
+				spTimeDirectModifiers.IsEnabled = false;
+				btnAdvanceTurn.IsEnabled = true;
+			}
+			else
+			{
+				tbEnterExitCombat.Text = "Enter Combat";
+				realTimeAdvanceTimer.Start();
+				spTimeDirectModifiers.IsEnabled = true;
+				btnAdvanceTurn.IsEnabled = false;
+			}
+		}
+
+		void realTimeClockHandler(object sender, EventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromSeconds(1));
 		}
 	}
 }
