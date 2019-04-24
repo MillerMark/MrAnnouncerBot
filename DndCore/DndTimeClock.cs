@@ -169,10 +169,12 @@ namespace DndCore
 
 		internal int GetDayOfMonth(int dayOfYear, int month)
 		{
-			int leapYearOffset = 0;
+			int laterMonthsOffset = 0;
+			int leapYearOffset = GetLeapYearOffset();
+
 			if (month >= Eleasis)
-				leapYearOffset = 1;
-			return dayOfYear - MonthStartDays[month] + 1 - leapYearOffset;
+				laterMonthsOffset = leapYearOffset;
+			return dayOfYear - MonthStartDays[month] + 1 - laterMonthsOffset;
 		}
 
 		string GetMonthOrHolidayName(int monthOrHoliday)
