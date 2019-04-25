@@ -137,8 +137,8 @@ class DiceLayer {
     this.diceFireball.add(x, y, 0);
   }
 
-  testMagicRing(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-    this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+  addMagicRing(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
+    return this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
 
   testDiceBlowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {

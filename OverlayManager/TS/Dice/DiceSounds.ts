@@ -15,25 +15,25 @@ class DiceSounds extends SoundManager {
   }
 
   playOpenDiePortal() {
-    this.safePlay('DiePortal');
+    this.safePlayMP3('DiePortal');
   }
 
   playSteampunkTunnel() {
-    this.safePlay('SteampunkTunnel');
+    this.safePlayMP3('SteampunkTunnel');
   }
 
   playFireball() {
-    this.safePlay('Fireball2');
+    this.safePlayMP3('Fireball2');
   }
 
   playDiceBlow() {
-    this.safePlay('DiceBlow');
+    this.safePlayMP3('DiceBlow');
   }
 
   playDieBomb() {
     const numDieBombSounds: number = 2;
     var index: number = Math.floor(Math.random() * numDieBombSounds) + 1;
-    this.safePlay(`DieBomb${index}`);
+    this.safePlayMP3(`DieBomb${index}`);
   }
 
   playWallHit(percentage: number): void {

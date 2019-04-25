@@ -32,12 +32,13 @@ namespace DHDM
 		DndTimeClock dndTimeClock;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
+		DateTime lastUpdateTime;
 
 		public MainWindow()
 		{
-			realTimeAdvanceTimer = new DispatcherTimer();
+			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(realTimeClockHandler);
-			realTimeAdvanceTimer.Interval = new TimeSpan(0, 0, 1);
+			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
 
 			dndTimeClock = new DndTimeClock();
 			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
@@ -219,13 +220,15 @@ namespace DHDM
 			}
 		}
 
+		bool toggle;
+
 		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
 		{
 			if (txtTime == null)
 				return;
 			string timeStr = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
 			txtTime.Text = timeStr;
-			
+
 			TimeSpan timeIntoToday = dndTimeClock.Time - new DateTime(dndTimeClock.Time.Year, dndTimeClock.Time.Month, dndTimeClock.Time.Day);
 			double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
 
@@ -251,6 +254,7 @@ namespace DHDM
 		{
 			OnCombatChanged();
 			UpdateClock();
+			StartRealTimeTimer();
 		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
@@ -305,16 +309,26 @@ namespace DHDM
 			else
 			{
 				tbEnterExitCombat.Text = "Enter Combat";
-				realTimeAdvanceTimer.Start();
+				StartRealTimeTimer();
 				spTimeDirectModifiers.IsEnabled = true;
 				btnAdvanceTurn.IsEnabled = false;
 			}
 			UpdateClock(true);
 		}
 
+		private void StartRealTimeTimer()
+		{
+			realTimeAdvanceTimer.Start();
+			lastUpdateTime = DateTime.Now;
+		}
+
+		bool toggle2;
+		List<DateTime> list = new List<DateTime>();
 		void realTimeClockHandler(object sender, EventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromSeconds(1));
+			TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdateTime;
+			lastUpdateTime = DateTime.Now;
+			dndTimeClock.Advance(timeSinceLastUpdate.TotalMilliseconds);
 		}
 	}
 }

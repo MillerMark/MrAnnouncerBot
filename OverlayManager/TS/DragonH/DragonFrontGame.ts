@@ -235,6 +235,7 @@ class DragonFrontGame extends GamePlusQuiz {
     this.allEffects = new SpriteCollection();
     this.allEffects.add(this.denseSmoke);
     this.allEffects.add(this.poof);
+    this.allEffects.add(this.clock);
     this.allEffects.add(this.fireBallBack);
     this.allEffects.add(this.fireBallFront);
     this.allEffects.add(this.stars);
@@ -251,7 +252,6 @@ class DragonFrontGame extends GamePlusQuiz {
     this.allEffects.add(this.bloodSmallest);
     this.allEffects.add(this.charmed);
     this.allEffects.add(this.restrained);
-    this.allEffects.add(this.clock);
     this.allEffects.add(this.fireWall);
     this.allEffects.add(this.clockPanel);
   }
@@ -474,17 +474,34 @@ class DragonFrontGame extends GamePlusQuiz {
     if (this._inCombat) {
       this.dndClock.frameIndex = 1;
       this.dndClockPanel.frameIndex = 1;
-      const fireMargin: number = 16;
-      let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), screenHeight - this.clockPanel.originY * 2 + fireMargin);
-      fireWall.expirationDate = performance.now() + 11000;
-      fireWall.fadeOutTime = 2000;
-      this.dragonFrontSounds.playFlameOn();
+      //this.createFireWallBehindClock();
+      this.createFireBallBehindClock(330);
     }
     else {
       this.dndClock.frameIndex = 0;
       this.dndClockPanel.frameIndex = 0;
       this.fireWall.sprites = [];
+      this.createFireBallBehindClock(200);
     }
+  }
+
+  private createFireBallBehindClock(hue: number): any {
+    let x: number;
+    let y: number;
+    x = this.getClockX() - 90;
+    y = screenHeight - this.clockPanel.originY * 2;
+    let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
+    this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
+    this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
+    this.dragonFrontSounds.playHeavyPoof();
+  }
+
+  private createFireWallBehindClock() {
+    const displayMargin: number = 16;
+    let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), screenHeight - this.clockPanel.originY * 2 + displayMargin);
+    fireWall.expirationDate = performance.now() + 11000;
+    fireWall.fadeOutTime = 2000;
+    this.dragonFrontSounds.playFlameOn();
   }
 
   getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
@@ -511,7 +528,7 @@ class DragonFrontGame extends GamePlusQuiz {
         timeToRotate = 2600;
         this.dragonFrontSounds.playGear2_6();
       }
-      else 
+      else
         timeToRotate = 250;
     }
     else if (degreesToMove < 10) {

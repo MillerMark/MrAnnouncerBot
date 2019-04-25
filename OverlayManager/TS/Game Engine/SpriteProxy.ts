@@ -286,7 +286,7 @@ class SpriteProxy {
 class ColorShiftingSpriteProxy extends SpriteProxy {
   hueShift: number = 0;
   saturationPercent: number = 100;
-  brightness: number = 50;
+  brightness: number = 100;
 
   constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
     super(startingFrameNumber, center.x, center.y, lifeSpanMs);

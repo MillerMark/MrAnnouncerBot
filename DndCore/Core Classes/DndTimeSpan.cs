@@ -97,7 +97,6 @@ namespace DndCore
 		{
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
 		}
-		
 
 		public TimeMeasure TimeMeasure { get; set; }
 		public int Count { get; set; }

@@ -48,13 +48,22 @@ namespace DndCore
 
 		public void Advance(DndTimeSpan dndTimeSpan, bool reverseDirection = false)
 		{
-			TimeSpan timeSpan = dndTimeSpan.GetTimeSpan();
+			Advance(dndTimeSpan.GetTimeSpan(), reverseDirection);
+		}
+
+		private void Advance(TimeSpan timeSpan, bool reverseDirection = false)
+		{
 			if (timeSpan == Timeout.InfiniteTimeSpan)
 				throw new Exception("Cannot add infinity. COME ON!!!");
 			if (reverseDirection)
 				SetTime(Time - timeSpan);
 			else
 				SetTime(Time + timeSpan);
+		}
+
+		public void Advance(double milliseconds, bool reverseDirection = false)
+		{
+			Advance(TimeSpan.FromMilliseconds(milliseconds), reverseDirection);
 		}
 
 		private const int HammerStart = 1;
