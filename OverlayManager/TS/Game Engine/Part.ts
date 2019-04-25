@@ -139,7 +139,7 @@ class Part {
     this.drawByIndex(context, x, y, this.frameIndex);
   }
 
-  drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number): void {
+  drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, rotation: number = 0, centerX: number = 0, centerY: number = 0): void {
     if (frameIndex < 0)
       return;
     if (!this.images[frameIndex]) {
@@ -147,14 +147,28 @@ class Part {
       return;
     }
 
+    var needToRestoreContext: boolean = false;
+
+    if (rotation != 0) {
+      context.save();
+      needToRestoreContext = true;
+      context.translate(centerX, centerY);
+      context.rotate(rotation * Math.PI / 180);
+      context.translate(-centerX, -centerY);
+    }
+
     context.drawImage(this.images[frameIndex],
       x + this.offsetX + this.getJiggle(this.jiggleX),
       y + this.offsetY + this.getJiggle(this.jiggleY));
+
+    if (needToRestoreContext) {
+      context.restore();
+    }
   }
 
   drawCroppedByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number,
     sx: number, sy: number, sw: number, sh: number, dw: number, dh: number): void {
-                     //` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+    //` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
     let dx: number = x + this.offsetX + this.getJiggle(this.jiggleX);
     let dy: number = y + this.offsetY + this.getJiggle(this.jiggleY);
     context.drawImage(this.images[frameIndex], sx, sy, sw, sh, dx, dy, dw, dh);

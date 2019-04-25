@@ -54,6 +54,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("TriggerEffect", effectData);
 		}
 
+		public static void UpdateClock(string clockData)
+		{
+			HubConnection.InvokeAsync("UpdateClock", clockData);
+		}
+
 		public static void RollDice(string diceData)
 		{
 			HubConnection.InvokeAsync("RollDice", diceData);

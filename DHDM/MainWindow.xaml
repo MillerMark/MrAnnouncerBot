@@ -105,7 +105,7 @@
 					<Button x:Name="btnAdvanceTurn" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdvanceTurn_Click">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Advance " Width="Auto" Height="Auto"/>
-							<TextBlock Text="Turn" Width="Auto" Height="Auto" FontWeight="Bold"/>
+							<TextBlock Text="Round" Width="Auto" Height="Auto" FontWeight="Bold"/>
 						</StackPanel>
 					</Button>
 

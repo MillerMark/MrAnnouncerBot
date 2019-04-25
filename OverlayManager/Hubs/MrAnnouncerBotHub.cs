@@ -35,6 +35,11 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.TriggerEffect(effectData);
 		}
+		
+		public void UpdateClock(string clockData)
+		{
+			coderushedHub.Clients.All.UpdateClock(clockData);
+		}
 
 		public void RollDice(string diceRollData)
 		{

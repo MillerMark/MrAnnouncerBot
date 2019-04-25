@@ -5,6 +5,7 @@
 }
 
 class SpriteProxy {
+  rotation: number;
   isRemoving: boolean;
   haveCycledOnce: boolean;
   systemDrawn: boolean = true;
@@ -27,8 +28,14 @@ class SpriteProxy {
   lastY: number;
   fadeInTime: number = 0;
   fadeOutTime: number = 4000;
+  rotationStartTime: number;
+  timeToRotate: number = 0;
+  targetRotation: number = 0;
+  degreesPerMs: number;
+  lastRotationUpdate: number;
 
   constructor(startingFrameNumber: number, public x: number, public y: number, lifeSpanMs: number = -1) {
+    this.rotation = 0;
     this.opacity = 1;
     this.frameIndex = startingFrameNumber;
     this.timeStart = performance.now();
@@ -125,8 +132,33 @@ class SpriteProxy {
     this.haveCycledOnce = true;
   }
 
-  advanceFrame(frameCount: number, now: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false) {
-    if (now < this.timeStart)
+  animate(nowMs: number) {
+    if (nowMs < this.timeStart)
+      return;
+
+    if (this.timeToRotate > 0) {
+      if (this.rotationStartTime + this.timeToRotate < nowMs) {
+        // done rotating.
+        this.timeToRotate = 0;
+        this.rotation = this.targetRotation;
+      }
+      else {
+        let timeSinceLastFrameAdvance: number = nowMs - this.lastRotationUpdate;
+        let degreesToMove: number = this.degreesPerMs * timeSinceLastFrameAdvance;
+        this.rotation += degreesToMove;
+        if (this.rotation > 360) {
+          this.rotation -= 360;
+        }
+        else if (this.rotation < 0) {
+          this.rotation += 360;
+        }
+        this.lastRotationUpdate = nowMs;
+      }
+    }
+  }
+
+  advanceFrame(frameCount: number, nowMs: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false) {
+    if (nowMs < this.timeStart)
       return;
 
     if (reverse) {
@@ -139,19 +171,19 @@ class SpriteProxy {
     if (endBounds != 0) {
       if (this.frameIndex >= endBounds) {
         this.frameIndex = startIndex;
-        this.cycled(now);
+        this.cycled(nowMs);
       }
     }
     else if (!reverse) {
       if (this.frameIndex >= frameCount) {
         this.frameIndex = returnFrameIndex;
-        this.cycled(now);
+        this.cycled(nowMs);
       }
     }
     else {
       if (this.frameIndex <= 0) {
         this.frameIndex = returnFrameIndex;
-        this.cycled(now);
+        this.cycled(nowMs);
       }
     }
 
@@ -191,8 +223,9 @@ class SpriteProxy {
     this.startY = this.y;
   }
 
-  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {
-    baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex);
+  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
+    originX: number = 0, originY: number = 0): void {
+    baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.rotation, this.x + originX, this.y + originY);
   }
 
 
@@ -232,6 +265,22 @@ class SpriteProxy {
     this.fadeOutTime = fadeOutTime;
     return this;
   }
+
+  rotateTo(targetRotation: number, degreesToMove: number, timeToRotate: number): void {
+    if (timeToRotate == 0)
+      return;
+
+    //if (this.timeToRotate > 0) {  // Already rotating...
+    //  // TODO: Figure out what to do when we are already rotating.
+    //  return;
+    //}
+
+    this.rotationStartTime = performance.now();
+    this.timeToRotate = timeToRotate;
+    this.targetRotation = targetRotation;
+    this.lastRotationUpdate = this.rotationStartTime;
+    this.degreesPerMs = degreesToMove / timeToRotate;
+  }
 }
 
 class ColorShiftingSpriteProxy extends SpriteProxy {
@@ -243,10 +292,11 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
     super(startingFrameNumber, center.x, center.y, lifeSpanMs);
   }
 
-  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number): void {
+  draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
+    originX: number = 0, originY: number = 0): void {
     let saveFilter: string = (context as any).filter;
     (context as any).filter = "hue-rotate(" + this.hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
-    super.draw(baseAnimation, context, now, spriteWidth, spriteHeight);
+    super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
     (context as any).filter = saveFilter;
   }
 

@@ -210,6 +210,7 @@ class DiceObject {
       geometry.faces[i].materialIndex = materialIndex + 1;
     }
 
+    this.object.geometry.dispose();  //`-- <-- Fixes memory leak.
     this.object.geometry = geometry;
   }
 

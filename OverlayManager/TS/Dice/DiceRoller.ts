@@ -1,6 +1,8 @@
 var diceToRoll = 10;
 var secondsBetweenRolls: number = 9;
 const dieScale = 1.5;
+var clearDiceEachTime: boolean = true;
+var repeatRandomThrow: boolean = true;
 
 enum DieEffect {
   StinkyFumes,
@@ -22,7 +24,7 @@ var scalingDice = [];
 var specialDice = [];
 //var bodiesToRemove = [];
 var bodiesToFree = [];
-var diceSounds = new DiceSounds();
+var diceSounds = new DiceSounds('GameDev/Assets/DragonH/SoundEffects');
 
 var waitingForSettle = false;
 var diceHaveStoppedRolling = false;
@@ -46,11 +48,12 @@ function clearAllDice() {
   for (var i = 0; i < dice.length; i++) {
     let die = dice[i];
     let dieObject = die.getObject();
+    dieObject.geometry.dispose();   //`-- <-- Fixes memory leak.
     scene.remove(dieObject);
 
     // @ts-ignore - THREE
     DiceManager.world.remove(die.object.body);
-    //dieObject.body.removeEventListener("collide", handleDieCollision);
+    dieObject.body.removeEventListener("collide", handleDieCollision);
   }
   dice = [];
   //diceToRoll++;
@@ -328,12 +331,14 @@ function init() { // From Rolling.html example.
 
   var needToHookEvents: boolean = true;
 
-  for (var i = 0; i < diceToRoll; i++) {
-    //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
-    // @ts-ignore - DiceD20
-    var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
-    scene.add(die.getObject());
-    dice.push(die);
+  if (!clearDiceEachTime) {
+    for (var i = 0; i < diceToRoll; i++) {
+      //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
+      // @ts-ignore - DiceD20
+      var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
+      scene.add(die.getObject());
+      dice.push(die);
+    }
   }
 
   function randomDiceThrow() {
@@ -346,17 +351,20 @@ function init() { // From Rolling.html example.
     waitingForSettle = true;
     diceValues = [];
 
-    clearAllDice();
+    if (clearDiceEachTime) {
+      clearAllDice();
 
-    for (var i = 0; i < diceToRoll; i++) {
-      //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
-      // @ts-ignore - DiceD20
-      var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
-      scene.add(die.getObject());
-      dice.push(die);
+      for (var i = 0; i < diceToRoll; i++) {
+        //var die = new DiceD20({ size: 1.5, backColor: colors[i] });
+        // @ts-ignore - DiceD20
+        var die = new DiceD20({ size: dieScale, backColor: '#D0D0ff' });
+        scene.add(die.getObject());
+        dice.push(die);
+      }
+      needToHookEvents = true;
     }
 
-    needToHookEvents = true;
+
 
     for (var i = 0; i < dice.length; i++) {
       let yRand = Math.random() * 20
@@ -375,12 +383,14 @@ function init() { // From Rolling.html example.
       die.body.name = 'die';
     }
 
+    diceHaveStoppedRolling = false;
+
     // @ts-ignore - DiceManager
     DiceManager.prepareValues(diceValues);
 
-    diceHaveStoppedRolling = false;
-
     if (needToHookEvents) {
+      // Test to see if this is related to the memory leak:
+
       needToHookEvents = false;
       for (var i = 0; i < dice.length; i++) {
         let die = dice[i].getObject();
@@ -390,9 +400,11 @@ function init() { // From Rolling.html example.
     }
   }
 
-  setInterval(randomDiceThrow, secondsBetweenRolls * 1000);
-  randomDiceThrow();
-  requestAnimationFrame(animate);
+  if (repeatRandomThrow) {
+    setInterval(randomDiceThrow, secondsBetweenRolls * 1000);
+    randomDiceThrow();
+    requestAnimationFrame(animate);
+  }
 }
 
 function handleDieCollision(e: any) {
@@ -825,7 +837,7 @@ function prepareBaseDie(die: any) {
 
 function prepareD10x10Die(die: any) {
   prepareBaseDie(die);
-  var newValue: number = Math.floor(Math.random() * die.values) * 10;
+  var newValue: number = Math.floor(Math.random() * die.values);
   diceValues.push({ dice: die, value: newValue });
 }
 
@@ -866,13 +878,14 @@ function pleaseRollDice(diceRollData: DiceRollData) {
   for (var i = 0; i < numD20s; i++) {
     // @ts-ignore - DiceD20
     var die = new DiceD20({ size: dieScale, backColor: '#c0A0ff' });
+    console.log(die);
     prepareDie(die);
   }
 
   // @ts-ignore - DiceD10x10
   var die = new DiceD10x10({ size: dieScale, backColor: '#ffA0c0' });
   prepareD10x10Die(die);
-  die.value
+  
   // @ts-ignore - DiceD10x01
   die = new DiceD10x01({ size: dieScale, backColor: '#ffA0c0' });
   prepareD10x01Die(die);

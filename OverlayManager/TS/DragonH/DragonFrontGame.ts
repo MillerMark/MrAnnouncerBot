@@ -19,12 +19,15 @@ enum EffectKind {
 }
 
 class DragonFrontGame extends GamePlusQuiz {
+  readonly clockMargin: number = 14;
   emitter: Emitter;
   shouldDrawCenterCrossHairs: boolean = false;
   denseSmoke: Sprites;
   fireBallBack: Sprites;
   fireBallFront: Sprites;
   poof: Sprites;
+  clock: Sprites;
+  clockPanel: Sprites;
   bloodGush: Sprites;
   bloodLarger: Sprites;
   bloodLarge: Sprites;
@@ -37,12 +40,18 @@ class DragonFrontGame extends GamePlusQuiz {
   sparkShower: Sprites;
   embersLarge: Sprites;
   embersMedium: Sprites;
+  fireWall: Sprites;
   stars: Sprites;
   fumes: Sprites;
   allEffects: SpriteCollection;
+  dndClock: SpriteProxy;
+  dndClockPanel: SpriteProxy;
+  dndTimeStr: string;
+  dragonFrontSounds: DragonFrontSounds;
 
   constructor(context: CanvasRenderingContext2D) {
     super(context);
+    this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
   }
 
   update(timestamp: number) {
@@ -57,6 +66,28 @@ class DragonFrontGame extends GamePlusQuiz {
 
     if (this.shouldDrawCenterCrossHairs)
       drawCrossHairs(myContext, screenCenterX, screenCenterY);
+
+    this.drawTime(context);
+  }
+
+  private drawTime(context: CanvasRenderingContext2D) {
+    if (!this.dndTimeStr)
+      return;
+
+    const horizontalMargin: number = 10;
+    const verticalMargin: number = 15;
+    const textHeight: number = 28;
+    context.font = textHeight + "px Baskerville Old Face";
+    let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
+    let boxHeight: number = textHeight + 2 * verticalMargin;
+    let centerX: number = screenWidth - this.clockPanel.originX - this.clockMargin;
+    let centerY: number = screenHeight - textHeight / 2 - verticalMargin;
+    //context.fillStyle = "#3b3581";
+    //context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
+    context.fillStyle = "#0b0650"; // red: "#500506"
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(this.dndTimeStr, centerX, centerY);
   }
 
   removeAllGameElements(now: number): void {
@@ -104,6 +135,28 @@ class DragonFrontGame extends GamePlusQuiz {
     this.poof.name = 'Puff';
     this.poof.originX = 229;
     this.poof.originY = 698;
+
+    this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
+    this.clockPanel.name = 'ClockPanel';
+    this.clockPanel.originX = 278;
+    this.clockPanel.originY = 37;
+
+    let clockX: number = this.getClockX();
+    let clockY: number = screenHeight - 30;
+
+    this.dndClockPanel = this.clockPanel.add(clockX, clockY);
+
+    this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
+    this.clock.name = 'Clock';
+    this.clock.originX = 247;
+    this.clock.originY = 251;
+
+    this.fireWall = new Sprites('FireWall/FireWall', 121, fps20, AnimationStyle.Loop, true);
+    this.fireWall.name = 'FireWall';
+    this.fireWall.originX = 300;
+    this.fireWall.originY = 300;
+
+    this.dndClock = this.clock.add(clockX, clockY);
 
     this.sparkShower = new Sprites('Sparks/Big/BigSparks', 64, fps30, AnimationStyle.Sequential, true);
     this.sparkShower.name = 'SparkShower';
@@ -198,7 +251,15 @@ class DragonFrontGame extends GamePlusQuiz {
     this.allEffects.add(this.bloodSmallest);
     this.allEffects.add(this.charmed);
     this.allEffects.add(this.restrained);
+    this.allEffects.add(this.clock);
+    this.allEffects.add(this.fireWall);
+    this.allEffects.add(this.clockPanel);
   }
+
+  private getClockX(): number {
+    return screenWidth - this.clockPanel.originX - this.clockMargin;
+  }
+
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
     if (super.executeCommand(command, params, userId, userName, displayName, color, now))
       return true;
@@ -396,6 +457,89 @@ class DragonFrontGame extends GamePlusQuiz {
     else {
       this.triggerSingleEffect(dto);
     }
+  }
+
+  private _inCombat: boolean;
+
+  get inCombat(): boolean {
+    return this._inCombat;
+  }
+
+  set inCombat(newValue: boolean) {
+    if (this._inCombat == newValue)
+      return;
+
+
+    this._inCombat = newValue;
+    if (this._inCombat) {
+      this.dndClock.frameIndex = 1;
+      this.dndClockPanel.frameIndex = 1;
+      const fireMargin: number = 16;
+      let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), screenHeight - this.clockPanel.originY * 2 + fireMargin);
+      fireWall.expirationDate = performance.now() + 11000;
+      fireWall.fadeOutTime = 2000;
+      this.dragonFrontSounds.playFlameOn();
+    }
+    else {
+      this.dndClock.frameIndex = 0;
+      this.dndClockPanel.frameIndex = 0;
+      this.fireWall.sprites = [];
+    }
+  }
+
+  getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
+    let degreesToMove: number = targetRotation - sprite.rotation;
+    if (degreesToMove < 0) {
+      degreesToMove += 360;
+    }
+
+    return degreesToMove;
+  }
+
+  updateClock(clockData: string): void {
+    let dto: any = JSON.parse(clockData);
+    //console.log(dto);
+    this.inCombat = dto.InCombat;
+    this.dndTimeStr = dto.Time;
+    var fullSpins: number = dto.FullSpins;
+
+    let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.dndClock);
+    let timeToRotate: number;
+    if (degreesToMove < 1) {
+      if (fullSpins >= 1) {
+        degreesToMove = 360;
+        timeToRotate = 2600;
+        this.dragonFrontSounds.playGear2_6();
+      }
+      else 
+        timeToRotate = 250;
+    }
+    else if (degreesToMove < 10) {
+      timeToRotate = 150;
+      this.dragonFrontSounds.playGear0_2();
+    }
+    else if (degreesToMove < 20) {
+      timeToRotate = 250;
+      this.dragonFrontSounds.playGear0_25();
+    }
+    else if (degreesToMove < 45) {
+      timeToRotate = 500;
+      this.dragonFrontSounds.playGear0_5();
+    }
+    else if (degreesToMove < 90) {
+      timeToRotate = 1000;
+      this.dragonFrontSounds.playGear1_0();
+    }
+    else if (degreesToMove < 180) {
+      timeToRotate = 1800;
+      this.dragonFrontSounds.playGear1_8();
+    }
+    else {
+      timeToRotate = 2600;
+      this.dragonFrontSounds.playGear2_6();
+    }
+
+    this.dndClock.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
   }
 
   triggerSoundEffect(dto: any): void {

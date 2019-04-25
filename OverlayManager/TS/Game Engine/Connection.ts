@@ -10,6 +10,7 @@ function connectToSignalR(signalR) {
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
     connection.on("TriggerEffect", triggerEffect);
+    connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
   };
 }
@@ -17,6 +18,11 @@ function connectToSignalR(signalR) {
 function triggerEffect(effectData: string) {
   if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.triggerEffect(effectData);
+  }
+}
+function updateClock(clockData: string) {
+  if (activeFrontGame instanceof DragonFrontGame) {
+    activeFrontGame.updateClock(clockData);
   }
 }
 

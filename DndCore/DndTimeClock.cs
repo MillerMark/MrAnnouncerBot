@@ -7,11 +7,14 @@ namespace DndCore
 {
 	public class DndTimeClock
 	{
-		public event EventHandler TimeChanged;
+		TimeClockEventArgs timeClockEventArgs = new TimeClockEventArgs();
+		public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
+		public event TimeClockEventHandler TimeChanged;
 
-		protected virtual void OnTimeChanged(object sender, EventArgs e)
+		protected virtual void OnTimeChanged(object sender, DateTime previousTime)
 		{
-			TimeChanged?.Invoke(sender, e);
+			timeClockEventArgs.SpanSinceLastUpdate = Time - previousTime;
+			TimeChanged?.Invoke(sender, timeClockEventArgs);
 		}
 
 		//private fields...
@@ -38,8 +41,9 @@ namespace DndCore
 		{
 			if (Time == time)
 				return;
+			DateTime previousTime = Time;
 			Time = time;
-			OnTimeChanged(this, EventArgs.Empty);
+			OnTimeChanged(this, previousTime);
 		}
 
 		public void Advance(DndTimeSpan dndTimeSpan, bool reverseDirection = false)

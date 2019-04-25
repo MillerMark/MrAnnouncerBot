@@ -236,14 +236,23 @@
     });
   }
 
-  advanceFrames(now: number) {
+  animateFrames(nowMs: number): void {
+    for (var i = this.sprites.length - 1; i >= 0; i--) {
+      var sprite: SpriteProxy = this.sprites[i];
+      sprite.animate(nowMs);
+    }
+  }
+
+  advanceFrames(nowMs: number) {
+    this.animateFrames(nowMs);
+
     if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
       return;
-    var msPassed = now - this.lastTimeWeAdvancedTheFrame;
+    var msPassed = nowMs - this.lastTimeWeAdvancedTheFrame;
     if (msPassed < this.frameInterval)
       return;
 
-    this.lastTimeWeAdvancedTheFrame = now;
+    this.lastTimeWeAdvancedTheFrame = nowMs;
     var frameCount = this.baseAnimation.frameCount;
     var returnFrameIndex = this.returnFrameIndex;
     if (this.animationStyle == AnimationStyle.SequentialStop)
@@ -260,10 +269,10 @@
       if (this.segmentSize > 0) {
         let startIndex: number = sprite.frameIndex - sprite.frameIndex % this.segmentSize;
         let endBounds: number = startIndex + this.segmentSize;
-        sprite.advanceFrame(frameCount, now, returnFrameIndex, startIndex, endBounds);
+        sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds);
       }
       else
-        sprite.advanceFrame(frameCount, now, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse);
+        sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse);
       this.cleanupFinishedAnimations(i, sprite);
 
     }
@@ -300,6 +309,10 @@
       return;
     }
 
+    //if (this.name == 'Clock' && this.sprites[0].rotation != 0) {
+    //  debugger;
+    //}
+
     this.advanceFrames(now);
     let self: Sprites = this;
     this.sprites.forEach(function (sprite: SpriteProxy) {
@@ -308,7 +321,7 @@
       if (sprite.stillAlive(now) && sprite.systemDrawn) {
         if (now >= sprite.timeStart) {
           sprite.drawBackground(context, now);
-          sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
+          sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight, self.originX, self.originY);
           sprite.drawAdornments(context, now);
         }
       }

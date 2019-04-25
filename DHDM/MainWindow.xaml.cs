@@ -207,9 +207,10 @@ namespace DHDM
 			}
 		}
 
-		private void DndTimeClock_TimeChanged(object sender, EventArgs e)
+		private void DndTimeClock_TimeChanged(object sender, TimeClockEventArgs e)
 		{
-			UpdateClock();
+			bool bigUpdate = e.SpanSinceLastUpdate.TotalSeconds > 60;
+			UpdateClock(bigUpdate, e.SpanSinceLastUpdate.TotalDays);
 
 			// TODO: Update time-based curses, spells, and diseases.
 			if (resting)
@@ -218,11 +219,27 @@ namespace DHDM
 			}
 		}
 
-		private void UpdateClock()
+		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
 		{
 			if (txtTime == null)
 				return;
-			txtTime.Text = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
+			string timeStr = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
+			txtTime.Text = timeStr;
+			
+			TimeSpan timeIntoToday = dndTimeClock.Time - new DateTime(dndTimeClock.Time.Year, dndTimeClock.Time.Month, dndTimeClock.Time.Day);
+			double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
+
+			ClockDto clockDto = new ClockDto()
+			{
+				Time = timeStr,
+				BigUpdate = bigUpdate,
+				Rotation = percentageRotation,
+				InCombat = dndTimeClock.InCombat,
+				FullSpins = daysSinceLastUpdate
+			};
+			
+			string serializedObject = JsonConvert.SerializeObject(clockDto);
+			HubtasticBaseStation.UpdateClock(serializedObject);
 		}
 
 		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
@@ -238,27 +255,36 @@ namespace DHDM
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromDays(1));
+			dndTimeClock.Advance(DndTimeSpan.FromDays(1), ShiftKeyDown);
 		}
 
 		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromDays(10));
+			dndTimeClock.Advance(DndTimeSpan.FromDays(10), ShiftKeyDown);
 		}
 
 		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromDays(30));
+			dndTimeClock.Advance(DndTimeSpan.FromDays(30), ShiftKeyDown);
 		}
+
+		public bool ShiftKeyDown
+		{
+			get
+			{
+				return (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+			}
+		}
+		
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromHours(1));
+			dndTimeClock.Advance(DndTimeSpan.FromHours(1), ShiftKeyDown);
 		}
 
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10));
+			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
 		}
 
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
@@ -283,6 +309,7 @@ namespace DHDM
 				spTimeDirectModifiers.IsEnabled = true;
 				btnAdvanceTurn.IsEnabled = false;
 			}
+			UpdateClock(true);
 		}
 
 		void realTimeClockHandler(object sender, EventArgs e)
