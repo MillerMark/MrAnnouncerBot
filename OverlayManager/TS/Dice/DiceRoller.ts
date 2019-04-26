@@ -1,8 +1,11 @@
 var diceToRoll = 10;
 var secondsBetweenRolls: number = 9;
-const dieScale = 1.5;
+const dieScale: number = 1.5;
+const damageDieBackgroundColor: string = '#7f090e';
+const damageDieFontColor: string = '#ffffff';
 var repeatRandomThrow: boolean = true;
 var randomDiceThrowIntervalId: number = 0;
+var damageModifierThisRoll: number = 0;
 
 enum DieEffect {
   StinkyFumes,
@@ -403,8 +406,17 @@ function handleDieCollision(e: any) {
       if (relativeVelocity < 8) {
         diceSounds.playSettle();
       }
-      else
+      else {
         diceSounds.playFloorHit(relativeVelocity / 35);
+        // TODO: If wildmagic...
+        if (relativeVelocity > 12) {
+          let pos = getScreenCoordinates(e.target.parentDie.getObject());
+          if (!e.target.parentDie.sparks)
+            e.target.parentDie.sparks = [];
+          e.target.parentDie.sparks.push(diceLayer.spark(pos.x, pos.y));
+          diceSounds.playRandom('Dice/Zap', 4);
+        }
+      }
     else if (e.target.name === "die" && e.body.name === "wall")
       diceSounds.playWallHit(relativeVelocity / 40);
   }
@@ -488,9 +500,9 @@ function onDiceRollStopped() {
   specialDice = [];
   //bodiesToRemove = [];
   let diePortalTimeDistance: number = 0;
-  removeDieEffects(); 
+  removeDieEffects();
   for (var i = 0; i < dice.length; i++) {
-    
+
     let thisDiceValue: number = getDiceValue(dice[i]);
     let die: any = dice[i].getObject();
 
@@ -771,7 +783,7 @@ function highlightSpecialDice() {
             brightnessBase = 70;
           }
 
-          diceLayer.testDiceBlowColoredSmoke(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
+          diceLayer.blowColoredSmoke(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
           hideDie(die);
           diceSounds.playDiceBlow();
         }
@@ -870,6 +882,7 @@ function pleaseRollDice(diceRollData: DiceRollData) {
     queueRoll(diceRollData);
     return;
   }
+
   clearBeforeRoll();
   let numD20s: number = 1;
   if (diceRollData.kind !== DiceRollKind.Normal)
@@ -881,18 +894,12 @@ function pleaseRollDice(diceRollData: DiceRollData) {
     if (diceRollData.isMagic) {
       die.magicRing = diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100);
     }
-    console.log(die);
     prepareDie(die);
   }
 
-  //// @ts-ignore - DiceD10x10
-  //var die = new DiceD10x10({ size: dieScale, backColor: '#ffA0c0' });
-  //prepareD10x10Die(die);
+  //addD100(diceRollData);
 
-  //// @ts-ignore - DiceD10x01
-  //die = new DiceD10x01({ size: dieScale, backColor: '#ffA0c0' });
-  //prepareD10x01Die(die);
-
+  addDamageDie(diceRollData.damageDice);
 
   try {
     // @ts-ignore - DiceManager
@@ -905,6 +912,82 @@ function pleaseRollDice(diceRollData: DiceRollData) {
   //requestAnimationFrame(animate);
 }
 
+function addD100(diceRollData: DiceRollData) {
+  // @ts-ignore - DiceD10x10
+  var die = new DiceD10x10({ size: dieScale, backColor: '#ffA0c0' });
+  if (diceRollData.isMagic) {
+    die.magicRing = diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100);
+  }
+  prepareD10x10Die(die);
+
+  // @ts-ignore - DiceD10x01
+  die = new DiceD10x01({ size: dieScale, backColor: '#ffA0c0' });
+  if (diceRollData.isMagic) {
+    die.magicRing = diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100);
+  }
+  prepareD10x01Die(die);
+}
+
+function addDie(dieStr: string, backgroundColor: string, textColor: string) {
+  let countPlusDie: string[] = dieStr.split('d');
+  if (countPlusDie.length != 2)
+    throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
+  let count: number = 1;
+  if (countPlusDie[0])
+    count = +countPlusDie[0];
+  let dieKind: string = countPlusDie[1];
+
+  for (var i = 0; i < count; i++)
+  {
+    // @ts-ignore - DiceD4
+    let die: DiceObject = null;
+    switch (dieKind) {
+      case '4':
+        // @ts-ignore - DiceD4
+        die = new DiceD4({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+        break;
+      case '6':
+        // @ts-ignore - DiceD6
+        die = new DiceD6({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+        break;
+      case '8':
+        // @ts-ignore - DiceD8
+        die = new DiceD8({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+        break;
+      case '10':
+        // @ts-ignore - DiceD10
+        die = new DiceD10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+        break;
+      case '12':
+        // @ts-ignore - DiceD12
+        die = new DiceD12({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+        break;
+      case '20':
+        // @ts-ignore - DiceD20
+        die = new DiceD20({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+        break;
+    }
+    if (die === null) {
+      throw new Error(`Die not found: "${dieStr}". Unable to throw dice.`);
+    }
+    prepareDie(die);
+  }
+}
+
+function addDamageDie(damageDice: string) {
+  let allDice: string[] = damageDice.split(',');
+
+  var modifier: number = 0;
+  allDice.forEach(function (dieSpec: string) {
+    let dieAndModifier = dieSpec.split('+');
+    if (dieAndModifier.length == 2)
+      modifier += +dieAndModifier[1];
+    addDie(dieAndModifier[0], damageDieBackgroundColor, damageDieFontColor);
+  });
+
+  damageModifierThisRoll = modifier;
+}
+
 function update() {
   controls.update();
   if (stats) {
@@ -914,6 +997,7 @@ function update() {
 
 function render() {
   renderer.render(scene, camera);
+
   for (var i = 0; i < dice.length; i++) {
     let die = dice[i];
     if (die.magicRing) {
@@ -921,6 +1005,16 @@ function render() {
       let ring: SpriteProxy = die.magicRing;
       ring.x = screenPos.x - diceLayer.magicRing.originX;
       ring.y = screenPos.y - diceLayer.magicRing.originY;
+    }
+    if (die.sparks) {
+      let screenPos: any = getScreenCoordinates(die.getObject());
+      let newX: number = screenPos.x - diceLayer.diceSparks.originX;
+      let newY: number = screenPos.y - diceLayer.diceSparks.originY;
+      die.sparks.forEach(function (spark: SpriteProxy) {
+        spark.x = newX;
+        spark.y = newY;
+      });
+
     }
   }
   diceLayer.renderCanvas();

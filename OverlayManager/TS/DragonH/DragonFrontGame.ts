@@ -84,7 +84,10 @@ class DragonFrontGame extends GamePlusQuiz {
     let centerY: number = screenHeight - textHeight / 2 - verticalMargin;
     //context.fillStyle = "#3b3581";
     //context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
-    context.fillStyle = "#0b0650"; // red: "#500506"
+    if (this.inCombat)
+      context.fillStyle = "#500506";
+    else 
+      context.fillStyle = "#0b0650";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(this.dndTimeStr, centerX, centerY);
@@ -489,7 +492,7 @@ class DragonFrontGame extends GamePlusQuiz {
     let x: number;
     let y: number;
     x = this.getClockX() - 90;
-    y = screenHeight - this.clockPanel.originY * 2;
+    y = screenHeight - this.clockPanel.originY;
     let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
     this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
     this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
@@ -515,10 +518,11 @@ class DragonFrontGame extends GamePlusQuiz {
 
   updateClock(clockData: string): void {
     let dto: any = JSON.parse(clockData);
-    //console.log(dto);
+    console.log(dto.InCombat);
     this.inCombat = dto.InCombat;
     this.dndTimeStr = dto.Time;
-    var fullSpins: number = dto.FullSpins;
+    let fullSpins: number = dto.FullSpins;
+    let afterSpinMp3: string = dto.AfterSpinMp3;
 
     let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.dndClock);
     let timeToRotate: number;
@@ -554,6 +558,10 @@ class DragonFrontGame extends GamePlusQuiz {
     else {
       timeToRotate = 2600;
       this.dragonFrontSounds.playGear2_6();
+    }
+
+    if (afterSpinMp3) {
+      this.dragonFrontSounds.playMp3In(timeToRotate + 500, `TimeAmbiance/${afterSpinMp3}`);
     }
 
     this.dndClock.rotateTo(dto.Rotation, degreesToMove, timeToRotate);

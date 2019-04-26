@@ -226,11 +226,52 @@ namespace DHDM
 		{
 			if (txtTime == null)
 				return;
-			string timeStr = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
+			string inCombatLeadingBracket = string.Empty;
+			string inCombatTrailingBracket = string.Empty;
+			if (dndTimeClock.InCombat)
+			{
+				inCombatTrailingBracket = "]";
+				inCombatLeadingBracket = "[";
+			}
+			string timeStr = inCombatLeadingBracket + dndTimeClock.Time.ToString("H:mm:ss") + inCombatTrailingBracket + ", " + dndTimeClock.AsDndDateString();
+
+			if (txtTime.Text == timeStr)
+				return;
+
 			txtTime.Text = timeStr;
 
 			TimeSpan timeIntoToday = dndTimeClock.Time - new DateTime(dndTimeClock.Time.Year, dndTimeClock.Time.Month, dndTimeClock.Time.Day);
 			double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
+
+			string afterSpinMp3 = null;
+
+			if (daysSinceLastUpdate > 0.08)  // Short rest or greater
+			{
+				if (timeIntoToday.TotalHours < 2 || timeIntoToday.TotalHours > 22)
+				{
+					afterSpinMp3 = "midnightWolf";
+				}
+				else if (timeIntoToday.TotalHours > 4 && timeIntoToday.TotalHours < 8)
+				{
+					afterSpinMp3 = "morningRooster";
+					
+				}
+				else if (timeIntoToday.TotalHours > 10 && timeIntoToday.TotalHours < 14)
+				{
+					afterSpinMp3 = "birdsNoon";
+				}
+				else if (timeIntoToday.TotalHours > 16 && timeIntoToday.TotalHours < 20)
+				{
+					if (new Random().Next(100) > 50)
+						afterSpinMp3 = "eveningCrickets";
+					else
+						afterSpinMp3 = "lateEveningFrogs";
+				}
+				if (lastAmbientSoundPlayed == afterSpinMp3)  // prevent the same sound from being played twice in a row.
+					afterSpinMp3 = null;
+				else
+					lastAmbientSoundPlayed = afterSpinMp3;
+			}
 
 			ClockDto clockDto = new ClockDto()
 			{
@@ -238,9 +279,10 @@ namespace DHDM
 				BigUpdate = bigUpdate,
 				Rotation = percentageRotation,
 				InCombat = dndTimeClock.InCombat,
-				FullSpins = daysSinceLastUpdate
+				FullSpins = daysSinceLastUpdate,
+				AfterSpinMp3 = afterSpinMp3
 			};
-			
+
 			string serializedObject = JsonConvert.SerializeObject(clockDto);
 			HubtasticBaseStation.UpdateClock(serializedObject);
 		}
@@ -324,6 +366,7 @@ namespace DHDM
 
 		bool toggle2;
 		List<DateTime> list = new List<DateTime>();
+		string lastAmbientSoundPlayed;
 		void realTimeClockHandler(object sender, EventArgs e)
 		{
 			TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdateTime;

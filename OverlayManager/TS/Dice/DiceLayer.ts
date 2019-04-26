@@ -21,6 +21,7 @@ class DiceLayer {
   diceFireball: Sprites;
   d20Fire: Sprites;
   roll1Stink: Sprites;
+  diceSparks: Sprites;
   dicePortal: Sprites;
   dicePortalTop: Sprites;
   magicRing: Sprites;
@@ -72,6 +73,11 @@ class DiceLayer {
     this.roll1Stink.originX = 150;
     this.roll1Stink.originY = 150;
     this.allBackLayerEffects.add(this.roll1Stink);
+
+    this.diceSparks = new Sprites("/Dice/Sparks/Spark", 49, fps20, AnimationStyle.Loop, true);
+    this.diceSparks.originX = 170;
+    this.diceSparks.originY = 158;
+    this.allBackLayerEffects.add(this.diceSparks);
 
     this.magicRing = new Sprites("/Dice/MagicRing/MagicRing", 180, fps40, AnimationStyle.Loop, true);
     this.magicRing.returnFrameIndex = 60;
@@ -134,23 +140,25 @@ class DiceLayer {
   }
 
   testFireball(x: number, y: number) {
-    this.diceFireball.add(x, y, 0);
+    this.diceFireball.add(x, y, 0).rotation = 90;
   }
 
   addMagicRing(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
-    return this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    let magicRing = this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    magicRing.rotation = Math.random() * 360;
+    return magicRing;
   }
 
-  testDiceBlowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-    this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+  blowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
   }
 
   testD20Fire(x: number, y: number) {
-    this.d20Fire.add(x, y);
+    this.d20Fire.add(x, y).rotation = Math.random() * 360;
   }
 
   testRoll1Stink(x: number, y: number) {
-    this.roll1Stink.add(x, y);
+    this.roll1Stink.add(x, y).rotation = Math.random() * 360;
   }
 
   clearLoopingAnimations(): any {
@@ -161,12 +169,13 @@ class DiceLayer {
 
 
   testSteampunkTunnel(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    // no rotation on SteampunkTunnel - shadows built to 
     this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
 
   testDiceBomb(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-    this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
-    this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
+    this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
   }
 
   testPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
@@ -184,6 +193,14 @@ class DiceLayer {
     diceRoll.hiddenThreshold = dto.HiddenThreshold;
     diceRoll.isMagic = dto.IsMagic;
     return diceRoll;
+  }
+
+  spark(x: number, y: number): SpriteProxy {
+    let spark = this.diceSparks.addShifted(x, y, Math.round(Math.random() * this.diceSparks.sprites.length), Math.random() * 360);
+    spark.expirationDate = performance.now() + 180;
+    spark.fadeOutTime = 0;
+    spark.opacity = 0.8;
+    return spark;
   }
 
   rollDice(diceRollDto: string): any {

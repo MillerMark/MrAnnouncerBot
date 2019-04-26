@@ -400,6 +400,7 @@ class DiceObject {
     });
     this.object.body.linearDamping = 0.1;
     this.object.body.angularDamping = 0.1;
+    this.object.body.parentDie = this;
     DiceManager.world.add(this.object.body);
 
     return this.object;
@@ -435,7 +436,7 @@ class DiceD4 extends DiceObject {
       let context = canvas.getContext("2d");
       let ts = this.calculateTextureSize(this.size / 2 + this.size * 2) * 2;
       canvas.width = canvas.height = ts;
-      context.font = ts / 5 + "pt Arial";
+      context.font = "bold " + ts / 4 + "pt Arial";
       context.fillStyle = backColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.textAlign = "center";
@@ -443,7 +444,7 @@ class DiceD4 extends DiceObject {
       context.fillStyle = color;
       for (let i in text) {
         context.fillText(text[i], canvas.width / 2,
-          canvas.height / 2 - ts * 0.3);
+          canvas.height / 2 - ts * 0.2);
         context.translate(canvas.width / 2, canvas.height / 2);
         context.rotate(Math.PI * 2 / 3);
         context.translate(-canvas.width / 2, -canvas.height / 2);
@@ -457,6 +458,10 @@ class DiceD4 extends DiceObject {
     this.invertUpside = true;
 
     this.create();
+  }
+
+  shiftUpperValue(toValue) {
+    // The inherited implementation of shiftUpperValue fails on a D4 && can corrupt the sides.
   }
 }
 

@@ -32,7 +32,7 @@ class SoundManager {
     }
   }
 
-  safePlayMP3(fileName: string) {
+  safePlayMp3(fileName: string) {
     if (this.playedRecently(fileName))
       return;
     let media = new Audio(`${this.soundPath}/${fileName}.mp3`);

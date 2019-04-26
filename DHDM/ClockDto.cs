@@ -10,6 +10,7 @@ namespace DHDM
 		public double Rotation { get; set; }
 		public bool InCombat { get; set; }
 		public double FullSpins { get; set; }
+		public string AfterSpinMp3 { get; set; }
 		public ClockDto()
 		{
 
