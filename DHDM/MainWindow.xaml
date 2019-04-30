@@ -148,7 +148,7 @@
 							</RadioButton>
 						</StackPanel>
 						<CheckBox x:Name="ckbUseMagic" >
-							UseMagic
+							Use Magic
 						</CheckBox>
 						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
 							<Button x:Name="btnSkillCheck" Margin="8" Padding="8" MinWidth="100" Click="BtnSkillCheck_Click" >
@@ -168,6 +168,29 @@
 							</Button>
 
 						</StackPanel>
+						<StackPanel x:Name="spSpecialThrows" Orientation="Horizontal">
+							<Button x:Name="btnWildAnimalForm" Margin="8" Padding="8" MinWidth="100" Click="BtnWildAnimalForm_Click" >
+								Wild Animal Form Attack
+							</Button>
+							<Button x:Name="btnWildMagic" Margin="8" Padding="8" MinWidth="100" Click="BtnWildMagic_Click" >
+								Wild Magic
+							</Button>
+							<Button x:Name="btnPaladinSmite" Margin="8" Padding="8" MinWidth="100" Click="BtnPaladinSmite_Click" >
+								Paladin Smite
+							</Button>
+							<Button x:Name="btnSneakAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnSneakAttack_Click" >
+								Sneak Attack
+							</Button>
+						</StackPanel>
+						
+						<Button x:Name="btnClearDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 0, 0" Visibility="Hidden" Click="BtnClearDice_Click" MouseEnter="BtnClearDice_MouseEnter" MouseLeave="BtnClearDice_MouseLeave">
+							<Grid Width="{Binding RelativeSource={RelativeSource FindAncestor,
+                                    AncestorType={x:Type Button}}, Path=Width}" Height="{Binding RelativeSource={RelativeSource FindAncestor,
+                                    AncestorType={x:Type Button}}, Path=Height}" IsHitTestVisible="False">
+								<Rectangle x:Name="rectProgressToClear" Fill="#FF1AD9B6" Width="33" HorizontalAlignment="Left" IsHitTestVisible="False"></Rectangle>
+								<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+							</Grid>
+						</Button>
 						
 					</StackPanel>
 				</TabItem>

@@ -11,8 +11,11 @@ namespace DndCore
 		public double Modifier { get; set; }
 		public double HiddenThreshold { get; set; }
 		public bool IsMagic { get; set; }
+        public bool IsWildAnimalAttack { get; set; }
+        public bool IsSneakAttack { get; set; }
+        public bool IsPaladinSmiteAttack { get; set; }
 
-		public DiceRoll(DiceRollKind kind, string damageDice)
+        public DiceRoll(DiceRollKind kind = DiceRollKind.Normal, string damageDice = "")
 		{
 			DamageDice = damageDice;
 			Kind = kind;

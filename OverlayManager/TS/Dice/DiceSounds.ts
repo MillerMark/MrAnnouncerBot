@@ -26,6 +26,9 @@ class DiceSounds extends SoundManager {
     this.safePlayMp3('Fireball2');
   }
 
+  playHandGrab(): any {
+    this.safePlayMp3('HandGrabsDice');
+  }
   playDiceBlow() {
     this.safePlayMp3('DiceBlow');
   }

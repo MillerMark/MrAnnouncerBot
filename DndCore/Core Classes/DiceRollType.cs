@@ -10,6 +10,7 @@ namespace DndCore
 		SavingThrow,
 		FlatD20,
 		DeathSavingThrow,
-		PercentageRoll
+		PercentageRoll,
+		WildMagic
 	}
 }

@@ -30,6 +30,11 @@ namespace OverlayManager.Hubs
 			mrAnnouncerBotHub.Clients.All.NeedToGetCoins(userId);
 		}
 
+		public void DiceHaveStoppedRolling(string diceData)
+		{
+			mrAnnouncerBotHub.Clients.All.DiceHaveStoppedRolling(diceData);
+		}
+
 		public void Arm(string userId)
 		{
 			mrAnnouncerBotHub.Clients.All.Arm(userId);

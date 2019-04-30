@@ -5,6 +5,7 @@
 }
 
 class SpriteProxy {
+  autoRotationDegeesPerSecond: number = 0;
   rotation: number;
   isRemoving: boolean;
   haveCycledOnce: boolean;
@@ -153,6 +154,14 @@ class SpriteProxy {
           this.rotation += 360;
         }
         this.lastRotationUpdate = nowMs;
+      }
+    }
+    else if (this.autoRotationDegeesPerSecond != 0) {
+      if (!this.rotationStartTime || this.rotationStartTime == 0)
+        this.rotationStartTime = nowMs;
+      else {
+        let timeSpentRotatingSeconds: number = (nowMs - this.rotationStartTime) / 1000;
+        this.rotation = timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
       }
     }
   }

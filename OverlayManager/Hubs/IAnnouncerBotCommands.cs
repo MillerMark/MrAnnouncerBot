@@ -8,6 +8,7 @@ namespace OverlayManager.Hubs
 	{
 		Task AddCoins(string userID, int amount);
 		Task NeedToGetCoins(string userID);
+		Task DiceHaveStoppedRolling(string diceData);
 
 		Task Arm(string userID);
 		Task Disarm(string userID);
@@ -23,6 +24,7 @@ namespace OverlayManager.Hubs
 		Task TriggerEffect(string effectData);
 		Task UpdateClock(string clockData);
 		Task RollDice(string diceRollData);
+		Task ClearDice();
 
 	}
 }

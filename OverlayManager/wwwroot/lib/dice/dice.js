@@ -104,6 +104,9 @@ class DiceObject {
     this.size = options.size;
     this.invertUpside = false;
 
+    this.offset = 0;
+    this.multiplier = 1;
+
     this.materialOptions = {
       specular: 0x172022,
       color: 0xf0f0f0,
@@ -113,6 +116,22 @@ class DiceObject {
     };
     this.labelColor = options.fontColor;
     this.diceColor = options.backColor;
+  }
+
+  clear() {
+    this.object.body.removeEventListener("collide", handleDieCollision);
+    DiceManager.world.remove(this.object.body);
+    this.size = null;
+    this.materialOptions = null;
+    this.vertices = null;
+    this.faces = null;
+    this.faceTexts = null;
+    this.customTextTextureFunction = null;
+    this.object.geometry.dispose();
+    this.object.diceObject = null;
+    this.object.body.parentDie = null;
+    this.object.body = null;
+    this.object = null;
   }
 
   setDefaults(options, defaults) {
@@ -127,6 +146,10 @@ class DiceObject {
     }
 
     return options;
+  }
+
+  getTopNumber() {
+    return (this.getUpsideValue() + this.offset) * this.multiplier;
   }
 
   emulateThrow(callback) {
@@ -351,11 +374,11 @@ class DiceObject {
     if (text === '6' || text === '9') {
       let halfWidth = canvas.width / 2;
       let halfTextWidth = textWidth / 2;
-      let lineY = canvas.height / 2 + fontSize * 0.55;
+      let lineY = canvas.height / 2 + fontSize * 0.55 * this.heightFactor * this.heightFactor;
       context.moveTo(halfWidth - halfTextWidth, lineY);
       context.lineTo(halfWidth + halfTextWidth, lineY);
       context.strokeStyle = color;
-      context.lineWidth = 8;
+      context.lineWidth = 8 * this.heightFactor;
       context.globalAlpha = 0.5;
       context.stroke();
       context.globalAlpha = 1;
@@ -565,6 +588,8 @@ class DiceD10x10 extends DiceObject {
     this.scaleFactor = 0.9;
     this.heightFactor = 1.2;
     this.values = 10;
+    this.offset = -1;
+    this.multiplier = 10;
     this.faceTexts = [' ', '00', '00', '10', '20', '30', '40', '50', '60', '70',
       '80', '90', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
     this.textMargin = 1.0;
@@ -595,10 +620,11 @@ class DiceD10x01 extends DiceObject {
     this.vertices.push([0, 0, -1]);
     this.vertices.push([0, 0, 1]);
 
+    this.offset = -1;
     this.scaleFactor = 0.9;
-    this.heightFactor = 1.2;
+    this.heightFactor = 1.1;
     this.values = 10;
-    this.faceTexts = [' ', '0', '0', '1', '2', '3', '4', '5', '6', '7',
+    this.faceTexts = [' ', '-1', '0', '1', '2', '3', '4', '5', '6', '7',
       '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
     this.textMargin = 1.0;
     this.mass = 350;

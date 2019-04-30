@@ -10,6 +10,10 @@ namespace DHDM
 		static readonly object hubConnectionLock = new object();
 		static HubConnection hubConnection;
 
+		static void DiceHaveStoppedRolling(string diceData)
+		{
+			
+		}
 		public static HubConnection HubConnection
 		{
 			get
@@ -25,6 +29,7 @@ namespace DHDM
 							{
 								//hubConnection.Closed += HubConnection_Closed;
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
+								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
 								hubConnection.StartAsync();
 							}
 						}
@@ -62,6 +67,10 @@ namespace DHDM
 		public static void RollDice(string diceData)
 		{
 			HubConnection.InvokeAsync("RollDice", diceData);
+		}
+		public static void ClearDice()
+		{
+			HubConnection.InvokeAsync("ClearDice");
 		}
 	}
 }

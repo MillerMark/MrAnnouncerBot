@@ -22,5 +22,6 @@ namespace OverlayManager.Hubs
 		Task TriggerEffect(string effectData);
 		Task UpdateClock(string clockData);
 		Task RollDice(string diceRollData);
+		Task ClearDice();
 	}
 }

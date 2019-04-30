@@ -45,6 +45,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.RollDice(diceRollData);
 		}
+		public void ClearDice()
+		{
+			coderushedHub.Clients.All.ClearDice();
+		}
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)

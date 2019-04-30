@@ -32,13 +32,23 @@ namespace DHDM
 		DndTimeClock dndTimeClock;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
+		DispatcherTimer showClearButtonTimer;
+		DispatcherTimer updateClearButtonTimer;
 		DateTime lastUpdateTime;
 
 		public MainWindow()
 		{
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
-			realTimeAdvanceTimer.Tick += new EventHandler(realTimeClockHandler);
+			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
+
+			showClearButtonTimer = new DispatcherTimer();
+			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
+			showClearButtonTimer.Interval = TimeSpan.FromSeconds(2);
+
+			updateClearButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
+			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
+			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
 
 			dndTimeClock = new DndTimeClock();
 			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
@@ -132,30 +142,42 @@ namespace DHDM
 						lstItems.Save();
 		}
 
-		public void TestRollDice(DiceRoll diceRoll)
+		public void RollTheDice(DiceRoll diceRoll)
 		{
+			btnClearDice.Visibility = Visibility.Hidden;
+			PrepareForClear();
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
 
+		void PrepareForClear()
+		{
+			showClearButtonTimer.Start();
+		}
+
+		public void ClearTheDice()
+		{
+			HubtasticBaseStation.ClearDice();
+		}
+
 		private void BtnSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(PrepareRoll(DiceRollType.SkillCheck));
+			RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 		}
 
 		private void BtnSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(PrepareRoll(DiceRollType.SavingThrow));
+			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
 		}
 
 		private void BtnDeathSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(PrepareRoll(DiceRollType.DeathSavingThrow));
+			RollTheDice(PrepareRoll(DiceRollType.DeathSavingThrow));
 		}
 
 		private void BtnAttack_Click(object sender, RoutedEventArgs e)
 		{
-			TestRollDice(PrepareRoll(DiceRollType.Attack));
+			RollTheDice(PrepareRoll(DiceRollType.Attack));
 		}
 
 		private DiceRoll PrepareRoll(DiceRollType type)
@@ -167,7 +189,11 @@ namespace DHDM
 				diceRollKind = DiceRollKind.Disadvantage;
 			else
 				diceRollKind = DiceRollKind.Normal;
-			DiceRoll diceRoll = new DiceRoll(diceRollKind, tbxDamageDice.Text);
+			string damageDice = string.Empty;
+			if (type == DiceRollType.Attack)
+				damageDice = tbxDamageDice.Text;
+
+			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
 
 			if (double.TryParse(tbxModifier.Text, out double modifierResult))
 				diceRoll.Modifier = modifierResult;
@@ -175,14 +201,14 @@ namespace DHDM
 			if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
-			diceRoll.IsMagic = ckbUseMagic.IsChecked == true;
+			diceRoll.IsMagic = ckbUseMagic.IsChecked == true && type == DiceRollType.Attack;
 			diceRoll.Type = type;
 			return diceRoll;
 		}
 
 		private void BtnFlatD20_Click(object sender, RoutedEventArgs e)
 		{
-
+			RollTheDice(PrepareRoll(DiceRollType.FlatD20));
 		}
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
@@ -220,20 +246,14 @@ namespace DHDM
 			}
 		}
 
-		bool toggle;
-
 		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
 		{
 			if (txtTime == null)
 				return;
-			string inCombatLeadingBracket = string.Empty;
-			string inCombatTrailingBracket = string.Empty;
+			string timeStr = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
+
 			if (dndTimeClock.InCombat)
-			{
-				inCombatTrailingBracket = "]";
-				inCombatLeadingBracket = "[";
-			}
-			string timeStr = inCombatLeadingBracket + dndTimeClock.Time.ToString("H:mm:ss") + inCombatTrailingBracket + ", " + dndTimeClock.AsDndDateString();
+				timeStr = " " + timeStr + " ";
 
 			if (txtTime.Text == timeStr)
 				return;
@@ -364,14 +384,90 @@ namespace DHDM
 			lastUpdateTime = DateTime.Now;
 		}
 
-		bool toggle2;
-		List<DateTime> list = new List<DateTime>();
 		string lastAmbientSoundPlayed;
-		void realTimeClockHandler(object sender, EventArgs e)
+		DateTime clearButtonShowTime;
+		private static readonly TimeSpan timeToAutoClear = TimeSpan.FromSeconds(2); // Delete this.
+		void RealTimeClockHandler(object sender, EventArgs e)
 		{
 			TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdateTime;
 			lastUpdateTime = DateTime.Now;
 			dndTimeClock.Advance(timeSinceLastUpdate.TotalMilliseconds);
 		}
-	}
+
+		private void BtnWildMagic_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = new DiceRoll();
+			diceRoll.Modifier = 0;
+			diceRoll.HiddenThreshold = 0;
+			diceRoll.IsMagic = true;
+			diceRoll.Type = DiceRollType.WildMagic;
+			RollTheDice(diceRoll);
+		}
+
+        private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
+        {
+            DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+            diceRoll.IsWildAnimalAttack = true;
+            RollTheDice(diceRoll);
+        }
+
+        void ShowClearButton(object sender, EventArgs e)
+		{
+			pauseTime = TimeSpan.Zero;
+			clearButtonShowTime = DateTime.Now;
+			showClearButtonTimer.Stop();
+			updateClearButtonTimer.Start();
+			btnClearDice.Visibility = Visibility.Visible;
+		}
+
+		void UpdateClearButton(object sender, EventArgs e)
+		{
+			const double timeToAutoClear = 6000;
+			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
+			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
+			{
+				updateClearButtonTimer.Stop();
+				btnClearDice.Visibility = Visibility.Hidden;
+				ClearTheDice();
+				rectProgressToClear.Width = 0;
+				return;
+			}
+
+			double progress = timeClearButtonHasBeenVisible.TotalMilliseconds / timeToAutoClear;
+			rectProgressToClear.Width = progress * btnClearDice.Width;
+		}
+
+		private void BtnClearDice_Click(object sender, RoutedEventArgs e)
+		{
+			ClearTheDice();
+			btnClearDice.Visibility = Visibility.Hidden;
+		}
+		TimeSpan pauseTime;
+		DateTime updateClearPaused;
+		private void BtnClearDice_MouseEnter(object sender, MouseEventArgs e)
+		{
+			updateClearPaused = DateTime.Now;
+			updateClearButtonTimer.Stop();
+		}
+
+		private void BtnClearDice_MouseLeave(object sender, MouseEventArgs e)
+		{
+			pauseTime += DateTime.Now - updateClearPaused;
+			updateClearButtonTimer.Start();
+		}
+
+        private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
+        {
+            DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+            diceRoll.IsPaladinSmiteAttack = true;
+            RollTheDice(diceRoll);
+        }
+
+        private void BtnSneakAttack_Click(object sender, RoutedEventArgs e)
+        {
+            DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+            diceRoll.IsSneakAttack = true;
+            RollTheDice(diceRoll);
+        }
+    }
 }

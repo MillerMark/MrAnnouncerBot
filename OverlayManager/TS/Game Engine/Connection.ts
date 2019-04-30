@@ -12,6 +12,7 @@ function connectToSignalR(signalR) {
     connection.on("TriggerEffect", triggerEffect);
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
+    connection.on("ClearDice", clearDice);
   };
 }
 
@@ -23,6 +24,12 @@ function triggerEffect(effectData: string) {
 function updateClock(clockData: string) {
   if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.updateClock(clockData);
+  }
+}
+
+function clearDice() {
+  if (diceLayer) {
+    diceLayer.clearDice();
   }
 }
 
@@ -64,6 +71,9 @@ function playerDataChanged(playerID: number, pageID: number, playerData: string)
   if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.playerChanged(playerID);
   }
+  if (diceLayer) {
+    diceLayer.playerChanged(playerID);
+  }
 }
 
 function userHasCoins(userId: string, amount: number) {
@@ -84,6 +94,11 @@ function whisper(userName: string, message: string) {
 
 function needToGetCoins(userId: string) {
   connection.invoke("NeedToGetCoins", userId);
+}
+
+function diceHaveStoppedRolling(diceData: string) {
+  if (connection.connectionState == 1)
+    connection.invoke("DiceHaveStoppedRolling", diceData);
 }
 
 function arm(userId: string) {
