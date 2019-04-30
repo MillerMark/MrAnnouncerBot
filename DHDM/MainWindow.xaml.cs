@@ -144,6 +144,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			EnableDiceRollButtons(false);
 			btnClearDice.Visibility = Visibility.Hidden;
 			PrepareForClear();
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
@@ -157,6 +158,10 @@ namespace DHDM
 
 		public void ClearTheDice()
 		{
+			updateClearButtonTimer.Stop();
+			btnClearDice.Visibility = Visibility.Hidden;
+			spRollNowButtons.IsEnabled = true;
+			spSpecialThrows.IsEnabled = true;
 			HubtasticBaseStation.ClearDice();
 		}
 
@@ -274,7 +279,7 @@ namespace DHDM
 				else if (timeIntoToday.TotalHours > 4 && timeIntoToday.TotalHours < 8)
 				{
 					afterSpinMp3 = "morningRooster";
-					
+
 				}
 				else if (timeIntoToday.TotalHours > 10 && timeIntoToday.TotalHours < 14)
 				{
@@ -314,6 +319,7 @@ namespace DHDM
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
+			HubtasticBaseStation.DiceStoppedRolling += HubtasticBaseStation_DiceStoppedRolling;
 			OnCombatChanged();
 			UpdateClock();
 			StartRealTimeTimer();
@@ -341,7 +347,7 @@ namespace DHDM
 				return (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 			}
 		}
-		
+
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
@@ -351,6 +357,26 @@ namespace DHDM
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
+		}
+
+		void enableDiceRollButtons()
+		{
+			spRollNowButtons.IsEnabled = true;
+			spSpecialThrows.IsEnabled = true;
+		}
+
+		void EnableDiceRollButtons(bool enable)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				spRollNowButtons.IsEnabled = enable;
+				spSpecialThrows.IsEnabled = enable;
+			});
+		}
+
+		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
+		{
+			EnableDiceRollButtons(true);
 		}
 
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
@@ -404,19 +430,20 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
-        private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
-        {
-            DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-            diceRoll.IsWildAnimalAttack = true;
-            RollTheDice(diceRoll);
-        }
+		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+			diceRoll.IsWildAnimalAttack = true;
+			RollTheDice(diceRoll);
+		}
 
-        void ShowClearButton(object sender, EventArgs e)
+		void ShowClearButton(object sender, EventArgs e)
 		{
 			pauseTime = TimeSpan.Zero;
 			clearButtonShowTime = DateTime.Now;
 			showClearButtonTimer.Stop();
 			updateClearButtonTimer.Start();
+			justClickedTheClearDiceButton = false;
 			btnClearDice.Visibility = Visibility.Visible;
 		}
 
@@ -426,8 +453,6 @@ namespace DHDM
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
-				updateClearButtonTimer.Stop();
-				btnClearDice.Visibility = Visibility.Hidden;
 				ClearTheDice();
 				rectProgressToClear.Width = 0;
 				return;
@@ -437,10 +462,11 @@ namespace DHDM
 			rectProgressToClear.Width = progress * btnClearDice.Width;
 		}
 
+		bool justClickedTheClearDiceButton;
 		private void BtnClearDice_Click(object sender, RoutedEventArgs e)
 		{
+			justClickedTheClearDiceButton = true;
 			ClearTheDice();
-			btnClearDice.Visibility = Visibility.Hidden;
 		}
 		TimeSpan pauseTime;
 		DateTime updateClearPaused;
@@ -453,21 +479,27 @@ namespace DHDM
 		private void BtnClearDice_MouseLeave(object sender, MouseEventArgs e)
 		{
 			pauseTime += DateTime.Now - updateClearPaused;
-			updateClearButtonTimer.Start();
+			if (!justClickedTheClearDiceButton)
+				updateClearButtonTimer.Start();
 		}
 
-        private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
-        {
-            DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-            diceRoll.IsPaladinSmiteAttack = true;
-            RollTheDice(diceRoll);
-        }
+		private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+			diceRoll.IsPaladinSmiteAttack = true;
+			RollTheDice(diceRoll);
+		}
 
-        private void BtnSneakAttack_Click(object sender, RoutedEventArgs e)
-        {
-            DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-            diceRoll.IsSneakAttack = true;
-            RollTheDice(diceRoll);
-        }
-    }
+		private void BtnSneakAttack_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+			diceRoll.IsSneakAttack = true;
+			RollTheDice(diceRoll);
+		}
+
+		private void Window_Unloaded(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.DiceStoppedRolling -= HubtasticBaseStation_DiceStoppedRolling;
+		}
+	}
 }

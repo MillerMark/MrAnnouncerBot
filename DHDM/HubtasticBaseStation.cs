@@ -5,14 +5,43 @@ using System.Linq;
 
 namespace DHDM
 {
+	public class DiceEventArgs : EventArgs
+	{
+		public DiceEventArgs()
+		{
+		}
+		public DiceEventArgs(string diceData)
+		{
+			// TODO: JSON Deserialize
+			DiceData = diceData;
+		}
+
+		public void SetDiceData(string diceData)
+		{
+			DiceData = diceData;
+		}
+
+		public string DiceData { get; set; }
+	}
+
 	public static class HubtasticBaseStation
 	{
+		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);
 		static readonly object hubConnectionLock = new object();
 		static HubConnection hubConnection;
-
+		public static event DiceEventHandler DiceStoppedRolling;
+		public static void OnDiceStoppedRolling(object sender, DiceEventArgs ea)
+		{
+			DiceStoppedRolling?.Invoke(sender, ea);
+		}
+		static DiceEventArgs diceEventArgs;
 		static void DiceHaveStoppedRolling(string diceData)
 		{
-			
+			if (diceEventArgs == null)
+				diceEventArgs = new DiceEventArgs();
+
+			diceEventArgs.SetDiceData(diceData);
+			OnDiceStoppedRolling(null, diceEventArgs);
 		}
 		public static HubConnection HubConnection
 		{

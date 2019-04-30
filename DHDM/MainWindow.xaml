@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DHDM"
 				xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded">
+        Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*" />

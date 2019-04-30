@@ -2,6 +2,7 @@ var firstContactSoundEffect: string = null;
 var diceToRoll = 10;
 var secondsBetweenRolls: number = 12;
 var showTextValues: boolean = false;
+var removeDiceImmediately: boolean = false;
 const dieScale: number = 1.5;
 const damageDieBackgroundColor: string = '#7f090e';
 const damageDieFontColor: string = '#ffffff';
@@ -547,10 +548,10 @@ function onDiceRollStopped() {
   diceSettleTime = performance.now();
   console.log('Dice have stopped rolling!');
   diceHaveStoppedRolling(null);
-  console.log(dice);
-  console.log(diceValues);
+  //console.log(dice);
+  //console.log(diceValues);
+  var totalDamage: number = 0;
   if (showTextValues) {
-    let totalDamage: number = 0;
     for (var i = 0; i < dice.length; i++) {
       let die = dice[i];
       let topNumber = die.getTopNumber();
@@ -565,10 +566,18 @@ function onDiceRollStopped() {
     }
   }
 
-  removeRemainingDice();
+  var diceData = {
+    'totalDamage': totalDamage,
+  };
+
+  diceHaveStoppedRolling(diceData);
+
+  if (removeDiceImmediately)
+    removeRemainingDice();
 }
 
 function removeRemainingDice() {
+  // TODO: Make sure we can call this robustly at any time.
   scalingDice = [];
   specialDice = [];
   //bodiesToRemove = [];

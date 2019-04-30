@@ -339,7 +339,7 @@ class DiceLayer {
   }
 
   clearDice(): void {
-  	// TODO: implement this.
+    removeRemainingDice();
   }
 
   rollDice(diceRollDto: string): void {
