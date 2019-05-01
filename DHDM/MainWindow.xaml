@@ -7,6 +7,39 @@
 				xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
         mc:Ignorable="d"
         Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+	<Window.Resources>
+		<Style TargetType="{x:Type RadioButton}" x:Key="VantageStyle"  >
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type RadioButton}">
+						<BulletDecorator x:Name="rbBackground" Background="White" Cursor="Hand">
+							<BulletDecorator.Bullet>
+								<Grid Height="44" Width="44" Background="White">
+									<!--The check mark-->
+									<Border Name="RadioOuter" Background="Transparent" BorderBrush="Gainsboro" BorderThickness="4" CornerRadius="2" />
+									<Border Name="RadioMark" Visibility="Hidden" Margin="8" CornerRadius="0" Background="#FF1C1C1C" />
+								</Grid>
+							</BulletDecorator.Bullet>
+							<!--Text element-->
+							<TextBlock x:Name="tbPresenter" Margin="3,1,0,0" Foreground="#FF3E3E3E" FontFamily="Calibri" FontSize="30" VerticalAlignment="Center" Padding="6, 3, 8, 3" >
+                        <ContentPresenter />
+							</TextBlock>
+						</BulletDecorator>
+						<!--If item is checked, trigger the visibility of the mark-->
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsChecked" Value="true">
+								<!--If item is checked, trigger the visibility of the mark and change the color of the selected bullet into a darker gray for better highlighting-->
+								<Setter TargetName="RadioMark" Property="Visibility" Value="Visible"/>
+								<Setter TargetName="RadioOuter" Property="BorderBrush" Value="#FFADADAD" />
+								<Setter TargetName="rbBackground" Property="Background" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Background}" />
+								<Setter TargetName="tbPresenter" Property="Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}" />
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*" />
@@ -135,16 +168,16 @@
 								12
 							</TextBox>
 						</StackPanel>
-						
-						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" >
-							<RadioButton x:Name="rbTestNormalDieRoll" IsChecked="True" MinWidth="85" Margin="0, 0, 10, 0">
-								Normal Roll
+						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8"  >
+							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>
+							<RadioButton x:Name="rbTestNormalDieRoll"  Style="{StaticResource VantageStyle}" IsChecked="True" MinWidth="85" Margin="0, 0, 30, 0">
+								Normal
 							</RadioButton>
-							<RadioButton x:Name="rbTestAdvantageDieRoll" MinWidth="85" Margin="0, 0, 10, 0">
-								Advantage Roll
+							<RadioButton x:Name="rbTestAdvantageDieRoll" Style="{StaticResource VantageStyle}" Background="#FF000096" Foreground="White" MinWidth="85" Margin="0, 0, 30, 0">
+								Advantage
 							</RadioButton>
-							<RadioButton x:Name="rbTestDisadvantageDieRoll" MinWidth="85" Margin="0, 0, 10, 0">
-								Disadvantage Roll
+							<RadioButton x:Name="rbTestDisadvantageDieRoll" Style="{StaticResource VantageStyle}" MinWidth="85" Background="#FF850000" Foreground="White" Margin="0, 0, 30, 0">
+								Disadvantage
 							</RadioButton>
 						</StackPanel>
 						<CheckBox x:Name="ckbUseMagic" >
@@ -169,6 +202,7 @@
 
 						</StackPanel>
 						<StackPanel x:Name="spSpecialThrows" Orientation="Horizontal">
+							<TextBlock Text="Special attacks: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnWildAnimalForm" Margin="8" Padding="8" MinWidth="100" Click="BtnWildAnimalForm_Click" >
 								Wild Animal Form Attack
 							</Button>

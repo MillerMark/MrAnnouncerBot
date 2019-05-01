@@ -430,8 +430,9 @@ function handleDieCollision(e: any) {
   if (e.target.name === "die" && e.body.name === "die")
     diceSounds.playDiceHit(relativeVelocity / 10);
   else if (e.target.name === "die" && e.body.name === "floor") {
-    if (rollIsPalladinSmite) {
-      // Effect on first floor hit?
+    if (e.target.parentDie.hasNotHitFloorYet) {
+      e.target.parentDie.hasNotHitFloorYet = false;
+      dieFirstHitsFloor(e.target.parentDie);
     }
     if (relativeVelocity < 8) {
       diceSounds.playSettle();
@@ -451,6 +452,19 @@ function handleDieCollision(e: any) {
   }
   else if (e.target.name === "die" && e.body.name === "wall")
     diceSounds.playWallHit(relativeVelocity / 40);
+}
+
+var addedOneHeavyEffectThisRoll: boolean = false;
+
+function dieFirstHitsFloor(die: any) {
+  if (rollIsSneakAttack && !die.isDamage && !addedOneHeavyEffectThisRoll) {
+    //addedOneHeavyEffectThisRoll = true;
+    let pos: Vector = getScreenCoordinates(die.getObject());
+    let percentageOnDie: number = 0.7;
+    let percentageOffDie: number = 1 - percentageOnDie;
+    diceLayer.addSneakAttack(pos.x * percentageOnDie + percentageOffDie * 960, pos.y * percentageOnDie + percentageOffDie * 540, diceLayer.activePlayerHueShift);
+    diceSounds.safePlayMp3('SneakAttack');
+  }
 }
 
 function placePawPrint(die: any) {
@@ -538,6 +552,7 @@ function getScreenCoordinates(element): Vector {
 }
 
 var diceSettleTime: number = performance.now();
+var diceRemoveTime: number = performance.now();
 
 function getDieEffectDistance(): number {
   return Math.round(Math.random() * 5) * 40 + 40;
@@ -570,7 +585,7 @@ function onDiceRollStopped() {
     'totalDamage': totalDamage,
   };
 
-  diceHaveStoppedRolling(diceData);
+  diceHaveStoppedRolling(JSON.stringify(diceData));
 
   if (removeDiceImmediately)
     removeRemainingDice();
@@ -582,6 +597,7 @@ function removeRemainingDice() {
   specialDice = [];
   //bodiesToRemove = [];
   let diePortalTimeDistance: number = 0;
+  diceRemoveTime = performance.now();
   removeDieEffects();
   for (var i = 0; i < dice.length; i++) {
 
@@ -704,7 +720,7 @@ function scaleFallingDice() {
     for (var i = 0; i < scalingDice.length; i++) {
 
       let dieObject = scalingDice[i].getObject();
-      let portalOpenTime: number = diceSettleTime + dieObject.effectStartOffset;
+      let portalOpenTime: number = diceRemoveTime + dieObject.effectStartOffset;
 
       let now: number = performance.now();
       let waitToFallTime: number;
@@ -723,7 +739,7 @@ function scaleFallingDice() {
         let screenPos: Vector = getScreenCoordinates(dieObject);
 
         if (dieObject.effectKind == DieEffect.SteamPunkTunnel) {
-          diceLayer.testSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
           diceSounds.playSteampunkTunnel();
         }
         else if (dieObject.effectKind == DieEffect.HandGrab) {
@@ -745,12 +761,12 @@ function scaleFallingDice() {
           while (hueShift > 30 && hueShift < 160 && tryCount++ < 5) {
             hueShift = Math.floor(Math.random() * 360);
           }
-          diceLayer.testPortal(screenPos.x, screenPos.y, hueShift, 100, 100);
+          diceLayer.addPortal(screenPos.x, screenPos.y, hueShift, 100, 100);
           diceSounds.playOpenDiePortal();
         }
       }
 
-      let startFallTime: number = diceSettleTime + waitToFallTime + dieObject.effectStartOffset;
+      let startFallTime: number = diceRemoveTime + waitToFallTime + dieObject.effectStartOffset;
 
       if (now < startFallTime)
         continue;
@@ -845,7 +861,7 @@ function highlightSpecialDice() {
     }
 
     if (dieObject.needToStartEffect) {
-      let effectStartTime: number = diceSettleTime + dieObject.effectStartOffset;
+      let effectStartTime: number = diceRemoveTime + dieObject.effectStartOffset;
       if (now > effectStartTime && dieObject.needToStartEffect) {
 
         dieObject.needToStartEffect = false;
@@ -865,12 +881,12 @@ function highlightSpecialDice() {
           diceLayer.testRoll1Stink(screenPos.x, screenPos.y);
         }
         else if (dieObject.effectKind === DieEffect.Bomb) {
-          diceLayer.testDiceBomb(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          diceLayer.addDiceBomb(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
           diceSounds.playDieBomb();
           hideDieIn(dieObject, 700);
         }
         else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-          diceLayer.testSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+          diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
           //diceLayer.playSteampunkTunnel();
           //hideDieIn(die, 700);
         }
@@ -931,43 +947,54 @@ function updatePhysics() {
   highlightSpecialDice();
 }
 
-function prepareDie(die: any) {
-  prepareBaseDie(die);
+function prepareDie(die: any, throwPower: number, xPositionModifier: number = 0) {
+  prepareBaseDie(die, throwPower, xPositionModifier);
 
   var newValue: number = Math.floor(Math.random() * die.values + 1);
   diceValues.push({ dice: die, value: newValue });
 }
 
-function prepareBaseDie(die: any) {
+function prepareBaseDie(die: any, throwPower: number, xPositionModifier: number = 0) {
   let dieObject = die.getObject();
   scene.add(dieObject);
   dice.push(die);
 
+  die.hasNotHitFloorYet = true;
+
   let index: number = dice.length;
-  let yRand = Math.random() * 20;
-  dieObject.position.x = -15 - (index % 3) * dieScale;
+  let yVelocityModifier: number = Math.random() * 10 * throwPower;
+  dieObject.position.x = xPositionModifier + -15 - (index % 3) * dieScale;
   dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
   dieObject.position.z = -13 + (index % 3) * dieScale;
   dieObject.quaternion.x = (Math.random() * 90 - 45) * Math.PI / 180;
   dieObject.quaternion.z = (Math.random() * 90 - 45) * Math.PI / 180;
+  let xVelocityMultiplier: number = 1;
+  if (xPositionModifier != 0)
+    xVelocityMultiplier = -1;
   die.updateBodyFromMesh();
-  let rand = Math.random() * 5;
-  dieObject.body.velocity.set(35 + rand, 10 + yRand, 25 + rand);
-  dieObject.body.angularVelocity.set(20 * Math.random() - 10, 20 * Math.random() - 10, 20 * Math.random() - 10);
+  let xVelocityModifier: number = Math.random() * 20 * throwPower;
+  let zVelocityModifier: number = Math.random() * 20 * throwPower;
+  dieObject.body.velocity.set(xVelocityMultiplier * (35 + xVelocityModifier), 10 + yVelocityModifier, 25 + zVelocityModifier);
+  let angularModifierLimit: number = 20 * throwPower;
+  let angularModifierHalfLimit: number = angularModifierLimit / 2;
+  let xAngularRotationModifier: number = Math.random() * angularModifierLimit;
+  let yAngularRotationModifier: number = Math.random() * angularModifierLimit;
+  let zAngularRotationModifier: number = Math.random() * angularModifierLimit;
+  dieObject.body.angularVelocity.set(xAngularRotationModifier - angularModifierHalfLimit, yAngularRotationModifier - angularModifierHalfLimit, zAngularRotationModifier - angularModifierHalfLimit);
   dieObject.body.name = 'die';
   dieObject.body.addEventListener("collide", handleDieCollision);
   die.lastPos = new Vector(-100, -100);
   die.lastPawPrintOnLeft = false;
 }
 
-function prepareD10x10Die(die: any) {
-  prepareBaseDie(die);
+function prepareD10x10Die(die: any, throwPower: number, xPositionModifier: number = 0) {
+  prepareBaseDie(die, throwPower, xPositionModifier);
   var newValue: number = Math.floor(Math.random() * die.values);
   diceValues.push({ dice: die, value: newValue });
 }
 
-function prepareD10x01Die(die: any) {
-  prepareBaseDie(die);
+function prepareD10x01Die(die: any, throwPower: number, xPositionModifier: number = 0) {
+  prepareBaseDie(die, throwPower, xPositionModifier);
   var newValue: number = Math.floor(Math.random() * die.values);
   diceValues.push({ dice: die, value: newValue });
 }
@@ -991,6 +1018,7 @@ function queueRoll(diceRollData: DiceRollData) {
 }
 
 function pleaseRollDice(diceRollData: DiceRollData) {
+  addedOneHeavyEffectThisRoll = false;
   if (randomDiceThrowIntervalId != 0) {
     clearInterval(randomDiceThrowIntervalId);
     randomDiceThrowIntervalId = 0;
@@ -1002,18 +1030,24 @@ function pleaseRollDice(diceRollData: DiceRollData) {
     return;
   }
 
+  let xPositionModifier: number = 0;
+
+  if (Math.random() * 100 < 50)
+    xPositionModifier = 26;  // Throw from the right to the left.
+
   clearBeforeRoll();
   thisRollKind = diceRollData.kind;
   thisRollType = diceRollData.type;
 
   rollIsWildAnimalAttack = diceRollData.isWildAnimalAttack;
   rollIsPalladinSmite = diceRollData.isPaladinSmiteAttack;
+  rollIsSneakAttack = diceRollData.isSneakAttack;
   if (rollIsWildAnimalAttack)
     firstContactSoundEffect = 'WildForm';
 
   if (diceRollData.type == DiceRollType.WildMagic) {
     rollIsWildMagic = true;
-    addD100(diceRollData, wildMagicDieBackgroundColor, wildMagicDieFontColor);
+    addD100(diceRollData, wildMagicDieBackgroundColor, wildMagicDieFontColor, diceRollData.throwPower, xPositionModifier);
   }
   else {
     rollIsWildMagic = false;
@@ -1041,11 +1075,11 @@ function pleaseRollDice(diceRollData: DiceRollData) {
         die.originX = diceLayer.stars.originX;
         die.originY = diceLayer.stars.originY;
       }
-      prepareDie(die);
+      prepareDie(die, diceRollData.throwPower, xPositionModifier);
     }
 
     if (diceRollData.type == DiceRollType.Attack) {
-      addDamageDie(diceRollData.damageDice);
+      addDamageDie(diceRollData.damageDice, diceRollData.throwPower, xPositionModifier);
     }
   }
 
@@ -1058,7 +1092,7 @@ function pleaseRollDice(diceRollData: DiceRollData) {
   }
 }
 
-function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor: string) {
+function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0) {
 
   // @ts-ignore - DiceD10x10
   var die = new DiceD10x10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
@@ -1067,7 +1101,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
     die.originX = diceLayer.magicRing.originX;
     die.originY = diceLayer.magicRing.originY;
   }
-  prepareD10x10Die(die);
+  prepareD10x10Die(die, throwPower, xPositionModifier);
 
   // @ts-ignore - DiceD10x01
   die = new DiceD10x01({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
@@ -1076,10 +1110,10 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
     die.originX = diceLayer.magicRing.originX;
     die.originY = diceLayer.magicRing.originY;
   }
-  prepareD10x01Die(die);
+  prepareD10x01Die(die, throwPower, xPositionModifier);
 }
 
-function addDie(dieStr: string, backgroundColor: string, textColor: string, isDamage: boolean = false): any {
+function addDie(dieStr: string, backgroundColor: string, textColor: string, throwPower: number = 1, isDamage: boolean = false, xPositionModifier: number = 0): any {
   let countPlusDie: string[] = dieStr.split('d');
   if (countPlusDie.length != 2)
     throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1120,12 +1154,12 @@ function addDie(dieStr: string, backgroundColor: string, textColor: string, isDa
     if (die === null) {
       throw new Error(`Die not found: "${dieStr}". Unable to throw dice.`);
     }
-    prepareDie(die);
+    prepareDie(die, throwPower, xPositionModifier);
     die.isDamage = isDamage;
   }
 }
 
-function addDamageDie(damageDice: string) {
+function addDamageDie(damageDice: string, throwPower: number, xPositionModifier: number = 0) {
   let allDice: string[] = damageDice.split(',');
 
   var modifier: number = 0;
@@ -1133,7 +1167,7 @@ function addDamageDie(damageDice: string) {
     let dieAndModifier = dieSpec.split('+');
     if (dieAndModifier.length == 2)
       modifier += +dieAndModifier[1];
-    addDie(dieAndModifier[0], damageDieBackgroundColor, damageDieFontColor, true);
+    addDie(dieAndModifier[0], damageDieBackgroundColor, damageDieFontColor, throwPower, true, xPositionModifier);
   });
 
   damageModifierThisRoll = modifier;

@@ -144,6 +144,8 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			rbTestNormalDieRoll.IsChecked = true;
+			updateClearButtonTimer.Stop();
 			EnableDiceRollButtons(false);
 			btnClearDice.Visibility = Visibility.Hidden;
 			PrepareForClear();
@@ -199,6 +201,10 @@ namespace DHDM
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
+
+			diceRoll.ThrowPower = new Random().Next() * 2;
+			if (diceRoll.ThrowPower < 0.3)
+				diceRoll.ThrowPower = 0.3;
 
 			if (double.TryParse(tbxModifier.Text, out double modifierResult))
 				diceRoll.Modifier = modifierResult;
@@ -444,6 +450,7 @@ namespace DHDM
 			showClearButtonTimer.Stop();
 			updateClearButtonTimer.Start();
 			justClickedTheClearDiceButton = false;
+			rectProgressToClear.Width = 0;
 			btnClearDice.Visibility = Visibility.Visible;
 		}
 

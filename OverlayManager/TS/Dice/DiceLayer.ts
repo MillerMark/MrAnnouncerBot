@@ -88,6 +88,8 @@ class DiceLayer {
   d20Fire: Sprites;
   roll1Stink: Sprites;
   diceSparks: Sprites;
+  sneakAttackTop: Sprites;
+  sneakAttackBottom: Sprites;
   pawPrints: Sprites;
   stars: Sprites;
   dicePortal: Sprites;
@@ -199,6 +201,16 @@ class DiceLayer {
     this.diceBombTop.originX = 295;
     this.diceBombTop.originY = 316;
     this.allFrontLayerEffects.add(this.diceBombTop);
+
+    this.sneakAttackTop = new Sprites("/Dice/SneakAttack/SneakAttackTop", 91, fps30, AnimationStyle.Sequential, true);
+    this.sneakAttackTop.originX = 373;
+    this.sneakAttackTop.originY = 377;
+    this.allFrontLayerEffects.add(this.sneakAttackTop);
+
+    this.sneakAttackBottom = new Sprites("/Dice/SneakAttack/SneakAttackBottom", 91, fps30, AnimationStyle.Sequential, true);
+    this.sneakAttackBottom.originX = 373;
+    this.sneakAttackBottom.originY = 377;
+    this.allBackLayerEffects.add(this.sneakAttackBottom);
   }
 
   addDieValueLabel(centerPos: Vector, value: string, highlight: boolean = false) {
@@ -273,17 +285,23 @@ class DiceLayer {
   }
 
 
-  testSteampunkTunnel(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-    // no rotation on SteampunkTunnel - shadows built to 
+  addSteampunkTunnel(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    // no rotation on SteampunkTunnel - shadows expect light source from above.
     this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
 
-  testDiceBomb(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+  addSneakAttack(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+    let rotation: number = Math.random() * 360;
+    this.sneakAttackBottom.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
+    this.sneakAttackTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
+  }
+
+  addDiceBomb(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
     this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
     this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
   }
 
-  testPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
+  addPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
     this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
     this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
   }
@@ -306,6 +324,11 @@ class DiceLayer {
     diceRoll.isSneakAttack = dto.IsSneakAttack;
     diceRoll.isPaladinSmiteAttack = dto.IsPaladinSmiteAttack;
     diceRoll.isWildAnimalAttack = dto.IsWildAnimalAttack;
+    diceRoll.throwPower = dto.ThrowPower;
+    if (diceRoll.throwPower < 0.2)
+      diceRoll.throwPower = 0.2;
+    if (diceRoll.throwPower > 2.0)
+      diceRoll.throwPower = 2.0;
     return diceRoll;
   }
 
@@ -388,6 +411,7 @@ class DiceRollData {
   isSneakAttack: boolean;
   isPaladinSmiteAttack: boolean;
   isWildAnimalAttack: boolean;
+  throwPower: number;
   constructor() {
 
   }
