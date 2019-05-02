@@ -131,7 +131,7 @@ namespace BotCore
 			}
 			catch (Exception ex)
 			{
-				Debugger.Break();
+				//Debugger.Break();
 			}
 		}
 

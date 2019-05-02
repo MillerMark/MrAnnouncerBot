@@ -144,7 +144,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-			rbTestNormalDieRoll.IsChecked = true;
+			//rbTestNormalDieRoll.IsChecked = true;
 			updateClearButtonTimer.Stop();
 			EnableDiceRollButtons(false);
 			btnClearDice.Visibility = Visibility.Hidden;

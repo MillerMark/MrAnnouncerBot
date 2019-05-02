@@ -17,7 +17,16 @@
 								<Grid Height="44" Width="44" Background="White">
 									<!--The check mark-->
 									<Border Name="RadioOuter" Background="Transparent" BorderBrush="Gainsboro" BorderThickness="4" CornerRadius="2" />
-									<Border Name="RadioMark" Visibility="Hidden" Margin="8" CornerRadius="0" Background="#FF1C1C1C" />
+									<Viewbox Name="RadioMark" Visibility="Hidden" Margin="8,8,3,3" >
+										<Canvas Width="399" Height="316">
+											<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1.3125" StrokeMiterLimit="10">
+												<Path.Data>
+													<PathGeometry Figures="M361.9375,45.25L128.375,278.8125C124.5,282.6875,118.3125,282.6875,114.4375,278.8125L86.5625,250.9375 86.5625,250.9375 3.5625,168C-0.25,164.125,-0.25,157.875,3.5625,154.0625L31.4375,126.1875C35.3125,122.3125,41.5625,122.3125,45.4375,126.1875L121.375,202.1875 320.125,3.4375C324,-0.4375,330.25,-0.4375,334.0625,3.4375L361.9375,31.3125C365.8125,35.1875,365.8125,41.375,361.9375,45.25z" />
+												</Path.Data>
+											</Path>
+										</Canvas>
+									</Viewbox>
+
 								</Grid>
 							</BulletDecorator.Bullet>
 							<!--Text element-->

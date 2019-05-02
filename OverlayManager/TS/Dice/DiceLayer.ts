@@ -14,69 +14,6 @@ enum DiceRollType {
   WildMagic
 }
 
-class TextEffects {
-  textEffects: Array<TextEffect> = new Array<TextEffect>();
-	constructor() {
-		
-  }
-
-  clear() {
-    this.textEffects = new Array<TextEffect>();
-  }
-
-  add(centerPos: Vector, text: string): TextEffect {
-    let textEffect: TextEffect = new TextEffect();
-    textEffect.center = centerPos;
-    textEffect.text = text;
-    this.textEffects.push(textEffect);
-    return textEffect;
-  }
-
-  render(context: CanvasRenderingContext2D, now: number) {
-    this.textEffects.forEach(function (textEffect: TextEffect) {
-      textEffect.render(context, now);
-    });
-  }
-}
-
-class TextEffect {
-  text: string;
-  fontColor: string;
-  fontName: string;
-  outlineColor: string;
-  outlineThickness: number;
-  center: Vector;
-  fontSize: number;
-  opacity: number;
-  scale: number;
-
-	constructor() {
-    this.text = 'test';
-    this.fontColor = '#ffffff';
-    this.outlineColor = '#000000';
-    this.outlineThickness = 1;
-    this.center = new Vector(960, 540);
-    this.fontSize = 18;
-    this.opacity = 1;
-    this.scale = 1;
-  }
-
-  render(context: CanvasRenderingContext2D, now: number) {
-    const yOffset: number = 60;
-    context.font = `${this.fontSize * this.scale}px ${this.fontName}`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = this.fontColor;
-    context.globalAlpha = this.opacity;
-    context.strokeStyle = this.outlineColor;
-    context.lineWidth = this.outlineThickness * this.scale * 2; // Half the stroke is outside the font.
-    context.lineJoin = "round";
-    context.strokeText(this.text, this.center.x, this.center.y + yOffset);
-    context.fillText(this.text, this.center.x, this.center.y + yOffset);
-    context.globalAlpha = 1;
-  }
-}
-
 class DiceLayer {
   static matchOozeToDieColor: boolean = false;
   textEffects: TextEffects = new TextEffects();
@@ -86,7 +23,7 @@ class DiceLayer {
   diceBackContext: CanvasRenderingContext2D;
   diceFireball: Sprites;
   d20Fire: Sprites;
-  roll1Stink: Sprites;
+  puff: Sprites;
   diceSparks: Sprites;
   sneakAttackTop: Sprites;
   sneakAttackBottom: Sprites;
@@ -124,6 +61,8 @@ class DiceLayer {
 
     this.allFrontLayerEffects = new SpriteCollection();
     this.allBackLayerEffects = new SpriteCollection();
+
+    // Items added later are drawn on top of earlier items.
 
     this.diceFireball = new Sprites("/Dice/Roll20Fireball/DiceFireball", 71, fps30, AnimationStyle.Sequential, true);
     this.diceFireball.originX = 104;
@@ -166,11 +105,6 @@ class DiceLayer {
     this.dicePortalTop.originY = 212;
     this.allFrontLayerEffects.add(this.dicePortalTop);
 
-    this.roll1Stink = new Sprites("/Dice/Roll1/Roll", 172, fps30, AnimationStyle.Loop, true);
-    this.roll1Stink.originX = 150;
-    this.roll1Stink.originY = 150;
-    this.allBackLayerEffects.add(this.roll1Stink);
-
     this.diceSparks = new Sprites("/Dice/Sparks/Spark", 49, fps20, AnimationStyle.Loop, true);
     this.diceSparks.originX = 170;
     this.diceSparks.originY = 158;
@@ -207,6 +141,11 @@ class DiceLayer {
     this.sneakAttackTop.originY = 377;
     this.allFrontLayerEffects.add(this.sneakAttackTop);
 
+    this.puff = new Sprites("/Dice/SneakAttack/Puff", 32, fps30, AnimationStyle.Sequential, true);
+    this.puff.originX = 201;
+    this.puff.originY = 424;
+    this.allFrontLayerEffects.add(this.puff);
+
     this.sneakAttackBottom = new Sprites("/Dice/SneakAttack/SneakAttackBottom", 91, fps30, AnimationStyle.Sequential, true);
     this.sneakAttackBottom.originX = 373;
     this.sneakAttackBottom.originY = 377;
@@ -221,15 +160,15 @@ class DiceLayer {
   }
 
   mouseDownInCanvas(e) {
-    if (effectOverride != undefined) {
-      var enumIndex: number = <number>effectOverride;
-      let totalElements: number = Object.keys(DieEffect).length / 2;
-      enumIndex++;
-      if (enumIndex >= totalElements)
-        enumIndex = 0;
-      effectOverride = <DieEffect>enumIndex;
-      console.log('New effect: ' + DieEffect[effectOverride]);
-    }
+    //if (effectOverride != undefined) {
+    //  var enumIndex: number = <number>effectOverride;
+    //  let totalElements: number = Object.keys(DieEffect).length / 2;
+    //  enumIndex++;
+    //  if (enumIndex >= totalElements)
+    //    enumIndex = 0;
+    //  effectOverride = <DieEffect>enumIndex;
+    //  console.log('New effect: ' + DieEffect[effectOverride]);
+    //}
   }
 
   getContext() {
@@ -268,19 +207,18 @@ class DiceLayer {
     this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
   }
 
-  testD20Fire(x: number, y: number) {
+  addD20Fire(x: number, y: number) {
     this.d20Fire.add(x, y).rotation = Math.random() * 360;
   }
 
-  testRoll1Stink(x: number, y: number) {
-    this.roll1Stink.add(x, y).rotation = Math.random() * 360;
+  addPuff(x: number, y: number, angle: number, hueShift: number) {
+    this.puff.addShifted(x, y, 0, hueShift).rotation = angle;
   }
 
   clearResidualEffects(): any {
     this.magicRing.sprites = [];
     this.stars.sprites = [];
     this.d20Fire.sprites = [];
-    this.roll1Stink.sprites = [];
     this.textEffects.clear();
   }
 
