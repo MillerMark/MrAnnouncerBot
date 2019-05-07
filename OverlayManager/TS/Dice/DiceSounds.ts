@@ -33,9 +33,12 @@ class DiceSounds extends SoundManager {
     this.safePlayMp3('DiceBlow');
   }
 
-  playRandom(fileName: string, count: number) {
+  playRandom(fileName: string, count: number, compareThreshold: number = -1) {
+    if (this.playedRecently(fileName, compareThreshold))
+      return false;
     var index: number = Math.floor(Math.random() * count + 1);
-    this.safePlayMp3(fileName + index.toString());
+    this.playingNow(fileName);
+    return this.safePlayMp3(fileName + index.toString());
   }
 
   playDieBomb() {

@@ -32,25 +32,28 @@ class SoundManager {
     }
   }
 
-  safePlayMp3(fileName: string) {
-    if (this.playedRecently(fileName))
-      return;
+  safePlayMp3(fileName: string, compareThreshold: number = -1): boolean {
+    if (this.playedRecently(fileName, compareThreshold))
+      return false;
     let media = new Audio(`${this.soundPath}/${fileName}.mp3`);
     const playPromise = media.play();
     if (playPromise !== null) {
       playPromise.catch(() => { })
     }
     this.playingNow(fileName);
+    return true;
   }
 
   static readonly threshold: number = 50; // ms
 
-  playedRecently(key: string) {
+  playedRecently(key: string, compareThreshold: number = -1) {
+    if (compareThreshold == -1)
+      compareThreshold = SoundManager.threshold;
     for (var i = 0; i < this.lastPlayTimes.length; i++) {
       let keyTime: KeyTime = <KeyTime>this.lastPlayTimes[i];
       if (keyTime.key === key) {
         var now: number = performance.now();
-        return now - keyTime.time < SoundManager.threshold;
+        return now - keyTime.time < compareThreshold;
       }
     }
     return false;

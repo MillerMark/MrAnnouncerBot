@@ -14,26 +14,43 @@ enum DiceRollType {
   WildMagic
 }
 
+const fps40: number = 1000 / 40;
+const fps30: number = 33;
+const fps25: number = 40;
+const fps20: number = 50;
+const matchNormalDieColorsToSpecial: boolean = true;
+const damageDieBackgroundColor: string = '#e49836';
+const damageDieFontColor: string = '#000000';
+const successFontColor: string = '#ffffff';
+const successOutlineColor: string = '#000000';
+const failFontColor: string = '#000000';
+const failOutlineColor: string = '#ffffff';
+
 class DiceLayer {
-  static matchOozeToDieColor: boolean = false;
+  static matchOozeToDieColor: boolean = true;
   textEffects: TextEffects = new TextEffects();
   diceFrontCanvas: HTMLCanvasElement;
   diceBackCanvas: HTMLCanvasElement;
   diceFrontContext: CanvasRenderingContext2D;
   diceBackContext: CanvasRenderingContext2D;
   diceFireball: Sprites;
-  d20Fire: Sprites;
+  sparkTrail: Sprites;
+  haloSpins: Sprites;
+  //d20Fire: Sprites;
   puff: Sprites;
   diceSparks: Sprites;
   sneakAttackTop: Sprites;
   sneakAttackBottom: Sprites;
   pawPrints: Sprites;
-  stars: Sprites;
+  //stars: Sprites;
   dicePortal: Sprites;
   handGrabsDiceTop: Sprites;
   handGrabsDiceBottom: Sprites;
   dicePortalTop: Sprites;
   magicRing: Sprites;
+  spirals: Sprites;
+  halos: Sprites;
+  ravens: Sprites[];
   diceBlowColoredSmoke: Sprites;
   diceBombBase: Sprites;
   diceBombTop: Sprites;
@@ -53,10 +70,6 @@ class DiceLayer {
   loadSprites() {
     Part.loadSprites = true;
 
-    const fps40: number = 1000 / 40;
-    const fps30: number = 33;
-    const fps20: number = 50;
-
     globalBypassFrameSkip = true;
 
     this.allFrontLayerEffects = new SpriteCollection();
@@ -69,21 +82,26 @@ class DiceLayer {
     this.diceFireball.originY = 155;
     this.allFrontLayerEffects.add(this.diceFireball);
 
-    this.pawPrints = new Sprites("/Dice/TigerPaw/TigerPaw", 60, fps30, AnimationStyle.Sequential, true);
-    this.pawPrints.originX = 38;
-    this.pawPrints.originY = 63;
+    this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
+    this.sparkTrail.originX = 322;
+    this.sparkTrail.originY = 152;
+    this.allFrontLayerEffects.add(this.sparkTrail);
+
+    this.pawPrints = new Sprites("/Dice/TigerPaw/TigerPaw", 76, fps30, AnimationStyle.Loop, true);
+    this.pawPrints.originX = 50;
+    this.pawPrints.originY = 66;
     this.allBackLayerEffects.add(this.pawPrints);
 
-    this.stars = new Sprites("/Dice/Star/Star", 60, fps30, AnimationStyle.Loop, true);
-    this.stars.originX = 170;
-    this.stars.originY = 165;
-    this.allBackLayerEffects.add(this.stars);
+    //this.stars = new Sprites("/Dice/Star/Star", 60, fps30, AnimationStyle.Loop, true);
+    //this.stars.originX = 170;
+    //this.stars.originY = 165;
+    //this.allBackLayerEffects.add(this.stars);
 
-    this.d20Fire = new Sprites("/Dice/D20Fire/D20Fire", 180, fps30, AnimationStyle.Loop, true);
-    this.d20Fire.originX = 151;
-    this.d20Fire.originY = 149;
-    this.d20Fire.returnFrameIndex = 72;
-    this.allBackLayerEffects.add(this.d20Fire);
+    //this.d20Fire = new Sprites("/Dice/D20Fire/D20Fire", 180, fps30, AnimationStyle.Loop, true);
+    //this.d20Fire.originX = 151;
+    //this.d20Fire.originY = 149;
+    //this.d20Fire.returnFrameIndex = 72;
+    //this.allBackLayerEffects.add(this.d20Fire);
 
     this.dicePortal = new Sprites("/Dice/DiePortal/DiePortal", 73, fps30, AnimationStyle.Sequential, true);
     this.dicePortal.originX = 189;
@@ -116,6 +134,24 @@ class DiceLayer {
     this.magicRing.originY = 112;
     this.allFrontLayerEffects.add(this.magicRing);
 
+    this.halos = new Sprites("/Dice/Halo/Halo", 90, fps30, AnimationStyle.Loop, true);
+    this.halos.originX = 190;
+    this.halos.originY = 190;
+    this.allFrontLayerEffects.add(this.halos);
+
+    this.haloSpins = new Sprites("/Dice/PaladinSpin/PaladinSpin", 85, fps30, AnimationStyle.Loop, true);
+    this.haloSpins.originX = 200;
+    this.haloSpins.originY = 200;
+    this.allFrontLayerEffects.add(this.haloSpins);
+
+    this.ravens = [];
+    this.loadRavens(3);
+
+    this.spirals = new Sprites("/Dice/Spiral/Spiral", 64, fps20, AnimationStyle.Sequential, true);
+    this.spirals.originX = 134;
+    this.spirals.originY = 107;
+    this.allBackLayerEffects.add(this.spirals);
+
     this.diceBlowColoredSmoke = new Sprites("/Dice/Blow/DiceBlow", 41, fps40, AnimationStyle.Sequential, true);
     this.diceBlowColoredSmoke.originX = 178;
     this.diceBlowColoredSmoke.originY = 170;
@@ -143,7 +179,7 @@ class DiceLayer {
 
     this.puff = new Sprites("/Dice/SneakAttack/Puff", 32, fps30, AnimationStyle.Sequential, true);
     this.puff.originX = 201;
-    this.puff.originY = 424;
+    this.puff.originY = 404;
     this.allFrontLayerEffects.add(this.puff);
 
     this.sneakAttackBottom = new Sprites("/Dice/SneakAttack/SneakAttackBottom", 91, fps30, AnimationStyle.Sequential, true);
@@ -152,12 +188,121 @@ class DiceLayer {
     this.allBackLayerEffects.add(this.sneakAttackBottom);
   }
 
+  loadRavens(count: number): any {
+    for (var i = 0; i < count; i++) {
+      let raven = new Sprites(`/Dice/Ravens/${i + 1}/Ravens`, 36, fps30, AnimationStyle.Sequential, true);
+      raven.originX = 44;
+      raven.originY = 477;
+      this.allBackLayerEffects.add(raven);
+      this.ravens.push(raven);
+    }
+  }
+
+
+  showResult(resultMessage: string, success: boolean): any {
+    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 150), resultMessage, 5000);
+    if (success) {
+      textEffect.fontColor = successFontColor;
+      textEffect.outlineColor = successOutlineColor;
+    }
+    else {
+      textEffect.fontColor = failFontColor;
+      textEffect.outlineColor = failOutlineColor;
+    }
+    textEffect.scale = 4;
+    textEffect.velocityY = 0.6;
+    textEffect.opacity = 0.90;
+    if (success)
+      textEffect.targetScale = 12;
+    else
+      textEffect.targetScale = 2;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 200;
+  }
+
+  showTotalDamage(totalDamage: number, success: boolean): any {
+    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 700), `Damage: ${totalDamage}`, 5000);
+    textEffect.fontColor = damageDieBackgroundColor;
+    textEffect.outlineColor = damageDieFontColor;
+    textEffect.scale = 4;
+    textEffect.velocityY = 0.6;
+    textEffect.opacity = 0.90;
+    if (success)
+      textEffect.targetScale = 12;
+    else 
+      textEffect.targetScale = 2;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 200;
+  }
+
+  showDieTotal(thisRollStr: string): void {
+    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 540), thisRollStr, 5000);
+    textEffect.fontColor = this.activePlayerDieColor;
+    textEffect.outlineColor = this.activePlayerDieFontColor;
+    textEffect.scale = 10;
+    textEffect.opacity = 0.90;
+    textEffect.targetScale = 30;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 200;
+  }
+
+  showRollModifier(rollModifier: number): void {
+    if (rollModifier == 0)
+      return;
+    var rollModStr: string = rollModifier.toString();
+    if (rollModifier > 0)
+      rollModStr = '+' + rollModStr;
+    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 420), `(${rollModStr})`, 5000);
+    textEffect.fontColor = this.activePlayerDieColor;
+    textEffect.outlineColor = this.activePlayerDieFontColor;
+    textEffect.velocityY = -0.7;
+    textEffect.scale = 3;
+    textEffect.opacity = 0.90;
+    textEffect.targetScale = 5.5;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 500;
+  }
+
   addDieValueLabel(centerPos: Vector, value: string, highlight: boolean = false) {
-    let textEffect: TextEffect = this.textEffects.add(centerPos, value);
+    let textEffect: TextEffect = this.textEffects.add(centerPos, value, 5000);
     if (highlight)
       textEffect.fontColor = '#ff0000';
-    textEffect.scale = 4;
+    textEffect.scale = 6;
+    textEffect.opacity = 0.75;
+    textEffect.targetScale = 0.5;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 200;
   }
+
+  addVantageText(die: any, message: string, fontColor: string, outlineColor: string): any {
+    let centerPos: Vector = getScreenCoordinates(die.getObject());
+    let textEffect: TextEffect = this.textEffects.add(centerPos.add(new Vector(0, 80)), message, 1500);
+    textEffect.fontColor = fontColor;
+    textEffect.outlineColor = outlineColor;
+    textEffect.scale = 3;
+    textEffect.waitToScale = 400;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 600;
+    textEffect.targetScale = 1;
+  }
+
+  addVantageTextAfter(die: any, message: string, fontColor: string, outlineColor: string, timeout: number = 0) {
+    if (timeout > 0)
+      setTimeout(function () {
+        this.addVantageText(die, message, fontColor, outlineColor);
+      }.bind(this), timeout);
+    else
+      this.addVantageText(die, message, fontColor, outlineColor);
+  }
+
+  addDisadvantageText(die: any, timeout: number = 0): any {
+    this.addVantageTextAfter(die, 'Disadvantage', this.activePlayerDieColor, this.activePlayerSpecialDieColor, timeout);
+  }
+
+  addAdvantageText(die: any, timeout: number = 0): any {
+    this.addVantageTextAfter(die, 'Advantage', this.activePlayerDieColor, this.activePlayerSpecialDieColor, timeout);
+  }
+
 
   mouseDownInCanvas(e) {
     //if (effectOverride != undefined) {
@@ -190,6 +335,8 @@ class DiceLayer {
     this.allBackLayerEffects.updatePositions(now);
     this.allFrontLayerEffects.draw(this.diceFrontContext, now);
     this.allBackLayerEffects.draw(this.diceBackContext, now);
+    this.textEffects.removeExpiredText(now);
+    this.textEffects.updatePositions(now);
     this.textEffects.render(this.diceFrontContext, now);
   }
 
@@ -203,22 +350,61 @@ class DiceLayer {
     return magicRing;
   }
 
+  addHalo(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
+    let halo = this.halos.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    halo.rotation = Math.random() * 360;
+    halo.opacity = 0.9;
+    halo.fadeInTime = 500;
+    halo.fadeOutTime = 500;
+    halo.fadeOnDestroy = true;
+    halo.autoRotationDegeesPerSecond = 10;
+    return halo;
+  }
+
+  addHaloSpin(x: number, y: number, hueShift: number = 0, angle: number): SpriteProxy {
+    let haloSpin = this.haloSpins.addShifted(x, y, 0, hueShift);
+    haloSpin.rotation = angle;
+    haloSpin.fadeInTime = 500;
+    haloSpin.fadeOutTime = 500;
+    haloSpin.fadeOnDestroy = true;
+    return haloSpin;
+  }
+
+
+  addRaven(x: number, y: number, angle: number) {
+    let index: number = Math.floor(Math.random() * this.ravens.length);
+    let raven = this.ravens[index].addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
+    raven.rotation = angle + 180 + Random.plusMinus(45);
+    //diceSounds.playRandom('BirdFlap', 4);
+    return raven;
+  }
+
   blowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
     this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
   }
 
-  addD20Fire(x: number, y: number) {
-    this.d20Fire.add(x, y).rotation = Math.random() * 360;
+  //addD20Fire(x: number, y: number) {
+  //  this.d20Fire.add(x, y).rotation = Math.random() * 360;
+  //}
+
+  addPuff(x: number, y: number, angle: number) {
+    let hueShift = this.activePlayerHueShift + Random.plusMinus(10);
+    var angleShift: number = 0;
+    if (Math.random() > 0.5)
+      angleShift = 180;
+    this.puff.addShifted(x, y, 0, hueShift).rotation = angle + angleShift;
   }
 
-  addPuff(x: number, y: number, angle: number, hueShift: number) {
-    this.puff.addShifted(x, y, 0, hueShift).rotation = angle;
+  addSparkTrail(x: number, y: number, angle: number) {
+    this.sparkTrail.addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35)).rotation = angle + 180 + Random.plusMinus(15);
   }
 
   clearResidualEffects(): any {
     this.magicRing.sprites = [];
-    this.stars.sprites = [];
-    this.d20Fire.sprites = [];
+    this.halos.sprites = [];
+    this.haloSpins.sprites = [];
+    //this.stars.sprites = [];
+    //this.d20Fire.sprites = [];
     this.textEffects.clear();
   }
 
@@ -278,26 +464,32 @@ class DiceLayer {
     return spark;
   }
 
+  addSpiral(x: number, y: number, angle: number): SpriteProxy {
+    let spiral = this.spirals.addShifted(x, y, Math.round(Math.random() * this.spirals.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
+    spiral.rotation = Random.between(0, 360);
+    return spiral;
+  }
+
   addPawPrint(x: number, y: number, angle: number): SpriteProxy {
     let pawPrint = this.pawPrints.addShifted(x, y, Math.round(Math.random() * this.pawPrints.sprites.length), diceLayer.activePlayerHueShift);
     pawPrint.rotation = angle;
-    pawPrint.expirationDate = performance.now() + 2000;
-    pawPrint.fadeOutTime = 500;
+    pawPrint.expirationDate = performance.now() + 4000;
+    pawPrint.fadeOutTime = 2000;
     pawPrint.fadeInTime = 500;
-    pawPrint.opacity = 0.8;
+    pawPrint.opacity = 0.9;
     return pawPrint;
   }
 
-  addStar(x: number, y: number): SpriteProxy {
-    let star = this.stars.addShifted(x, y, Math.round(Math.random() * this.stars.sprites.length), diceLayer.activePlayerHueShift);
-    star.autoRotationDegeesPerSecond = 15 + Math.round(Math.random() * 20);
-    if (Math.random() < 0.5)
-      star.autoRotationDegeesPerSecond = -star.autoRotationDegeesPerSecond;
-    star.fadeInTime = 1000;
-    star.fadeOutTime = 500;
-    star.opacity = 0.75;
-    return star;
-  }
+  //addStar(x: number, y: number): SpriteProxy {
+  //  let star = this.stars.addShifted(x, y, Math.round(Math.random() * this.stars.sprites.length), diceLayer.activePlayerHueShift);
+  //  star.autoRotationDegeesPerSecond = 15 + Math.round(Math.random() * 20);
+  //  if (Math.random() < 0.5)
+  //    star.autoRotationDegeesPerSecond = -star.autoRotationDegeesPerSecond;
+  //  star.fadeInTime = 1000;
+  //  star.fadeOutTime = 500;
+  //  star.opacity = 0.75;
+  //  return star;
+  //}
 
   clearDice(): void {
     removeRemainingDice();
@@ -314,27 +506,35 @@ class DiceLayer {
   playerChanged(playerID: number): void {
     this.activePlayerDieFontColor = '#000000';
     this.activePlayerSpecialDieFontColor = '#ffffff';
-    if (playerID === 0) {
-      this.activePlayerDieColor = '#fcd5a6';
-      this.activePlayerSpecialDieColor = '#4e2c04';
-      this.activePlayerHueShift = 33;
-      //this.activePlayerDieColor = '#000000';
-      //this.activePlayerDieFontColor = '#ffffff';
+    if (playerID === 0) { // Kent
+      this.activePlayerDieColor = '#feb6b6'; // '#fcd5a6';
+      this.activePlayerSpecialDieColor = '#720102'; //'#4e2c04';
+      //this.activePlayerDieColor = '#fec75e'; // '#fcd5a6';
+      //this.activePlayerSpecialDieColor = '#422b00'; //'#4e2c04';
+      this.activePlayerHueShift = 0; // 39;
     }
-    else if (playerID === 1) {
+    else if (playerID === 1) {  // Kayla
       this.activePlayerDieColor = '#a6fcc0';
       this.activePlayerSpecialDieColor = '#00641d';
+      //this.activePlayerSpecialDieFontColor = '#ddffe7';
       this.activePlayerHueShift = 138;
     }
-    else if (playerID === 2) {
+    else if (playerID === 2) {    // Mark
       this.activePlayerDieColor = '#c0A0ff';
       this.activePlayerSpecialDieColor = '#401260';
+      //this.activePlayerSpecialDieFontColor = '#f0e2fa';
       this.activePlayerHueShift = 260;
     }
-    else if (playerID === 3) {
-      this.activePlayerDieColor = '#a6d2fc'; // '#a6f9fc';
+    else if (playerID === 3) {    // Karen
+      this.activePlayerDieColor = '#9fd2ff'; // '#a6d2fc'; // '#a6f9fc';
       this.activePlayerSpecialDieColor = '#04315a';
+      //this.activePlayerSpecialDieFontColor = '#e4f2fe';
       this.activePlayerHueShift = 210;
+    }
+
+    if (matchNormalDieColorsToSpecial) {
+      this.activePlayerDieFontColor = this.activePlayerSpecialDieFontColor;
+      this.activePlayerDieColor = this.activePlayerSpecialDieColor;
     }
   }
 }

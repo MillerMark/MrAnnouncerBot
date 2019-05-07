@@ -211,6 +211,7 @@ namespace OverlayManager
 			chatCommands.Add(new ChatCommand("l", "DroneLeft"));
 			chatCommands.Add(new ChatCommand("r", "DroneRight"));
 			chatCommands.Add(new ChatCommand("cv", "ChangeDroneVelocity"));
+			chatCommands.Add(new ChatCommand("swat", "Swat"));
 
 			// Polling:
 			chatCommands.Add(new ChatCommand("poll", "StartQuiz").AddAliases("quiz"));

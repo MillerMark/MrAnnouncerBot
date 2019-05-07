@@ -56,6 +56,10 @@ class Random {
     return Math.random() * (max - min) + min;
   }
 
+  static plusMinus(value: number): number {
+    return -value + Math.random() * 2 * value;
+  }
+
   static max(max: number): number {
     return Math.random() * max;
   }

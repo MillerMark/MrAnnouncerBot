@@ -8,9 +8,8 @@ class TextEffects {
     this.textEffects = new Array<TextEffect>();
   }
 
-  add(centerPos: Vector, text: string): TextEffect {
-    let textEffect: TextEffect = new TextEffect();
-    textEffect.center = centerPos;
+  add(centerPos: Vector, text: string, lifeSpanMs: number = -1): TextEffect {
+    let textEffect: TextEffect = new TextEffect(centerPos.x, centerPos.y, lifeSpanMs);
     textEffect.text = text;
     this.textEffects.push(textEffect);
     return textEffect;
@@ -21,42 +20,103 @@ class TextEffects {
       textEffect.render(context, now);
     });
   }
+
+  removeExpiredText(now: number): void {
+    for (var i = this.textEffects.length - 1; i >= 0; i--) {
+      let textEffect: TextEffect = this.textEffects[i];
+      if (textEffect.expirationDate) {
+        if (!textEffect.stillAlive(now)) {
+          textEffect.destroying();
+          textEffect.removing();
+          if (!textEffect.isRemoving)
+            this.textEffects.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  updatePositions(now: number): void {
+    for (var i = this.textEffects.length - 1; i >= 0; i--) {
+      let textEffect: TextEffect = this.textEffects[i];
+      textEffect.updatePosition(now);
+    }
+  }
 }
 
-class TextEffect {
+class TextEffect extends AnimatedElement {
   text: string;
   fontColor: string;
   fontName: string;
   outlineColor: string;
   outlineThickness: number;
-  center: Vector;
   fontSize: number;
-  opacity: number;
   scale: number;
+  targetScale: number = -1;
+  originalScale: number;
+  deltaScale: number = undefined;
+  waitToScale: number = 0;
 
-  constructor() {
+
+  constructor(x: number, y: number, lifeSpanMs: number = -1) {
+    super(x, y, lifeSpanMs);
     this.text = 'test';
     this.fontColor = '#ffffff';
     this.outlineColor = '#000000';
-    this.outlineThickness = 1;
-    this.center = new Vector(960, 540);
+    this.outlineThickness = 0.5;
     this.fontSize = 18;
     this.opacity = 1;
     this.scale = 1;
+    this.originalScale = -1;
+  }
+
+  getVerticalThrust(now: number): number {
+    return 0;
+  }
+
+  lerp(start: number, end: number, percentComplete: number) {
+    return start + (end - start) * percentComplete;
+  }
+
+  lerpc(start: number, change: number, percentComplete: number) {
+    return start + change * percentComplete;
   }
 
   render(context: CanvasRenderingContext2D, now: number) {
-    const yOffset: number = 60;
-    context.font = `${this.fontSize * this.scale}px ${this.fontName}`;
+    let thisScale: number = this.scale;
+    if (this.targetScale >= 0) {
+
+      if (this.originalScale < 0)
+        this.originalScale = this.scale;
+
+      if (this.deltaScale === undefined)
+        this.deltaScale = this.targetScale - this.originalScale;
+
+      let scaleStartTime: number = this.timeStart + this.waitToScale;
+      let timePassed: number = now - scaleStartTime;
+
+      if (timePassed > 0) {
+        let lifespan: number = this.expirationDate - scaleStartTime;
+
+        let percentComplete: number;
+        if (lifespan == 0)
+          percentComplete = 1;
+        else
+          percentComplete = Math.max(Math.min(1, timePassed / lifespan), 0);
+
+        thisScale = this.lerpc(this.originalScale, this.deltaScale, percentComplete);
+      }
+    }
+
+    context.font = `${this.fontSize * thisScale}px ${this.fontName}`; //`-- <- Fixes memory leak
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillStyle = this.fontColor;
-    context.globalAlpha = this.opacity;
+    context.globalAlpha = this.getAlpha(now) * this.opacity;
     context.strokeStyle = this.outlineColor;
-    context.lineWidth = this.outlineThickness * this.scale * 2; // Half the stroke is outside the font.
+    context.lineWidth = this.outlineThickness * thisScale;
     context.lineJoin = "round";
-    context.strokeText(this.text, this.center.x, this.center.y + yOffset);
-    context.fillText(this.text, this.center.x, this.center.y + yOffset);
+    context.strokeText(this.text, this.x, this.y);
+    context.fillText(this.text, this.x, this.y);
     context.globalAlpha = 1;
   }
 }

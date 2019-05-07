@@ -176,6 +176,9 @@ class DiceObject {
   isFinished() {
     let threshold = 1;
 
+    if (this.object.body === null)
+      return true;
+
     let angularVelocity = this.object.body.angularVelocity;
     let velocity = this.object.body.velocity;
 
@@ -555,6 +558,7 @@ class DiceD10 extends DiceObject {
 
     this.scaleFactor = 0.9;
     this.values = 10;
+    this.offset = 1;
     this.faceTexts = [' ', '1', '2', '3', '4', '5', '6', '7', '8',
       '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
     //this.faceTexts = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8',
@@ -590,10 +594,10 @@ class DiceD10x10 extends DiceObject {
     this.scaleFactor = 0.9;
     this.heightFactor = 1.2;
     this.values = 10;
-    this.offset = -1;
+    this.offset = 0;
     this.multiplier = 10;
-    this.faceTexts = [' ', '00', '00', '10', '20', '30', '40', '50', '60', '70',
-      '80', '90', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+    this.faceTexts = [' ', '00', '10', '20', '30', '40', '50', '60', '70', '80',
+      '90', '90', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
     this.textMargin = 1.0;
     this.mass = 350;
     this.inertia = 9;
@@ -622,7 +626,7 @@ class DiceD10x01 extends DiceObject {
     this.vertices.push([0, 0, -1]);
     this.vertices.push([0, 0, 1]);
 
-    this.offset = -1;
+    this.offset = 1;
     this.scaleFactor = 0.9;
     this.heightFactor = 1.1;
     this.values = 10;
