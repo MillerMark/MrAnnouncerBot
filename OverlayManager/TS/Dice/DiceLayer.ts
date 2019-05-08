@@ -62,6 +62,7 @@ class DiceLayer {
   activePlayerDieFontColor: string = '#000000';
   activePlayerSpecialDieFontColor: string = '#ffffff';
   activePlayerHueShift: number = 0;
+  playerID: number;
 
   constructor() {
     this.loadSprites();
@@ -209,7 +210,7 @@ class DiceLayer {
       textEffect.fontColor = failFontColor;
       textEffect.outlineColor = failOutlineColor;
     }
-    textEffect.scale = 4;
+    textEffect.scale = 2;
     textEffect.velocityY = 0.6;
     textEffect.opacity = 0.90;
     if (success)
@@ -504,6 +505,7 @@ class DiceLayer {
   }
 
   playerChanged(playerID: number): void {
+    this.playerID = playerID;
     this.activePlayerDieFontColor = '#000000';
     this.activePlayerSpecialDieFontColor = '#ffffff';
     if (playerID === 0) { // Kent

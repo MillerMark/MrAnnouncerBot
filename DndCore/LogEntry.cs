@@ -16,6 +16,13 @@ namespace DndCore
 			ActualTime = DateTime.Now;
 			DndTime = DndTimeClock.Instance.Time;
 		}
+
+		public LogEntry(string message, DateTime actualTime, DateTime dndTime)
+		{
+			Message = message;
+			ActualTime = actualTime;
+			DndTime = dndTime;
+		}
 	}
 }
 

@@ -50,14 +50,26 @@ namespace DHDM
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
 			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
 
+
 			dndTimeClock = new DndTimeClock();
+			History.TimeClock = dndTimeClock;
 			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
-			// TODO: Save and retrieve time.
+			// TODO: Save and retrieve game time.
 			dndTimeClock.SetTime(DateTime.Now);
 			InitializeComponent();
 			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
 			groupEffectBuilder.Entries = new ObservableCollection<TimeLineEffect>();
 			spTimeSegments.DataContext = dndTimeClock;
+			logListBox.ItemsSource = History.Entries;
+			History.LogUpdated += History_LogUpdated;
+		}
+
+		private void History_LogUpdated(object sender, EventArgs e)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				History.UpdateQueuedEntries();
+			});
 		}
 
 		public int PlayerID
@@ -86,11 +98,6 @@ namespace DHDM
 			activePage = ScrollPage.main;
 			FocusHelper.ClearActiveStatBoxes();
 			HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
-		}
-
-		void ConnectToHub()
-		{
-
 		}
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
@@ -144,7 +151,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-			//rbTestNormalDieRoll.IsChecked = true;
+			rbTestNormalDieRoll.IsChecked = true;
 			updateClearButtonTimer.Stop();
 			EnableDiceRollButtons(false);
 			btnClearDice.Visibility = Visibility.Hidden;
@@ -382,6 +389,8 @@ namespace DHDM
 
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
+			if (ea.DiceRollData != null)
+				History.Log("Die roll: " + ea.DiceRollData.roll);
 			EnableDiceRollButtons(true);
 		}
 

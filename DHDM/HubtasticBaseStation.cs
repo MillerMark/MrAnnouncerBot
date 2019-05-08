@@ -5,44 +5,6 @@ using System.Linq;
 
 namespace DHDM
 {
-	public class DiceRollResult
-	{
-		public bool success;
-		public int d20Roll;
-		public int attackModifierThisRoll;
-		public int hiddenThreshold;
-		public int totalDamage;
-    
-		public DiceRollResult()
-		{
-			
-		}
-	}
-	public class DiceEventArgs : EventArgs
-	{
-		DiceRollResult diceRollResult;
-		public DiceEventArgs()
-		{
-		}
-		public DiceEventArgs(string diceData)
-		{
-			// TODO: JSON Deserialize
-			DiceData = diceData;
-		}
-
-		public void SetDiceData(string diceData)
-		{
-			if (diceData == null)
-				diceRollResult = null;
-			else
-				diceRollResult = Newtonsoft.Json.JsonConvert.DeserializeObject<DiceRollResult>(diceData);
-			DiceData = diceData;
-		}
-
-		public string DiceData { get; set; }
-		public DiceRollResult DiceRollResult { get => diceRollResult; set => diceRollResult = value; }
-	}
-
 	public static class HubtasticBaseStation
 	{
 		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);

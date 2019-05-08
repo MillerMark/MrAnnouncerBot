@@ -516,8 +516,8 @@ function animate() {
 
 function anyDiceStillRolling(): boolean {
   for (var i = 0; i < dice.length; i++) {
-    let die = dice[i].getObject();
-    if (die.body.velocity.norm() > 10)
+    let dieObject = dice[i].getObject();
+    if (dieObject.body.velocity.norm() > 10)
       return true;
   }
   return false;
@@ -538,7 +538,7 @@ function checkStillRolling() {
   else {
     let thisTime: number = performance.now();
     if ((thisTime - firstStopTime) / 1000 > 1.5) {
-      onDiceRollStopped();
+        onDiceRollStopped();
     }
   }
 }
@@ -1354,16 +1354,21 @@ function onDiceRollStopped() {
     onFailure();
   }
 
+  let totalDamagePlusModifier: number = totalDamage + damageModifierThisRoll;
+
   if (totalDamage > 0) {
-    diceLayer.showTotalDamage(totalDamage + damageModifierThisRoll, success);
+    diceLayer.showTotalDamage(totalDamagePlusModifier, success);
   }
+  else 
+    totalDamagePlusModifier = 0;
+
 
   var diceData = {
+    'playerID': diceLayer.playerID,
     'success': success,
-    'd20Roll': d20Value,
-    'damageModifierThisRoll': damageModifierThisRoll,
+    'roll': thisRollValue,
     'hiddenThreshold': hiddenThreshold,
-    'totalDamage': totalDamage,
+    'damage': totalDamagePlusModifier,
   };
 
   diceHaveStoppedRolling(JSON.stringify(diceData));

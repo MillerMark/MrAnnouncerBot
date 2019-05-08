@@ -238,7 +238,22 @@
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
-					<Grid Background="#FFE5E5E5"/>
+					<ListBox x:Name="logListBox" MaxHeight="500" >
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="80" />
+										<ColumnDefinition Width="20" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
+
+									<TextBlock Grid.Column="0" MinWidth="80" Text="{Binding Path=DndTime}" />
+									<TextBlock Grid.Column="2" Text="{Binding Path=Message}"/>
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
 				</TabItem>
 				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<local:EffectsList x:Name="effectsList" Height="Auto" VerticalAlignment="Stretch"/>
