@@ -19,14 +19,19 @@ const fps30: number = 33;
 const fps25: number = 40;
 const fps20: number = 50;
 const matchNormalDieColorsToSpecial: boolean = true;
-const damageDieBackgroundColor: string = '#e49836';
-const damageDieFontColor: string = '#000000';
+//const damageDieBackgroundColor: string = '#e49836';
+//const damageDieFontColor: string = '#000000';
+const damageDieBackgroundColor: string = '#a40017';
+const damageDieFontColor: string = '#ffffff';
+
 const successFontColor: string = '#ffffff';
 const successOutlineColor: string = '#000000';
 const failFontColor: string = '#000000';
 const failOutlineColor: string = '#ffffff';
 
 class DiceLayer {
+  static readonly bonusRollDieColor: string = '#adfff4'; // '#ff81bf'; // '#a3ffe6'
+  static readonly bonusRollFontColor: string = '#000000';
   static matchOozeToDieColor: boolean = true;
   textEffects: TextEffects = new TextEffects();
   diceFrontCanvas: HTMLCanvasElement;
@@ -38,6 +43,8 @@ class DiceLayer {
   haloSpins: Sprites;
   //d20Fire: Sprites;
   puff: Sprites;
+  freeze: Sprites;
+  freezePop: Sprites;
   diceSparks: Sprites;
   sneakAttackTop: Sprites;
   sneakAttackBottom: Sprites;
@@ -76,12 +83,21 @@ class DiceLayer {
     this.allFrontLayerEffects = new SpriteCollection();
     this.allBackLayerEffects = new SpriteCollection();
 
-    // Items added later are drawn on top of earlier items.
-
+    //! Items added later are drawn on top of earlier items.
     this.diceFireball = new Sprites("/Dice/Roll20Fireball/DiceFireball", 71, fps30, AnimationStyle.Sequential, true);
     this.diceFireball.originX = 104;
     this.diceFireball.originY = 155;
     this.allFrontLayerEffects.add(this.diceFireball);
+
+    this.freeze = new Sprites("/Dice/Freeze/Freeze", 30, fps30, AnimationStyle.SequentialStop, true);
+    this.freeze.originX = 80;
+    this.freeze.originY = 80;
+    this.allFrontLayerEffects.add(this.freeze);
+
+    this.freezePop = new Sprites("/Dice/Freeze/Pop", 50, fps30, AnimationStyle.Sequential, true);
+    this.freezePop.originX = 182;
+    this.freezePop.originY = 136;
+    this.allFrontLayerEffects.add(this.freezePop);
 
     this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
     this.sparkTrail.originX = 322;
@@ -236,6 +252,18 @@ class DiceLayer {
     textEffect.fadeInTime = 200;
   }
 
+  showBonusRoll(totalBonusStr: string): any {
+    let textEffect: TextEffect = this.textEffects.add(new Vector(500, 900), totalBonusStr, 5000);
+    textEffect.fontColor = DiceLayer.bonusRollDieColor;
+    textEffect.outlineColor = DiceLayer.bonusRollFontColor;
+    textEffect.scale = 3;
+    textEffect.velocityY = 0.6;
+    textEffect.opacity = 0.90;
+    textEffect.targetScale = 9;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 200;
+  }
+
   showDieTotal(thisRollStr: string): void {
     let textEffect: TextEffect = this.textEffects.add(new Vector(960, 540), thisRollStr, 5000);
     textEffect.fontColor = this.activePlayerDieColor;
@@ -274,6 +302,16 @@ class DiceLayer {
     textEffect.fadeOutTime = 800;
     textEffect.fadeInTime = 200;
   }
+
+  indicateBonusRoll(message: string): any {
+    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 800), message, 3000);
+    textEffect.scale = 6;
+    textEffect.opacity = 0.75;
+    textEffect.targetScale = 10;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 800;
+  }
+
 
   addVantageText(die: any, message: string, fontColor: string, outlineColor: string): any {
     let centerPos: Vector = getScreenCoordinates(die.getObject());
@@ -341,7 +379,7 @@ class DiceLayer {
     this.textEffects.render(this.diceFrontContext, now);
   }
 
-  testFireball(x: number, y: number) {
+  addFireball(x: number, y: number) {
     this.diceFireball.add(x, y, 0).rotation = 90;
   }
 
@@ -349,6 +387,19 @@ class DiceLayer {
     let magicRing = this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
     magicRing.rotation = Math.random() * 360;
     return magicRing;
+  }
+
+  addFreezeBubble(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
+    let freeze: SpriteProxy = this.freeze.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    freeze.rotation = Math.random() * 360;
+    freeze.fadeInTime = 500;
+    return freeze;
+  }
+
+  addFeezePop(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
+    let freezePop = this.freezePop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+    freezePop.rotation = Math.random() * 360;
+    return freezePop;
   }
 
   addHalo(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
@@ -510,7 +561,7 @@ class DiceLayer {
     this.activePlayerSpecialDieFontColor = '#ffffff';
     if (playerID === 0) { // Kent
       this.activePlayerDieColor = '#feb6b6'; // '#fcd5a6';
-      this.activePlayerSpecialDieColor = '#720102'; //'#4e2c04';
+      this.activePlayerSpecialDieColor = '#710138'; // '#720102'; //'#4e2c04';
       //this.activePlayerDieColor = '#fec75e'; // '#fcd5a6';
       //this.activePlayerSpecialDieColor = '#422b00'; //'#4e2c04';
       this.activePlayerHueShift = 0; // 39;

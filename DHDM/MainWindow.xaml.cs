@@ -44,7 +44,7 @@ namespace DHDM
 
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
-			showClearButtonTimer.Interval = TimeSpan.FromSeconds(2);
+			showClearButtonTimer.Interval = TimeSpan.FromSeconds(5);
 
 			updateClearButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
@@ -149,8 +149,18 @@ namespace DHDM
 						lstItems.Save();
 		}
 
+		public class MyOtherClass
+		{
+
+			public double X { get; set; }
+			public double Y { get; set; }
+			public double Z { get; set; }
+
+		}
+
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+
 			rbTestNormalDieRoll.IsChecked = true;
 			updateClearButtonTimer.Stop();
 			EnableDiceRollButtons(false);
@@ -162,7 +172,7 @@ namespace DHDM
 
 		void PrepareForClear()
 		{
-			showClearButtonTimer.Start();
+			//showClearButtonTimer.Start();
 		}
 
 		public void ClearTheDice()
@@ -392,6 +402,7 @@ namespace DHDM
 			if (ea.DiceRollData != null)
 				History.Log("Die roll: " + ea.DiceRollData.roll);
 			EnableDiceRollButtons(true);
+			ShowClearButton(null, EventArgs.Empty);
 		}
 
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
@@ -452,6 +463,15 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
+		void PrepareUiForClearButton()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				rectProgressToClear.Width = 0;
+				btnClearDice.Visibility = Visibility.Visible;
+			});
+		}
+
 		void ShowClearButton(object sender, EventArgs e)
 		{
 			pauseTime = TimeSpan.Zero;
@@ -459,13 +479,12 @@ namespace DHDM
 			showClearButtonTimer.Stop();
 			updateClearButtonTimer.Start();
 			justClickedTheClearDiceButton = false;
-			rectProgressToClear.Width = 0;
-			btnClearDice.Visibility = Visibility.Visible;
+			PrepareUiForClearButton();
 		}
 
 		void UpdateClearButton(object sender, EventArgs e)
 		{
-			const double timeToAutoClear = 6000;
+			const double timeToAutoClear = 6500;
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
@@ -486,6 +505,7 @@ namespace DHDM
 		}
 		TimeSpan pauseTime;
 		DateTime updateClearPaused;
+
 		private void BtnClearDice_MouseEnter(object sender, MouseEventArgs e)
 		{
 			updateClearPaused = DateTime.Now;
@@ -497,6 +517,25 @@ namespace DHDM
 			pauseTime += DateTime.Now - updateClearPaused;
 			if (!justClickedTheClearDiceButton)
 				updateClearButtonTimer.Start();
+		}
+
+
+		public static FrameworkElement FindChild(DependencyObject parent, string childName)
+		{
+			int childCount = VisualTreeHelper.GetChildrenCount(parent);
+			for (int i = 0; i < childCount; i++)
+			{
+				FrameworkElement child = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
+				if (child != null)
+				{
+					if (child.Name == childName)
+						return child;
+					child = FindChild(child, childName);
+					if (child != null && child.Name == childName)
+						return child;
+				}
+			}
+			return null;
 		}
 
 		private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)

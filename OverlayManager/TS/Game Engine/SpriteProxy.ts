@@ -219,6 +219,7 @@ class AnimatedElement {
 }
 
 class SpriteProxy extends AnimatedElement {
+  data: any;
   haveCycledOnce: boolean;
   systemDrawn: boolean = true;
   owned: boolean;

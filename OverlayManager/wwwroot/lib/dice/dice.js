@@ -626,7 +626,7 @@ class DiceD10x01 extends DiceObject {
     this.vertices.push([0, 0, -1]);
     this.vertices.push([0, 0, 1]);
 
-    this.offset = 1;
+    this.offset = 0;
     this.scaleFactor = 0.9;
     this.heightFactor = 1.1;
     this.values = 10;
