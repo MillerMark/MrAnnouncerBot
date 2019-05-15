@@ -11,10 +11,7 @@ var removeDiceImmediately: boolean = false;
 const dieScale: number = 1.5;
 //const damageDieBackgroundColor: string = '#7f090e';
 //const damageDieFontColor: string = '#ffffff';
-//const wildMagicDieBackgroundColor: string = '#401260';
-//const wildMagicDieFontColor: string = '#ffffff';
 var repeatRandomThrow: boolean = false;
-var rollIsWildMagic: boolean = false;
 var onBonusThrow: boolean = false;
 var startedBonusRoll: boolean = false;
 var randomDiceThrowIntervalId: number = 0;
@@ -625,8 +622,7 @@ function checkStillRolling() {
 			}
 			else {
 				popFrozenDice();
-				if (diceRollData.type != DiceRollType.WildMagic)
-					showRollTotal();
+				showRollTotal();
 				onDiceRollStopped();
 			}
 		}

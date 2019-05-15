@@ -21,9 +21,7 @@ function playZap() {
 const dronePathExtension: number = 18;
 
 //` ![](204DC0A5D26C752B4ED0E8696EBE637B.png)
-
-
-class Drone extends SpriteProxy {
+class Drone extends ColorShiftingSpriteProxy {
   static readonly width: number = 192;
   static readonly height: number = 90;
   firstCoinCollection: number;
@@ -34,9 +32,10 @@ class Drone extends SpriteProxy {
     if (!(activeDroneGame instanceof DroneGame))
       return;
     let drones: Sprites = activeDroneGame.dronesRed;
-    //if (params === 'blue')
-    //  drones = dronesBlue;
-    let myDrone: Drone = <Drone>createSprite(drones, now, createDrone);
+		let myDrone: Drone = <Drone>createSprite(drones, now, createDrone);
+		let hsl: HueSatLight = HueSatLight.fromHex(color);
+		if (hsl)
+			myDrone.setHueSatBrightness(hsl.hue * 360, 100, 125);
     myDrone.height = drones.spriteHeight;
     myDrone.width = drones.spriteWidth;
     myDrone.displayName = displayName;
@@ -93,8 +92,8 @@ class Drone extends SpriteProxy {
   sparkY: number;
   sparkCreationTime: number;
 
-  constructor(startingFrameNumber: number, public x: number, public y: number) {
-    super(startingFrameNumber, x, y);
+	constructor(startingFrameNumber: number, public x: number, public y: number) {
+		super(startingFrameNumber, new Vector(x, y));
     this.fadeOnDestroy = false;
     let now: number = performance.now();
     this.leftThrustOffTime = now;
@@ -112,7 +111,7 @@ class Drone extends SpriteProxy {
     this.lastTimeWeAdvancedTheSparksFrame = now;
   }
 
-  static create(x: number, y: number, frameCount: number) {
+	static create(x: number, y: number, frameCount: number): Drone {
     return new Drone(Random.intMax(frameCount), x, y);
   }
 
@@ -557,7 +556,7 @@ class Drone extends SpriteProxy {
 
 
   matches(matchData: any): boolean {
-    return this.userId == matchData;
+		return this.userId == matchData;
   }
 
   getMs(durationSeconds: string): number {
@@ -658,7 +657,7 @@ class Drone extends SpriteProxy {
     this.selfDestruct();
   }
 
-  destroying(): void {
+	destroying(): void {
     if (this.meteor) {
       let now: number = performance.now();
       this.changingDirection(now);

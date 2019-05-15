@@ -112,7 +112,7 @@ class HueSatLight {
     return new HueSatLight(inbounds(hue), inbounds(sat), inbounds(light));
   }
 
-  static fromHex(hex: string) {
+	static fromHex(hex: string) {
     // Expand shorthand form (e.g. "08f") to full form (e.g. "0088FF")
     var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
     hex = hex.replace(shorthandRegex, function (m, r, g, b) {

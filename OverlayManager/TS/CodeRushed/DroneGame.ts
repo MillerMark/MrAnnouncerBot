@@ -204,7 +204,12 @@ class DroneGame extends GamePlusQuiz {
 
   executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
     if (super.executeCommand(command, params, userId, userName, displayName, color, now))
-      return true;
+			return true;
+
+		if (command === "Swat") {
+			this.destroyAllDronesOverMark();
+		}
+
     if (command === "Launch") {
       if (!myRocket.started || myRocket.isDocked) {
         myRocket.started = true;
@@ -297,6 +302,15 @@ class DroneGame extends GamePlusQuiz {
     else if (command === "Toss") {
       this.tossMeteor(userId, params);
     }
+	}
+
+  destroyAllDronesOverMark(): void {
+		this.allDrones.allSprites.forEach(function (drones: Sprites) {
+			drones.sprites.forEach(function (drone: Drone) {
+				if (drone.x > 885 && drone.x < 1236 && drone.y > 737)
+					drone.selfDestruct();
+			}, this);
+		}, this);
   }
 
   test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
