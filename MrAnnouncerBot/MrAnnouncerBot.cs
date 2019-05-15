@@ -152,7 +152,7 @@ namespace MrAnnouncerBot
 
 		void AutoSaveViewers(object obj)
 		{
-			Console.WriteLine("Saving viewer data....");
+			Console.WriteLine($"Saving viewer data... {DateTime.Now:T}");
 			allViewers.Save();
 		}
 

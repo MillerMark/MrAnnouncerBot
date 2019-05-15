@@ -44,7 +44,7 @@ namespace DHDM
 
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
-			showClearButtonTimer.Interval = TimeSpan.FromSeconds(5);
+			showClearButtonTimer.Interval = TimeSpan.FromSeconds(8);
 
 			updateClearButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
@@ -160,7 +160,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-
+			showClearButtonTimer.Start();
 			rbTestNormalDieRoll.IsChecked = true;
 			updateClearButtonTimer.Stop();
 			EnableDiceRollButtons(false);
@@ -218,6 +218,40 @@ namespace DHDM
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
+
+			diceRoll.CritFailMessage = "";
+			diceRoll.CritSuccessMessage = "";
+			diceRoll.SuccessMessage = "";
+			diceRoll.FailMessage = "";
+
+			switch (type)
+			{
+				case DiceRollType.SkillCheck:
+					diceRoll.CritFailMessage = "COMPLETE FAILURE!";
+					diceRoll.CritSuccessMessage = "Nat 20!";
+					diceRoll.SuccessMessage = "Success!";
+					diceRoll.FailMessage = "Fail!";
+ 				break;
+				case DiceRollType.Attack:
+					diceRoll.CritFailMessage = "SPECTACULAR MISS!";
+					diceRoll.CritSuccessMessage = "Critical Hit!";
+					diceRoll.SuccessMessage = "Hit!";
+					diceRoll.FailMessage = "Miss!";
+					break;
+				case DiceRollType.SavingThrow:
+					diceRoll.CritFailMessage = "COMPLETE FAILURE!";
+					diceRoll.CritSuccessMessage = "Critical Success!";
+					diceRoll.SuccessMessage = "Success!";
+					diceRoll.FailMessage = "Fail!";
+					break;
+				case DiceRollType.DeathSavingThrow:
+					diceRoll.CritFailMessage = "COMPLETE FAILURE!";
+					diceRoll.CritSuccessMessage = "Critical Success!";
+					diceRoll.SuccessMessage = "Success!";
+					diceRoll.FailMessage = "Fail!";
+					break;
+			}
+
 
 			diceRoll.ThrowPower = new Random().Next() * 2;
 			if (diceRoll.ThrowPower < 0.3)
@@ -446,23 +480,6 @@ namespace DHDM
 			dndTimeClock.Advance(timeSinceLastUpdate.TotalMilliseconds);
 		}
 
-		private void BtnWildMagic_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = new DiceRoll();
-			diceRoll.Modifier = 0;
-			diceRoll.HiddenThreshold = 0;
-			diceRoll.IsMagic = true;
-			diceRoll.Type = DiceRollType.WildMagic;
-			RollTheDice(diceRoll);
-		}
-
-		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsWildAnimalAttack = true;
-			RollTheDice(diceRoll);
-		}
-
 		void PrepareUiForClearButton()
 		{
 			Dispatcher.Invoke(() =>
@@ -538,10 +555,42 @@ namespace DHDM
 			return null;
 		}
 
+		public enum Flavors
+		{
+			Vanilla,
+			Chocolate,
+			Strawberry,
+			Mint
+		}
+
 		private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
 			diceRoll.IsPaladinSmiteAttack = true;
+			diceRoll.NumHalos = 3;
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.Raven,
+				LeftRightDistanceBetweenPrints = 15,
+				MinForwardDistanceBetweenPrints = 5,
+				OnPrintPlaySound = "Flap",
+				MinSoundInterval= 600,
+				PlusMinusSoundInterval = 300,
+				NumRandomSounds = 6
+				
+			});
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.Spiral,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 150,
+				OnPrintPlaySound = "Crow",
+				MinSoundInterval = 500,
+				PlusMinusSoundInterval = 300,
+				NumRandomSounds = 3
+
+				
+			});
 			RollTheDice(diceRoll);
 		}
 
@@ -549,6 +598,46 @@ namespace DHDM
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
 			diceRoll.IsSneakAttack = true;
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.Smoke,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
+			});
+			diceRoll.OnFirstContactSound = "SneakAttack";
+			diceRoll.OnFirstContactEffect = TrailingSpriteType.SmokeExplosion;
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnWildMagic_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = new DiceRoll();
+			diceRoll.Modifier = 0;
+			diceRoll.HiddenThreshold = 0;
+			diceRoll.IsMagic = true;
+			diceRoll.Type = DiceRollType.WildMagic;
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.SparkTrail,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 84
+			});
+
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+			diceRoll.IsWildAnimalAttack = true;
+			diceRoll.OnFirstContactSound = "WildForm";
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.PawPrint,
+				LeftRightDistanceBetweenPrints = 50,
+				MinForwardDistanceBetweenPrints = 90,
+			});
+
 			RollTheDice(diceRoll);
 		}
 

@@ -1,7 +1,8 @@
 ﻿var connection;
 
 function connectToSignalR(signalR) {
-  connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
+	connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
+	connection.serverTimeoutInMilliseconds = 1000000; // 1000 second
   window.onload = function () {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);

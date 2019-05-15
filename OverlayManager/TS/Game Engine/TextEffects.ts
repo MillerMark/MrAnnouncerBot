@@ -44,6 +44,7 @@ class TextEffects {
 }
 
 class TextEffect extends AnimatedElement {
+	elasticIn: boolean;
   text: string;
   fontColor: string;
   fontName: string;
@@ -79,7 +80,12 @@ class TextEffect extends AnimatedElement {
 
   lerpc(start: number, change: number, percentComplete: number) {
     return start + change * percentComplete;
-  }
+	}
+
+	static inElastic(t: number) {
+		const inverseSpeed: number = 0.02;  // Smaller == faster.
+		return t === 0 ? 0 : t === 1 ? 1 : (inverseSpeed - inverseSpeed / t) * Math.sin(25 * t) + 1;
+	}
 
   render(context: CanvasRenderingContext2D, now: number) {
     let thisScale: number = this.scale;
@@ -103,7 +109,13 @@ class TextEffect extends AnimatedElement {
         else
           percentComplete = Math.max(Math.min(1, timePassed / lifespan), 0);
 
-        thisScale = this.lerpc(this.originalScale, this.deltaScale, percentComplete);
+				let easedPercent: number;
+				if (this.elasticIn)
+					easedPercent = TextEffect.inElastic(percentComplete);
+				else
+					easedPercent = percentComplete;
+
+				thisScale = this.lerpc(this.originalScale, this.deltaScale, easedPercent);
       }
     }
 

@@ -14,7 +14,40 @@ enum DiceRollType {
   WildMagic
 }
 
-const fps40: number = 1000 / 40;
+enum SpriteType {
+	PawPrint,
+	Raven,
+	Spiral,
+	Smoke,
+	SmokeExplosion,
+	SparkTrail
+}
+
+class TrailingEffect {
+  constructor(dto: any) {
+		this.MinForwardDistanceBetweenPrints = dto.MinForwardDistanceBetweenPrints;
+		this.LeftRightDistanceBetweenPrints = dto.LeftRightDistanceBetweenPrints;
+		this.Index = dto.Index;
+		this.Type = dto.Type;
+		this.OnPrintPlaySound = dto.OnPrintPlaySound;
+		this.MinSoundInterval = dto.MinSoundInterval;
+		this.PlusMinusSoundInterval = dto.PlusMinusSoundInterval;
+		this.NumRandomSounds = dto.NumRandomSounds;
+		this.intervalBetweenSounds = 0;
+	}
+
+	intervalBetweenSounds: number;
+	NumRandomSounds: number;
+	MinForwardDistanceBetweenPrints: number;
+	LeftRightDistanceBetweenPrints: number;
+	Index: number;
+	Type: SpriteType;
+	OnPrintPlaySound: string;
+	MinSoundInterval: number;
+	PlusMinusSoundInterval: number;
+}
+
+const fps40: number = 25;
 const fps30: number = 33;
 const fps25: number = 40;
 const fps20: number = 50;
@@ -30,6 +63,13 @@ const failFontColor: string = '#000000';
 const failOutlineColor: string = '#ffffff';
 
 class DiceLayer {
+	private readonly totalDamageTime: number = 7000;
+	private readonly totalRollScoreTime: number = 7000;
+	private readonly damageModifierTime: number = 5000;
+	private readonly rollModifierTime: number = 4000;
+	private readonly bonusRollTime: number = 5000;
+	private readonly resultTextTime: number = 9000;
+
   static readonly bonusRollDieColor: string = '#adfff4'; // '#ff81bf'; // '#a3ffe6'
   static readonly bonusRollFontColor: string = '#000000';
   static matchOozeToDieColor: boolean = true;
@@ -164,7 +204,7 @@ class DiceLayer {
     this.ravens = [];
     this.loadRavens(3);
 
-    this.spirals = new Sprites("/Dice/Spiral/Spiral", 64, fps20, AnimationStyle.Sequential, true);
+    this.spirals = new Sprites("/Dice/Spiral/Spiral", 64, fps40, AnimationStyle.Sequential, true);
     this.spirals.originX = 134;
     this.spirals.originY = 107;
     this.allBackLayerEffects.add(this.spirals);
@@ -215,9 +255,10 @@ class DiceLayer {
     }
   }
 
-
-  showResult(resultMessage: string, success: boolean): any {
-    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 150), resultMessage, 5000);
+	showResult(resultMessage: string, success: boolean): any {
+		if (!resultMessage)
+			return;
+		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 100), resultMessage, this.resultTextTime);
     if (success) {
       textEffect.fontColor = successFontColor;
       textEffect.outlineColor = successOutlineColor;
@@ -226,36 +267,75 @@ class DiceLayer {
       textEffect.fontColor = failFontColor;
       textEffect.outlineColor = failOutlineColor;
     }
-    textEffect.scale = 2;
-    textEffect.velocityY = 0.6;
+    textEffect.scale = 1;
+    textEffect.velocityY = 0.2;
     textEffect.opacity = 0.90;
-    if (success)
-      textEffect.targetScale = 12;
-    else
-      textEffect.targetScale = 2;
-    textEffect.fadeOutTime = 800;
+    textEffect.targetScale = 9;
+    textEffect.fadeOutTime = 1000;
     textEffect.fadeInTime = 200;
-  }
+	}
 
-  showTotalDamage(totalDamage: number, success: boolean): any {
-    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 700), `Damage: ${totalDamage}`, 5000);
+	showTotalDamage(totalDamage: number, success: boolean): any {
+		var damageTime: number = this.totalDamageTime;
+		if (!success)
+			damageTime = 2 * damageTime / 3;
+		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 750), `Damage: ${totalDamage}`, damageTime);
     textEffect.fontColor = damageDieBackgroundColor;
-    textEffect.outlineColor = damageDieFontColor;
+		textEffect.outlineColor = damageDieFontColor;
+		textEffect.elasticIn = true;
     textEffect.scale = 4;
-    textEffect.velocityY = 0.6;
+    textEffect.velocityY = 0.4;
     textEffect.opacity = 0.90;
     if (success)
-      textEffect.targetScale = 12;
+      textEffect.targetScale = 8;
     else 
-      textEffect.targetScale = 2;
+      textEffect.targetScale = 3;
+    textEffect.fadeOutTime = 800;
+    textEffect.fadeInTime = 200;
+	}
+
+	showDamageModifier(modifier: number, success: boolean): any {
+		let totalDamage: string;
+		if (modifier < 0)
+			totalDamage = modifier.toString();
+		else 
+			totalDamage = '+' + modifier.toString();
+
+		var damageTime: number = this.damageModifierTime;
+		if (!success)
+			damageTime = 2 * damageTime / 3;
+
+		let yPos: number;
+		let targetScale: number;
+		let velocityY: number;
+		if (success) {
+			targetScale = 4;
+			velocityY = 0.5;
+			yPos = 880;
+		}
+		else {
+			targetScale = 2;
+			velocityY = 0.5;
+			yPos = 810;
+		}
+		let textEffect: TextEffect = this.textEffects.add(new Vector(960, yPos), `(${totalDamage})`, damageTime);
+		textEffect.targetScale = targetScale;
+    textEffect.fontColor = damageDieBackgroundColor;
+		textEffect.outlineColor = damageDieFontColor;
+		textEffect.elasticIn = true;
+    textEffect.scale = 3;
+		textEffect.velocityY = velocityY;
+    textEffect.opacity = 0.90;
+		
     textEffect.fadeOutTime = 800;
     textEffect.fadeInTime = 200;
   }
 
-  showBonusRoll(totalBonusStr: string): any {
-    let textEffect: TextEffect = this.textEffects.add(new Vector(500, 900), totalBonusStr, 5000);
+	showBonusRoll(totalBonusStr: string): any {
+		let textEffect: TextEffect = this.textEffects.add(new Vector(500, 900), totalBonusStr, this.bonusRollTime);
     textEffect.fontColor = DiceLayer.bonusRollDieColor;
-    textEffect.outlineColor = DiceLayer.bonusRollFontColor;
+		textEffect.outlineColor = DiceLayer.bonusRollFontColor;
+		textEffect.elasticIn = true;
     textEffect.scale = 3;
     textEffect.velocityY = 0.6;
     textEffect.opacity = 0.90;
@@ -264,9 +344,10 @@ class DiceLayer {
     textEffect.fadeInTime = 200;
   }
 
-  showDieTotal(thisRollStr: string): void {
-    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 540), thisRollStr, 5000);
-    textEffect.fontColor = this.activePlayerDieColor;
+	showDieTotal(thisRollStr: string): void {
+		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 540), thisRollStr, this.totalRollScoreTime);
+		textEffect.fontColor = this.activePlayerDieColor;
+		textEffect.elasticIn = true;
     textEffect.outlineColor = this.activePlayerDieFontColor;
     textEffect.scale = 10;
     textEffect.opacity = 0.90;
@@ -275,19 +356,20 @@ class DiceLayer {
     textEffect.fadeInTime = 200;
   }
 
-  showRollModifier(rollModifier: number): void {
+	showRollModifier(rollModifier: number): void {
     if (rollModifier == 0)
       return;
     var rollModStr: string = rollModifier.toString();
     if (rollModifier > 0)
       rollModStr = '+' + rollModStr;
-    let textEffect: TextEffect = this.textEffects.add(new Vector(960, 420), `(${rollModStr})`, 5000);
+		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 250), `(${rollModStr})`, this.rollModifierTime);
+		textEffect.elasticIn = true;
     textEffect.fontColor = this.activePlayerDieColor;
     textEffect.outlineColor = this.activePlayerDieFontColor;
-    textEffect.velocityY = -0.7;
-    textEffect.scale = 3;
+    textEffect.velocityY = -0.1;
+    textEffect.scale = 2;
     textEffect.opacity = 0.90;
-    textEffect.targetScale = 5.5;
+    textEffect.targetScale = 5;
     textEffect.fadeOutTime = 800;
     textEffect.fadeInTime = 500;
   }
@@ -500,7 +582,22 @@ class DiceLayer {
     diceRoll.isSneakAttack = dto.IsSneakAttack;
     diceRoll.isPaladinSmiteAttack = dto.IsPaladinSmiteAttack;
     diceRoll.isWildAnimalAttack = dto.IsWildAnimalAttack;
-    diceRoll.throwPower = dto.ThrowPower;
+		diceRoll.throwPower = dto.ThrowPower;
+		diceRoll.onFirstContactSound = dto.OnFirstContactSound;
+		diceRoll.onFirstContactEffect = dto.OnFirstContactEffect;
+		diceRoll.onRollSound = dto.OnRollSound;
+		diceRoll.minCrit = dto.MinCrit;
+		diceRoll.successMessage = dto.SuccessMessage;
+		diceRoll.failMessage = dto.FailMessage;
+		diceRoll.critFailMessage = dto.CritFailMessage;
+		diceRoll.critSuccessMessage = dto.CritSuccessMessage;
+		diceRoll.numHalos = dto.NumHalos;
+		for (var i = 0; i < dto.TrailingEffects.length; i++)
+		{
+			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
+		}
+
+		
     if (diceRoll.throwPower < 0.2)
       diceRoll.throwPower = 0.2;
     if (diceRoll.throwPower > 2.0)
@@ -597,12 +694,23 @@ class DiceRollData {
   kind: DiceRollKind;
   damageDice: string;
   modifier: number;
+  minCrit: number;
   hiddenThreshold: number;
   isMagic: boolean;
   isSneakAttack: boolean;
   isPaladinSmiteAttack: boolean;
   isWildAnimalAttack: boolean;
   throwPower: number;
+	itsAD20Roll: boolean;
+	trailingEffects: Array<TrailingEffect> = new Array<TrailingEffect>();
+  onFirstContactSound: string;
+	critSuccessMessage: string;
+	successMessage: string;
+	critFailMessage: string;
+	failMessage: string;
+	onFirstContactEffect: SpriteType;
+	onRollSound: number;
+  numHalos: number;
   constructor() {
 
   }
