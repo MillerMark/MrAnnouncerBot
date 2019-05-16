@@ -5,10 +5,14 @@ namespace DndTests
 {
 	public static class MonsterBuilder
 	{
-		public static Monster BuildVioletFungus()
+		public static Monster BuildVioletFungus(string name = "")
 		{
 			Monster violetFungus = new Monster();
-			violetFungus.name = "Bonnie";
+			if (string.IsNullOrEmpty(name))
+				violetFungus.name = "Bonnie";
+			else
+				violetFungus.name = name;
+			
 			violetFungus.raceClass = "Violet Fungus";
 			violetFungus.creatureSize = CreatureSize.Medium;
 			violetFungus.alignment = AlignmentNames.unaligned;
@@ -31,10 +35,14 @@ namespace DndTests
 			return violetFungus;
 		}
 
-		public static Monster BuildVineBlight()
+		public static Monster BuildVineBlight(string name = "")
 		{
 			Monster vineBlight = new Monster();
-			vineBlight.name = "Joe";
+			if (string.IsNullOrEmpty(name))
+				vineBlight.name = "Joe";
+			else
+				vineBlight.name = name;
+			
 			vineBlight.raceClass = "Vine Blight";
 			vineBlight.creatureSize = CreatureSize.Medium;
 			vineBlight.alignment = AlignmentNames.NeutralEvil;
@@ -80,10 +88,14 @@ namespace DndTests
 
 		}
 
-		public static Monster BuildVrock()
+		public static Monster BuildVrock(string name = "")
 		{
 			Monster vrock = new Monster();
-			vrock.name = "Clyde";
+			if (string.IsNullOrEmpty(name))
+				vrock.name = "Clyde";
+			else
+				vrock.name = name;
+			
 			vrock.raceClass = "Vrock";
 			vrock.creatureSize = CreatureSize.Large;
 			vrock.alignment = AlignmentNames.ChaoticEvil;

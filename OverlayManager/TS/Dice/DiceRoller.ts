@@ -524,13 +524,173 @@ function anyDiceStillRolling(): boolean {
 	return false;
 }
 
+enum WildMagic {
+	wildMagicMinute,
+	seeInvisibleCreatures,
+	modronAppearsOneMinute,
+	regain5hpPerTurnForOneMinute,
+	castMagicMissile,
+	castFireball,
+	heightChange,
+	castConfusionOnSelf,
+	beardOfFeathers,
+	castGreaseCenteredOnSelf,
+	spellTargetsDisadvantagedSavingThrowForOneMinute,
+	skinTurnsBlue,
+	thirdEyeAdvantageWisdomChecks,
+	castTimeBonusActionOneMinute,
+	teleportUpTo60Feet,
+	astralPlaneUntilEndOfNextTurn,
+	maximizeDamageOnSpellCastInNextMinute,
+	ageChange,
+	flumphs,
+	regainHitPoints,
+	pottedPlant,
+	teleportUpTo20FeetBonusActionOneMinute,
+	castLevitateOnSelf,
+	unicorn,
+	cannotSpeakPinkBubbles,
+	spectralShieldPlus2ArmorClassNextMinute,
+	alcoholImmunity,
+	hairFallsOutGrowsBack24Hours,
+	fireTouchOneMinute,
+	regainLowestLevelExpendedSpellSlot,
+	shoutWhenSpeakingOneMinute,
+	castFogCloudCenteredOnSelf,
+	lightningDamageUpToThreeCreatures,
+	frightenedByNearestCreatureUntilEndOfNextTurn,
+	allCreatures30FeetInvisibleOneMinute,
+	resistanceToAllDamageNextMinute,
+	randomCreaturePoisoned1d4Hours,
+	glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded,
+	castPolymorphToSheepOnSelf,
+	butterfliesAndPetals10FeetOneMinute,
+	takeOneAdditionalActionImmediately,
+	allCreaturesWithin30FeetTake1d10NecroticDamage,
+	castMirrorImage,
+	castFlyOnRandomCreatureWithin60Feet,
+	invisibleSilentNextMinute,
+	immortalOneMinute,
+	increaseSizeOneMinute,
+	allCreatures30FeetVulnerableToPiercingDamageOneMinute,
+	faintEtheralMusicOneMinute,
+	regainSorceryPoints
+}
+
+function bonusRollDealsDamage(damageStr: string) {
+	diceRollData.bonusRoll = damageStr;
+	diceRollData.bonusRollDieColor = damageDieBackgroundColor;
+	diceRollData.bonusRollFontColor = damageDieFontColor;
+}
+
 function needToRollBonusDice() {
 	if (onBonusThrow)
 		return false;
-	if (diceRollData.type == DiceRollType.Attack && d20RollValue >= diceRollData.minCrit)
-		return true;
 
-	// TODO: implement more logic...
+	diceRollData.bonusRollDieColor = DiceLayer.bonusRollDieColor;
+	diceRollData.bonusRollFontColor = DiceLayer.bonusRollFontColor;
+	if (diceRollData.type == DiceRollType.Attack && d20RollValue >= diceRollData.minCrit) {
+		bonusRollDealsDamage(diceRollData.damageDice);
+		return true;
+	}
+
+	if (diceRollData.type == DiceRollType.WildMagic) {
+		let rollValue: number = 0;
+
+		for (var i = 0; i < dice.length; i++) {
+			let die = dice[i];
+			if (die.inPlay && die.rollType == RollType.totalScore)
+				rollValue += die.getTopNumber();
+		}
+
+		totalRoll = rollValue + diceRollData.modifier;
+
+		diceRollData.bonusRoll = null;
+		if (totalRoll == 0 || totalRoll == 99) diceRollData.wildMagic = WildMagic.regainSorceryPoints;
+		else if (totalRoll < 3) diceRollData.wildMagic = WildMagic.wildMagicMinute;
+		else if (totalRoll < 5) diceRollData.wildMagic = WildMagic.seeInvisibleCreatures;
+		else if (totalRoll < 7) diceRollData.wildMagic = WildMagic.modronAppearsOneMinute;
+		else if (totalRoll < 9) diceRollData.wildMagic = WildMagic.castFireball;
+		else if (totalRoll < 11) diceRollData.wildMagic = WildMagic.castMagicMissile;
+		else if (totalRoll < 13) {
+			diceRollData.bonusRoll = '1d10';
+			diceRollData.bonusRollDescription = 'Inches Changed: ';
+			diceRollData.wildMagic = WildMagic.heightChange;
+		}
+		else if (totalRoll < 15) diceRollData.wildMagic = WildMagic.castConfusionOnSelf;
+		else if (totalRoll < 17) diceRollData.wildMagic = WildMagic.regain5hpPerTurnForOneMinute;
+		else if (totalRoll < 19) diceRollData.wildMagic = WildMagic.beardOfFeathers;
+		else if (totalRoll < 21) diceRollData.wildMagic = WildMagic.castGreaseCenteredOnSelf;
+		else if (totalRoll < 23) diceRollData.wildMagic = WildMagic.spellTargetsDisadvantagedSavingThrowForOneMinute;
+		else if (totalRoll < 25) diceRollData.wildMagic = WildMagic.skinTurnsBlue;
+		else if (totalRoll < 27) diceRollData.wildMagic = WildMagic.thirdEyeAdvantageWisdomChecks;
+		else if (totalRoll < 29) diceRollData.wildMagic = WildMagic.castTimeBonusActionOneMinute;
+		else if (totalRoll < 31) diceRollData.wildMagic = WildMagic.teleportUpTo60Feet;
+		else if (totalRoll < 33) diceRollData.wildMagic = WildMagic.astralPlaneUntilEndOfNextTurn;
+		else if (totalRoll < 35) diceRollData.wildMagic = WildMagic.maximizeDamageOnSpellCastInNextMinute;
+		else if (totalRoll < 37) {
+			diceRollData.bonusRoll = '1d10';
+			diceRollData.bonusRollDescription = 'Years Changed: ';
+			diceRollData.wildMagic = WildMagic.ageChange;
+		}
+		else if (totalRoll < 39) {
+			diceRollData.bonusRoll = '1d6';
+			diceRollData.bonusRollDescription = 'Flumphs: ';
+			diceRollData.wildMagic = WildMagic.flumphs;
+		}
+		else if (totalRoll < 41) {
+			diceRollData.bonusRoll = '2d10';
+			diceRollData.bonusRollDescription = 'HP Regained: ';
+			diceRollData.wildMagic = WildMagic.regainHitPoints;
+		}
+		else if (totalRoll < 43) diceRollData.wildMagic = WildMagic.pottedPlant;
+		else if (totalRoll < 45) diceRollData.wildMagic = WildMagic.teleportUpTo20FeetBonusActionOneMinute;
+		else if (totalRoll < 47) diceRollData.wildMagic = WildMagic.castLevitateOnSelf;
+		else if (totalRoll < 49) diceRollData.wildMagic = WildMagic.unicorn;
+		else if (totalRoll < 51) diceRollData.wildMagic = WildMagic.cannotSpeakPinkBubbles;
+		else if (totalRoll < 53) diceRollData.wildMagic = WildMagic.spectralShieldPlus2ArmorClassNextMinute;
+		else if (totalRoll < 55) {
+			diceRollData.bonusRoll = '5d6';
+			diceRollData.bonusRollDescription = 'Days Immune: ';
+			diceRollData.wildMagic = WildMagic.alcoholImmunity;
+		}
+		else if (totalRoll < 57) diceRollData.wildMagic = WildMagic.hairFallsOutGrowsBack24Hours;
+		else if (totalRoll < 59) diceRollData.wildMagic = WildMagic.fireTouchOneMinute;
+		else if (totalRoll < 61) diceRollData.wildMagic = WildMagic.regainLowestLevelExpendedSpellSlot;
+		else if (totalRoll < 63) diceRollData.wildMagic = WildMagic.shoutWhenSpeakingOneMinute;
+		else if (totalRoll < 65) diceRollData.wildMagic = WildMagic.castFogCloudCenteredOnSelf;
+		else if (totalRoll < 67) {
+			diceRollData.wildMagic = WildMagic.lightningDamageUpToThreeCreatures;
+			diceRollData.bonusRollDescription = 'Lightning Damage: ';
+			bonusRollDealsDamage('4d10');
+		}
+		else if (totalRoll < 69) diceRollData.wildMagic = WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn;
+		else if (totalRoll < 71) diceRollData.wildMagic = WildMagic.allCreatures30FeetInvisibleOneMinute;
+		else if (totalRoll < 73) diceRollData.wildMagic = WildMagic.resistanceToAllDamageNextMinute;
+		else if (totalRoll < 75) {
+			diceRollData.bonusRoll = '1d4';
+			diceRollData.bonusRollDescription = 'Hours Poisoned: ';
+			diceRollData.wildMagic = WildMagic.randomCreaturePoisoned1d4Hours;
+		}
+		else if (totalRoll < 77) diceRollData.wildMagic = WildMagic.glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded;
+		else if (totalRoll < 79) diceRollData.wildMagic = WildMagic.castPolymorphToSheepOnSelf;
+		else if (totalRoll < 81) diceRollData.wildMagic = WildMagic.butterfliesAndPetals10FeetOneMinute;
+		else if (totalRoll < 83) diceRollData.wildMagic = WildMagic.takeOneAdditionalActionImmediately;
+		else if (totalRoll < 85) {
+			bonusRollDealsDamage('1d10');
+			diceRollData.bonusRollDescription = 'Necrotic Damage: ';
+			diceRollData.wildMagic = WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage;
+		}
+		else if (totalRoll < 87) diceRollData.wildMagic = WildMagic.castMirrorImage;
+		else if (totalRoll < 89) diceRollData.wildMagic = WildMagic.castFlyOnRandomCreatureWithin60Feet;
+		else if (totalRoll < 91) diceRollData.wildMagic = WildMagic.invisibleSilentNextMinute;
+		else if (totalRoll < 93) diceRollData.wildMagic = WildMagic.immortalOneMinute;
+		else if (totalRoll < 95) diceRollData.wildMagic = WildMagic.increaseSizeOneMinute;
+		else if (totalRoll < 97) diceRollData.wildMagic = WildMagic.allCreatures30FeetVulnerableToPiercingDamageOneMinute;
+		else if (totalRoll < 99) diceRollData.wildMagic = WildMagic.faintEtheralMusicOneMinute;
+		return diceRollData.bonusRoll != null;
+	}
+
 	return false;
 }
 
@@ -577,14 +737,13 @@ function popFrozenDice() {
 function rollBonusDice() {
 	onBonusThrow = true;
 	if (diceRollData.type == DiceRollType.Attack && d20RollValue >= diceRollData.minCrit) {
-		console.log('adding damage die');
 		addDieFromStr(diceRollData.damageDice, RollType.damage, 1.4, 0, damageDieBackgroundColor, damageDieFontColor);
 	}
 	else {
-		console.log('adding bonus die.');
-		console.log('d20RollValue: ' + d20RollValue);
-		console.log('diceRollData.minCrit: ' + diceRollData.minCrit);
-		addDieFromStr('3d12', RollType.bonus, 1.4, 0, DiceLayer.bonusRollDieColor, DiceLayer.bonusRollFontColor);
+		//console.log('adding bonus die.');
+		//console.log('d20RollValue: ' + d20RollValue);
+		//console.log('diceRollData.minCrit: ' + diceRollData.minCrit);
+		addDieFromStr(diceRollData.bonusRoll, RollType.bonus, 1.4, 0, diceRollData.bonusRollDieColor, diceRollData.bonusRollFontColor);
 	}
 
 }
@@ -610,8 +769,8 @@ function checkStillRolling() {
 			if (needToRollBonusDice()) {
 				if (!startedBonusRoll) {
 					startedBonusRoll = true;
-					if (diceRollData.type == DiceRollType.WildMagic)
-						showRollTotal();
+					//if (diceRollData.type == DiceRollType.WildMagic)
+					//	showRollTotal();
 					if (diceRollData.type == DiceRollType.Attack && d20RollValue >= diceRollData.minCrit)
 						diceLayer.indicateBonusRoll('Damage Bonus!');
 					else
@@ -1202,7 +1361,6 @@ enum RollType {
 }
 
 function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined) {
-
 	let allDice: string[] = damageDice.split(',');
 	if (backgroundColor === undefined)
 		backgroundColor = damageDieBackgroundColor;
@@ -1410,8 +1568,13 @@ function showRollTotal() {
 		diceLayer.showDieTotal(`${totalRoll}`);
 	}
 
-	if (totalBonus > 0)
-		diceLayer.showBonusRoll(`Bonus Roll: ${totalBonus}`);
+	if (totalBonus > 0) {
+		let  bonusRollStr: string = 'Bonus Roll: ';
+		if (diceRollData.bonusRollDescription)
+			bonusRollStr = diceRollData.bonusRollDescription;
+
+		diceLayer.showBonusRoll(`${bonusRollStr}${totalBonus}`, diceRollData.bonusRollFontColor, diceRollData.bonusRollDieColor);
+	}
 
 	attemptedRollWasSuccessful = totalRoll >= diceRollData.hiddenThreshold;
 

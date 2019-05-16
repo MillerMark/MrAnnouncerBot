@@ -70,7 +70,7 @@ class DiceLayer {
 	private readonly bonusRollTime: number = 5000;
 	private readonly resultTextTime: number = 9000;
 
-  static readonly bonusRollDieColor: string = '#adfff4'; // '#ff81bf'; // '#a3ffe6'
+	static readonly bonusRollDieColor: string = '#ffcd6d'; // '#adfff4'; // '#ff81bf'; // '#a3ffe6'
   static readonly bonusRollFontColor: string = '#000000';
   static matchOozeToDieColor: boolean = true;
   textEffects: TextEffects = new TextEffects();
@@ -331,10 +331,15 @@ class DiceLayer {
     textEffect.fadeInTime = 200;
   }
 
-	showBonusRoll(totalBonusStr: string): any {
-		let textEffect: TextEffect = this.textEffects.add(new Vector(500, 900), totalBonusStr, this.bonusRollTime);
-    textEffect.fontColor = DiceLayer.bonusRollDieColor;
-		textEffect.outlineColor = DiceLayer.bonusRollFontColor;
+	showBonusRoll(totalBonusStr: string, dieColor: string = undefined, fontColor: string = undefined): any {
+		let textEffect: TextEffect = this.textEffects.add(new Vector(50, 900), totalBonusStr, this.bonusRollTime);
+		textEffect.textAlign = 'left';
+		if (dieColor === undefined)
+			dieColor = DiceLayer.bonusRollDieColor;
+		if (fontColor === undefined)
+			fontColor = DiceLayer.bonusRollFontColor;
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = dieColor;
 		textEffect.elasticIn = true;
     textEffect.scale = 3;
     textEffect.velocityY = 0.6;
@@ -711,6 +716,11 @@ class DiceRollData {
 	onFirstContactEffect: SpriteType;
 	onRollSound: number;
   numHalos: number;
+  bonusRoll: string;
+  wildMagic: WildMagic;
+    bonusRollFontColor: string;
+    bonusRollDieColor: string;
+    bonusRollDescription: string;
   constructor() {
 
   }

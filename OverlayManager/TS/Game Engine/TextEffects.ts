@@ -48,7 +48,9 @@ class TextEffect extends AnimatedElement {
   text: string;
   fontColor: string;
   fontName: string;
-  outlineColor: string;
+	outlineColor: string;
+	textAlign: string = 'center';
+	textBaseline: string = 'middle';
   outlineThickness: number;
   fontSize: number;
   scale: number;
@@ -120,8 +122,8 @@ class TextEffect extends AnimatedElement {
     }
 
     context.font = `${this.fontSize * thisScale}px ${this.fontName}`; //`-- <- Fixes memory leak
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
+		context.textAlign = this.textAlign;
+		context.textBaseline = this.textBaseline;
     context.fillStyle = this.fontColor;
     context.globalAlpha = this.getAlpha(now) * this.opacity;
     context.strokeStyle = this.outlineColor;

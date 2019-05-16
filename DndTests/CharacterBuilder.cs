@@ -5,11 +5,16 @@ namespace DndTests
 {
 	public static class CharacterBuilder
 	{
-		public static Character BuildTestElf()
+		public static Character BuildTestElf(string name = "")
 		{
 			Character elf = new Character();
 			elf.kind = CreatureKinds.Humanoids;
-			elf.name = "Taragon";
+			
+			if (string.IsNullOrEmpty(name))
+				elf.name = "Taragon";
+			else
+				elf.name = name;
+
 			elf.raceClass = "Wood Elf Barbarian";
 			elf.alignment = "Chaotic Good";
 			elf.baseArmorClass = 12;
@@ -49,11 +54,15 @@ namespace DndTests
 			character.load = 166;
 		}
 
-		public static Character BuildTestBarbarian()
+		public static Character BuildTestBarbarian(string name = "")
 		{
 			Character barbarian = new Character();
 			barbarian.kind = CreatureKinds.Humanoids;
-			barbarian.name = "Ava";
+
+			if (string.IsNullOrEmpty(name))
+				barbarian.name = "Ava";
+			else
+				barbarian.name = name;
 			barbarian.raceClass = "Dragonborn Barbarian";
 			barbarian.alignment = "Chaotic Evil";
 			barbarian.baseArmorClass = 14;
@@ -80,13 +89,15 @@ namespace DndTests
 			return barbarian;
 		}
 
-
-
-		public static Character BuildTestWizard()
+		public static Character BuildTestWizard(string name = "")
 		{
 			Character wizard = new Character();
 			wizard.kind = CreatureKinds.Humanoids;
-			wizard.name = "Morkin";
+			if (string.IsNullOrEmpty(name))
+				wizard.name = "Morkin";
+			else
+				wizard.name = name;
+			
 			wizard.raceClass = "Human Wizard";
 			wizard.alignment = "Chaotic Neutral";
 			wizard.baseArmorClass = 10;
@@ -109,11 +120,15 @@ namespace DndTests
 
 			return wizard;
 		}
-		public static Character BuildTestDruid()
+		public static Character BuildTestDruid(string name = "")
 		{
 			Character druid = new Character();
 			druid.kind = CreatureKinds.Humanoids;
-			druid.name = "Kylee";
+			if (string.IsNullOrEmpty(name))
+				druid.name = "Kylee";
+			else
+				druid.name = name;
+			
 			druid.raceClass = "Wood Elf Druid";
 			druid.alignment = "Lawful Good";
 			druid.baseArmorClass = 10;

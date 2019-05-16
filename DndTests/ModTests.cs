@@ -1,6 +1,7 @@
 ﻿using DndCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 
 namespace DndTests
 {
@@ -132,6 +133,32 @@ namespace DndTests
 			testBarbarian.Equip(breastplate);
 
 			Assert.AreEqual(breastplateAbsoluteAC + Math.Min(dexterityMod, 2), testBarbarian.ArmorClass);
+		}
+	}
+	[TestClass]
+	public class SecondaryTests
+	{
+		private TestContext testContextInstance;
+
+		/// <summary>
+		///Gets or sets the test context which provides
+		///information about and functionality for the current test run.
+		///</summary>
+		public TestContext TestContext
+		{
+			get
+			{
+				return testContextInstance;
+			}
+			set
+			{
+				testContextInstance = value;
+			}
+		}
+		[TestMethod]
+		public void Test()
+		{
+			
 		}
 	}
 }
