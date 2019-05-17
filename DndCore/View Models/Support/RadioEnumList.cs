@@ -8,9 +8,9 @@ namespace DndCore
 	public class RadioEnumList : ViewModelBase
 	{
 
-		private Type _enumType;
+		Type _enumType;
 
-		private object _value;
+		object _value;
 		bool settingInternally;
 
 		public RadioEnumList(Type enumType, string groupName)
@@ -95,19 +95,19 @@ namespace DndCore
 					item.IsChecked = false;
 		}
 
-		private void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (settingInternally)
 				return;
 			Value = CalcValue(Items, _enumType);
 		}
-		private void Initialize(Type enumType)
+		void Initialize(Type enumType)
 		{
 			_enumType = enumType;
 			Items = new ObservableCollection<RadioEnumViewModel>();
 		}
 
-		private void Item_EntryClicked(object sender, EventArgs e)
+		void Item_EntryClicked(object sender, EventArgs e)
 		{
 			if (settingInternally)
 				return;

@@ -212,7 +212,7 @@ namespace DndCore
 			}
 		}
 
-		private void Damages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void Damages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(Damages));
 		}
@@ -297,7 +297,7 @@ namespace DndCore
 			TargetLimit = attack.targetLimit;
 		}
 
-		private void SuccessfulSaveDamages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void SuccessfulSaveDamages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(SuccessfulSaveDamages));
 		}

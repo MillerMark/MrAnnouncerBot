@@ -11,10 +11,10 @@ namespace DndCore
 	public class CheckEnumList : ViewModelBase
 	{
 
-		private Type _enumType;
+		Type _enumType;
 
 
-		private object _value;
+		object _value;
 		bool settingInternally;
 
 		public CheckEnumList(Type enumType)
@@ -95,7 +95,7 @@ namespace DndCore
 				}
 		}
 
-		private object CalcValue()
+		object CalcValue()
 		{
 			// Assumes the enums are ints.  Can change if needed (can dynamically determine as well).
 			Type enumType = _enumType;
@@ -103,13 +103,13 @@ namespace DndCore
 			return CalcValue(items, enumType);
 		}
 
-		private void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (settingInternally)
 				return;
 			Value = CalcValue();
 		}
-		private void Initialize(Type enumType)
+		void Initialize(Type enumType)
 		{
 			_enumType = enumType;
 
@@ -117,7 +117,7 @@ namespace DndCore
 			Items.CollectionChanged += Items_CollectionChanged;
 		}
 
-		private void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 
 		}

@@ -10,7 +10,7 @@ namespace DndCore
 	public class CheckEnumViewModel : ViewModelBase
 	{
 
-		private bool isChecked;
+		bool isChecked;
 
 		public CheckEnumViewModel(object value) => Value = value;
 

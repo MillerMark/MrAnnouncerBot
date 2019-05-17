@@ -6,9 +6,9 @@ namespace DndCore
 	public class RadioEnumViewModel : ViewModelBase
 	{
 
-		private string groupName;
+		string groupName;
 
-		private bool isChecked;
+		bool isChecked;
 
 		public RadioEnumViewModel(object value) => Value = value;
 

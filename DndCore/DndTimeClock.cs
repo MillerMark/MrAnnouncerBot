@@ -8,28 +8,28 @@ namespace DndCore
 	public class DndTimeClock
 	{
 		public const int Alturiak = 2;
-		private const int AlturiakStart = 32;
+		const int AlturiakStart = 32;
 		public const int Ches = 3;
-		private const int ChesStart = 62;
+		const int ChesStart = 62;
 		public const int Eleasis = 8;
-		private const int EleasisStart = 214;
+		const int EleasisStart = 214;
 		public const int Eleint = 9;
-		private const int EleintStart = 244;
+		const int EleintStart = 244;
 		public const int Flamerule = 7;
-		private const int FlameruleStart = 183;
+		const int FlameruleStart = 183;
 		public const int Greengrass = -2;  // Holiday
 		public const int GreengrassStart = 122;
 
 		// Months & holidays...
 		public const int Hammer = 1;
 
-		private const int HammerStart = 1;
+		const int HammerStart = 1;
 		public const int Highharvestide = -5;  // Holiday
 		public const int HighharvestideStart = 274;
 		public const int Kythorn = 6;
-		private const int KythornStart = 153;
+		const int KythornStart = 153;
 		public const int Marpenoth = 10;
-		private const int MarpenothStart = 275;
+		const int MarpenothStart = 275;
 		public const int Midsummer = -3;  // Holiday
 		public const int MidsummerStart = 213;
 		public const int Midwinter = -1;  // Holiday
@@ -37,19 +37,19 @@ namespace DndCore
 		// Holidays...
 		public const int MidwinterStart = 31;
 		public const int Mirtul = 5;
-		private const int MirtulStart = 123;
+		const int MirtulStart = 123;
 		public const int Nightal = 12;
-		private const int NightalStart = 336;
+		const int NightalStart = 336;
 		public const int Shieldmeet = -4;  // Leap Day/Holiday
 		public const int ShieldmeetStart = 214;
 		public const int Tarsakh = 4;
-		private const int TarsakhStart = 92;
+		const int TarsakhStart = 92;
 		public const int TheFeastOfTheMoon = -6;  // Holiday
 		public const int TheFeastOfTheMoonStart = 335;
 		public const int Uktar = 11;
-		private const int UktarStart = 305;
+		const int UktarStart = 305;
 
-		private readonly int[] MonthStartDays = { 0, HammerStart, AlturiakStart, ChesStart, TarsakhStart, MirtulStart, KythornStart, FlameruleStart, EleasisStart, EleintStart, MarpenothStart, UktarStart, NightalStart };
+		readonly int[] MonthStartDays = { 0, HammerStart, AlturiakStart, ChesStart, TarsakhStart, MirtulStart, KythornStart, FlameruleStart, EleasisStart, EleintStart, MarpenothStart, UktarStart, NightalStart };
 		TimeClockEventArgs timeClockEventArgs = new TimeClockEventArgs();
 
 		static DndTimeClock()
@@ -67,7 +67,7 @@ namespace DndCore
 			Advance(dndTimeSpan.GetTimeSpan(), reverseDirection);
 		}
 
-		private void Advance(TimeSpan timeSpan, bool reverseDirection = false)
+		void Advance(TimeSpan timeSpan, bool reverseDirection = false)
 		{
 			if (timeSpan == Timeout.InfiniteTimeSpan)
 				throw new Exception("Cannot add infinity. COME ON!!!");

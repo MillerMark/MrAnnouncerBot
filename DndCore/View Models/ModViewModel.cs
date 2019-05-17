@@ -306,7 +306,7 @@ namespace DndCore
 			}
 		}
 
-		private void DamageTypeFilter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void DamageTypeFilter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(DamageFilter));
 		}

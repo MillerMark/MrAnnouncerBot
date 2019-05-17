@@ -183,7 +183,7 @@ namespace DndCore
 				CalculatedMods.Add(key, value);
 		}
 
-		private int CalculateAbilityModifier(double abilityScore)
+		int CalculateAbilityModifier(double abilityScore)
 		{
 			return (int)Math.Floor((abilityScore - 10) / 2.0);
 		}
@@ -262,7 +262,7 @@ namespace DndCore
 			return false;
 		}
 
-		private bool CanBeAffectedBy(Conditions conditions)
+		bool CanBeAffectedBy(Conditions conditions)
 		{
 			if (conditions == Conditions.None)
 				return false;
@@ -473,7 +473,7 @@ namespace DndCore
 			return FilterCatches(damageVulnerability, damageType, attackKind);
 		}
 
-		private void ItemCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void ItemCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			needToRecalculateMods = true;
 		}

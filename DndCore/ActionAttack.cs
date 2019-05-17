@@ -2,8 +2,8 @@
 {
 	public class ActionAttack
 	{
-		private string constrict;
-		private Monster Monster;
+		string constrict;
+		Monster Monster;
 
 		public ActionAttack()
 		{

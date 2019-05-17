@@ -12,11 +12,11 @@ namespace DndCore
 
 		// Create separate IsDisplaying/IsEditing so we can use the BooleanToVisibilityConverter
 		// without having to create our own (for negating).
-		private bool isDisplaying = true;
+		bool isDisplaying = true;
 
-		private bool isEditing;
+		bool isEditing;
 
-		private bool isSelected;
+		bool isSelected;
 
 		PlaceholderType type = PlaceholderType.None;
 

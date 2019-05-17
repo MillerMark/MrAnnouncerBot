@@ -10,7 +10,7 @@ namespace DndCore
 	public class Character : Creature
 	{
 
-		private double _passivePerception = int.MinValue;
+		double _passivePerception = int.MinValue;
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
 		public bool deathSaveDeath3 = false;
