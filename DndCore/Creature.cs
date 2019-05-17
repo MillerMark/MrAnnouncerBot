@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 
 namespace DndCore
@@ -473,7 +474,7 @@ namespace DndCore
 			return FilterCatches(damageVulnerability, damageType, attackKind);
 		}
 
-		void ItemCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void ItemCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			needToRecalculateMods = true;
 		}

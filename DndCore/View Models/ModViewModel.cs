@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -34,8 +35,8 @@ namespace DndCore
 			damageTypeFilter = new DamageFilterViewModel();
 			damageTypeFilter.DamageType.Value = DamageType.None;
 			damageTypeFilter.AttackKind.Value = AttackKind.Any;
-			modConditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			modConditions.Value = DndCore.Conditions.None;
+			modConditions = new CheckEnumList(typeof(Conditions), Conditions.None, EnumListOption.Exclude);
+			modConditions.Value = Conditions.None;
 			modType = new RadioEnumList(typeof(ModType), nameof(ModType));
 			modType.Value = DndCore.ModType.incomingAttack;
 			modAddAbilityModifier = new RadioEnumList(typeof(Ability), "AddModifier");
@@ -306,7 +307,7 @@ namespace DndCore
 			}
 		}
 
-		void DamageTypeFilter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void DamageTypeFilter_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(DamageFilter));
 		}
@@ -317,7 +318,7 @@ namespace DndCore
 			if (modConditions != null)
 				mod.condition = (Conditions)Convert.ToInt32(modConditions.Value);
 			else
-				mod.condition = DndCore.Conditions.None;
+				mod.condition = Conditions.None;
 
 			if (damageTypeFilter != null && damageTypeFilter.DamageType != null && damageTypeFilter.AttackKind != null)
 				mod.damageTypeFilter = new DamageFilter((DamageType)Convert.ToInt32(damageTypeFilter.DamageType.Value),

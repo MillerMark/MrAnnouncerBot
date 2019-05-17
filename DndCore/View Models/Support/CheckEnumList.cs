@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace DndCore
 {
@@ -117,7 +118,7 @@ namespace DndCore
 			Items.CollectionChanged += Items_CollectionChanged;
 		}
 
-		void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 
 		}
