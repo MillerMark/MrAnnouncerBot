@@ -31,7 +31,7 @@ namespace DndTests
 		public void TestItemDescription()
 		{
 			ItemViewModel item = new ItemViewModel();
-			QualityResults results = QualityEngine.CheckItem(item);
+			QualityResults results = QualityEngine.CheckItem(item, "This isn't needed.");
 			Assert.IsNotNull(results);
 			Assert.IsTrue(results.Count > 0);
 			QualityIssue descriptionEmpty = results.FindFirstIssue(QualityEngine.DescriptionIsEmpty);

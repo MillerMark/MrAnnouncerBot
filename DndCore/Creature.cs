@@ -571,7 +571,7 @@ namespace DndCore
 
 	internal class OtherClass
 	{
-		public OtherClass()
+		public OtherClass(int a, int b, int c, int d)
 		{
 
 		}
@@ -587,7 +587,7 @@ namespace DndCore
 		
 		public ThirdClass()
 		{
-			var otherClass = new OtherClass();
+			var otherClass = new OtherClass(1, 2, 3, 4);
 		}
 	}
 
