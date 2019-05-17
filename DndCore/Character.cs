@@ -550,8 +550,9 @@ namespace DndCore
 		{
 			return (savingThrowProficiency & ability) == ability;
 		}
-		public void SetWorldPosition(Vector worldPosition)
+		public void SetWorldPosition(Vector worldPosition, string message)
 		{
+			Console.WriteLine(message);
 			WorldPosition = worldPosition;
 		}
 	}

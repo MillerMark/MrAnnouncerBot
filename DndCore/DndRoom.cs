@@ -45,7 +45,7 @@ namespace DndCore
 						Character foundCharacter = Map.Game.Players.FirstOrDefault(player => player.name == creatureName.ToString());
 						if (foundCharacter != null)
 						{
-							foundCharacter.SetWorldPosition(GetWorldPosition(x, y + yOffset));
+							foundCharacter.SetWorldPosition(GetWorldPosition(x, y + yOffset), "This isn't needed.");
 						}
 
 					}
