@@ -582,18 +582,19 @@ namespace DndCore
 		{
 		}
 
-		void MyProc(int a, int b, int c, int d)
-		{
-			Console.WriteLine("Inside MyProc");
-		}
-
 		SuperCreature GetIt()
 		{
 			return new SuperCreature();
 		}
+
 		public void Initialize()
 		{
 			MyProc(1, 2, 3, 4);
+		}
+
+		void MyProc(int a, int b, int c, int d, [CallerMemberName] string memberName = "")
+		{
+			Console.WriteLine("Inside MyProc, called from " + memberName);
 		}
 	}
 
