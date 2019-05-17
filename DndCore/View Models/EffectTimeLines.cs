@@ -7,13 +7,12 @@ namespace DndCore
 {
 	public class EffectTimeLines : ListEntry
 	{
-		private ObservableCollection<TimeLineEffect> entries = new ObservableCollection<TimeLineEffect>();
 
 		public EffectTimeLines()
 		{
 
 		}
 
-		public ObservableCollection<TimeLineEffect> Entries { get => entries; set => entries = value; }
+		public ObservableCollection<TimeLineEffect> Entries { get; set; } = new ObservableCollection<TimeLineEffect>();
 	}
 }

@@ -14,8 +14,6 @@ namespace DndCore
 
 		List<Monster> monsters = new List<Monster>();
 
-		List<Character> players = new List<Character>();
-
 		public DndGame()
 		{
 		}
@@ -37,7 +35,7 @@ namespace DndCore
 			}
 		}
 
-		public List<Character> Players { get => players; }
+		public List<Character> Players { get; } = new List<Character>();
 
 		public DndMap ActivateMap(DndMap map)
 		{
@@ -71,7 +69,7 @@ namespace DndCore
 		public Character AddPlayer(Character character)
 		{
 			character.Game = this;
-			players.Add(character);
+			Players.Add(character);
 			return character;
 		}
 		public void EnterCombat(bool value)

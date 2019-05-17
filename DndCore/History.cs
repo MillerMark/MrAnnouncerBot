@@ -6,7 +6,6 @@ namespace DndCore
 {
 	public static class History
 	{
-		static ObservableCollection<LogEntry> entries = new ObservableCollection<LogEntry>();
 		static ObservableCollection<LogEntry> queuedEntries = new ObservableCollection<LogEntry>();
 
 		static History()
@@ -14,7 +13,7 @@ namespace DndCore
 
 		}
 
-		public static ObservableCollection<LogEntry> Entries { get => entries; private set => entries = value; }
+		public static ObservableCollection<LogEntry> Entries { get; private set; } = new ObservableCollection<LogEntry>();
 		public static DndTimeClock TimeClock { get; set; }
 
 		public static void Log(string message)
@@ -25,7 +24,7 @@ namespace DndCore
 
 		public static void Log(LogEntry entry)
 		{
-			entries.Add(entry);
+			Entries.Add(entry);
 		}
 
 		public static void OnLogUpdated(object sender, EventArgs e)
@@ -37,7 +36,7 @@ namespace DndCore
 		{
 			foreach (LogEntry logEntry in queuedEntries)
 			{
-				entries.Add(logEntry);
+				Entries.Add(logEntry);
 			}
 		}
 

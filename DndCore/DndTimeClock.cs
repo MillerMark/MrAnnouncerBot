@@ -49,25 +49,15 @@ namespace DndCore
 		public const int Uktar = 11;
 		private const int UktarStart = 305;
 
-		//private fields...
-		static DndTimeClock instance;
-
 		private readonly int[] MonthStartDays = { 0, HammerStart, AlturiakStart, ChesStart, TarsakhStart, MirtulStart, KythornStart, FlameruleStart, EleasisStart, EleintStart, MarpenothStart, UktarStart, NightalStart };
 		TimeClockEventArgs timeClockEventArgs = new TimeClockEventArgs();
 
 		static DndTimeClock()
 		{
-			instance = new DndTimeClock();
+			Instance = new DndTimeClock();
 		}
 
-		public static DndTimeClock Instance
-		{
-			get { return instance; }
-			set
-			{
-				instance = value;
-			}
-		}
+		public static DndTimeClock Instance { get; set; }
 		public bool InCombat { get; set; }
 
 		public DateTime Time { get; private set; }
