@@ -560,7 +560,7 @@ namespace DndCore
 		}
 	}
 
-	internal class SuperCreature : Creature
+	class SuperCreature : Creature
 	{
 
 		public SuperCreature()
@@ -587,9 +587,16 @@ namespace DndCore
 		
 		public ThirdClass()
 		{
-			var otherClass = new OtherClass()
-			{
-			};
+			var otherClass = new OtherClass();
+		}
+	}
+
+	class FourthUnusedClass
+	{
+		
+		public FourthUnusedClass()
+		{
+			
 		}
 	}
 }
