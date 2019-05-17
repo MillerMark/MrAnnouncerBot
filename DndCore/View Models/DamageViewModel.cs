@@ -21,10 +21,10 @@ namespace DndCore
 
 		public DamageViewModel()
 		{
-			attackKind = new RadioEnumList(typeof(AttackKind), "AttackKind");
-			saveOpportunity = new RadioEnumList(typeof(TimePoint), "SaveOpportunity");
-			damageHits = new RadioEnumList(typeof(TimePoint), "DamageHits");
-			damageType = new RadioEnumList(typeof(DamageType), "DamageType");
+			attackKind = new RadioEnumList(typeof(AttackKind), nameof(AttackKind));
+			saveOpportunity = new RadioEnumList(typeof(TimePoint), nameof(SaveOpportunity));
+			damageHits = new RadioEnumList(typeof(TimePoint), nameof(DamageHits));
+			damageType = new RadioEnumList(typeof(DamageType), nameof(DamageType));
 			includeTargetSenses = new CheckEnumList(typeof(Senses));
 			savingThrowAbility = new CheckEnumList(typeof(Ability));
 			includeCreatures = new CheckEnumList(typeof(CreatureKinds));

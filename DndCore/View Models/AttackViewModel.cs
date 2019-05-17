@@ -28,8 +28,8 @@ namespace DndCore
 			SuccessfulSaveDamages = new ObservableCollection<DamageViewModel>();
 
 
-			type = new RadioEnumList(typeof(AttackType), "AttackType", AttackType.None, EnumListOption.Exclude);
-			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), "RechargeOdds", DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
+			type = new RadioEnumList(typeof(AttackType), nameof(AttackType), AttackType.None, EnumListOption.Exclude);
+			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), nameof(RechargeOdds), DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
 			type.Value = AttackType.Melee;
 			targetLimit = 1;
 			reachRange = 5;
@@ -214,7 +214,7 @@ namespace DndCore
 
 		private void Damages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			OnPropertyChanged("Damages");
+			OnPropertyChanged(nameof(Damages));
 		}
 
 		public Attack GetAttack()
@@ -299,7 +299,7 @@ namespace DndCore
 
 		private void SuccessfulSaveDamages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			OnPropertyChanged("SuccessfulSaveDamages");
+			OnPropertyChanged(nameof(SuccessfulSaveDamages));
 		}
 	}
 }

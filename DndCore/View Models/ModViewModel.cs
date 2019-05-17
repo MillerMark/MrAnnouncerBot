@@ -36,7 +36,7 @@ namespace DndCore
 			damageTypeFilter.AttackKind.Value = AttackKind.Any;
 			modConditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
 			modConditions.Value = DndCore.Conditions.None;
-			modType = new RadioEnumList(typeof(ModType), "ModType");
+			modType = new RadioEnumList(typeof(ModType), nameof(ModType));
 			modType.Value = DndCore.ModType.incomingAttack;
 			modAddAbilityModifier = new RadioEnumList(typeof(Ability), "AddModifier");
 			modAddAbilityModifier.Value = Skills.none;
@@ -308,7 +308,7 @@ namespace DndCore
 
 		private void DamageTypeFilter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			OnPropertyChanged("DamageFilter");
+			OnPropertyChanged(nameof(DamageFilter));
 		}
 
 		Mod GetMod()

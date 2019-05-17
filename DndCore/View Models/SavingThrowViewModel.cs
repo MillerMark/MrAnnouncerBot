@@ -12,7 +12,7 @@ namespace DndCore
 
 		public SavingThrowViewModel()
 		{
-			ability = new RadioEnumList(typeof(Ability), "Ability");
+			ability = new RadioEnumList(typeof(Ability), nameof(Ability));
 		}
 
 		public RadioEnumList Ability
