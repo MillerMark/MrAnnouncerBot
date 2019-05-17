@@ -5,8 +5,8 @@ namespace DndCore
 {
 	public class PlaceholderEffect : Effect
 	{
-		public PlaceholderType PlaceholderType;
 		public string Name;
+		public PlaceholderType PlaceholderType;
 
 		public PlaceholderEffect()
 		{

@@ -6,10 +6,16 @@ namespace DndCore
 {
 	public class DamageFilterViewModel : ViewModelBase
 	{
+		RadioEnumList attackKind;
 
 		//private fields...
 		CheckEnumList damageType;
-		RadioEnumList attackKind;
+
+		public DamageFilterViewModel()
+		{
+			damageType = new CheckEnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
+			attackKind = new RadioEnumList(typeof(AttackKind), "AttackKind");
+		}
 
 		public RadioEnumList AttackKind
 		{
@@ -34,12 +40,6 @@ namespace DndCore
 				damageType = value;
 				OnPropertyChanged();
 			}
-		}
-
-		public DamageFilterViewModel()
-		{
-			damageType = new CheckEnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
-			attackKind = new RadioEnumList(typeof(AttackKind), "AttackKind");
 		}
 	}
 }

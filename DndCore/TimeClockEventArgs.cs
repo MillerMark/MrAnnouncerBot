@@ -6,11 +6,12 @@ namespace DndCore
 {
 	public class TimeClockEventArgs : EventArgs
 	{
-		public TimeSpan SpanSinceLastUpdate { get; set; }
 		public TimeClockEventArgs()
 		{
 
 		}
+
+		public TimeSpan SpanSinceLastUpdate { get; set; }
 	}
 }
 

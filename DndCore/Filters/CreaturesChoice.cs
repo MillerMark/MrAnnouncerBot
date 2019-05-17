@@ -10,6 +10,8 @@ namespace DndCore
 			MaxTargets = maxTargets;
 		}
 
+		public int MaxTargets { get; set; }
+
 		public override bool IsTrue(Creature creature)
 		{
 			if (MaxTargets == int.MaxValue)
@@ -18,7 +20,5 @@ namespace DndCore
 			// TODO: Solve this interactively, or through UI for the DM to select targets?
 			return false;
 		}
-
-		public int MaxTargets { get; set; }
 	}
 }

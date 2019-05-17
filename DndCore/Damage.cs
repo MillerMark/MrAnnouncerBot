@@ -22,23 +22,23 @@ namespace DndCore
 			IncludeCreatures = CreatureKinds.None;
 		}
 
+		public AttackKind AttackKind { get; set; }
+		public Conditions Conditions { get; set; }
+		public TimePoint DamageHits { get; set; }
+
+		public string DamageRoll { get; set; }
+		public DamageType DamageType { get; set; }
+		public CreatureKinds IncludeCreatures { get; set; }
+		public CreatureSize IncludeCreatureSizes { get; set; }
+
+		public Senses IncludeTargetSenses { get; set; }
+		public TimePoint SaveOpportunity { get; set; }
+		public Ability SavingThrowAbility { get; set; }
+		public int SavingThrowSuccess { get; set; }
+
 		public void ApplyTo(Character player)
 		{
 			player.TakeDamage(DamageType, AttackKind, GetDamageRoll());
-		}
-
-		public double GetDamageRoll()
-		{
-			if (DamageRoll == "1d6")
-				return 3.5;
-			if (DamageRoll == "2d6+2")
-				return 9;
-			return 0;
-		}
-
-		public bool Saves(int savingThrow)
-		{
-			return savingThrow >= SavingThrowSuccess;
 		}
 
 		public void ExcludeCreatureKinds(CreatureKinds creatureKinds)
@@ -61,18 +61,19 @@ namespace DndCore
 			IncludeCreatures = allCreatureKinds & ~creatureKinds;
 		}
 
-		public string DamageRoll { get; set; }
-		public DamageType DamageType { get; set; }
-		public AttackKind AttackKind { get; set; }
-		public TimePoint DamageHits { get; set; }
-		public TimePoint SaveOpportunity { get; set; }
-		public int SavingThrowSuccess { get; set; }
-		public Ability SavingThrowAbility { get; set; }
-		public Conditions Conditions { get; set; }
+		public double GetDamageRoll()
+		{
+			if (DamageRoll == "1d6")
+				return 3.5;
+			if (DamageRoll == "2d6+2")
+				return 9;
+			return 0;
+		}
 
-		public Senses IncludeTargetSenses { get; set; }
-		public CreatureSize IncludeCreatureSizes { get; set; }
-		public CreatureKinds IncludeCreatures { get; set; }
+		public bool Saves(int savingThrow)
+		{
+			return savingThrow >= SavingThrowSuccess;
+		}
 
 	}
 }

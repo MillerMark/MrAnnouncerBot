@@ -6,8 +6,14 @@ namespace DndCore
 {
 	public class SavingThrowViewModel : ViewModelBase
 	{
-		int success;
 		RadioEnumList ability;
+		int success;
+
+
+		public SavingThrowViewModel()
+		{
+			ability = new RadioEnumList(typeof(Ability), "Ability");
+		}
 
 		public RadioEnumList Ability
 		{
@@ -32,12 +38,6 @@ namespace DndCore
 				success = value;
 				OnPropertyChanged();
 			}
-		}
-
-
-		public SavingThrowViewModel()
-		{
-			ability = new RadioEnumList(typeof(Ability), "Ability");
 		}
 	}
 }

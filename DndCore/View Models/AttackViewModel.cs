@@ -8,40 +8,74 @@ namespace DndCore
 {
 	public class AttackViewModel : ListEntry
 	{
-		RadioEnumList type;
 		ObservableCollection<DamageViewModel> damages;
-		//ObservableCollection<DamageConditionsViewModel> filteredConditions;
-		ObservableCollection<DamageViewModel> successfulSaveDamages;
-		int targetLimit;
+		string description;
+		DndTimeSpan lasts;
+		bool needsRecharging;
 		double plusToHit;
 		double rangeMax;
 		double reachRange;
-		string description;
-		bool needsRecharging;
-		DndTimeSpan lasts;
-		DndTimeSpan recharges;
 		RadioEnumList rechargeOdds;
+		DndTimeSpan recharges;
+		//ObservableCollection<DamageConditionsViewModel> filteredConditions;
+		ObservableCollection<DamageViewModel> successfulSaveDamages;
+		int targetLimit;
+		RadioEnumList type;
 
-		public RadioEnumList RechargeOdds
+		public AttackViewModel()
 		{
-			get { return rechargeOdds; }
+			Damages = new ObservableCollection<DamageViewModel>();
+			SuccessfulSaveDamages = new ObservableCollection<DamageViewModel>();
+
+
+			type = new RadioEnumList(typeof(AttackType), "AttackType", AttackType.None, EnumListOption.Exclude);
+			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), "RechargeOdds", DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
+			type.Value = AttackType.Melee;
+			targetLimit = 1;
+			reachRange = 5;
+			rangeMax = 30;
+			recharges = DndTimeSpan.Never;
+			lasts = DndTimeSpan.OneMinute;
+		}
+
+		public Attack Attack
+		{
+			get { return GetAttack(); }
 			set
 			{
-				if (rechargeOdds == value)
+				SetFromAttack(value);
+			}
+		}
+
+
+		public ObservableCollection<DamageViewModel> Damages
+		{
+			get { return damages; }
+			set
+			{
+				if (damages == value)
 					return;
-				rechargeOdds = value;
+
+				if (damages != null)
+					damages.CollectionChanged -= Damages_CollectionChanged;
+
+				damages = value;
+
+				if (damages != null)
+					damages.CollectionChanged += Damages_CollectionChanged;
+
 				OnPropertyChanged();
 			}
 		}
 
-		public DndTimeSpan Recharges
+		public string Description
 		{
-			get { return recharges; }
+			get { return description; }
 			set
 			{
-				if (recharges.Equals(value))
+				if (description == value)
 					return;
-				recharges = value;
+				description = value;
 				OnPropertyChanged();
 			}
 		}
@@ -70,27 +104,15 @@ namespace DndCore
 			}
 		}
 
-		public string Description
+
+		public double PlusToHit
 		{
-			get { return description; }
+			get { return plusToHit; }
 			set
 			{
-				if (description == value)
+				if (plusToHit == value)
 					return;
-				description = value;
-				OnPropertyChanged();
-			}
-		}
-
-
-		public double ReachRange
-		{
-			get { return reachRange; }
-			set
-			{
-				if (reachRange == value)
-					return;
-				reachRange = value;
+				plusToHit = value;
 				OnPropertyChanged();
 			}
 		}
@@ -109,55 +131,40 @@ namespace DndCore
 		}
 
 
-		public double PlusToHit
+		public double ReachRange
 		{
-			get { return plusToHit; }
+			get { return reachRange; }
 			set
 			{
-				if (plusToHit == value)
+				if (reachRange == value)
 					return;
-				plusToHit = value;
+				reachRange = value;
 				OnPropertyChanged();
 			}
 		}
 
-
-		public int TargetLimit
+		public RadioEnumList RechargeOdds
 		{
-			get { return targetLimit; }
+			get { return rechargeOdds; }
 			set
 			{
-				if (targetLimit == value)
+				if (rechargeOdds == value)
 					return;
-				targetLimit = value;
+				rechargeOdds = value;
 				OnPropertyChanged();
 			}
 		}
 
-
-		public ObservableCollection<DamageViewModel> Damages
+		public DndTimeSpan Recharges
 		{
-			get { return damages; }
+			get { return recharges; }
 			set
 			{
-				if (damages == value)
+				if (recharges.Equals(value))
 					return;
-
-				if (damages != null)
-					damages.CollectionChanged -= Damages_CollectionChanged;
-
-				damages = value;
-
-				if (damages != null)
-					damages.CollectionChanged += Damages_CollectionChanged;
-
+				recharges = value;
 				OnPropertyChanged();
 			}
-		}
-
-		private void Damages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
-			OnPropertyChanged("Damages");
 		}
 
 		public ObservableCollection<DamageViewModel> SuccessfulSaveDamages
@@ -180,9 +187,17 @@ namespace DndCore
 			}
 		}
 
-		private void SuccessfulSaveDamages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+
+		public int TargetLimit
 		{
-			OnPropertyChanged("SuccessfulSaveDamages");
+			get { return targetLimit; }
+			set
+			{
+				if (targetLimit == value)
+					return;
+				targetLimit = value;
+				OnPropertyChanged();
+			}
 		}
 
 		public RadioEnumList Type
@@ -197,31 +212,9 @@ namespace DndCore
 			}
 		}
 
-		public Attack Attack
+		private void Damages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			get { return GetAttack(); }
-			set
-			{
-				SetFromAttack(value);
-			}
-		}
-
-		List<Damage> GetListOf(ObservableCollection<DamageViewModel> damages)
-		{
-			List<Damage> results = new List<Damage>();
-			if (damages != null)
-				foreach (DamageViewModel damageViewModel in damages)
-					results.Add(damageViewModel.Damage);
-			return results;
-		}
-
-		List<DamageConditions> GetListOf(ObservableCollection<DamageConditionsViewModel> damages)
-		{
-			List<DamageConditions> results = new List<DamageConditions>();
-			if (damages != null)
-				foreach (DamageConditionsViewModel damageViewModel in damages)
-					results.Add(damageViewModel.DamageConditions);
-			return results;
+			OnPropertyChanged("Damages");
 		}
 
 		public Attack GetAttack()
@@ -245,6 +238,24 @@ namespace DndCore
 			attack.successfulSaveDamages = GetListOf(SuccessfulSaveDamages);
 			attack.targetLimit = TargetLimit;
 			return attack;
+		}
+
+		List<Damage> GetListOf(ObservableCollection<DamageViewModel> damages)
+		{
+			List<Damage> results = new List<Damage>();
+			if (damages != null)
+				foreach (DamageViewModel damageViewModel in damages)
+					results.Add(damageViewModel.Damage);
+			return results;
+		}
+
+		List<DamageConditions> GetListOf(ObservableCollection<DamageConditionsViewModel> damages)
+		{
+			List<DamageConditions> results = new List<DamageConditions>();
+			if (damages != null)
+				foreach (DamageConditionsViewModel damageViewModel in damages)
+					results.Add(damageViewModel.DamageConditions);
+			return results;
 		}
 
 		void SetFrom(ObservableCollection<DamageViewModel> targetList, List<Damage> sourceList)
@@ -286,20 +297,9 @@ namespace DndCore
 			TargetLimit = attack.targetLimit;
 		}
 
-		public AttackViewModel()
+		private void SuccessfulSaveDamages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			Damages = new ObservableCollection<DamageViewModel>();
-			SuccessfulSaveDamages = new ObservableCollection<DamageViewModel>();
-
-
-			type = new RadioEnumList(typeof(AttackType), "AttackType", AttackType.None, EnumListOption.Exclude);
-			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), "RechargeOdds", DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
-			type.Value = AttackType.Melee;
-			targetLimit = 1;
-			reachRange = 5;
-			rangeMax = 30;
-			recharges = DndTimeSpan.Never;
-			lasts = DndTimeSpan.OneMinute;
+			OnPropertyChanged("SuccessfulSaveDamages");
 		}
 	}
 }

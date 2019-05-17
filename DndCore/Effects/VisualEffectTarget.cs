@@ -13,11 +13,11 @@ namespace DndCore
 
 	public class VisualEffectTarget
 	{
-		public TargetType targetType;
+		public string entryName = string.Empty;
 		public Vector screenPosition;
 		public Vector targetOffset;
 		public TargetPage targetPage = TargetPage.None;
-		public string entryName = string.Empty;
+		public TargetType targetType;
 
 		public VisualEffectTarget()
 		{

@@ -11,21 +11,125 @@ namespace DndCore
 {
 	public class ModViewModel : ListEntry
 	{
-		DndTimeSpan repeats = DndTimeSpan.Zero;
-		double multiplier = 1;
-		int modifierLimit = 0;
-		double offset;
 		double absolute;
-		CheckEnumList modConditions;
-		DamageFilterViewModel damageTypeFilter;
-		bool requiresConsumption;
-		bool requiresEquipped;
 		bool addsAdvantage;
 		bool addsDisadvantage;
-		string targetName;
-		RadioEnumList modType;
+		DamageFilterViewModel damageTypeFilter;
 		RadioEnumList modAddAbilityModifier;
+		CheckEnumList modConditions;
+		int modifierLimit = 0;
+		RadioEnumList modType;
+		double multiplier = 1;
+		double offset;
+		DndTimeSpan repeats = DndTimeSpan.Zero;
+		bool requiresConsumption;
+		bool requiresEquipped;
+		string targetName;
 		Skills vantageSkillFilter;
+
+		public ModViewModel()
+		{
+			//damageType = new EnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
+			//attackKind = new EnumList(typeof(AttackKind));
+			damageTypeFilter = new DamageFilterViewModel();
+			damageTypeFilter.DamageType.Value = DamageType.None;
+			damageTypeFilter.AttackKind.Value = AttackKind.Any;
+			modConditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
+			modConditions.Value = DndCore.Conditions.None;
+			modType = new RadioEnumList(typeof(ModType), "ModType");
+			modType.Value = DndCore.ModType.incomingAttack;
+			modAddAbilityModifier = new RadioEnumList(typeof(Ability), "AddModifier");
+			modAddAbilityModifier.Value = Skills.none;
+			repeats = DndTimeSpan.Never;
+		}
+
+		public ModViewModel(string name) : this()
+		{
+			Name = name;
+		}
+
+		public double Absolute
+		{
+			get { return absolute; }
+			set
+			{
+				if (absolute == value)
+					return;
+				absolute = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public Ability AddAbilityModifier
+		{
+			get { return (Ability)modAddAbilityModifier.Value; }
+			set
+			{
+				Ability existingModType = (Ability)modAddAbilityModifier.Value;
+				if (existingModType == value)
+					return;
+
+				modAddAbilityModifier.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool AddsAdvantage
+		{
+			get { return addsAdvantage; }
+			set
+			{
+				if (addsAdvantage == value)
+					return;
+				addsAdvantage = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool AddsDisadvantage
+		{
+			get { return addsDisadvantage; }
+			set
+			{
+				if (addsDisadvantage == value)
+					return;
+				addsDisadvantage = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public Conditions Conditions
+		{
+			get { return (Conditions)modConditions.Value; }
+			set
+			{
+				Conditions existingConditions = (Conditions)modConditions.Value;
+				if (existingConditions == value)
+					return;
+
+				modConditions.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public DamageFilterViewModel DamageTypeFilter
+		{
+			get { return damageTypeFilter; }
+			set
+			{
+				if (damageTypeFilter == value)
+					return;
+				if (damageTypeFilter != null)
+					damageTypeFilter.PropertyChanged -= DamageTypeFilter_PropertyChanged;
+
+				damageTypeFilter = value;
+
+				if (damageTypeFilter != null)
+					damageTypeFilter.PropertyChanged += DamageTypeFilter_PropertyChanged;
+
+				OnPropertyChanged();
+			}
+		}
 
 		[JsonIgnore]
 		public Mod Mod
@@ -35,6 +139,176 @@ namespace DndCore
 			{
 				SetFromMod(value);
 			}
+		}
+
+		[JsonIgnore]
+		public RadioEnumList ModAddAbilityModifier
+		{
+			get { return modAddAbilityModifier; }
+			set
+			{
+				if (modAddAbilityModifier == value)
+					return;
+
+				modAddAbilityModifier = value;
+				OnPropertyChanged();
+			}
+		}
+
+		//public EnumList DamageType
+		//{
+		//	get { return damageType; }
+		//	set
+		//	{
+		//		if (damageType == value)
+		//			return;
+		//		damageType = value;
+		//		OnPropertyChanged();
+		//	}
+		//}
+
+		[JsonIgnore]
+		public CheckEnumList ModConditions
+		{
+			get { return modConditions; }
+			set
+			{
+				if (modConditions == value)
+					return;
+				modConditions = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public int ModifierLimit  // < 1 for resistance, > 1 for vulnerability
+		{
+			get { return modifierLimit; }
+			set
+			{
+				if (modifierLimit == value)
+					return;
+				modifierLimit = value;
+				OnPropertyChanged();
+			}
+		}
+
+
+		[JsonIgnore]
+		public RadioEnumList ModType
+		{
+			get { return modType; }
+			set
+			{
+				if (modType == value)
+					return;
+
+				modType = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public double Multiplier  // < 1 for resistance, > 1 for vulnerability
+		{
+			get { return multiplier; }
+			set
+			{
+				if (multiplier == value)
+					return;
+				multiplier = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public double Offset
+		{
+			get { return offset; }
+			set
+			{
+				if (offset == value)
+					return;
+				offset = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public DndTimeSpan Repeats
+		{
+			get { return repeats; }
+			set
+			{
+				if (repeats.Equals(value))
+					return;
+				repeats = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool RequiresConsumption
+		{
+			get { return requiresConsumption; }
+			set
+			{
+				if (requiresConsumption == value)
+					return;
+				requiresConsumption = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool RequiresEquipped
+		{
+			get { return requiresEquipped; }
+			set
+			{
+				if (requiresEquipped == value)
+					return;
+				requiresEquipped = value;
+				OnPropertyChanged();
+			}
+		}
+
+
+		public string TargetName
+		{
+			get { return targetName; }
+			set
+			{
+				if (targetName == value)
+					return;
+				targetName = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public ModType Type
+		{
+			get { return (ModType)modType.Value; }
+			set
+			{
+				ModType existingModType = (ModType)modType.Value;
+				if (existingModType == value)
+					return;
+
+				modType.Value = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public Skills VantageSkillFilter
+		{
+			get { return vantageSkillFilter; }
+			set
+			{
+				if (vantageSkillFilter == value)
+					return;
+				vantageSkillFilter = value;
+				OnPropertyChanged();
+			}
+		}
+
+		private void DamageTypeFilter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged("DamageFilter");
 		}
 
 		Mod GetMod()
@@ -98,280 +372,6 @@ namespace DndCore
 			AddsDisadvantage = mod.addsDisadvantage;
 			VantageSkillFilter = mod.vantageSkillFilter;
 			Absolute = mod.absolute;
-		}
-
-
-		[JsonIgnore]
-		public RadioEnumList ModType
-		{
-			get { return modType; }
-			set
-			{
-				if (modType == value)
-					return;
-
-				modType = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public ModType Type
-		{
-			get { return (ModType)modType.Value; }
-			set
-			{
-				ModType existingModType = (ModType)modType.Value;
-				if (existingModType == value)
-					return;
-
-				modType.Value = value;
-				OnPropertyChanged();
-			}
-		}
-
-		[JsonIgnore]
-		public RadioEnumList ModAddAbilityModifier
-		{
-			get { return modAddAbilityModifier; }
-			set
-			{
-				if (modAddAbilityModifier == value)
-					return;
-
-				modAddAbilityModifier = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public Ability AddAbilityModifier
-		{
-			get { return (Ability)modAddAbilityModifier.Value; }
-			set
-			{
-				Ability existingModType = (Ability)modAddAbilityModifier.Value;
-				if (existingModType == value)
-					return;
-
-				modAddAbilityModifier.Value = value;
-				OnPropertyChanged();
-			}
-		}
-
-
-		public string TargetName
-		{
-			get { return targetName; }
-			set
-			{
-				if (targetName == value)
-					return;
-				targetName = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool RequiresEquipped
-		{
-			get { return requiresEquipped; }
-			set
-			{
-				if (requiresEquipped == value)
-					return;
-				requiresEquipped = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool AddsDisadvantage
-		{
-			get { return addsDisadvantage; }
-			set
-			{
-				if (addsDisadvantage == value)
-					return;
-				addsDisadvantage = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool AddsAdvantage
-		{
-			get { return addsAdvantage; }
-			set
-			{
-				if (addsAdvantage == value)
-					return;
-				addsAdvantage = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public Skills VantageSkillFilter
-		{
-			get { return vantageSkillFilter; }
-			set
-			{
-				if (vantageSkillFilter == value)
-					return;
-				vantageSkillFilter = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public bool RequiresConsumption
-		{
-			get { return requiresConsumption; }
-			set
-			{
-				if (requiresConsumption == value)
-					return;
-				requiresConsumption = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public DamageFilterViewModel DamageTypeFilter
-		{
-			get { return damageTypeFilter; }
-			set
-			{
-				if (damageTypeFilter == value)
-					return;
-				if (damageTypeFilter != null)
-					damageTypeFilter.PropertyChanged -= DamageTypeFilter_PropertyChanged;
-
-				damageTypeFilter = value;
-
-				if (damageTypeFilter != null)
-					damageTypeFilter.PropertyChanged += DamageTypeFilter_PropertyChanged;
-
-				OnPropertyChanged();
-			}
-		}
-
-		private void DamageTypeFilter_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			OnPropertyChanged("DamageFilter");
-		}
-
-		//public EnumList DamageType
-		//{
-		//	get { return damageType; }
-		//	set
-		//	{
-		//		if (damageType == value)
-		//			return;
-		//		damageType = value;
-		//		OnPropertyChanged();
-		//	}
-		//}
-
-		[JsonIgnore]
-		public CheckEnumList ModConditions
-		{
-			get { return modConditions; }
-			set
-			{
-				if (modConditions == value)
-					return;
-				modConditions = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public Conditions Conditions
-		{
-			get { return (Conditions)modConditions.Value; }
-			set
-			{
-				Conditions existingConditions = (Conditions)modConditions.Value;
-				if (existingConditions == value)
-					return;
-
-				modConditions.Value = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public ModViewModel()
-		{
-			//damageType = new EnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
-			//attackKind = new EnumList(typeof(AttackKind));
-			damageTypeFilter = new DamageFilterViewModel();
-			damageTypeFilter.DamageType.Value = DamageType.None;
-			damageTypeFilter.AttackKind.Value = AttackKind.Any;
-			modConditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			modConditions.Value = DndCore.Conditions.None;
-			modType = new RadioEnumList(typeof(ModType), "ModType");
-			modType.Value = DndCore.ModType.incomingAttack;
-			modAddAbilityModifier = new RadioEnumList(typeof(Ability), "AddModifier");
-			modAddAbilityModifier.Value = Skills.none;
-			repeats = DndTimeSpan.Never;
-		}
-
-		public ModViewModel(string name) : this()
-		{
-			Name = name;
-		}
-
-		public double Offset
-		{
-			get { return offset; }
-			set
-			{
-				if (offset == value)
-					return;
-				offset = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public double Absolute
-		{
-			get { return absolute; }
-			set
-			{
-				if (absolute == value)
-					return;
-				absolute = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public double Multiplier  // < 1 for resistance, > 1 for vulnerability
-		{
-			get { return multiplier; }
-			set
-			{
-				if (multiplier == value)
-					return;
-				multiplier = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public int ModifierLimit  // < 1 for resistance, > 1 for vulnerability
-		{
-			get { return modifierLimit; }
-			set
-			{
-				if (modifierLimit == value)
-					return;
-				modifierLimit = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public DndTimeSpan Repeats
-		{
-			get { return repeats; }
-			set
-			{
-				if (repeats.Equals(value))
-					return;
-				repeats = value;
-				OnPropertyChanged();
-			}
 		}
 	}
 }

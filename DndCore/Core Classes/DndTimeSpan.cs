@@ -6,29 +6,45 @@ namespace DndCore
 {
 	public struct DndTimeSpan
 	{
-		public static readonly DndTimeSpan Zero = FromActions(0);
-		public static readonly DndTimeSpan Never = Zero;
-		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
-		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
 
-		public TimeSpan GetTimeSpan()
+		public DndTimeSpan(TimeMeasure timeMeasure, int count)
 		{
-			switch (TimeMeasure)
-			{
-				case TimeMeasure.round:
-					return TimeSpan.FromSeconds(6);
-				case TimeMeasure.seconds:
-					return TimeSpan.FromSeconds(Count);
-				case TimeMeasure.minutes:
-					return TimeSpan.FromMinutes(Count);
-				case TimeMeasure.hours:
-					return TimeSpan.FromHours(Count);
-				case TimeMeasure.days:
-					return TimeSpan.FromDays(Count);
-				case TimeMeasure.forever:
-					return Timeout.InfiniteTimeSpan;
-			}
-			return TimeSpan.Zero;
+			Count = count;
+			TimeMeasure = timeMeasure;
+		}
+
+		public int Count { get; set; }
+
+		public TimeMeasure TimeMeasure { get; set; }
+
+		public static DndTimeSpan FromActions(int actionCount)
+		{
+			return new DndTimeSpan(TimeMeasure.actions, actionCount);
+		}
+
+		public static DndTimeSpan FromDays(int days)
+		{
+			return new DndTimeSpan(TimeMeasure.days, days);
+		}
+
+		public static DndTimeSpan FromHours(int hours)
+		{
+			return new DndTimeSpan(TimeMeasure.hours, hours);
+		}
+
+		public static DndTimeSpan FromMinutes(int minutes)
+		{
+			return new DndTimeSpan(TimeMeasure.minutes, minutes);
+		}
+
+		public static DndTimeSpan FromRounds(int rounds)
+		{
+			return new DndTimeSpan(TimeMeasure.round, rounds);
+		}
+
+		public static DndTimeSpan FromSeconds(int seconds)
+		{
+			return new DndTimeSpan(TimeMeasure.seconds, seconds);
 		}
 
 		public bool Equals(DndTimeSpan other)
@@ -57,40 +73,24 @@ namespace DndCore
 			}
 		}
 
-		public DndTimeSpan(TimeMeasure timeMeasure, int count)
+		public TimeSpan GetTimeSpan()
 		{
-			Count = count;
-			TimeMeasure = timeMeasure;
-		}
-
-		public static DndTimeSpan FromActions(int actionCount)
-		{
-			return new DndTimeSpan(TimeMeasure.actions, actionCount);
-		}
-
-		public static DndTimeSpan FromSeconds(int seconds)
-		{
-			return new DndTimeSpan(TimeMeasure.seconds, seconds);
-		}
-
-		public static DndTimeSpan FromMinutes(int minutes)
-		{
-			return new DndTimeSpan(TimeMeasure.minutes, minutes);
-		}
-
-		public static DndTimeSpan FromHours(int hours)
-		{
-			return new DndTimeSpan(TimeMeasure.hours, hours);
-		}
-
-		public static DndTimeSpan FromDays(int days)
-		{
-			return new DndTimeSpan(TimeMeasure.days, days);
-		}
-
-		public static DndTimeSpan FromRounds(int rounds)
-		{
-			return new DndTimeSpan(TimeMeasure.round, rounds);
+			switch (TimeMeasure)
+			{
+				case TimeMeasure.round:
+					return TimeSpan.FromSeconds(6);
+				case TimeMeasure.seconds:
+					return TimeSpan.FromSeconds(Count);
+				case TimeMeasure.minutes:
+					return TimeSpan.FromMinutes(Count);
+				case TimeMeasure.hours:
+					return TimeSpan.FromHours(Count);
+				case TimeMeasure.days:
+					return TimeSpan.FromDays(Count);
+				case TimeMeasure.forever:
+					return Timeout.InfiniteTimeSpan;
+			}
+			return TimeSpan.Zero;
 		}
 
 		public bool IsForever()
@@ -98,7 +98,9 @@ namespace DndCore
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
 		}
 
-		public TimeMeasure TimeMeasure { get; set; }
-		public int Count { get; set; }
+		public static readonly DndTimeSpan Zero = FromActions(0);
+		public static readonly DndTimeSpan Never = Zero;
+		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
+		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
 	}
 }

@@ -10,11 +10,11 @@ namespace DndCore
 			CreatureSize = creatureSize;
 		}
 
+		public CreatureSize CreatureSize { get; set; }
+
 		public override bool IsTrue(Creature creature)
 		{
 			return creature.creatureSize == CreatureSize;
 		}
-
-		public CreatureSize CreatureSize { get; set; }
 	}
 }

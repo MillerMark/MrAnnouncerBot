@@ -10,17 +10,22 @@ namespace DndCore
 {
 	public class CheckEnumList : ViewModelBase
 	{
-		private void Initialize(Type enumType)
+
+		private Type _enumType;
+
+
+		private object _value;
+		bool settingInternally;
+
+		public CheckEnumList(Type enumType)
 		{
-			_enumType = enumType;
-
-			Items = new ObservableCollection<CheckEnumViewModel>();
-			Items.CollectionChanged += Items_CollectionChanged;
-		}
-
-		private void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
-
+			Initialize(enumType);
+			foreach (object value in Enum.GetValues(_enumType))
+			{
+				var item = new CheckEnumViewModel(value);
+				item.PropertyChanged += HandleItemPropertyChanged;
+				Items.Add(item);
+			}
 		}
 
 		public CheckEnumList(Type enumType, object filterItems, EnumListOption enumListOption = EnumListOption.Add)
@@ -48,44 +53,7 @@ namespace DndCore
 			}
 		}
 
-		public CheckEnumList(Type enumType)
-		{
-			Initialize(enumType);
-			foreach (object value in Enum.GetValues(_enumType))
-			{
-				var item = new CheckEnumViewModel(value);
-				item.PropertyChanged += HandleItemPropertyChanged;
-				Items.Add(item);
-			}
-		}
-
-
-		private object _value;
-
-		void SetCheckedFromValue(int value)
-		{
-			settingInternally = true;
-			try
-			{
-				ObservableCollection<CheckEnumViewModel> items = Items;
-				SetValue(items, value);
-			}
-			finally
-			{
-				settingInternally = false;
-			}
-		}
-
-		public static void SetValue(object itemSource, object valueObject)
-		{
-			int value = Convert.ToInt32(valueObject);
-			if (itemSource is ObservableCollection<CheckEnumViewModel> items)
-				foreach (CheckEnumViewModel item in items)
-				{
-					int itemValue = Convert.ToInt32(item.Value);
-					item.IsChecked = (value & itemValue) == itemValue;
-				}
-		}
+		public ObservableCollection<CheckEnumViewModel> Items { get; private set; }
 
 		public object Value
 		{
@@ -96,19 +64,6 @@ namespace DndCore
 				SetCheckedFromValue(Convert.ToInt32(_value));
 				OnPropertyChanged();
 			}
-		}
-
-		public ObservableCollection<CheckEnumViewModel> Items { get; private set; }
-
-		private Type _enumType;
-		bool settingInternally;
-
-		private object CalcValue()
-		{
-			// Assumes the enums are ints.  Can change if needed (can dynamically determine as well).
-			Type enumType = _enumType;
-			ObservableCollection<CheckEnumViewModel> items = Items;
-			return CalcValue(items, enumType);
 		}
 
 		public static object CalcValue(object itemSource, Type enumType)
@@ -129,11 +84,56 @@ namespace DndCore
 			return Enum.ToObject(enumType, 0);
 		}
 
+		public static void SetValue(object itemSource, object valueObject)
+		{
+			int value = Convert.ToInt32(valueObject);
+			if (itemSource is ObservableCollection<CheckEnumViewModel> items)
+				foreach (CheckEnumViewModel item in items)
+				{
+					int itemValue = Convert.ToInt32(item.Value);
+					item.IsChecked = (value & itemValue) == itemValue;
+				}
+		}
+
+		private object CalcValue()
+		{
+			// Assumes the enums are ints.  Can change if needed (can dynamically determine as well).
+			Type enumType = _enumType;
+			ObservableCollection<CheckEnumViewModel> items = Items;
+			return CalcValue(items, enumType);
+		}
+
 		private void HandleItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (settingInternally)
 				return;
 			Value = CalcValue();
+		}
+		private void Initialize(Type enumType)
+		{
+			_enumType = enumType;
+
+			Items = new ObservableCollection<CheckEnumViewModel>();
+			Items.CollectionChanged += Items_CollectionChanged;
+		}
+
+		private void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+
+		}
+
+		void SetCheckedFromValue(int value)
+		{
+			settingInternally = true;
+			try
+			{
+				ObservableCollection<CheckEnumViewModel> items = Items;
+				SetValue(items, value);
+			}
+			finally
+			{
+				settingInternally = false;
+			}
 		}
 	}
 }

@@ -9,11 +9,10 @@ namespace DndCore
 	// Wraps an enum value so we can expose an IsChecked property.
 	public class CheckEnumViewModel : ViewModelBase
 	{
-		public CheckEnumViewModel(object value) => Value = value;
-
-		public object Value { get; }
 
 		private bool isChecked;
+
+		public CheckEnumViewModel(object value) => Value = value;
 
 		public bool IsChecked
 		{
@@ -24,5 +23,7 @@ namespace DndCore
 				OnPropertyChanged();
 			}
 		}
+
+		public object Value { get; }
 	}
 }

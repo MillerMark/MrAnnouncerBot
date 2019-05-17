@@ -5,8 +5,6 @@ namespace DndCore
 {
 	public class DndRoom
 	{
-		public int X { get; set; }
-		public int Y { get; set; }
 
 		public DndRoom()
 		{
@@ -17,8 +15,12 @@ namespace DndCore
 			Name = name;
 		}
 
-		public string Name { get; set; }
 		public DndMap Map { get; set; }
+
+		public string Name { get; set; }
+		public int X { get; set; }
+		public int Y { get; set; }
+
 		Vector GetWorldPosition(int x, int y)
 		{
 			return Map.GetWorldPosition(X + x, Y + y);

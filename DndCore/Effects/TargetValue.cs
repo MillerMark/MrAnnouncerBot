@@ -2,13 +2,17 @@
 {
 	public class TargetValue
 	{
-		public double value;
-		public double relativeVariance;
 		public double absoluteVariance;
-		public double min;
-		public double max;
 		public double drift;
+		public double max;
+		public double min;
+		public double relativeVariance;
 		public TargetBinding targetBinding;
+		public double value;
+
+		public TargetValue()
+		{
+		}
 		public TargetValue(double value, double relativeVariance = 0, double absoluteVariance = 0, double min = 0, double max = 1, double drift = 0, TargetBinding targetBinding = TargetBinding.truncate)
 		{
 			this.value = value;
@@ -18,10 +22,6 @@
 			this.max = max;
 			this.drift = drift;
 			this.targetBinding = targetBinding;
-		}
-
-		public TargetValue()
-		{
 		}
 	}
 }

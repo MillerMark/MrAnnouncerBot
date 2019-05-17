@@ -5,20 +5,13 @@ namespace DndCore
 {
 	public class RadioEnumViewModel : ViewModelBase
 	{
-		public event EventHandler EntryClicked;
 
-		internal void OnEntryClicked(object sender, EventArgs e)
-		{
-			EntryClicked?.Invoke(sender, e);
-		}
-
-		public RadioEnumViewModel(object value) => Value = value;
-
-		public object Value { get; }
+		private string groupName;
 
 		private bool isChecked;
 
-		private string groupName;
+		public RadioEnumViewModel(object value) => Value = value;
+
 		public string GroupName
 		{
 			get
@@ -49,5 +42,14 @@ namespace DndCore
 				OnPropertyChanged();
 			}
 		}
+
+		public object Value { get; }
+
+		internal void OnEntryClicked(object sender, EventArgs e)
+		{
+			EntryClicked?.Invoke(sender, e);
+		}
+
+		public event EventHandler EntryClicked;
 	}
 }

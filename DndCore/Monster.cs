@@ -7,28 +7,86 @@ namespace DndCore
 	public class Monster : Creature
 	{
 		public double challengeRating;
-		public double experiencePoints;
-
-		public double strengthMod;
-		public double dexterityMod;
-		public double constitutionMod;
-		public double intelligenceMod;
-		public double wisdomMod;
 		public double charismaMod;
+		public double constitutionMod;
+		public double dexterityMod;
+		public double experiencePoints;
+		public string hitPointsDice;
+		public double intelligenceMod;
+
+		public bool naturalArmor;
+		public int passivePerception;
+		public double savingCharismaMod;
+		public double savingConstitutionMod;
+		public double savingDexterityMod;
+		public double savingIntelligenceMod;
 
 		public double savingStrengthMod;
-		public double savingDexterityMod;
-		public double savingConstitutionMod;
-		public double savingIntelligenceMod;
 		public double savingWisdomMod;
-		public double savingCharismaMod;
 
 		public int skillsModStealth;
 
-		public bool naturalArmor;
-		public string hitPointsDice;
-		public int passivePerception;
+		public double strengthMod;
 		public List<string> traits = new List<string>();
+		public double wisdomMod;
+
+		public void AddAttack(Attack attack)
+		{
+			attacks.Add(attack);
+		}
+
+		public void AddLanguages(Languages languages)
+		{
+			languagesSpoken |= languages;
+			languagesUnderstood |= languages;
+		}
+
+		public void AddMultiAttack(params string[] attackNames)
+		{
+			foreach (string attackName in attackNames)
+			{
+				Attack attack = attacks.Find(x => x.Name == attackName);
+				if (attack != null)
+					multiAttack.Add(attack);
+			}
+		}
+
+		public override double GetAttackModifier(Ability modifier)
+		{
+			switch (modifier)
+			{
+				case Ability.Strength:
+					return strengthMod;
+				case Ability.Dexterity:
+					return dexterityMod;
+				case Ability.Constitution:
+					return constitutionMod;
+				case Ability.Intelligence:
+					return intelligenceMod;
+				case Ability.Wisdom:
+					return wisdomMod;
+				case Ability.Charisma:
+					return charismaMod;
+			}
+			return 0;
+		}
+
+		public int GetAttackRoll(int value, string attackName)
+		{
+			Attack attack = attacks.Find(x => x.Name == attackName);
+			if (attack == null)
+				return 0;
+			return value + (int)Math.Floor(attack.plusToHit);
+		}
+		public DamageResult GetDamageFromAttack(Creature creature, string attackName, int savingThrow, int attackRoll = int.MaxValue)
+		{
+			if (attackRoll < creature.ArmorClass)
+				return null;
+			Attack attack = attacks.Find(x => x.Name == attackName);
+			if (attack != null)
+				return attack.GetDamage(creature, savingThrow);
+			return null;
+		}
 
 		public void SetAbilities(int strength, int strengthMod, int dexterity, int dexterityMod, int constitution, int constitutionMod, int intelligence, int intelligenceMod, int wisdom, int wisdomMod, int charisma, int charismaMod)
 		{
@@ -44,31 +102,6 @@ namespace DndCore
 			this.wisdomMod = wisdomMod;
 			this.baseCharisma = charisma;
 			this.charismaMod = charismaMod;
-		}
-
-		public void AddAttack(Attack attack)
-		{
-			attacks.Add(attack);
-		}
-
-		public void AddMultiAttack(params string[] attackNames)
-		{
-			foreach (string attackName in attackNames)
-			{
-				Attack attack = attacks.Find(x => x.Name == attackName);
-				if (attack != null)
-					multiAttack.Add(attack);
-			}
-		}
-
-		void SetAbilityFromStr(string str, ref double ability, ref double abilityMod)
-		{
-			int openParen = str.IndexOf("(");
-			int closeParen = str.IndexOf(")");
-			string abilityStr = str.Substring(0, openParen).Trim();
-			string abilityModStr = str.Substring(openParen + 1, closeParen - openParen - 1).Trim();
-			ability = abilityStr.ToDouble();
-			abilityMod = abilityModStr.ToDouble();
 		}
 
 		// ![](36C54F2C5F48AF603559DA1AFB31DAF9.png;https://www.dndbeyond.com/monsters/vine-blight )
@@ -100,47 +133,14 @@ namespace DndCore
 			SetAbilityFromStr(lines[11], ref baseCharisma, ref charismaMod);
 		}
 
-		public override double GetAttackModifier(Ability modifier)
+		void SetAbilityFromStr(string str, ref double ability, ref double abilityMod)
 		{
-			switch (modifier)
-			{
-				case Ability.Strength:
-					return strengthMod;
-				case Ability.Dexterity:
-					return dexterityMod;
-				case Ability.Constitution:
-					return constitutionMod;
-				case Ability.Intelligence:
-					return intelligenceMod;
-				case Ability.Wisdom:
-					return wisdomMod;
-				case Ability.Charisma:
-					return charismaMod;
-			}
-			return 0;
-		}
-
-		public void AddLanguages(Languages languages)
-		{
-			languagesSpoken |= languages;
-			languagesUnderstood |= languages;
-		}
-		public DamageResult GetDamageFromAttack(Creature creature, string attackName, int savingThrow, int attackRoll = int.MaxValue)
-		{
-			if (attackRoll < creature.ArmorClass)
-				return null;
-			Attack attack = attacks.Find(x => x.Name == attackName);
-			if (attack != null)
-				return attack.GetDamage(creature, savingThrow);
-			return null;
-		}
-
-		public int GetAttackRoll(int value, string attackName)
-		{
-			Attack attack = attacks.Find(x => x.Name == attackName);
-			if (attack == null)
-				return 0;
-			return value + (int)Math.Floor(attack.plusToHit);
+			int openParen = str.IndexOf("(");
+			int closeParen = str.IndexOf(")");
+			string abilityStr = str.Substring(0, openParen).Trim();
+			string abilityModStr = str.Substring(openParen + 1, closeParen - openParen - 1).Trim();
+			ability = abilityStr.ToDouble();
+			abilityMod = abilityModStr.ToDouble();
 		}
 	}
 }

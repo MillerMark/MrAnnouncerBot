@@ -8,6 +8,7 @@ namespace DndCore
 		public static readonly Vector zero = new Vector(0, 0);
 		public double x;
 		public double y;
+
 		public Vector(double x, double y)
 		{
 			this.x = x;

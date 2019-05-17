@@ -19,14 +19,14 @@ namespace DndCore
 			return MatchesDamage(damageType) && MatchesAttackKind(attackKind);
 		}
 
-		private bool MatchesDamage(DamageType damageType)
-		{
-			return (damageType & DamageType) == damageType;
-		}
-
 		private bool MatchesAttackKind(AttackKind attackKind)
 		{
 			return (attackKind & AttackKind) == attackKind;
+		}
+
+		private bool MatchesDamage(DamageType damageType)
+		{
+			return (damageType & DamageType) == damageType;
 		}
 	}
 }

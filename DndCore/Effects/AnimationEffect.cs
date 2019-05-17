@@ -8,16 +8,16 @@ namespace DndCore
 {
 	public class AnimationEffect : Effect
 	{
-		public string name;
-		public string spriteName;
-		public VisualEffectTarget target;
-		public int startFrameIndex;
-		public double hueShift;
-		public double saturation;
 		public double brightness;
+		public double hueShift;
+		public string name;
+		public double saturation;
+		public double secondaryBrightness = 100;
 		public double secondaryHueShift = 0;
 		public double secondarySaturation = 100;
-		public double secondaryBrightness = 100;
+		public string spriteName;
+		public int startFrameIndex;
+		public VisualEffectTarget target;
 
 		public AnimationEffect()
 		{

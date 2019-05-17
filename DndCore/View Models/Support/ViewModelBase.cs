@@ -11,11 +11,12 @@ namespace DndCore
 	// Base class so we don't have to re-implement INPC in view models.
 	public class ViewModelBase : INotifyPropertyChanged
 	{
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = "")
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
 	}
 }

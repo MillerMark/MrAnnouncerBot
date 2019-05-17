@@ -8,6 +8,7 @@ namespace DndCore
 	public class EffectTimeLines : ListEntry
 	{
 		private ObservableCollection<TimeLineEffect> entries = new ObservableCollection<TimeLineEffect>();
+
 		public EffectTimeLines()
 		{
 

@@ -6,20 +6,26 @@ namespace DndCore
 {
 	public class DamageConditionsViewModel : ViewModelBase
 	{
+		int concurrentTargets;
+		CheckEnumList conditions;
 		//private fields...
 		CheckEnumList creatureSizeFilter;
-		int concurrentTargets;
 		int escapeDC;
-		CheckEnumList conditions;
 
-		public CheckEnumList CreatureSizeFilter
+		public DamageConditionsViewModel()
 		{
-			get { return creatureSizeFilter; }
+			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
+			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize));
+		}
+
+		public int ConcurrentTargets
+		{
+			get { return concurrentTargets; }
 			set
 			{
-				if (creatureSizeFilter == value)
+				if (concurrentTargets == value)
 					return;
-				creatureSizeFilter = value;
+				concurrentTargets = value;
 				OnPropertyChanged();
 			}
 		}
@@ -36,26 +42,14 @@ namespace DndCore
 			}
 		}
 
-		public int EscapeDC
+		public CheckEnumList CreatureSizeFilter
 		{
-			get { return escapeDC; }
+			get { return creatureSizeFilter; }
 			set
 			{
-				if (escapeDC == value)
+				if (creatureSizeFilter == value)
 					return;
-				escapeDC = value;
-				OnPropertyChanged();
-			}
-		}
-
-		public int ConcurrentTargets
-		{
-			get { return concurrentTargets; }
-			set
-			{
-				if (concurrentTargets == value)
-					return;
-				concurrentTargets = value;
+				creatureSizeFilter = value;
 				OnPropertyChanged();
 			}
 		}
@@ -69,6 +63,18 @@ namespace DndCore
 			set
 			{
 				SetFrom(value);
+			}
+		}
+
+		public int EscapeDC
+		{
+			get { return escapeDC; }
+			set
+			{
+				if (escapeDC == value)
+					return;
+				escapeDC = value;
+				OnPropertyChanged();
 			}
 		}
 
@@ -86,12 +92,6 @@ namespace DndCore
 			creatureSizeFilter.Value = damageConditions.CreatureSizeFilter;
 			escapeDC = damageConditions.EscapeDC;
 			concurrentTargets = damageConditions.ConcurrentTargets;
-		}
-
-		public DamageConditionsViewModel()
-		{
-			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
-			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize));
 		}
 	}
 }

@@ -7,18 +7,58 @@ namespace DndCore
 {
 	public class DndTimeClock
 	{
-		TimeClockEventArgs timeClockEventArgs = new TimeClockEventArgs();
-		public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
-		public event TimeClockEventHandler TimeChanged;
+		public const int Alturiak = 2;
+		private const int AlturiakStart = 32;
+		public const int Ches = 3;
+		private const int ChesStart = 62;
+		public const int Eleasis = 8;
+		private const int EleasisStart = 214;
+		public const int Eleint = 9;
+		private const int EleintStart = 244;
+		public const int Flamerule = 7;
+		private const int FlameruleStart = 183;
+		public const int Greengrass = -2;  // Holiday
+		public const int GreengrassStart = 122;
 
-		protected virtual void OnTimeChanged(object sender, DateTime previousTime)
-		{
-			timeClockEventArgs.SpanSinceLastUpdate = Time - previousTime;
-			TimeChanged?.Invoke(sender, timeClockEventArgs);
-		}
+		// Months & holidays...
+		public const int Hammer = 1;
+
+		private const int HammerStart = 1;
+		public const int Highharvestide = -5;  // Holiday
+		public const int HighharvestideStart = 274;
+		public const int Kythorn = 6;
+		private const int KythornStart = 153;
+		public const int Marpenoth = 10;
+		private const int MarpenothStart = 275;
+		public const int Midsummer = -3;  // Holiday
+		public const int MidsummerStart = 213;
+		public const int Midwinter = -1;  // Holiday
+
+		// Holidays...
+		public const int MidwinterStart = 31;
+		public const int Mirtul = 5;
+		private const int MirtulStart = 123;
+		public const int Nightal = 12;
+		private const int NightalStart = 336;
+		public const int Shieldmeet = -4;  // Leap Day/Holiday
+		public const int ShieldmeetStart = 214;
+		public const int Tarsakh = 4;
+		private const int TarsakhStart = 92;
+		public const int TheFeastOfTheMoon = -6;  // Holiday
+		public const int TheFeastOfTheMoonStart = 335;
+		public const int Uktar = 11;
+		private const int UktarStart = 305;
 
 		//private fields...
 		static DndTimeClock instance;
+
+		private readonly int[] MonthStartDays = { 0, HammerStart, AlturiakStart, ChesStart, TarsakhStart, MirtulStart, KythornStart, FlameruleStart, EleasisStart, EleintStart, MarpenothStart, UktarStart, NightalStart };
+		TimeClockEventArgs timeClockEventArgs = new TimeClockEventArgs();
+
+		static DndTimeClock()
+		{
+			instance = new DndTimeClock();
+		}
 
 		public static DndTimeClock Instance
 		{
@@ -28,23 +68,9 @@ namespace DndCore
 				instance = value;
 			}
 		}
-
-		static DndTimeClock()
-		{
-			instance = new DndTimeClock();
-		}
-
-		public DateTime Time { get; private set; }
 		public bool InCombat { get; set; }
 
-		public void SetTime(DateTime time)
-		{
-			if (Time == time)
-				return;
-			DateTime previousTime = Time;
-			Time = time;
-			OnTimeChanged(this, previousTime);
-		}
+		public DateTime Time { get; private set; }
 
 		public void Advance(DndTimeSpan dndTimeSpan, bool reverseDirection = false)
 		{
@@ -66,48 +92,48 @@ namespace DndCore
 			Advance(TimeSpan.FromMilliseconds(milliseconds), reverseDirection);
 		}
 
-		private const int HammerStart = 1;
-		private const int AlturiakStart = 32;
-		private const int ChesStart = 62;
-		private const int TarsakhStart = 92;
-		private const int MirtulStart = 123;
-		private const int KythornStart = 153;
-		private const int FlameruleStart = 183;
-		private const int EleasisStart = 214;
-		private const int EleintStart = 244;
-		private const int MarpenothStart = 275;
-		private const int UktarStart = 305;
-		private const int NightalStart = 336;
+		public string AsDndDateString()
+		{
+			string yearStr = $", {Time.Year} DR";
+			int dayOfYear = Time.DayOfYear;
+			int monthOrHoliday = GetMonthOrHoliday(dayOfYear);
+			string monthOrHolidayName = GetMonthOrHolidayName(monthOrHoliday);
 
-		private readonly int[] MonthStartDays = { 0, HammerStart, AlturiakStart, ChesStart, TarsakhStart, MirtulStart, KythornStart, FlameruleStart, EleasisStart, EleintStart, MarpenothStart, UktarStart, NightalStart };
+			if (IsHoliday(monthOrHoliday))
+				return monthOrHolidayName + yearStr;
 
-		// Holidays...
-		public const int MidwinterStart = 31;
-		public const int GreengrassStart = 122;
-		public const int MidsummerStart = 213;
-		public const int ShieldmeetStart = 214;
-		public const int HighharvestideStart = 274;
-		public const int TheFeastOfTheMoonStart = 335;
+			int dayOfMonth = GetDayOfMonth(dayOfYear, monthOrHoliday);
+			string dayOfMonthSuffix = GetDaySuffix(dayOfMonth);
 
-		// Months & holidays...
-		public const int Hammer = 1;
-		public const int Midwinter = -1;  // Holiday
-		public const int Alturiak = 2;
-		public const int Ches = 3;
-		public const int Tarsakh = 4;
-		public const int Greengrass = -2;  // Holiday
-		public const int Mirtul = 5;
-		public const int Kythorn = 6;
-		public const int Flamerule = 7;
-		public const int Midsummer = -3;  // Holiday
-		public const int Shieldmeet = -4;  // Leap Day/Holiday
-		public const int Eleasis = 8;
-		public const int Eleint = 9;
-		public const int Highharvestide = -5;  // Holiday
-		public const int Marpenoth = 10;
-		public const int Uktar = 11;
-		public const int TheFeastOfTheMoon = -6;  // Holiday
-		public const int Nightal = 12;
+			return dayOfMonth + dayOfMonthSuffix + " of " + monthOrHolidayName + yearStr;
+		}
+
+		internal int GetDayOfMonth(int dayOfYear, int month)
+		{
+			int laterMonthsOffset = 0;
+			int leapYearOffset = GetLeapYearOffset();
+
+			if (month >= Eleasis)
+				laterMonthsOffset = leapYearOffset;
+			return dayOfYear - MonthStartDays[month] + 1 - laterMonthsOffset;
+		}
+
+		string GetDaySuffix(int dayOfMonth)
+		{
+			switch (dayOfMonth)
+			{
+				case 1:
+				case 21:
+					return "st";
+				case 2:
+				case 22:
+					return "nd";
+				case 3:
+					return "rd";
+				default:
+					return "th";
+			}
+		}
 
 		// Holidays...
 
@@ -169,31 +195,6 @@ namespace DndCore
 			return 0;
 		}
 
-		internal bool IsHoliday(int monthOrHoliday)
-		{
-			switch (monthOrHoliday)
-			{
-				case Midwinter:
-				case Greengrass:
-				case Midsummer:
-				case Highharvestide:
-				case TheFeastOfTheMoon:
-				case Shieldmeet:
-					return true;
-			}
-			return false;
-		}
-
-		internal int GetDayOfMonth(int dayOfYear, int month)
-		{
-			int laterMonthsOffset = 0;
-			int leapYearOffset = GetLeapYearOffset();
-
-			if (month >= Eleasis)
-				laterMonthsOffset = leapYearOffset;
-			return dayOfYear - MonthStartDays[month] + 1 - laterMonthsOffset;
-		}
-
 		string GetMonthOrHolidayName(int monthOrHoliday)
 		{
 			switch (monthOrHoliday)
@@ -238,43 +239,43 @@ namespace DndCore
 			return string.Empty;
 		}
 
-		string GetDaySuffix(int dayOfMonth)
+		internal bool IsHoliday(int monthOrHoliday)
 		{
-			switch (dayOfMonth)
+			switch (monthOrHoliday)
 			{
-				case 1:
-				case 21:
-					return "st";
-				case 2:
-				case 22:
-					return "nd";
-				case 3:
-					return "rd";
-				default:
-					return "th";
+				case Midwinter:
+				case Greengrass:
+				case Midsummer:
+				case Highharvestide:
+				case TheFeastOfTheMoon:
+				case Shieldmeet:
+					return true;
 			}
+			return false;
 		}
 
-		public string AsDndDateString()
+		protected virtual void OnTimeChanged(object sender, DateTime previousTime)
 		{
-			string yearStr = $", {Time.Year} DR";
-			int dayOfYear = Time.DayOfYear;
-			int monthOrHoliday = GetMonthOrHoliday(dayOfYear);
-			string monthOrHolidayName = GetMonthOrHolidayName(monthOrHoliday);
+			timeClockEventArgs.SpanSinceLastUpdate = Time - previousTime;
+			TimeChanged?.Invoke(sender, timeClockEventArgs);
+		}
 
-			if (IsHoliday(monthOrHoliday))
-				return monthOrHolidayName + yearStr;
-
-			int dayOfMonth = GetDayOfMonth(dayOfYear, monthOrHoliday);
-			string dayOfMonthSuffix = GetDaySuffix(dayOfMonth);
-
-			return dayOfMonth + dayOfMonthSuffix + " of " + monthOrHolidayName + yearStr;
+		public void SetTime(DateTime time)
+		{
+			if (Time == time)
+				return;
+			DateTime previousTime = Time;
+			Time = time;
+			OnTimeChanged(this, previousTime);
 		}
 
 		public void SetTime(int year, int dayOfYear, int hour = 0, int minutes = 0, int seconds = 0)
 		{
 			SetTime(new DateTime(year, 1, 1).AddDays(dayOfYear - 1).AddHours(hour).AddMinutes(minutes).AddSeconds(seconds));
 		}
+
+		public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
+		public event TimeClockEventHandler TimeChanged;
 	}
 }
 

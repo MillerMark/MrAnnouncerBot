@@ -10,9 +10,10 @@
 			Conditions = conditions;
 		}
 
+		public int ConcurrentTargets { get; set; }
+
 		public Conditions Conditions { get; set; }
 		public CreatureSize CreatureSizeFilter { get; set; }
 		public int EscapeDC { get; set; }
-		public int ConcurrentTargets { get; set; }
 	}
 }

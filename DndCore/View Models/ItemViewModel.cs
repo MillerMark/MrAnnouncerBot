@@ -7,21 +7,21 @@ namespace DndCore
 {
 	public class ItemViewModel : ListEntry
 	{
-		public DndTimeSpan equipTime = DndTimeSpan.Zero;
-		public DndTimeSpan unequipTime = DndTimeSpan.Zero;
-		public string description = string.Empty;
-		public bool consumable = false;
-		public int weight = 0;
-		public double costValue = 0;
-		public bool magic = false;
-		public bool equipped = false;
-		public bool silvered = false;
 		public bool adamantine = false;
+		public bool consumable = false;
+		public double costValue = 0;
 		public int count = 1;
+		public ObservableCollection<CurseBlessingDisease> cursesBlessingsDiseases = new ObservableCollection<CurseBlessingDisease>();
+		public string description = string.Empty;
+		public bool equipped = false;
+		public DndTimeSpan equipTime = DndTimeSpan.Zero;
+		public ObservableCollection<EffectTimeLines> events = new ObservableCollection<EffectTimeLines>();
+		public bool magic = false;
 		public int minStrengthToCarry = 0;
 		public ObservableCollection<ModViewModel> mods = new ObservableCollection<ModViewModel>();
-		public ObservableCollection<CurseBlessingDisease> cursesBlessingsDiseases = new ObservableCollection<CurseBlessingDisease>();
-		public ObservableCollection<EffectTimeLines> events = new ObservableCollection<EffectTimeLines>();
+		public bool silvered = false;
+		public DndTimeSpan unequipTime = DndTimeSpan.Zero;
+		public int weight = 0;
 
 		public ItemViewModel()
 		{
@@ -29,6 +29,11 @@ namespace DndCore
 			equipTime.Count = 0;
 			unequipTime.TimeMeasure = TimeMeasure.actions;
 			unequipTime.Count = 0;
+		}
+
+		public ItemViewModel(string name)
+		{
+			Name = name;
 		}
 
 		public override void AfterLoad()
@@ -44,11 +49,6 @@ namespace DndCore
 					return modViewModel;
 			}
 			return null;
-		}
-
-		public ItemViewModel(string name)
-		{
-			Name = name;
 		}
 	}
 }

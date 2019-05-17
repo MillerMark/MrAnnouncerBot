@@ -7,6 +7,12 @@ namespace DndCore
 {
 	public class TimeLineEffect : TimeLineEntry
 	{
+
+		public TimeLineEffect()
+		{
+
+		}
+
 		public EffectEntry Effect
 		{
 			get
@@ -17,11 +23,6 @@ namespace DndCore
 			{
 				Data = value;
 			}
-		}
-
-		public TimeLineEffect()
-		{
-
 		}
 	}
 }
