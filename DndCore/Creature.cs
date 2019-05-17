@@ -581,4 +581,15 @@ namespace DndCore
 			return new SuperCreature();
 		}
 	}
+
+	public class ThirdClass
+	{
+		
+		public ThirdClass()
+		{
+			var otherClass = new OtherClass()
+			{
+			};
+		}
+	}
 }
