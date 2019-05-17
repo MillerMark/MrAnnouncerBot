@@ -560,6 +560,13 @@ namespace DndCore
 		}
 	}
 
+
+
+	//`!――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+	//` What's New in CodeRush - Test Classes for Code Cleanup
+	//`!――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
 	class SuperCreature : Creature
 	{
 
@@ -569,34 +576,43 @@ namespace DndCore
 		}
 	}
 
-	internal class OtherClass
+	class OtherClass
 	{
-		public OtherClass(int a, int b, int c, int d)
+		public OtherClass()
 		{
+		}
 
+		void MyProc(int a, int b, int c, int d)
+		{
+			Console.WriteLine("Inside MyProc");
 		}
 
 		SuperCreature GetIt()
 		{
 			return new SuperCreature();
 		}
+		public void Initialize()
+		{
+			MyProc(1, 2, 3, 4);
+		}
 	}
 
 	public class ThirdClass
 	{
-		
+
 		public ThirdClass()
 		{
-			var otherClass = new OtherClass(1, 2, 3, 4);
+			var otherClass = new OtherClass();
+			otherClass.Initialize();
 		}
 	}
 
 	class FourthUnusedClass
 	{
-		
+
 		public FourthUnusedClass()
 		{
-			
+
 		}
 	}
 }
