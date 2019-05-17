@@ -28,9 +28,6 @@ namespace DndCore
 		public bool naturalArmor;
 		public string hitPointsDice;
 		public int passivePerception;
-		public List<Attack> attacks = new List<Attack>();
-		public List<Attack> multiAttack = new List<Attack>();
-		public MultiAttackCount multiAttackCount = MultiAttackCount.oneEach;
 		public List<string> traits = new List<string>();
 
 		public void SetAbilities(int strength, int strengthMod, int dexterity, int dexterityMod, int constitution, int constitutionMod, int intelligence, int intelligenceMod, int wisdom, int wisdomMod, int charisma, int charismaMod)

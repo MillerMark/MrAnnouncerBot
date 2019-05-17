@@ -19,6 +19,9 @@ namespace DndCore
 		public CreatureSize creatureSize = CreatureSize.Medium;
 		public string raceClass = string.Empty;
 
+		public List<Attack> attacks = new List<Attack>();
+		public List<Attack> multiAttack = new List<Attack>();
+		public MultiAttackCount multiAttackCount = MultiAttackCount.oneEach;
 		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
 		public ObservableCollection<CurseBlessingDisease> cursesAndBlessings = new ObservableCollection<CurseBlessingDisease>();
 		public ObservableCollection<DamageFilter> damageImmunities = new ObservableCollection<DamageFilter>();
@@ -547,5 +550,10 @@ namespace DndCore
 
 			return DiceRollKind.Normal;
 		}
+		public void QueueAction(ActionAttack actionAttack)
+		{
+			Game.QueueAction(this, actionAttack);
+		}
+		public DndGame Game { get; set; }
 	}
 }

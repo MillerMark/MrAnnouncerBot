@@ -528,11 +528,13 @@ namespace DndCore
 				return this.getModFromAbility(this.Strength);
 			}
 		}
+		
+		public Vector WorldPosition { get; private set; }
+
 		int getModFromAbility(double abilityScore)
 		{
 			return (int)Math.Floor((abilityScore - 10) / 2);
 		}
-
 
 		public void ApplyModPermanently(Mod mod, string description)
 		{
@@ -542,6 +544,14 @@ namespace DndCore
 		public void ApplyModTemporarily(Mod mod, string description)
 		{
 			// TODO: Implement this!
+		}
+		public Vector GetRoomCoordinates()
+		{
+			return Vector.zero;
+		}
+		public void SetWorldPosition(Vector worldPosition)
+		{
+			WorldPosition = worldPosition;
 		}
 	}
 }
