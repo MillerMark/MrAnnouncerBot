@@ -560,7 +560,7 @@ namespace DndCore
 		}
 	}
 
-	public class SuperCreature : Creature
+	internal class SuperCreature : Creature
 	{
 
 		public SuperCreature()
@@ -569,7 +569,7 @@ namespace DndCore
 		}
 	}
 
-	public class OtherClass
+	internal class OtherClass
 	{
 		public OtherClass()
 		{
