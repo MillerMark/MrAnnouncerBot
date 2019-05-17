@@ -1,6 +1,6 @@
-﻿using DndCore;
-using System;
+﻿using System;
 using System.Linq;
+using DndCore;
 
 namespace DndCore
 {

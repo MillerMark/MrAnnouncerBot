@@ -1,7 +1,7 @@
-﻿using DndCore;
-using System;
-using System.Collections.ObjectModel;
+﻿using System;
 using System.Linq;
+using System.Collections.ObjectModel;
+using DndCore;
 
 namespace DndCore
 {
