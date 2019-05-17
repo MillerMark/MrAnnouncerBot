@@ -1,4 +1,6 @@
-﻿namespace DndCore
+﻿using DndCore.Enums;
+
+namespace DndCore
 {
 	public class DamageConditions
 	{

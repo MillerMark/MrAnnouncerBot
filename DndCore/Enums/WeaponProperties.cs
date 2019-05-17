@@ -2,7 +2,7 @@
 using System.Linq;
 using System.ComponentModel;
 
-namespace DndCore
+namespace DndCore.Enums
 {
 	[Flags]
 	public enum WeaponProperties

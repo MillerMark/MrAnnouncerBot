@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
+using DndCore.Enums;
+using DndCore.Filters;
+using DndCore.ViewModels;
 
 namespace DndCore
 {

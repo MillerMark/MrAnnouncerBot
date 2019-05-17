@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using DndCore;
+using DndCore.Enums;
+using DndCore.CoreClasses;
 
 namespace DndTests
 {

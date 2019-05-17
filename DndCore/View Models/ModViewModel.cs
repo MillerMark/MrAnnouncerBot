@@ -5,10 +5,13 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using DndCore;
+using DndCore.Enums;
+using DndCore.Filters;
+using DndCore.CoreClasses;
+using DndCore.ViewModels.Support;
 using Newtonsoft.Json;
 
-namespace DndCore
+namespace DndCore.ViewModels
 {
 	public class ModViewModel : ListEntry
 	{
@@ -38,7 +41,7 @@ namespace DndCore
 			modConditions = new CheckEnumList(typeof(Conditions), Conditions.None, EnumListOption.Exclude);
 			modConditions.Value = Conditions.None;
 			modType = new RadioEnumList(typeof(ModType), nameof(ModType));
-			modType.Value = DndCore.ModType.incomingAttack;
+			modType.Value = Enums.ModType.incomingAttack;
 			modAddAbilityModifier = new RadioEnumList(typeof(Ability), "AddModifier");
 			modAddAbilityModifier.Value = Skills.none;
 			repeats = DndTimeSpan.Never;

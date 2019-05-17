@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using DndCore.Enums;
 
-namespace DndCore
+namespace DndCore.Filters
 {
 	public class SizeGreaterThan : ComparisonFilter
 	{

@@ -1,4 +1,5 @@
 ﻿using DndCore;
+using DndCore.ViewModels;
 using System;
 using System.Collections.ObjectModel;
 

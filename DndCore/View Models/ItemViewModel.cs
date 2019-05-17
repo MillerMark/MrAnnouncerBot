@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.ObjectModel;
-using DndCore;
+using DndCore.Enums;
+using DndCore.CoreClasses;
+using DndCore.ViewModels.Support;
 
-namespace DndCore
+namespace DndCore.ViewModels
 {
 	public class ItemViewModel : ListEntry
 	{

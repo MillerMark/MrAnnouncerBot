@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore
+namespace DndCore.ViewModels.Support
 {
 	public enum EnumListOption
 	{

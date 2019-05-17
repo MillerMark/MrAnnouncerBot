@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore
+namespace DndCore.Enums
 {
 	/* 
 	 * Sources where these languages became available to players:

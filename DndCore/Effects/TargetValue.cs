@@ -1,4 +1,4 @@
-﻿namespace DndCore
+﻿namespace DndCore.Effects
 {
 	public class TargetValue
 	{

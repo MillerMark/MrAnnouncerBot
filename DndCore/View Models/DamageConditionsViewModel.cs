@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
-using DndCore;
+using DndCore.Enums;
+using DndCore.ViewModels.Support;
 
-namespace DndCore
+namespace DndCore.ViewModels
 {
 	public class DamageConditionsViewModel : ViewModelBase
 	{
@@ -14,7 +15,7 @@ namespace DndCore
 
 		public DamageConditionsViewModel()
 		{
-			conditions = new CheckEnumList(typeof(Conditions), DndCore.Conditions.None, EnumListOption.Exclude);
+			conditions = new CheckEnumList(typeof(Conditions), Enums.Conditions.None, EnumListOption.Exclude);
 			creatureSizeFilter = new CheckEnumList(typeof(CreatureSize));
 		}
 
@@ -83,7 +84,7 @@ namespace DndCore
 			if (conditions != null && creatureSizeFilter != null)
 				return new DamageConditions((Conditions)conditions.Value, (CreatureSize)creatureSizeFilter.Value, escapeDC, concurrentTargets);
 
-			return new DamageConditions(DndCore.Conditions.None, CreatureSize.Medium, escapeDC, concurrentTargets);
+			return new DamageConditions(Enums.Conditions.None, CreatureSize.Medium, escapeDC, concurrentTargets);
 		}
 
 		void SetFrom(DamageConditions damageConditions)

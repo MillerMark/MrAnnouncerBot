@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Linq;
+using DndCore.Enums;
+using DndCore.Filters;
+using DndCore.CoreClasses;
 
 namespace DndCore
 {

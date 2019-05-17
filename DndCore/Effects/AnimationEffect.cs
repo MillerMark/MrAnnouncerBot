@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace DndCore
+namespace DndCore.Effects
 {
 	public class AnimationEffect : Effect
 	{

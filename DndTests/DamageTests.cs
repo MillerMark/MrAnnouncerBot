@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DndCore;
+using DndCore.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DndTests

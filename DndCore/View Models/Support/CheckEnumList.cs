@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace DndCore
+namespace DndCore.ViewModels.Support
 {
 	public class CheckEnumList : ViewModelBase
 	{

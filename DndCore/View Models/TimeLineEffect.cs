@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
-using DndCore;
 using TimeLineControl;
 
-namespace DndCore
+namespace DndCore.ViewModels
 {
 	public class TimeLineEffect : TimeLineEntry
 	{

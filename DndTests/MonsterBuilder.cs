@@ -1,4 +1,6 @@
 ﻿using DndCore;
+using DndCore.Enums;
+using DndCore.CoreClasses;
 using System;
 
 namespace DndTests

@@ -1,4 +1,5 @@
 ﻿using DndCore;
+using DndCore.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 

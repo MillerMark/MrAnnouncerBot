@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using DndCore.Enums;
 
-namespace DndCore
+namespace DndCore.CoreClasses
 {
 	public struct DndTimeSpan
 	{
