@@ -185,7 +185,7 @@ namespace DndCore
 		{
 			Damage damage;
 			if (damageType == null || attackKind == null || DamageRoll == null || damageHits == null || saveOpportunity == null)
-				damage = new Damage(DndCore.DamageType.None, DndCore.AttackKind.Any, "");
+				damage = new Damage(DndCore.DamageType.None, DndCore.AttackKind.Any, string.Empty);
 			else
 				damage = new Damage((DamageType)damageType.Value, (AttackKind)attackKind.Value, DamageRoll, (TimePoint)damageHits.Value, (TimePoint)saveOpportunity.Value);
 

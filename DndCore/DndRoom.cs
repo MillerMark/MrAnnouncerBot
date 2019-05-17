@@ -30,7 +30,7 @@ namespace DndCore
 			string[] crlf = { "\r\n" };
 			string[] lines = str.Split(crlf, StringSplitOptions.None);
 
-			bool firstLineIsEmpty = lines[0] == "";
+			bool firstLineIsEmpty = lines[0] == string.Empty;
 			int yOffset = 0;
 			if (firstLineIsEmpty)
 				yOffset = -1;
