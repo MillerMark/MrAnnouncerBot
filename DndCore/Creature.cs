@@ -559,4 +559,26 @@ namespace DndCore
 			}
 		}
 	}
+
+	public class SuperCreature : Creature
+	{
+
+		public SuperCreature()
+		{
+
+		}
+	}
+
+	public class OtherClass
+	{
+		public OtherClass()
+		{
+
+		}
+
+		SuperCreature GetIt()
+		{
+			return new SuperCreature();
+		}
+	}
 }
