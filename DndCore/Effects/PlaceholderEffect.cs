@@ -13,7 +13,7 @@ namespace DndCore
 			effectKind = EffectKind.Placeholder;
 		}
 
-		public PlaceholderEffect(string name, PlaceholderType type): this()
+		public PlaceholderEffect(string name, PlaceholderType type) : this()
 		{
 			Name = name;
 			PlaceholderType = type;

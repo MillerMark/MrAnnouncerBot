@@ -10,7 +10,7 @@ namespace DndCore
 		Skills,
 		Equipment
 	}
-	
+
 	public class VisualEffectTarget
 	{
 		public TargetType targetType;
@@ -25,7 +25,7 @@ namespace DndCore
 			targetOffset = Vector.zero;
 		}
 
-		public VisualEffectTarget(Vector vector): this(vector.x, vector.y)
+		public VisualEffectTarget(Vector vector) : this(vector.x, vector.y)
 		{
 		}
 

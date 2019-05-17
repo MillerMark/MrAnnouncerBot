@@ -20,14 +20,14 @@ namespace DndCore
 		Quarterstaff,
 		Sickle,
 		Spear,
-		
+
 		//Simple Ranged Weapons:
 		[Description("Crossbow, Light")]
 		CrossbowLight,
 		Dart,
 		Shortbow,
 		Sling,
-		
+
 		//Martial Melee Weapons:
 		Battleaxe,
 		Flail,

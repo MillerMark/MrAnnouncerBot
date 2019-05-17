@@ -12,6 +12,6 @@ namespace DndCore
 		Medium = 4,     //	5 by 5 ft.							(Orc, werewolf)
 		Large = 8,      //	10 by 10 ft.						(Hippogriff, ogre)
 		Huge = 16,      //	15 by 15 ft.						(Fire giant, treant)
-		Gargantuan = 32	//  20 by 20 ft. or larger	(Kraken, purple worm)
+		Gargantuan = 32 //  20 by 20 ft. or larger	(Kraken, purple worm)
 	}
 }

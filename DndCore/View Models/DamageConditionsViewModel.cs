@@ -11,7 +11,7 @@ namespace DndCore
 		int concurrentTargets;
 		int escapeDC;
 		CheckEnumList conditions;
-		
+
 		public CheckEnumList CreatureSizeFilter
 		{
 			get { return creatureSizeFilter; }
@@ -71,7 +71,7 @@ namespace DndCore
 				SetFrom(value);
 			}
 		}
-		
+
 		DamageConditions GetDamageCondition()
 		{
 			if (conditions != null && creatureSizeFilter != null)

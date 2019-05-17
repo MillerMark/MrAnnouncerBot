@@ -21,7 +21,7 @@ namespace DndCore
 			}
 		}
 
-		
+
 		public int Success
 		{
 			get { return success; }
@@ -33,7 +33,7 @@ namespace DndCore
 				OnPropertyChanged();
 			}
 		}
-		
+
 
 		public SavingThrowViewModel()
 		{

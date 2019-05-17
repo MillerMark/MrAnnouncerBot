@@ -20,7 +20,7 @@ namespace DndCore
 
 		public Ability addModifier;
 		public int modifierLimit = 0;
-		
+
 		public double offset = 0;
 		public double multiplier = 1; // < 1 for resistance, > 1 for vulnerability
 

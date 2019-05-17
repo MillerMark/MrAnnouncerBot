@@ -23,7 +23,7 @@ namespace DndCore
 			}
 		}
 
-		
+
 		public CheckEnumList DamageType
 		{
 			get { return damageType; }
@@ -35,7 +35,7 @@ namespace DndCore
 				OnPropertyChanged();
 			}
 		}
-		
+
 		public DamageFilterViewModel()
 		{
 			damageType = new CheckEnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);

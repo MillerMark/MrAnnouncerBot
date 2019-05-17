@@ -166,7 +166,7 @@ namespace DndCore
 				SetFromDamage(value);
 			}
 		}
-		
+
 
 		public Damage GetDamage()
 		{

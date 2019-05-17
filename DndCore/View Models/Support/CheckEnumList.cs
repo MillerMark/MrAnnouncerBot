@@ -20,7 +20,7 @@ namespace DndCore
 
 		private void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			
+
 		}
 
 		public CheckEnumList(Type enumType, object filterItems, EnumListOption enumListOption = EnumListOption.Add)

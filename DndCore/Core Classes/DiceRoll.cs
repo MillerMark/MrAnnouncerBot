@@ -31,7 +31,7 @@ namespace DndCore
 		public int NumRandomSounds { get; set; }
 		public TrailingEffect()
 		{
-			
+
 		}
 	}
 

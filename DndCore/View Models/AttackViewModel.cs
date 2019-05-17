@@ -228,7 +228,7 @@ namespace DndCore
 		{
 			Attack attack = new Attack(Name);
 
-			
+
 			attack.damages = GetListOf(Damages);
 			attack.description = Description;
 

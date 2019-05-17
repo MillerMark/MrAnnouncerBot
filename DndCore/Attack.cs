@@ -91,7 +91,7 @@ namespace DndCore
 				return damages.Last();
 			}
 		}
-		
+
 
 		public Attack AddCondition(Conditions conditions, int savingThrow, Ability savingThrowAbility, CreatureSize includeCreatureSizes = CreatureSizes.All)
 		{

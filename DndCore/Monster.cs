@@ -121,7 +121,7 @@ namespace DndCore
 		}
 
 		public void AddLanguages(Languages languages)
-        {
+		{
 			languagesSpoken |= languages;
 			languagesUnderstood |= languages;
 		}

@@ -28,10 +28,10 @@ namespace DndCore
 		// Standard Languages (Ravnica):
 		Abyssal = 256, // (PHB)
 		Celestial = 512, // (PHB)
-		// Common, // (PHB)
+										 // Common, // (PHB)
 		Draconic = 1024, // (PHB)
-		// Elvish, // (PHB)
-		// Giant, // (PHB)
+										 // Elvish, // (PHB)
+										 // Giant, // (PHB)
 		Kraul = 2048, // (GGtR)
 		Loxodon = 4096, // (GGtR)
 		Merfolk = 8192, // (GGtR)
@@ -58,54 +58,54 @@ namespace DndCore
 		Druidic = 134217728, // (PHB)
 		Gith = 268435456, // (MToF)
 		ThievesCant = 536870912, // (PHB)
-		/* 
-		 		// Forgotten Realms Human Languages (requires GM permission):
-		// (All in SCAG)
+														 /* 
+																 // Forgotten Realms Human Languages (requires GM permission):
+														 // (All in SCAG)
 
-		Dambrathan,
-		Bedine,
-		Alzhedo,
-		Chondathan,
-		Damaran,
-		Waelan,
-		Guran,
-		Halruaan,
-		Illuskan,
-		Roushoum,
-		Chessentan,
-		Mulhorandi,
-		Untheric,
-		Thayan,
-		Rashemi,
-		Shaaran,
-		Shou,
-		Tuigan,
-		Turmic,
-		Uluik,
-		// Monstrous Languages (available via Favored Enemy or Training):
-		BlinkDog, // (MM)
-		Bullywug, // (MM)
-		GiantEagle, // (MM)
-		GiantElk, // (MM)
-		GiantOwl, // (MM)
-		Gnoll, // (MM)
-		Grell, // (MM)
-		Grung, // (VGtM)
-		HookHorror, // (MM)
-		Kruthik, // (MToF)
-		Modron, // (MM)
-		Otyugh, // (MM)
-		Sahuagin, // (MM)
-		Slaad, // (MM)
-		//Sphinx, // (MM)
-		Thri_kreen, // (MM)
-		Tlincalli, // (VGtM)
-		Troglodyte, // (MM)
-		UmberHulk, // (MM)
-		Vegepygmy, // (VGtM)
-		WinterWolf, // (MM)
-		Worg, // (MM)
-		Yeti, // (MM)
-*/
+														 Dambrathan,
+														 Bedine,
+														 Alzhedo,
+														 Chondathan,
+														 Damaran,
+														 Waelan,
+														 Guran,
+														 Halruaan,
+														 Illuskan,
+														 Roushoum,
+														 Chessentan,
+														 Mulhorandi,
+														 Untheric,
+														 Thayan,
+														 Rashemi,
+														 Shaaran,
+														 Shou,
+														 Tuigan,
+														 Turmic,
+														 Uluik,
+														 // Monstrous Languages (available via Favored Enemy or Training):
+														 BlinkDog, // (MM)
+														 Bullywug, // (MM)
+														 GiantEagle, // (MM)
+														 GiantElk, // (MM)
+														 GiantOwl, // (MM)
+														 Gnoll, // (MM)
+														 Grell, // (MM)
+														 Grung, // (VGtM)
+														 HookHorror, // (MM)
+														 Kruthik, // (MToF)
+														 Modron, // (MM)
+														 Otyugh, // (MM)
+														 Sahuagin, // (MM)
+														 Slaad, // (MM)
+														 //Sphinx, // (MM)
+														 Thri_kreen, // (MM)
+														 Tlincalli, // (VGtM)
+														 Troglodyte, // (MM)
+														 UmberHulk, // (MM)
+														 Vegepygmy, // (VGtM)
+														 WinterWolf, // (MM)
+														 Worg, // (MM)
+														 Yeti, // (MM)
+												 */
 	}
 }

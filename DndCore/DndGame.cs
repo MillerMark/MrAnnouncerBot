@@ -29,7 +29,7 @@ namespace DndCore
 				throw new DndException("Cannot activate a room that has not been added to a map!");
 			dndRoom.Map.ActivateRoom(dndRoom);
 		}
-		
+
 		List<DndMap> maps = new List<DndMap>();
 		public DndMap AddMap(DndMap dndMap)
 		{
@@ -69,8 +69,10 @@ namespace DndCore
 				ActivateMap(value);
 			}
 		}
-		
-		public DndRoom ActiveRoom { get
+
+		public DndRoom ActiveRoom
+		{
+			get
 			{
 				return ActiveMap?.ActiveRoom;
 			}

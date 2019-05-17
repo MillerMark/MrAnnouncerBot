@@ -39,7 +39,9 @@ namespace DndCore
 		}
 
 		public string Name { get; set; }
-		public DndRoom ActiveRoom { get => activeRoom;
+		public DndRoom ActiveRoom
+		{
+			get => activeRoom;
 			set
 			{
 				ActivateRoom(value);

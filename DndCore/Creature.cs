@@ -335,7 +335,8 @@ namespace DndCore
 		public DamageType LastDamageTaken { get; protected set; }
 		public double LastDamagePointsTaken { get; protected set; }
 
-		public Dictionary<string, double> CalculatedMods {
+		public Dictionary<string, double> CalculatedMods
+		{
 			get
 			{
 				RecalculateModsIfNecessary();

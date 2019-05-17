@@ -528,7 +528,7 @@ namespace DndCore
 				return this.getModFromAbility(this.Strength);
 			}
 		}
-		
+
 		public Vector WorldPosition { get; private set; }
 
 		int getModFromAbility(double abilityScore)
