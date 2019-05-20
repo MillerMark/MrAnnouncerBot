@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
-namespace DndCore.ViewModels
+namespace DndCore
 {
 	//class VmEffectsList: INotifyPropertyChanged
 	//{

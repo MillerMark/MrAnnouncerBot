@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore.Filters
+namespace DndCore
 {
 	public class CreaturesChoice : ComparisonFilter
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore.Enums
+namespace DndCore
 {
 	public enum Against
 	{

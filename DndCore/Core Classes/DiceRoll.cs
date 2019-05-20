@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace DndCore.CoreClasses
+namespace DndCore
 {
 	public enum TrailingSpriteType
 	{

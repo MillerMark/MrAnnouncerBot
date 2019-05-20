@@ -1,5 +1,4 @@
 ﻿using DndCore;
-using DndCore.Enums;
 using System;
 
 namespace DndTests

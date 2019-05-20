@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using DndCore.Enums;
-using DndCore.ViewModels.Support;
 
-namespace DndCore.ViewModels
+namespace DndCore
 {
 	public class SavingThrowViewModel : ViewModelBase
 	{

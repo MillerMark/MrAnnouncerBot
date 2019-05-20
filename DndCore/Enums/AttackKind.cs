@@ -2,7 +2,7 @@
 using System.Linq;
 using System.ComponentModel;
 
-namespace DndCore.Enums
+namespace DndCore
 {
 	[TypeConverter("DndCore.EnumDescriptionTypeConverter")]
 	public enum AttackKind

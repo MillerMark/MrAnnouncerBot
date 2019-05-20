@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Globalization;
 using System.ComponentModel;
 
-namespace DndCore.Enums.Support
+namespace DndCore
 {
 	public class EnumDescriptionTypeConverter : EnumConverter
 	{

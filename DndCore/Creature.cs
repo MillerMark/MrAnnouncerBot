@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
-using DndCore.Enums;
-using DndCore.Filters;
-using DndCore.ViewModels;
 
 namespace DndCore
 {
@@ -560,63 +557,6 @@ namespace DndCore
 				if (thisItem.count <= 0)
 					equipment.RemoveAt(index);
 			}
-		}
-	}
-
-
-
-	//`!――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-	//` What's New in CodeRush - Test Classes for Code Cleanup
-	//`!――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-
-
-	class SuperCreature : Creature
-	{
-
-		public SuperCreature()
-		{
-
-		}
-	}
-
-	class OtherClass
-	{
-		public OtherClass()
-		{
-		}
-
-		SuperCreature GetIt()
-		{
-			return new SuperCreature();
-		}
-
-		public void Initialize()
-		{
-			MyProc(1, 2, 3, 4);
-		}
-
-		void MyProc(int a, int b, int c, int d, [CallerMemberName] string memberName = "")
-		{
-			Console.WriteLine("Inside MyProc, called from " + memberName);
-		}
-	}
-
-	public class ThirdClass
-	{
-
-		public ThirdClass()
-		{
-			var otherClass = new OtherClass();
-			otherClass.Initialize();
-		}
-	}
-
-	class FourthUnusedClass
-	{
-
-		public FourthUnusedClass()
-		{
-
 		}
 	}
 }

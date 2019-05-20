@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace DndCore.ViewModels.Support
+namespace DndCore
 {
 	// Base class so we don't have to re-implement INPC in view models.
 	public class ViewModelBase : INotifyPropertyChanged

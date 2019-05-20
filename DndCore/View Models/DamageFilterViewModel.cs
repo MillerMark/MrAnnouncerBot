@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using DndCore.Enums;
-using DndCore.ViewModels.Support;
 
-namespace DndCore.ViewModels
+namespace DndCore
 {
 	public class DamageFilterViewModel : ViewModelBase
 	{
@@ -14,7 +12,7 @@ namespace DndCore.ViewModels
 
 		public DamageFilterViewModel()
 		{
-			damageType = new CheckEnumList(typeof(DamageType), Enums.DamageType.None, EnumListOption.Exclude);
+			damageType = new CheckEnumList(typeof(DamageType), DndCore.DamageType.None, EnumListOption.Exclude);
 			attackKind = new RadioEnumList(typeof(AttackKind), nameof(AttackKind));
 		}
 

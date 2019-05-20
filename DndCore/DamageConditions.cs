@@ -1,4 +1,4 @@
-﻿using DndCore.Enums;
+﻿using DndCore;
 
 namespace DndCore
 {

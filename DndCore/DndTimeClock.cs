@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using DndCore.CoreClasses;
 
 namespace DndCore
 {

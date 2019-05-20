@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace DndCore.ViewModels.Support
+namespace DndCore
 {
 	// Wraps an enum value so we can expose an IsChecked property.
 	public class CheckEnumViewModel : ViewModelBase

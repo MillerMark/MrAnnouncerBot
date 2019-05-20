@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using DndCore.CoreClasses;
+using DndCore;
 
-namespace DndCore.Effects
+namespace DndCore
 {
 	public enum TargetPage
 	{

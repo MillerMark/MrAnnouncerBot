@@ -3,11 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using DndCore.Enums;
-using DndCore.CoreClasses;
-using DndCore.ViewModels.Support;
 
-namespace DndCore.ViewModels
+namespace DndCore
 {
 	public class AttackViewModel : ListEntry
 	{
@@ -32,7 +29,7 @@ namespace DndCore.ViewModels
 
 
 			type = new RadioEnumList(typeof(AttackType), nameof(AttackType), AttackType.None, EnumListOption.Exclude);
-			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), nameof(RechargeOdds), Enums.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
+			rechargeOdds = new RadioEnumList(typeof(RechargeOdds), nameof(RechargeOdds), DndCore.RechargeOdds.ZeroInSix, EnumListOption.Exclude);
 			type.Value = AttackType.Melee;
 			targetLimit = 1;
 			reachRange = 5;

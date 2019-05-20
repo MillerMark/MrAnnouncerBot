@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using DndCore.Enums;
-using DndCore.ViewModels;
 
 namespace DndCore
 {

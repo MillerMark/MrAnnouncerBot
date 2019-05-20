@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace DndCore.Effects
+namespace DndCore
 {
 	public class EffectGroup : Effect
 	{

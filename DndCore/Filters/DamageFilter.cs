@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using DndCore.Enums;
 
-namespace DndCore.Filters
+namespace DndCore
 {
 	public class DamageFilter
 	{

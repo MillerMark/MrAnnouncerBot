@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore.CoreClasses
+namespace DndCore
 {
 	public enum DiceRollType
 	{

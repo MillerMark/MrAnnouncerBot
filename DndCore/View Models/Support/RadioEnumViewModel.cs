@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore.ViewModels.Support
+namespace DndCore
 {
 	public class RadioEnumViewModel : ViewModelBase
 	{

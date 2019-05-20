@@ -2,11 +2,9 @@
 using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using DndCore.Effects;
-using DndCore.ViewModels.Support;
 using Newtonsoft.Json;
 
-namespace DndCore.ViewModels
+namespace DndCore
 {
 	public class EffectEntry : ListEntry, INotifyPropertyChanged
 	{

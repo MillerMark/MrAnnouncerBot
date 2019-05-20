@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore.Effects
+namespace DndCore
 {
 	public enum TargetType
 	{

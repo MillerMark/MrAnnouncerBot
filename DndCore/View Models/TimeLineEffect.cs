@@ -2,7 +2,7 @@
 using System.Linq;
 using TimeLineControl;
 
-namespace DndCore.ViewModels
+namespace DndCore
 {
 	public class TimeLineEffect : TimeLineEntry
 	{

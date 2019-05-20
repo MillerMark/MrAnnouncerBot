@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using DndCore.CoreClasses;
 
-namespace DndCore.Effects
+namespace DndCore
 {
 	public enum TargetBinding
 	{

@@ -1,6 +1,6 @@
 ﻿using System;
+using DndCore;
 using System.Collections.Generic;
-using DndCore.ViewModels;
 using System.Linq;
 
 namespace DndQuality
