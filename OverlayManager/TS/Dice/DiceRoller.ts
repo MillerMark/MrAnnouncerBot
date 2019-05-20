@@ -604,8 +604,11 @@ function needToRollBonusDice() {
 		}
 
 		totalRoll = rollValue + diceRollData.modifier;
+		modifyTotalRollForTestingPurposes();
 
 		diceRollData.bonusRoll = null;
+		diceRollData.playBonusSoundAfter = 2500;
+
 		if (totalRoll == 0 || totalRoll == 99) diceRollData.wildMagic = WildMagic.regainSorceryPoints;
 		else if (totalRoll < 3) diceRollData.wildMagic = WildMagic.wildMagicMinute;
 		else if (totalRoll < 5) diceRollData.wildMagic = WildMagic.seeInvisibleCreatures;
@@ -616,6 +619,7 @@ function needToRollBonusDice() {
 			diceRollData.bonusRoll = '1d10';
 			diceRollData.bonusRollDescription = 'Inches Changed: ';
 			diceRollData.wildMagic = WildMagic.heightChange;
+			diceRollData.playBonusSoundAfter = 700;
 		}
 		else if (totalRoll < 15) diceRollData.wildMagic = WildMagic.castConfusionOnSelf;
 		else if (totalRoll < 17) diceRollData.wildMagic = WildMagic.regain5hpPerTurnForOneMinute;
@@ -632,6 +636,7 @@ function needToRollBonusDice() {
 			diceRollData.bonusRoll = '1d10';
 			diceRollData.bonusRollDescription = 'Years Changed: ';
 			diceRollData.wildMagic = WildMagic.ageChange;
+			diceRollData.playBonusSoundAfter = 700;
 		}
 		else if (totalRoll < 39) {
 			diceRollData.bonusRoll = '1d6';
@@ -692,6 +697,10 @@ function needToRollBonusDice() {
 	}
 
 	return false;
+}
+
+function modifyTotalRollForTestingPurposes() {
+	totalRoll = 35; // age change
 }
 
 const bubbleId: string = 'bubble';
@@ -782,9 +791,76 @@ function checkStillRolling() {
 			else {
 				popFrozenDice();
 				showRollTotal();
+				if (diceRollData.playBonusSoundAfter)
+					setTimeout(playFinalRollSoundEffects, diceRollData.playBonusSoundAfter);
 				onDiceRollStopped();
 			}
 		}
+	}
+}
+
+function isOdd(num) {
+	return num % 2;
+}
+
+function playFinalRollSoundEffects() {
+	switch (diceRollData.wildMagic) {
+		case WildMagic.wildMagicMinute: ; break;
+		case WildMagic.seeInvisibleCreatures: ; break;
+		case WildMagic.modronAppearsOneMinute: diceSounds.playWildMagic('modron'); break;
+		case WildMagic.regain5hpPerTurnForOneMinute: ; break;
+		case WildMagic.castMagicMissile: diceSounds.playWildMagic('magicMissile'); break;
+		case WildMagic.castFireball: diceSounds.playWildMagic('fireball'); break;
+		case WildMagic.heightChange:
+		case WildMagic.ageChange:
+			if (isOdd(totalBonus))
+				diceSounds.playWildMagic('slideWhistleDown');
+			else 
+				diceSounds.playWildMagic('slideWhistleUp');
+			break;
+		case WildMagic.castConfusionOnSelf: ; break;
+		case WildMagic.beardOfFeathers: ; break;
+		case WildMagic.castGreaseCenteredOnSelf: ; break;
+		case WildMagic.spellTargetsDisadvantagedSavingThrowForOneMinute: ; break;
+		case WildMagic.skinTurnsBlue: ; break;
+		case WildMagic.thirdEyeAdvantageWisdomChecks: ; break;
+		case WildMagic.castTimeBonusActionOneMinute: ; break;
+		case WildMagic.teleportUpTo60Feet: ; break;
+		case WildMagic.astralPlaneUntilEndOfNextTurn: ; break;
+		case WildMagic.maximizeDamageOnSpellCastInNextMinute: ; break;
+		case WildMagic.ageChange: ; break;
+		case WildMagic.flumphs: ; break;
+		case WildMagic.regainHitPoints: ; break;
+		case WildMagic.pottedPlant: ; break;
+		case WildMagic.teleportUpTo20FeetBonusActionOneMinute: ; break;
+		case WildMagic.castLevitateOnSelf: ; break;
+		case WildMagic.unicorn: ; break;
+		case WildMagic.cannotSpeakPinkBubbles: ; break;
+		case WildMagic.spectralShieldPlus2ArmorClassNextMinute: ; break;
+		case WildMagic.alcoholImmunity: ; break;
+		case WildMagic.hairFallsOutGrowsBack24Hours: ; break;
+		case WildMagic.fireTouchOneMinute: ; break;
+		case WildMagic.regainLowestLevelExpendedSpellSlot: ; break;
+		case WildMagic.shoutWhenSpeakingOneMinute: ; break;
+		case WildMagic.castFogCloudCenteredOnSelf: ; break;
+		case WildMagic.lightningDamageUpToThreeCreatures: ; break;
+		case WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn: ; break;
+		case WildMagic.allCreatures30FeetInvisibleOneMinute: ; break;
+		case WildMagic.resistanceToAllDamageNextMinute: ; break;
+		case WildMagic.randomCreaturePoisoned1d4Hours: ; break;
+		case WildMagic.glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded: ; break;
+		case WildMagic.castPolymorphToSheepOnSelf: ; break;
+		case WildMagic.butterfliesAndPetals10FeetOneMinute: ; break;
+		case WildMagic.takeOneAdditionalActionImmediately: ; break;
+		case WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage: ; break;
+		case WildMagic.castMirrorImage: ; break;
+		case WildMagic.castFlyOnRandomCreatureWithin60Feet: ; break;
+		case WildMagic.invisibleSilentNextMinute: ; break;
+		case WildMagic.immortalOneMinute: ; break;
+		case WildMagic.increaseSizeOneMinute: ; break;
+		case WildMagic.allCreatures30FeetVulnerableToPiercingDamageOneMinute: ; break;
+		case WildMagic.faintEtheralMusicOneMinute: ; break;
+		case WildMagic.regainSorceryPoints: ; break;
 	}
 }
 
@@ -1561,6 +1637,7 @@ function showRollTotal() {
 	}
 
 	totalRoll = rollValue + diceRollData.modifier;
+	modifyTotalRollForTestingPurposes();
 
 	if (rollValue >= 0) {
 		if (diceRollData.modifier != 0)
@@ -1569,9 +1646,17 @@ function showRollTotal() {
 	}
 
 	if (totalBonus > 0) {
-		let  bonusRollStr: string = 'Bonus Roll: ';
+		let bonusRollStr: string = 'Bonus Roll: ';
 		if (diceRollData.bonusRollDescription)
 			bonusRollStr = diceRollData.bonusRollDescription;
+
+		switch (diceRollData.wildMagic) {
+			case WildMagic.heightChange:
+			case WildMagic.ageChange:
+				if (isOdd(totalBonus))
+					totalBonus = -totalBonus;
+				break;
+		}
 
 		diceLayer.showBonusRoll(`${bonusRollStr}${totalBonus}`, diceRollData.bonusRollFontColor, diceRollData.bonusRollDieColor);
 	}

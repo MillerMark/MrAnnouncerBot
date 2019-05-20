@@ -718,9 +718,10 @@ class DiceRollData {
   numHalos: number;
   bonusRoll: string;
   wildMagic: WildMagic;
-    bonusRollFontColor: string;
-    bonusRollDieColor: string;
-    bonusRollDescription: string;
+  bonusRollFontColor: string;
+  bonusRollDieColor: string;
+  bonusRollDescription: string;
+  playBonusSoundAfter: number;
   constructor() {
 
   }

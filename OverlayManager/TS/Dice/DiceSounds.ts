@@ -39,7 +39,14 @@ class DiceSounds extends SoundManager {
     var index: number = Math.floor(Math.random() * count + 1);
     this.playingNow(fileName);
     return this.safePlayMp3(fileName + index.toString());
-  }
+	}
+
+	playWildMagic(fileName: string, count: number = 0): void {
+		if (count == 0)
+			this.safePlayMp3('WildMagic/' + fileName);
+		else
+			this.playRandom('WildMagic/' + fileName, count);
+	}
 
   playDieBomb() {
     const numDieBombSounds: number = 2;
