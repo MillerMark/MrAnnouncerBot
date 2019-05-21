@@ -159,9 +159,6 @@
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Dungeon" x:Name="tbDungeon">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
-						<Button x:Name="btnNamedButton" >
-							Hello
-						</Button>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
 							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
 							<TextBox x:Name="tbxDamageDice" MinWidth="120">
@@ -213,6 +210,15 @@
 							</Button>
 
 						</StackPanel>
+						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Center">
+							<TextBlock Text="Bending Luck: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
+							<Button x:Name="btnBendLuckAdd" Margin="8" Padding="8" MinWidth="100" Click="BtnBendLuckAdd_Click">
+								Bend Luck (+++)
+							</Button>
+							<Button x:Name="btnBendLuckSubtract" Margin="8" Padding="8" MinWidth="100" Click="BtnBendLuckSubtract_Click">
+								Bend Luck (---)
+							</Button>
+						</StackPanel>
 						<StackPanel x:Name="spSpecialThrows" Orientation="Horizontal">
 							<TextBlock Text="Special attacks: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnWildAnimalForm" Margin="8" Padding="8" MinWidth="100" Click="BtnWildAnimalForm_Click" >
@@ -228,7 +234,7 @@
 								Sneak Attack
 							</Button>
 						</StackPanel>
-						
+
 						<Button x:Name="btnClearDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 0, 0" Visibility="Hidden" Click="BtnClearDice_Click" MouseEnter="BtnClearDice_MouseEnter" MouseLeave="BtnClearDice_MouseLeave">
 							<Grid Width="{Binding RelativeSource={RelativeSource FindAncestor,
                                     AncestorType={x:Type Button}}, Path=Width}" Height="{Binding RelativeSource={RelativeSource FindAncestor,
@@ -237,7 +243,6 @@
 								<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 							</Grid>
 						</Button>
-						
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">

@@ -11,6 +11,8 @@ namespace DndCore
 		FlatD20,
 		DeathSavingThrow,
 		PercentageRoll,
-		WildMagic
+		WildMagic,
+		BendLuckAdd,
+		BendLuckSubtract,
 	}
 }

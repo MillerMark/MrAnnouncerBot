@@ -11,7 +11,8 @@ namespace DndCore
 		Spiral,
 		Smoke,
 		SmokeExplosion,
-		SparkTrail
+		SparkTrail,
+		SmallSparks
 	}
 
 	public class TrailingEffect

@@ -645,5 +645,31 @@ namespace DHDM
 		{
 			HubtasticBaseStation.DiceStoppedRolling -= HubtasticBaseStation_DiceStoppedRolling;
 		}
+
+		private void BtnBendLuckAdd_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckAdd);
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.SmallSparks,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 33
+			});
+
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnBendLuckSubtract_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckSubtract);
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.SmallSparks,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 33
+			});
+
+			RollTheDice(diceRoll);
+		}
 	}
 }
