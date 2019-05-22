@@ -30,18 +30,26 @@ class SoundManager {
       let fileIndex: number = i + 1;
       sounds.push(new Audio(`${this.soundPath}/${baseFileName}${fileIndex}.wav`))
     }
-  }
+	}
 
-  safePlayMp3(fileName: string, compareThreshold: number = -1): boolean {
-    if (this.playedRecently(fileName, compareThreshold))
-      return false;
-    let media = new Audio(`${this.soundPath}/${fileName}.mp3`);
-    const playPromise = media.play();
-    if (playPromise !== null) {
-      playPromise.catch(() => { })
-    }
-    this.playingNow(fileName);
-    return true;
+	safePlayMp3ReturnAudio(fileName: string, compareThreshold: number = -1): HTMLAudioElement {
+		if (this.playedRecently(fileName, compareThreshold))
+			return null;
+		let media: HTMLAudioElement = new Audio(`${this.soundPath}/${fileName}.mp3`);
+		const playPromise = media.play();
+		if (playPromise !== null) {
+			playPromise.catch(() => { })
+		}
+		this.playingNow(fileName);
+		return media;
+	}
+
+	safePlayMp3(fileName: string, compareThreshold: number = -1): boolean {
+		let audio: HTMLAudioElement = this.safePlayMp3ReturnAudio(fileName, compareThreshold);
+		if (audio)
+			return true;
+		else 
+			return false;
   }
 
   static readonly threshold: number = 50; // ms

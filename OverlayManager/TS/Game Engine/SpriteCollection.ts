@@ -26,7 +26,13 @@
         theseSprites.checkCollisionAgainst(compareSprites, collisionFoundFunction, now);
       });
     });
-  }
+	}
+
+	checkCollisionAgainstSprites(compareSprites: Sprites, collisionFoundFunction: (meteor: SpriteProxy, sprite: SpriteProxy, now: number) => void, now: number): void {
+		this.allSprites.forEach(function (theseSprites: Sprites) {
+			theseSprites.checkCollisionAgainst(compareSprites, collisionFoundFunction, now);
+		});
+	}
 
   destroyAll(): void{
     this.allSprites.forEach(function (theseSprites: Sprites) { theseSprites.destroyAll(); });

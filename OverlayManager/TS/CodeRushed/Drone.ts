@@ -638,14 +638,22 @@ class Drone extends ColorShiftingSpriteProxy {
         this.meteorJustThrown = null;
     }
     return super.isHitBy(thisSprite);
-  }
+	}
+
+	getHalfWidth(): number {
+		return Drone.width / 2;
+	}
+
+	getHalfHeight(): number {
+		return Drone.height / 2;
+	}
 
   getDistanceTo(otherSprite: SpriteProxy): number {
-    let centerDroneX: number = this.x + Drone.width / 2;
-    let centerDroneY: number = this.y + Drone.height / 2;
+		let centerDroneX: number = this.x + this.getHalfWidth();
+		let centerDroneY: number = this.y + this.getHalfHeight();
 
-    let centerMeteorX: number = otherSprite.x + meteorWidth / 2;
-    let centerMeteorY: number = otherSprite.y + meteorHeight / 2;
+		let centerMeteorX: number = otherSprite.x + otherSprite.getHalfWidth();
+		let centerMeteorY: number = otherSprite.y + otherSprite.getHalfHeight();
 
     let deltaX: number = centerDroneX - centerMeteorX;
     let deltaY: number = centerDroneY - centerMeteorY;

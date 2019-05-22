@@ -204,6 +204,11 @@ namespace OverlayManager
 			chatCommands.Add(new ChatCommand("seed", "Seed"));
 			chatCommands.Add(new ChatCommand("drone", "Drone"));
 
+			// Music control:
+			chatCommands.Add(new ChatCommand("music", "Music"));
+			chatCommands.Add(new ChatCommand("volume", "Volume"));
+			chatCommands.Add(new ChatCommand("genre", "Genre"));
+
 			// Drone control:
 			chatCommands.Add(new ChatCommand("toss", "Toss").AddAliases("t"));
 			chatCommands.Add(new ChatCommand("u", "DroneUp"));
