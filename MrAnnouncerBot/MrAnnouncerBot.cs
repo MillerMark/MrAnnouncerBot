@@ -535,7 +535,7 @@ namespace MrAnnouncerBot
 			//else
 			//	Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
 		}
-
+		
 
 		string QuotedIfSpace(string chatShortcut)
 		{

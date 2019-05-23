@@ -555,6 +555,7 @@ class DroneGame extends GamePlusQuiz {
 		let boomboxSprite: Boombox = new Boombox(0, new Vector(10, 1000));
 		this.boomboxes.sprites.push(boomboxSprite);
 
+		boomboxSprite.fadeInTime = 3000;
 		boomboxSprite.playRandomSong();
 		boomboxSprite.hueShiftPerSecond = 90;
 
@@ -1221,7 +1222,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 	genres: Array<Genre> = [];
 	activeGenre: string;
 	activeSongCount: number;
-	static volume: number = 0.5;
+	static volume: number = 2;
 	soundManager: SoundManager = new SoundManager('GameDev/Assets/DroneGame/Music');
 	activeSong: HTMLAudioElement;
 
@@ -1229,7 +1230,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		super(startingFrameNumber, center, lifeSpanMs);
 		this.addSongs('Adventure', 4);
 		this.addSongs('Techno', 66);
-		this.addSongs('Action', 77);
+		this.addSongs('Action', 76);
 		this.activeGenre = 'Action';
 		//this.activeGenre = 'Techno';
 		this.activeSongCount = 77;
@@ -1260,28 +1261,27 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	changeActiveGenre(newGenre: string): void {
-		if (this.activeSong)
-			this.activeSong.pause();
 		this.genres.forEach(function (genre: Genre) {
 			if (genre.name.toLowerCase() == newGenre.toLowerCase()) {
 				this.activeGenre = genre.name;
 				this.activeSongCount = genre.count;
-				chat('Changing active genre to: ' + this.activeGenre);
-				this.playRandomSong();
+				chat(`Next song played will be from the ${this.activeGenre} genre.`);
 			}
 		}, this);
 	}
 
+	// Here we are in a class
+
 	static trimVolume() {
-		Boombox.volume = Math.round(Boombox.volume * 10) / 10;
-		if (Boombox.volume > 1)
+		Boombox.volume = Math.round(Boombox.volume);
+		if (Boombox.volume > 11)
+			Boombox.volume = 11;
+		if (Boombox.volume < 1)
 			Boombox.volume = 1;
-		if (Boombox.volume < 0.1)
-			Boombox.volume = 0.1;
 	}
 
 	static volumeDown(): any {
-		Boombox.volume -= 0.1;
+		Boombox.volume -= 1;
 
 		Boombox.trimVolume();
 
@@ -1294,7 +1294,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 
 	static volumeUp(): any {
-		Boombox.volume += 0.1;
+		Boombox.volume += 1;
 		Boombox.trimVolume();
 
 		let boombox: Boombox = Boombox.getInstance();
@@ -1310,7 +1310,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 	setVolumeForActiveSong() {
 		if (this.activeSong)
-			this.activeSong.volume = Boombox.volume;
+			this.activeSong.volume = this.fadeVolumeMultiplier * Boombox.volume / 11;
 	}
 
 	addSongs(genre: string, count: number) {
@@ -1328,7 +1328,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 			fileName = this.getFileName(index);
 			tries++;
 		}
-		console.log('playRandomSong - fileName: ' + fileName);
+		//console.log('playRandomSong - fileName: ' + fileName);
 		if (this.activeSong) {
 			this.activeSong.pause();
 		}
@@ -1336,8 +1336,66 @@ class Boombox extends ColorShiftingSpriteProxy {
 		if (!this.activeSong)
 			this.activeSong = this.soundManager.safePlayMp3ReturnAudio(fileName, 0);
 
-		this.activeSong.volume = Boombox.volume;
+		this.activeSong.volume = Boombox.volume / 11;
+
+		this.clearActiveTimeout();
+
+		this.activeSong.addEventListener('loadedmetadata', function () {
+			let duration: number = this.activeSong.duration;
+
+			//const testingCrossFade: boolean = true;
+			//if (testingCrossFade) {
+			//	const startTimeFromEnd: number = 20;
+			//	let newStartTime: number = duration - startTimeFromEnd;
+			//	this.activeSong.currentTime = newStartTime;
+			//	duration = startTimeFromEnd;
+			//}
+
+			this.activeTimeout = setTimeout(this.playNextSong.bind(this), duration * 1000 - Boombox.crossFadeTime);
+		}.bind(this), false);
 	}
+
+	clearActiveTimeout(): any {
+		if (this.activeTimeout) {
+			clearTimeout(this.activeTimeout);
+			this.activeTimeout = null;
+		}
+	}
+
+	activeTimeout: any;
+
+	static readonly crossFadeTime: number = 5000;
+
+	playNextSong() {
+		let boomboxSprite: Boombox = new Boombox(0, new Vector(10, 1000));
+
+		if (activeDroneGame instanceof DroneGame)
+			activeDroneGame.boomboxes.sprites.unshift(boomboxSprite);
+
+		boomboxSprite.fadeInTime = Boombox.crossFadeTime;
+		boomboxSprite.playRandomSong();
+		boomboxSprite.hueShiftPerSecond = 90;
+		this.fadeOutTime = Boombox.crossFadeTime;
+		this.expirationDate = performance.now() + this.fadeOutTime;
+	}
+
+	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
+		originX: number = 0, originY: number = 0): void {
+		let newFadeVolumeMultiplier: number = Math.round(this.getAlpha(now) * 10) / 10;
+		if (newFadeVolumeMultiplier != this.fadeVolumeMultiplier) {
+			this.fadeVolumeMultiplier = newFadeVolumeMultiplier;
+			this.setVolumeForActiveSong();
+		}
+		super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
+	}
+
+	destroying(): void {
+		if (this.activeSong)
+			this.activeSong.pause();
+		this.activeSong = null;
+	}
+
+	fadeVolumeMultiplier: number = 1;
 
 	getFileName(index: number): string {
 		return `${this.activeGenre}/song (${index.toString()})`;
