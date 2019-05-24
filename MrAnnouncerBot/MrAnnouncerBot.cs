@@ -122,6 +122,7 @@ namespace MrAnnouncerBot
 		private void LoadPersistentData()
 		{
 			scenes = CsvData.Get<SceneDto>(FileName.SceneData);
+			fanfares = CsvData.Get<FanfareDto>(FileName.FanfareData);
 			restrictedScenes = CsvData.Get<RestrictedSceneDto>(FileName.SceneRestrictions);
 			try
 			{
@@ -185,8 +186,69 @@ namespace MrAnnouncerBot
 			allViewers.UserJoined(e.Username);
 		}
 
+		Dictionary<string, DateTime> playedFanfares = new Dictionary<string, DateTime>();
+
+		Queue<FanfareDto> fanfareQueue = new Queue<FanfareDto>();
+		List<FanfareDto> fanfares = new List<FanfareDto>();
+		DateTime lastFanfareActivated = DateTime.Now;
+
+		void HandleUserFanfare(string displayName)
+		{
+			FanfareDto fanfare = fanfares.FirstOrDefault(x => x.DisplayName == displayName);
+
+			if (fanfare != null)
+			{
+				PlayFanfare(fanfare);
+			}
+			else 
+				PlayBackloggedFanfare();
+		}
+
+		void PlayBackloggedFanfare()
+		{
+			if (fanfareQueue.Count == 0)
+				return;
+			FanfareDto fanfare = fanfareQueue.Peek();
+			if (PlayFanfare(fanfare))
+				fanfareQueue.Dequeue();
+		}
+
+		private bool PlayFanfare(FanfareDto fanfare)
+		{
+			if (fanfare == null)
+				return false;
+
+			if (playedFanfares.ContainsKey(fanfare.DisplayName) && playedFanfares[fanfare.DisplayName].DayOfYear == DateTime.Now.DayOfYear)
+				return true;
+
+			if (DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(15))
+			{
+				if (!fanfareQueue.Contains(fanfare))
+					fanfareQueue.Enqueue(fanfare);
+				return false;
+			}
+
+			lastFanfareActivated = DateTime.Now;
+			ActivatingSceneByName(fanfare.DisplayName, "Fanfare");
+			try
+			{
+				hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);
+				obsWebsocket.SetCurrentScene(fanfare.DisplayName);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Unable to play fanfare: " + fanfare.DisplayName);
+			}
+			if (playedFanfares.ContainsKey(fanfare.DisplayName))
+				playedFanfares[fanfare.DisplayName] = DateTime.Now;
+			else
+				playedFanfares.Add(fanfare.DisplayName, DateTime.Now);
+			return true;
+		}
+
 		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
+			HandleUserFanfare(e.ChatMessage.DisplayName);
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
@@ -444,19 +506,24 @@ namespace MrAnnouncerBot
 			return TimeSpan.MaxValue;
 		}
 
-		void ActivatingScene(SceneDto scene)
+		void ActivatingSceneByName(string name, string category)
 		{
 			DateTime now = DateTime.Now;
 
-			if (!lastScenePlayTime.ContainsKey(scene.SceneName))
-				lastScenePlayTime.Add(scene.SceneName, now);
+			if (!lastScenePlayTime.ContainsKey(name))
+				lastScenePlayTime.Add(name, now);
 			else
-				lastScenePlayTime[scene.SceneName] = now;
+				lastScenePlayTime[name] = now;
 
-			if (!lastCategoryPlayTime.ContainsKey(scene.Category))
-				lastCategoryPlayTime.Add(scene.Category, now);
+			if (!lastCategoryPlayTime.ContainsKey(category))
+				lastCategoryPlayTime.Add(category, now);
 			else
-				lastCategoryPlayTime[scene.Category] = now;
+				lastCategoryPlayTime[category] = now;
+		}
+
+		void ActivatingScene(SceneDto scene)
+		{
+			ActivatingSceneByName(scene.SceneName, scene.Category);
 		}
 
 		double GetSpanWaitAdjust(int userLevel)
@@ -528,6 +595,15 @@ namespace MrAnnouncerBot
 
 			if (BotCommands.Execute(e.Command.CommandText, e) > 0)
 				return;
+
+			if (e.Command.ChatMessage.DisplayName == "CodeRushed")
+			{
+				if (e.Command.CommandText == "Reset" && e.Command.ArgumentsAsString == "Fanfare")
+					playedFanfares.Clear();
+
+				if (e.Command.CommandText == "Fanfare")
+					PlayFanfare(fanfares.FirstOrDefault(x => x.DisplayName == e.Command.ArgumentsAsString));
+			}
 
 			var scene = GetScene(command);
 			if (scene != null)

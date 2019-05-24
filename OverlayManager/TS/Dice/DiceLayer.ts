@@ -773,6 +773,7 @@ class DiceRollData {
 	bentLuckRollData: DiceRollData = null;
   startedBonusDiceRoll: boolean;
   showedVantageMessage: boolean;
+  timeLastRolledMs: number;
 	constructor() {
 
 	}

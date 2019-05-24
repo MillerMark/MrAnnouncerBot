@@ -7,6 +7,7 @@ function connectToSignalR(signalR) {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
     connection.on("UserHasCoins", userHasCoins);
+		connection.on("SuppressVolume", suppressVolume);
     connection.on("PlayerDataChanged", playerDataChanged);
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
@@ -83,6 +84,11 @@ function userHasCoins(userId: string, amount: number) {
     if (userDrone)
       userDrone.coinCount += amount;
   }
+}
+function suppressVolume(seconds: number) {
+	if (activeDroneGame instanceof DroneGame) {
+		Boombox.suppressVolume(seconds, performance.now());
+	}
 }
 
 function chat(message: string) {

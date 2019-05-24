@@ -1294,7 +1294,29 @@ function updatePhysics() {
 	checkStillRolling();
 	scaleFallingDice();
 	highlightSpecialDice();
+
+	if (!animationsShouldBeDone && diceRemainingInPlay() == 0 && allDiceHaveStoppedRolling &&
+		(scalingDice == null || scalingDice.length == 0) &&
+		(specialDice == null || specialDice.length == 0)) {
+		animationsShouldBeDone = true;
+		console.log('animationsShouldBeDone = true;');
+		diceRollData = null;
+	}
 }
+
+function diceRemainingInPlay(): number {
+	var count: number = 0;
+	for (var i in dice) {
+		if (dice[i].inPlay) {
+			count++;
+		}
+	}
+	return count;
+}
+
+
+
+var animationsShouldBeDone: boolean;
 
 function prepareDie(die: any, throwPower: number, xPositionModifier: number = 0) {
 	prepareBaseDie(die, throwPower, xPositionModifier);
@@ -1395,7 +1417,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
-function addDie(dieStr: string, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0): any {
+function addDie(dieStr: string, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false): any {
 	let countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length != 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1446,6 +1468,11 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 		}
 		prepareDie(die, throwPower, xPositionModifier);
 		die.rollType = dieType;
+
+		if (isMagic) {
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
+			die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
+		}
 	}
 }
 
@@ -1456,7 +1483,7 @@ enum RollType {
 	bentLuck
 }
 
-function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined) {
+function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false) {
 	let allDice: string[] = damageDice.split(',');
 	if (backgroundColor === undefined)
 		backgroundColor = damageDieBackgroundColor;
@@ -1467,7 +1494,7 @@ function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number
 		let dieAndModifier = dieSpec.split('+');
 		if (dieAndModifier.length == 2)
 			modifier += +dieAndModifier[1];
-		addDie(dieAndModifier[0], dieType, backgroundColor, fontColor, throwPower, xPositionModifier);
+		addDie(dieAndModifier[0], dieType, backgroundColor, fontColor, throwPower, xPositionModifier, isMagic);
 	});
 
 	damageModifierThisRoll = modifier;
@@ -1555,9 +1582,16 @@ function addTrailingEffects(die: any, trailingEffects: Array<TrailingEffect>) {
 	}
 }
 
+var rollingOnlyBentLuck: boolean;
+
 function bendLuck(diceRollDto: DiceRollData, multiplier: number) {
-	if (diceRollData.bentLuckRollData)
+	if (diceRollData && diceRollData.bentLuckRollData)
 		return;
+
+	if (diceRollData == null) {
+		diceRollData = diceRollDto;
+		rollingOnlyBentLuck = true;
+	}
 
 	diceRollData.bentLuckMultiplier = multiplier;
 	diceRollData.bentLuckRollData = diceRollDto;
@@ -1572,7 +1606,7 @@ function rollBentLuck() {
 	rollBentLuckCount++;
 
 	// @ts-ignore - DiceManager
-	if (!allDiceHaveStoppedRolling && rollBentLuckCount < 30) {
+	if (!rollingOnlyBentLuck && !allDiceHaveStoppedRolling && rollBentLuckCount < 30) {
 		setTimeout(rollBentLuck, 300);
 		return;
 	}
@@ -1581,7 +1615,10 @@ function rollBentLuck() {
 	diceLayer.clearTextEffects();
 	diceLayer.bendingLuck('Bending Luck!', diceRollData.bentLuckMultiplier);
 	diceSounds.safePlayMp3('PaladinThunder');
-	setTimeout(rollBentLuckDice, 2500);
+	if (rollingOnlyBentLuck)
+		rollBentLuckDice();
+	else
+		setTimeout(rollBentLuckDice, 2500);
 }
 
 function rollBentLuckDice() {
@@ -1605,10 +1642,14 @@ function rollBentLuckDice() {
 		dieFont = DiceLayer.goodLuckFontColor;
 	}
 
-	addDieFromStr('1d4', RollType.bentLuck, diceRollData.throwPower * 1.2, xPositionModifier, dieBack, dieFont);
+	addDieFromStr('1d4', RollType.bentLuck, diceRollData.throwPower * 1.2, xPositionModifier, dieBack, dieFont, true);
 }
 
 function pleaseRollDice(diceRollDto: DiceRollData) {
+	animationsShouldBeDone = false;
+	rollingOnlyBentLuck = false;
+
+
 	if (diceRollDto.type == DiceRollType.BendLuckAdd) {
 		bendLuck(diceRollDto, +1);
 		return;
@@ -1620,6 +1661,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	}
 
 	diceRollData = diceRollDto;
+	diceRollData.timeLastRolledMs = performance.now();
 	attemptedRollWasSuccessful = false;
 
 	if (randomDiceThrowIntervalId != 0) {
@@ -1702,6 +1744,8 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	if (diceRollData.isSneakAttack) {
 		diceSounds.safePlayMp3('SneakAttackWhoosh');
 	}
+
+	//startedRoll = true;
 }
 
 function showRollTotal() {

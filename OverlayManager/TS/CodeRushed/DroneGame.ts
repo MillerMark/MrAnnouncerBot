@@ -19,7 +19,7 @@ class DroneGame extends GamePlusQuiz {
 	portalBackground: Sprites;
 	backgroundBanner: Part;
 	coins: Sprites;
-
+	textEffects: TextEffects = new TextEffects();
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -104,6 +104,8 @@ class DroneGame extends GamePlusQuiz {
 		//this.emitter.draw(myContext, now);
 		//drawCrossHairs(myContext, 830, 540);
 		//drawCrossHairs(myContext, 830 + 340, 540);
+		this.textEffects.removeExpiredText(now);
+		this.textEffects.render(myContext, now);
 	}
 
 	getBoomboxInstance(): Boombox {
@@ -315,7 +317,12 @@ class DroneGame extends GamePlusQuiz {
 			this.tossMeteor(userId, params);
 		}
 		else if (command === 'Music') {
-			this.startMusic();
+			if (params === 'off')
+				this.stopMusic();
+			else if (params.startsWith('supress'))
+				this.stopMusic();
+			else
+				this.startMusic();
 		}
 		else if (command === 'Genre') {
 			Boombox.changeGenre(params);
@@ -579,7 +586,7 @@ class DroneGame extends GamePlusQuiz {
 
 		this.musicPlaying = false;
 		Boombox.stopMusic();
-		this.boomboxes.sprites = [];
+		//this.boomboxes.sprites = [];
 	}
 
 	tossMeteor(userId: string, params: string) {
@@ -1223,8 +1230,12 @@ class Boombox extends ColorShiftingSpriteProxy {
 	activeGenre: string;
 	activeSongCount: number;
 	static volume: number = 2;
+	static saveVolume: number = 0;
+	static readonly suppressVolumeLevel: number = 0.5;
 	soundManager: SoundManager = new SoundManager('GameDev/Assets/DroneGame/Music');
 	activeSong: HTMLAudioElement;
+	static suppressingVolume: boolean = false;
+  static suppressingVolumeEnds: number;
 
 	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
 		super(startingFrameNumber, center, lifeSpanMs);
@@ -1236,6 +1247,21 @@ class Boombox extends ColorShiftingSpriteProxy {
 		this.activeSongCount = 77;
 	}
 
+	static suppressVolume(seconds: number, now: number): void {
+		Boombox.suppressingVolume = true;
+		let boombox: Boombox = Boombox.getInstance();
+		if (boombox != null) {
+			if (Boombox.volume != Boombox.suppressVolumeLevel) {
+				Boombox.saveVolume = Boombox.volume;
+				Boombox.volume = Boombox.suppressVolumeLevel
+				boombox.setVolumeForActiveSong();
+			}
+			Boombox.suppressingVolumeEnds = now + seconds * 1000;
+		}
+
+		console.log(`Suppressing music volume for ${seconds} seconds.`);
+	}
+
 	static getInstance(): Boombox {
 		if (!(activeDroneGame instanceof DroneGame))
 			return null;
@@ -1245,14 +1271,28 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 	static changeGenre(newGenre: string): void {
 		let boombox: Boombox = Boombox.getInstance();
-		if (boombox)
+		if (boombox) {
 			boombox.changeActiveGenre(newGenre);
+
+			if (activeDroneGame instanceof DroneGame) {
+				let textEffect: TextEffect = activeDroneGame.textEffects.add(new Vector(100, 1000), newGenre, 4000);
+				textEffect.scale = 3;
+				textEffect.targetScale = 5;
+				textEffect.fadeOutTime = 800;
+				textEffect.fadeInTime = 800;
+				textEffect.velocityX = 3;
+				textEffect.velocityY = 2;
+			}
+		}
 	}
 
 	static stopMusic(): void {
 		let boombox: Boombox = Boombox.getInstance();
-		if (boombox)
-			boombox.stopActiveSong();
+		if (boombox) {
+			//boombox.stopActiveSong();
+			boombox.clearActiveTimeout();
+			boombox.expirationDate = performance.now() + 3000;
+		}
 	}
 
 	stopActiveSong() {
@@ -1387,6 +1427,15 @@ class Boombox extends ColorShiftingSpriteProxy {
 			this.setVolumeForActiveSong();
 		}
 		super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
+
+		if (Boombox.suppressingVolume && now > Boombox.suppressingVolumeEnds) {
+			Boombox.suppressingVolume = false;
+			let boombox: Boombox = Boombox.getInstance();
+			if (boombox != null) {
+				Boombox.volume = Boombox.saveVolume;
+				boombox.setVolumeForActiveSong();
+			}
+		}
 	}
 
 	destroying(): void {

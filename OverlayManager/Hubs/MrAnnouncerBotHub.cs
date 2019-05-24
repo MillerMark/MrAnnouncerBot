@@ -13,6 +13,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.UserHasCoins(userId, amount);
 		}
 
+		public void SuppressVolume(int seconds)
+		{
+			coderushedHub.Clients.All.SuppressVolume(seconds);
+		}
+
 		public void PlayerDataChanged(int playerID, int pageID, string playerData)
 		{
 			string[] sceneNames = { "Kent's Turn", "Karen's Turn", "Mark's Turn", "Kayla's Turn" };

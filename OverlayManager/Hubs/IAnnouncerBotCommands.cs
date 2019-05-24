@@ -17,6 +17,7 @@ namespace OverlayManager.Hubs
 		Task ChangeScene(string sceneName);
 
 		Task UserHasCoins(string userID, int amount);  // A -> B -> C
+		Task SuppressVolume(int seconds);
 
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
 		Task FocusItem(int playerID, int pageID, string itemID);
