@@ -7,8 +7,11 @@
 
   <ItemGroup>
     <Compile Remove="Data\**" />
+    <Compile Remove="SoundEffects\**" />
     <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="SoundEffects\**" />
     <None Remove="Data\**" />
+    <None Remove="SoundEffects\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +46,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
+    <PackageReference Include="NAudio" Version="1.9.0" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.2.0-beta3" />
     <PackageReference Include="TwitchLib" Version="2.1.5" />
   </ItemGroup>
@@ -77,6 +81,10 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Data\Mr. Announcer Guy - Fanfare.csv" />
   </ItemGroup>
 
 </Project>
