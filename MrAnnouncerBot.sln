@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.28721.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OverlayManager", "OverlayManager\OverlayManager.csproj", "{59028903-47B5-4377-AEC6-30E12CD531F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotCore", "BotCore\BotCore.csproj", "{6286BC4A-3EA1-4B15-987A-8F6D18D4E835}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MrAnnouncerBot", "MrAnnouncerBot\MrAnnouncerBot.csproj", "{37888FE4-0E89-4235-838A-FE49E8B72E8B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DHDM", "DHDM\DHDM.csproj", "{F5FE9F83-00A9-42DA-B81E-8D64BD456029}"
@@ -23,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeLineControl", "..\TimeL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndQuality", "DndQuality\DndQuality.csproj", "{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotCoreNet", "BotCoreNet\BotCoreNet.csproj", "{7F1F032D-49C2-433B-8006-AD5B617B11EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotCore", "BotCore\BotCore.csproj", "{C0E907EB-85E4-4597-A157-93D35866F1B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,10 +35,6 @@ Global
 		{59028903-47B5-4377-AEC6-30E12CD531F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59028903-47B5-4377-AEC6-30E12CD531F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59028903-47B5-4377-AEC6-30E12CD531F9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6286BC4A-3EA1-4B15-987A-8F6D18D4E835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6286BC4A-3EA1-4B15-987A-8F6D18D4E835}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6286BC4A-3EA1-4B15-987A-8F6D18D4E835}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6286BC4A-3EA1-4B15-987A-8F6D18D4E835}.Release|Any CPU.Build.0 = Release|Any CPU
 		{37888FE4-0E89-4235-838A-FE49E8B72E8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{37888FE4-0E89-4235-838A-FE49E8B72E8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37888FE4-0E89-4235-838A-FE49E8B72E8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,6 +67,14 @@ Global
 		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82F7E2F5-2622-48BC-830C-5DCECB84EC4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F1F032D-49C2-433B-8006-AD5B617B11EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F1F032D-49C2-433B-8006-AD5B617B11EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F1F032D-49C2-433B-8006-AD5B617B11EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F1F032D-49C2-433B-8006-AD5B617B11EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0E907EB-85E4-4597-A157-93D35866F1B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0E907EB-85E4-4597-A157-93D35866F1B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0E907EB-85E4-4597-A157-93D35866F1B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0E907EB-85E4-4597-A157-93D35866F1B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

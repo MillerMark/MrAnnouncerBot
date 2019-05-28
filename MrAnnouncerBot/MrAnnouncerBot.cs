@@ -68,7 +68,14 @@ namespace MrAnnouncerBot
 
 		void ChangeScene(string sceneName)
 		{
-			obsWebsocket.SetCurrentScene(sceneName);
+			try
+			{
+				obsWebsocket.SetCurrentScene(sceneName);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 
 		void NeedToGetCoins(string userId)

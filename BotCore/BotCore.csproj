@@ -1,14 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\BotCoreNet\AllViewers.cs" Link="AllViewers.cs" />
+    <Compile Include="..\BotCoreNet\AppData.cs" Link="AppData.cs" />
+    <Compile Include="..\BotCoreNet\BotCommand.cs" Link="BotCommand.cs" />
+    <Compile Include="..\BotCoreNet\BotCommands.cs" Link="BotCommands.cs" />
+    <Compile Include="..\BotCoreNet\ObsHelper.cs" Link="ObsHelper.cs" />
+    <Compile Include="..\BotCoreNet\Twitch.cs" Link="Twitch.cs" />
+    <Compile Include="..\BotCoreNet\Viewer.cs" Link="Viewer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
-    <PackageReference Include="TwitchLib" Version="2.1.5" />
+    <PackageReference Include="TwitchLib" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>
