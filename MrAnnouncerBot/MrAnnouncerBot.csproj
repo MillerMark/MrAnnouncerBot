@@ -92,7 +92,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Data\Mr. Announcer Guy - Fanfare.csv" />
+    <Content Include="Data\Mr. Announcer Guy - Fanfare.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

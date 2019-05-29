@@ -214,7 +214,7 @@ namespace DHDM
 			else
 				diceRollKind = DiceRollKind.Normal;
 			string damageDice = string.Empty;
-			if (type == DiceRollType.Attack)
+			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
@@ -662,13 +662,38 @@ namespace DHDM
 		private void BtnBendLuckSubtract_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckSubtract);
+			AddTrailingSparks(diceRoll);
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnLuckRoll_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRoll);
+			AddTrailingSparks(diceRoll);
+			RollTheDice(diceRoll);
+		}
+
+		private static void AddTrailingSparks(DiceRoll diceRoll)
+		{
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.SmallSparks,
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 33
 			});
+		}
 
+		private void BtnRollHealthOnly_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.HealthOnly);
+			diceRoll.HiddenThreshold = 0;
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnRollDamageOnly_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
+			diceRoll.HiddenThreshold = 0;
 			RollTheDice(diceRoll);
 		}
 	}

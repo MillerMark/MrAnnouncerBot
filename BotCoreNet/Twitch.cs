@@ -96,7 +96,15 @@ namespace BotCore
 
 		public static void Chat(string msg)
 		{
-			Client.SendMessage(STR_ChannelName, msg);
+			try
+			{
+				Client.SendMessage(STR_ChannelName, msg);
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 
 		public static void Whisper(string userName, string msg)

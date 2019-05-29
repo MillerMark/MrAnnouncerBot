@@ -13,7 +13,10 @@ enum DiceRollType {
 	PercentageRoll,
 	WildMagic,
 	BendLuckAdd,
-	BendLuckSubtract
+	BendLuckSubtract,
+	LuckRoll,
+	DamageOnly,
+	HealthOnly
 }
 
 enum SpriteType {
@@ -57,8 +60,6 @@ const fps20: number = 50;
 const matchNormalDieColorsToSpecial: boolean = true;
 //const damageDieBackgroundColor: string = '#e49836';
 //const damageDieFontColor: string = '#000000';
-const damageDieBackgroundColor: string = '#a40017';
-const damageDieFontColor: string = '#ffffff';
 
 const successFontColor: string = '#ffffff';
 const successOutlineColor: string = '#000000';
@@ -81,6 +82,11 @@ class DiceLayer {
 	static readonly goodLuckDieColor: string = '#15ff81';
 	static readonly goodLuckFontColor: string = '#000000';
 
+	static readonly damageDieBackgroundColor: string = '#a40017';
+	static readonly damageDieFontColor: string = '#ffffff';
+	static readonly healthDieBackgroundColor: string = '#0074c8';
+	static readonly healthDieFontColor: string = '#ffffff';
+
 	static matchOozeToDieColor: boolean = true;
 	textEffects: TextEffects = new TextEffects();
 	diceFrontCanvas: HTMLCanvasElement;
@@ -88,6 +94,7 @@ class DiceLayer {
 	diceFrontContext: CanvasRenderingContext2D;
 	diceBackContext: CanvasRenderingContext2D;
 	diceFireball: Sprites;
+	cloverRing: Sprites;
 	sparkTrail: Sprites;
 	haloSpins: Sprites;
 	//d20Fire: Sprites;
@@ -137,6 +144,11 @@ class DiceLayer {
 		this.diceFireball.originX = 104;
 		this.diceFireball.originY = 155;
 		this.allFrontLayerEffects.add(this.diceFireball);
+
+		this.cloverRing = new Sprites("/Dice/Luck/CloverRing", 120, fps30, AnimationStyle.Loop, true);
+		this.cloverRing.originX = 141;
+		this.cloverRing.originY = 137;
+		this.allFrontLayerEffects.add(this.cloverRing);
 
 		this.freeze = new Sprites("/Dice/Freeze/Freeze", 30, fps30, AnimationStyle.SequentialStop, true);
 		this.freeze.originX = 80;
@@ -284,13 +296,13 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showTotalDamage(totalDamage: number, success: boolean): any {
+	showTotalHealthDamage(totalDamage: number, success: boolean, label: string, fontColor: string, outlineColor: string): any {
 		var damageTime: number = this.totalDamageTime;
 		if (!success)
 			damageTime = 2 * damageTime / 3;
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 750), `Damage: ${totalDamage}`, damageTime);
-		textEffect.fontColor = damageDieBackgroundColor;
-		textEffect.outlineColor = damageDieFontColor;
+		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 750), `${label}${totalDamage}`, damageTime);
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = outlineColor;
 		textEffect.elasticIn = true;
 		textEffect.scale = 4;
 		textEffect.velocityY = 0.4;
@@ -303,7 +315,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDamageModifier(modifier: number, success: boolean): any {
+	showDamageHealthModifier(modifier: number, success: boolean, fontColor: string, outlineColor: string): any {
+		if (modifier == 0)
+			return;
 		let totalDamage: string;
 		if (modifier < 0)
 			totalDamage = modifier.toString();
@@ -329,8 +343,8 @@ class DiceLayer {
 		}
 		let textEffect: TextEffect = this.textEffects.add(new Vector(960, yPos), `(${totalDamage})`, damageTime);
 		textEffect.targetScale = targetScale;
-		textEffect.fontColor = damageDieBackgroundColor;
-		textEffect.outlineColor = damageDieFontColor;
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = outlineColor;
 		textEffect.elasticIn = true;
 		textEffect.scale = 3;
 		textEffect.velocityY = velocityY;
@@ -517,6 +531,11 @@ class DiceLayer {
 		return magicRing;
 	}
 
+	addLuckyRing(x: number, y: number): SpriteProxy {
+		let luckyRing = this.cloverRing.add(x, y, Math.floor(Math.random() * 120));
+		return luckyRing;
+	}
+
 	addFreezeBubble(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
 		let freeze: SpriteProxy = this.freeze.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
 		freeze.rotation = Math.random() * 360;
@@ -581,6 +600,7 @@ class DiceLayer {
 
 	clearResidualEffects(): any {
 		this.magicRing.sprites = [];
+		this.cloverRing.sprites = [];
 		this.halos.sprites = [];
 		this.haloSpins.sprites = [];
 		//this.stars.sprites = [];

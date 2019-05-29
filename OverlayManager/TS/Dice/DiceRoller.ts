@@ -1,6 +1,7 @@
 var diceRollData: DiceRollData;
 var showDieValues: boolean = false;
 var totalDamagePlusModifier: number = 0;
+var totalHealthPlusModifier: number = 0;
 var totalRoll: number = 0;
 var totalBonus: number = 0;
 var d20RollValue: number = -1;
@@ -9,16 +10,16 @@ var diceToRoll = 10;
 var secondsBetweenRolls: number = 12;
 var removeDiceImmediately: boolean = false;
 const dieScale: number = 1.5;
-//const damageDieBackgroundColor: string = '#7f090e';
-//const damageDieFontColor: string = '#ffffff';
 var repeatRandomThrow: boolean = false;
 var onBonusThrow: boolean = false;
 var startedBonusRoll: boolean = false;
 var randomDiceThrowIntervalId: number = 0;
 var damageModifierThisRoll: number = 0;
+var healthModifierThisRoll: number = 0;
 
 enum DieEffect {
 	Ring,
+	Lucky,
 	Fireball,
 	Portal,
 	Shockwave,
@@ -583,8 +584,8 @@ enum WildMagic {
 
 function bonusRollDealsDamage(damageStr: string) {
 	diceRollData.bonusRoll = damageStr;
-	diceRollData.bonusRollDieColor = damageDieBackgroundColor;
-	diceRollData.bonusRollFontColor = damageDieFontColor;
+	diceRollData.bonusRollDieColor = DiceLayer.damageDieBackgroundColor;
+	diceRollData.bonusRollFontColor = DiceLayer.damageDieFontColor;
 }
 
 function needToRollBonusDice() {
@@ -752,7 +753,7 @@ function popFrozenDice() {
 function rollBonusDice() {
 	onBonusThrow = true;
 	if (diceRollData.type == DiceRollType.Attack && d20RollValue >= diceRollData.minCrit) {
-		addDieFromStr(diceRollData.damageDice, RollType.damage, 1.4, 0, damageDieBackgroundColor, damageDieFontColor);
+		addDieFromStr(diceRollData.damageDice, RollType.damage, 1.4, 0, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
 	}
 	else {
 
@@ -1203,6 +1204,9 @@ function highlightSpecialDice() {
 				if (!screenPos)
 					continue;
 
+				if (dieObject.effectKind === DieEffect.Lucky) {
+					diceLayer.addLuckyRing(screenPos.x, screenPos.y);
+				}
 				if (dieObject.effectKind === DieEffect.Ring) {
 					diceLayer.addMagicRing(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
 				}
@@ -1383,10 +1387,12 @@ function clearBeforeRoll() {
 	waitingForSettle = true;
 	diceValues = [];
 	totalDamagePlusModifier = 0;
+	totalHealthPlusModifier = 0;
 	totalRoll = 0;
 	d20RollValue = -1;
 	totalBonus = 0;
 	damageModifierThisRoll = 0;
+	healthModifierThisRoll = 0;
 	clearAllDice();
 	allDiceHaveStoppedRolling = false;
 }
@@ -1479,6 +1485,7 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 enum RollType {
 	totalScore,
 	damage,
+	health,
 	bonus,
 	bentLuck
 }
@@ -1486,9 +1493,9 @@ enum RollType {
 function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false) {
 	let allDice: string[] = damageDice.split(',');
 	if (backgroundColor === undefined)
-		backgroundColor = damageDieBackgroundColor;
+		backgroundColor = DiceLayer.damageDieBackgroundColor;
 	if (fontColor === undefined)
-		fontColor = damageDieFontColor;
+		fontColor = DiceLayer.damageDieFontColor;
 	var modifier: number = 0;
 	allDice.forEach(function (dieSpec: string) {
 		let dieAndModifier = dieSpec.split('+');
@@ -1498,6 +1505,7 @@ function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number
 	});
 
 	damageModifierThisRoll = modifier;
+	healthModifierThisRoll = modifier;
 }
 
 function update() {
@@ -1687,6 +1695,16 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.itsAD20Roll = false;
 		addD100(diceRollData, diceLayer.activePlayerSpecialDieColor, diceLayer.activePlayerSpecialDieFontColor, diceRollData.throwPower, xPositionModifier);
 	}
+	else if (diceRollData.type == DiceRollType.DamageOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(diceRollData.damageDice, RollType.damage, diceRollData.throwPower, xPositionModifier);
+	}
+	else if (diceRollData.type == DiceRollType.HealthOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(diceRollData.damageDice, RollType.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+	}
 	else {
 		diceRollData.itsAD20Roll = true;
 		let numD20s: number = 1;
@@ -1703,9 +1721,16 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		for (var i = 0; i < numD20s; i++) {
 			// @ts-ignore - DiceD20
 			var die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
+
 			die.isD20 = true;
 			prepareDie(die, diceRollData.throwPower, xPositionModifier);
 			die.rollType = RollType.totalScore;
+
+			if (diceRollData.type == DiceRollType.LuckRoll) {
+				die.attachedSprites.push(diceLayer.addLuckyRing(960, 540));
+				die.origins.push(new Vector(diceLayer.cloverRing.originX, diceLayer.cloverRing.originY));
+			}
+
 			if (diceRollData.isMagic) {
 				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
 				die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
@@ -1751,6 +1776,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 function showRollTotal() {
 	let rollValue: number = 0;
 	let totalDamage: number = 0;
+	let totalHealth: number = 0;
 	let totalLuckBend: number = 0;
 
 	for (var i = 0; i < dice.length; i++) {
@@ -1774,13 +1800,16 @@ function showRollTotal() {
 			case RollType.damage:
 				totalDamage += topNumber;
 				break;
+			case RollType.health:
+				totalHealth += topNumber;
+				break;
 		}
 	}
 
 	totalRoll = rollValue + diceRollData.modifier;
 	modifyTotalRollForTestingPurposes();
 
-	if (rollValue >= 0) {
+	if (rollValue > 0) {
 		if (diceRollData.modifier != 0)
 			diceLayer.showRollModifier(diceRollData.modifier, totalLuckBend);
 		diceLayer.showDieTotal(`${totalRoll}`);
@@ -1805,13 +1834,21 @@ function showRollTotal() {
 	attemptedRollWasSuccessful = totalRoll >= diceRollData.hiddenThreshold;
 
 	totalDamagePlusModifier = totalDamage + damageModifierThisRoll;
+	totalHealthPlusModifier = totalHealth + healthModifierThisRoll;
 
 	if (totalDamage > 0) {
-		diceLayer.showTotalDamage(totalDamagePlusModifier, attemptedRollWasSuccessful);
-		diceLayer.showDamageModifier(damageModifierThisRoll, attemptedRollWasSuccessful);
+		diceLayer.showTotalHealthDamage(totalDamagePlusModifier, attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+		diceLayer.showDamageHealthModifier(damageModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+	}
+	if (totalHealth > 0) {
+		diceLayer.showTotalHealthDamage(totalHealthPlusModifier, attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+		diceLayer.showDamageHealthModifier(healthModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
 	}
 
-	if (diceRollData.type != DiceRollType.WildMagic && diceRollData.type != DiceRollType.PercentageRoll) {
+	if (diceRollData.type != DiceRollType.WildMagic &&
+		diceRollData.type != DiceRollType.PercentageRoll &&
+		diceRollData.type != DiceRollType.DamageOnly &&
+		diceRollData.type != DiceRollType.HealthOnly) {
 		if (attemptedRollWasSuccessful)
 			if (rollValue >= diceRollData.minCrit)
 				diceLayer.showResult(diceRollData.critSuccessMessage, attemptedRollWasSuccessful);
@@ -1908,6 +1945,7 @@ function onDiceRollStopped() {
 		'roll': totalRoll,
 		'hiddenThreshold': diceRollData.hiddenThreshold,
 		'damage': totalDamagePlusModifier,
+		'health': totalHealthPlusModifier,
 	};
 
 	diceHaveStoppedRolling(JSON.stringify(diceData));

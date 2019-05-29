@@ -8,6 +8,22 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
 	<Window.Resources>
+		<Style TargetType="{x:Type Button}" x:Key="darkButton">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type Button}">
+						<Border Background="{TemplateBinding Background}" BorderBrush="Black" BorderThickness="1">
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			<Style.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+					<Setter Property="Background" Value="#FF1A1940"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
 		<Style TargetType="{x:Type RadioButton}" x:Key="VantageStyle"  >
 			<Setter Property="Template">
 				<Setter.Value>
@@ -210,6 +226,14 @@
 							</Button>
 
 						</StackPanel>
+						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
+							<Button x:Name="btnRollDamageOnly" Style="{StaticResource darkButton}" Background="#FFB50000" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollDamageOnly_Click">
+								Damage Only
+							</Button>
+							<Button x:Name="btnRollHealthOnly" Style="{StaticResource darkButton}" Background="#FF0090FF" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollHealthOnly_Click">
+								Health Only
+							</Button>
+						</StackPanel>
 						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Center">
 							<TextBlock Text="Bending Luck: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnBendLuckAdd" Margin="8" Padding="8" MinWidth="100" Click="BtnBendLuckAdd_Click">
@@ -217,6 +241,9 @@
 							</Button>
 							<Button x:Name="btnBendLuckSubtract" Margin="8" Padding="8" MinWidth="100" Click="BtnBendLuckSubtract_Click">
 								Bend Luck (---)
+							</Button>
+							<Button x:Name="btnLuckRoll" Margin="8" Padding="8" MinWidth="100" Click="BtnLuckRoll_Click">
+								Luck Roll
 							</Button>
 						</StackPanel>
 						<StackPanel x:Name="spSpecialThrows" Orientation="Horizontal">
