@@ -74,7 +74,6 @@ class DroneGame extends GamePlusQuiz {
 
 		this.wallBounce(now);
 
-		this.allSeeds.draw(myContext, now);
 		//this.beesYellow.draw(myContext, now);
 		this.allWalls.draw(myContext, now);
 		this.droneGateways.draw(myContext, now);
@@ -85,6 +84,7 @@ class DroneGame extends GamePlusQuiz {
 
 		this.endCaps.draw(myContext, now);
 
+		this.allSeeds.draw(myContext, now);
 		myRocket.draw(myContext, now);
 		//this.purpleFlowers.draw(myContext, now);
 		//blueFlowers.draw(myContext, now);

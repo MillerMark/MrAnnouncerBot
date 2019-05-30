@@ -1479,6 +1479,8 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
 			die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
 		}
+
+		return die;
 	}
 }
 
@@ -1490,7 +1492,7 @@ enum RollType {
 	bentLuck
 }
 
-function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false) {
+function addDieFromStr(damageDice: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
 	let allDice: string[] = damageDice.split(',');
 	if (backgroundColor === undefined)
 		backgroundColor = DiceLayer.damageDieBackgroundColor;
@@ -1621,7 +1623,16 @@ function rollBentLuck() {
 
 	freezeExistingDice();
 	diceLayer.clearTextEffects();
-	diceLayer.bendingLuck('Bending Luck!', diceRollData.bentLuckMultiplier);
+
+	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
+
+	if (isLuckBent(localDiceRollData))
+		diceLayer.bendingLuck('Bending Luck!', diceRollData.bentLuckMultiplier);
+	else {
+		localDiceRollData.itsAD20Roll = true;
+		diceLayer.bendingLuck("Sorcerer's Luck!", diceRollData.bentLuckMultiplier);
+	}
+
 	diceSounds.safePlayMp3('PaladinThunder');
 	if (rollingOnlyBentLuck)
 		rollBentLuckDice();
@@ -1650,7 +1661,43 @@ function rollBentLuckDice() {
 		dieFont = DiceLayer.goodLuckFontColor;
 	}
 
-	addDieFromStr('1d4', RollType.bentLuck, diceRollData.throwPower * 1.2, xPositionModifier, dieBack, dieFont, true);
+	let localDiceRollData: DiceRollData;
+
+	localDiceRollData = getMostRecentDiceRollData(localDiceRollData);
+
+	let die: any;
+	if (isLuckBent(localDiceRollData)) {
+		let throwPower: number = diceRollData.throwPower * 1.2;
+		die = addDie('d4', RollType.bentLuck, dieBack, dieFont, throwPower, xPositionModifier, false);
+		//prepareDie(die, throwPower, xPositionModifier);
+	}
+	else {
+		die = addD20(localDiceRollData, dieBack, dieFont, xPositionModifier);
+	}
+
+	const isGoodLuck: boolean = isLuckBent(localDiceRollData) && diceRollData.bentLuckMultiplier > 0 || diceRollData.type == DiceRollType.LuckRollHigh;
+	const isBadLuck: boolean = isLuckBent(localDiceRollData) && diceRollData.bentLuckMultiplier < 0 || diceRollData.type == DiceRollType.LuckRollLow;
+
+	if (isGoodLuck) {
+		console.log('addGoodLuckEffects...');
+		addGoodLuckEffects(die);
+	}
+	else if (isBadLuck) {
+		console.log('addBadLuckEffects...');
+		addBadLuckEffects(die);
+	}
+}
+
+function getMostRecentDiceRollData(localDiceRollData: DiceRollData) {
+    if (diceRollData.bentLuckRollData)
+        localDiceRollData = diceRollData.bentLuckRollData;
+    else
+        localDiceRollData = diceRollData;
+    return localDiceRollData;
+}
+
+function isLuckBent(localDiceRollData: DiceRollData) {
+  return localDiceRollData.type == DiceRollType.BendLuckAdd || localDiceRollData.type == DiceRollType.BendLuckSubtract;
 }
 
 function pleaseRollDice(diceRollDto: DiceRollData) {
@@ -1658,12 +1705,12 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	rollingOnlyBentLuck = false;
 
 
-	if (diceRollDto.type == DiceRollType.BendLuckAdd) {
+	if (diceRollDto.type == DiceRollType.BendLuckAdd || diceRollDto.type == DiceRollType.LuckRollHigh) {
 		bendLuck(diceRollDto, +1);
 		return;
 	}
 
-	else if (diceRollDto.type == DiceRollType.BendLuckSubtract) {
+	else if (diceRollDto.type == DiceRollType.BendLuckSubtract || diceRollDto.type == DiceRollType.LuckRollLow) {
 		bendLuck(diceRollDto, -1);
 		return;
 	}
@@ -1720,16 +1767,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		}
 		for (var i = 0; i < numD20s; i++) {
 			// @ts-ignore - DiceD20
-			var die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
-
-			die.isD20 = true;
-			prepareDie(die, diceRollData.throwPower, xPositionModifier);
-			die.rollType = RollType.totalScore;
-
-			if (diceRollData.type == DiceRollType.LuckRoll) {
-				die.attachedSprites.push(diceLayer.addLuckyRing(960, 540));
-				die.origins.push(new Vector(diceLayer.cloverRing.originX, diceLayer.cloverRing.originY));
-			}
+			var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
 
 			if (diceRollData.isMagic) {
 				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
@@ -1771,6 +1809,25 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	}
 
 	//startedRoll = true;
+}
+
+function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number) {
+	// @ts-ignore - DiceD20
+    var die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
+    die.isD20 = true;
+    prepareDie(die, diceRollData.throwPower, xPositionModifier);
+    die.rollType = RollType.totalScore;
+    return die;
+}
+
+function addBadLuckEffects(die: any) {
+    die.attachedSprites.push(diceLayer.addBadLuckRing(960, 540));
+    die.origins.push(new Vector(diceLayer.badLuckRing.originX, diceLayer.badLuckRing.originY));
+}
+
+function addGoodLuckEffects(die: any) {
+    die.attachedSprites.push(diceLayer.addLuckyRing(960, 540));
+    die.origins.push(new Vector(diceLayer.cloverRing.originX, diceLayer.cloverRing.originY));
 }
 
 function showRollTotal() {
@@ -1864,7 +1921,13 @@ function showRollTotal() {
 function removeD20s(): number {
 	needToClearD20s = false;
 	let rollValue: number = -1;
-	if (diceRollData.kind == DiceRollKind.Normal || diceRollData.type == DiceRollType.WildMagic || !diceRollData.itsAD20Roll)
+	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
+	const isLuckRollHigh: boolean = localDiceRollData.type == DiceRollType.LuckRollHigh;
+	const isLuckRollLow: boolean = localDiceRollData.type == DiceRollType.LuckRollLow;
+	const isLuckRoll: boolean = isLuckRollHigh || isLuckRollLow;
+	const isNormal: boolean = localDiceRollData.kind == DiceRollKind.Normal;
+	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
+	if ((isNormal && !isLuckRoll) || isWildMagic || !localDiceRollData.itsAD20Roll)
 		return rollValue;
 	let otherDie: any = null;
 	const vantageTextDelay = 900;
@@ -1876,36 +1939,36 @@ function removeD20s(): number {
 		if (die.isD20) {
 			if (rollValue == -1)
 				rollValue = topNumber;
-			else if (diceRollData.kind == DiceRollKind.Advantage) {
+			else if (localDiceRollData.kind == DiceRollKind.Advantage || isLuckRollHigh) {
 				if (rollValue <= topNumber) {
 					removeSingleDieNow(otherDie);
-					if (!diceRollData.showedVantageMessage) {
-						diceRollData.showedVantageMessage = true;
+					if (!localDiceRollData.showedVantageMessage) {
+						localDiceRollData.showedVantageMessage = true;
 						diceLayer.addAdvantageText(otherDie, vantageTextDelay);
 					}
 					rollValue = topNumber;
 				}
 				else {
 					removeSingleDieNow(die);
-					if (!diceRollData.showedVantageMessage) {
-						diceRollData.showedVantageMessage = true;
+					if (!localDiceRollData.showedVantageMessage) {
+						localDiceRollData.showedVantageMessage = true;
 						diceLayer.addAdvantageText(die, vantageTextDelay);
 					}
 				}
 			}
-			else if (diceRollData.kind == DiceRollKind.Disadvantage) {
+			else if (localDiceRollData.kind == DiceRollKind.Disadvantage || isLuckRollLow) {
 				if (rollValue >= topNumber) {
 					removeSingleDieNow(otherDie);
-					if (!diceRollData.showedVantageMessage) {
-						diceRollData.showedVantageMessage = true;
+					if (!localDiceRollData.showedVantageMessage) {
+						localDiceRollData.showedVantageMessage = true;
 						diceLayer.addDisadvantageText(otherDie, vantageTextDelay);
 					}
 					rollValue = topNumber;
 				}
 				else {
 					removeSingleDieNow(die);
-					if (!diceRollData.showedVantageMessage) {
-						diceRollData.showedVantageMessage = true;
+					if (!localDiceRollData.showedVantageMessage) {
+						localDiceRollData.showedVantageMessage = true;
 						diceLayer.addDisadvantageText(die, vantageTextDelay);
 					}
 				}

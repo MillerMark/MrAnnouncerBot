@@ -14,7 +14,8 @@ enum DiceRollType {
 	WildMagic,
 	BendLuckAdd,
 	BendLuckSubtract,
-	LuckRoll,
+	LuckRollLow,
+	LuckRollHigh,
 	DamageOnly,
 	HealthOnly
 }
@@ -95,6 +96,7 @@ class DiceLayer {
 	diceBackContext: CanvasRenderingContext2D;
 	diceFireball: Sprites;
 	cloverRing: Sprites;
+	badLuckRing: Sprites;
 	sparkTrail: Sprites;
 	haloSpins: Sprites;
 	//d20Fire: Sprites;
@@ -149,6 +151,11 @@ class DiceLayer {
 		this.cloverRing.originX = 141;
 		this.cloverRing.originY = 137;
 		this.allFrontLayerEffects.add(this.cloverRing);
+
+		this.badLuckRing = new Sprites("/Dice/Luck/BadLuckRing", 120, fps30, AnimationStyle.Loop, true);
+		this.badLuckRing.originX = 141;
+		this.badLuckRing.originY = 137;
+		this.allFrontLayerEffects.add(this.badLuckRing);
 
 		this.freeze = new Sprites("/Dice/Freeze/Freeze", 30, fps30, AnimationStyle.SequentialStop, true);
 		this.freeze.originX = 80;
@@ -536,6 +543,11 @@ class DiceLayer {
 		return luckyRing;
 	}
 
+	addBadLuckRing(x: number, y: number): SpriteProxy {
+		let badLuckRing = this.badLuckRing.add(x, y, Math.floor(Math.random() * 120));
+		return badLuckRing;
+	}
+
 	addFreezeBubble(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
 		let freeze: SpriteProxy = this.freeze.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
 		freeze.rotation = Math.random() * 360;
@@ -601,6 +613,7 @@ class DiceLayer {
 	clearResidualEffects(): any {
 		this.magicRing.sprites = [];
 		this.cloverRing.sprites = [];
+		this.badLuckRing.sprites = [];
 		this.halos.sprites = [];
 		this.haloSpins.sprites = [];
 		//this.stars.sprites = [];

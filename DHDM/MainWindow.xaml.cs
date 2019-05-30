@@ -666,9 +666,9 @@ namespace DHDM
 			RollTheDice(diceRoll);
 		}
 
-		private void BtnLuckRoll_Click(object sender, RoutedEventArgs e)
+		private void BtnLuckRollHigh_Click(object sender, RoutedEventArgs e)
 		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRoll);
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollHigh);
 			AddTrailingSparks(diceRoll);
 			RollTheDice(diceRoll);
 		}
@@ -694,6 +694,13 @@ namespace DHDM
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
 			diceRoll.HiddenThreshold = 0;
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnLuckRollLow_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollLow);
+			AddTrailingSparks(diceRoll);
 			RollTheDice(diceRoll);
 		}
 	}

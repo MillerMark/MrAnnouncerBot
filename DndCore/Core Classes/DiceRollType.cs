@@ -14,7 +14,8 @@ namespace DndCore
 		WildMagic,
 		BendLuckAdd,
 		BendLuckSubtract,
-		LuckRoll,
+		LuckRollLow,
+		LuckRollHigh,
 		DamageOnly,
 		HealthOnly
 	}
