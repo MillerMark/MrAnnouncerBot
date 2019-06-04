@@ -274,6 +274,7 @@
     <Compile Include="ClockDto.cs" />
     <Compile Include="DiceEventArgs.cs" />
     <Compile Include="DiceRollData.cs" />
+    <Compile Include="PlayerActionShortcut.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

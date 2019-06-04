@@ -28,6 +28,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		ScrollPage activePage = ScrollPage.main;
 		DndTimeClock dndTimeClock;
 		bool resting = false;
@@ -50,7 +51,6 @@ namespace DHDM
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
 			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
 
-
 			dndTimeClock = new DndTimeClock();
 			History.TimeClock = dndTimeClock;
 			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
@@ -62,6 +62,8 @@ namespace DHDM
 			spTimeSegments.DataContext = dndTimeClock;
 			logListBox.ItemsSource = History.Entries;
 			History.LogUpdated += History_LogUpdated;
+
+			InitializeAttackShortcuts();
 		}
 
 		private void History_LogUpdated(object sender, EventArgs e)
@@ -93,11 +95,66 @@ namespace DHDM
 			}
 		}
 
+		UIElement BuildShortcutButton(PlayerActionShortcut playerActionShortcut)
+		{
+			StackPanel stackPanel = new StackPanel();
+			stackPanel.Margin = new Thickness(2);
+			stackPanel.Tag = playerActionShortcut.Index;
+			Button button = new Button();
+			button.Padding = new Thickness(4,2,4,2);
+			stackPanel.Children.Add(button);
+			button.Content = playerActionShortcut.Name;
+			button.Tag = playerActionShortcut.Index;
+			button.Click += PlayerShortcutButton_Click;
+			Rectangle rectangle = new Rectangle();
+			rectangle.Tag = playerActionShortcut.Index;
+			rectangle.Height = 3;
+			rectangle.Fill = new SolidColorBrush(Colors.Red);
+			return stackPanel;
+		}
+
+		PlayerActionShortcut GetActionShortcut(object tag)
+		{
+			if (int.TryParse(tag.ToString(), out int index))
+				return actionShortcuts.FirstOrDefault(x => x.Index == index);
+			return null;
+		}
+		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button)
+			{
+				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
+				if (actionShortcut == null)
+					return;
+				tbxDamageDice.Text = actionShortcut.Dice;
+				tbxModifier.Text = actionShortcut.Modifier.ToString();
+				ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
+				NextDieRollType = actionShortcut.Type;
+			}
+		}
+
+		void SetActionShortcuts(int playerID)
+		{
+			for (int i = spShortcutsActivePlayer.Children.Count - 1; i >= 0; i--)
+			{
+				UIElement uIElement = spShortcutsActivePlayer.Children[i];
+				if (uIElement is StackPanel)
+					spShortcutsActivePlayer.Children.RemoveAt(i);
+			}
+			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerID == playerID).ToList();
+
+			foreach (PlayerActionShortcut playerActionShortcut in playerActions)
+			{
+				spShortcutsActivePlayer.Children.Add(BuildShortcutButton(playerActionShortcut));
+			}
+		}
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
+			NextDieRollType = DiceRollType.None;
 			activePage = ScrollPage.main;
 			FocusHelper.ClearActiveStatBoxes();
 			HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
+			SetActionShortcuts(PlayerID);
 		}
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
@@ -201,20 +258,34 @@ namespace DHDM
 
 		private void BtnAttack_Click(object sender, RoutedEventArgs e)
 		{
-			RollTheDice(PrepareRoll(DiceRollType.Attack));
+			DiceRollType rollType;
+			if (NextDieRollType == DiceRollType.None)
+				rollType = DiceRollType.Attack;
+			else
+				rollType = NextDieRollType;
+			RollTheDice(PrepareRoll(rollType));
 		}
 
+		bool IsAttack(DiceRollType type)
+		{
+			return type == DiceRollType.Attack || type == DiceRollType.ChaosBolt;
+		}
+		bool CanIncludeVantageDice(DiceRollType type)
+		{
+			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.SkillCheck);
+		}
 		private DiceRoll PrepareRoll(DiceRollType type)
 		{
-			DiceRollKind diceRollKind;
-			if (rbTestAdvantageDieRoll.IsChecked == true)
-				diceRollKind = DiceRollKind.Advantage;
-			else if (rbTestDisadvantageDieRoll.IsChecked == true)
-				diceRollKind = DiceRollKind.Disadvantage;
-			else
-				diceRollKind = DiceRollKind.Normal;
+			DiceRollKind diceRollKind = DiceRollKind.Normal;
+
+			if (CanIncludeVantageDice(type))
+				if (rbTestAdvantageDieRoll.IsChecked == true)
+					diceRollKind = DiceRollKind.Advantage;
+				else if (rbTestDisadvantageDieRoll.IsChecked == true)
+					diceRollKind = DiceRollKind.Disadvantage;
+			
 			string damageDice = string.Empty;
-			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly)
+			if (IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
@@ -231,8 +302,9 @@ namespace DHDM
 					diceRoll.CritSuccessMessage = "Nat 20!";
 					diceRoll.SuccessMessage = "Success!";
 					diceRoll.FailMessage = "Fail!";
- 				break;
+					break;
 				case DiceRollType.Attack:
+				case DiceRollType.ChaosBolt:
 					diceRoll.CritFailMessage = "SPECTACULAR MISS!";
 					diceRoll.CritSuccessMessage = "Critical Hit!";
 					diceRoll.SuccessMessage = "Hit!";
@@ -263,7 +335,7 @@ namespace DHDM
 			if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
-			diceRoll.IsMagic = ckbUseMagic.IsChecked == true && type == DiceRollType.Attack;
+			diceRoll.IsMagic = ckbUseMagic.IsChecked == true && IsAttack(type);
 			diceRoll.Type = type;
 			return diceRoll;
 		}
@@ -405,6 +477,18 @@ namespace DHDM
 			}
 		}
 
+		public DiceRollType NextDieRollType { get => nextDieRollType; set
+			{
+				if (nextDieRollType == value)
+					return;
+
+				nextDieRollType = value;
+				if (nextDieRollType != DiceRollType.None)
+					tbNextDieRoll.Text = $"({nextDieRollType})";
+				else
+					tbNextDieRoll.Text = "";
+			}
+		}
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
@@ -442,6 +526,8 @@ namespace DHDM
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.InCombat = !dndTimeClock.InCombat;
+			if (dndTimeClock.InCombat)
+				RollInitiative();
 			OnCombatChanged();
 		}
 
@@ -574,10 +660,10 @@ namespace DHDM
 				LeftRightDistanceBetweenPrints = 15,
 				MinForwardDistanceBetweenPrints = 5,
 				OnPrintPlaySound = "Flap",
-				MinSoundInterval= 600,
+				MinSoundInterval = 600,
 				PlusMinusSoundInterval = 300,
 				NumRandomSounds = 6
-				
+
 			});
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
@@ -589,7 +675,7 @@ namespace DHDM
 				PlusMinusSoundInterval = 300,
 				NumRandomSounds = 3
 
-				
+
 			});
 			RollTheDice(diceRoll);
 		}
@@ -702,6 +788,97 @@ namespace DHDM
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollLow);
 			AddTrailingSparks(diceRoll);
 			RollTheDice(diceRoll);
+		}
+
+		void RollInitiative()
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Initiative);
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnHiddenThreshold_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button)
+				tbxHiddenThreshold.Text = button.Tag.ToString();
+		}
+
+		private void BtnModifier_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button)
+			{
+				tbxModifier.Text = button.Tag.ToString();
+			}
+		}
+
+		private const int Player_Willy = 0;
+		private const int Player_Shemo = 1;
+		private const int Player_Merkin = 2;
+		private const int Player_Ava = 3;
+		DiceRollType nextDieRollType;
+		void InitializeAttackShortcuts()
+		{
+			PlayerActionShortcut.PrepareForCreation();
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Dagger of Warning", PlayerID = Player_Willy, Dice = "1d4+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shortbow", PlayerID = Player_Willy, Dice = "1d6+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shortsword", PlayerID = Player_Willy, Dice = "1d6+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Fire Bolt", PlayerID = Player_Willy, Dice = "1d10", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Bonus Dagger", PlayerID = Player_Willy, Dice = "1d4", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Dagger of Warning (Sneak)", PlayerID = Player_Willy, Dice = "2d6,1d4+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shortbow (Sneak)", PlayerID = Player_Willy, Dice = "3d6+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shortsword (Sneak)", PlayerID = Player_Willy, Dice = "3d6+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Bonus Dagger (Sneak)", PlayerID = Player_Willy, Dice = "2d6,1d4", Modifier = 5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8", DC = 13, Ability = Ability.Strength, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2", Modifier = 4 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2", Modifier = 4 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8", Modifier = 5, UsesMagic = true });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Net", PlayerID = Player_Ava, Dice = "", Modifier = 2 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Unarmed Strike", PlayerID = Player_Ava, Dice = "+4", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Cure Wounds", PlayerID = Player_Ava, Dice = "1d8+3", Healing = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Thunderous Smite", PlayerID = Player_Ava, Dice = "2d6", DC = 13, Ability = Ability.Strength });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Wrathful Smite", PlayerID = Player_Ava, Dice = "1d6", DC = 13, Ability = Ability.Wisdom });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Scimitar", PlayerID = Player_Shemo, Dice = "1d6+1", Modifier = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Scimitar (Shillelagh)", PlayerID = Player_Shemo, Dice = "1d8+1", Modifier = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Poison Spray", PlayerID = Player_Shemo, Dice = "1d12", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shillelagh", PlayerID = Player_Shemo, Dice = "1d8+3", Modifier = 5, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Thunderwave", PlayerID = Player_Shemo, Dice = "2d8", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Healing Word", PlayerID = Player_Shemo, Dice = "1d4+3", Healing = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Cure Wounds", PlayerID = Player_Shemo, Dice = "1d8+3", Healing = true });
 		}
 	}
 }

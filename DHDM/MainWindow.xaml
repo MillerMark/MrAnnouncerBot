@@ -159,23 +159,180 @@
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Dungeon" x:Name="tbDungeon">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
+						<StackPanel x:Name="spShortcutsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+							<TextBlock Text="Attacks:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
+							<StackPanel Margin="2" >
+								<Button x:Name="btnDaggerOfWarning" >
+									Dagger of Warning
+								</Button>
+								<Rectangle x:Name="rectDaggerOfWarning" Height="3" Fill="Red"></Rectangle>
+							</StackPanel>
+							<StackPanel Margin="2" >
+								<Button x:Name="btnDaggerOfWarning2" >
+									Dagger of Warning
+								</Button>
+								<Rectangle x:Name="rectDaggerOfWarning2" Height="3" Fill="Red"></Rectangle>
+							</StackPanel>
+						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
 							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
 							<TextBox x:Name="tbxDamageDice" MinWidth="120">
 								2d8+6
 							</TextBox>
+							<TextBlock x:Name="tbNextDieRoll" Text="()" Width="Auto" Height="Auto" Foreground="SlateGray"/>
 						</StackPanel>
-						<StackPanel x:Name="spModifier" Orientation="Horizontal" Margin="0, 0, 0, 8">
-							<TextBlock Text="Modifier: " Width="Auto" Height="Auto"/>
-							<TextBox x:Name="tbxModifier" MinWidth="120">
+						<StackPanel x:Name="spModifier" Orientation="Horizontal" Margin="0, 0, 0, 8" MinHeight="30" >
+							<Button x:Name="btnModifierNeg12" Tag="-12" MinWidth="30" Click="BtnModifier_Click">
+								-12
+							</Button>
+							<Button x:Name="btnModifierNeg11" Tag="-11" MinWidth="30" Click="BtnModifier_Click">
+								-11
+							</Button>
+							<Button x:Name="btnModifierNeg10" Tag="-10" MinWidth="30" Click="BtnModifier_Click">
+								-10
+							</Button>
+							<Button x:Name="btnModifierNeg9" Tag="-9" MinWidth="30" Click="BtnModifier_Click">
+								-9
+							</Button>
+							<Button x:Name="btnModifierNeg8" Tag="-8" MinWidth="30" Click="BtnModifier_Click">
+								-8
+							</Button>
+							<Button x:Name="btnModifierNeg7" Tag="-7" MinWidth="30" Click="BtnModifier_Click">
+								-7
+							</Button>
+							<Button x:Name="btnModifierNeg6" Tag="-6" MinWidth="30" Click="BtnModifier_Click">
+								-6
+							</Button>
+							<Button x:Name="btnModifierNeg5" Tag="-5" MinWidth="30" Click="BtnModifier_Click">
+								-5
+							</Button>
+							<Button x:Name="btnModifierNeg4" Tag="-4" MinWidth="30" Click="BtnModifier_Click">
+								-4
+							</Button>
+							<Button x:Name="btnModifierNeg3" Tag="-3" MinWidth="30" Click="BtnModifier_Click">
+								-3
+							</Button>
+							<Button x:Name="btnModifierNeg2" Tag="-2" MinWidth="30" Click="BtnModifier_Click">
+								-2
+							</Button>
+							<Button x:Name="btnModifierNeg1" Tag="-1" MinWidth="30" Click="BtnModifier_Click">
+								-1
+							</Button>
+							<TextBlock Text="Modifier: " Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="10, 0, 0, 0" FontSize="22" Foreground="SlateGray"/>
+							<TextBox x:Name="tbxModifier" MinWidth="40" VerticalAlignment="Center" Margin="0, 0, 10, 0" FontSize="22">
 								+1
 							</TextBox>
+							<Button x:Name="btnModifier0" Tag="0" MinWidth="30" Click="BtnModifier_Click">
+								0
+							</Button>
+							<Button x:Name="btnModifier1" Tag="+1" MinWidth="30" Click="BtnModifier_Click">
+								+1
+							</Button>
+							<Button x:Name="btnModifier2" Tag="+2" MinWidth="30" Click="BtnModifier_Click">
+								+2
+							</Button>
+							<Button x:Name="btnModifier3" Tag="+3" MinWidth="30" Click="BtnModifier_Click">
+								+3
+							</Button>
+							<Button x:Name="btnModifier4" Tag="+4" MinWidth="30" Click="BtnModifier_Click">
+								+4
+							</Button>
+							<Button x:Name="btnModifier5" Tag="+5" MinWidth="30" Click="BtnModifier_Click">
+								+5
+							</Button>
+							<Button x:Name="btnModifier6" Tag="+6" MinWidth="30" Click="BtnModifier_Click">
+								+6
+							</Button>
+							<Button x:Name="btnModifier7" Tag="+7" MinWidth="30" Click="BtnModifier_Click">
+								+7
+							</Button>
+							<Button x:Name="btnModifier8" Tag="+8" MinWidth="30" Click="BtnModifier_Click">
+								+8
+							</Button>
+							<Button x:Name="btnModifier9" Tag="+9" MinWidth="30" Click="BtnModifier_Click">
+								+9
+							</Button>
+							<Button x:Name="btnModifier10" Tag="+10" MinWidth="30" Click="BtnModifier_Click">
+								+10
+							</Button>
+							<Button x:Name="btnModifier11" Tag="+11" MinWidth="30" Click="BtnModifier_Click">
+								+11
+							</Button>
+							<Button x:Name="btnModifier12" Tag="+12" MinWidth="30" Click="BtnModifier_Click">
+								+12
+							</Button>
+							
 						</StackPanel>
 						<StackPanel x:Name="spHiddenThreshold" Orientation="Horizontal" Margin="0, 0, 0, 8">
-							<TextBlock Text="Hidden Threshold: " Width="Auto" Height="Auto"/>
-							<TextBox x:Name="tbxHiddenThreshold" MinWidth="120">
+							<TextBlock Text="Hidden Threshold: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+							<TextBox x:Name="tbxHiddenThreshold" MinWidth="50" FontSize="22">
 								12
 							</TextBox>
+							<Button x:Name="btnHiddenThreshold0" Tag="0" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								0
+							</Button>
+							<Button x:Name="btnHiddenThreshold1" Tag="1" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								1
+							</Button>
+							<Button x:Name="btnHiddenThreshold2" Tag="2" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								2
+							</Button>
+							<Button x:Name="btnHiddenThreshold3" Tag="3" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								3
+							</Button>
+							<Button x:Name="btnHiddenThreshold4" Tag="4" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								4
+							</Button>
+							<Button x:Name="btnHiddenThreshold5" Tag="5" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								5
+							</Button>
+							<Button x:Name="btnHiddenThreshold6" Tag="6" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								6
+							</Button>
+							<Button x:Name="btnHiddenThreshold7" Tag="7" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								7
+							</Button>
+							<Button x:Name="btnHiddenThreshold8" Tag="8" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								8
+							</Button>
+							<Button x:Name="btnHiddenThreshold9" Tag="9" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								9
+							</Button>
+							<Button x:Name="btnHiddenThreshold10" Tag="10" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								10
+							</Button>
+							<Button x:Name="btnHiddenThreshold11" Tag="11" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								11
+							</Button>
+							<Button x:Name="btnHiddenThreshold12" Tag="12" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								12
+							</Button>
+							<Button x:Name="btnHiddenThreshold13" Tag="13" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								13
+							</Button>
+							<Button x:Name="btnHiddenThreshold14" Tag="14" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								14
+							</Button>
+							<Button x:Name="btnHiddenThreshold15" Tag="15" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								15
+							</Button>
+							<Button x:Name="btnHiddenThreshold16" Tag="16" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								16
+							</Button>
+							<Button x:Name="btnHiddenThreshold17" Tag="17" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								17
+							</Button>
+							<Button x:Name="btnHiddenThreshold18" Tag="18" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								18
+							</Button>
+							<Button x:Name="btnHiddenThreshold19" Tag="19" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								19
+							</Button>
+							<Button x:Name="btnHiddenThreshold20" Tag="20" MinWidth="30" Click="BtnHiddenThreshold_Click">
+								20
+							</Button>
+							
+							
 						</StackPanel>
 						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8"  >
 							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>

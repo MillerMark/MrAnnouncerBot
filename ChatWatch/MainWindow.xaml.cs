@@ -215,5 +215,6 @@ namespace ChatWatch
 			else if (WindowState == WindowState.Normal)
 				WindowState = WindowState.Maximized;
 		}
+		
 	}
 }

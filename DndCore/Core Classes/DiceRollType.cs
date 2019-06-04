@@ -5,6 +5,7 @@ namespace DndCore
 {
 	public enum DiceRollType
 	{
+		None,
 		SkillCheck,
 		Attack,
 		SavingThrow,
@@ -17,7 +18,9 @@ namespace DndCore
 		LuckRollLow,
 		LuckRollHigh,
 		DamageOnly,
-		HealthOnly
+		HealthOnly, 
+		ChaosBolt,
+		Initiative
 	}
 
 }

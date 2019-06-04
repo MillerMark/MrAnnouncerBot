@@ -5,6 +5,7 @@ enum DiceRollKind {
 }
 
 enum DiceRollType {
+	None,
 	SkillCheck,
 	Attack,
 	SavingThrow,
@@ -17,7 +18,9 @@ enum DiceRollType {
 	LuckRollLow,
 	LuckRollHigh,
 	DamageOnly,
-	HealthOnly
+	HealthOnly,
+	ChaosBolt,
+	Initiative
 }
 
 enum SpriteType {
@@ -123,9 +126,7 @@ class DiceLayer {
 	allFrontLayerEffects: SpriteCollection;
 	allBackLayerEffects: SpriteCollection;
 	activePlayerDieColor: string = '#fcd5a6';
-	activePlayerSpecialDieColor: string = '#4e2c04';
-	activePlayerDieFontColor: string = '#000000';
-	activePlayerSpecialDieFontColor: string = '#ffffff';
+	activePlayerDieFontColor: string = '#ffffff';
 	activePlayerHueShift: number = 0;
 	playerID: number;
 
@@ -460,11 +461,11 @@ class DiceLayer {
 	}
 
 
-	addVantageText(die: any, message: string, fontColor: string, outlineColor: string): any {
+	addDieText(die: any, message: string, fontColor: string, outlineColor: string, lifeSpan: number = 1500): any {
 		let centerPos: Vector = getScreenCoordinates(die.getObject());
 		if (centerPos == null)
 			return;
-		let textEffect: TextEffect = this.textEffects.add(centerPos.add(new Vector(0, 80)), message, 1500);
+		let textEffect: TextEffect = this.textEffects.add(centerPos.add(new Vector(0, 80)), message, lifeSpan);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.scale = 3;
@@ -474,21 +475,31 @@ class DiceLayer {
 		textEffect.targetScale = 1;
 	}
 
-	addVantageTextAfter(die: any, message: string, fontColor: string, outlineColor: string, timeout: number = 0) {
+	addDieTextAfter(die: any, message: string, fontColor: string, outlineColor: string, timeout: number = 0, lifeSpan: number = 1500) {
 		if (timeout > 0)
 			setTimeout(function () {
-				this.addVantageText(die, message, fontColor, outlineColor);
+				this.addDieText(die, message, fontColor, outlineColor, lifeSpan);
 			}.bind(this), timeout);
 		else
-			this.addVantageText(die, message, fontColor, outlineColor);
+			this.addDieText(die, message, fontColor, outlineColor, lifeSpan);
 	}
 
-	addDisadvantageText(die: any, timeout: number = 0): any {
-		this.addVantageTextAfter(die, 'Disadvantage', this.activePlayerDieColor, this.activePlayerSpecialDieColor, timeout);
+	addDisadvantageText(die: any, timeout: number = 0, isLuckyFeat: boolean = false): any {
+		var message: string;
+		if (isLuckyFeat)
+			message = 'Lucky Feat';
+		else 
+			message = 'Disadvantage';
+		this.addDieTextAfter(die, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
 	}
 
-	addAdvantageText(die: any, timeout: number = 0): any {
-		this.addVantageTextAfter(die, 'Advantage', this.activePlayerDieColor, this.activePlayerSpecialDieColor, timeout);
+	addAdvantageText(die: any, timeout: number = 0, isLuckyFeat: boolean = false): any {
+		var message: string;
+		if (isLuckyFeat)
+			message = 'Lucky Feat';
+		else
+			message = 'Advantage';
+		this.addDieTextAfter(die, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
 	}
 
 
@@ -737,40 +748,56 @@ class DiceLayer {
 		//  { "Type": 1, "Kind": 0, "DamageDice": "2d8+6", "Modifier": 1.0, "HiddenThreshold": 12.0, "IsMagic": true }
 	}
 
+	getDieColor(playerID: number): string {
+		switch (playerID)
+		{
+			case 0:
+				return '#710138';
+			case 1:
+				return '#00641d';
+			case 2:
+				return '#401260';
+			case 3:
+				return '#04315a';
+		}
+		return '#000000';
+	}
+
+	getPlayerName(playerID: number): string {
+		switch (playerID)
+		{
+			case 0:
+				return 'Willy';
+			case 1:
+				return 'Shemo';
+			case 2:
+				return 'Merkin';
+			case 3:
+				return 'Ava';
+		}
+		return '';
+	}
+
+	getHueShift(playerID: number): number {
+		switch (playerID) {
+			case 0:
+				return 0;
+			case 1:
+				return 138;
+			case 2:
+				return 260;
+			case 3:
+				return 210;
+		}
+		return 0;
+	}
+
 	playerChanged(playerID: number): void {
 		this.playerID = playerID;
-		this.activePlayerDieFontColor = '#000000';
-		this.activePlayerSpecialDieFontColor = '#ffffff';
-		if (playerID === 0) { // Kent
-			this.activePlayerDieColor = '#feb6b6'; // '#fcd5a6';
-			this.activePlayerSpecialDieColor = '#710138'; // '#720102'; //'#4e2c04';
-			//this.activePlayerDieColor = '#fec75e'; // '#fcd5a6';
-			//this.activePlayerSpecialDieColor = '#422b00'; //'#4e2c04';
-			this.activePlayerHueShift = 0; // 39;
-		}
-		else if (playerID === 1) {  // Kayla
-			this.activePlayerDieColor = '#a6fcc0';
-			this.activePlayerSpecialDieColor = '#00641d';
-			//this.activePlayerSpecialDieFontColor = '#ddffe7';
-			this.activePlayerHueShift = 138;
-		}
-		else if (playerID === 2) {    // Mark
-			this.activePlayerDieColor = '#c0A0ff';
-			this.activePlayerSpecialDieColor = '#401260';
-			//this.activePlayerSpecialDieFontColor = '#f0e2fa';
-			this.activePlayerHueShift = 260;
-		}
-		else if (playerID === 3) {    // Karen
-			this.activePlayerDieColor = '#9fd2ff'; // '#a6d2fc'; // '#a6f9fc';
-			this.activePlayerSpecialDieColor = '#04315a';
-			//this.activePlayerSpecialDieFontColor = '#e4f2fe';
-			this.activePlayerHueShift = 210;
-		}
+		this.activePlayerDieFontColor = '#ffffff';
 
-		if (matchNormalDieColorsToSpecial) {
-			this.activePlayerDieFontColor = this.activePlayerSpecialDieFontColor;
-			this.activePlayerDieColor = this.activePlayerSpecialDieColor;
-		}
+		this.activePlayerDieColor = this.getDieColor(playerID);
+		this.activePlayerHueShift = this.getHueShift(playerID);
 	}
 }
 
@@ -807,6 +834,7 @@ class DiceRollData {
   startedBonusDiceRoll: boolean;
   showedVantageMessage: boolean;
   timeLastRolledMs: number;
+  appliedVantage: boolean = false;
 	constructor() {
 
 	}
