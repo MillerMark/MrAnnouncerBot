@@ -176,7 +176,7 @@
 						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
 							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
-							<TextBox x:Name="tbxDamageDice" MinWidth="120">
+							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
 								2d8+6
 							</TextBox>
 							<TextBlock x:Name="tbNextDieRoll" Text="()" Width="Auto" Height="Auto" Foreground="SlateGray"/>
@@ -219,8 +219,8 @@
 								-1
 							</Button>
 							<TextBlock Text="Modifier: " Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="10, 0, 0, 0" FontSize="22" Foreground="SlateGray"/>
-							<TextBox x:Name="tbxModifier" MinWidth="40" VerticalAlignment="Center" Margin="0, 0, 10, 0" FontSize="22">
-								+1
+							<TextBox x:Name="tbxModifier" MinWidth="40" VerticalAlignment="Center" Margin="0, 0, 10, 0" FontSize="22" TextChanged="TbxModifier_TextChanged">
+								0
 							</TextBox>
 							<Button x:Name="btnModifier0" Tag="0" MinWidth="30" Click="BtnModifier_Click">
 								0
@@ -346,7 +346,7 @@
 								Disadvantage
 							</RadioButton>
 						</StackPanel>
-						<CheckBox x:Name="ckbUseMagic" >
+						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>
 						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
@@ -446,6 +446,7 @@
 				<TabItem Header="Weapons" x:Name="tbWeapons" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<local:WeaponsList/>
 				</TabItem>
+				
 				<TabItem Header="Effect Group" x:Name="tbEffectGroup" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<StackPanel x:Name="spEffectGroup" Orientation="Vertical">
 						<uc:GroupEffectBuilder x:Name="groupEffectBuilder" Padding="5"/>

@@ -64,6 +64,7 @@ namespace MrAnnouncerBot
 				// TODO: Check out benefits of stopping gracefully with a cancellation token.
 				hubConnection.StartAsync();
 			}
+			lastFanfareDuration = 15;
 		}
 
 		void ChangeScene(string sceneName)
@@ -198,14 +199,15 @@ namespace MrAnnouncerBot
 		Queue<FanfareDto> fanfareQueue = new Queue<FanfareDto>();
 		List<FanfareDto> fanfares = new List<FanfareDto>();
 		DateTime lastFanfareActivated = DateTime.Now;
+		double lastFanfareDuration;
 
-		void HandleUserFanfare(string displayName)
+		void HandleUserFanfare(ChatMessage chatMessage)
 		{
-			FanfareDto fanfare = fanfares.FirstOrDefault(x => x.DisplayName == displayName);
+			FanfareDto fanfare = fanfares.FirstOrDefault(x => x.DisplayName == chatMessage.DisplayName);
 
 			if (fanfare != null)
 			{
-				PlayFanfare(fanfare);
+				PlayFanfare(fanfare, chatMessage);
 			}
 			else 
 				PlayBackloggedFanfare();
@@ -216,11 +218,11 @@ namespace MrAnnouncerBot
 			if (fanfareQueue.Count == 0)
 				return;
 			FanfareDto fanfare = fanfareQueue.Peek();
-			if (PlayFanfare(fanfare))
+			if (PlayFanfare(fanfare, null))
 				fanfareQueue.Dequeue();
 		}
 
-		private bool PlayFanfare(FanfareDto fanfare)
+		private bool PlayFanfare(FanfareDto fanfare, ChatMessage chatMessage)
 		{
 			if (fanfare == null)
 				return false;
@@ -228,7 +230,16 @@ namespace MrAnnouncerBot
 			if (playedFanfares.ContainsKey(fanfare.DisplayName) && playedFanfares[fanfare.DisplayName].DayOfYear == DateTime.Now.DayOfYear)
 				return true;
 
-			if (DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(15))
+			bool stillPlaying = DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(lastFanfareDuration);
+			bool suppressFanfareToday = chatMessage != null && chatMessage.Message != null && chatMessage.Message.StartsWith('/');
+
+			if (suppressFanfareToday)
+			{
+				MarkFanfareAsPlayed(fanfare);
+				return true;
+			}
+
+			if (stillPlaying || RestrictedSceneIsActive())
 			{
 				if (!fanfareQueue.Contains(fanfare))
 					fanfareQueue.Enqueue(fanfare);
@@ -236,6 +247,7 @@ namespace MrAnnouncerBot
 			}
 
 			lastFanfareActivated = DateTime.Now;
+			lastFanfareDuration = fanfare.SecondsLong + 3;
 			ActivatingSceneByName(fanfare.DisplayName, "Fanfare");
 			try
 			{
@@ -246,16 +258,188 @@ namespace MrAnnouncerBot
 			{
 				Console.WriteLine("Unable to play fanfare: " + fanfare.DisplayName);
 			}
+			if (fanfare.DisplayName == "SurlyDev")
+				GreetSurlyDev();
+			else
+				GreetVip(fanfare.DisplayName);
+			MarkFanfareAsPlayed(fanfare);
+			return true;
+		}
+
+		private void GreetVip(string displayName)
+		{
+			switch (new Random().Next(41))
+			{
+				case 0:
+					Chat($"@{displayName} is in the house!");
+					break;
+				case 1:
+					Chat($"@{displayName} has arrived!");
+					break;
+				case 2:
+					Chat($"Welcome @{displayName}!");
+					break;
+				case 3:
+					Chat($"Everybody say Hi to @{displayName}!");
+					break;
+				case 4:
+					Chat($"Greetings @{displayName}!");
+					break;
+				case 5:
+					Chat($"Hello @{displayName}! So glad you are here!");
+					break;
+				case 6:
+					Chat($"OMG! @{displayName} is here!");
+					break;
+				case 7:
+					Chat($"A warm welcome to @{displayName}, who is NOW in the house!");
+					break;
+				case 8:
+					Chat($"Hey @{displayName}! So happy you could make it!");
+					break;
+				case 9:
+					Chat($"Look out kids! Here comes @{displayName}!");
+					break;
+				case 10:
+					Chat($"Everybody stand back! @{displayName} is here!");
+					break;
+				case 11:
+					Chat($"Yay! My favorite (@{displayName}) just got here!");
+					break;
+				case 12:
+					Chat($"Fantastic! @{displayName} has entered the building.");
+					break;
+				case 13:
+					Chat($"Hey! Say hello to our friend @{displayName}!");
+					break;
+				case 14:
+					Chat($"Welcome! Welcome! Welcome! (talking to you, @{displayName})");
+					break;
+				case 15:
+					Chat($"Good news, kids: @{displayName} is in the house!");
+					break;
+				case 16:
+					Chat($"Thank God you're here, @{displayName}. Now we can finally write some decent code.");
+					break;
+				case 17:
+					Chat($"Gentle folk of the chat room, I give you, the incredible, the amazing, the mind-blowingly fantastic, it's.... @{displayName}!!!!!");
+					break;
+				case 18:
+					Chat($"Hey @{displayName}! How are you doing today?");
+					break;
+				case 19:
+					Chat($"Everybody relax! @{displayName} is here. Everything's gonna be okay.");
+					break;
+				case 20:
+					Chat($"We can finally calm down, people! @{displayName} is here!");
+					break;
+				case 21:
+					Chat($"Wassup @{displayName}???");
+					break;
+				case 22:
+					Chat($"I'm so psyched that @{displayName} is here. That means this show is gonna be awesome!");
+					break;
+				case 23:
+					Chat($"Yo @{displayName}!");
+					break;
+				case 24:
+					Chat($"Hey @{displayName}!");
+					break;
+				case 25:
+					Chat($"Hi @{displayName}!");
+					break;
+				case 26:
+					Chat($"Hello @{displayName}!");
+					break;
+				case 27:
+					Chat($"Yo yo yo! It's @{displayName}!");
+					break;
+				case 28:
+					Chat($"Yes! It's @{displayName}!");
+					break;
+				case 29:
+					Chat($"It's @{displayName}!");
+					break;
+				case 30:
+					Chat($"@{displayName}! Excellent.");
+					break;
+				case 31:
+					Chat($"@{displayName}! Fantastic to have you here.");
+					break;
+				case 32:
+					Chat($"@{displayName}! Yes! Exactly what we need right now.");
+					break;
+				case 33:
+					Chat($"@{displayName}! Now the stream's gonna be awesome.");
+					break;
+				case 34:
+					Chat($"@{displayName}! Buckle up, kids. This show is gonna rock now.");
+					break;
+				case 35:
+					Chat($"Whoa kids! @{displayName} is in the house!");
+					break;
+				case 36:
+					Chat($"Yo @{displayName}! How's it going?");
+					break;
+				case 37:
+					Chat($"Hey @{displayName}! How are you doing?");
+					break;
+				case 38:
+					Chat($"Hi @{displayName}! Glad you are here.");
+					break;
+				case 39:
+					Chat($"Greetings @{displayName}! Great to see you.");
+					break;
+				case 40:
+					Chat($"Greetings @{displayName}!");
+					break;
+			}
+		}
+		private void GreetSurlyDev()
+		{
+			switch (new Random().Next(11))
+			{
+				case 0:
+					Chat($"Look out Mark! SurlyDev just showed up!");
+					break;
+				case 1:
+					Chat($"Oh no! SurlyDev is here!");
+					break;
+				case 2:
+					Chat($"Watch out, Mark! (SurlyDev is here)");
+					break;
+				case 3:
+					Chat($"Look out, kids! SurlyDev is here!");
+					break;
+				case 4:
+					Chat($"Everyone to the lifeboats (me first)! SurlyDev is here!");
+					break;
+				case 5:
+					Chat($"Mark, you'd better clean up this code! SurlyDev is in the house!");
+					break;
+				case 6:
+					Chat($"Break out the drone-swatter! SurlyDev just showed up!");
+					break;
+				case 7:
+				case 8:
+				case 9:
+				case 10:
+					GreetVip("SurlyDev");
+					break;
+			}
+		}
+
+		private void MarkFanfareAsPlayed(FanfareDto fanfare)
+		{
 			if (playedFanfares.ContainsKey(fanfare.DisplayName))
 				playedFanfares[fanfare.DisplayName] = DateTime.Now;
 			else
 				playedFanfares.Add(fanfare.DisplayName, DateTime.Now);
-			return true;
 		}
 
 		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
-			HandleUserFanfare(e.ChatMessage.DisplayName);
+			HandleUserFanfare(e.ChatMessage);
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
@@ -609,7 +793,7 @@ namespace MrAnnouncerBot
 					playedFanfares.Clear();
 
 				if (e.Command.CommandText == "Fanfare")
-					PlayFanfare(fanfares.FirstOrDefault(x => x.DisplayName == e.Command.ArgumentsAsString));
+					PlayFanfare(fanfares.FirstOrDefault(x => x.DisplayName == e.Command.ArgumentsAsString), null);
 			}
 
 			var scene = GetScene(command);

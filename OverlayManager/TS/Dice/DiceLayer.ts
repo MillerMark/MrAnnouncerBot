@@ -284,6 +284,30 @@ class DiceLayer {
 		}
 	}
 
+	showInitiativeResults(initiativeSummary: PlayerRoll[]): any {
+		let x: number = 10;
+		let y: number = 10;
+		for (var i = 0; i < initiativeSummary.length; i++) {
+			let playerRoll: PlayerRoll = initiativeSummary[i];
+			this.showPlayerRoll(playerRoll, x, y);
+			y += 50;
+		}
+	}
+
+	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): any {
+		var message: string = `${playerRoll.name} - ${playerRoll.roll}`;
+		let textEffect: TextEffect = this.textEffects.add(new Vector(x, y), message, 15000);
+		textEffect.fontColor = this.getDieColor(playerRoll.id);
+		textEffect.outlineColor = this.activePlayerDieFontColor;
+		textEffect.textAlign = 'left';
+		textEffect.textBaseline = 'top';
+		textEffect.scale = 2;
+		textEffect.opacity = 0.90;
+		textEffect.targetScale = 3;
+		textEffect.fadeOutTime = 1000;
+		textEffect.fadeInTime = 1000;
+	}
+
 	showResult(resultMessage: string, success: boolean): any {
 		if (!resultMessage)
 			return;
@@ -488,7 +512,7 @@ class DiceLayer {
 		var message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
-		else 
+		else
 			message = 'Disadvantage';
 		this.addDieTextAfter(die, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
 	}
@@ -749,8 +773,7 @@ class DiceLayer {
 	}
 
 	getDieColor(playerID: number): string {
-		switch (playerID)
-		{
+		switch (playerID) {
 			case 0:
 				return '#710138';
 			case 1:
@@ -764,8 +787,7 @@ class DiceLayer {
 	}
 
 	getPlayerName(playerID: number): string {
-		switch (playerID)
-		{
+		switch (playerID) {
 			case 0:
 				return 'Willy';
 			case 1:
@@ -831,10 +853,10 @@ class DiceRollData {
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;
 	bentLuckRollData: DiceRollData = null;
-  startedBonusDiceRoll: boolean;
-  showedVantageMessage: boolean;
-  timeLastRolledMs: number;
-  appliedVantage: boolean = false;
+	startedBonusDiceRoll: boolean;
+	showedVantageMessage: boolean;
+	timeLastRolledMs: number;
+	appliedVantage: boolean = false;
 	constructor() {
 
 	}

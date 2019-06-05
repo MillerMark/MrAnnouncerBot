@@ -95,8 +95,12 @@ namespace DHDM
 			}
 		}
 
+		Dictionary<int, Rectangle> highlightRectangles;
+
 		UIElement BuildShortcutButton(PlayerActionShortcut playerActionShortcut)
 		{
+			if (highlightRectangles == null)
+				highlightRectangles = new Dictionary<int, Rectangle>();
 			StackPanel stackPanel = new StackPanel();
 			stackPanel.Margin = new Thickness(2);
 			stackPanel.Tag = playerActionShortcut.Index;
@@ -107,9 +111,12 @@ namespace DHDM
 			button.Tag = playerActionShortcut.Index;
 			button.Click += PlayerShortcutButton_Click;
 			Rectangle rectangle = new Rectangle();
+			stackPanel.Children.Add(rectangle);
 			rectangle.Tag = playerActionShortcut.Index;
+			rectangle.Visibility = Visibility.Hidden;
 			rectangle.Height = 3;
 			rectangle.Fill = new SolidColorBrush(Colors.Red);
+			highlightRectangles.Add(playerActionShortcut.Index, rectangle);
 			return stackPanel;
 		}
 
@@ -119,6 +126,21 @@ namespace DHDM
 				return actionShortcuts.FirstOrDefault(x => x.Index == index);
 			return null;
 		}
+		void HidePlayerShortcutHighlights()
+		{
+			if (highlightRectangles == null)
+				return;
+			foreach (Rectangle rectangle in highlightRectangles.Values)
+			{
+				rectangle.Visibility = Visibility.Hidden;
+			}
+		}
+		void HighlightPlayerShortcut(int index)
+		{
+			HidePlayerShortcutHighlights();
+			if (highlightRectangles.ContainsKey(index))
+				highlightRectangles[index].Visibility = Visibility.Visible;
+		}
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (sender is Button button)
@@ -126,10 +148,23 @@ namespace DHDM
 				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
 				if (actionShortcut == null)
 					return;
-				tbxDamageDice.Text = actionShortcut.Dice;
-				tbxModifier.Text = actionShortcut.Modifier.ToString();
-				ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
-				NextDieRollType = actionShortcut.Type;
+				settingInternally = true;
+				try
+				{
+					HighlightPlayerShortcut((int)button.Tag);
+					tbxDamageDice.Text = actionShortcut.Dice;
+					if (actionShortcut.Modifier > 0)
+						tbxModifier.Text = "+" + actionShortcut.Modifier.ToString();
+					else
+						tbxModifier.Text = actionShortcut.Modifier.ToString();
+
+					ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
+					NextDieRollType = actionShortcut.Type;
+				}
+				finally
+				{
+					settingInternally = false;
+				}
 			}
 		}
 
@@ -150,6 +185,7 @@ namespace DHDM
 		}
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
+			highlightRectangles = null;
 			NextDieRollType = DiceRollType.None;
 			activePage = ScrollPage.main;
 			FocusHelper.ClearActiveStatBoxes();
@@ -879,6 +915,29 @@ namespace DHDM
 			{ Name = "Healing Word", PlayerID = Player_Shemo, Dice = "1d4+3", Healing = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Cure Wounds", PlayerID = Player_Shemo, Dice = "1d8+3", Healing = true });
+		}
+
+		bool settingInternally;
+
+		private void TbxDamageDice_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (settingInternally)
+				return;
+			HidePlayerShortcutHighlights();
+		}
+
+		private void TbxModifier_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (settingInternally)
+				return;
+			HidePlayerShortcutHighlights();
+		}
+
+		private void CkbUseMagic_Checked(object sender, RoutedEventArgs e)
+		{
+			if (settingInternally)
+				return;
+			HidePlayerShortcutHighlights();
 		}
 	}
 }

@@ -1758,6 +1758,7 @@ function showRollTotal() {
 	let totalHealth: number = 0;
 	let totalLuckBend: number = 0;
 
+	let initiativeSummary: Array<PlayerRoll>;
 	for (var i = 0; i < dice.length; i++) {
 		let die = dice[i];
 		if (!die.inPlay)
@@ -1766,7 +1767,10 @@ function showRollTotal() {
 		let topNumber = die.getTopNumber();
 
 		if (diceRollData.type == DiceRollType.Initiative) {
-			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 18000);
+			if (initiativeSummary == null)
+				initiativeSummary = [];
+			initiativeSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID));
+			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000);
 		}
 
 		switch (die.rollType) {
@@ -1787,6 +1791,10 @@ function showRollTotal() {
 				totalHealth += topNumber;
 				break;
 		}
+	}
+	if (initiativeSummary) {
+		initiativeSummary.sort((a, b) => b.roll - a.roll);
+		diceLayer.showInitiativeResults(initiativeSummary);
 	}
 
 	totalRoll = rollValue + diceRollData.modifier;
@@ -1876,7 +1884,7 @@ function removeD20s(): number {
 						removeNonVantageDieNow(otherDie);
 						//if (!localDiceRollData.showedVantageMessage) {
 						//	localDiceRollData.showedVantageMessage = true;
-							diceLayer.addAdvantageText(otherDie, vantageTextDelay);
+						diceLayer.addAdvantageText(otherDie, vantageTextDelay);
 						//}
 						edgeRollValue = topNumber;
 					}
@@ -1884,7 +1892,7 @@ function removeD20s(): number {
 						removeNonVantageDieNow(die);
 						//if (!localDiceRollData.showedVantageMessage) {
 						//	localDiceRollData.showedVantageMessage = true;
-							diceLayer.addAdvantageText(die, vantageTextDelay);
+						diceLayer.addAdvantageText(die, vantageTextDelay);
 						//}
 					}
 				}
@@ -1893,7 +1901,7 @@ function removeD20s(): number {
 						removeNonVantageDieNow(otherDie);
 						//if (!localDiceRollData.showedVantageMessage) {
 						//	localDiceRollData.showedVantageMessage = true;
-							diceLayer.addDisadvantageText(otherDie, vantageTextDelay);
+						diceLayer.addDisadvantageText(otherDie, vantageTextDelay);
 						//}
 						edgeRollValue = topNumber;
 					}
@@ -1901,7 +1909,7 @@ function removeD20s(): number {
 						removeNonVantageDieNow(die);
 						//if (!localDiceRollData.showedVantageMessage) {
 						//	localDiceRollData.showedVantageMessage = true;
-							diceLayer.addDisadvantageText(die, vantageTextDelay);
+						diceLayer.addDisadvantageText(die, vantageTextDelay);
 						//}
 					}
 				}
@@ -2239,4 +2247,10 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	}
 
 	//startedRoll = true;
+}
+
+class PlayerRoll {
+	constructor(public roll: number, public name: string, public id: number) {
+		
+	}
 }
