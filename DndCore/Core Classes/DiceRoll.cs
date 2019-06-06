@@ -37,6 +37,13 @@ namespace DndCore
 		public TrailingSpriteType Type { get; set; }
 	}
 
+	public enum RollScope
+	{
+		ActivePlayer,
+		Everyone,
+		Individuals
+	}
+
 	public class DiceRoll
 	{
 		public List<TrailingEffect> TrailingEffects = new List<TrailingEffect>();
@@ -56,6 +63,7 @@ namespace DndCore
 		public string CritFailMessage { get; set; }
 		public string CritSuccessMessage { get; set; }
 		public string DamageDice { get; set; }
+		public string Inspiration { get; set; }
 		public string FailMessage { get; set; }
 		public double HiddenThreshold { get; set; }
 		public bool IsMagic { get; set; }
@@ -72,5 +80,7 @@ namespace DndCore
 		public string SuccessMessage { get; set; }
 		public double ThrowPower { get; set; }
 		public DiceRollType Type { get; set; }
+		public RollScope RollScope { get; set; }
+		public int IndividualFilter { get; set; }
 	}
 }

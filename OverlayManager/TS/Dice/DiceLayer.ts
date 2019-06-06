@@ -1,3 +1,9 @@
+enum RollScope {
+	ActivePlayer,
+	Everyone,
+	Individuals
+}
+
 enum DiceRollKind {
 	Normal,
 	Advantage,
@@ -485,27 +491,27 @@ class DiceLayer {
 	}
 
 
-	addDieText(die: any, message: string, fontColor: string, outlineColor: string, lifeSpan: number = 1500): any {
+	addDieText(die: any, message: string, fontColor: string, outlineColor: string, lifeSpan: number = 1500, scaleAdjust: number = 1): any {
 		let centerPos: Vector = getScreenCoordinates(die.getObject());
 		if (centerPos == null)
 			return;
-		let textEffect: TextEffect = this.textEffects.add(centerPos.add(new Vector(0, 80)), message, lifeSpan);
+		let textEffect: TextEffect = this.textEffects.add(centerPos.add(new Vector(0, 80 * scaleAdjust)), message, lifeSpan);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
-		textEffect.scale = 3;
+		textEffect.scale = 3 * scaleAdjust;
 		textEffect.waitToScale = 400;
 		textEffect.fadeOutTime = 800;
 		textEffect.fadeInTime = 600;
-		textEffect.targetScale = 1;
+		textEffect.targetScale = 1 * scaleAdjust;
 	}
 
-	addDieTextAfter(die: any, message: string, fontColor: string, outlineColor: string, timeout: number = 0, lifeSpan: number = 1500) {
+	addDieTextAfter(die: any, message: string, fontColor: string, outlineColor: string, timeout: number = 0, lifeSpan: number = 1500, scaleAdjust: number = 1) {
 		if (timeout > 0)
 			setTimeout(function () {
-				this.addDieText(die, message, fontColor, outlineColor, lifeSpan);
+				this.addDieText(die, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
 			}.bind(this), timeout);
 		else
-			this.addDieText(die, message, fontColor, outlineColor, lifeSpan);
+			this.addDieText(die, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
 	}
 
 	addDisadvantageText(die: any, timeout: number = 0, isLuckyFeat: boolean = false): any {
@@ -705,15 +711,17 @@ class DiceLayer {
 		diceRoll.onFirstContactEffect = dto.OnFirstContactEffect;
 		diceRoll.onRollSound = dto.OnRollSound;
 		diceRoll.minCrit = dto.MinCrit;
+		diceRoll.inspiration = dto.Inspiration;
 		diceRoll.successMessage = dto.SuccessMessage;
 		diceRoll.failMessage = dto.FailMessage;
 		diceRoll.critFailMessage = dto.CritFailMessage;
 		diceRoll.critSuccessMessage = dto.CritSuccessMessage;
 		diceRoll.numHalos = dto.NumHalos;
+		diceRoll.rollScope = dto.RollScope;
+		diceRoll.individualFilter = dto.IndividualFilter;
 		for (var i = 0; i < dto.TrailingEffects.length; i++) {
 			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
 		}
-
 
 		if (diceRoll.throwPower < 0.2)
 			diceRoll.throwPower = 0.2;
@@ -774,6 +782,8 @@ class DiceLayer {
 
 	getDieColor(playerID: number): string {
 		switch (playerID) {
+			case -1:
+				return this.activePlayerDieColor;
 			case 0:
 				return '#710138';
 			case 1:
@@ -784,6 +794,10 @@ class DiceLayer {
 				return '#04315a';
 		}
 		return '#000000';
+	}
+
+	getDieFontColor(playerID: number): string {
+		return this.activePlayerDieFontColor;
 	}
 
 	getPlayerName(playerID: number): string {
@@ -845,10 +859,13 @@ class DiceRollData {
 	onFirstContactEffect: SpriteType;
 	onRollSound: number;
 	numHalos: number;
+	individualFilter: number;
+	rollScope: RollScope;
 	bonusRoll: string;
 	wildMagic: WildMagic;
 	bonusRollFontColor: string;
 	bonusRollDieColor: string;
+	inspiration: string;
 	bonusRollDescription: string;
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;
@@ -857,6 +874,8 @@ class DiceRollData {
 	showedVantageMessage: boolean;
 	timeLastRolledMs: number;
 	appliedVantage: boolean = false;
+	maxInspirationDiceAllowed: number = 1;
+	numInspirationDiceCreated: number = 0;
 	constructor() {
 
 	}

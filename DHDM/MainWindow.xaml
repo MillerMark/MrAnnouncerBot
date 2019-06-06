@@ -167,19 +167,17 @@
 								</Button>
 								<Rectangle x:Name="rectDaggerOfWarning" Height="3" Fill="Red"></Rectangle>
 							</StackPanel>
-							<StackPanel Margin="2" >
-								<Button x:Name="btnDaggerOfWarning2" >
-									Dagger of Warning
-								</Button>
-								<Rectangle x:Name="rectDaggerOfWarning2" Height="3" Fill="Red"></Rectangle>
-							</StackPanel>
 						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
 							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
 							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
 								2d8+6
 							</TextBox>
-							<TextBlock x:Name="tbNextDieRoll" Text="()" Width="Auto" Height="Auto" Foreground="SlateGray"/>
+							<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray"/>
+							<TextBlock Text="Group Inspiration: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0"/>
+							<TextBox x:Name="tbxInspiration" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
+								
+							</TextBox>
 						</StackPanel>
 						<StackPanel x:Name="spModifier" Orientation="Horizontal" Margin="0, 0, 0, 8" MinHeight="30" >
 							<Button x:Name="btnModifierNeg12" Tag="-12" MinWidth="30" Click="BtnModifier_Click">
@@ -349,18 +347,45 @@
 						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>
-						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
+						<StackPanel x:Name="spSkillChecks" Orientation="Horizontal">
 							<Button x:Name="btnSkillCheck" Margin="8" Padding="8" MinWidth="100" Click="BtnSkillCheck_Click" >
 								Skill Check
-							</Button>
-							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
-								Attack
 							</Button>
 							<Button x:Name="btnSavingThrow" Margin="8" Padding="8" MinWidth="100" Click="BtnSavingThrow_Click" >
 								Saving Throw
 							</Button>
 							<Button x:Name="btnFlatD20" Margin="8" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
 								FlatD20
+							</Button>
+							<StackPanel x:Name="spGroupActivePlayer" Margin="15, 0, 0, 0">
+								<RadioButton x:Name="rbActivePlayer" >
+									Active Player
+								</RadioButton>
+								<RadioButton x:Name="rbEveryone" >
+									Everyone
+								</RadioButton>
+								<RadioButton x:Name="rbIndividuals" >
+									Individuals
+								</RadioButton>
+							</StackPanel>
+							<StackPanel x:Name="spPlayerNames" Margin="23, 0, 0, 0">
+								<CheckBox x:Name="ckPlayer1" Tag="1">
+									Willy
+								</CheckBox>
+								<CheckBox x:Name="ckPlayer2" Tag="2">
+									Shemo
+								</CheckBox>
+								<CheckBox x:Name="ckPlayer3" Tag="4">
+									Merkin
+								</CheckBox>
+								<CheckBox x:Name="ckPlayer4" Tag="8">
+									Ava
+								</CheckBox>
+							</StackPanel>
+						</StackPanel>
+						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
+							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
+								Attack
 							</Button>
 							<Button x:Name="btnDeathSavingThrow" Margin="8" Padding="8" Click="BtnDeathSavingThrow_Click" >
 								Death Saving Throw

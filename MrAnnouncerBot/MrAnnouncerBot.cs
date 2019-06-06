@@ -231,7 +231,7 @@ namespace MrAnnouncerBot
 				return true;
 
 			bool stillPlaying = DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(lastFanfareDuration);
-			bool suppressFanfareToday = chatMessage != null && chatMessage.Message != null && chatMessage.Message.StartsWith('/');
+			bool suppressFanfareToday = chatMessage != null && chatMessage.Message != null && chatMessage.Message.StartsWith('[');
 
 			if (suppressFanfareToday)
 			{

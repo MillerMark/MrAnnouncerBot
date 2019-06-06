@@ -325,11 +325,32 @@ namespace DHDM
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
-
+			diceRoll.Inspiration = tbxInspiration.Text;
 			diceRoll.CritFailMessage = "";
 			diceRoll.CritSuccessMessage = "";
 			diceRoll.SuccessMessage = "";
 			diceRoll.FailMessage = "";
+
+			if (rbActivePlayer.IsChecked == true)
+				diceRoll.RollScope = RollScope.ActivePlayer;
+			else if (rbEveryone.IsChecked == true)
+				diceRoll.RollScope = RollScope.Everyone;
+			else
+			{
+				diceRoll.RollScope = RollScope.Individuals;
+
+				foreach (UIElement uIElement in spPlayerNames.Children)
+				{
+					if (uIElement is CheckBox checkbox && checkbox.IsChecked == true)
+					{
+						if (checkbox.Tag != null && int.TryParse(checkbox.Tag.ToString(), out int result))
+						{
+							int tag = result;
+							diceRoll.IndividualFilter |= tag;
+						}
+					}
+				}
+			}
 
 			switch (type)
 			{

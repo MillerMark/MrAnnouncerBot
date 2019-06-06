@@ -1392,7 +1392,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
-function addDie(dieStr: string, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false): any {
+function addDie(dieStr: string, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1): any {
 	let countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length != 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1442,6 +1442,7 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 		if (die === null) {
 			throw new Error(`Die not found: "${dieStr}". Unable to throw dice.`);
 		}
+		die.playerID = playerID;
 		prepareDie(die, throwPower, xPositionModifier);
 		die.rollType = dieType;
 
@@ -1461,7 +1462,9 @@ enum RollType {
 	bentLuck
 }
 
-function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
+function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false, playerID: number = -1): any {
+	if (!diceStr)
+		return;
 	let allDice: string[] = diceStr.split(',');
 	if (backgroundColor === undefined)
 		backgroundColor = DiceLayer.damageDieBackgroundColor;
@@ -1472,7 +1475,7 @@ function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, x
 		let dieAndModifier = dieSpec.split('+');
 		if (dieAndModifier.length == 2)
 			modifier += +dieAndModifier[1];
-		addDie(dieAndModifier[0], dieType, backgroundColor, fontColor, throwPower, xPositionModifier, isMagic);
+		addDie(dieAndModifier[0], dieType, backgroundColor, fontColor, throwPower, xPositionModifier, isMagic, playerID);
 	});
 
 	damageModifierThisRoll = modifier;
@@ -1733,12 +1736,17 @@ function testD20Removal(roll1: number, roll2: number, roll3: number, vantage: Di
 	return returnDie;
 }
 
-function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number) {
+function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID: number = -1) {
 	// @ts-ignore - DiceD20
 	var die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
 	die.isD20 = true;
 	prepareDie(die, diceRollData.throwPower, xPositionModifier);
 	die.rollType = RollType.totalScore;
+	die.playerID = playerID;
+	if (diceRollData.numInspirationDiceCreated < diceRollData.maxInspirationDiceAllowed) {
+		diceRollData.numInspirationDiceCreated++;
+		addDieFromStr(diceRollData.inspiration, RollType.totalScore, diceRollData.throwPower, xPositionModifier, d20BackColor, d20FontColor, diceRollData.isMagic, playerID);
+	}
 	return die;
 }
 
@@ -1769,8 +1777,19 @@ function showRollTotal() {
 		if (diceRollData.type == DiceRollType.Initiative) {
 			if (initiativeSummary == null)
 				initiativeSummary = [];
-			initiativeSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID));
-			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000);
+			let playerRoll: PlayerRoll = initiativeSummary.find((value, index, obj) => value.id == die.playerID);
+			if (playerRoll)
+				playerRoll.roll += topNumber;
+			else
+				initiativeSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID));
+			let scaleAdjust: number = 1;
+			let isInspirationDie: boolean = !die.playerName;
+			if (isInspirationDie) {
+				scaleAdjust = 0.7;
+				die.playerName = diceLayer.getPlayerName(die.playerID);
+			}
+
+			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
 		}
 
 		switch (die.rollType) {
@@ -2173,11 +2192,12 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	}
 	else if (diceRollData.type == DiceRollType.Initiative) {
 		diceRollData.modifier = 0;
+		diceRollData.maxInspirationDiceAllowed = 4;
+
 		diceRollData.itsAD20Roll = false;
 		for (var i = 0; i < 4; i++) {
-			let die: any = addD20(diceRollData, diceLayer.getDieColor(i), diceLayer.activePlayerDieFontColor, xPositionModifier);
+			let die: any = addD20(diceRollData, diceLayer.getDieColor(i), diceLayer.activePlayerDieFontColor, xPositionModifier, i);
 			die.playerName = diceLayer.getPlayerName(i);
-			die.playerID = i;
 		}
 	}
 	else if (diceRollData.type == DiceRollType.DamageOnly) {
@@ -2192,34 +2212,20 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	}
 	else {
 		diceRollData.itsAD20Roll = true;
-		let numD20s: number = 1;
-		if (diceRollData.kind !== DiceRollKind.Normal)
-			numD20s = 2;
+		let playerID: number = -1;
 
-		let d20BackColor: string = diceLayer.activePlayerDieColor;
-		let d20FontColor: string = diceLayer.activePlayerDieFontColor;
-
-		if (diceRollData.isPaladinSmiteAttack || diceRollData.isWildAnimalAttack || diceRollData.isSneakAttack) {
-			d20BackColor = diceLayer.activePlayerDieColor;
-			d20FontColor = diceLayer.activePlayerDieFontColor;
-		}
-		for (var i = 0; i < numD20s; i++) {
-			// @ts-ignore - DiceD20
-			var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
-
-			if (diceRollData.isMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
-				die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
+		if (diceRollData.rollScope == RollScope.ActivePlayer)
+			addDiceForPlayer(playerID, xPositionModifier);
+		else if (diceRollData.rollScope == RollScope.Everyone) {
+			for (var i = 0; i < 4; i++) {
+				addDiceForPlayer(i, xPositionModifier);
 			}
-			if (diceRollData.numHalos > 0) {
-				let angleDelta: number = 360 / diceRollData.numHalos;
-				let angle: number = Math.random() * 360;
-				let haloOrigin: Vector = new Vector(diceLayer.haloSpins.originX, diceLayer.haloSpins.originY);
-				for (var j = 0; j < diceRollData.numHalos; j++) {
-					die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
-					die.origins.push(haloOrigin);
-					angle += angleDelta;
-				}
+		}
+		else if (diceRollData.rollScope == RollScope.Individuals) {
+			for (var i = 0; i < 4; i++) {
+				let filter: number = Math.pow(2, i);
+				if ((diceRollData.individualFilter & filter) == filter)
+					addDiceForPlayer(i, xPositionModifier);
 			}
 		}
 
@@ -2249,8 +2255,36 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	//startedRoll = true;
 }
 
+function addDiceForPlayer(playerID: number, xPositionModifier: number) {
+	let d20BackColor: string = diceLayer.getDieColor(playerID);
+	let d20FontColor: string = diceLayer.getDieFontColor(playerID);
+	let numD20s: number = 1;
+	if (diceRollData.kind !== DiceRollKind.Normal)
+		numD20s = 2;
+
+	for (var i = 0; i < numD20s; i++) {
+		var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
+		die.playerID = playerID;
+
+		if (diceRollData.isMagic) {
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
+			die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
+		}
+		if (diceRollData.numHalos > 0) {
+			let angleDelta: number = 360 / diceRollData.numHalos;
+			let angle: number = Math.random() * 360;
+			let haloOrigin: Vector = new Vector(diceLayer.haloSpins.originX, diceLayer.haloSpins.originY);
+			for (var j = 0; j < diceRollData.numHalos; j++) {
+				die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
+				die.origins.push(haloOrigin);
+				angle += angleDelta;
+			}
+		}
+	}
+}
+
 class PlayerRoll {
 	constructor(public roll: number, public name: string, public id: number) {
-		
+
 	}
 }
