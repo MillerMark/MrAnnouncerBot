@@ -43,6 +43,10 @@ class AnimatedElement {
 			this.expirationDate = null;
 	}
 
+	render(context: CanvasRenderingContext2D, now: number) {
+		// Do nothing. Allow descendants to override.
+	}
+
 	rotateTo(targetRotation: number, degreesToMove: number, timeToRotate: number): void {
 		if (timeToRotate == 0)
 			return;
@@ -323,14 +327,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
 		originX: number = 0, originY: number = 0): void {
-		let hueShift: number = this.hueShift;
-		if (this.hueShiftPerSecond != 0) {
-			let secondsPassed: number = (now - this.timeStart) / 1000;
-			hueShift = secondsPassed * this.hueShiftPerSecond % 360;
-		}
-
 		let saveFilter: string = (context as any).filter;
-		(context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
+		this.shiftColor(context, now);
 		try
 		{
 			super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
@@ -340,6 +338,16 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 			(context as any).filter = saveFilter;
 		}
 	}
+
+	shiftColor(context: CanvasRenderingContext2D, now: number) {
+		let hueShift: number = this.hueShift;
+		if (this.hueShiftPerSecond != 0) {
+			let secondsPassed: number = (now - this.timeStart) / 1000;
+			hueShift = secondsPassed * this.hueShiftPerSecond % 360;
+		}
+
+    (context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
+  }
 
 	setHueSatBrightness(hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
 		this.hueShift = hueShift;

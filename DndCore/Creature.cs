@@ -22,6 +22,7 @@ namespace DndCore
 
 		public List<Attack> attacks = new List<Attack>();
 		public double baseArmorClass = 0;
+		public double tempArmorClassMod = 0;
 		public double baseCharisma;
 
 		public double baseConstitution;
@@ -89,7 +90,7 @@ namespace DndCore
 				double thisArmorClass = baseArmorClass;
 				if (absolute > 0)
 					thisArmorClass = absolute;
-				return thisArmorClass + GetMods();
+				return thisArmorClass + tempArmorClassMod + GetMods();
 			}
 		}
 

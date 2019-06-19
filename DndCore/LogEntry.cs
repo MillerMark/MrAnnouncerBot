@@ -6,7 +6,6 @@ namespace DndCore
 {
 	public class LogEntry
 	{
-
 		public LogEntry(string message)
 		{
 			Message = message;
@@ -24,6 +23,15 @@ namespace DndCore
 		public DateTime ActualTime { get; set; }
 		public DateTime DndTime { get; set; }
 		public string Message { get; set; }
+	}
+
+	public class RollEntry
+	{
+		
+		public RollEntry()
+		{
+			
+		}
 	}
 }
 

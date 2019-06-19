@@ -8,7 +8,6 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
-
 		double _passivePerception = int.MinValue;
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
@@ -19,9 +18,13 @@ namespace DndCore
 		public int experiencePoints = 0;
 		public double inspiration = 0;
 		public int level;
+		public int hueShift = 0;
+		public string dieBackColor = "#ffffff";
+		public string dieFontColor = "#000000";
 		public double load = 0;
 		public double proficiencyBonus = 0;
 		public Skills proficientSkills = 0;
+		public Skills doubleProficiency = 0;
 		public string remainingHitDice = string.Empty;
 		public Ability savingThrowProficiency = 0;
 		public double tempAcrobaticsMod = 0;
@@ -50,6 +53,7 @@ namespace DndCore
 		public double tempSurvivalMod = 0;
 		public string totalHitDice = string.Empty;
 		public double weight = 0;
+		public DiceRollKind rollInitiative = DiceRollKind.Normal;
 
 		public double charismaMod
 		{
@@ -520,10 +524,19 @@ namespace DndCore
 			return 0;
 		}
 
+		double getProficiencyBonusMultiplier(Skills skill)
+		{
+			if (hasDoubleProficiencyBonusForSkill(skill))
+				return 2;
+			return 1;
+		}
+
 		double getProficiencyBonusForSkill(Skills skill)
 		{
 			if (hasProficiencyBonusForSkill(skill))
-				return this.proficiencyBonus;
+			{
+				return proficiencyBonus * getProficiencyBonusMultiplier(skill);
+			}
 			return 0;
 		}
 		public Vector GetRoomCoordinates()
@@ -542,7 +555,12 @@ namespace DndCore
 
 		bool hasProficiencyBonusForSkill(Skills skill)
 		{
-			return (proficientSkills & skill) == skill;
+			return hasDoubleProficiencyBonusForSkill(skill) || (proficientSkills & skill) == skill;
+		}
+
+		bool hasDoubleProficiencyBonusForSkill(Skills skill)
+		{
+			return (doubleProficiency & skill) == skill;
 		}
 
 		bool hasSavingThrowProficiency(Ability ability)

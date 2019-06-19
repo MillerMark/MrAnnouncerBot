@@ -19,7 +19,14 @@ namespace DHDM
 			if (diceData == null)
 				DiceRollData = null;
 			else
-				DiceRollData = Newtonsoft.Json.JsonConvert.DeserializeObject<DiceRollData>(diceData);
+				try
+				{
+					DiceRollData = Newtonsoft.Json.JsonConvert.DeserializeObject<DiceRollData>(diceData);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+				}
 			DiceData = diceData;
 		}
 

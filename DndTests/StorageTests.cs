@@ -109,6 +109,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.advantages, loadedCharacter.advantages);
 			Assert.AreEqual(originalTestWizard.proficiencyBonus, loadedCharacter.proficiencyBonus);
 			Assert.AreEqual(originalTestWizard.proficientSkills, loadedCharacter.proficientSkills);
+			Assert.AreEqual(originalTestWizard.doubleProficiency, loadedCharacter.doubleProficiency);
 			Assert.AreEqual(originalTestWizard.raceClass, loadedCharacter.raceClass);
 			Assert.AreEqual(originalTestWizard.remainingHitDice, loadedCharacter.remainingHitDice);
 			Assert.AreEqual(originalTestWizard.savingThrowProficiency, loadedCharacter.savingThrowProficiency);

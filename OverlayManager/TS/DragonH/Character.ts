@@ -1,39 +1,39 @@
 ﻿enum Ability {
-  strength = 1,
-  dexterity = 2,
-  constitution = 4,
-  intelligence = 8,
-  wisdom = 16,
-  charisma = 32,
-  none = 0
+	strength = 1,
+	dexterity = 2,
+	constitution = 4,
+	intelligence = 8,
+	wisdom = 16,
+	charisma = 32,
+	none = 0
 }
 
 enum ExhaustionLevels {
-  level1DisadvantageOnAbilityChecks = 1,
-  level2SpeedHalved = 2,
-  level3DisadvantageOnAttackRollsAndSavingThrows = 3,
-  level4HitPointMaximumHalved = 4,
-  level5SpeedReducedToZero = 5,
-  level6Death = 6
+	level1DisadvantageOnAbilityChecks = 1,
+	level2SpeedHalved = 2,
+	level3DisadvantageOnAttackRollsAndSavingThrows = 3,
+	level4HitPointMaximumHalved = 4,
+	level5SpeedReducedToZero = 5,
+	level6Death = 6
 }
 
 enum Conditions {
-  none = 0,
-  blinded = 1,
-  charmed = 2,
-  deafened = 4,
-  fatigued = 8,
-  frightened = 16,
-  grappled = 32,
-  incapacitated = 64,
-  invisible = 128,
-  paralyzed = 256,
-  petrified = 512,
-  poisoned = 1024,
-  prone = 2048,
-  restrained = 4096,
-  stunned = 8192,
-  unconscious = 16384
+	none = 0,
+	blinded = 1,
+	charmed = 2,
+	deafened = 4,
+	fatigued = 8,
+	frightened = 16,
+	grappled = 32,
+	incapacitated = 64,
+	invisible = 128,
+	paralyzed = 256,
+	petrified = 512,
+	poisoned = 1024,
+	prone = 2048,
+	restrained = 4096,
+	stunned = 8192,
+	unconscious = 16384
 }
 
 /* Blinded
@@ -105,84 +105,90 @@ Level	Effect
 6	Death */
 
 enum Skills {
-  acrobatics = 1,
-  animalHandling = 2,
-  arcana = 4,
-  athletics = 8,
-  deception = 16,
-  history = 32,
-  insight = 64,
-  intimidation = 128,
-  investigation = 256,
-  medicine = 512,
-  nature = 1024,
-  perception = 2048,
-  performance = 4096,
-  persuasion = 8192,
-  religion = 16384,
-  slightOfHand = 32768,
-  stealth = 65536,
-  survival = 131072
+	acrobatics = 1,
+	animalHandling = 2,
+	arcana = 4,
+	athletics = 8,
+	deception = 16,
+	history = 32,
+	insight = 64,
+	intimidation = 128,
+	investigation = 256,
+	medicine = 512,
+	nature = 1024,
+	perception = 2048,
+	performance = 4096,
+	persuasion = 8192,
+	religion = 16384,
+	slightOfHand = 32768,
+	stealth = 65536,
+	survival = 131072
 }
 
 class Character {
-  equipment: Array<Item> = new Array<Item>();
-  cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
-  name: string;
-  level: number;
-  conditions: Conditions = Conditions.none;
-  onTurnActions: number = 1;
-  offTurnActions: number = 0;
-  inspiration: number;
-  experiencePoints: number;
-  raceClass: string;
-  alignment: string;
-  armorClass: number;
-  initiative: number;
-  speed: number;
-  hitPoints: number;
-  tempHitPoints: number;
-  maxHitPoints: number;
-  goldPieces: number;
-  load: number;
-  weight: number;
-  proficiencyBonus: number;
-  savingThrowProficiency: number;
-  remainingHitDice: string;
-  totalHitDice: string;
-  deathSaveLife1: boolean;
-  deathSaveLife2: boolean;
-  deathSaveLife3: boolean;
-  deathSaveDeath1: boolean;
-  deathSaveDeath2: boolean;
-  deathSaveDeath3: boolean;
-  proficientSkills: number;
+	equipment: Array<Item> = new Array<Item>();
+	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
+	name: string;
+	level: number;
+	hueShift: number;
+	dieBackColor: number;
+	dieFontColor: number;
+	conditions: Conditions = Conditions.none;
+	onTurnActions: number = 1;
+	offTurnActions: number = 0;
+	inspiration: number;
+	experiencePoints: number;
+	raceClass: string;
+	alignment: string;
+	baseArmorClass: number;
+	initiative: number;
+	speed: number;
+	hitPoints: number;
+	tempHitPoints: number;
+	maxHitPoints: number;
+	goldPieces: number;
+	load: number;
+	weight: number;
+	proficiencyBonus: number;
+	savingThrowProficiency: number;
+	remainingHitDice: string;
+	totalHitDice: string;
+	deathSaveLife1: boolean;
+	deathSaveLife2: boolean;
+	deathSaveLife3: boolean;
+	deathSaveDeath1: boolean;
+	deathSaveDeath2: boolean;
+	deathSaveDeath3: boolean;
+	proficientSkills: number;
+	doubleProficiency: number;
 
-  tempSavingThrowModStrength: number = 0;
-  tempSavingThrowModDexterity: number = 0;
-  tempSavingThrowModConstitution: number = 0;
-  tempSavingThrowModIntelligence: number = 0;
-  tempSavingThrowModWisdom: number = 0;
-  tempSavingThrowModCharisma: number = 0;
+	tempSavingThrowModStrength: number = 0;
+	tempSavingThrowModDexterity: number = 0;
+	tempSavingThrowModConstitution: number = 0;
+	tempSavingThrowModIntelligence: number = 0;
+	tempSavingThrowModWisdom: number = 0;
+	tempSavingThrowModCharisma: number = 0;
 
-  tempAcrobaticsMod: number = 0;
-  tempAnimalHandlingMod: number = 0;
-  tempArcanaMod: number = 0;
-  tempAthleticsMod: number = 0;
-  tempDeceptionMod: number = 0;
-  tempHistoryMod: number = 0;
-  tempInsightMod: number = 0;
-  tempIntimidationMod: number = 0;
-  tempInvestigationMod: number = 0;
-  tempMedicineMod: number = 0;
-  tempNatureMod: number = 0;
-  tempPerceptionMod: number = 0;
-  tempPerformanceMod: number = 0;
-  tempPersuasionMod: number = 0;
-  tempReligionMod: number = 0;
-  tempSlightOfHandMod: number = 0;
-  tempStealthMod: number = 0;
-  tempSurvivalMod: number = 0;
+	tempAcrobaticsMod: number = 0;
+	tempAnimalHandlingMod: number = 0;
+	tempArcanaMod: number = 0;
+	tempAthleticsMod: number = 0;
+	tempDeceptionMod: number = 0;
+	tempHistoryMod: number = 0;
+	tempInsightMod: number = 0;
+	tempIntimidationMod: number = 0;
+	tempInvestigationMod: number = 0;
+	tempMedicineMod: number = 0;
+	tempNatureMod: number = 0;
+	tempPerceptionMod: number = 0;
+	tempPerformanceMod: number = 0;
+	tempPersuasionMod: number = 0;
+	tempReligionMod: number = 0;
+	tempSlightOfHandMod: number = 0;
+	tempStealthMod: number = 0;
+	tempSurvivalMod: number = 0;
+	tempArmorClassMod: number = 0;
+	rollInitiative: DiceRollKind = DiceRollKind.Normal;
 
   /* 
     savingThrowModStrength
@@ -193,523 +199,660 @@ class Character {
     savingThrowModCharisma
   */
 
-  get hasSkillProficiencyAcrobatics(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.acrobatics);
-  }
+	copyAttributesFrom(sourceCharacter: any): void {
+		this.alignment = sourceCharacter.alignment;
+		this.baseArmorClass = sourceCharacter.baseArmorClass;
+		this.tempArmorClassMod = sourceCharacter.tempArmorClassMod;
+		this.baseCharisma = sourceCharacter.baseCharisma;
+		this.baseConstitution = sourceCharacter.baseConstitution;
+		this.baseDexterity = sourceCharacter.baseDexterity;
+		this.baseIntelligence = sourceCharacter.baseIntelligence;
+		this.baseStrength = sourceCharacter.baseStrength;
+		this.baseWisdom = sourceCharacter.baseWisdom;
+		this.conditions = sourceCharacter.conditions;
+		this.cursesAndBlessings = sourceCharacter.cursesAndBlessings;
+		this.deathSaveDeath1 = sourceCharacter.deathSaveDeath1;
+		this.deathSaveDeath2 = sourceCharacter.deathSaveDeath2;
+		this.deathSaveDeath3 = sourceCharacter.deathSaveDeath3;
+		this.deathSaveLife1 = sourceCharacter.deathSaveLife1;
+		this.deathSaveLife2 = sourceCharacter.deathSaveLife2;
+		this.deathSaveLife3 = sourceCharacter.deathSaveLife3;
+		this.dieBackColor = sourceCharacter.dieBackColor;
+		this.dieFontColor = sourceCharacter.dieFontColor;
+		this.equipment = sourceCharacter.equipment;
+		this.experiencePoints = sourceCharacter.experiencePoints;
+		this.goldPieces = sourceCharacter.goldPieces;
+		this.hitPoints = sourceCharacter.hitPoints;
+		this.hueShift = sourceCharacter.hueShift;
+		this.initiative = sourceCharacter.initiative;
+		this.inspiration = sourceCharacter.inspiration;
+		this.level = sourceCharacter.level;
+		this.load = sourceCharacter.load;
+		this.maxHitPoints = sourceCharacter.maxHitPoints;
+		this.name = sourceCharacter.name;
+		this.offTurnActions = sourceCharacter.offTurnActions;
+		this.onTurnActions = sourceCharacter.onTurnActions;
+		this.proficiencyBonus = sourceCharacter.proficiencyBonus;
+		this.proficientSkills = sourceCharacter.proficientSkills;
+		this.savingThrowProficiency = sourceCharacter.savingThrowProficiency;
+		this.doubleProficiency = sourceCharacter.doubleProficiency;
+		this.raceClass = sourceCharacter.raceClass;
+		this.remainingHitDice = sourceCharacter.remainingHitDice;
+		this.rollInitiative = sourceCharacter.rollInitiative;
+		this.speed = sourceCharacter.speed;
+		this.tempAcrobaticsMod = sourceCharacter.tempAcrobaticsMod;
+		this.tempAnimalHandlingMod = sourceCharacter.tempAnimalHandlingMod;
+		this.tempArcanaMod = sourceCharacter.tempArcanaMod;
+		this.tempAthleticsMod = sourceCharacter.tempAthleticsMod;
+		this.tempDeceptionMod = sourceCharacter.tempDeceptionMod;
+		this.tempHistoryMod = sourceCharacter.tempHistoryMod;
+		this.tempHitPoints = sourceCharacter.tempHitPoints;
+		this.tempInsightMod = sourceCharacter.tempInsightMod;
+		this.tempIntimidationMod = sourceCharacter.tempIntimidationMod;
+		this.tempInvestigationMod = sourceCharacter.tempInvestigationMod;
+		this.tempMedicineMod = sourceCharacter.tempMedicineMod;
+		this.tempNatureMod = sourceCharacter.tempNatureMod;
+		this.tempPerceptionMod = sourceCharacter.tempPerceptionMod;
+		this.tempPerformanceMod = sourceCharacter.tempPerformanceMod;
+		this.tempPersuasionMod = sourceCharacter.tempPersuasionMod;
+		this.tempReligionMod = sourceCharacter.tempReligionMod;
+		this.tempSavingThrowModCharisma = sourceCharacter.tempSavingThrowModCharisma;
+		this.tempSavingThrowModConstitution = sourceCharacter.tempSavingThrowModConstitution;
+		this.tempSavingThrowModDexterity = sourceCharacter.tempSavingThrowModDexterity;
+		this.tempSavingThrowModIntelligence = sourceCharacter.tempSavingThrowModIntelligence;
+		this.tempSavingThrowModStrength = sourceCharacter.tempSavingThrowModStrength;
+		this.tempSavingThrowModWisdom = sourceCharacter.tempSavingThrowModWisdom;
+		this.tempSlightOfHandMod = sourceCharacter.tempSlightOfHandMod;
+		this.tempStealthMod = sourceCharacter.tempStealthMod;
+		this.tempSurvivalMod = sourceCharacter.tempSurvivalMod;
+		this.totalHitDice = sourceCharacter.totalHitDice;
+		this.weight = sourceCharacter.weight;
+	}
+
+	get hasSkillProficiencyAcrobatics(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.acrobatics);
+	}
+
+	get hasSkillProficiencyAnimalHandling(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.animalHandling);
+	}
+
+
+	get hasSkillProficiencyArcana(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.arcana);
+	}
+
+
+	get hasSkillProficiencyAthletics(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.athletics);
+	}
+
+
+	get hasSkillProficiencyDeception(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.deception);
+	}
+
+
+	get hasSkillProficiencyHistory(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.history);
+	}
+
+
+	get hasSkillProficiencyInsight(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.insight);
+	}
 
-  get hasSkillProficiencyAnimalHandling(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.animalHandling);
-  }
 
+	get hasSkillProficiencyIntimidation(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.intimidation);
+	}
 
-  get hasSkillProficiencyArcana(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.arcana);
-  }
 
+	get hasSkillProficiencyInvestigation(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.investigation);
+	}
 
-  get hasSkillProficiencyAthletics(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.athletics);
-  }
 
+	get hasSkillProficiencyMedicine(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.medicine);
+	}
 
-  get hasSkillProficiencyDeception(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.deception);
-  }
 
+	get hasSkillProficiencyNature(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.nature);
+	}
 
-  get hasSkillProficiencyHistory(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.history);
-  }
 
+	get hasSkillProficiencyPerception(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.perception);
+	}
 
-  get hasSkillProficiencyInsight(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.insight);
-  }
 
+	get hasSkillProficiencyPerformance(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.performance);
+	}
 
-  get hasSkillProficiencyIntimidation(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.intimidation);
-  }
 
+	get hasSkillProficiencyPersuasion(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.persuasion);
+	}
 
-  get hasSkillProficiencyInvestigation(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.investigation);
-  }
 
+	get hasSkillProficiencyReligion(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.religion);
+	}
 
-  get hasSkillProficiencyMedicine(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.medicine);
-  }
 
+	get hasSkillProficiencySlightOfHand(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.slightOfHand);
+	}
 
-  get hasSkillProficiencyNature(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.nature);
-  }
 
+	get hasSkillProficiencyStealth(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.stealth);
+	}
 
-  get hasSkillProficiencyPerception(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.perception);
-  }
 
+	get hasSkillProficiencySurvival(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.survival);
+	}
 
-  get hasSkillProficiencyPerformance(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.performance);
-  }
+	get skillModAcrobatics(): number {
+		return this.getProficiencyBonusForSkill(Skills.acrobatics) + this.dexterityMod + this.tempAcrobaticsMod;
+	}
 
+	get skillModAnimalHandling(): number {
+		return this.getProficiencyBonusForSkill(Skills.animalHandling) + this.wisdomMod + this.tempAnimalHandlingMod;
+	}
 
-  get hasSkillProficiencyPersuasion(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.persuasion);
-  }
+	get skillModArcana(): number {
+		return this.getProficiencyBonusForSkill(Skills.arcana) + this.intelligenceMod + this.tempArcanaMod;
+	}
 
 
-  get hasSkillProficiencyReligion(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.religion);
-  }
+	get skillModAthletics(): number {
+		return this.getProficiencyBonusForSkill(Skills.athletics) + this.strengthMod + this.tempAthleticsMod;
+	}
 
 
-  get hasSkillProficiencySlightOfHand(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.slightOfHand);
-  }
+	get skillModDeception(): number {
+		return this.getProficiencyBonusForSkill(Skills.deception) + this.charismaMod + this.tempDeceptionMod;
+	}
 
 
-  get hasSkillProficiencyStealth(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.stealth);
-  }
+	get skillModHistory(): number {
+		return this.getProficiencyBonusForSkill(Skills.history) + this.intelligenceMod + this.tempHistoryMod;
+	}
 
 
-  get hasSkillProficiencySurvival(): boolean {
-    return this.hasProficiencyBonusForSkill(Skills.survival);
-  }
+	get skillModInsight(): number {
+		return this.getProficiencyBonusForSkill(Skills.insight) + this.wisdomMod + this.tempInsightMod;
+	}
 
-  get skillModAcrobatics(): number {
-    return this.getProficiencyBonusForSkill(Skills.acrobatics) + this.dexterityMod + this.tempAcrobaticsMod;
-  }
 
-  get skillModAnimalHandling(): number {
-    return this.getProficiencyBonusForSkill(Skills.animalHandling) + this.wisdomMod + this.tempAnimalHandlingMod;
-  }
+	get skillModIntimidation(): number {
+		return this.getProficiencyBonusForSkill(Skills.intimidation) + this.charismaMod + this.tempIntimidationMod;
+	}
 
-  get skillModArcana(): number {
-    return this.getProficiencyBonusForSkill(Skills.arcana) + this.intelligenceMod + this.tempArcanaMod;
-  }
 
+	get skillModInvestigation(): number {
+		return this.getProficiencyBonusForSkill(Skills.investigation) + this.intelligenceMod + this.tempInvestigationMod;
+	}
 
-  get skillModAthletics(): number {
-    return this.getProficiencyBonusForSkill(Skills.athletics) + this.strengthMod + this.tempAthleticsMod;
-  }
 
+	get skillModMedicine(): number {
+		return this.getProficiencyBonusForSkill(Skills.medicine) + this.wisdomMod + this.tempMedicineMod;
+	}
 
-  get skillModDeception(): number {
-    return this.getProficiencyBonusForSkill(Skills.deception) + this.charismaMod + this.tempDeceptionMod;
-  }
 
+	get skillModNature(): number {
+		return this.getProficiencyBonusForSkill(Skills.nature) + this.intelligenceMod + this.tempNatureMod;
+	}
 
-  get skillModHistory(): number {
-    return this.getProficiencyBonusForSkill(Skills.history) + this.intelligenceMod + this.tempHistoryMod;
-  }
 
+	get skillModPerception(): number {
+		return this.getProficiencyBonusForSkill(Skills.perception) + this.wisdomMod + this.tempPerceptionMod;
+	}
 
-  get skillModInsight(): number {
-    return this.getProficiencyBonusForSkill(Skills.insight) + this.wisdomMod + this.tempInsightMod;
-  }
 
+	get skillModPerformance(): number {
+		return this.getProficiencyBonusForSkill(Skills.performance) + this.charismaMod + this.tempPerformanceMod;
+	}
 
-  get skillModIntimidation(): number {
-    return this.getProficiencyBonusForSkill(Skills.intimidation) + this.charismaMod + this.tempIntimidationMod;
-  }
 
+	get skillModPersuasion(): number {
+		return this.getProficiencyBonusForSkill(Skills.persuasion) + this.charismaMod + this.tempPersuasionMod;
+	}
 
-  get skillModInvestigation(): number {
-    return this.getProficiencyBonusForSkill(Skills.investigation) + this.intelligenceMod + this.tempInvestigationMod;
-  }
 
+	get skillModReligion(): number {
+		return this.getProficiencyBonusForSkill(Skills.religion) + this.intelligenceMod + this.tempReligionMod;
+	}
 
-  get skillModMedicine(): number {
-    return this.getProficiencyBonusForSkill(Skills.medicine) + this.wisdomMod + this.tempMedicineMod;
-  }
 
+	get skillModSlightOfHand(): number {
+		return this.getProficiencyBonusForSkill(Skills.slightOfHand) + this.dexterityMod + this.tempSlightOfHandMod;
+	}
 
-  get skillModNature(): number {
-    return this.getProficiencyBonusForSkill(Skills.nature) + this.intelligenceMod + this.tempNatureMod;
-  }
+	get skillModStealth(): number {
+		return this.getProficiencyBonusForSkill(Skills.stealth) + this.dexterityMod + this.tempStealthMod;
+	}
 
+	get skillModSurvival(): number {
+		return this.getProficiencyBonusForSkill(Skills.survival) + this.wisdomMod + this.tempSurvivalMod;
+	}
 
-  get skillModPerception(): number {
-    return this.getProficiencyBonusForSkill(Skills.perception) + this.wisdomMod + this.tempPerceptionMod;
-  }
+	get savingThrowModStrength(): number {
+		return this.getProficiencyBonusForSavingThrow(Ability.strength) + this.strengthMod + this.tempSavingThrowModStrength;
+	}
 
+	get savingThrowModDexterity(): number {
+		return this.getProficiencyBonusForSavingThrow(Ability.dexterity) + this.dexterityMod + this.tempSavingThrowModDexterity;
+	}
 
-  get skillModPerformance(): number {
-    return this.getProficiencyBonusForSkill(Skills.performance) + this.charismaMod + this.tempPerformanceMod;
-  }
+	get savingThrowModConstitution(): number {
+		return this.getProficiencyBonusForSavingThrow(Ability.constitution) + this.constitutionMod + this.tempSavingThrowModConstitution;
+	}
 
+	get savingThrowModWisdom(): number {
+		return this.getProficiencyBonusForSavingThrow(Ability.wisdom) + this.wisdomMod + this.tempSavingThrowModWisdom;
+	}
 
-  get skillModPersuasion(): number {
-    return this.getProficiencyBonusForSkill(Skills.persuasion) + this.charismaMod + this.tempPersuasionMod;
-  }
+	get savingThrowModCharisma(): number {
+		return this.getProficiencyBonusForSavingThrow(Ability.charisma) + this.charismaMod + this.tempSavingThrowModCharisma;
+	}
 
+	get savingThrowModIntelligence(): number {
+		return this.getProficiencyBonusForSavingThrow(Ability.intelligence) + this.intelligenceMod + this.tempSavingThrowModIntelligence;
+	}
 
-  get skillModReligion(): number {
-    return this.getProficiencyBonusForSkill(Skills.religion) + this.intelligenceMod + this.tempReligionMod;
-  }
+	hasSavingThrowProficiency(ability: Ability): boolean {
+		return (this.savingThrowProficiency & ability) === ability;
+	}
 
+	get hasSavingThrowProficiencyIntelligence(): boolean {
+		return this.hasSavingThrowProficiency(Ability.intelligence);
+	}
+	get hasSavingThrowProficiencyStrength(): boolean {
+		return this.hasSavingThrowProficiency(Ability.strength);
+	}
+	get hasSavingThrowProficiencyDexterity(): boolean {
+		return this.hasSavingThrowProficiency(Ability.dexterity);
+	}
+	get hasSavingThrowProficiencyConstitution(): boolean {
+		return this.hasSavingThrowProficiency(Ability.constitution);
+	}
+	get hasSavingThrowProficiencyWisdom(): boolean {
+		return this.hasSavingThrowProficiency(Ability.wisdom);
+	}
+	get hasSavingThrowProficiencyCharisma(): boolean {
+		return this.hasSavingThrowProficiency(Ability.charisma);
+	}
 
-  get skillModSlightOfHand(): number {
-    return this.getProficiencyBonusForSkill(Skills.slightOfHand) + this.dexterityMod + this.tempSlightOfHandMod;
-  }
+	hasProficiencyBonusForSkill(skill: Skills): boolean {
+		return this.hasDoubleProficiencyBonusForSkill(skill) || (this.proficientSkills & skill) === skill;
+	}
 
-  get skillModStealth(): number {
-    return this.getProficiencyBonusForSkill(Skills.stealth) + this.dexterityMod + this.tempStealthMod;
-  }
+	hasDoubleProficiencyBonusForSkill(skill: Skills): boolean {
+		return (this.doubleProficiency & skill) === skill;
+	}
 
-  get skillModSurvival(): number {
-    return this.getProficiencyBonusForSkill(Skills.survival) + this.wisdomMod + this.tempSurvivalMod;
-  }
+	getProficiencyBonusForSkill(skill: Skills): number {
+		if (this.hasDoubleProficiencyBonusForSkill(skill))
+			return this.proficiencyBonus * 2;
+		else if (this.hasProficiencyBonusForSkill(skill))
+			return this.proficiencyBonus;
+		return 0;
+	}
 
-  get savingThrowModStrength(): number {
-    return this.getProficiencyBonusForSavingThrow(Ability.strength) + this.strengthMod + this.tempSavingThrowModStrength;
-  }
+	getProficiencyBonusForSavingThrow(savingThrow: Ability): number {
+		if (this.hasSavingThrowProficiency(savingThrow))
+			return this.proficiencyBonus;
+		return 0;
+	}
 
-  get savingThrowModDexterity(): number {
-    return this.getProficiencyBonusForSavingThrow(Ability.dexterity) + this.dexterityMod + this.tempSavingThrowModDexterity;
-  }
+	private _passivePerception: number;
 
-  get savingThrowModConstitution(): number {
-    return this.getProficiencyBonusForSavingThrow(Ability.constitution) + this.constitutionMod + this.tempSavingThrowModConstitution;
-  }
+	get passivePerception(): number {
+		if (this._passivePerception === undefined) {
+			this._passivePerception = 10 + this._wisdomMod + this.getProficiencyBonusForSkill(Skills.perception);
+		}
+		return this._passivePerception;
+	}
 
-  get savingThrowModWisdom(): number {
-    return this.getProficiencyBonusForSavingThrow(Ability.wisdom) + this.wisdomMod + this.tempSavingThrowModWisdom;
-  }
+	private _wisdomMod: number;
 
-  get savingThrowModCharisma(): number {
-    return this.getProficiencyBonusForSavingThrow(Ability.charisma) + this.charismaMod + this.tempSavingThrowModCharisma;
-  }
+	get wisdomMod(): number {
+		return this._wisdomMod;
+	}
 
-  get savingThrowModIntelligence(): number {
-    return this.getProficiencyBonusForSavingThrow(Ability.intelligence) + this.intelligenceMod + this.tempSavingThrowModIntelligence;
-  }
+	private _baseWisdom: number;
 
-  hasSavingThrowProficiency(ability: Ability): boolean {
-    return (this.savingThrowProficiency & ability) === ability;
-  }
+	get baseWisdom(): number {
+		return this._baseWisdom;
+	}
 
-  get hasSavingThrowProficiencyIntelligence(): boolean {
-    return this.hasSavingThrowProficiency(Ability.intelligence);
-  }
-  get hasSavingThrowProficiencyStrength(): boolean {
-    return this.hasSavingThrowProficiency(Ability.strength);
-  }
-  get hasSavingThrowProficiencyDexterity(): boolean {
-    return this.hasSavingThrowProficiency(Ability.dexterity);
-  }
-  get hasSavingThrowProficiencyConstitution(): boolean {
-    return this.hasSavingThrowProficiency(Ability.constitution);
-  }
-  get hasSavingThrowProficiencyWisdom(): boolean {
-    return this.hasSavingThrowProficiency(Ability.wisdom);
-  }
-  get hasSavingThrowProficiencyCharisma(): boolean {
-    return this.hasSavingThrowProficiency(Ability.charisma);
-  }
+	set baseWisdom(newValue: number) {
+		this._baseWisdom = newValue;
+		this._wisdomMod = this.getModFromAbility(this._baseWisdom);
+	}
 
-  hasProficiencyBonusForSkill(skill: Skills): boolean {
-    return (this.proficientSkills & skill) === skill;
-  }
+	private _charismaMod: number;
 
-  getProficiencyBonusForSkill(skill: Skills): number {
-    if (this.hasProficiencyBonusForSkill(skill))
-      return this.proficiencyBonus;
-    return 0;
-  }
+	get charismaMod(): number {
+		return this._charismaMod;
+	}
 
-  getProficiencyBonusForSavingThrow(savingThrow: Ability): number {
-    if (this.hasSavingThrowProficiency(savingThrow))
-      return this.proficiencyBonus;
-    return 0;
-  }
+	private _baseCharisma: number;
 
-  private _passivePerception: number;
+	get baseCharisma(): number {
+		return this._baseCharisma;
+	}
 
-  get passivePerception(): number {
-    if (this._passivePerception === undefined) {
-      this._passivePerception = 10 + this._wisdomMod + this.getProficiencyBonusForSkill(Skills.perception);
-    }
-    return this._passivePerception;
-  }
+	set baseCharisma(newValue: number) {
+		this._baseCharisma = newValue;
+		this._charismaMod = this.getModFromAbility(this._baseCharisma);
+	}
 
-  private _wisdomMod: number;
+	private _intelligenceMod: number;
 
-  get wisdomMod(): number {
-    return this._wisdomMod;
-  }
+	get intelligenceMod(): number {
+		return this._intelligenceMod;
+	}
 
-  private _wisdom: number;
+	private _baseIntelligence: number;
 
-  get wisdom(): number {
-    return this._wisdom;
-  }
+	get baseIntelligence(): number {
+		return this._baseIntelligence;
+	}
 
-  set wisdom(newValue: number) {
-    this._wisdom = newValue;
-    this._wisdomMod = this.getModFromAbility(this._wisdom);
-  }
+	set baseIntelligence(newValue: number) {
+		this._baseIntelligence = newValue;
+		this._intelligenceMod = this.getModFromAbility(this._baseIntelligence);
+	}
 
-  private _charismaMod: number;
+	private _strengthMod: number;
 
-  get charismaMod(): number {
-    return this._charismaMod;
-  }
+	get strengthMod(): number {
+		return this._strengthMod;
+	}
 
-  private _charisma: number;
+	private _baseStrength: number;
 
-  get charisma(): number {
-    return this._charisma;
-  }
+	get baseStrength(): number {
+		return this._baseStrength;
+	}
 
-  set charisma(newValue: number) {
-    this._charisma = newValue;
-    this._charismaMod = this.getModFromAbility(this._charisma);
-  }
+	set baseStrength(newValue: number) {
+		this._baseStrength = newValue;
+		this._strengthMod = this.getModFromAbility(this._baseStrength);
+	}
 
-  private _intelligenceMod: number;
+	private _dexterityMod: number;
 
-  get intelligenceMod(): number {
-    return this._intelligenceMod;
-  }
+	get dexterityMod(): number {
+		return this._dexterityMod;
+	}
 
-  private _intelligence: number;
+	private _baseDexterity: number;
 
-  get intelligence(): number {
-    return this._intelligence;
-  }
+	get baseDexterity(): number {
+		return this._baseDexterity;
+	}
 
-  set intelligence(newValue: number) {
-    this._intelligence = newValue;
-    this._intelligenceMod = this.getModFromAbility(this._intelligence);
-  }
+	set baseDexterity(newValue: number) {
+		this._baseDexterity = newValue;
+		this._dexterityMod = this.getModFromAbility(this._baseDexterity);
+	}
 
-  private _strengthMod: number;
+	private _constitutionMod: number;
 
-  get strengthMod(): number {
-    return this._strengthMod;
-  }
+	get constitutionMod(): number {
+		return this._constitutionMod;
+	}
 
-  private _strength: number;
+	private _baseConstitution: number;
 
-  get strength(): number {
-    return this._strength;
-  }
+	get baseConstitution(): number {
+		return this._baseConstitution;
+	}
 
-  set strength(newValue: number) {
-    this._strength = newValue;
-    this._strengthMod = this.getModFromAbility(this._strength);
-  }
+	set baseConstitution(newValue: number) {
+		this._baseConstitution = newValue;
+		this._constitutionMod = this.getModFromAbility(this._baseConstitution);
+	}
 
-  private _dexterityMod: number;
+	getModFromAbility(abilityScore: number): number {
+		return Math.floor((abilityScore - 10) / 2);
+	}
 
-  get dexterityMod(): number {
-    return this._dexterityMod;
-  }
+	get armorClass(): number {
+		return this.tempArmorClassMod + this.baseArmorClass;
+	}
 
-  private _dexterity: number;
+	constructor(cloneFrom: any = null) {
+		if (cloneFrom) {
+			this.copyAttributesFrom(cloneFrom);
+		}
+	}
 
-  get dexterity(): number {
-    return this._dexterity;
-  }
-
-  set dexterity(newValue: number) {
-    this._dexterity = newValue;
-    this._dexterityMod = this.getModFromAbility(this._dexterity);
-  }
-
-  private _constitutionMod: number;
-
-  get constitutionMod(): number {
-    return this._constitutionMod;
-  }
-
-  private _constitution: number;
-
-  get constitution(): number {
-    return this._constitution;
-  }
-
-  set constitution(newValue: number) {
-    this._constitution = newValue;
-    this._constitutionMod = this.getModFromAbility(this._constitution);
-  }
-
-  getModFromAbility(abilityScore: number): number {
-    return Math.floor((abilityScore - 10) / 2);
-  }
-
-  constructor() {
-
-  }
-
-  static rollDie(sides: number): number {
-    return Random.intBetween(1, sides);
-  }
-
-  static getAbilityScore(): number {
-    return Character.rollDie(6) + Character.rollDie(6) + Character.rollDie(6);
-  }
-
-  getPropValue(name: string): number | string | boolean {
-    return this[name];
-  }
-
-  static newTestElf(): Character {
-    let elf: Character = new Character();
-    elf.name = 'Taragon';
-    elf.raceClass = 'Wood Elf Barbarian';
-    elf.alignment = 'Chaotic Good';
-    elf.armorClass = 12;
-    Character.generateRandomAttributes(elf);
-    elf.remainingHitDice = '1 d10';
-    elf.level = 1;
-    elf.inspiration = 0;
-
-    elf.initiative = 2;
-    elf.speed = 30;
-    elf.hitPoints = 47;
-    elf.tempHitPoints = 0;
-    elf.maxHitPoints = 55;
-    elf.proficiencyBonus = 2;
-    elf.savingThrowProficiency = Ability.intelligence + Ability.charisma;
-    elf.proficientSkills = Skills.acrobatics + Skills.deception + Skills.slightOfHand;
-    elf.deathSaveLife1 = true;
-    //elf.deathSaveLife2 = true;
-    //elf.deathSaveLife3 = true;
-    elf.deathSaveDeath1 = true;
-    elf.deathSaveDeath2 = true;
-    //elf.deathSaveDeath3 = true;
-
-    return elf;
-  }
-
-  private static generateRandomAttributes(character: Character) {
-    character.charisma = Character.getAbilityScore();
-    character.constitution = Character.getAbilityScore();
-    character.dexterity = Character.getAbilityScore();
-    character.wisdom = Character.getAbilityScore();
-    character.intelligence = Character.getAbilityScore();
-    character.strength = Character.getAbilityScore();
-    character.experiencePoints = Random.intMaxDigitCount(6);
-    character.goldPieces = Random.intMaxDigitCount(6);
-    character.weight = Random.intBetween(80, 275);
-    character.load = Random.intBetween(15, 88);
-  }
-
-  static newTestBarbarian(): Character {
-    let barbarian: Character = new Character();
-    barbarian.name = 'Ava';
-    barbarian.raceClass = 'Dragonborn Barbarian';
-    barbarian.alignment = 'Chaotic Evil';
-    barbarian.armorClass = 14;
-    Character.generateRandomAttributes(barbarian);
-    barbarian.remainingHitDice = '1 d10';
-    barbarian.level = 1;
-    barbarian.inspiration = 0;
-
-    barbarian.initiative = 2;
-    barbarian.speed = 30;
-    barbarian.hitPoints = 127;
-    barbarian.tempHitPoints = 3;
-    barbarian.maxHitPoints = 127;
-    barbarian.proficiencyBonus = 2;
-    barbarian.savingThrowProficiency = Ability.strength + Ability.dexterity;
-    barbarian.proficientSkills = Skills.acrobatics + Skills.intimidation + Skills.athletics;
-    barbarian.deathSaveLife1 = true;
-    barbarian.deathSaveLife2 = true;
-    //elf.deathSaveLife3 = true;
-    barbarian.deathSaveDeath1 = true;
-    barbarian.deathSaveDeath2 = true;
-    //elf.deathSaveDeath3 = true;
-
-    return barbarian;
-  }
-
-  static newTestDruid(): Character {
-    let druid: Character = new Character();
-    druid.name = 'Kylee';
-    druid.raceClass = 'Wood Elf Druid';
-    druid.alignment = 'Lawful Good';
-    druid.armorClass = 10;
-    Character.generateRandomAttributes(druid);
-    druid.remainingHitDice = '1 d8';
-    druid.level = 1;
-    druid.inspiration = 0;
-
-    druid.initiative = 2;
-    druid.speed = 30;
-    druid.hitPoints = 27;
-    druid.tempHitPoints = 0;
-    druid.maxHitPoints = 44;
-    druid.proficiencyBonus = 2;
-    druid.savingThrowProficiency = Ability.wisdom + Ability.dexterity;
-    druid.proficientSkills = Skills.animalHandling + Skills.nature + Skills.medicine;
-    //barbarian.deathSaveLife1 = true;
-    //barbarian.deathSaveLife2 = true;
-    //elf.deathSaveLife3 = true;
-    //barbarian.deathSaveDeath1 = true;
-    //barbarian.deathSaveDeath2 = true;
-    //elf.deathSaveDeath3 = true;
-
-    return druid;
-  }
-
-  static newTestWizard(): Character {
-    let wizard: Character = new Character();
-    wizard.name = 'Morkin';
-    wizard.raceClass = 'Human Wizard';
-    wizard.alignment = 'Chaotic Neutral';
-    wizard.armorClass = 10;
-    Character.generateRandomAttributes(wizard);
-    wizard.remainingHitDice = '1 d8';
-    wizard.level = 1;
-    wizard.inspiration = 0;
-
-    wizard.initiative = 2;
-    wizard.speed = 30;
-    wizard.hitPoints = 33;
-    wizard.tempHitPoints = 0;
-    wizard.maxHitPoints = 127;
-    wizard.proficiencyBonus = 2;
-    wizard.savingThrowProficiency = Ability.intelligence + Ability.charisma;
-    wizard.proficientSkills = Skills.arcana + Skills.slightOfHand + Skills.deception;
-    wizard.equip(Weapon.buildShortSword());
-    wizard.pack(Weapon.buildBlowgun());
-    wizard.pack(Ammunition.buildBlowgunNeedlePack());
-
-    return wizard;
-  }
-
-  pack(item: Item): void {
-    this.equipment.push(item);
-  }
-
-  unpack(item: Item, count: number = 1): void {
-    let index: number = this.equipment.indexOf(item);
-    if (index >= 0) {
-      let thisItem: Item = this.equipment[index];
-      if (thisItem.count > 0)
-        if (count === Infinity) {
-          thisItem.count = 0;
-        }
-        else {
-          thisItem.count -= count;
-        }
-
-      if (thisItem.count <= 0) {
-        this.equipment.splice(index, 1);
-      }
-    }
-  }
-
-  equip(item: Item): void {
-    this.equipment.push(item);
-    item.equipped = true;
-  }
+	static rollDie(sides: number): number {
+		return Random.intBetween(1, sides);
+	}
+
+	static getAbilityScore(): number {
+		return Character.rollDie(6) + Character.rollDie(6) + Character.rollDie(6);
+	}
+
+	getPropValue(name: string): number | string | boolean {
+		return this[name];
+	}
+
+	getSavingThrowMod(savingThrow: Ability): number {
+		switch (savingThrow)
+		{
+			case Ability.charisma: return this.savingThrowModCharisma;
+			case Ability.constitution: return this.savingThrowModConstitution;
+			case Ability.dexterity: return this.savingThrowModDexterity;
+			case Ability.intelligence: return this.savingThrowModIntelligence;
+			case Ability.strength: return this.savingThrowModStrength;
+			case Ability.wisdom: return this.savingThrowModWisdom;
+		}
+		return 0;
+	}
+
+	getSkillMod(skillCheck: Skills): number {
+		switch (skillCheck) {
+			case Skills.acrobatics:
+				return this.skillModAcrobatics;
+			case Skills.animalHandling:
+				return this.skillModAnimalHandling;
+			case Skills.arcana:
+				return this.skillModArcana;
+			case Skills.athletics:
+				return this.skillModAthletics;
+			case Skills.deception:
+				return this.skillModDeception;
+			case Skills.history:
+				return this.skillModHistory;
+			case Skills.insight:
+				return this.skillModInsight;
+			case Skills.intimidation:
+				return this.skillModIntimidation;
+			case Skills.investigation:
+				return this.skillModInvestigation;
+			case Skills.medicine:
+				return this.skillModMedicine;
+			case Skills.nature:
+				return this.skillModNature;
+			case Skills.perception:
+				return this.skillModPerception;
+			case Skills.performance:
+				return this.skillModPerformance;
+			case Skills.persuasion:
+				return this.skillModPersuasion;
+			case Skills.religion:
+				return this.skillModReligion;
+			case Skills.slightOfHand:
+				return this.skillModSlightOfHand;
+			case Skills.stealth:
+				return this.skillModStealth;
+			case Skills.survival:
+				return this.skillModSurvival;
+		}
+		return 0;
+	}
+
+	static newTestElf(): Character {
+		let elf: Character = new Character();
+		elf.name = 'Taragon';
+		elf.raceClass = 'Wood Elf Barbarian';
+		elf.alignment = 'Chaotic Good';
+		elf.baseArmorClass = 12;
+		Character.generateRandomAttributes(elf);
+		elf.remainingHitDice = '1 d10';
+		elf.level = 1;
+		elf.inspiration = 0;
+
+		elf.initiative = 2;
+		elf.speed = 30;
+		elf.hitPoints = 47;
+		elf.tempHitPoints = 0;
+		elf.maxHitPoints = 55;
+		elf.proficiencyBonus = 2;
+		elf.savingThrowProficiency = Ability.intelligence + Ability.charisma;
+		elf.proficientSkills = Skills.acrobatics + Skills.deception + Skills.slightOfHand;
+		elf.deathSaveLife1 = true;
+		//elf.deathSaveLife2 = true;
+		//elf.deathSaveLife3 = true;
+		elf.deathSaveDeath1 = true;
+		elf.deathSaveDeath2 = true;
+		//elf.deathSaveDeath3 = true;
+
+		return elf;
+	}
+
+	private static generateRandomAttributes(character: Character) {
+		character.baseCharisma = Character.getAbilityScore();
+		character.baseConstitution = Character.getAbilityScore();
+		character.baseDexterity = Character.getAbilityScore();
+		character.baseWisdom = Character.getAbilityScore();
+		character.baseIntelligence = Character.getAbilityScore();
+		character.baseStrength = Character.getAbilityScore();
+		character.experiencePoints = Random.intMaxDigitCount(6);
+		character.goldPieces = Random.intMaxDigitCount(6);
+		character.weight = Random.intBetween(80, 275);
+		character.load = Random.intBetween(15, 88);
+	}
+
+	static newTestBarbarian(): Character {
+		let barbarian: Character = new Character();
+		barbarian.name = 'Ava';
+		barbarian.raceClass = 'Dragonborn Barbarian';
+		barbarian.alignment = 'Chaotic Evil';
+		barbarian.baseArmorClass = 14;
+		Character.generateRandomAttributes(barbarian);
+		barbarian.remainingHitDice = '1 d10';
+		barbarian.level = 1;
+		barbarian.inspiration = 0;
+
+		barbarian.initiative = 2;
+		barbarian.speed = 30;
+		barbarian.hitPoints = 127;
+		barbarian.tempHitPoints = 3;
+		barbarian.maxHitPoints = 127;
+		barbarian.proficiencyBonus = 2;
+		barbarian.savingThrowProficiency = Ability.strength + Ability.dexterity;
+		barbarian.proficientSkills = Skills.acrobatics + Skills.intimidation + Skills.athletics;
+		barbarian.deathSaveLife1 = true;
+		barbarian.deathSaveLife2 = true;
+		//elf.deathSaveLife3 = true;
+		barbarian.deathSaveDeath1 = true;
+		barbarian.deathSaveDeath2 = true;
+		//elf.deathSaveDeath3 = true;
+
+		return barbarian;
+	}
+
+	static newTestDruid(): Character {
+		let druid: Character = new Character();
+		druid.name = 'Kylee';
+		druid.raceClass = 'Wood Elf Druid';
+		druid.alignment = 'Lawful Good';
+		druid.baseArmorClass = 10;
+		Character.generateRandomAttributes(druid);
+		druid.remainingHitDice = '1 d8';
+		druid.level = 1;
+		druid.inspiration = 0;
+
+		druid.initiative = 2;
+		druid.speed = 30;
+		druid.hitPoints = 27;
+		druid.tempHitPoints = 0;
+		druid.maxHitPoints = 44;
+		druid.proficiencyBonus = 2;
+		druid.savingThrowProficiency = Ability.wisdom + Ability.dexterity;
+		druid.proficientSkills = Skills.animalHandling + Skills.nature + Skills.medicine;
+		//barbarian.deathSaveLife1 = true;
+		//barbarian.deathSaveLife2 = true;
+		//elf.deathSaveLife3 = true;
+		//barbarian.deathSaveDeath1 = true;
+		//barbarian.deathSaveDeath2 = true;
+		//elf.deathSaveDeath3 = true;
+
+		return druid;
+	}
+
+	static newTestWizard(): Character {
+		let wizard: Character = new Character();
+		wizard.name = 'Morkin';
+		wizard.raceClass = 'Human Wizard';
+		wizard.alignment = 'Chaotic Neutral';
+		wizard.baseArmorClass = 10;
+		Character.generateRandomAttributes(wizard);
+		wizard.remainingHitDice = '1 d8';
+		wizard.level = 1;
+		wizard.inspiration = 0;
+
+		wizard.initiative = 2;
+		wizard.speed = 30;
+		wizard.hitPoints = 33;
+		wizard.tempHitPoints = 0;
+		wizard.maxHitPoints = 127;
+		wizard.proficiencyBonus = 2;
+		wizard.savingThrowProficiency = Ability.intelligence + Ability.charisma;
+		wizard.proficientSkills = Skills.arcana + Skills.slightOfHand + Skills.deception;
+		wizard.equip(Weapon.buildShortSword());
+		wizard.pack(Weapon.buildBlowgun());
+		wizard.pack(Ammunition.buildBlowgunNeedlePack());
+
+		return wizard;
+	}
+
+	pack(item: Item): void {
+		this.equipment.push(item);
+	}
+
+	unpack(item: Item, count: number = 1): void {
+		let index: number = this.equipment.indexOf(item);
+		if (index >= 0) {
+			let thisItem: Item = this.equipment[index];
+			if (thisItem.count > 0)
+				if (count === Infinity) {
+					thisItem.count = 0;
+				}
+				else {
+					thisItem.count -= count;
+				}
+
+			if (thisItem.count <= 0) {
+				this.equipment.splice(index, 1);
+			}
+		}
+	}
+
+	equip(item: Item): void {
+		this.equipment.push(item);
+		item.equipped = true;
+	}
 }

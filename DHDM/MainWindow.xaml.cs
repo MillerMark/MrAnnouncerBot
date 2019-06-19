@@ -105,7 +105,7 @@ namespace DHDM
 			stackPanel.Margin = new Thickness(2);
 			stackPanel.Tag = playerActionShortcut.Index;
 			Button button = new Button();
-			button.Padding = new Thickness(4,2,4,2);
+			button.Padding = new Thickness(4, 2, 4, 2);
 			stackPanel.Children.Add(button);
 			button.Content = playerActionShortcut.Name;
 			button.Tag = playerActionShortcut.Index;
@@ -310,6 +310,7 @@ namespace DHDM
 		{
 			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.SkillCheck);
 		}
+
 		private DiceRoll PrepareRoll(DiceRollType type)
 		{
 			DiceRollKind diceRollKind = DiceRollKind.Normal;
@@ -319,9 +320,9 @@ namespace DHDM
 					diceRollKind = DiceRollKind.Advantage;
 				else if (rbTestDisadvantageDieRoll.IsChecked == true)
 					diceRollKind = DiceRollKind.Disadvantage;
-			
+
 			string damageDice = string.Empty;
-			if (IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly)
+			if (IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
@@ -330,27 +331,51 @@ namespace DHDM
 			diceRoll.CritSuccessMessage = "";
 			diceRoll.SuccessMessage = "";
 			diceRoll.FailMessage = "";
+			diceRoll.SkillCheck = Skills.none;
+			diceRoll.SavingThrow = Ability.None;
 
-			if (rbActivePlayer.IsChecked == true)
-				diceRoll.RollScope = RollScope.ActivePlayer;
-			else if (rbEveryone.IsChecked == true)
-				diceRoll.RollScope = RollScope.Everyone;
-			else
+			if (type == DiceRollType.SkillCheck)
 			{
-				diceRoll.RollScope = RollScope.Individuals;
-
-				foreach (UIElement uIElement in spPlayerNames.Children)
+				ComboBoxItem selectedItem = (ComboBoxItem)cbSkillFilter.SelectedItem;
+				if (selectedItem != null && selectedItem.Content != null)
 				{
-					if (uIElement is CheckBox checkbox && checkbox.IsChecked == true)
+					string skillStr = selectedItem.Content.ToString();
+					diceRoll.SkillCheck = DndUtils.ToSkill(skillStr);
+				}
+			}
+			if (type == DiceRollType.SavingThrow)
+			{
+				ComboBoxItem selectedItem = (ComboBoxItem)cbAbility.SelectedItem;
+				if (selectedItem != null && selectedItem.Content != null)
+				{
+					string abilityStr = selectedItem.Content.ToString();
+					diceRoll.SavingThrow = DndUtils.ToAbility(abilityStr);
+				}
+			}
+
+			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow)
+				if (rbActivePlayer.IsChecked == true)
+					diceRoll.RollScope = RollScope.ActivePlayer;
+				else if (rbEveryone.IsChecked == true)
+					diceRoll.RollScope = RollScope.Everyone;
+				else
+				{
+					diceRoll.RollScope = RollScope.Individuals;
+
+					foreach (UIElement uIElement in spPlayerNames.Children)
 					{
-						if (checkbox.Tag != null && int.TryParse(checkbox.Tag.ToString(), out int result))
+						if (uIElement is CheckBox checkbox && checkbox.IsChecked == true)
 						{
-							int tag = result;
-							diceRoll.IndividualFilter |= tag;
+							if (checkbox.Tag != null && int.TryParse(checkbox.Tag.ToString(), out int result))
+							{
+								int tag = result;
+								diceRoll.IndividualFilter |= tag;
+							}
 						}
 					}
 				}
-			}
+			else
+				diceRoll.RollScope = RollScope.ActivePlayer;
 
 			switch (type)
 			{
@@ -378,6 +403,7 @@ namespace DHDM
 					diceRoll.CritSuccessMessage = "Critical Success!";
 					diceRoll.SuccessMessage = "Success!";
 					diceRoll.FailMessage = "Fail!";
+					diceRoll.HiddenThreshold = 10;
 					break;
 			}
 
@@ -389,7 +415,9 @@ namespace DHDM
 			if (double.TryParse(tbxModifier.Text, out double modifierResult))
 				diceRoll.Modifier = modifierResult;
 
-			if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
+			if (type == DiceRollType.DeathSavingThrow)
+				diceRoll.HiddenThreshold = 10;
+			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
 			diceRoll.IsMagic = ckbUseMagic.IsChecked == true && IsAttack(type);
@@ -534,7 +562,9 @@ namespace DHDM
 			}
 		}
 
-		public DiceRollType NextDieRollType { get => nextDieRollType; set
+		public DiceRollType NextDieRollType
+		{
+			get => nextDieRollType; set
 			{
 				if (nextDieRollType == value)
 					return;
@@ -572,14 +602,188 @@ namespace DHDM
 			});
 		}
 
+		string GetSkillCheckStr(Skills skillCheck)
+		{
+			switch (skillCheck)
+			{
+				case Skills.acrobatics: return "Acrobatics";
+				case Skills.animalHandling: return "Animal Handling";
+				case Skills.arcana: return "Arcana";
+				case Skills.athletics: return "Athletics";
+				case Skills.deception: return "Deception";
+				case Skills.history: return "History";
+				case Skills.insight: return "Insight";
+				case Skills.intimidation: return "Intimidation";
+				case Skills.investigation: return "Investigation";
+				case Skills.medicine: return "Medicine";
+				case Skills.nature: return "Nature";
+				case Skills.perception: return "Perception";
+				case Skills.performance: return "Performance";
+				case Skills.persuasion: return "Persuasion";
+				case Skills.religion: return "Religion";
+				case Skills.slightOfHand: return "Slight of Hand";
+				case Skills.stealth: return "Stealth";
+				case Skills.survival: return "Survival";
+			}
+			return "None";
+		}
+
+		string GetAbilityStr(Ability savingThrow)
+		{
+			switch (savingThrow)
+			{
+				case Ability.Charisma: return "Charisma";
+				case Ability.Constitution: return "Constitution";
+				case Ability.Dexterity: return "Dexterity";
+				case Ability.Intelligence: return "Intelligence";
+				case Ability.Strength: return "Strength";
+				case Ability.Wisdom: return "Wisdom";
+			}
+			return "None";
+		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			if (ea.DiceRollData != null)
-				History.Log("Die roll: " + ea.DiceRollData.roll);
+			{
+				int rollValue = ea.DiceRollData.roll;
+				string rollTitle = "";
+				string damageStr = "";
+				string bonusStr = "";
+				if (ea.DiceRollData.bonus > 0)
+					bonusStr = " - bonus: " + ea.DiceRollData.bonus.ToString();
+				string successStr = GetSuccessStr(ea.DiceRollData.success, ea.DiceRollData.type);
+				switch (ea.DiceRollData.type)
+				{
+					case DiceRollType.SkillCheck:
+						rollTitle = GetSkillCheckStr(ea.DiceRollData.skillCheck) + " Skill Check: ";
+						break;
+					case DiceRollType.Attack:
+						rollTitle = "Attack: ";
+						damageStr = ", Damage: " + ea.DiceRollData.damage.ToString();
+						break;
+					case DiceRollType.SavingThrow:
+						rollTitle = GetAbilityStr(ea.DiceRollData.savingThrow) + " Saving Throw: ";
+						break;
+					case DiceRollType.FlatD20:
+						rollTitle = "Flat D20: ";
+						break;
+					case DiceRollType.DeathSavingThrow:
+						rollTitle = "Death Saving Throw: ";
+						break;
+					case DiceRollType.PercentageRoll:
+						rollTitle = "Percentage Roll: ";
+						break;
+					case DiceRollType.WildMagic:
+						rollTitle = "Wild Magic: ";
+						break;
+					case DiceRollType.BendLuckAdd:
+						rollTitle = "Bend Luck Add: ";
+						break;
+					case DiceRollType.BendLuckSubtract:
+						rollTitle = "Bend Luck Subtract: ";
+						break;
+					case DiceRollType.LuckRollLow:
+						rollTitle = "Luck Roll Low: ";
+						break;
+					case DiceRollType.LuckRollHigh:
+						rollTitle = "Luck Roll High: ";
+						break;
+					case DiceRollType.DamageOnly:
+						rollTitle = "Damage Only: ";
+						rollValue = ea.DiceRollData.damage;
+						break;
+					case DiceRollType.HealthOnly:
+						rollTitle = "Health Only: ";
+						rollValue = ea.DiceRollData.health;
+						break;
+					case DiceRollType.ExtraOnly:
+						rollTitle = "Extra Only: ";
+						rollValue = ea.DiceRollData.extra;
+						break;
+					case DiceRollType.ChaosBolt:
+						rollTitle = "Chaos Bolt: ";
+						damageStr = ", Damage: " + ea.DiceRollData.damage.ToString();
+						break;
+					case DiceRollType.Initiative:
+						rollTitle = "Initiative: ";
+						break;
+				}
+				if (rollTitle == "")
+					rollTitle = "Dice roll: ";
+				if (ea.DiceRollData.multiplayerSummary != null && ea.DiceRollData.multiplayerSummary.Count > 0)
+				{
+					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
+					{
+						string playerName = GetPlayerName(playerRoll.id);
+						if (playerName != "")
+							playerName = playerName + " ";
+
+						rollValue = playerRoll.modifier + playerRoll.roll;
+						bool success = rollValue >= ea.DiceRollData.hiddenThreshold;
+						successStr = GetSuccessStr(success, ea.DiceRollData.type);
+						string localDamageStr;
+						if (success)
+							localDamageStr = damageStr;
+						else
+							localDamageStr = "";
+						History.Log(playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr);
+					}
+				}
+				else
+				{
+					string playerName = GetPlayerName(ea.DiceRollData.playerID);
+					if (playerName != "")
+						playerName = playerName + " ";
+					if (!ea.DiceRollData.success)
+						damageStr = "";
+					History.Log(playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr);
+				}
+			}
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
 		}
 
+		private static string GetSuccessStr(bool success, DiceRollType type)
+		{
+			string successStr = "";
+			switch (type)
+			{
+				case DiceRollType.FlatD20:
+				case DiceRollType.SavingThrow:
+				case DiceRollType.SkillCheck:
+				case DiceRollType.DeathSavingThrow:
+					if (success)
+						successStr = " (success)";
+					else
+						successStr = " (fail)";
+					break;
+				case DiceRollType.Attack:
+				case DiceRollType.ChaosBolt:
+					if (success)
+						successStr = " (hit)";
+					else
+						successStr = " (miss)";
+					break;
+			}
+
+			return successStr;
+		}
+
+		string GetPlayerName(int playerID)
+		{
+			switch (playerID)
+			{
+				case 0:
+					return "Willy";
+				case 1:
+					return "Shemo";
+				case 2:
+					return "Merkin";
+				case 3:
+					return "Ava";
+			}
+			return "";
+		}
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.InCombat = !dndTimeClock.InCombat;
@@ -959,6 +1163,159 @@ namespace DHDM
 			if (settingInternally)
 				return;
 			HidePlayerShortcutHighlights();
+		}
+
+		void BuildPlayerTabs()
+		{
+			tabPlayers.Items.Clear();
+
+			foreach (Character player in players)
+			{
+				TabItem tabItem = new TabItem();
+				tabItem.Header = player.name;
+				tabPlayers.Items.Add(tabItem);
+
+				Grid grid = new Grid();
+				grid.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
+				tabItem.Content = grid;
+
+				CharacterSheets characterSheets = new CharacterSheets();
+				characterSheets.PageChanged += CharacterSheets_PageChanged;
+				characterSheets.CharacterChanged += HandleCharacterChanged;
+				characterSheets.SetFromCharacter(player);
+				grid.Children.Add(characterSheets);
+			}
+		}
+		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
+		{
+			Character kent = new Character();
+			kent.name = "Willy Shaker";
+			kent.raceClass = "High Elf Rogue";
+			kent.goldPieces = 150;
+			kent.hitPoints = 35;
+			kent.maxHitPoints = 35;
+			kent.baseArmorClass = 15;
+			kent.baseStrength = 10;
+			kent.baseDexterity = 17;
+			kent.baseConstitution = 16;
+			kent.baseIntelligence = 9;
+			kent.baseWisdom = 8;
+			kent.baseCharisma = 14;
+			kent.proficiencyBonus = 2;
+			kent.proficientSkills = Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth;
+			kent.savingThrowProficiency = Ability.Dexterity | Ability.Intelligence;
+			kent.doubleProficiency = Skills.deception | Skills.persuasion;
+			kent.initiative = +3;
+			kent.hueShift = 0;
+			kent.dieBackColor = "#710138";
+			kent.dieFontColor = "#ffffff";
+			kent.rollInitiative = DiceRollKind.Advantage;
+
+			Character kayla = new Character();
+			kayla.name = "Shemo Globin";
+			kayla.raceClass = "Firbolg Druid";
+			kayla.goldPieces = 170;
+			kayla.hitPoints = 31;
+			kayla.maxHitPoints = 31;
+			kayla.baseArmorClass = 15;
+			kayla.baseStrength = 10;
+			kayla.baseDexterity = 12;
+			kayla.baseConstitution = 15;
+			kayla.baseIntelligence = 8;
+			kayla.baseCharisma = 13;
+			kayla.baseWisdom = 17;
+			kayla.proficiencyBonus = 2;
+			kayla.initiative = +1;
+			kayla.proficientSkills = Skills.animalHandling | Skills.arcana | Skills.history | Skills.nature;
+			kayla.savingThrowProficiency = Ability.Intelligence | Ability.Wisdom;
+			kayla.hueShift = 138;
+			kayla.dieBackColor = "#00641d";
+			kayla.dieFontColor = "#ffffff";
+
+			Character mark = new Character();
+			mark.name = "Merkin Bushwacker";
+			mark.raceClass = "Half-Elf Sorcerer";
+			mark.goldPieces = 128;
+			mark.hitPoints = 26;
+			mark.maxHitPoints = 26;
+			mark.baseArmorClass = 12;
+			mark.baseStrength = 8;
+			mark.baseDexterity = 14;
+			mark.baseConstitution = 14;
+			mark.baseIntelligence = 12;
+			mark.baseCharisma = 17;
+			mark.baseWisdom = 12;
+			mark.proficiencyBonus = 2;
+			mark.initiative = +2;
+			mark.proficientSkills = Skills.acrobatics | Skills.deception | Skills.intimidation | Skills.perception | Skills.performance | Skills.persuasion;
+			mark.savingThrowProficiency = Ability.Constitution | Ability.Charisma;
+			mark.hueShift = 260;
+			mark.dieBackColor = "#401260";
+			mark.dieFontColor = "#ffffff";
+
+			Character karen = new Character();
+			karen.name = "Ava Wolfhard";
+			karen.raceClass = "Human Paladin";
+			karen.goldPieces = 150;
+			karen.hitPoints = 36;
+			karen.maxHitPoints = 36;
+			karen.baseArmorClass = 16;
+			karen.baseStrength = 16;
+			karen.baseDexterity = 11;
+			karen.baseConstitution = 14;
+			karen.baseIntelligence = 8;
+			karen.baseWisdom = 8;
+			karen.baseCharisma = 16;
+			karen.proficiencyBonus = +2;
+			karen.initiative = 0;
+			karen.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.performance | Skills.persuasion | Skills.survival;
+			karen.savingThrowProficiency = Ability.Wisdom | Ability.Charisma;
+			karen.hueShift = 210;
+			karen.dieBackColor = "#04315a";
+			karen.dieFontColor = "#ffffff";
+
+			// TODO: Promote characters to field and populate tabs...
+			if (this.players == null)
+				this.players = new List<Character>();
+			this.players.Clear();
+
+			players.Add(kent);
+			players.Add(kayla);
+			players.Add(mark);
+			players.Add(karen);
+
+			string playerData = JsonConvert.SerializeObject(players);
+			HubtasticBaseStation.SetPlayerData(playerData);
+
+			BuildPlayerTabs();
+		}
+
+		List<Character> players;
+
+		private void BtnRollExtraOnly_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.ExtraOnly);
+			diceRoll.HiddenThreshold = 0;
+			RollTheDice(diceRoll);
+		}
+
+		private void ClearHistoryLog_Click(object sender, RoutedEventArgs e)
+		{
+			History.Clear();
+		}
+
+		private void CbAbility_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
+
+		private void CbSkillFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (rbActivePlayer.IsChecked == true)
+			{
+				//PlayerID;
+				//tbxModifier.Text = ;
+			}
 		}
 	}
 }

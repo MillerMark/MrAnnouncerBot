@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DHDM"
-				xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
+		xmlns:uc="clr-namespace:DndUI;assembly=DndUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+		xmlns:dh="clr-namespace:DndUI"
+		xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
+		Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
 	<Window.Resources>
 		<Style TargetType="{x:Type RadioButton}" x:Key="VantageStyle"  >
 			<Setter Property="Template">
@@ -169,11 +171,6 @@
 							</StackPanel>
 						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
-							<TextBlock Text="Damage Dice: " Width="Auto" Height="Auto"/>
-							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
-								2d8+6
-							</TextBox>
-							<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray"/>
 							<TextBlock Text="Group Inspiration: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0"/>
 							<TextBox x:Name="tbxInspiration" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
 								
@@ -347,18 +344,62 @@
 						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>
-						<StackPanel x:Name="spSkillChecks" Orientation="Horizontal">
-							<Button x:Name="btnSkillCheck" Margin="8" Padding="8" MinWidth="100" Click="BtnSkillCheck_Click" >
-								Skill Check
-							</Button>
-							<Button x:Name="btnSavingThrow" Margin="8" Padding="8" MinWidth="100" Click="BtnSavingThrow_Click" >
-								Saving Throw
-							</Button>
-							<Button x:Name="btnFlatD20" Margin="8" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
+						<StackPanel x:Name="spSkillChecks" Orientation="Horizontal" Margin="0, 8, 0, 0">
+							<StackPanel Margin="0, 0, 20, 0">
+								<Button x:Name="btnSkillCheck" Margin="0,0,0,4" Padding="8" MinWidth="100" Click="BtnSkillCheck_Click" >
+									Skill Check
+								</Button>
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="on: " Width="Auto" Height="Auto" Margin="3,0,0,0" Foreground="Gray" VerticalAlignment="Center" />
+									<!--
+								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:Skills}}}" 
+								-->
+									<ComboBox x:Name="cbSkillFilter" MaxHeight="22" MinWidth="150" 
+								Margin="0" SelectionChanged="CbSkillFilter_SelectionChanged">
+										<ComboBoxItem>Acrobatics</ComboBoxItem>
+										<ComboBoxItem>Animal Handling</ComboBoxItem>
+										<ComboBoxItem>Arcana</ComboBoxItem>
+										<ComboBoxItem>Athletics</ComboBoxItem>
+										<ComboBoxItem>Deception</ComboBoxItem>
+										<ComboBoxItem>History</ComboBoxItem>
+										<ComboBoxItem>Insight</ComboBoxItem>
+										<ComboBoxItem>Intimidation</ComboBoxItem>
+										<ComboBoxItem>Investigation</ComboBoxItem>
+										<ComboBoxItem>Medicine</ComboBoxItem>
+										<ComboBoxItem>Nature</ComboBoxItem>
+										<ComboBoxItem>Perception</ComboBoxItem>
+										<ComboBoxItem>Performance</ComboBoxItem>
+										<ComboBoxItem>Persuasion</ComboBoxItem>
+										<ComboBoxItem>Religion</ComboBoxItem>
+										<ComboBoxItem>Slight of Hand</ComboBoxItem>
+										<ComboBoxItem>Stealth</ComboBoxItem>
+										<ComboBoxItem>Survival</ComboBoxItem>
+
+									</ComboBox>
+								</StackPanel>
+							</StackPanel>
+							<StackPanel Margin="0, 0, 20, 0">
+								<Button x:Name="btnSavingThrow" Margin="0,0,0,4" Padding="8" MinWidth="100" Click="BtnSavingThrow_Click" >
+									Saving Throw
+								</Button>
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="for: " Width="Auto" Height="Auto" Margin="3,0,0,0" Foreground="Gray" VerticalAlignment="Center" />
+									<ComboBox x:Name="cbAbility" MaxHeight="22" MinWidth="150" 
+								Margin="0" SelectionChanged="CbAbility_SelectionChanged">
+										<ComboBoxItem>Strength</ComboBoxItem>
+										<ComboBoxItem>Dexterity</ComboBoxItem>
+										<ComboBoxItem>Constitution</ComboBoxItem>
+										<ComboBoxItem>Intelligence</ComboBoxItem>
+										<ComboBoxItem>Wisdom</ComboBoxItem>
+										<ComboBoxItem>Charisma</ComboBoxItem>
+									</ComboBox>
+								</StackPanel>
+							</StackPanel>
+							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
 								FlatD20
 							</Button>
 							<StackPanel x:Name="spGroupActivePlayer" Margin="15, 0, 0, 0">
-								<RadioButton x:Name="rbActivePlayer" >
+								<RadioButton x:Name="rbActivePlayer" IsChecked="True">
 									Active Player
 								</RadioButton>
 								<RadioButton x:Name="rbEveryone" >
@@ -392,12 +433,22 @@
 							</Button>
 
 						</StackPanel>
+						<StackPanel x:Name="StackPanel1" Orientation="Horizontal">
+							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto"/>
+							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
+								2d8+6
+							</TextBox>
+							<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray"/>
+						</StackPanel>
 						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
 							<Button x:Name="btnRollDamageOnly" Background="#FFB50000" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollDamageOnly_Click">
 								Damage Only
 							</Button>
 							<Button x:Name="btnRollHealthOnly" Background="#FF0090FF" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollHealthOnly_Click">
 								Health Only
+							</Button>
+							<Button x:Name="btnRollExtraOnly" Background="#FF404040" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollExtraOnly_Click">
+								Extra Only
 							</Button>
 						</StackPanel>
 						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Center">
@@ -441,13 +492,18 @@
 						</Button>
 					</StackPanel>
 				</TabItem>
+				<TabItem Header="Players">
+					<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click">
+						Initialize Player Data
+					</Button>
+				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
 					<ListBox x:Name="logListBox" MaxHeight="500" >
 						<ListBox.ItemTemplate>
 							<DataTemplate>
 								<Grid>
 									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="80" />
+										<ColumnDefinition Width="130" />
 										<ColumnDefinition Width="20" />
 										<ColumnDefinition Width="*" />
 									</Grid.ColumnDefinitions>
@@ -457,6 +513,11 @@
 								</Grid>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
+						<ListBox.ContextMenu>
+							<ContextMenu>
+								<MenuItem Header="Clear" Click="ClearHistoryLog_Click"/>
+							</ContextMenu>
+						</ListBox.ContextMenu>
 					</ListBox>
 				</TabItem>
 				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >

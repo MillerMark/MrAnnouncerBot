@@ -24,5 +24,6 @@ namespace OverlayManager.Hubs
 		Task UpdateClock(string clockData);
 		Task RollDice(string diceRollData);
 		Task ClearDice();
+		Task SetPlayerData(string playerData);
 	}
 }

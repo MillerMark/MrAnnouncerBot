@@ -19,7 +19,7 @@ class DroneGame extends GamePlusQuiz {
 	portalBackground: Sprites;
 	backgroundBanner: Part;
 	coins: Sprites;
-	textEffects: TextEffects = new TextEffects();
+	animations: Animations = new Animations();
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -104,8 +104,8 @@ class DroneGame extends GamePlusQuiz {
 		//this.emitter.draw(myContext, now);
 		//drawCrossHairs(myContext, 830, 540);
 		//drawCrossHairs(myContext, 830 + 340, 540);
-		this.textEffects.removeExpiredText(now);
-		this.textEffects.render(myContext, now);
+		this.animations.removeExpiredAnimations(now);
+		this.animations.render(myContext, now);
 	}
 
 	getBoomboxInstance(): Boombox {
@@ -1275,7 +1275,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 			boombox.changeActiveGenre(newGenre);
 
 			if (activeDroneGame instanceof DroneGame) {
-				let textEffect: TextEffect = activeDroneGame.textEffects.add(new Vector(100, 1000), newGenre, 4000);
+				let textEffect: TextEffect = activeDroneGame.animations.addText(new Vector(100, 1000), newGenre, 4000);
 				textEffect.scale = 3;
 				textEffect.targetScale = 5;
 				textEffect.fadeOutTime = 800;

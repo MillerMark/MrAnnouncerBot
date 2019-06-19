@@ -78,9 +78,15 @@ namespace DHDM
 		{
 			HubConnection.InvokeAsync("RollDice", diceData);
 		}
+
 		public static void ClearDice()
 		{
 			HubConnection.InvokeAsync("ClearDice");
+		}
+
+		public static void SetPlayerData(string playerData)
+		{
+			HubConnection.InvokeAsync("SetPlayerData", playerData);
 		}
 	}
 }

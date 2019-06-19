@@ -4,46 +4,6 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
-	public enum TrailingSpriteType
-	{
-		PawPrint,
-		Raven,
-		Spiral,
-		Smoke,
-		SmokeExplosion,
-		SparkTrail,
-		SmallSparks
-	}
-
-	public class TrailingEffect
-	{
-		public TrailingEffect()
-		{
-
-		}
-
-		public int Index { get; set; }
-		public double LeftRightDistanceBetweenPrints { get; set; }
-		public double MinForwardDistanceBetweenPrints { get; set; }
-		// TODO: Rename to MedianSoundInterval
-		public double MinSoundInterval { get; set; }
-		/// <summary>
-		/// The number of sound files starting with the base file name OnPrintPlaySound that 
-		/// are located in the sound effects folder (or sub-folder if specified).
-		/// </summary>
-		public int NumRandomSounds { get; set; }
-		public string OnPrintPlaySound { get; set; }
-		public double PlusMinusSoundInterval { get; set; }
-		public TrailingSpriteType Type { get; set; }
-	}
-
-	public enum RollScope
-	{
-		ActivePlayer,
-		Everyone,
-		Individuals
-	}
-
 	public class DiceRoll
 	{
 		public List<TrailingEffect> TrailingEffects = new List<TrailingEffect>();
@@ -82,5 +42,7 @@ namespace DndCore
 		public DiceRollType Type { get; set; }
 		public RollScope RollScope { get; set; }
 		public int IndividualFilter { get; set; }
+		public Skills SkillCheck { get; set; }
+		public Ability SavingThrow { get; set; }
 	}
 }

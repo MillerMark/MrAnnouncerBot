@@ -18,7 +18,8 @@ namespace DndCore
 		LuckRollLow,
 		LuckRollHigh,
 		DamageOnly,
-		HealthOnly, 
+		HealthOnly,
+		ExtraOnly,
 		ChaosBolt,
 		Initiative
 	}

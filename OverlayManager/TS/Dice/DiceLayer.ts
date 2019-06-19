@@ -25,6 +25,7 @@ enum DiceRollType {
 	LuckRollHigh,
 	DamageOnly,
 	HealthOnly,
+	ExtraOnly,
 	ChaosBolt,
 	Initiative
 }
@@ -77,6 +78,7 @@ const failFontColor: string = '#000000';
 const failOutlineColor: string = '#ffffff';
 
 class DiceLayer {
+	players: Array<Character> = [];
 	private readonly totalDamageTime: number = 7000;
 	private readonly totalRollScoreTime: number = 7000;
 	private readonly damageModifierTime: number = 5000;
@@ -94,11 +96,15 @@ class DiceLayer {
 
 	static readonly damageDieBackgroundColor: string = '#a40017';
 	static readonly damageDieFontColor: string = '#ffffff';
+
 	static readonly healthDieBackgroundColor: string = '#0074c8';
 	static readonly healthDieFontColor: string = '#ffffff';
 
+	static readonly extraDieBackgroundColor: string = '#404040';
+	static readonly extraDieFontColor: string = '#ffffff';
+
 	static matchOozeToDieColor: boolean = true;
-	textEffects: TextEffects = new TextEffects();
+	animations: Animations = new Animations();
 	diceFrontCanvas: HTMLCanvasElement;
 	diceBackCanvas: HTMLCanvasElement;
 	diceFrontContext: CanvasRenderingContext2D;
@@ -135,6 +141,7 @@ class DiceLayer {
 	activePlayerDieFontColor: string = '#ffffff';
 	activePlayerHueShift: number = 0;
 	playerID: number;
+  playerDataSet: boolean = false;
 
 	constructor() {
 		this.loadSprites();
@@ -280,6 +287,16 @@ class DiceLayer {
 		this.allBackLayerEffects.add(this.sneakAttackBottom);
 	}
 
+	setPlayerData(playerData: string): any {
+		this.playerDataSet = true;
+		this.players = [];
+		let playerDto: Array<Character> = JSON.parse(playerData);
+		for (var i = 0; i < playerDto.length; i++) {
+			this.players.push(new Character(playerDto[i]));
+		}
+	}
+
+
 	loadRavens(count: number): any {
 		for (var i = 0; i < count; i++) {
 			let raven = new Sprites(`/Dice/Ravens/${i + 1}/Ravens`, 36, fps30, AnimationStyle.Sequential, true);
@@ -290,34 +307,95 @@ class DiceLayer {
 		}
 	}
 
-	showInitiativeResults(initiativeSummary: PlayerRoll[]): any {
+	addBackgroundRect(x: number, y: number, width: number, height: number, lifespan: number): AnimatedRectangle {
+		const borderThickness: number = 2;
+		const opacity: number = 0.95;
+		return this.animations.addRectangle(x, y, width, height, '#f5e0b7', '#ae722c', lifespan, borderThickness, opacity);
+	}
+
+	setMultiplayerFades(animatedElement: AnimatedElement) {
+		animatedElement.fadeOutTime = 1000;
+		animatedElement.fadeInTime = 1000;
+	}
+
+	showMultiplayerResults(title: string, initiativeSummary: PlayerRoll[], hiddenThreshold: number = 0): any {
 		let x: number = 10;
 		let y: number = 10;
+		const lineHeight: number = 70;
+		const margins: number = 5;
+		let backgroundRect: AnimatedRectangle = this.addBackgroundRect(2, 2, 50, 50 /* lineHeight * initiativeSummary.length + margins * 2 */, DiceLayer.multiplePlayerSummaryDuration);
+		this.setMultiplayerFades(backgroundRect);
+		var lastRollWasHigherThanThreshold: boolean = true;
+		if (title) {
+			let titleEffect: TextEffect = this.showMultiplayerResultTitle(title, x, y);
+			titleEffect.boundingRect = backgroundRect;
+			titleEffect.fontSize = 15;
+			y += lineHeight;
+			backgroundRect.height += lineHeight;
+			x += 30;
+		}
+
 		for (var i = 0; i < initiativeSummary.length; i++) {
 			let playerRoll: PlayerRoll = initiativeSummary[i];
-			this.showPlayerRoll(playerRoll, x, y);
-			y += 50;
+			if (playerRoll.roll + playerRoll.modifier < hiddenThreshold && lastRollWasHigherThanThreshold) {
+				if (hiddenThreshold != 0) {
+					const separatorHeight: number = 20;
+					let line: AnimatedLine = this.addSeparatorHorizontalLine(x, y, 350, '#ff0000', DiceLayer.multiplePlayerSummaryDuration);
+					this.setMultiplayerFades(line);
+					y += separatorHeight;
+					backgroundRect.height += separatorHeight;
+				}
+				lastRollWasHigherThanThreshold = false;
+			}
+			let effect: TextEffect = this.showPlayerRoll(playerRoll, x, y);
+			effect.boundingRect = backgroundRect;
+			y += lineHeight;
 		}
 	}
 
-	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): any {
-		var message: string = `${playerRoll.name} - ${playerRoll.roll}`;
-		let textEffect: TextEffect = this.textEffects.add(new Vector(x, y), message, 15000);
-		textEffect.fontColor = this.getDieColor(playerRoll.id);
-		textEffect.outlineColor = this.activePlayerDieFontColor;
+	addSeparatorHorizontalLine(x: number, y: number, width: number, color: string, lifespan: number): AnimatedLine {
+		return this.animations.addLine(x, y, width, color, lifespan, 2);
+	}
+
+	static readonly multiplePlayerSummaryDuration: number = 14000;
+
+	showMultiplayerResultTitle(title: string, x: number, y: number): TextEffect {
+		let textEffect: TextEffect = this.animations.addText(new Vector(x, y), title, DiceLayer.multiplePlayerSummaryDuration);
+		textEffect.fontColor = '#000000';
+		textEffect.outlineColor = '#ffffff';
+		this.setMultiplayerResultText(textEffect);
+		return textEffect;
+	}
+
+	setMultiplayerResultText(textEffect: TextEffect): any {
 		textEffect.textAlign = 'left';
 		textEffect.textBaseline = 'top';
-		textEffect.scale = 2;
+		textEffect.scale = 2.5;
 		textEffect.opacity = 0.90;
-		textEffect.targetScale = 3;
-		textEffect.fadeOutTime = 1000;
-		textEffect.fadeInTime = 1000;
+		textEffect.targetScale = 3.5;
+		this.setMultiplayerFades(textEffect);
+	}
+
+	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
+		if (!playerRoll.name)
+			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
+		var message: string = `${playerRoll.name} - ${playerRoll.roll + playerRoll.modifier}`;
+		if (playerRoll.modifier > 0)
+			message += ` (+${playerRoll.modifier})`;
+		else if (playerRoll.modifier < 0)
+			message += ` (${playerRoll.modifier})`;
+
+		let textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
+		textEffect.fontColor = this.getDieColor(playerRoll.id);
+		textEffect.outlineColor = this.activePlayerDieFontColor;
+		this.setMultiplayerResultText(textEffect);
+		return textEffect;
 	}
 
 	showResult(resultMessage: string, success: boolean): any {
 		if (!resultMessage)
 			return;
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 100), resultMessage, this.resultTextTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 100), resultMessage, this.resultTextTime);
 		if (success) {
 			textEffect.fontColor = successFontColor;
 			textEffect.outlineColor = successOutlineColor;
@@ -338,7 +416,7 @@ class DiceLayer {
 		var damageTime: number = this.totalDamageTime;
 		if (!success)
 			damageTime = 2 * damageTime / 3;
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 750), `${label}${totalDamage}`, damageTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 750), `${label}${totalDamage}`, damageTime);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.elasticIn = true;
@@ -379,7 +457,7 @@ class DiceLayer {
 			velocityY = 0.5;
 			yPos = 810;
 		}
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, yPos), `(${totalDamage})`, damageTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, yPos), `(${totalDamage})`, damageTime);
 		textEffect.targetScale = targetScale;
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
@@ -393,7 +471,7 @@ class DiceLayer {
 	}
 
 	showBonusRoll(totalBonusStr: string, dieColor: string = undefined, fontColor: string = undefined): any {
-		let textEffect: TextEffect = this.textEffects.add(new Vector(50, 900), totalBonusStr, this.bonusRollTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(50, 900), totalBonusStr, this.bonusRollTime);
 		textEffect.textAlign = 'left';
 		if (dieColor === undefined)
 			dieColor = DiceLayer.bonusRollDieColor;
@@ -411,7 +489,7 @@ class DiceLayer {
 	}
 
 	showDieTotal(thisRollStr: string): void {
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 540), thisRollStr, this.totalRollScoreTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 540), thisRollStr, this.totalRollScoreTime);
 		textEffect.fontColor = this.activePlayerDieColor;
 		textEffect.elasticIn = true;
 		textEffect.outlineColor = this.activePlayerDieFontColor;
@@ -438,7 +516,7 @@ class DiceLayer {
 			rollLuckModStr = ', ' + rollLuckModStr;
 		}
 
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 250), `(${rollModStr}${rollLuckModStr})`, this.rollModifierTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr}${rollLuckModStr})`, this.rollModifierTime);
 		textEffect.elasticIn = true;
 		textEffect.fontColor = this.activePlayerDieColor;
 		textEffect.outlineColor = this.activePlayerDieFontColor;
@@ -451,7 +529,7 @@ class DiceLayer {
 	}
 
 	addDieValueLabel(centerPos: Vector, value: string, highlight: boolean = false) {
-		let textEffect: TextEffect = this.textEffects.add(centerPos, value, 5000);
+		let textEffect: TextEffect = this.animations.addText(centerPos, value, 5000);
 		if (highlight)
 			textEffect.fontColor = '#ff0000';
 		textEffect.scale = 6;
@@ -462,7 +540,7 @@ class DiceLayer {
 	}
 
 	indicateBonusRoll(message: string): any {
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 800), message, 3000);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 800), message, 3000);
 		textEffect.scale = 6;
 		textEffect.opacity = 0.75;
 		textEffect.targetScale = 10;
@@ -471,7 +549,7 @@ class DiceLayer {
 	}
 
 	bendingLuck(message: string, luckMultiplier: number): any {
-		let textEffect: TextEffect = this.textEffects.add(new Vector(960, 540), message, 3000);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 540), message, 3000);
 
 		if (luckMultiplier < 0) {
 			// Bad luck
@@ -495,7 +573,7 @@ class DiceLayer {
 		let centerPos: Vector = getScreenCoordinates(die.getObject());
 		if (centerPos == null)
 			return;
-		let textEffect: TextEffect = this.textEffects.add(centerPos.add(new Vector(0, 80 * scaleAdjust)), message, lifeSpan);
+		let textEffect: TextEffect = this.animations.addText(centerPos.add(new Vector(0, 80 * scaleAdjust)), message, lifeSpan);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.scale = 3 * scaleAdjust;
@@ -559,14 +637,21 @@ class DiceLayer {
 
 		this.diceFrontContext.clearRect(0, 0, 1920, 1080);
 		this.diceBackContext.clearRect(0, 0, 1920, 1080);
+		if (!this.playerDataSet) {
+			this.diceFrontContext.font = '38px Arial';
+			this.diceFrontContext.fillStyle = '#ff0000';
+			this.diceFrontContext.textAlign = 'left';
+			this.diceFrontContext.textBaseline = 'top';
+			this.diceFrontContext.fillText("Waiting for player data to be initialized.", 10, 10);
+		}
 		var now: number = performance.now();
 		this.allFrontLayerEffects.updatePositions(now);
 		this.allBackLayerEffects.updatePositions(now);
 		this.allFrontLayerEffects.draw(this.diceFrontContext, now);
 		this.allBackLayerEffects.draw(this.diceBackContext, now);
-		this.textEffects.removeExpiredText(now);
-		this.textEffects.updatePositions(now);
-		this.textEffects.render(this.diceFrontContext, now);
+		this.animations.removeExpiredAnimations(now);
+		this.animations.updatePositions(now);
+		this.animations.render(this.diceFrontContext, now);
 	}
 
 	addFireball(x: number, y: number) {
@@ -663,7 +748,7 @@ class DiceLayer {
 	}
 
 	clearTextEffects() {
-		this.textEffects.clear();
+		this.animations.clear();
 	}
 
 
@@ -719,6 +804,9 @@ class DiceLayer {
 		diceRoll.numHalos = dto.NumHalos;
 		diceRoll.rollScope = dto.RollScope;
 		diceRoll.individualFilter = dto.IndividualFilter;
+		diceRoll.skillCheck = dto.SkillCheck;
+		diceRoll.savingThrow = dto.SavingThrow;
+
 		for (var i = 0; i < dto.TrailingEffects.length; i++) {
 			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
 		}
@@ -851,6 +939,7 @@ class DiceRollData {
 	throwPower: number;
 	itsAD20Roll: boolean;
 	trailingEffects: Array<TrailingEffect> = new Array<TrailingEffect>();
+	bonusRolls: Array<BonusRoll> = null;
 	onFirstContactSound: string;
 	critSuccessMessage: string;
 	successMessage: string;
@@ -860,13 +949,11 @@ class DiceRollData {
 	onRollSound: number;
 	numHalos: number;
 	individualFilter: number;
+	skillCheck: Skills;
+	savingThrow: Ability;
 	rollScope: RollScope;
-	bonusRoll: string;
 	wildMagic: WildMagic;
-	bonusRollFontColor: string;
-	bonusRollDieColor: string;
 	inspiration: string;
-	bonusRollDescription: string;
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;
 	bentLuckRollData: DiceRollData = null;
@@ -876,7 +963,100 @@ class DiceRollData {
 	appliedVantage: boolean = false;
 	maxInspirationDiceAllowed: number = 1;
 	numInspirationDiceCreated: number = 0;
+	hasMultiPlayerDice: boolean = false;
+	multiplayerSummary: Array<PlayerRoll> = null;
 	constructor() {
 
 	}
+
+	getFirstBonusRollDescription(): string {
+		if (!this.bonusRolls || this.bonusRolls.length == 0)
+			return null;
+		return this.bonusRolls[0].description;
+	}
+
+	addBonusRoll(diceStr: string, description: string, playerID: number = -1, dieBackColor: string = DiceLayer.bonusRollDieColor, dieTextColor: string = DiceLayer.bonusRollFontColor): BonusRoll {
+		if (!this.bonusRolls)
+			this.bonusRolls = [];
+		let bonusRoll = new BonusRoll(diceStr, description, playerID, dieBackColor, dieTextColor);
+		this.bonusRolls.push(bonusRoll);
+
+		return bonusRoll;
+	}
+	addBonusDamageRoll(diceStr: string, description: string, playerID: number = -1, dieBackColor: string = DiceLayer.damageDieBackgroundColor, dieTextColor: string = DiceLayer.damageDieFontColor): BonusRoll {
+		if (!this.bonusRolls)
+			this.bonusRolls = [];
+		let bonusRoll = new BonusRoll(diceStr, description, playerID, dieBackColor, dieTextColor);
+		this.bonusRolls.push(bonusRoll);
+
+		return bonusRoll;
+	}
+}
+
+class BonusRoll {
+	isMagic: boolean = false;
+	constructor(public diceStr: string, public description: string, public playerID: number, public dieBackColor: string = DiceLayer.bonusRollDieColor, public dieTextColor: string = DiceLayer.bonusRollFontColor) {
+		
+	}
+}
+
+class AnimatedLine extends ScalableAnimation {
+	constructor(x: number, y: number, public width: number, public lineColor: string, public lifeSpanMs: number, public lineThickness: number = 1) {
+		super(x, y, lifeSpanMs);
+	}
+
+	render(context: CanvasRenderingContext2D, now: number) {
+		context.globalAlpha = this.getAlpha(now) * this.opacity;
+		context.strokeStyle = this.lineColor;
+		context.lineWidth = this.lineThickness;
+		context.lineJoin = "round";
+		context.beginPath();
+		let scale: number = this.getScale(now);
+		context.moveTo(this.x, this.y);
+		context.lineTo(this.x + this.width * scale, this.y);
+		context.stroke();
+		context.globalAlpha = 1;
+	}
+
+	getVerticalThrust(now: number): number {
+		return 0;
+	}
+}
+
+class AnimatedRectangle extends ScalableAnimation {
+	margin: number = 5;
+	constructor(public x: number, public y: number, public width: number, public height: number, public fillColor: string, public outlineColor: string, public lifeSpanMs: number, public lineThickness: number = 1) {
+		super(x, y, lifeSpanMs);
+	}
+
+	render(context: CanvasRenderingContext2D, now: number) {
+		context.globalAlpha = this.getAlpha(now) * this.opacity;
+		context.strokeStyle = this.outlineColor;
+		context.fillStyle = this.fillColor;
+		context.lineWidth = this.lineThickness;
+		context.lineJoin = "round";
+		let scale: number = this.getScale(now);
+		context.fillRect(this.x, this.y, this.width * scale, this.height * scale);
+		context.strokeRect(this.x, this.y, this.width * scale, this.height * scale);
+		context.globalAlpha = 1;
+	}
+
+	getVerticalThrust(now: number): number {
+		return 0;
+	}
+
+	fitToRect(left: number, top: number, width: number, height: number): any {
+		if (left - this.margin < this.x)
+			this.x = left - this.margin;
+
+		if (top - this.margin < this.y)
+			this.y = top - this.margin;
+
+		if (this.x + this.width < left + width + this.margin * 2)
+			this.width = left + width + this.margin * 2 - this.x;
+
+		if (this.y + this.height < top + height + this.margin * 2)
+			this.height = top + height + this.margin * 2 - this.y;
+	}
+
 }

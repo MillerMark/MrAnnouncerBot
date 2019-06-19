@@ -54,6 +54,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.ClearDice();
 		}
+		public void SetPlayerData(string playerData)
+		{
+			coderushedHub.Clients.All.SetPlayerData(playerData);
+		}
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)

@@ -38,6 +38,12 @@ namespace DndCore
 			{
 				Entries.Add(logEntry);
 			}
+			queuedEntries.Clear();
+		}
+		public static void Clear()
+		{
+			Entries.Clear();
+			queuedEntries.Clear();
 		}
 
 		public static event EventHandler LogUpdated;

@@ -63,10 +63,10 @@
     this.characterStatsScroll = new CharacterStatsScroll();
     this.world.addCharacter(this.characterStatsScroll);
 
-    this.characterStatsScroll.characters.push(Character.newTestElf());
-    this.characterStatsScroll.characters.push(Character.newTestBarbarian());
-    this.characterStatsScroll.characters.push(Character.newTestWizard());
-    this.characterStatsScroll.characters.push(Character.newTestDruid());
+    //this.characterStatsScroll.characters.push(Character.newTestElf());
+    //this.characterStatsScroll.characters.push(Character.newTestBarbarian());
+    //this.characterStatsScroll.characters.push(Character.newTestWizard());
+    //this.characterStatsScroll.characters.push(Character.newTestDruid());
     this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
     this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
     this.characterStatsScroll.pages.push(StatPage.createEquipmentPage());

@@ -216,8 +216,16 @@ namespace DndUI
 			statSavingWisdomProficient.IsChecked = (ability & Ability.Wisdom) == Ability.Wisdom;
 		}
 
+		string PlusModifier(double value)
+		{
+			if (value > 0)
+				return "+";
+			return "";
+		}
 		public void SetFromCharacter(Character character)
 		{
+			statGoldPieces.Text = character.goldPieces.ToString();
+			statGoldPieces3.Text = statGoldPieces.Text;
 			//character.activeConditions = 
 			//character.advantages = ;
 			statAlignment.Text = character.alignment;
@@ -243,13 +251,14 @@ namespace DndUI
 			statDeathSaveHeart2.IsChecked = character.deathSaveLife2;
 			statDeathSaveHeart3.IsChecked = character.deathSaveLife3;
 			statDexterity.Text = character.Dexterity.ToString();
+			statDexterity2.Text = statDexterity.Text;
 			//character.disadvantages = 
 			//character.equipment = 
 			statExperiencePoints.Text = character.experiencePoints.ToString();
 			//character.flyingSpeed = 
 			statGoldPieces.Text = character.goldPieces.ToString();
 			statHitPoints.Text = character.hitPoints.ToString();
-			statInitiative.Text = character.initiative.ToString();
+			statInitiative.Text = PlusModifier(character.initiative) + character.initiative.ToString();
 			statInspiration.Text = character.inspiration.ToString();
 			statIntelligence.Text = character.Intelligence.ToString();
 			statIntelligence2.Text = statIntelligence.Text;
@@ -262,16 +271,19 @@ namespace DndUI
 			//character.maxHitPoints = 
 			statName.Text = character.name;
 			statName2.Text = character.name;
+			statName3.Text = character.name;
+
 			//character.offTurnActions = 
 			//character.onTurnActions = 
-			statProficiencyBonus.Text = character.proficiencyBonus.ToString();
-			SetSkillProficiency(character.proficientSkills);
+			statProficiencyBonus.Text = PlusModifier(character.proficiencyBonus) + character.proficiencyBonus.ToString();
+			SetSkillProficiency(character.proficientSkills | character.doubleProficiency);
 			statRaceClass.Text = character.raceClass;
 			//character.remainingHitDice = 
 			SetSavingThrowProficiency(character.savingThrowProficiency);
 			//character.senses = 
 			statSpeed.Text = character.baseSpeed.ToString();
 			statStrength.Text = character.Strength.ToString();
+			statStrength2.Text = statStrength.Text;
 			//character.swimmingSpeed = 
 			//character.telepathyRadius = 
 			//character.tempAcrobaticsMod = 
@@ -304,6 +316,7 @@ namespace DndUI
 			//character.truesightRadius = 
 			statWeight.Text = character.weight.ToString();
 			statWisdom.Text = character.Wisdom.ToString();
+			statWisdom2.Text = statWisdom.Text;
 		}
 
 		public string GetCharacter()
