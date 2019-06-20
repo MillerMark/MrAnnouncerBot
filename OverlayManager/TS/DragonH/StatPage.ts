@@ -145,10 +145,13 @@
     });
 
     for (var i = 0; i < abilities.length; i++) {
-      statPage.addStat(abilities[i], attributeLeft, attributeTop + i * attributeDistanceY, StatPage.bigNumberFontSize);
+			statPage.addStat('base' + StatPage.initialCap(abilities[i]), attributeLeft, attributeTop + i * attributeDistanceY, StatPage.bigNumberFontSize);
       statPage.addStat(abilities[i] + 'Mod', attributeLeft, attributeTop + i * attributeDistanceY + modOffset, modFontSize, TextAlign.center, TextDisplay.plusMinus);
     }
   }
+    static initialCap(str: string): any {
+			return str[0].toUpperCase()+ str.substring(1);
+    }
 
   addStat(name: string, x: number, y: number, size: number, textAlign: TextAlign = TextAlign.center, textDisplay: TextDisplay = TextDisplay.normal): any {
     this.characterStats.push(new CharacterStat(name, x, y, size, textAlign, textDisplay));

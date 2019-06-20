@@ -248,7 +248,10 @@ namespace MrAnnouncerBot
 
 			lastFanfareActivated = DateTime.Now;
 			lastFanfareDuration = fanfare.SecondsLong + 3;
-			ActivatingSceneByName(fanfare.DisplayName, "Fanfare");
+			string indexStr = "";
+			if (fanfare.Count > 1)
+				indexStr = (new Random().Next(fanfare.Count) + 1).ToString();
+			ActivatingSceneByName(fanfare.DisplayName + indexStr, "Fanfare");
 			try
 			{
 				hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);

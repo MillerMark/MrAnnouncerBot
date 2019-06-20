@@ -4,12 +4,6 @@ enum RollScope {
 	Individuals
 }
 
-enum DiceRollKind {
-	Normal,
-	Advantage,
-	Disadvantage
-}
-
 enum DiceRollType {
 	None,
 	SkillCheck,

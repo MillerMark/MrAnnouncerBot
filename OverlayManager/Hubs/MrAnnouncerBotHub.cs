@@ -20,9 +20,9 @@ namespace OverlayManager.Hubs
 
 		public void PlayerDataChanged(int playerID, int pageID, string playerData)
 		{
-			string[] sceneNames = { "Kent's Turn", "Karen's Turn", "Mark's Turn", "Kayla's Turn" };
-			if (playerID >= 0 && playerID < sceneNames.Length)
-				Clients.All.ChangeScene(sceneNames[playerID]);
+			const int numPlayers = 4;
+			string sceneName = $"Player {playerID + 1}/{numPlayers}";
+			Clients.All.ChangeScene(sceneName);
 			coderushedHub.Clients.All.PlayerDataChanged(playerID, pageID, playerData);
 		}
 

@@ -10,6 +10,12 @@ enum TargetType {
 	ScreenPosition = 3
 }
 
+enum DiceRollKind {
+	Normal,
+	Advantage,
+	Disadvantage
+}
+
 enum EffectKind {
 	Animation = 0,
 	Emitter = 1,

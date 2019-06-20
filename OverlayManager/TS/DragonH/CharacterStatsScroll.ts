@@ -207,7 +207,14 @@ class CharacterStatsScroll extends WorldObject {
 		let players: Array<Character> = JSON.parse(playerData);
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
-			this.characters.push(new Character(players[i]));
+			try
+			{
+				this.characters.push(new Character(players[i]));
+			}
+			catch (ex)
+			{
+				console.error('Unable to create new Character: ' + ex);
+			}
 		}
 	}
 
@@ -430,18 +437,24 @@ class CharacterStatsScroll extends WorldObject {
 		});
 	}
 
+	static readonly showEmitters: boolean = true; // Related to perf issue.
+
 	update(now: number, timeScale: number, world: World): void {
 		super.update(now, timeScale, world);
-		this.topEmitter.update(now, timeScale, world);
-		this.bottomEmitter.update(now, timeScale, world);
+		if (CharacterStatsScroll.showEmitters) {
+			this.topEmitter.update(now, timeScale, world);
+			this.bottomEmitter.update(now, timeScale, world);
+		}
 
 		if (this.state === ScrollState.slammed) {
 			this.unroll(); // do we queue?
 		}
 
-		this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
-			highlightEmitter.update(now, timeScale, world);
-		});
+		if (CharacterStatsScroll.showEmitters) {
+			this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
+				highlightEmitter.update(now, timeScale, world);
+			});
+		}
 	}
 
 	scrollIsVisible(): boolean {
