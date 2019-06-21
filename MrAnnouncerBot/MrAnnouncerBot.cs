@@ -424,9 +424,15 @@ namespace MrAnnouncerBot
 					Chat($"Break out the drone-swatter! SurlyDev just showed up!");
 					break;
 				case 7:
-				case 8:
-				case 9:
-				case 10:
+                    Chat($"Drat! We almost made a show without him! But alas, no, SurlyDev just sauntered in!");
+                    break;
+                case 8:
+                    Chat($"He does one PR on GitHub and he thinks he's an open-source contributor. SurlyDev fork off ;) Let's just hope he never clones himself.");
+                    break;
+                case 9:
+                    Chat($"Drone, drone, drone. That's all SurlyDev ever does. I'm not talking about the drone game, I'm talking about him talking.");
+                    break;
+                case 10:
 					GreetVip("SurlyDev");
 					break;
 			}
