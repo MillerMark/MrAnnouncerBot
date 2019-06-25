@@ -445,7 +445,12 @@
       this.initializeScroll();
       this.characterStatsScroll.open(this.now);
       return true;
-    }
+		}
+
+		if (testCommand === 'close') {
+			this.characterStatsScroll.close();
+			return true;
+		}
 
     if (testCommand === 'Emphasis1') {
       this.characterStatsScroll.page = ScrollPage.main;

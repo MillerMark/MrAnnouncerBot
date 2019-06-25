@@ -54,7 +54,8 @@ enum ScrollState {
   unrolled,
   closing,
   closed,
-  paused
+	paused,
+	disappearing
 }
 
 enum emphasisMain {
