@@ -88,5 +88,9 @@ namespace DHDM
 		{
 			HubConnection.InvokeAsync("SetPlayerData", playerData);
 		}
+		public static void SendScrollLayerCommand(string commandData)
+		{
+			HubConnection.InvokeAsync("SendScrollLayerCommand", commandData);
+		}
 	}
 }

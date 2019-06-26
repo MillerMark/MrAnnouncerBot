@@ -16,6 +16,7 @@ function connectToSignalR(signalR) {
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
 		connection.on("SetPlayerData", setPlayerData);
+		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
   };
 }
 
@@ -39,6 +40,12 @@ function setPlayerData(playerData: string) {
 	}
 	if (diceLayer) {
 		diceLayer.setPlayerData(playerData);
+	}
+}
+
+function sendScrollLayerCommand(commandData: string) {
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.characterStatsScroll.sendScrollLayerCommand(commandData);
 	}
 }
 

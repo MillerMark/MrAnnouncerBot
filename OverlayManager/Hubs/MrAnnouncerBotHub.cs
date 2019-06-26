@@ -58,6 +58,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.SetPlayerData(playerData);
 		}
+		public void SendScrollLayerCommand(string commandData)
+		{
+			coderushedHub.Clients.All.SendScrollLayerCommand(commandData);
+		}
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)

@@ -27,6 +27,7 @@ namespace OverlayManager.Hubs
 		Task RollDice(string diceRollData);
 		Task ClearDice();
 		Task SetPlayerData(string playerData);
+		Task SendScrollLayerCommand(string commandData);
 
 	}
 }

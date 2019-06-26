@@ -208,7 +208,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.addHighlightEmitters();
 	}
 
-	setPlayerData(playerData: string): any {
+	setPlayerData(playerData: string): void {
 		let players: Array<Character> = JSON.parse(playerData);
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
@@ -221,6 +221,11 @@ class CharacterStatsScroll extends WorldObject {
 				console.error('Unable to create new Character: ' + ex);
 			}
 		}
+	}
+
+
+	sendScrollLayerCommand(commandData: string): void {
+		// TODO: Implement this.
 	}
 
 	private addHighlightEmitters() {
