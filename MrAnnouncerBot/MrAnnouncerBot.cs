@@ -203,7 +203,7 @@ namespace MrAnnouncerBot
 
 		void HandleUserFanfare(ChatMessage chatMessage)
 		{
-			FanfareDto fanfare = fanfares.FirstOrDefault(x => x.DisplayName == chatMessage.DisplayName);
+			FanfareDto fanfare = fanfares.FirstOrDefault(x => string.Compare(x.DisplayName, chatMessage.DisplayName, StringComparison.InvariantCultureIgnoreCase) == 0);
 
 			if (fanfare != null)
 			{
@@ -239,6 +239,11 @@ namespace MrAnnouncerBot
 				return true;
 			}
 
+			if (chatMessage != null && chatMessage.Message.IndexOf('[') >= 0)
+			{
+				
+			}
+
 			if (stillPlaying || RestrictedSceneIsActive())
 			{
 				if (!fanfareQueue.Contains(fanfare))
@@ -248,18 +253,25 @@ namespace MrAnnouncerBot
 
 			lastFanfareActivated = DateTime.Now;
 			lastFanfareDuration = fanfare.SecondsLong + 3;
-			string indexStr = "";
+			
+			string sceneName = fanfare.DisplayName;
+
 			if (fanfare.Count > 1)
-				indexStr = (new Random().Next(fanfare.Count) + 1).ToString();
-			ActivatingSceneByName(fanfare.DisplayName + indexStr, "Fanfare");
+			{
+				string indexStr = (new Random().Next(fanfare.Count) + 1).ToString();
+				sceneName += indexStr;
+			}
+
+			
+			ActivatingSceneByName(sceneName, "Fanfare");
 			try
 			{
 				hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);
-				obsWebsocket.SetCurrentScene(fanfare.DisplayName);
+				obsWebsocket.SetCurrentScene(sceneName);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("Unable to play fanfare: " + fanfare.DisplayName);
+				Console.WriteLine("Unable to play fanfare: " + sceneName);
 			}
 			if (fanfare.DisplayName == "SurlyDev")
 				GreetSurlyDev();

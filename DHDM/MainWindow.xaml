@@ -497,6 +497,29 @@
 						Initialize Player Data
 					</Button>
 				</TabItem>
+				<TabItem Header="Damage/Health">
+					<StackPanel Orientation="Vertical" Margin="4" >
+						<StackPanel Orientation="Horizontal">
+							<TextBlock x:Name="txtHealth" Text="Health: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
+							<TextBox x:Name="tbxHealth" MinWidth="90" Margin="0, 0, 8, 0">
+
+							</TextBox>
+							<Button x:Name="btnApplyHealth" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnApplyHealth_Click">
+								Add Health!
+							</Button>
+						</StackPanel>
+						
+						<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
+							<TextBlock x:Name="txtDamage" Text="Damage: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
+							<TextBox x:Name="tbxDamage" MinWidth="90" Margin="0, 0, 8, 0">
+
+							</TextBox>
+							<Button x:Name="btnInflictDamage" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnInflictDamage_Click" >
+								Inflict Damage!
+							</Button>
+						</StackPanel>
+					</StackPanel>
+				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
 					<ListBox x:Name="logListBox" MaxHeight="500" >
 						<ListBox.ItemTemplate>

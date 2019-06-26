@@ -134,6 +134,7 @@ class HighlightEmitterPages {
 class CharacterStatsScroll extends WorldObject {
 	scrollOpenSfx: HTMLAudioElement;
 	scrollWooshSfx: HTMLAudioElement;
+	scrollPoofSfx: HTMLAudioElement;
 	scrollCloseSfx: HTMLAudioElement;
 	scrollSlamSfx: HTMLAudioElement;
 
@@ -145,6 +146,8 @@ class CharacterStatsScroll extends WorldObject {
 
 	private _selectedCharacterIndex: number;
 	deEmphasisSprite: SpriteProxy;
+  currentScrollRoll: SpriteProxy;
+  currentScrollBack: SpriteProxy;
 
 	get selectedCharacterIndex(): number {
 		return this._selectedCharacterIndex;
@@ -159,6 +162,8 @@ class CharacterStatsScroll extends WorldObject {
 
 	state: ScrollState = ScrollState.none;
 	scrollRolls: Sprites;
+	scrollPoofBack: Sprites;
+	scrollPoofFront: Sprites;
 	emphasisSprites: Sprites;
 	emphasisIndices: Array<number> = [];
 	emitterIndices: Array<string> = [];
@@ -203,7 +208,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.addHighlightEmitters();
 	}
 
-	setPlayerData(playerData: string): any {
+	setPlayerData(playerData: string): void {
 		let players: Array<Character> = JSON.parse(playerData);
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
@@ -216,6 +221,11 @@ class CharacterStatsScroll extends WorldObject {
 				console.error('Unable to create new Character: ' + ex);
 			}
 		}
+	}
+
+
+	sendScrollLayerCommand(commandData: string): void {
+		// TODO: Implement this.
 	}
 
 	private addHighlightEmitters() {
@@ -348,7 +358,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.highlightEmitterPages[scrollPage].emitters.push(new HighlightEmitter(name, new Vector(centerX, centerY)).setRectangular(width, height));
 	}
 
-
+	needImmediateReopen: boolean;
 
 	private _page: ScrollPage;
 
@@ -358,6 +368,7 @@ class CharacterStatsScroll extends WorldObject {
 
 	set page(newValue: ScrollPage) {
 		if (this._page !== newValue) {
+			this.needImmediateReopen = true;
 			this.close();
 			this._page = newValue;
 		}
@@ -404,8 +415,8 @@ class CharacterStatsScroll extends WorldObject {
 		this.scrollRolls.baseAnimation.reverse = false;
 		this.scrollRolls.sprites = [];
 		this.scrollBacks.sprites = [];
-		this.scrollRolls.add(0, 0, 0);
-		this.scrollBacks.add(0, 0, this._page);
+		this.currentScrollRoll = this.scrollRolls.add(0, 0, 0);
+		this.currentScrollBack = this.scrollBacks.add(0, 0, this._page);
 		this.playerHeadshots.sprites = [];
 		this.playerHeadshots.add(0, 0, this.selectedCharacterIndex);
 		this.pageIndex = this._page;
@@ -475,10 +486,10 @@ class CharacterStatsScroll extends WorldObject {
 
 		if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
 			let elapsedTime: number = now - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
-			let frameIndex: number = this.scrollRolls.sprites[0].frameIndex;
+			let scrollRollsFrameIndex: number = this.scrollRolls.sprites[0].frameIndex;
 
 			if (this.state === ScrollState.paused) {
-				frameIndex = this.lastFrameIndex;
+				scrollRollsFrameIndex = this.lastFrameIndex;
 				elapsedTime = this.lastElapsedTime;
 			}
 
@@ -487,12 +498,12 @@ class CharacterStatsScroll extends WorldObject {
 			let stillAnimating: boolean;
 
 			if (this.state === ScrollState.closing || this.state === ScrollState.closed) {
-				stillAnimating = frameIndex > 0;
-				nextFrameIndex = frameIndex - 1;
+				stillAnimating = scrollRollsFrameIndex > 0;
+				nextFrameIndex = scrollRollsFrameIndex - 1;
 			}
 			else { // opening...
-				stillAnimating = frameIndex < 22;
-				nextFrameIndex = frameIndex + 1;
+				stillAnimating = scrollRollsFrameIndex < 22;
+				nextFrameIndex = scrollRollsFrameIndex + 1;
 			}
 
 			let frameFraction: number = elapsedTime / (this.framerateMs / 1000);
@@ -507,12 +518,12 @@ class CharacterStatsScroll extends WorldObject {
 			let topData: number = 0;
 			let bottomData: number = Infinity;
 
-			let frameIndexPrecise: number = frameIndex + frameFraction;
+			let frameIndexPrecise: number = scrollRollsFrameIndex + frameFraction;
 
 			if (stillAnimating || this.state === ScrollState.closing || this.state === ScrollState.closed) {
-				let offset: number = CharacterStatsScroll.scrollOpenOffsets[frameIndex + 1];
+				let offset: number = CharacterStatsScroll.scrollOpenOffsets[scrollRollsFrameIndex + 1];
 
-				let decimalOffset: number = frameIndexPrecise - frameIndex;
+				let decimalOffset: number = frameIndexPrecise - scrollRollsFrameIndex;
 				let distanceBetweenOffsets: number = CharacterStatsScroll.scrollOpenOffsets[nextFrameIndex + 1] - offset;
 
 				let superPreciseOffset: number = offset + distanceBetweenOffsets * decimalOffset;
@@ -548,12 +559,12 @@ class CharacterStatsScroll extends WorldObject {
 				//  this.lastElapsedTime = elapsedTime;
 				//}
 
-				if (frameIndex === 0 && this.state === ScrollState.unrolling) {
+				if (scrollRollsFrameIndex === 0 && this.state === ScrollState.unrolling) {
 					this.topEmitter.start();
 					this.bottomEmitter.start();
 				}
 
-				if (frameIndex === 0 && this.state === ScrollState.closing) {
+				if (scrollRollsFrameIndex === 0 && this.state === ScrollState.closing) {
 					justClosed = true;
 				}
 
@@ -577,6 +588,16 @@ class CharacterStatsScroll extends WorldObject {
 			this.drawCharacterStats(world.ctx, topData, bottomData);
 
 			this.scrollRolls.draw(world.ctx, now * 1000);
+
+		}
+		else if (this.state === ScrollState.disappearing) {
+			this.scrollRolls.draw(world.ctx, now * 1000);
+			this.scrollPoofBack.draw(world.ctx, now * 1000);
+			this.scrollPoofFront.draw(world.ctx, now * 1000);
+			let poofFrameIndex: number = this.scrollPoofFront.sprites[0].frameIndex;
+			if (poofFrameIndex === 0) {
+				this.state = ScrollState.none;
+			}
 		}
 		else {
 			// console.log('Scroll is not visible!');
@@ -592,9 +613,39 @@ class CharacterStatsScroll extends WorldObject {
 		}
 
 		if (justClosed) {
-			this.state = ScrollState.closed;
-			this.open(now);
+			if (this.needImmediateReopen) {
+				this.state = ScrollState.closed;
+				this.open(now);
+				this.needImmediateReopen = false;
+			}
+			else
+				this.makeScrollDisappear(now * 1000);
 		}
+	}
+
+	makeScrollDisappear(nowMs: number): void {
+		const fadeOutTime: number = 450;
+		if (this.currentScrollRoll) {
+			this.currentScrollRoll.expirationDate = nowMs + fadeOutTime;
+			this.currentScrollRoll.fadeOutTime = fadeOutTime;
+		}
+		if (this.currentScrollBack) {
+			this.currentScrollBack.expirationDate = nowMs + fadeOutTime;
+			this.currentScrollBack.fadeOutTime = fadeOutTime;
+		}
+
+		this.currentScrollRoll = null;
+		this.currentScrollBack = null;
+
+		const scrollCenterX: number = 170;
+		const scrollCenterY: number = 440;
+
+		let thisChar: Character = this.characters[this.selectedCharacterIndex];
+		const hueShift: number = thisChar.hueShift;
+		this.scrollPoofBack.addShifted(scrollCenterX, scrollCenterY, 0, hueShift);
+		this.scrollPoofFront.add(scrollCenterX, scrollCenterY, 0);
+		this.play(this.scrollPoofSfx);
+		this.state = ScrollState.disappearing;
 	}
 
 	startQueuedEmitters(): void {
@@ -692,6 +743,13 @@ class CharacterStatsScroll extends WorldObject {
 		Folders.assets = 'GameDev/Assets/DragonH/';
 
 		this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
+		this.scrollPoofBack = new Sprites("Scroll/Close/ScrollPoof", 44, this.framerateMs, AnimationStyle.Sequential, true);
+		this.scrollPoofFront = new Sprites("Scroll/Close/ScrollFire", 63, this.framerateMs, AnimationStyle.Sequential, true);
+		this.scrollPoofFront.originX = 370;
+		this.scrollPoofFront.originY = 325;
+		this.scrollPoofBack.originX = 370;
+		this.scrollPoofBack.originY = 325;
+
 		this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
 		this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
 		this.playerHeadshots = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
@@ -703,6 +761,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.scrollOpenSfx = new Audio(Folders.assets + 'SoundEffects/scrollOpen.mp3');
 		this.scrollCloseSfx = new Audio(Folders.assets + 'SoundEffects/scrollClose.mp3');
 		this.scrollSlamSfx = new Audio(Folders.assets + 'SoundEffects/scrollSlam.mp3');
+		this.scrollPoofSfx = new Audio(Folders.assets + 'SoundEffects/scrollPoof.mp3');
 
 		Folders.assets = assetFolderName;
 	}

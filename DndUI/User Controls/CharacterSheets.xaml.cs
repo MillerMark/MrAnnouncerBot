@@ -46,9 +46,11 @@ namespace DndUI
 			add { AddHandler(PreviewCharacterChangedEvent, value); }
 			remove { RemoveHandler(PreviewCharacterChangedEvent, value); }
 		}
-
+		bool changingInternally;
 		protected virtual void OnCharacterChanged()
 		{
+			if (changingInternally)
+				return;
 			RoutedEventArgs previewEventArgs = new RoutedEventArgs(PreviewCharacterChangedEvent);
 			RaiseEvent(previewEventArgs);
 			if (previewEventArgs.Handled)
@@ -57,7 +59,7 @@ namespace DndUI
 			eventArgs.Source = this;
 			RaiseEvent(eventArgs);
 		}
-		
+
 		public static readonly RoutedEvent PageChangedEvent = 
 			EventManager.RegisterRoutedEvent("PageChanged", RoutingStrategy.Bubble, 
 				typeof(RoutedEventHandler), typeof(CharacterSheets));
@@ -224,99 +226,107 @@ namespace DndUI
 		}
 		public void SetFromCharacter(Character character)
 		{
-			statGoldPieces.Text = character.goldPieces.ToString();
-			statGoldPieces3.Text = statGoldPieces.Text;
-			//character.activeConditions = 
-			//character.advantages = ;
-			statAlignment.Text = character.alignment;
-			statArmorClass.Text = character.baseArmorClass.ToString();
-			//character.blindsightRadius = 
-			//character.burrowingSpeed = 
-			statCharisma.Text = character.Charisma.ToString();
-			statCharisma2.Text = character.Charisma.ToString();
-			//character.climbingSpeed = 
-			// character.conditionImmunities = 
-			statConstitution.Text = character.Constitution.ToString();
-			statConstitution2.Text = character.Constitution.ToString();
-			//character.creatureSize = 
-			//character.cursesAndBlessings = 
-			//character.damageImmunities = 
-			//character.damageResistance = 
-			//character.damageVulnerability = 
-			//character.darkvisionRadius = 
-			statDeathSaveSkull1.IsChecked = character.deathSaveDeath1;
-			statDeathSaveSkull2.IsChecked = character.deathSaveDeath2;
-			statDeathSaveSkull3.IsChecked = character.deathSaveDeath3;
-			statDeathSaveHeart1.IsChecked = character.deathSaveLife1;
-			statDeathSaveHeart2.IsChecked = character.deathSaveLife2;
-			statDeathSaveHeart3.IsChecked = character.deathSaveLife3;
-			statDexterity.Text = character.Dexterity.ToString();
-			statDexterity2.Text = statDexterity.Text;
-			//character.disadvantages = 
-			//character.equipment = 
-			statExperiencePoints.Text = character.experiencePoints.ToString();
-			//character.flyingSpeed = 
-			statGoldPieces.Text = character.goldPieces.ToString();
-			statHitPoints.Text = character.hitPoints.ToString();
-			statInitiative.Text = PlusModifier(character.initiative) + character.initiative.ToString();
-			statInspiration.Text = character.inspiration.ToString();
-			statIntelligence.Text = character.Intelligence.ToString();
-			statIntelligence2.Text = statIntelligence.Text;
-			// character.baseIntelligence = statIntelligence.ToInt();
-			// character.kind = 
-			// character.languagesSpoken = 
-			// character.languagesUnderstood = 
-			statLevel.Text = character.level.ToString();
-			statLoad.Text = character.load.ToString();
-			//character.maxHitPoints = 
-			statName.Text = character.name;
-			statName2.Text = character.name;
-			statName3.Text = character.name;
+			changingInternally = true;
+			try
+			{
+				statGoldPieces.Text = character.goldPieces.ToString();
+				statGoldPieces3.Text = statGoldPieces.Text;
+				//character.activeConditions = 
+				//character.advantages = ;
+				statAlignment.Text = character.alignment;
+				statArmorClass.Text = character.baseArmorClass.ToString();
+				//character.blindsightRadius = 
+				//character.burrowingSpeed = 
+				statCharisma.Text = character.Charisma.ToString();
+				statCharisma2.Text = character.Charisma.ToString();
+				//character.climbingSpeed = 
+				// character.conditionImmunities = 
+				statConstitution.Text = character.Constitution.ToString();
+				statConstitution2.Text = character.Constitution.ToString();
+				//character.creatureSize = 
+				//character.cursesAndBlessings = 
+				//character.damageImmunities = 
+				//character.damageResistance = 
+				//character.damageVulnerability = 
+				//character.darkvisionRadius = 
+				statDeathSaveSkull1.IsChecked = character.deathSaveDeath1;
+				statDeathSaveSkull2.IsChecked = character.deathSaveDeath2;
+				statDeathSaveSkull3.IsChecked = character.deathSaveDeath3;
+				statDeathSaveHeart1.IsChecked = character.deathSaveLife1;
+				statDeathSaveHeart2.IsChecked = character.deathSaveLife2;
+				statDeathSaveHeart3.IsChecked = character.deathSaveLife3;
+				statDexterity.Text = character.Dexterity.ToString();
+				statDexterity2.Text = statDexterity.Text;
+				//character.disadvantages = 
+				//character.equipment = 
+				statExperiencePoints.Text = character.experiencePoints.ToString();
+				//character.flyingSpeed = 
+				statGoldPieces.Text = character.goldPieces.ToString();
+				statHitPoints.Text = character.hitPoints.ToString();
+				statInitiative.Text = PlusModifier(character.initiative) + character.initiative.ToString();
+				statInspiration.Text = character.inspiration.ToString();
+				statIntelligence.Text = character.Intelligence.ToString();
+				statIntelligence2.Text = statIntelligence.Text;
+				// character.baseIntelligence = statIntelligence.ToInt();
+				// character.kind = 
+				// character.languagesSpoken = 
+				// character.languagesUnderstood = 
+				statLevel.Text = character.level.ToString();
+				statLoad.Text = character.load.ToString();
+				//character.maxHitPoints = 
+				statName.Text = character.name;
+				statName2.Text = character.name;
+				statName3.Text = character.name;
 
-			//character.offTurnActions = 
-			//character.onTurnActions = 
-			statProficiencyBonus.Text = PlusModifier(character.proficiencyBonus) + character.proficiencyBonus.ToString();
-			SetSkillProficiency(character.proficientSkills | character.doubleProficiency);
-			statRaceClass.Text = character.raceClass;
-			//character.remainingHitDice = 
-			SetSavingThrowProficiency(character.savingThrowProficiency);
-			//character.senses = 
-			statSpeed.Text = character.baseSpeed.ToString();
-			statStrength.Text = character.Strength.ToString();
-			statStrength2.Text = statStrength.Text;
-			//character.swimmingSpeed = 
-			//character.telepathyRadius = 
-			//character.tempAcrobaticsMod = 
-			//character.tempAnimalHandlingMod = 
-			//character.tempArcanaMod = 
-			//character.tempAthleticsMod = 
-			//character.tempDeceptionMod = 
-			//character.tempHistoryMod =
-			statTempHitPoints.Text = character.tempHitPoints.ToString();
-			//character.tempInsightMod = 
-			//character.tempIntimidationMod = 
-			//character.tempInvestigationMod =
-			//character.tempMedicineMod = 
-			//character.tempNatureMod = 
-			//character.tempPerceptionMod =
-			//character.tempPerformanceMod = 
-			//character.tempPersuasionMod = 
-			//character.tempReligionMod = 
-			//character.tempSavingThrowModCharisma = 
-			//character.tempSavingThrowModConstitution = 
-			//character.tempSavingThrowModDexterity = 
-			//character.tempSavingThrowModIntelligence = 
-			//character.tempSavingThrowModStrength = 
-			//character.tempSavingThrowModWisdom = 
-			//character.tempSlightOfHandMod = 
-			//character.tempStealthMod = 
-			//character.tempSurvivalMod = 
-			statHitDice.Text = character.totalHitDice;
-			//character.tremorSenseRadius =
-			//character.truesightRadius = 
-			statWeight.Text = character.weight.ToString();
-			statWisdom.Text = character.Wisdom.ToString();
-			statWisdom2.Text = statWisdom.Text;
+				//character.offTurnActions = 
+				//character.onTurnActions = 
+				statProficiencyBonus.Text = PlusModifier(character.proficiencyBonus) + character.proficiencyBonus.ToString();
+				SetSkillProficiency(character.proficientSkills | character.doubleProficiency);
+				statRaceClass.Text = character.raceClass;
+				//character.remainingHitDice = 
+				SetSavingThrowProficiency(character.savingThrowProficiency);
+				//character.senses = 
+				statSpeed.Text = character.baseSpeed.ToString();
+				statStrength.Text = character.Strength.ToString();
+				statStrength2.Text = statStrength.Text;
+				//character.swimmingSpeed = 
+				//character.telepathyRadius = 
+				//character.tempAcrobaticsMod = 
+				//character.tempAnimalHandlingMod = 
+				//character.tempArcanaMod = 
+				//character.tempAthleticsMod = 
+				//character.tempDeceptionMod = 
+				//character.tempHistoryMod =
+				statTempHitPoints.Text = character.tempHitPoints.ToString();
+				//character.tempInsightMod = 
+				//character.tempIntimidationMod = 
+				//character.tempInvestigationMod =
+				//character.tempMedicineMod = 
+				//character.tempNatureMod = 
+				//character.tempPerceptionMod =
+				//character.tempPerformanceMod = 
+				//character.tempPersuasionMod = 
+				//character.tempReligionMod = 
+				//character.tempSavingThrowModCharisma = 
+				//character.tempSavingThrowModConstitution = 
+				//character.tempSavingThrowModDexterity = 
+				//character.tempSavingThrowModIntelligence = 
+				//character.tempSavingThrowModStrength = 
+				//character.tempSavingThrowModWisdom = 
+				//character.tempSlightOfHandMod = 
+				//character.tempStealthMod = 
+				//character.tempSurvivalMod = 
+				statHitDice.Text = character.totalHitDice;
+				//character.tremorSenseRadius =
+				//character.truesightRadius = 
+				statWeight.Text = character.weight.ToString();
+				statWisdom.Text = character.Wisdom.ToString();
+				statWisdom2.Text = statWisdom.Text;
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 
 		public string GetCharacter()

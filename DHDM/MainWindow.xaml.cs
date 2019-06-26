@@ -185,6 +185,8 @@ namespace DHDM
 		}
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (buildingTabs)
+				return;
 			highlightRectangles = null;
 			NextDieRollType = DiceRollType.None;
 			activePage = ScrollPage.main;
@@ -1167,23 +1169,32 @@ namespace DHDM
 
 		void BuildPlayerTabs()
 		{
-			tabPlayers.Items.Clear();
+			buildingTabs = true;
 
-			foreach (Character player in players)
+			try
 			{
-				TabItem tabItem = new TabItem();
-				tabItem.Header = player.name;
-				tabPlayers.Items.Add(tabItem);
+				tabPlayers.Items.Clear();
 
-				Grid grid = new Grid();
-				grid.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
-				tabItem.Content = grid;
+				foreach (Character player in players)
+				{
+					TabItem tabItem = new TabItem();
+					tabItem.Header = player.name;
+					tabPlayers.Items.Add(tabItem);
 
-				CharacterSheets characterSheets = new CharacterSheets();
-				characterSheets.PageChanged += CharacterSheets_PageChanged;
-				characterSheets.CharacterChanged += HandleCharacterChanged;
-				characterSheets.SetFromCharacter(player);
-				grid.Children.Add(characterSheets);
+					Grid grid = new Grid();
+					grid.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
+					tabItem.Content = grid;
+
+					CharacterSheets characterSheets = new CharacterSheets();
+					characterSheets.PageChanged += CharacterSheets_PageChanged;
+					characterSheets.CharacterChanged += HandleCharacterChanged;
+					characterSheets.SetFromCharacter(player);
+					grid.Children.Add(characterSheets);
+				}
+			}
+			finally
+			{
+				buildingTabs = false;
 			}
 		}
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
@@ -1291,6 +1302,7 @@ namespace DHDM
 		}
 
 		List<Character> players;
+		bool buildingTabs;
 
 		private void BtnRollExtraOnly_Click(object sender, RoutedEventArgs e)
 		{
@@ -1316,6 +1328,19 @@ namespace DHDM
 				//PlayerID;
 				//tbxModifier.Text = ;
 			}
+		}
+
+		private void BtnApplyHealth_Click(object sender, RoutedEventArgs e)
+		{
+			if (int.TryParse(tbxHealth.Text, out int result))
+			{
+				// TODO: Send result via signalR.
+			}
+		}
+
+		private void BtnInflictDamage_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }
