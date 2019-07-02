@@ -1787,6 +1787,58 @@ function addGoodLuckEffects(die: any) {
 	die.origins.push(new Vector(diceLayer.cloverRing.originX, diceLayer.cloverRing.originY));
 }
 
+function removeMultiplayerD20s(): any {
+	console.log('removeMultiplayerD20s...');
+	needToClearD20s = false;
+	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
+	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
+	if (isWildMagic || !localDiceRollData.itsAD20Roll)
+		return;
+	const vantageTextDelay = 900;
+	console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
+
+	let playerEdgeRolls: Array<number> = [];
+	let otherPlayersDie: Array<any> = [];
+	for (var j = 0; j < diceLayer.players.length; j++) {
+		playerEdgeRolls.push(-1);
+		otherPlayersDie.push(null);
+	}
+
+		for (var i = 0; i < dice.length; i++) {
+			let die = dice[i];
+			let playerId: number = die.playerID;
+			let topNumber = die.getTopNumber();
+
+			if (die.isD20) {
+				if (playerEdgeRolls[playerId] == -1)
+					playerEdgeRolls[playerId] = topNumber;
+				else if (die.kind == DiceRollKind.Advantage) {
+					if (playerEdgeRolls[playerId] <= topNumber) {
+						removeNonVantageDieNow(otherPlayersDie[playerId]);
+						diceLayer.addAdvantageText(otherPlayersDie[playerId], vantageTextDelay);
+						playerEdgeRolls[playerId] = topNumber;
+					}
+					else {  // Disadvantage
+						removeNonVantageDieNow(die);
+						diceLayer.addAdvantageText(die, vantageTextDelay);
+					}
+				}
+				else if (die.kind == DiceRollKind.Disadvantage) {
+					if (playerEdgeRolls[playerId] >= topNumber) {
+						removeNonVantageDieNow(otherPlayersDie[playerId]);
+						diceLayer.addDisadvantageText(otherPlayersDie[playerId], vantageTextDelay);
+						playerEdgeRolls[playerId] = topNumber;
+					}
+					else {
+						removeNonVantageDieNow(die);
+						diceLayer.addDisadvantageText(die, vantageTextDelay);
+					}
+				}
+				otherPlayersDie[playerId] = die;
+			}
+	}
+}
+
 function removeD20s(): number {
 	console.log('removeD20s...');
 	needToClearD20s = false;
@@ -1795,9 +1847,8 @@ function removeD20s(): number {
 	const isLuckRollHigh: boolean = localDiceRollData.type == DiceRollType.LuckRollHigh;
 	const isLuckRollLow: boolean = localDiceRollData.type == DiceRollType.LuckRollLow;
 	const isLuckRoll: boolean = isLuckRollHigh || isLuckRollLow;
-	const isNormal: boolean = localDiceRollData.kind == DiceRollKind.Normal;
 	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
-	if ((isNormal && !isLuckRoll) || isWildMagic || !localDiceRollData.itsAD20Roll)
+	if (isWildMagic || !localDiceRollData.itsAD20Roll)
 		return edgeRollValue;
 	let otherDie: any = null;
 	const vantageTextDelay = 900;
@@ -1808,29 +1859,29 @@ function removeD20s(): number {
 			let die = dice[i];
 			if (die.isLucky)
 				continue;
+
+			// TODO: Check behavior of Sorcerer's luck and bent luck rolls and see if we need to change those.
+			//const isNormal: boolean = die.kind == DiceRollKind.Normal;
+			//if (isNormal && !isLuckRoll)
+			//	continue;
+
 			let topNumber = die.getTopNumber();
 
 			if (die.isD20) {
 				if (edgeRollValue == -1)
 					edgeRollValue = topNumber;
-				else if (localDiceRollData.kind == DiceRollKind.Advantage) {
+				else if (die.kind == DiceRollKind.Advantage) {
 					if (edgeRollValue <= topNumber) {
 						removeNonVantageDieNow(otherDie);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
 						diceLayer.addAdvantageText(otherDie, vantageTextDelay);
-						//}
 						edgeRollValue = topNumber;
 					}
-					else {
+					else {  // Disadvantage
 						removeNonVantageDieNow(die);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
 						diceLayer.addAdvantageText(die, vantageTextDelay);
-						//}
 					}
 				}
-				else if (localDiceRollData.kind == DiceRollKind.Disadvantage) {
+				else if (die.kind == DiceRollKind.Disadvantage) {
 					if (edgeRollValue >= topNumber) {
 						removeNonVantageDieNow(otherDie);
 						//if (!localDiceRollData.showedVantageMessage) {
@@ -1980,7 +2031,12 @@ function checkStillRolling() {
 		let thisTime: number = performance.now();
 		if ((thisTime - firstStopTime) / 1000 > 1.5) {
 			if (needToClearD20s) {
-				d20RollValue = removeD20s();
+				if (diceRollData.hasMultiPlayerDice) {
+					removeMultiplayerD20s();
+				}
+				else {
+					d20RollValue = removeD20s();
+				}
 				showSpecialLabels();
 			}
 
@@ -2310,11 +2366,12 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.modifier = 0;
 		diceRollData.maxInspirationDiceAllowed = 4;
 
-		diceRollData.itsAD20Roll = false;
+		diceRollData.itsAD20Roll = true;
 		for (var i = 0; i < 4; i++) {
-			let die: any = addD20(diceRollData, diceLayer.getDieColor(i), diceLayer.activePlayerDieFontColor, xPositionModifier, i);
-			die.playerName = diceLayer.getPlayerName(i);
+			let player: Character = diceLayer.players[i];
+			addDiceForPlayer(i, xPositionModifier, player.rollInitiative);
 		}
+
 		diceRollData.hasMultiPlayerDice = true;
 	}
 	else if (diceRollData.type == DiceRollType.DamageOnly) {
@@ -2337,10 +2394,11 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		let playerID: number = -1;
 
 		if (diceRollData.rollScope == RollScope.ActivePlayer)
-			addDiceForPlayer(playerID, xPositionModifier);
+			addDiceForPlayer(playerID, xPositionModifier, diceRollData.kind);
 		else if (diceRollData.rollScope == RollScope.Everyone) {
 			for (var i = 0; i < 4; i++) {
-				addDiceForPlayer(i, xPositionModifier);
+				// TODO: Replace diceRollData.kind with correct data for each player.
+				addDiceForPlayer(i, xPositionModifier, diceRollData.kind);
 			}
 			diceRollData.hasMultiPlayerDice = true;
 		}
@@ -2348,7 +2406,8 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 			for (var i = 0; i < 4; i++) {
 				let filter: number = Math.pow(2, i);
 				if ((diceRollData.individualFilter & filter) == filter)
-					addDiceForPlayer(i, xPositionModifier);
+					// TODO: Replace diceRollData.kind with correct data for each player.
+					addDiceForPlayer(i, xPositionModifier, diceRollData.kind);
 			}
 			diceRollData.hasMultiPlayerDice = true;
 		}
@@ -2379,17 +2438,18 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	//startedRoll = true;
 }
 
-function addDiceForPlayer(playerID: number, xPositionModifier: number) {
+function addDiceForPlayer(playerID: number, xPositionModifier: number, kind: DiceRollKind) {
 	let d20BackColor: string = diceLayer.getDieColor(playerID);
 	let d20FontColor: string = diceLayer.getDieFontColor(playerID);
 	let numD20s: number = 1;
-	if (diceRollData.kind !== DiceRollKind.Normal)
+	if (kind !== DiceRollKind.Normal)
 		numD20s = 2;
 
 	for (var i = 0; i < numD20s; i++) {
 		var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
 		die.playerID = playerID;
-
+		die.playerName = diceLayer.getPlayerName(playerID);
+		die.kind = kind;
 		if (diceRollData.isMagic) {
 			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
 			die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));

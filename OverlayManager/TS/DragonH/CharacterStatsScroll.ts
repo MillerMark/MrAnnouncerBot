@@ -225,7 +225,10 @@ class CharacterStatsScroll extends WorldObject {
 
 
 	sendScrollLayerCommand(commandData: string): void {
-		// TODO: Implement this.
+		if (commandData == "Close")
+			this.close();
+		if (commandData == "ClearHighlighting")
+			this.clearEmphasis();
 	}
 
 	private addHighlightEmitters() {

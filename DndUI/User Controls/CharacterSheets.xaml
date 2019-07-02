@@ -44,7 +44,7 @@
 	</UserControl.Resources>
 	<Grid>
 		<local:GridSheet x:Name="pageMain" Width="234" Height="555" Activated="PageMain_Activated" >
-			<Image Name="imageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="None" PreviewMouseDown="PageMain_MouseDown"/>
+			<Image Name="imageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="None" PreviewMouseDown="PageMain_PreviewMouseDown" MouseDown="PageMain_MouseDown"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="64,147,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statTempHitPoints, Mode=OneWay}"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,103,0,0" VerticalAlignment="Top" Width="42" 
@@ -133,7 +133,7 @@
 		</local:GridSheet>
 
 		<local:GridSheet x:Name="pageSkills" Width="234" Height="555" Activated="PageSkills_Activated" Margin="250, 0, 0, 0" >
-			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" PreviewMouseDown="PageSkills_MouseDown"/>
+			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" PreviewMouseDown="PageSkills_PreviewMouseDown" MouseDown="PageSkillsBack_MouseDown"/>
 			<local:GroupBackground Height="56" Margin="8,103,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}"/>
 			<local:GroupBackground Height="56" Margin="8,163,0,0" Width="42" 
@@ -273,7 +273,7 @@
 		</local:GridSheet>
 
 		<local:GridSheet x:Name="pageEquipment" Width="234" Height="555" Activated="PageEquipment_Activated" Margin="500, 0, 0, 0" >
-			<Image Name="imageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back3.png" Stretch="None" Height="555" PreviewMouseDown="PageEquipment_MouseDown"/>
+			<Image Name="imageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back3.png" Stretch="None" Height="555" PreviewMouseDown="PageEquipment_PreviewMouseDown" MouseDown="PageEquipment_MouseDown"/>
 			<local:StatBox x:Name="statName3" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statSpeed3" Margin="92,59,0,0" Width="37" Height="18" Text="30" FocusItem="Speed"/>
 			<local:StatBox x:Name="statWeight" Margin="142,59,0,0" Width="50" Height="18" Text="143" FocusItem="Weight"/>

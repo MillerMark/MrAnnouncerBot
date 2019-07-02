@@ -1181,15 +1181,26 @@ namespace DHDM
 					tabItem.Header = player.name;
 					tabPlayers.Items.Add(tabItem);
 
+					StackPanel stackPanel = new StackPanel();
+					tabItem.Content = stackPanel;
+
 					Grid grid = new Grid();
 					grid.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
-					tabItem.Content = grid;
+					stackPanel.Children.Add(grid);
 
 					CharacterSheets characterSheets = new CharacterSheets();
 					characterSheets.PageChanged += CharacterSheets_PageChanged;
+					characterSheets.PageBackgroundClicked += CharacterSheets_PageBackgroundClicked;
 					characterSheets.CharacterChanged += HandleCharacterChanged;
 					characterSheets.SetFromCharacter(player);
 					grid.Children.Add(characterSheets);
+
+					Button button = new Button();
+					button.Content = "Hide Scroll";
+					button.Click += Button_ClearScrollClick;
+					button.MaxWidth = 200;
+					button.MinHeight = 45;
+					stackPanel.Children.Add(button);
 				}
 			}
 			finally
@@ -1197,6 +1208,17 @@ namespace DHDM
 				buildingTabs = false;
 			}
 		}
+
+		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
+		}
+
+		private void Button_ClearScrollClick(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.SendScrollLayerCommand("Close");
+		}
+
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
 			Character kent = new Character();

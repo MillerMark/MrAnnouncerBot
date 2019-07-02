@@ -316,25 +316,27 @@ class DiceLayer {
 		let x: number = 10;
 		let y: number = 10;
 		const lineHeight: number = 70;
-		const margins: number = 5;
 		let backgroundRect: AnimatedRectangle = this.addBackgroundRect(2, 2, 50, 50 /* lineHeight * initiativeSummary.length + margins * 2 */, DiceLayer.multiplePlayerSummaryDuration);
 		this.setMultiplayerFades(backgroundRect);
 		var lastRollWasHigherThanThreshold: boolean = true;
 		if (title) {
 			let titleEffect: TextEffect = this.showMultiplayerResultTitle(title, x, y);
-			titleEffect.boundingRect = backgroundRect;
+			titleEffect.connectedShapes.push(backgroundRect);
 			titleEffect.fontSize = 15;
 			y += lineHeight;
 			backgroundRect.height += lineHeight;
 			x += 30;
 		}
 
+		let knownPlayerNames: Array<TextEffect> = [];
+
+		var line: AnimatedLine = null;
 		for (var i = 0; i < initiativeSummary.length; i++) {
 			let playerRoll: PlayerRoll = initiativeSummary[i];
 			if (playerRoll.roll + playerRoll.modifier < hiddenThreshold && lastRollWasHigherThanThreshold) {
 				if (hiddenThreshold != 0) {
 					const separatorHeight: number = 20;
-					let line: AnimatedLine = this.addSeparatorHorizontalLine(x, y, 350, '#ff0000', DiceLayer.multiplePlayerSummaryDuration);
+					line = this.addSeparatorHorizontalLine(x, y, 10, '#ff0000', DiceLayer.multiplePlayerSummaryDuration);
 					this.setMultiplayerFades(line);
 					y += separatorHeight;
 					backgroundRect.height += separatorHeight;
@@ -342,9 +344,16 @@ class DiceLayer {
 				lastRollWasHigherThanThreshold = false;
 			}
 			let effect: TextEffect = this.showPlayerRoll(playerRoll, x, y);
-			effect.boundingRect = backgroundRect;
+			effect.connectedShapes.push(backgroundRect);
+			knownPlayerNames.push(effect);
 			y += lineHeight;
 		}
+
+		if (line) {
+			knownPlayerNames.forEach(function (playerName: TextEffect) { playerName.connectedShapes.push(line) });
+							}
+
+		knownPlayerNames
 	}
 
 	addSeparatorHorizontalLine(x: number, y: number, width: number, color: string, lifespan: number): AnimatedLine {
@@ -1015,6 +1024,13 @@ class AnimatedLine extends ScalableAnimation {
 	getVerticalThrust(now: number): number {
 		return 0;
 	}
+
+	resizeToContent(left: number, top: number, width: number, height: number) {
+		let rightSide: number = left + width;
+		if (this.x + this.width < rightSide) {
+			this.width = rightSide - this.x;
+		}
+	}
 }
 
 class AnimatedRectangle extends ScalableAnimation {
@@ -1039,7 +1055,7 @@ class AnimatedRectangle extends ScalableAnimation {
 		return 0;
 	}
 
-	fitToRect(left: number, top: number, width: number, height: number): any {
+	resizeToContent(left: number, top: number, width: number, height: number): any {
 		if (left - this.margin < this.x)
 			this.x = left - this.margin;
 
@@ -1052,5 +1068,4 @@ class AnimatedRectangle extends ScalableAnimation {
 		if (this.y + this.height < top + height + this.margin * 2)
 			this.height = top + height + this.margin * 2 - this.y;
 	}
-
 }
