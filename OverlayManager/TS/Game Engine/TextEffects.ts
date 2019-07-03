@@ -25,6 +25,10 @@ class ScalableAnimation extends AnimatedElement {
 		return t === 0 ? 0 : t === 1 ? 1 : (inverseSpeed - inverseSpeed / t) * Math.sin(25 * t) + 1;
 	}
 
+	resizeToContent(left: number, top: number, width: number, height: number) {
+		// Descendants can override...
+	}
+
 	getScale(now: number) {
 		let thisScale: number = this.scale;
 		if (this.targetScale >= 0) {
@@ -73,7 +77,7 @@ class Animations {
 	addLine(x: number, y: number, width: number, color: string, lifespan: number, lineThickness: number): AnimatedLine {
 		let line: AnimatedLine = new AnimatedLine(x, y, width, color, lifespan, lineThickness);
 		line.scale = 1;
-		line.targetScale = 1.3;
+		line.targetScale = 1;
 		this.animations.push(line);
 		return line;
 	}
@@ -124,7 +128,7 @@ class TextEffect extends ScalableAnimation {
 	textBaseline: string = 'middle';
 	outlineThickness: number;
 	fontSize: number;
-	boundingRect: AnimatedRectangle;
+	connectedShapes: Array<ScalableAnimation> = [];
 
 	constructor(x: number, y: number, lifeSpanMs: number = -1) {
 		super(x, y, lifeSpanMs);
@@ -153,7 +157,7 @@ class TextEffect extends ScalableAnimation {
 		context.lineJoin = "round";
 		context.strokeText(this.text, this.x, this.y);
 		context.fillText(this.text, this.x, this.y);
-		if (this.boundingRect) {
+		if (this.connectedShapes.length > 0) {
 			let width: number = context.measureText(this.text).width;
 			let height: number = scaledFontSize;
 			let top: number;
@@ -172,7 +176,9 @@ class TextEffect extends ScalableAnimation {
 			else if (this.textBaseline == 'bottom')
 				top = this.y - height;
 
-			this.boundingRect.fitToRect(left, top, width, height);
+			for (var i = 0; i < this.connectedShapes.length; i++) {
+				this.connectedShapes[i].resizeToContent(left, top, width, height);
+			}
 		}
 
 		context.globalAlpha = 1;

@@ -33,6 +33,20 @@ namespace DndUI
 		
 
 		ScrollPage scrollPage;
+		public static readonly RoutedEvent PageBackgroundClickedEvent = EventManager.RegisterRoutedEvent("PageBackgroundClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(CharacterSheets));
+
+		public event RoutedEventHandler PageBackgroundClicked
+		{
+			add { AddHandler(PageBackgroundClickedEvent, value); }
+			remove { RemoveHandler(PageBackgroundClickedEvent, value); }
+		}
+
+		protected virtual void OnPageBackgroundClicked()
+		{
+			RoutedEventArgs eventArgs = new RoutedEventArgs(PageBackgroundClickedEvent);
+			RaiseEvent(eventArgs);
+		}
+
 		public static readonly RoutedEvent CharacterChangedEvent = EventManager.RegisterRoutedEvent("CharacterChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(CharacterSheets));
 		public static readonly RoutedEvent PreviewCharacterChangedEvent = EventManager.RegisterRoutedEvent("PreviewCharacterChanged", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(CharacterSheets));
 
@@ -59,7 +73,7 @@ namespace DndUI
 			eventArgs.Source = this;
 			RaiseEvent(eventArgs);
 		}
-
+		
 		public static readonly RoutedEvent PageChangedEvent = 
 			EventManager.RegisterRoutedEvent("PageChanged", RoutingStrategy.Bubble, 
 				typeof(RoutedEventHandler), typeof(CharacterSheets));
@@ -80,7 +94,9 @@ namespace DndUI
 		protected virtual void OnPageChanged(ScrollPage newPage)
 		{
 			if (scrollPage == newPage)
+			{
 				return;
+			}
 			scrollPage = newPage;
 			FocusHelper.ClearActiveStatBoxes();
 
@@ -97,12 +113,12 @@ namespace DndUI
 			InitializeComponent();
 		}
 
-		private void PageSkills_MouseDown(object sender, MouseButtonEventArgs e)
+		private void PageSkills_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageChanged(ScrollPage.skills);
 		}
 
-		private void PageEquipment_MouseDown(object sender, MouseButtonEventArgs e)
+		private void PageEquipment_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageChanged(ScrollPage.equipment);
 		}
@@ -112,7 +128,7 @@ namespace DndUI
 			OnPageChanged(ScrollPage.main);
 		}
 
-		private void PageMain_MouseDown(object sender, MouseButtonEventArgs e)
+		private void PageMain_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageChanged(ScrollPage.main);
 		}
@@ -446,6 +462,21 @@ namespace DndUI
 		private void UserControl_Loaded(object sender, RoutedEventArgs e)
 		{
 			HookChangedEvents(this);
+		}
+
+		private void PageSkillsBack_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			OnPageBackgroundClicked();
+		}
+
+		private void PageEquipment_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			OnPageBackgroundClicked();
+		}
+
+		private void PageMain_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			OnPageBackgroundClicked();
 		}
 	}
 }
