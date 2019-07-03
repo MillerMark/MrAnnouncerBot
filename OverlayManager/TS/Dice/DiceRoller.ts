@@ -1428,7 +1428,6 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 	for (var i = 0; i < count; i++) {
 		// @ts-ignore - DiceD4
 		let die: DiceObject = null;
-		lastDieAdded = die;
 		switch (dieKind) {
 			case '4':
 				// @ts-ignore - DiceD4
@@ -1463,6 +1462,7 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 				die = new DiceD20({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
 		}
+		lastDieAdded = die;
 		if (die === null) {
 			throw new Error(`Die not found: "${dieStr}". Unable to throw dice.`);
 		}
@@ -1669,6 +1669,8 @@ function rollBentLuckDice() {
 	if (isLuckBent(localDiceRollData)) {
 		let throwPower: number = diceRollData.throwPower * 1.2;
 		die = addDie('d4', RollType.bentLuck, dieBack, dieFont, throwPower, xPositionModifier, false);
+
+		
 		//prepareDie(die, throwPower, xPositionModifier);
 	}
 	else {

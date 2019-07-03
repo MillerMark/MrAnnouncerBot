@@ -399,30 +399,23 @@
 								FlatD20
 							</Button>
 							<StackPanel x:Name="spGroupActivePlayer" Margin="15, 0, 0, 0">
-								<RadioButton x:Name="rbActivePlayer" IsChecked="True">
+								<RadioButton x:Name="rbActivePlayer" IsChecked="True" Checked="RbActivePlayer_Checked">
 									Active Player
 								</RadioButton>
-								<RadioButton x:Name="rbEveryone" >
+								<RadioButton x:Name="rbEveryone" Checked="RbEveryone_Checked">
 									Everyone
 								</RadioButton>
-								<RadioButton x:Name="rbIndividuals" >
+								<RadioButton x:Name="rbIndividuals" Checked="RbIndividuals_Checked">
 									Individuals
 								</RadioButton>
 							</StackPanel>
-							<StackPanel x:Name="spPlayerNames" Margin="23, 0, 0, 0">
-								<CheckBox x:Name="ckPlayer1" Tag="1">
-									Willy
-								</CheckBox>
-								<CheckBox x:Name="ckPlayer2" Tag="2">
-									Shemo
-								</CheckBox>
-								<CheckBox x:Name="ckPlayer3" Tag="4">
-									Merkin
-								</CheckBox>
-								<CheckBox x:Name="ckPlayer4" Tag="8">
-									Ava
-								</CheckBox>
-							</StackPanel>
+							<Grid x:Name="grdPlayerRollOptions" Height="Auto" Width="Auto" Margin="14, 0, 0, 0">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+							</Grid>
 						</StackPanel>
 						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
 							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
