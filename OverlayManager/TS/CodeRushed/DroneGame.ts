@@ -580,7 +580,10 @@ class DroneGame extends GamePlusQuiz {
 			  * change the genre
 			  * stop the music
 		  */
-		chat("Available music genres are: " + this.getGenreDisplayList())
+		chat("Available music genres: " + this.getGenreDisplayList())
+		let boombox: Boombox = Boombox.getInstance();
+		if (boombox)
+			chat(`Active genre: ` + boombox.activeGenre);
 	}
 
 	getGenreDisplayList(): string {
@@ -1250,9 +1253,11 @@ class Boombox extends ColorShiftingSpriteProxy {
 	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
 		super(startingFrameNumber, center, lifeSpanMs);
 		//this.addSongs('Adventure', 4);
-		this.addSongs('Techno', 68);
-		this.addSongs('Action', 76);
-		this.addSongs('Rock', 118);
+		this.addSongs('Techno', 75);
+		this.addSongs('Action', 102);
+		this.addSongs('Rock', 172);
+		this.addSongs('Funk', 103);
+		this.addSongs('EDM', 108);
 		this.selectRandomGenre();
 	}
 
@@ -1320,7 +1325,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 			if (genre.name.toLowerCase() == newGenre.toLowerCase()) {
 				this.activeGenre = genre.name;
 				this.activeSongCount = genre.count;
-				chat(`Next song played will be ${this.activeGenre}.`);
+				chat(`Switching to ${this.activeGenre}, right after this song.`);
 			}
 		}, this);
 	}
@@ -1330,7 +1335,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		for (var i = 0; i < this.genres.length - 1; i++) {
 			genreDisplayList += this.genres[i].name + ', ';
 		}
-		genreDisplayList += this.genres[this.genres.length - 1].name;
+		genreDisplayList += 'and ' + this.genres[this.genres.length - 1].name;
 		return genreDisplayList;
 	}
 
@@ -1381,17 +1386,18 @@ class Boombox extends ColorShiftingSpriteProxy {
 		let thisVolume: number = Math.round(Boombox.volume);
 		if (thisVolume >= 4)
 			actualVolume = thisVolume - 3;
-		switch (thisVolume) {
-			case 3:
-				actualVolume = 0.75;
-				break;
-			case 2:
-				actualVolume = 0.5;
-				break;
-			case 1:
-				actualVolume = 0.25;
-				break;
-		}
+		else 
+			switch (thisVolume) {
+				case 3:
+					actualVolume = 0.75;
+					break;
+				case 2:
+					actualVolume = 0.5;
+					break;
+				case 1:
+					actualVolume = 0.25;
+					break;
+			}
 		if (this.activeSong)
 			this.activeSong.volume = this.fadeVolumeMultiplier * actualVolume / 8;
 	}
