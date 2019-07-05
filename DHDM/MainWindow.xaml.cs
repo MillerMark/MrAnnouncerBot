@@ -364,7 +364,7 @@ namespace DHDM
 				{
 					diceRoll.RollScope = RollScope.Individuals;
 
-					foreach (UIElement uIElement in spPlayerNames.Children)
+					foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 					{
 						if (uIElement is CheckBox checkbox && checkbox.IsChecked == true)
 						{
@@ -1321,6 +1321,82 @@ namespace DHDM
 			HubtasticBaseStation.SetPlayerData(playerData);
 
 			BuildPlayerTabs();
+			BuildPlayerUI();
+		}
+
+		string GetFirstName(string name)
+		{
+			if (name == null)
+				return "No name";
+			int spaceIndex = name.IndexOf(' ');
+			if (spaceIndex < 0)
+				return name;
+			return name.Substring(0, spaceIndex);
+		}
+		void SetGridPosition(UIElement control, int column, int row)
+		{
+			Grid.SetColumn(control, column);
+			Grid.SetRow(control, row);
+		}
+		void BuildPlayerUI()
+		{
+			grdPlayerRollOptions.Children.Clear();
+			grdPlayerRollOptions.RowDefinitions.Clear();
+			int tag = 1;
+			int row = 0;
+			foreach (Character player in players)
+			{
+				grdPlayerRollOptions.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
+
+				PlayerRollCheckBox checkBox = new PlayerRollCheckBox();
+				checkBox.Content = GetFirstName(player.name);
+				checkBox.Tag = tag;
+				checkBox.Checked += PlayerRollCheckBox_Checked;
+				checkBox.Unchecked += PlayerRollCheckBox_Unchecked;
+				SetGridPosition(checkBox, 0, row);
+				
+
+				StackPanel stackPanel = new StackPanel();
+				checkBox.DependantUI = stackPanel;
+				stackPanel.Orientation = Orientation.Horizontal;
+				stackPanel.Margin = new Thickness(14, 0, 0, 0);
+				SetGridPosition(stackPanel, 1, row);
+
+				
+				RadioButton rbNormalRoll = new RadioButton();
+				rbNormalRoll.Content = "Normal";
+				rbNormalRoll.IsChecked = true;
+				stackPanel.Children.Add(rbNormalRoll);
+				RadioButton rbAdvantageRoll = new RadioButton();
+				rbAdvantageRoll.Content = "Adv.";
+				rbAdvantageRoll.Margin = new Thickness(14, 0, 0, 0);
+				stackPanel.Children.Add(rbAdvantageRoll);
+				RadioButton rbDisadvantageRoll = new RadioButton();
+				rbDisadvantageRoll.Content = "Disadv.";
+				rbDisadvantageRoll.Margin = new Thickness(14, 0, 0, 0);
+				stackPanel.Children.Add(rbDisadvantageRoll);
+
+				tag *= 2;
+				row++;
+				grdPlayerRollOptions.Children.Add(checkBox);
+				grdPlayerRollOptions.Children.Add(stackPanel);
+			}
+		}
+
+		private void PlayerRollCheckBox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			PlayerRollCheckBox playerRollCheckBox = sender as PlayerRollCheckBox;
+			if (playerRollCheckBox == null)
+				return;
+			playerRollCheckBox.DependantUI.Visibility = Visibility.Hidden;
+		}
+
+		private void PlayerRollCheckBox_Checked(object sender, RoutedEventArgs e)
+		{
+			PlayerRollCheckBox playerRollCheckBox = sender as PlayerRollCheckBox;
+			if (playerRollCheckBox == null)
+				return;
+			playerRollCheckBox.DependantUI.Visibility = Visibility.Visible;
 		}
 
 		List<Character> players;
@@ -1363,6 +1439,39 @@ namespace DHDM
 		private void BtnInflictDamage_Click(object sender, RoutedEventArgs e)
 		{
 
+		}
+
+		private void RbActivePlayer_Checked(object sender, RoutedEventArgs e)
+		{
+			ShowHidePlayerUI(false);
+		}
+
+		private void RbEveryone_Checked(object sender, RoutedEventArgs e)
+		{
+			ShowHidePlayerUI(false);
+		}
+
+		private void RbIndividuals_Checked(object sender, RoutedEventArgs e)
+		{
+			ShowHidePlayerUI(true);
+		}
+		void ShowHidePlayerUI(bool showUI)
+		{
+			if (grdPlayerRollOptions == null)
+				return;
+			if (showUI)
+				grdPlayerRollOptions.Visibility = Visibility.Visible;
+			else
+				grdPlayerRollOptions.Visibility = Visibility.Hidden;
+		}
+	}
+
+	public class PlayerRollCheckBox: CheckBox
+	{
+		public UIElement DependantUI { get; set; }
+		public PlayerRollCheckBox()
+		{
+			
 		}
 	}
 }

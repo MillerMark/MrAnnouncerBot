@@ -337,6 +337,8 @@ class DroneGame extends GamePlusQuiz {
 					Boombox.volumeUp();
 				else if (volStr.startsWith('down'))
 					Boombox.volumeDown();
+				else 
+					Boombox.setVolumeTo(volStr);
 			}
 			this.startMusic();
 			return true;
@@ -578,6 +580,17 @@ class DroneGame extends GamePlusQuiz {
 			  * change the genre
 			  * stop the music
 		  */
+		chat("Available music genres: " + this.getGenreDisplayList())
+		let boombox: Boombox = Boombox.getInstance();
+		if (boombox)
+			chat(`Active genre: ` + boombox.activeGenre);
+	}
+
+	getGenreDisplayList(): string {
+		let boombox: Boombox = Boombox.getInstance();
+		if (boombox)
+			return boombox.getGenreDisplayList();
+		return '(error - boombox instance not found)';
 	}
 
 	stopMusic(): void {
@@ -1235,16 +1248,23 @@ class Boombox extends ColorShiftingSpriteProxy {
 	soundManager: SoundManager = new SoundManager('GameDev/Assets/DroneGame/Music');
 	activeSong: HTMLAudioElement;
 	static suppressingVolume: boolean = false;
-  static suppressingVolumeEnds: number;
+	static suppressingVolumeEnds: number;
 
 	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
 		super(startingFrameNumber, center, lifeSpanMs);
-		this.addSongs('Adventure', 4);
-		this.addSongs('Techno', 66);
-		this.addSongs('Action', 76);
-		this.activeGenre = 'Action';
-		//this.activeGenre = 'Techno';
-		this.activeSongCount = 77;
+		//this.addSongs('Adventure', 4);
+		this.addSongs('Techno', 80);
+		this.addSongs('Action', 108);
+		this.addSongs('Rock', 177);
+		this.addSongs('Funk', 103);
+		this.addSongs('EDM', 108);
+		this.selectRandomGenre();
+	}
+
+	selectRandomGenre(): void {
+		let index: number = Math.floor(Math.random() * this.genres.length);
+		this.activeSongCount = this.genres[index].count;
+		this.activeGenre = this.genres[index].name;
 	}
 
 	static suppressVolume(seconds: number, now: number): void {
@@ -1305,10 +1325,20 @@ class Boombox extends ColorShiftingSpriteProxy {
 			if (genre.name.toLowerCase() == newGenre.toLowerCase()) {
 				this.activeGenre = genre.name;
 				this.activeSongCount = genre.count;
-				chat(`Next song played will be from the ${this.activeGenre} genre.`);
+				chat(`Switching to ${this.activeGenre}, right after this song.`);
 			}
 		}, this);
 	}
+
+	getGenreDisplayList(): string {
+		let genreDisplayList: string = '';
+		for (var i = 0; i < this.genres.length - 1; i++) {
+			genreDisplayList += this.genres[i].name + ', ';
+		}
+		genreDisplayList += 'and ' + this.genres[this.genres.length - 1].name;
+		return genreDisplayList;
+	}
+
 
 	// Here we are in a class
 
@@ -1320,23 +1350,26 @@ class Boombox extends ColorShiftingSpriteProxy {
 			Boombox.volume = 1;
 	}
 
-	static volumeDown(): any {
-		Boombox.volume -= 1;
-
-		Boombox.trimVolume();
-
-		let boombox: Boombox = Boombox.getInstance();
-		if (boombox)
-			boombox.setVolumeForActiveSong();
-
-		Boombox.reportVolume();
+	static volumeDown(): void {
+		Boombox.setVolumeTo(Boombox.volume - 1);
 	}
 
 
-	static volumeUp(): any {
-		Boombox.volume += 1;
-		Boombox.trimVolume();
+	static volumeUp(): void {
+		Boombox.setVolumeTo(Boombox.volume + 1);
+	}
 
+	static setVolumeTo(volStr: number | string): void {
+		let newVolume: number = +volStr;
+		if (!newVolume)
+			return;
+
+		Boombox.volume = newVolume;
+		Boombox.actOnNewVolume();
+	}
+
+	static actOnNewVolume(): void {
+		Boombox.trimVolume();
 		let boombox: Boombox = Boombox.getInstance();
 		if (boombox)
 			boombox.setVolumeForActiveSong();
@@ -1349,8 +1382,24 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	setVolumeForActiveSong() {
+		let actualVolume: number;
+		let thisVolume: number = Math.round(Boombox.volume);
+		if (thisVolume >= 4)
+			actualVolume = thisVolume - 3;
+		else 
+			switch (thisVolume) {
+				case 3:
+					actualVolume = 0.75;
+					break;
+				case 2:
+					actualVolume = 0.5;
+					break;
+				case 1:
+					actualVolume = 0.25;
+					break;
+			}
 		if (this.activeSong)
-			this.activeSong.volume = this.fadeVolumeMultiplier * Boombox.volume / 11;
+			this.activeSong.volume = this.fadeVolumeMultiplier * actualVolume / 8;
 	}
 
 	addSongs(genre: string, count: number) {
@@ -1376,7 +1425,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		if (!this.activeSong)
 			this.activeSong = this.soundManager.safePlayMp3ReturnAudio(fileName, 0);
 
-		this.activeSong.volume = Boombox.volume / 11;
+		this.setVolumeForActiveSong();
 
 		this.clearActiveTimeout();
 
