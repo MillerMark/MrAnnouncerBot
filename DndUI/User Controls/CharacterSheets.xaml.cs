@@ -379,7 +379,7 @@ namespace DndUI
 			character.goldPieces = statGoldPieces.ToDouble();
 			character.hitPoints = statHitPoints.ToInt();
 			character.initiative = statInitiative.ToInt();
-			character.inspiration = statInspiration.ToInt();
+			character.inspiration = statInspiration.Text;
 			character.baseIntelligence = statIntelligence.ToInt();
 			// character.kind = 
 			character.kind = CreatureKinds.Humanoids;   // Allow editing of this prop?

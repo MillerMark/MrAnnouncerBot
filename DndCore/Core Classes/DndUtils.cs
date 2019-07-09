@@ -47,5 +47,27 @@ namespace DndCore
 			}
 			return Ability.None;
 		}
+		public static DamageType ToDamage(string damageStr)
+		{
+			switch (damageStr.ToLower())
+			{
+				case "acid": return DamageType.Acid;
+				case "bludgeoning": return DamageType.Bludgeoning;
+				case "cold": return DamageType.Cold;
+				case "fire": return DamageType.Fire;
+				case "force": return DamageType.Force;
+				case "lightning": return DamageType.Lightning;
+				case "necrotic": return DamageType.Necrotic;
+				case "piercing": return DamageType.Piercing;
+				case "poison": return DamageType.Poison;
+				case "psychic": return DamageType.Psychic;
+				case "radiant": return DamageType.Radiant;
+				case "slashing": return DamageType.Slashing;
+				case "thunder": return DamageType.Thunder;
+				case "condition": return DamageType.Condition;
+				case "none": return DamageType.None;
+			}
+			return DamageType.None;
+		}
 	}
 }

@@ -16,7 +16,7 @@ namespace DndCore
 		public bool deathSaveLife2 = false;
 		public bool deathSaveLife3 = false;
 		public int experiencePoints = 0;
-		public double inspiration = 0;
+		public string inspiration = "";
 		public int level;
 		public int hueShift = 0;
 		public string dieBackColor = "#ffffff";
@@ -53,7 +53,7 @@ namespace DndCore
 		public double tempSurvivalMod = 0;
 		public string totalHitDice = string.Empty;
 		public double weight = 0;
-		public DiceRollKind rollInitiative = DiceRollKind.Normal;
+		public VantageKind rollInitiative = VantageKind.Normal;
 
 		public double charismaMod
 		{

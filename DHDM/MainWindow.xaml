@@ -329,18 +329,6 @@
 							
 							
 						</StackPanel>
-						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8"  >
-							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>
-							<RadioButton x:Name="rbTestNormalDieRoll"  Style="{StaticResource VantageStyle}" IsChecked="True" MinWidth="85" Margin="0, 0, 30, 0">
-								Normal
-							</RadioButton>
-							<RadioButton x:Name="rbTestAdvantageDieRoll" Style="{StaticResource VantageStyle}" Background="#FF000096" Foreground="White" MinWidth="85" Margin="0, 0, 30, 0">
-								Advantage
-							</RadioButton>
-							<RadioButton x:Name="rbTestDisadvantageDieRoll" Style="{StaticResource VantageStyle}" MinWidth="85" Background="#FF850000" Foreground="White" Margin="0, 0, 30, 0">
-								Disadvantage
-							</RadioButton>
-						</StackPanel>
 						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>
@@ -374,7 +362,13 @@
 										<ComboBoxItem>Slight of Hand</ComboBoxItem>
 										<ComboBoxItem>Stealth</ComboBoxItem>
 										<ComboBoxItem>Survival</ComboBoxItem>
-
+										<ComboBoxItem>-</ComboBoxItem>
+										<ComboBoxItem>Strength</ComboBoxItem>
+										<ComboBoxItem>Dexterity</ComboBoxItem>
+										<ComboBoxItem>Constitution</ComboBoxItem>
+										<ComboBoxItem>Intelligence</ComboBoxItem>
+										<ComboBoxItem>Wisdom</ComboBoxItem>
+										<ComboBoxItem>Charisma</ComboBoxItem>
 									</ComboBox>
 								</StackPanel>
 							</StackPanel>
@@ -398,6 +392,8 @@
 							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
 								FlatD20
 							</Button>
+						</StackPanel>
+						<StackPanel x:Name="spGroupIndividualOptions" Orientation="Horizontal" Margin="0, 10, 0, 0">
 							<StackPanel x:Name="spGroupActivePlayer" Margin="15, 0, 0, 0">
 								<RadioButton x:Name="rbActivePlayer" IsChecked="True" Checked="RbActivePlayer_Checked">
 									Active Player
@@ -417,6 +413,18 @@
 								</Grid.ColumnDefinitions>
 							</Grid>
 						</StackPanel>
+						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8"  >
+							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>
+							<RadioButton x:Name="rbTestNormalDieRoll"  Style="{StaticResource VantageStyle}" IsChecked="True" MinWidth="85" Margin="0, 0, 30, 0">
+								Normal
+							</RadioButton>
+							<RadioButton x:Name="rbTestAdvantageDieRoll" Style="{StaticResource VantageStyle}" Background="#FF000096" Foreground="White" MinWidth="85" Margin="0, 0, 30, 0">
+								Advantage
+							</RadioButton>
+							<RadioButton x:Name="rbTestDisadvantageDieRoll" Style="{StaticResource VantageStyle}" MinWidth="85" Background="#FF850000" Foreground="White" Margin="0, 0, 30, 0">
+								Disadvantage
+							</RadioButton>
+						</StackPanel>
 						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
 							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
 								Attack
@@ -427,11 +435,29 @@
 
 						</StackPanel>
 						<StackPanel x:Name="StackPanel1" Orientation="Horizontal">
-							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto"/>
-							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
+							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
+							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
 								2d8+6
 							</TextBox>
 							<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray"/>
+							<TextBlock Text="Damage Type: " Width="Auto" Height="Auto" Margin="18, 2, 0, 0"/>
+							<ComboBox x:Name="cbDamage" MaxHeight="22" MinWidth="150" 
+								Margin="4,0,0,0" SelectionChanged="CbDamage_SelectionChanged" SelectedIndex="0">
+								<ComboBoxItem>None</ComboBoxItem>
+								<ComboBoxItem>Acid</ComboBoxItem>
+								<ComboBoxItem>Bludgeoning</ComboBoxItem>
+								<ComboBoxItem>Cold</ComboBoxItem>
+								<ComboBoxItem>Fire</ComboBoxItem>
+								<ComboBoxItem>Force</ComboBoxItem>
+								<ComboBoxItem>Lightning</ComboBoxItem>
+								<ComboBoxItem>Necrotic</ComboBoxItem>
+								<ComboBoxItem>Piercing</ComboBoxItem>
+								<ComboBoxItem>Poison</ComboBoxItem>
+								<ComboBoxItem>Psychic</ComboBoxItem>
+								<ComboBoxItem>Radiant</ComboBoxItem>
+								<ComboBoxItem>Slashing</ComboBoxItem>
+								<ComboBoxItem>Thunder</ComboBoxItem>
+							</ComboBox>
 						</StackPanel>
 						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
 							<Button x:Name="btnRollDamageOnly" Background="#FFB50000" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollDamageOnly_Click">

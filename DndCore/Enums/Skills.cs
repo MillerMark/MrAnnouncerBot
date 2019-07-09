@@ -23,6 +23,12 @@ namespace DndCore
 		religion = 16384,
 		slightOfHand = 32768,
 		stealth = 65536,
-		survival = 131072
+		survival = 131072,
+		strength = 262144,
+		dexterity = 524288,
+		constitution = 1048576,
+		intelligence = 2097152,
+		wisdom = 4194304,
+		charisma = 8388608
 	}
 }

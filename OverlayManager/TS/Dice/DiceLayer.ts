@@ -1,6 +1,5 @@
 enum RollScope {
 	ActivePlayer,
-	Everyone,
 	Individuals
 }
 
@@ -108,6 +107,9 @@ class DiceLayer {
 	badLuckRing: Sprites;
 	sparkTrail: Sprites;
 	haloSpins: Sprites;
+	inspirationParticles: Sprites;
+	inspirationSmoke: Sprites;
+	ripples: Sprites;
 	//d20Fire: Sprites;
 	puff: Sprites;
 	freeze: Sprites;
@@ -135,7 +137,7 @@ class DiceLayer {
 	activePlayerDieFontColor: string = '#ffffff';
 	activePlayerHueShift: number = 0;
 	playerID: number;
-  playerDataSet: boolean = false;
+	playerDataSet: boolean = false;
 
 	constructor() {
 		this.loadSprites();
@@ -237,6 +239,21 @@ class DiceLayer {
 		this.haloSpins.originY = 200;
 		this.allFrontLayerEffects.add(this.haloSpins);
 
+		this.inspirationParticles = new Sprites("/Dice/Inspiration/InspirationParticles", 64, fps30, AnimationStyle.Loop, true);
+		this.inspirationParticles.originX = 215;
+		this.inspirationParticles.originY = 106;
+		this.allBackLayerEffects.add(this.inspirationParticles);
+
+		this.inspirationSmoke = new Sprites("/Dice/Inspiration/InspirationSmoke", 177, fps30, AnimationStyle.Loop, true);
+		this.inspirationSmoke.originX = 106;
+		this.inspirationSmoke.originY = 99;
+		this.allFrontLayerEffects.add(this.inspirationSmoke);
+
+		this.ripples = new Sprites("/Dice/Ripple/Ripple", 38, fps30, AnimationStyle.Sequential, true);
+		this.ripples.originX = 121;
+		this.ripples.originY = 126;
+		this.allBackLayerEffects.add(this.ripples);
+
 		this.ravens = [];
 		this.loadRavens(3);
 
@@ -312,7 +329,7 @@ class DiceLayer {
 		animatedElement.fadeInTime = 1000;
 	}
 
-	showMultiplayerResults(title: string, initiativeSummary: PlayerRoll[], hiddenThreshold: number = 0): any {
+	showMultiplayerResults(title: string, rollSummary: PlayerRoll[], hiddenThreshold: number = 0): any {
 		let x: number = 10;
 		let y: number = 10;
 		const lineHeight: number = 70;
@@ -331,8 +348,8 @@ class DiceLayer {
 		let knownPlayerNames: Array<TextEffect> = [];
 
 		var line: AnimatedLine = null;
-		for (var i = 0; i < initiativeSummary.length; i++) {
-			let playerRoll: PlayerRoll = initiativeSummary[i];
+		for (var i = 0; i < rollSummary.length; i++) {
+			let playerRoll: PlayerRoll = rollSummary[i];
 			if (playerRoll.roll + playerRoll.modifier < hiddenThreshold && lastRollWasHigherThanThreshold) {
 				if (hiddenThreshold != 0) {
 					const separatorHeight: number = 20;
@@ -351,7 +368,7 @@ class DiceLayer {
 
 		if (line) {
 			knownPlayerNames.forEach(function (playerName: TextEffect) { playerName.connectedShapes.push(line) });
-							}
+		}
 
 		knownPlayerNames
 	}
@@ -382,7 +399,7 @@ class DiceLayer {
 	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
 		if (!playerRoll.name)
 			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
-		var message: string = `${playerRoll.name} - ${playerRoll.roll + playerRoll.modifier}`;
+		var message: string = `${playerRoll.name}: ${playerRoll.roll + playerRoll.modifier}`;
 		if (playerRoll.modifier > 0)
 			message += ` (+${playerRoll.modifier})`;
 		else if (playerRoll.modifier < 0)
@@ -491,11 +508,10 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDieTotal(thisRollStr: string): void {
+	showDieTotal(thisRollStr: string, playerId: number = -1): void {
 		let textEffect: TextEffect = this.animations.addText(new Vector(960, 540), thisRollStr, this.totalRollScoreTime);
-		textEffect.fontColor = this.activePlayerDieColor;
+		this.setTextColorToPlayer(textEffect, playerId);
 		textEffect.elasticIn = true;
-		textEffect.outlineColor = this.activePlayerDieFontColor;
 		textEffect.scale = 10;
 		textEffect.opacity = 0.90;
 		textEffect.targetScale = 30;
@@ -503,7 +519,14 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showRollModifier(rollModifier: number, luckBend: number = 0): void {
+	private setTextColorToPlayer(textEffect: TextEffect, playerID: number = -1) {
+		if (playerID == -1)
+			playerID = this.playerID;
+		textEffect.fontColor = this.getDieColor(playerID);
+		textEffect.outlineColor = this.getDieFontColor(playerID);
+	}
+
+	showRollModifier(rollModifier: number, luckBend: number = 0, playerId: number = -1): void {
 		if (rollModifier == 0 && luckBend == 0)
 			return;
 		var rollModStr: string = rollModifier.toString();
@@ -520,9 +543,8 @@ class DiceLayer {
 		}
 
 		let textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr}${rollLuckModStr})`, this.rollModifierTime);
+		this.setTextColorToPlayer(textEffect, playerId);
 		textEffect.elasticIn = true;
-		textEffect.fontColor = this.activePlayerDieColor;
-		textEffect.outlineColor = this.activePlayerDieFontColor;
 		textEffect.velocityY = -0.1;
 		textEffect.scale = 2;
 		textEffect.opacity = 0.90;
@@ -711,6 +733,32 @@ class DiceLayer {
 	}
 
 
+	addInspirationParticles(x: number, y: number, rotationDegeesPerSecond: number, hueShift: number = 0): SpriteProxy {
+		let inspirationParticlesProxy = this.inspirationParticles.addShifted(x, y, 0, hueShift);
+		inspirationParticlesProxy.fadeInTime = 500;
+		inspirationParticlesProxy.fadeOutTime = 500;
+		inspirationParticlesProxy.fadeOnDestroy = true;
+		inspirationParticlesProxy.autoRotationDegeesPerSecond = rotationDegeesPerSecond;
+		inspirationParticlesProxy.initialRotation = Math.random() * 360;
+		return inspirationParticlesProxy;
+	}
+
+	addInspirationSmoke(x: number, y: number, angle: number): SpriteProxy {
+		let inspirationSmokeProxy = this.inspirationSmoke.add(x, y, -1);
+		inspirationSmokeProxy.rotation = angle;
+		inspirationSmokeProxy.fadeInTime = 500;
+		inspirationSmokeProxy.fadeOutTime = 1000;
+		inspirationSmokeProxy.fadeOnDestroy = true;
+		inspirationSmokeProxy.expirationDate = performance.now() + 3000;
+		return inspirationSmokeProxy;
+	}
+
+	addRipple(x: number, y: number, angle: number, hueShift: number = 0): ColorShiftingSpriteProxy {
+		let rippleProxy = this.ripples.addShifted(x, y, 0, hueShift);
+		rippleProxy.rotation = angle;
+		return rippleProxy;
+	}
+
 	addRaven(x: number, y: number, angle: number) {
 		let index: number = Math.floor(Math.random() * this.ravens.length);
 		let raven = this.ravens[index].addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
@@ -745,6 +793,9 @@ class DiceLayer {
 		this.badLuckRing.sprites = [];
 		this.halos.sprites = [];
 		this.haloSpins.sprites = [];
+		this.freeze.sprites = [];
+		this.freezePop.sprites = [];
+		this.inspirationParticles.sprites = [];
 		//this.stars.sprites = [];
 		//this.d20Fire.sprites = [];
 		this.clearTextEffects();
@@ -786,8 +837,8 @@ class DiceLayer {
 		let dto: any = JSON.parse(diceRollData);
 		let diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
-		diceRoll.kind = dto.Kind;
-		diceRoll.damageDice = dto.DamageDice;
+		diceRoll.vantageKind = dto.VantageKind;
+		diceRoll.damageHealthExtraDice = dto.DamageDice;
 		diceRoll.modifier = dto.Modifier;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
@@ -799,7 +850,7 @@ class DiceLayer {
 		diceRoll.onFirstContactEffect = dto.OnFirstContactEffect;
 		diceRoll.onRollSound = dto.OnRollSound;
 		diceRoll.minCrit = dto.MinCrit;
-		diceRoll.inspiration = dto.Inspiration;
+		diceRoll.groupInspiration = dto.GroupInspiration;
 		diceRoll.successMessage = dto.SuccessMessage;
 		diceRoll.failMessage = dto.FailMessage;
 		diceRoll.critFailMessage = dto.CritFailMessage;
@@ -808,10 +859,15 @@ class DiceLayer {
 		diceRoll.rollScope = dto.RollScope;
 		diceRoll.individualFilter = dto.IndividualFilter;
 		diceRoll.skillCheck = dto.SkillCheck;
+		diceRoll.damageType = dto.DamageType;
 		diceRoll.savingThrow = dto.SavingThrow;
 
 		for (var i = 0; i < dto.TrailingEffects.length; i++) {
 			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
+		}
+
+		for (var i = 0; i < dto.PlayerRollOptions.length; i++) {
+			diceRoll.playerRollOptions.push(new PlayerRollOptions(dto.PlayerRollOptions[i]));
 		}
 
 		if (diceRoll.throwPower < 0.2)
@@ -872,9 +928,12 @@ class DiceLayer {
 	}
 
 	getDieColor(playerID: number): string {
+		if (playerID < 0)
+			return this.activePlayerDieColor;
+		if (playerID < this.players.length)
+			return this.players[playerID].dieBackColor;
+
 		switch (playerID) {
-			case -1:
-				return this.activePlayerDieColor;
 			case 0:
 				return '#710138';
 			case 1:
@@ -888,10 +947,19 @@ class DiceLayer {
 	}
 
 	getDieFontColor(playerID: number): string {
+		if (playerID < 0)
+			return this.activePlayerDieFontColor;
+		if (playerID < this.players.length)
+			return this.players[playerID].dieFontColor;
+
 		return this.activePlayerDieFontColor;
 	}
 
 	getPlayerName(playerID: number): string {
+		if (playerID < 0)
+			return '';
+		if (playerID < this.players.length)
+			return this.players[playerID].getFirstName();
 		switch (playerID) {
 			case 0:
 				return 'Willy';
@@ -906,6 +974,10 @@ class DiceLayer {
 	}
 
 	getHueShift(playerID: number): number {
+		if (playerID < 0)
+			return 0;
+		if (playerID < this.players.length)
+			return this.players[playerID].hueShift;
 		switch (playerID) {
 			case 0:
 				return 0;
@@ -928,10 +1000,22 @@ class DiceLayer {
 	}
 }
 
+class PlayerRollOptions {
+	PlayerID: number;
+	Inspiration: string;
+	VantageKind: VantageKind;
+
+	constructor(dto: any) {
+		this.PlayerID = dto.PlayerID;
+		this.Inspiration = dto.Inspiration;
+		this.VantageKind = dto.VantageKind;
+	}
+}
+
 class DiceRollData {
 	type: DiceRollType;
-	kind: DiceRollKind;
-	damageDice: string;
+	vantageKind: VantageKind;
+	damageHealthExtraDice: string;
 	modifier: number;
 	minCrit: number;
 	hiddenThreshold: number;
@@ -942,6 +1026,7 @@ class DiceRollData {
 	throwPower: number;
 	itsAD20Roll: boolean;
 	trailingEffects: Array<TrailingEffect> = new Array<TrailingEffect>();
+	playerRollOptions: Array<PlayerRollOptions> = new Array<PlayerRollOptions>();
 	bonusRolls: Array<BonusRoll> = null;
 	onFirstContactSound: string;
 	critSuccessMessage: string;
@@ -953,10 +1038,11 @@ class DiceRollData {
 	numHalos: number;
 	individualFilter: number;
 	skillCheck: Skills;
+	damageType: DamageType;
 	savingThrow: Ability;
 	rollScope: RollScope;
 	wildMagic: WildMagic;
-	inspiration: string;
+	groupInspiration: string;
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;
 	bentLuckRollData: DiceRollData = null;
@@ -968,6 +1054,7 @@ class DiceRollData {
 	numInspirationDiceCreated: number = 0;
 	hasMultiPlayerDice: boolean = false;
 	multiplayerSummary: Array<PlayerRoll> = null;
+	hasSingleIndividual: boolean = false;
 	constructor() {
 
 	}
@@ -999,7 +1086,7 @@ class DiceRollData {
 class BonusRoll {
 	isMagic: boolean = false;
 	constructor(public diceStr: string, public description: string, public playerID: number, public dieBackColor: string = DiceLayer.bonusRollDieColor, public dieTextColor: string = DiceLayer.bonusRollFontColor) {
-		
+
 	}
 }
 

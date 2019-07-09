@@ -386,7 +386,7 @@ namespace DndCore
 			return GetCalculatedMod(key);
 		}
 
-		public DiceRollKind GetSkillCheckDice(Skills skills)
+		public VantageKind GetSkillCheckDice(Skills skills)
 		{
 			string baseKey = skills.ToString();
 			int vantageCount = 0;
@@ -400,12 +400,12 @@ namespace DndCore
 			}
 
 			if (vantageCount > 0)
-				return DiceRollKind.Advantage;
+				return VantageKind.Advantage;
 
 			if (vantageCount < 0)
-				return DiceRollKind.Disadvantage;
+				return VantageKind.Disadvantage;
 
-			return DiceRollKind.Normal;
+			return VantageKind.Normal;
 		}
 
 		public bool HasAnyCondition(Conditions conditions)

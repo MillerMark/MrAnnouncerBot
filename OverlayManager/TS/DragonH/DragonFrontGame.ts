@@ -10,7 +10,7 @@ enum TargetType {
 	ScreenPosition = 3
 }
 
-enum DiceRollKind {
+enum VantageKind {
 	Normal,
 	Advantage,
 	Disadvantage
@@ -744,14 +744,14 @@ class DragonFrontGame extends GamePlusQuiz {
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 
 		let centerX: number = this.getPlayerX(playerID);
-		const drawLines: boolean = false;
-		if (drawLines) {
-			context.beginPath();
-			context.moveTo(centerX, 1080);
-			context.lineTo(centerX, 980);
-			context.strokeStyle = '#ff0000';
-			context.stroke();
-		}
+		//const drawLines: boolean = false;
+		//if (drawLines) {
+		//	context.beginPath();
+		//	context.moveTo(centerX, 1080);
+		//	context.lineTo(centerX, 980);
+		//	context.strokeStyle = '#ff0000';
+		//	context.stroke();
+		//}
 
 		let hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
 		let hpWidth: number = context.measureText(hpStr).width;
@@ -767,8 +767,6 @@ class DragonFrontGame extends GamePlusQuiz {
 		let nameCenter: number = centerX - additionalHalfWidth;
 		let hpCenter: number = nameCenter + nameWidth / 2 + nameHpMargin + hpWidth / 2;
 		let totalNameplateTextWidth: number = nameWidth + nameHpMargin + hpWidth;
-
-
 
 		const innerNameplateMargin: number = 8;
 		let horizontalMargin: number = (nameplateMaxWidth - totalNameplateTextWidth) / 2 - innerNameplateMargin * 2;

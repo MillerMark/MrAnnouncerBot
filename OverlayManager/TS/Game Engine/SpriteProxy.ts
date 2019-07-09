@@ -8,6 +8,7 @@ class AnimatedElement {
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond: number = 0;
 	rotation: number;
+	initialRotation: number;
 	rotationStartTime: number;
 	timeToRotate: number = 0;
 	targetRotation: number = 0;
@@ -34,6 +35,7 @@ class AnimatedElement {
 
 		this.opacity = 1;
 		this.rotation = 0;
+		this.initialRotation = 0;
 
 		this.timeStart = performance.now();
 
@@ -91,7 +93,7 @@ class AnimatedElement {
 				this.rotationStartTime = nowMs;
 			else {
 				let timeSpentRotatingSeconds: number = (nowMs - this.rotationStartTime) / 1000;
-				this.rotation = timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
+				this.rotation = this.initialRotation + timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
 			}
 		}
 	}
