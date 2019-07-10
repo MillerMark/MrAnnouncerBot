@@ -429,11 +429,13 @@ class DiceLayer {
 	attachDamageFire(die: any): void {
 		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360)));
 		die.origins.push(this.damageFire.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
 
 	attachDamageCold(die: any): void {
 		die.attachedSprites.push(this.addDamageCold(960, 540, 0));
 		die.origins.push(this.damageCold.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Cold');
 	}
 
 	attachDamageNecrotic(die: any): void {
@@ -453,6 +455,7 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageNecroticFog(960, 540, rotationOffset));
 		die.origins.push(this.damageNecroticFog.getOrigin());	
+		diceSounds.safePlayMp3('Dice/Damage/Necrotic');
 	}
 
 
@@ -460,6 +463,7 @@ class DiceLayer {
 		let rotationOffset: number = Random.plusMinus(24);
 		die.attachedSprites.push(this.addDamageAcid(960, 540, rotationOffset));
 		die.origins.push(this.damageAcid.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Acid');
 	}
 
 
@@ -467,12 +471,14 @@ class DiceLayer {
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageRadiant(960, 540, rotationOffset));
 		die.origins.push(this.damageRadiant.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Radiant');
 	}
 
 	attachDamagePoison(die: any): void {
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamagePoison(960, 540, rotationOffset));
 		die.origins.push(this.damagePoison.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Poison');
 	}
 
 	attachDamagePiercing(die: any): void {
@@ -484,26 +490,35 @@ class DiceLayer {
 		die.origins.push(this.damagePiercingThickSword.getOrigin());
 		die.attachedSprites.push(this.addDamagePiercingTrident(960, 540, rotationOffset + 240, autoRotation));
 		die.origins.push(this.damagePiercingTrident.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Piercing');
 	}
 
 	attachDamageSlashing(die: any): void {
 		let rotationOffset: number = Random.between(0, 360);
 		let autoRotation: number = Random.plusMinusBetween(60, 120);
 
-		die.attachedSprites.push(this.addDamageSlashingSword(960, 540, rotationOffset, autoRotation));
-		die.origins.push(this.damageSlashingSword.getOrigin());
+		const numBlades: number = 5;
+		let degreesBetweenBlades: number = 360 / numBlades;
+		for (var i = 0; i < numBlades; i++) {
+			if (Random.max(100) < 50) {
+				die.attachedSprites.push(this.addDamageSlashingSword(960, 540, rotationOffset, autoRotation));
+				die.origins.push(this.damageSlashingSword.getOrigin());
+			}
+			else  {
+				die.attachedSprites.push(this.addDamageSlashingLance(960, 540, rotationOffset, autoRotation));
+				die.origins.push(this.damageSlashingLance.getOrigin());
+			}
+			rotationOffset += degreesBetweenBlades;
+		}
 
-		die.attachedSprites.push(this.addDamageSlashingSword(960, 540, rotationOffset + 120, autoRotation));
-		die.origins.push(this.damageSlashingSword.getOrigin());
-
-		die.attachedSprites.push(this.addDamageSlashingLance(960, 540, rotationOffset + 240, autoRotation));
-		die.origins.push(this.damageSlashingLance.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Slashing');
 	}
 
 	attachDamageThunder(die: any): void {
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageThunder(960, 540, rotationOffset));
 		die.origins.push(this.damageThunder.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Thunder');
 	}
 
 	attachDamageForce(die: any): void {
@@ -516,6 +531,8 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageForce(960, 540, rotationOffset + 240));
 		die.origins.push(this.damageForce.getOrigin());
+
+		diceSounds.safePlayMp3('Dice/Damage/Force');
 	}
 
 
@@ -530,12 +547,14 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset + 240, autoRotationDegeesPerSecond, 1));
 		die.origins.push(this.damageBludgeoningWeapon.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Bludgeoning');
 	}
 
 	attachDamagePsychic(die: any): void {
 		let rotationOffset: number = Random.max(360);
 		die.attachedSprites.push(this.addDamagePsychic(960, 540, rotationOffset));
 		die.origins.push(this.damagePsychic.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Psychic');
 	}
 
 
@@ -555,6 +574,7 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageLightningC(960, 540, rotationOffset + 240, autoRotateDPS));
 		die.origins.push(this.damageLightningC.getOrigin());
+		diceSounds.safePlayMp3('Dice/Damage/Lightning');
 	}
 
 
