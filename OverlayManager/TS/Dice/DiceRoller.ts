@@ -1474,6 +1474,51 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 		}
 		die.playerID = playerID;
 		prepareDie(die, throwPower, xPositionModifier);
+
+		if (die && dieType == RollType.damage) {
+			switch (diceRollData.damageType) {
+				case DamageType.Fire:
+					diceLayer.attachDamageFire(die);
+					break;
+				case DamageType.Cold:
+					diceLayer.attachDamageCold(die);
+					break;
+				case DamageType.Necrotic:
+					diceLayer.attachDamageNecrotic(die);
+					break;
+				case DamageType.Acid:
+					diceLayer.attachDamageAcid(die);
+					break;
+				case DamageType.Piercing:
+					diceLayer.attachDamagePiercing(die);
+					break;
+				case DamageType.Radiant:
+					diceLayer.attachDamageRadiant(die);
+					break;
+				case DamageType.Poison:
+					diceLayer.attachDamagePoison(die);
+					break;
+				case DamageType.Slashing:
+					diceLayer.attachDamageSlashing(die);
+					break;
+				case DamageType.Thunder:
+					diceLayer.attachDamageThunder(die);
+					break;
+				case DamageType.Force:
+					diceLayer.attachDamageForce(die);
+					break;
+				case DamageType.Psychic:
+					diceLayer.attachDamagePsychic(die);
+					break;
+				case DamageType.Bludgeoning:
+					diceLayer.attachDamageBludgeoning(die);
+					break;
+				case DamageType.Lightning:
+					diceLayer.attachDamageLightning(die);
+					break;
+			}
+		}
+
 		die.rollType = dieType;
 
 		if (die.rollType === RollType.inspiration) {
@@ -2111,36 +2156,45 @@ function showSpecialLabels() {
 		for (var i = 0; i < dice.length; i++) {
 			let die = dice[i];
 			if (die.rollType == RollType.damage) {
+
 				let topNumber = die.getTopNumber();
 				var message: string = '';
 				switch (topNumber) {
 					case 1:
 						message = 'Acid';
+						diceLayer.attachDamageAcid(die);
 						break;
 					case 2:
 						message = 'Cold';
+						diceLayer.attachDamageCold(die);
 						break;
 					case 3:
 						message = 'Fire';
+						diceLayer.attachDamageFire(die);
 						break;
 					case 4:
 						message = 'Force';
+						diceLayer.attachDamageForce(die);
 						break;
 					case 5:
 						message = 'Lightning';
+						diceLayer.attachDamageLightning(die);
 						break;
 					case 6:
 						message = 'Poison';
+						diceLayer.attachDamagePoison(die);
 						break;
 					case 7:
 						message = 'Psychic';
+						diceLayer.attachDamagePsychic(die);
 						break;
 					case 8:
 						message = 'Thunder';
+						diceLayer.attachDamageThunder(die);
 						break;
 				}
 				if (message) {
-					diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieColor, 900, 7000);
+					diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
 				}
 			}
 		}

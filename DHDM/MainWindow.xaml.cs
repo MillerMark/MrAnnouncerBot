@@ -139,6 +139,8 @@ namespace DHDM
 		void HighlightPlayerShortcut(int index)
 		{
 			HidePlayerShortcutHighlights();
+			if (highlightRectangles == null)
+				return;
 			if (highlightRectangles.ContainsKey(index))
 				highlightRectangles[index].Visibility = Visibility.Visible;
 		}
@@ -370,7 +372,7 @@ namespace DHDM
 			else
 				diceRoll.RollScope = RollScope.ActivePlayer;
 
-			if (type == DiceRollType.Attack)
+			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly)
 			{
 				ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
 				if (selectedItem != null && selectedItem.Content != null)

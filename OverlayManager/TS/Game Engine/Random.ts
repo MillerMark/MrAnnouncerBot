@@ -54,6 +54,13 @@ class Random {
 
   static between(min: number, max: number): number {
     return Math.random() * (max - min) + min;
+	}
+
+	static plusMinusBetween(min: number, max: number): number {
+		if (Random.max(100) < 50)
+			return Random.between(min, max);
+		else 
+			return -Random.between(min, max);
   }
 
   static plusMinus(value: number): number {
