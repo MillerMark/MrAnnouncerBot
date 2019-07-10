@@ -2,6 +2,62 @@
 const globalFramesToCount: number = 2;
 var globalBypassFrameSkip: boolean = false;
 
+class ImageManager {
+    private static _images = new Map<string, HTMLImageElement[]>();
+
+    private static _imagesLoaded: Promise<void>;
+    static get imagesLoaded() {
+        return this._imagesLoaded || (this._imagesLoaded = this.loadImages());
+    }
+
+    static get(folder: string, filename: string) {
+        const name = (folder + filename).toLowerCase();
+        const images = this._images.get(name);
+
+        if (!images)
+            console.log(`Image "${name} was not found.`);
+
+        return images || [];
+    }
+
+    private static getJson(response: Response) {
+        if (response.ok)
+            return response.json();
+
+        throw new Error('Images.json not found.');
+    }
+
+    private static addImages(json: object) {
+        for (const dir in json) {
+            const dirInfo = json[dir];
+
+            for (const name in dirInfo) {
+                const urls: string[] = dirInfo[name];
+                const key = dir.endsWith("/") ? dir + name : dir + "/" + name;
+
+                const images: HTMLImageElement[] = urls.map(url => {
+                    const image = new Image();
+                    image.src = url;
+                    return image;
+                });
+
+                ImageManager._images.set(key, images);
+            }
+        }
+    }
+
+    private static handleError(error: Error) {
+        console.log(error);
+    }
+
+    private static loadImages() {
+        return fetch("/images.json")
+            .then(this.getJson)
+            .then(this.addImages)
+            .catch(this.handleError);
+    }
+}
+
 class Part {
   static loadSprites: boolean;
   images: HTMLImageElement[];
@@ -9,6 +65,7 @@ class Part {
   reverse: boolean;
   lastUpdateTime: any;
   frameCount: number;
+  imagesLoaded: Promise<HTMLImageElement>;
 
   constructor(private fileName: string, frameCount: number,
     public animationStyle: AnimationStyle,
@@ -48,33 +105,30 @@ class Part {
       let frameIncrementor = frameCount / totalFramesToLoad;
       let absoluteIndex = 0;
 
-      for (var i = 0; i < totalFramesToLoad; i++) {
-        var image = new Image();
-        var indexStr: string = Math.round(absoluteIndex).toString();
-        while (padFileIndex && indexStr.length < numDigits)
-          indexStr = '0' + indexStr;
-        image.src = Folders.assets + fileName + indexStr + '.png';
-        this.images.push(image);
+      const self = this;
+      const assetsFolder = Folders.assets;
 
-        actualFrameCount++;
-        absoluteIndex += frameIncrementor;
-      }
-      //for (var i = 0; i < frameCount; i++) {
-      //  var image = new Image();
-      //  var indexStr: string = i.toString();
-      //  while (padFileIndex && indexStr.length < numDigits)
-      //    indexStr = '0' + indexStr;
-      //  image.src = Folders.assets + fileName + indexStr + '.png';
-      //  this.images.push(image);
-      //  actualFrameCount++;
-      //}
+      this.imagesLoaded = ImageManager.imagesLoaded.then(() => {
+        const images = ImageManager.get(assetsFolder, fileName);
+
+        for (var i = 0; i < totalFramesToLoad; i++) {
+          var index = Math.round(absoluteIndex);
+          self.images.push(images[index]);
+        
+          absoluteIndex += frameIncrementor;
+        }
+
+        return self.images[0];
+      });
+
+      self.frameCount = self.images.length;
     }
     else {
       var image = new Image();
       this.images.push(image);
+      this.frameCount = this.images.length;
+      this.imagesLoaded = Promise.resolve(image);
     }
-
-    this.frameCount = actualFrameCount;
   }
 
   fileExists(url) {

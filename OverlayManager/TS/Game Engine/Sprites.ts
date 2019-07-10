@@ -26,13 +26,14 @@
     var self = this;
     this.originX = 0;
     this.originY = 0;
-    this.baseAnimation.images[0].onload = function () {
-      self.spriteWidth = (<HTMLImageElement>this).width;
-      self.spriteHeight = (<HTMLImageElement>this).height;
+
+    this.baseAnimation.imagesLoaded.then(image => {
+      self.spriteWidth = image.width;
+      self.spriteHeight = image.height;
       self.loaded = true;
       if (onLoadedFunc != null)
         onLoadedFunc(self);
-    };
+    });
 
     this.lastTimeWeAdvancedTheFrame = performance.now();
   }
