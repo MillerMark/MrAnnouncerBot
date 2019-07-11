@@ -139,12 +139,18 @@
 								<TextBlock Text="10 Minutes " Width="Auto" Height="Auto" FontWeight="Bold"/>
 							</StackPanel>
 						</Button>
+
+						<Button x:Name="btnAdd1Minute" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdd1Minute_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="1 Minute " Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
 					</StackPanel>
 
-					<Button x:Name="btnEnterExitCombat" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitCombat_Click">
-						<TextBlock x:Name="tbEnterExitCombat" Text="Enter Combat" Width="Auto" Height="Auto" FontWeight="Bold"/>
+					<Button x:Name="btnEnterExitCombat" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitCombat_Click" Background="DarkRed" Foreground="White">
+						<TextBlock x:Name="tbEnterExitCombat" Text="Enter Combat" Width="Auto" Height="Auto" FontWeight="Bold" />
 					</Button>
-
 
 					<Button x:Name="btnAdvanceTurn" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdvanceTurn_Click">
 						<StackPanel Orientation="Horizontal">
@@ -389,8 +395,11 @@
 									</ComboBox>
 								</StackPanel>
 							</StackPanel>
-							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
-								FlatD20
+							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" MaxHeight="45" Click="BtnFlatD20_Click" >
+								Flat D20
+							</Button>
+							<Button x:Name="btnWildMagicD20Check" Margin="20,0,0,0" Padding="8" MinWidth="100" MaxHeight="45" Click="BtnWildMagicD20Check_Click" >
+								Wild Magic D20 Check
 							</Button>
 						</StackPanel>
 						<StackPanel x:Name="spGroupIndividualOptions" Orientation="Horizontal" Margin="0, 10, 0, 0">
@@ -470,7 +479,7 @@
 								Extra Only
 							</Button>
 						</StackPanel>
-						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Center">
+						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Left">
 							<TextBlock Text="Bending Luck: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnBendLuckAdd" Margin="8" Padding="8" MinWidth="100" Click="BtnBendLuckAdd_Click">
 								Bend Luck (+++)
@@ -498,6 +507,9 @@
 							</Button>
 							<Button x:Name="btnSneakAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnSneakAttack_Click" >
 								Sneak Attack
+							</Button>
+							<Button x:Name="btnLongtoothShiftingStrike" Margin="8" Padding="8" MinWidth="100" Click="BtnLongtoothShiftingStrike_Click" >
+								Longtooth Shifting Strike
 							</Button>
 						</StackPanel>
 

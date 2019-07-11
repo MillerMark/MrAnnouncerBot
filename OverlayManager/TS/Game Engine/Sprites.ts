@@ -25,18 +25,30 @@
     this.moves = false;
     var self = this;
     this.originX = 0;
-    this.originY = 0;
+		this.originY = 0;
 
-    this.baseAnimation.imagesLoaded.then(image => {
+		/* 
+		 * ImageManager...
+		
+		  this.baseAnimation.imagesLoaded.then(image => {
       self.spriteWidth = image.width;
       self.spriteHeight = image.height;
       self.loaded = true;
       if (onLoadedFunc != null)
         onLoadedFunc(self);
     });
+		  */
+
+		this.baseAnimation.onImageLoaded = function (image: HTMLImageElement) {
+			self.spriteWidth = image.width;
+			self.spriteHeight = image.height;
+			self.loaded = true;
+			if (onLoadedFunc != null)
+				onLoadedFunc(self);
+		};
 
     this.lastTimeWeAdvancedTheFrame = performance.now();
-  }
+	}
 
 	getOrigin(): Vector {
 		return new Vector(this.originX, this.originY);

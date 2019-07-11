@@ -180,7 +180,7 @@ namespace DHDM
 				if (uIElement is StackPanel)
 					spShortcutsActivePlayer.Children.RemoveAt(i);
 			}
-			
+
 			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerID == playerID).ToList();
 
 			foreach (PlayerActionShortcut playerActionShortcut in playerActions)
@@ -192,12 +192,24 @@ namespace DHDM
 		{
 			if (buildingTabs)
 				return;
+			if (rbActivePlayer.IsChecked == true)
+			{
+				CheckOnlyOnePlayer(PlayerID);
+			}
 			highlightRectangles = null;
 			NextDieRollType = DiceRollType.None;
 			activePage = ScrollPage.main;
 			FocusHelper.ClearActiveStatBoxes();
 			HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
 			SetActionShortcuts(PlayerID);
+		}
+		void CheckOnlyOnePlayer(int playerID)
+		{
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			{
+				if (uIElement is PlayerRollCheckBox checkbox)
+					checkbox.IsChecked = checkbox.PlayerId == playerID;
+			}
 		}
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
@@ -367,7 +379,7 @@ namespace DHDM
 				//if (rbActivePlayer.IsChecked == true)
 				//	diceRoll.RollScope = RollScope.ActivePlayer;
 				//else
-					diceRoll.RollScope = RollScope.Individuals;
+				diceRoll.RollScope = RollScope.Individuals;
 			}
 			else
 				diceRoll.RollScope = RollScope.ActivePlayer;
@@ -441,7 +453,7 @@ namespace DHDM
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
-			diceRoll.IsMagic = ckbUseMagic.IsChecked == true && IsAttack(type);
+			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
 			return diceRoll;
 		}
@@ -449,6 +461,11 @@ namespace DHDM
 		private void BtnFlatD20_Click(object sender, RoutedEventArgs e)
 		{
 			RollTheDice(PrepareRoll(DiceRollType.FlatD20));
+		}
+
+		private void BtnWildMagicD20Check_Click(object sender, RoutedEventArgs e)
+		{
+			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
 		}
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
@@ -606,6 +623,11 @@ namespace DHDM
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
+		}
+
+		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
 		}
 
 		void enableDiceRollButtons()
@@ -808,6 +830,10 @@ namespace DHDM
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.InCombat = !dndTimeClock.InCombat;
+			if (dndTimeClock.InCombat)
+				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
+			else
+				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
 			if (dndTimeClock.InCombat)
 				RollInitiative();
 			OnCombatChanged();
@@ -1097,7 +1123,7 @@ namespace DHDM
 		private const int Player_Shemo = 1;
 		private const int Player_Merkin = 2;
 		private const int Player_Ava = 3;
-		
+
 		DiceRollType nextDieRollType;
 		void InitializeAttackShortcuts()
 		{
@@ -1665,6 +1691,20 @@ namespace DHDM
 		private void CbDamage_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 
+		}
+
+		private void BtnLongtoothShiftingStrike_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.Fangs,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
+			});
+			diceRoll.OnFirstContactSound = "Snarl";
+			//diceRoll.OnFirstContactEffect = TrailingSpriteType.Fangs;
+			RollTheDice(diceRoll);
 		}
 	}
 

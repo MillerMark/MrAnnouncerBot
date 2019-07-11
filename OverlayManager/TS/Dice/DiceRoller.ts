@@ -1648,6 +1648,8 @@ function addTrailingEffects(die: any, trailingEffects: Array<TrailingEffect>) {
 			addSpriteFunc = diceLayer.addSparkTrail.bind(diceLayer);
 		else if (trailingEffect.Type === SpriteType.SmallSparks)
 			addSpriteFunc = diceLayer.smallSpark.bind(diceLayer);
+		else if (trailingEffect.Type === SpriteType.Fangs)
+			addSpriteFunc = diceLayer.addFangs.bind(diceLayer);
 		else if (trailingEffect.Type === SpriteType.Spiral)
 			addSpriteFunc = diceLayer.addSpiral.bind(diceLayer);
 		else
@@ -2425,6 +2427,11 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 
 	if (diceRollData.type == DiceRollType.FlatD20) {
 		diceSounds.playFlatD20Commentary(d20RollValue);
+		return;
+	}
+
+	if (diceRollData.type == DiceRollType.WildMagicD20Check) {
+		diceSounds.playWildMagicD20CheckCommentary(d20RollValue);
 		return;
 	}
 }

@@ -20,7 +20,8 @@ enum DiceRollType {
 	HealthOnly,
 	ExtraOnly,
 	ChaosBolt,
-	Initiative
+	Initiative,
+	WildMagicD20Check
 }
 
 enum SpriteType {
@@ -30,7 +31,8 @@ enum SpriteType {
 	Smoke,
 	SmokeExplosion,
 	SparkTrail,
-	SmallSparks
+	SmallSparks,
+	Fangs
 }
 
 class TrailingEffect {
@@ -146,6 +148,7 @@ class DiceLayer {
 	dicePortalTop: Sprites;
 	magicRing: Sprites;
 	spirals: Sprites;
+	fangs: Sprites;
 	halos: Sprites;
 	ravens: Sprites[];
 	diceBlowColoredSmoke: Sprites;
@@ -166,6 +169,7 @@ class DiceLayer {
 
 	loadSprites() {
 		Part.loadSprites = true;
+		Folders.assets = 'GameDev/Assets/DragonH/';
 
 		globalBypassFrameSkip = true;
 
@@ -173,40 +177,25 @@ class DiceLayer {
 		this.allBackLayerEffects = new SpriteCollection();
 
 		//! Items added later are drawn on top of earlier items.
+
+
+		this.pawPrints = new Sprites("/Dice/TigerPaw/TigerPaw", 76, fps30, AnimationStyle.Loop, true);
+		this.pawPrints.originX = 50;
+		this.pawPrints.originY = 66;
+		this.allBackLayerEffects.add(this.pawPrints);
+
 		this.diceFireball = new Sprites("/Dice/Roll20Fireball/DiceFireball", 71, fps30, AnimationStyle.Sequential, true);
 		this.diceFireball.originX = 104;
 		this.diceFireball.originY = 155;
 		this.allFrontLayerEffects.add(this.diceFireball);
 
-		this.cloverRing = new Sprites("/Dice/Luck/CloverRing", 120, fps30, AnimationStyle.Loop, true);
-		this.cloverRing.originX = 141;
-		this.cloverRing.originY = 137;
-		this.allFrontLayerEffects.add(this.cloverRing);
-
-		this.badLuckRing = new Sprites("/Dice/Luck/BadLuckRing", 120, fps30, AnimationStyle.Loop, true);
-		this.badLuckRing.originX = 141;
-		this.badLuckRing.originY = 137;
-		this.allFrontLayerEffects.add(this.badLuckRing);
-
-		this.freeze = new Sprites("/Dice/Freeze/Freeze", 30, fps30, AnimationStyle.SequentialStop, true);
-		this.freeze.originX = 80;
-		this.freeze.originY = 80;
-		this.allFrontLayerEffects.add(this.freeze);
-
-		this.freezePop = new Sprites("/Dice/Freeze/Pop", 50, fps30, AnimationStyle.Sequential, true);
-		this.freezePop.originX = 182;
-		this.freezePop.originY = 136;
-		this.allFrontLayerEffects.add(this.freezePop);
 
 		this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
 		this.sparkTrail.originX = 322;
 		this.sparkTrail.originY = 152;
 		this.allFrontLayerEffects.add(this.sparkTrail);
 
-		this.pawPrints = new Sprites("/Dice/TigerPaw/TigerPaw", 76, fps30, AnimationStyle.Loop, true);
-		this.pawPrints.originX = 50;
-		this.pawPrints.originY = 66;
-		this.allBackLayerEffects.add(this.pawPrints);
+
 
 		//this.stars = new Sprites("/Dice/Star/Star", 60, fps30, AnimationStyle.Loop, true);
 		//this.stars.originX = 170;
@@ -390,6 +379,11 @@ class DiceLayer {
 		this.spirals.originY = 107;
 		this.allBackLayerEffects.add(this.spirals);
 
+		this.fangs = new Sprites("/Dice/Fang/Fang", 79, fps30, AnimationStyle.Loop, true);
+		this.fangs.originX = 87;
+		this.fangs.originY = 61;
+		this.allBackLayerEffects.add(this.fangs);
+
 		this.diceBlowColoredSmoke = new Sprites("/Dice/Blow/DiceBlow", 41, fps40, AnimationStyle.Sequential, true);
 		this.diceBlowColoredSmoke.originX = 178;
 		this.diceBlowColoredSmoke.originY = 170;
@@ -424,6 +418,26 @@ class DiceLayer {
 		this.sneakAttackBottom.originX = 373;
 		this.sneakAttackBottom.originY = 377;
 		this.allBackLayerEffects.add(this.sneakAttackBottom);
+
+		this.cloverRing = new Sprites("/Dice/Luck/CloverRing", 120, fps30, AnimationStyle.Loop, true);
+		this.cloverRing.originX = 141;
+		this.cloverRing.originY = 137;
+		this.allFrontLayerEffects.add(this.cloverRing);
+
+		this.badLuckRing = new Sprites("/Dice/Luck/BadLuckRing", 120, fps30, AnimationStyle.Loop, true);
+		this.badLuckRing.originX = 141;
+		this.badLuckRing.originY = 137;
+		this.allFrontLayerEffects.add(this.badLuckRing);
+
+		this.freeze = new Sprites("/Dice/Freeze/Freeze", 30, fps30, AnimationStyle.SequentialStop, true);
+		this.freeze.originX = 80;
+		this.freeze.originY = 80;
+		this.allFrontLayerEffects.add(this.freeze);
+
+		this.freezePop = new Sprites("/Dice/Freeze/Pop", 50, fps30, AnimationStyle.Sequential, true);
+		this.freezePop.originX = 182;
+		this.freezePop.originY = 136;
+		this.allFrontLayerEffects.add(this.freezePop);
 	}
 
 	attachDamageFire(die: any): void {
@@ -445,16 +459,16 @@ class DiceLayer {
 		let autoRotation: number = -Random.between(20, 45);
 
 		die.attachedSprites.push(this.addDamageNecroticFog(960, 540, rotationOffset));
-		die.origins.push(this.damageNecroticFog.getOrigin());	
+		die.origins.push(this.damageNecroticFog.getOrigin());
 
 		for (var i = 0; i < numHeads; i++) {
 			die.attachedSprites.push(this.addDamageNecroticHead(960, 540, rotationOffset + 0, autoRotation));
-			die.origins.push(this.damageNecroticHead.getOrigin());	
+			die.origins.push(this.damageNecroticHead.getOrigin());
 			rotationOffset += 360 / numHeads;
 		}
 
 		die.attachedSprites.push(this.addDamageNecroticFog(960, 540, rotationOffset));
-		die.origins.push(this.damageNecroticFog.getOrigin());	
+		die.origins.push(this.damageNecroticFog.getOrigin());
 		diceSounds.safePlayMp3('Dice/Damage/Necrotic');
 	}
 
@@ -504,7 +518,7 @@ class DiceLayer {
 				die.attachedSprites.push(this.addDamageSlashingSword(960, 540, rotationOffset, autoRotation));
 				die.origins.push(this.damageSlashingSword.getOrigin());
 			}
-			else  {
+			else {
 				die.attachedSprites.push(this.addDamageSlashingLance(960, 540, rotationOffset, autoRotation));
 				die.origins.push(this.damageSlashingLance.getOrigin());
 			}
@@ -1286,9 +1300,10 @@ class DiceLayer {
 	}
 
 	clearResidualEffects(): any {
-		this.magicRing.sprites = [];
 		this.cloverRing.sprites = [];
+		this.magicRing.sprites = [];
 		this.badLuckRing.sprites = [];
+		this.freeze.sprites = [];
 		this.halos.sprites = [];
 		this.haloSpins.sprites = [];
 		this.damageFire.sprites = [];
@@ -1312,7 +1327,6 @@ class DiceLayer {
 		this.damageLightningB.sprites = [];
 		this.damageLightningC.sprites = [];
 		this.damageLightningCloud.sprites = [];
-		this.freeze.sprites = [];
 		this.freezePop.sprites = [];
 		this.inspirationParticles.sprites = [];
 		//this.stars.sprites = [];
@@ -1413,8 +1427,18 @@ class DiceLayer {
 		return spiral;
 	}
 
+	addFangs(x: number, y: number, angle: number): SpriteProxy {
+		let fangs = this.fangs.addShifted(x, y, Math.round(Math.random() * this.spirals.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
+		fangs.rotation = angle;
+		fangs.expirationDate = performance.now() + 4000;
+		fangs.fadeOutTime = 2000;
+		fangs.fadeInTime = 500;
+		fangs.opacity = 0.9;
+		return fangs;
+	}
+
 	addPawPrint(x: number, y: number, angle: number): SpriteProxy {
-		let pawPrint = this.pawPrints.addShifted(x, y, Math.round(Math.random() * this.pawPrints.sprites.length), diceLayer.activePlayerHueShift);
+		let pawPrint = this.pawPrints.addShifted(x, y, Math.round(Math.random() * this.pawPrints.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		pawPrint.rotation = angle;
 		pawPrint.expirationDate = performance.now() + 4000;
 		pawPrint.fadeOutTime = 2000;

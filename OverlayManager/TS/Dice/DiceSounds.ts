@@ -55,6 +55,8 @@ class DiceSounds extends SoundManager {
 
 	playFlatD20Commentary(d20RollValue: number): void {
 	}
+	playWildMagicD20CheckCommentary(d20RollValue: number): void {
+	}
 	playExtraCommentary(type: DiceRollType, d20RollValue: number): void {
 	}
 	playHealthCommentary(type: DiceRollType, d20RollValue: number): void {
