@@ -58,6 +58,45 @@ class ImageManager {
 	}
 }
 
+class PartBackgroundLoader {
+	static partsToLoad: Array<Part> = [];
+
+	static remove(part: Part): void {
+		for (var i = length - 1; i >= 0; i--) {
+			if (PartBackgroundLoader.partsToLoad[i] == part)
+				PartBackgroundLoader.partsToLoad.splice(i, 1);
+		}
+	}
+	static add(part: Part): void {
+		PartBackgroundLoader.partsToLoad.push(part);
+		PartBackgroundLoader.initialize();
+	}
+
+	static loadImages() {
+		if (PartBackgroundLoader.partsToLoad.length == 0) {
+			if (PartBackgroundLoader.intervalHandle !== undefined) {
+				clearInterval(PartBackgroundLoader.intervalHandle);
+				PartBackgroundLoader.intervalHandle = undefined;
+			}
+			return;
+		}
+		PartBackgroundLoader.partsToLoad.sort((a, b) => (a.frameCount - b.frameCount));
+		let partToLoad: Part = PartBackgroundLoader.partsToLoad.pop();
+		console.log(`Background Loading Part with ${partToLoad.frameCount} images.`);
+		partToLoad.images;  // Triggering the load on demand.
+	}
+
+	static intervalHandle?: number = undefined;
+
+	static initialize() {
+		if (PartBackgroundLoader.intervalHandle === undefined)
+			PartBackgroundLoader.intervalHandle = setInterval(PartBackgroundLoader.loadImages, 3000);
+	}
+}
+
+PartBackgroundLoader.initialize();
+
+
 class Part {
 	static loadSprites: boolean;
 	loadedAllImages: boolean;
@@ -69,6 +108,8 @@ class Part {
 
 	private _images: HTMLImageElement[];
 	onImageLoaded: (image: HTMLImageElement) => void;
+    framesToCount: number;
+    framesToLoad: number;
 
 	get images(): HTMLImageElement[] {
 		if (!this.loadedAllImages) {
@@ -95,29 +136,34 @@ class Part {
 			numDigits = 2;
 		else
 			numDigits = 1;
-		let framesToLoad: number = 1;
-		let framesToCount: number = 1;
-		if (this.frameCount > 60 && !globalBypassFrameSkip) {
-			framesToLoad = globalFramesToLoad;
-			framesToCount = globalFramesToCount;
-			this.frameRate = framesToCount / framesToLoad;
-		}
+		//let framesToLoad: number = 1;
+		//let framesToCount: number = 1;
+		//if (this.frameCount > 60 && !globalBypassFrameSkip) {
+		//	framesToLoad = globalFramesToLoad;
+		//	framesToCount = globalFramesToCount;
+		//	this.frameRate = framesToCount / framesToLoad;
+		//}
 
-		let totalFramesToLoad = this.frameCount * framesToLoad / framesToCount - this._images.length;
-		let frameIncrementor = this.frameCount / totalFramesToLoad;
-		let absoluteStartIndex = this._images.length;
+		this.frameRate = this.framesToCount / this.framesToLoad;
+
+		let totalFramesToLoad = this.frameCount * this.framesToLoad / this.framesToCount;
+		let frameIncrementor = (this.frameCount) / totalFramesToLoad;
+		let absoluteStartIndex = 0;
 
 		if (onlyLoadOne) {
 			totalFramesToLoad = 1;
 		}
 
 		for (var i = 0; i < totalFramesToLoad; i++) {
-			var image = new Image();
-			var indexStr: string = Math.round(absoluteStartIndex).toString();
-			while (this.padFileIndex && indexStr.length < numDigits)
-				indexStr = '0' + indexStr;
-			image.src = this.assetFolder + this.fileName + indexStr + '.png';
-			this._images.push(image);
+			if (onlyLoadOne || i > 0) {
+				var image = new Image();
+				var indexStr: string = Math.round(absoluteStartIndex).toString();
+				while (this.padFileIndex && indexStr.length < numDigits)
+					indexStr = '0' + indexStr;
+				image.src = this.assetFolder + this.fileName + indexStr + '.png';
+				this._images.push(image);
+			}
+
 			actualFrameCount++;
 			absoluteStartIndex += frameIncrementor;
 		}
@@ -127,9 +173,15 @@ class Part {
 			this._images[0].onload = function () {
 				self.onImageLoaded(self._images[0]);
 			};
+
+			if (this.frameCount > 1) {
+				PartBackgroundLoader.add(this);
+			}
 		}
-		else 
+		else {
+			PartBackgroundLoader.remove(this);
 			this.frameCount = actualFrameCount;
+		}
 	}
 
 	set images(newValue: HTMLImageElement[]) {
@@ -152,6 +204,14 @@ class Part {
 		this.lastUpdateTime = null;
 
 		this._images = [];
+
+		this.framesToLoad = 1;
+		this.framesToCount = 1;
+		if (this.frameCount > 60 && !globalBypassFrameSkip) {
+			this.framesToLoad = globalFramesToLoad;
+			this.framesToCount = globalFramesToCount;
+		}
+
 		this.loadImages(true);
 	}
 

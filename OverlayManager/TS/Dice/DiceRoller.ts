@@ -787,7 +787,7 @@ function popFrozenDice() {
 function rollBonusDice() {
 	onBonusThrow = true;
 	if (isAttack(diceRollData) && d20RollValue >= diceRollData.minCrit) {
-		addDieFromStr(diceRollData.damageHealthExtraDice, RollType.damage, 1.4, 0, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+		addDieFromStr(diceRollData.damageHealthExtraDice, RollType.damage, 2.2, 0, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
 	}
 	else {
 		if (!diceRollData.bonusRolls)
@@ -1422,7 +1422,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
-function addDie(dieStr: string, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1): any {
+function addDie(dieStr: string, damageType: DamageType, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1): any {
 	let countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length != 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1476,7 +1476,7 @@ function addDie(dieStr: string, dieType: RollType, backgroundColor: string, text
 		prepareDie(die, throwPower, xPositionModifier);
 
 		if (die && dieType == RollType.damage) {
-			switch (diceRollData.damageType) {
+			switch (damageType) {
 				case DamageType.Fire:
 					diceLayer.attachDamageFire(die);
 					break;
@@ -1562,17 +1562,74 @@ function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, x
 		backgroundColor = DiceLayer.damageDieBackgroundColor;
 	if (fontColor === undefined)
 		fontColor = DiceLayer.damageDieFontColor;
-	var modifier: number = 0;
+	let modifier: number = 0;
+	let damageType: DamageType = DamageType.None;
 	allDice.forEach(function (dieSpec: string) {
+		let parenIndex: number = dieSpec.indexOf('(');
+		if (parenIndex >= 0) {
+			var damageStr: string = dieSpec.substring(parenIndex + 1);
+			let closeParenIndex: number = damageStr.indexOf(')');
+			if (closeParenIndex >= 0) {
+				damageStr = damageStr.substr(0, closeParenIndex);
+				damageType = damageTypeFromStr(damageStr);
+			}
+			dieSpec = dieSpec.substr(0, parenIndex);
+		}
+
 		let dieAndModifier = dieSpec.split('+');
 		if (dieAndModifier.length == 2)
 			modifier += +dieAndModifier[1];
-		addDie(dieAndModifier[0], dieType, backgroundColor, fontColor, throwPower, xPositionModifier, isMagic, playerID);
+		let dieStr: string = dieAndModifier[0];
+		addDie(dieAndModifier[0], damageType, dieType, backgroundColor, fontColor, throwPower, xPositionModifier, isMagic, playerID);
 	});
 
 	damageModifierThisRoll = modifier;
 	healthModifierThisRoll = modifier;
 	extraModifierThisRoll = modifier;
+}
+
+function damageTypeFromStr(str: string): DamageType {
+	str = str.toLowerCase();
+	if (str === 'acid')
+		return DamageType.Acid;
+
+	if (str === 'bludgeoning')
+		return DamageType.Bludgeoning;
+
+	if (str === 'cold')
+		return DamageType.Cold;
+
+	if (str === 'fire')
+		return DamageType.Fire;
+
+	if (str === 'force')
+		return DamageType.Force;
+
+	if (str === 'lightning')
+		return DamageType.Lightning;
+
+	if (str === 'necrotic')
+		return DamageType.Necrotic;
+
+	if (str === 'piercing')
+		return DamageType.Piercing;
+
+	if (str === 'poison')
+		return DamageType.Poison;
+
+	if (str === 'psychic')
+		return DamageType.Psychic;
+
+	if (str === 'radiant')
+		return DamageType.Radiant;
+
+	if (str === 'slashing')
+		return DamageType.Slashing;
+
+	if (str === 'thunder')
+		return DamageType.Thunder;
+
+	return DamageType.None;
 }
 
 function update() {
@@ -1746,7 +1803,7 @@ function rollBentLuckDice() {
 	let die: any;
 	if (isLuckBent(localDiceRollData)) {
 		let throwPower: number = diceRollData.throwPower * 1.2;
-		die = addDie('d4', RollType.bentLuck, dieBack, dieFont, throwPower, xPositionModifier, false);
+		die = addDie('d4', DamageType.None, RollType.bentLuck, dieBack, dieFont, throwPower, xPositionModifier, false);
 
 
 		//prepareDie(die, throwPower, xPositionModifier);
@@ -2133,6 +2190,7 @@ function checkStillRolling() {
 				}
 			}
 			else {
+				showSpecialLabels(true);
 				popFrozenDice();
 				reportRollResults();
 				if (diceRollData.playBonusSoundAfter)
@@ -2143,7 +2201,7 @@ function checkStillRolling() {
 	}
 }
 
-function showSpecialLabels() {
+function showSpecialLabels(onlyBonusDice: boolean = false) {
 	/*
 			1 / Acid
 			2 / Cold
@@ -2154,11 +2212,11 @@ function showSpecialLabels() {
 			7 / Psychic
 			8 / Thunder 
 	*/
+
 	if (diceRollData.type == DiceRollType.ChaosBolt) {
 		for (var i = 0; i < dice.length; i++) {
 			let die = dice[i];
-			if (die.rollType == RollType.damage) {
-
+			if (die.rollType == RollType.damage && die.attachedDamage !== true) {
 				let topNumber = die.getTopNumber();
 				var message: string = '';
 				switch (topNumber) {
@@ -2321,12 +2379,20 @@ function reportRollResults() {
 		diceLayer.showMultiplayerResults(title, diceRollData.multiplayerSummary, diceRollData.hiddenThreshold);
 	}
 
-	totalRoll = d20RollValue[singlePlayerId] + inspirationValue[singlePlayerId] + luckValue[singlePlayerId] + diceRollData.modifier;
+	let skillSavingModifier: number = 0;
+	if (diceRollData.type == DiceRollType.SkillCheck || diceRollData.type == DiceRollType.SavingThrow) {
+		let player: Character = diceLayer.players[singlePlayerId];
+		skillSavingModifier = getModifier(diceRollData, player);
+	}
+
+	totalRoll = d20RollValue[singlePlayerId] + inspirationValue[singlePlayerId] + luckValue[singlePlayerId] + diceRollData.modifier + skillSavingModifier;
 	modifyTotalRollForTestingPurposes();
 
 	if (!diceRollData.hasMultiPlayerDice && d20RollValue[singlePlayerId] > 0) {
 		if (diceRollData.modifier != 0)
 			diceLayer.showRollModifier(diceRollData.modifier, luckValue[singlePlayerId], playerIdForTextMessages);
+		if (skillSavingModifier != 0)
+			diceLayer.showRollModifier(skillSavingModifier, luckValue[singlePlayerId], playerIdForTextMessages);
 		if (diceRollData.type == DiceRollType.SkillCheck)
 			totalRoll += totalBonus;
 		diceLayer.showDieTotal(`${totalRoll}`, playerIdForTextMessages);

@@ -384,13 +384,20 @@ namespace DHDM
 			else
 				diceRoll.RollScope = RollScope.ActivePlayer;
 
-			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly)
+			diceRoll.Modifier = 0;
+			if (type == DiceRollType.Attack)
 			{
-				ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
-				if (selectedItem != null && selectedItem.Content != null)
+				if (double.TryParse(tbxModifier.Text, out double modifierResult))
+					diceRoll.Modifier = modifierResult;
+
+				if (type == DiceRollType.DamageOnly)
 				{
-					string damageStr = selectedItem.Content.ToString();
-					diceRoll.DamageType = DndUtils.ToDamage(damageStr);
+					ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
+					if (selectedItem != null && selectedItem.Content != null)
+					{
+						string damageStr = selectedItem.Content.ToString();
+						diceRoll.DamageType = DndUtils.ToDamage(damageStr);
+					}
 				}
 			}
 
@@ -439,12 +446,9 @@ namespace DHDM
 			}
 
 
-			diceRoll.ThrowPower = new Random().Next() * 2;
+			diceRoll.ThrowPower = new Random().Next() * 2.8;
 			if (diceRoll.ThrowPower < 0.3)
 				diceRoll.ThrowPower = 0.3;
-
-			if (double.TryParse(tbxModifier.Text, out double modifierResult))
-				diceRoll.Modifier = modifierResult;
 
 			if (type == DiceRollType.DeathSavingThrow)
 				diceRoll.HiddenThreshold = 10;
@@ -895,7 +899,7 @@ namespace DHDM
 
 		void UpdateClearButton(object sender, EventArgs e)
 		{
-			const double timeToAutoClear = 6500;
+			const double timeToAutoClear = 9000;
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
@@ -905,7 +909,7 @@ namespace DHDM
 			}
 
 			double progress = timeClearButtonHasBeenVisible.TotalMilliseconds / timeToAutoClear;
-			rectProgressToClear.Width = progress * btnClearDice.Width;
+			rectProgressToClear.Width = Math.Max(0, progress * btnClearDice.Width);
 		}
 
 		bool justClickedTheClearDiceButton;
@@ -1179,21 +1183,21 @@ namespace DHDM
 		private void AddPlayerActionShortcutsForAva()
 		{
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3", Modifier = 5 });
+			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3(slashing)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3", Modifier = 5 });
+			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3(slashing)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3", Modifier = 5 });
+			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Net", PlayerID = Player_Ava, Dice = "", Modifier = 2 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Unarmed Strike", PlayerID = Player_Ava, Dice = "+4", Modifier = 5 });
+			{ Name = "Unarmed Strike", PlayerID = Player_Ava, Dice = "+4(bludgeoning)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Cure Wounds", PlayerID = Player_Ava, Dice = "1d8+3", Healing = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Thunderous Smite", PlayerID = Player_Ava, Dice = "2d6", DC = 13, Ability = Ability.Strength });
+			{ Name = "Thunderous Smite", PlayerID = Player_Ava, Dice = "2d6(thunder)", DC = 13, Ability = Ability.Strength });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Wrathful Smite", PlayerID = Player_Ava, Dice = "1d6", DC = 13, Ability = Ability.Wisdom });
+			{ Name = "Wrathful Smite", PlayerID = Player_Ava, Dice = "1d6(psychic)", DC = 13, Ability = Ability.Wisdom });
 		}
 
 		private void AddPlayerActionShortcutsForMerkin()
@@ -1201,13 +1205,15 @@ namespace DHDM
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8", DC = 13, Ability = Ability.Strength, UsesMagic = true });
+			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2", Modifier = 4 });
+			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2(piercing)", Modifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2", Modifier = 4 });
+			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2(piercing)", Modifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8", Modifier = 5, UsesMagic = true });
+			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8(cold)", Modifier = 5, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Chill Touch", PlayerID = Player_Merkin, Dice = "1d8(necrotic)", Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack });
 		}
 
 		private void AddPlayerActionShortcutsForWilly()

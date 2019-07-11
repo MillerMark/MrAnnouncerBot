@@ -441,18 +441,22 @@ class DiceLayer {
 	}
 
 	attachDamageFire(die: any): void {
+		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360)));
 		die.origins.push(this.damageFire.getOrigin());
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
 
 	attachDamageCold(die: any): void {
+		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageCold(960, 540, 0));
 		die.origins.push(this.damageCold.getOrigin());
 		diceSounds.safePlayMp3('Dice/Damage/Cold');
 	}
 
 	attachDamageNecrotic(die: any): void {
+		die.attachedDamage = true;
+
 		const numHeads: number = 3;
 
 		let rotationOffset: number = Random.between(0, 360 / numHeads);
@@ -474,6 +478,7 @@ class DiceLayer {
 
 
 	attachDamageAcid(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.plusMinus(24);
 		die.attachedSprites.push(this.addDamageAcid(960, 540, rotationOffset));
 		die.origins.push(this.damageAcid.getOrigin());
@@ -482,6 +487,7 @@ class DiceLayer {
 
 
 	attachDamageRadiant(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageRadiant(960, 540, rotationOffset));
 		die.origins.push(this.damageRadiant.getOrigin());
@@ -489,6 +495,7 @@ class DiceLayer {
 	}
 
 	attachDamagePoison(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamagePoison(960, 540, rotationOffset));
 		die.origins.push(this.damagePoison.getOrigin());
@@ -496,6 +503,7 @@ class DiceLayer {
 	}
 
 	attachDamagePiercing(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		let autoRotation: number = Random.plusMinusBetween(5, 10);
 		die.attachedSprites.push(this.addDamagePiercingDagger(960, 540, rotationOffset, autoRotation));
@@ -508,6 +516,7 @@ class DiceLayer {
 	}
 
 	attachDamageSlashing(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		let autoRotation: number = Random.plusMinusBetween(60, 120);
 
@@ -529,6 +538,7 @@ class DiceLayer {
 	}
 
 	attachDamageThunder(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageThunder(960, 540, rotationOffset));
 		die.origins.push(this.damageThunder.getOrigin());
@@ -536,6 +546,7 @@ class DiceLayer {
 	}
 
 	attachDamageForce(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.plusMinus(60);
 		die.attachedSprites.push(this.addDamageForce(960, 540, rotationOffset));
 		die.origins.push(this.damageForce.getOrigin());
@@ -549,8 +560,8 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Force');
 	}
 
-
 	attachDamageBludgeoning(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.plusMinus(60);
 		let autoRotationDegeesPerSecond: number = Random.plusMinusBetween(20, 40);
 		die.attachedSprites.push(this.addDamageBludgeoningMace(960, 540, rotationOffset, autoRotationDegeesPerSecond));
@@ -565,6 +576,7 @@ class DiceLayer {
 	}
 
 	attachDamagePsychic(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.max(360);
 		die.attachedSprites.push(this.addDamagePsychic(960, 540, rotationOffset));
 		die.origins.push(this.damagePsychic.getOrigin());
@@ -573,6 +585,7 @@ class DiceLayer {
 
 
 	attachDamageLightning(die: any): void {
+		die.attachedDamage = true;
 		let rotationOffset: number = Random.max(120);
 
 		die.attachedSprites.push(this.addDamageLightningCloud(960, 540, Random.max(360)));
@@ -1046,7 +1059,7 @@ class DiceLayer {
 
 
 	addDamageNecroticHead(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
-		let damageNecroticHead = this.damageNecroticHead.add(x, y, -1);
+		let damageNecroticHead = this.damageNecroticHead.addShifted(x, y, -1, Random.plusMinus(30));
 		damageNecroticHead.rotation = angle;
 		damageNecroticHead.autoRotationDegeesPerSecond = autoRotation;
 		damageNecroticHead.initialRotation = angle;
@@ -1405,8 +1418,8 @@ class DiceLayer {
 
 		if (diceRoll.throwPower < 0.2)
 			diceRoll.throwPower = 0.2;
-		if (diceRoll.throwPower > 2.0)
-			diceRoll.throwPower = 2.0;
+		if (diceRoll.throwPower > 4.0)
+			diceRoll.throwPower = 4.0;
 		return diceRoll;
 	}
 
