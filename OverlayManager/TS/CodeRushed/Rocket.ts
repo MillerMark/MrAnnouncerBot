@@ -795,12 +795,6 @@
   }
 
   dropSeed(now: number, args?: string) {
-    if (activeDroneGame instanceof DragonGame) {
-      this.createSprite(activeDroneGame.yellowSeeds, now);
-      return;
-    }
-
-
     if (!(activeDroneGame instanceof DroneGame))
       return;
 

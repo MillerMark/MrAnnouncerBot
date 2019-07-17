@@ -114,16 +114,20 @@ class DiceLayer {
 	damageNecroticHead: Sprites;
 	damageNecroticFog: Sprites;
 	damageAcid: Sprites;
+	topDieCloud: Sprites;
 	damageRadiant: Sprites;
 	damageForce: Sprites;
 	damageBludgeoningMace: Sprites;
 	damageBludgeoningWeapon: Sprites;
+	damageSpinningCloudTrail: Sprites;
 	damagePoison: Sprites;
 	damagePiercingDagger: Sprites;
 	damagePiercingThickSword: Sprites;
 	damagePiercingTrident: Sprites;
 	damageSlashingSword: Sprites;
 	damageSlashingLance: Sprites;
+	health: Sprites;
+	damageSlashingAx: Sprites;
 	damageThunder: Sprites;
 	damagePsychic: Sprites;
 	damageLightningA: Sprites;
@@ -275,6 +279,11 @@ class DiceLayer {
 		this.damageAcid.originY = 103;
 		this.allBackLayerEffects.add(this.damageAcid);
 
+		this.topDieCloud = new Sprites("/Dice/Damage/TopCloud/TopCloud", 96, fps30, AnimationStyle.Loop, true);
+		this.topDieCloud.originX = 61;
+		this.topDieCloud.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloud);
+
 		this.damageRadiant = new Sprites("/Dice/Damage/Radiant/Radiant", 38, fps30, AnimationStyle.Loop, true);
 		this.damageRadiant.originX = 100;
 		this.damageRadiant.originY = 100;
@@ -284,6 +293,11 @@ class DiceLayer {
 		this.damageForce.originX = 176;
 		this.damageForce.originY = 64;
 		this.allBackLayerEffects.add(this.damageForce);
+
+		this.damageSpinningCloudTrail = new Sprites("/Dice/Damage/Bludgeoning/CloudTrail", 96, fps30, AnimationStyle.Loop, true);
+		this.damageSpinningCloudTrail.originX = 155;
+		this.damageSpinningCloudTrail.originY = 183;
+		this.allBackLayerEffects.add(this.damageSpinningCloudTrail);
 
 		this.damageBludgeoningMace = new Sprites("/Dice/Damage/Bludgeoning/mace", 84, fps30, AnimationStyle.Loop, true);
 		this.damageBludgeoningMace.originX = 0;
@@ -320,11 +334,20 @@ class DiceLayer {
 		this.damageSlashingSword.originY = 31;
 		this.allBackLayerEffects.add(this.damageSlashingSword);
 
-
 		this.damageSlashingLance = new Sprites("/Dice/Damage/Slashing/SlashingLance", 68, fps30, AnimationStyle.Loop, true);
-		this.damageSlashingLance.originX = 174;
+		this.damageSlashingLance.originX = 194;
 		this.damageSlashingLance.originY = 31;
 		this.allBackLayerEffects.add(this.damageSlashingLance);
+
+		this.health = new Sprites("/Dice/Health/Health", 77, fps30, AnimationStyle.Loop, true);
+		this.health.originX = 140;
+		this.health.originY = 175;
+		this.allFrontLayerEffects.add(this.health);
+
+		this.damageSlashingAx = new Sprites("/Dice/Damage/Slashing/SlashingAx", 68, fps30, AnimationStyle.Loop, true);
+		this.damageSlashingAx.originX = 174;
+		this.damageSlashingAx.originY = 31;
+		this.allBackLayerEffects.add(this.damageSlashingAx);
 
 		this.damageThunder = new Sprites("/Dice/Damage/Thunder/Thunder", 79, fps30, AnimationStyle.Loop, true);
 		this.damageThunder.originX = 110;
@@ -444,6 +467,9 @@ class DiceLayer {
 		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360)));
 		die.origins.push(this.damageFire.getOrigin());
+
+		this.addTopDieCloud(die, 5, Random.between(20, 45), 0.4, 0, 0, 0);
+
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
 
@@ -451,6 +477,7 @@ class DiceLayer {
 		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageCold(960, 540, 0));
 		die.origins.push(this.damageCold.getOrigin());
+		this.addTopDieCloud(die, 5, Random.between(20, 45), 0.6, 0, 0, 150);
 		diceSounds.safePlayMp3('Dice/Damage/Cold');
 	}
 
@@ -473,7 +500,29 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageNecroticFog(960, 540, rotationOffset));
 		die.origins.push(this.damageNecroticFog.getOrigin());
+
+		this.addTopDieCloud(die, 3, Random.between(20, 45), 0.9, 30, 75, 75);
+
 		diceSounds.safePlayMp3('Dice/Damage/Necrotic');
+	}
+
+	addTopDieCloud(die: any, count: number, autoRotationDegeesPerSecond: number, opacity: number, hueShift: number, saturation: number = -1, brightness: number = -1): void {
+		let angleBetweenClouds: number = 360 / count;
+		let rotationOffset: number = Random.between(0, angleBetweenClouds);
+		for (var i = 0; i < count; i++) {
+			let topDieCloud = this.topDieCloud.addShifted(0, 0, -1, hueShift, saturation, brightness);
+			topDieCloud.rotation = rotationOffset;
+			topDieCloud.initialRotation = rotationOffset;
+			rotationOffset += angleBetweenClouds;
+			topDieCloud.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
+			topDieCloud.fadeInTime = 500;
+			topDieCloud.fadeOutTime = 500;
+			topDieCloud.opacity = opacity;
+			topDieCloud.fadeOnDestroy = true;
+
+			die.attachedSprites.push(topDieCloud);
+			die.origins.push(this.topDieCloud.getOrigin());
+		}
 	}
 
 
@@ -482,6 +531,7 @@ class DiceLayer {
 		let rotationOffset: number = Random.plusMinus(24);
 		die.attachedSprites.push(this.addDamageAcid(960, 540, rotationOffset));
 		die.origins.push(this.damageAcid.getOrigin());
+		this.addTopDieCloud(die, 3, Random.between(20, 45), 0.5, 100, 200);
 		diceSounds.safePlayMp3('Dice/Damage/Acid');
 	}
 
@@ -491,14 +541,17 @@ class DiceLayer {
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageRadiant(960, 540, rotationOffset));
 		die.origins.push(this.damageRadiant.getOrigin());
+		this.addTopDieCloud(die, 4, Random.between(20, 45), 0.5, 50, 100, 150);
 		diceSounds.safePlayMp3('Dice/Damage/Radiant');
 	}
 
 	attachDamagePoison(die: any): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
-		die.attachedSprites.push(this.addDamagePoison(960, 540, rotationOffset));
+		let hueShift: number = Random.plusMinus(30);
+		die.attachedSprites.push(this.addDamagePoison(960, 540, rotationOffset, hueShift));
 		die.origins.push(this.damagePoison.getOrigin());
+		this.addTopDieCloud(die, 4, Random.between(20, 45), 0.7, 100 + hueShift, 100, 100);
 		diceSounds.safePlayMp3('Dice/Damage/Poison');
 	}
 
@@ -523,13 +576,18 @@ class DiceLayer {
 		const numBlades: number = 5;
 		let degreesBetweenBlades: number = 360 / numBlades;
 		for (var i = 0; i < numBlades; i++) {
-			if (Random.max(100) < 50) {
+			let randomNum: number = Random.max(100);
+			if (randomNum < 33) {
 				die.attachedSprites.push(this.addDamageSlashingSword(960, 540, rotationOffset, autoRotation));
 				die.origins.push(this.damageSlashingSword.getOrigin());
 			}
-			else {
+			else if (randomNum < 66) {
 				die.attachedSprites.push(this.addDamageSlashingLance(960, 540, rotationOffset, autoRotation));
 				die.origins.push(this.damageSlashingLance.getOrigin());
+			}
+			else {
+				die.attachedSprites.push(this.addDamageSlashingAx(960, 540, rotationOffset, autoRotation));
+				die.origins.push(this.damageSlashingAx.getOrigin());
 			}
 			rotationOffset += degreesBetweenBlades;
 		}
@@ -537,11 +595,18 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Slashing');
 	}
 
+	attachHealth(die: any): void {
+		die.attachedSprites.push(this.addHealth(960, 540));
+		die.origins.push(this.health.getOrigin());
+		diceSounds.safePlayMp3('Dice/health');
+	}
+
 	attachDamageThunder(die: any): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageThunder(960, 540, rotationOffset));
 		die.origins.push(this.damageThunder.getOrigin());
+		this.addTopDieCloud(die, 3, Random.between(20, 45), 0.8, 260 + Random.plusMinus(20), 100, 50);
 		diceSounds.safePlayMp3('Dice/Damage/Thunder');
 	}
 
@@ -557,13 +622,21 @@ class DiceLayer {
 		die.attachedSprites.push(this.addDamageForce(960, 540, rotationOffset + 240));
 		die.origins.push(this.damageForce.getOrigin());
 
+		this.addTopDieCloud(die, 2, Random.between(20, 45), 0.4, 250 + Random.plusMinus(20), 100, 50);
+
 		diceSounds.safePlayMp3('Dice/Damage/Force');
 	}
 
 	attachDamageBludgeoning(die: any): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.plusMinus(60);
-		let autoRotationDegeesPerSecond: number = Random.plusMinusBetween(20, 40);
+		let autoRotationDegeesPerSecond: number = Random.between(60, 100);
+
+		this.addBludgeoningCloud(die, rotationOffset, autoRotationDegeesPerSecond);
+		this.addBludgeoningCloud(die, rotationOffset + 120, autoRotationDegeesPerSecond);
+		this.addBludgeoningCloud(die, rotationOffset + 240, autoRotationDegeesPerSecond);
+
+
 		die.attachedSprites.push(this.addDamageBludgeoningMace(960, 540, rotationOffset, autoRotationDegeesPerSecond));
 		die.origins.push(this.damageBludgeoningMace.getOrigin());
 
@@ -572,7 +645,13 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset + 240, autoRotationDegeesPerSecond, 1));
 		die.origins.push(this.damageBludgeoningWeapon.getOrigin());
+
 		diceSounds.safePlayMp3('Dice/Damage/Bludgeoning');
+	}
+
+	addBludgeoningCloud(die: any, rotationOffset: number, autoRotationDegeesPerSecond: number): void {
+		die.attachedSprites.push(this.addDamageSpinningCloudTrail(960, 540, rotationOffset + 240, autoRotationDegeesPerSecond, -1));
+		die.origins.push(this.damageSpinningCloudTrail.getOrigin());
 	}
 
 	attachDamagePsychic(die: any): void {
@@ -580,6 +659,7 @@ class DiceLayer {
 		let rotationOffset: number = Random.max(360);
 		die.attachedSprites.push(this.addDamagePsychic(960, 540, rotationOffset));
 		die.origins.push(this.damagePsychic.getOrigin());
+		this.addTopDieCloud(die, 3, Random.between(20, 45), 1, Random.max(360), 100, 150);
 		diceSounds.safePlayMp3('Dice/Damage/Psychic');
 	}
 
@@ -601,6 +681,8 @@ class DiceLayer {
 
 		die.attachedSprites.push(this.addDamageLightningC(960, 540, rotationOffset + 240, autoRotateDPS));
 		die.origins.push(this.damageLightningC.getOrigin());
+
+		this.addTopDieCloud(die, 3, Random.between(20, 45), 0.4, 250 + Random.plusMinus(30), 100, 150);
 		diceSounds.safePlayMp3('Dice/Damage/Lightning');
 	}
 
@@ -739,11 +821,11 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showTotalHealthDamage(totalDamage: number, success: boolean, label: string, fontColor: string, outlineColor: string): any {
+	showTotalHealthDamage(totalHealthDamageStr: string, success: boolean, label: string, fontColor: string, outlineColor: string): any {
 		var damageTime: number = this.totalDamageTime;
 		if (!success)
 			damageTime = 2 * damageTime / 3;
-		let textEffect: TextEffect = this.animations.addText(new Vector(960, 750), `${label}${totalDamage}`, damageTime);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 750), `${label}${totalHealthDamageStr}`, damageTime);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.elasticIn = true;
@@ -1059,7 +1141,7 @@ class DiceLayer {
 
 
 	addDamageNecroticHead(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
-		let damageNecroticHead = this.damageNecroticHead.addShifted(x, y, -1, Random.plusMinus(30));
+		let damageNecroticHead = this.damageNecroticHead.addShifted(x, y, -1, Random.plusMinus(70) - 20, Random.max(50) + 50);
 		damageNecroticHead.rotation = angle;
 		damageNecroticHead.autoRotationDegeesPerSecond = autoRotation;
 		damageNecroticHead.initialRotation = angle;
@@ -1097,7 +1179,7 @@ class DiceLayer {
 	}
 
 	addDamageForce(x: number, y: number, angle: number): SpriteProxy {
-		let damageForce = this.damageForce.add(x, y, -1);
+		let damageForce = this.damageForce.addShifted(x, y, -1, Random.plusMinus(30));
 		damageForce.rotation = angle;
 		damageForce.autoRotationDegeesPerSecond = 5;
 		damageForce.initialRotation = angle;
@@ -1129,8 +1211,20 @@ class DiceLayer {
 		return damageBludgeoningWeapon;
 	}
 
-	addDamagePoison(x: number, y: number, angle: number): SpriteProxy {
-		let damagePoison = this.damagePoison.addShifted(x, y, -1, Random.plusMinus(30));
+	addDamageSpinningCloudTrail(x: number, y: number, angle: number, autoRotationDegeesPerSecond: number, startingFrame: number): SpriteProxy {
+		let damageSpinningCloudTrail = this.damageSpinningCloudTrail.addShifted(x, y, startingFrame, this.activePlayerHueShift);
+		damageSpinningCloudTrail.rotation = angle;
+		damageSpinningCloudTrail.opacity = 0.5;
+		damageSpinningCloudTrail.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
+		damageSpinningCloudTrail.initialRotation = angle;
+		damageSpinningCloudTrail.fadeInTime = 500;
+		damageSpinningCloudTrail.fadeOutTime = 500;
+		damageSpinningCloudTrail.fadeOnDestroy = true;
+		return damageSpinningCloudTrail;
+	}
+
+	addDamagePoison(x: number, y: number, angle: number, hueShift: number): SpriteProxy {
+		let damagePoison = this.damagePoison.addShifted(x, y, -1, hueShift);
 		damagePoison.rotation = angle;
 		damagePoison.fadeInTime = 500;
 		damagePoison.fadeOutTime = 500;
@@ -1172,7 +1266,7 @@ class DiceLayer {
 	}
 
 	addDamageSlashingSword(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
-		let damageSlashingSword = this.damageSlashingSword.add(x, y, -1);
+		let damageSlashingSword = this.damageSlashingSword.addShifted(x, y, -1, Random.max(360), 30 + Random.max(50));
 		damageSlashingSword.autoRotationDegeesPerSecond = autoRotation;
 		damageSlashingSword.initialRotation = angle;
 		damageSlashingSword.rotation = angle;
@@ -1182,8 +1276,20 @@ class DiceLayer {
 		return damageSlashingSword;
 	}
 
+
+	addDamageSlashingAx(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
+		let damageSlashingAx = this.damageSlashingAx.addShifted(x, y, -1, Random.max(360), 30 + Random.max(50));
+		damageSlashingAx.autoRotationDegeesPerSecond = autoRotation;
+		damageSlashingAx.initialRotation = angle;
+		damageSlashingAx.rotation = angle;
+		damageSlashingAx.fadeInTime = 500;
+		damageSlashingAx.fadeOutTime = 500;
+		damageSlashingAx.fadeOnDestroy = true;
+		return damageSlashingAx;
+	}
+
 	addDamageSlashingLance(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
-		let damageSlashingLance = this.damageSlashingLance.add(x, y, 0);
+		let damageSlashingLance = this.damageSlashingLance.addShifted(x, y, -1, Random.max(360), 20 + Random.max(50));
 		damageSlashingLance.autoRotationDegeesPerSecond = autoRotation;
 		damageSlashingLance.initialRotation = angle;
 		damageSlashingLance.rotation = angle;
@@ -1193,8 +1299,17 @@ class DiceLayer {
 		return damageSlashingLance;
 	}
 
+	addHealth(x: number, y: number): SpriteProxy {
+		let health = this.health.addShifted(x, y, -1, Random.max(40) - 10);
+		health.fadeInTime = 500;
+		health.fadeOutTime = 500;
+		health.fadeOnDestroy = true;
+		return health;
+	}
+
+
 	addDamageThunder(x: number, y: number, angle: number): SpriteProxy {
-		let damageThunder = this.damageThunder.addShifted(x, y, 0, Random.plusMinus(30));
+		let damageThunder = this.damageThunder.addShifted(x, y, -1, Random.plusMinus(30));
 		damageThunder.rotation = angle;
 		damageThunder.fadeInTime = 500;
 		damageThunder.fadeOutTime = 500;
@@ -1324,17 +1439,21 @@ class DiceLayer {
 		this.damageNecroticHead.sprites = [];
 		this.damageNecroticFog.sprites = [];
 		this.damageAcid.sprites = [];
+		this.topDieCloud.sprites = [];
 		this.damageRadiant.sprites = [];
 		this.damageForce.sprites = [];
 		this.damageBludgeoningMace.sprites = [];
 		this.damageBludgeoningWeapon.sprites = [];
+		this.damageSpinningCloudTrail.sprites = [];
 		this.damagePoison.sprites = [];
 		this.damagePiercingDagger.sprites = [];
 		this.damagePiercingThickSword.sprites = [];
 		this.damagePiercingTrident.sprites = [];
 		this.damageSlashingSword.sprites = [];
+		this.damageSlashingAx.sprites = [];
 		this.damageSlashingLance.sprites = [];
 		this.damageThunder.sprites = [];
+		this.health.sprites = [];
 		this.damagePsychic.sprites = [];
 		this.damageLightningA.sprites = [];
 		this.damageLightningB.sprites = [];

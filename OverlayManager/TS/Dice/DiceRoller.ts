@@ -1475,48 +1475,52 @@ function addDie(dieStr: string, damageType: DamageType, dieType: RollType, backg
 		die.playerID = playerID;
 		prepareDie(die, throwPower, xPositionModifier);
 
-		if (die && dieType == RollType.damage) {
-			switch (damageType) {
-				case DamageType.Fire:
-					diceLayer.attachDamageFire(die);
-					break;
-				case DamageType.Cold:
-					diceLayer.attachDamageCold(die);
-					break;
-				case DamageType.Necrotic:
-					diceLayer.attachDamageNecrotic(die);
-					break;
-				case DamageType.Acid:
-					diceLayer.attachDamageAcid(die);
-					break;
-				case DamageType.Piercing:
-					diceLayer.attachDamagePiercing(die);
-					break;
-				case DamageType.Radiant:
-					diceLayer.attachDamageRadiant(die);
-					break;
-				case DamageType.Poison:
-					diceLayer.attachDamagePoison(die);
-					break;
-				case DamageType.Slashing:
-					diceLayer.attachDamageSlashing(die);
-					break;
-				case DamageType.Thunder:
-					diceLayer.attachDamageThunder(die);
-					break;
-				case DamageType.Force:
-					diceLayer.attachDamageForce(die);
-					break;
-				case DamageType.Psychic:
-					diceLayer.attachDamagePsychic(die);
-					break;
-				case DamageType.Bludgeoning:
-					diceLayer.attachDamageBludgeoning(die);
-					break;
-				case DamageType.Lightning:
-					diceLayer.attachDamageLightning(die);
-					break;
+		if (die) {
+			if (dieType == RollType.damage) {
+				switch (damageType) {
+					case DamageType.Fire:
+						diceLayer.attachDamageFire(die);
+						break;
+					case DamageType.Cold:
+						diceLayer.attachDamageCold(die);
+						break;
+					case DamageType.Necrotic:
+						diceLayer.attachDamageNecrotic(die);
+						break;
+					case DamageType.Acid:
+						diceLayer.attachDamageAcid(die);
+						break;
+					case DamageType.Piercing:
+						diceLayer.attachDamagePiercing(die);
+						break;
+					case DamageType.Radiant:
+						diceLayer.attachDamageRadiant(die);
+						break;
+					case DamageType.Poison:
+						diceLayer.attachDamagePoison(die);
+						break;
+					case DamageType.Slashing:
+						diceLayer.attachDamageSlashing(die);
+						break;
+					case DamageType.Thunder:
+						diceLayer.attachDamageThunder(die);
+						break;
+					case DamageType.Force:
+						diceLayer.attachDamageForce(die);
+						break;
+					case DamageType.Psychic:
+						diceLayer.attachDamagePsychic(die);
+						break;
+					case DamageType.Bludgeoning:
+						diceLayer.attachDamageBludgeoning(die);
+						break;
+					case DamageType.Lightning:
+						diceLayer.attachDamageLightning(die);
+						break;
+				}
 			}
+			if (dieType == RollType.health)
+				diceLayer.attachHealth(die);
 		}
 
 		die.rollType = dieType;
@@ -1563,7 +1567,7 @@ function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, x
 	if (fontColor === undefined)
 		fontColor = DiceLayer.damageDieFontColor;
 	let modifier: number = 0;
-	let damageType: DamageType = DamageType.None;
+	let damageType: DamageType = diceRollData.damageType;
 	allDice.forEach(function (dieSpec: string) {
 		let parenIndex: number = dieSpec.indexOf('(');
 		if (parenIndex >= 0) {
@@ -2423,16 +2427,16 @@ function reportRollResults() {
 	totalExtraPlusModifier = totalExtra + extraModifierThisRoll;
 
 	if (totalDamage > 0) {
-		diceLayer.showTotalHealthDamage(totalDamagePlusModifier, attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+		diceLayer.showTotalHealthDamage(totalDamagePlusModifier.toString(), attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
 		diceLayer.showDamageHealthModifier(damageModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
 	}
 	if (totalHealth > 0) {
-		diceLayer.showTotalHealthDamage(totalHealthPlusModifier, attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+		diceLayer.showTotalHealthDamage('+' + totalHealthPlusModifier.toString(), attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
 		diceLayer.showDamageHealthModifier(healthModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
 	}
 
 	if (totalExtra > 0) {
-		diceLayer.showTotalHealthDamage(totalExtraPlusModifier, attemptedRollWasSuccessful, 'Extra: ', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
+		diceLayer.showTotalHealthDamage(totalExtraPlusModifier.toString(), attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
 		diceLayer.showDamageHealthModifier(extraModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
 	}
 

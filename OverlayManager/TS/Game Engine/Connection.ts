@@ -35,7 +35,7 @@ function setPlayerData(playerData: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.setPlayerData(playerData);
 	}
-	if (activeBackGame instanceof DragonGame) {
+	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.characterStatsScroll.setPlayerData(playerData);
 	}
 	if (diceLayer) {
@@ -44,7 +44,7 @@ function setPlayerData(playerData: string) {
 }
 
 function sendScrollLayerCommand(commandData: string) {
-	if (activeBackGame instanceof DragonGame) {
+	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.characterStatsScroll.sendScrollLayerCommand(commandData);
 	}
 }
@@ -75,20 +75,20 @@ function executeCommand(command: string, params: string, userId: string, userNam
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonGame) {
+  if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
   }
 }
 
 function unfocusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonGame) {
+  if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
   }
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
-  if (activeBackGame instanceof DragonGame) {
-    activeBackGame.characterStatsScroll.playerDataChanged(playerID, pageID, playerData);
+	if (activeBackGame instanceof DragonBackGame) {
+    activeBackGame.playerDataChanged(playerID, pageID, playerData);
   }
   if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.playerChanged(playerID, playerData);

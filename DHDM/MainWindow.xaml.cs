@@ -385,19 +385,19 @@ namespace DHDM
 				diceRoll.RollScope = RollScope.ActivePlayer;
 
 			diceRoll.Modifier = 0;
-			if (type == DiceRollType.Attack)
+			if (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt)
 			{
 				if (double.TryParse(tbxModifier.Text, out double modifierResult))
 					diceRoll.Modifier = modifierResult;
+			}
 
-				if (type == DiceRollType.DamageOnly)
+			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly)
+			{
+				ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
+				if (selectedItem != null && selectedItem.Content != null)
 				{
-					ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
-					if (selectedItem != null && selectedItem.Content != null)
-					{
-						string damageStr = selectedItem.Content.ToString();
-						diceRoll.DamageType = DndUtils.ToDamage(damageStr);
-					}
+					string damageStr = selectedItem.Content.ToString();
+					diceRoll.DamageType = DndUtils.ToDamage(damageStr);
 				}
 			}
 
@@ -1144,22 +1144,22 @@ namespace DHDM
 		void AddPlayerActionShortcutsForLady()
 		{
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longsword", PlayerID = Player_Lady, Dice = "1d8+3", Modifier = 5 });
+			{ Name = "Longsword", PlayerID = Player_Lady, Dice = "1d8+3(slashing)", Modifier = 5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longsword - 2H", PlayerID = Player_Lady, Dice = "1d10+3", Modifier = 5 });
+			{ Name = "Longsword - 2H", PlayerID = Player_Lady, Dice = "1d10+3(slashing)", Modifier = 5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Warhammer", PlayerID = Player_Lady, Dice = "1d8+3", Modifier = 5 });
+			{ Name = "Warhammer", PlayerID = Player_Lady, Dice = "1d8+3(bludgeoning)", Modifier = 5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Warhammer - 2H", PlayerID = Player_Lady, Dice = "1d10+3", Modifier = 5 });
+			{ Name = "Warhammer - 2H", PlayerID = Player_Lady, Dice = "1d10+3(bludgeoning)", Modifier = 5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Unarmed Strike", PlayerID = Player_Lady, Dice = "4", Modifier = 5 });
+			{ Name = "Unarmed Strike", PlayerID = Player_Lady, Dice = "4(bludgeoning)", Modifier = 5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longtooth Shifting Strike", PlayerID = Player_Lady, Dice = "1d6+3", Modifier = 5 });
+			{ Name = "Longtooth Shifting Strike", PlayerID = Player_Lady, Dice = "1d6+3(piercing)", Modifier = 5 });
 		}
 
 		private void AddPlayerActionShortcutsForShemo()
@@ -1287,6 +1287,8 @@ namespace DHDM
 					characterSheets.PageBackgroundClicked += CharacterSheets_PageBackgroundClicked;
 					characterSheets.CharacterChanged += HandleCharacterChanged;
 					characterSheets.SetFromCharacter(player);
+					characterSheets.SkillCheckRequested += CharacterSheets_SkillCheckRequested;
+					characterSheets.SavingThrowRequested += CharacterSheets_SavingThrowRequested;
 					grid.Children.Add(characterSheets);
 
 					Button button = new Button();
@@ -1301,6 +1303,64 @@ namespace DHDM
 			{
 				buildingTabs = false;
 			}
+		}
+
+		private void CharacterSheets_SavingThrowRequested(object sender, AbilityEventArgs e)
+		{
+			SelectSavingThrowAbility(e.Ability);
+			rbActivePlayer.IsChecked = true;
+			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
+		}
+
+		void SelectSavingThrowAbility(Ability ability)
+		{
+			string lowerCaseAbility = ability.ToString().ToLower();
+			for (int i = 0; i < cbAbility.Items.Count; i++)
+			{
+				if (cbAbility.Items[i] is ComboBoxItem item)
+				{
+					if (item.Content is string displayText)
+					{
+						string displayTextLower = displayText.ToLower();
+						if (displayTextLower == lowerCaseAbility)
+						{
+							cbAbility.SelectedIndex = i;
+							return;
+						}
+					}
+				}
+			}
+		}
+
+		void SelectSkill(Skills skill)
+		{
+			string lowerCaseSkillName = skill.ToString().ToLower();
+			if (skill == Skills.animalHandling)
+				lowerCaseSkillName = "animal handling";
+			else if (skill == Skills.slightOfHand)
+				lowerCaseSkillName = "slight of hand";
+			for (int i = 0; i < cbSkillFilter.Items.Count; i++)
+			{
+				if (cbSkillFilter.Items[i] is ComboBoxItem item)
+				{
+					if (item.Content is string displayText)
+					{
+						string displayTextLower = displayText.ToLower();
+						if (displayTextLower == lowerCaseSkillName)
+						{
+							cbSkillFilter.SelectedIndex = i;
+							return;
+						}
+					}
+				}
+			}
+			//cbSkillFilter.SelectedItem
+		}
+		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
+		{
+			SelectSkill(e.Skill);
+			rbActivePlayer.IsChecked = true;
+			RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 		}
 
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)

@@ -110,7 +110,7 @@ class DragonFrontGame extends GamePlusQuiz {
 	initialize() {
 		super.initialize();
 		gravityGames = new GravityGames();
-		//Folders.assets = 'GameDev/Assets/DroneGame/';
+		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
 	}
 
 	start() {

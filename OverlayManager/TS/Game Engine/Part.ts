@@ -108,8 +108,8 @@ class Part {
 
 	private _images: HTMLImageElement[];
 	onImageLoaded: (image: HTMLImageElement) => void;
-    framesToCount: number;
-    framesToLoad: number;
+	framesToCount: number;
+	framesToLoad: number;
 
 	get images(): HTMLImageElement[] {
 		if (!this.loadedAllImages) {
@@ -169,9 +169,18 @@ class Part {
 		}
 
 		if (onlyLoadOne) {
-			var self: any = this;
+			var self: Part = this;
 			this._images[0].onload = function () {
-				self.onImageLoaded(self._images[0]);
+				try
+				{
+					self.onImageLoaded(self._images[0]);
+				}
+				catch (ex)
+				{
+					debugger;
+					console.log('self: ' + self);
+					console.error('ex: ' + ex);
+				}
 			};
 
 			if (this.frameCount > 1) {

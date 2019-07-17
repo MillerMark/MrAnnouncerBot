@@ -33,9 +33,4 @@
   playHeavyPoof() {
     this.safePlayMp3('HeavyPoof');
   }
-
-  playMp3In(milliseconds: number, mp3Name: string): any {
-    setTimeout(function () { this.safePlayMp3(mp3Name); }.bind(this), milliseconds);
-  }
-
 }

@@ -146,8 +146,8 @@ class CharacterStatsScroll extends WorldObject {
 
 	private _selectedCharacterIndex: number;
 	deEmphasisSprite: SpriteProxy;
-  currentScrollRoll: SpriteProxy;
-  currentScrollBack: SpriteProxy;
+	currentScrollRoll: SpriteProxy;
+	currentScrollBack: SpriteProxy;
 
 	get selectedCharacterIndex(): number {
 		return this._selectedCharacterIndex;
@@ -212,12 +212,10 @@ class CharacterStatsScroll extends WorldObject {
 		let players: Array<Character> = JSON.parse(playerData);
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
-			try
-			{
+			try {
 				this.characters.push(new Character(players[i]));
 			}
-			catch (ex)
-			{
+			catch (ex) {
 				console.error('Unable to create new Character: ' + ex);
 			}
 		}
@@ -725,7 +723,8 @@ class CharacterStatsScroll extends WorldObject {
 		emitter.hue.absoluteVariance = 10;
 		emitter.brightness.target = 0.7;
 		emitter.brightness.relativeVariance = 0.5;
-		emitter.particlesPerSecond = 2500;
+		emitter.particlesPerSecond = 1250;
+		emitter.maxTotalParticles = 3000;
 		emitter.particleRadius.target = 0.8;
 		emitter.particleRadius.relativeVariance = 2;
 		emitter.particleLifeSpanSeconds = 1;
@@ -789,12 +788,13 @@ class CharacterStatsScroll extends WorldObject {
 		this.state = ScrollState.none;
 	}
 
-	playerDataChanged(playerID: number, pageID: number, playerData: string): any {
+	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
 		console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
+		let changedActiveCharacter: boolean = false;
 		if (this.selectedCharacterIndex !== playerID) {
+			changedActiveCharacter = true;
 			this.clearEmphasis();
-
 			this.selectedCharacterIndex = playerID;
 			this._page = pageID;
 			this.state = ScrollState.none;
@@ -808,11 +808,13 @@ class CharacterStatsScroll extends WorldObject {
 			this.open(performance.now());
 		}
 
-		if (playerData != '')
+		if (playerData != '') {
 			this.updatePlayerData(playerData);
+		}
+		return changedActiveCharacter;
 	}
 
-	updatePlayerData(playerData: string): void {
+	updatePlayerData(playerData: string): Character {
 		let sentChar: any = JSON.parse(playerData);
 		let thisChar: Character = this.characters[this.selectedCharacterIndex];
 
@@ -822,6 +824,7 @@ class CharacterStatsScroll extends WorldObject {
 		}
 
 		thisChar.copyAttributesFrom(sentChar);
+		return thisChar;
 	}
 
 	readonly fadeTime: number = 300;
