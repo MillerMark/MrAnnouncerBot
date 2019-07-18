@@ -441,7 +441,9 @@
 							<Button x:Name="btnDeathSavingThrow" Margin="8" Padding="8" Click="BtnDeathSavingThrow_Click" >
 								Death Saving Throw
 							</Button>
-
+							<Button x:Name="btnInspirationOnly" Margin="8" Padding="8" Click="BtnInspirationOnly_Click" >
+								Inspiration Only
+							</Button>	
 						</StackPanel>
 						<StackPanel x:Name="StackPanel1" Orientation="Horizontal">
 							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>

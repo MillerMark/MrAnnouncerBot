@@ -48,17 +48,53 @@
 			<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="64,147,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statTempHitPoints, Mode=OneWay}"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,103,0,0" VerticalAlignment="Top" Width="42" 
-		StatBox1="{Binding ElementName=statStrength, Mode=OneWay}"/>
+				StatBox1="{Binding ElementName=statStrength, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Strength Skill Check" Click="StrengthSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,163,0,0" VerticalAlignment="Top" Width="42" 
-		StatBox1="{Binding ElementName=statDexterity, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statDexterity, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Dexterity Skill Check" Click="DexteritySkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,221,0,0" VerticalAlignment="Top" Width="42" 
-		StatBox1="{Binding ElementName=statConstitution, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statConstitution, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Constitution Skill Check" Click="ConstitutionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,279,0,0" Width="42" 
-		StatBox1="{Binding ElementName=statIntelligence, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statIntelligence, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Intelligence Skill Check" Click="IntelligenceSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,337,0,0" Width="42" 
-		StatBox1="{Binding ElementName=statWisdom, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statWisdom, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Wisdom Skill Check" Click="WisdomSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,395,0,0" Width="42" 
-		StatBox1="{Binding ElementName=statCharisma, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statCharisma, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Charisma Skill Check" Click="CharismaSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:StatBox x:Name="statName" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statRaceClass" Margin="82,14,0,0" Width="121" Height="18" Text="Race/Class" FocusItem="RaceClass"/>
 			<local:StatBox x:Name="statLevel" Margin="84,38,0,0" Width="34" Height="18" Text="1" FocusItem="Level"/>
@@ -171,17 +207,53 @@
 		<local:GridSheet x:Name="pageSkills" Width="234" Height="555" Activated="PageSkills_Activated" Margin="250, 0, 0, 0" >
 			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" PreviewMouseDown="PageSkills_PreviewMouseDown" MouseDown="PageSkillsBack_MouseDown"/>
 			<local:GroupBackground Height="56" Margin="8,103,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Strength Skill Check" Click="StrengthSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,163,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statDexterity2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statDexterity2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Dexterity Skill Check" Click="DexteritySkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,221,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statConstitution2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statConstitution2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Constitution Skill Check" Click="ConstitutionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,279,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statIntelligence2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statIntelligence2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Intelligence Skill Check" Click="IntelligenceSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,337,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statWisdom2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statWisdom2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Wisdom Skill Check" Click="WisdomSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,395,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statCharisma2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statCharisma2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Charisma Skill Check" Click="CharismaSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 
 			<local:StatBox x:Name="statName2" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statPassivePerception2" Margin="116,18,0,0" Width="54" Height="18" Text="12" FocusItem="Perception"/>

@@ -2607,6 +2607,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.maxInspirationDiceAllowed = 4;
 
 		diceRollData.itsAD20Roll = true;
+		// TODO: Change 4 to num players.
 		for (var i = 0; i < 4; i++) {
 			let player: Character = diceLayer.players[i];
 			addDiceForPlayer(i, xPositionModifier, player.rollInitiative, player.inspiration);
@@ -2629,7 +2630,16 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.itsAD20Roll = false;
 		addDieFromStr(diceRollData.damageHealthExtraDice, RollType.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
 	}
-	else {
+	else if (diceRollData.type == DiceRollType.InspirationOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		for (var i = 0; i < diceRollData.playerRollOptions.length; i++) {
+			let playerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[i];
+			addDiceForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
+		}
+	}
+	else 
+	{
 		diceRollData.itsAD20Roll = true;
 		let playerID: number = -1;
 
@@ -2670,10 +2680,9 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	//startedRoll = true;
 }
 
-function addDiceForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '') {
+function addDiceForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '', numD20s: number = 1) {
 	let d20BackColor: string = diceLayer.getDieColor(playerID);
 	let d20FontColor: string = diceLayer.getDieFontColor(playerID);
-	let numD20s: number = 1;
 	if (kind !== VantageKind.Normal)
 		numD20s = 2;
 

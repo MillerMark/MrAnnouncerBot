@@ -337,6 +337,11 @@ namespace DndUI
 			textBlock.Text = SetTextBlockForeground(textBlock, value);
 		}
 
+		void SetName(StatBox statBox, string name)
+		{
+			statBox.Text = StrUtils.GetFirstName(name);
+			statBox.IsEnabled = false;
+		}
 		public void SetFromCharacter(Character character)
 		{
 			changingInternally = true;
@@ -387,9 +392,9 @@ namespace DndUI
 				statLevel.Text = character.level.ToString();
 				statLoad.Text = character.load.ToString();
 				//character.maxHitPoints = 
-				statName.Text = character.name;
-				statName2.Text = character.name;
-				statName3.Text = character.name;
+				SetName(statName, character.name);
+				SetName(statName2, character.name);
+				SetName(statName3, character.name);
 
 				//character.offTurnActions = 
 				//character.onTurnActions = 
@@ -668,7 +673,7 @@ namespace DndUI
 
 		private void DexteritySavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-
+			OnSavingThrowRequested(Ability.Dexterity);
 		}
 		private void StrengthSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
@@ -676,19 +681,49 @@ namespace DndUI
 		}
 		private void ConstitutionSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-
+			OnSavingThrowRequested(Ability.Constitution);
 		}
 		private void IntelligenceSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-
+			OnSavingThrowRequested(Ability.Intelligence);
 		}
 		private void WisdomSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-
+			OnSavingThrowRequested(Ability.Wisdom);
 		}
 		private void CharismaSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
+			OnSavingThrowRequested(Ability.Charisma);
+		}
 
+		private void StrengthSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.strength);
+		}
+
+		private void ConstitutionSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.constitution);
+		}
+
+		private void WisdomSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.wisdom);
+		}
+
+		private void DexteritySkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.dexterity);
+		}
+
+		private void IntelligenceSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.intelligence);
+		}
+
+		private void CharismaSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.charisma);
 		}
 	}
 }

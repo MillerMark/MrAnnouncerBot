@@ -30,6 +30,12 @@ namespace DndCore
 				: return Skills.slightOfHand;
 				case "stealth": return Skills.stealth;
 				case "survival": return Skills.survival;
+				case "strength": return Skills.strength;
+				case "dexterity": return Skills.dexterity;
+				case "constitution": return Skills.constitution;
+				case "intelligence": return Skills.intelligence;
+				case "wisdom": return Skills.wisdom;
+				case "charisma": return Skills.charisma;
 			}
 			return Skills.none;
 		}

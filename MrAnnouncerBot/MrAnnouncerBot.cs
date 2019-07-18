@@ -54,6 +54,7 @@ namespace MrAnnouncerBot
 			new BotCommand("?", HandleQuestionCommand);
 			new BotCommand("+", HandleLevelUp);
 			new BotCommand("github", HandleGitHubCommand);
+			new BotCommand("vscode", HandleVsCodeCommand);
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
@@ -853,6 +854,12 @@ namespace MrAnnouncerBot
 			Chat($"Active Projects: ");
 			Chat($"https://github.com/MillerMark/MrAnnouncerBot");
 			Chat($"https://github.com/MillerMark/TimeLine");
+		}
+
+		void HandleVsCodeCommand(OnChatCommandReceivedArgs obj)
+		{
+			Chat($"Please vote here: ");
+			Chat($"https://github.com/microsoft/vscode/issues/63791");
 		}
 
 

@@ -546,6 +546,8 @@ class Character {
 	private _wisdomMod: number;
 
 	get wisdomMod(): number {
+		if (!this._wisdomMod)
+			this._wisdomMod = this.getModFromAbility(this._baseWisdom);
 		return this._wisdomMod;
 	}
 
@@ -563,6 +565,9 @@ class Character {
 	private _charismaMod: number;
 
 	get charismaMod(): number {
+
+		if (!this._charismaMod)
+			this._charismaMod = this.getModFromAbility(this._baseCharisma);
 		return this._charismaMod;
 	}
 
@@ -580,6 +585,9 @@ class Character {
 	private _intelligenceMod: number;
 
 	get intelligenceMod(): number {
+
+		if (!this._intelligenceMod)
+			this._intelligenceMod = this.getModFromAbility(this._baseIntelligence);
 		return this._intelligenceMod;
 	}
 
@@ -597,6 +605,8 @@ class Character {
 	private _strengthMod: number;
 
 	get strengthMod(): number {
+		if (!this._strengthMod)
+			this._strengthMod = this.getModFromAbility(this._baseStrength);
 		return this._strengthMod;
 	}
 
@@ -614,6 +624,8 @@ class Character {
 	private _dexterityMod: number;
 
 	get dexterityMod(): number {
+		if (!this._dexterityMod)
+			this._dexterityMod = this.getModFromAbility(this._baseDexterity);
 		return this._dexterityMod;
 	}
 
@@ -631,6 +643,8 @@ class Character {
 	private _constitutionMod: number;
 
 	get constitutionMod(): number {
+		if (!this._constitutionMod)
+			this._constitutionMod = this.getModFromAbility(this._baseConstitution);
 		return this._constitutionMod;
 	}
 
@@ -722,6 +736,12 @@ class Character {
 				return this.skillModStealth;
 			case Skills.survival:
 				return this.skillModSurvival;
+			case Skills.strength: return this.strengthMod;
+			case Skills.dexterity: return this.dexterityMod;
+			case Skills.intelligence: return this.intelligenceMod;
+			case Skills.constitution: return this.constitutionMod;
+			case Skills.charisma: return this.charismaMod;
+			case Skills.wisdom: return this.wisdomMod;
 		}
 		return 0;
 	}

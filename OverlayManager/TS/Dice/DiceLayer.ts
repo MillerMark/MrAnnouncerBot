@@ -21,7 +21,8 @@ enum DiceRollType {
 	ExtraOnly,
 	ChaosBolt,
 	Initiative,
-	WildMagicD20Check
+	WildMagicD20Check,
+	InspirationOnly
 }
 
 enum SpriteType {

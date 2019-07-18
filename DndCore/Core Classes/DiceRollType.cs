@@ -22,7 +22,8 @@ namespace DndCore
 		ExtraOnly,
 		ChaosBolt,
 		Initiative,
-		WildMagicD20Check
+		WildMagicD20Check,
+		InspirationOnly
 	}
 
 }

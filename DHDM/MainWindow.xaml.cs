@@ -74,6 +74,17 @@ namespace DHDM
 			});
 		}
 
+		// TODO: Delete after debugging.
+		string GetFirstName(string name)
+		{
+			if (name == null)
+				return "No name";
+			int spaceIndex = name.IndexOf(' ');
+			if (spaceIndex < 0)
+				return name;
+			return name.Substring(0, spaceIndex);
+		}
+
 		public int PlayerID
 		{
 			get
@@ -1501,16 +1512,6 @@ namespace DHDM
 			InitializeAttackShortcuts();
 		}
 
-		string GetFirstName(string name)
-		{
-			if (name == null)
-				return "No name";
-			int spaceIndex = name.IndexOf(' ');
-			if (spaceIndex < 0)
-				return name;
-			return name.Substring(0, spaceIndex);
-		}
-
 		void SetGridPosition(UIElement control, int column, int row)
 		{
 			Grid.SetColumn(control, column);
@@ -1528,7 +1529,7 @@ namespace DHDM
 				grdPlayerRollOptions.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
 				PlayerRollCheckBox checkBox = new PlayerRollCheckBox();
-				checkBox.Content = GetFirstName(player.name);
+				checkBox.Content = StrUtils.GetFirstName(player.name);
 				checkBox.PlayerId = playerId;
 				playerId++;
 				checkBox.Checked += PlayerRollCheckBox_Checked;
@@ -1771,6 +1772,11 @@ namespace DHDM
 			diceRoll.OnFirstContactSound = "Snarl";
 			//diceRoll.OnFirstContactEffect = TrailingSpriteType.Fangs;
 			RollTheDice(diceRoll);
+		}
+
+		private void BtnInspirationOnly_Click(object sender, RoutedEventArgs e)
+		{
+			RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
 		}
 	}
 
