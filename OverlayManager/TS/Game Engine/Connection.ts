@@ -15,7 +15,7 @@ function connectToSignalR(signalR) {
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
-		connection.on("SetPlayerData", setPlayerData);
+		connection.on("SetPlayerData", initializePlayerData);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
   };
 }
@@ -31,15 +31,15 @@ function updateClock(clockData: string) {
   }
 }
 
-function setPlayerData(playerData: string) {
+function initializePlayerData(playerData: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.setPlayerData(playerData);
+		activeFrontGame.initializePlayerData(playerData);
 	}
 	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.characterStatsScroll.setPlayerData(playerData);
+		activeBackGame.characterStatsScroll.initializePlayerData(playerData);
 	}
 	if (diceLayer) {
-		diceLayer.setPlayerData(playerData);
+		diceLayer.initializePlayerData(playerData);
 	}
 }
 

@@ -45,6 +45,7 @@ namespace BotCore
 		public static TwitchAPI Api { get; private set; }
 		public static TwitchClient Client { get; private set; }
 		public static bool Logging { get; set; }
+		public static string CodeRushedBotApiClientId { get; set; }
 
 		async public static Task<User> GetUser(string userName)
 		{
@@ -72,8 +73,9 @@ namespace BotCore
 		static void InitializeApiClient()
 		{
 			Api = new TwitchAPI();
-			Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];  // Settings.Default.TwitchApiClientId;
-			Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];  // Settings.Default.TwitchBotOAuthToken;
+			Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];
+			CodeRushedBotApiClientId = Configuration["Secrets:CodeRushedBotTwitchApiClientId"];
+			Api.Settings.AccessToken = Configuration["Secrets:TwitchBotOAuthToken"];
 		}
 
 		public static void Disconnect()

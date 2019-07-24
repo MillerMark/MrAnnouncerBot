@@ -18,12 +18,16 @@ using System.Reflection;
 using System.Text;
 using BotCore;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Net.Mail;
+using System.Net;
+using System.Threading.Tasks;
+using System.IO.Compression;
 
 namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
-		public static readonly HttpClient httpClient = new HttpClient(); 
+		public static readonly HttpClient httpClient = new HttpClient();
 
 		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
 		Dictionary<string, DateTime> lastCategoryPlayTime = new Dictionary<string, DateTime>();
@@ -32,6 +36,7 @@ namespace MrAnnouncerBot
 		//private const string STR_TwitchUserName = "MrAnnouncerGuy";
 		const string STR_GetChattersApi = "https://tmi.twitch.tv/group/user/coderushed/chatters";
 		const string STR_Ellipsis = "...";
+		const string STR_CodeRushedUserId = "237584851";
 
 		private static List<SceneDto> scenes = new List<SceneDto>();
 		private static List<RestrictedSceneDto> restrictedScenes = new List<RestrictedSceneDto>();
@@ -55,6 +60,9 @@ namespace MrAnnouncerBot
 			new BotCommand("+", HandleLevelUp);
 			new BotCommand("github", HandleGitHubCommand);
 			new BotCommand("vscode", HandleVsCodeCommand);
+			new BotCommand("suppressFanfare", HandleSuppressFanfareCommand);
+			new BotCommand("crIssue", MarkCodeRushIssue);
+			new BotCommand("crIssueStart", MarkCodeRushIssueStart);
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
@@ -201,16 +209,22 @@ namespace MrAnnouncerBot
 		List<FanfareDto> fanfares = new List<FanfareDto>();
 		DateTime lastFanfareActivated = DateTime.Now;
 		double lastFanfareDuration;
+		bool suppressingFanfare;
+		string startTimeURL;
+		DateTime issueStartTime;
 
 		void HandleUserFanfare(ChatMessage chatMessage)
 		{
+			if (suppressingFanfare)
+				return;
+
 			FanfareDto fanfare = fanfares.FirstOrDefault(x => string.Compare(x.DisplayName, chatMessage.DisplayName, StringComparison.InvariantCultureIgnoreCase) == 0);
 
 			if (fanfare != null)
 			{
 				PlayFanfare(fanfare, chatMessage);
 			}
-			else 
+			else
 				PlayBackloggedFanfare();
 		}
 
@@ -242,7 +256,7 @@ namespace MrAnnouncerBot
 
 			if (chatMessage != null && chatMessage.Message.IndexOf('[') >= 0)
 			{
-				
+
 			}
 
 			if (stillPlaying || RestrictedSceneIsActive())
@@ -254,7 +268,7 @@ namespace MrAnnouncerBot
 
 			lastFanfareActivated = DateTime.Now;
 			lastFanfareDuration = fanfare.SecondsLong + 3;
-			
+
 			string sceneName = fanfare.DisplayName;
 
 			if (fanfare.Count > 1)
@@ -263,7 +277,7 @@ namespace MrAnnouncerBot
 				sceneName += indexStr;
 			}
 
-			
+
 			ActivatingSceneByName(sceneName, "Fanfare");
 			try
 			{
@@ -437,15 +451,15 @@ namespace MrAnnouncerBot
 					Chat($"Break out the drone-swatter! SurlyDev just showed up!");
 					break;
 				case 7:
-                    Chat($"Drat! We almost made a show without him! But alas, no, SurlyDev just sauntered in!");
-                    break;
-                case 8:
-                    Chat($"He does one PR on GitHub and he thinks he's an open-source contributor. SurlyDev fork off ;) Let's just hope he never clones himself.");
-                    break;
-                case 9:
-                    Chat($"Drone, drone, drone. That's all SurlyDev ever does. I'm not talking about the drone game, I'm talking about him talking.");
-                    break;
-                case 10:
+					Chat($"Drat! We almost made a show without him! But alas, no, SurlyDev just sauntered in!");
+					break;
+				case 8:
+					Chat($"He does one PR on GitHub and he thinks he's an open-source contributor. SurlyDev fork off ;) Let's just hope he never clones himself.");
+					break;
+				case 9:
+					Chat($"Drone, drone, drone. That's all SurlyDev ever does. Not talking about the game; I'm sayin' that guy never shuts his trap.");
+					break;
+				case 10:
 					GreetVip("SurlyDev");
 					break;
 			}
@@ -459,10 +473,148 @@ namespace MrAnnouncerBot
 				playedFanfares.Add(fanfare.DisplayName, DateTime.Now);
 		}
 
+		void MarkCodeRushIssue(OnChatCommandReceivedArgs obj)
+		{
+			if (obj.Command.ChatMessage.UserId != STR_CodeRushedUserId)
+				return;
+
+			bool attachLogFiles = false;
+			bool attachSettingsFiles = false;
+			bool sendPrz = false;
+			bool sendAlex = false;
+			bool sendPerf = false;
+			bool sendAllDevs = false;
+			string message = "";
+			foreach (string arg in obj.Command.ArgumentsAsList)
+			{
+				if (arg == "-log")
+					attachLogFiles = true;
+				else if (arg == "-settings")
+					attachSettingsFiles = true;
+				else if (arg == "-prz")
+					sendPrz = true;
+				else if (arg == "-alex")
+					sendAlex = true;
+				else if (arg == "-perf")
+					sendPerf = true;
+				else if (arg == "-allDevs")
+					sendAllDevs = true;
+				else
+					message = arg;
+			}
+
+			MarkCodeRushIssue(message, attachLogFiles, attachSettingsFiles, sendPrz, sendAlex, sendPerf, sendAllDevs);
+		}
+
+		void CompressFiles(string[] files)
+		{
+			
+		}
+
 		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
 			HandleUserFanfare(e.ChatMessage);
 			allViewers.OnMessageReceived(e.ChatMessage);
+		}
+
+		async void MarkCodeRushIssue(string title, bool attachLogFiles, bool attachSettingsFiles, bool sendPrz, bool sendAlex, bool sendPerf, bool sendAllDevs)
+		{
+			string showStartURL;
+			
+			string durationStr = "";
+			string errors = "";
+
+			if (startTimeURL == null)
+				showStartURL = await GetActiveShowPointURL();
+			else
+			{  // We already marked a start time for this issue.
+				TimeSpan timeSpan = DateTime.Now - issueStartTime;
+				durationStr = $" (duration: {timeSpan.TotalMinutes:F} minutes)";
+				showStartURL = startTimeURL;
+				startTimeURL = null;
+			}
+
+			List<string> attachedFiles = new List<string>();
+
+			if (attachLogFiles)
+			{
+				try
+				{
+					const string path = @"C:\Users\Mark Miller\AppData\Local\CodeRush\Logs\";
+					string zipFileName = Path.GetFileNameWithoutExtension(showStartURL);
+					zipFileName = "CodeRushLogFiles_" + zipFileName.Replace("?t=", "_") + ".zip";
+					string fullPathToZipFile = Path.Combine(path, zipFileName);
+					using (var zip = ZipFile.Open(fullPathToZipFile, ZipArchiveMode.Create))
+					{
+						IEnumerable<string> logFiles = Directory.EnumerateFiles(@"C:\Users\Mark Miller\AppData\Local\CodeRush\Logs", "*.log");
+						foreach (string file in logFiles)
+						{
+
+							try
+							{
+								// new FileStream("c:\test.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+								// What is going on here?
+								zip.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
+							}
+							catch (Exception ex)
+							{
+								errors += $"\n Exception attached log file {file}: " + ex.Message;
+							}
+						}
+					}
+					attachedFiles.Add(fullPathToZipFile);
+				}
+				catch (Exception ex)
+				{
+					
+				}
+				// 
+			}
+
+			Email($"CodeRush Issue - {title}", $"{title}:\n{showStartURL} {durationStr}{errors}", attachedFiles, sendPrz, sendAlex, sendPerf, sendAllDevs);
+		}
+
+		public static void Email(string subject, string htmlBody, List<string> attachedFiles, bool sendPrz, bool sendAlex, bool sendPerf, bool sendAllDevs)
+		{
+			try
+			{
+				MailMessage message = new MailMessage();
+				SmtpClient smtp = new SmtpClient();
+				message.From = new MailAddress(Twitch.Configuration["Secrets:EmailFromAddress"]);
+				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailMark"]));
+				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailRory"]));
+				if (sendPrz)
+					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPrz"]));
+				if (sendAlex)
+					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAlex"]));
+				if (sendPerf)
+					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPerf"]));
+				if (sendAllDevs)
+					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAllDevs"]));
+				message.Subject = subject;
+				message.IsBodyHtml = true; //to make message body as html  
+				message.Body = htmlBody;
+
+				foreach (string attachedFile in attachedFiles)
+				{
+					message.Attachments.Add(new Attachment(attachedFile));
+				}
+				
+				smtp.Port = 587;
+				smtp.Host = Twitch.Configuration["Secrets:EmailHost"];
+				smtp.EnableSsl = true;
+				smtp.UseDefaultCredentials = false;
+				smtp.Credentials = new NetworkCredential(Twitch.Configuration["Secrets:EmailUserName"], Twitch.Configuration["Secrets:EmailPassword"]);
+				smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+				smtp.Send(message);
+			}
+			catch (Exception ex)
+			{
+				if (ex != null)
+				{
+
+				}
+			}
 		}
 
 		private void ConnectToObs()
@@ -824,7 +976,7 @@ namespace MrAnnouncerBot
 			//else
 			//	Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
 		}
-		
+
 
 		string QuotedIfSpace(string chatShortcut)
 		{
@@ -892,6 +1044,33 @@ namespace MrAnnouncerBot
 				Console.WriteLine("Generating updated readme...");
 				ReadmeManager.GenerateNewReadme();
 			}
+		}
+
+		async Task<string> GetActiveShowPointURL()
+		{
+			var client = new HttpClient();
+			client.DefaultRequestHeaders.Add("Client-ID", Twitch.CodeRushedBotApiClientId);
+			string requestUri = $"https://api.twitch.tv/helix/videos?user_id={STR_CodeRushedUserId}";
+			HttpResponseMessage response = await client.GetAsync(requestUri);
+			string responseBody = await response.Content.ReadAsStringAsync();
+			LiveStreamData<LiveShowData> liveShowData = JsonConvert.DeserializeObject<LiveStreamData<LiveShowData>>(responseBody);
+			if (liveShowData != null && liveShowData.data.Count > 0)
+			{
+				LiveShowData showData = liveShowData.data[0];
+				return showData.url + "?t=" + showData.duration;
+			}
+			return null;
+		}
+
+		async void MarkCodeRushIssueStart(OnChatCommandReceivedArgs obj)
+		{
+			startTimeURL = await GetActiveShowPointURL();
+			issueStartTime = DateTime.Now;
+		}
+
+		void HandleSuppressFanfareCommand(OnChatCommandReceivedArgs obj)
+		{
+			suppressingFanfare = true;
 		}
 	}
 }

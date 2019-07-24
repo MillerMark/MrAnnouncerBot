@@ -286,7 +286,7 @@ class Part {
 		this.drawByIndex(context, x, y, this.frameIndex);
 	}
 
-	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, rotation: number = 0, centerX: number = 0, centerY: number = 0): void {
+	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false): void {
 		if (frameIndex < 0)
 			return;
 		if (!this.images[frameIndex]) {
@@ -296,11 +296,26 @@ class Part {
 
 		var needToRestoreContext: boolean = false;
 
-		if (rotation != 0) {
+		if (rotation != 0 || flipHorizontally || flipVertically) {
 			context.save();
 			needToRestoreContext = true;
+		}
+
+		if (rotation != 0) {
 			context.translate(centerX, centerY);
 			context.rotate(rotation * Math.PI / 180);
+			context.translate(-centerX, -centerY);
+		}
+
+		if (flipHorizontally || flipVertically) {
+			let horizontalFlipScale: number = 1;
+			let verticalFlipScale: number = 1;
+			if (flipHorizontally)
+				horizontalFlipScale = -1;
+			if (flipVertically)
+				verticalFlipScale = -1;
+			context.translate(centerX, centerY);
+			context.scale(horizontalFlipScale, verticalFlipScale);
 			context.translate(-centerX, -centerY);
 		}
 

@@ -29,6 +29,9 @@
 }
 
 class Random {
+  static chancePercent(percent: number): boolean {
+    return Random.max(100) <= percent;
+  }
 
   static intBetweenDigitCount(lowerBounds: number, upperBounds: number): number {
     let result: number = Random.intBetween(0, 9);

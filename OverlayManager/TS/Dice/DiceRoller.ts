@@ -644,6 +644,7 @@ function needToRollBonusDice() {
 
 		diceRollData.bonusRolls = null;
 		diceRollData.playBonusSoundAfter = 2500;
+		announceWildMagicResult(totalRoll);
 
 		if (totalRoll == 0 || totalRoll == 99) diceRollData.wildMagic = WildMagic.regainSorceryPoints;
 		else if (totalRoll < 3) diceRollData.wildMagic = WildMagic.wildMagicMinute;
@@ -727,6 +728,22 @@ function needToRollBonusDice() {
 	return false;
 }
 
+function announceWildMagicResult(totalRoll: number) {
+	var mp3BaseName: string = '99-00';
+	if (totalRoll > 0 && totalRoll < 99) {
+		let secondNumber: number = Math.floor((totalRoll + 1) / 2) * 2;
+		let firstNumber: number = secondNumber - 1;
+		let firstStr: string = firstNumber.toString();
+		if (firstNumber < 10)
+			firstStr = '0' + firstStr;
+		let secondStr: string = secondNumber.toString();
+		if (secondNumber < 10)
+			secondStr = '0' + secondStr;
+		mp3BaseName = firstStr + '-' + secondStr;
+	}
+	diceSounds.safePlayMp3('Announcer/Wild Magic/' + mp3BaseName);
+}
+
 function modifyTotalRollForTestingPurposes() {
 	//totalRoll = 35; // age change
 }
@@ -804,6 +821,8 @@ function isOdd(num) {
 }
 
 function playFinalRollSoundEffects() {
+	if (!diceRollData)
+		return;
 	switch (diceRollData.wildMagic) {
 		case WildMagic.wildMagicMinute: ; break;
 		case WildMagic.seeInvisibleCreatures: ; break;
@@ -1780,6 +1799,9 @@ function rollBentLuck() {
 }
 
 function rollBentLuckDice() {
+	if (!diceRollData)
+		return;
+
 	allDiceHaveStoppedRolling = false;
 
 	let xPositionModifier: number = 0;
@@ -2607,8 +2629,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.maxInspirationDiceAllowed = 4;
 
 		diceRollData.itsAD20Roll = true;
-		// TODO: Change 4 to num players.
-		for (var i = 0; i < 4; i++) {
+		for (var i = 0; i < diceLayer.players.length; i++) {
 			let player: Character = diceLayer.players[i];
 			addDiceForPlayer(i, xPositionModifier, player.rollInitiative, player.inspiration);
 		}
@@ -2638,14 +2659,18 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 			addDiceForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
 		}
 	}
-	else 
-	{
+	else {
 		diceRollData.itsAD20Roll = true;
 		let playerID: number = -1;
 
-		if (diceRollData.rollScope == RollScope.ActivePlayer)
+		if (diceRollData.rollScope == RollScope.ActivePlayer) {
 			// TODO: I think there's a bug here active player's inspiration needs to be used.
-			addDiceForPlayer(playerID, xPositionModifier, diceRollData.vantageKind, diceRollData.groupInspiration);
+			let vantageKind: VantageKind = diceRollData.vantageKind;
+			if (diceRollData.playerRollOptions.length == 1) {
+				vantageKind = diceRollData.playerRollOptions[0].VantageKind;
+			}
+			addDiceForPlayer(playerID, xPositionModifier, vantageKind, diceRollData.groupInspiration);
+		}
 		else if (diceRollData.rollScope == RollScope.Individuals) {
 			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
 				addDiceForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);

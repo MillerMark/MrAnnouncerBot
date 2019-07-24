@@ -208,7 +208,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.addHighlightEmitters();
 	}
 
-	setPlayerData(playerData: string): void {
+	initializePlayerData(playerData: string): void {
 		let players: Array<Character> = JSON.parse(playerData);
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
@@ -411,6 +411,12 @@ class CharacterStatsScroll extends WorldObject {
 		this.play(this.scrollCloseSfx);
 	}
 
+	get headshotIndex(): number {
+		return this.characters[this.selectedCharacterIndex].headshotIndex;
+	}
+	
+	
+
 	private unroll(): void {
 		this.state = ScrollState.unrolling;
 		this.scrollRolls.baseAnimation.reverse = false;
@@ -419,7 +425,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.currentScrollRoll = this.scrollRolls.add(0, 0, 0);
 		this.currentScrollBack = this.scrollBacks.add(0, 0, this._page);
 		this.playerHeadshots.sprites = [];
-		this.playerHeadshots.add(0, 0, this.selectedCharacterIndex);
+		this.playerHeadshots.add(0, 0, this.headshotIndex);
 		this.pageIndex = this._page;
 		this.selectedStatPageIndex = this._page - 1;
 		this.topEmitter.start();
@@ -549,7 +555,7 @@ class CharacterStatsScroll extends WorldObject {
 				if (picCroppedHeight > 0) {
 					// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 
-					this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.selectedCharacterIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
+					this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.headshotIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
 				}
 				this.drawHighlighting(now, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
 
@@ -574,7 +580,7 @@ class CharacterStatsScroll extends WorldObject {
 			}
 			else {
 				this.scrollBacks.draw(world.ctx, now * 1000);
-				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.selectedCharacterIndex);
+				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.headshotIndex);
 				this.drawHighlighting(now, timeScale, world);
 				this.topEmitter.stop();
 				this.bottomEmitter.stop();
@@ -754,7 +760,8 @@ class CharacterStatsScroll extends WorldObject {
 
 		this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
 		this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
-		this.playerHeadshots = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
+		const totalKnownPlayers: number = 6;
+		this.playerHeadshots = new Sprites("Scroll/Players/Player", totalKnownPlayers, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisEquipment = new Sprites("Scroll/Emphasis/Equipment/EmphasisEquipment", 5, this.framerateMs, AnimationStyle.Static);

@@ -281,6 +281,8 @@ namespace DHDM
 
 		}
 
+		bool rollInspirationAfterwards;
+
 		public void RollTheDice(DiceRoll diceRoll)
 		{
 			showClearButtonTimer.Start();
@@ -422,7 +424,10 @@ namespace DHDM
 					else if (checkbox.RbDisadvantage.IsChecked == true)
 						vantageKind = VantageKind.Disadvantage;
 
-					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, checkbox.TbxInspiration.Text);
+					checkbox.RbNormal.IsChecked = true;
+
+					string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
+					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
 				}
 			}
 
@@ -846,11 +851,13 @@ namespace DHDM
 		{
 			dndTimeClock.InCombat = !dndTimeClock.InCombat;
 			if (dndTimeClock.InCombat)
+			{
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
+				RollInitiative();
+			}
 			else
 				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
-			if (dndTimeClock.InCombat)
-				RollInitiative();
+				
 			OnCombatChanged();
 		}
 
@@ -1394,6 +1401,7 @@ namespace DHDM
 			kent.maxHitPoints = 35;
 			kent.baseArmorClass = 15;
 			kent.baseStrength = 10;
+			kent.headshotIndex = 4;
 			kent.baseDexterity = 17;
 			kent.baseConstitution = 16;
 			kent.baseIntelligence = 9;
@@ -1413,6 +1421,7 @@ namespace DHDM
 			kayla.name = "Shemo Globin";
 			kayla.raceClass = "Firbolg Druid";
 			kayla.goldPieces = 170;
+			kayla.headshotIndex = 1;
 			kayla.hitPoints = 31;
 			kayla.maxHitPoints = 31;
 			kayla.baseArmorClass = 15;
@@ -1434,6 +1443,7 @@ namespace DHDM
 			mark.name = "Merkin Bushwacker";
 			mark.raceClass = "Half-Elf Sorcerer";
 			mark.goldPieces = 128;
+			mark.headshotIndex = 2;
 			mark.hitPoints = 26;
 			mark.maxHitPoints = 26;
 			mark.baseArmorClass = 12;
@@ -1455,6 +1465,7 @@ namespace DHDM
 			karen.name = "Ava Wolfhard";
 			karen.raceClass = "Human Paladin";
 			karen.goldPieces = 150;
+			karen.headshotIndex = 3;
 			karen.hitPoints = 36;
 			karen.maxHitPoints = 36;
 			karen.baseArmorClass = 16;
@@ -1463,7 +1474,7 @@ namespace DHDM
 			karen.baseConstitution = 14;
 			karen.baseIntelligence = 8;
 			karen.baseWisdom = 8;
-			karen.baseCharisma = 16;
+			karen.baseCharisma = 18;
 			karen.proficiencyBonus = +2;
 			karen.initiative = 0;
 			karen.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.performance | Skills.persuasion | Skills.survival;
@@ -1471,11 +1482,34 @@ namespace DHDM
 			karen.hueShift = 210;
 			karen.dieBackColor = "#04315a";
 			karen.dieFontColor = "#ffffff";
+			
+			Character fred = new Character();
+			fred.name = "Fred";
+			fred.raceClass = "Lizardfolk Fighter";
+			fred.goldPieces = 10;
+			fred.headshotIndex = 5;
+			fred.hitPoints = 40;
+			fred.maxHitPoints = 40;
+			fred.baseArmorClass = 16;
+			fred.baseStrength = 16;
+			fred.baseDexterity = 11;
+			fred.baseConstitution = 16;
+			fred.baseIntelligence = 8;
+			fred.baseWisdom = 12;
+			fred.baseCharisma = 14;
+			fred.proficiencyBonus = 2;
+			fred.initiative = 0;
+			fred.proficientSkills = Skills.acrobatics | Skills.athletics | Skills.nature | Skills.perception | Skills.survival | Skills.stealth;
+			fred.savingThrowProficiency = Ability.Strength | Ability.Constitution;
+			fred.hueShift = 100;
+			fred.dieBackColor = "#04a044";
+			fred.dieFontColor = "#ffffff";
 
 			Character lara = new Character();
 			lara.name = "Lady McLoveNuts";
 			lara.raceClass = "Longtooth Fighter";
 			lara.goldPieces = 250;
+			lara.headshotIndex = 0;
 			lara.hitPoints = 32;
 			lara.maxHitPoints = 32;
 			lara.baseArmorClass = 16;
@@ -1499,10 +1533,12 @@ namespace DHDM
 			this.players.Clear();
 
 			//players.Add(kent);
+			players.Add(fred);
 			players.Add(lara);
-			players.Add(kayla);
+			//players.Add(kayla);
 			players.Add(mark);
 			players.Add(karen);
+			
 
 			string playerData = JsonConvert.SerializeObject(players);
 			HubtasticBaseStation.SetPlayerData(playerData);
@@ -1531,7 +1567,6 @@ namespace DHDM
 				PlayerRollCheckBox checkBox = new PlayerRollCheckBox();
 				checkBox.Content = StrUtils.GetFirstName(player.name);
 				checkBox.PlayerId = playerId;
-				playerId++;
 				checkBox.Checked += PlayerRollCheckBox_Checked;
 				checkBox.Unchecked += PlayerRollCheckBox_Unchecked;
 				SetGridPosition(checkBox, 0, row);
@@ -1566,16 +1601,50 @@ namespace DHDM
 				textBlock.Text = "Inspiration: ";
 				spOptions.Children.Add(textBlock);
 
-				TextBox textBox = new TextBox();
-				textBox.Text = "";
-				textBox.MinWidth = 70;
-				spOptions.Children.Add(textBox);
-				checkBox.TbxInspiration = textBox;
+				InspirationTextBox inspirationTextBox = new InspirationTextBox();
+				inspirationTextBox.Text = "";
+				inspirationTextBox.MinWidth = 70;
+				inspirationTextBox.TextChanged += InspirationTextBox_TextChanged;
+				spOptions.Children.Add(inspirationTextBox);
+				checkBox.TbxInspiration = inspirationTextBox;
+
+				PlayerButton btnRollInspiration = new PlayerButton();
+				btnRollInspiration.Content = "Roll Inspiration";
+				btnRollInspiration.IsEnabled = false;
+				btnRollInspiration.Margin = new Thickness(14, 0, 0, 0);
+				btnRollInspiration.Padding = new Thickness(8, 0, 8, 0);
+				btnRollInspiration.Click += ButtonRollInspirationOnly_Click;
+				btnRollInspiration.PlayerId = playerId;
+				spOptions.Children.Add(btnRollInspiration);
+				inspirationTextBox.PlayerButton = btnRollInspiration;
 
 				row++;
 				grdPlayerRollOptions.Children.Add(checkBox);
 				grdPlayerRollOptions.Children.Add(spOptions);
+
+				playerId++;
 			}
+		}
+
+		private void InspirationTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			InspirationTextBox inspirationTextBox = sender as InspirationTextBox;
+			if (inspirationTextBox != null)
+			{
+				inspirationTextBox.PlayerButton.IsEnabled = !string.IsNullOrWhiteSpace(inspirationTextBox.Text);
+			}
+		}
+
+		private void ButtonRollInspirationOnly_Click(object sender, RoutedEventArgs e)
+		{
+			PlayerButton playerButton = sender as PlayerButton;
+			if (playerButton != null)
+			{
+				CheckPlayer(playerButton.PlayerId);
+				RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
+			}
+
+			// TODO: Roll only for the player to the left of this button.
 		}
 
 		int lastPlayerIdUnchecked;
@@ -1647,11 +1716,16 @@ namespace DHDM
 		}
 		void CheckActivePlayer()
 		{
-			if (lastPlayerIdUnchecked == PlayerID)
+			CheckPlayer(PlayerID);
+		}
+
+		private void CheckPlayer(int playerID)
+		{
+			if (lastPlayerIdUnchecked == playerID)
 				return;
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 				if (uIElement is PlayerRollCheckBox checkbox)
-					checkbox.IsChecked = checkbox.PlayerId == PlayerID;
+					checkbox.IsChecked = checkbox.PlayerId == playerID;
 		}
 
 		List<Character> players;
@@ -1777,6 +1851,24 @@ namespace DHDM
 		private void BtnInspirationOnly_Click(object sender, RoutedEventArgs e)
 		{
 			RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
+		}
+	}
+
+	public class PlayerButton: Button
+	{
+		public int PlayerId { get; set; }
+		public PlayerButton()
+		{
+			
+		}
+	}
+
+	public class InspirationTextBox: TextBox
+	{
+		public PlayerButton PlayerButton { get; set; }
+		public InspirationTextBox()
+		{
+			
 		}
 	}
 

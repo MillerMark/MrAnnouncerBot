@@ -18,6 +18,7 @@ namespace DndCore
 		public int experiencePoints = 0;
 		public string inspiration = "";
 		public int level;
+		public int headshotIndex;
 		public int hueShift = 0;
 		public string dieBackColor = "#ffffff";
 		public string dieFontColor = "#000000";

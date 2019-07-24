@@ -136,6 +136,7 @@ class Character {
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
 	level: number;
+	headshotIndex: number;
 	hueShift: number;
 	dieBackColor: string;
 	dieFontColor: string;
@@ -215,6 +216,7 @@ class Character {
 
 	copyAttributesFrom(sourceCharacter: any): void {
 		this.alignment = sourceCharacter.alignment;
+		this.headshotIndex = sourceCharacter.headshotIndex;
 		this.baseArmorClass = sourceCharacter.baseArmorClass;
 		this.tempArmorClassMod = sourceCharacter.tempArmorClassMod;
 		this.baseCharisma = sourceCharacter.baseCharisma;

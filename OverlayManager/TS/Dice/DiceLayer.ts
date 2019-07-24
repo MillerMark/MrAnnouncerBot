@@ -688,7 +688,7 @@ class DiceLayer {
 	}
 
 
-	setPlayerData(playerData: string): any {
+	initializePlayerData(playerData: string): any {
 		this.playerDataSet = true;
 		this.players = [];
 		let playerDto: Array<Character> = JSON.parse(playerData);
