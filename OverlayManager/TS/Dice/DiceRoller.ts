@@ -698,7 +698,7 @@ function needToRollBonusDice() {
 		else if (totalRoll < 65) diceRollData.wildMagic = WildMagic.castFogCloudCenteredOnSelf;
 		else if (totalRoll < 67) {
 			diceRollData.wildMagic = WildMagic.lightningDamageUpToThreeCreatures;
-			diceRollData.addBonusDamageRoll('4d10', 'Lightning Damage: ');
+			diceRollData.addBonusDamageRoll('4d10(lightning)', 'Lightning Damage: ');
 		}
 		else if (totalRoll < 69) diceRollData.wildMagic = WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn;
 		else if (totalRoll < 71) diceRollData.wildMagic = WildMagic.allCreatures30FeetInvisibleOneMinute;
@@ -712,7 +712,7 @@ function needToRollBonusDice() {
 		else if (totalRoll < 81) diceRollData.wildMagic = WildMagic.butterfliesAndPetals10FeetOneMinute;
 		else if (totalRoll < 83) diceRollData.wildMagic = WildMagic.takeOneAdditionalActionImmediately;
 		else if (totalRoll < 85) {
-			diceRollData.addBonusDamageRoll('1d10', 'Necrotic Damage: ');
+			diceRollData.addBonusDamageRoll('1d10(necrotic)', 'Necrotic Damage: ');
 			diceRollData.wildMagic = WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage;
 		}
 		else if (totalRoll < 87) diceRollData.wildMagic = WildMagic.castMirrorImage;
@@ -741,7 +741,8 @@ function announceWildMagicResult(totalRoll: number) {
 			secondStr = '0' + secondStr;
 		mp3BaseName = firstStr + '-' + secondStr;
 	}
-	diceSounds.safePlayMp3('Announcer/Wild Magic/' + mp3BaseName);
+	diceSounds.playMp3In(1800, 'Announcer/Wild Magic/' + mp3BaseName);
+	diceSounds.safePlayMp3('WildMagic/' + mp3BaseName);
 }
 
 function modifyTotalRollForTestingPurposes() {
@@ -1495,7 +1496,7 @@ function addDie(dieStr: string, damageType: DamageType, dieType: RollType, backg
 		prepareDie(die, throwPower, xPositionModifier);
 
 		if (die) {
-			if (dieType == RollType.damage) {
+			if (dieType == RollType.damage || dieType == RollType.bonus) {
 				switch (damageType) {
 					case DamageType.Fire:
 						diceLayer.attachDamageFire(die);

@@ -541,9 +541,9 @@ namespace MrAnnouncerBot
 				try
 				{
 					const string path = @"C:\Users\Mark Miller\AppData\Local\CodeRush\Logs\";
-					string zipFileName = Path.GetFileNameWithoutExtension(showStartURL);
-					zipFileName = "CodeRushLogFiles_" + zipFileName.Replace("?t=", "_") + ".zip";
-					string fullPathToZipFile = Path.Combine(path, zipFileName);
+					string baseZipFileName = Path.GetFileNameWithoutExtension(showStartURL);
+					baseZipFileName = "CodeRushLogFiles_" + baseZipFileName.Replace("?t=", "_");
+					string fullPathToZipFile = Path.Combine(path, baseZipFileName + ".zip");
 					using (var zip = ZipFile.Open(fullPathToZipFile, ZipArchiveMode.Create))
 					{
 						IEnumerable<string> logFiles = Directory.EnumerateFiles(@"C:\Users\Mark Miller\AppData\Local\CodeRush\Logs", "*.log");
@@ -556,9 +556,20 @@ namespace MrAnnouncerBot
 								// What is going on here?
 								zip.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
 							}
-							catch (Exception ex)
+							catch (Exception ex1)
 							{
-								errors += $"\n Exception attached log file {file}: " + ex.Message;
+								try
+								{
+									string destFileName = Path.Combine(Path.GetDirectoryName(file), "MostRecent_" + Path.GetFileName(file));
+									File.Copy(file, destFileName);
+									zip.CreateEntryFromFile(destFileName, Path.GetFileName(destFileName), CompressionLevel.Optimal);
+									File.Delete(destFileName);
+								}
+								catch (Exception ex2)
+								{
+									errors += $"\n\n Exception attached log file {file}: " + ex2.Message;
+								}
+								
 							}
 						}
 					}
