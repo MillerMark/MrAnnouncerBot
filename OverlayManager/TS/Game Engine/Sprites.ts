@@ -106,7 +106,7 @@
       var thisSprite: SpriteProxy = this.sprites[index];
       thisSprite.destroying();
       if (destroyFunc)
-        destroyFunc(thisSprite, this.spriteWidth, this.spriteHeight);
+				destroyFunc(thisSprite, this.spriteWidth * thisSprite.scale, this.spriteHeight * thisSprite.scale);
       this.sprites.splice(index, 1);
     }
   }
@@ -123,10 +123,12 @@
       var line: string = allLines[lineIndex];
       for (var charIndex = 0; charIndex < line.length; charIndex++) {
         var char = line.charAt(charIndex);
-        if (char === '*') {
-          let x: number = margin + charIndex * (this.spriteWidth + margin);
-          let y: number = margin + lineIndex * (this.spriteHeight + margin);
-          this.sprites.push(new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y));
+        if (char === '*') {  // Adding a coin...
+					let x: number = margin + charIndex * (this.spriteWidth + margin);
+					let y: number = margin + lineIndex * (this.spriteHeight + margin);
+					let coin: SpriteProxy = new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y);
+					//coin.scale = 1.5;
+					this.sprites.push(coin);
         }
       }
     }
@@ -244,8 +246,8 @@
     var numCollected = 0;
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite = this.sprites[i];
-      var centerX = sprite.x + this.spriteWidth / 2;
-      var centerY = sprite.y + this.spriteHeight / 2;
+			var centerX = sprite.x + this.spriteWidth * sprite.scale / 2;
+			var centerY = sprite.y + this.spriteHeight * sprite.scale / 2;
       if (centerX > left && centerX < right && centerY > top && centerY < bottom) {
         this.sprites.splice(i, 1);
         numCollected++;

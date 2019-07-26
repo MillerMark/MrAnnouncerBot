@@ -61,16 +61,22 @@ function rollDice(diceRollData: string) {
   }
 }
 
-function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {
+class UserInfo {
+	constructor(public userId: string, public userName: string, public displayName: string, public color: string, public showsWatched: number) {
+		
+	}
+}
+
+function executeCommand(command: string, params: string, userInfo: UserInfo) {
   console.log('executeCommand from Connection.ts');
   if (activeBackGame) {
-    activeBackGame.executeCommand(command, params, userId, userName, displayName, color, activeBackGame.nowMs);
+		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
   }
   if (activeFrontGame) {
-    activeFrontGame.executeCommand(command, params, userId, userName, displayName, color, activeFrontGame.nowMs);
+		activeFrontGame.executeCommand(command, params, userInfo, activeFrontGame.nowMs);
   }
   if (activeDroneGame) {
-    activeDroneGame.executeCommand(command, params, userId, userName, displayName, color, activeDroneGame.nowMs);
+		activeDroneGame.executeCommand(command, params, userInfo, activeDroneGame.nowMs);
   }
 }
 

@@ -81,8 +81,10 @@ class GravityGames {
     let x: number = coinMargin + column * (coinBlockWidth + coinMargin);
     let y: number = coinMargin + row * (coinBlockWidth + coinMargin);
     if (!(activeDroneGame instanceof DroneGame))
-      return;
-    activeDroneGame.coins.sprites.push(new SpriteProxy(Random.intMax(activeDroneGame.coins.baseAnimation.frameCount), x, y));
+			return;
+		let coin: SpriteProxy = new SpriteProxy(Random.intMax(activeDroneGame.coins.baseAnimation.frameCount), x, y);
+		//coin.scale = 2;
+		activeDroneGame.coins.sprites.push(coin);
   }
 
   addGateway(column: number, row: number): void {

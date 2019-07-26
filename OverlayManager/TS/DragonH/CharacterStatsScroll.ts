@@ -144,18 +144,10 @@ class CharacterStatsScroll extends WorldObject {
 
 	selectedStatPageIndex: number = -1;
 
-	private _selectedCharacterIndex: number;
 	deEmphasisSprite: SpriteProxy;
 	currentScrollRoll: SpriteProxy;
 	currentScrollBack: SpriteProxy;
-
-	get selectedCharacterIndex(): number {
-		return this._selectedCharacterIndex;
-	}
-
-	set selectedCharacterIndex(newValue: number) {
-		this._selectedCharacterIndex = newValue;
-	}
+	activeCharacter: Character = null;
 
 	static readonly centerY: number = 424;
 	static readonly centerX: number = 174;
@@ -197,7 +189,7 @@ class CharacterStatsScroll extends WorldObject {
 		this._page = ScrollPage.main;
 		this.buildGoldDust();
 		this.pageIndex = this._page;
-		this._selectedCharacterIndex = -1;
+		this.activeCharacter = null;
 		this.deEmphasisSprite = new SpriteProxy(0, 0, 0);
 		this.deEmphasisSprite.fadeInTime = 700;
 		this.deEmphasisSprite.fadeOutTime = 700;
@@ -412,7 +404,9 @@ class CharacterStatsScroll extends WorldObject {
 	}
 
 	get headshotIndex(): number {
-		return this.characters[this.selectedCharacterIndex].headshotIndex;
+		if (this.activeCharacter)
+			return this.activeCharacter.headshotIndex;
+		return 0;
 	}
 	
 	
@@ -647,8 +641,10 @@ class CharacterStatsScroll extends WorldObject {
 		const scrollCenterX: number = 170;
 		const scrollCenterY: number = 440;
 
-		let thisChar: Character = this.characters[this.selectedCharacterIndex];
-		const hueShift: number = thisChar.hueShift;
+		let hueShift: number = 0;
+		if (this.activeCharacter) {
+			hueShift = this.activeCharacter.hueShift;
+		}
 		this.scrollPoofBack.addShifted(scrollCenterX, scrollCenterY, 0, hueShift);
 		this.scrollPoofFront.add(scrollCenterX, scrollCenterY, 0);
 		this.play(this.scrollPoofSfx);
@@ -776,12 +772,12 @@ class CharacterStatsScroll extends WorldObject {
 	}
 
 	drawCharacterStats(context: CanvasRenderingContext2D, topData: number, bottomData: number): void {
-		if (this.selectedCharacterIndex < 0)
+		if (!this.activeCharacter)
 			return;
 
 		if (this.selectedStatPageIndex < 0)
 			return;
-		let activeCharacter: Character = this.characters[this.selectedCharacterIndex];
+		let activeCharacter: Character = this.activeCharacter;
 		let activePage: StatPage = this.pages[this.selectedStatPageIndex];
 
 		activePage.render(context, activeCharacter, topData, bottomData);
@@ -790,7 +786,7 @@ class CharacterStatsScroll extends WorldObject {
 	clear(): any {
 		this.characters = [];
 		this.pages = [];
-		this.selectedCharacterIndex = -1;
+		this.activeCharacter = null;
 		this.selectedStatPageIndex = -1;
 		this.state = ScrollState.none;
 	}
@@ -799,10 +795,10 @@ class CharacterStatsScroll extends WorldObject {
 		console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
 		let changedActiveCharacter: boolean = false;
-		if (this.selectedCharacterIndex !== playerID) {
+		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
+			this.setActiveCharacter(playerID);
 			changedActiveCharacter = true;
 			this.clearEmphasis();
-			this.selectedCharacterIndex = playerID;
 			this._page = pageID;
 			this.state = ScrollState.none;
 			this.open(performance.now());
@@ -821,17 +817,28 @@ class CharacterStatsScroll extends WorldObject {
 		return changedActiveCharacter;
 	}
 
+	setActiveCharacter(playerID: number): void {
+		for (var i = 0; i < this.characters.length; i++) {
+			let thisCharacter: Character = this.characters[i];
+			if (thisCharacter.playerID == playerID) {
+				this.activeCharacter = thisCharacter;
+				return;
+			}
+		}
+	}
+
+
 	updatePlayerData(playerData: string): Character {
 		let sentChar: any = JSON.parse(playerData);
-		let thisChar: Character = this.characters[this.selectedCharacterIndex];
+		this.setActiveCharacter(sentChar.playerID);
 
-		if (!thisChar) {
-			console.error('Selected character index not found: ' + this.selectedCharacterIndex);
+		if (!this.activeCharacter) {
+			console.error('No active character: ' + this.activeCharacter);
 			return;
 		}
 
-		thisChar.copyAttributesFrom(sentChar);
-		return thisChar;
+		this.activeCharacter.copyAttributesFrom(sentChar);
+		return this.activeCharacter;
 	}
 
 	readonly fadeTime: number = 300;

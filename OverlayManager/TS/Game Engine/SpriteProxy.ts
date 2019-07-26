@@ -237,6 +237,7 @@ class SpriteProxy extends AnimatedElement {
 	cropLeft: number;
 	cropRight: number;
 	cropBottom: number;
+	scale: number = 1;
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
 		super(x, y, lifeSpanMs);
@@ -306,7 +307,7 @@ class SpriteProxy extends AnimatedElement {
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
 		originX: number = 0, originY: number = 0): void {
-		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
+		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.scale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
 	}
 
 	drawAdornments(context: CanvasRenderingContext2D, now: number): void {

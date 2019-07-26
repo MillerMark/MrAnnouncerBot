@@ -171,9 +171,10 @@ class Part {
 		if (onlyLoadOne) {
 			var self: Part = this;
 			this._images[0].onload = function () {
-				try
-				{
-					self.onImageLoaded(self._images[0]);
+				try {
+					if (self.onImageLoaded) {
+						self.onImageLoaded(self._images[0]);
+					}
 				}
 				catch (ex)
 				{
@@ -281,12 +282,12 @@ class Part {
 		return Random.intBetween(-amount, amount);
 	}
 
-	draw(context: CanvasRenderingContext2D, x: number, y: number) {
+	draw(context: CanvasRenderingContext2D, x: number, y: number, scale: number = 1) {
 		this.advanceFrameIfNecessary();
-		this.drawByIndex(context, x, y, this.frameIndex);
+		this.drawByIndex(context, x, y, this.frameIndex, scale);
 	}
 
-	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false): void {
+	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, scale: number = 1, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false): void {
 		if (frameIndex < 0)
 			return;
 		if (!this.images[frameIndex]) {
@@ -294,28 +295,29 @@ class Part {
 			return;
 		}
 
-		var needToRestoreContext: boolean = false;
+		var transforming: boolean = rotation != 0 || flipHorizontally || flipVertically || scale != 1;
 
-		if (rotation != 0 || flipHorizontally || flipVertically) {
+		if (transforming) {
 			context.save();
-			needToRestoreContext = true;
+			context.translate(centerX, centerY);
 		}
 
 		if (rotation != 0) {
-			context.translate(centerX, centerY);
 			context.rotate(rotation * Math.PI / 180);
-			context.translate(-centerX, -centerY);
 		}
 
-		if (flipHorizontally || flipVertically) {
+		if (flipHorizontally || flipVertically || scale != 1) {
 			let horizontalFlipScale: number = 1;
 			let verticalFlipScale: number = 1;
 			if (flipHorizontally)
 				horizontalFlipScale = -1;
 			if (flipVertically)
 				verticalFlipScale = -1;
-			context.translate(centerX, centerY);
-			context.scale(horizontalFlipScale, verticalFlipScale);
+			context.scale(horizontalFlipScale * scale, verticalFlipScale * scale);
+		}
+
+
+		if (transforming) {
 			context.translate(-centerX, -centerY);
 		}
 
@@ -323,7 +325,7 @@ class Part {
 			x + this.offsetX + this.getJiggle(this.jiggleX),
 			y + this.offsetY + this.getJiggle(this.jiggleY));
 
-		if (needToRestoreContext) {
+		if (transforming) {
 			context.restore();
 		}
 	}

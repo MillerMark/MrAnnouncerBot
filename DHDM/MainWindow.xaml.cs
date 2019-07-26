@@ -74,21 +74,12 @@ namespace DHDM
 			});
 		}
 
-		// TODO: Delete after debugging.
-		string GetFirstName(string name)
-		{
-			if (name == null)
-				return "No name";
-			int spaceIndex = name.IndexOf(' ');
-			if (spaceIndex < 0)
-				return name;
-			return name.Substring(0, spaceIndex);
-		}
-
 		public int PlayerID
 		{
 			get
 			{
+				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+					return playerTabItem.PlayerID;
 				return tabPlayers.SelectedIndex;
 			}
 		}
@@ -1140,11 +1131,12 @@ namespace DHDM
 			}
 		}
 
-		private const int Player_Willy = 0;
 		private const int Player_Lady = 0;
 		private const int Player_Shemo = 1;
 		private const int Player_Merkin = 2;
 		private const int Player_Ava = 3;
+		private const int Player_Fred = 4;
+		private const int Player_Willy = 5;
 
 		DiceRollType nextDieRollType;
 		void InitializeAttackShortcuts()
@@ -1157,6 +1149,29 @@ namespace DHDM
 			AddPlayerActionShortcutsForAva();
 			AddPlayerActionShortcutsForShemo();
 			AddPlayerActionShortcutsForLady();
+			AddPlayerActionShortcutsForFred();
+		}
+
+		void AddPlayerActionShortcutsForFred()
+		{
+			const int Player_Fred = 4;
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (1H)", PlayerID = Player_Fred, Dice = "1d8+5(slashing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (2H)", PlayerID = Player_Fred, Dice = "1d10+3(slashing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Handaxe", PlayerID = Player_Fred, Dice = "1d6+5(slashing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Longbow", PlayerID = Player_Fred, Dice = "1d8(piercing)", Modifier = +2 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Unarmed Strike", PlayerID = Player_Fred, Dice = "4(bludgeoning)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Bite", PlayerID = Player_Fred, Dice = "1d6+3(piercing)", Modifier = +5 });
 		}
 
 		void AddPlayerActionShortcutsForLady()
@@ -1204,6 +1219,8 @@ namespace DHDM
 			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3(slashing)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3(slashing)", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Greatsword, +1", PlayerID = Player_Ava, Dice = "2d6+4(slashing)", Modifier = +6 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
@@ -1289,9 +1306,10 @@ namespace DHDM
 
 				foreach (Character player in players)
 				{
-					TabItem tabItem = new TabItem();
+					PlayerTabItem tabItem = new PlayerTabItem();
 					tabItem.Header = player.name;
 					tabPlayers.Items.Add(tabItem);
+					tabItem.PlayerID = player.playerID;
 
 					StackPanel stackPanel = new StackPanel();
 					tabItem.Content = stackPanel;
@@ -1395,6 +1413,7 @@ namespace DHDM
 		{
 			Character kent = new Character();
 			kent.name = "Willy Shaker";
+			kent.playerID = Player_Willy;
 			kent.raceClass = "High Elf Rogue";
 			kent.goldPieces = 150;
 			kent.hitPoints = 35;
@@ -1419,6 +1438,7 @@ namespace DHDM
 
 			Character kayla = new Character();
 			kayla.name = "Shemo Globin";
+			kayla.playerID = Player_Shemo;
 			kayla.raceClass = "Firbolg Druid";
 			kayla.goldPieces = 170;
 			kayla.headshotIndex = 1;
@@ -1444,6 +1464,7 @@ namespace DHDM
 			mark.raceClass = "Half-Elf Sorcerer";
 			mark.goldPieces = 128;
 			mark.headshotIndex = 2;
+			mark.playerID = Player_Merkin;
 			mark.hitPoints = 26;
 			mark.maxHitPoints = 26;
 			mark.baseArmorClass = 12;
@@ -1465,6 +1486,7 @@ namespace DHDM
 			karen.name = "Ava Wolfhard";
 			karen.raceClass = "Human Paladin";
 			karen.goldPieces = 150;
+			karen.playerID = Player_Ava;
 			karen.headshotIndex = 3;
 			karen.hitPoints = 36;
 			karen.maxHitPoints = 36;
@@ -1487,28 +1509,30 @@ namespace DHDM
 			fred.name = "Fred";
 			fred.raceClass = "Lizardfolk Fighter";
 			fred.goldPieces = 10;
+			fred.playerID = Player_Fred;
 			fred.headshotIndex = 5;
 			fred.hitPoints = 40;
 			fred.maxHitPoints = 40;
 			fred.baseArmorClass = 16;
 			fred.baseStrength = 16;
-			fred.baseDexterity = 11;
+			fred.baseDexterity = 16;
 			fred.baseConstitution = 16;
 			fred.baseIntelligence = 8;
-			fred.baseWisdom = 12;
-			fred.baseCharisma = 14;
-			fred.proficiencyBonus = 2;
-			fred.initiative = 0;
+			fred.baseWisdom = 9;
+			fred.baseCharisma = 10;
+			fred.proficiencyBonus = +2;
+			fred.initiative = +3;
 			fred.proficientSkills = Skills.acrobatics | Skills.athletics | Skills.nature | Skills.perception | Skills.survival | Skills.stealth;
 			fred.savingThrowProficiency = Ability.Strength | Ability.Constitution;
-			fred.hueShift = 100;
-			fred.dieBackColor = "#04a044";
+			fred.hueShift = 206;
+			fred.dieBackColor = "#316b95";
 			fred.dieFontColor = "#ffffff";
 
 			Character lara = new Character();
 			lara.name = "Lady McLoveNuts";
 			lara.raceClass = "Longtooth Fighter";
 			lara.goldPieces = 250;
+			lara.playerID = Player_Lady;
 			lara.headshotIndex = 0;
 			lara.hitPoints = 32;
 			lara.maxHitPoints = 32;
@@ -1851,38 +1875,6 @@ namespace DHDM
 		private void BtnInspirationOnly_Click(object sender, RoutedEventArgs e)
 		{
 			RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
-		}
-	}
-
-	public class PlayerButton: Button
-	{
-		public int PlayerId { get; set; }
-		public PlayerButton()
-		{
-			
-		}
-	}
-
-	public class InspirationTextBox: TextBox
-	{
-		public PlayerButton PlayerButton { get; set; }
-		public InspirationTextBox()
-		{
-			
-		}
-	}
-
-	public class PlayerRollCheckBox : CheckBox
-	{
-		public UIElement DependantUI { get; set; }
-		public int PlayerId { get; set; }
-		public RadioButton RbDisadvantage { get; set; }
-		public RadioButton RbAdvantage { get; set; }
-		public RadioButton RbNormal { get; set; }
-		public TextBox TbxInspiration { get; set; }
-		public PlayerRollCheckBox()
-		{
-
 		}
 	}
 }

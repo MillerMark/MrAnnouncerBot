@@ -259,8 +259,8 @@ class DragonFrontGame extends GamePlusQuiz {
 		return screenWidth - this.clockPanel.originX - this.clockMargin;
 	}
 
-	executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+		if (super.executeCommand(command, params, userInfo, now))
 			return true;
 		if (command === "Cross2") {
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
@@ -305,8 +305,8 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.emitter.renderOldestParticlesLast = true;
 	}
 
-	test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.test(testCommand, userId, userName, displayName, color, now))
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
+		if (super.test(testCommand, userInfo, now))
 			return true;
 
 		if (testCommand === "Cross2") {

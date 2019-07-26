@@ -11,6 +11,7 @@
     <Compile Include="..\BotCoreNet\BotCommands.cs" Link="BotCommands.cs" />
     <Compile Include="..\BotCoreNet\ObsHelper.cs" Link="ObsHelper.cs" />
     <Compile Include="..\BotCoreNet\Twitch.cs" Link="Twitch.cs" />
+    <Compile Include="..\BotCoreNet\UserInfo.cs" Link="UserInfo.cs" />
     <Compile Include="..\BotCoreNet\Viewer.cs" Link="Viewer.cs" />
   </ItemGroup>
 

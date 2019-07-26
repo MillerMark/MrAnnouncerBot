@@ -69,14 +69,14 @@ class Game {
     Part.loadSprites = loadCopyrightedContent;
   }
 
-  executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number) {
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number) {
     if (command === "TestCommand") {
-      return this.test(params, userId, userName, displayName, color, now);
+			return this.test(params, userInfo, now);
     }
     return false;
   }
 
-  test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
     return false;
   }
 

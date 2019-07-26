@@ -14,7 +14,7 @@ namespace OverlayManager.Hubs
 	/// </summary>
 	public interface IOverlayCommands
 	{
-		Task ExecuteCommand(string command, string args, string userId, string userName, string displayName, string color);
+		Task ExecuteCommand(string command, string args, UserInfo userInfo);
 		Task UserHasCoins(string userID, int amount);
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);

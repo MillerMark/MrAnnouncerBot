@@ -234,8 +234,8 @@ class DroneGame extends GamePlusQuiz {
 		this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
 	}
 
-	executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+		if (super.executeCommand(command, params, userInfo, now))
 			return true;
 
 		if (command === "Swat") {
@@ -250,7 +250,7 @@ class DroneGame extends GamePlusQuiz {
 			}
 		}
 		else if (command === "Dock") {
-			if (this.isSuperUser(userName)) {
+			if (this.isSuperUser(userInfo.userName)) {
 				this.selfDestructAllDrones();
 				this.removeAllGameElements(now);
 			}
@@ -294,44 +294,44 @@ class DroneGame extends GamePlusQuiz {
 			myRocket.dropSeed(now, params);
 		}
 		else if (command === "Bee") {
-			myRocket.releaseBee(now, params, userId, displayName, color);
+			myRocket.releaseBee(now, params, userInfo.userId, userInfo.displayName, userInfo.color);
 		}
 		else if (command === "Drone") {
 			let gatewayNum: number = +params;
-			needToGetCoins(userId);
+			needToGetCoins(userInfo.userId);
 			if (gatewayNum)
-				this.droneGateways.releaseDrone(now, userId, displayName, color, gatewayNum);
+				this.droneGateways.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color, gatewayNum);
 			else
-				myRocket.releaseDrone(now, userId, displayName, color);
+				myRocket.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color);
 		}
 		else if (command === "MoveRelative") {
-			this.moveRelative(now, params, userId);
+			this.moveRelative(now, params, userInfo.userId);
 		}
 		else if (command === "MoveAbsolute") {
-			this.moveAbsolute(now, params, userId);
+			this.moveAbsolute(now, params, userInfo.userId);
 		}
 		else if (command === "red" || command === "orange" || command === "amber" || command === "yellow" ||
 			command === "green" || command === "cyan" || command === "blue" || command === "indigo"
 			|| command === "violet" || command === "magenta" || command === "black" || command === "white") {
-			this.paint(userId, command, params);
+			this.paint(userInfo.userId, command, params);
 		}
 		else if (command === "ChangeDroneVelocity") {
-			this.changeDroneVelocity(userId, params);
+			this.changeDroneVelocity(userInfo.userId, params);
 		}
 		else if (command === "DroneUp") {
-			this.droneUp(userId, params);
+			this.droneUp(userInfo.userId, params);
 		}
 		else if (command === "DroneDown") {
-			this.droneDown(userId, params);
+			this.droneDown(userInfo.userId, params);
 		}
 		else if (command === "DroneLeft") {
-			this.droneLeft(userId, params);
+			this.droneLeft(userInfo.userId, params);
 		}
 		else if (command === "DroneRight") {
-			this.droneRight(userId, params);
+			this.droneRight(userInfo.userId, params);
 		}
 		else if (command === "Toss") {
-			this.tossMeteor(userId, params);
+			this.tossMeteor(userInfo.userId, params);
 		}
 		else if (command === 'Music') {
 			if (params === 'off')
@@ -371,8 +371,8 @@ class DroneGame extends GamePlusQuiz {
 		}, this);
 	}
 
-	test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.test(testCommand, userId, userName, displayName, color, now))
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
+		if (super.test(testCommand, userInfo, now))
 			return true;
 
 		if (testCommand === 'game') {
@@ -402,17 +402,17 @@ class DroneGame extends GamePlusQuiz {
 		}
 
 		if (testCommand === 'arm') {
-			arm(userId);
+			arm(userInfo.userId);
 			return true;
 		}
 
 		if (testCommand === 'disarm') {
-			disarm(userId);
+			disarm(userInfo.userId);
 			return true;
 		}
 
 		if (testCommand === 'fire') {
-			fire(userId);
+			fire(userInfo.userId);
 			return true;
 		}
 
@@ -1257,7 +1257,7 @@ class DroneGame extends GamePlusQuiz {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
 			drones.sprites.forEach(function (drone: Drone) {
 				const margin: number = 8;
-				let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, Drone.width - margin / 2, Drone.height - margin / 2);
+				let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, Drone.width * drone.scale - margin / 2, Drone.height * drone.scale - margin / 2);
 				if (coinsFound > 0) {
 					connection.invoke("AddCoins", drone.userId, coinsFound);
 					drone.coinCount += coinsFound;

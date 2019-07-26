@@ -18,7 +18,9 @@ class DragonBackGame extends GamePlusQuiz {
 
 	playerDataChanged(playerID: number, pageID: number, playerData: string): void {
 		if (this.characterStatsScroll.playerDataChanged(playerID, pageID, playerData)) {
-			this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.characters[this.characterStatsScroll.selectedCharacterIndex].firstName, 6);
+			if (this.characterStatsScroll.activeCharacter) {
+				this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
+			}
 		}
 	}
 
@@ -65,7 +67,6 @@ class DragonBackGame extends GamePlusQuiz {
 		this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
 		this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
 		this.characterStatsScroll.pages.push(StatPage.createEquipmentPage());
-		this.characterStatsScroll.selectedCharacterIndex = 0;
 		this.characterStatsScroll.selectedStatPageIndex = 0;
 
 		this.characterStatsScroll.state = ScrollState.none;
@@ -367,8 +368,8 @@ class DragonBackGame extends GamePlusQuiz {
 		this.emitter.particleWind = new Vector(2, -0.1);
 	}
 
-	executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+		if (super.executeCommand(command, params, userInfo, now))
 			return true;
 		//if (command === "Launch") {
 		//  if (!myRocket.started || myRocket.isDocked) {
@@ -426,8 +427,8 @@ class DragonBackGame extends GamePlusQuiz {
 		//}
 	}
 
-	test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.test(testCommand, userId, userName, displayName, color, now))
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
+		if (super.test(testCommand, userInfo, now))
 			return true;
 
 		if (testCommand === 'scroll') {
@@ -462,21 +463,21 @@ class DragonBackGame extends GamePlusQuiz {
 
 		if (testCommand === '2') {
 			this.characterStatsScroll.state = ScrollState.none;
-			this.characterStatsScroll.selectedCharacterIndex = 2;
+			this.characterStatsScroll.setActiveCharacter(2);
 			this.characterStatsScroll.open(this.now);
 			return true;
 		}
 
 		if (testCommand === '1') {
 			this.characterStatsScroll.state = ScrollState.none;
-			this.characterStatsScroll.selectedCharacterIndex = 1;
+			this.characterStatsScroll.setActiveCharacter(1);
 			this.characterStatsScroll.open(this.now);
 			return true;
 		}
 
 		if (testCommand === '0') {
 			this.characterStatsScroll.state = ScrollState.none;
-			this.characterStatsScroll.selectedCharacterIndex = 0;
+			this.characterStatsScroll.setActiveCharacter(0);
 			this.characterStatsScroll.open(this.now);
 			return true;
 		}

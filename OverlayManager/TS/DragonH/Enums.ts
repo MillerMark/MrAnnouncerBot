@@ -17,7 +17,8 @@ enum DamageType {
   Psychic = 512,
   Radiant = 1024,
   Slashing = 2048,
-  Thunder = 4096
+  Thunder = 4096,
+	Superiority = 8192,
 }
 
 enum WeaponType {

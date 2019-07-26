@@ -36,7 +36,7 @@
 
         if (testSprite instanceof Drone) {
           // smoke..
-          activeDroneGame.sparkSmoke.add(testSprite.x + Drone.width / 2, testSprite.y + Drone.height / 2, 0);
+					activeDroneGame.sparkSmoke.add(testSprite.x + Drone.width * this.scale / 2, testSprite.y + Drone.height * this.scale / 2, 0);
 
           // sparks...
           if (wallSprite.wallStyle !== WallStyle.Double)

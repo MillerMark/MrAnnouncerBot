@@ -1442,7 +1442,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
-function addDie(dieStr: string, damageType: DamageType, dieType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1): any {
+function addDie(dieStr: string, damageType: DamageType, rollType: RollType, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1): any {
 	let countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length != 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1496,7 +1496,7 @@ function addDie(dieStr: string, damageType: DamageType, dieType: RollType, backg
 		prepareDie(die, throwPower, xPositionModifier);
 
 		if (die) {
-			if (dieType == RollType.damage || dieType == RollType.bonus) {
+			if (rollType == RollType.damage || rollType == RollType.bonus) {
 				switch (damageType) {
 					case DamageType.Fire:
 						diceLayer.attachDamageFire(die);
@@ -1537,13 +1537,20 @@ function addDie(dieStr: string, damageType: DamageType, dieType: RollType, backg
 					case DamageType.Lightning:
 						diceLayer.attachDamageLightning(die);
 						break;
+					case DamageType.Superiority:
+						diceLayer.attachSuperiority(die);
+						break;
 				}
 			}
-			if (dieType == RollType.health)
+			else if ((rollType == RollType.health || rollType == RollType.totalScore) && damageType == DamageType.Superiority) {
+				diceLayer.attachSuperiority(die);
+			}
+			if (rollType == RollType.health) {
 				diceLayer.attachHealth(die);
+			}
 		}
 
-		die.rollType = dieType;
+		die.rollType = rollType;
 
 		if (die.rollType === RollType.inspiration) {
 			let rotation: number = Random.between(4, 8);
@@ -1578,7 +1585,7 @@ enum RollType {
 	bentLuck
 }
 
-function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false, playerID: number = -1): any {
+function addDieFromStr(diceStr: string, rollType: RollType, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false, playerID: number = -1): any {
 	if (!diceStr)
 		return;
 	let allDice: string[] = diceStr.split(',');
@@ -1589,12 +1596,39 @@ function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, x
 	let modifier: number = 0;
 	let damageType: DamageType = diceRollData.damageType;
 	allDice.forEach(function (dieSpec: string) {
+		let thisBackgroundColor: string = backgroundColor;
+		let thisFontColor: string =fontColor;
+		let thisRollType: RollType = rollType;
 		let parenIndex: number = dieSpec.indexOf('(');
 		if (parenIndex >= 0) {
 			var damageStr: string = dieSpec.substring(parenIndex + 1);
 			let closeParenIndex: number = damageStr.indexOf(')');
 			if (closeParenIndex >= 0) {
 				damageStr = damageStr.substr(0, closeParenIndex);
+				let colonIndex: number = damageStr.indexOf(':');
+				if (colonIndex >= 0) {
+					let rollTypeOverride: string = damageStr.substr(colonIndex + 1).toLowerCase();
+					console.log('rollTypeOverride: ' + rollTypeOverride);
+					if (rollTypeOverride == 'health') {
+						thisRollType = RollType.health;
+						thisBackgroundColor = DiceLayer.healthDieBackgroundColor;
+						thisFontColor = DiceLayer.healthDieFontColor;
+					}
+					else if (rollTypeOverride == 'damage') {
+						thisRollType = RollType.damage;
+						thisBackgroundColor = DiceLayer.damageDieBackgroundColor;
+						thisFontColor = DiceLayer.damageDieFontColor;
+					}
+					else if (rollTypeOverride == 'roll') {
+						thisRollType = RollType.totalScore;
+						thisBackgroundColor = diceLayer.activePlayerDieColor;
+						thisFontColor = diceLayer.activePlayerDieFontColor;
+					}
+					damageStr = damageStr.substr(0, colonIndex);
+					console.log('damageStr: ' + damageStr);
+				}
+
+
 				damageType = damageTypeFromStr(damageStr);
 			}
 			dieSpec = dieSpec.substr(0, parenIndex);
@@ -1604,7 +1638,7 @@ function addDieFromStr(diceStr: string, dieType: RollType, throwPower: number, x
 		if (dieAndModifier.length == 2)
 			modifier += +dieAndModifier[1];
 		let dieStr: string = dieAndModifier[0];
-		addDie(dieAndModifier[0], damageType, dieType, backgroundColor, fontColor, throwPower, xPositionModifier, isMagic, playerID);
+		addDie(dieStr, damageType, thisRollType, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID);
 	});
 
 	damageModifierThisRoll = modifier;
@@ -1631,6 +1665,9 @@ function damageTypeFromStr(str: string): DamageType {
 
 	if (str === 'lightning')
 		return DamageType.Lightning;
+
+	if (str === 'superiority')
+		return DamageType.Superiority;
 
 	if (str === 'necrotic')
 		return DamageType.Necrotic;
