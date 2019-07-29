@@ -358,9 +358,9 @@ class GravityGames {
       activeDroneGame.allSeeds.changingDirection(now);
       //activeDroneGame.beesYellow.changingDirection(now);
     }
-    else if (activeDroneGame instanceof DragonGame) {
-      activeDroneGame.allSeeds.changingDirection(now);
-    }
+    //else if (activeDroneGame instanceof DragonBackGame) {
+    //  activeDroneGame.allSeeds.changingDirection(now);
+    //}
 
     this.activePlanet = planet;
 

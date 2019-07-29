@@ -12,7 +12,9 @@ class DroneGame extends GamePlusQuiz {
 	//blueExplosions: Sprites;
 	//purpleExplosions: Sprites;
 	//redFlowers: Sprites;
-	yellowFlowers1: Sprites;
+	yellowPetunias: Sprites;
+	superFlowerBack: Sprites;
+	superFlowerFront: Sprites;
 	//yellowFlowers3: Sprites;
 	//purpleFlowers: Sprites;
 	purplePortals: Sprites;
@@ -89,7 +91,9 @@ class DroneGame extends GamePlusQuiz {
 		//this.purpleFlowers.draw(myContext, now);
 		//blueFlowers.draw(myContext, now);
 		//this.redFlowers.draw(myContext, now);
-		this.yellowFlowers1.draw(myContext, now);
+		this.yellowPetunias.draw(myContext, now);
+		this.superFlowerBack.draw(myContext, now);
+		this.superFlowerFront.draw(myContext, now);
 		//yellowFlowers2.draw(myContext, now);
 		//this.yellowFlowers3.draw(myContext, now);
 		this.redExplosions.draw(myContext, now);
@@ -193,8 +197,21 @@ class DroneGame extends GamePlusQuiz {
 		const flowerFrameRate: number = 20;
 		//const grassFrameRate: number = 25;
 
-		this.yellowFlowers1 = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
-		this.yellowFlowers1.returnFrameIndex = 64;
+		this.yellowPetunias = new Sprites("Flowers/YellowPetunias1/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
+		this.yellowPetunias.returnFrameIndex = 64;
+		this.yellowPetunias.originX = 133;
+		this.yellowPetunias.originY = 227;
+
+		this.superFlowerBack = new Sprites("Flowers/SuperFlower/SuperFlowerBack", 290, flowerFrameRate, AnimationStyle.Loop, true);
+		this.superFlowerBack.returnFrameIndex = 99;
+		this.superFlowerBack.originX = 160;
+		this.superFlowerBack.originY = 277;
+
+		this.superFlowerFront = new Sprites("Flowers/SuperFlower/SuperFlowerFront", 290, flowerFrameRate, AnimationStyle.Loop, true);
+		this.superFlowerFront.returnFrameIndex = 99;
+		this.superFlowerFront.originX = 160;
+		this.superFlowerFront.originY = 277;
+
 		//var yellowFlowers2 = new Sprites("Flowers/YellowPetunias2/YellowPetunias", 270, flowerFrameRate, AnimationStyle.Loop, true);
 		//yellowFlowers2.returnFrameIndex = 64;
 		//this.yellowFlowers3 = new Sprites("Flowers/YellowPetunias3/YellowPetunias", 253, flowerFrameRate, AnimationStyle.Loop, true);
@@ -337,7 +354,7 @@ class DroneGame extends GamePlusQuiz {
 					Boombox.volumeUp();
 				else if (volStr.startsWith('down'))
 					Boombox.volumeDown();
-				else 
+				else
 					Boombox.setVolumeTo(volStr);
 			}
 			this.startMusic();
@@ -950,13 +967,14 @@ class DroneGame extends GamePlusQuiz {
 		////}
 		//else
 		if (seeds === this.yellowSeeds) {
-			//let randomYellow: number = Math.random() * 4;
-			//if (randomYellow < 2)
-			this.plantSeed(this.yellowFlowers1, x + 50, 5);
-			////else if (randomYellow < 2)
-			////  plantSeed(yellowFlowers2, x + 50, 0);
-			//else
-			//  this.plantSeed(this.yellowFlowers3, x + 50, 0);
+			let randomYellow: number = Math.random() * 10;
+			if (randomYellow < 2)
+				this.plantSeed(this.yellowPetunias, x + 50, 5);
+			else {
+				let angle: number = Random.plusMinus(15);
+				this.plantSeed(this.superFlowerBack, x + 50, 0, false, angle);
+				this.plantSeed(this.superFlowerFront, x + 50, 0, true, angle);
+			}
 		}
 		new Audio(Folders.assets + 'Sound Effects/MeteorHit.wav').play();
 	}
@@ -1180,9 +1198,30 @@ class DroneGame extends GamePlusQuiz {
 		this.allSparks.add(this.upAndLeftSparks);
 	}
 
-	plantSeed(spriteArray, x, y) {
+	plantSeed(spriteArray: Sprites, x, y, canShiftHue: boolean = false, angle: number = 0) {
 		const flowerLifeSpan: number = 120 * 1000;
-		spriteArray.sprites.push(new SpriteProxy(0, x - spriteArray.spriteWidth / 2, screenHeight - spriteArray.spriteHeight + y, flowerLifeSpan));
+		let heightDrop: number = Random.max(9) * 10;
+		let hueShift: number = 0;
+		if (canShiftHue) {
+			hueShift = Random.max(360);
+
+			let numTries: number = 0;
+			const maxTries: number = 30;
+			while (this.hueIsGreen(hueShift) && numTries < maxTries) {
+				numTries++;
+				hueShift = Random.max(360);
+			}
+			if (this.hueIsGreen(hueShift))
+				hueShift = 0;
+		}
+
+		let flower: SpriteProxy = spriteArray.addShifted(x, screenHeight + y + heightDrop, 0, hueShift);
+		flower.expirationDate = performance.now() + flowerLifeSpan;
+		flower.rotation = angle;
+	}
+
+	hueIsGreen(hueShift: number): boolean {
+		return hueShift > 60 && hueShift < 190;
 	}
 
 	putMeteorOnDrone(meteorProxy: SpriteProxy, droneProxy: SpriteProxy, now: number): void {
@@ -1386,7 +1425,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		let thisVolume: number = Math.round(Boombox.volume);
 		if (thisVolume >= 4)
 			actualVolume = thisVolume - 3;
-		else 
+		else
 			switch (thisVolume) {
 				case 3:
 					actualVolume = 0.75;

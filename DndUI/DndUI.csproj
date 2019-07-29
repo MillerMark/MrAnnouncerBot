@@ -71,7 +71,10 @@
     <Compile Include="Event Args\FocusedControlsChangedEventArgs.cs" />
     <Compile Include="Event Args\PageChangeEventArgs.cs" />
     <Compile Include="FocusHelper.cs" />
+    <Compile Include="User Controls\AbilityEventArgs.cs" />
     <Compile Include="User Controls\ScrollPage.cs" />
+    <Compile Include="User Controls\SkillCheckEventArgs.cs" />
+    <Compile Include="User Controls\StrUtils.cs" />
     <Compile Include="User Controls\Support\AnimationSprites.cs" />
     <Compile Include="User Controls\AttackBuilder.xaml.cs">
       <DependentUpon>AttackBuilder.xaml</DependentUpon>

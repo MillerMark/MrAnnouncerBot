@@ -21,18 +21,40 @@ namespace DndUI
 	/// </summary>
 	public partial class CharacterSheets : UserControl
 	{
-		
-		public ScrollPage Page
+		public delegate void SkillCheckEventHandler(object sender, SkillCheckEventArgs e);
+		public delegate void AbilityEventHandler(object sender, AbilityEventArgs e);
+
+		public static readonly RoutedEvent SavingThrowRequestedEvent = EventManager.RegisterRoutedEvent("SavingThrowRequested", RoutingStrategy.Bubble, typeof(AbilityEventHandler), typeof(CharacterSheets));
+
+		public event AbilityEventHandler SavingThrowRequested
 		{
-			get { return scrollPage; }
-			set
-			{
-				scrollPage = value;
-			}
+			add { AddHandler(SavingThrowRequestedEvent, value); }
+			remove { RemoveHandler(SavingThrowRequestedEvent, value); }
+		}
+
+		protected virtual void OnSavingThrowRequested(Ability ability)
+		{
+			AbilityEventArgs eventArgs = new AbilityEventArgs(SavingThrowRequestedEvent, ability);
+			RaiseEvent(eventArgs);
 		}
 		
 
-		ScrollPage scrollPage;
+		public static readonly RoutedEvent SkillCheckRequestedEvent = EventManager.RegisterRoutedEvent("SkillCheckRequested", RoutingStrategy.Bubble, typeof(SkillCheckEventHandler), typeof(CharacterSheets));
+
+		public event SkillCheckEventHandler SkillCheckRequested
+		{
+			add { AddHandler(SkillCheckRequestedEvent, value); }
+			remove { RemoveHandler(SkillCheckRequestedEvent, value); }
+		}
+
+		protected virtual void OnSkillCheckRequested(Skills skill)
+		{
+			SkillCheckEventArgs eventArgs = new SkillCheckEventArgs(SkillCheckRequestedEvent, skill);
+			RaiseEvent(eventArgs);
+		}
+		
+		public ScrollPage Page { get; set; }
+
 		public static readonly RoutedEvent PageBackgroundClickedEvent = EventManager.RegisterRoutedEvent("PageBackgroundClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(CharacterSheets));
 
 		public event RoutedEventHandler PageBackgroundClicked
@@ -93,11 +115,11 @@ namespace DndUI
 
 		protected virtual void OnPageChanged(ScrollPage newPage)
 		{
-			if (scrollPage == newPage)
+			if (Page == newPage)
 			{
 				return;
 			}
-			scrollPage = newPage;
+			Page = newPage;
 			FocusHelper.ClearActiveStatBoxes();
 
 			RoutedEventArgs previewEventArgs = new RoutedEventArgs(PreviewPageChangedEvent);
@@ -240,6 +262,86 @@ namespace DndUI
 				return "+";
 			return "";
 		}
+
+		void SetSkillText(StatBox statBox, double value)
+		{
+			string statStr = SetStatForeground(statBox, value);
+			statBox.Text = statStr;
+		}
+
+		static SolidColorBrush GetTextBrush(double value)
+		{
+			// TODO: Turn into read-only fields and reference them here:
+			if (value > 0)
+				return new SolidColorBrush(Color.FromRgb(0, 115, 192));
+			else if (value < 0)
+				return new SolidColorBrush(Color.FromRgb(192, 0, 0));
+			else
+				return new SolidColorBrush(Color.FromRgb(173, 133, 87));
+		}
+
+		private static string SetStatForeground(Control control, double value)
+		{
+			string statStr = value.ToString();
+			if (value > 0)
+				statStr = '+' + statStr;
+			control.Foreground = GetTextBrush(value);
+			return statStr;
+		}
+
+		private static string SetTextBlockForeground(TextBlock textBlock, double value)
+		{
+			string statStr = value.ToString();
+			if (value > 0)
+				statStr = '+' + statStr;
+			textBlock.Foreground = GetTextBrush(value);
+			return statStr;
+		}
+
+		void SetCalculatedFields(Character character)
+		{
+			SetSkillText(statSkillAcrobatics, character.skillModAcrobatics);
+			SetSkillText(statSkillAnimalHandling, character.skillModAnimalHandling);
+			SetSkillText(statSkillArcana, character.skillModArcana);
+			SetSkillText(statSkillAthletics, character.skillModAthletics);
+			SetSkillText(statSkillDeception, character.skillModDeception);
+			SetSkillText(statSkillHistory, character.skillModHistory);
+			SetSkillText(statSkillInsight, character.skillModInsight);
+			SetSkillText(statSkillIntimidation, character.skillModIntimidation);
+			SetSkillText(statSkillInvestigation, character.skillModInvestigation);
+			SetSkillText(statSkillMedicine, character.skillModMedicine);
+			SetSkillText(statSkillNature, character.skillModNature);
+			SetSkillText(statSkillPerception, character.skillModPerception);
+			SetSkillText(statSkillPerformance, character.skillModPerformance);
+			SetSkillText(statSkillPersuasion, character.skillModPersuasion);
+			SetSkillText(statSkillReligion, character.skillModReligion);
+			SetSkillText(statSkillSlightOfHand, character.skillModSlightOfHand);
+			SetSkillText(statSkillStealth, character.skillModStealth);
+			SetSkillText(statSkillSurvival, character.skillModSurvival);
+			SetTextBlockText(calcStatStrengthModifier2, character.strengthMod);
+			SetTextBlockText(calcStatDexterityModifier2, character.dexterityMod);
+			SetTextBlockText(calcStatConstitutionModifier2, character.constitutionMod);
+			SetTextBlockText(calcStatIntelligenceModifier2, character.intelligenceMod);
+			SetTextBlockText(calcStatWisdomModifier2, character.wisdomMod);
+			SetTextBlockText(calcStatCharismaModifier2, character.charismaMod);
+			SetTextBlockText(calcStatStrengthModifier, character.strengthMod);
+			SetTextBlockText(calcStatDexterityModifier, character.dexterityMod);
+			SetTextBlockText(calcStatConstitutionModifier, character.constitutionMod);
+			SetTextBlockText(calcStatIntelligenceModifier, character.intelligenceMod);
+			SetTextBlockText(calcStatWisdomModifier, character.wisdomMod);
+			SetTextBlockText(calcStatCharismaModifier, character.charismaMod);
+			//SetSkillText(stat, character.skillModSurvival);
+		}
+		void SetTextBlockText(TextBlock textBlock, double value)
+		{
+			textBlock.Text = SetTextBlockForeground(textBlock, value);
+		}
+
+		void SetName(StatBox statBox, string name)
+		{
+			statBox.Text = StrUtils.GetFirstName(name);
+			statBox.IsEnabled = false;
+		}
 		public void SetFromCharacter(Character character)
 		{
 			changingInternally = true;
@@ -290,9 +392,9 @@ namespace DndUI
 				statLevel.Text = character.level.ToString();
 				statLoad.Text = character.load.ToString();
 				//character.maxHitPoints = 
-				statName.Text = character.name;
-				statName2.Text = character.name;
-				statName3.Text = character.name;
+				SetName(statName, character.name);
+				SetName(statName2, character.name);
+				SetName(statName3, character.name);
 
 				//character.offTurnActions = 
 				//character.onTurnActions = 
@@ -338,12 +440,14 @@ namespace DndUI
 				statWeight.Text = character.weight.ToString();
 				statWisdom.Text = character.Wisdom.ToString();
 				statWisdom2.Text = statWisdom.Text;
+				SetCalculatedFields(character);
 			}
 			finally
 			{
 				changingInternally = false;
 			}
 		}
+		
 
 		public string GetCharacter()
 		{
@@ -379,7 +483,7 @@ namespace DndUI
 			character.goldPieces = statGoldPieces.ToDouble();
 			character.hitPoints = statHitPoints.ToInt();
 			character.initiative = statInitiative.ToInt();
-			character.inspiration = statInspiration.ToInt();
+			character.inspiration = statInspiration.Text;
 			character.baseIntelligence = statIntelligence.ToInt();
 			// character.kind = 
 			character.kind = CreatureKinds.Humanoids;   // Allow editing of this prop?
@@ -448,6 +552,7 @@ namespace DndUI
 				{
 					case StatBox statBox:
 						statBox.StatChanged += AnyStatChanged;
+						statBox.MouseDown += StatBox_MouseDown;
 						break;
 					case CheckBox checkBox:
 						checkBox.Checked += AnyStatChanged;
@@ -459,6 +564,12 @@ namespace DndUI
 					HookChangedEvents(child);
 			}
 		}
+
+		private void StatBox_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			
+		}
+
 		private void UserControl_Loaded(object sender, RoutedEventArgs e)
 		{
 			HookChangedEvents(this);
@@ -477,6 +588,142 @@ namespace DndUI
 		private void PageMain_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageBackgroundClicked();
+		}
+
+		private void AcrobaticsSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.acrobatics);
+		}
+		private void AnimalHandlingSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.animalHandling);
+		}
+
+		private void ArcanaSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.arcana);
+		}
+		private void AthleticsSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.athletics);
+
+		}
+		private void DeceptionSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.deception);
+		}
+
+		private void HistorySkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.history);
+		}
+		private void InsightSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.insight);
+		}
+		private void IntimidationSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.intimidation);
+		}
+		private void InvestigationSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.investigation);
+		}
+		private void MedicineSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.medicine);
+		}
+		private void NatureSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.nature);
+		}
+		private void PerceptionSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.perception);
+		}
+		private void PerformanceSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.performance);
+		}
+		private void PersuasionSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.persuasion);
+		}
+		private void ReligionSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.religion);
+		}
+		private void SlightOfHandSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.slightOfHand);
+		}
+		private void StealthSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.stealth);
+		}
+		private void SurvivalSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.survival);
+		}
+
+		private void MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void DexteritySavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			OnSavingThrowRequested(Ability.Dexterity);
+		}
+		private void StrengthSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			OnSavingThrowRequested(Ability.Strength);
+		}
+		private void ConstitutionSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			OnSavingThrowRequested(Ability.Constitution);
+		}
+		private void IntelligenceSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			OnSavingThrowRequested(Ability.Intelligence);
+		}
+		private void WisdomSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			OnSavingThrowRequested(Ability.Wisdom);
+		}
+		private void CharismaSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			OnSavingThrowRequested(Ability.Charisma);
+		}
+
+		private void StrengthSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.strength);
+		}
+
+		private void ConstitutionSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.constitution);
+		}
+
+		private void WisdomSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.wisdom);
+		}
+
+		private void DexteritySkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.dexterity);
+		}
+
+		private void IntelligenceSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.intelligence);
+		}
+
+		private void CharismaSkillCheck_Click(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckRequested(Skills.charisma);
 		}
 	}
 }

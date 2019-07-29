@@ -13,7 +13,7 @@ enum DamageType {
   Lightning = 32,
   Necrotic = 64,
   Piercing = 128,
-  Poison = 256,
+	Poison = 256,
   Psychic = 512,
   Radiant = 1024,
   Slashing = 2048,

@@ -25,19 +25,36 @@
     this.moves = false;
     var self = this;
     this.originX = 0;
-    this.originY = 0;
-    this.baseAnimation.images[0].onload = function () {
-      self.spriteWidth = (<HTMLImageElement>this).width;
-      self.spriteHeight = (<HTMLImageElement>this).height;
+		this.originY = 0;
+
+		/* 
+		 * ImageManager...
+		
+		  this.baseAnimation.imagesLoaded.then(image => {
+      self.spriteWidth = image.width;
+      self.spriteHeight = image.height;
       self.loaded = true;
       if (onLoadedFunc != null)
         onLoadedFunc(self);
-    };
+    });
+		  */
+
+		this.baseAnimation.onImageLoaded = function (image: HTMLImageElement) {
+			self.spriteWidth = image.width;
+			self.spriteHeight = image.height;
+			self.loaded = true;
+			if (onLoadedFunc != null)
+				onLoadedFunc(self);
+		};
 
     this.lastTimeWeAdvancedTheFrame = performance.now();
-  }
+	}
 
-  destroyAll(): any {
+	getOrigin(): Vector {
+		return new Vector(this.originX, this.originY);
+	}
+
+	destroyAll(): any {
     this.sprites = [];
   }
 
@@ -51,15 +68,23 @@
     if (index >= 0)
       return this.sprites[index];
     return null;
-  }
+	}
 
-  addShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
+	checkFrameIndex(frameIndex: number = 0): number {
+		if (frameIndex == -1)  // Select a random frame
+			return Math.floor(Math.random() * this.baseAnimation.frameCount);
+		return frameIndex;
+	}
+
+	addShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
+		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
     let sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
     this.sprites.push(sprite);
     return sprite;
   }
 
-  add(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
+	add(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
+		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
     let sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
     this.sprites.push(sprite);
     return sprite;

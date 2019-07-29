@@ -11,6 +11,7 @@ namespace DndCore
 		Smoke,
 		SmokeExplosion,
 		SparkTrail,
-		SmallSparks
+		SmallSparks,
+		Fangs
 	}
 }

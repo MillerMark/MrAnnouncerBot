@@ -15,7 +15,7 @@ function connectToSignalR(signalR) {
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
-		connection.on("SetPlayerData", setPlayerData);
+		connection.on("SetPlayerData", initializePlayerData);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
   };
 }
@@ -31,20 +31,20 @@ function updateClock(clockData: string) {
   }
 }
 
-function setPlayerData(playerData: string) {
+function initializePlayerData(playerData: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.setPlayerData(playerData);
+		activeFrontGame.initializePlayerData(playerData);
 	}
-	if (activeBackGame instanceof DragonGame) {
-		activeBackGame.characterStatsScroll.setPlayerData(playerData);
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.characterStatsScroll.initializePlayerData(playerData);
 	}
 	if (diceLayer) {
-		diceLayer.setPlayerData(playerData);
+		diceLayer.initializePlayerData(playerData);
 	}
 }
 
 function sendScrollLayerCommand(commandData: string) {
-	if (activeBackGame instanceof DragonGame) {
+	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.characterStatsScroll.sendScrollLayerCommand(commandData);
 	}
 }
@@ -75,20 +75,20 @@ function executeCommand(command: string, params: string, userId: string, userNam
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonGame) {
+  if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
   }
 }
 
 function unfocusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonGame) {
+  if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
   }
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
-  if (activeBackGame instanceof DragonGame) {
-    activeBackGame.characterStatsScroll.playerDataChanged(playerID, pageID, playerData);
+	if (activeBackGame instanceof DragonBackGame) {
+    activeBackGame.playerDataChanged(playerID, pageID, playerData);
   }
   if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.playerChanged(playerID, playerData);
