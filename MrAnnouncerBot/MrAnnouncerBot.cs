@@ -485,6 +485,7 @@ namespace MrAnnouncerBot
 			bool sendPerf = false;
 			bool sendAllDevs = false;
 			string message = "";
+			string backTrackStr = "";
 			foreach (string arg in obj.Command.ArgumentsAsList)
 			{
 				if (arg == "-log")
@@ -499,11 +500,13 @@ namespace MrAnnouncerBot
 					sendPerf = true;
 				else if (arg == "-allDevs")
 					sendAllDevs = true;
+				else if (arg.StartsWith("-$"))
+					backTrackStr = arg.Substring(1);
 				else
 					message = arg;
 			}
 
-			MarkCodeRushIssue(message, attachLogFiles, attachSettingsFiles, sendPrz, sendAlex, sendPerf, sendAllDevs);
+			MarkCodeRushIssue(message, attachLogFiles, attachSettingsFiles, sendPrz, sendAlex, sendPerf, sendAllDevs, backTrackStr);
 		}
 
 		void CompressFiles(string[] files)
@@ -517,7 +520,7 @@ namespace MrAnnouncerBot
 			allViewers.OnMessageReceived(e.ChatMessage);
 		}
 
-		async void MarkCodeRushIssue(string title, bool attachLogFiles, bool attachSettingsFiles, bool sendPrz, bool sendAlex, bool sendPerf, bool sendAllDevs)
+		async void MarkCodeRushIssue(string title, bool attachLogFiles, bool attachSettingsFiles, bool sendPrz, bool sendAlex, bool sendPerf, bool sendAllDevs, string backTrackStr)
 		{
 			string showStartURL;
 			
@@ -525,7 +528,9 @@ namespace MrAnnouncerBot
 			string errors = "";
 
 			if (startTimeURL == null)
-				showStartURL = await GetActiveShowPointURL();
+			{
+				showStartURL = await GetActiveShowPointURL(backTrackStr);
+			}
 			else
 			{  // We already marked a start time for this issue.
 				TimeSpan timeSpan = DateTime.Now - issueStartTime;
@@ -549,7 +554,6 @@ namespace MrAnnouncerBot
 						IEnumerable<string> logFiles = Directory.EnumerateFiles(@"C:\Users\Mark Miller\AppData\Local\CodeRush\Logs", "*.log");
 						foreach (string file in logFiles)
 						{
-
 							try
 							{
 								// new FileStream("c:\test.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -1057,7 +1061,27 @@ namespace MrAnnouncerBot
 			}
 		}
 
-		async Task<string> GetActiveShowPointURL()
+		int GetNumberBefore(string workStr, string marker)
+		{
+			int markerIndex = workStr.IndexOf(marker);
+			string numberStr = "";
+			if (markerIndex == -1)
+				return 0;
+
+			int numberIndex = markerIndex - 1;
+
+			while (numberIndex >= 0)
+			{
+				if (!char.IsDigit(workStr[numberIndex]))
+					break;
+				numberStr = workStr[numberIndex] + numberStr;
+				numberIndex--;
+			}
+			if (string.IsNullOrWhiteSpace(numberStr))
+				return 0;
+			return int.Parse(numberStr);
+		}
+		async Task<string> GetActiveShowPointURL(string backTrackStr = "")
 		{
 			var client = new HttpClient();
 			client.DefaultRequestHeaders.Add("Client-ID", Twitch.CodeRushedBotApiClientId);
@@ -1068,7 +1092,38 @@ namespace MrAnnouncerBot
 			if (liveShowData != null && liveShowData.data.Count > 0)
 			{
 				LiveShowData showData = liveShowData.data[0];
-				return showData.url + "?t=" + showData.duration;
+				string timeNow = showData.duration;
+				if (!string.IsNullOrWhiteSpace(backTrackStr))
+				{
+					int dollarIndex = backTrackStr.IndexOf("$");
+					if (dollarIndex >= 0)
+						backTrackStr = backTrackStr.Substring(dollarIndex + 1);
+					int minutes = GetNumberBefore(backTrackStr, "m");
+					int seconds = GetNumberBefore(backTrackStr, "s");
+
+					int totalSecondsBack = minutes * 60 + seconds;
+
+					int existingHours = GetNumberBefore(timeNow, "h");
+					int existingMinutes = GetNumberBefore(timeNow, "m");
+					int existingSeconds = GetNumberBefore(timeNow, "s");
+
+					const int secondsPerHour = 3600;
+					const int secondsPerMinute = 60;
+					int totalExistingSeconds = existingSeconds + 
+						existingMinutes * secondsPerMinute + 
+						existingHours * secondsPerHour;
+
+					int newTimeInSeconds = totalExistingSeconds - totalSecondsBack;
+
+					int newHours = (int)Math.Floor((double)newTimeInSeconds / secondsPerHour);
+					newTimeInSeconds -= newHours * secondsPerHour;
+					int newMinutes = (int)Math.Floor((double)newTimeInSeconds / secondsPerMinute);
+					newTimeInSeconds -= newMinutes * secondsPerMinute;
+					int newSeconds = newTimeInSeconds;
+
+					timeNow = $"{newHours}h{newMinutes}m{newSeconds}s";
+				}
+				return showData.url + "?t=" + timeNow;
 			}
 			return null;
 		}
@@ -1082,6 +1137,7 @@ namespace MrAnnouncerBot
 		void HandleSuppressFanfareCommand(OnChatCommandReceivedArgs obj)
 		{
 			suppressingFanfare = true;
+			Chat("Fanfare is suppressed.");
 		}
 	}
 }

@@ -183,6 +183,7 @@
     <Compile Include="ObsHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Twitch.cs" />
+    <Compile Include="UserInfo.cs" />
     <Compile Include="Viewer.cs" />
   </ItemGroup>
   <ItemGroup>

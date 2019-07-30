@@ -274,7 +274,11 @@
     <Compile Include="ClockDto.cs" />
     <Compile Include="DiceEventArgs.cs" />
     <Compile Include="DiceRollData.cs" />
+    <Compile Include="InspirationTextBox.cs" />
     <Compile Include="PlayerActionShortcut.cs" />
+    <Compile Include="PlayerButton.cs" />
+    <Compile Include="PlayerRollCheckBox.cs" />
+    <Compile Include="PlayerTabItem.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

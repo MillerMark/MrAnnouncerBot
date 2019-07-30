@@ -6,7 +6,8 @@ namespace DndCore
 {
 	public struct DndTimeSpan
 	{
-
+		public static readonly DndTimeSpan ShortRest = DndTimeSpan.FromHours(2);
+		public static readonly DndTimeSpan LongRest = DndTimeSpan.FromHours(8);
 		public DndTimeSpan(TimeMeasure timeMeasure, int count)
 		{
 			Count = count;

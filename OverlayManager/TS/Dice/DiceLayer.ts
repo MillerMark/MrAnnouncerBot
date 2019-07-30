@@ -22,7 +22,8 @@ enum DiceRollType {
 	ChaosBolt,
 	Initiative,
 	WildMagicD20Check,
-	InspirationOnly
+	InspirationOnly,
+	AddOnDice
 }
 
 enum SpriteType {
@@ -64,6 +65,7 @@ const fps40: number = 25;
 const fps30: number = 33;
 const fps25: number = 40;
 const fps20: number = 50;
+const fps15: number = 66.66666667;
 const matchNormalDieColorsToSpecial: boolean = true;
 //const damageDieBackgroundColor: string = '#e49836';
 //const damageDieFontColor: string = '#000000';
@@ -123,6 +125,7 @@ class DiceLayer {
 	damageSpinningCloudTrail: Sprites;
 	damagePoison: Sprites;
 	damagePiercingDagger: Sprites;
+	damagePiercingTooth: Sprites;
 	damagePiercingThickSword: Sprites;
 	damagePiercingTrident: Sprites;
 	damageSlashingSword: Sprites;
@@ -130,6 +133,9 @@ class DiceLayer {
 	health: Sprites;
 	damageSlashingAx: Sprites;
 	damageThunder: Sprites;
+	superiorityFire: Sprites;
+	superiorityDragonHead: Sprites;
+	superiorityDragonMouth: Sprites;
 	damagePsychic: Sprites;
 	damageLightningA: Sprites;
 	damageLightningB: Sprites;
@@ -320,6 +326,11 @@ class DiceLayer {
 		this.damagePiercingDagger.originY = 27;
 		this.allBackLayerEffects.add(this.damagePiercingDagger);
 
+		this.damagePiercingTooth = new Sprites("/Dice/Damage/Piercing/PiercingTooth", 61, fps30, AnimationStyle.Loop, true);
+		this.damagePiercingTooth.originX = 0;
+		this.damagePiercingTooth.originY = 27;
+		this.allBackLayerEffects.add(this.damagePiercingTooth);
+
 		this.damagePiercingThickSword = new Sprites("/Dice/Damage/Piercing/PiercingThickSword", 61, fps30, AnimationStyle.Loop, true);
 		this.damagePiercingThickSword.originX = 0;
 		this.damagePiercingThickSword.originY = 27;
@@ -354,6 +365,21 @@ class DiceLayer {
 		this.damageThunder.originX = 110;
 		this.damageThunder.originY = 108;
 		this.allBackLayerEffects.add(this.damageThunder);
+
+		this.superiorityDragonHead = new Sprites("/Dice/Damage/Superiority/SuperiorityDragon", 81, fps20, AnimationStyle.Loop, true);
+		this.superiorityDragonHead.originX = 74;
+		this.superiorityDragonHead.originY = 205;
+		this.allBackLayerEffects.add(this.superiorityDragonHead);
+
+		this.superiorityDragonMouth = new Sprites("/Dice/Damage/Superiority/SuperiorityMouth", 81, fps20, AnimationStyle.Loop, true);
+		this.superiorityDragonMouth.originX = 74;
+		this.superiorityDragonMouth.originY = 205;
+		this.allBackLayerEffects.add(this.superiorityDragonMouth);
+
+		this.superiorityFire = new Sprites("/Dice/Damage/Superiority/SuperiorityFire", 103, fps30, AnimationStyle.Loop, true);
+		this.superiorityFire.originX = 82;
+		this.superiorityFire.originY = 86;
+		this.allBackLayerEffects.add(this.superiorityFire);
 
 		this.damagePsychic = new Sprites("/Dice/Damage/Psychic/Psychic", 75, fps30, AnimationStyle.Loop, true);
 		this.damagePsychic.originX = 145;
@@ -560,13 +586,35 @@ class DiceLayer {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		let autoRotation: number = Random.plusMinusBetween(5, 10);
+		this.addDagger(die, rotationOffset, autoRotation);
+		rotationOffset += 90;
+		this.addSword(die, rotationOffset, autoRotation);
+		rotationOffset += 90;
+		this.addTrident(die, rotationOffset, autoRotation);
+		rotationOffset += 90;
+		this.addTooth(die, rotationOffset, autoRotation);
+
+		diceSounds.safePlayMp3('Dice/Damage/Piercing');
+	}
+
+	private addSword(die: any, rotationOffset: number, autoRotation: number) {
+		die.attachedSprites.push(this.addDamagePiercingThickSword(960, 540, rotationOffset, autoRotation));
+		die.origins.push(this.damagePiercingThickSword.getOrigin());
+	}
+
+	private addTooth(die: any, rotationOffset: number, autoRotation: number) {
+		die.attachedSprites.push(this.addDamagePiercingTooth(960, 540, rotationOffset, autoRotation));
+		die.origins.push(this.damagePiercingTooth.getOrigin());
+	}
+
+	private addTrident(die: any, rotationOffset: number, autoRotation: number) {
+		die.attachedSprites.push(this.addDamagePiercingTrident(960, 540, rotationOffset, autoRotation));
+		die.origins.push(this.damagePiercingTrident.getOrigin());
+	}
+
+	private addDagger(die: any, rotationOffset: number, autoRotation: number) {
 		die.attachedSprites.push(this.addDamagePiercingDagger(960, 540, rotationOffset, autoRotation));
 		die.origins.push(this.damagePiercingDagger.getOrigin());
-		die.attachedSprites.push(this.addDamagePiercingThickSword(960, 540, rotationOffset + 120, autoRotation));
-		die.origins.push(this.damagePiercingThickSword.getOrigin());
-		die.attachedSprites.push(this.addDamagePiercingTrident(960, 540, rotationOffset + 240, autoRotation));
-		die.origins.push(this.damagePiercingTrident.getOrigin());
-		diceSounds.safePlayMp3('Dice/Damage/Piercing');
 	}
 
 	attachDamageSlashing(die: any): void {
@@ -609,6 +657,30 @@ class DiceLayer {
 		die.origins.push(this.damageThunder.getOrigin());
 		this.addTopDieCloud(die, 3, Random.between(20, 45), 0.8, 260 + Random.plusMinus(20), 100, 50);
 		diceSounds.safePlayMp3('Dice/Damage/Thunder');
+	}
+
+	attachSuperiority(die: any): void {
+		const numHeads: number = 3;
+
+		let rotationOffset: number = Random.between(0, 360 / numHeads);
+		let autoRotation: number = Random.plusMinusBetween(20, 45);
+
+		die.attachedSprites.push(this.addSuperiorityFire(960, 540, rotationOffset));
+		die.origins.push(this.superiorityFire.getOrigin());
+
+		for (var i = 0; i < numHeads; i++) {
+			var startingFrameIndex: number = Random.intMax(this.superiorityDragonHead.baseAnimation.frameCount);
+			die.attachedSprites.push(this.addSuperiorityDragonHead(960, 540, startingFrameIndex, rotationOffset + 0, autoRotation));
+			die.origins.push(this.superiorityDragonHead.getOrigin());
+
+			die.attachedSprites.push(this.addSuperiorityDragonMouth(960, 540, startingFrameIndex, rotationOffset + 0, autoRotation));
+			die.origins.push(this.superiorityDragonMouth.getOrigin());
+			rotationOffset += 360 / numHeads;
+		}
+
+		//this.addTopDieCloud(die, 5, Random.between(20, 45), 0.2, 0, 0, 100);
+
+		diceSounds.safePlayMp3('Dice/Damage/DragonRoar');
 	}
 
 	attachDamageForce(die: any): void {
@@ -788,7 +860,7 @@ class DiceLayer {
 
 	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
 		if (!playerRoll.name)
-			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
+			playerRoll.name = diceLayer.getPlayerName(playerRoll.playerId);
 		var message: string = `${playerRoll.name}: ${playerRoll.roll + playerRoll.modifier}`;
 		if (playerRoll.modifier > 0)
 			message += ` (+${playerRoll.modifier})`;
@@ -796,8 +868,8 @@ class DiceLayer {
 			message += ` (${playerRoll.modifier})`;
 
 		let textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
-		textEffect.fontColor = this.getDieColor(playerRoll.id);
-		textEffect.outlineColor = this.activePlayerDieFontColor;
+		textEffect.fontColor = this.getDieColor(playerRoll.playerId);
+		textEffect.outlineColor = this.getDieFontColor(playerRoll.playerId);
 		this.setMultiplayerResultText(textEffect);
 		return textEffect;
 	}
@@ -963,7 +1035,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 800;
 	}
 
-	bendingLuck(message: string, luckMultiplier: number): any {
+	reportAddOnRoll(message: string, luckMultiplier: number): any {
+		if (!message)
+			return;
 		let textEffect: TextEffect = this.animations.addText(new Vector(960, 540), message, 3000);
 
 		if (luckMultiplier < 0) {
@@ -971,7 +1045,7 @@ class DiceLayer {
 			textEffect.outlineColor = DiceLayer.badLuckFontColor;
 			textEffect.fontColor = DiceLayer.badLuckDieColor;
 		}
-		else {
+		else if (luckMultiplier > 0) {
 			textEffect.outlineColor = DiceLayer.goodLuckFontColor;
 			textEffect.fontColor = DiceLayer.goodLuckDieColor;
 		}
@@ -1255,6 +1329,17 @@ class DiceLayer {
 		return damagePiercingThickSword;
 	}
 
+	addDamagePiercingTooth(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
+		let damagePiercingTooth = this.damagePiercingTooth.add(x, y, -1);
+		damagePiercingTooth.autoRotationDegeesPerSecond = autoRotation;
+		damagePiercingTooth.initialRotation = angle;
+		damagePiercingTooth.rotation = angle;
+		damagePiercingTooth.fadeInTime = 500;
+		damagePiercingTooth.fadeOutTime = 500;
+		damagePiercingTooth.fadeOnDestroy = true;
+		return damagePiercingTooth;
+	}
+
 	addDamagePiercingTrident(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
 		let damagePiercingTrident = this.damagePiercingTrident.add(x, y, -1);
 		damagePiercingTrident.autoRotationDegeesPerSecond = autoRotation;
@@ -1316,6 +1401,47 @@ class DiceLayer {
 		damageThunder.fadeOutTime = 500;
 		damageThunder.fadeOnDestroy = true;
 		return damageThunder;
+	}
+	addSuperiorityFire(x: number, y: number, angle: number): SpriteProxy {
+		let superiorityFire = this.superiorityFire.addShifted(x, y, -1, Random.plusMinus(30));
+		superiorityFire.rotation = angle;
+		superiorityFire.fadeInTime = 500;
+		superiorityFire.fadeOutTime = 500;
+		superiorityFire.fadeOnDestroy = true;
+		return superiorityFire;
+	}
+
+	addSuperiorityDragonHead(x: number, y: number, startingFrameIndex: number, angle: number, autoRotation: number): SpriteProxy {
+		var headSaturation: number = 100;
+		var headBrightness: number = 100;
+		if (Random.chancePercent(20)) {
+			headSaturation = 0;
+			if (Random.chancePercent(33)) {
+				headBrightness = 60;
+			}
+			else if (Random.chancePercent(33)) {
+				headBrightness = 200;
+			}
+		}
+		let superiorityDragonHead = this.superiorityDragonHead.addShifted(x, y, startingFrameIndex, Random.max(360), headSaturation, headBrightness);
+		superiorityDragonHead.rotation = angle;
+		superiorityDragonHead.initialRotation = angle;
+		superiorityDragonHead.autoRotationDegeesPerSecond = autoRotation;
+		superiorityDragonHead.fadeInTime = 500;
+		superiorityDragonHead.fadeOutTime = 500;
+		superiorityDragonHead.fadeOnDestroy = true;
+		return superiorityDragonHead;
+	}
+
+	addSuperiorityDragonMouth(x: number, y: number, startingFrameIndex: number, angle: number, autoRotation: number): SpriteProxy {
+		let superiorityMouth = this.superiorityDragonMouth.add(x, y, startingFrameIndex);
+		superiorityMouth.rotation = angle;
+		superiorityMouth.initialRotation = angle;
+		superiorityMouth.autoRotationDegeesPerSecond = autoRotation;
+		superiorityMouth.fadeInTime = 500;
+		superiorityMouth.fadeOutTime = 500;
+		superiorityMouth.fadeOnDestroy = true;
+		return superiorityMouth;
 	}
 
 	addDamagePsychic(x: number, y: number, angle: number): SpriteProxy {
@@ -1449,11 +1575,15 @@ class DiceLayer {
 		this.damagePoison.sprites = [];
 		this.damagePiercingDagger.sprites = [];
 		this.damagePiercingThickSword.sprites = [];
+		this.damagePiercingTooth.sprites = [];
 		this.damagePiercingTrident.sprites = [];
 		this.damageSlashingSword.sprites = [];
 		this.damageSlashingAx.sprites = [];
 		this.damageSlashingLance.sprites = [];
 		this.damageThunder.sprites = [];
+		this.superiorityFire.sprites = [];
+		this.superiorityDragonHead.sprites = [];
+		this.superiorityDragonMouth.sprites = [];
 		this.health.sprites = [];
 		this.damagePsychic.sprites = [];
 		this.damageLightningA.sprites = [];
@@ -1503,6 +1633,7 @@ class DiceLayer {
 		let dto: any = JSON.parse(diceRollData);
 		let diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
+		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageDice;
 		diceRoll.modifier = dto.Modifier;
@@ -1527,6 +1658,7 @@ class DiceLayer {
 		diceRoll.skillCheck = dto.SkillCheck;
 		diceRoll.damageType = dto.DamageType;
 		diceRoll.savingThrow = dto.SavingThrow;
+		diceRoll.minDamage = dto.MinDamage;
 
 		for (var i = 0; i < dto.TrailingEffects.length; i++) {
 			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
@@ -1604,66 +1736,48 @@ class DiceLayer {
 	}
 
 	getDieColor(playerID: number): string {
-		if (playerID < 0)
-			return this.activePlayerDieColor;
-		if (playerID < this.players.length)
-			return this.players[playerID].dieBackColor;
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.dieBackColor;
 
-		switch (playerID) {
-			case 0:
-				return '#710138';
-			case 1:
-				return '#00641d';
-			case 2:
-				return '#401260';
-			case 3:
-				return '#04315a';
-		}
 		return '#000000';
 	}
 
-	getDieFontColor(playerID: number): string {
+	getPlayer(playerID: number): Character {
 		if (playerID < 0)
-			return this.activePlayerDieFontColor;
-		if (playerID < this.players.length)
-			return this.players[playerID].dieFontColor;
+			return null;
 
+		for (var i = 0; i < this.players.length; i++) {
+			let player: Character = this.players[i];
+			if (player.playerID == playerID)
+				return player;
+		}
+
+		return null;
+	}
+
+	getDieFontColor(playerID: number): string {
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.dieFontColor;
+		
 		return this.activePlayerDieFontColor;
 	}
 
 	getPlayerName(playerID: number): string {
-		if (playerID < 0)
-			return '';
-		if (playerID < this.players.length)
-			return this.players[playerID].getFirstName();
-		switch (playerID) {
-			case 0:
-				return 'Willy';
-			case 1:
-				return 'Shemo';
-			case 2:
-				return 'Merkin';
-			case 3:
-				return 'Ava';
-		}
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.getFirstName();
+		
 		return '';
 	}
 
 	getHueShift(playerID: number): number {
-		if (playerID < 0)
-			return 0;
-		if (playerID < this.players.length)
-			return this.players[playerID].hueShift;
-		switch (playerID) {
-			case 0:
-				return 0;
-			case 1:
-				return 138;
-			case 2:
-				return 260;
-			case 3:
-				return 210;
-		}
+
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.hueShift;
+
 		return 0;
 	}
 
@@ -1721,7 +1835,7 @@ class DiceRollData {
 	groupInspiration: string;
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;
-	bentLuckRollData: DiceRollData = null;
+	secondRollData: DiceRollData = null;
 	startedBonusDiceRoll: boolean;
 	showedVantageMessage: boolean;
 	timeLastRolledMs: number;
@@ -1731,6 +1845,8 @@ class DiceRollData {
 	hasMultiPlayerDice: boolean = false;
 	multiplayerSummary: Array<PlayerRoll> = null;
 	hasSingleIndividual: boolean = false;
+  secondRollTitle: string;
+  minDamage: number = 0;
 	constructor() {
 
 	}
@@ -1761,6 +1877,7 @@ class DiceRollData {
 
 class BonusRoll {
 	isMagic: boolean = false;
+	dieCountsAs: DieCountsAs = DieCountsAs.bonus;
 	constructor(public diceStr: string, public description: string, public playerID: number, public dieBackColor: string = DiceLayer.bonusRollDieColor, public dieTextColor: string = DiceLayer.bonusRollFontColor) {
 
 	}

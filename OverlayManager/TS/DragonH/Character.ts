@@ -132,6 +132,7 @@ enum Skills {
 }
 
 class Character {
+	playerID: number;
 	equipment: Array<Item> = new Array<Item>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
@@ -215,6 +216,7 @@ class Character {
   */
 
 	copyAttributesFrom(sourceCharacter: any): void {
+		this.playerID = sourceCharacter.playerID;
 		this.alignment = sourceCharacter.alignment;
 		this.headshotIndex = sourceCharacter.headshotIndex;
 		this.baseArmorClass = sourceCharacter.baseArmorClass;

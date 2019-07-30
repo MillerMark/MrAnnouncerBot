@@ -30,7 +30,7 @@ namespace DHDM
 	{
 		public int roll;
 		public string name;
-		public int id;
+		public int playerId;
 		public int modifier;
 	}
 }

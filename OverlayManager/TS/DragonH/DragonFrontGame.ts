@@ -37,7 +37,7 @@ class DragonFrontGame extends GamePlusQuiz {
 	bloodGushA: Sprites;
 	bloodGushB: Sprites;
 	bloodGushC: Sprites;
-	
+
 	charmed: Sprites;
 	restrained: Sprites;
 	sparkShower: Sprites;
@@ -214,12 +214,12 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.bloodGushA.originX = 20;
 		this.bloodGushA.originY = 1080;
 
-		
+
 		this.bloodGushB = new Sprites('Blood/Gush/B/GushB', 78, fps30, AnimationStyle.Sequential, true);
 		this.bloodGushB.name = 'BloodGush';
 		this.bloodGushB.originX = 57;
 		this.bloodGushB.originY = 1080;
-		
+
 		this.bloodGushC = new Sprites('Blood/Gush/C/GushC', 89, fps30, AnimationStyle.Sequential, true);
 		this.bloodGushC.name = 'BloodGush';
 		this.bloodGushC.originX = 114;
@@ -259,8 +259,8 @@ class DragonFrontGame extends GamePlusQuiz {
 		return screenWidth - this.clockPanel.originX - this.clockMargin;
 	}
 
-	executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+		if (super.executeCommand(command, params, userInfo, now))
 			return true;
 		if (command === "Cross2") {
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
@@ -305,8 +305,8 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.emitter.renderOldestParticlesLast = true;
 	}
 
-	test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.test(testCommand, userId, userName, displayName, color, now))
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
+		if (super.test(testCommand, userInfo, now))
 			return true;
 
 		if (testCommand === "Cross2") {
@@ -391,11 +391,21 @@ class DragonFrontGame extends GamePlusQuiz {
 	player4X: number = -1;
 	activePlayerX: number = this.player1X;
 
-	getPlayerX(playerID: number): number {
+	getPlayerX(playerIndex: number): number {
 		let distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;
 		let distanceBetweenPlayers: number = distanceForPlayerVideos / this.numberOfPlayers;
 		let halfDistanceBetweenPlayers: number = distanceBetweenPlayers / 2;
-		return playerID * distanceBetweenPlayers + halfDistanceBetweenPlayers;
+		return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers;
+	}
+
+	getPlayerIndex(playerId: number): number {
+		for (var i = 0; i < this.players.length; i++) {
+			let player: Character = this.players[i];
+			if (player.playerID == playerId) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	playerChanged(playerID: number, playerData: string): void {
@@ -724,6 +734,45 @@ class DragonFrontGame extends GamePlusQuiz {
 		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 2);
 	}
 
+	changePlayerHealth(playerHealthDto: string): void {
+		console.log('playerHealth: ' + playerHealthDto);
+		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
+
+		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
+			this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+		}
+	}
+
+
+	private showDamageForPlayer(damageHealth: number, playerId: number) {
+		let flipHorizontally: boolean = false;
+		if (Random.chancePercent(50))
+			flipHorizontally = true;
+		let damageHealthSprites: Sprites;
+		let scale: number = 1;
+		if (damageHealth < 0) {
+			if (Random.chancePercent(33)) {
+				damageHealthSprites = this.bloodGushA;
+			}
+			else if (Random.chancePercent(50)) {
+				damageHealthSprites = this.bloodGushB;
+			}
+			else 
+				damageHealthSprites = this.bloodGushC;
+
+			let absDamage: number = -damageHealth;
+			if (absDamage < 10) {
+				scale = absDamage / 10;
+			}
+		}
+		let x: number = this.getPlayerX(this.getPlayerIndex(playerId));
+		let center: Vector = new Vector(x, 1080);
+
+		let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
+		spritesEffect.scale = scale;
+		spritesEffect.start();
+	}
+
 	showNameplate(context: CanvasRenderingContext2D, player: Character, playerID: number, now: number) {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
@@ -811,4 +860,11 @@ class DragonFrontGame extends GamePlusQuiz {
 			this.showNameplate(context, player, i, now);
 		}
 	}
-} 
+}
+
+class PlayerHealth {
+	PlayerIds: Array<number> = new Array<number>();
+	DamageHealth: number;
+	constructor() {
+	}
+}

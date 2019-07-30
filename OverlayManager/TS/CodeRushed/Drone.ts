@@ -30,16 +30,19 @@ class Drone extends ColorShiftingSpriteProxy {
   static createAt(x: number, y: number, now: number,
     createSprite: (spriteArray: Sprites, now: number, createSpriteFunc?: (x: number, y: number, frameCount: number) => SpriteProxy) => SpriteProxy, createDrone: (x: number, y: number, frameCount: number) => Drone, userId: string, displayName: string, color: string): any {
     if (!(activeDroneGame instanceof DroneGame))
-      return;
+			return;
+		
     let drones: Sprites = activeDroneGame.dronesRed;
 		let myDrone: Drone = <Drone>createSprite(drones, now, createDrone);
 		let hsl: HueSatLight = HueSatLight.fromHex(color);
 		if (hsl)
 			myDrone.setHueSatBrightness(hsl.hue * 360, 100, 125);
-    myDrone.height = drones.spriteHeight;
-    myDrone.width = drones.spriteWidth;
-    myDrone.displayName = displayName;
-    const initialBurnTime: number = 800;
+		//if (displayName == "CodeRushed" || displayName == "wil_bennett")
+		//	myDrone.scale = 1.5;
+		myDrone.height = drones.spriteHeight * myDrone.scale;
+		myDrone.width = drones.spriteWidth * myDrone.scale;
+		myDrone.displayName = displayName;
+		const initialBurnTime: number = 800;
     if (x < 960)
       myDrone.rightThrustOffTime = now + initialBurnTime;
     else
@@ -300,8 +303,8 @@ class Drone extends ColorShiftingSpriteProxy {
       else if (pitch == 2)
         meteorAdjustY = 8;
       this.meteor.storeLastPosition();
-      this.meteor.x = this.x + Drone.width / 2 - meteorWidth / 2;
-      this.meteor.y = this.y + Drone.height / 2 - meteorHeight + meteorAdjustY;
+      this.meteor.x = this.x + Drone.width * this.scale / 2 - meteorWidth / 2;
+			this.meteor.y = this.y + Drone.height * this.scale / 2 - meteorHeight + meteorAdjustY;
     }
 
     if (this.parentSparkSprites != undefined) {
@@ -311,8 +314,8 @@ class Drone extends ColorShiftingSpriteProxy {
         this.parentSparkSprites = null;
       }
       else {
-        this.sparkX = this.x + Drone.width / 2 - this.parentSparkSprites.originX;
-        this.sparkY = this.y + Drone.height / 2 - this.parentSparkSprites.originY;
+				this.sparkX = this.x + Drone.width * this.scale / 2 - this.parentSparkSprites.originX;
+				this.sparkY = this.y + Drone.height * this.scale / 2 - this.parentSparkSprites.originY;
       }
     }
   }
@@ -321,8 +324,8 @@ class Drone extends ColorShiftingSpriteProxy {
     this.parentSparkSprites = parentSparkSprites;
     this.sparkCreationTime = performance.now();
     this.sparkFrameIndex = 0;
-    this.sparkX = this.x + Drone.width / 2 - this.parentSparkSprites.originX;
-    this.sparkY = this.y + Drone.height / 2 - this.parentSparkSprites.originY;
+		this.sparkX = this.x + Drone.width * this.scale / 2 - this.parentSparkSprites.originX;
+		this.sparkY = this.y + Drone.height * this.scale / 2 - this.parentSparkSprites.originY;
   }
 
 
@@ -384,7 +387,7 @@ class Drone extends ColorShiftingSpriteProxy {
 
     if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeDroneGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x, this.y, healthIndex);
+		activeDroneGame.droneHealthLights.baseAnimation.drawByIndex(context, this.x / this.scale, this.y / this.scale, healthIndex, this.scale);
 
     this.drawUserName(context);
     this.drawCoinsCollected(context, now);
@@ -400,7 +403,7 @@ class Drone extends ColorShiftingSpriteProxy {
 
       if (this.parentSparkSprites) {
         this.parentSparkSprites.baseAnimation.frameIndex = this.sparkFrameIndex;
-        this.parentSparkSprites.baseAnimation.draw(context, this.sparkX, this.sparkY);
+        this.parentSparkSprites.baseAnimation.draw(context, this.sparkX, this.sparkY, this.scale);
       }
     }
 
@@ -454,8 +457,8 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   private drawUserName(context: CanvasRenderingContext2D) {
-    const fontSize: number = 14;
-    let yTop: number = this.y + this.height;
+    const fontSize: number = 14 * this.scale;
+		let yTop: number = this.y + this.height;
     this.centerTextInRect(context, this.displayName, yTop, fontSize, 1);
   }
 
@@ -641,11 +644,11 @@ class Drone extends ColorShiftingSpriteProxy {
 	}
 
 	getHalfWidth(): number {
-		return Drone.width / 2;
+		return Drone.width * this.scale / 2;
 	}
 
 	getHalfHeight(): number {
-		return Drone.height / 2;
+		return Drone.height * this.scale / 2;
 	}
 
   getDistanceTo(otherSprite: SpriteProxy): number {
@@ -696,8 +699,8 @@ class Drone extends ColorShiftingSpriteProxy {
     let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
     let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
-    let centerX: number = this.x + Drone.width / 2;
-    let centerY: number = this.y + Drone.height / 2;
+		let centerX: number = this.x + Drone.width * this.scale / 2;
+		let centerY: number = this.y + Drone.height * this.scale / 2;
     let deltaXPixels = x - centerX;
     if (deltaXPixels === 0) {
       return new FuturePoint(x, centerY, now);
@@ -752,11 +755,13 @@ class Drone extends ColorShiftingSpriteProxy {
 }
 
 function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {
-  let x: number = drone.x + spriteWidth / 2;
-  let y: number = drone.y + spriteHeight / 2;
+	let x: number = drone.x + spriteWidth / 2;
+	let y: number = drone.y + spriteHeight / 2;
   if (!(activeDroneGame instanceof DroneGame))
     return;
-  let thisDroneExplosion: Sprites = activeDroneGame.droneExplosions.allSprites[Math.floor(Math.random() * activeDroneGame.droneExplosions.allSprites.length)];
-  thisDroneExplosion.sprites.push(new SpriteProxy(0, x - thisDroneExplosion.spriteWidth / 2, y - thisDroneExplosion.spriteHeight / 2));
+	let thisDroneExplosion: Sprites = activeDroneGame.droneExplosions.allSprites[Math.floor(Math.random() * activeDroneGame.droneExplosions.allSprites.length)];
+	let explosion: SpriteProxy = new SpriteProxy(0, x - drone.scale * thisDroneExplosion.spriteWidth / 2, y - drone.scale * thisDroneExplosion.spriteHeight / 2);
+	explosion.scale = drone.scale;
+	thisDroneExplosion.sprites.push(explosion);
   new Audio(Folders.assets + 'Sound Effects/DroneGoBoom.wav').play();
 }

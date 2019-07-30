@@ -134,11 +134,11 @@ namespace OverlayManager
 		
 		void AnswerQuiz(string args, ChatMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("AnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
 		}
 		void SilentAnswerQuiz(string args, WhisperMessage chatMessage)
 		{
-			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
 		}
 		
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
@@ -154,7 +154,8 @@ namespace OverlayManager
 			ChatCommand command = FindCommand(cmdText);
 			if (command != null)
 			{
-				command.Execute(hub, chatMessage, cmdText, args);
+				// TODO: Add shows watched - allViewers.GetUserLevel(chatMessage)
+				command.Execute(hub, chatMessage, cmdText, args, 0);
 				return;
 			}
 		}

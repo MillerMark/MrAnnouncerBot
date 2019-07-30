@@ -17,7 +17,17 @@ namespace DndCore
 		}
 	}
 
-	//! Any changes here should be reflected in getDiceRollData inside DiceRoller.ts
+	public class DamageHealthChange
+	{
+		public List<int> PlayerIds = new List<int>();
+		public int DamageHealth { get; set; }
+		public DamageHealthChange()
+		{
+			
+		}
+	}
+
+	//! Any changes here should be reflected in getDiceRollData inside DiceLayers.ts
 	public class DiceRoll
 	{
 		public List<PlayerRollOptions> PlayerRollOptions = new List<PlayerRollOptions>();
@@ -33,6 +43,7 @@ namespace DndCore
 			FailMessage = "Fail!";
 			CritFailMessage = "Critical Fail!";
 			CritSuccessMessage = "Critical Success!";
+			MinDamage = 0;
 		}
 
 		public string CritFailMessage { get; set; }
@@ -62,6 +73,8 @@ namespace DndCore
 		public Skills SkillCheck { get; set; }
 		public Ability SavingThrow { get; set; }
 		public DamageType DamageType { get; set; }
+		public string SecondRollTitle { get; set; }
+		public int MinDamage { get; set; }
 		public void AddPlayer(int playerId, VantageKind vantageKind, string inspiration)
 		{
 			PlayerRollOptions.Add(new PlayerRollOptions(playerId, vantageKind, inspiration));

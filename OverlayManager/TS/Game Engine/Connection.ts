@@ -6,6 +6,7 @@ function connectToSignalR(signalR) {
   window.onload = function () {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
+		connection.on("ChangePlayerHealth", changePlayerHealth);
     connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
     connection.on("PlayerDataChanged", playerDataChanged);
@@ -61,16 +62,32 @@ function rollDice(diceRollData: string) {
   }
 }
 
-function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {
+class UserInfo {
+	constructor(public userId: string, public userName: string, public displayName: string, public color: string, public showsWatched: number) {
+		
+	}
+}
+
+function executeCommand(command: string, params: string, userInfo: UserInfo) {
   console.log('executeCommand from Connection.ts');
   if (activeBackGame) {
-    activeBackGame.executeCommand(command, params, userId, userName, displayName, color, activeBackGame.nowMs);
+		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
   }
   if (activeFrontGame) {
-    activeFrontGame.executeCommand(command, params, userId, userName, displayName, color, activeFrontGame.nowMs);
+		activeFrontGame.executeCommand(command, params, userInfo, activeFrontGame.nowMs);
   }
   if (activeDroneGame) {
-    activeDroneGame.executeCommand(command, params, userId, userName, displayName, color, activeDroneGame.nowMs);
+		activeDroneGame.executeCommand(command, params, userInfo, activeDroneGame.nowMs);
+  }
+}
+function changePlayerHealth(playerHealth: string) {
+  console.log('changePlayerHealth from Connection.ts');
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.changePlayerHealth(playerHealth);
+  }
+	
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.changePlayerHealth(playerHealth);
   }
 }
 
