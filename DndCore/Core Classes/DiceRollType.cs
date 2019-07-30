@@ -23,7 +23,8 @@ namespace DndCore
 		ChaosBolt,
 		Initiative,
 		WildMagicD20Check,
-		InspirationOnly
+		InspirationOnly,
+		AddOnDice
 	}
 
 }

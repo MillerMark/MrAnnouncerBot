@@ -325,7 +325,7 @@
 													 StatBox2="{Binding ElementName=statSkillDeception, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
 					<ContextMenu>
-						<MenuItem Header="Perform Deception Skill Check" Click="AthleticsSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Deception Skill Check" Click="DeceptionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -337,7 +337,7 @@
 													 StatBox2="{Binding ElementName=statSkillHistory, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
 					<ContextMenu>
-						<MenuItem Header="Perform History Skill Check" Click="DeceptionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform History Skill Check" Click="HistorySkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>

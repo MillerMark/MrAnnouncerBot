@@ -26,6 +26,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.PlayerDataChanged(playerID, pageID, playerData);
 		}
 
+		public void ChangePlayerHealth(string playerData)
+		{
+			coderushedHub.Clients.All.ChangePlayerHealth(playerData);
+		}
+
 		public void FocusItem(int playerID, int pageID, string itemID)
 		{
 			coderushedHub.Clients.All.FocusItem(playerID, pageID, itemID);

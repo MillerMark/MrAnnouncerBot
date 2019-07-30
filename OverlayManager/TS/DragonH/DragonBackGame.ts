@@ -24,6 +24,13 @@ class DragonBackGame extends GamePlusQuiz {
 		}
 	}
 
+
+	changePlayerHealth(playerData: string): void {
+		//this.characterStatsScroll.changePlayerHealth(playerData);
+	}
+
+
+
 	update(timestamp: number) {
 		this.updateGravity();
 		super.update(timestamp);

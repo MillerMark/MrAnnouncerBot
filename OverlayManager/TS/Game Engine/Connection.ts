@@ -6,6 +6,7 @@ function connectToSignalR(signalR) {
   window.onload = function () {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
+		connection.on("ChangePlayerHealth", changePlayerHealth);
     connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
     connection.on("PlayerDataChanged", playerDataChanged);
@@ -77,6 +78,16 @@ function executeCommand(command: string, params: string, userInfo: UserInfo) {
   }
   if (activeDroneGame) {
 		activeDroneGame.executeCommand(command, params, userInfo, activeDroneGame.nowMs);
+  }
+}
+function changePlayerHealth(playerHealth: string) {
+  console.log('changePlayerHealth from Connection.ts');
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.changePlayerHealth(playerHealth);
+  }
+	
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.changePlayerHealth(playerHealth);
   }
 }
 

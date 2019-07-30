@@ -37,8 +37,8 @@ class Drone extends ColorShiftingSpriteProxy {
 		let hsl: HueSatLight = HueSatLight.fromHex(color);
 		if (hsl)
 			myDrone.setHueSatBrightness(hsl.hue * 360, 100, 125);
-		if (displayName == "CodeRushed" || displayName == "wil_bennett")
-			myDrone.scale = 1.5;
+		//if (displayName == "CodeRushed" || displayName == "wil_bennett")
+		//	myDrone.scale = 1.5;
 		myDrone.height = drones.spriteHeight * myDrone.scale;
 		myDrone.width = drones.spriteWidth * myDrone.scale;
 		myDrone.displayName = displayName;

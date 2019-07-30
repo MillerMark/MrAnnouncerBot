@@ -101,6 +101,8 @@ namespace DndUI
 				typeof(RoutedEventHandler), typeof(CharacterSheets));
 
 		public static readonly RoutedEvent PreviewPageChangedEvent = EventManager.RegisterRoutedEvent("PreviewPageChanged", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(CharacterSheets));
+		int playerID;
+		int headshotIndex;
 
 		public event RoutedEventHandler PageChanged
 		{
@@ -347,6 +349,8 @@ namespace DndUI
 			changingInternally = true;
 			try
 			{
+				playerID = character.playerID;
+				headshotIndex = character.headshotIndex;
 				statGoldPieces.Text = character.goldPieces.ToString();
 				statGoldPieces3.Text = statGoldPieces.Text;
 				//character.activeConditions = 
@@ -452,6 +456,8 @@ namespace DndUI
 		public string GetCharacter()
 		{
 			Character character = new Character();
+			character.playerID = playerID;
+			character.headshotIndex = headshotIndex;
 			//character.activeConditions = 
 			//character.advantages = ;
 			character.alignment = statAlignment.Text;

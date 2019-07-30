@@ -22,7 +22,8 @@ enum DiceRollType {
 	ChaosBolt,
 	Initiative,
 	WildMagicD20Check,
-	InspirationOnly
+	InspirationOnly,
+	AddOnDice
 }
 
 enum SpriteType {
@@ -859,7 +860,7 @@ class DiceLayer {
 
 	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
 		if (!playerRoll.name)
-			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
+			playerRoll.name = diceLayer.getPlayerName(playerRoll.playerId);
 		var message: string = `${playerRoll.name}: ${playerRoll.roll + playerRoll.modifier}`;
 		if (playerRoll.modifier > 0)
 			message += ` (+${playerRoll.modifier})`;
@@ -867,8 +868,8 @@ class DiceLayer {
 			message += ` (${playerRoll.modifier})`;
 
 		let textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
-		textEffect.fontColor = this.getDieColor(playerRoll.id);
-		textEffect.outlineColor = this.activePlayerDieFontColor;
+		textEffect.fontColor = this.getDieColor(playerRoll.playerId);
+		textEffect.outlineColor = this.getDieFontColor(playerRoll.playerId);
 		this.setMultiplayerResultText(textEffect);
 		return textEffect;
 	}
@@ -1034,7 +1035,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 800;
 	}
 
-	bendingLuck(message: string, luckMultiplier: number): any {
+	reportAddOnRoll(message: string, luckMultiplier: number): any {
+		if (!message)
+			return;
 		let textEffect: TextEffect = this.animations.addText(new Vector(960, 540), message, 3000);
 
 		if (luckMultiplier < 0) {
@@ -1042,7 +1045,7 @@ class DiceLayer {
 			textEffect.outlineColor = DiceLayer.badLuckFontColor;
 			textEffect.fontColor = DiceLayer.badLuckDieColor;
 		}
-		else {
+		else if (luckMultiplier > 0) {
 			textEffect.outlineColor = DiceLayer.goodLuckFontColor;
 			textEffect.fontColor = DiceLayer.goodLuckDieColor;
 		}
@@ -1630,6 +1633,7 @@ class DiceLayer {
 		let dto: any = JSON.parse(diceRollData);
 		let diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
+		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageDice;
 		diceRoll.modifier = dto.Modifier;
@@ -1654,6 +1658,7 @@ class DiceLayer {
 		diceRoll.skillCheck = dto.SkillCheck;
 		diceRoll.damageType = dto.DamageType;
 		diceRoll.savingThrow = dto.SavingThrow;
+		diceRoll.minDamage = dto.MinDamage;
 
 		for (var i = 0; i < dto.TrailingEffects.length; i++) {
 			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
@@ -1731,66 +1736,48 @@ class DiceLayer {
 	}
 
 	getDieColor(playerID: number): string {
-		if (playerID < 0)
-			return this.activePlayerDieColor;
-		if (playerID < this.players.length)
-			return this.players[playerID].dieBackColor;
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.dieBackColor;
 
-		switch (playerID) {
-			case 0:
-				return '#710138';
-			case 1:
-				return '#00641d';
-			case 2:
-				return '#401260';
-			case 3:
-				return '#04315a';
-		}
 		return '#000000';
 	}
 
-	getDieFontColor(playerID: number): string {
+	getPlayer(playerID: number): Character {
 		if (playerID < 0)
-			return this.activePlayerDieFontColor;
-		if (playerID < this.players.length)
-			return this.players[playerID].dieFontColor;
+			return null;
 
+		for (var i = 0; i < this.players.length; i++) {
+			let player: Character = this.players[i];
+			if (player.playerID == playerID)
+				return player;
+		}
+
+		return null;
+	}
+
+	getDieFontColor(playerID: number): string {
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.dieFontColor;
+		
 		return this.activePlayerDieFontColor;
 	}
 
 	getPlayerName(playerID: number): string {
-		if (playerID < 0)
-			return '';
-		if (playerID < this.players.length)
-			return this.players[playerID].getFirstName();
-		switch (playerID) {
-			case 0:
-				return 'Willy';
-			case 1:
-				return 'Shemo';
-			case 2:
-				return 'Merkin';
-			case 3:
-				return 'Ava';
-		}
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.getFirstName();
+		
 		return '';
 	}
 
 	getHueShift(playerID: number): number {
-		if (playerID < 0)
-			return 0;
-		if (playerID < this.players.length)
-			return this.players[playerID].hueShift;
-		switch (playerID) {
-			case 0:
-				return 0;
-			case 1:
-				return 138;
-			case 2:
-				return 260;
-			case 3:
-				return 210;
-		}
+
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.hueShift;
+
 		return 0;
 	}
 
@@ -1848,7 +1835,7 @@ class DiceRollData {
 	groupInspiration: string;
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;
-	bentLuckRollData: DiceRollData = null;
+	secondRollData: DiceRollData = null;
 	startedBonusDiceRoll: boolean;
 	showedVantageMessage: boolean;
 	timeLastRolledMs: number;
@@ -1858,6 +1845,8 @@ class DiceRollData {
 	hasMultiPlayerDice: boolean = false;
 	multiplayerSummary: Array<PlayerRoll> = null;
 	hasSingleIndividual: boolean = false;
+  secondRollTitle: string;
+  minDamage: number = 0;
 	constructor() {
 
 	}
@@ -1888,6 +1877,7 @@ class DiceRollData {
 
 class BonusRoll {
 	isMagic: boolean = false;
+	dieCountsAs: DieCountsAs = DieCountsAs.bonus;
 	constructor(public diceStr: string, public description: string, public playerID: number, public dieBackColor: string = DiceLayer.bonusRollDieColor, public dieTextColor: string = DiceLayer.bonusRollFontColor) {
 
 	}
