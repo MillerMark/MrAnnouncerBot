@@ -122,21 +122,29 @@ enum Skills {
 	religion = 16384,
 	slightOfHand = 32768,
 	stealth = 65536,
-	survival = 131072
+	survival = 131072,
+	strength = 262144,
+	dexterity = 524288,
+	constitution = 1048576,
+	intelligence = 2097152,
+	wisdom = 4194304,
+	charisma = 8388608
 }
 
 class Character {
+	playerID: number;
 	equipment: Array<Item> = new Array<Item>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
 	level: number;
+	headshotIndex: number;
 	hueShift: number;
-	dieBackColor: number;
-	dieFontColor: number;
+	dieBackColor: string;
+	dieFontColor: string;
 	conditions: Conditions = Conditions.none;
 	onTurnActions: number = 1;
 	offTurnActions: number = 0;
-	inspiration: number;
+	inspiration: string;
 	experiencePoints: number;
 	raceClass: string;
 	alignment: string;
@@ -188,8 +196,16 @@ class Character {
 	tempStealthMod: number = 0;
 	tempSurvivalMod: number = 0;
 	tempArmorClassMod: number = 0;
-	rollInitiative: DiceRollKind = DiceRollKind.Normal;
+	rollInitiative: VantageKind = VantageKind.Normal;
 
+	private _firstName: string;
+	
+	get firstName(): string {
+		if (!this._firstName)
+			this._firstName = this.getFirstName();
+		return this._firstName;
+	}
+	
   /* 
     savingThrowModStrength
     savingThrowModDexterity
@@ -200,7 +216,9 @@ class Character {
   */
 
 	copyAttributesFrom(sourceCharacter: any): void {
+		this.playerID = sourceCharacter.playerID;
 		this.alignment = sourceCharacter.alignment;
+		this.headshotIndex = sourceCharacter.headshotIndex;
 		this.baseArmorClass = sourceCharacter.baseArmorClass;
 		this.tempArmorClassMod = sourceCharacter.tempArmorClassMod;
 		this.baseCharisma = sourceCharacter.baseCharisma;
@@ -267,6 +285,15 @@ class Character {
 		this.tempSurvivalMod = sourceCharacter.tempSurvivalMod;
 		this.totalHitDice = sourceCharacter.totalHitDice;
 		this.weight = sourceCharacter.weight;
+	}
+
+	getFirstName(): string {
+		if (!this.name)
+			return "No name";
+		let spaceIndex: number = this.name.indexOf(' ');
+		if (spaceIndex < 0)
+			return this.name;
+		return this.name.substring(0, spaceIndex);
 	}
 
 	get hasSkillProficiencyAcrobatics(): boolean {
@@ -523,6 +550,8 @@ class Character {
 	private _wisdomMod: number;
 
 	get wisdomMod(): number {
+		if (!this._wisdomMod)
+			this._wisdomMod = this.getModFromAbility(this._baseWisdom);
 		return this._wisdomMod;
 	}
 
@@ -540,6 +569,9 @@ class Character {
 	private _charismaMod: number;
 
 	get charismaMod(): number {
+
+		if (!this._charismaMod)
+			this._charismaMod = this.getModFromAbility(this._baseCharisma);
 		return this._charismaMod;
 	}
 
@@ -557,6 +589,9 @@ class Character {
 	private _intelligenceMod: number;
 
 	get intelligenceMod(): number {
+
+		if (!this._intelligenceMod)
+			this._intelligenceMod = this.getModFromAbility(this._baseIntelligence);
 		return this._intelligenceMod;
 	}
 
@@ -574,6 +609,8 @@ class Character {
 	private _strengthMod: number;
 
 	get strengthMod(): number {
+		if (!this._strengthMod)
+			this._strengthMod = this.getModFromAbility(this._baseStrength);
 		return this._strengthMod;
 	}
 
@@ -591,6 +628,8 @@ class Character {
 	private _dexterityMod: number;
 
 	get dexterityMod(): number {
+		if (!this._dexterityMod)
+			this._dexterityMod = this.getModFromAbility(this._baseDexterity);
 		return this._dexterityMod;
 	}
 
@@ -608,6 +647,8 @@ class Character {
 	private _constitutionMod: number;
 
 	get constitutionMod(): number {
+		if (!this._constitutionMod)
+			this._constitutionMod = this.getModFromAbility(this._baseConstitution);
 		return this._constitutionMod;
 	}
 
@@ -699,6 +740,12 @@ class Character {
 				return this.skillModStealth;
 			case Skills.survival:
 				return this.skillModSurvival;
+			case Skills.strength: return this.strengthMod;
+			case Skills.dexterity: return this.dexterityMod;
+			case Skills.intelligence: return this.intelligenceMod;
+			case Skills.constitution: return this.constitutionMod;
+			case Skills.charisma: return this.charismaMod;
+			case Skills.wisdom: return this.wisdomMod;
 		}
 		return 0;
 	}
@@ -712,7 +759,7 @@ class Character {
 		Character.generateRandomAttributes(elf);
 		elf.remainingHitDice = '1 d10';
 		elf.level = 1;
-		elf.inspiration = 0;
+		elf.inspiration = "";
 
 		elf.initiative = 2;
 		elf.speed = 30;
@@ -754,7 +801,7 @@ class Character {
 		Character.generateRandomAttributes(barbarian);
 		barbarian.remainingHitDice = '1 d10';
 		barbarian.level = 1;
-		barbarian.inspiration = 0;
+		barbarian.inspiration = "";
 
 		barbarian.initiative = 2;
 		barbarian.speed = 30;
@@ -783,7 +830,7 @@ class Character {
 		Character.generateRandomAttributes(druid);
 		druid.remainingHitDice = '1 d8';
 		druid.level = 1;
-		druid.inspiration = 0;
+		druid.inspiration = "";
 
 		druid.initiative = 2;
 		druid.speed = 30;
@@ -812,7 +859,7 @@ class Character {
 		Character.generateRandomAttributes(wizard);
 		wizard.remainingHitDice = '1 d8';
 		wizard.level = 1;
-		wizard.inspiration = 0;
+		wizard.inspiration = "";
 
 		wizard.initiative = 2;
 		wizard.speed = 30;

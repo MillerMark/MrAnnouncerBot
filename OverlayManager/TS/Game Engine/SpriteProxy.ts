@@ -8,6 +8,7 @@ class AnimatedElement {
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond: number = 0;
 	rotation: number;
+	initialRotation: number;
 	rotationStartTime: number;
 	timeToRotate: number = 0;
 	targetRotation: number = 0;
@@ -34,6 +35,7 @@ class AnimatedElement {
 
 		this.opacity = 1;
 		this.rotation = 0;
+		this.initialRotation = 0;
 
 		this.timeStart = performance.now();
 
@@ -91,7 +93,7 @@ class AnimatedElement {
 				this.rotationStartTime = nowMs;
 			else {
 				let timeSpentRotatingSeconds: number = (nowMs - this.rotationStartTime) / 1000;
-				this.rotation = timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
+				this.rotation = this.initialRotation + timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
 			}
 		}
 	}
@@ -225,6 +227,8 @@ class AnimatedElement {
 class SpriteProxy extends AnimatedElement {
 	data: any;
 	haveCycledOnce: boolean;
+	flipHorizontally: boolean;
+	flipVertically: boolean;
 	systemDrawn: boolean = true;
 	owned: boolean;
 	cropped: boolean;
@@ -233,6 +237,7 @@ class SpriteProxy extends AnimatedElement {
 	cropLeft: number;
 	cropRight: number;
 	cropBottom: number;
+	scale: number = 1;
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
 		super(x, y, lifeSpanMs);
@@ -302,7 +307,7 @@ class SpriteProxy extends AnimatedElement {
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
 		originX: number = 0, originY: number = 0): void {
-		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.rotation, this.x + originX, this.y + originY);
+		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.scale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
 	}
 
 	drawAdornments(context: CanvasRenderingContext2D, now: number): void {

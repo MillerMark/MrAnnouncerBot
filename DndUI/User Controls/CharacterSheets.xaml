@@ -48,17 +48,53 @@
 			<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="64,147,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statTempHitPoints, Mode=OneWay}"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,103,0,0" VerticalAlignment="Top" Width="42" 
-		StatBox1="{Binding ElementName=statStrength, Mode=OneWay}"/>
+				StatBox1="{Binding ElementName=statStrength, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Strength Skill Check" Click="StrengthSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,163,0,0" VerticalAlignment="Top" Width="42" 
-		StatBox1="{Binding ElementName=statDexterity, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statDexterity, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Dexterity Skill Check" Click="DexteritySkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,221,0,0" VerticalAlignment="Top" Width="42" 
-		StatBox1="{Binding ElementName=statConstitution, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statConstitution, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Constitution Skill Check" Click="ConstitutionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,279,0,0" Width="42" 
-		StatBox1="{Binding ElementName=statIntelligence, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statIntelligence, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Intelligence Skill Check" Click="IntelligenceSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,337,0,0" Width="42" 
-		StatBox1="{Binding ElementName=statWisdom, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statWisdom, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Wisdom Skill Check" Click="WisdomSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,395,0,0" Width="42" 
-		StatBox1="{Binding ElementName=statCharisma, Mode=OneWay}"/>
+		StatBox1="{Binding ElementName=statCharisma, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Charisma Skill Check" Click="CharismaSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:StatBox x:Name="statName" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statRaceClass" Margin="82,14,0,0" Width="121" Height="18" Text="Race/Class" FocusItem="RaceClass"/>
 			<local:StatBox x:Name="statLevel" Margin="84,38,0,0" Width="34" Height="18" Text="1" FocusItem="Level"/>
@@ -102,32 +138,68 @@
 			<local:StatBox x:Name="statGoldPieces" Margin="161,252,0,0" Width="48" Height="18" Text="222" FocusItem="GoldPieces"/>
 			<local:GroupBackground Height="20" Margin="68,298,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingStrengthProficient, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statSavingStrength, Mode=OneWay}"/>
+		StatBox2="{Binding ElementName=statSavingStrength, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Strength Saving Throw" Click="StrengthSavingThrow_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSavingStrengthProficient" Margin="68,301,0,0" IsEnabled="False" FocusItem="SavingStrength"/>
 			<local:StatBox x:Name="statSavingStrength" Margin="90,300,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingStrength"/>
 			<local:GroupBackground Height="20" Margin="68,321,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingDexterityProficient, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statSavingDexterity, Mode=OneWay}"/>
+		StatBox2="{Binding ElementName=statSavingDexterity, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Dexterity Saving Throw" Click="DexteritySavingThrow_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSavingDexterityProficient" Margin="68,324,0,0" IsEnabled="False" FocusItem="SavingDexterity"/>
 			<local:StatBox x:Name="statSavingDexterity" Margin="90,322,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingDexterity"/>
 			<local:GroupBackground Height="20" Margin="68,343,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingConstitutionProficient, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statSavingConstitution, Mode=OneWay}"/>
+		StatBox2="{Binding ElementName=statSavingConstitution, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Constitution Saving Throw" Click="ConstitutionSavingThrow_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSavingConstitutionProficient" Margin="68,346,0,0" IsEnabled="False" FocusItem="SavingConstitution"/>
 			<local:StatBox x:Name="statSavingConstitution" Margin="90,345,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingConstitution"/>
 			<local:GroupBackground Height="20" Margin="68,366,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingIntelligenceProficient, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statSavingIntelligence, Mode=OneWay}"/>
+		StatBox2="{Binding ElementName=statSavingIntelligence, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Intelligence Saving Throw" Click="IntelligenceSavingThrow_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSavingIntelligenceProficient" Margin="68,368,0,0" IsEnabled="False" FocusItem="SavingIntelligence"/>
 			<local:StatBox x:Name="statSavingIntelligence" Margin="90,367,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingIntelligence"/>
 			<local:GroupBackground Height="20" Margin="68,388,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingWisdomProficient, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statSavingWisdom, Mode=OneWay}"/>
+		StatBox2="{Binding ElementName=statSavingWisdom, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Wisdom Saving Throw" Click="WisdomSavingThrow_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSavingWisdomProficient" Margin="68,391,0,0" IsEnabled="False" FocusItem="SavingWisdom"/>
 			<local:StatBox x:Name="statSavingWisdom" Margin="90,390,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingWisdom"/>
 			<local:GroupBackground Height="20" Margin="68,411,0,0" Width="133" 
 		StatBox1="{Binding ElementName=statSavingCharismaProficient, Mode=OneWay}"
-		StatBox2="{Binding ElementName=statSavingCharisma, Mode=OneWay}"/>
+		StatBox2="{Binding ElementName=statSavingCharisma, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Charisma Saving Throw" Click="CharismaSavingThrow_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSavingCharismaProficient" Margin="68,413,0,0" IsEnabled="False" FocusItem="SavingCharisma"/>
 			<local:StatBox x:Name="statSavingCharisma" Margin="90,412,0,0" Width="22" Height="18" Text="+2" FocusItem="SavingCharisma"/>
 		</local:GridSheet>
@@ -135,17 +207,53 @@
 		<local:GridSheet x:Name="pageSkills" Width="234" Height="555" Activated="PageSkills_Activated" Margin="250, 0, 0, 0" >
 			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" PreviewMouseDown="PageSkills_PreviewMouseDown" MouseDown="PageSkillsBack_MouseDown"/>
 			<local:GroupBackground Height="56" Margin="8,103,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Strength Skill Check" Click="StrengthSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,163,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statDexterity2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statDexterity2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Dexterity Skill Check" Click="DexteritySkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,221,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statConstitution2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statConstitution2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Constitution Skill Check" Click="ConstitutionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,279,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statIntelligence2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statIntelligence2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Intelligence Skill Check" Click="IntelligenceSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,337,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statWisdom2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statWisdom2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Wisdom Skill Check" Click="WisdomSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,395,0,0" Width="42" 
-													 StatBox1="{Binding ElementName=statCharisma2, Mode=OneWay}"/>
+													 StatBox1="{Binding ElementName=statCharisma2, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Charisma Skill Check" Click="CharismaSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 
 			<local:StatBox x:Name="statName2" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statPassivePerception2" Margin="116,18,0,0" Width="54" Height="18" Text="12" FocusItem="Perception"/>
@@ -165,109 +273,218 @@
 
 			<local:GroupBackground Height="20" Margin="68,110,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillAcrobaticsProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillAcrobatics, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillAcrobatics, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Acrobatics Skill Check" Click="AcrobaticsSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillAcrobaticsProficient" Margin="72,114,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsAcrobatics"/>
 			<local:StatBox x:Name="statSkillAcrobatics" Margin="89,112,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsAcrobatics"/>
 
 			<local:GroupBackground Height="20" Margin="68,130,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillAnimalHandlingProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillAnimalHandling, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillAnimalHandling, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Animal Handling Skill Check" Click="AnimalHandlingSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillAnimalHandlingProficient" Margin="72,132,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsAnimalHandling"/>
 			<local:StatBox x:Name="statSkillAnimalHandling" Margin="89,131,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsAnimalHandling"/>
 
 			<local:GroupBackground Height="20" Margin="68,148,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillArcanaProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillArcana, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillArcana, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Arcana Skill Check" Click="ArcanaSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
+
 			<local:RoundCheck x:Name="statSkillArcanaProficient" Margin="72,151,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsArcana"/>
 			<local:StatBox x:Name="statSkillArcana" Margin="89,150,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsArcana"/>
 
 			<local:GroupBackground Height="20" Margin="68,167,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillAthleticsProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillAthletics, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillAthletics, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Athletics Skill Check" Click="AthleticsSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillAthleticsProficient" Margin="72,170,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsAthletics"/>
 			<local:StatBox x:Name="statSkillAthletics" Margin="89,168,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsAthletics"/>
 
 			<local:GroupBackground Height="20" Margin="68,185,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillDeceptionProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillDeception, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillDeception, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Deception Skill Check" Click="DeceptionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillDeceptionProficient" Margin="72,188,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsDeception"/>
 			<local:StatBox x:Name="statSkillDeception" Margin="89,187,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsDeception"/>
 
 			<local:GroupBackground Height="20" Margin="68,204,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillHistoryProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillHistory, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillHistory, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform History Skill Check" Click="HistorySkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillHistoryProficient" Margin="72,207,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsHistory"/>
 			<local:StatBox x:Name="statSkillHistory" Margin="89,206,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsHistory"/>
 
 			<local:GroupBackground Height="20" Margin="68,222,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillInsightProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillInsight, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillInsight, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Insight Skill Check" Click="InsightSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillInsightProficient" Margin="72,225,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsInsight"/>
 			<local:StatBox x:Name="statSkillInsight" Margin="89,224,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsInsight"/>
 
 			<local:GroupBackground Height="20" Margin="68,241,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillIntimidationProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillIntimidation, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillIntimidation, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Intimidation Skill Check" Click="IntimidationSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillIntimidationProficient" Margin="72,244,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsIntimidation"/>
 			<local:StatBox x:Name="statSkillIntimidation" Margin="89,243,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsIntimidation"/>
 
 			<local:GroupBackground Height="20" Margin="68,260,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillInvestigationProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillInvestigation, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillInvestigation, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Investigation Skill Check" Click="InvestigationSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillInvestigationProficient" Margin="72,263,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsInvestigation"/>
 			<local:StatBox x:Name="statSkillInvestigation" Margin="89,261,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsInvestigation"/>
 
 			<local:GroupBackground Height="20" Margin="68,279,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillMedicineProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillMedicine, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillMedicine, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Medicine Skill Check" Click="MedicineSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillMedicineProficient" Margin="72,281,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsMedicine"/>
 			<local:StatBox x:Name="statSkillMedicine" Margin="89,280,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsMedicine"/>
 
 			<local:GroupBackground Height="20" Margin="68,297,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillNatureProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillNature, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillNature, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Nature Skill Check" Click="NatureSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillNatureProficient" Margin="72,300,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsNature"/>
 			<local:StatBox x:Name="statSkillNature" Margin="89,298,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsNature"/>
 
 			<local:GroupBackground Height="20" Margin="68,315,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillPerceptionProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillPerception, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillPerception, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Perception Skill Check" Click="PerceptionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillPerceptionProficient" Margin="72,318,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsPerception"/>
 			<local:StatBox x:Name="statSkillPerception" Margin="89,317,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsPerception"/>
 
 			<local:GroupBackground Height="20" Margin="68,333,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillPerformanceProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillPerformance, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillPerformance, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Performance Skill Check" Click="PerformanceSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillPerformanceProficient" Margin="72,336,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsPerformance"/>
 			<local:StatBox x:Name="statSkillPerformance" Margin="89,335,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsPerformance"/>
 
 			<local:GroupBackground Height="20" Margin="68,352,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillPersuasionProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillPersuasion, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillPersuasion, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Persuasion Skill Check" Click="PersuasionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillPersuasionProficient" Margin="72,355,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsPersuasion"/>
 			<local:StatBox x:Name="statSkillPersuasion" Margin="89,354,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsPersuasion"/>
 
 			<local:GroupBackground Height="20" Margin="68,371,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillReligionProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillReligion, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillReligion, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Religion Skill Check" Click="ReligionSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillReligionProficient" Margin="72,374,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsReligion"/>
 			<local:StatBox x:Name="statSkillReligion" Margin="89,373,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsReligion"/>
 
 			<local:GroupBackground Height="20" Margin="68,389,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillSlightOfHandProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillSlightOfHand, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillSlightOfHand, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Slight of Hand Skill Check" Click="SlightOfHandSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillSlightOfHandProficient" Margin="72,392,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsSlightOfHand"/>
 			<local:StatBox x:Name="statSkillSlightOfHand" Margin="89,391,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsSlightOfHand"/>
 
 			<local:GroupBackground Height="20" Margin="68,408,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillStealthProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillStealth, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillStealth, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Stealth Skill Check" Click="StealthSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillStealthProficient" Margin="72,411,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsStealth"/>
 			<local:StatBox x:Name="statSkillStealth" Margin="89,410,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsStealth"/>
 
 			<local:GroupBackground Height="20" Margin="68,427,0,0" Width="133" 
 													 StatBox1="{Binding ElementName=statSkillSurvivalProficient, Mode=OneWay}"
-													 StatBox2="{Binding ElementName=statSkillSurvival, Mode=OneWay}"/>
+													 StatBox2="{Binding ElementName=statSkillSurvival, Mode=OneWay}">
+				<local:GroupBackground.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Perform Survival Skill Check" Click="SurvivalSkillCheck_Click"></MenuItem>
+					</ContextMenu>
+				</local:GroupBackground.ContextMenu>
+			</local:GroupBackground>
 			<local:RoundCheck x:Name="statSkillSurvivalProficient" Margin="72,430,0,0" IsEnabled="False" Height="14" Width="14" FocusItem="SkillsSurvival"/>
 			<local:StatBox x:Name="statSkillSurvival" Margin="89,428,0,0" Width="24" Height="16" Text="+2" FocusItem="SkillsSurvival"/>
 		</local:GridSheet>

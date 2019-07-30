@@ -29,6 +29,9 @@
 }
 
 class Random {
+  static chancePercent(percent: number): boolean {
+    return Random.max(100) <= percent;
+  }
 
   static intBetweenDigitCount(lowerBounds: number, upperBounds: number): number {
     let result: number = Random.intBetween(0, 9);
@@ -54,6 +57,13 @@ class Random {
 
   static between(min: number, max: number): number {
     return Math.random() * (max - min) + min;
+	}
+
+	static plusMinusBetween(min: number, max: number): number {
+		if (Random.max(100) < 50)
+			return Random.between(min, max);
+		else 
+			return -Random.between(min, max);
   }
 
   static plusMinus(value: number): number {

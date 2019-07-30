@@ -98,7 +98,7 @@
     this.percentParticlesToCreate = 1;
   }
 
-  stop(): void {
+	stop(): void {
     this.stopping = true;
   }
 
@@ -173,7 +173,8 @@
       this.percentParticlesToCreate -= 0.005;
       if (this.percentParticlesToCreate <= 0) {
         this.percentParticlesToCreate = 0;
-        this.stopped = true;
+				this.stopped = true;
+				this.particlesCreatedSoFar = 0;
         this.stopping = false;
         this.lastParticleCreationTime = undefined;
         super.update(now, timeScale, world);

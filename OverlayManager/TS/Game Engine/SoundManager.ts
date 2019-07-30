@@ -85,5 +85,19 @@ class SoundManager {
     if (playPromise !== null) {
       playPromise.catch(() => { })
     }
-  }
+	}
+
+	playRandom(fileName: string, count: number, compareThreshold: number = -1) {
+		if (this.playedRecently(fileName, compareThreshold))
+			return false;
+		if (count == 0)
+			return false;
+		var index: number = Math.floor(Math.random() * count + 1);
+		this.playingNow(fileName);
+		return this.safePlayMp3(fileName + index.toString());
+	}
+
+	playMp3In(milliseconds: number, mp3Name: string): any {
+		setTimeout(function () { this.safePlayMp3(mp3Name); }.bind(this), milliseconds);
+	}
 }

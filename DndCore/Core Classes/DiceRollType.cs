@@ -21,7 +21,10 @@ namespace DndCore
 		HealthOnly,
 		ExtraOnly,
 		ChaosBolt,
-		Initiative
+		Initiative,
+		WildMagicD20Check,
+		InspirationOnly,
+		AddOnDice
 	}
 
 }

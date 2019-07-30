@@ -18,16 +18,16 @@
     super.initialize();
   }
 
-  test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-    return super.test(testCommand, userId, userName, displayName, color, now);
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
+		return super.test(testCommand, userInfo, now);
   }
 
-  executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-    if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+		if (super.executeCommand(command, params, userInfo, now))
       return true;
 
     if (command === "StartQuiz") {
-      this.startQuiz(now, params, userId, userName);
+			this.startQuiz(now, params, userInfo.userId, userInfo.userName);
       return true;
     }
     if (command === "ShowLastQuizResults") {
@@ -35,15 +35,15 @@
       return true;
     }
     if (command === "AnswerQuiz") {
-      this.answerQuiz(params, userId);
+			this.answerQuiz(params, userInfo.userId);
       return true;
     }
     if (command === "SilentAnswerQuiz") {
-      this.silentAnswerQuiz(params, userId, userName);
+			this.silentAnswerQuiz(params, userInfo.userId, userInfo.userName);
       return true;
     }
     if (command === "ClearQuiz") {
-      this.clearQuiz(userName);
+			this.clearQuiz(userInfo.userName);
       return true;
     }
 

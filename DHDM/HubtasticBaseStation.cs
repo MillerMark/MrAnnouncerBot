@@ -54,6 +54,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("PlayerDataChanged", playerID, (int)pageID, playerData);
 		}
 
+		public static void ChangePlayerHealth(string playerData)
+		{
+			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);
+		}
+
 		public static void FocusItem(int playerID, ScrollPage pageID, string itemID)
 		{
 			HubConnection.InvokeAsync("FocusItem", playerID, (int)pageID, itemID);

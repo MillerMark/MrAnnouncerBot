@@ -14,10 +14,11 @@ namespace OverlayManager.Hubs
 	/// </summary>
 	public interface IOverlayCommands
 	{
-		Task ExecuteCommand(string command, string args, string userId, string userName, string displayName, string color);
+		Task ExecuteCommand(string command, string args, UserInfo userInfo);
 		Task UserHasCoins(string userID, int amount);
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
+		Task ChangePlayerHealth(string playerData);
 		Task FocusItem(int playerID, int pageID, string itemID);
 		Task UnfocusItem(int playerID, int pageID, string itemID);
 		Task TriggerEffect(string effectData);

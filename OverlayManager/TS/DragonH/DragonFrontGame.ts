@@ -10,7 +10,7 @@ enum TargetType {
 	ScreenPosition = 3
 }
 
-enum DiceRollKind {
+enum VantageKind {
 	Normal,
 	Advantage,
 	Disadvantage
@@ -34,13 +34,10 @@ class DragonFrontGame extends GamePlusQuiz {
 	poof: Sprites;
 	clock: Sprites;
 	clockPanel: Sprites;
-	bloodGush: Sprites;
-	bloodLarger: Sprites;
-	bloodLarge: Sprites;
-	bloodMedium: Sprites;
-	bloodSmall: Sprites;
-	bloodSmaller: Sprites;
-	bloodSmallest: Sprites;
+	bloodGushA: Sprites;
+	bloodGushB: Sprites;
+	bloodGushC: Sprites;
+
 	charmed: Sprites;
 	restrained: Sprites;
 	sparkShower: Sprites;
@@ -110,7 +107,7 @@ class DragonFrontGame extends GamePlusQuiz {
 	initialize() {
 		super.initialize();
 		gravityGames = new GravityGames();
-		//Folders.assets = 'GameDev/Assets/DroneGame/';
+		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
 	}
 
 	start() {
@@ -212,40 +209,21 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.fumes.originX = 281;
 		this.fumes.originY = 137;
 
-		this.bloodGush = new Sprites('Blood/BloodGush/BloodGush', 77, fps30, AnimationStyle.Sequential, true);
-		this.bloodGush.name = 'BloodGush';
-		this.bloodGush.originX = 39;
-		this.bloodGush.originY = 1075;
+		this.bloodGushA = new Sprites('Blood/Gush/A/GushA', 69, fps30, AnimationStyle.Sequential, true);
+		this.bloodGushA.name = 'BloodGush';
+		this.bloodGushA.originX = 20;
+		this.bloodGushA.originY = 1080;
 
-		this.bloodLarger = new Sprites('Blood/BloodLarger/BloodLarger', 49, fps15, AnimationStyle.Sequential, true);
-		this.bloodLarger.name = 'BloodLarger';
-		this.bloodLarger.originX = 471;
-		this.bloodLarger.originY = 678;
 
-		this.bloodLarge = new Sprites('Blood/BloodLarge/BloodLarge', 49, fps15, AnimationStyle.Sequential, true);
-		this.bloodLarge.name = 'BloodLarge';
-		this.bloodLarge.originX = 378;
-		this.bloodLarge.originY = 547;
+		this.bloodGushB = new Sprites('Blood/Gush/B/GushB', 78, fps30, AnimationStyle.Sequential, true);
+		this.bloodGushB.name = 'BloodGush';
+		this.bloodGushB.originX = 57;
+		this.bloodGushB.originY = 1080;
 
-		this.bloodMedium = new Sprites('Blood/BloodMedium/BloodMedium', 49, fps15, AnimationStyle.Sequential, true);
-		this.bloodMedium.name = 'BloodMedium';
-		this.bloodMedium.originX = 328;
-		this.bloodMedium.originY = 647;
-
-		this.bloodSmall = new Sprites('Blood/BloodSmall/BloodSmall', 49, fps15, AnimationStyle.Sequential, true);
-		this.bloodSmall.name = 'BloodSmall';
-		this.bloodSmall.originX = 246;
-		this.bloodSmall.originY = 498;
-
-		this.bloodSmaller = new Sprites('Blood/BloodSmaller/BloodSmaller', 49, fps15, AnimationStyle.Sequential, true);
-		this.bloodSmaller.name = 'BloodSmaller';
-		this.bloodSmaller.originX = 191;
-		this.bloodSmaller.originY = 348;
-
-		this.bloodSmallest = new Sprites('Blood/BloodSmallest/BloodSmallest', 49, fps15, AnimationStyle.Sequential, true);
-		this.bloodSmallest.name = 'BloodSmallest';
-		this.bloodSmallest.originX = 150;
-		this.bloodSmallest.originY = 300;
+		this.bloodGushC = new Sprites('Blood/Gush/C/GushC', 89, fps30, AnimationStyle.Sequential, true);
+		this.bloodGushC.name = 'BloodGush';
+		this.bloodGushC.originX = 114;
+		this.bloodGushC.originY = 1080;
 
 		this.charmed = new Sprites('Charmed/Charmed', 179, fps30, AnimationStyle.Loop, true);
 		this.charmed.name = 'Heart';
@@ -268,13 +246,9 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.allEffects.add(this.sparkShower);
 		this.allEffects.add(this.embersLarge);
 		this.allEffects.add(this.embersMedium);
-		this.allEffects.add(this.bloodGush);
-		this.allEffects.add(this.bloodLarger);
-		this.allEffects.add(this.bloodLarge);
-		this.allEffects.add(this.bloodMedium);
-		this.allEffects.add(this.bloodSmall);
-		this.allEffects.add(this.bloodSmaller);
-		this.allEffects.add(this.bloodSmallest);
+		this.allEffects.add(this.bloodGushA);
+		this.allEffects.add(this.bloodGushB);
+		this.allEffects.add(this.bloodGushC);
 		this.allEffects.add(this.charmed);
 		this.allEffects.add(this.restrained);
 		this.allEffects.add(this.fireWall);
@@ -285,8 +259,8 @@ class DragonFrontGame extends GamePlusQuiz {
 		return screenWidth - this.clockPanel.originX - this.clockMargin;
 	}
 
-	executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.executeCommand(command, params, userId, userName, displayName, color, now))
+	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
+		if (super.executeCommand(command, params, userInfo, now))
 			return true;
 		if (command === "Cross2") {
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
@@ -331,8 +305,8 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.emitter.renderOldestParticlesLast = true;
 	}
 
-	test(testCommand: string, userId: string, userName: string, displayName: string, color: string, now: number): boolean {
-		if (super.test(testCommand, userId, userName, displayName, color, now))
+	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
+		if (super.test(testCommand, userInfo, now))
 			return true;
 
 		if (testCommand === "Cross2") {
@@ -417,11 +391,21 @@ class DragonFrontGame extends GamePlusQuiz {
 	player4X: number = -1;
 	activePlayerX: number = this.player1X;
 
-	getPlayerX(playerID: number): number {
+	getPlayerX(playerIndex: number): number {
 		let distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;
 		let distanceBetweenPlayers: number = distanceForPlayerVideos / this.numberOfPlayers;
 		let halfDistanceBetweenPlayers: number = distanceBetweenPlayers / 2;
-		return playerID * distanceBetweenPlayers + halfDistanceBetweenPlayers;
+		return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers;
+	}
+
+	getPlayerIndex(playerId: number): number {
+		for (var i = 0; i < this.players.length; i++) {
+			let player: Character = this.players[i];
+			if (player.playerID == playerId) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	playerChanged(playerID: number, playerData: string): void {
@@ -666,25 +650,42 @@ class DragonFrontGame extends GamePlusQuiz {
 
 	private triggerAnimation(dto: any, center: Vector) {
 		let sprites: Sprites;
+		let horizontallyFlippable: boolean = false;
 		//console.log('dto.spriteName: ' + dto.spriteName);
 		if (dto.spriteName === 'DenseSmoke')
 			sprites = this.denseSmoke;
 		else if (dto.spriteName === 'Poof')
 			sprites = this.poof;
-		else if (dto.spriteName === 'BloodGush')
-			sprites = this.bloodGush;
-		else if (dto.spriteName === 'BloodLarger')
-			sprites = this.bloodLarger;
-		else if (dto.spriteName === 'BloodLarge')
-			sprites = this.bloodLarge;
-		else if (dto.spriteName === 'BloodMedium')
-			sprites = this.bloodMedium;
-		else if (dto.spriteName === 'BloodSmall')
-			sprites = this.bloodSmall;
-		else if (dto.spriteName === 'BloodSmaller')
-			sprites = this.bloodSmaller;
-		else if (dto.spriteName === 'BloodSmallest')
-			sprites = this.bloodSmallest;
+
+		// TODO: Update blood animation to pass in a severity number instead of a string in WPF app.
+		else if (dto.spriteName === 'BloodGush') {
+			sprites = this.bloodGushA;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'BloodLarger') {
+			sprites = this.bloodGushB;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'BloodLarge') {
+			sprites = this.bloodGushC;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'BloodMedium') {
+			sprites = this.bloodGushA;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'BloodSmall') {
+			sprites = this.bloodGushB;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'BloodSmaller') {
+			sprites = this.bloodGushC;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'BloodSmallest') {
+			sprites = this.bloodGushA;
+			horizontallyFlippable = true;
+		}
 		else if (dto.spriteName === 'Heart')
 			sprites = this.charmed;
 		else if (dto.spriteName === 'Restrained')
@@ -701,7 +702,13 @@ class DragonFrontGame extends GamePlusQuiz {
 			sprites = this.fumes;
 		else if (dto.spriteName === 'FireBall')
 			sprites = this.fireBallBack;
-		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness);
+
+		let flipHorizontally: boolean = false;
+
+		if (horizontallyFlippable && Random.chancePercent(50))
+			flipHorizontally = true;
+
+		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness, flipHorizontally);
 		spritesEffect.start();
 
 		if (dto.spriteName === 'FireBall') {
@@ -714,7 +721,7 @@ class DragonFrontGame extends GamePlusQuiz {
 	static readonly nameCenterY: number = 1056;
 	static readonly nameplateHalfHeight: number = 24;
 
-	setPlayerData(playerData: string): any {
+	initializePlayerData(playerData: string): any {
 		this.players = JSON.parse(playerData);
 		for (var i = 0; i < this.players.length; i++) {
 			let centerX: number = this.getPlayerX(i);
@@ -725,6 +732,45 @@ class DragonFrontGame extends GamePlusQuiz {
 		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 0);
 		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 1);
 		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 2);
+	}
+
+	changePlayerHealth(playerHealthDto: string): void {
+		console.log('playerHealth: ' + playerHealthDto);
+		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
+
+		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
+			this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+		}
+	}
+
+
+	private showDamageForPlayer(damageHealth: number, playerId: number) {
+		let flipHorizontally: boolean = false;
+		if (Random.chancePercent(50))
+			flipHorizontally = true;
+		let damageHealthSprites: Sprites;
+		let scale: number = 1;
+		if (damageHealth < 0) {
+			if (Random.chancePercent(33)) {
+				damageHealthSprites = this.bloodGushA;
+			}
+			else if (Random.chancePercent(50)) {
+				damageHealthSprites = this.bloodGushB;
+			}
+			else 
+				damageHealthSprites = this.bloodGushC;
+
+			let absDamage: number = -damageHealth;
+			if (absDamage < 10) {
+				scale = absDamage / 10;
+			}
+		}
+		let x: number = this.getPlayerX(this.getPlayerIndex(playerId));
+		let center: Vector = new Vector(x, 1080);
+
+		let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
+		spritesEffect.scale = scale;
+		spritesEffect.start();
 	}
 
 	showNameplate(context: CanvasRenderingContext2D, player: Character, playerID: number, now: number) {
@@ -744,14 +790,14 @@ class DragonFrontGame extends GamePlusQuiz {
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 
 		let centerX: number = this.getPlayerX(playerID);
-		const drawLines: boolean = false;
-		if (drawLines) {
-			context.beginPath();
-			context.moveTo(centerX, 1080);
-			context.lineTo(centerX, 980);
-			context.strokeStyle = '#ff0000';
-			context.stroke();
-		}
+		//const drawLines: boolean = false;
+		//if (drawLines) {
+		//	context.beginPath();
+		//	context.moveTo(centerX, 1080);
+		//	context.lineTo(centerX, 980);
+		//	context.strokeStyle = '#ff0000';
+		//	context.stroke();
+		//}
 
 		let hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
 		let hpWidth: number = context.measureText(hpStr).width;
@@ -767,8 +813,6 @@ class DragonFrontGame extends GamePlusQuiz {
 		let nameCenter: number = centerX - additionalHalfWidth;
 		let hpCenter: number = nameCenter + nameWidth / 2 + nameHpMargin + hpWidth / 2;
 		let totalNameplateTextWidth: number = nameWidth + nameHpMargin + hpWidth;
-
-
 
 		const innerNameplateMargin: number = 8;
 		let horizontalMargin: number = (nameplateMaxWidth - totalNameplateTextWidth) / 2 - innerNameplateMargin * 2;
@@ -816,4 +860,11 @@ class DragonFrontGame extends GamePlusQuiz {
 			this.showNameplate(context, player, i, now);
 		}
 	}
-} 
+}
+
+class PlayerHealth {
+	PlayerIds: Array<number> = new Array<number>();
+	DamageHealth: number;
+	constructor() {
+	}
+}

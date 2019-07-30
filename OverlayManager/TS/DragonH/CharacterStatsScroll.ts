@@ -144,18 +144,10 @@ class CharacterStatsScroll extends WorldObject {
 
 	selectedStatPageIndex: number = -1;
 
-	private _selectedCharacterIndex: number;
 	deEmphasisSprite: SpriteProxy;
-  currentScrollRoll: SpriteProxy;
-  currentScrollBack: SpriteProxy;
-
-	get selectedCharacterIndex(): number {
-		return this._selectedCharacterIndex;
-	}
-
-	set selectedCharacterIndex(newValue: number) {
-		this._selectedCharacterIndex = newValue;
-	}
+	currentScrollRoll: SpriteProxy;
+	currentScrollBack: SpriteProxy;
+	activeCharacter: Character = null;
 
 	static readonly centerY: number = 424;
 	static readonly centerX: number = 174;
@@ -197,7 +189,7 @@ class CharacterStatsScroll extends WorldObject {
 		this._page = ScrollPage.main;
 		this.buildGoldDust();
 		this.pageIndex = this._page;
-		this._selectedCharacterIndex = -1;
+		this.activeCharacter = null;
 		this.deEmphasisSprite = new SpriteProxy(0, 0, 0);
 		this.deEmphasisSprite.fadeInTime = 700;
 		this.deEmphasisSprite.fadeOutTime = 700;
@@ -208,16 +200,14 @@ class CharacterStatsScroll extends WorldObject {
 		this.addHighlightEmitters();
 	}
 
-	setPlayerData(playerData: string): void {
+	initializePlayerData(playerData: string): void {
 		let players: Array<Character> = JSON.parse(playerData);
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
-			try
-			{
+			try {
 				this.characters.push(new Character(players[i]));
 			}
-			catch (ex)
-			{
+			catch (ex) {
 				console.error('Unable to create new Character: ' + ex);
 			}
 		}
@@ -413,6 +403,14 @@ class CharacterStatsScroll extends WorldObject {
 		this.play(this.scrollCloseSfx);
 	}
 
+	get headshotIndex(): number {
+		if (this.activeCharacter)
+			return this.activeCharacter.headshotIndex;
+		return 0;
+	}
+	
+	
+
 	private unroll(): void {
 		this.state = ScrollState.unrolling;
 		this.scrollRolls.baseAnimation.reverse = false;
@@ -421,7 +419,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.currentScrollRoll = this.scrollRolls.add(0, 0, 0);
 		this.currentScrollBack = this.scrollBacks.add(0, 0, this._page);
 		this.playerHeadshots.sprites = [];
-		this.playerHeadshots.add(0, 0, this.selectedCharacterIndex);
+		this.playerHeadshots.add(0, 0, this.headshotIndex);
 		this.pageIndex = this._page;
 		this.selectedStatPageIndex = this._page - 1;
 		this.topEmitter.start();
@@ -551,7 +549,7 @@ class CharacterStatsScroll extends WorldObject {
 				if (picCroppedHeight > 0) {
 					// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 
-					this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.selectedCharacterIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
+					this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.headshotIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
 				}
 				this.drawHighlighting(now, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
 
@@ -576,7 +574,7 @@ class CharacterStatsScroll extends WorldObject {
 			}
 			else {
 				this.scrollBacks.draw(world.ctx, now * 1000);
-				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.selectedCharacterIndex);
+				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.headshotIndex);
 				this.drawHighlighting(now, timeScale, world);
 				this.topEmitter.stop();
 				this.bottomEmitter.stop();
@@ -643,8 +641,10 @@ class CharacterStatsScroll extends WorldObject {
 		const scrollCenterX: number = 170;
 		const scrollCenterY: number = 440;
 
-		let thisChar: Character = this.characters[this.selectedCharacterIndex];
-		const hueShift: number = thisChar.hueShift;
+		let hueShift: number = 0;
+		if (this.activeCharacter) {
+			hueShift = this.activeCharacter.hueShift;
+		}
 		this.scrollPoofBack.addShifted(scrollCenterX, scrollCenterY, 0, hueShift);
 		this.scrollPoofFront.add(scrollCenterX, scrollCenterY, 0);
 		this.play(this.scrollPoofSfx);
@@ -725,7 +725,8 @@ class CharacterStatsScroll extends WorldObject {
 		emitter.hue.absoluteVariance = 10;
 		emitter.brightness.target = 0.7;
 		emitter.brightness.relativeVariance = 0.5;
-		emitter.particlesPerSecond = 2500;
+		emitter.particlesPerSecond = 1250;
+		emitter.maxTotalParticles = 3000;
 		emitter.particleRadius.target = 0.8;
 		emitter.particleRadius.relativeVariance = 2;
 		emitter.particleLifeSpanSeconds = 1;
@@ -755,7 +756,8 @@ class CharacterStatsScroll extends WorldObject {
 
 		this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
 		this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
-		this.playerHeadshots = new Sprites("Scroll/Players/Player", 4, this.framerateMs, AnimationStyle.Static);
+		const totalKnownPlayers: number = 6;
+		this.playerHeadshots = new Sprites("Scroll/Players/Player", totalKnownPlayers, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisEquipment = new Sprites("Scroll/Emphasis/Equipment/EmphasisEquipment", 5, this.framerateMs, AnimationStyle.Static);
@@ -770,12 +772,12 @@ class CharacterStatsScroll extends WorldObject {
 	}
 
 	drawCharacterStats(context: CanvasRenderingContext2D, topData: number, bottomData: number): void {
-		if (this.selectedCharacterIndex < 0)
+		if (!this.activeCharacter)
 			return;
 
 		if (this.selectedStatPageIndex < 0)
 			return;
-		let activeCharacter: Character = this.characters[this.selectedCharacterIndex];
+		let activeCharacter: Character = this.activeCharacter;
 		let activePage: StatPage = this.pages[this.selectedStatPageIndex];
 
 		activePage.render(context, activeCharacter, topData, bottomData);
@@ -784,18 +786,19 @@ class CharacterStatsScroll extends WorldObject {
 	clear(): any {
 		this.characters = [];
 		this.pages = [];
-		this.selectedCharacterIndex = -1;
+		this.activeCharacter = null;
 		this.selectedStatPageIndex = -1;
 		this.state = ScrollState.none;
 	}
 
-	playerDataChanged(playerID: number, pageID: number, playerData: string): any {
+	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
 		console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
-		if (this.selectedCharacterIndex !== playerID) {
+		let changedActiveCharacter: boolean = false;
+		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
+			this.setActiveCharacter(playerID);
+			changedActiveCharacter = true;
 			this.clearEmphasis();
-
-			this.selectedCharacterIndex = playerID;
 			this._page = pageID;
 			this.state = ScrollState.none;
 			this.open(performance.now());
@@ -808,20 +811,34 @@ class CharacterStatsScroll extends WorldObject {
 			this.open(performance.now());
 		}
 
-		if (playerData != '')
+		if (playerData != '') {
 			this.updatePlayerData(playerData);
+		}
+		return changedActiveCharacter;
 	}
 
-	updatePlayerData(playerData: string): void {
-		let sentChar: any = JSON.parse(playerData);
-		let thisChar: Character = this.characters[this.selectedCharacterIndex];
+	setActiveCharacter(playerID: number): void {
+		for (var i = 0; i < this.characters.length; i++) {
+			let thisCharacter: Character = this.characters[i];
+			if (thisCharacter.playerID == playerID) {
+				this.activeCharacter = thisCharacter;
+				return;
+			}
+		}
+	}
 
-		if (!thisChar) {
-			console.error('Selected character index not found: ' + this.selectedCharacterIndex);
+
+	updatePlayerData(playerData: string): Character {
+		let sentChar: any = JSON.parse(playerData);
+		this.setActiveCharacter(sentChar.playerID);
+
+		if (!this.activeCharacter) {
+			console.error('No active character: ' + this.activeCharacter);
 			return;
 		}
 
-		thisChar.copyAttributesFrom(sentChar);
+		this.activeCharacter.copyAttributesFrom(sentChar);
+		return this.activeCharacter;
 	}
 
 	readonly fadeTime: number = 300;

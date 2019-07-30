@@ -139,12 +139,18 @@
 								<TextBlock Text="10 Minutes " Width="Auto" Height="Auto" FontWeight="Bold"/>
 							</StackPanel>
 						</Button>
+
+						<Button x:Name="btnAdd1Minute" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdd1Minute_Click">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Add " Width="Auto" Height="Auto"/>
+								<TextBlock Text="1 Minute " Width="Auto" Height="Auto" FontWeight="Bold"/>
+							</StackPanel>
+						</Button>
 					</StackPanel>
 
-					<Button x:Name="btnEnterExitCombat" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitCombat_Click">
-						<TextBlock x:Name="tbEnterExitCombat" Text="Enter Combat" Width="Auto" Height="Auto" FontWeight="Bold"/>
+					<Button x:Name="btnEnterExitCombat" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitCombat_Click" Background="DarkRed" Foreground="White">
+						<TextBlock x:Name="tbEnterExitCombat" Text="Enter Combat" Width="Auto" Height="Auto" FontWeight="Bold" />
 					</Button>
-
 
 					<Button x:Name="btnAdvanceTurn" Margin="4" Padding="8, 4, 8, 4" Click="BtnAdvanceTurn_Click">
 						<StackPanel Orientation="Horizontal">
@@ -159,15 +165,42 @@
 				</StackPanel>
 			</StackPanel>
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
-				<TabItem Header="Dungeon" x:Name="tbDungeon">
+				<TabItem Header="Dice" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
-						<StackPanel x:Name="spShortcutsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
-							<TextBlock Text="Attacks:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
+						<StackPanel x:Name="spActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+							<TextBlock Text="Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
-								<Button x:Name="btnDaggerOfWarning" >
-									Dagger of Warning
+								<Button >
+									Temp Button
 								</Button>
-								<Rectangle x:Name="rectDaggerOfWarning" Height="3" Fill="Red"></Rectangle>
+								<Rectangle Height="3" Fill="Red"></Rectangle>
+							</StackPanel>
+						</StackPanel>
+						<StackPanel x:Name="spBonusActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+							<TextBlock Text="Bonus Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
+							<StackPanel Margin="2" >
+								<Button >
+									Temp Button
+								</Button>
+								<Rectangle Height="3" Fill="Red"></Rectangle>
+							</StackPanel>
+						</StackPanel>
+						<StackPanel x:Name="spReactionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+							<TextBlock Text="Reactions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
+							<StackPanel Margin="2" >
+								<Button >
+									Temp Button
+								</Button>
+								<Rectangle Height="3" Fill="Red"></Rectangle>
+							</StackPanel>
+						</StackPanel>
+						<StackPanel x:Name="spSpecialActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+							<TextBlock Text="Special:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
+							<StackPanel Margin="2" >
+								<Button >
+									Temp Button
+								</Button>
+								<Rectangle Height="3" Fill="Red"></Rectangle>
 							</StackPanel>
 						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
@@ -329,18 +362,6 @@
 							
 							
 						</StackPanel>
-						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8"  >
-							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>
-							<RadioButton x:Name="rbTestNormalDieRoll"  Style="{StaticResource VantageStyle}" IsChecked="True" MinWidth="85" Margin="0, 0, 30, 0">
-								Normal
-							</RadioButton>
-							<RadioButton x:Name="rbTestAdvantageDieRoll" Style="{StaticResource VantageStyle}" Background="#FF000096" Foreground="White" MinWidth="85" Margin="0, 0, 30, 0">
-								Advantage
-							</RadioButton>
-							<RadioButton x:Name="rbTestDisadvantageDieRoll" Style="{StaticResource VantageStyle}" MinWidth="85" Background="#FF850000" Foreground="White" Margin="0, 0, 30, 0">
-								Disadvantage
-							</RadioButton>
-						</StackPanel>
 						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>
@@ -374,7 +395,13 @@
 										<ComboBoxItem>Slight of Hand</ComboBoxItem>
 										<ComboBoxItem>Stealth</ComboBoxItem>
 										<ComboBoxItem>Survival</ComboBoxItem>
-
+										<ComboBoxItem>-</ComboBoxItem>
+										<ComboBoxItem>Strength</ComboBoxItem>
+										<ComboBoxItem>Dexterity</ComboBoxItem>
+										<ComboBoxItem>Constitution</ComboBoxItem>
+										<ComboBoxItem>Intelligence</ComboBoxItem>
+										<ComboBoxItem>Wisdom</ComboBoxItem>
+										<ComboBoxItem>Charisma</ComboBoxItem>
 									</ComboBox>
 								</StackPanel>
 							</StackPanel>
@@ -395,9 +422,14 @@
 									</ComboBox>
 								</StackPanel>
 							</StackPanel>
-							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" Click="BtnFlatD20_Click" >
-								FlatD20
+							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" MaxHeight="45" Click="BtnFlatD20_Click" >
+								Flat D20
 							</Button>
+							<Button x:Name="btnWildMagicD20Check" Margin="20,0,0,0" Padding="8" MinWidth="100" MaxHeight="45" Click="BtnWildMagicD20Check_Click" >
+								Wild Magic D20 Check
+							</Button>
+						</StackPanel>
+						<StackPanel x:Name="spGroupIndividualOptions" Orientation="Horizontal" Margin="0, 10, 0, 0">
 							<StackPanel x:Name="spGroupActivePlayer" Margin="15, 0, 0, 0">
 								<RadioButton x:Name="rbActivePlayer" IsChecked="True" Checked="RbActivePlayer_Checked">
 									Active Player
@@ -417,6 +449,18 @@
 								</Grid.ColumnDefinitions>
 							</Grid>
 						</StackPanel>
+						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" Visibility="Collapsed" >
+							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>
+							<RadioButton x:Name="rbTestNormalDieRoll"  Style="{StaticResource VantageStyle}" IsChecked="True" MinWidth="85" Margin="0, 0, 30, 0">
+								Normal
+							</RadioButton>
+							<RadioButton x:Name="rbTestAdvantageDieRoll" Style="{StaticResource VantageStyle}" Background="#FF000096" Foreground="White" MinWidth="85" Margin="0, 0, 30, 0">
+								Advantage
+							</RadioButton>
+							<RadioButton x:Name="rbTestDisadvantageDieRoll" Style="{StaticResource VantageStyle}" MinWidth="85" Background="#FF850000" Foreground="White" Margin="0, 0, 30, 0">
+								Disadvantage
+							</RadioButton>
+						</StackPanel>
 						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
 							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
 								Attack
@@ -424,14 +468,38 @@
 							<Button x:Name="btnDeathSavingThrow" Margin="8" Padding="8" Click="BtnDeathSavingThrow_Click" >
 								Death Saving Throw
 							</Button>
-
+							<Button x:Name="btnInspirationOnly" Margin="8" Padding="8" Click="BtnInspirationOnly_Click" >
+								Inspiration Only
+							</Button>	
 						</StackPanel>
 						<StackPanel x:Name="StackPanel1" Orientation="Horizontal">
-							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto"/>
-							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
+							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
+							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
 								2d8+6
 							</TextBox>
 							<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray"/>
+							<TextBlock Text="Damage Type: " Width="Auto" Height="Auto" Margin="18, 2, 0, 0"/>
+							<ComboBox x:Name="cbDamage" MaxHeight="22" MinWidth="150" 
+								Margin="4,0,0,0" SelectionChanged="CbDamage_SelectionChanged" SelectedIndex="0">
+								<ComboBoxItem>None</ComboBoxItem>
+								<ComboBoxItem>Acid</ComboBoxItem>
+								<ComboBoxItem>Bludgeoning</ComboBoxItem>
+								<ComboBoxItem>Cold</ComboBoxItem>
+								<ComboBoxItem>Fire</ComboBoxItem>
+								<ComboBoxItem>Force</ComboBoxItem>
+								<ComboBoxItem>Lightning</ComboBoxItem>
+								<ComboBoxItem>Necrotic</ComboBoxItem>
+								<ComboBoxItem>Piercing</ComboBoxItem>
+								<ComboBoxItem>Poison</ComboBoxItem>
+								<ComboBoxItem>Psychic</ComboBoxItem>
+								<ComboBoxItem>Radiant</ComboBoxItem>
+								<ComboBoxItem>Slashing</ComboBoxItem>
+								<ComboBoxItem>Thunder</ComboBoxItem>
+							</ComboBox>
+							<TextBlock Text="MinDamage:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
+							<TextBox x:Name="tbxMinDamage" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
+								0
+							</TextBox>
 						</StackPanel>
 						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
 							<Button x:Name="btnRollDamageOnly" Background="#FFB50000" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollDamageOnly_Click">
@@ -444,7 +512,28 @@
 								Extra Only
 							</Button>
 						</StackPanel>
-						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Center">
+						<StackPanel Orientation="Vertical" Margin="4" >
+							<StackPanel Orientation="Horizontal">
+								<TextBlock x:Name="txtHealth" Text="Health: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
+								<TextBox x:Name="tbxHealth" MinWidth="90" Margin="0, 0, 8, 0">
+
+								</TextBox>
+								<Button x:Name="btnApplyHealth" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnApplyHealth_Click">
+									Add Health!
+								</Button>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
+								<TextBlock x:Name="txtDamage" Text="Damage: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
+								<TextBox x:Name="tbxDamage" MinWidth="90" Margin="0, 0, 8, 0">
+
+								</TextBox>
+								<Button x:Name="btnInflictDamage" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnInflictDamage_Click" >
+									Inflict Damage!
+								</Button>
+							</StackPanel>
+						</StackPanel>
+						<StackPanel x:Name="spBendLuck" Orientation="Horizontal" HorizontalAlignment="Left">
 							<TextBlock Text="Bending Luck: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnBendLuckAdd" Margin="8" Padding="8" MinWidth="100" Click="BtnBendLuckAdd_Click">
 								Bend Luck (+++)
@@ -473,6 +562,9 @@
 							<Button x:Name="btnSneakAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnSneakAttack_Click" >
 								Sneak Attack
 							</Button>
+							<Button x:Name="btnLongtoothShiftingStrike" Margin="8" Padding="8" MinWidth="100" Click="BtnLongtoothShiftingStrike_Click" >
+								Longtooth Shifting Strike
+							</Button>
 						</StackPanel>
 
 						<Button x:Name="btnClearDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 0, 0" Visibility="Hidden" Click="BtnClearDice_Click" MouseEnter="BtnClearDice_MouseEnter" MouseLeave="BtnClearDice_MouseLeave">
@@ -489,29 +581,6 @@
 					<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click">
 						Initialize Player Data
 					</Button>
-				</TabItem>
-				<TabItem Header="Damage/Health">
-					<StackPanel Orientation="Vertical" Margin="4" >
-						<StackPanel Orientation="Horizontal">
-							<TextBlock x:Name="txtHealth" Text="Health: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
-							<TextBox x:Name="tbxHealth" MinWidth="90" Margin="0, 0, 8, 0">
-
-							</TextBox>
-							<Button x:Name="btnApplyHealth" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnApplyHealth_Click">
-								Add Health!
-							</Button>
-						</StackPanel>
-						
-						<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
-							<TextBlock x:Name="txtDamage" Text="Damage: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
-							<TextBox x:Name="tbxDamage" MinWidth="90" Margin="0, 0, 8, 0">
-
-							</TextBox>
-							<Button x:Name="btnInflictDamage" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnInflictDamage_Click" >
-								Inflict Damage!
-							</Button>
-						</StackPanel>
-					</StackPanel>
 				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
 					<ListBox x:Name="logListBox" MaxHeight="500" >

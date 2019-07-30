@@ -8,6 +8,7 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
+		public int playerID { get; set; }
 		double _passivePerception = int.MinValue;
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
@@ -16,8 +17,9 @@ namespace DndCore
 		public bool deathSaveLife2 = false;
 		public bool deathSaveLife3 = false;
 		public int experiencePoints = 0;
-		public double inspiration = 0;
+		public string inspiration = "";
 		public int level;
+		public int headshotIndex;
 		public int hueShift = 0;
 		public string dieBackColor = "#ffffff";
 		public string dieFontColor = "#000000";
@@ -53,7 +55,7 @@ namespace DndCore
 		public double tempSurvivalMod = 0;
 		public string totalHitDice = string.Empty;
 		public double weight = 0;
-		public DiceRollKind rollInitiative = DiceRollKind.Normal;
+		public VantageKind rollInitiative = VantageKind.Normal;
 
 		public double charismaMod
 		{
@@ -285,7 +287,7 @@ namespace DndCore
 			}
 		}
 
-		double savingThrowModCharisma
+		public double savingThrowModCharisma
 		{
 			get
 			{
@@ -293,7 +295,7 @@ namespace DndCore
 			}
 		}
 
-		double savingThrowModConstitution
+		public double savingThrowModConstitution
 		{
 			get
 			{
@@ -301,7 +303,7 @@ namespace DndCore
 			}
 		}
 
-		double savingThrowModDexterity
+		public double savingThrowModDexterity
 		{
 			get
 			{
@@ -309,7 +311,7 @@ namespace DndCore
 			}
 		}
 
-		double savingThrowModIntelligence
+		public double savingThrowModIntelligence
 		{
 			get
 			{
@@ -317,7 +319,7 @@ namespace DndCore
 			}
 		}
 
-		double savingThrowModStrength
+		public double savingThrowModStrength
 		{
 			get
 			{
@@ -325,7 +327,7 @@ namespace DndCore
 			}
 		}
 
-		double savingThrowModWisdom
+		public double savingThrowModWisdom
 		{
 			get
 			{
@@ -333,7 +335,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModAcrobatics
+		public double skillModAcrobatics
 		{
 			get
 			{
@@ -341,7 +343,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModAnimalHandling
+		public double skillModAnimalHandling
 		{
 			get
 			{
@@ -349,7 +351,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModArcana
+		public double skillModArcana
 		{
 			get
 			{
@@ -357,7 +359,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModAthletics
+		public double skillModAthletics
 		{
 			get
 			{
@@ -366,7 +368,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModDeception
+		public double skillModDeception
 		{
 			get
 			{
@@ -375,7 +377,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModHistory
+		public double skillModHistory
 		{
 			get
 			{
@@ -384,7 +386,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModInsight
+		public double skillModInsight
 		{
 			get
 			{
@@ -392,7 +394,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModIntimidation
+		public double skillModIntimidation
 		{
 			get
 			{
@@ -401,7 +403,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModInvestigation
+		public double skillModInvestigation
 		{
 			get
 			{
@@ -409,7 +411,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModMedicine
+		public double skillModMedicine
 		{
 			get
 			{
@@ -418,7 +420,7 @@ namespace DndCore
 		}
 
 
-		double skillModNature
+		public double skillModNature
 		{
 			get
 			{
@@ -427,7 +429,7 @@ namespace DndCore
 		}
 
 
-		double skillModPerception
+		public double skillModPerception
 		{
 			get
 			{
@@ -436,7 +438,7 @@ namespace DndCore
 		}
 
 
-		double skillModPerformance
+		public double skillModPerformance
 		{
 			get
 			{
@@ -444,7 +446,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModPersuasion
+		public double skillModPersuasion
 		{
 			get
 			{
@@ -453,7 +455,7 @@ namespace DndCore
 		}
 
 
-		double skillModReligion
+		public double skillModReligion
 		{
 			get
 			{
@@ -462,7 +464,7 @@ namespace DndCore
 		}
 
 
-		double skillModSlightOfHand
+		public double skillModSlightOfHand
 		{
 			get
 			{
@@ -470,7 +472,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModStealth
+		public double skillModStealth
 		{
 			get
 			{
@@ -478,7 +480,7 @@ namespace DndCore
 			}
 		}
 
-		double skillModSurvival
+		public double skillModSurvival
 		{
 			get
 			{

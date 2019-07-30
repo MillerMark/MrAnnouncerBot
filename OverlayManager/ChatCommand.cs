@@ -62,13 +62,13 @@ namespace OverlayManager
 			return cmdText;
 		}
 
-		public virtual void Execute(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string cmdText, string args)
+		public virtual void Execute(IHubContext<CodeRushedHub, IOverlayCommands> hub, ChatMessage chatMessage, string cmdText, string args, int showsWatched)
 		{
 			if (commandBecomesArgs)
 				args = cmdText;
 			string targetCommand = Translate(cmdText);
 			if (targetCommand != null)
-				hub.Clients.All.ExecuteCommand(targetCommand, args, chatMessage.UserId, chatMessage.Username, chatMessage.DisplayName, chatMessage.ColorHex);
+				hub.Clients.All.ExecuteCommand(targetCommand, args, UserInfo.FromChatMessage(chatMessage, showsWatched));
 
 			if (chatBackMessage != null)
 				Twitch.Chat(chatBackMessage);

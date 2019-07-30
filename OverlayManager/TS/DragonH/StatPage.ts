@@ -130,7 +130,7 @@
 
   static addName(statPage: StatPage): any {
     const nameFontSize: number = 10.5;
-    statPage.addStat('name', 68, 128, nameFontSize);
+    statPage.addStat('firstName', 68, 128, nameFontSize);
   }
 
   static addAbilities(statPage: StatPage): any {

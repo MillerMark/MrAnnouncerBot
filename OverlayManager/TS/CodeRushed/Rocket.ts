@@ -1,6 +1,7 @@
 ﻿class Rocket {
   x: number;
-  y: number;
+	y: number;
+	scale: number = 1;
   hoverThrusterRestoreTime: number;
   mainThrusterOfftime: number;
   leftThrusterOfftime: number;
@@ -659,12 +660,12 @@
 
       if (this.checkRightThruster(now)) {
         offsettingHorizontalAcceleration = true;
-        this.rightFlame.draw(context, this.x, this.y);
+        this.rightFlame.draw(context, this.x, this.y, this.scale);
       }
 
       if (this.checkLeftThruster(now)) {
         offsettingHorizontalAcceleration = true;
-        this.leftFlame.draw(context, this.x, this.y);
+				this.leftFlame.draw(context, this.x, this.y, this.scale);
       }
 
       if (!offsettingHorizontalAcceleration && this.velocityX != 0) {
@@ -684,30 +685,30 @@
 
 
     if (drawBottomFullFlames) {
-      this.bottomRightFlame.draw(context, this.x, this.y);
-      this.bottomLeftFlame.draw(context, this.x, this.y);
+			this.bottomRightFlame.draw(context, this.x, this.y, this.scale);
+			this.bottomLeftFlame.draw(context, this.x, this.y, this.scale);
     }
     if (drawBottomMiniFlames) {
-      this.bottomRightMiniFlame.draw(context, this.x, this.y - hoverThrusterKillOffset);
-      this.bottomLeftMiniFlame.draw(context, this.x, this.y - hoverThrusterKillOffset);
+			this.bottomRightMiniFlame.draw(context, this.x, this.y - hoverThrusterKillOffset, this.scale);
+			this.bottomLeftMiniFlame.draw(context, this.x, this.y - hoverThrusterKillOffset, this.scale);
     }
 
     if (!this.enginesRetracted || this.extendingEngines) {
-      this.leftEngine.draw(context, this.x + leftEngineRetractionOffsetX, this.y + leftEngineRetractionOffsetY);
-      this.rightEngine.draw(context, this.x + rightEngineRetractionOffsetX, this.y + rightEngineRetractionOffsetY);
-      this.bottomLeftEngine.draw(context, this.x + bottomLeftEngineRetractionOffsetX, this.y + bottomLeftEngineRetractionOffsetY);
-      this.bottomRightEngine.draw(context, this.x + bottomRightEngineRetractionOffsetX, this.y + bottomRightEngineRetractionOffsetY);
+			this.leftEngine.draw(context, this.x + leftEngineRetractionOffsetX, this.y + leftEngineRetractionOffsetY, this.scale);
+			this.rightEngine.draw(context, this.x + rightEngineRetractionOffsetX, this.y + rightEngineRetractionOffsetY, this.scale);
+			this.bottomLeftEngine.draw(context, this.x + bottomLeftEngineRetractionOffsetX, this.y + bottomLeftEngineRetractionOffsetY, this.scale);
+			this.bottomRightEngine.draw(context, this.x + bottomRightEngineRetractionOffsetX, this.y + bottomRightEngineRetractionOffsetY, this.scale);
     }
 
     if (this.chuteDeployed) {
-      this.chute.draw(context, this.x, this.y);
+			this.chute.draw(context, this.x, this.y, this.scale);
       if (this.chute.isOnLastFrame() && !this.chuteSailsAreFull) {
         this.logState('Chute fully open...');
         this.onChutesFullyOpen(now);
       }
     }
     else if (this.chuteRetracting) {
-      this.chute.draw(context, this.x, this.y);
+			this.chute.draw(context, this.x, this.y, this.scale);
       if (this.chute.isOnFirstFrame()) {
         this.logState('Chute fully retracted...');
         this.chute.reverse = false;
@@ -715,7 +716,7 @@
       }
     }
 
-    this.codeRushedBody.draw(context, this.x, this.y);
+		this.codeRushedBody.draw(context, this.x, this.y, this.scale);
     this.drawing = false;
   }
 
@@ -795,12 +796,6 @@
   }
 
   dropSeed(now: number, args?: string) {
-    if (activeDroneGame instanceof DragonGame) {
-      this.createSprite(activeDroneGame.yellowSeeds, now);
-      return;
-    }
-
-
     if (!(activeDroneGame instanceof DroneGame))
       return;
 

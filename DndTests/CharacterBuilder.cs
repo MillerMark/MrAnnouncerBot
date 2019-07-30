@@ -21,7 +21,7 @@ namespace DndTests
 			GenerateRandomAttributes(elf);
 			elf.remainingHitDice = "1 d10";
 			elf.level = 1;
-			elf.inspiration = 0;
+			elf.inspiration = "";
 
 			elf.initiative = 2;
 			elf.baseSpeed = 30;
@@ -69,7 +69,7 @@ namespace DndTests
 			GenerateRandomAttributes(barbarian);
 			barbarian.remainingHitDice = "1 d10";
 			barbarian.level = 1;
-			barbarian.inspiration = 0;
+			barbarian.inspiration = "";
 
 			barbarian.initiative = 2;
 			barbarian.baseSpeed = 30;
@@ -104,7 +104,7 @@ namespace DndTests
 			GenerateRandomAttributes(wizard);
 			wizard.remainingHitDice = "1 d8";
 			wizard.level = 1;
-			wizard.inspiration = 0;
+			wizard.inspiration = "";
 
 			wizard.initiative = 2;
 			wizard.baseSpeed = 30;
@@ -135,7 +135,7 @@ namespace DndTests
 			GenerateRandomAttributes(druid);
 			druid.remainingHitDice = "1 d8";
 			druid.level = 1;
-			druid.inspiration = 0;
+			druid.inspiration = "";
 
 			druid.initiative = 2;
 			druid.baseSpeed = 30;

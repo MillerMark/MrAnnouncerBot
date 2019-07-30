@@ -6,6 +6,7 @@ function connectToSignalR(signalR) {
   window.onload = function () {
     connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
+		connection.on("ChangePlayerHealth", changePlayerHealth);
     connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
     connection.on("PlayerDataChanged", playerDataChanged);
@@ -15,7 +16,7 @@ function connectToSignalR(signalR) {
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
-		connection.on("SetPlayerData", setPlayerData);
+		connection.on("SetPlayerData", initializePlayerData);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
   };
 }
@@ -31,20 +32,20 @@ function updateClock(clockData: string) {
   }
 }
 
-function setPlayerData(playerData: string) {
+function initializePlayerData(playerData: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.setPlayerData(playerData);
+		activeFrontGame.initializePlayerData(playerData);
 	}
-	if (activeBackGame instanceof DragonGame) {
-		activeBackGame.characterStatsScroll.setPlayerData(playerData);
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.characterStatsScroll.initializePlayerData(playerData);
 	}
 	if (diceLayer) {
-		diceLayer.setPlayerData(playerData);
+		diceLayer.initializePlayerData(playerData);
 	}
 }
 
 function sendScrollLayerCommand(commandData: string) {
-	if (activeBackGame instanceof DragonGame) {
+	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.characterStatsScroll.sendScrollLayerCommand(commandData);
 	}
 }
@@ -61,34 +62,50 @@ function rollDice(diceRollData: string) {
   }
 }
 
-function executeCommand(command: string, params: string, userId: string, userName: string, displayName: string, color: string) {
+class UserInfo {
+	constructor(public userId: string, public userName: string, public displayName: string, public color: string, public showsWatched: number) {
+		
+	}
+}
+
+function executeCommand(command: string, params: string, userInfo: UserInfo) {
   console.log('executeCommand from Connection.ts');
   if (activeBackGame) {
-    activeBackGame.executeCommand(command, params, userId, userName, displayName, color, activeBackGame.nowMs);
+		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
   }
   if (activeFrontGame) {
-    activeFrontGame.executeCommand(command, params, userId, userName, displayName, color, activeFrontGame.nowMs);
+		activeFrontGame.executeCommand(command, params, userInfo, activeFrontGame.nowMs);
   }
   if (activeDroneGame) {
-    activeDroneGame.executeCommand(command, params, userId, userName, displayName, color, activeDroneGame.nowMs);
+		activeDroneGame.executeCommand(command, params, userInfo, activeDroneGame.nowMs);
+  }
+}
+function changePlayerHealth(playerHealth: string) {
+  console.log('changePlayerHealth from Connection.ts');
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.changePlayerHealth(playerHealth);
+  }
+	
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.changePlayerHealth(playerHealth);
   }
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonGame) {
+  if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
   }
 }
 
 function unfocusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonGame) {
+  if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
   }
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
-  if (activeBackGame instanceof DragonGame) {
-    activeBackGame.characterStatsScroll.playerDataChanged(playerID, pageID, playerData);
+	if (activeBackGame instanceof DragonBackGame) {
+    activeBackGame.playerDataChanged(playerID, pageID, playerData);
   }
   if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.playerChanged(playerID, playerData);

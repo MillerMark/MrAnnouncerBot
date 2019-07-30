@@ -36,6 +36,7 @@ namespace DHDM
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer updateClearButtonTimer;
 		DateTime lastUpdateTime;
+		int keepExistingModifier = int.MaxValue;
 
 		public MainWindow()
 		{
@@ -78,6 +79,8 @@ namespace DHDM
 		{
 			get
 			{
+				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+					return playerTabItem.PlayerID;
 				return tabPlayers.SelectedIndex;
 			}
 		}
@@ -97,6 +100,18 @@ namespace DHDM
 
 		Dictionary<int, Rectangle> highlightRectangles;
 
+		object GetToolTip(string description)
+		{
+			if (string.IsNullOrWhiteSpace(description))
+				return null;
+			ToolTip toolTip = new ToolTip();
+			TextBlock textBlock = new TextBlock();
+			textBlock.Text = description;
+			textBlock.TextWrapping = TextWrapping.Wrap;
+			textBlock.Width = 200;
+			toolTip.Content = textBlock;
+			return toolTip;
+		}
 		UIElement BuildShortcutButton(PlayerActionShortcut playerActionShortcut)
 		{
 			if (highlightRectangles == null)
@@ -108,6 +123,7 @@ namespace DHDM
 			button.Padding = new Thickness(4, 2, 4, 2);
 			stackPanel.Children.Add(button);
 			button.Content = playerActionShortcut.Name;
+			button.ToolTip = GetToolTip(playerActionShortcut.Description);
 			button.Tag = playerActionShortcut.Index;
 			button.Click += PlayerShortcutButton_Click;
 			Rectangle rectangle = new Rectangle();
@@ -116,6 +132,7 @@ namespace DHDM
 			rectangle.Visibility = Visibility.Hidden;
 			rectangle.Height = 3;
 			rectangle.Fill = new SolidColorBrush(Colors.Red);
+
 			highlightRectangles.Add(playerActionShortcut.Index, rectangle);
 			return stackPanel;
 		}
@@ -138,9 +155,35 @@ namespace DHDM
 		void HighlightPlayerShortcut(int index)
 		{
 			HidePlayerShortcutHighlights();
+			if (highlightRectangles == null)
+				return;
 			if (highlightRectangles.ContainsKey(index))
 				highlightRectangles[index].Visibility = Visibility.Visible;
 		}
+
+		void SetVantageForActivePlayer(VantageKind vantageMod)
+		{
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			{
+				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == PlayerID)
+				{
+					switch (vantageMod)
+					{
+						case VantageKind.Normal:
+							checkbox.RbNormal.IsChecked = true;
+							break;
+						case VantageKind.Advantage:
+							checkbox.RbAdvantage.IsChecked = true;
+							break;
+						case VantageKind.Disadvantage:
+							checkbox.RbDisadvantage.IsChecked = true;
+							break;
+					}
+					return;
+				}
+			}
+		}
+
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (sender is Button button)
@@ -152,14 +195,37 @@ namespace DHDM
 				try
 				{
 					HighlightPlayerShortcut((int)button.Tag);
-					tbxDamageDice.Text = actionShortcut.Dice;
-					if (actionShortcut.Modifier > 0)
-						tbxModifier.Text = "+" + actionShortcut.Modifier.ToString();
+					if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+						tbxDamageDice.Text += "," + actionShortcut.AddDice;
 					else
-						tbxModifier.Text = actionShortcut.Modifier.ToString();
+						tbxDamageDice.Text = actionShortcut.Dice;
+
+					if (actionShortcut.MinDamage != keepExistingModifier)
+						tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
+
+					if (actionShortcut.Modifier != keepExistingModifier)
+						if (actionShortcut.Modifier > 0)
+							tbxModifier.Text = "+" + actionShortcut.Modifier.ToString();
+						else
+							tbxModifier.Text = actionShortcut.Modifier.ToString();
 
 					ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
 					NextDieRollType = actionShortcut.Type;
+
+					if (actionShortcut.VantageMod != VantageKind.Normal)
+						SetVantageForActivePlayer(actionShortcut.VantageMod);
+
+					if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
+					{
+						DiceRollType type = actionShortcut.Type;
+						if (type == DiceRollType.None)
+							type = DiceRollType.DamageOnly;
+						DiceRoll diceRoll = PrepareRoll(type);
+						diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+						diceRoll.DamageDice = actionShortcut.InstantDice;
+						RollTheDice(diceRoll);
+					}
+
 				}
 				finally
 				{
@@ -170,23 +236,46 @@ namespace DHDM
 
 		void SetActionShortcuts(int playerID)
 		{
-			for (int i = spShortcutsActivePlayer.Children.Count - 1; i >= 0; i--)
-			{
-				UIElement uIElement = spShortcutsActivePlayer.Children[i];
-				if (uIElement is StackPanel)
-					spShortcutsActivePlayer.Children.RemoveAt(i);
-			}
-			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerID == playerID).ToList();
+			AddShortcutButtons(spActionsActivePlayer, playerID, TurnPart.Action);
+			AddShortcutButtons(spBonusActionsActivePlayer, playerID, TurnPart.BonusAction);
+			AddShortcutButtons(spReactionsActivePlayer, playerID, TurnPart.Reaction);
+			AddShortcutButtons(spSpecialActivePlayer, playerID, TurnPart.Special);
+		}
+
+		private void AddShortcutButtons(StackPanel stackPanel, int playerID, TurnPart part)
+		{
+			ClearExistingButtons(stackPanel);
+
+			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerID == playerID).Where(x => x.Part == part).ToList();
+			if (playerActions.Count == 0)
+				stackPanel.Visibility = Visibility.Collapsed;
+			else
+				stackPanel.Visibility = Visibility.Visible;
 
 			foreach (PlayerActionShortcut playerActionShortcut in playerActions)
 			{
-				spShortcutsActivePlayer.Children.Add(BuildShortcutButton(playerActionShortcut));
+				stackPanel.Children.Add(BuildShortcutButton(playerActionShortcut));
 			}
 		}
+
+		private void ClearExistingButtons(StackPanel stackPanel)
+		{
+			for (int i = stackPanel.Children.Count - 1; i >= 0; i--)
+			{
+				UIElement uIElement = stackPanel.Children[i];
+				if (uIElement is StackPanel)
+					stackPanel.Children.RemoveAt(i);
+			}
+		}
+
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (buildingTabs)
 				return;
+			if (rbActivePlayer.IsChecked == true)
+			{
+				CheckOnlyOnePlayer(PlayerID);
+			}
 			highlightRectangles = null;
 			NextDieRollType = DiceRollType.None;
 			activePage = ScrollPage.main;
@@ -194,13 +283,21 @@ namespace DHDM
 			HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
 			SetActionShortcuts(PlayerID);
 		}
+		void CheckOnlyOnePlayer(int playerID)
+		{
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			{
+				if (uIElement is PlayerRollCheckBox checkbox)
+					checkbox.IsChecked = checkbox.PlayerId == playerID;
+			}
+		}
 
 		private void CharacterSheets_PageChanged(object sender, RoutedEventArgs ea)
 		{
 			if (sender is CharacterSheets characterSheets && activePage != characterSheets.Page)
 			{
 				activePage = characterSheets.Page;
-				HubtasticBaseStation.PlayerDataChanged(tabPlayers.SelectedIndex, activePage, string.Empty);
+				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
 			}
 		}
 
@@ -209,7 +306,7 @@ namespace DHDM
 			if (sender is CharacterSheets characterSheets)
 			{
 				string character = characterSheets.GetCharacter();
-				HubtasticBaseStation.PlayerDataChanged(tabPlayers.SelectedIndex, activePage, character);
+				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, character);
 			}
 		}
 
@@ -252,6 +349,8 @@ namespace DHDM
 			public double Z { get; set; }
 
 		}
+
+		bool rollInspirationAfterwards;
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
@@ -315,26 +414,30 @@ namespace DHDM
 
 		private DiceRoll PrepareRoll(DiceRollType type)
 		{
-			DiceRollKind diceRollKind = DiceRollKind.Normal;
+			VantageKind diceRollKind = VantageKind.Normal;
 
 			if (CanIncludeVantageDice(type))
 				if (rbTestAdvantageDieRoll.IsChecked == true)
-					diceRollKind = DiceRollKind.Advantage;
+					diceRollKind = VantageKind.Advantage;
 				else if (rbTestDisadvantageDieRoll.IsChecked == true)
-					diceRollKind = DiceRollKind.Disadvantage;
+					diceRollKind = VantageKind.Disadvantage;
 
 			string damageDice = string.Empty;
 			if (IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
-			diceRoll.Inspiration = tbxInspiration.Text;
+			diceRoll.GroupInspiration = tbxInspiration.Text;
 			diceRoll.CritFailMessage = "";
 			diceRoll.CritSuccessMessage = "";
 			diceRoll.SuccessMessage = "";
 			diceRoll.FailMessage = "";
 			diceRoll.SkillCheck = Skills.none;
 			diceRoll.SavingThrow = Ability.None;
+			if (int.TryParse(tbxMinDamage.Text, out int result))
+				diceRoll.MinDamage = result;
+			else
+				diceRoll.MinDamage = 0;
 
 			if (type == DiceRollType.SkillCheck)
 			{
@@ -355,29 +458,51 @@ namespace DHDM
 				}
 			}
 
-			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow)
-				if (rbActivePlayer.IsChecked == true)
-					diceRoll.RollScope = RollScope.ActivePlayer;
-				else if (rbEveryone.IsChecked == true)
-					diceRoll.RollScope = RollScope.Everyone;
-				else
-				{
-					diceRoll.RollScope = RollScope.Individuals;
+			diceRoll.DamageType = DamageType.None;
 
-					foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-					{
-						if (uIElement is CheckBox checkbox && checkbox.IsChecked == true)
-						{
-							if (checkbox.Tag != null && int.TryParse(checkbox.Tag.ToString(), out int result))
-							{
-								int tag = result;
-								diceRoll.IndividualFilter |= tag;
-							}
-						}
-					}
-				}
+			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow)
+			{
+				//if (rbActivePlayer.IsChecked == true)
+				//	diceRoll.RollScope = RollScope.ActivePlayer;
+				//else
+				diceRoll.RollScope = RollScope.Individuals;
+			}
 			else
 				diceRoll.RollScope = RollScope.ActivePlayer;
+
+			diceRoll.Modifier = 0;
+			if (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt)
+			{
+				if (double.TryParse(tbxModifier.Text, out double modifierResult))
+					diceRoll.Modifier = modifierResult;
+			}
+
+			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly)
+			{
+				ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
+				if (selectedItem != null && selectedItem.Content != null)
+				{
+					string damageStr = selectedItem.Content.ToString();
+					diceRoll.DamageType = DndUtils.ToDamage(damageStr);
+				}
+			}
+
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			{
+				if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
+				{
+					VantageKind vantageKind = VantageKind.Normal;
+					if (checkbox.RbAdvantage.IsChecked == true)
+						vantageKind = VantageKind.Advantage;
+					else if (checkbox.RbDisadvantage.IsChecked == true)
+						vantageKind = VantageKind.Disadvantage;
+
+					checkbox.RbNormal.IsChecked = true;
+
+					string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
+					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
+				}
+			}
 
 			switch (type)
 			{
@@ -410,19 +535,18 @@ namespace DHDM
 			}
 
 
-			diceRoll.ThrowPower = new Random().Next() * 2;
+			diceRoll.ThrowPower = new Random().Next() * 2.8;
 			if (diceRoll.ThrowPower < 0.3)
 				diceRoll.ThrowPower = 0.3;
 
-			if (double.TryParse(tbxModifier.Text, out double modifierResult))
-				diceRoll.Modifier = modifierResult;
-
 			if (type == DiceRollType.DeathSavingThrow)
 				diceRoll.HiddenThreshold = 10;
+			else if (type == DiceRollType.Initiative)
+				diceRoll.HiddenThreshold = -100;
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
-			diceRoll.IsMagic = ckbUseMagic.IsChecked == true && IsAttack(type);
+			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
 			return diceRoll;
 		}
@@ -430,6 +554,11 @@ namespace DHDM
 		private void BtnFlatD20_Click(object sender, RoutedEventArgs e)
 		{
 			RollTheDice(PrepareRoll(DiceRollType.FlatD20));
+		}
+
+		private void BtnWildMagicD20Check_Click(object sender, RoutedEventArgs e)
+		{
+			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
 		}
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
@@ -589,6 +718,11 @@ namespace DHDM
 			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
 		}
 
+		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
+		{
+			dndTimeClock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
+		}
+
 		void enableDiceRollButtons()
 		{
 			spRollNowButtons.IsEnabled = true;
@@ -716,7 +850,7 @@ namespace DHDM
 				{
 					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
 					{
-						string playerName = GetPlayerName(playerRoll.id);
+						string playerName = playerRoll.name;
 						if (playerName != "")
 							playerName = playerName + " ";
 
@@ -790,7 +924,13 @@ namespace DHDM
 		{
 			dndTimeClock.InCombat = !dndTimeClock.InCombat;
 			if (dndTimeClock.InCombat)
+			{
+				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollInitiative();
+			}
+			else
+				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
+
 			OnCombatChanged();
 		}
 
@@ -850,7 +990,7 @@ namespace DHDM
 
 		void UpdateClearButton(object sender, EventArgs e)
 		{
-			const double timeToAutoClear = 6500;
+			const double timeToAutoClear = 9000;
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
@@ -860,7 +1000,7 @@ namespace DHDM
 			}
 
 			double progress = timeClearButtonHasBeenVisible.TotalMilliseconds / timeToAutoClear;
-			rectProgressToClear.Width = progress * btnClearDice.Width;
+			rectProgressToClear.Width = Math.Max(0, progress * btnClearDice.Width);
 		}
 
 		bool justClickedTheClearDiceButton;
@@ -998,13 +1138,8 @@ namespace DHDM
 		private void BtnBendLuckAdd_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckAdd);
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
-				Type = TrailingSpriteType.SmallSparks,
-				LeftRightDistanceBetweenPrints = 0,
-				MinForwardDistanceBetweenPrints = 33
-			});
-
+			AddTrailingSparks(diceRoll);
+			diceRoll.SecondRollTitle = "Bending Luck!";
 			RollTheDice(diceRoll);
 		}
 
@@ -1012,6 +1147,7 @@ namespace DHDM
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.BendLuckSubtract);
 			AddTrailingSparks(diceRoll);
+			diceRoll.SecondRollTitle = "Bending Luck!";
 			RollTheDice(diceRoll);
 		}
 
@@ -1019,6 +1155,7 @@ namespace DHDM
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollHigh);
 			AddTrailingSparks(diceRoll);
+			diceRoll.SecondRollTitle = "Sorcerer's Luck!";
 			RollTheDice(diceRoll);
 		}
 
@@ -1050,6 +1187,7 @@ namespace DHDM
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.LuckRollLow);
 			AddTrailingSparks(diceRoll);
+			diceRoll.SecondRollTitle = "Sorcerer's Luck!";
 			RollTheDice(diceRoll);
 		}
 
@@ -1073,14 +1211,266 @@ namespace DHDM
 			}
 		}
 
-		private const int Player_Willy = 0;
+		private const int Player_Lady = 0;
 		private const int Player_Shemo = 1;
 		private const int Player_Merkin = 2;
 		private const int Player_Ava = 3;
+		private const int Player_Fred = 4;
+		private const int Player_Willy = 5;
+
 		DiceRollType nextDieRollType;
 		void InitializeAttackShortcuts()
 		{
+			highlightRectangles = null;
+			actionShortcuts.Clear();
 			PlayerActionShortcut.PrepareForCreation();
+			AddPlayerActionShortcutsForWilly();
+			AddPlayerActionShortcutsForMerkin();
+			AddPlayerActionShortcutsForAva();
+			AddPlayerActionShortcutsForShemo();
+			AddPlayerActionShortcutsForLady();
+			AddPlayerActionShortcutsForFred();
+		}
+
+		void AddPlayerActionShortcutsForFred()
+		{
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (1H)", PlayerID = Player_Fred, Dice = "1d8+5(slashing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (2H)", PlayerID = Player_Fred, Dice = "1d10+3(slashing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Handaxe", PlayerID = Player_Fred, Dice = "1d6+5(slashing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Longbow", PlayerID = Player_Fred, Dice = "1d8(piercing)", Modifier = +2 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Unarmed Strike", PlayerID = Player_Fred, Dice = "4(bludgeoning)", Modifier = +5, Description = "You can punch, kick, head-butt, or use a similar forceful blow and deal bludgeoning damage equal to 1 + STR modifier." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Bite", PlayerID = Player_Fred, Dice = "1d6+3(piercing)", Modifier = +5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Feinting Attack",
+				PlayerID = Player_Fred,
+				Modifier = keepExistingModifier,
+				AddDice = "1d8(superiority)",
+				VantageMod = VantageKind.Advantage,
+				Part = TurnPart.BonusAction,
+				Description = "You can expend one superiority die and use a bonus action on your turn to add the total to the damage roll and to gain advantage on your next attack roll against a chosen creature within 5 ft. this turn."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Goading Attack", PlayerID = Player_Fred, Type = DiceRollType.AddOnDice, InstantDice = "1d8(superiority:damage)", AdditionalRollTitle = "Goading Attack", Part = TurnPart.Special, Description = "When you hit with a weapon attack, you can expend one superiority die to add the total to the damage roll and the target must make a WIS saving throw (DC 13). On failure, the target has disadvantage on all attack rolls against targets other than you until the end of your next turn." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Trip Attack", PlayerID = Player_Fred, Type = DiceRollType.AddOnDice, InstantDice = "1d8(superiority:damage)", AdditionalRollTitle = "Trip Attack", Part = TurnPart.Special, Description = "When you hit with a weapon attack, you can expend one superiority die to add the total to the damage roll, and if the target is Large or smaller, it must make a STR saving throw (DC 13). On failure, you knock the target prone." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Action Surge", PlayerID = Player_Fred, Part = TurnPart.Special, Description = "You can take one additional action on your turn. This can be used 1 times per short rest." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Second Wind", PlayerID = Player_Fred, Dice = "1d10+4", Type = DiceRollType.HealthOnly, Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest, you can use a bonus action to regain 1d10 + {$Level} HP." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Hungry Jaws", PlayerID = Player_Fred, Modifier = 5, Dice = "1d6+3", Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest as a bonus action, you can make a bite attack. If it hits, you gain {$ConstitutionModifier} temporary HP." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Great Weapon Master Attack", PlayerID = Player_Fred, Part = TurnPart.BonusAction, Description = "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action." });
+		}
+
+		void AddPlayerActionShortcutsForLady()
+		{
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Longsword", PlayerID = Player_Lady, Dice = "1d8+3(slashing)", Modifier = 5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Longsword - 2H", PlayerID = Player_Lady, Dice = "1d10+3(slashing)", Modifier = 5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Warhammer", PlayerID = Player_Lady, Dice = "1d8+3(bludgeoning)", Modifier = 5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Warhammer - 2H", PlayerID = Player_Lady, Dice = "1d10+3(bludgeoning)", Modifier = 5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Unarmed Strike", PlayerID = Player_Lady, Dice = "4(bludgeoning)", Modifier = 5 });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Second Wind", PlayerID = Player_Lady, Dice = "1d10+4", Type = DiceRollType.HealthOnly, Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest, you can use a bonus action to regain 1d10 + {$Level} HP." });
+
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shifting", PlayerID = Player_Lady, Type = DiceRollType.None, Part = TurnPart.BonusAction,
+				LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest,
+				Description = "Once per short rest as a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute, until you die, or until you revert to your normal appearance as a bonus action. When you shift, you gain +5 temp HP and additional benefits that depend on your shifter subrace."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Action Surge", PlayerID = Player_Lady, Part = TurnPart.Special, Description = "You can take one additional action on your turn. This can be used 1 times per short rest." });
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Longtooth Shifting Strike", PlayerID = Player_Lady, Part=TurnPart.BonusAction,
+				Dice = "1d6+3(piercing)", Modifier = 5,
+				Description = "While shifted, you can use your fangs to make an unarmed strike as a bonus action. If you hit, you can deal 1d6 + 3 piercing damage, instead of the bludgeoning damage normal for an unarmed strike."
+			});
+		}
+
+		private void AddPlayerActionShortcutsForShemo()
+		{
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Scimitar", PlayerID = Player_Shemo, Dice = "1d6+1", Modifier = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Scimitar (Shillelagh)", PlayerID = Player_Shemo, Dice = "1d8+1", Modifier = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Poison Spray", PlayerID = Player_Shemo, Dice = "1d12", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Shillelagh", PlayerID = Player_Shemo, Dice = "1d8+3", Modifier = 5, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Thunderwave", PlayerID = Player_Shemo, Dice = "2d8", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Healing Word", PlayerID = Player_Shemo, Dice = "1d4+3", Healing = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Cure Wounds", PlayerID = Player_Shemo, Dice = "1d8+3", Healing = true });
+		}
+
+		private void AddPlayerActionShortcutsForAva()
+		{
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3(slashing)", Modifier = 5, MinDamage = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3(slashing)", Modifier = 5, MinDamage = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Greatsword, +1", PlayerID = Player_Ava, Dice = "2d6+4(slashing)", Modifier = +6, MinDamage = 3 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Net", PlayerID = Player_Ava, Dice = "", Modifier = 2 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Unarmed Strike", PlayerID = Player_Ava, Dice = "+4(bludgeoning)", Modifier = 5 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Cure Wounds", PlayerID = Player_Ava, Dice = "1d8+3", Healing = true,
+			Description= "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs.\n\nAt Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Thunderous Smite", PlayerID = Player_Ava, Part = TurnPart.BonusAction,
+				AddDice = "2d6(thunder)", DC = 13, Ability = Ability.Strength,
+				MinDamage = keepExistingModifier,
+				Modifier = keepExistingModifier,
+				Description = "The first time you hit with a melee weapon attack during this spell’s duration, your weapon rings with thunder that is audible within 300 feet of you, and the attack deals an extra 2d6 thunder damage to the target. Additionally, if the target is a creature, it must succeed on a Strength saving throw or be pushed 10 feet away from you and knocked prone."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Wrathful Smite", PlayerID = Player_Ava, Part = TurnPart.BonusAction,
+				AddDice = "1d6(psychic)", DC = 13, Ability = Ability.Wisdom,
+				MinDamage = keepExistingModifier,
+				Modifier = keepExistingModifier,
+				Description = "The next time you hit with a melee weapon attack during this spell’s duration, your attack deals an extra 1d6 psychic damage. Additionally, if the target is a creature, it must make a Wisdom saving throw or be frightened of you until the spell ends. As an action, the creature can make a Wisdom check against your spell save DC to steel its resolve and end this spell."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Shield of Faith",
+				PlayerID = Player_Ava,
+				Part = TurnPart.BonusAction,
+				Description = "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Sanctuary",
+				PlayerID = Player_Ava,
+				Part = TurnPart.BonusAction,
+				Description = "You ward a creature within range against attack. Until the spell ends, any creature who targets the warded creature with an attack or a harmful spell must first make a Wisdom saving throw. On a failed save, the creature must choose a new target or lose the attack or spell. This spell doesn't protect the warded creature from area effects, such as the explosion of a fireball.\n\nIf the warded creature makes an attack, casts a spell that affects an enemy, or deals damage to another creature, this spell ends."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Divine Smite",
+				PlayerID = Player_Ava,
+				Type = DiceRollType.AddOnDice,
+				Part = TurnPart.Special,
+				AdditionalRollTitle = "Divine Smite",
+				InstantDice = "2d8(radiant:damage)",
+				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Channel Divinity: Rebuke the Violent",
+				PlayerID = Player_Ava,
+				Type = DiceRollType.None,
+				Part = TurnPart.Reaction,
+				DC = 14,
+				Ability = Ability.Wisdom,
+				Description = "Immediately after an attacker within 30 ft. deals damage with an attack against a creature other than you, you can use your reaction to force the attacker to make a WIS saving throw (DC 14). On failure, the attacker takes radiant damage equal to the damage it just dealt, or half damage on success."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Channel Divinity: Emissary of Peace",
+				PlayerID = Player_Ava,
+				Part = TurnPart.BonusAction,
+				Description = "As a bonus action, you grant yourself a +5 bonus to Charisma (Persuasion) checks for the next 10 minutes."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Great Weapon Master Attack",
+				PlayerID = Player_Ava,
+				Part = TurnPart.BonusAction,
+				Description = "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Divine Sense",
+				PlayerID = Player_Ava,
+				Part = TurnPart.Action,
+				Description = "As an action, you can detect good and evil. Until the end of your next turn, you can sense anything affected by the hallow spell or know the location of any celestial, fiend, undead within 60 ft. that is not behind total cover. You can use this feature 5 times per long rest."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Lay on Hands Pool",
+				PlayerID = Player_Ava,
+				Part = TurnPart.Action,
+				Description = "You have a pool of healing power that can restore 20 HP per long rest. As an action, you can touch a creature to restore any number of HP remaining in the pool, or 5 HP to either cure a disease or neutralize a poison affecting the creature."
+			});
+
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{
+				Name = "Divine Smite (undead)",
+				PlayerID = Player_Ava,
+				Type = DiceRollType.AddOnDice,
+				Part = TurnPart.Special,
+				AdditionalRollTitle = "Divine Smite",
+				InstantDice = "3d8(radiant:damage)",
+				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends."
+			});
+		}
+
+		private void AddPlayerActionShortcutsForMerkin()
+		{
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2(piercing)", Modifier = 4 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2(piercing)", Modifier = 4 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8(cold)", Modifier = 5, UsesMagic = true });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Chill Touch", PlayerID = Player_Merkin, Dice = "1d8(necrotic)", Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack });
+		}
+
+		private void AddPlayerActionShortcutsForWilly()
+		{
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Dagger of Warning", PlayerID = Player_Willy, Dice = "1d4+3", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
@@ -1099,49 +1489,6 @@ namespace DHDM
 			{ Name = "Shortsword (Sneak)", PlayerID = Player_Willy, Dice = "3d6+3", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Bonus Dagger (Sneak)", PlayerID = Player_Willy, Dice = "2d6,1d4", Modifier = 5 });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8", DC = 13, Ability = Ability.Strength, UsesMagic = true });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2", Modifier = 4 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2", Modifier = 4 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8", Modifier = 5, UsesMagic = true });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3", Modifier = 5 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3", Modifier = 5 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3", Modifier = 5 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Net", PlayerID = Player_Ava, Dice = "", Modifier = 2 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Unarmed Strike", PlayerID = Player_Ava, Dice = "+4", Modifier = 5 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Cure Wounds", PlayerID = Player_Ava, Dice = "1d8+3", Healing = true });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Thunderous Smite", PlayerID = Player_Ava, Dice = "2d6", DC = 13, Ability = Ability.Strength });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Wrathful Smite", PlayerID = Player_Ava, Dice = "1d6", DC = 13, Ability = Ability.Wisdom });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Scimitar", PlayerID = Player_Shemo, Dice = "1d6+1", Modifier = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Scimitar (Shillelagh)", PlayerID = Player_Shemo, Dice = "1d8+1", Modifier = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Poison Spray", PlayerID = Player_Shemo, Dice = "1d12", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Shillelagh", PlayerID = Player_Shemo, Dice = "1d8+3", Modifier = 5, UsesMagic = true });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Thunderwave", PlayerID = Player_Shemo, Dice = "2d8", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Healing Word", PlayerID = Player_Shemo, Dice = "1d4+3", Healing = true });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Cure Wounds", PlayerID = Player_Shemo, Dice = "1d8+3", Healing = true });
 		}
 
 		bool settingInternally;
@@ -1177,9 +1524,10 @@ namespace DHDM
 
 				foreach (Character player in players)
 				{
-					TabItem tabItem = new TabItem();
+					PlayerTabItem tabItem = new PlayerTabItem();
 					tabItem.Header = player.name;
 					tabPlayers.Items.Add(tabItem);
+					tabItem.PlayerID = player.playerID;
 
 					StackPanel stackPanel = new StackPanel();
 					tabItem.Content = stackPanel;
@@ -1193,6 +1541,8 @@ namespace DHDM
 					characterSheets.PageBackgroundClicked += CharacterSheets_PageBackgroundClicked;
 					characterSheets.CharacterChanged += HandleCharacterChanged;
 					characterSheets.SetFromCharacter(player);
+					characterSheets.SkillCheckRequested += CharacterSheets_SkillCheckRequested;
+					characterSheets.SavingThrowRequested += CharacterSheets_SavingThrowRequested;
 					grid.Children.Add(characterSheets);
 
 					Button button = new Button();
@@ -1209,6 +1559,64 @@ namespace DHDM
 			}
 		}
 
+		private void CharacterSheets_SavingThrowRequested(object sender, AbilityEventArgs e)
+		{
+			SelectSavingThrowAbility(e.Ability);
+			rbActivePlayer.IsChecked = true;
+			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
+		}
+
+		void SelectSavingThrowAbility(Ability ability)
+		{
+			string lowerCaseAbility = ability.ToString().ToLower();
+			for (int i = 0; i < cbAbility.Items.Count; i++)
+			{
+				if (cbAbility.Items[i] is ComboBoxItem item)
+				{
+					if (item.Content is string displayText)
+					{
+						string displayTextLower = displayText.ToLower();
+						if (displayTextLower == lowerCaseAbility)
+						{
+							cbAbility.SelectedIndex = i;
+							return;
+						}
+					}
+				}
+			}
+		}
+
+		void SelectSkill(Skills skill)
+		{
+			string lowerCaseSkillName = skill.ToString().ToLower();
+			if (skill == Skills.animalHandling)
+				lowerCaseSkillName = "animal handling";
+			else if (skill == Skills.slightOfHand)
+				lowerCaseSkillName = "slight of hand";
+			for (int i = 0; i < cbSkillFilter.Items.Count; i++)
+			{
+				if (cbSkillFilter.Items[i] is ComboBoxItem item)
+				{
+					if (item.Content is string displayText)
+					{
+						string displayTextLower = displayText.ToLower();
+						if (displayTextLower == lowerCaseSkillName)
+						{
+							cbSkillFilter.SelectedIndex = i;
+							return;
+						}
+					}
+				}
+			}
+			//cbSkillFilter.SelectedItem
+		}
+		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
+		{
+			SelectSkill(e.Skill);
+			rbActivePlayer.IsChecked = true;
+			RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
+		}
+
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
 		{
 			HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
@@ -1223,12 +1631,14 @@ namespace DHDM
 		{
 			Character kent = new Character();
 			kent.name = "Willy Shaker";
+			kent.playerID = Player_Willy;
 			kent.raceClass = "High Elf Rogue";
 			kent.goldPieces = 150;
 			kent.hitPoints = 35;
 			kent.maxHitPoints = 35;
 			kent.baseArmorClass = 15;
 			kent.baseStrength = 10;
+			kent.headshotIndex = 4;
 			kent.baseDexterity = 17;
 			kent.baseConstitution = 16;
 			kent.baseIntelligence = 9;
@@ -1242,12 +1652,14 @@ namespace DHDM
 			kent.hueShift = 0;
 			kent.dieBackColor = "#710138";
 			kent.dieFontColor = "#ffffff";
-			kent.rollInitiative = DiceRollKind.Advantage;
+			kent.rollInitiative = VantageKind.Advantage;
 
 			Character kayla = new Character();
 			kayla.name = "Shemo Globin";
+			kayla.playerID = Player_Shemo;
 			kayla.raceClass = "Firbolg Druid";
 			kayla.goldPieces = 170;
+			kayla.headshotIndex = 1;
 			kayla.hitPoints = 31;
 			kayla.maxHitPoints = 31;
 			kayla.baseArmorClass = 15;
@@ -1269,6 +1681,8 @@ namespace DHDM
 			mark.name = "Merkin Bushwacker";
 			mark.raceClass = "Half-Elf Sorcerer";
 			mark.goldPieces = 128;
+			mark.headshotIndex = 2;
+			mark.playerID = Player_Merkin;
 			mark.hitPoints = 26;
 			mark.maxHitPoints = 26;
 			mark.baseArmorClass = 12;
@@ -1290,6 +1704,8 @@ namespace DHDM
 			karen.name = "Ava Wolfhard";
 			karen.raceClass = "Human Paladin";
 			karen.goldPieces = 150;
+			karen.playerID = Player_Ava;
+			karen.headshotIndex = 3;
 			karen.hitPoints = 36;
 			karen.maxHitPoints = 36;
 			karen.baseArmorClass = 16;
@@ -1298,7 +1714,7 @@ namespace DHDM
 			karen.baseConstitution = 14;
 			karen.baseIntelligence = 8;
 			karen.baseWisdom = 8;
-			karen.baseCharisma = 16;
+			karen.baseCharisma = 18;
 			karen.proficiencyBonus = +2;
 			karen.initiative = 0;
 			karen.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.performance | Skills.persuasion | Skills.survival;
@@ -1307,88 +1723,188 @@ namespace DHDM
 			karen.dieBackColor = "#04315a";
 			karen.dieFontColor = "#ffffff";
 
+			Character fred = new Character();
+			fred.name = "Fred";
+			fred.raceClass = "Lizardfolk Fighter";
+			fred.goldPieces = 10;
+			fred.playerID = Player_Fred;
+			fred.headshotIndex = 5;
+			fred.hitPoints = 40;
+			fred.maxHitPoints = 40;
+			fred.baseArmorClass = 16;
+			fred.baseStrength = 16;
+			fred.baseDexterity = 16;
+			fred.baseConstitution = 16;
+			fred.baseIntelligence = 8;
+			fred.baseWisdom = 9;
+			fred.baseCharisma = 10;
+			fred.proficiencyBonus = +2;
+			fred.initiative = +3;
+			fred.proficientSkills = Skills.acrobatics | Skills.athletics | Skills.nature | Skills.perception | Skills.survival | Skills.stealth;
+			fred.savingThrowProficiency = Ability.Strength | Ability.Constitution;
+			fred.hueShift = 206;
+			fred.dieBackColor = "#136399";
+			fred.dieFontColor = "#ffffff";
+
+			Character lara = new Character();
+			lara.name = "Lady McLoveNuts";
+			lara.raceClass = "Longtooth Fighter";
+			lara.goldPieces = 250;
+			lara.playerID = Player_Lady;
+			lara.headshotIndex = 0;
+			lara.hitPoints = 32;
+			lara.maxHitPoints = 32;
+			lara.baseArmorClass = 16;
+			lara.baseStrength = 16;
+			lara.baseDexterity = 14;
+			lara.baseConstitution = 12;
+			lara.baseIntelligence = 13;
+			lara.baseWisdom = 12;
+			lara.baseCharisma = 12;
+			lara.proficiencyBonus = +2;
+			lara.initiative = +2;
+			lara.proficientSkills = Skills.animalHandling | Skills.arcana | Skills.intimidation | Skills.investigation | Skills.perception | Skills.survival;
+			lara.savingThrowProficiency = Ability.Strength | Ability.Constitution;
+			lara.hueShift = 37;
+			//lara.dieBackColor = "#a86600";
+			//lara.dieFontColor = "#ffffff";
+			lara.dieBackColor = "#fea424";
+			lara.dieFontColor = "#000000";
+
 			// TODO: Promote characters to field and populate tabs...
 			if (this.players == null)
 				this.players = new List<Character>();
 			this.players.Clear();
 
-			players.Add(kent);
-			players.Add(kayla);
+			//players.Add(kent);
+			players.Add(fred);
+			players.Add(lara);
+			//players.Add(kayla);
 			players.Add(mark);
 			players.Add(karen);
+
 
 			string playerData = JsonConvert.SerializeObject(players);
 			HubtasticBaseStation.SetPlayerData(playerData);
 
 			BuildPlayerTabs();
 			BuildPlayerUI();
+			InitializeAttackShortcuts();
 		}
 
-		string GetFirstName(string name)
-		{
-			if (name == null)
-				return "No name";
-			int spaceIndex = name.IndexOf(' ');
-			if (spaceIndex < 0)
-				return name;
-			return name.Substring(0, spaceIndex);
-		}
 		void SetGridPosition(UIElement control, int column, int row)
 		{
 			Grid.SetColumn(control, column);
 			Grid.SetRow(control, row);
 		}
+
 		void BuildPlayerUI()
 		{
 			grdPlayerRollOptions.Children.Clear();
 			grdPlayerRollOptions.RowDefinitions.Clear();
-			int tag = 1;
 			int row = 0;
+
 			foreach (Character player in players)
 			{
+				int playerId = player.playerID;
 				grdPlayerRollOptions.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
 				PlayerRollCheckBox checkBox = new PlayerRollCheckBox();
-				checkBox.Content = GetFirstName(player.name);
-				checkBox.Tag = tag;
+				checkBox.Content = StrUtils.GetFirstName(player.name);
+				checkBox.PlayerId = playerId;
 				checkBox.Checked += PlayerRollCheckBox_Checked;
 				checkBox.Unchecked += PlayerRollCheckBox_Unchecked;
 				SetGridPosition(checkBox, 0, row);
-				
 
-				StackPanel stackPanel = new StackPanel();
-				checkBox.DependantUI = stackPanel;
-				stackPanel.Orientation = Orientation.Horizontal;
-				stackPanel.Margin = new Thickness(14, 0, 0, 0);
-				SetGridPosition(stackPanel, 1, row);
+				StackPanel spOptions = new StackPanel();
+				spOptions.Visibility = Visibility.Hidden;
+				checkBox.DependantUI = spOptions;
+				spOptions.Orientation = Orientation.Horizontal;
+				spOptions.Margin = new Thickness(14, 0, 0, 0);
+				SetGridPosition(spOptions, 1, row);
 
-				
 				RadioButton rbNormalRoll = new RadioButton();
 				rbNormalRoll.Content = "Normal";
 				rbNormalRoll.IsChecked = true;
-				stackPanel.Children.Add(rbNormalRoll);
+				spOptions.Children.Add(rbNormalRoll);
+				checkBox.RbNormal = rbNormalRoll;
+
 				RadioButton rbAdvantageRoll = new RadioButton();
 				rbAdvantageRoll.Content = "Adv.";
 				rbAdvantageRoll.Margin = new Thickness(14, 0, 0, 0);
-				stackPanel.Children.Add(rbAdvantageRoll);
+				spOptions.Children.Add(rbAdvantageRoll);
+				checkBox.RbAdvantage = rbAdvantageRoll;
+
 				RadioButton rbDisadvantageRoll = new RadioButton();
 				rbDisadvantageRoll.Content = "Disadv.";
 				rbDisadvantageRoll.Margin = new Thickness(14, 0, 0, 0);
-				stackPanel.Children.Add(rbDisadvantageRoll);
+				spOptions.Children.Add(rbDisadvantageRoll);
+				checkBox.RbDisadvantage = rbDisadvantageRoll;
 
-				tag *= 2;
+				TextBlock textBlock = new TextBlock();
+				textBlock.Margin = new Thickness(14, 0, 0, 0);
+				textBlock.Text = "Inspiration: ";
+				spOptions.Children.Add(textBlock);
+
+				InspirationTextBox inspirationTextBox = new InspirationTextBox();
+				inspirationTextBox.Text = "";
+				inspirationTextBox.MinWidth = 70;
+				inspirationTextBox.TextChanged += InspirationTextBox_TextChanged;
+				spOptions.Children.Add(inspirationTextBox);
+				checkBox.TbxInspiration = inspirationTextBox;
+
+				PlayerButton btnRollInspiration = new PlayerButton();
+				btnRollInspiration.Content = "Roll Inspiration";
+				btnRollInspiration.IsEnabled = false;
+				btnRollInspiration.Margin = new Thickness(14, 0, 0, 0);
+				btnRollInspiration.Padding = new Thickness(8, 0, 8, 0);
+				btnRollInspiration.Click += ButtonRollInspirationOnly_Click;
+				btnRollInspiration.PlayerId = playerId;
+				spOptions.Children.Add(btnRollInspiration);
+				inspirationTextBox.PlayerButton = btnRollInspiration;
+
 				row++;
 				grdPlayerRollOptions.Children.Add(checkBox);
-				grdPlayerRollOptions.Children.Add(stackPanel);
+				grdPlayerRollOptions.Children.Add(spOptions);
+
+				playerId++;
 			}
 		}
 
+		private void InspirationTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			InspirationTextBox inspirationTextBox = sender as InspirationTextBox;
+			if (inspirationTextBox != null)
+			{
+				inspirationTextBox.PlayerButton.IsEnabled = !string.IsNullOrWhiteSpace(inspirationTextBox.Text);
+			}
+		}
+
+		private void ButtonRollInspirationOnly_Click(object sender, RoutedEventArgs e)
+		{
+			PlayerButton playerButton = sender as PlayerButton;
+			if (playerButton != null)
+			{
+				CheckPlayer(playerButton.PlayerId);
+				RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
+			}
+
+			// TODO: Roll only for the player to the left of this button.
+		}
+
+		int lastPlayerIdUnchecked;
 		private void PlayerRollCheckBox_Unchecked(object sender, RoutedEventArgs e)
 		{
 			PlayerRollCheckBox playerRollCheckBox = sender as PlayerRollCheckBox;
 			if (playerRollCheckBox == null)
 				return;
 			playerRollCheckBox.DependantUI.Visibility = Visibility.Hidden;
+
+			lastPlayerIdUnchecked = playerRollCheckBox.PlayerId;
+
+			if (checkingInternally)
+				return;
+			SelectRadioButtonBasedOnCheckedPlayers();
 		}
 
 		private void PlayerRollCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -1397,6 +1913,64 @@ namespace DHDM
 			if (playerRollCheckBox == null)
 				return;
 			playerRollCheckBox.DependantUI.Visibility = Visibility.Visible;
+			lastPlayerIdUnchecked = -1;
+
+			if (checkingInternally)
+				return;
+			SelectRadioButtonBasedOnCheckedPlayers();
+		}
+
+		bool radioingInternally;
+		void SelectRadioButtonBasedOnCheckedPlayers()
+		{
+			radioingInternally = true;
+			try
+			{
+				bool allCheckboxesChecked = true;
+				int numRadioBoxesChecked = 0;
+				int lastPlayerId = -1;
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+				{
+					if (uIElement is PlayerRollCheckBox checkbox)
+						if (checkbox.IsChecked == true)
+						{
+							numRadioBoxesChecked++;
+							lastPlayerId = checkbox.PlayerId;
+						}
+						else
+						{
+							allCheckboxesChecked = false;
+						}
+				}
+				if (allCheckboxesChecked)
+					rbEveryone.IsChecked = true;
+				else if (numRadioBoxesChecked == 0)
+				{
+					CheckActivePlayer();
+					rbActivePlayer.IsChecked = true;
+				}
+				else if (numRadioBoxesChecked == 1 && lastPlayerId == PlayerID)
+					rbActivePlayer.IsChecked = true;
+				else
+					rbIndividuals.IsChecked = true;
+			}
+			finally
+			{
+				radioingInternally = false;
+			}
+		}
+		void CheckActivePlayer()
+		{
+			CheckPlayer(PlayerID);
+		}
+
+		private void CheckPlayer(int playerID)
+		{
+			if (lastPlayerIdUnchecked == playerID)
+				return;
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+				if (uIElement is PlayerRollCheckBox checkbox)
+					checkbox.IsChecked = checkbox.PlayerId == playerID;
 		}
 
 		List<Character> players;
@@ -1433,26 +2007,88 @@ namespace DHDM
 			if (int.TryParse(tbxHealth.Text, out int result))
 			{
 				// TODO: Send result via signalR.
+				//HubtasticBaseStation.ChangePlayerHealth()
 			}
 		}
 
 		private void BtnInflictDamage_Click(object sender, RoutedEventArgs e)
 		{
+			int multiplier = -1;
+			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, tbxDamage);
 
+			if (damageHealthChange != null)
+			{
+				string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
+				HubtasticBaseStation.ChangePlayerHealth(serializedObject);
+			}
 		}
+
+		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox)
+		{
+			DamageHealthChange damageHealthChange;
+			int damage;
+
+			if (int.TryParse(textBox.Text, out damage))
+			{
+				damageHealthChange = new DamageHealthChange();
+				damageHealthChange.DamageHealth = damage * multiplier;
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+					if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
+						damageHealthChange.PlayerIds.Add(checkbox.PlayerId);
+			}
+			else
+				damageHealthChange = null;
+			return damageHealthChange;
+		}
+
 
 		private void RbActivePlayer_Checked(object sender, RoutedEventArgs e)
 		{
-			ShowHidePlayerUI(false);
+			if (radioingInternally)
+				return;
+			if (spRollButtons == null)
+				return;
+			spRollButtons.Visibility = Visibility.Visible;
+			ShowHidePlayerUI(true);
+			CheckActivePlayer();
 		}
 
 		private void RbEveryone_Checked(object sender, RoutedEventArgs e)
 		{
-			ShowHidePlayerUI(false);
+			if (radioingInternally)
+				return;
+			if (spRollButtons == null)
+				return;
+			spRollButtons.Visibility = Visibility.Collapsed;
+			ShowHidePlayerUI(true);
+			CheckAllPlayers();
+		}
+
+		bool checkingInternally;
+		void CheckAllPlayers()
+		{
+			checkingInternally = true;
+			try
+			{
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+				{
+					if (uIElement is PlayerRollCheckBox checkbox)
+						checkbox.IsChecked = true;
+				}
+			}
+			finally
+			{
+				checkingInternally = false;
+			}
 		}
 
 		private void RbIndividuals_Checked(object sender, RoutedEventArgs e)
 		{
+			if (radioingInternally)
+				return;
+			if (spRollButtons == null)
+				return;
+			spRollButtons.Visibility = Visibility.Collapsed;
 			ShowHidePlayerUI(true);
 		}
 		void ShowHidePlayerUI(bool showUI)
@@ -1464,14 +2100,29 @@ namespace DHDM
 			else
 				grdPlayerRollOptions.Visibility = Visibility.Hidden;
 		}
-	}
 
-	public class PlayerRollCheckBox: CheckBox
-	{
-		public UIElement DependantUI { get; set; }
-		public PlayerRollCheckBox()
+		private void CbDamage_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			
+
+		}
+
+		private void BtnLongtoothShiftingStrike_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				Type = TrailingSpriteType.Fangs,
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
+			});
+			diceRoll.OnFirstContactSound = "Snarl";
+			//diceRoll.OnFirstContactEffect = TrailingSpriteType.Fangs;
+			RollTheDice(diceRoll);
+		}
+
+		private void BtnInspirationOnly_Click(object sender, RoutedEventArgs e)
+		{
+			RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
 		}
 	}
 }
