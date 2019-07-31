@@ -59,6 +59,16 @@ namespace DHDM
 			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);
 		}
 
+		public static void AddWindup(string windupData)
+		{
+			HubConnection.InvokeAsync("AddWindup", windupData);
+		}
+
+		public static void ClearWindup(string windupName)
+		{
+			HubConnection.InvokeAsync("ClearWindup", windupName);
+		}
+
 		public static void FocusItem(int playerID, ScrollPage pageID, string itemID)
 		{
 			HubConnection.InvokeAsync("FocusItem", playerID, (int)pageID, itemID);

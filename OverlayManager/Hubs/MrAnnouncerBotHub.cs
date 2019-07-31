@@ -31,6 +31,16 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.ChangePlayerHealth(playerData);
 		}
 
+		public void AddWindup(string windupData)
+		{
+			coderushedHub.Clients.All.AddWindup(windupData);
+		}
+
+		public void ClearWindup(string windupName)
+		{
+			coderushedHub.Clients.All.ClearWindup(windupName);
+		}
+
 		public void FocusItem(int playerID, int pageID, string itemID)
 		{
 			coderushedHub.Clients.All.FocusItem(playerID, pageID, itemID);

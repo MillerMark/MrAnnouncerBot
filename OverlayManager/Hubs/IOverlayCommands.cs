@@ -19,6 +19,8 @@ namespace OverlayManager.Hubs
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
 		Task ChangePlayerHealth(string playerData);
+		Task AddWindup(string windupData);
+		Task ClearWindup(string windupName);
 		Task FocusItem(int playerID, int pageID, string itemID);
 		Task UnfocusItem(int playerID, int pageID, string itemID);
 		Task TriggerEffect(string effectData);

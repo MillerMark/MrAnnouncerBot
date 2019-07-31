@@ -743,7 +743,6 @@ class DragonFrontGame extends GamePlusQuiz {
 		}
 	}
 
-
 	private showDamageForPlayer(damageHealth: number, playerId: number) {
 		let flipHorizontally: boolean = false;
 		if (Random.chancePercent(50))
