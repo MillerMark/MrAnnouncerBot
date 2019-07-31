@@ -2004,17 +2004,17 @@ namespace DHDM
 
 		private void BtnApplyHealth_Click(object sender, RoutedEventArgs e)
 		{
-			if (int.TryParse(tbxHealth.Text, out int result))
-			{
-				// TODO: Send result via signalR.
-				//HubtasticBaseStation.ChangePlayerHealth()
-			}
+			ChangePlayerHealth(tbxHealth, +1);
 		}
 
 		private void BtnInflictDamage_Click(object sender, RoutedEventArgs e)
 		{
-			int multiplier = -1;
-			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, tbxDamage);
+			ChangePlayerHealth(tbxDamage, -1);
+		}
+
+		private void ChangePlayerHealth(TextBox textBox, int multiplier)
+		{
+			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, textBox);
 
 			if (damageHealthChange != null)
 			{
