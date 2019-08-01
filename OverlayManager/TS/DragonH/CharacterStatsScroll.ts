@@ -606,9 +606,12 @@ class CharacterStatsScroll extends WorldObject {
 
 		if (this.state === ScrollState.slamming) {
 			this.scrollSlam.draw(world.ctx, now * 1000);
-			if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
+			if (this.scrollSlam.sprites.length == 0) {
+				console.error("this.scrollSlam.sprites.length == 0");
 				this.state = ScrollState.slammed;
-
+			}
+			else if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
+				this.state = ScrollState.slammed;
 				this.play(this.scrollSlamSfx);
 			}
 		}

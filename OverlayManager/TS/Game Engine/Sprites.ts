@@ -271,15 +271,18 @@
   }
 
   advanceFrames(nowMs: number) {
-    this.animateFrames(nowMs);
+		this.animateFrames(nowMs);
 
     if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
       return;
     var msPassed = nowMs - this.lastTimeWeAdvancedTheFrame;
     if (msPassed < this.frameInterval)
-      return;
+			return;
 
-    this.lastTimeWeAdvancedTheFrame = nowMs;
+		let numFramesToAdvance: number = Math.floor(msPassed / this.frameInterval);
+
+    //this.lastTimeWeAdvancedTheFrame = nowMs;
+		this.lastTimeWeAdvancedTheFrame += numFramesToAdvance * this.frameInterval;
     var frameCount = this.baseAnimation.frameCount;
     var returnFrameIndex = this.returnFrameIndex;
     if (this.animationStyle == AnimationStyle.SequentialStop)
@@ -296,10 +299,10 @@
       if (this.segmentSize > 0) {
         let startIndex: number = sprite.frameIndex - sprite.frameIndex % this.segmentSize;
         let endBounds: number = startIndex + this.segmentSize;
-        sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds);
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, this.baseAnimation.reverse, numFramesToAdvance);
       }
       else
-        sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse);
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse, numFramesToAdvance);
       this.cleanupFinishedAnimations(i, sprite);
 
     }

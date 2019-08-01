@@ -4,12 +4,14 @@
 	}
 }
 
-class DragonBackGame extends GamePlusQuiz {
+class DragonBackGame extends DragonGame {
+	layerSuffix: string = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
 	shouldDrawCenterCrossHairs: boolean = false;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
+  
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -23,7 +25,6 @@ class DragonBackGame extends GamePlusQuiz {
 			}
 		}
 	}
-
 
 	changePlayerHealth(playerData: string): void {
 		//this.characterStatsScroll.changePlayerHealth(playerData);
@@ -51,7 +52,7 @@ class DragonBackGame extends GamePlusQuiz {
 
 	initialize() {
 		super.initialize();
-
+		
 		Folders.assets = 'GameDev/Assets/DroneGame/';
 
 		//myRocket = new Rocket(0, 0);

@@ -12,6 +12,8 @@ function connectToSignalR(signalR) {
     connection.on("PlayerDataChanged", playerDataChanged);
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
+    connection.on("AddWindup", addWindup);
+    connection.on("ClearWindup", clearWindup);
     connection.on("TriggerEffect", triggerEffect);
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
@@ -19,6 +21,24 @@ function connectToSignalR(signalR) {
 		connection.on("SetPlayerData", initializePlayerData);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
   };
+}
+
+function addWindup(windupData: string): void {
+	if (activeFrontGame instanceof DragonGame) {
+		activeFrontGame.addWindup(windupData);
+	}
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.addWindup(windupData);
+	}
+}
+
+function clearWindup(windupName: string): void {
+	if (activeFrontGame instanceof DragonGame) {
+		activeFrontGame.clearWindup(windupName);
+	}
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.clearWindup(windupName);
+	}
 }
 
 function triggerEffect(effectData: string) {

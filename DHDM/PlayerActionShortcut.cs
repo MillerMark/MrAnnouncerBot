@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using DndCore;
 
 namespace DHDM
 {
-	public enum TurnPart
-	{
-		Action,
-		BonusAction,
-		Reaction,
-		Special
-	}
-	
 	public class PlayerActionShortcut
 	{
+		public List<WindupDto> Windups { get; }
+		public string WindupName { get; set; }
 		static int attackIndex;
 		public int Modifier { get; set; }
 		public string Dice { get; set; }
@@ -53,6 +48,7 @@ namespace DHDM
 			AdditionalRollTitle = "";
 			Dice = "";
 			VantageMod = VantageKind.Normal;
+			Windups = new List<WindupDto>();
 		}
 
 		public static void PrepareForCreation()

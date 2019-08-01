@@ -1,5 +1,12 @@
 ﻿const globalFramesToLoad: number = 1;
 const globalFramesToCount: number = 2;
+
+const fps40: number = 25;
+const fps30: number = 33;
+const fps20: number = 50;
+const fps25: number = 40;
+const fps15: number = 66.66666667;
+
 var globalBypassFrameSkip: boolean = false;
 
 class ImageManager {
@@ -178,7 +185,6 @@ class Part {
 				}
 				catch (ex)
 				{
-					debugger;
 					console.log('self: ' + self);
 					console.error('ex: ' + ex);
 				}

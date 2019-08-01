@@ -279,6 +279,7 @@
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="PlayerTabItem.cs" />
+    <Compile Include="TurnPart.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>
@@ -293,6 +294,7 @@
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
+    <Compile Include="WindupDto.cs" />
     <Page Include="User Controls\AttackList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

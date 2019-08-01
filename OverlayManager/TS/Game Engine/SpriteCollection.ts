@@ -18,7 +18,21 @@
   bounce(left: number, top: number, right: number, bottom: number, now: number): void {
     this.allSprites.forEach(function (sprites: Sprites) { sprites.bounce(left, top, right, bottom, now) });
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.bounce(left, top, right, bottom, now) });
-  }
+	}
+
+	getSpritesByName(name: string): Sprites {
+		for (let i = 0; i < this.allSprites.length; i++) {
+			if (this.allSprites[i].name == name)
+				return this.allSprites[i];
+		}
+		for (let i = 0; i < this.childCollections.length; i++) {
+			let sprites: Sprites = this.childCollections[i].getSpritesByName(name);
+			if (sprites != null)
+				return sprites;
+		}
+		return null;
+	}
+
 
   checkCollisionAgainst(compareCollection: SpriteCollection, collisionFoundFunction: (meteor: SpriteProxy, sprite: SpriteProxy, now: number) => void, now: number): void {
     this.allSprites.forEach(function (theseSprites: Sprites) {

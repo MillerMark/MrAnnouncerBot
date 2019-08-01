@@ -577,6 +577,21 @@
 						</Button>
 					</StackPanel>
 				</TabItem>
+				<TabItem Header="Windup Test">
+					<StackPanel x:Name="spWrapTest">
+						<TextBox x:Name="tbxData" Height="200" TextWrapping="Wrap">
+							Enter JSON Here
+						</TextBox>
+						<StackPanel Orientation="Horizontal">
+							<Button x:Name="btnSendWindup" Click="BtnSendWindup_Click" MaxWidth="140" MinHeight="30" Margin="10" Padding="8" >
+								Send Windup
+							</Button>
+							<Button x:Name="btnClearWindups" Click="BtnClearWindups_Click" MaxWidth="140" MinHeight="30" Margin="10" Padding="8" >
+								Clear Windups
+							</Button>
+						</StackPanel>
+					</StackPanel>
+				</TabItem>
 				<TabItem Header="Players">
 					<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click">
 						Initialize Player Data
