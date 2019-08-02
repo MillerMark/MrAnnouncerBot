@@ -57,7 +57,7 @@ function initializePlayerData(playerData: string) {
 		activeFrontGame.initializePlayerData(playerData);
 	}
 	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.characterStatsScroll.initializePlayerData(playerData);
+		activeBackGame.initializePlayerData(playerData);
 	}
 	if (diceLayer) {
 		diceLayer.initializePlayerData(playerData);
@@ -128,7 +128,7 @@ function playerDataChanged(playerID: number, pageID: number, playerData: string)
     activeBackGame.playerDataChanged(playerID, pageID, playerData);
   }
   if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.playerChanged(playerID, playerData);
+		activeFrontGame.playerChanged(playerID);
   }
   if (diceLayer) {
     diceLayer.playerChanged(playerID);

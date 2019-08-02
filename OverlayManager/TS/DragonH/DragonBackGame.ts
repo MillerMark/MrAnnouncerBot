@@ -18,7 +18,13 @@ class DragonBackGame extends DragonGame {
 		this.dragonBackSounds = new DragonBackSounds('GameDev/Assets/DragonH/SoundEffects');
 	}
 
+	initializePlayerData(playerData: string): any {
+		super.initializePlayerData(playerData);
+		this.characterStatsScroll.initializePlayerData(this.players);
+	}
+
 	playerDataChanged(playerID: number, pageID: number, playerData: string): void {
+		super.playerChanged(playerID);
 		if (this.characterStatsScroll.playerDataChanged(playerID, pageID, playerData)) {
 			if (this.characterStatsScroll.activeCharacter) {
 				this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);

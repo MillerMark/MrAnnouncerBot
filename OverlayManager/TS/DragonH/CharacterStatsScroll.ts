@@ -200,8 +200,8 @@ class CharacterStatsScroll extends WorldObject {
 		this.addHighlightEmitters();
 	}
 
-	initializePlayerData(playerData: string): void {
-		let players: Array<Character> = JSON.parse(playerData);
+	initializePlayerData(players: Array<Character>): void {
+		
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
 			try {
@@ -595,9 +595,14 @@ class CharacterStatsScroll extends WorldObject {
 			this.scrollRolls.draw(world.ctx, now * 1000);
 			this.scrollPoofBack.draw(world.ctx, now * 1000);
 			this.scrollPoofFront.draw(world.ctx, now * 1000);
-			let poofFrameIndex: number = this.scrollPoofFront.sprites[0].frameIndex;
-			if (poofFrameIndex === 0) {
-				this.state = ScrollState.none;
+			if (this.scrollPoofFront.sprites.length == 0) {
+				console.error("this.scrollPoofFront.sprites.length == 0");
+			}
+			else {
+				let poofFrameIndex: number = this.scrollPoofFront.sprites[0].frameIndex;
+				if (poofFrameIndex === 0) {
+					this.state = ScrollState.none;
+				}
 			}
 		}
 		else {
@@ -608,7 +613,6 @@ class CharacterStatsScroll extends WorldObject {
 			this.scrollSlam.draw(world.ctx, now * 1000);
 			if (this.scrollSlam.sprites.length == 0) {
 				console.error("this.scrollSlam.sprites.length == 0");
-				this.state = ScrollState.slammed;
 			}
 			else if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
 				this.state = ScrollState.slammed;
@@ -795,7 +799,7 @@ class CharacterStatsScroll extends WorldObject {
 	}
 
 	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
-		console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
+		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
 		let changedActiveCharacter: boolean = false;
 		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {

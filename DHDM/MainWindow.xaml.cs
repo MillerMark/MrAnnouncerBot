@@ -192,17 +192,13 @@ namespace DHDM
 				if (actionShortcut == null)
 					return;
 
-				if (!string.IsNullOrWhiteSpace(actionShortcut.WindupName))
+				if (actionShortcut.Windups.Count > 0)
 				{
 					HubtasticBaseStation.ClearWindup("");
-					//HubtasticBaseStation.AddWindup("Fairy");
-					//HubtasticBaseStation.AddWindup("Ghost");
-					//HubtasticBaseStation.AddWindup("Smoke");
-					//HubtasticBaseStation.AddWindup("Fire");
-					//HubtasticBaseStation.AddWindup("LiquidSparks");
-					HubtasticBaseStation.AddWindup(actionShortcut.WindupName);
-
+					string serializedObject = JsonConvert.SerializeObject(actionShortcut.Windups);
+					HubtasticBaseStation.AddWindup(serializedObject);
 				}
+
 				settingInternally = true;
 				try
 				{
@@ -1467,18 +1463,68 @@ namespace DHDM
 
 		private void AddPlayerActionShortcutsForMerkin()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, WindupName="Wide", Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Lightning Lure", PlayerID = Player_Merkin, WindupName = "Narrow", Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true });
+			// TODO: Remove WindupName
+			AddChaosBolt();
+			AddLightningLure();
+			AddMelfsMinuteMeteors();
+			
+
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2(piercing)", Modifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2(piercing)", Modifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Ray of Frost", PlayerID = Player_Merkin, WindupName = "Trails", Dice = "1d8(cold)", Modifier = 5, UsesMagic = true });
+			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8(cold)", Modifier = 5, UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Chill Touch", PlayerID = Player_Merkin, WindupName = "Smoke", Dice = "1d8(necrotic)", Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack });
+			{ Name = "Chill Touch", PlayerID = Player_Merkin, Dice = "1d8(necrotic)", Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack });
+		}
+
+		void AddMelfsMinuteMeteors()
+		{
+			double scale = 0.5;
+			DndCore.Vector offset = new DndCore.Vector(0, -130);
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = "Melf's Minute Meteors", PlayerID = Player_Merkin, Dice = "1d6(fire)", DC = 13, Ability = Ability.Strength, UsesMagic = true };
+			const int numMeteors = 3;
+			int degreeSpan = 360 / numMeteors;
+			int degreeOffset = 6;
+			for (int i = 0; i < numMeteors; i++)
+			{
+				int hueAdjust = new Random().Next(60) - 30; 
+				shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Scale = scale, Hue = 30 + hueAdjust, DegreesOffset = degreeOffset, Offset = offset });
+				shortcut.Windups.Add(new WindupDto() { Effect = "Smoke", Scale = scale, Hue = 30 + hueAdjust, DegreesOffset = degreeOffset - 20, Offset = offset, Brightness = 20 });
+				degreeOffset += degreeSpan;
+			}
+			
+			actionShortcuts.Add(shortcut);
+		}
+
+		private void AddLightningLure()
+		{
+			DndCore.Vector offset = new DndCore.Vector(0, 70);
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true };
+			shortcut.Windups.Add(new WindupDto() { Effect = "Narrow", Hue = 220, Scale = 0.8  });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Smoke", Hue = 220, Scale = 0.8 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Narrow", Hue = 50, FlipHorizontal = true, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Smoke", Hue = 50, FlipHorizontal = true, Offset = offset });
+			actionShortcuts.Add(shortcut);
+		}
+
+		private void AddChaosBolt()
+		{
+			DndCore.Vector offset = new DndCore.Vector(0, 80);
+
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, WindupName = "Wide", Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt };
+			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300, Rotation = 45, FlipHorizontal = true, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220, Rotation = -45, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300 + 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 120 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220 + 30, Rotation = -45, Offset = offset, DegreesOffset = 120 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300 - 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 240 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220 - 30, Rotation = -45, Offset = offset, DegreesOffset = 240 });
+
+			actionShortcuts.Add(shortcut);
 		}
 
 		private void AddPlayerActionShortcutsForWilly()

@@ -41,7 +41,6 @@ class DragonFrontGame extends DragonGame {
 	bloodGushD: Sprites;  // Totally contained, 575 pixels high.
 	bloodGushE: Sprites;  // Totally contained, 700 pixels high.
 
-
 	charmed: Sprites;
 	restrained: Sprites;
 	sparkShower: Sprites;
@@ -57,7 +56,6 @@ class DragonFrontGame extends DragonGame {
 	dndClockPanel: SpriteProxy;
 	dndTimeStr: string;
 	dragonFrontSounds: DragonFrontSounds;
-	players: Array<Character> = [];
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -397,52 +395,7 @@ class DragonFrontGame extends DragonGame {
 		return false;
 	}
 
-	playerVideoLeftMargin = 10;
-	playerVideoRightMargin = 1384;
 
-	numberOfPlayers: number = 4;
-	player1X: number = -1;
-	player2X: number = -1; // + 317
-	player3X: number = -1; // + 316
-	player4X: number = -1;
-	activePlayerX: number = this.player1X;
-
-	getPlayerX(playerIndex: number): number {
-		let distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;
-		let distanceBetweenPlayers: number = distanceForPlayerVideos / this.numberOfPlayers;
-		let halfDistanceBetweenPlayers: number = distanceBetweenPlayers / 2;
-		return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers;
-	}
-
-	getPlayerIndex(playerId: number): number {
-		for (var i = 0; i < this.players.length; i++) {
-			let player: Character = this.players[i];
-			if (player.playerID == playerId) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	playerChanged(playerID: number, playerData: string): void {
-		this.activePlayerX = this.getPlayerX(playerID);
-	}
-
-	getCenter(target: any): Vector {
-		let result: Vector;
-		if (target.targetType === TargetType.ScreenPosition)
-			result = new Vector(target.screenPosition.x, target.screenPosition.y);
-		else if (target.targetType === TargetType.ActivePlayer)
-			result = new Vector(this.activePlayerX, 1080);
-		else if (target.targetType === TargetType.ActiveEnemy)
-			result = new Vector(1260, 1080);
-		else if (target.targetType === TargetType.ScrollPosition)
-			result = new Vector(150, 400);
-		else
-			result = new Vector(960, 540);
-
-		return result.add(new Vector(target.targetOffset.x, target.targetOffset.y));
-	}
 
 	triggerSingleEffect(dto: any) {
 		if (dto.timeOffsetMs > 0) {
@@ -738,16 +691,12 @@ class DragonFrontGame extends DragonGame {
 	static readonly nameplateHalfHeight: number = 24;
 
 	initializePlayerData(playerData: string): any {
-		this.players = JSON.parse(playerData);
+		super.initializePlayerData(playerData);
+		
 		for (var i = 0; i < this.players.length; i++) {
 			let centerX: number = this.getPlayerX(i);
 			this.nameplateMain.addShifted(centerX, DragonFrontGame.nameCenterY - DragonFrontGame.nameplateHalfHeight, 0, 0);
 		}
-
-		//this.nameplateMain.add(0, DragonFrontGame.nameCenterY - DragonFrontGame.nameplateHalfHeight, 0);
-		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 0);
-		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 1);
-		//this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 2);
 	}
 
 	changePlayerHealth(playerHealthDto: string): void {
@@ -874,11 +823,6 @@ class DragonFrontGame extends DragonGame {
 			let player: Character = this.players[i];
 			this.showNameplate(context, player, i, now);
 		}
-	}
-
-	addWindup(windupData: string): void {
-		console.log('addWindup from DragonFrontGame.');
-		super.addWindup(windupData);
 	}
 }
 

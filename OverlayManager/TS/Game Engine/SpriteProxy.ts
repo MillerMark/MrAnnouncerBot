@@ -237,11 +237,13 @@ class SpriteProxy extends AnimatedElement {
 	cropLeft: number;
 	cropRight: number;
 	cropBottom: number;
+	numFramesDrawn: number = 0;
 	scale: number = 1;
+  lastTimeWeAdvancedTheFrame: number;
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
 		super(x, y, lifeSpanMs);
-		this.frameIndex = startingFrameNumber;
+		this.frameIndex = Math.floor(startingFrameNumber);
 	}
 
 	cycled(now: number) {
@@ -249,15 +251,35 @@ class SpriteProxy extends AnimatedElement {
 	}
 
 
-	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false, numFrames: number = 1) {
+	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false, frameInterval: number = fps30, fileName: string = '') {
 		if (nowMs < this.timeStart)
 			return;
 
-		if (reverse) {
-			this.frameIndex -= numFrames;
+		let numFramesToAdvance: number;
+
+		if (this.numFramesDrawn == 0) {
+			numFramesToAdvance = 1;
+			this.lastTimeWeAdvancedTheFrame = nowMs;
 		}
 		else {
-			this.frameIndex += numFrames;
+			var msPassed = nowMs - this.lastTimeWeAdvancedTheFrame;
+			if (msPassed < frameInterval)
+				return;
+
+			numFramesToAdvance = Math.floor(msPassed / frameInterval);
+			if (numFramesToAdvance < 1)
+				return;
+
+			this.lastTimeWeAdvancedTheFrame += numFramesToAdvance * frameInterval;
+		}
+
+		this.numFramesDrawn += numFramesToAdvance;
+
+		if (reverse) {
+			this.frameIndex -= numFramesToAdvance;
+		}
+		else {
+			this.frameIndex += numFramesToAdvance;
 		}
 
 		if (endBounds != 0) {
