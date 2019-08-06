@@ -124,11 +124,11 @@ function unfocusItem(playerID: number, pageID: number, itemID: string) {
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
-	if (activeBackGame instanceof DragonBackGame) {
-    activeBackGame.playerDataChanged(playerID, pageID, playerData);
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.playerChanged(playerID, pageID, playerData);
   }
-  if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.playerChanged(playerID);
+  if (activeFrontGame instanceof DragonGame) {
+		activeFrontGame.playerChanged(playerID, pageID, playerData);
   }
   if (diceLayer) {
     diceLayer.playerChanged(playerID);

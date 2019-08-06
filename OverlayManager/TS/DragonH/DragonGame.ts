@@ -20,6 +20,7 @@
 		spell.name = spellName;
 		spell.originX = 390;
 		spell.originY = 232;
+		spell.moves = true;
 		this.spellWindupEffects.add(spell);
 		return spell;
 	}
@@ -30,7 +31,9 @@
 	}
 
 	initializePlayerData(playerData: string): any {
-		this.players = JSON.parse(playerData);
+		let characters: Array<Character> = JSON.parse(playerData);
+		this.players = [];
+		characters.forEach(function (character) { this.players.push(new Character(character)) }, this);
 	}
 
 	clearWindup(windupName: string): void {
@@ -43,23 +46,41 @@
 		for (let i = 0; i < windups.length; i++) {
 			let windup: WindupData = windups[i];
 			let sprites: Sprites = this.spellWindupEffects.getSpritesByName(windup.Effect);
+			if (!sprites)
+				continue;
 			let startingAngle: number = windup.DegreesOffset;
 			let startingFrameIndex: number = startingAngle / 6 % 360;
 			if (sprites) {
-				let sprite: SpriteProxy = sprites.addShifted(this.activePlayerX + windup.Offset.x, 934 + windup.Offset.y, startingFrameIndex, windup.Hue, windup.Saturation, windup.Brightness);
+				let hue: number = windup.Hue;
+				if (hue == -1)
+					hue = Random.max(360);
+				let sprite: SpriteProxy = sprites.addShifted(this.activePlayerX + windup.Offset.x, 934 + windup.Offset.y, startingFrameIndex, hue, windup.Saturation, windup.Brightness);
+				if (windup.Lifespan)
+					sprite.expirationDate = sprite.timeStart + windup.Lifespan;
 				sprite.fadeInTime = windup.FadeIn;
+				sprite.velocityX = windup.Velocity.x;
+				sprite.velocityY = windup.Velocity.y;
 				sprite.fadeOutTime = windup.FadeOut;
 				sprite.rotation = windup.Rotation;
+				let gravityVector: Vector = new Vector(windup.Force.x, windup.Force.y).normalize(windup.ForceAmount);
+				sprite.horizontalThrustOverride = gravityVector.x;
+				sprite.verticalThrustOverride = gravityVector.y;
 				sprite.scale = windup.Scale;
 				sprite.autoRotationDegeesPerSecond = windup.AutoRotation;
 				sprite.initialRotation = windup.Rotation;
 				sprite.flipHorizontally = windup.FlipHorizontal;
+				if (windup.SoundFileName)
+					this.playWindupSound(windup.SoundFileName);
 			}
 		}
-		
+	}
+
+	playWindupSound(soundFileName: string): void {
+		// Do nothing - let descendants override to see who is going to play the sound.
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
+		this.spellWindupEffects.updatePositions(now);
 		this.spellWindupEffects.draw(context, now);
 	}
 
@@ -67,10 +88,10 @@
 		let saveAssets: string = Folders.assets;
 		super.initialize();
 		Folders.assets = 'GameDev/Assets/DragonH/';
+		this.spellSmoke = this.loadSpell('Smoke');
 		this.spellGhost = this.loadSpell('Ghost');
 		this.spellFairy = this.loadSpell('Fairy');
 		this.spellPlasma = this.loadSpell('Plasma');
-		this.spellSmoke = this.loadSpell('Smoke');
 		this.spellFire = this.loadSpell('Fire');
 		this.spellLiquidSparks = this.loadSpell('LiquidSparks');
 		this.spellNarrow = this.loadSpell('Narrow');
@@ -103,8 +124,16 @@
 		return -1;
 	}
 
-	playerChanged(playerID: number): void {
-		this.activePlayerX = this.getPlayerX(playerID);
+	playerChanged(playerId: number, pageID: number, playerData: string): void {
+		this.activePlayerX = this.getPlayerX(playerId);
+		let playerIndex: number = this.getPlayerIndex(playerId);
+		if (playerIndex === -1)
+			return;
+
+		if (playerData) {
+			let playerDto: any = JSON.parse(playerData);
+			this.players[playerIndex].copyAttributesFrom(playerDto);
+		}
 	}
 
 	getCenter(target: any): Vector {

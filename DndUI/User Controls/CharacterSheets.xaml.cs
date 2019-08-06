@@ -543,7 +543,7 @@ namespace DndUI
 			//character.truesightRadius = 
 			character.weight = statWeight.ToDouble();
 			character.baseWisdom = statWisdom.ToInt();
-			return Newtonsoft.Json.JsonConvert.SerializeObject(character);
+			return character.ToJson();
 		}
 
 		void HookChangedEvents(Visual visual)

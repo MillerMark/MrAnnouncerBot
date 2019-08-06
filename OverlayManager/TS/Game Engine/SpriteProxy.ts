@@ -26,6 +26,8 @@ class AnimatedElement {
 	startY: number;
 	lastX: number;
 	lastY: number;
+	verticalThrustOverride: number = undefined;
+	horizontalThrustOverride: number = undefined;
 
 	constructor(public x: number, public y: number, lifeSpanMs: number = -1) {
 		this.velocityX = 0;
@@ -138,10 +140,14 @@ class AnimatedElement {
 	}
 
 	getHorizontalThrust(now: number): number {
+		if (this.horizontalThrustOverride !== undefined)
+			return this.horizontalThrustOverride;
 		return 0;
 	}
 
 	getVerticalThrust(now: number): number {
+		if (this.verticalThrustOverride !== undefined)
+			return this.verticalThrustOverride;
 		return gravityGames.activePlanet.gravity;
 	}
 

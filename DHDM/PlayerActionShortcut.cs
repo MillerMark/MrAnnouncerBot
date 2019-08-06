@@ -55,5 +55,14 @@ namespace DHDM
 		{
 			attackIndex = 0;
 		}
+		public List<WindupDto> CloneWindups()
+		{
+			List<WindupDto> result = new List<WindupDto>();
+			foreach (WindupDto windup in Windups)
+			{
+				result.Add(windup.Clone());
+			}
+			return result;
+		}
 	}
 }

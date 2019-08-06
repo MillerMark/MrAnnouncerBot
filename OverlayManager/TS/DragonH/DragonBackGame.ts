@@ -9,6 +9,7 @@ class DragonBackGame extends DragonGame {
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
 	shouldDrawCenterCrossHairs: boolean = false;
+	lightning: Sprites;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
   
@@ -23,8 +24,8 @@ class DragonBackGame extends DragonGame {
 		this.characterStatsScroll.initializePlayerData(this.players);
 	}
 
-	playerDataChanged(playerID: number, pageID: number, playerData: string): void {
-		super.playerChanged(playerID);
+	playerChanged(playerID: number, pageID: number, playerData: string): void {
+		super.playerChanged(playerID, pageID, playerData);
 		if (this.characterStatsScroll.playerDataChanged(playerID, pageID, playerData)) {
 			if (this.characterStatsScroll.activeCharacter) {
 				this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
@@ -35,8 +36,6 @@ class DragonBackGame extends DragonGame {
 	changePlayerHealth(playerData: string): void {
 		//this.characterStatsScroll.changePlayerHealth(playerData);
 	}
-
-
 
 	update(timestamp: number) {
 		this.updateGravity();
@@ -56,8 +55,21 @@ class DragonBackGame extends DragonGame {
 		super.removeAllGameElements(now);
 	}
 
+	playWindupSound(soundFileName: string): void {
+		//this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
+		this.dragonBackSounds.safePlayMp3('Windups/' + soundFileName);
+	}
+
 	initialize() {
 		super.initialize();
+
+		Folders.assets = 'GameDev/Assets/DragonH/';
+
+		this.lightning = new Sprites('PlayerEffects/Lightning/Lightning', 19, fps30, AnimationStyle.Sequential, true);
+		this.lightning.name = 'Lightning';
+		this.lightning.originX = 106;
+		this.lightning.originY = 540;
+		this.spellWindupEffects.add(this.lightning);
 		
 		Folders.assets = 'GameDev/Assets/DroneGame/';
 

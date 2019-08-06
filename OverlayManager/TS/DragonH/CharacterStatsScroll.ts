@@ -801,6 +801,9 @@ class CharacterStatsScroll extends WorldObject {
 	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
 		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
+		if (pageID === -1)
+			pageID = this._page;
+
 		let changedActiveCharacter: boolean = false;
 		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
 			this.setActiveCharacter(playerID);

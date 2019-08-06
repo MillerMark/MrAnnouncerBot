@@ -3,7 +3,7 @@
 		public Effect: string,
 		public Name: string,
 		public Scale: number,
-		public Expiration: number,
+		public Lifespan: number,
 		public FadeIn: number,
 		public FadeOut: number,
 		public Hue: number,

@@ -215,7 +215,7 @@ class Character {
     savingThrowModCharisma
   */
 
-	copyAttributesFrom(sourceCharacter: any): void {
+	copyAttributesFrom(sourceCharacter: any): Character {
 		this.playerID = sourceCharacter.playerID;
 		this.alignment = sourceCharacter.alignment;
 		this.headshotIndex = sourceCharacter.headshotIndex;
@@ -285,6 +285,8 @@ class Character {
 		this.tempSurvivalMod = sourceCharacter.tempSurvivalMod;
 		this.totalHitDice = sourceCharacter.totalHitDice;
 		this.weight = sourceCharacter.weight;
+
+		return this;
 	}
 
 	getFirstName(): string {

@@ -35,6 +35,7 @@
     <None Remove="TS\DragonH\VisualEffect.ts" />
     <None Remove="TS\DragonH\VisualEffectTarget.ts" />
     <None Remove="TS\DragonH\WeaponProperties.ts" />
+    <None Remove="TS\DragonH\Windups - Copy.ts" />
     <None Remove="TS\DragonH\Windups.ts" />
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\DroneProxy.ts" />
@@ -116,6 +117,7 @@
     <TypeScriptCompile Include="TS\DragonH\Character.ts" />
     <TypeScriptCompile Include="TS\DragonH\CurseBlessingDisease.ts" />
     <TypeScriptCompile Include="TS\DragonH\Damage.ts" />
+    <TypeScriptCompile Include="TS\DragonH\Windups - Copy.ts" />
     <TypeScriptCompile Include="TS\DragonH\Windups.ts" />
     <TypeScriptCompile Include="TS\DragonH\Enums.ts" />
     <TypeScriptCompile Include="TS\DragonH\DragonFrontGame.ts" />
