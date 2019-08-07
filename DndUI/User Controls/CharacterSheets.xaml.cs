@@ -132,6 +132,38 @@ namespace DndUI
 			RaiseEvent(eventArgs);
 		}
 
+		public void FocusSkill(Skills skill)
+		{
+			FocusHelper.ClearActiveStatBoxes();
+			switch (skill)
+			{
+				case Skills.acrobatics: FocusHelper.Add(statSkillAcrobatics); break;
+				case Skills.animalHandling: FocusHelper.Add(statSkillAnimalHandling); break;
+				case Skills.arcana: FocusHelper.Add(statSkillArcana); break;
+				case Skills.athletics: FocusHelper.Add(statSkillAthletics); break;
+				case Skills.deception: FocusHelper.Add(statSkillDeception); break;
+				case Skills.history: FocusHelper.Add(statSkillHistory); break;
+				case Skills.insight: FocusHelper.Add(statSkillInsight); break;
+				case Skills.intimidation: FocusHelper.Add(statSkillIntimidation); break;
+				case Skills.investigation: FocusHelper.Add(statSkillInvestigation); break;
+				case Skills.medicine: FocusHelper.Add(statSkillMedicine); break;
+				case Skills.nature: FocusHelper.Add(statSkillNature); break;
+				case Skills.perception: FocusHelper.Add(statSkillPerception); break;
+				case Skills.performance: FocusHelper.Add(statSkillPerformance); break;
+				case Skills.persuasion: FocusHelper.Add(statSkillPersuasion); break;
+				case Skills.religion: FocusHelper.Add(statSkillReligion); break;
+				case Skills.slightOfHand: FocusHelper.Add(statSkillSlightOfHand); break;
+				case Skills.stealth: FocusHelper.Add(statSkillStealth); break;
+				case Skills.survival: FocusHelper.Add(statSkillSurvival); break;
+				case Skills.strength: FocusHelper.Add(statStrength2); break;
+				case Skills.dexterity: FocusHelper.Add(statDexterity2); break;
+				case Skills.constitution: FocusHelper.Add(statConstitution2); break;
+				case Skills.intelligence: FocusHelper.Add(statIntelligence2); break;
+				case Skills.wisdom: FocusHelper.Add(statWisdom2); break;
+				case Skills.charisma: FocusHelper.Add(statCharisma2); break;
+			}
+		}
+
 		public CharacterSheets()
 		{
 			InitializeComponent();
