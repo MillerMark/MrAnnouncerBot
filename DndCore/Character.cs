@@ -573,5 +573,53 @@ namespace DndCore
 		{
 			WorldPosition = worldPosition;
 		}
+
+		public void InflictDamage(double deltaDamage)
+		{
+			double damageToSubtract = deltaDamage;
+			if (tempHitPoints > 0)
+				if (damageToSubtract > tempHitPoints)
+				{
+					damageToSubtract -= tempHitPoints;
+					tempHitPoints = 0;
+				}
+				else
+				{
+					tempHitPoints -= damageToSubtract;
+					damageToSubtract = 0;
+				}
+			if (damageToSubtract > hitPoints)
+				hitPoints = 0;
+			else
+				hitPoints -= damageToSubtract;
+		}
+
+		public void ChangeHealth(double damageHealthAmount)
+		{
+			if (damageHealthAmount < 0)
+				InflictDamage(-damageHealthAmount);
+			else
+				Heal(damageHealthAmount);
+		}
+
+		public void Heal(double deltaHealth)
+		{
+			if (deltaHealth <= 0)
+				return;
+
+			if (hitPoints >= maxHitPoints)
+				return;
+
+			double maxToHeal = maxHitPoints - hitPoints;
+			if (deltaHealth > maxToHeal)
+				hitPoints = maxHitPoints;
+			else
+				hitPoints += deltaHealth;
+		}
+
+		public string ToJson()
+		{
+			return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+		}
 	}
 }

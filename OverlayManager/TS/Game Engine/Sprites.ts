@@ -1,6 +1,5 @@
 ﻿class Sprites {
   name: string;
-  sprites: SpriteProxy[];
   baseAnimation: Part;
   spriteWidth: number;
   spriteHeight: number;
@@ -12,8 +11,10 @@
   segmentSize: number;
   originX: number;
   originY: number;
-  opacity: number;
+	opacity: number;
 
+	sprites: SpriteProxy[];
+	
   constructor(baseAnimationName: string, expectedFrameCount: number, private frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
     this.opacity = 1;
     this.sprites = [];
@@ -78,15 +79,15 @@
 
 	addShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
-    let sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
-    this.sprites.push(sprite);
+		let sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
+		this.sprites.push(sprite);
     return sprite;
   }
 
 	add(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
-    let sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
-    this.sprites.push(sprite);
+		let sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
+		this.sprites.push(sprite);
     return sprite;
   }
 
@@ -231,7 +232,9 @@
   }
 
   cleanupFinishedAnimations(i: number, sprite: SpriteProxy): any {
-    if (this.animationStyle == AnimationStyle.Sequential && sprite.haveCycledOnce) {
+		if (this.animationStyle == AnimationStyle.Sequential && sprite.haveCycledOnce) {
+			//if (this.baseAnimation.fileName.endsWith('Slam'))
+			//	debugger;
       this.sprites.splice(i, 1);
     }
   }
@@ -275,23 +278,17 @@
 
     if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
       return;
-    var msPassed = nowMs - this.lastTimeWeAdvancedTheFrame;
-    if (msPassed < this.frameInterval)
-			return;
 
-		let numFramesToAdvance: number = Math.floor(msPassed / this.frameInterval);
-
-    //this.lastTimeWeAdvancedTheFrame = nowMs;
-		this.lastTimeWeAdvancedTheFrame += numFramesToAdvance * this.frameInterval;
-    var frameCount = this.baseAnimation.frameCount;
+		var frameCount = this.baseAnimation.frameCount;
     var returnFrameIndex = this.returnFrameIndex;
-    if (this.animationStyle == AnimationStyle.SequentialStop)
-      if (this.baseAnimation.reverse) {
-        returnFrameIndex = 0;
-      }
-      else {
-        returnFrameIndex = frameCount - 1;
-      }
+		if (this.animationStyle == AnimationStyle.SequentialStop) {
+			if (this.baseAnimation.reverse) {
+				returnFrameIndex = 0;
+			}
+			else {
+				returnFrameIndex = frameCount - 1;
+			}
+		}
 
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite: SpriteProxy = this.sprites[i];
@@ -299,13 +296,14 @@
       if (this.segmentSize > 0) {
         let startIndex: number = sprite.frameIndex - sprite.frameIndex % this.segmentSize;
         let endBounds: number = startIndex + this.segmentSize;
-				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, this.baseAnimation.reverse, numFramesToAdvance);
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);
       }
       else
-				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse, numFramesToAdvance);
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);
       this.cleanupFinishedAnimations(i, sprite);
+		}
 
-    }
+		this.lastTimeWeAdvancedTheFrame = nowMs;
   }
 
   updatePositions(now: number): void {
@@ -344,9 +342,10 @@
     //}
 
     this.advanceFrames(now);
-    let self: Sprites = this;
+		let self: Sprites = this;
+
     this.sprites.forEach(function (sprite: SpriteProxy) {
-      context.globalAlpha = sprite.getAlpha(now) * this.opacity;
+			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
       if (sprite.stillAlive(now) && sprite.systemDrawn) {
         if (now >= sprite.timeStart) {
@@ -369,8 +368,9 @@
         if (!sprite.stillAlive(now)) {
           sprite.destroying();
           sprite.removing();
-          if (!sprite.isRemoving)
-            this.sprites.splice(i, 1);
+					if (!sprite.isRemoving) {
+						this.sprites.splice(i, 1);
+					}
         }
       }
     }
@@ -400,8 +400,9 @@
   removeByFrameIndex(frameIndex: number): any {
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       var sprite: SpriteProxy = this.sprites[i];
-      if (sprite.frameIndex === frameIndex)
-        this.sprites.splice(i, 1);
+			if (sprite.frameIndex === frameIndex) {
+				this.sprites.splice(i, 1);
+			}
     }
   }
 

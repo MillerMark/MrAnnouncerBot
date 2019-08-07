@@ -57,7 +57,7 @@ function initializePlayerData(playerData: string) {
 		activeFrontGame.initializePlayerData(playerData);
 	}
 	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.characterStatsScroll.initializePlayerData(playerData);
+		activeBackGame.initializePlayerData(playerData);
 	}
 	if (diceLayer) {
 		diceLayer.initializePlayerData(playerData);
@@ -124,11 +124,11 @@ function unfocusItem(playerID: number, pageID: number, itemID: string) {
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
-	if (activeBackGame instanceof DragonBackGame) {
-    activeBackGame.playerDataChanged(playerID, pageID, playerData);
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.playerChanged(playerID, pageID, playerData);
   }
-  if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.playerChanged(playerID, playerData);
+  if (activeFrontGame instanceof DragonGame) {
+		activeFrontGame.playerChanged(playerID, pageID, playerData);
   }
   if (diceLayer) {
     diceLayer.playerChanged(playerID);

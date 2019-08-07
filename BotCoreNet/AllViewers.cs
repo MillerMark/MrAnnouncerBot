@@ -151,11 +151,19 @@ namespace BotCore
 		{
 			if (viewers.Length == 0)
 				return;
-			var results = await Twitch.Api.V5.Users.GetUsersByNameAsync(viewers.ToList());
-			var userList = results.Matches;
+			try
+			{
+				var results = await Twitch.Api.V5.Users.GetUsersByNameAsync(viewers.ToList());
+				var userList = results.Matches;
 
-			foreach (User user in userList)
-				CheckViewer(user);
+				foreach (User user in userList)
+					CheckViewer(user);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error calling Twitch.Api.V5.Users.GetUsersByNameAsync: " + ex.Message);
+			}
+			
 		}
 
 		private void CheckViewer(User user)

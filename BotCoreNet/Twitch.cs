@@ -21,12 +21,31 @@ namespace BotCore
 
 		public static void InitializeConnections()
 		{
-			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];  // Settings.Default.TwitchBotOAuthToken;
+			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
 			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
 			Client.Initialize(connectionCredentials, STR_ChannelName);
 			Client.Connect();
 			//Client.JoinRoom(STR_ChannelName, "#botcontrol");
 			HookEvents();
+		}
+
+		public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
+		{
+			TwitchClient client = new TwitchClient();
+			var oAuthToken = Configuration[$"Secrets:{oauthPasswordName}"];
+			if (oAuthToken == null)
+				return null;
+			var connectionCredentials = new ConnectionCredentials(userName, oAuthToken);
+			client.Initialize(connectionCredentials, channelName);
+			try
+			{
+				client.Connect();
+				return client;
+			}
+			catch (Exception ex)
+			{
+				return null;
+			}
 		}
 
 		static Twitch()

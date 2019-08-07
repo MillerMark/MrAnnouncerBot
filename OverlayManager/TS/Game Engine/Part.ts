@@ -89,7 +89,7 @@ class PartBackgroundLoader {
 		}
 		PartBackgroundLoader.partsToLoad.sort((a, b) => (a.frameCount - b.frameCount));
 		let partToLoad: Part = PartBackgroundLoader.partsToLoad.pop();
-		console.log(`Background Loading Part with ${partToLoad.frameCount} images.`);
+		console.log(`Background Loading ${partToLoad.fileName} with ${partToLoad.frameCount} images.`);
 		partToLoad.images;  // Triggering the load on demand.
 	}
 
@@ -204,7 +204,7 @@ class Part {
 		this._images = newValue;
 	}
 
-	constructor(private fileName: string, public frameCount: number,
+	constructor(public fileName: string, public frameCount: number,
 		public animationStyle: AnimationStyle,
 		private offsetX: number,
 		private offsetY: number,
