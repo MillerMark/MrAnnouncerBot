@@ -61,11 +61,6 @@ class TrailingEffect {
 	PlusMinusSoundInterval: number;
 }
 
-const fps40: number = 25;
-const fps30: number = 33;
-const fps25: number = 40;
-const fps20: number = 50;
-const fps15: number = 66.66666667;
 const matchNormalDieColorsToSpecial: boolean = true;
 //const damageDieBackgroundColor: string = '#e49836';
 //const damageDieFontColor: string = '#000000';

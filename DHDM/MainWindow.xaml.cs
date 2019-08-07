@@ -191,6 +191,18 @@ namespace DHDM
 				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
 				if (actionShortcut == null)
 					return;
+
+				if (!string.IsNullOrWhiteSpace(actionShortcut.WindupName))
+				{
+					HubtasticBaseStation.ClearWindup("");
+					//HubtasticBaseStation.AddWindup("Fairy");
+					//HubtasticBaseStation.AddWindup("Ghost");
+					//HubtasticBaseStation.AddWindup("Smoke");
+					//HubtasticBaseStation.AddWindup("Fire");
+					//HubtasticBaseStation.AddWindup("LiquidSparks");
+					HubtasticBaseStation.AddWindup(actionShortcut.WindupName);
+
+				}
 				settingInternally = true;
 				try
 				{
@@ -1456,17 +1468,17 @@ namespace DHDM
 		private void AddPlayerActionShortcutsForMerkin()
 		{
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
+			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, WindupName="Wide", Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true });
+			{ Name = "Lightning Lure", PlayerID = Player_Merkin, WindupName = "Narrow", Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2(piercing)", Modifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2(piercing)", Modifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8(cold)", Modifier = 5, UsesMagic = true });
+			{ Name = "Ray of Frost", PlayerID = Player_Merkin, WindupName = "Trails", Dice = "1d8(cold)", Modifier = 5, UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Chill Touch", PlayerID = Player_Merkin, Dice = "1d8(necrotic)", Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack });
+			{ Name = "Chill Touch", PlayerID = Player_Merkin, WindupName = "Smoke", Dice = "1d8(necrotic)", Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack });
 		}
 
 		private void AddPlayerActionShortcutsForWilly()
@@ -2123,6 +2135,16 @@ namespace DHDM
 		private void BtnInspirationOnly_Click(object sender, RoutedEventArgs e)
 		{
 			RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
+		}
+
+		private void BtnSendWindup_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void BtnClearWindups_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }

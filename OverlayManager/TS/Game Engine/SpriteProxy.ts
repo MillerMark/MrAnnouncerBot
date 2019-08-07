@@ -249,15 +249,15 @@ class SpriteProxy extends AnimatedElement {
 	}
 
 
-	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false) {
+	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false, numFrames: number = 1) {
 		if (nowMs < this.timeStart)
 			return;
 
 		if (reverse) {
-			this.frameIndex--;
+			this.frameIndex -= numFrames;
 		}
 		else {
-			this.frameIndex++;
+			this.frameIndex += numFrames;
 		}
 
 		if (endBounds != 0) {

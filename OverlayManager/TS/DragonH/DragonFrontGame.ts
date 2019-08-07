@@ -24,7 +24,8 @@ enum EffectKind {
 	Placeholder = 4
 }
 
-class DragonFrontGame extends GamePlusQuiz {
+class DragonFrontGame extends DragonGame {
+	layerSuffix: string = 'Front';
 	readonly clockMargin: number = 14;
 	emitter: Emitter;
 	shouldDrawCenterCrossHairs: boolean = false;
@@ -34,9 +35,12 @@ class DragonFrontGame extends GamePlusQuiz {
 	poof: Sprites;
 	clock: Sprites;
 	clockPanel: Sprites;
-	bloodGushA: Sprites;
-	bloodGushB: Sprites;
-	bloodGushC: Sprites;
+	bloodGushA: Sprites;	// Totally contained - 903 high.
+	bloodGushB: Sprites;  // Full screen, not contained at all - blood escapes top and right edges.
+	bloodGushC: Sprites;	// Full screen, not contained at all - blood escapes top and right edges.
+	bloodGushD: Sprites;  // Totally contained, 575 pixels high.
+	bloodGushE: Sprites;  // Totally contained, 700 pixels high.
+
 
 	charmed: Sprites;
 	restrained: Sprites;
@@ -123,9 +127,6 @@ class DragonFrontGame extends GamePlusQuiz {
 	loadResources(): void {
 		super.loadResources();
 		Folders.assets = 'GameDev/Assets/DragonH/';
-		const fps30: number = 33;
-		const fps20: number = 50;
-		const fps15: number = 67;
 		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
 		this.denseSmoke.name = 'DenseSmoke';
 		this.denseSmoke.originX = 309;
@@ -211,8 +212,8 @@ class DragonFrontGame extends GamePlusQuiz {
 
 		this.bloodGushA = new Sprites('Blood/Gush/A/GushA', 69, fps30, AnimationStyle.Sequential, true);
 		this.bloodGushA.name = 'BloodGush';
-		this.bloodGushA.originX = 20;
-		this.bloodGushA.originY = 1080;
+		this.bloodGushA.originX = 0;
+		this.bloodGushA.originY = 903;
 
 
 		this.bloodGushB = new Sprites('Blood/Gush/B/GushB', 78, fps30, AnimationStyle.Sequential, true);
@@ -224,6 +225,21 @@ class DragonFrontGame extends GamePlusQuiz {
 		this.bloodGushC.name = 'BloodGush';
 		this.bloodGushC.originX = 114;
 		this.bloodGushC.originY = 1080;
+
+		this.bloodGushD = new Sprites('Blood/Gush/D/GushD', 48, fps30, AnimationStyle.Sequential, true);
+		this.bloodGushD.name = 'BloodGush';
+		this.bloodGushD.originX = 123;
+		this.bloodGushD.originY = 571;
+		
+
+
+		this.bloodGushE = new Sprites('Blood/Gush/E/GushE', 30, fps30, AnimationStyle.Sequential, true);
+		this.bloodGushE.name = 'BloodGush';
+		this.bloodGushE.originX = 82;
+		this.bloodGushE.originY = 698;
+		
+
+
 
 		this.charmed = new Sprites('Charmed/Charmed', 179, fps30, AnimationStyle.Loop, true);
 		this.charmed.name = 'Heart';
@@ -858,6 +874,11 @@ class DragonFrontGame extends GamePlusQuiz {
 			let player: Character = this.players[i];
 			this.showNameplate(context, player, i, now);
 		}
+	}
+
+	addWindup(windupData: string): void {
+		console.log('addWindup from DragonFrontGame.');
+		super.addWindup(windupData);
 	}
 }
 
