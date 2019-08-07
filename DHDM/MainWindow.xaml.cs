@@ -116,9 +116,12 @@ namespace DHDM
 		{
 			get
 			{
-				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
-					return playerTabItem.PlayerID;
-				return tabPlayers.SelectedIndex;
+				return Dispatcher.Invoke(() =>
+				{
+					if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+						return playerTabItem.PlayerID;
+					return tabPlayers.SelectedIndex;
+				});
 			}
 		}
 
@@ -401,12 +404,15 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-			showClearButtonTimer.Start();
-			rbTestNormalDieRoll.IsChecked = true;
-			updateClearButtonTimer.Stop();
-			EnableDiceRollButtons(false);
-			btnClearDice.Visibility = Visibility.Hidden;
-			PrepareForClear();
+			Dispatcher.Invoke(() =>
+			{
+				showClearButtonTimer.Start();
+				rbTestNormalDieRoll.IsChecked = true;
+				updateClearButtonTimer.Stop();
+				EnableDiceRollButtons(false);
+				btnClearDice.Visibility = Visibility.Hidden;
+				PrepareForClear();
+			});
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
@@ -1826,6 +1832,7 @@ namespace DHDM
 					characterSheets.SkillCheckRequested += CharacterSheets_SkillCheckRequested;
 					characterSheets.SavingThrowRequested += CharacterSheets_SavingThrowRequested;
 					grid.Children.Add(characterSheets);
+					tabItem.CharacterSheets = characterSheets;
 
 					Button button = new Button();
 					button.Content = "Hide Scroll";
@@ -1894,14 +1901,34 @@ namespace DHDM
 		}
 		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
 		{
-			RollSkillCheck(e.Skill);
+			InvokeSkillCheck(e.Skill);
 		}
 		
+		public void InvokeSkillCheck(Skills skill)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SelectSkill(skill);
+				rbActivePlayer.IsChecked = true;
+				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
+			});
+		}
+
 		public void RollSkillCheck(Skills skill)
 		{
-			SelectSkill(skill);
-			rbActivePlayer.IsChecked = true;
-			RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
+			if (activePage != ScrollPage.skills)
+			{
+				activePage = ScrollPage.skills;
+				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
+			}
+
+			Dispatcher.Invoke(() =>
+			{
+				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+					playerTabItem.CharacterSheets.FocusSkill(skill);
+			});
+			
+			InvokeSkillCheck(skill);
 		}
 
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
@@ -2324,12 +2351,17 @@ namespace DHDM
 
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
+			if (damageHealthChange.PlayerIds.Count == 0)
+				{
+				damageHealthChange.PlayerIds.Add(PlayerID);
+			}
 			foreach (int playerId in damageHealthChange.PlayerIds)
 			{
 				Character player = GetPlayer(playerId);
 				if (player != null)
 				{
 					player.ChangeHealth(damageHealthChange.DamageHealth);
+					HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
 					HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
 				}
 			}
@@ -2448,14 +2480,15 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
-				{
-					if (playerTabItem.PlayerID == playerId)
+				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem) 
+					foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
 					{
-						tabPlayers.SelectedItem = playerTabItem;
-						return;
+						if (playerTabItem.PlayerID == playerId)
+						{
+							tabPlayers.SelectedItem = playerTabItem;
+							return;
+						}
 					}
-				}
 			});
 		}
 
@@ -2463,6 +2496,7 @@ namespace DHDM
 		public void RollWildMagic()
 		{
 			BtnWildMagic_Click(null, null);
+				
 		}
 
 		private void BtnSendWindup_Click(object sender, RoutedEventArgs e)
@@ -2477,21 +2511,30 @@ namespace DHDM
 
 		public void SetClock(int hours, int minutes, int seconds)
 		{
-
+			Dispatcher.Invoke(() =>
+			{
+				
+			});
 		}
 		public void AdvanceClock(int hours, int minutes, int seconds)
 		{
-
+			Dispatcher.Invoke(() =>
+			{
+				
+			});
 		}
 
 		public void RollDice(string diceStr, DiceRollType diceRollType)
 		{
-			
+			Dispatcher.Invoke(() =>
+			{
+				
+			});
 		}
 
 		public void HideScroll()
 		{
-			
+			HubtasticBaseStation.SendScrollLayerCommand("Close");
 		}
 
 		public void Speak(int playerId, string message)
