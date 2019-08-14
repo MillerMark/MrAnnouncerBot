@@ -288,10 +288,9 @@ namespace MrAnnouncerBot
             {
                 Console.WriteLine("Unable to play fanfare: " + sceneName);
             }
-            if (fanfare.DisplayName == "SurlyDev")
-                GreetSurlyDev();
-            else
-                GreetVip(fanfare.DisplayName);
+
+            Chat(new VIPGreeting(fanfare.DisplayName).Greeting);
+            
             MarkFanfareAsPlayed(fanfare);
             return true;
         }
