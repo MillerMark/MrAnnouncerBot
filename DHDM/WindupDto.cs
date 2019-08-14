@@ -23,6 +23,7 @@ namespace DHDM
 		public Vector Offset { get; set; }
 		public Vector Force { get; set; }
 		public double ForceAmount { get; set; }
+		public bool PlayToEndOnExpire { get; set; }
 		public bool FlipHorizontal { get; set; }
 		public bool FlipVertical { get; set; }
 		public WindupDto()
@@ -31,6 +32,7 @@ namespace DHDM
 			Brightness = 100;
 			FadeIn = 400;
 			Scale = 1;
+			PlayToEndOnExpire = false;
 		}
 		public WindupDto Float()
 		{
@@ -86,6 +88,7 @@ namespace DHDM
 			result.FadeOut = this.FadeOut;
 			result.FlipHorizontal = this.FlipHorizontal;
 			result.FlipVertical = this.FlipVertical;
+			result.PlayToEndOnExpire = this.PlayToEndOnExpire;
 			result.Force = this.Force;
 			result.ForceAmount = this.ForceAmount;
 			result.Hue = this.Hue;

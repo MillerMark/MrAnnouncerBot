@@ -17,6 +17,7 @@
 		public Offset: Vector,
 		public Force: Vector,
 		public ForceAmount: number,
+		public PlayToEndOnExpire: boolean,
 		public FlipHorizontal: boolean,
 		public FlipVertical: boolean) {
 	}

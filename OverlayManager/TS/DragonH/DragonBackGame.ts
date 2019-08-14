@@ -69,7 +69,7 @@ class DragonBackGame extends DragonGame {
 		this.lightning.name = 'Lightning';
 		this.lightning.originX = 106;
 		this.lightning.originY = 540;
-		this.spellWindupEffects.add(this.lightning);
+		this.allWindupEffects.add(this.lightning);
 		
 		Folders.assets = 'GameDev/Assets/DroneGame/';
 

@@ -1,16 +1,6 @@
 ﻿abstract class DragonGame extends GamePlusQuiz {
 	abstract layerSuffix: string;
-	spellGhost: Sprites;
-	spellFairy: Sprites;
-	spellPlasma: Sprites;
-	spellSmoke: Sprites;
-	spellFire: Sprites;
-	spellNarrow: Sprites;
-	spellOrb: Sprites;
-	spellTrails: Sprites;
-	spellWide: Sprites;
-	spellLiquidSparks: Sprites;
-	spellWindupEffects: SpriteCollection;
+	allWindupEffects: SpriteCollection;
 
 	players: Array<Character> = [];
 
@@ -21,13 +11,24 @@
 		spell.originX = 390;
 		spell.originY = 232;
 		spell.moves = true;
-		this.spellWindupEffects.add(spell);
+		this.allWindupEffects.add(spell);
 		return spell;
+	}
+
+	loadWeapon(weaponName: string, animationName: string): Sprites {
+		let weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, 91, fps30, AnimationStyle.Loop, true);
+		weapon.name = weaponName + '.' + animationName;
+		weapon.originX = 306;
+		weapon.originY = 837;
+		weapon.returnFrameIndex = 11;
+		weapon.segmentSize = 60;
+		this.allWindupEffects.add(weapon);
+		return weapon;
 	}
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
-		this.spellWindupEffects = new SpriteCollection();
+		this.allWindupEffects = new SpriteCollection();
 	}
 
 	initializePlayerData(playerData: string): any {
@@ -37,7 +38,13 @@
 	}
 
 	clearWindup(windupName: string): void {
-		this.spellWindupEffects.allSprites.forEach(function (sprites: Sprites) { sprites.sprites = [] });
+		// TODO: Use windupName to find specific sprites to clear.
+		let now: number = performance.now();
+		this.allWindupEffects.allSprites.forEach(function (sprites: Sprites) {
+			sprites.sprites.forEach(function (sprite: SpriteProxy) {
+				sprite.expirationDate = now + sprite.fadeOutTime;
+			});
+		});
 	}
 
 	addWindup(windupData: string): void {
@@ -45,7 +52,7 @@
 
 		for (let i = 0; i < windups.length; i++) {
 			let windup: WindupData = windups[i];
-			let sprites: Sprites = this.spellWindupEffects.getSpritesByName(windup.Effect);
+			let sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
 			if (!sprites)
 				continue;
 			let startingAngle: number = windup.DegreesOffset;
@@ -61,6 +68,7 @@
 				sprite.velocityX = windup.Velocity.x;
 				sprite.velocityY = windup.Velocity.y;
 				sprite.fadeOutTime = windup.FadeOut;
+				sprite.playToEndOnExpire = windup.PlayToEndOnExpire;
 				sprite.rotation = windup.Rotation;
 				let gravityVector: Vector = new Vector(windup.Force.x, windup.Force.y).normalize(windup.ForceAmount);
 				sprite.horizontalThrustOverride = gravityVector.x;
@@ -80,24 +88,24 @@
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		this.spellWindupEffects.updatePositions(now);
-		this.spellWindupEffects.draw(context, now);
+		this.allWindupEffects.updatePositions(now);
+		this.allWindupEffects.draw(context, now);
 	}
 
 	initialize() {
 		let saveAssets: string = Folders.assets;
 		super.initialize();
 		Folders.assets = 'GameDev/Assets/DragonH/';
-		this.spellSmoke = this.loadSpell('Smoke');
-		this.spellGhost = this.loadSpell('Ghost');
-		this.spellFairy = this.loadSpell('Fairy');
-		this.spellPlasma = this.loadSpell('Plasma');
-		this.spellFire = this.loadSpell('Fire');
-		this.spellLiquidSparks = this.loadSpell('LiquidSparks');
-		this.spellNarrow = this.loadSpell('Narrow');
-		this.spellOrb = this.loadSpell('Orb');
-		this.spellTrails = this.loadSpell('Trails');
-		this.spellWide = this.loadSpell('Wide');
+		this.loadSpell('Smoke');
+		this.loadSpell('Ghost');
+		this.loadSpell('Fairy');
+		this.loadSpell('Plasma');
+		this.loadSpell('Fire');
+		this.loadSpell('LiquidSparks');
+		this.loadSpell('Narrow');
+		this.loadSpell('Orb');
+		this.loadSpell('Trails');
+		this.loadSpell('Wide');
 		Folders.assets = saveAssets;
 	}
 

@@ -120,6 +120,10 @@ class DragonFrontGame extends DragonGame {
 
 	initialize() {
 		super.initialize();
+		globalBypassFrameSkip = true;
+		Folders.assets = 'GameDev/Assets/DragonH/';
+		this.loadWeapon('GreatSword', 'Magic');
+		this.loadWeapon('GreatSword', 'Weapon');
 		gravityGames = new GravityGames();
 		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
 	}

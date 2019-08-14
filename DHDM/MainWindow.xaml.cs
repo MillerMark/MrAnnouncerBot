@@ -832,6 +832,8 @@ namespace DHDM
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
+			// TODO: Clear the actual windup by name.
+			HubtasticBaseStation.ClearWindup("");
 			if (ea.DiceRollData != null)
 			{
 				int rollValue = ea.DiceRollData.roll;
@@ -1579,8 +1581,7 @@ namespace DHDM
 			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3(slashing)", Modifier = 5, MinDamage = 3 });
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3(slashing)", Modifier = 5, MinDamage = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Greatsword, +1", PlayerID = Player_Ava, Dice = "2d6+4(slashing)", Modifier = +6, MinDamage = 3 });
+			AddGreatSword(Player_Ava, "2d6+4(slashing)");
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
@@ -1656,6 +1657,26 @@ namespace DHDM
 				InstantDice = "3d8(radiant:damage)",
 				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends."
 			});
+		}
+
+		private void AddGreatSword(int playerId, string damage)
+		{
+			PlayerActionShortcut greatSword = new PlayerActionShortcut()
+			{ Name = "Greatsword, +1", PlayerID = playerId, Dice = damage, Modifier = +6, MinDamage = 3 };
+			WindupDto greatSword3d = new WindupDto();
+			greatSword3d.Effect = "GreatSword.Weapon";
+			greatSword3d.FadeIn = 0;
+			greatSword3d.PlayToEndOnExpire = true;
+			greatSword3d.MoveUpDown(150);
+			greatSword.Windups.Add(greatSword3d);
+			WindupDto greatSwordMagic = new WindupDto();
+			greatSwordMagic.Effect = "GreatSword.Magic";
+			greatSwordMagic.FadeIn = 0;
+			greatSwordMagic.Hue = 270;
+			greatSwordMagic.PlayToEndOnExpire = true;
+			greatSwordMagic.MoveUpDown(150);
+			greatSword.Windups.Add(greatSwordMagic);
+			actionShortcuts.Add(greatSword);
 		}
 
 		private void AddPlayerActionShortcutsForMerkin()
