@@ -1,9 +1,30 @@
 ﻿abstract class DragonGame extends GamePlusQuiz {
 	abstract layerSuffix: string;
+	fireBallBack: Sprites;
+	fireBallFront: Sprites;
+
 	allWindupEffects: SpriteCollection;
+	backLayerEffects: SpriteCollection;
 
 	players: Array<Character> = [];
 
+	loadResources() {
+		super.loadResources();
+		Folders.assets = 'GameDev/Assets/DragonH/';
+		this.fireBallBack = new Sprites('FireBall/Back/BackFireBall', 88, fps30, AnimationStyle.Sequential, true);
+		this.fireBallBack.name = 'FireBallBack';
+		this.fireBallBack.originX = 190;
+		this.fireBallBack.originY = 1080;
+
+		this.fireBallFront = new Sprites('FireBall/Front/FireBallFront', 88, fps30, AnimationStyle.Sequential, true);
+		this.fireBallFront.name = 'FireBallFront';
+		this.fireBallFront.originX = 190;
+		this.fireBallFront.originY = 1080;
+
+		// TODO: Consider adding fireballs to another SpriteCollection. Not really windups.
+		this.backLayerEffects.add(this.fireBallBack);
+		this.backLayerEffects.add(this.fireBallFront);
+	}
 
 	loadSpell(spellName: string): Sprites {
 		let spell: Sprites = new Sprites(`PlayerEffects/Spells/${spellName}/${spellName}${this.layerSuffix}`, 60, fps30, AnimationStyle.Loop, true);
@@ -15,11 +36,11 @@
 		return spell;
 	}
 
-	loadWeapon(weaponName: string, animationName: string): Sprites {
+	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number): Sprites {
 		let weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, 91, fps30, AnimationStyle.Loop, true);
 		weapon.name = weaponName + '.' + animationName;
-		weapon.originX = 306;
-		weapon.originY = 837;
+		weapon.originX = originX;
+		weapon.originY = originY;
 		weapon.returnFrameIndex = 11;
 		weapon.segmentSize = 60;
 		this.allWindupEffects.add(weapon);
@@ -29,6 +50,7 @@
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
 		this.allWindupEffects = new SpriteCollection();
+		this.backLayerEffects = new SpriteCollection();
 	}
 
 	initializePlayerData(playerData: string): any {
@@ -88,6 +110,8 @@
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
+		this.backLayerEffects.updatePositions(now);
+		this.backLayerEffects.draw(context, now);
 		this.allWindupEffects.updatePositions(now);
 		this.allWindupEffects.draw(context, now);
 	}
@@ -119,7 +143,10 @@
 		let distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;
 		let distanceBetweenPlayers: number = distanceForPlayerVideos / this.numberOfPlayers;
 		let halfDistanceBetweenPlayers: number = distanceBetweenPlayers / 2;
-		return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers;
+		let horizontalNudge: number = 0;
+		if (playerIndex == 0)  // Fred.
+			horizontalNudge = 25;
+		return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers + horizontalNudge;
 	}
 
 	getPlayerIndex(playerId: number): number {
@@ -133,10 +160,10 @@
 	}
 
 	playerChanged(playerId: number, pageID: number, playerData: string): void {
-		this.activePlayerX = this.getPlayerX(playerId);
 		let playerIndex: number = this.getPlayerIndex(playerId);
 		if (playerIndex === -1)
 			return;
+		this.activePlayerX = this.getPlayerX(playerIndex);
 
 		if (playerData) {
 			let playerDto: any = JSON.parse(playerData);

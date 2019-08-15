@@ -34,15 +34,10 @@ class BloodSprites extends Sprites {
 
 class DragonFrontGame extends DragonGame {
 	layerSuffix: string = 'Front';
-	readonly clockMargin: number = 14;
 	emitter: Emitter;
 	shouldDrawCenterCrossHairs: boolean = false;
 	denseSmoke: Sprites;
-	fireBallBack: Sprites;
-	fireBallFront: Sprites;
 	poof: Sprites;
-	clock: Sprites;
-	clockPanel: Sprites;
 	bloodGushA: BloodSprites;	// Totally contained - 903 high.
 	bloodGushB: BloodSprites;  // Full screen, not contained at all - blood escapes top and right edges.
 	bloodGushC: BloodSprites;	// Full screen, not contained at all - blood escapes top and right edges.
@@ -61,9 +56,6 @@ class DragonFrontGame extends DragonGame {
 	fumes: Sprites;
 	allEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
-	dndClock: SpriteProxy;
-	dndClockPanel: SpriteProxy;
-	dndTimeStr: string;
 	dragonFrontSounds: DragonFrontSounds;
 
 	constructor(context: CanvasRenderingContext2D) {
@@ -84,34 +76,9 @@ class DragonFrontGame extends DragonGame {
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
-		this.drawTime(context);
-
 		this.bloodEffects.draw(context, now);
 
 		this.showNameplates(context, now);
-	}
-
-	private drawTime(context: CanvasRenderingContext2D) {
-		if (!this.dndTimeStr)
-			return;
-
-		const horizontalMargin: number = 10;
-		const verticalMargin: number = 15;
-		const textHeight: number = 28;
-		context.font = textHeight + "px Baskerville Old Face";
-		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
-		let boxHeight: number = textHeight + 2 * verticalMargin;
-		let centerX: number = screenWidth - this.clockPanel.originX - this.clockMargin;
-		let centerY: number = screenHeight - textHeight / 2 - verticalMargin;
-		//context.fillStyle = "#3b3581";
-		//context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
-		if (this.inCombat)
-			context.fillStyle = "#500506";
-		else
-			context.fillStyle = "#0b0650";
-		context.textAlign = "center";
-		context.textBaseline = "middle";
-		context.fillText(this.dndTimeStr, centerX, centerY);
 	}
 
 	removeAllGameElements(now: number): void {
@@ -119,13 +86,41 @@ class DragonFrontGame extends DragonGame {
 	}
 
 	initialize() {
+		this.loadWeapons();
 		super.initialize();
-		globalBypassFrameSkip = true;
-		Folders.assets = 'GameDev/Assets/DragonH/';
-		this.loadWeapon('GreatSword', 'Magic');
-		this.loadWeapon('GreatSword', 'Weapon');
 		gravityGames = new GravityGames();
 		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
+	}
+
+	private loadWeapons() {
+		globalBypassFrameSkip = true;
+		Folders.assets = 'GameDev/Assets/DragonH/';
+
+		this.loadGreatSword();
+		this.loadStaff();
+		this.loadBattleAxe();
+	}
+
+	private loadStaff() {
+		const staffOriginX: number = 352;
+		const staffOriginY: number = 744;
+		this.loadWeapon('Staff', 'Magic', staffOriginX, staffOriginY);
+		this.loadWeapon('Staff', 'Weapon', staffOriginX, staffOriginY);
+	}
+
+	private loadBattleAxe() {
+		const battleAxeOriginX: number = 341;
+		const battleAxeOriginY: number = 542;
+		this.loadWeapon('BattleAxe', 'MagicA', battleAxeOriginX, battleAxeOriginY);
+		this.loadWeapon('BattleAxe', 'MagicB', battleAxeOriginX, battleAxeOriginY);
+		this.loadWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY);
+	}
+
+	private loadGreatSword() {
+		const greatSwordOriginX: number = 306;
+		const greatSwordOriginY: number = 837;
+		this.loadWeapon('GreatSword', 'Magic', greatSwordOriginX, greatSwordOriginY);
+		this.loadWeapon('GreatSword', 'Weapon', greatSwordOriginX, greatSwordOriginY);
 	}
 
 	start() {
@@ -146,42 +141,10 @@ class DragonFrontGame extends DragonGame {
 		this.denseSmoke.originX = 309;
 		this.denseSmoke.originY = 723;
 
-		this.fireBallBack = new Sprites('FireBall/Back/BackFireBall', 88, fps30, AnimationStyle.Sequential, true);
-		this.fireBallBack.name = 'FireBallBack';
-		this.fireBallBack.originX = 190;
-		this.fireBallBack.originY = 1080;
-
-		this.fireBallFront = new Sprites('FireBall/Front/FireBallFront', 88, fps30, AnimationStyle.Sequential, true);
-		this.fireBallFront.name = 'FireBallFront';
-		this.fireBallFront.originX = 190;
-		this.fireBallFront.originY = 1080;
-
 		this.poof = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
 		this.poof.name = 'Puff';
 		this.poof.originX = 229;
 		this.poof.originY = 698;
-
-		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
-		this.clockPanel.name = 'ClockPanel';
-		this.clockPanel.originX = 278;
-		this.clockPanel.originY = 37;
-
-		let clockX: number = this.getClockX();
-		let clockY: number = screenHeight - 30;
-
-		this.dndClockPanel = this.clockPanel.add(clockX, clockY);
-
-		this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
-		this.clock.name = 'Clock';
-		this.clock.originX = 247;
-		this.clock.originY = 251;
-
-		this.fireWall = new Sprites('FireWall/FireWall', 121, fps20, AnimationStyle.Loop, true);
-		this.fireWall.name = 'FireWall';
-		this.fireWall.originX = 300;
-		this.fireWall.originY = 300;
-
-		this.dndClock = this.clock.add(clockX, clockY);
 
 		this.sparkShower = new Sprites('Sparks/Big/BigSparks', 64, fps30, AnimationStyle.Sequential, true);
 		this.sparkShower.name = 'SparkShower';
@@ -268,9 +231,6 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects = new SpriteCollection();
 		this.allEffects.add(this.denseSmoke);
 		this.allEffects.add(this.poof);
-		this.allEffects.add(this.clock);
-		this.allEffects.add(this.fireBallBack);
-		this.allEffects.add(this.fireBallFront);
 		this.allEffects.add(this.stars);
 		this.allEffects.add(this.fumes);
 		this.allEffects.add(this.sparkShower);
@@ -283,12 +243,6 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects.add(this.bloodGushE);
 		this.allEffects.add(this.charmed);
 		this.allEffects.add(this.restrained);
-		this.allEffects.add(this.fireWall);
-		this.allEffects.add(this.clockPanel);
-	}
-
-	private getClockX(): number {
-		return screenWidth - this.clockPanel.originX - this.clockMargin;
 	}
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
@@ -459,109 +413,6 @@ class DragonFrontGame extends DragonGame {
 		}
 	}
 
-	private _inCombat: boolean;
-
-	get inCombat(): boolean {
-		return this._inCombat;
-	}
-
-	set inCombat(newValue: boolean) {
-		if (this._inCombat == newValue)
-			return;
-
-
-		this._inCombat = newValue;
-		if (this._inCombat) {
-			this.dndClock.frameIndex = 1;
-			this.dndClockPanel.frameIndex = 1;
-			//this.createFireWallBehindClock();
-			this.createFireBallBehindClock(330);
-		}
-		else {
-			this.dndClock.frameIndex = 0;
-			this.dndClockPanel.frameIndex = 0;
-			this.fireWall.sprites = [];
-			this.createFireBallBehindClock(200);
-		}
-	}
-
-	private createFireBallBehindClock(hue: number): any {
-		let x: number;
-		let y: number;
-		x = this.getClockX() - 90;
-		y = screenHeight - this.clockPanel.originY;
-		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
-		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
-		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
-		this.dragonFrontSounds.playHeavyPoof();
-	}
-
-	private createFireWallBehindClock() {
-		const displayMargin: number = 16;
-		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), screenHeight - this.clockPanel.originY * 2 + displayMargin);
-		fireWall.expirationDate = performance.now() + 11000;
-		fireWall.fadeOutTime = 2000;
-		this.dragonFrontSounds.playFlameOn();
-	}
-
-	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
-		let degreesToMove: number = targetRotation - sprite.rotation;
-		if (degreesToMove < 0) {
-			degreesToMove += 360;
-		}
-
-		return degreesToMove;
-	}
-
-	updateClock(clockData: string): void {
-		let dto: any = JSON.parse(clockData);
-		this.inCombat = dto.InCombat;
-		this.dndTimeStr = dto.Time;
-		let fullSpins: number = dto.FullSpins;
-		let afterSpinMp3: string = dto.AfterSpinMp3;
-
-		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.dndClock);
-		let timeToRotate: number;
-		if (degreesToMove < 1) {
-			if (fullSpins >= 1) {
-				degreesToMove = 360;
-				timeToRotate = 2600;
-				this.dragonFrontSounds.playGear2_6();
-			}
-			else
-				timeToRotate = 250;
-		}
-		else if (degreesToMove < 10) {
-			timeToRotate = 150;
-			this.dragonFrontSounds.playGear0_2();
-		}
-		else if (degreesToMove < 20) {
-			timeToRotate = 250;
-			this.dragonFrontSounds.playGear0_25();
-		}
-		else if (degreesToMove < 45) {
-			timeToRotate = 500;
-			this.dragonFrontSounds.playGear0_5();
-		}
-		else if (degreesToMove < 90) {
-			timeToRotate = 1000;
-			this.dragonFrontSounds.playGear1_0();
-		}
-		else if (degreesToMove < 180) {
-			timeToRotate = 1800;
-			this.dragonFrontSounds.playGear1_8();
-		}
-		else {
-			timeToRotate = 2600;
-			this.dragonFrontSounds.playGear2_6();
-		}
-
-		if (afterSpinMp3) {
-			this.dragonFrontSounds.playMp3In(timeToRotate + 500, `TimeAmbiance/${afterSpinMp3}`);
-		}
-
-		this.dndClock.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
-	}
 
 	triggerSoundEffect(dto: any): void {
 		console.log("Playing " + Folders.assets + 'SoundEffects/' + dto.soundFileName);
@@ -774,7 +625,7 @@ class DragonFrontGame extends DragonGame {
 			}
 
 			let playerIndex: number = this.getPlayerIndex(playerId);
-			
+
 			let x: number = this.getPlayerX(playerIndex);
 			let center: Vector = new Vector(x, 1080);
 			if (x < 300 && flipHorizontally && Random.chancePercent(70))
@@ -796,13 +647,13 @@ class DragonFrontGame extends DragonGame {
 			return this.bloodGushE;
 	}
 
-	showNameplate(context: CanvasRenderingContext2D, player: Character, playerID: number, now: number) {
+	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number) {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
 		context.fillStyle = '#ffffff';
 		context.font = '36px Blackadder ITC';
 
-		let sprite: SpriteProxy = this.nameplateMain.sprites[playerID];
+		let sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
 
 		const nameplateMaxWidth: number = 358;
 
@@ -812,7 +663,7 @@ class DragonFrontGame extends DragonGame {
 		else
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 
-		let centerX: number = this.getPlayerX(playerID);
+		let centerX: number = this.getPlayerX(playerIndex);
 		//const drawLines: boolean = false;
 		//if (drawLines) {
 		//	context.beginPath();

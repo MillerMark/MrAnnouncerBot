@@ -1287,11 +1287,8 @@ namespace DHDM
 
 		void AddPlayerActionShortcutsForFred()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (1H)", PlayerID = Player_Fred, Dice = "1d8+5(slashing)", Modifier = +5 });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (2H)", PlayerID = Player_Fred, Dice = "1d10+3(slashing)", Modifier = +5 });
+			AddBattleAxe2("Battleaxe (1H)", Player_Fred, "1d8+5(slashing)", 5);
+			AddBattleAxe2("Battleaxe (2H)", Player_Fred, "1d10+3(slashing)", 5);
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Handaxe", PlayerID = Player_Fred, Dice = "1d6+5(slashing)", Modifier = +5 });
@@ -1333,6 +1330,56 @@ namespace DHDM
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Great Weapon Master Attack", PlayerID = Player_Fred, Part = TurnPart.BonusAction, Description = "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action." });
+		}
+
+		private void AddBattleAxe(string name, int playerId, string damage, double scale = 1.0)
+		{
+			PlayerActionShortcut battleAxe = new PlayerActionShortcut()
+			{ Name = name, PlayerID = playerId, Dice = damage, Modifier = +5 };
+
+			battleAxe.Windups.Add(new WindupDto()
+			{
+				Effect = "BattleAxe.Weapon",
+			});
+			
+			actionShortcuts.Add(battleAxe);
+		}
+
+		private void AddBattleAxe2(string name, int playerId, string damage, int modifier, int minDamage = 0, int hueShiftMagicA = int.MinValue, int hueShiftMagicB = int.MinValue, double scale = 1.0)
+		{
+			PlayerActionShortcut battleAxe = new PlayerActionShortcut()
+			{ Name = name, PlayerID = playerId, Dice = damage, Modifier = modifier, MinDamage = minDamage };
+
+			const int deltaY = 80;
+			battleAxe.Windups.Add(new WindupDto()
+			{
+				Effect = "BattleAxe.Weapon",
+				Scale = scale,
+				FadeIn = 0,
+				PlayToEndOnExpire = true
+		}.MoveUpDown(deltaY));
+
+			if (hueShiftMagicA != int.MinValue)
+				battleAxe.Windups.Add(new WindupDto()
+				{
+					Effect = "BattleAxe.MagicA",
+					Scale = scale,
+					FadeIn = 0,
+					PlayToEndOnExpire = true,
+					Hue = hueShiftMagicA
+				}.MoveUpDown(deltaY));
+
+			if (hueShiftMagicB != int.MinValue)
+				battleAxe.Windups.Add(new WindupDto()
+				{
+					Effect = "BattleAxe.MagicB",
+					Scale = scale,
+					FadeIn = 0,
+					PlayToEndOnExpire = true,
+					Hue = hueShiftMagicB
+				}.MoveUpDown(deltaY));
+
+			actionShortcuts.Add(battleAxe);
 		}
 
 		void AddPlayerActionShortcutsForLady()
@@ -1496,6 +1543,24 @@ namespace DHDM
 				FadeIn = 500,
 				DegreesOffset = -40
 			}.Necrotic().SetBright(20));
+
+			WindupDto staffWeapon = new WindupDto();
+			staffWeapon.Effect = "Staff.Weapon";
+			staffWeapon.FadeIn = 0;
+			staffWeapon.Hue = 30;
+			staffWeapon.PlayToEndOnExpire = true;
+			staffWeapon.MoveUpDown(150);
+			chillTouch.Windups.Add(staffWeapon);
+			WindupDto staffMagic = new WindupDto();
+			staffMagic.Effect = "Staff.Magic";
+			staffMagic.FadeIn = 0;
+			staffMagic.Hue = 30;
+			staffMagic.Brightness = 0;
+			staffMagic.PlayToEndOnExpire = true;
+			staffMagic.MoveUpDown(150);
+			chillTouch.Windups.Add(staffMagic);
+
+
 			actionShortcuts.Add(chillTouch);
 		}
 
@@ -1577,10 +1642,9 @@ namespace DHDM
 		}
 		private void AddPlayerActionShortcutsForAva()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3(slashing)", Modifier = 5, MinDamage = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3(slashing)", Modifier = 5, MinDamage = 3 });
+			AddBattleAxe2("Battleaxe (1H)", Player_Ava, "1d8+3(slashing)", 5, 3, int.MinValue, int.MinValue, 1.3);
+			AddBattleAxe2("Battleaxe (2H)", Player_Ava, "1d10+3(slashing)", 5, 3, 220, 280, 1.3);
+			
 			AddGreatSword(Player_Ava, "2d6+4(slashing)");
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
@@ -1717,13 +1781,15 @@ namespace DHDM
 				FlipHorizontal = true,
 				DegreesOffset = 0
 			}.MoveUpDown(60));
+
+			AddStaff(rayOfFrost, 230, 210);
 			actionShortcuts.Add(rayOfFrost);
 		}
 
 		void AddMelfsMinuteMeteors()
 		{
-			double scale = 0.6;
-			DndCore.Vector offset = new DndCore.Vector(0, -140);
+			double scale = 1;
+			DndCore.Vector offset = new DndCore.Vector(0, 30);
 			PlayerActionShortcut shortcut = new PlayerActionShortcut()
 			{ Name = "Melf's Minute Meteors", PlayerID = Player_Merkin, Dice = "1d6(fire)", DC = 13, Ability = Ability.Strength, UsesMagic = true };
 			const int numMeteors = 3;
@@ -1738,7 +1804,7 @@ namespace DHDM
 				degreeOffset += degreeSpan;
 				hueOffset += hueSpan;
 			}
-
+			AddStaff(shortcut, 30, 350);
 			actionShortcuts.Add(shortcut);
 		}
 
@@ -1750,7 +1816,7 @@ namespace DHDM
 
 			shortcut.Windups.Add(new WindupDto() { Hue = 45, Scale = 1.1, Effect = "LiquidSparks", Offset = offset });
 			shortcut.Windups.Add(new WindupDto() { Hue = 220, Scale = 1.1, DegreesOffset = 180, Effect = "LiquidSparks", Offset = offset });
-
+			AddStaff(shortcut, 220, 35);
 			actionShortcuts.Add(shortcut);
 		}
 
@@ -1766,8 +1832,26 @@ namespace DHDM
 			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220 + 30, Rotation = -45, Offset = offset, DegreesOffset = 120 });
 			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300 - 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 240 });
 			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220 - 30, Rotation = -45, Offset = offset, DegreesOffset = 240 });
-
+			AddStaff(shortcut, 220, 270);
 			actionShortcuts.Add(shortcut);
+		}
+
+		private static void AddStaff(PlayerActionShortcut shortcut, int staffHue, int headHue)
+		{
+			WindupDto staffWeapon = new WindupDto();
+			staffWeapon.Effect = "Staff.Weapon";
+			staffWeapon.FadeIn = 0;
+			staffWeapon.Hue = staffHue;
+			staffWeapon.PlayToEndOnExpire = true;
+			staffWeapon.MoveUpDown(150);
+			shortcut.Windups.Add(staffWeapon);
+			WindupDto staffMagic = new WindupDto();
+			staffMagic.Effect = "Staff.Magic";
+			staffMagic.FadeIn = 0;
+			staffMagic.Hue = headHue;
+			staffMagic.PlayToEndOnExpire = true;
+			staffMagic.MoveUpDown(150);
+			shortcut.Windups.Add(staffMagic);
 		}
 
 		private void AddPlayerActionShortcutsForWilly()
@@ -2361,10 +2445,9 @@ namespace DHDM
 		{
 			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, textBox);
 
-			ApplyDamageHealthChange(damageHealthChange);
-
 			if (damageHealthChange != null)
 			{
+				ApplyDamageHealthChange(damageHealthChange);
 				string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
 				HubtasticBaseStation.ChangePlayerHealth(serializedObject);
 			}
@@ -2372,8 +2455,10 @@ namespace DHDM
 
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
+			if (damageHealthChange == null)
+				return;
 			if (damageHealthChange.PlayerIds.Count == 0)
-				{
+			{
 				damageHealthChange.PlayerIds.Add(PlayerID);
 			}
 			foreach (int playerId in damageHealthChange.PlayerIds)

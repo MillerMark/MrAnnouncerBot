@@ -47,8 +47,8 @@ function triggerEffect(effectData: string) {
   }
 }
 function updateClock(clockData: string) {
-  if (activeFrontGame instanceof DragonFrontGame) {
-    activeFrontGame.updateClock(clockData);
+	if (activeBackGame instanceof DragonBackGame) {
+    activeBackGame.updateClock(clockData);
   }
 }
 
