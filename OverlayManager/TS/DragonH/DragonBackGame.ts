@@ -44,34 +44,22 @@ class DragonBackGame extends DragonGame {
 		//this.characterStatsScroll.changePlayerHealth(playerData);
 	}
 
+	exitingCombat() {
+		this.dndClock.frameIndex = 0;
+		this.dndClockPanel.frameIndex = 0;
+		this.fireWall.sprites = [];
+		this.createFireBallBehindClock(200);
+	}
+
+	enteringCombat() {
+		this.dndClock.frameIndex = 1;
+		this.dndClockPanel.frameIndex = 1;
+		this.createFireWallBehindClock();
+		this.createFireBallBehindClock(330);
+	}
+
 	private getClockX(): number {
 		return screenWidth - this.clockPanel.originX - this.clockMargin;
-	}
-
-	private _inCombat: boolean;
-
-	get inCombat(): boolean {
-		return this._inCombat;
-	}
-
-	set inCombat(newValue: boolean) {
-		if (this._inCombat == newValue)
-			return;
-
-
-		this._inCombat = newValue;
-		if (this._inCombat) {
-			this.dndClock.frameIndex = 1;
-			this.dndClockPanel.frameIndex = 1;
-			this.createFireWallBehindClock();
-			this.createFireBallBehindClock(330);
-		}
-		else {
-			this.dndClock.frameIndex = 0;
-			this.dndClockPanel.frameIndex = 0;
-			this.fireWall.sprites = [];
-			this.createFireBallBehindClock(200);
-		}
 	}
 
 	private drawTime(context: CanvasRenderingContext2D) {

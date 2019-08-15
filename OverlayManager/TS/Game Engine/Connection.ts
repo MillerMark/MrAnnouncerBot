@@ -50,6 +50,9 @@ function updateClock(clockData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.updateClock(clockData);
   }
+	if (activeFrontGame instanceof DragonFrontGame) {
+    activeFrontGame.updateClock(clockData);
+  }
 }
 
 function initializePlayerData(playerData: string) {

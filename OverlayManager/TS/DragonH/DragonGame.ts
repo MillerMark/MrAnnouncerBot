@@ -8,6 +8,32 @@
 
 	players: Array<Character> = [];
 
+	private _inCombat: boolean;
+
+	get inCombat(): boolean {
+		return this._inCombat;
+	}
+
+	set inCombat(newValue: boolean) {
+		if (this._inCombat == newValue)
+			return;
+
+
+		this._inCombat = newValue;
+		if (this._inCombat) {
+			this.enteringCombat();
+		}
+		else {
+			this.exitingCombat();
+		}
+	}
+
+	exitingCombat() {
+	}
+
+	enteringCombat() {
+	}
+
 	loadResources() {
 		super.loadResources();
 		Folders.assets = 'GameDev/Assets/DragonH/';

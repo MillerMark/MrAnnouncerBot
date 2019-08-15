@@ -647,6 +647,11 @@ class DragonFrontGame extends DragonGame {
 			return this.bloodGushE;
 	}
 
+	updateClock(clockData: string): void {
+		let dto: any = JSON.parse(clockData);
+		this.inCombat = dto.InCombat;
+	}
+
 	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number) {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
