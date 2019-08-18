@@ -6,6 +6,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
+
 	public interface IDungeonMasterCommand
 	{
 		bool Matches(string message);

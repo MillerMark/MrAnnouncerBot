@@ -272,11 +272,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
     <Compile Include="DiceEventArgs.cs" />
     <Compile Include="DiceRollData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
+    <Compile Include="DungeonMasterCommand.cs" />
     <Compile Include="HealthDamageCommand.cs" />
     <Compile Include="HiddenThresholdCommand.cs" />
     <Compile Include="IDungeonMasterCommand.cs" />
@@ -287,8 +289,11 @@
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
+    <Compile Include="SavingThrowCommand.cs" />
     <Compile Include="ScrollCloseCommand.cs" />
+    <Compile Include="SelectShortcutCommand.cs" />
     <Compile Include="SkillCheckCommand.cs" />
+    <Compile Include="StaticCommands.cs" />
     <Compile Include="TurnPart.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>

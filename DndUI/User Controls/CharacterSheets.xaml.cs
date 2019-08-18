@@ -163,6 +163,20 @@ namespace DndUI
 				case Skills.charisma: FocusHelper.Add(statCharisma2); break;
 			}
 		}
+		
+		public void FocusSavingAbility(Ability ability)
+		{
+			FocusHelper.ClearActiveStatBoxes();
+			switch (ability)
+			{
+				case Ability.Charisma: FocusHelper.Add(statSavingCharisma); break;
+				case Ability.Constitution: FocusHelper.Add(statSavingConstitution); break;
+				case Ability.Dexterity: FocusHelper.Add(statSavingDexterity); break;
+				case Ability.Intelligence: FocusHelper.Add(statSavingIntelligence); break;
+				case Ability.Strength: FocusHelper.Add(statSavingStrength); break;
+				case Ability.Wisdom: FocusHelper.Add(statSavingWisdom); break;
+			}
+		}
 
 		public CharacterSheets()
 		{

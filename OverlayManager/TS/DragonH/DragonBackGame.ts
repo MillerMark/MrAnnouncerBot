@@ -34,7 +34,7 @@ class DragonBackGame extends DragonGame {
 	playerChanged(playerID: number, pageID: number, playerData: string): void {
 		super.playerChanged(playerID, pageID, playerData);
 		if (this.characterStatsScroll.playerDataChanged(playerID, pageID, playerData)) {
-			if (this.characterStatsScroll.activeCharacter) {
+			if (pageID !== -1 && this.characterStatsScroll.activeCharacter) {
 				this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
 			}
 		}

@@ -35,6 +35,10 @@ namespace DHDM
 			Commands.Add(new HealthDamageCommand());
 			Commands.Add(new ScrollCloseCommand());
 			Commands.Add(new SkillCheckCommand());
+			Commands.Add(new SavingThrowCommand());
+			Commands.Add(new AdvanceClockCommand());
+			Commands.Add(new SelectShortcutCommand());
+			Commands.Add(new StaticCommands());
 			Commands.Add(new HiddenThresholdCommand());
 		}
 		public override void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient)
@@ -107,10 +111,12 @@ namespace DHDM
 			const string MarkMillerUserId = "237584851";
 			const string GentryUserId = "163482168";
 			const string HumperBotId = "274121151";
+			const string DungeonMasterId = "455518839";
 			userIds.Clear();
 			ListenTo(GentryUserId);
 			ListenTo(MarkMillerUserId);
 			ListenTo(HumperBotId);
+			ListenTo(DungeonMasterId);
 		}
 		public IDungeonMasterApp DungeonMasterApp { get; set; }
 	}

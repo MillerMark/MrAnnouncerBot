@@ -23,7 +23,8 @@ enum DiceRollType {
 	Initiative,
 	WildMagicD20Check,
 	InspirationOnly,
-	AddOnDice
+	AddOnDice,
+	NonCombatInitiative
 }
 
 enum SpriteType {

@@ -307,9 +307,6 @@
 
         let endBounds: number = startIndex + this.segmentSize;
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);
-				if (sprite.frameIndex >= 73) {
-					console.error('Error');
-				}
       }
       else
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);

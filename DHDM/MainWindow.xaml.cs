@@ -32,7 +32,7 @@ namespace DHDM
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
-		TwitchClient humperBotClient;
+		TwitchClient dungeonMasterClient;
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		ScrollPage activePage = ScrollPage.main;
 		DndTimeClock dndTimeClock;
@@ -69,10 +69,11 @@ namespace DHDM
 			logListBox.ItemsSource = History.Entries;
 			History.LogUpdated += History_LogUpdated;
 
-			InitializeAttackShortcuts();
-			humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
-			if (humperBotClient != null)
-				humperBotClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+			//InitializeAttackShortcuts();
+			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
+			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+			if (dungeonMasterClient != null)
+				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
 
 			dmChatBot.Initialize(this);
 			
@@ -101,7 +102,7 @@ namespace DHDM
 			BaseChatBot commandParser = GetCommandParser(e.ChatMessage.UserId);
 			if (commandParser == null)
 				return;
-			commandParser.HandleMessage(e.ChatMessage, humperBotClient);
+			commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient);
 		}
 
 		private void History_LogUpdated(object sender, EventArgs e)
@@ -594,7 +595,7 @@ namespace DHDM
 
 			if (type == DiceRollType.DeathSavingThrow)
 				diceRoll.HiddenThreshold = 10;
-			else if (type == DiceRollType.Initiative)
+			else if (type == DiceRollType.Initiative || type == DiceRollType.NonCombatInitiative)
 				diceRoll.HiddenThreshold = -100;
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
@@ -897,6 +898,9 @@ namespace DHDM
 						break;
 					case DiceRollType.Initiative:
 						rollTitle = "Initiative: ";
+						break;
+					case DiceRollType.NonCombatInitiative:
+						rollTitle = "Non-combat Initiative: ";
 						break;
 				}
 				if (rollTitle == "")
@@ -1384,17 +1388,13 @@ namespace DHDM
 
 		void AddPlayerActionShortcutsForLady()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longsword", PlayerID = Player_Lady, Dice = "1d8+3(slashing)", Modifier = 5 });
+			Character lady = GetPlayer(Player_Lady);
 
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longsword - 2H", PlayerID = Player_Lady, Dice = "1d10+3(slashing)", Modifier = 5 });
+			AddLongSword("Longsword", Player_Lady, "1d8+3(slashing)", 5, lady.hueShift);
+			AddLongSword("Longsword - 2H", Player_Lady, "1d10+3(slashing)", 5, lady.hueShift, lady.hueShift);
 
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Warhammer", PlayerID = Player_Lady, Dice = "1d8+3(bludgeoning)", Modifier = 5 });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Warhammer - 2H", PlayerID = Player_Lady, Dice = "1d10+3(bludgeoning)", Modifier = 5 });
+			AddWarhammer("Warhammer", Player_Lady, "1d8+3(bludgeoning)", 5, lady.hueShift);
+			AddWarhammer("Warhammer - 2H", Player_Lady, "1d10+3(bludgeoning)", 5, 220, int.MinValue, 0, 220);
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Unarmed Strike", PlayerID = Player_Lady, Dice = "4(bludgeoning)", Modifier = 5 });
@@ -1426,6 +1426,60 @@ namespace DHDM
 				Modifier = 5,
 				Description = "While shifted, you can use your fangs to make an unarmed strike as a bonus action. If you hit, you can deal 1d6 + 3 piercing damage, instead of the bludgeoning damage normal for an unarmed strike."
 			});
+		}
+		void AddLongSword(string name, int playerId, string damage, int modifier, int hueLongsword, int hueMagic = int.MinValue)
+		{
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = name, PlayerID = playerId, Dice = damage, Modifier = modifier };
+
+			actionShortcuts.Add(shortcut);
+
+			const int yAdjust = 150;
+
+			WindupDto longsword = CreateWeapon("LongSword.Weapon", hueLongsword);
+			longsword.MoveUpDown(yAdjust);
+			shortcut.Windups.Add(longsword);
+
+			if (hueMagic != int.MinValue)
+			{
+				WindupDto magic = CreateWeapon("LongSword.Magic", hueMagic);
+				magic.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(magic);
+			}
+		}
+		void AddWarhammer(string name, int playerId, string damage, int modifier,
+			int hueHammer = int.MinValue, int hueMagicHandle = int.MinValue, 
+			int hueMagicHeadFront = int.MinValue, int hueMagicHeadBack = int.MinValue)
+		{
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = name, PlayerID = playerId, Dice = damage, Modifier = modifier };
+			WindupDto hammer = CreateWeapon("WarHammer.Weapon", hueHammer);
+
+			const int yAdjust = 150;
+			hammer.MoveUpDown(yAdjust);
+			shortcut.Windups.Add(hammer);
+
+			if (hueMagicHandle != int.MinValue)
+			{
+				WindupDto handle = CreateWeapon("WarHammer.MagicHandle", hueMagicHandle);
+				handle.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(handle);
+			}
+
+			if (hueMagicHeadFront != int.MinValue)
+			{
+				WindupDto headFront = CreateWeapon("WarHammer.MagicFrontHead", hueMagicHeadFront);
+				headFront.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(headFront);
+			}
+			if (hueMagicHeadBack != int.MinValue)
+			{
+				WindupDto headBack = CreateWeapon("WarHammer.MagicBackHead", hueMagicHeadBack);
+				headBack.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(headBack);
+			}
+
+			actionShortcuts.Add(shortcut);
 		}
 
 		private void AddPlayerActionShortcutsForShemo()
@@ -1543,25 +1597,26 @@ namespace DHDM
 				FadeIn = 500,
 				DegreesOffset = -40
 			}.Necrotic().SetBright(20));
-
-			WindupDto staffWeapon = new WindupDto();
-			staffWeapon.Effect = "Staff.Weapon";
-			staffWeapon.FadeIn = 0;
-			staffWeapon.Hue = 30;
-			staffWeapon.PlayToEndOnExpire = true;
+			WindupDto staffWeapon = CreateWeapon("Staff.Weapon", 30);
 			staffWeapon.MoveUpDown(150);
 			chillTouch.Windups.Add(staffWeapon);
-			WindupDto staffMagic = new WindupDto();
-			staffMagic.Effect = "Staff.Magic";
-			staffMagic.FadeIn = 0;
-			staffMagic.Hue = 30;
+			WindupDto staffMagic = CreateWeapon("Staff.Magic", 30);
 			staffMagic.Brightness = 0;
-			staffMagic.PlayToEndOnExpire = true;
 			staffMagic.MoveUpDown(150);
 			chillTouch.Windups.Add(staffMagic);
 
-
 			actionShortcuts.Add(chillTouch);
+		}
+
+		private static WindupDto CreateWeapon(string effectName, int hueShift = int.MinValue)
+		{
+			WindupDto weapon = new WindupDto();
+			weapon.Effect = effectName;
+			weapon.FadeIn = 0;
+			if (hueShift != int.MinValue)
+				weapon.Hue = hueShift;
+			weapon.PlayToEndOnExpire = true;
+			return weapon;
 		}
 
 		void AddShieldOfFaith(int playerId)
@@ -2018,6 +2073,62 @@ namespace DHDM
 				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 			});
 		}
+		
+		public void InvokeSavingThrow(Ability ability)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SelectSavingThrowAbility(ability);
+				rbActivePlayer.IsChecked = true;
+				RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
+			});
+		}
+
+		void EnterCombat()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (dndTimeClock.InCombat)
+					return;  // Already in combat.
+				BtnEnterExitCombat_Click(null, null);
+			});
+		}
+		void ExitCombat()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (!dndTimeClock.InCombat)
+					return;  // Already NOT in combat.
+				BtnEnterExitCombat_Click(null, null);
+			});
+		}
+
+		void RollNonCombatInitiative()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.NonCombatInitiative);
+				RollTheDice(diceRoll);
+			});
+		}
+		public void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand)
+		{
+				switch (dungeonMasterCommand)
+				{
+					case DungeonMasterCommand.ClearScrollEmphasis:
+						HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
+						break;
+					case DungeonMasterCommand.NonCombatInitiative:
+						RollNonCombatInitiative();
+						break;
+					case DungeonMasterCommand.EnterCombat:
+						EnterCombat();
+						break;
+					case DungeonMasterCommand.ExitCombat:
+						ExitCombat();
+					break;
+				}
+		}
 
 		public void RollSkillCheck(Skills skill)
 		{
@@ -2034,6 +2145,23 @@ namespace DHDM
 			});
 			
 			InvokeSkillCheck(skill);
+		}
+
+		public void RollSavingThrow(Ability ability)
+		{
+			if (activePage != ScrollPage.main)
+			{
+				activePage = ScrollPage.main;
+				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
+			}
+
+			Dispatcher.Invoke(() =>
+			{
+				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+					playerTabItem.CharacterSheets.FocusSavingAbility(ability);
+			});
+
+			InvokeSavingThrow(ability);
 		}
 
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
@@ -2448,8 +2576,8 @@ namespace DHDM
 			if (damageHealthChange != null)
 			{
 				ApplyDamageHealthChange(damageHealthChange);
-				string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
-				HubtasticBaseStation.ChangePlayerHealth(serializedObject);
+				//string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
+				//HubtasticBaseStation.ChangePlayerHealth(serializedObject);
 			}
 		}
 
@@ -2467,10 +2595,10 @@ namespace DHDM
 				if (player != null)
 				{
 					player.ChangeHealth(damageHealthChange.DamageHealth);
-					HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
 					HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
 				}
 			}
+			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
 		}
 
 		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox)
@@ -2580,6 +2708,14 @@ namespace DHDM
 		{
 			SelectCharacter(Player_Merkin);
 			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
+		}
+
+		public void SelectPlayerShortcut(string shortcutName)
+		{
+			Dispatcher.Invoke(() =>
+			{
+
+			});
 		}
 
 		public void SelectCharacter(int playerId)

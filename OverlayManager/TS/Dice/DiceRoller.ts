@@ -657,10 +657,10 @@ function checkAttackBonusRolls() {
 }
 
 function getFirstPlayerId() {
-    let playerID: number = -1;
-    if (diceRollData.playerRollOptions.length > 0)
-        playerID = diceRollData.playerRollOptions[0].PlayerID;
-    return playerID;
+	let playerID: number = -1;
+	if (diceRollData.playerRollOptions.length > 0)
+		playerID = diceRollData.playerRollOptions[0].PlayerID;
+	return playerID;
 }
 
 function checkSkillCheckBonusRolls() {
@@ -2615,6 +2615,8 @@ function reportRollResults(rollResults: RollResults) {
 	let title: string = '';
 	if (diceRollData.type == DiceRollType.Initiative)
 		title = 'Initiative:';
+	else if (diceRollData.type == DiceRollType.NonCombatInitiative)
+		title = 'Non-combat Initiative:';
 	else if (diceRollData.type == DiceRollType.SkillCheck)
 		title = `${getSkillCheckName()} Check:`;
 	else if (diceRollData.type == DiceRollType.SavingThrow)
@@ -2836,14 +2838,20 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.itsAD20Roll = false;
 		addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, diceRollData.throwPower, xPositionModifier);
 	}
-	else if (diceRollData.type == DiceRollType.Initiative) {
+	else if (diceRollData.type == DiceRollType.Initiative || diceRollData.type == DiceRollType.NonCombatInitiative) {
 		diceRollData.modifier = 0;
 		diceRollData.maxInspirationDiceAllowed = 4;
 
 		diceRollData.itsAD20Roll = true;
 		for (var i = 0; i < diceLayer.players.length; i++) {
 			let player: Character = diceLayer.players[i];
-			addDiceForPlayer(player.playerID, xPositionModifier, player.rollInitiative, player.inspiration);
+			let initiativeBonus: number;
+			if (diceRollData.type == DiceRollType.NonCombatInitiative)
+				initiativeBonus = 0;
+			else
+				initiativeBonus = player.rollInitiative;
+
+			addDiceForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
 		}
 
 		diceRollData.hasMultiPlayerDice = true;

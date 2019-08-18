@@ -1,4 +1,10 @@
-﻿enum EmitterShape {
+﻿enum SplatterDirection {
+	None,
+	Left,
+	Right
+}
+
+enum EmitterShape {
 	Circular = 1,
 	Rectangular = 2
 }
@@ -33,10 +39,16 @@ class BloodSprites extends Sprites {
 }
 
 class DragonFrontGame extends DragonGame {
+	readonly fullScreenDamageThreshold: number = 15;
+	readonly heavyDamageThreshold: number = 15;
+	readonly mediumDamageThreshold: number = 6;
+	readonly lightDamageThreshold: number = 4;
+
 	layerSuffix: string = 'Front';
 	emitter: Emitter;
 	shouldDrawCenterCrossHairs: boolean = false;
 	denseSmoke: Sprites;
+	shield: Sprites;
 	poof: Sprites;
 	bloodGushA: BloodSprites;	// Totally contained - 903 high.
 	bloodGushB: BloodSprites;  // Full screen, not contained at all - blood escapes top and right edges.
@@ -99,6 +111,32 @@ class DragonFrontGame extends DragonGame {
 		this.loadGreatSword();
 		this.loadStaff();
 		this.loadBattleAxe();
+		this.loadWarHammer();
+		this.loadLongSword();
+		this.loadJavelin();
+	}
+
+	private loadWarHammer() {
+		const warHammerOriginX: number = 516;
+		const warHammerOriginY: number = 685;
+		this.loadWeapon('WarHammer', 'MagicBackHead', warHammerOriginX, warHammerOriginY);
+		this.loadWeapon('WarHammer', 'Weapon', warHammerOriginX, warHammerOriginY);
+		this.loadWeapon('WarHammer', 'MagicFrontHead', warHammerOriginX, warHammerOriginY);
+		this.loadWeapon('WarHammer', 'MagicHandle', warHammerOriginX, warHammerOriginY);
+	}
+
+	private loadLongSword() {
+		const longSwordOriginX: number = 315;
+		const longSwordOriginY: number = 646;
+		this.loadWeapon('LongSword', 'Weapon', longSwordOriginX, longSwordOriginY);
+		this.loadWeapon('LongSword', 'Magic', longSwordOriginX, longSwordOriginY);
+	}
+
+	private loadJavelin() {
+		const javelinOriginX: number = 426;
+		const javelinOriginY: number = 999;
+		this.loadWeapon('Javelin', 'Weapon', javelinOriginX, javelinOriginY);
+		this.loadWeapon('Javelin', 'Magic', javelinOriginX, javelinOriginY);
 	}
 
 	private loadStaff() {
@@ -140,6 +178,11 @@ class DragonFrontGame extends DragonGame {
 		this.denseSmoke.name = 'DenseSmoke';
 		this.denseSmoke.originX = 309;
 		this.denseSmoke.originY = 723;
+
+		this.shield = new Sprites('Weapons/Shield/Shield', 88, fps30, AnimationStyle.Sequential, true);
+		this.shield.name = 'Shield';
+		this.shield.originX = 125;
+		this.shield.originY = 445;
 
 		this.poof = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
 		this.poof.name = 'Puff';
@@ -243,6 +286,7 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects.add(this.bloodGushE);
 		this.allEffects.add(this.charmed);
 		this.allEffects.add(this.restrained);
+		this.allWindupEffects.add(this.shield);
 	}
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
@@ -572,40 +616,81 @@ class DragonFrontGame extends DragonGame {
 		super.playerChanged(playerID, pageID, playerData);
 	}
 
+	// TODO: Keep these in sync with those MainWindow.xaml.cs
+	readonly Player_Lady: number = 0;
+	readonly Player_Shemo: number = 1;
+	readonly Player_Merkin: number = 2;
+	readonly Player_Ava: number = 3;
+	readonly Player_Fred: number = 4;
+	readonly Player_Willy: number = 5;
+
 	changePlayerHealth(playerHealthDto: string): void {
-		console.log('playerHealth: ' + playerHealthDto);
 		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
 
+		let fredIsTakingDamage: boolean = false;
+		let fredIsGettingHitByBlood: boolean = false;
 		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
-			this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+			let splatterDirection: SplatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+			console.log('splatterDirection: ' + splatterDirection);
+
+			if (playerHealth.PlayerIds[i] === this.Player_Fred) {
+				fredIsTakingDamage = true;
+				console.log('fredIsTakingDamage = true');
+			}
+			else {
+				if (!fredIsTakingDamage && playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
+
+					let absDamage: number = -playerHealth.DamageHealth;
+
+					if (absDamage >= this.heavyDamageThreshold)
+						fredIsGettingHitByBlood = true;
+					else if (absDamage >= this.mediumDamageThreshold) {
+						let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+						if (playerX < 900)
+							fredIsGettingHitByBlood = true;
+					}
+					else if (absDamage >= this.lightDamageThreshold) {
+						let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+						if (playerX < 600)
+							fredIsGettingHitByBlood = true;
+					}
+				}
+			}
+		}
+
+		if (!fredIsTakingDamage && fredIsGettingHitByBlood)
+			setTimeout(this.raiseShield.bind(this), 700);
+	}
+
+	raiseShield() {
+		if (this.shield.sprites.length === 0) {
+			this.shield.add(this.getPlayerX(0), 1080);
+			this.dragonFrontSounds.playMp3In(100, 'Windups/ShieldUp');
 		}
 	}
 
-	private showDamageForPlayer(damageHealth: number, playerId: number) {
+
+	private showDamageForPlayer(damageHealth: number, playerId: number): SplatterDirection {
 		let flipHorizontally: boolean = false;
 		if (Random.chancePercent(50))
 			flipHorizontally = true;
 		let damageHealthSprites: BloodSprites;
 		let scale: number = 1;
 		if (damageHealth < 0) {
-			const fullScreenDamageThreshold: number = 15;
-			const heavyDamageThreshold: number = 15;
-			const mediumDamageThreshold: number = 6;
-
 			let absDamage: number = -damageHealth;
 
-			if (absDamage >= heavyDamageThreshold)
+			if (absDamage >= this.heavyDamageThreshold)
 				this.dragonFrontSounds.playRandom('Damage/Heavy/GushHeavy', 13);
-			else if (absDamage >= mediumDamageThreshold)
+			else if (absDamage >= this.mediumDamageThreshold)
 				this.dragonFrontSounds.playRandom('Damage/Medium/GushMedium', 29);
 			else
 				this.dragonFrontSounds.playRandom('Damage/Light/GushLight', 15);
 
 
-			if (absDamage < fullScreenDamageThreshold) {
+			if (absDamage < this.fullScreenDamageThreshold) {
 				damageHealthSprites = this.getScalableBlood();
 
-				let desiredBloodHeight: number = 1080 * absDamage / fullScreenDamageThreshold;
+				let desiredBloodHeight: number = 1080 * absDamage / this.fullScreenDamageThreshold;
 				scale = desiredBloodHeight / damageHealthSprites.height;
 			}
 			else {
@@ -633,7 +718,11 @@ class DragonFrontGame extends DragonGame {
 			let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
 			spritesEffect.scale = scale;
 			spritesEffect.start();
+			if (flipHorizontally)
+				return SplatterDirection.Left;
+			return SplatterDirection.Right;
 		}
+		return SplatterDirection.None;
 	}
 
 	getScalableBlood(): BloodSprites {
