@@ -11,7 +11,7 @@ namespace DHDM
 	{
 		int healthDamageValue;
 
-		public void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage)
+		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			DamageHealthChange damageHealthChange = new DamageHealthChange();
 			damageHealthChange.DamageHealth = healthDamageValue;

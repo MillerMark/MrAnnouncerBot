@@ -12,7 +12,7 @@ namespace DHDM
 		int minutes;
 		int seconds;
 
-		public void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage)
+		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			dungeonMasterApp.AdvanceClock(hours, minutes, seconds);
 		}

@@ -10,6 +10,6 @@ namespace DHDM
 	public interface IDungeonMasterCommand
 	{
 		bool Matches(string message);
-		void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage);
+		void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage);
 	}
 }

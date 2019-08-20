@@ -23,6 +23,7 @@ using TimeLineControl;
 using DndUI;
 using BotCore;
 using System.Threading;
+using OBSWebsocketDotNet;
 
 namespace DHDM
 {
@@ -31,8 +32,14 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		//protected const string DungeonMasterChannel = "DragonHumpersDm";
+		const string DungeonMasterChannel = "HumperBot";
+		const string DragonHumpersChannel = "DragonHumpers";
+
+		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
+
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		ScrollPage activePage = ScrollPage.main;
 		DndTimeClock dndTimeClock;
@@ -72,13 +79,24 @@ namespace DHDM
 			//InitializeAttackShortcuts();
 			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
 			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+			
 			if (dungeonMasterClient != null)
 				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
 
 			dmChatBot.Initialize(this);
-			
+
 			dmChatBot.DungeonMasterApp = this;
 			commandParsers.Add(dmChatBot);
+		}
+
+		bool JoinedChannel(string channel)
+		{
+			foreach (JoinedChannel joinedChannel in dungeonMasterClient.JoinedChannels)
+			{
+				if (string.Compare(joinedChannel.Channel, channel, true) == 0)
+					return true;
+			}
+			return false;
 		}
 
 		List<BaseChatBot> commandParsers = new List<BaseChatBot>();
@@ -87,14 +105,14 @@ namespace DHDM
 			return commandParsers.Find(x => x.ListensTo(userId));
 		}
 
-		public string SetHiddenThreshold(int hiddenThreshold)
+		public void SetHiddenThreshold(int hiddenThreshold)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				tbxHiddenThreshold.Text = hiddenThreshold.ToString();
 			});
 
-			return $"Hidden threshold successfully changed to {hiddenThreshold}.";
+			TellDungeonMaster($"Hidden threshold successfully changed to {hiddenThreshold}.");
 		}
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -814,6 +832,12 @@ namespace DHDM
 				case Skills.slightOfHand: return "Slight of Hand";
 				case Skills.stealth: return "Stealth";
 				case Skills.survival: return "Survival";
+				case Skills.strength: return "Strength";
+				case Skills.dexterity: return "Dexterity";
+				case Skills.constitution: return "Constitution";
+				case Skills.intelligence: return "Intelligence";
+				case Skills.wisdom: return "Wisdom";
+				case Skills.charisma: return "Charisma";
 			}
 			return "None";
 		}
@@ -909,9 +933,9 @@ namespace DHDM
 				{
 					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
 					{
-						string playerName = playerRoll.name;
+						string playerName = StrUtils.GetFirstName(playerRoll.name);
 						if (playerName != "")
-							playerName = playerName + " ";
+							playerName = playerName + "'s ";
 
 						rollValue = playerRoll.modifier + playerRoll.roll;
 						bool success = rollValue >= ea.DiceRollData.hiddenThreshold;
@@ -921,17 +945,24 @@ namespace DHDM
 							localDamageStr = damageStr;
 						else
 							localDamageStr = "";
-						History.Log(playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr);
+						string message = playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
+						TellDungeonMaster(message);
+						TellViewers(message);
+						History.Log(message);
 					}
 				}
 				else
 				{
 					string playerName = GetPlayerName(ea.DiceRollData.playerID);
 					if (playerName != "")
-						playerName = playerName + " ";
+						playerName = playerName + "'s ";
 					if (!ea.DiceRollData.success)
 						damageStr = "";
-					History.Log(playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr);
+
+					string message = playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
+					TellDungeonMaster(message);
+					TellViewers(message);
+					History.Log(message);
 				}
 			}
 			EnableDiceRollButtons(true);
@@ -967,17 +998,12 @@ namespace DHDM
 		// TODO: Remove this:
 		string GetPlayerName(int playerID)
 		{
-			switch (playerID)
+			foreach (Character player in players)
 			{
-				case 0:
-					return "Willy";
-				case 1:
-					return "Shemo";
-				case 2:
-					return "Merkin";
-				case 3:
-					return "Ava";
+				if (player.playerID == playerID)
+					return StrUtils.GetFirstName(player.name);
 			}
+
 			return "";
 		}
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
@@ -1345,7 +1371,7 @@ namespace DHDM
 			{
 				Effect = "BattleAxe.Weapon",
 			});
-			
+
 			actionShortcuts.Add(battleAxe);
 		}
 
@@ -1361,7 +1387,7 @@ namespace DHDM
 				Scale = scale,
 				FadeIn = 0,
 				PlayToEndOnExpire = true
-		}.MoveUpDown(deltaY));
+			}.MoveUpDown(deltaY));
 
 			if (hueShiftMagicA != int.MinValue)
 				battleAxe.Windups.Add(new WindupDto()
@@ -1448,7 +1474,7 @@ namespace DHDM
 			}
 		}
 		void AddWarhammer(string name, int playerId, string damage, int modifier,
-			int hueHammer = int.MinValue, int hueMagicHandle = int.MinValue, 
+			int hueHammer = int.MinValue, int hueMagicHandle = int.MinValue,
 			int hueMagicHeadFront = int.MinValue, int hueMagicHeadBack = int.MinValue)
 		{
 			PlayerActionShortcut shortcut = new PlayerActionShortcut()
@@ -1691,18 +1717,18 @@ namespace DHDM
 			AddLightning(wrathfulSmite, -1);
 			wrathfulSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = -1, SoundFileName = "Psychic1" }.Fade());
 			wrathfulSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = -1, FlipHorizontal = true, SoundFileName = "Psychic2" }.Fade().MoveUpDown(40));
-			
+
 			actionShortcuts.Add(wrathfulSmite);
-			
+
 		}
 		private void AddPlayerActionShortcutsForAva()
 		{
 			AddBattleAxe2("Battleaxe (1H)", Player_Ava, "1d8+3(slashing)", 5, 3, int.MinValue, int.MinValue, 1.3);
 			AddBattleAxe2("Battleaxe (2H)", Player_Ava, "1d10+3(slashing)", 5, 3, 220, 280, 1.3);
-			
+
 			AddGreatSword(Player_Ava, "2d6+4(slashing)");
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
+			AddJavelin("Javelin", Player_Ava, "1d6+3(piercing)", 5, 220);
+
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{ Name = "Net", PlayerID = Player_Ava, Dice = "", Modifier = 2 });
 			actionShortcuts.Add(new PlayerActionShortcut()
@@ -1776,6 +1802,31 @@ namespace DHDM
 				InstantDice = "3d8(radiant:damage)",
 				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends."
 			});
+		}
+		void AddJavelin(string name, int playerId, string damage, int modifier, int magicHue = int.MinValue)
+		{
+			PlayerActionShortcut javelin = new PlayerActionShortcut()
+			{ Name = name, PlayerID = playerId, Dice = damage, Modifier = modifier };
+
+			WindupDto javelin3D = new WindupDto();
+			javelin3D.Effect = "Javelin.Weapon";
+			javelin3D.FadeIn = 0;
+			javelin3D.PlayToEndOnExpire = true;
+			javelin3D.MoveUpDown(150);
+			javelin.Windups.Add(javelin3D);
+
+			if (magicHue != int.MinValue)
+			{
+				WindupDto javelinMagic = new WindupDto();
+				javelinMagic.Effect = "Javelin.Magic";
+				javelinMagic.FadeIn = 0;
+				javelinMagic.PlayToEndOnExpire = true;
+				javelinMagic.MoveUpDown(150);
+				javelinMagic.Hue = magicHue;
+				javelin.Windups.Add(javelinMagic);
+			}
+
+			actionShortcuts.Add(javelin);
 		}
 
 		private void AddGreatSword(int playerId, string damage)
@@ -2063,7 +2114,7 @@ namespace DHDM
 		{
 			InvokeSkillCheck(e.Skill);
 		}
-		
+
 		public void InvokeSkillCheck(Skills skill)
 		{
 			Dispatcher.Invoke(() =>
@@ -2073,7 +2124,7 @@ namespace DHDM
 				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 			});
 		}
-		
+
 		public void InvokeSavingThrow(Ability ability)
 		{
 			Dispatcher.Invoke(() =>
@@ -2089,8 +2140,12 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				if (dndTimeClock.InCombat)
-					return;  // Already in combat.
-				BtnEnterExitCombat_Click(null, null);
+					TellDungeonMaster("Already in combat!");
+				else
+				{
+					TellDungeonMaster("Entering combat...");
+					BtnEnterExitCombat_Click(null, null);
+				}
 			});
 		}
 		void ExitCombat()
@@ -2098,8 +2153,12 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				if (!dndTimeClock.InCombat)
-					return;  // Already NOT in combat.
-				BtnEnterExitCombat_Click(null, null);
+					TellDungeonMaster("Already NOT in combat!");
+				else
+				{
+					TellDungeonMaster("Exiting combat...");
+					BtnEnterExitCombat_Click(null, null);
+				}
 			});
 		}
 
@@ -2113,23 +2172,35 @@ namespace DHDM
 		}
 		public void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand)
 		{
-				switch (dungeonMasterCommand)
-				{
-					case DungeonMasterCommand.ClearScrollEmphasis:
-						HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
-						break;
-					case DungeonMasterCommand.NonCombatInitiative:
-						RollNonCombatInitiative();
-						break;
-					case DungeonMasterCommand.EnterCombat:
-						EnterCombat();
-						break;
-					case DungeonMasterCommand.ExitCombat:
-						ExitCombat();
+			switch (dungeonMasterCommand)
+			{
+				case DungeonMasterCommand.ClearScrollEmphasis:
+					HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
+					TellDungeonMaster("Clearing emphasis...");
 					break;
-				}
+				case DungeonMasterCommand.NonCombatInitiative:
+					RollNonCombatInitiative();
+					TellDungeonMaster("Rolling non-combat initiative...");
+					break;
+				case DungeonMasterCommand.EnterCombat:
+					EnterCombat();
+					break;
+				case DungeonMasterCommand.ExitCombat:
+					ExitCombat();
+					break;
+			}
 		}
 
+		string PlusHiddenThresholdDisplayStr()
+		{
+			string returnMessage = string.Empty;
+			Dispatcher.Invoke(() =>
+			{
+				returnMessage = $" (against a hidden threshold of {tbxHiddenThreshold.Text})";
+			});
+
+			return returnMessage;
+		}
 		public void RollSkillCheck(Skills skill)
 		{
 			if (activePage != ScrollPage.skills)
@@ -2143,8 +2214,23 @@ namespace DHDM
 				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
 					playerTabItem.CharacterSheets.FocusSkill(skill);
 			});
-			
+
 			InvokeSkillCheck(skill);
+
+			string articlePlusSkillDislay = DndUtils.ToArticlePlusSkillDisplayString(skill);
+			string firstPart = $"Rolling {articlePlusSkillDislay} skill check for {GetPlayerName(PlayerID)}";
+			TellDungeonMaster($"{firstPart}{PlusHiddenThresholdDisplayStr()}.");
+			TellViewers($"{firstPart}...");
+		}
+
+		public void RollAttack()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				BtnAttack_Click(null, null);
+			});
+			// TODO: Add report on advantage/disadvantage.
+			TellDungeonMaster($"Rolling {GetPlayerName(PlayerID)}'s attack with a hidden threshold of {tbxHiddenThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
 		}
 
 		public void RollSavingThrow(Ability ability)
@@ -2162,6 +2248,10 @@ namespace DHDM
 			});
 
 			InvokeSavingThrow(ability);
+			string abilityStr = DndUtils.ToArticlePlusAbilityDisplayString(ability);
+			string firstPart = $"Rolling {abilityStr} saving throw for {GetPlayerName(PlayerID)}";
+			TellDungeonMaster($"{firstPart}{PlusHiddenThresholdDisplayStr()}...");
+			TellViewers($"{firstPart}...");
 		}
 
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
@@ -2585,20 +2675,39 @@ namespace DHDM
 		{
 			if (damageHealthChange == null)
 				return;
+			string playerNames = string.Empty;
 			if (damageHealthChange.PlayerIds.Count == 0)
 			{
 				damageHealthChange.PlayerIds.Add(PlayerID);
 			}
-			foreach (int playerId in damageHealthChange.PlayerIds)
+			int numPlayers = damageHealthChange.PlayerIds.Count;
+			for (int i = 0; i < numPlayers; i++)
 			{
+				int playerId = damageHealthChange.PlayerIds[i];
 				Character player = GetPlayer(playerId);
-				if (player != null)
-				{
-					player.ChangeHealth(damageHealthChange.DamageHealth);
-					HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
-				}
+				if (player == null)
+					continue;
+				string firstName = StrUtils.GetFirstName(player.name);
+				if (i < numPlayers - 2)
+					playerNames += firstName + ", ";
+				else if (i < numPlayers - 1)
+					playerNames += firstName + ", and ";
+				else
+					playerNames += firstName;
+
+				player.ChangeHealth(damageHealthChange.DamageHealth);
+				HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
 			}
+
 			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
+			string message;
+			if (damageHealthChange.DamageHealth < 0)
+				message = $"{-damageHealthChange.DamageHealth} points of damage dealt to {playerNames}.";
+			else
+				message = $"{damageHealthChange.DamageHealth} points of healing given to {playerNames}.";
+
+			TellDungeonMaster(message);
+			TellViewers(message);
 		}
 
 		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox)
@@ -2708,6 +2817,7 @@ namespace DHDM
 		{
 			SelectCharacter(Player_Merkin);
 			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
+			TellDungeonMaster("Rolling wild magic check.");
 		}
 
 		public void SelectPlayerShortcut(string shortcutName)
@@ -2716,19 +2826,22 @@ namespace DHDM
 			{
 
 			});
+			TellDungeonMaster("");
 		}
 
 		public void SelectCharacter(int playerId)
 		{
+			string result = $"Error selecting player #{playerId}.";
 			Dispatcher.Invoke(() =>
 			{
-				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem) 
+				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem)
 					foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
 					{
 						if (playerTabItem.PlayerID == playerId)
 						{
 							tabPlayers.SelectedItem = playerTabItem;
-							return;
+							TellDungeonMaster($"----- {GetPlayerName(playerId)} -----");
+							break;
 						}
 					}
 			});
@@ -2738,7 +2851,7 @@ namespace DHDM
 		public void RollWildMagic()
 		{
 			BtnWildMagic_Click(null, null);
-				
+			TellDungeonMaster("Rolling wild magic...");
 		}
 
 		private void BtnSendWindup_Click(object sender, RoutedEventArgs e)
@@ -2755,14 +2868,16 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				
+
 			});
+			// TODO: Tell DM
 		}
+
 		public void AdvanceClock(int hours, int minutes, int seconds)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				
+
 			});
 		}
 
@@ -2770,18 +2885,62 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				
+
 			});
+			// TODO: Tell DM
 		}
 
 		public void HideScroll()
 		{
 			HubtasticBaseStation.SendScrollLayerCommand("Close");
+			TellDungeonMaster("Closing the scroll...", true);
+		}
+
+		public void DropWindup()
+		{
+			HubtasticBaseStation.ClearWindup("");
+			TellDungeonMaster("Dropping windups...");
+		}
+
+		public void PlayScene(string sceneName)
+		{
+			string dmMessage = $"Playing scene: {sceneName}";
+
+			try
+			{
+				obsWebsocket.SetCurrentScene(sceneName);
+			}
+			catch (Exception ex)
+			{
+				dmMessage = $"kill -name chrome -Force" +
+					$"Unable to play {sceneName}: {ex.Message}";
+			}
+			TellDungeonMaster(dmMessage);
 		}
 
 		public void Speak(int playerId, string message)
 		{
-			
+			Dispatcher.Invoke(() =>
+			{
+				// TODO: Implement this.
+			});
+			// TODO: Tell DM
+		}
+
+		public void TellDungeonMaster(string message, bool isDetail = false)
+		{
+			if (!JoinedChannel(DungeonMasterChannel))
+				dungeonMasterClient.JoinChannel(DungeonMasterChannel);
+
+			// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
+			dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+		}
+
+		public void TellViewers(string message)
+		{
+			if (!JoinedChannel(DragonHumpersChannel))
+				dungeonMasterClient.JoinChannel(DragonHumpersChannel);
+			dungeonMasterClient.SendMessage(DragonHumpersChannel, message);
 		}
 	}
 }

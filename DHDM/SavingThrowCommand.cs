@@ -11,7 +11,7 @@ namespace DHDM
 	{
 		Ability abilityToTest;
 
-		public void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage)
+		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			dungeonMasterApp.RollSavingThrow(abilityToTest);
 		}

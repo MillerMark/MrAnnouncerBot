@@ -10,7 +10,7 @@ namespace DHDM
 	{
 		DungeonMasterCommand command;
 
-		public void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage)
+		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			dungeonMasterApp.ExecuteCommand(command);
 		}

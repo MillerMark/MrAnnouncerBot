@@ -75,5 +75,107 @@ namespace DndCore
 			}
 			return DamageType.None;
 		}
+		
+		public static string ToSkillDisplayString(Skills skill)
+		{
+			switch (skill)
+			{
+				case Skills.none:
+					return "none";
+				case Skills.acrobatics:
+					return "Acrobatics";
+				case Skills.animalHandling:
+					return "Animal Handling";
+				case Skills.arcana:
+					return "Arcana";
+				case Skills.athletics:
+					return "Athletics";
+				case Skills.deception:
+					return "Deception";
+				case Skills.history:
+					return "History";
+				case Skills.insight:
+					return "Insight";
+				case Skills.intimidation:
+					return "Intimidation";
+				case Skills.investigation:
+					return "Investigation";
+				case Skills.medicine:
+					return "Medicine";
+				case Skills.nature:
+					return "Nature";
+				case Skills.perception:
+					return "Perception";
+				case Skills.performance:
+					return "Performance";
+				case Skills.persuasion:
+					return "Persuasion";
+				case Skills.religion:
+					return "Religion";
+				case Skills.slightOfHand:
+					return "Slight of Hand";
+				case Skills.stealth:
+					return "Stealth";
+				case Skills.survival:
+					return "Survival";
+				case Skills.strength:
+					return "Strength";
+				case Skills.dexterity:
+					return "Dexterity";
+				case Skills.constitution:
+					return "Constitution";
+				case Skills.intelligence:
+					return "Intelligence";
+				case Skills.wisdom:
+					return "Wisdom";
+				case Skills.charisma:
+					return "Charisma";
+			}
+			return "?";
+		}
+		public static string ToArticlePlusSkillDisplayString(Skills skill)
+		{
+			switch (skill)
+			{
+				case Skills.acrobatics:
+				case Skills.animalHandling:
+				case Skills.arcana:
+				case Skills.athletics:
+				case Skills.insight:
+				case Skills.intimidation:
+				case Skills.investigation:
+				case Skills.intelligence:
+					return "an " + ToSkillDisplayString(skill);
+			}
+			return "a " + ToSkillDisplayString(skill);
+		}
+
+		static string ToAbilityDisplayString(Ability ability)
+		{
+			switch (ability)
+			{
+				case Ability.None:
+					return "None";
+				case Ability.Strength:
+					return "Strength";
+				case Ability.Dexterity:
+					return "Dexterity";
+				case Ability.Constitution:
+					return "Constitution";
+				case Ability.Intelligence:
+					return "Intelligence";
+				case Ability.Wisdom:
+					return "Wisdom";
+				case Ability.Charisma:
+					return "Charisma";
+			}
+			return "?";
+		}
+		public static string ToArticlePlusAbilityDisplayString(Ability ability)
+		{
+			if (ability == Ability.Intelligence)
+				return "an " + ToAbilityDisplayString(ability);
+			return "a " + ToAbilityDisplayString(ability);
+		}
 	}
 }
