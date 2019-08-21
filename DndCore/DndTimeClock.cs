@@ -1,11 +1,47 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace DndCore
 {
+	public class DndTimeEventArgs : EventArgs
+	{
+		public DndTimeClock TimeClock { get; set; }
+		public DndAlarm Alarm { get; set; }
+		public DndTimeEventArgs(DndTimeClock timeClock, DndAlarm alarm)
+		{
+			TimeClock = timeClock;
+			Alarm = alarm;
+		}
+	}
+	public class DndAlarm
+	{
+		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name)
+		{
+			Name = name;
+			TriggerTime = triggerTime;
+			SetTime = dndTimeClock.Time;
+		}
+
+		public DateTime SetTime { get; set; }
+		public DateTime TriggerTime { get; set; }
+		public string Name { get; set; }
+
+		public void FireAlarm(DndTimeClock dndTimeClock)
+		{
+			AlarmFired?.Invoke(this, new DndTimeEventArgs(dndTimeClock, this));
+		}
+
+		public delegate void DndTimeEventHandler(object sender, DndTimeEventArgs ea);
+		public event DndTimeEventHandler AlarmFired;
+	}
 	public class DndTimeClock
 	{
+
+		// Months & holidays...
+		public const int Hammer = 1;
+		const int HammerStart = 1;
 		public const int Alturiak = 2;
 		const int AlturiakStart = 32;
 		public const int Ches = 3;
@@ -18,11 +54,6 @@ namespace DndCore
 		const int FlameruleStart = 183;
 		public const int Greengrass = -2;  // Holiday
 		public const int GreengrassStart = 122;
-
-		// Months & holidays...
-		public const int Hammer = 1;
-
-		const int HammerStart = 1;
 		public const int Highharvestide = -5;  // Holiday
 		public const int HighharvestideStart = 274;
 		public const int Kythorn = 6;
@@ -32,8 +63,6 @@ namespace DndCore
 		public const int Midsummer = -3;  // Holiday
 		public const int MidsummerStart = 213;
 		public const int Midwinter = -1;  // Holiday
-
-		// Holidays...
 		public const int MidwinterStart = 31;
 		public const int Mirtul = 5;
 		const int MirtulStart = 123;
@@ -70,7 +99,7 @@ namespace DndCore
 		{
 			if (timeSpan == Timeout.InfiniteTimeSpan)
 				throw new Exception("Cannot add infinity. COME ON!!!");
-			if (reverseDirection)
+			if (reverseDirection)  // Not fully supported.
 				SetTime(Time - timeSpan);
 			else
 				SetTime(Time + timeSpan);
@@ -249,11 +278,41 @@ namespace DndCore
 			TimeChanged?.Invoke(sender, timeClockEventArgs);
 		}
 
+		void TriggerAlarms(DateTime futureTime)
+		{
+			List<DndAlarm> alarmsToRemove = new List<DndAlarm>();
+			foreach (DndAlarm alarm in alarms)
+			{
+				if (alarm.TriggerTime > futureTime)
+					break;
+				
+				if (alarm.TriggerTime > Time)
+				{
+					Time = alarm.TriggerTime;
+					alarm.FireAlarm(this);
+					alarmsToRemove.Add(alarm);
+				}
+			}
+
+			foreach (DndAlarm alarmToRemove in alarmsToRemove)
+			{
+				alarms.Remove(alarmToRemove);
+			}
+		}
+		void ReengagePreviouslyTriggeredAlarms()
+		{
+			
+		}
 		public void SetTime(DateTime time)
 		{
 			if (Time == time)
 				return;
 			DateTime previousTime = Time;
+
+			if (time > Time)  // Moving forward
+				TriggerAlarms(time);
+			else
+				ReengagePreviouslyTriggeredAlarms();
 			Time = time;
 			OnTimeChanged(this, previousTime);
 		}
@@ -265,6 +324,19 @@ namespace DndCore
 
 		public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
 		public event TimeClockEventHandler TimeChanged;
+
+		List<DndAlarm> alarms = new List<DndAlarm>();
+
+		public DndAlarm CreateAlarm(TimeSpan fromNow, string name)
+		{
+			if (fromNow.TotalSeconds <= 0)
+				return null;
+
+			DndAlarm dndAlarm = new DndAlarm(this, Time + fromNow, name);
+			alarms.Add(dndAlarm);
+			alarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
+			return dndAlarm;
+		}
 	}
 }
 

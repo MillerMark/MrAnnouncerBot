@@ -35,7 +35,7 @@ namespace DHDM
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
 		const string DragonHumpersChannel = "DragonHumpers";
-
+		
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
@@ -793,6 +793,11 @@ namespace DHDM
 		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
+		}
+
+		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
+		{
+			Title += ea.Alarm.Name;
 		}
 
 		void enableDiceRollButtons()
@@ -2930,17 +2935,34 @@ namespace DHDM
 		public void TellDungeonMaster(string message, bool isDetail = false)
 		{
 			if (!JoinedChannel(DungeonMasterChannel))
-				dungeonMasterClient.JoinChannel(DungeonMasterChannel);
-
-			// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
-			dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+			{
+				try
+				{
+					dungeonMasterClient.JoinChannel(DungeonMasterChannel);
+					// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
+					dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+				}
+				catch (Exception ex)
+				{
+					
+				}
+			}
 		}
 
 		public void TellViewers(string message)
 		{
 			if (!JoinedChannel(DragonHumpersChannel))
-				dungeonMasterClient.JoinChannel(DragonHumpersChannel);
-			dungeonMasterClient.SendMessage(DragonHumpersChannel, message);
+			{
+				try
+				{
+					dungeonMasterClient.JoinChannel(DragonHumpersChannel);
+					dungeonMasterClient.SendMessage(DragonHumpersChannel, message);
+				}
+				catch (Exception ex)
+				{
+					
+				}
+			}
 		}
 	}
 }
