@@ -23,6 +23,11 @@ namespace DndCore
 			return new DndTimeSpan(TimeMeasure.actions, actionCount);
 		}
 
+		public static DndTimeSpan FromBonusActions(int bonusActionCount)
+		{
+			return new DndTimeSpan(TimeMeasure.bonusActions, bonusActionCount);
+		}
+
 		public static DndTimeSpan FromDays(int days)
 		{
 			return new DndTimeSpan(TimeMeasure.days, days);

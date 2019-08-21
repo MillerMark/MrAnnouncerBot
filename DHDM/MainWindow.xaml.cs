@@ -243,6 +243,17 @@ namespace DHDM
 			}
 		}
 
+		void CreateAlarm(TimeSpan timeSpan, string name)
+		{
+			DndAlarm dndAlarm = dndTimeClock.CreateAlarm(timeSpan, name);
+			dndAlarm.AlarmFired += DndAlarm_AlarmFired;
+		}
+
+		void PrepareToCastSpell(Spell spell, int playerId, string spellName)
+		{
+			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spellName} at {dndTimeClock.AsFullDndDateTimeString()}.");
+			CreateAlarm(spell.Duration.GetTimeSpan(), $"{STR_EndSpell}{spellName}({playerId})");
+		}
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (sender is Button button)
@@ -250,6 +261,18 @@ namespace DHDM
 				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
 				if (actionShortcut == null)
 					return;
+
+				if (actionShortcut.Spell != null)
+				{
+					if (!actionShortcut.Spell.Duration.IsForever())
+					 {
+						PrepareToCastSpell(actionShortcut.Spell, actionShortcut.PlayerID, actionShortcut.Spell.Name);
+						
+						CastedSpell spellToCast = new CastedSpell(actionShortcut.Spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = Player_Merkin });
+						string serializedObject = JsonConvert.SerializeObject(spellToCast);
+						HubtasticBaseStation.CastSpell(serializedObject);
+					}
+				}
 
 				if (actionShortcut.Windups.Count > 0)
 				{
@@ -672,7 +695,7 @@ namespace DHDM
 		{
 			if (txtTime == null)
 				return;
-			string timeStr = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
+			string timeStr = dndTimeClock.AsFullDndDateTimeString();
 
 			if (dndTimeClock.InCombat)
 				timeStr = " " + timeStr + " ";
@@ -797,7 +820,24 @@ namespace DHDM
 
 		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
 		{
-			Title += ea.Alarm.Name;
+			if (ea.Alarm.Name.StartsWith(STR_EndSpell))
+			{
+				string spellToEnd = ea.Alarm.Name.Substring(STR_EndSpell.Length);
+				HubtasticBaseStation.ClearWindup(spellToEnd);
+				int parenPos = spellToEnd.IndexOf('(');
+				
+				string casterId = string.Empty;
+				if (parenPos > 0)
+				{
+					string playerIdStr = spellToEnd.Substring(parenPos + 1);
+					char[] endChars = { ')' };
+					playerIdStr = playerIdStr.Trim(endChars);
+					if (int.TryParse(playerIdStr, out int playerId))
+						casterId = $"{GetPlayerName(playerId)}'s ";
+					spellToEnd = spellToEnd.Substring(0, parenPos);
+				}
+				TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {dndTimeClock.AsFullDndDateTimeString()}.");
+			}
 		}
 
 		void enableDiceRollButtons()
@@ -934,6 +974,7 @@ namespace DHDM
 				}
 				if (rollTitle == "")
 					rollTitle = "Dice roll: ";
+				string message = string.Empty;
 				if (ea.DiceRollData.multiplayerSummary != null && ea.DiceRollData.multiplayerSummary.Count > 0)
 				{
 					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
@@ -950,10 +991,9 @@ namespace DHDM
 							localDamageStr = damageStr;
 						else
 							localDamageStr = "";
-						string message = playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
-						TellDungeonMaster(message);
-						TellViewers(message);
-						History.Log(message);
+						if (!string.IsNullOrWhiteSpace(message))
+							message += "; ";
+						message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
 					}
 				}
 				else
@@ -964,12 +1004,18 @@ namespace DHDM
 					if (!ea.DiceRollData.success)
 						damageStr = "";
 
-					string message = playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
+					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
+				}
+
+				if (!string.IsNullOrWhiteSpace(message))
+				{
 					TellDungeonMaster(message);
 					TellViewers(message);
 					History.Log(message);
 				}
 			}
+
+
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
 		}
@@ -1305,6 +1351,7 @@ namespace DHDM
 		private const int Player_Ava = 3;
 		private const int Player_Fred = 4;
 		private const int Player_Willy = 5;
+		const string STR_EndSpell = "EndSpell:";
 
 		DiceRollType nextDieRollType;
 		void InitializeAttackShortcuts()
@@ -1660,6 +1707,8 @@ namespace DHDM
 				Description = "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration."
 			};
 
+			shieldOfFaith.Spell = new Spell() { Name = "Shield of Faith", OwnerId = playerId, CastingTime = DndTimeSpan.FromBonusActions(1), Range = 60, Components = SpellComponents.Material | SpellComponents.Somatic | SpellComponents.Verbal, Material = "a small parchment with a bit of holy text written on it.", Duration = DndTimeSpan.FromMinutes(10) };
+
 			const string effectName = "Plasma";
 			shieldOfFaith.Windups.Add(new WindupDto() { Effect = effectName, Hue = -30 }.MoveUpDown(160).Fade());
 			actionShortcuts.Add(shieldOfFaith);
@@ -1674,9 +1723,10 @@ namespace DHDM
 				Part = TurnPart.BonusAction,
 				Description = "You ward a creature within range against attack. Until the spell ends, any creature who targets the warded creature with an attack or a harmful spell must first make a Wisdom saving throw. On a failed save, the creature must choose a new target or lose the attack or spell. This spell doesn't protect the warded creature from area effects, such as the explosion of a fireball.\n\nIf the warded creature makes an attack, casts a spell that affects an enemy, or deals damage to another creature, this spell ends."
 			};
-			sanctuary.Windups.Add(new WindupDto() { Effect = "Wide", Hue = 170 }.Fade());
-			sanctuary.Windups.Add(new WindupDto() { Effect = "Wide", DegreesOffset = -60, Hue = 200, Rotation = 45 }.Fade());
-			sanctuary.Windups.Add(new WindupDto() { Effect = "Wide", DegreesOffset = 60, Hue = 230, Rotation = -45 }.Fade());
+			sanctuary.Spell = new Spell() { Name = "Sanctuary", OwnerId = playerId, Duration = DndTimeSpan.FromMinutes(1) };
+			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 170 }.Fade());
+			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = -60, Hue = 200, Rotation = 45 }.Fade());
+			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = 60, Hue = 230, Rotation = -45 }.Fade());
 			actionShortcuts.Add(sanctuary);
 		}
 		void AddThunderousSmite(int playerId, string additionalDice)

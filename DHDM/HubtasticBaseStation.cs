@@ -69,6 +69,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("AddWindup", windupData);
 		}
 
+		public static void CastSpell(string spellData)
+		{
+			HubConnection.InvokeAsync("CastSpell", spellData);
+		}
+
 		public static void ClearWindup(string windupName)
 		{
 			HubConnection.InvokeAsync("ClearWindup", windupName);

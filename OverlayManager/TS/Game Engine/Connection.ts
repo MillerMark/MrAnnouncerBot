@@ -13,6 +13,7 @@ function connectToSignalR(signalR) {
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
     connection.on("AddWindup", addWindup);
+    connection.on("CastSpell", castSpell);
     connection.on("ClearWindup", clearWindup);
     connection.on("TriggerEffect", triggerEffect);
     connection.on("UpdateClock", updateClock);
@@ -25,10 +26,18 @@ function connectToSignalR(signalR) {
 
 function addWindup(windupData: string): void {
 	if (activeFrontGame instanceof DragonGame) {
-		activeFrontGame.addWindup(windupData);
+		activeFrontGame.addWindupFromStr(windupData);
 	}
 	if (activeBackGame instanceof DragonGame) {
-		activeBackGame.addWindup(windupData);
+		activeBackGame.addWindupFromStr(windupData);
+	}
+}
+function castSpell(spellData: string): void {
+	if (activeFrontGame instanceof DragonGame) {
+		activeFrontGame.castSpell(spellData);
+	}
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.castSpell(spellData);
 	}
 }
 

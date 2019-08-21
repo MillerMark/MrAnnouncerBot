@@ -34,7 +34,6 @@ namespace DndTests
 			DateTime secondAlarmTime = DateTime.MinValue;
 
 
-
 			void First_AlarmFired(object sender, DndTimeEventArgs ea)
 			{
 				firstAlarmTime = ea.TimeClock.Time;
@@ -58,6 +57,7 @@ namespace DndTests
 			Assert.IsFalse(secondAlarmFired);
 			Assert.AreEqual(firstAlarmTime, DateTime.MinValue);
 			Assert.AreEqual(secondAlarmTime, DateTime.MinValue);
+			
 			dndTimeClock.Advance(DndTimeSpan.FromSeconds(10));
 			Assert.IsTrue(firstAlarmFired);
 			Assert.AreEqual(firstAlarmTime, startTime + TimeSpan.FromSeconds(5));

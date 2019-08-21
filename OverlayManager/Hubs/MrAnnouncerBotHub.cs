@@ -35,6 +35,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.AddWindup(windupData);
 		}
+		public void CastSpell(string spellData)
+		{
+			coderushedHub.Clients.All.CastSpell(spellData);
+		}
 
 		public void ClearWindup(string windupName)
 		{

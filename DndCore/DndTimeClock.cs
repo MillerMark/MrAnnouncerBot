@@ -337,6 +337,10 @@ namespace DndCore
 			alarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
 			return dndAlarm;
 		}
+		public string AsFullDndDateTimeString()
+		{
+			return Time.ToString("H:mm:ss") + ", " + AsDndDateString();
+		}
 	}
 }
 

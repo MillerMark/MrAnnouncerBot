@@ -5,6 +5,7 @@
 }
 
 class AnimatedElement {
+	name: string;
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond: number = 0;
 	rotation: number;
@@ -234,7 +235,8 @@ class AnimatedElement {
 	}
 
 	destroying(): void {
-
+		if (this.name)
+			console.log('destroying this sprite: ' + this.name);
 	}
 }
 

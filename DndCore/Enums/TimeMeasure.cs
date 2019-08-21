@@ -13,6 +13,7 @@ namespace DndCore
 		days = 5,
 		forever = 6,
 		never = 7,
-		round = 8
+		round = 8,
+		bonusActions = 9
 	}
 }

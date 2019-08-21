@@ -30,6 +30,7 @@ namespace DHDM
 		public string InstantDice { get; set; }
 		public string AdditionalRollTitle { get; set; }
 		public int MinDamage { get; set; }
+		public Spell Spell { get; set; }
 		public PlayerActionShortcut()
 		{
 			MinDamage = 0;
