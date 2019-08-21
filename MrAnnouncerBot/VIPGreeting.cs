@@ -67,6 +67,10 @@ namespace MrAnnouncerBot
                     Greet_Will_Bennet();
                     break;
 
+                case "codeman_codes":
+                    Greet_Codeman_Codes();
+                    break;
+
                 default:
                     GreetVip();
                     break;
@@ -276,6 +280,41 @@ namespace MrAnnouncerBot
                     break;
                 case 1:
                     Greeting = $"Oh hi @{DisplayName} nice of you to join us today";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+
+            }
+        }
+
+        private void Greet_Codeman_Codes()
+        {
+            switch (new Random().Next(9))
+            {
+                case 0:
+                    Greeting = $"Look! Behind the desk! It's an int! It's a string! It's @{DisplayName}!";
+                    break;
+                case 1:
+                    Greeting = $"This is my gift, my curse. Who am I? @{DisplayName}";
+                    break;
+                case 2:
+                    Greeting = $"Someone must have ripped the 'Q' section out of my dictionary, 'cause I don't know the meaning of the word 'quit'. I'm @{DisplayName}";
+                    break;
+                case 3:
+                    Greeting = $"For there must always, always be a @{DisplayName}. And some day, when he's needed, we will see him again.";
+                    break;
+                case 4:
+                    Greeting = $"Coders Compile! It's @{DisplayName}!";
+                    break;
+                case 5:
+                    Greeting = $"Never fear! @{DisplayName} is here!";
+                    break;
+                case 6:
+                    Greeting = $"Some say he speaks gibberish. But he actually speaks in code. @{DisplayName} is in da house!";
+                    break;
+                case 7:
+                    Greeting = $"Not all heroes wear capes, but all heroes know index starts at 0. Welcome @{DisplayName}!";
                     break;
                 default:
                     GreetVip();
