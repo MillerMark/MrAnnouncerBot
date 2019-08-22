@@ -28,6 +28,22 @@ namespace DndCore
 			return new DndTimeSpan(TimeMeasure.bonusActions, bonusActionCount);
 		}
 
+		public static DndTimeSpan OneBonusAction
+		{
+			get
+			{
+				return new DndTimeSpan(TimeMeasure.bonusActions, 1); ;
+			}
+		}
+		
+		public static DndTimeSpan OneAction
+		{
+			get
+			{
+				return new DndTimeSpan(TimeMeasure.actions, 1);
+			}
+		}
+
 		public static DndTimeSpan FromDays(int days)
 		{
 			return new DndTimeSpan(TimeMeasure.days, days);
@@ -102,6 +118,20 @@ namespace DndCore
 		public bool IsForever()
 		{
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
+		}
+		
+		public bool IsZero()
+		{
+			return TimeMeasure == TimeMeasure.instant || Count == 0;
+		}
+		
+		/// <summary>
+		/// Returns true if the duration has a finite positive value.
+		/// </summary>
+		/// <returns></returns>
+		public bool HasValue()
+		{
+			return !IsForever() && !IsZero() && Count > 0;
 		}
 
 		public static readonly DndTimeSpan Zero = FromActions(0);

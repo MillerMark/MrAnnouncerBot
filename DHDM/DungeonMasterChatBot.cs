@@ -39,12 +39,12 @@ namespace DHDM
 			Commands.Add(new AdvanceClockCommand());
 			Commands.Add(new SelectShortcutCommand());
 			Commands.Add(new StaticCommands());
+			Commands.Add(new BreakConcentrationCommand());
+			Commands.Add(new MoveFredCommand());
 			Commands.Add(new HiddenThresholdCommand());
 		}
 		public override void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient)
 		{
-			CreateCommandHandlers();
-
 			foreach (IDungeonMasterCommand dungeonMasterCommand in Commands)
 			{
 				if (dungeonMasterCommand.Matches(chatMessage.Message))
@@ -65,6 +65,7 @@ namespace DHDM
 			ListenTo(MarkMillerUserId);
 			ListenTo(HumperBotId);
 			ListenTo(DungeonMasterId);
+			CreateCommandHandlers();
 		}
 		public IDungeonMasterApp DungeonMasterApp { get; set; }
 	}

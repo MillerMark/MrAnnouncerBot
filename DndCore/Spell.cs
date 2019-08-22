@@ -13,6 +13,7 @@ namespace DndCore
 		public SpellComponents Components { get; set; }
 		public string Material { get; set; }
 		public int OwnerId { get; set; }
+		public bool RequiresConcentration { get; set; }
 
 		public Spell()
 		{

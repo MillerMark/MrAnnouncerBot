@@ -45,6 +45,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.ClearWindup(windupName);
 		}
 
+		public void MoveFred(string movement)
+		{
+			coderushedHub.Clients.All.MoveFred(movement);
+		}
+
 		public void FocusItem(int playerID, int pageID, string itemID)
 		{
 			coderushedHub.Clients.All.FocusItem(playerID, pageID, itemID);

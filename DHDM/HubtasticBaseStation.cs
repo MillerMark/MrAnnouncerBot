@@ -79,6 +79,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("ClearWindup", windupName);
 		}
 
+		public static void MoveFred(string movement)
+		{
+			HubConnection.InvokeAsync("MoveFred", movement);
+		}
+
 		public static void FocusItem(int playerID, ScrollPage pageID, string itemID)
 		{
 			HubConnection.InvokeAsync("FocusItem", playerID, (int)pageID, itemID);

@@ -1646,6 +1646,8 @@ class DiceLayer {
 		diceRoll.groupInspiration = dto.GroupInspiration;
 		diceRoll.successMessage = dto.SuccessMessage;
 		diceRoll.failMessage = dto.FailMessage;
+		diceRoll.additionalDiceOnHit = dto.AdditionalDiceOnHit;
+		diceRoll.additionalDiceOnHitMessage = dto.AdditionalDiceOnHitMessage;
 		diceRoll.critFailMessage = dto.CritFailMessage;
 		diceRoll.critSuccessMessage = dto.CritSuccessMessage;
 		diceRoll.numHalos = dto.NumHalos;
@@ -1819,6 +1821,8 @@ class DiceRollData {
 	successMessage: string;
 	critFailMessage: string;
 	failMessage: string;
+	additionalDiceOnHit: string;
+	additionalDiceOnHitMessage: string;
 	onFirstContactEffect: SpriteType;
 	onRollSound: number;
 	numHalos: number;

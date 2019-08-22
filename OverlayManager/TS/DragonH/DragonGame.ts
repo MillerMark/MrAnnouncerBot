@@ -17,6 +17,7 @@ class Spell {
 	Description: string;
 	Components: SpellComponents;
 	Material: string;
+	RequiresConcentration: boolean;
 	constructor() {
 
 	}

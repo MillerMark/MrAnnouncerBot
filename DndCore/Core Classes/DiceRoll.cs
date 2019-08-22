@@ -50,6 +50,8 @@ namespace DndCore
 		public string CritSuccessMessage { get; set; }
 		public string DamageDice { get; set; }
 		public string GroupInspiration { get; set; }
+		public string AdditionalDiceOnHit { get; set; }
+		public string AdditionalDiceOnHitMessage { get; set; }
 		public string FailMessage { get; set; }
 		public double HiddenThreshold { get; set; }
 		public bool IsMagic { get; set; }

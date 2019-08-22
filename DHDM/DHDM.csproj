@@ -273,6 +273,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AdvanceClockCommand.cs" />
+    <Compile Include="BreakConcentrationCommand.cs" />
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
     <Compile Include="DiceEventArgs.cs" />
@@ -284,11 +285,13 @@
     <Compile Include="IDungeonMasterCommand.cs" />
     <Compile Include="IDungeonMasterApp.cs" />
     <Compile Include="InspirationTextBox.cs" />
+    <Compile Include="MoveFredCommand.cs" />
     <Compile Include="PlayerActionShortcut.cs" />
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
+    <Compile Include="RegexConstants.cs" />
     <Compile Include="SavingThrowCommand.cs" />
     <Compile Include="ScrollCloseCommand.cs" />
     <Compile Include="SelectShortcutCommand.cs" />

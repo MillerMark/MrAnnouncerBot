@@ -1,27 +1,26 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class SelectShortcutCommand : IDungeonMasterCommand
+	public class BreakConcentrationCommand : IDungeonMasterCommand
 	{
-		string shortcutName;
+		int playerId;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.SelectPlayerShortcut(shortcutName);
+			dungeonMasterApp.BreakConcentration(playerId);
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"^ss\s+([\(\)\s\w']+)$");
+			Match match = Regex.Match(message, $"^bc [{RegexConstants.PlayerFirstInitials}]$");
 			if (match.Success)
 			{
-				shortcutName = match.Groups[1].Value;
-				return shortcutName != "";
+				if (int.TryParse(match.Groups[1].Value, out playerId))
+					return true;
 			}
 			return false;
 		}

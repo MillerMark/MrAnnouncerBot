@@ -15,6 +15,7 @@ function connectToSignalR(signalR) {
     connection.on("AddWindup", addWindup);
     connection.on("CastSpell", castSpell);
     connection.on("ClearWindup", clearWindup);
+		connection.on("MoveFred", moveFred);
     connection.on("TriggerEffect", triggerEffect);
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
@@ -47,6 +48,12 @@ function clearWindup(windupName: string): void {
 	}
 	if (activeBackGame instanceof DragonGame) {
 		activeBackGame.clearWindup(windupName);
+	}
+}
+
+function moveFred(movement: string): void {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.moveFred(movement);
 	}
 }
 

@@ -31,6 +31,8 @@ namespace DHDM
 		public string AdditionalRollTitle { get; set; }
 		public int MinDamage { get; set; }
 		public Spell Spell { get; set; }
+		public string AddDiceOnHit { get; set; }
+		public string AddDiceOnHitMessage { get; set; }
 		public PlayerActionShortcut()
 		{
 			MinDamage = 0;
@@ -45,6 +47,8 @@ namespace DHDM
 			LimitSpan = DndTimeSpan.Never;
 			Description = "";
 			AddDice = "";
+			AddDiceOnHit = "";
+			AddDiceOnHitMessage = "";
 			InstantDice = "";
 			AdditionalRollTitle = "";
 			Dice = "";

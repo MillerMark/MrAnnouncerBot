@@ -8,7 +8,7 @@
         mc:Ignorable="d"
 		xmlns:dh="clr-namespace:DndUI"
 		xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
-		Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+		Title="MainWindow" Height="938.188" Width="1862.227" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
 	<Window.Resources>
 		<Style TargetType="{x:Type RadioButton}" x:Key="VantageStyle"  >
 			<Setter Property="Template">
@@ -165,7 +165,7 @@
 				</StackPanel>
 			</StackPanel>
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
-				<TabItem Header="Dice" x:Name="tbDice">
+				<TabItem Header="Play" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
 						<StackPanel x:Name="spActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
 							<TextBlock Text="Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
@@ -497,8 +497,18 @@
 								<ComboBoxItem>Thunder</ComboBoxItem>
 							</ComboBox>
 							<TextBlock Text="MinDamage:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
-							<TextBox x:Name="tbxMinDamage" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
+							<TextBox x:Name="tbxMinDamage" MinWidth="50" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
 								0
+							</TextBox>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 3, 0, 0">
+							<TextBlock Text="Additional Dice on Hit:" Width="Auto" Height="Auto" Margin="22, 2, 0, 0"/>
+							<TextBox x:Name="tbxAddDiceOnHit" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+
+							</TextBox>
+							<TextBlock Text="Message:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
+							<TextBox x:Name="tbxMessageAddDiceOnHit" MinWidth="280" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+
 							</TextBox>
 						</StackPanel>
 						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
@@ -575,21 +585,6 @@
 								<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 							</Grid>
 						</Button>
-					</StackPanel>
-				</TabItem>
-				<TabItem Header="Windup Test">
-					<StackPanel x:Name="spWrapTest">
-						<TextBox x:Name="tbxData" Height="200" TextWrapping="Wrap">
-							Enter JSON Here
-						</TextBox>
-						<StackPanel Orientation="Horizontal">
-							<Button x:Name="btnSendWindup" Click="BtnSendWindup_Click" MaxWidth="140" MinHeight="30" Margin="10" Padding="8" >
-								Send Windup
-							</Button>
-							<Button x:Name="btnClearWindups" Click="BtnClearWindups_Click" MaxWidth="140" MinHeight="30" Margin="10" Padding="8" >
-								Clear Windups
-							</Button>
-						</StackPanel>
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="Players">

@@ -242,18 +242,72 @@ namespace DHDM
 				}
 			}
 		}
-
+		
+		void CreateAlarm(Spell spell, int playerId)
+		{
+			CreateAlarm(spell.Duration.GetTimeSpan(), $"{STR_EndSpell}{spell.Name}({playerId})");
+		}
+		
 		void CreateAlarm(TimeSpan timeSpan, string name)
 		{
 			DndAlarm dndAlarm = dndTimeClock.CreateAlarm(timeSpan, name);
 			dndAlarm.AlarmFired += DndAlarm_AlarmFired;
 		}
 
-		void PrepareToCastSpell(Spell spell, int playerId, string spellName)
+		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
 		{
-			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spellName} at {dndTimeClock.AsFullDndDateTimeString()}.");
-			CreateAlarm(spell.Duration.GetTimeSpan(), $"{STR_EndSpell}{spellName}({playerId})");
+			if (ea.Alarm.Name.StartsWith(STR_EndSpell))
+			{
+				string spellToEnd = ea.Alarm.Name.Substring(STR_EndSpell.Length);
+				HubtasticBaseStation.ClearWindup(spellToEnd);
+				int parenPos = spellToEnd.IndexOf('(');
+
+				string casterId = string.Empty;
+				if (parenPos > 0)
+				{
+					string playerIdStr = spellToEnd.Substring(parenPos + 1);
+					char[] endChars = { ')' };
+					playerIdStr = playerIdStr.Trim(endChars);
+					if (int.TryParse(playerIdStr, out int playerId))
+						casterId = $"{GetPlayerName(playerId)}'s ";
+					spellToEnd = spellToEnd.Substring(0, parenPos);
+				}
+				TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {dndTimeClock.AsFullDndDateTimeString()}.");
+			}
 		}
+
+		Dictionary<int, Spell> concentratedSpells = new Dictionary<int, Spell>();
+
+		void Dispel(Spell spell, int playerId)
+		{
+			HubtasticBaseStation.ClearWindup($"{spell.Name}({playerId})");
+		}
+
+		public void BreakConcentration(int playerId)
+		{
+			// TODO: Add support for Twinning spells.
+			if (concentratedSpells.ContainsKey(playerId))
+			{
+				Dispel(concentratedSpells[playerId], playerId);
+				concentratedSpells.Remove(playerId);
+			}
+		}
+		
+		void PlayerIsNowConcentrating(int playerId, Spell spell)
+		{
+			BreakConcentration(playerId);
+			concentratedSpells.Add(playerId, spell);
+		}
+
+
+		void PrepareToCastSpell(Spell spell, int playerId)
+		{
+			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {dndTimeClock.AsFullDndDateTimeString()}.");
+			CreateAlarm(spell, playerId);
+			if (spell.RequiresConcentration)
+				PlayerIsNowConcentrating(playerId, spell);
+		}
+		
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (sender is Button button)
@@ -261,67 +315,75 @@ namespace DHDM
 				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
 				if (actionShortcut == null)
 					return;
+				ActivateShortcut(actionShortcut);
+			}
+		}
 
-				if (actionShortcut.Spell != null)
+		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
+		{
+			Spell spell = actionShortcut.Spell;
+			if (spell != null)
+			{
+				if (spell.Duration.HasValue())
 				{
-					if (!actionShortcut.Spell.Duration.IsForever())
-					 {
-						PrepareToCastSpell(actionShortcut.Spell, actionShortcut.PlayerID, actionShortcut.Spell.Name);
-						
-						CastedSpell spellToCast = new CastedSpell(actionShortcut.Spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = Player_Merkin });
-						string serializedObject = JsonConvert.SerializeObject(spellToCast);
-						HubtasticBaseStation.CastSpell(serializedObject);
-					}
+					PrepareToCastSpell(spell, actionShortcut.PlayerID);
+
+					CastedSpell spellToCast = new CastedSpell(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = Player_Merkin });
+					string serializedObject = JsonConvert.SerializeObject(spellToCast);
+					HubtasticBaseStation.CastSpell(serializedObject);
 				}
+			}
 
-				if (actionShortcut.Windups.Count > 0)
-				{
-					List<WindupDto> windups = actionShortcut.CloneWindups();
-					HubtasticBaseStation.ClearWindup("");
-					string serializedObject = JsonConvert.SerializeObject(windups);
-					HubtasticBaseStation.AddWindup(serializedObject);
-				}
+			if (actionShortcut.Windups.Count > 0)
+			{
+				List<WindupDto> windups = actionShortcut.CloneWindups();
+				HubtasticBaseStation.ClearWindup("");
+				string serializedObject = JsonConvert.SerializeObject(windups);
+				HubtasticBaseStation.AddWindup(serializedObject);
+			}
 
-				settingInternally = true;
-				try
-				{
-					HighlightPlayerShortcut((int)button.Tag);
-					if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
-						tbxDamageDice.Text += "," + actionShortcut.AddDice;
+			settingInternally = true;
+			try
+			{
+				HighlightPlayerShortcut(actionShortcut.Index);
+				if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+					tbxDamageDice.Text += "," + actionShortcut.AddDice;
+				else
+					tbxDamageDice.Text = actionShortcut.Dice;
+
+				if (actionShortcut.MinDamage != keepExistingModifier)
+					tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
+
+				tbxAddDiceOnHit.Text = actionShortcut.AddDiceOnHit;
+				tbxMessageAddDiceOnHit.Text = actionShortcut.AddDiceOnHitMessage;
+
+				if (actionShortcut.Modifier != keepExistingModifier)
+					if (actionShortcut.Modifier > 0)
+						tbxModifier.Text = "+" + actionShortcut.Modifier.ToString();
 					else
-						tbxDamageDice.Text = actionShortcut.Dice;
+						tbxModifier.Text = actionShortcut.Modifier.ToString();
 
-					if (actionShortcut.MinDamage != keepExistingModifier)
-						tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
+				ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
+				NextDieRollType = actionShortcut.Type;
 
-					if (actionShortcut.Modifier != keepExistingModifier)
-						if (actionShortcut.Modifier > 0)
-							tbxModifier.Text = "+" + actionShortcut.Modifier.ToString();
-						else
-							tbxModifier.Text = actionShortcut.Modifier.ToString();
+				if (actionShortcut.VantageMod != VantageKind.Normal)
+					SetVantageForActivePlayer(actionShortcut.VantageMod);
 
-					ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
-					NextDieRollType = actionShortcut.Type;
-
-					if (actionShortcut.VantageMod != VantageKind.Normal)
-						SetVantageForActivePlayer(actionShortcut.VantageMod);
-
-					if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
-					{
-						DiceRollType type = actionShortcut.Type;
-						if (type == DiceRollType.None)
-							type = DiceRollType.DamageOnly;
-						DiceRoll diceRoll = PrepareRoll(type);
-						diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
-						diceRoll.DamageDice = actionShortcut.InstantDice;
-						RollTheDice(diceRoll);
-					}
-
-				}
-				finally
+				if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
 				{
-					settingInternally = false;
+					DiceRollType type = actionShortcut.Type;
+					if (type == DiceRollType.None)
+						type = DiceRollType.DamageOnly;
+					DiceRoll diceRoll = PrepareRoll(type);
+					diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+					diceRoll.DamageDice = actionShortcut.InstantDice;
+					RollTheDice(diceRoll);
 				}
+
+			}
+			finally
+			{
+				settingInternally = false;
 			}
 		}
 
@@ -523,6 +585,8 @@ namespace DHDM
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
 			diceRoll.GroupInspiration = tbxInspiration.Text;
+			diceRoll.AdditionalDiceOnHit = tbxAddDiceOnHit.Text;
+			diceRoll.AdditionalDiceOnHitMessage = tbxMessageAddDiceOnHit.Text;
 			diceRoll.CritFailMessage = "";
 			diceRoll.CritSuccessMessage = "";
 			diceRoll.SuccessMessage = "";
@@ -818,27 +882,7 @@ namespace DHDM
 			dndTimeClock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
 		}
 
-		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
-		{
-			if (ea.Alarm.Name.StartsWith(STR_EndSpell))
-			{
-				string spellToEnd = ea.Alarm.Name.Substring(STR_EndSpell.Length);
-				HubtasticBaseStation.ClearWindup(spellToEnd);
-				int parenPos = spellToEnd.IndexOf('(');
-				
-				string casterId = string.Empty;
-				if (parenPos > 0)
-				{
-					string playerIdStr = spellToEnd.Substring(parenPos + 1);
-					char[] endChars = { ')' };
-					playerIdStr = playerIdStr.Trim(endChars);
-					if (int.TryParse(playerIdStr, out int playerId))
-						casterId = $"{GetPlayerName(playerId)}'s ";
-					spellToEnd = spellToEnd.Substring(0, parenPos);
-				}
-				TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {dndTimeClock.AsFullDndDateTimeString()}.");
-			}
-		}
+
 
 		void enableDiceRollButtons()
 		{
@@ -1707,11 +1751,43 @@ namespace DHDM
 				Description = "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration."
 			};
 
-			shieldOfFaith.Spell = new Spell() { Name = "Shield of Faith", OwnerId = playerId, CastingTime = DndTimeSpan.FromBonusActions(1), Range = 60, Components = SpellComponents.Material | SpellComponents.Somatic | SpellComponents.Verbal, Material = "a small parchment with a bit of holy text written on it.", Duration = DndTimeSpan.FromMinutes(10) };
+			shieldOfFaith.Spell = new Spell()
+			{
+				Name = "Shield of Faith", OwnerId = playerId,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Range = 60,
+				Components = SpellComponents.All,
+				Material = "A small parchment with a bit of holy text written on it.",
+				Duration = DndTimeSpan.FromMinutes(10),
+				RequiresConcentration = true
+			};
 
 			const string effectName = "Plasma";
 			shieldOfFaith.Windups.Add(new WindupDto() { Effect = effectName, Hue = -30 }.MoveUpDown(160).Fade());
 			actionShortcuts.Add(shieldOfFaith);
+		}
+
+		void AddSleep(int playerId)
+		{
+			PlayerActionShortcut sleep = new PlayerActionShortcut()
+			{
+				Name = "Sleep",
+				PlayerID = playerId,
+				Part = TurnPart.Action,
+			};
+
+			sleep.Spell = new Spell()
+			{
+				Name = "Sleep",
+				OwnerId = playerId,
+				Duration = DndTimeSpan.OneMinute,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Material = "a pinch of fine sand, rose petals, or a cricket",
+				Range = 90
+				//,
+				//Subrange = 20,
+				//SubrangeType = AreaOfEffect.Sphere
+			};
 		}
 
 		void AddSanctuary(int playerId)
@@ -1723,7 +1799,16 @@ namespace DHDM
 				Part = TurnPart.BonusAction,
 				Description = "You ward a creature within range against attack. Until the spell ends, any creature who targets the warded creature with an attack or a harmful spell must first make a Wisdom saving throw. On a failed save, the creature must choose a new target or lose the attack or spell. This spell doesn't protect the warded creature from area effects, such as the explosion of a fireball.\n\nIf the warded creature makes an attack, casts a spell that affects an enemy, or deals damage to another creature, this spell ends."
 			};
-			sanctuary.Spell = new Spell() { Name = "Sanctuary", OwnerId = playerId, Duration = DndTimeSpan.FromMinutes(1) };
+
+			sanctuary.Spell = new Spell()
+			{
+				Name = "Sanctuary", OwnerId = playerId,
+				Duration = DndTimeSpan.OneMinute,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Material = "a small silver mirror",
+				Range = 30
+			};
+			
 			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 170 }.Fade());
 			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = -60, Hue = 200, Rotation = 45 }.Fade());
 			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = 60, Hue = 230, Rotation = -45 }.Fade());
@@ -1736,12 +1821,24 @@ namespace DHDM
 				Name = "Thunderous Smite",
 				PlayerID = playerId,
 				Part = TurnPart.BonusAction,
-				AddDice = additionalDice,
+				AddDiceOnHit = additionalDice,
+				AddDiceOnHitMessage = Name,
 				DC = 13,
 				Ability = Ability.Strength,
 				MinDamage = keepExistingModifier,
 				Modifier = keepExistingModifier,
 				Description = "The first time you hit with a melee weapon attack during this spell’s duration, your weapon rings with thunder that is audible within 300 feet of you, and the attack deals an extra 2d6 thunder damage to the target. Additionally, if the target is a creature, it must succeed on a Strength saving throw or be pushed 10 feet away from you and knocked prone."
+			};
+			thunderousSmite.Spell = new Spell()
+			{
+				Name = thunderousSmite.Name,
+				OwnerId = playerId,
+				Duration = DndTimeSpan.OneMinute,
+				RequiresConcentration = true,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Components = SpellComponents.Verbal,
+				Range = 30
+				// TODO: Clear Thunderous Smite visual effects on a hit.
 			};
 			AddLightning(thunderousSmite);
 			thunderousSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = 45 }.Fade());
@@ -1761,12 +1858,24 @@ namespace DHDM
 				Name = "Wrathful Smite",
 				PlayerID = playerId,
 				Part = TurnPart.BonusAction,
-				AddDice = additionalDice,
+				AddDiceOnHit = additionalDice,
+				AddDiceOnHitMessage = Name,
 				DC = 13,
 				Ability = Ability.Wisdom,
 				MinDamage = keepExistingModifier,
 				Modifier = keepExistingModifier,
 				Description = "The next time you hit with a melee weapon attack during this spell’s duration, your attack deals an extra 1d6 psychic damage. Additionally, if the target is a creature, it must make a Wisdom saving throw or be frightened of you until the spell ends. As an action, the creature can make a Wisdom check against your spell save DC to steel its resolve and end this spell."
+			};
+
+			wrathfulSmite.Spell = new Spell()
+			{
+				Name = wrathfulSmite.Name,
+				OwnerId = playerId,
+				Duration = DndTimeSpan.OneMinute,
+				RequiresConcentration = true,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Components = SpellComponents.Verbal,
+				Range = 30
 			};
 
 			AddLightning(wrathfulSmite, -1);
@@ -2879,7 +2988,11 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-
+				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName);
+				if (shortcut != null)
+				{
+					ActivateShortcut(shortcut);
+				}
 			});
 			TellDungeonMaster("");
 		}
@@ -2955,6 +3068,11 @@ namespace DHDM
 		{
 			HubtasticBaseStation.ClearWindup("");
 			TellDungeonMaster("Dropping windups...");
+		}
+
+		public void MoveFred(string movement)
+		{
+			HubtasticBaseStation.MoveFred(movement);
 		}
 
 		public void PlayScene(string sceneName)

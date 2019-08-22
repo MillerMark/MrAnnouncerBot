@@ -21,7 +21,9 @@ namespace DHDM
 		void RollDice(string diceStr, DiceRollType diceRollType);
 		void HideScroll();
 		void DropWindup();
+		void BreakConcentration(int playerId);
 		void PlayScene(string sceneName);
+		void MoveFred(string movement);
 		void Speak(int playerId, string message);
 		void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand);
 		void TellDungeonMaster(string message, bool isDetail = false);
