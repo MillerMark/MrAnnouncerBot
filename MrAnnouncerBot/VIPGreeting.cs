@@ -317,7 +317,7 @@ namespace MrAnnouncerBot
                     Greeting = $"Not all heroes wear capes, but all heroes know index starts at 0. Welcome @{DisplayName}!";
                     break;
                 case 8:
-                    Greeting = $"His IntelliSense® must be tingling! I see @{DisplayName}!";
+                    Greeting = $"His IntelliSense must be tingling! I see @{DisplayName}!";
                     break;
                 default:
                     GreetVip();
