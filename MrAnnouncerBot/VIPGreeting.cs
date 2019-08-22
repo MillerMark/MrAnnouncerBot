@@ -290,16 +290,16 @@ namespace MrAnnouncerBot
 
         private void Greet_Codeman_Codes()
         {
-            switch (new Random().Next(9))
+            switch (new Random().Next(10))
             {
                 case 0:
                     Greeting = $"Look! Behind the desk! It's an int! It's a string! It's @{DisplayName}!";
                     break;
                 case 1:
-                    Greeting = $"This is my gift, my curse. Who am I? @{DisplayName}";
+                    Greeting = $"This is his gift, his curse. Who am he? @{DisplayName}";
                     break;
                 case 2:
-                    Greeting = $"Someone must have ripped the 'Q' section out of my dictionary, 'cause I don't know the meaning of the word 'quit'. I'm @{DisplayName}";
+                    Greeting = $"Someone must have ripped the 'Q' section out of his dictionary, 'cause He don't know the meaning of the word 'quit'. Here comes @{DisplayName}!";
                     break;
                 case 3:
                     Greeting = $"For there must always, always be a @{DisplayName}. And some day, when he's needed, we will see him again.";
@@ -315,6 +315,9 @@ namespace MrAnnouncerBot
                     break;
                 case 7:
                     Greeting = $"Not all heroes wear capes, but all heroes know index starts at 0. Welcome @{DisplayName}!";
+                    break;
+                case 8:
+                    Greeting = $"His IntelliSense® must be tingling! I see @{DisplayName}!";
                     break;
                 default:
                     GreetVip();
