@@ -5,22 +5,22 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class BreakConcentrationCommand : IDungeonMasterCommand
+	public class GetDataCommand : IDungeonMasterCommand
 	{
-		int playerId;
+		string reportName;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.BreakConcentration(playerId);
+			dungeonMasterApp.GetData(reportName);
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, $"^bc {RegexConstants.PlayerFirstInitials}$");
+			Match match = Regex.Match(message, $"^GetData\\s+([\\(\\)\\s\\w']+)$");
 			if (match.Success)
 			{
-				if (int.TryParse(match.Groups[1].Value, out playerId))
-					return true;
+				reportName = match.Groups[1].Value;
+				return reportName != "";
 			}
 			return false;
 		}

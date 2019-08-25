@@ -28,22 +28,6 @@ namespace DndCore
 			return new DndTimeSpan(TimeMeasure.bonusActions, bonusActionCount);
 		}
 
-		public static DndTimeSpan OneBonusAction
-		{
-			get
-			{
-				return new DndTimeSpan(TimeMeasure.bonusActions, 1); ;
-			}
-		}
-		
-		public static DndTimeSpan OneAction
-		{
-			get
-			{
-				return new DndTimeSpan(TimeMeasure.actions, 1);
-			}
-		}
-
 		public static DndTimeSpan FromDays(int days)
 		{
 			return new DndTimeSpan(TimeMeasure.days, days);
@@ -119,24 +103,33 @@ namespace DndCore
 		{
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
 		}
-		
+
+		public bool IsUnknown()
+		{
+			return TimeMeasure == TimeMeasure.actions && Count == int.MinValue;
+		}
+
 		public bool IsZero()
 		{
 			return TimeMeasure == TimeMeasure.instant || Count == 0;
 		}
 		
 		/// <summary>
-		/// Returns true if the duration has a finite positive value.
+		/// Returns true if the duration is known and has a finite positive value.
 		/// </summary>
 		/// <returns></returns>
 		public bool HasValue()
 		{
-			return !IsForever() && !IsZero() && Count > 0;
+			return !IsForever() && !IsUnknown() && !IsZero() && Count > 0;
 		}
 
 		public static readonly DndTimeSpan Zero = FromActions(0);
+		public static readonly DndTimeSpan OneAction = FromActions(1);
+		public static readonly DndTimeSpan OneBonusAction = new DndTimeSpan(TimeMeasure.bonusActions, 1);
+		public static readonly DndTimeSpan OneReaction = new DndTimeSpan(TimeMeasure.reaction, 1);
 		public static readonly DndTimeSpan Never = Zero;
 		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
+		public static readonly DndTimeSpan Unknown = FromActions(int.MinValue);
 		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
 	}
 }

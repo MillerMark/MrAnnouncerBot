@@ -48,7 +48,7 @@ class SpellEffect {
 	}
 }
 
-class KnownSpells {
+class KnownSpellsEffects {
 	static spellEffects: Array<SpellEffect> = new Array<SpellEffect>();
 
 	static addSpell(spellEffect: SpellEffect) {
@@ -64,8 +64,8 @@ class KnownSpells {
 	}
 
 	static initializeSpells(): void {
-		this.addSpell(KnownSpells.shieldOfFaith());
-		this.addSpell(KnownSpells.sanctuary());
+		this.addSpell(KnownSpellsEffects.shieldOfFaith());
+		this.addSpell(KnownSpellsEffects.sanctuary());
 	}
 
 	static getEffect(effectName: string, hue: number): WindupData {
@@ -75,9 +75,9 @@ class KnownSpells {
 
 	static shieldOfFaith(): SpellEffect {
 		let spell: SpellEffect = new SpellEffect('Shield of Faith');
-		let part1: WindupData = KnownSpells.getEffect('Wide', -15);
-		let part2: WindupData = KnownSpells.getEffect('Wide', 15);
-		let part3: WindupData = KnownSpells.getEffect('Wide', 45);
+		let part1: WindupData = KnownSpellsEffects.getEffect('Wide', -15);
+		let part2: WindupData = KnownSpellsEffects.getEffect('Wide', 15);
+		let part3: WindupData = KnownSpellsEffects.getEffect('Wide', 45);
 
 		part2.Rotation = 45;
 		part2.DegreesOffset = -60;
@@ -93,9 +93,9 @@ class KnownSpells {
 
 	static sanctuary(): SpellEffect {
 		let spell: SpellEffect = new SpellEffect('Sanctuary');
-		let part1: WindupData = KnownSpells.getEffect('LiquidSparks', 170);
-		let part2: WindupData = KnownSpells.getEffect('LiquidSparks', 200);
-		let part3: WindupData = KnownSpells.getEffect('LiquidSparks', 230);
+		let part1: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 170);
+		let part2: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 200);
+		let part3: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 230);
 
 		part2.Rotation = 45;
 		part2.DegreesOffset = -60;
@@ -165,7 +165,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		// TODO: Consider adding fireballs to another SpriteCollection. Not really windups.
 		this.backLayerEffects.add(this.fireBallBack);
 		this.backLayerEffects.add(this.fireBallFront);
-		KnownSpells.initializeSpells();
+		KnownSpellsEffects.initializeSpells();
 	}
 
 	loadSpell(spellName: string): Sprites {
@@ -218,7 +218,7 @@ abstract class DragonGame extends GamePlusQuiz {
 
 	castSpell(spellData: string): void {
 		let spell: CastedSpellDataDto = JSON.parse(spellData);
-		let spellEffect: SpellEffect = KnownSpells.getSpell(spell.Spell.Name);
+		let spellEffect: SpellEffect = KnownSpellsEffects.getSpell(spell.Spell.Name);
 		if (spellEffect) {
 			let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
 			this.addWindups(spellEffect.windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);

@@ -29,6 +29,7 @@ namespace DndCore
 		public Skills doubleProficiency = 0;
 		public string remainingHitDice = string.Empty;
 		public Ability savingThrowProficiency = 0;
+		public Ability spellCastingAbility = Ability.None;
 		public double tempAcrobaticsMod = 0;
 		public double tempAnimalHandlingMod = 0;
 		public double tempArcanaMod = 0;
@@ -620,6 +621,20 @@ namespace DndCore
 		public string ToJson()
 		{
 			return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+		}
+		
+		public int GetSpellcastingAbilityModifier()
+		{
+			switch (spellCastingAbility)
+			{
+				case Ability.Wisdom: return (int)Math.Floor(wisdomMod);
+				case Ability.Charisma: return (int)Math.Floor(charismaMod);
+				case Ability.Constitution: return (int)Math.Floor(constitutionMod);
+				case Ability.Dexterity: return (int)Math.Floor(dexterityMod);
+				case Ability.Intelligence: return (int)Math.Floor(intelligenceMod);
+				case Ability.Strength: return (int)Math.Floor(strengthMod);
+			}
+			return 0;
 		}
 	}
 }

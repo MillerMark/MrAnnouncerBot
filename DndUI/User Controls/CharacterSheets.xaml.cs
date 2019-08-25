@@ -272,6 +272,13 @@ namespace DndUI
 				result |= Ability.Strength;
 			return result;
 		}
+		
+		Ability GetSpellCastingAbility()
+		{
+			Ability result = Ability.None;
+			// TODO: Implement this.
+			return result;
+		}
 
 		void SetSkillProficiency(Skills skills)
 		{
@@ -390,6 +397,11 @@ namespace DndUI
 			statBox.Text = StrUtils.GetFirstName(name);
 			statBox.IsEnabled = false;
 		}
+		
+		void SetSpellCastingAbility(Ability ability)
+		{
+			// TODO: Implement this.
+		}
 		public void SetFromCharacter(Character character)
 		{
 			changingInternally = true;
@@ -453,6 +465,7 @@ namespace DndUI
 				statRaceClass.Text = character.raceClass;
 				//character.remainingHitDice = 
 				SetSavingThrowProficiency(character.savingThrowProficiency);
+				SetSpellCastingAbility(character.spellCastingAbility);
 				//character.senses = 
 				statSpeed.Text = character.baseSpeed.ToString();
 				statStrength.Text = character.Strength.ToString();
@@ -554,6 +567,7 @@ namespace DndUI
 			character.raceClass = statRaceClass.Text;
 			//character.remainingHitDice = 
 			character.savingThrowProficiency = GetSavingThrowProficiency();
+			character.spellCastingAbility = GetSpellCastingAbility();
 			//character.senses = 
 			character.baseSpeed = statSpeed.ToDouble();
 			character.baseStrength = statStrength.ToInt();

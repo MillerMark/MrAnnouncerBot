@@ -280,6 +280,7 @@
     <Compile Include="DiceRollData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="DungeonMasterCommand.cs" />
+    <Compile Include="GetDataCommand.cs" />
     <Compile Include="HealthDamageCommand.cs" />
     <Compile Include="HiddenThresholdCommand.cs" />
     <Compile Include="IDungeonMasterCommand.cs" />

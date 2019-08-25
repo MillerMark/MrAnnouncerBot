@@ -5,7 +5,7 @@ namespace DHDM
 {
 	public static class RegexConstants
 	{
-		public const string PlayerFirstInitials = "flmaws";  // Fred, Lady, Merkin, Ava, Willy, Shemo
+		public const string PlayerFirstInitials = "[flmaws]";  // Fred, Lady, Merkin, Ava, Willy, Shemo
 
 	}
 }

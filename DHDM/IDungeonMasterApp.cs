@@ -12,7 +12,8 @@ namespace DHDM
 		void RollWildMagicCheck();
 		void RollWildMagic();
 		void SelectCharacter(int playerId);
-		void SelectPlayerShortcut(string shortcutName);
+		void SelectPlayerShortcut(string shortcutName, int playerId);
+		void GetData(string dataId);
 		void RollSkillCheck(Skills skill);
 		void RollSavingThrow(Ability ability);
 		void RollAttack();

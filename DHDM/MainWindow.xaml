@@ -362,6 +362,36 @@
 							
 							
 						</StackPanel>
+						<StackPanel x:Name="spSpellSlot" Orientation="Horizontal" Margin="0, 0, 0, 8">
+							<TextBlock Text="SpellSlot: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+							<TextBox x:Name="tbxSpellSlot" MinWidth="50" FontSize="22">
+								1
+							</TextBox>
+							<Button x:Name="btnSpellSlotCantrip" Tag="0" MinWidth="30" Click="BtnSpellSlot_Click">
+								Cantrip
+							</Button>
+							<Button x:Name="btnSpellSlot1" Tag="1" MinWidth="30" Click="BtnSpellSlot_Click">
+								1
+							</Button>
+							<Button x:Name="btnSpellSlot2" Tag="2" MinWidth="30" Click="BtnSpellSlot_Click">
+								2
+							</Button>
+							<Button x:Name="btnSpellSlot3" Tag="3" MinWidth="30" Click="BtnSpellSlot_Click">
+								3
+							</Button>
+							<Button x:Name="btnSpellSlot4" Tag="4" MinWidth="30" Click="BtnSpellSlot_Click">
+								4
+							</Button>
+							<Button x:Name="btnSpellSlot5" Tag="5" MinWidth="30" Click="BtnSpellSlot_Click">
+								5
+							</Button>
+							<Button x:Name="btnSpellSlot6" Tag="6" MinWidth="30" Click="BtnSpellSlot_Click">
+								6
+							</Button>
+							<Button x:Name="btnSpellSlot7" Tag="7" MinWidth="30" Click="BtnSpellSlot_Click">
+								7
+							</Button>
+						</StackPanel>
 						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>

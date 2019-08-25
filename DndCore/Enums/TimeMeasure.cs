@@ -14,6 +14,7 @@ namespace DndCore
 		forever = 6,
 		never = 7,
 		round = 8,
-		bonusActions = 9
+		bonusActions = 9,
+		reaction = 10
 	}
 }

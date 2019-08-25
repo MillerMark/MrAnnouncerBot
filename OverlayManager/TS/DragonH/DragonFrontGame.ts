@@ -77,13 +77,13 @@ class Fred {
 
 		this.one = new Sprites('Fred/One/One', 44, fps30, AnimationStyle.Sequential, true);
 		this.one.name = 'One';
-		this.one.originX = 238;
+		this.one.originX = 218;
 		this.one.originY = 249;
 
 		this.flipOff = new Sprites('Fred/FlipOff/FlipOff', 47, fps30, AnimationStyle.Sequential, true);
 		this.flipOff.name = 'FlipOff';
 		this.flipOff.originX = 180;
-		this.flipOff.originY = 227;
+		this.flipOff.originY = 207;
 
 		this.fistUp = new Sprites('Fred/FistUp/FistUp', 61, fps30, AnimationStyle.Sequential, true);
 		this.fistUp.name = 'FistUp';
@@ -280,7 +280,7 @@ class DragonFrontGame extends DragonGame {
 		this.poof.originX = 229;
 		this.poof.originY = 698;
 
-		this.sparkShower = new Sprites('Sparks/Big/BigSparks', 64, fps30, AnimationStyle.Sequential, true);
+		this.sparkShower = new Sprites('Sparks/Big/BigSparks', 63, fps30, AnimationStyle.Sequential, true);
 		this.sparkShower.name = 'SparkShower';
 		this.sparkShower.originX = 443;
 		this.sparkShower.originY = 595;

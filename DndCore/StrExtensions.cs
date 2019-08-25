@@ -18,6 +18,77 @@ namespace DndCore
 				return result;
 			return 0;
 		}
+
+		public static double GetFirstDouble(this string str, bool allowDecimals = true)
+		{
+			bool foundAtLeastOneDigit = false;
+			bool lastCharWasMinus = false;
+			bool isNegative = false;
+			bool lastCharWasDot = false;
+			bool hasDecimalPoint = false;
+			string numberStr = string.Empty;
+			for (int i = 0; i < str.Length; i++)
+			{
+				if (char.IsDigit(str[i]))
+				{
+					if (lastCharWasDot && !hasDecimalPoint)
+					{
+						numberStr += ".";
+						hasDecimalPoint = true;
+						lastCharWasDot = false;
+					}
+					foundAtLeastOneDigit = true;
+					if (lastCharWasMinus)
+					{
+						isNegative = true;
+						lastCharWasMinus = false;
+					}
+					numberStr += str[i];
+				}
+				else if (foundAtLeastOneDigit && !hasDecimalPoint && str[i] == '.' && allowDecimals)
+				{
+					if (lastCharWasDot)
+						break;
+					lastCharWasDot = true;
+				}
+				else
+				{
+					if (foundAtLeastOneDigit)
+						break;
+					if (str[i] == '-')
+						lastCharWasMinus = true;
+				}
+			}
+			int multiplier = isNegative ? -1 : 1;
+			if (foundAtLeastOneDigit)
+				return multiplier * double.Parse(numberStr);
+			return 0;
+		}
+
+		public static int GetFirstInt(this string str)
+		{
+			return (int)Math.Floor(GetFirstDouble(str, false));
+		}
+
+		public static string EverythingAfter(this string str, string matchStr)
+		{
+			int pos = str.IndexOf(matchStr);
+			if (pos >= 0)
+			{
+				return str.Substring(pos + matchStr.Length);
+			}
+			return null;
+		}
+		
+		public static string EverythingBefore(this string str, string matchStr)
+		{
+			int pos = str.IndexOf(matchStr);
+			if (pos >= 0)
+			{
+				return str.Substring(0, pos);
+			}
+			return null;
+		}
 	}
 }
 

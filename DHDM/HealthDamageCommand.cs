@@ -20,7 +20,7 @@ namespace DHDM
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"([\-\+]\d+)");
+			Match match = Regex.Match(message, @"(^[\-\+]\d+)");
 			if (match.Success)
 			{
 				if (int.TryParse(match.Groups[0].Value, out healthDamageValue))

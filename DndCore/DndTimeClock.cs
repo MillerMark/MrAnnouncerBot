@@ -341,6 +341,11 @@ namespace DndCore
 		{
 			return Time.ToString("H:mm:ss") + ", " + AsDndDateString();
 		}
+		
+		public DndAlarm GetAlarm(string alarmName)
+		{
+			return alarms.FirstOrDefault(x => x.Name == alarmName);
+		}
 	}
 }
 

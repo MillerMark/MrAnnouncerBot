@@ -49,6 +49,7 @@ namespace DHDM
 		DispatcherTimer updateClearButtonTimer;
 		DateTime lastUpdateTime;
 		int keepExistingModifier = int.MaxValue;
+		Spell activeSpell = null;
 
 		public MainWindow()
 		{
@@ -245,9 +246,14 @@ namespace DHDM
 		
 		void CreateAlarm(Spell spell, int playerId)
 		{
-			CreateAlarm(spell.Duration.GetTimeSpan(), $"{STR_EndSpell}{spell.Name}({playerId})");
+			CreateAlarm(spell.Duration.GetTimeSpan(), GetAlarmName(spell, playerId));
 		}
-		
+
+		private static string GetAlarmName(Spell spell, int playerId)
+		{
+			return $"{STR_EndSpell}{spell.Name}({playerId})";
+		}
+
 		void CreateAlarm(TimeSpan timeSpan, string name)
 		{
 			DndAlarm dndAlarm = dndTimeClock.CreateAlarm(timeSpan, name);
@@ -269,7 +275,10 @@ namespace DHDM
 					char[] endChars = { ')' };
 					playerIdStr = playerIdStr.Trim(endChars);
 					if (int.TryParse(playerIdStr, out int playerId))
+					{
+						BreakConcentration(playerId);
 						casterId = $"{GetPlayerName(playerId)}'s ";
+					}
 					spellToEnd = spellToEnd.Substring(0, parenPos);
 				}
 				TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {dndTimeClock.AsFullDndDateTimeString()}.");
@@ -292,7 +301,7 @@ namespace DHDM
 				concentratedSpells.Remove(playerId);
 			}
 		}
-		
+
 		void PlayerIsNowConcentrating(int playerId, Spell spell)
 		{
 			BreakConcentration(playerId);
@@ -302,6 +311,7 @@ namespace DHDM
 
 		void PrepareToCastSpell(Spell spell, int playerId)
 		{
+			spell.OwnerId = playerId;
 			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {dndTimeClock.AsFullDndDateTimeString()}.");
 			CreateAlarm(spell, playerId);
 			if (spell.RequiresConcentration)
@@ -322,6 +332,7 @@ namespace DHDM
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
 			Spell spell = actionShortcut.Spell;
+			//activeSpell = spell.ChangeSpellCastingConditions(newPlayerLevel, newSpellSlot);
 			if (spell != null)
 			{
 				if (spell.Duration.HasValue())
@@ -704,7 +715,7 @@ namespace DHDM
 				diceRoll.HiddenThreshold = -100;
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
-
+			
 			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
 			return diceRoll;
@@ -1745,22 +1756,23 @@ namespace DHDM
 		{
 			PlayerActionShortcut shieldOfFaith = new PlayerActionShortcut()
 			{
-				Name = "Shield of Faith",
+				Name = SpellNames.ShieldOfFaith,
 				PlayerID = playerId,
 				Part = TurnPart.BonusAction,
 				Description = "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration."
 			};
 
-			shieldOfFaith.Spell = new Spell()
-			{
-				Name = "Shield of Faith", OwnerId = playerId,
-				CastingTime = DndTimeSpan.OneBonusAction,
-				Range = 60,
-				Components = SpellComponents.All,
-				Material = "A small parchment with a bit of holy text written on it.",
-				Duration = DndTimeSpan.FromMinutes(10),
-				RequiresConcentration = true
-			};
+			shieldOfFaith.Spell = AllSpells.Get(SpellNames.ShieldOfFaith, players[playerId], 0);
+			//shieldOfFaith.Spell = new Spell()
+			//{
+			//	Name = "Shield of Faith", OwnerId = playerId,
+			//	CastingTime = DndTimeSpan.OneBonusAction,
+			//	Range = 60,
+			//	Components = SpellComponents.All,
+			//	Material = "A small parchment with a bit of holy text written on it.",
+			//	Duration = DndTimeSpan.FromMinutes(10),
+			//	RequiresConcentration = true
+			//};
 
 			const string effectName = "Plasma";
 			shieldOfFaith.Windups.Add(new WindupDto() { Effect = effectName, Hue = -30 }.MoveUpDown(160).Fade());
@@ -1794,20 +1806,21 @@ namespace DHDM
 		{
 			PlayerActionShortcut sanctuary = new PlayerActionShortcut()
 			{
-				Name = "Sanctuary",
+				Name = SpellNames.Sanctuary,
 				PlayerID = playerId,
 				Part = TurnPart.BonusAction,
 				Description = "You ward a creature within range against attack. Until the spell ends, any creature who targets the warded creature with an attack or a harmful spell must first make a Wisdom saving throw. On a failed save, the creature must choose a new target or lose the attack or spell. This spell doesn't protect the warded creature from area effects, such as the explosion of a fireball.\n\nIf the warded creature makes an attack, casts a spell that affects an enemy, or deals damage to another creature, this spell ends."
 			};
 
-			sanctuary.Spell = new Spell()
-			{
-				Name = "Sanctuary", OwnerId = playerId,
-				Duration = DndTimeSpan.OneMinute,
-				CastingTime = DndTimeSpan.OneBonusAction,
-				Material = "a small silver mirror",
-				Range = 30
-			};
+			sanctuary.Spell = AllSpells.Get(SpellNames.Sanctuary, players[playerId]);
+			//sanctuary.Spell = new Spell()
+			//{
+			//	Name = "Sanctuary", OwnerId = playerId,
+			//	Duration = DndTimeSpan.OneMinute,
+			//	CastingTime = DndTimeSpan.OneBonusAction,
+			//	Material = "a small silver mirror",
+			//	Range = 30
+			//};
 			
 			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 170 }.Fade());
 			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = -60, Hue = 200, Rotation = 45 }.Fade());
@@ -2448,6 +2461,7 @@ namespace DHDM
 			kent.proficiencyBonus = 2;
 			kent.proficientSkills = Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth;
 			kent.savingThrowProficiency = Ability.Dexterity | Ability.Intelligence;
+			kent.spellCastingAbility = Ability.None;
 			kent.doubleProficiency = Skills.deception | Skills.persuasion;
 			kent.initiative = +3;
 			kent.hueShift = 0;
@@ -2484,7 +2498,7 @@ namespace DHDM
 			mark.goldPieces = 128;
 			mark.headshotIndex = 2;
 			mark.playerID = Player_Merkin;
-			mark.hitPoints = 26;
+			mark.hitPoints = 32;
 			mark.maxHitPoints = 26;
 			mark.baseArmorClass = 12;
 			mark.baseStrength = 8;
@@ -2497,6 +2511,7 @@ namespace DHDM
 			mark.initiative = +2;
 			mark.proficientSkills = Skills.acrobatics | Skills.deception | Skills.intimidation | Skills.perception | Skills.performance | Skills.persuasion;
 			mark.savingThrowProficiency = Ability.Constitution | Ability.Charisma;
+			mark.spellCastingAbility = Ability.Charisma;
 			mark.hueShift = 260;
 			mark.dieBackColor = "#401260";
 			mark.dieFontColor = "#ffffff";
@@ -2520,6 +2535,7 @@ namespace DHDM
 			karen.initiative = 0;
 			karen.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.performance | Skills.persuasion | Skills.survival;
 			karen.savingThrowProficiency = Ability.Wisdom | Ability.Charisma;
+			karen.spellCastingAbility = Ability.Charisma;
 			karen.hueShift = 210;
 			karen.dieBackColor = "#04315a";
 			karen.dieFontColor = "#ffffff";
@@ -2543,6 +2559,7 @@ namespace DHDM
 			fred.initiative = +3;
 			fred.proficientSkills = Skills.acrobatics | Skills.athletics | Skills.nature | Skills.perception | Skills.survival | Skills.stealth;
 			fred.savingThrowProficiency = Ability.Strength | Ability.Constitution;
+			fred.spellCastingAbility = Ability.None;
 			fred.hueShift = 206;
 			fred.dieBackColor = "#136399";
 			fred.dieFontColor = "#ffffff";
@@ -2566,6 +2583,7 @@ namespace DHDM
 			lara.initiative = +2;
 			lara.proficientSkills = Skills.animalHandling | Skills.arcana | Skills.intimidation | Skills.investigation | Skills.perception | Skills.survival;
 			lara.savingThrowProficiency = Ability.Strength | Ability.Constitution;
+			lara.spellCastingAbility = Ability.None;
 			lara.hueShift = 37;
 			//lara.dieBackColor = "#a86600";
 			//lara.dieFontColor = "#ffffff";
@@ -2984,17 +3002,100 @@ namespace DHDM
 			TellDungeonMaster("Rolling wild magic check.");
 		}
 
-		public void SelectPlayerShortcut(string shortcutName)
+		string GetNopeMessage()
+		{
+			int rand = new Random((int)dndTimeClock.Time.Ticks).Next(10);
+			switch (rand)
+			{
+				case 0:
+					return "Nope";
+				case 1:
+					return "No way";
+				case 2:
+					return "Sorry";
+				case 3:
+					return "No can do";
+				case 4:
+					return "Try again";
+				case 5:
+					return "Yeah... uh NO";
+				case 6:
+					return "That's a negative";
+				case 7:
+					return "No way padre";
+				case 8:
+					return "Can't do that";
+				case 9:
+					return "Impossible";
+			}
+			return "Error";
+		}
+
+		string Plural(int count, string suffix)
+		{
+			if (count == 1)
+				return $"{count} {suffix}";
+			return $"{count} {suffix}s";
+		}
+
+		string GetTimeLeft(int playerId, Spell spell)
+		{
+			DndAlarm alarm = dndTimeClock.GetAlarm(GetAlarmName(spell, playerId));
+			if (alarm == null)
+				return "0 seconds";
+			TimeSpan time = alarm.TriggerTime - dndTimeClock.Time;
+			string result;
+			if (time.TotalDays >= 1)
+				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalHours >= 1)
+				result = $"{Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalMinutes >= 1)
+				result = $"{Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else
+				result = Plural(time.Seconds, "second");
+			return result;
+		}
+
+		void ReportOnConcentration()
+		{
+			string concentrationReport = string.Empty;
+			foreach (int key in concentratedSpells.Keys)
+			{
+				concentrationReport += $"{GetPlayerName(key)} is casting {concentratedSpells[key].Name} with {GetTimeLeft(key, concentratedSpells[key])} remaining; ";
+			}
+			
+			if (string.IsNullOrWhiteSpace(concentrationReport))
+				TellDungeonMaster("No players are concentrating on any spells at this time.");
+			else
+				TellDungeonMaster(concentrationReport);
+		}
+
+		public void GetData(string dataId)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName);
+				if (dataId == "Concentration")
+					ReportOnConcentration();
+			});
+		}
+		
+		public void SelectPlayerShortcut(string shortcutName, int playerId)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (playerId != PlayerID)
+				{
+					TellDungeonMaster($"===================> {GetNopeMessage()}. {GetPlayerName(playerId)} is not the active player!");
+					return;
+				}
+				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerID == playerId);
 				if (shortcut != null)
 				{
 					ActivateShortcut(shortcut);
+					TellDungeonMaster($"Activated {GetPlayerName(playerId)}'s {shortcutName}.");
 				}
 			});
-			TellDungeonMaster("");
+			
 		}
 
 		public void SelectCharacter(int playerId)
@@ -3131,6 +3232,12 @@ namespace DHDM
 					
 				}
 			}
+		}
+
+		private void BtnSpellSlot_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button)
+				tbxSpellSlot.Text = button.Tag.ToString();
 		}
 	}
 }
