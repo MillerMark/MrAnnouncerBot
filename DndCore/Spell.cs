@@ -5,7 +5,7 @@ namespace DndCore
 {
 	public class Spell
 	{
-		
+
 		public int Range { get; set; }
 		public SpellRangeType RangeType { get; set; }
 		public SpellType SpellType { get; set; }
@@ -32,10 +32,10 @@ namespace DndCore
 		static DndTimeSpan GetCastingTime(string casting_Time)
 		{
 			string castingTime = casting_Time.ToLower();
-			
+
 			if (castingTime.EndsWith(" bonus action"))
 				return DndTimeSpan.OneBonusAction;
-			
+
 			if (castingTime.EndsWith(" action"))
 				return DndTimeSpan.OneAction;
 
@@ -64,22 +64,22 @@ namespace DndCore
 
 			if (duration.IndexOf("hour") > 0)
 				return DndTimeSpan.FromHours(duration.GetFirstInt());
-			
+
 			if (duration.IndexOf("day") > 0)
 				return DndTimeSpan.FromDays(duration.GetFirstInt());
 
 			if (duration.IndexOf("until dispelled") > 0)
 				return DndTimeSpan.Forever;
-			
+
 			if (duration.IndexOf("special") > 0)
 				return DndTimeSpan.Unknown;
 
 			if (duration.IndexOf("round") > 0)
 				return DndTimeSpan.FromRounds(duration.GetFirstInt());
 
-			throw new NotImplementedException();
+			return DndTimeSpan.Zero;
 		}
-		
+
 		static int GetRange(SpellDto spellDto, SpellRangeType rangeType)
 		{
 			switch (rangeType)
@@ -148,7 +148,11 @@ namespace DndCore
 		static string GetDieStr(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			string bonusThreshold = spellDto.bonus_threshold.ToLower();
-			string dieStr = spellDto.die_str;
+			
+			DieRollDetails details = DieRollDetails.From(spellDto.die_str, spellcastingAbilityModifier);
+
+			string dieStr = details.ToString();
+
 			if (string.IsNullOrWhiteSpace(bonusThreshold))
 			{
 				return dieStr;
@@ -172,7 +176,6 @@ namespace DndCore
 
 			DieRollDetails bonusDetails = DieRollDetails.From(bonusPerLevelStr, spellcastingAbilityModifier);
 
-			DieRollDetails details = DieRollDetails.From(dieStr, spellcastingAbilityModifier);
 			foreach (Roll bonusRoll in bonusDetails.Rolls)
 			{
 				Roll matchingRoll = details.GetRoll(bonusRoll.Sides);
@@ -274,7 +277,7 @@ namespace DndCore
 				spellComponents |= SpellComponents.Verbal;
 			return spellComponents;
 		}
-		
+
 		public bool HasRange(int value, SpellRangeType spellRangeType)
 		{
 			return Range == value && RangeType == spellRangeType;

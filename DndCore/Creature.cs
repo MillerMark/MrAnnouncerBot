@@ -29,11 +29,11 @@ namespace DndCore
 
 		public double baseDexterity;
 		public double baseIntelligence;
-		public double baseSpeed;
-
+		
 		public double baseStrength;
 		public double baseWisdom;
 		public double blindsightRadius = 0;
+		public double baseWalkingSpeed = 0;
 		public double burrowingSpeed = 0;
 
 		Dictionary<string, double> calculatedMods = new Dictionary<string, double>();
@@ -139,11 +139,11 @@ namespace DndCore
 		public double LastDamagePointsTaken { get; protected set; }
 
 		public DamageType LastDamageTaken { get; protected set; }
-		public double Speed
+		public double WalkingSpeed
 		{
 			get
 			{
-				return baseSpeed + GetMods();
+				return baseWalkingSpeed + GetMods();
 			}
 		}
 		public double Strength

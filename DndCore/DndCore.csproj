@@ -5,11 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Data\DnD - Players.csv" />
+    <None Remove="Data\DnD - Shortcuts.csv" />
+    <None Remove="Data\DnD - Spells.csv" />
     <None Remove="Data\dnd spells - all spells.csv" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Data\dnd spells - all spells.csv">
+    <Content Include="Data\DnD - Players.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\DnD - Shortcuts.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\DnD - Spells.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

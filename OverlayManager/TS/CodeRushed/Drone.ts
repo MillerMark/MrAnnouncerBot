@@ -669,6 +669,7 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
 	destroying(): void {
+		super.destroying();
     if (this.meteor) {
       let now: number = performance.now();
       this.changingDirection(now);

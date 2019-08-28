@@ -2,20 +2,23 @@
 using System.Linq;
 using DndCore;
 
-namespace DHDM
+namespace DndCore
 {
+	//! Synchronize with WindupData in WindupData.ts.
 	public class WindupDto
 	{
 		public string Effect { get; set; }
 		public string Name { get; set; }
 		public double Scale { get; set; }
+		public double Opacity { get; set; }
 		public int Lifespan { get; set; }
 		public int FadeIn { get; set; }
 		public int FadeOut { get; set; }
 		public int Hue { get; set; }
 		public int Saturation { get; set; }
 		public int Brightness { get; set; }
-		public string SoundFileName { get; set; }
+		public string StartSound { get; set; }
+		public string EndSound { get; set; }
 		public double Rotation { get; set; }
 		public double AutoRotation { get; set; }
 		public int DegreesOffset { get; set; }
@@ -98,10 +101,55 @@ namespace DHDM
 			result.Rotation = this.Rotation;
 			result.Saturation = this.Saturation;
 			result.Scale = this.Scale;
-			result.SoundFileName = this.SoundFileName;
+			result.StartSound = this.StartSound;
 			result.Velocity = this.Velocity;
 			result.PrepareForSerialization();
 			return result;
+		}
+		static double GetDouble(string str, double value = 0)
+		{
+			if (!string.IsNullOrEmpty(str) && double.TryParse(str, out double result))
+				return result;
+			return value;
+		}
+		static int GetInt(string str, int value = 0)
+		{
+			if (!string.IsNullOrEmpty(str) && int.TryParse(str, out int result))
+				return result;
+			return value;
+		}
+		public static WindupDto From(PlayerActionShortcutDto shortcutDto, Character player)
+		{
+			if (string.IsNullOrEmpty(shortcutDto.effect))
+				return null;
+			if (shortcutDto.effect.StartsWith("//"))
+				return null;
+			WindupDto windupDto = new WindupDto();
+			windupDto.Effect = shortcutDto.effect;
+			if (!string.IsNullOrEmpty(shortcutDto.hue))
+				if (shortcutDto.hue == "player")
+					windupDto.Hue = player.hueShift;
+				else if (int.TryParse(shortcutDto.hue, out int hue))
+					windupDto.Hue = hue;
+			windupDto.Scale = GetDouble(shortcutDto.scale, 1);
+			windupDto.Opacity = GetDouble(shortcutDto.opacity, 1);
+			windupDto.Rotation = GetInt(shortcutDto.rotation);
+			windupDto.DegreesOffset = GetInt(shortcutDto.degreesOffset);
+			windupDto.FlipHorizontal = IsChecked(shortcutDto.flipHorizontal);
+			if (IsChecked(shortcutDto.fade))
+				windupDto.Fade();
+			if (IsChecked(shortcutDto.playToEndOnExpire))
+				windupDto.PlayToEndOnExpire = true;
+			if (!string.IsNullOrEmpty(shortcutDto.moveUpDown) && int.TryParse(shortcutDto.moveUpDown, out int moveUpDown))
+				windupDto.MoveUpDown(moveUpDown);
+			windupDto.StartSound = shortcutDto.startSound;
+			windupDto.EndSound = shortcutDto.endSound;
+			return windupDto;
+		}
+
+		public static bool IsChecked(string entry)
+		{
+			return entry.ToLower().Trim() == "x";
 		}
 	}
 }

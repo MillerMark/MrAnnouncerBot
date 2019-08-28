@@ -24,7 +24,7 @@ namespace DndTests
 			elf.inspiration = "";
 
 			elf.initiative = 2;
-			elf.baseSpeed = 30;
+			elf.baseWalkingSpeed = 30;
 			elf.hitPoints = 47;
 			elf.tempHitPoints = 0;
 			elf.maxHitPoints = 55;
@@ -72,7 +72,7 @@ namespace DndTests
 			barbarian.inspiration = "";
 
 			barbarian.initiative = 2;
-			barbarian.baseSpeed = 30;
+			barbarian.baseWalkingSpeed = 30;
 			barbarian.hitPoints = 127;
 			barbarian.tempHitPoints = 3;
 			barbarian.maxHitPoints = 127;
@@ -107,7 +107,7 @@ namespace DndTests
 			wizard.inspiration = "";
 
 			wizard.initiative = 2;
-			wizard.baseSpeed = 30;
+			wizard.baseWalkingSpeed = 30;
 			wizard.hitPoints = 33;
 			wizard.tempHitPoints = 0;
 			wizard.maxHitPoints = 127;
@@ -138,7 +138,7 @@ namespace DndTests
 			druid.inspiration = "";
 
 			druid.initiative = 2;
-			druid.baseSpeed = 30;
+			druid.baseWalkingSpeed = 30;
 			druid.hitPoints = 27;
 			druid.tempHitPoints = 0;
 			druid.maxHitPoints = 44;

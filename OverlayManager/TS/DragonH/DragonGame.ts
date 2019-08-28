@@ -36,6 +36,7 @@ class SpellTarget {
 class CastedSpellDataDto {
 	Spell: Spell;
 	Target: SpellTarget;
+	Windups: Array<WindupData> = new Array<WindupData>();
 	constructor() {
 
 	}
@@ -218,11 +219,16 @@ abstract class DragonGame extends GamePlusQuiz {
 
 	castSpell(spellData: string): void {
 		let spell: CastedSpellDataDto = JSON.parse(spellData);
-		let spellEffect: SpellEffect = KnownSpellsEffects.getSpell(spell.Spell.Name);
-		if (spellEffect) {
-			let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
-			this.addWindups(spellEffect.windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
-		}
+
+		let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
+		this.addWindups(spell.Windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
+
+		// remove this:
+		//let spellEffect: SpellEffect = KnownSpellsEffects.getSpell(spell.Spell.Name);
+		//if (spellEffect) {
+		//	let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
+		//	this.addWindups(spellEffect.windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
+		//}
 	}
 
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
@@ -242,6 +248,8 @@ abstract class DragonGame extends GamePlusQuiz {
 					sprite.name = name;
 				else 
 					sprite.name = windup.Name;
+				sprite.opacity = windup.Opacity;
+
 				if (windup.Lifespan)
 					sprite.expirationDate = sprite.timeStart + windup.Lifespan;
 				sprite.fadeInTime = windup.FadeIn;
@@ -257,8 +265,12 @@ abstract class DragonGame extends GamePlusQuiz {
 				sprite.autoRotationDegeesPerSecond = windup.AutoRotation;
 				sprite.initialRotation = windup.Rotation;
 				sprite.flipHorizontally = windup.FlipHorizontal;
-				if (windup.SoundFileName)
-					this.playWindupSound(windup.SoundFileName);
+				if (windup.StartSound)
+					this.playWindupSound(windup.StartSound);
+				if (windup.EndSound)
+					sprite.onExpire = function () {
+						this.playWindupSound(windup.EndSound);
+					}.bind(this);
 			}
 		}
 	}

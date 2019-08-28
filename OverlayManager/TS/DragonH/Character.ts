@@ -150,7 +150,10 @@ class Character {
 	alignment: string;
 	baseArmorClass: number;
 	initiative: number;
-	speed: number;
+	baseWalkingSpeed: number;
+	swimmingSpeed: number;
+	flyingSpeed: number;
+	burrowingSpeed: number;
 	hitPoints: number;
 	tempHitPoints: number;
 	maxHitPoints: number;
@@ -243,6 +246,10 @@ class Character {
 		this.hitPoints = sourceCharacter.hitPoints;
 		this.hueShift = sourceCharacter.hueShift;
 		this.initiative = sourceCharacter.initiative;
+		this.baseWalkingSpeed = sourceCharacter.baseWalkingSpeed;
+		this.flyingSpeed = sourceCharacter.flyingSpeed;
+		this.burrowingSpeed = sourceCharacter.burrowingSpeed;
+		this.swimmingSpeed = sourceCharacter.swimmingSpeed;
 		this.inspiration = sourceCharacter.inspiration;
 		this.level = sourceCharacter.level;
 		this.load = sourceCharacter.load;
@@ -257,7 +264,7 @@ class Character {
 		this.raceClass = sourceCharacter.raceClass;
 		this.remainingHitDice = sourceCharacter.remainingHitDice;
 		this.rollInitiative = sourceCharacter.rollInitiative;
-		this.speed = sourceCharacter.speed;
+		this.baseWalkingSpeed = sourceCharacter.speed;
 		this.tempAcrobaticsMod = sourceCharacter.tempAcrobaticsMod;
 		this.tempAnimalHandlingMod = sourceCharacter.tempAnimalHandlingMod;
 		this.tempArcanaMod = sourceCharacter.tempArcanaMod;
@@ -764,7 +771,7 @@ class Character {
 		elf.inspiration = "";
 
 		elf.initiative = 2;
-		elf.speed = 30;
+		elf.baseWalkingSpeed = 30;
 		elf.hitPoints = 47;
 		elf.tempHitPoints = 0;
 		elf.maxHitPoints = 55;
@@ -806,7 +813,7 @@ class Character {
 		barbarian.inspiration = "";
 
 		barbarian.initiative = 2;
-		barbarian.speed = 30;
+		barbarian.baseWalkingSpeed = 30;
 		barbarian.hitPoints = 127;
 		barbarian.tempHitPoints = 3;
 		barbarian.maxHitPoints = 127;
@@ -835,7 +842,7 @@ class Character {
 		druid.inspiration = "";
 
 		druid.initiative = 2;
-		druid.speed = 30;
+		druid.baseWalkingSpeed = 30;
 		druid.hitPoints = 27;
 		druid.tempHitPoints = 0;
 		druid.maxHitPoints = 44;
@@ -864,7 +871,7 @@ class Character {
 		wizard.inspiration = "";
 
 		wizard.initiative = 2;
-		wizard.speed = 30;
+		wizard.baseWalkingSpeed = 30;
 		wizard.hitPoints = 33;
 		wizard.tempHitPoints = 0;
 		wizard.maxHitPoints = 127;

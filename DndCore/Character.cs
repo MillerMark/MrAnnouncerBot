@@ -8,7 +8,9 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
+		public bool playingNow { get; set; }
 		public int playerID { get; set; }
+		public int leftMostPriority { get; set; }
 		double _passivePerception = int.MinValue;
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
@@ -622,7 +624,17 @@ namespace DndCore
 		{
 			return Newtonsoft.Json.JsonConvert.SerializeObject(this);
 		}
-		
+
+		public int GetSpellAttackModifier()
+		{
+			return (int)Math.Round(proficiencyBonus) + GetSpellcastingAbilityModifier();
+		}
+
+		public int GetSpellSaveDC()
+		{
+			return 8 + GetSpellAttackModifier();
+		}
+
 		public int GetSpellcastingAbilityModifier()
 		{
 			switch (spellCastingAbility)
@@ -635,6 +647,41 @@ namespace DndCore
 				case Ability.Strength: return (int)Math.Floor(strengthMod);
 			}
 			return 0;
+		}
+		
+		public static Character From(CharacterDto characterDto)
+		{
+			var character = new Character();
+			character.playerID = PlayerID.FromName(characterDto.name);
+			character.name = characterDto.name;
+			character.playingNow = !string.IsNullOrWhiteSpace(characterDto.playingNow);
+			character.raceClass = characterDto.raceClass;
+			character.level = characterDto.level;
+			character.hitPoints = characterDto.hitPoints;
+			character.maxHitPoints = characterDto.maxHitPoints;
+			character.baseArmorClass = characterDto.baseArmorClass;
+			character.goldPieces = characterDto.goldPieces;
+			character.baseStrength = characterDto.baseStrength;
+			character.baseDexterity = characterDto.baseDexterity;
+			character.baseConstitution = characterDto.baseConstitution;
+			character.baseIntelligence = characterDto.baseIntelligence;
+			character.baseWisdom = characterDto.baseWisdom;
+			character.baseCharisma = characterDto.baseCharisma;
+			character.proficiencyBonus = characterDto.proficiencyBonus;
+			character.baseWalkingSpeed = characterDto.walking;
+			character.proficientSkills = DndUtils.ToSkill(characterDto.proficientSkills);
+			character.doubleProficiency = DndUtils.ToSkill(characterDto.doubleProficiency);
+			character.savingThrowProficiency = DndUtils.ToAbility(characterDto.savingThrowProficiency);
+			character.spellCastingAbility = DndUtils.ToAbility(characterDto.spellCastingAbility);
+			character.initiative = characterDto.initiative;
+			character.rollInitiative = DndUtils.ToVantage(characterDto.rollInitiative);
+			character.hueShift = characterDto.hueShift;
+			character.dieBackColor = characterDto.dieBackColor;
+			character.dieFontColor = characterDto.dieFontColor;
+			character.headshotIndex = characterDto.headshotIndex;
+			character.alignment = characterDto.alignment;
+			character.leftMostPriority = characterDto.leftMostPriority;
+			return character;
 		}
 	}
 }

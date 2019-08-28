@@ -7,7 +7,7 @@ namespace DHDM
 {
 	public class PlayerTabItem : TabItem
 	{
-		public int PlayerID { get; set; }
+		public int PlayerId { get; set; }
 		public CharacterSheets CharacterSheets { get; set; }
 		public PlayerTabItem()
 		{

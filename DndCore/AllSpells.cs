@@ -9,7 +9,7 @@ namespace DndCore
 		static List<SpellDto> spells;
 		static AllSpells()
 		{
-			spells = CsvData.Get<SpellDto>("Data/dnd spells - all spells.csv");
+			spells = CsvData.Get<SpellDto>(Folders.InCoreData("DnD - Spells.csv"));
 		}
 		public static Spell Get(string spellName, int spellSlotLevel = 0, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{

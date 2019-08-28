@@ -287,8 +287,8 @@
     <Compile Include="IDungeonMasterApp.cs" />
     <Compile Include="InspirationTextBox.cs" />
     <Compile Include="MoveFredCommand.cs" />
-    <Compile Include="PlayerActionShortcut.cs" />
     <Compile Include="PlayerButton.cs" />
+    <Compile Include="PlayerFactory.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
@@ -297,8 +297,8 @@
     <Compile Include="ScrollCloseCommand.cs" />
     <Compile Include="SelectShortcutCommand.cs" />
     <Compile Include="SkillCheckCommand.cs" />
+    <Compile Include="SpellSlotSelectorCommand.cs" />
     <Compile Include="StaticCommands.cs" />
-    <Compile Include="TurnPart.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>
@@ -313,7 +313,6 @@
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
-    <Compile Include="WindupDto.cs" />
     <Page Include="User Controls\AttackList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

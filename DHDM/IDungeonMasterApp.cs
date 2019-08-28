@@ -12,10 +12,11 @@ namespace DHDM
 		void RollWildMagicCheck();
 		void RollWildMagic();
 		void SelectCharacter(int playerId);
+		void SetSpellSlotLevel(int level);
 		void SelectPlayerShortcut(string shortcutName, int playerId);
 		void GetData(string dataId);
-		void RollSkillCheck(Skills skill);
-		void RollSavingThrow(Ability ability);
+		void RollSkillCheck(Skills skill, bool allPlayers = false);
+		void RollSavingThrow(Ability ability, bool allPlayers = false);
 		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
 		void AdvanceClock(int hours, int minutes, int seconds);

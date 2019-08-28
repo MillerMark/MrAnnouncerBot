@@ -1,14 +1,17 @@
-﻿class WindupData {
+﻿//! Synchronize with WindupDto in WindupDto.ts.
+class WindupData {
 	constructor(
 		public Effect: string,
 		public Hue: number,
+		public Opacity: number = 1,
 		public Saturation: number = 100,
 		public Brightness: number = 100,
 		public Scale: number = 1,
 		public Lifespan: number = undefined,
 		public FadeIn: number = 500,
 		public FadeOut: number = 900,
-		public SoundFileName: string = '',
+		public StartSound: string = '',
+		public EndSound: string = '',
 		public Rotation: number = 0,
 		public AutoRotation: number = 0,
 		public DegreesOffset: number = 0,

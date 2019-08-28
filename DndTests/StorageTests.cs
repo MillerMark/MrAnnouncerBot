@@ -115,7 +115,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.savingThrowProficiency, loadedCharacter.savingThrowProficiency);
 			Assert.AreEqual(originalTestWizard.spellCastingAbility, loadedCharacter.spellCastingAbility);
 			Assert.AreEqual(originalTestWizard.senses, loadedCharacter.senses);
-			Assert.AreEqual(originalTestWizard.Speed, loadedCharacter.Speed);
+			Assert.AreEqual(originalTestWizard.WalkingSpeed, loadedCharacter.WalkingSpeed);
 			Assert.AreEqual(originalTestWizard.Strength, loadedCharacter.Strength);
 			Assert.AreEqual(originalTestWizard.swimmingSpeed, loadedCharacter.swimmingSpeed);
 			Assert.AreEqual(originalTestWizard.telepathyRadius, loadedCharacter.telepathyRadius);

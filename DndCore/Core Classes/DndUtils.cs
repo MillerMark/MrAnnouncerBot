@@ -7,7 +7,19 @@ namespace DndCore
 	{
 		public static Skills ToSkill(string skillStr)
 		{
-			switch (skillStr.ToLower())
+			var skills = skillStr.Split(',');
+			Skills result = Skills.none;
+			
+			foreach (var skill in skills)
+			{
+				result |= ToSingleSkill(skill);
+			}
+			return result;
+		}
+
+		private static Skills ToSingleSkill(string skillStr)
+		{
+			switch (skillStr.ToLower().Trim())
 			{
 				case "acrobatics": return Skills.acrobatics;
 				case "animal handling":
@@ -27,7 +39,8 @@ namespace DndCore
 				case "religion": return Skills.religion;
 				case "slightofhand":
 				case "slight of hand"
-				: return Skills.slightOfHand;
+							:
+					return Skills.slightOfHand;
 				case "stealth": return Skills.stealth;
 				case "survival": return Skills.survival;
 				case "strength": return Skills.strength;
@@ -42,7 +55,19 @@ namespace DndCore
 
 		public static Ability ToAbility(string abilityStr)
 		{
-			switch (abilityStr.ToLower())
+			var abilities = abilityStr.Split(',');
+			Ability result = Ability.None;
+
+			foreach (var ability in abilities)
+			{
+				result |= ToSingleAbility(ability);
+			}
+			return result;
+		}
+
+		private static Ability ToSingleAbility(string abilityStr)
+		{
+			switch (abilityStr.ToLower().Trim())
 			{
 				case "charisma": return Ability.Charisma;
 				case "constitution": return Ability.Constitution;
@@ -53,6 +78,7 @@ namespace DndCore
 			}
 			return Ability.None;
 		}
+
 		public static DamageType ToDamage(string damageStr)
 		{
 			switch (damageStr.ToLower())
@@ -176,6 +202,28 @@ namespace DndCore
 			if (ability == Ability.Intelligence)
 				return "an " + ToAbilityDisplayString(ability);
 			return "a " + ToAbilityDisplayString(ability);
+		}
+		
+		public static VantageKind ToVantage(string rollInitiative)
+		{
+			if (string.IsNullOrWhiteSpace(rollInitiative))
+				return VantageKind.Normal;
+			string compareStr = rollInitiative.ToLower().Trim();
+			if (compareStr == "advantage")
+				return VantageKind.Advantage;
+			if (compareStr == "disadvantage")
+				return VantageKind.Disadvantage;
+			return VantageKind.Normal;
+		}
+		public static TurnPart ToTurnPart(DndTimeSpan time)
+		{
+			if (time == DndTimeSpan.OneAction)
+				return TurnPart.Action;
+			if (time == DndTimeSpan.OneBonusAction)
+				return TurnPart.BonusAction;
+			if (time == DndTimeSpan.OneReaction)
+				return TurnPart.Reaction;
+			return TurnPart.Special;
 		}
 	}
 }

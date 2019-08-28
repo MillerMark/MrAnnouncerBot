@@ -21,6 +21,7 @@ var randomDiceThrowIntervalId: number = 0;
 var damageModifierThisRoll: number = 0;
 var healthModifierThisRoll: number = 0;
 var extraModifierThisRoll: number = 0;
+var additionalDieRollMessage: string = '';
 
 enum DieEffect {
 	Ring,
@@ -1482,6 +1483,7 @@ function prepareD10x01Die(die: any, throwPower: number, xPositionModifier: numbe
 }
 
 function clearBeforeRoll() {
+	additionalDieRollMessage = '';
 	diceLayer.clearResidualEffects();
 	scalingDice = [];
 	specialDice = [];
@@ -2308,6 +2310,7 @@ function onDiceRollStopped() {
 		'skillCheck': diceRollData.skillCheck,
 		'savingThrow': diceRollData.savingThrow,
 		'bonus': totalBonus,
+		'additionalDieRollMessage': additionalDieRollMessage,
 	};
 
 	diceHaveStoppedRolling(JSON.stringify(diceData));
@@ -2409,10 +2412,12 @@ function showSpecialLabels(onlyBonusDice: boolean = false) {
 			8 / Thunder 
 	*/
 
+	let changedMessage: boolean = false;
+
 	if (diceRollData.type == DiceRollType.ChaosBolt) {
 		for (var i = 0; i < dice.length; i++) {
 			let die = dice[i];
-			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true) {
+			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true && die.values == 8) {
 				let topNumber = die.getTopNumber();
 				var message: string = '';
 				switch (topNumber) {
@@ -2450,10 +2455,18 @@ function showSpecialLabels(onlyBonusDice: boolean = false) {
 						break;
 				}
 				if (message) {
+					if (additionalDieRollMessage)
+						additionalDieRollMessage += ', ';
+					else
+						additionalDieRollMessage = '(';
+					changedMessage = true;
+					additionalDieRollMessage += message;
 					diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
 				}
 			}
 		}
+		if (additionalDieRollMessage && changedMessage)
+			additionalDieRollMessage += ')';
 	}
 }
 

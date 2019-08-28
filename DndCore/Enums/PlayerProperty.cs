@@ -53,7 +53,7 @@ namespace DndCore
 		SkillsSlightOfHand,
 		SkillsStealth,
 		SkillsSurvival,
-		Speed,
+		WalkingSpeed,
 		Strength,
 		Weight,
 		Wisdom

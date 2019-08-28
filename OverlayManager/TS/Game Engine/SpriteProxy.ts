@@ -29,6 +29,7 @@ class AnimatedElement {
 	lastY: number;
 	verticalThrustOverride: number = undefined;
 	horizontalThrustOverride: number = undefined;
+	onExpire: () => void;
 
 	constructor(public x: number, public y: number, lifeSpanMs: number = -1) {
 		this.velocityX = 0;
@@ -237,6 +238,8 @@ class AnimatedElement {
 	destroying(): void {
 		if (this.name)
 			console.log('destroying this sprite: ' + this.name);
+		if (this.onExpire)
+			this.onExpire();
 	}
 }
 

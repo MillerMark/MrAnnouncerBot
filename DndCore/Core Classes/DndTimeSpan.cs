@@ -8,6 +8,19 @@ namespace DndCore
 	{
 		public static readonly DndTimeSpan ShortRest = DndTimeSpan.FromHours(2);
 		public static readonly DndTimeSpan LongRest = DndTimeSpan.FromHours(8);
+
+		public static bool operator ==(DndTimeSpan left, DndTimeSpan right)
+		{
+			if ((object)left == null)
+				return (object)right == null;
+			else
+				return left.Equals(right);
+		}
+		public static bool operator !=(DndTimeSpan left, DndTimeSpan right)
+		{
+			return !(left == right);
+		}
+
 		public DndTimeSpan(TimeMeasure timeMeasure, int count)
 		{
 			Count = count;
@@ -121,6 +134,16 @@ namespace DndCore
 		public bool HasValue()
 		{
 			return !IsForever() && !IsUnknown() && !IsZero() && Count > 0;
+		}
+		
+		public static DndTimeSpan FromString(string spanStr)
+		{
+			string spanStrLowerCase = spanStr.ToLower();
+			if (spanStrLowerCase == "short rest")
+				return ShortRest;
+			if (spanStrLowerCase == "long rest")
+				return LongRest;
+			return Forever;
 		}
 
 		public static readonly DndTimeSpan Zero = FromActions(0);

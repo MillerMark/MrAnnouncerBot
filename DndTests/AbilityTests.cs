@@ -4,7 +4,6 @@ using System;
 
 namespace DndTests
 {
-
 	[TestClass]
 	public class AbilityTests
 	{
@@ -25,6 +24,16 @@ namespace DndTests
 				testContextInstance = value;
 			}
 		}
+		[TestMethod]
+		public void TestStringToAbilityConversion()
+		{
+			Assert.AreEqual(Ability.Dexterity | Ability.Intelligence, DndUtils.ToAbility("dexterity,intelligence"));
+			Assert.AreEqual(Ability.Dexterity | Ability.Intelligence, DndUtils.ToAbility("Intelligence,Dexterity"));
+			Assert.AreEqual(Ability.Charisma | Ability.Constitution | Ability.Dexterity | Ability.Intelligence | Ability.Strength, DndUtils.ToAbility("Charisma,  constitution ,Dexterity, Intelligence , Strength"));
+			Assert.AreEqual(Ability.Constitution, DndUtils.ToAbility("Constitution"));
+			Assert.AreEqual(Ability.Strength, DndUtils.ToAbility("strength"));
+		}
+		
 		[TestMethod]
 		public void TestAbilityStrRead()
 		{
