@@ -1,5 +1,9 @@
-﻿namespace DndCore
+﻿using System;
+using System.Collections.Generic;
+
+namespace DndCore
 {
+
 	public class ActionAttack
 	{
 		string constrict;

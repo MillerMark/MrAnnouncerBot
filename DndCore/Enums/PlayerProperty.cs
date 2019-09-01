@@ -28,7 +28,7 @@ namespace DndCore
 		NameHeadshot,
 		Perception,
 		ProficiencyBonus,
-		RaceClass,
+		Race,
 		SavingCharisma,
 		SavingConstitution,
 		SavingDexterity,

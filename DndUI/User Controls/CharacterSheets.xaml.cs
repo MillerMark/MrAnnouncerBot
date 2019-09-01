@@ -169,12 +169,12 @@ namespace DndUI
 			FocusHelper.ClearActiveStatBoxes();
 			switch (ability)
 			{
-				case Ability.Charisma: FocusHelper.Add(statSavingCharisma); break;
-				case Ability.Constitution: FocusHelper.Add(statSavingConstitution); break;
-				case Ability.Dexterity: FocusHelper.Add(statSavingDexterity); break;
-				case Ability.Intelligence: FocusHelper.Add(statSavingIntelligence); break;
-				case Ability.Strength: FocusHelper.Add(statSavingStrength); break;
-				case Ability.Wisdom: FocusHelper.Add(statSavingWisdom); break;
+				case Ability.charisma: FocusHelper.Add(statSavingCharisma); break;
+				case Ability.constitution: FocusHelper.Add(statSavingConstitution); break;
+				case Ability.dexterity: FocusHelper.Add(statSavingDexterity); break;
+				case Ability.intelligence: FocusHelper.Add(statSavingIntelligence); break;
+				case Ability.strength: FocusHelper.Add(statSavingStrength); break;
+				case Ability.wisdom: FocusHelper.Add(statSavingWisdom); break;
 			}
 		}
 
@@ -257,25 +257,25 @@ namespace DndUI
 		}
 		Ability GetSavingThrowProficiency()
 		{
-			Ability result = Ability.None;
+			Ability result = Ability.none;
 			if (statSavingCharismaProficient.IsChecked == true)
-				result |= Ability.Charisma;
+				result |= Ability.charisma;
 			if (statSavingConstitutionProficient.IsChecked == true)
-				result |= Ability.Constitution;
+				result |= Ability.constitution;
 			if (statSavingIntelligenceProficient.IsChecked == true)
-				result |= Ability.Intelligence;
+				result |= Ability.intelligence;
 			if (statSavingWisdomProficient.IsChecked == true)
-				result |= Ability.Wisdom;
+				result |= Ability.wisdom;
 			if (statSavingDexterityProficient.IsChecked == true)
-				result |= Ability.Dexterity;
+				result |= Ability.dexterity;
 			if (statSavingStrengthProficient.IsChecked == true)
-				result |= Ability.Strength;
+				result |= Ability.strength;
 			return result;
 		}
 		
 		Ability GetSpellCastingAbility()
 		{
-			Ability result = Ability.None;
+			Ability result = Ability.none;
 			// TODO: Implement this.
 			return result;
 		}
@@ -303,12 +303,12 @@ namespace DndUI
 
 		void SetSavingThrowProficiency(Ability ability)
 		{
-			statSavingCharismaProficient.IsChecked = (ability & Ability.Charisma) == Ability.Charisma;
-			statSavingConstitutionProficient.IsChecked = (ability & Ability.Constitution) == Ability.Constitution;
-			statSavingDexterityProficient.IsChecked = (ability & Ability.Dexterity) == Ability.Dexterity;
-			statSavingIntelligenceProficient.IsChecked = (ability & Ability.Intelligence) == Ability.Intelligence;
-			statSavingStrengthProficient.IsChecked = (ability & Ability.Strength) == Ability.Strength;
-			statSavingWisdomProficient.IsChecked = (ability & Ability.Wisdom) == Ability.Wisdom;
+			statSavingCharismaProficient.IsChecked = (ability & Ability.charisma) == Ability.charisma;
+			statSavingConstitutionProficient.IsChecked = (ability & Ability.constitution) == Ability.constitution;
+			statSavingDexterityProficient.IsChecked = (ability & Ability.dexterity) == Ability.dexterity;
+			statSavingIntelligenceProficient.IsChecked = (ability & Ability.intelligence) == Ability.intelligence;
+			statSavingStrengthProficient.IsChecked = (ability & Ability.strength) == Ability.strength;
+			statSavingWisdomProficient.IsChecked = (ability & Ability.wisdom) == Ability.wisdom;
 		}
 
 		string PlusModifier(double value)
@@ -402,6 +402,7 @@ namespace DndUI
 		{
 			// TODO: Implement this.
 		}
+
 		public void SetFromCharacter(Character character)
 		{
 			changingInternally = true;
@@ -451,7 +452,9 @@ namespace DndUI
 				// character.kind = 
 				// character.languagesSpoken = 
 				// character.languagesUnderstood = 
-				statLevel.Text = character.level.ToString();
+
+				//statLevel.Text = character.level.ToString();  read-only
+
 				statLoad.Text = character.load.ToString();
 				//character.maxHitPoints = 
 				SetName(statName, character.name);
@@ -556,7 +559,7 @@ namespace DndUI
 			// character.languagesUnderstood = 
 			character.languagesSpoken = Languages.Common;
 			character.languagesUnderstood = Languages.Common;
-			character.level = statLevel.ToInt();
+			//character.level = statLevel.ToInt();  // read only
 			character.load = statLoad.ToInt();
 			//character.maxHitPoints = 
 			character.name = statName.Text;
@@ -564,7 +567,7 @@ namespace DndUI
 			//character.onTurnActions = 
 			character.proficiencyBonus = statProficiencyBonus.ToInt();
 			character.proficientSkills = GetProficiencySkills();
-			character.raceClass = statRaceClass.Text;
+			//character.raceClass = statRaceClass.Text;  // read only
 			//character.remainingHitDice = 
 			character.savingThrowProficiency = GetSavingThrowProficiency();
 			character.spellCastingAbility = GetSpellCastingAbility();
@@ -739,27 +742,27 @@ namespace DndUI
 
 		private void DexteritySavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.Dexterity);
+			OnSavingThrowRequested(Ability.dexterity);
 		}
 		private void StrengthSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.Strength);
+			OnSavingThrowRequested(Ability.strength);
 		}
 		private void ConstitutionSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.Constitution);
+			OnSavingThrowRequested(Ability.constitution);
 		}
 		private void IntelligenceSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.Intelligence);
+			OnSavingThrowRequested(Ability.intelligence);
 		}
 		private void WisdomSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.Wisdom);
+			OnSavingThrowRequested(Ability.wisdom);
 		}
 		private void CharismaSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.Charisma);
+			OnSavingThrowRequested(Ability.charisma);
 		}
 
 		private void StrengthSkillCheck_Click(object sender, RoutedEventArgs e)

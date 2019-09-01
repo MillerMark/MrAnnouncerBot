@@ -1,107 +1,67 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace DndCore
 {
+	/// <summary>
+	/// Currency in the D&D game world. Enum values are number of those pieces per platinum piece.
+	/// </summary>
+	public enum Currency
+	{
+		None = 0,
+		CopperPieces = 1000,  
+		SilverPieces = 100,
+		ElectrumPieces = 20,
+		GoldPieces = 10,
+		PlatinumPieces = 1
+	}
+	
 	public static class DndUtils
 	{
-		public static Skills ToSkill(string skillStr)
+		static double PlatinumPiecesToGoldPieces(double platinumPieces)
 		{
-			var skills = skillStr.Split(',');
-			Skills result = Skills.none;
-			
-			foreach (var skill in skills)
-			{
-				result |= ToSingleSkill(skill);
-			}
-			return result;
+			return platinumPieces * 10;
+		}
+		public static double GetGoldPieces(string cost)
+		{
+			string costStr = cost.ToLower().Trim();
+			Currency currency = Currency.None;
+			if (costStr.EndsWith("gp"))
+				currency = Currency.GoldPieces;
+			else if (costStr.EndsWith("ep"))
+				currency = Currency.ElectrumPieces;
+			else if (costStr.EndsWith("sp"))
+				currency = Currency.SilverPieces;
+			else if (costStr.EndsWith("cp"))
+				currency = Currency.CopperPieces;
+			else if (costStr.EndsWith("pp"))
+				currency = Currency.PlatinumPieces;
+
+			if (currency == Currency.None)
+				currency = Currency.GoldPieces;
+
+			double firstDouble = costStr.GetFirstDouble();
+			double platinumPieces = firstDouble / (double)currency;
+
+			return PlatinumPiecesToGoldPieces(platinumPieces);
 		}
 
-		private static Skills ToSingleSkill(string skillStr)
+		public static Skills ToSkill(string skillStr)
 		{
-			switch (skillStr.ToLower().Trim())
-			{
-				case "acrobatics": return Skills.acrobatics;
-				case "animal handling":
-				case "animalhandling": return Skills.animalHandling;
-				case "arcana": return Skills.arcana;
-				case "athletics": return Skills.athletics;
-				case "deception": return Skills.deception;
-				case "history": return Skills.history;
-				case "insight": return Skills.insight;
-				case "intimidation": return Skills.intimidation;
-				case "investigation": return Skills.investigation;
-				case "medicine": return Skills.medicine;
-				case "nature": return Skills.nature;
-				case "perception": return Skills.perception;
-				case "performance": return Skills.performance;
-				case "persuasion": return Skills.persuasion;
-				case "religion": return Skills.religion;
-				case "slightofhand":
-				case "slight of hand"
-							:
-					return Skills.slightOfHand;
-				case "stealth": return Skills.stealth;
-				case "survival": return Skills.survival;
-				case "strength": return Skills.strength;
-				case "dexterity": return Skills.dexterity;
-				case "constitution": return Skills.constitution;
-				case "intelligence": return Skills.intelligence;
-				case "wisdom": return Skills.wisdom;
-				case "charisma": return Skills.charisma;
-			}
-			return Skills.none;
+			return GetElement<Skills>(skillStr);
 		}
 
 		public static Ability ToAbility(string abilityStr)
 		{
-			var abilities = abilityStr.Split(',');
-			Ability result = Ability.None;
-
-			foreach (var ability in abilities)
-			{
-				result |= ToSingleAbility(ability);
-			}
-			return result;
-		}
-
-		private static Ability ToSingleAbility(string abilityStr)
-		{
-			switch (abilityStr.ToLower().Trim())
-			{
-				case "charisma": return Ability.Charisma;
-				case "constitution": return Ability.Constitution;
-				case "dexterity": return Ability.Dexterity;
-				case "intelligence": return Ability.Intelligence;
-				case "strength": return Ability.Strength;
-				case "wisdom": return Ability.Wisdom;
-			}
-			return Ability.None;
+			return GetElement<Ability>(abilityStr);
 		}
 
 		public static DamageType ToDamage(string damageStr)
 		{
-			switch (damageStr.ToLower())
-			{
-				case "acid": return DamageType.Acid;
-				case "bludgeoning": return DamageType.Bludgeoning;
-				case "cold": return DamageType.Cold;
-				case "fire": return DamageType.Fire;
-				case "force": return DamageType.Force;
-				case "lightning": return DamageType.Lightning;
-				case "necrotic": return DamageType.Necrotic;
-				case "piercing": return DamageType.Piercing;
-				case "poison": return DamageType.Poison;
-				case "psychic": return DamageType.Psychic;
-				case "radiant": return DamageType.Radiant;
-				case "slashing": return DamageType.Slashing;
-				case "thunder": return DamageType.Thunder;
-				case "condition": return DamageType.Condition;
-				case "none": return DamageType.None;
-			}
-			return DamageType.None;
+			return GetElement<DamageType>(damageStr);
 		}
-		
+
 		public static string ToSkillDisplayString(Skills skill)
 		{
 			switch (skill)
@@ -180,41 +140,35 @@ namespace DndCore
 		{
 			switch (ability)
 			{
-				case Ability.None:
+				case Ability.none:
 					return "None";
-				case Ability.Strength:
+				case Ability.strength:
 					return "Strength";
-				case Ability.Dexterity:
+				case Ability.dexterity:
 					return "Dexterity";
-				case Ability.Constitution:
+				case Ability.constitution:
 					return "Constitution";
-				case Ability.Intelligence:
+				case Ability.intelligence:
 					return "Intelligence";
-				case Ability.Wisdom:
+				case Ability.wisdom:
 					return "Wisdom";
-				case Ability.Charisma:
+				case Ability.charisma:
 					return "Charisma";
 			}
 			return "?";
 		}
 		public static string ToArticlePlusAbilityDisplayString(Ability ability)
 		{
-			if (ability == Ability.Intelligence)
+			if (ability == Ability.intelligence)
 				return "an " + ToAbilityDisplayString(ability);
 			return "a " + ToAbilityDisplayString(ability);
 		}
-		
-		public static VantageKind ToVantage(string rollInitiative)
+
+		public static VantageKind ToVantage(string vantageStr)
 		{
-			if (string.IsNullOrWhiteSpace(rollInitiative))
-				return VantageKind.Normal;
-			string compareStr = rollInitiative.ToLower().Trim();
-			if (compareStr == "advantage")
-				return VantageKind.Advantage;
-			if (compareStr == "disadvantage")
-				return VantageKind.Disadvantage;
-			return VantageKind.Normal;
+			return GetElement<VantageKind>(vantageStr);
 		}
+
 		public static TurnPart ToTurnPart(DndTimeSpan time)
 		{
 			if (time == DndTimeSpan.OneAction)
@@ -224,6 +178,30 @@ namespace DndCore
 			if (time == DndTimeSpan.OneReaction)
 				return TurnPart.Reaction;
 			return TurnPart.Special;
+		}
+
+		private static T GetElement<T>(string elementName) where T : struct
+		{
+			if (Enum.TryParse(elementName.Trim().Replace(" ", ""), true, out T result))
+				return result;
+			else
+				return default(T);
+		}
+
+		public static Weapons ToWeapon(string weaponStr)
+		{
+			return GetElement<Weapons>(weaponStr);
+		}
+
+		public static string GetCleanItemName(string name)
+		{
+			if (name.IndexOf(',') > 0)
+				name = name.EverythingBefore(",");
+			if (name.IndexOf('(') > 0)
+				name = name.EverythingBefore("(");
+			if (name.IndexOf('[') > 0)
+				name = name.EverythingBefore("[");
+			return name;
 		}
 	}
 }

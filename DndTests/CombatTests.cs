@@ -75,13 +75,23 @@ namespace DndTests
 └───────────────┘");
 			dndGame.ActivateMap(map);
 			dndGame.ActivateRoom(dndRoom);
-			Assert.AreEqual(new Vector(5, 3), alice.WorldPosition);
-			Assert.AreEqual(new Vector(8, 6), betty.WorldPosition);
-			Assert.AreEqual(new Vector(13, 4), charlie.WorldPosition);
-			Assert.AreEqual(new Vector(12, 11), david.WorldPosition);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 5, DndMap.SquareSide * 3), alice.WorldPosition);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 8, DndMap.SquareSide * 6), betty.WorldPosition);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 13, DndMap.SquareSide * 4), charlie.WorldPosition);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 12, DndMap.SquareSide * 11), david.WorldPosition);
 
 			//dndGame.EnterCombat(true);
 			//ergo.QueueAction(new ActionAttack(alice, AttackNames.Constrict));
+		}
+
+		[TestMethod]
+		public void TestTurnEvents()
+		{
+			DndGame dndGame = new DndGame();
+			Character ava = dndGame.AddPlayer(AllPlayers.GetFromId(PlayerID.Ava));
+			Monster joe = dndGame.AddMonster(MonsterBuilder.BuildVineBlight("Joe"));
+			dndGame.EnteringCombat();
+			dndGame.ExitingCombat();
 		}
 	}
 }

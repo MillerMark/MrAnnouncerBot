@@ -86,7 +86,7 @@ namespace DndCore
 			return this;
 		}
 
-		public Attack AddDamage(DamageType damageType, string damageRoll, AttackKind attackKind, TimePoint damageHits = TimePoint.Immediately, TimePoint saveOpportunity = TimePoint.None, Conditions conditions = Conditions.None, int savingThrowSuccess = int.MaxValue, Ability savingThrowAbility = Ability.None)
+		public Attack AddDamage(DamageType damageType, string damageRoll, AttackKind attackKind, TimePoint damageHits = TimePoint.Immediately, TimePoint saveOpportunity = TimePoint.None, Conditions conditions = Conditions.None, int savingThrowSuccess = int.MaxValue, Ability savingThrowAbility = Ability.none)
 		{
 			damages.Add(new Damage(damageType, attackKind, damageRoll, damageHits, saveOpportunity, conditions, savingThrowSuccess, savingThrowAbility));
 			return this;
@@ -100,7 +100,7 @@ namespace DndCore
 
 		public Attack AddGrapple(int savingThrow, CreatureSize includeCreatureSizes = CreatureSizes.All)
 		{
-			Damage damage = new Damage(DamageType.Condition, AttackKind.Any, Dice.NoRoll, TimePoint.Immediately, TimePoint.Immediately, Conditions.Grappled | Conditions.Restrained, savingThrow, Ability.Strength | Ability.Dexterity);
+			Damage damage = new Damage(DamageType.Condition, AttackKind.Any, Dice.NoRoll, TimePoint.Immediately, TimePoint.Immediately, Conditions.Grappled | Conditions.Restrained, savingThrow, Ability.strength | Ability.dexterity);
 			damage.IncludeCreatureSizes = includeCreatureSizes;
 			damages.Add(damage);
 			return this;

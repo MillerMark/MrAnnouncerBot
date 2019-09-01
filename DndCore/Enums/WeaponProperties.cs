@@ -36,7 +36,7 @@ namespace DndCore
 												reaction to fire it, regardless of the number of attacks you can normally 
 												make. */
 
-		Range = 32,      /* A weapon that can be used to make a ranged attack has a range in parentheses 
+		Ranged = 32,      /* A weapon that can be used to make a ranged attack has a range in parentheses 
 												after the ammunition or thrown property. The range lists two numbers. The 
 												first is the weapon's normal range in feet, and the second indicates the 
 												weapon's long range. When attacking a target beyond normal range, you have 
@@ -59,8 +59,10 @@ namespace DndCore
 		[Description("Two-handed")]
 		TwoHanded = 512, /* This weapon requires two hands when you attack with it. */
 
-		Versatile = 1024 /* This weapon can be used with one or two hands. A damage value in parentheses 
+		Versatile = 1024, /* This weapon can be used with one or two hands. A damage value in parentheses 
 												appears with the property–the damage when the weapon is used with two hands to 
 												make a melee attack. */
+		Martial = 2048,
+		Melee = 4096
 	}
 }

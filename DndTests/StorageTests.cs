@@ -78,7 +78,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.onTurnActions, loadedCharacter.onTurnActions);
 			Assert.AreEqual(originalTestWizard.maxHitPoints, loadedCharacter.maxHitPoints);
 			Assert.AreEqual(originalTestWizard.load, loadedCharacter.load);
-			Assert.AreEqual(originalTestWizard.level, loadedCharacter.level);
+			Assert.AreEqual(originalTestWizard.ClassLevelStr, loadedCharacter.ClassLevelStr);
 			Assert.AreEqual(originalTestWizard.languagesUnderstood, loadedCharacter.languagesUnderstood);
 			Assert.AreEqual(originalTestWizard.languagesSpoken, loadedCharacter.languagesSpoken);
 			Assert.AreEqual(originalTestWizard.kind, loadedCharacter.kind);
@@ -110,7 +110,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.proficiencyBonus, loadedCharacter.proficiencyBonus);
 			Assert.AreEqual(originalTestWizard.proficientSkills, loadedCharacter.proficientSkills);
 			Assert.AreEqual(originalTestWizard.doubleProficiency, loadedCharacter.doubleProficiency);
-			Assert.AreEqual(originalTestWizard.raceClass, loadedCharacter.raceClass);
+			Assert.AreEqual(originalTestWizard.race, loadedCharacter.race);
 			Assert.AreEqual(originalTestWizard.remainingHitDice, loadedCharacter.remainingHitDice);
 			Assert.AreEqual(originalTestWizard.savingThrowProficiency, loadedCharacter.savingThrowProficiency);
 			Assert.AreEqual(originalTestWizard.spellCastingAbility, loadedCharacter.spellCastingAbility);
@@ -179,7 +179,7 @@ namespace DndTests
 			Assert.AreEqual(ModType.playerProperty, (ModType)modViewModel.ModType.Value);
 			Assert.AreEqual(0, modViewModel.Offset);
 			Assert.AreEqual(1, modViewModel.Multiplier);
-			Assert.AreEqual(Ability.Dexterity, modViewModel.AddAbilityModifier);
+			Assert.AreEqual(Ability.dexterity, modViewModel.AddAbilityModifier);
 			Assert.AreEqual(2, modViewModel.ModifierLimit);
 			Assert.AreEqual("ArmorClass", modViewModel.TargetName);
 			Assert.IsTrue(modViewModel.RequiresEquipped);

@@ -124,6 +124,8 @@ abstract class DragonGame extends GamePlusQuiz {
 
 	players: Array<Character> = [];
 
+	dragonSharedSounds: SoundManager;
+
 	private _inCombat: boolean;
 
 	get inCombat(): boolean {
@@ -194,6 +196,8 @@ abstract class DragonGame extends GamePlusQuiz {
 		super(context);
 		this.allWindupEffects = new SpriteCollection();
 		this.backLayerEffects = new SpriteCollection();
+		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
+
 	}
 
 	initializePlayerData(playerData: string): any {
@@ -281,7 +285,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 	playWindupSound(soundFileName: string): void {
-		// Do nothing - let descendants override to see who is going to play the sound.
+		this.dragonSharedSounds.safePlayMp3('Windups/' + soundFileName);
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {

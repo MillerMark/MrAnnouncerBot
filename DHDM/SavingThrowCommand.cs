@@ -24,14 +24,14 @@ namespace DHDM
 			if (match.Success)
 			{
 				abilityToTest = DndUtils.ToAbility(match.Groups[1].Value);
-				return abilityToTest != Ability.None;
+				return abilityToTest != Ability.none;
 			}
 			match = Regex.Match(message, @"^sva\s+(\w+)$");
 			if (match.Success)
 			{
 				testAllPlayers = true;
 				abilityToTest = DndUtils.ToAbility(match.Groups[1].Value);
-				return abilityToTest != Ability.None;
+				return abilityToTest != Ability.none;
 			}
 			return false;
 		}

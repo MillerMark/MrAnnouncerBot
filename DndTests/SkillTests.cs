@@ -30,6 +30,8 @@ namespace DndTests
 		{
 			Assert.AreEqual(Skills.nature | Skills.religion, DndUtils.ToSkill("nature,religion"));
 			Assert.AreEqual(Skills.slightOfHand, DndUtils.ToSkill("slightOfHand"));
+			Assert.AreEqual(Skills.slightOfHand, DndUtils.ToSkill("slight of hand"));
+			Assert.AreEqual(Skills.animalHandling, DndUtils.ToSkill("animal handling"));
 		}
 	}
 }

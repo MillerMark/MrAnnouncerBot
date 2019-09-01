@@ -8,6 +8,10 @@ namespace DndTests
 	[TestClass]
 	public class PlayerTests
 	{
+		static PlayerTests()
+		{
+			Folders.UseTestData = true;
+		}
 		private TestContext testContextInstance;
 
 		/// <summary>
@@ -29,35 +33,73 @@ namespace DndTests
 		[TestMethod]
 		public void TestPlayerLoad()
 		{
-			Folders.UseTestData = true;
 			Character willy = AllPlayers.Get("Willy");
 			Assert.AreEqual(5, willy.level);
 			Assert.AreEqual(35, willy.hitPoints);
 			Assert.AreEqual(150, willy.goldPieces);
 			Assert.AreEqual(Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth, willy.proficientSkills);
 			Assert.AreEqual(Skills.deception | Skills.persuasion, willy.doubleProficiency);
-			Assert.AreEqual(Ability.Dexterity | Ability.Intelligence, willy.savingThrowProficiency);
-			Assert.AreEqual(Ability.None, willy.spellCastingAbility);
+			Assert.AreEqual(Ability.dexterity | Ability.intelligence, willy.savingThrowProficiency);
+			Assert.AreEqual(Ability.none, willy.spellCastingAbility);
 			Assert.AreEqual(3, willy.initiative);
 			Assert.AreEqual(VantageKind.Advantage, willy.rollInitiative);
 			Assert.AreEqual("#710138", willy.dieBackColor);
 			Assert.AreEqual(4, willy.headshotIndex);
-			
-			
+		}
+
+		[TestMethod]
+		public void TestWeaponProficiencies()
+		{
+			Character willy = AllPlayers.Get("Willy");
+			Assert.IsTrue(willy.IsProficientWith(Weapons.HandCrossbow));
+			Assert.IsTrue(willy.IsProficientWith(Weapons.Longbow));
+			Assert.IsTrue(willy.IsProficientWith(Weapons.Longsword));
+			Assert.IsTrue(willy.IsProficientWith(Weapons.Rapier));
+			Assert.IsTrue(willy.IsProficientWith(Weapons.Shortsword));
+			Assert.IsTrue(willy.IsProficientWith(Weapons.Simple));
+			Assert.IsFalse(willy.IsProficientWith(Weapons.Martial));
+
+			Character shemo = AllPlayers.Get("Shemo");
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Club));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Dagger));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Dart));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Javelin));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Mace));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Quarterstaff));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Sickle));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Scimitar));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Sling));
+			Assert.IsTrue(shemo.IsProficientWith(Weapons.Spear));
+			Assert.IsFalse(shemo.IsProficientWith(Weapons.Simple));
+			Assert.IsFalse(shemo.IsProficientWith(Weapons.Martial));
+
+			Character lady = AllPlayers.Get("Lady");
+			Assert.IsTrue(lady.IsProficientWith(Weapons.LightCrossbow));
+			Assert.IsTrue(lady.IsProficientWith(Weapons.Simple));
+			Assert.IsTrue(lady.IsProficientWith(Weapons.Martial));
+
+			Character merkin = AllPlayers.Get("Merkin");
+			Assert.IsTrue(merkin.IsProficientWith(Weapons.Wizard));
+			Assert.IsFalse(merkin.IsProficientWith(Weapons.Simple));
+			Assert.IsFalse(merkin.IsProficientWith(Weapons.Martial));
+			Assert.IsFalse(merkin.IsProficientWith(Weapons.UnarmedStrike));
+
+			Character fred = AllPlayers.Get("Fred");
+			Assert.IsTrue(fred.IsProficientWith(Weapons.Simple));
+			Assert.IsTrue(fred.IsProficientWith(Weapons.Martial));
 		}
 
 		[TestMethod]
 		public void TestLady()
 		{
-			Folders.UseTestData = true;
 			Character lady = AllPlayers.Get("Lady");
 			Assert.AreEqual(5, lady.level);
 			Assert.AreEqual(39, lady.hitPoints);
 			Assert.AreEqual(0, lady.goldPieces);
 			Assert.AreEqual(Skills.animalHandling | Skills.arcana| Skills.intimidation| Skills.investigation| Skills.perception | Skills.survival, lady.proficientSkills);
 			Assert.AreEqual(Skills.none, lady.doubleProficiency);
-			Assert.AreEqual(Ability.Strength| Ability.Constitution, lady.savingThrowProficiency);
-			Assert.AreEqual(Ability.None, lady.spellCastingAbility);
+			Assert.AreEqual(Ability.strength| Ability.constitution, lady.savingThrowProficiency);
+			Assert.AreEqual(Ability.none, lady.spellCastingAbility);
 			Assert.AreEqual(2, lady.initiative);
 			Assert.AreEqual(VantageKind.Normal, lady.rollInitiative);
 			Assert.AreEqual(37, lady.hueShift);
@@ -79,7 +121,6 @@ namespace DndTests
 		[TestMethod]
 		public void TestPlayerIds()
 		{
-			Folders.UseTestData = true;
 			Character lady = AllPlayers.Get("Lady");
 			Assert.AreEqual(PlayerID.Lady, lady.playerID);
 			Character willy = AllPlayers.Get("Willy");

@@ -61,6 +61,13 @@ namespace DndTests
 		[TestMethod]
 		public void TestDieRollDetails()
 		{
+			Roll roll = DieRollDetails.From("3d12").Rolls[0];
+			Assert.AreEqual("3d12", roll.ToString());
+			roll.Offset = 4;
+			Assert.AreEqual("3d12+4", roll.ToString());
+			roll.Descriptor = "(necrotic)";
+			Assert.AreEqual("3d12+4(necrotic)", roll.ToString());
+
 			DieRollDetails rollDetails = DieRollDetails.From("1d4");
 			Assert.AreEqual(1, rollDetails.Rolls.Count);
 			Assert.AreEqual(0, rollDetails.Rolls[0].Offset);

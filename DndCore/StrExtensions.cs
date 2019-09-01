@@ -80,6 +80,14 @@ namespace DndCore
 			return null;
 		}
 		
+		public static string InitialCap(this string str)
+		{
+			if (string.IsNullOrEmpty(str))
+				return string.Empty;
+			char firstChar = str[0];
+			return Char.ToUpper(firstChar) + str.Substring(1);
+		}
+
 		public static string EverythingBefore(this string str, string matchStr)
 		{
 			int pos = str.IndexOf(matchStr);

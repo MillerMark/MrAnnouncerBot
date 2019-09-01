@@ -186,7 +186,6 @@ class DragonBackGame extends DragonGame {
 
 	playWindupSound(soundFileName: string): void {
 		//this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
-		this.dragonBackSounds.safePlayMp3('Windups/' + soundFileName);
 	}
 
 	initialize() {

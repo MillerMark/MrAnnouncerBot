@@ -146,6 +146,38 @@ namespace DndCore
 			return Forever;
 		}
 
+		public static DndTimeSpan FromDurationStr(string durationStr)
+		{
+			string duration = durationStr.ToLower();
+
+			if (duration == "instantaneous")
+				return Zero;
+
+			if (duration.EndsWith(" bonus action"))
+				return OneBonusAction;
+
+			if (duration.EndsWith(" action"))
+				return OneAction;
+
+			if (duration.IndexOf("reaction") > 0)
+				return OneReaction;
+
+			if (duration.IndexOf("minute") > 0)
+				return FromMinutes(duration.GetFirstInt());
+
+			if (duration.IndexOf("hour") > 0)
+				return FromHours(duration.GetFirstInt());
+
+			if (duration.IndexOf("day") > 0)
+				return FromDays(duration.GetFirstInt());
+
+			if (duration.IndexOf("round") > 0)
+				return FromRounds(duration.GetFirstInt());
+
+			return Zero;
+
+		}
+
 		public static readonly DndTimeSpan Zero = FromActions(0);
 		public static readonly DndTimeSpan OneAction = FromActions(1);
 		public static readonly DndTimeSpan OneBonusAction = new DndTimeSpan(TimeMeasure.bonusActions, 1);

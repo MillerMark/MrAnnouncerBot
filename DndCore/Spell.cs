@@ -29,44 +29,9 @@ namespace DndCore
 			RangeType = SpellRangeType.DistanceFeet;
 		}
 
-		static DndTimeSpan GetCastingTime(string casting_Time)
+		static DndTimeSpan GetCastingTime(string durationStr)
 		{
-			string castingTime = casting_Time.ToLower();
-
-			if (castingTime.EndsWith(" bonus action"))
-				return DndTimeSpan.OneBonusAction;
-
-			if (castingTime.EndsWith(" action"))
-				return DndTimeSpan.OneAction;
-
-			if (castingTime.IndexOf("reaction") > 0)
-				return DndTimeSpan.OneReaction;
-
-			if (castingTime.IndexOf("minute") > 0)
-				return DndTimeSpan.FromMinutes(castingTime.GetFirstInt());
-
-			if (castingTime.IndexOf("hour") > 0)
-				return DndTimeSpan.FromHours(castingTime.GetFirstInt());
-
-			throw new NotImplementedException();
-		}
-		static DndTimeSpan GetDuration(SpellDto spellDto)
-		{
-			string duration = spellDto.duration.ToLower();
-			const string concentrationHeader = "Concentration, ";
-			if (duration.StartsWith(concentrationHeader))
-				duration = duration.Substring(0, concentrationHeader.Length);
-			if (duration == "instantaneous")
-				return DndTimeSpan.Zero;
-
-			if (duration.IndexOf("minute") > 0)
-				return DndTimeSpan.FromMinutes(duration.GetFirstInt());
-
-			if (duration.IndexOf("hour") > 0)
-				return DndTimeSpan.FromHours(duration.GetFirstInt());
-
-			if (duration.IndexOf("day") > 0)
-				return DndTimeSpan.FromDays(duration.GetFirstInt());
+			string duration = durationStr.ToLower();
 
 			if (duration.IndexOf("until dispelled") > 0)
 				return DndTimeSpan.Forever;
@@ -74,10 +39,7 @@ namespace DndCore
 			if (duration.IndexOf("special") > 0)
 				return DndTimeSpan.Unknown;
 
-			if (duration.IndexOf("round") > 0)
-				return DndTimeSpan.FromRounds(duration.GetFirstInt());
-
-			return DndTimeSpan.Zero;
+			return DndTimeSpan.FromDurationStr(duration);
 		}
 
 		static int GetRange(SpellDto spellDto, SpellRangeType rangeType)
@@ -225,30 +187,36 @@ namespace DndCore
 		{
 			string savingThrow = spellDto.saving_throw.ToLower();
 			if (string.IsNullOrWhiteSpace(savingThrow))
-				return Ability.None;
+				return Ability.none;
 			if (savingThrow == "strength")
-				return Ability.Strength;
+				return Ability.strength;
 			if (savingThrow == "charisma")
-				return Ability.Charisma;
+				return Ability.charisma;
 			if (savingThrow == "constitution")
-				return Ability.Constitution;
+				return Ability.constitution;
 			if (savingThrow == "dexterity")
-				return Ability.Dexterity;
+				return Ability.dexterity;
 			if (savingThrow == "intelligence")
-				return Ability.Intelligence;
+				return Ability.intelligence;
 			if (savingThrow == "wisdom")
-				return Ability.Wisdom;
-			return Ability.None;
+				return Ability.wisdom;
+			return Ability.none;
 		}
 		public static Spell FromDto(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			SpellComponents spellComponents = GetSpellComponents(spellDto);
+
+			const string concentrationHeader = "Concentration, ";
+			string spellDuration = spellDto.duration;
+			if (spellDuration.StartsWith(concentrationHeader))
+				spellDuration = spellDuration.Substring(0, concentrationHeader.Length);
+
 			Spell spell = new Spell()
 			{
 				CastingTime = GetCastingTime(spellDto.casting_time),
 				Components = spellComponents,
 				Description = spellDto.description,
-				Duration = GetDuration(spellDto),
+				Duration = DndTimeSpan.FromDurationStr(spellDuration),
 				Material = spellDto.components_materials_description,
 				Level = GetLevel(spellDto.level),
 				Name = spellDto.name,

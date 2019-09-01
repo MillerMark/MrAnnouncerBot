@@ -1,4 +1,46 @@
-﻿enum Ability {
+﻿enum Weapons {
+	None = 0,
+	Battleaxe = 1,
+	Blowgun = 2,
+	Club = 4,
+	Crossbow_Hand = 8,
+	Crossbow_Heavy = 16,
+	Crossbow_Light = 32,
+	Dagger = 64,
+	Dart = 128,
+	Flail = 256,
+	Glaive = 512,
+	Greataxe = 1024,
+	Greatclub = 2048,
+	Greatsword = 4096,
+	Halberd = 8192,
+	Handaxe = 16384,
+	Javelin = 32768,
+	Lance = 65536,
+	LightHammer = 131072,
+	Longbow = 262144,
+	Longsword = 524288,
+	Mace = 1048576,
+	Maul = 2097152,
+	Morningstar = 4194304,
+	Net = 8388608,
+	Pike = 16777216,
+	Quarterstaff = 33554432,
+	Rapier = 67108864,
+	Scimitar = 134217728,
+	Shortbow = 268435456,
+	Shortsword = 536870912,
+	Sickle = 1073741824,
+	Sling = 2147483648,
+	Spear = 4294967296,
+	Trident = 8589934592,
+	UnarmedStrike = 17179869184,
+	WarPick = 34359738368,
+	Warhammer = 68719476736,
+	Whip = 137438953472
+}
+
+enum Ability {
 	strength = 1,
 	dexterity = 2,
 	constitution = 4,
@@ -104,36 +146,72 @@ Level	Effect
 5	Speed reduced to 0
 6	Death */
 
+
 enum Skills {
-	acrobatics = 1,
-	animalHandling = 2,
-	arcana = 4,
-	athletics = 8,
-	deception = 16,
-	history = 32,
-	insight = 64,
-	intimidation = 128,
-	investigation = 256,
-	medicine = 512,
-	nature = 1024,
-	perception = 2048,
-	performance = 4096,
-	persuasion = 8192,
-	religion = 16384,
-	slightOfHand = 32768,
-	stealth = 65536,
-	survival = 131072,
-	strength = 262144,
-	dexterity = 524288,
-	constitution = 1048576,
-	intelligence = 2097152,
-	wisdom = 4194304,
-	charisma = 8388608
+	none = 0,
+	strength = 1,
+	dexterity = 2,
+	constitution = 4,
+	intelligence = 8,
+	wisdom = 16,
+	charisma = 32,
+	acrobatics = 64,
+	animalHandling = 128,
+	arcana = 256,
+	athletics = 512,
+	deception = 1024,
+	history = 2048,
+	insight = 4096,
+	intimidation = 8192,
+	investigation = 16384,
+	medicine = 32768,
+	nature = 65536,
+	perception = 131072,
+	performance = 262144,
+	persuasion = 524288,
+	religion = 1048576,
+	slightOfHand = 2097152,
+	stealth = 4194304,
+	survival = 8388608
+}
+
+//enum Skills {
+//	acrobatics = 1,
+//	animalHandling = 2,
+//	arcana = 4,
+//	athletics = 8,
+//	deception = 16,
+//	history = 32,
+//	insight = 64,
+//	intimidation = 128,
+//	investigation = 256,
+//	medicine = 512,
+//	nature = 1024,
+//	perception = 2048,
+//	performance = 4096,
+//	persuasion = 8192,
+//	religion = 16384,
+//	slightOfHand = 32768,
+//	stealth = 65536,
+//	survival = 131072,
+//	strength = 262144,
+//	dexterity = 524288,
+//	constitution = 1048576,
+//	intelligence = 2097152,
+//	wisdom = 4194304,
+//	charisma = 8388608
+//}
+
+class CharacterClass {
+	constructor(public Name: string, public Level: number, public HitDice: string) {
+		
+	}
 }
 
 class Character {
 	playerID: number;
 	equipment: Array<Item> = new Array<Item>();
+	classes: Array<CharacterClass> = new Array<CharacterClass>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
 	level: number;
@@ -142,11 +220,13 @@ class Character {
 	dieBackColor: string;
 	dieFontColor: string;
 	conditions: Conditions = Conditions.none;
+	weaponProficiency: Weapons = Weapons.None;
 	onTurnActions: number = 1;
 	offTurnActions: number = 0;
 	inspiration: string;
 	experiencePoints: number;
 	raceClass: string;
+	race: string;
 	alignment: string;
 	baseArmorClass: number;
 	initiative: number;
@@ -202,13 +282,13 @@ class Character {
 	rollInitiative: VantageKind = VantageKind.Normal;
 
 	private _firstName: string;
-	
+
 	get firstName(): string {
 		if (!this._firstName)
 			this._firstName = this.getFirstName();
 		return this._firstName;
 	}
-	
+
   /* 
     savingThrowModStrength
     savingThrowModDexterity
@@ -220,6 +300,12 @@ class Character {
 
 	copyAttributesFrom(sourceCharacter: any): Character {
 		this.playerID = sourceCharacter.playerID;
+
+		for (let i = 0; i < sourceCharacter.classes.length; i++) {
+			let thisClass: any = sourceCharacter.classes[i];
+			this.classes.push(new CharacterClass(thisClass.Name, thisClass.Level, thisClass.HitDice));
+		}
+		
 		this.alignment = sourceCharacter.alignment;
 		this.headshotIndex = sourceCharacter.headshotIndex;
 		this.baseArmorClass = sourceCharacter.baseArmorClass;
@@ -231,6 +317,7 @@ class Character {
 		this.baseStrength = sourceCharacter.baseStrength;
 		this.baseWisdom = sourceCharacter.baseWisdom;
 		this.conditions = sourceCharacter.conditions;
+		this.weaponProficiency = sourceCharacter.weaponProficiency;
 		this.cursesAndBlessings = sourceCharacter.cursesAndBlessings;
 		this.deathSaveDeath1 = sourceCharacter.deathSaveDeath1;
 		this.deathSaveDeath2 = sourceCharacter.deathSaveDeath2;
@@ -262,6 +349,7 @@ class Character {
 		this.savingThrowProficiency = sourceCharacter.savingThrowProficiency;
 		this.doubleProficiency = sourceCharacter.doubleProficiency;
 		this.raceClass = sourceCharacter.raceClass;
+		this.race = sourceCharacter.race;
 		this.remainingHitDice = sourceCharacter.remainingHitDice;
 		this.rollInitiative = sourceCharacter.rollInitiative;
 		this.baseWalkingSpeed = sourceCharacter.speed;
@@ -699,8 +787,7 @@ class Character {
 	}
 
 	getSavingThrowMod(savingThrow: Ability): number {
-		switch (savingThrow)
-		{
+		switch (savingThrow) {
 			case Ability.charisma: return this.savingThrowModCharisma;
 			case Ability.constitution: return this.savingThrowModConstitution;
 			case Ability.dexterity: return this.savingThrowModDexterity;

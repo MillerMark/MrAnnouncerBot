@@ -138,20 +138,6 @@ namespace DndUI
 			OnPropertyChanged("VantageSkillFilter");
 		}
 
-		double GetDouble(string text, double defaultValue = 0)
-		{
-			if (double.TryParse(text, out double result))
-				return result;
-			return defaultValue;
-		}
-
-		int GetInt(string text, int defaultValue = 0)
-		{
-			if (int.TryParse(text, out int result))
-				return result;
-			return defaultValue;
-		}
-
 		public void LoadFromMod(ModViewModel mod)
 		{
 			settingInternally = true;
@@ -188,13 +174,13 @@ namespace DndUI
 		{
 			if (settingInternally)
 				return;
-			mod.Absolute = GetDouble(tbxAbsolute.Text);
+			mod.Absolute = MathUtils.GetDouble(tbxAbsolute.Text);
 			mod.AddsAdvantage = ckbAddsAdvantage.IsChecked ?? false;
 			mod.AddsDisadvantage = ckbAddsDisadvantage.IsChecked ?? false;
-			mod.ModifierLimit = GetInt(txbModifierLimit.Text);
-			mod.Multiplier = GetDouble(tbxMultiplier.Text, 1);
+			mod.ModifierLimit = MathUtils.GetInt(txbModifierLimit.Text);
+			mod.Multiplier = MathUtils.GetDouble(tbxMultiplier.Text, 1);
 			//mod.Name = vm.Name;
-			mod.Offset = GetDouble(tbxOffset.Text);
+			mod.Offset = MathUtils.GetDouble(tbxOffset.Text);
 			mod.Repeats = new DndTimeSpan(tmRepeats.TimeMeasure, (int)tmRepeats.Amount);
 			mod.RequiresConsumption = ckRequiresConsumed.IsChecked == true;
 			mod.RequiresEquipped = ckRequiresEquipped.IsChecked == true;
