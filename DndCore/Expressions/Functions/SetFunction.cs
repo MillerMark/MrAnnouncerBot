@@ -17,7 +17,7 @@ namespace DndCore
 			ExpectingArguments(args, 2);
 
 			string propertyName = args[0];
-			object value = evaluator.Evaluate(args[1]);
+			object value = evaluator.Evaluate(Expressions.Clean(args[1]));
 
 			FieldInfo field = typeof(Character).GetField(propertyName);
 			if (field != null)

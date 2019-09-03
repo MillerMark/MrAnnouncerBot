@@ -22,28 +22,33 @@ namespace DndCore
 			variables.Add(variable);
 		}
 
+		public static string Clean(string expression)
+		{
+			return expression.Replace("“", "\"").Replace("”", "\"");
+
+		}
 		public static object Get(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			return expressionEvaluator.Evaluate(expression);
+			return expressionEvaluator.Evaluate(Clean(expression));
 		}
 
 		public static object Get<T>(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			return (T)expressionEvaluator.Evaluate(expression);
+			return (T)expressionEvaluator.Evaluate(Clean(expression));
 		}
 
 		public static void Do(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			expressionEvaluator.Evaluate(expression);
+			expressionEvaluator.Evaluate(Clean(expression));
 		}
 
 		public static int GetInt(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			object result = expressionEvaluator.Evaluate(expression);
+			object result = expressionEvaluator.Evaluate(Clean(expression));
 			if (result is int)
 				return (int)result;
 			if (result is double)
@@ -58,7 +63,7 @@ namespace DndCore
 		public static bool GetBool(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			object result = expressionEvaluator.Evaluate(expression);
+			object result = expressionEvaluator.Evaluate(Clean(expression));
 			if (result is int)
 				return (int)result == 1;
 			if (result is string)

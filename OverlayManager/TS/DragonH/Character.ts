@@ -301,9 +301,11 @@ class Character {
 	copyAttributesFrom(sourceCharacter: any): Character {
 		this.playerID = sourceCharacter.playerID;
 
-		for (let i = 0; i < sourceCharacter.classes.length; i++) {
-			let thisClass: any = sourceCharacter.classes[i];
-			this.classes.push(new CharacterClass(thisClass.Name, thisClass.Level, thisClass.HitDice));
+		if (sourceCharacter.classes) {
+			for (let i = 0; i < sourceCharacter.classes.length; i++) {
+				let thisClass: any = sourceCharacter.classes[i];
+				this.classes.push(new CharacterClass(thisClass.Name, thisClass.Level, thisClass.HitDice));
+			}
 		}
 		
 		this.alignment = sourceCharacter.alignment;

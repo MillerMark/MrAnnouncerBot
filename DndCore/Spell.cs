@@ -22,10 +22,14 @@ namespace DndCore
 		public int SpellCasterLevel { get; set; }
 		public string DieStr { get; set; }
 		public Ability SavingThrowAbility { get; set; }
+		public string BonusThreshold { get; set; }
+		public string OriginalDieStr { get; set; }
+		public string BonusPerLevel { get; set; }
+		public double PerLevelBonus { get; set; }
 
 		public Spell()
 		{
-			SpellType = SpellType.Other;
+			SpellType = SpellType.OtherSpell;
 			RangeType = SpellRangeType.DistanceFeet;
 		}
 
@@ -107,11 +111,11 @@ namespace DndCore
 			return levelStr.GetFirstInt();
 		}
 
-		static string GetDieStr(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
+		string GetDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
-			string bonusThreshold = spellDto.bonus_threshold.ToLower();
+			string bonusThreshold = BonusThreshold.ToLower();
 			
-			DieRollDetails details = DieRollDetails.From(spellDto.die_str, spellcastingAbilityModifier);
+			DieRollDetails details = DieRollDetails.From(OriginalDieStr, spellcastingAbilityModifier);
 
 			string dieStr = details.ToString();
 
@@ -127,12 +131,11 @@ namespace DndCore
 			int minThreshold = bonusThreshold.GetFirstInt();
 			double multiplier = compareLevel - minThreshold;
 
-			string bonusPerLevelStr = spellDto.bonus_per_level;
-			double perLevelBonus = bonusPerLevelStr.GetFirstDouble();
-			if (perLevelBonus == 0)
+			string bonusPerLevelStr = BonusPerLevel;
+			if (PerLevelBonus == 0)
 				return dieStr;
 
-			int totalBonus = (int)Math.Floor(perLevelBonus * multiplier);
+			int totalBonus = (int)Math.Floor(PerLevelBonus * multiplier);
 			if (totalBonus <= 0)
 				return dieStr;
 
@@ -156,31 +159,31 @@ namespace DndCore
 		private static SpellType GetSpellType(SpellDto spellDto)
 		{
 			if (!string.IsNullOrWhiteSpace(spellDto.saving_throw))
-				return SpellType.SavingThrow;
+				return SpellType.SavingThrowSpell;
 			if (!string.IsNullOrWhiteSpace(spellDto.attack_type))
 			{
 				string attackType = spellDto.attack_type.ToLower();
 				if (attackType.IndexOf("melee") >= 0)
-					return SpellType.Melee;
+					return SpellType.MeleeSpell;
 				if (attackType.IndexOf("ranged") >= 0)
-					return SpellType.Ranged;
+					return SpellType.RangedSpell;
 			}
 
 			string dieStr = spellDto.die_str.ToLower();
 			if (!string.IsNullOrWhiteSpace(dieStr))
 			{
 				if (dieStr.StartsWith("^"))
-					return SpellType.StartNextTurn;
+					return SpellType.StartNextTurnSpell;
 				if (dieStr.StartsWith("+"))
-					return SpellType.HitBonus;
+					return SpellType.HitBonusSpell;
 				if (dieStr.IndexOf("healing") >= 0)
-					return SpellType.Healing;
+					return SpellType.HealingSpell;
 				if (dieStr.IndexOf("hpcapacity") >= 0)
-					return SpellType.HpCapacity;
-				return SpellType.Damage;
+					return SpellType.HpCapacitySpell;
+				return SpellType.DamageSpell;
 			}
 
-			return SpellType.Other;
+			return SpellType.OtherSpell;
 		}
 
 		static Ability GetSavingThrowAbility(SpellDto spellDto)
@@ -202,6 +205,20 @@ namespace DndCore
 				return Ability.wisdom;
 			return Ability.none;
 		}
+
+		public bool MorePowerfulWhenCastAtHigherLevels
+		{
+			get
+			{
+				return PerLevelBonus != 0;
+			}
+		}
+
+		public void RecalculateDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
+		{
+			DieStr = GetDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
+		}
+
 		public static Spell FromDto(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			SpellComponents spellComponents = GetSpellComponents(spellDto);
@@ -224,15 +241,17 @@ namespace DndCore
 				SpellType = GetSpellType(spellDto),
 				SavingThrowAbility = GetSavingThrowAbility(spellDto),
 				RequiresConcentration = GetRequiresConcentration(spellDto),
-				DieStr = GetDieStr(spellDto, spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier),
+				BonusThreshold = spellDto.bonus_threshold,
+				OriginalDieStr = spellDto.die_str,
+				BonusPerLevel = spellDto.bonus_per_level,
+				PerLevelBonus = spellDto.bonus_per_level.GetFirstDouble(),
 				SpellCasterLevel = spellCasterLevel,
 				SpellSlotLevel = spellSlotLevel
 			};
+			spell.RecalculateDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
 			return spell;
 		}
-
-
 
 		private static SpellComponents GetSpellComponents(SpellDto spellDto)
 		{

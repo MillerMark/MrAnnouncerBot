@@ -98,14 +98,18 @@
 
     const skills = Object.keys(Skills).filter((item) => {
       return isNaN(Number(item));
-    });
+		});
 
-    for (var i = 0; i < skills.length; i++) {
-      statPage.addStat('hasSkillProficiency' + initialCap(skills[i]), skillRadioX, skillStartY + i * distanceBetweenSkills, skillRadius);
+		let acrobaticsStartIndex: number = 7;  // Skills.acrobatics starts at index 7.
+
+		for (let i = acrobaticsStartIndex; i < skills.length; i++) {
+			let yPos: number = skillStartY + (i - acrobaticsStartIndex) * distanceBetweenSkills;
+      statPage.addStat('hasSkillProficiency' + initialCap(skills[i]), skillRadioX, yPos, skillRadius);
     }
 
-    for (var i = 0; i < skills.length; i++) {
-      statPage.addStat('skillMod' + initialCap(skills[i]), skillBonusX, skillModOffset + skillStartY + i * distanceBetweenSkills, skillModFontSize, TextAlign.center, TextDisplay.plusMinus);
+		for (let i = acrobaticsStartIndex; i < skills.length; i++) {
+			let yPos: number = skillModOffset + skillStartY + (i - acrobaticsStartIndex) * distanceBetweenSkills - 1;
+      statPage.addStat('skillMod' + initialCap(skills[i]), skillBonusX, yPos, skillModFontSize, TextAlign.center, TextDisplay.plusMinus);
     }
 
     return statPage;

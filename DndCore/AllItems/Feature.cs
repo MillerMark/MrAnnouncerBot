@@ -15,7 +15,7 @@ namespace DndCore
 		public string Conditions { get; set; }
 		public DndTimeSpan Duration { get; set; }
 		public bool IsActive { get; private set; }
-		public string Limit { get; set; }
+		public string Limit { get; set; }  // Could be an expression.
 		public string Name { get; set; }
 		public string OnActivate { get; set; }
 		public string OnDeactivate { get; set; }
@@ -27,9 +27,13 @@ namespace DndCore
 		{
 			Feature result = new Feature();
 			result.Name = GetName(featureDto.Name);
-			result.AddParameters(featureDto.Name);
+			result.Parameters = GetParameters(featureDto.Name);
 			result.Conditions = featureDto.Conditions;
+			result.OnActivate = featureDto.OnActivate;
+			result.OnDeactivate = featureDto.OnDeactivate;
 			result.Duration = DndTimeSpan.FromDurationStr(featureDto.Duration);
+			result.Per = DndTimeSpan.FromDurationStr(featureDto.Per);
+			result.Limit = featureDto.Limit;
 			// Left off here.
 			return result;
 		}
@@ -40,60 +44,64 @@ namespace DndCore
 			return name;
 		}
 
-		public void Activate(string parameters)
+		public void Activate(string parameters, Character player)
 		{
 			IsActive = true;
-			if (!string.IsNullOrWhiteSpace(InjectParameters(parameters)))
-				Expressions.Do(OnActivate);
+			if (!string.IsNullOrWhiteSpace(OnActivate))
+				Expressions.Do(InjectParameters(OnActivate, parameters), player);
 		}
 
-		void AddParameters(string name)
+		public static List<string> GetParameters(string name)
 		{
+			List<string> result = new List<string>();
 			if (name.IndexOf("(") < 0)
-				return;
-			if (Parameters == null)
-				Parameters = new List<string>();
-			Parameters.Clear();
+				return result;
+
 			char[] trimChars = { ')', ' ', '\t' };
 			string parameters = name.EverythingAfter("(").Trim(trimChars);
 			string[] allParameters = parameters.Split(',');
 			foreach (string parameter in allParameters)
 			{
-				Parameters.Add(parameter);
+				result.Add(parameter.Trim());
 			}
+			return result;
+
+		}
+		void AddParameters(string name)
+		{
+			
 		}
 
-		public bool ConditionsSatisfied(string parameters)
+		public bool ConditionsSatisfied(List<string> args, Character player)
 		{
-			if (!string.IsNullOrWhiteSpace(Conditions))
+			if (string.IsNullOrWhiteSpace(Conditions))
 				return true;
 
-			return Expressions.GetBool(InjectParameters(parameters));
-		}
-		public bool ConditionsSatisfied(List<string> args)
-		{
-			if (!string.IsNullOrWhiteSpace(Conditions))
-				return true;
-
-			return Expressions.GetBool(InjectParameters(args));
+			return Expressions.GetBool(InjectParameters(Conditions, args), player);
 		}
 
-		public void Deactivate(string parameters)
+		public void Deactivate(string parameters, Character player)
 		{
 			IsActive = false;
-			if (!string.IsNullOrWhiteSpace(InjectParameters(parameters)))
-				Expressions.Do(OnDeactivate);
+			if (!string.IsNullOrWhiteSpace(OnDeactivate))
+				Expressions.Do(InjectParameters(OnDeactivate, parameters), player);
 		}
 
-		string InjectParameters(List<string> parameters)
+		string InjectParameters(string str, List<string> parameters)
 		{
-			throw new NotImplementedException();
+			for (int i = 0; i < Parameters.Count; i++)
+			{
+				string searchStr = Parameters[i];
+				string replaceStr = parameters[i];
+				str = str.Replace(searchStr, replaceStr);
+			}
+			return str;
 		}
 
-		public string InjectParameters(string parameters)
+		public string InjectParameters(string str, string parameters)
 		{
 			string[] parameterList = parameters.Split(',');
-			return InjectParameters(parameterList.ToList());
+			return InjectParameters(str, parameterList.ToList());
 		}
 	}
 }

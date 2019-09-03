@@ -15,7 +15,7 @@ namespace DndCore
 			string tableName = evaluator.Evaluate<string>(args[0]);
 			string fieldLookup = evaluator.Evaluate<string>(args[1]);
 			string matchColumn = evaluator.Evaluate<string>(args[2]);
-			object matchValue = evaluator.Evaluate(args[3]);
+			object matchValue = evaluator.Evaluate(Expressions.Clean(args[3]));
 
 			return AllTables.GetData(tableName, fieldLookup, matchColumn, matchValue);
 		}

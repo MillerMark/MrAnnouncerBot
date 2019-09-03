@@ -18,8 +18,6 @@ namespace DndTests
 		[TestMethod]
 		public void TestToHitBonusAndDamageDie()
 		{
-			
-
 			List<PlayerActionShortcut> battleaxes = AllActionShortcuts.Get(PlayerID.Ava, "Battleaxe");
 			PlayerActionShortcut battleaxe2H = battleaxes.FirstOrDefault(x => x.Name.IndexOf("(2H)") > 0);
 			PlayerActionShortcut battleaxe1H = battleaxes.FirstOrDefault(x => x.Name.IndexOf("(1H)") > 0);

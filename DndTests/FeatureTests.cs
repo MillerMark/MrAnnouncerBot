@@ -37,7 +37,17 @@ namespace DndTests
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Assert.IsFalse(Expressions.GetBool("BarbarianMelee(strength)", fred));
 			Expressions.Do("Set(Rage,true)", fred);
-			// TODO: Left off here.
+			Assert.IsFalse(Expressions.GetBool("BarbarianMelee(strength)", fred));
+			fred.GetAbilityModifier(WeaponProperties.Melee, AttackType.Melee);
+			Assert.IsTrue(Expressions.GetBool("BarbarianMelee(strength)", fred));
+		}
+
+		[TestMethod]
+		public void TestSecondWind()
+		{
+			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			fred.ActivateFeature("SecondWind");
+			Assert.AreEqual("1d10+4(healing)", fred.diceJustRolled);
 		}
 	}
 }

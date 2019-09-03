@@ -28,6 +28,7 @@ namespace DndCore
 		public Ability savingAgainst = Ability.none;
 		public Ability attackingAbility = Ability.none;
 		public Skills checkingSkills = Skills.none;
+		public string diceJustRolled = string.Empty;
 		public AttackType attackingType = AttackType.None;
 		public AttackKind attackingKind = AttackKind.Any;
 
@@ -46,6 +47,7 @@ namespace DndCore
 
 		public void ResetPlayerActionBasedState()
 		{
+			diceJustRolled = string.Empty;
 			damageOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
 			disadvantageDiceThisRoll = 0;
@@ -820,6 +822,8 @@ namespace DndCore
 			double dexterityModifier = GetAbilityModifier(Ability.dexterity);
 			double strengthModifier = GetAbilityModifier(Ability.strength);
 
+			attackingType = attackType;
+
 			if ((weaponProperties | WeaponProperties.Finesse) == WeaponProperties.Finesse)
 			{
 				abilityModifier = Math.Max(dexterityModifier, strengthModifier);
@@ -907,6 +911,7 @@ namespace DndCore
 
 		public void RollDice(string diceStr)
 		{
+			diceJustRolled = diceStr;
 			// TODO: Implement this.
 		}
 
@@ -933,6 +938,52 @@ namespace DndCore
 				return VantageKind.Disadvantage;
 
 			return VantageKind.Normal;
+		}
+
+		/// <summary>
+		/// Returns an array of ints indexed by spell slot level of the number of spell slots available for this character.
+		/// </summary>
+		/// <returns></returns>
+		public int[] GetSpellSlotLevels()
+		{
+			int[] results = new int[10];
+			for (int i = 0; i < 10; i++)
+			{
+				results[i] = 0;
+			}
+			foreach (CharacterClass characterClass in Classes)
+			{
+				if (DndUtils.CanCastSpells(characterClass.Name))
+				{
+					results[1] = DndUtils.GetAvailableSpellSlots(characterClass, 1);
+					results[2] = DndUtils.GetAvailableSpellSlots(characterClass, 2);
+					results[3] = DndUtils.GetAvailableSpellSlots(characterClass, 3);
+					results[4] = DndUtils.GetAvailableSpellSlots(characterClass, 4);
+					results[5] = DndUtils.GetAvailableSpellSlots(characterClass, 5);
+				}
+			}
+			return results;
+		}
+
+		public void ActivateFeature(string featureNameStr)
+		{
+			string foundFeature = features.FirstOrDefault(x => DndUtils.GetCleanItemName(x.ToLower()) == DndUtils.GetCleanItemName(featureNameStr).ToLower());
+			if (string.IsNullOrWhiteSpace(foundFeature))
+				return;
+
+			List<string> parameters = Feature.GetParameters(foundFeature);
+			string featureName = string.Empty;
+			if (foundFeature.IndexOf("(") >= 0)
+				featureName = foundFeature.EverythingBefore("(");
+			else
+				featureName = foundFeature;
+
+			Feature feature = AllFeatures.Get(featureName);
+			if (feature == null)
+				return;
+
+			string joinedParameters = string.Join(",", parameters);
+			feature.Activate(joinedParameters, this);
 		}
 	}
 }

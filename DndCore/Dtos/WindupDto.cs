@@ -138,8 +138,8 @@ namespace DndCore
 			if (MathUtils.IsChecked(shortcutDto.playToEndOnExpire))
 				windupDto.PlayToEndOnExpire = true;
 
-			int deltaY = MathUtils.GetInt(shortcutDto.moveLeftRight);
-			int deltaX = MathUtils.GetInt(shortcutDto.moveUpDown);
+			int deltaX = MathUtils.GetInt(shortcutDto.moveLeftRight);
+			int deltaY = MathUtils.GetInt(shortcutDto.moveUpDown);
 			windupDto.Offset = new Vector(deltaX, deltaY);
 
 			windupDto.StartSound = shortcutDto.startSound;

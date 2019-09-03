@@ -67,5 +67,13 @@ namespace DndTests
 			Assert.AreEqual(3, thunderousSmite.Windups.Count);
 			Assert.IsNotNull(thunderousSmite);
 		}
+
+		[TestMethod]
+		public void TestSpellCastingTimeTransitionToShortcut()
+		{
+			List<PlayerActionShortcut> merkinShortcuts = AllActionShortcuts.Get(PlayerID.Merkin);
+			PlayerActionShortcut shieldShortcut = merkinShortcuts.FirstOrDefault(x => x.Name == "Shield");
+			Assert.AreEqual(TurnPart.Reaction, shieldShortcut.Part);
+		}
 	}
 }

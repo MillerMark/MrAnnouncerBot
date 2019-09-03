@@ -150,10 +150,16 @@ namespace DndCore
 		{
 			string duration = durationStr.ToLower();
 
+			if (duration == "short rest")
+				return ShortRest;
+
+			if (duration == "long rest")
+				return LongRest;
+
 			if (duration == "instantaneous")
 				return Zero;
 
-			if (duration.EndsWith(" bonus action"))
+			if (duration.EndsWith("bonus action"))
 				return OneBonusAction;
 
 			if (duration.EndsWith(" action"))

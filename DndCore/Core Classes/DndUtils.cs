@@ -19,7 +19,28 @@ namespace DndCore
 	
 	public static class DndUtils
 	{
-		static double PlatinumPiecesToGoldPieces(double platinumPieces)
+		public static int GetAvailableSpellSlots(string className, int level, int slotLevel)
+		{
+			object data = AllTables.GetData(className, $"Slot{slotLevel}Spells", "Level", level);
+			if (data == null)
+				return 0;
+			if (data is string dataStr)
+			{
+				if (int.TryParse(dataStr, out int result))
+					return result;
+			}
+
+			if (data is int)
+				return (int)data;
+
+			return 0;
+		}
+
+		public static int GetAvailableSpellSlots(CharacterClass characterClass, int slotLevel)
+		{
+			return GetAvailableSpellSlots(characterClass.Name, characterClass.Level, slotLevel);
+		}
+		public static double PlatinumPiecesToGoldPieces(double platinumPieces)
 		{
 			return platinumPieces * 10;
 		}
@@ -202,6 +223,31 @@ namespace DndCore
 			if (name.IndexOf('[') > 0)
 				name = name.EverythingBefore("[");
 			return name;
+		}
+
+		public static bool CanCastSpells(string className)
+		{
+			return GetSpellCastingAbility(className) != Ability.none;
+		}
+
+		public static Ability GetSpellCastingAbility(string className)
+		{
+			switch (className.ToLower())
+			{
+				case "sorcerer":
+				case "bard":
+				case "favored soul":
+					return Ability.charisma;
+				case "wizard":
+					return Ability.intelligence;
+				case "cleric":
+				case "druid":
+				case "paladin":
+				case "ranger":
+				case "spirit shaman":
+					return Ability.wisdom;
+			}
+			return Ability.none;
 		}
 	}
 }

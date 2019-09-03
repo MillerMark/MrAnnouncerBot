@@ -5,14 +5,14 @@ namespace DndCore
 {
 	public enum SpellType
 	{
-		Melee,
-		Ranged,
-		SavingThrow,
-		HitBonus,
-		StartNextTurn,
-		Damage,
-		Healing,
-		HpCapacity,
-		Other
+		MeleeSpell,
+		RangedSpell,
+		SavingThrowSpell,
+		HitBonusSpell,
+		StartNextTurnSpell,
+		DamageSpell,
+		HealingSpell,
+		HpCapacitySpell,
+		OtherSpell
 	}
 }
