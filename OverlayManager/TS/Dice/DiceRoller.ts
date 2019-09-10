@@ -435,7 +435,7 @@ function handleDieCollision(e: any) {
 					let pos: Vector = getScreenCoordinates(e.target.parentDie.getObject());
 					if (pos)
 						e.target.parentDie.sparks.push(diceLayer.smallSpark(pos.x, pos.y));
-					diceSounds.playRandom('Dice/Zap', 4);
+					diceSounds.safePlayMp3('Dice/Zap[4]');
 				}
 			}
 		}
@@ -473,7 +473,39 @@ function dieFirstHitsFloor(die: any) {
 	}
 }
 
-function positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
+function positionTrailingSprite(die: any, trailingEffect: TrailingEffect, index: number = 0): SpriteProxy {
+	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration || die.rollType == DieCountsAs.bentLuck) {
+		let pos: Vector = getScreenCoordinates(die.getObject());
+		if (!pos)
+			return null;
+		if (die.lastPos.length <= index)
+			die.lastPos.push(new Vector(-100, -100));
+		let deltaX: number = pos.x - die.lastPos[index].x;
+		let deltaY: number = pos.y - die.lastPos[index].y;
+
+		//` <formula 2; \sqrt{deltaX^2 + deltaY^2}>
+		let distanceSinceLastPoint: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+
+		// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
+		if (distanceSinceLastPoint > trailingEffect.MinForwardDistanceBetweenPrints) {
+
+			//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
+			let angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
+			var angleToMovePawPrint: number = 90;
+			if (die.lastPrintOnLeft)
+				angleToMovePawPrint = -90;
+			die.lastPrintOnLeft = !die.lastPrintOnLeft;
+			let printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints);
+			let spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle);
+			die.lastPos[index] = pos;
+			return spriteProxy;
+		}
+	}
+	return null;
+}
+
+function old_positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
 	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration || die.rollType == DieCountsAs.bentLuck) {
 		let pos: Vector = getScreenCoordinates(die.getObject());
 		if (!pos)
@@ -493,11 +525,11 @@ function positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, a
 			//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
 			let angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
 			var angleToMovePawPrint: number = 90;
-			if (die.lastPawPrintOnLeft)
+			if (die.lastPrintOnLeft)
 				angleToMovePawPrint = -90;
-			die.lastPawPrintOnLeft = !die.lastPawPrintOnLeft;
-			let pawPrintPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
-			let spriteProxy: SpriteProxy = addPrintFunc(pawPrintPos.x, pawPrintPos.y, angle);
+			die.lastPrintOnLeft = !die.lastPrintOnLeft;
+			let printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
+			let spriteProxy: SpriteProxy = addPrintFunc(printPos.x, printPos.y, angle);
 			//diceLayer.addPawPrint(pawPrintPos.x, pawPrintPos.y, angle);
 			die.lastPos[index] = pos;
 			return spriteProxy;
@@ -862,7 +894,7 @@ function freezeExistingDice() {
 
 			bubble.data = bubbleId;
 			die.attachedSprites.push(bubble);
-			diceSounds.playRandom('ice/Freeze', 5);
+			diceSounds.safePlayMp3('ice/Freeze[5]');
 			die.origins.push(new Vector(diceLayer.freeze.originX, diceLayer.freeze.originY));
 		}
 	}
@@ -884,7 +916,7 @@ function popFrozenDice() {
 
 				die.attachedSprites[j] = diceLayer.addFeezePop(sprite.x, sprite.y, hueShift, 100, 100);
 				die.origins[j] = new Vector(diceLayer.freezePop.originX, diceLayer.freezePop.originY);
-				diceSounds.playRandom('ice/crack', 3);
+				diceSounds.safePlayMp3('ice/crack[3]');
 			}
 		}
 	}
@@ -1467,7 +1499,7 @@ function prepareBaseDie(die: any, throwPower: number, xPositionModifier: number 
 	dieObject.body.addEventListener("collide", handleDieCollision);
 	die.lastPos = [];
 	die.lastPos.push(new Vector(-100, -100));
-	die.lastPawPrintOnLeft = false;
+	die.lastPrintOnLeft = false;
 }
 
 function prepareD10x10Die(die: any, throwPower: number, xPositionModifier: number = 0) {
@@ -1828,7 +1860,7 @@ function updateDieRollSpecialEffects() {
 
 		if (die.rollType == DieCountsAs.inspiration) {
 			const distanceBetweenRipples: number = 80;
-			let ripple: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length);
+			let ripple: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length);
 
 			if (ripple) {
 				ripple.opacity = 0.5;
@@ -1862,35 +1894,45 @@ function updateDieRollSpecialEffects() {
 function addTrailingEffects(die: any, trailingEffects: Array<TrailingEffect>) {
 	for (var j = 0; j < trailingEffects.length; j++) {
 		let trailingEffect: TrailingEffect = trailingEffects[j];
-		let addSpriteFunc: any;
-		if (trailingEffect.Type === SpriteType.PawPrint)
-			addSpriteFunc = diceLayer.addPawPrint.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Raven)
-			addSpriteFunc = diceLayer.addRaven.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Smoke)
-			addSpriteFunc = diceLayer.addPuff.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.SparkTrail)
-			addSpriteFunc = diceLayer.addSparkTrail.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.SmallSparks)
-			addSpriteFunc = diceLayer.smallSpark.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Fangs)
-			addSpriteFunc = diceLayer.addFangs.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Spiral)
-			addSpriteFunc = diceLayer.addSpiral.bind(diceLayer);
-		else
-			continue;
 
-		if (positionTrailingSprite(die, addSpriteFunc, trailingEffect.MinForwardDistanceBetweenPrints,
-			trailingEffect.LeftRightDistanceBetweenPrints, j)) {
+		if (positionTrailingSprite(die, trailingEffect, j)) {
 			if (trailingEffect.OnPrintPlaySound) {
 				if (trailingEffect.intervalBetweenSounds == 0)
-					trailingEffect.intervalBetweenSounds = trailingEffect.MinSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-				if (diceSounds.playRandom(trailingEffect.OnPrintPlaySound, trailingEffect.NumRandomSounds,
-					trailingEffect.intervalBetweenSounds)) {
-					trailingEffect.intervalBetweenSounds = trailingEffect.MinSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+					trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+				if (diceSounds.safePlayMp3(trailingEffect.OnPrintPlaySound, trailingEffect.intervalBetweenSounds)) {
+					trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
 				}
 			}
 		}
+
+		//let addSpriteFunc: any;
+		//if (trailingEffect.Type === SpriteType.PawPrint)
+		//	addSpriteFunc = diceLayer.addPawPrint.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Raven)
+		//	addSpriteFunc = diceLayer.addRaven.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Smoke)
+		//	addSpriteFunc = diceLayer.addSmoke.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.SparkTrail)
+		//	addSpriteFunc = diceLayer.addSparkTrail.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.SmallSparks)
+		//	addSpriteFunc = diceLayer.smallSpark.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Fangs)
+		//	addSpriteFunc = diceLayer.addFangs.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Spiral)
+		//	addSpriteFunc = diceLayer.addSpiral.bind(diceLayer);
+		//else
+		//	continue;
+
+		//if (positionTrailingSprite(die, addSpriteFunc, trailingEffect.MinForwardDistanceBetweenPrints,
+		//	trailingEffect.LeftRightDistanceBetweenPrints, j)) {
+		//	if (trailingEffect.OnPrintPlaySound) {
+		//		if (trailingEffect.intervalBetweenSounds == 0)
+		//			trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+		//		if (diceSounds.playRandom(trailingEffect.OnPrintPlaySound, trailingEffect.NumRandomSounds, trailingEffect.intervalBetweenSounds)) {
+		//			trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+		//		}
+		//	}
+		//}
 	}
 }
 
@@ -2287,7 +2329,7 @@ function onDiceRollStopped() {
 	//diceHaveStoppedRolling(null);
 
 	if (diceRollData.type == DiceRollType.WildMagic) {
-		diceSounds.playRandom('WildMagicFinale/drum', 18);
+		diceSounds.safePlayMp3('WildMagicFinale/drum[18]');
 	}
 
 	if (attemptedRollWasSuccessful) {
@@ -2303,6 +2345,7 @@ function onDiceRollStopped() {
 		'roll': totalRoll,
 		'hiddenThreshold': diceRollData.hiddenThreshold,
 		'damage': totalDamagePlusModifier,
+		'healing': totalHealthPlusModifier,
 		'health': totalHealthPlusModifier,
 		'extra': totalExtraPlusModifier,
 		'multiplayerSummary': diceRollData.multiplayerSummary,
@@ -2926,16 +2969,9 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		console.log('exception on call to DiceManager.prepareValues: ' + ex);
 	}
 
-	if (diceRollData.type == DiceRollType.WildMagic) {
-		diceSounds.safePlayMp3('WildMagicRoll');
+	if (diceRollData.onThrowSound) {
+		diceSounds.safePlayMp3(diceRollData.onThrowSound);
 	}
-	if (diceRollData.isPaladinSmiteAttack) {
-		diceSounds.safePlayMp3('PaladinThunder');
-	}
-	if (diceRollData.isSneakAttack) {
-		diceSounds.safePlayMp3('SneakAttackWhoosh');
-	}
-
 	//startedRoll = true;
 }
 

@@ -102,12 +102,12 @@ namespace DndTests
 		[TestMethod]
 		public void TestSpellcastingAbilityModifier()
 		{
-			DieRollDetails rollDetails = DieRollDetails.From("1d4+SAM(healing)", +3);
+			DieRollDetails rollDetails = DieRollDetails.From("1d4+SAM(health)", +3);
 			Assert.AreEqual(1, rollDetails.Rolls.Count);
 			Assert.AreEqual(3, rollDetails.Rolls[0].Offset);
 			Assert.AreEqual(4, rollDetails.Rolls[0].Sides);
-			Assert.AreEqual("(healing)", rollDetails.Rolls[0].Descriptor);
-			Assert.AreEqual("1d4+3(healing)", rollDetails.ToString());
+			Assert.AreEqual("(health)", rollDetails.Rolls[0].Descriptor);
+			Assert.AreEqual("1d4+3(health)", rollDetails.ToString());
 		}
 
 		[TestMethod]

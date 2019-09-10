@@ -8,7 +8,7 @@ namespace DndCore
 {
 	public static class CsvData
 	{
-		public static List<T> Get<T>(string dataFileName)
+		public static List<T> Get<T>(string dataFileName, bool validateHeaders = true)
 		{
 			List<T> result = new List<T>();
 			try
@@ -16,7 +16,14 @@ namespace DndCore
 				var textReader = File.OpenText(dataFileName);
 
 				using (var csvReader = new CsvReader(textReader))
+				{
+					if (!validateHeaders)
+					{
+						csvReader.Configuration.HeaderValidated = null;
+						csvReader.Configuration.MissingFieldFound = null;
+					}
 					result = csvReader.GetRecords<T>().ToList();
+				}
 			}
 			catch (Exception ex)
 			{

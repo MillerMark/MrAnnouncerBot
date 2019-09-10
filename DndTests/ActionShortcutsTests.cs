@@ -51,7 +51,7 @@ namespace DndTests
 			List<PlayerActionShortcut> greatSwords = AllActionShortcuts.Get(PlayerID.Ava, "Greatsword");
 			Assert.IsNotNull(greatSwords);
 			Assert.AreEqual(1, greatSwords.Count);
-			Assert.AreEqual(3, greatSwords[0].AbilityModifier);
+			Assert.AreEqual(3, greatSwords[0].AttackingAbilityModifier);
 			Assert.AreEqual(1, greatSwords[0].PlusModifier);
 			Assert.IsTrue(greatSwords[0].UsedWithProficiency);
 		}

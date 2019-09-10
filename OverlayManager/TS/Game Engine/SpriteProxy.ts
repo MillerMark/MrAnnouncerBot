@@ -365,6 +365,11 @@ class SpriteProxy extends AnimatedElement {
 	drawBackground(context: CanvasRenderingContext2D, now: number): void {
 		// Descendants can override if they want to draw the background...
 	}
+
+	setScale(scale: number): SpriteProxy {
+		this.scale = scale;
+		return this;
+	}
 }
 
 
@@ -408,4 +413,6 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 			this.brightness = brightness;
 		return this;
 	}
+
+
 }

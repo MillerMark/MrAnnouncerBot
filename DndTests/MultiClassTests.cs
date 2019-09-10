@@ -32,6 +32,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestRaceClass()
 		{
+			AllPlayers.LoadData();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Assert.AreEqual("Lizardfolk Fighter 4 / Barbarian 1", fred.raceClass);
 

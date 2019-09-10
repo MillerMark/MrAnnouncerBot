@@ -20,16 +20,16 @@ namespace DndCore
 
 			FieldInfo field = typeof(Character).GetField(propertyName);
 			if (field != null)
-			{
 				return field.GetValue(player);
-			}
+
 			PropertyInfo property = typeof(Character).GetProperty(propertyName);
 			if (property != null)
-			{
 				return property.GetValue(player);
-			}
 
-			return player.GetState(propertyName);
+			if (player != null)
+				return player.GetState(propertyName);
+
+			return null;
 		}
 	}
 }

@@ -45,10 +45,30 @@ class TrailingEffect {
 		this.Index = dto.Index;
 		this.Type = dto.Type;
 		this.OnPrintPlaySound = dto.OnPrintPlaySound;
-		this.MinSoundInterval = dto.MinSoundInterval;
+		this.MedianSoundInterval = dto.MedianSoundInterval;
 		this.PlusMinusSoundInterval = dto.PlusMinusSoundInterval;
 		this.NumRandomSounds = dto.NumRandomSounds;
 		this.intervalBetweenSounds = 0;
+
+		this.Name = dto.Name;
+		this.EffectType = dto.EffectType;
+		this.OnThrowSound = dto.OnThrowSound;
+		this.OnFirstContactSound = dto.OnFirstContactSound;
+		this.OnFirstContactEffect = dto.OnFirstContactEffect;
+		this.NumHalos = dto.NumHalos;
+		this.StartIndex = dto.StartIndex;
+		this.FadeIn = dto.FadeIn;
+		this.Lifespan = dto.Lifespan;
+		this.FadeOut = dto.FadeOut;
+		this.Opacity = dto.Opacity;
+		this.Scale = dto.Scale;
+		this.HueShift = dto.HueShift;
+		this.HueShiftRandom = dto.HueShiftRandom;
+		this.Saturation = dto.Saturation;
+		this.Brightness = dto.Brightness;
+		this.RotationOffset = dto.RotationOffset;
+		this.RotationOffsetRandom = dto.RotationOffsetRandom;
+		this.FlipHalfTime = dto.FlipHalfTime;
 	}
 
 	intervalBetweenSounds: number;
@@ -58,8 +78,28 @@ class TrailingEffect {
 	Index: number;
 	Type: SpriteType;
 	OnPrintPlaySound: string;
-	MinSoundInterval: number;
+	MedianSoundInterval: number;
 	PlusMinusSoundInterval: number;
+
+	Name: string;
+	EffectType: string;
+	OnThrowSound: string;
+	OnFirstContactSound: string;
+	OnFirstContactEffect: string;
+	NumHalos: number;
+	StartIndex: number;
+	FadeIn: number;
+	Lifespan: number;
+	FadeOut: number;
+	Opacity: number;
+	Scale: number;
+	HueShift: string;
+	HueShiftRandom: number;
+	Saturation: number;
+	Brightness: number;
+	RotationOffset: number;
+	RotationOffsetRandom: number;
+	FlipHalfTime: boolean;
 }
 
 const matchNormalDieColorsToSpecial: boolean = true;
@@ -141,7 +181,7 @@ class DiceLayer {
 	inspirationSmoke: Sprites;
 	ripples: Sprites;
 	//d20Fire: Sprites;
-	puff: Sprites;
+	smoke: Sprites;
 	freeze: Sprites;
 	freezePop: Sprites;
 	diceSparks: Sprites;
@@ -187,6 +227,7 @@ class DiceLayer {
 
 
 		this.pawPrints = new Sprites("/Dice/TigerPaw/TigerPaw", 76, fps30, AnimationStyle.Loop, true);
+		this.pawPrints.name = 'PawPrint';
 		this.pawPrints.originX = 50;
 		this.pawPrints.originY = 66;
 		this.allBackLayerEffects.add(this.pawPrints);
@@ -198,6 +239,7 @@ class DiceLayer {
 
 
 		this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
+		this.sparkTrail.name = 'SparkTrail';
 		this.sparkTrail.originX = 322;
 		this.sparkTrail.originY = 152;
 		this.allFrontLayerEffects.add(this.sparkTrail);
@@ -236,22 +278,26 @@ class DiceLayer {
 		this.allFrontLayerEffects.add(this.dicePortalTop);
 
 		this.diceSparks = new Sprites("/Dice/Sparks/Spark", 49, fps20, AnimationStyle.Loop, true);
+		this.diceSparks.name = 'Spark';
 		this.diceSparks.originX = 170;
 		this.diceSparks.originY = 158;
 		this.allBackLayerEffects.add(this.diceSparks);
 
 		this.magicRing = new Sprites("/Dice/MagicRing/MagicRing", 180, fps40, AnimationStyle.Loop, true);
+		this.magicRing.name = 'MagicRing';
 		this.magicRing.returnFrameIndex = 60;
 		this.magicRing.originX = 140;
 		this.magicRing.originY = 112;
 		this.allFrontLayerEffects.add(this.magicRing);
 
 		this.halos = new Sprites("/Dice/Halo/Halo", 90, fps30, AnimationStyle.Loop, true);
+		this.halos.name = 'Halo';
 		this.halos.originX = 190;
 		this.halos.originY = 190;
 		this.allFrontLayerEffects.add(this.halos);
 
 		this.haloSpins = new Sprites("/Dice/PaladinSpin/PaladinSpin", 85, fps30, AnimationStyle.Loop, true);
+		this.haloSpins.name = 'HaloSpin';
 		this.haloSpins.originX = 200;
 		this.haloSpins.originY = 200;
 		this.allFrontLayerEffects.add(this.haloSpins);
@@ -283,6 +329,7 @@ class DiceLayer {
 		this.allBackLayerEffects.add(this.damageAcid);
 
 		this.topDieCloud = new Sprites("/Dice/Damage/TopCloud/TopCloud", 96, fps30, AnimationStyle.Loop, true);
+		this.topDieCloud.name = 'TopCloud';
 		this.topDieCloud.originX = 61;
 		this.topDieCloud.originY = 90;
 		this.allFrontLayerEffects.add(this.topDieCloud);
@@ -298,6 +345,7 @@ class DiceLayer {
 		this.allBackLayerEffects.add(this.damageForce);
 
 		this.damageSpinningCloudTrail = new Sprites("/Dice/Damage/Bludgeoning/CloudTrail", 96, fps30, AnimationStyle.Loop, true);
+		this.damageSpinningCloudTrail.name = 'CloudTrail';
 		this.damageSpinningCloudTrail.originX = 155;
 		this.damageSpinningCloudTrail.originY = 183;
 		this.allBackLayerEffects.add(this.damageSpinningCloudTrail);
@@ -313,6 +361,7 @@ class DiceLayer {
 		this.allBackLayerEffects.add(this.damageBludgeoningWeapon);
 
 		this.damagePoison = new Sprites("/Dice/Damage/Poison/Poison", 103, fps30, AnimationStyle.Loop, true);
+		this.damagePoison.name = 'Poison';
 		this.damagePoison.originX = 111;
 		this.damagePoison.originY = 115;
 		this.allBackLayerEffects.add(this.damagePoison);
@@ -403,16 +452,19 @@ class DiceLayer {
 		this.allBackLayerEffects.add(this.damageLightningCloud);
 
 		this.inspirationParticles = new Sprites("/Dice/Inspiration/InspirationParticles", 64, fps30, AnimationStyle.Loop, true);
+		this.inspirationParticles.name = 'InspirationParticles';
 		this.inspirationParticles.originX = 215;
 		this.inspirationParticles.originY = 106;
 		this.allBackLayerEffects.add(this.inspirationParticles);
 
 		this.inspirationSmoke = new Sprites("/Dice/Inspiration/InspirationSmoke", 177, fps30, AnimationStyle.Loop, true);
+		this.inspirationSmoke.name = 'InspirationSmoke';
 		this.inspirationSmoke.originX = 106;
 		this.inspirationSmoke.originY = 99;
 		this.allFrontLayerEffects.add(this.inspirationSmoke);
 
 		this.ripples = new Sprites("/Dice/Ripple/Ripple", 38, fps30, AnimationStyle.Sequential, true);
+		this.ripples.name = 'Ripple';
 		this.ripples.originX = 121;
 		this.ripples.originY = 126;
 		this.allBackLayerEffects.add(this.ripples);
@@ -421,11 +473,13 @@ class DiceLayer {
 		this.loadRavens(3);
 
 		this.spirals = new Sprites("/Dice/Spiral/Spiral", 64, fps40, AnimationStyle.Sequential, true);
+		this.spirals.name = 'Spiral';
 		this.spirals.originX = 134;
 		this.spirals.originY = 107;
 		this.allBackLayerEffects.add(this.spirals);
 
 		this.fangs = new Sprites("/Dice/Fang/Fang", 79, fps30, AnimationStyle.Loop, true);
+		this.fangs.name = 'Fang';
 		this.fangs.originX = 87;
 		this.fangs.originY = 61;
 		this.allBackLayerEffects.add(this.fangs);
@@ -451,26 +505,31 @@ class DiceLayer {
 		this.allFrontLayerEffects.add(this.diceBombTop);
 
 		this.sneakAttackTop = new Sprites("/Dice/SneakAttack/SneakAttackTop", 91, fps30, AnimationStyle.Sequential, true);
+		this.sneakAttackTop.name = 'SneakAttack';
 		this.sneakAttackTop.originX = 373;
 		this.sneakAttackTop.originY = 377;
 		this.allFrontLayerEffects.add(this.sneakAttackTop);
 
-		this.puff = new Sprites("/Dice/SneakAttack/Puff", 32, fps30, AnimationStyle.Sequential, true);
-		this.puff.originX = 201;
-		this.puff.originY = 404;
-		this.allFrontLayerEffects.add(this.puff);
+		this.smoke = new Sprites("/Dice/SneakAttack/Puff", 32, fps30, AnimationStyle.Sequential, true);
+		this.smoke.name = 'Smoke';
+		this.smoke.originX = 201;
+		this.smoke.originY = 404;
+		this.allFrontLayerEffects.add(this.smoke);
 
 		this.sneakAttackBottom = new Sprites("/Dice/SneakAttack/SneakAttackBottom", 91, fps30, AnimationStyle.Sequential, true);
+		this.sneakAttackBottom.name = 'SneakAttack';
 		this.sneakAttackBottom.originX = 373;
 		this.sneakAttackBottom.originY = 377;
 		this.allBackLayerEffects.add(this.sneakAttackBottom);
 
 		this.cloverRing = new Sprites("/Dice/Luck/CloverRing", 120, fps30, AnimationStyle.Loop, true);
+		this.cloverRing.name = 'CloverRing';
 		this.cloverRing.originX = 141;
 		this.cloverRing.originY = 137;
 		this.allFrontLayerEffects.add(this.cloverRing);
 
 		this.badLuckRing = new Sprites("/Dice/Luck/BadLuckRing", 120, fps30, AnimationStyle.Loop, true);
+		this.badLuckRing.name = 'BadLuckRing';
 		this.badLuckRing.originX = 141;
 		this.badLuckRing.originY = 137;
 		this.allFrontLayerEffects.add(this.badLuckRing);
@@ -1526,7 +1585,6 @@ class DiceLayer {
 		let index: number = Math.floor(Math.random() * this.ravens.length);
 		let raven = this.ravens[index].addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
 		raven.rotation = angle + 180 + Random.plusMinus(45);
-		//diceSounds.playRandom('BirdFlap', 4);
 		return raven;
 	}
 
@@ -1538,12 +1596,12 @@ class DiceLayer {
 	//  this.d20Fire.add(x, y).rotation = Math.random() * 360;
 	//}
 
-	addPuff(x: number, y: number, angle: number) {
+	addSmoke(x: number, y: number, angle: number) {
 		let hueShift = this.activePlayerHueShift + Random.plusMinus(10);
 		var angleShift: number = 0;
 		if (Math.random() > 0.5)
 			angleShift = 180;
-		this.puff.addShifted(x, y, 0, hueShift).rotation = angle + angleShift;
+		this.smoke.addShifted(x, y, 0, hueShift).rotation = angle + angleShift;
 	}
 
 	addSparkTrail(x: number, y: number, angle: number) {
@@ -1635,9 +1693,7 @@ class DiceLayer {
 		diceRoll.modifier = dto.Modifier;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
-		diceRoll.isSneakAttack = dto.IsSneakAttack;
-		diceRoll.isPaladinSmiteAttack = dto.IsPaladinSmiteAttack;
-		diceRoll.isWildAnimalAttack = dto.IsWildAnimalAttack;
+		diceRoll.onThrowSound = dto.OnThrowSound;
 		diceRoll.throwPower = dto.ThrowPower;
 		diceRoll.onFirstContactSound = dto.OnFirstContactSound;
 		diceRoll.onFirstContactEffect = dto.OnFirstContactEffect;
@@ -1685,13 +1741,13 @@ class DiceLayer {
 	}
 
 	addSpiral(x: number, y: number, angle: number): SpriteProxy {
-		let spiral = this.spirals.addShifted(x, y, Math.round(Math.random() * this.spirals.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
+		let spiral = this.spirals.addShifted(x, y, 0, diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		spiral.rotation = Random.between(0, 360);
 		return spiral;
 	}
 
 	addFangs(x: number, y: number, angle: number): SpriteProxy {
-		let fangs = this.fangs.addShifted(x, y, Math.round(Math.random() * this.spirals.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
+		let fangs = this.fangs.addShifted(x, y, Math.round(Math.random() * this.fangs.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		fangs.rotation = angle;
 		fangs.expirationDate = performance.now() + 4000;
 		fangs.fadeOutTime = 2000;
@@ -1709,6 +1765,50 @@ class DiceLayer {
 		pawPrint.opacity = 0.9;
 		return pawPrint;
 	}
+
+	AddTrailingEffectFrom(sprites: Sprites, trailingEffect: TrailingEffect, x: number, y: number, angle: number): SpriteProxy {
+		let index: number = 0;
+		if (trailingEffect.StartIndex == -1)
+			index = Math.round(Math.random() * sprites.sprites.length);
+		else
+			index = trailingEffect.StartIndex;
+
+		let hue: number = 0;
+		if (trailingEffect.HueShift == "player")
+			hue = diceLayer.activePlayerHueShift;
+		else if (trailingEffect.HueShift)
+			hue = +trailingEffect.HueShift;
+
+		if (trailingEffect.HueShiftRandom != 0)
+			hue += Random.plusMinus(trailingEffect.HueShiftRandom);
+
+		let effect: ColorShiftingSpriteProxy = sprites.addShifted(x, y, index, hue);
+		effect.rotation = angle + trailingEffect.RotationOffset + Random.plusMinus(trailingEffect.RotationOffsetRandom);
+		if (trailingEffect.Lifespan)
+			effect.expirationDate = performance.now() + trailingEffect.Lifespan;
+		effect.fadeOutTime = trailingEffect.FadeOut;
+		effect.fadeInTime = trailingEffect.FadeIn;
+		effect.opacity = trailingEffect.Opacity;
+		effect.brightness = trailingEffect.Brightness;
+		effect.saturationPercent = trailingEffect.Saturation;
+		effect.scale = trailingEffect.Scale;
+		return effect;
+	}
+
+	AddTrailingEffect(trailingEffect: TrailingEffect, x: number, y: number, angle: number): SpriteProxy {
+		let result: SpriteProxy;
+		let sprites: Sprites = this.allBackLayerEffects.getSpritesByName(trailingEffect.EffectType);
+		if (sprites)
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+
+		sprites = this.allFrontLayerEffects.getSpritesByName(trailingEffect.EffectType);
+
+		if (sprites)
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+
+		return result;
+	}
+
 
 	//addStar(x: number, y: number): SpriteProxy {
 	//  let star = this.stars.addShifted(x, y, Math.round(Math.random() * this.stars.sprites.length), diceLayer.activePlayerHueShift);
@@ -1758,7 +1858,7 @@ class DiceLayer {
 		let player: Character = this.getPlayer(playerID);
 		if (player)
 			return player.dieFontColor;
-		
+
 		return this.activePlayerDieFontColor;
 	}
 
@@ -1766,7 +1866,7 @@ class DiceLayer {
 		let player: Character = this.getPlayer(playerID);
 		if (player)
 			return player.getFirstName();
-		
+
 		return '';
 	}
 
@@ -1808,9 +1908,7 @@ class DiceRollData {
 	minCrit: number;
 	hiddenThreshold: number;
 	isMagic: boolean;
-	isSneakAttack: boolean;
-	isPaladinSmiteAttack: boolean;
-	isWildAnimalAttack: boolean;
+	onThrowSound: string;
 	throwPower: number;
 	itsAD20Roll: boolean;
 	trailingEffects: Array<TrailingEffect> = new Array<TrailingEffect>();
@@ -1845,8 +1943,8 @@ class DiceRollData {
 	hasMultiPlayerDice: boolean = false;
 	multiplayerSummary: Array<PlayerRoll> = null;
 	hasSingleIndividual: boolean = false;
-  secondRollTitle: string;
-  minDamage: number = 0;
+	secondRollTitle: string;
+	minDamage: number = 0;
 	constructor() {
 
 	}

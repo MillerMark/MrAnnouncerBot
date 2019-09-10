@@ -30,9 +30,9 @@ namespace DndTests
 		{
 			Character barbarian = CharacterBuilder.BuildTestBarbarian("Joe");
 			barbarian.SetAbilities(16, 11, 14, 8, 8, 18);
-			Assert.AreEqual(3, barbarian.GetAbilityModifier(WeaponProperties.Finesse, AttackType.Range));
-			Assert.AreEqual(3, barbarian.GetAbilityModifier(WeaponProperties.Martial | WeaponProperties.Versatile, AttackType.Melee));
-			Assert.AreEqual(3, barbarian.GetAbilityModifier(WeaponProperties.Martial | WeaponProperties.TwoHanded | WeaponProperties.Heavy, AttackType.Melee));
+			Assert.AreEqual(3, barbarian.GetAttackingAbilityModifier(WeaponProperties.Finesse, AttackType.Range));
+			Assert.AreEqual(3, barbarian.GetAttackingAbilityModifier(WeaponProperties.Martial | WeaponProperties.Versatile, AttackType.Melee));
+			Assert.AreEqual(3, barbarian.GetAttackingAbilityModifier(WeaponProperties.Martial | WeaponProperties.TwoHanded | WeaponProperties.Heavy, AttackType.Melee));
 		}
 
 		[TestMethod]

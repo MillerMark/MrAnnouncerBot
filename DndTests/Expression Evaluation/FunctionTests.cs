@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using DndCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -34,6 +36,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestLevel()
 		{
+			AllPlayers.LoadData();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
 			Assert.AreEqual(1, Expressions.Get("Level(\"Barbarian\")", fred));
@@ -180,6 +183,20 @@ namespace DndTests
 			fred.ShieldBonus = 2;
 			Expressions.Do("Set(baseArmorClass, 10 + Mod(dexterity) + Mod(constitution) + ShieldBonus)", fred);
 			Assert.AreEqual(19, fred.baseArmorClass);
+		}
+
+		[TestMethod]
+		public void TestOffset()
+		{
+			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			fred.ResetPlayerStartTurnBasedState();
+			Expressions.Do("Set(RageCount,0)", fred);
+			Expressions.Do("Set(MyOffset,4)", fred);
+			Assert.AreEqual(0, Expressions.GetInt("Get(RageCount)", fred));
+			Expressions.Do("Offset(RageCount, 1)", fred);
+			Assert.AreEqual(1, Expressions.GetInt("Get(RageCount)", fred));
+			Expressions.Do("Offset(RageCount, MyOffset)", fred);
+			Assert.AreEqual(5, Expressions.GetInt("Get(RageCount)", fred));
 		}
 	}
 }

@@ -5,12 +5,12 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	/// <summary>
-	/// Gets the specified property of the player.
+	/// Determines if the specified feature is active.
 	/// </summary>
-	public class AllFeaturesFunction : DndFunction
+	public class FeatureSatisfiedFunction : DndFunction
 	{
 		Feature feature;
-		public override bool Handles(string tokenName)
+		public override bool Handles(string tokenName, Character player)
 		{
 			feature = AllFeatures.Get(tokenName);
 			return feature != null;

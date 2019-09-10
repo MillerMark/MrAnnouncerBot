@@ -35,16 +35,18 @@ namespace DndTests
 			Feature barbarianMelee = AllFeatures.Get("BarbarianMelee");
 			Assert.IsNotNull(barbarianMelee);
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			fred.ResetPlayerStartTurnBasedState();
 			Assert.IsFalse(Expressions.GetBool("BarbarianMelee(strength)", fred));
-			Expressions.Do("Set(Rage,true)", fred);
+			Expressions.Do("Set(_rage,true)", fred);
 			Assert.IsFalse(Expressions.GetBool("BarbarianMelee(strength)", fred));
-			fred.GetAbilityModifier(WeaponProperties.Melee, AttackType.Melee);
+			fred.GetAttackingAbilityModifier(WeaponProperties.Melee, AttackType.Melee);
 			Assert.IsTrue(Expressions.GetBool("BarbarianMelee(strength)", fred));
 		}
 
 		[TestMethod]
 		public void TestSecondWind()
 		{
+			AllPlayers.LoadData();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			fred.ActivateFeature("SecondWind");
 			Assert.AreEqual("1d10+4(healing)", fred.diceJustRolled);

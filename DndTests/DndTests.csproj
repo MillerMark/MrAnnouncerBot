@@ -75,6 +75,7 @@
     <Compile Include="DamageTests.cs" />
     <Compile Include="DiceTests.cs" />
     <Compile Include="EventTests.cs" />
+    <Compile Include="Expression Evaluation\BarbarianMeleeFeatureTests.cs" />
     <Compile Include="FeatureTests.cs" />
     <Compile Include="Support\Die.cs" />
     <Compile Include="DieRollDetailTests.cs" />

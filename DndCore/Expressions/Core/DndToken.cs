@@ -7,7 +7,7 @@ namespace DndCore
 	{
 		public virtual string Name { get; set; }
 
-		public virtual bool Handles(string tokenName)
+		public virtual bool Handles(string tokenName, Character player)
 		{
 			return tokenName == Name;
 		}

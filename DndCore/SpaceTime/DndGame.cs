@@ -7,12 +7,32 @@ namespace DndCore
 {
 	public class DndGame
 	{
+		public static DndGame Instance
+		{
+			get
+			{
+				if (instance == null)
+				{
+					if (History.TimeClock == null)
+						History.TimeClock = new DndTimeClock();
+					instance = new DndGame();
+				}
+
+				return instance;
+			}
+		}
+
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
 		public event DndGameEventHandler RoundEnded;
 		public event DndGameEventHandler RoundStarting;
 		public event DndCharacterEventHandler TurnEnded;
 		public event DndCharacterEventHandler TurnStarting;
+		public event PlayerStateChangedEventHandler PlayerStateChanged;
+		protected virtual void OnPlayerStateChanged(object sender, PlayerStateEventArgs ea)
+		{
+			PlayerStateChanged?.Invoke(sender, ea);
+		}
 		protected virtual void OnEnterCombat(object sender, DndGameEventArgs ea)
 		{
 			EnterCombat?.Invoke(sender, ea);
@@ -43,9 +63,12 @@ namespace DndCore
 		List<DndMap> maps = new List<DndMap>();
 
 		List<Monster> monsters = new List<Monster>();
+		private static DndGame instance;
+		DndGameEventArgs dndGameEventArgs = new DndGameEventArgs();
 
 		public DndGame()
 		{
+			dndGameEventArgs.Game = this;
 		}
 
 		public DndMap ActiveMap
@@ -67,6 +90,8 @@ namespace DndCore
 
 		public List<Character> Players { get; } = new List<Character>();
 		public bool InCombat { get; set; }
+		public Creature ActiveCreature { get => activeCreature; private set => activeCreature = value; }
+		public int HiddenThreshold { get; set; }
 
 		public DndMap ActivateMap(DndMap map)
 		{
@@ -97,15 +122,24 @@ namespace DndCore
 			monsters.Add(monster);
 			return monster;
 		}
-		public Character AddPlayer(Character character)
+
+		public Character AddPlayer(Character player)
 		{
-			character.Game = this;
-			Players.Add(character);
-			return character;
+			player.Game = this;
+			player.StateChanged += Player_StateChanged;
+			Players.Add(player);
+			return player;
 		}
+
+		private void Player_StateChanged(object sender, StateChangedEventArgs ea)
+		{
+			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea.Key, ea.OldValue, ea.NewValue));
+		}
+
 		public void EnteringCombat()
 		{
 			InCombat = true;
+			OnEnterCombat(this, dndGameEventArgs);
 		}
 		public void MoveAllPlayersToActiveRoom()
 		{
@@ -118,6 +152,37 @@ namespace DndCore
 		public void ExitingCombat()
 		{
 			InCombat = false;
+			OnExitCombat(this, dndGameEventArgs);
+		}
+		Creature activeCreature;
+
+		public void EndingTurnFor(Character character)
+		{
+			if (activeCreature == character)
+				activeCreature = null;
+		}
+
+		public void StartingTurnFor(Character character)
+		{
+			if (activeCreature != character && activeCreature is Character player)
+				player.EndTurn();
+			activeCreature = character;
+		}
+
+		public void Reset()
+		{
+			activeMap = null;
+			activeCreature = null;
+			InCombat = false;
+			Players.Clear();
+			monsters.Clear();
+			maps.Clear();
+			dndGameEventArgs.Game = this;
+		}
+
+		public void SetHiddenThreshold(int value)
+		{
+			HiddenThreshold = value;
 		}
 	}
 }

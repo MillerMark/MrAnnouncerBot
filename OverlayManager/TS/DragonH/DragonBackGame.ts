@@ -5,7 +5,9 @@
 }
 
 class DragonBackGame extends DragonGame {
-	readonly clockMargin: number = 14;
+	readonly clockMargin: number = 0;
+	readonly clockBottomY: number = screenHeight; // 229
+	readonly clockScale: number = 0.84;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
@@ -73,7 +75,7 @@ class DragonBackGame extends DragonGame {
 		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
 		let boxHeight: number = textHeight + 2 * verticalMargin;
 		let centerX: number = screenWidth - this.clockPanel.originX - this.clockMargin;
-		let centerY: number = screenHeight - textHeight / 2 - verticalMargin;
+		let centerY: number = this.clockBottomY - textHeight / 2 - verticalMargin;
 		//context.fillStyle = "#3b3581";
 		//context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
 		if (this.inCombat)
@@ -89,17 +91,17 @@ class DragonBackGame extends DragonGame {
 		let x: number;
 		let y: number;
 		x = this.getClockX() - 90;
-		y = screenHeight - this.clockPanel.originY;
+		y = this.clockBottomY - this.clockPanel.originY;
 		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
-		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
-		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
+		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
 		this.dragonBackSounds.safePlayMp3('HeavyPoof');
 	}
 
 	private createFireWallBehindClock() {
 		const displayMargin: number = 16;
-		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), screenHeight - this.clockPanel.originY * 2 + displayMargin);
-		fireWall.scale = 0.6;
+		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.clockPanel.originY * 2 + displayMargin);
+		fireWall.scale = 0.6 * this.clockScale;
 		fireWall.opacity = 0.8;
 		fireWall.fadeOutTime = 400;
 		this.dragonBackSounds.safePlayMp3('FlameOn');
@@ -280,16 +282,16 @@ class DragonBackGame extends DragonGame {
 		this.clockPanel.originY = 37;
 
 		let clockX: number = this.getClockX();
-		let clockY: number = screenHeight - 30;
+		let clockY: number = this.clockBottomY - 30;
 
-		this.dndClockPanel = this.clockPanel.add(clockX, clockY);
+		this.dndClockPanel = this.clockPanel.add(clockX, clockY).setScale(this.clockScale);
 
 		this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
 		this.clock.name = 'Clock';
 		this.clock.originX = 247;
 		this.clock.originY = 251;
 
-		this.dndClock = this.clock.add(clockX, clockY);
+		this.dndClock = this.clock.add(clockX, clockY).setScale(this.clockScale);
 
 
 		this.backLayerEffects.add(this.clock);

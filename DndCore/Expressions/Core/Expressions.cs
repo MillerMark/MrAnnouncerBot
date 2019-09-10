@@ -30,52 +30,90 @@ namespace DndCore
 		public static object Get(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			return expressionEvaluator.Evaluate(Clean(expression));
+			try
+			{
+				return expressionEvaluator.Evaluate(Clean(expression));
+			}
+			finally
+			{
+				FinishedEvaluation(player);
+			}
 		}
 
 		public static object Get<T>(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			return (T)expressionEvaluator.Evaluate(Clean(expression));
+			try
+			{
+				return (T)expressionEvaluator.Evaluate(Clean(expression));
+			}
+			finally
+			{
+				FinishedEvaluation(player);
+			}
 		}
 
 		public static void Do(string expression, Character player = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return;
 			AddPlayerVariable(player);
-			expressionEvaluator.Evaluate(Clean(expression));
+			try
+			{
+				expressionEvaluator.Evaluate(Clean(expression));
+			}
+			finally
+			{
+				FinishedEvaluation(player);
+			}
 		}
 
 		public static int GetInt(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			object result = expressionEvaluator.Evaluate(Clean(expression));
-			if (result is int)
-				return (int)result;
-			if (result is double)
-				return (int)Math.Round((double)result);
-			if (result is decimal)
-				return (int)Math.Round((decimal)result);
-			if (result is Enum)
-				return (int)result;
-			return int.MinValue;
+			try
+			{
+				object result = expressionEvaluator.Evaluate(Clean(expression));
+				if (result is int)
+					return (int)result;
+				if (result is double)
+					return (int)Math.Round((double)result);
+
+				if (result is decimal)
+					return (int)Math.Round((decimal)result);
+				if (result is Enum)
+					return (int)result;
+				return int.MinValue;
+			}
+			finally
+			{
+				FinishedEvaluation(player);
+			}
 		}
 
 		public static bool GetBool(string expression, Character player = null)
 		{
 			AddPlayerVariable(player);
-			object result = expressionEvaluator.Evaluate(Clean(expression));
-			if (result is int)
-				return (int)result == 1;
-			if (result is string)
+			try
 			{
-				string compareStr = ((string)result).Trim().ToLower();
-				return compareStr == "x" || compareStr == "true";
+				object result = expressionEvaluator.Evaluate(Clean(expression));
+				if (result is int)
+					return (int)result == 1;
+				if (result is string)
+				{
+					string compareStr = ((string)result).Trim().ToLower();
+					return compareStr == "x" || compareStr == "true";
+				}
+
+				if (result is bool)
+					return (bool)result;
+
+				return false;
 			}
-
-			if (result is bool)
-				return (bool)result;
-
-			return false;
+			finally
+			{
+				FinishedEvaluation(player);
+			}
 		}
 
 		private static void AddPlayerVariable(Character player)
@@ -84,6 +122,13 @@ namespace DndCore
 			{
 				{ STR_Player, player }
 			};
+			if (player != null)
+				player.StartingExpressionEvaluation();
+		}
+		static void FinishedEvaluation(Character player)
+		{
+			if (player != null)
+				player.CompletingExpressionEvaluation();
 		}
 
 
@@ -106,21 +151,21 @@ namespace DndCore
 
 		private static void ExpressionEvaluator_EvaluateFunction(object sender, FunctionEvaluationEventArg e)
 		{
-			DndFunction function = functions.FirstOrDefault(x => x.Handles(e.Name));
+			Character player = GetPlayer(e.Evaluator.Variables);
+			DndFunction function = functions.FirstOrDefault(x => x.Handles(e.Name, player));
 			if (function != null)
 			{
-				Character player = GetPlayer(e.Evaluator.Variables);
 				e.Value = function.Evaluate(e.Args, e.Evaluator, player);
 			}
 		}
 
 		private static void ExpressionEvaluator_EvaluateVariable(object sender, VariableEvaluationEventArg e)
 		{
-			DndVariable variable = variables.FirstOrDefault(x => x.Handles(e.Name));
+			Character player = GetPlayer(e.Evaluator.Variables);
+			DndVariable variable = variables.FirstOrDefault(x => x.Handles(e.Name, player));
 			if (variable != null)
 			{
-				Character player = GetPlayer(e.Evaluator.Variables);
-				e.Value = variable.GetValue(e.Name, player);
+				e.Value = variable.GetValue(e.Name, e.Evaluator, player);
 			}
 		}
 

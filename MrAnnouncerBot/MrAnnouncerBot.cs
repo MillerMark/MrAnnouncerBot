@@ -267,21 +267,25 @@ namespace MrAnnouncerBot
 			}
 
 			lastFanfareActivated = DateTime.Now;
-			lastFanfareDuration = fanfare.SecondsLong + 3;
-
+			
 			string sceneName = fanfare.DisplayName;
 
+			int fanfareIndex = 1;
 			if (fanfare.Count > 1)
 			{
-				string indexStr = (new Random().Next(fanfare.Count) + 1).ToString();
+				fanfareIndex = new Random().Next(fanfare.Count) + 1;
+				string indexStr = fanfareIndex.ToString();
 				sceneName += indexStr;
 			}
+
+			double fanfareDuration = fanfare.GetFanfareDuration(fanfareIndex);
+			lastFanfareDuration = fanfareDuration + 3;
 
 
 			ActivatingSceneByName(sceneName, "Fanfare");
 			try
 			{
-				hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);
+				hubConnection.InvokeAsync("SuppressVolume", fanfareDuration);
 				obsWebsocket.SetCurrentScene(sceneName);
 			}
 			catch (Exception ex)
@@ -957,12 +961,23 @@ namespace MrAnnouncerBot
 						}
 					}
 
+					TimeSpan timeMarker = TimeSpan.MinValue;
 
-					TimeSpan timeMarker = GetTimeSpanFromString(showData.duration)
-																			.Subtract(rewindTimeSpan);
+					try
+					{
+						timeMarker = GetTimeSpanFromString(showData.duration).Subtract(rewindTimeSpan);
+					}
+					catch (Exception ex)
+					{
+						if (ex != null)
+						{
+
+						}
+						Debugger.Break();
+					}
 
 
-					return showData.url + "?t=" + ($"{timeMarker.Hours}h{timeMarker.Minutes}m{timeMarker.Seconds}s");
+					return showData.url + "?t=" + $"{timeMarker.Hours}h{timeMarker.Minutes}m{timeMarker.Seconds}s";
 				}
 			}
 			catch (Exception ex)

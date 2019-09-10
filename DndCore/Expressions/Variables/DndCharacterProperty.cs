@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
@@ -9,7 +10,7 @@ namespace DndCore
 	{
 		List<string> propertyNames = null;
 		List<string> fieldNames = null;
-
+		
 		void GetPropertyNames()
 		{
 			if (propertyNames != null)
@@ -29,13 +30,16 @@ namespace DndCore
 			}
 		}
 
-		public override bool Handles(string tokenName)
+		public override bool Handles(string tokenName, Character player)
 		{
 			GetPropertyNames();
-			return propertyNames.IndexOf(tokenName) >= 0 | fieldNames.IndexOf(tokenName) >= 0;
+			if (propertyNames.IndexOf(tokenName) >= 0 | fieldNames.IndexOf(tokenName) >= 0)
+				return true;
+
+			return player != null && player.GetState(tokenName) != null;
 		}
 
-		public override object GetValue(string variableName, Character player)
+		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
 		{
 			if (fieldNames.IndexOf(variableName) >= 0)
 			{
@@ -48,7 +52,8 @@ namespace DndCore
 				PropertyInfo property = typeof(Character).GetProperty(variableName);
 				return property?.GetValue(player);
 			}
-			return null;
+
+			return player.GetState(variableName);
 		}
 	}
 }

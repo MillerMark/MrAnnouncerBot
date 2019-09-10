@@ -80,5 +80,17 @@ namespace DndTests
 			Assert.AreEqual(DamageType.Fire | DamageType.Acid | DamageType.Bludgeoning, Expressions.Get("Fire | Acid | Bludgeoning"));
 			Assert.AreEqual(Conditions.Deafened, Expressions.Get("Deafened"));
 		}
+
+		[TestMethod]
+		public void TestProperties()
+		{
+			Character fred = AllPlayers.Get("Fred");
+			Expressions.Do("Set(_rage,true)", fred);
+			Assert.IsTrue(Expressions.GetBool("_rage", fred));
+			Assert.IsTrue(Expressions.GetBool("InRage", fred));
+			Expressions.Do("Set(_rage,false)", fred);
+			Assert.IsFalse(Expressions.GetBool("_rage", fred));
+			Assert.IsFalse(Expressions.GetBool("InRage", fred));
+		}
 	}
 }

@@ -9,7 +9,7 @@ namespace DndCore
 	public class Character : Creature
 	{
 		public event StateChangedEventHandler StateChanged;
-
+		
 		protected virtual void OnStateChanged(object sender, StateChangedEventArgs ea)
 		{
 			StateChanged?.Invoke(sender, ea);
@@ -20,7 +20,29 @@ namespace DndCore
 			OnStateChanged(this, new StateChangedEventArgs(key, oldValue, newValue));
 		}
 
+		private void CharacterClass_LevelChanged(object sender, LevelChangedEventArgs ea)
+		{
+			if (sender is CharacterClass characterClass)
+				OnStateChanged($"Level[{characterClass.Name}]", ea.OldLevel, ea.NewLevel);
+		}
+
+		
+		public int EnemyAdvantage
+		{
+			get { return enemyAdvantage; }
+			set
+			{
+				enemyAdvantage = value;
+				if (enemyAdvantage < -1)
+					enemyAdvantage = -1;
+
+				if (enemyAdvantage > 1)
+					enemyAdvantage = 1;
+			}
+		}
+		
 		public bool SpellCastingLock { get; set; }
+		int enemyAdvantage;
 		public int damageOffsetThisRoll = 0;
 		public int advantageDiceThisRoll = 0;
 		public int disadvantageDiceThisRoll = 0;
@@ -31,31 +53,50 @@ namespace DndCore
 		public string diceJustRolled = string.Empty;
 		public AttackType attackingType = AttackType.None;
 		public AttackKind attackingKind = AttackKind.Any;
+		public double attackingAbilityModifier = 0; // TODO: Set for spells?
+		public bool OneHanded { get; set; }  // TODO: Implement this.
+		public int WeaponsInHand { get; set; }  // TODO: Implement this (0, 1 or 2).
 
-		List<CharacterClass> classes = new List<CharacterClass>();
 
-		public void ResetPlayerTurnBasedState()
+		public void ResetPlayerStartTurnBasedState()
 		{
+			enemyAdvantage = 0;
+			WeaponsInHand = 0;
+			OneHanded = false;
 			checkingAbilities = Ability.none;
 			savingAgainst = Ability.none;
-			attackingAbility = Ability.none;
 			checkingSkills = Skills.none;
-			attackingType = AttackType.None;
-			attackingKind = AttackKind.Any;
+			ResetPlayerActionBasedState();
+		}
+
+		public void ResetPlayerEndTurnBasedState()
+		{
 			ResetPlayerActionBasedState();
 		}
 
 		public void ResetPlayerActionBasedState()
 		{
+			attackingAbility = Ability.none;
+			attackingAbilityModifier = 0;
+			attackingType = AttackType.None;
+			attackingKind = AttackKind.Any;
 			diceJustRolled = string.Empty;
 			damageOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
 			disadvantageDiceThisRoll = 0;
 		}
 
+		void ResetPlayerResistance()
+		{
+			// TODO: implement this.
+			//damageResistance
+		}
+
 		public void StartTurn()
 		{
-			ResetPlayerTurnBasedState();
+			if (Game != null)
+				Game.StartingTurnFor(this);
+			ResetPlayerStartTurnBasedState();
 		}
 
 		public void StartAction()
@@ -70,12 +111,16 @@ namespace DndCore
 
 		public void EndTurn()
 		{
-			ResetPlayerTurnBasedState();
+			if (Game != null)
+				Game.EndingTurnFor(this);
+			ResetPlayerEndTurnBasedState();
 		}
 
 		public void AddClass(string name, int level)
 		{
-			classes.Add(new CharacterClass(name, level));
+			CharacterClass characterClass = new CharacterClass(name, level);
+			characterClass.LevelChanged += CharacterClass_LevelChanged;
+			Classes.Add(characterClass);
 		}
 
 		public string ClassLevelStr
@@ -83,7 +128,7 @@ namespace DndCore
 			get
 			{
 				string result = string.Empty;
-				foreach (CharacterClass characterClass in classes)
+				foreach (CharacterClass characterClass in Classes)
 				{
 					if (result.Length > 0)
 						result += " / ";
@@ -119,7 +164,7 @@ namespace DndCore
 			get
 			{
 				int totalLevel = 0;
-				foreach (CharacterClass playerClass in classes)
+				foreach (CharacterClass playerClass in Classes)
 				{
 					totalLevel += playerClass.Level;
 				}
@@ -612,8 +657,8 @@ namespace DndCore
 
 		public Vector WorldPosition { get; private set; }
 		public Weapons weaponProficiency { get; set; }
-		public List<CharacterClass> Classes { get => classes; set => classes = value; }
-		public List<string> features { get; set; }
+		public List<CharacterClass> Classes { get; set; } = new List<CharacterClass>();
+		public List<AssignedFeature> features { get; set; }
 
 		public void ApplyModPermanently(Mod mod, string description)
 		{
@@ -761,7 +806,7 @@ namespace DndCore
 		{
 			var character = new Character();
 			character.playerID = PlayerID.FromName(characterDto.name);
-			character.features = GetFeatures(characterDto.features);
+			character.features = GetFeatures(characterDto.features, character);
 			character.name = characterDto.name;
 			character.playingNow = !string.IsNullOrWhiteSpace(characterDto.playingNow);
 			character.race = characterDto.race;
@@ -803,30 +848,29 @@ namespace DndCore
 			return character;
 		}
 
-		private static List<string> GetFeatures(string featureListStr)
+		private static List<AssignedFeature> GetFeatures(string featureListStr, Character player)
 		{
-			List<string> results = new List<string>();
+			List<AssignedFeature> results = new List<AssignedFeature>();
 			List<string> features = featureListStr.Split(';').ToList();
 			foreach (string feature in features)
 			{
 				string trimmedFeature = feature.Trim();
 				if (!string.IsNullOrEmpty(trimmedFeature))
-					results.Add(trimmedFeature);
+					results.Add(AssignedFeature.From(trimmedFeature, player));
 			}
 			return results;
 		}
 
-		public int GetAbilityModifier(WeaponProperties weaponProperties, AttackType attackType)
+		public int GetAttackingAbilityModifier(WeaponProperties weaponProperties, AttackType attackType)
 		{
-			double abilityModifier;
 			double dexterityModifier = GetAbilityModifier(Ability.dexterity);
 			double strengthModifier = GetAbilityModifier(Ability.strength);
 
 			attackingType = attackType;
 
-			if ((weaponProperties | WeaponProperties.Finesse) == WeaponProperties.Finesse)
+			if ((weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse)
 			{
-				abilityModifier = Math.Max(dexterityModifier, strengthModifier);
+				attackingAbilityModifier = Math.Max(dexterityModifier, strengthModifier);
 
 				if (dexterityModifier > strengthModifier)
 					attackingAbility = Ability.dexterity;
@@ -836,16 +880,16 @@ namespace DndCore
 			}
 			else if (attackType == AttackType.Range)
 			{
-				abilityModifier = dexterityModifier;
+				attackingAbilityModifier = dexterityModifier;
 				attackingAbility = Ability.dexterity;
 			}
 			else
 			{
-				abilityModifier = strengthModifier;
+				attackingAbilityModifier = strengthModifier;
 				attackingAbility = Ability.strength;
 			}
 
-			return (int)Math.Round(abilityModifier);
+			return (int)Math.Round(attackingAbilityModifier);
 		}
 
 		public void SetAbilities(int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma)
@@ -873,13 +917,15 @@ namespace DndCore
 
 		public int GetLevel(string characterClassName)
 		{
-			CharacterClass characterClass = classes.FirstOrDefault(x => string.Compare(x.Name, characterClassName, true) == 0);
+			CharacterClass characterClass = Classes.FirstOrDefault(x => string.Compare(x.Name, characterClassName, true) == 0);
 			if (characterClass == null)
 				return 0;
 			return characterClass.Level;
 		}
 
 		Dictionary<string, object> states = new Dictionary<string, object>();
+		bool reapplyingActiveFeatures;
+
 		public void SetState(string key, object newValue)
 		{
 			if (states.ContainsKey(key))
@@ -967,23 +1013,128 @@ namespace DndCore
 
 		public void ActivateFeature(string featureNameStr)
 		{
-			string foundFeature = features.FirstOrDefault(x => DndUtils.GetCleanItemName(x.ToLower()) == DndUtils.GetCleanItemName(featureNameStr).ToLower());
-			if (string.IsNullOrWhiteSpace(foundFeature))
+			AssignedFeature foundFeature = features.FirstOrDefault(x => DndUtils.GetCleanItemName(x.Feature.Name.ToLower()) == DndUtils.GetCleanItemName(featureNameStr).ToLower());
+			if (foundFeature == null)
 				return;
 
-			List<string> parameters = Feature.GetParameters(foundFeature);
-			string featureName = string.Empty;
-			if (foundFeature.IndexOf("(") >= 0)
-				featureName = foundFeature.EverythingBefore("(");
-			else
-				featureName = foundFeature;
-
-			Feature feature = AllFeatures.Get(featureName);
-			if (feature == null)
-				return;
-
-			string joinedParameters = string.Join(",", parameters);
-			feature.Activate(joinedParameters, this);
+			foundFeature.Activate();
 		}
+
+		public void DeactivateFeature(string featureNameStr)
+		{
+			AssignedFeature foundFeature = features.FirstOrDefault(x => DndUtils.GetCleanItemName(x.Feature.Name.ToLower()) == DndUtils.GetCleanItemName(featureNameStr).ToLower());
+			if (foundFeature == null)
+				return;
+
+			foundFeature.Deactivate();
+		}
+
+		public AssignedFeature GetFeature(string name)
+		{
+			return features.FirstOrDefault(x => DndUtils.GetCleanItemName(x.Feature.Name.ToLower()) == 
+			DndUtils.GetCleanItemName(name.ToLower()));
+		}
+
+		public void Use(PlayerActionShortcut playerActionShortcut)
+		{
+			ResetPlayerActionBasedState();
+			attackingAbilityModifier = playerActionShortcut.AttackingAbilityModifier;
+			attackingAbility = playerActionShortcut.AttackingAbility;
+			attackingType = playerActionShortcut.AttackingType;
+			playerActionShortcut.ExecuteCommands(this);
+			ReapplyActiveFeatures();
+		}
+
+		/// <summary>
+		/// Returns the first action shortcut for this player that starts with the specified name.
+		/// </summary>
+		/// <param name="shortcutName"></param>
+		/// <returns></returns>
+		public PlayerActionShortcut GetShortcut(string shortcutName)
+		{
+			List<PlayerActionShortcut> shortcuts = AllActionShortcuts.Get(playerID, shortcutName);
+			if (shortcuts != null && shortcuts.Count > 0)
+				return shortcuts[0];
+			return null;
+		}
+
+		void ReapplyActiveFeatures(bool forceApply = false, AssignedFeature ignored = null)
+		{
+			if (reapplyingActiveFeatures)
+				return;
+			queuedRecalcOptions = RecalcOptions.None;
+			reapplyingActiveFeatures = true;
+			try
+			{
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					if (assignedFeature == ignored)
+						continue;
+					if (!assignedFeature.HasConditions())
+						continue;
+					if (assignedFeature.ConditionsSatisfied())
+						assignedFeature.Activate(forceApply);
+					else
+						assignedFeature.Deactivate(forceApply);
+				}
+			}
+			finally
+			{
+				reapplyingActiveFeatures = false;
+				if (queuedRecalcOptions != RecalcOptions.None)
+					Recalculate(queuedRecalcOptions);
+			}
+		}
+
+		RecalcOptions queuedRecalcOptions = RecalcOptions.None;
+		public void Recalculate(RecalcOptions recalcOptions)
+		{
+			if (reapplyingActiveFeatures || evaluatingExpression)
+			{
+				queuedRecalcOptions |= recalcOptions;
+				return;
+			}
+
+			if ((recalcOptions & RecalcOptions.TurnBasedState) == RecalcOptions.TurnBasedState)
+			{
+				ResetPlayerStartTurnBasedState();
+			}
+			else if ((recalcOptions & RecalcOptions.ActionBasedState) == RecalcOptions.ActionBasedState)
+			{
+				ResetPlayerActionBasedState();
+			}
+
+			if ((recalcOptions & RecalcOptions.Resistance) == RecalcOptions.Resistance)
+			{
+				ResetPlayerResistance();
+			}
+
+			ReapplyActiveFeatures(false);
+		}
+
+		bool evaluatingExpression;
+		Creature targetedCreature;
+
+		public void StartingExpressionEvaluation()
+		{
+			evaluatingExpression = true;
+		}
+
+		public void CompletingExpressionEvaluation()
+		{
+			evaluatingExpression = false;
+			Recalculate(queuedRecalcOptions);
+			queuedRecalcOptions = RecalcOptions.None;
+		}
+
+		public void Target(Creature target)
+		{
+			targetedCreature = target;
+		}
+
+		//public DiceRoll GetRoll()
+		//{
+		//	
+		//}
 	}
 }

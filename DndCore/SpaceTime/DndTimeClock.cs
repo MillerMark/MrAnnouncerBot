@@ -17,8 +17,10 @@ namespace DndCore
 	}
 	public class DndAlarm
 	{
-		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name)
+		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name, Character player, object data = null)
 		{
+			Player = player;
+			Data = data;
 			Name = name;
 			TriggerTime = triggerTime;
 			SetTime = dndTimeClock.Time;
@@ -27,6 +29,8 @@ namespace DndCore
 		public DateTime SetTime { get; set; }
 		public DateTime TriggerTime { get; set; }
 		public string Name { get; set; }
+		public object Data { get; set; }
+		public Character Player { get; set; }
 
 		public void FireAlarm(DndTimeClock dndTimeClock)
 		{
@@ -326,12 +330,12 @@ namespace DndCore
 
 		List<DndAlarm> alarms = new List<DndAlarm>();
 
-		public DndAlarm CreateAlarm(TimeSpan fromNow, string name)
+		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Character player = null, object data = null)
 		{
 			if (fromNow.TotalSeconds <= 0)
 				return null;
 
-			DndAlarm dndAlarm = new DndAlarm(this, Time + fromNow, name);
+			DndAlarm dndAlarm = new DndAlarm(this, Time + fromNow, name, player, data);
 			alarms.Add(dndAlarm);
 			alarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
 			return dndAlarm;

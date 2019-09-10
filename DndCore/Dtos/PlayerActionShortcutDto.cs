@@ -35,9 +35,11 @@ namespace DndCore
 		public string moveLeftRight { get; set; }
 		public string fade { get; set; }
 		public string opacity { get; set; }
+		public string minSlotLevel { get; set; }
 		public string startSound { get; set; }
 		public string endSound { get; set; }
 		public string description { get; set; }
+		public string dieRollEffects { get; set; }
 		public PlayerActionShortcutDto()
 		{
 

@@ -4,9 +4,9 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class GiveAdvantageFunction : DndFunction
+	public class PlayerHasAdvantageFunction : DndFunction
 	{
-		public override string Name => "GiveAdvantage";
+		public override string Name => "PlayerHasAdvantage";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
 		{
