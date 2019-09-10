@@ -9,9 +9,18 @@ namespace DndCore
 	{
 		static int shortcutIndex;
 		public List<WindupDto> Windups { get; }
-		public AttackType AttackType { get; set; }
+		public List<WindupDto> WindupsReversed {
+			get
+			{
+				List<WindupDto> result = new List<WindupDto>();
+				for (int i = Windups.Count - 1; i >= 0; i--)
+					result.Add(Windups[i]);
+				return result;
+			}
+		}
+		public AttackType AttackingType { get; set; }
 		public int PlusModifier { get; set; }
-		public int AbilityModifier { get; set; }
+		public int AttackingAbilityModifier { get; set; }
 		public int ProficiencyBonus { get; set; }
 		public string Dice { get; set; }
 		public string Name { get; set; }
@@ -44,7 +53,7 @@ namespace DndCore
 		{
 			get
 			{
-				return PlusModifier + AbilityModifier + ProficiencyBonus;
+				return PlusModifier + AttackingAbilityModifier + ProficiencyBonus;
 			}
 		}
 
@@ -52,23 +61,26 @@ namespace DndCore
 		{
 			get
 			{
-				return PlusModifier + AbilityModifier;
+				return PlusModifier + AttackingAbilityModifier;
 			}
 		}
 		public bool ModifiesExistingRoll { get; set; }
 		public string Commands { get; set; }
-		public Ability AttackAbility { get; set; }
+		public Ability AttackingAbility { get; set; }
+		public WeaponProperties WeaponProperties { get; set; }
+		public string DieRollEffects { get; set; }
 
 		public PlayerActionShortcut()
 		{
-			AttackAbility = Ability.none;  // Calculated later.
+			AttackingAbility = Ability.none;  // Calculated later.
+			WeaponProperties = WeaponProperties.None;
 			ModifiesExistingRoll = false;
 			MinDamage = 0;
 			UsesMagic = false;
 			PlusModifier = 0;
-			AbilityModifier = 0;
+			AttackingAbilityModifier = 0;
 			ProficiencyBonus = 0;
-			AttackType = AttackType.None;
+			AttackingType = AttackType.None;
 			Type = DiceRollType.None;
 			Index = shortcutIndex;
 			shortcutIndex++;
@@ -174,8 +186,12 @@ namespace DndCore
 			Dice = Spell.DieStr;
 			Part = DndUtils.ToTurnPart(Spell.CastingTime);
 		}
-		public void AddEffect(PlayerActionShortcutDto shortcutDto, Character player)
+		public void AddEffect(PlayerActionShortcutDto shortcutDto, Character player, int slotLevel = 0)
 		{
+			int minSlotLevel = MathUtils.GetInt(shortcutDto.minSlotLevel);
+			if (slotLevel < minSlotLevel)
+				return;
+
 			WindupDto windup = WindupDto.From(shortcutDto, player);
 			if (windup == null)
 				return;
@@ -186,11 +202,6 @@ namespace DndCore
 
 		public static List<PlayerActionShortcut> From(PlayerActionShortcutDto shortcutDto)
 		{
-			// TODO: Delete this check.
-			if (string.Compare(shortcutDto.name, "battleaxe", true) == 0)
-			{
-				
-			}
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
 			string cleanName = DndUtils.GetCleanItemName(shortcutDto.name);
 			Weapon weapon = AllWeapons.Get(cleanName);
@@ -231,13 +242,25 @@ namespace DndCore
 						int[] spellSlotLevels = player.GetSpellSlotLevels();
 						int availableSlots = spellSlotLevels[spell.Level];
 						if (availableSlots > 0)
+						{
+							bool needToDisambiguateMultipleSpells = false;
+							if (spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0)
+								needToDisambiguateMultipleSpells = true;
+
 							for (int slotLevel = spell.Level; slotLevel <= 9; slotLevel++)
 							{
-								if (slotLevel == spell.Level)
-									results.Add(FromSpell(shortcutDto, player, spell));
-								else
-									results.Add(FromSpell(shortcutDto, player, spell, slotLevel));
+								if (spellSlotLevels[slotLevel] == 0)
+									break;
+
+								string suffix = string.Empty;
+								if (needToDisambiguateMultipleSpells)
+									suffix = $" [{slotLevel}]";
+								
+								results.Add(FromSpell(shortcutDto, player, spell, slotLevel, null, suffix));
 							}
+						}
+						else
+							results.Add(FromSpell(shortcutDto, player, spell));
 					}
 					else
 						results.Add(FromSpell(shortcutDto, player, spell));
@@ -254,6 +277,7 @@ namespace DndCore
 		private static PlayerActionShortcut FromWeapon(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
 			PlayerActionShortcut result = FromAction(shortcutDto, player, damageStr, suffix);
+			result.WeaponProperties = weaponProperties;
 
 			if (attackType == AttackType.None && weaponProperties != WeaponProperties.None)
 			{
@@ -266,7 +290,7 @@ namespace DndCore
 					attackType = AttackType.Range;
 				}
 			}
-			result.AttackType = attackType;
+			result.AttackingType = attackType;
 
 			if ((attackType & AttackType.Range) == AttackType.Range ||
 				(attackType & AttackType.MartialRange) == AttackType.MartialRange ||
@@ -276,28 +300,33 @@ namespace DndCore
 				if (player.IsProficientWith(shortcutDto.name))
 					result.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 			}
-			result.AbilityModifier = player.GetAbilityModifier(weaponProperties, attackType);
-			result.AttackAbility = player.attackingAbility;
+			result.UpdatePlayerAttackingAbility(player);
 
 			result.ProcessDieStr(shortcutDto, damageStr);
 
 			return result;
 		}
 
+		public void UpdatePlayerAttackingAbility(Character player)
+		{
+			AttackingAbilityModifier = player.GetAttackingAbilityModifier(WeaponProperties, AttackingType);
+			AttackingAbility = player.attackingAbility;
+		}
+
 		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, player, damageStr, suffix);
+			PlayerActionShortcut result = FromAction(shortcutDto, player, damageStr, suffix, slotLevelOverride);
 
 			int spellSlotLevel = spell.Level;
 			if (slotLevelOverride > 0)
 				spellSlotLevel = slotLevelOverride;
 			result.AddSpell(spellSlotLevel, player);
-			result.AttackAbility = player.spellCastingAbility;
+			result.AttackingAbility = player.spellCastingAbility;
 			result.ProcessDieStr(shortcutDto, damageStr);
 			return result;
 		}
 
-		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = "", string suffix = "")
+		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = "", string suffix = "", int slotLevel = 0)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
 			result.Description = shortcutDto.description;
@@ -318,9 +347,11 @@ namespace DndCore
 			result.VantageMod = DndUtils.ToVantage(shortcutDto.vantageMod);
 			result.ModifiesExistingRoll = MathUtils.IsChecked(shortcutDto.rollMod);
 			result.Commands = shortcutDto.commands;
-			result.AddEffect(shortcutDto, player);
-			player.ResetPlayerTurnBasedState();
+			result.AddEffect(shortcutDto, player, slotLevel);
+			result.SpellSlotLevel = slotLevel;
+			//player.ResetPlayerTurnBasedState();
 			result.ProcessDieStr(shortcutDto, damageStr);
+			result.DieRollEffects = shortcutDto.dieRollEffects;
 			return result;
 		}
 
@@ -328,7 +359,7 @@ namespace DndCore
 		{
 			string dieStr = shortcutDto.dieStr;
 
-			if (damageStr != null)
+			if (!string.IsNullOrWhiteSpace(damageStr))
 				dieStr = damageStr;
 
 			bool isInstantDice = dieStr.StartsWith("!");
@@ -348,9 +379,18 @@ namespace DndCore
 				Dice = dieStr;
 		}
 
+		void ExecuteCommand(string command, Character player)
+		{
+			Expressions.Do(command, player);
+		}
 		public void ExecuteCommands(Character player)
 		{
-			// Commands
+			string[] commands = Commands.Split(';');
+			foreach (string command in commands)
+			{
+				ExecuteCommand(command, player);
+			}
 		}
+
 	}
 }

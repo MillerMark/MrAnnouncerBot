@@ -5,8 +5,30 @@ namespace DndCore
 {
 	public class CharacterClass
 	{
+		public event LevelChangedEventHandler LevelChanged;
+		protected virtual void OnLevelChanged(object sender, LevelChangedEventArgs ea)
+		{
+			LevelChanged?.Invoke(sender, ea);
+		}
 		public string Name { get; set; }
-		public int Level { get; set; }
+		int level;
+		public int Level
+		{
+			get
+			{
+				return level;
+			}
+			set
+			{
+				if (level == value)
+					return;
+
+				int oldLevel = level;
+				level = value;
+				OnLevelChanged(this, new LevelChangedEventArgs(oldLevel, level));
+			}
+		}
+
 		public string HitDice { get; set; }
 
 		public CharacterClass(string name, int level, string hitDice = "")

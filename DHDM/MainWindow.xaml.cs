@@ -91,6 +91,8 @@ namespace DHDM
 
 		bool JoinedChannel(string channel)
 		{
+			if (dungeonMasterClient == null)
+				return false;
 			foreach (JoinedChannel joinedChannel in dungeonMasterClient.JoinedChannels)
 			{
 				if (string.Compare(joinedChannel.Channel, channel, true) == 0)
@@ -329,8 +331,12 @@ namespace DHDM
 			}
 		}
 
+		string activeDieRollEffects;
+
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
+			activeDieRollEffects = actionShortcut.DieRollEffects;
+			//diceRoll.TrailingEffects
 			if (actionShortcut.ModifiesExistingRoll)
 			{
 				switch (actionShortcut.VantageMod)
@@ -348,13 +354,14 @@ namespace DHDM
 			HubtasticBaseStation.ClearWindup("*");
 
 			Character player = GetPlayer(actionShortcut.PlayerId);
+			actionShortcut.ExecuteCommands(player);
 			Spell spell = actionShortcut.Spell;
 			if (spell != null)
 			{
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 				CastedSpell spellToCast = new CastedSpell(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = PlayerID.Merkin });
-				spellToCast.Windups = actionShortcut.Windups;
+				spellToCast.Windups = actionShortcut.WindupsReversed;
 				string serializedObject = JsonConvert.SerializeObject(spellToCast);
 				HubtasticBaseStation.CastSpell(serializedObject);
 				tbxDamageDice.Text = spell.DieStr;
@@ -369,7 +376,7 @@ namespace DHDM
 					HubtasticBaseStation.AddWindup(serializedObject);
 				}
 			}
-			actionShortcut.ExecuteCommands(player);
+			player.Use(actionShortcut);
 
 			// TODO: keepExistingModifier????
 			// if (actionShortcut.PlusModifier != keepExistingModifier)
@@ -419,36 +426,36 @@ namespace DHDM
 
 		void SetActionShortcuts(int playerID)
 		{
-			AddShortcutButtons(spActionsActivePlayer, playerID, TurnPart.Action);
+			AddShortcutButtons(wpActionsActivePlayer, playerID, TurnPart.Action);
 			AddShortcutButtons(spBonusActionsActivePlayer, playerID, TurnPart.BonusAction);
 			AddShortcutButtons(spReactionsActivePlayer, playerID, TurnPart.Reaction);
 			AddShortcutButtons(spSpecialActivePlayer, playerID, TurnPart.Special);
 		}
 
-		private void AddShortcutButtons(StackPanel stackPanel, int playerID, TurnPart part)
+		private void AddShortcutButtons(Panel panel, int playerID, TurnPart part)
 		{
-			ClearExistingButtons(stackPanel);
+			ClearExistingButtons(panel);
 
 			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerId == playerID).Where(x => x.Part == part).ToList();
 
 			if (playerActions.Count == 0)
-				stackPanel.Visibility = Visibility.Collapsed;
+				panel.Visibility = Visibility.Collapsed;
 			else
-				stackPanel.Visibility = Visibility.Visible;
+				panel.Visibility = Visibility.Visible;
 
 			foreach (PlayerActionShortcut playerActionShortcut in playerActions)
 			{
-				stackPanel.Children.Add(BuildShortcutButton(playerActionShortcut));
+				panel.Children.Add(BuildShortcutButton(playerActionShortcut));
 			}
 		}
 
-		private void ClearExistingButtons(StackPanel stackPanel)
+		private void ClearExistingButtons(Panel panel)
 		{
-			for (int i = stackPanel.Children.Count - 1; i >= 0; i--)
+			for (int i = panel.Children.Count - 1; i >= 0; i--)
 			{
-				UIElement uIElement = stackPanel.Children[i];
+				UIElement uIElement = panel.Children[i];
 				if (uIElement is StackPanel)
-					stackPanel.Children.RemoveAt(i);
+					panel.Children.RemoveAt(i);
 			}
 		}
 
@@ -738,6 +745,9 @@ namespace DHDM
 
 			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
+
+			diceRoll.AddEffects(activeDieRollEffects);
+
 			return diceRoll;
 		}
 
@@ -1271,27 +1281,25 @@ namespace DHDM
 		private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsPaladinSmiteAttack = true;
+			diceRoll.OnThrowSound = "PaladinThunder";
 			diceRoll.NumHalos = 3;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.Raven,
 				LeftRightDistanceBetweenPrints = 15,
 				MinForwardDistanceBetweenPrints = 5,
-				OnPrintPlaySound = "Flap",
-				MinSoundInterval = 600,
-				PlusMinusSoundInterval = 300,
-				NumRandomSounds = 6
+				OnPrintPlaySound = "Flap[6]",
+				MedianSoundInterval = 600,
+				PlusMinusSoundInterval = 300
 			});
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.Spiral,
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 150,
-				OnPrintPlaySound = "Crow",
-				MinSoundInterval = 500,
-				PlusMinusSoundInterval = 300,
-				NumRandomSounds = 3
+				OnPrintPlaySound = "Crow[3]",
+				MedianSoundInterval = 500,
+				PlusMinusSoundInterval = 300
 			});
 			RollTheDice(diceRoll);
 		}
@@ -1299,7 +1307,7 @@ namespace DHDM
 		private void BtnSneakAttack_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsSneakAttack = true;
+			diceRoll.OnThrowSound = "SneakAttackWhoosh";
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.Smoke,
@@ -1317,6 +1325,7 @@ namespace DHDM
 			diceRoll.Modifier = 0;
 			diceRoll.HiddenThreshold = 0;
 			diceRoll.IsMagic = true;
+			diceRoll.OnThrowSound = "WildMagicRoll";
 			diceRoll.Type = DiceRollType.WildMagic;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
@@ -1331,7 +1340,6 @@ namespace DHDM
 		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsWildAnimalAttack = true;
 			diceRoll.OnFirstContactSound = "WildForm";
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
@@ -3105,6 +3113,8 @@ namespace DHDM
 
 		public void TellDungeonMaster(string message, bool isDetail = false)
 		{
+			if (dungeonMasterClient == null)
+				return;
 			if (!JoinedChannel(DungeonMasterChannel))
 			{
 				try

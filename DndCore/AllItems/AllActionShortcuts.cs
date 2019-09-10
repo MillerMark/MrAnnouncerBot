@@ -22,12 +22,13 @@ namespace DndCore
 			while (index <= playerDtos.Count - 1)
 			{
 				PlayerActionShortcutDto thisShortcutDto = playerDtos[index];
+
 				if (string.IsNullOrWhiteSpace(thisShortcutDto.player)) // appending to last entry...
 				{
 					foreach (PlayerActionShortcut shortcut in lastShortcuts)
 					{
 						Character player = AllPlayers.GetFromId(shortcut.PlayerId);
-						shortcut.AddEffect(thisShortcutDto, player);
+						shortcut.AddEffect(thisShortcutDto, player, shortcut.SpellSlotLevel);
 					}
 				}
 				else

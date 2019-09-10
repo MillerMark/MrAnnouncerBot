@@ -10,6 +10,25 @@ namespace DndCore
 		static AllFeatures()
 		{
 			LoadData(CsvData.Get<FeatureDto>(Folders.InCoreData("DnD - Features.csv")));
+			DndGame.Instance.PlayerStateChanged += Instance_PlayerStateChanged;
+		}
+
+		private static void Instance_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
+		{
+			foreach (AssignedFeature assignedFeature in ea.Player.features)
+			{
+				if (!assignedFeature.HasConditions())
+					continue;
+
+				if (assignedFeature.ConditionsSatisfied())
+				{
+					assignedFeature.Activate();
+				}
+				else
+				{
+					assignedFeature.Deactivate();
+				}
+			}
 		}
 
 		public static List<Feature> Features { get; private set; }

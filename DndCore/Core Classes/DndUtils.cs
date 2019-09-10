@@ -19,6 +19,47 @@ namespace DndCore
 	
 	public static class DndUtils
 	{
+		public static string InjectParameters(string expression, List<string> parameters, List<string> arguments)
+		{
+			for (int i = 0; i < parameters.Count; i++)
+			{
+				string searchStr = parameters[i];
+				string replaceStr = arguments[i];
+				expression = expression.Replace(searchStr, replaceStr);
+			}
+			return expression;
+		}
+
+		public static string InjectParameters(string str, List<string> parameters, string arguments)
+		{
+			string[] argumentList = arguments.Split(',');
+			return InjectParameters(str, parameters, argumentList.ToList());
+		}
+
+		public static string GetName(string name)
+		{
+			if (name.IndexOf("(") >= 0)
+				return name.EverythingBefore("(");
+			return name;
+		}
+
+		public static List<string> GetParameters(string name)
+		{
+			List<string> result = new List<string>();
+			if (name.IndexOf("(") < 0)
+				return result;
+
+			char[] trimChars = { ')', ' ', '\t' };
+			string parameters = name.EverythingAfter("(").Trim(trimChars);
+			string[] allParameters = parameters.Split(',');
+			foreach (string parameter in allParameters)
+			{
+				result.Add(parameter.Trim());
+			}
+			return result;
+
+		}
+
 		public static int GetAvailableSpellSlots(string className, int level, int slotLevel)
 		{
 			object data = AllTables.GetData(className, $"Slot{slotLevel}Spells", "Level", level);
@@ -222,7 +263,7 @@ namespace DndCore
 				name = name.EverythingBefore("(");
 			if (name.IndexOf('[') > 0)
 				name = name.EverythingBefore("[");
-			return name;
+			return name.Trim();
 		}
 
 		public static bool CanCastSpells(string className)

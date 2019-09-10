@@ -167,7 +167,7 @@
 			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="984" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Play" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
-						<StackPanel x:Name="spActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
+						<WrapPanel x:Name="wpActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
 								<Button >
@@ -175,7 +175,7 @@
 								</Button>
 								<Rectangle Height="3" Fill="Red"></Rectangle>
 							</StackPanel>
-						</StackPanel>
+						</WrapPanel>
 						<StackPanel x:Name="spBonusActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Bonus Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >

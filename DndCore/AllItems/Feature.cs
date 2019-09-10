@@ -26,8 +26,8 @@ namespace DndCore
 		public static Feature FromDto(FeatureDto featureDto)
 		{
 			Feature result = new Feature();
-			result.Name = GetName(featureDto.Name);
-			result.Parameters = GetParameters(featureDto.Name);
+			result.Name = DndUtils.GetName(featureDto.Name);
+			result.Parameters = DndUtils.GetParameters(featureDto.Name);
 			result.Conditions = featureDto.Conditions;
 			result.OnActivate = featureDto.OnActivate;
 			result.OnDeactivate = featureDto.OnDeactivate;
@@ -37,39 +37,26 @@ namespace DndCore
 			// Left off here.
 			return result;
 		}
-		static string GetName(string name)
-		{
-			if (name.IndexOf("(") >= 0)
-				return name.EverythingBefore("(");
-			return name;
-		}
 
-		public void Activate(string parameters, Character player)
+		public void Activate(string arguments, Character player, bool forceActivation = false)
 		{
+			if (IsActive && !forceActivation)
+				return;
+			History.Log($"Activating {Name}.");
 			IsActive = true;
-			if (!string.IsNullOrWhiteSpace(OnActivate))
-				Expressions.Do(InjectParameters(OnActivate, parameters), player);
-		}
-
-		public static List<string> GetParameters(string name)
-		{
-			List<string> result = new List<string>();
-			if (name.IndexOf("(") < 0)
-				return result;
-
-			char[] trimChars = { ')', ' ', '\t' };
-			string parameters = name.EverythingAfter("(").Trim(trimChars);
-			string[] allParameters = parameters.Split(',');
-			foreach (string parameter in allParameters)
+			if (Duration.HasValue())
 			{
-				result.Add(parameter.Trim());
+				string alarmName = $"{player.name}.{Name}";
+				History.TimeClock.CreateAlarm(Duration.GetTimeSpan(), alarmName, player).AlarmFired += Feature_Expired;
 			}
-			return result;
-
+			if (!string.IsNullOrWhiteSpace(OnActivate))
+				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);
 		}
-		void AddParameters(string name)
+
+		private void Feature_Expired(object sender, DndTimeEventArgs ea)
 		{
-			
+			if (IsActive)
+				Deactivate(string.Empty, ea.Alarm.Player);
 		}
 
 		public bool ConditionsSatisfied(List<string> args, Character player)
@@ -77,31 +64,17 @@ namespace DndCore
 			if (string.IsNullOrWhiteSpace(Conditions))
 				return true;
 
-			return Expressions.GetBool(InjectParameters(Conditions, args), player);
+			return Expressions.GetBool(DndUtils.InjectParameters(Conditions, Parameters, args), player);
 		}
 
-		public void Deactivate(string parameters, Character player)
+		public void Deactivate(string arguments, Character player, bool forceDeactivation = false)
 		{
+			if (!IsActive && !forceDeactivation)
+				return;
+			History.Log($"Deactivating {Name}.");
 			IsActive = false;
 			if (!string.IsNullOrWhiteSpace(OnDeactivate))
-				Expressions.Do(InjectParameters(OnDeactivate, parameters), player);
-		}
-
-		string InjectParameters(string str, List<string> parameters)
-		{
-			for (int i = 0; i < Parameters.Count; i++)
-			{
-				string searchStr = Parameters[i];
-				string replaceStr = parameters[i];
-				str = str.Replace(searchStr, replaceStr);
-			}
-			return str;
-		}
-
-		public string InjectParameters(string str, string parameters)
-		{
-			string[] parameterList = parameters.Split(',');
-			return InjectParameters(str, parameterList.ToList());
+				Expressions.Do(DndUtils.InjectParameters(OnDeactivate, Parameters, arguments), player);
 		}
 	}
 }
