@@ -2345,7 +2345,6 @@ function onDiceRollStopped() {
 		'roll': totalRoll,
 		'hiddenThreshold': diceRollData.hiddenThreshold,
 		'damage': totalDamagePlusModifier,
-		'healing': totalHealthPlusModifier,
 		'health': totalHealthPlusModifier,
 		'extra': totalExtraPlusModifier,
 		'multiplayerSummary': diceRollData.multiplayerSummary,
