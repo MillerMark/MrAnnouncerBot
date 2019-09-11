@@ -61,8 +61,6 @@ namespace DndCore
 			trailingEffect.MedianSoundInterval = MathUtils.GetInt(dto.MedianSoundInterval);
 			trailingEffect.MinForwardDistanceBetweenPrints = MathUtils.GetInt(dto.MinForwardDistanceBetweenPrints);
 			trailingEffect.Name = dto.Name;
-			trailingEffect.OnFirstContactEffect = dto.OnFirstContactEffect;
-			trailingEffect.OnFirstContactSound = dto.OnFirstContactSound;
 			trailingEffect.OnPrintPlaySound = dto.OnPrintPlaySound;
 			trailingEffect.Opacity = MathUtils.GetDouble(dto.Opacity, 1);
 			trailingEffect.Saturation = MathUtils.GetInt(dto.Saturation, 100);
@@ -75,6 +73,8 @@ namespace DndCore
 			// These are for the higher level roll.... Not sure what to do with these.
 			trailingEffect.OnThrowSound = dto.OnThrowSound;
 			trailingEffect.NumHalos = MathUtils.GetInt(dto.NumHalos);
+			trailingEffect.OnFirstContactEffect = dto.OnFirstContactEffect;
+			trailingEffect.OnFirstContactSound = dto.OnFirstContactSound;
 
 			return trailingEffect;
 		}
