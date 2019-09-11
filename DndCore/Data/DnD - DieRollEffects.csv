@@ -1,0 +1,7 @@
+Name,OnThrowSound,OnFirstContactSound,OnFirstContactEffect,Scale,Rotation,HueShift,Saturation,Brightness,NumHalos,OnStopRollingSound
+PaladinSmite,PaladinThunder,,,,,,,,3,
+SmokeBomb,,SneakAttack,SmokeExplosion,1.3,-1,player,,75,2,
+WildMagic,,,,,,,,,,WildMagicFinale/drum[18]
+WildAnimalForm,,WildForm,,,,,,,,
+Fangs,,Snarl,,,,,,,,
+SmallSparks,,,,,,,,,,

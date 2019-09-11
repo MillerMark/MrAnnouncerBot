@@ -27,10 +27,6 @@ namespace DndCore
 
 
 		public string Name { get; set; }
-		public string OnThrowSound { get; set; }
-		public string OnFirstContactSound { get; set; }
-		public string OnFirstContactEffect { get; set; }
-		public int NumHalos { get; set; }
 		public string EffectType { get; set; }
 		public int StartIndex { get; set; }
 		public int FadeIn { get; set; }
@@ -69,12 +65,6 @@ namespace DndCore
 			trailingEffect.RotationOffsetRandom = MathUtils.GetInt(dto.RotationOffsetRandom);
 			trailingEffect.StartIndex = MathUtils.GetInt(dto.StartIndex);
 			trailingEffect.Scale = MathUtils.GetDouble(dto.Scale, 1);
-
-			// These are for the higher level roll.... Not sure what to do with these.
-			trailingEffect.OnThrowSound = dto.OnThrowSound;
-			trailingEffect.NumHalos = MathUtils.GetInt(dto.NumHalos);
-			trailingEffect.OnFirstContactEffect = dto.OnFirstContactEffect;
-			trailingEffect.OnFirstContactSound = dto.OnFirstContactSound;
 
 			return trailingEffect;
 		}

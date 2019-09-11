@@ -404,7 +404,8 @@ function movePointAtAngle(point: Vector, angleInDegrees: number, distance): Vect
 }
 
 function trailsSparks(diceRollData: DiceRollData): boolean {
-	return diceRollData.type == DiceRollType.WildMagic || diceRollData.type == DiceRollType.BendLuckAdd || diceRollData.type == DiceRollType.BendLuckSubtract;
+	// mkm diceRollData.type == DiceRollType.WildMagic || 
+	return diceRollData.type == DiceRollType.BendLuckAdd || diceRollData.type == DiceRollType.BendLuckSubtract;
 }
 
 function handleDieCollision(e: any) {
@@ -459,16 +460,16 @@ function dieFirstHitsFloor(die: any) {
 		let percentageOnDie: number = 0.7;
 		let percentageOffDie: number = 1 - percentageOnDie;
 
-		let mainEffectFunc: any;
-		switch (diceRollData.onFirstContactEffect) {
-			case SpriteType.SmokeExplosion:
-				mainEffectFunc = diceLayer.addSneakAttack.bind(diceLayer);
-				break;
-		}
-		if (mainEffectFunc) {
+
+		if (diceRollData.onFirstContactEffect) {
 			let pos: Vector = getScreenCoordinates(die.getObject());
-			if (pos)
-				mainEffectFunc(pos.x * percentageOnDie + percentageOffDie * 960, pos.y * percentageOnDie + percentageOffDie * 540, diceLayer.activePlayerHueShift);
+
+			var x: number = pos.x * percentageOnDie + percentageOffDie * 960;
+			var y: number = pos.y * percentageOnDie + percentageOffDie * 540;
+			
+			diceLayer.AddEffect(diceRollData.onFirstContactEffect, x, y, diceRollData.effectScale,
+				diceRollData.effectHueShift, diceRollData.effectSaturation,
+				diceRollData.effectBrightness, diceRollData.effectRotation);
 		}
 	}
 }
@@ -2328,9 +2329,8 @@ function onDiceRollStopped() {
 	//console.log('Dice have stopped rolling!');
 	//diceHaveStoppedRolling(null);
 
-	if (diceRollData.type == DiceRollType.WildMagic) {
-		diceSounds.safePlayMp3('WildMagicFinale/drum[18]');
-	}
+	if (diceRollData.onStopRollingSound)
+		diceSounds.safePlayMp3(diceRollData.onStopRollingSound);
 
 	if (attemptedRollWasSuccessful) {
 		onSuccess();

@@ -68,6 +68,7 @@ namespace DndCore
 		public string Commands { get; set; }
 		public Ability AttackingAbility { get; set; }
 		public WeaponProperties WeaponProperties { get; set; }
+		public string TrailingEffects { get; set; }
 		public string DieRollEffects { get; set; }
 
 		public PlayerActionShortcut()
@@ -351,6 +352,7 @@ namespace DndCore
 			result.SpellSlotLevel = slotLevel;
 			//player.ResetPlayerTurnBasedState();
 			result.ProcessDieStr(shortcutDto, damageStr);
+			result.TrailingEffects = shortcutDto.trailingEffects;
 			result.DieRollEffects = shortcutDto.dieRollEffects;
 			return result;
 		}

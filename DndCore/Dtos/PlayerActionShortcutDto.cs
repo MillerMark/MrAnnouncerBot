@@ -39,7 +39,9 @@ namespace DndCore
 		public string startSound { get; set; }
 		public string endSound { get; set; }
 		public string description { get; set; }
+		public string trailingEffects { get; set; }
 		public string dieRollEffects { get; set; }
+
 		public PlayerActionShortcutDto()
 		{
 

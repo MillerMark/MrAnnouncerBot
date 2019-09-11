@@ -4,12 +4,15 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
-	//! Any changes here should be reflected in getDiceRollData inside DiceLayers.ts
+	//+ Any changes here should be reflected in getDiceRollData inside DiceLayers.ts
 	public class DiceRoll
 	{
 		public List<PlayerRollOptions> PlayerRollOptions = new List<PlayerRollOptions>();
 		public List<TrailingEffect> TrailingEffects = new List<TrailingEffect>();
-		public TrailingSpriteType OnFirstContactEffect { get; set; }
+
+		public string OnFirstContactEffect { get; set; }
+
+
 		public int NumHalos { get; set; }
 		public string OnFirstContactSound { get; set; }
 		public string OnRollSound { get; set; }
@@ -52,27 +55,62 @@ namespace DndCore
 		public DamageType DamageType { get; set; }
 		public string SecondRollTitle { get; set; }
 		public int MinDamage { get; set; }
+		public string EffectHueShift { get; set; }
+		public int EffectSaturation { get; set; }
+		public int EffectBrightness { get; set; }
+		public int EffectRotation { get; set; }
+		public double EffectScale { get; set; }
+		public string OnStopRollingSound { get; set; }
 		public void AddPlayer(int playerId, VantageKind vantageKind, string inspiration)
 		{
 			PlayerRollOptions.Add(new PlayerRollOptions(playerId, vantageKind, inspiration));
 		}
 
-		void AddEffect(string effect)
+		void AddTrailingEffect(string effect)
 		{
 			TrailingEffect trailingEffect = AllTrailingEffects.Get(effect);
 			if (trailingEffect == null)
 				return;
+
 			TrailingEffects.Add(trailingEffect);
 		}
 
-		public void AddEffects(string activeDieRollEffects)
+		public void AddTrailingEffects(string dieRollEffects)
 		{
-			if (string.IsNullOrWhiteSpace(activeDieRollEffects))
+			if (string.IsNullOrWhiteSpace(dieRollEffects))
 				return;
-			string[] effects = activeDieRollEffects.Split(';');
+			string[] effects = dieRollEffects.Split(';');
 			foreach (string effect in effects)
 			{
-				AddEffect(effect);
+				AddTrailingEffect(effect);
+			}
+		}
+
+		void AddDieRollEffect(string effect)
+		{
+			DieRollEffect dieRollEffect = AllDieRollEffects.Get(effect);
+			if (dieRollEffect == null)
+				return;
+			NumHalos = dieRollEffect.NumHalos;
+			EffectRotation = dieRollEffect.Rotation;
+			EffectScale = dieRollEffect.Scale;
+			EffectBrightness = dieRollEffect.Brightness;
+			EffectSaturation = dieRollEffect.Saturation;
+			EffectHueShift = dieRollEffect.HueShift;
+			OnFirstContactEffect = dieRollEffect.OnFirstContactEffect;
+			OnFirstContactSound = dieRollEffect.OnFirstContactSound;
+			OnThrowSound = dieRollEffect.OnThrowSound;
+			OnStopRollingSound = dieRollEffect.OnStopRollingSound;
+		}
+
+		public void AddDieRollEffects(string dieRollEffects)
+		{
+			if (string.IsNullOrWhiteSpace(dieRollEffects))
+				return;
+			string[] effects = dieRollEffects.Split(';');
+			foreach (string effect in effects)
+			{
+				AddDieRollEffect(effect);
 			}
 		}
 	}

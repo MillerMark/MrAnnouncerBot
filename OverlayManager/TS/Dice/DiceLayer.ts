@@ -185,8 +185,8 @@ class DiceLayer {
 	freeze: Sprites;
 	freezePop: Sprites;
 	diceSparks: Sprites;
-	sneakAttackTop: Sprites;
-	sneakAttackBottom: Sprites;
+	smokeExplosionTop: Sprites;
+	smokeExplosionBottom: Sprites;
 	pawPrints: Sprites;
 	//stars: Sprites;
 	dicePortal: Sprites;
@@ -504,11 +504,11 @@ class DiceLayer {
 		this.diceBombTop.originY = 316;
 		this.allFrontLayerEffects.add(this.diceBombTop);
 
-		this.sneakAttackTop = new Sprites("/Dice/SneakAttack/SneakAttackTop", 91, fps30, AnimationStyle.Sequential, true);
-		this.sneakAttackTop.name = 'SneakAttack';
-		this.sneakAttackTop.originX = 373;
-		this.sneakAttackTop.originY = 377;
-		this.allFrontLayerEffects.add(this.sneakAttackTop);
+		this.smokeExplosionTop = new Sprites("/Dice/SneakAttack/SneakAttackTop", 91, fps30, AnimationStyle.Sequential, true);
+		this.smokeExplosionTop.name = 'SmokeExplosion';
+		this.smokeExplosionTop.originX = 373;
+		this.smokeExplosionTop.originY = 377;
+		this.allFrontLayerEffects.add(this.smokeExplosionTop);
 
 		this.smoke = new Sprites("/Dice/SneakAttack/Puff", 32, fps30, AnimationStyle.Sequential, true);
 		this.smoke.name = 'Smoke';
@@ -516,11 +516,11 @@ class DiceLayer {
 		this.smoke.originY = 404;
 		this.allFrontLayerEffects.add(this.smoke);
 
-		this.sneakAttackBottom = new Sprites("/Dice/SneakAttack/SneakAttackBottom", 91, fps30, AnimationStyle.Sequential, true);
-		this.sneakAttackBottom.name = 'SneakAttack';
-		this.sneakAttackBottom.originX = 373;
-		this.sneakAttackBottom.originY = 377;
-		this.allBackLayerEffects.add(this.sneakAttackBottom);
+		this.smokeExplosionBottom = new Sprites("/Dice/SneakAttack/SneakAttackBottom", 91, fps30, AnimationStyle.Sequential, true);
+		this.smokeExplosionBottom.name = 'SmokeExplosion';
+		this.smokeExplosionBottom.originX = 373;
+		this.smokeExplosionBottom.originY = 377;
+		this.allBackLayerEffects.add(this.smokeExplosionBottom);
 
 		this.cloverRing = new Sprites("/Dice/Luck/CloverRing", 120, fps30, AnimationStyle.Loop, true);
 		this.cloverRing.name = 'CloverRing';
@@ -1582,10 +1582,15 @@ class DiceLayer {
 	}
 
 	addRaven(x: number, y: number, angle: number) {
-		let index: number = Math.floor(Math.random() * this.ravens.length);
-		let raven = this.ravens[index].addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
+		let ravens: Sprites = this.getRavens();
+		let raven = ravens.addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
 		raven.rotation = angle + 180 + Random.plusMinus(45);
 		return raven;
+	}
+
+	getRavens() {
+		let index: number = Math.floor(Math.random() * this.ravens.length);
+		return this.ravens[index];
 	}
 
 	blowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
@@ -1663,8 +1668,8 @@ class DiceLayer {
 
 	addSneakAttack(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
 		let rotation: number = Math.random() * 360;
-		this.sneakAttackBottom.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
-		this.sneakAttackTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
+		this.smokeExplosionBottom.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
+		this.smokeExplosionTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
 	}
 
 	addDiceBomb(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
@@ -1713,6 +1718,12 @@ class DiceLayer {
 		diceRoll.damageType = dto.DamageType;
 		diceRoll.savingThrow = dto.SavingThrow;
 		diceRoll.minDamage = dto.MinDamage;
+		diceRoll.effectBrightness = dto.EffectBrightness;
+		diceRoll.effectScale = dto.EffectScale;
+		diceRoll.effectRotation = dto.EffectRotation;
+		diceRoll.effectSaturation = dto.EffectSaturation;
+		diceRoll.effectHueShift = dto.EffectHueShift;
+		diceRoll.onStopRollingSound = dto.OnStopRollingSound;
 
 		for (var i = 0; i < dto.TrailingEffects.length; i++) {
 			diceRoll.trailingEffects.push(new TrailingEffect(dto.TrailingEffects[i]));
@@ -1801,12 +1812,49 @@ class DiceLayer {
 		if (sprites)
 			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
 
+		if (trailingEffect.EffectType === 'Raven') {
+			sprites = this.getRavens();
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+		}
+
 		sprites = this.allFrontLayerEffects.getSpritesByName(trailingEffect.EffectType);
 
 		if (sprites)
 			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
 
 		return result;
+	}
+
+	AddEffect(effectName: string, x: number, y: number, scale: number, hueShift: string = '0', saturation: number = 100, brightness: number = 100, angle: number = 0): SpriteProxy {
+		let result: SpriteProxy;
+		let hue: number;
+		if (hueShift == 'player')
+			hue = this.activePlayerHueShift;
+		else
+			hue = +hueShift;
+
+		if (angle === -1)
+			angle = Random.max(360);
+
+		let sprites: Sprites = this.allBackLayerEffects.getSpritesByName(effectName);
+		if (sprites)
+			result = this.AddEffectFrom(sprites, x, y, scale, hue, saturation, brightness, angle);
+
+		sprites = this.allFrontLayerEffects.getSpritesByName(effectName);
+
+		if (sprites)
+			result = this.AddEffectFrom(sprites, x, y, scale, hue, saturation, brightness, angle);
+
+		return result;
+	}
+
+	AddEffectFrom(sprites: Sprites, x: number, y: number, scale: number, hueShift: number, saturation: number = 100, brightness: number = 100, angle: number = 0): SpriteProxy {
+		let effect: ColorShiftingSpriteProxy = sprites.addShifted(x, y, 0, hueShift);
+		effect.rotation = angle;
+		effect.brightness = brightness;
+		effect.saturationPercent = saturation;
+		effect.scale = scale;
+		return effect;
 	}
 
 
@@ -1921,7 +1969,6 @@ class DiceRollData {
 	failMessage: string;
 	additionalDiceOnHit: string;
 	additionalDiceOnHitMessage: string;
-	onFirstContactEffect: SpriteType;
 	onRollSound: number;
 	numHalos: number;
 	individualFilter: number;
@@ -1945,6 +1992,14 @@ class DiceRollData {
 	hasSingleIndividual: boolean = false;
 	secondRollTitle: string;
 	minDamage: number = 0;
+	onFirstContactEffect: string;
+	effectHueShift: string;
+	effectBrightness: number = 100;
+	effectScale: number = 1;
+	effectRotation: number = 0;
+	effectSaturation: number = 100;
+	onStopRollingSound: string;
+
 	constructor() {
 
 	}

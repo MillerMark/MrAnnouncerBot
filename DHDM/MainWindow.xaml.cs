@@ -331,11 +331,17 @@ namespace DHDM
 			}
 		}
 
+		string activeTrailingEffects;
 		string activeDieRollEffects;
 
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
-			activeDieRollEffects = actionShortcut.DieRollEffects;
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
+			if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
+				activeTrailingEffects = actionShortcut.TrailingEffects;
+			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
+				activeDieRollEffects = actionShortcut.DieRollEffects;
 			//diceRoll.TrailingEffects
 			if (actionShortcut.ModifiesExistingRoll)
 			{
@@ -467,14 +473,22 @@ namespace DHDM
 			{
 				CheckOnlyOnePlayer(ActivePlayerId);
 			}
-			highlightRectangles = null;
-			NextDieRollType = DiceRollType.None;
-			activePage = ScrollPage.main;
-			FocusHelper.ClearActiveStatBoxes();
+			InitializeActivePlayerData();
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			HubtasticBaseStation.ClearWindup("*");
 			SetActionShortcuts(ActivePlayerId);
 		}
+
+		private void InitializeActivePlayerData()
+		{
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
+			highlightRectangles = null;
+			NextDieRollType = DiceRollType.None;
+			activePage = ScrollPage.main;
+			FocusHelper.ClearActiveStatBoxes();
+		}
+
 		void CheckOnlyOnePlayer(int playerID)
 		{
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
@@ -746,7 +760,8 @@ namespace DHDM
 			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
 
-			diceRoll.AddEffects(activeDieRollEffects);
+			diceRoll.AddTrailingEffects(activeTrailingEffects);
+			diceRoll.AddDieRollEffects(activeDieRollEffects);
 
 			return diceRoll;
 		}
@@ -1315,7 +1330,7 @@ namespace DHDM
 				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
 			});
 			diceRoll.OnFirstContactSound = "SneakAttack";
-			diceRoll.OnFirstContactEffect = TrailingSpriteType.SmokeExplosion;
+			diceRoll.OnFirstContactEffect = "SmokeExplosion";
 			RollTheDice(diceRoll);
 		}
 
@@ -2510,6 +2525,8 @@ namespace DHDM
 		{
 			//PlayerFactory.BuildPlayers(players);
 			AllPlayers.LoadData();
+			AllDieRollEffects.LoadData();
+			AllTrailingEffects.LoadData();
 
 			players = AllPlayers.GetActive();
 			string playerData = JsonConvert.SerializeObject(players);
