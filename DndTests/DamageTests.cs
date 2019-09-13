@@ -1,68 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DndCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DndTests
 {
-	[TestClass]
-	public class AttackTests
-	{
-		private TestContext testContextInstance;
-
-		/// <summary>
-		///Gets or sets the test context which provides
-		///information about and functionality for the current test run.
-		///</summary>
-		public TestContext TestContext
-		{
-			get
-			{
-				return testContextInstance;
-			}
-			set
-			{
-				testContextInstance = value;
-			}
-		}
-
-		[TestMethod]
-		public void TestConditionalGrapple()
-		{
-			Monster vineBlight = MonsterBuilder.BuildVineBlight();
-			Character barbarian1 = CharacterBuilder.BuildTestBarbarian();
-			Character barbarian2 = CharacterBuilder.BuildTestBarbarian();
-			Character elf = CharacterBuilder.BuildTestElf();
-			Character druid = CharacterBuilder.BuildTestDruid();
-			elf.creatureSize = CreatureSize.Small;
-			barbarian1.creatureSize = CreatureSize.Huge;
-			Assert.IsFalse(barbarian1.HasCondition(Conditions.Grappled));
-			Assert.IsFalse(elf.HasCondition(Conditions.Grappled));
-			Assert.IsFalse(druid.HasCondition(Conditions.Grappled));
-			int attackRoll = vineBlight.GetAttackRoll(12, AttackNames.Constrict);
-			Assert.AreEqual(16, attackRoll);
-			barbarian1.baseArmorClass = 13;
-			barbarian2.baseArmorClass = 17;
-			DamageResult elfDamage = vineBlight.GetDamageFromAttack(elf, AttackNames.Constrict, 10, attackRoll);
-			DamageResult barbarian1Damage = vineBlight.GetDamageFromAttack(barbarian1, AttackNames.Constrict, 10, attackRoll);
-			DamageResult barbarian2Damage = vineBlight.GetDamageFromAttack(barbarian2, AttackNames.Constrict, 10, attackRoll);
-			Assert.IsNull(barbarian2Damage);  // Barbarian 2's AC is 17, which should result in a miss - no damage.
-			DamageResult druidDamage = vineBlight.GetDamageFromAttack(druid, AttackNames.Constrict, 12, attackRoll);
-			Assert.IsFalse(barbarian1Damage.HasCondition(Conditions.Grappled));  // barbarian 1 is huge => no damage.
-			Assert.IsTrue(elfDamage.HasCondition(Conditions.Grappled));
-			Assert.IsFalse(druidDamage.HasCondition(Conditions.Grappled));  // druid saving throw avoids the grapple.
-			Assert.AreEqual(-9, elfDamage.hitPointChange);
-			Assert.AreEqual(-9, barbarian1Damage.hitPointChange);
-			Assert.AreEqual(-9, druidDamage.hitPointChange);
-			Assert.AreEqual(DamageType.Bludgeoning | DamageType.Condition, elfDamage.damageTypes);
-			Assert.AreEqual(DamageType.Bludgeoning, barbarian1Damage.damageTypes);
-			Assert.AreEqual(DamageType.Bludgeoning, druidDamage.damageTypes);
-		}
-	}
 
 	[TestClass]
 	public class DamageTests
 	{
+		static DamageTests()
+		{
+			Folders.UseTestData = true;
+		}
+
+		[TestMethod]
+		public void TestToHitBonusAndDamageDie()
+		{
+			List<PlayerActionShortcut> battleaxes = AllActionShortcuts.Get(PlayerID.Ava, "Battleaxe");
+			PlayerActionShortcut battleaxe2H = battleaxes.FirstOrDefault(x => x.Name.IndexOf("(2H)") > 0);
+			PlayerActionShortcut battleaxe1H = battleaxes.FirstOrDefault(x => x.Name.IndexOf("(1H)") > 0);
+			Assert.IsNotNull(battleaxe1H);
+			Assert.IsNotNull(battleaxe2H);
+			Assert.AreEqual("1d8+3(slashing)", battleaxe1H.Dice);
+			Assert.AreEqual("1d10+3(slashing)", battleaxe2H.Dice);
+			Assert.AreEqual(6, battleaxe1H.ToHitModifier);
+			Assert.AreEqual(6, battleaxe2H.ToHitModifier);
+
+			PlayerActionShortcut greatsword = AllActionShortcuts.Get(PlayerID.Ava, "Greatsword")[0];
+			Assert.IsNotNull(greatsword);
+			Assert.AreEqual("2d6+4(slashing)", greatsword.Dice);
+			Assert.AreEqual(7, greatsword.ToHitModifier);
+		}
+
 		[TestMethod]
 		public void TestBasicDamage()
 		{

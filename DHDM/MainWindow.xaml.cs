@@ -23,6 +23,7 @@ using TimeLineControl;
 using DndUI;
 using BotCore;
 using System.Threading;
+using OBSWebsocketDotNet;
 
 namespace DHDM
 {
@@ -31,8 +32,14 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		//protected const string DungeonMasterChannel = "DragonHumpersDm";
+		const string DungeonMasterChannel = "HumperBot";
+		const string DragonHumpersChannel = "DragonHumpers";
+
+		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
-		TwitchClient humperBotClient;
+		TwitchClient dungeonMasterClient;
+
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		ScrollPage activePage = ScrollPage.main;
 		DndTimeClock dndTimeClock;
@@ -69,15 +76,29 @@ namespace DHDM
 			logListBox.ItemsSource = History.Entries;
 			History.LogUpdated += History_LogUpdated;
 
-			InitializeAttackShortcuts();
-			humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
-			if (humperBotClient != null)
-				humperBotClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+			//InitializeAttackShortcuts();
+			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
+			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+
+			if (dungeonMasterClient != null)
+				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
 
 			dmChatBot.Initialize(this);
-			
+
 			dmChatBot.DungeonMasterApp = this;
 			commandParsers.Add(dmChatBot);
+		}
+
+		bool JoinedChannel(string channel)
+		{
+			if (dungeonMasterClient == null)
+				return false;
+			foreach (JoinedChannel joinedChannel in dungeonMasterClient.JoinedChannels)
+			{
+				if (string.Compare(joinedChannel.Channel, channel, true) == 0)
+					return true;
+			}
+			return false;
 		}
 
 		List<BaseChatBot> commandParsers = new List<BaseChatBot>();
@@ -86,14 +107,14 @@ namespace DHDM
 			return commandParsers.Find(x => x.ListensTo(userId));
 		}
 
-		public string SetHiddenThreshold(int hiddenThreshold)
+		public void SetHiddenThreshold(int hiddenThreshold)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				tbxHiddenThreshold.Text = hiddenThreshold.ToString();
 			});
 
-			return $"Hidden threshold successfully changed to {hiddenThreshold}.";
+			TellDungeonMaster($"Hidden threshold successfully changed to {hiddenThreshold}.");
 		}
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -101,7 +122,7 @@ namespace DHDM
 			BaseChatBot commandParser = GetCommandParser(e.ChatMessage.UserId);
 			if (commandParser == null)
 				return;
-			commandParser.HandleMessage(e.ChatMessage, humperBotClient);
+			commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient);
 		}
 
 		private void History_LogUpdated(object sender, EventArgs e)
@@ -112,14 +133,14 @@ namespace DHDM
 			});
 		}
 
-		public int PlayerID
+		public int ActivePlayerId
 		{
 			get
 			{
 				return Dispatcher.Invoke(() =>
 				{
 					if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
-						return playerTabItem.PlayerID;
+						return playerTabItem.PlayerId;
 					return tabPlayers.SelectedIndex;
 				});
 			}
@@ -129,12 +150,12 @@ namespace DHDM
 		{
 			foreach (StatBox statBox in e.Active)
 			{
-				HubtasticBaseStation.FocusItem(PlayerID, activePage, statBox.FocusItem);
+				HubtasticBaseStation.FocusItem(ActivePlayerId, activePage, statBox.FocusItem);
 			}
 
 			foreach (StatBox statBox in e.Deactivated)
 			{
-				HubtasticBaseStation.UnfocusItem(PlayerID, activePage, statBox.FocusItem);
+				HubtasticBaseStation.UnfocusItem(ActivePlayerId, activePage, statBox.FocusItem);
 			}
 		}
 
@@ -205,7 +226,7 @@ namespace DHDM
 		{
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 			{
-				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == PlayerID)
+				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == ActivePlayerId)
 				{
 					switch (vantageMod)
 					{
@@ -224,6 +245,81 @@ namespace DHDM
 			}
 		}
 
+		void CreateAlarm(Spell spell, int playerId)
+		{
+			CreateAlarm(spell.Duration.GetTimeSpan(), GetAlarmName(spell, playerId));
+		}
+
+		private static string GetAlarmName(Spell spell, int playerId)
+		{
+			return $"{STR_EndSpell}{spell.Name}({playerId})";
+		}
+
+		void CreateAlarm(TimeSpan timeSpan, string name)
+		{
+			DndAlarm dndAlarm = dndTimeClock.CreateAlarm(timeSpan, name);
+			dndAlarm.AlarmFired += DndAlarm_AlarmFired;
+		}
+
+		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
+		{
+			if (ea.Alarm.Name.StartsWith(STR_EndSpell))
+			{
+				string spellToEnd = ea.Alarm.Name.Substring(STR_EndSpell.Length);
+				HubtasticBaseStation.ClearWindup(spellToEnd);
+				int parenPos = spellToEnd.IndexOf('(');
+
+				string casterId = string.Empty;
+				if (parenPos > 0)
+				{
+					string playerIdStr = spellToEnd.Substring(parenPos + 1);
+					char[] endChars = { ')' };
+					playerIdStr = playerIdStr.Trim(endChars);
+					if (int.TryParse(playerIdStr, out int playerId))
+					{
+						BreakConcentration(playerId);
+						casterId = $"{GetPlayerName(playerId)}'s ";
+					}
+					spellToEnd = spellToEnd.Substring(0, parenPos);
+				}
+				TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {dndTimeClock.AsFullDndDateTimeString()}.");
+			}
+		}
+
+		Dictionary<int, Spell> concentratedSpells = new Dictionary<int, Spell>();
+
+		void Dispel(Spell spell, int playerId)
+		{
+			HubtasticBaseStation.ClearWindup($"{spell.Name}({playerId})");
+		}
+
+		public void BreakConcentration(int playerId)
+		{
+			// TODO: Add support for Twinning spells.
+			if (concentratedSpells.ContainsKey(playerId))
+			{
+				Dispel(concentratedSpells[playerId], playerId);
+				concentratedSpells.Remove(playerId);
+			}
+		}
+
+		void PlayerIsNowConcentrating(int playerId, Spell spell)
+		{
+			BreakConcentration(playerId);
+			concentratedSpells.Add(playerId, spell);
+		}
+
+
+		void PrepareToCastSpell(Spell spell, int playerId)
+		{
+			spell.OwnerId = playerId;
+			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {dndTimeClock.AsFullDndDateTimeString()}.");
+			if (spell.Duration.HasValue())
+				CreateAlarm(spell, playerId);
+			if (spell.RequiresConcentration)
+				PlayerIsNowConcentrating(playerId, spell);
+		}
+
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (sender is Button button)
@@ -231,89 +327,141 @@ namespace DHDM
 				PlayerActionShortcut actionShortcut = GetActionShortcut(button.Tag);
 				if (actionShortcut == null)
 					return;
+				ActivateShortcut(actionShortcut);
+			}
+		}
 
+		string activeTrailingEffects;
+		string activeDieRollEffects;
+
+		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
+		{
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
+			if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
+				activeTrailingEffects = actionShortcut.TrailingEffects;
+			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
+				activeDieRollEffects = actionShortcut.DieRollEffects;
+			//diceRoll.TrailingEffects
+			if (actionShortcut.ModifiesExistingRoll)
+			{
+				switch (actionShortcut.VantageMod)
+				{
+					case VantageKind.Advantage:
+					case VantageKind.Disadvantage:
+						SetVantageForActivePlayer(actionShortcut.VantageMod);
+						break;
+				}
+				if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+					tbxDamageDice.Text += "," + actionShortcut.AddDice;
+				return;
+			}
+
+			HubtasticBaseStation.ClearWindup("*");
+
+			Character player = GetPlayer(actionShortcut.PlayerId);
+			actionShortcut.ExecuteCommands(player);
+			Spell spell = actionShortcut.Spell;
+			if (spell != null)
+			{
+				PrepareToCastSpell(spell, actionShortcut.PlayerId);
+
+				CastedSpell spellToCast = new CastedSpell(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = PlayerID.Merkin });
+				spellToCast.Windups = actionShortcut.WindupsReversed;
+				string serializedObject = JsonConvert.SerializeObject(spellToCast);
+				HubtasticBaseStation.CastSpell(serializedObject);
+				tbxDamageDice.Text = spell.DieStr;
+			}
+			else
+			{
 				if (actionShortcut.Windups.Count > 0)
 				{
 					List<WindupDto> windups = actionShortcut.CloneWindups();
-					HubtasticBaseStation.ClearWindup("");
+
 					string serializedObject = JsonConvert.SerializeObject(windups);
 					HubtasticBaseStation.AddWindup(serializedObject);
 				}
+			}
+			player.Use(actionShortcut);
 
-				settingInternally = true;
-				try
+			// TODO: keepExistingModifier????
+			// if (actionShortcut.PlusModifier != keepExistingModifier)
+			if (actionShortcut.ToHitModifier > 0)
+				tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
+			else
+				tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
+
+			settingInternally = true;
+			try
+			{
+				HighlightPlayerShortcut(actionShortcut.Index);
+				if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+					tbxDamageDice.Text += "," + actionShortcut.AddDice;
+				else if (spell == null)
+					tbxDamageDice.Text = actionShortcut.Dice;
+
+				if (actionShortcut.MinDamage != keepExistingModifier)
+					tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
+
+				tbxAddDiceOnHit.Text = actionShortcut.AddDiceOnHit;
+				tbxMessageAddDiceOnHit.Text = actionShortcut.AddDiceOnHitMessage;
+
+				ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
+				NextDieRollType = actionShortcut.Type;
+
+				if (actionShortcut.VantageMod != VantageKind.Normal)
+					SetVantageForActivePlayer(actionShortcut.VantageMod);
+
+				if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
 				{
-					HighlightPlayerShortcut((int)button.Tag);
-					if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
-						tbxDamageDice.Text += "," + actionShortcut.AddDice;
-					else
-						tbxDamageDice.Text = actionShortcut.Dice;
-
-					if (actionShortcut.MinDamage != keepExistingModifier)
-						tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
-
-					if (actionShortcut.Modifier != keepExistingModifier)
-						if (actionShortcut.Modifier > 0)
-							tbxModifier.Text = "+" + actionShortcut.Modifier.ToString();
-						else
-							tbxModifier.Text = actionShortcut.Modifier.ToString();
-
-					ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
-					NextDieRollType = actionShortcut.Type;
-
-					if (actionShortcut.VantageMod != VantageKind.Normal)
-						SetVantageForActivePlayer(actionShortcut.VantageMod);
-
-					if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
-					{
-						DiceRollType type = actionShortcut.Type;
-						if (type == DiceRollType.None)
-							type = DiceRollType.DamageOnly;
-						DiceRoll diceRoll = PrepareRoll(type);
-						diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
-						diceRoll.DamageDice = actionShortcut.InstantDice;
-						RollTheDice(diceRoll);
-					}
-
+					DiceRollType type = actionShortcut.Type;
+					if (type == DiceRollType.None)
+						type = DiceRollType.DamageOnly;
+					DiceRoll diceRoll = PrepareRoll(type);
+					diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+					diceRoll.DamageDice = actionShortcut.InstantDice;
+					RollTheDice(diceRoll);
 				}
-				finally
-				{
-					settingInternally = false;
-				}
+
+			}
+			finally
+			{
+				settingInternally = false;
 			}
 		}
 
 		void SetActionShortcuts(int playerID)
 		{
-			AddShortcutButtons(spActionsActivePlayer, playerID, TurnPart.Action);
+			AddShortcutButtons(wpActionsActivePlayer, playerID, TurnPart.Action);
 			AddShortcutButtons(spBonusActionsActivePlayer, playerID, TurnPart.BonusAction);
 			AddShortcutButtons(spReactionsActivePlayer, playerID, TurnPart.Reaction);
 			AddShortcutButtons(spSpecialActivePlayer, playerID, TurnPart.Special);
 		}
 
-		private void AddShortcutButtons(StackPanel stackPanel, int playerID, TurnPart part)
+		private void AddShortcutButtons(Panel panel, int playerID, TurnPart part)
 		{
-			ClearExistingButtons(stackPanel);
+			ClearExistingButtons(panel);
 
-			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerID == playerID).Where(x => x.Part == part).ToList();
+			List<PlayerActionShortcut> playerActions = actionShortcuts.Where(x => x.PlayerId == playerID).Where(x => x.Part == part).ToList();
+
 			if (playerActions.Count == 0)
-				stackPanel.Visibility = Visibility.Collapsed;
+				panel.Visibility = Visibility.Collapsed;
 			else
-				stackPanel.Visibility = Visibility.Visible;
+				panel.Visibility = Visibility.Visible;
 
 			foreach (PlayerActionShortcut playerActionShortcut in playerActions)
 			{
-				stackPanel.Children.Add(BuildShortcutButton(playerActionShortcut));
+				panel.Children.Add(BuildShortcutButton(playerActionShortcut));
 			}
 		}
 
-		private void ClearExistingButtons(StackPanel stackPanel)
+		private void ClearExistingButtons(Panel panel)
 		{
-			for (int i = stackPanel.Children.Count - 1; i >= 0; i--)
+			for (int i = panel.Children.Count - 1; i >= 0; i--)
 			{
-				UIElement uIElement = stackPanel.Children[i];
+				UIElement uIElement = panel.Children[i];
 				if (uIElement is StackPanel)
-					stackPanel.Children.RemoveAt(i);
+					panel.Children.RemoveAt(i);
 			}
 		}
 
@@ -323,16 +471,24 @@ namespace DHDM
 				return;
 			if (rbActivePlayer.IsChecked == true)
 			{
-				CheckOnlyOnePlayer(PlayerID);
+				CheckOnlyOnePlayer(ActivePlayerId);
 			}
+			InitializeActivePlayerData();
+			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
+			HubtasticBaseStation.ClearWindup("*");
+			SetActionShortcuts(ActivePlayerId);
+		}
+
+		private void InitializeActivePlayerData()
+		{
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
 			highlightRectangles = null;
 			NextDieRollType = DiceRollType.None;
 			activePage = ScrollPage.main;
 			FocusHelper.ClearActiveStatBoxes();
-			HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
-			HubtasticBaseStation.ClearWindup("*");
-			SetActionShortcuts(PlayerID);
 		}
+
 		void CheckOnlyOnePlayer(int playerID)
 		{
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
@@ -347,7 +503,7 @@ namespace DHDM
 			if (sender is CharacterSheets characterSheets && activePage != characterSheets.Page)
 			{
 				activePage = characterSheets.Page;
-				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
+				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			}
 		}
 
@@ -356,7 +512,7 @@ namespace DHDM
 			if (sender is CharacterSheets characterSheets)
 			{
 				string character = characterSheets.GetCharacter();
-				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, character);
+				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, character);
 			}
 		}
 
@@ -481,12 +637,14 @@ namespace DHDM
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
 			diceRoll.GroupInspiration = tbxInspiration.Text;
+			diceRoll.AdditionalDiceOnHit = tbxAddDiceOnHit.Text;
+			diceRoll.AdditionalDiceOnHitMessage = tbxMessageAddDiceOnHit.Text;
 			diceRoll.CritFailMessage = "";
 			diceRoll.CritSuccessMessage = "";
 			diceRoll.SuccessMessage = "";
 			diceRoll.FailMessage = "";
 			diceRoll.SkillCheck = Skills.none;
-			diceRoll.SavingThrow = Ability.None;
+			diceRoll.SavingThrow = Ability.none;
 			if (int.TryParse(tbxMinDamage.Text, out int result))
 				diceRoll.MinDamage = result;
 			else
@@ -594,13 +752,17 @@ namespace DHDM
 
 			if (type == DiceRollType.DeathSavingThrow)
 				diceRoll.HiddenThreshold = 10;
-			else if (type == DiceRollType.Initiative)
+			else if (type == DiceRollType.Initiative || type == DiceRollType.NonCombatInitiative)
 				diceRoll.HiddenThreshold = -100;
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
 			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
+
+			diceRoll.AddTrailingEffects(activeTrailingEffects);
+			diceRoll.AddDieRollEffects(activeDieRollEffects);
+
 			return diceRoll;
 		}
 
@@ -653,7 +815,7 @@ namespace DHDM
 		{
 			if (txtTime == null)
 				return;
-			string timeStr = dndTimeClock.Time.ToString("H:mm:ss") + ", " + dndTimeClock.AsDndDateString();
+			string timeStr = dndTimeClock.AsFullDndDateTimeString();
 
 			if (dndTimeClock.InCombat)
 				timeStr = " " + timeStr + " ";
@@ -776,6 +938,8 @@ namespace DHDM
 			dndTimeClock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
 		}
 
+
+
 		void enableDiceRollButtons()
 		{
 			spRollNowButtons.IsEnabled = true;
@@ -813,6 +977,12 @@ namespace DHDM
 				case Skills.slightOfHand: return "Slight of Hand";
 				case Skills.stealth: return "Stealth";
 				case Skills.survival: return "Survival";
+				case Skills.strength: return "Strength";
+				case Skills.dexterity: return "Dexterity";
+				case Skills.constitution: return "Constitution";
+				case Skills.intelligence: return "Intelligence";
+				case Skills.wisdom: return "Wisdom";
+				case Skills.charisma: return "Charisma";
 			}
 			return "None";
 		}
@@ -821,20 +991,25 @@ namespace DHDM
 		{
 			switch (savingThrow)
 			{
-				case Ability.Charisma: return "Charisma";
-				case Ability.Constitution: return "Constitution";
-				case Ability.Dexterity: return "Dexterity";
-				case Ability.Intelligence: return "Intelligence";
-				case Ability.Strength: return "Strength";
-				case Ability.Wisdom: return "Wisdom";
+				case Ability.charisma: return "Charisma";
+				case Ability.constitution: return "Constitution";
+				case Ability.dexterity: return "Dexterity";
+				case Ability.intelligence: return "Intelligence";
+				case Ability.strength: return "Strength";
+				case Ability.wisdom: return "Wisdom";
 			}
 			return "None";
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
+			// TODO: Clear the actual windup by name.
+			HubtasticBaseStation.ClearWindup("*");
 			if (ea.DiceRollData != null)
 			{
 				int rollValue = ea.DiceRollData.roll;
+				string additionalMessage = ea.DiceRollData.additionalDieRollMessage;
+				if (!String.IsNullOrEmpty(additionalMessage))
+					additionalMessage = " " + additionalMessage;
 				string rollTitle = "";
 				string damageStr = "";
 				string bonusStr = "";
@@ -896,16 +1071,20 @@ namespace DHDM
 					case DiceRollType.Initiative:
 						rollTitle = "Initiative: ";
 						break;
+					case DiceRollType.NonCombatInitiative:
+						rollTitle = "Non-combat Initiative: ";
+						break;
 				}
 				if (rollTitle == "")
 					rollTitle = "Dice roll: ";
+				string message = string.Empty;
 				if (ea.DiceRollData.multiplayerSummary != null && ea.DiceRollData.multiplayerSummary.Count > 0)
 				{
 					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
 					{
-						string playerName = playerRoll.name;
+						string playerName = StrUtils.GetFirstName(playerRoll.name);
 						if (playerName != "")
-							playerName = playerName + " ";
+							playerName = playerName + "'s ";
 
 						rollValue = playerRoll.modifier + playerRoll.roll;
 						bool success = rollValue >= ea.DiceRollData.hiddenThreshold;
@@ -915,19 +1094,32 @@ namespace DHDM
 							localDamageStr = damageStr;
 						else
 							localDamageStr = "";
-						History.Log(playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr);
+						if (!string.IsNullOrWhiteSpace(message))
+							message += "; ";
+						message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
 					}
 				}
 				else
 				{
 					string playerName = GetPlayerName(ea.DiceRollData.playerID);
 					if (playerName != "")
-						playerName = playerName + " ";
+						playerName = playerName + "'s ";
 					if (!ea.DiceRollData.success)
 						damageStr = "";
-					History.Log(playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr);
+
+					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
+				}
+
+				message += additionalMessage;
+				if (!string.IsNullOrWhiteSpace(message))
+				{
+					TellDungeonMaster(message);
+					TellViewers(message);
+					History.Log(message);
 				}
 			}
+
+
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
 		}
@@ -958,22 +1150,17 @@ namespace DHDM
 			return successStr;
 		}
 
-		// TODO: Remove this:
 		string GetPlayerName(int playerID)
 		{
-			switch (playerID)
+			foreach (Character player in players)
 			{
-				case 0:
-					return "Willy";
-				case 1:
-					return "Shemo";
-				case 2:
-					return "Merkin";
-				case 3:
-					return "Ava";
+				if (player.playerID == playerID)
+					return StrUtils.GetFirstName(player.name);
 			}
+
 			return "";
 		}
+
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
 		{
 			dndTimeClock.InCombat = !dndTimeClock.InCombat;
@@ -1109,27 +1296,25 @@ namespace DHDM
 		private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsPaladinSmiteAttack = true;
+			diceRoll.OnThrowSound = "PaladinThunder";
 			diceRoll.NumHalos = 3;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.Raven,
 				LeftRightDistanceBetweenPrints = 15,
 				MinForwardDistanceBetweenPrints = 5,
-				OnPrintPlaySound = "Flap",
-				MinSoundInterval = 600,
-				PlusMinusSoundInterval = 300,
-				NumRandomSounds = 6
+				OnPrintPlaySound = "Flap[6]",
+				MedianSoundInterval = 600,
+				PlusMinusSoundInterval = 300
 			});
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.Spiral,
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 150,
-				OnPrintPlaySound = "Crow",
-				MinSoundInterval = 500,
-				PlusMinusSoundInterval = 300,
-				NumRandomSounds = 3
+				OnPrintPlaySound = "Crow[3]",
+				MedianSoundInterval = 500,
+				PlusMinusSoundInterval = 300
 			});
 			RollTheDice(diceRoll);
 		}
@@ -1137,7 +1322,7 @@ namespace DHDM
 		private void BtnSneakAttack_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsSneakAttack = true;
+			diceRoll.OnThrowSound = "SneakAttackWhoosh";
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				Type = TrailingSpriteType.Smoke,
@@ -1145,7 +1330,7 @@ namespace DHDM
 				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
 			});
 			diceRoll.OnFirstContactSound = "SneakAttack";
-			diceRoll.OnFirstContactEffect = TrailingSpriteType.SmokeExplosion;
+			diceRoll.OnFirstContactEffect = "SmokeExplosion";
 			RollTheDice(diceRoll);
 		}
 
@@ -1155,6 +1340,7 @@ namespace DHDM
 			diceRoll.Modifier = 0;
 			diceRoll.HiddenThreshold = 0;
 			diceRoll.IsMagic = true;
+			diceRoll.OnThrowSound = "WildMagicRoll";
 			diceRoll.Type = DiceRollType.WildMagic;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
@@ -1169,7 +1355,6 @@ namespace DHDM
 		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.IsWildAnimalAttack = true;
 			diceRoll.OnFirstContactSound = "WildForm";
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
@@ -1262,12 +1447,7 @@ namespace DHDM
 			}
 		}
 
-		private const int Player_Lady = 0;
-		private const int Player_Shemo = 1;
-		private const int Player_Merkin = 2;
-		private const int Player_Ava = 3;
-		private const int Player_Fred = 4;
-		private const int Player_Willy = 5;
+		const string STR_EndSpell = "EndSpell:";
 
 		DiceRollType nextDieRollType;
 		void InitializeAttackShortcuts()
@@ -1275,39 +1455,38 @@ namespace DHDM
 			highlightRectangles = null;
 			actionShortcuts.Clear();
 			PlayerActionShortcut.PrepareForCreation();
-			AddPlayerActionShortcutsForWilly();
-			AddPlayerActionShortcutsForMerkin();
-			AddPlayerActionShortcutsForAva();
-			AddPlayerActionShortcutsForShemo();
-			AddPlayerActionShortcutsForLady();
-			AddPlayerActionShortcutsForFred();
+			AllActionShortcuts.LoadData();
+			actionShortcuts = AllActionShortcuts.AllShortcuts;
+			//AddPlayerActionShortcutsForWilly();
+			//AddPlayerActionShortcutsForMerkin();
+			//AddPlayerActionShortcutsForAva();
+			//AddPlayerActionShortcutsForShemo();
+			//AddPlayerActionShortcutsForLady();
+			//AddPlayerActionShortcutsForFred();
 		}
 
 		void AddPlayerActionShortcutsForFred()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (1H)", PlayerID = Player_Fred, Dice = "1d8+5(slashing)", Modifier = +5 });
+			AddBattleAxe("Battleaxe (1H)", PlayerID.Fred, "1d8+5(slashing)", 5);
+			AddBattleAxe("Battleaxe (2H)", PlayerID.Fred, "1d10+3(slashing)", 5);
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (2H)", PlayerID = Player_Fred, Dice = "1d10+3(slashing)", Modifier = +5 });
+			{ Name = "Handaxe", PlayerId = PlayerID.Fred, Dice = "1d6+5(slashing)", PlusModifier = +5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Handaxe", PlayerID = Player_Fred, Dice = "1d6+5(slashing)", Modifier = +5 });
+			{ Name = "Longbow", PlayerId = PlayerID.Fred, Dice = "1d8(piercing)", PlusModifier = +2 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longbow", PlayerID = Player_Fred, Dice = "1d8(piercing)", Modifier = +2 });
+			{ Name = "Unarmed Strike", PlayerId = PlayerID.Fred, Dice = "4(bludgeoning)", PlusModifier = +5, Description = "You can punch, kick, head-butt, or use a similar forceful blow and deal bludgeoning damage equal to 1 + STR modifier." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Unarmed Strike", PlayerID = Player_Fred, Dice = "4(bludgeoning)", Modifier = +5, Description = "You can punch, kick, head-butt, or use a similar forceful blow and deal bludgeoning damage equal to 1 + STR modifier." });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Bite", PlayerID = Player_Fred, Dice = "1d6+3(piercing)", Modifier = +5 });
+			{ Name = "Bite", PlayerId = PlayerID.Fred, Dice = "1d6+3(piercing)", PlusModifier = +5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Feinting Attack",
-				PlayerID = Player_Fred,
-				Modifier = keepExistingModifier,
+				PlayerId = PlayerID.Fred,
+				PlusModifier = keepExistingModifier,
 				AddDice = "1d8(superiority)",
 				VantageMod = VantageKind.Advantage,
 				Part = TurnPart.BonusAction,
@@ -1315,49 +1494,82 @@ namespace DHDM
 			});
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Goading Attack", PlayerID = Player_Fred, Type = DiceRollType.AddOnDice, InstantDice = "1d8(superiority:damage)", AdditionalRollTitle = "Goading Attack", Part = TurnPart.Special, Description = "When you hit with a weapon attack, you can expend one superiority die to add the total to the damage roll and the target must make a WIS saving throw (DC 13). On failure, the target has disadvantage on all attack rolls against targets other than you until the end of your next turn." });
+			{ Name = "Goading Attack", PlayerId = PlayerID.Fred, Type = DiceRollType.AddOnDice, InstantDice = "1d8(superiority:damage)", AdditionalRollTitle = "Goading Attack", Part = TurnPart.Special, Description = "When you hit with a weapon attack, you can expend one superiority die to add the total to the damage roll and the target must make a WIS saving throw (DC 13). On failure, the target has disadvantage on all attack rolls against targets other than you until the end of your next turn." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Trip Attack", PlayerID = Player_Fred, Type = DiceRollType.AddOnDice, InstantDice = "1d8(superiority:damage)", AdditionalRollTitle = "Trip Attack", Part = TurnPart.Special, Description = "When you hit with a weapon attack, you can expend one superiority die to add the total to the damage roll, and if the target is Large or smaller, it must make a STR saving throw (DC 13). On failure, you knock the target prone." });
+			{ Name = "Trip Attack", PlayerId = PlayerID.Fred, Type = DiceRollType.AddOnDice, InstantDice = "1d8(superiority:damage)", AdditionalRollTitle = "Trip Attack", Part = TurnPart.Special, Description = "When you hit with a weapon attack, you can expend one superiority die to add the total to the damage roll, and if the target is Large or smaller, it must make a STR saving throw (DC 13). On failure, you knock the target prone." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Action Surge", PlayerID = Player_Fred, Part = TurnPart.Special, Description = "You can take one additional action on your turn. This can be used 1 times per short rest." });
+			{ Name = "Action Surge", PlayerId = PlayerID.Fred, Part = TurnPart.Special, Description = "You can take one additional action on your turn. This can be used 1 times per short rest." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Second Wind", PlayerID = Player_Fred, Dice = "1d10+4", Type = DiceRollType.HealthOnly, Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest, you can use a bonus action to regain 1d10 + {$Level} HP." });
+			{ Name = "Second Wind", PlayerId = PlayerID.Fred, Dice = "1d10+4", Type = DiceRollType.HealthOnly, Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest, you can use a bonus action to regain 1d10 + {$Level} HP." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Hungry Jaws", PlayerID = Player_Fred, Modifier = 5, Dice = "1d6+3", Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest as a bonus action, you can make a bite attack. If it hits, you gain {$ConstitutionModifier} temporary HP." });
+			{ Name = "Hungry Jaws", PlayerId = PlayerID.Fred, PlusModifier = 5, Dice = "1d6+4", Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest as a bonus action, you can make a bite attack. If it hits, you gain {$ConstitutionModifier} temporary HP." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Great Weapon Master Attack", PlayerID = Player_Fred, Part = TurnPart.BonusAction, Description = "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action." });
+			{ Name = "Great Weapon Master Attack", PlayerId = PlayerID.Fred, Part = TurnPart.BonusAction, Description = "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action." });
+		}
+
+		private void AddBattleAxe(string name, int playerId, string damage, int modifier, int minDamage = 0, int hueShiftMagicA = int.MinValue, int hueShiftMagicB = int.MinValue, double scale = 1.0)
+		{
+			PlayerActionShortcut battleAxe = new PlayerActionShortcut()
+			{ Name = name, PlayerId = playerId, Dice = damage, PlusModifier = modifier, MinDamage = minDamage };
+
+			const int deltaY = 80;
+			battleAxe.Windups.Add(new WindupDto()
+			{
+				Effect = "BattleAxe.Weapon",
+				Scale = scale,
+				FadeIn = 0,
+				PlayToEndOnExpire = true
+			}.MoveUpDown(deltaY));
+
+			if (hueShiftMagicA != int.MinValue)
+				battleAxe.Windups.Add(new WindupDto()
+				{
+					Effect = "BattleAxe.MagicA",
+					Scale = scale,
+					FadeIn = 0,
+					PlayToEndOnExpire = true,
+					Hue = hueShiftMagicA
+				}.MoveUpDown(deltaY));
+
+			if (hueShiftMagicB != int.MinValue)
+				battleAxe.Windups.Add(new WindupDto()
+				{
+					Effect = "BattleAxe.MagicB",
+					Scale = scale,
+					FadeIn = 0,
+					PlayToEndOnExpire = true,
+					Hue = hueShiftMagicB
+				}.MoveUpDown(deltaY));
+
+			actionShortcuts.Add(battleAxe);
 		}
 
 		void AddPlayerActionShortcutsForLady()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longsword", PlayerID = Player_Lady, Dice = "1d8+3(slashing)", Modifier = 5 });
+			Character lady = GetPlayer(PlayerID.Lady);
+
+			AddLongSword("Longsword", PlayerID.Lady, "1d8+3(slashing)", 5, lady.hueShift);
+			AddLongSword("Longsword - 2H", PlayerID.Lady, "1d10+3(slashing)", 5, lady.hueShift, lady.hueShift);
+
+			AddWarhammer("Warhammer", PlayerID.Lady, "1d8+3(bludgeoning)", 5, lady.hueShift);
+			AddWarhammer("Warhammer - 2H", PlayerID.Lady, "1d10+3(bludgeoning)", 5, 220, int.MinValue, 0, 220);
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Longsword - 2H", PlayerID = Player_Lady, Dice = "1d10+3(slashing)", Modifier = 5 });
+			{ Name = "Unarmed Strike", PlayerId = PlayerID.Lady, Dice = "4(bludgeoning)", PlusModifier = 5 });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Warhammer", PlayerID = Player_Lady, Dice = "1d8+3(bludgeoning)", Modifier = 5 });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Warhammer - 2H", PlayerID = Player_Lady, Dice = "1d10+3(bludgeoning)", Modifier = 5 });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Unarmed Strike", PlayerID = Player_Lady, Dice = "4(bludgeoning)", Modifier = 5 });
-
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Second Wind", PlayerID = Player_Lady, Dice = "1d10+4", Type = DiceRollType.HealthOnly, Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest, you can use a bonus action to regain 1d10 + {$Level} HP." });
+			{ Name = "Second Wind", PlayerId = PlayerID.Lady, Dice = "1d10+4", Type = DiceRollType.HealthOnly, Part = TurnPart.BonusAction, LimitCount = 1, LimitSpan = DndTimeSpan.ShortRest, Description = "Once per short rest, you can use a bonus action to regain 1d10 + {$Level} HP." });
 
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Shifting",
-				PlayerID = Player_Lady,
+				PlayerId = PlayerID.Lady,
 				Type = DiceRollType.None,
 				Part = TurnPart.BonusAction,
 				LimitCount = 1,
@@ -1366,56 +1578,110 @@ namespace DHDM
 			});
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Action Surge", PlayerID = Player_Lady, Part = TurnPart.Special, Description = "You can take one additional action on your turn. This can be used 1 times per short rest." });
+			{ Name = "Action Surge", PlayerId = PlayerID.Lady, Part = TurnPart.Special, Description = "You can take one additional action on your turn. This can be used 1 times per short rest." });
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Longtooth Shifting Strike",
-				PlayerID = Player_Lady,
+				PlayerId = PlayerID.Lady,
 				Part = TurnPart.BonusAction,
 				Dice = "1d6+3(piercing)",
-				Modifier = 5,
+				PlusModifier = 5,
 				Description = "While shifted, you can use your fangs to make an unarmed strike as a bonus action. If you hit, you can deal 1d6 + 3 piercing damage, instead of the bludgeoning damage normal for an unarmed strike."
 			});
+		}
+		void AddLongSword(string name, int playerId, string damage, int modifier, int hueLongsword, int hueMagic = int.MinValue)
+		{
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = name, PlayerId = playerId, Dice = damage, PlusModifier = modifier };
+
+			actionShortcuts.Add(shortcut);
+
+			const int yAdjust = 150;
+
+			WindupDto longsword = CreateWeapon("LongSword.Weapon", hueLongsword);
+			longsword.MoveUpDown(yAdjust);
+			shortcut.Windups.Add(longsword);
+
+			if (hueMagic != int.MinValue)
+			{
+				WindupDto magic = CreateWeapon("LongSword.Magic", hueMagic);
+				magic.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(magic);
+			}
+		}
+		void AddWarhammer(string name, int playerId, string damage, int modifier,
+			int hueHammer = int.MinValue, int hueMagicHandle = int.MinValue,
+			int hueMagicHeadFront = int.MinValue, int hueMagicHeadBack = int.MinValue)
+		{
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+			{ Name = name, PlayerId = playerId, Dice = damage, PlusModifier = modifier };
+			WindupDto hammer = CreateWeapon("WarHammer.Weapon", hueHammer);
+
+			const int yAdjust = 150;
+			hammer.MoveUpDown(yAdjust);
+			shortcut.Windups.Add(hammer);
+
+			if (hueMagicHandle != int.MinValue)
+			{
+				WindupDto handle = CreateWeapon("WarHammer.MagicHandle", hueMagicHandle);
+				handle.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(handle);
+			}
+
+			if (hueMagicHeadFront != int.MinValue)
+			{
+				WindupDto headFront = CreateWeapon("WarHammer.MagicFrontHead", hueMagicHeadFront);
+				headFront.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(headFront);
+			}
+			if (hueMagicHeadBack != int.MinValue)
+			{
+				WindupDto headBack = CreateWeapon("WarHammer.MagicBackHead", hueMagicHeadBack);
+				headBack.MoveUpDown(yAdjust);
+				shortcut.Windups.Add(headBack);
+			}
+
+			actionShortcuts.Add(shortcut);
 		}
 
 		private void AddPlayerActionShortcutsForShemo()
 		{
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Scimitar", PlayerID = Player_Shemo, Dice = "1d6+1", Modifier = 3 });
+			{ Name = "Scimitar", PlayerId = PlayerID.Shemo, Dice = "1d6+1", PlusModifier = 3 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Scimitar (Shillelagh)", PlayerID = Player_Shemo, Dice = "1d8+1", Modifier = 3 });
+			{ Name = "Scimitar (Shillelagh)", PlayerId = PlayerID.Shemo, Dice = "1d8+1", PlusModifier = 3 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Poison Spray", PlayerID = Player_Shemo, Dice = "1d12", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
+			{ Name = "Poison Spray", PlayerId = PlayerID.Shemo, Dice = "1d12", UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Shillelagh", PlayerID = Player_Shemo, Dice = "1d8+3", Modifier = 5, UsesMagic = true });
+			{ Name = "Shillelagh", PlayerId = PlayerID.Shemo, Dice = "1d8+3", PlusModifier = 5, UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Thunderwave", PlayerID = Player_Shemo, Dice = "2d8", DC = 13, Ability = Ability.Constitution, UsesMagic = true });
+			{ Name = "Thunderwave", PlayerId = PlayerID.Shemo, Dice = "2d8", UsesMagic = true });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Healing Word", PlayerID = Player_Shemo, Dice = "1d4+3", Healing = true });
-			AddCureWounds(Player_Shemo, "1d8+3");
+			{ Name = "Healing Word", PlayerId = PlayerID.Shemo, Dice = "1d4+3(healing)" });
+			AddCureWounds(PlayerID.Shemo, "1d8+3");
 		}
 
 		void AddCureWounds(int playerID, string diceStr)
 		{
-			Character player = this.GetPlayer(playerID);
+			Character player = GetPlayer(playerID);
 			if (player == null)
 				return;
 			PlayerActionShortcut cureWounds = new PlayerActionShortcut()
 			{
 				Name = "Cure Wounds",
-				PlayerID = playerID,
+				PlayerId = playerID,
 				Dice = diceStr,
-				Healing = true,
 				Description = "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs.\n\nAt Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."
 			};
+			cureWounds.Spell = AllSpells.Get("Cure Wounds", player, 1);
 
 			cureWounds.Windups.Add(new WindupDto()
 			{
 				Effect = "Fairy",
 				Hue = player.hueShift,
 				Scale = 0.8,
-				SoundFileName = "CureWounds"
+				StartSound = "CureWounds"
 			}.Float());
 			actionShortcuts.Add(cureWounds);
 		}
@@ -1425,7 +1691,7 @@ namespace DHDM
 			PlayerActionShortcut divineSense = new PlayerActionShortcut()
 			{
 				Name = "Divine Sense",
-				PlayerID = playerId,
+				PlayerId = playerId,
 				Part = TurnPart.Action,
 				Description = "As an action, you can detect good and evil. Until the end of your next turn, you can sense anything affected by the hallow spell or know the location of any celestial, fiend, undead within 60 ft. that is not behind total cover. You can use this feature 5 times per long rest."
 			};
@@ -1434,7 +1700,7 @@ namespace DHDM
 			{
 				Effect = effectName,
 				Hue = 220,
-				SoundFileName = "DetectGoodEvil"
+				StartSound = "DetectGoodEvil"
 			}.Float());
 			divineSense.Windups.Add(new WindupDto()
 			{
@@ -1445,10 +1711,12 @@ namespace DHDM
 			actionShortcuts.Add(divineSense);
 		}
 
-		void AddChillTouch(int playerId, string damageDiceStr)
+		void AddChillTouch(int playerId, string damageDiceStr, int spellSlotLevel)
 		{
 			PlayerActionShortcut chillTouch = new PlayerActionShortcut()
-			{ Name = "Chill Touch", PlayerID = playerId, Dice = damageDiceStr, Modifier = 5, UsesMagic = true, Type = DiceRollType.Attack };
+			{ Name = SpellNames.ChillTouch, PlayerId = playerId, Dice = damageDiceStr, PlusModifier = 5, UsesMagic = true, Type = DiceRollType.Attack };
+
+			chillTouch.Spell = AllSpells.Get(SpellNames.ChillTouch, GetPlayer(playerId), spellSlotLevel);
 
 			const double shoulderDistance = 140;
 			double yPos = 140;
@@ -1494,36 +1762,103 @@ namespace DHDM
 				FadeIn = 500,
 				DegreesOffset = -40
 			}.Necrotic().SetBright(20));
+			WindupDto staffWeapon = CreateWeapon("Staff.Weapon", 30);
+			staffWeapon.MoveUpDown(150);
+			chillTouch.Windups.Add(staffWeapon);
+			WindupDto staffMagic = CreateWeapon("Staff.Magic", 30);
+			staffMagic.Brightness = 0;
+			staffMagic.MoveUpDown(150);
+			chillTouch.Windups.Add(staffMagic);
+
 			actionShortcuts.Add(chillTouch);
 		}
 
-		void AddShieldOfFaith(int playerId)
+		private static WindupDto CreateWeapon(string effectName, int hueShift = int.MinValue)
+		{
+			WindupDto weapon = new WindupDto();
+			weapon.Effect = effectName;
+			weapon.FadeIn = 0;
+			if (hueShift != int.MinValue)
+				weapon.Hue = hueShift;
+			weapon.PlayToEndOnExpire = true;
+			return weapon;
+		}
+
+		void AddShieldOfFaith(int playerId, int spellSlotLevel)
 		{
 			PlayerActionShortcut shieldOfFaith = new PlayerActionShortcut()
 			{
-				Name = "Shield of Faith",
-				PlayerID = playerId,
+				Name = SpellNames.ShieldOfFaith,
+				PlayerId = playerId,
 				Part = TurnPart.BonusAction,
 				Description = "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration."
 			};
+
+			shieldOfFaith.Spell = AllSpells.Get(SpellNames.ShieldOfFaith, GetPlayer(playerId), spellSlotLevel);
+			//shieldOfFaith.Spell = new Spell()
+			//{
+			//	Name = "Shield of Faith", OwnerId = playerId,
+			//	CastingTime = DndTimeSpan.OneBonusAction,
+			//	Range = 60,
+			//	Components = SpellComponents.All,
+			//	Material = "A small parchment with a bit of holy text written on it.",
+			//	Duration = DndTimeSpan.FromMinutes(10),
+			//	RequiresConcentration = true
+			//};
 
 			const string effectName = "Plasma";
 			shieldOfFaith.Windups.Add(new WindupDto() { Effect = effectName, Hue = -30 }.MoveUpDown(160).Fade());
 			actionShortcuts.Add(shieldOfFaith);
 		}
 
-		void AddSanctuary(int playerId)
+		void AddSleep(int playerId, int spellSlotLevel)
+		{
+			PlayerActionShortcut sleep = new PlayerActionShortcut()
+			{
+				Name = "Sleep",
+				PlayerId = playerId,
+				Part = TurnPart.Action,
+			};
+
+			sleep.Spell = AllSpells.Get(SpellNames.Sleep, GetPlayer(playerId), spellSlotLevel);
+
+			//sleep.Spell = new Spell()
+			//{
+			//	Name = "Sleep",
+			//	OwnerId = playerId,
+			//	Duration = DndTimeSpan.OneMinute,
+			//	CastingTime = DndTimeSpan.OneBonusAction,
+			//	Material = "a pinch of fine sand, rose petals, or a cricket",
+			//	Range = 90
+			//	//,
+			//	//Subrange = 20,
+			//	//SubrangeType = AreaOfEffect.Sphere
+			//};
+		}
+
+		void AddSanctuary(int playerId, int spellSlotLevel)
 		{
 			PlayerActionShortcut sanctuary = new PlayerActionShortcut()
 			{
-				Name = "Sanctuary",
-				PlayerID = playerId,
+				Name = SpellNames.Sanctuary,
+				PlayerId = playerId,
 				Part = TurnPart.BonusAction,
 				Description = "You ward a creature within range against attack. Until the spell ends, any creature who targets the warded creature with an attack or a harmful spell must first make a Wisdom saving throw. On a failed save, the creature must choose a new target or lose the attack or spell. This spell doesn't protect the warded creature from area effects, such as the explosion of a fireball.\n\nIf the warded creature makes an attack, casts a spell that affects an enemy, or deals damage to another creature, this spell ends."
 			};
-			sanctuary.Windups.Add(new WindupDto() { Effect = "Wide", Hue = 170 }.Fade());
-			sanctuary.Windups.Add(new WindupDto() { Effect = "Wide", DegreesOffset = -60, Hue = 200, Rotation = 45 }.Fade());
-			sanctuary.Windups.Add(new WindupDto() { Effect = "Wide", DegreesOffset = 60, Hue = 230, Rotation = -45 }.Fade());
+
+			sanctuary.Spell = AllSpells.Get(SpellNames.Sanctuary, GetPlayer(playerId), spellSlotLevel);
+			//sanctuary.Spell = new Spell()
+			//{
+			//	Name = "Sanctuary", OwnerId = playerId,
+			//	Duration = DndTimeSpan.OneMinute,
+			//	CastingTime = DndTimeSpan.OneBonusAction,
+			//	Material = "a small silver mirror",
+			//	Range = 30
+			//};
+
+			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 170 }.Fade());
+			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = -60, Hue = 200, Rotation = 45 }.Fade());
+			sanctuary.Windups.Add(new WindupDto() { Effect = "Trails", DegreesOffset = 60, Hue = 230, Rotation = -45 }.Fade());
 			actionShortcuts.Add(sanctuary);
 		}
 		void AddThunderousSmite(int playerId, string additionalDice)
@@ -1531,14 +1866,24 @@ namespace DHDM
 			PlayerActionShortcut thunderousSmite = new PlayerActionShortcut()
 			{
 				Name = "Thunderous Smite",
-				PlayerID = playerId,
+				PlayerId = playerId,
 				Part = TurnPart.BonusAction,
-				AddDice = additionalDice,
-				DC = 13,
-				Ability = Ability.Strength,
+				AddDiceOnHit = additionalDice,
+				AddDiceOnHitMessage = Name,
 				MinDamage = keepExistingModifier,
-				Modifier = keepExistingModifier,
+				PlusModifier = keepExistingModifier,
 				Description = "The first time you hit with a melee weapon attack during this spell’s duration, your weapon rings with thunder that is audible within 300 feet of you, and the attack deals an extra 2d6 thunder damage to the target. Additionally, if the target is a creature, it must succeed on a Strength saving throw or be pushed 10 feet away from you and knocked prone."
+			};
+			thunderousSmite.Spell = new Spell()
+			{
+				Name = thunderousSmite.Name,
+				OwnerId = playerId,
+				Duration = DndTimeSpan.OneMinute,
+				RequiresConcentration = true,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Components = SpellComponents.Verbal,
+				Range = 30
+				// TODO: Clear Thunderous Smite visual effects on a hit.
 			};
 			AddLightning(thunderousSmite);
 			thunderousSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = 45 }.Fade());
@@ -1548,7 +1893,7 @@ namespace DHDM
 
 		private static void AddLightning(PlayerActionShortcut thunderousSmite, int hueAdjust = 0)
 		{
-			thunderousSmite.Windups.Add(new WindupDto() { Effect = "Lightning", Hue = hueAdjust, Scale = 2, SoundFileName = "Lightning" }.MoveUpDown(146));
+			thunderousSmite.Windups.Add(new WindupDto() { Effect = "Lightning", Hue = hueAdjust, Scale = 2, StartSound = "Lightning" }.MoveUpDown(146));
 		}
 
 		void AddWrathfulSmite(int playerId, string additionalDice)
@@ -1556,74 +1901,82 @@ namespace DHDM
 			PlayerActionShortcut wrathfulSmite = new PlayerActionShortcut()
 			{
 				Name = "Wrathful Smite",
-				PlayerID = playerId,
+				PlayerId = playerId,
 				Part = TurnPart.BonusAction,
-				AddDice = additionalDice,
-				DC = 13,
-				Ability = Ability.Wisdom,
+				AddDiceOnHit = additionalDice,
+				AddDiceOnHitMessage = Name,
 				MinDamage = keepExistingModifier,
-				Modifier = keepExistingModifier,
+				PlusModifier = keepExistingModifier,
 				Description = "The next time you hit with a melee weapon attack during this spell’s duration, your attack deals an extra 1d6 psychic damage. Additionally, if the target is a creature, it must make a Wisdom saving throw or be frightened of you until the spell ends. As an action, the creature can make a Wisdom check against your spell save DC to steel its resolve and end this spell."
 			};
 
+			wrathfulSmite.Spell = new Spell()
+			{
+				Name = wrathfulSmite.Name,
+				OwnerId = playerId,
+				Duration = DndTimeSpan.OneMinute,
+				RequiresConcentration = true,
+				CastingTime = DndTimeSpan.OneBonusAction,
+				Components = SpellComponents.Verbal,
+				Range = 30
+			};
+
 			AddLightning(wrathfulSmite, -1);
-			wrathfulSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = -1, SoundFileName = "Psychic1" }.Fade());
-			wrathfulSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = -1, FlipHorizontal = true, SoundFileName = "Psychic2" }.Fade().MoveUpDown(40));
-			
+			wrathfulSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = -1, StartSound = "Psychic1" }.Fade());
+			wrathfulSmite.Windups.Add(new WindupDto() { Effect = "Wide", Hue = -1, FlipHorizontal = true, StartSound = "Psychic2" }.Fade().MoveUpDown(40));
+
 			actionShortcuts.Add(wrathfulSmite);
-			
+
 		}
 		private void AddPlayerActionShortcutsForAva()
 		{
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (1H)", PlayerID = Player_Ava, Dice = "1d8+3(slashing)", Modifier = 5, MinDamage = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Battleaxe (2H)", PlayerID = Player_Ava, Dice = "1d10+3(slashing)", Modifier = 5, MinDamage = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Greatsword, +1", PlayerID = Player_Ava, Dice = "2d6+4(slashing)", Modifier = +6, MinDamage = 3 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Javelin", PlayerID = Player_Ava, Dice = "1d6+3(piercing)", Modifier = 5 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Net", PlayerID = Player_Ava, Dice = "", Modifier = 2 });
-			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Unarmed Strike", PlayerID = Player_Ava, Dice = "+4(bludgeoning)", Modifier = 5 });
+			AddBattleAxe("Battleaxe (1H)", PlayerID.Ava, "1d8+3(slashing)", 5, 3, int.MinValue, int.MinValue, 1.3);
+			AddBattleAxe("Battleaxe (2H)", PlayerID.Ava, "1d10+3(slashing)", 5, 3, 220, 280, 1.3);
 
-			AddCureWounds(Player_Ava, "1d8+3");
+			AddGreatSword(PlayerID.Ava, "2d6+4(slashing)");
+			AddJavelin("Javelin", PlayerID.Ava, "1d6+3(piercing)", 5, 220);
 
-			AddThunderousSmite(Player_Ava, "2d6(thunder)");
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Net", PlayerId = PlayerID.Ava, Dice = "", PlusModifier = 2 });
+			actionShortcuts.Add(new PlayerActionShortcut()
+			{ Name = "Unarmed Strike", PlayerId = PlayerID.Ava, Dice = "+4(bludgeoning)", PlusModifier = 5 });
 
-			AddWrathfulSmite(Player_Ava, "1d6(psychic)");
+			AddCureWounds(PlayerID.Ava, "1d8+3");
 
-			AddShieldOfFaith(Player_Ava);
-			AddSanctuary(Player_Ava);
+			AddThunderousSmite(PlayerID.Ava, "2d6(thunder)");
 
+			AddWrathfulSmite(PlayerID.Ava, "1d6(psychic)");
+
+			AddShieldOfFaith(PlayerID.Ava, 1);
+			AddSanctuary(PlayerID.Ava, 1);
+			AddSleep(PlayerID.Ava, 1);
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Divine Smite",
-				PlayerID = Player_Ava,
+				PlayerId = PlayerID.Ava,
 				Type = DiceRollType.AddOnDice,
 				Part = TurnPart.Special,
 				AdditionalRollTitle = "Divine Smite",
 				InstantDice = "2d8(radiant:damage)",
-				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends."
+				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 " +
+											"extra radiant damage to the target plus 1d8 for each spell level higher than 1st " +
+											"(max 5d8) and plus 1d8 against undead or fiends."
 			});
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Channel Divinity: Rebuke the Violent",
-				PlayerID = Player_Ava,
+				PlayerId = PlayerID.Ava,
 				Type = DiceRollType.None,
 				Part = TurnPart.Reaction,
-				DC = 14,
-				Ability = Ability.Wisdom,
 				Description = "Immediately after an attacker within 30 ft. deals damage with an attack against a creature other than you, you can use your reaction to force the attacker to make a WIS saving throw (DC 14). On failure, the attacker takes radiant damage equal to the damage it just dealt, or half damage on success."
 			});
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Channel Divinity: Emissary of Peace",
-				PlayerID = Player_Ava,
+				PlayerId = PlayerID.Ava,
 				Part = TurnPart.BonusAction,
 				Description = "As a bonus action, you grant yourself a +5 bonus to Charisma (Persuasion) checks for the next 10 minutes."
 			});
@@ -1631,17 +1984,17 @@ namespace DHDM
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Great Weapon Master Attack",
-				PlayerID = Player_Ava,
+				PlayerId = PlayerID.Ava,
 				Part = TurnPart.BonusAction,
 				Description = "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
 			});
 
-			AddDivineSense(Player_Ava);
+			AddDivineSense(PlayerID.Ava);
 
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Lay on Hands Pool",
-				PlayerID = Player_Ava,
+				PlayerId = PlayerID.Ava,
 				Part = TurnPart.Action,
 				Description = "You have a pool of healing power that can restore 20 HP per long rest. As an action, you can touch a creature to restore any number of HP remaining in the pool, or 5 HP to either cure a disease or neutralize a poison affecting the creature."
 			});
@@ -1649,7 +2002,7 @@ namespace DHDM
 			actionShortcuts.Add(new PlayerActionShortcut()
 			{
 				Name = "Divine Smite (undead)",
-				PlayerID = Player_Ava,
+				PlayerId = PlayerID.Ava,
 				Type = DiceRollType.AddOnDice,
 				Part = TurnPart.Special,
 				AdditionalRollTitle = "Divine Smite",
@@ -1657,27 +2010,75 @@ namespace DHDM
 				Description = "When you hit with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage to the target plus 1d8 for each spell level higher than 1st (max 5d8) and plus 1d8 against undead or fiends."
 			});
 		}
+		void AddJavelin(string name, int playerId, string damage, int modifier, int magicHue = int.MinValue)
+		{
+			PlayerActionShortcut javelin = new PlayerActionShortcut()
+			{ Name = name, PlayerId = playerId, Dice = damage, PlusModifier = modifier };
+
+			WindupDto javelin3D = new WindupDto();
+			javelin3D.Effect = "Javelin.Weapon";
+			javelin3D.FadeIn = 0;
+			javelin3D.PlayToEndOnExpire = true;
+			javelin3D.MoveUpDown(150);
+			javelin.Windups.Add(javelin3D);
+
+			if (magicHue != int.MinValue)
+			{
+				WindupDto javelinMagic = new WindupDto();
+				javelinMagic.Effect = "Javelin.Magic";
+				javelinMagic.FadeIn = 0;
+				javelinMagic.PlayToEndOnExpire = true;
+				javelinMagic.MoveUpDown(150);
+				javelinMagic.Hue = magicHue;
+				javelin.Windups.Add(javelinMagic);
+			}
+
+			actionShortcuts.Add(javelin);
+		}
+
+		private void AddGreatSword(int playerId, string damage)
+		{
+			PlayerActionShortcut greatSword = new PlayerActionShortcut()
+			{ Name = "Greatsword, +1", PlayerId = playerId, Dice = damage, PlusModifier = +6, MinDamage = 3 };
+			WindupDto greatSword3d = new WindupDto();
+			greatSword3d.Effect = "GreatSword.Weapon";
+			greatSword3d.FadeIn = 0;
+			greatSword3d.PlayToEndOnExpire = true;
+			greatSword3d.MoveUpDown(150);
+			greatSword.Windups.Add(greatSword3d);
+			WindupDto greatSwordMagic = new WindupDto();
+			greatSwordMagic.Effect = "GreatSword.Magic";
+			greatSwordMagic.FadeIn = 0;
+			greatSwordMagic.Hue = 270;
+			greatSwordMagic.PlayToEndOnExpire = true;
+			greatSwordMagic.MoveUpDown(150);
+			greatSword.Windups.Add(greatSwordMagic);
+			actionShortcuts.Add(greatSword);
+		}
 
 		private void AddPlayerActionShortcutsForMerkin()
 		{
 			// TODO: Remove WindupName
-			AddChaosBolt();
-			AddLightningLure();
+			AddChaosBolt(PlayerID.Merkin, 1);
+			AddChaosBolt(PlayerID.Merkin, 2);
+			AddChaosBolt(PlayerID.Merkin, 3);
+			AddFireBolt(PlayerID.Merkin, 0);
+			AddLightningLure(PlayerID.Merkin, 0);
 			AddMelfsMinuteMeteors();
 			AddRayOfFrost();
 
 
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Crossbow, Light", PlayerID = Player_Merkin, Dice = "1d8+2(piercing)", Modifier = 4 });
+			{ Name = "Crossbow, Light", PlayerId = PlayerID.Merkin, Dice = "1d8+2(piercing)", PlusModifier = 4 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Dagger", PlayerID = Player_Merkin, Dice = "1d4+2(piercing)", Modifier = 4 });
+			{ Name = "Dagger", PlayerId = PlayerID.Merkin, Dice = "1d4+2(piercing)", PlusModifier = 4 });
 
-			AddChillTouch(Player_Merkin, "1d8(necrotic)");
+			AddChillTouch(PlayerID.Merkin, "1d8(necrotic)", 0);
 		}
 		void AddRayOfFrost()
 		{
 			PlayerActionShortcut rayOfFrost = new PlayerActionShortcut()
-			{ Name = "Ray of Frost", PlayerID = Player_Merkin, Dice = "1d8(cold)", Modifier = 5, UsesMagic = true };
+			{ Name = "Ray of Frost", PlayerId = PlayerID.Merkin, Dice = "1d8(cold)", PlusModifier = 5, UsesMagic = true };
 
 			rayOfFrost.Windups.Add(new WindupDto()
 			{
@@ -1696,15 +2097,17 @@ namespace DHDM
 				FlipHorizontal = true,
 				DegreesOffset = 0
 			}.MoveUpDown(60));
+
+			AddStaff(rayOfFrost, 230, 210);
 			actionShortcuts.Add(rayOfFrost);
 		}
 
 		void AddMelfsMinuteMeteors()
 		{
-			double scale = 0.6;
-			DndCore.Vector offset = new DndCore.Vector(0, -140);
+			double scale = 1;
+			DndCore.Vector offset = new DndCore.Vector(0, 30);
 			PlayerActionShortcut shortcut = new PlayerActionShortcut()
-			{ Name = "Melf's Minute Meteors", PlayerID = Player_Merkin, Dice = "1d6(fire)", DC = 13, Ability = Ability.Strength, UsesMagic = true };
+			{ Name = "Melf's Minute Meteors", PlayerId = PlayerID.Merkin, Dice = "1d6(fire)", UsesMagic = true };
 			const int numMeteors = 3;
 			int degreeSpan = 360 / numMeteors;
 			int degreeOffset = 6;
@@ -1717,58 +2120,104 @@ namespace DHDM
 				degreeOffset += degreeSpan;
 				hueOffset += hueSpan;
 			}
-
+			AddStaff(shortcut, 30, 350);
 			actionShortcuts.Add(shortcut);
 		}
 
-		private void AddLightningLure()
+		private void AddLightningLure(int playerId, int spellSlotLevel)
 		{
 			DndCore.Vector offset = new DndCore.Vector(0, 70);
 			PlayerActionShortcut shortcut = new PlayerActionShortcut()
-			{ Name = "Lightning Lure", PlayerID = Player_Merkin, Dice = "1d8(lightning)", DC = 13, Ability = Ability.Strength, UsesMagic = true };
+			{ Name = "Lightning Lure", PlayerId = PlayerID.Merkin, Dice = "1d8(lightning)", UsesMagic = true };
 
 			shortcut.Windups.Add(new WindupDto() { Hue = 45, Scale = 1.1, Effect = "LiquidSparks", Offset = offset });
 			shortcut.Windups.Add(new WindupDto() { Hue = 220, Scale = 1.1, DegreesOffset = 180, Effect = "LiquidSparks", Offset = offset });
-
+			shortcut.Spell = AllSpells.Get(SpellNames.LightningLure, GetPlayer(playerId), spellSlotLevel);
+			AddStaff(shortcut, 220, 35);
 			actionShortcuts.Add(shortcut);
 		}
 
-		private void AddChaosBolt()
+		private void AddChaosBolt(int playerId, int spellSlotLevel)
+		{
+			DndCore.Vector offset = new DndCore.Vector(0, 140);
+
+			string effectName;
+			if (spellSlotLevel <= 1)
+				effectName = "Narrow";
+			else if (spellSlotLevel == 2)
+				effectName = "Wide";
+			else
+				effectName = "Trails";
+			PlayerActionShortcut shortcut = new PlayerActionShortcut()
+
+			{ Name = $"{SpellNames.ChaosBolt} ({spellSlotLevel})", PlayerId = playerId, Dice = "2d8", PlusModifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt };
+			shortcut.Windups.Add(new WindupDto() { Effect = effectName, Hue = 300, Rotation = 45, FlipHorizontal = true, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = effectName, Hue = 220, Rotation = -45, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = effectName, Hue = 300 + 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 120 });
+			shortcut.Windups.Add(new WindupDto() { Effect = effectName, Hue = 220 + 30, Rotation = -45, Offset = offset, DegreesOffset = 120 });
+			shortcut.Windups.Add(new WindupDto() { Effect = effectName, Hue = 300 - 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 240 });
+			shortcut.Windups.Add(new WindupDto() { Effect = effectName, Hue = 220 - 30, Rotation = -45, Offset = offset, DegreesOffset = 240 });
+			AddStaff(shortcut, 220, 270);
+			shortcut.Spell = AllSpells.Get(SpellNames.ChaosBolt, GetPlayer(playerId), spellSlotLevel);
+			actionShortcuts.Add(shortcut);
+		}
+
+		private void AddFireBolt(int playerId, int spellSlotLevel)
 		{
 			DndCore.Vector offset = new DndCore.Vector(0, 140);
 
 			PlayerActionShortcut shortcut = new PlayerActionShortcut()
-			{ Name = "Chaos Bolt", PlayerID = Player_Merkin, WindupName = "Wide", Dice = "2d8", Modifier = 5, UsesMagic = true, Type = DiceRollType.ChaosBolt };
-			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300, Rotation = 45, FlipHorizontal = true, Offset = offset });
-			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220, Rotation = -45, Offset = offset });
-			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300 + 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 120 });
-			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220 + 30, Rotation = -45, Offset = offset, DegreesOffset = 120 });
-			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 300 - 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 240 });
-			shortcut.Windups.Add(new WindupDto() { Effect = "Trails", Hue = 220 - 30, Rotation = -45, Offset = offset, DegreesOffset = 240 });
 
+			{ Name = $"{SpellNames.FireBolt} ({spellSlotLevel})", PlayerId = playerId, Dice = "2d8", PlusModifier = 5, UsesMagic = true, Type = DiceRollType.Attack };
+			shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Hue = 0, Rotation = 45, FlipHorizontal = true, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Hue = 330, Rotation = -45, Offset = offset });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Hue = 30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 120 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Hue = 330 + 30, Rotation = -45, Offset = offset, DegreesOffset = 120 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Hue = -30, Rotation = 45, FlipHorizontal = true, Offset = offset, DegreesOffset = 240 });
+			shortcut.Windups.Add(new WindupDto() { Effect = "Fire", Hue = 330 - 30, Rotation = -45, Offset = offset, DegreesOffset = 240 });
+			AddStaff(shortcut, 0, 20);
+			shortcut.Spell = AllSpells.Get(SpellNames.FireBolt, GetPlayer(playerId), spellSlotLevel);
 			actionShortcuts.Add(shortcut);
+		}
+
+		private static void AddStaff(PlayerActionShortcut shortcut, int staffHue, int headHue)
+		{
+			WindupDto staffWeapon = new WindupDto();
+			staffWeapon.Effect = "Staff.Weapon";
+			staffWeapon.FadeIn = 0;
+			staffWeapon.Hue = staffHue;
+			staffWeapon.PlayToEndOnExpire = true;
+			staffWeapon.MoveUpDown(150);
+			shortcut.Windups.Add(staffWeapon);
+			WindupDto staffMagic = new WindupDto();
+			staffMagic.Effect = "Staff.Magic";
+			staffMagic.FadeIn = 0;
+			staffMagic.Hue = headHue;
+			staffMagic.PlayToEndOnExpire = true;
+			staffMagic.MoveUpDown(150);
+			shortcut.Windups.Add(staffMagic);
 		}
 
 		private void AddPlayerActionShortcutsForWilly()
 		{
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Dagger of Warning", PlayerID = Player_Willy, Dice = "1d4+3", Modifier = 5 });
+			{ Name = "Dagger of Warning", PlayerId = PlayerID.Willy, Dice = "1d4+3", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Shortbow", PlayerID = Player_Willy, Dice = "1d6+3", Modifier = 5 });
+			{ Name = "Shortbow", PlayerId = PlayerID.Willy, Dice = "1d6+3", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Shortsword", PlayerID = Player_Willy, Dice = "1d6+3", Modifier = 5 });
+			{ Name = "Shortsword", PlayerId = PlayerID.Willy, Dice = "1d6+3", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Fire Bolt", PlayerID = Player_Willy, Dice = "1d10", Modifier = 5 });
+			{ Name = "Fire Bolt", PlayerId = PlayerID.Willy, Dice = "1d10", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Bonus Dagger", PlayerID = Player_Willy, Dice = "1d4", Modifier = 5 });
+			{ Name = "Bonus Dagger", PlayerId = PlayerID.Willy, Dice = "1d4", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Dagger of Warning (Sneak)", PlayerID = Player_Willy, Dice = "2d6,1d4+3", Modifier = 5 });
+			{ Name = "Dagger of Warning (Sneak)", PlayerId = PlayerID.Willy, Dice = "2d6,1d4+3", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Shortbow (Sneak)", PlayerID = Player_Willy, Dice = "3d6+3", Modifier = 5 });
+			{ Name = "Shortbow (Sneak)", PlayerId = PlayerID.Willy, Dice = "3d6+3", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Shortsword (Sneak)", PlayerID = Player_Willy, Dice = "3d6+3", Modifier = 5 });
+			{ Name = "Shortsword (Sneak)", PlayerId = PlayerID.Willy, Dice = "3d6+3", PlusModifier = 5 });
 			actionShortcuts.Add(new PlayerActionShortcut()
-			{ Name = "Bonus Dagger (Sneak)", PlayerID = Player_Willy, Dice = "2d6,1d4", Modifier = 5 });
+			{ Name = "Bonus Dagger (Sneak)", PlayerId = PlayerID.Willy, Dice = "2d6,1d4", PlusModifier = 5 });
 		}
 
 		bool settingInternally;
@@ -1815,7 +2264,7 @@ namespace DHDM
 					PlayerTabItem tabItem = new PlayerTabItem();
 					tabItem.Header = player.name;
 					tabPlayers.Items.Add(tabItem);
-					tabItem.PlayerID = player.playerID;
+					tabItem.PlayerId = player.playerID;
 
 					StackPanel stackPanel = new StackPanel();
 					tabItem.Content = stackPanel;
@@ -1903,23 +2352,106 @@ namespace DHDM
 		{
 			InvokeSkillCheck(e.Skill);
 		}
-		
-		public void InvokeSkillCheck(Skills skill)
+
+		public void InvokeSkillCheck(Skills skill, bool allPlayers = false)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				SelectSkill(skill);
-				rbActivePlayer.IsChecked = true;
+				if (allPlayers)
+					rbEveryone.IsChecked = true;
+				else
+					rbActivePlayer.IsChecked = true;
 				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 			});
 		}
 
-		public void RollSkillCheck(Skills skill)
+		public void InvokeSavingThrow(Ability ability, bool allPlayers)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SelectSavingThrowAbility(ability);
+				if (allPlayers)
+					rbEveryone.IsChecked = true;
+				else
+					rbActivePlayer.IsChecked = true;
+				RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
+			});
+		}
+
+		void EnterCombat()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (dndTimeClock.InCombat)
+					TellDungeonMaster("Already in combat!");
+				else
+				{
+					TellDungeonMaster("Entering combat...");
+					BtnEnterExitCombat_Click(null, null);
+				}
+			});
+		}
+		void ExitCombat()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (!dndTimeClock.InCombat)
+					TellDungeonMaster("Already NOT in combat!");
+				else
+				{
+					TellDungeonMaster("Exiting combat...");
+					BtnEnterExitCombat_Click(null, null);
+				}
+			});
+		}
+
+		void RollNonCombatInitiative()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.NonCombatInitiative);
+				RollTheDice(diceRoll);
+			});
+		}
+		public void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand)
+		{
+			switch (dungeonMasterCommand)
+			{
+				case DungeonMasterCommand.ClearScrollEmphasis:
+					HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
+					TellDungeonMaster("Clearing emphasis...");
+					break;
+				case DungeonMasterCommand.NonCombatInitiative:
+					RollNonCombatInitiative();
+					TellDungeonMaster("Rolling non-combat initiative...");
+					break;
+				case DungeonMasterCommand.EnterCombat:
+					EnterCombat();
+					break;
+				case DungeonMasterCommand.ExitCombat:
+					ExitCombat();
+					break;
+			}
+		}
+
+		string PlusHiddenThresholdDisplayStr()
+		{
+			string returnMessage = string.Empty;
+			Dispatcher.Invoke(() =>
+			{
+				returnMessage = $" (against a hidden threshold of {tbxHiddenThreshold.Text})";
+			});
+
+			return returnMessage;
+		}
+
+		public void RollSkillCheck(Skills skill, bool allPlayers = false)
 		{
 			if (activePage != ScrollPage.skills)
 			{
 				activePage = ScrollPage.skills;
-				HubtasticBaseStation.PlayerDataChanged(PlayerID, activePage, string.Empty);
+				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			}
 
 			Dispatcher.Invoke(() =>
@@ -1927,8 +2459,56 @@ namespace DHDM
 				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
 					playerTabItem.CharacterSheets.FocusSkill(skill);
 			});
-			
-			InvokeSkillCheck(skill);
+
+			InvokeSkillCheck(skill, allPlayers);
+
+			string articlePlusSkillDislay = DndUtils.ToArticlePlusSkillDisplayString(skill);
+			string who;
+			if (allPlayers)
+				who = "all players";
+			else
+				who = GetPlayerName(ActivePlayerId);
+			string firstPart = $"Rolling {articlePlusSkillDislay} skill check for {who}";
+			TellDungeonMaster($"{firstPart}{PlusHiddenThresholdDisplayStr()}.");
+			TellViewers($"{firstPart}...");
+		}
+
+		public void RollAttack()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				BtnAttack_Click(null, null);
+			});
+			// TODO: Add report on advantage/disadvantage.
+			TellDungeonMaster($"Rolling {GetPlayerName(ActivePlayerId)}'s attack with a hidden threshold of {tbxHiddenThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
+		}
+
+		public void RollSavingThrow(Ability ability, bool allPlayers = false)
+		{
+			if (activePage != ScrollPage.main)
+			{
+				activePage = ScrollPage.main;
+				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
+			}
+
+			Dispatcher.Invoke(() =>
+			{
+				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+					playerTabItem.CharacterSheets.FocusSavingAbility(ability);
+			});
+
+			InvokeSavingThrow(ability, allPlayers);
+			string abilityStr = DndUtils.ToArticlePlusAbilityDisplayString(ability);
+
+			string who;
+			if (allPlayers)
+				who = "all players";
+			else
+				who = GetPlayerName(ActivePlayerId);
+
+			string firstPart = $"Rolling {abilityStr} saving throw for {who}";
+			TellDungeonMaster($"{firstPart}{PlusHiddenThresholdDisplayStr()}...");
+			TellViewers($"{firstPart}...");
 		}
 
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
@@ -1943,158 +2523,12 @@ namespace DHDM
 
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
-			Character kent = new Character();
-			kent.name = "Willy Shaker";
-			kent.playerID = Player_Willy;
-			kent.raceClass = "High Elf Rogue";
-			kent.goldPieces = 150;
-			kent.hitPoints = 35;
-			kent.maxHitPoints = 35;
-			kent.baseArmorClass = 15;
-			kent.baseStrength = 10;
-			kent.headshotIndex = 4;
-			kent.baseDexterity = 17;
-			kent.baseConstitution = 16;
-			kent.baseIntelligence = 9;
-			kent.baseWisdom = 8;
-			kent.baseCharisma = 14;
-			kent.proficiencyBonus = 2;
-			kent.proficientSkills = Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth;
-			kent.savingThrowProficiency = Ability.Dexterity | Ability.Intelligence;
-			kent.doubleProficiency = Skills.deception | Skills.persuasion;
-			kent.initiative = +3;
-			kent.hueShift = 0;
-			kent.dieBackColor = "#710138";
-			kent.dieFontColor = "#ffffff";
-			kent.rollInitiative = VantageKind.Advantage;
+			//PlayerFactory.BuildPlayers(players);
+			AllPlayers.LoadData();
+			AllDieRollEffects.LoadData();
+			AllTrailingEffects.LoadData();
 
-			Character kayla = new Character();
-			kayla.name = "Shemo Globin";
-			kayla.playerID = Player_Shemo;
-			kayla.raceClass = "Firbolg Druid";
-			kayla.goldPieces = 170;
-			kayla.headshotIndex = 1;
-			kayla.hitPoints = 31;
-			kayla.maxHitPoints = 31;
-			kayla.baseArmorClass = 15;
-			kayla.baseStrength = 10;
-			kayla.baseDexterity = 12;
-			kayla.baseConstitution = 15;
-			kayla.baseIntelligence = 8;
-			kayla.baseCharisma = 13;
-			kayla.baseWisdom = 17;
-			kayla.proficiencyBonus = 2;
-			kayla.initiative = +1;
-			kayla.proficientSkills = Skills.animalHandling | Skills.arcana | Skills.history | Skills.nature;
-			kayla.savingThrowProficiency = Ability.Intelligence | Ability.Wisdom;
-			kayla.hueShift = 138;
-			kayla.dieBackColor = "#00641d";
-			kayla.dieFontColor = "#ffffff";
-
-			Character mark = new Character();
-			mark.name = "Merkin Bushwacker";
-			mark.raceClass = "Half-Elf Sorcerer";
-			mark.goldPieces = 128;
-			mark.headshotIndex = 2;
-			mark.playerID = Player_Merkin;
-			mark.hitPoints = 26;
-			mark.maxHitPoints = 26;
-			mark.baseArmorClass = 12;
-			mark.baseStrength = 8;
-			mark.baseDexterity = 14;
-			mark.baseConstitution = 14;
-			mark.baseIntelligence = 12;
-			mark.baseCharisma = 17;
-			mark.baseWisdom = 12;
-			mark.proficiencyBonus = 2;
-			mark.initiative = +2;
-			mark.proficientSkills = Skills.acrobatics | Skills.deception | Skills.intimidation | Skills.perception | Skills.performance | Skills.persuasion;
-			mark.savingThrowProficiency = Ability.Constitution | Ability.Charisma;
-			mark.hueShift = 260;
-			mark.dieBackColor = "#401260";
-			mark.dieFontColor = "#ffffff";
-
-			Character karen = new Character();
-			karen.name = "Ava Wolfhard";
-			karen.raceClass = "Human Paladin";
-			karen.goldPieces = 150;
-			karen.playerID = Player_Ava;
-			karen.headshotIndex = 3;
-			karen.hitPoints = 36;
-			karen.maxHitPoints = 36;
-			karen.baseArmorClass = 16;
-			karen.baseStrength = 16;
-			karen.baseDexterity = 11;
-			karen.baseConstitution = 14;
-			karen.baseIntelligence = 8;
-			karen.baseWisdom = 8;
-			karen.baseCharisma = 18;
-			karen.proficiencyBonus = +2;
-			karen.initiative = 0;
-			karen.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.performance | Skills.persuasion | Skills.survival;
-			karen.savingThrowProficiency = Ability.Wisdom | Ability.Charisma;
-			karen.hueShift = 210;
-			karen.dieBackColor = "#04315a";
-			karen.dieFontColor = "#ffffff";
-
-			Character fred = new Character();
-			fred.name = "Fred";
-			fred.raceClass = "Lizardfolk Fighter";
-			fred.goldPieces = 10;
-			fred.playerID = Player_Fred;
-			fred.headshotIndex = 5;
-			fred.hitPoints = 40;
-			fred.maxHitPoints = 40;
-			fred.baseArmorClass = 16;
-			fred.baseStrength = 16;
-			fred.baseDexterity = 16;
-			fred.baseConstitution = 16;
-			fred.baseIntelligence = 8;
-			fred.baseWisdom = 9;
-			fred.baseCharisma = 10;
-			fred.proficiencyBonus = +2;
-			fred.initiative = +3;
-			fred.proficientSkills = Skills.acrobatics | Skills.athletics | Skills.nature | Skills.perception | Skills.survival | Skills.stealth;
-			fred.savingThrowProficiency = Ability.Strength | Ability.Constitution;
-			fred.hueShift = 206;
-			fred.dieBackColor = "#136399";
-			fred.dieFontColor = "#ffffff";
-
-			Character lara = new Character();
-			lara.name = "Lady McLoveNuts";
-			lara.raceClass = "Longtooth Fighter";
-			lara.goldPieces = 250;
-			lara.playerID = Player_Lady;
-			lara.headshotIndex = 0;
-			lara.hitPoints = 32;
-			lara.maxHitPoints = 32;
-			lara.baseArmorClass = 16;
-			lara.baseStrength = 16;
-			lara.baseDexterity = 14;
-			lara.baseConstitution = 12;
-			lara.baseIntelligence = 13;
-			lara.baseWisdom = 12;
-			lara.baseCharisma = 12;
-			lara.proficiencyBonus = +2;
-			lara.initiative = +2;
-			lara.proficientSkills = Skills.animalHandling | Skills.arcana | Skills.intimidation | Skills.investigation | Skills.perception | Skills.survival;
-			lara.savingThrowProficiency = Ability.Strength | Ability.Constitution;
-			lara.hueShift = 37;
-			//lara.dieBackColor = "#a86600";
-			//lara.dieFontColor = "#ffffff";
-			lara.dieBackColor = "#fea424";
-			lara.dieFontColor = "#000000";
-
-			players.Clear();
-
-			//players.Add(kent);
-			players.Add(fred);
-			players.Add(lara);
-			//players.Add(kayla);
-			players.Add(mark);
-			players.Add(karen);
-
-
+			players = AllPlayers.GetActive();
 			string playerData = JsonConvert.SerializeObject(players);
 			HubtasticBaseStation.SetPlayerData(playerData);
 
@@ -2260,7 +2694,7 @@ namespace DHDM
 					CheckActivePlayer();
 					rbActivePlayer.IsChecked = true;
 				}
-				else if (numRadioBoxesChecked == 1 && lastPlayerId == PlayerID)
+				else if (numRadioBoxesChecked == 1 && lastPlayerId == ActivePlayerId)
 					rbActivePlayer.IsChecked = true;
 				else
 					rbIndividuals.IsChecked = true;
@@ -2272,7 +2706,7 @@ namespace DHDM
 		}
 		void CheckActivePlayer()
 		{
-			CheckPlayer(PlayerID);
+			CheckPlayer(ActivePlayerId);
 		}
 
 		private void CheckPlayer(int playerID)
@@ -2325,46 +2759,58 @@ namespace DHDM
 
 		public int GetPlayerIdFromNameStart(string characterName)
 		{
-			string lowerName = characterName.ToLower();
-			foreach (Character character in this.players)
-			{
-				if (character.name.ToLower().StartsWith(lowerName))
-				{
-					return character.playerID;
-				}
-			}
-			return -1;
+			return AllPlayers.GetPlayerIdFromNameStart(players, characterName);
 		}
 
 		private void ChangePlayerHealth(TextBox textBox, int multiplier)
 		{
 			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, textBox);
 
-			ApplyDamageHealthChange(damageHealthChange);
-
 			if (damageHealthChange != null)
 			{
-				string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
-				HubtasticBaseStation.ChangePlayerHealth(serializedObject);
+				ApplyDamageHealthChange(damageHealthChange);
+				//string serializedObject = JsonConvert.SerializeObject(damageHealthChange);
+				//HubtasticBaseStation.ChangePlayerHealth(serializedObject);
 			}
 		}
 
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
+			if (damageHealthChange == null)
+				return;
+			string playerNames = string.Empty;
 			if (damageHealthChange.PlayerIds.Count == 0)
-				{
-				damageHealthChange.PlayerIds.Add(PlayerID);
-			}
-			foreach (int playerId in damageHealthChange.PlayerIds)
 			{
-				Character player = GetPlayer(playerId);
-				if (player != null)
-				{
-					player.ChangeHealth(damageHealthChange.DamageHealth);
-					HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
-					HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
-				}
+				damageHealthChange.PlayerIds.Add(ActivePlayerId);
 			}
+			int numPlayers = damageHealthChange.PlayerIds.Count;
+			for (int i = 0; i < numPlayers; i++)
+			{
+				int playerId = damageHealthChange.PlayerIds[i];
+				Character player = GetPlayer(playerId);
+				if (player == null)
+					continue;
+				string firstName = StrUtils.GetFirstName(player.name);
+				if (i < numPlayers - 2)
+					playerNames += firstName + ", ";
+				else if (i < numPlayers - 1)
+					playerNames += firstName + ", and ";
+				else
+					playerNames += firstName;
+
+				player.ChangeHealth(damageHealthChange.DamageHealth);
+				HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
+			}
+
+			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
+			string message;
+			if (damageHealthChange.DamageHealth < 0)
+				message = $"{-damageHealthChange.DamageHealth} points of damage dealt to {playerNames}.";
+			else
+				message = $"{damageHealthChange.DamageHealth} points of healing given to {playerNames}.";
+
+			TellDungeonMaster(message);
+			TellViewers(message);
 		}
 
 		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox)
@@ -2472,23 +2918,128 @@ namespace DHDM
 
 		public void RollWildMagicCheck()
 		{
-			SelectCharacter(Player_Merkin);
+			SelectCharacter(PlayerID.Merkin);
 			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
+			TellDungeonMaster("Rolling wild magic check.");
+		}
+
+		string GetNopeMessage()
+		{
+			int rand = new Random((int)dndTimeClock.Time.Ticks).Next(10);
+			switch (rand)
+			{
+				case 0:
+					return "Nope";
+				case 1:
+					return "No way";
+				case 2:
+					return "Sorry";
+				case 3:
+					return "No can do";
+				case 4:
+					return "Try again";
+				case 5:
+					return "Yeah... uh NO";
+				case 6:
+					return "That's a negative";
+				case 7:
+					return "No way padre";
+				case 8:
+					return "Can't do that";
+				case 9:
+					return "Impossible";
+			}
+			return "Error";
+		}
+
+		string Plural(int count, string suffix)
+		{
+			if (count == 1)
+				return $"{count} {suffix}";
+			return $"{count} {suffix}s";
+		}
+
+		string GetTimeLeft(int playerId, Spell spell)
+		{
+			DndAlarm alarm = dndTimeClock.GetAlarm(GetAlarmName(spell, playerId));
+			if (alarm == null)
+				return "0 seconds";
+			TimeSpan time = alarm.TriggerTime - dndTimeClock.Time;
+			string result;
+			if (time.TotalDays >= 1)
+				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalHours >= 1)
+				result = $"{Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalMinutes >= 1)
+				result = $"{Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else
+				result = Plural(time.Seconds, "second");
+			return result;
+		}
+
+		void ReportOnConcentration()
+		{
+			string concentrationReport = string.Empty;
+			foreach (int key in concentratedSpells.Keys)
+			{
+				concentrationReport += $"{GetPlayerName(key)} is casting {concentratedSpells[key].Name} with {GetTimeLeft(key, concentratedSpells[key])} remaining; ";
+			}
+
+			if (string.IsNullOrWhiteSpace(concentrationReport))
+				TellDungeonMaster("No players are concentrating on any spells at this time.");
+			else
+				TellDungeonMaster(concentrationReport);
+		}
+
+		public void GetData(string dataId)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (dataId == "Concentration")
+					ReportOnConcentration();
+			});
+		}
+
+		public void SelectPlayerShortcut(string shortcutName, int playerId)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (playerId != ActivePlayerId)
+				{
+					TellDungeonMaster($"===================> {GetNopeMessage()}. {GetPlayerName(playerId)} is not the active player!");
+					return;
+				}
+				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == playerId);
+				if (shortcut != null)
+				{
+					ActivateShortcut(shortcut);
+					TellDungeonMaster($"Activated {GetPlayerName(playerId)}'s {shortcutName}.");
+				}
+			});
+
 		}
 
 		public void SelectCharacter(int playerId)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem) 
+				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem)
 					foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
 					{
-						if (playerTabItem.PlayerID == playerId)
+						if (playerTabItem.PlayerId == playerId)
 						{
 							tabPlayers.SelectedItem = playerTabItem;
-							return;
+							TellDungeonMaster($"----- {GetPlayerName(playerId)} -----");
+							break;
 						}
 					}
+			});
+		}
+		public void SetSpellSlotLevel(int level)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				tbxSpellSlot.Text = level.ToString();
 			});
 		}
 
@@ -2496,7 +3047,7 @@ namespace DHDM
 		public void RollWildMagic()
 		{
 			BtnWildMagic_Click(null, null);
-				
+			TellDungeonMaster("Rolling wild magic...");
 		}
 
 		private void BtnSendWindup_Click(object sender, RoutedEventArgs e)
@@ -2513,14 +3064,16 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				
+
 			});
+			// TODO: Tell DM
 		}
+
 		public void AdvanceClock(int hours, int minutes, int seconds)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				
+
 			});
 		}
 
@@ -2528,18 +3081,92 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				
+
 			});
+			// TODO: Tell DM
 		}
 
 		public void HideScroll()
 		{
 			HubtasticBaseStation.SendScrollLayerCommand("Close");
+			TellDungeonMaster("Closing the scroll...", true);
+		}
+
+		public void DropWindup()
+		{
+			HubtasticBaseStation.ClearWindup("*");
+			TellDungeonMaster("Dropping windups...");
+		}
+
+		public void MoveFred(string movement)
+		{
+			HubtasticBaseStation.MoveFred(movement);
+		}
+
+		public void PlayScene(string sceneName)
+		{
+			string dmMessage = $"Playing scene: {sceneName}";
+
+			try
+			{
+				obsWebsocket.SetCurrentScene(sceneName);
+			}
+			catch (Exception ex)
+			{
+				dmMessage = $"kill -name chrome -Force" +
+					$"Unable to play {sceneName}: {ex.Message}";
+			}
+			TellDungeonMaster(dmMessage);
 		}
 
 		public void Speak(int playerId, string message)
 		{
-			
+			Dispatcher.Invoke(() =>
+			{
+				// TODO: Implement this.
+			});
+			// TODO: Tell DM
+		}
+
+		public void TellDungeonMaster(string message, bool isDetail = false)
+		{
+			if (dungeonMasterClient == null)
+				return;
+			if (!JoinedChannel(DungeonMasterChannel))
+			{
+				try
+				{
+					dungeonMasterClient.JoinChannel(DungeonMasterChannel);
+					// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
+					dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+				}
+				catch (Exception ex)
+				{
+
+				}
+			}
+		}
+
+		public void TellViewers(string message)
+		{
+			if (!JoinedChannel(DragonHumpersChannel))
+			{
+				try
+				{
+					dungeonMasterClient.JoinChannel(DragonHumpersChannel);
+					dungeonMasterClient.SendMessage(DragonHumpersChannel, message);
+				}
+				catch (Exception ex)
+				{
+
+				}
+			}
+		}
+
+		private void BtnSpellSlot_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button)
+				tbxSpellSlot.Text = button.Tag.ToString();
 		}
 	}
 }

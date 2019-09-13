@@ -26,6 +26,16 @@ namespace DndTests
 			}
 		}
 		[TestMethod]
+		public void TestStringToAbilityConversion()
+		{
+			Assert.AreEqual(Ability.dexterity | Ability.intelligence, DndUtils.ToAbility("dexterity,intelligence"));
+			Assert.AreEqual(Ability.dexterity | Ability.intelligence, DndUtils.ToAbility("Intelligence,Dexterity"));
+			Assert.AreEqual(Ability.charisma | Ability.constitution | Ability.dexterity | Ability.intelligence | Ability.strength, DndUtils.ToAbility("Charisma,  constitution ,Dexterity, Intelligence , Strength"));
+			Assert.AreEqual(Ability.constitution, DndUtils.ToAbility("Constitution"));
+			Assert.AreEqual(Ability.strength, DndUtils.ToAbility("strength"));
+		}
+		
+		[TestMethod]
 		public void TestAbilityStrRead()
 		{
 			Monster testMonster = new Monster();

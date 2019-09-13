@@ -11,7 +11,7 @@ namespace DHDM
 	{
 		int healthDamageValue;
 
-		public void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage)
+		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			DamageHealthChange damageHealthChange = new DamageHealthChange();
 			damageHealthChange.DamageHealth = healthDamageValue;
@@ -20,7 +20,7 @@ namespace DHDM
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"([\-\+]\d+)");
+			Match match = Regex.Match(message, @"(^[\-\+]\d+)");
 			if (match.Success)
 			{
 				if (int.TryParse(match.Groups[0].Value, out healthDamageValue))

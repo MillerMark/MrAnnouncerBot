@@ -6,17 +6,29 @@ namespace DHDM
 {
 	public interface IDungeonMasterApp
 	{
-		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
-		string SetHiddenThreshold(int hiddenThreshold);
+		void SetHiddenThreshold(int hiddenThreshold);
 		int GetPlayerIdFromNameStart(string characterName);
+		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
 		void RollWildMagicCheck();
 		void RollWildMagic();
 		void SelectCharacter(int playerId);
-		void RollSkillCheck(Skills skill);
+		void SetSpellSlotLevel(int level);
+		void SelectPlayerShortcut(string shortcutName, int playerId);
+		void GetData(string dataId);
+		void RollSkillCheck(Skills skill, bool allPlayers = false);
+		void RollSavingThrow(Ability ability, bool allPlayers = false);
+		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
 		void AdvanceClock(int hours, int minutes, int seconds);
 		void RollDice(string diceStr, DiceRollType diceRollType);
 		void HideScroll();
+		void DropWindup();
+		void BreakConcentration(int playerId);
+		void PlayScene(string sceneName);
+		void MoveFred(string movement);
 		void Speak(int playerId, string message);
+		void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand);
+		void TellDungeonMaster(string message, bool isDetail = false);
+		void TellViewers(string message);
 	}
 }

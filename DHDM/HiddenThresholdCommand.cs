@@ -9,7 +9,7 @@ namespace DHDM
 	{
 		int hiddenThreshold;
 
-		public void Execute(IDungeonMasterApp dungeonMasterApp, TwitchClient twitchClient, ChatMessage chatMessage)
+		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			dungeonMasterApp.SetHiddenThreshold(hiddenThreshold);
 		}

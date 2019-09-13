@@ -13,7 +13,9 @@ function connectToSignalR(signalR) {
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
     connection.on("AddWindup", addWindup);
+    connection.on("CastSpell", castSpell);
     connection.on("ClearWindup", clearWindup);
+		connection.on("MoveFred", moveFred);
     connection.on("TriggerEffect", triggerEffect);
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
@@ -25,10 +27,18 @@ function connectToSignalR(signalR) {
 
 function addWindup(windupData: string): void {
 	if (activeFrontGame instanceof DragonGame) {
-		activeFrontGame.addWindup(windupData);
+		activeFrontGame.addWindupFromStr(windupData);
 	}
 	if (activeBackGame instanceof DragonGame) {
-		activeBackGame.addWindup(windupData);
+		activeBackGame.addWindupFromStr(windupData);
+	}
+}
+function castSpell(spellData: string): void {
+	if (activeFrontGame instanceof DragonGame) {
+		activeFrontGame.castSpell(spellData);
+	}
+	if (activeBackGame instanceof DragonGame) {
+		activeBackGame.castSpell(spellData);
 	}
 }
 
@@ -41,13 +51,22 @@ function clearWindup(windupName: string): void {
 	}
 }
 
+function moveFred(movement: string): void {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.moveFred(movement);
+	}
+}
+
 function triggerEffect(effectData: string) {
   if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.triggerEffect(effectData);
   }
 }
 function updateClock(clockData: string) {
-  if (activeFrontGame instanceof DragonFrontGame) {
+	if (activeBackGame instanceof DragonBackGame) {
+    activeBackGame.updateClock(clockData);
+  }
+	if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.updateClock(clockData);
   }
 }

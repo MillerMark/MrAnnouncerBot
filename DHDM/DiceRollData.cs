@@ -19,6 +19,7 @@ namespace DHDM
 		public Skills skillCheck { get; set; }
 		public Ability savingThrow { get; set; }
 		public int bonus { get; set; }
+		public string additionalDieRollMessage { get; set; }
 
 		public DiceRollData()
 		{

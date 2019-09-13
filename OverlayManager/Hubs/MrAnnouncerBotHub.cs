@@ -35,10 +35,19 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.AddWindup(windupData);
 		}
+		public void CastSpell(string spellData)
+		{
+			coderushedHub.Clients.All.CastSpell(spellData);
+		}
 
 		public void ClearWindup(string windupName)
 		{
 			coderushedHub.Clients.All.ClearWindup(windupName);
+		}
+
+		public void MoveFred(string movement)
+		{
+			coderushedHub.Clients.All.MoveFred(movement);
 		}
 
 		public void FocusItem(int playerID, int pageID, string itemID)

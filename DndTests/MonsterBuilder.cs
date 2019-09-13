@@ -13,14 +13,14 @@ namespace DndTests
 			else
 				violetFungus.name = name;
 			
-			violetFungus.raceClass = "Violet Fungus";
+			violetFungus.race = "Violet Fungus";
 			violetFungus.creatureSize = CreatureSize.Medium;
 			violetFungus.alignment = AlignmentNames.unaligned;
 			violetFungus.kind = CreatureKinds.Plants;
 			violetFungus.baseArmorClass = 5;
 			violetFungus.hitPoints = 18;
 			violetFungus.hitPointsDice = Dice.d8x4;
-			violetFungus.baseSpeed = 5;
+			violetFungus.baseWalkingSpeed = 5;
 
 			violetFungus.SetAbilities(3, -4, 1, -5, 10, 0, 1, -5, 3, -4, 1, -5);
 			violetFungus.conditionImmunities = Conditions.Blinded | Conditions.Deafened | Conditions.Frightened;
@@ -43,7 +43,7 @@ namespace DndTests
 			else
 				vineBlight.name = name;
 			
-			vineBlight.raceClass = "Vine Blight";
+			vineBlight.race = "Vine Blight";
 			vineBlight.creatureSize = CreatureSize.Medium;
 			vineBlight.alignment = AlignmentNames.NeutralEvil;
 			vineBlight.kind = CreatureKinds.Plants;
@@ -51,7 +51,7 @@ namespace DndTests
 			vineBlight.naturalArmor = true;
 			vineBlight.hitPoints = 26;
 			vineBlight.hitPointsDice = Dice.d8x4.Plus(8);
-			vineBlight.baseSpeed = 10;
+			vineBlight.baseWalkingSpeed = 10;
 
 			vineBlight.SetAbilitiesFromStr(@"STR
 																			15 (+2)
@@ -81,7 +81,7 @@ namespace DndTests
 			vineBlight.AddAttack(Attack.Area(AttackNames.EntanglingPlants, 15)
 				.AddRecharge(RechargeOdds.TwoInSix)
 				.AddDuration(DndTimeSpan.OneMinute)
-				.AddCondition(Conditions.Restrained, 12, Ability.Strength));
+				.AddCondition(Conditions.Restrained, 12, Ability.strength));
 
 			vineBlight.traits.Add("False Appearance. While the blight remains motionless, it is indistinguishable from a tangle of vines.");
 			return vineBlight;
@@ -96,7 +96,7 @@ namespace DndTests
 			else
 				vrock.name = name;
 			
-			vrock.raceClass = "Vrock";
+			vrock.race = "Vrock";
 			vrock.creatureSize = CreatureSize.Large;
 			vrock.alignment = AlignmentNames.ChaoticEvil;
 			vrock.kind = CreatureKinds.Fiends;
@@ -104,7 +104,7 @@ namespace DndTests
 			vrock.naturalArmor = true;
 			vrock.hitPoints = 104;
 			vrock.hitPointsDice = Dice.d10x11.Plus(44);;
-			vrock.baseSpeed = 40;
+			vrock.baseWalkingSpeed = 40;
 			vrock.flyingSpeed = 60;
 			vrock.SetAbilities(17, +3, 15, +2, 18, +4, 8, -1, 13, +1, 8, -1);
 			vrock.savingDexterityMod = +5;
@@ -124,13 +124,13 @@ namespace DndTests
 
 			vrock.AddAttack(Attack.Melee(AttackNames.Talons, +6, 5, 1).AddDamage(DamageType.Slashing, Dice.d10x2.Plus(3), AttackKind.NonMagical));
 
-			Attack sporesAttack = Attack.Area(AttackNames.Spores, 15).AddDamage(DamageType.Poison, Dice.d10x1, AttackKind.NonMagical, TimePoint.StartOfTurn, TimePoint.EndOfTurn, Conditions.Poisoned, 14, Ability.Constitution);
+			Attack sporesAttack = Attack.Area(AttackNames.Spores, 15).AddDamage(DamageType.Poison, Dice.d10x1, AttackKind.NonMagical, TimePoint.StartOfTurn, TimePoint.EndOfTurn, Conditions.Poisoned, 14, Ability.constitution);
 			sporesAttack.description = "A 15­-foot­-radius cloud of toxic spores extends out from the vrock. The spores spread around corners. Each creature in that area must succeed on a DC 14 Constitution saving throw or become poisoned. While poisoned in this way, a target takes 5 (1d10) poison damage at the start of each of its turns. A target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. Emptying a vial of holy water on the target also ends the effect on it.";
 			//sporesAttack.releaseTrigger = new ReleaseTrigger("Target receives splashes of holy water.");
 			sporesAttack.AddRecharge(RechargeOdds.OneInSix);
 			vrock.AddAttack(sporesAttack);
 
-			Attack screech = Attack.Area(AttackNames.StunningScreech, 20).AddCondition(Conditions.Stunned, 14, Ability.Constitution);
+			Attack screech = Attack.Area(AttackNames.StunningScreech, 20).AddCondition(Conditions.Stunned, 14, Ability.constitution);
 			screech.LastDamage.IncludeTargetSenses = Senses.Hearing;
 			// TODO: Add test to determine if an attack hits a player using screech.includeTargetSenses.
 			screech.LastDamage.ExcludeCreatureKinds(CreatureKinds.Fiends);

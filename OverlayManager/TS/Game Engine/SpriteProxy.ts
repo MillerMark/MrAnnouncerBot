@@ -5,6 +5,7 @@
 }
 
 class AnimatedElement {
+	name: string;
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond: number = 0;
 	rotation: number;
@@ -28,6 +29,7 @@ class AnimatedElement {
 	lastY: number;
 	verticalThrustOverride: number = undefined;
 	horizontalThrustOverride: number = undefined;
+	onExpire: () => void;
 
 	constructor(public x: number, public y: number, lifeSpanMs: number = -1) {
 		this.velocityX = 0;
@@ -115,12 +117,20 @@ class AnimatedElement {
 			this.expirationDate = performance.now() + Math.round(Math.random() * lifeTimeMs);
 	}
 
-	stillAlive(now: number): boolean {
+	stillAlive(now: number, frameCount: number = 0): boolean {
+		return this.getLifeRemaining(now) >= 0 || !this.okayToDie(frameCount);
+	}
+
+	getLifeRemaining(now: number) {
 		let lifeRemaining: number = 0;
 		if (this.expirationDate) {
 			lifeRemaining = this.expirationDate - now;
 		}
-		return lifeRemaining >= 0;
+		return lifeRemaining;
+	}
+
+	okayToDie(frameCount: number): boolean {
+		return true;
 	}
 
 	getAlpha(now: number): number {
@@ -226,7 +236,10 @@ class AnimatedElement {
 	}
 
 	destroying(): void {
-
+		if (this.name)
+			console.log('destroying this sprite: ' + this.name);
+		if (this.onExpire)
+			this.onExpire();
 	}
 }
 
@@ -238,6 +251,7 @@ class SpriteProxy extends AnimatedElement {
 	systemDrawn: boolean = true;
 	owned: boolean;
 	cropped: boolean;
+	playToEndOnExpire: boolean = false;
 	frameIndex: number;
 	cropTop: number;
 	cropLeft: number;
@@ -245,12 +259,18 @@ class SpriteProxy extends AnimatedElement {
 	cropBottom: number;
 	numFramesDrawn: number = 0;
 	scale: number = 1;
-  lastTimeWeAdvancedTheFrame: number;
+	lastTimeWeAdvancedTheFrame: number;
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
 		super(x, y, lifeSpanMs);
 		this.frameIndex = Math.floor(startingFrameNumber);
 	}
+
+
+	okayToDie(frameCount: number): boolean {
+		return !this.playToEndOnExpire || this.frameIndex >= frameCount;
+	}
+
 
 	cycled(now: number) {
 		this.haveCycledOnce = true;
@@ -289,7 +309,7 @@ class SpriteProxy extends AnimatedElement {
 		}
 
 		if (endBounds != 0) {
-			if (this.frameIndex >= endBounds) {
+			if (this.frameIndex >= endBounds && (!this.expirationDate || this.getLifeRemaining(nowMs) > 0)) {
 				this.frameIndex = startIndex;
 				this.cycled(nowMs);
 			}
@@ -345,6 +365,11 @@ class SpriteProxy extends AnimatedElement {
 	drawBackground(context: CanvasRenderingContext2D, now: number): void {
 		// Descendants can override if they want to draw the background...
 	}
+
+	setScale(scale: number): SpriteProxy {
+		this.scale = scale;
+		return this;
+	}
 }
 
 
@@ -362,12 +387,10 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 		originX: number = 0, originY: number = 0): void {
 		let saveFilter: string = (context as any).filter;
 		this.shiftColor(context, now);
-		try
-		{
+		try {
 			super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
 		}
-		finally
-		{
+		finally {
 			(context as any).filter = saveFilter;
 		}
 	}
@@ -379,8 +402,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 			hueShift = secondsPassed * this.hueShiftPerSecond % 360;
 		}
 
-    (context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
-  }
+		(context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
+	}
 
 	setHueSatBrightness(hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
 		this.hueShift = hueShift;
@@ -390,4 +413,6 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 			this.brightness = brightness;
 		return this;
 	}
+
+
 }

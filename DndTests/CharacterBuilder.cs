@@ -15,21 +15,21 @@ namespace DndTests
 			else
 				elf.name = name;
 
-			elf.raceClass = "Wood Elf Barbarian";
+			elf.race = "Wood Elf Barbarian";
+			elf.AddClass("Barbarian", 1);
 			elf.alignment = "Chaotic Good";
 			elf.baseArmorClass = 12;
 			GenerateRandomAttributes(elf);
 			elf.remainingHitDice = "1 d10";
-			elf.level = 1;
 			elf.inspiration = "";
 
 			elf.initiative = 2;
-			elf.baseSpeed = 30;
+			elf.baseWalkingSpeed = 30;
 			elf.hitPoints = 47;
 			elf.tempHitPoints = 0;
 			elf.maxHitPoints = 55;
 			elf.proficiencyBonus = 2;
-			elf.savingThrowProficiency = Ability.Intelligence | Ability.Charisma;
+			elf.savingThrowProficiency = Ability.intelligence | Ability.charisma;
 			elf.proficientSkills = Skills.acrobatics | Skills.deception | Skills.slightOfHand;
 			elf.deathSaveLife1 = true;
 			//elf.deathSaveLife2 = true;
@@ -63,21 +63,21 @@ namespace DndTests
 				barbarian.name = "Ava";
 			else
 				barbarian.name = name;
-			barbarian.raceClass = "Dragonborn Barbarian";
+			barbarian.race = "Dragonborn";
+			barbarian.AddClass("Barbarian", 1);
 			barbarian.alignment = "Chaotic Evil";
 			barbarian.baseArmorClass = 14;
 			GenerateRandomAttributes(barbarian);
 			barbarian.remainingHitDice = "1 d10";
-			barbarian.level = 1;
 			barbarian.inspiration = "";
 
 			barbarian.initiative = 2;
-			barbarian.baseSpeed = 30;
+			barbarian.baseWalkingSpeed = 30;
 			barbarian.hitPoints = 127;
 			barbarian.tempHitPoints = 3;
 			barbarian.maxHitPoints = 127;
 			barbarian.proficiencyBonus = 2;
-			barbarian.savingThrowProficiency = Ability.Strength | Ability.Dexterity;
+			barbarian.savingThrowProficiency = Ability.strength | Ability.dexterity;
 			barbarian.proficientSkills = Skills.acrobatics | Skills.intimidation | Skills.athletics;
 			barbarian.deathSaveLife1 = true;
 			barbarian.deathSaveLife2 = true;
@@ -98,21 +98,21 @@ namespace DndTests
 			else
 				wizard.name = name;
 			
-			wizard.raceClass = "Human Wizard";
+			wizard.race = "Human";
+			wizard.AddClass("Wizard", 1);
 			wizard.alignment = "Chaotic Neutral";
 			wizard.baseArmorClass = 10;
 			GenerateRandomAttributes(wizard);
 			wizard.remainingHitDice = "1 d8";
-			wizard.level = 1;
 			wizard.inspiration = "";
 
 			wizard.initiative = 2;
-			wizard.baseSpeed = 30;
+			wizard.baseWalkingSpeed = 30;
 			wizard.hitPoints = 33;
 			wizard.tempHitPoints = 0;
 			wizard.maxHitPoints = 127;
 			wizard.proficiencyBonus = 2;
-			wizard.savingThrowProficiency = Ability.Intelligence | Ability.Charisma;
+			wizard.savingThrowProficiency = Ability.intelligence | Ability.charisma;
 			wizard.proficientSkills = Skills.arcana | Skills.slightOfHand | Skills.deception;
 			wizard.Equip(Weapon.buildShortSword());
 			wizard.Pack(Weapon.buildBlowgun());
@@ -129,21 +129,21 @@ namespace DndTests
 			else
 				druid.name = name;
 			
-			druid.raceClass = "Wood Elf Druid";
+			druid.race = "Wood Elf";
+			druid.AddClass("Druid", 1);
 			druid.alignment = "Lawful Good";
 			druid.baseArmorClass = 10;
 			GenerateRandomAttributes(druid);
 			druid.remainingHitDice = "1 d8";
-			druid.level = 1;
 			druid.inspiration = "";
 
 			druid.initiative = 2;
-			druid.baseSpeed = 30;
+			druid.baseWalkingSpeed = 30;
 			druid.hitPoints = 27;
 			druid.tempHitPoints = 0;
 			druid.maxHitPoints = 44;
 			druid.proficiencyBonus = 2;
-			druid.savingThrowProficiency = Ability.Wisdom | Ability.Dexterity;
+			druid.savingThrowProficiency = Ability.wisdom | Ability.dexterity;
 			druid.proficientSkills = Skills.animalHandling | Skills.nature | Skills.medicine;
 
 			return druid;

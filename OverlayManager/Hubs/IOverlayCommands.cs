@@ -20,7 +20,9 @@ namespace OverlayManager.Hubs
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
 		Task ChangePlayerHealth(string playerData);
 		Task AddWindup(string windupData);
+		Task CastSpell(string spellData);
 		Task ClearWindup(string windupName);
+		Task MoveFred(string movement);
 		Task FocusItem(int playerID, int pageID, string itemID);
 		Task UnfocusItem(int playerID, int pageID, string itemID);
 		Task TriggerEffect(string effectData);

@@ -801,24 +801,32 @@ class CharacterStatsScroll extends WorldObject {
 	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
 		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
 
-		if (pageID === -1)
-			pageID = this._page;
+		let okayToChangePage: boolean = pageID !== -1;
+		let newPageId: number = pageID;
+		if (newPageId === -1)
+			newPageId = this._page;
 
 		let changedActiveCharacter: boolean = false;
 		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
-			this.setActiveCharacter(playerID);
-			changedActiveCharacter = true;
 			this.clearEmphasis();
-			this._page = pageID;
-			this.state = ScrollState.none;
-			this.open(performance.now());
+			if (okayToChangePage)
+			{
+				this.setActiveCharacter(playerID);
+				changedActiveCharacter = true;
+				this._page = newPageId;
+				this.state = ScrollState.none;
+				this.open(performance.now());
+			}
 		}
-		else if (this.page != pageID) {
+		else if (this.page != newPageId) {
 			this.clearEmphasis();
 
-			this.state = ScrollState.none;
-			this.page = pageID;
-			this.open(performance.now());
+			if (okayToChangePage)
+			{
+				this.state = ScrollState.none;
+				this.page = newPageId;
+				this.open(performance.now());
+			}
 		}
 
 		if (playerData != '') {
@@ -837,18 +845,33 @@ class CharacterStatsScroll extends WorldObject {
 		}
 	}
 
+	getCharacter(playerID: number): Character {
+		for (var i = 0; i < this.characters.length; i++) {
+			let thisCharacter: Character = this.characters[i];
+			if (thisCharacter.playerID == playerID) {
+				return thisCharacter;
+			}
+		}
+		return null;
+	}
+
 
 	updatePlayerData(playerData: string): Character {
 		let sentChar: any = JSON.parse(playerData);
-		this.setActiveCharacter(sentChar.playerID);
-
-		if (!this.activeCharacter) {
-			console.error('No active character: ' + this.activeCharacter);
-			return;
+		let character: Character = this.getCharacter(sentChar.playerID);
+		if (character != null) {
+			character.copyAttributesFrom(sentChar);
 		}
+		return character;
+		//this.setActiveCharacter(sentChar.playerID);
 
-		this.activeCharacter.copyAttributesFrom(sentChar);
-		return this.activeCharacter;
+		//if (!this.activeCharacter) {
+		//	console.error('No active character: ' + this.activeCharacter);
+		//	return;
+		//}
+
+		// this.activeCharacter.copyAttributesFrom(sentChar);
+		//return this.activeCharacter;
 	}
 
 	readonly fadeTime: number = 300;

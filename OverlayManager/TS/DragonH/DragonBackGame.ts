@@ -5,11 +5,20 @@
 }
 
 class DragonBackGame extends DragonGame {
+	readonly clockMargin: number = 0;
+	readonly clockBottomY: number = screenHeight; // 229
+	readonly clockScale: number = 0.84;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
 	shouldDrawCenterCrossHairs: boolean = false;
+	clock: Sprites;
+	clockPanel: Sprites;
 	lightning: Sprites;
+	fireWall: Sprites;
+	dndClock: SpriteProxy;
+	dndClockPanel: SpriteProxy;
+	dndTimeStr: string;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
   
@@ -27,7 +36,7 @@ class DragonBackGame extends DragonGame {
 	playerChanged(playerID: number, pageID: number, playerData: string): void {
 		super.playerChanged(playerID, pageID, playerData);
 		if (this.characterStatsScroll.playerDataChanged(playerID, pageID, playerData)) {
-			if (this.characterStatsScroll.activeCharacter) {
+			if (pageID !== -1 && this.characterStatsScroll.activeCharacter) {
 				this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
 			}
 		}
@@ -37,6 +46,126 @@ class DragonBackGame extends DragonGame {
 		//this.characterStatsScroll.changePlayerHealth(playerData);
 	}
 
+	exitingCombat() {
+		this.dndClock.frameIndex = 0;
+		this.dndClockPanel.frameIndex = 0;
+		this.fireWall.sprites = [];
+		this.createFireBallBehindClock(200);
+	}
+
+	enteringCombat() {
+		this.dndClock.frameIndex = 1;
+		this.dndClockPanel.frameIndex = 1;
+		this.createFireWallBehindClock();
+		this.createFireBallBehindClock(330);
+	}
+
+	private getClockX(): number {
+		return screenWidth - this.clockPanel.originX - this.clockMargin;
+	}
+
+	private drawTime(context: CanvasRenderingContext2D) {
+		if (!this.dndTimeStr)
+			return;
+
+		const horizontalMargin: number = 10;
+		const verticalMargin: number = 15;
+		const textHeight: number = 28;
+		context.font = textHeight + "px Baskerville Old Face";
+		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
+		let boxHeight: number = textHeight + 2 * verticalMargin;
+		let centerX: number = screenWidth - this.clockPanel.originX - this.clockMargin;
+		let centerY: number = this.clockBottomY - textHeight / 2 - verticalMargin;
+		//context.fillStyle = "#3b3581";
+		//context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
+		if (this.inCombat)
+			context.fillStyle = "#500506";
+		else
+			context.fillStyle = "#0b0650";
+		context.textAlign = "center";
+		context.textBaseline = "middle";
+		context.fillText(this.dndTimeStr, centerX, centerY);
+	}
+
+	private createFireBallBehindClock(hue: number): any {
+		let x: number;
+		let y: number;
+		x = this.getClockX() - 90;
+		y = this.clockBottomY - this.clockPanel.originY;
+		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
+		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.dragonBackSounds.safePlayMp3('HeavyPoof');
+	}
+
+	private createFireWallBehindClock() {
+		const displayMargin: number = 16;
+		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.clockPanel.originY * 2 + displayMargin);
+		fireWall.scale = 0.6 * this.clockScale;
+		fireWall.opacity = 0.8;
+		fireWall.fadeOutTime = 400;
+		this.dragonBackSounds.safePlayMp3('FlameOn');
+	}
+
+	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
+		let degreesToMove: number = targetRotation - sprite.rotation;
+		if (degreesToMove < 0) {
+			degreesToMove += 360;
+		}
+
+		return degreesToMove;
+	}
+
+	updateClock(clockData: string): void {
+		let dto: any = JSON.parse(clockData);
+		this.inCombat = dto.InCombat;
+		this.dndTimeStr = dto.Time;
+		let fullSpins: number = dto.FullSpins;
+		let afterSpinMp3: string = dto.AfterSpinMp3;
+
+		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.dndClock);
+		let timeToRotate: number;
+		if (degreesToMove < 1) {
+			if (fullSpins >= 1) {
+				degreesToMove = 360;
+				timeToRotate = 2600;
+				this.dragonBackSounds.safePlayMp3('Gear2_6');
+			}
+			else
+				timeToRotate = 250;
+		}
+		else if (degreesToMove < 10) {
+			timeToRotate = 150;
+			this.dragonBackSounds.safePlayMp3('Gear0_2');
+		}
+		else if (degreesToMove < 20) {
+			timeToRotate = 250;
+			this.dragonBackSounds.safePlayMp3('Gear0_25');
+		}
+		else if (degreesToMove < 45) {
+			timeToRotate = 500;
+			this.dragonBackSounds.safePlayMp3('Gear0_5');
+		}
+		else if (degreesToMove < 90) {
+			timeToRotate = 1000;
+			this.dragonBackSounds.safePlayMp3('Gear1_0');
+		}
+		else if (degreesToMove < 180) {
+			timeToRotate = 1800;
+			this.dragonBackSounds.safePlayMp3('Gear1_8');
+		}
+		else {
+			timeToRotate = 2600;
+			this.dragonBackSounds.safePlayMp3('Gear2_6');
+		}
+
+		if (afterSpinMp3) {
+			this.dragonBackSounds.playMp3In(timeToRotate + 500, `TimeAmbiance/${afterSpinMp3}`);
+		}
+
+		this.dndClock.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
+	}
+
 	update(timestamp: number) {
 		this.updateGravity();
 		super.update(timestamp);
@@ -44,6 +173,8 @@ class DragonBackGame extends DragonGame {
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
 		super.updateScreen(context, now);
+
+		this.drawTime(context);
 
 		//backgroundBanner.draw(myContext, 0, 0);
 
@@ -57,7 +188,6 @@ class DragonBackGame extends DragonGame {
 
 	playWindupSound(soundFileName: string): void {
 		//this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
-		this.dragonBackSounds.safePlayMp3('Windups/' + soundFileName);
 	}
 
 	initialize() {
@@ -69,7 +199,7 @@ class DragonBackGame extends DragonGame {
 		this.lightning.name = 'Lightning';
 		this.lightning.originX = 106;
 		this.lightning.originY = 540;
-		this.spellWindupEffects.add(this.lightning);
+		this.allWindupEffects.add(this.lightning);
 		
 		Folders.assets = 'GameDev/Assets/DroneGame/';
 
@@ -130,16 +260,43 @@ class DragonBackGame extends DragonGame {
 
 		super.loadResources();
 
-
 		this.characterStatsScroll.loadResources();
 
-		Folders.assets = 'GameDev/Assets/DroneGame/';
-
+		//Folders.assets = 'GameDev/Assets/DroneGame/';
 		this.loadDragonAssets();
+
+		Folders.assets = 'GameDev/Assets/DragonH/';
+		this.fireWall = new Sprites('FireWall/FireWall', 121, fps20, AnimationStyle.Loop, true);
+		this.fireWall.name = 'FireWall';
+		this.fireWall.originX = 300;
+		this.fireWall.originY = 300;
+
 
 		Part.loadSprites = true;
 
 		//this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
+
+		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
+		this.clockPanel.name = 'ClockPanel';
+		this.clockPanel.originX = 278;
+		this.clockPanel.originY = 37;
+
+		let clockX: number = this.getClockX();
+		let clockY: number = this.clockBottomY - 30;
+
+		this.dndClockPanel = this.clockPanel.add(clockX, clockY).setScale(this.clockScale);
+
+		this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
+		this.clock.name = 'Clock';
+		this.clock.originX = 247;
+		this.clock.originY = 251;
+
+		this.dndClock = this.clock.add(clockX, clockY).setScale(this.clockScale);
+
+
+		this.backLayerEffects.add(this.clock);
+		this.backLayerEffects.add(this.fireWall);
+		this.backLayerEffects.add(this.clockPanel);
 	}
 
 	buildTestGoldParticle(): any {

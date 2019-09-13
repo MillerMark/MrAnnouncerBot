@@ -28,7 +28,7 @@ namespace DndCore
 		NameHeadshot,
 		Perception,
 		ProficiencyBonus,
-		RaceClass,
+		Race,
 		SavingCharisma,
 		SavingConstitution,
 		SavingDexterity,
@@ -53,7 +53,7 @@ namespace DndCore
 		SkillsSlightOfHand,
 		SkillsStealth,
 		SkillsSurvival,
-		Speed,
+		WalkingSpeed,
 		Strength,
 		Weight,
 		Wisdom

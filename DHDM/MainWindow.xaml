@@ -8,7 +8,7 @@
         mc:Ignorable="d"
 		xmlns:dh="clr-namespace:DndUI"
 		xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
-		Title="MainWindow" Height="938.188" Width="2419.675" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+		Title="MainWindow" Height="938.188" Width="2000.227" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
 	<Window.Resources>
 		<Style TargetType="{x:Type RadioButton}" x:Key="VantageStyle"  >
 			<Setter Property="Template">
@@ -164,10 +164,10 @@
 					</Button>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
-				<TabItem Header="Dice" x:Name="tbDice">
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="984" SelectionChanged="TabControl_SelectionChanged">
+				<TabItem Header="Play" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
-						<StackPanel x:Name="spActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+						<WrapPanel x:Name="wpActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
 								<Button >
@@ -175,8 +175,8 @@
 								</Button>
 								<Rectangle Height="3" Fill="Red"></Rectangle>
 							</StackPanel>
-						</StackPanel>
-						<StackPanel x:Name="spBonusActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+						</WrapPanel>
+						<StackPanel x:Name="spBonusActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Bonus Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
 								<Button >
@@ -185,7 +185,7 @@
 								<Rectangle Height="3" Fill="Red"></Rectangle>
 							</StackPanel>
 						</StackPanel>
-						<StackPanel x:Name="spReactionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+						<StackPanel x:Name="spReactionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Reactions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
 								<Button >
@@ -194,7 +194,7 @@
 								<Rectangle Height="3" Fill="Red"></Rectangle>
 							</StackPanel>
 						</StackPanel>
-						<StackPanel x:Name="spSpecialActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="908">
+						<StackPanel x:Name="spSpecialActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Special:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
 								<Button >
@@ -362,6 +362,36 @@
 							
 							
 						</StackPanel>
+						<StackPanel x:Name="spSpellSlot" Orientation="Horizontal" Margin="0, 0, 0, 8">
+							<TextBlock Text="SpellSlot: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+							<TextBox x:Name="tbxSpellSlot" MinWidth="50" FontSize="22">
+								1
+							</TextBox>
+							<Button x:Name="btnSpellSlotCantrip" Tag="0" MinWidth="30" Click="BtnSpellSlot_Click">
+								Cantrip
+							</Button>
+							<Button x:Name="btnSpellSlot1" Tag="1" MinWidth="30" Click="BtnSpellSlot_Click">
+								1
+							</Button>
+							<Button x:Name="btnSpellSlot2" Tag="2" MinWidth="30" Click="BtnSpellSlot_Click">
+								2
+							</Button>
+							<Button x:Name="btnSpellSlot3" Tag="3" MinWidth="30" Click="BtnSpellSlot_Click">
+								3
+							</Button>
+							<Button x:Name="btnSpellSlot4" Tag="4" MinWidth="30" Click="BtnSpellSlot_Click">
+								4
+							</Button>
+							<Button x:Name="btnSpellSlot5" Tag="5" MinWidth="30" Click="BtnSpellSlot_Click">
+								5
+							</Button>
+							<Button x:Name="btnSpellSlot6" Tag="6" MinWidth="30" Click="BtnSpellSlot_Click">
+								6
+							</Button>
+							<Button x:Name="btnSpellSlot7" Tag="7" MinWidth="30" Click="BtnSpellSlot_Click">
+								7
+							</Button>
+						</StackPanel>
 						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
 							Use Magic
 						</CheckBox>
@@ -497,8 +527,18 @@
 								<ComboBoxItem>Thunder</ComboBoxItem>
 							</ComboBox>
 							<TextBlock Text="MinDamage:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
-							<TextBox x:Name="tbxMinDamage" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
+							<TextBox x:Name="tbxMinDamage" MinWidth="50" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
 								0
+							</TextBox>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 3, 0, 0">
+							<TextBlock Text="Additional Dice on Hit:" Width="Auto" Height="Auto" Margin="22, 2, 0, 0"/>
+							<TextBox x:Name="tbxAddDiceOnHit" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+
+							</TextBox>
+							<TextBlock Text="Message:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
+							<TextBox x:Name="tbxMessageAddDiceOnHit" MinWidth="280" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+
 							</TextBox>
 						</StackPanel>
 						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
@@ -575,21 +615,6 @@
 								<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 							</Grid>
 						</Button>
-					</StackPanel>
-				</TabItem>
-				<TabItem Header="Windup Test">
-					<StackPanel x:Name="spWrapTest">
-						<TextBox x:Name="tbxData" Height="200" TextWrapping="Wrap">
-							Enter JSON Here
-						</TextBox>
-						<StackPanel Orientation="Horizontal">
-							<Button x:Name="btnSendWindup" Click="BtnSendWindup_Click" MaxWidth="140" MinHeight="30" Margin="10" Padding="8" >
-								Send Windup
-							</Button>
-							<Button x:Name="btnClearWindups" Click="BtnClearWindups_Click" MaxWidth="140" MinHeight="30" Margin="10" Padding="8" >
-								Clear Windups
-							</Button>
-						</StackPanel>
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="Players">

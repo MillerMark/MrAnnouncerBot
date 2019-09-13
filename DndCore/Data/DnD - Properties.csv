@@ -1,0 +1,8 @@
+Name,Expression
+BarbarianRageDamage,"Table(""Barbarian"", ""RageDamage"", ""Level"", Level(""Barbarian""))"
+InRage,Get(_rage) == true
+AttackIsMelee,attackingType == Melee || attackingType == MartialMelee
+AttackIsRange,attackingType == Range || attackingType == MartialRange
+StrikingWithWeapon,AttackIsMelee || AttackIsRange
+WieldingMeleeWeaponInOneHand,WeaponsInHand == 1 && OneHanded && AttackIsMelee
+InRecklessAttack,Get(_recklessAttack) == true

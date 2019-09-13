@@ -4,6 +4,7 @@ using System.ComponentModel;
 
 namespace DndCore
 {
+	// TODO: Replace this with Weapons enum everywhere and move over Descriptions.
 	public enum WeaponCategories
 	{
 		None,

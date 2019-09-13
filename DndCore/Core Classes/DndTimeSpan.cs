@@ -8,6 +8,19 @@ namespace DndCore
 	{
 		public static readonly DndTimeSpan ShortRest = DndTimeSpan.FromHours(2);
 		public static readonly DndTimeSpan LongRest = DndTimeSpan.FromHours(8);
+
+		public static bool operator ==(DndTimeSpan left, DndTimeSpan right)
+		{
+			if ((object)left == null)
+				return (object)right == null;
+			else
+				return left.Equals(right);
+		}
+		public static bool operator !=(DndTimeSpan left, DndTimeSpan right)
+		{
+			return !(left == right);
+		}
+
 		public DndTimeSpan(TimeMeasure timeMeasure, int count)
 		{
 			Count = count;
@@ -21,6 +34,11 @@ namespace DndCore
 		public static DndTimeSpan FromActions(int actionCount)
 		{
 			return new DndTimeSpan(TimeMeasure.actions, actionCount);
+		}
+
+		public static DndTimeSpan FromBonusActions(int bonusActionCount)
+		{
+			return new DndTimeSpan(TimeMeasure.bonusActions, bonusActionCount);
 		}
 
 		public static DndTimeSpan FromDays(int days)
@@ -99,9 +117,80 @@ namespace DndCore
 			return TimeMeasure == TimeMeasure.actions && Count == int.MaxValue;
 		}
 
+		public bool IsUnknown()
+		{
+			return TimeMeasure == TimeMeasure.actions && Count == int.MinValue;
+		}
+
+		public bool IsZero()
+		{
+			return TimeMeasure == TimeMeasure.instant || Count == 0;
+		}
+		
+		/// <summary>
+		/// Returns true if the duration is known and has a finite positive value.
+		/// </summary>
+		/// <returns></returns>
+		public bool HasValue()
+		{
+			return !IsForever() && !IsUnknown() && !IsZero() && Count > 0;
+		}
+		
+		public static DndTimeSpan FromString(string spanStr)
+		{
+			string spanStrLowerCase = spanStr.ToLower();
+			if (spanStrLowerCase == "short rest")
+				return ShortRest;
+			if (spanStrLowerCase == "long rest")
+				return LongRest;
+			return Forever;
+		}
+
+		public static DndTimeSpan FromDurationStr(string durationStr)
+		{
+			string duration = durationStr.ToLower();
+
+			if (duration == "short rest")
+				return ShortRest;
+
+			if (duration == "long rest")
+				return LongRest;
+
+			if (duration == "instantaneous")
+				return Zero;
+
+			if (duration.EndsWith("bonus action"))
+				return OneBonusAction;
+
+			if (duration.EndsWith(" action"))
+				return OneAction;
+
+			if (duration.IndexOf("reaction") > 0)
+				return OneReaction;
+
+			if (duration.IndexOf("minute") > 0)
+				return FromMinutes(duration.GetFirstInt());
+
+			if (duration.IndexOf("hour") > 0)
+				return FromHours(duration.GetFirstInt());
+
+			if (duration.IndexOf("day") > 0)
+				return FromDays(duration.GetFirstInt());
+
+			if (duration.IndexOf("round") > 0)
+				return FromRounds(duration.GetFirstInt());
+
+			return Zero;
+
+		}
+
 		public static readonly DndTimeSpan Zero = FromActions(0);
+		public static readonly DndTimeSpan OneAction = FromActions(1);
+		public static readonly DndTimeSpan OneBonusAction = new DndTimeSpan(TimeMeasure.bonusActions, 1);
+		public static readonly DndTimeSpan OneReaction = new DndTimeSpan(TimeMeasure.reaction, 1);
 		public static readonly DndTimeSpan Never = Zero;
 		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
+		public static readonly DndTimeSpan Unknown = FromActions(int.MinValue);
 		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
 	}
 }

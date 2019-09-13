@@ -279,8 +279,10 @@
     if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
       return;
 
-		var frameCount = this.baseAnimation.frameCount;
-    var returnFrameIndex = this.returnFrameIndex;
+		let startOffset: number = 0;
+		let frameCount = this.baseAnimation.frameCount;
+		let returnFrameIndex = this.returnFrameIndex;
+		startOffset = returnFrameIndex;
 		if (this.animationStyle == AnimationStyle.SequentialStop) {
 			if (this.baseAnimation.reverse) {
 				returnFrameIndex = 0;
@@ -291,10 +293,18 @@
 		}
 
     for (var i = this.sprites.length - 1; i >= 0; i--) {
-      var sprite: SpriteProxy = this.sprites[i];
+      let sprite: SpriteProxy = this.sprites[i];
 
-      if (this.segmentSize > 0) {
-        let startIndex: number = sprite.frameIndex - sprite.frameIndex % this.segmentSize;
+			if (this.segmentSize > 0 && sprite.frameIndex >= startOffset) {
+				let startIndex: number = sprite.frameIndex - (sprite.frameIndex - startOffset) % this.segmentSize;
+
+				if (startIndex >= 73) {
+					console.error('Error');
+				}
+				//if (startIndex > startOffset + this.segmentSize) {
+				//	startIndex = startOffset;
+				//}
+
         let endBounds: number = startIndex + this.segmentSize;
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);
       }
@@ -313,11 +323,11 @@
 
   drawCropped(context: CanvasRenderingContext2D, now: number, dx: number, dy: number, sx: number, sy: number, sw: number, sh: number, dw: number, dh: number) {
     this.advanceFrames(now);
-    let self: Sprites = this;
-    this.sprites.forEach(function (sprite: SpriteProxy) {
+		let self: Sprites = this;
+		this.sprites.forEach(function (sprite: SpriteProxy) {
       context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
-      if (sprite.stillAlive(now) && sprite.systemDrawn) {
+			if (sprite.stillAlive(now, self.baseAnimation.frameCount) && sprite.systemDrawn) {
         if (now >= sprite.timeStart) {
           //sprite.drawBackground(context, now);
           self.baseAnimation.drawCroppedByIndex(context, dx, dy, sprite.frameIndex, sx, sy, sw, sh, dw, dh);
@@ -347,7 +357,7 @@
     this.sprites.forEach(function (sprite: SpriteProxy) {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
-      if (sprite.stillAlive(now) && sprite.systemDrawn) {
+			if (sprite.stillAlive(now, self.baseAnimation.frameCount) && sprite.systemDrawn) {
         if (now >= sprite.timeStart) {
           sprite.drawBackground(context, now);
           sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight, self.originX, self.originY);
@@ -365,7 +375,7 @@
     for (var i = this.sprites.length - 1; i >= 0; i--) {
       let sprite: SpriteProxy = this.sprites[i];
       if (sprite.expirationDate) {
-        if (!sprite.stillAlive(now)) {
+				if (!sprite.stillAlive(now, this.baseAnimation.frameCount)) {
           sprite.destroying();
           sprite.removing();
 					if (!sprite.isRemoving) {

@@ -26,8 +26,6 @@ namespace DHDM
 
 		public bool ListensTo(string userId)
 		{
-			if (userId == "163482168")
-				return true;
 			return userIds.Contains(userId);
 		}
 

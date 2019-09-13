@@ -73,16 +73,16 @@ namespace DndTests
 
 			testWizard.baseDexterity = initialDexterity;
 			testWizard.baseStrength = initialStrength;
-			testWizard.baseSpeed = initialSpeed;
+			testWizard.baseWalkingSpeed = initialSpeed;
 			Assert.AreEqual(VantageKind.Normal, testWizard.GetSkillCheckDice(Skills.athletics));
 			Assert.AreEqual(VantageKind.Normal, testWizard.GetSkillCheckDice(Skills.acrobatics));
 			Assert.AreEqual(initialDexterity, testWizard.Dexterity);
 			Assert.AreEqual(initialStrength, testWizard.Strength);
-			Assert.AreEqual(initialSpeed, testWizard.Speed);
+			Assert.AreEqual(initialSpeed, testWizard.WalkingSpeed);
 			testWizard.Equip(ringOfLeaping);
 			Assert.AreEqual(initialDexterity + 1, testWizard.Dexterity);
 			Assert.AreEqual(initialStrength + 1, testWizard.Strength);
-			Assert.AreEqual(initialSpeed + 5, testWizard.Speed);
+			Assert.AreEqual(initialSpeed + 5, testWizard.WalkingSpeed);
 			Assert.AreEqual(VantageKind.Advantage, testWizard.GetSkillCheckDice(Skills.athletics));
 			Assert.AreEqual(VantageKind.Advantage, testWizard.GetSkillCheckDice(Skills.acrobatics));
 
@@ -92,7 +92,7 @@ namespace DndTests
 			Assert.AreEqual(VantageKind.Normal, testWizard.GetSkillCheckDice(Skills.acrobatics));
 			Assert.AreEqual(initialDexterity, testWizard.Dexterity);
 			Assert.AreEqual(initialStrength, testWizard.Strength);
-			Assert.AreEqual(initialSpeed, testWizard.Speed);
+			Assert.AreEqual(initialSpeed, testWizard.WalkingSpeed);
 		}
 
 		[TestMethod]

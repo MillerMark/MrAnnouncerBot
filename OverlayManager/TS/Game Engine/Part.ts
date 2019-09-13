@@ -6,6 +6,7 @@ const fps30: number = 33;
 const fps20: number = 50;
 const fps25: number = 40;
 const fps15: number = 66.66666667;
+const fps4: number = 250;
 
 var globalBypassFrameSkip: boolean = false;
 

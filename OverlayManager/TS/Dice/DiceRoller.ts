@@ -21,6 +21,7 @@ var randomDiceThrowIntervalId: number = 0;
 var damageModifierThisRoll: number = 0;
 var healthModifierThisRoll: number = 0;
 var extraModifierThisRoll: number = 0;
+var additionalDieRollMessage: string = '';
 
 enum DieEffect {
 	Ring,
@@ -403,7 +404,8 @@ function movePointAtAngle(point: Vector, angleInDegrees: number, distance): Vect
 }
 
 function trailsSparks(diceRollData: DiceRollData): boolean {
-	return diceRollData.type == DiceRollType.WildMagic || diceRollData.type == DiceRollType.BendLuckAdd || diceRollData.type == DiceRollType.BendLuckSubtract;
+	// mkm diceRollData.type == DiceRollType.WildMagic || 
+	return diceRollData.type == DiceRollType.BendLuckAdd || diceRollData.type == DiceRollType.BendLuckSubtract;
 }
 
 function handleDieCollision(e: any) {
@@ -434,7 +436,7 @@ function handleDieCollision(e: any) {
 					let pos: Vector = getScreenCoordinates(e.target.parentDie.getObject());
 					if (pos)
 						e.target.parentDie.sparks.push(diceLayer.smallSpark(pos.x, pos.y));
-					diceSounds.playRandom('Dice/Zap', 4);
+					diceSounds.safePlayMp3('Dice/Zap[4]');
 				}
 			}
 		}
@@ -458,21 +460,53 @@ function dieFirstHitsFloor(die: any) {
 		let percentageOnDie: number = 0.7;
 		let percentageOffDie: number = 1 - percentageOnDie;
 
-		let mainEffectFunc: any;
-		switch (diceRollData.onFirstContactEffect) {
-			case SpriteType.SmokeExplosion:
-				mainEffectFunc = diceLayer.addSneakAttack.bind(diceLayer);
-				break;
-		}
-		if (mainEffectFunc) {
+
+		if (diceRollData.onFirstContactEffect) {
 			let pos: Vector = getScreenCoordinates(die.getObject());
-			if (pos)
-				mainEffectFunc(pos.x * percentageOnDie + percentageOffDie * 960, pos.y * percentageOnDie + percentageOffDie * 540, diceLayer.activePlayerHueShift);
+
+			var x: number = pos.x * percentageOnDie + percentageOffDie * 960;
+			var y: number = pos.y * percentageOnDie + percentageOffDie * 540;
+			
+			diceLayer.AddEffect(diceRollData.onFirstContactEffect, x, y, diceRollData.effectScale,
+				diceRollData.effectHueShift, diceRollData.effectSaturation,
+				diceRollData.effectBrightness, diceRollData.effectRotation);
 		}
 	}
 }
 
-function positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
+function positionTrailingSprite(die: any, trailingEffect: TrailingEffect, index: number = 0): SpriteProxy {
+	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration || die.rollType == DieCountsAs.bentLuck) {
+		let pos: Vector = getScreenCoordinates(die.getObject());
+		if (!pos)
+			return null;
+		if (die.lastPos.length <= index)
+			die.lastPos.push(new Vector(-100, -100));
+		let deltaX: number = pos.x - die.lastPos[index].x;
+		let deltaY: number = pos.y - die.lastPos[index].y;
+
+		//` <formula 2; \sqrt{deltaX^2 + deltaY^2}>
+		let distanceSinceLastPoint: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+
+		// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
+		if (distanceSinceLastPoint > trailingEffect.MinForwardDistanceBetweenPrints) {
+
+			//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
+			let angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
+			var angleToMovePawPrint: number = 90;
+			if (die.lastPrintOnLeft)
+				angleToMovePawPrint = -90;
+			die.lastPrintOnLeft = !die.lastPrintOnLeft;
+			let printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints);
+			let spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle);
+			die.lastPos[index] = pos;
+			return spriteProxy;
+		}
+	}
+	return null;
+}
+
+function old_positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
 	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration || die.rollType == DieCountsAs.bentLuck) {
 		let pos: Vector = getScreenCoordinates(die.getObject());
 		if (!pos)
@@ -492,11 +526,11 @@ function positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, a
 			//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
 			let angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
 			var angleToMovePawPrint: number = 90;
-			if (die.lastPawPrintOnLeft)
+			if (die.lastPrintOnLeft)
 				angleToMovePawPrint = -90;
-			die.lastPawPrintOnLeft = !die.lastPawPrintOnLeft;
-			let pawPrintPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
-			let spriteProxy: SpriteProxy = addPrintFunc(pawPrintPos.x, pawPrintPos.y, angle);
+			die.lastPrintOnLeft = !die.lastPrintOnLeft;
+			let printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
+			let spriteProxy: SpriteProxy = addPrintFunc(printPos.x, printPos.y, angle);
 			//diceLayer.addPawPrint(pawPrintPos.x, pawPrintPos.y, angle);
 			die.lastPos[index] = pos;
 			return spriteProxy;
@@ -657,10 +691,10 @@ function checkAttackBonusRolls() {
 }
 
 function getFirstPlayerId() {
-    let playerID: number = -1;
-    if (diceRollData.playerRollOptions.length > 0)
-        playerID = diceRollData.playerRollOptions[0].PlayerID;
-    return playerID;
+	let playerID: number = -1;
+	if (diceRollData.playerRollOptions.length > 0)
+		playerID = diceRollData.playerRollOptions[0].PlayerID;
+	return playerID;
 }
 
 function checkSkillCheckBonusRolls() {
@@ -861,7 +895,7 @@ function freezeExistingDice() {
 
 			bubble.data = bubbleId;
 			die.attachedSprites.push(bubble);
-			diceSounds.playRandom('ice/Freeze', 5);
+			diceSounds.safePlayMp3('ice/Freeze[5]');
 			die.origins.push(new Vector(diceLayer.freeze.originX, diceLayer.freeze.originY));
 		}
 	}
@@ -883,7 +917,7 @@ function popFrozenDice() {
 
 				die.attachedSprites[j] = diceLayer.addFeezePop(sprite.x, sprite.y, hueShift, 100, 100);
 				die.origins[j] = new Vector(diceLayer.freezePop.originX, diceLayer.freezePop.originY);
-				diceSounds.playRandom('ice/crack', 3);
+				diceSounds.safePlayMp3('ice/crack[3]');
 			}
 		}
 	}
@@ -1466,7 +1500,7 @@ function prepareBaseDie(die: any, throwPower: number, xPositionModifier: number 
 	dieObject.body.addEventListener("collide", handleDieCollision);
 	die.lastPos = [];
 	die.lastPos.push(new Vector(-100, -100));
-	die.lastPawPrintOnLeft = false;
+	die.lastPrintOnLeft = false;
 }
 
 function prepareD10x10Die(die: any, throwPower: number, xPositionModifier: number = 0) {
@@ -1482,6 +1516,7 @@ function prepareD10x01Die(die: any, throwPower: number, xPositionModifier: numbe
 }
 
 function clearBeforeRoll() {
+	additionalDieRollMessage = '';
 	diceLayer.clearResidualEffects();
 	scalingDice = [];
 	specialDice = [];
@@ -1826,7 +1861,7 @@ function updateDieRollSpecialEffects() {
 
 		if (die.rollType == DieCountsAs.inspiration) {
 			const distanceBetweenRipples: number = 80;
-			let ripple: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length);
+			let ripple: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length);
 
 			if (ripple) {
 				ripple.opacity = 0.5;
@@ -1860,35 +1895,45 @@ function updateDieRollSpecialEffects() {
 function addTrailingEffects(die: any, trailingEffects: Array<TrailingEffect>) {
 	for (var j = 0; j < trailingEffects.length; j++) {
 		let trailingEffect: TrailingEffect = trailingEffects[j];
-		let addSpriteFunc: any;
-		if (trailingEffect.Type === SpriteType.PawPrint)
-			addSpriteFunc = diceLayer.addPawPrint.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Raven)
-			addSpriteFunc = diceLayer.addRaven.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Smoke)
-			addSpriteFunc = diceLayer.addPuff.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.SparkTrail)
-			addSpriteFunc = diceLayer.addSparkTrail.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.SmallSparks)
-			addSpriteFunc = diceLayer.smallSpark.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Fangs)
-			addSpriteFunc = diceLayer.addFangs.bind(diceLayer);
-		else if (trailingEffect.Type === SpriteType.Spiral)
-			addSpriteFunc = diceLayer.addSpiral.bind(diceLayer);
-		else
-			continue;
 
-		if (positionTrailingSprite(die, addSpriteFunc, trailingEffect.MinForwardDistanceBetweenPrints,
-			trailingEffect.LeftRightDistanceBetweenPrints, j)) {
+		if (positionTrailingSprite(die, trailingEffect, j)) {
 			if (trailingEffect.OnPrintPlaySound) {
 				if (trailingEffect.intervalBetweenSounds == 0)
-					trailingEffect.intervalBetweenSounds = trailingEffect.MinSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-				if (diceSounds.playRandom(trailingEffect.OnPrintPlaySound, trailingEffect.NumRandomSounds,
-					trailingEffect.intervalBetweenSounds)) {
-					trailingEffect.intervalBetweenSounds = trailingEffect.MinSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+					trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+				if (diceSounds.safePlayMp3(trailingEffect.OnPrintPlaySound, trailingEffect.intervalBetweenSounds)) {
+					trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
 				}
 			}
 		}
+
+		//let addSpriteFunc: any;
+		//if (trailingEffect.Type === SpriteType.PawPrint)
+		//	addSpriteFunc = diceLayer.addPawPrint.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Raven)
+		//	addSpriteFunc = diceLayer.addRaven.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Smoke)
+		//	addSpriteFunc = diceLayer.addSmoke.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.SparkTrail)
+		//	addSpriteFunc = diceLayer.addSparkTrail.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.SmallSparks)
+		//	addSpriteFunc = diceLayer.smallSpark.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Fangs)
+		//	addSpriteFunc = diceLayer.addFangs.bind(diceLayer);
+		//else if (trailingEffect.Type === SpriteType.Spiral)
+		//	addSpriteFunc = diceLayer.addSpiral.bind(diceLayer);
+		//else
+		//	continue;
+
+		//if (positionTrailingSprite(die, addSpriteFunc, trailingEffect.MinForwardDistanceBetweenPrints,
+		//	trailingEffect.LeftRightDistanceBetweenPrints, j)) {
+		//	if (trailingEffect.OnPrintPlaySound) {
+		//		if (trailingEffect.intervalBetweenSounds == 0)
+		//			trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+		//		if (diceSounds.playRandom(trailingEffect.OnPrintPlaySound, trailingEffect.NumRandomSounds, trailingEffect.intervalBetweenSounds)) {
+		//			trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+		//		}
+		//	}
+		//}
 	}
 }
 
@@ -2284,9 +2329,8 @@ function onDiceRollStopped() {
 	//console.log('Dice have stopped rolling!');
 	//diceHaveStoppedRolling(null);
 
-	if (diceRollData.type == DiceRollType.WildMagic) {
-		diceSounds.playRandom('WildMagicFinale/drum', 18);
-	}
+	if (diceRollData.onStopRollingSound)
+		diceSounds.safePlayMp3(diceRollData.onStopRollingSound);
 
 	if (attemptedRollWasSuccessful) {
 		onSuccess();
@@ -2308,6 +2352,7 @@ function onDiceRollStopped() {
 		'skillCheck': diceRollData.skillCheck,
 		'savingThrow': diceRollData.savingThrow,
 		'bonus': totalBonus,
+		'additionalDieRollMessage': additionalDieRollMessage,
 	};
 
 	diceHaveStoppedRolling(JSON.stringify(diceData));
@@ -2409,10 +2454,12 @@ function showSpecialLabels(onlyBonusDice: boolean = false) {
 			8 / Thunder 
 	*/
 
+	let changedMessage: boolean = false;
+
 	if (diceRollData.type == DiceRollType.ChaosBolt) {
 		for (var i = 0; i < dice.length; i++) {
 			let die = dice[i];
-			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true) {
+			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true && die.values == 8) {
 				let topNumber = die.getTopNumber();
 				var message: string = '';
 				switch (topNumber) {
@@ -2450,10 +2497,18 @@ function showSpecialLabels(onlyBonusDice: boolean = false) {
 						break;
 				}
 				if (message) {
+					if (additionalDieRollMessage)
+						additionalDieRollMessage += ', ';
+					else
+						additionalDieRollMessage = '(';
+					changedMessage = true;
+					additionalDieRollMessage += message;
 					diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
 				}
 			}
 		}
+		if (additionalDieRollMessage && changedMessage)
+			additionalDieRollMessage += ')';
 	}
 }
 
@@ -2615,6 +2670,8 @@ function reportRollResults(rollResults: RollResults) {
 	let title: string = '';
 	if (diceRollData.type == DiceRollType.Initiative)
 		title = 'Initiative:';
+	else if (diceRollData.type == DiceRollType.NonCombatInitiative)
+		title = 'Non-combat Initiative:';
 	else if (diceRollData.type == DiceRollType.SkillCheck)
 		title = `${getSkillCheckName()} Check:`;
 	else if (diceRollData.type == DiceRollType.SavingThrow)
@@ -2836,14 +2893,20 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		diceRollData.itsAD20Roll = false;
 		addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, diceRollData.throwPower, xPositionModifier);
 	}
-	else if (diceRollData.type == DiceRollType.Initiative) {
+	else if (diceRollData.type == DiceRollType.Initiative || diceRollData.type == DiceRollType.NonCombatInitiative) {
 		diceRollData.modifier = 0;
 		diceRollData.maxInspirationDiceAllowed = 4;
 
 		diceRollData.itsAD20Roll = true;
 		for (var i = 0; i < diceLayer.players.length; i++) {
 			let player: Character = diceLayer.players[i];
-			addDiceForPlayer(player.playerID, xPositionModifier, player.rollInitiative, player.inspiration);
+			let initiativeBonus: number;
+			if (diceRollData.type == DiceRollType.NonCombatInitiative)
+				initiativeBonus = 0;
+			else
+				initiativeBonus = player.rollInitiative;
+
+			addDiceForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
 		}
 
 		diceRollData.hasMultiPlayerDice = true;
@@ -2905,16 +2968,9 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		console.log('exception on call to DiceManager.prepareValues: ' + ex);
 	}
 
-	if (diceRollData.type == DiceRollType.WildMagic) {
-		diceSounds.safePlayMp3('WildMagicRoll');
+	if (diceRollData.onThrowSound) {
+		diceSounds.safePlayMp3(diceRollData.onThrowSound);
 	}
-	if (diceRollData.isPaladinSmiteAttack) {
-		diceSounds.safePlayMp3('PaladinThunder');
-	}
-	if (diceRollData.isSneakAttack) {
-		diceSounds.safePlayMp3('SneakAttackWhoosh');
-	}
-
 	//startedRoll = true;
 }
 

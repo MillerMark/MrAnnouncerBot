@@ -1,4 +1,10 @@
-﻿enum EmitterShape {
+﻿enum SplatterDirection {
+	None,
+	Left,
+	Right
+}
+
+enum EmitterShape {
 	Circular = 1,
 	Rectangular = 2
 }
@@ -32,17 +38,104 @@ class BloodSprites extends Sprites {
 	}
 }
 
+class Fred {
+	thumbsUp: Sprites;
+	thumbsDown: Sprites;
+	noIdea: Sprites;
+	handsClasped: Sprites;
+	one: Sprites;
+	flipOff: Sprites;
+	fistUp: Sprites;
+	pointRight: Sprites;
+	pointToViewer: Sprites;
+	allAnimations: SpriteCollection;
+	constructor() {
+		
+	}
+
+	loadResources(): any {
+		this.allAnimations = new SpriteCollection();
+		this.thumbsUp = new Sprites('Fred/ThumbsUp/ThumbsUp', 98, fps30, AnimationStyle.Sequential, true);
+		this.thumbsUp.name = 'ThumbsUp';
+		this.thumbsUp.originX = 262;
+		this.thumbsUp.originY = 218;
+
+		this.thumbsDown = new Sprites('Fred/ThumbsDown/ThumbsDown', 103, fps30, AnimationStyle.Sequential, true);
+		this.thumbsDown.name = 'ThumbsDown';
+		this.thumbsDown.originX = 220;
+		this.thumbsDown.originY = 217;
+
+		this.noIdea = new Sprites('Fred/NoIdea/NoIdea', 101, fps30, AnimationStyle.Sequential, true);
+		this.noIdea.name = 'NoIdea';
+		this.noIdea.originX = 220;
+		this.noIdea.originY = 247;
+
+		this.handsClasped = new Sprites('Fred/HandsClasped/HandsClasped', 171, fps30, AnimationStyle.Sequential, true);
+		this.handsClasped.name = 'HandsClasped';
+		this.handsClasped.originX = 244;
+		this.handsClasped.originY = 158;
+
+		this.one = new Sprites('Fred/One/One', 44, fps30, AnimationStyle.Sequential, true);
+		this.one.name = 'One';
+		this.one.originX = 218;
+		this.one.originY = 249;
+
+		this.flipOff = new Sprites('Fred/FlipOff/FlipOff', 47, fps30, AnimationStyle.Sequential, true);
+		this.flipOff.name = 'FlipOff';
+		this.flipOff.originX = 180;
+		this.flipOff.originY = 207;
+
+		this.fistUp = new Sprites('Fred/FistUp/FistUp', 61, fps30, AnimationStyle.Sequential, true);
+		this.fistUp.name = 'FistUp';
+		this.fistUp.originX = 228;
+		this.fistUp.originY = 148;
+
+		this.pointRight = new Sprites('Fred/PointRight/PointRight', 92, fps30, AnimationStyle.Sequential, true);
+		this.pointRight.name = 'PointRight';
+		this.pointRight.originX = 211;
+		this.pointRight.originY = 180;
+
+		this.pointToViewer = new Sprites('Fred/PointToViewer/PointToViewer', 101, fps30, AnimationStyle.Sequential, true);
+		this.pointToViewer.name = 'PointToViewer';
+		this.pointToViewer.originX = 223;
+		this.pointToViewer.originY = 248;
+
+		this.allAnimations.add(this.thumbsUp);
+		this.allAnimations.add(this.thumbsDown);
+		this.allAnimations.add(this.noIdea);
+		this.allAnimations.add(this.handsClasped);
+		this.allAnimations.add(this.one);
+		this.allAnimations.add(this.flipOff);
+		this.allAnimations.add(this.fistUp);
+		this.allAnimations.add(this.pointRight);
+		this.allAnimations.add(this.pointToViewer);
+	}
+
+	draw(context: CanvasRenderingContext2D, now: number): any {
+		this.allAnimations.draw(context, now);
+	}
+
+	playAnimation(animationName: string, playerX: number): void {
+		let sprites: Sprites = this.allAnimations.getSpritesByName(animationName);
+		if (!sprites)
+			return;
+		sprites.add(playerX, 1080);
+	}
+}
+
 class DragonFrontGame extends DragonGame {
+	readonly fullScreenDamageThreshold: number = 15;
+	readonly heavyDamageThreshold: number = 15;
+	readonly mediumDamageThreshold: number = 6;
+	readonly lightDamageThreshold: number = 4;
+
 	layerSuffix: string = 'Front';
-	readonly clockMargin: number = 14;
 	emitter: Emitter;
 	shouldDrawCenterCrossHairs: boolean = false;
 	denseSmoke: Sprites;
-	fireBallBack: Sprites;
-	fireBallFront: Sprites;
+	shield: Sprites;
 	poof: Sprites;
-	clock: Sprites;
-	clockPanel: Sprites;
+	fred: Fred = new Fred();
 	bloodGushA: BloodSprites;	// Totally contained - 903 high.
 	bloodGushB: BloodSprites;  // Full screen, not contained at all - blood escapes top and right edges.
 	bloodGushC: BloodSprites;	// Full screen, not contained at all - blood escapes top and right edges.
@@ -61,9 +154,6 @@ class DragonFrontGame extends DragonGame {
 	fumes: Sprites;
 	allEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
-	dndClock: SpriteProxy;
-	dndClockPanel: SpriteProxy;
-	dndTimeStr: string;
 	dragonFrontSounds: DragonFrontSounds;
 
 	constructor(context: CanvasRenderingContext2D) {
@@ -84,34 +174,11 @@ class DragonFrontGame extends DragonGame {
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
-		this.drawTime(context);
+		this.fred.draw(context, now);
 
 		this.bloodEffects.draw(context, now);
 
 		this.showNameplates(context, now);
-	}
-
-	private drawTime(context: CanvasRenderingContext2D) {
-		if (!this.dndTimeStr)
-			return;
-
-		const horizontalMargin: number = 10;
-		const verticalMargin: number = 15;
-		const textHeight: number = 28;
-		context.font = textHeight + "px Baskerville Old Face";
-		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
-		let boxHeight: number = textHeight + 2 * verticalMargin;
-		let centerX: number = screenWidth - this.clockPanel.originX - this.clockMargin;
-		let centerY: number = screenHeight - textHeight / 2 - verticalMargin;
-		//context.fillStyle = "#3b3581";
-		//context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
-		if (this.inCombat)
-			context.fillStyle = "#500506";
-		else
-			context.fillStyle = "#0b0650";
-		context.textAlign = "center";
-		context.textBaseline = "middle";
-		context.fillText(this.dndTimeStr, centerX, centerY);
 	}
 
 	removeAllGameElements(now: number): void {
@@ -119,9 +186,67 @@ class DragonFrontGame extends DragonGame {
 	}
 
 	initialize() {
+		this.loadWeapons();
 		super.initialize();
 		gravityGames = new GravityGames();
 		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
+	}
+
+	private loadWeapons() {
+		globalBypassFrameSkip = true;
+		Folders.assets = 'GameDev/Assets/DragonH/';
+
+		this.loadGreatSword();
+		this.loadStaff();
+		this.loadBattleAxe();
+		this.loadWarHammer();
+		this.loadLongSword();
+		this.loadJavelin();
+	}
+
+	private loadWarHammer() {
+		const warHammerOriginX: number = 516;
+		const warHammerOriginY: number = 685;
+		this.loadWeapon('WarHammer', 'MagicBackHead', warHammerOriginX, warHammerOriginY);
+		this.loadWeapon('WarHammer', 'Weapon', warHammerOriginX, warHammerOriginY);
+		this.loadWeapon('WarHammer', 'MagicFrontHead', warHammerOriginX, warHammerOriginY);
+		this.loadWeapon('WarHammer', 'MagicHandle', warHammerOriginX, warHammerOriginY);
+	}
+
+	private loadLongSword() {
+		const longSwordOriginX: number = 315;
+		const longSwordOriginY: number = 646;
+		this.loadWeapon('LongSword', 'Weapon', longSwordOriginX, longSwordOriginY);
+		this.loadWeapon('LongSword', 'Magic', longSwordOriginX, longSwordOriginY);
+	}
+
+	private loadJavelin() {
+		const javelinOriginX: number = 426;
+		const javelinOriginY: number = 999;
+		this.loadWeapon('Javelin', 'Weapon', javelinOriginX, javelinOriginY);
+		this.loadWeapon('Javelin', 'Magic', javelinOriginX, javelinOriginY);
+	}
+
+	private loadStaff() {
+		const staffOriginX: number = 352;
+		const staffOriginY: number = 744;
+		this.loadWeapon('Staff', 'Magic', staffOriginX, staffOriginY);
+		this.loadWeapon('Staff', 'Weapon', staffOriginX, staffOriginY);
+	}
+
+	private loadBattleAxe() {
+		const battleAxeOriginX: number = 341;
+		const battleAxeOriginY: number = 542;
+		this.loadWeapon('BattleAxe', 'MagicA', battleAxeOriginX, battleAxeOriginY);
+		this.loadWeapon('BattleAxe', 'MagicB', battleAxeOriginX, battleAxeOriginY);
+		this.loadWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY);
+	}
+
+	private loadGreatSword() {
+		const greatSwordOriginX: number = 306;
+		const greatSwordOriginY: number = 837;
+		this.loadWeapon('GreatSword', 'Magic', greatSwordOriginX, greatSwordOriginY);
+		this.loadWeapon('GreatSword', 'Weapon', greatSwordOriginX, greatSwordOriginY);
 	}
 
 	start() {
@@ -137,49 +262,25 @@ class DragonFrontGame extends DragonGame {
 	loadResources(): void {
 		super.loadResources();
 		Folders.assets = 'GameDev/Assets/DragonH/';
+
+		this.fred.loadResources();
+
 		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
 		this.denseSmoke.name = 'DenseSmoke';
 		this.denseSmoke.originX = 309;
 		this.denseSmoke.originY = 723;
 
-		this.fireBallBack = new Sprites('FireBall/Back/BackFireBall', 88, fps30, AnimationStyle.Sequential, true);
-		this.fireBallBack.name = 'FireBallBack';
-		this.fireBallBack.originX = 190;
-		this.fireBallBack.originY = 1080;
-
-		this.fireBallFront = new Sprites('FireBall/Front/FireBallFront', 88, fps30, AnimationStyle.Sequential, true);
-		this.fireBallFront.name = 'FireBallFront';
-		this.fireBallFront.originX = 190;
-		this.fireBallFront.originY = 1080;
+		this.shield = new Sprites('Weapons/Shield/Shield', 88, fps30, AnimationStyle.Sequential, true);
+		this.shield.name = 'Shield';
+		this.shield.originX = 125;
+		this.shield.originY = 445;
 
 		this.poof = new Sprites('Smoke/Poof/Poof', 67, fps30, AnimationStyle.Sequential, true);
 		this.poof.name = 'Puff';
 		this.poof.originX = 229;
 		this.poof.originY = 698;
 
-		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
-		this.clockPanel.name = 'ClockPanel';
-		this.clockPanel.originX = 278;
-		this.clockPanel.originY = 37;
-
-		let clockX: number = this.getClockX();
-		let clockY: number = screenHeight - 30;
-
-		this.dndClockPanel = this.clockPanel.add(clockX, clockY);
-
-		this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
-		this.clock.name = 'Clock';
-		this.clock.originX = 247;
-		this.clock.originY = 251;
-
-		this.fireWall = new Sprites('FireWall/FireWall', 121, fps20, AnimationStyle.Loop, true);
-		this.fireWall.name = 'FireWall';
-		this.fireWall.originX = 300;
-		this.fireWall.originY = 300;
-
-		this.dndClock = this.clock.add(clockX, clockY);
-
-		this.sparkShower = new Sprites('Sparks/Big/BigSparks', 64, fps30, AnimationStyle.Sequential, true);
+		this.sparkShower = new Sprites('Sparks/Big/BigSparks', 63, fps30, AnimationStyle.Sequential, true);
 		this.sparkShower.name = 'SparkShower';
 		this.sparkShower.originX = 443;
 		this.sparkShower.originY = 595;
@@ -264,9 +365,6 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects = new SpriteCollection();
 		this.allEffects.add(this.denseSmoke);
 		this.allEffects.add(this.poof);
-		this.allEffects.add(this.clock);
-		this.allEffects.add(this.fireBallBack);
-		this.allEffects.add(this.fireBallFront);
 		this.allEffects.add(this.stars);
 		this.allEffects.add(this.fumes);
 		this.allEffects.add(this.sparkShower);
@@ -279,12 +377,7 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects.add(this.bloodGushE);
 		this.allEffects.add(this.charmed);
 		this.allEffects.add(this.restrained);
-		this.allEffects.add(this.fireWall);
-		this.allEffects.add(this.clockPanel);
-	}
-
-	private getClockX(): number {
-		return screenWidth - this.clockPanel.originX - this.clockMargin;
+		this.allWindupEffects.add(this.shield);
 	}
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
@@ -455,109 +548,6 @@ class DragonFrontGame extends DragonGame {
 		}
 	}
 
-	private _inCombat: boolean;
-
-	get inCombat(): boolean {
-		return this._inCombat;
-	}
-
-	set inCombat(newValue: boolean) {
-		if (this._inCombat == newValue)
-			return;
-
-
-		this._inCombat = newValue;
-		if (this._inCombat) {
-			this.dndClock.frameIndex = 1;
-			this.dndClockPanel.frameIndex = 1;
-			//this.createFireWallBehindClock();
-			this.createFireBallBehindClock(330);
-		}
-		else {
-			this.dndClock.frameIndex = 0;
-			this.dndClockPanel.frameIndex = 0;
-			this.fireWall.sprites = [];
-			this.createFireBallBehindClock(200);
-		}
-	}
-
-	private createFireBallBehindClock(hue: number): any {
-		let x: number;
-		let y: number;
-		x = this.getClockX() - 90;
-		y = screenHeight - this.clockPanel.originY;
-		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
-		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
-		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue));
-		this.dragonFrontSounds.playHeavyPoof();
-	}
-
-	private createFireWallBehindClock() {
-		const displayMargin: number = 16;
-		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), screenHeight - this.clockPanel.originY * 2 + displayMargin);
-		fireWall.expirationDate = performance.now() + 11000;
-		fireWall.fadeOutTime = 2000;
-		this.dragonFrontSounds.playFlameOn();
-	}
-
-	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
-		let degreesToMove: number = targetRotation - sprite.rotation;
-		if (degreesToMove < 0) {
-			degreesToMove += 360;
-		}
-
-		return degreesToMove;
-	}
-
-	updateClock(clockData: string): void {
-		let dto: any = JSON.parse(clockData);
-		this.inCombat = dto.InCombat;
-		this.dndTimeStr = dto.Time;
-		let fullSpins: number = dto.FullSpins;
-		let afterSpinMp3: string = dto.AfterSpinMp3;
-
-		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.dndClock);
-		let timeToRotate: number;
-		if (degreesToMove < 1) {
-			if (fullSpins >= 1) {
-				degreesToMove = 360;
-				timeToRotate = 2600;
-				this.dragonFrontSounds.playGear2_6();
-			}
-			else
-				timeToRotate = 250;
-		}
-		else if (degreesToMove < 10) {
-			timeToRotate = 150;
-			this.dragonFrontSounds.playGear0_2();
-		}
-		else if (degreesToMove < 20) {
-			timeToRotate = 250;
-			this.dragonFrontSounds.playGear0_25();
-		}
-		else if (degreesToMove < 45) {
-			timeToRotate = 500;
-			this.dragonFrontSounds.playGear0_5();
-		}
-		else if (degreesToMove < 90) {
-			timeToRotate = 1000;
-			this.dragonFrontSounds.playGear1_0();
-		}
-		else if (degreesToMove < 180) {
-			timeToRotate = 1800;
-			this.dragonFrontSounds.playGear1_8();
-		}
-		else {
-			timeToRotate = 2600;
-			this.dragonFrontSounds.playGear2_6();
-		}
-
-		if (afterSpinMp3) {
-			this.dragonFrontSounds.playMp3In(timeToRotate + 500, `TimeAmbiance/${afterSpinMp3}`);
-		}
-
-		this.dndClock.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
-	}
 
 	triggerSoundEffect(dto: any): void {
 		console.log("Playing " + Folders.assets + 'SoundEffects/' + dto.soundFileName);
@@ -717,40 +707,81 @@ class DragonFrontGame extends DragonGame {
 		super.playerChanged(playerID, pageID, playerData);
 	}
 
+	// TODO: Keep these in sync with those MainWindow.xaml.cs
+	readonly Player_Lady: number = 0;
+	readonly Player_Shemo: number = 1;
+	readonly Player_Merkin: number = 2;
+	readonly Player_Ava: number = 3;
+	readonly Player_Fred: number = 4;
+	readonly Player_Willy: number = 5;
+
 	changePlayerHealth(playerHealthDto: string): void {
-		console.log('playerHealth: ' + playerHealthDto);
 		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
 
+		let fredIsTakingDamage: boolean = false;
+		let fredIsGettingHitByBlood: boolean = false;
 		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
-			this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+			let splatterDirection: SplatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+			console.log('splatterDirection: ' + splatterDirection);
+
+			if (playerHealth.PlayerIds[i] === this.Player_Fred) {
+				fredIsTakingDamage = true;
+				console.log('fredIsTakingDamage = true');
+			}
+			else {
+				if (!fredIsTakingDamage && playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
+
+					let absDamage: number = -playerHealth.DamageHealth;
+
+					if (absDamage >= this.heavyDamageThreshold)
+						fredIsGettingHitByBlood = true;
+					else if (absDamage >= this.mediumDamageThreshold) {
+						let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+						if (playerX < 900)
+							fredIsGettingHitByBlood = true;
+					}
+					else if (absDamage >= this.lightDamageThreshold) {
+						let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+						if (playerX < 600)
+							fredIsGettingHitByBlood = true;
+					}
+				}
+			}
+		}
+
+		if (!fredIsTakingDamage && fredIsGettingHitByBlood)
+			setTimeout(this.raiseShield.bind(this), 700);
+	}
+
+	raiseShield() {
+		if (this.shield.sprites.length === 0) {
+			this.shield.add(this.getPlayerX(0), 1080);
+			this.dragonFrontSounds.playMp3In(100, 'Windups/ShieldUp');
 		}
 	}
 
-	private showDamageForPlayer(damageHealth: number, playerId: number) {
+
+	private showDamageForPlayer(damageHealth: number, playerId: number): SplatterDirection {
 		let flipHorizontally: boolean = false;
 		if (Random.chancePercent(50))
 			flipHorizontally = true;
 		let damageHealthSprites: BloodSprites;
 		let scale: number = 1;
 		if (damageHealth < 0) {
-			const fullScreenDamageThreshold: number = 15;
-			const heavyDamageThreshold: number = 15;
-			const mediumDamageThreshold: number = 6;
-
 			let absDamage: number = -damageHealth;
 
-			if (absDamage >= heavyDamageThreshold)
+			if (absDamage >= this.heavyDamageThreshold)
 				this.dragonFrontSounds.playRandom('Damage/Heavy/GushHeavy', 13);
-			else if (absDamage >= mediumDamageThreshold)
+			else if (absDamage >= this.mediumDamageThreshold)
 				this.dragonFrontSounds.playRandom('Damage/Medium/GushMedium', 29);
 			else
 				this.dragonFrontSounds.playRandom('Damage/Light/GushLight', 15);
 
 
-			if (absDamage < fullScreenDamageThreshold) {
+			if (absDamage < this.fullScreenDamageThreshold) {
 				damageHealthSprites = this.getScalableBlood();
 
-				let desiredBloodHeight: number = 1080 * absDamage / fullScreenDamageThreshold;
+				let desiredBloodHeight: number = 1080 * absDamage / this.fullScreenDamageThreshold;
 				scale = desiredBloodHeight / damageHealthSprites.height;
 			}
 			else {
@@ -770,7 +801,7 @@ class DragonFrontGame extends DragonGame {
 			}
 
 			let playerIndex: number = this.getPlayerIndex(playerId);
-			
+
 			let x: number = this.getPlayerX(playerIndex);
 			let center: Vector = new Vector(x, 1080);
 			if (x < 300 && flipHorizontally && Random.chancePercent(70))
@@ -778,7 +809,11 @@ class DragonFrontGame extends DragonGame {
 			let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
 			spritesEffect.scale = scale;
 			spritesEffect.start();
+			if (flipHorizontally)
+				return SplatterDirection.Left;
+			return SplatterDirection.Right;
 		}
+		return SplatterDirection.None;
 	}
 
 	getScalableBlood(): BloodSprites {
@@ -792,13 +827,18 @@ class DragonFrontGame extends DragonGame {
 			return this.bloodGushE;
 	}
 
-	showNameplate(context: CanvasRenderingContext2D, player: Character, playerID: number, now: number) {
+	updateClock(clockData: string): void {
+		let dto: any = JSON.parse(clockData);
+		this.inCombat = dto.InCombat;
+	}
+
+	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number) {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
 		context.fillStyle = '#ffffff';
 		context.font = '36px Blackadder ITC';
 
-		let sprite: SpriteProxy = this.nameplateMain.sprites[playerID];
+		let sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
 
 		const nameplateMaxWidth: number = 358;
 
@@ -808,7 +848,7 @@ class DragonFrontGame extends DragonGame {
 		else
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 
-		let centerX: number = this.getPlayerX(playerID);
+		let centerX: number = this.getPlayerX(playerIndex);
 		//const drawLines: boolean = false;
 		//if (drawLines) {
 		//	context.beginPath();
@@ -879,6 +919,12 @@ class DragonFrontGame extends DragonGame {
 			this.showNameplate(context, player, i, now);
 		}
 	}
+
+	moveFred(movement: string): void {
+		// TODO: Implement this!
+		this.fred.playAnimation(movement, this.getPlayerX(this.getPlayerIndex(this.Player_Fred)));
+	}
+
 }
 
 class PlayerHealth {
