@@ -5,3 +5,6 @@ AttackIsMelee,attackingType == Melee || attackingType == MartialMelee
 AttackIsRange,attackingType == Range || attackingType == MartialRange
 StrikingWithWeapon,AttackIsMelee || AttackIsRange
 WieldingMeleeWeaponInOneHand,WeaponsInHand == 1 && OneHanded && AttackIsMelee
+InRecklessAttack,Get(_recklessAttack) == true
+BarbarianRagesPerDay,"Table(""Barbarian"", ""Rages"", ""Level"", Level(""Barbarian""))"
+TargetIsCreature,Get(targetThisRollIsCreature) == true

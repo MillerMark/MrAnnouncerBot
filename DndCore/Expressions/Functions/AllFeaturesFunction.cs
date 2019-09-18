@@ -10,7 +10,7 @@ namespace DndCore
 	public class FeatureSatisfiedFunction : DndFunction
 	{
 		Feature feature;
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell = null)
 		{
 			feature = AllFeatures.Get(tokenName);
 			return feature != null;

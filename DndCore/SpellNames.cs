@@ -14,5 +14,6 @@ namespace DndCore
 		public const string DivineSmite = "Divine Smite";
 		public const string LightningLure = "Lightning Lure";
 		public const string Sleep = "Sleep";
+		public const string WrathfulSmite = "Wrathful Smite";
 	}
 }

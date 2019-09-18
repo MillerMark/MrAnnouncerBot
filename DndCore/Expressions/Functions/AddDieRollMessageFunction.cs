@@ -4,17 +4,17 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class RollDiceFunction : DndFunction
+	public class AddDieRollMessageFunction : DndFunction
 	{
-		public override string Name => "RollDice";
+		public override string Name => "AddDieRollMessage";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
 		{
 			ExpectingArguments(args, 1);
 
-			string diceStr = evaluator.Evaluate<string>(args[0]);
+			string dieRollMessage = evaluator.Evaluate<string>(args[0]);
 
-			player.ReadyRollDice(DiceRollType.None, diceStr);
+			player.AddDieRollMessage(dieRollMessage);
 
 			return null;
 		}

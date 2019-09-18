@@ -39,8 +39,8 @@ namespace DndTests
 			AllPlayers.LoadData();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
-			Assert.AreEqual(1, Expressions.Get("Level(\"Barbarian\")", fred));
-			Assert.AreEqual(4, Expressions.Get("Level(\"Fighter\")", fred));
+			Assert.AreEqual(5, Expressions.Get("Level(\"Barbarian\")", fred));
+			Assert.AreEqual(0, Expressions.Get("Level(\"Fighter\")", fred));
 			Assert.AreEqual(0, Expressions.Get("Level(\"Fighter\")", ava));
 			Assert.AreEqual(5, Expressions.Get("Level(\"Paladin\")", ava));
 		}
@@ -139,7 +139,7 @@ namespace DndTests
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
-			Assert.AreEqual(2, Expressions.GetInt("Table(\"Barbarian\", \"Rages\", \"Level\", Level(\"Barbarian\"))", fred));
+			Assert.AreEqual(3, Expressions.GetInt("Table(\"Barbarian\", \"Rages\", \"Level\", Level(\"Barbarian\"))", fred));
 			Assert.AreEqual(1, Expressions.GetInt("Table(\"Sorcerer\", \"Slot5Spells\", \"Level\", 9)"));
 			Assert.AreEqual(5, Expressions.GetInt("Table(\"Sorcerer\", \"SorceryPoints\", \"Level\", Level(\"Sorcerer\"))", merkin));
 		}
@@ -189,7 +189,7 @@ namespace DndTests
 		public void TestOffset()
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
-			fred.ResetPlayerStartTurnBasedState();
+			fred.StartTurnResetState();
 			Expressions.Do("Set(RageCount,0)", fred);
 			Expressions.Do("Set(MyOffset,4)", fred);
 			Assert.AreEqual(0, Expressions.GetInt("Get(RageCount)", fred));

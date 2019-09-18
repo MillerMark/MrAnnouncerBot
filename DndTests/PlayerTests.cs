@@ -35,8 +35,8 @@ namespace DndTests
 		{
 			Character willy = AllPlayers.Get("Willy");
 			Assert.AreEqual(5, willy.level);
-			Assert.AreEqual(35, willy.hitPoints);
-			Assert.AreEqual(150, willy.goldPieces);
+			Assert.AreEqual(43, willy.hitPoints);
+			Assert.AreEqual(200, willy.goldPieces);
 			Assert.AreEqual(Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth, willy.proficientSkills);
 			Assert.AreEqual(Skills.deception | Skills.persuasion, willy.doubleProficiency);
 			Assert.AreEqual(Ability.dexterity | Ability.intelligence, willy.savingThrowProficiency);
@@ -111,11 +111,12 @@ namespace DndTests
 		public void TestLeftmostPriority()
 		{
 			List<Character> activePlayers = AllPlayers.GetActive();
-			Assert.AreEqual(4, activePlayers.Count);
+			Assert.AreEqual(5, activePlayers.Count);
 			Assert.IsTrue(activePlayers[0].name.StartsWith("Fred"));
-			Assert.IsTrue(activePlayers[1].name.StartsWith("Lady"));
-			Assert.IsTrue(activePlayers[2].name.StartsWith("Merkin"));
-			Assert.IsTrue(activePlayers[3].name.StartsWith("Ava"));
+			Assert.IsTrue(activePlayers[1].name.StartsWith("Willy"));
+			Assert.IsTrue(activePlayers[2].name.StartsWith("Lady"));
+			Assert.IsTrue(activePlayers[3].name.StartsWith("Merkin"));
+			Assert.IsTrue(activePlayers[4].name.StartsWith("Ava"));
 		}
 
 		[TestMethod]

@@ -77,6 +77,8 @@
     <Compile Include="EventTests.cs" />
     <Compile Include="Expression Evaluation\BarbarianMeleeFeatureTests.cs" />
     <Compile Include="FeatureTests.cs" />
+    <Compile Include="RoundTests.cs" />
+    <Compile Include="Support\CharacterExtensions.cs" />
     <Compile Include="Support\Die.cs" />
     <Compile Include="DieRollDetailTests.cs" />
     <Compile Include="Expression Evaluation\ExpressionTests.cs" />

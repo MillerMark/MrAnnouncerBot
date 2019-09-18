@@ -6,7 +6,7 @@ namespace DndCore
 {
 	public class DndWeaponPropertiesVariable : DndVariable
 	{
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell = null)
 		{
 			return Enum.TryParse(tokenName, out WeaponProperties result);
 		}

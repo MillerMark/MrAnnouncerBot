@@ -6,7 +6,7 @@ namespace DndCore
 {
 	public class DndProperty : DndVariable
 	{
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
 			PropertyDto property = AllProperties.Get(tokenName);
 			return property != null;

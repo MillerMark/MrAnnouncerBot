@@ -135,6 +135,7 @@ namespace DndCore
 			}
 		}
 		public DndGame Game { get; set; }
+
 		public double Intelligence
 		{
 			get
@@ -558,6 +559,62 @@ namespace DndCore
 				if (thisItem.count <= 0)
 					equipment.RemoveAt(index);
 			}
+		}
+
+		public void DieRollStopped(int score, int damage = 0)
+		{
+			Game.DieRollStopped(this, score, damage);
+		}
+
+		public virtual void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
+		{
+			if (Game != null)
+				Game.SetHiddenThreshold(this, hiddenThreshold, rollType);
+		}
+
+		public virtual void Use(PlayerActionShortcut playerActionShortcut)
+		{
+			
+		}
+
+		public virtual Attack GetAttack(string attackName)
+		{
+			return null;
+		}
+
+		public void WillAttack(Creature creature, Attack attack)
+		{
+			if (Game != null)
+			{
+				Game.CreatureTakingAction(this);
+				Game.CreatureWillAttack(this, creature, attack);
+			}
+		}
+
+		public void WillAttack(Creature target, PlayerActionShortcut shortcut)
+		{
+			if (Game != null)
+				Game.CreatureTakingAction(this);
+			Use(shortcut);
+			if (Game != null)
+				Game.CreatureWillAttack(this, target, null);
+		}
+
+		public virtual void Target(Creature target)
+		{
+			if (Game != null)
+			{
+				Game.CreatureTakingAction(this);
+				Game.CreatureWillAttack(this, target, null);
+			}
+		}
+
+		public virtual void StartTurnResetState()
+		{
+		}
+
+		public virtual void EndTurnResetState()
+		{
 		}
 	}
 }

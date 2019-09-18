@@ -290,5 +290,9 @@ namespace DndCore
 			}
 			return Ability.none;
 		}
+		public static bool IsAttack(DiceRollType type)
+		{
+			return type == DiceRollType.Attack || type == DiceRollType.ChaosBolt;
+		}
 	}
 }

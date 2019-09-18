@@ -26,6 +26,13 @@ namespace DndCore
 		public string OriginalDieStr { get; set; }
 		public string BonusPerLevel { get; set; }
 		public double PerLevelBonus { get; set; }
+		public string OnCast { get; set; }
+		public string OnCasting { get; set; }
+		public string OnPlayerAttacks { get; set; }
+		public string OnPlayerHitsTarget { get; set; }
+		public string OnDispel { get; set; }
+
+
 
 		public Spell()
 		{
@@ -226,7 +233,7 @@ namespace DndCore
 			const string concentrationHeader = "Concentration, ";
 			string spellDuration = spellDto.duration;
 			if (spellDuration.StartsWith(concentrationHeader))
-				spellDuration = spellDuration.Substring(0, concentrationHeader.Length);
+				spellDuration = spellDuration.Substring(concentrationHeader.Length).Trim();
 
 			Spell spell = new Spell()
 			{
@@ -246,7 +253,12 @@ namespace DndCore
 				BonusPerLevel = spellDto.bonus_per_level,
 				PerLevelBonus = spellDto.bonus_per_level.GetFirstDouble(),
 				SpellCasterLevel = spellCasterLevel,
-				SpellSlotLevel = spellSlotLevel
+				SpellSlotLevel = spellSlotLevel,
+				OnCast = spellDto.onCast,
+				OnCasting = spellDto.onCasting,
+				OnPlayerAttacks = spellDto.onPlayerAttacks,
+				OnPlayerHitsTarget = spellDto.onPlayerHitsTarget,
+				OnDispel = spellDto.onDispel
 			};
 			spell.RecalculateDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
@@ -268,6 +280,36 @@ namespace DndCore
 		public bool HasRange(int value, SpellRangeType spellRangeType)
 		{
 			return Range == value && RangeType == spellRangeType;
+		}
+
+		public bool MustRollDiceToCast()
+		{
+			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell;
+		}
+
+		public void TriggerOnCasting(Character player, Creature targetCreature, CastedSpell castedSpell)
+		{
+			Expressions.Do(OnCasting, player, targetCreature, castedSpell);
+		}
+
+		public void TriggerCast(Character player, Creature targetCreature, CastedSpell castedSpell)
+		{
+			Expressions.Do(OnCast, player, targetCreature, castedSpell);
+		}
+
+		public void TriggerDispel(Character player, Creature targetCreature, CastedSpell castedSpell)
+		{
+			Expressions.Do(OnDispel, player, targetCreature, castedSpell);
+		}
+
+		public void TriggerPlayerAttacks(Character player, Creature target, CastedSpell castedSpell)
+		{
+			Expressions.Do(OnPlayerAttacks, player, target, castedSpell);
+		}
+
+		public void TriggerPlayerHitsTarget(Character player, Creature target, CastedSpell castedSpell)
+		{
+			Expressions.Do(OnPlayerHitsTarget, player, target, castedSpell);
 		}
 	}
 }

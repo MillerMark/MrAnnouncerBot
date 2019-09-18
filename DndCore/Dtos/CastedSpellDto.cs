@@ -2,18 +2,18 @@
 
 namespace DndCore
 {
-	public class CastedSpell
+	public class CastedSpellDto
 	{
 		public Spell Spell { get; set; }
 		public SpellTarget Target { get; set; }
 		public List<WindupDto> Windups = new List<WindupDto>();
 
-		public CastedSpell(Spell spell, SpellTarget target)
+		public CastedSpellDto(Spell spell, SpellTarget target)
 		{
 			Spell = spell;
 			Target = target;
 		}
-		public CastedSpell()
+		public CastedSpellDto()
 		{
 
 		}

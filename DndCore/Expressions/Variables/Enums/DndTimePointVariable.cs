@@ -6,7 +6,7 @@ namespace DndCore
 {
 	public class DndTimePointVariable : DndVariable
 	{
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
 			return Enum.TryParse(tokenName, out TimePoint result);
 		}

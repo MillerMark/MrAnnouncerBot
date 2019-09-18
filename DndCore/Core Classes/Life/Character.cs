@@ -51,6 +51,11 @@ namespace DndCore
 		public Ability attackingAbility = Ability.none;
 		public Skills checkingSkills = Skills.none;
 		public string diceJustRolled = string.Empty;
+		public string additionalDiceThisRoll = string.Empty;
+		public string trailingEffectsThisRoll = string.Empty;
+		public string dieRollEffectsThisRoll = string.Empty;
+		public string dieRollMessageThisRoll = string.Empty;
+		public bool targetThisRollIsCreature = false; 
 		public AttackType attackingType = AttackType.None;
 		public AttackKind attackingKind = AttackKind.Any;
 		public double attackingAbilityModifier = 0; // TODO: Set for spells?
@@ -58,7 +63,7 @@ namespace DndCore
 		public int WeaponsInHand { get; set; }  // TODO: Implement this (0, 1 or 2).
 
 
-		public void ResetPlayerStartTurnBasedState()
+		public override void StartTurnResetState()
 		{
 			enemyAdvantage = 0;
 			WeaponsInHand = 0;
@@ -69,7 +74,7 @@ namespace DndCore
 			ResetPlayerActionBasedState();
 		}
 
-		public void ResetPlayerEndTurnBasedState()
+		public override void EndTurnResetState()
 		{
 			ResetPlayerActionBasedState();
 		}
@@ -81,6 +86,11 @@ namespace DndCore
 			attackingType = AttackType.None;
 			attackingKind = AttackKind.Any;
 			diceJustRolled = string.Empty;
+			additionalDiceThisRoll = string.Empty;
+			trailingEffectsThisRoll = string.Empty;
+			dieRollEffectsThisRoll = string.Empty;
+			dieRollMessageThisRoll = string.Empty;
+			targetThisRollIsCreature = false;
 			damageOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
 			disadvantageDiceThisRoll = 0;
@@ -96,7 +106,7 @@ namespace DndCore
 		{
 			if (Game != null)
 				Game.StartingTurnFor(this);
-			ResetPlayerStartTurnBasedState();
+			StartTurnResetState();
 		}
 
 		public void StartAction()
@@ -113,7 +123,7 @@ namespace DndCore
 		{
 			if (Game != null)
 				Game.EndingTurnFor(this);
-			ResetPlayerEndTurnBasedState();
+			EndTurnResetState();
 		}
 
 		public void AddClass(string name, int level)
@@ -783,6 +793,14 @@ namespace DndCore
 			return (int)Math.Round(proficiencyBonus) + GetSpellcastingAbilityModifier();
 		}
 
+		public int SpellSaveDC
+		{
+			get
+			{
+				return GetSpellSaveDC();
+			}
+		}
+		
 		public int GetSpellSaveDC()
 		{
 			return 8 + GetSpellAttackModifier();
@@ -955,10 +973,18 @@ namespace DndCore
 			states.Clear();
 		}
 
-		public void RollDice(string diceStr)
+		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
 		{
+			if (spellToCast != null)
+			{
+				if (Game != null)
+					Game.CompleteCast(this, spellToCast);
+				spellToCast = null;
+			}
+
+			if (Game != null)
+				Game.SetHiddenThreshold(this, hiddenThreshold, rollType);
 			diceJustRolled = diceStr;
-			// TODO: Implement this.
 		}
 
 		public void GiveAdvantageThisRoll()
@@ -1035,13 +1061,17 @@ namespace DndCore
 			DndUtils.GetCleanItemName(name.ToLower()));
 		}
 
-		public void Use(PlayerActionShortcut playerActionShortcut)
+		public override void Use(PlayerActionShortcut playerActionShortcut)
 		{
 			ResetPlayerActionBasedState();
-			attackingAbilityModifier = playerActionShortcut.AttackingAbilityModifier;
-			attackingAbility = playerActionShortcut.AttackingAbility;
-			attackingType = playerActionShortcut.AttackingType;
-			playerActionShortcut.ExecuteCommands(this);
+			if (playerActionShortcut != null)
+			{
+				attackingAbilityModifier = playerActionShortcut.AttackingAbilityModifier;
+				attackingAbility = playerActionShortcut.AttackingAbility;
+				attackingType = playerActionShortcut.AttackingType;
+				playerActionShortcut.ExecuteCommands(this);
+			}
+			
 			ReapplyActiveFeatures();
 		}
 
@@ -1089,6 +1119,9 @@ namespace DndCore
 		RecalcOptions queuedRecalcOptions = RecalcOptions.None;
 		public void Recalculate(RecalcOptions recalcOptions)
 		{
+			//if (recalcOptions == RecalcOptions.None)
+			//	return;
+
 			if (reapplyingActiveFeatures || evaluatingExpression)
 			{
 				queuedRecalcOptions |= recalcOptions;
@@ -1097,7 +1130,7 @@ namespace DndCore
 
 			if ((recalcOptions & RecalcOptions.TurnBasedState) == RecalcOptions.TurnBasedState)
 			{
-				ResetPlayerStartTurnBasedState();
+				StartTurnResetState();
 			}
 			else if ((recalcOptions & RecalcOptions.ActionBasedState) == RecalcOptions.ActionBasedState)
 			{
@@ -1113,8 +1146,8 @@ namespace DndCore
 		}
 
 		bool evaluatingExpression;
-		Creature targetedCreature;
-
+		public Creature targetedCreature;
+		
 		public void StartingExpressionEvaluation()
 		{
 			evaluatingExpression = true;
@@ -1127,14 +1160,66 @@ namespace DndCore
 			queuedRecalcOptions = RecalcOptions.None;
 		}
 
-		public void Target(Creature target)
+		public override void Target(Creature target)
 		{
 			targetedCreature = target;
+			base.Target(target);
 		}
 
-		//public DiceRoll GetRoll()
-		//{
-		//	
-		//}
+		CastedSpell spellToCast;
+		public CastedSpell Cast(Spell spell, Creature targetCreature = null)
+		{
+			spellToCast = null;
+
+			if (Game != null)
+				spellToCast = Game.Cast(this, spell, targetCreature);
+
+			return spellToCast;
+		}
+
+		public void Dispel(CastedSpell castedSpell)
+		{
+			if (Game != null)
+				Game.Dispel(castedSpell);
+		}
+
+		public List<CastedSpell> GetActiveSpells()
+		{
+			return Game.GetActiveSpells(this);
+		}
+		public bool SpellIsActive(string spellName)
+		{
+			return GetActiveSpells().FirstOrDefault(x => x.Spell.Name == spellName) != null;
+		}
+
+		public void AddDice(string diceStr)
+		{
+			additionalDiceThisRoll = diceStr;
+		}
+
+		public void AddTailingEffects(string trailingEffects)
+		{
+			if (!string.IsNullOrWhiteSpace(trailingEffectsThisRoll))
+				trailingEffectsThisRoll += ";";
+			trailingEffectsThisRoll += trailingEffects;
+		}
+
+		public void AddDieRollEffects(string dieRollEffects)
+		{
+			if (!string.IsNullOrWhiteSpace(dieRollEffectsThisRoll))
+				dieRollEffectsThisRoll += ";";
+			dieRollEffectsThisRoll += dieRollEffects;
+		}
+
+		public void AddDieRollMessage(string dieRollMessage)
+		{
+			dieRollMessageThisRoll = dieRollMessage;
+		}
+
+		public void RemoveStateVar(string varName)
+		{
+			if (states.ContainsKey(varName))
+				states.Remove(varName);
+		}
 	}
 }

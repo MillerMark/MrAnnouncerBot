@@ -42,6 +42,7 @@ namespace DndCore
 		public Spell Spell { get; set; }
 		public string AddDiceOnHit { get; set; }
 		public string AddDiceOnHitMessage { get; set; }
+
 		public bool UsedWithProficiency
 		{
 			get
@@ -354,6 +355,7 @@ namespace DndCore
 			result.ProcessDieStr(shortcutDto, damageStr);
 			result.TrailingEffects = shortcutDto.trailingEffects;
 			result.DieRollEffects = shortcutDto.dieRollEffects;
+
 			return result;
 		}
 

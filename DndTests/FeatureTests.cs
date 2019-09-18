@@ -35,7 +35,7 @@ namespace DndTests
 			Feature barbarianMelee = AllFeatures.Get("BarbarianMelee");
 			Assert.IsNotNull(barbarianMelee);
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
-			fred.ResetPlayerStartTurnBasedState();
+			fred.StartTurnResetState();
 			Assert.IsFalse(Expressions.GetBool("BarbarianMelee(strength)", fred));
 			Expressions.Do("Set(_rage,true)", fred);
 			Assert.IsFalse(Expressions.GetBool("BarbarianMelee(strength)", fred));
@@ -47,7 +47,7 @@ namespace DndTests
 		public void TestSecondWind()
 		{
 			AllPlayers.LoadData();
-			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			Character fred = AllPlayers.Get("Old Fred");
 			fred.ActivateFeature("SecondWind");
 			Assert.AreEqual("1d10+4(healing)", fred.diceJustRolled);
 		}

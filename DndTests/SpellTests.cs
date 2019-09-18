@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DndCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -187,6 +188,194 @@ namespace DndTests
 			Assert.AreEqual(3, DndUtils.GetAvailableSpellSlots(Sorcerer, Level9, SlotLevel4));
 			Assert.AreEqual(1, DndUtils.GetAvailableSpellSlots(Sorcerer, Level9, SlotLevel5));
 			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(Sorcerer, Level9, SlotLevel6));
+		}
+
+		[TestMethod]
+		public void TestSaveSpellEvents()
+		{
+			AllPlayers.LoadData();
+			History.TimeClock = new DndTimeClock();
+
+			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
+			Monster joeTheVineBlight = MonsterBuilder.BuildVineBlight("Joe");
+
+			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
+
+			DndGame game = DndGame.Instance;
+			game.StartNew();
+			game.AddPlayer(merkin);
+			game.AddMonster(joeTheVineBlight);
+			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
+			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
+			Assert.IsNotNull(activeSpells);
+			Assert.AreEqual(1, activeSpells.Count);
+			Assert.AreEqual("onCast", Expressions.GetStr("Get(_spellState)", merkin));
+			game.AdvanceClock(DndTimeSpan.FromMinutes(1));
+			Assert.AreEqual("onDispel", Expressions.GetStr("Get(_spellState)", merkin));
+			activeSpells = merkin.GetActiveSpells();
+			Assert.IsNotNull(activeSpells);
+			Assert.AreEqual(0, activeSpells.Count);
+		}
+
+		[TestMethod]
+		public void TestAttackSpellEventsTimeout()
+		{
+			AllPlayers.LoadData();
+			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
+			Monster joeTheVineBlight = MonsterBuilder.BuildVineBlight("Joe");
+
+			Spell zzzRangeSpell = AllSpells.Get("ZZZ Test Range Spell", merkin, 3);
+
+			DndGame game = DndGame.Instance;
+			game.StartNew();
+			game.AddPlayer(merkin);
+			game.AddMonster(joeTheVineBlight);
+			game.EnteringCombat();
+			merkin.Cast(zzzRangeSpell, joeTheVineBlight);
+			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
+			Assert.IsNotNull(activeSpells);
+			Assert.AreEqual(0, activeSpells.Count);
+			Assert.AreEqual("onCasting", Expressions.GetStr("Get(_spellState)", merkin));
+			const int hiddenThreshold = 12;
+
+			merkin.ReadyRollDice(DiceRollType.Attack, "1d20(:score),2d8(:damage),1d6(:damage)", hiddenThreshold);
+			Assert.AreEqual("onCast", Expressions.GetStr("Get(_spellState)", merkin));
+			const int damage = 7;
+			merkin.DieRollStopped(hiddenThreshold, damage);
+
+			game.AdvanceClock(DndTimeSpan.FromMinutes(1));
+			Assert.AreEqual("onDispel", Expressions.GetStr("Get(_spellState)", merkin));
+			activeSpells = merkin.GetActiveSpells();
+			Assert.IsNotNull(activeSpells);
+			Assert.AreEqual(0, activeSpells.Count);
+			game.ExitingCombat();
+		}
+
+		[TestMethod]
+		public void TestAttackSpellEventsOnPlayerAttacks()
+		{
+			AllPlayers.LoadData();
+			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
+			Monster joeVineBlight = MonsterBuilder.BuildVineBlight("Joe");
+
+			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
+
+			DndGame game = DndGame.Instance;
+			game.StartNew();
+			game.AddPlayer(merkin);
+			game.AddMonster(joeVineBlight);
+			game.EnteringCombat();
+			merkin.Cast(zzzSaveSpell, joeVineBlight);
+
+			const int hiddenThreshold = 12;
+			const int damage = 7;
+
+			Assert.AreEqual("onCast", Expressions.GetStr("Get(_spellState)", merkin));
+
+			merkin.WillAttack(joeVineBlight, Attack.Melee("Unarmed Strike", 5, 5));
+			Assert.AreEqual("onPlayerAttacks", Expressions.GetStr("Get(_spellState)", merkin));
+
+			merkin.ReadyRollDice(DiceRollType.Attack, "1d20(:score),2d8(:damage),1d6(:damage)", hiddenThreshold);
+			merkin.DieRollStopped(hiddenThreshold, damage);
+			Assert.AreEqual("onPlayerHitsTarget", Expressions.GetStr("Get(_spellState)", merkin));
+
+			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
+			Assert.IsNotNull(activeSpells);
+			game.ExitingCombat();
+		}
+
+		[TestMethod]
+		public void TestWrathfulSmiteDuration()
+		{
+			Spell wrathfulSmite = AllSpells.Get(SpellNames.WrathfulSmite);
+			Assert.IsNotNull(wrathfulSmite);
+			Assert.AreEqual(TimeSpan.FromMinutes(1), wrathfulSmite.Duration.GetTimeSpan());
+		}
+
+		[TestMethod]
+		public void TestWrathfulSmite()
+		{
+			AllPlayers.LoadData();
+			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword, +1");
+			Monster joeVineBlight = MonsterBuilder.BuildVineBlight("Joe");
+
+			List<PlayerActionShortcut> wrathfulSmites = AllActionShortcuts.Get(ava.playerID, SpellNames.WrathfulSmite);
+			Assert.AreEqual(1, wrathfulSmites.Count);
+			PlayerActionShortcut wrathfulSmite = wrathfulSmites[0];
+			Assert.IsNotNull(wrathfulSmite);
+
+			DndGame game = DndGame.Instance;
+			game.StartNew();
+			game.AddPlayer(ava);
+			game.AddMonster(joeVineBlight);
+			DateTime gameStartTime = game.Time;
+
+			game.EnteringCombat();
+
+			ava.Hits(joeVineBlight, greatsword);  // Action
+			ava.Cast(wrathfulSmite.Spell);  // Bonus Action - Wrathful Smite lasts for one minute.
+			Assert.IsTrue(ava.SpellIsActive(SpellNames.WrathfulSmite));
+
+			joeVineBlight.Misses(ava, AttackNames.Constrict);
+
+			AvaMeleeMissesJoe();
+			Assert.AreEqual(6, game.SecondsSince(gameStartTime));
+			
+			joeVineBlight.Misses(ava, AttackNames.Constrict);
+			Assert.AreEqual(6, game.SecondsSince(gameStartTime));
+
+			AvaMeleeMissesJoe();
+			Assert.AreEqual(12, game.SecondsSince(gameStartTime));
+
+			joeVineBlight.Misses(ava, AttackNames.Constrict);
+			Assert.AreEqual(12, game.SecondsSince(gameStartTime));
+
+			AvaMeleeMissesJoe();
+			Assert.AreEqual(18, game.SecondsSince(gameStartTime));
+
+			joeVineBlight.Misses(ava, AttackNames.Constrict);
+			Assert.AreEqual(18, game.SecondsSince(gameStartTime));
+
+			//`+++NOW THE HIT....
+			ava.Hits(joeVineBlight, greatsword);
+			Assert.AreEqual(24, game.SecondsSince(gameStartTime));
+
+			Assert.IsTrue(ava.SpellIsActive(SpellNames.WrathfulSmite));  // Wrathful Smite spell is not yet dispelled, however its impact on attack rolls is done.
+
+			Assert.AreEqual($"Target must make a Wisdom saving throw or be frightened of {ava.name} until the spell ends. As an action, the creature can make a Wisdom check against {ava.name}'s spell save DC ({ava.GetSpellSaveDC()}) to steel its resolve and end this {wrathfulSmite.Spell.Name} spell.", game.lastMessageSentToDungeonMaster);
+
+			joeVineBlight.Misses(ava, AttackNames.Constrict);
+			Assert.AreEqual(24, game.SecondsSince(gameStartTime));
+
+			ava.Misses(joeVineBlight, greatsword);  // Advancing Round (Ava's turn again).
+			Assert.AreEqual("", ava.additionalDiceThisRoll);  // No more die roll effects.
+			Assert.AreEqual("", ava.trailingEffectsThisRoll);
+			Assert.AreEqual("", ava.dieRollEffectsThisRoll);
+			Assert.AreEqual("", ava.dieRollMessageThisRoll);
+
+			Assert.AreEqual(30, game.SecondsSince(gameStartTime));
+			game.AdvanceClock(DndTimeSpan.FromSeconds(30));
+
+			Assert.IsFalse(ava.SpellIsActive(SpellNames.WrathfulSmite));  // Wrathful Smite spell should finally be dispelled.
+
+			void AvaMeleeMissesJoe()
+			{
+				Assert.AreEqual("", ava.additionalDiceThisRoll);
+				Assert.AreEqual("", ava.trailingEffectsThisRoll);
+				Assert.AreEqual("", ava.dieRollEffectsThisRoll);
+				Assert.AreEqual("", ava.dieRollMessageThisRoll);
+				ava.Misses(joeVineBlight, greatsword);  // Advancing Round (Ava's turn again).
+				Assert.AreEqual("1d6(psychic)", ava.additionalDiceThisRoll);
+				Assert.AreEqual("Ravens;Spirals", ava.trailingEffectsThisRoll);
+				Assert.AreEqual("PaladinSmite", ava.dieRollEffectsThisRoll);
+				Assert.AreEqual("Wrathful Smite", ava.dieRollMessageThisRoll);
+				Assert.IsTrue(ava.SpellIsActive(SpellNames.WrathfulSmite));
+			}
+
+
+
+
 		}
 	}
 }

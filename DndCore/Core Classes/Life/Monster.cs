@@ -71,13 +71,19 @@ namespace DndCore
 			return 0;
 		}
 
+		public override Attack GetAttack(string attackName)
+		{
+			return attacks.Find(x => x.Name == attackName);
+		}
+
 		public int GetAttackRoll(int value, string attackName)
 		{
-			Attack attack = attacks.Find(x => x.Name == attackName);
+			Attack attack = GetAttack(attackName);
 			if (attack == null)
 				return 0;
 			return value + (int)Math.Floor(attack.plusToHit);
 		}
+
 		public DamageResult GetDamageFromAttack(Creature creature, string attackName, int savingThrow, int attackRoll = int.MaxValue)
 		{
 			if (attackRoll < creature.ArmorClass)
@@ -141,6 +147,11 @@ namespace DndCore
 			string abilityModStr = str.Substring(openParen + 1, closeParen - openParen - 1).Trim();
 			ability = abilityStr.ToDouble();
 			abilityMod = abilityModStr.ToDouble();
+		}
+
+		public void WillAttack(Creature creature, string attackName)
+		{
+			WillAttack(creature, GetAttack(attackName));
 		}
 	}
 }

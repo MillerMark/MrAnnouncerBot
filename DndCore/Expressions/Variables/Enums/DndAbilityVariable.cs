@@ -7,7 +7,7 @@ namespace DndCore
 	//TODO: Wil says move all of these into an ancestor class and descendants only specify the type.
 	public class DndAbilityVariable : DndVariable
 	{
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
 			return Enum.TryParse(tokenName, out Ability result);
 		}

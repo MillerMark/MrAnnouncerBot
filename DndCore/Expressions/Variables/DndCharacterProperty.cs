@@ -30,7 +30,7 @@ namespace DndCore
 			}
 		}
 
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
 			GetPropertyNames();
 			if (propertyNames.IndexOf(tokenName) >= 0 | fieldNames.IndexOf(tokenName) >= 0)

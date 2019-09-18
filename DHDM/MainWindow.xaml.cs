@@ -366,9 +366,9 @@ namespace DHDM
 			{
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
-				CastedSpell spellToCast = new CastedSpell(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = PlayerID.Merkin });
-				spellToCast.Windups = actionShortcut.WindupsReversed;
-				string serializedObject = JsonConvert.SerializeObject(spellToCast);
+				CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = PlayerID.Merkin });
+				spellToCastDto.Windups = actionShortcut.WindupsReversed;
+				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
 				HubtasticBaseStation.CastSpell(serializedObject);
 				tbxDamageDice.Text = spell.DieStr;
 			}
@@ -612,10 +612,6 @@ namespace DHDM
 			RollTheDice(PrepareRoll(rollType));
 		}
 
-		bool IsAttack(DiceRollType type)
-		{
-			return type == DiceRollType.Attack || type == DiceRollType.ChaosBolt;
-		}
 		bool CanIncludeVantageDice(DiceRollType type)
 		{
 			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.SkillCheck);
@@ -632,7 +628,7 @@ namespace DHDM
 					diceRollKind = VantageKind.Disadvantage;
 
 			string damageDice = string.Empty;
-			if (IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
+			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
@@ -757,7 +753,7 @@ namespace DHDM
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
-			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
+			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && DndUtils.IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
 
 			diceRoll.AddTrailingEffects(activeTrailingEffects);

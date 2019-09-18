@@ -8,7 +8,7 @@ namespace DndCore
 	public class DndFunctionEvaluator : DndFunction
 	{
 		FunctionDto function;
-		public override bool Handles(string tokenName, Character player)
+		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
 			function = AllFunctions.Get(tokenName);
 			return function != null;

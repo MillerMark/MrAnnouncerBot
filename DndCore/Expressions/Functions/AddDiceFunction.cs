@@ -4,9 +4,9 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class RollDiceFunction : DndFunction
+	public class AddDiceFunction : DndFunction
 	{
-		public override string Name => "RollDice";
+		public override string Name => "AddDice";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
 		{
@@ -14,7 +14,7 @@ namespace DndCore
 
 			string diceStr = evaluator.Evaluate<string>(args[0]);
 
-			player.ReadyRollDice(DiceRollType.None, diceStr);
+			player.AddDice(diceStr);
 
 			return null;
 		}
