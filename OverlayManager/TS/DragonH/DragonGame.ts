@@ -213,8 +213,27 @@ abstract class DragonGame extends GamePlusQuiz {
 			sprites.sprites.forEach(function (sprite: SpriteProxy) {
 				let noNameSpecified: boolean = !windupName;
 				let destroyAllSprites: boolean = windupName === '*';
+				let asteriskIndex: number = windupName.indexOf('*');
+
 				let spriteHasNoName: boolean = sprite.name === null || sprite.name === '';
 				let nameMatches: boolean = sprite.name === windupName;
+
+				if (!destroyAllSprites && asteriskIndex >= 0){
+					let firstPart: string = windupName.substr(0, asteriskIndex);
+					let lastPart: string = windupName.substr(asteriskIndex + 1);
+					let firstPartMatches: boolean;
+					let lastPartMatches: boolean;
+					if (firstPart)
+						firstPartMatches = sprite.name.startsWith(firstPart);
+					else 
+						firstPartMatches = true;
+					if (lastPart)
+						lastPartMatches = sprite.name.endsWith(lastPart);
+					else 
+						lastPartMatches = true;
+					nameMatches = firstPartMatches && lastPartMatches;
+				}
+
 				if (destroyAllSprites || noNameSpecified && spriteHasNoName || nameMatches)
 					sprite.expirationDate = now + sprite.fadeOutTime;
 			});
