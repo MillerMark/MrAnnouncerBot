@@ -1,15 +1,18 @@
-DisplayName,Fanfare1,Fanfare2,Fanfare3,Fanfare4
-str8buttah,12,0,0,0
-SurlyDev,15,0,0,0
-wil_bennett,13,12,0,0
-TheHugoDahl,10,0,0,0
-theMichaelJolley,12,0,0,0
-legendairymoooo,20,0,0,0
-sxPositive,16,30,0,0
-CodeBaseAlpha,17,0,0,0
-Brendoneus,25,0,0,0
-csharpfritz,20,0,0,0
-CopperBeardy,20,0,0,0
-codeman_codes,34,11,0,0
-JTsom,17,0,0,0
-phrakberg,25,0,0,0
+DisplayName,SecondsLong,Index,Duration,LastPlayed
+str8buttah,12,1,fullLength,1/1/2000 12:00:00 AM
+SurlyDev,15,1,fullLength,1/1/2000 12:00:00 AM
+wil_bennett,13,1,fullLength,1/1/2000 12:00:00 AM
+wil_bennett,12,2,fullLength,1/1/2000 12:00:00 AM
+TheHugoDahl,10,1,fullLength,1/1/2000 12:00:00 AM
+theMichaelJolley,12,1,fullLength,1/1/2000 12:00:00 AM
+legendairymoooo,20,1,fullLength,1/1/2000 12:00:00 AM
+sxPositive,16,1,fullLength,1/1/2000 12:00:00 AM
+sxPositive,30,1,fullLength,1/1/2000 12:00:00 AM
+CodeBaseAlpha,17,1,fullLength,1/1/2000 12:00:00 AM
+Brendoneus,25,1,fullLength,1/1/2000 12:00:00 AM
+csharpfritz,20,1,fullLength,1/1/2000 12:00:00 AM
+CopperBeardy,20,1,fullLength,1/1/2000 12:00:00 AM
+codeman_codes,34,1,fullLength,1/1/2000 12:00:00 AM
+codeman_codes,11,2,fullLength,1/1/2000 12:00:00 AM
+JTsom,17,1,fullLength,1/1/2000 12:00:00 AM
+phrakberg,25,1,fullLength,1/1/2000 12:00:00 AM
