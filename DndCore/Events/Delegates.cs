@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
+	public delegate void DndSpellEventHandler(object sender, DndSpellEventArgs ea);
 	public delegate void StateChangedEventHandler(object sender, StateChangedEventArgs ea);
 	public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
 	public delegate void DndGameEventHandler(object sender, DndGameEventArgs ea);

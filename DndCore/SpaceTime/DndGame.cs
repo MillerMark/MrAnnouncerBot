@@ -22,6 +22,7 @@ namespace DndCore
 			}
 		}
 
+		public event DndSpellEventHandler SpellDispelled;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
 		public event DndGameEventHandler RoundEnded;
@@ -29,6 +30,10 @@ namespace DndCore
 		public event DndCharacterEventHandler TurnEnded;
 		public event DndCharacterEventHandler TurnStarting;
 		public event PlayerStateChangedEventHandler PlayerStateChanged;
+		protected virtual void OnSpellDispelled(object sender, DndSpellEventArgs ea)
+		{
+			SpellDispelled?.Invoke(sender, ea);
+		}
 		protected virtual void OnPlayerStateChanged(object sender, PlayerStateEventArgs ea)
 		{
 			PlayerStateChanged?.Invoke(sender, ea);
@@ -220,12 +225,16 @@ namespace DndCore
 		{
 			OnRoundEnded(this, dndGameEventArgs);
 			roundIndex++;
-			timeClock.Advance(6000);  // 6 seconds per round
+
+			if (InCombat)
+				timeClock.Advance(6000);  // 6 seconds per round
+
 			OnRoundStarting(this, dndGameEventArgs);
 		}
 
 		public void CreatureTakingAction(Creature player)
 		{
+			// TODO: Fix bug where first player dies - we need to reassign firstPlayer to the next player in the initiative line up.
 			if (firstPlayer == null)
 			{
 				StartRound(player);
@@ -306,6 +315,7 @@ namespace DndCore
 			if (ea.Alarm.Data is CastedSpell castedSpell)
 			{
 				Dispel(castedSpell);
+				OnSpellDispelled(this, new DndSpellEventArgs(this, castedSpell));
 			}
 		}
 
@@ -405,10 +415,24 @@ namespace DndCore
 			return (int)Math.Round(timeSpan.TotalSeconds);
 		}
 
+		public DndTimeClock Clock
+		{
+			get
+			{
+				return timeClock;
+			}
+		}
+		
+
 		public void TellDungeonMaster(string message)
 		{
 			lastMessageSentToDungeonMaster = message;
 			// TODO: send message to Dungeon Master
+		}
+
+		public Character GetPlayerFromId(int playerID)
+		{
+			return Players.FirstOrDefault(x => x.playerID == playerID);
 		}
 	}
 }

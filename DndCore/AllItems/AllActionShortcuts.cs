@@ -28,7 +28,7 @@ namespace DndCore
 					foreach (PlayerActionShortcut shortcut in lastShortcuts)
 					{
 						Character player = AllPlayers.GetFromId(shortcut.PlayerId);
-						shortcut.AddEffect(thisShortcutDto, player, shortcut.SpellSlotLevel);
+						shortcut.AddEffect(thisShortcutDto, shortcut.lastPrefix, player, shortcut.SpellSlotLevel);
 					}
 				}
 				else

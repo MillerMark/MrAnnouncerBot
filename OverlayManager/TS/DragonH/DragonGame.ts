@@ -226,13 +226,6 @@ abstract class DragonGame extends GamePlusQuiz {
 
 		let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
 		this.addWindups(spell.Windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
-
-		// remove this:
-		//let spellEffect: SpellEffect = KnownSpellsEffects.getSpell(spell.Spell.Name);
-		//if (spellEffect) {
-		//	let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
-		//	this.addWindups(spellEffect.windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
-		//}
 	}
 
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
@@ -252,6 +245,7 @@ abstract class DragonGame extends GamePlusQuiz {
 					sprite.name = name;
 				else 
 					sprite.name = windup.Name;
+				console.log('Adding Windup: ' + sprite.name);
 				sprite.opacity = windup.Opacity;
 
 				if (windup.Lifespan)

@@ -72,6 +72,7 @@ namespace DndCore
 			savingAgainst = Ability.none;
 			checkingSkills = Skills.none;
 			ResetPlayerActionBasedState();
+			ResetPlayerRollBasedState();
 		}
 
 		public override void EndTurnResetState()
@@ -86,14 +87,19 @@ namespace DndCore
 			attackingType = AttackType.None;
 			attackingKind = AttackKind.Any;
 			diceJustRolled = string.Empty;
-			additionalDiceThisRoll = string.Empty;
-			trailingEffectsThisRoll = string.Empty;
-			dieRollEffectsThisRoll = string.Empty;
-			dieRollMessageThisRoll = string.Empty;
 			targetThisRollIsCreature = false;
 			damageOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
 			disadvantageDiceThisRoll = 0;
+		}
+
+		// TODO: Call after a successful roll.
+		public void ResetPlayerRollBasedState()
+		{
+			additionalDiceThisRoll = string.Empty;
+			trailingEffectsThisRoll = string.Empty;
+			dieRollEffectsThisRoll = string.Empty;
+			dieRollMessageThisRoll = string.Empty;
 		}
 
 		void ResetPlayerResistance()

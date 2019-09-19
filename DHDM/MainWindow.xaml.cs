@@ -42,16 +42,18 @@ namespace DHDM
 
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		ScrollPage activePage = ScrollPage.main;
-		DndTimeClock dndTimeClock;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer updateClearButtonTimer;
 		DateTime lastUpdateTime;
 		int keepExistingModifier = int.MaxValue;
+		DndGame game = null;
 
 		public MainWindow()
 		{
+			game = new DndGame();
+			game.SpellDispelled += Game_SpellDispelled;
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
@@ -64,15 +66,14 @@ namespace DHDM
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
 			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
 
-			dndTimeClock = new DndTimeClock();
-			History.TimeClock = dndTimeClock;
-			dndTimeClock.TimeChanged += DndTimeClock_TimeChanged;
+			History.TimeClock = game.Clock;
+			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
 			// TODO: Save and retrieve game time.
-			dndTimeClock.SetTime(DateTime.Now);
+			game.Clock.SetTime(DateTime.Now);
 			InitializeComponent();
 			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
 			groupEffectBuilder.Entries = new ObservableCollection<TimeLineEffect>();
-			spTimeSegments.DataContext = dndTimeClock;
+			spTimeSegments.DataContext = game.Clock;
 			logListBox.ItemsSource = History.Entries;
 			History.LogUpdated += History_LogUpdated;
 
@@ -257,7 +258,7 @@ namespace DHDM
 
 		void CreateAlarm(TimeSpan timeSpan, string name)
 		{
-			DndAlarm dndAlarm = dndTimeClock.CreateAlarm(timeSpan, name);
+			DndAlarm dndAlarm = game.Clock.CreateAlarm(timeSpan, name);
 			dndAlarm.AlarmFired += DndAlarm_AlarmFired;
 		}
 
@@ -266,24 +267,38 @@ namespace DHDM
 			if (ea.Alarm.Name.StartsWith(STR_EndSpell))
 			{
 				string spellToEnd = ea.Alarm.Name.Substring(STR_EndSpell.Length);
-				HubtasticBaseStation.ClearWindup(spellToEnd);
-				int parenPos = spellToEnd.IndexOf('(');
-
-				string casterId = string.Empty;
-				if (parenPos > 0)
-				{
-					string playerIdStr = spellToEnd.Substring(parenPos + 1);
-					char[] endChars = { ')' };
-					playerIdStr = playerIdStr.Trim(endChars);
-					if (int.TryParse(playerIdStr, out int playerId))
-					{
-						BreakConcentration(playerId);
-						casterId = $"{GetPlayerName(playerId)}'s ";
-					}
-					spellToEnd = spellToEnd.Substring(0, parenPos);
-				}
-				TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {dndTimeClock.AsFullDndDateTimeString()}.");
+				EndSpellEffects(spellToEnd);
 			}
+		}
+
+		private void Game_SpellDispelled(object sender, DndSpellEventArgs ea)
+		{
+			if (ea.CastedSpell.SpellCaster == null)
+				return;
+
+			string spellToEnd = $"{ea.CastedSpell.Spell.Name}({ea.CastedSpell.SpellCaster.playerID})";
+			EndSpellEffects(spellToEnd);
+		}
+
+		private void EndSpellEffects(string spellToEnd)
+		{
+			HubtasticBaseStation.ClearWindup(spellToEnd);
+			int parenPos = spellToEnd.IndexOf('(');
+
+			string casterId = string.Empty;
+			if (parenPos > 0)
+			{
+				string playerIdStr = spellToEnd.Substring(parenPos + 1);
+				char[] endChars = { ')' };
+				playerIdStr = playerIdStr.Trim(endChars);
+				if (int.TryParse(playerIdStr, out int playerId))
+				{
+					BreakConcentration(playerId);
+					casterId = $"{GetPlayerName(playerId)}'s ";
+				}
+				spellToEnd = spellToEnd.Substring(0, parenPos);
+			}
+			TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
 		Dictionary<int, Spell> concentratedSpells = new Dictionary<int, Spell>();
@@ -313,9 +328,9 @@ namespace DHDM
 		void PrepareToCastSpell(Spell spell, int playerId)
 		{
 			spell.OwnerId = playerId;
-			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {dndTimeClock.AsFullDndDateTimeString()}.");
-			if (spell.Duration.HasValue())
-				CreateAlarm(spell, playerId);
+			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {game.Clock.AsFullDndDateTimeString()}.");
+			//if (spell.Duration.HasValue())
+			//	CreateAlarm(spell, playerId);
 			if (spell.RequiresConcentration)
 				PlayerIsNowConcentrating(playerId, spell);
 		}
@@ -333,6 +348,8 @@ namespace DHDM
 
 		string activeTrailingEffects;
 		string activeDieRollEffects;
+		CastedSpell castedSpellNeedingCompletion = null;
+		Character spellCaster = null;
 
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
@@ -357,20 +374,33 @@ namespace DHDM
 				return;
 			}
 
-			HubtasticBaseStation.ClearWindup("*");
+			// TODO: Clear the weapons, but not the spells...
+			HubtasticBaseStation.ClearWindup("Weapon.*");
+
 
 			Character player = GetPlayer(actionShortcut.PlayerId);
+
+			// TODO: Fix the targeting.
+			if (DndUtils.IsAttack(actionShortcut.Type))
+				player.WillAttack(null, actionShortcut);
+
 			actionShortcut.ExecuteCommands(player);
 			Spell spell = actionShortcut.Spell;
 			if (spell != null)
 			{
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
+				// TODO: Fix the targeting.
 				CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = PlayerID.Merkin });
+
 				spellToCastDto.Windups = actionShortcut.WindupsReversed;
 				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
 				HubtasticBaseStation.CastSpell(serializedObject);
 				tbxDamageDice.Text = spell.DieStr;
+
+				// TODO: Fix the targeting.
+				castedSpellNeedingCompletion = game.Cast(player, spell);
+				spellCaster = player;
 			}
 			else
 			{
@@ -481,6 +511,8 @@ namespace DHDM
 
 		private void InitializeActivePlayerData()
 		{
+			castedSpellNeedingCompletion = null;
+			spellCaster = null;
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 			highlightRectangles = null;
@@ -560,6 +592,35 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			Character player = null;
+			if (castedSpellNeedingCompletion != null)
+			{
+				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
+				spellCaster = null;
+				castedSpellNeedingCompletion = null;
+			}
+
+			if (diceRoll.PlayerRollOptions.Count == 1)
+			{
+				PlayerRollOptions playerRollOptions = diceRoll.PlayerRollOptions[0];
+				player = game.GetPlayerFromId(playerRollOptions.PlayerID);
+				if (player != null)
+				{
+					if (!string.IsNullOrWhiteSpace(player.additionalDiceThisRoll))
+					{
+						diceRoll.DamageDice += "," + player.additionalDiceThisRoll;
+					}
+					if (!string.IsNullOrWhiteSpace(player.dieRollEffectsThisRoll))
+					{
+						diceRoll.AddDieRollEffects(player.dieRollEffectsThisRoll);
+					}
+					if (!string.IsNullOrWhiteSpace(player.trailingEffectsThisRoll))
+					{
+						diceRoll.AddTrailingEffects(player.trailingEffectsThisRoll);
+					}
+				}
+			}
+
 			Dispatcher.Invoke(() =>
 			{
 				showClearButtonTimer.Start();
@@ -571,6 +632,9 @@ namespace DHDM
 			});
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
+
+			if (player != null)
+				player.ResetPlayerRollBasedState();
 		}
 
 		void PrepareForClear()
@@ -787,7 +851,7 @@ namespace DHDM
 			resting = true;
 			try
 			{
-				dndTimeClock.Advance(DndTimeSpan.FromHours(hours));
+				game.Clock.Advance(DndTimeSpan.FromHours(hours));
 			}
 			finally
 			{
@@ -811,9 +875,9 @@ namespace DHDM
 		{
 			if (txtTime == null)
 				return;
-			string timeStr = dndTimeClock.AsFullDndDateTimeString();
+			string timeStr = game.Clock.AsFullDndDateTimeString();
 
-			if (dndTimeClock.InCombat)
+			if (game.Clock.InCombat)
 				timeStr = " " + timeStr + " ";
 
 			if (txtTime.Text == timeStr)
@@ -821,7 +885,7 @@ namespace DHDM
 
 			txtTime.Text = timeStr;
 
-			TimeSpan timeIntoToday = dndTimeClock.Time - new DateTime(dndTimeClock.Time.Year, dndTimeClock.Time.Month, dndTimeClock.Time.Day);
+			TimeSpan timeIntoToday = game.Clock.Time - new DateTime(game.Clock.Time.Year, game.Clock.Time.Month, game.Clock.Time.Day);
 			double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
 
 			string afterSpinMp3 = null;
@@ -859,7 +923,7 @@ namespace DHDM
 				Time = timeStr,
 				BigUpdate = bigUpdate,
 				Rotation = percentageRotation,
-				InCombat = dndTimeClock.InCombat,
+				InCombat = game.Clock.InCombat,
 				FullSpins = daysSinceLastUpdate,
 				AfterSpinMp3 = afterSpinMp3
 			};
@@ -870,7 +934,7 @@ namespace DHDM
 
 		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromSeconds(6));
+			game.Clock.Advance(DndTimeSpan.FromSeconds(6));
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -883,17 +947,17 @@ namespace DHDM
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromDays(1), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(1), ShiftKeyDown);
 		}
 
 		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromDays(10), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(10), ShiftKeyDown);
 		}
 
 		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromDays(30), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(30), ShiftKeyDown);
 		}
 
 		public bool ShiftKeyDown
@@ -921,17 +985,17 @@ namespace DHDM
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromHours(1), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromHours(1), ShiftKeyDown);
 		}
 
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
 		}
 
 		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
 		}
 
 
@@ -1148,7 +1212,7 @@ namespace DHDM
 
 		string GetPlayerName(int playerID)
 		{
-			foreach (Character player in players)
+			foreach (Character player in game.Players)
 			{
 				if (player.playerID == playerID)
 					return StrUtils.GetFirstName(player.name);
@@ -1159,8 +1223,8 @@ namespace DHDM
 
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
 		{
-			dndTimeClock.InCombat = !dndTimeClock.InCombat;
-			if (dndTimeClock.InCombat)
+			game.Clock.InCombat = !game.Clock.InCombat;
+			if (game.Clock.InCombat)
 			{
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollInitiative();
@@ -1173,7 +1237,7 @@ namespace DHDM
 
 		private void OnCombatChanged()
 		{
-			if (dndTimeClock.InCombat)
+			if (game.Clock.InCombat)
 			{
 				tbEnterExitCombat.Text = "Exit Combat";
 				realTimeAdvanceTimer.Stop();
@@ -1203,7 +1267,7 @@ namespace DHDM
 		{
 			TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdateTime;
 			lastUpdateTime = DateTime.Now;
-			dndTimeClock.Advance(timeSinceLastUpdate.TotalMilliseconds);
+			game.Clock.Advance(timeSinceLastUpdate.TotalMilliseconds);
 		}
 
 		void PrepareUiForClearButton()
@@ -2241,7 +2305,7 @@ namespace DHDM
 
 		Character GetPlayer(int playerId)
 		{
-			foreach (Character player in players)
+			foreach (Character player in game.Players)
 				if (player.playerID == playerId)
 					return player;
 			return null;
@@ -2255,7 +2319,7 @@ namespace DHDM
 			{
 				tabPlayers.Items.Clear();
 
-				foreach (Character player in players)
+				foreach (Character player in game.Players)
 				{
 					PlayerTabItem tabItem = new PlayerTabItem();
 					tabItem.Header = player.name;
@@ -2379,7 +2443,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				if (dndTimeClock.InCombat)
+				if (game.Clock.InCombat)
 					TellDungeonMaster("Already in combat!");
 				else
 				{
@@ -2392,7 +2456,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				if (!dndTimeClock.InCombat)
+				if (!game.Clock.InCombat)
 					TellDungeonMaster("Already NOT in combat!");
 				else
 				{
@@ -2520,13 +2584,20 @@ namespace DHDM
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
 			//PlayerFactory.BuildPlayers(players);
+			game.Players.Clear();
 			AllPlayers.LoadData();
 			AllDieRollEffects.LoadData();
 			AllTrailingEffects.LoadData();
 
-			players = AllPlayers.GetActive();
+			List<Character> players = AllPlayers.GetActive();
+			
 			string playerData = JsonConvert.SerializeObject(players);
 			HubtasticBaseStation.SetPlayerData(playerData);
+
+			foreach (Character player in players)
+			{
+				game.AddPlayer(player);
+			}
 
 			BuildPlayerTabs();
 			BuildPlayerUI();
@@ -2545,7 +2616,7 @@ namespace DHDM
 			grdPlayerRollOptions.RowDefinitions.Clear();
 			int row = 0;
 
-			foreach (Character player in players)
+			foreach (Character player in game.Players)
 			{
 				int playerId = player.playerID;
 				grdPlayerRollOptions.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
@@ -2714,7 +2785,6 @@ namespace DHDM
 					checkbox.IsChecked = checkbox.PlayerId == playerID;
 		}
 
-		List<Character> players = new List<Character>();
 		bool buildingTabs;
 
 		private void BtnRollExtraOnly_Click(object sender, RoutedEventArgs e)
@@ -2755,7 +2825,7 @@ namespace DHDM
 
 		public int GetPlayerIdFromNameStart(string characterName)
 		{
-			return AllPlayers.GetPlayerIdFromNameStart(players, characterName);
+			return AllPlayers.GetPlayerIdFromNameStart(game.Players, characterName);
 		}
 
 		private void ChangePlayerHealth(TextBox textBox, int multiplier)
@@ -2921,7 +2991,7 @@ namespace DHDM
 
 		string GetNopeMessage()
 		{
-			int rand = new Random((int)dndTimeClock.Time.Ticks).Next(10);
+			int rand = new Random((int)game.Clock.Time.Ticks).Next(10);
 			switch (rand)
 			{
 				case 0:
@@ -2957,10 +3027,10 @@ namespace DHDM
 
 		string GetTimeLeft(int playerId, Spell spell)
 		{
-			DndAlarm alarm = dndTimeClock.GetAlarm(GetAlarmName(spell, playerId));
+			DndAlarm alarm = game.Clock.GetAlarm(GetAlarmName(spell, playerId));
 			if (alarm == null)
 				return "0 seconds";
-			TimeSpan time = alarm.TriggerTime - dndTimeClock.Time;
+			TimeSpan time = alarm.TriggerTime - game.Clock.Time;
 			string result;
 			if (time.TotalDays >= 1)
 				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";

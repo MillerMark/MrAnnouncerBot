@@ -7,6 +7,9 @@ namespace DndCore
 {
 	public class PlayerActionShortcut
 	{
+		const string STR_SpellPrefix = "Spell.";
+		const string STR_WeaponPrefix = "Weapon.";
+		const string STR_OtherPrefix = "Other.";
 		static int shortcutIndex;
 		public List<WindupDto> Windups { get; }
 		public List<WindupDto> WindupsReversed {
@@ -71,6 +74,7 @@ namespace DndCore
 		public WeaponProperties WeaponProperties { get; set; }
 		public string TrailingEffects { get; set; }
 		public string DieRollEffects { get; set; }
+		public string lastPrefix;
 
 		public PlayerActionShortcut()
 		{
@@ -188,15 +192,23 @@ namespace DndCore
 			Dice = Spell.DieStr;
 			Part = DndUtils.ToTurnPart(Spell.CastingTime);
 		}
-		public void AddEffect(PlayerActionShortcutDto shortcutDto, Character player, int slotLevel = 0)
+		public void AddEffect(PlayerActionShortcutDto shortcutDto, string windupPrefix, Character player, int slotLevel = 0)
 		{
+			lastPrefix = windupPrefix;
 			int minSlotLevel = MathUtils.GetInt(shortcutDto.minSlotLevel);
 			if (slotLevel < minSlotLevel)
 				return;
 
 			WindupDto windup = WindupDto.From(shortcutDto, player);
+
 			if (windup == null)
 				return;
+
+			string shortcutName = shortcutDto.name;
+			if (string.IsNullOrWhiteSpace(shortcutName))
+				shortcutName = this.Name;
+
+			windup.Name = windupPrefix + shortcutName;
 			if (Spell?.Duration.HasValue() == true)
 				windup.Lifespan = 0;
 			Windups.Add(windup);
@@ -234,8 +246,6 @@ namespace DndCore
 			}
 			else
 			{
-				// TODO: if there's a spell, add entries for each spell slot!!!
-
 				Spell spell = AllSpells.Get(cleanName, player);
 				if (spell != null)
 				{
@@ -267,10 +277,8 @@ namespace DndCore
 					else
 						results.Add(FromSpell(shortcutDto, player, spell));
 				}
-				else
-					results.Add(FromAction(shortcutDto, player));
-
-
+				else // Not a weapon or a spell.
+					results.Add(FromAction(shortcutDto, player, STR_OtherPrefix));
 			}
 
 			return results;
@@ -278,7 +286,7 @@ namespace DndCore
 
 		private static PlayerActionShortcut FromWeapon(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, player, damageStr, suffix);
+			PlayerActionShortcut result = FromAction(shortcutDto, player, STR_WeaponPrefix, damageStr, suffix);
 			result.WeaponProperties = weaponProperties;
 
 			if (attackType == AttackType.None && weaponProperties != WeaponProperties.None)
@@ -317,7 +325,7 @@ namespace DndCore
 
 		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, player, damageStr, suffix, slotLevelOverride);
+			PlayerActionShortcut result = FromAction(shortcutDto, player, STR_SpellPrefix, damageStr, suffix, slotLevelOverride);
 
 			int spellSlotLevel = spell.Level;
 			if (slotLevelOverride > 0)
@@ -328,7 +336,7 @@ namespace DndCore
 			return result;
 		}
 
-		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = "", string suffix = "", int slotLevel = 0)
+		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, Character player, string windupPrefix, string damageStr = "", string suffix = "", int slotLevel = 0)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
 			result.Description = shortcutDto.description;
@@ -349,7 +357,7 @@ namespace DndCore
 			result.VantageMod = DndUtils.ToVantage(shortcutDto.vantageMod);
 			result.ModifiesExistingRoll = MathUtils.IsChecked(shortcutDto.rollMod);
 			result.Commands = shortcutDto.commands;
-			result.AddEffect(shortcutDto, player, slotLevel);
+			result.AddEffect(shortcutDto, windupPrefix, player, slotLevel);
 			result.SpellSlotLevel = slotLevel;
 			//player.ResetPlayerTurnBasedState();
 			result.ProcessDieStr(shortcutDto, damageStr);

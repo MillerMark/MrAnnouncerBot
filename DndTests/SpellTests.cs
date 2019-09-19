@@ -372,10 +372,6 @@ namespace DndTests
 				Assert.AreEqual("Wrathful Smite", ava.dieRollMessageThisRoll);
 				Assert.IsTrue(ava.SpellIsActive(SpellNames.WrathfulSmite));
 			}
-
-
-
-
 		}
 	}
 }
