@@ -192,8 +192,14 @@ namespace DndCore
 			Dice = Spell.DieStr;
 			Part = DndUtils.ToTurnPart(Spell.CastingTime);
 		}
-		public void AddEffect(PlayerActionShortcutDto shortcutDto, string windupPrefix, Character player, int slotLevel = 0)
+		public void AddEffect(PlayerActionShortcutDto shortcutDto, string windupPrefix, Character player, int slotLevel = 0, bool isWindup = false)
 		{
+			if (isWindup)
+			{
+				if (!windupPrefix.StartsWith("Windup."))
+					windupPrefix = "Windup." + windupPrefix;
+			}
+			
 			lastPrefix = windupPrefix;
 			int minSlotLevel = MathUtils.GetInt(shortcutDto.minSlotLevel);
 			if (slotLevel < minSlotLevel)
@@ -278,7 +284,12 @@ namespace DndCore
 						results.Add(FromSpell(shortcutDto, player, spell));
 				}
 				else // Not a weapon or a spell.
-					results.Add(FromAction(shortcutDto, player, STR_OtherPrefix));
+				{
+					PlayerActionShortcut shortcut = FromAction(shortcutDto);
+					results.Add(shortcut);
+					shortcut.AddEffect(shortcutDto, "", player);
+
+				}
 			}
 
 			return results;
@@ -286,7 +297,7 @@ namespace DndCore
 
 		private static PlayerActionShortcut FromWeapon(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, player, STR_WeaponPrefix, damageStr, suffix);
+			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix);
 			result.WeaponProperties = weaponProperties;
 
 			if (attackType == AttackType.None && weaponProperties != WeaponProperties.None)
@@ -314,6 +325,8 @@ namespace DndCore
 
 			result.ProcessDieStr(shortcutDto, damageStr);
 
+			result.AddEffect(shortcutDto, STR_WeaponPrefix, player);
+
 			return result;
 		}
 
@@ -325,18 +338,20 @@ namespace DndCore
 
 		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, player, STR_SpellPrefix, damageStr, suffix, slotLevelOverride);
-
+			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix, slotLevelOverride);
+			result.UsesMagic = true;
 			int spellSlotLevel = spell.Level;
 			if (slotLevelOverride > 0)
 				spellSlotLevel = slotLevelOverride;
 			result.AddSpell(spellSlotLevel, player);
 			result.AttackingAbility = player.spellCastingAbility;
 			result.ProcessDieStr(shortcutDto, damageStr);
+			bool isWindup = result.Spell != null && !result.Spell.Duration.HasValue() && result.Spell.MustRollDiceToCast();
+			result.AddEffect(shortcutDto, STR_SpellPrefix, player, spellSlotLevel, isWindup);
 			return result;
 		}
 
-		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, Character player, string windupPrefix, string damageStr = "", string suffix = "", int slotLevel = 0)
+		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string damageStr = "", string suffix = "", int slotLevel = 0)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
 			result.Description = shortcutDto.description;
@@ -356,8 +371,8 @@ namespace DndCore
 			result.Type = GetDiceRollType(shortcutDto.type);
 			result.VantageMod = DndUtils.ToVantage(shortcutDto.vantageMod);
 			result.ModifiesExistingRoll = MathUtils.IsChecked(shortcutDto.rollMod);
+			result.UsesMagic = MathUtils.IsChecked(shortcutDto.magic);
 			result.Commands = shortcutDto.commands;
-			result.AddEffect(shortcutDto, windupPrefix, player, slotLevel);
 			result.SpellSlotLevel = slotLevel;
 			//player.ResetPlayerTurnBasedState();
 			result.ProcessDieStr(shortcutDto, damageStr);

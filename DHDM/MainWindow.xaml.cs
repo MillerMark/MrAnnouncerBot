@@ -391,7 +391,7 @@ namespace DHDM
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 				// TODO: Fix the targeting.
-				CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = PlayerID.Merkin });
+				CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
 
 				spellToCastDto.Windups = actionShortcut.WindupsReversed;
 				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
@@ -505,7 +505,8 @@ namespace DHDM
 			}
 			InitializeActivePlayerData();
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
-			HubtasticBaseStation.ClearWindup("*");
+			HubtasticBaseStation.ClearWindup("Weapon.*");
+			HubtasticBaseStation.ClearWindup("Windup.*");
 			SetActionShortcuts(ActivePlayerId);
 		}
 
@@ -620,6 +621,10 @@ namespace DHDM
 					}
 				}
 			}
+
+			if (diceRoll.IsOnePlayer && player != null)
+				player.ReadyRollDice(diceRoll.Type, diceRoll.DamageDice, (int)Math.Round(diceRoll.HiddenThreshold));
+
 
 			Dispatcher.Invoke(() =>
 			{
@@ -1062,8 +1067,10 @@ namespace DHDM
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
-			// TODO: Clear the actual windup by name.
-			HubtasticBaseStation.ClearWindup("*");
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
+			HubtasticBaseStation.ClearWindup("Windup.*");
+			HubtasticBaseStation.ClearWindup("Weapon.*");
 			if (ea.DiceRollData != null)
 			{
 				int rollValue = ea.DiceRollData.roll;
@@ -1138,8 +1145,11 @@ namespace DHDM
 				if (rollTitle == "")
 					rollTitle = "Dice roll: ";
 				string message = string.Empty;
+				Character singlePlayer = null;
 				if (ea.DiceRollData.multiplayerSummary != null && ea.DiceRollData.multiplayerSummary.Count > 0)
 				{
+					if (ea.DiceRollData.multiplayerSummary.Count == 1)
+						singlePlayer = AllPlayers.GetFromId(ea.DiceRollData.multiplayerSummary[0].playerId);
 					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
 					{
 						string playerName = StrUtils.GetFirstName(playerRoll.name);
@@ -1161,6 +1171,7 @@ namespace DHDM
 				}
 				else
 				{
+					singlePlayer = AllPlayers.GetFromId(ea.DiceRollData.playerID);
 					string playerName = GetPlayerName(ea.DiceRollData.playerID);
 					if (playerName != "")
 						playerName = playerName + "'s ";
@@ -1169,6 +1180,11 @@ namespace DHDM
 
 					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
 				}
+
+				if (singlePlayer != null)
+					game.DieRollStopped(singlePlayer, rollValue, ea.DiceRollData.damage);
+
+				//DieRollStopped
 
 				message += additionalMessage;
 				if (!string.IsNullOrWhiteSpace(message))
@@ -3160,7 +3176,7 @@ namespace DHDM
 
 		public void DropWindup()
 		{
-			HubtasticBaseStation.ClearWindup("*");
+			HubtasticBaseStation.ClearWindup("Weapon.*");
 			TellDungeonMaster("Dropping windups...");
 		}
 

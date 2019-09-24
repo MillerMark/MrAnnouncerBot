@@ -198,6 +198,7 @@ class DiceLayer {
 	fangs: Sprites;
 	halos: Sprites;
 	ravens: Sprites[];
+	fireTrails: Sprites[];
 	diceBlowColoredSmoke: Sprites;
 	diceBombBase: Sprites;
 	diceBombTop: Sprites;
@@ -471,6 +472,9 @@ class DiceLayer {
 
 		this.ravens = [];
 		this.loadRavens(3);
+
+		this.fireTrails = [];
+		this.loadFireTrails();
 
 		this.spirals = new Sprites("/Dice/Spiral/Spiral", 64, fps40, AnimationStyle.Sequential, true);
 		this.spirals.name = 'Spiral';
@@ -833,6 +837,32 @@ class DiceLayer {
 			this.allBackLayerEffects.add(raven);
 			this.ravens.push(raven);
 		}
+	}
+
+	loadFireTrails(): void {
+		let fireTrailA = new Sprites(`/Dice/FireTrail/A/FireTrailA`, 68, fps30, AnimationStyle.Sequential, true);
+		fireTrailA.originX = 115;
+		fireTrailA.originY = 444;
+		this.allBackLayerEffects.add(fireTrailA);
+		this.fireTrails.push(fireTrailA);
+
+		let fireTrailB = new Sprites(`/Dice/FireTrail/B/FireTrailB`, 61, fps30, AnimationStyle.Sequential, true);
+		fireTrailB.originX = 73;
+		fireTrailB.originY = 641;
+		this.allBackLayerEffects.add(fireTrailB);
+		this.fireTrails.push(fireTrailB);
+
+		let fireTrailC = new Sprites(`/Dice/FireTrail/C/FireTrailC`, 36, fps30, AnimationStyle.Sequential, true);
+		fireTrailC.originX = 142;
+		fireTrailC.originY = 174;
+		this.allBackLayerEffects.add(fireTrailC);
+		this.fireTrails.push(fireTrailC);
+
+		let fireTrailD = new Sprites(`/Dice/FireTrail/D/FireTrailD`, 78, fps30, AnimationStyle.Sequential, true);
+		fireTrailD.originX = 110;
+		fireTrailD.originY = 325;
+		this.allBackLayerEffects.add(fireTrailD);
+		this.fireTrails.push(fireTrailD);
 	}
 
 	addBackgroundRect(x: number, y: number, width: number, height: number, lifespan: number): AnimatedRectangle {
@@ -1593,6 +1623,11 @@ class DiceLayer {
 		return this.ravens[index];
 	}
 
+	getFireTrails() {
+		let index: number = Math.floor(Math.random() * this.fireTrails.length);
+		return this.fireTrails[index];
+	}
+
 	blowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
 		this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
 	}
@@ -1814,6 +1849,10 @@ class DiceLayer {
 
 		if (trailingEffect.EffectType === 'Raven') {
 			sprites = this.getRavens();
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+		}
+		else if (trailingEffect.EffectType === 'FireTrails') {
+			sprites = this.getFireTrails();
 			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
 		}
 

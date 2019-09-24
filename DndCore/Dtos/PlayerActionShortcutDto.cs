@@ -17,6 +17,7 @@ namespace DndCore
 		public string addDiceTitle { get; set; }
 		public string spellSlotLevel { get; set; }
 		public string time { get; set; }
+		public string magic { get; set; }
 		public string dieStr { get; set; }
 		public string plusModifier { get; set; }
 		public string minDamage { get; set; }

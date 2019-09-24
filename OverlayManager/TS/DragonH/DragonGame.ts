@@ -244,7 +244,8 @@ abstract class DragonGame extends GamePlusQuiz {
 		let spell: CastedSpellDataDto = JSON.parse(spellData);
 
 		let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
-		this.addWindups(spell.Windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
+		//this.addWindups(spell.Windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
+		this.addWindups(spell.Windups, playerX, `(${spell.Spell.OwnerId})`);
 	}
 
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
@@ -261,7 +262,7 @@ abstract class DragonGame extends GamePlusQuiz {
 					hue = Random.max(360);
 				let sprite: SpriteProxy = sprites.addShifted(playerX + windup.Offset.x, 934 + windup.Offset.y, startingFrameIndex, hue, windup.Saturation, windup.Brightness);
 				if (name)
-					sprite.name = name;
+					sprite.name = windup.Name + name;
 				else 
 					sprite.name = windup.Name;
 				console.log('Adding Windup: ' + sprite.name);

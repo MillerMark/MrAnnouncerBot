@@ -24,14 +24,5 @@ namespace BotCore
 			}
 			return result;
 		}
-
-        public static void WriteFanfareData(string dataFileName, List<FanfareDto> records)
-        {
-            using (var writer = new StreamWriter(dataFileName))
-            using (var csv = new CsvWriter(writer))
-            {
-                csv.WriteRecords(records);
-            }
-        }
-    }
+	}
 }

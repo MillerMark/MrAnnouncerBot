@@ -6,7 +6,8 @@
 
 class DragonBackGame extends DragonGame {
 	readonly clockMargin: number = 0;
-	readonly clockBottomY: number = screenHeight; // 229
+	readonly clockOffsetX: number = 0; // 49
+	readonly clockBottomY: number = screenHeight; // 230
 	readonly clockScale: number = 0.84;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
@@ -21,7 +22,7 @@ class DragonBackGame extends DragonGame {
 	dndTimeStr: string;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
-  
+
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -61,7 +62,7 @@ class DragonBackGame extends DragonGame {
 	}
 
 	private getClockX(): number {
-		return screenWidth - this.clockPanel.originX - this.clockMargin;
+		return screenWidth - this.clockPanel.originX - this.clockMargin + this.clockOffsetX;
 	}
 
 	private drawTime(context: CanvasRenderingContext2D) {
@@ -74,7 +75,7 @@ class DragonBackGame extends DragonGame {
 		context.font = textHeight + "px Baskerville Old Face";
 		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
 		let boxHeight: number = textHeight + 2 * verticalMargin;
-		let centerX: number = screenWidth - this.clockPanel.originX - this.clockMargin;
+		let centerX: number = this.getClockX();
 		let centerY: number = this.clockBottomY - textHeight / 2 - verticalMargin;
 		//context.fillStyle = "#3b3581";
 		//context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
@@ -200,7 +201,7 @@ class DragonBackGame extends DragonGame {
 		this.lightning.originX = 106;
 		this.lightning.originY = 540;
 		this.allWindupEffects.add(this.lightning);
-		
+
 		Folders.assets = 'GameDev/Assets/DroneGame/';
 
 		//myRocket = new Rocket(0, 0);

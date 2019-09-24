@@ -28,7 +28,9 @@ namespace DndCore
 					foreach (PlayerActionShortcut shortcut in lastShortcuts)
 					{
 						Character player = AllPlayers.GetFromId(shortcut.PlayerId);
-						shortcut.AddEffect(thisShortcutDto, shortcut.lastPrefix, player, shortcut.SpellSlotLevel);
+
+						bool isWindup = shortcut.Spell != null && !shortcut.Spell.Duration.HasValue() && shortcut.Spell.MustRollDiceToCast();
+						shortcut.AddEffect(thisShortcutDto, shortcut.lastPrefix, player, shortcut.SpellSlotLevel, isWindup);
 					}
 				}
 				else

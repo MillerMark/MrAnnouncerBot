@@ -218,38 +218,42 @@ namespace MrAnnouncerBot
 			if (suppressingFanfare)
 				return;
 
-            int userFanfares = fanfares.Where(x => string.Compare(x.DisplayName, chatMessage.DisplayName, StringComparison.InvariantCultureIgnoreCase) == 0).Count();
+			int userFanfareCount = GetFanfareCount(chatMessage.DisplayName);
 
-            if (userFanfares > 0)
-            {
+			if (userFanfareCount > 0)
+			{
 				PlayFanfare(chatMessage.DisplayName, chatMessage.Message);
 			}
 			else
 				PlayBackloggedFanfare();
 		}
 
+		private int GetFanfareCount(string displayName)
+		{
+			return fanfares.Where(x => string.Compare(x.DisplayName, displayName, StringComparison.InvariantCultureIgnoreCase) == 0).Count();
+		}
+
 		void PlayBackloggedFanfare()
 		{
 
-            if (fanfareQueue.Count == 0)
-                return;
+			if (fanfareQueue.Count == 0)
+				return;
 
-            string displayName = fanfareQueue.Peek();
+			string displayName = fanfareQueue.Peek();
 
-            if (PlayFanfare(displayName))
-                fanfareQueue.Dequeue();
+			if (PlayFanfare(displayName))
+				fanfareQueue.Dequeue();
 
-        }
+		}
 
-        private const string emptyString = "";
+		private const string emptyString = "";
 
 
 		private bool PlayFanfare(string displayName, string message = emptyString)
+		{
 
-        {
-
-            if (playedFanfares.ContainsKey(displayName) && playedFanfares[displayName].DayOfYear == DateTime.Now.DayOfYear)
-                return true;
+			if (playedFanfares.ContainsKey(displayName) && playedFanfares[displayName].DayOfYear == DateTime.Now.DayOfYear)
+				return true;
 
 			bool stillPlaying = DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(lastFanfareDuration);
 			bool suppressFanfareToday = message.StartsWith('[');
@@ -262,107 +266,117 @@ namespace MrAnnouncerBot
 
 			if (stillPlaying || RestrictedSceneIsActive())
 			{
-                if (!fanfareQueue.Contains(displayName))
-                    fanfareQueue.Enqueue(displayName);
-                return false;
-            }
+				if (!fanfareQueue.Contains(displayName))
+					fanfareQueue.Enqueue(displayName);
+				return false;
+			}
 
 			lastFanfareActivated = DateTime.Now;
 
 
-            // Determine the Fanfare to be played
-            FanfareDto fanfare = DetermineFanfareToPlay(displayName);
+			// Determine the Fanfare to be played
+			FanfareDto fanfare = DetermineFanfareToPlay(displayName);
 
-            if (fanfare != null && (DateTime.Now - fanfare.LastPlayed).Days > 0)
-            {
-                string sceneName = fanfare.DisplayName + fanfare.Index;
+			if (fanfare != null && (DateTime.Now - fanfare.LastPlayed).Days > 0)
+			{
+				string sceneName = fanfare.DisplayName;
+				if (GetFanfareCount(fanfare.DisplayName) > 1)
+					sceneName += fanfare.Index;
 
-                lastFanfareDuration = fanfare.SecondsLong + 3;
+				lastFanfareDuration = fanfare.SecondsLong + 3;
 
+				ActivatingSceneByName(sceneName, "Fanfare");
+				try
+				{
+					hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);
+					obsWebsocket.SetCurrentScene(sceneName);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("Unable to play fanfare: " + sceneName);
+				}
 
-                ActivatingSceneByName(sceneName, "Fanfare");
-                try
-                {
-                    hubConnection.InvokeAsync("SuppressVolume", fanfare.SecondsLong);
-                    obsWebsocket.SetCurrentScene(sceneName);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Unable to play fanfare: " + sceneName);
-                }
+				MarkFanfareAsPlayed(fanfare);
 
-                MarkFanfareAsPlayed(fanfare);
-            }
-
-			Chat(new VIPGreeting(displayName).Greeting);
+				Chat(new VIPGreeting(displayName).Greeting);
+			}
 
 			return true;
 		}
 
-        FanfareDto DetermineFanfareToPlay(string displayName)
-        {
+		FanfareDto DetermineFanfareToPlay(string displayName)
+		{
 
-            List<FanfareDto> userFanfares = fanfares.Where(x => string.Compare(x.DisplayName, displayName, StringComparison.InvariantCultureIgnoreCase) == 0).ToList();
+			List<FanfareDto> userFanfares = fanfares.Where(x => string.Compare(x.DisplayName, displayName, StringComparison.InvariantCultureIgnoreCase) == 0).ToList();
 
-            // Make sure none of the fanfares have been played today
-            // Handles scenario where MrAnnouncerBot has been restarted mid stream
-            if (userFanfares.Where(_ => (DateTime.Now - _.LastPlayed).Days == 0).Count() == 0)
-            {
+			// Make sure none of the fanfares have been played today
+			// Handles scenario where MrAnnouncerBot has been restarted mid stream
+			if (userFanfares.Where(_ => (DateTime.Now - _.LastPlayed).Days == 0).Count() == 0)
+			{
 
-                // Get the list of Full Length fanfares 
-                // that have not been played in the last week
-                IEnumerable<FanfareDto> fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.fullLength)
-                .Where(_ => (DateTime.Now - _.LastPlayed).Days > 6);
+				// Get the list of Full Length fanfares 
+				// that have not been played in the last week
+				IEnumerable<FanfareDto> fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.fullLength)
+				.Where(_ => (DateTime.Now - _.LastPlayed).Days > 6);
 
-                // No full length fanfares to play.  Get the clipped fanfare
-                if (fanFaresToPlay.Count() == 0)
-                {
-                    fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.clipped);
-                }
+				// No full length fanfares to play.  Get the clipped fanfare
+				if (fanFaresToPlay.Count() == 0)
+				{
+					fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.clipped);
+				}
 
 
-                // Select a random fanfare from the available list
+				// Select a random fanfare from the available list
 
-                if (fanFaresToPlay.Count() == 0)
-                {
-                    return null;
-                }
-                else if (fanFaresToPlay.Count() == 1)
-                {
-                    return fanFaresToPlay.First();
-                }
-                else
-                {
-                    return fanFaresToPlay.ElementAt(new Random().Next(fanFaresToPlay.Count()));
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
+				if (fanFaresToPlay.Count() == 0)
+				{
+					return null;
+				}
+				else if (fanFaresToPlay.Count() == 1)
+				{
+					return fanFaresToPlay.First();
+				}
+				else
+				{
+					return fanFaresToPlay.ElementAt(new Random().Next(fanFaresToPlay.Count()));
+				}
+			}
+			else
+			{
+				return null;
+			}
+		}
 
-        void MarkFanfareAsPlayed(FanfareDto fanfare)
-        {
+		static void WriteFanfareData(string dataFileName, List<FanfareDto> records)
+		{
+			using (var writer = new StreamWriter(dataFileName))
+			using (var csv = new CsvWriter(writer))
+			{
+				csv.WriteRecords(records);
+			}
+		}
 
-            FanfareDto updatedFanfare = fanfares.Where(_ => _.DisplayName == fanfare.DisplayName && _.Index == fanfare.Index && _.Duration == fanfare.Duration).First();
+		void MarkFanfareAsPlayed(FanfareDto fanfare)
+		{
 
-            updatedFanfare.LastPlayed = DateTime.Now;
+			FanfareDto updatedFanfare = fanfares.Where(_ => _.DisplayName == fanfare.DisplayName && _.Index == fanfare.Index && _.Duration == fanfare.Duration).First();
 
-            CsvData.WriteFanfareData(FileName.FanfareData_Source, fanfares);
+			updatedFanfare.LastPlayed = DateTime.Now;
 
-            MarkFanfareAsPlayed(fanfare.DisplayName);
-        }
+			WriteFanfareData(FileName.FanfareData_Source, fanfares);
 
-        void MarkFanfareAsPlayed(string DisplayName)
-        {
-            if (playedFanfares.ContainsKey(DisplayName))
-                playedFanfares[DisplayName] = DateTime.Now;
-            else
-                playedFanfares.Add(DisplayName, DateTime.Now);
-        }
+			MarkFanfareAsPlayed(fanfare.DisplayName);
+		}
 
-        void MarkCodeRushIssue(OnChatCommandReceivedArgs obj)
+		void MarkFanfareAsPlayed(string DisplayName)
+		{
+			if (playedFanfares.ContainsKey(DisplayName))
+				playedFanfares[DisplayName] = DateTime.Now;
+			else
+				playedFanfares.Add(DisplayName, DateTime.Now);
+		}
+
+		void MarkCodeRushIssue(OnChatCommandReceivedArgs obj)
 		{
 			if (obj.Command.ChatMessage.UserId != STR_CodeRushedUserId)
 				return;
@@ -875,13 +889,13 @@ namespace MrAnnouncerBot
 			if (e.Command.ChatMessage.DisplayName == "CodeRushed")
 			{
 				if (e.Command.CommandText == "Reset" && e.Command.ArgumentsAsString == "Fanfare")
-					playedFanfares.Clear();
+					ResetFanfares();
 
-                if (e.Command.CommandText == "Fanfare")
-                {
-                    string displayName = e.Command.ChatMessage.DisplayName;
-                    PlayFanfare(displayName);
-                }
+				if (e.Command.CommandText == "Fanfare")
+				{
+					string displayName = e.Command.ChatMessage.DisplayName;
+					PlayFanfare(displayName);
+				}
 			}
 
 			var scene = GetScene(command);
@@ -891,6 +905,15 @@ namespace MrAnnouncerBot
 			//	Whisper(e.Command.ChatMessage.Username, GetWhatMessage() + " Command not recognized: " + e.Command.CommandText);
 		}
 
+		void ResetFanfares()
+		{
+			playedFanfares.Clear();
+			foreach (FanfareDto fanfareDto in fanfares)
+			{
+				fanfareDto.LastPlayed = DateTime.MinValue;
+			}
+			WriteFanfareData(FileName.FanfareData_Source, fanfares);
+		}
 
 		string QuotedIfSpace(string chatShortcut)
 		{
@@ -970,7 +993,10 @@ namespace MrAnnouncerBot
 			}
 			else if (timeString.Contains("m"))
 			{
-				return "m\\mss\\s";
+				if (timeString.Contains("s"))
+					return "m\\mss\\s";
+				else
+					return "m\\m";
 			}
 			else if (timeString.Contains("s"))
 			{
@@ -985,7 +1011,18 @@ namespace MrAnnouncerBot
 
 		private TimeSpan GetTimeSpanFromString(string timeString)
 		{
-			return TimeSpan.ParseExact(timeString, GetTimeParseFormatExpression(timeString), System.Globalization.CultureInfo.CurrentCulture);
+			TimeSpan timeSpan;
+			try
+			{
+				// TODO: Maybe give up on ParseExact...
+				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpression(timeString), System.Globalization.CultureInfo.CurrentCulture);
+			}
+			catch (Exception ex)
+			{
+				Debugger.Break();
+				timeSpan = TimeSpan.FromSeconds(1);
+			}
+			return timeSpan;
 		}
 
 		async Task<string> GetActiveShowPointURL(string backTrackStr = "")

@@ -113,5 +113,12 @@ namespace DndCore
 				AddDieRollEffect(effect);
 			}
 		}
+		public bool IsOnePlayer
+		{
+			get
+			{
+				return PlayerRollOptions == null || PlayerRollOptions.Count == 1;
+			}
+		}
 	}
 }
