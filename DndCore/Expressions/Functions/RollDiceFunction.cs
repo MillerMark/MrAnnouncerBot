@@ -16,6 +16,8 @@ namespace DndCore
 
 			player.ReadyRollDice(DiceRollType.None, diceStr);
 
+			player.RollDiceNow();
+
 			return null;
 		}
 	}

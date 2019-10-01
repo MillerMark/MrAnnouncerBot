@@ -15,6 +15,8 @@ namespace DHDM
 		public int health { get; set; }
 		public int extra { get; set; }
 		public List<PlayerRoll> multiplayerSummary { get; set; }
+		public List<IndividualRoll> individualRolls { get; set; }
+
 		public DiceRollType type { get; set; }
 		public Skills skillCheck { get; set; }
 		public Ability savingThrow { get; set; }

@@ -317,7 +317,7 @@ namespace MrAnnouncerBot
 				// Get the list of Full Length fanfares 
 				// that have not been played in the last week
 				IEnumerable<FanfareDto> fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.fullLength)
-				.Where(_ => (DateTime.Now - _.LastPlayed).Days > 6);
+				.Where(_ => (DateTime.Now - _.LastPlayed).Days > 3);
 
 				// No full length fanfares to play.  Get the clipped fanfare
 				if (fanFaresToPlay.Count() == 0)

@@ -49,7 +49,7 @@ namespace DndTests
 			AllPlayers.LoadData();
 			Character fred = AllPlayers.Get("Old Fred");
 			fred.ActivateFeature("SecondWind");
-			Assert.AreEqual("1d10+4(healing)", fred.diceJustRolled);
+			Assert.AreEqual("1d10+4(healing)", fred.diceWeAreRolling);
 		}
 	}
 }

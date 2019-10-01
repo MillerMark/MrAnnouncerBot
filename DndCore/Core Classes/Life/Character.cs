@@ -8,8 +8,14 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
+		public event RollDiceEventHandler RollDiceRequest;
 		public event StateChangedEventHandler StateChanged;
-		
+
+		protected virtual void OnRollDiceRequest(object sender, RollDiceEventArgs ea)
+		{
+			RollDiceRequest?.Invoke(sender, ea);
+		}
+
 		protected virtual void OnStateChanged(object sender, StateChangedEventArgs ea)
 		{
 			StateChanged?.Invoke(sender, ea);
@@ -50,7 +56,7 @@ namespace DndCore
 		public Ability savingAgainst = Ability.none;
 		public Ability attackingAbility = Ability.none;
 		public Skills checkingSkills = Skills.none;
-		public string diceJustRolled = string.Empty;
+		public string diceWeAreRolling = string.Empty;
 		public string additionalDiceThisRoll = string.Empty;
 		public string trailingEffectsThisRoll = string.Empty;
 		public string dieRollEffectsThisRoll = string.Empty;
@@ -86,7 +92,7 @@ namespace DndCore
 			attackingAbilityModifier = 0;
 			attackingType = AttackType.None;
 			attackingKind = AttackKind.Any;
-			diceJustRolled = string.Empty;
+			diceWeAreRolling = string.Empty;
 			targetThisRollIsCreature = false;
 			damageOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
@@ -979,20 +985,6 @@ namespace DndCore
 			states.Clear();
 		}
 
-		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
-		{
-			if (spellToCast != null)
-			{
-				if (Game != null)
-					Game.CompleteCast(this, spellToCast);
-				spellToCast = null;
-			}
-
-			if (Game != null)
-				Game.SetHiddenThreshold(this, hiddenThreshold, rollType);
-			diceJustRolled = diceStr;
-		}
-
 		public void GiveAdvantageThisRoll()
 		{
 			advantageDiceThisRoll++;
@@ -1226,6 +1218,25 @@ namespace DndCore
 		{
 			if (states.ContainsKey(varName))
 				states.Remove(varName);
+		}
+
+		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
+		{
+			if (spellToCast != null)
+			{
+				if (Game != null)
+					Game.CompleteCast(this, spellToCast);
+				spellToCast = null;
+			}
+
+			if (Game != null)
+				Game.SetHiddenThreshold(this, hiddenThreshold, rollType);
+			diceWeAreRolling = diceStr;
+		}
+
+		public void RollDiceNow()
+		{
+			OnRollDiceRequest(this, new RollDiceEventArgs(diceWeAreRolling));
 		}
 	}
 }

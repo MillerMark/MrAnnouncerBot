@@ -225,6 +225,12 @@ namespace DndCore
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
 			string cleanName = DndUtils.GetCleanItemName(shortcutDto.name);
 			Weapon weapon = AllWeapons.Get(cleanName);
+			if (weapon == null && cleanName.IndexOf(" of ") > 0)
+			{
+				// Try again with the weapon...
+				cleanName = cleanName.EverythingBefore(" of ");
+				weapon = AllWeapons.Get(cleanName);
+			}
 			Character player = AllPlayers.GetFromId(PlayerID.FromName(shortcutDto.player));
 
 			if (weapon != null)

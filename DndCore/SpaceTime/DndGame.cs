@@ -30,6 +30,11 @@ namespace DndCore
 		public event DndCharacterEventHandler TurnEnded;
 		public event DndCharacterEventHandler TurnStarting;
 		public event PlayerStateChangedEventHandler PlayerStateChanged;
+		public event PlayerRollRequestEventHandler PlayerRequestsRoll;
+		protected virtual void OnPlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
+		{
+			PlayerRequestsRoll?.Invoke(sender, ea);
+		}
 		protected virtual void OnSpellDispelled(object sender, DndSpellEventArgs ea)
 		{
 			SpellDispelled?.Invoke(sender, ea);
@@ -151,8 +156,14 @@ namespace DndCore
 		{
 			player.Game = this;
 			player.StateChanged += Player_StateChanged;
+			player.RollDiceRequest += Player_RollDiceRequest; ;
 			Players.Add(player);
 			return player;
+		}
+
+		private void Player_RollDiceRequest(object sender, RollDiceEventArgs ea)
+		{
+			OnPlayerRequestsRoll(this, new PlayerRollRequestEventArgs(sender as Character, ea.DiceRollStr));
 		}
 
 		private void Player_StateChanged(object sender, StateChangedEventArgs ea)

@@ -1987,6 +1987,12 @@ class PlayerRollOptions {
 	}
 }
 
+class IndividualRoll {
+	constructor(public value: number, public numSides: number, public type: string) {
+		
+	}
+}
+
 class DiceRollData {
 	type: DiceRollType;
 	vantageKind: VantageKind;
@@ -1999,6 +2005,7 @@ class DiceRollData {
 	throwPower: number;
 	itsAD20Roll: boolean;
 	trailingEffects: Array<TrailingEffect> = new Array<TrailingEffect>();
+	individualRolls: Array<IndividualRoll> = new Array<IndividualRoll>();
 	playerRollOptions: Array<PlayerRollOptions> = new Array<PlayerRollOptions>();
 	bonusRolls: Array<BonusRoll> = null;
 	onFirstContactSound: string;

@@ -218,7 +218,7 @@ abstract class DragonGame extends GamePlusQuiz {
 				let spriteHasNoName: boolean = sprite.name === null || sprite.name === '';
 				let nameMatches: boolean = sprite.name === windupName;
 
-				if (!destroyAllSprites && asteriskIndex >= 0){
+				if (!destroyAllSprites && asteriskIndex >= 0) {
 					let firstPart: string = windupName.substr(0, asteriskIndex);
 					let lastPart: string = windupName.substr(asteriskIndex + 1);
 					let firstPartMatches: boolean;

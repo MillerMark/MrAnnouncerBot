@@ -506,6 +506,7 @@ function positionTrailingSprite(die: any, trailingEffect: TrailingEffect, index:
 	return null;
 }
 
+// TODO: For goodness sakes, Mark, do something with this.
 function old_positionTrailingSprite(die: any, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
 	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration || die.rollType == DieCountsAs.bentLuck) {
 		let pos: Vector = getScreenCoordinates(die.getObject());
@@ -1567,7 +1568,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
-function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1): any {
+function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1, dieType: string = ''): any {
 	let countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length != 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1617,6 +1618,7 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		if (die === null) {
 			throw new Error(`Die not found: "${dieStr}". Unable to throw dice.`);
 		}
+		die.dieType = dieType;
 		die.playerID = playerID;
 		prepareDie(die, throwPower, xPositionModifier);
 
@@ -1735,6 +1737,7 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 	let modifier: number = 0;
 	let damageType: DamageType = diceRollData.damageType;
 	allDice.forEach(function (dieSpec: string) {
+		let dieType: string = '';
 		let thisBackgroundColor: string = backgroundColor;
 		let thisFontColor: string = fontColor;
 		let thisDieCountsAs: DieCountsAs = dieCountsAs;
@@ -1769,6 +1772,8 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 
 
 				damageType = damageTypeFromStr(damageStr);
+				if (damageType === DamageType.None)
+					dieType = damageStr;
 			}
 			dieSpec = dieSpec.substr(0, parenIndex);
 		}
@@ -1777,7 +1782,7 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 		if (dieAndModifier.length == 2)
 			modifier += +dieAndModifier[1];
 		let dieStr: string = dieAndModifier[0];
-		addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID);
+		addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
 	});
 
 	damageModifierThisRoll += modifier;
@@ -2157,7 +2162,7 @@ function removeMultiplayerD20s(): any {
 
 	let playerEdgeRolls: Array<number> = [];
 	let otherPlayersDie: Array<any> = [];
-	for (var j = 0; j < diceLayer.players.length; j++) {
+	for (var j = 0; j < 20; j++) {
 		playerEdgeRolls.push(-1);
 		otherPlayersDie.push(null);
 	}
@@ -2348,6 +2353,7 @@ function onDiceRollStopped() {
 		'health': totalHealthPlusModifier,
 		'extra': totalExtraPlusModifier,
 		'multiplayerSummary': diceRollData.multiplayerSummary,
+		'individualRolls': diceRollData.individualRolls,
 		'type': diceRollData.type,
 		'skillCheck': diceRollData.skillCheck,
 		'savingThrow': diceRollData.savingThrow,
@@ -2549,8 +2555,9 @@ function getRollResults(): RollResults {
 			if (diceRollData.multiplayerSummary == null)
 				diceRollData.multiplayerSummary = [];
 			let playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.playerId == die.playerID);
-			if (playerRoll)
+			if (playerRoll) {
 				playerRoll.roll += topNumber;
+			}
 			else {
 				let modifier: number = 0;
 				if (diceLayer.players && diceLayer.players.length > 0) {
@@ -2571,6 +2578,8 @@ function getRollResults(): RollResults {
 
 			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
 		}
+
+		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType));
 
 		let playerID: number;
 		if (die.playerID === undefined || die.playerID < 0)
@@ -2689,6 +2698,7 @@ function reportRollResults(rollResults: RollResults) {
 			diceLayer.showRollModifier(skillSavingModifier, luckValue[singlePlayerId], playerIdForTextMessages);
 		diceLayer.showDieTotal(`${totalRoll}`, playerIdForTextMessages);
 	}
+
 	if (totalBonus > 0 && !diceRollData.hasMultiPlayerDice && diceRollData.type != DiceRollType.SkillCheck) {
 		let bonusRollStr: string = 'Bonus Roll: ';
 		let bonusRollOverrideStr: string = diceRollData.getFirstBonusRollDescription();
