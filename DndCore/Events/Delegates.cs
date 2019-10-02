@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace DndCore
 {
+	public delegate void FeatureEventHandler(object sender, FeatureEventArgs ea);
+	public delegate void AskEventHandler(object sender, AskEventArgs ea);
+	public delegate void DndCoreExceptionEventHandler(object sender, DndCoreExceptionEventArgs ea);
 	public delegate void RollDiceEventHandler(object sender, RollDiceEventArgs ea);
 	public delegate void PlayerRollRequestEventHandler(object sender, PlayerRollRequestEventArgs ea);
 	public delegate void DndSpellEventHandler(object sender, DndSpellEventArgs ea);

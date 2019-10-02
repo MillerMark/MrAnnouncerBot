@@ -8,7 +8,6 @@ namespace DndCore
 {
 	public class DndSpellProperty : DndVariable
 	{
-		const string STR_SpellPrefix = "spell_";
 		List<string> propertyNames = null;
 		List<string> fieldNames = null;
 
@@ -33,9 +32,9 @@ namespace DndCore
 
 		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
-			if (tokenName.IndexOf(STR_SpellPrefix) != 0)
+			if (tokenName.IndexOf(KnownQualifiers.Spell) != 0)
 				return false;
-			string spellPropToken = tokenName.EverythingAfter(STR_SpellPrefix);
+			string spellPropToken = tokenName.EverythingAfter(KnownQualifiers.Spell);
 			GetPropertyNames();
 			if (propertyNames.IndexOf(spellPropToken) >= 0 | fieldNames.IndexOf(spellPropToken) >= 0)
 				return true;
@@ -45,10 +44,10 @@ namespace DndCore
 
 		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
 		{
-			if (variableName.IndexOf(STR_SpellPrefix) != 0)
+			if (variableName.IndexOf(KnownQualifiers.Spell) != 0)
 				return null;
 			CastedSpell castedSpell = Expressions.GetCastedSpell(evaluator.Variables);
-			string spellPropToken = variableName.EverythingAfter(STR_SpellPrefix);
+			string spellPropToken = variableName.EverythingAfter(KnownQualifiers.Spell);
 
 			if (fieldNames.IndexOf(spellPropToken) >= 0)
 			{

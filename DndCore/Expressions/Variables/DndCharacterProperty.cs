@@ -6,6 +6,21 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	public static class KnownQualifiers
+	{
+		public const string Spell = "spell_";
+		public static bool IsSpellQualifier(string expression)
+		{
+			return expression.StartsWith(Spell);
+		}
+		public static bool StartsWithKnownQualifier(string expression)
+		{
+			if (IsSpellQualifier(expression))
+				return true;
+
+			return false;
+		}
+	}
 	public class DndCharacterProperty : DndVariable
 	{
 		List<string> propertyNames = null;
@@ -35,6 +50,9 @@ namespace DndCore
 			GetPropertyNames();
 			if (propertyNames.IndexOf(tokenName) >= 0 | fieldNames.IndexOf(tokenName) >= 0)
 				return true;
+
+			if (KnownQualifiers.StartsWithKnownQualifier(tokenName))
+				return false;
 
 			return player != null && player.GetState(tokenName) != null;
 		}

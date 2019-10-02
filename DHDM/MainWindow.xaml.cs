@@ -45,6 +45,8 @@ namespace DHDM
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
 		DispatcherTimer showClearButtonTimer;
+		DispatcherTimer wildMagicRollTimer;
+		DispatcherTimer switchBackToPlayersTimer;
 		DispatcherTimer updateClearButtonTimer;
 		DateTime lastUpdateTime;
 		int keepExistingModifier = int.MaxValue;
@@ -63,6 +65,14 @@ namespace DHDM
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
 			showClearButtonTimer.Interval = TimeSpan.FromSeconds(8);
 
+			wildMagicRollTimer = new DispatcherTimer();
+			wildMagicRollTimer.Tick += new EventHandler(RollWildMagicHandler);
+			wildMagicRollTimer.Interval = TimeSpan.FromSeconds(9);
+
+			switchBackToPlayersTimer = new DispatcherTimer();
+			switchBackToPlayersTimer.Tick += new EventHandler(SwitchBackToPlayersHandler);
+			switchBackToPlayersTimer.Interval = TimeSpan.FromSeconds(3);
+
 			updateClearButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
 			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
@@ -80,16 +90,46 @@ namespace DHDM
 
 			//InitializeAttackShortcuts();
 			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
-			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
-
-			if (dungeonMasterClient != null)
-				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+			CreateDungeonMasterClient();
 
 			dmChatBot.Initialize(this);
 
 			dmChatBot.DungeonMasterApp = this;
 			commandParsers.Add(dmChatBot);
 			ConnectToObs();
+
+			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
+			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
+			Feature.FeatureDeactivated += Feature_FeatureDeactivated;
+		}
+
+		private void CreateDungeonMasterClient()
+		{
+			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+
+			if (dungeonMasterClient != null)
+				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+		}
+
+		private void Feature_FeatureDeactivated(object sender, FeatureEventArgs ea)
+		{
+			if (ea.Feature.Name == "WildSurgeRage")
+			{
+				if (lastScenePlayed == "DH.WildSurge.PlantGrowth.Arrive")
+					PlayScene("DH.WildSurge.PlantGrowth.Leave");
+				else
+					PlayScene("Players");
+			}
+		}
+
+		private void AskFunction_AskQuestion(object sender, AskEventArgs ea)
+		{
+			ea.Result = FrmAsk.Ask(ea.Question, ea.Answers, this);
+		}
+
+		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
+		{
+			MessageBox.Show(ea.Ex.Message, "Unhandled Exception");
 		}
 
 		private void ConnectToObs()
@@ -377,6 +417,15 @@ namespace DHDM
 		CastedSpell castedSpellNeedingCompletion = null;
 		Character spellCaster = null;
 
+		private void ActivateShortcut(string shortcutName)
+		{
+			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == ActivePlayerId);
+			if (shortcut != null)
+				Dispatcher.Invoke(() =>
+				{
+					ActivateShortcut(shortcut);
+				});
+		}
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
 			activeTrailingEffects = string.Empty;
@@ -423,10 +472,10 @@ namespace DHDM
 				spellToCastDto.Windups = actionShortcut.WindupsReversed;
 				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
 				HubtasticBaseStation.CastSpell(serializedObject);
-				tbxDamageDice.Text = spell.DieStr;
 
 				// TODO: Fix the targeting.
 				castedSpellNeedingCompletion = game.Cast(player, spell);
+				tbxDamageDice.Text = spell.DieStr;
 				spellCaster = player;
 			}
 			else
@@ -865,7 +914,10 @@ namespace DHDM
 
 		private void BtnWildMagicD20Check_Click(object sender, RoutedEventArgs e)
 		{
-			RollTheDice(PrepareRoll(DiceRollType.WildMagicD20Check));
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.WildMagicD20Check);
+			diceRoll.NumHalos = 3;
+			diceRoll.AddTrailingEffects("SmallSparks");
+			RollTheDice(diceRoll);
 		}
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
@@ -1092,40 +1144,59 @@ namespace DHDM
 			}
 			return "None";
 		}
-		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
+		void HandleWildMagicD20Check(IndividualRoll individualRoll)
 		{
-			if (individualRoll.type == "BarbarianWildSurge")
+			if (individualRoll.value == 1)
 			{
-				switch (individualRoll.value)
-				{
-					case 1:
-						PlayScene("DH.WildSurge.Necrotic");
-						break;
-					case 2:
-						PlayScene("DH.WildSurge.Teleport");
-						break;
-					case 3:
-						PlayScene("DH.WildSurge.Flumphs");
-						break;
-					case 4:
-						PlayScene("DH.WildSurge.ArcanaShroud");
-						break;
-					case 5:
-						PlayScene("DH.WildSurge.PlantGrowth.Arrive");
-						break;
-					case 6:
-						PlayScene("DH.WildSurge.Thoughts");
-						break;
-					case 7:
-						//PlayScene("DH.WildSurge.Shadows");
-						break;
-					case 8:
-						PlayScene("DH.WildSurge.Radiant");
-						break;
-				}
-				
+				PlayScene("DH.WildMagicRoll");
+				wildMagicRollTimer.Start();
 			}
 		}
+		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
+		{
+			switch (individualRoll.type)
+			{
+				case "BarbarianWildSurge":
+					HandleBarbarianWildSurge(individualRoll);
+					break;
+				case "WildMagicD20Check":
+					HandleWildMagicD20Check(individualRoll);
+					break;
+			}
+			
+		}
+
+		private void HandleBarbarianWildSurge(IndividualRoll individualRoll)
+		{
+			switch (individualRoll.value)
+			{
+				case 1:
+					PlayScene("DH.WildSurge.Necrotic");
+					break;
+				case 2:
+					PlayScene("DH.WildSurge.Teleport");
+					break;
+				case 3:
+					PlayScene("DH.WildSurge.Flumphs");
+					break;
+				case 4:
+					PlayScene("DH.WildSurge.ArcanaShroud");
+					break;
+				case 5:
+					PlayScene("DH.WildSurge.PlantGrowth.Arrive");
+					break;
+				case 6:
+					PlayScene("DH.WildSurge.Thoughts");
+					break;
+				case 7:
+					//PlayScene("DH.WildSurge.Shadows");
+					break;
+				case 8:
+					PlayScene("DH.WildSurge.Radiant");
+					break;
+			}
+		}
+
 		void IndividualDiceStoppedRolling(List<IndividualRoll> individualRolls)
 		{
 			foreach (IndividualRoll individualRoll in individualRolls)
@@ -1375,6 +1446,29 @@ namespace DHDM
 			updateClearButtonTimer.Start();
 			justClickedTheClearDiceButton = false;
 			PrepareUiForClearButton();
+		}
+
+		void RollWildMagicHandler(object sender, EventArgs e)
+		{
+			wildMagicRollTimer.Stop();
+			Dispatcher.Invoke(() =>
+			{
+				ActivateShortcut("Wild Magic");
+				BackToPlayersIn(18);
+			});
+		}
+		void BackToPlayersIn(double seconds)
+		{
+			switchBackToPlayersTimer.Interval = TimeSpan.FromSeconds(seconds);
+			switchBackToPlayersTimer.Start();
+		}
+		void SwitchBackToPlayersHandler(object sender, EventArgs e)
+		{
+			switchBackToPlayersTimer.Stop();
+			Dispatcher.Invoke(() =>
+			{
+				PlayScene("Players");
+			});
 		}
 
 		void UpdateClearButton(object sender, EventArgs e)
@@ -2249,6 +2343,7 @@ namespace DHDM
 		}
 
 		bool checkingInternally;
+		string lastScenePlayed;
 		void CheckAllPlayers()
 		{
 			checkingInternally = true;
@@ -2499,6 +2594,7 @@ namespace DHDM
 
 		public void PlayScene(string sceneName)
 		{
+			lastScenePlayed = sceneName;
 			string dmMessage = $"Playing scene: {sceneName}";
 
 			try
@@ -2532,6 +2628,20 @@ namespace DHDM
 					dungeonMasterClient.JoinChannel(DungeonMasterChannel);
 					// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
 					dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+				}
+				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)
+				{
+					CreateDungeonMasterClient();
+					try
+					{
+						dungeonMasterClient.JoinChannel(DungeonMasterChannel);
+						// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
+						dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+					}
+					catch (Exception ex)
+					{
+						
+					}
 				}
 				catch (Exception ex)
 				{

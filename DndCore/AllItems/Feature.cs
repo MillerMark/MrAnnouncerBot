@@ -6,7 +6,16 @@ namespace DndCore
 {
 	public class Feature
 	{
-
+		public static event FeatureEventHandler FeatureActivated;
+		public static event FeatureEventHandler FeatureDeactivated;
+		public static void OnFeatureActivated(object sender, FeatureEventArgs ea)
+		{
+			FeatureActivated?.Invoke(sender, ea);
+		}
+		public static void OnFeatureDeactivated(object sender, FeatureEventArgs ea)
+		{
+			FeatureDeactivated?.Invoke(sender, ea);
+		}
 		public Feature()
 		{
 
@@ -42,7 +51,10 @@ namespace DndCore
 		{
 			if (IsActive && !forceActivation)
 				return;
-			History.Log($"Activating {Name}.");
+			if (player != null)
+				History.Log($"Activating {player.name}'s {Name}.");
+			else
+				History.Log($"Activating {Name}.");
 			IsActive = true;
 			if (Duration.HasValue())
 			{
@@ -51,6 +63,7 @@ namespace DndCore
 			}
 			if (!string.IsNullOrWhiteSpace(OnActivate))
 				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);
+			OnFeatureActivated(player, new FeatureEventArgs(this));
 		}
 
 		private void Feature_Expired(object sender, DndTimeEventArgs ea)
@@ -71,10 +84,14 @@ namespace DndCore
 		{
 			if (!IsActive && !forceDeactivation)
 				return;
-			History.Log($"Deactivating {Name}.");
+			if (player != null)
+				History.Log($"Deactivating {player.name}'s {Name}.");
+			else
+				History.Log($"Deactivating {Name}.");
 			IsActive = false;
 			if (!string.IsNullOrWhiteSpace(OnDeactivate))
 				Expressions.Do(DndUtils.InjectParameters(OnDeactivate, Parameters, arguments), player);
+			OnFeatureDeactivated(player, new FeatureEventArgs(this));
 		}
 	}
 }

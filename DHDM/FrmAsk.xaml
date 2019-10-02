@@ -1,0 +1,16 @@
+﻿<Window x:Class="DHDM.FrmAsk"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DHDM"
+        mc:Ignorable="d"
+        Title="Question:" Height="Auto" Width="Auto" FontSize="16" d:DesignWidth="328" d:DesignHeight="335"
+		MinWidth="400" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+	<StackPanel Orientation="Vertical" Height="Auto" Width="Auto" Margin="8">
+		<TextBlock x:Name="tbQuestion" Text="What do you want to do....???" Width="Auto" Height="Auto" />
+		<StackPanel x:Name="spAnswers" Orientation="Vertical" Height="Auto" Width="Auto">
+			
+		</StackPanel>
+	</StackPanel>
+</Window>

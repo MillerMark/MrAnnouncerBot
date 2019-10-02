@@ -8,11 +8,17 @@ namespace DndCore
 {
 	public static class Expressions
 	{
-		const string STR_Player = "player";
-		const string STR_Target = "target";
-		const string STR_CastedSpell = "castedSpell";
+		public static event DndCoreExceptionEventHandler ExceptionThrown;
+		public const string STR_Player = "player";
+		public const string STR_Target = "target";
+		public const string STR_CastedSpell = "castedSpell";
 		static List<DndFunction> functions = new List<DndFunction>();
 		static List<DndVariable> variables = new List<DndVariable>();
+
+		public static void OnExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
+		{
+			ExceptionThrown?.Invoke(sender, ea);
+		}
 
 		public static void AddFunction(DndFunction function)
 		{
@@ -66,7 +72,14 @@ namespace DndCore
 				if (!script.EndsWith(";") && !script.EndsWith("}"))
 					script += ";";
 
-				expressionEvaluator.ScriptEvaluate(script);
+				try
+				{
+					expressionEvaluator.ScriptEvaluate(script);
+				}
+				catch (ExpressionEvaluatorSyntaxErrorException ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+				}
 			}
 			finally
 			{

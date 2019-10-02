@@ -2992,6 +2992,7 @@ function addDiceForPlayer(playerID: number, xPositionModifier: number, kind: Van
 
 	for (var i = 0; i < numD20s; i++) {
 		var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
+		die.dieType = DiceRollType[diceRollData.type];
 		die.playerID = playerID;
 		die.playerName = diceLayer.getPlayerName(playerID);
 		die.kind = kind;

@@ -11,11 +11,12 @@ namespace DndCore
 			SpellCaster = spellCaster;
 			Spell = spell;
 		}
-
 		public Spell Spell { get; set; }
 		public Character SpellCaster { get; set; }
 		public Creature TargetCreature { get; set; }
 		public DateTime TimeSpellWasCast { get; set; }
+		public string DieStr { get => Spell.DieStr; set => Spell.DieStr = value; }
+
 		public void Casting()
 		{
 			Spell.TriggerOnCasting(SpellCaster, TargetCreature, this);

@@ -276,6 +276,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AdvanceClockCommand.cs" />
+    <Compile Include="AnswerButton.cs" />
     <Compile Include="BreakConcentrationCommand.cs" />
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
@@ -283,6 +284,9 @@
     <Compile Include="DiceRollData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="DungeonMasterCommand.cs" />
+    <Compile Include="FrmAsk.xaml.cs">
+      <DependentUpon>FrmAsk.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GetDataCommand.cs" />
     <Compile Include="HealthDamageCommand.cs" />
     <Compile Include="HiddenThresholdCommand.cs" />
@@ -316,6 +320,10 @@
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
+    <Page Include="FrmAsk.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User Controls\AttackList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

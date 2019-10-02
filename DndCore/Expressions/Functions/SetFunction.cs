@@ -19,16 +19,28 @@ namespace DndCore
 			string propertyName = args[0];
 			object value = evaluator.Evaluate(Expressions.Clean(args[1]));
 
-			FieldInfo field = typeof(Character).GetField(propertyName);
+			object instance = player;
+			Type instanceType = typeof(Character);
+			if (KnownQualifiers.IsSpellQualifier(propertyName))
+			{
+				if (evaluator.Variables.ContainsKey(Expressions.STR_CastedSpell))
+				{
+					instance = evaluator.Variables[Expressions.STR_CastedSpell];
+					instanceType = typeof(CastedSpell);
+					propertyName = propertyName.EverythingAfter(KnownQualifiers.Spell);
+				}
+			}
+
+			FieldInfo field = instanceType.GetField(propertyName);
 			if (field != null)
 			{
-				field.SetValue(player, value);
+				field.SetValue(instance, value);
 				return null;
 			}
-			PropertyInfo property = typeof(Character).GetProperty(propertyName);
+			PropertyInfo property = instanceType.GetProperty(propertyName);
 			if (property != null)
 			{
-				property.SetValue(player, value);
+				property.SetValue(instance, value);
 				return null;
 			}
 
