@@ -15,20 +15,7 @@ namespace DndCore
 
 		private static void Instance_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
 		{
-			foreach (AssignedFeature assignedFeature in ea.Player.features)
-			{
-				if (!assignedFeature.HasConditions())
-					continue;
-
-				if (assignedFeature.ConditionsSatisfied())
-				{
-					assignedFeature.Activate();
-				}
-				else
-				{
-					assignedFeature.Deactivate();
-				}
-			}
+			ea.Player.ActivateFeaturesByConditions();
 		}
 
 		public static List<Feature> Features { get; private set; }

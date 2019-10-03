@@ -12,7 +12,7 @@ namespace DndCore
 
 		public string OnFirstContactEffect { get; set; }
 
-
+		public string SpellName { get; set; }
 		public int NumHalos { get; set; }
 		public string OnFirstContactSound { get; set; }
 		public string OnRollSound { get; set; }

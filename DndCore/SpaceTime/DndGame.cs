@@ -7,6 +7,8 @@ namespace DndCore
 {
 	public class DndGame
 	{
+		public const string STR_EndSpell = "EndSpell:";
+
 		public static DndGame Instance
 		{
 			get
@@ -22,7 +24,7 @@ namespace DndCore
 			}
 		}
 
-		public event DndSpellEventHandler SpellDispelled;
+		public event CastedSpellEventHandler SpellDispelled;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
 		public event DndGameEventHandler RoundEnded;
@@ -35,7 +37,7 @@ namespace DndCore
 		{
 			PlayerRequestsRoll?.Invoke(sender, ea);
 		}
-		protected virtual void OnSpellDispelled(object sender, DndSpellEventArgs ea)
+		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
 			SpellDispelled?.Invoke(sender, ea);
 		}
@@ -156,9 +158,15 @@ namespace DndCore
 		{
 			player.Game = this;
 			player.StateChanged += Player_StateChanged;
-			player.RollDiceRequest += Player_RollDiceRequest; ;
+			player.RollDiceRequest += Player_RollDiceRequest ;
+			player.SpellDispelled += Player_SpellDispelled;
 			Players.Add(player);
 			return player;
+		}
+
+		private void Player_SpellDispelled(object sender, CastedSpellEventArgs ea)
+		{
+			OnSpellDispelled(this, ea);
 		}
 
 		private void Player_RollDiceRequest(object sender, RollDiceEventArgs ea)
@@ -265,16 +273,6 @@ namespace DndCore
 			lastPlayer = player;
 		}
 
-		/// <summary>
-		/// There are three types of spells that can be cast. 
-		/// 1. A spell that has a saving throw or otherwise immediately takes effect.
-		/// 2. A spell that has a ranged attack and needs a dice roll to take effect.
-		/// 3. A spell that needs a longer duration of casting time to take effect.
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="spell"></param>
-		/// <param name="targetCreature"></param>
-		/// <returns>Returns the CastedSpell instance if the spell still needs to be cast later (e.g., after a die roll).</returns>
 		public CastedSpell Cast(Character player, Spell spell, Creature targetCreature = null)
 		{
 			if (spell.CastingTime == DndTimeSpan.OneAction || spell.CastingTime == DndTimeSpan.OneBonusAction)
@@ -294,7 +292,7 @@ namespace DndCore
 			}
 
 			CompleteCast(player, castedSpell);
-			return null;
+			return castedSpell;
 		}
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
@@ -305,7 +303,7 @@ namespace DndCore
 			Spell spell = castedSpell.Spell;
 			if (spell.Duration.HasValue())
 			{
-				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), spell.Name, player, castedSpell);
+				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, player.playerID), player, castedSpell);
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
 			activeSpells.Add(castedSpell);
@@ -325,8 +323,11 @@ namespace DndCore
 		{
 			if (ea.Alarm.Data is CastedSpell castedSpell)
 			{
+				if (castedSpell.SpellCaster?.concentratedSpell == castedSpell)
+					castedSpell.SpellCaster.BreakConcentration();
+
 				Dispel(castedSpell);
-				OnSpellDispelled(this, new DndSpellEventArgs(this, castedSpell));
+				OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));
 			}
 		}
 
@@ -444,6 +445,81 @@ namespace DndCore
 		public Character GetPlayerFromId(int playerID)
 		{
 			return Players.FirstOrDefault(x => x.playerID == playerID);
+		}
+
+		public void BreakConcentration(int playerId)
+		{
+			Character player = GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			player.BreakConcentration();
+		}
+
+		//void CreateAlarm(Spell spell, int playerId)
+		//{
+		//	CreateAlarm(spell.Duration.GetTimeSpan(), GetAlarmName(spell, playerId));
+		//}
+
+		public static string GetSpellPlayerName(Spell spell, int playerId)
+		{
+			return $"{spell.Name}({playerId})";
+		}
+		public static string GetSpellAlarmName(Spell spell, int playerId)
+		{
+			return $"{STR_EndSpell}{GetSpellPlayerName(spell, playerId)}";
+		}
+
+		//void CreateAlarm(TimeSpan timeSpan, string name)
+		//{
+		//	DndAlarm dndAlarm = Clock.CreateAlarm(timeSpan, name);
+		//	dndAlarm.AlarmFired += DndAlarm_AlarmFired;
+		//}
+
+		//private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
+		//{
+		//	
+		//}
+
+		string Plural(int count, string suffix)
+		{
+			if (count == 1)
+				return $"{count} {suffix}";
+			return $"{count} {suffix}s";
+		}
+
+		public string GetSpellTimeLeft(int playerId, Spell spell)
+		{
+			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(spell, playerId));
+			if (alarm == null)
+				return "0 seconds";
+			TimeSpan time = alarm.TriggerTime - Clock.Time;
+			string result;
+			if (time.TotalDays >= 1)
+				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalHours >= 1)
+				result = $"{Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalMinutes >= 1)
+				result = $"{Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else
+				result = Plural(time.Seconds, "second");
+			return result;
+		}
+
+		public string GetConcentrationReport()
+		{
+			string concentrationReport = string.Empty;
+			foreach (Character player in Players)
+			{
+				CastedSpell concentratedCastedSpell = player.concentratedSpell;
+				if (concentratedCastedSpell == null)
+					continue;
+				Spell spell = concentratedCastedSpell.Spell;
+				if (concentratedCastedSpell != null)
+				concentrationReport += $"{player.name} is casting {spell.Name} with {GetSpellTimeLeft(player.playerID, spell)} remaining; ";
+			}
+			if (concentrationReport == string.Empty)
+				concentrationReport = "No players are concentrating on any spells at this time.";
+			return concentrationReport;
 		}
 	}
 }

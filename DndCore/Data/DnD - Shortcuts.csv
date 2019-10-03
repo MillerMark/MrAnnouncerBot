@@ -76,7 +76,7 @@ Merkin,Thunderclap,,x,,,,,,,,,,,,,,,Lightning,,,120,,,,2,,,,,146,,,,Lightning,,
 Merkin,Light Crossbow,,,,,,,1A,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Merkin,Dagger,,,,,,,1A,,,,,,,,,,LongSword.Weapon,,x,player,,,,0.35,,,,,150,,,,,,
 Fred,Feinting Attack,,,x,,Advantage,,1BA,,,,,1d8(superiority),Feinting Attack,,,,,,,,,,,,,,,,,,,,,,You can expend one superiority die and use a bonus action on your turn to add the total to the damage roll and to gain advantage on your next attack roll against a chosen creature within 5 ft. this turn.
-Fred,Enter Rage,,,,ActivateFeature(WildSurgeRage),,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,,"As a bonus action enter a rage for up to 1 minute (10 rounds).
+Fred,Enter Rage,,,,ActivateFeature(WildSurgeRage),,,1BA,,,,,,,,,,,,,,,,,,,,,,,,Halos3,SmallSparks,,,"As a bonus action enter a rage for up to 1 minute (10 rounds).
 
 You gain advantage on STR checks and saving throws (not attacks), +2 melee damage with STR weapons, resistance to bludgeoning, piercing, slashing damage. You can't cast or concentrate on spells while raging.
 
@@ -134,3 +134,4 @@ Willy,Cunning Dash,,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Willy,Cunning Disengage,,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Willy,Cunning Hide,,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Fred,End Rage,,,,"Set(_rage,false);",,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Merkin,Check Wild Magic,WildMagicD20Check,x,,,,,*,!1d20,,,,,,,,,,,,,,,,,,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.

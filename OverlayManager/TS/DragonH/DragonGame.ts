@@ -207,6 +207,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 	clearWindup(windupName: string): void {
+		console.log(`clearWindup(${windupName})`);
 		// TODO: Use windupName to find specific sprites to clear.
 		let now: number = performance.now();
 		this.allWindupEffects.allSprites.forEach(function (sprites: Sprites) {

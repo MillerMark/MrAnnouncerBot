@@ -7,7 +7,7 @@ namespace DndCore
 {
 	public class PlayerActionShortcut
 	{
-		const string STR_SpellPrefix = "Spell.";
+		public const string SpellWindupPrefix = "Spell.";
 		const string STR_WeaponPrefix = "Weapon.";
 		const string STR_OtherPrefix = "Other.";
 		static int shortcutIndex;
@@ -353,7 +353,7 @@ namespace DndCore
 			result.AttackingAbility = player.spellCastingAbility;
 			result.ProcessDieStr(shortcutDto, damageStr);
 			bool isWindup = result.Spell != null && !result.Spell.Duration.HasValue() && result.Spell.MustRollDiceToCast();
-			result.AddEffect(shortcutDto, STR_SpellPrefix, player, spellSlotLevel, isWindup);
+			result.AddEffect(shortcutDto, SpellWindupPrefix, player, spellSlotLevel, isWindup);
 			return result;
 		}
 

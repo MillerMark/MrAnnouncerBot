@@ -9,6 +9,7 @@ namespace DndCore
 		public string RequiresPlayerActivation { get; set; }
 		public string OnActivate { get; set; }
 		public string OnDeactivate { get; set; }
+		public string OnPlayerCastsSpell { get; set; }
 		public string Duration { get; set; }
 		public string Conditions { get; set; }
 		public string Limit { get; set; }

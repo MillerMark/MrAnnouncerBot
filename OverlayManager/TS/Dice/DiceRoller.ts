@@ -2349,6 +2349,7 @@ function onDiceRollStopped() {
 		'success': attemptedRollWasSuccessful,
 		'roll': totalRoll,
 		'hiddenThreshold': diceRollData.hiddenThreshold,
+		'spellName': diceRollData.spellName,
 		'damage': totalDamagePlusModifier,
 		'health': totalHealthPlusModifier,
 		'extra': totalExtraPlusModifier,

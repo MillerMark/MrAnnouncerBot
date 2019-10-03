@@ -9,6 +9,7 @@ namespace DHDM
 	{
 		public int playerID { get; set; }
 		public bool success { get; set; }
+		public string spellName { get; set; }
 		public int roll { get; set; }
 		public int hiddenThreshold { get; set; }
 		public int damage { get; set; }
@@ -26,6 +27,17 @@ namespace DHDM
 		public DiceRollData()
 		{
 
+		}
+
+		public Character GetSingleRollingPlayer()
+		{
+			if (multiplayerSummary == null)
+				return AllPlayers.GetFromId(playerID);
+
+			if (multiplayerSummary.Count == 1)
+				return AllPlayers.GetFromId(multiplayerSummary[0].playerId);
+
+			return null;
 		}
 	}
 

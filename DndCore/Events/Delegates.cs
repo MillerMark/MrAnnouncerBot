@@ -8,7 +8,9 @@ namespace DndCore
 	public delegate void DndCoreExceptionEventHandler(object sender, DndCoreExceptionEventArgs ea);
 	public delegate void RollDiceEventHandler(object sender, RollDiceEventArgs ea);
 	public delegate void PlayerRollRequestEventHandler(object sender, PlayerRollRequestEventArgs ea);
-	public delegate void DndSpellEventHandler(object sender, DndSpellEventArgs ea);
+	public delegate void CastedSpellEventHandler(object sender, CastedSpellEventArgs ea);
+	public delegate void SpellEventHandler(object sender, SpellEventArgs ea);
+	public delegate void CharacterSpellEventHandler(object sender, CharacterSpellEventArgs ea);
 	public delegate void StateChangedEventHandler(object sender, StateChangedEventArgs ea);
 	public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
 	public delegate void DndGameEventHandler(object sender, DndGameEventArgs ea);
@@ -17,5 +19,6 @@ namespace DndCore
 	public delegate void ConditionsChangedEventHandler(object sender, ConditionsChangedEventArgs ea);
 	public delegate void PlayerStateChangedEventHandler(object sender, PlayerStateEventArgs ea);
 	public delegate void LevelChangedEventHandler(object sender, LevelChangedEventArgs ea);
+	public delegate void ShortcutEventHandler(object sender, ShortcutEventArgs ea);
 
 }

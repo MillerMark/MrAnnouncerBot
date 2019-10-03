@@ -28,6 +28,7 @@ namespace DndCore
 		public string Name { get; set; }
 		public string OnActivate { get; set; }
 		public string OnDeactivate { get; set; }
+		public string OnPlayerCastsSpell { get; set; }
 		public DndTimeSpan Per { get; set; }
 		public bool RequiresPlayerActivation { get; set; }
 		public List<string> Parameters { get; set; }
@@ -40,6 +41,7 @@ namespace DndCore
 			result.Conditions = featureDto.Conditions;
 			result.OnActivate = featureDto.OnActivate;
 			result.OnDeactivate = featureDto.OnDeactivate;
+			result.OnPlayerCastsSpell = featureDto.OnPlayerCastsSpell;
 			result.Duration = DndTimeSpan.FromDurationStr(featureDto.Duration);
 			result.Per = DndTimeSpan.FromDurationStr(featureDto.Per);
 			result.Limit = featureDto.Limit;
@@ -93,5 +95,14 @@ namespace DndCore
 				Expressions.Do(DndUtils.InjectParameters(OnDeactivate, Parameters, arguments), player);
 			OnFeatureDeactivated(player, new FeatureEventArgs(this));
 		}
+
+		public void SpellJustCast(string arguments, Character player, CastedSpell spell)
+		{
+			if (!IsActive)
+				return;
+			if (!string.IsNullOrWhiteSpace(OnPlayerCastsSpell))
+				Expressions.Do(DndUtils.InjectParameters(OnPlayerCastsSpell, Parameters, arguments), player, null, spell);
+		}
+		
 	}
 }

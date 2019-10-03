@@ -71,5 +71,10 @@ namespace DndCore
 		{
 			return !string.IsNullOrWhiteSpace(Feature.Conditions);
 		}
+
+		public void SpellJustCast(Character player, CastedSpell spell)
+		{
+			Feature.SpellJustCast(GetArgStr(), player, spell);
+		}
 	}
 }

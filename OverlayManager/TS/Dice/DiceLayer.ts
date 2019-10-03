@@ -1733,6 +1733,7 @@ class DiceLayer {
 		diceRoll.modifier = dto.Modifier;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
+		diceRoll.spellName = dto.SpellName;
 		diceRoll.onThrowSound = dto.OnThrowSound;
 		diceRoll.throwPower = dto.ThrowPower;
 		diceRoll.onFirstContactSound = dto.OnFirstContactSound;
@@ -2001,6 +2002,7 @@ class DiceRollData {
 	minCrit: number;
 	hiddenThreshold: number;
 	isMagic: boolean;
+	spellName: string;
 	onThrowSound: string;
 	throwPower: number;
 	itsAD20Roll: boolean;

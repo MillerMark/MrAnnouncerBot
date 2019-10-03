@@ -595,10 +595,7 @@ class CharacterStatsScroll extends WorldObject {
 			this.scrollRolls.draw(world.ctx, now * 1000);
 			this.scrollPoofBack.draw(world.ctx, now * 1000);
 			this.scrollPoofFront.draw(world.ctx, now * 1000);
-			if (this.scrollPoofFront.sprites.length == 0) {
-				console.error("this.scrollPoofFront.sprites.length == 0");
-			}
-			else {
+			if (this.scrollPoofFront.sprites.length > 0) {
 				let poofFrameIndex: number = this.scrollPoofFront.sprites[0].frameIndex;
 				if (poofFrameIndex === 0) {
 					this.state = ScrollState.none;
@@ -611,12 +608,11 @@ class CharacterStatsScroll extends WorldObject {
 
 		if (this.state === ScrollState.slamming) {
 			this.scrollSlam.draw(world.ctx, now * 1000);
-			if (this.scrollSlam.sprites.length == 0) {
-				console.error("this.scrollSlam.sprites.length == 0");
-			}
-			else if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
-				this.state = ScrollState.slammed;
-				this.play(this.scrollSlamSfx);
+			if (this.scrollSlam.sprites.length > 0) {
+				if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
+					this.state = ScrollState.slammed;
+					this.play(this.scrollSlamSfx);
+				}
 			}
 		}
 

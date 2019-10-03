@@ -8,8 +8,14 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
+		public event CastedSpellEventHandler SpellDispelled;
 		public event RollDiceEventHandler RollDiceRequest;
 		public event StateChangedEventHandler StateChanged;
+
+		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
+		{
+			SpellDispelled?.Invoke(sender, ea);
+		}
 
 		protected virtual void OnRollDiceRequest(object sender, RollDiceEventArgs ea)
 		{
@@ -875,6 +881,7 @@ namespace DndCore
 			character.alignment = characterDto.alignment;
 			character.weaponProficiency = DndUtils.ToWeapon(characterDto.weaponProficiency);
 			character.leftMostPriority = characterDto.leftMostPriority;
+			character.ActivateFeaturesByConditions();
 			return character;
 		}
 
@@ -1237,6 +1244,49 @@ namespace DndCore
 		public void RollDiceNow()
 		{
 			OnRollDiceRequest(this, new RollDiceEventArgs(diceWeAreRolling));
+		}
+
+		public CastedSpell concentratedSpell;
+
+		public void BreakConcentration()
+		{
+			if (concentratedSpell == null)
+				return;
+
+			OnSpellDispelled(this, new CastedSpellEventArgs(Game, concentratedSpell));
+			concentratedSpell = null;
+		}
+
+		public void CastingSpell(CastedSpell spell)
+		{
+			BreakConcentration();
+			concentratedSpell = spell;
+		}
+		public void JustCastSpell(string spellName)
+		{
+			Spell spellJustCast = AllSpells.Get(spellName);
+			if (spellJustCast == null)
+				return;
+			
+			// HACK: Need a CastedSpell for the event. TimeSpellWasCast & SpellSlotLevel will not be correct.
+			CastedSpell castedSpell = new CastedSpell(spellJustCast, this); 
+			foreach (AssignedFeature assignedFeature in features)
+			{
+				assignedFeature.SpellJustCast(this, castedSpell);
+			}
+		}
+		public void ActivateFeaturesByConditions()
+		{
+			foreach (AssignedFeature assignedFeature in features)
+			{
+				if (!assignedFeature.HasConditions())
+					continue;
+
+				if (assignedFeature.ConditionsSatisfied())
+					assignedFeature.Activate();
+				else
+					assignedFeature.Deactivate();
+			}
 		}
 	}
 }

@@ -101,6 +101,25 @@ namespace DHDM
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
 			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
 			Feature.FeatureDeactivated += Feature_FeatureDeactivated;
+			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
+		}
+
+		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				ActivateShortcut(ea.Shortcut);
+			});
+		}
+
+		// TODO: Spell Expired
+		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
+		{
+			if (ea.Alarm.Name.StartsWith(DndGame.STR_EndSpell))
+			{
+				string spellToEnd = ea.Alarm.Name.Substring(DndGame.STR_EndSpell.Length);
+				EndSpellEffects(spellToEnd);
+			}
 		}
 
 		private void CreateDungeonMasterClient()
@@ -116,7 +135,10 @@ namespace DHDM
 			if (ea.Feature.Name == "WildSurgeRage")
 			{
 				if (lastScenePlayed == "DH.WildSurge.PlantGrowth.Arrive")
+				{
 					PlayScene("DH.WildSurge.PlantGrowth.Leave");
+					BackToPlayersIn(10);
+				}
 				else
 					PlayScene("Players");
 			}
@@ -312,42 +334,23 @@ namespace DHDM
 			}
 		}
 
-		void CreateAlarm(Spell spell, int playerId)
-		{
-			CreateAlarm(spell.Duration.GetTimeSpan(), GetAlarmName(spell, playerId));
-		}
 
-		private static string GetAlarmName(Spell spell, int playerId)
-		{
-			return $"{STR_EndSpell}{spell.Name}({playerId})";
-		}
 
-		void CreateAlarm(TimeSpan timeSpan, string name)
-		{
-			DndAlarm dndAlarm = game.Clock.CreateAlarm(timeSpan, name);
-			dndAlarm.AlarmFired += DndAlarm_AlarmFired;
-		}
-
-		private void DndAlarm_AlarmFired(object sender, DndTimeEventArgs ea)
-		{
-			if (ea.Alarm.Name.StartsWith(STR_EndSpell))
-			{
-				string spellToEnd = ea.Alarm.Name.Substring(STR_EndSpell.Length);
-				EndSpellEffects(spellToEnd);
-			}
-		}
-
-		private void Game_SpellDispelled(object sender, DndSpellEventArgs ea)
+		private void Game_SpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
 			if (ea.CastedSpell.SpellCaster == null)
 				return;
 
-			string spellToEnd = $"{ea.CastedSpell.Spell.Name}({ea.CastedSpell.SpellCaster.playerID})";
+			Dispel(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
+
+			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 			EndSpellEffects(spellToEnd);
 		}
 
 		private void EndSpellEffects(string spellToEnd)
 		{
+			if (!spellToEnd.StartsWith(PlayerActionShortcut.SpellWindupPrefix))
+				spellToEnd = PlayerActionShortcut.SpellWindupPrefix + spellToEnd;
 			HubtasticBaseStation.ClearWindup(spellToEnd);
 			int parenPos = spellToEnd.IndexOf('(');
 
@@ -359,7 +362,7 @@ namespace DHDM
 				playerIdStr = playerIdStr.Trim(endChars);
 				if (int.TryParse(playerIdStr, out int playerId))
 				{
-					BreakConcentration(playerId);
+					//BreakConcentration(playerId);
 					casterId = $"{GetPlayerName(playerId)}'s ";
 				}
 				spellToEnd = spellToEnd.Substring(0, parenPos);
@@ -371,23 +374,12 @@ namespace DHDM
 
 		void Dispel(Spell spell, int playerId)
 		{
-			HubtasticBaseStation.ClearWindup($"{spell.Name}({playerId})");
+			HubtasticBaseStation.ClearWindup(PlayerActionShortcut.SpellWindupPrefix + DndGame.GetSpellPlayerName(spell, playerId));
 		}
 
 		public void BreakConcentration(int playerId)
 		{
-			// TODO: Add support for Twinning spells.
-			if (concentratedSpells.ContainsKey(playerId))
-			{
-				Dispel(concentratedSpells[playerId], playerId);
-				concentratedSpells.Remove(playerId);
-			}
-		}
-
-		void PlayerIsNowConcentrating(int playerId, Spell spell)
-		{
-			BreakConcentration(playerId);
-			concentratedSpells.Add(playerId, spell);
+			game.BreakConcentration(playerId);
 		}
 
 
@@ -395,10 +387,6 @@ namespace DHDM
 		{
 			spell.OwnerId = playerId;
 			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {game.Clock.AsFullDndDateTimeString()}.");
-			//if (spell.Duration.HasValue())
-			//	CreateAlarm(spell, playerId);
-			if (spell.RequiresConcentration)
-				PlayerIsNowConcentrating(playerId, spell);
 		}
 
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
@@ -414,6 +402,7 @@ namespace DHDM
 
 		string activeTrailingEffects;
 		string activeDieRollEffects;
+		Spell activeIsSpell;
 		CastedSpell castedSpellNeedingCompletion = null;
 		Character spellCaster = null;
 
@@ -430,6 +419,7 @@ namespace DHDM
 		{
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
+			activeIsSpell = null;
 			if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
 				activeTrailingEffects = actionShortcut.TrailingEffects;
 			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
@@ -460,10 +450,30 @@ namespace DHDM
 			if (DndUtils.IsAttack(actionShortcut.Type))
 				player.WillAttack(null, actionShortcut);
 
-			actionShortcut.ExecuteCommands(player);
 			Spell spell = actionShortcut.Spell;
 			if (spell != null)
 			{
+				activeIsSpell = spell;
+				if (spell.RequiresConcentration && player.concentratedSpell != null)
+				{
+					Spell concentratedSpell = player.concentratedSpell.Spell;
+				
+					try
+					{
+						if (!game.Clock.InCombat)
+							realTimeAdvanceTimer.Stop();
+						if (FrmAsk.Ask($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }, this) == 0)
+							return;
+					}
+					finally
+					{
+						if (!game.Clock.InCombat)
+						{
+							realTimeAdvanceTimer.Start();
+							lastUpdateTime = DateTime.Now;
+						}
+					}
+				}
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 				// TODO: Fix the targeting.
@@ -473,8 +483,19 @@ namespace DHDM
 				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
 				HubtasticBaseStation.CastSpell(serializedObject);
 
-				// TODO: Fix the targeting.
-				castedSpellNeedingCompletion = game.Cast(player, spell);
+				// TODO: Ask to break existing concentration (if it exists).
+				CastedSpell castedSpell = game.Cast(player, spell);
+
+				if (spell.RequiresConcentration)
+					player.CastingSpell(castedSpell);
+
+				if (spell.MustRollDiceToCast())
+				{
+					castedSpellNeedingCompletion = castedSpell;
+					actionShortcut.AttackingAbilityModifier = player.GetSpellcastingAbilityModifier();
+					actionShortcut.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
+				}
+
 				tbxDamageDice.Text = spell.DieStr;
 				spellCaster = player;
 			}
@@ -488,6 +509,8 @@ namespace DHDM
 					HubtasticBaseStation.AddWindup(serializedObject);
 				}
 			}
+
+			actionShortcut.ExecuteCommands(player);
 			player.Use(actionShortcut);
 
 			// TODO: keepExistingModifier????
@@ -786,6 +809,10 @@ namespace DHDM
 			diceRoll.FailMessage = "";
 			diceRoll.SkillCheck = Skills.none;
 			diceRoll.SavingThrow = Ability.none;
+			diceRoll.SpellName = "";
+			if (activeIsSpell != null)
+				diceRoll.SpellName = activeIsSpell.Name;
+
 			if (int.TryParse(tbxMinDamage.Text, out int result))
 				diceRoll.MinDamage = result;
 			else
@@ -1163,7 +1190,7 @@ namespace DHDM
 					HandleWildMagicD20Check(individualRoll);
 					break;
 			}
-			
+
 		}
 
 		private void HandleBarbarianWildSurge(IndividualRoll individualRoll)
@@ -1204,6 +1231,18 @@ namespace DHDM
 				IndividualDiceStoppedRolling(individualRoll);
 			}
 		}
+		void CheckForFollowUpRolls(DiceRollData diceRollData)
+		{
+			// Noticed doubling up of individual rolls.
+			Character singlePlayer = diceRollData.GetSingleRollingPlayer();
+			if (singlePlayer == null)
+				return;
+			if (singlePlayer.playerID == PlayerID.Merkin)
+			if (!string.IsNullOrWhiteSpace(diceRollData.spellName))
+				singlePlayer.JustCastSpell(diceRollData.spellName);
+			//diceRollData.playerID
+			//if (diceRollData.isSpell)
+		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			if (ea.DiceRollData.individualRolls?.Count > 0)
@@ -1216,6 +1255,7 @@ namespace DHDM
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			if (ea.DiceRollData != null)
 			{
+				CheckForFollowUpRolls(ea.DiceRollData);
 				int rollValue = ea.DiceRollData.roll;
 				string additionalMessage = ea.DiceRollData.additionalDieRollMessage;
 				if (!String.IsNullOrEmpty(additionalMessage))
@@ -1689,8 +1729,6 @@ namespace DHDM
 			}
 		}
 
-		const string STR_EndSpell = "EndSpell:";
-
 		DiceRollType nextDieRollType;
 		void InitializeAttackShortcuts()
 		{
@@ -2012,7 +2050,7 @@ namespace DHDM
 			AllTrailingEffects.LoadData();
 
 			List<Character> players = AllPlayers.GetActive();
-			
+
 			string playerData = JsonConvert.SerializeObject(players);
 			HubtasticBaseStation.SetPlayerData(playerData);
 
@@ -2441,38 +2479,9 @@ namespace DHDM
 			return "Error";
 		}
 
-		string Plural(int count, string suffix)
-		{
-			if (count == 1)
-				return $"{count} {suffix}";
-			return $"{count} {suffix}s";
-		}
-
-		string GetTimeLeft(int playerId, Spell spell)
-		{
-			DndAlarm alarm = game.Clock.GetAlarm(GetAlarmName(spell, playerId));
-			if (alarm == null)
-				return "0 seconds";
-			TimeSpan time = alarm.TriggerTime - game.Clock.Time;
-			string result;
-			if (time.TotalDays >= 1)
-				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
-			else if (time.TotalHours >= 1)
-				result = $"{Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
-			else if (time.TotalMinutes >= 1)
-				result = $"{Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
-			else
-				result = Plural(time.Seconds, "second");
-			return result;
-		}
-
 		void ReportOnConcentration()
 		{
-			string concentrationReport = string.Empty;
-			foreach (int key in concentratedSpells.Keys)
-			{
-				concentrationReport += $"{GetPlayerName(key)} is casting {concentratedSpells[key].Name} with {GetTimeLeft(key, concentratedSpells[key])} remaining; ";
-			}
+			string concentrationReport = game.GetConcentrationReport();
 
 			if (string.IsNullOrWhiteSpace(concentrationReport))
 				TellDungeonMaster("No players are concentrating on any spells at this time.");
@@ -2640,7 +2649,7 @@ namespace DHDM
 					}
 					catch (Exception ex)
 					{
-						
+
 					}
 				}
 				catch (Exception ex)
