@@ -45,6 +45,7 @@ namespace DHDM
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
 		DispatcherTimer showClearButtonTimer;
+		DispatcherTimer pendingShortcutsTimer;
 		DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
 		DispatcherTimer updateClearButtonTimer;
@@ -57,6 +58,7 @@ namespace DHDM
 			game = new DndGame();
 			game.SpellDispelled += Game_SpellDispelled;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
+			game.PlayerStateChanged += Game_PlayerStateChanged;
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
@@ -64,6 +66,10 @@ namespace DHDM
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
 			showClearButtonTimer.Interval = TimeSpan.FromSeconds(8);
+
+			pendingShortcutsTimer = new DispatcherTimer();
+			pendingShortcutsTimer.Tick += new EventHandler(ActivatePendingShortcuts);
+			pendingShortcutsTimer.Interval = TimeSpan.FromSeconds(1);
 
 			wildMagicRollTimer = new DispatcherTimer();
 			wildMagicRollTimer.Tick += new EventHandler(RollWildMagicHandler);
@@ -104,12 +110,51 @@ namespace DHDM
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
 		}
 
+		void SetShortcutVisibility(Panel panel)
+		{
+			foreach (UIElement uIElement in panel.Children)
+			{
+				if (uIElement is ShortcutPanel shortcutPanel)
+				{
+					PlayerActionShortcut shortcut = shortcutPanel.Shortcut;
+					string availableWhen = shortcut.Spell?.AvailableWhen;
+					if (!string.IsNullOrEmpty(availableWhen))
+					{
+						Character player = AllPlayers.GetFromId(shortcut.PlayerId);
+						if (Expressions.GetBool(availableWhen, player))
+							shortcutPanel.Visibility = Visibility.Visible;
+						else
+							shortcutPanel.Visibility = Visibility.Collapsed;
+					}
+				}
+			}
+		}
+
+		void SetShortcutVisibility()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SetShortcutVisibility(wpActionsActivePlayer);
+				SetShortcutVisibility(spBonusActionsActivePlayer);
+				SetShortcutVisibility(spReactionsActivePlayer);
+				SetShortcutVisibility(spSpecialActivePlayer);
+			});
+		}
+		private void Game_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
+		{
+			SetShortcutVisibility();
+		}
+
 		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				ActivateShortcut(ea.Shortcut);
+				if (waitingToClearDice && !string.IsNullOrEmpty(ea.Shortcut.InstantDice))
+					shortcutToActivateAfterClearingDice = ea.Shortcut;
+				else
+					ActivateShortcut(ea.Shortcut);
 			});
+			
 		}
 
 		// TODO: Spell Expired
@@ -266,25 +311,27 @@ namespace DHDM
 		{
 			if (highlightRectangles == null)
 				highlightRectangles = new Dictionary<int, Rectangle>();
-			StackPanel stackPanel = new StackPanel();
-			stackPanel.Margin = new Thickness(2);
-			stackPanel.Tag = playerActionShortcut.Index;
+			ShortcutPanel shortcutPanel = new ShortcutPanel();
+			shortcutPanel.Margin = new Thickness(2);
+			shortcutPanel.Tag = playerActionShortcut.Index;
+			shortcutPanel.Shortcut = playerActionShortcut;
+
 			Button button = new Button();
 			button.Padding = new Thickness(4, 2, 4, 2);
-			stackPanel.Children.Add(button);
+			shortcutPanel.Children.Add(button);
 			button.Content = playerActionShortcut.Name;
 			button.ToolTip = GetToolTip(playerActionShortcut.Description);
 			button.Tag = playerActionShortcut.Index;
 			button.Click += PlayerShortcutButton_Click;
 			Rectangle rectangle = new Rectangle();
-			stackPanel.Children.Add(rectangle);
+			shortcutPanel.Children.Add(rectangle);
 			rectangle.Tag = playerActionShortcut.Index;
 			rectangle.Visibility = Visibility.Hidden;
 			rectangle.Height = 3;
 			rectangle.Fill = new SolidColorBrush(Colors.Red);
 
 			highlightRectangles.Add(playerActionShortcut.Index, rectangle);
-			return stackPanel;
+			return shortcutPanel;
 		}
 
 		PlayerActionShortcut GetActionShortcut(object tag)
@@ -417,6 +464,7 @@ namespace DHDM
 		}
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
+			ActivatePendingShortcuts();
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 			activeIsSpell = null;
@@ -565,6 +613,7 @@ namespace DHDM
 			AddShortcutButtons(spBonusActionsActivePlayer, playerID, TurnPart.BonusAction);
 			AddShortcutButtons(spReactionsActivePlayer, playerID, TurnPart.Reaction);
 			AddShortcutButtons(spSpecialActivePlayer, playerID, TurnPart.Special);
+			SetShortcutVisibility();
 		}
 
 		private void AddShortcutButtons(Panel panel, int playerID, TurnPart part)
@@ -596,6 +645,7 @@ namespace DHDM
 
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
+			ActivatePendingShortcuts();
 			if (buildingTabs)
 				return;
 			if (rbActivePlayer.IsChecked == true)
@@ -746,6 +796,23 @@ namespace DHDM
 			//showClearButtonTimer.Start();
 		}
 
+		void ActivatePendingShortcuts()
+		{
+			if (shortcutToActivateAfterClearingDice != null)
+			{
+				PlayerActionShortcut shortcutToActivate = shortcutToActivateAfterClearingDice;
+				shortcutToActivateAfterClearingDice = null;
+				ActivateShortcut(shortcutToActivate);
+			}
+		}
+
+		bool waitingToClearDice;
+
+		void ActivatePendingShortcutsIn(int seconds)
+		{
+			pendingShortcutsTimer.Interval = TimeSpan.FromSeconds(seconds);
+			pendingShortcutsTimer.Start();
+		}
 		public void ClearTheDice()
 		{
 			updateClearButtonTimer.Stop();
@@ -753,6 +820,8 @@ namespace DHDM
 			spRollNowButtons.IsEnabled = true;
 			spSpecialThrows.IsEnabled = true;
 			HubtasticBaseStation.ClearDice();
+			waitingToClearDice = false;
+			ActivatePendingShortcutsIn(1);
 		}
 
 		private void BtnSkillCheck_Click(object sender, RoutedEventArgs e)
@@ -1177,7 +1246,17 @@ namespace DHDM
 			{
 				PlayScene("DH.WildMagicRoll");
 				wildMagicRollTimer.Start();
+				TellDungeonMaster("It's a one! Need to roll wild magic!");
 			}
+			else
+			{
+				TellDungeonMaster($"Wild Magic roll: {individualRoll.value}.");
+			}
+		}
+		// TODO: Delete this.
+		void NeedToRollWildMagic(IndividualRoll individualRoll)
+		{
+			
 		}
 		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
 		{
@@ -1231,52 +1310,60 @@ namespace DHDM
 				IndividualDiceStoppedRolling(individualRoll);
 			}
 		}
-		void CheckForFollowUpRolls(DiceRollData diceRollData)
+		void CheckForFollowUpRolls(DiceStoppedRollingData diceStoppedRollindData)
 		{
+			if (diceStoppedRollindData == null)
+				return;
 			// Noticed doubling up of individual rolls.
-			Character singlePlayer = diceRollData.GetSingleRollingPlayer();
+			Character singlePlayer = diceStoppedRollindData.GetSingleRollingPlayer();
 			if (singlePlayer == null)
 				return;
-			if (singlePlayer.playerID == PlayerID.Merkin)
-			if (!string.IsNullOrWhiteSpace(diceRollData.spellName))
-				singlePlayer.JustCastSpell(diceRollData.spellName);
+
+			if (!string.IsNullOrWhiteSpace(diceStoppedRollindData.spellName))
+				singlePlayer.JustCastSpell(diceStoppedRollindData.spellName);
+			else if (diceStoppedRollindData.type == DiceRollType.Attack)
+				singlePlayer.JustSwungWeapon();
+
+			// TODO: pass **targeted creatures** into RollIsComplete...
+			singlePlayer.RollIsComplete(diceStoppedRollindData.wasCriticalHit);
+
 			//diceRollData.playerID
 			//if (diceRollData.isSpell)
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
-			if (ea.DiceRollData.individualRolls?.Count > 0)
+			waitingToClearDice = true;
+			if (ea.StopRollingData.individualRolls?.Count > 0)
 			{
-				IndividualDiceStoppedRolling(ea.DiceRollData.individualRolls);
+				IndividualDiceStoppedRolling(ea.StopRollingData.individualRolls);
 			}
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 			HubtasticBaseStation.ClearWindup("Windup.*");
 			HubtasticBaseStation.ClearWindup("Weapon.*");
-			if (ea.DiceRollData != null)
+			if (ea.StopRollingData != null)
 			{
-				CheckForFollowUpRolls(ea.DiceRollData);
-				int rollValue = ea.DiceRollData.roll;
-				string additionalMessage = ea.DiceRollData.additionalDieRollMessage;
+				int rollValue = ea.StopRollingData.roll;
+				string additionalMessage = ea.StopRollingData.additionalDieRollMessage;
 				if (!String.IsNullOrEmpty(additionalMessage))
 					additionalMessage = " " + additionalMessage;
 				string rollTitle = "";
 				string damageStr = "";
 				string bonusStr = "";
-				if (ea.DiceRollData.bonus > 0)
-					bonusStr = " - bonus: " + ea.DiceRollData.bonus.ToString();
-				string successStr = GetSuccessStr(ea.DiceRollData.success, ea.DiceRollData.type);
-				switch (ea.DiceRollData.type)
+				if (ea.StopRollingData.bonus > 0)
+					bonusStr = " - bonus: " + ea.StopRollingData.bonus.ToString();
+				string successStr = GetSuccessStr(ea.StopRollingData.success, ea.StopRollingData.type);
+				switch (ea.StopRollingData.type)
 				{
 					case DiceRollType.SkillCheck:
-						rollTitle = GetSkillCheckStr(ea.DiceRollData.skillCheck) + " Skill Check: ";
+						rollTitle = GetSkillCheckStr(ea.StopRollingData.skillCheck) + " Skill Check: ";
 						break;
 					case DiceRollType.Attack:
 						rollTitle = "Attack: ";
-						damageStr = ", Damage: " + ea.DiceRollData.damage.ToString();
+						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
 						break;
 					case DiceRollType.SavingThrow:
-						rollTitle = GetAbilityStr(ea.DiceRollData.savingThrow) + " Saving Throw: ";
+						rollTitle = GetAbilityStr(ea.StopRollingData.savingThrow) + " Saving Throw: ";
 						break;
 					case DiceRollType.FlatD20:
 						rollTitle = "Flat D20: ";
@@ -1304,19 +1391,19 @@ namespace DHDM
 						break;
 					case DiceRollType.DamageOnly:
 						rollTitle = "Damage Only: ";
-						rollValue = ea.DiceRollData.damage;
+						rollValue = ea.StopRollingData.damage;
 						break;
 					case DiceRollType.HealthOnly:
 						rollTitle = "Health Only: ";
-						rollValue = ea.DiceRollData.health;
+						rollValue = ea.StopRollingData.health;
 						break;
 					case DiceRollType.ExtraOnly:
 						rollTitle = "Extra Only: ";
-						rollValue = ea.DiceRollData.extra;
+						rollValue = ea.StopRollingData.extra;
 						break;
 					case DiceRollType.ChaosBolt:
 						rollTitle = "Chaos Bolt: ";
-						damageStr = ", Damage: " + ea.DiceRollData.damage.ToString();
+						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
 						break;
 					case DiceRollType.Initiative:
 						rollTitle = "Initiative: ";
@@ -1329,19 +1416,19 @@ namespace DHDM
 					rollTitle = "Dice roll: ";
 				string message = string.Empty;
 				Character singlePlayer = null;
-				if (ea.DiceRollData.multiplayerSummary != null && ea.DiceRollData.multiplayerSummary.Count > 0)
+				if (ea.StopRollingData.multiplayerSummary != null && ea.StopRollingData.multiplayerSummary.Count > 0)
 				{
-					if (ea.DiceRollData.multiplayerSummary.Count == 1)
-						singlePlayer = AllPlayers.GetFromId(ea.DiceRollData.multiplayerSummary[0].playerId);
-					foreach (PlayerRoll playerRoll in ea.DiceRollData.multiplayerSummary)
+					if (ea.StopRollingData.multiplayerSummary.Count == 1)
+						singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.multiplayerSummary[0].playerId);
+					foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 					{
 						string playerName = StrUtils.GetFirstName(playerRoll.name);
 						if (playerName != "")
 							playerName = playerName + "'s ";
 
 						rollValue = playerRoll.modifier + playerRoll.roll;
-						bool success = rollValue >= ea.DiceRollData.hiddenThreshold;
-						successStr = GetSuccessStr(success, ea.DiceRollData.type);
+						bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
+						successStr = GetSuccessStr(success, ea.StopRollingData.type);
 						string localDamageStr;
 						if (success)
 							localDamageStr = damageStr;
@@ -1354,18 +1441,18 @@ namespace DHDM
 				}
 				else
 				{
-					singlePlayer = AllPlayers.GetFromId(ea.DiceRollData.playerID);
-					string playerName = GetPlayerName(ea.DiceRollData.playerID);
+					singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.playerID);
+					string playerName = GetPlayerName(ea.StopRollingData.playerID);
 					if (playerName != "")
 						playerName = playerName + "'s ";
-					if (!ea.DiceRollData.success)
+					if (!ea.StopRollingData.success)
 						damageStr = "";
 
 					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
 				}
 
 				if (singlePlayer != null)
-					game.DieRollStopped(singlePlayer, rollValue, ea.DiceRollData.damage);
+					game.DieRollStopped(singlePlayer, rollValue, ea.StopRollingData.damage);
 
 				//DieRollStopped
 
@@ -1374,13 +1461,13 @@ namespace DHDM
 				{
 					TellDungeonMaster(message);
 					TellViewers(message);
-					History.Log(message);
 				}
 			}
 
 
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
+			CheckForFollowUpRolls(ea.StopRollingData);
 		}
 
 		private static string GetSuccessStr(bool success, DiceRollType type)
@@ -2046,6 +2133,8 @@ namespace DHDM
 			//PlayerFactory.BuildPlayers(players);
 			game.Players.Clear();
 			AllPlayers.LoadData();
+			AllSpells.LoadData();
+			AllFeatures.LoadData();
 			AllDieRollEffects.LoadData();
 			AllTrailingEffects.LoadData();
 
@@ -2382,6 +2471,7 @@ namespace DHDM
 
 		bool checkingInternally;
 		string lastScenePlayed;
+		PlayerActionShortcut shortcutToActivateAfterClearingDice;
 		void CheckAllPlayers()
 		{
 			checkingInternally = true;
@@ -2628,6 +2718,7 @@ namespace DHDM
 
 		public void TellDungeonMaster(string message, bool isDetail = false)
 		{
+			History.Log(message);
 			if (dungeonMasterClient == null)
 				return;
 			if (!JoinedChannel(DungeonMasterChannel))
@@ -2680,5 +2771,17 @@ namespace DHDM
 			if (sender is Button button)
 				tbxSpellSlot.Text = button.Tag.ToString();
 		}
+
+		void ActivatePendingShortcuts(object sender, EventArgs e)
+		{
+			pendingShortcutsTimer.Stop();
+			ActivatePendingShortcuts();
+		}
 	}
+
+	/* 
+	  Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown
+		Melf's Minute Meteors.6				Staff.Weapon	Casting								x										30	150				
+		Melf's Minute Meteors.7				Staff.Magic		Casting								x									 350	150				
+	 */
 }

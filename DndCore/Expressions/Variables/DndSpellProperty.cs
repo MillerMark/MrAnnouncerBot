@@ -49,16 +49,19 @@ namespace DndCore
 			CastedSpell castedSpell = Expressions.GetCastedSpell(evaluator.Variables);
 			string spellPropToken = variableName.EverythingAfter(KnownQualifiers.Spell);
 
-			if (fieldNames.IndexOf(spellPropToken) >= 0)
+			if (castedSpell != null)
 			{
-				FieldInfo field = typeof(Spell).GetField(spellPropToken);
-				return field?.GetValue(castedSpell.Spell);
-			}
+				if (fieldNames.IndexOf(spellPropToken) >= 0)
+				{
+					FieldInfo field = typeof(Spell).GetField(spellPropToken);
+					return field?.GetValue(castedSpell.Spell);
+				}
 
-			if (propertyNames.IndexOf(spellPropToken) >= 0)
-			{
-				PropertyInfo property = typeof(Spell).GetProperty(spellPropToken);
-				return property?.GetValue(castedSpell.Spell);
+				if (propertyNames.IndexOf(spellPropToken) >= 0)
+				{
+					PropertyInfo property = typeof(Spell).GetProperty(spellPropToken);
+					return property?.GetValue(castedSpell.Spell);
+				}
 			}
 
 			return null;

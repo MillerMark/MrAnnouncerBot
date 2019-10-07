@@ -180,6 +180,15 @@ namespace DndCore
 			if (duration.IndexOf("round") > 0)
 				return FromRounds(duration.GetFirstInt());
 
+			if (duration == "day")
+				return FromDays(1);
+			if (duration == "hour")
+				return FromHours(1);
+			if (duration == "minute")
+				return FromMinutes(1);
+			if (duration == "second")
+				return FromSeconds(1);
+
 			return Zero;
 
 		}

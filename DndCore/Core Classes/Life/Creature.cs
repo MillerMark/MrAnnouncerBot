@@ -590,7 +590,7 @@ namespace DndCore
 			if (Game != null)
 			{
 				Game.CreatureTakingAction(this);
-				Game.CreatureWillAttack(this, creature, attack);
+				Game.CreatureWillAttack(this, creature, attack, false);
 			}
 		}
 
@@ -600,7 +600,7 @@ namespace DndCore
 				Game.CreatureTakingAction(this);
 			Use(shortcut);
 			if (Game != null)
-				Game.CreatureWillAttack(this, target, null);
+				Game.CreatureWillAttack(this, target, null, shortcut.UsesMagic);
 		}
 
 		public virtual void Target(Creature target)
@@ -608,7 +608,7 @@ namespace DndCore
 			if (Game != null)
 			{
 				Game.CreatureTakingAction(this);
-				Game.CreatureWillAttack(this, target, null);
+				Game.CreatureWillAttack(this, target, null, false);
 			}
 		}
 

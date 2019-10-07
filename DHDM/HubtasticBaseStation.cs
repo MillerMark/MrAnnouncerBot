@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DHDM
 {
@@ -37,7 +38,7 @@ namespace DHDM
 							hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 							if (hubConnection != null)
 							{
-								//hubConnection.Closed += HubConnection_Closed;
+								hubConnection.Closed += HubConnection_Closed;
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
 								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
 								hubConnection.StartAsync();
@@ -45,8 +46,14 @@ namespace DHDM
 						}
 					}
 				}
+				
 				return hubConnection;
 			}
+		}
+
+		private static Task HubConnection_Closed(Exception arg)
+		{
+			return Task.CompletedTask;
 		}
 
 		public static void PlayerDataChanged(int playerID, ScrollPage pageID, string playerData)

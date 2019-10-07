@@ -6,8 +6,8 @@
 
 class DragonBackGame extends DragonGame {
 	readonly clockMargin: number = 0;
-	readonly clockOffsetX: number = 0; // 49
-	readonly clockBottomY: number = screenHeight; // 230
+	readonly clockOffsetX: number = 49; // 0
+	readonly clockBottomY: number = 230; // screenHeight; // 230
 	readonly clockScale: number = 0.84;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;

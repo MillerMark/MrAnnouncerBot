@@ -33,7 +33,7 @@ namespace OverlayManager
 			});
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-			services.AddSignalR();
+			services.AddSignalR(o => o.EnableDetailedErrors = true);
 			services.AddHostedService<BackgroundWorker>();
 		}
 

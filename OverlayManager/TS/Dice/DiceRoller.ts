@@ -7,6 +7,7 @@ var totalRoll: number = 0;
 var totalBonus: number = 0;
 var d20RollValue: number = -1;
 var attemptedRollWasSuccessful: boolean = false;
+var wasCriticalHit: boolean = false;
 var attemptedRollWasNarrowlySuccessful: boolean = false;
 var diceToRoll = 10;
 var secondsBetweenRolls: number = 12;
@@ -654,9 +655,9 @@ function needToRollBonusDice() {
 
 function checkAttackBonusRolls() {
 	if (isAttack(diceRollData)) {
-		let isCriticalHit: boolean = d20RollValue >= diceRollData.minCrit;
+		wasCriticalHit = d20RollValue >= diceRollData.minCrit;
 		//console.log('isCriticalHit: ' + isCriticalHit);
-		if (isCriticalHit && !diceRollData.secondRollData) {
+		if (wasCriticalHit && !diceRollData.secondRollData) {
 			//console.log('diceRollData.damageHealthExtraDice: ' + diceRollData.damageHealthExtraDice);
 			bonusRollDealsDamage(diceRollData.damageHealthExtraDice, '', getFirstPlayerId());
 			//console.log('checkAttackBonusRolls(1) - Roll Bonus Dice: ' + diceRollData.bonusRolls.length);
@@ -2344,8 +2345,14 @@ function onDiceRollStopped() {
 		onFailure();
 	}
 
+	let playerId: number = diceLayer.playerID;
+	if (diceRollData.playerRollOptions.length == 1)
+		playerId = diceRollData.playerRollOptions[0].PlayerID;
+
+	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
 	let diceData = {
-		'playerID': diceLayer.playerID,
+		'wasCriticalHit': wasCriticalHit,
+		'playerID': playerId,
 		'success': attemptedRollWasSuccessful,
 		'roll': totalRoll,
 		'hiddenThreshold': diceRollData.hiddenThreshold,
@@ -2429,8 +2436,10 @@ function checkStillRolling() {
 					if (!diceRollData.startedBonusDiceRoll) {
 						freezeExistingDice();
 						diceRollData.startedBonusDiceRoll = true;
-						if (isAttack(diceRollData) && d20RollValue >= diceRollData.minCrit)
+						if (isAttack(diceRollData) && d20RollValue >= diceRollData.minCrit) {
 							diceLayer.indicateBonusRoll('Damage Bonus!');
+							wasCriticalHit = true;
+						}
 						else
 							diceLayer.indicateBonusRoll('Bonus Roll!');
 						setTimeout(rollBonusDice, 2500);
@@ -2875,6 +2884,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	diceRollData = diceRollDto;
 	diceRollData.timeLastRolledMs = performance.now();
 	attemptedRollWasSuccessful = false;
+	wasCriticalHit = false;
 	attemptedRollWasNarrowlySuccessful = false;
 
 	if (randomDiceThrowIntervalId != 0) {

@@ -5,10 +5,11 @@ using DndCore;
 
 namespace DHDM
 {
-	public class DiceRollData
+	public class DiceStoppedRollingData
 	{
 		public int playerID { get; set; }
 		public bool success { get; set; }
+		public bool wasCriticalHit { get; set; }
 		public string spellName { get; set; }
 		public int roll { get; set; }
 		public int hiddenThreshold { get; set; }
@@ -24,7 +25,7 @@ namespace DHDM
 		public int bonus { get; set; }
 		public string additionalDieRollMessage { get; set; }
 
-		public DiceRollData()
+		public DiceStoppedRollingData()
 		{
 
 		}
@@ -39,13 +40,5 @@ namespace DHDM
 
 			return null;
 		}
-	}
-
-	public class PlayerRoll
-	{
-		public int roll;
-		public string name;
-		public int playerId;
-		public int modifier;
 	}
 }

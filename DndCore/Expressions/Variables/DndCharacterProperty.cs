@@ -54,7 +54,10 @@ namespace DndCore
 			if (KnownQualifiers.StartsWithKnownQualifier(tokenName))
 				return false;
 
-			return player != null && player.GetState(tokenName) != null;
+			if (player == null)
+				return false;
+
+			return player.HoldsState(tokenName) || tokenName.StartsWith("_"); // ;
 		}
 
 		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)

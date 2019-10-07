@@ -7,7 +7,7 @@ namespace DndCore
 	{
 		public static bool UseTestData { get; set; }
 		public const string CoreData = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndCore\Data";
-		public const string TestCoreData = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndCore\TestData";
+		public const string TestCoreData = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndCore\Data\TestData";
 		public static string InCoreData(string fileName)
 		{
 			string folder = UseTestData? TestCoreData: CoreData;

@@ -1,0 +1,24 @@
+name,index,effect,effectAvailableWhen,playToEndOnExpire,hue,saturation,brightness,opacity,scale,rotation,degreesOffset,flipHorizontal,moveLeftRight,moveUpDown,fade,dieRollEffects,trailingEffects,startSound,endSound
+Greatsword,0,GreatSword.Weapon,,x,player,,,,,,,,,150,,,,SwordDraw,SwordSlash
+Greatsword,1,GreatSword.Magic,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,
+Battleaxe,0,BattleAxe.Weapon,,x,player,,,,,,,,,,,,,SwordDraw,SwordSlash
+Battleaxe,1,BattleAxe.MagicA,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+Battleaxe,2,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+Shortsword,0,LongSword.Weapon,,x,player,,,,0.7,,,,,150,,,,SwordDraw,SwordSlash
+Shortsword,1,LongSword.Magic,usesMagicThisRoll == true,x,,,,,0.7,,,,,150,,,,,
+Javelin,0,Javelin.Weapon,,x,,,,,,,,,,150,,,,,
+Javelin,1,Javelin.Magic,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,
+Dagger,0,LongSword.Weapon,,x,player,,,,0.35,,,,,150,,,,,
+Dagger,1,LongSword.Magic,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,
+Greataxe,0,BattleAxe.Weapon,,x,,,,,1.2,,,,,90,,,,SwordDraw,SwordSlash
+Greataxe,1,BattleAxe.MagicA,usesMagicThisRoll == true,x,player,,,,0.8,,,,,90,,,,,
+Greataxe,2,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+Handaxe,0,BattleAxe.Weapon,,x,,,,,0.6,,,,,90,,,,SwordDraw,SwordSlash
+Handaxe,1,BattleAxe.MagicA,usesMagicThisRoll == true,x,player,,,,0.6,,,,,90,,,,,
+Handaxe,2,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+LongSword,0,LongSword.Weapon,,x,player,,,,,,,,,150,,,,SwordDraw,SwordSlash
+LongSword,1,LongSword.Magic,,x,220,,,,,,,,,,,,,,
+WarHammer,0,WarHammer.Weapon,,x,player,,,,,,,,,150,,,,,
+WarHammer,1,WarHammer.MagicHandle,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+WarHammer,2,WarHammer.MagicFrontHead,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+WarHammer,3,WarHammer.MagicBackHead,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,

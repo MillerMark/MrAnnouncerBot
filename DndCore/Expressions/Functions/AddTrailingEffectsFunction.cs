@@ -14,7 +14,7 @@ namespace DndCore
 
 			string trailingEffects = evaluator.Evaluate<string>(args[0]);
 
-			player.AddTailingEffects(trailingEffects);
+			player.AddTrailingEffects(trailingEffects);
 
 			return null;
 		}

@@ -38,6 +38,9 @@ namespace DndCore
 		public string alignment { get; set; }
 		public int leftMostPriority { get; set; }
 		public string weaponProficiency { get; set; }
+		public string weapons { get; set; }
+		public string ammunition { get; set; }
+		public string spells { get; set; }
 		public CharacterDto()
 		{
 

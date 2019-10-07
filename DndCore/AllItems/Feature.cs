@@ -29,6 +29,8 @@ namespace DndCore
 		public string OnActivate { get; set; }
 		public string OnDeactivate { get; set; }
 		public string OnPlayerCastsSpell { get; set; }
+		public string OnPlayerSwingsWeapon { get; set; }
+		public string OnRollComplete { get; set; }
 		public DndTimeSpan Per { get; set; }
 		public bool RequiresPlayerActivation { get; set; }
 		public List<string> Parameters { get; set; }
@@ -42,6 +44,8 @@ namespace DndCore
 			result.OnActivate = featureDto.OnActivate;
 			result.OnDeactivate = featureDto.OnDeactivate;
 			result.OnPlayerCastsSpell = featureDto.OnPlayerCastsSpell;
+			result.OnPlayerSwingsWeapon = featureDto.OnPlayerSwingsWeapon;
+			result.OnRollComplete = featureDto.OnRollComplete;
 			result.Duration = DndTimeSpan.FromDurationStr(featureDto.Duration);
 			result.Per = DndTimeSpan.FromDurationStr(featureDto.Per);
 			result.Limit = featureDto.Limit;
@@ -103,6 +107,21 @@ namespace DndCore
 			if (!string.IsNullOrWhiteSpace(OnPlayerCastsSpell))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerCastsSpell, Parameters, arguments), player, null, spell);
 		}
-		
+
+		public void WeaponJustSwung(string arguments, Character player)
+		{
+			if (!IsActive)
+				return;
+			if (!string.IsNullOrWhiteSpace(OnPlayerSwingsWeapon))
+				Expressions.Do(DndUtils.InjectParameters(OnPlayerSwingsWeapon, Parameters, arguments), player);
+		}
+
+		public void RollIsComplete(string arguments, Character player)
+		{
+			if (!IsActive)
+				return;
+			if (!string.IsNullOrWhiteSpace(OnRollComplete))
+				Expressions.Do(DndUtils.InjectParameters(OnRollComplete, Parameters, arguments), player);
+		}
 	}
 }

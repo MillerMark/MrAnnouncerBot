@@ -135,5 +135,15 @@ namespace DndTests
 			Character shemo = AllPlayers.Get("Shemo");
 			Assert.AreEqual(PlayerID.Shemo, shemo.playerID);
 		}
+
+		[TestMethod]
+		public void TestPlayerAmmunition()
+		{
+			AllPlayers.LoadData();
+			Character willy = AllPlayers.Get("Willy");
+			Assert.AreEqual(20, willy.GetAmmunitionCount("Arrow"));
+			Character merkin = AllPlayers.Get("Merkin");
+			Assert.AreEqual(20, merkin.GetAmmunitionCount("Bolt"));
+		}
 	}
 }

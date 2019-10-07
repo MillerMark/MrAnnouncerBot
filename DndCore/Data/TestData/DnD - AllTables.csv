@@ -1,0 +1,2 @@
+TableName,Fields
+Barbarian,"Level:int, ProficiencyBonus:int, Features:string, Rages:int, RageDamage:int"

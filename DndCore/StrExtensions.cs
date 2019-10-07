@@ -97,6 +97,21 @@ namespace DndCore
 			}
 			return null;
 		}
+
+		public static string EverythingBetween(this string str, string beginMatchStr, string endMatchStr)
+		{
+			return str.EverythingAfter(beginMatchStr).EverythingBefore(endMatchStr);
+		}
+
+		public static bool Has(this string str, string matchStr)
+		{
+			return str.IndexOf(matchStr) >= 0;
+		}
+
+		public static bool HasSomething(this string str)
+		{
+			return !string.IsNullOrWhiteSpace(str);
+		}
 	}
 }
 

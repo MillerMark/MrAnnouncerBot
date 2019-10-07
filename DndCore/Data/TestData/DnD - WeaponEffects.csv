@@ -1,0 +1,3 @@
+name,index,effect,effectAvailableWhen,minSlotLevel,playToEndOnExpire,hue,saturation,brightness,opacity,scale,rotation,degreesOffset,flipHorizontal,moveLeftRight,moveUpDown,fade,dieRollEffects,trailingEffects,startSound,endSound
+Greatsword,0,GreatSword.Weapon,,,x,,,,,,,,,,150,,,,SwordDraw,SwordSlash
+Greatsword,1,GreatSword.Magic,usesMagicThisRoll == true,,x,,,,,,,,,,150,,,,,

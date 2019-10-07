@@ -1,0 +1,23 @@
+Name,Index,RequiresPlayerActivation,Conditions,OnActivate,ActivationMessage,OnDeactivate,DeactivationMessage,OnPlayerSwingsWeapon,OnPlayerCastsSpell,OnRollComplete,Duration,Limit,Per,Description
+BarbarianMelee($Ability),,,InRage && AttackIsMelee && AttackingWith($Ability),"Offset(damageOffsetThisRoll, BarbarianRageDamage)",,Recalculate(ActionBasedState),,,,,,,,
+AdvChecksAndSaves($Ability),,,CheckingAbility($Ability) || SavingAgainst($Ability),PlayerHasAdvantage(),,Recalculate(ActionBasedState),,,,,,,,
+Dueling,,,WieldingMeleeWeaponInOneHand && StrikingWithWeapon,"Offset(damageOffsetThisRoll, 2)",,Recalculate(ActionBasedState),,,,,,,,
+SecondWind,,x,,"RollDice(""1d10+"" + Level(“Fighter”) + ""(healing)"")",,,,,,,,1,Short Rest,
+UnarmoredDefense,,,ArmorWorn(None),"Set(baseArmorClass, 10+Mod(dexterity)+Mod(constitution)+ShieldBonus)",,,,,,,,,,
+ActionSurge,,x,,"Offset(ActionsPerTurn, 1)",,,,,,,,1,Short Rest,
+RageResistance($Damage),,,InRage,"Set(Resistance, $Damage)",,Recalculate(Resistance),,,,,,,,
+NoSpellsDuringRage,,,InRage,"Set(SpellCastingLock, _rage)",,Recalculate(ActionBasedState),,,,,,,,
+Rage,,x,Get(_rage)==true,"Set(_rage,true)","$""{name} started raging...""","Set(_rage,false)","name + ""stopped raging...""",,,,1 minute,BarbarianRagesPerDay,Long Rest,
+RecklessAttack,,x,,"Set(_recklessAttack, true)",,,,,,,1 round,,,"When you make your first attack on your turn, you can decide to attack recklessly, giving you advantage on melee weapon attack rolls using STR during this turn, but attack rolls against you have advantage until your next turn."
+AdvOnRecklessAttack($Ability),,,InRecklessAttack && AttackIsMelee && AttackingWith($Ability),"PlayerHasAdvantage(); Offset(EnemyAdvantage, 1)",,"Offset(EnemyAdvantage, -1)",,,,,,,,
+WildSurgeRage,,x,Get(_rage)==true,"Set(_rage,true); RollDice(""1d8(BarbarianWildSurge)"")","$""{name} started wild surge raging...""","Set(_rage,false);
+Recalculate(ActionBasedState);","name + ""stopped wild surge raging...""",,,,1 minute,BarbarianRagesPerDay,Long Rest,
+SneakAttack,,,,,,,,,,,,1,Turn,
+WildMagicSurge,,,true,,,,,,"if (spell_Level >= 1)
+  ActivateShortcut(""Check Wild Magic"");",,,,,
+GreatWeaponFighting,,,true,,,,,"if (WieldingHeavyMeleeWeaponInBothHands)
+  Set(MinDamageThisRoll, 3);",,,,,,You can reroll a 1 or 2 on damage dice with melee weapons wielded with two hands.
+GreatWeaponMaster,0,x,,"Offset(damageOffsetThisRoll, 10); Offset(attackOffsetThisRoll, -5)",,,,,,,,,,"Before you make a melee attack with a heavy weapon that you are proficient with, you can choose to take a -5 penalty to the attack roll to add +10 to the attack's damage."
+GreatWeaponMaster,1,,true,,,,,,,"if (hitWasCritical || targetedCreatureHitPoints == 0)
+  TellDm($""{name} gets to make one melee weapon attack as a bonus action (Great Weapon Master)."");",,,,"On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
+,,,,,,,,,, ,,,,

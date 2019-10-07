@@ -34,18 +34,21 @@ namespace DndCore
 			FieldInfo field = instanceType.GetField(propertyName);
 			if (field != null)
 			{
-				field.SetValue(instance, value);
+				if (instance != null)
+					field.SetValue(instance, value);
 				return null;
 			}
+
 			PropertyInfo property = instanceType.GetProperty(propertyName);
 			if (property != null)
 			{
-				property.SetValue(instance, value);
+				if (instance != null)
+					property.SetValue(instance, value);
 				return null;
 			}
 
 			player.SetState(propertyName, value);
-			
+
 			return null;
 		}
 	}

@@ -15,7 +15,6 @@ namespace DndCore
 		public string addDiceOnHit { get; set; }
 		public string addDiceOnHitMessage { get; set; }
 		public string addDiceTitle { get; set; }
-		public string spellSlotLevel { get; set; }
 		public string time { get; set; }
 		public string magic { get; set; }
 		public string dieStr { get; set; }
@@ -28,8 +27,6 @@ namespace DndCore
 		public string scale { get; set; }
 		public string rotation { get; set; }
 		public string degreesOffset { get; set; }
-		public string limitCount { get; set; }
-		public string limitSpan { get; set; }
 		public string playToEndOnExpire { get; set; }
 		public string flipHorizontal { get; set; }
 		public string moveUpDown { get; set; }

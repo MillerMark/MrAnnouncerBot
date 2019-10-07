@@ -1,0 +1,7 @@
+name,index,effect,effectAvailableWhen,minSlotLevel,playToEndOnExpire,hue,saturation,brightness,opacity,scale,rotation,degreesOffset,flipHorizontal,moveLeftRight,moveUpDown,fade,dieRollEffects,trailingEffects,startSound,endSound
+Melf's Minute Meteors,0,Fire,_melfMeteorCount > 0,,,-30,,,,,,6,,,60,,,,,
+Melf's Minute Meteors,1,Smoke,_melfMeteorCount > 0,,,-30,,20,,,,-14,,,60,,,,,
+Melf's Minute Meteors,2,Fire,_melfMeteorCount > 1,,,0,,,,,,126,,,60,,,,,
+Melf's Minute Meteors,3,Smoke,_melfMeteorCount > 1,,,0,,20,,,,106,,,60,,,,,
+Melf's Minute Meteors,4,Fire,_melfMeteorCount > 2,,,30,,,,,,246,,,60,,,,,
+Melf's Minute Meteors,5,Smoke,_melfMeteorCount > 2,,,30,,20,,,,226,,,60,,,,,

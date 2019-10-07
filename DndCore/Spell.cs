@@ -5,7 +5,6 @@ namespace DndCore
 {
 	public class Spell
 	{
-
 		public int Range { get; set; }
 		public SpellRangeType RangeType { get; set; }
 		public SpellType SpellType { get; set; }
@@ -31,6 +30,7 @@ namespace DndCore
 		public string OnPlayerAttacks { get; set; }
 		public string OnPlayerHitsTarget { get; set; }
 		public string OnDispel { get; set; }
+		public string AvailableWhen { get; set; }
 
 
 
@@ -221,6 +221,13 @@ namespace DndCore
 			}
 		}
 
+		// TODO: Implement CastWith Hue1, Hue2, Bright1, & Bright2. Tie these to actual effects.
+		public string CastWith { get; set; }
+		public string Hue1 { get; set; }
+		public string Bright1 { get; set; }
+		public string Hue2 { get; set; }
+		public string Bright2 { get; set; }
+
 		public void RecalculateDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			DieStr = GetDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
@@ -258,7 +265,13 @@ namespace DndCore
 				OnCasting = spellDto.onCasting,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
 				OnPlayerHitsTarget = spellDto.onPlayerHitsTarget,
-				OnDispel = spellDto.onDispel
+				OnDispel = spellDto.onDispel,
+				Hue1 = spellDto.hue1,
+				Bright1 = spellDto.bright1,
+				Hue2 = spellDto.hue2,
+				Bright2 = spellDto.bright2,
+				CastWith = spellDto.cast_with,
+				AvailableWhen = spellDto.availableWhen
 			};
 			spell.RecalculateDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
@@ -310,6 +323,40 @@ namespace DndCore
 		public void TriggerPlayerHitsTarget(Character player, Creature target, CastedSpell castedSpell)
 		{
 			Expressions.Do(OnPlayerHitsTarget, player, target, castedSpell);
+		}
+		public Spell Clone(Character player, int spellSlotLevel)
+		{
+			Spell result = new Spell();
+			result.BonusPerLevel = BonusPerLevel;
+			result.BonusThreshold = BonusThreshold;
+			result.CastingTime = CastingTime;
+			result.Components = Components;
+			result.Description = Description;
+			result.DieStr = DieStr;
+			result.Duration = Duration;
+			result.Level = Level;
+			result.Material = Material;
+			result.Name = Name;
+			result.OnCast = OnCast;
+			result.OnCasting = OnCasting;
+			result.OnDispel = OnDispel;
+			result.OnPlayerAttacks = OnPlayerAttacks;
+			result.OnPlayerHitsTarget = OnPlayerHitsTarget;
+			result.OriginalDieStr = OriginalDieStr;
+			result.PerLevelBonus = PerLevelBonus;
+			result.Range = Range;
+			result.RangeType = RangeType;
+			result.RequiresConcentration = RequiresConcentration;
+			result.SavingThrowAbility = SavingThrowAbility;
+			result.AvailableWhen = AvailableWhen;
+			result.SpellCasterLevel = SpellCasterLevel;
+			result.SpellType = SpellType;
+
+			// Override...
+			result.OwnerId = player.playerID;
+			result.SpellSlotLevel = spellSlotLevel;
+
+			return result;
 		}
 	}
 }

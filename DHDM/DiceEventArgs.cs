@@ -17,11 +17,11 @@ namespace DHDM
 		public void SetDiceData(string diceData)
 		{
 			if (diceData == null)
-				DiceRollData = null;
+				StopRollingData = null;
 			else
 				try
 				{
-					DiceRollData = Newtonsoft.Json.JsonConvert.DeserializeObject<DiceRollData>(diceData);
+					StopRollingData = Newtonsoft.Json.JsonConvert.DeserializeObject<DiceStoppedRollingData>(diceData);
 				}
 				catch (Exception ex)
 				{
@@ -31,6 +31,6 @@ namespace DHDM
 		}
 
 		public string DiceData { get; set; }
-		public DiceRollData DiceRollData { get; set; }
+		public DiceStoppedRollingData StopRollingData { get; set; }
 	}
 }

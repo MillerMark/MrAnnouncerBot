@@ -34,8 +34,6 @@ namespace DndCore
 
 		public DiceRollType Type { get; set; }
 		public int Index { get; set; }
-		public int LimitCount { get; set; }
-		public DndTimeSpan LimitSpan { get; set; }
 		public string Description { get; set; }
 		public VantageKind VantageMod { get; set; }
 		public string AddDice { get; set; }
@@ -91,8 +89,6 @@ namespace DndCore
 			Index = shortcutIndex;
 			shortcutIndex++;
 			Part = TurnPart.Action;
-			LimitCount = 0;
-			LimitSpan = DndTimeSpan.Never;
 			Description = "";
 			AddDice = "";
 			AddDiceOnHit = "";
@@ -185,10 +181,10 @@ namespace DndCore
 			}
 			return DiceRollType.None;
 		}
-		void AddSpell(int spellSlotLevel, Character player)
+		
+		void AddSpell(int spellSlotLevel, Character player, Spell spell)
 		{
-			string spellName = DndUtils.GetCleanItemName(Name);
-			Spell = AllSpells.Get(spellName, player, spellSlotLevel);
+			Spell = spell.Clone(player, spellSlotLevel);
 			Dice = Spell.DieStr;
 			Part = DndUtils.ToTurnPart(Spell.CastingTime);
 		}
@@ -258,36 +254,39 @@ namespace DndCore
 			}
 			else
 			{
-				Spell spell = AllSpells.Get(cleanName, player);
-				if (spell != null)
+				List<Spell> spells = AllSpells.GetAll(cleanName, player);
+				if (spells != null)
 				{
-					if (spell.MorePowerfulWhenCastAtHigherLevels)
+					foreach (Spell spell in spells)
 					{
-						int[] spellSlotLevels = player.GetSpellSlotLevels();
-						int availableSlots = spellSlotLevels[spell.Level];
-						if (availableSlots > 0)
+						if (spell.MorePowerfulWhenCastAtHigherLevels)
 						{
-							bool needToDisambiguateMultipleSpells = false;
-							if (spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0)
-								needToDisambiguateMultipleSpells = true;
-
-							for (int slotLevel = spell.Level; slotLevel <= 9; slotLevel++)
+							int[] spellSlotLevels = player.GetSpellSlotLevels();
+							int availableSlots = spellSlotLevels[spell.Level];
+							if (availableSlots > 0)
 							{
-								if (spellSlotLevels[slotLevel] == 0)
-									break;
+								bool needToDisambiguateMultipleSpells = false;
+								if (spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0)
+									needToDisambiguateMultipleSpells = true;
 
-								string suffix = string.Empty;
-								if (needToDisambiguateMultipleSpells)
-									suffix = $" [{slotLevel}]";
-								
-								results.Add(FromSpell(shortcutDto, player, spell, slotLevel, null, suffix));
+								for (int slotLevel = spell.Level; slotLevel <= 9; slotLevel++)
+								{
+									if (spellSlotLevels[slotLevel] == 0)
+										break;
+
+									string suffix = string.Empty;
+									if (needToDisambiguateMultipleSpells)
+										suffix = $" [{slotLevel}]";
+
+									results.Add(FromSpell(shortcutDto, player, spell, slotLevel, null, suffix));
+								}
 							}
+							else
+								results.Add(FromSpell(shortcutDto, player, spell));
 						}
 						else
 							results.Add(FromSpell(shortcutDto, player, spell));
 					}
-					else
-						results.Add(FromSpell(shortcutDto, player, spell));
 				}
 				else // Not a weapon or a spell.
 				{
@@ -349,7 +348,8 @@ namespace DndCore
 			int spellSlotLevel = spell.Level;
 			if (slotLevelOverride > 0)
 				spellSlotLevel = slotLevelOverride;
-			result.AddSpell(spellSlotLevel, player);
+			result.AddSpell(spellSlotLevel, player, spell);
+			result.Description = spell.Description;
 			result.AttackingAbility = player.spellCastingAbility;
 			result.ProcessDieStr(shortcutDto, damageStr);
 			bool isWindup = result.Spell != null && !result.Spell.Duration.HasValue() && result.Spell.MustRollDiceToCast();
@@ -366,8 +366,6 @@ namespace DndCore
 			result.AddDiceOnHitMessage = shortcutDto.addDiceOnHitMessage;
 			result.AdditionalRollTitle = shortcutDto.addDiceTitle;
 
-			result.LimitCount = MathUtils.GetInt(shortcutDto.limitCount);
-			result.LimitSpan = DndTimeSpan.FromString(shortcutDto.limitSpan);
 			result.MinDamage = MathUtils.GetInt(shortcutDto.minDamage);
 			result.PlusModifier = MathUtils.GetInt(shortcutDto.plusModifier);
 			result.Name = shortcutDto.name + suffix;

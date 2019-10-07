@@ -281,7 +281,7 @@
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
     <Compile Include="DiceEventArgs.cs" />
-    <Compile Include="DiceRollData.cs" />
+    <Compile Include="DiceStoppedRollingData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="DungeonMasterCommand.cs" />
     <Compile Include="FrmAsk.xaml.cs">
@@ -296,6 +296,7 @@
     <Compile Include="MoveFredCommand.cs" />
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerFactory.cs" />
+    <Compile Include="PlayerRoll.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
@@ -303,6 +304,7 @@
     <Compile Include="SavingThrowCommand.cs" />
     <Compile Include="ScrollCloseCommand.cs" />
     <Compile Include="SelectShortcutCommand.cs" />
+    <Compile Include="ShortcutButton.cs" />
     <Compile Include="SkillCheckCommand.cs" />
     <Compile Include="SpellSlotSelectorCommand.cs" />
     <Compile Include="StaticCommands.cs" />

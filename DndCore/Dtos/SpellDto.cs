@@ -39,11 +39,17 @@ namespace DndCore
 		public string tags_5 { get; set; }
 		public string tags_6 { get; set; }
 		public string tags_7 { get; set; }
+		public string cast_with { get; set; }
+		public string hue1 { get; set; }
+		public string bright1 { get; set; }
+		public string hue2 { get; set; }
+		public string bright2 { get; set; }
 		public string onCast { get; set; }
 		public string onCasting { get; set; }
 		public string onPlayerAttacks { get; set; }
 		public string onPlayerHitsTarget { get; set; }
 		public string onDispel { get; set; }
+		public string availableWhen { get; set; }
 
 		public SpellDto()
 		{

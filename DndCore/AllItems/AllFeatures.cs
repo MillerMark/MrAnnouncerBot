@@ -9,8 +9,13 @@ namespace DndCore
 
 		static AllFeatures()
 		{
-			LoadData(CsvData.Get<FeatureDto>(Folders.InCoreData("DnD - Features.csv")));
+			LoadData();
 			DndGame.Instance.PlayerStateChanged += Instance_PlayerStateChanged;
+		}
+
+		public static void LoadData()
+		{
+			LoadData(CsvData.Get<FeatureDto>(Folders.InCoreData("DnD - Features.csv")));
 		}
 
 		private static void Instance_PlayerStateChanged(object sender, PlayerStateEventArgs ea)

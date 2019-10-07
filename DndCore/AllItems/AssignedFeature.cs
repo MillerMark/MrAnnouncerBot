@@ -76,5 +76,14 @@ namespace DndCore
 		{
 			Feature.SpellJustCast(GetArgStr(), player, spell);
 		}
+
+		public void WeaponJustSwung(Character player)
+		{
+			Feature.WeaponJustSwung(GetArgStr(), player);
+		}
+		public void RollIsComplete(Character player)
+		{
+			Feature.RollIsComplete(GetArgStr(), player);
+		}
 	}
 }

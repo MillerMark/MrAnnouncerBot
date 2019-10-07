@@ -313,19 +313,19 @@ namespace DndTests
 
 			game.EnteringCombat();
 
-			ava.Hits(joeVineBlight, greatsword);  // Action
+			ava.Hits(joeVineBlight, greatsword);  // Action. Ava is first to fight.
 			ava.Cast(wrathfulSmite.Spell);  // Bonus Action - Wrathful Smite lasts for one minute.
 			Assert.IsTrue(ava.SpellIsActive(SpellNames.WrathfulSmite));
 
 			joeVineBlight.Misses(ava, AttackNames.Constrict);
 
-			AvaMeleeMissesJoe();
+			AvaMeleeMissesJoe();		// Round 2
 			Assert.AreEqual(6, game.SecondsSince(gameStartTime));
 			
 			joeVineBlight.Misses(ava, AttackNames.Constrict);
 			Assert.AreEqual(6, game.SecondsSince(gameStartTime));
 
-			AvaMeleeMissesJoe();
+			AvaMeleeMissesJoe();    // Round 3
 			Assert.AreEqual(12, game.SecondsSince(gameStartTime));
 
 			joeVineBlight.Misses(ava, AttackNames.Constrict);

@@ -300,12 +300,16 @@ namespace DndCore
 			if (castingSpells.IndexOf(castedSpell) >= 0)
 				castingSpells.Remove(castedSpell);
 
+			if (activeSpells.IndexOf(castedSpell) >= 0)
+				activeSpells.Remove(castedSpell);
+
 			Spell spell = castedSpell.Spell;
 			if (spell.Duration.HasValue())
 			{
 				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, player.playerID), player, castedSpell);
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
+			
 			activeSpells.Add(castedSpell);
 			castedSpell.Cast();
 		}
@@ -336,11 +340,12 @@ namespace DndCore
 			return activeSpells.FindAll(x => x.SpellCaster == character);
 		}
 
-		public void CreatureWillAttack(Creature creature, Creature target, Attack attack)
+		public void CreatureWillAttack(Creature creature, Creature target, Attack attack, bool usesMagic)
 		{
 			if (creature is Character player)
 			{
 				player.targetThisRollIsCreature = target != null;
+				player.usesMagicThisRoll = usesMagic;
 				List<CastedSpell> playersActiveSpells = GetActiveSpells(player);
 				// Trigger in reverse order in case any of these spells are dispelled.
 				for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
