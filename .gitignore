@@ -910,3 +910,5 @@ DndCore/TestData/DnD - Table.Sorcerer.csv
 DndCore/TestData/DnD - Table.Barbarian.csv
 DndCore/TestData/DnD - Features.csv
 DndCore/TestData/DnD - AllTables.csv
+DndUI/User Controls/CharacterSheets_old.xaml.cs
+DndUI/User Controls/CharacterSheets_old.xaml

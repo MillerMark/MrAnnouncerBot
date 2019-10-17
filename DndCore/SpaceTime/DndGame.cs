@@ -321,6 +321,8 @@ namespace DndCore
 
 			castedSpell.Dispel();
 			activeSpells.Remove(castedSpell);
+			timeClock.RemoveAlarm(GetSpellAlarmName(castedSpell.Spell, castedSpell.SpellCaster.playerID));
+			OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));
 		}
 
 		private void DndAlarm_SpellDurationExpired(object sender, DndTimeEventArgs ea)
@@ -331,7 +333,6 @@ namespace DndCore
 					castedSpell.SpellCaster.BreakConcentration();
 
 				Dispel(castedSpell);
-				OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));
 			}
 		}
 
@@ -525,6 +526,10 @@ namespace DndCore
 			if (concentrationReport == string.Empty)
 				concentrationReport = "No players are concentrating on any spells at this time.";
 			return concentrationReport;
+		}
+		public void ClearAllAlarms()
+		{
+			timeClock.ClearAllAlarms();
 		}
 	}
 }

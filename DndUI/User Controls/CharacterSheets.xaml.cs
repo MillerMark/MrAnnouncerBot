@@ -794,5 +794,20 @@ namespace DndUI
 		{
 			OnSkillCheckRequested(Skills.charisma);
 		}
+
+		private void SkillCheckContextMenu_Drop(object sender, DragEventArgs e)
+		{
+
+		}
+
+		private void AbilityCheckContextMenu_Drop(object sender, DragEventArgs e)
+		{
+
+		}
+
+		private void SavingThrowContextMenu_Drop(object sender, DragEventArgs e)
+		{
+
+		}
 	}
 }

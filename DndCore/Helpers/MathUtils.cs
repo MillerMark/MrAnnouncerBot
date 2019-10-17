@@ -22,5 +22,12 @@ namespace DndCore
 				return result;
 			return defaultValue;
 		}
+
+		public static string BoolToStr(bool value)
+		{
+			if (value)
+				return "x";
+			return string.Empty;
+		}
 	}
 }

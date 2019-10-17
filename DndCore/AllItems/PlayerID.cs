@@ -14,6 +14,9 @@ namespace DndCore
 		
 		public static int FromName(string name)
 		{
+			if (name == null)
+				return -1;
+
 			string lowerCaseName = name.ToLower();
 			if (lowerCaseName.StartsWith("willy"))
 				return Willy;

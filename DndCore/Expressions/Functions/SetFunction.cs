@@ -12,12 +12,14 @@ namespace DndCore
 	{
 		public override string Name => "Set";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
 			ExpectingArguments(args, 2);
 
 			string propertyName = args[0];
-			object value = evaluator.Evaluate(Expressions.Clean(args[1]));
+			// TODO: incorrectValue:
+			//object incorrectValue = evaluator.Evaluate(Expressions.Clean(args[1]));
+			object value = Expressions.Get(Expressions.Clean(args[1]), player, target, spell);
 
 			object instance = player;
 			Type instanceType = typeof(Character);

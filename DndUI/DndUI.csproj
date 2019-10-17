@@ -72,15 +72,15 @@
     <Compile Include="Event Args\PageChangeEventArgs.cs" />
     <Compile Include="FocusHelper.cs" />
     <Compile Include="User Controls\AbilityEventArgs.cs" />
+    <Compile Include="User Controls\CharacterSheets.xaml.cs">
+      <DependentUpon>CharacterSheets.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User Controls\ScrollPage.cs" />
     <Compile Include="User Controls\SkillCheckEventArgs.cs" />
     <Compile Include="User Controls\StrUtils.cs" />
     <Compile Include="User Controls\Support\AnimationSprites.cs" />
     <Compile Include="User Controls\AttackBuilder.xaml.cs">
       <DependentUpon>AttackBuilder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="User Controls\CharacterSheets.xaml.cs">
-      <DependentUpon>CharacterSheets.xaml</DependentUpon>
     </Compile>
     <Compile Include="User Controls\ConditionEdit.xaml.cs">
       <DependentUpon>ConditionEdit.xaml</DependentUpon>
@@ -144,10 +144,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="User Controls\CharacterSheets.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="User Controls\ConditionEdit.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -177,6 +173,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="User Controls\ModsList.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="User Controls\CharacterSheets.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

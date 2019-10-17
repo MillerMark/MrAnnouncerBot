@@ -284,23 +284,18 @@ namespace DndCore
 
 		void TriggerAlarms(DateTime futureTime)
 		{
-			List<DndAlarm> alarmsToRemove = new List<DndAlarm>();
-			foreach (DndAlarm alarm in alarms)
+			for (int i = alarms.Count -1; i >= 0; i--)
 			{
+				DndAlarm alarm = alarms[i];
 				if (alarm.TriggerTime > futureTime)
 					break;
-				
+
 				if (alarm.TriggerTime > Time)
 				{
 					Time = alarm.TriggerTime;
 					alarm.FireAlarm(this);
-					alarmsToRemove.Add(alarm);
+					alarms.Remove(alarm);
 				}
-			}
-
-			foreach (DndAlarm alarmToRemove in alarmsToRemove)
-			{
-				alarms.Remove(alarmToRemove);
 			}
 		}
 		void ReengagePreviouslyTriggeredAlarms()
@@ -348,6 +343,15 @@ namespace DndCore
 		public DndAlarm GetAlarm(string alarmName)
 		{
 			return alarms.FirstOrDefault(x => x.Name == alarmName);
+		}
+
+		public void ClearAllAlarms()
+		{
+			alarms = new List<DndAlarm>();
+		}
+		public void RemoveAlarm(string alarmName)
+		{
+			alarms.RemoveAll(x => x.Name == alarmName);
 		}
 	}
 }

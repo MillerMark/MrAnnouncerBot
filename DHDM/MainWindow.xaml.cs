@@ -510,6 +510,11 @@ namespace DHDM
 					{
 						if (!game.Clock.InCombat)
 							realTimeAdvanceTimer.Stop();
+						if (concentratedSpell.Name == spell.Name)
+						{
+							// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
+							return;
+						}
 						if (FrmAsk.Ask($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }, this) == 0)
 							return;
 					}
@@ -531,7 +536,6 @@ namespace DHDM
 				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
 				HubtasticBaseStation.CastSpell(serializedObject);
 
-				// TODO: Ask to break existing concentration (if it exists).
 				CastedSpell castedSpell = game.Cast(player, spell);
 
 				if (spell.RequiresConcentration)
@@ -746,6 +750,7 @@ namespace DHDM
 			if (castedSpellNeedingCompletion != null)
 			{
 				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
+				diceRoll.DamageDice = castedSpellNeedingCompletion.DieStr;
 				spellCaster = null;
 				castedSpellNeedingCompletion = null;
 			}
@@ -2130,6 +2135,7 @@ namespace DHDM
 
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
+			game.ClearAllAlarms();
 			//PlayerFactory.BuildPlayers(players);
 			game.Players.Clear();
 			AllPlayers.LoadData();

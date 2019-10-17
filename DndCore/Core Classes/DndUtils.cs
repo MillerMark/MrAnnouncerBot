@@ -294,5 +294,14 @@ namespace DndCore
 		{
 			return type == DiceRollType.Attack || type == DiceRollType.ChaosBolt;
 		}
+		public static string VantageToStr(VantageKind vantageKind)
+		{
+			return Enum.GetName(typeof(VantageKind), vantageKind); ;
+		}
+
+		public static string DiceRollTypeToStr(DiceRollType diceRollType)
+		{
+			return Enum.GetName(typeof(DiceRollType), diceRollType);
+		}
 	}
 }

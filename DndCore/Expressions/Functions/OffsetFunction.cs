@@ -9,7 +9,7 @@ namespace DndCore
 	{
 		public override string Name => "Offset";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
 			if (player == null)
 				return null;
@@ -17,7 +17,7 @@ namespace DndCore
 			ExpectingArguments(args, 2);
 
 			string variableName = args[0];
-			double valueDouble = MathUtils.GetDouble(evaluator.Evaluate<object>(args[1]).ToString());
+			double valueDouble = MathUtils.GetDouble(Expressions.Get<object>(args[1], player, target, spell).ToString());
 			int valueInt = (int)Math.Round(valueDouble);
 
 			// TODO: Wil says Convert.ConvertTo() can simplify this.

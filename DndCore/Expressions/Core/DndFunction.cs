@@ -7,7 +7,8 @@ namespace DndCore
 {
 	public abstract class DndFunction: DndToken
 	{
-		public abstract object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player);
+		//,  = null, CastedSpell spell = null
+		public abstract object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell);
 
 		protected void ExpectingArguments(List<string> args, int value)
 		{

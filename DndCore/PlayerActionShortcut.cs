@@ -8,8 +8,8 @@ namespace DndCore
 	public class PlayerActionShortcut
 	{
 		public const string SpellWindupPrefix = "Spell.";
-		const string STR_WeaponPrefix = "Weapon.";
-		const string STR_OtherPrefix = "Other.";
+		public const string WeaponWindupPrefix = "Weapon.";
+		public const string STR_OtherPrefix = "Other.";
 		static int shortcutIndex;
 		public List<WindupDto> Windups { get; }
 		public List<WindupDto> WindupsReversed {
@@ -117,6 +117,9 @@ namespace DndCore
 
 		public static TurnPart GetTurnPart(string time)
 		{
+			if (time == null)
+				return TurnPart.Action;
+
 			string timeLowerCase = time.ToLower();
 			switch (timeLowerCase)
 			{
@@ -131,7 +134,7 @@ namespace DndCore
 			}
 			return TurnPart.Action;
 		}
-		
+
 		static DiceRollType GetDiceRollType(string type)
 		{
 			switch (type)
@@ -231,62 +234,14 @@ namespace DndCore
 
 			if (weapon != null)
 			{
-				if ((weapon.weaponProperties & WeaponProperties.Versatile) == WeaponProperties.Versatile)
-				{
-					if ((weapon.weaponProperties & WeaponProperties.Melee) == WeaponProperties.Melee &&
-							(weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged)
-					{
-						results.Add(FromWeapon(shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
-						results.Add(FromWeapon(shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
-						results.Add(FromWeapon(shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
-					}
-					else
-					{
-						results.Add(FromWeapon(shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
-						results.Add(FromWeapon(shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
-					}
-
-				}
-				else if ((weapon.weaponProperties & WeaponProperties.TwoHanded) == WeaponProperties.TwoHanded)
-					results.Add(FromWeapon(shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
-				else
-					results.Add(FromWeapon(shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
+				AddWeaponShortcuts(shortcutDto, results, weapon, player);
 			}
 			else
 			{
 				List<Spell> spells = AllSpells.GetAll(cleanName, player);
 				if (spells != null)
 				{
-					foreach (Spell spell in spells)
-					{
-						if (spell.MorePowerfulWhenCastAtHigherLevels)
-						{
-							int[] spellSlotLevels = player.GetSpellSlotLevels();
-							int availableSlots = spellSlotLevels[spell.Level];
-							if (availableSlots > 0)
-							{
-								bool needToDisambiguateMultipleSpells = false;
-								if (spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0)
-									needToDisambiguateMultipleSpells = true;
-
-								for (int slotLevel = spell.Level; slotLevel <= 9; slotLevel++)
-								{
-									if (spellSlotLevels[slotLevel] == 0)
-										break;
-
-									string suffix = string.Empty;
-									if (needToDisambiguateMultipleSpells)
-										suffix = $" [{slotLevel}]";
-
-									results.Add(FromSpell(shortcutDto, player, spell, slotLevel, null, suffix));
-								}
-							}
-							else
-								results.Add(FromSpell(shortcutDto, player, spell));
-						}
-						else
-							results.Add(FromSpell(shortcutDto, player, spell));
-					}
+					AddSpellShortcuts(shortcutDto, results, player, spells);
 				}
 				else // Not a weapon or a spell.
 				{
@@ -300,7 +255,65 @@ namespace DndCore
 			return results;
 		}
 
-		private static PlayerActionShortcut FromWeapon(PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
+		private static void AddSpellShortcuts(PlayerActionShortcutDto shortcutDto, List<PlayerActionShortcut> results, Character player, List<Spell> spells)
+		{
+			foreach (Spell spell in spells)
+			{
+				if (spell.MorePowerfulWhenCastAtHigherLevels)
+				{
+					int[] spellSlotLevels = player.GetSpellSlotLevels();
+					int availableSlots = spellSlotLevels[spell.Level];
+					if (availableSlots > 0)
+					{
+						bool needToDisambiguateMultipleSpells = false;
+						if (spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0)
+							needToDisambiguateMultipleSpells = true;
+
+						for (int slotLevel = spell.Level; slotLevel <= 9; slotLevel++)
+						{
+							if (spellSlotLevels[slotLevel] == 0)
+								break;
+
+							string suffix = string.Empty;
+							if (needToDisambiguateMultipleSpells)
+								suffix = $" [{slotLevel}]";
+
+							results.Add(FromSpell(shortcutDto, player, spell, slotLevel, null, suffix));
+						}
+					}
+					else
+						results.Add(FromSpell(shortcutDto, player, spell));
+				}
+				else
+					results.Add(FromSpell(shortcutDto, player, spell));
+			}
+		}
+
+		private static void AddWeaponShortcuts(PlayerActionShortcutDto shortcutDto, List<PlayerActionShortcut> results, Weapon weapon, Character player)
+		{
+			if ((weapon.weaponProperties & WeaponProperties.Versatile) == WeaponProperties.Versatile)
+			{
+				if ((weapon.weaponProperties & WeaponProperties.Melee) == WeaponProperties.Melee &&
+						(weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged)
+				{
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
+				}
+				else
+				{
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
+				}
+
+			}
+			else if ((weapon.weaponProperties & WeaponProperties.TwoHanded) == WeaponProperties.TwoHanded)
+				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
+			else
+				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
+		}
+
+		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
 			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix);
 			result.WeaponProperties = weaponProperties;
@@ -323,14 +336,14 @@ namespace DndCore
 				(attackType & AttackType.Melee) == AttackType.Melee ||
 				(attackType & AttackType.MartialMelee) == AttackType.MartialMelee)
 			{
-				if (player.IsProficientWith(shortcutDto.name))
+				if (player.IsProficientWith(weaponName))
 					result.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 			}
 			result.UpdatePlayerAttackingAbility(player);
 
 			result.ProcessDieStr(shortcutDto, damageStr);
 
-			result.AddEffect(shortcutDto, STR_WeaponPrefix, player);
+			result.AddEffect(shortcutDto, WeaponWindupPrefix, player);
 
 			return result;
 		}
@@ -339,6 +352,105 @@ namespace DndCore
 		{
 			AttackingAbilityModifier = player.GetAttackingAbilityModifier(WeaponProperties, AttackingType);
 			AttackingAbility = player.attackingAbility;
+		}
+
+		public static List<PlayerActionShortcut> FromItemSpellEffect(ItemEffect spellEffect, Character player)
+		{
+			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
+			
+			List<Spell> spells = AllSpells.GetAll(spellEffect.name);
+
+			foreach (Spell spell in spells)
+			{
+				PlayerActionShortcutDto dto = new PlayerActionShortcutDto();
+				dto.name = spell.Name;
+				dto.player = player.name;
+
+				//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
+
+				SetDtoFromEffect(dto, spellEffect);
+				if (spell.SpellType == SpellType.RangedSpell || spell.SpellType == SpellType.MeleeSpell)
+					if (spell.Name == "Chaos Bolt")
+						dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.ChaosBolt);
+					else
+						dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.Attack);
+				else if (spell.SpellType == SpellType.SavingThrowSpell)
+					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.DamageOnly);
+				else if (spell.SpellType == SpellType.OtherSpell)
+					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.None);
+				else if (spell.SpellType == SpellType.HpCapacitySpell)
+					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.ExtraOnly);
+				else
+				{
+					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.None);
+				}
+
+				SetSpellCastingTime(dto, spell);
+				List<Spell> oneSpell = new List<Spell>();
+				oneSpell.Add(spell);
+				AddSpellShortcuts(dto, results, player, oneSpell);
+			}
+			
+			return results;
+		}
+
+		public static List<PlayerActionShortcut> FromItemWeaponEffect(ItemEffect weaponEffect, Character player, string weaponName)
+		{
+			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
+			Weapon weapon = AllWeapons.Get(weaponEffect.name);
+			PlayerActionShortcutDto dto = new PlayerActionShortcutDto();
+			if (!string.IsNullOrWhiteSpace(weaponName))
+				dto.name = weaponName;
+			else
+				dto.name = weapon.Name;
+
+			//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
+
+			dto.player = player.name;
+			SetDtoFromEffect(dto, weaponEffect);
+			dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.Attack);
+
+			SetWeaponHitTime(dto, weapon);
+			AddWeaponShortcuts(dto, results, weapon, player);
+			return results;
+		}
+
+		private static void SetDtoFromEffect(PlayerActionShortcutDto dto, ItemEffect itemEffect)
+		{
+			dto.brightness = itemEffect.brightness.ToString();
+			dto.degreesOffset = itemEffect.degreesOffset.ToString();
+			dto.dieRollEffects = itemEffect.dieRollEffects;
+			dto.effect = itemEffect.effect;
+			dto.endSound = itemEffect.endSound;
+			dto.flipHorizontal = MathUtils.BoolToStr(itemEffect.flipHorizontal);
+			dto.endSound = itemEffect.endSound;
+			dto.hue = itemEffect.hue;
+			dto.moveLeftRight = itemEffect.moveLeftRight.ToString();
+			dto.moveUpDown = itemEffect.moveUpDown.ToString();
+			dto.opacity = itemEffect.opacity.ToString();
+			dto.playToEndOnExpire = MathUtils.BoolToStr(itemEffect.playToEndOnExpire);
+			dto.rotation = itemEffect.rotation.ToString();
+			dto.saturation = itemEffect.saturation.ToString();
+			dto.scale = itemEffect.scale.ToString();
+			dto.startSound = itemEffect.startSound;
+			dto.trailingEffects = itemEffect.trailingEffects;
+			dto.vantageMod = DndUtils.VantageToStr(VantageKind.Normal);
+		}
+
+		static void SetWeaponHitTime(PlayerActionShortcutDto dto, Weapon weapon)
+		{
+			
+		}
+		private static void SetSpellCastingTime(PlayerActionShortcutDto dto, Spell spell)
+		{
+			if (spell.CastingTime == DndTimeSpan.OneAction)
+				dto.time = "1a";
+			else if (spell.CastingTime == DndTimeSpan.OneBonusAction)
+				dto.time = "1ba";
+			else if (spell.CastingTime == DndTimeSpan.OneReaction)
+				dto.time = "1r";
+			else
+				dto.time = "*";
 		}
 
 		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
@@ -350,7 +462,7 @@ namespace DndCore
 				spellSlotLevel = slotLevelOverride;
 			result.AddSpell(spellSlotLevel, player, spell);
 			result.Description = spell.Description;
-			result.AttackingAbility = player.spellCastingAbility;
+			result.AttackingAbility = player == null ? Ability.none : player.spellCastingAbility;
 			result.ProcessDieStr(shortcutDto, damageStr);
 			bool isWindup = result.Spell != null && !result.Spell.Duration.HasValue() && result.Spell.MustRollDiceToCast();
 			result.AddEffect(shortcutDto, SpellWindupPrefix, player, spellSlotLevel, isWindup);

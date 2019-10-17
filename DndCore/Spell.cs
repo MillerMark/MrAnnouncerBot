@@ -297,7 +297,8 @@ namespace DndCore
 
 		public bool MustRollDiceToCast()
 		{
-			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell;
+			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || 
+				(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr));
 		}
 
 		public void TriggerOnCasting(Character player, Creature targetCreature, CastedSpell castedSpell)
@@ -353,7 +354,7 @@ namespace DndCore
 			result.SpellType = SpellType;
 
 			// Override...
-			result.OwnerId = player.playerID;
+			result.OwnerId = player != null ? player.playerID : -1;
 			result.SpellSlotLevel = spellSlotLevel;
 
 			return result;

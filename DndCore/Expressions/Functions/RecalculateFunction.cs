@@ -8,7 +8,7 @@ namespace DndCore
 	{
 		public override string Name => "Recalculate";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
 			ExpectingArguments(args, 1);
 
@@ -21,7 +21,7 @@ namespace DndCore
 	{
 		public override string Name => "RemoveVar";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
 			ExpectingArguments(args, 1);
 

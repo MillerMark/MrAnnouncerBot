@@ -147,5 +147,31 @@ namespace DndCore
 			windupDto.Description = shortcutDto.description;
 			return windupDto;
 		}
+
+		public static WindupDto FromItemEffect(ItemEffect itemEffect, string effectName)
+		{
+			WindupDto result = new WindupDto();
+			result.Effect = itemEffect.effect;
+			result.Name = effectName;
+			result.Scale = itemEffect.scale;
+			result.Opacity = itemEffect.opacity;
+			if (itemEffect.fade)
+			{
+				result.FadeIn = 500;
+				result.FadeOut = 900;
+			}
+
+			result.Hue = MathUtils.GetInt(itemEffect.hue);
+			result.Saturation = itemEffect.saturation;
+			result.Brightness = itemEffect.brightness;
+			result.StartSound = itemEffect.startSound;
+			result.EndSound = itemEffect.endSound;
+			result.Rotation = itemEffect.rotation;
+			result.DegreesOffset = (int)Math.Round(itemEffect.degreesOffset);
+			result.Offset = new Vector(itemEffect.moveLeftRight, itemEffect.moveUpDown);
+			result.PlayToEndOnExpire = itemEffect.playToEndOnExpire;
+			result.FlipHorizontal = itemEffect.flipHorizontal;
+			return result;
+		}
 	}
 }

@@ -1002,6 +1002,8 @@ namespace DndCore
 		{
 			if (Game != null)
 				Game.Dispel(castedSpell);
+			if (concentratedSpell?.Spell?.Name == castedSpell?.Spell?.Name)
+				concentratedSpell = null;
 		}
 
 		public void EndAction()

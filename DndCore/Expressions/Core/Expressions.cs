@@ -35,9 +35,9 @@ namespace DndCore
 			return expression.Replace("“", "\"").Replace("”", "\"").Trim();
 
 		}
-		public static object Get(string expression, Character player = null, Creature target = null)
+		public static object Get(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target);
+			AddPlayerVariables(player, target, spell);
 			try
 			{
 				return expressionEvaluator.Evaluate(Clean(expression));
@@ -48,9 +48,9 @@ namespace DndCore
 			}
 		}
 
-		public static object Get<T>(string expression, Character player = null, Creature target = null)
+		public static object Get<T>(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target);
+			AddPlayerVariables(player, target, spell);
 			try
 			{
 				return (T)expressionEvaluator.Evaluate(Clean(expression));
@@ -87,9 +87,9 @@ namespace DndCore
 			}
 		}
 
-		public static int GetInt(string expression, Character player = null, Creature target = null)
+		public static int GetInt(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target);
+			AddPlayerVariables(player, target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -110,9 +110,9 @@ namespace DndCore
 			}
 		}
 
-		public static bool GetBool(string expression, Character player = null, Creature target = null)
+		public static bool GetBool(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target);
+			AddPlayerVariables(player, target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -135,9 +135,9 @@ namespace DndCore
 			}
 		}
 
-		public static string GetStr(string expression, Character player = null, Creature target = null)
+		public static string GetStr(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target);
+			AddPlayerVariables(player, target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -157,8 +157,10 @@ namespace DndCore
 			}
 		}
 
+		static Stack<IDictionary<string, object>> variableStack = new Stack<IDictionary<string, object>>();
 		private static void AddPlayerVariables(Character player, Creature target = null, CastedSpell spell = null)
 		{
+			variableStack.Push(expressionEvaluator.Variables);
 			expressionEvaluator.Variables = new Dictionary<string, object>()
 			{
 				{ STR_Player, player },
@@ -171,6 +173,8 @@ namespace DndCore
 
 		static void FinishedEvaluation(Character player)
 		{
+			if (variableStack.Count > 0)
+				expressionEvaluator.Variables = variableStack.Pop();
 			if (player != null)
 				player.CompletingExpressionEvaluation();
 		}
@@ -193,6 +197,13 @@ namespace DndCore
 			return null;
 		}
 
+		public static Creature GetTargetCreature(IDictionary<string, object> variables)
+		{
+			if (variables.ContainsKey(STR_Target))
+				return variables[STR_Target] as Creature;
+			return null;
+		}
+
 		static Character GetPlayer(IDictionary<string, object> variables)
 		{
 			if (variables.ContainsKey(STR_Player))
@@ -204,10 +215,11 @@ namespace DndCore
 		{
 			Character player = GetPlayer(e.Evaluator.Variables);
 			CastedSpell castedSpell = GetCastedSpell(e.Evaluator.Variables);
+			Creature target = GetTargetCreature(e.Evaluator.Variables);
 			DndFunction function = functions.FirstOrDefault(x => x.Handles(e.Name, player, castedSpell));
 			if (function != null)
 			{
-				e.Value = function.Evaluate(e.Args, e.Evaluator, player);
+				e.Value = function.Evaluate(e.Args, e.Evaluator, player, target, castedSpell);
 			}
 		}
 

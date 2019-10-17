@@ -12,7 +12,7 @@ namespace DndCore
 	{
 		public override string Name => "Get";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
 			ExpectingArguments(args, 1);
 

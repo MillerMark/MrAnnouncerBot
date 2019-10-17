@@ -50,48 +50,60 @@
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,103,0,0" VerticalAlignment="Top" Width="42" 
 				StatBox1="{Binding ElementName=statStrength, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="1">
 						<MenuItem Header="Perform Strength Skill Check" Click="StrengthSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Strength Skill Check (with Advantage)" Tag="1" Click="StrengthSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Strength Skill Check (with Disadvantage)" Tag="2" Click="StrengthSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,163,0,0" VerticalAlignment="Top" Width="42" 
 		StatBox1="{Binding ElementName=statDexterity, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="2">
 						<MenuItem Header="Perform Dexterity Skill Check" Click="DexteritySkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Dexterity Skill Check (with Advantage)" Tag="1" Click="DexteritySkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Dexterity Skill Check (with Disadvantage)" Tag="2" Click="DexteritySkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,221,0,0" VerticalAlignment="Top" Width="42" 
 		StatBox1="{Binding ElementName=statConstitution, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="4">
 						<MenuItem Header="Perform Constitution Skill Check" Click="ConstitutionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Constitution Skill Check (with Advantage)" Tag="1" Click="ConstitutionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Constitution Skill Check (with Disadvantage)" Tag="2" Click="ConstitutionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,279,0,0" Width="42" 
 		StatBox1="{Binding ElementName=statIntelligence, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="8">
 						<MenuItem Header="Perform Intelligence Skill Check" Click="IntelligenceSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Intelligence Skill Check (with Advantage)" Tag="1" Click="IntelligenceSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Intelligence Skill Check (with Disadvantage)" Tag="2" Click="IntelligenceSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,337,0,0" Width="42" 
 		StatBox1="{Binding ElementName=statWisdom, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="16">
 						<MenuItem Header="Perform Wisdom Skill Check" Click="WisdomSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Wisdom Skill Check (with Advantage)" Tag="1" Click="WisdomSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Wisdom Skill Check (with Disadvantage)" Tag="2" Click="WisdomSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,395,0,0" Width="42" 
 		StatBox1="{Binding ElementName=statCharisma, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="32">
 						<MenuItem Header="Perform Charisma Skill Check" Click="CharismaSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Charisma Skill Check (with Advantage)" Tag="1" Click="CharismaSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Charisma Skill Check (with Disadvantage)" Tag="2" Click="CharismaSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -140,8 +152,10 @@
 		StatBox1="{Binding ElementName=statSavingStrengthProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingStrength, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SavingThrowContextMenu_Drop" Tag="1">
 						<MenuItem Header="Perform Strength Saving Throw" Click="StrengthSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Strength Saving Throw (with Advantage)" Tag="1" Click="StrengthSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Strength Saving Throw (with Disadvantage)" Tag="2" Click="StrengthSavingThrow_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -151,8 +165,10 @@
 		StatBox1="{Binding ElementName=statSavingDexterityProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingDexterity, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SavingThrowContextMenu_Drop" Tag="2">
 						<MenuItem Header="Perform Dexterity Saving Throw" Click="DexteritySavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Dexterity Saving Throw (with Advantage)" Tag="1" Click="DexteritySavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Dexterity Saving Throw (with Disadvantage)" Tag="2" Click="DexteritySavingThrow_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -162,8 +178,10 @@
 		StatBox1="{Binding ElementName=statSavingConstitutionProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingConstitution, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SavingThrowContextMenu_Drop" Tag="4">
 						<MenuItem Header="Perform Constitution Saving Throw" Click="ConstitutionSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Constitution Saving Throw (with Advantage)" Tag="1" Click="ConstitutionSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Constitution Saving Throw (with Disadvantage)" Tag="2" Click="ConstitutionSavingThrow_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -173,8 +191,10 @@
 		StatBox1="{Binding ElementName=statSavingIntelligenceProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingIntelligence, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SavingThrowContextMenu_Drop" Tag="8">
 						<MenuItem Header="Perform Intelligence Saving Throw" Click="IntelligenceSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Intelligence Saving Throw (with Advantage)" Tag="1" Click="IntelligenceSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Intelligence Saving Throw (with Disadvantage)" Tag="2" Click="IntelligenceSavingThrow_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -184,8 +204,10 @@
 		StatBox1="{Binding ElementName=statSavingWisdomProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingWisdom, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SavingThrowContextMenu_Drop" Tag="16">
 						<MenuItem Header="Perform Wisdom Saving Throw" Click="WisdomSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Wisdom Saving Throw (with Advantage)" Tag="1" Click="WisdomSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Wisdom Saving Throw (with Disadvantage)" Tag="2" Click="WisdomSavingThrow_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -195,8 +217,10 @@
 		StatBox1="{Binding ElementName=statSavingCharismaProficient, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statSavingCharisma, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SavingThrowContextMenu_Drop" Tag="32">
 						<MenuItem Header="Perform Charisma Saving Throw" Click="CharismaSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Charisma Saving Throw (with Advantage)" Tag="1" Click="CharismaSavingThrow_Click"></MenuItem>
+						<MenuItem Header="Perform Charisma Saving Throw (with Disadvantage)" Tag="2" Click="CharismaSavingThrow_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -209,48 +233,60 @@
 			<local:GroupBackground Height="56" Margin="8,103,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="1">
 						<MenuItem Header="Perform Strength Skill Check" Click="StrengthSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Strength Skill Check (with Advantage)" Tag="1" Click="StrengthSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Strength Skill Check (with Disadvantage)" Tag="2" Click="StrengthSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,163,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statDexterity2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="2">
 						<MenuItem Header="Perform Dexterity Skill Check" Click="DexteritySkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Dexterity Skill Check (with Advantage)" Tag="1" Click="DexteritySkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Dexterity Skill Check (with Disadvantage)" Tag="2" Click="DexteritySkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,221,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statConstitution2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="4">
 						<MenuItem Header="Perform Constitution Skill Check" Click="ConstitutionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Constitution Skill Check (with Advantage)" Tag="1" Click="ConstitutionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Constitution Skill Check (with Disadvantage)" Tag="2" Click="ConstitutionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,279,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statIntelligence2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="8">
 						<MenuItem Header="Perform Intelligence Skill Check" Click="IntelligenceSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Intelligence Skill Check (with Advantage)" Tag="1" Click="IntelligenceSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Intelligence Skill Check (with Disadvantage)" Tag="2" Click="IntelligenceSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,337,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statWisdom2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="16">
 						<MenuItem Header="Perform Wisdom Skill Check" Click="WisdomSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Wisdom Skill Check (with Advantage)" Tag="1" Click="WisdomSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Wisdom Skill Check (with Disadvantage)" Tag="2" Click="WisdomSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
 			<local:GroupBackground Height="56" Margin="8,395,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statCharisma2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="AbilityCheckContextMenu_Drop" Tag="32">
 						<MenuItem Header="Perform Charisma Skill Check" Click="CharismaSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Charisma Skill Check (with Advantage)" Tag="1" Click="CharismaSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Charisma Skill Check (with Disadvantage)" Tag="2" Click="CharismaSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -275,8 +311,10 @@
 													 StatBox1="{Binding ElementName=statSkillAcrobaticsProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillAcrobatics, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="64">
 						<MenuItem Header="Perform Acrobatics Skill Check" Click="AcrobaticsSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Acrobatics Skill Check (with Advantage)" Tag="1" Click="AcrobaticsSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Acrobatics Skill Check (with Disadvantage)" Tag="2" Click="AcrobaticsSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -287,8 +325,10 @@
 													 StatBox1="{Binding ElementName=statSkillAnimalHandlingProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillAnimalHandling, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="128">
 						<MenuItem Header="Perform Animal Handling Skill Check" Click="AnimalHandlingSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Animal Handling Skill Check (with Advantage)" Tag="1" Click="AnimalHandlingSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Animal Handling Skill Check (with Disadvantage)" Tag="2" Click="AnimalHandlingSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -299,8 +339,10 @@
 													 StatBox1="{Binding ElementName=statSkillArcanaProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillArcana, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="256">
 						<MenuItem Header="Perform Arcana Skill Check" Click="ArcanaSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Arcana Skill Check (with Advantage)" Tag="1" Click="ArcanaSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Arcana Skill Check (with Disadvantage)" Tag="2" Click="ArcanaSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -312,8 +354,10 @@
 													 StatBox1="{Binding ElementName=statSkillAthleticsProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillAthletics, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="512">
 						<MenuItem Header="Perform Athletics Skill Check" Click="AthleticsSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Athletics Skill Check (with Advantage)" Tag="1" Click="AthleticsSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Athletics Skill Check (with Disadvantage)" Tag="2" Click="AthleticsSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -324,8 +368,10 @@
 													 StatBox1="{Binding ElementName=statSkillDeceptionProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillDeception, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="1024">
 						<MenuItem Header="Perform Deception Skill Check" Click="DeceptionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Deception Skill Check (with Advantage)" Tag="1" Click="DeceptionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Deception Skill Check (with Disadvantage)" Tag="2" Click="DeceptionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -336,8 +382,10 @@
 													 StatBox1="{Binding ElementName=statSkillHistoryProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillHistory, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="2048">
 						<MenuItem Header="Perform History Skill Check" Click="HistorySkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform History Skill Check (with Advantage)" Tag="1" Click="HistorySkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform History Skill Check (with Disadvantage)" Tag="2" Click="HistorySkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -348,8 +396,10 @@
 													 StatBox1="{Binding ElementName=statSkillInsightProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillInsight, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="4096">
 						<MenuItem Header="Perform Insight Skill Check" Click="InsightSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Insight Skill Check (with Advantage)" Tag="1" Click="InsightSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Insight Skill Check (with Disadvantage)" Tag="2" Click="InsightSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -360,8 +410,10 @@
 													 StatBox1="{Binding ElementName=statSkillIntimidationProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillIntimidation, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="8192">
 						<MenuItem Header="Perform Intimidation Skill Check" Click="IntimidationSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Intimidation Skill Check (with Advantage)" Tag="1" Click="IntimidationSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Intimidation Skill Check (with Disadvantage)" Tag="2" Click="IntimidationSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -372,8 +424,10 @@
 													 StatBox1="{Binding ElementName=statSkillInvestigationProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillInvestigation, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="16384">
 						<MenuItem Header="Perform Investigation Skill Check" Click="InvestigationSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Investigation Skill Check (with Advantage)" Tag="1" Click="InvestigationSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Investigation Skill Check (with Disadvantage)" Tag="2" Click="InvestigationSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -384,8 +438,10 @@
 													 StatBox1="{Binding ElementName=statSkillMedicineProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillMedicine, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="32768">
 						<MenuItem Header="Perform Medicine Skill Check" Click="MedicineSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Medicine Skill Check (with Advantage)" Tag="1" Click="MedicineSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Medicine Skill Check (with Disadvantage)" Tag="2" Click="MedicineSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -396,8 +452,10 @@
 													 StatBox1="{Binding ElementName=statSkillNatureProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillNature, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="65536">
 						<MenuItem Header="Perform Nature Skill Check" Click="NatureSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Nature Skill Check (with Advantage)" Tag="1" Click="NatureSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Nature Skill Check (with Disadvantage)" Tag="2" Click="NatureSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -408,8 +466,10 @@
 													 StatBox1="{Binding ElementName=statSkillPerceptionProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillPerception, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="131072">
 						<MenuItem Header="Perform Perception Skill Check" Click="PerceptionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Perception Skill Check (with Advantage)" Tag="1" Click="PerceptionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Perception Skill Check (with Disadvantage)" Tag="2" Click="PerceptionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -420,8 +480,10 @@
 													 StatBox1="{Binding ElementName=statSkillPerformanceProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillPerformance, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="262144">
 						<MenuItem Header="Perform Performance Skill Check" Click="PerformanceSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Performance Skill Check (with Advantage)" Tag="1" Click="PerformanceSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Performance Skill Check (with Disadvantage)" Tag="2" Click="PerformanceSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -432,8 +494,10 @@
 													 StatBox1="{Binding ElementName=statSkillPersuasionProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillPersuasion, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="524288">
 						<MenuItem Header="Perform Persuasion Skill Check" Click="PersuasionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Persuasion Skill Check (with Advantage)" Tag="1" Click="PersuasionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Persuasion Skill Check (with Disadvantage)" Tag="2" Click="PersuasionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -444,8 +508,10 @@
 													 StatBox1="{Binding ElementName=statSkillReligionProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillReligion, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="1048576">
 						<MenuItem Header="Perform Religion Skill Check" Click="ReligionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Religion Skill Check (with Advantage)" Tag="1" Click="ReligionSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Religion Skill Check (with Disadvantage)" Tag="2" Click="ReligionSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -456,8 +522,10 @@
 													 StatBox1="{Binding ElementName=statSkillSlightOfHandProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillSlightOfHand, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="2097152">
 						<MenuItem Header="Perform Slight of Hand Skill Check" Click="SlightOfHandSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Slight of Hand Skill Check (with Advantage)" Tag="1" Click="SlightOfHandSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Slight of Hand Skill Check (with Disadvantage)" Tag="2" Click="SlightOfHandSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -468,8 +536,10 @@
 													 StatBox1="{Binding ElementName=statSkillStealthProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillStealth, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="4194304">
 						<MenuItem Header="Perform Stealth Skill Check" Click="StealthSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Stealth Skill Check (with Advantage)" Tag="1" Click="StealthSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Stealth Skill Check (with Disadvantage)" Tag="2" Click="StealthSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>
@@ -480,8 +550,10 @@
 													 StatBox1="{Binding ElementName=statSkillSurvivalProficient, Mode=OneWay}"
 													 StatBox2="{Binding ElementName=statSkillSurvival, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
-					<ContextMenu>
+					<ContextMenu Drop="SkillCheckContextMenu_Drop" Tag="8388608">
 						<MenuItem Header="Perform Survival Skill Check" Click="SurvivalSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Survival Skill Check (with Advantage)" Tag="1" Click="SurvivalSkillCheck_Click"></MenuItem>
+						<MenuItem Header="Perform Survival Skill Check (with Disadvantage)" Tag="2" Click="SurvivalSkillCheck_Click"></MenuItem>
 					</ContextMenu>
 				</local:GroupBackground.ContextMenu>
 			</local:GroupBackground>

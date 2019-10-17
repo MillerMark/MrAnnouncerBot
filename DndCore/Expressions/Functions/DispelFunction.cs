@@ -8,7 +8,7 @@ namespace DndCore
 	{
 		public override string Name => "Dispel";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
 			ExpectingArguments(args, 0);
 			CastedSpell castedSpell = Expressions.GetCastedSpell(evaluator.Variables);

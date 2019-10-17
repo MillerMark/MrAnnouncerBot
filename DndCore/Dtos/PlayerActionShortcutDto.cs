@@ -42,7 +42,40 @@ namespace DndCore
 
 		public PlayerActionShortcutDto()
 		{
-
+			player = "";
+			type = "";
+			vantageMod = "";
+			rollMod = "";
+			commands = "";
+			name = "";
+			addDice = "";
+			addDiceOnHit = "";
+			addDiceOnHitMessage = "";
+			addDiceTitle = "";
+			time = "";
+			magic = "";
+			dieStr = "";
+			plusModifier = "";
+			minDamage = "";
+			effect = "";
+			hue = "";
+			brightness = "";
+			saturation = "";
+			scale = "";
+			rotation = "";
+			degreesOffset = "";
+			playToEndOnExpire = "";
+			flipHorizontal = "";
+			moveUpDown = "";
+			moveLeftRight = "";
+			fade = "";
+			opacity = "";
+			minSlotLevel = "";
+			startSound = "";
+			endSound = "";
+			description = "";
+			trailingEffects = "";
+			dieRollEffects = "";
 		}
 	}
 }
