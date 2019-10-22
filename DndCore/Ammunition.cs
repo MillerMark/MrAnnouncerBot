@@ -8,7 +8,7 @@ namespace DndCore
 		public static Ammunition buildBlowgunNeedlePack()
 		{
 			Ammunition blowDart = new Ammunition();
-			blowDart.Name = "Blow Needle";
+			blowDart.StandardName = "Blow Needle";
 			blowDart.costValue = 1;
 			blowDart.weight = 1;
 			blowDart.count = 50;

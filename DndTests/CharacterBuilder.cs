@@ -30,7 +30,7 @@ namespace DndTests
 			elf.maxHitPoints = 55;
 			elf.proficiencyBonus = 2;
 			elf.savingThrowProficiency = Ability.intelligence | Ability.charisma;
-			elf.proficientSkills = Skills.acrobatics | Skills.deception | Skills.slightOfHand;
+			elf.proficientSkills = Skills.acrobatics | Skills.deception | Skills.sleightOfHand;
 			elf.deathSaveLife1 = true;
 			//elf.deathSaveLife2 = true;
 			//elf.deathSaveLife3 = true;
@@ -113,7 +113,7 @@ namespace DndTests
 			wizard.maxHitPoints = 127;
 			wizard.proficiencyBonus = 2;
 			wizard.savingThrowProficiency = Ability.intelligence | Ability.charisma;
-			wizard.proficientSkills = Skills.arcana | Skills.slightOfHand | Skills.deception;
+			wizard.proficientSkills = Skills.arcana | Skills.sleightOfHand | Skills.deception;
 			wizard.Equip(Weapon.buildShortSword());
 			wizard.Pack(Weapon.buildBlowgun());
 			wizard.Pack(Ammunition.buildBlowgunNeedlePack());

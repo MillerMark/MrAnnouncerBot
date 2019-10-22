@@ -160,8 +160,8 @@ namespace DndCore
 					return "Persuasion";
 				case Skills.religion:
 					return "Religion";
-				case Skills.slightOfHand:
-					return "Slight of Hand";
+				case Skills.sleightOfHand:
+					return "Sleight of Hand";
 				case Skills.stealth:
 					return "Stealth";
 				case Skills.survival:

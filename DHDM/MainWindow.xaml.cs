@@ -555,7 +555,7 @@ namespace DHDM
 			{
 				if (actionShortcut.Windups.Count > 0)
 				{
-					List<WindupDto> windups = actionShortcut.CloneWindups();
+					List <WindupDto> windups = actionShortcut.GetAvailableWindups(player);
 
 					string serializedObject = JsonConvert.SerializeObject(windups);
 					HubtasticBaseStation.AddWindup(serializedObject);
@@ -1219,7 +1219,7 @@ namespace DHDM
 				case Skills.performance: return "Performance";
 				case Skills.persuasion: return "Persuasion";
 				case Skills.religion: return "Religion";
-				case Skills.slightOfHand: return "Slight of Hand";
+				case Skills.sleightOfHand: return "Sleight of Hand";
 				case Skills.stealth: return "Stealth";
 				case Skills.survival: return "Survival";
 				case Skills.strength: return "Strength";
@@ -1892,6 +1892,8 @@ namespace DHDM
 					characterSheets.SetFromCharacter(player);
 					characterSheets.SkillCheckRequested += CharacterSheets_SkillCheckRequested;
 					characterSheets.SavingThrowRequested += CharacterSheets_SavingThrowRequested;
+					characterSheets.SavingThrowConsidered += CharacterSheets_SavingThrowConsidered;
+					characterSheets.SkillCheckConsidered += CharacterSheets_SkillCheckConsidered;
 					grid.Children.Add(characterSheets);
 					tabItem.CharacterSheets = characterSheets;
 
@@ -1909,10 +1911,21 @@ namespace DHDM
 			}
 		}
 
+		private void CharacterSheets_SkillCheckConsidered(object sender, SkillCheckEventArgs e)
+		{
+			SelectSkill(e.Skill);
+		}
+
+		private void CharacterSheets_SavingThrowConsidered(object sender, AbilityEventArgs e)
+		{
+			SelectSavingThrowAbility(e.Ability);
+		}
+
 		private void CharacterSheets_SavingThrowRequested(object sender, AbilityEventArgs e)
 		{
 			SelectSavingThrowAbility(e.Ability);
 			rbActivePlayer.IsChecked = true;
+			SetVantageForActivePlayer(e.VantageKind);
 			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
 		}
 
@@ -1941,8 +1954,8 @@ namespace DHDM
 			string lowerCaseSkillName = skill.ToString().ToLower();
 			if (skill == Skills.animalHandling)
 				lowerCaseSkillName = "animal handling";
-			else if (skill == Skills.slightOfHand)
-				lowerCaseSkillName = "slight of hand";
+			else if (skill == Skills.sleightOfHand)
+				lowerCaseSkillName = "sleight of hand";
 			for (int i = 0; i < cbSkillFilter.Items.Count; i++)
 			{
 				if (cbSkillFilter.Items[i] is ComboBoxItem item)
@@ -1960,8 +1973,10 @@ namespace DHDM
 			}
 			//cbSkillFilter.SelectedItem
 		}
+
 		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
 		{
+			SetVantageForActivePlayer(e.VantageKind);
 			InvokeSkillCheck(e.Skill);
 		}
 
@@ -2591,6 +2606,14 @@ namespace DHDM
 			{
 				if (dataId == "Concentration")
 					ReportOnConcentration();
+			});
+		}
+
+		public void SetVantage(VantageKind vantageKind)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				SetVantageForActivePlayer(vantageKind);
 			});
 		}
 

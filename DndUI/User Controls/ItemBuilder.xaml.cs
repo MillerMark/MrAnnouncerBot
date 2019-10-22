@@ -269,7 +269,7 @@ namespace DndUI
 		{
 			public EffectEvent(string name)
 			{
-				Name = name;
+				StandardName = name;
 			}
 		}
 
@@ -289,7 +289,7 @@ namespace DndUI
 		{
 			if (itemsSource != null)
 				foreach (EffectTimeLines effectTimeLines in itemsSource)
-					if (effectTimeLines.Name == eventName)
+					if (effectTimeLines.StandardName == eventName)
 						return;
 			effectEvents.Add(new EffectEvent(eventName));
 		}
@@ -311,14 +311,14 @@ namespace DndUI
 				if (frmPickOne.SelectedEntry is EffectEvent effectEvent)
 				{
 					EffectTimeLines effectTimeLines = new EffectTimeLines();
-					effectTimeLines.Name = effectEvent.Name;
+					effectTimeLines.StandardName = effectEvent.StandardName;
 					timeLines.Add(effectTimeLines);
 					groupEffectBuilder.tlEffects.ItemsSource = effectTimeLines.Entries;
 					groupEffectBuilder.Visibility = Visibility.Visible;
 					OnPropertyChanged("Effects");
 
 					//groupEffectBuilder.Entries = null;
-					string entryName = effectEvent.Name;
+					string entryName = effectEvent.StandardName;
 				}
 			}
 

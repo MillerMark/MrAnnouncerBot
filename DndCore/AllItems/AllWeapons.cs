@@ -29,7 +29,7 @@ namespace DndCore
 
 		public static Weapon Get(string weaponName)
 		{
-			return Weapons.FirstOrDefault(x => x.Name.StartsWith(weaponName));
+			return Weapons.FirstOrDefault(x => x.StandardName.StartsWith(weaponName));
 		}
 
 		public static List<Weapon> Weapons { get => weapons; private set => weapons = value; }

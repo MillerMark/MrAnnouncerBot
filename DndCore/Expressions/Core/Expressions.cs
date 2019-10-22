@@ -53,7 +53,15 @@ namespace DndCore
 			AddPlayerVariables(player, target, spell);
 			try
 			{
-				return (T)expressionEvaluator.Evaluate(Clean(expression));
+				try
+				{
+					return (T)expressionEvaluator.Evaluate(Clean(expression));
+				}
+				catch (Exception ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+					return null;
+				}
 			}
 			finally
 			{
@@ -72,9 +80,22 @@ namespace DndCore
 				if (!script.EndsWith(";") && !script.EndsWith("}"))
 					script += ";";
 
+				string compactScript = string.Empty;
+				string[] splitLines = script.Split('\r', '\n');
+				foreach (string line in splitLines)
+				{
+					if (string.IsNullOrWhiteSpace(line))
+						continue;
+					if (line.Trim().StartsWith("//"))
+						continue;
+					compactScript += line + Environment.NewLine;
+				}
+
+				if (string.IsNullOrWhiteSpace(compactScript))
+					return;
 				try
 				{
-					expressionEvaluator.ScriptEvaluate(script);
+					expressionEvaluator.ScriptEvaluate(compactScript);
 				}
 				catch (ExpressionEvaluatorSyntaxErrorException ex)
 				{

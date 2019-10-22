@@ -4,18 +4,11 @@ Ava,Channel Divinity: Rebuke the Violent,,x,,,,1R,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Ava,Channel Divinity: Emissary of Peace,,x,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Ava,Lay on Hands Pool,,x,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Ava,Divine Smite,,,,,,,,,,,,,,Lightning,,,,0,,,,2,,,,,,,PaladinSmite,Ravens;Spirals,,,
-Fred,Enter Rage,,,,ActivateFeature(WildSurgeRage),,1BA,,,,,,,,,,,,,,,,,,,,,,,Halos3,SmallSparks,,,"As a bonus action enter a rage for up to 1 minute (10 rounds).
-
-You gain advantage on STR checks and saving throws (not attacks), +2 melee damage with STR weapons, resistance to bludgeoning, piercing, slashing damage. You can't cast or concentrate on spells while raging.
-
-Your rage ends early if you are knocked unconscious or if your turn ends and you haven’t attacked a hostile creature since your last turn or taken damage since then. You can also end your rage as a bonus action."
 Fred,Hungry Jaws,Attack,,,,,1BA,1d6+4,,,,,,,,,,,,,,,,,,,,,,,,,,"Once per short rest as a bonus action, you can make a bite attack. If it hits, you gain CON modifier (min 1) temporary HP."
 Fred,Great Weapon Master Attack,,,,,,*,,,,,,,,,,,,,,,,,,,,,,,,,,,"On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
-Lady,Shifting,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,"Once per short rest as a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute, until you die, or until you revert to your normal appearance as a bonus action. When you shift, you gain temp HP (character level + Constitution modifier - min 1) and additional benefits that depend on your shifter subrace."
-Lady,Longtooth Shifting Strike,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,"While shifted, you can use your elongated fangs to make an unarmed strike as a bonus action. If you hit with your fangs, you can deal piercing damage equal to 1d6 + your Strength modifier, instead of the bludgeoning damage normal for an unarmed strike."
-Willy,Sneak Attack,,,,,,,,,3d6,,,,,,,,,,,,,,,,,,,,SmokeBomb,Smoke,,,
 Merkin,Wild Magic,WildMagic,x,,,,,"!d1001(:roll),d1010(:roll)",,,,,,,,,,,,,,,,,,,,,,WildMagic,Sparks,,,
+Merkin,Check Wild Magic,WildMagicD20Check,x,,,,*,!1d20,,,,,,,,,,,,,,,,,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.
+Willy,Sneak Attack,,,,,,,,,3d6,,,,,,,,,,,,,,,,,,,,SmokeBomb,Smoke,,,
 Willy,Cunning Dash,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Willy,Cunning Disengage,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,
 Willy,Cunning Hide,,,,,,1BA,,,,,,,,,,,,,,,,,,,,,,,,,,,
-Merkin,Check Wild Magic,WildMagicD20Check,x,,,,*,!1d20,,,,,,,,,,,,,,,,,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.

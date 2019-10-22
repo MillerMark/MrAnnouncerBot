@@ -30,6 +30,7 @@ namespace DndCore
 		public bool PlayToEndOnExpire { get; set; }
 		public bool FlipHorizontal { get; set; }
 		public bool FlipVertical { get; set; }
+		public string EffectAvailableWhen { get; set; }
 
 		public WindupDto Clone()
 		{
@@ -57,6 +58,7 @@ namespace DndCore
 			result.EndSound = this.EndSound;
 			result.Description = this.Description;
 			result.Velocity = this.Velocity;
+			result.EffectAvailableWhen = this.EffectAvailableWhen;
 			result.PrepareForSerialization();
 			return result;
 		}
@@ -171,6 +173,7 @@ namespace DndCore
 			result.Offset = new Vector(itemEffect.moveLeftRight, itemEffect.moveUpDown);
 			result.PlayToEndOnExpire = itemEffect.playToEndOnExpire;
 			result.FlipHorizontal = itemEffect.flipHorizontal;
+			result.EffectAvailableWhen = itemEffect.effectAvailableWhen;
 			return result;
 		}
 	}

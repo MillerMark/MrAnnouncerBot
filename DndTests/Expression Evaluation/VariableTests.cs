@@ -56,7 +56,7 @@ namespace DndTests
 			Assert.AreEqual(Skills.performance, Expressions.Get("performance"));
 			Assert.AreEqual(Skills.persuasion, Expressions.Get("persuasion"));
 			Assert.AreEqual(Skills.religion, Expressions.Get("religion"));
-			Assert.AreEqual(Skills.slightOfHand, Expressions.Get("slightOfHand"));
+			Assert.AreEqual(Skills.sleightOfHand, Expressions.Get("sleightOfHand"));
 			Assert.AreEqual(Skills.stealth, Expressions.Get("stealth"));
 			Assert.AreEqual(Skills.survival, Expressions.Get("survival"));
 		}

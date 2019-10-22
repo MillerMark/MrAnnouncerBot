@@ -170,7 +170,7 @@ enum Skills {
 	performance = 262144,
 	persuasion = 524288,
 	religion = 1048576,
-	slightOfHand = 2097152,
+	sleightOfHand = 2097152,
 	stealth = 4194304,
 	survival = 8388608
 }
@@ -191,7 +191,7 @@ enum Skills {
 //	performance = 4096,
 //	persuasion = 8192,
 //	religion = 16384,
-//	slightOfHand = 32768,
+//	sleightOfHand = 32768,
 //	stealth = 65536,
 //	survival = 131072,
 //	strength = 262144,
@@ -275,7 +275,7 @@ class Character {
 	tempPerformanceMod: number = 0;
 	tempPersuasionMod: number = 0;
 	tempReligionMod: number = 0;
-	tempSlightOfHandMod: number = 0;
+	tempSleightOfHandMod: number = 0;
 	tempStealthMod: number = 0;
 	tempSurvivalMod: number = 0;
 	tempArmorClassMod: number = 0;
@@ -377,7 +377,7 @@ class Character {
 		this.tempSavingThrowModIntelligence = sourceCharacter.tempSavingThrowModIntelligence;
 		this.tempSavingThrowModStrength = sourceCharacter.tempSavingThrowModStrength;
 		this.tempSavingThrowModWisdom = sourceCharacter.tempSavingThrowModWisdom;
-		this.tempSlightOfHandMod = sourceCharacter.tempSlightOfHandMod;
+		this.tempSleightOfHandMod = sourceCharacter.tempSleightOfHandMod;
 		this.tempStealthMod = sourceCharacter.tempStealthMod;
 		this.tempSurvivalMod = sourceCharacter.tempSurvivalMod;
 		this.totalHitDice = sourceCharacter.totalHitDice;
@@ -469,8 +469,8 @@ class Character {
 	}
 
 
-	get hasSkillProficiencySlightOfHand(): boolean {
-		return this.hasProficiencyBonusForSkill(Skills.slightOfHand);
+	get hasSkillProficiencySleightOfHand(): boolean {
+		return this.hasProficiencyBonusForSkill(Skills.sleightOfHand);
 	}
 
 
@@ -556,8 +556,8 @@ class Character {
 	}
 
 
-	get skillModSlightOfHand(): number {
-		return this.getProficiencyBonusForSkill(Skills.slightOfHand) + this.dexterityMod + this.tempSlightOfHandMod;
+	get skillModSleightOfHand(): number {
+		return this.getProficiencyBonusForSkill(Skills.sleightOfHand) + this.dexterityMod + this.tempSleightOfHandMod;
 	}
 
 	get skillModStealth(): number {
@@ -832,8 +832,8 @@ class Character {
 				return this.skillModPersuasion;
 			case Skills.religion:
 				return this.skillModReligion;
-			case Skills.slightOfHand:
-				return this.skillModSlightOfHand;
+			case Skills.sleightOfHand:
+				return this.skillModSleightOfHand;
 			case Skills.stealth:
 				return this.skillModStealth;
 			case Skills.survival:
@@ -866,7 +866,7 @@ class Character {
 		elf.maxHitPoints = 55;
 		elf.proficiencyBonus = 2;
 		elf.savingThrowProficiency = Ability.intelligence + Ability.charisma;
-		elf.proficientSkills = Skills.acrobatics + Skills.deception + Skills.slightOfHand;
+		elf.proficientSkills = Skills.acrobatics + Skills.deception + Skills.sleightOfHand;
 		elf.deathSaveLife1 = true;
 		//elf.deathSaveLife2 = true;
 		//elf.deathSaveLife3 = true;
@@ -966,7 +966,7 @@ class Character {
 		wizard.maxHitPoints = 127;
 		wizard.proficiencyBonus = 2;
 		wizard.savingThrowProficiency = Ability.intelligence + Ability.charisma;
-		wizard.proficientSkills = Skills.arcana + Skills.slightOfHand + Skills.deception;
+		wizard.proficientSkills = Skills.arcana + Skills.sleightOfHand + Skills.deception;
 		wizard.equip(Weapon.buildShortSword());
 		wizard.pack(Weapon.buildBlowgun());
 		wizard.pack(Ammunition.buildBlowgunNeedlePack());

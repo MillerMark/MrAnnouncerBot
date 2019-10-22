@@ -15,6 +15,7 @@ namespace DHDM
 		void SetSpellSlotLevel(int level);
 		void SelectPlayerShortcut(string shortcutName, int playerId);
 		void GetData(string dataId);
+		void SetVantage(VantageKind dataId);
 		void RollSkillCheck(Skills skill, bool allPlayers = false);
 		void RollSavingThrow(Ability ability, bool allPlayers = false);
 		void RollAttack();

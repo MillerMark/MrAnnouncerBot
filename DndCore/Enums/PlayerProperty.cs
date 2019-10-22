@@ -50,7 +50,7 @@ namespace DndCore
 		SkillsPerformance,
 		SkillsPersuasion,
 		SkillsReligion,
-		SkillsSlightOfHand,
+		SkillsSleightOfHand,
 		SkillsStealth,
 		SkillsSurvival,
 		WalkingSpeed,

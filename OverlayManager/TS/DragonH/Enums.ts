@@ -115,7 +115,7 @@ enum emphasisSkills {
   SkillsPerformance = 21,
   SkillsPersuasion = 22,
   SkillsReligion = 23,
-  SkillsSlightOfHand = 24,
+  SkillsSleightOfHand = 24,
   SkillsStealth = 25,
   SkillsSurvival = 26
 }

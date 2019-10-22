@@ -31,7 +31,7 @@ namespace DndCore
 
 		public static List<T> LoadTable<T>(string tableName)
 		{
-			return CsvData.Get<T>(Folders.InCoreData($"DnD - Table.{tableName}.csv"));
+			return CsvData.Get<T>(Folders.InCoreData($"DnD Table - {tableName}.csv"));
 		}
 		static object GetValue(object entry, string fieldLookup)
 		{

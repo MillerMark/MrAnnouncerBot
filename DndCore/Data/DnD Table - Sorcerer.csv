@@ -1,0 +1,21 @@
+Level,ProficiencyBonus,SorceryPoints,Features,CantripsKnown,SpellsKnown,Slot1Spells,Slot2Spells,Slot3Spells,Slot4Spells,Slot5Spells,Slot6Spells,Slot7Spells,Slot8Spells,Slot9Spells
+1,2,0,,4,2,2,0,0,0,0,0,0,0,0
+2,2,2,Font of Magic,4,3,3,0,0,0,0,0,0,0,0
+3,2,3,Metamagic,4,4,4,2,0,0,0,0,0,0,0
+4,2,4,Ability Score Improvement,5,5,4,3,0,0,0,0,0,0,0
+5,3,5,—,5,6,4,3,2,0,0,0,0,0,0
+6,3,6,Sorcerous Origin Feature,5,7,4,3,3,0,0,0,0,0,0
+7,3,7,—,5,8,4,3,3,1,0,0,0,0,0
+8,3,8,Ability Score Improvement,5,9,4,3,3,2,0,0,0,0,0
+9,4,9,—,5,10,4,3,3,3,1,0,0,0,0
+10,4,10,Metamagic,6,11,4,3,3,3,2,0,0,0,0
+11,4,11,—,6,12,4,3,3,3,2,1,0,0,0
+12,4,12,Ability Score Improvement,6,12,4,3,3,3,2,1,0,0,0
+13,5,13,—,6,13,4,3,3,3,2,1,1,0,0
+14,5,14,Sorcerous Origin Feature,6,13,4,3,3,3,2,1,1,0,0
+15,5,15,—,6,14,4,3,3,3,2,1,1,1,0
+16,5,16,Ability Score Improvement,6,14,4,3,3,3,2,1,1,1,0
+17,6,17,Metamagic,6,15,4,3,3,3,2,1,1,1,1
+18,6,18,Sorcerous Origin Feature,6,15,4,3,3,3,3,1,1,1,1
+19,6,19,Ability Score Improvement,6,15,4,3,3,3,3,2,1,1,1
+20,6,20,Sorcerous Restoration,6,15,4,3,3,3,3,2,2,1,1

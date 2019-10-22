@@ -29,8 +29,8 @@ namespace DndTests
 		public void TestStringToSkillConversion()
 		{
 			Assert.AreEqual(Skills.nature | Skills.religion, DndUtils.ToSkill("nature,religion"));
-			Assert.AreEqual(Skills.slightOfHand, DndUtils.ToSkill("slightOfHand"));
-			Assert.AreEqual(Skills.slightOfHand, DndUtils.ToSkill("slight of hand"));
+			Assert.AreEqual(Skills.sleightOfHand, DndUtils.ToSkill("sleightOfHand"));
+			Assert.AreEqual(Skills.sleightOfHand, DndUtils.ToSkill("sleight of hand"));
 			Assert.AreEqual(Skills.animalHandling, DndUtils.ToSkill("animal handling"));
 		}
 	}

@@ -72,6 +72,7 @@ namespace DndCore
 		public WeaponProperties WeaponProperties { get; set; }
 		public string TrailingEffects { get; set; }
 		public string DieRollEffects { get; set; }
+		public CarriedWeapon CarriedWeapon { get; set; }
 		public string lastPrefix;
 
 		public PlayerActionShortcut()
@@ -98,19 +99,56 @@ namespace DndCore
 			Dice = "";
 			VantageMod = VantageKind.Normal;
 			Windups = new List<WindupDto>();
+			CarriedWeapon = null;
 		}
 
 		public static void PrepareForCreation()
 		{
 			shortcutIndex = 0;
 		}
-		
-		public List<WindupDto> CloneWindups()
+
+		void SetHueFromStr(WindupDto item, Character player, string hueStr)
+		{
+			if (hueStr == null)
+				return;
+			string hueTrim = hueStr.Trim();
+			if (hueTrim.ToLower() == "player")
+				item.Hue = player.hueShift;
+
+			if (int.TryParse(hueTrim, out int result))
+				item.Hue = result;
+		}
+
+		public List<WindupDto> GetAvailableWindups(Character player)
 		{
 			List<WindupDto> result = new List<WindupDto>();
+			int index = 0;
 			foreach (WindupDto windup in Windups)
 			{
-				result.Add(windup.Clone());
+				if (string.IsNullOrWhiteSpace(windup.EffectAvailableWhen) || Expressions.GetBool(windup.EffectAvailableWhen, player))
+				{
+					WindupDto item = windup.Clone();
+					if (CarriedWeapon != null)
+					{
+						switch (index)
+						{
+							case 0:
+								SetHueFromStr(item, player, CarriedWeapon.WeaponHue);
+								break;
+							case 1:
+								SetHueFromStr(item, player, CarriedWeapon.Hue1);
+								break;
+							case 2:
+								SetHueFromStr(item, player, CarriedWeapon.Hue2);
+								break;
+							case 3:
+								SetHueFromStr(item, player, CarriedWeapon.Hue3);
+								break;
+						}
+					}
+					result.Add(item);
+				}
+				index++;
 			}
 			return result;
 		}
@@ -239,7 +277,7 @@ namespace DndCore
 			else
 			{
 				List<Spell> spells = AllSpells.GetAll(cleanName, player);
-				if (spells != null)
+				if (spells != null && spells.Count > 0)
 				{
 					AddSpellShortcuts(shortcutDto, results, player, spells);
 				}
@@ -296,21 +334,21 @@ namespace DndCore
 				if ((weapon.weaponProperties & WeaponProperties.Melee) == WeaponProperties.Melee &&
 						(weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged)
 				{
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
+					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
 				}
 				else
 				{
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
 				}
 
 			}
 			else if ((weapon.weaponProperties & WeaponProperties.TwoHanded) == WeaponProperties.TwoHanded)
-				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
+				results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
 			else
-				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
+				results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
 		}
 
 		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
@@ -354,11 +392,11 @@ namespace DndCore
 			AttackingAbility = player.attackingAbility;
 		}
 
-		public static List<PlayerActionShortcut> FromItemSpellEffect(ItemEffect spellEffect, Character player)
+		public static List<PlayerActionShortcut> FromItemSpellEffect(string spellName, ItemEffect spellEffect, Character player)
 		{
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
 			
-			List<Spell> spells = AllSpells.GetAll(spellEffect.name);
+			List<Spell> spells = AllSpells.GetAll(spellName);
 
 			foreach (Spell spell in spells)
 			{
@@ -394,15 +432,16 @@ namespace DndCore
 			return results;
 		}
 
-		public static List<PlayerActionShortcut> FromItemWeaponEffect(ItemEffect weaponEffect, Character player, string weaponName)
+		public static List<PlayerActionShortcut> FromWeapon(CarriedWeapon carriedWeapon, ItemEffect weaponEffect, Character player)
 		{
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
-			Weapon weapon = AllWeapons.Get(weaponEffect.name);
+			//Weapon weapon = AllWeapons.Get(weaponEffect.name);
+			Weapon weapon = AllWeapons.Get(carriedWeapon.Weapon.StandardName);
 			PlayerActionShortcutDto dto = new PlayerActionShortcutDto();
-			if (!string.IsNullOrWhiteSpace(weaponName))
-				dto.name = weaponName;
+			if (!string.IsNullOrWhiteSpace(carriedWeapon.Name))
+				dto.name = carriedWeapon.Name;
 			else
-				dto.name = weapon.Name;
+				dto.name = weapon.StandardName;
 
 			//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
 
@@ -417,6 +456,8 @@ namespace DndCore
 
 		private static void SetDtoFromEffect(PlayerActionShortcutDto dto, ItemEffect itemEffect)
 		{
+			if (itemEffect == null)
+				return;
 			dto.brightness = itemEffect.brightness.ToString();
 			dto.degreesOffset = itemEffect.degreesOffset.ToString();
 			dto.dieRollEffects = itemEffect.dieRollEffects;
@@ -533,6 +574,22 @@ namespace DndCore
 			{
 				ExecuteCommand(command, player);
 			}
+		}
+
+		public static PlayerActionShortcut FromFeature(Feature feature, Character player)
+		{
+			PlayerActionShortcut result = new PlayerActionShortcut();
+			result.Description = feature.Description;
+
+			if (string.IsNullOrEmpty(feature.ShortcutName))
+				result.Name = feature.Name;
+			else
+				result.Name = feature.ShortcutName;
+			result.UsesMagic = feature.Magic;
+			result.Part = feature.ActivationTime;
+			result.PlayerId = player.playerID;
+			result.Commands = $"ActivateFeature({feature.Name})";
+			return result;
 		}
 
 	}

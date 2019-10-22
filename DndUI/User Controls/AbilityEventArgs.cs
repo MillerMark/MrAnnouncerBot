@@ -8,8 +8,10 @@ namespace DndUI
 	public class AbilityEventArgs : RoutedEventArgs
 	{
 		public Ability Ability { get; set; }
-		public AbilityEventArgs(RoutedEvent routedEvent, Ability ability) : base(routedEvent)
+		public VantageKind VantageKind { get; set; }
+		public AbilityEventArgs(RoutedEvent routedEvent, Ability ability, VantageKind vantageKind) : base(routedEvent)
 		{
+			VantageKind = vantageKind;
 			Ability = ability;
 		}
 	}

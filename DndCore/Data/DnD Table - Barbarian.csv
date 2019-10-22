@@ -1,0 +1,21 @@
+Level,ProficiencyBonus,Features,Rages,RageDamage
+1,2,"Rage,Unarmored Defense",2,2
+2,2,"Reckless Attack,Danger Sense",2,2
+3,2,Primal Path,3,2
+4,2,Ability Score Improvement,3,2
+5,3,"Extra Attack,Fast Movement",3,2
+6,3,Path Feature,4,2
+7,3,Feral Instinct,4,2
+8,3,Ability Score Improvement,4,2
+9,4,Brutal Critical(1 die),4,3
+10,4,Path Feature,4,3
+11,4,Relentless Rage,4,3
+12,4,Ability Score Improvement,5,3
+13,5,Brutal Critical(2 dice),5,3
+14,5,Path Feature,5,3
+15,5,Persistent Rage,5,3
+16,5,Ability Score Improvement,5,4
+17,6,Brutal Critical(3 dice),6,4
+18,6,Indomitable Might,6,4
+19,6,Ability Score Improvement,6,4
+20,6,Primal Champion,2147483647,4

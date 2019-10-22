@@ -81,6 +81,10 @@ namespace DndCore
 		{
 			Feature.WeaponJustSwung(GetArgStr(), player);
 		}
+		public void PlayerStartsTurn(Character player)
+		{
+			Feature.PlayerStartsTurn(GetArgStr(), player);
+		}
 		public void RollIsComplete(Character player)
 		{
 			Feature.RollIsComplete(GetArgStr(), player);

@@ -33,8 +33,8 @@ namespace DndTests
 			ItemViewModel item = new ItemViewModel();
 			item.costValue = 50;
 			item.adamantine = true;
-			item.Name = "The Sneaky Sword";
-			item.description = "This super sword makes you super sneaky, adding a +2 bonuses to Slight of Hand, Persuasion, and Deception skill checks.";
+			item.StandardName = "The Sneaky Sword";
+			item.description = "This super sword makes you super sneaky, adding a +2 bonuses to Sleight of Hand, Persuasion, and Deception skill checks.";
 
 			const string localTestFileName = "Delete_TestSaveLoad.json";
 			string fullPathToFile = Storage.GetDataFileName(localTestFileName);
@@ -44,7 +44,7 @@ namespace DndTests
 			Assert.AreEqual(item.costValue, loadedItem.costValue);
 			Assert.AreEqual(item.adamantine, loadedItem.adamantine);
 			Assert.AreEqual(item.description, loadedItem.description);
-			Assert.AreEqual(item.Name, loadedItem.Name);
+			Assert.AreEqual(item.StandardName, loadedItem.StandardName);
 			DeleteIfExists(fullPathToFile);
 		}
 
@@ -141,7 +141,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.tempSavingThrowModIntelligence, loadedCharacter.tempSavingThrowModIntelligence);
 			Assert.AreEqual(originalTestWizard.tempSavingThrowModStrength, loadedCharacter.tempSavingThrowModStrength);
 			Assert.AreEqual(originalTestWizard.tempSavingThrowModWisdom, loadedCharacter.tempSavingThrowModWisdom);
-			Assert.AreEqual(originalTestWizard.tempSlightOfHandMod, loadedCharacter.tempSlightOfHandMod);
+			Assert.AreEqual(originalTestWizard.tempSleightOfHandMod, loadedCharacter.tempSleightOfHandMod);
 			Assert.AreEqual(originalTestWizard.tempStealthMod, loadedCharacter.tempStealthMod);
 			Assert.AreEqual(originalTestWizard.tempSurvivalMod, loadedCharacter.tempSurvivalMod);
 			Assert.AreEqual(originalTestWizard.totalHitDice, loadedCharacter.totalHitDice);

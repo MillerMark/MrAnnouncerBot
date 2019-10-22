@@ -37,7 +37,7 @@ namespace DndTests
 			Assert.AreEqual(5, willy.level);
 			Assert.AreEqual(43, willy.hitPoints);
 			Assert.AreEqual(200, willy.goldPieces);
-			Assert.AreEqual(Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth, willy.proficientSkills);
+			Assert.AreEqual(Skills.insight | Skills.perception | Skills.performance | Skills.sleightOfHand | Skills.stealth, willy.proficientSkills);
 			Assert.AreEqual(Skills.deception | Skills.persuasion, willy.doubleProficiency);
 			Assert.AreEqual(Ability.dexterity | Ability.intelligence, willy.savingThrowProficiency);
 			Assert.AreEqual(Ability.none, willy.spellCastingAbility);

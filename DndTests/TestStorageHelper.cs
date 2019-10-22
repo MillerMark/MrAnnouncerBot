@@ -11,7 +11,7 @@ namespace DndTests
 			ObservableCollection<ItemViewModel> loadEntriesFromFile = Storage.LoadEntriesFromFile<ItemViewModel>("items.json");
 			foreach (ItemViewModel itemViewModel in loadEntriesFromFile)
 			{
-				if (itemViewModel.Name == itemName)
+				if (itemViewModel.StandardName == itemName)
 				{
 					return itemViewModel;
 				}

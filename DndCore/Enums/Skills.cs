@@ -27,7 +27,7 @@ namespace DndCore
 		performance = 262144,
 		persuasion = 524288,
 		religion = 1048576,
-		slightOfHand = 2097152,
+		sleightOfHand = 2097152,
 		stealth = 4194304,
 		survival = 8388608
 	}

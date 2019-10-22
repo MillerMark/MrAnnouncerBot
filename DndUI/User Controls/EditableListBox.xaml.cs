@@ -263,7 +263,7 @@ namespace DndUI
 			if (ItemsSource == null)
 				return;
 
-			MessageBoxResult result = MessageBox.Show($"Delete this ({listEntry.Name})?",
+			MessageBoxResult result = MessageBox.Show($"Delete this ({listEntry.StandardName})?",
 																"Confirm",
 																MessageBoxButton.YesNo,
 																MessageBoxImage.Question);
@@ -288,7 +288,7 @@ namespace DndUI
 			if (SelectedItem is T effectEntry)
 			{
 				T item = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(effectEntry));
-				item.Name += " - Copy";
+				item.StandardName += " - Copy";
 				itemList.Add(item);
 			}
 		}

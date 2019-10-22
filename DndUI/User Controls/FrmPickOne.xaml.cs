@@ -38,7 +38,7 @@ namespace DndUI
 			foreach (object item in lbChoices.ItemsSource)
 			{
 				if (item is ListEntry listEntry)
-					if (listEntry.Name == itemName)
+					if (listEntry.StandardName == itemName)
 					{
 						SelectedEntry = listEntry;
 						DialogResult = true;

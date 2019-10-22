@@ -24,6 +24,21 @@ namespace DndUI
 		public delegate void SkillCheckEventHandler(object sender, SkillCheckEventArgs e);
 		public delegate void AbilityEventHandler(object sender, AbilityEventArgs e);
 
+		public static readonly RoutedEvent SavingThrowConsideredEvent = EventManager.RegisterRoutedEvent("SavingThrowConsidered", RoutingStrategy.Bubble, typeof(AbilityEventHandler), typeof(CharacterSheets));
+
+		public event AbilityEventHandler SavingThrowConsidered
+		{
+			add { AddHandler(SavingThrowConsideredEvent, value); }
+			remove { RemoveHandler(SavingThrowConsideredEvent, value); }
+		}
+
+		protected virtual void OnSavingThrowConsidered(Ability ability, VantageKind vantageKind)
+		{
+			AbilityEventArgs eventArgs = new AbilityEventArgs(SavingThrowConsideredEvent, ability, vantageKind);
+			RaiseEvent(eventArgs);
+		}
+
+
 		public static readonly RoutedEvent SavingThrowRequestedEvent = EventManager.RegisterRoutedEvent("SavingThrowRequested", RoutingStrategy.Bubble, typeof(AbilityEventHandler), typeof(CharacterSheets));
 
 		public event AbilityEventHandler SavingThrowRequested
@@ -32,12 +47,28 @@ namespace DndUI
 			remove { RemoveHandler(SavingThrowRequestedEvent, value); }
 		}
 
-		protected virtual void OnSavingThrowRequested(Ability ability)
+		protected virtual void OnSavingThrowRequested(Ability ability, VantageKind vantageKind)
 		{
-			AbilityEventArgs eventArgs = new AbilityEventArgs(SavingThrowRequestedEvent, ability);
+			AbilityEventArgs eventArgs = new AbilityEventArgs(SavingThrowRequestedEvent, ability, vantageKind);
 			RaiseEvent(eventArgs);
 		}
-		
+
+
+
+		public static readonly RoutedEvent SkillCheckConsideredEvent = EventManager.RegisterRoutedEvent("SkillCheckConsidered", RoutingStrategy.Bubble, typeof(SkillCheckEventHandler), typeof(CharacterSheets));
+
+		public event SkillCheckEventHandler SkillCheckConsidered
+		{
+			add { AddHandler(SkillCheckConsideredEvent, value); }
+			remove { RemoveHandler(SkillCheckConsideredEvent, value); }
+		}
+
+		protected virtual void OnSkillCheckConsidered(Skills skill, VantageKind vantageKind)
+		{
+			SkillCheckEventArgs eventArgs = new SkillCheckEventArgs(SkillCheckConsideredEvent, skill, vantageKind);
+			RaiseEvent(eventArgs);
+		}
+
 
 		public static readonly RoutedEvent SkillCheckRequestedEvent = EventManager.RegisterRoutedEvent("SkillCheckRequested", RoutingStrategy.Bubble, typeof(SkillCheckEventHandler), typeof(CharacterSheets));
 
@@ -47,12 +78,12 @@ namespace DndUI
 			remove { RemoveHandler(SkillCheckRequestedEvent, value); }
 		}
 
-		protected virtual void OnSkillCheckRequested(Skills skill)
+		protected virtual void OnSkillCheckRequested(Skills skill, VantageKind vantageKind)
 		{
-			SkillCheckEventArgs eventArgs = new SkillCheckEventArgs(SkillCheckRequestedEvent, skill);
+			SkillCheckEventArgs eventArgs = new SkillCheckEventArgs(SkillCheckRequestedEvent, skill, vantageKind);
 			RaiseEvent(eventArgs);
 		}
-		
+
 		public ScrollPage Page { get; set; }
 
 		public static readonly RoutedEvent PageBackgroundClickedEvent = EventManager.RegisterRoutedEvent("PageBackgroundClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(CharacterSheets));
@@ -95,9 +126,9 @@ namespace DndUI
 			eventArgs.Source = this;
 			RaiseEvent(eventArgs);
 		}
-		
-		public static readonly RoutedEvent PageChangedEvent = 
-			EventManager.RegisterRoutedEvent("PageChanged", RoutingStrategy.Bubble, 
+
+		public static readonly RoutedEvent PageChangedEvent =
+			EventManager.RegisterRoutedEvent("PageChanged", RoutingStrategy.Bubble,
 				typeof(RoutedEventHandler), typeof(CharacterSheets));
 
 		public static readonly RoutedEvent PreviewPageChangedEvent = EventManager.RegisterRoutedEvent("PreviewPageChanged", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(CharacterSheets));
@@ -152,7 +183,7 @@ namespace DndUI
 				case Skills.performance: FocusHelper.Add(statSkillPerformance); break;
 				case Skills.persuasion: FocusHelper.Add(statSkillPersuasion); break;
 				case Skills.religion: FocusHelper.Add(statSkillReligion); break;
-				case Skills.slightOfHand: FocusHelper.Add(statSkillSlightOfHand); break;
+				case Skills.sleightOfHand: FocusHelper.Add(statSkillSleightOfHand); break;
 				case Skills.stealth: FocusHelper.Add(statSkillStealth); break;
 				case Skills.survival: FocusHelper.Add(statSkillSurvival); break;
 				case Skills.strength: FocusHelper.Add(statStrength2); break;
@@ -163,7 +194,7 @@ namespace DndUI
 				case Skills.charisma: FocusHelper.Add(statCharisma2); break;
 			}
 		}
-		
+
 		public void FocusSavingAbility(Ability ability)
 		{
 			FocusHelper.ClearActiveStatBoxes();
@@ -247,8 +278,8 @@ namespace DndUI
 				result |= Skills.persuasion;
 			if (statSkillReligionProficient.IsChecked == true)
 				result |= Skills.religion;
-			if (statSkillSlightOfHandProficient.IsChecked == true)
-				result |= Skills.slightOfHand;
+			if (statSkillSleightOfHandProficient.IsChecked == true)
+				result |= Skills.sleightOfHand;
 			if (statSkillStealthProficient.IsChecked == true)
 				result |= Skills.stealth;
 			if (statSkillSurvivalProficient.IsChecked == true)
@@ -272,7 +303,7 @@ namespace DndUI
 				result |= Ability.strength;
 			return result;
 		}
-		
+
 		Ability GetSpellCastingAbility()
 		{
 			Ability result = Ability.none;
@@ -296,7 +327,7 @@ namespace DndUI
 			statSkillPerformanceProficient.IsChecked = (skills & Skills.performance) == Skills.performance;
 			statSkillPersuasionProficient.IsChecked = (skills & Skills.persuasion) == Skills.persuasion;
 			statSkillReligionProficient.IsChecked = (skills & Skills.religion) == Skills.religion;
-			statSkillSlightOfHandProficient.IsChecked = (skills & Skills.slightOfHand) == Skills.slightOfHand;
+			statSkillSleightOfHandProficient.IsChecked = (skills & Skills.sleightOfHand) == Skills.sleightOfHand;
 			statSkillStealthProficient.IsChecked = (skills & Skills.stealth) == Skills.stealth;
 			statSkillSurvivalProficient.IsChecked = (skills & Skills.survival) == Skills.survival;
 		}
@@ -370,7 +401,7 @@ namespace DndUI
 			SetSkillText(statSkillPerformance, character.skillModPerformance);
 			SetSkillText(statSkillPersuasion, character.skillModPersuasion);
 			SetSkillText(statSkillReligion, character.skillModReligion);
-			SetSkillText(statSkillSlightOfHand, character.skillModSlightOfHand);
+			SetSkillText(statSkillSleightOfHand, character.skillModSleightOfHand);
 			SetSkillText(statSkillStealth, character.skillModStealth);
 			SetSkillText(statSkillSurvival, character.skillModSurvival);
 			SetTextBlockText(calcStatStrengthModifier2, character.strengthMod);
@@ -397,7 +428,7 @@ namespace DndUI
 			statBox.Text = StrUtils.GetFirstName(name);
 			statBox.IsEnabled = false;
 		}
-		
+
 		void SetSpellCastingAbility(Ability ability)
 		{
 			// TODO: Implement this.
@@ -497,7 +528,7 @@ namespace DndUI
 				//character.tempSavingThrowModIntelligence = 
 				//character.tempSavingThrowModStrength = 
 				//character.tempSavingThrowModWisdom = 
-				//character.tempSlightOfHandMod = 
+				//character.tempSleightOfHandMod = 
 				//character.tempStealthMod = 
 				//character.tempSurvivalMod = 
 				statHitDice.Text = character.totalHitDice;
@@ -513,7 +544,7 @@ namespace DndUI
 				changingInternally = false;
 			}
 		}
-		
+
 
 		public string GetCharacter()
 		{
@@ -555,8 +586,8 @@ namespace DndUI
 			character.baseIntelligence = statIntelligence.ToInt();
 			// character.kind = 
 			character.kind = CreatureKinds.Humanoids;   // Allow editing of this prop?
-			// character.languagesSpoken = 
-			// character.languagesUnderstood = 
+																									// character.languagesSpoken = 
+																									// character.languagesUnderstood = 
 			character.languagesSpoken = Languages.Common;
 			character.languagesUnderstood = Languages.Common;
 			//character.level = statLevel.ToInt();  // read only
@@ -598,7 +629,7 @@ namespace DndUI
 			//character.tempSavingThrowModIntelligence = 
 			//character.tempSavingThrowModStrength = 
 			//character.tempSavingThrowModWisdom = 
-			//character.tempSlightOfHandMod = 
+			//character.tempSleightOfHandMod = 
 			//character.tempStealthMod = 
 			//character.tempSurvivalMod = 
 			character.totalHitDice = statHitDice.Text;
@@ -636,7 +667,7 @@ namespace DndUI
 
 		private void StatBox_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			
+
 		}
 
 		private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -661,78 +692,78 @@ namespace DndUI
 
 		private void AcrobaticsSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.acrobatics);
+			OnSkillCheckRequested(Skills.acrobatics, GetVantageFrom(sender));
 		}
 		private void AnimalHandlingSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.animalHandling);
+			OnSkillCheckRequested(Skills.animalHandling, GetVantageFrom(sender));
 		}
 
 		private void ArcanaSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.arcana);
+			OnSkillCheckRequested(Skills.arcana, GetVantageFrom(sender));
 		}
 		private void AthleticsSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.athletics);
+			OnSkillCheckRequested(Skills.athletics, GetVantageFrom(sender));
 
 		}
 		private void DeceptionSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.deception);
+			OnSkillCheckRequested(Skills.deception, GetVantageFrom(sender));
 		}
 
 		private void HistorySkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.history);
+			OnSkillCheckRequested(Skills.history, GetVantageFrom(sender));
 		}
 		private void InsightSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.insight);
+			OnSkillCheckRequested(Skills.insight, GetVantageFrom(sender));
 		}
 		private void IntimidationSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.intimidation);
+			OnSkillCheckRequested(Skills.intimidation, GetVantageFrom(sender));
 		}
 		private void InvestigationSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.investigation);
+			OnSkillCheckRequested(Skills.investigation, GetVantageFrom(sender));
 		}
 		private void MedicineSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.medicine);
+			OnSkillCheckRequested(Skills.medicine, GetVantageFrom(sender));
 		}
 		private void NatureSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.nature);
+			OnSkillCheckRequested(Skills.nature, GetVantageFrom(sender));
 		}
 		private void PerceptionSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.perception);
+			OnSkillCheckRequested(Skills.perception, GetVantageFrom(sender));
 		}
 		private void PerformanceSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.performance);
+			OnSkillCheckRequested(Skills.performance, GetVantageFrom(sender));
 		}
 		private void PersuasionSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.persuasion);
+			OnSkillCheckRequested(Skills.persuasion, GetVantageFrom(sender));
 		}
 		private void ReligionSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.religion);
+			OnSkillCheckRequested(Skills.religion, GetVantageFrom(sender));
 		}
-		private void SlightOfHandSkillCheck_Click(object sender, RoutedEventArgs e)
+		private void SleightOfHandSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.slightOfHand);
+			OnSkillCheckRequested(Skills.sleightOfHand, GetVantageFrom(sender));
 		}
 		private void StealthSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.stealth);
+			OnSkillCheckRequested(Skills.stealth, GetVantageFrom(sender));
 		}
 		private void SurvivalSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.survival);
+			OnSkillCheckRequested(Skills.survival, GetVantageFrom(sender));
 		}
 
 		private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -740,74 +771,107 @@ namespace DndUI
 
 		}
 
+		VantageKind GetVantageFrom(object sender)
+		{
+			if (sender is MenuItem menuItem)
+				if (menuItem.Tag is string tagStr)
+					if (int.TryParse(tagStr, out int value))
+						if (value == 1)
+							return VantageKind.Advantage;
+						else if (value == 2)
+							return VantageKind.Disadvantage;
+
+			return VantageKind.Normal;
+		}
 		private void DexteritySavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.dexterity);
+			OnSavingThrowRequested(Ability.dexterity, GetVantageFrom(sender));
 		}
 		private void StrengthSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.strength);
+			OnSavingThrowRequested(Ability.strength, GetVantageFrom(sender));
 		}
 		private void ConstitutionSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.constitution);
+			OnSavingThrowRequested(Ability.constitution, GetVantageFrom(sender));
 		}
 		private void IntelligenceSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.intelligence);
+			OnSavingThrowRequested(Ability.intelligence, GetVantageFrom(sender));
 		}
 		private void WisdomSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.wisdom);
+			OnSavingThrowRequested(Ability.wisdom, GetVantageFrom(sender));
 		}
 		private void CharismaSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			OnSavingThrowRequested(Ability.charisma);
+			OnSavingThrowRequested(Ability.charisma, GetVantageFrom(sender));
 		}
 
 		private void StrengthSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.strength);
+			OnSkillCheckRequested(Skills.strength, GetVantageFrom(sender));
 		}
 
 		private void ConstitutionSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.constitution);
+			OnSkillCheckRequested(Skills.constitution, GetVantageFrom(sender));
 		}
 
 		private void WisdomSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.wisdom);
+			OnSkillCheckRequested(Skills.wisdom, GetVantageFrom(sender));
 		}
 
 		private void DexteritySkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.dexterity);
+			OnSkillCheckRequested(Skills.dexterity, GetVantageFrom(sender));
 		}
 
 		private void IntelligenceSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.intelligence);
+			OnSkillCheckRequested(Skills.intelligence, GetVantageFrom(sender));
 		}
 
 		private void CharismaSkillCheck_Click(object sender, RoutedEventArgs e)
 		{
-			OnSkillCheckRequested(Skills.charisma);
+			OnSkillCheckRequested(Skills.charisma, GetVantageFrom(sender));
 		}
 
-		private void SkillCheckContextMenu_Drop(object sender, DragEventArgs e)
+		Skills ToSkill(object sender)
 		{
-
+			if (sender is ContextMenu contextMenu)
+			{
+				if (contextMenu.Tag is string tagStr)
+					if (int.TryParse(tagStr, out int value))
+						return (Skills)value;
+			}
+			return Skills.none;
+		}
+		Ability ToAbility(object sender)
+		{
+			if (sender is ContextMenu contextMenu)
+			{
+				if (contextMenu.Tag is string tagStr)
+					if (int.TryParse(tagStr, out int value))
+						return (Ability)value;
+			}
+			return Ability.none;
 		}
 
-		private void AbilityCheckContextMenu_Drop(object sender, DragEventArgs e)
+		private void SkillCheckContextMenu_Opened(object sender, RoutedEventArgs e)
 		{
-
+			OnSkillCheckConsidered(ToSkill(sender), VantageKind.Normal);
 		}
 
-		private void SavingThrowContextMenu_Drop(object sender, DragEventArgs e)
+		private void SavingThrowContextMenu_Opened(object sender, RoutedEventArgs e)
 		{
+			OnSavingThrowConsidered(ToAbility(sender), VantageKind.Normal);
+		}
 
+		private void AbilityCheckContextMenu_Opened(object sender, RoutedEventArgs e)
+		{
+			OnSkillCheckConsidered(ToSkill(sender), VantageKind.Normal);
 		}
 	}
 }

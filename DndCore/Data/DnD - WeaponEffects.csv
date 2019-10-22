@@ -16,9 +16,9 @@ Greataxe,2,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
 Handaxe,0,BattleAxe.Weapon,,x,,,,,0.6,,,,,90,,,,SwordDraw,SwordSlash
 Handaxe,1,BattleAxe.MagicA,usesMagicThisRoll == true,x,player,,,,0.6,,,,,90,,,,,
 Handaxe,2,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
-LongSword,0,LongSword.Weapon,,x,player,,,,,,,,,150,,,,SwordDraw,SwordSlash
-LongSword,1,LongSword.Magic,,x,220,,,,,,,,,,,,,,
-WarHammer,0,WarHammer.Weapon,,x,player,,,,,,,,,150,,,,,
-WarHammer,1,WarHammer.MagicHandle,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
-WarHammer,2,WarHammer.MagicFrontHead,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
-WarHammer,3,WarHammer.MagicBackHead,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,
+Longsword,0,LongSword.Weapon,,x,player,,,,,,,,,150,,,,SwordDraw,SwordSlash
+Longsword,1,LongSword.Magic,,x,,,,,,,,,,,,,,,
+Warhammer,0,WarHammer.Weapon,,x,player,,,,,,,,,150,,,,,
+Warhammer,1,WarHammer.MagicHandle,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,
+Warhammer,2,WarHammer.MagicFrontHead,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,
+Warhammer,3,WarHammer.MagicBackHead,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,

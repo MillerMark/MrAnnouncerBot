@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="DndUI.RechargeableBoxes"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DndUI"
+             mc:Ignorable="d" 
+             d:DesignHeight="30" d:DesignWidth="190">
+	<UserControl.Resources>
+		<Style TargetType="{x:Type CheckBox}">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type CheckBox}">
+						<Grid x:Name="grdBoxes" Height="24" Width="26" Margin="0,1,0,0">
+							<Rectangle Fill="White" Stroke="#d8d8d8" Width="22" Height="22" ></Rectangle>
+							<Rectangle Fill="White" Stroke="#e9e9e9" Width="20" Height="20" ></Rectangle>
+							<Rectangle Fill="White" Stroke="#f3f3f3" Width="18" Height="18" ></Rectangle>
+							<Rectangle Fill="White" Stroke="#fafafa" Width="16" Height="16" ></Rectangle>
+							<Rectangle x:Name="checkBoxFill" Fill="#FFC42F30" Width="12" Height="12" ></Rectangle>
+							<ContentPresenter VerticalAlignment="Center" />
+						</Grid>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsChecked" Value="False">
+								<Setter TargetName="checkBoxFill" Property="Visibility" Value="Hidden" />
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</UserControl.Resources>
+	<StackPanel x:Name="spBoxes" Orientation="Horizontal">
+		<CheckBox IsChecked="True"/>
+		<CheckBox />
+		<CheckBox />
+		<CheckBox IsChecked="True"/>
+	</StackPanel>
+</UserControl>

@@ -25,7 +25,7 @@ namespace DHDM
 			//kent.baseWisdom = 8;
 			//kent.baseCharisma = 14;
 			//kent.proficiencyBonus = 2;
-			//kent.proficientSkills = Skills.insight | Skills.perception | Skills.performance | Skills.slightOfHand | Skills.stealth;
+			//kent.proficientSkills = Skills.insight | Skills.perception | Skills.performance | Skills.sleightOfHand | Skills.stealth;
 			//kent.savingThrowProficiency = Ability.Dexterity | Ability.Intelligence;
 			//kent.spellCastingAbility = Ability.None;
 			//kent.doubleProficiency = Skills.deception | Skills.persuasion;

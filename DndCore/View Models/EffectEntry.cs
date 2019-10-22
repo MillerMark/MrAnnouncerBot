@@ -21,7 +21,7 @@ namespace DndCore
 
 		public EffectEntry(EffectKind effectKind, string name)
 		{
-			Name = name;
+			StandardName = name;
 			EffectKind = effectKind;
 			EmitterEffect = new EmitterEffect();
 			AnimationEffect = new AnimationEffect();
@@ -146,7 +146,7 @@ namespace DndCore
 			if (EffectKind == EffectKind.SoundEffect)
 				return SoundEffect;
 			if (EffectKind == EffectKind.Placeholder)
-				return new PlaceholderEffect(Name, PlaceholderType);
+				return new PlaceholderEffect(StandardName, PlaceholderType);
 
 			return null;
 		}

@@ -304,6 +304,7 @@
     <Compile Include="SavingThrowCommand.cs" />
     <Compile Include="ScrollCloseCommand.cs" />
     <Compile Include="SelectShortcutCommand.cs" />
+    <Compile Include="SetVantageCommand.cs" />
     <Compile Include="ShortcutButton.cs" />
     <Compile Include="SkillCheckCommand.cs" />
     <Compile Include="SpellSlotSelectorCommand.cs" />

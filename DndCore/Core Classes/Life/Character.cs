@@ -65,6 +65,9 @@ namespace DndCore
 		[JsonIgnore]
 		public bool hitWasCritical = false;  // TODO: Implement this + test cases.
 
+		[JsonIgnore]
+		public int _attackNum = 0;
+
 		public int hueShift = 0;
 		public string inspiration = string.Empty;
 		public double load = 0;
@@ -117,7 +120,7 @@ namespace DndCore
 		public double tempSavingThrowModIntelligence = 0;
 		public double tempSavingThrowModStrength = 0;
 		public double tempSavingThrowModWisdom = 0;
-		public double tempSlightOfHandMod = 0;
+		public double tempSleightOfHandMod = 0;
 		public double tempStealthMod = 0;
 		public double tempSurvivalMod = 0;
 		public string totalHitDice = string.Empty;
@@ -368,11 +371,11 @@ namespace DndCore
 			}
 		}
 
-		bool hasSkillProficiencySlightOfHand
+		bool hasSkillProficiencySleightOfHand
 		{
 			get
 			{
-				return hasProficiencyBonusForSkill(Skills.slightOfHand);
+				return hasProficiencyBonusForSkill(Skills.sleightOfHand);
 			}
 		}
 
@@ -616,11 +619,11 @@ namespace DndCore
 		}
 
 
-		public double skillModSlightOfHand
+		public double skillModSleightOfHand
 		{
 			get
 			{
-				return this.getProficiencyBonusForSkill(Skills.slightOfHand) + this.dexterityMod + this.tempSlightOfHandMod;
+				return this.getProficiencyBonusForSkill(Skills.sleightOfHand) + this.dexterityMod + this.tempSleightOfHandMod;
 			}
 		}
 
@@ -891,30 +894,39 @@ namespace DndCore
 
 			CarriedWeapon carriedWeapon = new CarriedWeapon();
 
-			int hitDamageBonus = 0;
 			if (parametersStr.HasSomething())
 			{
 				string[] parameters = parametersStr.Split(',');
 				for (int i = 0; i < parameters.Length; i++)
 				{
 					var parameter = parameters[i].Trim();
-					if (i == 0)
-						carriedWeapon.Name = parameter.EverythingBetween("\"", "\"");
-					else if (i == 1)
-						carriedWeapon.HitDamageBonus = MathUtils.GetInt(parameter);
-					else if (i == 2)
-						carriedWeapon.Hue1 = parameter;
-					else if (i == 3)
-						carriedWeapon.Hue2 = parameter;
-					else if (i == 4)
-						carriedWeapon.Hue3 = parameter;
+					switch (i)
+					{
+						case 0:
+							carriedWeapon.Name = parameter.EverythingBetween("\"", "\"");
+							break;
+						case 1:
+							carriedWeapon.HitDamageBonus = MathUtils.GetInt(parameter);
+							break;
+						case 2:
+							carriedWeapon.WeaponHue = parameter;
+							break;
+						case 3:
+							carriedWeapon.Hue1 = parameter;
+							break;
+						case 4:
+							carriedWeapon.Hue2 = parameter;
+							break;
+						case 5:
+							carriedWeapon.Hue3 = parameter;
+							break;
+					}
 				}
 			}
 
 			Weapon weapon = AllWeapons.Get(weaponName);
 			carriedWeapon.Weapon = weapon;
 			carriedWeapon.Count = count;
-			carriedWeapon.HitDamageBonus = hitDamageBonus;
 			CarriedWeapons.Add(carriedWeapon);
 		}
 
@@ -1305,6 +1317,14 @@ namespace DndCore
 			}
 		}
 
+		public void PlayerStartsTurn()
+		{
+			foreach (AssignedFeature assignedFeature in features)
+			{
+				assignedFeature.PlayerStartsTurn(this);
+			}
+		}
+
 		protected virtual void OnRollDiceRequest(object sender, RollDiceEventArgs ea)
 		{
 			RollDiceRequest?.Invoke(sender, ea);
@@ -1506,14 +1526,16 @@ namespace DndCore
 
 		public void StartTurn()
 		{
+			StartTurnResetState();
+			PlayerStartsTurn();
 			if (Game != null)
 				Game.StartingTurnFor(this);
-			StartTurnResetState();
 		}
 
 		public override void StartTurnResetState()
 		{
 			enemyAdvantage = 0;
+			_attackNum = 0;
 			WeaponsInHand = 0;
 			OneHanded = false;
 			TwoHanded = false;
@@ -1538,6 +1560,7 @@ namespace DndCore
 
 		public override void Use(PlayerActionShortcut playerActionShortcut)
 		{
+			_attackNum++;
 			ResetPlayerActionBasedState();
 			if (playerActionShortcut != null)
 			{

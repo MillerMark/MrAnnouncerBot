@@ -30,10 +30,18 @@ namespace DndCore
 		public string OnDeactivate { get; set; }
 		public string OnPlayerCastsSpell { get; set; }
 		public string OnPlayerSwingsWeapon { get; set; }
+		public string OnPlayerStartsTurn { get; set; }
+		public string OnPlayerSaves { get; set; }
 		public string OnRollComplete { get; set; }
 		public DndTimeSpan Per { get; set; }
 		public bool RequiresPlayerActivation { get; set; }
 		public List<string> Parameters { get; set; }
+		public string Description { get; set; }
+		public string ActivationMessage { get; set; }
+		public string DeactivationMessage { get; set; }
+		public TurnPart ActivationTime { get; set; }
+		public string ShortcutName { get; set; }
+		public bool Magic { get; set; }
 
 		public static Feature FromDto(FeatureDto featureDto)
 		{
@@ -41,11 +49,20 @@ namespace DndCore
 			result.Name = DndUtils.GetName(featureDto.Name);
 			result.Parameters = DndUtils.GetParameters(featureDto.Name);
 			result.Conditions = featureDto.Conditions;
+			result.Description = featureDto.Description;
 			result.OnActivate = featureDto.OnActivate;
+			result.ActivationMessage = featureDto.ActivationMessage;
 			result.OnDeactivate = featureDto.OnDeactivate;
+			result.DeactivationMessage = featureDto.DeactivationMessage;
 			result.OnPlayerCastsSpell = featureDto.OnPlayerCastsSpell;
 			result.OnPlayerSwingsWeapon = featureDto.OnPlayerSwingsWeapon;
+			result.OnPlayerStartsTurn = featureDto.OnPlayerStartsTurn;
+			result.OnPlayerSaves = featureDto.OnPlayerSaves;
 			result.OnRollComplete = featureDto.OnRollComplete;
+			result.ShortcutName = featureDto.ShortcutName;
+			result.Magic = MathUtils.IsChecked(featureDto.Magic);
+			result.ActivationTime = PlayerActionShortcut.GetTurnPart(featureDto.ActivationTime);
+			result.RequiresPlayerActivation = MathUtils.IsChecked(featureDto.RequiresActivation);
 			result.Duration = DndTimeSpan.FromDurationStr(featureDto.Duration);
 			result.Per = DndTimeSpan.FromDurationStr(featureDto.Per);
 			result.Limit = featureDto.Limit;
@@ -114,6 +131,24 @@ namespace DndCore
 				return;
 			if (!string.IsNullOrWhiteSpace(OnPlayerSwingsWeapon))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerSwingsWeapon, Parameters, arguments), player);
+		}
+
+		public void PlayerStartsTurn(string arguments, Character player)
+		{
+			if (!IsActive)
+				return;
+				if (!string.IsNullOrWhiteSpace(OnPlayerStartsTurn))
+					Expressions.Do(DndUtils.InjectParameters(OnPlayerStartsTurn, Parameters, arguments), player);
+		}
+
+		
+		// TODO: Call when a player rolls a saving throw (to implement DangerSense).
+		public void PlayerSaves(string arguments, Character player)
+		{
+			if (!IsActive)
+				return;
+			if (!string.IsNullOrWhiteSpace(OnPlayerSaves))
+				Expressions.Do(DndUtils.InjectParameters(OnPlayerSaves, Parameters, arguments), player);
 		}
 
 		public void RollIsComplete(string arguments, Character player)
