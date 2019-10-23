@@ -55,7 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EnumBindingSourceExtension.cs" />
-    <Compile Include="RechargeableBoxes.xaml.cs">
+    <Compile Include="User Controls\RechargeableBoxes.xaml.cs">
       <DependentUpon>RechargeableBoxes.xaml</DependentUpon>
     </Compile>
     <Compile Include="User Controls\EffectEvent.cs" />
@@ -127,7 +127,7 @@
       <DependentUpon>TimeSpanEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="User Controls\Support\VisualHelper.cs" />
-    <Page Include="RechargeableBoxes.xaml">
+    <Page Include="User Controls\RechargeableBoxes.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

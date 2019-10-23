@@ -244,6 +244,11 @@ namespace DndUI
 			OnPageChanged(ScrollPage.equipment);
 		}
 
+		private void PageSpells_Activated(object sender, RoutedEventArgs e)
+		{
+			OnPageChanged(ScrollPage.spells);
+		}
+
 		private void AnyStatChanged(object sender, RoutedEventArgs e)
 		{
 			OnCharacterChanged();
@@ -434,6 +439,32 @@ namespace DndUI
 			// TODO: Implement this.
 		}
 
+		void AddRechargeables(Character character)
+		{
+			int[] spellSlotLevels = character.GetSpellSlotLevels();
+			for (int i = 1; i < spellSlotLevels.Length; i++)
+			{
+				RechargeableBoxes rechargeable = new RechargeableBoxes();
+				if (spellSlotLevels[i] == 0)
+					continue;
+				switch (i)
+				{
+					case 1: rechargeable.BeginLabel = "1st: "; break;
+					case 2: rechargeable.BeginLabel = "2nd: "; break;
+					case 3: rechargeable.BeginLabel = "3rd: "; break;
+					case 4: rechargeable.BeginLabel = "4th: "; break;
+					case 5: rechargeable.BeginLabel = "5th: "; break;
+					case 6: rechargeable.BeginLabel = "6th: "; break;
+					case 7: rechargeable.BeginLabel = "7th: "; break;
+					case 8: rechargeable.BeginLabel = "8th: "; break;
+					case 9: rechargeable.BeginLabel = "9th: "; break;
+				}
+				rechargeable.MaxCharges = spellSlotLevels[i];
+				rechargeable.Tag = i;
+				rechargeable.MinBeginLabelWidth = 30;
+				spSpellSlots.Children.Add(rechargeable);
+			}
+		}
 		public void SetFromCharacter(Character character)
 		{
 			changingInternally = true;
@@ -491,6 +522,11 @@ namespace DndUI
 				SetName(statName, character.name);
 				SetName(statName2, character.name);
 				SetName(statName3, character.name);
+				SetName(statName4, character.name);
+
+				statSpellcastingAbility.Text = DndUtils.ToAbilityDisplayString(character.spellCastingAbility);
+				statSpellSaveDC.Text = character.SpellSaveDC.ToString();
+				statSpellAttackBonus.Text = character.SpellAttackModifier.ToString();
 
 				//character.offTurnActions = 
 				//character.onTurnActions = 
@@ -538,6 +574,7 @@ namespace DndUI
 				statWisdom.Text = character.Wisdom.ToString();
 				statWisdom2.Text = statWisdom.Text;
 				SetCalculatedFields(character);
+				AddRechargeables(character);
 			}
 			finally
 			{
@@ -872,6 +909,16 @@ namespace DndUI
 		private void AbilityCheckContextMenu_Opened(object sender, RoutedEventArgs e)
 		{
 			OnSkillCheckConsidered(ToSkill(sender), VantageKind.Normal);
+		}
+
+		private void PageSpells_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			OnPageChanged(ScrollPage.spells);
+		}
+
+		private void PageSpells_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			OnPageBackgroundClicked();
 		}
 	}
 }

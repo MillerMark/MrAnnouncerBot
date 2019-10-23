@@ -163,6 +163,7 @@ class CharacterStatsScroll extends WorldObject {
 	scrollEmphasisMain: Sprites;
 	scrollEmphasisSkills: Sprites;
 	scrollEmphasisEquipment: Sprites;
+	scrollEmphasisSpells: Sprites;
 	scrollSlam: Sprites;
 	scrollBacks: Sprites;
 	playerHeadshots: Sprites;
@@ -194,7 +195,8 @@ class CharacterStatsScroll extends WorldObject {
 		this.deEmphasisSprite.fadeInTime = 700;
 		this.deEmphasisSprite.fadeOutTime = 700;
 		this.deEmphasisSprite.expirationDate = activeBackGame.nowMs;
-		for (var i = 0; i < 4; i++) {
+		const numPagesPlusShadow: number = 5;
+		for (var i = 0; i < 5; i++) {
 			this.highlightEmitterPages.push(new HighlightEmitterPages());
 		}
 		this.addHighlightEmitters();
@@ -330,6 +332,22 @@ class CharacterStatsScroll extends WorldObject {
 
 		this.highlightEmitterPages[ScrollPage.equipment].emitters.push(
 			new HighlightEmitter(emphasisEquipment[emphasisEquipment.Weight], new Vector(261, speedWeightY)).setRectangular(80, 51));
+
+
+		// spells page...
+		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
+			new HighlightEmitter(emphasisSpells[emphasisSpells.NameHeadshot], new Vector(nameCenterX, nameCenterY)).setRectangular(nameWidth, nameHeight));
+
+		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
+			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellcastingAbility], new Vector(222, 49)).setRectangular(181, 47));
+
+		let spellSaveAttackY: number = 112;
+		let spellSaveAttackHeight: number = 46;
+		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
+			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellSaveDC], new Vector(165, spellSaveAttackY)).setRectangular(64, spellSaveAttackHeight));
+
+		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
+			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellAttackBonus], new Vector(263, spellSaveAttackY)).setRectangular(100, spellSaveAttackHeight));
 	}
 
 	private addDistribution(page: ScrollPage, first: number, last: number, dist: EmitterDistribution) {
@@ -374,6 +392,8 @@ class CharacterStatsScroll extends WorldObject {
 			return emphasisSkills[enumIndex];
 		else if (scrollPage === ScrollPage.equipment)
 			return emphasisEquipment[enumIndex];
+		else if (scrollPage === ScrollPage.spells)
+			return emphasisSpells[enumIndex];
 		return null;
 	}
 
@@ -680,6 +700,8 @@ class CharacterStatsScroll extends WorldObject {
 				this.scrollEmphasisSkills.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
 			if (this.page === ScrollPage.equipment)
 				this.scrollEmphasisEquipment.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
+			if (this.page === ScrollPage.spells)
+				this.scrollEmphasisSpells.drawCropped(world.ctx, now * 1000, sx, sy, dx, dy, sw, sh, dw, dh);
 		}
 		else {
 			if (this.page === ScrollPage.main)
@@ -688,6 +710,8 @@ class CharacterStatsScroll extends WorldObject {
 				this.scrollEmphasisSkills.draw(world.ctx, now * 1000);
 			if (this.page === ScrollPage.equipment)
 				this.scrollEmphasisEquipment.draw(world.ctx, now * 1000);
+			if (this.page === ScrollPage.spells)
+				this.scrollEmphasisSpells.draw(world.ctx, now * 1000);
 		}
 	}
 
@@ -758,12 +782,13 @@ class CharacterStatsScroll extends WorldObject {
 		this.scrollPoofBack.originY = 325;
 
 		this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
-		this.scrollBacks = new Sprites("Scroll/Backs/Back", 4, this.framerateMs, AnimationStyle.Static);
+		this.scrollBacks = new Sprites("Scroll/Backs/Back", 5, this.framerateMs, AnimationStyle.Static);
 		const totalKnownPlayers: number = 6;
 		this.playerHeadshots = new Sprites("Scroll/Players/Player", totalKnownPlayers, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisEquipment = new Sprites("Scroll/Emphasis/Equipment/EmphasisEquipment", 5, this.framerateMs, AnimationStyle.Static);
+		this.scrollEmphasisSpells = new Sprites("Scroll/Emphasis/Spells/EmphasisSpells", 4, this.framerateMs, AnimationStyle.Static);
 
 		this.scrollWooshSfx = new Audio(Folders.assets + 'SoundEffects/scrollWoosh.mp3');
 		this.scrollOpenSfx = new Audio(Folders.assets + 'SoundEffects/scrollOpen.mp3');
@@ -884,7 +909,9 @@ class CharacterStatsScroll extends WorldObject {
 		else if (this.page === ScrollPage.skills)
 			this.scrollEmphasisSkills.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
 		else if (this.page === ScrollPage.equipment)
-			this.scrollEmphasisEquipment.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);;
+			this.scrollEmphasisEquipment.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
+		else if (this.page === ScrollPage.spells)
+			this.scrollEmphasisSpells.add(0, 0, emphasisIndex).setFadeTimes(this.fadeTime, this.fadeTime);
 	}
 
 
@@ -938,6 +965,10 @@ class CharacterStatsScroll extends WorldObject {
 			this.emphasisSprites = this.scrollEmphasisEquipment;
 			this.emphasisIndices.push(emphasisEquipment[itemID]);
 		}
+		else if (pageID === ScrollPage.spells) {
+			this.emphasisSprites = this.scrollEmphasisSpells;
+			this.emphasisIndices.push(emphasisSpells[itemID]);
+		}
 
 		if (this.emphasisSprites)
 			if (pageID === this.pageIndex)
@@ -968,18 +999,28 @@ class CharacterStatsScroll extends WorldObject {
 			this.scrollEmphasisMain.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisSkills.sprites = [];
 			this.scrollEmphasisEquipment.sprites = [];
+			this.scrollEmphasisSpells.sprites = [];
 		}
 		else if (pageID === ScrollPage.skills) {
 			let emphasisIndex: number = emphasisSkills[itemID];
 			this.scrollEmphasisSkills.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisMain.sprites = [];
 			this.scrollEmphasisEquipment.sprites = [];
+			this.scrollEmphasisSpells.sprites = [];
 		}
 		else if (pageID === ScrollPage.equipment) {
 			let emphasisIndex: number = emphasisEquipment[itemID];
 			this.scrollEmphasisEquipment.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisMain.sprites = [];
 			this.scrollEmphasisSkills.sprites = [];
+			this.scrollEmphasisSpells.sprites = [];
+		}
+		else if (pageID === ScrollPage.spells) {
+			let emphasisIndex: number = emphasisSpells[itemID];
+			this.scrollEmphasisSpells.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
+			this.scrollEmphasisMain.sprites = [];
+			this.scrollEmphasisSkills.sprites = [];
+			this.scrollEmphasisEquipment.sprites = [];
 		}
 
 		let currentlyEmphasizing: boolean = this.currentlyEmphasizing();

@@ -198,7 +198,7 @@ namespace DndCore
 			return "a " + ToSkillDisplayString(skill);
 		}
 
-		static string ToAbilityDisplayString(Ability ability)
+		public static string ToAbilityDisplayString(Ability ability)
 		{
 			switch (ability)
 			{

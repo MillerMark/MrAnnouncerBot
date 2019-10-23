@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DndUI"
              mc:Ignorable="d" 
-             d:DesignHeight="500" d:DesignWidth="800" Loaded="UserControl_Loaded">
+             d:DesignHeight="600" d:DesignWidth="1000" Loaded="UserControl_Loaded">
 	<UserControl.Resources>
 		<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -44,7 +44,7 @@
 	</UserControl.Resources>
 	<Grid>
 		<local:GridSheet x:Name="pageMain" Width="234" Height="555" Activated="PageMain_Activated" >
-			<Image Name="imageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="None" PreviewMouseDown="PageMain_PreviewMouseDown" MouseDown="PageMain_MouseDown"/>
+			<Image Name="imageMain" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back1.png" Stretch="Fill" PreviewMouseDown="PageMain_PreviewMouseDown" MouseDown="PageMain_MouseDown"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="63" Margin="64,147,0,0" VerticalAlignment="Top" Width="49" StatBox1="{Binding ElementName=statHitPoints, Mode=OneWay}"
 		StatBox2="{Binding ElementName=statTempHitPoints, Mode=OneWay}"/>
 			<local:GroupBackground HorizontalAlignment="Left" Height="56" Margin="8,103,0,0" VerticalAlignment="Top" Width="42" 
@@ -229,7 +229,7 @@
 		</local:GridSheet>
 
 		<local:GridSheet x:Name="pageSkills" Width="234" Height="555" Activated="PageSkills_Activated" Margin="250, 0, 0, 0" >
-			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="None" Height="555" PreviewMouseDown="PageSkills_PreviewMouseDown" MouseDown="PageSkillsBack_MouseDown"/>
+			<Image HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back2.png" Stretch="Fill" Height="555" PreviewMouseDown="PageSkills_PreviewMouseDown" MouseDown="PageSkillsBack_MouseDown"/>
 			<local:GroupBackground Height="56" Margin="8,103,0,0" Width="42" 
 													 StatBox1="{Binding ElementName=statStrength2, Mode=OneWay}">
 				<local:GroupBackground.ContextMenu>
@@ -562,12 +562,21 @@
 		</local:GridSheet>
 
 		<local:GridSheet x:Name="pageEquipment" Width="234" Height="555" Activated="PageEquipment_Activated" Margin="500, 0, 0, 0" >
-			<Image Name="imageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back3.png" Stretch="None" Height="555" PreviewMouseDown="PageEquipment_PreviewMouseDown" MouseDown="PageEquipment_MouseDown"/>
+			<Image Name="imageEquipment" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back3.png" Stretch="Fill" Height="555" PreviewMouseDown="PageEquipment_PreviewMouseDown" MouseDown="PageEquipment_MouseDown"/>
 			<local:StatBox x:Name="statName3" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statSpeed3" Margin="92,59,0,0" Width="37" Height="18" Text="30" FocusItem="Speed"/>
 			<local:StatBox x:Name="statWeight" Margin="142,59,0,0" Width="50" Height="18" Text="143" FocusItem="Weight"/>
 			<local:StatBox x:Name="statLoad" Margin="142,20,0,0" Width="50" Height="18" Text="143" FocusItem="Load"/>
 			<local:StatBox x:Name="statGoldPieces3" Margin="85,20,0,0" Width="51" Height="18" Text="1,143" FocusItem="GoldPieces"/>
+		</local:GridSheet>
+
+		<local:GridSheet x:Name="pageSpells" Width="234" Height="555" Activated="PageSpells_Activated" Margin="750, 0, 0, 0" >
+			<Image Name="imageSpells" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back4.png" Stretch="Fill" Height="555" PreviewMouseDown="PageSpells_PreviewMouseDown" MouseDown="PageSpells_MouseDown"/>
+			<local:StatBox x:Name="statName4" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
+			<local:StatBox x:Name="statSpellcastingAbility" Margin="98,18,0,0" Width="90" Height="18" Text="Intelligence" FocusItem="SpellcastingAbility"/>
+			<local:StatBox x:Name="statSpellSaveDC" Margin="95,59,0,0" Width="20" Height="18" Text="22" FocusItem="SpellSaveDC"/>
+			<local:StatBox x:Name="statSpellAttackBonus" Margin="144,59,0,0" Width="50" Height="18" Text="+3" FocusItem="SpellAttackBonus"/>
+			<StackPanel x:Name="spSpellSlots" Orientation="Vertical" Margin="20, 130, 0, 0"/>
 		</local:GridSheet>
 
 	</Grid>

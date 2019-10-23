@@ -1139,10 +1139,14 @@ namespace DndCore
 			return null;
 		}
 
-		public int GetSpellAttackModifier()
+		public int SpellAttackModifier
 		{
-			return (int)Math.Round(proficiencyBonus) + GetSpellcastingAbilityModifier();
+			get
+			{
+				return (int)Math.Round(proficiencyBonus) + GetSpellcastingAbilityModifier();
+			}
 		}
+
 
 		public int GetSpellcastingAbilityModifier()
 		{
@@ -1160,7 +1164,7 @@ namespace DndCore
 
 		public int GetSpellSaveDC()
 		{
-			return 8 + GetSpellAttackModifier();
+			return 8 + SpellAttackModifier;
 		}
 
 		/// <summary>
@@ -1183,6 +1187,10 @@ namespace DndCore
 					results[3] = DndUtils.GetAvailableSpellSlots(characterClass, 3);
 					results[4] = DndUtils.GetAvailableSpellSlots(characterClass, 4);
 					results[5] = DndUtils.GetAvailableSpellSlots(characterClass, 5);
+					results[6] = DndUtils.GetAvailableSpellSlots(characterClass, 6);
+					results[7] = DndUtils.GetAvailableSpellSlots(characterClass, 7);
+					results[8] = DndUtils.GetAvailableSpellSlots(characterClass, 8);
+					results[9] = DndUtils.GetAvailableSpellSlots(characterClass, 9);
 				}
 			}
 			return results;

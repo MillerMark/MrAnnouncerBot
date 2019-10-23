@@ -8,6 +8,7 @@ namespace DndUI
 		deEmphasis = 0,
 		main = 1,
 		skills = 2,
-		equipment = 3
+		equipment = 3,
+		spells = 4
 	}
 }

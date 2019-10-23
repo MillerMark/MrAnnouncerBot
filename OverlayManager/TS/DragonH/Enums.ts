@@ -44,7 +44,8 @@ enum ScrollPage {
   deEmphasis = 0,
   main = 1,
   skills = 2,
-  equipment = 3
+  equipment = 3,
+  spells = 4
 }
 
 enum ScrollState {
@@ -126,6 +127,13 @@ enum emphasisEquipment {
   Load = 2,
   Speed = 3,
   Weight = 4
+}
+
+enum emphasisSpells {
+	NameHeadshot = 0,
+	SpellcastingAbility = 1,
+	SpellSaveDC = 2,
+	SpellAttackBonus = 3
 }
 
 enum WeaponProperties {

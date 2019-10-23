@@ -131,6 +131,16 @@
     return statPage;
   }
 
+	static createSpellPage(): any {
+    let statPage: StatPage = new StatPage();
+
+    StatPage.addName(statPage);
+		statPage.addStat('spellCastingAbility', 222, 43, 166, TextAlign.center, TextDisplay.autoSize);
+		statPage.addStat('SpellSaveDC', 164, 107, 52, TextAlign.center, TextDisplay.autoSize);
+		statPage.addStat('SpellAttackBonus', 266, 107, TextDisplay.autoSize);
+    return statPage;
+  }
+
 
   static addName(statPage: StatPage): any {
     const nameFontSize: number = 10.5;

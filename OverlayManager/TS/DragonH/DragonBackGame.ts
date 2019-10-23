@@ -224,6 +224,7 @@ class DragonBackGame extends DragonGame {
 		this.characterStatsScroll.pages.push(StatPage.createMainStatsPage());
 		this.characterStatsScroll.pages.push(StatPage.createSkillsStatsPage());
 		this.characterStatsScroll.pages.push(StatPage.createEquipmentPage());
+		this.characterStatsScroll.pages.push(StatPage.createSpellPage());
 		this.characterStatsScroll.selectedStatPageIndex = 0;
 
 		this.characterStatsScroll.state = ScrollState.none;

@@ -5,13 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DndUI"
              mc:Ignorable="d" 
-             d:DesignHeight="30" d:DesignWidth="190">
+             d:DesignHeight="30" Background="White">
 	<UserControl.Resources>
 		<Style TargetType="{x:Type CheckBox}">
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type CheckBox}">
-						<Grid x:Name="grdBoxes" Height="24" Width="26" Margin="0,1,0,0">
+						<Grid x:Name="grdBoxes" Height="22" Width="26" Margin="0,1,0,1">
 							<Rectangle Fill="White" Stroke="#d8d8d8" Width="22" Height="22" ></Rectangle>
 							<Rectangle Fill="White" Stroke="#e9e9e9" Width="20" Height="20" ></Rectangle>
 							<Rectangle Fill="White" Stroke="#f3f3f3" Width="18" Height="18" ></Rectangle>
@@ -29,10 +29,10 @@
 			</Setter>
 		</Style>
 	</UserControl.Resources>
-	<StackPanel x:Name="spBoxes" Orientation="Horizontal">
-		<CheckBox IsChecked="True"/>
-		<CheckBox />
-		<CheckBox />
-		<CheckBox IsChecked="True"/>
+	<StackPanel x:Name="spRechargeable" Orientation="Horizontal" Width="Auto">
+		<TextBlock x:Name="tbLabelBegin" Text="" Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="4,0,0,0"/>
+		<StackPanel x:Name="spBoxes" Orientation="Horizontal">
+		</StackPanel>
+		<TextBlock x:Name="tbLabelEnd" Text="" Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="3,0,4,0"/>
 	</StackPanel>
 </UserControl>
