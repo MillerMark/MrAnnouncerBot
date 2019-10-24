@@ -169,18 +169,18 @@ namespace DndCore
 				return OneReaction;
 
 			if (duration.IndexOf("minute") > 0)
-				return FromMinutes(duration.GetFirstInt());
+				return FromMinutes(duration.GetFirstInt(1));
 
 			if (duration.IndexOf("hour") > 0)
-				return FromHours(duration.GetFirstInt());
+				return FromHours(duration.GetFirstInt(1));
 
-			if (duration.IndexOf("day") > 0)
-				return FromDays(duration.GetFirstInt());
+			if (duration.IndexOf("day") > 0 || duration.IndexOf("dawn") > 0)
+				return FromDays(duration.GetFirstInt(1));
 
 			if (duration.IndexOf("round") > 0)
-				return FromRounds(duration.GetFirstInt());
+				return FromRounds(duration.GetFirstInt(1));
 
-			if (duration == "day")
+			if (duration == "day" || duration == "dawn")
 				return FromDays(1);
 			if (duration == "hour")
 				return FromHours(1);

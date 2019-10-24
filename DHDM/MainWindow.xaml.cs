@@ -117,10 +117,21 @@ namespace DHDM
 				if (uIElement is ShortcutPanel shortcutPanel)
 				{
 					PlayerActionShortcut shortcut = shortcutPanel.Shortcut;
+					if (shortcut.Spell != null)
+					{
+						Character player = game.GetPlayerFromId(shortcut.PlayerId);
+						if (shortcut.Spell.SpellSlotLevel > 0)
+						{
+							if (player.HasRemainingSpellSlotCharges(shortcut.Spell.SpellSlotLevel))
+								shortcutPanel.Visibility = Visibility.Visible;
+							else
+								shortcutPanel.Visibility = Visibility.Collapsed;
+						}
+					}
 					string availableWhen = shortcut.Spell?.AvailableWhen;
 					if (!string.IsNullOrEmpty(availableWhen))
 					{
-						Character player = AllPlayers.GetFromId(shortcut.PlayerId);
+						Character player = game.GetPlayerFromId(shortcut.PlayerId);
 						if (Expressions.GetBool(availableWhen, player))
 							shortcutPanel.Visibility = Visibility.Visible;
 						else
@@ -140,8 +151,27 @@ namespace DHDM
 				SetShortcutVisibility(spSpecialActivePlayer);
 			});
 		}
+
+		void ClearAllSpellSlots()
+		{
+			foreach (Character player in game.Players)
+			{
+				CharacterSheets sheetForCharacter = GetSheetForCharacter(player.playerID);
+				sheetForCharacter?.ClearAllSpellSlots();
+			}
+		}
+
 		private void Game_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
 		{
+			if (ea.Key == "Rechargeables")
+			{
+				ClearAllSpellSlots();
+			}
+			else if (ea.Key.StartsWith("SpellSlots"))
+			{
+				CharacterSheets sheetForCharacter = GetSheetForCharacter(ea.Player.playerID);
+				sheetForCharacter?.UpdateSpellSlots(ea.Key, (int)ea.NewValue);
+			}
 			SetShortcutVisibility();
 		}
 
@@ -547,6 +577,10 @@ namespace DHDM
 					actionShortcut.AttackingAbilityModifier = player.GetSpellcastingAbilityModifier();
 					actionShortcut.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 				}
+				else
+				{
+					player.JustCastSpell(spell.Name);
+				}
 
 				tbxDamageDice.Text = spell.DieStr;
 				spellCaster = player;
@@ -746,6 +780,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			lastRoll = diceRoll;
 			Character player = null;
 			if (castedSpellNeedingCompletion != null)
 			{
@@ -1023,11 +1058,13 @@ namespace DHDM
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
 		{
+			game?.RechargePlayersAfterLongRest();
 			Rest(8);
 		}
 
 		private void BtnAddShortRest_Click(object sender, RoutedEventArgs e)
 		{
+			game?.RechargePlayersAfterShortRest();
 			Rest(2);
 		}
 
@@ -1315,26 +1352,75 @@ namespace DHDM
 				IndividualDiceStoppedRolling(individualRoll);
 			}
 		}
-		void CheckForFollowUpRolls(DiceStoppedRollingData diceStoppedRollindData)
+
+		bool ChaosBoltRolledDoubles(DiceStoppedRollingData diceStoppedRollingData)
 		{
-			if (diceStoppedRollindData == null)
+			if (!diceStoppedRollingData.success)
+				return false;
+			bool isChaosBolt = false;
+			foreach (IndividualRoll individualRoll in diceStoppedRollingData.individualRolls)
+			{
+				if (individualRoll.numSides == 20 && individualRoll.type == "ChaosBolt")
+				{
+					isChaosBolt = true;
+				}
+			}
+			if (!isChaosBolt)
+				return false;
+
+			int firstValue = -1;
+			int secondValue = -1;
+			foreach (IndividualRoll individualRoll in diceStoppedRollingData.individualRolls)
+			{
+				if (individualRoll.numSides == 8)
+					if (firstValue == -1)
+						firstValue = individualRoll.value;
+					else
+					{
+						secondValue = individualRoll.value;
+						break;
+					}
+			}
+			return firstValue == secondValue;
+		}
+
+		void CheckForFollowUpRolls(DiceStoppedRollingData diceStoppedRollingData)
+		{
+			if (diceStoppedRollingData == null)
 				return;
 			// Noticed doubling up of individual rolls.
-			Character singlePlayer = diceStoppedRollindData.GetSingleRollingPlayer();
+			Character singlePlayer = diceStoppedRollingData.GetSingleRollingPlayer();
 			if (singlePlayer == null)
 				return;
 
-			if (!string.IsNullOrWhiteSpace(diceStoppedRollindData.spellName))
-				singlePlayer.JustCastSpell(diceStoppedRollindData.spellName);
-			else if (diceStoppedRollindData.type == DiceRollType.Attack)
+			if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellName))
+				singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
+			else if (diceStoppedRollingData.type == DiceRollType.Attack)
 				singlePlayer.JustSwungWeapon();
 
 			// TODO: pass **targeted creatures** into RollIsComplete...
-			singlePlayer.RollIsComplete(diceStoppedRollindData.wasCriticalHit);
+			singlePlayer.RollIsComplete(diceStoppedRollingData.wasCriticalHit);
 
 			//diceRollData.playerID
 			//if (diceRollData.isSpell)
+
+			if (ChaosBoltRolledDoubles(diceStoppedRollingData))
+			{
+				DiceRoll chaosBoltRoll = lastRoll;
+				Dispatcher.Invoke(() =>
+				{
+					if (AnswersYes("Doubles! Fire Chaos Bolt again?"))
+					{
+						RollTheDice(chaosBoltRoll);
+					}
+				});
+			}
 		}
+		void RepeatLastRoll()
+		{
+			RollTheDice(lastRoll);
+		}
+
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			waitingToClearDice = true;
@@ -1473,6 +1559,15 @@ namespace DHDM
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
 			CheckForFollowUpRolls(ea.StopRollingData);
+		}
+
+		private bool AnswersYes(string question)
+		{
+			List<string> answers = new List<string>();
+			answers.Add("1:Yes");
+			answers.Add("2:No");
+			bool yes = FrmAsk.Ask(question, answers, this) == 1;
+			return yes;
 		}
 
 		private static string GetSuccessStr(bool success, DiceRollType type)
@@ -1887,6 +1982,7 @@ namespace DHDM
 
 					CharacterSheets characterSheets = new CharacterSheets();
 					characterSheets.PageChanged += CharacterSheets_PageChanged;
+					characterSheets.ChargesChanged += CharacterSheets_ChargesChanged;
 					characterSheets.PageBackgroundClicked += CharacterSheets_PageBackgroundClicked;
 					characterSheets.CharacterChanged += HandleCharacterChanged;
 					characterSheets.SetFromCharacter(player);
@@ -1909,6 +2005,16 @@ namespace DHDM
 			{
 				buildingTabs = false;
 			}
+		}
+
+		private void CharacterSheets_ChargesChanged(object sender, ChargesChangedEventArgs e)
+		{
+			if (!(sender is CharacterSheets characterSheets))
+				return;
+			Character player = game.GetPlayerFromId(characterSheets.playerID);
+			if (player == null)
+				return;
+			player.SetState(e.Key, e.NewValue);
 		}
 
 		private void CharacterSheets_SkillCheckConsidered(object sender, SkillCheckEventArgs e)
@@ -2071,6 +2177,16 @@ namespace DHDM
 			});
 
 			return returnMessage;
+		}
+
+		CharacterSheets GetSheetForCharacter(int playerID)
+		{
+			foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
+			{
+				if (playerTabItem.PlayerId == playerID)
+					return playerTabItem.CharacterSheets;
+			}
+			return null;
 		}
 
 		public void RollSkillCheck(Skills skill, bool allPlayers = false)
@@ -2493,6 +2609,7 @@ namespace DHDM
 		bool checkingInternally;
 		string lastScenePlayed;
 		PlayerActionShortcut shortcutToActivateAfterClearingDice;
+		DiceRoll lastRoll;
 		void CheckAllPlayers()
 		{
 			checkingInternally = true;

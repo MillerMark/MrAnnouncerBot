@@ -277,7 +277,7 @@ namespace MrAnnouncerBot
 			// Determine the Fanfare to be played
 			FanfareDto fanfare = DetermineFanfareToPlay(displayName);
 
-			if (fanfare != null && (DateTime.Now - fanfare.LastPlayed).Days > 0)
+			if (fanfare != null && (DateTime.Now - fanfare.LastPlayed).TotalHours > 5)
 			{
 				string sceneName = fanfare.DisplayName;
 				if (GetFanfareCount(fanfare.DisplayName) > 1)
@@ -311,16 +311,16 @@ namespace MrAnnouncerBot
 
 			// Make sure none of the fanfares have been played today
 			// Handles scenario where MrAnnouncerBot has been restarted mid stream
-			if (userFanfares.Where(_ => (DateTime.Now - _.LastPlayed).Days == 0).Count() == 0)
+			if (userFanfares.Where(fanfare => (DateTime.Now - fanfare.LastPlayed).TotalHours > 5).Any())
 			{
 
 				// Get the list of Full Length fanfares 
 				// that have not been played in the last week
-				IEnumerable<FanfareDto> fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.fullLength)
-				.Where(_ => (DateTime.Now - _.LastPlayed).Days > 1);
+				IEnumerable<FanfareDto> fanFaresToPlay = userFanfares.Where(fanfare => fanfare.Duration == FanfareDuration.fullLength)
+				.Where(fanfare => (DateTime.Now - fanfare.LastPlayed).TotalHours > 5);
 
 				// No full length fanfares to play.  Get the clipped fanfare
-				if (fanFaresToPlay.Count() == 0)
+				if (!fanFaresToPlay.Any())
 				{
 					fanFaresToPlay = userFanfares.Where(_ => _.Duration == FanfareDuration.clipped);
 				}
@@ -328,7 +328,7 @@ namespace MrAnnouncerBot
 
 				// Select a random fanfare from the available list
 
-				if (fanFaresToPlay.Count() == 0)
+				if (!fanFaresToPlay.Any())
 				{
 					return null;
 				}

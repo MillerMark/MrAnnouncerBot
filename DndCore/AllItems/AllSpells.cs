@@ -19,7 +19,7 @@ namespace DndCore
 
 		public static List<SpellDto> Spells { get; private set; }
 
-		public static Spell Get(string spellName, int spellSlotLevel = 0, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
+		public static Spell Get(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
 			SpellDto spell = Spells.FirstOrDefault(x => string.Compare(x.name, spellName, true) == 0);
 			if (spell != null)
@@ -27,7 +27,7 @@ namespace DndCore
 			return null;
 		}
 
-		public static List<Spell> GetAll(string spellName, int spellSlotLevel = 0, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
+		public static List<Spell> GetAll(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
 			List<Spell> result = new List<Spell>();
 			

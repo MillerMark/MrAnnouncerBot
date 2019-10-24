@@ -9,7 +9,12 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
+		const string STR_RechargeableMaxSuffix = "_max";
 		double _passivePerception = int.MinValue;
+
+		[JsonIgnore]
+		public List<Rechargeable> rechargeables = new List<Rechargeable>();
+
 		[JsonIgnore]
 		public string additionalDiceThisRoll = string.Empty;
 		[JsonIgnore]
@@ -817,11 +822,13 @@ namespace DndCore
 			DndTimeSpan chargeResetSpan = DndTimeSpan.Zero;
 			string spellName = spellStr;
 			string itemName = string.Empty;
+			DndTimeSpan rechargesAt = DndTimeSpan.FromSeconds(0);  // midnight;
 			if (spellName.Has("("))
 			{
 				spellName = spellName.EverythingBefore("(");
 				string parameterStr = spellStr.EverythingBetween("(", ")");
 				var parameters = parameterStr.Split(',');
+				
 				for (int i = 0; i < parameters.Length; i++)
 				{
 					var parameter = parameters[i].Trim();
@@ -836,13 +843,17 @@ namespace DndCore
 						if (chargeDetails.Length == 2)
 						{
 							int.TryParse(chargeDetails[0], out totalCharges);
-							chargeResetSpan = DndTimeSpan.FromDurationStr(chargeDetails[1]);
+							string durationStr = chargeDetails[1];
+							chargeResetSpan = DndTimeSpan.FromDurationStr(durationStr);
+							if (durationStr == "dawn")
+								rechargesAt = DndTimeSpan.FromHours(6);  // 6:00 am
 						}
 					}
 				}
 			}
 			KnownSpell knownSpell = new KnownSpell();
 			knownSpell.SpellName = spellName;
+			knownSpell.RechargesAt = rechargesAt.GetTimeSpan();
 			knownSpell.TotalCharges = totalCharges;
 			knownSpell.ChargesRemaining = totalCharges;
 			knownSpell.ResetSpan = chargeResetSpan;
@@ -1200,7 +1211,23 @@ namespace DndCore
 		{
 			if (states.ContainsKey(key))
 				return states[key];
+			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key);
+			if (rechargeable != null)
+				return rechargeable.ChargesUsed;
+
+			rechargeable = rechargeables.FirstOrDefault(x => x.VarName + STR_RechargeableMaxSuffix == key);
+			if (rechargeable != null)
+				return rechargeable.MaxValue;
+
 			return null;
+		}
+
+		int GetIntState(string key)
+		{
+			object result = GetState(key);
+			if (result == null)
+				return 0;
+			return (int)result;
 		}
 
 		// TODO: Incorporate GetVantageThisRoll into die rolls.
@@ -1509,6 +1536,30 @@ namespace DndCore
 			}
 			else
 			{
+				Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key);
+				if (rechargeable != null)
+				{
+					int newIntValue = (int)newValue;
+					if (newIntValue == rechargeable.ChargesUsed)
+						return;
+					int oldValue = rechargeable.ChargesUsed;
+					rechargeable.ChargesUsed = newIntValue;
+					OnStateChanged(key, oldValue, newValue);
+					return;
+				}
+
+				rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key + STR_RechargeableMaxSuffix);
+				if (rechargeable != null)
+				{
+					int newIntValue = (int)newValue;
+					if (newIntValue == rechargeable.MaxValue)
+						return;
+					int oldValue = rechargeable.MaxValue;
+					rechargeable.MaxValue = newIntValue;
+					OnStateChanged(key + STR_RechargeableMaxSuffix, oldValue, newValue);
+					return;
+				}
+
 				states.Add(key, newValue);
 				OnStateChanged(key, null, newValue);
 			}
@@ -1579,6 +1630,112 @@ namespace DndCore
 			}
 
 			ReapplyActiveFeatures();
+		}
+
+		public int SpellSlots1
+		{
+			get
+			{
+				return GetIntState("SpellSlots1");
+			}
+			set
+			{
+				SetState("SpellSlots1", value);
+			}
+		}
+
+		void AddRechargeable(string displayName, string varName, int maxValue, string cycle)
+		{
+			if (maxValue == 0)
+				return;
+			rechargeables.Add(new Rechargeable(displayName, varName, maxValue, cycle));
+		}
+
+		public void AddSpellSlots()
+		{
+			int[] spellSlotLevels = GetSpellSlotLevels();
+			AddRechargeable("Spell Slots 1", "SpellSlots1", spellSlotLevels[1], "long rest");
+			AddRechargeable("Spell Slots 2", "SpellSlots2", spellSlotLevels[2], "long rest");
+			AddRechargeable("Spell Slots 3", "SpellSlots3", spellSlotLevels[3], "long rest");
+			AddRechargeable("Spell Slots 4", "SpellSlots4", spellSlotLevels[4], "long rest");
+			AddRechargeable("Spell Slots 5", "SpellSlots5", spellSlotLevels[5], "long rest");
+			AddRechargeable("Spell Slots 6", "SpellSlots6", spellSlotLevels[6], "long rest");
+			AddRechargeable("Spell Slots 7", "SpellSlots7", spellSlotLevels[7], "long rest");
+			AddRechargeable("Spell Slots 8", "SpellSlots8", spellSlotLevels[8], "long rest");
+			AddRechargeable("Spell Slots 9", "SpellSlots9", spellSlotLevels[9], "long rest");
+		}
+
+		public void UseSpellSlot(int spellSlotLevel)
+		{
+			string key = GetSpellSlotLevelKey(spellSlotLevel);
+			SetState(key, GetIntState(key) + 1);
+		}
+
+		public void RechargeAfterShortRest()
+		{
+			RechargeAfterHours(2);
+		}
+
+		public void RechargeAfterLongRest()
+		{
+			RechargeAfterHours(8);
+		}
+
+		private void RechargeAfterHours(int hours)
+		{
+			bool stateChanged = false;
+			foreach (Rechargeable rechargeable in rechargeables)
+			{
+				if (rechargeable.Cycle.GetTimeSpan().TotalHours <= hours)
+					if (rechargeable.ChargesUsed != 0)
+					{
+						rechargeable.ChargesUsed = 0;
+						stateChanged = true;
+					}
+			}
+
+			if (stateChanged)
+				OnStateChanged(this, new StateChangedEventArgs("Rechargeables", 1, 0));
+		}
+
+		public bool HasRemainingSpellSlotCharges(int spellSlotLevel)
+		{
+			string key = GetSpellSlotLevelKey(spellSlotLevel);
+			return GetIntState(key) < GetIntState(key + STR_RechargeableMaxSuffix);
+		}
+
+		private static string GetSpellSlotLevelKey(int spellSlotLevel)
+		{
+			return $"SpellSlots{spellSlotLevel}";
+		}
+
+		public void SetTimeBasedEvents()
+		{
+			foreach (KnownSpell knownSpell in KnownSpells)
+			{
+				if (knownSpell.TotalCharges > 0 && knownSpell.TotalCharges != int.MaxValue)
+				{
+					if (knownSpell.ResetSpan.GetTimeSpan().TotalDays == 1)
+					{
+						DndAlarm dndAlarm = Game.Clock.CreateDailyAlarm("Recharge:" + knownSpell.ItemName, knownSpell.RechargesAt.Hours, knownSpell.RechargesAt.Minutes, knownSpell.RechargesAt.Seconds, this);
+						dndAlarm.AlarmFired += DndAlarm_RechargeItem;
+						AddRechargeable(knownSpell.ItemName, DndUtils.ToVarName(knownSpell.ItemName), knownSpell.TotalCharges, "1 day");
+					}
+				}
+			}
+		}
+
+		private void DndAlarm_RechargeItem(object sender, DndTimeEventArgs ea)
+		{
+			if (ea.Alarm.Name.StartsWith("Recharge:"))
+			{
+				string itemName = ea.Alarm.Name.EverythingAfter("Recharge:");
+				KnownSpell foundItem = KnownSpells.FirstOrDefault(x => x.ItemName == itemName);
+				if (foundItem != null)
+				{
+					foundItem.ChargesRemaining = foundItem.TotalCharges;
+				}
+			}
 		}
 
 		public event CastedSpellEventHandler SpellDispelled;

@@ -19,7 +19,7 @@ namespace DndCore
 			return 0;
 		}
 
-		public static double GetFirstDouble(this string str, bool allowDecimals = true)
+		public static double GetFirstDouble(this string str, bool allowDecimals = true, double defaultValue = 0)
 		{
 			bool foundAtLeastOneDigit = false;
 			bool lastCharWasMinus = false;
@@ -62,13 +62,20 @@ namespace DndCore
 			int multiplier = isNegative ? -1 : 1;
 			if (foundAtLeastOneDigit)
 				return multiplier * double.Parse(numberStr);
-			return 0;
+			return defaultValue;
 		}
 
-		public static int GetFirstInt(this string str)
+		public static int GetFirstInt(this string str, int defaultValue = 0)
 		{
-			return (int)Math.Floor(GetFirstDouble(str, false));
+			return (int)Math.Floor(GetFirstDouble(str, false, defaultValue));
 		}
+
+		//public static string InitialCap(this string str)
+		//{
+		//	if (string.IsNullOrWhiteSpace(str))
+		//		return str;
+		//	return char.ToUpper(str[0]) + str.Substring(1);
+		//}
 
 		public static string EverythingAfter(this string str, string matchStr)
 		{

@@ -5,41 +5,6 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
-	public class DndTimeEventArgs : EventArgs
-	{
-		public DndTimeClock TimeClock { get; set; }
-		public DndAlarm Alarm { get; set; }
-		public DndTimeEventArgs(DndTimeClock timeClock, DndAlarm alarm)
-		{
-			TimeClock = timeClock;
-			Alarm = alarm;
-		}
-	}
-	public class DndAlarm
-	{
-		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name, Character player, object data = null)
-		{
-			Player = player;
-			Data = data;
-			Name = name;
-			TriggerTime = triggerTime;
-			SetTime = dndTimeClock.Time;
-		}
-
-		public DateTime SetTime { get; set; }
-		public DateTime TriggerTime { get; set; }
-		public string Name { get; set; }
-		public object Data { get; set; }
-		public Character Player { get; set; }
-
-		public void FireAlarm(DndTimeClock dndTimeClock)
-		{
-			AlarmFired?.Invoke(this, new DndTimeEventArgs(dndTimeClock, this));
-		}
-
-		public delegate void DndTimeEventHandler(object sender, DndTimeEventArgs ea);
-		public event DndTimeEventHandler AlarmFired;
-	}
 	public class DndTimeClock
 	{
 
@@ -282,22 +247,60 @@ namespace DndCore
 			TimeChanged?.Invoke(sender, timeClockEventArgs);
 		}
 
+		List<DndAlarm> alarmsToRemove = new List<DndAlarm>();
+		bool triggeringAlarms;
 		void TriggerAlarms(DateTime futureTime)
 		{
-			for (int i = alarms.Count -1; i >= 0; i--)
+			triggeringAlarms = true;
+			try
 			{
-				DndAlarm alarm = alarms[i];
-				if (alarm.TriggerTime > futureTime)
-					break;
-
-				if (alarm.TriggerTime > Time)
+				for (int i = alarms.Count - 1; i >= 0; i--)
 				{
-					Time = alarm.TriggerTime;
-					alarm.FireAlarm(this);
-					alarms.Remove(alarm);
+					DndAlarm alarm = alarms[i];
+					if (alarm.TriggerTime > futureTime)
+						break;
+
+					TriggerAlarm(alarm);
+				}
+
+				for (int i = dailyAlarms.Count - 1; i >= 0; i--)
+				{
+					DndDailyAlarm dailyAlarm = dailyAlarms[i];
+					int daysFromNow = (futureTime - dailyAlarm.TriggerTime).Days;
+					if (daysFromNow != 0)
+						dailyAlarm.TriggerTime = dailyAlarm.TriggerTime.AddDays(daysFromNow);
+					if (dailyAlarm.TriggerTime > futureTime || dailyAlarm.DayOfYearLastTriggered == dailyAlarm.TriggerTime.DayOfYear)
+						break;
+					dailyAlarm.DayOfYearLastTriggered = dailyAlarm.TriggerTime.DayOfYear;
+					TriggerAlarm(dailyAlarm);
 				}
 			}
+			finally
+			{
+				triggeringAlarms = false;
+			}
+
+			RemoveExpiredAlarms();
 		}
+
+		private void TriggerAlarm(DndAlarm alarm)
+		{
+			if (alarm.TriggerTime <= Time)
+				return;
+
+			Time = alarm.TriggerTime;
+			alarm.FireAlarm(this);
+			alarmsToRemove.Add(alarm);
+		}
+
+		private void RemoveExpiredAlarms()
+		{
+			foreach (DndAlarm alarmToRemove in alarmsToRemove)
+			{
+				alarms.Remove(alarmToRemove);
+			}
+		}
+
 		void ReengagePreviouslyTriggeredAlarms()
 		{
 			
@@ -324,6 +327,7 @@ namespace DndCore
 		public event TimeClockEventHandler TimeChanged;
 
 		List<DndAlarm> alarms = new List<DndAlarm>();
+		List<DndDailyAlarm> dailyAlarms = new List<DndDailyAlarm>();
 
 		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Character player = null, object data = null)
 		{
@@ -335,6 +339,15 @@ namespace DndCore
 			alarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
 			return dndAlarm;
 		}
+
+		public DndDailyAlarm CreateDailyAlarm(string name, int hours, int minutes = 0, int seconds = 0, Character player = null, object data = null)
+		{
+			DndDailyAlarm dndAlarm = new DndDailyAlarm(this, new DateTime(Time.Year, Time.Month, Time.Day, hours, minutes, seconds), name, player, data);
+			dailyAlarms.Add(dndAlarm);
+			dailyAlarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
+			return dndAlarm;
+		}
+
 		public string AsFullDndDateTimeString()
 		{
 			return Time.ToString("H:mm:ss") + ", " + AsDndDateString();
@@ -342,16 +355,29 @@ namespace DndCore
 		
 		public DndAlarm GetAlarm(string alarmName)
 		{
-			return alarms.FirstOrDefault(x => x.Name == alarmName);
+			DndAlarm first = alarms.FirstOrDefault(x => x.Name == alarmName);
+			if (first != null)
+				return first;
+			return dailyAlarms.FirstOrDefault(x => x.Name == alarmName);
 		}
 
 		public void ClearAllAlarms()
 		{
 			alarms = new List<DndAlarm>();
+			dailyAlarms = new List<DndDailyAlarm>();
 		}
 		public void RemoveAlarm(string alarmName)
 		{
-			alarms.RemoveAll(x => x.Name == alarmName);
+			if (triggeringAlarms)
+			{
+				alarmsToRemove.AddRange(alarms.Where(x => x.Name == alarmName));
+				alarmsToRemove.AddRange(dailyAlarms.Where(x => x.Name == alarmName));
+			}
+			else
+			{
+				alarms.RemoveAll(x => x.Name == alarmName);
+				dailyAlarms.RemoveAll(x => x.Name == alarmName);
+			}
 		}
 	}
 }

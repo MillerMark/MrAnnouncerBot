@@ -10,6 +10,7 @@ namespace DndCore
 		public int ChargesRemaining { get; set; } = int.MaxValue;
 		public int TotalCharges { get; set; } = int.MaxValue;
 		public DndTimeSpan ResetSpan { get; set; }
+		public TimeSpan RechargesAt { get; set; }
 
 		public KnownSpell()
 		{

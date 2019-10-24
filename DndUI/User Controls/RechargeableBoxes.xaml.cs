@@ -20,6 +20,20 @@ namespace DndUI
 	/// </summary>
 	public partial class RechargeableBoxes : UserControl
 	{
+		public static readonly RoutedEvent ChargesChangedEvent = EventManager.RegisterRoutedEvent("ChargesChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(RechargeableBoxes));
+
+		public event RoutedEventHandler ChargesChanged
+		{
+			add { AddHandler(ChargesChangedEvent, value); }
+			remove { RemoveHandler(ChargesChangedEvent, value); }
+		}
+
+		protected virtual void TriggerChargesChanged()
+		{
+			RoutedEventArgs eventArgs = new RoutedEventArgs(ChargesChangedEvent);
+			RaiseEvent(eventArgs);
+		}
+		
 		public static readonly DependencyProperty MinBeginLabelWidthProperty = DependencyProperty.Register("MinBeginLabelWidth", typeof(int), typeof(RechargeableBoxes), new FrameworkPropertyMetadata(0, new PropertyChangedCallback(OnMinBeginLabelWidthChanged)));
 		
 		public static readonly DependencyProperty BeginLabelProperty = DependencyProperty.Register("BeginLabel", typeof(string), typeof(RechargeableBoxes), new FrameworkPropertyMetadata("", new PropertyChangedCallback(OnBeginLabelChanged)));
@@ -29,7 +43,8 @@ namespace DndUI
 		public static readonly DependencyProperty MaxChargesProperty = DependencyProperty.Register("MaxCharges", typeof(int), typeof(RechargeableBoxes), new FrameworkPropertyMetadata(0, new PropertyChangedCallback(OnMaxChargesChanged)));
 
 
-		public static readonly DependencyProperty ChargesProperty = DependencyProperty.Register("Charges", typeof(int), typeof(RechargeableBoxes), new FrameworkPropertyMetadata(0, new PropertyChangedCallback(OnChargesChanged)));
+		public static readonly DependencyProperty ChargesUsedProperty = DependencyProperty.Register("ChargesUsed", typeof(int), typeof(RechargeableBoxes), new FrameworkPropertyMetadata(0, new PropertyChangedCallback(OnChargesUsedChanged)));
+		bool updatingInternally;
 
 
 		private static void OnMinBeginLabelWidthChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
@@ -78,22 +93,42 @@ namespace DndUI
 		{
 			spBoxes.Children.Clear();
 			for (int i = 0; i < newValue; i++)
-				spBoxes.Children.Add(new CheckBox());
+			{
+				CheckBox checkbox = new CheckBox();
+				checkbox.Checked += Checkbox_Checked;
+				checkbox.Unchecked += Checkbox_Unchecked;
+				spBoxes.Children.Add(checkbox);
+			}
 
 			UpdateCharges();
 		}
 
-		private static void OnChargesChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+		private void Checkbox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			if (updatingInternally)
+				return;
+			ChargesUsed--;
+		}
+
+		private void Checkbox_Checked(object sender, RoutedEventArgs e)
+		{
+			if (updatingInternally)
+				return;
+			ChargesUsed++;
+		}
+
+		private static void OnChargesUsedChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
 		{
 			RechargeableBoxes rechargeableBoxes = o as RechargeableBoxes;
 			if (rechargeableBoxes != null)
-				rechargeableBoxes.OnChargesChanged((int)e.OldValue, (int)e.NewValue);
+				rechargeableBoxes.OnChargesUsedChanged((int)e.OldValue, (int)e.NewValue);
 		}
 
-		protected virtual void OnChargesChanged(int oldValue, int newValue)
+		protected virtual void OnChargesUsedChanged(int oldValue, int newValue)
 		{
-			// TODO: Add your property changed side-effects. Descendants can override as well.
+			TriggerChargesChanged();
 			UpdateCharges();
+
 		}
 
 		public int MinBeginLabelWidth
@@ -145,18 +180,21 @@ namespace DndUI
 				SetValue(MaxChargesProperty, value);
 			}
 		}
-		public int Charges
+		public int ChargesUsed
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
 			get
 			{
-				return (int)GetValue(ChargesProperty);
+				return (int)GetValue(ChargesUsedProperty);
 			}
 			set
 			{
-				SetValue(ChargesProperty, value);
+				SetValue(ChargesUsedProperty, value);
 			}
 		}
+
+		public string Key { get; set; }
+		public int PlayerId { get; set; }
 
 		public RechargeableBoxes()
 		{
@@ -165,11 +203,19 @@ namespace DndUI
 
 		void UpdateCharges()
 		{
-			for (int i = 0; i < spBoxes.Children.Count; i++)
+			updatingInternally = true;
+			try
 			{
-				UIElement uIElement = spBoxes.Children[i];
-				if (uIElement is CheckBox checkBox)
-					checkBox.IsChecked = i < Charges;
+				for (int i = 0; i < spBoxes.Children.Count; i++)
+				{
+					UIElement uIElement = spBoxes.Children[i];
+					if (uIElement is CheckBox checkBox)
+						checkBox.IsChecked = i < ChargesUsed;
+				}
+			}
+			finally
+			{
+				updatingInternally = false;
 			}
 		}
 	}

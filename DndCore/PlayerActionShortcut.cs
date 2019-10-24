@@ -320,10 +320,10 @@ namespace DndCore
 						}
 					}
 					else
-						results.Add(FromSpell(shortcutDto, player, spell));
+						results.Add(FromSpell(shortcutDto, player, spell, spell.Level));
 				}
 				else
-					results.Add(FromSpell(shortcutDto, player, spell));
+					results.Add(FromSpell(shortcutDto, player, spell, spell.Level));
 			}
 		}
 

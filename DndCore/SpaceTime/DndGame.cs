@@ -160,6 +160,8 @@ namespace DndCore
 			player.StateChanged += Player_StateChanged;
 			player.RollDiceRequest += Player_RollDiceRequest ;
 			player.SpellDispelled += Player_SpellDispelled;
+			player.AddSpellSlots();
+			player.SetTimeBasedEvents();
 			Players.Add(player);
 			return player;
 		}
@@ -297,6 +299,7 @@ namespace DndCore
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
+			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			if (castingSpells.IndexOf(castedSpell) >= 0)
 				castingSpells.Remove(castedSpell);
 
@@ -530,6 +533,20 @@ namespace DndCore
 		public void ClearAllAlarms()
 		{
 			timeClock.ClearAllAlarms();
+		}
+		public void RechargePlayersAfterLongRest()
+		{
+			foreach (Character player in Players)
+			{
+				player.RechargeAfterLongRest();
+			}
+		}
+		public void RechargePlayersAfterShortRest()
+		{
+			foreach (Character player in Players)
+			{
+				player.RechargeAfterShortRest();
+			}
 		}
 	}
 }

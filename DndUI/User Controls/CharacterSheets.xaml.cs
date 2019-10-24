@@ -23,6 +23,14 @@ namespace DndUI
 	{
 		public delegate void SkillCheckEventHandler(object sender, SkillCheckEventArgs e);
 		public delegate void AbilityEventHandler(object sender, AbilityEventArgs e);
+		public delegate void ChargesChangedEventHandler(object sender, ChargesChangedEventArgs e);
+
+		public event ChargesChangedEventHandler ChargesChanged;
+
+		protected virtual void OnChargesChanged(object sender, ChargesChangedEventArgs e)
+		{
+			ChargesChanged?.Invoke(sender, e);
+		}
 
 		public static readonly RoutedEvent SavingThrowConsideredEvent = EventManager.RegisterRoutedEvent("SavingThrowConsidered", RoutingStrategy.Bubble, typeof(AbilityEventHandler), typeof(CharacterSheets));
 
@@ -132,7 +140,7 @@ namespace DndUI
 				typeof(RoutedEventHandler), typeof(CharacterSheets));
 
 		public static readonly RoutedEvent PreviewPageChangedEvent = EventManager.RegisterRoutedEvent("PreviewPageChanged", RoutingStrategy.Tunnel, typeof(RoutedEventHandler), typeof(CharacterSheets));
-		int playerID;
+		public int playerID;
 		int headshotIndex;
 
 		public event RoutedEventHandler PageChanged
@@ -441,6 +449,11 @@ namespace DndUI
 
 		void AddRechargeables(Character character)
 		{
+			AddSpellSlots(character);
+		}
+
+		private void AddSpellSlots(Character character)
+		{
 			int[] spellSlotLevels = character.GetSpellSlotLevels();
 			for (int i = 1; i < spellSlotLevels.Length; i++)
 			{
@@ -460,11 +473,21 @@ namespace DndUI
 					case 9: rechargeable.BeginLabel = "9th: "; break;
 				}
 				rechargeable.MaxCharges = spellSlotLevels[i];
-				rechargeable.Tag = i;
+				rechargeable.Key = $"SpellSlots{i}";
+				rechargeable.PlayerId = character.playerID;
 				rechargeable.MinBeginLabelWidth = 30;
+				rechargeable.ChargesChanged += Rechargeable_ChargesChanged;
 				spSpellSlots.Children.Add(rechargeable);
 			}
 		}
+
+		private void Rechargeable_ChargesChanged(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is RechargeableBoxes rechargeableBoxes))
+				return;
+			OnChargesChanged(this, new ChargesChangedEventArgs(rechargeableBoxes.Key, rechargeableBoxes.ChargesUsed));
+		}
+
 		public void SetFromCharacter(Character character)
 		{
 			changingInternally = true;
@@ -919,6 +942,28 @@ namespace DndUI
 		private void PageSpells_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			OnPageBackgroundClicked();
+		}
+
+		public void UpdateSpellSlots(string key, int newValue)
+		{
+			foreach (UIElement uIElement in spSpellSlots.Children)
+			{
+				if (uIElement is RechargeableBoxes rechargeable)
+				{
+					if (rechargeable.Key == key)
+					{
+						rechargeable.ChargesUsed = newValue;
+						return;
+					}
+				}
+			}
+		}
+
+		public void ClearAllSpellSlots()
+		{
+			foreach (UIElement uIElement in spSpellSlots.Children)
+				if (uIElement is RechargeableBoxes rechargeable)
+					rechargeable.ChargesUsed = 0;
 		}
 	}
 }

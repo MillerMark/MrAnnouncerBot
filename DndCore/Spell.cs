@@ -242,6 +242,7 @@ namespace DndCore
 			if (spellDuration.StartsWith(concentrationHeader))
 				spellDuration = spellDuration.Substring(concentrationHeader.Length).Trim();
 
+			int spellLevel = GetLevel(spellDto.level);
 			Spell spell = new Spell()
 			{
 				CastingTime = GetCastingTime(spellDto.casting_time),
@@ -249,7 +250,7 @@ namespace DndCore
 				Description = spellDto.description,
 				Duration = DndTimeSpan.FromDurationStr(spellDuration),
 				Material = spellDto.components_materials_description,
-				Level = GetLevel(spellDto.level),
+				Level = spellLevel,
 				Name = spellDto.name,
 				RangeType = GetRangeType(spellDto),
 				SpellType = GetSpellType(spellDto),
@@ -260,7 +261,7 @@ namespace DndCore
 				BonusPerLevel = spellDto.bonus_per_level,
 				PerLevelBonus = spellDto.bonus_per_level.GetFirstDouble(),
 				SpellCasterLevel = spellCasterLevel,
-				SpellSlotLevel = spellSlotLevel,
+				SpellSlotLevel = spellSlotLevel >= 0 ? spellSlotLevel: spellLevel,
 				OnCast = spellDto.onCast,
 				OnCasting = spellDto.onCasting,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
@@ -273,7 +274,7 @@ namespace DndCore
 				CastWith = spellDto.cast_with,
 				AvailableWhen = spellDto.availableWhen
 			};
-			spell.RecalculateDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
+			spell.RecalculateDieStr(spell.SpellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
 			return spell;
 		}

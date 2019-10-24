@@ -303,5 +303,14 @@ namespace DndCore
 		{
 			return Enum.GetName(typeof(DiceRollType), diceRollType);
 		}
+		public static string ToVarName(string itemName)
+		{
+			string[] words = itemName.Split(' ');
+			for (int i = 0; i < words.Length; i++)
+			{
+				words[i] = words[i].InitialCap();
+			}
+			return string.Join("", words);
+		}
 	}
 }
