@@ -19,6 +19,16 @@ namespace DndCore
 	
 	public static class DndUtils
 	{
+		public static string GetFirstName(string name)
+		{
+			if (name == null)
+				return "No name";
+			int spaceIndex = name.IndexOf(' ');
+			if (spaceIndex < 0)
+				return name;
+			return name.Substring(0, spaceIndex);
+		}
+
 		public static string InjectParameters(string expression, List<string> parameters, List<string> arguments)
 		{
 			for (int i = 0; i < parameters.Count; i++)
@@ -79,8 +89,10 @@ namespace DndCore
 
 		public static int GetAvailableSpellSlots(CharacterClass characterClass, int slotLevel)
 		{
+			// BUG: We need to use the spellcasting level of the player for the specific spell that is being cast, not the overall characterClass level.
 			return GetAvailableSpellSlots(characterClass.Name, characterClass.Level, slotLevel);
 		}
+
 		public static double PlatinumPiecesToGoldPieces(double platinumPieces)
 		{
 			return platinumPieces * 10;
@@ -311,6 +323,60 @@ namespace DndCore
 				words[i] = words[i].InitialCap();
 			}
 			return string.Join("", words);
+		}
+
+		public static string GetSpellSlotLevelKey(int spellSlotLevel)
+		{
+			return $"SpellSlots{spellSlotLevel}";
+		}
+
+		public static string GetOrdinal(int i)
+		{
+			switch (i)
+			{
+				case 1: return "1st";
+				case 2: return "2nd";
+				case 3: return "3rd";
+			}
+
+			return $"{i}th";
+		}
+
+		public static Class ToClass(string name)
+		{
+			string matchingName = name.ToLower();
+			switch (matchingName)
+			{
+				case "artificer": return Class.Artificer;
+				case "barbarian": return Class.Barbarian;
+				case "bard": return Class.Bard;
+				case "bloodHunter": return Class.BloodHunter;
+				case "cleric": return Class.Cleric;
+				case "druid": return Class.Druid;
+				case "fighter": return Class.Fighter;
+				case "monk": return Class.Monk;
+				case "paladin": return Class.Paladin;
+				case "ranger": return Class.Ranger;
+				case "rogue": return Class.Rogue;
+				case "sorcerer": return Class.Sorcerer;
+				case "warlock": return Class.Warlock;
+				case "wizard": return Class.Wizard;
+			}
+			return Class.None;
+		}
+
+		public static SubClass ToSubClass(string name)
+		{
+			string matchingName = name.Replace(" ", "").Replace("/", "_").ToLower();
+			Array values = Enum.GetValues(typeof(SubClass));
+			foreach (SubClass value in values)
+			{
+				string compareValue = value.ToString().ToLower();
+				if (matchingName == compareValue)
+					return value;
+			}
+
+			return SubClass.None;
 		}
 	}
 }

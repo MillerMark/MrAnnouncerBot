@@ -6,18 +6,29 @@ namespace DndCore
 {
 	public static class AllSpells
 	{
-
-		static AllSpells()
+		public static void Invalidate()
 		{
-			LoadData();
+			spells = null;
 		}
-
-		public static void LoadData()
+		static void LoadData()
 		{
 			Spells = CsvData.Get<SpellDto>(Folders.InCoreData("DnD - Spells.csv"));
 		}
 
-		public static List<SpellDto> Spells { get; private set; }
+		static List<SpellDto> spells;
+		public static List<SpellDto> Spells
+		{
+			get
+			{
+				if (spells == null)
+					LoadData();
+				return spells;
+			}
+			private set
+			{
+				spells = value;
+			}
+		}
 
 		public static Spell Get(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
@@ -42,11 +53,18 @@ namespace DndCore
 		}
 		public static Spell Get(string spellName, Character character, int spellSlotLevel = 0)
 		{
-			return Get(spellName, spellSlotLevel, character.level, character.GetSpellcastingAbilityModifier());
+			return Get(spellName, spellSlotLevel, character.GetSpellcastingLevel(), character.GetSpellcastingAbilityModifier());
 		}
 		public static List<Spell> GetAll(string spellName, Character character, int spellSlotLevel = 0)
 		{
-			return GetAll(spellName, spellSlotLevel, character.level, character.GetSpellcastingAbilityModifier());
+			int spellLevel = 0;
+			int spellcastingAbilityModifier = 0;
+			if (character != null)
+			{
+				spellLevel = character.GetSpellcastingLevel();
+				spellcastingAbilityModifier = character.GetSpellcastingAbilityModifier();
+			}
+			return GetAll(spellName, spellSlotLevel, spellLevel, spellcastingAbilityModifier);
 		}
 	}
 }

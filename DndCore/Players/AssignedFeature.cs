@@ -16,9 +16,9 @@ namespace DndCore
 			Args = new List<string>();
 		}
 
-		public bool ConditionsSatisfied()
+		public bool ShouldActivateNow()
 		{
-			return Feature.ConditionsSatisfied(Args, Player);
+			return Feature.ShouldActivateNow(Args, Player);
 		}
 
 		static AssignedFeature From(Feature feature, string[] arguments, Character player)
@@ -67,14 +67,18 @@ namespace DndCore
 			Feature.Deactivate(GetArgStr(), Player, forceDeactivation);
 		}
 
-		public bool HasConditions()
+		public bool ActivatesConditionally()
 		{
-			return !string.IsNullOrWhiteSpace(Feature.Conditions);
+			return !string.IsNullOrWhiteSpace(Feature.ActivateWhen);
 		}
 
 		public void SpellJustCast(Character player, CastedSpell spell)
 		{
 			Feature.SpellJustCast(GetArgStr(), player, spell);
+		}
+		public void StartGame(Character player)
+		{
+			Feature.StartGame(GetArgStr(), player);
 		}
 
 		public void WeaponJustSwung(Character player)
@@ -88,6 +92,39 @@ namespace DndCore
 		public void RollIsComplete(Character player)
 		{
 			Feature.RollIsComplete(GetArgStr(), player);
+		}
+
+		public void ActivateIfAlwaysOn()
+		{
+			if (Feature.AlwaysOn)
+				Activate(true);
+		}
+
+		public void ActivateIfConditionallySatisfied()
+		{
+			if (Feature.AlwaysOn)
+				return;
+
+			if (Feature.RequiresPlayerActivation)
+				return;
+
+			if (ActivatesConditionally())
+				if (ShouldActivateNow())
+					Activate();
+				else
+					Deactivate();
+		}
+		public void TestEvaluateAllExpressions(Character player)
+		{
+			ShouldActivateNow();
+			StartGame(player);
+			Activate(true);
+			CastedSpell castedSpell = new CastedSpell(AllSpells.Get("Magic Missile"), player);
+			SpellJustCast(player, castedSpell);
+			WeaponJustSwung(player);
+			PlayerStartsTurn(player);
+			RollIsComplete(player);
+			Deactivate(true);
 		}
 	}
 }

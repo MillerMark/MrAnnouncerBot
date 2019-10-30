@@ -73,10 +73,12 @@ namespace DndCore
 		public string TrailingEffects { get; set; }
 		public string DieRollEffects { get; set; }
 		public CarriedWeapon CarriedWeapon { get; set; }
+		public string AvailableWhen { get; set; }
 		public string lastPrefix;
 
 		public PlayerActionShortcut()
 		{
+			AvailableWhen = string.Empty;
 			AttackingAbility = Ability.none;  // Calculated later.
 			WeaponProperties = WeaponProperties.None;
 			ModifiesExistingRoll = false;
@@ -229,32 +231,35 @@ namespace DndCore
 			Dice = Spell.DieStr;
 			Part = DndUtils.ToTurnPart(Spell.CastingTime);
 		}
+
+		// This seems to be the problem - we are adding effects to the PlayerActionShortcutDto instead of passing in an ItemEffect.
 		public void AddEffect(PlayerActionShortcutDto shortcutDto, string windupPrefix, Character player, int slotLevel = 0, bool isWindup = false)
 		{
-			if (isWindup)
-			{
-				if (!windupPrefix.StartsWith("Windup."))
-					windupPrefix = "Windup." + windupPrefix;
-			}
-			
-			lastPrefix = windupPrefix;
-			int minSlotLevel = MathUtils.GetInt(shortcutDto.minSlotLevel);
-			if (slotLevel < minSlotLevel)
-				return;
+			return;
+			//if (isWindup)
+			//{
+			//	if (!windupPrefix.StartsWith("Windup."))
+			//		windupPrefix = "Windup." + windupPrefix;
+			//}
+			//
+			//lastPrefix = windupPrefix;
+			//int minSlotLevel = MathUtils.GetInt(shortcutDto.minSlotLevel);
+			//if (slotLevel < minSlotLevel)
+			//	return;
 
-			WindupDto windup = WindupDto.From(shortcutDto, player);
+			//WindupDto windup = WindupDto.From(shortcutDto, player);
 
-			if (windup == null)
-				return;
+			//if (windup == null)
+			//	return;
 
-			string shortcutName = shortcutDto.name;
-			if (string.IsNullOrWhiteSpace(shortcutName))
-				shortcutName = this.Name;
+			//string shortcutName = shortcutDto.name;
+			//if (string.IsNullOrWhiteSpace(shortcutName))
+			//	shortcutName = this.Name;
 
-			windup.Name = windupPrefix + shortcutName;
-			if (Spell?.Duration.HasValue() == true)
-				windup.Lifespan = 0;
-			Windups.Add(windup);
+			//windup.Name = windupPrefix + shortcutName;
+			//if (Spell?.Duration.HasValue() == true)
+			//	windup.Lifespan = 0;
+			//Windups.Add(windup);
 		}
 
 		public static List<PlayerActionShortcut> From(PlayerActionShortcutDto shortcutDto)
@@ -334,21 +339,21 @@ namespace DndCore
 				if ((weapon.weaponProperties & WeaponProperties.Melee) == WeaponProperties.Melee &&
 						(weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged)
 				{
-					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
-					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
-					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
 				}
 				else
 				{
-					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
-					results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
 				}
 
 			}
 			else if ((weapon.weaponProperties & WeaponProperties.TwoHanded) == WeaponProperties.TwoHanded)
-				results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
+				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
 			else
-				results.Add(FromWeapon(weapon.StandardName, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
+				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
 		}
 
 		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
@@ -392,6 +397,12 @@ namespace DndCore
 			AttackingAbility = player.attackingAbility;
 		}
 
+		static void AddItemEffect(List<PlayerActionShortcut> shortcuts, ItemEffect itemEffect)
+		{
+			foreach (PlayerActionShortcut playerActionShortcut in shortcuts)
+				playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.Name));
+		}
+
 		public static List<PlayerActionShortcut> FromItemSpellEffect(string spellName, ItemEffect spellEffect, Character player)
 		{
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
@@ -428,6 +439,8 @@ namespace DndCore
 				oneSpell.Add(spell);
 				AddSpellShortcuts(dto, results, player, oneSpell);
 			}
+
+			AddItemEffect(results, spellEffect);
 			
 			return results;
 		}
@@ -436,12 +449,12 @@ namespace DndCore
 		{
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
 			//Weapon weapon = AllWeapons.Get(weaponEffect.name);
-			Weapon weapon = AllWeapons.Get(carriedWeapon.Weapon.StandardName);
+			Weapon weapon = AllWeapons.Get(carriedWeapon.Weapon.Name);
 			PlayerActionShortcutDto dto = new PlayerActionShortcutDto();
 			if (!string.IsNullOrWhiteSpace(carriedWeapon.Name))
 				dto.name = carriedWeapon.Name;
 			else
-				dto.name = weapon.StandardName;
+				dto.name = weapon.Name;
 
 			//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
 
@@ -450,32 +463,41 @@ namespace DndCore
 			dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.Attack);
 
 			SetWeaponHitTime(dto, weapon);
+			dto.plusModifier = carriedWeapon.HitDamageBonus.ToString();
 			AddWeaponShortcuts(dto, results, weapon, player);
+			foreach (PlayerActionShortcut playerActionShortcut in results)
+			{
+				playerActionShortcut.CarriedWeapon = carriedWeapon;
+				playerActionShortcut.PlusModifier = carriedWeapon.HitDamageBonus;
+				playerActionShortcut.UsesMagic = carriedWeapon.HitDamageBonus > 0;
+			}
+
+			AddItemEffect(results, weaponEffect);
 			return results;
 		}
 
+		// We may be able to safely remove this.
 		private static void SetDtoFromEffect(PlayerActionShortcutDto dto, ItemEffect itemEffect)
 		{
-			if (itemEffect == null)
-				return;
-			dto.brightness = itemEffect.brightness.ToString();
-			dto.degreesOffset = itemEffect.degreesOffset.ToString();
-			dto.dieRollEffects = itemEffect.dieRollEffects;
-			dto.effect = itemEffect.effect;
-			dto.endSound = itemEffect.endSound;
-			dto.flipHorizontal = MathUtils.BoolToStr(itemEffect.flipHorizontal);
-			dto.endSound = itemEffect.endSound;
-			dto.hue = itemEffect.hue;
-			dto.moveLeftRight = itemEffect.moveLeftRight.ToString();
-			dto.moveUpDown = itemEffect.moveUpDown.ToString();
-			dto.opacity = itemEffect.opacity.ToString();
-			dto.playToEndOnExpire = MathUtils.BoolToStr(itemEffect.playToEndOnExpire);
-			dto.rotation = itemEffect.rotation.ToString();
-			dto.saturation = itemEffect.saturation.ToString();
-			dto.scale = itemEffect.scale.ToString();
-			dto.startSound = itemEffect.startSound;
-			dto.trailingEffects = itemEffect.trailingEffects;
-			dto.vantageMod = DndUtils.VantageToStr(VantageKind.Normal);
+			//if (itemEffect == null)
+			//	return;
+			//dto.brightness = itemEffect.brightness.ToString();
+			//dto.degreesOffset = itemEffect.degreesOffset.ToString();
+			//dto.dieRollEffects = itemEffect.dieRollEffects;
+			//dto.effect = itemEffect.effect;
+			//dto.endSound = itemEffect.endSound;
+			//dto.flipHorizontal = MathUtils.BoolToStr(itemEffect.flipHorizontal);
+			//dto.endSound = itemEffect.endSound;
+			//dto.hue = itemEffect.hue;
+			//dto.moveLeftRight = itemEffect.moveLeftRight.ToString();
+			//dto.moveUpDown = itemEffect.moveUpDown.ToString();
+			//dto.opacity = itemEffect.opacity.ToString();
+			//dto.playToEndOnExpire = MathUtils.BoolToStr(itemEffect.playToEndOnExpire);
+			//dto.rotation = itemEffect.rotation.ToString();
+			//dto.saturation = itemEffect.saturation.ToString();
+			//dto.scale = itemEffect.scale.ToString();
+			//dto.startSound = itemEffect.startSound;
+			//dto.trailingEffects = itemEffect.trailingEffects;
 		}
 
 		static void SetWeaponHitTime(PlayerActionShortcutDto dto, Weapon weapon)
@@ -585,6 +607,7 @@ namespace DndCore
 				result.Name = feature.Name;
 			else
 				result.Name = feature.ShortcutName;
+			result.AvailableWhen = feature.ShortcutAvailableWhen;
 			result.UsesMagic = feature.Magic;
 			result.Part = feature.ActivationTime;
 			result.PlayerId = player.playerID;

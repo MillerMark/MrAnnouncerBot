@@ -11,6 +11,9 @@ namespace DndCore
 			LevelChanged?.Invoke(sender, ea);
 		}
 		public string Name { get; set; }
+		public Class Class { get; set; }
+		public SubClass SubClass { get; set; }
+
 		int level;
 		public int Level
 		{
@@ -34,6 +37,7 @@ namespace DndCore
 		public CharacterClass(string name, int level, string hitDice = "")
 		{
 			Name = name;
+			Class = DndUtils.ToClass(name);
 			Level = level;
 			HitDice = hitDice;
 		}

@@ -7,6 +7,7 @@ namespace DndCore
 	{
 		public string name { get; set; }
 		public string index { get; set; }
+		public string kind { get; set; }
 		public string effect { get; set; }
 		public string effectAvailableWhen { get; set; }
 		public string playToEndOnExpire { get; set; }
@@ -25,6 +26,9 @@ namespace DndCore
 		public string trailingEffects { get; set; }
 		public string startSound { get; set; }
 		public string endSound { get; set; }
+		public string lifespan { get; set; }
+		public string fadeIn { get; set; }
+		public string fadeOut { get; set; }
 
 		public ItemEffectDto()
 		{

@@ -219,7 +219,7 @@ namespace DndCore
 
 		public Attack GetAttack()
 		{
-			Attack attack = new Attack(StandardName);
+			Attack attack = new Attack(Name);
 
 
 			attack.damages = GetListOf(Damages);
@@ -281,7 +281,7 @@ namespace DndCore
 		//}
 		public void SetFromAttack(Attack attack)
 		{
-			StandardName = attack.Name;
+			Name = attack.Name;
 			type.Value = attack.type;
 			SetFrom(Damages, attack.damages);
 			Description = attack.description;

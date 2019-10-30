@@ -32,7 +32,7 @@ namespace DndCore
 
 		public ItemViewModel(string name)
 		{
-			StandardName = name;
+			Name = name;
 		}
 
 		public override void AfterLoad()
@@ -44,7 +44,7 @@ namespace DndCore
 		{
 			foreach (ModViewModel modViewModel in mods)
 			{
-				if (modViewModel.StandardName == name)
+				if (modViewModel.Name == name)
 					return modViewModel;
 			}
 			return null;

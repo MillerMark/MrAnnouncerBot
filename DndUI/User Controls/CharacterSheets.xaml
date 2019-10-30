@@ -576,7 +576,7 @@
 			<local:StatBox x:Name="statSpellcastingAbility" Margin="98,18,0,0" Width="90" Height="18" Text="Intelligence" FocusItem="SpellcastingAbility"/>
 			<local:StatBox x:Name="statSpellSaveDC" Margin="95,59,0,0" Width="20" Height="18" Text="22" FocusItem="SpellSaveDC"/>
 			<local:StatBox x:Name="statSpellAttackBonus" Margin="144,59,0,0" Width="50" Height="18" Text="+3" FocusItem="SpellAttackBonus"/>
-			<StackPanel x:Name="spSpellSlots" Orientation="Vertical" Margin="20, 130, 0, 0"/>
+			<StackPanel x:Name="spSpellSlots" Orientation="Vertical" Margin="15, 115, 0, 0"/>
 		</local:GridSheet>
 
 	</Grid>

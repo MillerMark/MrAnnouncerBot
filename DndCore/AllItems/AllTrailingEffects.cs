@@ -6,15 +6,14 @@ namespace DndCore
 {
 	public static class AllTrailingEffects
 	{
-		static AllTrailingEffects()
+		public static void Invalidate()
 		{
-			TrailingEffects = new List<TrailingEffect>();
-			LoadData();
+			trailingEffects = null;
 		}
 
-		public static void LoadData()
+		static void LoadData()
 		{
-			TrailingEffects.Clear();
+			trailingEffects = new List<TrailingEffect>();
 			List<TrailingEffectsDto> trailingEffectsDtos = CsvData.Get<TrailingEffectsDto>(Folders.InCoreData("DnD - TrailingEffects.csv"), false);
 			foreach (TrailingEffectsDto trailingEffect in trailingEffectsDtos)
 			{
@@ -22,8 +21,20 @@ namespace DndCore
 			}
 		}
 
-		public static List<TrailingEffect> TrailingEffects { get; private set; }
-
+		static List<TrailingEffect> trailingEffects;
+		public static List<TrailingEffect> TrailingEffects
+		{
+			get
+			{
+				if (trailingEffects == null)
+					LoadData();
+				return trailingEffects;
+			}
+			private set
+			{
+				trailingEffects = value;
+			}
+		}
 		public static TrailingEffect Get(string effectName)
 		{
 			return TrailingEffects.FirstOrDefault(x => x.Name == effectName);

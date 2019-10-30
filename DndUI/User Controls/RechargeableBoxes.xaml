@@ -29,10 +29,8 @@
 			</Setter>
 		</Style>
 	</UserControl.Resources>
-	<StackPanel x:Name="spRechargeable" Orientation="Horizontal" Width="Auto">
+	<WrapPanel x:Name="spRechargeable" Orientation="Horizontal" Width="Auto" MaxWidth="240" MinWidth="100" Height="Auto" Margin="0,2,0,3">
 		<TextBlock x:Name="tbLabelBegin" Text="" Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="4,0,0,0"/>
-		<StackPanel x:Name="spBoxes" Orientation="Horizontal">
-		</StackPanel>
 		<TextBlock x:Name="tbLabelEnd" Text="" Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="3,0,4,0"/>
-	</StackPanel>
+	</WrapPanel>
 </UserControl>

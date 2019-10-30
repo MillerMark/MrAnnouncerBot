@@ -36,7 +36,7 @@ namespace DndTests
 		public void TestMapAndRoomActivation()
 		{
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			DndMap map = game.AddMap(new DndMap("Caves of the Wandering Winds"));
 			DndRoom wizardsWorkshop = map.AddRoom(new DndRoom("Wizard's Workshop"));
 			Assert.IsNull(game.ActiveMap);
@@ -53,7 +53,7 @@ namespace DndTests
 		public void TestPositionCreatures()
 		{
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			Character alice = game.AddPlayer(CharacterBuilder.BuildTestBarbarian("a"));
 			Character betty = game.AddPlayer(CharacterBuilder.BuildTestDruid("b"));
 			Character charlie = game.AddPlayer(CharacterBuilder.BuildTestElf("c"));
@@ -94,16 +94,16 @@ namespace DndTests
 		[TestMethod]
 		public void TestTurnEvents()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			Character ava = game.AddPlayer(AllPlayers.GetFromId(PlayerID.Ava));
 			Monster joe = game.AddMonster(MonsterBuilder.BuildVineBlight("Joe"));
-			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword, +1");
+			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword");
 
 			game.EnteringCombat();
 			Assert.IsNull(game.ActiveCreature);
-			ava.StartTurn();
+			ava.TestStartTurn();
 			Assert.AreEqual(ava, game.ActiveCreature);
 			ava.WillAttack(joe, greatsword);
 			game.SetHiddenThreshold(ava, 12, DiceRollType.Attack);

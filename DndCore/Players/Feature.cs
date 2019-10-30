@@ -8,6 +8,11 @@ namespace DndCore
 	{
 		public static event FeatureEventHandler FeatureActivated;
 		public static event FeatureEventHandler FeatureDeactivated;
+		public static event MessageEventHandler RequestMessageToDungeonMaster;
+		protected static void OnRequestMessageToDungeonMaster(Feature feature, string message)
+		{
+			RequestMessageToDungeonMaster?.Invoke(feature, new MessageEventArgs(message));
+		}
 		public static void OnFeatureActivated(object sender, FeatureEventArgs ea)
 		{
 			FeatureActivated?.Invoke(sender, ea);
@@ -21,7 +26,8 @@ namespace DndCore
 
 		}
 
-		public string Conditions { get; set; }
+		public string ActivateWhen { get; set; }
+		public string OnStartGame { get; set; }
 		public DndTimeSpan Duration { get; set; }
 		public bool IsActive { get; private set; }
 		public string Limit { get; set; }  // Could be an expression.
@@ -41,14 +47,26 @@ namespace DndCore
 		public string DeactivationMessage { get; set; }
 		public TurnPart ActivationTime { get; set; }
 		public string ShortcutName { get; set; }
+		public string ShortcutAvailableWhen { get; set; }
 		public bool Magic { get; set; }
 
+		public bool AlwaysOn
+		{
+			get
+			{
+				string conditions = ActivateWhen;
+				if (conditions == null)
+					return false;
+				return conditions.Trim().ToLower() == "true";
+			}
+		}
 		public static Feature FromDto(FeatureDto featureDto)
 		{
 			Feature result = new Feature();
 			result.Name = DndUtils.GetName(featureDto.Name);
 			result.Parameters = DndUtils.GetParameters(featureDto.Name);
-			result.Conditions = featureDto.Conditions;
+			result.ActivateWhen = featureDto.ActivateWhen;
+			result.OnStartGame = featureDto.OnStartGame;
 			result.Description = featureDto.Description;
 			result.OnActivate = featureDto.OnActivate;
 			result.ActivationMessage = featureDto.ActivationMessage;
@@ -60,13 +78,13 @@ namespace DndCore
 			result.OnPlayerSaves = featureDto.OnPlayerSaves;
 			result.OnRollComplete = featureDto.OnRollComplete;
 			result.ShortcutName = featureDto.ShortcutName;
+			result.ShortcutAvailableWhen = featureDto.ShortcutAvailableWhen;
 			result.Magic = MathUtils.IsChecked(featureDto.Magic);
 			result.ActivationTime = PlayerActionShortcut.GetTurnPart(featureDto.ActivationTime);
 			result.RequiresPlayerActivation = MathUtils.IsChecked(featureDto.RequiresActivation);
 			result.Duration = DndTimeSpan.FromDurationStr(featureDto.Duration);
 			result.Per = DndTimeSpan.FromDurationStr(featureDto.Per);
 			result.Limit = featureDto.Limit;
-			// Left off here.
 			return result;
 		}
 
@@ -74,10 +92,17 @@ namespace DndCore
 		{
 			if (IsActive && !forceActivation)
 				return;
-			if (player != null)
-				History.Log($"Activating {player.name}'s {Name}.");
+
+			string activationMessage;
+			if (!string.IsNullOrWhiteSpace(ActivationMessage))
+			{
+				activationMessage = Expressions.GetStr(DndUtils.InjectParameters(ActivationMessage, Parameters, arguments), player);
+			}
+			else if (player != null)
+				activationMessage = $"Activating {player.name}'s {Name}.";
 			else
-				History.Log($"Activating {Name}.");
+				activationMessage = $"Activating {Name}.";
+
 			IsActive = true;
 			if (Duration.HasValue())
 			{
@@ -86,35 +111,49 @@ namespace DndCore
 			}
 			if (!string.IsNullOrWhiteSpace(OnActivate))
 				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);
+			OnRequestMessageToDungeonMaster(this, activationMessage);
 			OnFeatureActivated(player, new FeatureEventArgs(this));
-		}
-
-		private void Feature_Expired(object sender, DndTimeEventArgs ea)
-		{
-			if (IsActive)
-				Deactivate(string.Empty, ea.Alarm.Player);
-		}
-
-		public bool ConditionsSatisfied(List<string> args, Character player)
-		{
-			if (string.IsNullOrWhiteSpace(Conditions))
-				return true;
-
-			return Expressions.GetBool(DndUtils.InjectParameters(Conditions, Parameters, args), player);
 		}
 
 		public void Deactivate(string arguments, Character player, bool forceDeactivation = false)
 		{
 			if (!IsActive && !forceDeactivation)
 				return;
-			if (player != null)
-				History.Log($"Deactivating {player.name}'s {Name}.");
+			string deactivationMessage;
+			if (!string.IsNullOrWhiteSpace(DeactivationMessage))
+			{
+				deactivationMessage = Expressions.GetStr(DndUtils.InjectParameters(DeactivationMessage, Parameters, arguments), player);
+			}
+			else if (player != null)
+				deactivationMessage = $"Deactivating {player.name}'s {Name}.";
 			else
-				History.Log($"Deactivating {Name}.");
+				deactivationMessage = $"Deactivating {Name}.";
+
 			IsActive = false;
 			if (!string.IsNullOrWhiteSpace(OnDeactivate))
 				Expressions.Do(DndUtils.InjectParameters(OnDeactivate, Parameters, arguments), player);
+			OnRequestMessageToDungeonMaster(this, deactivationMessage);
 			OnFeatureDeactivated(player, new FeatureEventArgs(this));
+		}
+		private void Feature_Expired(object sender, DndTimeEventArgs ea)
+		{
+			if (IsActive)
+				Deactivate(string.Empty, ea.Alarm.Player);
+		}
+
+		public void StartGame(string arguments, Character player)
+		{
+			if (string.IsNullOrWhiteSpace(OnStartGame))
+				return;
+			Expressions.Do(DndUtils.InjectParameters(OnStartGame, Parameters, arguments), player);
+		}
+
+		public bool ShouldActivateNow(List<string> args, Character player)
+		{
+			if (string.IsNullOrWhiteSpace(ActivateWhen))
+				return true;
+
+			return Expressions.GetBool(DndUtils.InjectParameters(ActivateWhen, Parameters, args), player);
 		}
 
 		public void SpellJustCast(string arguments, Character player, CastedSpell spell)

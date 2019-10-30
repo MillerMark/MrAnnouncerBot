@@ -1,0 +1,39 @@
+Name,DamageOneHanded,DamageTwoHanded,Range,DisadvantageRange,Weight,Ammo,Light,Heavy,TwoHanded,Loading,Martial,Ranged,Melee,Finesse,Reach,Thrown,Special,Versatile,Cost,PropertyDescription
+Battleaxe,1d8(slashing),1d10(slashing),,,4,,,,,,x,,x,,,,,x,10 gp,Versatile (1d10)
+Blowgun,1(piercing),,25,100,1,Dart,,,,x,x,x,,,,,,,10 gp,"Ammunition (range 25/100), loading"
+Club,1d4(bludgeoning),,,,2,,x,,,,,,x,,,,,,1 sp,Light
+"Crossbow, Hand",1d6(piercing),,30,120,3,Bolt,x,,,x,x,x,,,,,,,75 gp,"Ammunition (range 30/120), light, loading"
+"Crossbow, Heavy",,1d10(piercing),100,400,18,Bolt,,x,x,x,x,x,,,,,,,50 gp,"Ammunition (range 100/400), heavy, loading, two-handed"
+"Crossbow, Light",,1d8(piercing),80,320,5,Bolt,,,x,x,,x,,,,,,,25 gp,"Ammunition (range 80/320), loading, two-handed"
+Dagger,1d4(piercing),,20,60,1,,x,,,,,x,x,x,,x,,,2 gp,"Finesse, light, thrown (range 20/60)"
+Dart,1d4(piercing),,20,60,0.25,,,,,,,x,,x,,x,,,5 cp,"Finesse, thrown (range 20/60)"
+Flail,1d8(bludgeoning),,,,2,,,,,,x,,x,,,,,,10 gp,—
+Glaive,,1d10(slashing),,,6,,,x,x,,x,,x,,x,,,,20 gp,"Heavy, reach, two-handed"
+Greataxe,,1d12(slashing),,,7,,,x,x,,x,,x,,,,,,30 gp,"Heavy, two-handed"
+Greatclub,,1d8(bludgeoning),,,10,,,,x,,,,x,,,,,,2 sp,Two-handed
+Greatsword,,2d6(slashing),,,6,,,x,x,,x,,x,,,,,,50 gp,"Heavy, two-handed"
+Halberd,,1d10(slashing),,,6,,,x,x,,x,,x,,x,,,,20 gp,"Heavy, reach, two-handed"
+Handaxe,1d6(slashing),,20,60,2,,x,,,,,x,x,,,x,,,5 gp,"Light, thrown (range 20/60)"
+Javelin,1d6(piercing),,30,120,2,,,,,,,x,x,,,x,,,5 sp,Thrown (range 30/120)
+Lance,1d12(piercing),,,,6,,,,,,x,,x,,x,,x,,10 gp,"Reach, special"
+Light Hammer,1d4(bludgeoning),,20,60,2,,x,,,,,x,x,,,x,,,2 sp,"Light, thrown (range 20/60)"
+Longbow,,1d8(piercing),150,600,2,Arrow,,x,x,,x,x,,,,,,,50 gp,"Ammunition (range 150/600), heavy, two-handed"
+Longsword,1d8(slashing),1d10(slashing),,,3,,,,,,x,,x,,,,,x,15 gp,Versatile (1d10)
+Mace,1d6(bludgeoning),,,,4,,,,,,,,x,,,,,,5 gp,—
+Maul,,2d6(bludgeoning),,,10,,,x,x,,x,,x,,,,,,10 gp,"Heavy, two-handed"
+Morningstar,1d8(piercing),,,,4,,,,,,x,,x,,,,,,15 gp,—
+Net,—,,5,15,3,,,,,,x,x,,,,x,x,,1 gp,"Special, thrown (range 5/15)"
+Pike,,1d10(piercing),,,18,,,x,x,,x,,x,,x,,,,5 gp,"Heavy, reach, two-handed"
+Quarterstaff,1d6(bludgeoning),1d8(bludgeoning),,,4,,,,,,,,x,,,,,x,2 sp,Versatile (1d8)
+Rapier,1d8(piercing),,,,2,,,,,,x,,x,x,,,,,25 gp,Finesse
+Scimitar,1d6(slashing),,,,3,,x,,,,x,,x,x,,,,,25 gp,"Finesse, light"
+Shortbow,,1d6(piercing),80,320,2,Arrow,,,x,,,x,,,,,,,25 gp,"Ammunition (range 80/320), two-handed"
+Shortsword,1d6(piercing),,,,2,,x,,,,x,,x,x,,,,,10 gp,"Finesse, light"
+Sickle,1d4(slashing),,,,2,,x,,,,,,x,,,,,,1 gp,Light
+Sling,1d4(bludgeoning),,30,120,0,Bullet,,,,,,x,,,,,,,1 sp,Ammunition (range 30/120)
+Spear,1d6(piercing),1d8(piercing),20,60,3,,,,,,,x,x,,,x,,x,1 gp,"Thrown (range 20/60), versatile (1d8)"
+Trident,1d6(piercing),1d8(piercing),20,60,4,,,,,,x,x,x,,,x,,x,5 gp,"Thrown (range 20/60), versatile (1d8)"
+Unarmed Strike,1(bludgeoning),,,,0,,,,,,,,x,,,,,,0,
+War Pick,1d8(piercing),,,,2,,,,,,x,,x,,,,,,5 gp,—
+Warhammer,1d8(bludgeoning),1d10(bludgeoning),,,2,,,,,,x,,x,,,,,x,15 gp,Versatile (1d10)
+Whip,1d4(slashing),,,,3,,,,,,x,,x,x,x,,,,2 gp,"Finesse, reach"

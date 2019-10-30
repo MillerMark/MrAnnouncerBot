@@ -9,7 +9,6 @@ namespace DndCore
 
 		static AllFeatures()
 		{
-			LoadData();
 			DndGame.Instance.PlayerStateChanged += Instance_PlayerStateChanged;
 		}
 
@@ -20,10 +19,23 @@ namespace DndCore
 
 		private static void Instance_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
 		{
-			ea.Player.ActivateFeaturesByConditions();
+			ea.Player.ActivateConditionallySatisfiedFeatures();
 		}
 
-		public static List<Feature> Features { get; private set; }
+		static List<Feature> features;
+		public static List<Feature> Features
+		{
+			get
+			{
+				if (features == null)
+					LoadData();
+				return features;
+			}
+			private set
+			{
+				features = value;
+			}
+		}
 
 		public static Feature Get(string featureName)
 		{
@@ -31,13 +43,15 @@ namespace DndCore
 		}
 		static void LoadData(List<FeatureDto> data)
 		{
-			if (Features == null)
-				Features = new List<Feature>();
-			Features.Clear();
+			features = new List<Feature>();
 			foreach (FeatureDto featureDto in data)
 			{
-				Features.Add(Feature.FromDto(featureDto));
+				features.Add(Feature.FromDto(featureDto));
 			}
+		}
+		public static void Invalidate()
+		{
+			features = null;
 		}
 	}
 }

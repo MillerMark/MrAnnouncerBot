@@ -32,7 +32,6 @@ namespace DHDM
 		{
 			Commands.Clear();
 			Commands.Add(new PlayerSelectorCommand());
-			Commands.Add(new SpellSlotSelectorCommand());
 			Commands.Add(new HealthDamageCommand());
 			Commands.Add(new ScrollCloseCommand());
 			Commands.Add(new SkillCheckCommand());

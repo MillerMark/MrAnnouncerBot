@@ -1009,13 +1009,31 @@ namespace MrAnnouncerBot
 
 		}
 
+		private string GetTimeParseFormatExpressionFromWilBennett(string timeString)
+		{
+			void subst(char ch)
+			{
+				var search = $@"(\d+)(?={ch})"; // 1 or more digits followed by ch. e.g. "1h", "22m"
+				var suffix = $@"\"; // \ch. e.g. "\h", "\m"
+														// Replace the match with ch instead of the digits and \ at the end
+														// e.g. "1h" => "h\h", "22m" => "mm\m"
+				timeString = System.Text.RegularExpressions.Regex.Replace(timeString, search, m => new String(ch, m.Captures[0].Length) + suffix);
+			}
+
+			subst('h');
+			subst('m');
+			subst('s');
+
+			return timeString;
+		}
+
 		private TimeSpan GetTimeSpanFromString(string timeString)
 		{
 			TimeSpan timeSpan;
 			try
 			{
 				// TODO: Maybe give up on ParseExact...
-				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpression(timeString), System.Globalization.CultureInfo.CurrentCulture);
+				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpressionFromWilBennett(timeString), System.Globalization.CultureInfo.CurrentCulture);
 			}
 			catch (Exception ex)
 			{

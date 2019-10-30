@@ -57,6 +57,7 @@ namespace DHDM
 		{
 			game = new DndGame();
 			game.SpellDispelled += Game_SpellDispelled;
+			game.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -106,8 +107,57 @@ namespace DHDM
 
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
 			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
+			GetRoll.GetRollRequest += GetRoll_GetRollRequest;
 			Feature.FeatureDeactivated += Feature_FeatureDeactivated;
+			Feature.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
+			AddReminderFunction.AddReminderRequest += AddReminderFunction_AddReminderRequest;
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
+		}
+
+		private void AddReminderFunction_AddReminderRequest(object sender, AddReminderEventArgs ea)
+		{
+			if (ea.NowDuration == "1 round")
+			{
+				game.TellDmInRounds(1, ea.Reminder);
+			}
+			else if (ea.NowDuration == "end of turn")
+			{
+				game.TellDmInRounds(0, ea.Reminder, RoundPoint.End);
+			}
+		}
+
+		Dictionary<string, int> savedRolls;
+		private void GetRoll_GetRollRequest(object sender, GetRollEventArgs ea)
+		{
+			if (savedRolls == null)
+				return;
+			if (savedRolls.ContainsKey(ea.RollName))
+				ea.Result = savedRolls[ea.RollName];
+		}
+
+		void SaveNamedResults(DiceEventArgs ea)
+		{
+			if (savedRolls == null)
+				savedRolls = new Dictionary<string, int>();
+			savedRolls.Clear();
+			if (ea.StopRollingData.individualRolls == null)
+				return;
+			foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+			{
+				if (!string.IsNullOrWhiteSpace(individualRoll.type))
+				{
+					if (savedRolls.ContainsKey(individualRoll.type))
+						savedRolls[individualRoll.type] += individualRoll.value;
+					else
+						savedRolls.Add(individualRoll.type, individualRoll.value);
+				}
+			}
+		}
+
+
+		private void Game_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
+		{
+			TellDungeonMaster(ea.Message);
 		}
 
 		void SetShortcutVisibility(Panel panel)
@@ -120,7 +170,15 @@ namespace DHDM
 					if (shortcut.Spell != null)
 					{
 						Character player = game.GetPlayerFromId(shortcut.PlayerId);
-						if (shortcut.Spell.SpellSlotLevel > 0)
+						KnownSpell matchingSpell = GetMatchingSpell(shortcut.Spell, player);
+						if (matchingSpell != null && matchingSpell.CanBeRecharged())
+						{
+							if (matchingSpell.HasAnyCharges())
+								shortcutPanel.Visibility = Visibility.Visible;
+							else
+								shortcutPanel.Visibility = Visibility.Collapsed;
+						}
+						else if (shortcut.Spell.SpellSlotLevel > 0)
 						{
 							if (player.HasRemainingSpellSlotCharges(shortcut.Spell.SpellSlotLevel))
 								shortcutPanel.Visibility = Visibility.Visible;
@@ -129,6 +187,9 @@ namespace DHDM
 						}
 					}
 					string availableWhen = shortcut.Spell?.AvailableWhen;
+					if (string.IsNullOrWhiteSpace(availableWhen))
+						availableWhen = shortcut.AvailableWhen;
+
 					if (!string.IsNullOrEmpty(availableWhen))
 					{
 						Character player = game.GetPlayerFromId(shortcut.PlayerId);
@@ -139,6 +200,11 @@ namespace DHDM
 					}
 				}
 			}
+		}
+
+		private static KnownSpell GetMatchingSpell(Spell spell, Character player)
+		{
+			return player.KnownSpells.FirstOrDefault(x => x.SpellName == spell.Name);
 		}
 
 		void SetShortcutVisibility()
@@ -161,18 +227,52 @@ namespace DHDM
 			}
 		}
 
+		bool updatingRechargeables;
 		private void Game_PlayerStateChanged(object sender, PlayerStateEventArgs ea)
 		{
+			if (updatingRechargeables)
+				return;
+
 			if (ea.Key == "Rechargeables")
 			{
-				ClearAllSpellSlots();
+				UpdateStateUIForPlayer(ea.Player);
 			}
-			else if (ea.Key.StartsWith("SpellSlots"))
+			else 
+			if (ea.IsRechargeable)
 			{
-				CharacterSheets sheetForCharacter = GetSheetForCharacter(ea.Player.playerID);
-				sheetForCharacter?.UpdateSpellSlots(ea.Key, (int)ea.NewValue);
+				updatingRechargeables = true;
+				try
+				{
+					int playerID = ea.Player.playerID;
+					CharacterSheets sheetForCharacter = GetSheetForCharacter(playerID);
+					sheetForCharacter?.UpdateRechargeableUI(ea.Key, (int)ea.NewValue);
+					UpdateStateUIForPlayer(ea.Player);
+				}
+				finally
+				{
+					updatingRechargeables = false;
+				}
 			}
+
+			if (ea.Player != null)
+				UpdateStateUIForPlayer(ea.Player);
 			SetShortcutVisibility();
+		}
+
+		private void UpdateStateUIForPlayer(Character player)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				ListBox stateList = GetStateListForCharacter(player.playerID);
+				if (stateList != null)
+				{
+					stateList.Items.Clear();
+					List<string> stateReport = player.GetStateReport();
+					stateReport.Sort();
+					foreach (string item in stateReport)
+						stateList.Items.Add(item);
+				}
+			});
 		}
 
 		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
@@ -492,6 +592,24 @@ namespace DHDM
 					ActivateShortcut(shortcut);
 				});
 		}
+
+		void HideShortcutUI(Panel panel, PlayerActionShortcut actionShortcut)
+		{
+			foreach (UIElement uIElement in panel.Children)
+				if (uIElement is ShortcutPanel shortcutPanel && shortcutPanel.Shortcut == actionShortcut)
+				{
+					shortcutPanel.Visibility = Visibility.Collapsed;
+					return;
+				}
+		}
+
+		void HideShortcutUI(PlayerActionShortcut actionShortcut)
+		{
+			HideShortcutUI(wpActionsActivePlayer, actionShortcut);
+			HideShortcutUI(spBonusActionsActivePlayer, actionShortcut);
+			HideShortcutUI(spReactionsActivePlayer, actionShortcut);
+			HideShortcutUI(spSpecialActivePlayer, actionShortcut);
+		}
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
 			ActivatePendingShortcuts();
@@ -519,10 +637,12 @@ namespace DHDM
 
 			// TODO: Clear the weapons, but not the spells...
 			HubtasticBaseStation.ClearWindup("Weapon.*");
-			HubtasticBaseStation.ClearWindup("Windup.Spell.*");
+			HubtasticBaseStation.ClearWindup("Windup.*");
 
 
 			Character player = GetPlayer(actionShortcut.PlayerId);
+			if (actionShortcut.Part != TurnPart.Reaction)
+				game.CreatureTakingAction(player);
 
 			// TODO: Fix the targeting.
 			if (DndUtils.IsAttack(actionShortcut.Type))
@@ -532,54 +652,14 @@ namespace DHDM
 			if (spell != null)
 			{
 				activeIsSpell = spell;
-				if (spell.RequiresConcentration && player.concentratedSpell != null)
+				KnownSpell matchingSpell = GetMatchingSpell(spell, player);
+				if (matchingSpell.CanBeRecharged())
 				{
-					Spell concentratedSpell = player.concentratedSpell.Spell;
-				
-					try
-					{
-						if (!game.Clock.InCombat)
-							realTimeAdvanceTimer.Stop();
-						if (concentratedSpell.Name == spell.Name)
-						{
-							// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
-							return;
-						}
-						if (FrmAsk.Ask($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }, this) == 0)
-							return;
-					}
-					finally
-					{
-						if (!game.Clock.InCombat)
-						{
-							realTimeAdvanceTimer.Start();
-							lastUpdateTime = DateTime.Now;
-						}
-					}
-				}
-				PrepareToCastSpell(spell, actionShortcut.PlayerId);
-
-				// TODO: Fix the targeting.
-				CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
-
-				spellToCastDto.Windups = actionShortcut.WindupsReversed;
-				string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
-				HubtasticBaseStation.CastSpell(serializedObject);
-
-				CastedSpell castedSpell = game.Cast(player, spell);
-
-				if (spell.RequiresConcentration)
-					player.CastingSpell(castedSpell);
-
-				if (spell.MustRollDiceToCast())
-				{
-					castedSpellNeedingCompletion = castedSpell;
-					actionShortcut.AttackingAbilityModifier = player.GetSpellcastingAbilityModifier();
-					actionShortcut.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
+					UseRechargeableItem(actionShortcut, matchingSpell);
 				}
 				else
 				{
-					player.JustCastSpell(spell.Name);
+					CastActionSpell(actionShortcut, player, spell);
 				}
 
 				tbxDamageDice.Text = spell.DieStr;
@@ -642,6 +722,68 @@ namespace DHDM
 			finally
 			{
 				settingInternally = false;
+				UpdateStateUIForPlayer(player);
+			}
+		}
+
+		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell)
+		{
+			matchingSpell.ChargesRemaining--;
+			if (matchingSpell.ChargesRemaining == 0)
+				HideShortcutUI(actionShortcut);
+			
+		}
+
+		private void CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell)
+		{
+			if (spell.RequiresConcentration && player.concentratedSpell != null)
+			{
+				Spell concentratedSpell = player.concentratedSpell.Spell;
+
+				try
+				{
+					if (!game.Clock.InCombat)
+						realTimeAdvanceTimer.Stop();
+					if (concentratedSpell.Name == spell.Name)
+					{
+						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
+						return;
+					}
+					if (FrmAsk.Ask($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }, this) == 0)
+						return;
+				}
+				finally
+				{
+					if (!game.Clock.InCombat)
+					{
+						realTimeAdvanceTimer.Start();
+						lastUpdateTime = DateTime.Now;
+					}
+				}
+			}
+			PrepareToCastSpell(spell, actionShortcut.PlayerId);
+
+			// TODO: Fix the targeting.
+			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
+
+			spellToCastDto.Windups = actionShortcut.WindupsReversed;
+			string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
+			HubtasticBaseStation.CastSpell(serializedObject);
+
+			CastedSpell castedSpell = game.Cast(player, spell);
+
+			if (spell.RequiresConcentration)
+				player.CastingSpell(castedSpell);
+
+			if (spell.MustRollDiceToCast())
+			{
+				castedSpellNeedingCompletion = castedSpell;
+				actionShortcut.AttackingAbilityModifier = player.GetSpellcastingAbilityModifier();
+				actionShortcut.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
+			}
+			else
+			{
+				player.JustCastSpell(spell.Name);
 			}
 		}
 
@@ -1311,7 +1453,6 @@ namespace DHDM
 					HandleWildMagicD20Check(individualRoll);
 					break;
 			}
-
 		}
 
 		private void HandleBarbarianWildSurge(IndividualRoll individualRoll)
@@ -1428,137 +1569,163 @@ namespace DHDM
 			{
 				IndividualDiceStoppedRolling(ea.StopRollingData.individualRolls);
 			}
+			SaveNamedResults(ea);
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 			HubtasticBaseStation.ClearWindup("Windup.*");
 			HubtasticBaseStation.ClearWindup("Weapon.*");
-			if (ea.StopRollingData != null)
-			{
-				int rollValue = ea.StopRollingData.roll;
-				string additionalMessage = ea.StopRollingData.additionalDieRollMessage;
-				if (!String.IsNullOrEmpty(additionalMessage))
-					additionalMessage = " " + additionalMessage;
-				string rollTitle = "";
-				string damageStr = "";
-				string bonusStr = "";
-				if (ea.StopRollingData.bonus > 0)
-					bonusStr = " - bonus: " + ea.StopRollingData.bonus.ToString();
-				string successStr = GetSuccessStr(ea.StopRollingData.success, ea.StopRollingData.type);
-				switch (ea.StopRollingData.type)
-				{
-					case DiceRollType.SkillCheck:
-						rollTitle = GetSkillCheckStr(ea.StopRollingData.skillCheck) + " Skill Check: ";
-						break;
-					case DiceRollType.Attack:
-						rollTitle = "Attack: ";
-						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
-						break;
-					case DiceRollType.SavingThrow:
-						rollTitle = GetAbilityStr(ea.StopRollingData.savingThrow) + " Saving Throw: ";
-						break;
-					case DiceRollType.FlatD20:
-						rollTitle = "Flat D20: ";
-						break;
-					case DiceRollType.DeathSavingThrow:
-						rollTitle = "Death Saving Throw: ";
-						break;
-					case DiceRollType.PercentageRoll:
-						rollTitle = "Percentage Roll: ";
-						break;
-					case DiceRollType.WildMagic:
-						rollTitle = "Wild Magic: ";
-						break;
-					case DiceRollType.BendLuckAdd:
-						rollTitle = "Bend Luck Add: ";
-						break;
-					case DiceRollType.BendLuckSubtract:
-						rollTitle = "Bend Luck Subtract: ";
-						break;
-					case DiceRollType.LuckRollLow:
-						rollTitle = "Luck Roll Low: ";
-						break;
-					case DiceRollType.LuckRollHigh:
-						rollTitle = "Luck Roll High: ";
-						break;
-					case DiceRollType.DamageOnly:
-						rollTitle = "Damage Only: ";
-						rollValue = ea.StopRollingData.damage;
-						break;
-					case DiceRollType.HealthOnly:
-						rollTitle = "Health Only: ";
-						rollValue = ea.StopRollingData.health;
-						break;
-					case DiceRollType.ExtraOnly:
-						rollTitle = "Extra Only: ";
-						rollValue = ea.StopRollingData.extra;
-						break;
-					case DiceRollType.ChaosBolt:
-						rollTitle = "Chaos Bolt: ";
-						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
-						break;
-					case DiceRollType.Initiative:
-						rollTitle = "Initiative: ";
-						break;
-					case DiceRollType.NonCombatInitiative:
-						rollTitle = "Non-combat Initiative: ";
-						break;
-				}
-				if (rollTitle == "")
-					rollTitle = "Dice roll: ";
-				string message = string.Empty;
-				Character singlePlayer = null;
-				if (ea.StopRollingData.multiplayerSummary != null && ea.StopRollingData.multiplayerSummary.Count > 0)
-				{
-					if (ea.StopRollingData.multiplayerSummary.Count == 1)
-						singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.multiplayerSummary[0].playerId);
-					foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
-					{
-						string playerName = StrUtils.GetFirstName(playerRoll.name);
-						if (playerName != "")
-							playerName = playerName + "'s ";
-
-						rollValue = playerRoll.modifier + playerRoll.roll;
-						bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-						successStr = GetSuccessStr(success, ea.StopRollingData.type);
-						string localDamageStr;
-						if (success)
-							localDamageStr = damageStr;
-						else
-							localDamageStr = "";
-						if (!string.IsNullOrWhiteSpace(message))
-							message += "; ";
-						message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
-					}
-				}
-				else
-				{
-					singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.playerID);
-					string playerName = GetPlayerName(ea.StopRollingData.playerID);
-					if (playerName != "")
-						playerName = playerName + "'s ";
-					if (!ea.StopRollingData.success)
-						damageStr = "";
-
-					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
-				}
-
-				if (singlePlayer != null)
-					game.DieRollStopped(singlePlayer, rollValue, ea.StopRollingData.damage);
-
-				//DieRollStopped
-
-				message += additionalMessage;
-				if (!string.IsNullOrWhiteSpace(message))
-				{
-					TellDungeonMaster(message);
-					TellViewers(message);
-				}
-			}
-
+			ReportOnDieRoll(ea);
 
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
 			CheckForFollowUpRolls(ea.StopRollingData);
+		}
+
+		void ReportInitiativeResults(DiceEventArgs ea)
+		{
+			TellDungeonMaster("Initiative: ");
+			int count = 1;
+			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+			{
+				string playerName = DndUtils.GetFirstName(playerRoll.name);
+				int rollValue = playerRoll.modifier + playerRoll.roll;
+				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
+				const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {playerName}, rolled a {rollValue.ToString()}.");
+				count++;
+			}
+		}
+
+		private void ReportOnDieRoll(DiceEventArgs ea)
+		{
+			if (ea.StopRollingData == null)
+				return;
+
+			if (ea.StopRollingData.type == DiceRollType.Initiative)
+			{
+				ReportInitiativeResults(ea);
+				return;
+			}
+
+			int rollValue = ea.StopRollingData.roll;
+			string additionalMessage = ea.StopRollingData.additionalDieRollMessage;
+			if (!String.IsNullOrEmpty(additionalMessage))
+				additionalMessage = " " + additionalMessage;
+			string rollTitle = "";
+			string damageStr = "";
+			string bonusStr = "";
+			if (ea.StopRollingData.bonus > 0)
+				bonusStr = " - bonus: " + ea.StopRollingData.bonus.ToString();
+			string successStr = GetSuccessStr(ea.StopRollingData.success, ea.StopRollingData.type);
+			switch (ea.StopRollingData.type)
+			{
+				case DiceRollType.SkillCheck:
+					rollTitle = GetSkillCheckStr(ea.StopRollingData.skillCheck) + " Skill Check: ";
+					break;
+				case DiceRollType.Attack:
+					rollTitle = "Attack: ";
+					damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
+					break;
+				case DiceRollType.SavingThrow:
+					rollTitle = GetAbilityStr(ea.StopRollingData.savingThrow) + " Saving Throw: ";
+					break;
+				case DiceRollType.FlatD20:
+					rollTitle = "Flat D20: ";
+					break;
+				case DiceRollType.DeathSavingThrow:
+					rollTitle = "Death Saving Throw: ";
+					break;
+				case DiceRollType.PercentageRoll:
+					rollTitle = "Percentage Roll: ";
+					break;
+				case DiceRollType.WildMagic:
+					rollTitle = "Wild Magic: ";
+					break;
+				case DiceRollType.BendLuckAdd:
+					rollTitle = "Bend Luck Add: ";
+					break;
+				case DiceRollType.BendLuckSubtract:
+					rollTitle = "Bend Luck Subtract: ";
+					break;
+				case DiceRollType.LuckRollLow:
+					rollTitle = "Luck Roll Low: ";
+					break;
+				case DiceRollType.LuckRollHigh:
+					rollTitle = "Luck Roll High: ";
+					break;
+				case DiceRollType.DamageOnly:
+					rollTitle = "Damage Only: ";
+					rollValue = ea.StopRollingData.damage;
+					break;
+				case DiceRollType.HealthOnly:
+					rollTitle = "Health Only: ";
+					rollValue = ea.StopRollingData.health;
+					break;
+				case DiceRollType.ExtraOnly:
+					rollTitle = "Extra Only: ";
+					rollValue = ea.StopRollingData.extra;
+					break;
+				case DiceRollType.ChaosBolt:
+					rollTitle = "Chaos Bolt: ";
+					damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
+					break;
+				case DiceRollType.Initiative:
+					rollTitle = "Initiative: ";
+					break;
+				case DiceRollType.NonCombatInitiative:
+					rollTitle = "Non-combat Initiative: ";
+					break;
+			}
+			if (rollTitle == "")
+				rollTitle = "Dice roll: ";
+			string message = string.Empty;
+			Character singlePlayer = null;
+			if (ea.StopRollingData.multiplayerSummary != null && ea.StopRollingData.multiplayerSummary.Count > 0)
+			{
+				if (ea.StopRollingData.multiplayerSummary.Count == 1)
+					singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.multiplayerSummary[0].playerId);
+				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+				{
+					string playerName = DndUtils.GetFirstName(playerRoll.name);
+					if (playerName != "")
+						playerName = playerName + "'s ";
+
+					rollValue = playerRoll.modifier + playerRoll.roll;
+					bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
+					successStr = GetSuccessStr(success, ea.StopRollingData.type);
+					string localDamageStr;
+					if (success)
+						localDamageStr = damageStr;
+					else
+						localDamageStr = "";
+					if (!string.IsNullOrWhiteSpace(message))
+						message += "; ";
+					message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
+				}
+			}
+			else
+			{
+				singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.playerID);
+				string playerName = GetPlayerName(ea.StopRollingData.playerID);
+				if (playerName != "")
+					playerName = playerName + "'s ";
+				if (!ea.StopRollingData.success)
+					damageStr = "";
+
+				message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
+			}
+
+			if (singlePlayer != null)
+				game.DieRollStopped(singlePlayer, rollValue, ea.StopRollingData.damage);
+
+			//DieRollStopped
+
+			message += additionalMessage;
+			if (!string.IsNullOrWhiteSpace(message))
+			{
+				TellDungeonMaster(message);
+				TellViewers(message);
+			}
 		}
 
 		private bool AnswersYes(string question)
@@ -1601,7 +1768,7 @@ namespace DHDM
 			foreach (Character player in game.Players)
 			{
 				if (player.playerID == playerID)
-					return StrUtils.GetFirstName(player.name);
+					return DndUtils.GetFirstName(player.name);
 			}
 
 			return "";
@@ -1612,11 +1779,15 @@ namespace DHDM
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
+				game.EnteringCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollInitiative();
 			}
 			else
+			{
+				game.ExitingCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
+			}
 
 			OnCombatChanged();
 		}
@@ -1920,9 +2091,6 @@ namespace DHDM
 		void InitializeAttackShortcuts()
 		{
 			highlightRectangles = null;
-			actionShortcuts.Clear();
-			PlayerActionShortcut.PrepareForCreation();
-			AllActionShortcuts.LoadData();
 			actionShortcuts = AllActionShortcuts.AllShortcuts;
 		}
 
@@ -1976,9 +2144,13 @@ namespace DHDM
 					StackPanel stackPanel = new StackPanel();
 					tabItem.Content = stackPanel;
 
+					ScrollViewer scrollViewer = new ScrollViewer();
+					scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+					stackPanel.Children.Add(scrollViewer);
+
 					Grid grid = new Grid();
 					grid.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
-					stackPanel.Children.Add(grid);
+					scrollViewer.Content = grid;
 
 					CharacterSheets characterSheets = new CharacterSheets();
 					characterSheets.PageChanged += CharacterSheets_PageChanged;
@@ -1999,6 +2171,10 @@ namespace DHDM
 					button.MaxWidth = 200;
 					button.MinHeight = 45;
 					stackPanel.Children.Add(button);
+
+					ListBox stateList = new ListBox();
+					tabItem.StateList = stateList;
+					stackPanel.Children.Add(stateList);
 				}
 			}
 			finally
@@ -2189,6 +2365,16 @@ namespace DHDM
 			return null;
 		}
 
+		ListBox GetStateListForCharacter(int playerID)
+		{
+			foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
+			{
+				if (playerTabItem.PlayerId == playerID)
+					return playerTabItem.StateList;
+			}
+			return null;
+		}
+
 		public void RollSkillCheck(Skills skill, bool allPlayers = false)
 		{
 			if (activePage != ScrollPage.skills)
@@ -2266,14 +2452,16 @@ namespace DHDM
 
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
-			game.ClearAllAlarms();
+			AllWeaponEffects.Invalidate();
+			AllPlayers.Invalidate();
+			AllSpells.Invalidate();
+			AllFeatures.Invalidate();
+			AllDieRollEffects.Invalidate();
+			AllTrailingEffects.Invalidate();
+			PlayerActionShortcut.PrepareForCreation();
+			AllActionShortcuts.Invalidate();
 			//PlayerFactory.BuildPlayers(players);
-			game.Players.Clear();
-			AllPlayers.LoadData();
-			AllSpells.LoadData();
-			AllFeatures.LoadData();
-			AllDieRollEffects.LoadData();
-			AllTrailingEffects.LoadData();
+			game.GetReadyToPlay();
 
 			List<Character> players = AllPlayers.GetActive();
 
@@ -2285,6 +2473,7 @@ namespace DHDM
 				game.AddPlayer(player);
 			}
 
+			game.Start();
 			BuildPlayerTabs();
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
@@ -2308,7 +2497,7 @@ namespace DHDM
 				grdPlayerRollOptions.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
 				PlayerRollCheckBox checkBox = new PlayerRollCheckBox();
-				checkBox.Content = StrUtils.GetFirstName(player.name);
+				checkBox.Content = DndUtils.GetFirstName(player.name);
 				checkBox.PlayerId = playerId;
 				checkBox.Checked += PlayerRollCheckBox_Checked;
 				checkBox.Unchecked += PlayerRollCheckBox_Unchecked;
@@ -2542,7 +2731,7 @@ namespace DHDM
 				Character player = GetPlayer(playerId);
 				if (player == null)
 					continue;
-				string firstName = StrUtils.GetFirstName(player.name);
+				string firstName = DndUtils.GetFirstName(player.name);
 				if (i < numPlayers - 2)
 					playerNames += firstName + ", ";
 				else if (i < numPlayers - 1)
@@ -2610,6 +2799,7 @@ namespace DHDM
 		string lastScenePlayed;
 		PlayerActionShortcut shortcutToActivateAfterClearingDice;
 		DiceRoll lastRoll;
+		DateTime lastChatMessageSent;
 		void CheckAllPlayers()
 		{
 			checkingInternally = true;
@@ -2769,14 +2959,6 @@ namespace DHDM
 					}
 			});
 		}
-		public void SetSpellSlotLevel(int level)
-		{
-			Dispatcher.Invoke(() =>
-			{
-				tbxSpellSlot.Text = level.ToString();
-			});
-		}
-
 
 		public void RollWildMagic()
 		{
@@ -2864,15 +3046,17 @@ namespace DHDM
 
 		public void TellDungeonMaster(string message, bool isDetail = false)
 		{
-			History.Log(message);
 			if (dungeonMasterClient == null)
 				return;
-			if (!JoinedChannel(DungeonMasterChannel))
+
+			History.Log(message);
+			if (JoinedChannel(DungeonMasterChannel))
+				dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+			else
 			{
 				try
 				{
 					dungeonMasterClient.JoinChannel(DungeonMasterChannel);
-					// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
 					dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
 				}
 				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)
@@ -2880,8 +3064,9 @@ namespace DHDM
 					CreateDungeonMasterClient();
 					try
 					{
+						if (dungeonMasterClient == null)
+							return;
 						dungeonMasterClient.JoinChannel(DungeonMasterChannel);
-						// TODO: determine whether we are showing detail messages or not and suppress this message if we are not showing detail messages and isDetail is true.
 						dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
 					}
 					catch (Exception ex)
@@ -2910,12 +3095,6 @@ namespace DHDM
 
 				}
 			}
-		}
-
-		private void BtnSpellSlot_Click(object sender, RoutedEventArgs e)
-		{
-			if (sender is Button button)
-				tbxSpellSlot.Text = button.Tag.ToString();
 		}
 
 		void ActivatePendingShortcuts(object sender, EventArgs e)

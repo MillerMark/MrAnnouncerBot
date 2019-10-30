@@ -28,7 +28,9 @@ namespace DndCore
 		public string alignment = string.Empty;
 		public string race { get; set; }
 
+		[JsonIgnore]
 		public List<Attack> attacks = new List<Attack>();
+
 		public double baseArmorClass = 0;
 		public double tempArmorClassMod = 0;
 		public double baseCharisma;
@@ -44,13 +46,19 @@ namespace DndCore
 		public double baseWalkingSpeed = 0;
 		public double burrowingSpeed = 0;
 
+		[JsonIgnore]
 		Dictionary<string, double> calculatedMods = new Dictionary<string, double>();
 		public double climbingSpeed = 0;
 		public Conditions conditionImmunities = Conditions.None;
 		public CreatureSize creatureSize = CreatureSize.Medium;
+
+		[JsonIgnore]
 		public ObservableCollection<CurseBlessingDisease> cursesAndBlessings = new ObservableCollection<CurseBlessingDisease>();
+		[JsonIgnore]
 		public ObservableCollection<DamageFilter> damageImmunities = new ObservableCollection<DamageFilter>();
+		[JsonIgnore]
 		public ObservableCollection<DamageFilter> damageResistance = new ObservableCollection<DamageFilter>();
+		[JsonIgnore]
 		public ObservableCollection<DamageFilter> damageVulnerability = new ObservableCollection<DamageFilter>();
 
 		public double darkvisionRadius = 0;

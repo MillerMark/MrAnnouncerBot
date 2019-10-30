@@ -58,12 +58,13 @@ namespace DndTests
 		[TestMethod]
 		public void TestBarbarianMeleeDeactivate()
 		{
-			AllPlayers.LoadData();
-
+			AllPlayers.Invalidate();
+			AllFeatures.Invalidate();
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			game.AddPlayer(fred);
+			game.Start();
 
 			PlayerActionShortcut greataxe = fred.GetShortcut("Greataxe");
 			fred.Use(greataxe);
@@ -107,51 +108,65 @@ namespace DndTests
 		public void TestBarbarianMeleeConditions()
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			game.AddPlayer(fred);
+			game.Start();
 			fred.StartTurnResetState();
 			AssignedFeature barbarianMelee = fred.GetFeature("BarbarianMelee");
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 			Expressions.Do("Set(_rage,true)", fred);
 			fred.GetAttackingAbilityModifier(WeaponProperties.Melee, AttackType.Melee);
-			Assert.IsTrue(barbarianMelee.ConditionsSatisfied());
+			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 		}
 
 	 	[TestMethod]
 		public void TestBarbarianMeleeRageExpiration()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
+			AllFeatures.Invalidate();
 			History.TimeClock = new DndTimeClock();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			game.AddPlayer(fred);
+			game.Start();
+
 			fred.StartTurnResetState();
 			AssignedFeature barbarianMelee = fred.GetFeature("BarbarianMelee");
 
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 
 			fred.ActivateFeature("WildSurgeRage");
 			PlayerActionShortcut greataxe = fred.GetShortcut("Greataxe");
 			fred.Use(greataxe);
 
-			Assert.IsTrue(barbarianMelee.ConditionsSatisfied());
+			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 
 			// Now test alarm system to turn off rage after one minute....
 			History.TimeClock.Advance(DndTimeSpan.FromSeconds(59));
-			Assert.IsTrue(barbarianMelee.ConditionsSatisfied());
+			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 			History.TimeClock.Advance(DndTimeSpan.FromSeconds(1));
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 		}
 
 		[TestMethod]
 		public void TestBarbarianMeleeConditionsWithVariousWeapons()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			History.TimeClock = new DndTimeClock();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			game.AddPlayer(fred);
+			game.Start();
 			fred.StartTurnResetState();
 			AssignedFeature barbarianMelee = fred.GetFeature("BarbarianMelee");
 
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 
 			fred.ActivateFeature("WildSurgeRage");
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());  // Not yet. We need to be using the right weapon.
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());  // Not yet. We need to be using the right weapon.
 
 			PlayerActionShortcut greataxe = fred.GetShortcut("Greataxe");
 			Assert.IsNotNull(greataxe);
@@ -160,11 +175,11 @@ namespace DndTests
 			Assert.IsTrue(Expressions.GetBool("InRage", fred));
 			Assert.IsTrue(Expressions.GetBool("AttackIsMelee", fred));
 			Assert.IsTrue(Expressions.GetBool("AttackingWith(strength)", fred));
-			Assert.IsTrue(barbarianMelee.ConditionsSatisfied());
+			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 
 			PlayerActionShortcut longbow = fred.GetShortcut("Longbow");
 			fred.Use(longbow);
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 		}
 
 		[TestMethod]
@@ -172,23 +187,28 @@ namespace DndTests
 		{
 			History.TimeClock = new DndTimeClock();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			game.AddPlayer(fred);
+			game.Start();
 			fred.StartTurnResetState();
 			AssignedFeature barbarianMelee = fred.GetFeature("BarbarianMelee");
 
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 
 			fred.ActivateFeature("WildSurgeRage");
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());  // Not yet. We need to be using the right weapon.
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());  // Not yet. We need to be using the right weapon.
 
-			PlayerActionShortcut shortsword = fred.GetShortcut("Shortsword");
-			fred.Use(shortsword);
-			Assert.IsTrue(barbarianMelee.ConditionsSatisfied());
+			PlayerActionShortcut dagger = fred.GetShortcut("Dagger");
+			Assert.IsNotNull(dagger);
+			fred.Use(dagger);
+			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 
 			fred.baseDexterity = 18;
 			fred.baseStrength = 10;
-			shortsword.UpdatePlayerAttackingAbility(fred);
-			fred.Use(shortsword);
-			Assert.IsFalse(barbarianMelee.ConditionsSatisfied());  // Should not be satisfied because dexterity is now the ability of choice to use with this finesse weapon.
+			dagger.UpdatePlayerAttackingAbility(fred);
+			fred.Use(dagger);
+			Assert.IsFalse(barbarianMelee.ShouldActivateNow());  // Should not be satisfied because dexterity is now the ability of choice to use with this finesse weapon.
 		}
 	}
 }

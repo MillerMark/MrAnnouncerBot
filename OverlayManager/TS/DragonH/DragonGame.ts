@@ -250,6 +250,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
+		console.log('Adding Windups:');
 		for (let i = 0; i < windups.length; i++) {
 			let windup: WindupData = windups[i];
 			let sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
@@ -266,7 +267,7 @@ abstract class DragonGame extends GamePlusQuiz {
 					sprite.name = windup.Name + name;
 				else 
 					sprite.name = windup.Name;
-				console.log('Adding Windup: ' + sprite.name);
+				console.log('  Windup: "' + sprite.name + '"');
 				sprite.opacity = windup.Opacity;
 
 				if (windup.Lifespan)
@@ -292,6 +293,7 @@ abstract class DragonGame extends GamePlusQuiz {
 					}.bind(this);
 			}
 		}
+		console.log('');
 	}
 
 	addWindupFromStr(windupData: string, playerX: number = this.activePlayerX): void {

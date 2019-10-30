@@ -6,15 +6,11 @@ namespace DndCore
 {
 	public static class AllWeapons
 	{
-		static List<Weapon> weapons = new List<Weapon>();
-		static AllWeapons()
-		{
-			LoadData();
-		}
-
+		static List<Weapon> weapons;
 		public static void LoadData()
 		{
-			weapons.Clear();
+			weapons = new List<Weapon>();
+
 			List<WeaponDto> weaponDtos = LoadData(Folders.InCoreData("DnD - Weapons.csv"));
 			foreach (var weaponDto in weaponDtos)
 			{
@@ -29,9 +25,23 @@ namespace DndCore
 
 		public static Weapon Get(string weaponName)
 		{
-			return Weapons.FirstOrDefault(x => x.StandardName.StartsWith(weaponName));
+			return Weapons.FirstOrDefault(x => x.Name.StartsWith(weaponName));
 		}
 
-		public static List<Weapon> Weapons { get => weapons; private set => weapons = value; }
+		public static void Invalidate()
+		{
+			weapons = null;
+		}
+
+		public static List<Weapon> Weapons
+		{
+			get
+			{
+				if (weapons == null)
+					LoadData();
+				return weapons;
+			}
+			private set => weapons = value;
+		}
 	}
 }

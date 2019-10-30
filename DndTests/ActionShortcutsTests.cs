@@ -12,6 +12,7 @@ namespace DndTests
 		static ActionShortcutsTests()
 		{
 			Folders.UseTestData = true;
+			AllKnownItems.Invalidate();
 		}
 
 		private TestContext testContextInstance;
@@ -35,10 +36,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestBattleaxeMultiples()
 		{
-			List<PlayerActionShortcutDto> rawDtos = AllActionShortcuts.LoadData(Folders.InCoreData("DnD - Shortcuts.csv"));
-			PlayerActionShortcutDto battleAxe = rawDtos.FirstOrDefault(x => x.name == "Battleaxe" && x.player == "Ava");
-			Assert.IsNotNull(battleAxe);
-			List<PlayerActionShortcut> actionShortcuts = PlayerActionShortcut.From(battleAxe);
+			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(PlayerID.Ava, "Battleaxe");
 			Assert.IsNotNull(actionShortcuts);
 			Assert.AreEqual(2, actionShortcuts.Count);
 			Assert.AreEqual("Battleaxe (1H)", actionShortcuts[0].Name);

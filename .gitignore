@@ -912,3 +912,4 @@ DndCore/TestData/DnD - Features.csv
 DndCore/TestData/DnD - AllTables.csv
 DndUI/User Controls/CharacterSheets_old.xaml.cs
 DndUI/User Controls/CharacterSheets_old.xaml
+DndCore/Data/TestData/Old/

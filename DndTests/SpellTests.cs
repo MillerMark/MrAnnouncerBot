@@ -193,7 +193,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestSaveSpellEvents()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			History.TimeClock = new DndTimeClock();
 
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
@@ -202,10 +202,11 @@ namespace DndTests
 			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
 
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
 			game.AddMonster(joeTheVineBlight);
 			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
+			merkin.ReadyRollDice(DiceRollType.DamageOnly, "3d6(fire)", 12);
 			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
 			Assert.IsNotNull(activeSpells);
 			Assert.AreEqual(1, activeSpells.Count);
@@ -220,14 +221,14 @@ namespace DndTests
 		[TestMethod]
 		public void TestAttackSpellEventsTimeout()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
 			Monster joeTheVineBlight = MonsterBuilder.BuildVineBlight("Joe");
 
 			Spell zzzRangeSpell = AllSpells.Get("ZZZ Test Range Spell", merkin, 3);
 
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
 			game.AddMonster(joeTheVineBlight);
 			game.EnteringCombat();
@@ -254,14 +255,14 @@ namespace DndTests
 		[TestMethod]
 		public void TestAttackSpellEventsOnPlayerAttacks()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
 			Monster joeVineBlight = MonsterBuilder.BuildVineBlight("Joe");
 
 			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
 
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
 			game.AddMonster(joeVineBlight);
 			game.EnteringCombat();
@@ -270,6 +271,8 @@ namespace DndTests
 			const int hiddenThreshold = 12;
 			const int damage = 7;
 
+			Assert.AreEqual("onCasting", Expressions.GetStr("Get(_spellState)", merkin));
+			merkin.ReadyRollDice(DiceRollType.DamageOnly, "1d6(fire)");
 			Assert.AreEqual("onCast", Expressions.GetStr("Get(_spellState)", merkin));
 
 			merkin.WillAttack(joeVineBlight, Attack.Melee("Unarmed Strike", 5, 5));
@@ -295,9 +298,12 @@ namespace DndTests
 		[TestMethod]
 		public void TestWrathfulSmite()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
+			AllSpells.Invalidate();
+			AllActionShortcuts.Invalidate();
 			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
-			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword, +1");
+			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword");
+			Assert.IsNotNull(greatsword);
 			Monster joeVineBlight = MonsterBuilder.BuildVineBlight("Joe");
 
 			List<PlayerActionShortcut> wrathfulSmites = AllActionShortcuts.Get(ava.playerID, SpellNames.WrathfulSmite);
@@ -306,7 +312,7 @@ namespace DndTests
 			Assert.IsNotNull(wrathfulSmite);
 
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			game.AddPlayer(ava);
 			game.AddMonster(joeVineBlight);
 			DateTime gameStartTime = game.Time;

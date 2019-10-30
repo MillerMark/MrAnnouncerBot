@@ -10,6 +10,7 @@ namespace DndTests
 		static MultiClassTests()
 		{
 			Folders.UseTestData = true;
+			AllPlayers.Invalidate();
 		}
 		private TestContext testContextInstance;
 
@@ -32,15 +33,14 @@ namespace DndTests
 		[TestMethod]
 		public void TestRaceClass()
 		{
-			AllPlayers.LoadData();
 			Character oldFred = AllPlayers.Get("Old Fred");
 			Assert.AreEqual("Lizardfolk Fighter 4 / Barbarian 1", oldFred.raceClass);
 
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
-			Assert.AreEqual("Lizardfolk Barbarian 5", fred.raceClass);
+			Assert.AreEqual("Lizardfolk Barbarian 6", fred.raceClass);
 
 			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
-			Assert.AreEqual("Human Paladin 5", ava.raceClass);
+			Assert.AreEqual("Human Paladin 6", ava.raceClass);
 		}
 	}
 }

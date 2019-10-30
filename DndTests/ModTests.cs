@@ -99,6 +99,7 @@ namespace DndTests
 		public void TestBreastplate()
 		{
 			ItemViewModel breastplate = TestStorageHelper.GetExistingItem("Breastplate");
+			Assert.IsNotNull(breastplate);
 			Character testBarbarian = CharacterBuilder.BuildTestBarbarian();
 			const double initialArmorClass = 12;
 

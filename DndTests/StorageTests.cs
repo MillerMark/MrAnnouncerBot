@@ -33,7 +33,7 @@ namespace DndTests
 			ItemViewModel item = new ItemViewModel();
 			item.costValue = 50;
 			item.adamantine = true;
-			item.StandardName = "The Sneaky Sword";
+			item.Name = "The Sneaky Sword";
 			item.description = "This super sword makes you super sneaky, adding a +2 bonuses to Sleight of Hand, Persuasion, and Deception skill checks.";
 
 			const string localTestFileName = "Delete_TestSaveLoad.json";
@@ -44,7 +44,7 @@ namespace DndTests
 			Assert.AreEqual(item.costValue, loadedItem.costValue);
 			Assert.AreEqual(item.adamantine, loadedItem.adamantine);
 			Assert.AreEqual(item.description, loadedItem.description);
-			Assert.AreEqual(item.StandardName, loadedItem.StandardName);
+			Assert.AreEqual(item.Name, loadedItem.Name);
 			DeleteIfExists(fullPathToFile);
 		}
 

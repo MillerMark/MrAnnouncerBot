@@ -22,7 +22,7 @@ namespace DndCore
 			weapon.costValue = DndUtils.GetGoldPieces(weaponDto.Cost);
 			weapon.damageOneHanded = weaponDto.DamageOneHanded;
 			weapon.damageTwoHanded = weaponDto.DamageTwoHanded;
-			weapon.StandardName = weaponDto.Name;
+			weapon.Name = weaponDto.Name;
 			return weapon;
 		}
 
@@ -63,7 +63,7 @@ namespace DndCore
 		public static Weapon buildBlowgun()
 		{
 			Weapon blowGun = new Weapon();
-			blowGun.StandardName = "Blowgun";
+			blowGun.Name = "Blowgun";
 			blowGun.normalRange = 25;
 			blowGun.disadvantageRange = 100;
 			blowGun.costValue = 10;
@@ -77,7 +77,7 @@ namespace DndCore
 		{
 			Weapon shortSword = new Weapon();
 			shortSword.magic = true;
-			shortSword.StandardName = "Magical Shortsword";
+			shortSword.Name = "Magical Shortsword";
 			shortSword.costValue = 10;
 			shortSword.attacks.Add(new Attack(AttackNames.Stab).AddDamage(DamageType.Piercing, Dice.d6x1, AttackKind.Magical));
 			shortSword.weaponProperties = WeaponProperties.Finesse | WeaponProperties.Light;
@@ -88,7 +88,7 @@ namespace DndCore
 		public static Weapon buildShortSword()
 		{
 			Weapon shortSword = new Weapon();
-			shortSword.StandardName = "Shortsword";
+			shortSword.Name = "Shortsword";
 			shortSword.costValue = 10;
 			shortSword.attacks.Add(new Attack(AttackNames.Stab).AddDamage(DamageType.Piercing, Dice.d6x1, AttackKind.NonMagical));
 			shortSword.weaponProperties = WeaponProperties.Finesse | WeaponProperties.Light;

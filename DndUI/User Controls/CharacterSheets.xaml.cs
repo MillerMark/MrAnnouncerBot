@@ -438,7 +438,7 @@ namespace DndUI
 
 		void SetName(StatBox statBox, string name)
 		{
-			statBox.Text = StrUtils.GetFirstName(name);
+			statBox.Text = DndUtils.GetFirstName(name);
 			statBox.IsEnabled = false;
 		}
 
@@ -447,9 +447,45 @@ namespace DndUI
 			// TODO: Implement this.
 		}
 
+		private const int RechargeableColumnStart = 30;
+		void AddChargedSpellItems(Character character)
+		{
+			foreach (KnownSpell knownSpell in character.KnownSpells)
+			{
+				if (knownSpell.CanBeRecharged())
+				{
+					string beginLabel = $"{knownSpell.ItemName}: ";
+					int maxCharges = knownSpell.TotalCharges;
+					string key = DndUtils.ToVarName(knownSpell.ItemName);
+					AddedToUI(character, key);
+					AddRechargeable(character, beginLabel, maxCharges, key);
+				}
+			}
+		}
+
+		private static void AddedToUI(Character character, string key)
+		{
+			Rechargeable rechargeable = character.rechargeables.FirstOrDefault(x => x.VarName == key);
+			if (rechargeable != null)
+				rechargeable.AddedToUI = true;
+		}
+
+		void AddCustomRechargeables(Character character)
+		{
+			foreach (Rechargeable rechargeable in character.rechargeables)
+			{
+				if (!rechargeable.AddedToUI)
+					AddRechargeable(character, $"{rechargeable.DisplayName}: ", rechargeable.TotalCharges, rechargeable.VarName);
+			}
+		}
+		
 		void AddRechargeables(Character character)
 		{
+			foreach (Rechargeable rechargeable in character.rechargeables)
+				rechargeable.AddedToUI = false;
 			AddSpellSlots(character);
+			AddChargedSpellItems(character);
+			AddCustomRechargeables(character);
 		}
 
 		private void AddSpellSlots(Character character)
@@ -457,28 +493,32 @@ namespace DndUI
 			int[] spellSlotLevels = character.GetSpellSlotLevels();
 			for (int i = 1; i < spellSlotLevels.Length; i++)
 			{
-				RechargeableBoxes rechargeable = new RechargeableBoxes();
 				if (spellSlotLevels[i] == 0)
 					continue;
-				switch (i)
-				{
-					case 1: rechargeable.BeginLabel = "1st: "; break;
-					case 2: rechargeable.BeginLabel = "2nd: "; break;
-					case 3: rechargeable.BeginLabel = "3rd: "; break;
-					case 4: rechargeable.BeginLabel = "4th: "; break;
-					case 5: rechargeable.BeginLabel = "5th: "; break;
-					case 6: rechargeable.BeginLabel = "6th: "; break;
-					case 7: rechargeable.BeginLabel = "7th: "; break;
-					case 8: rechargeable.BeginLabel = "8th: "; break;
-					case 9: rechargeable.BeginLabel = "9th: "; break;
-				}
-				rechargeable.MaxCharges = spellSlotLevels[i];
-				rechargeable.Key = $"SpellSlots{i}";
-				rechargeable.PlayerId = character.playerID;
-				rechargeable.MinBeginLabelWidth = 30;
-				rechargeable.ChargesChanged += Rechargeable_ChargesChanged;
-				spSpellSlots.Children.Add(rechargeable);
+				string beginLabel = $"{DndUtils.GetOrdinal(i)}: ";
+				int maxCharges = spellSlotLevels[i];
+				string key = DndUtils.GetSpellSlotLevelKey(i);
+				AddedToUI(character, key);
+				AddRechargeable(character, beginLabel, maxCharges, key);
 			}
+		}
+
+		private void AddRechargeable(Character character, string beginLabel, int maxCharges, string key)
+		{
+			RechargeableBoxes rechargeable = new RechargeableBoxes();
+			rechargeable.BeginLabel = beginLabel;
+			rechargeable.MaxCharges = maxCharges;
+			rechargeable.Key = key;
+			rechargeable.PlayerId = character.playerID;
+			rechargeable.MinBeginLabelWidth = RechargeableColumnStart;
+			rechargeable.ChargesChanged += Rechargeable_ChargesChanged;
+			
+			Viewbox viewbox = new Viewbox();
+			viewbox.MaxWidth = 180;
+			viewbox.StretchDirection = StretchDirection.DownOnly;
+			viewbox.Child = rechargeable;
+			viewbox.HorizontalAlignment = HorizontalAlignment.Left;
+			spSpellSlots.Children.Add(viewbox);
 		}
 
 		private void Rechargeable_ChargesChanged(object sender, RoutedEventArgs e)
@@ -944,25 +984,24 @@ namespace DndUI
 			OnPageBackgroundClicked();
 		}
 
-		public void UpdateSpellSlots(string key, int newValue)
+		public void UpdateRechargeableUI(string keyStr, int newValue)
 		{
-			foreach (UIElement uIElement in spSpellSlots.Children)
-			{
-				if (uIElement is RechargeableBoxes rechargeable)
-				{
-					if (rechargeable.Key == key)
-					{
-						rechargeable.ChargesUsed = newValue;
-						return;
-					}
-				}
-			}
+			string[] keys = keyStr.Split(',');
+			foreach (string key in keys)
+				foreach (UIElement uIElement in spSpellSlots.Children)
+					if (uIElement is Viewbox viewbox && viewbox.Child is RechargeableBoxes rechargeable)
+						if (rechargeable.Key == key)
+						{
+							rechargeable.ChargesUsed = newValue;  // rechargeable.MaxCharges - newValue;
+							break;
+						}
+
 		}
 
 		public void ClearAllSpellSlots()
 		{
 			foreach (UIElement uIElement in spSpellSlots.Children)
-				if (uIElement is RechargeableBoxes rechargeable)
+				if (uIElement is Viewbox viewbox && viewbox.Child is RechargeableBoxes rechargeable)
 					rechargeable.ChargesUsed = 0;
 		}
 	}

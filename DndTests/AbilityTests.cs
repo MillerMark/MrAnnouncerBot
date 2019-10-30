@@ -4,6 +4,34 @@ using System;
 
 namespace DndTests
 {
+	[TestClass]
+	public class SubClassTests
+	{
+		private TestContext testContextInstance;
+
+		/// <summary>
+		///Gets or sets the test context which provides
+		///information about and functionality for the current test run.
+		///</summary>
+		public TestContext TestContext
+		{
+			get
+			{
+				return testContextInstance;
+			}
+			set
+			{
+				testContextInstance = value;
+			}
+		}
+		[TestMethod]
+		public void TestNameConversion()
+		{
+			Assert.AreEqual(SubClass.ArcaneTrickster, DndUtils.ToSubClass("arcane trickster"));
+			Assert.AreEqual(SubClass.Banneret_PurpleDragonKnight, DndUtils.ToSubClass("Banneret / Purple Dragon Knight"));
+			Assert.AreEqual(SubClass.WildMagic, DndUtils.ToSubClass("wild   magic"));
+		}
+	}
 
 	[TestClass]
 	public class AbilityTests

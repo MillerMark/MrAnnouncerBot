@@ -6,15 +6,14 @@ namespace DndCore
 {
 	public static class AllDieRollEffects
 	{
-		static AllDieRollEffects()
+		public static void Invalidate()
 		{
-			DieRollEffects = new List<DieRollEffect>();
-			LoadData();
+			dieRollEffects = null;
 		}
 
 		public static void LoadData()
 		{
-			DieRollEffects.Clear();
+			dieRollEffects = new List<DieRollEffect>();
 			List<DieRollEffectDto> dieRollEffectDtos = CsvData.Get<DieRollEffectDto>(Folders.InCoreData("DnD - DieRollEffects.csv"), false);
 			foreach (DieRollEffectDto dieRollEffect in dieRollEffectDtos)
 			{
@@ -22,8 +21,20 @@ namespace DndCore
 			}
 		}
 
-		public static List<DieRollEffect> DieRollEffects { get; private set; }
-
+		static List<DieRollEffect> dieRollEffects;
+		public static List<DieRollEffect> DieRollEffects
+		{
+			get
+			{
+				if (dieRollEffects == null)
+					LoadData();
+				return dieRollEffects;
+			}
+			private set
+			{
+				dieRollEffects = value;
+			}
+		}
 		public static DieRollEffect Get(string effectName)
 		{
 			return DieRollEffects.FirstOrDefault(x => x.Name == effectName);

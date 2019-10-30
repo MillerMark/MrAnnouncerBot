@@ -21,7 +21,7 @@ namespace DndCore
 			if (feature == null)
 				return null;
 
-			return feature.ConditionsSatisfied(args, player);
+			return feature.ShouldActivateNow(args, player);
 		}
 	}
 }

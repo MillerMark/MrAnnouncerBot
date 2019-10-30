@@ -7,14 +7,31 @@ namespace DndCore
 {
 	public static class AllTables
 	{
-		static List<object> tables = new List<object>();
-		static AllTables()
+		static List<object> tables;
+
+		public static void Invalidate()
 		{
-			LoadData();
+			tables = null;
 		}
 
+		public static List<object> Tables
+		{
+			get
+			{
+				if (tables == null)
+					LoadData();
+
+				return tables;
+			}
+			set
+			{
+				tables = value;
+			}
+		}
+		
 		public static void LoadData()
 		{
+			tables = new List<object>();
 			LoadTable<Barbarian>();
 			LoadTable<Sorcerer>();
 		}
@@ -74,7 +91,7 @@ namespace DndCore
 		private static object FindTable(string tableName)
 		{
 			object foundTable = null;
-			foreach (object item in tables)
+			foreach (object item in Tables)
 			{
 				PropertyInfo nameProperty = item.GetType().GetProperty("Name");
 				if (nameProperty != null)

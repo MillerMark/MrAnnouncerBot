@@ -91,13 +91,19 @@ namespace DndUI
 
 		protected virtual void OnMaxChargesChanged(int oldValue, int newValue)
 		{
-			spBoxes.Children.Clear();
+			for (int i = spRechargeable.Children.Count - 1; i > 0; i--)
+			{
+				UIElement child = spRechargeable.Children[i];
+				if (child is CheckBox)
+					spRechargeable.Children.RemoveAt(i);
+			}
+
 			for (int i = 0; i < newValue; i++)
 			{
 				CheckBox checkbox = new CheckBox();
 				checkbox.Checked += Checkbox_Checked;
 				checkbox.Unchecked += Checkbox_Unchecked;
-				spBoxes.Children.Add(checkbox);
+				spRechargeable.Children.Insert(i + 1, checkbox);
 			}
 
 			UpdateCharges();
@@ -206,11 +212,15 @@ namespace DndUI
 			updatingInternally = true;
 			try
 			{
-				for (int i = 0; i < spBoxes.Children.Count; i++)
+				int checkboxIndex = 0;
+				for (int i = 0; i < spRechargeable.Children.Count; i++)
 				{
-					UIElement uIElement = spBoxes.Children[i];
+					UIElement uIElement = spRechargeable.Children[i];
 					if (uIElement is CheckBox checkBox)
-						checkBox.IsChecked = i < ChargesUsed;
+					{
+						checkBox.IsChecked = checkboxIndex < ChargesUsed;
+						checkboxIndex++;
+					}
 				}
 			}
 			finally

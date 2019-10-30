@@ -36,13 +36,13 @@ namespace DndTests
 		[TestMethod]
 		public void TestLevel()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
-			Assert.AreEqual(5, Expressions.Get("Level(\"Barbarian\")", fred));
+			Assert.AreEqual(6, Expressions.Get("Level(\"Barbarian\")", fred));
 			Assert.AreEqual(0, Expressions.Get("Level(\"Fighter\")", fred));
 			Assert.AreEqual(0, Expressions.Get("Level(\"Fighter\")", ava));
-			Assert.AreEqual(5, Expressions.Get("Level(\"Paladin\")", ava));
+			Assert.AreEqual(6, Expressions.Get("Level(\"Paladin\")", ava));
 		}
 
 		[TestMethod]
@@ -139,9 +139,9 @@ namespace DndTests
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
-			Assert.AreEqual(3, Expressions.GetInt("Table(\"Barbarian\", \"Rages\", \"Level\", Level(\"Barbarian\"))", fred));
+			Assert.AreEqual(4, Expressions.GetInt("Table(\"Barbarian\", \"Rages\", \"Level\", Level(\"Barbarian\"))", fred));
 			Assert.AreEqual(1, Expressions.GetInt("Table(\"Sorcerer\", \"Slot5Spells\", \"Level\", 9)"));
-			Assert.AreEqual(5, Expressions.GetInt("Table(\"Sorcerer\", \"SorceryPoints\", \"Level\", Level(\"Sorcerer\"))", merkin));
+			Assert.AreEqual(6, Expressions.GetInt("Table(\"Sorcerer\", \"SorceryPoints\", \"Level\", Level(\"Sorcerer\"))", merkin));
 		}
 
 		[TestMethod]

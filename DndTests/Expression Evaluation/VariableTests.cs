@@ -31,7 +31,7 @@ namespace DndTests
 			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
 			Assert.AreEqual(0, Expressions.Get("leftMostPriority", fred));
 			Assert.AreEqual(5, Expressions.Get("leftMostPriority", ava));
-			Assert.AreEqual(44, Expressions.GetInt("hitPoints", ava));
+			Assert.AreEqual(52, Expressions.GetInt("hitPoints", ava));
 			Assert.AreEqual(30, Expressions.GetInt("WalkingSpeed", ava));
 			Assert.AreEqual(3, Expressions.GetInt("Max(dexterityMod,strengthMod)", ava));
 			Assert.AreEqual(0, Expressions.GetInt("Min(dexterityMod,strengthMod)", ava));
@@ -85,6 +85,11 @@ namespace DndTests
 		public void TestProperties()
 		{
 			Character fred = AllPlayers.Get("Fred");
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			game.AddPlayer(fred);
+			game.Start();
+
 			Expressions.Do("Set(_rage,true)", fred);
 			Assert.IsTrue(Expressions.GetBool("_rage", fred));
 			Assert.IsTrue(Expressions.GetBool("InRage", fred));

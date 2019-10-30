@@ -20,20 +20,6 @@ namespace DndCore
 		public string dieStr { get; set; }
 		public string plusModifier { get; set; }
 		public string minDamage { get; set; }
-		public string effect { get; set; }
-		public string hue { get; set; }
-		public string brightness { get; set; }
-		public string saturation { get; set; }
-		public string scale { get; set; }
-		public string rotation { get; set; }
-		public string degreesOffset { get; set; }
-		public string playToEndOnExpire { get; set; }
-		public string flipHorizontal { get; set; }
-		public string moveUpDown { get; set; }
-		public string moveLeftRight { get; set; }
-		public string fade { get; set; }
-		public string opacity { get; set; }
-		public string minSlotLevel { get; set; }
 		public string startSound { get; set; }
 		public string endSound { get; set; }
 		public string description { get; set; }
@@ -44,7 +30,7 @@ namespace DndCore
 		{
 			player = "";
 			type = "";
-			vantageMod = "";
+			vantageMod = DndUtils.VantageToStr(VantageKind.Normal);
 			rollMod = "";
 			commands = "";
 			name = "";
@@ -57,20 +43,6 @@ namespace DndCore
 			dieStr = "";
 			plusModifier = "";
 			minDamage = "";
-			effect = "";
-			hue = "";
-			brightness = "";
-			saturation = "";
-			scale = "";
-			rotation = "";
-			degreesOffset = "";
-			playToEndOnExpire = "";
-			flipHorizontal = "";
-			moveUpDown = "";
-			moveLeftRight = "";
-			fade = "";
-			opacity = "";
-			minSlotLevel = "";
 			startSound = "";
 			endSound = "";
 			description = "";

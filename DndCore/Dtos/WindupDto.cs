@@ -115,46 +115,49 @@ namespace DndCore
 
 		static Random random = new Random();
 
-		public static WindupDto From(PlayerActionShortcutDto shortcutDto, Character player)
-		{
-			if (string.IsNullOrEmpty(shortcutDto.effect))
-				return null;
-			if (shortcutDto.effect.StartsWith("//"))
-				return null;
-			WindupDto windupDto = new WindupDto();
-			windupDto.Effect = shortcutDto.effect;
-			if (!string.IsNullOrEmpty(shortcutDto.hue))
-				if (shortcutDto.hue == "player")
-					windupDto.Hue = player.hueShift;
-				else if (int.TryParse(shortcutDto.hue, out int hue))
-					windupDto.Hue = hue;
-			windupDto.Brightness = MathUtils.GetInt(shortcutDto.brightness, 100);
-			windupDto.Saturation = MathUtils.GetInt(shortcutDto.saturation, 100);
-			windupDto.Scale = MathUtils.GetDouble(shortcutDto.scale, 1);
-			windupDto.Opacity = MathUtils.GetDouble(shortcutDto.opacity, 1);
-			windupDto.Rotation = MathUtils.GetInt(shortcutDto.rotation);
-			windupDto.DegreesOffset = MathUtils.GetInt(shortcutDto.degreesOffset);
-			windupDto.FlipHorizontal = MathUtils.IsChecked(shortcutDto.flipHorizontal);
-			if (MathUtils.IsChecked(shortcutDto.fade))
-				windupDto.Fade();
-			if (MathUtils.IsChecked(shortcutDto.playToEndOnExpire))
-				windupDto.PlayToEndOnExpire = true;
+		//public static WindupDto From(PlayerActionShortcutDto shortcutDto, Character player)
+		//{
+		//	if (string.IsNullOrEmpty(shortcutDto.effect))
+		//		return null;
+		//	if (shortcutDto.effect.StartsWith("//"))
+		//		return null;
+		//	WindupDto windupDto = new WindupDto();
+		//	windupDto.Effect = shortcutDto.effect;
+		//	if (!string.IsNullOrEmpty(shortcutDto.hue))
+		//		if (shortcutDto.hue == "player")
+		//			windupDto.Hue = player.hueShift;
+		//		else if (int.TryParse(shortcutDto.hue, out int hue))
+		//			windupDto.Hue = hue;
+		//	windupDto.Brightness = MathUtils.GetInt(shortcutDto.brightness, 100);
+		//	windupDto.Saturation = MathUtils.GetInt(shortcutDto.saturation, 100);
+		//	windupDto.Scale = MathUtils.GetDouble(shortcutDto.scale, 1);
+		//	windupDto.Opacity = MathUtils.GetDouble(shortcutDto.opacity, 1);
+		//	windupDto.Rotation = MathUtils.GetInt(shortcutDto.rotation);
+		//	windupDto.DegreesOffset = MathUtils.GetInt(shortcutDto.degreesOffset);
+		//	windupDto.FlipHorizontal = MathUtils.IsChecked(shortcutDto.flipHorizontal);
+		//	if (MathUtils.IsChecked(shortcutDto.fade))
+		//		windupDto.Fade();
+		//	if (MathUtils.IsChecked(shortcutDto.playToEndOnExpire))
+		//		windupDto.PlayToEndOnExpire = true;
 
-			int deltaX = MathUtils.GetInt(shortcutDto.moveLeftRight);
-			int deltaY = MathUtils.GetInt(shortcutDto.moveUpDown);
-			windupDto.Offset = new Vector(deltaX, deltaY);
+		//	int deltaX = MathUtils.GetInt(shortcutDto.moveLeftRight);
+		//	int deltaY = MathUtils.GetInt(shortcutDto.moveUpDown);
+		//	windupDto.Offset = new Vector(deltaX, deltaY);
 
-			windupDto.StartSound = shortcutDto.startSound;
-			windupDto.EndSound = shortcutDto.endSound;
-			windupDto.Description = shortcutDto.description;
-			return windupDto;
-		}
+		//	windupDto.StartSound = shortcutDto.startSound;
+		//	windupDto.EndSound = shortcutDto.endSound;
+		//	windupDto.Description = shortcutDto.description;
+		//	return windupDto;
+		//}
 
 		public static WindupDto FromItemEffect(ItemEffect itemEffect, string effectName)
 		{
+			if (itemEffect == null)
+				return null;
+
 			WindupDto result = new WindupDto();
 			result.Effect = itemEffect.effect;
-			result.Name = effectName;
+
 			result.Scale = itemEffect.scale;
 			result.Opacity = itemEffect.opacity;
 			if (itemEffect.fade)
@@ -162,6 +165,31 @@ namespace DndCore
 				result.FadeIn = 500;
 				result.FadeOut = 900;
 			}
+			else
+			{
+				result.FadeIn = itemEffect.FadeIn;
+				result.FadeOut = itemEffect.FadeOut;
+			}
+
+			switch (itemEffect.kind)
+			{
+				case ItemEffectKind.None:
+					result.Name = effectName;
+					break;
+				case ItemEffectKind.Windup:
+					result.Name = "Windup." + effectName;
+					break;
+				case ItemEffectKind.Spell:
+					result.Name = "Spell." + effectName;
+					break;
+				case ItemEffectKind.Strike:
+					result.Name = "Strike." + effectName;
+					break;
+				case ItemEffectKind.Target:
+					result.Name = "Target." + effectName;
+					break;
+			}
+			result.Lifespan = itemEffect.Lifespan;
 
 			result.Hue = MathUtils.GetInt(itemEffect.hue);
 			result.Saturation = itemEffect.saturation;

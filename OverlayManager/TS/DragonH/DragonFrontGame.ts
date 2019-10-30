@@ -155,6 +155,7 @@ class DragonFrontGame extends DragonGame {
 	allEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
 	dragonFrontSounds: DragonFrontSounds;
+    activePlayerId: number;
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -691,7 +692,7 @@ class DragonFrontGame extends DragonGame {
 		}
 	}
 
-	static readonly nameCenterY: number = 1056;
+	static readonly nameCenterY: number = 1052;
 	static readonly nameplateHalfHeight: number = 24;
 
 	initializePlayerData(playerData: string): any {
@@ -705,6 +706,7 @@ class DragonFrontGame extends DragonGame {
 
 	playerChanged(playerID: number, pageID: number, playerData: string): void {
 		super.playerChanged(playerID, pageID, playerData);
+		this.activePlayerId = playerID;
 	}
 
 	// TODO: Keep these in sync with those MainWindow.xaml.cs
@@ -836,7 +838,7 @@ class DragonFrontGame extends DragonGame {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
 		context.fillStyle = '#ffffff';
-		context.font = '36px Blackadder ITC';
+		context.font = '31px Blackadder ITC';
 
 		let sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
 
@@ -887,8 +889,8 @@ class DragonFrontGame extends DragonGame {
 				sprite.hueShift = player.hueShift;
 				sprite.shiftColor(context, now);
 			}
-			this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0,
-				plateWidth, this.nameplateMain.spriteHeight, plateWidth, this.nameplateMain.spriteHeight);
+      let height = this.nameplateMain.spriteHeight;
+			this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
 
 			let leftX: number = centerX - plateWidth / 2;
 			this.nameplateParts.baseAnimation.drawByIndex(context, leftX - this.nameplateParts.originX, sprite.y - this.nameplateParts.originY, 0);
@@ -914,10 +916,20 @@ class DragonFrontGame extends DragonGame {
 	}
 
 	showNameplates(context: CanvasRenderingContext2D, now: number) {
+		let activePlayer: Character = null;
+		let playerIndex: number = 0;
 		for (var i = 0; i < this.players.length; i++) {
 			let player: Character = this.players[i];
+			if (player.playerID == this.activePlayerId) {
+				activePlayer = player;
+				playerIndex = i;
+				continue;
+			}
 			this.showNameplate(context, player, i, now);
 		}
+
+		// Place active player on top:
+		this.showNameplate(context, activePlayer, playerIndex, now);
 	}
 
 	moveFred(movement: string): void {

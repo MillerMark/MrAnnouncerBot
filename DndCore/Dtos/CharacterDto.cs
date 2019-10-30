@@ -9,9 +9,14 @@ namespace DndCore
 		public string features { get; set; }
 		public string playingNow { get; set; }
 		public string race { get; set; }
+		public string heShe { get; set; }
+		public string hisHer { get; set; }
+		public string himHer { get; set; }
 		public string class1 { get; set; }
+		public string subclass1 { get; set; }
 		public string level1 { get; set; }
 		public string class2 { get; set; }
+		public string subclass2 { get; set; }
 		public string level2 { get; set; }
 		public int hitPoints { get; set; }
 		public int maxHitPoints { get; set; }

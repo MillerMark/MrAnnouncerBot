@@ -12,7 +12,6 @@ namespace DHDM
 		void RollWildMagicCheck();
 		void RollWildMagic();
 		void SelectCharacter(int playerId);
-		void SetSpellSlotLevel(int level);
 		void SelectPlayerShortcut(string shortcutName, int playerId);
 		void GetData(string dataId);
 		void SetVantage(VantageKind dataId);

@@ -254,7 +254,7 @@ namespace DndCore
 			triggeringAlarms = true;
 			try
 			{
-				for (int i = alarms.Count - 1; i >= 0; i--)
+				for (int i = 0; i < alarms.Count; i++)
 				{
 					DndAlarm alarm = alarms[i];
 					if (alarm.TriggerTime > futureTime)
@@ -263,7 +263,7 @@ namespace DndCore
 					TriggerAlarm(alarm);
 				}
 
-				for (int i = dailyAlarms.Count - 1; i >= 0; i--)
+				for (int i = 0; i < dailyAlarms.Count; i++)
 				{
 					DndDailyAlarm dailyAlarm = dailyAlarms[i];
 					int daysFromNow = (futureTime - dailyAlarm.TriggerTime).Days;

@@ -299,7 +299,8 @@ namespace DndCore
 		public bool MustRollDiceToCast()
 		{
 			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || 
-				(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr));
+				(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr) && 
+				(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
 		public void TriggerOnCasting(Character player, Creature targetCreature, CastedSpell castedSpell)

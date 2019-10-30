@@ -9,7 +9,7 @@ namespace DndCore
 	{
 		string name;
 
-		public string StandardName
+		public string Name
 		{
 			get { return name; }
 			set

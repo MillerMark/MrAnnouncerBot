@@ -9,6 +9,7 @@ namespace DHDM
 	{
 		public int PlayerId { get; set; }
 		public CharacterSheets CharacterSheets { get; set; }
+		public ListBox StateList { get; set; }
 		public PlayerTabItem()
 		{
 

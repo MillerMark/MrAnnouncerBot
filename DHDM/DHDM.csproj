@@ -307,7 +307,6 @@
     <Compile Include="SetVantageCommand.cs" />
     <Compile Include="ShortcutButton.cs" />
     <Compile Include="SkillCheckCommand.cs" />
-    <Compile Include="SpellSlotSelectorCommand.cs" />
     <Compile Include="StaticCommands.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>

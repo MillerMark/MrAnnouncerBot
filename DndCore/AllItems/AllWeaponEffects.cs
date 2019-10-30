@@ -6,15 +6,14 @@ namespace DndCore
 {
 	public static class AllWeaponEffects
 	{
-		static AllWeaponEffects()
+		public static void Invalidate()
 		{
-			WeaponEffects = new List<ItemEffect>();
-			LoadData();
+			weaponEffects = null;
 		}
 
-		public static void LoadData()
+		static void LoadData()
 		{
-			WeaponEffects.Clear();
+			weaponEffects = new List<ItemEffect>();
 			List<ItemEffectDto> weaponEffectDtos = CsvData.Get<ItemEffectDto>(Folders.InCoreData("DnD - WeaponEffects.csv"), false);
 			foreach (ItemEffectDto itemEffect in weaponEffectDtos)
 			{
@@ -22,8 +21,20 @@ namespace DndCore
 			}
 		}
 
-		public static List<ItemEffect> WeaponEffects { get; private set; }
-
+		static List<ItemEffect> weaponEffects = new List<ItemEffect>();
+		public static List<ItemEffect> WeaponEffects
+		{
+			get
+			{
+				if (weaponEffects == null)
+					LoadData();
+				return weaponEffects;
+			}
+			private set
+			{
+				weaponEffects = value;
+			}
+		}
 		public static List<ItemEffect> GetAll(string weaponName)
 		{
 			return WeaponEffects.Where(x => x.name == weaponName).OrderBy(o => o.index).ToList();

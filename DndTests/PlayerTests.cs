@@ -34,11 +34,11 @@ namespace DndTests
 		public void TestPlayerLoad()
 		{
 			Character willy = AllPlayers.Get("Willy");
-			Assert.AreEqual(5, willy.level);
-			Assert.AreEqual(43, willy.hitPoints);
-			Assert.AreEqual(200, willy.goldPieces);
+			Assert.AreEqual(6, willy.level);
+			Assert.AreEqual(45, willy.hitPoints);
+			Assert.AreEqual(204, willy.goldPieces);
 			Assert.AreEqual(Skills.insight | Skills.perception | Skills.performance | Skills.sleightOfHand | Skills.stealth, willy.proficientSkills);
-			Assert.AreEqual(Skills.deception | Skills.persuasion, willy.doubleProficiency);
+			Assert.AreEqual(Skills.deception | Skills.persuasion | Skills.sleightOfHand | Skills.perception, willy.doubleProficiency);
 			Assert.AreEqual(Ability.dexterity | Ability.intelligence, willy.savingThrowProficiency);
 			Assert.AreEqual(Ability.none, willy.spellCastingAbility);
 			Assert.AreEqual(3, willy.initiative);
@@ -93,8 +93,8 @@ namespace DndTests
 		public void TestLady()
 		{
 			Character lady = AllPlayers.Get("Lady");
-			Assert.AreEqual(5, lady.level);
-			Assert.AreEqual(39, lady.hitPoints);
+			Assert.AreEqual(6, lady.level);
+			Assert.AreEqual(46, lady.hitPoints);
 			Assert.AreEqual(0, lady.goldPieces);
 			Assert.AreEqual(Skills.animalHandling | Skills.arcana| Skills.intimidation| Skills.investigation| Skills.perception | Skills.survival, lady.proficientSkills);
 			Assert.AreEqual(Skills.none, lady.doubleProficiency);
@@ -139,7 +139,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestPlayerAmmunition()
 		{
-			AllPlayers.LoadData();
+			AllPlayers.Invalidate();
 			Character willy = AllPlayers.Get("Willy");
 			Assert.AreEqual(20, willy.GetAmmunitionCount("Arrow"));
 			Character merkin = AllPlayers.Get("Merkin");

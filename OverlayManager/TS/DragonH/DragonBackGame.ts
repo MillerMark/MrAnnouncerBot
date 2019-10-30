@@ -7,7 +7,7 @@
 class DragonBackGame extends DragonGame {
 	readonly clockMargin: number = 0;
 	readonly clockOffsetX: number = 0; // 49;
-	readonly clockBottomY: number = screenHeight; // 230
+	readonly clockBottomY: number = screenHeight; // 232
 	readonly clockScale: number = 0.84;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
@@ -71,7 +71,7 @@ class DragonBackGame extends DragonGame {
 
 		const horizontalMargin: number = 10;
 		const verticalMargin: number = 15;
-		const textHeight: number = 28;
+		const textHeight: number = 26;
 		context.font = textHeight + "px Baskerville Old Face";
 		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
 		let boxHeight: number = textHeight + 2 * verticalMargin;
@@ -100,7 +100,7 @@ class DragonBackGame extends DragonGame {
 	}
 
 	private createFireWallBehindClock() {
-		const displayMargin: number = 16;
+		const displayMargin: number = 18;
 		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.clockPanel.originY * 2 + displayMargin);
 		fireWall.scale = 0.6 * this.clockScale;
 		fireWall.opacity = 0.8;

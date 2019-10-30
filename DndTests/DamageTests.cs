@@ -29,6 +29,7 @@ namespace DndTests
 			Assert.AreEqual(6, battleaxe2H.ToHitModifier);
 
 			PlayerActionShortcut greatsword = AllActionShortcuts.Get(PlayerID.Ava, "Greatsword")[0];
+			Assert.AreEqual(1, greatsword.PlusModifier);
 			Assert.IsNotNull(greatsword);
 			Assert.AreEqual("2d6+4(slashing)", greatsword.Dice);
 			Assert.AreEqual(7, greatsword.ToHitModifier);

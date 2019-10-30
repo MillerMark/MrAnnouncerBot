@@ -28,7 +28,7 @@ namespace DndTests
 		public void TestAutoAdvanceRound()
 		{
 			DndGame game = DndGame.Instance;
-			game.StartNew();
+			game.GetReadyToPlay();
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
 			Monster joeTheVineBlight = MonsterBuilder.BuildVineBlight("Joe");
 

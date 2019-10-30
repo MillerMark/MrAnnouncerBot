@@ -10,8 +10,10 @@ namespace DndCore
 		public string RequiresActivation { get; set; }
 		public string ActivationTime { get; set; }
 		public string ShortcutName { get; set; }
+		public string ShortcutAvailableWhen { get; set; }
 		public string Magic { get; set; }
-		public string Conditions { get; set; }
+		public string ActivateWhen { get; set; }
+		public string OnStartGame { get; set; }
 		public string OnActivate { get; set; }
 		public string ActivationMessage { get; set; }
 		public string OnDeactivate { get; set; }

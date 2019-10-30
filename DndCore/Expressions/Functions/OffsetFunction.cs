@@ -49,9 +49,10 @@ namespace DndCore
 					player.SetState(variableName, MathUtils.GetInt(existingValueRaw.ToString()) + valueInt);
 				else
 					player.SetState(variableName, MathUtils.GetDouble(existingValueRaw.ToString()) + valueDouble);
+				return null;
 			}
 
-			return null;
+			throw new Exception($"Variable \"{variableName}\" not found.");
 		}
 	}
 }

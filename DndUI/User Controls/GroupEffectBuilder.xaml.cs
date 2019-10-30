@@ -104,7 +104,7 @@ namespace DndUI
 			{
 				if (frmPickOne.SelectedEntry is EffectEntry effectEntry)
 				{
-					string entryName = effectEntry.StandardName;
+					string entryName = effectEntry.Name;
 
 					TimeLineEffect newEntry = AddEntry(TimeSpan.Zero, GetEffectDuration(effectEntry), entryName, effectEntry);
 					newEntry.PropertyChanged += Entry_PropertyChanged;

@@ -62,6 +62,7 @@ namespace DndCore
 		public int disadvantageDiceThisRoll = 0;
 		public Skills doubleProficiency = 0;
 		int enemyAdvantage;
+		public int ActionsPerTurn;
 
 		bool evaluatingExpression;
 		public int experiencePoints = 0;
@@ -684,15 +685,22 @@ namespace DndCore
 			character.name = characterDto.name;
 			character.playingNow = !string.IsNullOrWhiteSpace(characterDto.playingNow);
 			character.race = characterDto.race;
+			character.heShe = characterDto.heShe;
+			character.hisHer = characterDto.hisHer;
+			character.himHer = characterDto.himHer;
+			character.HeShe = characterDto.heShe.InitialCap();
+			character.HisHer = characterDto.hisHer.InitialCap();
 			string class1 = characterDto.class1;
 			int level1 = MathUtils.GetInt(characterDto.level1);
+			SubClass subClass1 = DndUtils.ToSubClass(characterDto.subclass1);
 			if (!string.IsNullOrEmpty(class1) && level1 > 0)
-				character.AddClass(class1, level1);
+				character.AddClass(class1, level1).SubClass = subClass1;
 
 			string class2 = characterDto.class2;
+			SubClass subClass2 = DndUtils.ToSubClass(characterDto.subclass2);
 			int level2 = MathUtils.GetInt(characterDto.level2);
 			if (!string.IsNullOrEmpty(class2) && level2 > 0)  // Multi-class
-				character.AddClass(class2, level2);
+				character.AddClass(class2, level2).SubClass = subClass2;
 
 			character.hitPoints = characterDto.hitPoints;
 			character.maxHitPoints = characterDto.maxHitPoints;
@@ -722,7 +730,6 @@ namespace DndCore
 			character.AddSpellsFrom(characterDto.spells);
 			character.weaponProficiency = DndUtils.ToWeapon(characterDto.weaponProficiency);
 			character.leftMostPriority = characterDto.leftMostPriority;
-			character.ActivateFeaturesByConditions();
 			return character;
 		}
 
@@ -746,19 +753,6 @@ namespace DndCore
 				return;
 
 			foundFeature.Activate();
-		}
-		public void ActivateFeaturesByConditions()
-		{
-			foreach (AssignedFeature assignedFeature in features)
-			{
-				if (!assignedFeature.HasConditions())
-					continue;
-
-				if (assignedFeature.ConditionsSatisfied())
-					assignedFeature.Activate();
-				else
-					assignedFeature.Deactivate();
-			}
 		}
 
 		void AddAmmunition(string ammunitionStr)
@@ -791,11 +785,12 @@ namespace DndCore
 			}
 		}
 
-		public void AddClass(string name, int level)
+		public CharacterClass AddClass(string name, int level)
 		{
 			CharacterClass characterClass = new CharacterClass(name, level);
 			characterClass.LevelChanged += CharacterClass_LevelChanged;
 			Classes.Add(characterClass);
+			return characterClass;
 		}
 
 		public void AddDice(string diceStr)
@@ -858,6 +853,7 @@ namespace DndCore
 			knownSpell.ChargesRemaining = totalCharges;
 			knownSpell.ResetSpan = chargeResetSpan;
 			knownSpell.ItemName = itemName;
+			knownSpell.Player = this;
 			KnownSpells.Add(knownSpell);
 		}
 
@@ -1105,6 +1101,14 @@ namespace DndCore
 			return characterClass.Level;
 		}
 
+		public int GetLevel(Class dndClass)
+		{
+			CharacterClass characterClass = Classes.FirstOrDefault(x => x.Class == dndClass);
+			if (characterClass == null)
+				return 0;
+			return characterClass.Level;
+		}
+
 		int getModFromAbility(double abilityScore)
 		{
 			return (int)Math.Floor((abilityScore - 10) / 2);
@@ -1193,15 +1197,16 @@ namespace DndCore
 			{
 				if (DndUtils.CanCastSpells(characterClass.Name))
 				{
-					results[1] = DndUtils.GetAvailableSpellSlots(characterClass, 1);
-					results[2] = DndUtils.GetAvailableSpellSlots(characterClass, 2);
-					results[3] = DndUtils.GetAvailableSpellSlots(characterClass, 3);
-					results[4] = DndUtils.GetAvailableSpellSlots(characterClass, 4);
-					results[5] = DndUtils.GetAvailableSpellSlots(characterClass, 5);
-					results[6] = DndUtils.GetAvailableSpellSlots(characterClass, 6);
-					results[7] = DndUtils.GetAvailableSpellSlots(characterClass, 7);
-					results[8] = DndUtils.GetAvailableSpellSlots(characterClass, 8);
-					results[9] = DndUtils.GetAvailableSpellSlots(characterClass, 9);
+					// BUG: If a character multi-classes in two classes that can both cast spells, should we keep the spell slots separate?
+					results[1] += DndUtils.GetAvailableSpellSlots(characterClass, 1);
+					results[2] += DndUtils.GetAvailableSpellSlots(characterClass, 2);
+					results[3] += DndUtils.GetAvailableSpellSlots(characterClass, 3);
+					results[4] += DndUtils.GetAvailableSpellSlots(characterClass, 4);
+					results[5] += DndUtils.GetAvailableSpellSlots(characterClass, 5);
+					results[6] += DndUtils.GetAvailableSpellSlots(characterClass, 6);
+					results[7] += DndUtils.GetAvailableSpellSlots(characterClass, 7);
+					results[8] += DndUtils.GetAvailableSpellSlots(characterClass, 8);
+					results[9] += DndUtils.GetAvailableSpellSlots(characterClass, 9);
 				}
 			}
 			return results;
@@ -1217,7 +1222,7 @@ namespace DndCore
 
 			rechargeable = rechargeables.FirstOrDefault(x => x.VarName + STR_RechargeableMaxSuffix == key);
 			if (rechargeable != null)
-				return rechargeable.MaxValue;
+				return rechargeable.TotalCharges;
 
 			return null;
 		}
@@ -1339,24 +1344,49 @@ namespace DndCore
 
 			// HACK: Need a CastedSpell for the event. TimeSpellWasCast & SpellSlotLevel will not be correct.
 			CastedSpell castedSpell = new CastedSpell(spellJustCast, this);
-			foreach (AssignedFeature assignedFeature in features)
+			Expressions.BeginUpdate();
+			try
 			{
-				assignedFeature.SpellJustCast(this, castedSpell);
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.SpellJustCast(this, castedSpell);
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
 			}
 		}
+
 		public void JustSwungWeapon()
 		{
-			foreach (AssignedFeature assignedFeature in features)
+			Expressions.BeginUpdate();
+			try
 			{
-				assignedFeature.WeaponJustSwung(this);
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.WeaponJustSwung(this);
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
 			}
 		}
 
 		public void PlayerStartsTurn()
 		{
-			foreach (AssignedFeature assignedFeature in features)
+			Expressions.BeginUpdate();
+			try
 			{
-				assignedFeature.PlayerStartsTurn(this);
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.PlayerStartsTurn(this);
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
 			}
 		}
 
@@ -1375,9 +1405,9 @@ namespace DndCore
 			StateChanged?.Invoke(sender, ea);
 		}
 
-		void OnStateChanged(string key, object oldValue, object newValue)
+		void OnStateChanged(string key, object oldValue, object newValue, bool isRechargeable = false)
 		{
-			OnStateChanged(this, new StateChangedEventArgs(key, oldValue, newValue));
+			OnStateChanged(this, new StateChangedEventArgs(key, oldValue, newValue, isRechargeable));
 		}
 
 		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
@@ -1400,15 +1430,16 @@ namespace DndCore
 				return;
 			queuedRecalcOptions = RecalcOptions.None;
 			reapplyingActiveFeatures = true;
+			Expressions.BeginUpdate();
 			try
 			{
 				foreach (AssignedFeature assignedFeature in features)
 				{
 					if (assignedFeature == ignored)
 						continue;
-					if (!assignedFeature.HasConditions())
+					if (!assignedFeature.ActivatesConditionally())
 						continue;
-					if (assignedFeature.ConditionsSatisfied())
+					if (assignedFeature.ShouldActivateNow())
 						assignedFeature.Activate(forceApply);
 					else
 						assignedFeature.Deactivate(forceApply);
@@ -1416,6 +1447,7 @@ namespace DndCore
 			}
 			finally
 			{
+				Expressions.EndUpdate(this);
 				reapplyingActiveFeatures = false;
 				if (queuedRecalcOptions != RecalcOptions.None)
 					Recalculate(queuedRecalcOptions);
@@ -1508,9 +1540,17 @@ namespace DndCore
 				}
 			}
 
-			foreach (AssignedFeature assignedFeature in features)
+			Expressions.BeginUpdate();
+			try
 			{
-				assignedFeature.RollIsComplete(this);
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.RollIsComplete(this);
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
 			}
 		}
 
@@ -1544,7 +1584,7 @@ namespace DndCore
 						return;
 					int oldValue = rechargeable.ChargesUsed;
 					rechargeable.ChargesUsed = newIntValue;
-					OnStateChanged(key, oldValue, newValue);
+					OnStateChanged(key, oldValue, newValue, true);
 					return;
 				}
 
@@ -1552,11 +1592,11 @@ namespace DndCore
 				if (rechargeable != null)
 				{
 					int newIntValue = (int)newValue;
-					if (newIntValue == rechargeable.MaxValue)
+					if (newIntValue == rechargeable.TotalCharges)
 						return;
-					int oldValue = rechargeable.MaxValue;
-					rechargeable.MaxValue = newIntValue;
-					OnStateChanged(key + STR_RechargeableMaxSuffix, oldValue, newValue);
+					int oldValue = rechargeable.TotalCharges;
+					rechargeable.TotalCharges = newIntValue;
+					OnStateChanged(key + STR_RechargeableMaxSuffix, oldValue, newValue, false); // max value is not considered a rechargeable, as the max value does not change and has no corresponding UI key.
 					return;
 				}
 
@@ -1583,7 +1623,7 @@ namespace DndCore
 			evaluatingExpression = true;
 		}
 
-		public void StartTurn()
+		public void TestStartTurn()
 		{
 			StartTurnResetState();
 			PlayerStartsTurn();
@@ -1593,6 +1633,7 @@ namespace DndCore
 
 		public override void StartTurnResetState()
 		{
+			ActionsPerTurn = 1;
 			enemyAdvantage = 0;
 			_attackNum = 0;
 			WeaponsInHand = 0;
@@ -1644,7 +1685,7 @@ namespace DndCore
 			}
 		}
 
-		void AddRechargeable(string displayName, string varName, int maxValue, string cycle)
+		public void AddRechargeable(string displayName, string varName, int maxValue, string cycle)
 		{
 			if (maxValue == 0)
 				return;
@@ -1667,7 +1708,7 @@ namespace DndCore
 
 		public void UseSpellSlot(int spellSlotLevel)
 		{
-			string key = GetSpellSlotLevelKey(spellSlotLevel);
+			string key = DndUtils.GetSpellSlotLevelKey(spellSlotLevel);
 			SetState(key, GetIntState(key) + 1);
 		}
 
@@ -1683,30 +1724,27 @@ namespace DndCore
 
 		private void RechargeAfterHours(int hours)
 		{
+			List<string> keys = new List<string>();
 			bool stateChanged = false;
 			foreach (Rechargeable rechargeable in rechargeables)
 			{
 				if (rechargeable.Cycle.GetTimeSpan().TotalHours <= hours)
 					if (rechargeable.ChargesUsed != 0)
 					{
+						keys.Add(rechargeable.VarName);
 						rechargeable.ChargesUsed = 0;
 						stateChanged = true;
 					}
 			}
 
 			if (stateChanged)
-				OnStateChanged(this, new StateChangedEventArgs("Rechargeables", 1, 0));
+				OnStateChanged(this, new StateChangedEventArgs(string.Join(",", keys), 1, 0, true));
 		}
 
 		public bool HasRemainingSpellSlotCharges(int spellSlotLevel)
 		{
-			string key = GetSpellSlotLevelKey(spellSlotLevel);
+			string key = DndUtils.GetSpellSlotLevelKey(spellSlotLevel);
 			return GetIntState(key) < GetIntState(key + STR_RechargeableMaxSuffix);
-		}
-
-		private static string GetSpellSlotLevelKey(int spellSlotLevel)
-		{
-			return $"SpellSlots{spellSlotLevel}";
 		}
 
 		public void SetTimeBasedEvents()
@@ -1730,16 +1768,191 @@ namespace DndCore
 			if (ea.Alarm.Name.StartsWith("Recharge:"))
 			{
 				string itemName = ea.Alarm.Name.EverythingAfter("Recharge:");
-				KnownSpell foundItem = KnownSpells.FirstOrDefault(x => x.ItemName == itemName);
-				if (foundItem != null)
+				KnownSpell item = KnownSpells.FirstOrDefault(x => x.ItemName == itemName);
+				if (item != null)
 				{
-					foundItem.ChargesRemaining = foundItem.TotalCharges;
+					item.ChargesRemaining = item.TotalCharges;
 				}
+				OnRequestMessageToDungeonMaster($"{firstName}'s {item.ItemName} recharged ({item.TotalCharges}).");
 			}
 		}
+
+		public string firstName
+		{
+			get
+			{
+				return DndUtils.GetFirstName(name);
+			}
+		}
+		public string heShe { get; set; }
+		public string hisHer { get; set; }
+		public string himHer { get; set; }
+		public string HisHer { get; set; }
+		public string HeShe { get; set; }
+
+		public void SetRemainingChargesOnItem(string itemName, int value)
+		{
+			string varName = DndUtils.ToVarName(itemName);
+			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
+			int oldChargesRemaining = rechargeable.ChargesRemaining;
+			if (rechargeable != null && oldChargesRemaining != value)
+			{
+				int oldChargesUsed = rechargeable.ChargesUsed;
+				rechargeable.SetRemainingCharges(value);
+				OnStateChanged(this, new StateChangedEventArgs(rechargeable.VarName, oldChargesUsed, rechargeable.ChargesUsed, true));
+			}
+		}
+
+		public int GetRemainingChargesOnItem(string itemName)
+		{
+			string varName = DndUtils.ToVarName(itemName);
+			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
+			if (rechargeable != null)
+				return rechargeable.ChargesRemaining;
+			return 0;
+		}
+
+		protected virtual void OnRequestMessageToDungeonMaster(string message)
+		{
+			RequestMessageToDungeonMaster?.Invoke(this, new MessageEventArgs(message));
+		}
+		public int GetSpellcastingLevel()
+		{
+			return level;
+			//foreach (CharacterClass characterClass in Classes)
+			//{
+			//	switch (characterClass.Class)
+			//	{
+			//		case Class.None:
+			//			return 0;
+			//		case Class.Artificer:
+			//		case Class.Bard:
+			//		case Class.BloodHunter:
+			//		case Class.Druid:
+			//		case Class.Cleric:
+			//			return characterClass.Level;
+
+			//		case Class.Paladin:
+			//		case Class.Ranger:
+			//			return characterClass.Level / 2;
+
+			//		case Class.Barbarian:
+			//			return 0;
+			//		case Class.Fighter:
+
+			//			break;
+			//		case Class.Monk:
+
+			//			// TODO: Check this logic against D&D rules:
+			//			if (characterClass.SubClass == SubClass.WayOfTheFourElements)
+			//				return characterClass.Level / 2;
+			//			else
+			//				return characterClass.Level;
+
+			//		case Class.Rogue:
+			//			if (characterClass.SubClass == SubClass.ArcaneTrickster)
+			//			break;
+			//		case Class.Sorcerer:
+
+			//			break;
+			//		case Class.Warlock:
+
+			//			break;
+			//		case Class.Wizard:
+			//			
+			//			break;
+			//	}
+			//}
+			// return 0;
+		}
+
+		public void StartGame()
+		{
+			Expressions.BeginUpdate();
+			try
+			{
+				foreach (AssignedFeature assignedFeature in features)
+					assignedFeature.StartGame(this);
+			}
+			finally
+			{
+				Expressions.EndUpdate(null); // We are about to activate always-on features. No need to do this twice.
+			}
+
+			ActivateAlwaysOnFeatures();
+			ActivateConditionallySatisfiedFeatures();
+		}
+
+		public void ActivateConditionallySatisfiedFeatures()
+		{
+			Expressions.BeginUpdate();
+			try
+			{
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.ActivateIfConditionallySatisfied();
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
+			}
+		}
+
+		public void ActivateAlwaysOnFeatures()
+		{
+			Expressions.BeginUpdate();
+			try
+			{
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.ActivateIfAlwaysOn();
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
+			}
+		}
+		string GetValueStr(object value)
+		{
+			if (value == null)
+				return "null";
+			return value.ToString();
+		}
+
+		public List<string> GetStateReport()
+		{
+			List<string> report = new List<string>();
+			foreach (KeyValuePair<string, object> pair in states)
+			{
+				report.Add($"{pair.Key} = {GetValueStr(pair.Value)}");
+			}
+
+			foreach (Rechargeable rechargeable in rechargeables)
+			{
+				report.Add($"{rechargeable.DisplayName} ({rechargeable.VarName}): {rechargeable.ChargesUsed}/{rechargeable.TotalCharges}");
+			}
+
+			return report;
+		}
+		public void TestEvaluateAllExpressions()
+		{
+			foreach (AssignedFeature assignedFeature in features)
+			{
+				assignedFeature.TestEvaluateAllExpressions(this);
+			}
+
+			foreach (KnownSpell knownSpell in KnownSpells)
+			{
+				knownSpell.TestEvaluateAllExpressions(this);
+			}
+		}
+
 
 		public event CastedSpellEventHandler SpellDispelled;
 		public event RollDiceEventHandler RollDiceRequest;
 		public event StateChangedEventHandler StateChanged;
+		public event MessageEventHandler RequestMessageToDungeonMaster;
 	}
 }

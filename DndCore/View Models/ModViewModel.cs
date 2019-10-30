@@ -45,7 +45,7 @@ namespace DndCore
 
 		public ModViewModel(string name) : this()
 		{
-			StandardName = name;
+			Name = name;
 		}
 
 		public double Absolute

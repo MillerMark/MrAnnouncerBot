@@ -14,6 +14,7 @@ namespace DndCore
 		public const string STR_CastedSpell = "castedSpell";
 		static List<DndFunction> functions = new List<DndFunction>();
 		static List<DndVariable> variables = new List<DndVariable>();
+		public static List<string> history = new List<string>();
 
 		public static void OnExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
 		{
@@ -37,10 +38,12 @@ namespace DndCore
 		}
 		public static object Get(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target, spell);
+			AddPlayerVariables(player, $"Get({expression})", target, spell);
 			try
 			{
-				return expressionEvaluator.Evaluate(Clean(expression));
+				object result = expressionEvaluator.Evaluate(Clean(expression));
+				Log($"  returns {result};");
+				return result;
 			}
 			finally
 			{
@@ -50,12 +53,14 @@ namespace DndCore
 
 		public static object Get<T>(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target, spell);
+			AddPlayerVariables(player, $"Get<{typeof(T).ToString()}>({expression})", target, spell);
 			try
 			{
 				try
 				{
-					return (T)expressionEvaluator.Evaluate(Clean(expression));
+					T result = (T)expressionEvaluator.Evaluate(Clean(expression));
+					Log($"  returns {result};");
+					return result;
 				}
 				catch (Exception ex)
 				{
@@ -73,7 +78,7 @@ namespace DndCore
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return;
-			AddPlayerVariables(player, target, castedSpell);
+			AddPlayerVariables(player, $"Do({expression})", target, castedSpell);
 			try
 			{
 				string script = Clean(expression);
@@ -110,10 +115,12 @@ namespace DndCore
 
 		public static int GetInt(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target, spell);
+			AddPlayerVariables(player, $"GetInt({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
+				Log($"  returns {result};");
+
 				if (result is int)
 					return (int)result;
 				if (result is double)
@@ -133,22 +140,26 @@ namespace DndCore
 
 		public static bool GetBool(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target, spell);
+			AddPlayerVariables(player, $"GetBool({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
+				bool resultBool;
 				if (result is int)
-					return (int)result == 1;
-				if (result is string)
+					resultBool = (int)result == 1;
+				else if (result is string)
 				{
 					string compareStr = ((string)result).Trim().ToLower();
-					return compareStr == "x" || compareStr == "true";
+					resultBool = compareStr == "x" || compareStr == "true";
 				}
+				else if (result is bool)
+					resultBool = (bool)result;
+				else
+					resultBool = false;
 
-				if (result is bool)
-					return (bool)result;
+				Log($"  returns {resultBool};");
 
-				return false;
+				return resultBool;
 			}
 			finally
 			{
@@ -158,19 +169,22 @@ namespace DndCore
 
 		public static string GetStr(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, target, spell);
+			AddPlayerVariables(player, $"GetStr({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
+				string resultStr = string.Empty;
 				if (result is string)
 				{
-					return (string)result;
+					resultStr = (string)result;
 				}
+				else if (result == null)
+					resultStr = string.Empty;
+				else
+					resultStr = result.ToString();
 
-				if (result == null)
-					return string.Empty;
-
-				return result.ToString();
+				Log($"  returns \"{resultStr}\";");
+				return resultStr;
 			}
 			finally
 			{
@@ -179,8 +193,11 @@ namespace DndCore
 		}
 
 		static Stack<IDictionary<string, object>> variableStack = new Stack<IDictionary<string, object>>();
-		private static void AddPlayerVariables(Character player, Creature target = null, CastedSpell spell = null)
+		private static void AddPlayerVariables(Character player, string callingProc, Creature target = null, CastedSpell spell = null)
 		{
+			//historyStack.Push(history);
+			//history = new List<string>();
+			LogCallingProc(callingProc);
 			variableStack.Push(expressionEvaluator.Variables);
 			expressionEvaluator.Variables = new Dictionary<string, object>()
 			{
@@ -190,16 +207,17 @@ namespace DndCore
 			};
 			if (player != null)
 				player.StartingExpressionEvaluation();
+			BeginUpdate();
 		}
 
 		static void FinishedEvaluation(Character player)
 		{
 			if (variableStack.Count > 0)
 				expressionEvaluator.Variables = variableStack.Pop();
-			if (player != null)
-				player.CompletingExpressionEvaluation();
+			EndUpdate(player);
 		}
 
+		static int callDepth;
 
 
 		static ExpressionEvaluator expressionEvaluator;
@@ -232,6 +250,11 @@ namespace DndCore
 			return null;
 		}
 
+		static string GetArgsStr(List<string> args)
+		{
+			return string.Join(", ", args);
+		}
+
 		private static void ExpressionEvaluator_EvaluateFunction(object sender, FunctionEvaluationEventArg e)
 		{
 			Character player = GetPlayer(e.Evaluator.Variables);
@@ -241,7 +264,16 @@ namespace DndCore
 			if (function != null)
 			{
 				e.Value = function.Evaluate(e.Args, e.Evaluator, player, target, castedSpell);
+				Log($"  {e.Name}({GetArgsStr(e.Args)}) => {GetValueStr(e.Value)}");
 			}
+		}
+
+		private static string GetValueStr(object value)
+		{
+			if (value == null)
+				return "null";
+
+			return value.ToString();
 		}
 
 		private static void ExpressionEvaluator_EvaluateVariable(object sender, VariableEvaluationEventArg e)
@@ -252,6 +284,7 @@ namespace DndCore
 			if (variable != null)
 			{
 				e.Value = variable.GetValue(e.Name, e.Evaluator, player);
+				Log($"  {e.Name} == {e.Value}");
 			}
 		}
 
@@ -267,6 +300,46 @@ namespace DndCore
 					AddFunction((DndFunction)Activator.CreateInstance(type));
 				if (type.BaseType == typeof(DndVariable))
 					AddVariable((DndVariable)Activator.CreateInstance(type));
+			}
+		}
+		public static bool LogHistory { get; set; }
+
+		static void Log(string str)
+		{
+			if (!LogHistory)
+				return;
+			history.Add(str);
+		}
+
+		static void LogCallingProc(string callingProc)
+		{
+			if (!LogHistory)
+				return;
+			if (history.Count > 0)
+				history.Add("");
+			history.Add(callingProc);
+		}
+
+		public static void ClearHistory()
+		{
+			history.Clear();
+		}
+		public static void BeginUpdate()
+		{
+			callDepth++;
+		}
+		public static void EndUpdate(Character player = null)
+		{
+			callDepth--;
+			if (player != null && callDepth == 0)
+				player.CompletingExpressionEvaluation();
+		}
+
+		public static string HistoryLog
+		{
+			get
+			{
+				return string.Join(Environment.NewLine, history);
 			}
 		}
 	}

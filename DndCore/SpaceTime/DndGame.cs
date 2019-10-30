@@ -24,6 +24,7 @@ namespace DndCore
 			}
 		}
 
+		public event MessageEventHandler RequestMessageToDungeonMaster;
 		public event CastedSpellEventHandler SpellDispelled;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
@@ -157,13 +158,24 @@ namespace DndCore
 		public Character AddPlayer(Character player)
 		{
 			player.Game = this;
-			player.StateChanged += Player_StateChanged;
-			player.RollDiceRequest += Player_RollDiceRequest ;
-			player.SpellDispelled += Player_SpellDispelled;
+			HookPlayerEvents(player);
 			player.AddSpellSlots();
 			player.SetTimeBasedEvents();
 			Players.Add(player);
 			return player;
+		}
+
+		private void HookPlayerEvents(Character player)
+		{
+			player.StateChanged += Player_StateChanged;
+			player.RollDiceRequest += Player_RollDiceRequest;
+			player.SpellDispelled += Player_SpellDispelled;
+			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
+		}
+
+		private void Player_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
+		{
+			TellDungeonMaster(ea.Message);
 		}
 
 		private void Player_SpellDispelled(object sender, CastedSpellEventArgs ea)
@@ -178,7 +190,7 @@ namespace DndCore
 
 		private void Player_StateChanged(object sender, StateChangedEventArgs ea)
 		{
-			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea.Key, ea.OldValue, ea.NewValue));
+			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea.Key, ea.OldValue, ea.NewValue, ea.IsRechargeable));
 		}
 
 		Creature firstPlayer = null;
@@ -190,6 +202,8 @@ namespace DndCore
 			lastPlayer = null;
 			InCombat = true;
 			OnEnterCombat(this, dndGameEventArgs);
+			TellDungeonMaster("---");
+			TellDungeonMaster("Entering combat...");
 		}
 
 		public void MoveAllPlayersToActiveRoom()
@@ -206,20 +220,24 @@ namespace DndCore
 			roundIndex = 0;
 			InCombat = false;
 			OnExitCombat(this, dndGameEventArgs);
+			TellDungeonMaster("Exiting combat...");
 		}
 		Creature activeCreature;
 
-		public void EndingTurnFor(Character character)
+		// TODO: As a cleanup, end the last creature's turn when 6 seconds pass after combat ends.
+		public void EndingTurnFor(Creature creature)
 		{
-			if (activeCreature == character)
+			if (activeCreature == creature)
 				activeCreature = null;
+			SendReminders(creature, RoundPoint.End);
 		}
 
-		public void StartingTurnFor(Character character)
+		public void StartingTurnFor(Creature creature)
 		{
-			if (activeCreature != character && activeCreature is Character player)
+			if (activeCreature != creature && activeCreature is Character player)
 				player.EndTurn();
-			activeCreature = character;
+			activeCreature = creature;
+			SendReminders(creature, RoundPoint.Start);
 		}
 
 		public void SetHiddenThreshold(Creature creature, int value, DiceRollType rollType)
@@ -240,6 +258,7 @@ namespace DndCore
 			roundIndex = 0;
 			firstPlayer = player;
 			OnRoundStarting(this, dndGameEventArgs);
+			TellDungeonMasterWhichRound();
 		}
 
 		void AdvanceRound()
@@ -248,9 +267,17 @@ namespace DndCore
 			roundIndex++;
 
 			if (InCombat)
+			{
 				timeClock.Advance(6000);  // 6 seconds per round
+				TellDungeonMasterWhichRound();
+			}
 
 			OnRoundStarting(this, dndGameEventArgs);
+		}
+
+		private void TellDungeonMasterWhichRound()
+		{
+			TellDungeonMaster($"Starting round {roundIndex + 1}...");
 		}
 
 		public void CreatureTakingAction(Creature player)
@@ -267,10 +294,16 @@ namespace DndCore
 			}
 
 			if (lastPlayer != null)
+			{
 				lastPlayer.EndTurnResetState();
+				EndingTurnFor(player);
+			}
 
 			if (lastPlayer != player)
+			{
 				player.StartTurnResetState();
+				StartingTurnFor(player);
+			}
 
 			lastPlayer = player;
 		}
@@ -400,15 +433,17 @@ namespace DndCore
 			}
 		}
 
-		public void StartNew()
+		public void GetReadyToPlay()
 		{
 			dndGameEventArgs.Game = this;
 			activeMap = null;
 			nextTarget = null;
+			roundReminders.Clear();
 			maps.Clear();
 			monsters.Clear();
 			ActiveMap = null;
 			Players.Clear();
+			ClearAllAlarms();
 			InCombat = false;
 			ActiveCreature = null;
 			WaitingForRollHiddenThreshold = int.MinValue;
@@ -448,7 +483,7 @@ namespace DndCore
 		public void TellDungeonMaster(string message)
 		{
 			lastMessageSentToDungeonMaster = message;
-			// TODO: send message to Dungeon Master
+			OnRequestMessageToDungeonMaster(this, new MessageEventArgs(message));
 		}
 
 		public Character GetPlayerFromId(int playerID)
@@ -547,6 +582,45 @@ namespace DndCore
 			{
 				player.RechargeAfterShortRest();
 			}
+		}
+
+		protected virtual void OnRequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
+		{
+			RequestMessageToDungeonMaster?.Invoke(sender, ea);
+		}
+		public void Start()
+		{
+			foreach (Character player in Players)
+			{
+				player.StartGame();
+			}
+		}
+
+		private void SendReminders(Creature creature, RoundPoint point)
+		{
+			for (int i = roundReminders.Count - 1; i >= 0; i--)
+			{
+				RoundReminder roundReminder = roundReminders[i];
+				if (roundReminder.Creature == creature && roundReminder.RoundPoint == point && roundReminder.RoundNumber == roundIndex)
+				{
+					TellDungeonMaster(roundReminder.ReminderMessage);
+					roundReminders.RemoveAt(i);
+				}
+			}
+		}
+
+		List<RoundReminder> roundReminders = new List<RoundReminder>();
+		public void TellDmInRounds(int roundOffset, string reminder, RoundPoint roundPoint = RoundPoint.Start)
+		{
+			if (roundReminders == null)
+				roundReminders = new List<RoundReminder>();
+			RoundReminder item = new RoundReminder();
+			item.Creature = activeCreature;
+			item.RoundNumber = roundIndex + roundOffset;
+			// TODO: Make this work for RoundPoint.End as well.
+			item.RoundPoint = roundPoint;
+			item.ReminderMessage = reminder;
+			roundReminders.Add(item);
 		}
 	}
 }

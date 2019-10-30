@@ -6,14 +6,15 @@ namespace DndCore
 {
 	public static class AllPlayers
 	{
-		static List<Character> players = new List<Character>();
-		static AllPlayers()
+		public static void Invalidate()
 		{
-			LoadData();
+			players = null;
 		}
 
+		static List<Character> players;
 		public static void LoadData()
 		{
+			players = new List<Character>();
 			players.Clear();
 			List<CharacterDto> playerDtos = LoadData(Folders.InCoreData("DnD - Players.csv"));
 			foreach (var characterDto in playerDtos)
@@ -54,6 +55,15 @@ namespace DndCore
 			return Players.FirstOrDefault(x => x.playerID == playerId);
 		}
 
-		public static List<Character> Players { get => players; private set => players = value; }
+		public static List<Character> Players
+		{
+			get
+			{
+				if (players == null)
+					LoadData();
+				return players;
+			}
+			private set => players = value;
+		}
 	}
 }

@@ -4,6 +4,8 @@ using System.Linq;
 namespace DndCore
 {
 	public delegate void FeatureEventHandler(object sender, FeatureEventArgs ea);
+	public delegate void GetRollEventHandler(object sender, GetRollEventArgs ea);
+	public delegate void AddReminderEventHandler(object sender, AddReminderEventArgs ea);
 	public delegate void AskEventHandler(object sender, AskEventArgs ea);
 	public delegate void DndCoreExceptionEventHandler(object sender, DndCoreExceptionEventArgs ea);
 	public delegate void RollDiceEventHandler(object sender, RollDiceEventArgs ea);
@@ -20,5 +22,6 @@ namespace DndCore
 	public delegate void PlayerStateChangedEventHandler(object sender, PlayerStateEventArgs ea);
 	public delegate void LevelChangedEventHandler(object sender, LevelChangedEventArgs ea);
 	public delegate void ShortcutEventHandler(object sender, ShortcutEventArgs ea);
+	public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
 
 }

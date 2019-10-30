@@ -5,6 +5,6 @@ namespace DndCore
 {
 	public interface IListEntry
 	{
-		string StandardName { get; set; }
+		string Name { get; set; }
 	}
 }

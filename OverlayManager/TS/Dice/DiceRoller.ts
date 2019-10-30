@@ -467,7 +467,7 @@ function dieFirstHitsFloor(die: any) {
 
 			var x: number = pos.x * percentageOnDie + percentageOffDie * 960;
 			var y: number = pos.y * percentageOnDie + percentageOffDie * 540;
-			
+
 			diceLayer.AddEffect(diceRollData.onFirstContactEffect, x, y, diceRollData.effectScale,
 				diceRollData.effectHueShift, diceRollData.effectSaturation,
 				diceRollData.effectBrightness, diceRollData.effectRotation);
@@ -1684,7 +1684,7 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 						break;
 				}
 			}
-			else if ((rollType == DieCountsAs.health || rollType == DieCountsAs.totalScore) && damageType == DamageType.Superiority) {
+			else if ((rollType == DieCountsAs.health || rollType == DieCountsAs.totalScore || rollType == DieCountsAs.extra) && damageType == DamageType.Superiority) {
 				diceLayer.attachSuperiority(die);
 			}
 			if (rollType == DieCountsAs.health) {
@@ -1750,31 +1750,34 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 				damageStr = damageStr.substr(0, closeParenIndex);
 				let colonIndex: number = damageStr.indexOf(':');
 				if (colonIndex >= 0) {
-					let rollTypeOverride: string = damageStr.substr(colonIndex + 1).toLowerCase();
+					let rollTypeOverride: string = damageStr.substr(colonIndex + 1);
+					let rollTypeOverrideLowerCase: string = rollTypeOverride.toLowerCase();
 					//console.log('rollTypeOverride: ' + rollTypeOverride);
-					if (rollTypeOverride == 'health') {
+					if (rollTypeOverrideLowerCase == 'health') {
 						thisDieCountsAs = DieCountsAs.health;
 						thisBackgroundColor = DiceLayer.healthDieBackgroundColor;
 						thisFontColor = DiceLayer.healthDieFontColor;
 					}
-					else if (rollTypeOverride == 'damage') {
+					else if (rollTypeOverrideLowerCase == 'damage') {
 						thisDieCountsAs = DieCountsAs.damage;
 						thisBackgroundColor = DiceLayer.damageDieBackgroundColor;
 						thisFontColor = DiceLayer.damageDieFontColor;
 					}
-					else if (rollTypeOverride == 'roll') {
+					else if (rollTypeOverrideLowerCase == 'roll') {
 						thisDieCountsAs = DieCountsAs.totalScore;
 						thisBackgroundColor = diceLayer.activePlayerDieColor;
 						thisFontColor = diceLayer.activePlayerDieFontColor;
 					}
 					damageStr = damageStr.substr(0, colonIndex);
+					dieType = rollTypeOverride;
 					console.log('damageStr: ' + damageStr);
+					damageType = damageTypeFromStr(damageStr);
 				}
-
-
-				damageType = damageTypeFromStr(damageStr);
-				if (damageType === DamageType.None)
-					dieType = damageStr;
+				else {
+					damageType = damageTypeFromStr(damageStr);
+					if (damageType === DamageType.None)
+						dieType = damageStr;
+				}
 			}
 			dieSpec = dieSpec.substr(0, parenIndex);
 		}

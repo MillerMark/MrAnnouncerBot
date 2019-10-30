@@ -7,14 +7,17 @@ namespace DndCore
 {
 	public static class AllActionShortcuts
 	{
-		static List<PlayerActionShortcut> shortcuts = new List<PlayerActionShortcut>();
-		static AllActionShortcuts()
+		static List<PlayerActionShortcut> shortcuts;
+
+		public static void Invalidate()
 		{
-			LoadData();
+			shortcuts = null;
 		}
 
 		static void ProcessDtos(List<PlayerActionShortcutDto> playerDtos)
 		{
+			shortcuts = new List<PlayerActionShortcut>();
+
 			shortcuts.Clear();
 
 			int index = 0;
@@ -46,8 +49,6 @@ namespace DndCore
 		}
 		public static void LoadData()
 		{
-			AllWeaponEffects.LoadData();
-			AllSpellEffects.LoadData();
 			ProcessDtos(LoadData(Folders.InCoreData("DnD - Shortcuts.csv")));
 			AddPlayerShortcuts();
 		}
@@ -68,7 +69,7 @@ namespace DndCore
 					else
 						foreach (PlayerActionShortcut playerActionShortcut in lastShortcuts)
 						{
-							playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, PlayerActionShortcut.SpellWindupPrefix + playerActionShortcut.Name));
+							playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.Name));
 						}
 				}
 			if (lastShortcuts != null)
@@ -79,7 +80,7 @@ namespace DndCore
 		{
 			List<PlayerActionShortcut> lastShortcuts = null;
 
-			List<ItemEffect> weaponEffects = AllWeaponEffects.GetAll(carriedWeapon.Weapon.StandardName).OrderBy(x => x.index).ToList(); ;
+			List<ItemEffect> weaponEffects = AllWeaponEffects.GetAll(carriedWeapon.Weapon.Name).OrderBy(x => x.index).ToList(); ;
 			if (weaponEffects.Count == 0)
 			{
 				lastShortcuts = PlayerActionShortcut.FromWeapon(carriedWeapon, null, player);
@@ -91,11 +92,6 @@ namespace DndCore
 					if (i == 0)
 					{
 						lastShortcuts = PlayerActionShortcut.FromWeapon(carriedWeapon, itemEffect, player);
-						foreach (PlayerActionShortcut playerActionShortcut in lastShortcuts)
-						{
-							playerActionShortcut.UsesMagic = carriedWeapon.HitDamageBonus > 0;
-							playerActionShortcut.CarriedWeapon = carriedWeapon;
-						}
 					}
 					else
 						foreach (PlayerActionShortcut playerActionShortcut in lastShortcuts)
@@ -118,15 +114,12 @@ namespace DndCore
 		{
 			if (!player.playingNow)
 				return;
+
 			foreach (KnownSpell knownSpell in player.KnownSpells)
-			{
 				AddSpellShortcutsFor(player, knownSpell);
-			}
 
 			foreach (CarriedWeapon carriedWeapon in player.CarriedWeapons)
-			{
 				AddWeaponShortcutsFor(player, carriedWeapon);
-			}
 
 			AddFeatureShortcutsFor(player);
 		}
@@ -147,11 +140,7 @@ namespace DndCore
 				AddShortcutsFor(player);
 			}
 		}
-		static void AddWeaponEffects()
-		{
-
-		}
-
+		
 		public static List<PlayerActionShortcutDto> LoadData(string dataFile)
 		{
 			return CsvData.Get<PlayerActionShortcutDto>(dataFile);
@@ -173,7 +162,14 @@ namespace DndCore
 			return AllShortcuts.Where(x => x.PlayerId == playerId).Where(x => x.Name.ToLower().StartsWith(lowerName)).ToList();
 		}
 
-		public static List<PlayerActionShortcut> AllShortcuts { get => shortcuts; private set => shortcuts = value; }
+		public static List<PlayerActionShortcut> AllShortcuts {
+			get
+			{
+				if (shortcuts == null)
+					LoadData();
+				return shortcuts;
+			}
+			private set => shortcuts = value; }
 	}
 }
 

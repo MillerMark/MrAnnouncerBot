@@ -25,10 +25,30 @@ namespace DndCore
 		public string trailingEffects { get; set; }
 		public string startSound { get; set; }
 		public string endSound { get; set; }
+		public ItemEffectKind kind { get; set; }
+		public int Lifespan { get; set; }
+		public int FadeIn { get; set; }
+		public int FadeOut { get; set; }
 
 		public ItemEffect()
 		{
 
+		}
+
+		public static ItemEffectKind ToEffectKind(string str)
+		{
+			switch (str.Trim().ToLower())
+			{
+				case "windup":
+					return ItemEffectKind.Windup;
+				case "spell":
+					return ItemEffectKind.Spell;
+				case "strike":
+					return ItemEffectKind.Strike;
+				case "target":
+					return ItemEffectKind.Target;
+			}
+			return ItemEffectKind.None;
 		}
 
 		public static ItemEffect From(ItemEffectDto dto)
@@ -37,6 +57,7 @@ namespace DndCore
 
 			result.name = dto.name;
 			result.index = MathUtils.GetInt(dto.index);
+			result.kind = ToEffectKind(dto.kind);
 			result.effect = dto.effect;
 			result.effectAvailableWhen = dto.effectAvailableWhen;
 			result.playToEndOnExpire = MathUtils.IsChecked(dto.playToEndOnExpire);
@@ -55,6 +76,10 @@ namespace DndCore
 			result.trailingEffects = dto.trailingEffects;
 			result.startSound = dto.startSound;
 			result.endSound = dto.endSound;
+			result.Lifespan = MathUtils.GetInt(dto.lifespan);
+			result.FadeIn = MathUtils.GetInt(dto.fadeIn);
+			result.FadeOut = MathUtils.GetInt(dto.fadeOut);
+
 
 			return result;
 		}
