@@ -21,16 +21,27 @@ namespace DndCore
 
 		public void Casting()
 		{
+			SpellCaster.CheckConcentration(this);
+			SpellCaster.ShowPlayerCasting(this);
 			Spell.TriggerOnCasting(SpellCaster, TargetCreature, this);
 		}
+
+		public void CastingWithItem()
+		{
+			SpellCaster.ShowPlayerCasting(this);
+			Spell.TriggerOnCasting(SpellCaster, TargetCreature, this);
+		}
+
 		public void Cast()
 		{
 			Spell.TriggerCast(SpellCaster, TargetCreature, this);
 		}
+
 		public void Dispel()
 		{
 			Spell.TriggerDispel(SpellCaster, TargetCreature, this);
 		}
+
 		public void Dispel(Character player)
 		{
 			player.Dispel(this);

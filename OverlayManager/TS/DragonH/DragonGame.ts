@@ -203,7 +203,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	initializePlayerData(playerData: string): any {
 		let characters: Array<Character> = JSON.parse(playerData);
 		this.players = [];
-		characters.forEach(function (character) { this.players.push(new Character(character)) }, this);
+		characters.forEach(character => { this.players.push(new Character(character)) }, this);
 	}
 
 	clearWindup(windupName: string): void {
@@ -253,6 +253,10 @@ abstract class DragonGame extends GamePlusQuiz {
 		console.log('Adding Windups:');
 		for (let i = 0; i < windups.length; i++) {
 			let windup: WindupData = windups[i];
+			if (windup === null) {
+				console.error('windup == null');
+				continue;
+			}
 			let sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
 			if (!sprites)
 				continue;

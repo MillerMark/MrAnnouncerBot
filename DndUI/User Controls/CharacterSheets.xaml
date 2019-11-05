@@ -574,8 +574,8 @@
 			<Image Name="imageSpells" HorizontalAlignment="Left" VerticalAlignment="Top" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Backs\Back4.png" Stretch="Fill" Height="555" PreviewMouseDown="PageSpells_PreviewMouseDown" MouseDown="PageSpells_MouseDown"/>
 			<local:StatBox x:Name="statName4" Margin="10,73,0,0" Width="67" Height="18" Text="Name" FocusItem="NameHeadshot"/>
 			<local:StatBox x:Name="statSpellcastingAbility" Margin="98,18,0,0" Width="90" Height="18" Text="Intelligence" FocusItem="SpellcastingAbility"/>
-			<local:StatBox x:Name="statSpellSaveDC" Margin="95,59,0,0" Width="20" Height="18" Text="22" FocusItem="SpellSaveDC"/>
-			<local:StatBox x:Name="statSpellAttackBonus" Margin="144,59,0,0" Width="50" Height="18" Text="+3" FocusItem="SpellAttackBonus"/>
+			<local:StatBox x:Name="statSpellAttackBonus" Margin="84,59,0,0" Width="50" Height="18" Text="+3" FocusItem="SpellAttackBonus"/>
+			<local:StatBox x:Name="statSpellSaveDC" Margin="161,59,0,0" Width="20" Height="18" Text="12" FocusItem="SpellSaveDC"/>
 			<StackPanel x:Name="spSpellSlots" Orientation="Vertical" Margin="15, 115, 0, 0"/>
 		</local:GridSheet>
 

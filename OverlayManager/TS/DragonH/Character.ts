@@ -1,219 +1,28 @@
-﻿enum Weapons {
-	None = 0,
-	Battleaxe = 1,
-	Blowgun = 2,
-	Club = 4,
-	Crossbow_Hand = 8,
-	Crossbow_Heavy = 16,
-	Crossbow_Light = 32,
-	Dagger = 64,
-	Dart = 128,
-	Flail = 256,
-	Glaive = 512,
-	Greataxe = 1024,
-	Greatclub = 2048,
-	Greatsword = 4096,
-	Halberd = 8192,
-	Handaxe = 16384,
-	Javelin = 32768,
-	Lance = 65536,
-	LightHammer = 131072,
-	Longbow = 262144,
-	Longsword = 524288,
-	Mace = 1048576,
-	Maul = 2097152,
-	Morningstar = 4194304,
-	Net = 8388608,
-	Pike = 16777216,
-	Quarterstaff = 33554432,
-	Rapier = 67108864,
-	Scimitar = 134217728,
-	Shortbow = 268435456,
-	Shortsword = 536870912,
-	Sickle = 1073741824,
-	Sling = 2147483648,
-	Spear = 4294967296,
-	Trident = 8589934592,
-	UnarmedStrike = 17179869184,
-	WarPick = 34359738368,
-	Warhammer = 68719476736,
-	Whip = 137438953472
-}
-
-enum Ability {
-	strength = 1,
-	dexterity = 2,
-	constitution = 4,
-	intelligence = 8,
-	wisdom = 16,
-	charisma = 32,
-	none = 0
-}
-
-enum ExhaustionLevels {
-	level1DisadvantageOnAbilityChecks = 1,
-	level2SpeedHalved = 2,
-	level3DisadvantageOnAttackRollsAndSavingThrows = 3,
-	level4HitPointMaximumHalved = 4,
-	level5SpeedReducedToZero = 5,
-	level6Death = 6
-}
-
-enum Conditions {
-	none = 0,
-	blinded = 1,
-	charmed = 2,
-	deafened = 4,
-	fatigued = 8,
-	frightened = 16,
-	grappled = 32,
-	incapacitated = 64,
-	invisible = 128,
-	paralyzed = 256,
-	petrified = 512,
-	poisoned = 1024,
-	prone = 2048,
-	restrained = 4096,
-	stunned = 8192,
-	unconscious = 16384
-}
-
-/* Blinded
-A blinded creature can’t see and automatically fails any ability check that requires sight.
-Attack rolls against the creature have advantage, and the creature’s Attack rolls have disadvantage.
-Charmed
-A charmed creature can’t Attack the charmer or target the charmer with harmful Abilities or magical Effects.
-The charmer has advantage on any ability check to interact socially with the creature.
-Deafened
-A deafened creature can’t hear and automatically fails any ability check that requires hearing.
-Fatigued
-See Exhaustion (below).
-
-Frightened
-A frightened creature has disadvantage on Ability Checks and Attack rolls while the source of its fear is within line of sight.
-The creature can’t willingly move closer to the source of its fear.
-Grappled
-A grappled creature’s speed becomes 0, and it can’t benefit from any bonus to its speed.
-The condition ends if the Grappler is incapacitated (see the condition).
-The condition also ends if an effect removes the grappled creature from the reach of the Grappler or Grappling effect, such as when a creature is hurled away by the Thunderwave spell.
-Incapacitated
-An incapacitated creature can’t take Actions or reactions.
-Invisible
-An invisible creature is impossible to see without the aid of magic or a Special sense. For the purpose of Hiding, the creature is heavily obscured. The creature’s location can be detected by any noise it makes or any tracks it leaves.
-Attack rolls against the creature have disadvantage, and the creature’s Attack rolls have advantage.
-Paralyzed
-A paralyzed creature is incapacitated (see the condition) and can’t move or speak.
-The creature automatically fails Strength and Dexterity Saving Throws.
-Attack rolls against the creature have advantage.
-Any Attack that hits the creature is a critical hit if the attacker is within 5 feet of the creature.
-Petrified
-A petrified creature is transformed, along with any nonmagical object it is wearing or carrying, into a solid inanimate substance (usually stone). Its weight increases by a factor of ten, and it ceases aging.
-The creature is incapacitated (see the condition), can’t move or speak, and is unaware of its surroundings.
-Attack rolls against the creature have advantage.
-The creature automatically fails Strength and Dexterity Saving Throws.
-The creature has Resistance to all damage.
-The creature is immune to poison and disease, although a poison or disease already in its system is suspended, not neutralized.
-Poisoned
-A poisoned creature has disadvantage on Attack rolls and Ability Checks.
-Prone
-A prone creature’s only Movement option is to crawl, unless it stands up and thereby ends the condition.
-The creature has disadvantage on Attack rolls.
-An Attack roll against the creature has advantage if the attacker is within 5 feet of the creature. Otherwise, the Attack roll has disadvantage.
-Restrained
-A restrained creature’s speed becomes 0, and it can’t benefit from any bonus to its speed.
-Attack rolls against the creature have advantage, and the creature’s Attack rolls have disadvantage.
-The creature has disadvantage on Dexterity Saving Throws.
-Stunned
-A stunned creature is incapacitated (see the condition), can’t move, and can speak only falteringly.
-The creature automatically fails Strength and Dexterity Saving Throws.
-Attack rolls against the creature have advantage.
-Unconscious
-An unconscious creature is incapacitated (see the condition), can’t move or speak, and is unaware of its surroundings
-The creature drops whatever it’s holding and falls prone.
-The creature automatically fails Strength and Dexterity Saving Throws.
-Attack rolls against the creature have advantage.
-Any Attack that hits the creature is a critical hit if the attacker is within 5 feet of the creature.
-
-Exhaustion
-Some Special Abilities and environmental hazards, such as starvation and the long-­term Effects of freezing or scorching temperatures, can lead to a Special condition called exhaustion. Exhaustion is measured in six levels. An effect can give a creature one or more levels of exhaustion, as specified in the effect’s description.
-
-Exhaustion Effects
-Level	Effect
-1	Disadvantage on Ability Checks
-2	Speed halved
-3	Disadvantage on Attack rolls and Saving Throws
-4	Hit point maximum halved
-5	Speed reduced to 0
-6	Death */
-
-
-enum Skills {
-	none = 0,
-	strength = 1,
-	dexterity = 2,
-	constitution = 4,
-	intelligence = 8,
-	wisdom = 16,
-	charisma = 32,
-	acrobatics = 64,
-	animalHandling = 128,
-	arcana = 256,
-	athletics = 512,
-	deception = 1024,
-	history = 2048,
-	insight = 4096,
-	intimidation = 8192,
-	investigation = 16384,
-	medicine = 32768,
-	nature = 65536,
-	perception = 131072,
-	performance = 262144,
-	persuasion = 524288,
-	religion = 1048576,
-	sleightOfHand = 2097152,
-	stealth = 4194304,
-	survival = 8388608
-}
-
-//enum Skills {
-//	acrobatics = 1,
-//	animalHandling = 2,
-//	arcana = 4,
-//	athletics = 8,
-//	deception = 16,
-//	history = 32,
-//	insight = 64,
-//	intimidation = 128,
-//	investigation = 256,
-//	medicine = 512,
-//	nature = 1024,
-//	perception = 2048,
-//	performance = 4096,
-//	persuasion = 8192,
-//	religion = 16384,
-//	sleightOfHand = 32768,
-//	stealth = 65536,
-//	survival = 131072,
-//	strength = 262144,
-//	dexterity = 524288,
-//	constitution = 1048576,
-//	intelligence = 2097152,
-//	wisdom = 4194304,
-//	charisma = 8388608
-//}
-
-class CharacterClass {
+﻿class CharacterClass {
 	constructor(public Name: string, public Level: number, public HitDice: string) {
-		
+
 	}
 }
 
+class SpellGroup {
+	public Name: string;
+	public TotalCharges: number;
+	public ChargesUsed: number;
+	public SpellNames: Array<string>;
+	constructor() {
+
+	}
+}
+
+//! Important!!! - property names must **exactly** match those in Character.ts that are serialized for copyAttributesFrom to work!!! (because it is called with two different data types - the DTO from our C# app && an instance of Character here, so the prop names have to be the same)
 class Character {
+	SpellData: Array<SpellGroup>;
 	playerID: number;
 	equipment: Array<Item> = new Array<Item>();
 	classes: Array<CharacterClass> = new Array<CharacterClass>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
+	spellActivelyCasting: ActiveSpellData;
 	level: number;
 	headshotIndex: number;
 	hueShift: number;
@@ -228,6 +37,9 @@ class Character {
 	raceClass: string;
 	race: string;
 	alignment: string;
+	SpellCastingAbilityStr: string;
+	SpellSaveDC: number = 0;
+	SpellAttackBonusStr: string;
 	baseArmorClass: number;
 	initiative: number;
 	baseWalkingSpeed: number;
@@ -301,14 +113,13 @@ class Character {
 	copyAttributesFrom(sourceCharacter: any): Character {
 		this.playerID = sourceCharacter.playerID;
 
-		if (sourceCharacter.classes) {
-			for (let i = 0; i < sourceCharacter.classes.length; i++) {
-				let thisClass: any = sourceCharacter.classes[i];
-				this.classes.push(new CharacterClass(thisClass.Name, thisClass.Level, thisClass.HitDice));
-			}
-		}
-		
+		this.copySpellDataFrom(sourceCharacter);
+		this.copyClassDataFrom(sourceCharacter);
+
 		this.alignment = sourceCharacter.alignment;
+		this.SpellCastingAbilityStr = sourceCharacter.SpellCastingAbilityStr;
+		this.SpellSaveDC = sourceCharacter.SpellSaveDC;
+		this.SpellAttackBonusStr = sourceCharacter.SpellAttackBonusStr;
 		this.headshotIndex = sourceCharacter.headshotIndex;
 		this.baseArmorClass = sourceCharacter.baseArmorClass;
 		this.tempArmorClassMod = sourceCharacter.tempArmorClassMod;
@@ -344,6 +155,7 @@ class Character {
 		this.load = sourceCharacter.load;
 		this.maxHitPoints = sourceCharacter.maxHitPoints;
 		this.name = sourceCharacter.name;
+		this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);
 		this.offTurnActions = sourceCharacter.offTurnActions;
 		this.onTurnActions = sourceCharacter.onTurnActions;
 		this.proficiencyBonus = sourceCharacter.proficiencyBonus;
@@ -384,6 +196,27 @@ class Character {
 		this.weight = sourceCharacter.weight;
 
 		return this;
+	}
+
+	private copyClassDataFrom(sourceCharacter: any) {
+		if (sourceCharacter.classes) {
+			for (let i = 0; i < sourceCharacter.classes.length; i++) {
+				let thisClass: any = sourceCharacter.classes[i];
+				this.classes.push(new CharacterClass(thisClass.Name, thisClass.Level, thisClass.HitDice));
+			}
+		}
+	}
+
+	private copySpellDataFrom(sourceCharacter: any) {
+		this.SpellData = [];
+		sourceCharacter.SpellData.forEach(function (spellData) {
+			let spellGroup: SpellGroup = new SpellGroup();
+			spellGroup.Name = spellData.Name;
+			spellGroup.ChargesUsed = spellData.ChargesUsed;
+			spellGroup.TotalCharges = spellData.TotalCharges;
+			spellGroup.SpellNames = spellData.SpellNames;
+			this.SpellData.push(spellGroup);
+		}, this);
 	}
 
 	getFirstName(): string {

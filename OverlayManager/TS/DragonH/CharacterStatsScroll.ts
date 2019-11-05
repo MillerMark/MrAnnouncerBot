@@ -1,137 +1,4 @@
-﻿enum HighlightEmitterType {
-	circular,
-	rectangular
-}
-
-enum DistributionOrientation {
-	Horizontal,
-	Vertical
-}
-
-class EmitterDistribution {
-	orientation: DistributionOrientation;
-	constructor(public centerX: number, public centerY: number, public width: number, public height: number, public spread: number) {
-		this.orientation = DistributionOrientation.Vertical;
-	}
-}
-
-class HighlightEmitter {
-	width: number;
-	height: number;
-	radius: number;
-	type: HighlightEmitterType;
-	emitter: Emitter;
-
-	constructor(public name: string, public center: Vector) {
-		this.type = HighlightEmitterType.circular;
-		this.radius = 3;
-	}
-
-	preUpdate(now: number, timeScale: number, world: World): any {
-		if (this.emitter) {
-			this.emitter.preUpdate(now, timeScale, world);
-		}
-	}
-
-	update(now: number, timeScale: number, world: World): any {
-		if (this.emitter) {
-			this.emitter.update(now, timeScale, world);
-		}
-	}
-
-	render(now: number, timeScale: number, world: World): void {
-		if (this.emitter) {
-			this.emitter.render(now, timeScale, world);
-		}
-	}
-
-	setRectangular(width: number, height: number): HighlightEmitter {
-		this.type = HighlightEmitterType.rectangular;
-		this.width = width;
-		this.height = height;
-		return this;
-	}
-
-	setCircular(radius: number): HighlightEmitter {
-		this.type = HighlightEmitterType.circular;
-		this.radius = radius;
-		return this;
-	}
-
-	start(): void {
-		if (!this.emitter)
-			this.emitter = HighlightEmitter.createBaseEmitter(this.center);
-
-		if (this.type === HighlightEmitterType.circular) {
-			this.emitter.radius = this.radius;
-		}
-		else {
-			this.emitter.setRectShape(this.width, this.height);
-		}
-
-		const standardLength: number = 290;
-		const idealParticlesPerSecond: number = 200;
-		this.emitter.particlesPerSecond = idealParticlesPerSecond * this.getPerimeter() / standardLength;
-
-		this.emitter.start();
-	}
-
-	stop() {
-		if (this.emitter) {
-			this.emitter.stop();
-		}
-	}
-
-	getPerimeter(): number {
-		if (this.type === HighlightEmitterType.circular) {
-			return this.radius * MathEx.TWO_PI;
-		}
-		else {
-			return 2 * this.width + 2 * this.height;
-		}
-	}
-
-	static createBaseEmitter(center: Vector): Emitter {
-		var emitter: Emitter;
-		emitter = new Emitter(center);
-		emitter.saturation.target = 0.9;
-		emitter.saturation.relativeVariance = 0.2;
-		emitter.hue = new TargetValue(40, 0, 0, 60);
-		emitter.hue.absoluteVariance = 10;
-		emitter.brightness.target = 0.7;
-		emitter.brightness.relativeVariance = 0.5;
-		emitter.particlesPerSecond = 300;
-		emitter.particleRadius.target = 1;
-		emitter.particleRadius.relativeVariance = 0.3;
-		emitter.particleLifeSpanSeconds = 1.7;
-		emitter.particleGravity = 0;
-		emitter.particleInitialVelocity.target = 0.1;
-		emitter.particleInitialVelocity.relativeVariance = 0.5;
-		emitter.particleMaxOpacity = 0.8;
-		emitter.particleAirDensity = 0;
-		emitter.emitterEdgeSpread = 0.2;
-		return emitter;
-	}
-}
-
-class HighlightEmitterPages {
-	emitters: Array<HighlightEmitter> = new Array<HighlightEmitter>();
-	constructor() {
-
-	}
-
-	render(now: number, timeScale: number, world: World) {
-		this.emitters.forEach(function (emitter: HighlightEmitter) {
-			emitter.render(now, timeScale, world);
-		});
-	}
-
-	find(itemID: string): HighlightEmitter {
-		return this.emitters.find(s => s.name === itemID);
-	}
-}
-
-class CharacterStatsScroll extends WorldObject {
+﻿class CharacterStatsScroll extends WorldObject {
 	scrollOpenSfx: HTMLAudioElement;
 	scrollWooshSfx: HTMLAudioElement;
 	scrollPoofSfx: HTMLAudioElement;
@@ -159,6 +26,7 @@ class CharacterStatsScroll extends WorldObject {
 	emphasisSprites: Sprites;
 	emphasisIndices: Array<number> = [];
 	emitterIndices: Array<string> = [];
+	spellBook: SpellBook;
 
 	scrollEmphasisMain: Sprites;
 	scrollEmphasisSkills: Sprites;
@@ -167,6 +35,7 @@ class CharacterStatsScroll extends WorldObject {
 	scrollSlam: Sprites;
 	scrollBacks: Sprites;
 	playerHeadshots: Sprites;
+
 
 	// TODO: consolidate with page, if possible.
 	pageIndex: number;
@@ -187,6 +56,7 @@ class CharacterStatsScroll extends WorldObject {
 
 	constructor() {
 		super();
+		this.spellBook = new SpellBook();
 		this._page = ScrollPage.main;
 		this.buildGoldDust();
 		this.pageIndex = this._page;
@@ -203,7 +73,7 @@ class CharacterStatsScroll extends WorldObject {
 	}
 
 	initializePlayerData(players: Array<Character>): void {
-		
+
 		this.characters = [];
 		for (var i = 0; i < players.length; i++) {
 			try {
@@ -339,15 +209,17 @@ class CharacterStatsScroll extends WorldObject {
 			new HighlightEmitter(emphasisSpells[emphasisSpells.NameHeadshot], new Vector(nameCenterX, nameCenterY)).setRectangular(nameWidth, nameHeight));
 
 		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
-			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellcastingAbility], new Vector(222, 49)).setRectangular(181, 47));
+			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellcastingAbility], new Vector(223, 52)).setRectangular(186, 50));
 
 		let spellSaveAttackY: number = 112;
-		let spellSaveAttackHeight: number = 46;
-		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
-			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellSaveDC], new Vector(165, spellSaveAttackY)).setRectangular(64, spellSaveAttackHeight));
+		let spellSaveAttackHeight: number = 50;
 
 		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
-			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellAttackBonus], new Vector(263, spellSaveAttackY)).setRectangular(100, spellSaveAttackHeight));
+			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellAttackBonus], new Vector(172, spellSaveAttackY)).setRectangular(83, spellSaveAttackHeight));
+
+		this.highlightEmitterPages[ScrollPage.spells].emitters.push(
+			new HighlightEmitter(emphasisSpells[emphasisSpells.SpellSaveDC], new Vector(269, spellSaveAttackY + 2)).setRectangular(97, spellSaveAttackHeight));
+
 	}
 
 	private addDistribution(page: ScrollPage, first: number, last: number, dist: EmitterDistribution) {
@@ -428,8 +300,8 @@ class CharacterStatsScroll extends WorldObject {
 			return this.activeCharacter.headshotIndex;
 		return 0;
 	}
-	
-	
+
+
 
 	private unroll(): void {
 		this.state = ScrollState.unrolling;
@@ -606,9 +478,14 @@ class CharacterStatsScroll extends WorldObject {
 			this.topEmitter.render(now, timeScale, world);
 			this.bottomEmitter.render(now, timeScale, world);
 
-			this.drawCharacterStats(world.ctx, topData, bottomData);
+			this.drawCharacterStats(now, world.ctx, topData, bottomData);
 
 			this.scrollRolls.draw(world.ctx, now * 1000);
+
+			if (this.activeCharacter) {
+				let activeCharacter: Character = this.activeCharacter;
+				this.drawAdditionalData(now, world.ctx, activeCharacter, topData, bottomData);
+			}
 
 		}
 		else if (this.state === ScrollState.disappearing) {
@@ -770,6 +647,7 @@ class CharacterStatsScroll extends WorldObject {
 	}
 
 	loadResources(): void {
+		this.spellBook.loadResources();
 		var assetFolderName: string = Folders.assets;
 		Folders.assets = 'GameDev/Assets/DragonH/';
 
@@ -799,7 +677,7 @@ class CharacterStatsScroll extends WorldObject {
 		Folders.assets = assetFolderName;
 	}
 
-	drawCharacterStats(context: CanvasRenderingContext2D, topData: number, bottomData: number): void {
+	drawCharacterStats(now: number, context: CanvasRenderingContext2D, topData: number, bottomData: number): void {
 		if (!this.activeCharacter)
 			return;
 
@@ -809,6 +687,189 @@ class CharacterStatsScroll extends WorldObject {
 		let activePage: StatPage = this.pages[this.selectedStatPageIndex];
 
 		activePage.render(context, activeCharacter, topData, bottomData);
+	}
+
+	isOnPage(page: ScrollPage): boolean {
+		return this.selectedStatPageIndex + 1 == page;
+	}
+
+	drawAdditionalData(now: number, context: CanvasRenderingContext2D, activeCharacter: Character, topData: number, bottomData: number): any {
+		if (!activeCharacter.SpellData)
+			return;
+		if (this.isOnPage(ScrollPage.spells)) {
+			this.drawSpellData(now, activeCharacter, context, topData, bottomData);
+		}
+	}
+
+	private drawSpellData(now: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
+		let x: number = 30;
+		let y: number = 179;
+
+		let drawActiveSpellData: boolean = false;
+		let calloutPointX: number;
+		let calloutPointY: number;
+		let rightMostTextX: number = x;
+		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
+			y += this.drawSpellGroupTitle(context, x, y, item, topData, bottomData);
+
+			this.drawSpellBackground(context, x, y, item.SpellNames.length, topData, bottomData);
+
+			const belowTitleSpacing: number = 5;
+			y += belowTitleSpacing;
+			let indent: number = 6;
+			item.SpellNames.forEach(function (spellName: string) {
+				let saveTop: number = y;
+				y += this.drawSpellGroupItem(context, x + indent, y, spellName, topData, bottomData);
+
+				let spellNameWidth: number = context.measureText(spellName).width;
+				if (x + indent + spellNameWidth > rightMostTextX) {
+					rightMostTextX = x + indent + spellNameWidth;
+				}
+				if (activeCharacter.spellActivelyCasting.name == spellName) {
+					const calloutMarginX: number = 8;
+					calloutPointX = x + indent + spellNameWidth + calloutMarginX;
+					calloutPointY = saveTop;
+					drawActiveSpellData = true;
+				}
+			}, this);
+
+			const interGroupSpacing: number = 12;
+			y += interGroupSpacing;
+		}, this);
+
+		if (drawActiveSpellData) {
+			if (calloutPointY >= topData && calloutPointY <= bottomData) {
+				calloutPointX += this.drawActiveSpellIndicator(context, calloutPointX, calloutPointY, activeCharacter.spellActivelyCasting);
+				this.spellBook.draw(now, context, Math.max(rightMostTextX, calloutPointX), calloutPointY, activeCharacter);
+			}
+		}
+
+		//if (this.browserIsOBS())
+		//	this.drawSpellGroupItem(context, x, y, 'OBS', topData, bottomData);
+		//else 
+		//	this.drawSpellGroupItem(context, x, y, 'NOT OBS!!!', topData, bottomData);
+	}
+
+	readonly spellNameFontHeight: number = 18;
+	readonly obsRectTextYOffset: number = 4;  // OBS rectangles seem to draw 4px closer to the top of the screen relative to text than in Chrome.
+
+	browserIsOBS(): boolean {
+		// @ts-ignore - obsstudio
+		return window != undefined && window.obsstudio != undefined && window.obsstudio.pluginVersion != undefined;
+	}
+
+	drawActiveSpellIndicator(context: CanvasRenderingContext2D, x: number, y: number, spell: ActiveSpellData): number {
+		let width: number = 0;
+		context.fillStyle = '#aa0000';
+		context.beginPath();
+		let centerY: number = y + this.spellNameFontHeight / 2 + this.getBrowserGraphicsYOffset() / 2;
+		const indicatorRadius: number = 4;
+		context.arc(x, centerY, indicatorRadius, 0, 2 * Math.PI);
+		width = 2 * indicatorRadius;
+		context.fill();
+		if (spell.spellLevel < spell.spellSlotLevel) {
+			let slotLevelStr = `[${spell.spellSlotLevel}]`;
+			context.fillText(slotLevelStr, x + width, y);
+			width += context.measureText(slotLevelStr).width;
+		}
+		return width;
+	}
+
+	getBrowserGraphicsYOffset(): number {
+		if (this.browserIsOBS())
+			return this.obsRectTextYOffset;
+		return 0;
+	}
+
+	drawSpellBackground(context: CanvasRenderingContext2D, x: number, y: number, numSpells: number, topData: number, bottomData: number): void {
+		let width: number = 305 - x;
+
+		context.fillStyle = '#dfd1b7';
+
+		let browserAdjustY: number = 0;
+
+		if (this.browserIsOBS())
+			browserAdjustY = this.obsRectTextYOffset;
+
+		let top: number = y + browserAdjustY;
+		let height: number = numSpells * this.spellNameFontHeight + this.spellNameFontHeight / 2;
+		let bottom: number = top + height;
+
+		if (top < topData)
+			top = topData;
+
+		if (bottom > bottomData)
+			bottom = bottomData;
+
+		height = bottom - top;
+
+		if (height <= 0)
+			return;
+
+		context.fillRect(x, top, width, height);
+	}
+
+	drawSpellGroupItem(context: CanvasRenderingContext2D, x: number, y: number, spellName: string, topData: number, bottomData: number): number {
+
+		let middleY: number = y + this.spellNameFontHeight / 2;
+		let textIsOnScreen = middleY > topData && middleY < bottomData;
+
+		if (textIsOnScreen) {
+			context.font = this.spellNameFontHeight + 'px Calibri';
+			context.fillStyle = '#3a1f0c';
+			let maxWidth: number = 305 - x;
+			context.fillText(spellName, x, y, maxWidth);
+		}
+		return this.spellNameFontHeight;
+	}
+
+	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): number {
+		const groupTitleHeight: number = 22;
+
+		let middleY: number = y + groupTitleHeight / 2;
+		let textIsOnScreen = middleY > topData && middleY < bottomData;
+
+		if (textIsOnScreen) {
+			context.textAlign = 'left';
+			context.textBaseline = 'top';
+			context.font = groupTitleHeight + 'px Calibri';
+			context.fillStyle = '#3a1f0c';
+			let titleWidth: number = context.measureText(spellGroup.Name).width;
+			let maxWidth: number = 305 - x;
+			context.fillText(spellGroup.Name, x, y, maxWidth);
+			const chargeBoxTopMargin: number = 1;
+			this.drawChargeBoxes(context, x + titleWidth, y + chargeBoxTopMargin, spellGroup.TotalCharges, spellGroup.ChargesUsed);
+		}
+
+		return groupTitleHeight;
+	}
+
+	drawChargeBoxes(context: CanvasRenderingContext2D, x: number, y: number, totalCharges: number, chargesUsed: number): void {
+		const side: number = 18;
+		const minLeft: number = 72;
+		const marginRight: number = 3;
+		const indent: number = 4;
+		let innerSide: number = side - indent * 2;
+		let left: number = x;
+		if (left < minLeft)
+			left = minLeft;
+
+		let browserAdjustY: number = 0;
+
+		if (this.browserIsOBS())
+			browserAdjustY = this.obsRectTextYOffset;
+
+		let top: number = y + browserAdjustY;
+
+		for (let i = 0; i < totalCharges; i++) {
+			context.fillStyle = '#dfd1b7';
+			context.fillRect(left, top, side, side);
+			if (i < chargesUsed) {
+				context.fillStyle = '#764d1e';
+				context.fillRect(left + indent, top + indent, innerSide, innerSide);
+			}
+			left += side + marginRight;
+		}
 	}
 
 	clear(): any {
@@ -830,8 +891,7 @@ class CharacterStatsScroll extends WorldObject {
 		let changedActiveCharacter: boolean = false;
 		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
 			this.clearEmphasis();
-			if (okayToChangePage)
-			{
+			if (okayToChangePage) {
 				this.setActiveCharacter(playerID);
 				changedActiveCharacter = true;
 				this._page = newPageId;
@@ -842,8 +902,7 @@ class CharacterStatsScroll extends WorldObject {
 		else if (this.page != newPageId) {
 			this.clearEmphasis();
 
-			if (okayToChangePage)
-			{
+			if (okayToChangePage) {
 				this.state = ScrollState.none;
 				this.page = newPageId;
 				this.open(performance.now());
@@ -884,15 +943,6 @@ class CharacterStatsScroll extends WorldObject {
 			character.copyAttributesFrom(sentChar);
 		}
 		return character;
-		//this.setActiveCharacter(sentChar.playerID);
-
-		//if (!this.activeCharacter) {
-		//	console.error('No active character: ' + this.activeCharacter);
-		//	return;
-		//}
-
-		// this.activeCharacter.copyAttributesFrom(sentChar);
-		//return this.activeCharacter;
 	}
 
 	readonly fadeTime: number = 300;
@@ -901,6 +951,7 @@ class CharacterStatsScroll extends WorldObject {
 		this.scrollEmphasisMain.sprites = [];
 		this.scrollEmphasisSkills.sprites = [];
 		this.scrollEmphasisEquipment.sprites = [];
+		this.scrollEmphasisSpells.sprites = [];
 	}
 
 	addEmphasis(emphasisIndex: number): void {
@@ -941,7 +992,8 @@ class CharacterStatsScroll extends WorldObject {
 		let now: number = activeBackGame.nowMs;
 		return this.scrollEmphasisMain.hasAnyAlive(now) ||
 			this.scrollEmphasisSkills.hasAnyAlive(now) ||
-			this.scrollEmphasisEquipment.hasAnyAlive(now);
+			this.scrollEmphasisEquipment.hasAnyAlive(now) ||
+			this.scrollEmphasisSpells.hasAnyAlive(now);
 	}
 
 	focusItem(playerID: number, pageID: number, itemID: string): void {

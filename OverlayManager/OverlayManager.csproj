@@ -15,6 +15,7 @@
     <None Remove="TS\DH\Monster.ts" />
     <None Remove="TS\DH\Treasure.ts" />
     <None Remove="TS\Digits.ts" />
+    <None Remove="TS\DragonH\ActiveSpellData.ts" />
     <None Remove="TS\DragonH\Attack.ts" />
     <None Remove="TS\DragonH\Character.ts" />
     <None Remove="TS\DragonH\CharacterStat.ts" />
@@ -24,11 +25,13 @@
     <None Remove="TS\DragonH\DragonFrontGame.ts" />
     <None Remove="TS\DragonH\Effect.ts" />
     <None Remove="TS\DragonH\Enums.ts" />
+    <None Remove="TS\DragonH\HighlightEmitter.ts" />
     <None Remove="TS\DragonH\Item.ts" />
     <None Remove="TS\DragonH\Mod.ts" />
     <None Remove="TS\DragonH\ReleaseTrigger.ts" />
     <None Remove="TS\DragonH\SavingThrow.ts" />
     <None Remove="TS\DragonH\ScreenPosTarget.ts" />
+    <None Remove="TS\DragonH\SpellBook.ts" />
     <None Remove="TS\DragonH\SpritesEffect.ts" />
     <None Remove="TS\DragonH\StatPage.ts" />
     <None Remove="TS\DragonH\TimeSpan.ts" />
@@ -113,7 +116,10 @@
     <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
+    <TypeScriptCompile Include="TS\DragonH\HighlightEmitter.ts" />
+    <TypeScriptCompile Include="TS\DragonH\SpellBook.ts" />
     <TypeScriptCompile Include="TS\DragonH\Character.ts" />
     <TypeScriptCompile Include="TS\DragonH\CurseBlessingDisease.ts" />
     <TypeScriptCompile Include="TS\DragonH\Damage.ts" />

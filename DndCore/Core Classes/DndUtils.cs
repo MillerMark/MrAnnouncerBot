@@ -70,9 +70,16 @@ namespace DndCore
 
 		}
 
+		static string SpellSlotLevelToFieldName(int slotLevel)
+		{
+			if (slotLevel == 0)
+				return "CantripsKnown";
+			return $"Slot{slotLevel}Spells";
+		}
+
 		public static int GetAvailableSpellSlots(string className, int level, int slotLevel)
 		{
-			object data = AllTables.GetData(className, $"Slot{slotLevel}Spells", "Level", level);
+			object data = AllTables.GetData(className, SpellSlotLevelToFieldName(slotLevel), "Level", level);
 			if (data == null)
 				return 0;
 			if (data is string dataStr)
@@ -85,12 +92,6 @@ namespace DndCore
 				return (int)data;
 
 			return 0;
-		}
-
-		public static int GetAvailableSpellSlots(CharacterClass characterClass, int slotLevel)
-		{
-			// BUG: We need to use the spellcasting level of the player for the specific spell that is being cast, not the overall characterClass level.
-			return GetAvailableSpellSlots(characterClass.Name, characterClass.Level, slotLevel);
 		}
 
 		public static double PlatinumPiecesToGoldPieces(double platinumPieces)
@@ -285,6 +286,7 @@ namespace DndCore
 
 		public static Ability GetSpellCastingAbility(string className)
 		{
+			// TODO: Put this in a table, Mark. Come on!!!
 			switch (className.ToLower())
 			{
 				case "sorcerer":
@@ -292,6 +294,7 @@ namespace DndCore
 				case "favored soul":
 					return Ability.charisma;
 				case "wizard":
+				case "arcanetrickster":
 					return Ability.intelligence;
 				case "cleric":
 				case "druid":
@@ -377,6 +380,24 @@ namespace DndCore
 			}
 
 			return SubClass.None;
+		}
+
+		public static SchoolOfMagic ToSchoolOfMagic(string school)
+		{
+			if (school == null)
+				return SchoolOfMagic.None;
+			switch (school.Trim().ToLower())
+			{
+				case "abjuration": return SchoolOfMagic.Abjuration;
+				case "illusion": return SchoolOfMagic.Illusion;
+				case "conjuration": return SchoolOfMagic.Conjuration;
+				case "enchantment": return SchoolOfMagic.Enchantment;
+				case "necromancy": return SchoolOfMagic.Necromancy;
+				case "evocation": return SchoolOfMagic.Evocation;
+				case "transmutation": return SchoolOfMagic.Transmutation;
+				case "divination": return SchoolOfMagic.Divination;
+			}
+			return SchoolOfMagic.None;
 		}
 	}
 }

@@ -228,6 +228,13 @@ namespace DndCore
 		public string Hue2 { get; set; }
 		public string Bright2 { get; set; }
 
+
+		public string RangeStr { get; set; }
+		public string ComponentsStr { get; set; }
+		public string CastingTimeStr { get; set; }
+		public string DurationStr { get; set; }
+		public SchoolOfMagic SchoolOfMagic { get; set; }
+
 		public void RecalculateDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			DieStr = GetDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
@@ -261,7 +268,7 @@ namespace DndCore
 				BonusPerLevel = spellDto.bonus_per_level,
 				PerLevelBonus = spellDto.bonus_per_level.GetFirstDouble(),
 				SpellCasterLevel = spellCasterLevel,
-				SpellSlotLevel = spellSlotLevel >= 0 ? spellSlotLevel: spellLevel,
+				SpellSlotLevel = spellSlotLevel >= 0 ? spellSlotLevel : spellLevel,
 				OnCast = spellDto.onCast,
 				OnCasting = spellDto.onCasting,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
@@ -269,6 +276,11 @@ namespace DndCore
 				OnDispel = spellDto.onDispel,
 				Hue1 = spellDto.hue1,
 				Bright1 = spellDto.bright1,
+				RangeStr = GetRangeStr(spellDto),
+				ComponentsStr = GetComponentsStr(spellComponents, spellDto),
+				DurationStr = GetDurationStr(spellDto),
+				SchoolOfMagic = DndUtils.ToSchoolOfMagic(spellDto.school),
+				CastingTimeStr = GetCastingTimeStr(spellDto),
 				Hue2 = spellDto.hue2,
 				Bright2 = spellDto.bright2,
 				CastWith = spellDto.cast_with,
@@ -277,6 +289,36 @@ namespace DndCore
 			spell.RecalculateDieStr(spell.SpellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
 			return spell;
+		}
+		static string GetRangeStr(SpellDto spellDto)
+		{
+			return spellDto.range;
+		}
+		static string GetComponentsStr(SpellComponents spellComponents, SpellDto spellDto)
+		{
+			string result = "";
+			if ((spellComponents & SpellComponents.Verbal) == SpellComponents.Verbal)
+				result += "V, ";
+			if ((spellComponents & SpellComponents.Somatic) == SpellComponents.Somatic)
+				result += "S, ";
+			if ((spellComponents & SpellComponents.Material) == SpellComponents.Material)
+			{
+				result += $"M ";
+				if (!string.IsNullOrWhiteSpace(spellDto.components_materials_description))
+					result += $"({spellDto.components_materials_description})";
+			}
+			result = result.Trim(new char[] { ' ', ','});
+			return result;
+		}
+
+		static string GetDurationStr(SpellDto spellDto)
+		{
+			return spellDto.duration;
+		}
+
+		static string GetCastingTimeStr(SpellDto spellDto)
+		{
+			return spellDto.casting_time;
 		}
 
 		private static SpellComponents GetSpellComponents(SpellDto spellDto)
@@ -354,6 +396,15 @@ namespace DndCore
 			result.AvailableWhen = AvailableWhen;
 			result.SpellCasterLevel = SpellCasterLevel;
 			result.SpellType = SpellType;
+			result.SchoolOfMagic = SchoolOfMagic;
+			result.CastingTimeStr = CastingTimeStr;
+			result.DurationStr = DurationStr;
+			result.RangeStr = RangeStr;
+			result.ComponentsStr = ComponentsStr;
+			result.Bright1 = Bright1;
+			result.Bright2 = Bright2;
+			result.Hue1 = Hue1;
+			result.Hue2 = Hue2;
 
 			// Override...
 			result.OwnerId = player != null ? player.playerID : -1;

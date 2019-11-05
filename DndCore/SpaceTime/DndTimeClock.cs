@@ -289,7 +289,14 @@ namespace DndCore
 				return;
 
 			Time = alarm.TriggerTime;
-			alarm.FireAlarm(this);
+			try
+			{
+				alarm.FireAlarm(this);
+			}
+			catch (Exception ex)
+			{
+				// TODO: Fire an OnException event handler....
+			}
 			alarmsToRemove.Add(alarm);
 		}
 

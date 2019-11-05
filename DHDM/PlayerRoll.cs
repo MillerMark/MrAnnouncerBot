@@ -9,5 +9,6 @@ namespace DHDM
 		public string name;
 		public int playerId;
 		public int modifier;
+		public bool success;
 	}
 }

@@ -34,6 +34,8 @@ namespace DndCore
 			tables = new List<object>();
 			LoadTable<Barbarian>();
 			LoadTable<Sorcerer>();
+			LoadTable<ArcaneTrickster>();
+			LoadTable<Paladin>();
 		}
 
 		static void LoadTable<T>() where T : BaseRow

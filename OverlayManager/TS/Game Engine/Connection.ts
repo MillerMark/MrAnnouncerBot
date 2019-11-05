@@ -9,7 +9,6 @@ function connectToSignalR(signalR) {
 		connection.on("ChangePlayerHealth", changePlayerHealth);
     connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
-    connection.on("PlayerDataChanged", playerDataChanged);
     connection.on("FocusItem", focusItem);
     connection.on("UnfocusItem", unfocusItem);
     connection.on("AddWindup", addWindup);
@@ -20,8 +19,9 @@ function connectToSignalR(signalR) {
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
-		connection.on("SetPlayerData", initializePlayerData);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
+		connection.on("PlayerDataChanged", playerDataChanged);
+		connection.on("SetPlayerData", initializePlayerData);
   };
 }
 

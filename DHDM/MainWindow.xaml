@@ -61,28 +61,28 @@
 			<TabItem Header="Kent">
 				<Grid Background="#FFE5E5E5">
 					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
+						<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
 					</ScrollViewer>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Kayla">
 				<Grid Background="#FFE5E5E5">
 					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
+						<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
 					</ScrollViewer>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Mark">
 				<Grid Background="#FFE5E5E5">
 					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
+						<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
 					</ScrollViewer>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Karen">
 				<Grid Background="#FFE5E5E5">
 					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterChanged"></uc:CharacterSheets>
+						<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
 					</ScrollViewer>
 				</Grid>
 			</TabItem>

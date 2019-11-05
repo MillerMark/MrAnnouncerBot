@@ -2,6 +2,8 @@ Name,Index,RequiresActivation,ActivationTime,ShortcutName,ShortcutAvailableWhen,
 ActionSurge,,x,*,Action Surge,,,,,"Offset(ActionsPerTurn, 1)",,,,,,,,,,1,Short Rest,
 AdvChecksAndSaves($Ability),,,,,,,CheckingAbility($Ability) || SavingAgainst($Ability),,PlayerHasAdvantage(),,Recalculate(ActionBasedState),,,,,,,,,,
 AdvOnRecklessAttack($Ability),,,,,,,InRecklessAttack && AttackIsMelee && AttackingWith($Ability),,"PlayerHasAdvantage(); Offset(EnemyAdvantage, 1)",,"Offset(EnemyAdvantage, -1)",,,,,,,,,,
+ArcaneTrickster,,,,,,,,"AddSpells(""Mage Hand"");
+Set(spellCastingAbility, intelligence);",,,,,,,,,,,,,
 AuraOfProtection,,,,,,,true,,,,,,,,,// TODO: Implement - see description,,,,,"Starting at 6th level, whenever you or a friendly creature within 10 feet of you must make a saving throw, the creature gains a bonus to the saving throw equal to your Charisma modifier (with a minimum bonus of +1). You must be conscious to grant this bonus.
 
 At 18th level, the range of this aura increases to 30 feet."

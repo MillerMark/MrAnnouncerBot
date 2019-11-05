@@ -12,6 +12,9 @@ namespace DndCore
 		const string STR_RechargeableMaxSuffix = "_max";
 		double _passivePerception = int.MinValue;
 
+		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+		public List<SpellGroup> SpellData { get; private set; }
+
 		[JsonIgnore]
 		public List<Rechargeable> rechargeables = new List<Rechargeable>();
 
@@ -47,6 +50,8 @@ namespace DndCore
 
 		[JsonIgnore]
 		public int damageOffsetThisRoll = 0;
+
+		public ActiveSpellData spellActivelyCasting;
 
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
@@ -94,6 +99,16 @@ namespace DndCore
 		public Ability savingThrowProficiency = 0;
 		public Ability spellCastingAbility = Ability.none;
 
+		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+		public string SpellCastingAbilityStr
+		{
+			get
+			{
+				return DndUtils.ToAbilityDisplayString(spellCastingAbility);
+			}
+		}
+		
+
 		[JsonIgnore]
 		CastedSpell spellToCast;
 
@@ -140,6 +155,10 @@ namespace DndCore
 		[JsonIgnore]
 		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
 
+		
+		
+		
+		// TODO: Set this to true when casting and false when no longer casting.
 		public bool Casting
 		{
 			get { return casting; }
@@ -152,9 +171,11 @@ namespace DndCore
 					return;
 
 				casting = value;
-				OnStateChanged($"Casting", oldValue, newValue);
+				OnStateChanged("Casting", oldValue, newValue);
 			}
 		}
+
+
 
 		public double charismaMod
 		{
@@ -651,6 +672,7 @@ namespace DndCore
 
 		public bool SpellCastingLock { get; set; }
 
+		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
 		public int SpellSaveDC
 		{
 			get
@@ -809,7 +831,8 @@ namespace DndCore
 		{
 			dieRollMessageThisRoll = dieRollMessage;
 		}
-		void AddSpell(string spellStr)
+
+		public void AddSpell(string spellStr)
 		{
 			if (string.IsNullOrWhiteSpace(spellStr))
 				return;
@@ -821,9 +844,12 @@ namespace DndCore
 			if (spellName.Has("("))
 			{
 				spellName = spellName.EverythingBefore("(");
+				if (HasSpell(spellName))
+					return;
+
 				string parameterStr = spellStr.EverythingBetween("(", ")");
 				var parameters = parameterStr.Split(',');
-				
+
 				for (int i = 0; i < parameters.Length; i++)
 				{
 					var parameter = parameters[i].Trim();
@@ -846,6 +872,8 @@ namespace DndCore
 					}
 				}
 			}
+			else if (HasSpell(spellName))
+				return;
 			KnownSpell knownSpell = new KnownSpell();
 			knownSpell.SpellName = spellName;
 			knownSpell.RechargesAt = rechargesAt.GetTimeSpan();
@@ -857,7 +885,12 @@ namespace DndCore
 			KnownSpells.Add(knownSpell);
 		}
 
-		void AddSpellsFrom(string spellsStr)
+		private bool HasSpell(string spellName)
+		{
+			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName) != null;
+		}
+
+		public void AddSpellsFrom(string spellsStr)
 		{
 			if (string.IsNullOrWhiteSpace(spellsStr))
 				return;
@@ -976,10 +1009,21 @@ namespace DndCore
 			return spellToCast;
 		}
 
-		public void CastingSpell(CastedSpell spell)
+		public void CastingSpellRequiringConcentration(CastedSpell spell)
 		{
 			BreakConcentration();
 			concentratedSpell = spell;
+		}
+
+		public void CheckConcentration(CastedSpell castedSpell)
+		{
+			if (castedSpell.Spell.RequiresConcentration)
+				CastingSpellRequiringConcentration(castedSpell);
+		}
+
+		public void ShowPlayerCasting(CastedSpell castedSpell)
+		{
+			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
 		}
 
 		public void ChangeHealth(double damageHealthAmount)
@@ -1154,7 +1198,23 @@ namespace DndCore
 			return null;
 		}
 
-		public int SpellAttackModifier
+		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+		public string SpellAttackBonusStr
+		{
+			get
+			{
+				string bonusStr;
+				int bonus = SpellAttackBonus;
+				if (bonus > 0)
+					bonusStr = "+" + bonus.ToString();
+				else
+					bonusStr = bonus.ToString();
+				return bonusStr;
+			}
+		}
+		
+		[JsonIgnore]
+		public int SpellAttackBonus
 		{
 			get
 			{
@@ -1179,7 +1239,7 @@ namespace DndCore
 
 		public int GetSpellSaveDC()
 		{
-			return 8 + SpellAttackModifier;
+			return 8 + SpellAttackBonus;
 		}
 
 		/// <summary>
@@ -1190,26 +1250,32 @@ namespace DndCore
 		{
 			int[] results = new int[10];
 			for (int i = 0; i < 10; i++)
-			{
 				results[i] = 0;
-			}
+
 			foreach (CharacterClass characterClass in Classes)
 			{
-				if (DndUtils.CanCastSpells(characterClass.Name))
-				{
-					// BUG: If a character multi-classes in two classes that can both cast spells, should we keep the spell slots separate?
-					results[1] += DndUtils.GetAvailableSpellSlots(characterClass, 1);
-					results[2] += DndUtils.GetAvailableSpellSlots(characterClass, 2);
-					results[3] += DndUtils.GetAvailableSpellSlots(characterClass, 3);
-					results[4] += DndUtils.GetAvailableSpellSlots(characterClass, 4);
-					results[5] += DndUtils.GetAvailableSpellSlots(characterClass, 5);
-					results[6] += DndUtils.GetAvailableSpellSlots(characterClass, 6);
-					results[7] += DndUtils.GetAvailableSpellSlots(characterClass, 7);
-					results[8] += DndUtils.GetAvailableSpellSlots(characterClass, 8);
-					results[9] += DndUtils.GetAvailableSpellSlots(characterClass, 9);
-				}
+				AddAvailableSpellSlots(results, characterClass.Name, characterClass.Level);
+				if (characterClass.SubClass != SubClass.None)
+					AddAvailableSpellSlots(results, Enum.GetName(typeof(SubClass), characterClass.SubClass), characterClass.Level);
 			}
 			return results;
+		}
+
+		private static void AddAvailableSpellSlots(int[] results, string name, int level)
+		{
+			if (DndUtils.CanCastSpells(name))
+			{
+				// BUG: If a character multi-classes in two classes that can both cast spells, should we keep the spell slots separate?
+				results[1] += DndUtils.GetAvailableSpellSlots(name, level, 1);
+				results[2] += DndUtils.GetAvailableSpellSlots(name, level, 2);
+				results[3] += DndUtils.GetAvailableSpellSlots(name, level, 3);
+				results[4] += DndUtils.GetAvailableSpellSlots(name, level, 4);
+				results[5] += DndUtils.GetAvailableSpellSlots(name, level, 5);
+				results[6] += DndUtils.GetAvailableSpellSlots(name, level, 6);
+				results[7] += DndUtils.GetAvailableSpellSlots(name, level, 7);
+				results[8] += DndUtils.GetAvailableSpellSlots(name, level, 8);
+				results[9] += DndUtils.GetAvailableSpellSlots(name, level, 9);
+			}
 		}
 
 		public object GetState(string key)
@@ -1510,6 +1576,7 @@ namespace DndCore
 		// TODO: Call after a successful roll.
 		public void ResetPlayerRollBasedState()
 		{
+			lastRollWasSuccessful = false;
 			usesMagicThisRoll = false;
 			targetedCreatureHitPoints = 0;
 			hitWasCritical = false;
@@ -1655,6 +1722,7 @@ namespace DndCore
 
 		public string ToJson()
 		{
+			BuildSpellGroupData();
 			return JsonConvert.SerializeObject(this);
 		}
 
@@ -1790,6 +1858,9 @@ namespace DndCore
 		public string HisHer { get; set; }
 		public string HeShe { get; set; }
 
+		[JsonIgnore]
+		public bool lastRollWasSuccessful { get; set; }
+
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{
 			string varName = DndUtils.ToVarName(itemName);
@@ -1882,6 +1953,65 @@ namespace DndCore
 			ActivateAlwaysOnFeatures();
 			ActivateConditionallySatisfiedFeatures();
 		}
+		void BuildSpellGroupData()
+		{
+			SortedDictionary<int, SpellGroup> spellGroupsByLevel = new SortedDictionary<int, SpellGroup>();
+			int[] spellSlotLevels = GetSpellSlotLevels();
+
+			string GetSpellGroupName(int level)
+			{
+				switch (level)
+				{
+					case 0:
+						return "Cantrips: ";
+					case 1:
+						return "1st: ";
+					case 2:
+						return "2nd: ";
+					case 3:
+						return "3rd: ";
+				}
+				return $"{level}th: ";
+			}
+			SpellGroup GetSpellGroupByLevel(int level)
+			{
+				if (!spellGroupsByLevel.ContainsKey(level))
+				{
+					
+					SpellGroup newSpellGroup = new SpellGroup();
+					newSpellGroup.Name = GetSpellGroupName(level);
+					if (level > 0)
+					{
+						newSpellGroup.TotalCharges = spellSlotLevels[level];
+						newSpellGroup.ChargesUsed = newSpellGroup.TotalCharges - GetRemainingChargesOnItem(DndUtils.GetSpellSlotLevelKey(level));
+					}
+
+					spellGroupsByLevel.Add(level, newSpellGroup);
+
+				}
+
+				return spellGroupsByLevel[level];
+			}
+
+			foreach (KnownSpell knownSpell in KnownSpells)
+			{
+				Spell spell = AllSpells.Get(knownSpell.SpellName);
+
+				if (spell != null)
+				{
+					SpellGroup spellGroup = GetSpellGroupByLevel(spell.Level);
+					spellGroup.SpellNames.Add(knownSpell.SpellName);
+				}
+
+			}
+
+			SpellData = new List<SpellGroup>();
+
+			foreach (int key in spellGroupsByLevel.Keys)
+			{
+				SpellData.Add(spellGroupsByLevel[key]);
+			}
+		}
 
 		public void ActivateConditionallySatisfiedFeatures()
 		{
@@ -1946,6 +2076,89 @@ namespace DndCore
 			foreach (KnownSpell knownSpell in KnownSpells)
 			{
 				knownSpell.TestEvaluateAllExpressions(this);
+			}
+		}
+		public void PrepareForSerialization()
+		{
+			BuildSpellGroupData();
+		}
+
+		StateChangedEventArgs stateChangedEventArgs;
+
+		void SetField(string fieldName, ref double field, double newValue, bool isRechargeable = false)
+		{
+			if (field == newValue)
+				return;
+			stateChangedEventArgs.Add(fieldName, field, newValue, isRechargeable);
+			field = newValue;
+		}
+		void SetField(string fieldName, ref int field, int newValue, bool isRechargeable = false)
+		{
+			if (field == newValue)
+				return;
+			stateChangedEventArgs.Add(fieldName, field, newValue, isRechargeable);
+			field = newValue;
+		}
+		void SetField(string fieldName, ref bool field, bool newValue, bool isRechargeable = false)
+		{
+			if (field == newValue)
+				return;
+			stateChangedEventArgs.Add(fieldName, field, newValue, isRechargeable);
+			field = newValue;
+		}
+		void SetField(string fieldName, ref string field, string newValue, bool isRechargeable = false)
+		{
+			if (field == newValue)
+				return;
+			stateChangedEventArgs.Add(fieldName, field, newValue, isRechargeable);
+			field = newValue;
+		}
+		public void CopyUIChangeableAttributesFrom(Character character)
+		{
+			
+			stateChangedEventArgs = new StateChangedEventArgs();
+			SetField("baseArmorClass",   ref baseArmorClass,                   character.baseArmorClass);
+			SetField("baseCharisma",     ref baseCharisma,                   character.baseCharisma);
+			SetField("baseConstitution", ref baseConstitution,                   character.baseConstitution);
+			SetField("baseDexterity",    ref baseDexterity,                   character.baseDexterity);
+			SetField("baseIntelligence", ref baseIntelligence,                   character.baseIntelligence);
+			SetField("baseStrength",     ref baseStrength,                   character.baseStrength);
+			SetField("alignment",        ref alignment,                   character.alignment);
+			SetField("deathSaveDeath1",  ref deathSaveDeath1,                   character.deathSaveDeath1);
+			SetField("deathSaveDeath2",  ref deathSaveDeath2,                   character.deathSaveDeath2);
+			SetField("deathSaveDeath3",  ref deathSaveDeath3,                   character.deathSaveDeath3);
+			SetField("deathSaveLife1",   ref deathSaveLife1,                   character.deathSaveLife1);
+			SetField("deathSaveLife2",   ref deathSaveLife2,                   character.deathSaveLife2);
+			SetField("deathSaveLife3",   ref deathSaveLife3,                   character.deathSaveLife3);
+			SetField("experiencePoints", ref experiencePoints,                   character.experiencePoints);
+			SetField("goldPieces",       ref goldPieces,                   character.goldPieces);
+			SetField("hitPoints",        ref hitPoints,                   character.hitPoints);
+			SetField("initiative",       ref initiative,                   character.initiative);
+			SetField("inspiration",      ref inspiration,                   character.inspiration);
+			SetField("load",             ref load,                   character.load);
+			SetField("name",             ref name,                   character.name);
+			SetField("proficiencyBonus", ref proficiencyBonus,                   character.proficiencyBonus);
+			SetField("baseWalkingSpeed", ref baseWalkingSpeed,                   character.baseWalkingSpeed);
+			SetField("tempHitPoints",    ref tempHitPoints,                   character.tempHitPoints);
+			SetField("totalHitDice",     ref totalHitDice,                   character.totalHitDice);
+			SetField("weight",					 ref weight,                   character.weight);
+
+			if (stateChangedEventArgs.ChangeList.Count > 0)
+			{
+				OnStateChanged(this, stateChangedEventArgs);
+				stateChangedEventArgs = null;
+			}
+		}
+		public void CompleteCast()
+		{
+		}
+
+		public void RollHasStopped()
+		{
+			if (spellActivelyCasting != null)
+			{
+				spellActivelyCasting = null;
+				OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 			}
 		}
 

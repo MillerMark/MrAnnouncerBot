@@ -135,9 +135,9 @@
     let statPage: StatPage = new StatPage();
 
     StatPage.addName(statPage);
-		statPage.addStat('spellCastingAbility', 222, 43, 166, TextAlign.center, TextDisplay.autoSize);
-		statPage.addStat('SpellSaveDC', 164, 107, 52, TextAlign.center, TextDisplay.autoSize);
-		statPage.addStat('SpellAttackBonus', 266, 107, TextDisplay.autoSize);
+		statPage.addStat('SpellCastingAbilityStr', 222, 43, 166, TextAlign.center, TextDisplay.autoSize);
+		statPage.addStat('SpellAttackBonusStr', 173, 107, 72, TextAlign.center, TextDisplay.autoSize);
+		statPage.addStat('SpellSaveDC', 267, 107, 86, TextAlign.center, TextDisplay.autoSize);
     return statPage;
   }
 

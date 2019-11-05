@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using Newtonsoft.Json;
 using System;
 using DndCore;
 using System.Collections.Generic;
@@ -24,6 +23,7 @@ using DndUI;
 using BotCore;
 using System.Threading;
 using OBSWebsocketDotNet;
+using Newtonsoft.Json;
 
 namespace DHDM
 {
@@ -86,7 +86,7 @@ namespace DHDM
 
 			History.TimeClock = game.Clock;
 			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
-			// TODO: Save and retrieve game time.
+			// TODO: Save and retrieve game time between games (or allow DM to set start time for every game).
 			game.Clock.SetTime(DateTime.Now);
 			InitializeComponent();
 			FocusHelper.FocusedControlsChanged += FocusHelper_FocusedControlsChanged;
@@ -158,6 +158,12 @@ namespace DHDM
 		private void Game_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
 		{
 			TellDungeonMaster(ea.Message);
+		}
+
+		void EnsureEverythingRemainsHookedUpAsExpected()
+		{
+			game.Clock.TimeChanged -= DndTimeClock_TimeChanged;
+			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
 		}
 
 		void SetShortcutVisibility(Panel panel)
@@ -233,7 +239,7 @@ namespace DHDM
 			if (updatingRechargeables)
 				return;
 
-			if (ea.Key == "Rechargeables")
+			if (ea.Contains("Rechargeables"))
 			{
 				UpdateStateUIForPlayer(ea.Player);
 			}
@@ -261,6 +267,7 @@ namespace DHDM
 
 		private void UpdateStateUIForPlayer(Character player)
 		{
+			UpdatePlayerScrollOnStream(player);
 			Dispatcher.Invoke(() =>
 			{
 				ListBox stateList = GetStateListForCharacter(player.playerID);
@@ -651,11 +658,15 @@ namespace DHDM
 			Spell spell = actionShortcut.Spell;
 			if (spell != null)
 			{
+				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
 				activeIsSpell = spell;
 				KnownSpell matchingSpell = GetMatchingSpell(spell, player);
-				if (matchingSpell.CanBeRecharged())
+				if (matchingSpell != null && matchingSpell.CanBeRecharged())
 				{
+					PrepareToCastSpell(spell, actionShortcut.PlayerId);
 					UseRechargeableItem(actionShortcut, matchingSpell);
+					CastedSpell castedSpell = new CastedSpell(spell, player, null);
+					castedSpell.CastingWithItem();
 				}
 				else
 				{
@@ -667,6 +678,9 @@ namespace DHDM
 			}
 			else
 			{
+				// TODO: Add support for shortcut buttons that can activate a particular scroll page (e.g., a wand that activates the items page?)
+				if (actionShortcut.Name.IndexOf("Wild Magic") < 0)
+					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
 				if (actionShortcut.Windups.Count > 0)
 				{
 					List <WindupDto> windups = actionShortcut.GetAvailableWindups(player);
@@ -714,6 +728,8 @@ namespace DHDM
 						type = DiceRollType.DamageOnly;
 					DiceRoll diceRoll = PrepareRoll(type);
 					diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+
+
 					diceRoll.DamageDice = actionShortcut.InstantDice;
 					RollTheDice(diceRoll);
 				}
@@ -771,9 +787,6 @@ namespace DHDM
 			HubtasticBaseStation.CastSpell(serializedObject);
 
 			CastedSpell castedSpell = game.Cast(player, spell);
-
-			if (spell.RequiresConcentration)
-				player.CastingSpell(castedSpell);
 
 			if (spell.MustRollDiceToCast())
 			{
@@ -869,12 +882,19 @@ namespace DHDM
 			}
 		}
 
-		private void HandleCharacterChanged(object sender, RoutedEventArgs e)
+		void SetActivePlayerFromCharacter(Character character)
+		{
+			if (character.playerID != ActivePlayerId)
+				return;
+			Character player = game.GetPlayerFromId(ActivePlayerId);
+			player.CopyUIChangeableAttributesFrom(character);
+		}
+		private void HandleCharacterSheetDataChanged(object sender, RoutedEventArgs e)
 		{
 			if (sender is CharacterSheets characterSheets)
 			{
-				string character = characterSheets.GetCharacter();
-				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, character);
+				Character character = characterSheets.GetCharacter();
+				SetActivePlayerFromCharacter(character);
 			}
 		}
 
@@ -924,13 +944,7 @@ namespace DHDM
 		{
 			lastRoll = diceRoll;
 			Character player = null;
-			if (castedSpellNeedingCompletion != null)
-			{
-				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
-				diceRoll.DamageDice = castedSpellNeedingCompletion.DieStr;
-				spellCaster = null;
-				castedSpellNeedingCompletion = null;
-			}
+			CompleteCast(diceRoll);
 
 			if (diceRoll.PlayerRollOptions.Count == 1)
 			{
@@ -966,11 +980,30 @@ namespace DHDM
 				btnClearDice.Visibility = Visibility.Hidden;
 				PrepareForClear();
 			});
+			if (diceRoll.IsOnePlayer)
+				player?.ResetPlayerRollBasedState();
+			else
+			{
+				foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
+				{
+					player = game.GetPlayerFromId(playerRollOption.PlayerID);
+					player?.ResetPlayerRollBasedState();
+				}
+			}
+
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
+		}
 
-			if (player != null)
-				player.ResetPlayerRollBasedState();
+		private void CompleteCast(DiceRoll diceRoll)
+		{
+			if (castedSpellNeedingCompletion != null)
+			{
+				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
+				diceRoll.DamageDice = castedSpellNeedingCompletion.DieStr;
+				spellCaster = null;
+				castedSpellNeedingCompletion = null;
+			}
 		}
 
 		void PrepareForClear()
@@ -1531,16 +1564,20 @@ namespace DHDM
 				return;
 			// Noticed doubling up of individual rolls.
 			Character singlePlayer = diceStoppedRollingData.GetSingleRollingPlayer();
-			if (singlePlayer == null)
-				return;
+			if (singlePlayer != null)
+			{
+				TriggerAfterRollEffects(diceStoppedRollingData, singlePlayer);
+			}
+			else if (diceStoppedRollingData.multiplayerSummary != null)
+				foreach (PlayerRoll playerRoll in diceStoppedRollingData.multiplayerSummary)
+				{
+					Character player = game.GetPlayerFromId(playerRoll.playerId);
+					TriggerAfterRollEffects(diceStoppedRollingData, player);
+				}
 
-			if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellName))
-				singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
-			else if (diceStoppedRollingData.type == DiceRollType.Attack)
-				singlePlayer.JustSwungWeapon();
 
-			// TODO: pass **targeted creatures** into RollIsComplete...
-			singlePlayer.RollIsComplete(diceStoppedRollingData.wasCriticalHit);
+			// TODO: Trigger After Roll Effects for all players if multiple players rolled at the same time.
+
 
 			//diceRollData.playerID
 			//if (diceRollData.isSpell)
@@ -1557,9 +1594,44 @@ namespace DHDM
 				});
 			}
 		}
+
+		private static void TriggerAfterRollEffects(DiceStoppedRollingData diceStoppedRollingData, Character singlePlayer)
+		{
+			if (singlePlayer == null)
+				return;
+
+			// TODO: Add support for OnPlayerSaves event.
+			singlePlayer.lastRollWasSuccessful = diceStoppedRollingData.success;
+
+			if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellName))
+				singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
+			else if (diceStoppedRollingData.type == DiceRollType.Attack)
+			{
+				singlePlayer.JustSwungWeapon();
+			}
+
+			// TODO: pass **targeted creatures** into RollIsComplete...
+			singlePlayer.RollIsComplete(diceStoppedRollingData.wasCriticalHit);
+		}
+
 		void RepeatLastRoll()
 		{
 			RollTheDice(lastRoll);
+		}
+
+		void NotifyPlayersRollHasStopped(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData.multiplayerSummary != null)
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
+				{
+					Character player = game.GetPlayerFromId(playerRoll.playerId);
+					player?.RollHasStopped();
+				}
+			else
+			{
+				Character player = game.GetPlayerFromId(stopRollingData.playerID);
+				player?.RollHasStopped();
+			}
 		}
 
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
@@ -1569,6 +1641,9 @@ namespace DHDM
 			{
 				IndividualDiceStoppedRolling(ea.StopRollingData.individualRolls);
 			}
+
+			NotifyPlayersRollHasStopped(ea.StopRollingData);
+
 			SaveNamedResults(ea);
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
@@ -1583,6 +1658,12 @@ namespace DHDM
 
 		void ReportInitiativeResults(DiceEventArgs ea)
 		{
+			if (ea.StopRollingData.multiplayerSummary == null)
+			{
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣Unexpected issue - no multiplayer results.");
+				return;
+			}
+
 			TellDungeonMaster("Initiative: ");
 			int count = 1;
 			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
@@ -2156,7 +2237,7 @@ namespace DHDM
 					characterSheets.PageChanged += CharacterSheets_PageChanged;
 					characterSheets.ChargesChanged += CharacterSheets_ChargesChanged;
 					characterSheets.PageBackgroundClicked += CharacterSheets_PageBackgroundClicked;
-					characterSheets.CharacterChanged += HandleCharacterChanged;
+					characterSheets.CharacterChanged += HandleCharacterSheetDataChanged;
 					characterSheets.SetFromCharacter(player);
 					characterSheets.SkillCheckRequested += CharacterSheets_SkillCheckRequested;
 					characterSheets.SavingThrowRequested += CharacterSheets_SavingThrowRequested;
@@ -2455,18 +2536,19 @@ namespace DHDM
 			AllWeaponEffects.Invalidate();
 			AllPlayers.Invalidate();
 			AllSpells.Invalidate();
+			AllSpellEffects.Invalidate();
 			AllFeatures.Invalidate();
 			AllDieRollEffects.Invalidate();
 			AllTrailingEffects.Invalidate();
 			PlayerActionShortcut.PrepareForCreation();
 			AllActionShortcuts.Invalidate();
 			//PlayerFactory.BuildPlayers(players);
+
+			game.Clock.TimeChanged -= DndTimeClock_TimeChanged;
 			game.GetReadyToPlay();
+			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
 
 			List<Character> players = AllPlayers.GetActive();
-
-			string playerData = JsonConvert.SerializeObject(players);
-			HubtasticBaseStation.SetPlayerData(playerData);
 
 			foreach (Character player in players)
 			{
@@ -2474,9 +2556,18 @@ namespace DHDM
 			}
 
 			game.Start();
+			SendPlayerData();
+
 			BuildPlayerTabs();
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
+		}
+
+		private void SendPlayerData()
+		{
+			game.PreparePlayersForSerialization();
+			string playerData = JsonConvert.SerializeObject(game.Players);
+			HubtasticBaseStation.SetPlayerData(playerData);
 		}
 
 		void SetGridPosition(UIElement control, int column, int row)
@@ -2715,6 +2806,12 @@ namespace DHDM
 			}
 		}
 
+		void UpdatePlayerScrollOnStream(Character player)
+		{
+			if (ActivePlayerId == player.playerID)
+				HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
+		}
+
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
 			if (damageHealthChange == null)
@@ -2740,7 +2837,7 @@ namespace DHDM
 					playerNames += firstName;
 
 				player.ChangeHealth(damageHealthChange.DamageHealth);
-				HubtasticBaseStation.PlayerDataChanged(playerId, player.ToJson());
+				UpdatePlayerScrollOnStream(player);
 			}
 
 			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));

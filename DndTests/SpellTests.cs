@@ -30,6 +30,7 @@ namespace DndTests
 		const int Level19 = 19;
 		const int Level20 = 20;
 
+		const int Cantrip = 0;
 		const int SlotLevel1 = 1;
 		const int SlotLevel2 = 2;
 		const int SlotLevel3 = 3;
@@ -54,7 +55,7 @@ namespace DndTests
 				testContextInstance = value;
 			}
 		}
-		private const int Cantrip = 0;
+		
 		[TestMethod]
 		public void TestRayOfFrost()
 		{
@@ -146,6 +147,7 @@ namespace DndTests
 		public void SpellSorcererSlotTests()
 		{
 			const string Sorcerer = "Sorcerer";
+			Assert.AreEqual(4, DndUtils.GetAvailableSpellSlots(Sorcerer, Level1, Cantrip));
 			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(Sorcerer, Level1, SlotLevel1));
 			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(Sorcerer, Level1, SlotLevel2));
 
@@ -188,6 +190,37 @@ namespace DndTests
 			Assert.AreEqual(3, DndUtils.GetAvailableSpellSlots(Sorcerer, Level9, SlotLevel4));
 			Assert.AreEqual(1, DndUtils.GetAvailableSpellSlots(Sorcerer, Level9, SlotLevel5));
 			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(Sorcerer, Level9, SlotLevel6));
+		}
+		[TestMethod]
+		public void ArcaneTricksterSpellSlotTests()
+		{
+			const string ArcaneTrickster = "ArcaneTrickster";
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level1, SlotLevel1));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level1, SlotLevel2));
+
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level2, SlotLevel1));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level2, SlotLevel2));
+
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level3, Cantrip));
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level3, SlotLevel1));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level3, SlotLevel2));
+
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level4, Cantrip));
+			Assert.AreEqual(3, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level4, SlotLevel1));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level4, SlotLevel2));
+
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level5, Cantrip));
+			Assert.AreEqual(3, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level5, SlotLevel1));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level5, SlotLevel2));
+
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level6, Cantrip));
+			Assert.AreEqual(3, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level6, SlotLevel1));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level6, SlotLevel2));
+
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level7, Cantrip));
+			Assert.AreEqual(4, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level7, SlotLevel1));
+			Assert.AreEqual(2, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level7, SlotLevel2));
+			Assert.AreEqual(0, DndUtils.GetAvailableSpellSlots(ArcaneTrickster, Level7, SlotLevel3));
 		}
 
 		[TestMethod]

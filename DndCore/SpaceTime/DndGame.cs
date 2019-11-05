@@ -190,7 +190,7 @@ namespace DndCore
 
 		private void Player_StateChanged(object sender, StateChangedEventArgs ea)
 		{
-			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea.Key, ea.OldValue, ea.NewValue, ea.IsRechargeable));
+			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea));
 		}
 
 		Creature firstPlayer = null;
@@ -332,6 +332,7 @@ namespace DndCore
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
+			player.CompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			if (castingSpells.IndexOf(castedSpell) >= 0)
 				castingSpells.Remove(castedSpell);
@@ -621,6 +622,13 @@ namespace DndCore
 			item.RoundPoint = roundPoint;
 			item.ReminderMessage = reminder;
 			roundReminders.Add(item);
+		}
+		public void PreparePlayersForSerialization()
+		{
+			foreach (Character player in Players)
+			{
+				player.PrepareForSerialization();
+			}
 		}
 	}
 }

@@ -1,9 +1,10 @@
 ﻿@page
 @model IndexModel
 @{
-  Layout = null;
+	Layout = null;
 }
 <link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://use.typekit.net/dbg4ecf.css">
 <canvas id="myCanvas" width="1920" height="1080"></canvas>
 
 <script src="~/lib/signalr/signalr.js"></script>
@@ -13,7 +14,7 @@
 <script src="~/GameDev/Source/Game Engine/Folders.js"></script>
 
 <script>
-  Folders.assets = 'GameDev/Assets/DragonH';
+	Folders.assets = 'GameDev/Assets/DragonH';
 </script>
 
 <script src="~/GameDev/Source/Game Engine/Vector.js"></script>
@@ -84,9 +85,12 @@
 <script src="~/GameDev/Source/DragonH/SpritesEffect.js"></script>
 <script src="~/GameDev/Source/DragonH/Item.js"></script>
 <script src="~/GameDev/Source/DragonH/CharacterEnums.js"></script>
+<script src="~/GameDev/Source/DragonH/ActiveSpellData.js"></script>
 <script src="~/GameDev/Source/DragonH/Character.js"></script>
 <script src="~/GameDev/Source/DragonH/CharacterStat.js"></script>
 <script src="~/GameDev/Source/DragonH/StatPage.js"></script>
+<script src="~/GameDev/Source/DragonH/SpellBook.js"></script>
+<script src="~/GameDev/Source/DragonH/HighlightEmitter.js"></script>
 <script src="~/GameDev/Source/DragonH/Windups.js"></script>
 <script src="~/GameDev/Source/DragonH/DragonGame.js"></script>
 <script src="~/GameDev/Source/DragonH/CharacterStatsScroll.js"></script>
@@ -96,5 +100,5 @@
 <script src="~/GameDev/Source/Main.js"></script>
 
 <script>
-  connectToSignalR(signalR);
+	connectToSignalR(signalR);
 </script>

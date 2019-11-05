@@ -12,7 +12,8 @@ namespace DndCore
 		public const string STR_OtherPrefix = "Other.";
 		static int shortcutIndex;
 		public List<WindupDto> Windups { get; }
-		public List<WindupDto> WindupsReversed {
+		public List<WindupDto> WindupsReversed
+		{
 			get
 			{
 				List<WindupDto> result = new List<WindupDto>();
@@ -127,29 +128,30 @@ namespace DndCore
 			int index = 0;
 			foreach (WindupDto windup in Windups)
 			{
-				if (string.IsNullOrWhiteSpace(windup.EffectAvailableWhen) || Expressions.GetBool(windup.EffectAvailableWhen, player))
-				{
-					WindupDto item = windup.Clone();
-					if (CarriedWeapon != null)
+				if (windup != null)
+					if (string.IsNullOrWhiteSpace(windup.EffectAvailableWhen) || Expressions.GetBool(windup.EffectAvailableWhen, player))
 					{
-						switch (index)
+						WindupDto item = windup.Clone();
+						if (CarriedWeapon != null)
 						{
-							case 0:
-								SetHueFromStr(item, player, CarriedWeapon.WeaponHue);
-								break;
-							case 1:
-								SetHueFromStr(item, player, CarriedWeapon.Hue1);
-								break;
-							case 2:
-								SetHueFromStr(item, player, CarriedWeapon.Hue2);
-								break;
-							case 3:
-								SetHueFromStr(item, player, CarriedWeapon.Hue3);
-								break;
+							switch (index)
+							{
+								case 0:
+									SetHueFromStr(item, player, CarriedWeapon.WeaponHue);
+									break;
+								case 1:
+									SetHueFromStr(item, player, CarriedWeapon.Hue1);
+									break;
+								case 2:
+									SetHueFromStr(item, player, CarriedWeapon.Hue2);
+									break;
+								case 3:
+									SetHueFromStr(item, player, CarriedWeapon.Hue3);
+									break;
+							}
 						}
+						result.Add(item);
 					}
-					result.Add(item);
-				}
 				index++;
 			}
 			return result;
@@ -224,7 +226,7 @@ namespace DndCore
 			}
 			return DiceRollType.None;
 		}
-		
+
 		void AddSpell(int spellSlotLevel, Character player, Spell spell)
 		{
 			Spell = spell.Clone(player, spellSlotLevel);
@@ -406,7 +408,7 @@ namespace DndCore
 		public static List<PlayerActionShortcut> FromItemSpellEffect(string spellName, ItemEffect spellEffect, Character player)
 		{
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
-			
+
 			List<Spell> spells = AllSpells.GetAll(spellName);
 
 			foreach (Spell spell in spells)
@@ -441,7 +443,7 @@ namespace DndCore
 			}
 
 			AddItemEffect(results, spellEffect);
-			
+
 			return results;
 		}
 
@@ -502,7 +504,7 @@ namespace DndCore
 
 		static void SetWeaponHitTime(PlayerActionShortcutDto dto, Weapon weapon)
 		{
-			
+
 		}
 		private static void SetSpellCastingTime(PlayerActionShortcutDto dto, Spell spell)
 		{

@@ -319,9 +319,7 @@ namespace DndUI
 
 		Ability GetSpellCastingAbility()
 		{
-			Ability result = Ability.none;
-			// TODO: Implement this.
-			return result;
+			return DndUtils.ToAbility(statSpellcastingAbility.Text);
 		}
 
 		void SetSkillProficiency(Skills skills)
@@ -588,8 +586,16 @@ namespace DndUI
 				SetName(statName4, character.name);
 
 				statSpellcastingAbility.Text = DndUtils.ToAbilityDisplayString(character.spellCastingAbility);
-				statSpellSaveDC.Text = character.SpellSaveDC.ToString();
-				statSpellAttackBonus.Text = character.SpellAttackModifier.ToString();
+				if (character.spellCastingAbility == Ability.none)
+				{
+					statSpellSaveDC.Text = "-";
+					statSpellAttackBonus.Text = "-";
+				}
+				else
+				{
+					statSpellSaveDC.Text = character.SpellSaveDC.ToString();
+					statSpellAttackBonus.Text = character.SpellAttackBonus.ToString();
+				}
 
 				//character.offTurnActions = 
 				//character.onTurnActions = 
@@ -646,7 +652,7 @@ namespace DndUI
 		}
 
 
-		public string GetCharacter()
+		public Character GetCharacter()
 		{
 			Character character = new Character();
 			character.playerID = playerID;
@@ -737,7 +743,7 @@ namespace DndUI
 			//character.truesightRadius = 
 			character.weight = statWeight.ToDouble();
 			character.baseWisdom = statWisdom.ToInt();
-			return character.ToJson();
+			return character;
 		}
 
 		void HookChangedEvents(Visual visual)

@@ -2570,6 +2570,7 @@ function getRollResults(): RollResults {
 			let playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.playerId == die.playerID);
 			if (playerRoll) {
 				playerRoll.roll += topNumber;
+				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
 			}
 			else {
 				let modifier: number = 0;
@@ -2578,7 +2579,8 @@ function getRollResults(): RollResults {
 					modifier = getModifier(diceRollData, player);
 				}
 
-				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, modifier));
+				let success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
+				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, modifier, success));
 			}
 			let scaleAdjust: number = 1;
 			if (die.rollType === DieCountsAs.inspiration) {
@@ -3031,7 +3033,7 @@ function addDiceForPlayer(playerID: number, xPositionModifier: number, kind: Van
 }
 
 class PlayerRoll {
-	constructor(public roll: number, public name: string, public playerId: number, public modifier: number = 0) {
+	constructor(public roll: number, public name: string, public playerId: number, public modifier: number = 0, public success: boolean = false) {
 
 	}
 }
