@@ -16,6 +16,7 @@ namespace DndCore
 		public Creature TargetCreature { get; set; }
 		public DateTime TimeSpellWasCast { get; set; }
 		public string DieStr { get => Spell.DieStr; set => Spell.DieStr = value; }
+		public string DieStrRaw { get => Spell.DieStrRaw; set { } }
 		public int SpellSlotLevel { get => Spell.SpellSlotLevel; set => Spell.SpellSlotLevel = value; }
 		public int Level { get => Spell.Level; set => Spell.Level = value; }
 

@@ -534,14 +534,19 @@
 							</Button>
 						</StackPanel>
 
-						<Button x:Name="btnClearDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 0, 0" Visibility="Hidden" Click="BtnClearDice_Click" MouseEnter="BtnClearDice_MouseEnter" MouseLeave="BtnClearDice_MouseLeave">
-							<Grid Width="{Binding RelativeSource={RelativeSource FindAncestor,
+						<StackPanel Orientation="Horizontal">
+							<Button x:Name="btnClearDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 40, 0" Visibility="Hidden" Click="BtnClearDice_Click" MouseEnter="BtnClearDice_MouseEnter" MouseLeave="BtnClearDice_MouseLeave">
+								<Grid Width="{Binding RelativeSource={RelativeSource FindAncestor,
                                     AncestorType={x:Type Button}}, Path=Width}" Height="{Binding RelativeSource={RelativeSource FindAncestor,
                                     AncestorType={x:Type Button}}, Path=Height}" IsHitTestVisible="False">
-								<Rectangle x:Name="rectProgressToClear" Fill="#FF1AD9B6" Width="33" HorizontalAlignment="Left" IsHitTestVisible="False"></Rectangle>
-								<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
-							</Grid>
-						</Button>
+									<Rectangle x:Name="rectProgressToClear" Fill="#FF1AD9B6" Width="33" HorizontalAlignment="Left" IsHitTestVisible="False"></Rectangle>
+									<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+								</Grid>
+							</Button>
+							<Button x:Name="btnClearSpell" Visibility="Hidden" Width="240" Height="75" FontSize="33" Click="BtnClearSpell_Click">
+								Clear Spell
+							</Button>
+						</StackPanel>
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="Players">

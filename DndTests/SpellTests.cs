@@ -96,6 +96,32 @@ namespace DndTests
 		}
 
 		[TestMethod]
+		public void TestSpellSlotLevelsWithClonedSpells()
+		{
+			Spell fireball = AllSpells.Get("Fireball");
+			Character merkin = AllPlayers.Get("Merkin");
+			Assert.AreEqual("8d6(fire)", fireball.Clone(merkin, 3).DieStr);
+			Assert.AreEqual("9d6(fire)", fireball.Clone(merkin, 4).DieStr);
+			Assert.AreEqual("10d6(fire)", fireball.Clone(merkin, 5).DieStr);
+			Assert.AreEqual("11d6(fire)", fireball.Clone(merkin, 6).DieStr);
+			Assert.AreEqual("12d6(fire)", fireball.Clone(merkin, 7).DieStr);
+			Assert.AreEqual("13d6(fire)", fireball.Clone(merkin, 8).DieStr);
+			Assert.AreEqual("14d6(fire)", fireball.Clone(merkin, 9).DieStr);
+		}
+
+		[TestMethod]
+		public void TestAmmoAndSpellSlotLevelsWithClonedSpells()
+		{
+			Spell bonesOfTheEarth = AllSpells.Get("Bones of the Earth");
+			Character merkin = AllPlayers.Get("Merkin");
+			Assert.AreEqual(6, bonesOfTheEarth.Clone(merkin, 6).AmmoCount);
+			Assert.AreEqual(8, bonesOfTheEarth.Clone(merkin, 7).AmmoCount);
+			Assert.AreEqual(10, bonesOfTheEarth.Clone(merkin, 8).AmmoCount);
+			Assert.AreEqual(12, bonesOfTheEarth.Clone(merkin, 9).AmmoCount);
+		}
+
+
+		[TestMethod]
 		public void TestSpellcastingAbilityModifier()
 		{
 			AllSpells.Get("Cure Wounds", 1);

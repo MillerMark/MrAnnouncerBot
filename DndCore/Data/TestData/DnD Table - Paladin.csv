@@ -1,21 +1,21 @@
 Level,ProficiencyBonus,Features,Slot1Spells,Slot2Spells,Slot3Spells,Slot4Spells,Slot5Spells
-1st,2,"Divine Sense,Lay on Hands",0,0,0,0,0
-2nd,2,"Fighting Style,Spellcasting,Divine Smite",2,0,0,0,0
-3rd,2,"Divine Health,Sacred Oath",3,0,0,0,0
-4th,2,Ability Score Improvement,3,0,0,0,0
-5th,3,Extra Attack,4,2,0,0,0
-6th,3,Aura of Protection,4,2,0,0,0
-7th,3,Sacred Oath Feature,4,3,0,0,0
-8th,3,Ability Score Improvement,4,3,0,0,0
-9th,4,—,4,3,2,0,0
-10th,4,Aura of Courage,4,3,2,0,0
-11th,4,Improved Divine Smite,4,3,3,0,0
-12th,4,Ability Score Improvement,4,3,3,0,0
-13th,5,—,4,3,3,1,0
-14th,5,Cleansing Touch,4,3,3,1,0
-15th,5,Sacred Oath Feature,4,3,3,2,0
-16th,5,Ability Score Improvement,4,3,3,2,0
-17th,6,—,4,3,3,3,1
-18th,6,Aura Improvements,4,3,3,3,1
-19th,6,Ability Score Improvement,4,3,3,3,2
-20th,6,Sacred Oath Feature,4,3,3,3,2
+1,2,"Divine Sense,Lay on Hands",0,0,0,0,0
+2,2,"Fighting Style,Spellcasting,Divine Smite",2,0,0,0,0
+3,2,"Divine Health,Sacred Oath",3,0,0,0,0
+4,2,Ability Score Improvement,3,0,0,0,0
+5,3,Extra Attack,4,2,0,0,0
+6,3,Aura of Protection,4,2,0,0,0
+7,3,Sacred Oath Feature,4,3,0,0,0
+8,3,Ability Score Improvement,4,3,0,0,0
+9,4,—,4,3,2,0,0
+10,4,Aura of Courage,4,3,2,0,0
+11,4,Improved Divine Smite,4,3,3,0,0
+12,4,Ability Score Improvement,4,3,3,0,0
+13,5,—,4,3,3,1,0
+14,5,Cleansing Touch,4,3,3,1,0
+15,5,Sacred Oath Feature,4,3,3,2,0
+16,5,Ability Score Improvement,4,3,3,2,0
+17,6,—,4,3,3,3,1
+18,6,Aura Improvements,4,3,3,3,1
+19,6,Ability Score Improvement,4,3,3,3,2
+20,6,Sacred Oath Feature,4,3,3,3,2

@@ -709,6 +709,9 @@
 		let calloutPointX: number;
 		let calloutPointY: number;
 		let rightMostTextX: number = x;
+
+		let activeSpellData: ActiveSpellData = activeCharacter.getActiveSpell();
+
 		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
 			y += this.drawSpellGroupTitle(context, x, y, item, topData, bottomData);
 
@@ -725,9 +728,13 @@
 				if (x + indent + spellNameWidth > rightMostTextX) {
 					rightMostTextX = x + indent + spellNameWidth;
 				}
-				if (activeCharacter.spellActivelyCasting.name == spellName) {
+
+				if (activeSpellData && activeSpellData.name == spellName) {
 					const calloutMarginX: number = 8;
 					calloutPointX = x + indent + spellNameWidth + calloutMarginX;
+					if (calloutPointX > rightMostTextX) {
+						rightMostTextX = calloutPointX;
+					}
 					calloutPointY = saveTop;
 					drawActiveSpellData = true;
 				}
@@ -739,7 +746,7 @@
 
 		if (drawActiveSpellData) {
 			if (calloutPointY >= topData && calloutPointY <= bottomData) {
-				calloutPointX += this.drawActiveSpellIndicator(context, calloutPointX, calloutPointY, activeCharacter.spellActivelyCasting);
+				calloutPointX += this.drawActiveSpellIndicator(context, calloutPointX, calloutPointY, activeSpellData);
 				this.spellBook.draw(now, context, Math.max(rightMostTextX, calloutPointX), calloutPointY, activeCharacter);
 			}
 		}
@@ -767,7 +774,7 @@
 		context.arc(x, centerY, indicatorRadius, 0, 2 * Math.PI);
 		width = 2 * indicatorRadius;
 		context.fill();
-		if (spell.spellLevel < spell.spellSlotLevel) {
+		if (spell && spell.spellLevel < spell.spellSlotLevel) {
 			let slotLevelStr = `[${spell.spellSlotLevel}]`;
 			context.fillText(slotLevelStr, x + width, y);
 			width += context.measureText(slotLevelStr).width;

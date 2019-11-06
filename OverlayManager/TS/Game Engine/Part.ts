@@ -289,12 +289,15 @@ class Part {
 		return Random.intBetween(-amount, amount);
 	}
 
-	draw(context: CanvasRenderingContext2D, x: number, y: number, scale: number = 1) {
+	draw(context: CanvasRenderingContext2D, x: number, y: number, horizontalScale: number = 1, verticalScale: number = -1) {
 		this.advanceFrameIfNecessary();
-		this.drawByIndex(context, x, y, this.frameIndex, scale);
+		// TODO: Update all the calls so vertical scale is specified and change verticalScale's default value to 1?
+		if (verticalScale == -1)
+			verticalScale = horizontalScale;
+		this.drawByIndex(context, x, y, this.frameIndex, horizontalScale, verticalScale);
 	}
 
-	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, scale: number = 1, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false): void {
+	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale: number = 1, verticalScale: number = -1,  rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false): void {
 		if (frameIndex < 0)
 			return;
 		if (!this.images[frameIndex]) {
@@ -302,25 +305,30 @@ class Part {
 			return;
 		}
 
-		var transforming: boolean = rotation != 0 || flipHorizontally || flipVertically || scale != 1;
+		if (verticalScale == -1)
+			verticalScale = horizontalScale;
+
+		let scaling: boolean = flipHorizontally || flipVertically || horizontalScale != 1 || verticalScale != 1;
+		let rotating: boolean = rotation != 0;
+		let transforming: boolean = rotating || scaling; 
 
 		if (transforming) {
 			context.save();
 			context.translate(centerX, centerY);
 		}
 
-		if (rotation != 0) {
+		if (rotating) {
 			context.rotate(rotation * Math.PI / 180);
 		}
 
-		if (flipHorizontally || flipVertically || scale != 1) {
+		if (scaling) {
 			let horizontalFlipScale: number = 1;
 			let verticalFlipScale: number = 1;
 			if (flipHorizontally)
 				horizontalFlipScale = -1;
 			if (flipVertically)
 				verticalFlipScale = -1;
-			context.scale(horizontalFlipScale * scale, verticalFlipScale * scale);
+			context.scale(horizontalFlipScale * horizontalScale, verticalFlipScale * verticalScale);
 		}
 
 

@@ -23,6 +23,7 @@ class Character {
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
 	spellActivelyCasting: ActiveSpellData;
+	spellPreviouslyCasting: ActiveSpellData;
 	level: number;
 	headshotIndex: number;
 	hueShift: number;
@@ -155,7 +156,17 @@ class Character {
 		this.load = sourceCharacter.load;
 		this.maxHitPoints = sourceCharacter.maxHitPoints;
 		this.name = sourceCharacter.name;
-		this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);
+
+		if (sourceCharacter.spellActivelyCasting)
+			this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);
+		else
+			this.spellActivelyCasting = null;
+
+		if (sourceCharacter.spellPreviouslyCasting)
+			this.spellPreviouslyCasting = new ActiveSpellData(sourceCharacter.spellPreviouslyCasting);
+		else
+			this.spellPreviouslyCasting = null;
+
 		this.offTurnActions = sourceCharacter.offTurnActions;
 		this.onTurnActions = sourceCharacter.onTurnActions;
 		this.proficiencyBonus = sourceCharacter.proficiencyBonus;
@@ -832,5 +843,12 @@ class Character {
 	equip(item: Item): void {
 		this.equipment.push(item);
 		item.equipped = true;
+	}
+
+	getActiveSpell(): ActiveSpellData {
+		let activeSpellData: ActiveSpellData = this.spellActivelyCasting;
+		if (activeSpellData)
+			return activeSpellData;
+		return this.spellPreviouslyCasting;
 	}
 }

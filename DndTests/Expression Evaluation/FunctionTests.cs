@@ -141,7 +141,7 @@ namespace DndTests
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
 			Assert.AreEqual(4, Expressions.GetInt("Table(\"Barbarian\", \"Rages\", \"Level\", Level(\"Barbarian\"))", fred));
 			Assert.AreEqual(1, Expressions.GetInt("Table(\"Sorcerer\", \"Slot5Spells\", \"Level\", 9)"));
-			Assert.AreEqual(6, Expressions.GetInt("Table(\"Sorcerer\", \"SorceryPoints\", \"Level\", Level(\"Sorcerer\"))", merkin));
+			Assert.AreEqual(6, Expressions.GetInt("Table(\"Sorcerer\", \"SorceryPoints\", \"Level\", 6)", merkin));
 		}
 
 		[TestMethod]

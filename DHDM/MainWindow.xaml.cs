@@ -279,6 +279,7 @@ namespace DHDM
 					foreach (string item in stateReport)
 						stateList.Items.Add(item);
 				}
+				SetClearSpellVisibility(player);
 			});
 		}
 
@@ -787,6 +788,7 @@ namespace DHDM
 			HubtasticBaseStation.CastSpell(serializedObject);
 
 			CastedSpell castedSpell = game.Cast(player, spell);
+			SetClearSpellVisibility(player);
 
 			if (spell.MustRollDiceToCast())
 			{
@@ -798,6 +800,14 @@ namespace DHDM
 			{
 				player.JustCastSpell(spell.Name);
 			}
+		}
+
+		private void SetClearSpellVisibility(Character player)
+		{
+			if (player.spellActivelyCasting == null && player.spellPreviouslyCasting != null)
+				btnClearSpell.Visibility = Visibility.Visible;
+			else
+				btnClearSpell.Visibility = Visibility.Hidden;
 		}
 
 		void SetActionShortcuts(int playerID)
@@ -850,6 +860,7 @@ namespace DHDM
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			HubtasticBaseStation.ClearWindup("Windup.*");
 			SetActionShortcuts(ActivePlayerId);
+			UpdateStateUIForPlayer(game.GetPlayerFromId(ActivePlayerId));
 		}
 
 		private void InitializeActivePlayerData()
@@ -3198,6 +3209,15 @@ namespace DHDM
 		{
 			pendingShortcutsTimer.Stop();
 			ActivatePendingShortcuts();
+		}
+
+		private void BtnClearSpell_Click(object sender, RoutedEventArgs e)
+		{
+			Character player = game.GetPlayerFromId(ActivePlayerId);
+			if (player == null)
+				return;
+			player.ClearPreviouslyCastingSpell();
+			SetClearSpellVisibility(player);
 		}
 	}
 

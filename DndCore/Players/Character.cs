@@ -52,6 +52,7 @@ namespace DndCore
 		public int damageOffsetThisRoll = 0;
 
 		public ActiveSpellData spellActivelyCasting;
+		public ActiveSpellData spellPreviouslyCasting;
 
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
@@ -1023,7 +1024,9 @@ namespace DndCore
 
 		public void ShowPlayerCasting(CastedSpell castedSpell)
 		{
+			spellPreviouslyCasting = null;
 			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
+			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
 		public void ChangeHealth(double damageHealthAmount)
@@ -2157,9 +2160,18 @@ namespace DndCore
 		{
 			if (spellActivelyCasting != null)
 			{
+				spellPreviouslyCasting = spellActivelyCasting; // So we can show the spell for a longer time before we hide it.
 				spellActivelyCasting = null;
 				OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 			}
+		}
+
+		public void ClearPreviouslyCastingSpell()
+		{
+			if (spellPreviouslyCasting == null)
+				return;
+			spellPreviouslyCasting = null;
+			OnStateChanged(this, new StateChangedEventArgs("spellPreviouslyCasting", null, null));
 		}
 
 

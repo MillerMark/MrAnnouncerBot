@@ -6,6 +6,24 @@ namespace DndCore
 	public class Spell
 	{
 		public int Range { get; set; }
+		public int AmmoCount { get; set; }
+		public int OriginalAmmoCount { get; set; }
+		public string AmmoCount_word
+		{
+			get
+			{
+				return DndUtils.ToWordStr(AmmoCount);
+			}
+			set { }
+		}
+		public string AmmoCount_Word
+		{
+			get
+			{
+				return DndUtils.ToWordStr(AmmoCount).InitialCap();
+			}
+			set { }
+		}
 		public SpellRangeType RangeType { get; set; }
 		public SpellType SpellType { get; set; }
 		public DndTimeSpan Duration { get; set; }
@@ -120,33 +138,17 @@ namespace DndCore
 
 		string GetDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
-			string bonusThreshold = BonusThreshold.ToLower();
-			
 			DieRollDetails details = DieRollDetails.From(OriginalDieStr, spellcastingAbilityModifier);
 
 			string dieStr = details.ToString();
 
-			if (string.IsNullOrWhiteSpace(bonusThreshold))
-			{
-				return dieStr;
-			}
-
-			int compareLevel = spellSlotLevel;
-			if (bonusThreshold.StartsWith("c"))
-				compareLevel = spellCasterLevel;
-
-			int minThreshold = bonusThreshold.GetFirstInt();
-			double multiplier = compareLevel - minThreshold;
-
-			string bonusPerLevelStr = BonusPerLevel;
-			if (PerLevelBonus == 0)
+			if (string.IsNullOrWhiteSpace(BonusThreshold))
 				return dieStr;
 
-			int totalBonus = (int)Math.Floor(PerLevelBonus * multiplier);
-			if (totalBonus <= 0)
+			if (!GetMultiplier(spellSlotLevel, spellCasterLevel, out double multiplier))
 				return dieStr;
 
-			DieRollDetails bonusDetails = DieRollDetails.From(bonusPerLevelStr, spellcastingAbilityModifier);
+			DieRollDetails bonusDetails = DieRollDetails.From(BonusPerLevel, spellcastingAbilityModifier);
 
 			foreach (Roll bonusRoll in bonusDetails.Rolls)
 			{
@@ -161,6 +163,19 @@ namespace DndCore
 			}
 
 			return details.ToString();
+		}
+
+		private bool GetMultiplier(int spellSlotLevel, int spellCasterLevel, out double multiplier)
+		{
+			string bonusThreshold = BonusThreshold.ToLower();
+			int compareLevel = spellSlotLevel;
+			if (bonusThreshold.StartsWith("c"))
+				compareLevel = spellCasterLevel;
+
+			int minThreshold = bonusThreshold.GetFirstInt();
+			multiplier = compareLevel - minThreshold;
+			int totalBonus = (int)Math.Floor(PerLevelBonus * multiplier);
+			return totalBonus > 0;
 		}
 
 		private static SpellType GetSpellType(SpellDto spellDto)
@@ -238,7 +253,30 @@ namespace DndCore
 		public void RecalculateDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			DieStr = GetDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
+			AmmoCount = GetAmmoCount(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 		}
+		int GetAmmoCount(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
+		{
+			if (!GetMultiplier(spellSlotLevel, spellCasterLevel, out double multiplier))
+				return OriginalAmmoCount;
+
+			if (!int.TryParse(BonusPerLevel, out int bonusPerLevel))
+				return OriginalAmmoCount;
+
+			return OriginalAmmoCount + (int)Math.Floor(multiplier * bonusPerLevel);
+		}
+
+		public string DieStrRaw
+		{
+			get
+			{
+				string result = DieStr;
+				if (result.Contains("("))
+					return result.EverythingBefore("(").Trim();
+				return result.Replace(", ", " + ").Replace(",", " + ");
+			}
+		}
+		
 
 		public static Spell FromDto(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
@@ -288,6 +326,8 @@ namespace DndCore
 			};
 			spell.RecalculateDieStr(spell.SpellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
+			spell.AmmoCount = spellDto.ammo_count;
+			spell.OriginalAmmoCount = spellDto.ammo_count;
 			return spell;
 		}
 		static string GetRangeStr(SpellDto spellDto)
@@ -388,6 +428,8 @@ namespace DndCore
 			result.OnPlayerAttacks = OnPlayerAttacks;
 			result.OnPlayerHitsTarget = OnPlayerHitsTarget;
 			result.OriginalDieStr = OriginalDieStr;
+			result.OriginalAmmoCount = OriginalAmmoCount;
+			result.AmmoCount = AmmoCount;
 			result.PerLevelBonus = PerLevelBonus;
 			result.Range = Range;
 			result.RangeType = RangeType;
@@ -409,6 +451,8 @@ namespace DndCore
 			// Override...
 			result.OwnerId = player != null ? player.playerID : -1;
 			result.SpellSlotLevel = spellSlotLevel;
+
+			result.RecalculateDieStr(spellSlotLevel, player.level, player.GetSpellcastingAbilityModifier());
 
 			return result;
 		}

@@ -13,6 +13,7 @@ namespace DndCore
 		public string range { get; set; }
 		public string description { get; set; }
 		public string die_str { get; set; }
+		public int ammo_count { get; set; }
 		public string attack_type { get; set; }
 		public string saving_throw { get; set; }
 		public string duration { get; set; }

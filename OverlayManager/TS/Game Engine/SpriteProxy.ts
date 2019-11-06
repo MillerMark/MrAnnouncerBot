@@ -258,7 +258,34 @@ class SpriteProxy extends AnimatedElement {
 	cropRight: number;
 	cropBottom: number;
 	numFramesDrawn: number = 0;
-	scale: number = 1;
+	private _verticalScale: number = 1;
+	private _horizontalScale: number = 1;
+	
+	get scale(): number {
+		return this._horizontalScale;
+	}
+	
+	set scale(newValue: number) {
+		this._horizontalScale = newValue;
+		this._verticalScale = newValue;
+	}
+
+	get verticalScale(): number {
+		return this._verticalScale;
+	}
+
+	set verticalScale(newValue: number) {
+		this._verticalScale = newValue;
+	}
+
+	get horizontalScale(): number {
+		return this._horizontalScale;
+	}
+
+	set horizontalScale(newValue: number) {
+		this._horizontalScale = newValue;
+	}
+
 	lastTimeWeAdvancedTheFrame: number;
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs: number = -1) {
@@ -355,7 +382,7 @@ class SpriteProxy extends AnimatedElement {
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
 		originX: number = 0, originY: number = 0): void {
-		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.scale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
+		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
 	}
 
 	drawAdornments(context: CanvasRenderingContext2D, now: number): void {
