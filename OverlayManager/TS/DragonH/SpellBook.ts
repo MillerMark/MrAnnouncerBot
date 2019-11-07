@@ -21,11 +21,11 @@ class Column {
 		if (cellContents.startsWith(':'))
 			if (cellContents.endsWith(':'))
 				this.justification = Justification.center;
-			else 
+			else
 				this.justification = Justification.left;
 		else if (cellContents.endsWith(':'))
 			this.justification = Justification.right;
-		else 
+		else
 			this.justification = Justification.left;
 	}
 
@@ -56,14 +56,14 @@ class Span {
 
 class Table {
 	columns: Array<Column>;
-  private _width: number = 0;
-	
+	private _width: number = 0;
+
 	get width(): number {
 		if (this._width === 0)
 			this.calculateTableWidth();
 		return this._width;
 	}
-	
+
 	set width(newValue: number) {
 		this._width = newValue;
 	}
@@ -98,8 +98,7 @@ class Table {
 			line = line.substr(1);
 
 		let pipePos: number = line.indexOf('|');
-		while (pipePos >= 0)
-		{
+		while (pipePos >= 0) {
 			let column: Column = this.getColumnByIndex(columnIndex);
 
 			let cellContents: string = line.substr(0, pipePos).trim();
@@ -126,13 +125,13 @@ class ParagraphWrapData {
 	lineData: Array<LineWrapData>;
 	tables: Array<Table>;
 	private _maxTableWidth: number = 0;
-	
+
 	get maxTableWidth(): number {
 		if (this._maxTableWidth === 0)
 			this.calculateMaxTableWidth();
 		return this._maxTableWidth;
 	}
-	
+
 	set maxTableWidth(newValue: number) {
 		this._maxTableWidth = newValue;
 	}
@@ -201,9 +200,12 @@ class SpellBook {
 	static readonly detailFontName: string = 'mrs-eaves';
 	static readonly titleFontIdealSize: number = 30;
 	static readonly titleLeftMargin: number = 25;
+	static readonly titleConcentrationIconSpacing: number = 15;
+	static readonly concentrationIconWidth: number = 36;
 	static readonly detailFontSize: number = 18;
 	static readonly spellDetailsWidth: number = 220;
-	static readonly schoolOfMagicWidth: number = 144;
+	static readonly schoolOfMagicIndent: number = 20;
+	static readonly schoolOfMagicWidth: number = 115 + SpellBook.schoolOfMagicIndent;
 	static readonly spellDescriptionWidth: number = 330;
 	static readonly titleLevelMargin: number = 3;
 	static readonly tableCellHorizontalMargin: number = 8;
@@ -262,6 +264,7 @@ class SpellBook {
 	spellBookBack: Sprites;
 	spellBookTop: Sprites;
 	schoolOfMagic: Sprites;
+	concentrationIcon: Sprites;
 	bookGlow: Sprites;
 	lastPlayerId: number;
 	lastSpellName: string;
@@ -276,6 +279,7 @@ class SpellBook {
 	horizontalScale: number = 1;
 	activeStyle: LayoutStyle;
 	descriptionParagraphs: ParagraphWrapData;
+	titleWidth: number;
 
 	constructor() {
 		this.loadFonts();
@@ -447,7 +451,7 @@ class SpellBook {
 		this.activeStyle = LayoutStyle.normal;
 
 		let lines = this.descriptionParagraphs.lineData; // this.getWordWrappedLinesForParagraphs(context, spell.description, SpellBook.spellDescriptionWidth * this.horizontalScale);
-		
+
 		for (let i = 0; i < lines.length; i++) {
 			let lineData: LineWrapData = lines[i];
 
@@ -456,7 +460,7 @@ class SpellBook {
 			}
 
 			if (lineData.inTableRow) {
-				this.setActiveStyle(context, LayoutStyle.normal); 
+				this.setActiveStyle(context, LayoutStyle.normal);
 				this.drawTableRow(context, x, y, lineData);
 				if (lineData.line.indexOf('---') >= 0) {
 					y -= SpellBook.detailFontSize / 2;
@@ -506,7 +510,7 @@ class SpellBook {
 		}
 	}
 
-  drawTableRow(context: CanvasRenderingContext2D, x: number, y: number, lineData: LineWrapData): any {
+	drawTableRow(context: CanvasRenderingContext2D, x: number, y: number, lineData: LineWrapData): any {
 		let cells: string[] = lineData.line.split('|').filter(Boolean);
 		let offset: number = 0;
 		context.save();
@@ -525,9 +529,8 @@ class SpellBook {
 				context.globalAlpha = 0.5;
 				context.stroke();
 				context.globalAlpha = 1;
-			} 
-			else 
-			{
+			}
+			else {
 				if (column.justification === Justification.right) {
 					context.textAlign = 'right';
 					textX += column.width;
@@ -542,7 +545,7 @@ class SpellBook {
 
 				context.fillText(cellText, textX, y);
 			}
-			
+
 			offset += column.width + SpellBook.tableCellHorizontalMargin;
 		}
 		context.restore();
@@ -784,6 +787,7 @@ class SpellBook {
 
 		this.spellBookTop.draw(context, now * 1000);
 		this.schoolOfMagic.draw(context, now * 1000);
+		this.concentrationIcon.draw(context, now * 1000);
 
 		this.drawSpellTitle(now, context, spell);
 		this.drawSpellLevelSchool(now, context, spell);
@@ -792,15 +796,20 @@ class SpellBook {
 	}
 
 
-	getTitleFontSize(context: CanvasRenderingContext2D, left: number, name: string): number {
+	getTitleFontSize(context: CanvasRenderingContext2D, left: number, name: string, requiresConcentration: boolean): number {
 		let fontSize: number = SpellBook.titleFontIdealSize;
 		this.setTitleFont(context, fontSize);
-		while (SpellBook.titleLeftMargin + context.measureText(name).width > SpellBook.spellPageRightEdge) {
+		this.titleWidth = context.measureText(name).width;
+		let rightEdge: number = SpellBook.spellPageRightEdge;
+		if (requiresConcentration)
+			rightEdge -= SpellBook.titleConcentrationIconSpacing + SpellBook.concentrationIconWidth;
+		while (SpellBook.titleLeftMargin + this.titleWidth > rightEdge) {
 			fontSize--;
 			if (fontSize <= 6) {
 				return fontSize;
 			}
 			this.setTitleFont(context, fontSize);
+			this.titleWidth = context.measureText(name).width;
 		}
 		return fontSize;
 	}
@@ -811,6 +820,9 @@ class SpellBook {
 		this.spellBookBack.originY = 999;
 		this.spellBookTop = new Sprites("Scroll/Spells/BookTop", 1, 0, AnimationStyle.Static);
 		this.schoolOfMagic = new Sprites("Scroll/Spells/SchoolsOfMagic", 8, 0, AnimationStyle.Static);
+		this.concentrationIcon = new Sprites("Scroll/Spells/Concentration/Concentration", 8, 0, AnimationStyle.Static);
+		this.concentrationIcon.originX = 0;
+		this.concentrationIcon.originY = 18;
 		this.bookGlow = new Sprites("Scroll/Spells/BookMagic/BookMagic", 119, fps30, AnimationStyle.Loop, true);
 	}
 
@@ -827,13 +839,14 @@ class SpellBook {
 		this.spellBookBack.sprites = [];
 		this.spellBookTop.sprites = [];
 		this.schoolOfMagic.sprites = [];
+		this.concentrationIcon.sprites = [];
 		this.bookGlow.sprites = [];
 
 		let left: number = x + 12;
 		let top: number = y - 33;
 
 
-		this.titleFontSize = this.getTitleFontSize(context, left, spell.name);
+		this.titleFontSize = this.getTitleFontSize(context, left, spell.name, spell.requiresConcentration);
 
 		let descriptionLinesWeNeedToAdd: number = this.descriptionParagraphs.lineData.length;
 		let descriptionHeightWeNeedToAdd: number = descriptionLinesWeNeedToAdd * (SpellBook.detailFontSize);
@@ -875,7 +888,7 @@ class SpellBook {
 		this.spellDescriptionTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + SpellBook.spellHeaderHeight + detailsHeight);
 		this.titleTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + 27);
 		this.levelSchoolTopLeft = new Vector(left + SpellBook.titleLeftMargin, this.titleTopLeft.y + this.titleFontSize + SpellBook.titleLevelMargin);
-		let schoolOfMagicTopLeft: Vector = new Vector(left + 25, this.levelSchoolTopLeft.y + SpellBook.detailFontSize + SpellBook.levelDetailsMargin);
+		let schoolOfMagicTopLeft: Vector = new Vector(left + SpellBook.schoolOfMagicIndent, this.levelSchoolTopLeft.y + SpellBook.detailFontSize + SpellBook.levelDetailsMargin);
 		this.spellDetailsTopLeft = new Vector(left + SpellBook.schoolOfMagicWidth, schoolOfMagicTopLeft.y);
 		//let spellBookBottomTop: number = top + bookBottomYOffset + lineSpaceWeNeedToAdd + detailExpansionHeight;
 		let lowerSpellBookTop: number = top + totalSpellPageHeight;
@@ -888,8 +901,17 @@ class SpellBook {
 		spellBookFront.timeStart = 0;
 		spellBookFront.horizontalScale = this.horizontalScale;
 
-		if (spell.schoolOfMagic > SchoolOfMagic.None)
-			this.schoolOfMagic.add(schoolOfMagicTopLeft.x, schoolOfMagicTopLeft.y, spell.schoolOfMagic - 1).timeStart = 0;
+		let schoolOfMagicIndex = spell.schoolOfMagic - 1;
+		if (spell.schoolOfMagic > SchoolOfMagic.None) {
+			this.schoolOfMagic.add(schoolOfMagicTopLeft.x, schoolOfMagicTopLeft.y, schoolOfMagicIndex).timeStart = 0;
+		}
+
+		if (spell.requiresConcentration) {
+			let concentrationIconScale: number = Math.min(1, this.titleFontSize / 30);
+			let iconX = left + SpellBook.titleLeftMargin + this.titleWidth + SpellBook.titleConcentrationIconSpacing * concentrationIconScale;
+			let iconY = this.titleTopLeft.y + this.titleFontSize / 2;
+			this.concentrationIcon.add(iconX, iconY, schoolOfMagicIndex).scale = concentrationIconScale;
+		}
 
 		// TODO: Consider adding SpellBook.spellBottomMargin instead of SpellBook.bookSpellHeightAdjust
 		totalSpellPageHeight += SpellBook.bookSpellHeightAdjust;

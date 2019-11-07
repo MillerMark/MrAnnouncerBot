@@ -267,6 +267,8 @@ namespace DHDM
 
 		private void UpdateStateUIForPlayer(Character player)
 		{
+			if (player == null)
+				return;
 			UpdatePlayerScrollOnStream(player);
 			Dispatcher.Invoke(() =>
 			{
@@ -2819,6 +2821,8 @@ namespace DHDM
 
 		void UpdatePlayerScrollOnStream(Character player)
 		{
+			if (player == null)
+				return;
 			if (ActivePlayerId == player.playerID)
 				HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
 		}
