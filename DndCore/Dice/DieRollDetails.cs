@@ -22,6 +22,8 @@ namespace DndCore
 					result += ",";
 				result += roll.ToString();
 			}
+			if (ImpactsTargetOnStartOfTurn)
+				result = "^" + result;
 			return result;
 		}
 		
@@ -31,6 +33,7 @@ namespace DndCore
 		}
 		
 		public List<Roll> Rolls { get => rolls; set => rolls = value; }
+		public bool ImpactsTargetOnStartOfTurn { get; set; }
 
 		public void AddRoll(string dieStr, int spellcastingAbilityModifier = int.MinValue)
 		{
@@ -45,6 +48,11 @@ namespace DndCore
 		public static DieRollDetails From(string str, int spellcastingAbilityModifier = int.MinValue)
 		{
 			DieRollDetails dieRollDetails = new DieRollDetails();
+			if (str.StartsWith("^"))
+			{
+				str = str.Substring(1);
+				dieRollDetails.ImpactsTargetOnStartOfTurn = true;
+			}
 			string[] split = str.Split(',');
 			foreach (string dieStr in split)
 				dieRollDetails.AddRoll(dieStr, spellcastingAbilityModifier);

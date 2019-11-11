@@ -34,8 +34,11 @@ namespace DndCore
 			for (int i = 0; i < parameters.Count; i++)
 			{
 				string searchStr = parameters[i];
-				string replaceStr = arguments[i];
-				expression = expression.Replace(searchStr, replaceStr);
+				if (i < arguments.Count)
+				{
+					string replaceStr = arguments[i];
+					expression = expression.Replace(searchStr, replaceStr);
+				}
 			}
 			return expression;
 		}

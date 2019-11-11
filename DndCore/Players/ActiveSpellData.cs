@@ -16,13 +16,15 @@ namespace DndCore
 		public string durationStr;
 		public SchoolOfMagic schoolOfMagic;
 		public bool requiresConcentration;
+		public bool morePowerfulAtHigherLevels;
+		public bool powerComesFromCasterLevel;
 
 		public ActiveSpellData()
 		{
 
 		}
 
-		public ActiveSpellData(string name, int spellSlotLevel, int spellLevel, int playerLevel, string castingTimeStr, string rangeStr, string componentsStr, string durationStr, SchoolOfMagic schoolOfMagic, bool requiresConcentration)
+		public ActiveSpellData(string name, int spellSlotLevel, int spellLevel, int playerLevel, string castingTimeStr, string rangeStr, string componentsStr, string durationStr, SchoolOfMagic schoolOfMagic, bool requiresConcentration, bool morePowerfulAtHigherLevels, bool powerComesFromCasterLevel)
 		{
 			this.name = name;
 			this.spellSlotLevel = spellSlotLevel;
@@ -35,6 +37,8 @@ namespace DndCore
 			this.durationStr = durationStr;
 			this.schoolOfMagic = schoolOfMagic;
 			this.requiresConcentration = requiresConcentration;
+			this.morePowerfulAtHigherLevels = morePowerfulAtHigherLevels;
+			this.powerComesFromCasterLevel = powerComesFromCasterLevel;
 		}
 
 		static string GetSpellDescription(CastedSpell castedSpell)
@@ -59,10 +63,15 @@ namespace DndCore
 
 		public static ActiveSpellData FromCastedSpell(CastedSpell castedSpell)
 		{
-			ActiveSpellData activeSpellData = new ActiveSpellData(castedSpell.Spell.Name,
+			Spell spell = castedSpell.Spell;
+
+			bool castingPowerComesFromPlayerLevel = !string.IsNullOrEmpty(spell.BonusThreshold) && spell.BonusThreshold.StartsWith("c");
+
+			ActiveSpellData activeSpellData = new ActiveSpellData(spell.Name,
 				castedSpell.SpellSlotLevel, castedSpell.Level, castedSpell.SpellCaster.level,
-				castedSpell.Spell.CastingTimeStr, castedSpell.Spell.RangeStr, castedSpell.Spell.ComponentsStr,
-				castedSpell.Spell.DurationStr, castedSpell.Spell.SchoolOfMagic, castedSpell.Spell.RequiresConcentration);
+				spell.CastingTimeStr, spell.RangeStr, spell.ComponentsStr,
+				spell.DurationStr, spell.SchoolOfMagic, spell.RequiresConcentration,
+				spell.MorePowerfulWhenCastAtHigherLevels, castingPowerComesFromPlayerLevel);
 			activeSpellData.description = GetSpellDescription(castedSpell);
 			return activeSpellData;
 		}

@@ -180,7 +180,7 @@ namespace DndCore
 					result.Name = "Windup." + effectName;
 					break;
 				case ItemEffectKind.Spell:
-					result.Name = "Spell." + effectName;
+					result.Name = PlayerActionShortcut.SpellWindupPrefix + effectName;
 					break;
 				case ItemEffectKind.Strike:
 					result.Name = "Strike." + effectName;

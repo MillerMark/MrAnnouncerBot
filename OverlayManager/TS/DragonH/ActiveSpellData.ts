@@ -10,6 +10,8 @@
 	durationStr: string;
 	schoolOfMagic: SchoolOfMagic;
 	requiresConcentration: boolean;
+	morePowerfulAtHigherLevels: boolean;
+	powerComesFromCasterLevel: boolean;
 
 	constructor(fromDto: any) {
 		if (fromDto) {
@@ -24,6 +26,8 @@
 			this.durationStr = fromDto.durationStr;
 			this.schoolOfMagic = fromDto.schoolOfMagic;
 			this.requiresConcentration = fromDto.requiresConcentration;
+			this.morePowerfulAtHigherLevels = fromDto.morePowerfulAtHigherLevels;
+			this.powerComesFromCasterLevel = fromDto.powerComesFromCasterLevel; 
 		}
 	}
 }

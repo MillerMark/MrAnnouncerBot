@@ -36,9 +36,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodingSeb.ExpressionEvaluator, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CodingSeb.ExpressionEvaluator.1.4.0\lib\net45\CodingSeb.ExpressionEvaluator.dll</HintPath>
-    </Reference>
     <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvHelper.12.1.1\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
@@ -399,6 +396,10 @@
     <ProjectReference Include="..\DndUI\DndUI.csproj">
       <Project>{82a18721-edd9-4e9d-b875-da216a82209c}</Project>
       <Name>DndUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ExpressionEngine\CodingSeb.ExpressionEvaluator\CodingSeb.ExpressionEvaluator.csproj">
+      <Project>{be921b8c-fe38-4d8a-a5bd-aa6496883e4f}</Project>
+      <Name>CodingSeb.ExpressionEvaluator</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

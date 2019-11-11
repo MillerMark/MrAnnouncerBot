@@ -84,7 +84,7 @@ namespace DndCore
 			{
 				return str.Substring(pos + matchStr.Length);
 			}
-			return null;
+			return string.Empty;
 		}
 		
 		public static string InitialCap(this string str)
@@ -97,12 +97,14 @@ namespace DndCore
 
 		public static string EverythingBefore(this string str, string matchStr)
 		{
+			if (str == null)
+				return string.Empty;
 			int pos = str.IndexOf(matchStr);
 			if (pos >= 0)
 			{
 				return str.Substring(0, pos);
 			}
-			return null;
+			return string.Empty;
 		}
 
 		public static string EverythingBetween(this string str, string beginMatchStr, string endMatchStr)

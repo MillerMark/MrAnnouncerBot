@@ -12,7 +12,7 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 1);
 
-			Ability ability = (Ability)evaluator.Evaluate<int>(args[0]);
+			Ability ability = (Ability)Expressions.GetInt(args[0], player, target, spell);
 
 			return player.GetAbilityModifier(ability);
 		}

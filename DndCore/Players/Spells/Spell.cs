@@ -40,6 +40,7 @@ namespace DndCore
 		public string DieStr { get; set; }
 		public Ability SavingThrowAbility { get; set; }
 		public string BonusThreshold { get; set; }
+		public int BonusMax { get; set; }
 		public string OriginalDieStr { get; set; }
 		public string BonusPerLevel { get; set; }
 		public double PerLevelBonus { get; set; }
@@ -158,6 +159,8 @@ namespace DndCore
 				else if (multiplier != 0)
 				{
 					matchingRoll.Count += (int)Math.Floor(bonusRoll.Count * multiplier);
+					if (BonusMax > 0 && matchingRoll.Count > BonusMax)
+						matchingRoll.Count = BonusMax;
 					matchingRoll.Offset += (int)Math.Floor(bonusRoll.Offset * multiplier);
 				}
 			}
@@ -250,7 +253,7 @@ namespace DndCore
 		public string DurationStr { get; set; }
 		public SchoolOfMagic SchoolOfMagic { get; set; }
 
-		public void RecalculateDieStr(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
+		public void RecalculateDiceAndAmmo(int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
 			DieStr = GetDieStr(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			AmmoCount = GetAmmoCount(spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
@@ -270,10 +273,20 @@ namespace DndCore
 		{
 			get
 			{
-				string result = DieStr;
-				if (result.Contains("("))
-					return result.EverythingBefore("(").Trim();
-				return result.Replace(", ", " + ").Replace(",", " + ");
+				string workStr = DieStr;
+				if (workStr.StartsWith("^"))
+					workStr = workStr.Substring(1);
+				string[] dieStrs = workStr.Split(',');
+				for (int i = 0; i < dieStrs.Length; i++)
+				{
+					if (dieStrs[i].Contains("("))
+						dieStrs[i] = dieStrs[i].EverythingBefore("(").Trim();
+					else
+						dieStrs[i] = dieStrs[i].Trim();
+				}
+				string result = string.Join(" + ", dieStrs);
+
+ 				return result;
 			}
 		}
 		
@@ -302,6 +315,7 @@ namespace DndCore
 				SavingThrowAbility = GetSavingThrowAbility(spellDto),
 				RequiresConcentration = GetRequiresConcentration(spellDto),
 				BonusThreshold = spellDto.bonus_threshold,
+				BonusMax = MathUtils.GetInt(spellDto.bonus_max),
 				OriginalDieStr = spellDto.die_str,
 				BonusPerLevel = spellDto.bonus_per_level,
 				PerLevelBonus = spellDto.bonus_per_level.GetFirstDouble(),
@@ -324,10 +338,13 @@ namespace DndCore
 				CastWith = spellDto.cast_with,
 				AvailableWhen = spellDto.availableWhen
 			};
-			spell.RecalculateDieStr(spell.SpellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
+
+			if (spell.SpellSlotLevel < spellLevel)
+				spell.SpellSlotLevel = spellLevel;
+
+			spell.OriginalAmmoCount = spellDto.ammo_count; // Must be set before calculating dice and ammo.
+			spell.RecalculateDiceAndAmmo(spell.SpellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
 			spell.Range = GetRange(spellDto, spell.RangeType);
-			spell.AmmoCount = spellDto.ammo_count;
-			spell.OriginalAmmoCount = spellDto.ammo_count;
 			return spell;
 		}
 		static string GetRangeStr(SpellDto spellDto)
@@ -414,6 +431,7 @@ namespace DndCore
 			Spell result = new Spell();
 			result.BonusPerLevel = BonusPerLevel;
 			result.BonusThreshold = BonusThreshold;
+			result.BonusMax = BonusMax;
 			result.CastingTime = CastingTime;
 			result.Components = Components;
 			result.Description = Description;
@@ -452,7 +470,7 @@ namespace DndCore
 			result.OwnerId = player != null ? player.playerID : -1;
 			result.SpellSlotLevel = spellSlotLevel;
 
-			result.RecalculateDieStr(spellSlotLevel, player.level, player.GetSpellcastingAbilityModifier());
+			result.RecalculateDiceAndAmmo(spellSlotLevel, player.level, player.GetSpellcastingAbilityModifier());
 
 			return result;
 		}

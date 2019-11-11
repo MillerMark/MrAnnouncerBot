@@ -24,6 +24,7 @@ using BotCore;
 using System.Threading;
 using OBSWebsocketDotNet;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace DHDM
 {
@@ -35,6 +36,7 @@ namespace DHDM
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
 		const string DragonHumpersChannel = "DragonHumpers";
+		const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";  // This sequence allows indentation in Twitch chats!
 
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
@@ -45,6 +47,7 @@ namespace DHDM
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
 		DispatcherTimer showClearButtonTimer;
+		DispatcherTimer reloadSpellsTimer;
 		DispatcherTimer pendingShortcutsTimer;
 		DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
@@ -67,6 +70,10 @@ namespace DHDM
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
 			showClearButtonTimer.Interval = TimeSpan.FromSeconds(8);
+
+			reloadSpellsTimer = new DispatcherTimer();
+			reloadSpellsTimer.Tick += new EventHandler(CheckForNewSpells);
+			reloadSpellsTimer.Interval = TimeSpan.FromSeconds(1.2);
 
 			pendingShortcutsTimer = new DispatcherTimer();
 			pendingShortcutsTimer.Tick += new EventHandler(ActivatePendingShortcuts);
@@ -112,6 +119,74 @@ namespace DHDM
 			Feature.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
 			AddReminderFunction.AddReminderRequest += AddReminderFunction_AddReminderRequest;
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
+
+			SetupSpellsChangedFileWatcher();
+		}
+
+		void SetupSpellsChangedFileWatcher()
+		{
+			spellsChangedFileWatcher = new FileSystemWatcher
+			{
+				Path = Folders.CoreData,
+				NotifyFilter = NotifyFilters.LastWrite,
+				Filter = "DnD - Spells*.csv"
+			};
+			spellsChangedFileWatcher.Changed += SpellsUpdated;
+			spellsChangedFileWatcher.EnableRaisingEvents = true;
+		}
+
+		string newSpellFileName;
+		void ReplaceSpellsDataFile(string fullPath)
+		{
+			newSpellFileName = fullPath;
+
+			reloadSpellsTimer.Stop();
+			reloadSpellsTimer.Start();
+		}
+
+		void CheckForNewSpells(object sender, EventArgs e)
+		{
+			reloadSpellsTimer.Stop();
+
+			try
+			{
+				if (!newSpellFileName.Contains('(')) // Chrome adds "(1)", "(2)", etc onto files saved to prevent name collision.
+					return;  // If no parens exist, user saved with an overwrite, so no need to replace.
+				string spellDataFileName = System.IO.Path.Combine(Folders.CoreData, "DnD - Spells.csv");
+
+				if (!File.Exists(newSpellFileName))
+					return;
+
+				File.Delete(spellDataFileName);
+				File.Move(newSpellFileName, spellDataFileName);
+			}
+			finally
+			{
+				Dispatcher.Invoke(() =>
+				{
+					SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
+					string spellName = selectedItem?.name;
+					ReloadSpells();
+					if (string.IsNullOrWhiteSpace(spellName))
+						return;
+
+					foreach (object item in lstAllSpells.Items)
+					{
+						if (item is SpellDto spellDto && spellDto.name == spellName)
+						{
+							Character player = game.GetPlayerFromId(ActivePlayerId);
+							player.ClearAllCasting();
+
+							lstAllSpells.SelectedItem = item;
+							return;
+						}
+					}
+				});
+			}
+		}
+		private void SpellsUpdated(object sender, FileSystemEventArgs e)
+		{
+			ReplaceSpellsDataFile(e.FullPath);
 		}
 
 		private void AddReminderFunction_AddReminderRequest(object sender, AddReminderEventArgs ea)
@@ -329,9 +404,78 @@ namespace DHDM
 			}
 		}
 
+		public class AnswerMap
+		{
+			public int Index { get; set; }
+			public int Value { get; set; }
+			public string AnswerText { get; set; }
+			public AnswerMap(int index, int value, string answerText)
+			{
+				Index = index;
+				Value = value;
+				AnswerText = answerText;
+			}
+			public static AnswerMap FromAnswer(string answerStr, int index)
+			{
+				AnswerMap result = new AnswerMap();
+				result.Index = index;
+				string workStr = answerStr.Trim(new char[] { '"', ' ' });
+				int colonPos = workStr.IndexOf(':');
+				if (colonPos > 0)
+				{
+					string valueStr = workStr.EverythingBefore(":");
+					result.AnswerText = workStr.EverythingAfter(":");
+					if (int.TryParse(valueStr, out int value))
+						result.Value = value;
+				}
+				
+				return result;
+			}
+			public AnswerMap()
+			{
+				
+			}
+		}
+		List<AnswerMap> answerMap;
+
+		int AskQuestion(string question, List<string> answers)
+		{
+			waitingForAnswerToQuestion = true;
+			try
+			{
+				answerMap = new List<AnswerMap>();
+				List<string> textAnswers = new List<string>();
+				int index = 1;
+				bool firstTimeIn = true;
+				foreach (string answer in answers)
+				{
+					if (firstTimeIn && answer.ToLower().IndexOf("zero") >= 0)
+						index = 0;
+					firstTimeIn = false;
+
+					AnswerMap thisAnswer = AnswerMap.FromAnswer(answer, index);
+					answerMap.Add(thisAnswer);
+					textAnswers.Add($"{index}. " + thisAnswer.AnswerText);
+					index++;
+				}
+				TellDungeonMaster($"QuestionBlock {twitchIndent}" + question);
+				foreach (AnswerMap answer in answerMap)
+				{
+					TellDungeonMaster($"{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent} {answer.Index}. {answer.AnswerText}");
+				}
+
+				return FrmAsk.Ask(question, answers, this);
+			}
+			finally
+			{
+				waitingForAnswerToQuestion = false;
+				answerMap = null;
+			}
+		}
+
 		private void AskFunction_AskQuestion(object sender, AskEventArgs ea)
 		{
-			ea.Result = FrmAsk.Ask(ea.Question, ea.Answers, this);
+			ea.Result = AskQuestion(ea.Question, ea.Answers);
 		}
 
 		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
@@ -388,11 +532,20 @@ namespace DHDM
 				tbxHiddenThreshold.Text = hiddenThreshold.ToString();
 			});
 
-			TellDungeonMaster($"Hidden threshold successfully changed to {hiddenThreshold}.");
+			TellDungeonMaster($"PLAYlogo {twitchIndent} Hidden threshold successfully changed to {hiddenThreshold}.");
 		}
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
+			if (waitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result))
+			{
+				AnswerMap answer = answerMap.FirstOrDefault(x => x.Index == result);
+				if (answer != null)
+				{
+					FrmAsk.TryAnswer(answer.Value);
+					return;
+				}
+			}
 			BaseChatBot commandParser = GetCommandParser(e.ChatMessage.UserId);
 			if (commandParser == null)
 				return;
@@ -554,6 +707,8 @@ namespace DHDM
 				}
 				spellToEnd = spellToEnd.Substring(0, parenPos);
 			}
+			if (spellToEnd.StartsWith(PlayerActionShortcut.SpellWindupPrefix))
+				spellToEnd = spellToEnd.Substring(PlayerActionShortcut.SpellWindupPrefix.Length);
 			TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
@@ -862,7 +1017,11 @@ namespace DHDM
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			HubtasticBaseStation.ClearWindup("Windup.*");
 			SetActionShortcuts(ActivePlayerId);
-			UpdateStateUIForPlayer(game.GetPlayerFromId(ActivePlayerId));
+			Character player = game.GetPlayerFromId(ActivePlayerId);
+			if (player != null)
+				player.forceShowSpell = false;
+			UpdateStateUIForPlayer(player);
+			TellDmActivePlayer(ActivePlayerId);
 		}
 
 		private void InitializeActivePlayerData()
@@ -1684,7 +1843,6 @@ namespace DHDM
 				string playerName = DndUtils.GetFirstName(playerRoll.name);
 				int rollValue = playerRoll.modifier + playerRoll.roll;
 				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-				const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {playerName}, rolled a {rollValue.ToString()}.");
 				count++;
 			}
@@ -1748,15 +1906,15 @@ namespace DHDM
 					rollTitle = "Luck Roll High: ";
 					break;
 				case DiceRollType.DamageOnly:
-					rollTitle = "Damage Only: ";
+					rollTitle = "Damage: ";
 					rollValue = ea.StopRollingData.damage;
 					break;
 				case DiceRollType.HealthOnly:
-					rollTitle = "Health Only: ";
+					rollTitle = "Health: ";
 					rollValue = ea.StopRollingData.health;
 					break;
 				case DiceRollType.ExtraOnly:
-					rollTitle = "Extra Only: ";
+					rollTitle = "Extra: ";
 					rollValue = ea.StopRollingData.extra;
 					break;
 				case DiceRollType.ChaosBolt:
@@ -2574,6 +2732,7 @@ namespace DHDM
 			BuildPlayerTabs();
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
+			lstAllSpells.ItemsSource = AllSpells.Spells;
 		}
 
 		private void SendPlayerData()
@@ -2912,6 +3071,7 @@ namespace DHDM
 		PlayerActionShortcut shortcutToActivateAfterClearingDice;
 		DiceRoll lastRoll;
 		DateTime lastChatMessageSent;
+		bool waitingForAnswerToQuestion;
 		void CheckAllPlayers()
 		{
 			checkingInternally = true;
@@ -3065,11 +3225,19 @@ namespace DHDM
 						if (playerTabItem.PlayerId == playerId)
 						{
 							tabPlayers.SelectedItem = playerTabItem;
-							TellDungeonMaster($"----- {GetPlayerName(playerId)} -----");
+							TellDmActivePlayer(playerId);
 							break;
 						}
 					}
 			});
+		}
+
+		private void TellDmActivePlayer(int playerId)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			TellDungeonMaster($"{player.emoticon} {twitchIndent} ----- {GetPlayerName(playerId)} -----");
 		}
 
 		public void RollWildMagic()
@@ -3223,8 +3391,62 @@ namespace DHDM
 			player.ClearPreviouslyCastingSpell();
 			SetClearSpellVisibility(player);
 		}
+
+		int lastSpellSlotTested;
+		FileSystemWatcher spellsChangedFileWatcher;
+		private void ShowPlayerCasting()
+		{
+			Character player = game.GetPlayerFromId(ActivePlayerId);
+			if (player == null)
+				return;
+			SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
+			if (selectedItem == null)
+				return;
+			Spell spell = AllSpells.Get(selectedItem.name, player, lastSpellSlotTested);
+			player.ShowPlayerCasting(new CastedSpell(spell, player));
+		}
+
+		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
+			if (selectedItem == null)
+				return;
+			int level;
+			int.TryParse(selectedItem.level, out level);
+			btnSlot1.IsEnabled = level <= 1;
+			btnSlot2.IsEnabled = level <= 2;
+			btnSlot3.IsEnabled = level <= 3;
+			btnSlot4.IsEnabled = level <= 4;
+			btnSlot5.IsEnabled = level <= 5;
+			btnSlot6.IsEnabled = level <= 6;
+			btnSlot7.IsEnabled = level <= 7;
+			btnSlot8.IsEnabled = level <= 8;
+			btnSlot9.IsEnabled = level <= 9;
+			ShowPlayerCasting();
+		}
+
+		private void BtnReloadSpells_Click(object sender, RoutedEventArgs e)
+		{
+			ReloadSpells();
+		}
+
+		private void ReloadSpells()
+		{
+			AllSpells.Invalidate();
+			lstAllSpells.ItemsSource = AllSpells.Spells;
+		}
+
+		private void BtnSlotTest_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is Button button))
+				return;
+			if (!int.TryParse((string)button.Tag, out lastSpellSlotTested))
+				return;
+			ShowPlayerCasting();
+		}
 	}
 
+	// TODO: Reintegrate wand/staff animations....
 	/* 
 	  Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown
 		Melf's Minute Meteors.6				Staff.Weapon	Casting								x										30	150				

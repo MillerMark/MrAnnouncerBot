@@ -11,6 +11,7 @@ namespace DndCore
 			AllDieRollEffects.Invalidate();
 			AllFeatures.Invalidate();
 			AllFunctions.Invalidate();
+			AllProcs.Invalidate();
 			AllPlayers.Invalidate();
 			AllProperties.Invalidate();
 			AllSpellEffects.Invalidate();

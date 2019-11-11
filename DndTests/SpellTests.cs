@@ -152,16 +152,16 @@ namespace DndTests
 			Spell sleep = AllSpells.Get("Sleep");
 			Assert.AreEqual(1, sleep.Level);
 			Assert.IsTrue(sleep.MorePowerfulWhenCastAtHigherLevels);
-			sleep.RecalculateDieStr(2, 5, 0);
+			sleep.RecalculateDiceAndAmmo(2, 5, 0);
 			Assert.AreEqual("7d8(hpCapacity)", sleep.DieStr);
 
-			sleep.RecalculateDieStr(3, 5, 0);
+			sleep.RecalculateDiceAndAmmo(3, 5, 0);
 			Assert.AreEqual("9d8(hpCapacity)", sleep.DieStr);
 
-			sleep.RecalculateDieStr(4, 5, 0);
+			sleep.RecalculateDiceAndAmmo(4, 5, 0);
 			Assert.AreEqual("11d8(hpCapacity)", sleep.DieStr);
 
-			sleep.RecalculateDieStr(5, 5, 0);
+			sleep.RecalculateDiceAndAmmo(5, 5, 0);
 			Assert.AreEqual("13d8(hpCapacity)", sleep.DieStr);
 
 			Spell astralProjection = AllSpells.Get("Astral Projection");

@@ -31,6 +31,7 @@ namespace DndCore
 		public int proficiencyBonus { get; set; }
 		public int walking { get; set; }
 		public string proficientSkills { get; set; }
+		public string emoticon { get; set; }
 		public string doubleProficiency { get; set; }
 		public string savingThrowProficiency { get; set; }
 		public string spellCastingAbility { get; set; }

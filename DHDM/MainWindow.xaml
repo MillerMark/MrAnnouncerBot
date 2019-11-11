@@ -543,7 +543,7 @@
 									<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 								</Grid>
 							</Button>
-							<Button x:Name="btnClearSpell" Visibility="Hidden" Width="240" Height="75" FontSize="33" Click="BtnClearSpell_Click">
+							<Button x:Name="btnClearSpell" Visibility="Hidden" Width="240" Height="75" FontSize="33" Margin="0, 20, 0, 0" Click="BtnClearSpell_Click">
 								Clear Spell
 							</Button>
 						</StackPanel>
@@ -579,6 +579,38 @@
 				</TabItem>
 				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<local:EffectsList x:Name="effectsList" Height="Auto" VerticalAlignment="Stretch"/>
+				</TabItem>
+				<TabItem Header="Spells" x:Name="tbSpells" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+					<StackPanel Orientation="Vertical">
+						<StackPanel Orientation="Horizontal">
+							<Button x:Name="btnSlot1" Tag="1" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 1</Button>
+							<Button x:Name="btnSlot2" Tag="2" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 2</Button>
+							<Button x:Name="btnSlot3" Tag="3" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 3</Button>
+							<Button x:Name="btnSlot4" Tag="4" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 4</Button>
+							<Button x:Name="btnSlot5" Tag="5" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 5</Button>
+							<Button x:Name="btnSlot6" Tag="6" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 6</Button>
+							<Button x:Name="btnSlot7" Tag="7" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 7</Button>
+							<Button x:Name="btnSlot8" Tag="8" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 8</Button>
+							<Button x:Name="btnSlot9" Tag="9" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 9</Button>
+							<Button x:Name="btnReloadSpells" Height="25" Width="90" Margin="10,4,4,4"  Click="BtnReloadSpells_Click">
+								Reload Spells
+							</Button>
+						</StackPanel>
+						<ListBox x:Name="lstAllSpells" SelectionChanged="LstAllSpells_SelectionChanged" Height="800">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Grid Margin="4">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" SharedSizeGroup="Key" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<TextBlock Text="{Binding name}" FontWeight="Bold"  />
+										<TextBox Grid.Column="1" Text="{Binding level }" />
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</StackPanel>
 				</TabItem>
 				<TabItem Header="Mods" x:Name="tbMods" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
 					<uc:ModsList/>

@@ -16,6 +16,9 @@ namespace DndCore
 		public List<SpellGroup> SpellData { get; private set; }
 
 		[JsonIgnore]
+		public string emoticon { get; set; }
+
+		[JsonIgnore]
 		public List<Rechargeable> rechargeables = new List<Rechargeable>();
 
 		[JsonIgnore]
@@ -53,6 +56,8 @@ namespace DndCore
 
 		public ActiveSpellData spellActivelyCasting;
 		public ActiveSpellData spellPreviouslyCasting;
+
+		public bool forceShowSpell = false;
 
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
@@ -736,6 +741,7 @@ namespace DndCore
 			character.baseWisdom = characterDto.baseWisdom;
 			character.baseCharisma = characterDto.baseCharisma;
 			character.proficiencyBonus = characterDto.proficiencyBonus;
+			character.emoticon = characterDto.emoticon;
 			character.baseWalkingSpeed = characterDto.walking;
 			character.proficientSkills = DndUtils.ToSkill(characterDto.proficientSkills);
 			character.doubleProficiency = DndUtils.ToSkill(characterDto.doubleProficiency);
@@ -903,6 +909,14 @@ namespace DndCore
 			}
 		}
 
+		public void RemoveSpell(string name)
+		{
+			KnownSpell foundSpell = KnownSpells.FirstOrDefault(x => x.SpellName == name);
+			if (foundSpell == null)
+				return;
+			KnownSpells.Remove(foundSpell);
+		}
+
 		public void AddTrailingEffects(string trailingEffects)
 		{
 			if (!string.IsNullOrWhiteSpace(trailingEffectsThisRoll))
@@ -1024,8 +1038,18 @@ namespace DndCore
 
 		public void ShowPlayerCasting(CastedSpell castedSpell)
 		{
+			forceShowSpell = true;
 			spellPreviouslyCasting = null;
 			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
+			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
+		}
+
+		public void ClearAllCasting()
+		{
+			if (spellPreviouslyCasting == null && spellActivelyCasting == null)
+				return;
+			spellPreviouslyCasting = null;
+			spellActivelyCasting = null;
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
@@ -1225,6 +1249,32 @@ namespace DndCore
 			}
 		}
 
+		[JsonIgnore]
+		public int SpellcastingAbilityModifier
+		{
+			get
+			{
+				return GetSpellcastingAbilityModifier();
+			}
+			set
+			{
+			}
+		}
+
+		[JsonIgnore]
+		public string SpellcastingAbilityModifierStr
+		{
+			get
+			{
+				int spellcastingAbilityModifier = GetSpellcastingAbilityModifier();
+				if (spellcastingAbilityModifier >= 0)
+					return "+" + spellcastingAbilityModifier.ToString();
+				return spellcastingAbilityModifier.ToString();
+			}
+			set
+			{
+			}
+		}
 
 		public int GetSpellcastingAbilityModifier()
 		{
@@ -1703,6 +1753,7 @@ namespace DndCore
 
 		public override void StartTurnResetState()
 		{
+			forceShowSpell = false;
 			ActionsPerTurn = 1;
 			enemyAdvantage = 0;
 			_attackNum = 0;
@@ -2173,7 +2224,6 @@ namespace DndCore
 			spellPreviouslyCasting = null;
 			OnStateChanged(this, new StateChangedEventArgs("spellPreviouslyCasting", null, null));
 		}
-
 
 		public event CastedSpellEventHandler SpellDispelled;
 		public event RollDiceEventHandler RollDiceRequest;

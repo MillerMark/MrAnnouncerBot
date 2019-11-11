@@ -56,7 +56,7 @@
 
 	constructor() {
 		super();
-		this.spellBook = new SpellBook();
+		this.spellBook = new SpellBook(this.browserIsOBS());
 		this._page = ScrollPage.main;
 		this.buildGoldDust();
 		this.pageIndex = this._page;
@@ -750,6 +750,9 @@
 				this.spellBook.draw(now, context, Math.max(rightMostTextX, calloutPointX), calloutPointY, activeCharacter);
 			}
 		}
+		else if (activeCharacter.forceShowSpell)
+			this.spellBook.draw(now, context, 600, 200, activeCharacter);
+
 
 		//if (this.browserIsOBS())
 		//	this.drawSpellGroupItem(context, x, y, 'OBS', topData, bottomData);
@@ -949,6 +952,10 @@
 		if (character != null) {
 			character.copyAttributesFrom(sentChar);
 		}
+
+		if (!character.spellActivelyCasting && !character.spellPreviouslyCasting)
+			this.spellBook.lastSpellName = '';
+
 		return character;
 	}
 

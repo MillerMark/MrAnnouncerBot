@@ -43,6 +43,5 @@ namespace DndCore
 		{
 			functions = null;
 		}
-
 	}
 }

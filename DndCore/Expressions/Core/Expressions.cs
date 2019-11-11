@@ -226,7 +226,19 @@ namespace DndCore
 			expressionEvaluator = new ExpressionEvaluator();
 			expressionEvaluator.EvaluateVariable += ExpressionEvaluator_EvaluateVariable;
 			expressionEvaluator.EvaluateFunction += ExpressionEvaluator_EvaluateFunction;
+			expressionEvaluator.ExecutionPointerChanged += ExpressionEvaluator_ExecutionPointerChanged;
 			LoadEvaluatorExtensions();
+		}
+
+		private static void ExpressionEvaluator_ExecutionPointerChanged(object sender, ExecutionPointerChangedEventArgs ea)
+		{
+			string thisSection = ea.Script.Substring(ea.ExecutionPointer, ea.ExecutionLength);
+			// HACK: It's a serious hack kids, but it's for debugging and it solves 99% of my use case needs.
+			//! So please don't hate too much.
+			int instructionPointer = ea.OriginalScript.IndexOf(thisSection);
+			//+++ SUPER HACK: Store a previous pointer and search 
+			//+++ starting at that!!! From the amazing and one and only
+			//+++ Rory!!!
 		}
 
 		public static CastedSpell GetCastedSpell(IDictionary<string, object> variables)

@@ -22,6 +22,7 @@ class Character {
 	classes: Array<CharacterClass> = new Array<CharacterClass>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
+	forceShowSpell: boolean;
 	spellActivelyCasting: ActiveSpellData;
 	spellPreviouslyCasting: ActiveSpellData;
 	level: number;
@@ -156,6 +157,7 @@ class Character {
 		this.load = sourceCharacter.load;
 		this.maxHitPoints = sourceCharacter.maxHitPoints;
 		this.name = sourceCharacter.name;
+		this.forceShowSpell = sourceCharacter.forceShowSpell;
 
 		if (sourceCharacter.spellActivelyCasting)
 			this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);

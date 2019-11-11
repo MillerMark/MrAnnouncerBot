@@ -4,18 +4,13 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
-	public class FunctionDto : PropertyDto
+	public class FunctionDto : FunctionProcDto
 	{
-		public string FunctionName { get; set; }
-		public List<string> Parameters { get; set; }
+		public string Expression { get; set; }
+		
 		public FunctionDto()
 		{
 
-		}
-		public void ProcessArguments()
-		{
-			FunctionName = DndUtils.GetName(Name);
-			Parameters = DndUtils.GetParameters(Name);
 		}
 	}
 }

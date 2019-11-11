@@ -177,6 +177,10 @@ class ParagraphWrapData {
 				tableLines = [];
 			}
 		}, this);
+
+		if (inTable) {
+			activeTable.createColumns(tableLines, context);
+		}
 	}
 
 	constructor() {
@@ -191,34 +195,41 @@ class LineWrapData {
 	}
 }
 
-// ![](8982D67972CF7C02518FFCA1FB57B247.png;;326,97,694,577)  <-- Support indented bullet points.
-
-// ![](E2AA2C6314DC3F9A9BAB6EBD50DA2232.png;;354,109,850,760;0.03846,0.03846)  <-- Support tables
-
 class SpellBook {
+	// titles:
+	static readonly str_CastingTime: string = 'Casting Time: ';
+	static readonly str_Range: string = 'Range: ';
+	static readonly str_Components: string = 'Components: ';
+	static readonly str_Duration: string = 'Duration: ';
+
+	static readonly str_ConcentrationPrefix: string = 'Concentration, ';
+
+	// appearance:
 	static readonly titleFontName: string = 'Modesto Condensed Bold';
 	static readonly detailFontName: string = 'mrs-eaves';
 	static readonly titleFontIdealSize: number = 30;
 	static readonly titleLeftMargin: number = 25;
-	static readonly titleConcentrationIconSpacing: number = 15;
-	static readonly concentrationIconWidth: number = 36;
+	static readonly titleFirstIconSpacing: number = 10;
+	static readonly iconSpacing: number = 8;
+	static readonly iconScaleDenominator: number = 38; // Divide title font size by this to get concentration icon scale
+	static readonly titleFontCenterYAdjust: number = 3;
+	static readonly iconSize: number = 36;
 	static readonly detailFontSize: number = 18;
+	static readonly castingSubDetailIndent: number = 8;
 	static readonly spellDetailsWidth: number = 220;
 	static readonly schoolOfMagicIndent: number = 20;
 	static readonly schoolOfMagicWidth: number = 115 + SpellBook.schoolOfMagicIndent;
-	static readonly spellDescriptionWidth: number = 330;
+	static readonly spellDescriptionWidth: number = 320;
 	static readonly titleLevelMargin: number = 3;
 	static readonly tableCellHorizontalMargin: number = 8;
 	static readonly detailSpacing: number = 4;
-	static readonly calculatedFontYOffset: number = -2;
+	static readonly calculatedFontYOffsetForChrome: number = -2;
+	static readonly calculatedFontYOffsetForObs: number = -3;
+	static readonly abjurationAdjust: number = 4;
 	static readonly emphasisFontHeightIncrease: number = 3;
 	static readonly bulletIndent: number = SpellBook.detailFontSize * 1.2;
 
-	static readonly styleDelimeters: Array<LayoutDelimiters> = [
-		new LayoutDelimiters(LayoutStyle.calculated, '«', '»', SpellBook.calculatedFontYOffset),
-		new LayoutDelimiters(LayoutStyle.bold, '**', '**'),
-		new LayoutDelimiters(LayoutStyle.italic, '*', '*')
-	];
+	static styleDelimiters: Array<LayoutDelimiters>;
 
 	static readonly levelDetailsMargin: number = 6;
 	static readonly maxSpellBookHeight: number = 1000;
@@ -244,7 +255,9 @@ class SpellBook {
 	// 1. Can we get the spell above Fred's head.
 	// 2. If not, move it to the top of the screen and to the right of Fred's head.
 
-	static readonly spellPageRightEdge: number = 332;
+	static readonly spellPageRightEdge: number = 350;
+	static readonly maxTitleWidth: number = SpellBook.spellPageRightEdge - SpellBook.titleLeftMargin;
+
 	static readonly bottomWindowHeight: number = 1080;
 	static readonly spellBottomHeight: number = 1022;
 
@@ -252,7 +265,10 @@ class SpellBook {
 	static readonly spellBottomMargin: number = 23;
 
 	// ![](C1726232AA0D358FB5CC3FE2FE14D260.png)  schoolOfMagicHeight
-	static readonly schoolOfMagicHeight: number = 105;
+	static readonly schoolOfMagicHeight: number = 109;
+
+	// ![](ADB813D0BFBAA54EC6A49957A0FB6E2E.png)
+	static readonly schoolOfMagicAbjurationHeight: number = 117;
 
 	// ![](BCA0565D701D0D116C5132DE9B222FD6.png)
 	static readonly spellHeaderHeight: number = 79;
@@ -265,8 +281,10 @@ class SpellBook {
 	spellBookTop: Sprites;
 	schoolOfMagic: Sprites;
 	concentrationIcon: Sprites;
+	morePowerIcon: Sprites;
 	bookGlow: Sprites;
 	lastPlayerId: number;
+	calculatedFontYOffset: number = 0;
 	lastSpellName: string;
 	titleTopLeft: Vector;
 	levelSchoolTopLeft: Vector;
@@ -280,8 +298,30 @@ class SpellBook {
 	activeStyle: LayoutStyle;
 	descriptionParagraphs: ParagraphWrapData;
 	titleWidth: number;
+	lastSpellSlotLevel: number;
+	wrappedSubCastingLines: LineWrapData[];
+	wrappedSubRangeLines: LineWrapData[];
+	wrappedSubComponentMaterialLines: LineWrapData[];
+	castingTime: string;
+	componentSummary: string;
+	rangeSummary: string;
+	availableSpellDetailsWidth: number;
+	schoolOfMagicAdjust: number;
+	browserIsObs: boolean;
 
-	constructor() {
+	constructor(browserIsObs: boolean) {
+		this.browserIsObs = browserIsObs;
+		if (browserIsObs)
+			this.calculatedFontYOffset = SpellBook.calculatedFontYOffsetForObs;
+		else
+			this.calculatedFontYOffset = SpellBook.calculatedFontYOffsetForChrome;
+
+		SpellBook.styleDelimiters = [
+			new LayoutDelimiters(LayoutStyle.calculated, '«', '»', this.calculatedFontYOffset),
+			new LayoutDelimiters(LayoutStyle.bold, '**', '**'),
+			new LayoutDelimiters(LayoutStyle.italic, '*', '*')
+		];
+
 		this.loadFonts();
 		this.loadColors();
 	}
@@ -321,7 +361,10 @@ class SpellBook {
 		let indent: number = 0;
 		let inTableRow: boolean;
 		let wordWrappingThisLine: boolean = true;
-		let width: number = 0;
+		let lineWidth: number = 0;
+		let activeStyle: LayoutStyle = LayoutStyle.normal;
+
+		let lastPart: string = '';
 
 		for (var i = 0; i < words.length; i++) {
 			let word = words[i];
@@ -335,75 +378,131 @@ class SpellBook {
 					word = word.substr(1);
 					inTableRow = true;
 					currentLine = text;
-					width = -1;
+					lineWidth = -1;
 					break; // No support for formatting inside tables as long as we are breaking here.
 					// We could continue to collect formatting, but NOT check for word wrap (set wordWrappingThisLine to false).
 				}
 			}
 
-			SpellBook.styleDelimeters.forEach(function (styleDelimeters: LayoutDelimiters) {
+			let firstPart: string = '';
+			lastPart = '';
+
+			SpellBook.styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
 				styleDelimeters.needToClose = false;
-				if (word.startsWith(styleDelimeters.startDelimiter)) {
-					word = word.substr(styleDelimeters.startDelimiter.length);
-					styleDelimeters.lastStart = currentLine.length;
-					styleDelimeters.inPair = true;
+				if (!styleDelimeters.inPair) {
+					let delimiterStartIndex: number = word.indexOf(styleDelimeters.startDelimiter);
+					if (delimiterStartIndex >= 0) {
+						firstPart = word.substr(0, delimiterStartIndex);
+						word = word.substr(delimiterStartIndex + styleDelimeters.startDelimiter.length);
+						let startOffset: number = firstPart.length;
+						if (startOffset > 0)
+							startOffset++;
+						styleDelimeters.lastStart = currentLine.length + startOffset;
+						styleDelimeters.inPair = true;
+						activeStyle = styleDelimeters.style;
+					}
 				}
 
-				// Catches **this bold**: delimeter.
+				//if (word.startsWith(styleDelimeters.startDelimiter)) {
+				//	word = word.substr(styleDelimeters.startDelimiter.length);
+				//	styleDelimeters.lastStart = currentLine.length;
+				//	styleDelimeters.inPair = true;
+				//	activeStyle = styleDelimeters.style;
+				//}
+
+				// Catches **this bold**: delimeter (where ending bold delimiter is not followed by a space).
 				let endDelimeterIndex = word.indexOf(styleDelimeters.endDelimiter);
 				if (endDelimeterIndex > 0) {
-					word = word.substr(0, endDelimeterIndex) + word.substr(endDelimeterIndex + styleDelimeters.endDelimiter.length, word.length - endDelimeterIndex);
+					lastPart = word.substr(endDelimeterIndex + styleDelimeters.endDelimiter.length, word.length - endDelimeterIndex);
+					word = word.substr(0, endDelimeterIndex);
 					styleDelimeters.needToClose = true;
 				}
 			}, this);
 
-			// BUG: always measuring the currentLine assuming always rendered with the same font! Need to accumulate the width instead!
-			width = indent + context.measureText(currentLine + ' ' + word).width;
-			if (!wordWrappingThisLine || width < maxScaledWidth) {  // Words still fit on this line.
-				if (currentLine)
-					currentLine += ' ' + word;
-				else
-					currentLine = word;
+
+			var thisWord: string = '';
+			if (currentLine)
+				thisWord = ' ' + word;
+			else {
+				thisWord = word;
+				lineWidth = indent;
+			}
+
+			let firstPartWidth: number = 0; // e.g., a "(" in "(**"
+			if (firstPart) {
+				firstPartWidth = context.measureText(firstPart).width;
+			}
+
+			this.setActiveStyle(context, activeStyle);
+			let thisWordWidth: number = context.measureText(thisWord).width;
+
+			if (!wordWrappingThisLine || lineWidth + thisWordWidth + firstPartWidth < maxScaledWidth - indent) {  // Words still fit on this line.
+				if (currentLine) {
+					currentLine += ' ' + firstPart + word + lastPart;
+					lineWidth += firstPartWidth + thisWordWidth;
+				}
+				else {
+					currentLine = firstPart + word + lastPart;
+					lineWidth = indent + firstPartWidth + thisWordWidth;
+				}
 			}
 			else {  // We are wrapping to the next line!!!
-				SpellBook.styleDelimeters.forEach(function (styleDelimeters: LayoutDelimiters) {
+				SpellBook.styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
 					if (styleDelimeters.inPair) {
 						allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length, styleDelimeters.style));
-						styleDelimeters.lastStart = 0; // Still in the pair!!!
-						styleDelimeters.inPair = false;  // Looks wrong to me on review.
+						styleDelimeters.lastStart = firstPart.length; // Still in the pair!!!
+						//styleDelimeters.inPair = false;  // Looks wrong to me on review.
 					}
 				}, this);
 
-				lines.push(new LineWrapData(currentLine, allSpans, width, indent, isBullet));
+				lines.push(new LineWrapData(currentLine, allSpans, lineWidth, indent, isBullet));
 				isBullet = false;
-				currentLine = word;
+				currentLine = firstPart + word + lastPart;
+				lineWidth = thisWordWidth;
 				allSpans = [];
+
+				if (lastPart) {
+					SpellBook.styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
+						if (styleDelimeters.inPair) {
+							allSpans.push(new Span(styleDelimeters.lastStart, word.length, styleDelimeters.style));
+							styleDelimeters.lastStart = -1;
+							styleDelimeters.inPair = false;
+							activeStyle = LayoutStyle.normal;
+							styleDelimeters.needToClose = false;
+						}
+					}, this);
+				}
+
 			}
 
-			SpellBook.styleDelimeters.forEach(function (styleDelimeters: LayoutDelimiters) {
+			SpellBook.styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
 				if (styleDelimeters.needToClose) {
-					allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length, styleDelimeters.style));
+					allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length - lastPart.length, styleDelimeters.style));
 					styleDelimeters.lastStart = -1;
 					styleDelimeters.inPair = false;
+					activeStyle = LayoutStyle.normal;
+					styleDelimeters.needToClose = false;
 				}
 			}, this);
 		}
 
 		// One last check to see if any styles are left hanging and need closure...
-		SpellBook.styleDelimeters.forEach(function (styleDelimeters: LayoutDelimiters) {
+		SpellBook.styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
 			if (styleDelimeters.lastStart >= 0) {
 				if (currentLine.length > 0) {
-					allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length, styleDelimeters.style));
+					allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length - lastPart.length, styleDelimeters.style));
 					styleDelimeters.lastStart = -1;
 				}
 			}
 		}, this);
 
-		lines.push(new LineWrapData(currentLine, allSpans, width, indent, isBullet, inTableRow));
+		lines.push(new LineWrapData(currentLine, allSpans, lineWidth, indent, isBullet, inTableRow));
 		return lines;
 	}
 
 	private getWordWrappedLinesForParagraphs(context: CanvasRenderingContext2D, text: string, maxScaledWidth: number): ParagraphWrapData {
+		this.initializeStyleDelimiters();
+
 		let lines: Array<LineWrapData> = text.split("\n").map(para => this.getWordWrappedLines(context, para, maxScaledWidth)).reduce((a, b) => a.concat(b), []);
 		let paragraphWrapData: ParagraphWrapData = new ParagraphWrapData();
 		paragraphWrapData.lineData = lines;
@@ -411,6 +510,14 @@ class SpellBook {
 		return paragraphWrapData;
 	}
 
+
+	private initializeStyleDelimiters() {
+		SpellBook.styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
+			styleDelimeters.inPair = false;
+			styleDelimeters.lastStart = -1;
+			styleDelimeters.needToClose = false;
+		});
+	}
 
 	private loadFonts() {
 		// @ts-ignore - FontFace
@@ -427,19 +534,103 @@ class SpellBook {
 	drawSpellTitle(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): any {
 		this.setTitleFont(context, this.titleFontSize);
 		context.fillStyle = this.titleColors[spell.schoolOfMagic];
-		context.fillText(spell.name, this.titleTopLeft.x, this.titleTopLeft.y, SpellBook.spellPageRightEdge);
+		context.fillText(spell.name, this.titleTopLeft.x, this.titleTopLeft.y);
+	}
+
+	getSpellLevelSchoolWidth(context: CanvasRenderingContext2D, spell: ActiveSpellData): number {
+		this.setDetailFontNormal(context);
+		let levelStr: string = this.getLevelStr(spell);
+		let castAtLevelStr: string = '';
+
+		let castStr: string = this.getSchoolCastingStr(levelStr, spell, castAtLevelStr);
+
+		let width: number = context.measureText(castStr).width;
+
+		if (spell.morePowerfulAtHigherLevels && spell.spellSlotLevel > spell.spellLevel) {
+			if (spell.powerComesFromCasterLevel) {
+				width += context.measureText(`, cast by a level ${spell.playerLevel} adventurer`).width;
+			}
+			else {
+				this.setDetailFontBold(context);
+				width += context.measureText('upcast ').width;
+
+				this.setDetailFontNormal(context);
+				width += context.measureText('to ').width;
+
+				this.setDetailFontBold(context);
+				width += context.measureText(`slot level ${spell.spellSlotLevel}`).width;
+			}
+
+			this.setActiveStyle(context, LayoutStyle.normal);
+			return width;
+		}
+	}
+
+	private getLevelStr(spell: ActiveSpellData) {
+		if (spell.spellLevel == 0)
+			return 'Cantrip';
+		else {
+			return `Level ${spell.spellLevel}`;
+		}
 	}
 
 	drawSpellLevelSchool(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): any {
 		this.setDetailFontNormal(context);
 		context.fillStyle = SpellBook.textColor;
-		let levelStr: string;
-		if (spell.spellLevel == 0)
-			levelStr = 'Cantrip';
-		else
-			levelStr = `Level ${spell.spellLevel}`;
+		let levelStr: string = this.getLevelStr(spell);
+		let castAtLevelStr: string = '';
 
-		context.fillText(`${levelStr} ${this.toSchoolDisplayName(spell.schoolOfMagic)}`, this.levelSchoolTopLeft.x, this.levelSchoolTopLeft.y, SpellBook.spellPageRightEdge);
+		let castStr: string = this.getSchoolCastingStr(levelStr, spell, castAtLevelStr);
+		let x: number = this.levelSchoolTopLeft.x;
+		let y: number = this.levelSchoolTopLeft.y;
+		context.fillText(castStr, x, y);
+
+		if (spell.morePowerfulAtHigherLevels && spell.spellSlotLevel > spell.spellLevel) {
+			x += context.measureText(castStr).width;
+			const commaSepStr: string = ', ';
+			context.fillText(commaSepStr, x, y);
+			x += context.measureText(commaSepStr).width;
+
+			if (spell.powerComesFromCasterLevel) {
+				const castByAStr: string = 'cast by a ';
+				this.setDetailFontNormal(context);
+				context.fillText(castByAStr, x, y);
+				x += context.measureText(castByAStr).width;
+
+				const levelStr: string = `level ${spell.playerLevel} `;
+				this.setDetailFontBold(context);
+				context.fillStyle = SpellBook.emphasisColor;
+				context.fillText(levelStr, x, y);
+				x += context.measureText(levelStr).width;
+
+				this.setDetailFontNormal(context);
+				context.fillStyle = SpellBook.textColor;
+				context.fillText('adventurer', x, y);
+			}
+			else {
+				const upcastStr: string = 'upcast ';
+				this.setDetailFontBold(context);
+				context.fillText(upcastStr, x, y);
+				x += context.measureText(upcastStr).width;
+
+				const atStr: string = 'to ';
+				this.setDetailFontNormal(context);
+				context.fillText(atStr, x, y);
+				x += context.measureText(atStr).width;
+
+				this.setDetailFontBold(context);
+				context.fillStyle = SpellBook.emphasisColor;
+				context.fillText(`slot level ${spell.spellSlotLevel}`, x, y);
+				context.fillStyle = SpellBook.textColor;
+			}
+
+
+			this.setDetailFontNormal(context);
+		}
+	}
+
+	private getSchoolCastingStr(levelStr: string, spell: ActiveSpellData, castAtLevelStr: string): string {
+		return `${levelStr} ${this.toSchoolDisplayName(spell.schoolOfMagic)}${castAtLevelStr}`;
 	}
 
 	drawSpellDescription(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): void {
@@ -468,28 +659,28 @@ class SpellBook {
 			}
 			else if (lineData.allSpans.length > 0) {
 				let offsetX: number = lineData.indent;
+				let lastDrawnStyledOffset: number = 0;
 				for (let spanIndex = 0; spanIndex < lineData.allSpans.length; spanIndex++) {
 					let span: Span = lineData.allSpans[spanIndex];
 
-					let onTheVeryFirstSpan: boolean = spanIndex == 0;
 					let onTheVeryLastSpan: boolean = spanIndex == lineData.allSpans.length - 1;
 
 					// Special case (first span):
-					if (onTheVeryFirstSpan && span.startOffset > 0) {
+					if (span.startOffset > lastDrawnStyledOffset) {
 						// We have a normal part first
 						this.setActiveStyle(context, LayoutStyle.normal);
-						let normalPart: string = lineData.line.substr(0, span.startOffset);
+						let normalPart: string = lineData.line.substr(lastDrawnStyledOffset, span.startOffset - lastDrawnStyledOffset);
 						context.fillText(normalPart, x + offsetX, y);
 						offsetX += context.measureText(normalPart).width;
 					}
-
+					// Draw the styled part...
 					let styledPart: string = lineData.line.substr(span.startOffset, span.stopOffset - span.startOffset);
 					this.setActiveStyle(context, span.style);
 
 					let yOffset: number = this.getStyleDelimeters(span.style).fontYOffset;
 					context.fillText(styledPart, x + offsetX, y + yOffset);
 					offsetX += context.measureText(styledPart).width;
-
+					lastDrawnStyledOffset = span.stopOffset;
 
 					// Special case (last span):
 					if (onTheVeryLastSpan && span.stopOffset < lineData.line.length) {
@@ -516,6 +707,9 @@ class SpellBook {
 		context.save();
 		for (let i = 0; i < cells.length; i++) {
 			let cellText: string = cells[i].trim();
+			if (!lineData.table.columns) {
+				console.error('lineData.table.columns is null!!!');
+			}
 			let column: Column = lineData.table.columns[i];
 			offset += SpellBook.tableCellHorizontalMargin;
 			let textX: number = x + offset;
@@ -564,16 +758,14 @@ class SpellBook {
 	}
 
 	getStyleDelimeters(style: LayoutStyle): LayoutDelimiters {
-		for (let i = 0; i < SpellBook.styleDelimeters.length; i++) {
-			if (SpellBook.styleDelimeters[i].style == style)
-				return SpellBook.styleDelimeters[i];
+		for (let i = 0; i < SpellBook.styleDelimiters.length; i++) {
+			if (SpellBook.styleDelimiters[i].style == style)
+				return SpellBook.styleDelimiters[i];
 		}
 		return null;
 	}
 
 	setActiveStyle(context: CanvasRenderingContext2D, style: LayoutStyle): any {
-		if (this.activeStyle == style)
-			return;
 		this.activeStyle = style;
 		switch (style) {
 			case LayoutStyle.bold:
@@ -593,111 +785,151 @@ class SpellBook {
 		this.setDetailFontNormal(context);
 	}
 
-	getDetailHeight(context: CanvasRenderingContext2D, spell: ActiveSpellData): number {
+	getDetailSize(context: CanvasRenderingContext2D, spell: ActiveSpellData): Vector {
 		this.setDetailFontNormal(context);
 
 		let lineCount: number = 0;
 		let spacerCount: number = 0;
 		let height: number = 0;
+		let width: number = 0;
 
-		let castingLines = spell.castingTimeStr.split(',');
+		height += SpellBook.detailFontSize;  // Casting time.
+		lineCount++; // Casting time.
+		this.wrappedSubCastingLines = [];
+		this.wrappedSubRangeLines = [];
+		this.wrappedSubComponentMaterialLines = [];
 
-		if (castingLines.length > 0) {
-			height += SpellBook.detailFontSize;
-			lineCount++;
-			if (castingLines.length > 1) {
-				let castingLinesExtraCount: number = this.getDetailLineCount(context, castingLines[1].trim());
-				console.log('castingLinesExtraCount: ' + castingLinesExtraCount);
-				height += SpellBook.detailFontSize * castingLinesExtraCount;
-				lineCount += castingLinesExtraCount;
-			}
-			height += SpellBook.detailSpacing;
-			spacerCount++;
+		function checkWidth(testWidth: number) {
+			if (testWidth > width)
+				width = testWidth;
 		}
+
+		let commaPos: number = spell.castingTimeStr.indexOf(',');
+
+		if (commaPos < 0)
+			this.castingTime = spell.castingTimeStr;
+		else {
+			this.castingTime = spell.castingTimeStr.substr(0, commaPos).trim();
+			let remainingCastingDetails: string = spell.castingTimeStr.substr(commaPos + 1).trim();
+			this.wrappedSubCastingLines = this.getWrappedSubDetailLines(context, remainingCastingDetails);
+			let castingLinesExtraCount: number = this.wrappedSubCastingLines.length;
+			height += SpellBook.detailFontSize * castingLinesExtraCount;
+			lineCount += castingLinesExtraCount;
+		}
+
+		checkWidth(this.measureDetail(context, SpellBook.str_CastingTime, this.castingTime));
+
+		height += SpellBook.detailSpacing;
+		spacerCount++;
 
 		height += SpellBook.detailFontSize + SpellBook.detailSpacing;  // Range
 		lineCount++;
 		spacerCount++;
+		let parenPos: number = spell.rangeStr.indexOf('(');
+
+		if (parenPos < 0)
+			this.rangeSummary = spell.rangeStr;
+		else {
+			this.rangeSummary = spell.rangeStr.substr(0, parenPos).trim();
+			let remainingRangeDetails: string = spell.rangeStr.substr(parenPos).trim();
+			this.wrappedSubRangeLines = this.getWrappedSubDetailLines(context, remainingRangeDetails);
+			let rangeLinesExtraCount: number = this.wrappedSubRangeLines.length;
+			height += SpellBook.detailFontSize * rangeLinesExtraCount;
+			lineCount += rangeLinesExtraCount;
+		}
+
+		checkWidth(this.measureDetail(context, SpellBook.str_Range, this.rangeSummary));
 
 		if (spell.componentsStr) {
 			height += SpellBook.detailFontSize;
 			lineCount++;
 
 			let parenIndex = spell.componentsStr.indexOf('(');
-			let componentMaterials: string = '';
-			if (parenIndex > 0) {
-				componentMaterials = spell.componentsStr.substr(parenIndex);
-			}
 
-			if (componentMaterials) {
-				let componentsExtraLines: number = this.getDetailLineCount(context, componentMaterials);
-				console.log('componentsExtraLines: ' + componentsExtraLines);
-				height += SpellBook.detailFontSize * componentsExtraLines;
-				lineCount += componentsExtraLines;
+			if (parenIndex > 0) {
+				this.componentSummary = spell.componentsStr.substr(0, parenIndex).trim();
+				let componentMaterials: string = spell.componentsStr.substr(parenIndex);
+				if (componentMaterials) {
+					this.wrappedSubComponentMaterialLines = this.getWrappedSubDetailLines(context, componentMaterials);
+					let componentsExtraLines: number = this.wrappedSubComponentMaterialLines.length;
+
+					height += SpellBook.detailFontSize * componentsExtraLines;
+					lineCount += componentsExtraLines;
+				}
 			}
+			else
+				this.componentSummary = spell.componentsStr;
+
+			checkWidth(this.measureDetail(context, SpellBook.str_Components, this.componentSummary));
+
 			height += SpellBook.detailSpacing;
 			spacerCount++;
 		}
 
 		height += SpellBook.detailFontSize + SpellBook.detailSpacing;   // Duration
 		lineCount++;
+
+		let durationStr: string = this.getDurationStr(spell);
+		checkWidth(this.measureDetail(context, SpellBook.str_Duration, durationStr));
+
 		console.log('Detail: lineCount: ' + lineCount);
 		console.log('Detail: spacerCount: ' + spacerCount);
-		return height;
+		return new Vector(width, height);
 	}
 
 	drawSpellDetails(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): void {
 		context.fillStyle = SpellBook.textColor;
-		let x: number = this.spellDetailsTopLeft.x;
+		let x: number = this.spellDetailsTopLeft.x + this.schoolOfMagicAdjust;
 		let y: number = this.spellDetailsTopLeft.y;
 
-		let castingLines = spell.castingTimeStr.split(',');
 
-		if (castingLines.length > 0) {
-			this.showDetail(context, 'Casting Time: ', castingLines[0], x, y);
-			y += SpellBook.detailFontSize;
-			let castingTimeX: number = x + 4;
-			if (castingLines.length > 1) {
-				this.setDetailFontNormal(context);
-				y = this.wrapDetailLines(context, castingLines[1].trim(), castingTimeX, y);
-			}
-			y += SpellBook.detailSpacing;
+		this.showDetail(context, SpellBook.str_CastingTime, this.castingTime, x, y);
+		y += SpellBook.detailFontSize;
+
+		if (this.wrappedSubCastingLines) {
+			let castingTimeX: number = x + SpellBook.castingSubDetailIndent;
+			this.setDetailFontNormal(context);
+			y = this.wrapDetailLines(context, this.wrappedSubCastingLines, castingTimeX, y);
 		}
+		y += SpellBook.detailSpacing;
 
-		this.showDetail(context, 'Range: ', spell.rangeStr, x, y);
-		y += SpellBook.detailFontSize + SpellBook.detailSpacing;
+
+
+		this.showDetail(context, SpellBook.str_Range, this.rangeSummary, x, y);
+		y += SpellBook.detailFontSize;
+		if (this.wrappedSubRangeLines) {
+			const materialX: number = x + SpellBook.castingSubDetailIndent;
+			this.setDetailFontNormal(context);
+			y = this.wrapDetailLines(context, this.wrappedSubRangeLines, materialX, y);
+		}
+		y += SpellBook.detailSpacing;
+
 
 		if (spell.componentsStr) {
-			let parenIndex = spell.componentsStr.indexOf('(');
-			let componentSummary: string;
-			let componentMaterials: string = '';
-			if (parenIndex > 0) {
-				componentSummary = spell.componentsStr.substr(0, parenIndex);
-				componentMaterials = spell.componentsStr.substr(parenIndex);
-				// BUG: Looks like we might be leaving on the trailing paren.
-			}
-			else
-				componentSummary = spell.componentsStr;
-			this.showDetail(context, 'Components: ', componentSummary, x, y);
+			this.showDetail(context, SpellBook.str_Components, this.componentSummary, x, y);
 			y += SpellBook.detailFontSize;
 
-			if (componentMaterials) {
-				const materialX: number = x + 7;
+			if (this.wrappedSubComponentMaterialLines) {
+				const materialX: number = x + SpellBook.castingSubDetailIndent;
 				this.setDetailFontNormal(context);
-				y = this.wrapDetailLines(context, componentMaterials, materialX, y);
+				y = this.wrapDetailLines(context, this.wrappedSubComponentMaterialLines, materialX, y);
 			}
 			y += SpellBook.detailSpacing;
 		}
 
-		let durationStr: string = spell.durationStr;
-		const concentrationPrefix: string = 'Concentration, ';
-		if (durationStr.startsWith(concentrationPrefix))
-			durationStr = spell.durationStr.substr(concentrationPrefix.length);
-		this.showDetail(context, 'Duration: ', durationStr, x, y);
+		let durationStr: string = this.getDurationStr(spell);
+		this.showDetail(context, SpellBook.str_Duration, durationStr, x, y);
 	}
 
-	private wrapDetailLines(context: CanvasRenderingContext2D, detailStr: string, x: number, y: number) {
-		let lines = this.getWordWrappedLines(context, detailStr, SpellBook.spellDetailsWidth * this.horizontalScale);
+	private getDurationStr(spell: ActiveSpellData): string {
+		let durationStr: string = spell.durationStr;
+		const concentrationPrefix: string = SpellBook.str_ConcentrationPrefix;
+		if (durationStr.startsWith(concentrationPrefix))
+			durationStr = spell.durationStr.substr(concentrationPrefix.length);
+		return durationStr;
+	}
+
+	private wrapDetailLines(context: CanvasRenderingContext2D, lines: LineWrapData[], x: number, y: number) {
 		for (let i = 0; i < lines.length; i++) {
 			context.fillText(lines[i].line, x, y);
 			y += SpellBook.detailFontSize;
@@ -705,16 +937,25 @@ class SpellBook {
 		return y;
 	}
 
-	private getDetailLineCount(context: CanvasRenderingContext2D, detailStr: string) {
-		return this.getWordWrappedLines(context, detailStr, SpellBook.spellDetailsWidth * this.horizontalScale).length;
+	private getWrappedSubDetailLines(context: CanvasRenderingContext2D, detailStr: string) {
+		return this.getWordWrappedLines(context, detailStr, this.availableSpellDetailsWidth * this.horizontalScale - SpellBook.castingSubDetailIndent);
 	}
 
 	showDetail(context: CanvasRenderingContext2D, label: string, data: string, x: number, y: number): void {
 		this.setDetailFontNormal(context);
-		context.fillText(label, x, y, SpellBook.spellPageRightEdge);
+		context.fillText(label, x, y);
 		x += context.measureText(label).width;
 		this.setDetailFontBold(context);
-		context.fillText(data, x, y, SpellBook.spellPageRightEdge);
+		context.fillText(data, x, y);
+	}
+
+	measureDetail(context: CanvasRenderingContext2D, label: string, data: string): number {
+		let result: number = 0;
+		this.setDetailFontNormal(context);
+		result += context.measureText(label).width;
+		this.setDetailFontBold(context);
+		result += context.measureText(data).width;
+		return result;
 	}
 
 	toSchoolDisplayName(schoolOfMagic: SchoolOfMagic): string {
@@ -746,7 +987,7 @@ class SpellBook {
 
 
 	private setDetailFontItalic(context: CanvasRenderingContext2D) {
-		context.font = `italic ${SpellBook.detailFontSize}px ${SpellBook.detailFontName}`;
+		context.font = `700 italic ${SpellBook.detailFontSize}px ${SpellBook.detailFontName}`;
 	}
 
 	private setInlineDetailFontCalculated(context: CanvasRenderingContext2D) {
@@ -765,13 +1006,14 @@ class SpellBook {
 		if (!spell)
 			return;
 
-		if (this.lastSpellName != spell.name) {
+		if (this.lastSpellName != spell.name || this.lastSpellSlotLevel != spell.spellSlotLevel) {
 			this.lastSpellName = spell.name;
+			this.lastSpellSlotLevel = spell.spellSlotLevel;
 			this.lastPlayerId = player.playerID;
 
 			let scale: number = 1;
 			while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
-				scale += 0.05;
+				scale += 0.01;
 			}
 		}
 
@@ -788,6 +1030,7 @@ class SpellBook {
 		this.spellBookTop.draw(context, now * 1000);
 		this.schoolOfMagic.draw(context, now * 1000);
 		this.concentrationIcon.draw(context, now * 1000);
+		this.morePowerIcon.draw(context, now * 1000);
 
 		this.drawSpellTitle(now, context, spell);
 		this.drawSpellLevelSchool(now, context, spell);
@@ -796,14 +1039,24 @@ class SpellBook {
 	}
 
 
-	getTitleFontSize(context: CanvasRenderingContext2D, left: number, name: string, requiresConcentration: boolean): number {
+	getTitleFontSize(context: CanvasRenderingContext2D, name: string, requiresConcentration: boolean, morePowerfulAtHigherLevels: boolean): number {
 		let fontSize: number = SpellBook.titleFontIdealSize;
 		this.setTitleFont(context, fontSize);
 		this.titleWidth = context.measureText(name).width;
-		let rightEdge: number = SpellBook.spellPageRightEdge;
-		if (requiresConcentration)
-			rightEdge -= SpellBook.titleConcentrationIconSpacing + SpellBook.concentrationIconWidth;
-		while (SpellBook.titleLeftMargin + this.titleWidth > rightEdge) {
+
+		function getIconSpace(iconScale: number, horizontalScale: number): number {
+			let iconSpace: number = 0;
+			if (requiresConcentration || morePowerfulAtHigherLevels) {
+				iconSpace += SpellBook.titleFirstIconSpacing * horizontalScale + SpellBook.iconSize * iconScale;
+				if (requiresConcentration && morePowerfulAtHigherLevels)
+					iconSpace += SpellBook.iconSpacing * horizontalScale + SpellBook.iconSize * iconScale;
+			}
+			return iconSpace;
+		}
+
+		let maxTitleWidth: number = SpellBook.maxTitleWidth * this.horizontalScale;
+
+		while (this.titleWidth > maxTitleWidth - getIconSpace(this.getIconScale(fontSize), this.horizontalScale)) {
 			fontSize--;
 			if (fontSize <= 6) {
 				return fontSize;
@@ -822,7 +1075,10 @@ class SpellBook {
 		this.schoolOfMagic = new Sprites("Scroll/Spells/SchoolsOfMagic", 8, 0, AnimationStyle.Static);
 		this.concentrationIcon = new Sprites("Scroll/Spells/Concentration/Concentration", 8, 0, AnimationStyle.Static);
 		this.concentrationIcon.originX = 0;
-		this.concentrationIcon.originY = 18;
+		this.concentrationIcon.originY = SpellBook.iconSize;
+		this.morePowerIcon = new Sprites("Scroll/Spells/MorePower/MorePower", 8, 0, AnimationStyle.Static);
+		this.morePowerIcon.originX = 0;
+		this.morePowerIcon.originY = SpellBook.iconSize;
 		this.bookGlow = new Sprites("Scroll/Spells/BookMagic/BookMagic", 119, fps30, AnimationStyle.Loop, true);
 	}
 
@@ -836,22 +1092,48 @@ class SpellBook {
 		if (this.descriptionParagraphs.maxTableWidth > maxSpellDescriptionWidth)
 			return false;
 
+		if (this.getSpellLevelSchoolWidth(context, spell) > maxSpellDescriptionWidth)
+			return false;
+
 		this.spellBookBack.sprites = [];
 		this.spellBookTop.sprites = [];
 		this.schoolOfMagic.sprites = [];
 		this.concentrationIcon.sprites = [];
+		this.morePowerIcon.sprites = [];
 		this.bookGlow.sprites = [];
 
 		let left: number = x + 12;
 		let top: number = y - 33;
 
 
-		this.titleFontSize = this.getTitleFontSize(context, left, spell.name, spell.requiresConcentration);
+		this.titleFontSize = this.getTitleFontSize(context, spell.name, spell.requiresConcentration, spell.morePowerfulAtHigherLevels);
 
 		let descriptionLinesWeNeedToAdd: number = this.descriptionParagraphs.lineData.length;
 		let descriptionHeightWeNeedToAdd: number = descriptionLinesWeNeedToAdd * (SpellBook.detailFontSize);
 
-		let detailsHeight: number = Math.max(this.getDetailHeight(context, spell) + SpellBook.detailFontSize, SpellBook.schoolOfMagicHeight);
+
+		this.schoolOfMagicAdjust = 0;
+		this.availableSpellDetailsWidth = SpellBook.spellDetailsWidth;
+		let schoolOfMagicWidth: number = SpellBook.schoolOfMagicWidth;
+
+		let schoolOfMagicIndent: number;
+		if (spell.schoolOfMagic == SchoolOfMagic.None) {
+			schoolOfMagicIndent = 0;
+			schoolOfMagicWidth = 0;
+			this.availableSpellDetailsWidth += SpellBook.schoolOfMagicWidth;
+		}
+		else {
+			if (spell.schoolOfMagic == SchoolOfMagic.Abjuration) {
+				this.schoolOfMagicAdjust = SpellBook.abjurationAdjust;
+				this.availableSpellDetailsWidth -= SpellBook.abjurationAdjust;
+			}
+
+			schoolOfMagicIndent = SpellBook.schoolOfMagicIndent - this.schoolOfMagicAdjust;
+		}
+
+
+		let detailSize: Vector = this.getDetailSize(context, spell);
+		let detailsHeight: number = Math.max(detailSize.y + SpellBook.detailFontSize, this.getSchoolOfMagicHeight(spell.schoolOfMagic));
 
 		let totalSpellPageHeight: number = SpellBook.spellHeaderHeight + detailsHeight + descriptionHeightWeNeedToAdd;
 
@@ -874,23 +1156,25 @@ class SpellBook {
 		spellBottom = this.getSpellDescriptionBottom(top, totalSpellPageHeight);
 
 		if (spellBottom > SpellBook.fredShoulderY) {
-			left = SpellBook.fredShoulderX;
+			left = Math.max(left, SpellBook.fredShoulderX);
 		}
 		else if (spellBottom > SpellBook.fredHeadY) {
-			left = SpellBook.fredHeadX;
+			left = Math.max(left, SpellBook.fredHeadX);
 		}
 
-		// positioning logic:
-		// 1. Can we get the spell above Fred's head.
-		// 2. If not, move it to the top of the screen and to the right of Fred's head.
+		if (spell.schoolOfMagic == SchoolOfMagic.Abjuration) {
 
+		}
 
 		this.spellDescriptionTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + SpellBook.spellHeaderHeight + detailsHeight);
 		this.titleTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + 27);
 		this.levelSchoolTopLeft = new Vector(left + SpellBook.titleLeftMargin, this.titleTopLeft.y + this.titleFontSize + SpellBook.titleLevelMargin);
-		let schoolOfMagicTopLeft: Vector = new Vector(left + SpellBook.schoolOfMagicIndent, this.levelSchoolTopLeft.y + SpellBook.detailFontSize + SpellBook.levelDetailsMargin);
-		this.spellDetailsTopLeft = new Vector(left + SpellBook.schoolOfMagicWidth, schoolOfMagicTopLeft.y);
-		//let spellBookBottomTop: number = top + bookBottomYOffset + lineSpaceWeNeedToAdd + detailExpansionHeight;
+		let schoolOfMagicTopLeft: Vector = new Vector(left + schoolOfMagicIndent, this.levelSchoolTopLeft.y + SpellBook.detailFontSize + SpellBook.levelDetailsMargin);
+
+		this.spellDetailsTopLeft = new Vector(left + schoolOfMagicWidth, schoolOfMagicTopLeft.y);
+		if (detailSize.x > this.availableSpellDetailsWidth * horizontalScale)
+			return false;
+
 		let lowerSpellBookTop: number = top + totalSpellPageHeight;
 
 		this.spellBookBackHeight = totalSpellPageHeight;
@@ -906,11 +1190,18 @@ class SpellBook {
 			this.schoolOfMagic.add(schoolOfMagicTopLeft.x, schoolOfMagicTopLeft.y, schoolOfMagicIndex).timeStart = 0;
 		}
 
+
+		let iconScale: number = this.getIconScale(this.titleFontSize);
+		let iconX = left + SpellBook.titleLeftMargin + this.titleWidth + SpellBook.titleFirstIconSpacing * this.horizontalScale;
+		let iconY = this.titleTopLeft.y + this.titleFontSize;
+
 		if (spell.requiresConcentration) {
-			let concentrationIconScale: number = Math.min(1, this.titleFontSize / 30);
-			let iconX = left + SpellBook.titleLeftMargin + this.titleWidth + SpellBook.titleConcentrationIconSpacing * concentrationIconScale;
-			let iconY = this.titleTopLeft.y + this.titleFontSize / 2;
-			this.concentrationIcon.add(iconX, iconY, schoolOfMagicIndex).scale = concentrationIconScale;
+			this.concentrationIcon.add(iconX, iconY, schoolOfMagicIndex).scale = iconScale;
+			iconX += SpellBook.iconSize * iconScale + SpellBook.iconSpacing * this.horizontalScale;
+		}
+
+		if (spell.morePowerfulAtHigherLevels) {
+			this.morePowerIcon.add(iconX, iconY, schoolOfMagicIndex).scale = iconScale;
 		}
 
 		// TODO: Consider adding SpellBook.spellBottomMargin instead of SpellBook.bookSpellHeightAdjust
@@ -924,6 +1215,16 @@ class SpellBook {
 		bookGlow.horizontalScale = this.horizontalScale;
 		bookGlow.verticalScale = verticalScale;
 		return true;
+	}
+
+	private getIconScale(titleFontSize: number): number {
+		return Math.min(1, titleFontSize / SpellBook.iconScaleDenominator);
+	}
+
+	getSchoolOfMagicHeight(schoolOfMagic: SchoolOfMagic): any {
+		if (schoolOfMagic == SchoolOfMagic.Abjuration)
+			return SpellBook.schoolOfMagicAbjurationHeight;
+		return SpellBook.schoolOfMagicHeight;
 	}
 
 	private getNewTop(bottom: number, totalSpellPageHeight: number): number {

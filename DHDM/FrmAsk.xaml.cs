@@ -27,9 +27,11 @@ namespace DHDM
 			InitializeComponent();
 		}
 
+		static FrmAsk frmAsk;
+
 		public static int Ask(string question, List<string> answers, Window owner)
 		{
-			FrmAsk frmAsk = new FrmAsk();
+			frmAsk = new FrmAsk();
 			frmAsk.Owner = owner;
 			frmAsk.AnswerInt = 0;
 			char[] quotes = { '"', ' ' };
@@ -75,6 +77,20 @@ namespace DHDM
 
 			//answerButton
 			// AnswerInt
+		}
+		public static void TryAnswer(int value)
+		{
+			if (frmAsk == null)
+				return;
+			frmAsk.AnswerInt = value;
+			frmAsk.CloseGracefully();
+		}
+		void CloseGracefully()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				frmAsk.Close();
+			});
 		}
 	}
 }
