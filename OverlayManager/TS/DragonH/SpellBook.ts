@@ -223,10 +223,13 @@ class SpellBook {
 	static readonly titleLevelMargin: number = 3;
 	static readonly tableCellHorizontalMargin: number = 8;
 	static readonly detailSpacing: number = 4;
-	static readonly calculatedFontYOffsetForChrome: number = -2;
-	static readonly calculatedFontYOffsetForObs: number = -3;
+	static readonly emphasisFontYOffsetForChrome: number = -2;
+	static readonly emphasisFontYOffsetForObs: number = -3;
+	static readonly emphasisLineYOffsetForChrome: number = 0;
+	static readonly emphasisLineYOffsetForObs: number = 2;
 	static readonly abjurationAdjust: number = 4;
 	static readonly emphasisFontHeightIncrease: number = 3;
+	static readonly emphasisFontStyleAscender: number = 19;
 	static readonly bulletIndent: number = SpellBook.detailFontSize * 1.2;
 
 	static styleDelimiters: Array<LayoutDelimiters>;
@@ -307,14 +310,20 @@ class SpellBook {
 	rangeSummary: string;
 	availableSpellDetailsWidth: number;
 	schoolOfMagicAdjust: number;
+	underlineOffset: number;
 	browserIsObs: boolean;
 
 	constructor(browserIsObs: boolean) {
 		this.browserIsObs = browserIsObs;
-		if (browserIsObs)
-			this.calculatedFontYOffset = SpellBook.calculatedFontYOffsetForObs;
-		else
-			this.calculatedFontYOffset = SpellBook.calculatedFontYOffsetForChrome;
+		if (browserIsObs) {
+			this.calculatedFontYOffset = SpellBook.emphasisFontYOffsetForObs;
+			this.underlineOffset = SpellBook.emphasisLineYOffsetForObs;
+		}
+		else {
+			this.calculatedFontYOffset = SpellBook.emphasisFontYOffsetForChrome;
+			this.underlineOffset = SpellBook.emphasisLineYOffsetForChrome;
+		}
+		
 
 		SpellBook.styleDelimiters = [
 			new LayoutDelimiters(LayoutStyle.calculated, '«', '»', this.calculatedFontYOffset),
@@ -677,9 +686,27 @@ class SpellBook {
 					let styledPart: string = lineData.line.substr(span.startOffset, span.stopOffset - span.startOffset);
 					this.setActiveStyle(context, span.style);
 
-					let yOffset: number = this.getStyleDelimeters(span.style).fontYOffset;
-					context.fillText(styledPart, x + offsetX, y + yOffset);
-					offsetX += context.measureText(styledPart).width;
+					let wordTop: number = y + this.getStyleDelimeters(span.style).fontYOffset;
+					let styledPartWidth: number = context.measureText(styledPart).width;
+
+					if (span.style == LayoutStyle.calculated) {  // Underline this.
+						let wordStartX: number = x + offsetX;
+						let wordEndX: number = wordStartX + styledPartWidth;
+						if (styledPart.startsWith(' ')) {
+							wordStartX += context.measureText(' ').width;
+						}
+						context.beginPath();
+						let lineY: number = wordTop + SpellBook.emphasisFontStyleAscender + this.underlineOffset;
+						context.lineWidth = 2;
+						context.strokeStyle = '#3e6bb8';
+						context.moveTo(wordStartX, lineY);
+						context.lineTo(wordEndX, lineY);
+						context.stroke();
+					}
+
+					context.fillText(styledPart, x + offsetX, wordTop);
+					offsetX += styledPartWidth;
+
 					lastDrawnStyledOffset = span.stopOffset;
 
 					// Special case (last span):

@@ -440,6 +440,9 @@ namespace DHDM
 
 		int AskQuestion(string question, List<string> answers)
 		{
+			bool timerWasRunning = realTimeAdvanceTimer.IsEnabled;
+			if (timerWasRunning)
+				realTimeAdvanceTimer.Stop();
 			waitingForAnswerToQuestion = true;
 			try
 			{
@@ -470,6 +473,8 @@ namespace DHDM
 			{
 				waitingForAnswerToQuestion = false;
 				answerMap = null;
+				if (timerWasRunning)
+					StartRealTimeTimer();
 			}
 		}
 
@@ -923,16 +928,13 @@ namespace DHDM
 						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
 						return;
 					}
-					if (FrmAsk.Ask($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }, this) == 0)
+					if (AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
 						return;
 				}
 				finally
 				{
 					if (!game.Clock.InCombat)
-					{
-						realTimeAdvanceTimer.Start();
-						lastUpdateTime = DateTime.Now;
-					}
+						StartRealTimeTimer();
 				}
 			}
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
@@ -1985,7 +1987,7 @@ namespace DHDM
 			List<string> answers = new List<string>();
 			answers.Add("1:Yes");
 			answers.Add("2:No");
-			bool yes = FrmAsk.Ask(question, answers, this) == 1;
+			bool yes = AskQuestion(question, answers) == 1;
 			return yes;
 		}
 

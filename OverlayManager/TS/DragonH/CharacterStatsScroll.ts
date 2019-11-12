@@ -24,6 +24,9 @@
 	scrollPoofBack: Sprites;
 	scrollPoofFront: Sprites;
 	emphasisSprites: Sprites;
+	concentrationIcons: Sprites;
+	spinningConcentrationIcons: Sprites;
+	morePowerIcons: Sprites;
 	emphasisIndices: Array<number> = [];
 	emitterIndices: Array<string> = [];
 	spellBook: SpellBook;
@@ -53,10 +56,19 @@
 	// diagnostics:
 	lastFrameIndex: number;
 	lastElapsedTime: number;
+	morePowerIcon: SpriteProxy;
+	concentrationIcon: SpriteProxy;
+	spinningConcentrationIcon: SpriteProxy;
+	spellIconYOffset: number = 0;
 
 	constructor() {
 		super();
-		this.spellBook = new SpellBook(this.browserIsOBS());
+		let browserIsObs: boolean = this.browserIsOBS();
+
+		this.spellBook = new SpellBook(browserIsObs);
+		if (browserIsObs)
+			this.spellIconYOffset = 4;
+
 		this._page = ScrollPage.main;
 		this.buildGoldDust();
 		this.pageIndex = this._page;
@@ -65,8 +77,9 @@
 		this.deEmphasisSprite.fadeInTime = 700;
 		this.deEmphasisSprite.fadeOutTime = 700;
 		this.deEmphasisSprite.expirationDate = activeBackGame.nowMs;
+
 		const numPagesPlusShadow: number = 5;
-		for (var i = 0; i < 5; i++) {
+		for (var i = 0; i < numPagesPlusShadow; i++) {
 			this.highlightEmitterPages.push(new HighlightEmitterPages());
 		}
 		this.addHighlightEmitters();
@@ -611,18 +624,27 @@
 	buildGoldDust(): void {
 		let windSpeed: number = 0.8;
 
-		this.topEmitter = this.getMagicDustEmitter(windSpeed);
-		this.bottomEmitter = this.getMagicDustEmitter(-windSpeed);
+		this.topEmitter = this.getMagicDustScrollOpenEmitter(windSpeed);
+		this.bottomEmitter = this.getMagicDustScrollOpenEmitter(-windSpeed);
 
 		this.topEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY - CharacterStatsScroll.scrollOpenOffsets[1]);
 		this.bottomEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY + CharacterStatsScroll.scrollOpenOffsets[1]);
 	}
 
-	private getMagicDustEmitter(windSpeed: number): Emitter {
+	private getMagicDustScrollOpenEmitter(windSpeed: number): Emitter {
 		const scrollLength: number = 348;
-		let emitter: Emitter = new Emitter(new Vector(scrollLength / 2, 460));
-		emitter.stop();
+		let emitter: Emitter = this.getMagicDustEmitter(scrollLength / 2, 460);
+
+		emitter.particleWind = new Vector(0, windSpeed);
+		emitter.initialParticleDirection = new Vector(0, Math.sign(windSpeed));
 		emitter.setRectShape(scrollLength, 1);
+
+		return emitter;
+	}
+
+	private getMagicDustEmitter(x: number, y: number) {
+		let emitter: Emitter = new Emitter(new Vector(x, y));
+		emitter.stop();
 		emitter.saturation.target = 0.9;
 		emitter.saturation.relativeVariance = 0.2;
 		emitter.hue = new TargetValue(40, 0, 0, 60);
@@ -637,12 +659,9 @@
 		emitter.particleGravity = 0;
 		emitter.particleInitialVelocity.target = 0.4;
 		emitter.particleInitialVelocity.relativeVariance = 0.5;
-		emitter.initialParticleDirection = new Vector(0, Math.sign(windSpeed));
 		emitter.gravity = 0;
 		emitter.airDensity = 0.2;
 		emitter.particleAirDensity = 1;
-		emitter.particleWind = new Vector(0, windSpeed);
-
 		return emitter;
 	}
 
@@ -650,6 +669,22 @@
 		this.spellBook.loadResources();
 		var assetFolderName: string = Folders.assets;
 		Folders.assets = 'GameDev/Assets/DragonH/';
+
+		this.concentrationIcons = new Sprites("Scroll/Spells/Concentration/MiniConcentration", 1, 0, AnimationStyle.Static);
+		this.morePowerIcons = new Sprites("Scroll/Spells/MorePower/MorePower", 9, 0, AnimationStyle.Static);
+		this.morePowerIcon = this.morePowerIcons.add(0, 0, 8);
+		this.morePowerIcon.scale = 0.45;
+		this.morePowerIcon.opacity = 0.6;
+		this.concentrationIcon = this.concentrationIcons.add(0, 0, 0);
+		this.concentrationIcon.opacity = 0.6;
+
+		this.spinningConcentrationIcons = new Sprites("Scroll/Spells/Concentration/MiniConcentration", 1, 0, AnimationStyle.Static);
+
+		this.spinningConcentrationIcon = this.spinningConcentrationIcons.add(0, 0, 0);
+		this.spinningConcentrationIcon.autoRotationDegeesPerSecond = 40;
+		this.spinningConcentrationIcons.originX = 8;
+		this.spinningConcentrationIcons.originY = 8;
+		this.spinningConcentrationIcon.initialRotation = 0;
 
 		this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
 		this.scrollPoofBack = new Sprites("Scroll/Close/ScrollPoof", 44, this.framerateMs, AnimationStyle.Sequential, true);
@@ -701,63 +736,116 @@
 		}
 	}
 
-	private drawSpellData(now: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
-		let x: number = 30;
-		let y: number = 179;
+	static readonly iconIndent: number = 4;
 
-		let drawActiveSpellData: boolean = false;
-		let calloutPointX: number;
-		let calloutPointY: number;
-		let rightMostTextX: number = x;
+	drawSpellItem(now: number, context: CanvasRenderingContext2D, spellDataItem: SpellDataItem, x: number, y: number, topData: number, bottomData: number): number {
+		let indent: number = 6;
 
-		let activeSpellData: ActiveSpellData = activeCharacter.getActiveSpell();
+		let spellName: string = spellDataItem.Name;
+		let saveTop: number = y;
 
-		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
-			y += this.drawSpellGroupTitle(context, x, y, item, topData, bottomData);
+		let middleY: number = y + this.spellNameFontHeight / 2;
+		let itemIsOnScreen = middleY > topData && middleY < bottomData;
 
-			this.drawSpellBackground(context, x, y, item.SpellNames.length, topData, bottomData);
+		if (itemIsOnScreen)
+			this.drawSpellGroupItem(context, x + indent, y, spellName, topData, bottomData);
 
-			const belowTitleSpacing: number = 5;
-			y += belowTitleSpacing;
-			let indent: number = 6;
-			item.SpellNames.forEach(function (spellName: string) {
-				let saveTop: number = y;
-				y += this.drawSpellGroupItem(context, x + indent, y, spellName, topData, bottomData);
+		y += this.spellNameFontHeight
 
-				let spellNameWidth: number = context.measureText(spellName).width;
-				if (x + indent + spellNameWidth > rightMostTextX) {
-					rightMostTextX = x + indent + spellNameWidth;
-				}
+		let spellNameWidth: number = context.measureText(spellName).width;
+		let spellNameRight: number = x + indent + spellNameWidth;
+		if (spellNameRight > this.rightMostTextX) {
+			this.rightMostTextX = spellNameRight;
+		}
 
-				if (activeSpellData && activeSpellData.name == spellName) {
-					const calloutMarginX: number = 8;
-					calloutPointX = x + indent + spellNameWidth + calloutMarginX;
-					if (calloutPointX > rightMostTextX) {
-						rightMostTextX = calloutPointX;
-					}
-					calloutPointY = saveTop;
-					drawActiveSpellData = true;
-				}
-			}, this);
+		if (spellDataItem.IsConcentratingNow) {
+			spellNameRight += CharacterStatsScroll.iconIndent;
+			this.spinningConcentrationIcon.x = spellNameRight;
+			spellNameRight += this.spinningConcentrationIcons.spriteWidth * this.spinningConcentrationIcon.scale;
+			this.spinningConcentrationIcon.y = saveTop + this.spellIconYOffset;
+			if (itemIsOnScreen)
+				this.spinningConcentrationIcons.draw(context, now * 1000);
+		}
+		else if (spellDataItem.RequiresConcentration) {
+			spellNameRight += CharacterStatsScroll.iconIndent;
+			this.concentrationIcon.x = spellNameRight;
+			spellNameRight += this.concentrationIcons.spriteWidth * this.concentrationIcon.scale;
+			this.concentrationIcon.y = saveTop + this.spellIconYOffset;
+			if (itemIsOnScreen)
+				this.concentrationIcons.draw(context, now * 1000);
+		}
 
-			const interGroupSpacing: number = 12;
-			y += interGroupSpacing;
+		if (spellDataItem.MorePowerfulAtHigherLevels) {
+			spellNameRight += CharacterStatsScroll.iconIndent;
+			this.morePowerIcon.x = spellNameRight;
+			spellNameRight += this.morePowerIcons.spriteWidth * this.morePowerIcon.scale;
+			this.morePowerIcon.y = saveTop + this.spellIconYOffset;
+			if (itemIsOnScreen)
+				this.morePowerIcons.draw(context, now * 1000);
+		}
+
+
+		if (this.activeSpellData && this.activeSpellData.name == spellName) {
+			const calloutMarginX: number = 8;
+			this.calloutPointX = spellNameRight + calloutMarginX;
+			if (this.calloutPointX > this.rightMostTextX) {
+				this.rightMostTextX = this.calloutPointX;
+			}
+			this.calloutPointY = saveTop;
+			if (itemIsOnScreen)
+				this.drawActiveSpellData = true;
+		}
+		return y;
+	}
+
+	drawSpellGroup(now: number, context: CanvasRenderingContext2D, item: SpellGroup, x: number, y: number, topData: number, bottomData: number): number {
+		y += this.drawSpellGroupTitle(context, x, y, item, topData, bottomData);
+
+		this.drawSpellBackground(context, x, y, item.SpellDataItems.length, topData, bottomData);
+
+		const belowTitleSpacing: number = 5;
+		y += belowTitleSpacing;
+
+		item.SpellDataItems.forEach(function (spellDataItem: SpellDataItem) {
+			y = this.drawSpellItem(now, context, spellDataItem, x, y, topData, bottomData)
 		}, this);
 
-		if (drawActiveSpellData) {
-			if (calloutPointY >= topData && calloutPointY <= bottomData) {
-				calloutPointX += this.drawActiveSpellIndicator(context, calloutPointX, calloutPointY, activeSpellData);
-				this.spellBook.draw(now, context, Math.max(rightMostTextX, calloutPointX), calloutPointY, activeCharacter);
+		const interGroupSpacing: number = 12;
+		y += interGroupSpacing;
+		return y;
+	}
+
+	static readonly spellDataLeft: number = 30;
+	static readonly spellDataTop: number = 179;
+
+	rightMostTextX: number;
+	calloutPointX: number;
+	calloutPointY: number;
+	drawActiveSpellData: boolean = false;
+	activeSpellData: ActiveSpellData;
+
+	private drawSpellData(now: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
+		let x: number = CharacterStatsScroll.spellDataLeft;
+		let y: number = CharacterStatsScroll.spellDataTop;
+
+
+		this.drawActiveSpellData = false;
+		this.rightMostTextX = x;
+
+		this.activeSpellData = activeCharacter.getActiveSpell();
+
+		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
+			y = this.drawSpellGroup(now, context, item, x, y, topData, bottomData);
+		}, this);
+
+		if (this.drawActiveSpellData) {
+			if (this.calloutPointY >= topData && this.calloutPointY <= bottomData) {
+				this.calloutPointX += this.drawActiveSpellIndicator(context, this.calloutPointX, this.calloutPointY, this.activeSpellData);
+				this.spellBook.draw(now, context, Math.max(this.rightMostTextX, this.calloutPointX), this.calloutPointY, activeCharacter);
 			}
 		}
 		else if (activeCharacter.forceShowSpell)
 			this.spellBook.draw(now, context, 600, 200, activeCharacter);
-
-
-		//if (this.browserIsOBS())
-		//	this.drawSpellGroupItem(context, x, y, 'OBS', topData, bottomData);
-		//else 
-		//	this.drawSpellGroupItem(context, x, y, 'NOT OBS!!!', topData, bottomData);
 	}
 
 	readonly spellNameFontHeight: number = 18;
@@ -820,17 +908,10 @@
 	}
 
 	drawSpellGroupItem(context: CanvasRenderingContext2D, x: number, y: number, spellName: string, topData: number, bottomData: number): number {
-
-		let middleY: number = y + this.spellNameFontHeight / 2;
-		let textIsOnScreen = middleY > topData && middleY < bottomData;
-
-		if (textIsOnScreen) {
-			context.font = this.spellNameFontHeight + 'px Calibri';
-			context.fillStyle = '#3a1f0c';
-			let maxWidth: number = 305 - x;
-			context.fillText(spellName, x, y, maxWidth);
-		}
-		return this.spellNameFontHeight;
+		context.font = this.spellNameFontHeight + 'px Calibri';
+		context.fillStyle = '#3a1f0c';
+		let maxWidth: number = 305 - x;
+		context.fillText(spellName, x, y, maxWidth);
 	}
 
 	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): number {

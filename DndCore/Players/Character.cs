@@ -19,6 +19,22 @@ namespace DndCore
 		public string emoticon { get; set; }
 
 		[JsonIgnore]
+		public int HighestSpellSlot
+		{
+			get
+			{
+				int[] spellSlotLevels = GetSpellSlotLevels();
+				for (int i = 0; i < spellSlotLevels.Length; i++)
+				{
+					if (spellSlotLevels[i] == 0)
+						return i - 1;
+				}
+				return -1;
+			}
+		}
+		
+
+		[JsonIgnore]
 		public List<Rechargeable> rechargeables = new List<Rechargeable>();
 
 		[JsonIgnore]
@@ -2054,9 +2070,25 @@ namespace DndCore
 				if (spell != null)
 				{
 					SpellGroup spellGroup = GetSpellGroupByLevel(spell.Level);
-					spellGroup.SpellNames.Add(knownSpell.SpellName);
+					Spell matchingSpell = AllSpells.Get(knownSpell.SpellName);
+					bool requiresConcentration = false;
+					bool morePowerfulAtHigherLevels = false;
+					if (matchingSpell != null)
+					{
+						requiresConcentration = matchingSpell.RequiresConcentration;
+						morePowerfulAtHigherLevels = matchingSpell.MorePowerfulWhenCastAtHigherLevels;
+					}
+
+					bool isConcentratingNow = concentratedSpell != null && concentratedSpell.Spell.Name == knownSpell.SpellName;
+
+					spellGroup.SpellDataItems.Add(new SpellDataItem(knownSpell.SpellName, requiresConcentration, morePowerfulAtHigherLevels, isConcentratingNow));
 				}
 
+			}
+
+			for (int i = 1; i <= HighestSpellSlot; i++)
+			{
+				GetSpellGroupByLevel(i); // Ensures we have groups even for spell levels that have no spells (e.g., if a character only has first and third-level spells, this ensures we'll generate a group of second-level spell slots).
 			}
 
 			SpellData = new List<SpellGroup>();

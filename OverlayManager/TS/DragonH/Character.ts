@@ -4,11 +4,29 @@
 	}
 }
 
+class SpellDataItem {
+	public Name: string;
+	public RequiresConcentration: boolean;
+	public MorePowerfulAtHigherLevels: boolean;
+	public IsConcentratingNow: boolean;
+	constructor() {
+		
+	}
+	static From(spellDataItemDto: any): SpellDataItem {
+		let result: SpellDataItem = new SpellDataItem();
+		result.Name = spellDataItemDto.Name;
+		result.RequiresConcentration = spellDataItemDto.RequiresConcentration;
+		result.MorePowerfulAtHigherLevels = spellDataItemDto.MorePowerfulAtHigherLevels;
+		result.IsConcentratingNow = spellDataItemDto.IsConcentratingNow;
+		return result;
+	}
+}
+
 class SpellGroup {
 	public Name: string;
 	public TotalCharges: number;
 	public ChargesUsed: number;
-	public SpellNames: Array<string>;
+	public SpellDataItems: Array<SpellDataItem>;
 	constructor() {
 
 	}
@@ -227,7 +245,11 @@ class Character {
 			spellGroup.Name = spellData.Name;
 			spellGroup.ChargesUsed = spellData.ChargesUsed;
 			spellGroup.TotalCharges = spellData.TotalCharges;
-			spellGroup.SpellNames = spellData.SpellNames;
+			spellGroup.SpellDataItems = [];
+			spellData.SpellDataItems.forEach(function (item) {
+				spellGroup.SpellDataItems.push(SpellDataItem.From(item));
+			}, this);
+			
 			this.SpellData.push(spellGroup);
 		}, this);
 	}

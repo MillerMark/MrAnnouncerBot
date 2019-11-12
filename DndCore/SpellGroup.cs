@@ -9,7 +9,7 @@ namespace DndCore
 		public string Name { get; set; }
 		public int TotalCharges { get; set; }
 		public int ChargesUsed { get; set; }
-		public List<string> SpellNames { get; set; } = new List<string>();
+		public List<SpellDataItem> SpellDataItems { get; set; } = new List<SpellDataItem>();
 		public SpellGroup()
 		{
 
