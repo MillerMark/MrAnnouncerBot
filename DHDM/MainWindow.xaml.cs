@@ -3446,6 +3446,26 @@ namespace DHDM
 				return;
 			ShowPlayerCasting();
 		}
+
+		private void BtnDebugRun_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void CkBreakTest_Checked(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void CkBreakTest_Unchecked(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void BtnDebugStep_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
 	}
 
 	// TODO: Reintegrate wand/staff animations....

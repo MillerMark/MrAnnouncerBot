@@ -748,7 +748,7 @@
 		let itemIsOnScreen = middleY > topData && middleY < bottomData;
 
 		if (itemIsOnScreen)
-			this.drawSpellGroupItem(context, x + indent, y, spellName, topData, bottomData);
+			this.drawSpellGroupItem(context, x + indent, y, spellName);
 
 		y += this.spellNameFontHeight
 
@@ -907,7 +907,7 @@
 		context.fillRect(x, top, width, height);
 	}
 
-	drawSpellGroupItem(context: CanvasRenderingContext2D, x: number, y: number, spellName: string, topData: number, bottomData: number): number {
+	drawSpellGroupItem(context: CanvasRenderingContext2D, x: number, y: number, spellName: string): void {
 		context.font = this.spellNameFontHeight + 'px Calibri';
 		context.fillStyle = '#3a1f0c';
 		let maxWidth: number = 305 - x;

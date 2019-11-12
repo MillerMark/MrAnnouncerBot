@@ -38,7 +38,7 @@ namespace DndCore
 		}
 		public static object Get(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, $"Get({expression})", target, spell);
+			StartEvaluation(player, $"Get({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -47,13 +47,13 @@ namespace DndCore
 			}
 			finally
 			{
-				FinishedEvaluation(player);
+				FinishEvaluation(player);
 			}
 		}
 
 		public static object Get<T>(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, $"Get<{typeof(T).ToString()}>({expression})", target, spell);
+			StartEvaluation(player, $"Get<{typeof(T).ToString()}>({expression})", target, spell);
 			try
 			{
 				try
@@ -70,7 +70,7 @@ namespace DndCore
 			}
 			finally
 			{
-				FinishedEvaluation(player);
+				FinishEvaluation(player);
 			}
 		}
 
@@ -78,7 +78,7 @@ namespace DndCore
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return;
-			AddPlayerVariables(player, $"Do({expression})", target, castedSpell);
+			StartEvaluation(player, $"Do({expression})", target, castedSpell);
 			try
 			{
 				string script = Clean(expression);
@@ -109,13 +109,13 @@ namespace DndCore
 			}
 			finally
 			{
-				FinishedEvaluation(player);
+				FinishEvaluation(player);
 			}
 		}
 
 		public static int GetInt(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, $"GetInt({expression})", target, spell);
+			StartEvaluation(player, $"GetInt({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -134,13 +134,13 @@ namespace DndCore
 			}
 			finally
 			{
-				FinishedEvaluation(player);
+				FinishEvaluation(player);
 			}
 		}
 
 		public static bool GetBool(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, $"GetBool({expression})", target, spell);
+			StartEvaluation(player, $"GetBool({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -163,13 +163,13 @@ namespace DndCore
 			}
 			finally
 			{
-				FinishedEvaluation(player);
+				FinishEvaluation(player);
 			}
 		}
 
 		public static string GetStr(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
-			AddPlayerVariables(player, $"GetStr({expression})", target, spell);
+			StartEvaluation(player, $"GetStr({expression})", target, spell);
 			try
 			{
 				object result = expressionEvaluator.Evaluate(Clean(expression));
@@ -188,16 +188,24 @@ namespace DndCore
 			}
 			finally
 			{
-				FinishedEvaluation(player);
+				FinishEvaluation(player);
 			}
 		}
 
 		static Stack<IDictionary<string, object>> variableStack = new Stack<IDictionary<string, object>>();
-		private static void AddPlayerVariables(Character player, string callingProc, Creature target = null, CastedSpell spell = null)
+		private static void StartEvaluation(Character player, string callingProc, Creature target = null, CastedSpell spell = null)
 		{
 			//historyStack.Push(history);
 			//history = new List<string>();
 			LogCallingProc(callingProc);
+			AddPlayerVariables(player, target, spell);
+			if (player != null)
+				player.StartingExpressionEvaluation();
+			BeginUpdate();
+		}
+
+		private static void AddPlayerVariables(Character player, Creature target, CastedSpell spell)
+		{
 			variableStack.Push(expressionEvaluator.Variables);
 			expressionEvaluator.Variables = new Dictionary<string, object>()
 			{
@@ -205,12 +213,9 @@ namespace DndCore
 				{ STR_Target, target },
 				{ STR_CastedSpell, spell }
 			};
-			if (player != null)
-				player.StartingExpressionEvaluation();
-			BeginUpdate();
 		}
 
-		static void FinishedEvaluation(Character player)
+		static void FinishEvaluation(Character player)
 		{
 			if (variableStack.Count > 0)
 				expressionEvaluator.Variables = variableStack.Pop();

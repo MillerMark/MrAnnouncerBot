@@ -51,42 +51,49 @@
 			</Setter>
 		</Style>
 	</Window.Resources>
+	
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*" />
 			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-		<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-			<TabItem Header="Kent">
-				<Grid Background="#FFE5E5E5">
-					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-					</ScrollViewer>
-				</Grid>
-			</TabItem>
-			<TabItem Header="Kayla">
-				<Grid Background="#FFE5E5E5">
-					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-					</ScrollViewer>
-				</Grid>
-			</TabItem>
-			<TabItem Header="Mark">
-				<Grid Background="#FFE5E5E5">
-					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-					</ScrollViewer>
-				</Grid>
-			</TabItem>
-			<TabItem Header="Karen">
-				<Grid Background="#FFE5E5E5">
-					<ScrollViewer>
-						<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-					</ScrollViewer>
-				</Grid>
-			</TabItem>
-		</TabControl>
+		<StackPanel x:Name="spPlayerSide" Orientation="Vertical">
+			<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+				<TabItem Header="Kent">
+					<Grid Background="#FFE5E5E5">
+						<ScrollViewer>
+							<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
+						</ScrollViewer>
+					</Grid>
+				</TabItem>
+				<TabItem Header="Kayla">
+					<Grid Background="#FFE5E5E5">
+						<ScrollViewer>
+							<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
+						</ScrollViewer>
+					</Grid>
+				</TabItem>
+				<TabItem Header="Mark">
+					<Grid Background="#FFE5E5E5">
+						<ScrollViewer>
+							<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
+						</ScrollViewer>
+					</Grid>
+				</TabItem>
+				<TabItem Header="Karen">
+					<Grid Background="#FFE5E5E5">
+						<ScrollViewer>
+							<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
+						</ScrollViewer>
+					</Grid>
+				</TabItem>
+			</TabControl>
+			<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click" Height="44" Width="222" FontSize="22" Margin="22" >
+				Initialize Player Data
+			</Button>
+		</StackPanel>
+		
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 		<StackPanel x:Name="spTimeManagement" Grid.Column="2" Orientation="Vertical" >
 			<StackPanel x:Name="spTime" Orientation="Vertical">
@@ -549,11 +556,6 @@
 						</StackPanel>
 					</StackPanel>
 				</TabItem>
-				<TabItem Header="Players">
-					<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click">
-						Initialize Player Data
-					</Button>
-				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
 					<ListBox x:Name="logListBox" MaxHeight="500" >
 						<ListBox.ItemTemplate>
@@ -577,10 +579,10 @@
 						</ListBox.ContextMenu>
 					</ListBox>
 				</TabItem>
-				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:EffectsList x:Name="effectsList" Height="Auto" VerticalAlignment="Stretch"/>
 				</TabItem>
-				<TabItem Header="Spells" x:Name="tbSpells" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Spells" x:Name="tbSpells" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<StackPanel Orientation="Vertical">
 						<StackPanel Orientation="Horizontal">
 							<Button x:Name="btnSlot1" Tag="1" Click="BtnSlotTest_Click" Margin="4" Width="60" Height="25" >Slot 1</Button>
@@ -612,21 +614,36 @@
 						</ListBox>
 					</StackPanel>
 				</TabItem>
-				<TabItem Header="Mods" x:Name="tbMods" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Mods" x:Name="tbMods" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<uc:ModsList/>
 				</TabItem>
-				<TabItem Header="Items" x:Name="tbItems" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Items" x:Name="tbItems" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:ItemList x:Name="lstItems" Padding="5" />
 				</TabItem>
-				<TabItem Header="Weapons" x:Name="tbWeapons" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Weapons" x:Name="tbWeapons" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:WeaponsList/>
 				</TabItem>
 				
-				<TabItem Header="Effect Group" x:Name="tbEffectGroup" HorizontalAlignment="Left" Height="20" Width="88" VerticalAlignment="Top" >
+				<TabItem Header="Effect Group" x:Name="tbEffectGroup" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<StackPanel x:Name="spEffectGroup" Orientation="Vertical">
 						<uc:GroupEffectBuilder x:Name="groupEffectBuilder" Padding="5"/>
 						<Button x:Name="btnTestGroupEffect" MaxWidth="70" Click="BtnTestGroupEffect_Click">
 							Test Group
+						</Button>
+					</StackPanel>
+				</TabItem>
+
+				<TabItem Header="Debug" x:Name="tbDebug" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
+					<StackPanel Orientation="Horizontal">
+						<CheckBox x:Name="ckBreakTest" Margin="8" VerticalAlignment="Center" Checked="CkBreakTest_Checked" Unchecked="CkBreakTest_Unchecked">
+							Test Breakpoint
+						</CheckBox>
+						<Button x:Name="btnDebugStep" MaxWidth="132" MinWidth="66" MinHeight="24" Click="BtnDebugStep_Click" Margin="8" VerticalAlignment="Center">
+							Step
+						</Button>
+						
+						<Button x:Name="btnDebugRun" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugRun_Click" Margin="8" VerticalAlignment="Center">
+							Run
 						</Button>
 					</StackPanel>
 				</TabItem>
