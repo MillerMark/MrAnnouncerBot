@@ -107,7 +107,11 @@ namespace DndCore
 			if (Duration.HasValue())
 			{
 				string alarmName = $"{player.name}.{Name}";
-				History.TimeClock.CreateAlarm(Duration.GetTimeSpan(), alarmName, player).AlarmFired += Feature_Expired;
+				TimeSpan duration = Duration.GetTimeSpan();
+				if (player.Game != null)
+					player.Game.CreateAlarm(duration, alarmName, player, this).AlarmFired += Feature_Expired;
+				else
+					History.TimeClock.CreateAlarm(duration, alarmName, player, this).AlarmFired += Feature_Expired;
 			}
 			if (!string.IsNullOrWhiteSpace(OnActivate))
 				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);

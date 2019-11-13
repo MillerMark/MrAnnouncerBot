@@ -645,6 +645,10 @@
 						<Button x:Name="btnDebugRun" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugRun_Click" Margin="8" VerticalAlignment="Center">
 							Run
 						</Button>
+
+						<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
+							Test
+						</Button>
 					</StackPanel>
 				</TabItem>
 			</TabControl>

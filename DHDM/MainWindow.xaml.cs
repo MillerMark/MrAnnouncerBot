@@ -578,6 +578,19 @@ namespace DHDM
 			}
 		}
 
+		public Character ActivePlayer
+		{
+			get
+			{
+				return Dispatcher.Invoke(() =>
+				{
+					if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+						return game.GetPlayerFromId(playerTabItem.PlayerId);
+					return null;
+				});
+			}
+		}
+
 		private void FocusHelper_FocusedControlsChanged(object sender, FocusedControlsChangedEventArgs e)
 		{
 			foreach (StatBox statBox in e.Active)
@@ -3447,24 +3460,75 @@ namespace DHDM
 			ShowPlayerCasting();
 		}
 
-		private void BtnDebugRun_Click(object sender, RoutedEventArgs e)
-		{
-
-		}
-
 		private void CkBreakTest_Checked(object sender, RoutedEventArgs e)
 		{
-
+			Expressions.Debugging = true;
 		}
 
 		private void CkBreakTest_Unchecked(object sender, RoutedEventArgs e)
 		{
-
+			Expressions.Debugging = false;
 		}
 
 		private void BtnDebugStep_Click(object sender, RoutedEventArgs e)
 		{
 
+		}
+
+		private void BtnDebugRun_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void BtnDebugTest_Click(object sender, RoutedEventArgs e)
+		{
+			ckBreakTest.IsChecked = true;
+			Expressions.Debugging = true;
+			const string script = 
+@"if (Get(_justEnteredWildSurgeRage) == true)
+{
+	Set(_rageDeactivationMessage, """");
+	Set(_justEnteredWildSurgeRage, false);
+	result = GetRoll(BarbarianWildSurge);
+	if (result == 1)
+		TellDm(WildSurgeNecrotic);
+	else if (result == 2)
+	{
+		Set(_rageDeactivationMessage, $""{firstName} can no longer teleport."");
+		TellDm(WildSurgeTeleport);
+	}
+	else if (result == 3)
+	{
+		AddReminder(""All flumph - like spirits explode and each creature within 5 feet of one or more of them must succeed on a * *Dexterity * *saving throw or take 2d8 force damage."", ""end of turn"");
+		TellDm(WildSurgeFlumphs);
+	}
+	else if (result == 4)
+	{
+		Set(_rageDeactivationMessage, $""{firstName}'s AC is back to normal."");
+		TellDm(WildSurgeArcaneShroud);
+	}
+	else if (result == 5)
+	{
+		Set(_rageDeactivationMessage, $""{firstName}'s weapons are back to normal."");
+		TellDm(WildSurgePlantGrowth);
+	}
+	else if (result == 6)
+	{
+		TellDm(WildSurgeReadThoughts);
+		AddReminder($""Creatures whose thoughts were detected by {firstName} no longer have disadvantage against {firstName}."", ""1 round"");
+	}
+	else if (result == 7)
+	{
+		Set(_rageDeactivationMessage, $""{firstName}'s weapons are back to normal."");
+		TellDm(WildSurgeShadowWeapon);
+	}
+	else if (result == 8)
+	{
+		TellDm(WildSurgeRadiantLight);
+		AddReminder($""Blinded creatures from {firstName}'s Wild Surge Radiance can now see"", ""1 round"");
+	}
+}";
+			Expressions.Do(script, ActivePlayer);
 		}
 	}
 
