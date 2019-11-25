@@ -18,7 +18,7 @@ namespace DndCore
 		public bool requiresConcentration;
 		public bool morePowerfulAtHigherLevels;
 		public bool powerComesFromCasterLevel;
-
+		
 		public ActiveSpellData()
 		{
 

@@ -31,12 +31,18 @@ namespace DndCore
 		}
 
 		public static event DndCoreExceptionEventHandler ExceptionThrown;
+		public static event ExecutionPointerChangedHandler ExecutionChanged;
 		public const string STR_Player = "player";
 		public const string STR_Target = "target";
 		public const string STR_CastedSpell = "castedSpell";
 		static List<DndFunction> functions = new List<DndFunction>();
 		static List<DndVariable> variables = new List<DndVariable>();
 		public static List<string> history = new List<string>();
+
+		public static void OnExecutionChanged(object sender, ExecutionPointerChangedEventArgs ea)
+		{
+			ExecutionChanged?.Invoke(sender, ea);
+		}
 
 		public static void OnExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
 		{
@@ -261,21 +267,7 @@ namespace DndCore
 			if (!Debugging)
 				return;
 
-			string thisSection = string.Empty;
-			if (ea.InstructionPointer >= ea.OriginalScript.Length)
-			{
-				System.Diagnostics.Debugger.Break();
-			}
-			else
-				thisSection = ea.OriginalScript.Substring(ea.InstructionPointer);
-			// HACK: It's a serious hack kids, but it's for debugging and it solves 99% of my use case needs.
-			//! So please don't hate too much.
-			if (ea.StackFrames.Count > 0)
-				return;
-			int instructionPointer = ea.OriginalScript.IndexOf(thisSection);
-			//+++ SUPER HACK: Store a previous pointer and search 
-			//+++ starting at that!!! From the amazing and one and only
-			//+++ Rory!!!
+			OnExecutionChanged(sender, ea);
 		}
 
 		public static CastedSpell GetCastedSpell(IDictionary<string, object> variables)

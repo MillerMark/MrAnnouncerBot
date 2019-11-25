@@ -6,9 +6,15 @@
 
 class DragonBackGame extends DragonGame {
 	readonly clockMargin: number = 0;
-	readonly clockOffsetX: number = 49;
-	readonly clockBottomY: number = screenHeight + 8; // 232
-	readonly clockScale: number = 0.84;
+	readonly clockOffsetX: number = -20;
+	//readonly clockWidth: number = 556;
+	readonly clockBottomY: number = screenHeight - 26; // 232
+	readonly clockScale: number = 0.52;
+	readonly panelScale: number = 0.67;
+	readonly panelShiftY: number = 16;
+	readonly panelWidth: number = 391;
+	readonly panelMargin: number = 34;
+	readonly maxPanelWidth: number = (this.panelWidth - this.panelMargin * 2) * this.panelScale;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
@@ -18,8 +24,9 @@ class DragonBackGame extends DragonGame {
 	lightning: Sprites;
 	fireWall: Sprites;
 	dndClock: SpriteProxy;
-	dndClockPanel: SpriteProxy;
+	dndTimeDatePanel: SpriteProxy;
 	dndTimeStr: string;
+	dndDateStr: string;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
 
@@ -49,49 +56,72 @@ class DragonBackGame extends DragonGame {
 
 	exitingCombat() {
 		this.dndClock.frameIndex = 0;
-		this.dndClockPanel.frameIndex = 0;
+		this.dndTimeDatePanel.frameIndex = 0;
 		this.fireWall.sprites = [];
 		this.createFireBallBehindClock(200);
 	}
 
 	enteringCombat() {
 		this.dndClock.frameIndex = 1;
-		this.dndClockPanel.frameIndex = 1;
+		this.dndTimeDatePanel.frameIndex = 1;
 		this.createFireWallBehindClock();
 		this.createFireBallBehindClock(330);
 	}
 
 	private getClockX(): number {
-		return screenWidth - this.clockPanel.originX - this.clockMargin + this.clockOffsetX;
+		return screenWidth - this.clockScale * this.clockPanel.originX - this.clockMargin + this.clockOffsetX;
 	}
 
 	private drawTime(context: CanvasRenderingContext2D) {
 		if (!this.dndTimeStr)
 			return;
 
-		const horizontalMargin: number = 10;
-		const verticalMargin: number = 15;
-		const textHeight: number = 26;
-		context.font = textHeight + "px Baskerville Old Face";
-		let boxWidth: number = context.measureText(this.dndTimeStr).width + 2 * horizontalMargin;
-		let boxHeight: number = textHeight + 2 * verticalMargin;
+		const timeFont: string = 'px Baskerville Old Face';
+		const verticalMargin: number = 10;
+		const timeHeight: number = 32;
+		const dateHeight: number = 24;
+		context.font = timeHeight + timeFont;
+		let timeWidth: number = context.measureText(this.dndTimeStr.trim()).width;
+		let timeHalfWidth: number = timeWidth / 2;
+
 		let centerX: number = this.getClockX();
-		let centerY: number = this.clockBottomY - textHeight / 2 - verticalMargin;
-		//context.fillStyle = "#3b3581";
-		//context.fillRect(centerX - boxWidth / 2, centerY - boxHeight / 2, boxWidth, boxHeight);
+		let centerY: number = this.clockBottomY - timeHeight / 2 - verticalMargin;
+
 		if (this.inCombat)
-			context.fillStyle = "#500506";
+			context.fillStyle = '#500506';
 		else
-			context.fillStyle = "#0b0650";
-		context.textAlign = "center";
-		context.textBaseline = "middle";
-		context.fillText(this.dndTimeStr, centerX, centerY);
+			context.fillStyle = '#0b0650';
+
+		let lastColonPos: number = this.dndTimeStr.lastIndexOf(':');
+		let firstTimePart: string = this.dndTimeStr.substr(0, lastColonPos).trim();
+		let lastTimePart: string = this.dndTimeStr.substr(lastColonPos).trim();
+		let leftX: number = centerX - timeHalfWidth;
+		context.textAlign = 'left';
+		context.textBaseline = 'middle';
+		context.fillText(firstTimePart, leftX, centerY);
+		let firstTimePartWidth: number = context.measureText(firstTimePart).width;
+		context.globalAlpha = 0.75;
+		context.fillText(lastTimePart, leftX + firstTimePartWidth, centerY);
+		context.globalAlpha = 1;
+
+		context.textAlign = 'center';
+		centerY += timeHeight;
+		context.font = dateHeight + timeFont;
+		let dateFontScale: number = 1;
+		let tryFontSize: number = dateHeight * dateFontScale;
+		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6)
+		{
+			dateFontScale *= 0.95;
+			tryFontSize = dateHeight * dateFontScale;
+			context.font = tryFontSize + timeFont;
+		}
+		context.fillText(this.dndDateStr, centerX, centerY);
 	}
 
 	private createFireBallBehindClock(hue: number): any {
 		let x: number;
 		let y: number;
-		x = this.getClockX() - 90;
+		x = this.getClockX() - 90 * this.clockScale;
 		y = this.clockBottomY - this.clockPanel.originY;
 		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
 		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
@@ -100,8 +130,8 @@ class DragonBackGame extends DragonGame {
 	}
 
 	private createFireWallBehindClock() {
-		const displayMargin: number = 18;
-		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.clockPanel.originY * 2 + displayMargin);
+		const displayMargin: number = -10;
+		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.panelScale * this.clockPanel.originY + displayMargin);
 		fireWall.scale = 0.6 * this.clockScale;
 		fireWall.opacity = 0.8;
 		fireWall.fadeOutTime = 400;
@@ -120,7 +150,9 @@ class DragonBackGame extends DragonGame {
 	updateClock(clockData: string): void {
 		let dto: any = JSON.parse(clockData);
 		this.inCombat = dto.InCombat;
-		this.dndTimeStr = dto.Time;
+		let timeStrs: string[] = dto.Time.split(',');
+		this.dndTimeStr = timeStrs[0];
+		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
 		let fullSpins: number = dto.FullSpins;
 		let afterSpinMp3: string = dto.AfterSpinMp3;
 
@@ -280,13 +312,12 @@ class DragonBackGame extends DragonGame {
 
 		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
 		this.clockPanel.name = 'ClockPanel';
-		this.clockPanel.originX = 278;
-		this.clockPanel.originY = 37;
+		this.clockPanel.originX = 196;
+		this.clockPanel.originY = 67;
 
 		let clockX: number = this.getClockX();
 		let clockY: number = this.clockBottomY - 30;
-
-		this.dndClockPanel = this.clockPanel.add(clockX, clockY).setScale(this.clockScale);
+		this.dndTimeDatePanel = this.clockPanel.add(clockX, this.panelShiftY + clockY).setScale(this.panelScale);
 
 		this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
 		this.clock.name = 'Clock';
@@ -395,7 +426,7 @@ class DragonBackGame extends DragonGame {
 	}
 
 	buildSmoke() {
-		this.emitter = new Emitter(new Vector(screenCenterX + 90, screenCenterY + 160));
+		this.emitter = new Emitter(new Vector(screenCenterX + 280, screenCenterY + 160));
 		this.emitter.radius = 66;
 		this.emitter.saturation.target = 0;
 		this.emitter.brightness.target = 0.8;

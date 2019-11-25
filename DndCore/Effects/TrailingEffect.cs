@@ -7,7 +7,10 @@ namespace DndCore
 	{
 		public TrailingEffect()
 		{
-
+			Opacity = 1;
+			Scale = 1;
+			Brightness = 100;
+			Saturation = 100;
 		}
 
 		public int LeftRightDistanceBetweenPrints { get; set; }
@@ -22,10 +25,6 @@ namespace DndCore
 		public double PlusMinusSoundInterval { get; set; }
 
 		
-		// TODO: Remove TrailingSpriteType and work with strings.
-		public TrailingSpriteType Type { get; set; }
-
-
 		public string Name { get; set; }
 		public string EffectType { get; set; }
 		public int StartIndex { get; set; }

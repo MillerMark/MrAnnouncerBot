@@ -520,7 +520,7 @@ class DroneGame extends GamePlusQuiz {
 		}
 
 		if (testCommand === 'smoke') {
-			this.sparkSmoke.add(screenCenterX, screenCenterY);
+			this.sparkSmoke.add(screenCenterX + 280, screenCenterY + 160);
 			return true;
 		}
 

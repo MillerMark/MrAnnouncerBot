@@ -332,7 +332,7 @@ namespace DndCore
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
-			player.CompleteCast();
+			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			if (castingSpells.IndexOf(castedSpell) >= 0)
 				castingSpells.Remove(castedSpell);
@@ -629,6 +629,13 @@ namespace DndCore
 			{
 				player.PrepareForSerialization();
 			}
+		}
+		public bool PlayerIsCastingSpell(CastedSpell castedSpell, int playerId)
+		{
+			if (castedSpell == null)
+				return false;
+			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(castedSpell.Spell, playerId));
+			return alarm != null;
 		}
 	}
 }

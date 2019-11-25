@@ -390,7 +390,7 @@ class DragonFrontGame extends DragonGame {
 	}
 
 	testBloodEmitter(): void {
-		this.emitter = new Emitter(new Vector(450, 1080));
+		this.emitter = new Emitter(new Vector(screenCenterX + 280, 1080));
 		this.emitter.radius = 1;
 		this.emitter.saturation.target = 0.9;
 		this.emitter.saturation.relativeVariance = 0.2;
@@ -840,6 +840,14 @@ class DragonFrontGame extends DragonGame {
 		context.fillStyle = '#ffffff';
 		context.font = '31px Blackadder ITC';
 
+		let playerName: string = player.name;
+
+		if (this.inCombat) {
+			let spaceIndex: number = playerName.indexOf(' ');
+			if (spaceIndex > 0)
+				playerName = playerName.substr(0, spaceIndex).trim();
+		}
+
 		let sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
 
 		const nameplateMaxWidth: number = 358;
@@ -862,7 +870,7 @@ class DragonFrontGame extends DragonGame {
 
 		let hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
 		let hpWidth: number = context.measureText(hpStr).width;
-		let nameWidth: number = context.measureText(player.name).width;
+		let nameWidth: number = context.measureText(playerName).width;
 		let nameHpMargin: number = 25;
 		let additionalWidth: number = hpWidth + nameHpMargin;
 		if (hidingHitPoints) {
@@ -905,7 +913,7 @@ class DragonFrontGame extends DragonGame {
 			(context as any).filter = saveFilter;
 		}
 
-		context.fillText(player.name, nameCenter, DragonFrontGame.nameCenterY);
+		context.fillText(playerName, nameCenter, DragonFrontGame.nameCenterY);
 		if (!hidingHitPoints) {
 			context.fillText(hpStr, hpCenter, DragonFrontGame.nameCenterY);
 		}

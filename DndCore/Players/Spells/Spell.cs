@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
+	[HasDndEvents]
 	public class Spell
 	{
 		public int Range { get; set; }
@@ -44,10 +45,15 @@ namespace DndCore
 		public string OriginalDieStr { get; set; }
 		public string BonusPerLevel { get; set; }
 		public double PerLevelBonus { get; set; }
+		[DndEvent]
 		public string OnCast { get; set; }
+		[DndEvent]
 		public string OnCasting { get; set; }
+		[DndEvent]
 		public string OnPlayerAttacks { get; set; }
+		[DndEvent]
 		public string OnPlayerHitsTarget { get; set; }
+		[DndEvent]
 		public string OnDispel { get; set; }
 		public string AvailableWhen { get; set; }
 

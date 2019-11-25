@@ -24,7 +24,8 @@ enum DiceRollType {
 	WildMagicD20Check,
 	InspirationOnly,
 	AddOnDice,
-	NonCombatInitiative
+	NonCombatInitiative,
+	HPCapacity
 }
 
 enum SpriteType {
@@ -43,7 +44,6 @@ class TrailingEffect {
 		this.MinForwardDistanceBetweenPrints = dto.MinForwardDistanceBetweenPrints;
 		this.LeftRightDistanceBetweenPrints = dto.LeftRightDistanceBetweenPrints;
 		this.Index = dto.Index;
-		this.Type = dto.Type;
 		this.OnPrintPlaySound = dto.OnPrintPlaySound;
 		this.MedianSoundInterval = dto.MedianSoundInterval;
 		this.PlusMinusSoundInterval = dto.PlusMinusSoundInterval;
@@ -76,7 +76,6 @@ class TrailingEffect {
 	MinForwardDistanceBetweenPrints: number;
 	LeftRightDistanceBetweenPrints: number;
 	Index: number;
-	Type: SpriteType;
 	OnPrintPlaySound: string;
 	MedianSoundInterval: number;
 	PlusMinusSoundInterval: number;
@@ -557,6 +556,18 @@ class DiceLayer {
 		this.addTopDieCloud(die, 5, Random.between(20, 45), 0.4, 0, 0, 0);
 
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
+	}
+
+	attachLabel(die: any, label: string, backgroundColor: string, textColor: string): void {
+		label = label.trim();
+		if (label.startsWith('"') && label.endsWith('"'))  // Remove quotes.
+			label = label.substr(1, label.length - 2);
+		let textEffect: TextEffect = this.animations.addText(new Vector(960, 540), label);
+		textEffect.fontSize = 30;
+		textEffect.offsetY = 80;
+		textEffect.fontColor = textColor;
+		textEffect.outlineColor = backgroundColor;
+		die.attachedLabels.push(textEffect);
 	}
 
 	attachDamageCold(die: any): void {

@@ -25,7 +25,8 @@ namespace DndCore
 		WildMagicD20Check,
 		InspirationOnly,
 		AddOnDice,
-		NonCombatInitiative
+		NonCombatInitiative,
+		HPCapacity
 	}
 
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
+	[HasDndEvents]
 	public class Feature
 	{
 		public static event FeatureEventHandler FeatureActivated;
@@ -32,12 +33,19 @@ namespace DndCore
 		public bool IsActive { get; private set; }
 		public string Limit { get; set; }  // Could be an expression.
 		public string Name { get; set; }
+		[DndEvent]
 		public string OnActivate { get; set; }
+		[DndEvent]
 		public string OnDeactivate { get; set; }
+		[DndEvent]
 		public string OnPlayerCastsSpell { get; set; }
+		[DndEvent]
 		public string OnPlayerSwingsWeapon { get; set; }
+		[DndEvent]
 		public string OnPlayerStartsTurn { get; set; }
+		[DndEvent]
 		public string OnPlayerSaves { get; set; }
+		[DndEvent]
 		public string OnRollComplete { get; set; }
 		public DndTimeSpan Per { get; set; }
 		public bool RequiresPlayerActivation { get; set; }

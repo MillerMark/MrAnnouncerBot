@@ -128,6 +128,8 @@ class TextEffect extends ScalableAnimation {
 	textBaseline: string = 'middle';
 	outlineThickness: number;
 	fontSize: number;
+	offsetX: number = 0;
+	offsetY: number = 0;
 	connectedShapes: Array<ScalableAnimation> = [];
 
 	constructor(x: number, y: number, lifeSpanMs: number = -1) {
@@ -155,8 +157,9 @@ class TextEffect extends ScalableAnimation {
 		context.strokeStyle = this.outlineColor;
 		context.lineWidth = this.outlineThickness * thisScale;
 		context.lineJoin = "round";
-		context.strokeText(this.text, this.x, this.y);
-		context.fillText(this.text, this.x, this.y);
+		context.strokeText(this.text, this.x + this.offsetX, this.y + this.offsetY);
+		context.fillText(this.text, this.x + this.offsetX, this.y + this.offsetY);
+
 		if (this.connectedShapes.length > 0) {
 			let width: number = context.measureText(this.text).width;
 			let height: number = scaledFontSize;

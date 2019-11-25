@@ -26,6 +26,7 @@
 	emphasisSprites: Sprites;
 	concentrationIcons: Sprites;
 	spinningConcentrationIcons: Sprites;
+	spellItemIcons: Sprites;
 	morePowerIcons: Sprites;
 	emphasisIndices: Array<number> = [];
 	emitterIndices: Array<string> = [];
@@ -59,6 +60,7 @@
 	morePowerIcon: SpriteProxy;
 	concentrationIcon: SpriteProxy;
 	spinningConcentrationIcon: SpriteProxy;
+	spellItemIcon: SpriteProxy;
 	spellIconYOffset: number = 0;
 
 	constructor() {
@@ -686,6 +688,10 @@
 		this.spinningConcentrationIcons.originY = 8;
 		this.spinningConcentrationIcon.initialRotation = 0;
 
+		this.spellItemIcons = new Sprites("Scroll/Spells/Concentration/MiniWand", 1, 0, AnimationStyle.Static);
+		this.spellItemIcon = this.spellItemIcons.add(0, 0, 0);
+		this.spellItemIcon.opacity = 0.6;
+
 		this.scrollRolls = new Sprites("Scroll/Open/ScrollOpen", 23, this.framerateMs, AnimationStyle.SequentialStop, true);
 		this.scrollPoofBack = new Sprites("Scroll/Close/ScrollPoof", 44, this.framerateMs, AnimationStyle.Sequential, true);
 		this.scrollPoofFront = new Sprites("Scroll/Close/ScrollFire", 63, this.framerateMs, AnimationStyle.Sequential, true);
@@ -758,7 +764,16 @@
 			this.rightMostTextX = spellNameRight;
 		}
 
-		if (spellDataItem.IsConcentratingNow) {
+		
+		if (spellDataItem.FromChargedItem) {
+			spellNameRight += CharacterStatsScroll.iconIndent;
+			this.spellItemIcon.x = spellNameRight;
+			spellNameRight += this.spellItemIcons.spriteWidth * this.spinningConcentrationIcon.scale;
+			this.spellItemIcon.y = saveTop + this.spellIconYOffset;
+			if (itemIsOnScreen)
+				this.spellItemIcons.draw(context, now * 1000);
+		}
+		else if (spellDataItem.IsConcentratingNow) {
 			spellNameRight += CharacterStatsScroll.iconIndent;
 			this.spinningConcentrationIcon.x = spellNameRight;
 			spellNameRight += this.spinningConcentrationIcons.spriteWidth * this.spinningConcentrationIcon.scale;

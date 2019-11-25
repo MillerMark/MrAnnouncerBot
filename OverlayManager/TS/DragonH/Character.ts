@@ -9,6 +9,7 @@ class SpellDataItem {
 	public RequiresConcentration: boolean;
 	public MorePowerfulAtHigherLevels: boolean;
 	public IsConcentratingNow: boolean;
+	public FromChargedItem: boolean;
 	constructor() {
 		
 	}
@@ -18,6 +19,7 @@ class SpellDataItem {
 		result.RequiresConcentration = spellDataItemDto.RequiresConcentration;
 		result.MorePowerfulAtHigherLevels = spellDataItemDto.MorePowerfulAtHigherLevels;
 		result.IsConcentratingNow = spellDataItemDto.IsConcentratingNow;
+		result.FromChargedItem = spellDataItemDto.FromChargedItem;
 		return result;
 	}
 }

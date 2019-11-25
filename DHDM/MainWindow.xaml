@@ -10,6 +10,44 @@
 		xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
 		Title="MainWindow" Height="938.188" Width="2000.227" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
 	<Window.Resources>
+		<Style TargetType="{x:Type CheckBox}" x:Key="Breakpoint">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type CheckBox}">
+						<Grid x:Name="grdBoxes" Height="18" Width="22" Margin="0,1,0,1">
+							<Ellipse Fill="White" Stroke="#FFD4CBCB" Width="12" Height="12" ></Ellipse>
+							<Ellipse x:Name="checkBoxFill" Fill="#FFC42F30" Width="10" Height="10" ></Ellipse>
+							<ContentPresenter VerticalAlignment="Center" />
+						</Grid>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsChecked" Value="False">
+								<Setter TargetName="checkBoxFill" Property="Visibility" Value="Hidden" />
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style TargetType="{x:Type CheckBox}" x:Key="MismatchedBreakpoint">
+			<Setter Property="IsEnabled" Value="False"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type CheckBox}">
+						<Grid x:Name="grdBoxes" Height="18" Width="22" Margin="0,1,0,1">
+							<Ellipse Fill="White" Stroke="#FFD4CBCB" Width="12" Height="12" ></Ellipse>
+							<Ellipse x:Name="checkBoxFill" Fill="#FF828282" Width="10" Height="10" ></Ellipse>
+							<ContentPresenter VerticalAlignment="Center" />
+						</Grid>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsChecked" Value="False">
+								<Setter TargetName="checkBoxFill" Property="Visibility" Value="Hidden" />
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<local:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter"/>
 		<Style TargetType="{x:Type RadioButton}" x:Key="VantageStyle"  >
 			<Setter Property="Template">
 				<Setter.Value>
@@ -51,7 +89,7 @@
 			</Setter>
 		</Style>
 	</Window.Resources>
-	
+
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*" />
@@ -93,7 +131,7 @@
 				Initialize Player Data
 			</Button>
 		</StackPanel>
-		
+
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 		<StackPanel x:Name="spTimeManagement" Grid.Column="2" Orientation="Vertical" >
 			<StackPanel x:Name="spTime" Orientation="Vertical">
@@ -179,7 +217,7 @@
 					</Button>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="984" SelectionChanged="TabControl_SelectionChanged">
+			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Play" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
 						<WrapPanel x:Name="wpActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
@@ -219,21 +257,21 @@
 							</StackPanel>
 						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
-							<TextBlock Text="Group Inspiration: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0"/>
-							<TextBox x:Name="tbxInspiration" MinWidth="120" TextChanged="TbxDamageDice_TextChanged">
-								
+							<StackPanel x:Name="spHiddenThreshold" Orientation="Horizontal" Margin="0, 0, 0, 8">
+								<TextBlock Text="Hidden Threshold: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+								<TextBox x:Name="tbxHiddenThreshold" MinWidth="50" FontSize="22">
+									12
+								</TextBox>
+							</StackPanel>
+							<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked" VerticalAlignment="Center" Margin="20, 0, 0, 0">
+								Uses Magic
+							</CheckBox>
+							<TextBlock Text="Group Inspiration: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0" VerticalAlignment="Center"/>
+							<TextBox x:Name="tbxInspiration" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" VerticalAlignment="Center">
+
 							</TextBox>
 						</StackPanel>
 						<StackPanel x:Name="spModifier" Orientation="Horizontal" Margin="0, 0, 0, 8" MinHeight="30" >
-							<Button x:Name="btnModifierNeg3" Tag="-3" MinWidth="30" Click="BtnModifier_Click">
-								-3
-							</Button>
-							<Button x:Name="btnModifierNeg2" Tag="-2" MinWidth="30" Click="BtnModifier_Click">
-								-2
-							</Button>
-							<Button x:Name="btnModifierNeg1" Tag="-1" MinWidth="30" Click="BtnModifier_Click">
-								-1
-							</Button>
 							<TextBlock Text="Modifier: " Width="Auto" Height="Auto" VerticalAlignment="Center" Margin="10, 0, 0, 0" FontSize="22" Foreground="SlateGray"/>
 							<TextBox x:Name="tbxModifier" MinWidth="40" VerticalAlignment="Center" Margin="0, 0, 10, 0" FontSize="22" TextChanged="TbxModifier_TextChanged">
 								0
@@ -277,143 +315,200 @@
 							<Button x:Name="btnModifier12" Tag="+12" MinWidth="30" Click="BtnModifier_Click">
 								+12
 							</Button>
-							
+
 						</StackPanel>
-						<StackPanel x:Name="spHiddenThreshold" Orientation="Horizontal" Margin="0, 0, 0, 8">
-							<TextBlock Text="Hidden Threshold: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
-							<TextBox x:Name="tbxHiddenThreshold" MinWidth="50" FontSize="22">
-								12
-							</TextBox>
-							<Button x:Name="btnHiddenThreshold8" Tag="8" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								8
-							</Button>
-							<Button x:Name="btnHiddenThreshold9" Tag="9" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								9
-							</Button>
-							<Button x:Name="btnHiddenThreshold10" Tag="10" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								10
-							</Button>
-							<Button x:Name="btnHiddenThreshold11" Tag="11" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								11
-							</Button>
-							<Button x:Name="btnHiddenThreshold12" Tag="12" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								12
-							</Button>
-							<Button x:Name="btnHiddenThreshold13" Tag="13" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								13
-							</Button>
-							<Button x:Name="btnHiddenThreshold14" Tag="14" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								14
-							</Button>
-							<Button x:Name="btnHiddenThreshold15" Tag="15" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								15
-							</Button>
-							<Button x:Name="btnHiddenThreshold16" Tag="16" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								16
-							</Button>
-							<Button x:Name="btnHiddenThreshold17" Tag="17" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								17
-							</Button>
-							<Button x:Name="btnHiddenThreshold18" Tag="18" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								18
-							</Button>
-							<Button x:Name="btnHiddenThreshold19" Tag="19" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								19
-							</Button>
-							<Button x:Name="btnHiddenThreshold20" Tag="20" MinWidth="30" Click="BtnHiddenThreshold_Click">
-								20
-							</Button>
-							
-							
-						</StackPanel>
-						<CheckBox x:Name="ckbUseMagic" Checked="CkbUseMagic_Checked" Unchecked="CkbUseMagic_Checked">
-							Use Magic
-						</CheckBox>
-						<StackPanel x:Name="spSkillChecks" Orientation="Horizontal" Margin="0, 8, 0, 0">
-							<StackPanel Margin="0, 0, 20, 0">
-								<Button x:Name="btnSkillCheck" Margin="0,0,0,4" Padding="8" MinWidth="100" Click="BtnSkillCheck_Click" >
-									Skill Check
-								</Button>
-								<StackPanel Orientation="Horizontal">
-									<TextBlock Text="on: " Width="Auto" Height="Auto" Margin="3,0,0,0" Foreground="Gray" VerticalAlignment="Center" />
-									<!--
-								ItemsSource="{Binding Source={dh:EnumBindingSource {x:Type dndCore:Skills}}}" 
-								-->
-									<ComboBox x:Name="cbSkillFilter" MaxHeight="22" MinWidth="150" 
-								Margin="0" SelectionChanged="CbSkillFilter_SelectionChanged">
-										<ComboBoxItem>Acrobatics</ComboBoxItem>
-										<ComboBoxItem>Animal Handling</ComboBoxItem>
-										<ComboBoxItem>Arcana</ComboBoxItem>
-										<ComboBoxItem>Athletics</ComboBoxItem>
-										<ComboBoxItem>Deception</ComboBoxItem>
-										<ComboBoxItem>History</ComboBoxItem>
-										<ComboBoxItem>Insight</ComboBoxItem>
-										<ComboBoxItem>Intimidation</ComboBoxItem>
-										<ComboBoxItem>Investigation</ComboBoxItem>
-										<ComboBoxItem>Medicine</ComboBoxItem>
-										<ComboBoxItem>Nature</ComboBoxItem>
-										<ComboBoxItem>Perception</ComboBoxItem>
-										<ComboBoxItem>Performance</ComboBoxItem>
-										<ComboBoxItem>Persuasion</ComboBoxItem>
-										<ComboBoxItem>Religion</ComboBoxItem>
-										<ComboBoxItem>Sleight of Hand</ComboBoxItem>
-										<ComboBoxItem>Stealth</ComboBoxItem>
-										<ComboBoxItem>Survival</ComboBoxItem>
-										<ComboBoxItem>-</ComboBoxItem>
-										<ComboBoxItem>Strength</ComboBoxItem>
-										<ComboBoxItem>Dexterity</ComboBoxItem>
-										<ComboBoxItem>Constitution</ComboBoxItem>
-										<ComboBoxItem>Intelligence</ComboBoxItem>
-										<ComboBoxItem>Wisdom</ComboBoxItem>
-										<ComboBoxItem>Charisma</ComboBoxItem>
-									</ComboBox>
+						<StackPanel x:Name="spRollTypes" Orientation="Horizontal" Margin="0, 8, 0, 0">
+							<StackPanel>
+								<StackPanel>
+									<StackPanel Orientation="Horizontal" MinHeight="25" >
+										<RadioButton x:Name="rbAttack" Checked="RbAttack_Checked" GroupName="DieRollTypes" Margin="0, 3, 0, 0" >
+											Attack
+										</RadioButton>
+										<RadioButton x:Name="rbDamageOnly" Checked="RbDamageOnly_Checked" GroupName="DieRollTypes" Margin="8, 3, 0, 0" >
+											Damage
+										</RadioButton>
+										<RadioButton x:Name="rbHealth" Checked="RbHealth_Checked" GroupName="DieRollTypes" Margin="8, 3, 0, 0" >
+											Health
+										</RadioButton>
+										<RadioButton x:Name="rbHitPointCapacity" Checked="RbHitPointCapacity_Checked" GroupName="DieRollTypes" Margin="8, 3, 0, 0" >
+											Hit Point Capacity
+										</RadioButton>
+										<RadioButton x:Name="rbExtra" Checked="RbExtra_Checked" GroupName="DieRollTypes" Margin="8, 3, 0, 0" >
+											Extra
+										</RadioButton>
+									</StackPanel>
+									<StackPanel Orientation="Horizontal">
+										<StackPanel Orientation="Vertical">
+											<StackPanel Orientation="Horizontal">
+												<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto" Margin="12, 2, 0, 0">
+													<TextBlock.ContextMenu>
+														<ContextMenu>
+															<MenuItem Header="Test All Damage" Click="DamageContextTestAllMenuItem_Click"></MenuItem>
+														</ContextMenu>
+													</TextBlock.ContextMenu>
+												</TextBlock>
+												<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
+													2d8+6
+												</TextBox>
+												<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray" Margin="4, 0, 0, 0"/>
+												<TextBlock Text="Damage Type: " Width="Auto" Height="Auto" Margin="18, 2, 0, 0"/>
+												<ComboBox x:Name="cbDamage" MaxHeight="22" MinWidth="150" 
+													Margin="4,0,0,0" SelectionChanged="CbDamage_SelectionChanged" SelectedIndex="0">
+													<ComboBoxItem>None</ComboBoxItem>
+													<ComboBoxItem>Acid</ComboBoxItem>
+													<ComboBoxItem>Bludgeoning</ComboBoxItem>
+													<ComboBoxItem>Cold</ComboBoxItem>
+													<ComboBoxItem>Fire</ComboBoxItem>
+													<ComboBoxItem>Force</ComboBoxItem>
+													<ComboBoxItem>Lightning</ComboBoxItem>
+													<ComboBoxItem>Necrotic</ComboBoxItem>
+													<ComboBoxItem>Piercing</ComboBoxItem>
+													<ComboBoxItem>Poison</ComboBoxItem>
+													<ComboBoxItem>Psychic</ComboBoxItem>
+													<ComboBoxItem>Radiant</ComboBoxItem>
+													<ComboBoxItem>Slashing</ComboBoxItem>
+													<ComboBoxItem>Thunder</ComboBoxItem>
+												</ComboBox>
+												<TextBlock Text="MinDamage:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
+												<TextBox x:Name="tbxMinDamage" MinWidth="50" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+													0
+												</TextBox>
+											</StackPanel>
+											<StackPanel Orientation="Horizontal" Margin="0, 7, 0, 0">
+												<TextBlock Text="Additional Dice on Hit:" Width="Auto" Height="Auto" Margin="12, 2, 0, 0"/>
+												<TextBox x:Name="tbxAddDiceOnHit" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+
+												</TextBox>
+												<TextBlock Text="Message:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
+												<TextBox x:Name="tbxMessageAddDiceOnHit" MinWidth="280" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
+
+												</TextBox>
+											</StackPanel>
+										</StackPanel>
+									</StackPanel>
+
 								</StackPanel>
-							</StackPanel>
-							<StackPanel Margin="0, 0, 20, 0">
-								<Button x:Name="btnSavingThrow" Margin="0,0,0,4" Padding="8" MinWidth="100" Click="BtnSavingThrow_Click" >
-									Saving Throw
-								</Button>
-								<StackPanel Orientation="Horizontal">
-									<TextBlock Text="for: " Width="Auto" Height="Auto" Margin="3,0,0,0" Foreground="Gray" VerticalAlignment="Center" />
-									<ComboBox x:Name="cbAbility" MaxHeight="22" MinWidth="150" 
-								Margin="0" SelectionChanged="CbAbility_SelectionChanged">
-										<ComboBoxItem>Strength</ComboBoxItem>
-										<ComboBoxItem>Dexterity</ComboBoxItem>
-										<ComboBoxItem>Constitution</ComboBoxItem>
-										<ComboBoxItem>Intelligence</ComboBoxItem>
-										<ComboBoxItem>Wisdom</ComboBoxItem>
-										<ComboBoxItem>Charisma</ComboBoxItem>
-									</ComboBox>
+								<StackPanel Orientation="Horizontal" Margin="0, 20, 0, 0">
+									<StackPanel Margin="0, 0, 20, 0">
+										<StackPanel Orientation="Horizontal" MinHeight="22">
+											<RadioButton x:Name="rbSkillCheck" GroupName="DieRollTypes" Checked="RbSkillCheck_Checked" VerticalAlignment="Center">
+												Skill Check:
+											</RadioButton>
+											<ComboBox x:Name="cbSkillFilter" Margin="10, 0, 0, 0" MaxHeight="22" MinWidth="150" VerticalAlignment="Center"
+												SelectionChanged="CbSkillFilter_SelectionChanged">
+												<ComboBoxItem>Acrobatics</ComboBoxItem>
+												<ComboBoxItem>Animal Handling</ComboBoxItem>
+												<ComboBoxItem>Arcana</ComboBoxItem>
+												<ComboBoxItem>Athletics</ComboBoxItem>
+												<ComboBoxItem>Deception</ComboBoxItem>
+												<ComboBoxItem>History</ComboBoxItem>
+												<ComboBoxItem>Insight</ComboBoxItem>
+												<ComboBoxItem>Intimidation</ComboBoxItem>
+												<ComboBoxItem>Investigation</ComboBoxItem>
+												<ComboBoxItem>Medicine</ComboBoxItem>
+												<ComboBoxItem>Nature</ComboBoxItem>
+												<ComboBoxItem>Perception</ComboBoxItem>
+												<ComboBoxItem>Performance</ComboBoxItem>
+												<ComboBoxItem>Persuasion</ComboBoxItem>
+												<ComboBoxItem>Religion</ComboBoxItem>
+												<ComboBoxItem>Sleight of Hand</ComboBoxItem>
+												<ComboBoxItem>Stealth</ComboBoxItem>
+												<ComboBoxItem>Survival</ComboBoxItem>
+												<ComboBoxItem>-</ComboBoxItem>
+												<ComboBoxItem>Strength</ComboBoxItem>
+												<ComboBoxItem>Dexterity</ComboBoxItem>
+												<ComboBoxItem>Constitution</ComboBoxItem>
+												<ComboBoxItem>Intelligence</ComboBoxItem>
+												<ComboBoxItem>Wisdom</ComboBoxItem>
+												<ComboBoxItem>Charisma</ComboBoxItem>
+											</ComboBox>
+										</StackPanel>
+										<RadioButton x:Name="rbFlatD20" MinHeight="22" Checked="RbFlatD20_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >
+											Flat d20
+										</RadioButton>
+										<StackPanel Orientation="Horizontal" Margin="0, -4, 0, 0">
+											<RadioButton x:Name="rbSavingThrow" VerticalAlignment="Center" Click="RbSavingThrow_Click" GroupName="DieRollTypes" >
+												Saving Throw:
+											</RadioButton>
+											<ComboBox x:Name="cbAbility" MaxHeight="22" MinWidth="150" 
+												Margin="10,0,0,0" SelectionChanged="CbAbility_SelectionChanged" VerticalAlignment="Center">
+												<ComboBoxItem>Strength</ComboBoxItem>
+												<ComboBoxItem>Dexterity</ComboBoxItem>
+												<ComboBoxItem>Constitution</ComboBoxItem>
+												<ComboBoxItem>Intelligence</ComboBoxItem>
+												<ComboBoxItem>Wisdom</ComboBoxItem>
+												<ComboBoxItem>Charisma</ComboBoxItem>
+											</ComboBox>
+										</StackPanel>
+										<RadioButton x:Name="rbDeathSavingThrow" MinHeight="22" Checked="RbDeathSavingThrow_Checked" GroupName="DieRollTypes" Margin="0,4,0,0" >
+											Death Saving Throw
+										</RadioButton>
+										<RadioButton x:Name="rbPercentageRoll" MinHeight="22" Checked="RbPercentageRoll_Checked" GroupName="DieRollTypes" Margin="0, 0, 0, 0">
+											Percentage Roll
+										</RadioButton>
+										<StackPanel Orientation="Horizontal">
+											<RadioButton x:Name="rbInspirationOnly" MinHeight="22" Checked="RbInspirationOnly_Checked" GroupName="DieRollTypes" Margin="0, 0, 0, 0" >
+												Inspiration Only
+											</RadioButton>
+											<RadioButton x:Name="rbInitiative" MinHeight="22" Checked="RbInitiative_Checked" GroupName="DieRollTypes" Margin="20, 0, 0, 0" >
+												Initiative
+											</RadioButton>
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<RadioButton x:Name="rbWildMagicD20Check" MinHeight="22" Checked="RbWildMagicD20Check_Checked" GroupName="DieRollTypes" Margin="0, 0, 0, 0">
+												Wild Magic Check (D20)
+											</RadioButton>
+											<RadioButton x:Name="rbWildMagic" MinHeight="22" Checked="RbWildMagic_Checked" GroupName="DieRollTypes" Margin="20, 0, 0, 0">
+												Wild Magic
+											</RadioButton>
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<RadioButton x:Name="rbBendLuckAdd" MinHeight="22" Checked="RbBendLuckAdd_Checked" GroupName="DieRollTypes" Margin="0, 0, 0, 0">
+												Bend Luck (+)
+											</RadioButton>
+											<RadioButton x:Name="rbBendLuckSubtract" MinHeight="22" Checked="RbBendLuckSubtract_Checked" GroupName="DieRollTypes" Margin="8, 0, 0, 0">
+												Bend Luck (-)
+											</RadioButton>
+										</StackPanel>
+										<StackPanel Orientation="Horizontal">
+											<RadioButton x:Name="rbLuckRollHigh" MinHeight="22" Checked="RbLuckRollHigh_Checked" GroupName="DieRollTypes" Margin="0, 0, 0, 0">
+												Luck Roll High
+											</RadioButton>
+											<RadioButton x:Name="rbLuckRollLow" MinHeight="22" Checked="RbLuckRollLow_Checked" GroupName="DieRollTypes" Margin="8, 0, 0, 0">
+												Luck Roll Low
+											</RadioButton>
+										</StackPanel>
+									</StackPanel>
+									<StackPanel x:Name="spGroupIndividualOptions" Orientation="Vertical" Margin="0, 0, 0, 0">
+										<StackPanel x:Name="spGroupActivePlayer" Margin="15, 6, 0, 0" Orientation="Horizontal">
+											<RadioButton x:Name="rbActivePlayer" IsChecked="True" Checked="RbActivePlayer_Checked">
+												Active Player
+											</RadioButton>
+											<RadioButton x:Name="rbEveryone" Checked="RbEveryone_Checked" Margin="20, 0, 0, 0">
+												Everyone
+											</RadioButton>
+											<RadioButton x:Name="rbIndividuals" Checked="RbIndividuals_Checked" Margin="20, 0, 0, 0">
+												Individuals
+											</RadioButton>
+										</StackPanel>
+										<Grid x:Name="grdPlayerRollOptions" Height="Auto" Width="Auto" Margin="14, 10, 0, 0">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="Auto"/>
+											</Grid.ColumnDefinitions>
+										</Grid>
+									</StackPanel>
 								</StackPanel>
+								<StackPanel Orientation="Horizontal">
+									<Button x:Name="btnRollDice" Click="BtnRollDice_Click" MinHeight="60" Padding="20, 0, 20, 0" MaxWidth="350"  FontSize="33" HorizontalAlignment="Left" >
+										Roll Dice
+									</Button>
+								</StackPanel>
+
 							</StackPanel>
-							<Button x:Name="btnFlatD20" Margin="0,0,0,0" Padding="8" MinWidth="100" MaxHeight="45" Click="BtnFlatD20_Click" >
-								Flat D20
-							</Button>
-							<Button x:Name="btnWildMagicD20Check" Margin="20,0,0,0" Padding="8" MinWidth="100" MaxHeight="45" Click="BtnWildMagicD20Check_Click" >
-								Wild Magic D20 Check
-							</Button>
 						</StackPanel>
-						<StackPanel x:Name="spGroupIndividualOptions" Orientation="Horizontal" Margin="0, 10, 0, 0">
-							<StackPanel x:Name="spGroupActivePlayer" Margin="15, 0, 0, 0">
-								<RadioButton x:Name="rbActivePlayer" IsChecked="True" Checked="RbActivePlayer_Checked">
-									Active Player
-								</RadioButton>
-								<RadioButton x:Name="rbEveryone" Checked="RbEveryone_Checked">
-									Everyone
-								</RadioButton>
-								<RadioButton x:Name="rbIndividuals" Checked="RbIndividuals_Checked">
-									Individuals
-								</RadioButton>
-							</StackPanel>
-							<Grid x:Name="grdPlayerRollOptions" Height="Auto" Width="Auto" Margin="14, 0, 0, 0">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto"/>
-									<ColumnDefinition Width="Auto"/>
-									<ColumnDefinition Width="Auto"/>
-								</Grid.ColumnDefinitions>
-							</Grid>
-						</StackPanel>
-						<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" Visibility="Collapsed" >
+						<!--<StackPanel x:Name="spRollButtons" Orientation="Horizontal" Margin="0,8" Visibility="Collapsed" >
 							<TextBlock Text="Roll: " Width="Auto" Height="Auto" VerticalAlignment="Center" FontSize="33" Foreground="SlateGray"/>
 							<RadioButton x:Name="rbTestNormalDieRoll"  Style="{StaticResource VantageStyle}" IsChecked="True" MinWidth="85" Margin="0, 0, 30, 0">
 								Normal
@@ -424,68 +519,7 @@
 							<RadioButton x:Name="rbTestDisadvantageDieRoll" Style="{StaticResource VantageStyle}" MinWidth="85" Background="#FF850000" Foreground="White" Margin="0, 0, 30, 0">
 								Disadvantage
 							</RadioButton>
-						</StackPanel>
-						<StackPanel x:Name="spRollNowButtons" Orientation="Horizontal">
-							<Button x:Name="btnAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnAttack_Click" >
-								Attack
-							</Button>
-							<Button x:Name="btnDeathSavingThrow" Margin="8" Padding="8" Click="BtnDeathSavingThrow_Click" >
-								Death Saving Throw
-							</Button>
-							<Button x:Name="btnInspirationOnly" Margin="8" Padding="8" Click="BtnInspirationOnly_Click" >
-								Inspiration Only
-							</Button>	
-						</StackPanel>
-						<StackPanel x:Name="StackPanel1" Orientation="Horizontal">
-							<TextBlock Text="Damage/Health/Extra Dice: " Width="Auto" Height="Auto" Margin="0, 2, 0, 0"/>
-							<TextBox x:Name="tbxDamageDice" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="0, 1, 0, 0">
-								2d8+6
-							</TextBox>
-							<TextBlock x:Name="tbNextDieRoll" Text="" Width="Auto" Height="Auto" Foreground="SlateGray"/>
-							<TextBlock Text="Damage Type: " Width="Auto" Height="Auto" Margin="18, 2, 0, 0"/>
-							<ComboBox x:Name="cbDamage" MaxHeight="22" MinWidth="150" 
-								Margin="4,0,0,0" SelectionChanged="CbDamage_SelectionChanged" SelectedIndex="0">
-								<ComboBoxItem>None</ComboBoxItem>
-								<ComboBoxItem>Acid</ComboBoxItem>
-								<ComboBoxItem>Bludgeoning</ComboBoxItem>
-								<ComboBoxItem>Cold</ComboBoxItem>
-								<ComboBoxItem>Fire</ComboBoxItem>
-								<ComboBoxItem>Force</ComboBoxItem>
-								<ComboBoxItem>Lightning</ComboBoxItem>
-								<ComboBoxItem>Necrotic</ComboBoxItem>
-								<ComboBoxItem>Piercing</ComboBoxItem>
-								<ComboBoxItem>Poison</ComboBoxItem>
-								<ComboBoxItem>Psychic</ComboBoxItem>
-								<ComboBoxItem>Radiant</ComboBoxItem>
-								<ComboBoxItem>Slashing</ComboBoxItem>
-								<ComboBoxItem>Thunder</ComboBoxItem>
-							</ComboBox>
-							<TextBlock Text="MinDamage:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
-							<TextBox x:Name="tbxMinDamage" MinWidth="50" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
-								0
-							</TextBox>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal" Margin="0, 3, 0, 0">
-							<TextBlock Text="Additional Dice on Hit:" Width="Auto" Height="Auto" Margin="22, 2, 0, 0"/>
-							<TextBox x:Name="tbxAddDiceOnHit" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
-
-							</TextBox>
-							<TextBlock Text="Message:" Width="Auto" Height="Auto" Margin="20, 2, 0, 0"/>
-							<TextBox x:Name="tbxMessageAddDiceOnHit" MinWidth="280" TextChanged="TbxDamageDice_TextChanged" Margin="5, 1, 0, 0">
-
-							</TextBox>
-						</StackPanel>
-						<StackPanel x:Name="spDamageHealthOnly" Orientation="Horizontal">
-							<Button x:Name="btnRollDamageOnly" Background="#FFB50000" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollDamageOnly_Click">
-								Damage Only
-							</Button>
-							<Button x:Name="btnRollHealthOnly" Background="#FF0090FF" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollHealthOnly_Click">
-								Health Only
-							</Button>
-							<Button x:Name="btnRollExtraOnly" Background="#FF404040" FontWeight="Bold" Foreground="White" Margin="8" MinWidth="100" MinHeight="35" Click="BtnRollExtraOnly_Click">
-								Extra Only
-							</Button>
-						</StackPanel>
+						</StackPanel>-->
 						<StackPanel Orientation="Vertical" Margin="4" >
 							<StackPanel Orientation="Horizontal">
 								<TextBlock x:Name="txtHealth" Text="Health: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
@@ -623,7 +657,7 @@
 				<TabItem Header="Weapons" x:Name="tbWeapons" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:WeaponsList/>
 				</TabItem>
-				
+
 				<TabItem Header="Effect Group" x:Name="tbEffectGroup" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<StackPanel x:Name="spEffectGroup" Orientation="Vertical">
 						<uc:GroupEffectBuilder x:Name="groupEffectBuilder" Padding="5"/>
@@ -633,22 +667,89 @@
 					</StackPanel>
 				</TabItem>
 
-				<TabItem Header="Debug" x:Name="tbDebug" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
+				<TabItem Header="Debug" x:Name="tbDebug" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="Auto" >
 					<StackPanel Orientation="Horizontal">
-						<CheckBox x:Name="ckBreakTest" Margin="8" VerticalAlignment="Center" Checked="CkBreakTest_Checked" Unchecked="CkBreakTest_Unchecked">
-							Test Breakpoint
-						</CheckBox>
-						<Button x:Name="btnDebugStep" MaxWidth="132" MinWidth="66" MinHeight="24" Click="BtnDebugStep_Click" Margin="8" VerticalAlignment="Center">
-							Step
-						</Button>
-						
-						<Button x:Name="btnDebugRun" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugRun_Click" Margin="8" VerticalAlignment="Center">
-							Run
-						</Button>
+						<StackPanel x:Name="spEvents" Orientation="Vertical">
+							<StackPanel Orientation="Horizontal">
+								<ListBox x:Name="lstAssignedFeatures" SelectionChanged="LstEventCategory_SelectionChanged" >
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition />
+													<ColumnDefinition Width="Auto" />
+												</Grid.ColumnDefinitions>
+												<CheckBox Style="{StaticResource MismatchedBreakpoint}" IsChecked="{Binding HasBreakpoints}" />
+												<TextBlock Grid.Column="1" Text="{Binding Name}" 
+													FontWeight="{Binding Path=HasCode, Converter={StaticResource BoolToFontWeightConverter}}"/>
+											</Grid>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+								<ListBox x:Name="lstKnownSpells" SelectionChanged="LstEventCategory_SelectionChanged" >
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition />
+													<ColumnDefinition Width="Auto" />
+												</Grid.ColumnDefinitions>
+												<CheckBox Style="{StaticResource MismatchedBreakpoint}" IsChecked="{Binding HasBreakpoints}" />
+												<TextBlock Grid.Column="1" Text="{Binding Name}" 
+													FontWeight="{Binding Path=HasCode, Converter={StaticResource BoolToFontWeightConverter}}"/>
+											</Grid>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+								<ListBox x:Name="lstEvents" SelectionChanged="LstFeatureEvents_SelectionChanged" >
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition />
+													<ColumnDefinition Width="Auto" />
+												</Grid.ColumnDefinitions>
+												<CheckBox Style="{StaticResource Breakpoint}" IsChecked="{Binding BreakAtStart}" />
+												<TextBlock Grid.Column="1" Text="{Binding Name}" 
+													FontWeight="{Binding Path=HasCode, Converter={StaticResource BoolToFontWeightConverter}}"/>
+											</Grid>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" >
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition />
+													<ColumnDefinition Width="Auto" />
+												</Grid.ColumnDefinitions>
+												<CheckBox Style="{StaticResource Breakpoint}" IsChecked="{Binding BreakAtStart}" />
+												<TextBlock Grid.Column="1" Text="{Binding Line}" 
+													FontWeight="{Binding Path=HasCode, Converter={StaticResource BoolToFontWeightConverter}}"/>
+											</Grid>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<Button x:Name="btnDebugStep" MaxWidth="132" MinWidth="66" MinHeight="24" Click="BtnDebugStep_Click" Margin="8" VerticalAlignment="Center">
+									Step
+								</Button>
 
-						<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
-							Test
-						</Button>
+								<Button x:Name="btnDebugRun" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugRun_Click" Margin="8" VerticalAlignment="Center">
+									Run
+								</Button>
+
+								<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
+									Test
+								</Button>
+							</StackPanel>
+						</StackPanel>
 					</StackPanel>
 				</TabItem>
 			</TabControl>

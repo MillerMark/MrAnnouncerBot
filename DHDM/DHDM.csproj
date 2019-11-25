@@ -274,6 +274,7 @@
     </ApplicationDefinition>
     <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="AnswerButton.cs" />
+    <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="BreakConcentrationCommand.cs" />
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
@@ -281,6 +282,7 @@
     <Compile Include="DiceStoppedRollingData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="DungeonMasterCommand.cs" />
+    <Compile Include="EventManager.cs" />
     <Compile Include="FrmAsk.xaml.cs">
       <DependentUpon>FrmAsk.xaml</DependentUpon>
     </Compile>

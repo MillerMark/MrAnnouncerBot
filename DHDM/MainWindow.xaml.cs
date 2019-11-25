@@ -28,6 +28,25 @@ using System.IO;
 
 namespace DHDM
 {
+	// TODO: Move to its own class
+	public class DebugLine
+	{
+		public string Line { get; set; }
+		public bool BreakAtStart { get; set; }
+		public DebugLine(string line, bool breakAtStart)
+		{
+			Line = line;
+			BreakAtStart = breakAtStart;
+		}
+		public DebugLine(string line)
+		{
+			Line = line;
+		}
+		public DebugLine()
+		{
+			
+		}
+	}
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -47,6 +66,7 @@ namespace DHDM
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
 		DispatcherTimer showClearButtonTimer;
+		DispatcherTimer stateUpdateTimer;
 		DispatcherTimer reloadSpellsTimer;
 		DispatcherTimer pendingShortcutsTimer;
 		DispatcherTimer wildMagicRollTimer;
@@ -70,6 +90,11 @@ namespace DHDM
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
 			showClearButtonTimer.Interval = TimeSpan.FromSeconds(8);
+
+			stateUpdateTimer = new DispatcherTimer();
+			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
+			stateUpdateTimer.Interval = TimeSpan.FromSeconds(1);
+			stateUpdateTimer.Start();
 
 			reloadSpellsTimer = new DispatcherTimer();
 			reloadSpellsTimer.Tick += new EventHandler(CheckForNewSpells);
@@ -113,6 +138,7 @@ namespace DHDM
 			ConnectToObs();
 
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
+			Expressions.ExecutionChanged += Expressions_ExecutionChanged;
 			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
 			GetRoll.GetRollRequest += GetRoll_GetRollRequest;
 			Feature.FeatureDeactivated += Feature_FeatureDeactivated;
@@ -121,6 +147,11 @@ namespace DHDM
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
 
 			SetupSpellsChangedFileWatcher();
+		}
+
+		private void Expressions_ExecutionChanged(object sender, CodingSeb.ExpressionEvaluator.ExecutionPointerChangedEventArgs ea)
+		{
+
 		}
 
 		void SetupSpellsChangedFileWatcher()
@@ -251,7 +282,7 @@ namespace DHDM
 					if (shortcut.Spell != null)
 					{
 						Character player = game.GetPlayerFromId(shortcut.PlayerId);
-						KnownSpell matchingSpell = GetMatchingSpell(shortcut.Spell, player);
+						KnownSpell matchingSpell = player.GetMatchingSpell(shortcut.Spell.Name);
 						if (matchingSpell != null && matchingSpell.CanBeRecharged())
 						{
 							if (matchingSpell.HasAnyCharges())
@@ -281,11 +312,6 @@ namespace DHDM
 					}
 				}
 			}
-		}
-
-		private static KnownSpell GetMatchingSpell(Spell spell, Character player)
-		{
-			return player.KnownSpells.FirstOrDefault(x => x.SpellName == spell.Name);
 		}
 
 		void SetShortcutVisibility()
@@ -318,7 +344,7 @@ namespace DHDM
 			{
 				UpdateStateUIForPlayer(ea.Player);
 			}
-			else 
+			else
 			if (ea.IsRechargeable)
 			{
 				updatingRechargeables = true;
@@ -340,24 +366,40 @@ namespace DHDM
 			SetShortcutVisibility();
 		}
 
-		private void UpdateStateUIForPlayer(Character player)
+		bool updatingUI;
+		private void UpdateStateUIForPlayer(Character player, bool fromTimer = false)
 		{
 			if (player == null)
 				return;
-			UpdatePlayerScrollOnStream(player);
-			Dispatcher.Invoke(() =>
+
+			if (updatingUI)
+				return;
+
+			updatingUI = true;
+			try
 			{
-				ListBox stateList = GetStateListForCharacter(player.playerID);
-				if (stateList != null)
+				if (!fromTimer)
+					UpdatePlayerScrollOnStream(player);
+				Dispatcher.Invoke(() =>
 				{
-					stateList.Items.Clear();
-					List<string> stateReport = player.GetStateReport();
-					stateReport.Sort();
-					foreach (string item in stateReport)
-						stateList.Items.Add(item);
-				}
-				SetClearSpellVisibility(player);
-			});
+					ListBox stateList = GetStateListForCharacter(player.playerID);
+					if (stateList != null)
+					{
+						stateList.Items.Clear();
+						List<string> stateReport = player.GetStateReport();
+						stateReport.Sort();
+						if (player.concentratedSpell != null)
+							stateReport.Add($"*Concentrating on {player.concentratedSpell.Spell.Name} with {game.GetSpellTimeLeft(player.playerID, player.concentratedSpell.Spell)} remaining.");
+						foreach (string item in stateReport)
+							stateList.Items.Add(item);
+					}
+					SetClearSpellVisibility(player);
+				});
+			}
+			finally
+			{
+				updatingUI = false;
+			}
 		}
 
 		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
@@ -369,7 +411,7 @@ namespace DHDM
 				else
 					ActivateShortcut(ea.Shortcut);
 			});
-			
+
 		}
 
 		// TODO: Spell Expired
@@ -428,12 +470,12 @@ namespace DHDM
 					if (int.TryParse(valueStr, out int value))
 						result.Value = value;
 				}
-				
+
 				return result;
 			}
 			public AnswerMap()
 			{
-				
+
 			}
 		}
 		List<AnswerMap> answerMap;
@@ -793,6 +835,75 @@ namespace DHDM
 			HideShortcutUI(spReactionsActivePlayer, actionShortcut);
 			HideShortcutUI(spSpecialActivePlayer, actionShortcut);
 		}
+
+		void SetRollTypeCheckbox(PlayerActionShortcut actionShortcut)
+		{
+			btnRollDice.IsEnabled = actionShortcut.Type != DiceRollType.None;
+			switch (actionShortcut.Type)
+			{
+				case DiceRollType.SkillCheck:
+					rbSkillCheck.IsChecked = true;
+					break;
+				case DiceRollType.Attack:
+					rbAttack.IsChecked = true;
+					break;
+				case DiceRollType.SavingThrow:
+					rbSavingThrow.IsChecked = true;
+					break;
+				case DiceRollType.FlatD20:
+					rbFlatD20.IsChecked = true;
+					break;
+				case DiceRollType.DeathSavingThrow:
+					rbDeathSavingThrow.IsChecked = true;
+					break;
+				case DiceRollType.PercentageRoll:
+					rbPercentageRoll.IsChecked = true;
+					break;
+				case DiceRollType.WildMagic:
+					rbWildMagicD20Check.IsChecked = true;
+					break;
+				case DiceRollType.BendLuckAdd:
+					rbBendLuckAdd.IsChecked = true;
+					break;
+				case DiceRollType.BendLuckSubtract:
+					rbBendLuckSubtract.IsChecked = true;
+					break;
+				case DiceRollType.LuckRollLow:
+					rbLuckRollLow.IsChecked = true;
+					break;
+				case DiceRollType.LuckRollHigh:
+					rbLuckRollHigh.IsChecked = true;
+					break;
+				case DiceRollType.DamageOnly:
+					rbDamageOnly.IsChecked = true;
+					break;
+				case DiceRollType.HealthOnly:
+					rbHealth.IsChecked = true;
+					break;
+				case DiceRollType.ExtraOnly:
+					rbExtra.IsChecked = true;
+					break;
+				case DiceRollType.ChaosBolt:
+					rbAttack.IsChecked = true;
+					break;
+				case DiceRollType.Initiative:
+					rbInitiative.IsChecked = true;
+					break;
+				case DiceRollType.WildMagicD20Check:
+
+					break;
+				case DiceRollType.InspirationOnly:
+
+					break;
+				case DiceRollType.AddOnDice:
+
+					break;
+				case DiceRollType.NonCombatInitiative:
+					
+					break;
+			}
+		}
+
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
 			ActivatePendingShortcuts();
@@ -803,6 +914,9 @@ namespace DHDM
 				activeTrailingEffects = actionShortcut.TrailingEffects;
 			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
 				activeDieRollEffects = actionShortcut.DieRollEffects;
+
+			SetRollTypeCheckbox(actionShortcut);
+
 			//diceRoll.TrailingEffects
 			if (actionShortcut.ModifiesExistingRoll)
 			{
@@ -836,7 +950,7 @@ namespace DHDM
 			{
 				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
 				activeIsSpell = spell;
-				KnownSpell matchingSpell = GetMatchingSpell(spell, player);
+				KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
 				if (matchingSpell != null && matchingSpell.CanBeRecharged())
 				{
 					PrepareToCastSpell(spell, actionShortcut.PlayerId);
@@ -859,7 +973,7 @@ namespace DHDM
 					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
 				if (actionShortcut.Windups.Count > 0)
 				{
-					List <WindupDto> windups = actionShortcut.GetAvailableWindups(player);
+					List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
 
 					string serializedObject = JsonConvert.SerializeObject(windups);
 					HubtasticBaseStation.AddWindup(serializedObject);
@@ -923,7 +1037,7 @@ namespace DHDM
 			matchingSpell.ChargesRemaining--;
 			if (matchingSpell.ChargesRemaining == 0)
 				HideShortcutUI(actionShortcut);
-			
+
 		}
 
 		private void CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell)
@@ -1035,8 +1149,23 @@ namespace DHDM
 			Character player = game.GetPlayerFromId(ActivePlayerId);
 			if (player != null)
 				player.forceShowSpell = false;
-			UpdateStateUIForPlayer(player);
+			UpdateAllUIForPlayer(player);
 			TellDmActivePlayer(ActivePlayerId);
+		}
+		void UpdateAllUIForPlayer(Character player)
+		{
+			UpdateStateUIForPlayer(player);
+			UpdateEventsUIForPlayer(player);
+		}
+
+		void UpdateEventsUIForPlayer(Character player)
+		{
+			if (player == null)
+				return;
+
+			lstAssignedFeatures.ItemsSource = player.GetEventGroup(typeof(Feature));
+			lstKnownSpells.ItemsSource = player.GetEventGroup(typeof(Spell));
+			lstEvents.ItemsSource = null;
 		}
 
 		private void InitializeActivePlayerData()
@@ -1161,7 +1290,7 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				showClearButtonTimer.Start();
-				rbTestNormalDieRoll.IsChecked = true;
+				//rbTestNormalDieRoll.IsChecked = true;
 				updateClearButtonTimer.Stop();
 				EnableDiceRollButtons(false);
 				btnClearDice.Visibility = Visibility.Hidden;
@@ -1219,36 +1348,16 @@ namespace DHDM
 		{
 			updateClearButtonTimer.Stop();
 			btnClearDice.Visibility = Visibility.Hidden;
-			spRollNowButtons.IsEnabled = true;
+			btnRollDice.IsEnabled = true;
 			spSpecialThrows.IsEnabled = true;
 			HubtasticBaseStation.ClearDice();
 			waitingToClearDice = false;
 			ActivatePendingShortcutsIn(1);
 		}
 
-		private void BtnSkillCheck_Click(object sender, RoutedEventArgs e)
-		{
-			RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
-		}
-
 		private void BtnSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
 			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
-		}
-
-		private void BtnDeathSavingThrow_Click(object sender, RoutedEventArgs e)
-		{
-			RollTheDice(PrepareRoll(DiceRollType.DeathSavingThrow));
-		}
-
-		private void BtnAttack_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRollType rollType;
-			if (NextDieRollType == DiceRollType.None)
-				rollType = DiceRollType.Attack;
-			else
-				rollType = NextDieRollType;
-			RollTheDice(PrepareRoll(rollType));
 		}
 
 		bool CanIncludeVantageDice(DiceRollType type)
@@ -1261,10 +1370,12 @@ namespace DHDM
 			VantageKind diceRollKind = VantageKind.Normal;
 
 			if (CanIncludeVantageDice(type))
-				if (rbTestAdvantageDieRoll.IsChecked == true)
-					diceRollKind = VantageKind.Advantage;
-				else if (rbTestDisadvantageDieRoll.IsChecked == true)
-					diceRollKind = VantageKind.Disadvantage;
+			{
+				//if (rbTestAdvantageDieRoll.IsChecked == true)
+				//	diceRollKind = VantageKind.Advantage;
+				//else if (rbTestDisadvantageDieRoll.IsChecked == true)
+				//	diceRollKind = VantageKind.Disadvantage;
+			}
 
 			string damageDice = string.Empty;
 			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
@@ -1393,6 +1504,8 @@ namespace DHDM
 				diceRoll.HiddenThreshold = 10;
 			else if (type == DiceRollType.Initiative || type == DiceRollType.NonCombatInitiative)
 				diceRoll.HiddenThreshold = -100;
+			else if (type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
+				diceRoll.HiddenThreshold = 0;
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
@@ -1402,20 +1515,33 @@ namespace DHDM
 			diceRoll.AddTrailingEffects(activeTrailingEffects);
 			diceRoll.AddDieRollEffects(activeDieRollEffects);
 
+			// TODO: Make this data-driven:
+			if (type == DiceRollType.WildMagicD20Check)
+			{
+				diceRoll.NumHalos = 3;
+				diceRoll.AddTrailingEffects("SmallSparks");
+			}
+
+			if (type == DiceRollType.WildMagic)
+			{
+				diceRoll.Modifier = 0;
+				diceRoll.HiddenThreshold = 0;
+				diceRoll.IsMagic = true;
+				diceRoll.OnThrowSound = "WildMagicRoll";
+				diceRoll.Type = DiceRollType.WildMagic;
+				diceRoll.TrailingEffects.Add(new TrailingEffect()
+				{
+					EffectType = "SparkTrail",
+					RotationOffset = 180,
+					RotationOffsetRandom = 15,
+					HueShift = ActivePlayer.hueShift.ToString(),
+					HueShiftRandom = 35,
+					LeftRightDistanceBetweenPrints = 0,
+					MinForwardDistanceBetweenPrints = 64
+				});
+			}
+
 			return diceRoll;
-		}
-
-		private void BtnFlatD20_Click(object sender, RoutedEventArgs e)
-		{
-			RollTheDice(PrepareRoll(DiceRollType.FlatD20));
-		}
-
-		private void BtnWildMagicD20Check_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.WildMagicD20Check);
-			diceRoll.NumHalos = 3;
-			diceRoll.AddTrailingEffects("SmallSparks");
-			RollTheDice(diceRoll);
 		}
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
@@ -1586,7 +1712,7 @@ namespace DHDM
 
 		void enableDiceRollButtons()
 		{
-			spRollNowButtons.IsEnabled = true;
+			btnRollDice.IsEnabled = true;
 			spSpecialThrows.IsEnabled = true;
 		}
 
@@ -1594,7 +1720,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				spRollNowButtons.IsEnabled = enable;
+				btnRollDice.IsEnabled = enable;
 				spSpecialThrows.IsEnabled = enable;
 			});
 		}
@@ -1660,7 +1786,7 @@ namespace DHDM
 		// TODO: Delete this.
 		void NeedToRollWildMagic(IndividualRoll individualRoll)
 		{
-			
+
 		}
 		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
 		{
@@ -2113,6 +2239,17 @@ namespace DHDM
 			PrepareUiForClearButton();
 		}
 
+		void UpdateStateFromTimer(object sender, EventArgs e)
+		{
+			if (ActivePlayer == null)
+				return;
+
+			if (ActivePlayer.concentratedSpell == null)
+				return;
+
+			UpdateStateUIForPlayer(ActivePlayer, true);
+		}
+
 		void RollWildMagicHandler(object sender, EventArgs e)
 		{
 			wildMagicRollTimer.Stop();
@@ -2207,7 +2344,7 @@ namespace DHDM
 			diceRoll.NumHalos = 3;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.Raven,
+				EffectType = "Raven",
 				LeftRightDistanceBetweenPrints = 15,
 				MinForwardDistanceBetweenPrints = 5,
 				OnPrintPlaySound = "Flap[6]",
@@ -2216,7 +2353,7 @@ namespace DHDM
 			});
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.Spiral,
+				EffectType = "Spiral",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 150,
 				OnPrintPlaySound = "Crow[3]",
@@ -2232,7 +2369,7 @@ namespace DHDM
 			diceRoll.OnThrowSound = "SneakAttackWhoosh";
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.Smoke,
+				EffectType = "Smoke",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
 			});
@@ -2251,7 +2388,7 @@ namespace DHDM
 			diceRoll.Type = DiceRollType.WildMagic;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.SparkTrail,
+				EffectType = "SparkTrail",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 84
 			});
@@ -2265,7 +2402,7 @@ namespace DHDM
 			diceRoll.OnFirstContactSound = "WildForm";
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.PawPrint,
+				EffectType = "PawPrint",
 				LeftRightDistanceBetweenPrints = 50,
 				MinForwardDistanceBetweenPrints = 90,
 			});
@@ -2306,24 +2443,10 @@ namespace DHDM
 		{
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.SmallSparks,
+				EffectType = "SmallSparks",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 33
 			});
-		}
-
-		private void BtnRollHealthOnly_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.HealthOnly);
-			diceRoll.HiddenThreshold = 0;
-			RollTheDice(diceRoll);
-		}
-
-		private void BtnRollDamageOnly_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
-			diceRoll.HiddenThreshold = 0;
-			RollTheDice(diceRoll);
 		}
 
 		private void BtnLuckRollLow_Click(object sender, RoutedEventArgs e)
@@ -2338,12 +2461,6 @@ namespace DHDM
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Initiative);
 			RollTheDice(diceRoll);
-		}
-
-		private void BtnHiddenThreshold_Click(object sender, RoutedEventArgs e)
-		{
-			if (sender is Button button)
-				tbxHiddenThreshold.Text = button.Tag.ToString();
 		}
 
 		private void BtnModifier_Click(object sender, RoutedEventArgs e)
@@ -2673,7 +2790,9 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				BtnAttack_Click(null, null);
+				if (NextDieRollType == DiceRollType.None)
+					NextDieRollType = DiceRollType.Attack;
+				BtnRollDice_Click(null, null);
 			});
 			// TODO: Add report on advantage/disadvantage.
 			TellDungeonMaster($"Rolling {GetPlayerName(ActivePlayerId)}'s attack with a hidden threshold of {tbxHiddenThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
@@ -2719,6 +2838,8 @@ namespace DHDM
 
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
+			DateTime saveTime = game.Clock.Time;
+
 			AllWeaponEffects.Invalidate();
 			AllPlayers.Invalidate();
 			AllSpells.Invalidate();
@@ -2738,9 +2859,11 @@ namespace DHDM
 
 			foreach (Character player in players)
 			{
+				player.RebuildAllEvents();
 				game.AddPlayer(player);
 			}
 
+			game.Clock.SetTime(saveTime);
 			game.Start();
 			SendPlayerData();
 
@@ -2933,19 +3056,14 @@ namespace DHDM
 		{
 			if (lastPlayerIdUnchecked == playerID)
 				return;
+			if (grdPlayerRollOptions == null)
+				return;
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 				if (uIElement is PlayerRollCheckBox checkbox)
 					checkbox.IsChecked = checkbox.PlayerId == playerID;
 		}
 
 		bool buildingTabs;
-
-		private void BtnRollExtraOnly_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.ExtraOnly);
-			diceRoll.HiddenThreshold = 0;
-			RollTheDice(diceRoll);
-		}
 
 		private void ClearHistoryLog_Click(object sender, RoutedEventArgs e)
 		{
@@ -3063,9 +3181,9 @@ namespace DHDM
 		{
 			if (radioingInternally)
 				return;
-			if (spRollButtons == null)
-				return;
-			spRollButtons.Visibility = Visibility.Visible;
+			//if (spRollButtons == null)
+			//	return;
+			//spRollButtons.Visibility = Visibility.Visible;
 			ShowHidePlayerUI(true);
 			CheckActivePlayer();
 		}
@@ -3074,9 +3192,9 @@ namespace DHDM
 		{
 			if (radioingInternally)
 				return;
-			if (spRollButtons == null)
-				return;
-			spRollButtons.Visibility = Visibility.Collapsed;
+			//if (spRollButtons == null)
+			//	return;
+			//spRollButtons.Visibility = Visibility.Collapsed;
 			ShowHidePlayerUI(true);
 			CheckAllPlayers();
 		}
@@ -3108,9 +3226,9 @@ namespace DHDM
 		{
 			if (radioingInternally)
 				return;
-			if (spRollButtons == null)
-				return;
-			spRollButtons.Visibility = Visibility.Collapsed;
+			//if (spRollButtons == null)
+			//	return;
+			//spRollButtons.Visibility = Visibility.Collapsed;
 			ShowHidePlayerUI(true);
 		}
 
@@ -3134,18 +3252,13 @@ namespace DHDM
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
-				Type = TrailingSpriteType.Fangs,
+				EffectType = "Fangs",
 				LeftRightDistanceBetweenPrints = 0,
 				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
 			});
 			diceRoll.OnFirstContactSound = "Snarl";
 			//diceRoll.OnFirstContactEffect = TrailingSpriteType.Fangs;
 			RollTheDice(diceRoll);
-		}
-
-		private void BtnInspirationOnly_Click(object sender, RoutedEventArgs e)
-		{
-			RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
 		}
 
 		public void RollWildMagicCheck()
@@ -3482,9 +3595,9 @@ namespace DHDM
 
 		private void BtnDebugTest_Click(object sender, RoutedEventArgs e)
 		{
-			ckBreakTest.IsChecked = true;
+			//ckBreakTest.IsChecked = true;
 			Expressions.Debugging = true;
-			const string script = 
+			const string script =
 @"if (Get(_justEnteredWildSurgeRage) == true)
 {
 	Set(_rageDeactivationMessage, """");
@@ -3529,6 +3642,167 @@ namespace DHDM
 	}
 }";
 			Expressions.Do(script, ActivePlayer);
+		}
+
+		private void LstEventCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems != null && e.AddedItems.Count > 0)
+				if (e.AddedItems[0] is EventGroup eventGroup)
+					lstEvents.ItemsSource = eventGroup.Events;
+		}
+		System.Collections.IEnumerable GetPlayerEventCode(Character activePlayer, EventGroup parentGroup, string name)
+		{
+			string groupName = parentGroup.Name;
+			object instance = null;
+
+			if (parentGroup.Type == EventType.FeatureEvents)
+				instance = AllFeatures.Get(groupName);
+			else if (parentGroup.Type == EventType.SpellEvents)
+				instance = AllSpells.Get(groupName);
+
+			if (instance == null)
+				return null;
+			object value = instance.GetType().GetProperty(name).GetValue(instance, null);
+			if (!(value is string code))
+				return null;
+
+			List<DebugLine> debugLines = new List<DebugLine>();
+			string[] splitLines = code.Split('\n');
+			foreach (string line in splitLines)
+			{
+				debugLines.Add(new DebugLine(line));
+			}
+
+			return debugLines;
+		}
+
+		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems != null && e.AddedItems.Count > 0)
+				if (e.AddedItems[0] is EventData eventData)
+					lstCode.ItemsSource = GetPlayerEventCode(ActivePlayer, eventData.ParentGroup, eventData.Name);
+		}
+
+		private void BtnRollDice_Click(object sender, RoutedEventArgs e)
+		{
+			if (NextDieRollType != DiceRollType.None)
+				RollTheDice(PrepareRoll(NextDieRollType));
+		}
+
+		private void RbSkillCheck_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.SkillCheck;
+			btnRollDice.Content = "Roll Skill Check";
+		}
+
+		private void RbSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.SkillCheck;
+			btnRollDice.Content = "Roll Saving Throw";
+		}
+
+		private void RbWildMagicD20Check_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.WildMagicD20Check;
+			btnRollDice.Content = "Check Wild Magic";
+		}
+
+		private void RbFlatD20_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.FlatD20;
+			btnRollDice.Content = "Roll d20";
+		}
+
+		private void RbAttack_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.Attack;
+			btnRollDice.Content = "Roll Attack";
+		}
+
+		private void RbDeathSavingThrow_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.DeathSavingThrow;
+			btnRollDice.Content = "Roll Death Save";
+		}
+
+		private void RbInspirationOnly_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.InspirationOnly;
+			btnRollDice.Content = "Roll Inspiration";
+		}
+
+		private void RbHitPointCapacity_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.HPCapacity;
+			btnRollDice.Content = "Roll HP Capacity";
+		}
+
+		private void RbHealth_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.HealthOnly;
+			btnRollDice.Content = "Roll Health";
+		}
+
+		private void RbDamageOnly_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.DamageOnly;
+			btnRollDice.Content = "Roll Damage";
+		}
+
+		private void RbPercentageRoll_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.PercentageRoll;
+			btnRollDice.Content = "Roll Percentage";
+		}
+
+		private void RbWildMagic_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.WildMagic;
+			btnRollDice.Content = "Roll Wild Magic";
+		}
+
+		private void RbInitiative_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.Initiative;
+			btnRollDice.Content = "Roll Initiative";
+		}
+
+		private void RbBendLuckAdd_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.BendLuckAdd;
+			btnRollDice.Content = "Bend Luck Up (+)";
+		}
+
+		private void RbBendLuckSubtract_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.BendLuckSubtract;
+			btnRollDice.Content = "Bend Luck Down (-)";
+		}
+
+		private void RbLuckRollHigh_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.LuckRollHigh;
+			btnRollDice.Content = "Lucky Roll High";
+		}
+
+		private void RbLuckRollLow_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.LuckRollLow;
+			btnRollDice.Content = "Lucky Roll Low";
+		}
+
+		private void RbExtra_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.ExtraOnly;
+			btnRollDice.Content = "Roll Extra";
+		}
+
+		private void DamageContextTestAllMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
+			diceRoll.DamageDice = "1d20(fire),1d20(acid),1d20(cold),1d20(force),1d20(necrotic),1d20(piercing),1d20(bludgeoning),1d20(slashing),1d20(lightning),1d20(radiant),1d20(thunder)";
+			RollTheDice(diceRoll);
+			// 1d20(superiority),
 		}
 	}
 

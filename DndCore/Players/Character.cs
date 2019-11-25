@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Collections;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -178,26 +179,22 @@ namespace DndCore
 		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
 
 		
-		
-		
-		// TODO: Set this to true when casting and false when no longer casting.
-		public bool Casting
-		{
-			get { return casting; }
-			set
-			{
-				bool oldValue = casting;
-				bool newValue = value;
+		//// TODO: Set this to true when casting and false when no longer casting.
+		//public bool Casting
+		//{
+		//	get { return casting; }
+		//	set
+		//	{
+		//		bool oldValue = casting;
+		//		bool newValue = value;
 
-				if (oldValue == newValue)
-					return;
+		//		if (oldValue == newValue)
+		//			return;
 
-				casting = value;
-				OnStateChanged("Casting", oldValue, newValue);
-			}
-		}
-
-
+		//		casting = value;
+		//		OnStateChanged("Casting", oldValue, newValue);
+		//	}
+		//}
 
 		public double charismaMod
 		{
@@ -1545,14 +1542,28 @@ namespace DndCore
 			OnStateChanged(this, new StateChangedEventArgs(key, oldValue, newValue, isRechargeable));
 		}
 
+		public void AboutToCompleteCast()
+		{
+			
+		}
+
+		public void CompleteCast()
+		{
+			CastedSpell spellToComplete = spellToCast;
+			if (spellToComplete == null && !Game.PlayerIsCastingSpell(concentratedSpell, playerID))
+				spellToComplete = concentratedSpell;
+			if (spellToComplete == null)
+				return;
+
+			if (Game != null)
+				Game.CompleteCast(this, spellToComplete);
+
+			spellToCast = null;
+		}
+
 		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
 		{
-			if (spellToCast != null)
-			{
-				if (Game != null)
-					Game.CompleteCast(this, spellToCast);
-				spellToCast = null;
-			}
+			CompleteCast();
 
 			if (Game != null)
 				Game.SetHiddenThreshold(this, hiddenThreshold, rollType);
@@ -2080,8 +2091,10 @@ namespace DndCore
 					}
 
 					bool isConcentratingNow = concentratedSpell != null && concentratedSpell.Spell.Name == knownSpell.SpellName;
+					
+					bool powerComesFromItem = knownSpell.CanBeRecharged();
 
-					spellGroup.SpellDataItems.Add(new SpellDataItem(knownSpell.SpellName, requiresConcentration, morePowerfulAtHigherLevels, isConcentratingNow));
+					spellGroup.SpellDataItems.Add(new SpellDataItem(knownSpell.SpellName, requiresConcentration, morePowerfulAtHigherLevels, isConcentratingNow, powerComesFromItem));
 				}
 
 			}
@@ -2235,9 +2248,6 @@ namespace DndCore
 				stateChangedEventArgs = null;
 			}
 		}
-		public void CompleteCast()
-		{
-		}
 
 		public void RollHasStopped()
 		{
@@ -2255,6 +2265,63 @@ namespace DndCore
 				return;
 			spellPreviouslyCasting = null;
 			OnStateChanged(this, new StateChangedEventArgs("spellPreviouslyCasting", null, null));
+		}
+
+		private static EventCategory CreateFeatureEvents(Character player)
+		{
+			Type type = typeof(Feature);
+			EventCategory eventCategory = new EventCategory("Features", type);
+			EventType eventType = EventType.FeatureEvents;
+
+			foreach (AssignedFeature assignedFeature in player.features)
+			{
+				eventCategory.Add(new EventGroup(assignedFeature.Feature, assignedFeature.Feature.Name, eventType, DndEventManager.knownEvents[type]));
+			}
+
+			return eventCategory;
+		}
+
+		private static EventCategory CreateSpellEvents(Character player)
+		{
+			Type type = typeof(Spell);
+			EventCategory eventCategory = new EventCategory("Spells", type);
+			EventType eventType = EventType.SpellEvents;
+
+			foreach (KnownSpell knownSpell in player.KnownSpells)
+			{
+				Spell spell = AllSpells.Get(knownSpell.SpellName);
+				eventCategory.Add(new EventGroup(spell, knownSpell.SpellName, eventType, DndEventManager.knownEvents[type]));
+			}
+
+			return eventCategory;
+		}
+
+		public void RebuildAllEvents()
+		{
+			eventCategories.Clear();
+			AddEvents(CreateFeatureEvents(this));
+			AddEvents(CreateSpellEvents(this));
+		}
+
+		[JsonIgnore]
+		public List<EventCategory> eventCategories = new List<EventCategory>();
+		public void AddEvents(EventCategory eventCategory)
+		{
+			eventCategories.Add(eventCategory);
+		}
+
+		public IEnumerable GetEventGroup(Type type)
+		{
+			foreach (EventCategory eventCategory in eventCategories)
+			{
+				if (eventCategory.Type == type)
+					return eventCategory.Groups;
+			}
+			return null;
+		}
+		public KnownSpell GetMatchingSpell(string spellName)
+		{
+			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
 		}
 
 		public event CastedSpellEventHandler SpellDispelled;

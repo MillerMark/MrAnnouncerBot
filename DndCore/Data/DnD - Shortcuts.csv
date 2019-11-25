@@ -7,7 +7,7 @@ Ava,Divine Smite,,,,,,,,,,,,,,PaladinSmite,Ravens;Spirals,,,
 Fred,Hungry Jaws,Attack,,,,,1BA,1d6+4,,,,,,,,,,,"Once per short rest as a bonus action, you can make a bite attack. If it hits, you gain CON modifier (min 1) temporary HP."
 Fred,Great Weapon Master Attack,,,,,,*,,,,,,,,,,,,"On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
 Merkin,Wild Magic,WildMagic,x,,,,,"!d1001(:roll),d1010(:roll)",,,,,,,WildMagic,Sparks,,,
-Merkin,Check Wild Magic,WildMagicD20Check,x,,,,*,!1d20,,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.
+Merkin,Check Wild Magic,WildMagicD20Check,x,,,,*,"!1d20(""Wild Magic Check"")",,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.
 Willy,Sneak Attack,,,,,,,,,3d6,,,,,SmokeBomb,Smoke,,,
 Willy,Cunning Dash,,,,,,1BA,,,,,,,,,,,,
 Willy,Cunning Disengage,,,,,,1BA,,,,,,,,,,,,
