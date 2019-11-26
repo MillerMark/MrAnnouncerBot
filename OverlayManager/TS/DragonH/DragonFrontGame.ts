@@ -147,6 +147,12 @@ class DragonFrontGame extends DragonGame {
 	sparkShower: Sprites;
 	embersLarge: Sprites;
 	embersMedium: Sprites;
+	spellHits1: Sprites;
+	spellHits2: Sprites;
+	spellHits3: Sprites;
+	spellHits4: Sprites;
+	spellHits5: Sprites;
+	spellMisses: Sprites;
 	nameplateParts: Sprites;
 	nameplateMain: Sprites;
 	fireWall: Sprites;
@@ -300,6 +306,41 @@ class DragonFrontGame extends DragonGame {
 		this.embersMedium.originX = 504;
 		this.embersMedium.originY = 501;
 
+		
+		this.spellHits1 = new Sprites('PlayerEffects/Spells/SpellHits/Hit1/Hit', 28, fps30, AnimationStyle.Sequential, true);
+		this.spellHits1.name = "SpellHit1";
+		this.spellHits1.originX = 176;
+		this.spellHits1.originY = 238;
+
+
+		this.spellHits2 = new Sprites('PlayerEffects/Spells/SpellHits/Hit2/Hit', 27, fps30, AnimationStyle.Sequential, true);
+		this.spellHits2.name = "SpellHit2";
+		this.spellHits2.originX = 283;
+		this.spellHits2.originY = 248;
+
+
+		this.spellHits3 = new Sprites('PlayerEffects/Spells/SpellHits/Hit3/Hit', 27, fps30, AnimationStyle.Sequential, true);
+		this.spellHits3.name = "SpellHit3";
+		this.spellHits3.originX = 290;
+		this.spellHits3.originY = 390;
+
+
+		this.spellHits4 = new Sprites('PlayerEffects/Spells/SpellHits/Hit4/Hit', 27, fps30, AnimationStyle.Sequential, true);
+		this.spellHits4.name = "SpellHit4";
+		this.spellHits4.originX = 320;
+		this.spellHits4.originY = 300;
+
+
+		this.spellHits5 = new Sprites('PlayerEffects/Spells/SpellHits/Hit5/Hit', 26, fps30, AnimationStyle.Sequential, true);
+		this.spellHits5.name = "SpellHit5";
+		this.spellHits5.originX = 190;
+		this.spellHits5.originY = 420;
+		
+		this.spellMisses = new Sprites('PlayerEffects/Spells/SpellHits/Miss/Miss', 34, fps30, AnimationStyle.Sequential, true);
+		this.spellHits5.name = "SpellMiss";
+		this.spellHits5.originX = 186;
+		this.spellHits5.originY = 237;
+
 		this.nameplateParts = new Sprites('Nameplates/Piece', 3, fps30, AnimationStyle.Static, true);
 		this.nameplateParts.originX = 19;
 		this.nameplateParts.originY = 8;
@@ -371,6 +412,12 @@ class DragonFrontGame extends DragonGame {
 		this.allEffects.add(this.sparkShower);
 		this.allEffects.add(this.embersLarge);
 		this.allEffects.add(this.embersMedium);
+		this.allEffects.add(this.spellHits1);
+		this.allEffects.add(this.spellHits2);
+		this.allEffects.add(this.spellHits3);
+		this.allEffects.add(this.spellHits4);
+		this.allEffects.add(this.spellHits5);
+		this.allEffects.add(this.spellMisses);
 		this.bloodEffects.add(this.bloodGushA);
 		this.bloodEffects.add(this.bloodGushB);
 		this.bloodEffects.add(this.bloodGushC);

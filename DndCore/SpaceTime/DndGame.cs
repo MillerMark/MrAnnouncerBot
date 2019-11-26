@@ -560,7 +560,7 @@ namespace DndCore
 					continue;
 				Spell spell = concentratedCastedSpell.Spell;
 				if (concentratedCastedSpell != null)
-				concentrationReport += $"{player.name} is casting {spell.Name} with {GetSpellTimeLeft(player.playerID, spell)} remaining; ";
+				concentrationReport += $"{player.emoticon} {player.name} is casting {spell.Name} with {GetSpellTimeLeft(player.playerID, spell)} remaining; ";
 			}
 			if (concentrationReport == string.Empty)
 				concentrationReport = "No players are concentrating on any spells at this time.";

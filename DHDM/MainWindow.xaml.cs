@@ -28,25 +28,6 @@ using System.IO;
 
 namespace DHDM
 {
-	// TODO: Move to its own class
-	public class DebugLine
-	{
-		public string Line { get; set; }
-		public bool BreakAtStart { get; set; }
-		public DebugLine(string line, bool breakAtStart)
-		{
-			Line = line;
-			BreakAtStart = breakAtStart;
-		}
-		public DebugLine(string line)
-		{
-			Line = line;
-		}
-		public DebugLine()
-		{
-			
-		}
-	}
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -503,7 +484,7 @@ namespace DHDM
 					textAnswers.Add($"{index}. " + thisAnswer.AnswerText);
 					index++;
 				}
-				TellDungeonMaster($"QuestionBlock {twitchIndent}" + question);
+				TellDungeonMaster($"{Icons.QuestionBlock} {twitchIndent}" + question);
 				foreach (AnswerMap answer in answerMap)
 				{
 					TellDungeonMaster($"{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent} {answer.Index}. {answer.AnswerText}");
@@ -579,7 +560,7 @@ namespace DHDM
 				tbxHiddenThreshold.Text = hiddenThreshold.ToString();
 			});
 
-			TellDungeonMaster($"PLAYlogo {twitchIndent} Hidden threshold successfully changed to {hiddenThreshold}.");
+			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{hiddenThreshold} {twitchIndent} <-- hidden threshold");
 		}
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -755,6 +736,7 @@ namespace DHDM
 			int parenPos = spellToEnd.IndexOf('(');
 
 			string casterId = string.Empty;
+			string casterEmote = string.Empty;
 			if (parenPos > 0)
 			{
 				string playerIdStr = spellToEnd.Substring(parenPos + 1);
@@ -762,6 +744,8 @@ namespace DHDM
 				playerIdStr = playerIdStr.Trim(endChars);
 				if (int.TryParse(playerIdStr, out int playerId))
 				{
+					Character player = game.GetPlayerFromId(playerId);
+					casterEmote = player.emoticon + " ";
 					//BreakConcentration(playerId);
 					casterId = $"{GetPlayerName(playerId)}'s ";
 				}
@@ -769,7 +753,8 @@ namespace DHDM
 			}
 			if (spellToEnd.StartsWith(PlayerActionShortcut.SpellWindupPrefix))
 				spellToEnd = spellToEnd.Substring(PlayerActionShortcut.SpellWindupPrefix.Length);
-			TellDungeonMaster($"{casterId} {spellToEnd} spell ends at {game.Clock.AsFullDndDateTimeString()}.");
+			
+			TellDungeonMaster($"{casterEmote}{casterId} {spellToEnd} spell ends at {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
 		Dictionary<int, Spell> concentratedSpells = new Dictionary<int, Spell>();
@@ -1969,11 +1954,18 @@ namespace DHDM
 			CheckForFollowUpRolls(ea.StopRollingData);
 		}
 
+		string GetPlayerEmoticon(int playerId)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return string.Empty;
+			return player.emoticon;
+		}
 		void ReportInitiativeResults(DiceEventArgs ea)
 		{
 			if (ea.StopRollingData.multiplayerSummary == null)
 			{
-				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣Unexpected issue - no multiplayer results.");
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unexpected issue - no multiplayer results.");
 				return;
 			}
 
@@ -1982,9 +1974,10 @@ namespace DHDM
 			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 			{
 				string playerName = DndUtils.GetFirstName(playerRoll.name);
+				string emoticon = GetPlayerEmoticon(playerRoll.playerId);
 				int rollValue = playerRoll.modifier + playerRoll.roll;
 				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {playerName}, rolled a {rollValue.ToString()}.");
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.");
 				count++;
 			}
 		}
@@ -2677,10 +2670,10 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				if (game.Clock.InCombat)
-					TellDungeonMaster("Already in combat!");
+					TellDungeonMaster($"{Icons.WarningSign} Already in combat!");
 				else
 				{
-					TellDungeonMaster("Entering combat...");
+					TellDungeonMaster($"{Icons.EnteringCombat} Entering combat...");
 					BtnEnterExitCombat_Click(null, null);
 				}
 			});
@@ -2690,10 +2683,10 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				if (!game.Clock.InCombat)
-					TellDungeonMaster("Already NOT in combat!");
+					TellDungeonMaster($"{Icons.WarningSign} Already NOT in combat!");
 				else
 				{
-					TellDungeonMaster("Exiting combat...");
+					TellDungeonMaster($"{Icons.ExitCombat} Exiting combat...");
 					BtnEnterExitCombat_Click(null, null);
 				}
 			});
@@ -2717,7 +2710,7 @@ namespace DHDM
 					break;
 				case DungeonMasterCommand.NonCombatInitiative:
 					RollNonCombatInitiative();
-					TellDungeonMaster("Rolling non-combat initiative...");
+					TellDungeonMaster($"{Icons.NonCombatInitiative} Rolling non-combat initiative...");
 					break;
 				case DungeonMasterCommand.EnterCombat:
 					EnterCombat();
@@ -2777,12 +2770,19 @@ namespace DHDM
 
 			string articlePlusSkillDislay = DndUtils.ToArticlePlusSkillDisplayString(skill);
 			string who;
+			string icon;
 			if (allPlayers)
+			{
 				who = "all players";
+				icon = Icons.SkillTest;
+			}
 			else
+			{
 				who = GetPlayerName(ActivePlayerId);
+				icon = Icons.MultiplayerSkillCheck;
+			}
 			string firstPart = $"Rolling {articlePlusSkillDislay} skill check for {who}";
-			TellDungeonMaster($"{firstPart}{PlusHiddenThresholdDisplayStr()}.");
+			TellDungeonMaster($"{icon} {firstPart}{PlusHiddenThresholdDisplayStr()}.");
 			TellViewers($"{firstPart}...");
 		}
 
@@ -2822,7 +2822,7 @@ namespace DHDM
 				who = GetPlayerName(ActivePlayerId);
 
 			string firstPart = $"Rolling {abilityStr} saving throw for {who}";
-			TellDungeonMaster($"{firstPart}{PlusHiddenThresholdDisplayStr()}...");
+			TellDungeonMaster($"{Icons.SavingThrow} {firstPart}{PlusHiddenThresholdDisplayStr()}...");
 			TellViewers($"{firstPart}...");
 		}
 
@@ -3150,9 +3150,9 @@ namespace DHDM
 			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
 			string message;
 			if (damageHealthChange.DamageHealth < 0)
-				message = $"{-damageHealthChange.DamageHealth} points of damage dealt to {playerNames}.";
+				message = $"{Icons.TakesDamage} {-damageHealthChange.DamageHealth} points of damage dealt to {playerNames}.";
 			else
-				message = $"{damageHealthChange.DamageHealth} points of healing given to {playerNames}.";
+				message = $"{Icons.GainsHealth} {damageHealthChange.DamageHealth} points of healing given to {playerNames}.";
 
 			TellDungeonMaster(message);
 			TellViewers(message);
@@ -3330,7 +3330,7 @@ namespace DHDM
 			{
 				if (playerId != ActivePlayerId)
 				{
-					TellDungeonMaster($"===================> {GetNopeMessage()}. {GetPlayerName(playerId)} is not the active player!");
+					TellDungeonMaster($"{Icons.WarningSign} ===================> {GetNopeMessage()}. {GetPlayerName(playerId)} is not the active player!");
 					return;
 				}
 				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == playerId);
@@ -3353,7 +3353,7 @@ namespace DHDM
 						if (playerTabItem.PlayerId == playerId)
 						{
 							tabPlayers.SelectedItem = playerTabItem;
-							TellDmActivePlayer(playerId);
+							//TellDmActivePlayer(playerId);
 							break;
 						}
 					}
@@ -3365,6 +3365,7 @@ namespace DHDM
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
+			TellDungeonMaster($"{twitchIndent}");
 			TellDungeonMaster($"{player.emoticon} {twitchIndent} ----- {GetPlayerName(playerId)} -----");
 		}
 
@@ -3438,7 +3439,7 @@ namespace DHDM
 			}
 			catch (Exception ex)
 			{
-				dmMessage = $"Unable to play {sceneName}: {ex.Message}";
+				dmMessage = $"{Icons.WarningSign} Unable to play {sceneName}: {ex.Message}";
 			}
 			TellDungeonMaster(dmMessage);
 		}
