@@ -278,6 +278,7 @@
     <Compile Include="BreakConcentrationCommand.cs" />
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
+    <Compile Include="DebugLine.cs" />
     <Compile Include="DiceEventArgs.cs" />
     <Compile Include="DiceStoppedRollingData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
@@ -289,6 +290,7 @@
     <Compile Include="GetDataCommand.cs" />
     <Compile Include="HealthDamageCommand.cs" />
     <Compile Include="HiddenThresholdCommand.cs" />
+    <Compile Include="Icons.cs" />
     <Compile Include="IDungeonMasterCommand.cs" />
     <Compile Include="IDungeonMasterApp.cs" />
     <Compile Include="InspirationTextBox.cs" />

@@ -15,6 +15,11 @@ namespace DndCore
 			if (args.Count != value)
 				throw new Exception($"args.count ({args.Count}) does not match arguments sent ({value}).");
 		}
+		protected void ExpectingArguments(List<string> args, int minValue, int maxValue)
+		{
+			if (args.Count < minValue || args.Count > maxValue)
+				throw new Exception($"args.count ({args.Count}) must be between {minValue} and {maxValue}.");
+		}
 	}
 }
 

@@ -671,7 +671,7 @@
 					<StackPanel Orientation="Horizontal">
 						<StackPanel x:Name="spEvents" Orientation="Vertical">
 							<StackPanel Orientation="Horizontal">
-								<ListBox x:Name="lstAssignedFeatures" SelectionChanged="LstEventCategory_SelectionChanged" >
+								<ListBox x:Name="lstAssignedFeatures" SelectionChanged="LstEventCategory_SelectionChanged" PreviewMouseUp="LstAssignedFeatures_PreviewMouseUp" >
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<Grid>
@@ -687,7 +687,7 @@
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<ListBox x:Name="lstKnownSpells" SelectionChanged="LstEventCategory_SelectionChanged" >
+								<ListBox x:Name="lstKnownSpells" SelectionChanged="LstEventCategory_SelectionChanged" PreviewMouseUp="LstKnownSpells_PreviewMouseUp">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<Grid>

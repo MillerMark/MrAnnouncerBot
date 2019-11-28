@@ -4,12 +4,16 @@ using System.Text;
 using System.Collections;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 
 namespace DndCore
 {
 	public class Character : Creature
 	{
+		[JsonIgnore]
+		public Queue<SpellHit> additionalSpellEffect = new Queue<SpellHit>();
+
 		const string STR_RechargeableMaxSuffix = "_max";
 		double _passivePerception = int.MinValue;
 
@@ -2322,6 +2326,38 @@ namespace DndCore
 		public KnownSpell GetMatchingSpell(string spellName)
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
+		}
+		public void AddSpellEffect(int hue, int brightness, string effectName = "")
+		{
+			additionalSpellEffect.Enqueue(new SpellHit(hue, brightness, effectName));
+		}
+
+		public void ClearAdditionalSpellEffects()
+		{
+			additionalSpellEffect.Clear();
+		}
+		EventData FindEvent(EventType eventType, string parentName, string eventName)
+		{
+			foreach (EventCategory eventCategory in eventCategories)
+			{
+				EventData foundEvent = eventCategory.FindEvent(eventType, parentName,  eventName);
+				if (foundEvent != null)
+					return foundEvent;
+			}
+			return null;
+		}
+		public bool NeedToBreakBeforeFiringEvent(EventType eventType, string parentName, [CallerMemberName] string eventName = "")
+		{
+			const string TriggerMethodPrefix = "Trigger";
+			if (!eventName.StartsWith(TriggerMethodPrefix))
+				return false;
+			string realEventName = "On" + eventName.Substring(TriggerMethodPrefix.Length);
+
+			EventData foundEvent = FindEvent(eventType, parentName, realEventName);
+			if (foundEvent == null)
+				return false;
+
+			return foundEvent.BreakAtStart;
 		}
 
 		public event CastedSpellEventHandler SpellDispelled;

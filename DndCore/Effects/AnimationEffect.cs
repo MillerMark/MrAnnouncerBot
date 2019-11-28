@@ -12,6 +12,11 @@ namespace DndCore
 		public double hueShift;
 		public string name;
 		public double saturation;
+		public double scale = 1;
+		public double rotation = 0;
+		public double autoRotation = 0;
+		public bool horizontalFlip = false;
+		public bool verticalFlip = false;
 		public double secondaryBrightness = 100;
 		public double secondaryHueShift = 0;
 		public double secondarySaturation = 100;

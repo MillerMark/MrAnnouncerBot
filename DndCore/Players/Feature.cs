@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 namespace DndCore
@@ -28,6 +29,7 @@ namespace DndCore
 		}
 
 		public string ActivateWhen { get; set; }
+		[DndEvent]
 		public string OnStartGame { get; set; }
 		public DndTimeSpan Duration { get; set; }
 		public bool IsActive { get; private set; }
@@ -121,10 +123,16 @@ namespace DndCore
 				else
 					History.TimeClock.CreateAlarm(duration, alarmName, player, this).AlarmFired += Feature_Expired;
 			}
-			if (!string.IsNullOrWhiteSpace(OnActivate))
-				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);
+			TriggerActivate(arguments, player);
 			OnRequestMessageToDungeonMaster(this, activationMessage);
 			OnFeatureActivated(player, new FeatureEventArgs(this));
+		}
+
+		private void TriggerActivate(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(OnActivate))
+				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);
 		}
 
 		public void Deactivate(string arguments, Character player, bool forceDeactivation = false)
@@ -142,11 +150,18 @@ namespace DndCore
 				deactivationMessage = $"Deactivating {Name}.";
 
 			IsActive = false;
-			if (!string.IsNullOrWhiteSpace(OnDeactivate))
-				Expressions.Do(DndUtils.InjectParameters(OnDeactivate, Parameters, arguments), player);
+			TriggerDeactivate(arguments, player);
 			OnRequestMessageToDungeonMaster(this, deactivationMessage);
 			OnFeatureDeactivated(player, new FeatureEventArgs(this));
 		}
+
+		private void TriggerDeactivate(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(OnDeactivate))
+				Expressions.Do(DndUtils.InjectParameters(OnDeactivate, Parameters, arguments), player);
+		}
+
 		private void Feature_Expired(object sender, DndTimeEventArgs ea)
 		{
 			if (IsActive)
@@ -155,9 +170,14 @@ namespace DndCore
 
 		public void StartGame(string arguments, Character player)
 		{
-			if (string.IsNullOrWhiteSpace(OnStartGame))
-				return;
-			Expressions.Do(DndUtils.InjectParameters(OnStartGame, Parameters, arguments), player);
+			TriggerStartGame(arguments, player);
+		}
+
+		private void TriggerStartGame(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(OnStartGame))
+				Expressions.Do(DndUtils.InjectParameters(OnStartGame, Parameters, arguments), player);
 		}
 
 		public bool ShouldActivateNow(List<string> args, Character player)
@@ -172,6 +192,12 @@ namespace DndCore
 		{
 			if (!IsActive)
 				return;
+			TriggerPlayerCastsSpell(arguments, player, spell);
+		}
+
+		private void TriggerPlayerCastsSpell(string arguments, Character player, CastedSpell spell)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerCastsSpell))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerCastsSpell, Parameters, arguments), player, null, spell);
 		}
@@ -180,6 +206,12 @@ namespace DndCore
 		{
 			if (!IsActive)
 				return;
+			TriggerPlayerSwingsWeapon(arguments, player);
+		}
+
+		private void TriggerPlayerSwingsWeapon(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerSwingsWeapon))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerSwingsWeapon, Parameters, arguments), player);
 		}
@@ -188,16 +220,28 @@ namespace DndCore
 		{
 			if (!IsActive)
 				return;
-				if (!string.IsNullOrWhiteSpace(OnPlayerStartsTurn))
-					Expressions.Do(DndUtils.InjectParameters(OnPlayerStartsTurn, Parameters, arguments), player);
+			TriggerPlayerStartsTurn(arguments, player);
 		}
 
-		
+		private void TriggerPlayerStartsTurn(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(OnPlayerStartsTurn))
+				Expressions.Do(DndUtils.InjectParameters(OnPlayerStartsTurn, Parameters, arguments), player);
+		}
+
+
 		// TODO: Call when a player rolls a saving throw (to implement DangerSense).
 		public void PlayerSaves(string arguments, Character player)
 		{
 			if (!IsActive)
 				return;
+			TriggerPlayerSaves(arguments, player);
+		}
+
+		private void TriggerPlayerSaves(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerSaves))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerSaves, Parameters, arguments), player);
 		}
@@ -206,6 +250,12 @@ namespace DndCore
 		{
 			if (!IsActive)
 				return;
+			TriggerRollComplete(arguments, player);
+		}
+
+		private void TriggerRollComplete(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnRollComplete))
 				Expressions.Do(DndUtils.InjectParameters(OnRollComplete, Parameters, arguments), player);
 		}

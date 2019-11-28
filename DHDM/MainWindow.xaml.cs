@@ -923,6 +923,7 @@ namespace DHDM
 
 
 			Character player = GetPlayer(actionShortcut.PlayerId);
+			player.ClearAdditionalSpellEffects();
 			if (actionShortcut.Part != TurnPart.Reaction)
 				game.CreatureTakingAction(player);
 
@@ -933,36 +934,15 @@ namespace DHDM
 			Spell spell = actionShortcut.Spell;
 			if (spell != null)
 			{
-				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
-				activeIsSpell = spell;
-				KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
-				if (matchingSpell != null && matchingSpell.CanBeRecharged())
-				{
-					PrepareToCastSpell(spell, actionShortcut.PlayerId);
-					UseRechargeableItem(actionShortcut, matchingSpell);
-					CastedSpell castedSpell = new CastedSpell(spell, player, null);
-					castedSpell.CastingWithItem();
-				}
-				else
-				{
-					CastActionSpell(actionShortcut, player, spell);
-				}
-
-				tbxDamageDice.Text = spell.DieStr;
-				spellCaster = player;
+				ActivateSpellShortcut(actionShortcut, player, spell);
 			}
 			else
 			{
 				// TODO: Add support for shortcut buttons that can activate a particular scroll page (e.g., a wand that activates the items page?)
 				if (actionShortcut.Name.IndexOf("Wild Magic") < 0)
 					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
-				if (actionShortcut.Windups.Count > 0)
-				{
-					List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
 
-					string serializedObject = JsonConvert.SerializeObject(windups);
-					HubtasticBaseStation.AddWindup(serializedObject);
-				}
+				SendShortcutWindups(actionShortcut, player);
 			}
 
 			actionShortcut.ExecuteCommands(player);
@@ -979,18 +959,7 @@ namespace DHDM
 			try
 			{
 				HighlightPlayerShortcut(actionShortcut.Index);
-				if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
-					tbxDamageDice.Text += "," + actionShortcut.AddDice;
-				else if (spell == null)
-					tbxDamageDice.Text = actionShortcut.Dice;
-
-				if (actionShortcut.MinDamage != keepExistingModifier)
-					tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
-
-				tbxAddDiceOnHit.Text = actionShortcut.AddDiceOnHit;
-				tbxMessageAddDiceOnHit.Text = actionShortcut.AddDiceOnHitMessage;
-
-				ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
+				SetControlsFromShortcut(actionShortcut, spell);
 				NextDieRollType = actionShortcut.Type;
 
 				if (actionShortcut.VantageMod != VantageKind.Normal)
@@ -1015,6 +984,54 @@ namespace DHDM
 				settingInternally = false;
 				UpdateStateUIForPlayer(player);
 			}
+		}
+
+		private void SetControlsFromShortcut(PlayerActionShortcut actionShortcut, Spell spell)
+		{
+			if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+				tbxDamageDice.Text += "," + actionShortcut.AddDice;
+			else if (spell == null)
+				tbxDamageDice.Text = actionShortcut.Dice;
+
+			if (actionShortcut.MinDamage != keepExistingModifier)
+				tbxMinDamage.Text = actionShortcut.MinDamage.ToString();
+
+			tbxAddDiceOnHit.Text = actionShortcut.AddDiceOnHit;
+			tbxMessageAddDiceOnHit.Text = actionShortcut.AddDiceOnHitMessage;
+
+			ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
+		}
+
+		private static void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player)
+		{
+			if (actionShortcut.Windups.Count > 0)
+			{
+				List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
+
+				string serializedObject = JsonConvert.SerializeObject(windups);
+				HubtasticBaseStation.AddWindup(serializedObject);
+			}
+		}
+
+		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut, Character player, Spell spell)
+		{
+			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
+			activeIsSpell = spell;
+			KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
+			if (matchingSpell != null && matchingSpell.CanBeRecharged())
+			{
+				PrepareToCastSpell(spell, actionShortcut.PlayerId);
+				UseRechargeableItem(actionShortcut, matchingSpell);
+				CastedSpell castedSpell = new CastedSpell(spell, player, null);
+				castedSpell.CastingWithItem();
+			}
+			else
+			{
+				CastActionSpell(actionShortcut, player, spell);
+			}
+
+			tbxDamageDice.Text = spell.DieStr;
+			spellCaster = player;
 		}
 
 		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell)
@@ -1069,6 +1086,7 @@ namespace DHDM
 			}
 			else
 			{
+				ShowSpellHit(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
 				player.JustCastSpell(spell.Name);
 			}
 		}
@@ -1119,6 +1137,7 @@ namespace DHDM
 
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
+			btnRollDice.IsEnabled = true;
 			ActivatePendingShortcuts();
 			if (buildingTabs)
 				return;
@@ -1243,6 +1262,17 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
+			{
+				Spell spell = AllSpells.Get(diceRoll.SpellName);
+				if (spell != null && spell.MustRollDiceToCast())
+				{
+					DiceRollType diceRollType = PlayerActionShortcut.GetDiceRollType(PlayerActionShortcut.GetDiceRollTypeStr(spell));
+					if (!DndUtils.IsAttack(diceRollType) && diceRoll.PlayerRollOptions.Count == 1)
+						ShowSpellHit(diceRoll.PlayerRollOptions[0].PlayerID, SpellHitType.Hit, spell.Name);
+				}
+			}
+
 			lastRoll = diceRoll;
 			Character player = null;
 			CompleteCast(diceRoll);
@@ -1932,6 +1962,153 @@ namespace DHDM
 			}
 		}
 
+		public enum SpellHitType
+		{
+			Miss,
+			Hit
+		}
+
+		void ShowSpellHit(int playerId, SpellHitType spellHitType, string spellName)
+		{
+			Spell spell = AllSpells.Get(spellName);
+			if (spell == null)
+				return;
+			int hueShift = DndUtils.GetHueShift(spell.SchoolOfMagic);
+			EffectGroup effectGroup = new EffectGroup();
+			
+			VisualEffectTarget chestTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
+			VisualEffectTarget bottomTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
+
+			if (spellHitType == SpellHitType.Miss)
+			{
+				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, hueShift, 20));
+			}
+			else
+			{
+				double scale = 1;
+				double autoRotation = 140;
+				const double scaleIncrement = 1.1;
+				AnimationEffect effect = CreateEffect(GetRandomHitSpellName(), chestTarget, hueShift);
+				effect.autoRotation = autoRotation;
+				autoRotation *= -1;
+				effectGroup.Add(effect);
+				scale *= scaleIncrement;
+
+				int timeOffset = 200;
+				if (!string.IsNullOrWhiteSpace(spell.Hue1))
+				{
+					AnimationEffect effectBonus1 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue1, spell.Bright1);
+					effectBonus1.timeOffsetMs = timeOffset;
+					effectBonus1.scale = scale;
+					effectBonus1.autoRotation = autoRotation;
+					autoRotation *= -1;
+					scale *= scaleIncrement;
+					effectGroup.Add(effectBonus1);
+				}
+				timeOffset += 200;
+				if (!string.IsNullOrWhiteSpace(spell.Hue2))
+				{
+					AnimationEffect effectBonus2 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue2, spell.Bright2);
+					effectBonus2.timeOffsetMs = timeOffset;
+					effectBonus2.scale = scale;
+					effectBonus2.autoRotation = autoRotation;
+					autoRotation *= -1;
+					scale *= scaleIncrement;
+					effectGroup.Add(effectBonus2);
+				}
+				Character player = game.GetPlayerFromId(playerId);
+
+				if (player != null)
+					while (player.additionalSpellEffect.Count > 0)
+					{
+						SpellHit spellHit = player.additionalSpellEffect.Dequeue();
+						string effectName;
+						bool usingSpellHits = true;
+						VisualEffectTarget target;
+
+						if (!string.IsNullOrWhiteSpace(spellHit.EffectName))
+						{
+							effectName = spellHit.EffectName;
+							usingSpellHits = false;
+							target = bottomTarget;
+						}
+						else
+						{
+							effectName = GetRandomHitSpellName();
+							target = chestTarget;
+						}
+						AnimationEffect effectBonus = CreateEffect(effectName, target, spellHit.Hue, spellHit.Brightness);
+						if (usingSpellHits)
+						{
+							effectBonus.timeOffsetMs = timeOffset;
+							effectBonus.scale = scale;
+							effectBonus.autoRotation = autoRotation;
+							autoRotation *= -1;
+							scale *= scaleIncrement;
+						}
+						effectGroup.Add(effectBonus);
+						timeOffset += 200;
+					}
+				//effectGroup.Add(new SoundEffect("Blood Squirting Weapon Impact.mp3"));
+			}
+
+			// TODO: Add scaling and rotation to AnimationEffect!
+
+			// TODO: Add success or fail sound effects.
+			//effectGroup.Add(new SoundEffect("Blood Squirting Weapon Impact.mp3"));
+
+			string serializedObject = JsonConvert.SerializeObject(effectGroup);
+			HubtasticBaseStation.TriggerEffect(serializedObject);
+		}
+
+		private static string GetRandomHitSpellName()
+		{
+			return "SpellHit" + MathUtils.RandomBetween(1, 5).ToString();
+		}
+
+		AnimationEffect CreateSpellEffect(string spriteName, VisualEffectTarget target, string hueShiftStr, string brightnessStr = null)
+		{
+			int hueShift;
+			if (hueShiftStr == "player")
+			{
+				hueShift = ActivePlayer.hueShift;
+			}
+			else
+			{
+				if (!int.TryParse(hueShiftStr, out hueShift))
+					hueShift = 0;
+			}
+			if (!int.TryParse(brightnessStr, out int brightness))
+				brightness = 100;
+			return CreateEffect(spriteName, target, hueShift, brightness);
+		}
+
+		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target, int hueShift, int brightness = 100)
+		{
+			AnimationEffect spellEffect = new AnimationEffect();
+			spellEffect.spriteName = spriteName;
+			spellEffect.hueShift = hueShift;
+			spellEffect.brightness = brightness;
+			spellEffect.target = target;
+			return spellEffect;
+		}
+
+		void CheckSpellHitResults(DiceStoppedRollingData stopRollingData)
+		{
+			if (!DndUtils.IsAttack(stopRollingData.type))
+				return;
+			
+			if (string.IsNullOrWhiteSpace(stopRollingData.spellName))
+				return;
+			if (stopRollingData.success)
+			{
+				ShowSpellHit(stopRollingData.playerID, SpellHitType.Hit, stopRollingData.spellName);
+			}
+			else
+			{
+				ShowSpellHit(stopRollingData.playerID, SpellHitType.Miss, stopRollingData.spellName);
+			}
+		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			waitingToClearDice = true;
@@ -1948,6 +2125,7 @@ namespace DHDM
 			HubtasticBaseStation.ClearWindup("Windup.*");
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			ReportOnDieRoll(ea);
+			CheckSpellHitResults(ea.StopRollingData);
 
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
@@ -3651,6 +3829,7 @@ namespace DHDM
 				if (e.AddedItems[0] is EventGroup eventGroup)
 					lstEvents.ItemsSource = eventGroup.Events;
 		}
+
 		System.Collections.IEnumerable GetPlayerEventCode(Character activePlayer, EventGroup parentGroup, string name)
 		{
 			string groupName = parentGroup.Name;
@@ -3804,6 +3983,18 @@ namespace DHDM
 			diceRoll.DamageDice = "1d20(fire),1d20(acid),1d20(cold),1d20(force),1d20(necrotic),1d20(piercing),1d20(bludgeoning),1d20(slashing),1d20(lightning),1d20(radiant),1d20(thunder)";
 			RollTheDice(diceRoll);
 			// 1d20(superiority),
+		}
+
+		private void LstAssignedFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		{
+			if (lstAssignedFeatures.SelectedItem is EventGroup eventGroup)
+				lstEvents.ItemsSource = eventGroup.Events;
+		}
+
+		private void LstKnownSpells_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		{
+			if (lstKnownSpells.SelectedItem is EventGroup eventGroup)
+				lstEvents.ItemsSource = eventGroup.Events;
 		}
 	}
 

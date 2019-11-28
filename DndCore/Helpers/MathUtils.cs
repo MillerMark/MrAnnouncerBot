@@ -29,5 +29,14 @@ namespace DndCore
 				return "x";
 			return string.Empty;
 		}
+
+		static Random random = new Random();
+		public static int RandomBetween(int min, int max)
+		{
+			int delta = max - min + 1;
+			if (delta == 0)
+				return min;
+			return random.Next(delta) + min;
+		}
 	}
 }

@@ -92,5 +92,12 @@ namespace DndCore
 		{
 			return Name;
 		}
+		public EventData FindEvent(EventType eventType, string eventName)
+		{
+			if (Type != eventType)
+				return null;
+
+			return Events.FirstOrDefault(eventData => eventData.Name == eventName);
+		}
 	}
 }

@@ -24,13 +24,13 @@ namespace DndCore
 		{
 			SpellCaster.CheckConcentration(this);
 			SpellCaster.ShowPlayerCasting(this);
-			Spell.TriggerOnCasting(SpellCaster, TargetCreature, this);
+			Spell.TriggerCasting(SpellCaster, TargetCreature, this);
 		}
 
 		public void CastingWithItem()
 		{
 			SpellCaster.ShowPlayerCasting(this);
-			Spell.TriggerOnCasting(SpellCaster, TargetCreature, this);
+			Spell.TriggerCasting(SpellCaster, TargetCreature, this);
 		}
 
 		public void Cast()

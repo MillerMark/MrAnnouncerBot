@@ -6,9 +6,9 @@
 
 class SpritesEffect extends VisualEffect {
   lifeSpanMs: number;
-  scale: number = 1;
-  constructor(private spritesRef: Sprites, private visualEffectTarget: VisualEffectTarget, private startFrameIndex: number,
-		private hueShift: number, private saturation: number, private brightness: number, private flipHorizontally: boolean = false) {
+  constructor(public spritesRef: Sprites, public visualEffectTarget: VisualEffectTarget, public startFrameIndex: number,
+		public hueShift: number, public saturation: number, public brightness: number, public flipHorizontally: boolean = false,
+	  public flipVertically: boolean = false, public scale: number = 1, public rotation: number = 0, public autoRotation: number = 0) {
     super();
   }
 
@@ -19,7 +19,10 @@ class SpritesEffect extends VisualEffect {
 				new Vector(-this.spritesRef.originX, -this.spritesRef.originY)), this.lifeSpanMs)
 				.setHueSatBrightness(this.hueShift, this.saturation, this.brightness);
 			sprite.flipHorizontally = this.flipHorizontally;
+			sprite.flipVertically = this.flipVertically;
 			sprite.scale = this.scale;
+			sprite.rotation = this.rotation;
+			sprite.autoRotationDegeesPerSecond = this.autoRotation;
 			this.spritesRef.sprites.push(sprite);
     }
     else {

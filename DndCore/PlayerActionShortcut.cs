@@ -177,7 +177,7 @@ namespace DndCore
 			return TurnPart.Action;
 		}
 
-		static DiceRollType GetDiceRollType(string type)
+		public static DiceRollType GetDiceRollType(string type)
 		{
 			switch (type)
 			{
@@ -420,22 +420,7 @@ namespace DndCore
 				//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
 
 				SetDtoFromEffect(dto, spellEffect);
-				if (spell.SpellType == SpellType.RangedSpell || spell.SpellType == SpellType.MeleeSpell)
-					if (spell.Name == "Chaos Bolt")
-						dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.ChaosBolt);
-					else
-						dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.Attack);
-				else if (spell.SpellType == SpellType.SavingThrowSpell)
-					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.DamageOnly);
-				else if (spell.SpellType == SpellType.OtherSpell)
-					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.None);
-				else if (spell.SpellType == SpellType.HpCapacitySpell)
-					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.ExtraOnly);
-				else
-				{
-					dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.None);
-				}
-
+				dto.type = GetDiceRollTypeStr(spell);
 				SetSpellCastingTime(dto, spell);
 				List<Spell> oneSpell = new List<Spell>();
 				oneSpell.Add(spell);
@@ -445,6 +430,25 @@ namespace DndCore
 			AddItemEffect(results, spellEffect);
 
 			return results;
+		}
+
+		public static string GetDiceRollTypeStr(Spell spell)
+		{
+			if (spell.SpellType == SpellType.RangedSpell || spell.SpellType == SpellType.MeleeSpell)
+				if (spell.Name == "Chaos Bolt")
+					return DndUtils.DiceRollTypeToStr(DiceRollType.ChaosBolt);
+				else
+					return DndUtils.DiceRollTypeToStr(DiceRollType.Attack);
+			else if (spell.SpellType == SpellType.SavingThrowSpell || spell.SpellType == SpellType.DamageSpell)
+				return DndUtils.DiceRollTypeToStr(DiceRollType.DamageOnly);
+			else if (spell.SpellType == SpellType.OtherSpell)
+				return DndUtils.DiceRollTypeToStr(DiceRollType.None);
+			else if (spell.SpellType == SpellType.HpCapacitySpell)
+				return DndUtils.DiceRollTypeToStr(DiceRollType.ExtraOnly);
+			else
+			{
+				return DndUtils.DiceRollTypeToStr(DiceRollType.None);
+			}
 		}
 
 		public static List<PlayerActionShortcut> FromWeapon(CarriedWeapon carriedWeapon, ItemEffect weaponEffect, Character player)
@@ -521,6 +525,7 @@ namespace DndCore
 		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
 			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix, slotLevelOverride);
+			result.Type = GetDiceRollType(GetDiceRollTypeStr(spell));
 			result.UsesMagic = true;
 			int spellSlotLevel = spell.Level;
 			if (slotLevelOverride > 0)

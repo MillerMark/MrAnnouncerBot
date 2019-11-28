@@ -19,6 +19,32 @@ namespace DndCore
 	
 	public static class DndUtils
 	{
+		public static int GetHueShift(SchoolOfMagic schoolOfMagic)
+		{
+			switch (schoolOfMagic)
+			{
+				case SchoolOfMagic.None:
+					return 0;
+				case SchoolOfMagic.Abjuration:
+					return 191;
+				case SchoolOfMagic.Illusion:
+					return 238;
+				case SchoolOfMagic.Conjuration:
+					return 277;
+				case SchoolOfMagic.Enchantment:
+					return 331;
+				case SchoolOfMagic.Necromancy:
+					return 7;
+				case SchoolOfMagic.Evocation:
+					return 137;
+				case SchoolOfMagic.Transmutation:
+					return 101;
+				case SchoolOfMagic.Divination:
+					return 52;
+			}
+			return 0;
+		}
+
 		public static string GetFirstName(string name)
 		{
 			if (name == null)

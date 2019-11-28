@@ -28,6 +28,18 @@ namespace DndCore
 		{
 			groups.Clear();
 		}
+		public EventData FindEvent(EventType eventType, string parentName, string eventName)
+		{
+			foreach (EventGroup eventGroup in Groups)
+			{
+				if (eventGroup.Name != parentName)
+					continue;
+				EventData foundEvent = eventGroup.FindEvent(eventType, eventName);
+				if (foundEvent != null)
+					return foundEvent;
+			}
+			return null;
+		}
 
 		public List<EventGroup> Groups { get => groups; set => groups = value; }
 		public string CategoryName { get; set; }

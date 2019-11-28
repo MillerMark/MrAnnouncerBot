@@ -161,7 +161,7 @@ class DragonFrontGame extends DragonGame {
 	allEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
 	dragonFrontSounds: DragonFrontSounds;
-    activePlayerId: number;
+  activePlayerId: number;
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -306,37 +306,45 @@ class DragonFrontGame extends DragonGame {
 		this.embersMedium.originX = 504;
 		this.embersMedium.originY = 501;
 
+		/* Three/four kinds of hits:
+		 
+		 1a. Successful ranged spell attack (the d20 score is above or equal to the min threshold)
+		 1b. Failed ranged spell attack (the d20 score is below the min threshold)
+		 2. Any other spell that requires a die roll (commit to the cast)
+		 3. Any other spell as soon as it is activated.
+
+		 */
 		
-		this.spellHits1 = new Sprites('PlayerEffects/Spells/SpellHits/Hit1/Hit', 28, fps30, AnimationStyle.Sequential, true);
+		this.spellHits1 = new Sprites('PlayerEffects/Spells/SpellHits/Hit1/Hit', 28, fps25, AnimationStyle.Sequential, true);
 		this.spellHits1.name = "SpellHit1";
 		this.spellHits1.originX = 176;
 		this.spellHits1.originY = 238;
 
 
-		this.spellHits2 = new Sprites('PlayerEffects/Spells/SpellHits/Hit2/Hit', 27, fps30, AnimationStyle.Sequential, true);
+		this.spellHits2 = new Sprites('PlayerEffects/Spells/SpellHits/Hit2/Hit', 27, fps25, AnimationStyle.Sequential, true);
 		this.spellHits2.name = "SpellHit2";
 		this.spellHits2.originX = 283;
 		this.spellHits2.originY = 248;
 
 
-		this.spellHits3 = new Sprites('PlayerEffects/Spells/SpellHits/Hit3/Hit', 27, fps30, AnimationStyle.Sequential, true);
+		this.spellHits3 = new Sprites('PlayerEffects/Spells/SpellHits/Hit3/Hit', 27, fps25, AnimationStyle.Sequential, true);
 		this.spellHits3.name = "SpellHit3";
 		this.spellHits3.originX = 290;
 		this.spellHits3.originY = 390;
 
 
-		this.spellHits4 = new Sprites('PlayerEffects/Spells/SpellHits/Hit4/Hit', 27, fps30, AnimationStyle.Sequential, true);
+		this.spellHits4 = new Sprites('PlayerEffects/Spells/SpellHits/Hit4/Hit', 27, fps25, AnimationStyle.Sequential, true);
 		this.spellHits4.name = "SpellHit4";
 		this.spellHits4.originX = 320;
 		this.spellHits4.originY = 300;
 
 
-		this.spellHits5 = new Sprites('PlayerEffects/Spells/SpellHits/Hit5/Hit', 26, fps30, AnimationStyle.Sequential, true);
+		this.spellHits5 = new Sprites('PlayerEffects/Spells/SpellHits/Hit5/Hit', 26, fps25, AnimationStyle.Sequential, true);
 		this.spellHits5.name = "SpellHit5";
 		this.spellHits5.originX = 190;
 		this.spellHits5.originY = 420;
 		
-		this.spellMisses = new Sprites('PlayerEffects/Spells/SpellHits/Miss/Miss', 34, fps30, AnimationStyle.Sequential, true);
+		this.spellMisses = new Sprites('PlayerEffects/Spells/SpellHits/Miss/Miss', 34, fps25, AnimationStyle.Sequential, true);
 		this.spellHits5.name = "SpellMiss";
 		this.spellHits5.originX = 186;
 		this.spellHits5.originY = 237;
@@ -723,13 +731,23 @@ class DragonFrontGame extends DragonGame {
 			sprites = this.fumes;
 		else if (dto.spriteName === 'FireBall')
 			sprites = this.fireBallBack;
+		else {
+			for (let i = 0; i < this.allEffects.allSprites.length; i++) {
+				if (dto.spriteName === this.allEffects.allSprites[i].name) {
+					sprites = this.allEffects.allSprites[i];
+					break;
+				}
+			}
+		}
 
 		let flipHorizontally: boolean = false;
 
-		if (horizontallyFlippable && Random.chancePercent(50))
+		if (dto.horizontalFlip || horizontallyFlippable && Random.chancePercent(50))
 			flipHorizontally = true;
 
-		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness, flipHorizontally);
+		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
+			flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
+		
 		spritesEffect.start();
 
 		if (dto.spriteName === 'FireBall') {

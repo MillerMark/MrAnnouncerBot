@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Diagnostics;
 
 namespace DndCore
 {
@@ -198,6 +199,8 @@ namespace DndCore
 					return SpellType.MeleeSpell;
 				if (attackType.IndexOf("ranged") >= 0)
 					return SpellType.RangedSpell;
+				if (attackType.IndexOf("damage") >= 0)
+					return SpellType.DamageSpell;
 			}
 
 			string dieStr = spellDto.die_str.ToLower();
@@ -403,34 +406,39 @@ namespace DndCore
 
 		public bool MustRollDiceToCast()
 		{
-			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || 
+			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || SpellType == SpellType.DamageSpell ||
 				(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr) && 
 				(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
-		public void TriggerOnCasting(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerCasting(Character player, Creature targetCreature, CastedSpell castedSpell)
 		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnCasting, player, targetCreature, castedSpell);
 		}
 
 		public void TriggerCast(Character player, Creature targetCreature, CastedSpell castedSpell)
 		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnCast, player, targetCreature, castedSpell);
 		}
 
 		public void TriggerDispel(Character player, Creature targetCreature, CastedSpell castedSpell)
 		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnDispel, player, targetCreature, castedSpell);
 		}
 
-		public void TriggerPlayerAttacks(Character player, Creature target, CastedSpell castedSpell)
+		public void TriggerPlayerAttacks(Character player, Creature targetCreature, CastedSpell castedSpell)
 		{
-			Expressions.Do(OnPlayerAttacks, player, target, castedSpell);
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnPlayerAttacks, player, targetCreature, castedSpell);
 		}
 
-		public void TriggerPlayerHitsTarget(Character player, Creature target, CastedSpell castedSpell)
+		public void TriggerPlayerHitsTarget(Character player, Creature targetCreature, CastedSpell castedSpell)
 		{
-			Expressions.Do(OnPlayerHitsTarget, player, target, castedSpell);
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnPlayerHitsTarget, player, targetCreature, castedSpell);
 		}
 		public Spell Clone(Character player, int spellSlotLevel)
 		{
