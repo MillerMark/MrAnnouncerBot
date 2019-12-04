@@ -12,7 +12,10 @@ namespace DndCore
 	public class Character : Creature
 	{
 		[JsonIgnore]
-		public Queue<SpellHit> additionalSpellEffect = new Queue<SpellHit>();
+		public Queue<SpellHit> additionalSpellEffects = new Queue<SpellHit>();
+
+		[JsonIgnore]
+		public Queue<SoundEffect> additionalSoundEffects = new Queue<SoundEffect>();
 
 		const string STR_RechargeableMaxSuffix = "_max";
 		double _passivePerception = int.MinValue;
@@ -2327,14 +2330,19 @@ namespace DndCore
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
 		}
-		public void AddSpellEffect(int hue, int brightness, string effectName = "")
+		public void AddSpellEffect(string effectName = "", int hue = 0, int saturation = 100, int brightness = 100, double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0)
 		{
-			additionalSpellEffect.Enqueue(new SpellHit(hue, brightness, effectName));
+			additionalSpellEffects.Enqueue(new SpellHit(effectName, hue, saturation, brightness, scale, rotation, autoRotation, timeOffset));
+		}
+		public void AddSoundEffect(string fileName, int timeOffset = 0)
+		{
+			additionalSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
 		}
 
 		public void ClearAdditionalSpellEffects()
 		{
-			additionalSpellEffect.Clear();
+			additionalSpellEffects.Clear();
+			additionalSoundEffects.Clear();
 		}
 		EventData FindEvent(EventType eventType, string parentName, string eventName)
 		{

@@ -1,129 +1,4 @@
-﻿enum SplatterDirection {
-	None,
-	Left,
-	Right
-}
-
-enum EmitterShape {
-	Circular = 1,
-	Rectangular = 2
-}
-
-enum TargetType {
-	ActivePlayer = 0,
-	ActiveEnemy = 1,
-	ScrollPosition = 2,
-	ScreenPosition = 3
-}
-
-enum VantageKind {
-	Normal,
-	Advantage,
-	Disadvantage
-}
-
-enum EffectKind {
-	Animation = 0,
-	Emitter = 1,
-	SoundEffect = 2,
-	GroupEffect = 3,
-	Placeholder = 4
-}
-
-class BloodSprites extends Sprites {
-	totallyContained: boolean;
-	height: number;
-	constructor(baseAnimationName: string, expectedFrameCount: number, frameInterval: number, animationStyle: AnimationStyle, padFileIndex: boolean = false, hitFloorFunc?, onLoadedFunc?) {
-		super(baseAnimationName, expectedFrameCount, frameInterval, animationStyle, padFileIndex, hitFloorFunc, onLoadedFunc);
-	}
-}
-
-class Fred {
-	thumbsUp: Sprites;
-	thumbsDown: Sprites;
-	noIdea: Sprites;
-	handsClasped: Sprites;
-	one: Sprites;
-	flipOff: Sprites;
-	fistUp: Sprites;
-	pointRight: Sprites;
-	pointToViewer: Sprites;
-	allAnimations: SpriteCollection;
-	constructor() {
-		
-	}
-
-	loadResources(): any {
-		this.allAnimations = new SpriteCollection();
-		this.thumbsUp = new Sprites('Fred/ThumbsUp/ThumbsUp', 98, fps30, AnimationStyle.Sequential, true);
-		this.thumbsUp.name = 'ThumbsUp';
-		this.thumbsUp.originX = 262;
-		this.thumbsUp.originY = 218;
-
-		this.thumbsDown = new Sprites('Fred/ThumbsDown/ThumbsDown', 103, fps30, AnimationStyle.Sequential, true);
-		this.thumbsDown.name = 'ThumbsDown';
-		this.thumbsDown.originX = 220;
-		this.thumbsDown.originY = 217;
-
-		this.noIdea = new Sprites('Fred/NoIdea/NoIdea', 101, fps30, AnimationStyle.Sequential, true);
-		this.noIdea.name = 'NoIdea';
-		this.noIdea.originX = 220;
-		this.noIdea.originY = 247;
-
-		this.handsClasped = new Sprites('Fred/HandsClasped/HandsClasped', 171, fps30, AnimationStyle.Sequential, true);
-		this.handsClasped.name = 'HandsClasped';
-		this.handsClasped.originX = 244;
-		this.handsClasped.originY = 158;
-
-		this.one = new Sprites('Fred/One/One', 44, fps30, AnimationStyle.Sequential, true);
-		this.one.name = 'One';
-		this.one.originX = 218;
-		this.one.originY = 249;
-
-		this.flipOff = new Sprites('Fred/FlipOff/FlipOff', 47, fps30, AnimationStyle.Sequential, true);
-		this.flipOff.name = 'FlipOff';
-		this.flipOff.originX = 180;
-		this.flipOff.originY = 207;
-
-		this.fistUp = new Sprites('Fred/FistUp/FistUp', 61, fps30, AnimationStyle.Sequential, true);
-		this.fistUp.name = 'FistUp';
-		this.fistUp.originX = 228;
-		this.fistUp.originY = 148;
-
-		this.pointRight = new Sprites('Fred/PointRight/PointRight', 92, fps30, AnimationStyle.Sequential, true);
-		this.pointRight.name = 'PointRight';
-		this.pointRight.originX = 211;
-		this.pointRight.originY = 180;
-
-		this.pointToViewer = new Sprites('Fred/PointToViewer/PointToViewer', 101, fps30, AnimationStyle.Sequential, true);
-		this.pointToViewer.name = 'PointToViewer';
-		this.pointToViewer.originX = 223;
-		this.pointToViewer.originY = 248;
-
-		this.allAnimations.add(this.thumbsUp);
-		this.allAnimations.add(this.thumbsDown);
-		this.allAnimations.add(this.noIdea);
-		this.allAnimations.add(this.handsClasped);
-		this.allAnimations.add(this.one);
-		this.allAnimations.add(this.flipOff);
-		this.allAnimations.add(this.fistUp);
-		this.allAnimations.add(this.pointRight);
-		this.allAnimations.add(this.pointToViewer);
-	}
-
-	draw(context: CanvasRenderingContext2D, now: number): any {
-		this.allAnimations.draw(context, now);
-	}
-
-	playAnimation(animationName: string, playerX: number): void {
-		let sprites: Sprites = this.allAnimations.getSpritesByName(animationName);
-		if (!sprites)
-			return;
-		sprites.add(playerX, 1080);
-	}
-}
-
-class DragonFrontGame extends DragonGame {
+﻿class DragonFrontGame extends DragonGame {
 	readonly fullScreenDamageThreshold: number = 15;
 	readonly heavyDamageThreshold: number = 15;
 	readonly mediumDamageThreshold: number = 6;
@@ -145,6 +20,16 @@ class DragonFrontGame extends DragonGame {
 	charmed: Sprites;
 	restrained: Sprites;
 	sparkShower: Sprites;
+	smokeWaveA: Sprites;
+	smokeWaveB: Sprites;
+	waterA: Sprites;
+	waterB: Sprites;
+	smokeBlastA: Sprites;
+	smokeBlastB: Sprites;
+	sparkBurstA: Sprites;
+	sparkBurstB: Sprites;
+	sparkBurstC: Sprites;
+	sparkBurstD: Sprites;
 	embersLarge: Sprites;
 	embersMedium: Sprites;
 	spellHits1: Sprites;
@@ -158,7 +43,8 @@ class DragonFrontGame extends DragonGame {
 	fireWall: Sprites;
 	stars: Sprites;
 	fumes: Sprites;
-	allEffects: SpriteCollection;
+	allBackEffects: SpriteCollection;
+	allFrontEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
 	dragonFrontSounds: DragonFrontSounds;
   activePlayerId: number;
@@ -174,7 +60,7 @@ class DragonFrontGame extends DragonGame {
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		this.allEffects.draw(context, now);
+		this.allBackEffects.draw(context, now);
 
 		super.updateScreen(context, now);
 
@@ -186,6 +72,7 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects.draw(context, now);
 
 		this.showNameplates(context, now);
+		this.allFrontEffects.draw(context, now);
 	}
 
 	removeAllGameElements(now: number): void {
@@ -292,6 +179,57 @@ class DragonFrontGame extends DragonGame {
 		this.sparkShower.originX = 443;
 		this.sparkShower.originY = 595;
 
+		this.smokeWaveA = new Sprites('Smoke/Waves/SmokeWaveA/SmokeWaveA', 157, fps30, AnimationStyle.Sequential, true);
+		this.smokeWaveA.name = 'SmokeWaveA';
+		this.smokeWaveA.originX = 466;
+		this.smokeWaveA.originY = 330;
+
+		this.smokeWaveB = new Sprites('Smoke/Waves/SmokeWaveB/SmokeWaveB', 174, fps30, AnimationStyle.Sequential, true);
+		this.smokeWaveB.name = 'SmokeWaveB';
+		this.smokeWaveB.originX = 370;
+		this.smokeWaveB.originY = 282;
+
+		this.waterA = new Sprites('Water/WaterA/WaterA', 206, fps30, AnimationStyle.Sequential, true);
+		this.waterA.name = 'WaterA';
+		this.waterA.originX = 395;
+		this.waterA.originY = 750;
+
+		this.waterB = new Sprites('Water/WaterB/WaterB', 254, fps30, AnimationStyle.Sequential, true);
+		this.waterB.name = 'WaterB';
+		this.waterB.originX = 311;
+		this.waterB.originY = 950;
+
+		this.smokeBlastA = new Sprites('Smoke/Blast/SmokeBlastA/SmokeBlastA', 71, fps30, AnimationStyle.Sequential, true);
+		this.smokeBlastA.name = 'SmokeBlastA';
+		this.smokeBlastA.originX = 350;
+		this.smokeBlastA.originY = 380;
+
+		this.sparkBurstA = new Sprites('Sparks/SparkBurstA/SparkBurstA', 56, fps30, AnimationStyle.Sequential, true);
+		this.sparkBurstA.name = 'SparkBurstA';
+		this.sparkBurstA.originX = 416;
+		this.sparkBurstA.originY = 525;
+
+		this.sparkBurstB = new Sprites('Sparks/SparkBurstB/SparkBurstB', 37, fps30, AnimationStyle.Sequential, true);
+		this.sparkBurstB.name = 'SparkBurstB';
+		this.sparkBurstB.originX = 463;
+		this.sparkBurstB.originY = 375;
+
+		this.sparkBurstC = new Sprites('Sparks/SparkBurstC/SparkBurstC', 64, fps30, AnimationStyle.Sequential, true);
+		this.sparkBurstC.name = 'SparkBurstC';
+		this.sparkBurstC.originX = 497;
+		this.sparkBurstC.originY = 470;
+
+
+		this.sparkBurstD = new Sprites('Sparks/SparkBurstD/SparkBurstD', 53, fps30, AnimationStyle.Sequential, true);
+		this.sparkBurstD.name = 'SparkBurstD';
+		this.sparkBurstD.originX = 371;
+		this.sparkBurstD.originY = 397;
+
+		this.smokeBlastB = new Sprites('Smoke/Blast/SmokeBlastB/SmokeBlastB', 82, fps30, AnimationStyle.Sequential, true);
+		this.smokeBlastB.name = 'SmokeBlastB';
+		this.smokeBlastB.originX = 337;
+		this.smokeBlastB.originY = 334;
+
 		this.embersLarge = new Sprites('Embers/Large/EmberLarge', 93, fps30, AnimationStyle.Sequential, true);
 		this.embersLarge.name = 'EmbersLarge';
 		this.embersLarge.originX = 431;
@@ -345,9 +283,9 @@ class DragonFrontGame extends DragonGame {
 		this.spellHits5.originY = 420;
 		
 		this.spellMisses = new Sprites('PlayerEffects/Spells/SpellHits/Miss/Miss', 34, fps25, AnimationStyle.Sequential, true);
-		this.spellHits5.name = "SpellMiss";
-		this.spellHits5.originX = 186;
-		this.spellHits5.originY = 237;
+		this.spellMisses.name = "SpellMiss";
+		this.spellMisses.originX = 186;
+		this.spellMisses.originY = 237;
 
 		this.nameplateParts = new Sprites('Nameplates/Piece', 3, fps30, AnimationStyle.Static, true);
 		this.nameplateParts.originX = 19;
@@ -411,28 +349,39 @@ class DragonFrontGame extends DragonGame {
 		this.restrained.originX = 213;
 		this.restrained.originY = 299;
 
-		this.allEffects = new SpriteCollection();
+		this.allBackEffects = new SpriteCollection();
+		this.allFrontEffects = new SpriteCollection();
 		this.bloodEffects = new SpriteCollection();
-		this.allEffects.add(this.denseSmoke);
-		this.allEffects.add(this.poof);
-		this.allEffects.add(this.stars);
-		this.allEffects.add(this.fumes);
-		this.allEffects.add(this.sparkShower);
-		this.allEffects.add(this.embersLarge);
-		this.allEffects.add(this.embersMedium);
-		this.allEffects.add(this.spellHits1);
-		this.allEffects.add(this.spellHits2);
-		this.allEffects.add(this.spellHits3);
-		this.allEffects.add(this.spellHits4);
-		this.allEffects.add(this.spellHits5);
-		this.allEffects.add(this.spellMisses);
+		this.allBackEffects.add(this.denseSmoke);
+		this.allBackEffects.add(this.poof);
+		this.allBackEffects.add(this.stars);
+		this.allBackEffects.add(this.fumes);
+		this.allFrontEffects.add(this.sparkShower);
+		this.allFrontEffects.add(this.smokeWaveA);
+		this.allFrontEffects.add(this.smokeWaveB);
+		this.allFrontEffects.add(this.smokeBlastA);
+		this.allFrontEffects.add(this.smokeBlastB);
+		this.allBackEffects.add(this.waterA);
+		this.allBackEffects.add(this.waterB);
+		this.allFrontEffects.add(this.sparkBurstA);
+		this.allFrontEffects.add(this.sparkBurstB);
+		this.allFrontEffects.add(this.sparkBurstC);
+		this.allFrontEffects.add(this.sparkBurstD);
+		this.allFrontEffects.add(this.embersLarge);
+		this.allFrontEffects.add(this.embersMedium);
+		this.allFrontEffects.add(this.spellHits1);
+		this.allFrontEffects.add(this.spellHits2);
+		this.allFrontEffects.add(this.spellHits3);
+		this.allFrontEffects.add(this.spellHits4);
+		this.allFrontEffects.add(this.spellHits5);
+		this.allFrontEffects.add(this.spellMisses);
 		this.bloodEffects.add(this.bloodGushA);
 		this.bloodEffects.add(this.bloodGushB);
 		this.bloodEffects.add(this.bloodGushC);
 		this.bloodEffects.add(this.bloodGushD);
 		this.bloodEffects.add(this.bloodGushE);
-		this.allEffects.add(this.charmed);
-		this.allEffects.add(this.restrained);
+		this.allBackEffects.add(this.charmed);
+		this.allBackEffects.add(this.restrained);
 		this.allWindupEffects.add(this.shield);
 	}
 
@@ -560,57 +509,15 @@ class DragonFrontGame extends DragonGame {
 
 
 
-	triggerSingleEffect(dto: any) {
-		if (dto.timeOffsetMs > 0) {
-			let offset: number = dto.timeOffsetMs;
-			dto.timeOffsetMs = -1;
-			setTimeout(this.triggerSingleEffect.bind(this), offset, dto);
-			return;
-		}
-
-		if (dto.effectKind === EffectKind.SoundEffect) {
-			this.triggerSoundEffect(dto);
-			return;
-		}
-
-		if (dto.effectKind === EffectKind.Placeholder) {
-			this.triggerPlaceholder(dto);
-			return;
-		}
-
-		let center: Vector = this.getCenter(dto.target);
-
-		if (dto.effectKind === EffectKind.Animation)
-			this.triggerAnimation(dto, center);
-		else if (dto.effectKind === EffectKind.Emitter)
-			this.triggerEmitter(dto, center);
+	protected triggerSoundEffect(dto: any): void {
+		let soundFileName: string = dto.soundFileName;
+		if (soundFileName.indexOf('.') < 0)
+			soundFileName += '.mp3';
+		console.log("Playing " + Folders.assets + 'SoundEffects/' + soundFileName);
+		new Audio(Folders.assets + 'SoundEffects/' + soundFileName).play();
 	}
 
-	triggerPlaceholder(dto: any): any {
-		console.log('triggerPlaceholder - dto: ' + dto);
-	}
-
-	triggerEffect(effectData: string): void {
-		let dto: any = JSON.parse(effectData);
-		console.log(dto);
-
-		if (dto.effectKind === EffectKind.GroupEffect) {
-			for (var i = 0; i < dto.effectsCount; i++) {
-				this.triggerSingleEffect(dto.effects[i]);
-			}
-		}
-		else {
-			this.triggerSingleEffect(dto);
-		}
-	}
-
-
-	triggerSoundEffect(dto: any): void {
-		console.log("Playing " + Folders.assets + 'SoundEffects/' + dto.soundFileName);
-		new Audio(Folders.assets + 'SoundEffects/' + dto.soundFileName).play();
-	}
-
-	triggerEmitter(dto: any, center: Vector): void {
+	protected triggerEmitter(dto: any, center: Vector): void {
 		this.world.removeCharacter(this.emitter);
 
 		console.log('emitter: ' + dto);
@@ -677,7 +584,7 @@ class DragonFrontGame extends DragonGame {
 		brightness.binding = anyTargetValue.targetBinding;
 	}
 
-	private triggerAnimation(dto: any, center: Vector) {
+	protected triggerAnimation(dto: any, center: Vector) {
 		let sprites: Sprites;
 		let horizontallyFlippable: boolean = false;
 		//console.log('dto.spriteName: ' + dto.spriteName);
@@ -715,6 +622,38 @@ class DragonFrontGame extends DragonGame {
 			sprites = this.bloodGushB;
 			horizontallyFlippable = true;
 		}
+		else if (dto.spriteName === 'SmokeBlast') {
+			if (Random.chancePercent(50))
+				sprites = this.smokeBlastA;
+			else 
+				sprites = this.smokeBlastB;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'SmokeWave') {
+			if (Random.chancePercent(50))
+				sprites = this.smokeWaveA;
+			else 
+				sprites = this.smokeWaveB;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'SparkBurst') {
+			if (Random.chancePercent(25))
+				sprites = this.sparkBurstA;
+			else if (Random.chancePercent(33))
+				sprites = this.sparkBurstB;
+			else if (Random.chancePercent(50))
+				sprites = this.sparkBurstC;
+			else
+				sprites = this.sparkBurstD;
+			horizontallyFlippable = true;
+		}
+		else if (dto.spriteName === 'Water') {
+			if (Random.chancePercent(50))
+				sprites = this.waterA;
+			else
+				sprites = this.waterB;
+			horizontallyFlippable = true;
+		}
 		else if (dto.spriteName === 'Heart')
 			sprites = this.charmed;
 		else if (dto.spriteName === 'Restrained')
@@ -732,9 +671,15 @@ class DragonFrontGame extends DragonGame {
 		else if (dto.spriteName === 'FireBall')
 			sprites = this.fireBallBack;
 		else {
-			for (let i = 0; i < this.allEffects.allSprites.length; i++) {
-				if (dto.spriteName === this.allEffects.allSprites[i].name) {
-					sprites = this.allEffects.allSprites[i];
+			for (let i = 0; i < this.allBackEffects.allSprites.length; i++) {
+				if (dto.spriteName === this.allBackEffects.allSprites[i].name) {
+					sprites = this.allBackEffects.allSprites[i];
+					break;
+				}
+			}
+			for (let i = 0; i < this.allFrontEffects.allSprites.length; i++) {
+				if (dto.spriteName === this.allFrontEffects.allSprites[i].name) {
+					sprites = this.allFrontEffects.allSprites[i];
 					break;
 				}
 			}
@@ -744,6 +689,11 @@ class DragonFrontGame extends DragonGame {
 
 		if (dto.horizontalFlip || horizontallyFlippable && Random.chancePercent(50))
 			flipHorizontally = true;
+
+		if (!sprites) {
+			console.error(`"${dto.spriteName}" sprite not found.`);
+			return;
+		}
 
 		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
 			flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
@@ -904,6 +854,9 @@ class DragonFrontGame extends DragonGame {
 		context.textBaseline = 'middle';
 		context.fillStyle = '#ffffff';
 		context.font = '31px Blackadder ITC';
+
+		if (!player)
+			return;
 
 		let playerName: string = player.name;
 

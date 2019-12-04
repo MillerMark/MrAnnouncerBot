@@ -18,5 +18,10 @@ namespace DndCore
 			this.soundFileName = soundFileName;
 			effectKind = EffectKind.SoundEffect;
 		}
+
+		public SoundEffect(string soundFileName, int timeOffset) : this(soundFileName)
+		{
+			timeOffsetMs = timeOffset;
+		}
 	}
 }

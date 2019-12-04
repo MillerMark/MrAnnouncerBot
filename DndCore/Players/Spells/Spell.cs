@@ -302,6 +302,9 @@ namespace DndCore
 
 		public static Spell FromDto(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
+			if (spellDto == null)
+				return null;
+
 			SpellComponents spellComponents = GetSpellComponents(spellDto);
 
 			const string concentrationHeader = "Concentration, ";

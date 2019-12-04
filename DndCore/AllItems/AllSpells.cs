@@ -32,16 +32,19 @@ namespace DndCore
 
 		public static Spell Get(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
-			SpellDto spell = Spells.FirstOrDefault(x => string.Compare(x.name, spellName, true) == 0);
-			if (spell != null)
-				return Spell.FromDto(spell, spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
-			return null;
+			SpellDto spell = GetDto(spellName);
+			return Spell.FromDto(spell, spellSlotLevel, spellCasterLevel, spellcastingAbilityModifier);
+		}
+
+		public static SpellDto GetDto(string spellName)
+		{
+			return Spells.FirstOrDefault(x => string.Compare(x.name, spellName, true) == 0);
 		}
 
 		public static List<Spell> GetAll(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
 			List<Spell> result = new List<Spell>();
-			
+
 			List<SpellDto> spells = Spells.Where(x => string.Compare(x.name, spellName, true) == 0).ToList();
 			if (spells != null)
 				foreach (SpellDto spellDto in spells)

@@ -2035,7 +2035,7 @@ class DiceRollData {
 	damageType: DamageType;
 	savingThrow: Ability;
 	rollScope: RollScope;
-	wildMagic: WildMagic;
+	wildMagic: WildMagic = WildMagic.none;
 	groupInspiration: string;
 	playBonusSoundAfter: number;
 	bentLuckMultiplier: number;

@@ -18,6 +18,7 @@ namespace OverlayManager.Hubs
 		Task UserHasCoins(string userID, int amount);
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
+		Task MapDataChanged(string mapData);
 		Task ChangePlayerHealth(string playerData);
 		Task AddWindup(string windupData);
 		Task CastSpell(string spellData);

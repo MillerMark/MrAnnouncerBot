@@ -20,6 +20,7 @@ namespace OverlayManager.Hubs
 		Task SuppressVolume(int seconds);
 
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
+		Task MapDataChanged(string mapData);
 		Task ChangePlayerHealth(string playerData);
 		Task ClearWindup(string windupName);
 		Task MoveFred(string movement);

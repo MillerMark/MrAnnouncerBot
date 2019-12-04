@@ -302,6 +302,7 @@
     <Compile Include="PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />
+    <Compile Include="RollDiceCommand.cs" />
     <Compile Include="SavingThrowCommand.cs" />
     <Compile Include="ScrollCloseCommand.cs" />
     <Compile Include="SelectShortcutCommand.cs" />

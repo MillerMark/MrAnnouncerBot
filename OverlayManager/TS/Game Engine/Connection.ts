@@ -21,6 +21,7 @@ function connectToSignalR(signalR) {
     connection.on("ClearDice", clearDice);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
 		connection.on("PlayerDataChanged", playerDataChanged);
+		connection.on("MapDataChanged", mapDataChanged);
 		connection.on("SetPlayerData", initializePlayerData);
   };
 }
@@ -60,7 +61,10 @@ function moveFred(movement: string): void {
 function triggerEffect(effectData: string) {
   if (activeFrontGame instanceof DragonFrontGame) {
     activeFrontGame.triggerEffect(effectData);
-  }
+	}
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.triggerEffect(effectData);
+	}
 }
 function updateClock(clockData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
@@ -140,6 +144,10 @@ function unfocusItem(playerID: number, pageID: number, itemID: string) {
   if (activeBackGame instanceof DragonBackGame) {
     activeBackGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
   }
+}
+
+function mapDataChanged(mapData: string) {
+	
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {

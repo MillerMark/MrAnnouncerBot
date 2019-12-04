@@ -166,6 +166,33 @@ namespace DndCore
 			}
 		}
 
+		public static double GetDouble(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
+		{
+			StartEvaluation(player, $"GetDouble({expression})", target, spell);
+			try
+			{
+				object result = expressionEvaluator.Evaluate(Clean(expression));
+				Log($"  returns {result};");
+
+				if (result is int)
+					return (int)result;
+
+				if (result is decimal)
+					return (double)((decimal)result);
+
+				if (result is double)
+					return (double)result;
+
+				if (result is string resultStr && double.TryParse(resultStr, out double resultDbl))
+					return resultDbl;
+				return double.MinValue;
+			}
+			finally
+			{
+				FinishEvaluation(player);
+			}
+		}
+
 		public static bool GetBool(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
 		{
 			StartEvaluation(player, $"GetBool({expression})", target, spell);

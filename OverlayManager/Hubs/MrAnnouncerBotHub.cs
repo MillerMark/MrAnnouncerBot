@@ -25,6 +25,10 @@ namespace OverlayManager.Hubs
 			Clients.All.ChangeScene(sceneName);
 			coderushedHub.Clients.All.PlayerDataChanged(playerID, pageID, playerData);
 		}
+		public void MapDataChanged(string mapData)
+		{
+			coderushedHub.Clients.All.MapDataChanged(mapData);
+		}
 
 		public void ChangePlayerHealth(string playerData)
 		{

@@ -126,6 +126,62 @@ abstract class DragonGame extends GamePlusQuiz {
 
 	dragonSharedSounds: SoundManager;
 
+	protected triggerSoundEffect(dto: any): void {
+	}
+
+	protected triggerEmitter(dto: any, center: Vector): void {
+	}
+
+	protected triggerAnimation(dto: any, center: Vector) {
+	}
+
+	protected triggerPlaceholder(dto: any): any {
+		console.log('triggerPlaceholder - dto: ' + dto);
+	}
+
+	protected triggerSingleEffect(dto: any) {
+		if (dto.timeOffsetMs > 0) {
+			let offset: number = dto.timeOffsetMs;
+			dto.timeOffsetMs = -1;
+			setTimeout(this.triggerSingleEffect.bind(this), offset, dto);
+			return;
+		}
+
+		if (dto.effectKind === EffectKind.SoundEffect) {
+			this.triggerSoundEffect(dto);
+			return;
+		}
+
+		if (dto.effectKind === EffectKind.Placeholder) {
+			this.triggerPlaceholder(dto);
+			return;
+		}
+
+		let center: Vector = this.getCenter(dto.target);
+
+		if (dto.effectKind === EffectKind.Animation)
+			this.triggerAnimation(dto, center);
+		else if (dto.effectKind === EffectKind.Emitter)
+			this.triggerEmitter(dto, center);
+	}
+
+	triggerEffect(effectData: string): void {
+		let dto: any = JSON.parse(effectData);
+		console.log(dto);
+
+		if (dto.effectKind === EffectKind.GroupEffect) {
+			for (var i = 0; i < dto.effectsCount; i++) {
+				this.triggerSingleEffect(dto.effects[i]);
+			}
+		}
+		else {
+			this.triggerSingleEffect(dto);
+		}
+	}
+
+
+
+
 	private _inCombat: boolean;
 
 	get inCombat(): boolean {

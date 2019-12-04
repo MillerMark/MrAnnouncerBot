@@ -66,6 +66,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("PlayerDataChanged", playerID, -1, playerData);
 		}
 
+		public static void MapDataChanged(string mapData)
+		{
+			HubConnection.InvokeAsync("MapDataChanged", mapData);
+		}
+
 		public static void ChangePlayerHealth(string playerData)
 		{
 			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);

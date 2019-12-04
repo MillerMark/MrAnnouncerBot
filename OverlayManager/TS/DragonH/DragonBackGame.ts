@@ -50,6 +50,26 @@ class DragonBackGame extends DragonGame {
 		}
 	}
 
+	protected triggerAnimation(dto: any, center: Vector) {
+		let sprites: Sprites;
+		for (let i = 0; i < this.allWindupEffects.allSprites.length; i++) {
+			if (dto.spriteName === this.allWindupEffects.allSprites[i].name) {
+				sprites = this.allWindupEffects.allSprites[i];
+				break;
+			}
+		}
+
+		if (!sprites) {
+			console.error(`"${dto.spriteName}" sprite not found.`);
+			return;
+		}	
+
+		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
+			dto.horizontalFlip, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
+
+		spritesEffect.start();
+	}
+
 	changePlayerHealth(playerData: string): void {
 		//this.characterStatsScroll.changePlayerHealth(playerData);
 	}

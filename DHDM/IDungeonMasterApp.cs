@@ -20,7 +20,8 @@ namespace DHDM
 		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
 		void AdvanceClock(int hours, int minutes, int seconds);
-		void RollDice(string diceStr, DiceRollType diceRollType);
+		void AdvanceDate(int days, int months, int years);
+		void RollDice();
 		void HideScroll();
 		void DropWindup();
 		void BreakConcentration(int playerId);

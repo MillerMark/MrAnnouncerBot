@@ -796,6 +796,8 @@ namespace DHDM
 		private void ActivateShortcut(string shortcutName)
 		{
 			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == ActivePlayerId);
+			if (shortcut == null && tbTabs.SelectedItem == tbDebug)
+				shortcut = actionShortcuts.FirstOrDefault(x => x.Name.StartsWith(shortcutName) && x.PlayerId == ActivePlayerId);
 			if (shortcut != null)
 				Dispatcher.Invoke(() =>
 				{
@@ -934,6 +936,8 @@ namespace DHDM
 			Spell spell = actionShortcut.Spell;
 			if (spell != null)
 			{
+				if (tbTabs.SelectedItem == tbDebug)
+					UpdateSpellEvents(spell);
 				ActivateSpellShortcut(actionShortcut, player, spell);
 			}
 			else
@@ -2019,46 +2023,71 @@ namespace DHDM
 				Character player = game.GetPlayerFromId(playerId);
 
 				if (player != null)
-					while (player.additionalSpellEffect.Count > 0)
-					{
-						SpellHit spellHit = player.additionalSpellEffect.Dequeue();
-						string effectName;
-						bool usingSpellHits = true;
-						VisualEffectTarget target;
-
-						if (!string.IsNullOrWhiteSpace(spellHit.EffectName))
-						{
-							effectName = spellHit.EffectName;
-							usingSpellHits = false;
-							target = bottomTarget;
-						}
-						else
-						{
-							effectName = GetRandomHitSpellName();
-							target = chestTarget;
-						}
-						AnimationEffect effectBonus = CreateEffect(effectName, target, spellHit.Hue, spellHit.Brightness);
-						if (usingSpellHits)
-						{
-							effectBonus.timeOffsetMs = timeOffset;
-							effectBonus.scale = scale;
-							effectBonus.autoRotation = autoRotation;
-							autoRotation *= -1;
-							scale *= scaleIncrement;
-						}
-						effectGroup.Add(effectBonus);
-						timeOffset += 200;
-					}
-				//effectGroup.Add(new SoundEffect("Blood Squirting Weapon Impact.mp3"));
+				{
+					DequeueAnimationEffects(effectGroup, chestTarget, bottomTarget, ref scale, scaleIncrement, ref autoRotation, ref timeOffset, player);
+					DequeueSoundEffects(player, effectGroup);
+				}
 			}
-
-			// TODO: Add scaling and rotation to AnimationEffect!
-
 			// TODO: Add success or fail sound effects.
-			//effectGroup.Add(new SoundEffect("Blood Squirting Weapon Impact.mp3"));
-
 			string serializedObject = JsonConvert.SerializeObject(effectGroup);
 			HubtasticBaseStation.TriggerEffect(serializedObject);
+		}
+
+		void DequeueSoundEffects(Character player, EffectGroup effectGroup)
+		{
+			while (player.additionalSoundEffects.Count > 0)
+			{
+				effectGroup.Add(player.additionalSoundEffects.Dequeue());
+			}
+		}
+
+		private void DequeueAnimationEffects(EffectGroup effectGroup, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset, Character player)
+		{
+			while (player.additionalSpellEffects.Count > 0)
+			{
+				SpellHit spellHit = player.additionalSpellEffects.Dequeue();
+				string effectName;
+				bool usingSpellHits = true;
+				VisualEffectTarget target;
+
+				if (!string.IsNullOrWhiteSpace(spellHit.EffectName))
+				{
+					effectName = spellHit.EffectName;
+					usingSpellHits = false;
+					target = bottomTarget;
+				}
+				else
+				{
+					effectName = GetRandomHitSpellName();
+					target = chestTarget;
+				}
+				AnimationEffect effectBonus = CreateEffect(effectName, target, spellHit.Hue, spellHit.Brightness);
+				if (usingSpellHits)
+				{
+					effectBonus.timeOffsetMs = timeOffset;
+					effectBonus.scale = scale;
+					effectBonus.autoRotation = autoRotation;
+					autoRotation *= -1;
+					scale *= scaleIncrement;
+					timeOffset += 200;
+				}
+				else
+				{
+					if (spellHit.TimeOffset > int.MinValue)
+						effectBonus.timeOffsetMs = spellHit.TimeOffset;
+					else
+					{
+						effectBonus.timeOffsetMs = timeOffset;
+						timeOffset += 200;
+					}
+
+					effectBonus.scale = spellHit.Scale;
+					effectBonus.autoRotation = spellHit.AutoRotation;
+					effectBonus.rotation = spellHit.Rotation;
+				}
+				effectGroup.Add(effectBonus);
+
+			}
 		}
 
 		private static string GetRandomHitSpellName()
@@ -2172,6 +2201,16 @@ namespace DHDM
 			}
 
 			int rollValue = ea.StopRollingData.roll;
+
+
+			if (rollValue == 0 && ea.StopRollingData.individualRolls != null && ea.StopRollingData.individualRolls.Count > 0)
+			{
+				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+				{
+					rollValue += individualRoll.value;
+				}
+			}
+
 			string additionalMessage = ea.StopRollingData.additionalDieRollMessage;
 			if (!String.IsNullOrEmpty(additionalMessage))
 				additionalMessage = " " + additionalMessage;
@@ -2238,6 +2277,9 @@ namespace DHDM
 					break;
 				case DiceRollType.NonCombatInitiative:
 					rollTitle = "Non-combat Initiative: ";
+					break;
+				case DiceRollType.WildMagicD20Check:
+					rollTitle = "wild magic check: ";
 					break;
 			}
 			if (rollTitle == "")
@@ -3574,19 +3616,32 @@ namespace DHDM
 
 		public void AdvanceClock(int hours, int minutes, int seconds)
 		{
+			if (hours == 0 && minutes == 0 && seconds == 0)
+				return;
 			Dispatcher.Invoke(() =>
 			{
-
+				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), ShiftKeyDown);
 			});
 		}
 
-		public void RollDice(string diceStr, DiceRollType diceRollType)
+		public void AdvanceDate(int days, int months, int years)
+		{
+			if (days == 0 && months == 0 && years == 0)
+				return;
+			Dispatcher.Invoke(() =>
+			{
+				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), ShiftKeyDown);
+			});
+		}
+		
+
+		public void RollDice()
 		{
 			Dispatcher.Invoke(() =>
 			{
-
+				UnleashTheDice();
+				TellDungeonMaster("Rolling the dice...");
 			});
-			// TODO: Tell DM
 		}
 
 		public void HideScroll()
@@ -3827,10 +3882,25 @@ namespace DHDM
 		{
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
 				if (e.AddedItems[0] is EventGroup eventGroup)
+				{
+					activeEventGroup = eventGroup;
 					lstEvents.ItemsSource = eventGroup.Events;
+				}
 		}
 
-		System.Collections.IEnumerable GetPlayerEventCode(Character activePlayer, EventGroup parentGroup, string name)
+		List<DebugLine> GetDebugLines(string code)
+		{
+			List<DebugLine> debugLines = new List<DebugLine>();
+			string[] splitLines = code.Split('\n');
+			foreach (string line in splitLines)
+			{
+				debugLines.Add(new DebugLine(line));
+			}
+
+			return debugLines;
+		}
+
+		private static string GetPlayerEventCode(EventGroup parentGroup, string name)
 		{
 			string groupName = parentGroup.Name;
 			object instance = null;
@@ -3846,24 +3916,44 @@ namespace DHDM
 			if (!(value is string code))
 				return null;
 
-			List<DebugLine> debugLines = new List<DebugLine>();
-			string[] splitLines = code.Split('\n');
-			foreach (string line in splitLines)
-			{
-				debugLines.Add(new DebugLine(line));
-			}
-
-			return debugLines;
+			return code;
 		}
 
+		EventData activeEventData;
 		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
 				if (e.AddedItems[0] is EventData eventData)
-					lstCode.ItemsSource = GetPlayerEventCode(ActivePlayer, eventData.ParentGroup, eventData.Name);
+				{
+					activeEventData = eventData;
+					string code = GetPlayerEventCode(eventData.ParentGroup, eventData.Name);
+					SetEventCode(code);
+
+					// TODO: Remove lstCode and related if no longer used:
+					List<DebugLine> debugLines = GetDebugLines(code);
+					lstCode.ItemsSource = debugLines;
+				}
+		}
+
+		private void SetEventCode(string code)
+		{
+			changingInternally = true;
+			try
+			{
+				tbxCode.Text = code;
+			}
+			finally
+			{
+				changingInternally = false;
+			}
 		}
 
 		private void BtnRollDice_Click(object sender, RoutedEventArgs e)
+		{
+			UnleashTheDice();
+		}
+
+		private void UnleashTheDice()
 		{
 			if (NextDieRollType != DiceRollType.None)
 				RollTheDice(PrepareRoll(NextDieRollType));
@@ -3985,16 +4075,101 @@ namespace DHDM
 			// 1d20(superiority),
 		}
 
+		EventGroup activeEventGroup;
+
 		private void LstAssignedFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (lstAssignedFeatures.SelectedItem is EventGroup eventGroup)
+			{
+				activeEventGroup = eventGroup;
 				lstEvents.ItemsSource = eventGroup.Events;
+			}
 		}
 
 		private void LstKnownSpells_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (lstKnownSpells.SelectedItem is EventGroup eventGroup)
+			{
+				activeEventGroup = eventGroup;
 				lstEvents.ItemsSource = eventGroup.Events;
+				btnRepeatLastCast.Content = $"Cast {eventGroup.Name}";
+			}
+		}
+
+		private void SetEventCode(EventGroup parentGroup, string name, string code)
+		{
+			string groupName = parentGroup.Name;
+			object instance = null;
+
+			if (parentGroup.Type == EventType.FeatureEvents)
+				instance = AllFeatures.Get(groupName);
+			else if (parentGroup.Type == EventType.SpellEvents)
+			{
+				instance = AllSpells.GetDto(groupName);
+				name = Char.ToLower(name[0]) + name.Substring(1);  // SpellDto events start with a lower case letter.
+			}
+
+			if (instance == null)
+				return;
+
+			instance.GetType().GetProperty(name).SetValue(instance, code);
+
+			//if (parentGroup.Type == EventType.FeatureEvents)
+			//	
+			//else if (parentGroup.Type == EventType.SpellEvents)
+			//	
+		}
+
+		void UpdateSelectedEvent(string text)
+		{
+			if (activeEventData == null)
+				return;
+			SetEventCode(activeEventData.ParentGroup, activeEventData.Name, text);
+		}
+
+		bool changingInternally;
+		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (changingInternally)
+				return;
+			changingInternally = true;
+			try
+			{
+				UpdateSelectedEvent(tbxCode.Text);
+			}
+			finally
+			{
+				changingInternally = false;
+			}
+		}
+
+		private void BtnRepeatLastCast_Click(object sender, RoutedEventArgs e)
+		{
+			const string CastPrefix = "Cast ";
+			string buttonLabel = btnRepeatLastCast.Content as string;
+			if (!buttonLabel.StartsWith(CastPrefix))
+				return;
+			string spellName = buttonLabel.Substring(CastPrefix.Length);
+			if (string.IsNullOrWhiteSpace(spellName))
+				return;
+			TestCastSpell(spellName);
+		}
+
+		void TestCastSpell(string spellName)
+		{
+			ActivateShortcut(spellName);
+		}
+
+		void UpdateSpellEvents(Spell spell)
+		{
+			Spell latestSpell = AllSpells.Get(spell.Name);
+			if (latestSpell == null)
+				return;
+			spell.OnCast = latestSpell.OnCast;
+			spell.OnCasting = latestSpell.OnCasting;
+			spell.OnDispel = latestSpell.OnDispel;
+			spell.OnPlayerAttacks = latestSpell.OnPlayerAttacks;
+			spell.OnPlayerHitsTarget = latestSpell.OnPlayerHitsTarget;
 		}
 	}
 

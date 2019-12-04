@@ -98,31 +98,10 @@
 		</Grid.ColumnDefinitions>
 		<StackPanel x:Name="spPlayerSide" Orientation="Vertical">
 			<TabControl x:Name="tabPlayers" SelectionChanged="TabControl_PlayerChanged" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-				<TabItem Header="Kent">
+				<TabItem Header="Player">
 					<Grid Background="#FFE5E5E5">
 						<ScrollViewer>
 							<uc:CharacterSheets x:Name="characterSheetsKent" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-						</ScrollViewer>
-					</Grid>
-				</TabItem>
-				<TabItem Header="Kayla">
-					<Grid Background="#FFE5E5E5">
-						<ScrollViewer>
-							<uc:CharacterSheets x:Name="characterSheetsKayla" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-						</ScrollViewer>
-					</Grid>
-				</TabItem>
-				<TabItem Header="Mark">
-					<Grid Background="#FFE5E5E5">
-						<ScrollViewer>
-							<uc:CharacterSheets x:Name="characterSheetsMark" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
-						</ScrollViewer>
-					</Grid>
-				</TabItem>
-				<TabItem Header="Karen">
-					<Grid Background="#FFE5E5E5">
-						<ScrollViewer>
-							<uc:CharacterSheets x:Name="characterSheetsKaren" PageChanged="CharacterSheets_PageChanged" CharacterChanged="HandleCharacterSheetDataChanged"></uc:CharacterSheets>
 						</ScrollViewer>
 					</Grid>
 				</TabItem>
@@ -217,7 +196,7 @@
 					</Button>
 				</StackPanel>
 			</StackPanel>
-			<TabControl HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
+			<TabControl x:Name="tbTabs" HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Play" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
 						<WrapPanel x:Name="wpActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
@@ -719,7 +698,10 @@
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" >
+								<TextBox x:Name="tbxCode" AcceptsReturn="True" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_TextChanged">
+									
+								</TextBox>
+								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<Grid>
@@ -747,6 +729,14 @@
 
 								<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
 									Test
+								</Button>
+
+								<Button x:Name="btnRepeatLastCast" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Click="BtnRepeatLastCast_Click" Margin="8" VerticalAlignment="Center">
+									Cast
+								</Button>
+
+								<Button x:Name="btnRollDiceRemote" Click="BtnRollDice_Click" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
+									Roll Dice
 								</Button>
 							</StackPanel>
 						</StackPanel>

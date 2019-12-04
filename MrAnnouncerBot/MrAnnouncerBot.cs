@@ -252,7 +252,8 @@ namespace MrAnnouncerBot
 		private bool PlayFanfare(string displayName, string message = emptyString)
 		{
 
-			if (playedFanfares.ContainsKey(displayName) && playedFanfares[displayName].DayOfYear == DateTime.Now.DayOfYear)
+			string fanfareKey = displayName.ToLower();
+			if (playedFanfares.ContainsKey(fanfareKey) && playedFanfares[fanfareKey].DayOfYear == DateTime.Now.DayOfYear)
 				return true;
 
 			bool stillPlaying = DateTime.Now - lastFanfareActivated < TimeSpan.FromSeconds(lastFanfareDuration);
@@ -370,10 +371,11 @@ namespace MrAnnouncerBot
 
 		void MarkFanfareAsPlayed(string DisplayName)
 		{
-			if (playedFanfares.ContainsKey(DisplayName))
-				playedFanfares[DisplayName] = DateTime.Now;
+			string fanfareKey = DisplayName.ToLower();
+			if (playedFanfares.ContainsKey(fanfareKey))
+				playedFanfares[fanfareKey] = DateTime.Now;
 			else
-				playedFanfares.Add(DisplayName, DateTime.Now);
+				playedFanfares.Add(fanfareKey, DateTime.Now);
 		}
 
 		void MarkCodeRushIssue(OnChatCommandReceivedArgs obj)

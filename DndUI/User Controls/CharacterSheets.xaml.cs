@@ -436,7 +436,8 @@ namespace DndUI
 
 		void SetName(StatBox statBox, string name)
 		{
-			statBox.Text = DndUtils.GetFirstName(name);
+			statBox.Text = name;
+			//statBox.Text = DndUtils.GetFirstName(name);
 			statBox.IsEnabled = false;
 		}
 

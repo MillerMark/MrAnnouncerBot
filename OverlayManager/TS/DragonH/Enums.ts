@@ -1,4 +1,36 @@
-﻿enum Weapons {
+﻿enum SplatterDirection {
+	None,
+	Left,
+	Right
+}
+
+enum EmitterShape {
+	Circular = 1,
+	Rectangular = 2
+}
+
+enum TargetType {
+	ActivePlayer = 0,
+	ActiveEnemy = 1,
+	ScrollPosition = 2,
+	ScreenPosition = 3
+}
+
+enum VantageKind {
+	Normal,
+	Advantage,
+	Disadvantage
+}
+
+enum EffectKind {
+	Animation = 0,
+	Emitter = 1,
+	SoundEffect = 2,
+	GroupEffect = 3,
+	Placeholder = 4
+}
+
+enum Weapons {
 	None = 0,
 	Battleaxe = 1,
 	Blowgun = 2,
