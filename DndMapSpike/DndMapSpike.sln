@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndMapSpike", "DndMapSpike.csproj", "{7F0C6802-B4F2-4F63-A204-3725C3664EB1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7F0C6802-B4F2-4F63-A204-3725C3664EB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F0C6802-B4F2-4F63-A204-3725C3664EB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F0C6802-B4F2-4F63-A204-3725C3664EB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F0C6802-B4F2-4F63-A204-3725C3664EB1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F97D1EF-8B5A-4601-A4AC-72C7759727C2}
+	EndGlobalSection
+EndGlobal
