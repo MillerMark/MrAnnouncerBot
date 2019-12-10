@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndMapSpike
+namespace MapCore
 {
 	public enum MapSpaceType
 	{
@@ -17,6 +17,7 @@ namespace DndMapSpike
 		StairsUp,
 		StairsUpUp,
 		StairsDown,
-		StairsDownDown
+		StairsDownDown,
+		None
 	}
 }

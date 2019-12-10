@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndMapSpike
+namespace MapCore
 {
 	public class RoomSegment
 	{
@@ -19,9 +19,10 @@ namespace DndMapSpike
 		{
 
 		}
-		public bool Matches(RoomSegment compareRoomSegment)
+		public bool IsAdjacent(RoomSegment compareRoomSegment)
 		{
-			return StartRow == compareRoomSegment.StartRow && EndRow == compareRoomSegment.EndRow;
+			return StartRow < compareRoomSegment.EndRow  &&
+						 compareRoomSegment.StartRow < EndRow;
 		}
 	}
 }

@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-using System.Windows.Shapes;
 
-namespace DndMapSpike
+namespace MapCore
 {
 	public class Space
 	{
 		public MapSpaceType Type { get; set; }
 		public int Row { get; set; }
 		public int Column { get; set; }
-		public UIElement UiElement { get; set; }
-		public Space(int column, int row, MapSpaceType type, UIElement uiElement)
+		public object Data { get; set; }
+		public Space(int column, int row, MapSpaceType type, object data = null)
 		{
-			UiElement = uiElement;
+			Data = data;
 			Type = type;
 			Column = column;
 			Row = row;
