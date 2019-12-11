@@ -30,7 +30,7 @@ namespace MapCore
 		}
 		void Reset()
 		{
-			Spaces = new List<Space>();
+			Spaces = new List<FloorSpace>();
 			lastRowIndex = -1;
 			lastColumnIndex = -1;
 			rightmostColumnIndex = -1;
@@ -40,19 +40,15 @@ namespace MapCore
 			lastRowIndex++;
 			lastColumnIndex = -1;
 		}
-		MapSpaceType GetMapSpaceType(string space)
+		bool IsFloor(string space)
 		{
-			if (space == "F")
-				return MapSpaceType.Floor;
-			// TODO: Add more...
-			return MapSpaceType.None;
+			return space == "F" || space.StartsWith("D") || space.StartsWith("S");
 		}
 		void LoadNewSpace(string space)
 		{
 			OnNewSpace();
-			MapSpaceType type = GetMapSpaceType(space);
-			if (type != MapSpaceType.None)
-				Spaces.Add(new Space(lastColumnIndex, lastRowIndex, type));
+			if (IsFloor(space))
+				Spaces.Add(new FloorSpace(lastColumnIndex, lastRowIndex, space));
 		}
 		void OnNewSpace()
 		{
@@ -77,8 +73,23 @@ namespace MapCore
 			foreach (var line in lines)
 				LoadNewLine(line);
 
-			MapArray = MapEngine.BuildMapArray(Spaces, rightmostColumnIndex, lastRowIndex);
-			Rooms = MapEngine.GetAllRooms(MapArray);
+			SetMapSize();
+			MapArray = BuildMapArray();
+			GetAllRoomsAndCorridors();
+		}
+
+		public FloorSpace[,] BuildMapArray()
+		{
+			FloorSpace[,] spaceArray = new FloorSpace[NumColumns, NumRows];
+			foreach (FloorSpace space in Spaces)
+				spaceArray[space.Column, space.Row] = space;
+			return spaceArray;
+		}
+
+		private void SetMapSize()
+		{
+			NumColumns = rightmostColumnIndex + 1;
+			NumRows = lastRowIndex + 1;
 		}
 
 		private static string GetDataFromFile(string fileName)
@@ -116,6 +127,162 @@ namespace MapCore
 			foreach (var space in spaces5x5)
 				LoadNewSpace(space);
 		}
+
+		static void ClearAllSpaces(FloorSpace[,] mapArray, int numColumns, int numRows)
+		{
+			for (int column = 0; column < numColumns; column++)
+				for (int row = 0; row < numRows; row++)
+				{
+					FloorSpace activeSpace = mapArray[column, row];
+					if (activeSpace != null)
+					{
+						activeSpace.Parent = null;
+						activeSpace.SpaceType = SpaceType.None;
+					}
+				}
+		}
+
+		FloorSpace GetFloorSpace(int column, int row)
+		{
+			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
+				return null;
+			return MapArray[column, row];
+		}
+
+		bool FloorSpaceExists(int column, int row)
+		{
+			return GetFloorSpace(column, row) != null;
+		}
+
+		bool HasThreeAdjacentSpaces(int column, int row)
+		{
+			FloorSpace space = MapArray[column, row];
+			if (space == null)
+				return false;
+
+			//`![](ED9ECD1CDEB692B400A201F68CF8A9EA.png;;;0.01733,0.01733)
+			if (FloorSpaceExists(column - 1, row - 1) &&
+					FloorSpaceExists(column, row - 1) &&
+					FloorSpaceExists(column - 1, row))
+				return true;
+
+			//`![](0C3CAA979E1487CDF14DE5E512962E76.png;;;0.01700,0.01700)
+			if (FloorSpaceExists(column + 1, row - 1) &&
+					FloorSpaceExists(column, row - 1) &&
+					FloorSpaceExists(column + 1, row))
+				return true;
+
+			//`![](855BAF66C3E8591E6C2CA4F77ABF7721.png;;;0.01700,0.01700)
+			if (FloorSpaceExists(column + 1, row + 1) &&
+					FloorSpaceExists(column, row + 1) &&
+					FloorSpaceExists(column + 1, row))
+				return true;
+
+			//`![](110734251D6CBA4D89D75BB67519694F.png;;;0.01667,0.01667)
+			if (FloorSpaceExists(column - 1, row + 1) &&
+					FloorSpaceExists(column, row + 1) &&
+					FloorSpaceExists(column - 1, row))
+				return true;
+
+			return false;
+		}
+
+		void AddIfAvailable(FloorSpace floorSpace, MapRegion region, FloorSpace activeSpace)
+		{
+			if (floorSpace == null)
+				return;
+			if (floorSpace.SpaceType == activeSpace.SpaceType && floorSpace.Parent == null)
+			{
+				floorSpace.Parent = region;
+				AddAdjacentSpaces(region, floorSpace);
+			}
+		}
+
+		void AddAdjacentSpaces(MapRegion region, FloorSpace activeSpace)
+		{
+			region.Spaces.Add(activeSpace);
+
+			FloorSpace left = GetFloorSpace(activeSpace.Column - 1, activeSpace.Row);
+			AddIfAvailable(left, region, activeSpace);
+
+			FloorSpace top = GetFloorSpace(activeSpace.Column, activeSpace.Row - 1);
+			AddIfAvailable(top, region, activeSpace);
+
+			FloorSpace right = GetFloorSpace(activeSpace.Column + 1, activeSpace.Row);
+			AddIfAvailable(right, region, activeSpace);
+
+			FloorSpace bottom = GetFloorSpace(activeSpace.Column, activeSpace.Row + 1);
+			AddIfAvailable(bottom, region, activeSpace);
+		}
+
+		void AddSpaceToRegion(MapRegion region, FloorSpace activeSpace)
+		{
+			activeSpace.Parent = region;
+			AddAdjacentSpaces(region, activeSpace);
+		}
+
+		Room CreateRoomFromSpace(FloorSpace activeSpace)
+		{
+			Room room = new Room();
+			AddSpaceToRegion(room, activeSpace);
+			return room;
+		}
+
+		Corridor CreateCorridorFromSpace(FloorSpace activeSpace)
+		{
+			Corridor corridor = new Corridor();
+			AddSpaceToRegion(corridor, activeSpace);
+			return corridor;
+		}
+
+		public void GetAllRoomsAndCorridors()
+		{
+			Rooms.Clear();
+			Corridors.Clear();
+			ClearAllSpaces(MapArray, NumColumns, NumRows);
+			DetermineSpaceTypes();
+
+
+			for (int column = 0; column < NumColumns; column++)
+				for (int row = 0; row < NumRows; row++)
+				{
+					FloorSpace activeSpace = MapArray[column, row];
+					if (activeSpace == null)
+						continue;
+
+					if (activeSpace.SpaceType == SpaceType.Room)
+					{
+						if (activeSpace.Parent == null)
+							Rooms.Add(CreateRoomFromSpace(activeSpace));
+					}
+					else if (activeSpace.SpaceType == SpaceType.Corridor)
+					{
+						if (activeSpace.Parent == null)
+							Corridors.Add(CreateCorridorFromSpace(activeSpace));
+					}
+				}
+		}
+
+		private void DetermineSpaceTypes()
+		{
+			for (int column = 0; column < NumColumns; column++)
+				for (int row = 0; row < NumRows; row++)
+				{
+					FloorSpace activeSpace = MapArray[column, row];
+					if (activeSpace == null || activeSpace.SpaceType != SpaceType.None)
+						continue;
+
+					if (HasThreeAdjacentSpaces(column, row))
+					{
+						activeSpace.SpaceType = SpaceType.Room;
+					}
+					else
+					{
+						activeSpace.SpaceType = SpaceType.Corridor;
+					}
+				}
+		}
+
 		public double Width
 		{
 			get
@@ -133,8 +300,11 @@ namespace MapCore
 			}
 		}
 
-		public List<Space> Spaces { get; private set; }
-		public List<Room> Rooms { get; private set; }
-		public Space[,] MapArray { get; private set; }
+		public List<FloorSpace> Spaces { get; private set; }
+		public List<Room> Rooms { get; private set; } = new List<Room>();
+		public List<Corridor> Corridors { get; private set; } = new List<Corridor>();
+		public FloorSpace[,] MapArray { get; private set; }
+		public int NumColumns { get; set; }
+		public int NumRows { get; set; }
 	}
 }

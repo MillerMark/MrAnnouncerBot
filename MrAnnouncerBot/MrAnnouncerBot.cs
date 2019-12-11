@@ -85,6 +85,7 @@ namespace MrAnnouncerBot
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message);
+				//Debugger.Break();
 			}
 		}
 
@@ -190,6 +191,7 @@ namespace MrAnnouncerBot
 			catch (Exception ex)
 			{
 				Console.WriteLine("Exception in CheckViewers: " + ex.Message);
+				Debugger.Break();
 			}
 		}
 
@@ -295,6 +297,7 @@ namespace MrAnnouncerBot
 				catch (Exception ex)
 				{
 					Console.WriteLine("Unable to play fanfare: " + sceneName);
+					Debugger.Break();
 				}
 
 				MarkFanfareAsPlayed(fanfare);
@@ -441,6 +444,7 @@ namespace MrAnnouncerBot
 				catch (Exception ex)
 				{
 					showStartURL = startTimeURL;
+					Debugger.Break();
 				}
 			}
 			else
@@ -480,10 +484,12 @@ namespace MrAnnouncerBot
 									File.Copy(file, destFileName);
 									zip.CreateEntryFromFile(destFileName, Path.GetFileName(destFileName), CompressionLevel.Optimal);
 									File.Delete(destFileName);
+									Debugger.Break();
 								}
 								catch (Exception ex2)
 								{
 									errors += $"\n\n Exception attached log file {file}: " + ex2.Message;
+									Debugger.Break();
 								}
 
 							}
@@ -493,7 +499,7 @@ namespace MrAnnouncerBot
 				}
 				catch (Exception ex)
 				{
-
+					Debugger.Break();
 				}
 				// 
 			}
@@ -539,7 +545,7 @@ namespace MrAnnouncerBot
 			{
 				if (ex != null)
 				{
-
+					Debugger.Break();
 				}
 			}
 		}
@@ -554,10 +560,12 @@ namespace MrAnnouncerBot
 			catch (AuthFailureException)
 			{
 				Console.WriteLine("Authentication failed.");
+				Debugger.Break();
 			}
 			catch (ErrorResponseException ex)
 			{
 				Console.WriteLine($"Connect failed. {ex.Message}");
+				Debugger.Break();
 			}
 		}
 
@@ -615,6 +623,7 @@ namespace MrAnnouncerBot
 			catch (Exception ex)
 			{
 				Console.WriteLine("Exception thrown in TwitchClient_OnJoinedChannel: " + ex);
+				Debugger.Break();
 			}
 		}
 

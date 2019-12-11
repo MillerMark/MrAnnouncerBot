@@ -3,9 +3,10 @@ using System.Linq;
 
 namespace MapCore
 {
-	public enum SegmentPosition
+	public enum SpaceType
 	{
-		OverlapsRoom,
-		OutsideRoom
+		None,
+		Room,
+		Corridor
 	}
 }

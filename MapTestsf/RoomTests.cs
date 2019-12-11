@@ -11,26 +11,11 @@ namespace Tests
 		{
 		}
 
-
-		[Test]
-		public void TestSegmentOverlap()
-		{
-			RoomSegment roomSegment1 = new RoomSegment(10, 12, 0);
-			RoomSegment roomSegment2 = new RoomSegment(10, 12, 1);
-			RoomSegment roomSegment3 = new RoomSegment(10, 12, 2);
-			Room room = new Room(0);
-			room.Segments.Add(roomSegment1);
-			room.Segments.Add(roomSegment2);
-			SegmentAnalysis segmentAnalysis = room.AnalyzeSegment(roomSegment3);
-			Assert.IsTrue(segmentAnalysis.OverlapsLastSegment);
-			Assert.AreEqual(SegmentPosition.OverlapsRoom, segmentAnalysis.Position);
-		}
-
 		public void TestRoom(string mapData, int expectedRoomCount, int roomTestIndex = -1, int expectedWidth = 0, int expectedHeight = 0)
 		{
 			Map map = new Map();
 			map.LoadData(mapData);
-			List<Room> allRooms = MapEngine.GetAllRooms(map.MapArray);
+			List<Room> allRooms = map.Rooms;
 			Assert.AreEqual(expectedRoomCount, allRooms.Count);
 			if (roomTestIndex >= 0)
 			{
@@ -95,8 +80,8 @@ namespace Tests
 F	F	F	F	F";
 			Map map = new Map();
 			map.LoadData(twoRoomsConnectedByVerticalHallway);
-			Assert.AreEqual(5, map.MapArray.GetLength(0));
-			Assert.AreEqual(10, map.MapArray.GetLength(1));
+			Assert.AreEqual(5, map.NumColumns);
+			Assert.AreEqual(10, map.NumRows);
 		}
 
 		void TestMapArray(string mapData, int expectedMapWidth, int expectedMapHeight)
@@ -115,17 +100,6 @@ F	F	F	F	F
 ", 5, 1);
 
 			TestMapArray("F	F	F	F	F", 5, 1);
-		}
-
-		[Test]
-		public void RoomTest()
-		{
-			Room room = new Room(2);
-			room.AddSegment(0, 6, 2);
-			room.AddSegment(0, 3, 3);
-			room.AddSegment(0, 3, 4);
-			Assert.AreEqual(3, room.Width);
-			Assert.AreEqual(4, room.Height);
 		}
 	}
 }

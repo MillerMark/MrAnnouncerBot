@@ -4,16 +4,18 @@ using System.Windows;
 
 namespace MapCore
 {
-	public class Space
+	public class FloorSpace
 	{
-		public MapSpaceType Type { get; set; }
 		public int Row { get; set; }
 		public int Column { get; set; }
 		public object Data { get; set; }
-		public Space(int column, int row, MapSpaceType type, object data = null)
+		public SpaceType SpaceType { get; set; }
+		public MapRegion Parent { get; set; }
+		public string Code { get; set; }
+		public FloorSpace(int column, int row, string code, object data = null)
 		{
+			Code = code;
 			Data = data;
-			Type = type;
 			Column = column;
 			Row = row;
 		}
