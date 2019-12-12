@@ -8,8 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
 		<Viewbox x:Name="vbxMap" >
-			<Canvas x:Name="cvsMap">
-
+			<Canvas x:Name="cvsMap" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp" Width="150" Height="150" >
 			</Canvas>
 		</Viewbox>
 	</Grid>

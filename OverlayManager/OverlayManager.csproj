@@ -29,6 +29,7 @@
     <None Remove="TS\DragonH\Fred.ts" />
     <None Remove="TS\DragonH\HighlightEmitter.ts" />
     <None Remove="TS\DragonH\Item.ts" />
+    <None Remove="TS\DragonH\MapGame.ts" />
     <None Remove="TS\DragonH\Mod.ts" />
     <None Remove="TS\DragonH\ReleaseTrigger.ts" />
     <None Remove="TS\DragonH\SavingThrow.ts" />
@@ -65,6 +66,7 @@
     <None Remove="TS\Layouts.ts" />
     <None Remove="TS\Line.ts" />
     <None Remove="TS\Main.ts" />
+    <None Remove="TS\MapMain.ts" />
     <None Remove="TS\Meteor.ts" />
     <None Remove="TS\Part.ts" />
     <None Remove="TS\Physics.ts" />
@@ -121,6 +123,7 @@
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
     <TypeScriptCompile Include="TS\DragonH\BloodSprites.ts" />
+    <TypeScriptCompile Include="TS\DragonH\MapGame.ts" />
     <TypeScriptCompile Include="TS\DragonH\Fred.ts" />
     <TypeScriptCompile Include="TS\DragonH\HighlightEmitter.ts" />
     <TypeScriptCompile Include="TS\DragonH\SpellBook.ts" />
@@ -144,6 +147,7 @@
     <TypeScriptCompile Include="TS\DragonH\TimeSpan.ts" />
     <TypeScriptCompile Include="TS\DragonH\VisualEffect.ts" />
     <TypeScriptCompile Include="TS\DragonH\VisualEffectTarget.ts" />
+    <TypeScriptCompile Include="TS\MapMain.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Emitter\CircularParticleGenerator.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Emitter\Emitter.ts" />
     <TypeScriptCompile Include="TS\Game Engine\Emitter\ParticleGenerator.ts" />
@@ -162,6 +166,9 @@
     <TypeScriptCompile Include="TS\DroneMain.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Update="Pages\DragonMap.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Pages\DroneOverlay.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

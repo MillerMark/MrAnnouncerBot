@@ -6,6 +6,7 @@ namespace MapCore
 	public enum SpaceType
 	{
 		None,
+		Empty,
 		Room,
 		Corridor
 	}

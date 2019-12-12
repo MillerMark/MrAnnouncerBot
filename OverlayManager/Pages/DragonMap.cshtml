@@ -1,0 +1,112 @@
+﻿@page
+@model OverlayManager.Pages.DragonMapOverlayModel
+@{
+	Layout = null;
+}
+
+<link rel="icon" href="data:,">
+<!DOCTYPE html>
+
+<canvas id="myMapCanvas" width="1920" height="1080"></canvas>
+
+<script src="~/lib/signalr/signalr.js"></script>
+
+<!-- Order is important! -->
+
+<script src="~/GameDev/Source/Game Engine/Folders.js"></script>
+
+<script>
+	Folders.assets = 'GameDev/Assets/';
+</script>
+
+<script src="~/GameDev/Source/Game Engine/Vector.js"></script>
+<script src="~/GameDev/Source/Game Engine/TargetValue.js"></script>
+<script src="~/GameDev/Source/Game Engine/Force.js"></script>
+<script src="~/GameDev/Source/Game Engine/WorldObject.js"></script>
+<script src="~/GameDev/Source/Game Engine/World.js"></script>
+<script src="~/GameDev/Source/Game Engine/GravityForce.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/Particle.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/PositionPlusVelocity.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/ParticleGenerator.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/CircularParticleGenerator.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/RectangularParticleGenerator.js"></script>
+<script src="~/GameDev/Source/Game Engine/Emitter/Emitter.js"></script>
+<script src="~/GameDev/Source/Game Engine/Connection.js"></script>
+<script src="~/GameDev/Source/Game Engine/AnimationStyle.js"></script>
+<script src="~/GameDev/Source/Game Engine/Point.js"></script>
+<script src="~/GameDev/Source/Game Engine/Line.js"></script>
+<script src="~/GameDev/Source/Game Engine/Physics.js"></script>
+<script src="~/GameDev/Source/Game Engine/HueSatLight.js"></script>
+<script src="~/GameDev/Source/Game Engine/SpriteProxy.js"></script>
+<script src="~/GameDev/Source/Game Engine/Sprites.js"></script>
+<script src="~/GameDev/Source/Game Engine/Game.js"></script>
+<script src="~/GameDev/Source/Globals.js"></script>
+<script src="~/GameDev/Source/Game Engine/Diagnostics.js"></script>
+<script src="~/GameDev/Source/Game Engine/GamePlusQuiz.js"></script>
+<script src="~/GameDev/Source/Game Engine/SpriteCollection.js"></script>
+<script src="~/GameDev/Source/Game Engine/Part.js"></script>
+<script src="~/GameDev/Source/Game Engine/Random.js"></script>
+<script src="~/GameDev/Source/Game Engine/Digits.js"></script>
+<script src="~/GameDev/Source/Game Engine/Gravity.js"></script>
+<script src="~/GameDev/Source/Game Engine/Tests/Tests.js"></script>
+<script src="~/GameDev/Source/Game Engine/SoundManager.js"></script>
+
+<script src="~/GameDev/Source/Polls/Quiz.js"></script>
+<script src="~/GameDev/Source/Polls/Vote.js"></script>
+
+<script src="~/GameDev/Source/CodeRushed/FuturePoint.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Wall.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Sparks.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Layouts.js"></script>
+<script src="~/GameDev/Source/CodeRushed/BumbleBee.js"></script>
+<script src="~/GameDev/Source/CodeRushed/SplatSprites.js"></script>
+<script src="~/GameDev/Source/CodeRushed/WallSprites.js"></script>
+<script src="~/GameDev/Source/CodeRushed/DroneProxy.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Drone.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Gateway.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Portal.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Meteor.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Planet.js"></script>
+<script src="~/GameDev/Source/CodeRushed/GravityGame.js"></script>
+<script src="~/GameDev/Source/CodeRushed/GravityGames.js"></script>
+<script src="~/GameDev/Source/CodeRushed/Rocket.js"></script>
+<script src="~/GameDev/Source/CodeRushed/DroneGame.js"></script>
+
+<script src="~/GameDev/Source/DragonH/Enums.js"></script>
+<script src="~/GameDev/Source/DragonH/TimeSpan.js"></script>
+<script src="~/GameDev/Source/DragonH/Mod.js"></script>
+<script src="~/GameDev/Source/DragonH/Damage.js"></script>
+<script src="~/GameDev/Source/DragonH/ReleaseTrigger.js"></script>
+<script src="~/GameDev/Source/DragonH/CurseBlessingDisease.js"></script>
+<script src="~/GameDev/Source/DragonH/SavingThrow.js"></script>
+<script src="~/GameDev/Source/DragonH/Effect.js"></script>
+<script src="~/GameDev/Source/DragonH/Attack.js"></script>
+<script src="~/GameDev/Source/DragonH/VisualEffectTarget.js"></script>
+<script src="~/GameDev/Source/DragonH/ScreenPosTarget.js"></script>
+<script src="~/GameDev/Source/DragonH/VisualEffect.js"></script>
+<script src="~/GameDev/Source/DragonH/SpritesEffect.js"></script>
+<script src="~/GameDev/Source/DragonH/Item.js"></script>
+
+<script src="~/GameDev/Source/DragonH/ActiveSpellData.js"></script>
+<script src="~/GameDev/Source/DragonH/Character.js"></script>
+<script src="~/GameDev/Source/DragonH/CharacterStat.js"></script>
+<script src="~/GameDev/Source/DragonH/StatPage.js"></script>
+<script src="~/GameDev/Source/DragonH/SpellBook.js"></script>
+<script src="~/GameDev/Source/DragonH/HighlightEmitter.js"></script>
+
+<script src="~/GameDev/Source/DragonH/Windups.js"></script>
+<script src="~/GameDev/Source/DragonH/DragonGame.js"></script>
+
+<script src="~/GameDev/Source/DragonH/CharacterStatsScroll.js"></script>
+
+<script src="~/GameDev/Source/DragonH/DragonBackGame.js"></script>
+<script src="~/GameDev/Source/DragonH/DragonFrontSounds.js"></script>
+<script src="~/GameDev/Source/DragonH/BloodSprites.js"></script>
+<script src="~/GameDev/Source/DragonH/Fred.js"></script>
+<script src="~/GameDev/Source/DragonH/DragonFrontGame.js"></script>
+
+<script src="~/GameDev/Source/MapMain.js"></script>
+
+<script>
+	connectToSignalR(signalR);
+</script>
