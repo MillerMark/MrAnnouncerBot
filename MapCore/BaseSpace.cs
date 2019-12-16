@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
-	public class BaseSpace
+	public class Tile
 	{
 		public int Row { get; set; }
 		public int Column { get; set; }
@@ -11,17 +11,17 @@ namespace MapCore
 		public object SelectorPanel { get; set; }
 		public bool Selected { get; set; }
 
-		public BaseSpace(int column, int row)
+		public Tile(int column, int row)
 		{
 			Row = row;
 			Column = column;
 		}
 		public void GetPixelCoordinates(out int left, out int top, out int right, out int bottom)
 		{
-			left = Column * Map.pixelsPerTile;
-			top = Row * Map.pixelsPerTile;
-			right = left + Map.pixelsPerTile - 1;
-			bottom = top + Map.pixelsPerTile - 1;
+			left = Column * Map.TileSizePx;
+			top = Row * Map.TileSizePx;
+			right = left + Map.TileSizePx - 1;
+			bottom = top + Map.TileSizePx - 1;
 		}
 	}
 }

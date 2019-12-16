@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace MapCore
 {
-	public class FloorSpace: BaseSpace
+	public class FloorSpace: Tile
 	{
 		public object Data { get; set; }
 		public string Code { get; set; }

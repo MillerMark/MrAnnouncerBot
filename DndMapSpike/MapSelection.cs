@@ -23,8 +23,8 @@ namespace DndMapSpike
 		}
 
 		public bool Selecting { get; set; }
-		public BaseSpace Caret { get; set; }
-		public BaseSpace Anchor { get; set; }
+		public Tile Caret { get; set; }
+		public Tile Anchor { get; set; }
 
 		// TODO: Move this to a UI space, buddy. Come on.
 		public int BorderThickness { get; set; } = 4;
@@ -45,7 +45,7 @@ namespace DndMapSpike
 			SelectionCancelled?.Invoke(this, EventArgs.Empty);
 		}
 
-		public void StartSelection(BaseSpace baseSpace, SelectionType selectionType = SelectionType.Replace)
+		public void StartSelection(Tile baseSpace, SelectionType selectionType = SelectionType.Replace)
 		{
 			SelectionType = selectionType;
 			Selecting = true;
@@ -54,7 +54,7 @@ namespace DndMapSpike
 			OnSelectionChanged();
 		}
 
-		public void SelectTo(BaseSpace baseSpace)
+		public void SelectTo(Tile baseSpace)
 		{
 			if (Caret == baseSpace)
 				return;

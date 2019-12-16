@@ -13,7 +13,7 @@ namespace MapCore
 
 
 		// TODO: Should pixelsPerFiveFeet really be here?
-		public static int pixelsPerTile { get; set; } = 60;
+		public static int TileSizePx { get; set; } = 60;
 
 		//public double pixelsPerFoot { get; set; } = 4;
 		//public int feetPerSquare { get; set; } = 5;
@@ -30,7 +30,7 @@ namespace MapCore
 		}
 		void Reset()
 		{
-			Spaces = new List<BaseSpace>();
+			Spaces = new List<Tile>();
 			lastRowIndex = -1;
 			lastColumnIndex = -1;
 			rightmostColumnIndex = -1;
@@ -82,10 +82,10 @@ namespace MapCore
 
 		public void BuildMapArrays()
 		{
-			AllSpacesArray = new BaseSpace[NumColumns, NumRows];
-			foreach (BaseSpace space in Spaces)
+			AllTiles = new Tile[NumColumns, NumRows];
+			foreach (Tile space in Spaces)
 			{
-				AllSpacesArray[space.Column, space.Row] = space;
+				AllTiles[space.Column, space.Row] = space;
 			}
 		}
 
@@ -131,7 +131,7 @@ namespace MapCore
 				LoadNewSpace(space);
 		}
 
-		static void ClearAllSpaces(BaseSpace[,] mapArray, int numColumns, int numRows)
+		static void ClearAllSpaces(Tile[,] mapArray, int numColumns, int numRows)
 		{
 			for (int column = 0; column < numColumns; column++)
 				for (int row = 0; row < numRows; row++)
@@ -149,14 +149,14 @@ namespace MapCore
 		{
 			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
 				return null;
-			return AllSpacesArray[column, row] as FloorSpace;
+			return AllTiles[column, row] as FloorSpace;
 		}
 
-		public BaseSpace GetBaseSpace(int column, int row)
+		public Tile GetBaseSpace(int column, int row)
 		{
 			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
 				return null;
-			return AllSpacesArray[column, row];
+			return AllTiles[column, row];
 		}
 
 		bool FloorSpaceExists(int column, int row)
@@ -249,7 +249,7 @@ namespace MapCore
 		{
 			Rooms.Clear();
 			Corridors.Clear();
-			ClearAllSpaces(AllSpacesArray, NumColumns, NumRows);
+			ClearAllSpaces(AllTiles, NumColumns, NumRows);
 			DetermineSpaceTypes();
 
 
@@ -291,16 +291,16 @@ namespace MapCore
 
 		public void PixelsToColumnRow(double x, double y, out int column, out int row)
 		{
-			column = (int)(x / pixelsPerTile);
-			row = (int)(y / pixelsPerTile);
+			column = (int)(x / TileSizePx);
+			row = (int)(y / TileSizePx);
 		}
 
-		public List<BaseSpace> GetTilesInPixelRect(int left, int top, int width, int height)
+		public List<Tile> GetTilesInPixelRect(int left, int top, int width, int height)
 		{
 			PixelsToColumnRow(left, top, out int leftColumn, out int topRow);
 			PixelsToColumnRow(left + width - 1, top + height - 1, out int rightColumn, out int bottomRow);
-			List<BaseSpace> results = new List<BaseSpace>();
-			foreach (BaseSpace baseSpace in Spaces)
+			List<Tile> results = new List<Tile>();
+			foreach (Tile baseSpace in Spaces)
 			{
 				if (baseSpace.Column >= leftColumn && baseSpace.Column <= rightColumn &&
 						baseSpace.Row >= topRow && baseSpace.Row <= bottomRow)
@@ -309,12 +309,12 @@ namespace MapCore
 			return results;
 		}
 
-		public List<BaseSpace> GetTilesOutsidePixelRect(int left, int top, int width, int height)
+		public List<Tile> GetTilesOutsidePixelRect(int left, int top, int width, int height)
 		{
 			PixelsToColumnRow(left, top, out int leftColumn, out int topRow);
 			PixelsToColumnRow(left + width - 1, top + height - 1, out int rightColumn, out int bottomRow);
-			List<BaseSpace> results = new List<BaseSpace>();
-			foreach (BaseSpace baseSpace in Spaces)
+			List<Tile> results = new List<Tile>();
+			foreach (Tile baseSpace in Spaces)
 			{
 				if (baseSpace.Column < leftColumn || baseSpace.Column > rightColumn ||
 						baseSpace.Row < topRow || baseSpace.Row > bottomRow)
@@ -325,29 +325,29 @@ namespace MapCore
 
 		public void ClearSelection()
 		{
-			foreach (BaseSpace baseSpace in Spaces)
+			foreach (Tile baseSpace in Spaces)
 				baseSpace.Selected = false;
 		}
 
-		public double Width
+		public double WidthPx
 		{
 			get
 			{
-				return (rightmostColumnIndex + 1) * pixelsPerTile;
+				return (rightmostColumnIndex + 1) * TileSizePx;
 			}
 		}
-		public double Height
+		public double HeightPx
 		{
 			get
 			{
-				return (lastRowIndex + 1) * pixelsPerTile;
+				return (lastRowIndex + 1) * TileSizePx;
 			}
 		}
 
-		public List<BaseSpace> Spaces { get; private set; }
+		public List<Tile> Spaces { get; private set; }
 		public List<Room> Rooms { get; private set; } = new List<Room>();
 		public List<Corridor> Corridors { get; private set; } = new List<Corridor>();
-		public BaseSpace[,] AllSpacesArray { get; private set; }
+		public Tile[,] AllTiles { get; private set; }
 		public int NumColumns { get; set; }
 		public int NumRows { get; set; }
 	}
