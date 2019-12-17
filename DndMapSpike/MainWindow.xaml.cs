@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.IO;
 using MapCore;
 using System.Timers;
+using MapUI;
 
 namespace DndMapSpike
 {
@@ -23,6 +24,45 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		const double DBL_SelectionLineThickness = 10;
+		const double DBL_HalfSelectionLineThickness = DBL_SelectionLineThickness / 2;
+		#region Fields from ZoomAndPan example
+		/// <summary>
+		/// Specifies the current state of the mouse handling logic.
+		/// </summary>
+		private MouseHandlingMode mouseHandlingMode = MouseHandlingMode.None;
+
+		/// <summary>
+		/// The point that was clicked relative to the ZoomAndPanControl.
+		/// </summary>
+		private Point origZoomAndPanControlMouseDownPoint;
+
+		/// <summary>
+		/// The point that was clicked relative to the content that is contained within the ZoomAndPanControl.
+		/// </summary>
+		private Point origContentMouseDownPoint;
+
+		/// <summary>
+		/// Records which mouse button clicked during mouse dragging.
+		/// </summary>
+		private MouseButton mouseButtonDown;
+
+		/// <summary>
+		/// Saves the previous zoom rectangle, pressing the backspace key jumps back to this zoom rectangle.
+		/// </summary>
+		private Rect prevZoomRect;
+
+		/// <summary>
+		/// Save the previous content scale, pressing the backspace key jumps back to this scale.
+		/// </summary>
+		private double prevZoomScale;
+
+		/// <summary>
+		/// Set to 'true' when the previous zoom rect is saved.
+		/// </summary>
+		private bool prevZoomRectSet = false;
+
+		#endregion
 		MapSelection selection;
 		int clickCounter;
 		public Map Map { get; set; }
@@ -72,15 +112,21 @@ namespace DndMapSpike
 			selection.GetPixelRect(out int left, out int top, out int width, out int height);
 			List<Tile> tilesInPixelRect = Map.GetTilesInPixelRect(left, top, width, height);
 			List<Tile> tilesOutsidePixelRect = Map.GetTilesOutsidePixelRect(left, top, width, height);
+			SelectAllTiles(tilesInPixelRect, tilesOutsidePixelRect);
+		}
 
-			SelectSpaces(tilesInPixelRect, true);
-			SelectSpaces(tilesOutsidePixelRect, false);
+		private void SelectAllTiles(List<Tile> tilesToSelect, List<Tile> tilesNotSelected = null)
+		{
+			SelectTiles(tilesToSelect, true);
+			if (tilesNotSelected == null)
+				tilesNotSelected = Map.GetAllOtherSpaces(tilesToSelect);
+			SelectTiles(tilesNotSelected, false);
 			CreateSelectionOutline();
 		}
 
 		private void CreateSelectionOutline()
 		{
-			cvsMap.Children.Remove(outline);
+			content.Children.Remove(outline);
 			outline = new System.Windows.Shapes.Path();
 
 			PathGeometry allLines = new PathGeometry();
@@ -130,61 +176,61 @@ namespace DndMapSpike
 			}
 
 			outline.Stroke = new SolidColorBrush(Color.FromRgb(0, 72, 255));
-			outline.StrokeThickness = 10;
+			outline.StrokeThickness = DBL_SelectionLineThickness;
 			outline.Data = allLines;
-			cvsMap.Children.Add(outline);
+			content.Children.Add(outline);
 		}
 
 		private static void AddHorizontalLine(PathGeometry allLines, Tile tile, int offset = 0)
 		{
 			tile.GetPixelCoordinates(out int left, out int top, out int right, out int _);
-			allLines.AddGeometry(new LineGeometry(new Point(left, top + offset), new Point(right, top + offset)));
+			allLines.AddGeometry(new LineGeometry(new Point(left - DBL_HalfSelectionLineThickness, top + offset), new Point(right + DBL_HalfSelectionLineThickness, top + offset)));
 		}
 
 		private static void AddVerticalLine(PathGeometry allLines, Tile tile, int offset = 0)
 		{
 			tile.GetPixelCoordinates(out int left, out int top, out int _, out int bottom);
-			allLines.AddGeometry(new LineGeometry(new Point(left + offset, top), new Point(left + offset, bottom)));
+			allLines.AddGeometry(new LineGeometry(new Point(left + offset, top - DBL_HalfSelectionLineThickness), new Point(left + offset, bottom + DBL_HalfSelectionLineThickness)));
 		}
 
 		System.Windows.Shapes.Path outline;
 
-		private void SelectSpaces(List<Tile> spaces, bool tileRubberBanded)
+		private void SelectTiles(List<Tile> tiles, bool select)
 		{
-			foreach (Tile baseSpace in spaces)
+			foreach (Tile tile in tiles)
 			{
-				if (baseSpace.SelectorPanel is FrameworkElement selectorPanel)
+				if (tile.SelectorPanel is FrameworkElement selectorPanel)
 				{
 					switch (selection.SelectionType)
 					{
 						case SelectionType.Replace:
-							if (tileRubberBanded)
-								Select(baseSpace, selectorPanel);
+							if (select)
+								Select(tile, selectorPanel);
 							else
-								Deselect(baseSpace, selectorPanel);
+								Deselect(tile, selectorPanel);
 							break;
 						case SelectionType.Add:
-							if (tileRubberBanded)
-								Select(baseSpace, selectorPanel);
+							if (select)
+								Select(tile, selectorPanel);
 							break;
 						case SelectionType.Remove:
-							if (tileRubberBanded)
-								Deselect(baseSpace, selectorPanel);
+							if (select)
+								Deselect(tile, selectorPanel);
 							break;
 					}
 				}
 			}
 		}
 
-		private static void Deselect(Tile baseSpace, FrameworkElement selectorPanel)
+		private static void Deselect(Tile tile, FrameworkElement selectorPanel)
 		{
-			baseSpace.Selected = false;
+			tile.Selected = false;
 			selectorPanel.Opacity = 0.8;
 		}
 
-		private static void Select(Tile baseSpace, FrameworkElement selectorPanel)
+		private static void Select(Tile tile, FrameworkElement selectorPanel)
 		{
-			baseSpace.Selected = true;
+			tile.Selected = true;
 			selectorPanel.Opacity = 0.0;
 		}
 
@@ -197,15 +243,17 @@ namespace DndMapSpike
 
 		void ClearSelection()
 		{
-			cvsMap.Children.Remove(outline);
+			content.Children.Remove(outline);
+			outline = new System.Windows.Shapes.Path();
 			selection.Clear();
+			Map.ClearSelection();
 			ClearSelectionUI();
 		}
 
 		private void ClearSelectionUI()
 		{
-			foreach (Tile baseSpace in Map.Spaces)
-				if (baseSpace.SelectorPanel is FrameworkElement selectorPanel)
+			foreach (Tile tile in Map.Tiles)
+				if (tile.SelectorPanel is FrameworkElement selectorPanel)
 					selectorPanel.Opacity = 0;
 		}
 
@@ -217,10 +265,10 @@ namespace DndMapSpike
 		}
 		void ShowSelectionRubberBand()
 		{
-			selection.GetPixelRect(out int left, out int top, out int width, out int height);
-			SetSelectorSize(rubberBandOutsideSelector, left, top, width, height);
 			int margin = selection.BorderThickness;
-			SetSelectorSize(rubberBandInsideSelector, left + margin, top + margin, width - 2 * margin, height - 2 * margin);
+			selection.GetPixelRect(out int left, out int top, out int width, out int height);
+			SetSelectorSize(rubberBandOutsideSelector, left - margin, top - margin, width + 2 * margin, height + 2 * margin);
+			SetSelectorSize(rubberBandInsideSelector, left, top, width, height);
 			SetSelectorSize(rubberBandFillSelector, left, top, width, height);
 		}
 
@@ -247,12 +295,12 @@ namespace DndMapSpike
 
 		FrameworkElement mouseDownSender;
 
-		Tile GetBaseSpace(FrameworkElement frameworkElement)
+		Tile GetTile(FrameworkElement frameworkElement)
 		{
 			if (frameworkElement == null)
 				return null;
-			if (frameworkElement.Tag is Tile baseSpace)
-				return baseSpace;
+			if (frameworkElement.Tag is Tile tile)
+				return tile;
 			return null;
 		}
 
@@ -271,9 +319,9 @@ namespace DndMapSpike
 
 		void LoadMap(string fileName)
 		{
-			cvsMap.Children.Clear();
+			content.Children.Clear();
 			Map.Load(fileName);
-			foreach (Tile tile in Map.Spaces)
+			foreach (Tile tile in Map.Tiles)
 			{
 				UIElement floorUI = null;
 
@@ -304,8 +352,10 @@ namespace DndMapSpike
 
 		private void SetCanvasSizeFromMap()
 		{
-			cvsMap.Width = Map.WidthPx;
-			cvsMap.Height = Map.HeightPx;
+			content.Width = Map.WidthPx;
+			content.Height = Map.HeightPx;
+			theGrid.Width = Map.WidthPx;
+			theGrid.Height = Map.HeightPx;
 		}
 
 		private void BuildRubberBandSelector()
@@ -323,9 +373,9 @@ namespace DndMapSpike
 			rubberBandFillSelector.Opacity = 0.25;
 			SetRubberBandVisibility(Visibility.Hidden);
 
-			cvsMap.Children.Add(rubberBandFillSelector);
-			cvsMap.Children.Add(rubberBandInsideSelector);
-			cvsMap.Children.Add(rubberBandOutsideSelector);
+			content.Children.Add(rubberBandFillSelector);
+			content.Children.Add(rubberBandInsideSelector);
+			content.Children.Add(rubberBandOutsideSelector);
 		}
 
 		Rectangle rubberBandOutsideSelector;
@@ -339,10 +389,10 @@ namespace DndMapSpike
 				return;
 			Canvas.SetLeft(element, tile.Column * Map.TileSizePx);
 			Canvas.SetTop(element, tile.Row * Map.TileSizePx);
-			cvsMap.Children.Add(element);
+			content.Children.Add(element);
 		}
 
-		Tile GetBaseSpaceUnderMouse(Point position)
+		Tile GetTileUnderMouse(Point position)
 		{
 			Map.PixelsToColumnRow(position.X, position.Y, out int column, out int row);
 			return Map.GetBaseSpace(column, row);
@@ -363,9 +413,9 @@ namespace DndMapSpike
 			if (!selection.Selecting)
 				return;
 
-			Tile baseSpace = GetBaseSpaceUnderMouse(e.GetPosition(cvsMap));
-			if (baseSpace != null)
-				selection.SelectTo(baseSpace);
+			Tile tile = GetTileUnderMouse(e.GetPosition(content));
+			if (tile != null)
+				selection.SelectTo(tile);
 		}
 
 		private void CvsMap_MouseUp(object sender, MouseButtonEventArgs e)
@@ -373,45 +423,405 @@ namespace DndMapSpike
 			mouseIsDown = false;
 			if (!selection.Selecting)
 				return;
-			cvsMap.ReleaseMouseCapture();
+			content.ReleaseMouseCapture();
 			selection.Commit();
 		}
 
+private void ZoomOut_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			ZoomOut(new Point(zoomAndPanControl.ContentZoomFocusX, zoomAndPanControl.ContentZoomFocusY));
+		}
+
+		private void ZoomIn_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			ZoomIn(new Point(zoomAndPanControl.ContentZoomFocusX, zoomAndPanControl.ContentZoomFocusY));
+		}
+
+		private void JumpBackToPrevZoom_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			JumpBackToPrevZoom();
+		}
+
+		private void JumpBackToPrevZoom_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = prevZoomRectSet;
+		}
+
+		private void Fill_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			SavePrevZoomRect();
+			zoomAndPanControl.AnimatedScaleToFit();
+		}
+
+		private void OneHundredPercent_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			SavePrevZoomRect();
+
+			zoomAndPanControl.AnimatedZoomTo(1.0);
+		}
+
+		/// <summary>
+		/// Jump back to the previous zoom level.
+		/// </summary>
+		private void JumpBackToPrevZoom()
+		{
+			zoomAndPanControl.AnimatedZoomTo(prevZoomScale, prevZoomRect);
+
+			ClearPrevZoomRect();
+		}
+
+		/// <summary>
+		/// Clear the memory of the previous zoom level.
+		/// </summary>
+		private void ClearPrevZoomRect()
+		{
+			prevZoomRectSet = false;
+		}
+
+		/// <summary>
+		/// Zoom the viewport out, centering on the specified point (in content coordinates).
+		/// </summary>
+		private void ZoomOut(Point contentZoomCenter)
+		{
+			zoomAndPanControl.ZoomAboutPoint(zoomAndPanControl.ContentScale - 0.1, contentZoomCenter);
+		}
+
+		/// <summary>
+		/// Zoom the viewport in, centering on the specified point (in content coordinates).
+		/// </summary>
+		private void ZoomIn(Point contentZoomCenter)
+		{
+			zoomAndPanControl.ZoomAboutPoint(zoomAndPanControl.ContentScale + 0.1, contentZoomCenter);
+		}
+
+		private void ZoomAndPanControl_MouseUp(object sender, MouseButtonEventArgs e)
+		{
+			if (mouseHandlingMode != MouseHandlingMode.None)
+			{
+				if (mouseHandlingMode == MouseHandlingMode.Zooming)
+				{
+					if (mouseButtonDown == MouseButton.Left)
+					{
+						// Shift + left-click zooms in on the content.
+						ZoomIn(origContentMouseDownPoint);
+					}
+					else if (mouseButtonDown == MouseButton.Right)
+					{
+						// Shift + left-click zooms out from the content.
+						ZoomOut(origContentMouseDownPoint);
+					}
+				}
+				else if (mouseHandlingMode == MouseHandlingMode.DragZooming)
+				{
+					// When drag-zooming has finished we zoom in on the rectangle that was highlighted by the user.
+					ApplyDragZoomRect();
+				}
+
+				zoomAndPanControl.ReleaseMouseCapture();
+				mouseHandlingMode = MouseHandlingMode.None;
+				e.Handled = true;
+			}
+		}
+
+		//
+		// Record the previous zoom level, so that we can jump back to it when the backspace key is pressed.
+		//
+		private void SavePrevZoomRect()
+		{
+			prevZoomRect = new Rect(zoomAndPanControl.ContentOffsetX, zoomAndPanControl.ContentOffsetY, zoomAndPanControl.ContentViewportWidth, zoomAndPanControl.ContentViewportHeight);
+			prevZoomScale = zoomAndPanControl.ContentScale;
+			prevZoomRectSet = true;
+		}
+
+		/// <summary>
+		/// When the user has finished dragging out the rectangle the zoom operation is applied.
+		/// </summary>
+		private void ApplyDragZoomRect()
+		{
+			//
+			// Record the previous zoom level, so that we can jump back to it when the backspace key is pressed.
+			//
+			SavePrevZoomRect();
+
+			//
+			// Retrieve the rectangle that the user dragged out and zoom in on it.
+			//
+			double contentX = Canvas.GetLeft(dragZoomBorder);
+			double contentY = Canvas.GetTop(dragZoomBorder);
+			double contentWidth = dragZoomBorder.Width;
+			double contentHeight = dragZoomBorder.Height;
+			zoomAndPanControl.AnimatedZoomTo(new Rect(contentX, contentY, contentWidth, contentHeight));
+
+			FadeOutDragZoomRect();
+		}
+
+		private void FadeOutDragZoomRect()
+		{
+			AnimationHelper.StartAnimation(dragZoomBorder, Border.OpacityProperty, 0.0, 0.1,
+					delegate (object sender, EventArgs e)
+					{
+						dragZoomCanvas.Visibility = Visibility.Collapsed;
+					});
+		}
+
+		/// <summary>
+		/// Update the position and size of the rectangle that user is dragging out.
+		/// </summary>
+		private void SetDragZoomRect(Point pt1, Point pt2)
+		{
+			double x, y, width, height;
+
+			//
+			// Determine x,y,width and height of the rect inverting the points if necessary.
+			// 
+
+			if (pt2.X < pt1.X)
+			{
+				x = pt2.X;
+				width = pt1.X - pt2.X;
+			}
+			else
+			{
+				x = pt1.X;
+				width = pt2.X - pt1.X;
+			}
+
+			if (pt2.Y < pt1.Y)
+			{
+				y = pt2.Y;
+				height = pt1.Y - pt2.Y;
+			}
+			else
+			{
+				y = pt1.Y;
+				height = pt2.Y - pt1.Y;
+			}
+
+			//
+			// Update the coordinates of the rectangle that is being dragged out by the user.
+			// The we offset and rescale to convert from content coordinates.
+			//
+			Canvas.SetLeft(dragZoomBorder, x);
+			Canvas.SetTop(dragZoomBorder, y);
+			dragZoomBorder.Width = width;
+			dragZoomBorder.Height = height;
+		}
+
+		/// <summary>
+		/// Initialize the rectangle that the use is dragging out.
+		/// </summary>
+		private void InitDragZoomRect(Point pt1, Point pt2)
+		{
+			SetDragZoomRect(pt1, pt2);
+
+			dragZoomCanvas.Visibility = Visibility.Visible;
+			dragZoomBorder.Opacity = 0.5;
+		}
+
+		private void ZoomAndPanControl_MouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			e.Handled = true;
+
+			if (e.Delta > 0)
+			{
+				Point curContentMousePoint = e.GetPosition(content);
+				ZoomIn(curContentMousePoint);
+				if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+					zoomAndPanControl.AnimatedSnapTo(curContentMousePoint);
+			}
+			else if (e.Delta < 0)
+			{
+				Point curContentMousePoint = e.GetPosition(content);
+				ZoomOut(curContentMousePoint);
+			}
+			
+		}
+
+		private void ZoomAndPanControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			//if ((Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+			//{
+			//	Point doubleClickPoint = e.GetPosition(content);
+			//	zoomAndPanControl.AnimatedSnapTo(doubleClickPoint);
+			//}
+		}
+
+		private void ZoomAndPanControl_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (mouseHandlingMode == MouseHandlingMode.Panning)
+			{
+				//
+				// The user is left-dragging the mouse.
+				// Pan the viewport by the appropriate amount.
+				//
+				Point curContentMousePoint = e.GetPosition(content);
+				Vector dragOffset = curContentMousePoint - origContentMouseDownPoint;
+
+				zoomAndPanControl.ContentOffsetX -= dragOffset.X;
+				zoomAndPanControl.ContentOffsetY -= dragOffset.Y;
+
+				e.Handled = true;
+			}
+			else if (mouseHandlingMode == MouseHandlingMode.Zooming)
+			{
+				Point curZoomAndPanControlMousePoint = e.GetPosition(zoomAndPanControl);
+				Vector dragOffset = curZoomAndPanControlMousePoint - origZoomAndPanControlMouseDownPoint;
+				double dragThreshold = 10;
+				if (mouseButtonDown == MouseButton.Left &&
+						(Math.Abs(dragOffset.X) > dragThreshold ||
+						 Math.Abs(dragOffset.Y) > dragThreshold))
+				{
+					//
+					// When Shift + left-down zooming mode and the user drags beyond the drag threshold,
+					// initiate drag zooming mode where the user can drag out a rectangle to select the area
+					// to zoom in on.
+					//
+					mouseHandlingMode = MouseHandlingMode.DragZooming;
+					Point curContentMousePoint = e.GetPosition(content);
+					InitDragZoomRect(origContentMouseDownPoint, curContentMousePoint);
+				}
+
+				e.Handled = true;
+			}
+			else if (mouseHandlingMode == MouseHandlingMode.DragZooming)
+			{
+				//
+				// When in drag zooming mode continously update the position of the rectangle
+				// that the user is dragging out.
+				//
+				Point curContentMousePoint = e.GetPosition(content);
+				SetDragZoomRect(origContentMouseDownPoint, curContentMousePoint);
+
+				e.Handled = true;
+			}
+		}
+
+		private void ZoomAndPanControl_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			content.Focus();
+			Keyboard.Focus(content);
+
+			mouseButtonDown = e.ChangedButton;
+			origZoomAndPanControlMouseDownPoint = e.GetPosition(zoomAndPanControl);
+			origContentMouseDownPoint = e.GetPosition(content);
+			if (origContentMouseDownPoint.X < 0 || origContentMouseDownPoint.X > content.Width || origContentMouseDownPoint.Y < 0 || origContentMouseDownPoint.Y > theGrid.Height)
+			{
+				if (Map.SelectionExists())
+					ClearSelection();
+			}
+
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt) && e.ChangedButton == MouseButton.Left)
+			{
+				// Alt + left initiates special zooming to rect mode.
+				mouseHandlingMode = MouseHandlingMode.Zooming;
+			}
+			else if (mouseButtonDown == MouseButton.Left && Keyboard.IsKeyDown(Key.Space))
+			{
+				// Just left-down plus space bar down initiates panning mode.
+				mouseHandlingMode = MouseHandlingMode.Panning;
+			}
+
+			if (mouseHandlingMode != MouseHandlingMode.None)
+			{
+				// Capture the mouse so that we eventually receive the mouse up event.
+				zoomAndPanControl.CaptureMouse();
+				e.Handled = true;
+			}
+		}
+
+		void FloodSelect(Tile baseSpace, SelectionType selectionType)
+		{
+			if (selectionType == SelectionType.None)
+				return;
+
+			if (!(baseSpace is FloorSpace floorSpace))
+				return;
+
+			selection.SelectionType = selectionType;
+
+			//if (selection.SelectionType == SelectionType.Replace)
+			//{
+			//	Map.ClearSelection();
+			//	ClearSelectionUI();
+			//}
+
+			List<Tile> roomTiles = floorSpace.Parent.Spaces.ConvertAll(x => x as Tile);
+			SelectAllTiles(roomTiles);
+		}
+
+		void FloodSelectAll(Tile baseSpace, SelectionType selectionType)
+		{
+			if (selectionType == SelectionType.None)
+				return;
+
+			if (!(baseSpace is FloorSpace floorSpace))
+				return;
+
+			List<Tile> allRegionTiles;
+
+			if (floorSpace.Parent is Room)
+			{
+				allRegionTiles = Map.GetAllMatchingTiles<Room>();
+			}
+			else if (floorSpace.Parent is Corridor)
+			{
+				allRegionTiles = Map.GetAllMatchingTiles<Corridor>();
+			}
+			else
+				return;
+
+			SelectAllTiles(allRegionTiles);
+		}
 		private void EvaluateClicks(object source, ElapsedEventArgs e)
 		{
 			clickTimer.Stop();
-			
+
 			Dispatcher.Invoke(() =>
 			{
-				Tile baseSpace = GetBaseSpace(mouseDownSender);
+				Tile baseSpace = GetTile(mouseDownSender);
 				if (baseSpace != null)
 				{
 					if (clickCounter == 1)
 					{
-						if (mouseIsDown)
+						if (mouseIsDown && !Keyboard.IsKeyDown(Key.Space))
 						{
-							SelectionType selectionType = SelectionType.Replace;
-							if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-								selectionType = SelectionType.Add;
-							else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-								selectionType = SelectionType.Remove;
+							if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) // Alt key is reserved for zooming into a rect.
+								return;
+							SelectionType selectionType = GetSelectionType();
 
 							if (selectionType == SelectionType.Replace)
 								ClearSelection();
 
 							SetRubberBandVisibility(Visibility.Visible);
 							selection.StartSelection(baseSpace, selectionType);
-							cvsMap.CaptureMouse();
+							content.CaptureMouse();
 						}
 					}
 					else if (clickCounter == 2)
 					{
-
+						FloodSelect(baseSpace, GetSelectionType());
+					}
+					else if (clickCounter == 3)
+					{
+						FloodSelectAll(baseSpace, GetSelectionType());
 					}
 				}
 			});
 
 			clickCounter = 0;
+		}
+
+		private SelectionType GetSelectionType()
+		{
+			SelectionType selectionType = SelectionType.Replace;
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+				selectionType = SelectionType.Add;
+			else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+				selectionType = SelectionType.Remove;
+
+			if (selectionType == SelectionType.Add && !Map.SelectionExists())
+				selectionType = SelectionType.Replace;
+			return selectionType;
 		}
 	}
 }

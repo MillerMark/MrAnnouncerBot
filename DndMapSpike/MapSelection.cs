@@ -4,14 +4,6 @@ using MapCore;
 
 namespace DndMapSpike
 {
-	public enum SelectionType
-	{
-		None,
-		Replace,
-		Add,
-		Remove
-	}
-	
 	public class MapSelection
 	{
 		public event EventHandler SelectionChanged;
@@ -80,6 +72,7 @@ namespace DndMapSpike
 		{
 			Caret = null;
 			Anchor = null;
+			SelectionType = SelectionType.None;
 		}
 
 		public void GetPixelRect(out int left, out int top, out int width, out int height)

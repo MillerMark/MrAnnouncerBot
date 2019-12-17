@@ -56,6 +56,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="MapSelection.cs" />
+    <Compile Include="SelectionType.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -70,6 +71,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MouseHandlingMode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -99,6 +101,10 @@
     <ProjectReference Include="..\MapCore\MapCore.csproj">
       <Project>{a3bdd0fe-d302-49ba-9320-df9f4e2d2d2d}</Project>
       <Name>MapCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MapUI\MapUI.csproj">
+      <Project>{33f719a2-0a2f-4a97-b3c1-d10f3272078b}</Project>
+      <Name>MapUI</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,12 +4,207 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DndMapSpike"
+		xmlns:mapUI="clr-namespace:MapUI;assembly=MapUI"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+	<Window.Resources>
+		<RoutedUICommand x:Key="Commands.ZoomOut" />
+		<RoutedUICommand x:Key="Commands.ZoomIn" />
+		<RoutedUICommand x:Key="Commands.JumpBackToPrevZoom" />
+		<RoutedUICommand x:Key="Commands.Fill" />
+		<RoutedUICommand x:Key="Commands.OneHundredPercent" />
+		<mapUI:ScaleToPercentConverter x:Key="scaleToPercentConverter"/>
+	</Window.Resources>
+	<Window.InputBindings>
+		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
+		<KeyBinding Key="Plus" Command="{StaticResource Commands.ZoomIn}"/>
+		<KeyBinding Key="Backspace" Command="{StaticResource Commands.JumpBackToPrevZoom}"/>
+	</Window.InputBindings>
+	<Window.CommandBindings>
+		<CommandBinding Command="{StaticResource Commands.ZoomOut}" Executed="ZoomOut_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.ZoomIn}" Executed="ZoomIn_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.JumpBackToPrevZoom}" Executed="JumpBackToPrevZoom_Executed" CanExecute="JumpBackToPrevZoom_CanExecute"/>
+		<CommandBinding Command="{StaticResource Commands.Fill}" Executed="Fill_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.OneHundredPercent}" Executed="OneHundredPercent_Executed"/>
+	</Window.CommandBindings>
+	<DockPanel>
+		<!-- 
+        Grid placed below the zoom and pan control that contains the zoom slider, zoom label and
+        some button.
+        -->
+		<Grid
+            Margin="5,5,5,5"
+            DockPanel.Dock="Bottom"
+            >
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<!-- empty space -->
+				<ColumnDefinition Width="40" />
+				<!-- the fill button -->
+				<ColumnDefinition Width="5" />
+				<!-- spacer -->
+				<ColumnDefinition Width="40" />
+				<!-- the 100% button -->
+				<ColumnDefinition Width="5" />
+				<!-- spacer -->
+				<ColumnDefinition Width="25" />
+				<!-- the zoom percentage label -->
+				<ColumnDefinition Width="15" />
+				<!-- the % symbol -->
+				<ColumnDefinition Width="5" />
+				<!-- spacer -->
+				<ColumnDefinition Width="20" />
+				<!-- the zoom out button -->
+				<ColumnDefinition Width="5" />
+				<!-- spacer -->
+				<ColumnDefinition Width="120" />
+				<!-- the zoom slider -->
+				<ColumnDefinition Width="5" />
+				<!-- spacer -->
+				<ColumnDefinition Width="20" />
+				<!-- the zoom in button -->
+				<ColumnDefinition Width="10" />
+				<!-- spacer -->
+				<ColumnDefinition Width="Auto" />
+				<!-- resize grip -->
+				<!-- spacer -->
+			</Grid.ColumnDefinitions>
+
+			<!-- 
+            The fill button.  Causes the content to be scaled so that it fits in the viewport.
+            -->
+			<Button
+                Grid.Column="1"
+                Command="{StaticResource Commands.Fill}"
+                >
+				Fill
+			</Button>
+			<!-- 
+            The 100% button.  Causes the content to be scaled to 100 percent.
+            -->
+			<Button
+                Grid.Column="3"
+                Command="{StaticResource Commands.OneHundredPercent}"
+                >
+				100%
+			</Button>
+
+			<!--
+            This is the label that shows what the current zoom level
+            is while zooming in and out.
+            -->
+			<TextBlock
+                Grid.Column="5"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Text="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"
+                />
+
+			<TextBlock
+                Grid.Column="6"
+                VerticalAlignment="Center"
+                Text="%"
+                />
+
+			<!-- Button to zoom out. -->
+			<Button
+                Grid.Column="8"
+                Command="{StaticResource Commands.ZoomOut}"
+                >
+				-
+			</Button>
+
+			<!-- Slider to change the current zoom level. -->
+			<Slider
+                Grid.Column="10"
+                Minimum="10" 
+                LargeChange="20" 
+                TickFrequency="10" 
+                Maximum="200" 
+                SmallChange="10" 
+                TickPlacement="TopLeft"
+                Value="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"
+                />
+
+			<!--
+            Button to zoom in.
+            -->
+			<Button
+                Grid.Column="12"
+                Command="{StaticResource Commands.ZoomIn}"
+                >
+				+
+			</Button>
+
+			<!-- Stick a resize grip in the bottom right corner of the window. -->
+			<ResizeGrip
+                Grid.Column="14"
+                />
+
+		</Grid>
+
+		<!--
+	    Wrap the ZoomAndPanControl in a ScrollViewer.
+	    When the scaled content that is displayed in ZoomAndPanControl is larger than the viewport onto the content
+	    ScrollViewer's scrollbars can be used to manipulate the offset of the viewport.    
+        -->
+		<ScrollViewer
+			x:Name="scroller"
+            CanContentScroll="True"
+            VerticalScrollBarVisibility="Visible"
+            HorizontalScrollBarVisibility="Visible"
+            >
+
+			<!--
+            This is the control that handles zooming and panning.
+            -->
+			<mapUI:ZoomAndPanControl
+                x:Name="zoomAndPanControl"
+                Background="LightGray"
+	            MouseDown="ZoomAndPanControl_MouseDown"
+	            MouseUp="ZoomAndPanControl_MouseUp"
+	            MouseMove="ZoomAndPanControl_MouseMove"
+	            MouseWheel="ZoomAndPanControl_MouseWheel"
+                MouseDoubleClick="ZoomAndPanControl_MouseDoubleClick"
+                >
+
+				<!-- 
+				This is the content that is displayed.
+				-->
+				<Grid
+                    x:Name="theGrid"
+                    Width="2000"
+                    Height="2000"
+					>
+					<!--
+            		This Canvas is the main part of the content that is displayed.
+					-->
+					<Canvas x:Name="content" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp"/>
+
+					<!--
+					This Canvas and Border render a drag rectangle to specify a region to zoom in on.
+					-->
+					<Canvas
+						x:Name="dragZoomCanvas"
+						Visibility="Collapsed"
+						>
+						<Border 
+							x:Name="dragZoomBorder"
+							BorderBrush="Black"
+							BorderThickness="1"
+							Background="Silver"
+							CornerRadius="1"
+							Opacity="0"
+							/>
+					</Canvas>
+				</Grid>
+			</mapUI:ZoomAndPanControl>
+		</ScrollViewer>
+	</DockPanel>
+	<!--<Grid>
 		<Viewbox x:Name="vbxMap" >
-			<Canvas x:Name="cvsMap" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp" Width="150" Height="150" >
+			<Canvas x:Name="content" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp" Width="150" Height="150" >
 			</Canvas>
 		</Viewbox>
-	</Grid>
+	</Grid>-->
 </Window>

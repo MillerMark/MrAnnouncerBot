@@ -30,7 +30,7 @@ namespace MapCore
 		}
 		void Reset()
 		{
-			Spaces = new List<Tile>();
+			Tiles = new List<Tile>();
 			lastRowIndex = -1;
 			lastColumnIndex = -1;
 			rightmostColumnIndex = -1;
@@ -48,9 +48,9 @@ namespace MapCore
 		{
 			OnNewSpace();
 			if (IsFloor(space))
-				Spaces.Add(new FloorSpace(lastColumnIndex, lastRowIndex, space));
+				Tiles.Add(new FloorSpace(lastColumnIndex, lastRowIndex, space));
 			else
-				Spaces.Add(new EmptySpace(lastColumnIndex, lastRowIndex));
+				Tiles.Add(new EmptySpace(lastColumnIndex, lastRowIndex));
 		}
 		void OnNewSpace()
 		{
@@ -83,7 +83,7 @@ namespace MapCore
 		public void BuildMapArrays()
 		{
 			AllTiles = new Tile[NumColumns, NumRows];
-			foreach (Tile space in Spaces)
+			foreach (Tile space in Tiles)
 			{
 				AllTiles[space.Column, space.Row] = space;
 			}
@@ -300,7 +300,7 @@ namespace MapCore
 			PixelsToColumnRow(left, top, out int leftColumn, out int topRow);
 			PixelsToColumnRow(left + width - 1, top + height - 1, out int rightColumn, out int bottomRow);
 			List<Tile> results = new List<Tile>();
-			foreach (Tile baseSpace in Spaces)
+			foreach (Tile baseSpace in Tiles)
 			{
 				if (baseSpace.Column >= leftColumn && baseSpace.Column <= rightColumn &&
 						baseSpace.Row >= topRow && baseSpace.Row <= bottomRow)
@@ -314,7 +314,7 @@ namespace MapCore
 			PixelsToColumnRow(left, top, out int leftColumn, out int topRow);
 			PixelsToColumnRow(left + width - 1, top + height - 1, out int rightColumn, out int bottomRow);
 			List<Tile> results = new List<Tile>();
-			foreach (Tile baseSpace in Spaces)
+			foreach (Tile baseSpace in Tiles)
 			{
 				if (baseSpace.Column < leftColumn || baseSpace.Column > rightColumn ||
 						baseSpace.Row < topRow || baseSpace.Row > bottomRow)
@@ -325,8 +325,34 @@ namespace MapCore
 
 		public void ClearSelection()
 		{
-			foreach (Tile baseSpace in Spaces)
+			foreach (Tile baseSpace in Tiles)
 				baseSpace.Selected = false;
+		}
+
+		public bool SelectionExists()
+		{
+			foreach (Tile baseSpace in Tiles)
+				if (baseSpace.Selected)
+					return true;
+			return false;
+		}
+
+		public List<Tile> GetAllOtherSpaces(List<Tile> compareSpaces)
+		{
+			List<Tile> results = new List<Tile>();
+			foreach (Tile tile in Tiles)
+				if (compareSpaces.IndexOf(tile) < 0)
+					results.Add(tile);
+			return results;
+		}
+
+		public List<Tile> GetAllMatchingTiles<T>() where T: MapRegion
+		{
+			List<Tile> results = new List<Tile>();
+			foreach (Tile tile in Tiles)
+				if (tile is FloorSpace floorSpace && floorSpace.Parent is T)
+					results.Add(tile);
+			return results;
 		}
 
 		public double WidthPx
@@ -344,7 +370,7 @@ namespace MapCore
 			}
 		}
 
-		public List<Tile> Spaces { get; private set; }
+		public List<Tile> Tiles { get; private set; }
 		public List<Room> Rooms { get; private set; } = new List<Room>();
 		public List<Corridor> Corridors { get; private set; } = new List<Corridor>();
 		public Tile[,] AllTiles { get; private set; }
