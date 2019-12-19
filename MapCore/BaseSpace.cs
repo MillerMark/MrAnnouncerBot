@@ -5,10 +5,12 @@ namespace MapCore
 {
 	public class Tile
 	{
+		public object UIElementFloor { get; set; }
+		public object UIElementOverlay { get; set; }
+		public object SelectorPanel { get; set; }
 		public int Row { get; set; }
 		public int Column { get; set; }
 		public SpaceType SpaceType { get; set; }
-		public object SelectorPanel { get; set; }
 		public bool Selected { get; set; }
 
 		public Tile(int column, int row)

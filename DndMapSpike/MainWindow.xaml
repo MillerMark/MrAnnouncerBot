@@ -28,6 +28,27 @@
 		<CommandBinding Command="{StaticResource Commands.OneHundredPercent}" Executed="OneHundredPercent_Executed"/>
 	</Window.CommandBindings>
 	<DockPanel>
+		<Grid x:Name="grdMapControls" Height="Auto" Width="100" DockPanel.Dock="Right">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+			<ListBox x:Name="lstFlooring" IsEnabled="False">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Button Click="Button_ApplyFlooring" Tag="{Binding}">
+							<Image Source="{Binding}"></Image>
+						</Button>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Grid>
 		<!-- 
         Grid placed below the zoom and pan control that contains the zoom slider, zoom label and
         some button.

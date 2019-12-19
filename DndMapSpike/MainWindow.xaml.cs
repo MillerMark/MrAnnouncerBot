@@ -16,6 +16,7 @@ using System.IO;
 using MapCore;
 using System.Timers;
 using MapUI;
+using System.Windows.Threading;
 
 namespace DndMapSpike
 {
@@ -24,6 +25,7 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private const string TileFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Tiles";
 		const double DBL_SelectionLineThickness = 10;
 		const double DBL_HalfSelectionLineThickness = DBL_SelectionLineThickness / 2;
 		#region Fields from ZoomAndPan example
@@ -70,6 +72,9 @@ namespace DndMapSpike
 		{
 			clickTimer = new Timer(225);
 			clickTimer.Elapsed += new ElapsedEventHandler(EvaluateClicks);
+			fileWatchTimer = new DispatcherTimer();
+			fileWatchTimer.Interval = TimeSpan.FromMilliseconds(330);
+			fileWatchTimer.Tick += FileWatchTimer_Tick;
 			InitializeComponent();
 			Map = new Map();
 			selection = new MapSelection();
@@ -82,7 +87,36 @@ namespace DndMapSpike
 			//LoadMap("The Barrow of Elemental Horror.txt");
 			//LoadMap("The Hive of the Vampire Princess.txt");
 			//LoadMap("The Dark Chambers of Ages.txt");
-			LoadMap("The Barrow of Emirkol the Chaotic.txt");
+			//LoadMap("The Barrow of Emirkol the Chaotic.txt");
+			LoadMap("Test New Map.txt");
+			LoadFloorTiles();
+			AddFileSystemWatcher();
+		}
+
+		FileSystemWatcher fileSystemWatcher;
+		void AddFileSystemWatcher()
+		{
+			fileSystemWatcher = new FileSystemWatcher(TileFolder, "*.png");
+			fileSystemWatcher.Changed += FileSystemWatcher_Changed;
+			fileSystemWatcher.EnableRaisingEvents = true;
+		}
+
+		private void FileWatchTimer_Tick(object sender, EventArgs e)
+		{
+			fileWatchTimer.Stop();
+			LoadFloorTiles();
+		}
+
+		private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
+		{
+			fileWatchTimer.Stop();
+			fileWatchTimer.Start();
+		}
+
+		private void LoadFloorTiles()
+		{
+			string[] pngFiles = Directory.GetFiles(TileFolder, "*.png");
+			lstFlooring.ItemsSource = pngFiles;
 		}
 
 		private void Selection_SelectionCancelled(object sender, EventArgs e)
@@ -101,10 +135,14 @@ namespace DndMapSpike
 			SetRubberBandVisibility(Visibility.Hidden);
 			ShowSelection();
 
+			bool selectionExists = true;
+			if (selection.SelectionType == SelectionType.Remove || selection.SelectionType == SelectionType.None)
+				selectionExists = Map.SelectionExists();
+
 			if (selection.SelectionType == SelectionType.Replace)
-			{
 				selection.Clear();
-			}
+
+			EnableSelectionControls(selectionExists);
 		}
 
 		private void ShowSelection()
@@ -122,6 +160,17 @@ namespace DndMapSpike
 				tilesNotSelected = Map.GetAllOtherSpaces(tilesToSelect);
 			SelectTiles(tilesNotSelected, false);
 			CreateSelectionOutline();
+			bool selectionExists = Map.SelectionExists();
+			EnableSelectionControls(selectionExists);
+			if (!selectionExists)
+			{
+				ClearSelectionUI();
+			}
+		}
+
+		void EnableSelectionControls(bool isEnabled)
+		{
+			lstFlooring.IsEnabled = isEnabled;
 		}
 
 		private void CreateSelectionOutline()
@@ -248,6 +297,7 @@ namespace DndMapSpike
 			selection.Clear();
 			Map.ClearSelection();
 			ClearSelectionUI();
+			EnableSelectionControls(false);
 		}
 
 		private void ClearSelectionUI()
@@ -311,8 +361,8 @@ namespace DndMapSpike
 		private Rectangle GetTileRectangle(Color fillColor)
 		{
 			Rectangle floor = new Rectangle();
-			floor.Width = Map.TileSizePx + 1;
-			floor.Height = Map.TileSizePx + 1;
+			floor.Width = Map.TileSizePx;
+			floor.Height = Map.TileSizePx;
 			floor.Fill = new SolidColorBrush(fillColor);
 			return floor;
 		}
@@ -333,6 +383,8 @@ namespace DndMapSpike
 						floorUI = GetCorridorFloor();
 
 					AddElementOverTile(tile, floorUI);
+					AddFloorOverlay(tile);
+
 				}
 
 				AddSelector(tile);
@@ -348,6 +400,7 @@ namespace DndMapSpike
 			selectorPanel.Tag = tile;
 			tile.SelectorPanel = selectorPanel;
 			AddElementOverTile(tile, selectorPanel);
+			selectorPanel.IsHitTestVisible = true;
 		}
 
 		private void SetCanvasSizeFromMap()
@@ -378,24 +431,46 @@ namespace DndMapSpike
 			content.Children.Add(rubberBandOutsideSelector);
 		}
 
+		private void RemoveRubberBandSelector()
+		{
+			content.Children.Remove(rubberBandFillSelector);
+			content.Children.Remove(rubberBandInsideSelector);
+			content.Children.Remove(rubberBandOutsideSelector);
+		}
+
 		Rectangle rubberBandOutsideSelector;
 		Rectangle rubberBandInsideSelector;
 		Rectangle rubberBandFillSelector;
 		Timer clickTimer;
+		DispatcherTimer fileWatchTimer;
 
 		private void AddElementOverTile(Tile tile, UIElement element)
 		{
 			if (element == null)
 				return;
+			tile.UIElementFloor = element;
+			element.IsHitTestVisible = false;
 			Canvas.SetLeft(element, tile.Column * Map.TileSizePx);
 			Canvas.SetTop(element, tile.Row * Map.TileSizePx);
 			content.Children.Add(element);
 		}
 
+		private void AddFloorOverlay(Tile tile)
+		{
+			string heavyTilePath = System.IO.Path.Combine(TileFolder, "TileOverlay", "Heavy.png");
+			Image imageHeavyTile = new Image();
+			imageHeavyTile.Source = new BitmapImage(new Uri(heavyTilePath));
+			imageHeavyTile.IsHitTestVisible = false;
+			Canvas.SetLeft(imageHeavyTile, tile.Column * Map.TileSizePx);
+			Canvas.SetTop(imageHeavyTile, tile.Row * Map.TileSizePx);
+			content.Children.Add(imageHeavyTile);
+			tile.UIElementOverlay = imageHeavyTile;
+		}
+
 		Tile GetTileUnderMouse(Point position)
 		{
 			Map.PixelsToColumnRow(position.X, position.Y, out int column, out int row);
-			return Map.GetBaseSpace(column, row);
+			return Map.GetTile(column, row);
 		}
 
 		private void Selector_MouseDown(object sender, MouseButtonEventArgs e)
@@ -427,7 +502,7 @@ namespace DndMapSpike
 			selection.Commit();
 		}
 
-private void ZoomOut_Executed(object sender, ExecutedRoutedEventArgs e)
+		private void ZoomOut_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
 			ZoomOut(new Point(zoomAndPanControl.ContentZoomFocusX, zoomAndPanControl.ContentZoomFocusY));
 		}
@@ -634,7 +709,7 @@ private void ZoomOut_Executed(object sender, ExecutedRoutedEventArgs e)
 				Point curContentMousePoint = e.GetPosition(content);
 				ZoomOut(curContentMousePoint);
 			}
-			
+
 		}
 
 		private void ZoomAndPanControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -822,6 +897,29 @@ private void ZoomOut_Executed(object sender, ExecutedRoutedEventArgs e)
 			if (selectionType == SelectionType.Add && !Map.SelectionExists())
 				selectionType = SelectionType.Replace;
 			return selectionType;
+		}
+
+		private void Button_ApplyFlooring(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is Button button))
+				return;
+			string filePath = (string)button.Tag;
+			List<Tile> selection = Map.GetSelection();
+			RemoveRubberBandSelector();
+			foreach (Tile tile in selection)
+			{
+				content.Children.Remove(tile.UIElementFloor as UIElement);
+				content.Children.Remove(tile.UIElementOverlay as UIElement);
+				content.Children.Remove(tile.SelectorPanel as UIElement);
+
+
+				Image imageTile = new Image();
+				imageTile.Source = new BitmapImage(new Uri(filePath));
+				AddElementOverTile(tile, imageTile);
+				AddFloorOverlay(tile);
+				AddSelector(tile);
+			}
+			BuildRubberBandSelector();
 		}
 	}
 }

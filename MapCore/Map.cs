@@ -152,7 +152,7 @@ namespace MapCore
 			return AllTiles[column, row] as FloorSpace;
 		}
 
-		public Tile GetBaseSpace(int column, int row)
+		public Tile GetTile(int column, int row)
 		{
 			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
 				return null;
@@ -325,16 +325,21 @@ namespace MapCore
 
 		public void ClearSelection()
 		{
-			foreach (Tile baseSpace in Tiles)
-				baseSpace.Selected = false;
+			foreach (Tile tile in Tiles)
+				tile.Selected = false;
 		}
 
 		public bool SelectionExists()
 		{
-			foreach (Tile baseSpace in Tiles)
-				if (baseSpace.Selected)
+			foreach (Tile tile in Tiles)
+				if (tile.Selected)
 					return true;
 			return false;
+		}
+
+		public List<Tile> GetSelection()
+		{
+			return Tiles.Where(x => x.Selected).ToList();
 		}
 
 		public List<Tile> GetAllOtherSpaces(List<Tile> compareSpaces)
