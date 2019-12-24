@@ -16,12 +16,17 @@ class Vector {
   // will make it easier when looking up information/formulas on the web.
   length: number;
 
-  constructor(public readonly x: number, public readonly y: number) {
+  constructor(public x: number, public y: number) {
     this.length = Math.sqrt(this.x * this.x + this.y * this.y);
   }
 
   add(vector: Vector): Vector {
     return new Vector(this.x + vector.x, this.y + vector.y);
+  }
+  
+  addRef(vector: Vector): void {
+		this.x += vector.x;
+		this.y += vector.y;
   }
 
   subtract(vector: Vector): Vector {

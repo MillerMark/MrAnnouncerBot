@@ -54,16 +54,22 @@ class WorldObject {
   }
 
   // a = f / m.  Alternatively, could call the physics engine. Multiplying by inverse mass to save a division.
-  protected updateAcceleration(now: number) { this._acceleration = this._appliedForce.multiply(this.inverseMass); }
+	protected updateAcceleration(now: number) {
+		this._acceleration = this._appliedForce.multiply(this.inverseMass);
+	}
 
   // v = v + a.  Alternatively, could call the physics engine.
   // Using the prior value as a base here so the update can be called again if forces are added later.
   // This will allow objects to act as forces on other objects later if needed (update can be called again and it
   // will still calculate correctly using the additional applied forces).
-  protected updateVelocity(now: number, acceleration: Vector) { this._velocity = this.priorVelocity.add(acceleration); }
+	protected updateVelocity(now: number, acceleration: Vector) {
+		this._velocity = this.priorVelocity.add(acceleration);
+	}
 
   // Using the prior value here for the same reason as in updateVelocity.
-  protected updatePosition(now: number, velocity: Vector) { this._position = this.priorPosition.add(velocity); }
+	protected updatePosition(now: number, velocity: Vector) {
+		this._position = this.priorPosition.add(velocity);
+	}
 
   // Allows resetting variables in preparation for update.
   // Separating this from update allows descendants to only override the pieces they

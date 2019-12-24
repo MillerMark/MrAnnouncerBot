@@ -28,7 +28,7 @@
 		<CommandBinding Command="{StaticResource Commands.OneHundredPercent}" Executed="OneHundredPercent_Executed"/>
 	</Window.CommandBindings>
 	<DockPanel>
-		<Grid x:Name="grdMapControls" Height="Auto" Width="100" DockPanel.Dock="Right">
+		<Grid x:Name="grdMapControls" Height="Auto" Width="212" DockPanel.Dock="Right">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
@@ -39,15 +39,91 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
-			<ListBox x:Name="lstFlooring" IsEnabled="False">
+			<ListBox x:Name="lstFlooring" IsEnabled="False" Height="300" Width="200">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel Orientation="Horizontal" Width="200"/>
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<Button Click="Button_ApplyFlooring" Tag="{Binding}">
-							<Image Source="{Binding}"></Image>
+							<Image Source="{Binding Path=FileName}" Width="32" Height="32"></Image>
 						</Button>
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
+			<ListBox Grid.Row="1"  x:Name="lstDebris" IsEnabled="False" Height="300" Width="200">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel Orientation="Horizontal" Width="200"/>
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Button Click="Button_ApplyDebris" Tag="{Binding}">
+							<Image Source="{Binding Path=FileName}" Width="32" Height="32"></Image>
+						</Button>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+			<StackPanel Grid.Row="2" x:Name="spWallControls" Orientation="Horizontal" Height="38" >
+				<Button x:Name="btnLeftWall" Click="BtnLeftWall_Click" Margin="6, 3, 3, 3" >
+					<Viewbox Width="32" Height="32" >
+						<Canvas Width="180" Height="208">
+						<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+						<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+						<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FF4472C4" Stroke="{x:Null}" />
+						<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+						</Canvas>
+					</Viewbox>
+				</Button>
+				<Button x:Name="btnTopWall" Click="BtnTopWall_Click" Margin="3" >
+					<Viewbox Width="32" Height="32" >
+					  <Canvas Width="205" Height="197">
+						<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+						<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
+						<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+					  </Canvas>
+					</Viewbox>
+
+				</Button>
+				<Button x:Name="btnRightWall" Click="BtnRightWall_Click" Margin="3" >
+					<Viewbox Width="32" Height="32" >
+					  <Canvas Width="180" Height="208">
+						<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+						<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FF4472C4" Stroke="{x:Null}" />
+						<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+					  </Canvas>
+					</Viewbox>
+
+				</Button>
+				<Button x:Name="btnBottomWall" Click="BtnBottomWall_Click" Margin="3" >
+					<Viewbox Width="32" Height="32">
+					  <Canvas Width="205" Height="197">
+						<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+						<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
+						<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+					  </Canvas>
+					</Viewbox>
+				</Button>
+				<Button x:Name="btnOutlineWall" Click="BtnOutlineWall_Click" Margin="3" >
+					<Viewbox>
+						<Canvas Width="205" Height="205">
+							<Polygon Points="180,24 180,181 23,181 23,24" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="180,24 180,181 23,181 23,24" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FFBFBFBF" StrokeThickness="1" />
+							<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+								<Path.Data>
+									<PathGeometry Figures="M38.875,39.0625L38.875,165 164.1875,165 164.1875,39.0625 38.875,39.0625z M0.0625,0L203,0 203,0.1875 203,0.1875 203,204 164.1875,204 164.1875,204 38.875,204 38.875,204 0,204 0,0.1875 0.0625,0.1875 0.0625,0z" />
+								</Path.Data>
+							</Path>
+						</Canvas>
+					</Viewbox>	
+				</Button>
+			</StackPanel>
 		</Grid>
 		<!-- 
         Grid placed below the zoom and pan control that contains the zoom slider, zoom label and

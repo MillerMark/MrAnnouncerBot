@@ -37,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -55,8 +56,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BaseTexture.cs" />
+    <Compile Include="EvenOddTexture.cs" />
+    <Compile Include="FourPartTexture.cs" />
+    <Compile Include="ImageUtils.cs" />
+    <Compile Include="Layer.cs" />
+    <Compile Include="Layers.cs" />
     <Compile Include="MapSelection.cs" />
+    <Compile Include="RandomTexture.cs" />
     <Compile Include="SelectionType.cs" />
+    <Compile Include="SimpleTexture.cs" />
+    <Compile Include="TextureUtils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -5,6 +5,8 @@ namespace MapCore
 {
 	public class Tile
 	{
+		public const int Width = 120;
+		public const int Height = 120;
 		public object UIElementFloor { get; set; }
 		public object UIElementOverlay { get; set; }
 		public object SelectorPanel { get; set; }
@@ -12,6 +14,20 @@ namespace MapCore
 		public int Column { get; set; }
 		public SpaceType SpaceType { get; set; }
 		public bool Selected { get; set; }
+		public int PixelX
+		{
+			get
+			{
+				return Column * Width;
+			}
+		}
+		public int PixelY
+		{
+			get
+			{
+				return Row * Height;
+			}
+		}
 
 		public Tile(int column, int row)
 		{
@@ -20,10 +36,10 @@ namespace MapCore
 		}
 		public void GetPixelCoordinates(out int left, out int top, out int right, out int bottom)
 		{
-			left = Column * Map.TileSizePx;
-			top = Row * Map.TileSizePx;
-			right = left + Map.TileSizePx - 1;
-			bottom = top + Map.TileSizePx - 1;
+			left = PixelX;
+			top = PixelY;
+			right = left + Width - 1;
+			bottom = top + Height - 1;
 		}
 	}
 }

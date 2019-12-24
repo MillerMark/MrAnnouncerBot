@@ -9,17 +9,6 @@ namespace MapCore
 	public class Map
 	{
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
-		
-
-
-		// TODO: Should pixelsPerFiveFeet really be here?
-		public static int TileSizePx { get; set; } = 60;
-
-		//public double pixelsPerFoot { get; set; } = 4;
-		//public int feetPerSquare { get; set; } = 5;
-
-
-
 
 		int lastRowIndex;
 		int lastColumnIndex;
@@ -42,6 +31,7 @@ namespace MapCore
 		}
 		bool IsFloor(string space)
 		{
+			// TODO: Check for code for Portcullis.
 			return space == "F" || space.StartsWith("D") || space.StartsWith("S");
 		}
 		void LoadNewSpace(string space)
@@ -291,8 +281,8 @@ namespace MapCore
 
 		public void PixelsToColumnRow(double x, double y, out int column, out int row)
 		{
-			column = (int)(x / TileSizePx);
-			row = (int)(y / TileSizePx);
+			column = (int)(x / Tile.Width);
+			row = (int)(y / Tile.Height);
 		}
 
 		public List<Tile> GetTilesInPixelRect(int left, int top, int width, int height)
@@ -360,18 +350,18 @@ namespace MapCore
 			return results;
 		}
 
-		public double WidthPx
+		public int WidthPx
 		{
 			get
 			{
-				return (rightmostColumnIndex + 1) * TileSizePx;
+				return (rightmostColumnIndex + 1) * Tile.Width;
 			}
 		}
-		public double HeightPx
+		public int HeightPx
 		{
 			get
 			{
-				return (lastRowIndex + 1) * TileSizePx;
+				return (lastRowIndex + 1) * Tile.Height;
 			}
 		}
 
