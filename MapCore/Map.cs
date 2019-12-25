@@ -6,7 +6,7 @@ using MapCore;
 
 namespace MapCore
 {
-	public class Map
+	public class Map : IMapInterface
 	{
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
@@ -38,9 +38,9 @@ namespace MapCore
 		{
 			OnNewSpace();
 			if (IsFloor(space))
-				Tiles.Add(new FloorSpace(lastColumnIndex, lastRowIndex, space));
+				Tiles.Add(new FloorSpace(lastColumnIndex, lastRowIndex, space, this));
 			else
-				Tiles.Add(new EmptySpace(lastColumnIndex, lastRowIndex));
+				Tiles.Add(new EmptySpace(lastColumnIndex, lastRowIndex, this));
 		}
 		void OnNewSpace()
 		{
@@ -73,6 +73,10 @@ namespace MapCore
 		public void BuildMapArrays()
 		{
 			AllTiles = new Tile[NumColumns, NumRows];
+			HasVerticalWall = new bool[NumColumns + 1, NumRows];
+			HasHorizontalWall = new bool[NumColumns, NumRows + 1];
+			// TODO: Find walls for rooms that are loaded.
+
 			foreach (Tile space in Tiles)
 			{
 				AllTiles[space.Column, space.Row] = space;
@@ -149,7 +153,7 @@ namespace MapCore
 			return AllTiles[column, row];
 		}
 
-		bool FloorSpaceExists(int column, int row)
+		public bool FloorSpaceExists(int column, int row)
 		{
 			return GetFloorSpace(column, row) != null;
 		}
@@ -349,6 +353,31 @@ namespace MapCore
 					results.Add(tile);
 			return results;
 		}
+		public bool TileExists(int column, int row)
+		{
+			return column >= 0 && row >= 0 && column < NumColumns && row < NumRows;
+		}
+
+		public void SetWall(int column, int row, WallOrientation wallOrientation, bool isThere)
+		{
+			switch (wallOrientation)
+			{
+				case WallOrientation.Horizontal:
+					if (HasHorizontalWall[column, row] != isThere)
+					{
+						HasHorizontalWall[column, row] = isThere;
+						OnWallsChanged();
+					}
+					break;
+				case WallOrientation.Vertical:
+					if (HasVerticalWall[column, row] != isThere)
+					{
+						HasVerticalWall[column, row] = isThere;
+						OnWallsChanged();
+					}
+					break;
+			}
+		}
 
 		public int WidthPx
 		{
@@ -371,5 +400,14 @@ namespace MapCore
 		public Tile[,] AllTiles { get; private set; }
 		public int NumColumns { get; set; }
 		public int NumRows { get; set; }
+		public bool[,] HasHorizontalWall { get; set; }
+		public bool[,] HasVerticalWall { get; set; }
+
+		public event EventHandler WallsChanged;
+
+		protected virtual void OnWallsChanged()
+		{
+			WallsChanged?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

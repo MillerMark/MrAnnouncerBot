@@ -86,5 +86,13 @@ namespace DndMapSpike
 			width = right - left;
 			height = bottom - top;
 		}
+
+		public void GetCoordinateRect(out int left, out int top, out int right, out int bottom)
+		{
+			left = Math.Min(Caret.Column, Anchor.Column);
+			right = Math.Max(Caret.Column, Anchor.Column) + 1;
+			top = Math.Min(Caret.Row, Anchor.Row);
+			bottom = Math.Max(Caret.Row, Anchor.Row) + 1;
+		}
 	}
 }

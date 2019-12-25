@@ -20,6 +20,38 @@ using System.Windows.Threading;
 
 namespace DndMapSpike
 {
+	public class WallBuilder
+	{
+
+		Image horizontalWall;
+		public WallBuilder()
+		{
+			LoadImages();
+		}
+
+		void LoadImages()
+		{
+			horizontalWall = LoadImage("HorizontalWall.png");
+		}
+		Image LoadImage(string assetName)
+		{
+			string imagePath = System.IO.Path.Combine(TextureUtils.WallFolder, assetName);
+			Image image = new Image();
+			image.Source = new BitmapImage(new Uri(imagePath));
+			return image;
+		}
+		public void BuildWalls(Map map, Layer layer)
+		{
+			for (int column = 0; column < map.NumColumns; column++)
+				for (int row = 0; row < map.NumRows; row++)
+				{
+					if (map.HasHorizontalWall[column, row])
+					{
+						layer.DrawImageOverTile(horizontalWall, map.AllTiles[column, row]);
+					}
+				}
+		}
+	}
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -67,6 +99,7 @@ namespace DndMapSpike
 		List<BaseTexture> tileTextures = new List<BaseTexture>();
 		List<BaseTexture> debrisTextures = new List<BaseTexture>();
 		MapSelection selection;
+		WallBuilder wallBuilder = new WallBuilder();
 		int clickCounter;
 		public Map Map { get; set; }
 		public MainWindow()
@@ -78,6 +111,7 @@ namespace DndMapSpike
 			fileWatchTimer.Tick += FileWatchTimer_Tick;
 			InitializeComponent();
 			Map = new Map();
+			Map.WallsChanged += Map_WallsChanged;
 			selection = new MapSelection();
 			selection.SelectionChanged += Selection_SelectionChanged;
 			selection.SelectionCommitted += Selection_SelectionCommitted;
@@ -91,10 +125,18 @@ namespace DndMapSpike
 			//LoadMap("The Barrow of Emirkol the Chaotic.txt");
 			InitializeLayers();
 			LoadImageResources();
-			LoadMap("Test New Map.txt");
+			//LoadMap("Test New Map.txt");
+			//LoadMap("The Tomb of Baleful Ruin.txt");
+			LoadMap("The Dark Lair of Sorrows.txt");
 			LoadFloorTiles();
 			LoadDebris();
 			AddFileSystemWatcher();
+		}
+
+		private void Map_WallsChanged(object sender, EventArgs e)
+		{
+			wallLayer.ClearAll();
+			wallBuilder.BuildWalls(Map, wallLayer);
 		}
 
 		//public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
@@ -1004,6 +1046,7 @@ namespace DndMapSpike
 
 		Layer depthLayer = new Layer();
 		Layer debrisLayer = new Layer();
+		Layer wallLayer = new Layer();
 		Layer floorLayer = new Layer();
 		Layers allLayers = new Layers();
 
@@ -1012,6 +1055,7 @@ namespace DndMapSpike
 			allLayers.Add(floorLayer);
 			allLayers.Add(debrisLayer);
 			allLayers.Add(depthLayer);
+			allLayers.Add(wallLayer);
 		}
 
 		Image imageHeavyTile;
@@ -1031,6 +1075,39 @@ namespace DndMapSpike
 
 		}
 
+		void AddSegments(WallSide wallSide)
+		{
+			List<Tile> selection = Map.GetSelection();
+			foreach (Tile tile in selection)
+			{
+				int column = tile.Column;
+				int row = tile.Row;
+				WallOrientation wallOrientation = WallOrientation.None;
+				switch (wallSide)
+				{
+					case WallSide.Left:
+						column--;
+						wallOrientation = WallOrientation.Vertical;
+						break;
+					case WallSide.Top:
+						row--;
+						wallOrientation = WallOrientation.Horizontal;
+						break;
+					case WallSide.Right:
+						column++;
+						wallOrientation = WallOrientation.Vertical;
+						break;
+					case WallSide.Bottom:
+						row++;
+						wallOrientation = WallOrientation.Horizontal;
+						break;
+
+
+				}
+				if (!Map.TileExists(column, row) || !Map.AllTiles[column, row].Selected)
+					Map.SetWall(column, row, wallOrientation, true);
+			}
+		}
 		private void BtnRightWall_Click(object sender, RoutedEventArgs e)
 		{
 
@@ -1038,12 +1115,12 @@ namespace DndMapSpike
 
 		private void BtnTopWall_Click(object sender, RoutedEventArgs e)
 		{
-
+			AddSegments(WallSide.Top);
 		}
 
 		private void BtnLeftWall_Click(object sender, RoutedEventArgs e)
 		{
-
+			AddSegments(WallSide.Left);
 		}
 
 		private void BtnOutlineWall_Click(object sender, RoutedEventArgs e)

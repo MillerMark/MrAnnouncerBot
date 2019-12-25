@@ -5,6 +5,7 @@ namespace MapCore
 {
 	public class Tile
 	{
+		public IMapInterface Map { get; set; }
 		public const int Width = 120;
 		public const int Height = 120;
 		public object UIElementFloor { get; set; }
@@ -29,8 +30,9 @@ namespace MapCore
 			}
 		}
 
-		public Tile(int column, int row)
+		public Tile(int column, int row, IMapInterface iMap)
 		{
+			Map = iMap;
 			Row = row;
 			Column = column;
 		}

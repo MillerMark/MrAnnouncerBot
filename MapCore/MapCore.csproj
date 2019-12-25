@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IMapInterface.cs" />
+    <Compile Include="WallOrientation.cs" />
+    <Compile Include="SegmentProcessor.cs" />
     <Compile Include="Tile.cs" />
     <Compile Include="Corridor.cs" />
     <Compile Include="EmptySpace.cs" />
@@ -51,6 +54,7 @@
     <Compile Include="Room.cs" />
     <Compile Include="FloorSpace.cs" />
     <Compile Include="SpaceType.cs" />
+    <Compile Include="WallSide.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

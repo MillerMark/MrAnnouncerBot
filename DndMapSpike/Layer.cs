@@ -10,6 +10,8 @@ namespace DndMapSpike
 	public class Layer
 	{
 		//public string Name { get; set; }
+		public int WidthPx { get; set; }
+		public int HeightPx { get; set; }
 		public WriteableBitmap WriteableBitmap { get; private set; }
 		public Image Image { get; private set; }
 		public int ZIndexOffset { get; set; }
@@ -27,8 +29,15 @@ namespace DndMapSpike
 			ImageUtils.ClearRect(tile.PixelX, tile.PixelY, Tile.Width, Tile.Height, WriteableBitmap);
 		}
 
+		public void ClearAll()
+		{
+			ImageUtils.ClearRect(0, 0, WidthPx, HeightPx, WriteableBitmap);
+		}
+
 		public void SetSize(int widthPx, int heightPx)
 		{
+			HeightPx = heightPx;
+			WidthPx = widthPx;
 			WriteableBitmap = new WriteableBitmap(widthPx, heightPx, 96, 96, PixelFormats.Bgra32, null);
 			Image.Source = WriteableBitmap;
 		}

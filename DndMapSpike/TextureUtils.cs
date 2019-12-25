@@ -7,6 +7,7 @@ namespace DndMapSpike
 	{
 		public const string TileFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Tiles\120x120";
 		public const string DebrisFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Tiles\120x120\Debris";
+		public const string WallFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Walls";
 
 		public static void GetTextureNameAndKey(string fileName, out string baseName, out string textureName, out string key)
 		{
