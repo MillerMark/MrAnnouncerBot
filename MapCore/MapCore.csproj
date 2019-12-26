@@ -41,7 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HorizontalWallData.cs" />
+    <Compile Include="EndCapKind.cs" />
+    <Compile Include="WallData.cs" />
     <Compile Include="IMapInterface.cs" />
     <Compile Include="WallOrientation.cs" />
     <Compile Include="SegmentProcessor.cs" />

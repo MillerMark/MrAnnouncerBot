@@ -14,10 +14,6 @@ namespace MapCore
 		int lastColumnIndex;
 		int rightmostColumnIndex;
 		int wallChangeCount;
-		public int StartColumn { get; set; }
-		public int StartRow { get; set; }
-		public int EndColumn { get; set; }
-		public int EndRow { get; set; }
 		public Map()
 		{
 
@@ -418,9 +414,9 @@ namespace MapCore
 		}
 		public WallData CollectHorizontalWall(int column, int row)
 		{
-			StartColumn = column;
-			StartRow = row;
 			WallData result = new WallData();
+			result.StartColumn = column - 1;
+			result.StartRow = row;
 			int startX = column * Tile.Width;
 			int startY = row * Tile.Height;
 
@@ -428,8 +424,8 @@ namespace MapCore
 			{
 				column++;
 			}
-			EndColumn = column;
-			EndRow = row;
+			result.EndColumn = column;
+			result.EndRow = row;
 			int endX = column * Tile.Width;
 			result.X = startX;
 			result.Y = startY;
@@ -438,9 +434,9 @@ namespace MapCore
 		}
 		public WallData CollectVerticalWall(int column, int row)
 		{
-			StartColumn = column;
-			StartRow = row;
 			WallData result = new WallData();
+			result.StartColumn = column;
+			result.StartRow = row - 1;
 			int startX = column * Tile.Width;
 			int startY = row * Tile.Height;
 
@@ -448,8 +444,8 @@ namespace MapCore
 			{
 				row++;
 			}
-			EndColumn = column;
-			EndRow = row;
+			result.EndColumn = column;
+			result.EndRow = row;
 			int endY = row * Tile.Height;
 			result.X = startX;
 			result.Y = startY;
@@ -476,12 +472,33 @@ namespace MapCore
 
 		bool HasVerticalTouchingWall(int column, int row)
 		{
-			return HasVerticalWall(column, row + 1) || HasVerticalWall(column, row);
+			return HasVerticalTouchingWallBottom(column, row) || 
+						 HasVerticalTouchingWallTop(column, row);
+		}
+
+		private bool HasVerticalTouchingWallTop(int column, int row)
+		{
+			return HasVerticalWall(column, row);
+		}
+
+		private bool HasVerticalTouchingWallBottom(int column, int row)
+		{
+			return HasVerticalWall(column, row + 1);
 		}
 
 		bool HasHorizontalTouchingWall(int column, int row)
 		{
-			return HasHorizontalWall(column + 1, row) || HasHorizontalWall(column, row);
+			return HasHorizontalTouchingWallRight(column, row) || HasHorizontalTouchingWallLeft(column, row);
+		}
+
+		private bool HasHorizontalTouchingWallLeft(int column, int row)
+		{
+			return HasHorizontalWall(column, row);
+		}
+
+		private bool HasHorizontalTouchingWallRight(int column, int row)
+		{
+			return HasHorizontalWall(column + 1, row);
 		}
 
 		public bool HasHorizontalWallStart(int column, int row)
@@ -520,6 +537,68 @@ namespace MapCore
 				wallsChanged = false;
 				OnWallsChanged();
 			}
+		}
+		public EndCapKind GetEndCapKind(int column, int row)
+		{
+			bool wallLeft = HasHorizontalTouchingWallLeft(column, row);
+			bool wallRight = HasHorizontalTouchingWallRight(column, row);
+			bool wallTop = HasVerticalTouchingWallTop(column, row);
+			bool wallBottom = HasVerticalTouchingWallBottom(column, row);
+			int count = 0;
+			if (wallLeft)
+				count++;
+			if (wallTop)
+				count++;
+			if (wallRight)
+				count++;
+			if (wallBottom)
+				count++;
+
+			if (count == 4)
+				return EndCapKind.FourWayIntersection;
+
+			if (count == 0)
+				return EndCapKind.None;
+
+			if (count == 1)
+			{
+				if (wallLeft)
+					return EndCapKind.Right;
+				if (wallTop)
+					return EndCapKind.Bottom;
+				if (wallRight)
+					return EndCapKind.Left;
+				if (wallBottom)
+					return EndCapKind.Top;
+
+				return EndCapKind.None;
+			}
+
+			if (count == 2) // Corners
+			{
+				if (wallLeft && wallTop)
+					return EndCapKind.BottomRightCorner;
+				if (wallTop && wallRight)
+					return EndCapKind.BottomLeftCorner;
+				if (wallRight && wallBottom)
+					return EndCapKind.TopLeftCorner;
+				if (wallBottom && wallLeft)
+					return EndCapKind.TopRightCorner;
+
+				return EndCapKind.None;
+			}
+
+			// Tees...
+			if (!wallLeft)
+				return EndCapKind.LeftTee;
+			if (!wallTop)
+				return EndCapKind.TopTee;
+			if (!wallRight)
+				return EndCapKind.RightTee;
+			if (!wallBottom)
+				return EndCapKind.BottomTee;
+
+			return EndCapKind.None;
 		}
 	}
 }

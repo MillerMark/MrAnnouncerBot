@@ -10,6 +10,7 @@ namespace DndMapSpike
 	public class Layer
 	{
 		//public string Name { get; set; }
+		public int OuterMargin { get; set; }
 		public int WidthPx { get; set; }
 		public int HeightPx { get; set; }
 		public WriteableBitmap WriteableBitmap { get; private set; }
@@ -40,9 +41,9 @@ namespace DndMapSpike
 
 		public void SetSize(int widthPx, int heightPx)
 		{
-			HeightPx = heightPx;
-			WidthPx = widthPx;
-			WriteableBitmap = new WriteableBitmap(widthPx, heightPx, 96, 96, PixelFormats.Bgra32, null);
+			HeightPx = heightPx + 2 * OuterMargin;
+			WidthPx = widthPx + 2 * OuterMargin;
+			WriteableBitmap = new WriteableBitmap(WidthPx, HeightPx, 96, 96, PixelFormats.Bgra32, null);
 			Image.Source = WriteableBitmap;
 		}
 
@@ -50,6 +51,8 @@ namespace DndMapSpike
 		{
 			Image = new Image { IsHitTestVisible = false };
 			canvas.Children.Add(Image);
+			Canvas.SetLeft(Image, -OuterMargin);
+			Canvas.SetTop(Image, -OuterMargin);
 		}
 		public void SetZIndex(int count)
 		{

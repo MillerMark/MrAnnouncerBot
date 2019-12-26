@@ -20,75 +20,6 @@ using System.Windows.Threading;
 
 namespace DndMapSpike
 {
-	public class WallBuilder
-	{
-
-		Image horizontalWall;
-		Image verticalWall;
-		public WallBuilder()
-		{
-			LoadImages();
-		}
-
-		void LoadImages()
-		{
-			horizontalWall = LoadImage("HorizontalWall.png");
-			verticalWall = LoadImage("VerticalWall.png");
-		}
-		Image LoadImage(string assetName)
-		{
-			string imagePath = System.IO.Path.Combine(TextureUtils.WallFolder, assetName);
-			Image image = new Image();
-			image.Source = new BitmapImage(new Uri(imagePath));
-			return image;
-		}
-
-		void DrawHorizontalWall(WallData horizontalWallData, Layer layer)
-		{
-			int yAdjust = Tile.Height - (int)horizontalWall.Source.Height / 2;
-			double pixelLengthToDraw = horizontalWallData.WallLength - Walls.EndCapSize;
-			double x = horizontalWallData.X + Walls.EndCapIndent;
-			double imageWidth = horizontalWall.Source.Width;
-			while (pixelLengthToDraw > 0)
-			{
-				layer.DrawImageAt(horizontalWall, (int)x, horizontalWallData.Y + yAdjust, (int)Math.Min(pixelLengthToDraw, imageWidth));
-				pixelLengthToDraw -= imageWidth;
-				x += imageWidth;
-			}
-		}
-		void DrawVerticalWall(WallData wallData, Layer layer)
-		{
-			int xAdjust = Tile.Width - (int)verticalWall.Source.Width / 2;
-			double pixelLengthToDraw = wallData.WallLength - Walls.EndCapSize;
-			double y = wallData.Y + Walls.EndCapIndent;
-			double imageHeight = verticalWall.Source.Height;
-			while (pixelLengthToDraw > 0)
-			{
-				layer.DrawImageAt(verticalWall, wallData.X + xAdjust, (int)y, -1, (int)Math.Min(pixelLengthToDraw, imageHeight));
-				pixelLengthToDraw -= imageHeight;
-				y += imageHeight;
-			}
-		}
-
-		public void BuildWalls(Map map, Layer layer)
-		{
-			for (int column = -1; column < map.NumColumns; column++)
-				for (int row = -1; row < map.NumRows; row++)
-				{
-					if (map.HasHorizontalWallStart(column, row))
-					{
-						WallData wallData = map.CollectHorizontalWall(column, row);
-						DrawHorizontalWall(wallData, layer);
-					}
-
-					if (map.HasVerticalWallStart(column, row))
-					{
-						WallData wallData = map.CollectVerticalWall(column, row);
-						DrawVerticalWall(wallData, layer);
-					}
-				}
-		}
-	}
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -172,8 +103,10 @@ namespace DndMapSpike
 
 		private void Map_WallsChanged(object sender, EventArgs e)
 		{
-			wallLayer.ClearAll();
-			wallBuilder.BuildWalls(Map, wallLayer);
+			horizontalWallLayer.ClearAll();
+			verticalWallLayer.ClearAll();
+			endCapLayer.ClearAll();
+			wallBuilder.BuildWalls(Map, horizontalWallLayer, verticalWallLayer, endCapLayer);
 		}
 
 		//public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
@@ -1070,7 +1003,7 @@ namespace DndMapSpike
 			debrisLayer.DrawImageOverTile(image, tile);
 		}
 
-		
+
 
 		private void SetCanvasSizeFromMap()
 		{
@@ -1083,7 +1016,9 @@ namespace DndMapSpike
 
 		Layer depthLayer = new Layer();
 		Layer debrisLayer = new Layer();
-		Layer wallLayer = new Layer();
+		Layer horizontalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
+		Layer verticalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
+		Layer endCapLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer floorLayer = new Layer();
 		Layers allLayers = new Layers();
 
@@ -1092,7 +1027,9 @@ namespace DndMapSpike
 			allLayers.Add(floorLayer);
 			allLayers.Add(debrisLayer);
 			allLayers.Add(depthLayer);
-			allLayers.Add(wallLayer);
+			allLayers.Add(horizontalWallLayer);
+			allLayers.Add(verticalWallLayer);
+			allLayers.Add(endCapLayer);
 		}
 
 		Image imageHeavyTile;
