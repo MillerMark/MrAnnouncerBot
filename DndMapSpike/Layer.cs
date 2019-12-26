@@ -19,9 +19,13 @@ namespace DndMapSpike
 		{
 
 		}
-		public void DrawImageOverTile(Image image, Tile tile)
+		public void DrawImageAt(Image image, int x, int y, int cropWidth = -1, int cropHeight = -1)
 		{
-			ImageUtils.CopyImageTo(image, tile.PixelX, tile.PixelY, WriteableBitmap);
+			ImageUtils.CopyImageTo(image, x, y, WriteableBitmap, cropWidth, cropHeight);
+		}
+		public void DrawImageOverTile(Image image, Tile tile, int xOffset = 0, int yOffset = 0, int cropWidth = -1)
+		{
+			DrawImageAt(image, tile.PixelX + xOffset, tile.PixelY + yOffset, cropWidth);
 		}
 
 		public void ClearAtTile(Tile tile)

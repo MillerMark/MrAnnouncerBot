@@ -6,6 +6,7 @@ namespace MapCore
 	public class Tile
 	{
 		public IMapInterface Map { get; set; }
+		// TODO: Hmm.. 120 is a UI=specific implementation. Maybe change to a static property? 
 		public const int Width = 120;
 		public const int Height = 120;
 		public object UIElementFloor { get; set; }

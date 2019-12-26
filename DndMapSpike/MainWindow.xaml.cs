@@ -24,6 +24,7 @@ namespace DndMapSpike
 	{
 
 		Image horizontalWall;
+		Image verticalWall;
 		public WallBuilder()
 		{
 			LoadImages();
@@ -32,6 +33,7 @@ namespace DndMapSpike
 		void LoadImages()
 		{
 			horizontalWall = LoadImage("HorizontalWall.png");
+			verticalWall = LoadImage("VerticalWall.png");
 		}
 		Image LoadImage(string assetName)
 		{
@@ -40,14 +42,49 @@ namespace DndMapSpike
 			image.Source = new BitmapImage(new Uri(imagePath));
 			return image;
 		}
+
+		void DrawHorizontalWall(WallData horizontalWallData, Layer layer)
+		{
+			int yAdjust = Tile.Height - (int)horizontalWall.Source.Height / 2;
+			double pixelLengthToDraw = horizontalWallData.WallLength - Walls.EndCapSize;
+			double x = horizontalWallData.X + Walls.EndCapIndent;
+			double imageWidth = horizontalWall.Source.Width;
+			while (pixelLengthToDraw > 0)
+			{
+				layer.DrawImageAt(horizontalWall, (int)x, horizontalWallData.Y + yAdjust, (int)Math.Min(pixelLengthToDraw, imageWidth));
+				pixelLengthToDraw -= imageWidth;
+				x += imageWidth;
+			}
+		}
+		void DrawVerticalWall(WallData wallData, Layer layer)
+		{
+			int xAdjust = Tile.Width - (int)verticalWall.Source.Width / 2;
+			double pixelLengthToDraw = wallData.WallLength - Walls.EndCapSize;
+			double y = wallData.Y + Walls.EndCapIndent;
+			double imageHeight = verticalWall.Source.Height;
+			while (pixelLengthToDraw > 0)
+			{
+				layer.DrawImageAt(verticalWall, wallData.X + xAdjust, (int)y, -1, (int)Math.Min(pixelLengthToDraw, imageHeight));
+				pixelLengthToDraw -= imageHeight;
+				y += imageHeight;
+			}
+		}
+
 		public void BuildWalls(Map map, Layer layer)
 		{
-			for (int column = 0; column < map.NumColumns; column++)
-				for (int row = 0; row < map.NumRows; row++)
+			for (int column = -1; column < map.NumColumns; column++)
+				for (int row = -1; row < map.NumRows; row++)
 				{
-					if (map.HasHorizontalWall[column, row])
+					if (map.HasHorizontalWallStart(column, row))
 					{
-						layer.DrawImageOverTile(horizontalWall, map.AllTiles[column, row]);
+						WallData wallData = map.CollectHorizontalWall(column, row);
+						DrawHorizontalWall(wallData, layer);
+					}
+
+					if (map.HasVerticalWallStart(column, row))
+					{
+						WallData wallData = map.CollectVerticalWall(column, row);
+						DrawVerticalWall(wallData, layer);
 					}
 				}
 		}
@@ -1072,45 +1109,57 @@ namespace DndMapSpike
 
 		private void BtnBottomWall_Click(object sender, RoutedEventArgs e)
 		{
-
+			AddSegments(WallSide.Bottom);
 		}
 
 		void AddSegments(WallSide wallSide)
 		{
 			List<Tile> selection = Map.GetSelection();
-			foreach (Tile tile in selection)
+			Map.BeginWallUpdate();
+			try
 			{
-				int column = tile.Column;
-				int row = tile.Row;
-				WallOrientation wallOrientation = WallOrientation.None;
-				switch (wallSide)
+				foreach (Tile tile in selection)
 				{
-					case WallSide.Left:
-						column--;
-						wallOrientation = WallOrientation.Vertical;
-						break;
-					case WallSide.Top:
-						row--;
-						wallOrientation = WallOrientation.Horizontal;
-						break;
-					case WallSide.Right:
-						column++;
-						wallOrientation = WallOrientation.Vertical;
-						break;
-					case WallSide.Bottom:
-						row++;
-						wallOrientation = WallOrientation.Horizontal;
-						break;
+					int column = tile.Column;
+					int row = tile.Row;
+					WallOrientation wallOrientation = WallOrientation.None;
+					int rowOffset = 0;
+					int columnOffset = 0;
+					switch (wallSide)
+					{
+						case WallSide.Left:
+							column--;
+							wallOrientation = WallOrientation.Vertical;
+							break;
+						case WallSide.Top:
+							row--;
+							wallOrientation = WallOrientation.Horizontal;
+							break;
+						case WallSide.Right:
+							column++;
+							columnOffset = -1;
+							wallOrientation = WallOrientation.Vertical;
+							break;
+						case WallSide.Bottom:
+							row++;
+							rowOffset = -1;
+							wallOrientation = WallOrientation.Horizontal;
+							break;
 
 
+					}
+					if (!Map.TileExists(column, row) || !Map.AllTiles[column, row].Selected)
+						Map.SetWall(column + columnOffset, row + rowOffset, wallOrientation, true);
 				}
-				if (!Map.TileExists(column, row) || !Map.AllTiles[column, row].Selected)
-					Map.SetWall(column, row, wallOrientation, true);
+			}
+			finally
+			{
+				Map.EndWallUpdate();
 			}
 		}
 		private void BtnRightWall_Click(object sender, RoutedEventArgs e)
 		{
-
+			AddSegments(WallSide.Right);
 		}
 
 		private void BtnTopWall_Click(object sender, RoutedEventArgs e)
@@ -1125,7 +1174,18 @@ namespace DndMapSpike
 
 		private void BtnOutlineWall_Click(object sender, RoutedEventArgs e)
 		{
-
+			Map.BeginWallUpdate();
+			try
+			{
+				AddSegments(WallSide.Left);
+				AddSegments(WallSide.Top);
+				AddSegments(WallSide.Right);
+				AddSegments(WallSide.Bottom);
+			}
+			finally
+			{
+				Map.EndWallUpdate();
+			}
 		}
 
 		//private void CvsTestCopy_MouseDown(object sender, MouseButtonEventArgs e)

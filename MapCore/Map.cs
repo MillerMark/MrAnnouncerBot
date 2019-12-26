@@ -13,6 +13,11 @@ namespace MapCore
 		int lastRowIndex;
 		int lastColumnIndex;
 		int rightmostColumnIndex;
+		int wallChangeCount;
+		public int StartColumn { get; set; }
+		public int StartRow { get; set; }
+		public int EndColumn { get; set; }
+		public int EndRow { get; set; }
 		public Map()
 		{
 
@@ -73,8 +78,8 @@ namespace MapCore
 		public void BuildMapArrays()
 		{
 			AllTiles = new Tile[NumColumns, NumRows];
-			HasVerticalWall = new bool[NumColumns + 1, NumRows];
-			HasHorizontalWall = new bool[NumColumns, NumRows + 1];
+			_allVerticalWalls = new bool[NumColumns + 1, NumRows + 1];
+			_allHorizontalWalls = new bool[NumColumns + 1, NumRows + 1];
 			// TODO: Find walls for rooms that are loaded.
 
 			foreach (Tile space in Tiles)
@@ -360,20 +365,22 @@ namespace MapCore
 
 		public void SetWall(int column, int row, WallOrientation wallOrientation, bool isThere)
 		{
+			column++;  // To allow for -1, -1 coordinates
+			row++;
 			switch (wallOrientation)
 			{
 				case WallOrientation.Horizontal:
-					if (HasHorizontalWall[column, row] != isThere)
+					if (_allHorizontalWalls[column, row] != isThere)
 					{
-						HasHorizontalWall[column, row] = isThere;
-						OnWallsChanged();
+						_allHorizontalWalls[column, row] = isThere;
+						wallsChanged = true;
 					}
 					break;
 				case WallOrientation.Vertical:
-					if (HasVerticalWall[column, row] != isThere)
+					if (_allVerticalWalls[column, row] != isThere)
 					{
-						HasVerticalWall[column, row] = isThere;
-						OnWallsChanged();
+						_allVerticalWalls[column, row] = isThere;
+						wallsChanged = true; 
 					}
 					break;
 			}
@@ -400,14 +407,119 @@ namespace MapCore
 		public Tile[,] AllTiles { get; private set; }
 		public int NumColumns { get; set; }
 		public int NumRows { get; set; }
-		public bool[,] HasHorizontalWall { get; set; }
-		public bool[,] HasVerticalWall { get; set; }
+		bool[,] _allHorizontalWalls { get; set; }
+		bool[,] _allVerticalWalls { get; set; }
 
 		public event EventHandler WallsChanged;
 
 		protected virtual void OnWallsChanged()
 		{
 			WallsChanged?.Invoke(this, EventArgs.Empty);
+		}
+		public WallData CollectHorizontalWall(int column, int row)
+		{
+			StartColumn = column;
+			StartRow = row;
+			WallData result = new WallData();
+			int startX = column * Tile.Width;
+			int startY = row * Tile.Height;
+
+			while (column < NumColumns && HasHorizontalWall(column + 1, row) && !HasVerticalTouchingWall(column, row))
+			{
+				column++;
+			}
+			EndColumn = column;
+			EndRow = row;
+			int endX = column * Tile.Width;
+			result.X = startX;
+			result.Y = startY;
+			result.WallLength = endX + Tile.Width - startX;
+			return result;
+		}
+		public WallData CollectVerticalWall(int column, int row)
+		{
+			StartColumn = column;
+			StartRow = row;
+			WallData result = new WallData();
+			int startX = column * Tile.Width;
+			int startY = row * Tile.Height;
+
+			while (row < NumRows && HasVerticalWall(column, row + 1) && !HasHorizontalTouchingWall(column, row))
+			{
+				row++;
+			}
+			EndColumn = column;
+			EndRow = row;
+			int endY = row * Tile.Height;
+			result.X = startX;
+			result.Y = startY;
+			result.WallLength = endY + Tile.Height - startY;
+			return result;
+		}
+		bool HasHorizontalWall(int column, int row)
+		{
+			column++;
+			row++;
+			if (column < 0 || row < 0 || column > NumColumns || row > NumRows)
+				return false;
+			return _allHorizontalWalls[column, row];
+		}
+
+		bool HasVerticalWall(int column, int row)
+		{
+			column++;
+			row++;
+			if (column < 0 || row < 0 || column > NumColumns || row > NumRows)
+				return false;
+			return _allVerticalWalls[column, row];
+		}
+
+		bool HasVerticalTouchingWall(int column, int row)
+		{
+			return HasVerticalWall(column, row + 1) || HasVerticalWall(column, row);
+		}
+
+		bool HasHorizontalTouchingWall(int column, int row)
+		{
+			return HasHorizontalWall(column + 1, row) || HasHorizontalWall(column, row);
+		}
+
+		public bool HasHorizontalWallStart(int column, int row)
+		{
+			if (!HasHorizontalWall(column, row))
+				return false;
+			if (HasHorizontalWall(column - 1, row))
+			{
+				return HasVerticalTouchingWall(column - 1, row);
+			}
+			return true;
+		}
+		public bool HasVerticalWallStart(int column, int row)
+		{
+			if (!HasVerticalWall(column, row))
+				return false;
+			if (HasVerticalWall(column, row - 1))
+			{
+				return HasHorizontalTouchingWall(column, row - 1);
+			}
+			return true;
+		}
+
+		bool wallsChanged;
+		public void BeginWallUpdate()
+		{
+			if (wallChangeCount == 0)
+				wallsChanged = false;
+			wallChangeCount++;
+		}
+		public void EndWallUpdate()
+		{
+			wallChangeCount--;
+			if (wallChangeCount == 0 && wallsChanged)
+			{
+				wallsChanged = false;
+				OnWallsChanged();
+			}
 		}
 	}
 }

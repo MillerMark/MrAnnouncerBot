@@ -67,6 +67,7 @@
     <Compile Include="SelectionType.cs" />
     <Compile Include="SimpleTexture.cs" />
     <Compile Include="TextureUtils.cs" />
+    <Compile Include="Walls.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
