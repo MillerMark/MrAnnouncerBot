@@ -1,4 +1,5 @@
-﻿using MapCore;
+﻿using System;
+using MapCore;
 
 namespace MapCore
 {
@@ -12,6 +13,21 @@ namespace MapCore
 		public int StartRow { get; set; }
 		public int EndColumn { get; set; }
 		public int EndRow { get; set; }
+		public bool IsVertical
+		{
+			get
+			{
+				return StartColumn == EndColumn;
+			}
+		}
+
+		public bool IsHorizontal
+		{
+			get
+			{
+				return StartRow == EndRow;
+			}
+		}
 
 		public WallData()
 		{

@@ -8,6 +8,18 @@ namespace DndMapSpike
 {
 	public class WallBuilder
 	{
+		Image insideCornerVoidTopLeft;
+		Image insideCornerVoidTopRight;
+		Image insideCornerVoidBottomLeft;
+		Image insideCornerVoidBottomRight;
+		Image outsideCornerVoidTopLeft;
+		Image outsideCornerVoidTopRight;
+		Image outsideCornerVoidBottomLeft;
+		Image outsideCornerVoidBottomRight;
+		Image horizontalVoidTop;
+		Image horizontalVoidBottom;
+		Image verticalVoidLeft;
+		Image verticalVoidRight;
 		Image horizontalWall;
 		Image verticalWall;
 		Image endCap_Left;
@@ -30,6 +42,18 @@ namespace DndMapSpike
 
 		void LoadImages()
 		{
+			insideCornerVoidTopLeft = LoadImage(@"InnerVoid\Inside-TopLeft.png");
+			insideCornerVoidTopRight = LoadImage(@"InnerVoid\Inside-TopRight.png");
+			insideCornerVoidBottomLeft = LoadImage(@"InnerVoid\Inside-BottomLeft.png");
+			insideCornerVoidBottomRight = LoadImage(@"InnerVoid\Inside-BottomRight.png");
+			outsideCornerVoidTopLeft = LoadImage(@"InnerVoid\Outside-TopLeft.png");
+			outsideCornerVoidTopRight = LoadImage(@"InnerVoid\Outside-TopRight.png");
+			outsideCornerVoidBottomLeft = LoadImage(@"InnerVoid\Outside-BottomLeft.png");
+			outsideCornerVoidBottomRight = LoadImage(@"InnerVoid\Outside-BottomRight.png");
+			horizontalVoidTop = LoadImage(@"InnerVoid\HorizontalTop.png");
+			horizontalVoidBottom = LoadImage(@"InnerVoid\HorizontalBottom.png");
+			verticalVoidLeft = LoadImage(@"InnerVoid\VerticalLeft.png");
+			verticalVoidRight = LoadImage(@"InnerVoid\VerticalRight.png");
 			horizontalWall = LoadImage("HorizontalWall.png");
 			verticalWall = LoadImage("VerticalWall.png");
 			endCap_Left = LoadImage("EndCap_Left.png");
@@ -54,29 +78,39 @@ namespace DndMapSpike
 			return image;
 		}
 
-		void DrawHorizontalWall(WallData horizontalWallData, Layer layer)
+		void DrawHorizontalWall(WallData horizontalWallData, Layer layer, Image horizontalWallImage, int additionalPixelsToDraw = 0)
 		{
-			int yAdjust = GetYAdjust(horizontalWall);
-			double pixelLengthToDraw = horizontalWallData.WallLength - Walls.EndCapSize;
+			double pixelLengthToDraw = horizontalWallData.WallLength - Walls.EndCapSize + 1 + additionalPixelsToDraw;
 			double x = Tile.Width / 2 + horizontalWallData.X + Walls.EndCapIndent;
-			double imageWidth = horizontalWall.Source.Width;
-			while (pixelLengthToDraw > 0)
+			DrawHorizontalWall(horizontalWallImage, x, horizontalWallData.Y, pixelLengthToDraw, layer);
+		}
+
+		void DrawHorizontalWall(Image image, double x, int y, double pixelLengthToDraw, Layer layer)
+		{
+			int yAdjust = GetWallYAdjust(image);
+			double imageWidth = image.Source.Width;
+			while (Math.Round(pixelLengthToDraw) > 0)
 			{
-				layer.DrawImageAt(horizontalWall, (int)x, horizontalWallData.Y + yAdjust, (int)Math.Min(pixelLengthToDraw, imageWidth));
+				layer.DrawImageAt(image, (int)Math.Round(x), y + yAdjust, (int)Math.Min(Math.Round(pixelLengthToDraw), imageWidth));
 				pixelLengthToDraw -= imageWidth;
 				x += imageWidth;
 			}
 		}
 
-		void DrawVerticalWall(WallData wallData, Layer layer)
+		void DrawVerticalWall(WallData wallData, Layer layer, Image verticalWallImage)
 		{
-			int xAdjust = GetXAdjust(verticalWall);
-			double pixelLengthToDraw = wallData.WallLength - Walls.EndCapSize;
+			double pixelLengthToDraw = wallData.WallLength - Walls.EndCapSize + 1;
 			double y = Tile.Height / 2 + wallData.Y + Walls.EndCapIndent;
-			double imageHeight = verticalWall.Source.Height;
-			while (pixelLengthToDraw > 0)
+			DrawVerticalWall(verticalWallImage, wallData.X, y, pixelLengthToDraw, layer);
+		}
+
+		void DrawVerticalWall(Image image, int x, double y, double pixelLengthToDraw, Layer layer)
+		{
+			int xAdjust = GetWallXAdjust(image);
+			double imageHeight = image.Source.Height;
+			while (Math.Round(pixelLengthToDraw) > 0)
 			{
-				layer.DrawImageAt(verticalWall, wallData.X + xAdjust, (int)y, -1, (int)Math.Min(pixelLengthToDraw, imageHeight));
+				layer.DrawImageAt(image, x + xAdjust, (int)Math.Round(y), -1, (int)Math.Min(Math.Round(pixelLengthToDraw), imageHeight));
 				pixelLengthToDraw -= imageHeight;
 				y += imageHeight;
 			}
@@ -88,56 +122,192 @@ namespace DndMapSpike
 			DrawCap(map, wallData.EndColumn, wallData.EndRow, endCapLayer);
 		}
 
+		Image GetEndCapImage(EndCapKind endCapKind)
+		{
+			switch (endCapKind)
+			{
+				case EndCapKind.Left:
+					return endCap_Left;
+				case EndCapKind.Right:
+					return endCap_Right;
+				case EndCapKind.Bottom:
+					return endCap_Bottom;
+				case EndCapKind.Top:
+					return endCap_Top;
+				case EndCapKind.LeftTee:
+					return tee_Left;
+				case EndCapKind.RightTee:
+					return tee_Right;
+				case EndCapKind.BottomTee:
+					return tee_Bottom;
+				case EndCapKind.TopTee:
+					return tee_Top;
+				case EndCapKind.BottomLeftCorner:
+					return corner_BottomLeft;
+				case EndCapKind.BottomRightCorner:
+					return corner_BottomRight;
+				case EndCapKind.TopRightCorner:
+					return corner_TopRight;
+				case EndCapKind.TopLeftCorner:
+					return corner_TopLeft;
+				case EndCapKind.FourWayIntersection:
+					return fourWayIntersection;
+			}
+			return null;
+		}
 		private void DrawCap(Map map, int column, int row, Layer endCapLayer)
 		{
 			EndCapKind endCapKind = map.GetEndCapKind(column, row);
-			if (endCapKind == EndCapKind.Left)
-				DrawCap(column, row, endCapLayer, endCap_Left);
-			else if (endCapKind == EndCapKind.Right)
-				DrawCap(column, row, endCapLayer, endCap_Right);
-			else if (endCapKind == EndCapKind.Bottom)
-				DrawCap(column, row, endCapLayer, endCap_Bottom);
-			else if (endCapKind == EndCapKind.Top)
-				DrawCap(column, row, endCapLayer, endCap_Top);
-			else if (endCapKind == EndCapKind.LeftTee)
-				DrawCap(column, row, endCapLayer, tee_Left);
-			else if (endCapKind == EndCapKind.RightTee)
-				DrawCap(column, row, endCapLayer, tee_Right);
-			else if (endCapKind == EndCapKind.BottomTee)
-				DrawCap(column, row, endCapLayer, tee_Bottom);
-			else if (endCapKind == EndCapKind.TopTee)
-				DrawCap(column, row, endCapLayer, tee_Top);
-			else if (endCapKind == EndCapKind.BottomLeftCorner)
-				DrawCap(column, row, endCapLayer, corner_BottomLeft);
-			else if (endCapKind == EndCapKind.BottomRightCorner)
-				DrawCap(column, row, endCapLayer, corner_BottomRight);
-			else if (endCapKind == EndCapKind.TopRightCorner)
-				DrawCap(column, row, endCapLayer, corner_TopRight);
-			else if (endCapKind == EndCapKind.TopLeftCorner)
-				DrawCap(column, row, endCapLayer, corner_TopLeft);
-			else if (endCapKind == EndCapKind.FourWayIntersection)
-				DrawCap(column, row, endCapLayer, fourWayIntersection);
+			Image capImage = GetEndCapImage(endCapKind);
+			DrawCap(column, row, endCapLayer, capImage);
 		}
 
 		private void DrawCap(int startColumn, int startRow, Layer layer, Image image)
 		{
-			int xAdjust = GetXAdjust(image);
-			int x = startColumn * Tile.Width + 1;
-			double y = (startRow + 1) * Tile.Height + 2;
-			layer.DrawImageAt(image, x + xAdjust, (int)y);
+			if (image == null)
+				return;
+			int x = GetWallImageStartX(startColumn, image);
+			int y = GetWallImageStartY(startRow, image);
+			layer.DrawImageAt(image, x, y);
 		}
 
-		private int GetXAdjust(Image image)
+		int GetWallImageStartY(int startRow, Image image)
 		{
-			return 3 * Tile.Width / 2 - (int)image.Source.Width / 2;
+			int yAdjust = GetWallYAdjust(image);
+			int y = startRow * Tile.Height;
+			return y + yAdjust;
 		}
 
-		private int GetYAdjust(Image image)
+		private int GetWallImageStartX(int startColumn, Image image)
 		{
-			return 3 * Tile.Height / 2 - (int)image.Source.Height / 2;
+			int xAdjust = GetWallXAdjust(image);
+			int x = startColumn * Tile.Width + 2;
+			return x + xAdjust;
 		}
 
-		public void BuildWalls(Map map, Layer horizontalWallLayer, Layer verticalWallLayer, Layer endCapLayer)
+		private int GetWallXAdjust(Image image)
+		{
+			return (3 * Tile.Width - (int)Math.Round(image.Source.Width)) / 2;
+		}
+
+		private int GetWallYAdjust(Image image)
+		{
+			return (3 * Tile.Height - (int)Math.Round(image.Source.Height)) / 2;
+		}
+
+		void DrawVoidCap(int column, int row, VoidCornerKind voidKind, Layer voidLayer)
+		{
+			Image voidCapImage = null;
+
+			switch (voidKind)
+			{
+				case VoidCornerKind.TLeft:
+					voidCapImage = verticalVoidRight;
+					break;
+				case VoidCornerKind.TTop:
+					voidCapImage = horizontalVoidBottom;
+					break;
+				case VoidCornerKind.TRight:
+					voidCapImage = verticalVoidLeft;
+					break;
+				case VoidCornerKind.TBottom:
+					voidCapImage = horizontalVoidTop;
+					//DrawHorizontalWall()
+					break;
+			}
+			if (voidCapImage != null)   // It's a T
+			{
+				int x = GetWallImageStartX(column, voidCapImage);
+				int y = GetWallImageStartY(row, voidCapImage);
+				voidLayer.DrawImageAt(voidCapImage, x, y);
+				return;
+			}
+
+			voidCapImage = GetVoidCapImage(voidKind);
+			if (voidCapImage == null)
+				return;
+			
+			DrawCap(column, row, voidLayer, voidCapImage);
+		}
+
+		Image GetVoidCapImage(VoidCornerKind startCap)
+		{
+			switch (startCap)
+			{
+				case VoidCornerKind.None:
+					return null;
+				case VoidCornerKind.InsideTopLeft:
+					return insideCornerVoidTopLeft;
+				case VoidCornerKind.InsideTopRight:
+					return insideCornerVoidTopRight;
+				case VoidCornerKind.InsideBottomLeft:
+					return insideCornerVoidBottomLeft;
+				case VoidCornerKind.InsideBottomRight:
+					return insideCornerVoidBottomRight;
+				case VoidCornerKind.OutsideTopLeft:
+					return outsideCornerVoidTopLeft;
+				case VoidCornerKind.OutsideTopRight:
+					return outsideCornerVoidTopRight;
+				case VoidCornerKind.OutsideBottomLeft:
+					return outsideCornerVoidBottomLeft;
+				case VoidCornerKind.OutsideBottomRight:
+					return outsideCornerVoidBottomRight;
+			}
+			return null;
+		}
+		bool IsTVoid(VoidCornerKind voidKind)
+		{
+			switch (voidKind)
+			{
+				case VoidCornerKind.TLeft:
+				case VoidCornerKind.TTop:
+				case VoidCornerKind.TRight:
+				case VoidCornerKind.TBottom:
+					return true;
+			}
+			return false;
+		}
+		void DrawInnerVoid(Map map, WallData wallData, Layer voidLayer, Orientation orientation)
+		{
+			VoidCornerKind startVoidKind = map.GetVoidKind(wallData.StartColumn, wallData.StartRow);
+			VoidCornerKind endVoidKind = map.GetVoidKind(wallData.EndColumn, wallData.EndRow);
+			if (orientation == Orientation.Vertical)
+			{
+				Image voidImage = null;
+				if (map.VoidIsLeft(wallData.StartColumn, wallData.StartRow))
+					voidImage = verticalVoidRight;
+				else if (map.VoidIsRight(wallData.StartColumn, wallData.StartRow))
+					voidImage = verticalVoidLeft;
+				if (voidImage != null)
+					DrawVerticalWall(wallData, voidLayer, voidImage);
+				if (IsTVoid(startVoidKind))
+				{
+					DrawVoidCap(wallData.StartColumn, wallData.StartRow, startVoidKind, voidLayer);
+				}
+				if (IsTVoid(endVoidKind))
+				{
+					DrawVoidCap(wallData.EndColumn, wallData.EndRow, endVoidKind, voidLayer);
+				}
+			}
+			else
+			{
+				Image voidImage = null;
+				if (map.VoidIsAbove(wallData.StartColumn, wallData.StartRow))
+					voidImage = horizontalVoidBottom;
+				else if (map.VoidIsBelow(wallData.StartColumn, wallData.StartRow))
+					voidImage = horizontalVoidTop;
+				if (voidImage != null)
+					DrawHorizontalWall(wallData, voidLayer, voidImage, 1);
+
+				if (startVoidKind != VoidCornerKind.None)
+					DrawVoidCap(wallData.StartColumn, wallData.StartRow, startVoidKind, voidLayer);
+
+				if (endVoidKind != VoidCornerKind.None)
+					DrawVoidCap(wallData.EndColumn, wallData.EndRow, endVoidKind, voidLayer);
+			}
+		}
+
+		public void BuildWalls(Map map, Layer horizontalWallLayer, Layer verticalWallLayer, Layer endCapLayer, Layer innerVoidLayer)
 		{
 			for (int column = -1; column < map.NumColumns; column++)
 				for (int row = -1; row < map.NumRows; row++)
@@ -145,15 +315,17 @@ namespace DndMapSpike
 					if (map.HasHorizontalWallStart(column, row))
 					{
 						WallData wallData = map.CollectHorizontalWall(column, row);
-						DrawHorizontalWall(wallData, horizontalWallLayer);
+						DrawHorizontalWall(wallData, horizontalWallLayer, horizontalWall);
 						DrawEndCaps(map, wallData, endCapLayer);
+						DrawInnerVoid(map, wallData, innerVoidLayer, Orientation.Horizontal);
 					}
 
 					if (map.HasVerticalWallStart(column, row))
 					{
 						WallData wallData = map.CollectVerticalWall(column, row);
-						DrawVerticalWall(wallData, verticalWallLayer);
+						DrawVerticalWall(wallData, verticalWallLayer, verticalWall);
 						DrawEndCaps(map, wallData, endCapLayer);
+						DrawInnerVoid(map, wallData, innerVoidLayer, Orientation.Vertical);
 					}
 				}
 		}

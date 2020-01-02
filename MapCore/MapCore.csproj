@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EndCapKind.cs" />
+    <Compile Include="VoidCornerKind.cs" />
     <Compile Include="WallData.cs" />
     <Compile Include="IMapInterface.cs" />
     <Compile Include="WallOrientation.cs" />

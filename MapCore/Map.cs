@@ -600,5 +600,76 @@ namespace MapCore
 
 			return EndCapKind.None;
 		}
+
+		public VoidCornerKind GetVoidKind(int column, int row)
+		{
+			bool hasUpperLeftTile = FloorSpaceExists(column, row);
+			bool hasUpperRightTile = FloorSpaceExists(column + 1, row);
+			bool hasLowerLeftTile = FloorSpaceExists(column, row + 1);
+			bool hasLowerRightTile = FloorSpaceExists(column + 1, row + 1);
+			int tileCount = 0;
+			if (hasUpperLeftTile)
+				tileCount++;
+			if (hasUpperRightTile)
+				tileCount++;
+			if (hasLowerLeftTile)
+				tileCount++;
+			if (hasLowerRightTile)
+				tileCount++;
+
+			if (tileCount == 3)
+			{
+				if (!hasLowerRightTile)
+					return VoidCornerKind.InsideTopLeft;
+				if (!hasUpperRightTile)
+					return VoidCornerKind.InsideBottomLeft;
+				if (!hasLowerLeftTile)
+					return VoidCornerKind.InsideTopRight;
+				if (!hasUpperLeftTile)
+					return VoidCornerKind.InsideBottomRight;
+			}
+
+			if (tileCount == 1)
+			{
+				if (hasLowerRightTile)
+					return VoidCornerKind.OutsideTopLeft;
+				if (hasUpperRightTile)
+					return VoidCornerKind.OutsideBottomLeft;
+				if (hasLowerLeftTile)
+					return VoidCornerKind.OutsideTopRight;
+				if (hasUpperLeftTile)
+					return VoidCornerKind.OutsideBottomRight;
+			}
+
+			if (tileCount == 2)
+			{
+				if (hasLowerRightTile && hasUpperRightTile)
+					return VoidCornerKind.TLeft;
+				if (hasUpperLeftTile && hasUpperRightTile)
+					return VoidCornerKind.TBottom;
+				if (hasUpperLeftTile && hasLowerLeftTile)
+					return VoidCornerKind.TRight;
+				if (hasLowerRightTile && hasLowerLeftTile)
+					return VoidCornerKind.TTop;
+			}
+
+			return VoidCornerKind.None;
+		}
+		public bool VoidIsLeft(int column, int row)
+		{
+			return !FloorSpaceExists(column, row + 1);
+		}
+		public bool VoidIsRight(int column, int row)
+		{
+			return !FloorSpaceExists(column + 1, row + 1);
+		}
+		public bool VoidIsAbove(int column, int row)
+		{
+			return !FloorSpaceExists(column + 1, row);
+		}
+		public bool VoidIsBelow(int column, int row)
+		{
+			return !FloorSpaceExists(column + 1, row + 1);
+		}
 	}
 }

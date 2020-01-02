@@ -95,7 +95,8 @@ namespace DndMapSpike
 			LoadImageResources();
 			//LoadMap("Test New Map.txt");
 			//LoadMap("The Tomb of Baleful Ruin.txt");
-			LoadMap("The Dark Lair of Sorrows.txt");
+			//LoadMap("The Dark Lair of Sorrows.txt");
+			LoadMap("The Forsaken Tunnels of Death.txt");
 			LoadFloorTiles();
 			LoadDebris();
 			AddFileSystemWatcher();
@@ -106,7 +107,8 @@ namespace DndMapSpike
 			horizontalWallLayer.ClearAll();
 			verticalWallLayer.ClearAll();
 			endCapLayer.ClearAll();
-			wallBuilder.BuildWalls(Map, horizontalWallLayer, verticalWallLayer, endCapLayer);
+			innerVoidLayer.ClearAll();
+			wallBuilder.BuildWalls(Map, horizontalWallLayer, verticalWallLayer, endCapLayer, innerVoidLayer);
 		}
 
 		//public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
@@ -1019,6 +1021,7 @@ namespace DndMapSpike
 		Layer horizontalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer verticalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer endCapLayer = new Layer() { OuterMargin = Tile.Width / 2 };
+		Layer innerVoidLayer = new Layer() { OuterMargin = Tile.Width / 2};
 		Layer floorLayer = new Layer();
 		Layers allLayers = new Layers();
 
@@ -1030,6 +1033,7 @@ namespace DndMapSpike
 			allLayers.Add(horizontalWallLayer);
 			allLayers.Add(verticalWallLayer);
 			allLayers.Add(endCapLayer);
+			allLayers.Add(innerVoidLayer);
 		}
 
 		Image imageHeavyTile;
