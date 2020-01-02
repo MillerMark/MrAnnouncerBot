@@ -85,18 +85,19 @@ namespace DndMapSpike
 			selection.SelectionCommitted += Selection_SelectionCommitted;
 			selection.SelectionCancelled += Selection_SelectionCancelled;
 
-			//LoadMap("The Delve of Lamprica.txt");
-			//LoadMap("The Pit of Alan the Necromancer.txt");
-			//LoadMap("The Barrow of Elemental Horror.txt");
-			//LoadMap("The Hive of the Vampire Princess.txt");
-			//LoadMap("The Dark Chambers of Ages.txt");
-			//LoadMap("The Barrow of Emirkol the Chaotic.txt");
+			//ImportDonJonMap("The Delve of Lamprica.txt");
+			//ImportDonJonMap("The Pit of Alan the Necromancer.txt");
+			//ImportDonJonMap("The Barrow of Elemental Horror.txt");
+			//ImportDonJonMap("The Hive of the Vampire Princess.txt");
+			//ImportDonJonMap("The Dark Chambers of Ages.txt");
+			//ImportDonJonMap("The Barrow of Emirkol the Chaotic.txt");
 			InitializeLayers();
 			LoadImageResources();
-			//LoadMap("Test New Map.txt");
-			//LoadMap("The Tomb of Baleful Ruin.txt");
-			//LoadMap("The Dark Lair of Sorrows.txt");
-			LoadMap("The Forsaken Tunnels of Death.txt");
+			//ImportDonJonMap("Test New Map.txt");
+			//ImportDonJonMap("The Tomb of Baleful Ruin.txt");
+			//ImportDonJonMap("The Dark Lair of Sorrows.txt");
+			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
+			ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
 			LoadFloorTiles();
 			LoadDebris();
 			AddFileSystemWatcher();
@@ -419,7 +420,51 @@ namespace DndMapSpike
 			return floor;
 		}
 
-		void LoadMap(string fileName)
+		Image doorLightHorizontal;
+		Image doorLightVertical;
+
+		void AddDoors(Tile tile)
+		{
+			if (!(tile is FloorSpace floorSpace))
+				return;
+
+			if (!floorSpace.HasDoors)
+				return;
+
+			foreach (Door door in floorSpace.Doors)
+			{
+				int xOffset;
+				int yOffset;
+				Image image;
+				Layer doorLayer;
+				if (door.Position == DoorPosition.Bottom || door.Position == DoorPosition.Top)
+				{
+					xOffset = (Tile.Width - Door.Span) / 2;
+					yOffset = (Tile.Height - Door.Thickness) / 2;
+					image = doorLightHorizontal;
+					doorLayer = horizontalDoorLayer;
+					if (door.Position == DoorPosition.Bottom)
+						yOffset += Tile.Height / 2;
+					else
+						yOffset -= Tile.Height / 2;
+				}
+				else
+				{
+					xOffset = (Tile.Width - Door.Thickness) / 2;
+					yOffset = (Tile.Height - Door.Span) / 2;
+					image = doorLightVertical;
+					doorLayer = verticalDoorLayer;
+					if (door.Position == DoorPosition.Right)
+						xOffset += Tile.Width / 2;
+					else
+						xOffset -= Tile.Width / 2;
+				}
+
+				doorLayer.DrawImageOverTile(image, tile, xOffset, yOffset);
+			}
+		}
+
+		void ImportDonJonMap(string fileName)
 		{
 			content.Children.Clear();
 			Map.Load(fileName);
@@ -439,13 +484,32 @@ namespace DndMapSpike
 
 					AddElementOverTile(tile, floorUI);
 					AddFloorOverlay(tile);
-
+					AddDoors(tile);
 				}
 
 				AddSelector(tile);
 			}
 
 			LoadFinalCanvasElements();
+			SelectAllRoomsAndCorridors();
+			OutlineWalls();
+			ClearSelection();
+		}
+
+		void SelectAllRooms()
+		{
+			FloodSelectAll<Room>(SelectionType.Add);
+		}
+
+		void SelectAllCorridors()
+		{
+			FloodSelectAll<Corridor>(SelectionType.Add);
+		}
+
+		void SelectAllRoomsAndCorridors()
+		{
+			SelectAllRooms();
+			SelectAllCorridors();
 		}
 
 		private void AddSelector(Tile tile)
@@ -891,21 +955,19 @@ namespace DndMapSpike
 			if (!(baseSpace is FloorSpace floorSpace))
 				return;
 
-			List<Tile> allRegionTiles;
-
 			if (floorSpace.Parent is Room)
-			{
-				allRegionTiles = Map.GetAllMatchingTiles<Room>();
-			}
+				FloodSelectAll<Room>(selectionType);
 			else if (floorSpace.Parent is Corridor)
-			{
-				allRegionTiles = Map.GetAllMatchingTiles<Corridor>();
-			}
-			else
-				return;
+				FloodSelectAll<Corridor>(selectionType);
+		}
 
+		private void FloodSelectAll<T>(SelectionType selectionType) where T : MapRegion
+		{
+			selection.SelectionType = selectionType;
+			List<Tile> allRegionTiles = Map.GetAllMatchingTiles<T>();
 			SelectAllTiles(allRegionTiles);
 		}
+
 		private void EvaluateClicks(object source, ElapsedEventArgs e)
 		{
 			clickTimer.Stop();
@@ -994,6 +1056,7 @@ namespace DndMapSpike
 		{
 			depthLayer.DrawImageOverTile(imageLightTile, tile);
 		}
+
 		private void AddFloorFile(Tile tile, Image image)
 		{
 			floorLayer.DrawImageOverTile(image, tile);
@@ -1017,11 +1080,13 @@ namespace DndMapSpike
 		}
 
 		Layer depthLayer = new Layer();
+		Layer verticalDoorLayer = new Layer();
+		Layer horizontalDoorLayer = new Layer();
 		Layer debrisLayer = new Layer();
 		Layer horizontalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer verticalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer endCapLayer = new Layer() { OuterMargin = Tile.Width / 2 };
-		Layer innerVoidLayer = new Layer() { OuterMargin = Tile.Width / 2};
+		Layer innerVoidLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer floorLayer = new Layer();
 		Layers allLayers = new Layers();
 
@@ -1030,6 +1095,8 @@ namespace DndMapSpike
 			allLayers.Add(floorLayer);
 			allLayers.Add(debrisLayer);
 			allLayers.Add(depthLayer);
+			allLayers.Add(verticalDoorLayer);
+			allLayers.Add(horizontalDoorLayer);
 			allLayers.Add(horizontalWallLayer);
 			allLayers.Add(verticalWallLayer);
 			allLayers.Add(endCapLayer);
@@ -1038,6 +1105,13 @@ namespace DndMapSpike
 
 		Image imageHeavyTile;
 		Image imageLightTile;
+		Image LoadDoor(string fileName)
+		{
+			string doorPath = System.IO.Path.Combine(TextureUtils.DoorsFolder, fileName);
+			Image image = new Image();
+			image.Source = new BitmapImage(new Uri(doorPath));
+			return image;
+		}
 		void LoadImageResources()
 		{
 			string heavyTilePath = System.IO.Path.Combine(TextureUtils.TileFolder, "TileOverlay", "Heavy.png");
@@ -1046,6 +1120,9 @@ namespace DndMapSpike
 			string lightTilePath = System.IO.Path.Combine(TextureUtils.TileFolder, "TileOverlay", "Light.png");
 			imageLightTile = new Image();
 			imageLightTile.Source = new BitmapImage(new Uri(lightTilePath));
+
+			doorLightHorizontal = LoadDoor("LightWoodenHorizontal.png");
+			doorLightVertical = LoadDoor("LightWoodenVertical.png");
 		}
 
 		private void BtnBottomWall_Click(object sender, RoutedEventArgs e)
@@ -1053,8 +1130,29 @@ namespace DndMapSpike
 			AddSegments(WallSide.Bottom);
 		}
 
+		void AddDoors(DoorPosition doorPosition)
+		{
+			bool adding = !(Keyboard.Modifiers.HasFlag(ModifierKeys.Control));
+			List<Tile> selection = Map.GetSelection();
+			foreach (Tile tile in selection)
+				if (tile is FloorSpace floorSpace)
+					floorSpace.SetDoor(doorPosition, adding);
+
+			UpdateDoors();
+		}
+
+		void UpdateDoors()
+		{
+			horizontalDoorLayer.ClearAll();
+			verticalDoorLayer.ClearAll();
+			foreach (Tile tile in Map.Tiles)
+				AddDoors(tile);
+		}
+
 		void AddSegments(WallSide wallSide)
 		{
+			bool adding = !(Keyboard.Modifiers.HasFlag(ModifierKeys.Control));
+
 			List<Tile> selection = Map.GetSelection();
 			Map.BeginWallUpdate();
 			try
@@ -1090,7 +1188,7 @@ namespace DndMapSpike
 
 					}
 					if (!Map.TileExists(column, row) || !Map.AllTiles[column, row].Selected)
-						Map.SetWall(column + columnOffset, row + rowOffset, wallOrientation, true);
+						Map.SetWall(column + columnOffset, row + rowOffset, wallOrientation, adding);
 				}
 			}
 			finally
@@ -1115,6 +1213,11 @@ namespace DndMapSpike
 
 		private void BtnOutlineWall_Click(object sender, RoutedEventArgs e)
 		{
+			OutlineWalls();
+		}
+
+		private void OutlineWalls()
+		{
 			Map.BeginWallUpdate();
 			try
 			{
@@ -1127,6 +1230,26 @@ namespace DndMapSpike
 			{
 				Map.EndWallUpdate();
 			}
+		}
+
+		private void BtnLeftDoor_Click(object sender, RoutedEventArgs e)
+		{
+			AddDoors(DoorPosition.Left);
+		}
+
+		private void BtnTopDoor_Click(object sender, RoutedEventArgs e)
+		{
+			AddDoors(DoorPosition.Top);
+		}
+
+		private void BtnRightDoor_Click(object sender, RoutedEventArgs e)
+		{
+			AddDoors(DoorPosition.Right);
+		}
+
+		private void BtnBottomDoor_Click(object sender, RoutedEventArgs e)
+		{
+			AddDoors(DoorPosition.Bottom);
 		}
 
 		//private void CvsTestCopy_MouseDown(object sender, MouseButtonEventArgs e)

@@ -67,7 +67,11 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
-			<StackPanel Grid.Row="2" x:Name="spWallControls" Orientation="Horizontal" Height="38" >
+			<StackPanel Grid.Row="2" Orientation="Horizontal" Margin="4, 4, 0, 0" >
+				<TextBlock Text="Walls: " Width="Auto" Height="Auto"/>
+				<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
+			</StackPanel>
+			<StackPanel Grid.Row="3" x:Name="spWallControls" Orientation="Horizontal" Height="38" >
 				<Button x:Name="btnLeftWall" Click="BtnLeftWall_Click" Margin="6, 3, 3, 3" >
 					<Viewbox Width="32" Height="32" >
 						<Canvas Width="180" Height="208">
@@ -122,6 +126,54 @@
 							</Path>
 						</Canvas>
 					</Viewbox>	
+				</Button>
+			</StackPanel>
+			<StackPanel Grid.Row="4" Orientation="Horizontal" Margin="4, 4, 0, 0" >
+				<TextBlock Text="Doors: " Width="Auto" Height="Auto"/>
+				<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
+			</StackPanel>
+			<StackPanel Grid.Row="5" x:Name="spDoorControls" Orientation="Horizontal" Height="38" >
+				<Button x:Name="btnLeftDoor" Click="BtnLeftDoor_Click" Margin="6, 3, 3, 3" >
+					<Viewbox Width="32" Height="32" >
+						<Canvas Width="180" Height="208">
+							<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+							<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FFC44545" Stroke="{x:Null}" />
+							<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+						</Canvas>
+					</Viewbox>
+				</Button>
+				<Button x:Name="btnTopDoor" Click="BtnTopDoor_Click" Margin="3" >
+					<Viewbox Width="32" Height="32" >
+						<Canvas Width="205" Height="197">
+							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FFC44545" Stroke="{x:Null}" />
+							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+						</Canvas>
+					</Viewbox>
+
+				</Button>
+				<Button x:Name="btnRightDoor" Click="BtnRightDoor_Click" Margin="3" >
+					<Viewbox Width="32" Height="32" >
+						<Canvas Width="180" Height="208">
+							<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+							<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FFC44545" Stroke="{x:Null}" />
+							<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+						</Canvas>
+					</Viewbox>
+
+				</Button>
+				<Button x:Name="btnBottomDoor" Click="BtnBottomDoor_Click" Margin="3" >
+					<Viewbox Width="32" Height="32">
+						<Canvas Width="205" Height="197">
+							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FFC44545" Stroke="{x:Null}" />
+							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+						</Canvas>
+					</Viewbox>
 				</Button>
 			</StackPanel>
 		</Grid>

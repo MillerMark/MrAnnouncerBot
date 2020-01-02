@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Door.cs" />
+    <Compile Include="DoorPosition.cs" />
     <Compile Include="EndCapKind.cs" />
     <Compile Include="VoidCornerKind.cs" />
     <Compile Include="WallData.cs" />
