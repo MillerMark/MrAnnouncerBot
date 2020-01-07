@@ -62,10 +62,14 @@
     <Compile Include="ImageUtils.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
+    <Compile Include="MapEditModes.cs" />
     <Compile Include="MapSelection.cs" />
     <Compile Include="RandomTexture.cs" />
     <Compile Include="SelectionType.cs" />
     <Compile Include="SimpleTexture.cs" />
+    <Compile Include="Stamp.cs" />
+    <Compile Include="StampFolder.cs" />
+    <Compile Include="StampsLayer.cs" />
     <Compile Include="TextureUtils.cs" />
     <Compile Include="WallBuilder.cs" />
     <Compile Include="Walls.cs" />

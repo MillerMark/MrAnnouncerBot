@@ -414,7 +414,7 @@ namespace MapCore
 		}
 		public WallData CollectHorizontalWall(int column, int row)
 		{
-			WallData result = new WallData();
+			WallData result = new WallData(WallOrientation.Horizontal);
 			result.StartColumn = column - 1;
 			result.StartRow = row;
 			int startX = column * Tile.Width;
@@ -434,7 +434,7 @@ namespace MapCore
 		}
 		public WallData CollectVerticalWall(int column, int row)
 		{
-			WallData result = new WallData();
+			WallData result = new WallData(WallOrientation.Vertical);
 			result.StartColumn = column;
 			result.StartRow = row - 1;
 			int startX = column * Tile.Width;

@@ -20,6 +20,12 @@ namespace DndMapSpike
 			WritePixelsTo(source, x, y, pixelWidth, pixelHeight, pixelFormat, target, cropWidth, cropHeight);
 		}
 
+		public static void MergeImageWith(Image sourceImage, int x, int y, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1)
+		{
+			BitmapSource source = sourceImage.Source as BitmapSource;
+			MergePixelsWith(source, x, y, target, cropWidth, cropHeight);
+		}
+
 		public static void ClearRect(int x, int y, int width, int height, WriteableBitmap target)
 		{
 			WritePixelsTo(null, x, y, width, height, target.Format, target);
@@ -63,6 +69,57 @@ namespace DndMapSpike
 			target.WritePixels(sourceRect, sourcePixels, sourceBytesPerLine, 0);
 		}
 
+		public static void MergePixelsWith(BitmapSource source, int x, int y, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1)
+		{
+			if (cropWidth == -1)
+				cropWidth = source.PixelWidth;
+
+			if (cropHeight == -1)
+				cropHeight = source.PixelHeight;
+
+			// copy the source image into a byte buffer...
+			int src_stride = source.PixelWidth * (source.Format.BitsPerPixel >> 3);
+			byte[] src_buffer = new byte[src_stride * source.PixelHeight];
+			source.CopyPixels(src_buffer, src_stride, 0);
+
+			// copy the dest image into a byte buffer
+			int dest_stride = source.PixelWidth * (target.Format.BitsPerPixel >> 3);
+			byte[] target_buffer = new byte[(source.PixelWidth * source.PixelHeight) << 2];
+			target.CopyPixels(new Int32Rect(x, y, cropWidth, cropHeight), target_buffer, dest_stride, 0);
+
+			// merge
+			for (int i = 0; i < src_buffer.Length; i = i + 4)
+			{
+				byte alphaSource = src_buffer[i + 3];
+				byte blueSource = src_buffer[i + 2];
+				byte greenSource = src_buffer[i + 1];
+				byte redSource = src_buffer[i + 0];
+
+				byte alphaTarget = target_buffer[i + 3];
+				byte blueTarget = target_buffer[i + 2];
+				byte greenTarget = target_buffer[i + 1];
+				byte redTarget = target_buffer[i + 0];
+
+				const int Square255 = 255 * 255;
+				int inverseAlphaSource = 255 - alphaSource;
+
+				byte rOut = (byte)((redSource * alphaSource / 255) + (redTarget * alphaTarget * inverseAlphaSource / Square255));
+				byte gOut = (byte)((greenSource * alphaSource / 255) + (greenTarget * alphaTarget * inverseAlphaSource / Square255));
+				byte bOut = (byte)((blueSource * alphaSource / 255) + (blueTarget * alphaTarget * inverseAlphaSource / Square255));
+				byte aOut = (byte)(alphaSource + (alphaTarget * (255 - alphaSource) / 255));
+
+				target_buffer[i + 0] = rOut;
+				target_buffer[i + 1] = gOut;
+				target_buffer[i + 2] = bOut;
+				target_buffer[i + 3] = aOut;
+			}
+
+
+			Int32Rect sourceRect = new Int32Rect(x, y, cropWidth, cropHeight);
+
+			target.WritePixels(sourceRect, target_buffer, dest_stride, 0);
+		}
+		
 		public static int GetBytesPerPixel(PixelFormat format)
 		{
 			return format.BitsPerPixel / 8;

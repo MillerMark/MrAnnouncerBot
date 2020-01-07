@@ -14,6 +14,38 @@
 		<RoutedUICommand x:Key="Commands.Fill" />
 		<RoutedUICommand x:Key="Commands.OneHundredPercent" />
 		<mapUI:ScaleToPercentConverter x:Key="scaleToPercentConverter"/>
+		<Style TargetType="{x:Type RadioButton}" >
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type RadioButton}">
+						<Grid Height="36" Width="36" Margin="2" >
+							<Viewbox HorizontalAlignment="Center" VerticalAlignment="Center">
+								<Canvas Width="170" Height="170">
+									<Path Canvas.Left="6" Canvas.Top="6" x:Name="pthBackground" Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+										<Path.Data>
+											<PathGeometry Figures="M0,8.3125C0,3.75,3.75,0,8.3125,0L143.75,0C148.3125,0,152,3.75,152,8.3125L152,143.75C152,148.3125,148.3125,152,143.75,152L8.3125,152C3.75,152,0,148.3125,0,143.75z" />
+										</Path.Data>
+									</Path>
+								</Canvas>
+							</Viewbox>
+							<ContentPresenter />
+						</Grid>
+
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="true">
+								<Setter TargetName="pthBackground" Property="StrokeThickness" Value="5"/>
+							</Trigger>
+							<Trigger Property="IsChecked" Value="true">
+								<Setter TargetName="pthBackground" Property="Fill" Value="#FF4472C4"/>
+							</Trigger>
+							<Trigger Property="IsChecked" Value="false">
+								<Setter TargetName="pthBackground" Property="Fill" Value="#FFDAE3F3"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
@@ -27,8 +59,82 @@
 		<CommandBinding Command="{StaticResource Commands.Fill}" Executed="Fill_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.OneHundredPercent}" Executed="OneHundredPercent_Executed"/>
 	</Window.CommandBindings>
-	<DockPanel>
-		<Grid x:Name="grdMapControls" Height="Auto" Width="212" DockPanel.Dock="Right">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="5"/>
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="38"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<StackPanel x:Name="spToolbar" Orientation="Horizontal">
+			<RadioButton x:Name="btnSelect" IsChecked="True" Checked="BtnSelect_Checked">
+				<StackPanel>
+					<Viewbox HorizontalAlignment="Center" VerticalAlignment="Center" >
+						<Canvas Width="160" Height="160">
+							<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1.3125" StrokeMiterLimit="10">
+								<Path.Data>
+									<PathGeometry Figures="M25,24.375L97.6875,40.0625 81.3125,56.5 135,110.1875C137.1875,112.4375,137.1875,116,135,118.25L118.875,134.375C116.6875,136.5625,113.0625,136.5625,110.8125,134.375L57.125,80.625 40.75,97.0625z" />
+								</Path.Data>
+							</Path>
+						</Canvas>
+					</Viewbox>
+				</StackPanel>
+			</RadioButton>
+			<RadioButton x:Name="btnStamp" Checked="BtnStamp_Checked">
+				<Viewbox>
+					<Canvas Width="157" Height="157">
+						<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+							<Path.Data>
+								<PathGeometry Figures="M21.375,126.0625L131.6875,126.0625C132.4375,126.0625,133,126.625,133,127.375L133,132.6875C133,133.4375,132.4375,134,131.6875,134L21.375,134C20.625,134,20,133.4375,20,132.6875L20,127.375C20,126.625,20.625,126.0625,21.375,126.0625z M67.4375,18L85.625,18C88.125,18,90.125,20.0625,90.125,22.5625L90.125,66.6875 125.8125,66.6875C129.8125,66.6875,133,69.9375,133,73.875L133,102.625C133,106.625,129.8125,109.8125,125.8125,109.8125L27.25,109.8125C23.25,109.8125,20,106.625,20,102.625L20,73.875C20,69.9375,23.25,66.6875,27.25,66.6875L62.875,66.6875 62.875,22.5625C62.875,20.0625,64.9375,18,67.4375,18z" />
+							</Path.Data>
+						</Path>
+					</Canvas>
+				</Viewbox>
+			</RadioButton>
+		</StackPanel>
+		<ScrollViewer Grid.Column="0" Grid.Row="1"  x:Name="scroller" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+			<!--
+            This is the control that handles zooming and panning.
+            -->
+			<mapUI:ZoomAndPanControl
+                x:Name="zoomAndPanControl"
+                Background="LightGray"
+	            MouseDown="ZoomAndPanControl_MouseDown"
+	            MouseUp="ZoomAndPanControl_MouseUp"
+	            MouseMove="ZoomAndPanControl_MouseMove"
+	            MouseWheel="ZoomAndPanControl_MouseWheel"
+                MouseDoubleClick="ZoomAndPanControl_MouseDoubleClick"
+                >
+
+				<Grid x:Name="theGrid" Width="2000" Height="2000">
+					<!-- Map: -->
+					<Canvas x:Name="content" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp"/>
+
+					<!--
+					This Canvas and Border render a drag rectangle to specify a region to zoom in on.
+					-->
+					<Canvas
+						x:Name="dragZoomCanvas"
+						Visibility="Collapsed"
+						>
+						<Border 
+							x:Name="dragZoomBorder"
+							BorderBrush="Black"
+							BorderThickness="1"
+							Background="Silver"
+							CornerRadius="1"
+							Opacity="0"
+							/>
+					</Canvas>
+				</Grid>
+			</mapUI:ZoomAndPanControl>
+		</ScrollViewer>
+		<GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+		<Grid Grid.Column="2" Grid.Row="1" x:Name="grdMapControls" Height="Auto" Width="Auto">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
@@ -38,11 +144,11 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-			<ListBox x:Name="lstFlooring" IsEnabled="False" Height="300" Width="200">
+			</Grid.RowDefinitions>
+			<ListBox x:Name="lstFlooring" IsEnabled="False" Height="200" Width="400">
 				<ListBox.ItemsPanel>
 					<ItemsPanelTemplate>
-						<WrapPanel Orientation="Horizontal" Width="200"/>
+						<WrapPanel Orientation="Horizontal" Width="400"/>
 					</ItemsPanelTemplate>
 				</ListBox.ItemsPanel>
 				<ListBox.ItemTemplate>
@@ -53,7 +159,36 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
-			<ListBox Grid.Row="1"  x:Name="lstDebris" IsEnabled="False" Height="300" Width="200">
+			<StackPanel Grid.Row="1" x:Name="spStamps">
+				<TabControl x:Name="tbcStamps" Width="400">
+					<TabControl.ItemTemplate>
+						<DataTemplate>
+							<TextBlock>                            
+								<TextBlock Text="{Binding Name}"/>
+							</TextBlock>
+						</DataTemplate>
+					</TabControl.ItemTemplate>
+					<TabControl.ContentTemplate>
+						<DataTemplate>
+							<ListBox ItemsSource="{Binding Stamps}" Width="400" MaxHeight="600">
+								<ListBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel Orientation="Horizontal" Width="400"/>
+									</ItemsPanelTemplate>
+								</ListBox.ItemsPanel>
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<Button Click="StampButton_Click" Tag="{Binding}">
+											<Image Source="{Binding Path=FileName}" Width="64" Height="64"></Image>
+										</Button>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</DataTemplate>
+					</TabControl.ContentTemplate>
+				</TabControl>
+			</StackPanel>
+			<!--<ListBox Grid.Row="1"  x:Name="lstDebris" IsEnabled="False" Height="300" Width="200">
 				<ListBox.ItemsPanel>
 					<ItemsPanelTemplate>
 						<WrapPanel Orientation="Horizontal" Width="200"/>
@@ -66,7 +201,7 @@
 						</Button>
 					</DataTemplate>
 				</ListBox.ItemTemplate>
-			</ListBox>
+			</ListBox>-->
 			<StackPanel Grid.Row="2" Orientation="Horizontal" Margin="4, 4, 0, 0" >
 				<TextBlock Text="Walls: " Width="Auto" Height="Auto"/>
 				<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
@@ -75,43 +210,43 @@
 				<Button x:Name="btnLeftWall" Click="BtnLeftWall_Click" Margin="6, 3, 3, 3" >
 					<Viewbox Width="32" Height="32" >
 						<Canvas Width="180" Height="208">
-						<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-						<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-						<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FF4472C4" Stroke="{x:Null}" />
-						<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+							<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+							<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+							<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FF4472C4" Stroke="{x:Null}" />
+							<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
 						</Canvas>
 					</Viewbox>
 				</Button>
 				<Button x:Name="btnTopWall" Click="BtnTopWall_Click" Margin="3" >
 					<Viewbox Width="32" Height="32" >
-					  <Canvas Width="205" Height="197">
-						<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+						<Canvas Width="205" Height="197">
+							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
 							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-						<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
-						<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-					  </Canvas>
+							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
+							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+						</Canvas>
 					</Viewbox>
 
 				</Button>
 				<Button x:Name="btnRightWall" Click="BtnRightWall_Click" Margin="3" >
 					<Viewbox Width="32" Height="32" >
-					  <Canvas Width="180" Height="208">
-						<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+						<Canvas Width="180" Height="208">
+							<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
 							<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-						<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FF4472C4" Stroke="{x:Null}" />
-						<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-					  </Canvas>
+							<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FF4472C4" Stroke="{x:Null}" />
+							<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+						</Canvas>
 					</Viewbox>
 
 				</Button>
 				<Button x:Name="btnBottomWall" Click="BtnBottomWall_Click" Margin="3" >
 					<Viewbox Width="32" Height="32">
-					  <Canvas Width="205" Height="197">
-						<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+						<Canvas Width="205" Height="197">
+							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
 							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-						<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
-						<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-					  </Canvas>
+							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
+							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+						</Canvas>
 					</Viewbox>
 				</Button>
 				<Button x:Name="btnOutlineWall" Click="BtnOutlineWall_Click" Margin="3" >
@@ -125,7 +260,7 @@
 								</Path.Data>
 							</Path>
 						</Canvas>
-					</Viewbox>	
+					</Viewbox>
 				</Button>
 			</StackPanel>
 			<StackPanel Grid.Row="4" Orientation="Horizontal" Margin="4, 4, 0, 0" >
@@ -181,10 +316,7 @@
         Grid placed below the zoom and pan control that contains the zoom slider, zoom label and
         some button.
         -->
-		<Grid
-            Margin="5,5,5,5"
-            DockPanel.Dock="Bottom"
-            >
+		<Grid Grid.Column="0" Grid.Row="2" Margin="5,5,5,5">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<!-- empty space -->
@@ -291,69 +423,5 @@
                 />
 
 		</Grid>
-
-		<!--
-	    Wrap the ZoomAndPanControl in a ScrollViewer.
-	    When the scaled content that is displayed in ZoomAndPanControl is larger than the viewport onto the content
-	    ScrollViewer's scrollbars can be used to manipulate the offset of the viewport.    
-        -->
-		<ScrollViewer
-			x:Name="scroller"
-            CanContentScroll="True"
-            VerticalScrollBarVisibility="Visible"
-            HorizontalScrollBarVisibility="Visible"
-            >
-
-			<!--
-            This is the control that handles zooming and panning.
-            -->
-			<mapUI:ZoomAndPanControl
-                x:Name="zoomAndPanControl"
-                Background="LightGray"
-	            MouseDown="ZoomAndPanControl_MouseDown"
-	            MouseUp="ZoomAndPanControl_MouseUp"
-	            MouseMove="ZoomAndPanControl_MouseMove"
-	            MouseWheel="ZoomAndPanControl_MouseWheel"
-                MouseDoubleClick="ZoomAndPanControl_MouseDoubleClick"
-                >
-
-				<!-- 
-				This is the content that is displayed.
-				-->
-				<Grid
-                    x:Name="theGrid"
-                    Width="2000"
-                    Height="2000"
-					>
-					<!--
-            		This Canvas is the main part of the content that is displayed.
-					-->
-					<Canvas x:Name="content" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp"/>
-
-					<!--
-					This Canvas and Border render a drag rectangle to specify a region to zoom in on.
-					-->
-					<Canvas
-						x:Name="dragZoomCanvas"
-						Visibility="Collapsed"
-						>
-						<Border 
-							x:Name="dragZoomBorder"
-							BorderBrush="Black"
-							BorderThickness="1"
-							Background="Silver"
-							CornerRadius="1"
-							Opacity="0"
-							/>
-					</Canvas>
-				</Grid>
-			</mapUI:ZoomAndPanControl>
-		</ScrollViewer>
-	</DockPanel>
-	<!--<Grid>
-		<Viewbox x:Name="vbxMap" >
-			<Canvas x:Name="content" Background="Black" MouseMove="CvsMap_MouseMove" MouseUp="CvsMap_MouseUp" Width="150" Height="150" >
-			</Canvas>
-		</Viewbox>
-	</Grid>-->
+	</Grid>
 </Window>

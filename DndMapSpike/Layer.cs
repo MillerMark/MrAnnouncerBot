@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Media;
 using System.Windows.Controls;
+using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 using MapCore;
 
@@ -24,6 +25,17 @@ namespace DndMapSpike
 		{
 			ImageUtils.CopyImageTo(image, x, y, WriteableBitmap, cropWidth, cropHeight);
 		}
+
+		public void BlendImage(Image image, int x, int y, int cropWidth = -1, int cropHeight = -1)
+		{
+			ImageUtils.MergeImageWith(image, x, y, WriteableBitmap, cropWidth, cropHeight);
+		}
+
+		public void BlendImageOverTile(Image image, Tile tile, int xOffset = 0, int yOffset = 0, int cropWidth = -1)
+		{
+			BlendImage(image, tile.PixelX + xOffset, tile.PixelY + yOffset, cropWidth);
+		}
+
 		public void DrawImageOverTile(Image image, Tile tile, int xOffset = 0, int yOffset = 0, int cropWidth = -1)
 		{
 			DrawImageAt(image, tile.PixelX + xOffset, tile.PixelY + yOffset, cropWidth);

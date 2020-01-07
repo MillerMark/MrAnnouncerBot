@@ -1108,6 +1108,7 @@
 
 	focusItem(playerID: number, pageID: number, itemID: string): void {
 		let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
+
 		if (pageID === this.pageIndex)
 			this.addParticleEmphasis(itemID);
 		else

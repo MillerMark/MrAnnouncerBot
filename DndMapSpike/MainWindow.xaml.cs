@@ -25,6 +25,8 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
+		MapEditModes mapEditMode = MapEditModes.TileSelect;
 		const double DBL_SelectionLineThickness = 10;
 		const double DBL_HalfSelectionLineThickness = DBL_SelectionLineThickness / 2;
 		#region Fields from ZoomAndPan example
@@ -99,17 +101,30 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
 			ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
 			LoadFloorTiles();
-			LoadDebris();
+			//LoadDebris();
 			AddFileSystemWatcher();
+			BuildStampsUI();
+		}
+
+		public List<StampFolder> Directories = new List<StampFolder>();
+
+		void BuildStampsUI()
+		{
+			Directories.Clear();
+			IEnumerable<string> directories = System.IO.Directory.EnumerateDirectories(StampsPath);
+			foreach (string directory in directories)
+			{
+				Directories.Add(new StampFolder(directory));
+			}
+			tbcStamps.ItemsSource = Directories;
+			//UIElement buildStampsUI = StampUIBuilder.BuildStampsUI();
+			//spStamps.Children.Add(buildStampsUI);
 		}
 
 		private void Map_WallsChanged(object sender, EventArgs e)
 		{
-			horizontalWallLayer.ClearAll();
-			verticalWallLayer.ClearAll();
-			endCapLayer.ClearAll();
-			innerVoidLayer.ClearAll();
-			wallBuilder.BuildWalls(Map, horizontalWallLayer, verticalWallLayer, endCapLayer, innerVoidLayer);
+			wallLayer.ClearAll();
+			wallBuilder.BuildWalls(Map, wallLayer);
 		}
 
 		//public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
@@ -162,12 +177,12 @@ namespace DndMapSpike
 			ProcessRawPngFiles(pngFiles, tileTextures);
 			lstFlooring.ItemsSource = tileTextures;
 		}
-		private void LoadDebris()
-		{
-			string[] pngFiles = Directory.GetFiles(TextureUtils.DebrisFolder, "*.png");
-			ProcessRawPngFiles(pngFiles, debrisTextures);
-			lstDebris.ItemsSource = debrisTextures;
-		}
+		//private void LoadDebris()
+		//{
+		//	string[] pngFiles = Directory.GetFiles(TextureUtils.DebrisFolder, "*.png");
+		//	ProcessRawPngFiles(pngFiles, debrisTextures);
+		//	lstDebris.ItemsSource = debrisTextures;
+		//}
 
 		private void Selection_SelectionCancelled(object sender, EventArgs e)
 		{
@@ -221,7 +236,7 @@ namespace DndMapSpike
 		void EnableSelectionControls(bool isEnabled)
 		{
 			lstFlooring.IsEnabled = isEnabled;
-			lstDebris.IsEnabled = isEnabled;
+			//lstDebris.IsEnabled = isEnabled;
 		}
 
 		private void CreateSelectionOutline()
@@ -326,7 +341,7 @@ namespace DndMapSpike
 		private static void Deselect(Tile tile, FrameworkElement selectorPanel)
 		{
 			tile.Selected = false;
-			selectorPanel.Opacity = 0.8;
+			selectorPanel.Opacity = 0.4;
 		}
 
 		private static void Select(Tile tile, FrameworkElement selectorPanel)
@@ -436,13 +451,11 @@ namespace DndMapSpike
 				int xOffset;
 				int yOffset;
 				Image image;
-				Layer doorLayer;
 				if (door.Position == DoorPosition.Bottom || door.Position == DoorPosition.Top)
 				{
 					xOffset = (Tile.Width - Door.Span) / 2;
 					yOffset = (Tile.Height - Door.Thickness) / 2;
 					image = doorLightHorizontal;
-					doorLayer = horizontalDoorLayer;
 					if (door.Position == DoorPosition.Bottom)
 						yOffset += Tile.Height / 2;
 					else
@@ -453,14 +466,13 @@ namespace DndMapSpike
 					xOffset = (Tile.Width - Door.Thickness) / 2;
 					yOffset = (Tile.Height - Door.Span) / 2;
 					image = doorLightVertical;
-					doorLayer = verticalDoorLayer;
 					if (door.Position == DoorPosition.Right)
 						xOffset += Tile.Width / 2;
 					else
 						xOffset -= Tile.Width / 2;
 				}
 
-				doorLayer.DrawImageOverTile(image, tile, xOffset, yOffset);
+				doorLayer.BlendImageOverTile(image, tile, xOffset, yOffset);
 			}
 		}
 
@@ -599,6 +611,7 @@ namespace DndMapSpike
 		private void Selector_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			mouseIsDown = true;
+			lastMouseDownEventArgs = e;
 			mouseDownSender = sender as FrameworkElement;
 			clickTimer.Stop();
 			clickCounter++;
@@ -846,6 +859,13 @@ namespace DndMapSpike
 
 		private void ZoomAndPanControl_MouseMove(object sender, MouseEventArgs e)
 		{
+			if (activeStampImage != null)
+			{
+				Point curContentMousePoint = e.GetPosition(content);
+				Canvas.SetLeft(activeStampImage, curContentMousePoint.X - activeStampImage.Source.Width / 2);
+				Canvas.SetTop(activeStampImage, curContentMousePoint.Y - activeStampImage.Source.Height / 2);
+				return;
+			}
 			if (mouseHandlingMode == MouseHandlingMode.Panning)
 			{
 				//
@@ -896,6 +916,8 @@ namespace DndMapSpike
 
 		private void ZoomAndPanControl_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+			if (MapEditMode != MapEditModes.TileSelect)
+				return;
 			content.Focus();
 			Keyboard.Focus(content);
 
@@ -972,6 +994,22 @@ namespace DndMapSpike
 		{
 			clickTimer.Stop();
 
+			if (MapEditMode != MapEditModes.TileSelect)
+			{
+				if (activeStamp != null && lastMouseDownEventArgs != null)
+				{
+					Dispatcher.Invoke(() =>
+					{
+						Point curContentMousePoint = lastMouseDownEventArgs.GetPosition(content);
+						int x = (int)Math.Round(curContentMousePoint.X);
+						int y = (int)Math.Round(curContentMousePoint.Y);
+						stampsLayer.AddStampNow(new Stamp(activeStamp.FileName, x, y));
+					});
+					return;
+				}
+				return;
+			}
+
 			Dispatcher.Invoke(() =>
 			{
 				Tile baseSpace = GetTile(mouseDownSender);
@@ -1024,7 +1062,9 @@ namespace DndMapSpike
 		{
 			if (!(sender is Button button))
 				return;
-			BaseTexture texture = (BaseTexture)button.Tag;
+			if (!(button.Tag is BaseTexture texture))
+				return;
+			
 			List<Tile> selection = Map.GetSelection();
 			RemoveRubberBandSelector();
 			foreach (Tile tile in selection)
@@ -1068,8 +1108,6 @@ namespace DndMapSpike
 			debrisLayer.DrawImageOverTile(image, tile);
 		}
 
-
-
 		private void SetCanvasSizeFromMap()
 		{
 			content.Width = Map.WidthPx;
@@ -1080,27 +1118,21 @@ namespace DndMapSpike
 		}
 
 		Layer depthLayer = new Layer();
-		Layer verticalDoorLayer = new Layer();
-		Layer horizontalDoorLayer = new Layer();
+		Layer doorLayer = new Layer();
 		Layer debrisLayer = new Layer();
-		Layer horizontalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
-		Layer verticalWallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
-		Layer endCapLayer = new Layer() { OuterMargin = Tile.Width / 2 };
-		Layer innerVoidLayer = new Layer() { OuterMargin = Tile.Width / 2 };
+		StampsLayer stampsLayer = new StampsLayer();
+		Layer wallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer floorLayer = new Layer();
 		Layers allLayers = new Layers();
 
 		void InitializeLayers()
 		{
 			allLayers.Add(floorLayer);
-			allLayers.Add(debrisLayer);
 			allLayers.Add(depthLayer);
-			allLayers.Add(verticalDoorLayer);
-			allLayers.Add(horizontalDoorLayer);
-			allLayers.Add(horizontalWallLayer);
-			allLayers.Add(verticalWallLayer);
-			allLayers.Add(endCapLayer);
-			allLayers.Add(innerVoidLayer);
+			allLayers.Add(debrisLayer);
+			allLayers.Add(stampsLayer);
+			allLayers.Add(doorLayer);
+			allLayers.Add(wallLayer);
 		}
 
 		Image imageHeavyTile;
@@ -1143,8 +1175,7 @@ namespace DndMapSpike
 
 		void UpdateDoors()
 		{
-			horizontalDoorLayer.ClearAll();
-			verticalDoorLayer.ClearAll();
+			doorLayer.ClearAll();
 			foreach (Tile tile in Map.Tiles)
 				AddDoors(tile);
 		}
@@ -1251,6 +1282,84 @@ namespace DndMapSpike
 		{
 			AddDoors(DoorPosition.Bottom);
 		}
+
+		private void BtnSelect_MouseMove(object sender, MouseEventArgs e)
+		{
+
+		}
+
+		private void BtnSelect_Checked(object sender, RoutedEventArgs e)
+		{
+			MapEditMode = MapEditModes.TileSelect;
+		}
+
+		private void BtnStamp_Checked(object sender, RoutedEventArgs e)
+		{
+			ClearSelection();
+			MapEditMode = MapEditModes.Stamp;
+		}
+
+		public MapEditModes MapEditMode
+		{
+			get
+			{
+				return mapEditMode;
+			}
+			set
+			{
+				if (mapEditMode == value)
+				{
+					return;
+				}
+
+				mapEditMode = value;
+				OnEditModeChanged();
+			}
+		}
+
+		void OnEditModeChanged()
+		{
+			if (MapEditMode == MapEditModes.Stamp)
+			{
+				Cursor = Cursors.Hand;
+				lstFlooring.Visibility = Visibility.Collapsed;
+				spStamps.Visibility = Visibility.Visible;
+				if (activeStampImage != null)
+					Panel.SetZIndex(activeStampImage, int.MaxValue);
+			}
+			else if (MapEditMode == MapEditModes.TileSelect)
+			{
+				Cursor = Cursors.Arrow;
+				lstFlooring.Visibility = Visibility.Visible;
+				spStamps.Visibility = Visibility.Collapsed;
+				content.Children.Remove(activeStampImage);
+				activeStampImage = null;
+				activeStamp = null;
+			}
+		}
+
+		Image activeStampImage;
+		Stamp activeStamp;
+		MouseButtonEventArgs lastMouseDownEventArgs;
+		private void StampButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (activeStampImage != null)
+				content.Children.Remove(activeStampImage);
+			if (!(sender is Button button))
+				return;
+			if (!(button.Tag is Stamp knownStamp))
+				return;
+
+			activeStamp = knownStamp;
+			activeStampImage = new Image();
+			activeStampImage.Source = new BitmapImage(new Uri(knownStamp.FileName));
+			activeStampImage.Opacity = 0.5;
+			content.Children.Add(activeStampImage);
+			activeStampImage.IsHitTestVisible = false;
+			Panel.SetZIndex(activeStampImage, int.MaxValue);
+		}
+
+
 
 		//private void CvsTestCopy_MouseDown(object sender, MouseButtonEventArgs e)
 		//{
