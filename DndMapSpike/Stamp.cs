@@ -7,15 +7,10 @@ using System.Windows.Media.Imaging;
 
 namespace DndMapSpike
 {
-	public enum StampRotation
-	{
-		Zero,
-		Ninety,
-		OneEighty,
-		TwoSeventy
-	}
 	public class Stamp
 	{
+		public int RelativeX { get; set; }
+		public int RelativeY { get; set; }
 		StampRotation rotation;
 		public StampRotation Rotation
 		{

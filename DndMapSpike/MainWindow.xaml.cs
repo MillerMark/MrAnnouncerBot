@@ -355,6 +355,7 @@ namespace DndMapSpike
 
 		private void ClearSelectionUI()
 		{
+			selectionCanvas.Children.Clear();
 			foreach (Tile tile in Map.Tiles)
 				if (tile.SelectorPanel is FrameworkElement selectorPanel)
 					selectorPanel.Opacity = 0;
@@ -363,9 +364,8 @@ namespace DndMapSpike
 		private void Selection_SelectionChanged(object sender, EventArgs e)
 		{
 			ShowSelectionRubberBand();
-			//if (selection.SelectionType == SelectionType.Replace)
-			//	ClearSelectionUI();
 		}
+
 		void ShowSelectionRubberBand()
 		{
 			tileSelection.GetPixelRect(out int left, out int top, out int width, out int height);
@@ -397,7 +397,7 @@ namespace DndMapSpike
 		private FrameworkElement GetSelectorPanel()
 		{
 			Rectangle selector = GetTileRectangle(Colors.DimGray);
-			Panel.SetZIndex(selector, int.MaxValue);
+			Panel.SetZIndex(selector, int.MaxValue - 1);
 			selector.MouseDown += Selector_MouseDown;
 			selector.Opacity = 0;
 			return selector;
@@ -497,7 +497,19 @@ namespace DndMapSpike
 			LoadFinalCanvasElements();
 			SelectAllRoomsAndCorridors();
 			OutlineWalls();
+			AddSelectionCanvas();
 			ClearSelection();
+		}
+		void AddSelectionCanvas()
+		{
+			selectionCanvas = new Canvas();
+			content.Children.Add(selectionCanvas);
+			MoveSelectionCanvasToTop();
+		}
+
+		private void MoveSelectionCanvasToTop()
+		{
+			Panel.SetZIndex(selectionCanvas, int.MaxValue);
 		}
 
 		void SelectAllRooms()
@@ -847,19 +859,29 @@ namespace DndMapSpike
 			//}
 		}
 
+		void DragCanvas(Canvas canvas, MouseEventArgs e)
+		{
+			Point cursor = e.GetPosition(content);
+			if (draggingStamps && e.LeftButton == MouseButtonState.Released)
+			{
+				StopDraggingStamps(cursor);
+				return;
+			}
+			Canvas.SetLeft(canvas, cursor.X - lastStampHalfWidth);
+			Canvas.SetTop(canvas, cursor.Y - lastStampHalfHeight);
+		}
+
 		bool draggingStamps;
 		private void ZoomAndPanControl_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (activeStampCanvas != null)
 			{
-				Point cursor = e.GetPosition(content);
-				if (draggingStamps && e.LeftButton == MouseButtonState.Released)
-				{
-					StopDraggingStamps(cursor);
-					return;
-				}
-				Canvas.SetLeft(activeStampCanvas, cursor.X - stampMouseOffsetX);
-				Canvas.SetTop(activeStampCanvas, cursor.Y - stampMouseOffsetY);
+				DragCanvas(activeStampCanvas, e);
+				return;
+			}
+			if (selectDragStampCanvas != null)
+			{
+				DragCanvas(selectDragStampCanvas, e);
 				return;
 			}
 			if (mouseHandlingMode == MouseHandlingMode.Panning)
@@ -922,11 +944,7 @@ namespace DndMapSpike
 			}
 
 			draggingStamps = false;
-			if (activeStampCanvas != null)
-			{
-				content.Children.Remove(activeStampCanvas);
-				activeStampCanvas = null;
-			}
+			ClearFloatingCanvases();
 		}
 
 		private void MoveSelectedStamps(int deltaX, int deltaY)
@@ -941,7 +959,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			StampsAreSelected();
+			UpdateStampSelection();
 		}
 
 		private void ZoomAndPanControl_MouseDown(object sender, MouseButtonEventArgs e)
@@ -1136,7 +1154,10 @@ namespace DndMapSpike
 
 
 				if (SelectedStamps.Count > 0)
-					StampsAreSelected();
+				{
+					draggingStamps = true;
+					UpdateStampSelection();
+				}
 				else
 					StampsAreNotSelected();
 				return;
@@ -1162,24 +1183,102 @@ namespace DndMapSpike
 			lstFlooring.Visibility = Visibility.Visible;
 		}
 
-		void CreateFloatingStampsForSelection()
+		void AddSelectedStampsToFloatingUI()
 		{
-			draggingStamps = true;
-			if (activeStampCanvas != null)
-				activeStampCanvas.Children.Clear();
+			ClearFloatingCanvases();
+
+			// TODO: Figure out top left of selection
 			foreach (Stamp stamp in SelectedStamps)
-				CreateFloatingStamp(stamp);
+			{
+				// TODO: Figure out x and y relative to top left of selection.
+				CreateFloatingStamp(ref selectDragStampCanvas, stamp);
+			}
 		}
-		private void StampsAreSelected()
+		private void UpdateStampSelection()
 		{
-			GetStampSelectedBounds(out int left, out int top, out int width, out int height);
-			ShowSelectionRubberBand(left, top, width, height);
+			CollapseFlooringControls();
+			AddSelectedStampsToFloatingUI();
+			ShowStampSelectionUI();
+		}
+
+		void CreateResizeCorner(int left, int top, SizeDirection sizeDirection, Stamp stamp)
+		{
+			Ellipse ellipse = new Ellipse();
+			const double sizeDiameter = 10;
+			ellipse.Width = sizeDiameter;
+			ellipse.Height = sizeDiameter;
+			ellipse.Fill = Brushes.White;
+			ellipse.Stroke = Brushes.Gray;
+			Canvas.SetLeft(ellipse, left - sizeDiameter / 2);
+			Canvas.SetTop(ellipse, top - sizeDiameter / 2);
+			switch (sizeDirection)
+			{
+				case SizeDirection.NorthWest:
+				case SizeDirection.SouthEast:
+					ellipse.Cursor = Cursors.SizeNWSE;
+					break;
+				case SizeDirection.NorthEast:
+				case SizeDirection.SouthWest:
+					ellipse.Cursor = Cursors.SizeNESW;
+					break;
+			}
+			ellipse.Tag = new ResizeTracker(stamp, sizeDirection);
+			ellipse.MouseDown += ResizeTracker_MouseDown;
+			ellipse.MouseMove += Ellipse_MouseMove;
+			ellipse.MouseUp += Ellipse_MouseUp;
+			selectionCanvas.Children.Add(ellipse);
+		}
+
+		private void Ellipse_MouseUp(object sender, MouseButtonEventArgs e)
+		{
+		}
+
+		private void Ellipse_MouseMove(object sender, MouseEventArgs e)
+		{
+		}
+
+		private void ResizeTracker_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+		}
+
+		void AddSelectionUI(Stamp stamp)
+		{
+			
+			// stamp.Width;
+			Rectangle selectionRect = new Rectangle();
+			selectionRect.Width = stamp.Width;
+			selectionRect.Height = stamp.Height;
+			int left = stamp.GetLeft();
+			int top = stamp.GetTop();
+			Canvas.SetLeft(selectionRect, left);
+			Canvas.SetTop(selectionRect, top);
+			selectionRect.Stroke = Brushes.Gray;
+			selectionRect.StrokeThickness = 1;
+			selectionCanvas.Children.Add(selectionRect);
+			int right = left + stamp.Width;
+			int bottom = top + stamp.Height;
+			CreateResizeCorner(left, top, SizeDirection.NorthWest, stamp);
+			CreateResizeCorner(right, top, SizeDirection.NorthEast, stamp);
+			CreateResizeCorner(left, bottom, SizeDirection.SouthWest, stamp);
+			CreateResizeCorner(right, bottom, SizeDirection.SouthEast, stamp);
+		}
+
+		void ShowStampSelectionUI()
+		{
+			ClearSelectionUI();
+			foreach (Stamp stamp in SelectedStamps)
+				AddSelectionUI(stamp);
+
+			MoveSelectionCanvasToTop();
+		}
+
+		private void CollapseFlooringControls()
+		{
 			spWallControls.Visibility = Visibility.Collapsed;
 			spWallLabels.Visibility = Visibility.Collapsed;
 			spDoorLabels.Visibility = Visibility.Collapsed;
 			spDoorControls.Visibility = Visibility.Collapsed;
 			lstFlooring.Visibility = Visibility.Collapsed;
-			CreateFloatingStampsForSelection();
 		}
 
 		private void HandleTileClick(Tile baseSpace)
@@ -1496,29 +1595,60 @@ namespace DndMapSpike
 		{
 			if (MapEditMode == MapEditModes.Stamp)
 			{
-				SelectedStamps.Clear();
-				SetRubberBandVisibility(Visibility.Hidden);
-				Cursor = Cursors.Hand;
-				lstFlooring.Visibility = Visibility.Collapsed;
-				spStamps.Visibility = Visibility.Visible;
-				if (activeStampCanvas != null)
-					Panel.SetZIndex(activeStampCanvas, int.MaxValue);
+				EnterStampMode();
 			}
 			else if (MapEditMode == MapEditModes.Select)
 			{
-				Cursor = Cursors.Arrow;
-				lstFlooring.Visibility = Visibility.Visible;
-				spStamps.Visibility = Visibility.Collapsed;
-				content.Children.Remove(activeStampCanvas);
-				activeStampCanvas = null;
-				activeStamp = null;
+				EnterSelectMode();
 			}
 		}
 
+		private void EnterSelectMode()
+		{
+			Cursor = Cursors.Arrow;
+			lstFlooring.Visibility = Visibility.Visible;
+			spStamps.Visibility = Visibility.Collapsed;
+			ClearFloatingCanvases();
+			activeStamp = null;
+		}
+
+		private void EnterStampMode()
+		{
+			SelectedStamps.Clear();
+			SetRubberBandVisibility(Visibility.Hidden);
+			Cursor = Cursors.Hand;
+			lstFlooring.Visibility = Visibility.Collapsed;
+			spStamps.Visibility = Visibility.Visible;
+			MoveFloatingCanvasesToTop();
+		}
+
+		private void MoveFloatingCanvasesToTop()
+		{
+			if (activeStampCanvas != null)
+				Panel.SetZIndex(activeStampCanvas, int.MaxValue);
+			if (selectDragStampCanvas != null)
+				Panel.SetZIndex(selectDragStampCanvas, int.MaxValue);
+		}
+
 		Canvas activeStampCanvas;
-		Image activeStampImage;
+		Canvas selectDragStampCanvas;
 		Stamp activeStamp;
 		MouseButtonEventArgs lastMouseDownEventArgs;
+
+		void ClearFloatingCanvases()
+		{
+			ClearCanvas(ref selectDragStampCanvas);
+			ClearCanvas(ref activeStampCanvas);
+		}
+
+		private void ClearCanvas(ref Canvas canvas)
+		{
+			if (canvas != null)
+			{
+				content.Children.Remove(canvas);
+				canvas = null;
+			}
+		}
 
 		private void StampButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -1528,20 +1658,21 @@ namespace DndMapSpike
 				return;
 			if (!(button.Tag is Stamp knownStamp))
 				return;
-			CreateFloatingStamp(knownStamp);
+			CreateFloatingStamp(ref activeStampCanvas, knownStamp);
 		}
 
-		double stampMouseOffsetX;
-		double stampMouseOffsetY;
-		void CreateFloatingStamp(Stamp knownStamp, int x = 0, int y = 0)
+		double lastStampHalfWidth;
+		double lastStampHalfHeight;
+		Canvas selectionCanvas;
+		void CreateFloatingStamp(ref Canvas canvas, Stamp knownStamp, int x = 0, int y = 0)
 		{
 			activeStamp = knownStamp;
-			if (activeStampCanvas == null)
+			if (canvas == null)
 			{
-				activeStampCanvas = new Canvas();
-				content.Children.Add(activeStampCanvas);
-				activeStampCanvas.IsHitTestVisible = false;
-				Panel.SetZIndex(activeStampCanvas, int.MaxValue);
+				canvas = new Canvas();
+				content.Children.Add(canvas);
+				canvas.IsHitTestVisible = false;
+				Panel.SetZIndex(canvas, int.MaxValue);
 			}
 			Image image = new Image();
 			image.Source = new BitmapImage(new Uri(knownStamp.FileName));
@@ -1566,9 +1697,9 @@ namespace DndMapSpike
 				image.LayoutTransform = transformGroup;
 			image.Opacity = 0.5;
 			image.IsHitTestVisible = false;
-			stampMouseOffsetX = image.Source.Width / 2;
-			stampMouseOffsetY = image.Source.Height / 2;
-			activeStampCanvas.Children.Add(image);
+			lastStampHalfWidth = image.Source.Width / 2;
+			lastStampHalfHeight = image.Source.Height / 2;
+			canvas.Children.Add(image);
 			Canvas.SetLeft(image, x);
 			Canvas.SetTop(image, y);
 		}

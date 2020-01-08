@@ -65,10 +65,13 @@
     <Compile Include="MapEditModes.cs" />
     <Compile Include="MapSelection.cs" />
     <Compile Include="RandomTexture.cs" />
+    <Compile Include="ResizeTracker.cs" />
     <Compile Include="SelectionType.cs" />
     <Compile Include="SimpleTexture.cs" />
+    <Compile Include="SizeDirection.cs" />
     <Compile Include="Stamp.cs" />
     <Compile Include="StampFolder.cs" />
+    <Compile Include="StampRotation.cs" />
     <Compile Include="StampsLayer.cs" />
     <Compile Include="TextureUtils.cs" />
     <Compile Include="WallBuilder.cs" />
