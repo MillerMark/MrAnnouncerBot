@@ -5,7 +5,7 @@ namespace DndMapSpike
 {
 	public enum MapEditModes
 	{
-		TileSelect,
+		Select,
 		Stamp
 	}
 }

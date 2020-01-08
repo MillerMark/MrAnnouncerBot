@@ -25,8 +25,9 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		List<Stamp> selectedStamps;
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
-		MapEditModes mapEditMode = MapEditModes.TileSelect;
+		MapEditModes mapEditMode = MapEditModes.Select;
 		const double DBL_SelectionLineThickness = 10;
 		const double DBL_HalfSelectionLineThickness = DBL_SelectionLineThickness / 2;
 		#region Fields from ZoomAndPan example
@@ -68,7 +69,7 @@ namespace DndMapSpike
 		#endregion
 		List<BaseTexture> tileTextures = new List<BaseTexture>();
 		List<BaseTexture> debrisTextures = new List<BaseTexture>();
-		MapSelection selection;
+		MapSelection tileSelection;
 		WallBuilder wallBuilder = new WallBuilder();
 		int clickCounter;
 		public Map Map { get; set; }
@@ -82,10 +83,10 @@ namespace DndMapSpike
 			InitializeComponent();
 			Map = new Map();
 			Map.WallsChanged += Map_WallsChanged;
-			selection = new MapSelection();
-			selection.SelectionChanged += Selection_SelectionChanged;
-			selection.SelectionCommitted += Selection_SelectionCommitted;
-			selection.SelectionCancelled += Selection_SelectionCancelled;
+			tileSelection = new MapSelection();
+			tileSelection.SelectionChanged += Selection_SelectionChanged;
+			tileSelection.SelectionCommitted += Selection_SelectionCommitted;
+			tileSelection.SelectionCancelled += Selection_SelectionCancelled;
 
 			//ImportDonJonMap("The Delve of Lamprica.txt");
 			//ImportDonJonMap("The Pit of Alan the Necromancer.txt");
@@ -117,8 +118,6 @@ namespace DndMapSpike
 				Directories.Add(new StampFolder(directory));
 			}
 			tbcStamps.ItemsSource = Directories;
-			//UIElement buildStampsUI = StampUIBuilder.BuildStampsUI();
-			//spStamps.Children.Add(buildStampsUI);
 		}
 
 		private void Map_WallsChanged(object sender, EventArgs e)
@@ -127,13 +126,6 @@ namespace DndMapSpike
 			wallBuilder.BuildWalls(Map, wallLayer);
 		}
 
-		//public static void CopyRegionIntoImage(System.Drawing.Bitmap srcBitmap, System.Drawing.Rectangle srcRegion, ref System.Drawing.Bitmap destBitmap, System.Drawing.Rectangle destRegion)
-		//{
-		//	using (System.Drawing.Graphics grD = System.Drawing.Graphics.FromImage(destBitmap))
-		//	{
-		//		grD.DrawImage(srcBitmap, destRegion, srcRegion, System.Drawing.GraphicsUnit.Pixel);
-		//	}
-		//}
 
 		FileSystemWatcher fileSystemWatcher;
 		void AddFileSystemWatcher()
@@ -177,12 +169,6 @@ namespace DndMapSpike
 			ProcessRawPngFiles(pngFiles, tileTextures);
 			lstFlooring.ItemsSource = tileTextures;
 		}
-		//private void LoadDebris()
-		//{
-		//	string[] pngFiles = Directory.GetFiles(TextureUtils.DebrisFolder, "*.png");
-		//	ProcessRawPngFiles(pngFiles, debrisTextures);
-		//	lstDebris.ItemsSource = debrisTextures;
-		//}
 
 		private void Selection_SelectionCancelled(object sender, EventArgs e)
 		{
@@ -192,7 +178,7 @@ namespace DndMapSpike
 		private void Selection_SelectionCommitted(object sender, EventArgs e)
 		{
 
-			if (selection.SelectionType == SelectionType.Replace)
+			if (tileSelection.SelectionType == SelectionType.Replace)
 			{
 				Map.ClearSelection();
 				ClearSelectionUI();
@@ -201,18 +187,18 @@ namespace DndMapSpike
 			ShowSelection();
 
 			bool selectionExists = true;
-			if (selection.SelectionType == SelectionType.Remove || selection.SelectionType == SelectionType.None)
+			if (tileSelection.SelectionType == SelectionType.Remove || tileSelection.SelectionType == SelectionType.None)
 				selectionExists = Map.SelectionExists();
 
-			if (selection.SelectionType == SelectionType.Replace)
-				selection.Clear();
+			if (tileSelection.SelectionType == SelectionType.Replace)
+				tileSelection.Clear();
 
 			EnableSelectionControls(selectionExists);
 		}
 
 		private void ShowSelection()
 		{
-			selection.GetPixelRect(out int left, out int top, out int width, out int height);
+			tileSelection.GetPixelRect(out int left, out int top, out int width, out int height);
 			List<Tile> tilesInPixelRect = Map.GetTilesInPixelRect(left, top, width, height);
 			List<Tile> tilesOutsidePixelRect = Map.GetTilesOutsidePixelRect(left, top, width, height);
 			SelectAllTiles(tilesInPixelRect, tilesOutsidePixelRect);
@@ -317,7 +303,7 @@ namespace DndMapSpike
 			{
 				if (tile.SelectorPanel is FrameworkElement selectorPanel)
 				{
-					switch (selection.SelectionType)
+					switch (tileSelection.SelectionType)
 					{
 						case SelectionType.Replace:
 							if (select)
@@ -361,7 +347,7 @@ namespace DndMapSpike
 		{
 			content.Children.Remove(outline);
 			outline = new System.Windows.Shapes.Path();
-			selection.Clear();
+			tileSelection.Clear();
 			Map.ClearSelection();
 			ClearSelectionUI();
 			EnableSelectionControls(false);
@@ -382,8 +368,14 @@ namespace DndMapSpike
 		}
 		void ShowSelectionRubberBand()
 		{
-			int margin = selection.BorderThickness;
-			selection.GetPixelRect(out int left, out int top, out int width, out int height);
+			tileSelection.GetPixelRect(out int left, out int top, out int width, out int height);
+			ShowSelectionRubberBand(left, top, width, height);
+		}
+
+		private void ShowSelectionRubberBand(int left, int top, int width, int height)
+		{
+			int margin = tileSelection.BorderThickness;
+
 			SetSelectorSize(rubberBandOutsideSelector, left - margin, top - margin, width + 2 * margin, height + 2 * margin);
 			SetSelectorSize(rubberBandInsideSelector, left, top, width, height);
 			SetSelectorSize(rubberBandFillSelector, left, top, width, height);
@@ -544,13 +536,13 @@ namespace DndMapSpike
 		{
 			rubberBandOutsideSelector = new Rectangle();
 			rubberBandOutsideSelector.Stroke = Brushes.Black;
-			rubberBandOutsideSelector.StrokeThickness = selection.BorderThickness;
+			rubberBandOutsideSelector.StrokeThickness = tileSelection.BorderThickness;
 			rubberBandOutsideSelector.Opacity = 0.85;
 
 			rubberBandInsideSelector = new Rectangle();
 			rubberBandInsideSelector.Stroke = Brushes.White;
 			rubberBandInsideSelector.Opacity = 0.85;
-			rubberBandInsideSelector.StrokeThickness = selection.BorderThickness;
+			rubberBandInsideSelector.StrokeThickness = tileSelection.BorderThickness;
 
 			rubberBandFillSelector = new Rectangle();
 			rubberBandFillSelector.Fill = Brushes.Blue;
@@ -590,28 +582,20 @@ namespace DndMapSpike
 			content.Children.Add(element);
 		}
 
-		//private void AddFloorOverlay(Tile tile)
-		//{
-		//	string heavyTilePath = System.IO.Path.Combine(TileFolder, "TileOverlay", "Heavy.png");
-		//	Image imageHeavyTile = new Image();
-		//	imageHeavyTile.Source = new BitmapImage(new Uri(heavyTilePath));
-		//	imageHeavyTile.IsHitTestVisible = false;
-		//	Canvas.SetLeft(imageHeavyTile, tile.Column * Map.TileSizePx);
-		//	Canvas.SetTop(imageHeavyTile, tile.Row * Map.TileSizePx);
-		//	content.Children.Add(imageHeavyTile);
-		//	tile.UIElementOverlay = imageHeavyTile;
-		//}
-
 		Tile GetTileUnderMouse(Point position)
 		{
 			Map.PixelsToColumnRow(position.X, position.Y, out int column, out int row);
 			return Map.GetTile(column, row);
 		}
 
+		Point lastMouseDownPoint;
+		DateTime lastMouseDownTime;
 		private void Selector_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			mouseIsDown = true;
 			lastMouseDownEventArgs = e;
+			lastMouseDownPoint = lastMouseDownEventArgs.GetPosition(content);
+			lastMouseDownTime = DateTime.Now;
 			mouseDownSender = sender as FrameworkElement;
 			clickTimer.Stop();
 			clickCounter++;
@@ -621,21 +605,21 @@ namespace DndMapSpike
 		bool mouseIsDown;
 		private void CvsMap_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (!selection.Selecting)
+			if (!tileSelection.Selecting)
 				return;
 
 			Tile tile = GetTileUnderMouse(e.GetPosition(content));
 			if (tile != null)
-				selection.SelectTo(tile);
+				tileSelection.SelectTo(tile);
 		}
 
 		private void CvsMap_MouseUp(object sender, MouseButtonEventArgs e)
 		{
 			mouseIsDown = false;
-			if (!selection.Selecting)
+			if (!tileSelection.Selecting)
 				return;
 			content.ReleaseMouseCapture();
-			selection.Commit();
+			tileSelection.Commit();
 		}
 
 		private void ZoomOut_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -707,6 +691,12 @@ namespace DndMapSpike
 
 		private void ZoomAndPanControl_MouseUp(object sender, MouseButtonEventArgs e)
 		{
+			if (draggingStamps)
+			{
+				Point cursor = e.GetPosition(content);
+				StopDraggingStamps(cursor);
+				return;
+			}
 			if (mouseHandlingMode != MouseHandlingMode.None)
 			{
 				if (mouseHandlingMode == MouseHandlingMode.Zooming)
@@ -857,13 +847,19 @@ namespace DndMapSpike
 			//}
 		}
 
+		bool draggingStamps;
 		private void ZoomAndPanControl_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (activeStampImage != null)
+			if (activeStampCanvas != null)
 			{
-				Point curContentMousePoint = e.GetPosition(content);
-				Canvas.SetLeft(activeStampImage, curContentMousePoint.X - activeStampImage.Source.Width / 2);
-				Canvas.SetTop(activeStampImage, curContentMousePoint.Y - activeStampImage.Source.Height / 2);
+				Point cursor = e.GetPosition(content);
+				if (draggingStamps && e.LeftButton == MouseButtonState.Released)
+				{
+					StopDraggingStamps(cursor);
+					return;
+				}
+				Canvas.SetLeft(activeStampCanvas, cursor.X - stampMouseOffsetX);
+				Canvas.SetTop(activeStampCanvas, cursor.Y - stampMouseOffsetY);
 				return;
 			}
 			if (mouseHandlingMode == MouseHandlingMode.Panning)
@@ -914,9 +910,43 @@ namespace DndMapSpike
 			}
 		}
 
+		private void StopDraggingStamps(Point curContentMousePoint)
+		{
+			double secondsSinceMouseDown = (DateTime.Now - lastMouseDownTime).TotalSeconds;
+			int deltaX = (int)Math.Round(curContentMousePoint.X - lastMouseDownPoint.X);
+			int deltaY = (int)Math.Round(curContentMousePoint.Y - lastMouseDownPoint.Y);
+			int totalXY = Math.Abs(deltaX) + Math.Abs(deltaY);
+			if (secondsSinceMouseDown > 0.6 || secondsSinceMouseDown > 0.3 && totalXY > 20)
+			{
+				MoveSelectedStamps(deltaX, deltaY);
+			}
+
+			draggingStamps = false;
+			if (activeStampCanvas != null)
+			{
+				content.Children.Remove(activeStampCanvas);
+				activeStampCanvas = null;
+			}
+		}
+
+		private void MoveSelectedStamps(int deltaX, int deltaY)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Move(deltaX, deltaY);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			StampsAreSelected();
+		}
+
 		private void ZoomAndPanControl_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			if (MapEditMode != MapEditModes.TileSelect)
+			if (MapEditMode != MapEditModes.Select)
 				return;
 			content.Focus();
 			Keyboard.Focus(content);
@@ -957,7 +987,7 @@ namespace DndMapSpike
 			if (!(baseSpace is FloorSpace floorSpace))
 				return;
 
-			selection.SelectionType = selectionType;
+			tileSelection.SelectionType = selectionType;
 
 			//if (selection.SelectionType == SelectionType.Replace)
 			//{
@@ -985,7 +1015,7 @@ namespace DndMapSpike
 
 		private void FloodSelectAll<T>(SelectionType selectionType) where T : MapRegion
 		{
-			selection.SelectionType = selectionType;
+			tileSelection.SelectionType = selectionType;
 			List<Tile> allRegionTiles = Map.GetAllMatchingTiles<T>();
 			SelectAllTiles(allRegionTiles);
 		}
@@ -994,58 +1024,203 @@ namespace DndMapSpike
 		{
 			clickTimer.Stop();
 
-			if (MapEditMode != MapEditModes.TileSelect)
+			try
 			{
-				if (activeStamp != null && lastMouseDownEventArgs != null)
+				if (MapEditMode == MapEditModes.Stamp)
+					HandleStampMouseDown();
+				else if (MapEditMode == MapEditModes.Select)
+					HandleMouseDownSelectForceUI();
+			}
+			finally
+			{
+				clickCounter = 0;
+			}
+		}
+
+		private void HandleStampMouseDown()
+		{
+			if (activeStamp != null && lastMouseDownEventArgs != null)
+			{
+				AddStampAtLastMouseDownForceUI();
+			}
+		}
+
+		private void AddStampAtLastMouseDownForceUI()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				AddStampAtLastMouseDown();
+			});
+		}
+
+		private void AddStampAtLastMouseDown()
+		{
+			int x = (int)Math.Round(lastMouseDownPoint.X);
+			int y = (int)Math.Round(lastMouseDownPoint.Y);
+			stampsLayer.AddStampNow(new Stamp(activeStamp.FileName, x, y));
+		}
+
+		private void HandleMouseDownSelectForceUI()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				HandleMouseDownSelect();
+			});
+		}
+
+		Stamp GetStampAt(Point point)
+		{
+			Stamp stamp = stampsLayer.GetStampAt(point);
+			return stamp;
+		}
+
+		
+		public List<Stamp> SelectedStamps
+		{
+			get
+			{
+				if (selectedStamps == null)
+					selectedStamps = new List<Stamp>();
+
+				return selectedStamps;
+			}
+			set
+			{
+				selectedStamps = value;
+			}
+		}
+
+		void GetStampSelectedBounds(out int left, out int top, out int width, out int height)
+		{
+			left = int.MaxValue;
+			top = int.MaxValue;
+			int right = 0;
+			int bottom = 0;
+			foreach (Stamp stamp in SelectedStamps)
+			{
+				int stampLeft = stamp.GetLeft();
+				int stampTop = stamp.GetTop();
+				int stampRight = stampLeft + stamp.Width;
+				int stampBottom = stampTop + stamp.Height;
+				if (stampLeft < left)
+					left = stampLeft;
+				if (stampTop < top)
+					top = stampTop;
+				if (stampRight > right)
+					right = stampRight;
+				if (stampBottom > bottom)
+					bottom = stampBottom;
+			}
+			width = Math.Max(0, right - left);
+			height = Math.Max(0, bottom - top);
+		}
+		private void HandleMouseDownSelect()
+		{
+			Stamp stamp = GetStampAt(lastMouseDownPoint);
+			if (stamp != null)
+			{
+				ClearSelection();
+				SelectionType selectionType = GetSelectionType(SelectedStamps.Count > 0);
+				if (selectionType == SelectionType.Replace)
 				{
-					Dispatcher.Invoke(() =>
-					{
-						Point curContentMousePoint = lastMouseDownEventArgs.GetPosition(content);
-						int x = (int)Math.Round(curContentMousePoint.X);
-						int y = (int)Math.Round(curContentMousePoint.Y);
-						stampsLayer.AddStampNow(new Stamp(activeStamp.FileName, x, y));
-					});
-					return;
+					if (SelectedStamps.IndexOf(stamp) < 0)
+						SelectedStamps.Clear();
 				}
+
+				if (selectionType == SelectionType.Remove)
+				{
+					SelectedStamps.Remove(stamp);
+				}
+				else if (SelectedStamps.IndexOf(stamp) < 0)
+					SelectedStamps.Add(stamp);
+
+
+				if (SelectedStamps.Count > 0)
+					StampsAreSelected();
+				else
+					StampsAreNotSelected();
 				return;
 			}
 
-			Dispatcher.Invoke(() =>
-			{
-				Tile baseSpace = GetTile(mouseDownSender);
-				if (baseSpace != null)
-				{
-					if (clickCounter == 1)
-					{
-						if (mouseIsDown && !Keyboard.IsKeyDown(Key.Space))
-						{
-							if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) // Alt key is reserved for zooming into a rect.
-								return;
-							SelectionType selectionType = GetSelectionType();
-
-							if (selectionType == SelectionType.Replace)
-								ClearSelection();
-
-							SetRubberBandVisibility(Visibility.Visible);
-							selection.StartSelection(baseSpace, selectionType);
-							content.CaptureMouse();
-						}
-					}
-					else if (clickCounter == 2)
-					{
-						FloodSelect(baseSpace, GetSelectionType());
-					}
-					else if (clickCounter == 3)
-					{
-						FloodSelectAll(baseSpace, GetSelectionType());
-					}
-				}
-			});
-
-			clickCounter = 0;
+			Tile baseSpace = GetTile(mouseDownSender);
+			if (baseSpace != null)
+				HandleTileClick(baseSpace);
 		}
 
-		private SelectionType GetSelectionType()
+		private void StampsAreNotSelected()
+		{
+			SetRubberBandVisibility(Visibility.Hidden);
+			ShowTilingControls();
+		}
+
+		private void ShowTilingControls()
+		{
+			spWallControls.Visibility = Visibility.Visible;
+			spWallLabels.Visibility = Visibility.Visible;
+			spDoorLabels.Visibility = Visibility.Visible;
+			spDoorControls.Visibility = Visibility.Visible;
+			lstFlooring.Visibility = Visibility.Visible;
+		}
+
+		void CreateFloatingStampsForSelection()
+		{
+			draggingStamps = true;
+			if (activeStampCanvas != null)
+				activeStampCanvas.Children.Clear();
+			foreach (Stamp stamp in SelectedStamps)
+				CreateFloatingStamp(stamp);
+		}
+		private void StampsAreSelected()
+		{
+			GetStampSelectedBounds(out int left, out int top, out int width, out int height);
+			ShowSelectionRubberBand(left, top, width, height);
+			spWallControls.Visibility = Visibility.Collapsed;
+			spWallLabels.Visibility = Visibility.Collapsed;
+			spDoorLabels.Visibility = Visibility.Collapsed;
+			spDoorControls.Visibility = Visibility.Collapsed;
+			lstFlooring.Visibility = Visibility.Collapsed;
+			CreateFloatingStampsForSelection();
+		}
+
+		private void HandleTileClick(Tile baseSpace)
+		{
+			if (clickCounter == 1)
+				HandleSingleClickTileSelect(baseSpace);
+			else if (clickCounter == 2)
+				HandleDoubleClickTileSelect(baseSpace);
+			else if (clickCounter == 3)
+				HandleTripleClickTileSelect(baseSpace);
+		}
+
+		private void HandleTripleClickTileSelect(Tile baseSpace)
+		{
+			FloodSelectAll(baseSpace, GetSelectionType(Map.SelectionExists()));
+		}
+
+		private void HandleDoubleClickTileSelect(Tile baseSpace)
+		{
+			FloodSelect(baseSpace, GetSelectionType(Map.SelectionExists()));
+		}
+
+		private void HandleSingleClickTileSelect(Tile baseSpace)
+		{
+			if (!mouseIsDown || Keyboard.IsKeyDown(Key.Space))
+				return;
+
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) // Alt key is reserved for zooming into a rect.
+				return;
+
+			SelectionType selectionType = GetSelectionType(Map.SelectionExists());
+
+			if (selectionType == SelectionType.Replace)
+				ClearSelection();
+
+			SetRubberBandVisibility(Visibility.Visible);
+			tileSelection.StartSelection(baseSpace, selectionType);
+			content.CaptureMouse();
+		}
+
+		private SelectionType GetSelectionType(bool selectionExists)
 		{
 			SelectionType selectionType = SelectionType.Replace;
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
@@ -1053,7 +1228,7 @@ namespace DndMapSpike
 			else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
 				selectionType = SelectionType.Remove;
 
-			if (selectionType == SelectionType.Add && !Map.SelectionExists())
+			if (selectionType == SelectionType.Add && !selectionExists)
 				selectionType = SelectionType.Replace;
 			return selectionType;
 		}
@@ -1290,7 +1465,7 @@ namespace DndMapSpike
 
 		private void BtnSelect_Checked(object sender, RoutedEventArgs e)
 		{
-			MapEditMode = MapEditModes.TileSelect;
+			MapEditMode = MapEditModes.Select;
 		}
 
 		private void BtnStamp_Checked(object sender, RoutedEventArgs e)
@@ -1321,53 +1496,116 @@ namespace DndMapSpike
 		{
 			if (MapEditMode == MapEditModes.Stamp)
 			{
+				SelectedStamps.Clear();
+				SetRubberBandVisibility(Visibility.Hidden);
 				Cursor = Cursors.Hand;
 				lstFlooring.Visibility = Visibility.Collapsed;
 				spStamps.Visibility = Visibility.Visible;
-				if (activeStampImage != null)
-					Panel.SetZIndex(activeStampImage, int.MaxValue);
+				if (activeStampCanvas != null)
+					Panel.SetZIndex(activeStampCanvas, int.MaxValue);
 			}
-			else if (MapEditMode == MapEditModes.TileSelect)
+			else if (MapEditMode == MapEditModes.Select)
 			{
 				Cursor = Cursors.Arrow;
 				lstFlooring.Visibility = Visibility.Visible;
 				spStamps.Visibility = Visibility.Collapsed;
-				content.Children.Remove(activeStampImage);
-				activeStampImage = null;
+				content.Children.Remove(activeStampCanvas);
+				activeStampCanvas = null;
 				activeStamp = null;
 			}
 		}
 
+		Canvas activeStampCanvas;
 		Image activeStampImage;
 		Stamp activeStamp;
 		MouseButtonEventArgs lastMouseDownEventArgs;
+
 		private void StampButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (activeStampImage != null)
-				content.Children.Remove(activeStampImage);
+			if (activeStampCanvas != null)
+				content.Children.Remove(activeStampCanvas);
 			if (!(sender is Button button))
 				return;
 			if (!(button.Tag is Stamp knownStamp))
 				return;
-
-			activeStamp = knownStamp;
-			activeStampImage = new Image();
-			activeStampImage.Source = new BitmapImage(new Uri(knownStamp.FileName));
-			activeStampImage.Opacity = 0.5;
-			content.Children.Add(activeStampImage);
-			activeStampImage.IsHitTestVisible = false;
-			Panel.SetZIndex(activeStampImage, int.MaxValue);
+			CreateFloatingStamp(knownStamp);
 		}
 
+		double stampMouseOffsetX;
+		double stampMouseOffsetY;
+		void CreateFloatingStamp(Stamp knownStamp, int x = 0, int y = 0)
+		{
+			activeStamp = knownStamp;
+			if (activeStampCanvas == null)
+			{
+				activeStampCanvas = new Canvas();
+				content.Children.Add(activeStampCanvas);
+				activeStampCanvas.IsHitTestVisible = false;
+				Panel.SetZIndex(activeStampCanvas, int.MaxValue);
+			}
+			Image image = new Image();
+			image.Source = new BitmapImage(new Uri(knownStamp.FileName));
+			TransformGroup transformGroup = new TransformGroup();
+			RotateTransform rotation = null;
+			switch (knownStamp.Rotation)
+			{
+				case StampRotation.Ninety:
+					rotation = new RotateTransform(90);
+					break;
+				case StampRotation.OneEighty:
+					rotation = new RotateTransform(180);
+					break;
+				case StampRotation.TwoSeventy:
+					rotation = new RotateTransform(270);
+					break;
+			}
+			if (rotation != null)
+				transformGroup.Children.Add(rotation);
 
+			if (transformGroup.Children.Count > 0)
+				image.LayoutTransform = transformGroup;
+			image.Opacity = 0.5;
+			image.IsHitTestVisible = false;
+			stampMouseOffsetX = image.Source.Width / 2;
+			stampMouseOffsetY = image.Source.Height / 2;
+			activeStampCanvas.Children.Add(image);
+			Canvas.SetLeft(image, x);
+			Canvas.SetTop(image, y);
+		}
 
-		//private void CvsTestCopy_MouseDown(object sender, MouseButtonEventArgs e)
-		//{
-		//	Point position = e.GetPosition(imgTest);
-		//	Image imageTile = new Image();
-		//	imageTile.Source = new BitmapImage(new Uri(lastTextureFileUsed));
-		//	ImageUtils.CopyImageTo(imageTile, (int)position.X, (int)position.Y, writeableBitmap);
-		//}
+		private void BtnRotateRight_Click(object sender, RoutedEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+				{
+					stamp.RotateRight();
+				}
+
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+		}
+
+		private void BtnRotateLeft_Click(object sender, RoutedEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+				{
+					stamp.RotateLeft();
+				}
+
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+		}
 	}
 }
 

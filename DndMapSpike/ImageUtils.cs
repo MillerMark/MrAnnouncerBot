@@ -134,6 +134,31 @@ namespace DndMapSpike
 			using (FileStream stream = new FileStream(filePath, FileMode.Create))
 				encoder.Save(stream);
 		}
+
+		public static Color GetPixelColor(BitmapSource source, int x, int y)
+		{
+			Color result = Colors.Transparent;
+			if (source == null)
+				return result;
+
+			try
+			{
+				CroppedBitmap croppedBitmap = new CroppedBitmap(source, new Int32Rect(x, y, 1, 1));
+				const int bytesPerPixel = 4;
+				var pixels = new byte[bytesPerPixel];
+				croppedBitmap.CopyPixels(pixels, bytesPerPixel, 0);
+				result = Color.FromArgb(pixels[3], pixels[2], pixels[1], pixels[0]);
+			}
+			catch (Exception) {
+			}
+			return result;
+		}
+
+		public static bool HasPixelAt(Image image, int x, int y)
+		{
+			Color pixelColor = GetPixelColor(image.Source as BitmapSource, x, y);
+			return pixelColor.A > 128;
+		}
 	}
 }
 

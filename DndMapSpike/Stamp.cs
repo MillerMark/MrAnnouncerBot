@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -61,6 +62,7 @@ namespace DndMapSpike
 			}
 			return 0;
 		}
+
 		public Image Image
 		{
 			get
@@ -143,6 +145,90 @@ namespace DndMapSpike
 		{
 			ZOrderChanged?.Invoke(this, EventArgs.Empty);
 		}
+
+		public bool ContainsPoint(Point point)
+		{
+			int left = GetLeft();
+			int top = GetTop();
+			if (point.X < left)
+				return false;
+			if (point.Y < top)
+				return false;
+
+			if (point.X > left + Width)
+				return false;
+			if (point.Y > top + Height)
+				return false;
+
+			return ImageUtils.HasPixelAt(Image, (int)(point.X - left), (int)(point.Y - top));
+		}
+		public int GetLeft()
+		{
+			return (int)Math.Round(X - Width / 2.0);
+		}
+
+		public int Width
+		{
+			get
+			{
+				return (int)Math.Round(Image.Source.Width);
+			}
+		}
+
+		public int Height
+		{
+			get
+			{
+				return (int)Math.Round(Image.Source.Height);
+			}
+		}
+
+		public int GetTop()
+		{
+			return (int)Math.Round(Y - Height / 2.0);
+		}
+		public void RotateRight()
+		{
+			switch (Rotation)
+			{
+				case StampRotation.Zero:
+					Rotation = StampRotation.Ninety;
+					break;
+				case StampRotation.Ninety:
+					Rotation = StampRotation.OneEighty;
+					break;
+				case StampRotation.OneEighty:
+					Rotation = StampRotation.TwoSeventy;
+					break;
+				case StampRotation.TwoSeventy:
+					Rotation = StampRotation.Zero;
+					break;
+			}
+		}
+		public void RotateLeft()
+		{
+			switch (Rotation)
+			{
+				case StampRotation.Zero:
+					Rotation = StampRotation.TwoSeventy;
+					break;
+				case StampRotation.Ninety:
+					Rotation = StampRotation.Zero;
+					break;
+				case StampRotation.OneEighty:
+					Rotation = StampRotation.Ninety;
+					break;
+				case StampRotation.TwoSeventy:
+					Rotation = StampRotation.OneEighty;
+					break;
+			}
+		}
+		public void Move(int deltaX, int deltaY)
+		{
+			X += deltaX;
+			Y += deltaY;
+		}
+
 		public event EventHandler ZOrderChanged;
 	}
 }

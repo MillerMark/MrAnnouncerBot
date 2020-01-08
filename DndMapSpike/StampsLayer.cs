@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using System.Collections.Generic;
 
 namespace DndMapSpike
@@ -46,10 +47,11 @@ namespace DndMapSpike
 
 		void PlaceStamp(Stamp stamp)
 		{
-			int x = (int)Math.Round(stamp.X - stamp.Image.Source.Width / 2);
-			int y = (int)Math.Round(stamp.Y - stamp.Image.Source.Height / 2);
+			int x = stamp.GetLeft();
+			int y = stamp.GetTop();
 			BlendImage(stamp.Image, x, y);
 		}
+
 		void Refresh()
 		{
 			ClearAll();
@@ -66,6 +68,16 @@ namespace DndMapSpike
 				SortStampsByZOrder();
 				Refresh();
 			}
+		}
+		public Stamp GetStampAt(Point point)
+		{
+			for (int i = stamps.Count - 1; i >= 0; i--)
+			{
+				Stamp stamp = stamps[i];
+				if (stamp.ContainsPoint(point))
+					return stamp;
+			}
+			return null;
 		}
 	}
 }
