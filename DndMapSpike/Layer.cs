@@ -1,4 +1,5 @@
 ﻿using System;
+using Imaging;
 using System.Linq;
 using System.Windows.Media;
 using System.Windows.Controls;

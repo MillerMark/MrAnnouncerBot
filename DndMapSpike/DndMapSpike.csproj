@@ -59,7 +59,6 @@
     <Compile Include="BaseTexture.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
-    <Compile Include="ImageUtils.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapEditModes.cs" />
@@ -117,6 +116,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Imaging\Imaging.csproj">
+      <Project>{a514de46-aa88-471b-81a8-2c387dc629f7}</Project>
+      <Name>Imaging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MapCore\MapCore.csproj">
       <Project>{a3bdd0fe-d302-49ba-9320-df9f4e2d2d2d}</Project>
       <Name>MapCore</Name>

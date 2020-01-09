@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.IO;
 
-namespace DndMapSpike
+namespace Imaging
 {
 	public static class ImageUtils
 	{
