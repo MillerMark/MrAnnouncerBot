@@ -17,6 +17,8 @@ using MapCore;
 using System.Timers;
 using MapUI;
 using System.Windows.Threading;
+using System.Xml;
+using System.Windows.Markup;
 
 namespace DndMapSpike
 {
@@ -25,6 +27,7 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private const int StampButtonSize = 36;
 		List<Stamp> selectedStamps;
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
 		MapEditModes mapEditMode = MapEditModes.Select;
@@ -81,6 +84,7 @@ namespace DndMapSpike
 			fileWatchTimer.Interval = TimeSpan.FromMilliseconds(330);
 			fileWatchTimer.Tick += FileWatchTimer_Tick;
 			InitializeComponent();
+			zoomAndPanControl.ZoomLevelChanged += ZoomAndPanControl_ZoomLevelChanged;
 			Map = new Map();
 			Map.WallsChanged += Map_WallsChanged;
 			tileSelection = new MapSelection();
@@ -105,6 +109,12 @@ namespace DndMapSpike
 			//LoadDebris();
 			AddFileSystemWatcher();
 			BuildStampsUI();
+		}
+
+		private void ZoomAndPanControl_ZoomLevelChanged(object sender, EventArgs e)
+		{
+			if (SelectedStamps.Count > 0)
+				UpdateStampSelectionUI();
 		}
 
 		public List<StampFolder> Directories = new List<StampFolder>();
@@ -211,11 +221,14 @@ namespace DndMapSpike
 				tilesNotSelected = Map.GetAllOtherSpaces(tilesToSelect);
 			SelectTiles(tilesNotSelected, false);
 			CreateSelectionOutline();
-			bool selectionExists = Map.SelectionExists();
-			EnableSelectionControls(selectionExists);
-			if (!selectionExists)
+			bool tileSelectionExists = Map.SelectionExists();
+			EnableSelectionControls(tileSelectionExists);
+			if (tileSelectionExists)
+				ShowTilingControls();
+			else
 			{
 				ClearSelectionUI();
+				HideTilingControls();
 			}
 		}
 
@@ -355,10 +368,15 @@ namespace DndMapSpike
 
 		private void ClearSelectionUI()
 		{
-			selectionCanvas.Children.Clear();
+			ClearStampSelection();
 			foreach (Tile tile in Map.Tiles)
 				if (tile.SelectorPanel is FrameworkElement selectorPanel)
 					selectorPanel.Opacity = 0;
+		}
+
+		private void ClearStampSelection()
+		{
+			stampSelectionCanvas.Children.Clear();
 		}
 
 		private void Selection_SelectionChanged(object sender, EventArgs e)
@@ -502,14 +520,14 @@ namespace DndMapSpike
 		}
 		void AddSelectionCanvas()
 		{
-			selectionCanvas = new Canvas();
-			content.Children.Add(selectionCanvas);
+			stampSelectionCanvas = new Canvas();
+			content.Children.Add(stampSelectionCanvas);
 			MoveSelectionCanvasToTop();
 		}
 
 		private void MoveSelectionCanvasToTop()
 		{
-			Panel.SetZIndex(selectionCanvas, int.MaxValue);
+			Panel.SetZIndex(stampSelectionCanvas, int.MaxValue);
 		}
 
 		void SelectAllRooms()
@@ -867,8 +885,8 @@ namespace DndMapSpike
 				StopDraggingStamps(cursor);
 				return;
 			}
-			Canvas.SetLeft(canvas, cursor.X - lastStampHalfWidth);
-			Canvas.SetTop(canvas, cursor.Y - lastStampHalfHeight);
+			Canvas.SetLeft(canvas, cursor.X - mouseDragAdjustX);
+			Canvas.SetTop(canvas, cursor.Y - mouseDragAdjustY);
 		}
 
 		bool draggingStamps;
@@ -1075,7 +1093,21 @@ namespace DndMapSpike
 		{
 			int x = (int)Math.Round(lastMouseDownPoint.X);
 			int y = (int)Math.Round(lastMouseDownPoint.Y);
-			stampsLayer.AddStampNow(new Stamp(activeStamp.FileName, x, y));
+			Stamp newStamp = new Stamp(activeStamp.FileName, x, y);
+			stampsLayer.AddStampNow(newStamp);
+			SelectStamp(newStamp);
+		}
+
+		void SelectStamp(Stamp stamp)
+		{
+			if (SelectedStamps.IndexOf(stamp) < 0)
+			{
+				SelectionType selectionType = GetSelectionType(SelectedStamps.Count > 0);
+				if (selectionType != SelectionType.Add)
+					SelectedStamps.Clear();
+				SelectedStamps.Add(stamp);
+				UpdateStampSelection();
+			}
 		}
 
 		private void HandleMouseDownSelectForceUI()
@@ -1092,7 +1124,7 @@ namespace DndMapSpike
 			return stamp;
 		}
 
-		
+
 		public List<Stamp> SelectedStamps
 		{
 			get
@@ -1157,10 +1189,19 @@ namespace DndMapSpike
 				{
 					draggingStamps = true;
 					UpdateStampSelection();
+					GetTopLeftOfStampSelection(out int left, out int top);
+
+					mouseDragAdjustX = lastMouseDownPoint.X - left;
+					mouseDragAdjustY = lastMouseDownPoint.Y - top;
 				}
 				else
 					StampsAreNotSelected();
 				return;
+			}
+			else
+			{
+				ClearStampSelection();
+				SelectedStamps.Clear();
 			}
 
 			Tile baseSpace = GetTile(mouseDownSender);
@@ -1183,32 +1224,55 @@ namespace DndMapSpike
 			lstFlooring.Visibility = Visibility.Visible;
 		}
 
+		void GetTopLeftOfStampSelection(out int left, out int top)
+		{
+			left = int.MaxValue;
+			top = int.MaxValue;
+			foreach (Stamp stamp in SelectedStamps)
+			{
+				int stampLeft = stamp.GetLeft();
+				int stampTop = stamp.GetTop();
+
+				if (stampLeft < left)
+					left = stampLeft;
+				if (stampTop < top)
+					top = stampTop;
+			}
+		}
+
 		void AddSelectedStampsToFloatingUI()
 		{
 			ClearFloatingCanvases();
 
+			GetTopLeftOfStampSelection(out int left, out int top);
+
 			// TODO: Figure out top left of selection
 			foreach (Stamp stamp in SelectedStamps)
 			{
-				// TODO: Figure out x and y relative to top left of selection.
-				CreateFloatingStamp(ref selectDragStampCanvas, stamp);
+				int stampLeft = stamp.GetLeft();
+				int stampTop = stamp.GetTop();
+				stamp.RelativeX = stampLeft - left;
+				stamp.RelativeY = stampTop - top;
+				CreateFloatingStamp(ref selectDragStampCanvas, stamp, stamp.RelativeX, stamp.RelativeY);
 			}
 		}
 		private void UpdateStampSelection()
 		{
-			CollapseFlooringControls();
+			HideTilingControls();
 			AddSelectedStampsToFloatingUI();
-			ShowStampSelectionUI();
+			UpdateStampSelectionUI();
 		}
 
 		void CreateResizeCorner(int left, int top, SizeDirection sizeDirection, Stamp stamp)
 		{
 			Ellipse ellipse = new Ellipse();
-			const double sizeDiameter = 10;
+			const double sizeDiameterPixels = 10;
+			double sizeDiameter = sizeDiameterPixels / zoomAndPanControl.ContentScale;
 			ellipse.Width = sizeDiameter;
 			ellipse.Height = sizeDiameter;
 			ellipse.Fill = Brushes.White;
 			ellipse.Stroke = Brushes.Gray;
+			ellipse.StrokeThickness = 1 / zoomAndPanControl.ContentScale;
 			Canvas.SetLeft(ellipse, left - sizeDiameter / 2);
 			Canvas.SetTop(ellipse, top - sizeDiameter / 2);
 			switch (sizeDirection)
@@ -1226,7 +1290,7 @@ namespace DndMapSpike
 			ellipse.MouseDown += ResizeTracker_MouseDown;
 			ellipse.MouseMove += Ellipse_MouseMove;
 			ellipse.MouseUp += Ellipse_MouseUp;
-			selectionCanvas.Children.Add(ellipse);
+			stampSelectionCanvas.Children.Add(ellipse);
 		}
 
 		private void Ellipse_MouseUp(object sender, MouseButtonEventArgs e)
@@ -1241,38 +1305,69 @@ namespace DndMapSpike
 		{
 		}
 
-		void AddSelectionUI(Stamp stamp)
+		void AddStampSelectionButtons(int left, int top, int width, int height)
 		{
-			
-			// stamp.Width;
-			Rectangle selectionRect = new Rectangle();
-			selectionRect.Width = stamp.Width;
-			selectionRect.Height = stamp.Height;
+			int right = left + width;
+			int bottom = top + height;
+			double buttonSize = StampButtonSize / zoomAndPanControl.ContentScale;
+			double topRow = top - buttonSize;
+			CreateButton("btnRotateLeft", left - buttonSize, topRow, buttonSize);
+			CreateButton("btnRotateRight", right, topRow, buttonSize);
+		}
+
+		private void CreateButton(string buttonName, double x, double y, double buttonSize)
+		{
+			Viewbox viewbox = FindResource(buttonName) as Viewbox;
+			viewbox.Width = buttonSize;
+			viewbox.Height = buttonSize;
+			stampSelectionCanvas.Children.Add(viewbox);
+			Canvas.SetLeft(viewbox, x);
+			Canvas.SetTop(viewbox, y);
+		}
+
+		void AddStampSelectionUI(Stamp stamp)
+		{
 			int left = stamp.GetLeft();
 			int top = stamp.GetTop();
-			Canvas.SetLeft(selectionRect, left);
-			Canvas.SetTop(selectionRect, top);
-			selectionRect.Stroke = Brushes.Gray;
-			selectionRect.StrokeThickness = 1;
-			selectionCanvas.Children.Add(selectionRect);
 			int right = left + stamp.Width;
 			int bottom = top + stamp.Height;
+
+			AddStampSelectionRect(stamp, left, top);
 			CreateResizeCorner(left, top, SizeDirection.NorthWest, stamp);
 			CreateResizeCorner(right, top, SizeDirection.NorthEast, stamp);
 			CreateResizeCorner(left, bottom, SizeDirection.SouthWest, stamp);
 			CreateResizeCorner(right, bottom, SizeDirection.SouthEast, stamp);
 		}
 
-		void ShowStampSelectionUI()
+		private void AddStampSelectionRect(Stamp stamp, int left, int top)
+		{
+			Rectangle selectionRect = new Rectangle();
+			selectionRect.Width = stamp.Width;
+			selectionRect.Height = stamp.Height;
+			Canvas.SetLeft(selectionRect, left);
+			Canvas.SetTop(selectionRect, top);
+			selectionRect.Stroke = Brushes.Gray;
+			selectionRect.StrokeThickness = 1 / zoomAndPanControl.ContentScale;
+			stampSelectionCanvas.Children.Add(selectionRect);
+		}
+
+		void AddStampSelectionButtons()
+		{
+			GetStampSelectedBounds(out int left, out int top, out int width, out int height);
+			AddStampSelectionButtons(left, top, width, height);
+
+		}
+		void UpdateStampSelectionUI()
 		{
 			ClearSelectionUI();
 			foreach (Stamp stamp in SelectedStamps)
-				AddSelectionUI(stamp);
+				AddStampSelectionUI(stamp);
 
 			MoveSelectionCanvasToTop();
+			AddStampSelectionButtons();
 		}
 
-		private void CollapseFlooringControls()
+		private void HideTilingControls()
 		{
 			spWallControls.Visibility = Visibility.Collapsed;
 			spWallLabels.Visibility = Visibility.Collapsed;
@@ -1303,13 +1398,20 @@ namespace DndMapSpike
 
 		private void HandleSingleClickTileSelect(Tile baseSpace)
 		{
-			if (!mouseIsDown || Keyboard.IsKeyDown(Key.Space))
+			if (mouseIsDown && Keyboard.IsKeyDown(Key.Space))
 				return;
+
+			SelectionType selectionType = GetSelectionType(Map.SelectionExists());
+			if (!mouseIsDown && selectionType == SelectionType.Replace)
+			{
+				ClearSelection();
+				return;
+			}
 
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) // Alt key is reserved for zooming into a rect.
 				return;
 
-			SelectionType selectionType = GetSelectionType(Map.SelectionExists());
+
 
 			if (selectionType == SelectionType.Replace)
 				ClearSelection();
@@ -1338,7 +1440,7 @@ namespace DndMapSpike
 				return;
 			if (!(button.Tag is BaseTexture texture))
 				return;
-			
+
 			List<Tile> selection = Map.GetSelection();
 			RemoveRubberBandSelector();
 			foreach (Tile tile in selection)
@@ -1582,9 +1684,7 @@ namespace DndMapSpike
 			set
 			{
 				if (mapEditMode == value)
-				{
 					return;
-				}
 
 				mapEditMode = value;
 				OnEditModeChanged();
@@ -1606,8 +1706,8 @@ namespace DndMapSpike
 		private void EnterSelectMode()
 		{
 			Cursor = Cursors.Arrow;
-			lstFlooring.Visibility = Visibility.Visible;
-			spStamps.Visibility = Visibility.Collapsed;
+			//lstFlooring.Visibility = Visibility.Visible;
+			//spStamps.Visibility = Visibility.Collapsed;
 			ClearFloatingCanvases();
 			activeStamp = null;
 		}
@@ -1653,17 +1753,21 @@ namespace DndMapSpike
 		private void StampButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (activeStampCanvas != null)
-				content.Children.Remove(activeStampCanvas);
+			{
+				activeStampCanvas.Children.Clear();
+			}
+
 			if (!(sender is Button button))
 				return;
 			if (!(button.Tag is Stamp knownStamp))
 				return;
 			CreateFloatingStamp(ref activeStampCanvas, knownStamp);
+			MapEditMode = MapEditModes.Stamp;
 		}
 
-		double lastStampHalfWidth;
-		double lastStampHalfHeight;
-		Canvas selectionCanvas;
+		double mouseDragAdjustX;
+		double mouseDragAdjustY;
+		Canvas stampSelectionCanvas;
 		void CreateFloatingStamp(ref Canvas canvas, Stamp knownStamp, int x = 0, int y = 0)
 		{
 			activeStamp = knownStamp;
@@ -1697,14 +1801,30 @@ namespace DndMapSpike
 				image.LayoutTransform = transformGroup;
 			image.Opacity = 0.5;
 			image.IsHitTestVisible = false;
-			lastStampHalfWidth = image.Source.Width / 2;
-			lastStampHalfHeight = image.Source.Height / 2;
+			mouseDragAdjustX = image.Source.Width / 2;
+			mouseDragAdjustY = image.Source.Height / 2;
 			canvas.Children.Add(image);
 			Canvas.SetLeft(image, x);
 			Canvas.SetTop(image, y);
 		}
 
-		private void BtnRotateRight_Click(object sender, RoutedEventArgs e)
+		private void CancelStampMode_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			MapEditMode = MapEditModes.Select;
+		}
+
+		// TODO: Delete...
+		public static void SaveDefaultTemplate()
+		{
+			var control = Application.Current.FindResource(typeof(Button));
+			using (XmlTextWriter writer = new XmlTextWriter(@"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\ButtonDefaultTemplate.xml", System.Text.Encoding.UTF8))
+			{
+				writer.Formatting = Formatting.Indented;
+				XamlWriter.Save(control, writer);
+			}
+		}
+
+		private void btnRotateRight_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			stampsLayer.BeginUpdate();
 			try
@@ -1719,9 +1839,10 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
+			UpdateStampSelectionUI();
 		}
 
-		private void BtnRotateLeft_Click(object sender, RoutedEventArgs e)
+		private void btnRotateLeft_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			stampsLayer.BeginUpdate();
 			try
@@ -1736,6 +1857,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
+			UpdateStampSelectionUI();
 		}
 	}
 }

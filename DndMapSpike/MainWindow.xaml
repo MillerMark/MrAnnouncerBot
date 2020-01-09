@@ -13,6 +13,7 @@
 		<RoutedUICommand x:Key="Commands.JumpBackToPrevZoom" />
 		<RoutedUICommand x:Key="Commands.Fill" />
 		<RoutedUICommand x:Key="Commands.OneHundredPercent" />
+		<RoutedUICommand x:Key="Commands.CancelStampMode" />
 		<mapUI:ScaleToPercentConverter x:Key="scaleToPercentConverter"/>
 		<Style TargetType="{x:Type RadioButton}" >
 			<Setter Property="Template">
@@ -46,9 +47,38 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
+		<Viewbox x:Key="btnRotateLeft" MouseDown="btnRotateLeft_MouseDown">
+			<Canvas Width="219" Height="219">
+				<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+					<Path.Data>
+						<PathGeometry Figures="M214,16.375C214,7.3125,206.75,0,197.6875,0L16.375,0C7.3125,0,0,7.3125,0,16.375L0,197.6875C0,206.75,7.3125,214,16.375,214L197.6875,214C206.75,214,214,206.75,214,197.6875z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+					<Path.Data>
+						<PathGeometry Figures="M156,42L141.625,43.4375C106.8125,50.5625,80.625,81.125,80.625,117.8125L80.625,128.6875 57,128.6875 100.75,172 144.4375,128.6875 120.875,128.6875 120.875,117.8125C120.875,100.4375,133.25,85.9375,149.75,82.625L156,82z" />
+					</Path.Data>
+				</Path>
+			</Canvas>
+		</Viewbox>
+		<Viewbox x:Key="btnRotateRight" MouseDown="btnRotateRight_MouseDown" >
+			<Canvas Width="219" Height="219">
+				<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+					<Path.Data>
+						<PathGeometry Figures="M0,16.375C0,7.3125,7.3125,0,16.375,0L197.6875,0C206.75,0,214,7.3125,214,16.375L214,197.6875C214,206.75,206.75,214,197.6875,214L16.375,214C7.3125,214,0,206.75,0,197.6875z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+					<Path.Data>
+						<PathGeometry Figures="M57,42L71.4375,43.4375C106.25,50.5625,132.4375,81.125,132.4375,117.8125L132.4375,128.6875 156,128.6875 112.3125,172 68.625,128.6875 92.1875,128.6875 92.1875,117.8125C92.1875,100.4375,79.8125,85.9375,63.3125,82.625L57,82z" />
+					</Path.Data>
+				</Path>
+			</Canvas>
+		</Viewbox>
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
+		<KeyBinding Key="Esc" Command="{StaticResource Commands.CancelStampMode}"/>
 		<KeyBinding Key="Plus" Command="{StaticResource Commands.ZoomIn}"/>
 		<KeyBinding Key="Backspace" Command="{StaticResource Commands.JumpBackToPrevZoom}"/>
 	</Window.InputBindings>
@@ -58,6 +88,7 @@
 		<CommandBinding Command="{StaticResource Commands.JumpBackToPrevZoom}" Executed="JumpBackToPrevZoom_Executed" CanExecute="JumpBackToPrevZoom_CanExecute"/>
 		<CommandBinding Command="{StaticResource Commands.Fill}" Executed="Fill_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.OneHundredPercent}" Executed="OneHundredPercent_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.CancelStampMode}" Executed="CancelStampMode_Executed"/>
 	</Window.CommandBindings>
 	<Grid>
 		<Grid.ColumnDefinitions>
@@ -310,40 +341,6 @@
 							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
 						</Canvas>
 					</Viewbox>
-				</Button>
-			</StackPanel>
-			<StackPanel Grid.Row="5" x:Name="spStampControls" Orientation="Horizontal" Height="38" >
-				<Button x:Name="btnRotateLeft" Click="BtnRotateLeft_Click">
-					<Viewbox>
-						<Canvas Width="219" Height="219">
-							<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
-								<Path.Data>
-									<PathGeometry Figures="M214,16.375C214,7.3125,206.75,0,197.6875,0L16.375,0C7.3125,0,0,7.3125,0,16.375L0,197.6875C0,206.75,7.3125,214,16.375,214L197.6875,214C206.75,214,214,206.75,214,197.6875z" />
-								</Path.Data>
-							</Path>
-							<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
-								<Path.Data>
-									<PathGeometry Figures="M156,42L141.625,43.4375C106.8125,50.5625,80.625,81.125,80.625,117.8125L80.625,128.6875 57,128.6875 100.75,172 144.4375,128.6875 120.875,128.6875 120.875,117.8125C120.875,100.4375,133.25,85.9375,149.75,82.625L156,82z" />
-								</Path.Data>
-							</Path>
-						</Canvas>
-					</Viewbox>
-				</Button>
-				<Button x:Name="btnRotateRight" Click="BtnRotateRight_Click">
-					<Viewbox>
-						<Canvas Width="219" Height="219">
-							<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
-								<Path.Data>
-									<PathGeometry Figures="M0,16.375C0,7.3125,7.3125,0,16.375,0L197.6875,0C206.75,0,214,7.3125,214,16.375L214,197.6875C214,206.75,206.75,214,197.6875,214L16.375,214C7.3125,214,0,206.75,0,197.6875z" />
-								</Path.Data>
-							</Path>
-							<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
-								<Path.Data>
-									<PathGeometry Figures="M57,42L71.4375,43.4375C106.25,50.5625,132.4375,81.125,132.4375,117.8125L132.4375,128.6875 156,128.6875 112.3125,172 68.625,128.6875 92.1875,128.6875 92.1875,117.8125C92.1875,100.4375,79.8125,85.9375,63.3125,82.625L57,82z" />
-								</Path.Data>
-							</Path>
-						</Canvas>
-					</Viewbox>		
 				</Button>
 			</StackPanel>
 		</Grid>

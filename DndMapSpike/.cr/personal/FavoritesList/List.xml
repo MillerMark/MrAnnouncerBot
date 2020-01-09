@@ -2,57 +2,43 @@
 <Root Type="DevExpress.CodeRush.Foundation.CodePlaces.Options.FavoritesListContainer">
   <Options Language="Neutral">
     <Groups>
-      <Item Id="{6ae22e53-01a7-4491-a053-71fa89547137}">
+      <Item Id="{ab0ac9b7-875b-48eb-a454-ca4e67ecf620}">
         <GroupName>Mouse Handling</GroupName>
         <IsExpanded>True</IsExpanded>
         <Items>
-          <Item Id="{313d9b0b-8e21-4fa8-a9ed-cc3ab9beeeee}">
-            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.HandleSingleClickTileSelect(MapCore.Tile)</LogicalPath>
-            <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
-          </Item>
-          <Item Id="{9279f731-1feb-4b73-9fd0-5fae56ad7574}">
-            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.HandleDoubleClickTileSelect(MapCore.Tile)</LogicalPath>
-            <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
-          </Item>
-          <Item Id="{02fa4b5e-1562-45d2-9035-d02063715382}">
-            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.HandleTripleClickTileSelect(MapCore.Tile)</LogicalPath>
-            <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
-          </Item>
-          <Item Id="{072f094e-1830-4d1d-ab18-9cb928eb6acf}">
+          <Item Id="{eb3d014e-afa9-4b34-9809-8778e6b723dc}">
             <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.HandleMouseDownSelect()</LogicalPath>
             <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
           </Item>
-          <Item Id="{32d3aa4b-5559-4f3c-b0f5-fefc3e150e52}">
+          <Item Id="{eba4d1e2-3eea-4537-9752-576ee2ad697c}">
             <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.ZoomAndPanControl_MouseMove(object, System.Windows.Input.MouseEventArgs)</LogicalPath>
             <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
           </Item>
-          <Item Id="{08135827-95fc-4fbf-9867-d5f8d997d9c8}">
+          <Item Id="{447b00bd-d998-4b0d-8148-afdbd1468c17}">
             <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.ZoomAndPanControl_MouseUp(object, System.Windows.Input.MouseButtonEventArgs)</LogicalPath>
             <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
           </Item>
-          <Item Id="{4fa2cf7b-613f-434b-ae49-b0814508d569}">
+          <Item Id="{f91320fb-ec31-473e-9929-a779527a4876}">
             <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.Selector_MouseDown(object, System.Windows.Input.MouseButtonEventArgs)</LogicalPath>
             <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
           </Item>
         </Items>
       </Item>
-      <Item Id="{517885e3-80c8-44ba-b37b-2c18d82e076e}">
+      <Item Id="{8fbaa0b8-925f-4ce6-925e-3e27fa8b3405}">
         <GroupName>Stamp Select</GroupName>
+        <IsExpanded>True</IsExpanded>
         <Items>
-          <Item Id="{f43b6849-1817-43a8-a4bc-0a7885533e83}">
-            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.ClearStampSelection()</LogicalPath>
-            <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
-          </Item>
-          <Item Id="{2f37993a-018a-45b2-b20d-2e7e566e74c1}">
+          <Item Id="{d861a0e9-c9d6-4ff1-a2d3-e6bfef3840de}">
             <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.StopDraggingStamps(System.Windows.Point)</LogicalPath>
             <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
           </Item>
-          <Item Id="{b27d8099-8e45-4498-a366-f8c1f4255b11}">
-            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.StampsAreSelected()</LogicalPath>
-            <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
-          </Item>
-          <Item Id="{c1bad912-11e1-409b-bfd7-f172172f528f}">
-            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.CreateFloatingStampsForSelection()</LogicalPath>
+        </Items>
+      </Item>
+      <Item Id="{f8ed2e4e-6f39-4e6d-8c02-ae2ef9bc14a2}">
+        <GroupName>Stamping</GroupName>
+        <Items>
+          <Item Id="{3048b906-2f63-46d3-8ea3-46b40c68bb01}">
+            <LogicalPath>&lt;global namespace&gt;\DndMapSpike\DndMapSpike.MainWindow\void DndMapSpike.MainWindow.AddStampAtLastMouseDown()</LogicalPath>
             <FilePath>D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\MainWindow.xaml.cs</FilePath>
           </Item>
         </Items>

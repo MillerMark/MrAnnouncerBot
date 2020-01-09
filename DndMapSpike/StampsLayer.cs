@@ -57,7 +57,14 @@ namespace DndMapSpike
 			ClearAll();
 			foreach (Stamp stamp in stamps)
 			{
-				PlaceStamp(stamp);
+				try
+				{
+					PlaceStamp(stamp);
+				}
+				catch
+				{
+					// TODO: Error placing stamp (likely out of bounds) - should we save it/remove it?
+				}
 			}
 		}
 		public void EndUpdate()

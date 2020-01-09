@@ -484,12 +484,10 @@ namespace MrAnnouncerBot
 									File.Copy(file, destFileName);
 									zip.CreateEntryFromFile(destFileName, Path.GetFileName(destFileName), CompressionLevel.Optimal);
 									File.Delete(destFileName);
-									Debugger.Break();
 								}
 								catch (Exception ex2)
 								{
 									errors += $"\n\n Exception attached log file {file}: " + ex2.Message;
-									Debugger.Break();
 								}
 
 							}
