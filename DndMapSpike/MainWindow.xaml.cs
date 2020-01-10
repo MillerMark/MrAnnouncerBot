@@ -27,8 +27,6 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		// TODO: Delete resizeHandleDiameter
-		const double resizeHandleDiameter = 10;
 		private const int StampButtonSize = 36;
 		List<Stamp> selectedStamps;
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
@@ -80,6 +78,14 @@ namespace DndMapSpike
 		public Map Map { get; set; }
 		public MainWindow()
 		{
+			hueShiftUpdateTimer = new Timer(125);
+			hueShiftUpdateTimer.Elapsed += HueShiftUpdateTimer_Elapsed;
+			saturationUpdateTimer = new Timer(125);
+			saturationUpdateTimer.Elapsed += SaturationUpdateTimer_Elapsed;
+			lightnessUpdateTimer = new Timer(125);
+			lightnessUpdateTimer.Elapsed += LightnessUpdateTimer_Elapsed;
+			contrastUpdateTimer = new Timer(125);
+			contrastUpdateTimer.Elapsed += ContrastUpdateTimer_Elapsed;
 			clickTimer = new Timer(225);
 			clickTimer.Elapsed += new ElapsedEventHandler(EvaluateClicks);
 			fileWatchTimer = new DispatcherTimer();
@@ -1330,11 +1336,11 @@ namespace DndMapSpike
 			}
 			UpdateStampSelectionUI();
 
-			
+
 			activeStampResizing = null;
 		}
 
-		
+
 
 		private void ResizeTracker_MouseMove(object sender, MouseEventArgs e)
 		{
@@ -1423,7 +1429,7 @@ namespace DndMapSpike
 					bottomAdjust = newHeight - stamp.Height;
 					if (bottomAdjust != 0)
 					{
-						
+
 					}
 					break;
 				case SizeDirection.SouthWest:
@@ -1457,7 +1463,7 @@ namespace DndMapSpike
 					dataIsGood = newX > oppositeX && newY > oppositeY;
 					if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
 					{
-						
+
 					}
 					leftAdjust = stamp.Width - newWidth;
 					topAdjust = stamp.Height - newHeight;
@@ -1551,7 +1557,7 @@ namespace DndMapSpike
 				btnScale100Percent.Visibility = Visibility.Hidden;
 		}
 
-		void AddStampSelectionButtons(double? selectedButtonScale, int left, int top, int width, int height)
+		void AddStampSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, int left, int top, int width, int height)
 		{
 			int right = left + width;
 			int bottom = top + height;
@@ -1572,11 +1578,51 @@ namespace DndMapSpike
 
 			CreateButton("btnSendToBack", right, bottom, buttonSize);
 			CreateButton("btnBringToFront", right + buttonSize, bottom, buttonSize);
+			
+			bool hasColorMod = selectedHueShift.HasValue && selectedHueShift.Value != 0 ||
+												 selectedSaturation.HasValue && selectedSaturation.Value != 0 ||
+												 selectedLightness.HasValue && selectedLightness.Value != 0 || 
+												 selectedContrast.HasValue && selectedContrast.Value != 0;
+
+			double pixelWidth = width * zoomAndPanControl.ContentScale;
+			const double maxPixelWidth = 400;
+			StackPanel spHueShift = null;
+			if (pixelWidth > 60)
+			{
+				spHueShift = FindResource("spHueShift") as StackPanel;
+				spHueShift.Visibility = Visibility.Visible;
+				spHueShift.Width = Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
+				stampSelectionCanvas.Children.Add(spHueShift);
+				Canvas.SetLeft(spHueShift, left + (width - spHueShift.Width) / 2);
+				Canvas.SetTop(spHueShift, bottom);
+				SetSlider(GetActiveHueSlider(), selectedHueShift);
+				SetSlider(GetActiveSaturationSlider(), selectedSaturation);
+				SetSlider(GetActiveLightnessSlider(), selectedLightness);
+				SetSlider(GetActiveContrastSlider(), selectedContrast);
+			}
+
+			if (!hasColorMod)
+			{
+				if (spHueShift != null)
+					spHueShift.Visibility = Visibility.Hidden;
+				CreateButton("btnShowColorControls", left, bottom, buttonSize);
+			}
+		}
+
+		private void SetSlider(Slider slider, double? value)
+		{
+			if (slider == null)
+				return;
+
+			slider.IsEnabled = value.HasValue;
+			if (value.HasValue)
+				slider.Value = value.Value;
 		}
 
 		private Viewbox CreateButton(string buttonName, double x, double y, double buttonSize)
 		{
 			Viewbox viewbox = FindResource(buttonName) as Viewbox;
+			viewbox.Visibility = Visibility.Visible;
 			viewbox.Width = buttonSize;
 			viewbox.Height = buttonSize;
 			viewbox.Cursor = Cursors.Hand;
@@ -1614,30 +1660,70 @@ namespace DndMapSpike
 			stampSelectionCanvas.Children.Add(selectionRect);
 		}
 
-		void AddStampSelectionButtons(double? scale)
+		void AddStampSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast)
 		{
 			GetStampSelectedBounds(out int left, out int top, out int width, out int height);
-			AddStampSelectionButtons(scale, left, top, width, height);
-
+			AddStampSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, top, width, height);
 		}
+
 		void UpdateStampSelectionUI()
 		{
 			ClearSelectionUI();
-			double? scale = null;
-			foreach (Stamp stamp in SelectedStamps)
-				if (scale == null)
-					scale = stamp.Scale;
-				else if (scale != stamp.Scale)
-				{
-					scale = null;
-					break;
-				}
+			double? selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast;
+			GetConsistentModSettings(out selectedButtonScale, out selectedHueShift, out selectedSaturation, out selectedLightness, out selectedContrast);
 
-			AddStampSelectionButtons(scale);
+			AddStampSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast);
 			foreach (Stamp stamp in SelectedStamps)
 				AddStampSelectionUI(stamp);
 
 			MoveSelectionCanvasToTop();
+		}
+
+		private void GetConsistentModSettings(out double? selectedButtonScale, out double? selectedHueShift, out double? selectedSaturation, out double? selectedLightness, out double? selectedContrast)
+		{
+			selectedButtonScale = null;
+			selectedHueShift = null;
+			selectedSaturation = null;
+			selectedLightness = null;
+			selectedContrast = null;
+			foreach (Stamp stamp in SelectedStamps)
+			{
+				if (selectedButtonScale == null)
+					selectedButtonScale = stamp.Scale;
+				else if (selectedButtonScale != stamp.Scale)
+				{
+					selectedButtonScale = null;
+					break;
+				}
+				if (selectedHueShift == null)
+					selectedHueShift = stamp.HueShift;
+				else if (selectedHueShift != stamp.HueShift)
+				{
+					selectedHueShift = null;
+					break;
+				}
+				if (selectedSaturation == null)
+					selectedSaturation = stamp.Saturation;
+				else if (selectedSaturation != stamp.Saturation)
+				{
+					selectedSaturation = null;
+					break;
+				}
+				if (selectedLightness == null)
+					selectedLightness = stamp.Lightness;
+				else if (selectedLightness != stamp.Lightness)
+				{
+					selectedLightness = null;
+					break;
+				}
+				if (selectedContrast == null)
+					selectedContrast = stamp.Contrast;
+				else if (selectedContrast != stamp.Contrast)
+				{
+					selectedContrast = null;
+					break;
+				}
+			}
 		}
 
 		private void HideTilingControls()
@@ -2043,6 +2129,10 @@ namespace DndMapSpike
 		Canvas stampSelectionCanvas;
 		Stamp activeStampResizing;
 		double resizeDiagonal;
+		Timer hueShiftUpdateTimer;
+		Timer saturationUpdateTimer;
+		Timer lightnessUpdateTimer;
+		Timer contrastUpdateTimer;
 		void CreateFloatingStamp(ref Canvas canvas, Stamp knownStamp, int x = 0, int y = 0)
 		{
 			activeStamp = knownStamp;
@@ -2226,7 +2316,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (Stamp stamp in SelectedStamps)
-					stamp.Scale = (double)1 /3;
+					stamp.Scale = (double)1 / 3;
 			}
 			finally
 			{
@@ -2259,6 +2349,338 @@ namespace DndMapSpike
 				stampsLayer.RemoveAllStamps(SelectedStamps);
 				stampsLayer.SortStampsByZOrder();
 				stampsLayer.AddStamps(SelectedStamps);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void HueShiftUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			hueShiftUpdateTimer.Stop();
+
+			Dispatcher.Invoke(() =>
+			{
+				stampsLayer.BeginUpdate();
+				try
+				{
+					foreach (Stamp stamp in SelectedStamps)
+						stamp.HueShift = hueShiftToApply;
+				}
+				finally
+				{
+					stampsLayer.EndUpdate();
+				}
+				UpdateStampSelectionUI();
+			});
+		}
+
+		private void SaturationUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			saturationUpdateTimer.Stop();
+
+			Dispatcher.Invoke(() =>
+			{
+				stampsLayer.BeginUpdate();
+				try
+				{
+					foreach (Stamp stamp in SelectedStamps)
+						stamp.Saturation = saturationToApply;
+				}
+				finally
+				{
+					stampsLayer.EndUpdate();
+				}
+				UpdateStampSelectionUI();
+			});
+		}
+		private void LightnessUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			lightnessUpdateTimer.Stop();
+
+			Dispatcher.Invoke(() =>
+			{
+				stampsLayer.BeginUpdate();
+				try
+				{
+					foreach (Stamp stamp in SelectedStamps)
+						stamp.Lightness = lightnessToApply;
+				}
+				finally
+				{
+					stampsLayer.EndUpdate();
+				}
+				UpdateStampSelectionUI();
+			});
+		}
+		private void ContrastUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			contrastUpdateTimer.Stop();
+
+			Dispatcher.Invoke(() =>
+			{
+				stampsLayer.BeginUpdate();
+				try
+				{
+					foreach (Stamp stamp in SelectedStamps)
+						stamp.Contrast = contrastToApply;
+				}
+				finally
+				{
+					stampsLayer.EndUpdate();
+				}
+				UpdateStampSelectionUI();
+			});
+		}
+
+		double hueShiftToApply;
+		double saturationToApply;
+		double lightnessToApply;
+		double contrastToApply;
+
+		private void HueShiftSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (!(sender is Slider slider))
+				return;
+
+			hueShiftToApply = slider.Value;
+			hueShiftUpdateTimer.Stop();
+			hueShiftUpdateTimer.Start();
+		}
+
+		private void SaturationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (!(sender is Slider slider))
+				return;
+
+			saturationToApply = slider.Value;
+			saturationUpdateTimer.Stop();
+			saturationUpdateTimer.Start();
+		}
+		private void LightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (!(sender is Slider slider))
+				return;
+
+			lightnessToApply = slider.Value;
+			lightnessUpdateTimer.Stop();
+			lightnessUpdateTimer.Start();
+		}
+
+		Slider GetActiveHueSlider()
+		{
+			return GetActiveSlider("HueSlider");
+		}
+
+		Slider GetActiveSaturationSlider()
+		{
+			return GetActiveSlider("SaturationSlider");
+		}
+
+		Slider GetActiveLightnessSlider()
+		{
+			return GetActiveSlider("LightnessSlider");
+		}
+
+		Slider GetActiveContrastSlider()
+		{
+			return GetActiveSlider("ContrastSlider");
+		}
+
+		private Slider GetActiveSlider(string sliderName)
+		{
+
+			StackPanel spHueShift = FindResource("spHueShift") as StackPanel;
+			if (spHueShift != null)
+				foreach (UIElement uIElement in spHueShift.Children)
+					if (uIElement is Slider slider && slider.Name == sliderName)
+						return slider;
+			return null;
+		}
+
+		private void HueShiftReset_Click(object sender, RoutedEventArgs e)
+		{
+			ResetHueSlider();
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.HueShift = 0;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void ResetHueSlider()
+		{
+			Slider activeHueSlider = GetActiveHueSlider();
+			if (activeHueSlider != null)
+				activeHueSlider.Value = 0;
+		}
+
+		private void SaturationReset_Click(object sender, RoutedEventArgs e)
+		{
+			ResetSaturationSlider();
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Saturation = 0;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void ResetSaturationSlider()
+		{
+			Slider activeSaturationSlider = GetActiveSaturationSlider();
+			if (activeSaturationSlider != null)
+				activeSaturationSlider.Value = 0;
+		}
+
+		private void LightnessReset_Click(object sender, RoutedEventArgs e)
+		{
+			ResetLightnessSlider();
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Lightness = 0;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void ResetLightnessSlider()
+		{
+			Slider activeLightnessSlider = GetActiveLightnessSlider();
+			if (activeLightnessSlider != null)
+				activeLightnessSlider.Value = 0;
+		}
+
+		private void ContrastReset_Click(object sender, RoutedEventArgs e)
+		{
+			ResetContrastSlider();
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Contrast = 0;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void ResetContrastSlider()
+		{
+			Slider activeContrastSlider = GetActiveContrastSlider();
+			if (activeContrastSlider != null)
+				activeContrastSlider.Value = 0;
+		}
+
+		private void btnShowColorControls_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			StackPanel spHueShift = FindResource("spHueShift") as StackPanel;
+			if (spHueShift != null)
+			{
+				spHueShift.Visibility = Visibility.Visible;
+				Viewbox btnShowColorControls = FindResource("btnShowColorControls") as Viewbox;
+				if (btnShowColorControls != null)
+					btnShowColorControls.Visibility = Visibility.Hidden;
+			}
+		}
+
+		private void DeleteSelected_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				stampsLayer.RemoveAllStamps(SelectedStamps);
+				SelectedStamps.Clear();
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		double? clipboardSaturation;
+		double? clipboardLightness;
+		double? clipboardContrast;
+		double? clipboardHue;
+
+		private void CopyColorMod_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			double? selectedButtonScale;
+			GetConsistentModSettings(out selectedButtonScale, out clipboardHue, out clipboardSaturation, out clipboardLightness, out clipboardContrast);
+		}
+
+		private void PasteColorMod_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+				{
+					if (clipboardLightness.HasValue)
+						stamp.Lightness = clipboardLightness.Value;
+					if (clipboardContrast.HasValue)
+						stamp.Contrast = clipboardContrast.Value;
+					if (clipboardHue.HasValue)
+						stamp.HueShift = clipboardHue.Value;
+					if (clipboardSaturation.HasValue)
+						stamp.Saturation = clipboardSaturation.Value;
+				}
+				
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void ContrastSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (!(sender is Slider slider))
+				return;
+
+			contrastToApply = slider.Value;
+			contrastUpdateTimer.Stop();
+			contrastUpdateTimer.Start();
+		}
+
+		private void ResetAllColorMods_Click(object sender, RoutedEventArgs e)
+		{
+			ResetSaturationSlider();
+			ResetLightnessSlider();
+			ResetHueSlider();
+			ResetContrastSlider();
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+				{
+					stamp.HueShift = 0;
+					stamp.Saturation = 0;
+					stamp.Lightness = 0;
+					stamp.Contrast = 0;
+				}
 			}
 			finally
 			{

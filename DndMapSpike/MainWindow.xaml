@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DndMapSpike"
 		xmlns:mapUI="clr-namespace:MapUI;assembly=MapUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="850" Width="1200">
+        Title="MainWindow" Height="850" Width="1200" FontSize="9">
 	<Window.Resources>
 		<RoutedUICommand x:Key="Commands.ZoomOut" />
 		<RoutedUICommand x:Key="Commands.ZoomIn" />
@@ -14,6 +14,9 @@
 		<RoutedUICommand x:Key="Commands.Fill" />
 		<RoutedUICommand x:Key="Commands.OneHundredPercent" />
 		<RoutedUICommand x:Key="Commands.CancelStampMode" />
+		<RoutedUICommand x:Key="Commands.DeleteSelected" />
+		<RoutedUICommand x:Key="Commands.CopyColorMod" />
+		<RoutedUICommand x:Key="Commands.PasteColorMod" />
 		<mapUI:ScaleToPercentConverter x:Key="scaleToPercentConverter"/>
 		<Style TargetType="{x:Type RadioButton}" >
 			<Setter Property="Template">
@@ -211,12 +214,146 @@
 				<Polygon Points="9.5,8.5 9.5,25.5 27.5,25.5 27.5,8.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
 			</Canvas>
 		</Viewbox>
+		<Viewbox x:Key="btnShowColorControls" MouseDown="btnShowColorControls_MouseDown">
+			<Canvas Width="35" Height="36">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M35.5,2.25C35.5,0.75,34.3125,-0.5,32.8125,-0.5L2.25,-0.5C0.75,-0.5,-0.5,0.75,-0.5,2.25L-0.5,33.8125C-0.5,35.3125,0.75,36.5,2.25,36.5L32.8125,36.5C34.3125,36.5,35.5,35.3125,35.5,33.8125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M34.5,2.6875C34.5,1.5,33.5625,0.5,32.375,0.5L2.6875,0.5C1.5,0.5,0.5,1.5,0.5,2.6875L0.5,32.375C0.5,33.5625,1.5,34.5,2.6875,34.5L32.375,34.5C33.5625,34.5,34.5,33.5625,34.5,32.375z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="2.5,3.5 2.5,10.5 5.5,10.5 5.5,3.5" FillRule="EvenOdd" Fill="#FFFF2600" Stroke="{x:Null}" />
+				<Polygon Points="5.5,3.5 5.5,10.5 8.5,10.5 8.5,3.5" FillRule="EvenOdd" Fill="#FFFFAE00" Stroke="{x:Null}" />
+				<Polygon Points="8.5,3.5 8.5,10.5 11.5,10.5 11.5,3.5" FillRule="EvenOdd" Fill="#FFABFF00" Stroke="{x:Null}" />
+				<Polygon Points="11.5,3.5 11.5,10.5 14.5,10.5 14.5,3.5" FillRule="EvenOdd" Fill="#FF0CFF00" Stroke="{x:Null}" />
+				<Polygon Points="14.5,3.5 14.5,10.5 17.5,10.5 17.5,3.5" FillRule="EvenOdd" Fill="#FF00FFA5" Stroke="{x:Null}" />
+				<Polygon Points="17.5,3.5 17.5,10.5 20.5,10.5 20.5,3.5" FillRule="EvenOdd" Fill="#FF00B2FF" Stroke="{x:Null}" />
+				<Polygon Points="20.5,3.5 20.5,10.5 23.5,10.5 23.5,3.5" FillRule="EvenOdd" Fill="#FF0039FF" Stroke="{x:Null}" />
+				<Polygon Points="23.5,3.5 23.5,10.5 26.5,10.5 26.5,3.5" FillRule="EvenOdd" Fill="#FF6600FF" Stroke="{x:Null}" />
+				<Polygon Points="26.5,3.5 26.5,10.5 29.5,10.5 29.5,3.5" FillRule="EvenOdd" Fill="#FFF800FF" Stroke="{x:Null}" />
+				<Polygon Points="29.5,3.5 29.5,10.5 32.5,10.5 32.5,3.5" FillRule="EvenOdd" Fill="#FFFF006B" Stroke="{x:Null}" />
+				<Polygon Points="2.5,14.5 2.5,20.5 5.5,20.5 5.5,14.5" FillRule="EvenOdd" Fill="#FFFFE5E5" Stroke="{x:Null}" />
+				<Polygon Points="5.5,14.5 5.5,20.5 8.5,20.5 8.5,14.5" FillRule="EvenOdd" Fill="#FFFFCCCC" Stroke="{x:Null}" />
+				<Polygon Points="8.5,14.5 8.5,20.5 11.5,20.5 11.5,14.5" FillRule="EvenOdd" Fill="#FFFFB2B2" Stroke="{x:Null}" />
+				<Polygon Points="11.5,14.5 11.5,20.5 14.5,20.5 14.5,14.5" FillRule="EvenOdd" Fill="#FFFF9999" Stroke="{x:Null}" />
+				<Polygon Points="14.5,14.5 14.5,20.5 17.5,20.5 17.5,14.5" FillRule="EvenOdd" Fill="#FFFF7F7F" Stroke="{x:Null}" />
+				<Polygon Points="17.5,14.5 17.5,20.5 20.5,20.5 20.5,14.5" FillRule="EvenOdd" Fill="#FFFF6666" Stroke="{x:Null}" />
+				<Polygon Points="20.5,14.5 20.5,20.5 23.5,20.5 23.5,14.5" FillRule="EvenOdd" Fill="#FFFF4D4D" Stroke="{x:Null}" />
+				<Polygon Points="23.5,14.5 23.5,20.5 26.5,20.5 26.5,14.5" FillRule="EvenOdd" Fill="#FFFF3333" Stroke="{x:Null}" />
+				<Polygon Points="26.5,14.5 26.5,20.5 29.5,20.5 29.5,14.5" FillRule="EvenOdd" Fill="#FFFF1A1A" Stroke="{x:Null}" />
+				<Polygon Points="29.5,14.5 29.5,20.5 32.5,20.5 32.5,14.5" FillRule="EvenOdd" Fill="#FFFF0000" Stroke="{x:Null}" />
+				<Polygon Points="5.5,25.5 5.5,31.5 7.5,31.5 7.5,25.5" FillRule="EvenOdd" Fill="#FFE6E6E6" Stroke="{x:Null}" />
+				<Polygon Points="7.5,25.5 7.5,31.5 10.5,31.5 10.5,25.5" FillRule="EvenOdd" Fill="#FFCCCCCC" Stroke="{x:Null}" />
+				<Polygon Points="10.5,25.5 10.5,31.5 13.5,31.5 13.5,25.5" FillRule="EvenOdd" Fill="#FFB3B3B3" Stroke="{x:Null}" />
+				<Polygon Points="13.5,25.5 13.5,31.5 16.5,31.5 16.5,25.5" FillRule="EvenOdd" Fill="#FF999999" Stroke="{x:Null}" />
+				<Polygon Points="16.5,25.5 16.5,31.5 18.5,31.5 18.5,25.5" FillRule="EvenOdd" Fill="#FF808080" Stroke="{x:Null}" />
+				<Polygon Points="18.5,25.5 18.5,31.5 21.5,31.5 21.5,25.5" FillRule="EvenOdd" Fill="#FF666666" Stroke="{x:Null}" />
+				<Polygon Points="21.5,25.5 21.5,31.5 24.5,31.5 24.5,25.5" FillRule="EvenOdd" Fill="#FF4D4D4D" Stroke="{x:Null}" />
+				<Polygon Points="24.5,25.5 24.5,31.5 27.5,31.5 27.5,25.5" FillRule="EvenOdd" Fill="#FF333333" Stroke="{x:Null}" />
+				<Polygon Points="27.5,25.5 27.5,31.5 29.5,31.5 29.5,25.5" FillRule="EvenOdd" Fill="#FF1A1A1A" Stroke="{x:Null}" />
+				<Polygon Points="29.5,25.5 29.5,31.5 32.5,31.5 32.5,25.5" FillRule="EvenOdd" Fill="#FF000000" Stroke="{x:Null}" />
+				<Polygon Points="2.5,25.5 2.5,31.5 5.5,31.5 5.5,25.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
 
+		<StackPanel x:Key="spHueShift" Orientation="Vertical" Width="200" Background="#FF4472C4">
+			<Slider x:Name="HueSlider" Orientation="Horizontal" Value="0" Maximum="180" Minimum="-180" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="HueShiftSlider_ValueChanged">
+				<Slider.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
+						<MenuItem Header="Paste Color Mod" Command="{StaticResource Commands.PasteColorMod}"></MenuItem>
+						<Separator></Separator>
+						<MenuItem Header="Reset Hue Shift" Click="HueShiftReset_Click"></MenuItem>
+						<MenuItem Header="Reset All" Click="ResetAllColorMods_Click"></MenuItem>
+					</ContextMenu>
+				</Slider.ContextMenu>
+			</Slider>
+			<Grid HorizontalAlignment="Stretch" Margin="3, -3, 0, 2">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Text="-180" Width="Auto" Height="Auto" Foreground="White"/>
+				<TextBlock Grid.Column="1" Text="Hue" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
+				<TextBlock Grid.Column="2" Text="180" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
+			</Grid>
+			<Slider x:Name="SaturationSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="SaturationSlider_ValueChanged">
+				<Slider.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
+						<MenuItem Header="Paste Color Mod" Command="{StaticResource Commands.PasteColorMod}"></MenuItem>
+						<Separator></Separator>
+						<MenuItem Header="Reset Saturation" Click="SaturationReset_Click"></MenuItem>
+						<MenuItem Header="Reset All" Click="ResetAllColorMods_Click"></MenuItem>
+					</ContextMenu>
+				</Slider.ContextMenu>
+			</Slider>
+			<Grid HorizontalAlignment="Stretch" Margin="3, -3, 0, 2">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Text="-100" Width="Auto" Height="Auto" Foreground="White"/>
+				<TextBlock Grid.Column="1" Text="Sat" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
+				<TextBlock Grid.Column="2" Text="100" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
+			</Grid>
+			<Slider x:Name="LightnessSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="LightnessSlider_ValueChanged">
+				<Slider.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
+						<MenuItem Header="Paste Color Mod" Command="{StaticResource Commands.PasteColorMod}"></MenuItem>
+						<Separator></Separator>
+						<MenuItem Header="Reset Lightness" Click="LightnessReset_Click"></MenuItem>
+						<MenuItem Header="Reset All" Click="ResetAllColorMods_Click"></MenuItem>
+					</ContextMenu>
+				</Slider.ContextMenu>
+			</Slider>
+			<Grid HorizontalAlignment="Stretch" Margin="3, -3, 0, 2">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Text="-100" Width="Auto" Height="Auto" Foreground="White"/>
+				<TextBlock Grid.Column="1" Text="Light" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
+				<TextBlock Grid.Column="2" Text="100" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
+			</Grid>
+			<Slider x:Name="ContrastSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="ContrastSlider_ValueChanged">
+				<Slider.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
+						<MenuItem Header="Paste Color Mod" Command="{StaticResource Commands.PasteColorMod}"></MenuItem>
+						<Separator></Separator>
+						<MenuItem Header="Reset Contrast" Click="ContrastReset_Click"></MenuItem>
+						<MenuItem Header="Reset All" Click="ResetAllColorMods_Click"></MenuItem>
+					</ContextMenu>
+				</Slider.ContextMenu>
+			</Slider>
+			<Grid HorizontalAlignment="Stretch" Margin="3, -3, 0, 2">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Text="-100" Width="Auto" Height="Auto" Foreground="White"/>
+				<TextBlock Grid.Column="1" Text="Contrast" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
+				<TextBlock Grid.Column="2" Text="100" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
+			</Grid>
+		</StackPanel>
 
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
 		<KeyBinding Key="Esc" Command="{StaticResource Commands.CancelStampMode}"/>
+		<KeyBinding Key="Delete" Command="{StaticResource Commands.DeleteSelected}"/>
+		<KeyBinding Key="C" Modifiers="Ctrl+Alt" Command="{StaticResource Commands.CopyColorMod}"/>
+		<KeyBinding Key="V" Modifiers="Ctrl+Alt" Command="{StaticResource Commands.PasteColorMod}"/>
 		<KeyBinding Key="Plus" Command="{StaticResource Commands.ZoomIn}"/>
 		<KeyBinding Key="Backspace" Command="{StaticResource Commands.JumpBackToPrevZoom}"/>
 	</Window.InputBindings>
@@ -227,6 +364,9 @@
 		<CommandBinding Command="{StaticResource Commands.Fill}" Executed="Fill_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.OneHundredPercent}" Executed="OneHundredPercent_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.CancelStampMode}" Executed="CancelStampMode_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.DeleteSelected}" Executed="DeleteSelected_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.CopyColorMod}" Executed="CopyColorMod_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.PasteColorMod}" Executed="PasteColorMod_Executed"/>
 	</Window.CommandBindings>
 	<Grid>
 		<Grid.ColumnDefinitions>
@@ -239,7 +379,7 @@
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<StackPanel x:Name="spToolbar" Orientation="Horizontal">
+		<StackPanel x:Name="spToolbar" Orientation="Horizontal" Visibility="Hidden">
 			<RadioButton x:Name="btnSelect" IsChecked="True" Checked="BtnSelect_Checked">
 				<StackPanel>
 					<Viewbox HorizontalAlignment="Center" VerticalAlignment="Center" >

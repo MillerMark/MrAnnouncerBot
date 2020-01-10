@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.IO;
+using System.Windows.Resources;
 
 namespace Imaging
 {
@@ -159,37 +160,78 @@ namespace Imaging
 			Color pixelColor = GetPixelColor(image.Source as BitmapSource, x, y);
 			return pixelColor.A > 128;
 		}
-		public static Image CreateImage(int angle, double scaleX, double scaleY, string fileName)
+		public static Image CreateImage(int angle, double hueShift, double saturationAdjust, double lightnessAdjust, double contrast, double scaleX, double scaleY, string fileName)
 		{
-			Image image = new Image();
-
 			TransformedBitmap transformBmp = new TransformedBitmap();
 
-			BitmapImage bmpImage = new BitmapImage();
+			BitmapSource bitmapSource;
 
-			bmpImage.BeginInit();
+			if (hueShift == 0 && saturationAdjust == 0 && lightnessAdjust == 0 && contrast == 0)
+			{
+				BitmapImage bmpImage = new BitmapImage();
+				bmpImage.BeginInit();
+				bmpImage.UriSource = new Uri(fileName, UriKind.RelativeOrAbsolute);
+				bmpImage.EndInit();
+				bitmapSource = bmpImage;
+			}
+			else
+			{
+				BitmapDecoder dec = BitmapDecoder.Create(new Uri(fileName), BitmapCreateOptions.None, BitmapCacheOption.Default);
+				BitmapFrame firstFrame = dec.Frames[0];
+				const int bytesPerPixel = 4;
+				byte[] pixels = new byte[firstFrame.PixelWidth * firstFrame.PixelHeight * bytesPerPixel];
+				firstFrame.CopyPixels(pixels, firstFrame.PixelWidth * bytesPerPixel, 0);
 
-			bmpImage.UriSource = new Uri(fileName, UriKind.RelativeOrAbsolute);
+				for (int i = 0; i < pixels.Length / 4; ++i)
+				{
+					int index = i * 4;
+					const int blueOffset = 0;
+					const int greenOffset = 1;
+					const int redOffset = 2;
+					const int alphaOffset = 3;
+					
+					byte b = pixels[index + blueOffset];
+					byte g = pixels[index + greenOffset];
+					byte r = pixels[index + redOffset];
+					byte a = pixels[index + alphaOffset];
+					HueSatLight hueSatLight = new HueSatLight(Color.FromArgb(a, r, g, b));
+					if (hueShift != 0)
+						hueSatLight.HueShiftDegrees(hueShift);
+					if (saturationAdjust != 0)
+						hueSatLight.AdjustSaturation(saturationAdjust);
+					if (lightnessAdjust != 0)
+						hueSatLight.AdjustLightness(lightnessAdjust);
 
-			bmpImage.EndInit();
+					if (contrast != 0)
+						hueSatLight.AdjustContrast(contrast, (lightnessAdjust + 100) / 200);
+					Color shifted = hueSatLight.AsRGB;
+					pixels[index + blueOffset] = shifted.B;
+					pixels[index + greenOffset] = shifted.G;
+					pixels[index + redOffset] = shifted.R;
+					pixels[index + alphaOffset] = shifted.A;
+				}
+
+				// Write the modified pixels into a new bitmap and set that to the source
+				var writeableBitmap = new WriteableBitmap(firstFrame.PixelWidth, firstFrame.PixelHeight, firstFrame.DpiX, firstFrame.DpiY, PixelFormats.Pbgra32, null);
+				writeableBitmap.WritePixels(new Int32Rect(0, 0, firstFrame.PixelWidth, firstFrame.PixelHeight), pixels, firstFrame.PixelWidth * bytesPerPixel, 0);
+				bitmapSource = writeableBitmap;
+			}
 
 			transformBmp.BeginInit();
-
-			transformBmp.Source = bmpImage;
-
+			transformBmp.Source = bitmapSource;
 			RotateTransform rotation = new RotateTransform(angle);
 			ScaleTransform scaling = new ScaleTransform(scaleX, scaleY);
 			TransformGroup group = new TransformGroup();
 			group.Children.Add(rotation);
 			group.Children.Add(scaling);
-
 			transformBmp.Transform = group;
-
 			transformBmp.EndInit();
 
-			image.Source = transformBmp;
+			Image result = new Image();
 
-			return image;
+			result.Source = transformBmp;
+
+			return result;
 		}
 	}
 }

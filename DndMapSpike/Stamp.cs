@@ -92,7 +92,7 @@ namespace DndMapSpike
 			get
 			{
 				if (image == null)
-					image = ImageUtils.CreateImage(GetAngle(Rotation), ScaleX, ScaleY, FileName);
+					image = ImageUtils.CreateImage(GetAngle(Rotation), HueShift, Saturation, Lightness, Contrast, ScaleX, ScaleY, FileName);
 
 				return image;
 			}
@@ -202,6 +202,72 @@ namespace DndMapSpike
 			get
 			{
 				return Math.Sqrt(Width * Width + Height * Height);
+			}
+		}
+		double hueShift;
+		public double HueShift
+		{
+			get
+			{
+				return hueShift;
+			}
+			set
+			{
+				if (hueShift == value)
+					return;
+
+				image = null;
+				hueShift = value;
+			}
+		}
+
+		double saturation;
+		public double Saturation
+		{
+			get
+			{
+				return saturation;
+			}
+			set
+			{
+				if (saturation == value)
+					return;
+
+				image = null;
+				saturation = value;
+			}
+		}
+		double lightness;
+		public double Lightness
+		{
+			get
+			{
+				return lightness;
+			}
+			set
+			{
+				if (lightness == value)
+					return;
+
+				image = null;
+				lightness = value;
+			}
+		}
+
+		double contrast;
+		public double Contrast
+		{
+			get
+			{
+				return contrast;
+			}
+			set
+			{
+				if (contrast == value)
+					return;
+
+				image = null;
+				contrast = value;
 			}
 		}
 

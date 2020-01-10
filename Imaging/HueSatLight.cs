@@ -27,6 +27,7 @@ namespace Imaging
 			Hue = color.GetHue() / 360.0; // Convert from range of 0-360 to 0.0-1.0.
 			Lightness = color.GetBrightness();
 			Saturation = color.GetSaturation();
+			Alpha = color.A / 255.0;
 		}
 
 		public HueSatLight(double hue, double saturation, double lightness)
@@ -141,7 +142,7 @@ namespace Imaging
 			else
 				G = Math.Pow(((GsRGB + 0.055) / 1.055), 2.4);
 
-			
+
 			if (BsRGB <= 0.03928)
 				B = BsRGB / 12.92;
 			else
@@ -151,9 +152,66 @@ namespace Imaging
 			return luminance;
 		}
 		#endregion
-		void HueShiftDegrees()
+		public void HueShiftDegrees(double degrees)
 		{
-			
+			hue += degrees / 360.0;
+			while (hue < 0)
+			{
+				hue++;
+			}
+			while (hue > 1)
+			{
+				hue--;
+			}
+		}
+
+		/// <summary>
+		/// Adjusts the saturation by the specified amount. 
+		/// </summary>
+		/// <param name="saturationAdjust">A value between -100 and 100. Negative values reduce saturation; positive values increase saturation.</param>
+		public void AdjustSaturation(double saturationAdjust)
+		{
+			if (saturationAdjust > 0)
+				Saturation += (1 - Saturation) * saturationAdjust / 100;
+			else
+				Saturation += Saturation * saturationAdjust / 100;
+		}
+
+		/// <summary>
+		/// Adjusts the Lightness by the specified amount. 
+		/// </summary>
+		/// <param name="lightnessAdjust">A value between -100 and 100. Negative values darken the color; positive values lighten the color.</param>
+		public void AdjustLightness(double lightnessAdjust)
+		{
+			if (lightnessAdjust > 0)
+				Lightness += (1 - Lightness) * lightnessAdjust / 100;
+			else
+				Lightness += Lightness * lightnessAdjust / 100;
+		}
+
+
+		/// <summary>
+		/// Adjusts the contrast by the specified amount. 
+		/// </summary>
+		/// <param name="contrast">A value between -100 and 100. Negative values reduce contrast (move more toward the threshold value); positive values increase the contrast (move away from the threshold value).</param>
+		/// <param name="threshold">A value between 0 and 1, around which contrast is adjusted.</param>
+		public void AdjustContrast(double contrast, double threshold)
+		{
+			double testBright = GetRelativeLuminance();
+			double divisor = 50d;
+			if (contrast > 0)  // Increase contrast.
+				if (testBright > threshold)  // Brighten - move away from the threshold...
+					Lightness += (Lightness - threshold) * contrast / divisor;
+				else    // Darken - move away from the threshold...
+					Lightness -= (threshold - Lightness) * contrast / divisor;
+			else // Reduce contrast...
+			{
+				divisor = 100d;
+				if (testBright > threshold)  // Move closer (darker) to threshold (contrast is negative)...
+					Lightness += (Lightness - threshold) * contrast / divisor;
+				else    // Move closer (lighter) to threshold (contrast is negative)...
+					Lightness -= (threshold - Lightness) * contrast / divisor;
+			}
 		}
 
 		// public properties...
