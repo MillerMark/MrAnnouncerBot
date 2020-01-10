@@ -27,6 +27,8 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		// TODO: Delete resizeHandleDiameter
+		const double resizeHandleDiameter = 10;
 		private const int StampButtonSize = 36;
 		List<Stamp> selectedStamps;
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
@@ -1200,6 +1202,8 @@ namespace DndMapSpike
 			}
 			else
 			{
+				if (Keyboard.IsKeyDown(Key.Space))
+					return;
 				ClearStampSelection();
 				SelectedStamps.Clear();
 			}
@@ -1263,11 +1267,11 @@ namespace DndMapSpike
 			UpdateStampSelectionUI();
 		}
 
-		void CreateResizeCorner(int left, int top, SizeDirection sizeDirection, Stamp stamp)
+		void CreateResizeCorner(ResizeTracker resizeTracker, int left, int top, SizeDirection sizeDirection, Stamp stamp)
 		{
 			Ellipse ellipse = new Ellipse();
-			const double sizeDiameterPixels = 10;
-			double sizeDiameter = sizeDiameterPixels / zoomAndPanControl.ContentScale;
+			resizeTracker.AddCorner(ellipse, sizeDirection);
+			double sizeDiameter = ResizeTracker.ResizeHandleDiameter / zoomAndPanControl.ContentScale;
 			ellipse.Width = sizeDiameter;
 			ellipse.Height = sizeDiameter;
 			ellipse.Fill = Brushes.White;
@@ -1286,26 +1290,268 @@ namespace DndMapSpike
 					ellipse.Cursor = Cursors.SizeNESW;
 					break;
 			}
-			ellipse.Tag = new ResizeTracker(stamp, sizeDirection);
+			ellipse.Tag = resizeTracker;
 			ellipse.MouseDown += ResizeTracker_MouseDown;
-			ellipse.MouseMove += Ellipse_MouseMove;
-			ellipse.MouseUp += Ellipse_MouseUp;
+			ellipse.MouseMove += ResizeTracker_MouseMove;
+			ellipse.MouseUp += ResizeTracker_MouseUp;
 			stampSelectionCanvas.Children.Add(ellipse);
 		}
 
-		private void Ellipse_MouseUp(object sender, MouseButtonEventArgs e)
+		Point resizeOppositeCornerPosition;
+		double mouseResizeOffsetX;
+		double mouseResizeOffsetY;
+
+		private void ResizeTracker_MouseUp(object sender, MouseButtonEventArgs e)
 		{
+			if (!(sender is Ellipse ellipse))
+				return;
+			ellipse.ReleaseMouseCapture();
+
+			if (!(ellipse.Tag is ResizeTracker resizeTracker))
+				return;
+
+			double left, top, right, bottom;
+			SizeDirection direction = resizeTracker.GetDirection(ellipse);
+			GetNewTrackerBounds(resizeTracker, direction, e, out left, out top, out right, out bottom);
+
+			double newWidth = right - left;
+			double scaleAdjust = newWidth / resizeTracker.Stamp.Width;
+
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Scale *= scaleAdjust;
+
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+
+			
+			activeStampResizing = null;
 		}
 
-		private void Ellipse_MouseMove(object sender, MouseEventArgs e)
+		
+
+		private void ResizeTracker_MouseMove(object sender, MouseEventArgs e)
 		{
+			if (activeStampResizing == null)
+				return;
+			else
+			{
+				if (!(sender is Ellipse ellipse))
+					return;
+
+				if (!(ellipse.Tag is ResizeTracker resizeTracker))
+					return;
+
+				double left, top, right, bottom;
+				SizeDirection direction = resizeTracker.GetDirection(ellipse);
+				GetNewTrackerBounds(resizeTracker, direction, e, out left, out top, out right, out bottom);
+
+				resizeTracker.Reposition(zoomAndPanControl.ContentScale, left, top, right, bottom);
+			}
+		}
+
+		private void GetNewTrackerBounds(ResizeTracker resizeTracker, SizeDirection direction, MouseEventArgs e, out double left, out double top, out double right, out double bottom)
+		{
+			left = 0;
+			top = 0;
+			right = 0;
+			bottom = 0;
+			if (resizeTracker == null)
+				return;
+			Point newPosition = e.GetPosition(stampSelectionCanvas);
+			newPosition.Offset(-mouseResizeOffsetX, -mouseResizeOffsetY);
+			double oppositeX = resizeOppositeCornerPosition.X;
+			double oppositeY = resizeOppositeCornerPosition.Y;
+			double deltaX = newPosition.X - oppositeX;
+			double deltaY = newPosition.Y - oppositeY;
+			double newAspectRatio = deltaX / deltaY;
+			Stamp stamp = resizeTracker.Stamp;
+			double originalAspectRatio = (double)stamp.Width / stamp.Height;
+			double newX = newPosition.X;
+			double newY = newPosition.Y;
+			double leftAdjust = 0;
+			double topAdjust = 0;
+			double rightAdjust = 0;
+			double bottomAdjust = 0;
+
+
+			// For debugging...
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+			{
+
+			}
+			double newWidth = originalAspectRatio * deltaY;
+			double newHeight = deltaX / originalAspectRatio;
+			bool dataIsGood = true;
+			switch (direction)
+			{
+				case SizeDirection.NorthWest:
+					if (originalAspectRatio < newAspectRatio)
+					{
+						newX = oppositeX + newWidth;
+						newHeight = newWidth / originalAspectRatio;
+					}
+					else
+					{
+						newY = oppositeY + newHeight;
+						newWidth = newHeight * originalAspectRatio;
+					}
+					rightAdjust = -newWidth - stamp.Width;
+					bottomAdjust = -newHeight - stamp.Height;
+					dataIsGood = newX < oppositeX && newY < oppositeY;
+					break;
+				case SizeDirection.NorthEast:
+					if (originalAspectRatio < newAspectRatio)
+					{
+						newX = oppositeX + newWidth;
+						newHeight = newWidth / originalAspectRatio;
+					}
+					else
+					{
+						newY = oppositeY - newHeight;
+						newWidth = newHeight * originalAspectRatio;
+					}
+					dataIsGood = newX > oppositeX && newY < oppositeY;
+
+					leftAdjust = stamp.Width - newWidth;
+					bottomAdjust = newHeight - stamp.Height;
+					if (bottomAdjust != 0)
+					{
+						
+					}
+					break;
+				case SizeDirection.SouthWest:
+					//topAdjust = -(stamp.Height + newHeight);
+					if (originalAspectRatio < newAspectRatio)
+					{
+						newX = oppositeX - newWidth;
+						newHeight = newWidth / originalAspectRatio;
+					}
+					else
+					{
+						newY = oppositeY - newHeight;
+						newWidth = newHeight * originalAspectRatio;
+					}
+					rightAdjust = -stamp.Width - newWidth;
+
+					topAdjust = newHeight + stamp.Height;
+					dataIsGood = newX < oppositeX && newY > oppositeY;
+					break;
+				case SizeDirection.SouthEast:
+					if (originalAspectRatio < newAspectRatio)
+					{
+						newX = oppositeX + newWidth;
+						newHeight = newWidth / originalAspectRatio;
+					}
+					else
+					{
+						newY = oppositeY + newHeight;
+						newWidth = newHeight * originalAspectRatio;
+					}
+					dataIsGood = newX > oppositeX && newY > oppositeY;
+					if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+					{
+						
+					}
+					leftAdjust = stamp.Width - newWidth;
+					topAdjust = stamp.Height - newHeight;
+					break;
+			}
+
+			const double minSide = 20;
+
+			double width;
+			double height;
+			if (dataIsGood)
+			{
+				left = Math.Min(oppositeX + leftAdjust, newX);
+				top = Math.Min(oppositeY + topAdjust, newY);
+				right = Math.Max(oppositeX + rightAdjust, newX);
+				bottom = Math.Max(oppositeY + bottomAdjust, newY);
+
+				width = right - left;
+				height = bottom - top;
+
+				if (width < minSide)
+				{
+					width = minSide;
+					height = width / originalAspectRatio;
+				}
+				else if (height < minSide)
+				{
+					height = minSide;
+					width = height * originalAspectRatio;
+				}
+				else
+					return;
+
+			}
+			else
+			{
+				width = minSide;
+				height = width / originalAspectRatio;
+			}
+			left = stamp.X - width / 2;
+			top = stamp.Y - height / 2;
+			right = left + width;
+			bottom = top + height;
+
 		}
 
 		private void ResizeTracker_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+			if (!(sender is Ellipse ellipse))
+				return;
+			if (!(ellipse.Tag is ResizeTracker resizeTracker))
+				return;
+			Point ellipsePosition = e.GetPosition(ellipse);
+			mouseResizeOffsetX = ellipsePosition.X - ResizeTracker.ResizeHandleDiameter / 2;
+			mouseResizeOffsetY = ellipsePosition.Y - ResizeTracker.ResizeHandleDiameter / 2;
+			Point absolutePosition = e.GetPosition(stampSelectionCanvas);
+			absolutePosition.Offset(-mouseResizeOffsetX, -mouseResizeOffsetY);
+			Stamp stamp = resizeTracker.Stamp;
+
+			switch (resizeTracker.GetDirection(ellipse))
+			{
+				case SizeDirection.NorthWest:
+					resizeOppositeCornerPosition = new Point(absolutePosition.X + stamp.Width, absolutePosition.Y + stamp.Height);
+					break;
+				case SizeDirection.NorthEast:
+					resizeOppositeCornerPosition = new Point(absolutePosition.X - stamp.Width, absolutePosition.Y + stamp.Height);
+					break;
+				case SizeDirection.SouthWest:
+					resizeOppositeCornerPosition = new Point(absolutePosition.X + stamp.Width, absolutePosition.Y - stamp.Height);
+					break;
+				case SizeDirection.SouthEast:
+					resizeOppositeCornerPosition = new Point(absolutePosition.X - stamp.Width, absolutePosition.Y - stamp.Height);
+					break;
+			}
+			activeStampResizing = stamp;
+			resizeDiagonal = stamp.Diagonal;
+			ellipse.CaptureMouse();
 		}
 
-		void AddStampSelectionButtons(int left, int top, int width, int height)
+		void StackScaleButtons(string buttonName, double compareScale, double? selectedButtonScale, double buttonSize, double x, ref double y, int maxTop)
+		{
+			if (y < maxTop)
+				return;
+			Viewbox btnScale100Percent = CreateButton(buttonName, x - buttonSize, y, buttonSize);
+			if (!selectedButtonScale.HasValue || selectedButtonScale.Value != compareScale)
+			{
+				btnScale100Percent.Visibility = Visibility.Visible;
+				y -= buttonSize;
+			}
+			else
+				btnScale100Percent.Visibility = Visibility.Hidden;
+		}
+
+		void AddStampSelectionButtons(double? selectedButtonScale, int left, int top, int width, int height)
 		{
 			int right = left + width;
 			int bottom = top + height;
@@ -1313,16 +1559,28 @@ namespace DndMapSpike
 			double topRow = top - buttonSize;
 			CreateButton("btnRotateLeft", left - buttonSize, topRow, buttonSize);
 			CreateButton("btnRotateRight", right, topRow, buttonSize);
+			if (width >= buttonSize)
+				CreateButton("btnFlipVertical", left + width / 2 - buttonSize / 2, topRow, buttonSize);
+			if (height >= buttonSize)
+				CreateButton("btnFlipHorizontal", right, top + height / 2 - buttonSize / 2, buttonSize);
+
+			double yPos = bottom - buttonSize;
+			StackScaleButtons("btnScale33Percent", (double)1 / 3, selectedButtonScale, buttonSize, left, ref yPos, top);
+			StackScaleButtons("btnScale50Percent", (double)1 / 2, selectedButtonScale, buttonSize, left, ref yPos, top);
+			StackScaleButtons("btnScale100Percent", 1, selectedButtonScale, buttonSize, left, ref yPos, top);
+			StackScaleButtons("btnScale200Percent", 2, selectedButtonScale, buttonSize, left, ref yPos, top);
 		}
 
-		private void CreateButton(string buttonName, double x, double y, double buttonSize)
+		private Viewbox CreateButton(string buttonName, double x, double y, double buttonSize)
 		{
 			Viewbox viewbox = FindResource(buttonName) as Viewbox;
 			viewbox.Width = buttonSize;
 			viewbox.Height = buttonSize;
+			viewbox.Cursor = Cursors.Hand;
 			stampSelectionCanvas.Children.Add(viewbox);
 			Canvas.SetLeft(viewbox, x);
 			Canvas.SetTop(viewbox, y);
+			return viewbox;
 		}
 
 		void AddStampSelectionUI(Stamp stamp)
@@ -1332,16 +1590,18 @@ namespace DndMapSpike
 			int right = left + stamp.Width;
 			int bottom = top + stamp.Height;
 
-			AddStampSelectionRect(stamp, left, top);
-			CreateResizeCorner(left, top, SizeDirection.NorthWest, stamp);
-			CreateResizeCorner(right, top, SizeDirection.NorthEast, stamp);
-			CreateResizeCorner(left, bottom, SizeDirection.SouthWest, stamp);
-			CreateResizeCorner(right, bottom, SizeDirection.SouthEast, stamp);
+			ResizeTracker resizeTracker = new ResizeTracker(stamp);
+			AddStampSelectionRect(resizeTracker, stamp, left, top);
+			CreateResizeCorner(resizeTracker, left, top, SizeDirection.NorthWest, stamp);
+			CreateResizeCorner(resizeTracker, right, top, SizeDirection.NorthEast, stamp);
+			CreateResizeCorner(resizeTracker, left, bottom, SizeDirection.SouthWest, stamp);
+			CreateResizeCorner(resizeTracker, right, bottom, SizeDirection.SouthEast, stamp);
 		}
 
-		private void AddStampSelectionRect(Stamp stamp, int left, int top)
+		private void AddStampSelectionRect(ResizeTracker resizeTracker, Stamp stamp, int left, int top)
 		{
 			Rectangle selectionRect = new Rectangle();
+			resizeTracker.SelectionRect = selectionRect;
 			selectionRect.Width = stamp.Width;
 			selectionRect.Height = stamp.Height;
 			Canvas.SetLeft(selectionRect, left);
@@ -1351,20 +1611,30 @@ namespace DndMapSpike
 			stampSelectionCanvas.Children.Add(selectionRect);
 		}
 
-		void AddStampSelectionButtons()
+		void AddStampSelectionButtons(double? scale)
 		{
 			GetStampSelectedBounds(out int left, out int top, out int width, out int height);
-			AddStampSelectionButtons(left, top, width, height);
+			AddStampSelectionButtons(scale, left, top, width, height);
 
 		}
 		void UpdateStampSelectionUI()
 		{
 			ClearSelectionUI();
+			double? scale = null;
+			foreach (Stamp stamp in SelectedStamps)
+				if (scale == null)
+					scale = stamp.Scale;
+				else if (scale != stamp.Scale)
+				{
+					scale = null;
+					break;
+				}
+
+			AddStampSelectionButtons(scale);
 			foreach (Stamp stamp in SelectedStamps)
 				AddStampSelectionUI(stamp);
 
 			MoveSelectionCanvasToTop();
-			AddStampSelectionButtons();
 		}
 
 		private void HideTilingControls()
@@ -1768,6 +2038,8 @@ namespace DndMapSpike
 		double mouseDragAdjustX;
 		double mouseDragAdjustY;
 		Canvas stampSelectionCanvas;
+		Stamp activeStampResizing;
+		double resizeDiagonal;
 		void CreateFloatingStamp(ref Canvas canvas, Stamp knownStamp, int x = 0, int y = 0)
 		{
 			activeStamp = knownStamp;
@@ -1780,6 +2052,13 @@ namespace DndMapSpike
 			}
 			Image image = new Image();
 			image.Source = new BitmapImage(new Uri(knownStamp.FileName));
+			ScaleTransform scaleTransform = null;
+			if (knownStamp.FlipVertically || knownStamp.FlipHorizontally || knownStamp.Scale != 1)
+			{
+				scaleTransform = new ScaleTransform();
+				scaleTransform.ScaleX = knownStamp.ScaleX;
+				scaleTransform.ScaleY = knownStamp.ScaleY;
+			}
 			TransformGroup transformGroup = new TransformGroup();
 			RotateTransform rotation = null;
 			switch (knownStamp.Rotation)
@@ -1796,6 +2075,8 @@ namespace DndMapSpike
 			}
 			if (rotation != null)
 				transformGroup.Children.Add(rotation);
+			if (scaleTransform != null)
+				transformGroup.Children.Add(scaleTransform);
 
 			if (transformGroup.Children.Count > 0)
 				image.LayoutTransform = transformGroup;
@@ -1810,7 +2091,14 @@ namespace DndMapSpike
 
 		private void CancelStampMode_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			MapEditMode = MapEditModes.Select;
+			if (MapEditMode == MapEditModes.Stamp)
+				MapEditMode = MapEditModes.Select;
+			else
+			{
+				ClearSelectionUI();
+				ClearSelection();
+				SelectedStamps.Clear();
+			}
 		}
 
 		// TODO: Delete...
@@ -1830,10 +2118,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (Stamp stamp in SelectedStamps)
-				{
 					stamp.RotateRight();
-				}
-
 			}
 			finally
 			{
@@ -1848,10 +2133,97 @@ namespace DndMapSpike
 			try
 			{
 				foreach (Stamp stamp in SelectedStamps)
-				{
 					stamp.RotateLeft();
-				}
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
 
+		private void btnFlipVertical_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.FlipVertically = !stamp.FlipVertically;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnFlipHorizontal_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.FlipHorizontally = !stamp.FlipHorizontally;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnScale100Percent_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Scale = 1;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnScale200Percent_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Scale = 2;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnScale50Percent_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Scale = 0.5;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnScale33Percent_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (Stamp stamp in SelectedStamps)
+					stamp.Scale = (double)1 /3;
 			}
 			finally
 			{

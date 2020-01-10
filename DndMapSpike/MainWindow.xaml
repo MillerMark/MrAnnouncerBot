@@ -75,6 +75,103 @@
 				</Path>
 			</Canvas>
 		</Viewbox>
+		<Viewbox x:Key="btnScale33Percent" MouseDown="btnScale33Percent_MouseDown">
+			<Canvas Width="38" Height="37">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M37.5,2.375C37.5,0.8125,36.25,-0.5,34.6875,-0.5L3.375,-0.5C1.8125,-0.5,0.5,0.8125,0.5,2.375L0.5,33.6875C0.5,35.25,1.8125,36.5,3.375,36.5L34.6875,36.5C36.25,36.5,37.5,35.25,37.5,33.6875z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,3.1875C36.5,1.75,35.3125,0.5,33.875,0.5L4.1875,0.5C2.75,0.5,1.5,1.75,1.5,3.1875L1.5,32.875C1.5,34.3125,2.75,35.5,4.1875,35.5L33.875,35.5C35.3125,35.5,36.5,34.3125,36.5,32.875z" />
+					</Path.Data>
+				</Path>
+				<TextBlock Text="1/3" FontFamily="Calibri" FontSize="19" Foreground="#FFFFFFFF" Canvas.Left="6" Canvas.Top="6" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnScale50Percent" MouseDown="btnScale50Percent_MouseDown">
+			<Canvas Width="38" Height="37">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M37.5,2.375C37.5,0.8125,36.25,-0.5,34.6875,-0.5L3.375,-0.5C1.8125,-0.5,0.5,0.8125,0.5,2.375L0.5,33.6875C0.5,35.25,1.8125,36.5,3.375,36.5L34.6875,36.5C36.25,36.5,37.5,35.25,37.5,33.6875z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,4.125C36.5,2.6875,35.375,1.5,33.9375,1.5L4.125,1.5C2.6875,1.5,1.5,2.6875,1.5,4.125L1.5,32.9375C1.5,34.375,2.6875,35.5,4.125,35.5L33.9375,35.5C35.375,35.5,36.5,34.375,36.5,32.9375z" />
+					</Path.Data>
+				</Path>
+				<TextBlock Text="1/2" FontFamily="Calibri" FontSize="19" Foreground="#FFFFFFFF" Canvas.Left="6" Canvas.Top="7" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnScale200Percent" MouseDown="btnScale200Percent_MouseDown">
+			<Canvas Width="38" Height="38">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M37.5,3.375C37.5,1.8125,36.25,0.5,34.6875,0.5L3.375,0.5C1.8125,0.5,0.5,1.8125,0.5,3.375L0.5,34.6875C0.5,36.25,1.8125,37.5,3.375,37.5L34.6875,37.5C36.25,37.5,37.5,36.25,37.5,34.6875z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,4.125C36.5,2.6875,35.375,1.5,33.9375,1.5L4.125,1.5C2.6875,1.5,1.5,2.6875,1.5,4.125L1.5,32.9375C1.5,34.375,2.6875,35.5,4.125,35.5L33.9375,35.5C35.375,35.5,36.5,34.375,36.5,32.9375z" />
+					</Path.Data>
+				</Path>
+				<TextBlock Text="x2" FontFamily="Calibri" FontSize="24" Foreground="#FFFFFFFF" Canvas.Left="8" Canvas.Top="4" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnScale100Percent" MouseDown="btnScale100Percent_MouseDown">
+			<Canvas Width="38" Height="37">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M37.5,3.25C37.5,1.75,36.3125,0.5,34.8125,0.5L3.25,0.5C1.75,0.5,0.5,1.75,0.5,3.25L0.5,33.8125C0.5,35.3125,1.75,36.5,3.25,36.5L34.8125,36.5C36.3125,36.5,37.5,35.3125,37.5,33.8125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,4.125C36.5,2.6875,35.375,1.5,33.9375,1.5L4.125,1.5C2.6875,1.5,1.5,2.6875,1.5,4.125L1.5,32.9375C1.5,34.375,2.6875,35.5,4.125,35.5L33.9375,35.5C35.375,35.5,36.5,34.375,36.5,32.9375z" />
+					</Path.Data>
+				</Path>
+				<TextBlock Text="x1" FontFamily="Calibri" FontSize="24" Foreground="#FFFFFFFF" Canvas.Left="8" Canvas.Top="4" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnFlipVertical" MouseDown="btnFlipVertical_MouseDown">
+			<Canvas Width="36" Height="35">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M33.8125,35.5C35.3125,35.5,36.5,34.3125,36.5,32.8125L36.5,2.25C36.5,0.75,35.3125,-0.5,33.8125,-0.5L2.25,-0.5C0.75,-0.5,-0.5,0.75,-0.5,2.25L-0.5,32.8125C-0.5,34.3125,0.75,35.5,2.25,35.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M32.9375,34.5C34.375,34.5,35.5,33.375,35.5,31.9375L35.5,3.125C35.5,1.6875,34.375,0.5,32.9375,0.5L3.125,0.5C1.6875,0.5,0.5,1.6875,0.5,3.125L0.5,31.9375C0.5,33.375,1.6875,34.5,3.125,34.5z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="29.5,18.5 6.5,18.5 6.5,30.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="29.5,16.5 6.5,16.5 6.5,4.5" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+		<Viewbox x:Key="btnFlipHorizontal" MouseDown="btnFlipHorizontal_MouseDown" >
+			<Canvas Width="36" Height="35">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,2.25C36.5,0.75,35.3125,-0.5,33.8125,-0.5L2.25,-0.5C0.75,-0.5,-0.5,0.75,-0.5,2.25L-0.5,32.8125C-0.5,34.3125,0.75,35.5,2.25,35.5L33.8125,35.5C35.3125,35.5,36.5,34.3125,36.5,32.8125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M35.5,3.125C35.5,1.6875,34.375,0.5,32.9375,0.5L3.125,0.5C1.6875,0.5,0.5,1.6875,0.5,3.125L0.5,31.9375C0.5,33.375,1.6875,34.5,3.125,34.5L32.9375,34.5C34.375,34.5,35.5,33.375,35.5,31.9375z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="18.5,5.5 18.5,28.5 31.5,28.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="17.5,5.5 17.5,28.5 4.5,28.5" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>

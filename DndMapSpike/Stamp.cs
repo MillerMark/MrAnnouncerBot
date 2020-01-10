@@ -10,8 +10,36 @@ namespace DndMapSpike
 {
 	public class Stamp
 	{
+		
+		public bool FlipHorizontally
+		{
+			get { return flipHorizontally; }
+			set
+			{
+				if (flipHorizontally == value)
+					return;
+
+				image = null;
+				flipHorizontally = value;
+			}
+		}
+		public bool FlipVertically
+		{
+			get { return flipVertically; }
+			set
+			{
+				if (flipVertically == value)
+					return;
+
+				image = null;
+				flipVertically = value;
+			}
+		}
+
 		public int RelativeX { get; set; }
 		public int RelativeY { get; set; }
+		bool flipHorizontally;
+		bool flipVertically;
 		StampRotation rotation;
 		public StampRotation Rotation
 		{
@@ -58,48 +86,38 @@ namespace DndMapSpike
 			}
 			return 0;
 		}
-
+		
 		public Image Image
 		{
 			get
 			{
 				if (image == null)
-					image = CreateImage(GetAngle(Rotation), Scale);
+					image = ImageUtils.CreateImage(GetAngle(Rotation), ScaleX, ScaleY, FileName);
+
 				return image;
 			}
 		}
 
-		Image CreateImage(int angle, double scale)
+		public double ScaleX
 		{
-			Image image = new Image();
+			get
+			{
+				double horizontalFlipFactor = 1;
+				if (FlipHorizontally)
+					horizontalFlipFactor = -1;
+				return Scale * horizontalFlipFactor;
+			}
+		}
 
-			TransformedBitmap transformBmp = new TransformedBitmap();
-
-			BitmapImage bmpImage = new BitmapImage();
-
-			bmpImage.BeginInit();
-
-			bmpImage.UriSource = new Uri(FileName, UriKind.RelativeOrAbsolute);
-
-			bmpImage.EndInit();
-
-			transformBmp.BeginInit();
-
-			transformBmp.Source = bmpImage;
-
-			RotateTransform rotation = new RotateTransform(angle);
-			ScaleTransform scaling = new ScaleTransform(scale, scale);
-			TransformGroup group = new TransformGroup();
-			group.Children.Add(rotation);
-			group.Children.Add(scaling);
-
-			transformBmp.Transform = group;
-
-			transformBmp.EndInit();
-
-			image.Source = transformBmp;
-
-			return image;
+		public double ScaleY
+		{
+			get
+			{
+				double verticalFlipFactor = 1;
+				if (FlipVertically)
+					verticalFlipFactor = -1;
+				return Scale * verticalFlipFactor;
+			}
 		}
 
 		public int X { get; set; }
@@ -176,6 +194,14 @@ namespace DndMapSpike
 			get
 			{
 				return (int)Math.Round(Image.Source.Height);
+			}
+		}
+
+		public double Diagonal
+		{
+			get
+			{
+				return Math.Sqrt(Width * Width + Height * Height);
 			}
 		}
 

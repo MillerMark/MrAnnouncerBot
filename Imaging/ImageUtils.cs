@@ -159,6 +159,38 @@ namespace Imaging
 			Color pixelColor = GetPixelColor(image.Source as BitmapSource, x, y);
 			return pixelColor.A > 128;
 		}
+		public static Image CreateImage(int angle, double scaleX, double scaleY, string fileName)
+		{
+			Image image = new Image();
+
+			TransformedBitmap transformBmp = new TransformedBitmap();
+
+			BitmapImage bmpImage = new BitmapImage();
+
+			bmpImage.BeginInit();
+
+			bmpImage.UriSource = new Uri(fileName, UriKind.RelativeOrAbsolute);
+
+			bmpImage.EndInit();
+
+			transformBmp.BeginInit();
+
+			transformBmp.Source = bmpImage;
+
+			RotateTransform rotation = new RotateTransform(angle);
+			ScaleTransform scaling = new ScaleTransform(scaleX, scaleY);
+			TransformGroup group = new TransformGroup();
+			group.Children.Add(rotation);
+			group.Children.Add(scaling);
+
+			transformBmp.Transform = group;
+
+			transformBmp.EndInit();
+
+			image.Source = transformBmp;
+
+			return image;
+		}
 	}
 }
 

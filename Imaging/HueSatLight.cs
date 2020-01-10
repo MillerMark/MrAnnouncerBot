@@ -151,6 +151,10 @@ namespace Imaging
 			return luminance;
 		}
 		#endregion
+		void HueShiftDegrees()
+		{
+			
+		}
 
 		// public properties...
 		#region AsHtml
