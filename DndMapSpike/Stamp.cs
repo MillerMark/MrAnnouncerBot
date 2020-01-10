@@ -251,6 +251,16 @@ namespace DndMapSpike
 			Y += deltaY;
 		}
 
+		public void ResetZOrder()
+		{
+			ZOrder = -1;
+		}
+
+		public bool HasNoZOrder()
+		{
+			return ZOrder == -1;
+		}
+
 		public event EventHandler ZOrderChanged;
 	}
 }

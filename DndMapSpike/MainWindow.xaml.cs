@@ -1168,6 +1168,8 @@ namespace DndMapSpike
 		}
 		private void HandleMouseDownSelect()
 		{
+			if (Keyboard.IsKeyDown(Key.Space))  // Space + mouse down = pan view
+				return;
 			Stamp stamp = GetStampAt(lastMouseDownPoint);
 			if (stamp != null)
 			{
@@ -1202,8 +1204,6 @@ namespace DndMapSpike
 			}
 			else
 			{
-				if (Keyboard.IsKeyDown(Key.Space))
-					return;
 				ClearStampSelection();
 				SelectedStamps.Clear();
 			}
@@ -1569,6 +1569,9 @@ namespace DndMapSpike
 			StackScaleButtons("btnScale50Percent", (double)1 / 2, selectedButtonScale, buttonSize, left, ref yPos, top);
 			StackScaleButtons("btnScale100Percent", 1, selectedButtonScale, buttonSize, left, ref yPos, top);
 			StackScaleButtons("btnScale200Percent", 2, selectedButtonScale, buttonSize, left, ref yPos, top);
+
+			CreateButton("btnSendToBack", right, bottom, buttonSize);
+			CreateButton("btnBringToFront", right + buttonSize, bottom, buttonSize);
 		}
 
 		private Viewbox CreateButton(string buttonName, double x, double y, double buttonSize)
@@ -2224,6 +2227,38 @@ namespace DndMapSpike
 			{
 				foreach (Stamp stamp in SelectedStamps)
 					stamp.Scale = (double)1 /3;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnSendToBack_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				stampsLayer.RemoveAllStamps(SelectedStamps);
+				stampsLayer.SortStampsByZOrder(SelectedStamps.Count);
+				stampsLayer.InsertStamps(0, SelectedStamps);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnBringToFront_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				stampsLayer.RemoveAllStamps(SelectedStamps);
+				stampsLayer.SortStampsByZOrder();
+				stampsLayer.AddStamps(SelectedStamps);
 			}
 			finally
 			{

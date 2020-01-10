@@ -14,19 +14,32 @@ namespace DndMapSpike
 		{
 		}
 
-		void SortStampsByZOrder()
+		public void SortStampsByZOrder(int zOrderOffset = 0)
 		{
 			stamps = stamps.OrderBy(o => o.ZOrder).ToList();
 			for(int i = 0; i < stamps.Count; i++)
-				stamps[i].ZOrder = i;
+				stamps[i].ZOrder = i + zOrderOffset;
 		}
 
 		public void AddStamp(Stamp stamp)
 		{
-			if(stamp.ZOrder == -1)
+			if(stamp.HasNoZOrder())
 				stamp.ZOrder = stamps.Count;
 			stamps.Add(stamp);
 		}
+
+		public void InsertStamp(int i, Stamp stamp)
+		{
+			if (stamp.HasNoZOrder())
+				stamp.ZOrder = i;
+			stamps.Insert(i, stamp);
+		}
+
+		public void RemoveStamp(Stamp stamp)
+		{
+			stamps.Remove(stamp);
+		}
+
 		public void AddStampNow(Stamp stamp)
 		{
 			BeginUpdate();
@@ -40,12 +53,7 @@ namespace DndMapSpike
 			}
 		}
 
-		public void BeginUpdate()
-		{
-			updateCount++;
-		}
-
-		void PlaceStamp(Stamp stamp)
+		void BlendStampImage(Stamp stamp)
 		{
 			int x = stamp.GetLeft();
 			int y = stamp.GetTop();
@@ -59,7 +67,7 @@ namespace DndMapSpike
 			{
 				try
 				{
-					PlaceStamp(stamp);
+					BlendStampImage(stamp);
 				}
 				catch
 				{
@@ -67,6 +75,12 @@ namespace DndMapSpike
 				}
 			}
 		}
+
+		public void BeginUpdate()
+		{
+			updateCount++;
+		}
+
 		public void EndUpdate()
 		{
 			updateCount--;
@@ -76,6 +90,13 @@ namespace DndMapSpike
 				Refresh();
 			}
 		}
+
+		/// <summary>
+		/// Gets the stamp at the specified point if the stamp contains non-transparent 
+		/// image data at this point.
+		/// </summary>
+		/// <param name="point">The coordinates to check (on the layer).</param>
+		/// <returns>Returns the stamp if found, or null.</returns>
 		public Stamp GetStampAt(Point point)
 		{
 			for (int i = stamps.Count - 1; i >= 0; i--)
@@ -85,6 +106,31 @@ namespace DndMapSpike
 					return stamp;
 			}
 			return null;
+		}
+
+		public void RemoveAllStamps(List<Stamp> stamps)
+		{
+			foreach (Stamp stamp in stamps)
+				RemoveStamp(stamp);
+		}
+
+		public void AddStamps(List<Stamp> stamps)
+		{
+			foreach (Stamp stamp in stamps)
+			{
+				stamp.ResetZOrder();
+				AddStamp(stamp);
+			}
+		}
+
+		public void InsertStamps(int startIndex, List<Stamp> stamps)
+		{
+			for (int i = 0; i < stamps.Count; i++)
+			{
+				Stamp stamp = stamps[i];
+				stamp.ResetZOrder();
+				InsertStamp(startIndex + i, stamp);
+			}
 		}
 	}
 }
