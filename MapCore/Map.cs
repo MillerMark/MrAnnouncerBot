@@ -337,6 +337,26 @@ namespace MapCore
 			return Tiles.Where(x => x.Selected).ToList();
 		}
 
+		public void GetSelectionBoundaries(out int left, out int top, out int right, out int bottom)
+		{
+			left = int.MaxValue;
+			top = int.MaxValue;
+			right = 0;
+			bottom = 0;
+			List<Tile> selection = GetSelection();
+			foreach (Tile tile in selection)
+			{
+				int tileLeft = tile.PixelX;
+				int tileTop = tile.PixelY;
+				int tileRight = tileLeft + Tile.Width;
+				int tileBottom = tileTop + Tile.Height;
+				left = Math.Min(tileLeft, left);
+				top = Math.Min(tileTop, top);
+				right = Math.Max(tileRight, right);
+				bottom = Math.Max(tileBottom, bottom);
+			}
+		}
+
 		public List<Tile> GetAllOtherSpaces(List<Tile> compareSpaces)
 		{
 			List<Tile> results = new List<Tile>();

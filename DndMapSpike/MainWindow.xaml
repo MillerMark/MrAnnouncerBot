@@ -349,7 +349,13 @@
 			</StackPanel>
 		</ContentControl>
 
-
+		<ContextMenu x:Key="ctxStamp" >
+			<MenuItem Header="Copy Color Mod" Click="CopyColorModMenuItem_Click"></MenuItem>
+			<MenuItem Header="Paste Color Mod" Click="PasteColorModMenuItem_Click"></MenuItem>
+			<Separator></Separator>
+			<MenuItem Header="Reset All Color Mods" Click="ResetAllColorMods_Click"></MenuItem>
+		</ContextMenu>
+		
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>

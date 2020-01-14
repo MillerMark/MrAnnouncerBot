@@ -10,7 +10,8 @@ namespace DndMapSpike
 {
 	public class Stamp
 	{
-		
+		// TODO: Any new writeable properties added need to be copied in the Clone method.
+
 		public bool FlipHorizontally
 		{
 			get { return flipHorizontally; }
@@ -72,6 +73,21 @@ namespace DndMapSpike
 		}
 
 		public string FileName { get; set; }
+		static Stamp Clone(Stamp stamp)
+		{
+			Stamp result = new Stamp(stamp.FileName, stamp.X, stamp.Y);
+			result.Contrast = stamp.Contrast;
+			result.FlipHorizontally = stamp.FlipHorizontally;
+			result.FlipVertically = stamp.FlipVertically;
+			result.HueShift = stamp.HueShift;
+			result.Lightness = stamp.Lightness;
+			result.RelativeX = stamp.RelativeX;
+			result.RelativeY = stamp.RelativeY;
+			result.Rotation = stamp.Rotation;
+			result.Saturation = stamp.Saturation;
+			result.Scale = stamp.Scale;
+			return result;
+		}
 
 		int GetAngle(StampRotation rotation)
 		{
@@ -315,6 +331,13 @@ namespace DndMapSpike
 		{
 			X += deltaX;
 			Y += deltaY;
+		}
+
+		public Stamp Copy(int deltaX, int deltaY)
+		{
+			Stamp result = Stamp.Clone(this);
+			result.Move(deltaX, deltaY);
+			return result;
 		}
 
 		public void ResetZOrder()

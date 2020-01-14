@@ -639,10 +639,12 @@ namespace DndMapSpike
 
 		Point lastMouseDownPoint;
 		DateTime lastMouseDownTime;
+		bool lastMouseDownWasRightButton;
 		private void Selector_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			mouseIsDown = true;
 			lastMouseDownEventArgs = e;
+			lastMouseDownWasRightButton = lastMouseDownEventArgs.RightButton == MouseButtonState.Pressed;
 			lastMouseDownPoint = lastMouseDownEventArgs.GetPosition(content);
 			lastMouseDownTime = DateTime.Now;
 			mouseDownSender = sender as FrameworkElement;
@@ -989,8 +991,27 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
+				List<Stamp> copiedStamps = null;
+				bool copy = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+				if (copy)
+				{
+					copiedStamps = new List<Stamp>();
+					if (stampJustRemoved != null && SelectedStamps.IndexOf(stampJustRemoved) < 0)
+						SelectedStamps.Add(stampJustRemoved);
+				}
+
 				foreach (Stamp stamp in SelectedStamps)
-					stamp.Move(deltaX, deltaY);
+					if (copy)
+					{
+						Stamp newStamp = stamp.Copy(deltaX, deltaY);
+						stampsLayer.AddStamp(newStamp);
+						copiedStamps.Add(newStamp);
+					}
+					else
+						stamp.Move(deltaX, deltaY);
+
+				if (copiedStamps != null)
+					SelectedStamps = copiedStamps;
 			}
 			finally
 			{
@@ -1183,6 +1204,14 @@ namespace DndMapSpike
 			width = Math.Max(0, right - left);
 			height = Math.Max(0, bottom - top);
 		}
+		void ShowStampContextMenu(Stamp stamp)
+		{
+			ContextMenu ctxStamp = FindResource("ctxStamp") as ContextMenu;
+			if (ctxStamp == null)
+				return;
+			ctxStamp.IsOpen = true;
+			stamp.Image.ContextMenu = ctxStamp;
+		}
 		private void HandleMouseDownSelect()
 		{
 			if (Keyboard.IsKeyDown(Key.Space))  // Space + mouse down = pan view
@@ -1191,6 +1220,17 @@ namespace DndMapSpike
 			if (stamp != null)
 			{
 				ClearSelection();
+
+				if (lastMouseDownWasRightButton)
+				{
+					if (SelectedStamps.IndexOf(stamp) < 0)
+					{
+						SelectedStamps.Clear();
+						SelectedStamps.Add(stamp);
+					}
+					ShowStampContextMenu(stamp);
+					return;
+				}
 				SelectionType selectionType = GetSelectionType(SelectedStamps.Count > 0);
 				if (selectionType == SelectionType.Replace)
 				{
@@ -1267,16 +1307,21 @@ namespace DndMapSpike
 
 			GetTopLeftOfStampSelection(out int left, out int top);
 
-			// TODO: Figure out top left of selection
 			foreach (Stamp stamp in SelectedStamps)
 			{
-				int stampLeft = stamp.GetLeft();
-				int stampTop = stamp.GetTop();
-				stamp.RelativeX = stampLeft - left;
-				stamp.RelativeY = stampTop - top;
-				CreateFloatingStamp(ref selectDragStampCanvas, stamp, stamp.RelativeX, stamp.RelativeY);
+				CreateFloatingStamp(left, top, stamp);
 			}
 		}
+
+		private void CreateFloatingStamp(int left, int top, Stamp stamp)
+		{
+			int stampLeft = stamp.GetLeft();
+			int stampTop = stamp.GetTop();
+			stamp.RelativeX = stampLeft - left;
+			stamp.RelativeY = stampTop - top;
+			CreateFloatingStamp(ref selectDragStampCanvas, stamp, stamp.RelativeX, stamp.RelativeY);
+		}
+
 		private void UpdateStampSelection()
 		{
 			HideTilingControls();
@@ -1760,11 +1805,18 @@ namespace DndMapSpike
 		private void HandleTripleClickTileSelect(Tile baseSpace)
 		{
 			FloodSelectAll(baseSpace, GetSelectionType(Map.SelectionExists()));
+			ZoomToTileSelection();
 		}
 
+		void ZoomToTileSelection()
+		{
+			Map.GetSelectionBoundaries(out int left, out int top, out int right, out int bottom);
+			zoomAndPanControl.AnimatedZoomTo(new Rect(left - Tile.Width / 2, top - Tile.Height / 2, right - left + Tile.Width, bottom - top + Tile.Height));
+		}
 		private void HandleDoubleClickTileSelect(Tile baseSpace)
 		{
 			FloodSelect(baseSpace, GetSelectionType(Map.SelectionExists()));
+			ZoomToTileSelection();
 		}
 
 		private void HandleSingleClickTileSelect(Tile baseSpace)
@@ -2200,9 +2252,14 @@ namespace DndMapSpike
 				MapEditMode = MapEditModes.Select;
 			else
 			{
-				ClearSelectionUI();
-				ClearSelection();
-				SelectedStamps.Clear();
+				if (Map.SelectionExists() || SelectedStamps.Count > 0)
+				{
+					ClearSelectionUI();
+					ClearSelection();
+					SelectedStamps.Clear();
+				}
+				else
+					zoomAndPanControl.AnimatedZoomTo(new Rect(0, 0, content.Width, content.Height));
 			}
 		}
 
@@ -2646,13 +2703,22 @@ namespace DndMapSpike
 		double? clipboardContrast;
 		double? clipboardHue;
 
-		private void CopyColorMod_Executed(object sender, ExecutedRoutedEventArgs e)
+		void CopyColorModifications()
 		{
 			double? selectedButtonScale;
 			GetConsistentModSettings(out selectedButtonScale, out clipboardHue, out clipboardSaturation, out clipboardLightness, out clipboardContrast);
 		}
+		private void CopyColorMod_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			CopyColorModifications();
+		}
 
 		private void PasteColorMod_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			PasteColorMods();
+		}
+
+		private void PasteColorMods()
 		{
 			stampsLayer.BeginUpdate();
 			try
@@ -2709,6 +2775,16 @@ namespace DndMapSpike
 				stampsLayer.EndUpdate();
 			}
 			UpdateStampSelectionUI();
+		}
+
+		private void CopyColorModMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			CopyColorModifications();
+		}
+
+		private void PasteColorModMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			PasteColorMods();
 		}
 	}
 }
