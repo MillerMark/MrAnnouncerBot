@@ -57,6 +57,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BaseTexture.cs" />
+    <Compile Include="BigTexture.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
     <Compile Include="Layer.cs" />

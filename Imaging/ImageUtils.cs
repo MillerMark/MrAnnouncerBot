@@ -11,14 +11,14 @@ namespace Imaging
 {
 	public static class ImageUtils
 	{
-		public static void CopyImageTo(Image sourceImage, int x, int y, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1)
+		public static void CopyImageTo(Image sourceImage, int x, int y, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1, int sourceX = 0, int sourceY = 0)
 		{
 			BitmapSource source = sourceImage.Source as BitmapSource;
 
 			PixelFormat pixelFormat = source.Format;
 			int pixelWidth = source.PixelWidth;
 			int pixelHeight = source.PixelHeight;
-			WritePixelsTo(source, x, y, pixelWidth, pixelHeight, pixelFormat, target, cropWidth, cropHeight);
+			WritePixelsTo(source, x, y, pixelWidth, pixelHeight, pixelFormat, target, cropWidth, cropHeight, sourceX, sourceY);
 		}
 
 		public static void MergeImageWith(Image sourceImage, int x, int y, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1)
@@ -32,12 +32,12 @@ namespace Imaging
 			WritePixelsTo(null, x, y, width, height, target.Format, target);
 		}
 
-		private static void WritePixelsTo(BitmapSource source, int x, int y, int pixelWidth, int pixelHeight, PixelFormat pixelFormat, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1)
+		private static void WritePixelsTo(BitmapSource source, int destinationX, int destinationY, int pixelWidth, int pixelHeight, PixelFormat pixelFormat, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1, int sourceX = 0, int sourceY = 0)
 		{
 			int sourceBytesPerPixel = GetBytesPerPixel(pixelFormat);
 			int sourceBytesPerLine = pixelWidth * sourceBytesPerPixel;
 
-			if (y < 0)
+			if (destinationY < 0)
 				return;
 
 			byte[] sourcePixels = new byte[sourceBytesPerLine * pixelHeight];
@@ -45,29 +45,14 @@ namespace Imaging
 			if (source != null)
 				source.CopyPixels(sourcePixels, sourceBytesPerLine, 0);
 
-
-			//for (int imageY = 0; imageY < pixelHeight; y++)
-			//	for (int imageX = 0; imageX < pixelWidth; x++)
-			//	{
-			//		int sourcePixelIndex = sourceBytesPerLine * imageY + imageX;
-
-			//		byte alpha = sourcePixels[sourcePixelIndex];
-			//		byte blue = sourcePixels[sourcePixelIndex + 1];
-			//		byte green = sourcePixels[sourcePixelIndex + 2];
-			//		byte red = sourcePixels[sourcePixelIndex + 3];
-
-			//		sourcePixels[sourcePixelIndex] = (uint)((alpha << 24) + (red << 16) + (green << 8) + blue);
-			//		if (target.BackBuffer)
-			//	}
-
-
 			if (cropWidth == -1)
 				cropWidth = pixelWidth;
 
 			if (cropHeight == -1)
 				cropHeight = pixelHeight;
-			Int32Rect sourceRect = new Int32Rect(x, y, cropWidth, cropHeight);
-			target.WritePixels(sourceRect, sourcePixels, sourceBytesPerLine, 0);
+			Int32Rect targetRect = new Int32Rect(destinationX, destinationY, cropWidth, cropHeight);
+			int offset = sourceBytesPerPixel * sourceX + sourceY * sourceBytesPerLine;
+			target.WritePixels(targetRect, sourcePixels, sourceBytesPerLine, offset);
 		}
 
 		public static void MergePixelsWith(BitmapSource source, int x, int y, WriteableBitmap target, int cropWidth = -1, int cropHeight = -1)

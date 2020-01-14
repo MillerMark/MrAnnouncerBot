@@ -6,6 +6,7 @@ namespace DndMapSpike
 	public static class TextureUtils
 	{
 		public const string TileFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Tiles\120x120";
+		public const string BigTextureFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\BigTextures";
 		public const string DoorsFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Doors";
 		public const string DebrisFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Tiles\120x120\Debris";
 		public const string WallFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Walls";
@@ -38,6 +39,8 @@ namespace DndMapSpike
 					return new RandomTexture(baseName);
 				case "Even Odd":
 					return new EvenOddTexture(baseName);
+				case "Big":
+					return new BigTexture(baseName);
 			}
 			return new SimpleTexture(baseName); ;
 		}

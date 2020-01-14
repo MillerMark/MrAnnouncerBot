@@ -165,9 +165,8 @@ namespace DndMapSpike
 			fileWatchTimer.Start();
 		}
 
-		void ProcessRawPngFiles(string[] pngFiles, List<BaseTexture> textures)
+		void Process120x120FloorTiles(string[] pngFiles, List<BaseTexture> textures)
 		{
-			textures.Clear();
 			foreach (string fileName in pngFiles)
 			{
 				TextureUtils.GetTextureNameAndKey(fileName, out string baseName, out string textureName, out string imageKey);
@@ -181,10 +180,22 @@ namespace DndMapSpike
 				texture.AddImage(fileName, imageKey);
 			}
 		}
+		void ProcessBigTextures(string[] pngFiles, List<BaseTexture> textures)
+		{
+			foreach (string fileName in pngFiles)
+			{
+				BaseTexture texture = TextureUtils.CreateTexture(fileName, "Big");
+				textures.Add(texture);
+				texture.AddImage(fileName, string.Empty);
+			}
+		}
 		private void LoadFloorTiles()
 		{
+			tileTextures.Clear();
 			string[] pngFiles = Directory.GetFiles(TextureUtils.TileFolder, "*.png");
-			ProcessRawPngFiles(pngFiles, tileTextures);
+			Process120x120FloorTiles(pngFiles, tileTextures);
+			pngFiles = Directory.GetFiles(TextureUtils.BigTextureFolder, "*.png");
+			ProcessBigTextures(pngFiles, tileTextures);
 			lstFlooring.ItemsSource = tileTextures;
 		}
 
@@ -1586,15 +1597,16 @@ namespace DndMapSpike
 
 			double pixelWidth = width * zoomAndPanControl.ContentScale;
 			const double maxPixelWidth = 400;
-			StackPanel spHueShift = null;
+			ContentControl ccColorControls = null;
 			if (pixelWidth > 60)
 			{
-				spHueShift = FindResource("spHueShift") as StackPanel;
-				spHueShift.Visibility = Visibility.Visible;
-				spHueShift.Width = Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
-				stampSelectionCanvas.Children.Add(spHueShift);
-				Canvas.SetLeft(spHueShift, left + (width - spHueShift.Width) / 2);
-				Canvas.SetTop(spHueShift, bottom);
+				ccColorControls = GetColorControls();
+				ccColorControls.FontSize = 15 / zoomAndPanControl.ContentScale;
+				ccColorControls.Visibility = Visibility.Visible;
+				ccColorControls.Width = Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
+				stampSelectionCanvas.Children.Add(ccColorControls);
+				Canvas.SetLeft(ccColorControls, left + (width - ccColorControls.Width) / 2);
+				Canvas.SetTop(ccColorControls, bottom);
 				SetSlider(GetActiveHueSlider(), selectedHueShift);
 				SetSlider(GetActiveSaturationSlider(), selectedSaturation);
 				SetSlider(GetActiveLightnessSlider(), selectedLightness);
@@ -1603,8 +1615,8 @@ namespace DndMapSpike
 
 			if (!hasColorMod)
 			{
-				if (spHueShift != null)
-					spHueShift.Visibility = Visibility.Hidden;
+				if (ccColorControls != null)
+					ccColorControls.Visibility = Visibility.Hidden;
 				CreateButton("btnShowColorControls", left, bottom, buttonSize);
 			}
 		}
@@ -2492,11 +2504,16 @@ namespace DndMapSpike
 		private Slider GetActiveSlider(string sliderName)
 		{
 
-			StackPanel spHueShift = FindResource("spHueShift") as StackPanel;
-			if (spHueShift != null)
-				foreach (UIElement uIElement in spHueShift.Children)
-					if (uIElement is Slider slider && slider.Name == sliderName)
-						return slider;
+			ContentControl ccColorControls = GetColorControls();
+			if (ccColorControls == null)
+				return null;
+
+			if (!(ccColorControls.Content is StackPanel stackPanel))
+				return null;
+
+			foreach (UIElement uIElement in stackPanel.Children)
+				if (uIElement is Slider slider && slider.Name == sliderName)
+					return slider;
 			return null;
 		}
 
@@ -2594,14 +2611,19 @@ namespace DndMapSpike
 
 		private void btnShowColorControls_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			StackPanel spHueShift = FindResource("spHueShift") as StackPanel;
-			if (spHueShift != null)
+			ContentControl ccColorControls = GetColorControls();
+			if (ccColorControls != null)
 			{
-				spHueShift.Visibility = Visibility.Visible;
+				ccColorControls.Visibility = Visibility.Visible;
 				Viewbox btnShowColorControls = FindResource("btnShowColorControls") as Viewbox;
 				if (btnShowColorControls != null)
 					btnShowColorControls.Visibility = Visibility.Hidden;
 			}
+		}
+
+		private ContentControl GetColorControls()
+		{
+			return FindResource("ccColorControls") as ContentControl;
 		}
 
 		private void DeleteSelected_Executed(object sender, ExecutedRoutedEventArgs e)

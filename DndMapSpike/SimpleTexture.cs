@@ -8,7 +8,7 @@ namespace DndMapSpike
 {
 	public class SimpleTexture: BaseTexture
 	{
-		Image textureImage;
+		protected Image textureImage;
 		public SimpleTexture(string baseName) : base(baseName)
 		{
 
