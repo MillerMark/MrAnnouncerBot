@@ -7,14 +7,14 @@ namespace DndMapSpike
 	public class ResizeTracker
 	{
 		public const double ResizeHandleDiameter = 10d;
-		public Stamp Stamp { get; set; }
+		public IStamp Stamp { get; set; }
 		public Ellipse NorthWest { get; set; }
 		public Ellipse NorthEast { get; set; }
 		public Ellipse SouthWest { get; set; }
 		public Ellipse SouthEast { get; set; }
 		public Rectangle SelectionRect { get; set; }
 
-		public ResizeTracker(Stamp stamp)
+		public ResizeTracker(IStamp stamp)
 		{
 			Stamp = stamp;
 		}

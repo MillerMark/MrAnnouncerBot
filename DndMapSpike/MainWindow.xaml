@@ -16,6 +16,8 @@
 		<RoutedUICommand x:Key="Commands.CancelStampMode" />
 		<RoutedUICommand x:Key="Commands.DeleteSelected" />
 		<RoutedUICommand x:Key="Commands.CopyColorMod" />
+		<RoutedUICommand x:Key="Commands.GroupSelection" />
+		<RoutedUICommand x:Key="Commands.UngroupSelection" />
 		<RoutedUICommand x:Key="Commands.PasteColorMod" />
 		<mapUI:ScaleToPercentConverter x:Key="scaleToPercentConverter"/>
 		<Style TargetType="{x:Type RadioButton}" >
@@ -363,6 +365,8 @@
 		<KeyBinding Key="Delete" Command="{StaticResource Commands.DeleteSelected}"/>
 		<KeyBinding Key="C" Modifiers="Ctrl+Alt" Command="{StaticResource Commands.CopyColorMod}"/>
 		<KeyBinding Key="V" Modifiers="Ctrl+Alt" Command="{StaticResource Commands.PasteColorMod}"/>
+		<KeyBinding Key="G" Modifiers="Ctrl" Command="{StaticResource Commands.GroupSelection}"/>
+		<KeyBinding Key="U" Modifiers="Ctrl" Command="{StaticResource Commands.UngroupSelection}"/>
 		<KeyBinding Key="Plus" Command="{StaticResource Commands.ZoomIn}"/>
 		<KeyBinding Key="Backspace" Command="{StaticResource Commands.JumpBackToPrevZoom}"/>
 	</Window.InputBindings>
@@ -375,6 +379,8 @@
 		<CommandBinding Command="{StaticResource Commands.CancelStampMode}" Executed="CancelStampMode_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.DeleteSelected}" Executed="DeleteSelected_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.CopyColorMod}" Executed="CopyColorMod_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.GroupSelection}" Executed="GroupSelection_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.UngroupSelection}" Executed="UngroupSelection_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.PasteColorMod}" Executed="PasteColorMod_Executed"/>
 	</Window.CommandBindings>
 	<Grid>

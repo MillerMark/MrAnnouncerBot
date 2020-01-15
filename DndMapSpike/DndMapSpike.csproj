@@ -60,6 +60,7 @@
     <Compile Include="BigTexture.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
+    <Compile Include="IStamp.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapEditModes.cs" />
@@ -71,9 +72,11 @@
     <Compile Include="SizeDirection.cs" />
     <Compile Include="Stamp.cs" />
     <Compile Include="StampFolder.cs" />
+    <Compile Include="StampGroup.cs" />
     <Compile Include="StampRotation.cs" />
     <Compile Include="StampsLayer.cs" />
     <Compile Include="TextureUtils.cs" />
+    <Compile Include="UngroupedStamps.cs" />
     <Compile Include="WallBuilder.cs" />
     <Compile Include="Walls.cs" />
     <Page Include="MainWindow.xaml">

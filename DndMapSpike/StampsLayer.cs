@@ -7,7 +7,7 @@ namespace DndMapSpike
 {
 	public class StampsLayer : Layer
 	{
-		List<Stamp> stamps = new List<Stamp>();
+		List<IStamp> stamps = new List<IStamp>();
 		int updateCount;
 
 		public StampsLayer()
@@ -21,26 +21,26 @@ namespace DndMapSpike
 				stamps[i].ZOrder = i + zOrderOffset;
 		}
 
-		public void AddStamp(Stamp stamp)
+		public void AddStamp(IStamp stamp)
 		{
-			if(stamp.HasNoZOrder())
+			if (stamp.HasNoZOrder())
 				stamp.ZOrder = stamps.Count;
 			stamps.Add(stamp);
 		}
 
-		public void InsertStamp(int i, Stamp stamp)
+		public void InsertStamp(int i, IStamp stamp)
 		{
 			if (stamp.HasNoZOrder())
 				stamp.ZOrder = i;
 			stamps.Insert(i, stamp);
 		}
 
-		public void RemoveStamp(Stamp stamp)
+		public void RemoveStamp(IStamp stamp)
 		{
 			stamps.Remove(stamp);
 		}
 
-		public void AddStampNow(Stamp stamp)
+		public void AddStampNow(IStamp stamp)
 		{
 			BeginUpdate();
 			try
@@ -53,21 +53,21 @@ namespace DndMapSpike
 			}
 		}
 
-		void BlendStampImage(Stamp stamp)
+		public void BlendStampImage(Stamp stamp, int xOffset = 0, int yOffset = 0)
 		{
-			int x = stamp.GetLeft();
-			int y = stamp.GetTop();
+			int x = stamp.GetLeft() + xOffset;
+			int y = stamp.GetTop() + yOffset;
 			BlendImage(stamp.Image, x, y);
 		}
 
 		void Refresh()
 		{
 			ClearAll();
-			foreach (Stamp stamp in stamps)
+			foreach (IStamp stamp in stamps)
 			{
 				try
 				{
-					BlendStampImage(stamp);
+					stamp.BlendStampImage(this);
 				}
 				catch
 				{
@@ -97,37 +97,37 @@ namespace DndMapSpike
 		/// </summary>
 		/// <param name="point">The coordinates to check (on the layer).</param>
 		/// <returns>Returns the stamp if found, or null.</returns>
-		public Stamp GetStampAt(Point point)
+		public IStamp GetStampAt(Point point)
 		{
 			for (int i = stamps.Count - 1; i >= 0; i--)
 			{
-				Stamp stamp = stamps[i];
+				IStamp stamp = stamps[i];
 				if (stamp.ContainsPoint(point))
 					return stamp;
 			}
 			return null;
 		}
 
-		public void RemoveAllStamps(List<Stamp> stamps)
+		public void RemoveAllStamps(List<IStamp> stamps)
 		{
-			foreach (Stamp stamp in stamps)
+			foreach (IStamp stamp in stamps)
 				RemoveStamp(stamp);
 		}
 
-		public void AddStamps(List<Stamp> stamps)
+		public void AddStamps(List<IStamp> stamps)
 		{
-			foreach (Stamp stamp in stamps)
+			foreach (IStamp stamp in stamps)
 			{
 				stamp.ResetZOrder();
 				AddStamp(stamp);
 			}
 		}
 
-		public void InsertStamps(int startIndex, List<Stamp> stamps)
+		public void InsertStamps(int startIndex, List<IStamp> stamps)
 		{
 			for (int i = 0; i < stamps.Count; i++)
 			{
-				Stamp stamp = stamps[i];
+				IStamp stamp = stamps[i];
 				stamp.ResetZOrder();
 				InsertStamp(startIndex + i, stamp);
 			}

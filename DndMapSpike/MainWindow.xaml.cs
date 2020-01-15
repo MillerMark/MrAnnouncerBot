@@ -28,7 +28,7 @@ namespace DndMapSpike
 	public partial class MainWindow : Window
 	{
 		private const int StampButtonSize = 36;
-		List<Stamp> selectedStamps;
+		List<IStamp> selectedStamps;
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
 		MapEditModes mapEditMode = MapEditModes.Select;
 		const double DBL_SelectionLineThickness = 10;
@@ -996,15 +996,15 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				List<Stamp> copiedStamps = null;
+				List<IStamp> copiedStamps = null;
 				bool copy = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
 				if (copy)
-					copiedStamps = new List<Stamp>();
+					copiedStamps = new List<IStamp>();
 
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					if (copy)
 					{
-						Stamp newStamp = stamp.Copy(deltaX, deltaY);
+						IStamp newStamp = stamp.Copy(deltaX, deltaY);
 						stampsLayer.AddStamp(newStamp);
 						copiedStamps.Add(newStamp);
 					}
@@ -1159,19 +1159,19 @@ namespace DndMapSpike
 			});
 		}
 
-		Stamp GetStampAt(Point point)
+		IStamp GetStampAt(Point point)
 		{
-			Stamp stamp = stampsLayer.GetStampAt(point);
+			IStamp stamp = stampsLayer.GetStampAt(point);
 			return stamp;
 		}
 
 
-		public List<Stamp> SelectedStamps
+		public List<IStamp> SelectedStamps
 		{
 			get
 			{
 				if (selectedStamps == null)
-					selectedStamps = new List<Stamp>();
+					selectedStamps = new List<IStamp>();
 
 				return selectedStamps;
 			}
@@ -1187,7 +1187,7 @@ namespace DndMapSpike
 			top = int.MaxValue;
 			int right = 0;
 			int bottom = 0;
-			foreach (Stamp stamp in SelectedStamps)
+			foreach (IStamp stamp in SelectedStamps)
 			{
 				int stampLeft = stamp.GetLeft();
 				int stampTop = stamp.GetTop();
@@ -1205,7 +1205,7 @@ namespace DndMapSpike
 			width = Math.Max(0, right - left);
 			height = Math.Max(0, bottom - top);
 		}
-		void ShowStampContextMenu(Stamp stamp)
+		void ShowStampContextMenu(IStamp stamp)
 		{
 			ContextMenu ctxStamp = FindResource("ctxStamp") as ContextMenu;
 			if (ctxStamp == null)
@@ -1217,7 +1217,7 @@ namespace DndMapSpike
 		{
 			if (Keyboard.IsKeyDown(Key.Space))  // Space + mouse down = pan view
 				return;
-			Stamp stamp = GetStampAt(lastMouseDownPoint);
+			IStamp stamp = GetStampAt(lastMouseDownPoint);
 			if (stamp != null)
 			{
 				ClearSelection();
@@ -1290,7 +1290,7 @@ namespace DndMapSpike
 		{
 			left = int.MaxValue;
 			top = int.MaxValue;
-			foreach (Stamp stamp in SelectedStamps)
+			foreach (IStamp stamp in SelectedStamps)
 			{
 				int stampLeft = stamp.GetLeft();
 				int stampTop = stamp.GetTop();
@@ -1307,20 +1307,28 @@ namespace DndMapSpike
 			ClearFloatingCanvases();
 
 			GetTopLeftOfStampSelection(out int left, out int top);
+			mouseDragAdjustX = lastMouseDownPoint.X - left;
+			mouseDragAdjustY = lastMouseDownPoint.Y - top;
 
-			foreach (Stamp stamp in SelectedStamps)
+			foreach (IStamp stamp in SelectedStamps)
 			{
 				CreateFloatingStamp(left, top, stamp);
 			}
 		}
 
-		private void CreateFloatingStamp(int left, int top, Stamp stamp)
+		private void CreateFloatingStamp(int left, int top, IStamp stamp)
 		{
 			int stampLeft = stamp.GetLeft();
 			int stampTop = stamp.GetTop();
-			stamp.RelativeX = stampLeft - left;
-			stamp.RelativeY = stampTop - top;
-			CreateFloatingStamp(ref selectDragStampCanvas, stamp, stamp.RelativeX, stamp.RelativeY);
+			int relativeX = stampLeft - left;
+			int relativeY = stampTop - top;
+			CreatingFloatingStamp(ref selectDragStampCanvas, stamp);
+			if (stamp is StampGroup stampGroup)
+			{
+				relativeX += stampGroup.Width / 2;
+				relativeY += stampGroup.Height / 2;
+			}
+			stamp.CreateFloating(selectDragStampCanvas, relativeX, relativeY);
 		}
 
 		private void UpdateStampSelection()
@@ -1330,7 +1338,7 @@ namespace DndMapSpike
 			UpdateStampSelectionUI();
 		}
 
-		void CreateResizeCorner(ResizeTracker resizeTracker, int left, int top, SizeDirection sizeDirection, Stamp stamp)
+		void CreateResizeCorner(ResizeTracker resizeTracker, int left, int top, SizeDirection sizeDirection, IStamp stamp)
 		{
 			Ellipse ellipse = new Ellipse();
 			resizeTracker.AddCorner(ellipse, sizeDirection);
@@ -1383,7 +1391,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Scale *= scaleAdjust;
 
 			}
@@ -1434,7 +1442,7 @@ namespace DndMapSpike
 			double deltaX = newPosition.X - oppositeX;
 			double deltaY = newPosition.Y - oppositeY;
 			double newAspectRatio = deltaX / deltaY;
-			Stamp stamp = resizeTracker.Stamp;
+			IStamp stamp = resizeTracker.Stamp;
 			double originalAspectRatio = (double)stamp.Width / stamp.Height;
 			double newX = newPosition.X;
 			double newY = newPosition.Y;
@@ -1578,7 +1586,7 @@ namespace DndMapSpike
 			mouseResizeOffsetY = ellipsePosition.Y - ResizeTracker.ResizeHandleDiameter / 2;
 			Point absolutePosition = e.GetPosition(stampSelectionCanvas);
 			absolutePosition.Offset(-mouseResizeOffsetX, -mouseResizeOffsetY);
-			Stamp stamp = resizeTracker.Stamp;
+			IStamp stamp = resizeTracker.Stamp;
 
 			switch (resizeTracker.GetDirection(ellipse))
 			{
@@ -1596,7 +1604,6 @@ namespace DndMapSpike
 					break;
 			}
 			activeStampResizing = stamp;
-			resizeDiagonal = stamp.Diagonal;
 			ellipse.CaptureMouse();
 		}
 
@@ -1690,7 +1697,7 @@ namespace DndMapSpike
 			return viewbox;
 		}
 
-		void AddStampSelectionUI(Stamp stamp)
+		void AddStampSelectionUI(IStamp stamp)
 		{
 			int left = stamp.GetLeft();
 			int top = stamp.GetTop();
@@ -1705,7 +1712,7 @@ namespace DndMapSpike
 			CreateResizeCorner(resizeTracker, right, bottom, SizeDirection.SouthEast, stamp);
 		}
 
-		private void AddStampSelectionRect(ResizeTracker resizeTracker, Stamp stamp, int left, int top)
+		private void AddStampSelectionRect(ResizeTracker resizeTracker, IStamp stamp, int left, int top)
 		{
 			Rectangle selectionRect = new Rectangle();
 			resizeTracker.SelectionRect = selectionRect;
@@ -1731,7 +1738,7 @@ namespace DndMapSpike
 			GetConsistentModSettings(out selectedButtonScale, out selectedHueShift, out selectedSaturation, out selectedLightness, out selectedContrast);
 
 			AddStampSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast);
-			foreach (Stamp stamp in SelectedStamps)
+			foreach (IStamp stamp in SelectedStamps)
 				AddStampSelectionUI(stamp);
 
 			MoveSelectionCanvasToTop();
@@ -1744,7 +1751,7 @@ namespace DndMapSpike
 			selectedSaturation = null;
 			selectedLightness = null;
 			selectedContrast = null;
-			foreach (Stamp stamp in SelectedStamps)
+			foreach (IStamp stamp in SelectedStamps)
 			{
 				if (selectedButtonScale == null)
 					selectedButtonScale = stamp.Scale;
@@ -2156,7 +2163,7 @@ namespace DndMapSpike
 
 		Canvas activeStampCanvas;
 		Canvas selectDragStampCanvas;
-		Stamp activeStamp;
+		IStamp activeStamp;
 		MouseButtonEventArgs lastMouseDownEventArgs;
 
 		void ClearFloatingCanvases()
@@ -2183,24 +2190,18 @@ namespace DndMapSpike
 
 			if (!(sender is Button button))
 				return;
-			if (!(button.Tag is Stamp knownStamp))
+			if (!(button.Tag is Stamp stamp))
 				return;
-			CreateFloatingStamp(ref activeStampCanvas, knownStamp);
+			CreatingFloatingStamp(ref activeStampCanvas, stamp);
+			stamp.CreateFloating(activeStampCanvas);
+			mouseDragAdjustX = -stamp.GetLeft();
+			mouseDragAdjustY = -stamp.GetTop();
 			MapEditMode = MapEditModes.Stamp;
 		}
 
-		double mouseDragAdjustX;
-		double mouseDragAdjustY;
-		Canvas stampSelectionCanvas;
-		Stamp activeStampResizing;
-		double resizeDiagonal;
-		Timer hueShiftUpdateTimer;
-		Timer saturationUpdateTimer;
-		Timer lightnessUpdateTimer;
-		Timer contrastUpdateTimer;
-		void CreateFloatingStamp(ref Canvas canvas, Stamp knownStamp, int x = 0, int y = 0)
+		private void CreatingFloatingStamp(ref Canvas canvas, IStamp stamp)
 		{
-			activeStamp = knownStamp;
+			activeStamp = stamp;
 			if (canvas == null)
 			{
 				canvas = new Canvas();
@@ -2208,44 +2209,17 @@ namespace DndMapSpike
 				canvas.IsHitTestVisible = false;
 				Panel.SetZIndex(canvas, int.MaxValue);
 			}
-			Image image = new Image();
-			image.Source = new BitmapImage(new Uri(knownStamp.FileName));
-			ScaleTransform scaleTransform = null;
-			if (knownStamp.FlipVertically || knownStamp.FlipHorizontally || knownStamp.Scale != 1)
-			{
-				scaleTransform = new ScaleTransform();
-				scaleTransform.ScaleX = knownStamp.ScaleX;
-				scaleTransform.ScaleY = knownStamp.ScaleY;
-			}
-			TransformGroup transformGroup = new TransformGroup();
-			RotateTransform rotation = null;
-			switch (knownStamp.Rotation)
-			{
-				case StampRotation.Ninety:
-					rotation = new RotateTransform(90);
-					break;
-				case StampRotation.OneEighty:
-					rotation = new RotateTransform(180);
-					break;
-				case StampRotation.TwoSeventy:
-					rotation = new RotateTransform(270);
-					break;
-			}
-			if (rotation != null)
-				transformGroup.Children.Add(rotation);
-			if (scaleTransform != null)
-				transformGroup.Children.Add(scaleTransform);
-
-			if (transformGroup.Children.Count > 0)
-				image.LayoutTransform = transformGroup;
-			image.Opacity = 0.5;
-			image.IsHitTestVisible = false;
-			mouseDragAdjustX = image.Source.Width / 2;
-			mouseDragAdjustY = image.Source.Height / 2;
-			canvas.Children.Add(image);
-			Canvas.SetLeft(image, x);
-			Canvas.SetTop(image, y);
 		}
+
+		double mouseDragAdjustX;
+		double mouseDragAdjustY;
+		Canvas stampSelectionCanvas;
+		IStamp activeStampResizing;
+		Timer hueShiftUpdateTimer;
+		Timer saturationUpdateTimer;
+		Timer lightnessUpdateTimer;
+		Timer contrastUpdateTimer;
+
 
 		private void CancelStampMode_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
@@ -2280,7 +2254,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.RotateRight();
 			}
 			finally
@@ -2295,7 +2269,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.RotateLeft();
 			}
 			finally
@@ -2310,7 +2284,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.FlipVertically = !stamp.FlipVertically;
 			}
 			finally
@@ -2325,7 +2299,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.FlipHorizontally = !stamp.FlipHorizontally;
 			}
 			finally
@@ -2340,7 +2314,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Scale = 1;
 			}
 			finally
@@ -2355,7 +2329,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Scale = 2;
 			}
 			finally
@@ -2370,7 +2344,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Scale = 0.5;
 			}
 			finally
@@ -2385,7 +2359,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Scale = (double)1 / 3;
 			}
 			finally
@@ -2436,7 +2410,7 @@ namespace DndMapSpike
 				stampsLayer.BeginUpdate();
 				try
 				{
-					foreach (Stamp stamp in SelectedStamps)
+					foreach (IStamp stamp in SelectedStamps)
 						stamp.HueShift = hueShiftToApply;
 				}
 				finally
@@ -2456,7 +2430,7 @@ namespace DndMapSpike
 				stampsLayer.BeginUpdate();
 				try
 				{
-					foreach (Stamp stamp in SelectedStamps)
+					foreach (IStamp stamp in SelectedStamps)
 						stamp.Saturation = saturationToApply;
 				}
 				finally
@@ -2475,7 +2449,7 @@ namespace DndMapSpike
 				stampsLayer.BeginUpdate();
 				try
 				{
-					foreach (Stamp stamp in SelectedStamps)
+					foreach (IStamp stamp in SelectedStamps)
 						stamp.Lightness = lightnessToApply;
 				}
 				finally
@@ -2494,7 +2468,7 @@ namespace DndMapSpike
 				stampsLayer.BeginUpdate();
 				try
 				{
-					foreach (Stamp stamp in SelectedStamps)
+					foreach (IStamp stamp in SelectedStamps)
 						stamp.Contrast = contrastToApply;
 				}
 				finally
@@ -2581,7 +2555,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.HueShift = 0;
 			}
 			finally
@@ -2604,7 +2578,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Saturation = 0;
 			}
 			finally
@@ -2627,7 +2601,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Lightness = 0;
 			}
 			finally
@@ -2650,7 +2624,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 					stamp.Contrast = 0;
 			}
 			finally
@@ -2724,7 +2698,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 				{
 					if (clipboardLightness.HasValue)
 						stamp.Lightness = clipboardLightness.Value;
@@ -2763,7 +2737,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (Stamp stamp in SelectedStamps)
+				foreach (IStamp stamp in SelectedStamps)
 				{
 					stamp.HueShift = 0;
 					stamp.Saturation = 0;
@@ -2786,6 +2760,56 @@ namespace DndMapSpike
 		private void PasteColorModMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			PasteColorMods();
+		}
+
+		private void GroupSelection_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (!SelectedStamps.Any())
+				return;
+			List<IStamp> stampsToGroup = new List<IStamp>();
+			stampsToGroup.AddRange(SelectedStamps);
+			StampGroup stampGroup = StampGroup.Create(stampsToGroup);
+			stampsLayer.AddStamp(stampGroup);
+			stampsLayer.SortStampsByZOrder();
+			SelectedStamps.Clear();
+			SelectedStamps.Add(stampGroup);
+			UpdateStampSelectionUI();
+		}
+
+		private void UngroupSelection_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			List<UngroupedStamps> ungroupedStamps = new List<UngroupedStamps>();
+			foreach (IStamp stamp in SelectedStamps)
+			{
+				if (stamp is StampGroup stampGroup)
+				{
+					UngroupedStamps ungroupedStampsThisGroup = new UngroupedStamps(stampGroup);
+					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;
+					stampGroup.Ungroup(ungroupedStampsThisGroup.Stamps);
+					ungroupedStamps.Add(ungroupedStampsThisGroup);
+				}
+			}
+
+			List<UngroupedStamps> sortedUngroups = ungroupedStamps.OrderByDescending(x => x.StartingZOrder).ToList();
+
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (UngroupedStamps ungroup in sortedUngroups)
+				{
+					SelectedStamps.Remove(ungroup.StampGroup);
+					foreach (IStamp stamp in ungroup.Stamps)
+					{
+						SelectedStamps.Add(stamp);
+						stampsLayer.AddStamp(stamp);
+					}
+				}
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
 		}
 	}
 }

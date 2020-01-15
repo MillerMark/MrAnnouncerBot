@@ -3,14 +3,20 @@ using Imaging;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace DndMapSpike
 {
-	public class Stamp
+	public class Stamp : IStamp
 	{
 		// TODO: Any new writeable properties added need to be copied in the Clone method.
+
+		public void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0)
+		{
+			stampsLayer.BlendStampImage(this, xOffset, yOffset);
+		}
 
 		public bool FlipHorizontally
 		{
@@ -37,8 +43,8 @@ namespace DndMapSpike
 			}
 		}
 
-		public int RelativeX { get; set; }
-		public int RelativeY { get; set; }
+		//public int RelativeX { get; set; }
+		//public int RelativeY { get; set; }
 		bool flipHorizontally;
 		bool flipVertically;
 		StampRotation rotation;
@@ -81,8 +87,8 @@ namespace DndMapSpike
 			result.FlipVertically = stamp.FlipVertically;
 			result.HueShift = stamp.HueShift;
 			result.Lightness = stamp.Lightness;
-			result.RelativeX = stamp.RelativeX;
-			result.RelativeY = stamp.RelativeY;
+			//result.RelativeX = stamp.RelativeX;
+			//result.RelativeY = stamp.RelativeY;
 			result.Rotation = stamp.Rotation;
 			result.Saturation = stamp.Saturation;
 			result.Scale = stamp.Scale;
@@ -102,7 +108,7 @@ namespace DndMapSpike
 			}
 			return 0;
 		}
-		
+
 		public Image Image
 		{
 			get
@@ -151,7 +157,6 @@ namespace DndMapSpike
 				}
 
 				zOrder = value;
-				OnZOrderChanged();
 			}
 		}
 		double scale = 1;
@@ -171,11 +176,6 @@ namespace DndMapSpike
 			}
 		}
 
-		protected virtual void OnZOrderChanged()
-		{
-			ZOrderChanged?.Invoke(this, EventArgs.Empty);
-		}
-
 		public bool ContainsPoint(Point point)
 		{
 			int left = GetLeft();
@@ -192,6 +192,11 @@ namespace DndMapSpike
 
 			return ImageUtils.HasPixelAt(Image, (int)(point.X - left), (int)(point.Y - top));
 		}
+
+		/// <summary>
+		/// Gets the left of this stamp (X and Y are the center points)
+		/// </summary>
+		/// <returns></returns>
 		public int GetLeft()
 		{
 			return (int)Math.Round(X - Width / 2.0);
@@ -213,13 +218,6 @@ namespace DndMapSpike
 			}
 		}
 
-		public double Diagonal
-		{
-			get
-			{
-				return Math.Sqrt(Width * Width + Height * Height);
-			}
-		}
 		double hueShift;
 		public double HueShift
 		{
@@ -287,6 +285,10 @@ namespace DndMapSpike
 			}
 		}
 
+		/// <summary>
+		/// Gets the top of this group(X and Y are center points)
+		/// </summary>
+		/// <returns></returns>
 		public int GetTop()
 		{
 			return (int)Math.Round(Y - Height / 2.0);
@@ -333,9 +335,9 @@ namespace DndMapSpike
 			Y += deltaY;
 		}
 
-		public Stamp Copy(int deltaX, int deltaY)
+		public IStamp Copy(int deltaX, int deltaY)
 		{
-			Stamp result = Stamp.Clone(this);
+			Stamp result = Clone(this);
 			result.Move(deltaX, deltaY);
 			return result;
 		}
@@ -350,7 +352,47 @@ namespace DndMapSpike
 			return ZOrder == -1;
 		}
 
-		public event EventHandler ZOrderChanged;
+		public void CreateFloating(Canvas canvas, int x = 0, int y = 0)
+		{
+			IStamp knownStamp = this;
+			Image image = new Image();
+			image.Source = new BitmapImage(new Uri(knownStamp.FileName));
+			ScaleTransform scaleTransform = null;
+			if (knownStamp.FlipVertically || knownStamp.FlipHorizontally || knownStamp.Scale != 1)
+			{
+				scaleTransform = new ScaleTransform();
+				scaleTransform.ScaleX = knownStamp.ScaleX;
+				scaleTransform.ScaleY = knownStamp.ScaleY;
+			}
+			TransformGroup transformGroup = new TransformGroup();
+			RotateTransform rotation = null;
+			switch (knownStamp.Rotation)
+			{
+				case StampRotation.Ninety:
+					rotation = new RotateTransform(90);
+					break;
+				case StampRotation.OneEighty:
+					rotation = new RotateTransform(180);
+					break;
+				case StampRotation.TwoSeventy:
+					rotation = new RotateTransform(270);
+					break;
+			}
+			if (rotation != null)
+				transformGroup.Children.Add(rotation);
+			if (scaleTransform != null)
+				transformGroup.Children.Add(scaleTransform);
+
+			if (transformGroup.Children.Count > 0)
+				image.LayoutTransform = transformGroup;
+			image.Opacity = 0.5;
+			image.IsHitTestVisible = false;
+			//mouseDragAdjustX = image.Source.Width / 2;
+			//mouseDragAdjustY = image.Source.Height / 2;
+			canvas.Children.Add(image);
+			Canvas.SetLeft(image, x);
+			Canvas.SetTop(image, y);
+		}
 	}
 }
 
