@@ -253,6 +253,11 @@ namespace DndMapSpike
 
 		void EnableSelectionControls(bool isEnabled)
 		{
+			if (!isEnabled)
+				lstFlooring.Visibility = Visibility.Collapsed;
+			else
+				lstFlooring.Visibility = Visibility.Visible;
+
 			lstFlooring.IsEnabled = isEnabled;
 			//lstDebris.IsEnabled = isEnabled;
 		}
@@ -994,11 +999,7 @@ namespace DndMapSpike
 				List<Stamp> copiedStamps = null;
 				bool copy = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
 				if (copy)
-				{
 					copiedStamps = new List<Stamp>();
-					if (stampJustRemoved != null && SelectedStamps.IndexOf(stampJustRemoved) < 0)
-						SelectedStamps.Add(stampJustRemoved);
-				}
 
 				foreach (Stamp stamp in SelectedStamps)
 					if (copy)

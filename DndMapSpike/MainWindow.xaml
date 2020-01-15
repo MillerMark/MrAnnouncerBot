@@ -463,7 +463,7 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
-			<ListBox x:Name="lstFlooring" IsEnabled="False" Height="200" Width="400">
+			<ListBox x:Name="lstFlooring" IsEnabled="False" Height="1000" Width="400">
 				<ListBox.ItemsPanel>
 					<ItemsPanelTemplate>
 						<WrapPanel Orientation="Horizontal" Width="400"/>
