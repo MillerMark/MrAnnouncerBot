@@ -17,7 +17,7 @@ namespace DndMapSpike
 		void RotateLeft();
 		void RotateRight();
 		void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0);
-		void CreateFloating(Canvas canvas, int x = 0, int y = 0);
+		void CreateFloating(Canvas canvas, int left = 0, int top = 0);
 
 		double Contrast { get; set; }
 		string FileName { get; set; }
@@ -38,6 +38,9 @@ namespace DndMapSpike
 		int X { get; set; }
 		int Y { get; set; }
 		int ZOrder { get; set; }
+		void SwapXY();
+		void AdjustScale(double scaleAdjust);
+		void SetAbsoluteScaleTo(double newScale);
 	}
 }
 

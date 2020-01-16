@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 
 namespace DndMapSpike
 {
-	public class Stamp : IStamp
+	public class Stamp : BaseStamp, IStamp
 	{
 		// TODO: Any new writeable properties added need to be copied in the Clone method.
 
@@ -65,7 +65,6 @@ namespace DndMapSpike
 		}
 
 		Image image;
-		int zOrder = -1;
 
 		public Stamp()
 		{
@@ -87,8 +86,6 @@ namespace DndMapSpike
 			result.FlipVertically = stamp.FlipVertically;
 			result.HueShift = stamp.HueShift;
 			result.Lightness = stamp.Lightness;
-			//result.RelativeX = stamp.RelativeX;
-			//result.RelativeY = stamp.RelativeY;
 			result.Rotation = stamp.Rotation;
 			result.Saturation = stamp.Saturation;
 			result.Scale = stamp.Scale;
@@ -124,8 +121,13 @@ namespace DndMapSpike
 		{
 			get
 			{
+				bool isFlipping;
+				if (Rotation == StampRotation.Ninety || Rotation == StampRotation.TwoSeventy)
+					isFlipping = FlipVertically;
+				else  // Normal flip
+					isFlipping = FlipHorizontally;
 				double horizontalFlipFactor = 1;
-				if (FlipHorizontally)
+				if (isFlipping)
 					horizontalFlipFactor = -1;
 				return Scale * horizontalFlipFactor;
 			}
@@ -135,30 +137,18 @@ namespace DndMapSpike
 		{
 			get
 			{
+				bool isFlipping;
+				if (Rotation == StampRotation.Ninety || Rotation == StampRotation.TwoSeventy)
+					isFlipping = FlipHorizontally;
+				else  // Normal flip
+					isFlipping = FlipVertically;
 				double verticalFlipFactor = 1;
-				if (FlipVertically)
+				if (isFlipping)
 					verticalFlipFactor = -1;
 				return Scale * verticalFlipFactor;
 			}
 		}
 
-		public int X { get; set; }
-
-		public int Y { get; set; }
-
-		public int ZOrder
-		{
-			get { return zOrder; }
-			set
-			{
-				if (zOrder == value)
-				{
-					return;
-				}
-
-				zOrder = value;
-			}
-		}
 		double scale = 1;
 		public double Scale
 		{
@@ -342,16 +332,6 @@ namespace DndMapSpike
 			return result;
 		}
 
-		public void ResetZOrder()
-		{
-			ZOrder = -1;
-		}
-
-		public bool HasNoZOrder()
-		{
-			return ZOrder == -1;
-		}
-
 		public void CreateFloating(Canvas canvas, int left = 0, int top = 0)
 		{
 			Image image = new Image();
@@ -377,10 +357,11 @@ namespace DndMapSpike
 					rotation = new RotateTransform(270);
 					break;
 			}
-			if (rotation != null)
-				transformGroup.Children.Add(rotation);
 			if (scaleTransform != null)
 				transformGroup.Children.Add(scaleTransform);
+
+			if (rotation != null)
+				transformGroup.Children.Add(rotation);
 
 			if (transformGroup.Children.Count > 0)
 				image.LayoutTransform = transformGroup;
@@ -391,6 +372,14 @@ namespace DndMapSpike
 			canvas.Children.Add(image);
 			Canvas.SetLeft(image, left);
 			Canvas.SetTop(image, top);
+		}
+		public void AdjustScale(double scaleAdjust)
+		{
+			Scale *= scaleAdjust;
+		}
+		public void SetAbsoluteScaleTo(double newScale)
+		{
+			Scale = newScale;
 		}
 	}
 }

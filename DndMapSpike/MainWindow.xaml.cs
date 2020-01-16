@@ -1003,7 +1003,8 @@ namespace DndMapSpike
 				if (copy)
 					copiedStamps = new List<IStamp>();
 
-				foreach (IStamp stamp in SelectedStamps)
+				List<IStamp> zOrderedSelection = SelectedStamps.OrderBy(x => x.ZOrder).ToList();
+				foreach (IStamp stamp in zOrderedSelection)
 					if (copy)
 					{
 						IStamp newStamp = stamp.Copy(deltaX, deltaY);
@@ -1397,7 +1398,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (IStamp stamp in SelectedStamps)
-					stamp.Scale *= scaleAdjust;
+					stamp.AdjustScale(scaleAdjust);
 
 			}
 			finally
@@ -1679,6 +1680,8 @@ namespace DndMapSpike
 			}
 		}
 
+		bool changingInternally;
+
 		private void SetSlider(Slider slider, double? value)
 		{
 			if (slider == null)
@@ -1686,7 +1689,17 @@ namespace DndMapSpike
 
 			slider.IsEnabled = value.HasValue;
 			if (value.HasValue)
-				slider.Value = value.Value;
+			{
+				changingInternally = true;
+				try
+				{
+					slider.Value = value.Value;
+				}
+				finally
+				{
+					changingInternally = false;
+				}
+			}
 		}
 
 		private Viewbox CreateButton(string buttonName, double x, double y, double buttonSize)
@@ -2321,7 +2334,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (IStamp stamp in SelectedStamps)
-					stamp.Scale = 1;
+					stamp.SetAbsoluteScaleTo(1);
 			}
 			finally
 			{
@@ -2336,7 +2349,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (IStamp stamp in SelectedStamps)
-					stamp.Scale = 2;
+					stamp.SetAbsoluteScaleTo(2);
 			}
 			finally
 			{
@@ -2351,7 +2364,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (IStamp stamp in SelectedStamps)
-					stamp.Scale = 0.5;
+					stamp.SetAbsoluteScaleTo(0.5);
 			}
 			finally
 			{
@@ -2366,7 +2379,7 @@ namespace DndMapSpike
 			try
 			{
 				foreach (IStamp stamp in SelectedStamps)
-					stamp.Scale = (double)1 / 3;
+					stamp.SetAbsoluteScaleTo((double)1 / 3);
 			}
 			finally
 			{
@@ -2492,6 +2505,8 @@ namespace DndMapSpike
 
 		private void HueShiftSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
+			if (changingInternally)
+				return;
 			if (!(sender is Slider slider))
 				return;
 
@@ -2502,6 +2517,8 @@ namespace DndMapSpike
 
 		private void SaturationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
+			if (changingInternally)
+				return;
 			if (!(sender is Slider slider))
 				return;
 
@@ -2511,12 +2528,26 @@ namespace DndMapSpike
 		}
 		private void LightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
+			if (changingInternally)
+				return;
 			if (!(sender is Slider slider))
 				return;
 
 			lightnessToApply = slider.Value;
 			lightnessUpdateTimer.Stop();
 			lightnessUpdateTimer.Start();
+		}
+
+		private void ContrastSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (changingInternally)
+				return;
+			if (!(sender is Slider slider))
+				return;
+
+			contrastToApply = slider.Value;
+			contrastUpdateTimer.Stop();
+			contrastUpdateTimer.Start();
 		}
 
 		Slider GetActiveHueSlider()
@@ -2724,16 +2755,6 @@ namespace DndMapSpike
 			UpdateStampSelectionUI();
 		}
 
-		private void ContrastSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-		{
-			if (!(sender is Slider slider))
-				return;
-
-			contrastToApply = slider.Value;
-			contrastUpdateTimer.Stop();
-			contrastUpdateTimer.Start();
-		}
-
 		private void ResetAllColorMods_Click(object sender, RoutedEventArgs e)
 		{
 			ResetSaturationSlider();
@@ -2794,6 +2815,7 @@ namespace DndMapSpike
 					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;
 					stampGroup.Ungroup(ungroupedStampsThisGroup.Stamps);
 					ungroupedStamps.Add(ungroupedStampsThisGroup);
+					stampsLayer.RemoveStamp(stampGroup);
 				}
 			}
 

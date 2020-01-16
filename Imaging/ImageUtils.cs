@@ -205,10 +205,16 @@ namespace Imaging
 			transformBmp.BeginInit();
 			transformBmp.Source = bitmapSource;
 			RotateTransform rotation = new RotateTransform(angle);
+
+			if (angle == 90 || angle == 270)
+			{
+				scaleX *= -1;
+				scaleY *= -1;
+			}	
 			ScaleTransform scaling = new ScaleTransform(scaleX, scaleY);
 			TransformGroup group = new TransformGroup();
-			group.Children.Add(rotation);
 			group.Children.Add(scaling);
+			group.Children.Add(rotation);
 			transformBmp.Transform = group;
 			transformBmp.EndInit();
 
