@@ -43,7 +43,6 @@ namespace DndMapSpike
 			}
 		}
 
-
 		public bool FlipHorizontally
 		{
 			get
@@ -111,35 +110,6 @@ namespace DndMapSpike
 				}
 			}
 		}
-
-		//public int RelativeX
-		//{
-		//	get
-		//	{
-		//		return stamps.FirstOrDefault().RelativeX;
-		//	}
-		//	set
-		//	{
-		//		foreach (IStamp stamp in stamps)
-		//		{
-		//			stamp.RelativeX = value;
-		//		}
-		//	}
-		//}
-		//public int RelativeY
-		//{
-		//	get
-		//	{
-		//		return stamps.FirstOrDefault().RelativeY;
-		//	}
-		//	set
-		//	{
-		//		foreach (IStamp stamp in stamps)
-		//		{
-		//			stamp.RelativeY = value;
-		//		}
-		//	}
-		//}
 
 		public StampRotation Rotation
 		{
@@ -258,7 +228,8 @@ namespace DndMapSpike
 
 		public IStamp Copy(int deltaX, int deltaY)
 		{
-			throw new NotImplementedException();
+			return null;
+			//throw new NotImplementedException();
 		}
 
 		void CalculateSizeAndPosition()

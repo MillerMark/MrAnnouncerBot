@@ -905,6 +905,8 @@ namespace DndMapSpike
 
 		void DragCanvas(Canvas canvas, MouseEventArgs e)
 		{
+			if (canvas.Visibility == Visibility.Hidden)
+				canvas.Visibility = Visibility.Visible;
 			Point cursor = e.GetPosition(content);
 			if (draggingStamps && e.LeftButton == MouseButtonState.Released)
 			{
@@ -1005,8 +1007,11 @@ namespace DndMapSpike
 					if (copy)
 					{
 						IStamp newStamp = stamp.Copy(deltaX, deltaY);
-						stampsLayer.AddStamp(newStamp);
-						copiedStamps.Add(newStamp);
+						if (newStamp != null)
+						{
+							stampsLayer.AddStamp(newStamp);
+							copiedStamps.Add(newStamp);
+						}
 					}
 					else
 						stamp.Move(deltaX, deltaY);
@@ -1322,12 +1327,12 @@ namespace DndMapSpike
 			int stampTop = stamp.GetTop();
 			int relativeX = stampLeft - left;
 			int relativeY = stampTop - top;
-			CreatingFloatingStamp(ref selectDragStampCanvas, stamp);
-			if (stamp is StampGroup stampGroup)
-			{
-				relativeX += stampGroup.Width / 2;
-				relativeY += stampGroup.Height / 2;
-			}
+			FloatingStamp(ref selectDragStampCanvas, stamp);
+			//if (stamp is StampGroup stampGroup)
+			//{
+			//	relativeX += stampGroup.Width / 2;
+			//	relativeY += stampGroup.Height / 2;
+			//}
 			stamp.CreateFloating(selectDragStampCanvas, relativeX, relativeY);
 		}
 
@@ -2192,23 +2197,24 @@ namespace DndMapSpike
 				return;
 			if (!(button.Tag is Stamp stamp))
 				return;
-			CreatingFloatingStamp(ref activeStampCanvas, stamp);
+			FloatingStamp(ref activeStampCanvas, stamp);
 			stamp.CreateFloating(activeStampCanvas);
 			mouseDragAdjustX = -stamp.GetLeft();
 			mouseDragAdjustY = -stamp.GetTop();
 			MapEditMode = MapEditModes.Stamp;
 		}
 
-		private void CreatingFloatingStamp(ref Canvas canvas, IStamp stamp)
+		private void FloatingStamp(ref Canvas canvas, IStamp stamp)
 		{
 			activeStamp = stamp;
-			if (canvas == null)
-			{
-				canvas = new Canvas();
-				content.Children.Add(canvas);
-				canvas.IsHitTestVisible = false;
-				Panel.SetZIndex(canvas, int.MaxValue);
-			}
+			if (canvas != null)
+				return;
+
+			canvas = new Canvas();
+			content.Children.Add(canvas);
+			canvas.IsHitTestVisible = false;
+			canvas.Visibility = Visibility.Hidden;
+			Panel.SetZIndex(canvas, int.MaxValue);
 		}
 
 		double mouseDragAdjustX;
@@ -2768,6 +2774,7 @@ namespace DndMapSpike
 				return;
 			List<IStamp> stampsToGroup = new List<IStamp>();
 			stampsToGroup.AddRange(SelectedStamps);
+			stampsLayer.RemoveAllStamps(SelectedStamps);
 			StampGroup stampGroup = StampGroup.Create(stampsToGroup);
 			stampsLayer.AddStamp(stampGroup);
 			stampsLayer.SortStampsByZOrder();
