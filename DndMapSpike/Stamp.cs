@@ -352,21 +352,20 @@ namespace DndMapSpike
 			return ZOrder == -1;
 		}
 
-		public void CreateFloating(Canvas canvas, int x = 0, int y = 0)
+		public void CreateFloating(Canvas canvas, int left = 0, int top = 0)
 		{
-			IStamp knownStamp = this;
 			Image image = new Image();
-			image.Source = new BitmapImage(new Uri(knownStamp.FileName));
+			image.Source = new BitmapImage(new Uri(FileName));
 			ScaleTransform scaleTransform = null;
-			if (knownStamp.FlipVertically || knownStamp.FlipHorizontally || knownStamp.Scale != 1)
+			if (FlipVertically || FlipHorizontally || Scale != 1)
 			{
 				scaleTransform = new ScaleTransform();
-				scaleTransform.ScaleX = knownStamp.ScaleX;
-				scaleTransform.ScaleY = knownStamp.ScaleY;
+				scaleTransform.ScaleX = ScaleX;
+				scaleTransform.ScaleY = ScaleY;
 			}
 			TransformGroup transformGroup = new TransformGroup();
 			RotateTransform rotation = null;
-			switch (knownStamp.Rotation)
+			switch (Rotation)
 			{
 				case StampRotation.Ninety:
 					rotation = new RotateTransform(90);
@@ -390,8 +389,8 @@ namespace DndMapSpike
 			//mouseDragAdjustX = image.Source.Width / 2;
 			//mouseDragAdjustY = image.Source.Height / 2;
 			canvas.Children.Add(image);
-			Canvas.SetLeft(image, x);
-			Canvas.SetTop(image, y);
+			Canvas.SetLeft(image, left);
+			Canvas.SetTop(image, top);
 		}
 	}
 }
