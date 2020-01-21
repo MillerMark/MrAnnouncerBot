@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace MapCore
@@ -19,6 +20,15 @@ namespace MapCore
 		public Map()
 		{
 		}
+
+		/* 
+		 * Store:
+		 
+
+		 * Reconstitute:
+						
+		 
+			 */
 
 		bool[,] _allHorizontalWalls { get; set; }
 
