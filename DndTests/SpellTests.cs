@@ -360,7 +360,7 @@ namespace DndTests
 			AllPlayers.Invalidate();
 			AllSpells.Invalidate();
 			AllActionShortcuts.Invalidate();
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword");
 			Assert.IsNotNull(greatsword);
 			Monster joeVineBlight = MonsterBuilder.BuildVineBlight("Joe");

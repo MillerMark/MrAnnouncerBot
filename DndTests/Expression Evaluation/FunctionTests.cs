@@ -38,7 +38,7 @@ namespace DndTests
 		{
 			AllPlayers.Invalidate();
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Assert.AreEqual(6, Expressions.Get("Level(\"Barbarian\")", fred));
 			Assert.AreEqual(0, Expressions.Get("Level(\"Fighter\")", fred));
 			Assert.AreEqual(0, Expressions.Get("Level(\"Fighter\")", ava));
@@ -49,7 +49,7 @@ namespace DndTests
 		public void TestGetSet()
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 
 			Expressions.Do("Set(Rage,true)", ava);
 			Expressions.Do("Set(Rage,false)", fred);
@@ -92,7 +92,7 @@ namespace DndTests
 				lastAvaNewValue = ea.NewValue;
 			}
 
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 
 			ava.ClearStateVariables();
 			ava.StateChanged += Ava_StateChanged;
@@ -113,7 +113,7 @@ namespace DndTests
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Assert.AreEqual(3, Expressions.GetInt("Get(proficiencyBonus)", ava));
 			Assert.AreEqual(Ability.charisma, Expressions.Get<Ability>("Get(spellCastingAbility)", ava));
 			Assert.AreEqual(Ability.charisma, Expressions.Get<Ability>("Get(spellCastingAbility)", merkin));
@@ -124,7 +124,7 @@ namespace DndTests
 		[TestMethod]
 		public void SetTests()
 		{
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Expressions.Do("Set(proficiencyBonus, 4)", ava);
 			Assert.AreEqual(4, ava.proficiencyBonus);
 			Expressions.Do("Set(proficiencyBonus, 8)", ava);
@@ -147,7 +147,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestMods()
 		{
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Assert.AreEqual(3, Expressions.GetInt("Mod(strength)", ava));
 			Assert.AreEqual(0, Expressions.GetInt("Mod(dexterity)", ava));
 			Assert.AreEqual(2, Expressions.GetInt("Mod(constitution)", ava));

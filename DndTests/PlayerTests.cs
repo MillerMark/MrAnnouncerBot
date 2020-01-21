@@ -131,7 +131,7 @@ namespace DndTests
 			Character fred = AllPlayers.Get("Fred");
 			Assert.AreEqual(PlayerID.Fred, fred.playerID);
 			Character ava = AllPlayers.Get("Ava");
-			Assert.AreEqual(PlayerID.Ava, ava.playerID);
+			Assert.AreEqual(PlayerID.LilCutie, ava.playerID);
 			Character shemo = AllPlayers.Get("Shemo");
 			Assert.AreEqual(PlayerID.Shemo, shemo.playerID);
 		}

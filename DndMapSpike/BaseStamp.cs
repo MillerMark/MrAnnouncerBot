@@ -5,6 +5,7 @@ namespace DndMapSpike
 {
 	public class BaseStamp
 	{
+		public bool Visible { get; set; } = true;
 		public int X { get; set; }
 
 		public int Y { get; set; }

@@ -27,6 +27,7 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		bool ctrlKeyDown;
 		private const int StampButtonSize = 36;
 		List<IStamp> selectedStamps;
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
@@ -113,6 +114,7 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Dark Lair of Sorrows.txt");
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
 			ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
+			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();
 			AddFileSystemWatcher();
@@ -251,15 +253,14 @@ namespace DndMapSpike
 			}
 		}
 
-		void EnableSelectionControls(bool isEnabled)
+		void EnableSelectionControls(bool tileSelectionExists)
 		{
-			if (!isEnabled)
-				lstFlooring.Visibility = Visibility.Collapsed;
-			else
-				lstFlooring.Visibility = Visibility.Visible;
+			Visibility tileSelectionControlVisibility = tileSelectionExists ? Visibility.Visible : Visibility.Collapsed;
+			Visibility stampControlVisibility = !tileSelectionExists ? Visibility.Visible : Visibility.Collapsed;
 
-			lstFlooring.IsEnabled = isEnabled;
-			//lstDebris.IsEnabled = isEnabled;
+			tbcStamps.Visibility = stampControlVisibility;
+			lstFlooring.Visibility = tileSelectionControlVisibility;
+			spWallDoorControls.Visibility = tileSelectionControlVisibility;
 		}
 
 		private void CreateSelectionOutline()
@@ -400,7 +401,8 @@ namespace DndMapSpike
 
 		private void ClearStampSelection()
 		{
-			stampSelectionCanvas.Children.Clear();
+			if (stampSelectionCanvas != null)
+				stampSelectionCanvas.Children.Clear();
 		}
 
 		private void Selection_SelectionChanged(object sender, EventArgs e)
@@ -474,7 +476,7 @@ namespace DndMapSpike
 
 		void AddDoors(Tile tile)
 		{
-			if (!(tile is FloorSpace floorSpace))
+			if (!(tile is Tile floorSpace))
 				return;
 
 			if (!floorSpace.HasDoors)
@@ -521,7 +523,7 @@ namespace DndMapSpike
 			{
 				UIElement floorUI = null;
 
-				if (tile is FloorSpace)
+				if (tile.SpaceType != SpaceType.None)
 				{
 					if (tile.SpaceType == SpaceType.Room)
 						floorUI = GetRoomFloor();
@@ -918,6 +920,8 @@ namespace DndMapSpike
 		}
 
 		bool draggingStamps;
+		bool needToHideOriginalStamps;
+
 		private void ZoomAndPanControl_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (activeStampCanvas != null)
@@ -927,6 +931,15 @@ namespace DndMapSpike
 			}
 			if (selectDragStampCanvas != null)
 			{
+				if (needToHideOriginalStamps)
+				{
+					needToHideOriginalStamps = false;
+					if (e.LeftButton == MouseButtonState.Pressed)
+					{
+						ClearStampSelection();
+						HideSelectedStamps();
+					}
+				}
 				DragCanvas(selectDragStampCanvas, e);
 				return;
 			}
@@ -976,6 +989,10 @@ namespace DndMapSpike
 
 				e.Handled = true;
 			}
+			else
+			{
+
+			}
 		}
 
 		private void StopDraggingStamps(Point curContentMousePoint)
@@ -990,9 +1007,32 @@ namespace DndMapSpike
 			}
 
 			draggingStamps = false;
+			ShowSelectedStamps();
 			ClearFloatingCanvases();
 		}
+		void SetSelectedStampVisibility(bool isVisible)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				foreach (IStamp stamp in SelectedStamps)
+					stamp.Visible = isVisible;
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+		}
 
+		void HideSelectedStamps()
+		{
+			SetSelectedStampVisibility(false);
+		}
+
+		void ShowSelectedStamps()
+		{
+			SetSelectedStampVisibility(true);
+		}
 		private void MoveSelectedStamps(int deltaX, int deltaY)
 		{
 			stampsLayer.BeginUpdate();
@@ -1002,6 +1042,8 @@ namespace DndMapSpike
 				bool copy = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
 				if (copy)
 					copiedStamps = new List<IStamp>();
+
+				ShowSelectedStamps();
 
 				List<IStamp> zOrderedSelection = SelectedStamps.OrderBy(x => x.ZOrder).ToList();
 				foreach (IStamp stamp in zOrderedSelection)
@@ -1067,7 +1109,7 @@ namespace DndMapSpike
 			if (selectionType == SelectionType.None)
 				return;
 
-			if (!(baseSpace is FloorSpace floorSpace))
+			if (!(baseSpace is Tile floorSpace))
 				return;
 
 			tileSelection.SelectionType = selectionType;
@@ -1087,7 +1129,7 @@ namespace DndMapSpike
 			if (selectionType == SelectionType.None)
 				return;
 
-			if (!(baseSpace is FloorSpace floorSpace))
+			if (!(baseSpace is Tile floorSpace))
 				return;
 
 			if (floorSpace.Parent is Room)
@@ -1256,6 +1298,7 @@ namespace DndMapSpike
 				if (SelectedStamps.Count > 0)
 				{
 					draggingStamps = true;
+					needToHideOriginalStamps = true;
 					UpdateStampSelection();
 					GetTopLeftOfStampSelection(out int left, out int top);
 
@@ -1613,45 +1656,62 @@ namespace DndMapSpike
 			ellipse.CaptureMouse();
 		}
 
-		void StackScaleButtons(string buttonName, double compareScale, double? selectedButtonScale, double buttonSize, double x, ref double y, int maxTop)
+		void StackScaleButtons(string buttonName, double compareScale, double? selectedButtonScale, double buttonSize, double rowColumnSpacer, double x, ref double y, int maxTop)
 		{
 			if (y < maxTop)
 				return;
-			Viewbox btnScale100Percent = CreateButton(buttonName, x - buttonSize, y, buttonSize);
+			Viewbox btnScale = CreateButton(buttonName, x - buttonSize, y, buttonSize);
 			if (!selectedButtonScale.HasValue || selectedButtonScale.Value != compareScale)
 			{
-				btnScale100Percent.Visibility = Visibility.Visible;
-				y -= buttonSize;
+				btnScale.Visibility = Visibility.Visible;
+				y -= buttonSize + rowColumnSpacer;
 			}
 			else
-				btnScale100Percent.Visibility = Visibility.Hidden;
+				btnScale.Visibility = Visibility.Hidden;
+		}
+
+		bool HasAtLeastOneGroupSelected()
+		{
+			return SelectedStamps.Any(x => x is StampGroup);
 		}
 
 		void AddStampSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, int left, int top, int width, int height)
 		{
+			double rowColumnSpacer = 3 / zoomAndPanControl.ContentScale;
 			int right = left + width;
 			int bottom = top + height;
+			double bottomRow = bottom + rowColumnSpacer;
 			double buttonSize = StampButtonSize / zoomAndPanControl.ContentScale;
-			double topRow = top - buttonSize;
+			double topRow = top - buttonSize - rowColumnSpacer;
+			double alignRow = topRow - buttonSize - rowColumnSpacer;
+			double distributeRow = alignRow - buttonSize - rowColumnSpacer;
+			double alignColumn = right + buttonSize + rowColumnSpacer;
+			double distributeColumn = alignColumn + buttonSize + rowColumnSpacer;
 			CreateButton("btnRotateLeft", left - buttonSize, topRow, buttonSize);
 			CreateButton("btnRotateRight", right, topRow, buttonSize);
+			double middleButtonX = left + width / 2 - buttonSize / 2;
+			double middleButtonY = top + height / 2 - buttonSize / 2;
+
 			if (width >= buttonSize)
-				CreateButton("btnFlipVertical", left + width / 2 - buttonSize / 2, topRow, buttonSize);
+			{
+				CreateButton("btnFlipVertical", middleButtonX, topRow, buttonSize);
+			}
+
 			if (height >= buttonSize)
-				CreateButton("btnFlipHorizontal", right, top + height / 2 - buttonSize / 2, buttonSize);
+				CreateButton("btnFlipHorizontal", right, middleButtonY, buttonSize);
 
 			double yPos = bottom - buttonSize;
-			StackScaleButtons("btnScale33Percent", (double)1 / 3, selectedButtonScale, buttonSize, left, ref yPos, top);
-			StackScaleButtons("btnScale50Percent", (double)1 / 2, selectedButtonScale, buttonSize, left, ref yPos, top);
-			StackScaleButtons("btnScale100Percent", 1, selectedButtonScale, buttonSize, left, ref yPos, top);
-			StackScaleButtons("btnScale200Percent", 2, selectedButtonScale, buttonSize, left, ref yPos, top);
+			StackScaleButtons("btnScale33Percent", (double)1 / 3, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+			StackScaleButtons("btnScale50Percent", (double)1 / 2, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+			StackScaleButtons("btnScale100Percent", 1, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+			StackScaleButtons("btnScale200Percent", 2, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
 
-			CreateButton("btnSendToBack", right, bottom, buttonSize);
-			CreateButton("btnBringToFront", right + buttonSize, bottom, buttonSize);
-			
+			CreateButton("btnSendToBack", right, bottomRow, buttonSize);
+			CreateButton("btnBringToFront", right + buttonSize + rowColumnSpacer, bottomRow, buttonSize);
+
 			bool hasColorMod = selectedHueShift.HasValue && selectedHueShift.Value != 0 ||
 												 selectedSaturation.HasValue && selectedSaturation.Value != 0 ||
-												 selectedLightness.HasValue && selectedLightness.Value != 0 || 
+												 selectedLightness.HasValue && selectedLightness.Value != 0 ||
 												 selectedContrast.HasValue && selectedContrast.Value != 0;
 
 			double pixelWidth = width * zoomAndPanControl.ContentScale;
@@ -1665,7 +1725,7 @@ namespace DndMapSpike
 				ccColorControls.Width = Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
 				stampSelectionCanvas.Children.Add(ccColorControls);
 				Canvas.SetLeft(ccColorControls, left + (width - ccColorControls.Width) / 2);
-				Canvas.SetTop(ccColorControls, bottom);
+				Canvas.SetTop(ccColorControls, bottomRow);
 				SetSlider(GetActiveHueSlider(), selectedHueShift);
 				SetSlider(GetActiveSaturationSlider(), selectedSaturation);
 				SetSlider(GetActiveLightnessSlider(), selectedLightness);
@@ -1676,7 +1736,49 @@ namespace DndMapSpike
 			{
 				if (ccColorControls != null)
 					ccColorControls.Visibility = Visibility.Hidden;
-				CreateButton("btnShowColorControls", left, bottom, buttonSize);
+				CreateButton("btnShowColorControls", left, bottomRow, buttonSize);
+			}
+
+			bool hasMoreThanOneSelected = SelectedStamps.Count > 1;
+			bool hasAtLeastOneGroupSelected = HasAtLeastOneGroupSelected();
+			double secondRow = bottomRow + buttonSize + rowColumnSpacer;
+			double groupUngroupLeft = right;
+			if (hasMoreThanOneSelected)
+			{
+				CreateButton("btnGroup", groupUngroupLeft, secondRow, buttonSize);
+				groupUngroupLeft += buttonSize + rowColumnSpacer;
+			}
+			if (hasAtLeastOneGroupSelected)
+			{
+				CreateButton("btnUngroup", groupUngroupLeft, secondRow, buttonSize);
+			}
+
+			if (hasMoreThanOneSelected)
+			{
+				double longButtonLength = buttonSize * 1.6;
+				double longButtonIndent = (longButtonLength - buttonSize) / 2;
+				if (width >= buttonSize)
+				{
+					CreateButton("btnAlignHorizontalCenter", middleButtonX, alignRow, buttonSize);
+					if (SelectedStamps.Count > 2)
+						CreateButton("btnDistributeHorizontally", middleButtonX - longButtonIndent, distributeRow, longButtonLength, buttonSize);
+					if (width >= 3 * buttonSize + 2 * rowColumnSpacer)
+					{
+						CreateButton("btnAlignLeft", left, alignRow, buttonSize);
+						CreateButton("btnAlignRight", right - buttonSize, alignRow, buttonSize);
+					}
+				}
+				if (height >= buttonSize)
+				{
+					CreateButton("btnAlignVerticalCenter", alignColumn, middleButtonY, buttonSize);
+					if (SelectedStamps.Count > 2)
+						CreateButton("btnDistributeVertically", distributeColumn, middleButtonY - longButtonIndent, buttonSize, longButtonLength);
+					if (height >= 3 * buttonSize + 2 * rowColumnSpacer)
+					{
+						CreateButton("btnAlignTop", alignColumn, top, buttonSize);
+						CreateButton("btnAlignBottom", alignColumn, bottom - buttonSize, buttonSize);
+					}
+				}
 			}
 		}
 
@@ -1702,12 +1804,14 @@ namespace DndMapSpike
 			}
 		}
 
-		private Viewbox CreateButton(string buttonName, double x, double y, double buttonSize)
+		private Viewbox CreateButton(string buttonName, double x, double y, double buttonWidth, double buttonHeight = -1)
 		{
+			if (buttonHeight == -1)
+				buttonHeight = buttonWidth;
 			Viewbox viewbox = FindResource(buttonName) as Viewbox;
 			viewbox.Visibility = Visibility.Visible;
-			viewbox.Width = buttonSize;
-			viewbox.Height = buttonSize;
+			viewbox.Width = buttonWidth;
+			viewbox.Height = buttonHeight;
 			viewbox.Cursor = Cursors.Hand;
 			stampSelectionCanvas.Children.Add(viewbox);
 			Canvas.SetLeft(viewbox, x);
@@ -1820,6 +1924,7 @@ namespace DndMapSpike
 
 		private void HandleTileClick(Tile baseSpace)
 		{
+			this.Title = $"Tile (col = {baseSpace.Column}, row = {baseSpace.Row})";
 			if (clickCounter == 1)
 				HandleSingleClickTileSelect(baseSpace);
 			else if (clickCounter == 2)
@@ -1894,28 +1999,30 @@ namespace DndMapSpike
 			RemoveRubberBandSelector();
 			foreach (Tile tile in selection)
 			{
+				if (!tile.IsFloor)
+					tile.IsFloor = true;
 				content.Children.Remove(tile.UIElementFloor as UIElement);
 				content.Children.Remove(tile.UIElementOverlay as UIElement);
 				content.Children.Remove(tile.SelectorPanel as UIElement);
 
-				//AddElementOverTile(tile, texture.GetImage(tile.Column, tile.Row));
 				AddFloorFile(tile, texture.GetImage(tile.Column, tile.Row));
 				AddFloorOverlay(tile);
 				AddSelector(tile);
 			}
+			Map.UpdateIfNeeded();
 			LoadFinalCanvasElements();
 		}
-		private void Button_ApplyDebris(object sender, RoutedEventArgs e)
-		{
-			if (!(sender is Button button))
-				return;
-			BaseTexture texture = (BaseTexture)button.Tag;
-			List<Tile> selection = Map.GetSelection();
-			foreach (Tile tile in selection)
-			{
-				AddDebris(tile, texture.GetImage(tile.Column, tile.Row));
-			}
-		}
+		//private void Button_ApplyDebris(object sender, RoutedEventArgs e)
+		//{
+		//	if (!(sender is Button button))
+		//		return;
+		//	BaseTexture texture = (BaseTexture)button.Tag;
+		//	List<Tile> selection = Map.GetSelection();
+		//	foreach (Tile tile in selection)
+		//	{
+		//		AddDebris(tile, texture.GetImage(tile.Column, tile.Row));
+		//	}
+		//}
 
 		private void AddFloorOverlay(Tile tile)
 		{
@@ -1992,7 +2099,7 @@ namespace DndMapSpike
 			bool adding = !(Keyboard.Modifiers.HasFlag(ModifierKeys.Control));
 			List<Tile> selection = Map.GetSelection();
 			foreach (Tile tile in selection)
-				if (tile is FloorSpace floorSpace)
+				if (tile is Tile floorSpace)
 					floorSpace.SetDoor(doorPosition, adding);
 
 			UpdateDoors();
@@ -2746,7 +2853,7 @@ namespace DndMapSpike
 					if (clipboardSaturation.HasValue)
 						stamp.Saturation = clipboardSaturation.Value;
 				}
-				
+
 			}
 			finally
 			{
@@ -2791,6 +2898,11 @@ namespace DndMapSpike
 
 		private void GroupSelection_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
+			GroupSelection();
+		}
+
+		private void GroupSelection()
+		{
 			if (!SelectedStamps.Any())
 				return;
 			List<IStamp> stampsToGroup = new List<IStamp>();
@@ -2805,6 +2917,11 @@ namespace DndMapSpike
 		}
 
 		private void UngroupSelection_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			UngroupSelection();
+		}
+
+		private void UngroupSelection()
 		{
 			List<UngroupedStamps> ungroupedStamps = new List<UngroupedStamps>();
 			foreach (IStamp stamp in SelectedStamps)
@@ -2839,6 +2956,241 @@ namespace DndMapSpike
 				stampsLayer.EndUpdate();
 			}
 			UpdateStampSelectionUI();
+		}
+
+		private void btnGroup_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			GroupSelection();
+		}
+
+		private void btnUngroup_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			UngroupSelection();
+		}
+
+		private void btnAlignHorizontalCenter_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double totalCenterX = 0;
+				foreach (IStamp stamp in SelectedStamps)
+					totalCenterX += stamp.X;
+
+				double averageCenterX = totalCenterX / SelectedStamps.Count;
+				foreach (IStamp stamp in SelectedStamps)
+					stamp.X = (int)Math.Round(averageCenterX);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnAlignVerticalCenter_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double totalCenterY = 0;
+				foreach (IStamp stamp in SelectedStamps)
+					totalCenterY += stamp.Y;
+
+				double averageCenterY = totalCenterY / SelectedStamps.Count;
+				foreach (IStamp stamp in SelectedStamps)
+					stamp.Y = (int)Math.Round(averageCenterY);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnAlignLeft_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double furthestLeft = int.MaxValue;
+				foreach (IStamp stamp in SelectedStamps)
+				{
+					double left = stamp.GetLeft();
+					if (left < furthestLeft)
+						furthestLeft = left;
+				}
+
+				if (furthestLeft < int.MaxValue)
+					foreach (IStamp stamp in SelectedStamps)
+						stamp.X = (int)Math.Round(furthestLeft + stamp.Width / 2);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnAlignRight_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double furthestRight = 0;
+				foreach (IStamp stamp in SelectedStamps)
+				{
+					double right = stamp.GetRight();
+					if (right > furthestRight)
+						furthestRight = right;
+				}
+
+				foreach (IStamp stamp in SelectedStamps)
+					stamp.X = (int)Math.Round(furthestRight - stamp.Width / 2);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnAlignTop_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double furthestTop = int.MaxValue;
+				foreach (IStamp stamp in SelectedStamps)
+				{
+					double top = stamp.GetTop();
+					if (top < furthestTop)
+						furthestTop = top;
+				}
+
+				if (furthestTop < int.MaxValue)
+					foreach (IStamp stamp in SelectedStamps)
+						stamp.Y = (int)Math.Round(furthestTop + stamp.Height / 2);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnAlignBottom_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double furthestBottom = 0;
+				foreach (IStamp stamp in SelectedStamps)
+				{
+					double bottom = stamp.GetBottom();
+					if (bottom > furthestBottom)
+						furthestBottom = bottom;
+				}
+
+				foreach (IStamp stamp in SelectedStamps)
+					stamp.Y = (int)Math.Round(furthestBottom - stamp.Height / 2);
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnDistributeHorizontally_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double furthestRight = 0;
+				double furthestLeft = double.MaxValue;
+				foreach (IStamp stamp in SelectedStamps)
+				{
+					double centerX = stamp.X;
+					double top = stamp.GetLeft();
+					if (centerX > furthestRight)
+						furthestRight = centerX;
+					if (centerX < furthestLeft)
+						furthestLeft = centerX;
+				}
+				double spaceBetweenStamps = (furthestRight - furthestLeft) / (SelectedStamps.Count - 1);
+
+				double stampX = furthestLeft;
+				List<IStamp> sortedStamps = SelectedStamps.OrderBy(s => s.X).ToList();
+				foreach (IStamp stamp in sortedStamps)
+				{
+					stamp.X = (int)Math.Round(stampX);
+					stampX += spaceBetweenStamps;
+				}
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		private void btnDistributeVertically_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			stampsLayer.BeginUpdate();
+			try
+			{
+				double furthestBottom = 0;
+				double furthestTop = double.MaxValue;
+				foreach (IStamp stamp in SelectedStamps)
+				{
+					double centerY = stamp.Y;
+					double top = stamp.GetTop();
+					if (centerY > furthestBottom)
+						furthestBottom = centerY;
+					if (centerY < furthestTop)
+						furthestTop = centerY;
+				}
+				double spaceBetweenStamps = (furthestBottom - furthestTop) / (SelectedStamps.Count - 1);
+
+				double stampY = furthestTop;
+
+				List<IStamp> sortedStamps = SelectedStamps.OrderBy(s => s.Y).ToList();
+				foreach (IStamp stamp in sortedStamps)
+				{
+					stamp.Y = (int)Math.Round(stampY);
+					stampY += spaceBetweenStamps;
+				}
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
+			UpdateStampSelectionUI();
+		}
+
+		public bool CtrlKeyDown
+		{
+			get { return ctrlKeyDown; }
+			set
+			{
+				if (ctrlKeyDown == value)
+					return;
+
+				ctrlKeyDown = value;
+				if (draggingStamps)
+					SetSelectedStampVisibility(ctrlKeyDown);
+			}
+		}
+
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			CtrlKeyDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+		}
+
+		private void Window_PreviewKeyUp(object sender, KeyEventArgs e)
+		{
+			CtrlKeyDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 		}
 	}
 }

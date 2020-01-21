@@ -41,7 +41,7 @@ namespace DndTests
 				newConditions = ea.NewConditions;
 			}
 
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			ava.ConditionsChanged += Ava_ConditionsChanged;
 			ava.ActiveConditions = Conditions.None;
 			Assert.AreEqual(Conditions.None, oldConditions);

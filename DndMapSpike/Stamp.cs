@@ -15,6 +15,8 @@ namespace DndMapSpike
 
 		public void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0)
 		{
+			if (!Visible)
+				return;
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
@@ -82,6 +84,7 @@ namespace DndMapSpike
 		{
 			Stamp result = new Stamp(stamp.FileName, stamp.X, stamp.Y);
 			result.Contrast = stamp.Contrast;
+			result.Visible = stamp.Visible;
 			result.FlipHorizontally = stamp.FlipHorizontally;
 			result.FlipVertically = stamp.FlipVertically;
 			result.HueShift = stamp.HueShift;
@@ -285,6 +288,14 @@ namespace DndMapSpike
 		}
 		public void RotateRight()
 		{
+			if (FlipHorizontally ^ FlipVertically)
+				DoRotateLeft();
+			else
+				DoRotateRight();
+		}
+
+		private void DoRotateRight()
+		{
 			switch (Rotation)
 			{
 				case StampRotation.Zero:
@@ -301,7 +312,16 @@ namespace DndMapSpike
 					break;
 			}
 		}
+
 		public void RotateLeft()
+		{
+			if (FlipHorizontally ^ FlipVertically)
+				DoRotateRight();
+			else
+				DoRotateLeft();
+		}
+
+		private void DoRotateLeft()
 		{
 			switch (Rotation)
 			{
@@ -319,6 +339,7 @@ namespace DndMapSpike
 					break;
 			}
 		}
+
 		public void Move(int deltaX, int deltaY)
 		{
 			X += deltaX;
@@ -381,6 +402,16 @@ namespace DndMapSpike
 		{
 			Scale = newScale;
 		}
+		public double GetBottom()
+		{
+			return Y + Height / 2;
+		}
+
+		public double GetRight()
+		{
+			return X + Width / 2;
+		}
+
 	}
 }
 

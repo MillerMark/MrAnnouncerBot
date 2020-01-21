@@ -38,9 +38,12 @@ namespace DndMapSpike
 		int X { get; set; }
 		int Y { get; set; }
 		int ZOrder { get; set; }
+		bool Visible { get; set; }
 		void SwapXY();
 		void AdjustScale(double scaleAdjust);
 		void SetAbsoluteScaleTo(double newScale);
+		double GetBottom();
+		double GetRight();
 	}
 }
 

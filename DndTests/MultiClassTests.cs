@@ -39,7 +39,7 @@ namespace DndTests
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
 			Assert.AreEqual("Lizardfolk Barbarian 6", fred.raceClass);
 
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Assert.AreEqual("Human Paladin 6", ava.raceClass);
 		}
 	}

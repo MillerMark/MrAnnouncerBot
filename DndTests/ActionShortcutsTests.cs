@@ -36,7 +36,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestBattleaxeMultiples()
 		{
-			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(PlayerID.Ava, "Battleaxe");
+			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(PlayerID.LilCutie, "Battleaxe");
 			Assert.IsNotNull(actionShortcuts);
 			Assert.AreEqual(2, actionShortcuts.Count);
 			Assert.AreEqual("Battleaxe (1H)", actionShortcuts[0].Name);
@@ -46,7 +46,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestGreatsword()
 		{
-			List<PlayerActionShortcut> greatSwords = AllActionShortcuts.Get(PlayerID.Ava, "Greatsword");
+			List<PlayerActionShortcut> greatSwords = AllActionShortcuts.Get(PlayerID.LilCutie, "Greatsword");
 			Assert.IsNotNull(greatSwords);
 			Assert.AreEqual(1, greatSwords.Count);
 			Assert.AreEqual(3, greatSwords[0].AttackingAbilityModifier);
@@ -57,7 +57,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestAvaActionShortcuts()
 		{
-			List<PlayerActionShortcut> avaShortcuts = AllActionShortcuts.Get(PlayerID.Ava);
+			List<PlayerActionShortcut> avaShortcuts = AllActionShortcuts.Get(PlayerID.LilCutie);
 			PlayerActionShortcut javelin = avaShortcuts.FirstOrDefault(x => x.Name == "Javelin");
 			Assert.IsNotNull(javelin);
 

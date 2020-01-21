@@ -60,11 +60,11 @@ namespace DHDM
 		public void Initialize(IDungeonMasterApp dungeonMasterApp)
 		{
 			const string MarkMillerUserId = "237584851";
-			const string GentryUserId = "163482168";
+			const string MattUserId = "191566012";
 			const string HumperBotId = "274121151";
 			const string DungeonMasterId = "455518839";
 			userIds.Clear();
-			ListenTo(GentryUserId);
+			ListenTo(MattUserId);
 			ListenTo(MarkMillerUserId);
 			ListenTo(HumperBotId);
 			ListenTo(DungeonMasterId);

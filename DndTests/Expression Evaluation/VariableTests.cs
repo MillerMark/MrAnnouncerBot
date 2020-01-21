@@ -28,7 +28,7 @@ namespace DndTests
 		public void TestPropertyAccess()
 		{
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Assert.AreEqual(0, Expressions.Get("leftMostPriority", fred));
 			Assert.AreEqual(5, Expressions.Get("leftMostPriority", ava));
 			Assert.AreEqual(52, Expressions.GetInt("hitPoints", ava));

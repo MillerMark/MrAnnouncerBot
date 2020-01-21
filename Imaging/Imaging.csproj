@@ -46,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorExtensions.cs" />
+    <Compile Include="DirectBitmap.cs" />
     <Compile Include="HueSatLight.cs" />
+    <Compile Include="ImageCropper.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -172,6 +172,8 @@ namespace DndMapSpike
 
 		public void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0)
 		{
+			if (!Visible)
+				return;
 			foreach (IStamp stamp in stamps)
 				stamp.BlendStampImage(stampsLayer, xOffset + X, yOffset + Y);
 		}
@@ -323,10 +325,19 @@ namespace DndMapSpike
 			CalculateSizeAndPosition(X, Y);
 		}
 
+		public double GetBottom()
+		{
+			return Y + Height / 2;
+		}
+
+		public double GetRight()
+		{
+			return X + Width / 2;
+		}
+
 		public int Width { get; private set; }
 
 		public int Height { get; private set; }
-
 	}
 }
 

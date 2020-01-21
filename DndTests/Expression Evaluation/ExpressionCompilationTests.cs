@@ -35,7 +35,7 @@ namespace DndTests
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
 			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
-			Character ava = AllPlayers.GetFromId(PlayerID.Ava);
+			Character ava = AllPlayers.GetFromId(PlayerID.LilCutie);
 			Character willy = AllPlayers.GetFromId(PlayerID.Willy);
 			Character lady = AllPlayers.GetFromId(PlayerID.Lady);
 			Character fred = AllPlayers.GetFromId(PlayerID.Fred);

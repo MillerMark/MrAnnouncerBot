@@ -6,7 +6,7 @@ namespace MapCore
 {
 	public class MapRegion
 	{
-		public List<FloorSpace> Spaces { get; set; } = new List<FloorSpace>();
+		public List<Tile> Spaces { get; set; } = new List<Tile>();
 		public double Width { get; private set; }
 		public double Height { get; private set; }
 	}

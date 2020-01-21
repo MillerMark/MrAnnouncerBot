@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DndMapSpike"
 		xmlns:mapUI="clr-namespace:MapUI;assembly=MapUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="850" Width="1200" FontSize="9">
+        Title="MainWindow" Height="850" Width="1200" FontSize="9" PreviewKeyDown="Window_PreviewKeyDown" PreviewKeyUp="Window_PreviewKeyUp">
 	<Window.Resources>
 		<RoutedUICommand x:Key="Commands.ZoomOut" />
 		<RoutedUICommand x:Key="Commands.ZoomIn" />
@@ -52,7 +52,157 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
-		<Viewbox x:Key="btnRotateLeft" MouseDown="btnRotateLeft_MouseDown">
+		<Viewbox x:Key="btnAlignVerticalCenter" MouseDown="btnAlignVerticalCenter_MouseDown" ToolTip="Align Vertical Centers">
+			<Canvas Width="228" Height="228">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M228.5,17C228.5,7.375,220.6875,-0.5,211.0625,-0.5L17,-0.5C7.375,-0.5,-0.5,7.375,-0.5,17L-0.5,211.0625C-0.5,220.6875,7.375,228.5,17,228.5L211.0625,228.5C220.6875,228.5,228.5,220.6875,228.5,211.0625z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M221.5,22.9375C221.5,13.875,214.1875,6.5,205.125,6.5L22.9375,6.5C13.875,6.5,6.5,13.875,6.5,22.9375L6.5,205.125C6.5,214.1875,13.875,221.5,22.9375,221.5L205.125,221.5C214.1875,221.5,221.5,214.1875,221.5,205.125z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="31.5,105.5 31.5,122.5 196.5,122.5 196.5,105.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="135.5,53.5 135.5,174.5 164.5,174.5 164.5,53.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="63.5,31.5 63.5,196.5 118.5,196.5 118.5,31.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+		<Viewbox x:Key="btnDistributeVertically" MouseDown="btnDistributeVertically_MouseDown" ToolTip="Distribute Vertically">
+			<Canvas Width="227" Height="365">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,348.125C-0.5,357.75,7.3125,365.5,16.9375,365.5L210.125,365.5C219.75,365.5,227.5,357.75,227.5,348.125L227.5,16.9375C227.5,7.3125,219.75,-0.5,210.125,-0.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M22.875,5.5C13.8125,5.5,6.5,12.8125,6.5,21.875L6.5,343.1875C6.5,352.25,13.8125,359.5,22.875,359.5L204.1875,359.5C213.25,359.5,220.5,352.25,220.5,343.1875L220.5,21.875C220.5,12.8125,213.25,5.5,204.1875,5.5z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="104.5,321.5 104.5,62.5 122.5,62.5 122.5,321.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="24.5,225.5 24.5,125.5 202.5,125.5 202.5,225.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="48.5,327.5 48.5,285.5 179.5,285.5 179.5,327.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="66.5,68.5 66.5,35.5 161.5,35.5 161.5,68.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+
+		<Viewbox x:Key="btnDistributeHorizontally" MouseDown="btnDistributeHorizontally_MouseDown" ToolTip="Distribute Horizontally">
+			<Canvas Width="364" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M364.5,16.9375C364.5,7.3125,356.75,-0.5,347.125,-0.5L16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,210.125C-0.5,219.75,7.3125,227.5,16.9375,227.5L347.125,227.5C356.75,227.5,364.5,219.75,364.5,210.125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M358.5,22.875C358.5,13.8125,351.25,6.5,342.1875,6.5L21.875,6.5C12.8125,6.5,5.5,13.8125,5.5,22.875L5.5,204.1875C5.5,213.25,12.8125,220.5,21.875,220.5L342.1875,220.5C351.25,220.5,358.5,213.25,358.5,204.1875z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="43.5,104.5 43.5,122.5 302.5,122.5 302.5,104.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="138.5,24.5 138.5,202.5 239.5,202.5 239.5,24.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="37.5,48.5 37.5,179.5 79.5,179.5 79.5,48.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="296.5,66.5 296.5,161.5 328.5,161.5 328.5,66.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnAlignBottom" MouseDown="btnAlignBottom_MouseDown" ToolTip="Align Bottom">
+			<Canvas Width="227" Height="228">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M227.5,16.9375C227.5,7.3125,219.75,-0.5,210.125,-0.5L16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,211.125C-0.5,220.75,7.3125,228.5,16.9375,228.5L210.125,228.5C219.75,228.5,227.5,220.75,227.5,211.125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M220.5,22.875C220.5,13.8125,213.25,6.5,204.1875,6.5L22.875,6.5C13.8125,6.5,6.5,13.8125,6.5,22.875L6.5,205.1875C6.5,214.25,13.8125,221.5,22.875,221.5L204.1875,221.5C213.25,221.5,220.5,214.25,220.5,205.1875z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="29.5,186.5 29.5,201.5 197.5,201.5 197.5,186.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="73.5,26.5 73.5,173.5 124.5,173.5 124.5,26.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="30.5,65.5 30.5,173.5 57.5,173.5 57.5,65.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="182.5,67.5 182.5,127.5625 197.5,127.5625 167.5,173.5 137.5,127.5625 152.5,127.5625 152.5,67.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnAlignTop" MouseDown="btnAlignTop_MouseDown" ToolTip="Align Top">
+			<Canvas Width="227" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M227.5,210.125C227.5,219.75,219.75,227.5,210.125,227.5L16.9375,227.5C7.3125,227.5,-0.5,219.75,-0.5,210.125L-0.5,16.9375C-0.5,7.3125,7.3125,-0.5,16.9375,-0.5L210.125,-0.5C219.75,-0.5,227.5,7.3125,227.5,16.9375z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M220.5,204.1875C220.5,213.25,213.25,220.5,204.1875,220.5L22.875,220.5C13.8125,220.5,6.5,213.25,6.5,204.1875L6.5,22.875C6.5,13.8125,13.8125,6.5,22.875,6.5L204.1875,6.5C213.25,6.5,220.5,13.8125,220.5,22.875z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="29.5,26.5 29.5,41.5 197.5,41.5 197.5,26.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="73.5,53.5 73.5,201.5 124.5,201.5 124.5,53.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="30.5,53.5 30.5,162.5 57.5,162.5 57.5,53.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="182.5,159.5 182.5,99.5 197.5,99.5 167.5,53.5 137.5,99.5 152.5,99.5 152.5,159.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnAlignRight" MouseDown="btnAlignRight_MouseDown" ToolTip="Align Right">
+			<Canvas Width="228" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,210.125C-0.5,219.75,7.3125,227.5,16.9375,227.5L211.125,227.5C220.75,227.5,228.5,219.75,228.5,210.125L228.5,16.9375C228.5,7.3125,220.75,-0.5,211.125,-0.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M22.875,6.5C13.8125,6.5,6.5,13.8125,6.5,22.875L6.5,204.1875C6.5,213.25,13.8125,220.5,22.875,220.5L205.1875,220.5C214.25,220.5,221.5,213.25,221.5,204.1875L221.5,22.875C221.5,13.8125,214.25,6.5,205.1875,6.5z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="186.5,197.5 186.5,29.5 201.5,29.5 201.5,197.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="26.5,102.5 173.5,102.5 173.5,154.5 26.5,154.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="65.5,169.5 173.5,169.5 173.5,196.5 65.5,196.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="67.5,44.5 127.5625,44.5 127.5625,29.5 173.5,59.5 127.5625,89.5 127.5625,74.5 67.5,74.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnAlignLeft" MouseDown="btnAlignLeft_MouseDown" ToolTip="Align Left">
+			<Canvas Width="227" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M210.125,-0.5C219.75,-0.5,227.5,7.3125,227.5,16.9375L227.5,210.125C227.5,219.75,219.75,227.5,210.125,227.5L16.9375,227.5C7.3125,227.5,-0.5,219.75,-0.5,210.125L-0.5,16.9375C-0.5,7.3125,7.3125,-0.5,16.9375,-0.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M204.1875,6.5C213.25,6.5,220.5,13.8125,220.5,22.875L220.5,204.1875C220.5,213.25,213.25,220.5,204.1875,220.5L22.875,220.5C13.8125,220.5,6.5,213.25,6.5,204.1875L6.5,22.875C6.5,13.8125,13.8125,6.5,22.875,6.5z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="41.5,197.5 41.5,29.5 26.5,29.5 26.5,197.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="201.5,102.5 53.5,102.5 53.5,154.5 201.5,154.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="162.5,169.5 53.5,169.5 53.5,196.5 162.5,196.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="159.5,44.5 99.5,44.5 99.5,29.5 53.5,59.5 99.5,89.5 99.5,74.5 159.5,74.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnAlignHorizontalCenter" MouseDown="btnAlignHorizontalCenter_MouseDown" ToolTip="Align Horizontal Centers">
+			<Canvas Width="228" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,210.125C-0.5,219.75,7.3125,227.5,16.9375,227.5L211.125,227.5C220.75,227.5,228.5,219.75,228.5,210.125L228.5,16.9375C228.5,7.3125,220.75,-0.5,211.125,-0.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M22.875,6.5C13.8125,6.5,6.5,13.8125,6.5,22.875L6.5,204.1875C6.5,213.25,13.8125,220.5,22.875,220.5L205.1875,220.5C214.25,220.5,221.5,213.25,221.5,204.1875L221.5,22.875C221.5,13.8125,214.25,6.5,205.1875,6.5z" />
+					</Path.Data>
+				</Path>
+				<Polygon Points="105.5,30.5 105.5,196.5 122.5,196.5 122.5,30.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
+				<Polygon Points="53.5,63.5 174.5,63.5 174.5,92.5 53.5,92.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+				<Polygon Points="31.5,109.5 196.5,109.5 196.5,163.5 31.5,163.5" FillRule="EvenOdd" Fill="#FF8FAADC" Stroke="{x:Null}" />
+			</Canvas>
+		</Viewbox>
+
+		<Viewbox x:Key="btnRotateLeft" MouseDown="btnRotateLeft_MouseDown" ToolTip="Rotate Left">
 			<Canvas Width="219" Height="219">
 				<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
 					<Path.Data>
@@ -66,7 +216,7 @@
 				</Path>
 			</Canvas>
 		</Viewbox>
-		<Viewbox x:Key="btnRotateRight" MouseDown="btnRotateRight_MouseDown" >
+		<Viewbox x:Key="btnRotateRight" MouseDown="btnRotateRight_MouseDown"  ToolTip="Rotate Right">
 			<Canvas Width="219" Height="219">
 				<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
 					<Path.Data>
@@ -80,7 +230,7 @@
 				</Path>
 			</Canvas>
 		</Viewbox>
-		<Viewbox x:Key="btnScale33Percent" MouseDown="btnScale33Percent_MouseDown">
+		<Viewbox x:Key="btnScale33Percent" MouseDown="btnScale33Percent_MouseDown" ToolTip="Scale to 33%">
 			<Canvas Width="38" Height="37">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -96,7 +246,7 @@
 			</Canvas>
 		</Viewbox>
 
-		<Viewbox x:Key="btnScale50Percent" MouseDown="btnScale50Percent_MouseDown">
+		<Viewbox x:Key="btnScale50Percent" MouseDown="btnScale50Percent_MouseDown" ToolTip="Scale to 50%">
 			<Canvas Width="38" Height="37">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -112,7 +262,7 @@
 			</Canvas>
 		</Viewbox>
 
-		<Viewbox x:Key="btnScale200Percent" MouseDown="btnScale200Percent_MouseDown">
+		<Viewbox x:Key="btnScale200Percent" MouseDown="btnScale200Percent_MouseDown" ToolTip="Scale to 200%">
 			<Canvas Width="38" Height="38">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -128,7 +278,7 @@
 			</Canvas>
 		</Viewbox>
 
-		<Viewbox x:Key="btnScale100Percent" MouseDown="btnScale100Percent_MouseDown">
+		<Viewbox x:Key="btnScale100Percent" MouseDown="btnScale100Percent_MouseDown" ToolTip="Scale to 100%">
 			<Canvas Width="38" Height="37">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -144,7 +294,7 @@
 			</Canvas>
 		</Viewbox>
 
-		<Viewbox x:Key="btnFlipVertical" MouseDown="btnFlipVertical_MouseDown">
+		<Viewbox x:Key="btnFlipVertical" MouseDown="btnFlipVertical_MouseDown" ToolTip="Flip Vertical">
 			<Canvas Width="36" Height="35">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -160,7 +310,7 @@
 				<Polygon Points="29.5,16.5 6.5,16.5 6.5,4.5" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
 			</Canvas>
 		</Viewbox>
-		<Viewbox x:Key="btnFlipHorizontal" MouseDown="btnFlipHorizontal_MouseDown" >
+		<Viewbox x:Key="btnFlipHorizontal" MouseDown="btnFlipHorizontal_MouseDown"  ToolTip="Flip Horizontal">
 			<Canvas Width="36" Height="35">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -176,7 +326,7 @@
 				<Polygon Points="17.5,5.5 17.5,28.5 4.5,28.5" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
 			</Canvas>
 		</Viewbox>
-		<Viewbox x:Key="btnSendToBack" MouseDown="btnSendToBack_MouseDown">
+		<Viewbox x:Key="btnSendToBack" MouseDown="btnSendToBack_MouseDown" ToolTip="Send to Back">
 			<Canvas Width="35" Height="35">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -196,7 +346,7 @@
 				</Path>
 			</Canvas>
 		</Viewbox>
-		<Viewbox x:Key="btnBringToFront" MouseDown="btnBringToFront_MouseDown">
+		<Viewbox x:Key="btnBringToFront" MouseDown="btnBringToFront_MouseDown"  ToolTip="Bring to Front">
 			<Canvas Width="36" Height="35">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -216,7 +366,7 @@
 				<Polygon Points="9.5,8.5 9.5,25.5 27.5,25.5 27.5,8.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
 			</Canvas>
 		</Viewbox>
-		<Viewbox x:Key="btnShowColorControls" MouseDown="btnShowColorControls_MouseDown">
+		<Viewbox x:Key="btnShowColorControls" MouseDown="btnShowColorControls_MouseDown"  ToolTip="Show Color Controls">
 			<Canvas Width="35" Height="36">
 				<Path Fill="#FF2F528F">
 					<Path.Data>
@@ -261,6 +411,171 @@
 				<Polygon Points="2.5,25.5 2.5,31.5 5.5,31.5 5.5,25.5" FillRule="EvenOdd" Fill="#FFFFFFFF" Stroke="{x:Null}" />
 			</Canvas>
 		</Viewbox>
+
+		<Viewbox x:Key="btnGroup" MouseDown="btnGroup_MouseDown"  ToolTip="Group">
+			<Canvas Width="227" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M227.5,16.9375C227.5,7.3125,219.75,-0.5,210.125,-0.5L16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,210.125C-0.5,219.75,7.3125,227.5,16.9375,227.5L210.125,227.5C219.75,227.5,227.5,219.75,227.5,210.125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M220.5,22.875C220.5,13.8125,213.25,6.5,204.1875,6.5L22.875,6.5C13.8125,6.5,6.5,13.8125,6.5,22.875L6.5,205.1875C6.5,214.25,13.8125,221.5,22.875,221.5L204.1875,221.5C213.25,221.5,220.5,214.25,220.5,205.1875z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFA1B8E1" Stroke="{x:Null}">
+					<Path.Data>
+						<PathGeometry Figures="M136.6875,97.1875L148.5,97.1875 148.5,151.375 97.5,151.375 97.5,139.5625 136.6875,139.5625 136.6875,97.1875z M77.5625,76.6875L195.5,76.6875 195.5,168.6875 183.75,168.6875 183.75,88.5 89.375,88.5 89.375,182.75 169,182.75 169,194.5 77.5625,194.5 77.5625,76.6875z M30.5,59.375L42.3125,59.375 42.3125,139.5625 69.5625,139.5625 69.5625,151.375 30.5,151.375 30.5,59.375z M57.0625,33.5L148.5,33.5 148.5,69.25 136.6875,69.25 136.6875,45.3125 57.0625,45.3125 57.0625,33.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M190.5,174.5C198.8125,174.5,205.5,181.5,205.5,190C205.5,198.5625,198.8125,205.5,190.5,205.5C182.25,205.5,175.5,198.5625,175.5,190C175.5,181.5,182.25,174.5,190.5,174.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M190.5,178.5C196.625,178.5,201.5,183.6875,201.5,190C201.5,196.375,196.625,201.5,190.5,201.5C184.4375,201.5,179.5,196.375,179.5,190C179.5,183.6875,184.4375,178.5,190.5,178.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M190.5,22.5C198.8125,22.5,205.5,29.5,205.5,38C205.5,46.5625,198.8125,53.5,190.5,53.5C182.25,53.5,175.5,46.5625,175.5,38C175.5,29.5,182.25,22.5,190.5,22.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M190.5,26.5C196.625,26.5,201.5,31.6875,201.5,38C201.5,44.375,196.625,49.5,190.5,49.5C184.4375,49.5,179.5,44.375,179.5,38C179.5,31.6875,184.4375,26.5,190.5,26.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,22.5C44.8125,22.5,51.5,29.5,51.5,38C51.5,46.5625,44.8125,53.5,36.5,53.5C28.25,53.5,21.5,46.5625,21.5,38C21.5,29.5,28.25,22.5,36.5,22.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,26.5C42.625,26.5,47.5,31.6875,47.5,38C47.5,44.375,42.625,49.5,36.5,49.5C30.4375,49.5,25.5,44.375,25.5,38C25.5,31.6875,30.4375,26.5,36.5,26.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,174.5C44.8125,174.5,51.5,181.5,51.5,190C51.5,198.5625,44.8125,205.5,36.5,205.5C28.25,205.5,21.5,198.5625,21.5,190C21.5,181.5,28.25,174.5,36.5,174.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M36.5,178.5C42.625,178.5,47.5,183.6875,47.5,190C47.5,196.375,42.625,201.5,36.5,201.5C30.4375,201.5,25.5,196.375,25.5,190C25.5,183.6875,30.4375,178.5,36.5,178.5" />
+					</Path.Data>
+				</Path>
+			</Canvas>
+		</Viewbox>
+		<Viewbox x:Key="btnUngroup" MouseDown="btnUngroup_MouseDown" ToolTip="Ungroup">
+			<Canvas Width="227" Height="227">
+				<Path Fill="#FF2F528F">
+					<Path.Data>
+						<PathGeometry Figures="M227.5,16.9375C227.5,7.3125,219.75,-0.5,210.125,-0.5L16.9375,-0.5C7.3125,-0.5,-0.5,7.3125,-0.5,16.9375L-0.5,210.125C-0.5,219.75,7.3125,227.5,16.9375,227.5L210.125,227.5C219.75,227.5,227.5,219.75,227.5,210.125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M220.5,22.9375C220.5,13.875,213.1875,6.5,204.125,6.5L21.9375,6.5C12.875,6.5,5.5,13.875,5.5,22.9375L5.5,205.125C5.5,214.1875,12.875,221.5,21.9375,221.5L204.125,221.5C213.1875,221.5,220.5,214.1875,220.5,205.125z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M193.5,176.5C202.375,176.5,209.5,183.6875,209.5,192.5C209.5,201.375,202.375,208.5,193.5,208.5C184.6875,208.5,177.5,201.375,177.5,192.5C177.5,183.6875,184.6875,176.5,193.5,176.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M193.5,180.5C200.1875,180.5,205.5,185.6875,205.5,192C205.5,198.375,200.1875,203.5,193.5,203.5C186.875,203.5,181.5,198.375,181.5,192C181.5,185.6875,186.875,180.5,193.5,180.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M193.5,64.5C202.375,64.5,209.5,71.6875,209.5,80.5C209.5,89.375,202.375,96.5,193.5,96.5C184.6875,96.5,177.5,89.375,177.5,80.5C177.5,71.6875,184.6875,64.5,193.5,64.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M193.5,68.5C200.1875,68.5,205.5,73.875,205.5,80.5C205.5,87.1875,200.1875,92.5,193.5,92.5C186.875,92.5,181.5,87.1875,181.5,80.5C181.5,73.875,186.875,68.5,193.5,68.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M82.5,64.5C91.375,64.5,98.5,71.6875,98.5,80.5C98.5,89.375,91.375,96.5,82.5,96.5C73.6875,96.5,66.5,89.375,66.5,80.5C66.5,71.6875,73.6875,64.5,82.5,64.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M82,68.5C88.375,68.5,93.5,73.875,93.5,80.5C93.5,87.1875,88.375,92.5,82,92.5C75.6875,92.5,70.5,87.1875,70.5,80.5C70.5,73.875,75.6875,68.5,82,68.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M82,176.5C90.5625,176.5,97.5,183.6875,97.5,192.5C97.5,201.375,90.5625,208.5,82,208.5C73.5,208.5,66.5,201.375,66.5,192.5C66.5,183.6875,73.5,176.5,82,176.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M82,180.5C88.375,180.5,93.5,185.6875,93.5,192C93.5,198.375,88.375,203.5,82,203.5C75.6875,203.5,70.5,198.375,70.5,192C70.5,185.6875,75.6875,180.5,82,180.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFA1B8E1" Stroke="{x:Null}">
+					<Path.Data>
+						<PathGeometry Figures="M102.5,185.25L170.875,185.25 170.875,197.5 102.5,197.5 102.5,185.25z M186.25,102.1875L198.5,102.1875 198.5,170.5625 186.25,170.5625 186.25,102.1875z M75.5,101.5L87.8125,101.5 87.8125,169.875 75.5,169.875 75.5,101.5z M103.1875,74.5L171.5625,74.5 171.5625,86.8125 103.1875,86.8125 103.1875,74.5z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M144.5,131.5C153.375,131.5,160.5,138.5,160.5,147C160.5,155.5625,153.375,162.5,144.5,162.5C135.6875,162.5,128.5,155.5625,128.5,147C128.5,138.5,135.6875,131.5,144.5,131.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M144.5,135.5C151.1875,135.5,156.5,140.6875,156.5,147C156.5,153.375,151.1875,158.5,144.5,158.5C137.875,158.5,132.5,153.375,132.5,147C132.5,140.6875,137.875,135.5,144.5,135.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M144.5,19.5C153.375,19.5,160.5,26.6875,160.5,35.5C160.5,44.375,153.375,51.5,144.5,51.5C135.6875,51.5,128.5,44.375,128.5,35.5C128.5,26.6875,135.6875,19.5,144.5,19.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M144.5,23.5C151.1875,23.5,156.5,28.6875,156.5,35C156.5,41.375,151.1875,46.5,144.5,46.5C137.875,46.5,132.5,41.375,132.5,35C132.5,28.6875,137.875,23.5,144.5,23.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M33.5,19.5C42.375,19.5,49.5,26.6875,49.5,35.5C49.5,44.375,42.375,51.5,33.5,51.5C24.6875,51.5,17.5,44.375,17.5,35.5C17.5,26.6875,24.6875,19.5,33.5,19.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M33.5,23.5C40.1875,23.5,45.5,28.6875,45.5,35C45.5,41.375,40.1875,46.5,33.5,46.5C26.875,46.5,21.5,41.375,21.5,35C21.5,28.6875,26.875,23.5,33.5,23.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF7F7F7F">
+					<Path.Data>
+						<PathGeometry Figures="M33,131.5C41.5625,131.5,48.5,138.5,48.5,147C48.5,155.5625,41.5625,162.5,33,162.5C24.5,162.5,17.5,155.5625,17.5,147C17.5,138.5,24.5,131.5,33,131.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M33,135.5C39.375,135.5,44.5,140.6875,44.5,147C44.5,153.375,39.375,158.5,33,158.5C26.6875,158.5,21.5,153.375,21.5,147C21.5,140.6875,26.6875,135.5,33,135.5" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFA1B8E1" Stroke="{x:Null}">
+					<Path.Data>
+						<PathGeometry Figures="M92.375,140.25L121.875,140.25 121.875,152.5 92.375,152.5 92.375,140.25z M53.5,140.25L71.125,140.25 71.125,152.5 53.5,152.5 53.5,140.25z M137.25,91.1875L149.5,91.1875 149.5,125.5625 137.25,125.5625 137.25,91.1875z M137.25,57.1875L149.5,57.1875 149.5,70 137.25,70 137.25,57.1875z M26.5,56.5L38.8125,56.5 38.8125,124.875 26.5,124.875 26.5,56.5z M54.1875,29.5L122.5625,29.5 122.5625,41.8125 54.1875,41.8125 54.1875,29.5z" />
+					</Path.Data>
+				</Path>
+			</Canvas>
+		</Viewbox>
+
 
 		<ContentControl x:Key="ccColorControls" FontSize="15" Width="200" FontWeight="Normal">
 			<StackPanel Orientation="Vertical" Background="#FF4472C4">
@@ -390,37 +705,10 @@
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="38"/>
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<StackPanel x:Name="spToolbar" Orientation="Horizontal" Visibility="Hidden">
-			<RadioButton x:Name="btnSelect" IsChecked="True" Checked="BtnSelect_Checked">
-				<StackPanel>
-					<Viewbox HorizontalAlignment="Center" VerticalAlignment="Center" >
-						<Canvas Width="160" Height="160">
-							<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1.3125" StrokeMiterLimit="10">
-								<Path.Data>
-									<PathGeometry Figures="M25,24.375L97.6875,40.0625 81.3125,56.5 135,110.1875C137.1875,112.4375,137.1875,116,135,118.25L118.875,134.375C116.6875,136.5625,113.0625,136.5625,110.8125,134.375L57.125,80.625 40.75,97.0625z" />
-								</Path.Data>
-							</Path>
-						</Canvas>
-					</Viewbox>
-				</StackPanel>
-			</RadioButton>
-			<RadioButton x:Name="btnStamp" Checked="BtnStamp_Checked">
-				<Viewbox>
-					<Canvas Width="157" Height="157">
-						<Path Fill="#FFFFFFFF" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
-							<Path.Data>
-								<PathGeometry Figures="M21.375,126.0625L131.6875,126.0625C132.4375,126.0625,133,126.625,133,127.375L133,132.6875C133,133.4375,132.4375,134,131.6875,134L21.375,134C20.625,134,20,133.4375,20,132.6875L20,127.375C20,126.625,20.625,126.0625,21.375,126.0625z M67.4375,18L85.625,18C88.125,18,90.125,20.0625,90.125,22.5625L90.125,66.6875 125.8125,66.6875C129.8125,66.6875,133,69.9375,133,73.875L133,102.625C133,106.625,129.8125,109.8125,125.8125,109.8125L27.25,109.8125C23.25,109.8125,20,106.625,20,102.625L20,73.875C20,69.9375,23.25,66.6875,27.25,66.6875L62.875,66.6875 62.875,22.5625C62.875,20.0625,64.9375,18,67.4375,18z" />
-							</Path.Data>
-						</Path>
-					</Canvas>
-				</Viewbox>
-			</RadioButton>
-		</StackPanel>
-		<ScrollViewer Grid.Column="0" Grid.Row="1"  x:Name="scroller" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+		<ScrollViewer Grid.Column="0" Grid.Row="0"  x:Name="scroller" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
 			<!--
             This is the control that handles zooming and panning.
             -->
@@ -457,8 +745,8 @@
 				</Grid>
 			</mapUI:ZoomAndPanControl>
 		</ScrollViewer>
-		<GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
-		<Grid Grid.Column="2" Grid.Row="1" x:Name="grdMapControls" Height="Auto" Width="Auto">
+		<GridSplitter Grid.Column="1" Grid.Row="0" Width="5" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+		<Grid Grid.Column="2" Grid.Row="0" x:Name="grdMapControls" Height="Auto" Width="Auto">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
@@ -469,7 +757,7 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
-			<ListBox x:Name="lstFlooring" IsEnabled="False" Height="1000" Width="400">
+			<ListBox x:Name="lstFlooring" Visibility="Hidden" Height="860" Width="400">
 				<ListBox.ItemsPanel>
 					<ItemsPanelTemplate>
 						<WrapPanel Orientation="Horizontal" Width="400"/>
@@ -484,7 +772,7 @@
 				</ListBox.ItemTemplate>
 			</ListBox>
 			<StackPanel Grid.Row="1" x:Name="spStamps">
-				<TabControl x:Name="tbcStamps" Width="400">
+				<TabControl x:Name="tbcStamps" Width="480" TabStripPlacement="Left">
 					<TabControl.ItemTemplate>
 						<DataTemplate>
 							<TextBlock>                            
@@ -494,7 +782,7 @@
 					</TabControl.ItemTemplate>
 					<TabControl.ContentTemplate>
 						<DataTemplate>
-							<ListBox ItemsSource="{Binding Stamps}" Width="400" MaxHeight="600">
+							<ListBox ItemsSource="{Binding Stamps}" Width="400" MaxHeight="980">
 								<ListBox.ItemsPanel>
 									<ItemsPanelTemplate>
 										<WrapPanel Orientation="Horizontal" Width="400"/>
@@ -512,136 +800,124 @@
 					</TabControl.ContentTemplate>
 				</TabControl>
 			</StackPanel>
-			<!--<ListBox Grid.Row="1"  x:Name="lstDebris" IsEnabled="False" Height="300" Width="200">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel Orientation="Horizontal" Width="200"/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<Button Click="Button_ApplyDebris" Tag="{Binding}">
-							<Image Source="{Binding Path=FileName}" Width="32" Height="32"></Image>
-						</Button>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>-->
-			<StackPanel x:Name="spWallLabels" Grid.Row="2" Orientation="Horizontal" Margin="4, 4, 0, 0" >
-				<TextBlock Text="Walls: " Width="Auto" Height="Auto"/>
-				<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
-			</StackPanel>
-			<StackPanel Grid.Row="3" x:Name="spWallControls" Orientation="Horizontal" Height="38" >
-				<Button x:Name="btnLeftWall" Click="BtnLeftWall_Click" Margin="6, 3, 3, 3" >
-					<Viewbox Width="32" Height="32" >
-						<Canvas Width="180" Height="208">
-							<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FF4472C4" Stroke="{x:Null}" />
-							<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
-				</Button>
-				<Button x:Name="btnTopWall" Click="BtnTopWall_Click" Margin="3" >
-					<Viewbox Width="32" Height="32" >
-						<Canvas Width="205" Height="197">
-							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
-							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
+			<StackPanel x:Name="spWallDoorControls" Grid.Row="2" Orientation="Vertical">
+				<StackPanel x:Name="spWallLabels" Orientation="Horizontal" Margin="4, 4, 0, 0" >
+					<TextBlock Text="Walls: " Width="Auto" Height="Auto"/>
+					<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
+				</StackPanel>
+				<StackPanel x:Name="spWallControls" Orientation="Horizontal" Height="38" >
+					<Button x:Name="btnLeftWall" Click="BtnLeftWall_Click" Margin="6, 3, 3, 3" >
+						<Viewbox Width="32" Height="32" >
+							<Canvas Width="180" Height="208">
+								<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FF4472C4" Stroke="{x:Null}" />
+								<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
+					</Button>
+					<Button x:Name="btnTopWall" Click="BtnTopWall_Click" Margin="3" >
+						<Viewbox Width="32" Height="32" >
+							<Canvas Width="205" Height="197">
+								<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
+								<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
 
-				</Button>
-				<Button x:Name="btnRightWall" Click="BtnRightWall_Click" Margin="3" >
-					<Viewbox Width="32" Height="32" >
-						<Canvas Width="180" Height="208">
-							<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FF4472C4" Stroke="{x:Null}" />
-							<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
+					</Button>
+					<Button x:Name="btnRightWall" Click="BtnRightWall_Click" Margin="3" >
+						<Viewbox Width="32" Height="32" >
+							<Canvas Width="180" Height="208">
+								<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FF4472C4" Stroke="{x:Null}" />
+								<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
 
-				</Button>
-				<Button x:Name="btnBottomWall" Click="BtnBottomWall_Click" Margin="3" >
-					<Viewbox Width="32" Height="32">
-						<Canvas Width="205" Height="197">
-							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
-							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
-				</Button>
-				<Button x:Name="btnOutlineWall" Click="BtnOutlineWall_Click" Margin="3" >
-					<Viewbox>
-						<Canvas Width="205" Height="205">
-							<Polygon Points="180,24 180,181 23,181 23,24" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="180,24 180,181 23,181 23,24" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FFBFBFBF" StrokeThickness="1" />
-							<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
-								<Path.Data>
-									<PathGeometry Figures="M38.875,39.0625L38.875,165 164.1875,165 164.1875,39.0625 38.875,39.0625z M0.0625,0L203,0 203,0.1875 203,0.1875 203,204 164.1875,204 164.1875,204 38.875,204 38.875,204 0,204 0,0.1875 0.0625,0.1875 0.0625,0z" />
-								</Path.Data>
-							</Path>
-						</Canvas>
-					</Viewbox>
-				</Button>
-			</StackPanel>
+					</Button>
+					<Button x:Name="btnBottomWall" Click="BtnBottomWall_Click" Margin="3" >
+						<Viewbox Width="32" Height="32">
+							<Canvas Width="205" Height="197">
+								<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FF4472C4" Stroke="{x:Null}" />
+								<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF2F528F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
+					</Button>
+					<Button x:Name="btnOutlineWall" Click="BtnOutlineWall_Click" Margin="3" >
+						<Viewbox>
+							<Canvas Width="205" Height="205">
+								<Polygon Points="180,24 180,181 23,181 23,24" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="180,24 180,181 23,181 23,24" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FFBFBFBF" StrokeThickness="1" />
+								<Path Fill="#FF4472C4" Stroke="#FF2F528F" StrokeThickness="1" StrokeMiterLimit="10">
+									<Path.Data>
+										<PathGeometry Figures="M38.875,39.0625L38.875,165 164.1875,165 164.1875,39.0625 38.875,39.0625z M0.0625,0L203,0 203,0.1875 203,0.1875 203,204 164.1875,204 164.1875,204 38.875,204 38.875,204 0,204 0,0.1875 0.0625,0.1875 0.0625,0z" />
+									</Path.Data>
+								</Path>
+							</Canvas>
+						</Viewbox>
+					</Button>
+				</StackPanel>
 
-			<StackPanel x:Name="spDoorLabels" Grid.Row="4" Orientation="Horizontal" Margin="4, 4, 0, 0" >
-				<TextBlock Text="Doors: " Width="Auto" Height="Auto"/>
-				<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
-			</StackPanel>
-			<StackPanel Grid.Row="5" x:Name="spDoorControls" Orientation="Horizontal" Height="38" >
-				<Button x:Name="btnLeftDoor" Click="BtnLeftDoor_Click" Margin="6, 3, 3, 3" >
-					<Viewbox Width="32" Height="32" >
-						<Canvas Width="180" Height="208">
-							<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FFC44545" Stroke="{x:Null}" />
-							<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
-				</Button>
-				<Button x:Name="btnTopDoor" Click="BtnTopDoor_Click" Margin="3" >
-					<Viewbox Width="32" Height="32" >
-						<Canvas Width="205" Height="197">
-							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FFC44545" Stroke="{x:Null}" />
-							<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
+				<StackPanel x:Name="spDoorLabels" Orientation="Horizontal" Margin="4, 4, 0, 0" >
+					<TextBlock Text="Doors: " Width="Auto" Height="Auto"/>
+					<TextBlock Text="(hold Ctrl to delete)" Width="Auto" Height="Auto" Foreground="Gray"/>
+				</StackPanel>
+				<StackPanel x:Name="spDoorControls" Orientation="Horizontal" Height="38" >
+					<Button x:Name="btnLeftDoor" Click="BtnLeftDoor_Click" Margin="6, 3, 3, 3" >
+						<Viewbox Width="32" Height="32" >
+							<Canvas Width="180" Height="208">
+								<Polygon Points="19,23 19,160 175,160 175,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="175,160 19,160 19,23 175,23" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="0,0 0,203 38,203 38,0" Fill="#FFC44545" Stroke="{x:Null}" />
+								<Polygon Points="38,203 0,203 0,0 38,0" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
+					</Button>
+					<Button x:Name="btnTopDoor" Click="BtnTopDoor_Click" Margin="3" >
+						<Viewbox Width="32" Height="32" >
+							<Canvas Width="205" Height="197">
+								<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="24,175 24,19 180,19 180,175" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="#FFC44545" Stroke="{x:Null}" />
+								<Polygon Points="0,39 0,0 204,0 204,39" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
 
-				</Button>
-				<Button x:Name="btnRightDoor" Click="BtnRightDoor_Click" Margin="3" >
-					<Viewbox Width="32" Height="32" >
-						<Canvas Width="180" Height="208">
-							<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FFC44545" Stroke="{x:Null}" />
-							<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
+					</Button>
+					<Button x:Name="btnRightDoor" Click="BtnRightDoor_Click" Margin="3" >
+						<Viewbox Width="32" Height="32" >
+							<Canvas Width="180" Height="208">
+								<Polygon Points="0,23 0,160 156,160 156,23" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="0,23 156,23 156,160 0,160" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="136,0 136,203 175,203 175,0" Fill="#FFC44545" Stroke="{x:Null}" />
+								<Polygon Points="136,0 175,0 175,203 136,203" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
 
-				</Button>
-				<Button x:Name="btnBottomDoor" Click="BtnBottomDoor_Click" Margin="3" >
-					<Viewbox Width="32" Height="32">
-						<Canvas Width="205" Height="197">
-							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
-							<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
-							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FFC44545" Stroke="{x:Null}" />
-							<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
-						</Canvas>
-					</Viewbox>
-				</Button>
+					</Button>
+					<Button x:Name="btnBottomDoor" Click="BtnBottomDoor_Click" Margin="3" >
+						<Viewbox Width="32" Height="32">
+							<Canvas Width="205" Height="197">
+								<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="#FFF2F2F2" Stroke="{x:Null}" />
+								<Polygon Points="180,0 180,156 23,156 23,0" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF707070" StrokeThickness="1" />
+								<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="#FFC44545" Stroke="{x:Null}" />
+								<Polygon Points="203,136 203,175 0,175 0,136" FillRule="EvenOdd" Fill="{x:Null}" Stroke="#FF8F2F2F" StrokeThickness="1" />
+							</Canvas>
+						</Viewbox>
+					</Button>
+				</StackPanel>
 			</StackPanel>
 		</Grid>
 		<!-- 
         Grid placed below the zoom and pan control that contains the zoom slider, zoom label and
         some button.
         -->
-		<Grid Grid.Column="0" Grid.Row="2" Margin="5,5,5,5">
+		<Grid Grid.Column="0" Grid.Row="1" Margin="5,5,5,5">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<!-- empty space -->

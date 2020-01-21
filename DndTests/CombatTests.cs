@@ -97,7 +97,7 @@ namespace DndTests
 			AllPlayers.Invalidate();
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
-			Character ava = game.AddPlayer(AllPlayers.GetFromId(PlayerID.Ava));
+			Character ava = game.AddPlayer(AllPlayers.GetFromId(PlayerID.LilCutie));
 			Monster joe = game.AddMonster(MonsterBuilder.BuildVineBlight("Joe"));
 			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword");
 

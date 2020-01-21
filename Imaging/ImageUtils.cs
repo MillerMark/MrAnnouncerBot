@@ -145,6 +145,7 @@ namespace Imaging
 			Color pixelColor = GetPixelColor(image.Source as BitmapSource, x, y);
 			return pixelColor.A > 128;
 		}
+
 		public static Image CreateImage(int angle, double hueShift, double saturationAdjust, double lightnessAdjust, double contrast, double scaleX, double scaleY, string fileName)
 		{
 			TransformedBitmap transformBmp = new TransformedBitmap();
@@ -206,11 +207,6 @@ namespace Imaging
 			transformBmp.Source = bitmapSource;
 			RotateTransform rotation = new RotateTransform(angle);
 
-			if (angle == 90 || angle == 270)
-			{
-				scaleX *= -1;
-				scaleY *= -1;
-			}	
 			ScaleTransform scaling = new ScaleTransform(scaleX, scaleY);
 			TransformGroup group = new TransformGroup();
 			group.Children.Add(scaling);

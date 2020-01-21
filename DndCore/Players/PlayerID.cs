@@ -8,7 +8,7 @@ namespace DndCore
 		public const int Lady = 0;
 		public const int Shemo = 1;
 		public const int Merkin = 2;
-		public const int Ava = 3;
+		public const int LilCutie = 3;
 		public const int Fred = 4;
 		public const int Willy = 5;
 		
@@ -24,8 +24,8 @@ namespace DndCore
 				return Shemo;
 			if (lowerCaseName.StartsWith("merkin"))
 				return Merkin;
-			if (lowerCaseName.StartsWith("ava"))
-				return Ava;
+			if (lowerCaseName.StartsWith("ava") || lowerCaseName.StartsWith("l'il"))
+				return LilCutie;
 			if (lowerCaseName.StartsWith("fred"))
 				return Fred;
 			if (lowerCaseName.StartsWith("lady"))
