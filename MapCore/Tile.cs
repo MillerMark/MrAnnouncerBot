@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using System.Linq;
 
 namespace MapCore
 {
-	public class Tile
+	public class Tile : IFlyweight
 	{
 		public IMapInterface Map { get; set; }
 		// TODO: Hmm.. 120 is a UI=specific implementation. Maybe change to a static property? 
 		public const int Width = 120;
 		public const int Height = 120;
+		[JsonIgnore]
 		public object UIElementFloor { get; set; }
+		[JsonIgnore]
 		public object UIElementOverlay { get; set; }
+		[JsonIgnore]
 		public object SelectorPanel { get; set; }
 		public int Row { get; set; }
 		public int Column { get; set; }
@@ -44,7 +48,7 @@ namespace MapCore
 		{
 			Column = tile.Column;
 			Map = tile.Map;
-			Row= tile.Row;
+			Row = tile.Row;
 			Selected = tile.Selected;
 			SelectorPanel = tile.SelectorPanel;
 			SpaceType = tile.SpaceType;
@@ -54,7 +58,29 @@ namespace MapCore
 
 		List<Door> doors = new List<Door>();
 		public string Code { get; set; }
+
+		[JsonIgnore]
 		public MapRegion Parent { get; set; }
+
+		Guid parentGuid;
+		public Guid ParentGuid
+		{
+			get
+			{
+				if (Parent != null)
+					return Parent.Guid;
+				return Guid.Empty;
+			}
+			set
+			{
+				parentGuid = value;
+			}
+		}
+
+		public void Reconstitute()
+		{
+			Parent = Map.GetFlyweight<MapRegion>(ParentGuid);
+		}
 		public List<Door> Doors
 		{
 			get
@@ -92,6 +118,21 @@ namespace MapCore
 				Map.FloorTypeChanged(this);
 			}
 		}
+
+		Guid guid = Guid.Empty;
+		public Guid Guid
+		{
+			get
+			{
+				return guid;
+			}
+			set
+			{
+				guid = value;
+			}
+		}
+		public string ImageFileName { get; set; }
+		public string BaseTextureName { get; set; }
 
 		public Tile(int column, int row, IMapInterface iMap)
 		{
@@ -194,7 +235,7 @@ namespace MapCore
 
 		bool HasWallOrDoor(int deltaColumn, int deltaRow)
 		{
-			
+
 			foreach (Door door in doors)
 			{
 				if (deltaColumn == -1 && door.Position == DoorPosition.Left)

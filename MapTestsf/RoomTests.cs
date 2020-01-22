@@ -88,8 +88,8 @@ F	F	F	F	F";
 		{
 			Map map = new Map();
 			map.LoadData(mapData);
-			Assert.AreEqual(expectedMapWidth, map.AllTiles.GetLength(0));
-			Assert.AreEqual(expectedMapHeight, map.AllTiles.GetLength(1));
+			Assert.AreEqual(expectedMapWidth, map.TileMap.GetLength(0));
+			Assert.AreEqual(expectedMapHeight, map.TileMap.GetLength(1));
 		}
 
 		[Test]

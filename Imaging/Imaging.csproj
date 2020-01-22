@@ -50,6 +50,7 @@
     <Compile Include="HueSatLight.cs" />
     <Compile Include="ImageCropper.cs" />
     <Compile Include="ImageUtils.cs" />
+    <Compile Include="Margins.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

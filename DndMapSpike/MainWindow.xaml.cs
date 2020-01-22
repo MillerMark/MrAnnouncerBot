@@ -72,7 +72,6 @@ namespace DndMapSpike
 
 		#endregion
 		List<BaseTexture> tileTextures = new List<BaseTexture>();
-		List<BaseTexture> debrisTextures = new List<BaseTexture>();
 		MapSelection tileSelection;
 		WallBuilder wallBuilder = new WallBuilder();
 		int clickCounter;
@@ -277,7 +276,7 @@ namespace DndMapSpike
 				bool inSelection = false;
 				for (int row = 0; row < Map.NumRows; row++)
 				{
-					Tile tile = Map.AllTiles[column, row];
+					Tile tile = Map.TileMap[column, row];
 					if (!inSelection && tile.Selected)    // Add top line...
 					{
 						inSelection = true;
@@ -298,7 +297,7 @@ namespace DndMapSpike
 				bool inSelection = false;
 				for (int column = 0; column < Map.NumColumns; column++)
 				{
-					Tile tile = Map.AllTiles[column, row];
+					Tile tile = Map.TileMap[column, row];
 					if (!inSelection && tile.Selected)    // Add left line...
 					{
 						inSelection = true;
@@ -514,11 +513,27 @@ namespace DndMapSpike
 
 		void ImportDonJonMap(string fileName)
 		{
-			content.Children.Clear();
+			ClearMap();
 			Map.Load(fileName);
 			allLayers.AddImagesToCanvas(content);
 			SetCanvasSizeFromMap();
 
+			AddTileOverlays();
+
+			LoadFinalCanvasElements();
+			SelectAllRoomsAndCorridors();
+			OutlineWalls();
+			AddSelectionCanvas();
+			ClearSelection();
+		}
+
+		private void ClearMap()
+		{
+			content.Children.Clear();
+		}
+
+		private void AddTileOverlays()
+		{
 			foreach (Tile tile in Map.Tiles)
 			{
 				UIElement floorUI = null;
@@ -537,13 +552,8 @@ namespace DndMapSpike
 
 				AddSelector(tile);
 			}
-
-			LoadFinalCanvasElements();
-			SelectAllRoomsAndCorridors();
-			OutlineWalls();
-			AddSelectionCanvas();
-			ClearSelection();
 		}
+
 		void AddSelectionCanvas()
 		{
 			stampSelectionCanvas = new Canvas();
@@ -590,6 +600,7 @@ namespace DndMapSpike
 
 		private void BuildRubberBandSelector(int zIndex)
 		{
+			RemoveRubberBandSelector();
 			rubberBandOutsideSelector = new Rectangle();
 			rubberBandOutsideSelector.Stroke = Brushes.Black;
 			rubberBandOutsideSelector.StrokeThickness = tileSelection.BorderThickness;
@@ -1120,7 +1131,7 @@ namespace DndMapSpike
 			//	ClearSelectionUI();
 			//}
 
-			List<Tile> roomTiles = floorSpace.Parent.Spaces.ConvertAll(x => x as Tile);
+			List<Tile> roomTiles = floorSpace.Parent.Tiles.ConvertAll(x => x as Tile);
 			SelectAllTiles(roomTiles);
 		}
 
@@ -2005,7 +2016,10 @@ namespace DndMapSpike
 				content.Children.Remove(tile.UIElementOverlay as UIElement);
 				content.Children.Remove(tile.SelectorPanel as UIElement);
 
-				AddFloorFile(tile, texture.GetImage(tile.Column, tile.Row));
+				string imageFileName = null;
+				AddFloorFile(tile, texture.GetImage(tile.Column, tile.Row, ref imageFileName));
+				tile.ImageFileName = imageFileName;
+				tile.BaseTextureName = texture.BaseName;
 				AddFloorOverlay(tile);
 				AddSelector(tile);
 			}
@@ -2034,12 +2048,6 @@ namespace DndMapSpike
 			floorLayer.DrawImageOverTile(image, tile);
 		}
 
-		private void AddDebris(Tile tile, Image image)
-		{
-			debrisLayer.ClearAtTile(tile);
-			debrisLayer.DrawImageOverTile(image, tile);
-		}
-
 		private void SetCanvasSizeFromMap()
 		{
 			content.Width = Map.WidthPx;
@@ -2051,7 +2059,6 @@ namespace DndMapSpike
 
 		Layer depthLayer = new Layer();
 		Layer doorLayer = new Layer();
-		Layer debrisLayer = new Layer();
 		StampsLayer stampsLayer = new StampsLayer();
 		Layer wallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer floorLayer = new Layer();
@@ -2061,7 +2068,6 @@ namespace DndMapSpike
 		{
 			allLayers.Add(floorLayer);
 			allLayers.Add(depthLayer);
-			allLayers.Add(debrisLayer);
 			allLayers.Add(stampsLayer);
 			allLayers.Add(doorLayer);
 			allLayers.Add(wallLayer);
@@ -2150,7 +2156,7 @@ namespace DndMapSpike
 
 
 					}
-					if (!Map.TileExists(column, row) || !Map.AllTiles[column, row].Selected)
+					if (!Map.TileExists(column, row) || !Map.TileMap[column, row].Selected)
 						Map.SetWall(column + columnOffset, row + rowOffset, wallOrientation, adding);
 				}
 			}
@@ -3191,6 +3197,35 @@ namespace DndMapSpike
 		private void Window_PreviewKeyUp(object sender, KeyEventArgs e)
 		{
 			CtrlKeyDown = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+		}
+
+		BaseTexture GetTexture(string baseTextureName)
+		{
+			return tileTextures.FirstOrDefault(x => x.BaseName == baseTextureName);
+		}
+
+		void Load(string fileName)
+		{
+			// TODO: Load the map from the file.
+			ClearMap();
+
+			AddTileOverlays();
+
+			RemoveRubberBandSelector();
+			foreach (Tile tile in Map.Tiles)
+			{
+				BaseTexture baseTexture = GetTexture(tile.BaseTextureName);
+				if (baseTexture != null)
+				{
+					string imageFileName = tile.ImageFileName;
+					AddFloorFile(tile, baseTexture.GetImage(tile.Column, tile.Row, ref imageFileName));
+				}
+
+				AddFloorOverlay(tile);
+				AddSelector(tile);
+			}
+			Map.UpdateIfNeeded();
+			LoadFinalCanvasElements();
 		}
 	}
 }

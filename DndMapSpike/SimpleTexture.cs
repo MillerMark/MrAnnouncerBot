@@ -14,10 +14,15 @@ namespace DndMapSpike
 
 		}
 
-		public override Image GetImage(int column, int row)
+		public override Image GetImage(int column, int row, ref string imageFileName)
 		{
+			if (imageFileName != null)
+				return GetImageFromFilename(imageFileName);
+
+			imageFileName = FileName;
 			return textureImage;
 		}
+
 		public override void AddImage(string fileName, string textureKey)
 		{
 			base.AddImage(fileName, textureKey);

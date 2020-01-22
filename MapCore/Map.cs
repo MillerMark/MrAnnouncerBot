@@ -34,7 +34,8 @@ namespace MapCore
 
 		bool[,] _allVerticalWalls { get; set; }
 
-		public Tile[,] AllTiles { get; private set; }
+		[JsonIgnore]
+		public Tile[,] TileMap { get; private set; }
 
 		public List<Corridor> Corridors { get; private set; } = new List<Corridor>();
 
@@ -95,7 +96,7 @@ namespace MapCore
 
 		void AddAdjacentSpaces(MapRegion region, Tile activeSpace)
 		{
-			region.Spaces.Add(activeSpace);
+			region.AddTile(activeSpace);
 
 			Tile left = GetFloorSpace(activeSpace.Column - 1, activeSpace.Row);
 			AddIfAvailable(left, region, activeSpace);
@@ -129,14 +130,14 @@ namespace MapCore
 
 		Corridor CreateCorridorFromSpace(Tile activeSpace)
 		{
-			Corridor corridor = new Corridor();
+			Corridor corridor = new Corridor(this);
 			AddSpaceToRegion(corridor, activeSpace);
 			return corridor;
 		}
 
 		Room CreateRoomFromSpace(Tile activeSpace)
 		{
-			Room room = new Room();
+			Room room = new Room(this);
 			AddSpaceToRegion(room, activeSpace);
 			return room;
 		}
@@ -298,14 +299,14 @@ namespace MapCore
 
 		public void BuildMapArrays()
 		{
-			AllTiles = new Tile[NumColumns, NumRows];
+			TileMap = new Tile[NumColumns, NumRows];
 			_allVerticalWalls = new bool[NumColumns + 1, NumRows + 1];
 			_allHorizontalWalls = new bool[NumColumns + 1, NumRows + 1];
 			// TODO: Find walls for rooms that are loaded.
 
 			foreach (Tile tile in Tiles)
 			{
-				AllTiles[tile.Column, tile.Row] = tile;
+				TileMap[tile.Column, tile.Row] = tile;
 			}
 		}
 
@@ -400,7 +401,7 @@ namespace MapCore
 		{
 			Rooms.Clear();
 			Corridors.Clear();
-			ClearAllSpaces(AllTiles, NumColumns, NumRows);
+			ClearAllSpaces(TileMap, NumColumns, NumRows);
 			DetermineSpaceTypes();
 
 
@@ -490,10 +491,10 @@ namespace MapCore
 		{
 			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
 				return null;
-			Tile tile = AllTiles[column, row];
+			Tile tile = TileMap[column, row];
 			if (!tile.IsFloor)
 				return null;
-			return AllTiles[column, row];
+			return TileMap[column, row];
 		}
 
 		public List<Tile> GetSelection()
@@ -525,7 +526,7 @@ namespace MapCore
 		{
 			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
 				return null;
-			return AllTiles[column, row];
+			return TileMap[column, row];
 		}
 
 		public List<Tile> GetTilesInPixelRect(int left, int top, int width, int height)
@@ -715,6 +716,60 @@ namespace MapCore
 		{
 			return !FloorSpaceExists(column + 1, row + 1);
 		}
+
+		public void Reconstitute()
+		{
+			BuildMapArrays();
+
+			
+			foreach (Room room in Rooms)
+			{
+				room.ParentMap = this;
+				room.Reconstitute();
+			}
+
+			foreach (Corridor corridor in Corridors)
+			{
+				corridor.ParentMap = this;
+				corridor.Reconstitute();
+			}
+		}
+
+		void Save()
+		{
+			PrepareForSerialization();
+
+		}
+
+		public Dictionary<Guid, object> flyweights = new Dictionary<Guid, object>();
+
+		public T GetFlyweight<T>(Guid guid) where T : class
+		{
+			if (guid == Guid.Empty)
+				return null;
+
+			if (flyweights.ContainsKey(guid))
+				return flyweights[guid] as T;
+			return null;
+		}
+
+		public void AddFlyweight(Guid key, object instance)
+		{
+			if (key == Guid.Empty)
+				throw new Exception($"What? Cannot add flyweight {instance} with an empty key!!!");
+			if (!flyweights.ContainsKey(key))
+				flyweights.Add(key, instance);
+			else  // TODO: Should we throw an exception here?
+				flyweights[key] = instance;
+		}
+
+		public void PrepareForSerialization()
+		{
+			
+			// TODO: Call AddFlyweight for each instance we want to GUID-ify.
+		}
+
+
 
 		public event EventHandler WallsChanged;
 	}

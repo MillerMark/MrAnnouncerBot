@@ -47,6 +47,7 @@
     <Compile Include="Door.cs" />
     <Compile Include="DoorPosition.cs" />
     <Compile Include="EndCapKind.cs" />
+    <Compile Include="IFlyweight.cs" />
     <Compile Include="VoidCornerKind.cs" />
     <Compile Include="WallData.cs" />
     <Compile Include="IMapInterface.cs" />

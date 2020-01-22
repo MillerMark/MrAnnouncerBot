@@ -5,24 +5,66 @@ using Newtonsoft.Json;
 
 namespace MapCore
 {
-	public class MapRegion
+	public class MapRegion: IFlyweight
 	{
 		[JsonIgnore]
-		public List<Tile> Spaces { get; set; } = new List<Tile>();
-		List<Guid> spaceGuids;
-		public List<Guid> SpaceGuids
+		public IMapInterface ParentMap { get; set; }
+
+		public Guid Guid { get; set; }
+
+		[JsonIgnore]
+		public List<Tile> Tiles { get; set; } = new List<Tile>();
+
+		List<Guid> tileGuids;
+
+		public MapRegion(IMapInterface map)
+		{
+			ParentMap = map;
+		}
+
+		List<Guid> GetTileGuids()
+		{
+			List<Guid> guids = new List<Guid>();
+			foreach (Tile tile in Tiles)
+				guids.Add(tile.Guid);
+
+			return guids;
+		}
+
+		void InvalidateTileGuids()
+		{
+			tileGuids = null;
+		}
+
+		public void AddTile(Tile tile)
+		{
+			Tiles.Add(tile);
+			InvalidateTileGuids();
+		}
+
+		public List<Guid> TileGuids
 		{
 			get
 			{
-				return spaceGuids;
+				return tileGuids;
 			}
 			set
 			{
-				if (spaceGuids == null)
-					spaceGuids = GetSpaceGuids();
-				spaceGuids = value;
+				if (tileGuids == null)
+					tileGuids = GetTileGuids();
+				tileGuids = value;
 			}
 		}
+
+		// TODO: Call this after serializing this from disk.
+		public void Reconstitute()
+		{
+			foreach (Guid guid in TileGuids)
+			{
+				AddTile(ParentMap.GetFlyweight<Tile>(guid));
+			}
+		}
+
 		public double Width { get; private set; }
 		public double Height { get; private set; }
 	}

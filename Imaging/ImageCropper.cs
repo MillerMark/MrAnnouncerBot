@@ -29,6 +29,13 @@ namespace Imaging
 			ProgressChanged?.Invoke(null, EventArgs.Empty);
 		}
 
+		public void FindCropEdges(string fileName)
+		{
+			List<string> files = new List<string>();
+			files.Add(fileName);
+			FindCropEdges(files);
+		}
+
 		public void FindCropEdges(List<string> files)
 		{
 			leftMargin = int.MaxValue;
@@ -114,7 +121,7 @@ namespace Imaging
 				}
 			}
 		}
-		void CropFile(string file, int leftMargin, int topMargin, int rightMargin, int bottomMargin)
+		void CropFile(string file, int leftMargin, int topMargin, int rightMargin, int bottomMargin, string targetFileName = null)
 		{
 			string workFile = file;
 			bool workFileIsTemporary = false;
@@ -133,40 +140,48 @@ namespace Imaging
 			{
 				using (Bitmap cropped = image.Clone(new Rectangle(leftMargin, topMargin, image.Width - rightMargin - leftMargin, image.Height - bottomMargin - topMargin), PixelFormat.Format32bppArgb))
 				{
-					string fileNameOnly = Path.GetFileName(file);
+					if (targetFileName == null)
+						targetFileName = Path.GetFileName(file);
 					string path = Path.GetDirectoryName(file);
-					string croppedPath;
+					string targetPath;
 					if (!string.IsNullOrEmpty(CroppedFolder))
 					{
-						croppedPath = Path.Combine(path, CroppedFolder);
-						if (!Directory.Exists(croppedPath))
-							Directory.CreateDirectory(croppedPath);
+						targetPath = Path.Combine(path, CroppedFolder);
+						if (!Directory.Exists(targetPath))
+							Directory.CreateDirectory(targetPath);
 					}
 					else  // Replacing the file...
 					{
-						croppedPath = path;
+						targetPath = path;
 					}
 
-					string targetFileName = Path.Combine(croppedPath, fileNameOnly);
-					cropped.Save(targetFileName);
+					cropped.Save(Path.Combine(targetPath, targetFileName));
 				}
 			}
 			if (workFileIsTemporary)
 				File.Delete(workFile);
 		}
 
-		public void ApplyCrop(List<string> files)
+		public void ApplyCrop(List<string> files, string baseName = null, bool useIndices = false)
 		{
 			ProgressApplyPercent = 0;
 			int filesToProcess = files.Count;
 			int counter = 0;
 			foreach (string file in files)
 			{
+				string targetFileName = null;
+				if (baseName != null)
+					if (useIndices)
+						targetFileName = $"{baseName}{counter}.png";
+					else
+						targetFileName = $"{baseName}.png";
+
 				ActiveFile = file;
 				ProgressScanPercent = counter * 100 / filesToProcess;
 				counter++;
 				OnProgressChanged();
-				CropFile(file, leftMargin, topMargin, rightMargin, bottomMargin);
+				
+				CropFile(file, leftMargin, topMargin, rightMargin, bottomMargin, targetFileName);
 			}
 			ProgressApplyPercent = 100;
 			OnProgressChanged();
@@ -175,5 +190,15 @@ namespace Imaging
 		public int ProgressScanPercent { get; set; }
 		public int ProgressApplyPercent { get; set; }
 		public string ActiveFile { get; set; }
+
+		public Margins GetMargins()
+		{
+			Margins result = new Margins();
+			result.Left = leftMargin;
+			result.Top = topMargin;
+			result.Right = rightMargin;
+			result.Bottom = bottomMargin;
+			return result;
+		}
 	}
 }

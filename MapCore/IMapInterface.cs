@@ -12,5 +12,6 @@ namespace MapCore
 		bool HasWallRight(int column, int row);
 		bool HasWallTop(int column, int row);
 		bool HasWallBottom(int column, int row);
+		T GetFlyweight<T>(Guid parentGuid) where T : class;
 	}
 }
