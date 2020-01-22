@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace MapCore
@@ -47,9 +48,12 @@ namespace MapCore
 
 		public List<Room> Rooms { get; private set; } = new List<Room>();
 
-		public List<Tile> Tiles { get; private set; }
+		public List<Tile> Tiles { get; private set; } = new List<Tile>();
 
 		public int WidthPx { get { return (rightmostColumnIndex + 1) * Tile.Width; } }
+
+		[JsonIgnore]
+		public string FileName { get; set; }
 
 		static void ClearAllSpaces(Tile[,] mapArray, int numColumns, int numRows)
 		{
@@ -721,7 +725,6 @@ namespace MapCore
 		{
 			BuildMapArrays();
 
-			
 			foreach (Room room in Rooms)
 			{
 				room.ParentMap = this;
@@ -749,14 +752,19 @@ namespace MapCore
 				return null;
 
 			if (flyweights.ContainsKey(guid))
-				return flyweights[guid] as T;
+			{
+				JObject jObject = flyweights[guid] as JObject;
+				return jObject.ToObject<T>() as T;
+			}
 			return null;
 		}
 
-		public void AddFlyweight(Guid key, object instance)
+		public void AddFlyweight(Guid key, IFlyweight instance)
 		{
 			if (key == Guid.Empty)
 				throw new Exception($"What? Cannot add flyweight {instance} with an empty key!!!");
+
+			instance.Guid = key;
 			if (!flyweights.ContainsKey(key))
 				flyweights.Add(key, instance);
 			else  // TODO: Should we throw an exception here?
@@ -765,8 +773,26 @@ namespace MapCore
 
 		public void PrepareForSerialization()
 		{
-			
-			// TODO: Call AddFlyweight for each instance we want to GUID-ify.
+			foreach (Tile tile in Tiles)
+			{
+				if (tile.NeedsGuid())
+					AddFlyweight(Guid.NewGuid(), tile);
+				tile.PrepareForSerialization();
+			}
+
+			foreach (Corridor corridor in Corridors)
+			{
+				if (corridor.NeedsGuid())
+					AddFlyweight(Guid.NewGuid(), corridor);
+				corridor.PrepareForSerialization();
+			}
+
+			foreach (Room room in Rooms)
+			{
+				if (room.NeedsGuid())
+					AddFlyweight(Guid.NewGuid(), room);
+				room.PrepareForSerialization();
+			}
 		}
 
 

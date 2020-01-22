@@ -19,6 +19,7 @@ using MapUI;
 using System.Windows.Threading;
 using System.Xml;
 using System.Windows.Markup;
+using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
@@ -112,8 +113,9 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Tomb of Baleful Ruin.txt");
 			//ImportDonJonMap("The Dark Lair of Sorrows.txt");
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
-			ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
-			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
+			//ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
+			//ImportDonJonMap("SmallMap.txt");
+			ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();
 			AddFileSystemWatcher();
@@ -513,7 +515,7 @@ namespace DndMapSpike
 
 		void ImportDonJonMap(string fileName)
 		{
-			ClearMap();
+			ClearMapCanvasChildren();
 			Map.Load(fileName);
 			allLayers.AddImagesToCanvas(content);
 			SetCanvasSizeFromMap();
@@ -527,7 +529,7 @@ namespace DndMapSpike
 			ClearSelection();
 		}
 
-		private void ClearMap()
+		private void ClearMapCanvasChildren()
 		{
 			content.Children.Clear();
 		}
@@ -2059,6 +2061,7 @@ namespace DndMapSpike
 
 		Layer depthLayer = new Layer();
 		Layer doorLayer = new Layer();
+		// TODO: Need to move this...
 		StampsLayer stampsLayer = new StampsLayer();
 		Layer wallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer floorLayer = new Layer();
@@ -2376,7 +2379,7 @@ namespace DndMapSpike
 			var control = Application.Current.FindResource(typeof(Button));
 			using (XmlTextWriter writer = new XmlTextWriter(@"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\DndMapSpike\ButtonDefaultTemplate.xml", System.Text.Encoding.UTF8))
 			{
-				writer.Formatting = Formatting.Indented;
+				writer.Formatting = System.Xml.Formatting.Indented;
 				XamlWriter.Save(control, writer);
 			}
 		}
@@ -3206,8 +3209,13 @@ namespace DndMapSpike
 
 		void Load(string fileName)
 		{
-			// TODO: Load the map from the file.
-			ClearMap();
+			ClearMapCanvasChildren();
+
+			string mapStr = File.ReadAllText(fileName);
+
+			Map = JsonConvert.DeserializeObject<Map>(mapStr);
+
+			Map.Reconstitute();
 
 			AddTileOverlays();
 
@@ -3226,6 +3234,30 @@ namespace DndMapSpike
 			}
 			Map.UpdateIfNeeded();
 			LoadFinalCanvasElements();
+		}
+
+		string GetMapFileName()
+		{
+			const string MapSaveFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Data";
+			return System.IO.Path.Combine(MapSaveFolder, "FirstSave.json");
+		}
+
+		void Save()
+		{
+			if (string.IsNullOrWhiteSpace(Map.FileName))
+				Map.FileName = GetMapFileName();
+			Map.PrepareForSerialization();
+			string output = JsonConvert.SerializeObject(Map, Newtonsoft.Json.Formatting.Indented);
+			File.WriteAllText(Map.FileName, output);
+		}
+
+		private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			Save();
+		}
+		private void Load_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			Load(GetMapFileName());
 		}
 	}
 }

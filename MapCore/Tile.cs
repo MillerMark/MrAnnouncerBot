@@ -7,10 +7,13 @@ namespace MapCore
 {
 	public class Tile : IFlyweight
 	{
+		[JsonIgnore]
 		public IMapInterface Map { get; set; }
+
 		// TODO: Hmm.. 120 is a UI=specific implementation. Maybe change to a static property? 
 		public const int Width = 120;
 		public const int Height = 120;
+
 		[JsonIgnore]
 		public object UIElementFloor { get; set; }
 		[JsonIgnore]
@@ -59,17 +62,31 @@ namespace MapCore
 		List<Door> doors = new List<Door>();
 		public string Code { get; set; }
 
+		MapRegion parent;
 		[JsonIgnore]
-		public MapRegion Parent { get; set; }
+		public MapRegion Parent
+		{
+			get
+			{
+				if (parent == null && parentGuid != Guid.Empty && Map != null)
+					parent = Map.GetFlyweight<MapRegion>(parentGuid);
+				return parent;
+			}
+			set
+			{
+				parent = value;
+			}
+		}
 
-		Guid parentGuid;
+		Guid parentGuid = Guid.Empty;
 		public Guid ParentGuid
 		{
 			get
 			{
-				if (Parent != null)
-					return Parent.Guid;
-				return Guid.Empty;
+				if (parent != null)
+					return parent.Guid;
+
+				return parentGuid;
 			}
 			set
 			{
@@ -81,6 +98,13 @@ namespace MapCore
 		{
 			Parent = Map.GetFlyweight<MapRegion>(ParentGuid);
 		}
+
+		public void PrepareForSerialization()
+		{
+			if (Parent != null)
+				ParentGuid = Parent.Guid;
+		}
+
 		public List<Door> Doors
 		{
 			get
@@ -115,7 +139,8 @@ namespace MapCore
 				}
 
 				isFloor = value;
-				Map.FloorTypeChanged(this);
+				if (Map != null)
+					Map.FloorTypeChanged(this);
 			}
 		}
 
@@ -131,6 +156,12 @@ namespace MapCore
 				guid = value;
 			}
 		}
+
+		public bool NeedsGuid()
+		{
+			return Guid == Guid.Empty;
+		}
+
 		public string ImageFileName { get; set; }
 		public string BaseTextureName { get; set; }
 
@@ -139,6 +170,10 @@ namespace MapCore
 			Map = iMap;
 			Row = row;
 			Column = column;
+		}
+
+		public Tile()  // Called by deserialization
+		{
 		}
 
 		public Tile(int column, int row, string code, IMapInterface iMap, bool isFloor) : this(column, row, iMap)

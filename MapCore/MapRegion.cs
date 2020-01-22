@@ -12,6 +12,11 @@ namespace MapCore
 
 		public Guid Guid { get; set; }
 
+		public bool NeedsGuid()
+		{
+			return Guid == Guid.Empty;
+		}
+
 		[JsonIgnore]
 		public List<Tile> Tiles { get; set; } = new List<Tile>();
 
@@ -46,12 +51,12 @@ namespace MapCore
 		{
 			get
 			{
+				if (tileGuids == null)
+					tileGuids = GetTileGuids();
 				return tileGuids;
 			}
 			set
 			{
-				if (tileGuids == null)
-					tileGuids = GetTileGuids();
 				tileGuids = value;
 			}
 		}
@@ -59,10 +64,16 @@ namespace MapCore
 		// TODO: Call this after serializing this from disk.
 		public void Reconstitute()
 		{
-			foreach (Guid guid in TileGuids)
+			List<Guid> tileGuids = TileGuids;
+			foreach (Guid guid in tileGuids)
 			{
 				AddTile(ParentMap.GetFlyweight<Tile>(guid));
 			}
+		}
+
+		public void PrepareForSerialization()
+		{
+
 		}
 
 		public double Width { get; private set; }

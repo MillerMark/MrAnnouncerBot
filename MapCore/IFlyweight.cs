@@ -8,7 +8,12 @@ namespace MapCore
 	{
 		// Needed for serialization.
 		Guid Guid { get; set; }
-		
+		bool NeedsGuid();
+
+
+		// Called before serialization...
+		void PrepareForSerialization();
+
 		// Called after deserialization...
 		void Reconstitute();
 	}

@@ -9,6 +9,8 @@
         Title="MainWindow" Height="850" Width="1200" FontSize="9" PreviewKeyDown="Window_PreviewKeyDown" PreviewKeyUp="Window_PreviewKeyUp">
 	<Window.Resources>
 		<RoutedUICommand x:Key="Commands.ZoomOut" />
+		<RoutedUICommand x:Key="Commands.Save" />
+		<RoutedUICommand x:Key="Commands.Load" />
 		<RoutedUICommand x:Key="Commands.ZoomIn" />
 		<RoutedUICommand x:Key="Commands.JumpBackToPrevZoom" />
 		<RoutedUICommand x:Key="Commands.Fill" />
@@ -676,6 +678,8 @@
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
+		<KeyBinding Key="S" Modifiers="Ctrl" Command="{StaticResource Commands.Save}"/>
+		<KeyBinding Key="O" Modifiers="Ctrl" Command="{StaticResource Commands.Load}"/>
 		<KeyBinding Key="Esc" Command="{StaticResource Commands.CancelStampMode}"/>
 		<KeyBinding Key="Delete" Command="{StaticResource Commands.DeleteSelected}"/>
 		<KeyBinding Key="C" Modifiers="Ctrl+Alt" Command="{StaticResource Commands.CopyColorMod}"/>
@@ -687,6 +691,8 @@
 	</Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="{StaticResource Commands.ZoomOut}" Executed="ZoomOut_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.Save}" Executed="Save_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.Load}" Executed="Load_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.ZoomIn}" Executed="ZoomIn_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.JumpBackToPrevZoom}" Executed="JumpBackToPrevZoom_Executed" CanExecute="JumpBackToPrevZoom_CanExecute"/>
 		<CommandBinding Command="{StaticResource Commands.Fill}" Executed="Fill_Executed"/>
