@@ -5,7 +5,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class GetDataCommand : IDungeonMasterCommand
+	public class GetDataCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		string reportName;
 

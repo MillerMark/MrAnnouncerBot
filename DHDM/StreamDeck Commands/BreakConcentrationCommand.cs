@@ -5,22 +5,22 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class MoveFredCommand : IDungeonMasterCommand
+	public class BreakConcentrationCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		string animationName;
+		int playerId;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.MoveFred(animationName);
+			dungeonMasterApp.BreakConcentration(playerId);
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"^MoveFred\s+(\w+)$");
+			Match match = Regex.Match(message, $"^bc {RegexConstants.PlayerFirstInitials}$");
 			if (match.Success)
 			{
-				animationName = match.Groups[1].Value;
-				return animationName != "";
+				if (int.TryParse(match.Groups[1].Value, out playerId))
+					return true;
 			}
 			return false;
 		}

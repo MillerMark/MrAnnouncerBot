@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Linq;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class HiddenThresholdCommand : IDungeonMasterCommand
+	public class RollDiceCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		int hiddenThreshold;
-
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.SetHiddenThreshold(hiddenThreshold);
+			dungeonMasterApp.RollDice();
 		}
 
 		public bool Matches(string message)
 		{
-			return int.TryParse(message, out hiddenThreshold);
+			return message == "RollDice";
 		}
 	}
 }

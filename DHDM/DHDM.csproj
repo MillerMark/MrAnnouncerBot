@@ -274,42 +274,43 @@
     </ApplicationDefinition>
     <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="AnswerButton.cs" />
+    <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
-    <Compile Include="BreakConcentrationCommand.cs" />
+    <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
     <Compile Include="DebugLine.cs" />
     <Compile Include="DiceEventArgs.cs" />
     <Compile Include="DiceStoppedRollingData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
-    <Compile Include="DungeonMasterCommand.cs" />
+    <Compile Include="StreamDeck Commands\DungeonMasterCommand.cs" />
     <Compile Include="EventManager.cs" />
     <Compile Include="FrmAsk.xaml.cs">
       <DependentUpon>FrmAsk.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GetDataCommand.cs" />
-    <Compile Include="HealthDamageCommand.cs" />
-    <Compile Include="HiddenThresholdCommand.cs" />
+    <Compile Include="StreamDeck Commands\GetDataCommand.cs" />
+    <Compile Include="StreamDeck Commands\HealthDamageCommand.cs" />
+    <Compile Include="StreamDeck Commands\HiddenThresholdCommand.cs" />
     <Compile Include="Icons.cs" />
-    <Compile Include="IDungeonMasterCommand.cs" />
+    <Compile Include="StreamDeck Commands\Core\IDungeonMasterCommand.cs" />
     <Compile Include="IDungeonMasterApp.cs" />
     <Compile Include="InspirationTextBox.cs" />
-    <Compile Include="MoveFredCommand.cs" />
+    <Compile Include="StreamDeck Commands\MoveFredCommand.cs" />
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerFactory.cs" />
     <Compile Include="PlayerRoll.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
-    <Compile Include="PlayerSelectorCommand.cs" />
+    <Compile Include="StreamDeck Commands\PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />
-    <Compile Include="RollDiceCommand.cs" />
-    <Compile Include="SavingThrowCommand.cs" />
-    <Compile Include="ScrollCloseCommand.cs" />
-    <Compile Include="SelectShortcutCommand.cs" />
-    <Compile Include="SetVantageCommand.cs" />
+    <Compile Include="StreamDeck Commands\RollDiceCommand.cs" />
+    <Compile Include="StreamDeck Commands\SavingThrowCommand.cs" />
+    <Compile Include="StreamDeck Commands\ScrollCloseCommand.cs" />
+    <Compile Include="StreamDeck Commands\SelectShortcutCommand.cs" />
+    <Compile Include="StreamDeck Commands\SetVantageCommand.cs" />
     <Compile Include="ShortcutButton.cs" />
-    <Compile Include="SkillCheckCommand.cs" />
-    <Compile Include="StaticCommands.cs" />
+    <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
+    <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

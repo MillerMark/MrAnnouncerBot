@@ -7,6 +7,9 @@ namespace MapCore
 {
 	public class MapRegion: IFlyweight
 	{
+		public string TypeName { get; set; } = typeof(MapRegion).FullName;
+		public RegionType RegionType { get; set; }
+
 		[JsonIgnore]
 		public IMapInterface ParentMap { get; set; }
 
@@ -43,6 +46,7 @@ namespace MapCore
 
 		public void AddTile(Tile tile)
 		{
+			tile.Parent = this;
 			Tiles.Add(tile);
 			InvalidateTileGuids();
 		}

@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Linq;
+using TwitchLib.Client;
 using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class RollDiceCommand : IDungeonMasterCommand
+	public class ScrollCloseCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.RollDice();
+			dungeonMasterApp.HideScroll();
 		}
 
 		public bool Matches(string message)
 		{
-			return message == "RollDice";
+			return message == "close scroll";
 		}
 	}
 }

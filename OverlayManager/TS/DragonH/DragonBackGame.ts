@@ -29,6 +29,7 @@ class DragonBackGame extends DragonGame {
 	dndDateStr: string;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
+	playerDataSet: boolean = false;
 
 
 	constructor(context: CanvasRenderingContext2D) {
@@ -37,6 +38,7 @@ class DragonBackGame extends DragonGame {
 	}
 
 	initializePlayerData(playerData: string): any {
+		this.playerDataSet = true;
 		super.initializePlayerData(playerData);
 		this.characterStatsScroll.initializePlayerData(this.players);
 	}
@@ -226,6 +228,10 @@ class DragonBackGame extends DragonGame {
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
 		super.updateScreen(context, now);
+
+		if (!this.playerDataSet) {
+			this.ShowWaitingForInitializationMessage(context, '#0000ff', 'Back Overlay is waiting for player data to be initialized.', 300);
+		}
 
 		this.drawTime(context);
 

@@ -126,6 +126,16 @@ abstract class DragonGame extends GamePlusQuiz {
 
 	dragonSharedSounds: SoundManager;
 
+	protected ShowWaitingForInitializationMessage(context: CanvasRenderingContext2D, fontColor: string, message: string, yTop: number) {
+		context.font = '38px Arial';
+		context.textAlign = 'left';
+		context.textBaseline = 'top';
+		context.fillStyle = fontColor;
+		context.globalAlpha = 0.5;
+		context.fillText(message, 100, yTop);
+		context.globalAlpha = 1;
+	}
+
 	protected triggerSoundEffect(dto: any): void {
 	}
 

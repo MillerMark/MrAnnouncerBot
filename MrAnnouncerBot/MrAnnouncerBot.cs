@@ -27,6 +27,7 @@ namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
+		List<LogEntry> log = new List<LogEntry>();
 		public static readonly HttpClient httpClient = new HttpClient();
 
 		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
@@ -167,6 +168,36 @@ namespace MrAnnouncerBot
 			Twitch.Client.OnMessageReceived += TwitchClient_OnMessageReceived;
 			Twitch.Client.OnUserJoined += TwitchClient_OnUserJoined;
 			Twitch.Client.OnUserLeft += TwitchClient_OnUserLeft;
+			Twitch.Client.OnChannelStateChanged += Client_OnChannelStateChanged;
+			Twitch.Client.OnDisconnected += Client_OnDisconnected;
+			Twitch.Client.OnError += Client_OnError;
+			Twitch.Client.OnHostingStopped += Client_OnHostingStopped;
+			Twitch.Client.OnLog += Client_OnLog;
+		}
+
+		private void Client_OnLog(object sender, OnLogArgs e)
+		{
+			log.Add(new LogEntry() { BotUsername = e.BotUsername, Data = e.Data, Time = e.DateTime });
+		}
+
+		private void Client_OnHostingStopped(object sender, OnHostingStoppedArgs e)
+		{
+			
+		}
+
+		private void Client_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)
+		{
+			
+		}
+
+		private void Client_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
+		{
+			
+		}
+
+		private void Client_OnChannelStateChanged(object sender, OnChannelStateChangedArgs e)
+		{
+			
 		}
 
 		void AutoSaveViewers(object obj)

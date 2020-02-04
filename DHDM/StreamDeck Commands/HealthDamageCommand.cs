@@ -7,7 +7,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class HealthDamageCommand : IDungeonMasterCommand
+	public class HealthDamageCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		int healthDamageValue;
 
@@ -15,15 +15,22 @@ namespace DHDM
 		{
 			DamageHealthChange damageHealthChange = new DamageHealthChange();
 			damageHealthChange.DamageHealth = healthDamageValue;
+			if (TargetPlayer != null)
+			{
+				int playerId = dungeonMasterApp.GetPlayerIdFromNameStart(TargetPlayer);
+				if (playerId != -1)
+					damageHealthChange.PlayerIds.Add(playerId);
+			}
 			dungeonMasterApp.ApplyDamageHealthChange(damageHealthChange);
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"(^[\-\+]\d+)");
+			Match match = Regex.Match(message, @"(^[\-\+]\d+)" + PlayerSpecifier);
 			if (match.Success)
 			{
-				if (int.TryParse(match.Groups[0].Value, out healthDamageValue))
+				SetTargetPlayer(match.Groups);
+				if (int.TryParse(match.Groups[match.Groups.Count - 2].Value, out healthDamageValue))
 					return true;
 			}
 			return false;

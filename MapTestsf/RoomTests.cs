@@ -15,7 +15,7 @@ namespace Tests
 		{
 			Map map = new Map();
 			map.LoadData(mapData);
-			List<Room> allRooms = map.Rooms;
+			List<MapRegion> allRooms = map.Rooms;
 			Assert.AreEqual(expectedRoomCount, allRooms.Count);
 			if (roomTestIndex >= 0)
 			{

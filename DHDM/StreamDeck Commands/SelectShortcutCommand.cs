@@ -6,7 +6,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class SelectShortcutCommand : IDungeonMasterCommand
+	public class SelectShortcutCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		string shortcutName;
 		string playerInitial;

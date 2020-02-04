@@ -48,18 +48,17 @@
     <Compile Include="DoorPosition.cs" />
     <Compile Include="EndCapKind.cs" />
     <Compile Include="IFlyweight.cs" />
+    <Compile Include="RegionType.cs" />
     <Compile Include="VoidCornerKind.cs" />
     <Compile Include="WallData.cs" />
     <Compile Include="IMapInterface.cs" />
     <Compile Include="WallOrientation.cs" />
     <Compile Include="SegmentProcessor.cs" />
     <Compile Include="Tile.cs" />
-    <Compile Include="Corridor.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="MapRegion.cs" />
     <Compile Include="MapSpaceType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Room.cs" />
     <Compile Include="SpaceType.cs" />
     <Compile Include="WallSide.cs" />
   </ItemGroup>

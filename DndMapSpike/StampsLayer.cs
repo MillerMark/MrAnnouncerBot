@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace DndMapSpike
 {
-	public class StampsLayer : Layer
+	public class StampsLayer : Layer, IStampsManager
 	{
 		List<IStamp> stamps = new List<IStamp>();
 		int updateCount;
@@ -17,7 +17,7 @@ namespace DndMapSpike
 		public void SortStampsByZOrder(int zOrderOffset = 0)
 		{
 			stamps = stamps.OrderBy(o => o.ZOrder).ToList();
-			for(int i = 0; i < stamps.Count; i++)
+			for (int i = 0; i < stamps.Count; i++)
 				stamps[i].ZOrder = i + zOrderOffset;
 		}
 
@@ -84,7 +84,7 @@ namespace DndMapSpike
 		public void EndUpdate()
 		{
 			updateCount--;
-			if(updateCount == 0)
+			if (updateCount == 0)
 			{
 				SortStampsByZOrder();
 				Refresh();

@@ -1227,7 +1227,9 @@ class DiceLayer {
 			this.diceFrontContext.fillStyle = '#ff0000';
 			this.diceFrontContext.textAlign = 'left';
 			this.diceFrontContext.textBaseline = 'top';
+			this.diceFrontContext.globalAlpha = 0.5;
 			this.diceFrontContext.fillText("Dice Roller is waiting for player data to be initialized.", 100, 100);
+			this.diceFrontContext.globalAlpha = 1;
 		}
 		var now: number = performance.now();
 		this.allFrontLayerEffects.updatePositions(now);

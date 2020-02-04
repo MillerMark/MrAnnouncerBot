@@ -6,7 +6,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class SetVantageCommand : IDungeonMasterCommand
+	public class SetVantageCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		VantageKind vantageKind;
 

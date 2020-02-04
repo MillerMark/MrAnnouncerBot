@@ -12,9 +12,9 @@ namespace MapCore
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
-		int lastRowIndex;
+		public int lastRowIndex;
 		bool needToRecalculateRoomsAndCorridors;
-		int rightmostColumnIndex;
+		public int rightmostColumnIndex;
 		int wallChangeCount;
 		bool wallsChanged;
 
@@ -31,14 +31,15 @@ namespace MapCore
 		 
 			 */
 
-		bool[,] _allHorizontalWalls { get; set; }
+		public bool[,] _allHorizontalWalls { get; set; }
 
-		bool[,] _allVerticalWalls { get; set; }
+		public bool[,] _allVerticalWalls { get; set; }
 
 		[JsonIgnore]
 		public Tile[,] TileMap { get; private set; }
 
-		public List<Corridor> Corridors { get; private set; } = new List<Corridor>();
+		[JsonIgnore]
+		public List<MapRegion> Corridors { get; private set; } = new List<MapRegion>();
 
 		public int HeightPx { get { return (lastRowIndex + 1) * Tile.Height; } }
 
@@ -46,8 +47,10 @@ namespace MapCore
 
 		public int NumRows { get; set; }
 
-		public List<Room> Rooms { get; private set; } = new List<Room>();
+		[JsonIgnore]
+		public List<MapRegion> Rooms { get; private set; } = new List<MapRegion>();
 
+		[JsonIgnore]
 		public List<Tile> Tiles { get; private set; } = new List<Tile>();
 
 		public int WidthPx { get { return (rightmostColumnIndex + 1) * Tile.Width; } }
@@ -132,16 +135,18 @@ namespace MapCore
 			AddAdjacentSpaces(region, activeSpace);
 		}
 
-		Corridor CreateCorridorFromSpace(Tile activeSpace)
+		MapRegion CreateCorridorFromSpace(Tile activeSpace)
 		{
-			Corridor corridor = new Corridor(this);
+			MapRegion corridor = new MapRegion(this);
+			corridor.RegionType = RegionType.Corridor;
 			AddSpaceToRegion(corridor, activeSpace);
 			return corridor;
 		}
 
-		Room CreateRoomFromSpace(Tile activeSpace)
+		MapRegion CreateRoomFromSpace(Tile activeSpace)
 		{
-			Room room = new Room(this);
+			MapRegion room = new MapRegion(this);
+			room.RegionType = RegionType.Room;
 			AddSpaceToRegion(room, activeSpace);
 			return room;
 		}
@@ -271,8 +276,16 @@ namespace MapCore
 				LoadNewLine(line);
 
 			SetMapSize();
+			AllocateWallsArrays();
+
 			BuildMapArrays();
 			GetAllRoomsAndCorridors();
+		}
+
+		private void AllocateWallsArrays()
+		{
+			_allVerticalWalls = new bool[NumColumns + 1, NumRows + 1];
+			_allHorizontalWalls = new bool[NumColumns + 1, NumRows + 1];
 		}
 
 		void Reset()
@@ -301,16 +314,43 @@ namespace MapCore
 			wallChangeCount++;
 		}
 
+		void GetTilesAndRoomsFromFlyweights()
+		{
+			foreach (Guid guid in flyweights.Keys)
+			{
+				JObject jObject = flyweights[guid] as JObject;
+				JToken typeNameToken = jObject.GetValue("TypeName");
+				string typeName = typeNameToken.ToString();
+				switch (typeName)
+				{
+					case "MapCore.Tile":
+						Tile tile = jObject.ToObject<Tile>();
+						Tiles.Add(tile);
+						reconstitutedFlyweights[guid] = tile;
+						break;
+					case "MapCore.MapRegion":
+						MapRegion mapRegion = jObject.ToObject<MapRegion>();
+						reconstitutedFlyweights[guid] = mapRegion;
+						if (mapRegion.RegionType == RegionType.Room)
+							Rooms.Add(mapRegion);
+						else if (mapRegion.RegionType == RegionType.Corridor)
+							Corridors.Add(mapRegion);
+						break;
+				}
+			}
+		}
+
 		public void BuildMapArrays()
 		{
 			TileMap = new Tile[NumColumns, NumRows];
-			_allVerticalWalls = new bool[NumColumns + 1, NumRows + 1];
-			_allHorizontalWalls = new bool[NumColumns + 1, NumRows + 1];
 			// TODO: Find walls for rooms that are loaded.
+
+			GetTilesAndRoomsFromFlyweights();
 
 			foreach (Tile tile in Tiles)
 			{
 				TileMap[tile.Column, tile.Row] = tile;
+				tile.Map = this;
 			}
 		}
 
@@ -382,12 +422,11 @@ namespace MapCore
 			needToRecalculateRoomsAndCorridors = true;
 		}
 
-		public List<Tile> GetAllMatchingTiles<T>()
-			where T : MapRegion
+		public List<Tile> GetAllMatchingTiles(RegionType regionType)
 		{
 			List<Tile> results = new List<Tile>();
 			foreach (Tile tile in Tiles)
-				if (tile is Tile floorSpace && floorSpace.Parent is T)
+				if (tile is Tile floorSpace && floorSpace.Parent != null && floorSpace.Parent.RegionType == regionType)
 					results.Add(tile);
 			return results;
 		}
@@ -725,36 +764,51 @@ namespace MapCore
 		{
 			BuildMapArrays();
 
-			foreach (Room room in Rooms)
+			foreach (MapRegion room in Rooms)
 			{
 				room.ParentMap = this;
 				room.Reconstitute();
 			}
 
-			foreach (Corridor corridor in Corridors)
+			foreach (MapRegion corridor in Corridors)
 			{
 				corridor.ParentMap = this;
 				corridor.Reconstitute();
 			}
 		}
 
-		void Save()
+		public void Save()
 		{
 			PrepareForSerialization();
-
+			string output = JsonConvert.SerializeObject(this, Formatting.Indented);
+			File.WriteAllText(FileName, output);
 		}
 
 		public Dictionary<Guid, object> flyweights = new Dictionary<Guid, object>();
+
+		[JsonIgnore]
+		public Dictionary<Guid, object> reconstitutedFlyweights = new Dictionary<Guid, object>();
 
 		public T GetFlyweight<T>(Guid guid) where T : class
 		{
 			if (guid == Guid.Empty)
 				return null;
 
+			if (reconstitutedFlyweights.ContainsKey(guid))
+			{
+				if (reconstitutedFlyweights[guid] as T == null)
+				{
+
+				}
+				return reconstitutedFlyweights[guid] as T;
+			}
+
 			if (flyweights.ContainsKey(guid))
 			{
-				JObject jObject = flyweights[guid] as JObject;
-				return jObject.ToObject<T>() as T;
+				JObject jObject = flyweights[guid] as JObject;  // Thanks Rory (and S.O.)!!! 
+				T instance = jObject.ToObject<T>() as T;
+				reconstitutedFlyweights[guid] = instance;
+				return instance;
 			}
 			return null;
 		}
@@ -780,14 +834,14 @@ namespace MapCore
 				tile.PrepareForSerialization();
 			}
 
-			foreach (Corridor corridor in Corridors)
+			foreach (MapRegion corridor in Corridors)
 			{
 				if (corridor.NeedsGuid())
 					AddFlyweight(Guid.NewGuid(), corridor);
 				corridor.PrepareForSerialization();
 			}
 
-			foreach (Room room in Rooms)
+			foreach (MapRegion room in Rooms)
 			{
 				if (room.NeedsGuid())
 					AddFlyweight(Guid.NewGuid(), room);

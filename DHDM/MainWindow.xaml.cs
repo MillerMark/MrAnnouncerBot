@@ -599,6 +599,24 @@ namespace DHDM
 					return tabPlayers.SelectedIndex;
 				});
 			}
+			set
+			{
+				Dispatcher.Invoke(() =>
+				{
+					if (tabPlayers.SelectedItem is PlayerTabItem selectedPlayerTab)
+					{
+						if (selectedPlayerTab.PlayerId == value)
+							return;
+					}
+
+					foreach (object item in tabPlayers.Items)
+						if (item is PlayerTabItem playerTabItem && playerTabItem.PlayerId == value)
+						{
+							tabPlayers.SelectedItem = playerTabItem;
+							return;
+						}
+				});
+			}
 		}
 
 		public Character ActivePlayer
@@ -2856,31 +2874,48 @@ namespace DHDM
 		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
 		{
 			SetVantageForActivePlayer(e.VantageKind);
-			InvokeSkillCheck(e.Skill);
+			List<int> playerIds = new List<int>();
+			playerIds.Add(ActivePlayerId);
+			InvokeSkillCheck(e.Skill, playerIds);
 		}
 
-		public void InvokeSkillCheck(Skills skill, bool allPlayers = false)
+		public void InvokeSkillCheck(Skills skill, List<int> playerIds)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				SelectSkill(skill);
-				if (allPlayers)
-					rbEveryone.IsChecked = true;
-				else
-					rbActivePlayer.IsChecked = true;
+				SetRollScopeForPlayers(playerIds);
 				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 			});
 		}
 
-		public void InvokeSavingThrow(Ability ability, bool allPlayers)
+		private void SetRollScopeForPlayers(List<int> playerIds)
+		{
+			if (IncludesAllPlayers(playerIds))
+				rbEveryone.IsChecked = true;
+			else if (playerIds.Count > 1)
+			{
+				rbIndividuals.IsChecked = true;
+				// TODO: Check each individual identified by the player id's.
+			}
+			else
+			{
+				ActivePlayerId = playerIds[0];
+				rbActivePlayer.IsChecked = true;
+			}
+		}
+
+		private static bool IncludesAllPlayers(List<int> playerIds)
+		{
+			return playerIds == null || playerIds.Count == 0 || playerIds.First() == int.MaxValue;
+		}
+
+		public void InvokeSavingThrow(Ability ability, List<int> playerIds)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				SelectSavingThrowAbility(ability);
-				if (allPlayers)
-					rbEveryone.IsChecked = true;
-				else
-					rbActivePlayer.IsChecked = true;
+				SetRollScopeForPlayers(playerIds);
 				RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
 			});
 		}
@@ -2972,8 +3007,10 @@ namespace DHDM
 			return null;
 		}
 
-		public void RollSkillCheck(Skills skill, bool allPlayers = false)
+		public void RollSkillCheck(Skills skill, List<int> playerIds)
 		{
+			InvokeSkillCheck(skill, playerIds);
+
 			if (activePage != ScrollPage.skills)
 			{
 				activePage = ScrollPage.skills;
@@ -2986,12 +3023,10 @@ namespace DHDM
 					playerTabItem.CharacterSheets.FocusSkill(skill);
 			});
 
-			InvokeSkillCheck(skill, allPlayers);
-
-			string articlePlusSkillDislay = DndUtils.ToArticlePlusSkillDisplayString(skill);
+			string articlePlusSkillDisplay = DndUtils.ToArticlePlusSkillDisplayString(skill);
 			string who;
 			string icon;
-			if (allPlayers)
+			if (IncludesAllPlayers(playerIds))
 			{
 				who = "all players";
 				icon = Icons.SkillTest;
@@ -3001,7 +3036,7 @@ namespace DHDM
 				who = GetPlayerName(ActivePlayerId);
 				icon = Icons.MultiplayerSkillCheck;
 			}
-			string firstPart = $"Rolling {articlePlusSkillDislay} skill check for {who}";
+			string firstPart = $"Rolling {articlePlusSkillDisplay} skill check for {who}";
 			TellDungeonMaster($"{icon} {firstPart}{PlusHiddenThresholdDisplayStr()}.");
 			TellViewers($"{firstPart}...");
 		}
@@ -3018,8 +3053,10 @@ namespace DHDM
 			TellDungeonMaster($"Rolling {GetPlayerName(ActivePlayerId)}'s attack with a hidden threshold of {tbxHiddenThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
 		}
 
-		public void RollSavingThrow(Ability ability, bool allPlayers = false)
+		public void RollSavingThrow(Ability ability, List<int> playerIds)
 		{
+			InvokeSavingThrow(ability, playerIds);
+
 			if (activePage != ScrollPage.main)
 			{
 				activePage = ScrollPage.main;
@@ -3032,11 +3069,10 @@ namespace DHDM
 					playerTabItem.CharacterSheets.FocusSavingAbility(ability);
 			});
 
-			InvokeSavingThrow(ability, allPlayers);
 			string abilityStr = DndUtils.ToArticlePlusAbilityDisplayString(ability);
 
 			string who;
-			if (allPlayers)
+			if (IncludesAllPlayers(playerIds))
 				who = "all players";
 			else
 				who = GetPlayerName(ActivePlayerId);
@@ -3319,6 +3355,11 @@ namespace DHDM
 			return AllPlayers.GetPlayerIdFromNameStart(game.Players, characterName);
 		}
 
+		public int GetActivePlayerId()
+		{
+			return ActivePlayerId;
+		}
+
 		private void ChangePlayerHealth(TextBox textBox, int multiplier)
 		{
 			DamageHealthChange damageHealthChange = GetDamageHealthChange(multiplier, textBox);
@@ -3335,7 +3376,7 @@ namespace DHDM
 		{
 			if (player == null)
 				return;
-			if (ActivePlayerId == player.playerID)
+			//if (ActivePlayerId == player.playerID)
 				HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
 		}
 

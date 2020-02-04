@@ -5,16 +5,18 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class ScrollCloseCommand : IDungeonMasterCommand
+	public class HiddenThresholdCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
+		int hiddenThreshold;
+
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.HideScroll();
+			dungeonMasterApp.SetHiddenThreshold(hiddenThreshold);
 		}
 
 		public bool Matches(string message)
 		{
-			return message == "close scroll";
+			return int.TryParse(message, out hiddenThreshold);
 		}
 	}
 }

@@ -6,7 +6,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class PlayerSelectorCommand : IDungeonMasterCommand
+	public class PlayerSelectorCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		string playerInitial;
 

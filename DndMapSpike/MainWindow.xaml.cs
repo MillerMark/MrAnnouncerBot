@@ -20,6 +20,7 @@ using System.Windows.Threading;
 using System.Xml;
 using System.Windows.Markup;
 using Newtonsoft.Json;
+using Microsoft.Win32;
 
 namespace DndMapSpike
 {
@@ -31,6 +32,7 @@ namespace DndMapSpike
 		bool ctrlKeyDown;
 		private const int StampButtonSize = 36;
 		List<IStamp> selectedStamps;
+		const string MapSaveFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Data";
 		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
 		MapEditModes mapEditMode = MapEditModes.Select;
 		const double DBL_SelectionLineThickness = 10;
@@ -95,7 +97,7 @@ namespace DndMapSpike
 			InitializeComponent();
 			zoomAndPanControl.ZoomLevelChanged += ZoomAndPanControl_ZoomLevelChanged;
 			Map = new Map();
-			Map.WallsChanged += Map_WallsChanged;
+			HookupMapEvents();
 			tileSelection = new MapSelection();
 			tileSelection.SelectionChanged += Selection_SelectionChanged;
 			tileSelection.SelectionCommitted += Selection_SelectionCommitted;
@@ -114,12 +116,17 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Dark Lair of Sorrows.txt");
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
 			//ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
-			//ImportDonJonMap("SmallMap.txt");
-			ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
+			ImportDonJonMap("SmallMap.txt");
+			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();
 			AddFileSystemWatcher();
 			BuildStampsUI();
+		}
+
+		private void HookupMapEvents()
+		{
+			Map.WallsChanged += Map_WallsChanged;
 		}
 
 		private void ZoomAndPanControl_ZoomLevelChanged(object sender, EventArgs e)
@@ -143,10 +150,14 @@ namespace DndMapSpike
 
 		private void Map_WallsChanged(object sender, EventArgs e)
 		{
+			RebuildWalls();
+		}
+
+		private void RebuildWalls()
+		{
 			wallLayer.ClearAll();
 			wallBuilder.BuildWalls(Map, wallLayer);
 		}
-
 
 		FileSystemWatcher fileSystemWatcher;
 		void AddFileSystemWatcher()
@@ -517,16 +528,21 @@ namespace DndMapSpike
 		{
 			ClearMapCanvasChildren();
 			Map.Load(fileName);
-			allLayers.AddImagesToCanvas(content);
-			SetCanvasSizeFromMap();
-
-			AddTileOverlays();
+			PrepareUIForNewMap();
 
 			LoadFinalCanvasElements();
 			SelectAllRoomsAndCorridors();
 			OutlineWalls();
 			AddSelectionCanvas();
 			ClearSelection();
+		}
+
+		private void PrepareUIForNewMap()
+		{
+			allLayers.AddImagesToCanvas(content);
+			SetCanvasSizeFromMap();
+
+			AddTileOverlays();
 		}
 
 		private void ClearMapCanvasChildren()
@@ -570,12 +586,12 @@ namespace DndMapSpike
 
 		void SelectAllRooms()
 		{
-			FloodSelectAll<Room>(SelectionType.Add);
+			FloodSelectAll(RegionType.Room, SelectionType.Add);
 		}
 
 		void SelectAllCorridors()
 		{
-			FloodSelectAll<Corridor>(SelectionType.Add);
+			FloodSelectAll(RegionType.Corridor, SelectionType.Add);
 		}
 
 		void SelectAllRoomsAndCorridors()
@@ -1145,16 +1161,16 @@ namespace DndMapSpike
 			if (!(baseSpace is Tile floorSpace))
 				return;
 
-			if (floorSpace.Parent is Room)
-				FloodSelectAll<Room>(selectionType);
-			else if (floorSpace.Parent is Corridor)
-				FloodSelectAll<Corridor>(selectionType);
+			if (floorSpace.Parent == null)
+				return;
+
+			FloodSelectAll(floorSpace.Parent.RegionType, selectionType);
 		}
 
-		private void FloodSelectAll<T>(SelectionType selectionType) where T : MapRegion
+		private void FloodSelectAll(RegionType regionType, SelectionType selectionType)
 		{
 			tileSelection.SelectionType = selectionType;
-			List<Tile> allRegionTiles = Map.GetAllMatchingTiles<T>();
+			List<Tile> allRegionTiles = Map.GetAllMatchingTiles(regionType);
 			SelectAllTiles(allRegionTiles);
 		}
 
@@ -1955,6 +1971,8 @@ namespace DndMapSpike
 		void ZoomToTileSelection()
 		{
 			Map.GetSelectionBoundaries(out int left, out int top, out int right, out int bottom);
+			if (right == 0 || bottom == 0 || left == int.MaxValue || top == int.MaxValue)
+				return;  // No selection!!?
 			zoomAndPanControl.AnimatedZoomTo(new Rect(left - Tile.Width / 2, top - Tile.Height / 2, right - left + Tile.Width, bottom - top + Tile.Height));
 		}
 		private void HandleDoubleClickTileSelect(Tile baseSpace)
@@ -2019,7 +2037,7 @@ namespace DndMapSpike
 				content.Children.Remove(tile.SelectorPanel as UIElement);
 
 				string imageFileName = null;
-				AddFloorFile(tile, texture.GetImage(tile.Column, tile.Row, ref imageFileName));
+				AddFloorTile(tile, texture.GetImage(tile.Column, tile.Row, ref imageFileName));
 				tile.ImageFileName = imageFileName;
 				tile.BaseTextureName = texture.BaseName;
 				AddFloorOverlay(tile);
@@ -2045,7 +2063,7 @@ namespace DndMapSpike
 			depthLayer.DrawImageOverTile(imageLightTile, tile);
 		}
 
-		private void AddFloorFile(Tile tile, Image image)
+		private void AddFloorTile(Tile tile, Image image)
 		{
 			floorLayer.DrawImageOverTile(image, tile);
 		}
@@ -3210,54 +3228,80 @@ namespace DndMapSpike
 		void Load(string fileName)
 		{
 			ClearMapCanvasChildren();
-
+			
 			string mapStr = File.ReadAllText(fileName);
 
 			Map = JsonConvert.DeserializeObject<Map>(mapStr);
-
 			Map.Reconstitute();
-
-			AddTileOverlays();
-
+			HookupMapEvents();
+			PrepareUIForNewMap();
 			RemoveRubberBandSelector();
+			AddTilesFromMap();
+			Map.UpdateIfNeeded();
+			RebuildWalls();
+			LoadFinalCanvasElements();
+			AddSelectionCanvas();
+		}
+
+		private void AddTilesFromMap()
+		{
 			foreach (Tile tile in Map.Tiles)
 			{
 				BaseTexture baseTexture = GetTexture(tile.BaseTextureName);
 				if (baseTexture != null)
 				{
 					string imageFileName = tile.ImageFileName;
-					AddFloorFile(tile, baseTexture.GetImage(tile.Column, tile.Row, ref imageFileName));
+					AddFloorTile(tile, baseTexture.GetImage(tile.Column, tile.Row, ref imageFileName));
 				}
 
-				AddFloorOverlay(tile);
+				if (tile.IsFloor)
+					AddFloorOverlay(tile);
+
 				AddSelector(tile);
 			}
-			Map.UpdateIfNeeded();
-			LoadFinalCanvasElements();
 		}
 
-		string GetMapFileName()
+		string GetMapSaveFileName()
 		{
-			const string MapSaveFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Data";
-			return System.IO.Path.Combine(MapSaveFolder, "FirstSave.json");
+			SaveFileDialog saveFileDialog = new SaveFileDialog();
+			saveFileDialog.InitialDirectory = MapSaveFolder;
+			saveFileDialog.Filter = "Map file (*.json)|*.json";
+			saveFileDialog.DefaultExt = "*.json";
+			if (saveFileDialog.ShowDialog() == true)
+				return saveFileDialog.FileName;
+			return null;
 		}
 
 		void Save()
 		{
 			if (string.IsNullOrWhiteSpace(Map.FileName))
-				Map.FileName = GetMapFileName();
-			Map.PrepareForSerialization();
-			string output = JsonConvert.SerializeObject(Map, Newtonsoft.Json.Formatting.Indented);
-			File.WriteAllText(Map.FileName, output);
+			{
+				Map.FileName = GetMapSaveFileName();
+			}
+			Map.Save();
 		}
 
 		private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
 			Save();
 		}
+
+		private void SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			string newFileName = GetMapSaveFileName();
+			if (newFileName == null)
+				return;
+			Map.FileName = newFileName;
+			Save();
+		}
 		private void Load_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			Load(GetMapFileName());
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "Map file (*.json)|*.json";
+			openFileDialog.DefaultExt = "*.json";
+			openFileDialog.InitialDirectory = MapSaveFolder;
+			if (openFileDialog.ShowDialog() == true)
+				Load(openFileDialog.FileName);
 		}
 	}
 }

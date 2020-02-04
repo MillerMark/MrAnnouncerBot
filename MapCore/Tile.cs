@@ -7,6 +7,7 @@ namespace MapCore
 {
 	public class Tile : IFlyweight
 	{
+		public string TypeName { get; set; } = typeof(Tile).FullName;
 		[JsonIgnore]
 		public IMapInterface Map { get; set; }
 

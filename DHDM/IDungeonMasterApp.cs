@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using DndCore;
 
 namespace DHDM
@@ -8,6 +9,7 @@ namespace DHDM
 	{
 		void SetHiddenThreshold(int hiddenThreshold);
 		int GetPlayerIdFromNameStart(string characterName);
+		int GetActivePlayerId();
 		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
 		void RollWildMagicCheck();
 		void RollWildMagic();
@@ -15,8 +17,8 @@ namespace DHDM
 		void SelectPlayerShortcut(string shortcutName, int playerId);
 		void GetData(string dataId);
 		void SetVantage(VantageKind dataId);
-		void RollSkillCheck(Skills skill, bool allPlayers = false);
-		void RollSavingThrow(Ability ability, bool allPlayers = false);
+		void RollSkillCheck(Skills skill, List<int> playerIds);
+		void RollSavingThrow(Ability ability, List<int> playerIds);
 		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
 		void AdvanceClock(int hours, int minutes, int seconds);

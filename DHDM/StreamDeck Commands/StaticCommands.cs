@@ -6,7 +6,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class StaticCommands : IDungeonMasterCommand
+	public class StaticCommands : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		DungeonMasterCommand command;
 

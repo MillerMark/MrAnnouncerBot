@@ -40,13 +40,18 @@ namespace DndCore
 
 		public static int GetPlayerIdFromNameStart(List<Character> players, string characterName)
 		{
+			if (characterName == "c")
+				characterName = "L'il Cutie";
+
 			string lowerName = characterName.ToLower();
+			
 			foreach (Character character in players)
 			{
 				if (character.name.ToLower().StartsWith(lowerName))
 				{
 					return character.playerID;
 				}
+				
 			}
 			return -1;
 		}

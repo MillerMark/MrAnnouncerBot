@@ -50,7 +50,13 @@ namespace Imaging
 
 			if (cropHeight == -1)
 				cropHeight = pixelHeight;
-			Int32Rect targetRect = new Int32Rect(destinationX, destinationY, cropWidth, cropHeight);
+			int targetWidth = cropWidth;
+			if (destinationX + targetWidth > target.PixelWidth)
+				targetWidth = target.PixelWidth - destinationX;
+			int targetHeight = cropHeight;
+			if (destinationY + targetHeight > target.PixelHeight)
+				targetHeight = target.PixelHeight - destinationY;
+			Int32Rect targetRect = new Int32Rect(destinationX, destinationY, targetWidth, targetHeight);
 			int offset = sourceBytesPerPixel * sourceX + sourceY * sourceBytesPerLine;
 			target.WritePixels(targetRect, sourcePixels, sourceBytesPerLine, offset);
 		}

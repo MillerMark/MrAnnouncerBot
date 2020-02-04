@@ -9,6 +9,7 @@ namespace MapCore
 		// Needed for serialization.
 		Guid Guid { get; set; }
 		bool NeedsGuid();
+		string TypeName { get; set; }
 
 
 		// Called before serialization...

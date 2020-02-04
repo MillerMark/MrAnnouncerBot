@@ -6,7 +6,7 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class AdvanceClockCommand : IDungeonMasterCommand
+	public class AdvanceClockCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		int days;
 		int months;

@@ -47,7 +47,8 @@
 	allFrontEffects: SpriteCollection;
 	bloodEffects: SpriteCollection;
 	dragonFrontSounds: DragonFrontSounds;
-  activePlayerId: number;
+	activePlayerId: number;
+	playerDataSet: boolean = false;
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
@@ -61,6 +62,10 @@
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
 		this.allBackEffects.draw(context, now);
+
+		if (!this.playerDataSet) {
+			this.ShowWaitingForInitializationMessage(context, '#00ff00', 'Front Overlay is waiting for player data to be initialized.', 200);
+		}
 
 		super.updateScreen(context, now);
 
@@ -252,7 +257,7 @@
 		 3. Any other spell as soon as it is activated.
 
 		 */
-		
+
 		this.spellHits1 = new Sprites('PlayerEffects/Spells/SpellHits/Hit1/Hit', 28, fps25, AnimationStyle.Sequential, true);
 		this.spellHits1.name = "SpellHit1";
 		this.spellHits1.originX = 176;
@@ -281,7 +286,7 @@
 		this.spellHits5.name = "SpellHit5";
 		this.spellHits5.originX = 190;
 		this.spellHits5.originY = 420;
-		
+
 		this.spellMisses = new Sprites('PlayerEffects/Spells/SpellHits/Miss/Miss', 34, fps25, AnimationStyle.Sequential, true);
 		this.spellMisses.name = "SpellMiss";
 		this.spellMisses.originX = 186;
@@ -625,14 +630,14 @@
 		else if (dto.spriteName === 'SmokeBlast') {
 			if (Random.chancePercent(50))
 				sprites = this.smokeBlastA;
-			else 
+			else
 				sprites = this.smokeBlastB;
 			horizontallyFlippable = true;
 		}
 		else if (dto.spriteName === 'SmokeWave') {
 			if (Random.chancePercent(50))
 				sprites = this.smokeWaveA;
-			else 
+			else
 				sprites = this.smokeWaveB;
 			horizontallyFlippable = true;
 		}
@@ -697,7 +702,7 @@
 
 		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
 			flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
-		
+
 		spritesEffect.start();
 
 		if (dto.spriteName === 'FireBall') {
@@ -712,6 +717,8 @@
 
 	initializePlayerData(playerData: string): any {
 		super.initializePlayerData(playerData);
+
+		this.playerDataSet = true;
 
 		for (var i = 0; i < this.players.length; i++) {
 			let centerX: number = this.getPlayerX(i);
@@ -915,7 +922,7 @@
 				sprite.hueShift = player.hueShift;
 				sprite.shiftColor(context, now);
 			}
-      let height = this.nameplateMain.spriteHeight;
+			let height = this.nameplateMain.spriteHeight;
 			this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
 
 			let leftX: number = centerX - plateWidth / 2;
