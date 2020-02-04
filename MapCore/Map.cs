@@ -9,6 +9,7 @@ namespace MapCore
 {
 	public class Map : IMapInterface
 	{
+		List<IStampProperties> stamps = new List<IStampProperties>();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
@@ -312,6 +313,7 @@ namespace MapCore
 			if (wallChangeCount == 0)
 				wallsChanged = false;
 			wallChangeCount++;
+			needToRecalculateRoomsAndCorridors = true;
 		}
 
 		void GetTilesAndRoomsFromFlyweights()
@@ -408,6 +410,7 @@ namespace MapCore
 			if (wallChangeCount == 0 && wallsChanged)
 			{
 				wallsChanged = false;
+				UpdateIfNeeded();
 				OnWallsChanged();
 			}
 		}
@@ -535,6 +538,8 @@ namespace MapCore
 			if (column < 0 || row < 0 || column >= NumColumns || row >= NumRows)
 				return null;
 			Tile tile = TileMap[column, row];
+			if (tile == null)
+				return null;
 			if (!tile.IsFloor)
 				return null;
 			return TileMap[column, row];
@@ -779,6 +784,8 @@ namespace MapCore
 
 		public void Save()
 		{
+			if (FileName == null)
+				return;
 			PrepareForSerialization();
 			string output = JsonConvert.SerializeObject(this, Formatting.Indented);
 			File.WriteAllText(FileName, output);
@@ -827,24 +834,25 @@ namespace MapCore
 
 		public void PrepareForSerialization()
 		{
+			flyweights.Clear();
 			foreach (Tile tile in Tiles)
 			{
-				if (tile.NeedsGuid())
-					AddFlyweight(Guid.NewGuid(), tile);
+				//if (tile.NeedsGuid())
+				AddFlyweight(Guid.NewGuid(), tile);
 				tile.PrepareForSerialization();
 			}
 
 			foreach (MapRegion corridor in Corridors)
 			{
-				if (corridor.NeedsGuid())
-					AddFlyweight(Guid.NewGuid(), corridor);
+				//if (corridor.NeedsGuid())
+				AddFlyweight(Guid.NewGuid(), corridor);
 				corridor.PrepareForSerialization();
 			}
 
 			foreach (MapRegion room in Rooms)
 			{
-				if (room.NeedsGuid())
-					AddFlyweight(Guid.NewGuid(), room);
+				//if (room.NeedsGuid())
+				AddFlyweight(Guid.NewGuid(), room);
 				room.PrepareForSerialization();
 			}
 		}

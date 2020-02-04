@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapCore;
+using System;
 using System.Linq;
 using System.Windows.Shapes;
 
@@ -7,14 +8,14 @@ namespace DndMapSpike
 	public class ResizeTracker
 	{
 		public const double ResizeHandleDiameter = 10d;
-		public IStamp Stamp { get; set; }
+		public IStampProperties Stamp { get; set; }
 		public Ellipse NorthWest { get; set; }
 		public Ellipse NorthEast { get; set; }
 		public Ellipse SouthWest { get; set; }
 		public Ellipse SouthEast { get; set; }
 		public Rectangle SelectionRect { get; set; }
 
-		public ResizeTracker(IStamp stamp)
+		public ResizeTracker(IStampProperties stamp)
 		{
 			Stamp = stamp;
 		}

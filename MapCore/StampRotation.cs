@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndMapSpike
+namespace MapCore
 {
 	public enum StampRotation
 	{

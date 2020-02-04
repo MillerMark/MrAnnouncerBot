@@ -46,6 +46,8 @@ namespace MapCore
 
 		public void AddTile(Tile tile)
 		{
+			if (tile == null)
+				return;
 			tile.Parent = this;
 			Tiles.Add(tile);
 			InvalidateTileGuids();

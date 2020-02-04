@@ -222,7 +222,7 @@ namespace MrAnnouncerBot
 			catch (Exception ex)
 			{
 				Console.WriteLine("Exception in CheckViewers: " + ex.Message);
-				Debugger.Break();
+				//Debugger.Break();
 			}
 		}
 

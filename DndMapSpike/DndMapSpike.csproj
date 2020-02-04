@@ -78,7 +78,6 @@
     <Compile Include="Stamp.cs" />
     <Compile Include="StampFolder.cs" />
     <Compile Include="StampGroup.cs" />
-    <Compile Include="StampRotation.cs" />
     <Compile Include="StampsLayer.cs" />
     <Compile Include="TextureUtils.cs" />
     <Compile Include="UngroupedStamps.cs" />

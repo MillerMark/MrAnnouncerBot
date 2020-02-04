@@ -75,6 +75,8 @@ namespace MapCore
 			}
 			set
 			{
+				if (value == null)
+					parentGuid = Guid.Empty;
 				parent = value;
 			}
 		}

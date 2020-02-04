@@ -1,5 +1,6 @@
 ﻿using System;
 using Imaging;
+using MapCore;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,51 +21,11 @@ namespace DndMapSpike
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
-		public bool FlipHorizontally
-		{
-			get { return flipHorizontally; }
-			set
-			{
-				if (flipHorizontally == value)
-					return;
-
-				image = null;
-				flipHorizontally = value;
-			}
-		}
-		public bool FlipVertically
-		{
-			get { return flipVertically; }
-			set
-			{
-				if (flipVertically == value)
-					return;
-
-				image = null;
-				flipVertically = value;
-			}
-		}
+		
 
 		//public int RelativeX { get; set; }
 		//public int RelativeY { get; set; }
-		bool flipHorizontally;
-		bool flipVertically;
-		StampRotation rotation;
-		public StampRotation Rotation
-		{
-			get
-			{
-				return rotation;
-			}
-			set
-			{
-				if (rotation == value)
-					return;
 
-				rotation = value;
-				image = null;
-			}
-		}
 
 		Image image;
 
@@ -79,7 +40,7 @@ namespace DndMapSpike
 			FileName = fileName;
 		}
 
-		public string FileName { get; set; }
+		
 		static Stamp Clone(Stamp stamp)
 		{
 			Stamp result = new Stamp(stamp.FileName, stamp.X, stamp.Y);
@@ -94,6 +55,12 @@ namespace DndMapSpike
 			result.Scale = stamp.Scale;
 			return result;
 		}
+
+		public override void ResetImage()
+		{
+			image = null;
+		}
+
 
 		int GetAngle(StampRotation rotation)
 		{
@@ -120,233 +87,24 @@ namespace DndMapSpike
 			}
 		}
 
-		public double ScaleX
-		{
-			get
-			{
-				bool isFlipping;
-				if (Rotation == StampRotation.Ninety || Rotation == StampRotation.TwoSeventy)
-					isFlipping = FlipVertically;
-				else  // Normal flip
-					isFlipping = FlipHorizontally;
-				double horizontalFlipFactor = 1;
-				if (isFlipping)
-					horizontalFlipFactor = -1;
-				return Scale * horizontalFlipFactor;
-			}
-		}
-
-		public double ScaleY
-		{
-			get
-			{
-				bool isFlipping;
-				if (Rotation == StampRotation.Ninety || Rotation == StampRotation.TwoSeventy)
-					isFlipping = FlipHorizontally;
-				else  // Normal flip
-					isFlipping = FlipVertically;
-				double verticalFlipFactor = 1;
-				if (isFlipping)
-					verticalFlipFactor = -1;
-				return Scale * verticalFlipFactor;
-			}
-		}
-
-		double scale = 1;
-		public double Scale
-		{
-			get
-			{
-				return scale;
-			}
-			set
-			{
-				if (scale == value)
-					return;
-
-				image = null;
-				scale = value;
-			}
-		}
-
-		public bool ContainsPoint(Point point)
+		public override bool ContainsPoint(double x, double y)
 		{
 			int left = GetLeft();
 			int top = GetTop();
-			if (point.X < left)
+			if (x < left)
 				return false;
-			if (point.Y < top)
-				return false;
-
-			if (point.X > left + Width)
-				return false;
-			if (point.Y > top + Height)
+			if (y < top)
 				return false;
 
-			return ImageUtils.HasPixelAt(Image, (int)(point.X - left), (int)(point.Y - top));
+			if (x > left + Width)
+				return false;
+			if (y > top + Height)
+				return false;
+
+			return ImageUtils.HasPixelAt(Image, (int)(x - left), (int)(y - top));
 		}
 
-		/// <summary>
-		/// Gets the left of this stamp (X and Y are the center points)
-		/// </summary>
-		/// <returns></returns>
-		public int GetLeft()
-		{
-			return (int)Math.Round(X - Width / 2.0);
-		}
-
-		public int Width
-		{
-			get
-			{
-				return (int)Math.Round(Image.Source.Width);
-			}
-		}
-
-		public int Height
-		{
-			get
-			{
-				return (int)Math.Round(Image.Source.Height);
-			}
-		}
-
-		double hueShift;
-		public double HueShift
-		{
-			get
-			{
-				return hueShift;
-			}
-			set
-			{
-				if (hueShift == value)
-					return;
-
-				image = null;
-				hueShift = value;
-			}
-		}
-
-		double saturation;
-		public double Saturation
-		{
-			get
-			{
-				return saturation;
-			}
-			set
-			{
-				if (saturation == value)
-					return;
-
-				image = null;
-				saturation = value;
-			}
-		}
-		double lightness;
-		public double Lightness
-		{
-			get
-			{
-				return lightness;
-			}
-			set
-			{
-				if (lightness == value)
-					return;
-
-				image = null;
-				lightness = value;
-			}
-		}
-
-		double contrast;
-		public double Contrast
-		{
-			get
-			{
-				return contrast;
-			}
-			set
-			{
-				if (contrast == value)
-					return;
-
-				image = null;
-				contrast = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets the top of this group(X and Y are center points)
-		/// </summary>
-		/// <returns></returns>
-		public int GetTop()
-		{
-			return (int)Math.Round(Y - Height / 2.0);
-		}
-		public void RotateRight()
-		{
-			if (FlipHorizontally ^ FlipVertically)
-				DoRotateLeft();
-			else
-				DoRotateRight();
-		}
-
-		private void DoRotateRight()
-		{
-			switch (Rotation)
-			{
-				case StampRotation.Zero:
-					Rotation = StampRotation.Ninety;
-					break;
-				case StampRotation.Ninety:
-					Rotation = StampRotation.OneEighty;
-					break;
-				case StampRotation.OneEighty:
-					Rotation = StampRotation.TwoSeventy;
-					break;
-				case StampRotation.TwoSeventy:
-					Rotation = StampRotation.Zero;
-					break;
-			}
-		}
-
-		public void RotateLeft()
-		{
-			if (FlipHorizontally ^ FlipVertically)
-				DoRotateRight();
-			else
-				DoRotateLeft();
-		}
-
-		private void DoRotateLeft()
-		{
-			switch (Rotation)
-			{
-				case StampRotation.Zero:
-					Rotation = StampRotation.TwoSeventy;
-					break;
-				case StampRotation.Ninety:
-					Rotation = StampRotation.Zero;
-					break;
-				case StampRotation.OneEighty:
-					Rotation = StampRotation.Ninety;
-					break;
-				case StampRotation.TwoSeventy:
-					Rotation = StampRotation.OneEighty;
-					break;
-			}
-		}
-
-		public void Move(int deltaX, int deltaY)
-		{
-			X += deltaX;
-			Y += deltaY;
-		}
-
-		public IStamp Copy(int deltaX, int deltaY)
+		public override IStampProperties Copy(int deltaX, int deltaY)
 		{
 			Stamp result = Clone(this);
 			result.Move(deltaX, deltaY);
@@ -394,24 +152,59 @@ namespace DndMapSpike
 			Canvas.SetLeft(image, left);
 			Canvas.SetTop(image, top);
 		}
-		public void AdjustScale(double scaleAdjust)
+
+		/// <summary>
+		/// Gets the left of this stamp (X and Y are the center points)
+		/// </summary>
+		/// <returns></returns>
+		public override int GetLeft()
 		{
-			Scale *= scaleAdjust;
+			return (int)Math.Round(X - Width / 2.0);
 		}
-		public void SetAbsoluteScaleTo(double newScale)
+
+		public override int Width
 		{
-			Scale = newScale;
+			get
+			{
+				return (int)Math.Round(Image.Source.Width);
+			}
+			set
+			{
+				// Do nothing. Width is read-only (from the Image) in Stamp.
+			}
 		}
-		public double GetBottom()
+
+		public override int Height
+		{
+			get
+			{
+				return (int)Math.Round(Image.Source.Height);
+			}
+			set
+			{
+				// Do nothing. Height is read-only (from the Image) in Stamp.
+			}
+		}
+
+		public override double GetBottom()
 		{
 			return Y + Height / 2;
 		}
 
-		public double GetRight()
+		public override double GetRight()
 		{
 			return X + Width / 2;
 		}
 
+
+		/// <summary>
+		/// Gets the top of this group(X and Y are center points)
+		/// </summary>
+		/// <returns></returns>
+		public override int GetTop()
+		{
+			return (int)Math.Round(Y - Height / 2.0);
+		}
 	}
 }
 
