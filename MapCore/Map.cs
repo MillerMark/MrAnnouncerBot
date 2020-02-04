@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace MapCore
 {
-	public class Map : IMapInterface
+	public class Map : IMapInterface, IStampsManager
 	{
 		List<IStampProperties> stamps = new List<IStampProperties>();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
@@ -58,6 +58,8 @@ namespace MapCore
 
 		[JsonIgnore]
 		public string FileName { get; set; }
+
+		public List<IStampProperties> Stamps { get => stamps; set => stamps = value; }
 
 		static void ClearAllSpaces(Tile[,] mapArray, int numColumns, int numRows)
 		{
@@ -857,7 +859,67 @@ namespace MapCore
 			}
 		}
 
+		public void AddStamp(IStampProperties stamp)
+		{
+			if (stamp.HasNoZOrder())
+				stamp.ZOrder = stamps.Count;
+			stamps.Add(stamp);
+		}
 
+		public void AddStamps(List<IStampProperties> stamps)
+		{
+			foreach (IStampProperties stamp in stamps)
+			{
+				stamp.ResetZOrder();
+				AddStamp(stamp);
+			}
+		}
+
+		public IStampProperties GetStampAt(double x, double y)
+		{
+			for (int i = stamps.Count - 1; i >= 0; i--)
+			{
+				IStampProperties stamp = stamps[i];
+				if (stamp.ContainsPoint(x, y))
+					return stamp;
+			}
+			return null;
+		}
+
+		public void InsertStamp(int startIndex, IStampProperties stamp)
+		{
+			if (stamp.HasNoZOrder())
+				stamp.ZOrder = startIndex;
+			stamps.Insert(startIndex, stamp);
+		}
+
+		public void InsertStamps(int startIndex, List<IStampProperties> stamps)
+		{
+			for (int i = 0; i < stamps.Count; i++)
+			{
+				IStampProperties stamp = stamps[i];
+				stamp.ResetZOrder();
+				InsertStamp(startIndex + i, stamp);
+			}
+		}
+
+		public void RemoveAllStamps(List<IStampProperties> stamps)
+		{
+			foreach (IStampProperties stamp in stamps)
+				RemoveStamp(stamp);
+		}
+
+		public void RemoveStamp(IStampProperties stamp)
+		{
+			stamps.Remove(stamp);
+		}
+
+		public void SortStampsByZOrder(int zOrderOffset = 0)
+		{
+			stamps = stamps.OrderBy(o => o.ZOrder).ToList();
+			for (int i = 0; i < stamps.Count; i++)
+				stamps[i].ZOrder = i + zOrderOffset;
+		}
 
 		public event EventHandler WallsChanged;
 	}

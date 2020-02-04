@@ -6,9 +6,11 @@ using MapCore;
 
 namespace DndMapSpike
 {
-	public class StampsLayer : Layer, IStampsManager
+	public class StampsLayer : Layer
 	{
-		List<IStampProperties> stamps = new List<IStampProperties>();
+		public IStampsManager Map { get; set; }
+		public List<IStampProperties> Stamps { get => Map.Stamps; set => Map.Stamps = value; }
+
 		int updateCount;
 
 		public StampsLayer()
@@ -17,28 +19,22 @@ namespace DndMapSpike
 
 		public void SortStampsByZOrder(int zOrderOffset = 0)
 		{
-			stamps = stamps.OrderBy(o => o.ZOrder).ToList();
-			for (int i = 0; i < stamps.Count; i++)
-				stamps[i].ZOrder = i + zOrderOffset;
+			Map.SortStampsByZOrder(zOrderOffset);
 		}
 
 		public void AddStamp(IStampProperties stamp)
 		{
-			if (stamp.HasNoZOrder())
-				stamp.ZOrder = stamps.Count;
-			stamps.Add(stamp);
+			Map.AddStamp(stamp);
 		}
 
-		public void InsertStamp(int i, IStampProperties stamp)
+		public void InsertStamp(int startIndex, IStampProperties stamp)
 		{
-			if (stamp.HasNoZOrder())
-				stamp.ZOrder = i;
-			stamps.Insert(i, stamp);
+			Map.InsertStamp(startIndex, stamp);
 		}
 
 		public void RemoveStamp(IStampProperties stamp)
 		{
-			stamps.Remove(stamp);
+			Map.RemoveStamp(stamp);
 		}
 
 		public void AddStampNow(IStampProperties stamp)
@@ -64,7 +60,7 @@ namespace DndMapSpike
 		void Refresh()
 		{
 			ClearAll();
-			foreach (IStampProperties stamp in stamps)
+			foreach (IStampProperties stamp in Map.Stamps)
 			{
 				try
 				{
@@ -99,40 +95,24 @@ namespace DndMapSpike
 		/// </summary>
 		/// <param name="point">The coordinates to check (on the layer).</param>
 		/// <returns>Returns the stamp if found, or null.</returns>
-		public IStampProperties GetStampAt(Point point)
+		public IStampProperties GetStampAt(double x, double y)
 		{
-			for (int i = stamps.Count - 1; i >= 0; i--)
-			{
-				IStampProperties stamp = stamps[i];
-				if (stamp.ContainsPoint(point.X, point.Y))
-					return stamp;
-			}
-			return null;
+			return Map.GetStampAt(x, y);
 		}
 
 		public void RemoveAllStamps(List<IStampProperties> stamps)
 		{
-			foreach (IStampProperties stamp in stamps)
-				RemoveStamp(stamp);
+			Map.RemoveAllStamps(stamps);
 		}
 
 		public void AddStamps(List<IStampProperties> stamps)
 		{
-			foreach (IStampProperties stamp in stamps)
-			{
-				stamp.ResetZOrder();
-				AddStamp(stamp);
-			}
+			Map.AddStamps(stamps);
 		}
 
 		public void InsertStamps(int startIndex, List<IStampProperties> stamps)
 		{
-			for (int i = 0; i < stamps.Count; i++)
-			{
-				IStampProperties stamp = stamps[i];
-				stamp.ResetZOrder();
-				InsertStamp(startIndex + i, stamp);
-			}
+			Map.InsertStamps(startIndex, stamps);
 		}
 	}
 }

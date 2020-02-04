@@ -97,6 +97,7 @@ namespace DndMapSpike
 			InitializeComponent();
 			zoomAndPanControl.ZoomLevelChanged += ZoomAndPanControl_ZoomLevelChanged;
 			Map = new Map();
+			AssignMapToStampsLayer();
 			HookupMapEvents();
 			tileSelection = new MapSelection();
 			tileSelection.SelectionChanged += Selection_SelectionChanged;
@@ -1237,9 +1238,9 @@ namespace DndMapSpike
 			});
 		}
 
-		IStampProperties GetStampAt(Point point)
+		IStampProperties GetStampAt(double x, double y)
 		{
-			IStampProperties stamp = stampsLayer.GetStampAt(point);
+			IStampProperties stamp = stampsLayer.GetStampAt(x, y);
 			return stamp;
 		}
 
@@ -1297,7 +1298,7 @@ namespace DndMapSpike
 		{
 			if (Keyboard.IsKeyDown(Key.Space))  // Space + mouse down = pan view
 				return;
-			IStampProperties stamp = GetStampAt(lastMouseDownPoint);
+			IStampProperties stamp = GetStampAt(lastMouseDownPoint.X, lastMouseDownPoint.Y);
 			if (stamp != null)
 			{
 				ClearSelection();
@@ -2090,6 +2091,11 @@ namespace DndMapSpike
 		Layer wallLayer = new Layer() { OuterMargin = Tile.Width / 2 };
 		Layer floorLayer = new Layer();
 		Layers allLayers = new Layers();
+
+		void AssignMapToStampsLayer()
+		{
+			stampsLayer.Map = Map;
+		}
 
 		void InitializeLayers()
 		{
@@ -3238,6 +3244,8 @@ namespace DndMapSpike
 			string mapStr = File.ReadAllText(fileName);
 
 			Map = JsonConvert.DeserializeObject<Map>(mapStr);
+			AssignMapToStampsLayer();
+
 			Map.FileName = fileName;
 			Map.Reconstitute();
 			HookupMapEvents();

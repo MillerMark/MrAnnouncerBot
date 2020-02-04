@@ -5,6 +5,7 @@ namespace MapCore
 {
 	public interface IStampProperties
 	{
+		string TypeName { get; set; }
 		IStampProperties Copy(int deltaX, int deltaY);
 		int Height { get; set; }
 		int Width { get; set; }

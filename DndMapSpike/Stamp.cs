@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
@@ -21,12 +22,8 @@ namespace DndMapSpike
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
-		
 
-		//public int RelativeX { get; set; }
-		//public int RelativeY { get; set; }
-
-
+		[JsonIgnore]
 		Image image;
 
 		public Stamp()

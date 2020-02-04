@@ -6,6 +6,7 @@ namespace DndMapSpike
 {
 	public abstract class BaseStamp : IStampProperties
 	{
+		public string TypeName { get; set; }
 		public abstract IStampProperties Copy(int deltaX, int deltaY);
 		public abstract bool ContainsPoint(double x, double y);
 		public abstract int Height { get; set; }
@@ -267,7 +268,7 @@ namespace DndMapSpike
 
 		public BaseStamp()
 		{
-
+			TypeName = nameof(BaseStamp);
 		}
 	}
 }

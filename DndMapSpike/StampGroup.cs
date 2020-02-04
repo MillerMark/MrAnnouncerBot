@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
@@ -12,7 +13,7 @@ namespace DndMapSpike
 		List<IStampProperties> stamps = new List<IStampProperties>();
 		public StampGroup()
 		{
-
+			TypeName = nameof(StampGroup);
 		}
 
 		public override void ResetImage()
@@ -107,6 +108,7 @@ namespace DndMapSpike
 			}
 		}
 
+		[JsonIgnore]
 		public Image Image
 		{
 			get
@@ -349,6 +351,7 @@ namespace DndMapSpike
 		public override int Width { get; set; }
 
 		public override int Height { get; set; }
+		public List<IStampProperties> Stamps { get => stamps; set => stamps = value; }
 	}
 }
 

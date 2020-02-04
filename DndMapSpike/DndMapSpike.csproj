@@ -65,7 +65,6 @@
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
     <Compile Include="IStamp.cs" />
-    <Compile Include="IStampsManager.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapEditModes.cs" />
