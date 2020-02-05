@@ -2993,9 +2993,9 @@ namespace DHDM
 
 		CharacterSheets GetSheetForCharacter(int playerID)
 		{
-			foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
+			foreach (TabItem tabItem in tabPlayers.Items)
 			{
-				if (playerTabItem.PlayerId == playerID)
+				if ((tabItem is PlayerTabItem playerTabItem) && (playerTabItem.PlayerId == playerID))
 					return playerTabItem.CharacterSheets;
 			}
 			return null;

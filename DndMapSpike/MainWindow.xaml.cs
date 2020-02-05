@@ -115,10 +115,10 @@ namespace DndMapSpike
 			//ImportDonJonMap("Test New Map.txt");
 			//ImportDonJonMap("The Tomb of Baleful Ruin.txt");
 			//ImportDonJonMap("The Dark Lair of Sorrows.txt");
-			ImportDonJonMap("The Dark Crypts of the Shadow Countess.txt");
+			//ImportDonJonMap("The Dark Crypts of the Shadow Countess.txt");
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
 			//ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
-			//ImportDonJonMap("SmallMap.txt");
+			ImportDonJonMap("SmallMap.txt");
 			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();

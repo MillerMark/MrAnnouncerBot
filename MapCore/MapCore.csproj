@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseStampProperties.cs" />
     <Compile Include="Door.cs" />
     <Compile Include="DoorPosition.cs" />
     <Compile Include="EndCapKind.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="IStampProperties.cs" />
     <Compile Include="IStampsManager.cs" />
     <Compile Include="RegionType.cs" />
+    <Compile Include="SerializedStamp.cs" />
     <Compile Include="StampRotation.cs" />
     <Compile Include="VoidCornerKind.cs" />
     <Compile Include="WallData.cs" />

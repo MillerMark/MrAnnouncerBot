@@ -73,6 +73,7 @@ namespace DndMapSpike
 			return 0;
 		}
 
+		[JsonIgnore]
 		public Image Image
 		{
 			get

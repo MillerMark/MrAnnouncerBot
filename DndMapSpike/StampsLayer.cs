@@ -93,7 +93,6 @@ namespace DndMapSpike
 		/// Gets the stamp at the specified point if the stamp contains non-transparent 
 		/// image data at this point.
 		/// </summary>
-		/// <param name="point">The coordinates to check (on the layer).</param>
 		/// <returns>Returns the stamp if found, or null.</returns>
 		public IStampProperties GetStampAt(double x, double y)
 		{

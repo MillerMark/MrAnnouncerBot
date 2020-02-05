@@ -1,31 +1,22 @@
 ﻿using MapCore;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace DndMapSpike
 {
-	public abstract class BaseStamp : IStampProperties
+	public abstract class BaseStamp : BaseStampProperties, IStampProperties
 	{
-		public string TypeName { get; set; }
 		public abstract IStampProperties Copy(int deltaX, int deltaY);
 		public abstract bool ContainsPoint(double x, double y);
-		public abstract int Height { get; set; }
-		public abstract int Width { get; set; }
 		public abstract int GetLeft();
 		public abstract int GetTop();
 		public abstract double GetBottom();
 		public abstract double GetRight();
 
-		public bool Visible { get; set; } = true;
-		public int X { get; set; }
-
-		public int Y { get; set; }
-
-		public int ZOrder { get; set; } = -1;
-
 		public abstract void ResetImage();
 
-		public virtual bool FlipHorizontally
+		public override bool FlipHorizontally
 		{
 			get { return flipHorizontally; }
 			set
@@ -37,7 +28,7 @@ namespace DndMapSpike
 				flipHorizontally = value;
 			}
 		}
-		public virtual  bool FlipVertically
+		public override bool FlipVertically
 		{
 			get { return flipVertically; }
 			set
@@ -52,7 +43,7 @@ namespace DndMapSpike
 		bool flipHorizontally;
 		bool flipVertically;
 		StampRotation rotation;
-		public virtual StampRotation Rotation
+		public override StampRotation Rotation
 		{
 			get
 			{
@@ -67,9 +58,9 @@ namespace DndMapSpike
 				ResetImage();
 			}
 		}
-		public virtual string FileName { get; set; }
+		public override string FileName { get; set; }
 		double scale = 1;
-		public virtual double Scale
+		public override double Scale
 		{
 			get
 			{
@@ -85,7 +76,7 @@ namespace DndMapSpike
 			}
 		}
 		double hueShift;
-		public virtual double HueShift
+		public override double HueShift
 		{
 			get
 			{
@@ -102,7 +93,7 @@ namespace DndMapSpike
 		}
 
 		double saturation;
-		public virtual double Saturation
+		public override double Saturation
 		{
 			get
 			{
@@ -118,7 +109,7 @@ namespace DndMapSpike
 			}
 		}
 		double lightness;
-		public virtual double Lightness
+		public override double Lightness
 		{
 			get
 			{
@@ -135,7 +126,7 @@ namespace DndMapSpike
 		}
 
 		double contrast;
-		public virtual double Contrast
+		public override double Contrast
 		{
 			get
 			{

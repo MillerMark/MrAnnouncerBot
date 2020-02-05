@@ -9,7 +9,6 @@ namespace MapCore
 {
 	public class Map : IMapInterface, IStampsManager
 	{
-		List<IStampProperties> stamps = new List<IStampProperties>();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
@@ -59,7 +58,10 @@ namespace MapCore
 		[JsonIgnore]
 		public string FileName { get; set; }
 
-		public List<IStampProperties> Stamps { get => stamps; set => stamps = value; }
+		[JsonIgnore]
+		public List<IStampProperties> Stamps { get; set; } = new List<IStampProperties>();
+
+		public List<SerializedStamp> SerializedStamps { get; set; }
 
 		static void ClearAllSpaces(Tile[,] mapArray, int numColumns, int numRows)
 		{
@@ -836,6 +838,29 @@ namespace MapCore
 
 		public void PrepareForSerialization()
 		{
+			PrepareStampsForSerialization();
+			PrepareTilesForSerialization();
+		}
+		SerializedStamp NewSerializedStamp(IStampProperties stampProperties)
+		{
+			SerializedStamp result;
+			result = new SerializedStamp();
+			
+			return result;
+		}
+		void PrepareStampsForSerialization()
+		{
+			if (SerializedStamps == null)
+				SerializedStamps = new List<SerializedStamp>();
+			SerializedStamps.Clear();
+			foreach (IStampProperties stampProperties in Stamps)
+			{
+				SerializedStamps.Add(NewSerializedStamp(stampProperties));
+			}
+		}
+
+		private void PrepareTilesForSerialization()
+		{
 			flyweights.Clear();
 			foreach (Tile tile in Tiles)
 			{
@@ -862,8 +887,8 @@ namespace MapCore
 		public void AddStamp(IStampProperties stamp)
 		{
 			if (stamp.HasNoZOrder())
-				stamp.ZOrder = stamps.Count;
-			stamps.Add(stamp);
+				stamp.ZOrder = Stamps.Count;
+			Stamps.Add(stamp);
 		}
 
 		public void AddStamps(List<IStampProperties> stamps)
@@ -877,9 +902,9 @@ namespace MapCore
 
 		public IStampProperties GetStampAt(double x, double y)
 		{
-			for (int i = stamps.Count - 1; i >= 0; i--)
+			for (int i = Stamps.Count - 1; i >= 0; i--)
 			{
-				IStampProperties stamp = stamps[i];
+				IStampProperties stamp = Stamps[i];
 				if (stamp.ContainsPoint(x, y))
 					return stamp;
 			}
@@ -890,7 +915,7 @@ namespace MapCore
 		{
 			if (stamp.HasNoZOrder())
 				stamp.ZOrder = startIndex;
-			stamps.Insert(startIndex, stamp);
+			Stamps.Insert(startIndex, stamp);
 		}
 
 		public void InsertStamps(int startIndex, List<IStampProperties> stamps)
@@ -911,14 +936,14 @@ namespace MapCore
 
 		public void RemoveStamp(IStampProperties stamp)
 		{
-			stamps.Remove(stamp);
+			Stamps.Remove(stamp);
 		}
 
 		public void SortStampsByZOrder(int zOrderOffset = 0)
 		{
-			stamps = stamps.OrderBy(o => o.ZOrder).ToList();
-			for (int i = 0; i < stamps.Count; i++)
-				stamps[i].ZOrder = i + zOrderOffset;
+			Stamps = Stamps.OrderBy(o => o.ZOrder).ToList();
+			for (int i = 0; i < Stamps.Count; i++)
+				Stamps[i].ZOrder = i + zOrderOffset;
 		}
 
 		public event EventHandler WallsChanged;
