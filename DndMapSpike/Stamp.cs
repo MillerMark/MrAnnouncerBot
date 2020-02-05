@@ -28,6 +28,7 @@ namespace DndMapSpike
 
 		public Stamp()
 		{
+			TypeName = nameof(Stamp);
 		}
 
 		public Stamp(string fileName, int x = 0, int y = 0)

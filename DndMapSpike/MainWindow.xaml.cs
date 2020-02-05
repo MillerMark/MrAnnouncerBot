@@ -81,6 +81,7 @@ namespace DndMapSpike
 		public Map Map { get; set; }
 		public MainWindow()
 		{
+			SerializedStamp.PrepareStampForSerialization += PrepareStampForSerialization;
 			hueShiftUpdateTimer = new Timer(125);
 			hueShiftUpdateTimer.Elapsed += HueShiftUpdateTimer_Elapsed;
 			saturationUpdateTimer = new Timer(125);
@@ -129,6 +130,14 @@ namespace DndMapSpike
 		private void HookupMapEvents()
 		{
 			Map.WallsChanged += Map_WallsChanged;
+		}
+
+		private void PrepareStampForSerialization(object sender, SerializedStampEventArgs ea)
+		{
+			if (ea.Stamp.TypeName == "StampGroup")
+			{
+				
+			}
 		}
 
 		private void ZoomAndPanControl_ZoomLevelChanged(object sender, EventArgs e)

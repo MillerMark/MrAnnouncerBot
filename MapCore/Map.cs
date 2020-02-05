@@ -7,8 +7,26 @@ using System.Collections.Generic;
 
 namespace MapCore
 {
+	public class ReconstituteStampsEventArgs : EventArgs
+	{
+		public List<IStampProperties> Stamps { get; set; }
+		public List<SerializedStamp> SerializedStamps { get; set; }
+		public ReconstituteStampsEventArgs()
+		{
+			
+		}
+	}
 	public class Map : IMapInterface, IStampsManager
 	{
+		public delegate void ReconstituteStampsEventHandler(ReconstituteStampsEventArgs ea);
+		public static event ReconstituteStampsEventHandler ReconstitutingStamps;
+		static void OnAddStamp(List<IStampProperties> Stamps)
+		{
+			reconstituteStampsEventArgs.Stamps = Stamps;
+			ReconstitutingStamps?.Invoke(reconstituteStampsEventArgs);
+		}
+
+		static ReconstituteStampsEventArgs reconstituteStampsEventArgs = new ReconstituteStampsEventArgs();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
@@ -772,7 +790,33 @@ namespace MapCore
 		public void Reconstitute()
 		{
 			BuildMapArrays();
+			ReconstituteRoomsAndCorridors();
+			ReconstituteStamps(Stamps, SerializedStamps);
+		}
 
+		public static void ReconstituteStamps(List<IStampProperties> Stamps, List<SerializedStamp> SerializedStamps)
+		{
+			foreach (SerializedStamp serializedStamp in SerializedStamps)
+			{
+				OnAddStamp(Stamps);
+				//, 
+			}
+		}
+		void AddStamp(List<IStampProperties> Stamps, SerializedStamp serializedStamp)
+		{
+			switch (serializedStamp.TypeName)
+			{
+				case "Stamp":
+					Stamp stamp = new Stamp();
+					break;
+				case "StampGroup":
+
+					break;
+			}
+		}
+
+		private void ReconstituteRoomsAndCorridors()
+		{
 			foreach (MapRegion room in Rooms)
 			{
 				room.ParentMap = this;
@@ -786,6 +830,11 @@ namespace MapCore
 			}
 		}
 
+		void WrapupSerialization()
+		{
+			SerializedStamps = null;
+		}
+
 		public void Save()
 		{
 			if (FileName == null)
@@ -793,6 +842,7 @@ namespace MapCore
 			PrepareForSerialization();
 			string output = JsonConvert.SerializeObject(this, Formatting.Indented);
 			File.WriteAllText(FileName, output);
+			WrapupSerialization();
 		}
 
 		public Dictionary<Guid, object> flyweights = new Dictionary<Guid, object>();
@@ -841,18 +891,15 @@ namespace MapCore
 			PrepareStampsForSerialization();
 			PrepareTilesForSerialization();
 		}
+
 		SerializedStamp NewSerializedStamp(IStampProperties stampProperties)
 		{
-			SerializedStamp result;
-			result = new SerializedStamp();
-			
-			return result;
+			return SerializedStamp.From(stampProperties);
 		}
+
 		void PrepareStampsForSerialization()
 		{
-			if (SerializedStamps == null)
-				SerializedStamps = new List<SerializedStamp>();
-			SerializedStamps.Clear();
+			SerializedStamps = new List<SerializedStamp>();
 			foreach (IStampProperties stampProperties in Stamps)
 			{
 				SerializedStamps.Add(NewSerializedStamp(stampProperties));
@@ -864,21 +911,18 @@ namespace MapCore
 			flyweights.Clear();
 			foreach (Tile tile in Tiles)
 			{
-				//if (tile.NeedsGuid())
 				AddFlyweight(Guid.NewGuid(), tile);
 				tile.PrepareForSerialization();
 			}
 
 			foreach (MapRegion corridor in Corridors)
 			{
-				//if (corridor.NeedsGuid())
 				AddFlyweight(Guid.NewGuid(), corridor);
 				corridor.PrepareForSerialization();
 			}
 
 			foreach (MapRegion room in Rooms)
 			{
-				//if (room.NeedsGuid())
 				AddFlyweight(Guid.NewGuid(), room);
 				room.PrepareForSerialization();
 			}

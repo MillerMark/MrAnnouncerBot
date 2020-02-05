@@ -31,5 +31,25 @@ namespace MapCore
 		{
 
 		}
+
+		public virtual void TransferProperties(IStampProperties stampProperties)
+		{
+			TypeName = stampProperties.TypeName;
+			Visible = stampProperties.Visible;
+			X = stampProperties.X;
+			Y = stampProperties.Y;
+			ZOrder = stampProperties.ZOrder;
+			Height = stampProperties.Height;
+			Width = stampProperties.Width;
+			FlipHorizontally = stampProperties.FlipHorizontally;
+			FlipVertically = stampProperties.FlipVertically;
+			Rotation = stampProperties.Rotation;
+			FileName = stampProperties.FileName;
+			Scale = stampProperties.Scale;
+			HueShift = stampProperties.HueShift;
+			Saturation = stampProperties.Saturation;
+			Lightness = stampProperties.Lightness;
+			Contrast = stampProperties.Contrast;
+		}
 	}
 }

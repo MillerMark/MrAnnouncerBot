@@ -53,6 +53,7 @@
     <Compile Include="IStampsManager.cs" />
     <Compile Include="RegionType.cs" />
     <Compile Include="SerializedStamp.cs" />
+    <Compile Include="SerializedStampEventArgs.cs" />
     <Compile Include="StampRotation.cs" />
     <Compile Include="VoidCornerKind.cs" />
     <Compile Include="WallData.cs" />
