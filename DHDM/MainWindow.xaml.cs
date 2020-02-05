@@ -1167,12 +1167,16 @@ namespace DHDM
 			{
 				CheckOnlyOnePlayer(ActivePlayerId);
 			}
+			CharacterSheets sheetForCharacter = GetSheetForCharacter(ActivePlayerId);
+			if (sheetForCharacter != null)
+				sheetForCharacter.Page = ScrollPage.main;
 			InitializeActivePlayerData();
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			HubtasticBaseStation.ClearWindup("Weapon.*");
 			HubtasticBaseStation.ClearWindup("Windup.*");
 			SetActionShortcuts(ActivePlayerId);
 			Character player = game.GetPlayerFromId(ActivePlayerId);
+
 			if (player != null)
 				player.forceShowSpell = false;
 			UpdateAllUIForPlayer(player);
