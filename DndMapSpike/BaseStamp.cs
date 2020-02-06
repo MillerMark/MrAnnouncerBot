@@ -7,6 +7,13 @@ namespace DndMapSpike
 {
 	public abstract class BaseStamp : BaseStampProperties, IStampProperties
 	{
+		public static IStampProperties CreateStampFrom(SerializedStamp stamp)
+		{
+			if (stamp.TypeName == "StampGroup")
+				return StampGroup.From(stamp);
+			return Stamp.From(stamp);
+		}
+
 		public abstract IStampProperties Copy(int deltaX, int deltaY);
 		public abstract bool ContainsPoint(double x, double y);
 		public abstract int GetLeft();
@@ -257,9 +264,13 @@ namespace DndMapSpike
 			Scale = newScale;
 		}
 
+		protected override void TransferFrom(SerializedStamp serializedStamp)
+		{
+			base.TransferFrom(serializedStamp);
+		}
+
 		public BaseStamp()
 		{
-			TypeName = nameof(BaseStamp);
 		}
 	}
 }

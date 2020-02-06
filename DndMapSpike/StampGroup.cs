@@ -347,6 +347,15 @@ namespace DndMapSpike
 		{
 			return X + Width / 2;
 		}
+		public static StampGroup From(SerializedStamp stamp)
+		{
+			StampGroup stampGroup = new StampGroup();
+			stampGroup.TransferFrom(stamp);
+			if (stamp.Children != null)
+				foreach (SerializedStamp childStamp in stamp.Children)
+					stampGroup.Stamps.Add(CreateStampFrom(childStamp));
+			return stampGroup;
+		}
 
 		public override int Width { get; set; }
 

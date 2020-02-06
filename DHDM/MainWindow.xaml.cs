@@ -3593,11 +3593,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				if (playerId != ActivePlayerId)
-				{
-					TellDungeonMaster($"{Icons.WarningSign} ===================> {GetNopeMessage()}. {GetPlayerName(playerId)} is not the active player!");
-					return;
-				}
+				ActivePlayerId = playerId;
 				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == playerId);
 				if (shortcut != null)
 				{

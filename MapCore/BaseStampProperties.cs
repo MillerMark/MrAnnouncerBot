@@ -51,5 +51,24 @@ namespace MapCore
 			Lightness = stampProperties.Lightness;
 			Contrast = stampProperties.Contrast;
 		}
+		protected virtual void TransferFrom(SerializedStamp serializedStamp)
+		{
+			TypeName = serializedStamp.TypeName;
+			Visible = serializedStamp.Visible;
+			X = serializedStamp.X;
+			Y = serializedStamp.Y;
+			ZOrder = serializedStamp.ZOrder;
+			Height = serializedStamp.Height;
+			Width = serializedStamp.Width;
+			FlipHorizontally = serializedStamp.FlipHorizontally;
+			FlipVertically = serializedStamp.FlipVertically;
+			Rotation = serializedStamp.Rotation;
+			FileName = serializedStamp.FileName;
+			Scale = serializedStamp.Scale;
+			HueShift = serializedStamp.HueShift;
+			Saturation = serializedStamp.Saturation;
+			Lightness = serializedStamp.Lightness;
+			Contrast = serializedStamp.Contrast;
+		}
 	}
 }

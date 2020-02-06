@@ -267,7 +267,10 @@
 	set page(newValue: ScrollPage) {
 		if (this._page !== newValue) {
 			this.needImmediateReopen = true;
-			this.close();
+
+			if (this.state !== ScrollState.disappearing)
+				this.close();
+
 			this._page = newValue;
 		}
 	}
@@ -392,7 +395,7 @@
 		const picY: number = 24;
 		const picHeight: number = 90;
 
-		if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
+		 if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
 			let elapsedTime: number = now - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
 			let scrollRollsFrameIndex: number = this.scrollRolls.sprites[0].frameIndex;
 
@@ -1009,8 +1012,12 @@
 			this.clearEmphasis();
 
 			if (okayToChangePage) {
-				this.state = ScrollState.none;
-				this.page = newPageId;
+				let needToImmediatelyOpen: boolean = this.state === ScrollState.disappearing;
+				 this.page = newPageId;
+				if (needToImmediatelyOpen) {
+					this.state = ScrollState.none;
+					this.needImmediateReopen = false;
+				}
 				this.open(performance.now());
 			}
 		}

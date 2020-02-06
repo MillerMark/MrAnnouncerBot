@@ -31,7 +31,7 @@ namespace DndMapSpike
 			TypeName = nameof(Stamp);
 		}
 
-		public Stamp(string fileName, int x = 0, int y = 0)
+		public Stamp(string fileName, int x = 0, int y = 0) : this()
 		{
 			X = x;
 			Y = y;
@@ -203,6 +203,16 @@ namespace DndMapSpike
 		public override int GetTop()
 		{
 			return (int)Math.Round(Y - Height / 2.0);
+		}
+		protected override void TransferFrom(SerializedStamp serializedStamp)
+		{
+			base.TransferFrom(serializedStamp);
+		}
+		public static Stamp From(SerializedStamp serializedStamp)
+		{
+			Stamp stamp = new Stamp();
+			stamp.TransferFrom(serializedStamp);
+			return stamp;
 		}
 	}
 }

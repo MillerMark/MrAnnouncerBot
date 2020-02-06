@@ -130,14 +130,32 @@ namespace DndMapSpike
 		private void HookupMapEvents()
 		{
 			Map.WallsChanged += Map_WallsChanged;
+			Map.ReconstitutingStamps += ReconstituteStamps;
+		}
+
+		private void ReconstituteStamps(object sender, ReconstituteStampsEventArgs ea)
+		{
+			ReconstituteStamp(ea.SerializedStamp, ea.Stamps);
+		}
+
+		private static void ReconstituteStamp(SerializedStamp serializedStamp, List<IStampProperties> stamps)
+		{
+			stamps.Add(BaseStamp.CreateStampFrom(serializedStamp));
 		}
 
 		private void PrepareStampForSerialization(object sender, SerializedStampEventArgs ea)
 		{
-			if (ea.Stamp.TypeName == "StampGroup")
-			{
-				
-			}
+			PrepareStampForSerialization(ea.Properties, ea.Stamp);
+		}
+
+		private static void PrepareStampForSerialization(IStampProperties stampInstance, SerializedStamp stamp)
+		{
+			if (stamp.TypeName == "StampGroup" && stampInstance is StampGroup stampGroup)
+				foreach (IStampProperties childStamp in stampGroup.Stamps)
+				{
+					SerializedStamp serializedStamp = SerializedStamp.From(childStamp);
+					stamp.AddChild(serializedStamp);
+				}
 		}
 
 		private void ZoomAndPanControl_ZoomLevelChanged(object sender, EventArgs e)
@@ -585,6 +603,9 @@ namespace DndMapSpike
 
 		void AddSelectionCanvas()
 		{
+			if (stampSelectionCanvas != null)
+				stampSelectionCanvas.Children.Clear();
+
 			stampSelectionCanvas = new Canvas();
 			content.Children.Add(stampSelectionCanvas);
 			MoveSelectionCanvasToTop();
@@ -1858,6 +1879,8 @@ namespace DndMapSpike
 			viewbox.Width = buttonWidth;
 			viewbox.Height = buttonHeight;
 			viewbox.Cursor = Cursors.Hand;
+			if (viewbox.Parent is Canvas canvas)
+				canvas.Children.Remove(viewbox);
 			stampSelectionCanvas.Children.Add(viewbox);
 			Canvas.SetLeft(viewbox, x);
 			Canvas.SetTop(viewbox, y);
@@ -3249,22 +3272,30 @@ namespace DndMapSpike
 		void Load(string fileName)
 		{
 			ClearMapCanvasChildren();
-			
+
 			string mapStr = File.ReadAllText(fileName);
 
 			Map = JsonConvert.DeserializeObject<Map>(mapStr);
+			HookupMapEvents();
 			AssignMapToStampsLayer();
 
 			Map.FileName = fileName;
-			Map.Reconstitute();
-			HookupMapEvents();
-			PrepareUIForNewMap();
-			RemoveRubberBandSelector();
-			AddTilesFromMap();
-			Map.UpdateIfNeeded();
-			RebuildWalls();
-			LoadFinalCanvasElements();
-			AddSelectionCanvas();
+			stampsLayer.BeginUpdate();
+			try
+			{
+				Map.Reconstitute();
+				PrepareUIForNewMap();
+				RemoveRubberBandSelector();
+				AddTilesFromMap();
+				Map.UpdateIfNeeded();
+				RebuildWalls();
+				LoadFinalCanvasElements();
+				AddSelectionCanvas();
+			}
+			finally
+			{
+				stampsLayer.EndUpdate();
+			}
 		}
 
 		private void AddTilesFromMap()

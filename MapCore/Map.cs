@@ -10,7 +10,7 @@ namespace MapCore
 	public class ReconstituteStampsEventArgs : EventArgs
 	{
 		public List<IStampProperties> Stamps { get; set; }
-		public List<SerializedStamp> SerializedStamps { get; set; }
+		public SerializedStamp SerializedStamp { get; set; }
 		public ReconstituteStampsEventArgs()
 		{
 			
@@ -18,12 +18,13 @@ namespace MapCore
 	}
 	public class Map : IMapInterface, IStampsManager
 	{
-		public delegate void ReconstituteStampsEventHandler(ReconstituteStampsEventArgs ea);
-		public static event ReconstituteStampsEventHandler ReconstitutingStamps;
-		static void OnAddStamp(List<IStampProperties> Stamps)
+		public delegate void ReconstituteStampsEventHandler(object sender, ReconstituteStampsEventArgs ea);
+		public event ReconstituteStampsEventHandler ReconstitutingStamps;
+		void OnAddStamp(List<IStampProperties> Stamps, SerializedStamp serializedStamp)
 		{
 			reconstituteStampsEventArgs.Stamps = Stamps;
-			ReconstitutingStamps?.Invoke(reconstituteStampsEventArgs);
+			reconstituteStampsEventArgs.SerializedStamp = serializedStamp;
+			ReconstitutingStamps?.Invoke(this, reconstituteStampsEventArgs);
 		}
 
 		static ReconstituteStampsEventArgs reconstituteStampsEventArgs = new ReconstituteStampsEventArgs();
@@ -794,24 +795,13 @@ namespace MapCore
 			ReconstituteStamps(Stamps, SerializedStamps);
 		}
 
-		public static void ReconstituteStamps(List<IStampProperties> Stamps, List<SerializedStamp> SerializedStamps)
+		public void ReconstituteStamps(List<IStampProperties> Stamps, List<SerializedStamp> SerializedStamps)
 		{
+			if (SerializedStamps == null)
+				return;
 			foreach (SerializedStamp serializedStamp in SerializedStamps)
 			{
-				OnAddStamp(Stamps);
-				//, 
-			}
-		}
-		void AddStamp(List<IStampProperties> Stamps, SerializedStamp serializedStamp)
-		{
-			switch (serializedStamp.TypeName)
-			{
-				case "Stamp":
-					Stamp stamp = new Stamp();
-					break;
-				case "StampGroup":
-
-					break;
+				OnAddStamp(Stamps, serializedStamp);
 			}
 		}
 
