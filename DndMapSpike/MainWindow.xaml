@@ -10,6 +10,8 @@
 	<Window.Resources>
 		<RoutedUICommand x:Key="Commands.ZoomOut" />
 		<RoutedUICommand x:Key="Commands.Save" />
+		<RoutedUICommand x:Key="Commands.Undo" />
+		<RoutedUICommand x:Key="Commands.Redo" />
 		<RoutedUICommand x:Key="Commands.SaveAs" />
 		<RoutedUICommand x:Key="Commands.Load" />
 		<RoutedUICommand x:Key="Commands.ZoomIn" />
@@ -679,6 +681,8 @@
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
+		<KeyBinding Key="Z" Modifiers="Ctrl" Command="{StaticResource Commands.Undo}"/>
+		<KeyBinding Key="Z" Modifiers="Ctrl+Shift" Command="{StaticResource Commands.Redo}"/>
 		<KeyBinding Key="S" Modifiers="Ctrl" Command="{StaticResource Commands.Save}"/>
 		<KeyBinding Key="S" Modifiers="Ctrl+Shift" Command="{StaticResource Commands.SaveAs}"/>
 		<KeyBinding Key="O" Modifiers="Ctrl" Command="{StaticResource Commands.Load}"/>
@@ -693,6 +697,8 @@
 	</Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="{StaticResource Commands.ZoomOut}" Executed="ZoomOut_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.Undo}" Executed="Undo_Executed"/>
+		<CommandBinding Command="{StaticResource Commands.Redo}" Executed="Redo_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.Save}" Executed="Save_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.SaveAs}" Executed="SaveAs_Executed"/>
 		<CommandBinding Command="{StaticResource Commands.Load}" Executed="Load_Executed"/>

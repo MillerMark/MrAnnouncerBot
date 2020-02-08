@@ -29,6 +29,8 @@ namespace DndMapSpike
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		Stack<BaseCommand> redoStack = new Stack<BaseCommand>();
+		Stack<BaseCommand> undoStack = new Stack<BaseCommand>();
 		bool ctrlKeyDown;
 		private const int StampButtonSize = 36;
 		List<IStampProperties> selectedStamps;
@@ -1064,7 +1066,11 @@ namespace DndMapSpike
 			int totalXY = Math.Abs(deltaX) + Math.Abs(deltaY);
 			if (secondsSinceMouseDown > 0.6 || secondsSinceMouseDown > 0.3 && totalXY > 20)
 			{
-				MoveSelectedStamps(deltaX, deltaY);
+				bool copy = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+				if (copy)
+					CopySelectedStamps(deltaX, deltaY);
+				else
+					MoveSelectedStamps(deltaX, deltaY);
 			}
 
 			draggingStamps = false;
@@ -1094,34 +1100,33 @@ namespace DndMapSpike
 		{
 			SetSelectedStampVisibility(true);
 		}
+
 		private void MoveSelectedStamps(int deltaX, int deltaY)
+		{
+			ExecuteCommand("Move", new MoveData(deltaX, deltaY));
+		}
+
+		private void CopySelectedStamps(int deltaX, int deltaY)
 		{
 			stampsLayer.BeginUpdate();
 			try
 			{
-				List<IStampProperties> copiedStamps = null;
-				bool copy = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
-				if (copy)
-					copiedStamps = new List<IStampProperties>();
+				List<IStampProperties> copiedStamps = new List<IStampProperties>();
 
 				ShowSelectedStamps();
 
 				List<IStampProperties> zOrderedSelection = SelectedStamps.OrderBy(x => x.ZOrder).ToList();
 				foreach (IStampProperties stamp in zOrderedSelection)
-					if (copy)
+				{
+					IStampProperties newStamp = stamp.Copy(deltaX, deltaY);
+					if (newStamp != null)
 					{
-						IStampProperties newStamp = stamp.Copy(deltaX, deltaY);
-						if (newStamp != null)
-						{
-							stampsLayer.AddStamp(newStamp);
-							copiedStamps.Add(newStamp);
-						}
+						stampsLayer.AddStamp(newStamp);
+						copiedStamps.Add(newStamp);
 					}
-					else
-						stamp.Move(deltaX, deltaY);
+				}
 
-				if (copiedStamps != null)
-					SelectedStamps = copiedStamps;
+				SelectedStamps = copiedStamps;
 			}
 			finally
 			{
@@ -1503,24 +1508,10 @@ namespace DndMapSpike
 			double newWidth = right - left;
 			double scaleAdjust = newWidth / resizeTracker.Stamp.Width;
 
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.AdjustScale(scaleAdjust);
-
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
-
+			ExecuteCommand("Scale", new ScaleData(scaleAdjust));
 
 			activeStampResizing = null;
 		}
-
-
 
 		private void ResizeTracker_MouseMove(object sender, MouseEventArgs e)
 		{
@@ -2448,62 +2439,73 @@ namespace DndMapSpike
 
 		private void btnRotateRight_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.RotateRight();
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("RotateRight");
 		}
 
 		private void btnRotateLeft_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.RotateLeft();
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("RotateLeft");
 		}
 
 		private void btnFlipVertical_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.FlipVertically = !stamp.FlipVertically;
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("VerticalFlip");
 		}
 
 		private void btnFlipHorizontal_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
+			ExecuteCommand("HorizontalFlip");
+		}
+
+		public enum CommandExecutionType
+		{
+			Execute,
+			Undo,
+			Redo
+		}
+
+
+		void ExecuteCommand(string commandType, object data = null)
+		{
+			ExecuteCommand(CommandFactory.Create(commandType, data));
+		}
+
+		void ExecuteCommand(BaseCommand command)
+		{
+			if (command == null)
+				return;
+			redoStack.Clear();
+			undoStack.Push(command);
+			ExecuteCommand(command, CommandExecutionType.Execute);
+		}
+
+		private void ExecuteCommand(BaseCommand command, CommandExecutionType executionType)
+		{
+			if (command.WorksOnStamps)
 			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.FlipHorizontally = !stamp.FlipHorizontally;
+				stampsLayer.BeginUpdate();
+				try
+				{
+					ShowSelectedStamps(); // Need for the move. Consider **only** calling when it's actually a Move.
+					switch (executionType)
+					{
+						case CommandExecutionType.Execute:
+							command.Execute(Map, SelectedStamps);
+							break;
+						case CommandExecutionType.Undo:
+							command.Undo(Map);
+							break;
+						case CommandExecutionType.Redo:
+							command.Redo(Map);
+							break;
+					}
+				}
+				finally
+				{
+					stampsLayer.EndUpdate();
+				}
+				UpdateStampSelectionUI();
 			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
 		}
 
 		private void btnScale100Percent_MouseDown(object sender, MouseButtonEventArgs e)
@@ -3357,6 +3359,34 @@ namespace DndMapSpike
 			openFileDialog.InitialDirectory = MapSaveFolder;
 			if (openFileDialog.ShowDialog() == true)
 				Load(openFileDialog.FileName);
+		}
+
+		private void Redo_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (redoStack.Count == 0)
+				return;
+			BaseCommand command = redoStack.Pop();
+			undoStack.Push(command);
+			Redo(command);
+		}
+
+		private void Undo_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (undoStack.Count == 0)
+				return;
+			BaseCommand command = undoStack.Pop();
+			redoStack.Push(command);
+			Undo(command);
+		}
+
+		private void Undo(BaseCommand command)
+		{
+			ExecuteCommand(command, CommandExecutionType.Undo);
+		}
+
+		private void Redo(BaseCommand command)
+		{
+			ExecuteCommand(command, CommandExecutionType.Redo);
 		}
 	}
 }
