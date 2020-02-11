@@ -31,7 +31,12 @@ namespace DndCore
 		{
 			return rolls.FirstOrDefault(x => x.Sides == sides);
 		}
-		
+
+		public Roll GetRoll(int sides, string descriptor)
+		{
+			return rolls.FirstOrDefault(x => x.Sides == sides && x.Descriptor == descriptor);
+		}
+
 		public List<Roll> Rolls { get => rolls; set => rolls = value; }
 		public bool ImpactsTargetOnStartOfTurn { get; set; }
 
@@ -42,6 +47,13 @@ namespace DndCore
 			Roll roll = Roll.From(dieStr, spellcastingAbilityModifier);
 			if (roll == null)
 				return;
+			Roll existingRollSameDie = GetRoll(roll.Sides, roll.Descriptor);
+			if (existingRollSameDie != null)
+			{
+				existingRollSameDie.Count += roll.Count;
+				existingRollSameDie.Offset += roll.Offset;
+				return;
+			}
 			rolls.Add(roll);
 		}
 		

@@ -5,20 +5,28 @@ Battleaxe,0,Windup,BattleAxe.Weapon,,x,player,,,,,,,,,,,,,,,,SwordDraw,SwordSlas
 Battleaxe,1,Windup,BattleAxe.MagicA,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,,,,
 Battleaxe,2,Windup,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,,,,
 Shortsword,0,Windup,LongSword.Weapon,,x,player,,,,0.7,,,,,150,,,,,,,SwordDraw,SwordSlash
-Shortsword,1,Windup,LongSword.Magic,usesMagicThisRoll == true,x,,,,,0.7,,,,,150,,,,,,,,
+Shortsword,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,0.7,,,,,150,,,,,,,,
+Shortsword,2,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,0.7,,,,,150,,,,,,,,
 Javelin,0,Windup,Javelin.Weapon,,x,,,,,,,,,,150,,,,,,,,
 Javelin,1,Windup,Javelin.Magic,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
 Dagger,0,Windup,LongSword.Weapon,,x,player,,,,0.35,,,,,150,,,,,,,,
-Dagger,1,Windup,LongSword.Magic,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,,,,
-Greataxe,0,Windup,BattleAxe.Weapon,,x,,,,,1.2,,,,,90,,,,,,,SwordDraw,SwordSlash
-Greataxe,1,Windup,BattleAxe.MagicA,usesMagicThisRoll == true,x,player,,,,0.8,,,,,90,,,,,,,,
+Dagger,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,,,,
+Dagger,2,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,,,,
+Greataxe,0,Windup,BattleAxe.Weapon,,x,player,,,,1.2,,,,,90,,,,,,,SwordDraw,SwordSlash
+Greataxe,1,Windup,BattleAxe.MagicA,usesMagicThisRoll == true,x,,,,,0.8,,,,,90,,,,,,,,
 Greataxe,2,Windup,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,90,,,,,,,,
 Handaxe,0,Windup,BattleAxe.Weapon,,x,,,,,0.6,,,,,90,,,,,,,SwordDraw,SwordSlash
 Handaxe,1,Windup,BattleAxe.MagicA,usesMagicThisRoll == true,x,player,,,,0.6,,,,,90,,,,,,,,
-Handaxe,2,Windup,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,90,,,,,,,,
+Handaxe,2,Windup,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,0.6,,,,,90,,,,,,,,
 Longsword,0,Windup,LongSword.Weapon,,x,player,,,,,,,,,150,,,,,,,SwordDraw,SwordSlash
-Longsword,1,Windup,LongSword.Magic,,x,,,,,,,,,,150,,,,,,,,
+Longsword,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
+Longsword,2,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
 Warhammer,0,Windup,WarHammer.Weapon,,x,player,,,,,,,,,150,,,,,,,SwordDraw,SwordSlash
 Warhammer,1,Windup,WarHammer.MagicHandle,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
 Warhammer,2,Windup,WarHammer.MagicFrontHead,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
 Warhammer,3,Windup,WarHammer.MagicBackHead,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
+Unich-er,0,Windup,LongSword.Weapon,,x,player,,,,,,,,,150,,,,,,,Unich-er[7],SwordSlash
+Unich-er,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
+Unich-er,2,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
+Dagger of Warning,0,Windup,LongSword.Weapon,,x,player,,,,0.35,,,,,150,,,,,,,,
+Dagger of Warning,1,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,,,,

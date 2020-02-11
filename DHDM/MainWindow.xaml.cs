@@ -911,6 +911,12 @@ namespace DHDM
 
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
+			if (actionShortcut.Type == DiceRollType.WildMagic)
+			{
+				Character activePlayer = GetPlayer(actionShortcut.PlayerId);
+				if (activePlayer != null)
+					activePlayer.NumWildMagicChecks = 0;
+			}
 			ActivatePendingShortcuts();
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
@@ -960,6 +966,11 @@ namespace DHDM
 			}
 			else
 			{
+				if (DndUtils.IsAttack(actionShortcut.Type) && actionShortcut.WeaponProperties != WeaponProperties.None)
+				{
+					game.CreatureRaisingWeapon(player, actionShortcut);
+				}
+
 				// TODO: Add support for shortcut buttons that can activate a particular scroll page (e.g., a wand that activates the items page?)
 				if (actionShortcut.Name.IndexOf("Wild Magic") < 0)
 					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
@@ -999,7 +1010,6 @@ namespace DHDM
 					diceRoll.DamageDice = actionShortcut.InstantDice;
 					RollTheDice(diceRoll);
 				}
-
 			}
 			finally
 			{
@@ -1288,6 +1298,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
 			{
 				Spell spell = AllSpells.Get(diceRoll.SpellName);
@@ -1561,6 +1572,12 @@ namespace DHDM
 			{
 				diceRoll.NumHalos = 3;
 				diceRoll.AddTrailingEffects("SmallSparks");
+				if (diceRoll.PlayerRollOptions != null && diceRoll.PlayerRollOptions.Count == 1)
+				{
+					Character activePlayer = GetPlayer(diceRoll.PlayerRollOptions[0].PlayerID);
+					activePlayer.NumWildMagicChecks++;
+					diceRoll.Modifier = activePlayer.NumWildMagicChecks;
+				}
 			}
 
 			if (type == DiceRollType.WildMagic)
@@ -1811,10 +1828,16 @@ namespace DHDM
 			}
 			return "None";
 		}
+
+		bool forcedWildMagicThisRoll;
+
 		void HandleWildMagicD20Check(IndividualRoll individualRoll)
 		{
+			if (forcedWildMagicThisRoll)
+				return;
 			if (individualRoll.value == 1)
 			{
+				forcedWildMagicThisRoll = true;
 				PlayScene("DH.WildMagicRoll");
 				wildMagicRollTimer.Start();
 				TellDungeonMaster("It's a one! Need to roll wild magic!");
@@ -1837,6 +1860,8 @@ namespace DHDM
 					HandleBarbarianWildSurge(individualRoll);
 					break;
 				case "WildMagicD20Check":
+				case "Wild Magic Check":
+				case "\"Wild Magic Check\"":
 					HandleWildMagicD20Check(individualRoll);
 					break;
 			}
@@ -2491,6 +2516,7 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				ActivateShortcut("Wild Magic");
+				btnRollDice.Content = "Roll Wild Magic";
 				BackToPlayersIn(18);
 			});
 		}

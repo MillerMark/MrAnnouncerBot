@@ -44,6 +44,8 @@ namespace DndCore
 		[DndEvent]
 		public string OnPlayerSwingsWeapon { get; set; }
 		[DndEvent]
+		public string OnPlayerRaisesWeapon { get; set; }
+		[DndEvent]
 		public string OnPlayerStartsTurn { get; set; }
 		[DndEvent]
 		public string OnPlayerSaves { get; set; }
@@ -84,6 +86,7 @@ namespace DndCore
 			result.DeactivationMessage = featureDto.DeactivationMessage;
 			result.OnPlayerCastsSpell = featureDto.OnPlayerCastsSpell;
 			result.OnPlayerSwingsWeapon = featureDto.OnPlayerSwingsWeapon;
+			result.OnPlayerRaisesWeapon = featureDto.OnPlayerRaisesWeapon;
 			result.OnPlayerStartsTurn = featureDto.OnPlayerStartsTurn;
 			result.OnPlayerSaves = featureDto.OnPlayerSaves;
 			result.OnRollComplete = featureDto.OnRollComplete;
@@ -214,6 +217,13 @@ namespace DndCore
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerSwingsWeapon))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerSwingsWeapon, Parameters, arguments), player);
+		}
+
+		private void TriggerPlayerRaisesWeapon(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(OnPlayerRaisesWeapon))
+				Expressions.Do(DndUtils.InjectParameters(OnPlayerRaisesWeapon, Parameters, arguments), player);
 		}
 
 		public void PlayerStartsTurn(string arguments, Character player)

@@ -1638,9 +1638,7 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		die.playerID = playerID;
 		prepareDie(die, throwPower, xPositionModifier);
 
-		if (die.dieType && die.dieType.startsWith('"')) {
-			diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor);
-		}
+		attachLabel(die, textColor, backgroundColor);
 
 		if (die) {
 			if (rollType == DieCountsAs.damage || rollType == DieCountsAs.bonus) {
@@ -1729,6 +1727,12 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		}
 	}
 	return lastDieAdded;
+}
+
+function attachLabel(die: any, textColor: string, backgroundColor: string) {
+    if (die.dieType && die.dieType.startsWith('"')) {
+        diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor);
+    }
 }
 
 function addInspirationParticles(die: any, playerID: number, hueShiftOffset: number, rotationDegeesPerSecond: number) {
@@ -3114,7 +3118,13 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		}
 	}
 	else if (diceRollData.damageHealthExtraDice.indexOf('d20') >= 0) {
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier,
+		let dieStr: string = diceRollData.damageHealthExtraDice;
+		if (dieStr === '1d20("Wild Magic Check")') {
+			let numD20s: number = diceRollData.modifier;
+			diceRollData.modifier = 0;
+			dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
+		}
+		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier,
 			diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
 	}
 	else {
@@ -3127,7 +3137,14 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 			if (diceRollData.playerRollOptions.length == 1) {
 				vantageKind = activePlayerRollOptions.VantageKind;
 			}
-			addD20sForPlayer(activePlayerRollOptions.PlayerID, xPositionModifier, vantageKind, diceRollData.groupInspiration);
+			let numD20s: number = 1;
+			let dieLabel: string = '';
+			if (diceRollData.type === DiceRollType.WildMagicD20Check) {
+				numD20s = diceRollData.modifier;
+				diceRollData.modifier = 0;
+				dieLabel = '"Wild Magic Check"';
+			}
+			addD20sForPlayer(activePlayerRollOptions.PlayerID, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
 			diceRollData.hasSingleIndividual = true;
 		}
 		else if (diceRollData.rollScope == RollScope.Individuals) {
@@ -3157,7 +3174,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	//startedRoll = true;
 }
 
-function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '', numD20s: number = 1) {
+function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '', numD20s: number = 1, dieLabelOverride: string = null) {
 	let d20BackColor: string = diceLayer.getDieColor(playerID);
 	let d20FontColor: string = diceLayer.getDieFontColor(playerID);
 	if (kind !== VantageKind.Normal)
@@ -3165,7 +3182,11 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 
 	for (var i = 0; i < numD20s; i++) {
 		var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
-		die.dieType = DiceRollType[diceRollData.type];
+		if (dieLabelOverride)
+			die.dieType = dieLabelOverride;
+		else 
+			die.dieType = DiceRollType[diceRollData.type];
+		attachLabel(die, d20FontColor, d20BackColor);
 		die.playerID = playerID;
 		die.playerName = diceLayer.getPlayerName(playerID);
 		die.kind = kind;

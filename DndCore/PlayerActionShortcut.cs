@@ -24,6 +24,7 @@ namespace DndCore
 		}
 		public AttackType AttackingType { get; set; }
 		public int PlusModifier { get; set; }
+		public string DamageDieBonus { get; set; }
 		public int AttackingAbilityModifier { get; set; }
 		public int ProficiencyBonus { get; set; }
 		public string Dice { get; set; }
@@ -38,6 +39,7 @@ namespace DndCore
 		public string Description { get; set; }
 		public VantageKind VantageMod { get; set; }
 		public string AddDice { get; set; }
+		public string WeaponDamage { get; set; }
 		public string InstantDice { get; set; }
 		public string AdditionalRollTitle { get; set; }
 		public int MinDamage { get; set; }
@@ -86,6 +88,7 @@ namespace DndCore
 			MinDamage = 0;
 			UsesMagic = false;
 			PlusModifier = 0;
+			DamageDieBonus = "";
 			AttackingAbilityModifier = 0;
 			ProficiencyBonus = 0;
 			AttackingType = AttackType.None;
@@ -291,6 +294,7 @@ namespace DndCore
 				else // Not a weapon or a spell.
 				{
 					PlayerActionShortcut shortcut = FromAction(shortcutDto);
+					shortcut.ProcessDieStr(shortcutDto);
 					results.Add(shortcut);
 					shortcut.AddEffect(shortcutDto, "", player);
 
@@ -358,9 +362,9 @@ namespace DndCore
 				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
 		}
 
-		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, Character player, string damageStr = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
+		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, Character player, string weaponDamage = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix);
+			PlayerActionShortcut result = FromAction(shortcutDto, weaponDamage, suffix);
 			result.WeaponProperties = weaponProperties;
 
 			if (attackType == AttackType.None && weaponProperties != WeaponProperties.None)
@@ -385,8 +389,6 @@ namespace DndCore
 					result.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 			}
 			result.UpdatePlayerAttackingAbility(player);
-
-			result.ProcessDieStr(shortcutDto, damageStr);
 
 			result.AddEffect(shortcutDto, WeaponWindupPrefix, player);
 
@@ -469,14 +471,18 @@ namespace DndCore
 			dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.Attack);
 
 			SetWeaponHitTime(dto, weapon);
-			dto.plusModifier = carriedWeapon.HitDamageBonus.ToString();
+			dto.plusModifier = carriedWeapon.HitPlusModifier.ToString();
 			AddWeaponShortcuts(dto, results, weapon, player);
 			foreach (PlayerActionShortcut playerActionShortcut in results)
 			{
 				playerActionShortcut.CarriedWeapon = carriedWeapon;
-				playerActionShortcut.PlusModifier = carriedWeapon.HitDamageBonus;
-				playerActionShortcut.UsesMagic = carriedWeapon.HitDamageBonus > 0;
+				playerActionShortcut.PlusModifier = carriedWeapon.HitPlusModifier;
+				playerActionShortcut.DamageDieBonus = carriedWeapon.DamageDieBonus;
+				playerActionShortcut.UsesMagic = carriedWeapon.HitPlusModifier > 0;
+				playerActionShortcut.ProcessDieStr(dto, playerActionShortcut.WeaponDamage);
 			}
+
+			
 
 			AddItemEffect(results, weaponEffect);
 			return results;
@@ -525,6 +531,7 @@ namespace DndCore
 		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
 			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix, slotLevelOverride);
+			result.ProcessDieStr(shortcutDto, damageStr);
 			result.Type = GetDiceRollType(GetDiceRollTypeStr(spell));
 			result.UsesMagic = true;
 			int spellSlotLevel = spell.Level;
@@ -539,9 +546,10 @@ namespace DndCore
 			return result;
 		}
 
-		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string damageStr = "", string suffix = "", int slotLevel = 0)
+		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string weaponDamage = "", string suffix = "", int slotLevel = 0)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
+			result.WeaponDamage = weaponDamage;
 			result.Description = shortcutDto.description;
 			result.AddDice = shortcutDto.addDice;
 			result.AddDiceOnHit = shortcutDto.addDiceOnHit;
@@ -560,15 +568,13 @@ namespace DndCore
 			result.UsesMagic = MathUtils.IsChecked(shortcutDto.magic);
 			result.Commands = shortcutDto.commands;
 			result.SpellSlotLevel = slotLevel;
-			//player.ResetPlayerTurnBasedState();
-			result.ProcessDieStr(shortcutDto, damageStr);
 			result.TrailingEffects = shortcutDto.trailingEffects;
 			result.DieRollEffects = shortcutDto.dieRollEffects;
 
 			return result;
 		}
 
-		void ProcessDieStr(PlayerActionShortcutDto shortcutDto, string damageStr)
+		void ProcessDieStr(PlayerActionShortcutDto shortcutDto, string damageStr = null)
 		{
 			string dieStr = shortcutDto.dieStr;
 
@@ -580,6 +586,8 @@ namespace DndCore
 				dieStr = dieStr.Substring(1);
 
 			DieRollDetails dieRollDetails = DieRollDetails.From(dieStr);
+			if (!string.IsNullOrWhiteSpace(DamageDieBonus))
+				dieRollDetails.AddRoll(DamageDieBonus);
 			if (dieRollDetails?.Rolls.Count > 0)
 			{
 				dieRollDetails.Rolls[0].Offset += DamageModifier;

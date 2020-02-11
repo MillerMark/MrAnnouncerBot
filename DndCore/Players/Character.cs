@@ -981,7 +981,13 @@ namespace DndCore
 							carriedWeapon.Name = parameter.EverythingBetween("\"", "\"");
 							break;
 						case 1:
-							carriedWeapon.HitDamageBonus = MathUtils.GetInt(parameter);
+							int plusPos = parameter.IndexOf("+");
+							if (plusPos > 0)
+							{
+								carriedWeapon.DamageDieBonus = parameter.Substring(0, plusPos);
+								parameter = parameter.Substring(plusPos);
+							}
+							carriedWeapon.HitPlusModifier = MathUtils.GetInt(parameter);
 							break;
 						case 2:
 							carriedWeapon.WeaponHue = parameter;
@@ -1787,6 +1793,7 @@ namespace DndCore
 
 		public override void StartTurnResetState()
 		{
+			ActiveWeaponName = "";
 			forceShowSpell = false;
 			ActionsPerTurn = 1;
 			enemyAdvantage = 0;
@@ -1948,6 +1955,11 @@ namespace DndCore
 
 		[JsonIgnore]
 		public bool lastRollWasSuccessful { get; set; }
+
+		[JsonIgnore]
+		public string ActiveWeaponName { get; set; }
+		[JsonIgnore]
+		public int NumWildMagicChecks { get; set;  }
 
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{

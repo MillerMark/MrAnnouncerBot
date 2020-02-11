@@ -19,6 +19,7 @@ namespace DndCore
 		public string OnDeactivate { get; set; }
 		public string DeactivationMessage { get; set; }
 		public string OnPlayerStartsTurn { get; set; }
+		public string OnPlayerRaisesWeapon { get; set; }
 		public string OnPlayerSwingsWeapon { get; set; }
 		public string OnPlayerCastsSpell { get; set; }
 		public string OnPlayerSaves { get; set; }

@@ -7,7 +7,8 @@ namespace DndCore
 	{
 		public string Name { get; set; }
 		public int Count { get; set; }
-		public int HitDamageBonus { get; set; }
+		public int HitPlusModifier { get; set; }
+		public string DamageDieBonus { get; set; }
 		public Weapon Weapon { get; set; }
 		public string WeaponHue { get; set; }
 		public string Hue1 { get; set; }

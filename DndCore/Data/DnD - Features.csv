@@ -1,50 +1,50 @@
-Name,Index,RequiresActivation,ActivationTime,ShortcutName,ShortcutAvailableWhen,Magic,ActivateWhen,OnStartGame,OnActivate,ActivationMessage,OnDeactivate,DeactivationMessage,OnPlayerStartsTurn,OnPlayerSwingsWeapon,OnPlayerCastsSpell,OnPlayerSaves,OnRollComplete,Duration,Limit,Per,Description
-ActionSurge,,x,*,Action Surge,,,,,"Offset(ActionsPerTurn, 1)",,,,,,,,,,1,Short Rest,
-AdvChecksAndSaves($Ability),,,,,,,CheckingAbility($Ability) || SavingAgainst($Ability),,PlayerHasAdvantage(),,Recalculate(ActionBasedState),,,,,,,,,,
-AdvOnRecklessAttack($Ability),,,,,,,InRecklessAttack && AttackIsMelee && AttackingWith($Ability),,"PlayerHasAdvantage(); Offset(EnemyAdvantage, 1)",,"Offset(EnemyAdvantage, -1)",,,,,,,,,,
+Name,Index,RequiresActivation,ActivationTime,ShortcutName,ShortcutAvailableWhen,Magic,ActivateWhen,OnStartGame,OnActivate,ActivationMessage,OnDeactivate,DeactivationMessage,OnPlayerStartsTurn,OnPlayerRaisesWeapon,OnPlayerSwingsWeapon,OnPlayerCastsSpell,OnPlayerSaves,OnRollComplete,Duration,Limit,Per,Description
+ActionSurge,,x,*,Action Surge,,,,,"Offset(ActionsPerTurn, 1)",,,,,,,,,,,1,Short Rest,
+AdvChecksAndSaves($Ability),,,,,,,CheckingAbility($Ability) || SavingAgainst($Ability),,PlayerHasAdvantage(),,Recalculate(ActionBasedState),,,,,,,,,,,
+AdvOnRecklessAttack($Ability),,,,,,,InRecklessAttack && AttackIsMelee && AttackingWith($Ability),,"PlayerHasAdvantage(); Offset(EnemyAdvantage, 1)",,"Offset(EnemyAdvantage, -1)",,,,,,,,,,,
 ArcaneTrickster,,,,,,,,"AddSpells(""Mage Hand"");
-Set(spellCastingAbility, intelligence);",,,,,,,,,,,,,
-AuraOfProtection,,,,,,,true,,,,,,,,,// TODO: Implement - see description,,,,,"Starting at 6th level, whenever you or a friendly creature within 10 feet of you must make a saving throw, the creature gains a bonus to the saving throw equal to your Charisma modifier (with a minimum bonus of +1). You must be conscious to grant this bonus.
+Set(spellCastingAbility, intelligence);",,,,,,,,,,,,,,
+AuraOfProtection,,,,,,,true,,,,,,,,,,// TODO: Implement - see description,,,,,"Starting at 6th level, whenever you or a friendly creature within 10 feet of you must make a saving throw, the creature gains a bonus to the saving throw equal to your Charisma modifier (with a minimum bonus of +1). You must be conscious to grant this bonus.
 
 At 18th level, the range of this aura increases to 30 feet."
-BarbarianMelee($Ability),,,,,,,InRage && AttackIsMelee && AttackingWith($Ability),,"Offset(damageOffsetThisRoll, BarbarianRageDamage)",,Recalculate(ActionBasedState),,,,,,,,,,
-DangerSense,,,,,,,true,,,,,,,,,// TODO: Implement - see description,,,,,"You have advantage on DEX saving throws against effects that you can see while not blinded, deafened, or incapacitated."
-DualWielder,,,,,,,true,,// TODO: Implement - see description,,,,,,,,,,,,"You master fighting with two weapons, gaining the following benefits:
+BarbarianMelee($Ability),,,,,,,InRage && AttackIsMelee && AttackingWith($Ability),,"Offset(damageOffsetThisRoll, BarbarianRageDamage)",,Recalculate(ActionBasedState),,,,,,,,,,,
+DangerSense,,,,,,,true,,,,,,,,,,// TODO: Implement - see description,,,,,"You have advantage on DEX saving throws against effects that you can see while not blinded, deafened, or incapacitated."
+DualWielder,,,,,,,true,,// TODO: Implement - see description,,,,,,,,,,,,,"You master fighting with two weapons, gaining the following benefits:
 
 You gain a +1 bonus to AC while you are wielding a separate melee weapon in each hand.
 You can use two-weapon fighting even when the one-handed melee weapons you are wielding aren't light.
 You can draw or stow two one-handed weapons when you would normally be able to draw or stow only one."
-Dueling,,,,,,,WieldingMeleeWeaponInOneHand && StrikingWithWeapon,,"Offset(damageOffsetThisRoll, 2)",,Recalculate(ActionBasedState),,,,,,,,,,
-ExtraAttack,,,,,,,true,,,,,,// TODO: Implement - see description,,,,,,,,"Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn.
+Dueling,,,,,,,WieldingMeleeWeaponInOneHand && StrikingWithWeapon,,"Offset(damageOffsetThisRoll, 2)",,Recalculate(ActionBasedState),,,,,,,,,,,
+ExtraAttack,,,,,,,true,,,,,,// TODO: Implement - see description,,,,,,,,,"Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn.
 
 The number of attacks increases to three when you reach 11th level in this class and to four when you reach 20th level in this class."
-EyeOfTheStorm,,,,,,,true,,"AddDamageResistance(Lightning | Thunder, Any);",,,,,,,,,,,,
-FontOfMagic,,,,Font of Magic,,,true,"AddRechargeable(""Sorcery Points"", ""_sorceryPts"", SorceryPointsPerRest, ""long rest"");",,,,,,,,,,,,,
-GreatWeaponFighting,,,,,,,true,,,,,,,"if (WieldingHeavyMeleeWeaponInBothHands)
+EyeOfTheStorm,,,,,,,true,,"AddDamageResistance(Lightning | Thunder, Any);",,,,,,,,,,,,,
+FontOfMagic,,,,Font of Magic,,,true,"AddRechargeable(""Sorcery Points"", ""_sorceryPts"", SorceryPointsPerRest, ""long rest"");",,,,,,,,,,,,,,
+GreatWeaponFighting,,,,,,,true,,,,,,,,"if (WieldingHeavyMeleeWeaponInBothHands)
   Set(MinDamageThisRoll, 3);",,,,,,,You can reroll a 1 or 2 on damage dice with melee weapons wielded with two hands.
-GreatWeaponMaster,0,x,*,Great Weapon Master,,,,,"Offset(damageOffsetThisRoll, 10); Offset(attackOffsetThisRoll, -5)",,,,,,,,,,,,"Before you make a melee attack with a heavy weapon that you are proficient with, you can choose to take a -5 penalty to the attack roll to add +10 to the attack's damage."
-GreatWeaponMaster,1,,,,,,true,,,,,,,,,,"if (hitWasCritical || targetedCreatureHitPoints == 0)
+GreatWeaponMaster,0,x,*,Great Weapon Master,,,,,"Offset(damageOffsetThisRoll, 10); Offset(attackOffsetThisRoll, -5)",,,,,,,,,,,,,"Before you make a melee attack with a heavy weapon that you are proficient with, you can choose to take a -5 penalty to the attack roll to add +10 to the attack's damage."
+GreatWeaponMaster,1,,,,,,true,,,,,,,,,,,"if (hitWasCritical || targetedCreatureHitPoints == 0)
   TellDm($""{firstName} gets to make one melee weapon attack as a bonus action (Great Weapon Master)."");",,,,"On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
-LongtoothShiftingStrike,,x,1BA,Longtooth Shifting Strike,IsShifted,,,,// TODO: Roll attack dice (1d6+Mod(strength) - see description),,,,,,,,,,,,"While shifted, you can use your elongated fangs to make an unarmed strike as a bonus action. If you hit with your fangs, you can deal piercing damage equal to 1d6 + your Strength modifier, instead of the bludgeoning damage normal for an unarmed strike."
+LongtoothShiftingStrike,,x,1BA,Longtooth Shifting Strike,IsShifted,,,,// TODO: Roll attack dice (1d6+Mod(strength) - see description),,,,,,,,,,,,,"While shifted, you can use your elongated fangs to make an unarmed strike as a bonus action. If you hit with your fangs, you can deal piercing damage equal to 1d6 + your Strength modifier, instead of the bludgeoning damage normal for an unarmed strike."
 MagicReserves,,x,1A,Magic Reserves,,x,,,"// TODO: Ask for Target for the Touch
 if (Level(""Barbarian"") >= 14) 
   RollDice(""1d6(force:MagicReserves)"");
 else if (Level(""Barbarian"") >= 6) 
-  RollDice(""1d4(force:MagicReserves)"");","$""{firstName} magic reserves...""",,,,,,,// TODO: Subtract 5*die roll HP (force damage) from player. Recover expended spell slot or give 5 * roll as temp HP to target.,,,,
-NoSpellsDuringRage,,,,,,,InRage,,"Set(SpellCastingLock, _rage)","$""{firstName} cannot cast or concentrate on spells while raging...""",Recalculate(ActionBasedState),,,,,,,,,,You can't cast or concentrate on spells while raging.
-Rage,,x,1BA,Rage,,,InRage,,"Set(_rage,true)","$""{firstName} started raging...""","Set(_rage, false)","$""{firstName} stopped raging...""",,,,,,1 minute,BarbarianRagesPerRest,Long Rest,
-RageResistance($Damage),,,,,,,InRage,,"AddDamageResistance($Damage, Any);","$""{firstName} is resistant to $Damage...""",Recalculate(Resistance),,,,,,,,,,
-RecklessAttack,,x,*,Reckless Attack,,,,,"Set(_recklessAttack, true)",,,,,,,,,1 round,,,"When you make your first attack on your turn, you can decide to attack recklessly, giving you advantage on melee weapon attack rolls using STR during this turn, but attack rolls against you have advantage until your next turn."
-SecondWind,,x,1BA,Second Wind,,,,,"RollDice(""1d10+"" + Level(""Fighter"") + ""(healing)"")",,,,,,,,,,1,Short Rest,
+  RollDice(""1d4(force:MagicReserves)"");","$""{firstName} magic reserves...""",,,,,,,,// TODO: Subtract 5*die roll HP (force damage) from player. Recover expended spell slot or give 5 * roll as temp HP to target.,,,,
+NoSpellsDuringRage,,,,,,,InRage,,"Set(SpellCastingLock, _rage)","$""{firstName} cannot cast or concentrate on spells while raging...""",Recalculate(ActionBasedState),,,,,,,,,,,You can't cast or concentrate on spells while raging.
+Rage,,x,1BA,Rage,,,InRage,,"Set(_rage,true)","$""{firstName} started raging...""","Set(_rage, false)","$""{firstName} stopped raging...""",,,,,,,1 minute,BarbarianRagesPerRest,Long Rest,
+RageResistance($Damage),,,,,,,InRage,,"AddDamageResistance($Damage, Any);","$""{firstName} is resistant to $Damage...""",Recalculate(Resistance),,,,,,,,,,,
+RecklessAttack,,x,*,Reckless Attack,,,,,"Set(_recklessAttack, true)",,,,,,,,,,1 round,,,"When you make your first attack on your turn, you can decide to attack recklessly, giving you advantage on melee weapon attack rolls using STR during this turn, but attack rolls against you have advantage until your next turn."
+SecondWind,,x,1BA,Second Wind,,,,,"RollDice(""1d10+"" + Level(""Fighter"") + ""(healing)"")",,,,,,,,,,,1,Short Rest,
 Shifting,,x,1BA,Shifting,!IsShifted,,,,"Set(_shifted, true);
-Offset(tempHitPoints, Level(""Fighter"")+Mod(constitution));","$""{firstName} shifted in a more bestial form, gaining {Level(""Fighter"")+Mod(constitution)} temp hit points...""","Set(_shifted, false);","$""{firstName} shifted back to normal form...""",,,,,,1 minute,1,Short Rest,"Once per short rest as a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute, until you die, or until you revert to your normal appearance as a bonus action. When you shift, you gain temporary hit points equal to your level + your Constitution modifier (minimum of 1 temporary hit point). You also gain additional benefits that depend on your shifter subrace.
+Offset(tempHitPoints, Level(""Fighter"")+Mod(constitution));","$""{firstName} shifted in a more bestial form, gaining {Level(""Fighter"")+Mod(constitution)} temp hit points...""","Set(_shifted, false);","$""{firstName} shifted back to normal form...""",,,,,,,1 minute,1,Short Rest,"Once per short rest as a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute, until you die, or until you revert to your normal appearance as a bonus action. When you shift, you gain temporary hit points equal to your level + your Constitution modifier (minimum of 1 temporary hit point). You also gain additional benefits that depend on your shifter subrace.
 
 "
-SneakAttack,,,,,,,,,,,,,,,,,,,1,Turn,
-TwoWeaponFighting,,,,,,,true,,,,,,,"if (WeaponsInHand == 2 && _attackNum == 2)
+SneakAttack,,,,,,,,,,,,,"Set(_numSneakAttacksUsedThisTurn, 0);",,,,,,,1,Turn,
+TwoWeaponFighting,,,,,,,true,,,,,,,,"if (WeaponsInHand == 2 && _attackNum == 2)
   Offset(damageOffsetThisRoll, Mod(strength));",,,,,,,"When you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack."
-UnarmoredDefense,,,,,,,ArmorWorn(None),,"Set(baseArmorClass, 10+Mod(dexterity)+Mod(constitution)+ShieldBonus)",,,,,,,,,,,,
-WildMagicSurge,,,,,,x,true,,,,,,,,"if (spell_Level >= 1)
+UnarmoredDefense,,,,,,,ArmorWorn(None),,"Set(baseArmorClass, 10+Mod(dexterity)+Mod(constitution)+ShieldBonus)",,,,,,,,,,,,,
+WildMagicSurge,,,,,,x,true,,,,,,,,,"if (spell_Level >= 1)
   ActivateShortcut(""Check Wild Magic"");",,,,,,
 WildSurgeRage,,x,1BA,Wild Surge Rage,Get(_rages) < BarbarianRagesPerRest && !InRage,x,InRage,"AddRechargeable(""Rages"", ""_rages"", BarbarianRagesPerRest, ""long rest"");","Offset(_rages, 1);
 Set(_rage,true);
@@ -56,7 +56,7 @@ if (msg != """" && msg != null)
 {
   TellDm(msg);
   Set(_rageDeactivationMessage, null);
-}","$""{firstName} stopped wild surge raging...""",,,,,"if (Get(_justEnteredWildSurgeRage) == true)
+}","$""{firstName} stopped wild surge raging...""",,,,,,"if (Get(_justEnteredWildSurgeRage) == true)
 {
   Set(_rageDeactivationMessage, """");
   Set(_justEnteredWildSurgeRage, false);
@@ -70,7 +70,7 @@ if (msg != """" && msg != null)
   }
   else if (result == 3)
   {
-    AddReminder(""All flumph-like spirits explode and each creature within 5 feet of one or more of them must succeed on a Dexterity saving throw or take 2d8 force damage."", ""end of turn"");
+    AddReminder(""All flumph-like spirits explode and each creature within 5 feet of one or more of them must succeed on a **Dexterity** saving throw or take 2d8 force damage."", ""end of turn"");
     TellDm(WildSurgeFlumphs);
   }
   else if (result == 4)

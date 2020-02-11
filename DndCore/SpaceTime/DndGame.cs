@@ -378,6 +378,10 @@ namespace DndCore
 			return activeSpells.FindAll(x => x.SpellCaster == character);
 		}
 
+		public void CreatureRaisingWeapon(Character player, PlayerActionShortcut actionShortcut)
+		{
+			player.ActiveWeaponName = actionShortcut.Name;
+		}
 		public void CreatureWillAttack(Creature creature, Creature target, Attack attack, bool usesMagic)
 		{
 			if (creature is Character player)

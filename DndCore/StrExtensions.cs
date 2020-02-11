@@ -95,6 +95,18 @@ namespace DndCore
 			return Char.ToUpper(firstChar) + str.Substring(1);
 		}
 
+		public static string EverythingBeforeLast(this string str, string matchStr)
+		{
+			if (str == null)
+				return string.Empty;
+			int pos = str.LastIndexOf(matchStr);
+			if (pos >= 0)
+			{
+				return str.Substring(0, pos);
+			}
+			return string.Empty;
+		}
+
 		public static string EverythingBefore(this string str, string matchStr)
 		{
 			if (str == null)
@@ -107,9 +119,10 @@ namespace DndCore
 			return string.Empty;
 		}
 
+
 		public static string EverythingBetween(this string str, string beginMatchStr, string endMatchStr)
 		{
-			return str.EverythingAfter(beginMatchStr).EverythingBefore(endMatchStr);
+			return str.EverythingAfter(beginMatchStr).EverythingBeforeLast(endMatchStr);
 		}
 
 		public static bool Has(this string str, string matchStr)

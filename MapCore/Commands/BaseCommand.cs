@@ -30,6 +30,7 @@ namespace MapCore
 			}
 		}
 		public bool WorksOnStamps { get; set; }
+		// TODO: This has to change to support adding and deleting stam
 		public List<IStampProperties> SelectedStamps { get; set; }
 		public object Data { get; set; }
 

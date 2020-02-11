@@ -113,10 +113,11 @@
 	}
 
 	private loadLongSword() {
-		const longSwordOriginX: number = 315;
-		const longSwordOriginY: number = 646;
+		const longSwordOriginX: number = 410;
+		const longSwordOriginY: number = 717;
+		this.loadWeapon('LongSword', 'MagicB', longSwordOriginX, longSwordOriginY);  // Big fire effect in back.
 		this.loadWeapon('LongSword', 'Weapon', longSwordOriginX, longSwordOriginY);
-		this.loadWeapon('LongSword', 'Magic', longSwordOriginX, longSwordOriginY);
+		this.loadWeapon('LongSword', 'MagicA', longSwordOriginX, longSwordOriginY);
 	}
 
 	private loadJavelin() {
