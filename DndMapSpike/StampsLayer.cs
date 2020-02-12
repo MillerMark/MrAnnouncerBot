@@ -17,39 +17,6 @@ namespace DndMapSpike
 		{
 		}
 
-		public void SortStampsByZOrder(int zOrderOffset = 0)
-		{
-			Map.SortStampsByZOrder(zOrderOffset);
-		}
-
-		public void AddStamp(IStampProperties stamp)
-		{
-			Map.AddStamp(stamp);
-		}
-
-		public void InsertStamp(int startIndex, IStampProperties stamp)
-		{
-			Map.InsertStamp(startIndex, stamp);
-		}
-
-		public void RemoveStamp(IStampProperties stamp)
-		{
-			Map.RemoveStamp(stamp);
-		}
-
-		public void AddStampNow(IStampProperties stamp)
-		{
-			BeginUpdate();
-			try
-			{
-				AddStamp(stamp);
-			}
-			finally
-			{
-				EndUpdate();
-			}
-		}
-
 		public void BlendStampImage(Stamp stamp, int xOffset = 0, int yOffset = 0)
 		{
 			int x = stamp.GetLeft() + xOffset;
@@ -84,7 +51,8 @@ namespace DndMapSpike
 			updateCount--;
 			if (updateCount == 0)
 			{
-				SortStampsByZOrder();
+				Map.SortStampsByZOrder();
+				Map.NormalizeZOrder();
 				Refresh();
 			}
 		}
@@ -97,21 +65,6 @@ namespace DndMapSpike
 		public IStampProperties GetStampAt(double x, double y)
 		{
 			return Map.GetStampAt(x, y);
-		}
-
-		public void RemoveAllStamps(List<IStampProperties> stamps)
-		{
-			Map.RemoveAllStamps(stamps);
-		}
-
-		public void AddStamps(List<IStampProperties> stamps)
-		{
-			Map.AddStamps(stamps);
-		}
-
-		public void InsertStamps(int startIndex, List<IStampProperties> stamps)
-		{
-			Map.InsertStamps(startIndex, stamps);
 		}
 	}
 }

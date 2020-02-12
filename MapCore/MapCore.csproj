@@ -44,14 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\AddStampCommand.cs" />
     <Compile Include="Commands\AlignmentData.cs" />
     <Compile Include="Commands\AlignOrDistributeCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="BaseStampProperties.cs" />
     <Compile Include="Commands\BaseStampAbsoluteValueCommand.cs" />
     <Compile Include="Commands\BaseStampCommand.cs" />
+    <Compile Include="Commands\BringToFrontCommand.cs" />
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\ContrastChangeCommand.cs" />
+    <Compile Include="Commands\DeleteStampsCommand.cs" />
     <Compile Include="Commands\DoubleData.cs" />
     <Compile Include="Commands\HorizontalFlipCommand.cs" />
     <Compile Include="Commands\HueChangeCommand.cs" />
@@ -64,8 +67,12 @@
     <Compile Include="Commands\ScaleAbsolutePercentCommand.cs" />
     <Compile Include="Commands\ScaleCommand.cs" />
     <Compile Include="Commands\ScaleData.cs" />
+    <Compile Include="Commands\SendToBackCommand.cs" />
     <Compile Include="Commands\StampAlignment.cs" />
+    <Compile Include="Commands\StampPropertiesData.cs" />
+    <Compile Include="Commands\StampRestoreBaseCommand.cs" />
     <Compile Include="Commands\VerticalFlipCommand.cs" />
+    <Compile Include="Commands\ZOrderCommand.cs" />
     <Compile Include="Door.cs" />
     <Compile Include="DoorPosition.cs" />
     <Compile Include="EndCapKind.cs" />
@@ -74,6 +81,7 @@
     <Compile Include="IStampProperties.cs" />
     <Compile Include="IStampsManager.cs" />
     <Compile Include="RegionType.cs" />
+    <Compile Include="SelectStampsEventArgs.cs" />
     <Compile Include="SerializedStamp.cs" />
     <Compile Include="SerializedStampEventArgs.cs" />
     <Compile Include="StampRotation.cs" />

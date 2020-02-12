@@ -5,6 +5,8 @@ namespace MapCore
 {
 	public abstract class BaseStampProperties
 	{
+		public Guid Guid { get; set; }
+
 		public string TypeName { get; set; }
 
 		public bool Visible { get; set; } = true;
@@ -35,6 +37,7 @@ namespace MapCore
 		public virtual void TransferProperties(IStampProperties stampProperties)
 		{
 			TypeName = stampProperties.TypeName;
+			Guid = stampProperties.Guid;
 			Visible = stampProperties.Visible;
 			X = stampProperties.X;
 			Y = stampProperties.Y;
@@ -54,6 +57,7 @@ namespace MapCore
 		protected virtual void TransferFrom(SerializedStamp serializedStamp)
 		{
 			TypeName = serializedStamp.TypeName;
+			Guid = serializedStamp.Guid;
 			Visible = serializedStamp.Visible;
 			X = serializedStamp.X;
 			Y = serializedStamp.Y;

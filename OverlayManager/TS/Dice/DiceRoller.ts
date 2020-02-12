@@ -1126,6 +1126,7 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 }
 
 function getRandomEffect() {
+	return DieEffect.Burst;
 	let random: number = Math.random() * 100;
 	if (random < 15)
 		return DieEffect.Bomb;
@@ -1435,7 +1436,7 @@ function highlightSpecialDice() {
 					else if (die.playerID >= 0)
 						hueShift = diceLayer.getHueShift(die.playerID);
 					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, lightness);
-					diceSounds.playDieBomb();
+					diceSounds.playDieBurst();
 					hideDieIn(dieObject, 100);
 				}
 				else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {

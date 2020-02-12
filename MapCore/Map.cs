@@ -19,6 +19,9 @@ namespace MapCore
 	}
 	public class Map : IMapInterface, IStampsManager
 	{
+		public delegate void SelectStampsEventHandler(object sender, SelectStampsEventArgs ea);
+		public event SelectStampsEventHandler SelectingStamps;
+
 		public delegate void ReconstituteStampsEventHandler(object sender, ReconstituteStampsEventArgs ea);
 		public event ReconstituteStampsEventHandler ReconstitutingStamps;
 		void OnAddStamp(List<IStampProperties> Stamps, SerializedStamp serializedStamp)
@@ -380,7 +383,7 @@ namespace MapCore
 			}
 		}
 
-		public void ClearSelection()
+		public void ClearTileSelection()
 		{
 			foreach (Tile tile in Tiles)
 				tile.Selected = false;
@@ -977,6 +980,10 @@ namespace MapCore
 		public void SortStampsByZOrder(int zOrderOffset = 0)
 		{
 			Stamps = Stamps.OrderBy(o => o.ZOrder).ToList();
+		}
+
+		public void NormalizeZOrder(int zOrderOffset = 0)
+		{
 			for (int i = 0; i < Stamps.Count; i++)
 				Stamps[i].ZOrder = i + zOrderOffset;
 		}
@@ -986,8 +993,34 @@ namespace MapCore
 			List<IStampProperties> result = new List<IStampProperties>();
 
 			foreach (Guid guid in stampGuids)
-				result.Add(Stamps.First(x => x.Guid == guid));
+			{
+				IStampProperties foundStamp = GetStampFromGuid(guid);
+				if (foundStamp != null)
+					result.Add(foundStamp);
+			}
 			return result;
+		}
+		public void SelectStampsByGuid(List<Guid> stampGuids)
+		{
+			SelectingStamps?.Invoke(this, new SelectStampsEventArgs(stampGuids));
+		}
+
+		public void SelectStampsByGuid(Guid stampGuid)
+		{
+			List<Guid> guids = new List<Guid>();
+			if (stampGuid != null)
+				guids.Add(stampGuid);
+			SelectStampsByGuid(guids);
+		}
+
+		public IStampProperties GetStampFromGuid(Guid guid)
+		{
+			return Stamps.FirstOrDefault(x => x.Guid == guid); ;
+		}
+
+		public void ClearStampSelection()
+		{
+			SelectStampsByGuid(null);
 		}
 
 		public event EventHandler WallsChanged;

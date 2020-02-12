@@ -12,9 +12,9 @@ namespace MapCore
 
 		}
 
-		protected override void PrepareForExecution(List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
 		{
-			base.PrepareForExecution(selectedStamps);
+			base.PrepareForExecution(map, selectedStamps);
 			foreach (IStampProperties stampProperties in selectedStamps)
 				SaveValue(stampProperties, stampProperties.Contrast);
 		}

@@ -15,9 +15,6 @@ namespace DndMapSpike
 			return Stamp.From(stamp);
 		}
 
-		[JsonIgnore]
-		public Guid Guid { get; set; }
-
 		public abstract IStampProperties Copy(int deltaX, int deltaY);
 		public abstract bool ContainsPoint(double x, double y);
 		public abstract int GetLeft();

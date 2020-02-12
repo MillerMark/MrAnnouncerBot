@@ -133,6 +133,24 @@ namespace DndMapSpike
 		{
 			Map.WallsChanged += Map_WallsChanged;
 			Map.ReconstitutingStamps += ReconstituteStamps;
+			Map.SelectingStamps += Map_SelectingStamps;
+		}
+
+		private void Map_SelectingStamps(object sender, SelectStampsEventArgs ea)
+		{
+			SelectedStamps.Clear();
+			if (ea.StampGuids != null)
+				foreach (Guid guid in ea.StampGuids)
+				{
+					IStampProperties stampFromGuid = Map.GetStampFromGuid(guid);
+					if (stampFromGuid == null)
+					{
+						System.Diagnostics.Debugger.Break();
+					}
+					else
+						SelectedStamps.Add(stampFromGuid);
+				}
+			UpdateStampSelectionUI();
 		}
 
 		private void ReconstituteStamps(object sender, ReconstituteStampsEventArgs ea)
@@ -254,7 +272,7 @@ namespace DndMapSpike
 
 			if (tileSelection.SelectionType == SelectionType.Replace)
 			{
-				Map.ClearSelection();
+				Map.ClearTileSelection();
 				ClearSelectionUI();
 			}
 			SetRubberBandVisibility(Visibility.Hidden);
@@ -429,7 +447,7 @@ namespace DndMapSpike
 			content.Children.Remove(outline);
 			outline = new System.Windows.Shapes.Path();
 			tileSelection.Clear();
-			Map.ClearSelection();
+			Map.ClearTileSelection();
 			ClearSelectionUI();
 			EnableSelectionControls(false);
 		}
@@ -1121,7 +1139,7 @@ namespace DndMapSpike
 					IStampProperties newStamp = stamp.Copy(deltaX, deltaY);
 					if (newStamp != null)
 					{
-						stampsLayer.AddStamp(newStamp);
+						Map.AddStamp(newStamp);
 						copiedStamps.Add(newStamp);
 					}
 				}
@@ -1248,9 +1266,8 @@ namespace DndMapSpike
 		{
 			int x = (int)Math.Round(lastMouseDownPoint.X);
 			int y = (int)Math.Round(lastMouseDownPoint.Y);
-			Stamp newStamp = new Stamp(activeStamp.FileName, x, y);
-			stampsLayer.AddStampNow(newStamp);
-			SelectStamp(newStamp);
+			IStampProperties newStamp = new Stamp(activeStamp.FileName, x, y);
+			ExecuteCommand("AddStamp", new StampPropertiesData(newStamp));
 		}
 
 		void SelectStamp(Stamp stamp)
@@ -2464,9 +2481,12 @@ namespace DndMapSpike
 			Redo
 		}
 
-
+		string lastCommandChangeID;
 		void ExecuteCommand(string commandType, object data = null)
 		{
+			if (interactiveChangeID != null && lastCommandChangeID == interactiveChangeID)
+				undoStack.Pop();
+			lastCommandChangeID = interactiveChangeID;
 			ExecuteCommand(CommandFactory.Create(commandType, data));
 		}
 
@@ -2491,14 +2511,19 @@ namespace DndMapSpike
 					{
 						case CommandExecutionType.Execute:
 							command.Execute(Map, SelectedStamps);
+							if (command.ClearSelectionAfterRedo)
+								SelectedStamps.Clear();
 							break;
 						case CommandExecutionType.Undo:
 							command.Undo(Map);
 							break;
 						case CommandExecutionType.Redo:
 							command.Redo(Map);
+							if (command.ClearSelectionAfterRedo)
+								SelectedStamps.Clear();
 							break;
 					}
+					
 				}
 				finally
 				{
@@ -2530,34 +2555,12 @@ namespace DndMapSpike
 
 		private void btnSendToBack_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				stampsLayer.RemoveAllStamps(SelectedStamps);
-				stampsLayer.SortStampsByZOrder(SelectedStamps.Count);
-				stampsLayer.InsertStamps(0, SelectedStamps);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("SendToBack");
 		}
 
 		private void btnBringToFront_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				stampsLayer.RemoveAllStamps(SelectedStamps);
-				stampsLayer.SortStampsByZOrder();
-				stampsLayer.AddStamps(SelectedStamps);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("BringToFront");
 		}
 
 		private void HueShiftUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -2801,17 +2804,7 @@ namespace DndMapSpike
 
 		private void DeleteSelected_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				stampsLayer.RemoveAllStamps(SelectedStamps);
-				SelectedStamps.Clear();
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("DeleteStamps");
 		}
 
 		double? clipboardSaturation;
@@ -2904,10 +2897,11 @@ namespace DndMapSpike
 				return;
 			List<IStampProperties> stampsToGroup = new List<IStampProperties>();
 			stampsToGroup.AddRange(SelectedStamps);
-			stampsLayer.RemoveAllStamps(SelectedStamps);
+			Map.RemoveAllStamps(SelectedStamps);
 			StampGroup stampGroup = StampGroup.Create(stampsToGroup);
-			stampsLayer.AddStamp(stampGroup);
-			stampsLayer.SortStampsByZOrder();
+			Map.AddStamp(stampGroup);
+			Map.SortStampsByZOrder();
+			Map.NormalizeZOrder();
 			SelectedStamps.Clear();
 			SelectedStamps.Add(stampGroup);
 			UpdateStampSelectionUI();
@@ -2929,7 +2923,7 @@ namespace DndMapSpike
 					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;
 					stampGroup.Ungroup(ungroupedStampsThisGroup.Stamps);
 					ungroupedStamps.Add(ungroupedStampsThisGroup);
-					stampsLayer.RemoveStamp(stampGroup);
+					Map.RemoveStamp(stampGroup);
 				}
 			}
 
@@ -2944,7 +2938,7 @@ namespace DndMapSpike
 					foreach (IStampProperties stamp in ungroup.Stamps)
 					{
 						SelectedStamps.Add(stamp);
-						stampsLayer.AddStamp(stamp);
+						Map.AddStamp(stamp);
 					}
 				}
 			}
@@ -3279,12 +3273,12 @@ namespace DndMapSpike
 			if (interactiveChangeID == changeName)
 				return;
 			interactiveChangeID = changeName;
-
 		}
 
 		void StopInteractiveChange()
 		{
 			interactiveChangeID = null;
+			lastCommandChangeID = null;
 		}
 
 		private void ContrastSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)

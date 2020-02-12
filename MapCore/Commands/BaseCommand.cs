@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.Remoting;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace MapCore
 {
@@ -53,6 +54,8 @@ namespace MapCore
 				OnDataChanged();
 			}
 		}
+		public bool ClearSelectionAfterRedo { get; set; }
+
 		protected virtual void OnDataChanged()
 		{
 			
@@ -61,8 +64,9 @@ namespace MapCore
 		public void Execute(Map map, List<IStampProperties> selectedStamps)
 		{
 			SelectedStamps = selectedStamps;
-			PrepareForExecution(selectedStamps);
+			PrepareForExecution(map, selectedStamps);
 			Redo(map);
+			// TODO: consider adding a diff virtual method call here to optimize undo data.
 		}
 
 		/// <summary>
@@ -70,7 +74,8 @@ namespace MapCore
 		/// This is your chance to save data for the undo.
 		/// </summary>
 		/// <param name="selectedStamps"></param>
-		protected virtual void PrepareForExecution(List<IStampProperties> selectedStamps)
+		/// <param name="map"></param>
+		protected virtual void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
 		{
 			stampGuids.Clear();
 			foreach (IStampProperties stampProperties in selectedStamps)

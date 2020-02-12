@@ -22,6 +22,7 @@ namespace MapCore
 		void RemoveAllStamps(List<IStampProperties> stamps);
 		void RemoveStamp(IStampProperties stamp);
 		void SortStampsByZOrder(int zOrderOffset = 0);
+		void NormalizeZOrder(int zOrderOffset = 0);
 		List<IStampProperties> Stamps { get; set; }
 	}
 }
