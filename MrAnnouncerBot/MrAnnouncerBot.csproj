@@ -17,6 +17,7 @@
   <ItemGroup>
     <Compile Remove="AllViewers.cs" />
     <Compile Remove="AppData.cs" />
+    <Compile Remove="LogEntry1.cs" />
     <Compile Remove="Viewer.cs" />
   </ItemGroup>
 

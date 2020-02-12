@@ -27,7 +27,7 @@ namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
-		List<LogEntry> log = new List<LogEntry>();
+		List<Entry> log = new List<Entry>();
 		public static readonly HttpClient httpClient = new HttpClient();
 
 		Dictionary<string, DateTime> lastScenePlayTime = new Dictionary<string, DateTime>();
@@ -195,22 +195,22 @@ namespace MrAnnouncerBot
 
 		private void Client_OnHostingStopped(object sender, OnHostingStoppedArgs e)
 		{
-			
+			log.Add(new MessageEntry() { Message = "Hosting Stopped: " + e.HostingStopped.HostingChannel, Time = DateTime.Now });
 		}
 
 		private void Client_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)
 		{
-			
+			log.Add(new ErrorEntry() { Exception = e.Exception, Time = DateTime.Now });
 		}
 
 		private void Client_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
 		{
-			
+			log.Add(new MessageEntry() { Message = "ClientDisconnected", Time = DateTime.Now });
 		}
 
 		private void Client_OnChannelStateChanged(object sender, OnChannelStateChangedArgs e)
 		{
-			
+			log.Add(new MessageEntry() { Message = "ChannelStateChanged: " + e.Channel, Time = DateTime.Now });
 		}
 
 		void AutoSaveViewers(object obj)
