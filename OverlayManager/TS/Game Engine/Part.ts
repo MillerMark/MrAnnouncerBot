@@ -23,7 +23,7 @@ class ImageManager {
 		const images = this._images.get(name);
 
 		if (!images)
-			console.log(`Image "${name} was not found.`);
+			console.error(`Image "${name} was not found.`);
 
 		return images || [];
 	}
@@ -88,17 +88,22 @@ class PartBackgroundLoader {
 			}
 			return;
 		}
+		var startTime: number = performance.now();
 		PartBackgroundLoader.partsToLoad.sort((a, b) => (a.frameCount - b.frameCount));
 		let partToLoad: Part = PartBackgroundLoader.partsToLoad.pop();
 		console.log(`Background Loading ${partToLoad.fileName} with ${partToLoad.frameCount} images.`);
 		partToLoad.images;  // Triggering the load on demand.
+		var loadTime: number = performance.now() - startTime;
+		PartBackgroundLoader.nextInterval = Math.min(2000, loadTime * 2);
 	}
 
 	static intervalHandle?: number = undefined;
 
+	static nextInterval: number = 5000;
+
 	static initialize() {
 		if (PartBackgroundLoader.intervalHandle === undefined)
-			PartBackgroundLoader.intervalHandle = setInterval(PartBackgroundLoader.loadImages, 3000);
+			PartBackgroundLoader.intervalHandle = setInterval(PartBackgroundLoader.loadImages, PartBackgroundLoader.nextInterval);
 	}
 }
 

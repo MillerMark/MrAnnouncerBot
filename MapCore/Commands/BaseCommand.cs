@@ -30,18 +30,68 @@ namespace MapCore
 			}
 		}
 		public bool WorksOnStamps { get; set; }
-		// TODO: This has to change to support adding and deleting stam
+		// TODO: This has to change to support adding and deleting stamps
 		public List<IStampProperties> SelectedStamps { get; set; }
-		public object Data { get; set; }
+		List<Guid> stampGuids = new List<Guid>();
+		void LoadSelectedStamps(Map map)
+		{
+			SelectedStamps = map.GetStamps(stampGuids);
+		}
+		object data;
+		public object Data
+		{
+			get
+			{
+				return data;
+			}
+			set
+			{
+				if (data == value)
+					return;
+
+				data = value;
+				OnDataChanged();
+			}
+		}
+		protected virtual void OnDataChanged()
+		{
+			
+		}
 
 		public void Execute(Map map, List<IStampProperties> selectedStamps)
 		{
 			SelectedStamps = selectedStamps;
+			PrepareForExecution(selectedStamps);
 			Redo(map);
 		}
 
-		public abstract void Redo(Map map);
-		public abstract void Undo(Map map);
+		/// <summary>
+		/// Called just before the first time execution of a command.
+		/// This is your chance to save data for the undo.
+		/// </summary>
+		/// <param name="selectedStamps"></param>
+		protected virtual void PrepareForExecution(List<IStampProperties> selectedStamps)
+		{
+			stampGuids.Clear();
+			foreach (IStampProperties stampProperties in selectedStamps)
+				stampGuids.Add(stampProperties.Guid);
+		}
+
+		protected abstract void ActivateRedo(Map map);
+		protected abstract void ActivateUndo(Map map);
+
+		public virtual void Redo(Map map)
+		{
+			LoadSelectedStamps(map);
+			ActivateRedo(map);
+		}
+
+		public virtual void Undo(Map map)
+		{
+			LoadSelectedStamps(map);
+			ActivateUndo(map);
+		}
+
 		public BaseCommand()
 		{
 

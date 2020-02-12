@@ -32,6 +32,7 @@ enum DieEffect {
 	Shockwave,
 	ColoredSmoke,
 	Bomb,
+	Burst,
 	SteamPunkTunnel,
 	HandGrab,
 	Random
@@ -1126,14 +1127,16 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 
 function getRandomEffect() {
 	let random: number = Math.random() * 100;
-	if (random < 20)
+	if (random < 15)
 		return DieEffect.Bomb;
-	else if (random < 40)
+	else if (random < 30)
 		return DieEffect.ColoredSmoke;
-	else if (random < 60)
+	else if (random < 45)
 		return DieEffect.Portal;
-	else if (random < 80)
+	else if (random < 60)
 		return DieEffect.SteamPunkTunnel;
+	else if (random < 75)
+		return DieEffect.Burst;
 	else
 		return DieEffect.Random;
 }
@@ -1325,6 +1328,53 @@ function removeDieEffectsForSingleDie(die: any) {
 	die.origins = [];
 }
 
+function rgbToHSL(rgb) {
+	// strip the leading # if it's there
+	rgb = rgb.replace(/^\s*#|\s*$/g, '');
+
+	// convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
+	if (rgb.length == 3) {
+		rgb = rgb.replace(/(.)/g, '$1$1');
+	}
+
+	var r = parseInt(rgb.substr(0, 2), 16) / 255,
+		g = parseInt(rgb.substr(2, 2), 16) / 255,
+		b = parseInt(rgb.substr(4, 2), 16) / 255,
+		cMax = Math.max(r, g, b),
+		cMin = Math.min(r, g, b),
+		delta = cMax - cMin,
+		l = (cMax + cMin) / 2,
+		h = 0,
+		s = 0;
+
+	if (delta == 0) {
+		h = 0;
+	}
+	else if (cMax == r) {
+		h = 60 * (((g - b) / delta) % 6);
+	}
+	else if (cMax == g) {
+		h = 60 * (((b - r) / delta) + 2);
+	}
+	else {
+		h = 60 * (((r - g) / delta) + 4);
+	}
+
+	if (delta == 0) {
+		s = 0;
+	}
+	else {
+		s = (delta / (1 - Math.abs(2 * l - 1)))
+	}
+
+	return {
+		h: h,
+		s: s,
+		l: l
+	}
+}
+
+
 function highlightSpecialDice() {
 	if (!specialDice || specialDice.length == 0)
 		return;
@@ -1370,6 +1420,23 @@ function highlightSpecialDice() {
 					diceLayer.addDiceBomb(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
 					diceSounds.playDieBomb();
 					hideDieIn(dieObject, 700);
+				}
+				else if (dieObject.effectKind === DieEffect.Burst) {
+					let hueShift: number = 0;
+					let die: any = specialDice[i];
+					let hsl = rgbToHSL(die.diceColor);
+					let saturation: number = 100;
+					let lightness: number = 100;
+					if (hsl) {
+						hueShift = hsl.h;
+						saturation = hsl.s * 100;
+						lightness = hsl.l * 100 + 60;
+					}
+					else if (die.playerID >= 0)
+						hueShift = diceLayer.getHueShift(die.playerID);
+					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, lightness);
+					diceSounds.playDieBomb();
+					hideDieIn(dieObject, 100);
 				}
 				else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
 					diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);

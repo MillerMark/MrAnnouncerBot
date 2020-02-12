@@ -44,17 +44,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\AlignmentData.cs" />
+    <Compile Include="Commands\AlignOrDistributeCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="BaseStampProperties.cs" />
+    <Compile Include="Commands\BaseStampAbsoluteValueCommand.cs" />
     <Compile Include="Commands\BaseStampCommand.cs" />
     <Compile Include="Commands\CommandFactory.cs" />
+    <Compile Include="Commands\ContrastChangeCommand.cs" />
+    <Compile Include="Commands\DoubleData.cs" />
     <Compile Include="Commands\HorizontalFlipCommand.cs" />
+    <Compile Include="Commands\HueChangeCommand.cs" />
+    <Compile Include="Commands\LightnessChangeCommand.cs" />
     <Compile Include="Commands\MoveCommand.cs" />
     <Compile Include="Commands\MoveData.cs" />
     <Compile Include="Commands\RotateLeftCommand.cs" />
     <Compile Include="Commands\RotateRightCommand.cs" />
+    <Compile Include="Commands\SaturationChangeCommand.cs" />
+    <Compile Include="Commands\ScaleAbsolutePercentCommand.cs" />
     <Compile Include="Commands\ScaleCommand.cs" />
     <Compile Include="Commands\ScaleData.cs" />
+    <Compile Include="Commands\StampAlignment.cs" />
     <Compile Include="Commands\VerticalFlipCommand.cs" />
     <Compile Include="Door.cs" />
     <Compile Include="DoorPosition.cs" />

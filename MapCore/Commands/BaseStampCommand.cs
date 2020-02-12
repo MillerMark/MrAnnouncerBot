@@ -10,13 +10,4 @@ namespace MapCore
 			WorksOnStamps = true;
 		}
 	}
-
-	public abstract class BaseStampAbsoluteValue : BaseStampCommand
-	{
-		
-		public BaseStampAbsoluteValue()
-		{
-			
-		}
-	}
 }

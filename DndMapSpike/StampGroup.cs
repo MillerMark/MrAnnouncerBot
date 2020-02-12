@@ -22,7 +22,7 @@ namespace DndMapSpike
 				stamp.ResetImage();
 		}
 
-		public StampGroup(StampGroup stampGroup)
+		public StampGroup(StampGroup stampGroup): base()
 		{
 			X = stampGroup.X;
 			Y = stampGroup.Y;

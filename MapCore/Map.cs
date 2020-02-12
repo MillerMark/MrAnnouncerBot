@@ -981,6 +981,15 @@ namespace MapCore
 				Stamps[i].ZOrder = i + zOrderOffset;
 		}
 
+		public List<IStampProperties> GetStamps(List<Guid> stampGuids)
+		{
+			List<IStampProperties> result = new List<IStampProperties>();
+
+			foreach (Guid guid in stampGuids)
+				result.Add(Stamps.First(x => x.Guid == guid));
+			return result;
+		}
+
 		public event EventHandler WallsChanged;
 	}
 }

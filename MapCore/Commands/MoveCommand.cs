@@ -12,7 +12,7 @@ namespace MapCore
 
 		}
 
-		public override void Redo(Map map)
+		protected override void ActivateRedo(Map map)
 		{
 			if (!(Data is MoveData moveData))
 				return;
@@ -21,7 +21,7 @@ namespace MapCore
 				stamp.Move(moveData.DeltaX, moveData.DeltaY);
 		}
 
-		public override void Undo(Map map)
+		protected override void ActivateUndo(Map map)
 		{
 			if (!(Data is MoveData moveData))
 				return;

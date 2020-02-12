@@ -11,7 +11,7 @@ namespace MapCore
 
 		}
 
-		public override void Redo(Map map)
+		protected override void ActivateRedo(Map map)
 		{
 			if (!(Data is ScaleData scaleData))
 				return;
@@ -19,7 +19,7 @@ namespace MapCore
 				stamp.AdjustScale(scaleData.ScaleFactor);
 		}
 
-		public override void Undo(Map map)
+		protected override void ActivateUndo(Map map)
 		{
 			if (!(Data is ScaleData scaleData))
 				return;

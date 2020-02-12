@@ -59,7 +59,10 @@
       <Item Id="{873edd5e-4c45-4d44-a85a-1b80152ea10d}">
         <FilterName>T - Protected Internal/Friend</FilterName>
       </Item>
+      <Item Id="{df76de23-e35f-40b2-9718-6eaae45dc1e2}">
+        <FilterName>4 - File</FilterName>
+        <IsActive>False</IsActive>
+      </Item>
     </Items>
-    <ActiveScopeFilter>ActiveFile</ActiveScopeFilter>
   </Options>
 </Root>

@@ -143,6 +143,9 @@ class DiceLayer {
 	diceFrontContext: CanvasRenderingContext2D;
 	diceBackContext: CanvasRenderingContext2D;
 	diceFireball: Sprites;
+	diceShockwave: Sprites;
+	diceBurst: Sprites;
+	diceSmoke: Sprites;
 	cloverRing: Sprites;
 	badLuckRing: Sprites;
 	sparkTrail: Sprites;
@@ -236,6 +239,24 @@ class DiceLayer {
 		this.diceFireball.originX = 104;
 		this.diceFireball.originY = 155;
 		this.allFrontLayerEffects.add(this.diceFireball);
+
+
+		this.diceShockwave = new Sprites("/Dice/BlowToDust/Shockwave", 44, fps30, AnimationStyle.Sequential, true);
+		this.diceShockwave.originX = 188;
+		this.diceShockwave.originY = 188;
+		this.allBackLayerEffects.add(this.diceShockwave);
+
+
+		this.diceBurst = new Sprites("/Dice/BlowToDust/DieBurst", 66, fps30, AnimationStyle.SequentialStop, true);
+		this.diceBurst.originX = 188;
+		this.diceBurst.originY = 188;
+		this.allFrontLayerEffects.add(this.diceBurst);
+
+
+		this.diceSmoke = new Sprites("/Dice/BlowToDust/SmokeTop", 62, fps30, AnimationStyle.Sequential, true);
+		this.diceSmoke.originX = 188;
+		this.diceSmoke.originY = 188;
+		this.allFrontLayerEffects.add(this.diceSmoke);
 
 
 		this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
@@ -1243,6 +1264,19 @@ class DiceLayer {
 
 	addFireball(x: number, y: number) {
 		this.diceFireball.add(x, y, 0).rotation = 90;
+	}
+
+	addDiceBurst(x: number, y: number, hueShift: number, saturation: number = 100, lightness: number = 100) {
+		let shockwave: SpriteProxy = this.diceShockwave.addShifted(x, y, 0, hueShift + Random.plusMinus(50), saturation, lightness);
+		shockwave.rotation = Math.random() * 360;
+		let dieBurst: SpriteProxy = this.diceBurst.addShifted(x, y, 0, hueShift, saturation, lightness);
+		dieBurst.rotation = Math.random() * 360;
+		dieBurst.fadeOutTime = 800;
+		dieBurst.expirationDate = performance.now() + 2400;
+		let smokeTop: SpriteProxy = this.diceSmoke.addShifted(x, y, 0, hueShift + Random.plusMinus(50), saturation, lightness);
+		smokeTop.rotation = Math.random() * 360;
+		smokeTop.delayStart = 3 * fps30;
+		shockwave.delayStart = 6 * fps30;
 	}
 
 	addMagicRing(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {

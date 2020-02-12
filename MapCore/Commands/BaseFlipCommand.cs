@@ -11,12 +11,12 @@ namespace MapCore
 
 		}
 
-		public override void Redo(Map map)
+		protected override void ActivateRedo(Map map)
 		{
 			FlipSelection();
 		}
 
-		public override void Undo(Map map)
+		protected override void ActivateUndo(Map map)
 		{
 			FlipSelection();
 		}

@@ -2510,62 +2510,22 @@ namespace DndMapSpike
 
 		private void btnScale100Percent_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.SetAbsoluteScaleTo(1);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("ScaleAbsolutePercent", new DoubleData(1));
 		}
 
 		private void btnScale200Percent_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.SetAbsoluteScaleTo(2);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("ScaleAbsolutePercent", new DoubleData(2));
 		}
 
 		private void btnScale50Percent_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.SetAbsoluteScaleTo(0.5);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("ScaleAbsolutePercent", new DoubleData(0.5));
 		}
 
 		private void btnScale33Percent_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.SetAbsoluteScaleTo((double)1 / 3);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			ExecuteCommand("ScaleAbsolutePercent", new DoubleData(1.0 / 3));
 		}
 
 		private void btnSendToBack_MouseDown(object sender, MouseButtonEventArgs e)
@@ -2606,17 +2566,7 @@ namespace DndMapSpike
 
 			Dispatcher.Invoke(() =>
 			{
-				stampsLayer.BeginUpdate();
-				try
-				{
-					foreach (IStampProperties stamp in SelectedStamps)
-						stamp.HueShift = hueShiftToApply;
-				}
-				finally
-				{
-					stampsLayer.EndUpdate();
-				}
-				UpdateStampSelectionUI();
+				ExecuteCommand("HueChange", new DoubleData(hueShiftToApply));
 			});
 		}
 
@@ -2626,17 +2576,7 @@ namespace DndMapSpike
 
 			Dispatcher.Invoke(() =>
 			{
-				stampsLayer.BeginUpdate();
-				try
-				{
-					foreach (IStampProperties stamp in SelectedStamps)
-						stamp.Saturation = saturationToApply;
-				}
-				finally
-				{
-					stampsLayer.EndUpdate();
-				}
-				UpdateStampSelectionUI();
+				ExecuteCommand("SaturationChange", new DoubleData(saturationToApply));
 			});
 		}
 		private void LightnessUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -2645,17 +2585,7 @@ namespace DndMapSpike
 
 			Dispatcher.Invoke(() =>
 			{
-				stampsLayer.BeginUpdate();
-				try
-				{
-					foreach (IStampProperties stamp in SelectedStamps)
-						stamp.Lightness = lightnessToApply;
-				}
-				finally
-				{
-					stampsLayer.EndUpdate();
-				}
-				UpdateStampSelectionUI();
+				ExecuteCommand("LightnessChange", new DoubleData(lightnessToApply));
 			});
 		}
 		private void ContrastUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -2664,17 +2594,7 @@ namespace DndMapSpike
 
 			Dispatcher.Invoke(() =>
 			{
-				stampsLayer.BeginUpdate();
-				try
-				{
-					foreach (IStampProperties stamp in SelectedStamps)
-						stamp.Contrast = contrastToApply;
-				}
-				finally
-				{
-					stampsLayer.EndUpdate();
-				}
-				UpdateStampSelectionUI();
+				ExecuteCommand("ContrastChange", new DoubleData(contrastToApply));
 			});
 		}
 
@@ -2690,6 +2610,7 @@ namespace DndMapSpike
 			if (!(sender is Slider slider))
 				return;
 
+			StartInteractiveChange("Hue");
 			hueShiftToApply = slider.Value;
 			hueShiftUpdateTimer.Stop();
 			hueShiftUpdateTimer.Start();
@@ -2702,6 +2623,7 @@ namespace DndMapSpike
 			if (!(sender is Slider slider))
 				return;
 
+			StartInteractiveChange("Saturation");
 			saturationToApply = slider.Value;
 			saturationUpdateTimer.Stop();
 			saturationUpdateTimer.Start();
@@ -2713,6 +2635,7 @@ namespace DndMapSpike
 			if (!(sender is Slider slider))
 				return;
 
+			StartInteractiveChange("Lightness");
 			lightnessToApply = slider.Value;
 			lightnessUpdateTimer.Stop();
 			lightnessUpdateTimer.Start();
@@ -2725,6 +2648,7 @@ namespace DndMapSpike
 			if (!(sender is Slider slider))
 				return;
 
+			StartInteractiveChange("Contrast");
 			contrastToApply = slider.Value;
 			contrastUpdateTimer.Stop();
 			contrastUpdateTimer.Start();
@@ -3043,203 +2967,163 @@ namespace DndMapSpike
 
 		private void btnAlignHorizontalCenter_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double totalCenterX = 0;
-				foreach (IStampProperties stamp in SelectedStamps)
-					totalCenterX += stamp.X;
+			Align(StampAlignment.HorizontalCenter, GetAverageHorizontalCenterInSelection());
+		}
 
-				double averageCenterX = totalCenterX / SelectedStamps.Count;
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.X = (int)Math.Round(averageCenterX);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+		private double GetAverageHorizontalCenterInSelection()
+		{
+			double totalCenterX = 0;
+			foreach (IStampProperties stamp in SelectedStamps)
+				totalCenterX += stamp.X;
+
+			return totalCenterX / SelectedStamps.Count;
+		}
+		private double GetAverageVerticalCenterInSelection()
+		{
+			double totalCenterY = 0;
+			foreach (IStampProperties stamp in SelectedStamps)
+				totalCenterY += stamp.Y;
+
+			return totalCenterY / SelectedStamps.Count;
 		}
 
 		private void btnAlignVerticalCenter_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double totalCenterY = 0;
-				foreach (IStampProperties stamp in SelectedStamps)
-					totalCenterY += stamp.Y;
-
-				double averageCenterY = totalCenterY / SelectedStamps.Count;
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.Y = (int)Math.Round(averageCenterY);
-			}
-			finally
-			{
-				stampsLayer.EndUpdate();
-			}
-			UpdateStampSelectionUI();
+			Align(StampAlignment.VerticalCenter, GetAverageVerticalCenterInSelection());
 		}
 
 		private void btnAlignLeft_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double furthestLeft = int.MaxValue;
-				foreach (IStampProperties stamp in SelectedStamps)
-				{
-					double left = stamp.GetLeft();
-					if (left < furthestLeft)
-						furthestLeft = left;
-				}
+			double furthestLeft = GetFurthestLeftInSelection();
 
-				if (furthestLeft < int.MaxValue)
-					foreach (IStampProperties stamp in SelectedStamps)
-						stamp.X = (int)Math.Round(furthestLeft + stamp.Width / 2);
-			}
-			finally
+			if (furthestLeft < int.MaxValue)
+				Align(StampAlignment.Left, furthestLeft);
+		}
+
+		private double GetFurthestLeftInSelection()
+		{
+			double furthestLeft = int.MaxValue;
+			foreach (IStampProperties stamp in SelectedStamps)
 			{
-				stampsLayer.EndUpdate();
+				double left = stamp.GetLeft();
+				if (left < furthestLeft)
+					furthestLeft = left;
 			}
-			UpdateStampSelectionUI();
+
+			return furthestLeft;
 		}
 
 		private void btnAlignRight_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double furthestRight = 0;
-				foreach (IStampProperties stamp in SelectedStamps)
-				{
-					double right = stamp.GetRight();
-					if (right > furthestRight)
-						furthestRight = right;
-				}
+			Align(StampAlignment.Right, GetFurthestRightInSelection());
+		}
 
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.X = (int)Math.Round(furthestRight - stamp.Width / 2);
-			}
-			finally
+		private double GetFurthestRightInSelection()
+		{
+			double furthestRight = 0;
+			foreach (IStampProperties stamp in SelectedStamps)
 			{
-				stampsLayer.EndUpdate();
+				double right = stamp.GetRight();
+				if (right > furthestRight)
+					furthestRight = right;
 			}
-			UpdateStampSelectionUI();
+
+			return furthestRight;
 		}
 
 		private void btnAlignTop_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double furthestTop = int.MaxValue;
-				foreach (IStampProperties stamp in SelectedStamps)
-				{
-					double top = stamp.GetTop();
-					if (top < furthestTop)
-						furthestTop = top;
-				}
+			double furthestTop = GetFurthestTopInSelection();
 
-				if (furthestTop < int.MaxValue)
-					foreach (IStampProperties stamp in SelectedStamps)
-						stamp.Y = (int)Math.Round(furthestTop + stamp.Height / 2);
-			}
-			finally
+			if (furthestTop < int.MaxValue)
+				Align(StampAlignment.Top, furthestTop);
+		}
+
+		private void Align(StampAlignment alignment, double value)
+		{
+			ExecuteCommand("AlignOrDistribute", new AlignmentData(alignment, value));
+		}
+
+		private void Distribute(StampAlignment alignment, double alignValue, double spaceBetween)
+		{
+			ExecuteCommand("AlignOrDistribute", new AlignmentData(alignment, alignValue, spaceBetween));
+		}
+
+		private double GetFurthestTopInSelection()
+		{
+			double furthestTop = int.MaxValue;
+			foreach (IStampProperties stamp in SelectedStamps)
 			{
-				stampsLayer.EndUpdate();
+				double top = stamp.GetTop();
+				if (top < furthestTop)
+					furthestTop = top;
 			}
-			UpdateStampSelectionUI();
+
+			return furthestTop;
 		}
 
 		private void btnAlignBottom_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double furthestBottom = 0;
-				foreach (IStampProperties stamp in SelectedStamps)
-				{
-					double bottom = stamp.GetBottom();
-					if (bottom > furthestBottom)
-						furthestBottom = bottom;
-				}
+			Align(StampAlignment.Bottom, GetFurthestBottomInSelection());
+		}
 
-				foreach (IStampProperties stamp in SelectedStamps)
-					stamp.Y = (int)Math.Round(furthestBottom - stamp.Height / 2);
-			}
-			finally
+		private double GetFurthestBottomInSelection()
+		{
+			double furthestBottom = 0;
+			foreach (IStampProperties stamp in SelectedStamps)
 			{
-				stampsLayer.EndUpdate();
+				double bottom = stamp.GetBottom();
+				if (bottom > furthestBottom)
+					furthestBottom = bottom;
 			}
-			UpdateStampSelectionUI();
+
+			return furthestBottom;
 		}
 
 		private void btnDistributeHorizontally_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double furthestRight = 0;
-				double furthestLeft = double.MaxValue;
-				foreach (IStampProperties stamp in SelectedStamps)
-				{
-					double centerX = stamp.X;
-					double top = stamp.GetLeft();
-					if (centerX > furthestRight)
-						furthestRight = centerX;
-					if (centerX < furthestLeft)
-						furthestLeft = centerX;
-				}
-				double spaceBetweenStamps = (furthestRight - furthestLeft) / (SelectedStamps.Count - 1);
+			double furthestLeft, spaceBetweenStamps;
+			GetFurthestLeftAndSpaceBetweenSelectedStamps(out furthestLeft, out spaceBetweenStamps);
+			Distribute(StampAlignment.DistributeHorizontally, furthestLeft, spaceBetweenStamps);
+		}
 
-				double stampX = furthestLeft;
-				List<IStampProperties> sortedStamps = SelectedStamps.OrderBy(s => s.X).ToList();
-				foreach (IStampProperties stamp in sortedStamps)
-				{
-					stamp.X = (int)Math.Round(stampX);
-					stampX += spaceBetweenStamps;
-				}
-			}
-			finally
+		private void GetFurthestLeftAndSpaceBetweenSelectedStamps(out double furthestLeft, out double spaceBetweenStamps)
+		{
+			double furthestRight = 0;
+			furthestLeft = double.MaxValue;
+			foreach (IStampProperties stamp in SelectedStamps)
 			{
-				stampsLayer.EndUpdate();
+				double centerX = stamp.X;
+				double top = stamp.GetLeft();
+				if (centerX > furthestRight)
+					furthestRight = centerX;
+				if (centerX < furthestLeft)
+					furthestLeft = centerX;
 			}
-			UpdateStampSelectionUI();
+			spaceBetweenStamps = (furthestRight - furthestLeft) / (SelectedStamps.Count - 1);
 		}
 
 		private void btnDistributeVertically_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			stampsLayer.BeginUpdate();
-			try
-			{
-				double furthestBottom = 0;
-				double furthestTop = double.MaxValue;
-				foreach (IStampProperties stamp in SelectedStamps)
-				{
-					double centerY = stamp.Y;
-					double top = stamp.GetTop();
-					if (centerY > furthestBottom)
-						furthestBottom = centerY;
-					if (centerY < furthestTop)
-						furthestTop = centerY;
-				}
-				double spaceBetweenStamps = (furthestBottom - furthestTop) / (SelectedStamps.Count - 1);
+			double furthestTop, spaceBetweenStamps;
+			GetFurthestTopAndSpaceBetweenStamps(out furthestTop, out spaceBetweenStamps);
+			Distribute(StampAlignment.DistributeVertically, furthestTop, spaceBetweenStamps);
+		}
 
-				double stampY = furthestTop;
-
-				List<IStampProperties> sortedStamps = SelectedStamps.OrderBy(s => s.Y).ToList();
-				foreach (IStampProperties stamp in sortedStamps)
-				{
-					stamp.Y = (int)Math.Round(stampY);
-					stampY += spaceBetweenStamps;
-				}
-			}
-			finally
+		private void GetFurthestTopAndSpaceBetweenStamps(out double furthestTop, out double spaceBetweenStamps)
+		{
+			double furthestBottom = 0;
+			furthestTop = double.MaxValue;
+			foreach (IStampProperties stamp in SelectedStamps)
 			{
-				stampsLayer.EndUpdate();
+				double centerY = stamp.Y;
+				double top = stamp.GetTop();
+				if (centerY > furthestBottom)
+					furthestBottom = centerY;
+				if (centerY < furthestTop)
+					furthestTop = centerY;
 			}
-			UpdateStampSelectionUI();
+			spaceBetweenStamps = (furthestBottom - furthestTop) / (SelectedStamps.Count - 1);
 		}
 
 		public bool CtrlKeyDown
@@ -3387,6 +3271,40 @@ namespace DndMapSpike
 		private void Redo(BaseCommand command)
 		{
 			ExecuteCommand(command, CommandExecutionType.Redo);
+		}
+
+		string interactiveChangeID;
+		void StartInteractiveChange(string changeName)
+		{
+			if (interactiveChangeID == changeName)
+				return;
+			interactiveChangeID = changeName;
+
+		}
+
+		void StopInteractiveChange()
+		{
+			interactiveChangeID = null;
+		}
+
+		private void ContrastSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+		{
+			StopInteractiveChange();
+		}
+
+		private void HueSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+		{
+			StopInteractiveChange();
+		}
+
+		private void SaturationSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+		{
+			StopInteractiveChange();
+		}
+
+		private void LightnessSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+		{
+			StopInteractiveChange();
 		}
 	}
 }

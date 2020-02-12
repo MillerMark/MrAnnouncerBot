@@ -108,6 +108,13 @@ class DiceSounds extends SoundManager {
 		this.safePlayMp3(`DieBomb${index}`);
 	}
 
+	
+	playDieBurst() {
+		const numDieBurstSounds: number = 2;
+		var index: number = Math.floor(Math.random() * numDieBurstSounds) + 1;
+		this.safePlayMp3(`DieBurst${index}`);
+	}
+
 	playWallHit(percentage: number): void {
 		this.play(this.getPercentageAudio(this.hitWall, percentage));
 	}

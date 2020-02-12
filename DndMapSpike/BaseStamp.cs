@@ -1,4 +1,5 @@
 ﻿using MapCore;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -13,6 +14,9 @@ namespace DndMapSpike
 				return StampGroup.From(stamp);
 			return Stamp.From(stamp);
 		}
+
+		[JsonIgnore]
+		public Guid Guid { get; set; }
 
 		public abstract IStampProperties Copy(int deltaX, int deltaY);
 		public abstract bool ContainsPoint(double x, double y);
@@ -271,6 +275,7 @@ namespace DndMapSpike
 
 		public BaseStamp()
 		{
+			Guid = Guid.NewGuid();
 		}
 	}
 }

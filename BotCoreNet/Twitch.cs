@@ -21,6 +21,13 @@ namespace BotCore
 
 		public static void InitializeConnections()
 		{
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//`! !!!                                                                                      !!!
+			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+			//`! !!!                                                                                      !!!
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+			UnhookEvents();
 			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
 			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
 			Client.Initialize(connectionCredentials, STR_ChannelName);
@@ -31,6 +38,12 @@ namespace BotCore
 
 		public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
 		{
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//`! !!!                                                                                      !!!
+			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+			//`! !!!                                                                                      !!!
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 			TwitchClient client = new TwitchClient();
 			var oAuthToken = Configuration[$"Secrets:{oauthPasswordName}"];
 			if (oAuthToken == null)
@@ -91,6 +104,12 @@ namespace BotCore
 
 		static void InitializeApiClient()
 		{
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//`! !!!                                                                                      !!!
+			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+			//`! !!!                                                                                      !!!
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 			Api = new TwitchAPI();
 			Api.Settings.ClientId = Configuration["Secrets:TwitchApiClientId"];
 			CodeRushedBotApiClientId = Configuration["Secrets:CodeRushedBotTwitchApiClientId"];
@@ -137,6 +156,11 @@ namespace BotCore
 		{
 			Client.OnLog += TwitchClientLog;
 			Client.OnConnectionError += TwitchClient_OnConnectionError;
+		}
+		static void UnhookEvents()
+		{
+			Client.OnLog -= TwitchClientLog;
+			Client.OnConnectionError -= TwitchClient_OnConnectionError;
 		}
 
 		static void TwitchClientLog(object sender, OnLogArgs e)

@@ -11,13 +11,13 @@ namespace MapCore
 
 		}
 
-		public override void Redo(Map map)
+		protected override void ActivateRedo(Map map)
 		{
 			foreach (IStampProperties stamp in SelectedStamps)
 				stamp.RotateRight();
 		}
 
-		public override void Undo(Map map)
+		protected override void ActivateUndo(Map map)
 		{
 			foreach (IStampProperties stamp in SelectedStamps)
 				stamp.RotateLeft();

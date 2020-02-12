@@ -174,6 +174,19 @@ namespace MrAnnouncerBot
 			Twitch.Client.OnHostingStopped += Client_OnHostingStopped;
 			Twitch.Client.OnLog += Client_OnLog;
 		}
+		void UnHookTwitchEvents()
+		{
+			Twitch.Client.OnJoinedChannel -= TwitchClient_OnJoinedChannel;
+			Twitch.Client.OnChatCommandReceived -= TwitchClient_OnChatCommandReceived;
+			Twitch.Client.OnMessageReceived -= TwitchClient_OnMessageReceived;
+			Twitch.Client.OnUserJoined -= TwitchClient_OnUserJoined;
+			Twitch.Client.OnUserLeft -= TwitchClient_OnUserLeft;
+			Twitch.Client.OnChannelStateChanged -= Client_OnChannelStateChanged;
+			Twitch.Client.OnDisconnected -= Client_OnDisconnected;
+			Twitch.Client.OnError -= Client_OnError;
+			Twitch.Client.OnHostingStopped -= Client_OnHostingStopped;
+			Twitch.Client.OnLog -= Client_OnLog;
+		}
 
 		private void Client_OnLog(object sender, OnLogArgs e)
 		{
@@ -542,6 +555,12 @@ namespace MrAnnouncerBot
 			{
 				MailMessage message = new MailMessage();
 				SmtpClient smtp = new SmtpClient();
+				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				//`! !!!                                                                                      !!!
+				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+				//`! !!!                                                                                      !!!
+				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 				message.From = new MailAddress(Twitch.Configuration["Secrets:EmailFromAddress"]);
 				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailMark"]));
 				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailRory"]));
@@ -574,6 +593,12 @@ namespace MrAnnouncerBot
 			{
 				if (ex != null)
 				{
+					//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					//`! !!!                                                                                      !!!
+					//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+					//`! !!!                                                                                      !!!
+					//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 					Debugger.Break();
 				}
 			}
@@ -584,6 +609,11 @@ namespace MrAnnouncerBot
 			if (obsWebsocket.IsConnected) return;
 			try
 			{
+				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				//`! !!!                                                                                      !!!
+				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+				//`! !!!                                                                                      !!!
+				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
 			}
 			catch (AuthFailureException)
@@ -630,6 +660,13 @@ namespace MrAnnouncerBot
 		private void ObsWebsocket_SceneChanged(OBSWebsocket sender, string newSceneName)
 		{
 			activeSceneName = newSceneName;
+			if (newSceneName == "EventReset")
+			{
+				Debugger.Break();
+				UnHookTwitchEvents();
+				Twitch.InitializeConnections();
+				HookupTwitchEvents();
+			}
 			Console.WriteLine($"Active Scene: {activeSceneName}");
 		}
 

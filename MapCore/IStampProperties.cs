@@ -5,7 +5,7 @@ namespace MapCore
 {
 	public interface IStampProperties
 	{
-		// TODO: We are going to need to recreate (undo/redo) with an identity (GUID).
+		Guid Guid { get; set; }
 		string TypeName { get; set; }
 		IStampProperties Copy(int deltaX, int deltaY);
 		int Height { get; set; }

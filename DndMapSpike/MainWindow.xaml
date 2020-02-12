@@ -584,7 +584,7 @@
 
 		<ContentControl x:Key="ccColorControls" FontSize="15" Width="200" FontWeight="Normal">
 			<StackPanel Orientation="Vertical" Background="#FF4472C4">
-				<Slider x:Name="HueSlider" Orientation="Horizontal" Value="0" Maximum="180" Minimum="-180" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="HueShiftSlider_ValueChanged">
+				<Slider x:Name="HueSlider" Orientation="Horizontal" Value="0" Maximum="180" Minimum="-180" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="HueShiftSlider_ValueChanged" Thumb.DragCompleted="HueSlider_DragCompleted">
 					<Slider.ContextMenu>
 						<ContextMenu>
 							<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
@@ -605,7 +605,7 @@
 					<TextBlock Grid.Column="1" Text="Hue" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
 					<TextBlock Grid.Column="2" Text="180" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
 				</Grid>
-				<Slider x:Name="SaturationSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="SaturationSlider_ValueChanged">
+				<Slider x:Name="SaturationSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="SaturationSlider_ValueChanged" Thumb.DragCompleted="SaturationSlider_DragCompleted">
 					<Slider.ContextMenu>
 						<ContextMenu>
 							<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
@@ -626,7 +626,7 @@
 					<TextBlock Grid.Column="1" Text="Sat" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
 					<TextBlock Grid.Column="2" Text="100" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
 				</Grid>
-				<Slider x:Name="LightnessSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="LightnessSlider_ValueChanged">
+				<Slider x:Name="LightnessSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="LightnessSlider_ValueChanged" Thumb.DragCompleted="LightnessSlider_DragCompleted">
 					<Slider.ContextMenu>
 						<ContextMenu>
 							<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
@@ -647,7 +647,7 @@
 					<TextBlock Grid.Column="1" Text="Light" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="White"/>
 					<TextBlock Grid.Column="2" Text="100" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
 				</Grid>
-				<Slider x:Name="ContrastSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="ContrastSlider_ValueChanged">
+				<Slider x:Name="ContrastSlider" Orientation="Horizontal" Value="0" Minimum="-100" Maximum="100" HorizontalAlignment="Stretch" ToolTip="Hue Adjust" Margin="10,4,10,0" ValueChanged="ContrastSlider_ValueChanged" Thumb.DragCompleted="ContrastSlider_DragCompleted">
 					<Slider.ContextMenu>
 						<ContextMenu>
 							<MenuItem Header="Copy Color Mod" Command="{StaticResource Commands.CopyColorMod}"></MenuItem>
