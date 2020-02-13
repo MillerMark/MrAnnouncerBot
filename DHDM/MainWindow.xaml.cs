@@ -1708,9 +1708,15 @@ namespace DHDM
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
 			HubtasticBaseStation.DiceStoppedRolling += HubtasticBaseStation_DiceStoppedRolling;
+			HubtasticBaseStation.AllDiceDestroyed += HubtasticBaseStation_AllDiceDestroyed;
 			OnCombatChanged();
 			UpdateClock();
 			StartRealTimeTimer();
+		}
+
+		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
+		{
+			CheckForFollowUpRolls(ea.StopRollingData);
 		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
@@ -2205,7 +2211,6 @@ namespace DHDM
 
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
-			CheckForFollowUpRolls(ea.StopRollingData);
 		}
 
 		string GetPlayerEmoticon(int playerId)
@@ -2674,6 +2679,7 @@ namespace DHDM
 		private void Window_Unloaded(object sender, RoutedEventArgs e)
 		{
 			HubtasticBaseStation.DiceStoppedRolling -= HubtasticBaseStation_DiceStoppedRolling;
+			HubtasticBaseStation.AllDiceDestroyed -= HubtasticBaseStation_AllDiceDestroyed;
 		}
 
 		private void BtnBendLuckAdd_Click(object sender, RoutedEventArgs e)

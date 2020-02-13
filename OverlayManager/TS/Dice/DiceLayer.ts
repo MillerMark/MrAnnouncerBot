@@ -569,9 +569,9 @@ class DiceLayer {
 		this.allFrontLayerEffects.add(this.freezePop);
 	}
 
-	attachDamageFire(die: any): void {
+	attachDamageFire(die: any, hueShift: number = 0): void {
 		die.attachedDamage = true;
-		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360)));
+		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360), hueShift));
 		die.origins.push(this.damageFire.getOrigin());
 
 		this.addTopDieCloud(die, 5, Random.between(20, 45), 0.4, 0, 0, 0);
@@ -1328,8 +1328,8 @@ class DiceLayer {
 		return haloSpin;
 	}
 
-	addDamageFire(x: number, y: number, angle: number): SpriteProxy {
-		let damageFire = this.damageFire.add(x, y, -1);
+	addDamageFire(x: number, y: number, angle: number, hueShift: number = 0): SpriteProxy {
+		let damageFire = this.damageFire.addShifted(x, y, -1, hueShift);
 		damageFire.rotation = angle;
 		damageFire.fadeInTime = 500;
 		damageFire.fadeOutTime = 500;

@@ -9,6 +9,7 @@ namespace OverlayManager.Hubs
 		Task AddCoins(string userID, int amount);
 		Task NeedToGetCoins(string userID);
 		Task DiceHaveStoppedRolling(string diceData);
+		Task AllDiceHaveBeenDestroyed(string diceData);
 
 		Task Arm(string userID);
 		Task Disarm(string userID);

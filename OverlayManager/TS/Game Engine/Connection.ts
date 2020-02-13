@@ -192,6 +192,11 @@ function diceHaveStoppedRolling(diceData: string) {
     connection.invoke("DiceHaveStoppedRolling", diceData);
 }
 
+function allDiceHaveBeenDestroyed(diceData: string) {
+  if (connection.connectionState == 1)
+    connection.invoke("AllDiceHaveBeenDestroyed", diceData);
+}
+
 function arm(userId: string) {
   connection.invoke("Arm", userId);
 }

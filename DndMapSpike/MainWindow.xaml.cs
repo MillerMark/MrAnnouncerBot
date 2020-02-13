@@ -2486,6 +2486,7 @@ namespace DndMapSpike
 		{
 			if (interactiveChangeID != null && lastCommandChangeID == interactiveChangeID)
 				undoStack.Pop();
+
 			lastCommandChangeID = interactiveChangeID;
 			ExecuteCommand(CommandFactory.Create(commandType, data));
 		}

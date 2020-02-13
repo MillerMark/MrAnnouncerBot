@@ -12,10 +12,17 @@ namespace DHDM
 		static readonly object hubConnectionLock = new object();
 		static HubConnection hubConnection;
 		public static event DiceEventHandler DiceStoppedRolling;
+		public static event DiceEventHandler AllDiceDestroyed;
 		public static void OnDiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			DiceStoppedRolling?.Invoke(sender, ea);
 		}
+
+		public static void OnAllDiceDestroyed(object sender, DiceEventArgs ea)
+		{
+			AllDiceDestroyed?.Invoke(sender, ea);
+		}
+
 		static DiceEventArgs diceEventArgs;
 		static void DiceHaveStoppedRolling(string diceData)
 		{
@@ -24,6 +31,14 @@ namespace DHDM
 
 			diceEventArgs.SetDiceData(diceData);
 			OnDiceStoppedRolling(null, diceEventArgs);
+		}
+		static void AllDiceHaveBeenDestroyed(string diceData)
+		{
+			if (diceEventArgs == null)
+				diceEventArgs = new DiceEventArgs();
+
+			diceEventArgs.SetDiceData(diceData);
+			OnAllDiceDestroyed(null, diceEventArgs);
 		}
 		public static HubConnection HubConnection
 		{
@@ -41,6 +56,7 @@ namespace DHDM
 								hubConnection.Closed += HubConnection_Closed;
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
 								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
+								hubConnection.On<string>("AllDiceHaveBeenDestroyed", AllDiceHaveBeenDestroyed);
 								hubConnection.StartAsync();
 							}
 						}

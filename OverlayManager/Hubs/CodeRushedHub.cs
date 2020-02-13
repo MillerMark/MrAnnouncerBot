@@ -35,6 +35,11 @@ namespace OverlayManager.Hubs
 			mrAnnouncerBotHub.Clients.All.DiceHaveStoppedRolling(diceData);
 		}
 
+		public void AllDiceHaveBeenDestroyed(string diceData)
+		{
+			mrAnnouncerBotHub.Clients.All.AllDiceHaveBeenDestroyed(diceData);
+		}
+
 		public void Arm(string userId)
 		{
 			mrAnnouncerBotHub.Clients.All.Arm(userId);
