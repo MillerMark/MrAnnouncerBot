@@ -8,12 +8,12 @@ namespace MapCore
 
 		public DeleteStampsCommand()
 		{
-			ClearSelectionAfterRedo = true;
 		}
 
 		protected override void ActivateRedo(Map map)
 		{
 			map.RemoveAllStamps(SelectedStamps);
+			map.SelectedStamps.Clear();
 		}
 	}
 }

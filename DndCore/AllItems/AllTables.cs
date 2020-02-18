@@ -36,6 +36,7 @@ namespace DndCore
 			LoadTable<Sorcerer>();
 			LoadTable<ArcaneTrickster>();
 			LoadTable<Paladin>();
+			LoadTable<Rogue>();
 		}
 
 		static void LoadTable<T>() where T : BaseRow

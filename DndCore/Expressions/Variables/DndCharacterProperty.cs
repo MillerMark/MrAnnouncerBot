@@ -6,23 +6,12 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public static class KnownQualifiers
-	{
-		public const string Spell = "spell_";
-		public static bool IsSpellQualifier(string expression)
-		{
-			return expression.StartsWith(Spell);
-		}
-		public static bool StartsWithKnownQualifier(string expression)
-		{
-			if (IsSpellQualifier(expression))
-				return true;
-
-			return false;
-		}
-	}
 	public class DndCharacterProperty : DndVariable
 	{
+		public delegate void AskValueEventHandler(object sender, AskValueEventArgs ea);
+		public static event AskValueEventHandler AskingValue;
+		private static AskValueEventArgs askValueEventArgs;
+
 		List<string> propertyNames = null;
 		List<string> fieldNames = null;
 		
@@ -60,18 +49,57 @@ namespace DndCore
 			return player.HoldsState(tokenName) || tokenName.StartsWith("_"); // ;
 		}
 
+		object AskValue(Character player, string caption, object currentValue, string memberName, string memberTypeName)
+		{
+			if (askValueEventArgs == null)
+				askValueEventArgs = new AskValueEventArgs(player, caption, memberName, memberTypeName, currentValue);
+			else
+			{
+				askValueEventArgs.Player = player;
+				askValueEventArgs.Caption = caption;
+				askValueEventArgs.MemberName = memberName;
+				askValueEventArgs.MemberTypeName = memberTypeName;
+				askValueEventArgs.Value = currentValue;
+			}
+
+			AskingValue?.Invoke(this, askValueEventArgs);
+			return askValueEventArgs.Value;
+		}
+
+		void CheckValue(Character player, MemberInfo member, ref object value)
+		{
+			AskAttribute askAttr = member?.Get<AskAttribute>();
+			if (askAttr == null)
+				return;
+
+			string askCaption = askAttr.Caption;
+			string memberType = null;
+			if (member is PropertyInfo propInfo)
+				memberType = propInfo.PropertyType.Name;
+			else if (member is FieldInfo fieldInfo)
+				memberType = fieldInfo.FieldType.Name;
+
+			value = AskValue(player, askCaption, value, member.Name, memberType);
+		}
+
 		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
 		{
 			if (fieldNames.IndexOf(variableName) >= 0)
 			{
 				FieldInfo field = typeof(Character).GetField(variableName);
-				return field?.GetValue(player);
+
+				object value = field?.GetValue(player);
+				CheckValue(player, field, ref value);
+				return value;
 			}
 
 			if (propertyNames.IndexOf(variableName) >= 0)
 			{
 				PropertyInfo property = typeof(Character).GetProperty(variableName);
-				return property?.GetValue(player);
+
+				object value = property?.GetValue(player);
+				CheckValue(player, property, ref value);
+				return value;
 			}
 
 			return player.GetState(variableName);

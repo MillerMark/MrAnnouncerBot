@@ -142,11 +142,65 @@ abstract class DragonGame extends GamePlusQuiz {
 	protected triggerEmitter(dto: any, center: Vector): void {
 	}
 
-	protected triggerAnimation(dto: any, center: Vector) {
+	protected triggerAnimationDto(dto: any, center: Vector) {
 	}
 
 	protected triggerPlaceholder(dto: any): any {
 		console.log('triggerPlaceholder - dto: ' + dto);
+	}
+
+	protected showHealthGain(healthGain: number, playerId: number) {
+		let playerIndex: number = this.getPlayerIndex(playerId);
+
+		let humanoidSizeScaleFactor: number = 1;
+		let humanoidThrustScaleFactor: number = 1;
+		let humanoidScaleOffset: number = 0;
+		if (playerIndex == 0) {
+			// It's Fred. Make it bigger and taller.
+			humanoidSizeScaleFactor = 2;
+			humanoidThrustScaleFactor = 2.6;
+			humanoidScaleOffset = 0.06;
+		}
+		let x: number = this.getPlayerX(playerIndex);
+		let center: Vector = new Vector(x, 1000);
+		let hueShift: number = 220;
+		let saturation: number = 100;
+		let brightness: number = 100;
+		let horizontalFlip: boolean = false;
+		let verticalFlip: boolean = false;
+		let scale: number = 1.8 * humanoidSizeScaleFactor;
+		let rotation: number = 0;
+		let autoRotation: number = 0;
+		let velocityX: number = 0;
+		let velocityY: number = -0.1;
+		let sprite: SpriteProxy = this.triggerAnimation('Health', center, 0, hueShift, saturation, brightness,
+			horizontalFlip, verticalFlip,
+			scale, rotation, autoRotation, velocityX, velocityY, 7500);
+		sprite.fadeInTime = 400;
+		sprite.fadeOutTime = 800;
+		sprite.verticalThrustOverride = -0.09 * humanoidThrustScaleFactor;
+		sprite.autoScaleFactorPerSecond = 0.89 + humanoidScaleOffset;
+	}
+
+	protected triggerAnimation(spriteName: string, center: Vector, startFrameIndex: number, hueShift: number, saturation: number, brightness: number, horizontalFlip: boolean, verticalFlip: boolean, scale: number, rotation: number, autoRotation: number, velocityX: number = 0, velocityY: number = 0, lifespan: number = 0): SpriteProxy {
+		let sprites: Sprites;
+		for (let i = 0; i < this.allWindupEffects.allSprites.length; i++) {
+			if (spriteName === this.allWindupEffects.allSprites[i].name) {
+				sprites = this.allWindupEffects.allSprites[i];
+				break;
+			}
+		}
+		if (!sprites) {
+			console.error(`"${spriteName}" sprite not found.`);
+			return null;
+		}
+		else {
+			let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), startFrameIndex, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation, velocityX, velocityY);
+			let sprite: SpriteProxy = spritesEffect.start();
+			if (lifespan > 0)
+				sprite.expirationDate = performance.now() + lifespan;
+			return sprite;
+		}
 	}
 
 	protected triggerSingleEffect(dto: any) {
@@ -170,7 +224,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		let center: Vector = this.getCenter(dto.target);
 
 		if (dto.effectKind === EffectKind.Animation)
-			this.triggerAnimation(dto, center);
+			this.triggerAnimationDto(dto, center);
 		else if (dto.effectKind === EffectKind.Emitter)
 			this.triggerEmitter(dto, center);
 	}
@@ -247,6 +301,16 @@ abstract class DragonGame extends GamePlusQuiz {
 		return spell;
 	}
 
+	loadHealthSpinUp(): Sprites {
+		let health: Sprites = new Sprites(`PlayerEffects/Health/PlusSpin${this.layerSuffix}`, 120, fps30, AnimationStyle.Loop, true);
+		health.name = 'Health';
+		health.originX = 315;
+		health.originY = 67;
+		health.moves = true;
+		this.allWindupEffects.add(health);
+		return health;
+	}
+
 	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number): Sprites {
 		let weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, 91, fps30, AnimationStyle.Loop, true);
 		weapon.name = weaponName + '.' + animationName;
@@ -291,12 +355,12 @@ abstract class DragonGame extends GamePlusQuiz {
 					let firstPartMatches: boolean;
 					let lastPartMatches: boolean;
 					if (firstPart)
-						firstPartMatches = sprite.name.startsWith(firstPart);
-					else 
+						firstPartMatches = sprite.name && sprite.name.startsWith(firstPart);
+					else
 						firstPartMatches = true;
 					if (lastPart)
-						lastPartMatches = sprite.name.endsWith(lastPart);
-					else 
+						lastPartMatches = sprite.name && sprite.name.endsWith(lastPart);
+					else
 						lastPartMatches = true;
 					nameMatches = firstPartMatches && lastPartMatches;
 				}
@@ -335,7 +399,7 @@ abstract class DragonGame extends GamePlusQuiz {
 				let sprite: SpriteProxy = sprites.addShifted(playerX + windup.Offset.x, 934 + windup.Offset.y, startingFrameIndex, hue, windup.Saturation, windup.Brightness);
 				if (name)
 					sprite.name = windup.Name + name;
-				else 
+				else
 					sprite.name = windup.Name;
 				console.log('  Windup: "' + sprite.name + '"');
 				sprite.opacity = windup.Opacity;
@@ -439,6 +503,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	initialize() {
 		let saveAssets: string = Folders.assets;
 		super.initialize();
+		globalBypassFrameSkip = false;
 		Folders.assets = 'GameDev/Assets/DragonH/';
 		this.loadSpell('Smoke');
 		this.loadSpell('Ghost');
@@ -450,6 +515,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.loadSpell('Orb');
 		this.loadSpell('Trails');
 		this.loadSpell('Wide');
+		this.loadHealthSpinUp();
 		Folders.assets = saveAssets;
 	}
 }

@@ -6,6 +6,7 @@ BarbarianRagesPerRest,"Table(""Barbarian"", ""Rages"", ""Level"", Level(""Barbar
 InRage,Get(_rage) == true
 InRecklessAttack,Get(_recklessAttack) == true
 IsShifted,Get(_shifted) == true
+SneakAttackAvailable,((TargetIsFlanked && (VantageThisRoll != Disadvantage)) || (VantageThisRoll == Advantage)) && (WeaponIsRanged || WeaponIsFinesse) && (_numSneakAttacksUsedThisTurn == 0 || _numSneakAttacksUsedThisTurn == null)
 SneakAttackDamage,"Table(""Rogue"", ""SneakAttack"", ""Level"", Level(""Rogue""))"
 SorceryPointsPerRest,"Table(""Sorcerer"", ""SorceryPoints"", ""Level"", Level(""Sorcerer""))"
 StrikingWithWeapon,AttackIsMelee || AttackIsRange

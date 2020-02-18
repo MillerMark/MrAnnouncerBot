@@ -1958,6 +1958,8 @@ class DiceLayer {
 
 	clearDice(): void {
 		removeRemainingDice();
+		//if (!removeRemainingDice())
+		//	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
 	}
 
 	rollDice(diceRollDto: string): void {

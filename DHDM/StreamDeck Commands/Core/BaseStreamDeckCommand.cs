@@ -25,11 +25,11 @@ namespace DHDM
 		protected List<int> GetPlayerIds(IDungeonMasterApp dungeonMasterApp, bool testAllPlayers)
 		{
 			List<int> playerIds = new List<int>();
-			if (TargetPlayer == null)
-				playerIds.Add(dungeonMasterApp.GetActivePlayerId());
-			else if (testAllPlayers)
+			if (testAllPlayers)
 				playerIds.Add(int.MaxValue);
-			else
+			else if(TargetPlayer == null)
+				playerIds.Add(dungeonMasterApp.GetActivePlayerId());
+			else 
 				playerIds.Add(dungeonMasterApp.GetPlayerIdFromNameStart(TargetPlayer));
 			return playerIds;
 		}

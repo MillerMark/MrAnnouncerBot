@@ -8,9 +8,11 @@ class AnimatedElement {
 	name: string;
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond: number = 0;
+	autoScaleFactorPerSecond: number = 1;
 	rotation: number;
 	initialRotation: number;
 	rotationStartTime: number;
+	scaleStartTime: number;
 	timeToRotate: number = 0;
 	targetRotation: number = 0;
 	degreesPerMs: number;
@@ -27,6 +29,8 @@ class AnimatedElement {
 	startY: number;
 	lastX: number;
 	lastY: number;
+	initialHorizontalScale: number;
+	initialVerticalScale: number;
 	verticalThrustOverride: number = undefined;
 	horizontalThrustOverride: number = undefined;
 	onExpire: () => void;
@@ -40,6 +44,8 @@ class AnimatedElement {
 		this.opacity = 1;
 		this.rotation = 0;
 		this.initialRotation = 0;
+		this.initialHorizontalScale = 1;
+		this.initialVerticalScale = 1;
 
 		this.timeStart = performance.now();
 
@@ -47,6 +53,34 @@ class AnimatedElement {
 			this.expirationDate = this.timeStart + lifeSpanMs;
 		else
 			this.expirationDate = null;
+	}
+
+	private _verticalScale: number = 1;
+	private _horizontalScale: number = 1;
+
+	get scale(): number {
+		return this._horizontalScale;
+	}
+
+	set scale(newValue: number) {
+		this._horizontalScale = newValue;
+		this._verticalScale = newValue;
+	}
+
+	get verticalScale(): number {
+		return this._verticalScale;
+	}
+
+	set verticalScale(newValue: number) {
+		this._verticalScale = newValue;
+	}
+
+	get horizontalScale(): number {
+		return this._horizontalScale;
+	}
+
+	set horizontalScale(newValue: number) {
+		this._horizontalScale = newValue;
 	}
 
 	render(context: CanvasRenderingContext2D, now: number) {
@@ -98,6 +132,17 @@ class AnimatedElement {
 			else {
 				let timeSpentRotatingSeconds: number = (nowMs - this.rotationStartTime) / 1000;
 				this.rotation = this.initialRotation + timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
+			}
+		}
+
+		if (this.autoScaleFactorPerSecond != 1) {
+			if (!this.scaleStartTime || this.scaleStartTime == 0)
+				this.scaleStartTime = nowMs;
+			else {
+				let timeSpentScalingSeconds: number = (nowMs - this.scaleStartTime) / 1000;
+				let scaleFactor: number = Math.pow(this.autoScaleFactorPerSecond, timeSpentScalingSeconds);
+				this._horizontalScale = this.initialHorizontalScale * scaleFactor;
+				this._verticalScale = this.initialVerticalScale * scaleFactor;
 			}
 		}
 	}
@@ -258,33 +303,6 @@ class SpriteProxy extends AnimatedElement {
 	cropRight: number;
 	cropBottom: number;
 	numFramesDrawn: number = 0;
-	private _verticalScale: number = 1;
-	private _horizontalScale: number = 1;
-	
-	get scale(): number {
-		return this._horizontalScale;
-	}
-	
-	set scale(newValue: number) {
-		this._horizontalScale = newValue;
-		this._verticalScale = newValue;
-	}
-
-	get verticalScale(): number {
-		return this._verticalScale;
-	}
-
-	set verticalScale(newValue: number) {
-		this._verticalScale = newValue;
-	}
-
-	get horizontalScale(): number {
-		return this._horizontalScale;
-	}
-
-	set horizontalScale(newValue: number) {
-		this._horizontalScale = newValue;
-	}
 
 	lastTimeWeAdvancedTheFrame: number;
 

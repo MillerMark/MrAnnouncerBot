@@ -274,6 +274,7 @@
     </ApplicationDefinition>
     <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="AnswerButton.cs" />
+    <Compile Include="AskUI.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />
@@ -307,6 +308,7 @@
     <Compile Include="StreamDeck Commands\SavingThrowCommand.cs" />
     <Compile Include="StreamDeck Commands\ScrollCloseCommand.cs" />
     <Compile Include="StreamDeck Commands\SelectShortcutCommand.cs" />
+    <Compile Include="StreamDeck Commands\SetPropertyCommand.cs" />
     <Compile Include="StreamDeck Commands\SetVantageCommand.cs" />
     <Compile Include="ShortcutButton.cs" />
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />

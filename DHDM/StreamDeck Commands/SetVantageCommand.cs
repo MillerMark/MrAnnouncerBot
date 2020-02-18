@@ -9,20 +9,40 @@ namespace DHDM
 	public class SetVantageCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		VantageKind vantageKind;
+		string playerInitial;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.SetVantage(vantageKind);
+			dungeonMasterApp.SetVantage(vantageKind, dungeonMasterApp.GetPlayerIdFromNameStart(playerInitial));
 		}
 
 		public bool Matches(string message)
 		{
-			if (message == "SetVantage(Normal)")
+			const string normalStart = "SetVantage(Normal,";
+			const string advantageStart = "SetVantage(Advantage,";
+			const string disadvantageStart = "SetVantage(Disadvantage,";
+			string remainingMessage;
+			if (message.StartsWith(normalStart))
+			{
 				vantageKind = VantageKind.Normal;
-			else if (message == "SetVantage(Advantage)")
+				remainingMessage = message.Substring(normalStart.Length);
+			}
+			else if (message.StartsWith(advantageStart))
+			{
 				vantageKind = VantageKind.Advantage;
-			else if (message == "SetVantage(Disadvantage)")
+				remainingMessage = message.Substring(advantageStart.Length);
+			}
+			else if (message.StartsWith(disadvantageStart))
+			{
 				vantageKind = VantageKind.Disadvantage;
+				remainingMessage = message.Substring(disadvantageStart.Length);
+			}
+			else
+				return false;
+
+			remainingMessage = remainingMessage.Trim();
+			if (remainingMessage.Length > 0)
+				playerInitial = remainingMessage[0].ToString();
 			else
 				return false;
 

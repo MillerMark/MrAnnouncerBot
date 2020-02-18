@@ -1080,15 +1080,19 @@ function removeSingleDieWithEffect(die: any, dieEffect: DieEffect, effectInterva
 	}
 }
 
-function removeRemainingDice() {
+function removeRemainingDice(): boolean {
 	// TODO: Make sure we can call this robustly at any time.
 	let dieEffectInterval: number = 0;
 	removeDieEffects();
+	let diceInPlayWereRemoved: boolean = false;
 	var effectOverride = getRandomEffect();
 	for (var i = 0; i < dice.length; i++) {
-		if (dice[i].inPlay)
+		if (dice[i].inPlay) {
+			diceInPlayWereRemoved = true;
 			dieEffectInterval = removeDie(dice[i], dieEffectInterval, effectOverride);
+		}
 	}
+	return diceInPlayWereRemoved;
 }
 
 function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffect = undefined) {
@@ -3294,7 +3298,10 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 				diceRollData.modifier = 0;
 				dieLabel = '"Wild Magic Check"';
 			}
-			addD20sForPlayer(activePlayerRollOptions.PlayerID, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
+			let playerId: number = diceLayer.playerID;
+			if (activePlayerRollOptions)
+				playerId = activePlayerRollOptions.PlayerID;
+			addD20sForPlayer(playerId, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
 			diceRollData.hasSingleIndividual = true;
 		}
 		else if (diceRollData.rollScope == RollScope.Individuals) {

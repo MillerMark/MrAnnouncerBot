@@ -25,6 +25,8 @@ namespace DndCore
 
 		public static Weapon Get(string weaponName)
 		{
+			if (weaponName == null)
+				return null;
 			return Weapons.FirstOrDefault(x => x.Name.StartsWith(weaponName));
 		}
 

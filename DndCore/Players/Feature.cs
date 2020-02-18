@@ -31,6 +31,9 @@ namespace DndCore
 		public string ActivateWhen { get; set; }
 		[DndEvent]
 		public string OnStartGame { get; set; }
+		[DndEvent]
+		public string OnShortcutAvailabilityChange { get; set; }
+
 		public DndTimeSpan Duration { get; set; }
 		public bool IsActive { get; private set; }
 		public string Limit { get; set; }  // Could be an expression.
@@ -42,7 +45,9 @@ namespace DndCore
 		[DndEvent]
 		public string OnPlayerCastsSpell { get; set; }
 		[DndEvent]
-		public string OnPlayerSwingsWeapon { get; set; }
+		public string AfterPlayerSwingsWeapon { get; set; }
+		[DndEvent]
+		public string BeforePlayerRollsDice { get; set; }
 		[DndEvent]
 		public string OnPlayerRaisesWeapon { get; set; }
 		[DndEvent]
@@ -61,6 +66,7 @@ namespace DndCore
 		public string ShortcutName { get; set; }
 		public string ShortcutAvailableWhen { get; set; }
 		public bool Magic { get; set; }
+		public bool ModifiesExistingRoll { get; set; }
 
 		public bool AlwaysOn
 		{
@@ -79,19 +85,22 @@ namespace DndCore
 			result.Parameters = DndUtils.GetParameters(featureDto.Name);
 			result.ActivateWhen = featureDto.ActivateWhen;
 			result.OnStartGame = featureDto.OnStartGame;
+			result.OnShortcutAvailabilityChange = featureDto.OnShortcutAvailabilityChange;
 			result.Description = featureDto.Description;
 			result.OnActivate = featureDto.OnActivate;
 			result.ActivationMessage = featureDto.ActivationMessage;
 			result.OnDeactivate = featureDto.OnDeactivate;
 			result.DeactivationMessage = featureDto.DeactivationMessage;
 			result.OnPlayerCastsSpell = featureDto.OnPlayerCastsSpell;
-			result.OnPlayerSwingsWeapon = featureDto.OnPlayerSwingsWeapon;
+			result.AfterPlayerSwingsWeapon = featureDto.AfterPlayerSwingsWeapon;
+			result.BeforePlayerRollsDice = featureDto.BeforePlayerRollsDice;
 			result.OnPlayerRaisesWeapon = featureDto.OnPlayerRaisesWeapon;
 			result.OnPlayerStartsTurn = featureDto.OnPlayerStartsTurn;
 			result.OnPlayerSaves = featureDto.OnPlayerSaves;
 			result.OnRollComplete = featureDto.OnRollComplete;
 			result.ShortcutName = featureDto.ShortcutName;
 			result.ShortcutAvailableWhen = featureDto.ShortcutAvailableWhen;
+			result.ModifiesExistingRoll = MathUtils.IsChecked(featureDto.rollMod);
 			result.Magic = MathUtils.IsChecked(featureDto.Magic);
 			result.ActivationTime = PlayerActionShortcut.GetTurnPart(featureDto.ActivationTime);
 			result.RequiresPlayerActivation = MathUtils.IsChecked(featureDto.RequiresActivation);
@@ -176,11 +185,23 @@ namespace DndCore
 			TriggerStartGame(arguments, player);
 		}
 
+		public void ShortcutAvailabilityChange(string arguments, Character player)
+		{
+			TriggerShortcutAvailabilityChange(arguments, player);
+		}
+
 		private void TriggerStartGame(string arguments, Character player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnStartGame))
 				Expressions.Do(DndUtils.InjectParameters(OnStartGame, Parameters, arguments), player);
+		}
+
+		private void TriggerShortcutAvailabilityChange(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(OnShortcutAvailabilityChange))
+				Expressions.Do(DndUtils.InjectParameters(OnShortcutAvailabilityChange, Parameters, arguments), player);
 		}
 
 		public bool ShouldActivateNow(List<string> args, Character player)
@@ -205,18 +226,32 @@ namespace DndCore
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerCastsSpell, Parameters, arguments), player, null, spell);
 		}
 
-		public void WeaponJustSwung(string arguments, Character player)
+		public void AfterPlayerSwings(string arguments, Character player)
 		{
 			if (!IsActive)
 				return;
-			TriggerPlayerSwingsWeapon(arguments, player);
+			TriggerAfterPlayerSwingsWeapon(arguments, player);
 		}
 
-		private void TriggerPlayerSwingsWeapon(string arguments, Character player)
+		public void BeforePlayerRolls(string arguments, Character player)
+		{
+			if (!IsActive)
+				return;
+			TriggerBeforePlayerRollsDice(arguments, player);
+		}
+
+		private void TriggerAfterPlayerSwingsWeapon(string arguments, Character player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
-			if (!string.IsNullOrWhiteSpace(OnPlayerSwingsWeapon))
-				Expressions.Do(DndUtils.InjectParameters(OnPlayerSwingsWeapon, Parameters, arguments), player);
+			if (!string.IsNullOrWhiteSpace(AfterPlayerSwingsWeapon))
+				Expressions.Do(DndUtils.InjectParameters(AfterPlayerSwingsWeapon, Parameters, arguments), player);
+		}
+
+		private void TriggerBeforePlayerRollsDice(string arguments, Character player)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
+			if (!string.IsNullOrWhiteSpace(BeforePlayerRollsDice))
+				Expressions.Do(DndUtils.InjectParameters(BeforePlayerRollsDice, Parameters, arguments), player);
 		}
 
 		private void TriggerPlayerRaisesWeapon(string arguments, Character player)
@@ -228,8 +263,7 @@ namespace DndCore
 
 		public void PlayerStartsTurn(string arguments, Character player)
 		{
-			if (!IsActive)
-				return;
+			// Always trigger this event even if inactive.
 			TriggerPlayerStartsTurn(arguments, player);
 		}
 

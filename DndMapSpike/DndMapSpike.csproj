@@ -79,7 +79,6 @@
     <Compile Include="StampGroup.cs" />
     <Compile Include="StampsLayer.cs" />
     <Compile Include="TextureUtils.cs" />
-    <Compile Include="UngroupedStamps.cs" />
     <Compile Include="WallBuilder.cs" />
     <Compile Include="Walls.cs" />
     <Page Include="MainWindow.xaml">

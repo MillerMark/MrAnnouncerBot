@@ -33,6 +33,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
 		const string DragonHumpersChannel = "DragonHumpers";
@@ -127,7 +128,106 @@ namespace DHDM
 			AddReminderFunction.AddReminderRequest += AddReminderFunction_AddReminderRequest;
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
 
+			DndCharacterProperty.AskingValue += DndCharacterProperty_AskingValue;
+
 			SetupSpellsChangedFileWatcher();
+		}
+
+		void AddBooleanAsk(AskUI askUI)
+		{
+			CheckBox booleanAsk = new CheckBox();
+			booleanAsk.Margin = new Thickness(2, 2, 8, 2);
+			booleanAsk.Tag = askUI;
+			booleanAsk.Content = askUI.Caption;
+			booleanAsk.Checked += BooleanAsk_CheckChanged;
+			booleanAsk.Unchecked += BooleanAsk_CheckChanged;
+			booleanAsk.IsChecked = askUI.GetBooleanValue();
+			wpAskUI.Children.Add(booleanAsk);
+		}
+
+		private void BooleanAsk_CheckChanged(object sender, RoutedEventArgs e)
+		{
+			SetBooleanPropertyFromCheckbox(sender);
+			SetShortcutVisibility();
+		}
+
+		private static void SetBooleanPropertyFromCheckbox(object sender)
+		{
+			if (!(sender is CheckBox checkBox))
+				return;
+			if (!(checkBox.Tag is AskUI askUI))
+				return;
+			askUI.SetBooleanProperty(checkBox.IsChecked);
+		}
+
+		void AddStringAsk(AskUI askUI)
+		{
+			System.Diagnostics.Debugger.Break();
+		}
+
+		void UpdateAskUI(Character player)
+		{
+			if (!askUIs.ContainsKey(player))
+				return;
+			foreach (var uIElement in wpAskUI.Children)
+			{
+				if (uIElement is CheckBox checkBox)
+				{
+					if (checkBox.Tag is AskUI askUI)
+					{
+						checkBox.IsChecked = askUI.GetBooleanValue();
+					}
+				}
+				// TODO: Add support for text values here.
+			}
+		}
+
+		void RebuildAskUI(Character player)
+		{
+			wpAskUI.Children.Clear();
+			if (player == null)
+				return;
+			if (!askUIs.ContainsKey(player))
+				return;
+			List<AskUI> asks = askUIs[player];
+
+			List<AskUI> dupList = asks.ToList();
+			for (int i = 0; i < dupList.Count; i++)
+			{
+				AskUI askUI = dupList[i];
+				switch (askUI.MemberTypeName)
+				{
+					case "Boolean":
+						AddBooleanAsk(askUI);
+						break;
+					case "String":
+						AddStringAsk(askUI);
+						break;
+				}
+			}
+		}
+
+		private void DndCharacterProperty_AskingValue(object sender, AskValueEventArgs ea)
+		{
+			bool needToRebuildAskUI = false;
+			if (!askUIs.ContainsKey(ea.Player))
+			{
+				askUIs.Add(ea.Player, new List<AskUI>());
+				needToRebuildAskUI = true;
+			}
+			List<AskUI> asks = askUIs[ea.Player];
+			AskUI foundAsk = asks.FirstOrDefault(x => x.MemberName == ea.MemberName);
+			if (foundAsk == null)
+			{
+				foundAsk = new AskUI(ea);
+				asks.Add(foundAsk);
+				needToRebuildAskUI = true;
+			}
+
+			if (needToRebuildAskUI)
+				RebuildAskUI(ea.Player);
+
+			ea.Value = foundAsk.Value;
 		}
 
 		private void Expressions_ExecutionChanged(object sender, CodingSeb.ExpressionEvaluator.ExecutionPointerChangedEventArgs ea)
@@ -286,7 +386,14 @@ namespace DHDM
 					if (!string.IsNullOrEmpty(availableWhen))
 					{
 						Character player = game.GetPlayerFromId(shortcut.PlayerId);
-						if (Expressions.GetBool(availableWhen, player))
+						bool shortcutIsAvailable = Expressions.GetBool(availableWhen, player);
+						if (shortcutIsAvailable != shortcut.Available)
+						{
+							shortcut.Available = shortcutIsAvailable;
+							if (shortcut.SourceFeature != null)
+								shortcut.SourceFeature.ShortcutAvailabilityChange("", player);
+						}
+						if (shortcutIsAvailable)
 							shortcutPanel.Visibility = Visibility.Visible;
 						else
 							shortcutPanel.Visibility = Visibility.Collapsed;
@@ -383,16 +490,44 @@ namespace DHDM
 			}
 		}
 
+		Dictionary<DispatcherTimer, PlayerActionShortcut> shortcutTimers = new Dictionary<DispatcherTimer, PlayerActionShortcut>();
 		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				if (waitingToClearDice && !string.IsNullOrEmpty(ea.Shortcut.InstantDice))
-					shortcutToActivateAfterClearingDice = ea.Shortcut;
+				if (ea.DelayMs == 0)
+				{
+					if (waitingToClearDice && !string.IsNullOrEmpty(ea.Shortcut.InstantDice))
+						shortcutToActivateAfterClearingDice = ea.Shortcut;
+					else
+						ActivateShortcut(ea.Shortcut);
+				}
 				else
-					ActivateShortcut(ea.Shortcut);
+				{
+					DispatcherTimer dispatcherTimer = new DispatcherTimer();
+					dispatcherTimer.Interval = TimeSpan.FromMilliseconds(ea.DelayMs);
+					shortcutTimers.Add(dispatcherTimer, ea.Shortcut);
+					dispatcherTimer.Tick += ActivateShortcutTimer_Tick;
+					dispatcherTimer.Start();
+				}
 			});
 
+		}
+
+		private void ActivateShortcutTimer_Tick(object sender, EventArgs e)
+		{
+			if (!(sender is DispatcherTimer dispatcherTimer))
+				return;
+
+			dispatcherTimer.Stop();
+			dispatcherTimer.Tick -= ActivateShortcutTimer_Tick;
+
+			if (!shortcutTimers.ContainsKey(dispatcherTimer))
+				return;
+
+			PlayerActionShortcut shortcutToActivate = shortcutTimers[dispatcherTimer];
+			shortcutTimers.Remove(dispatcherTimer);
+			ActivateShortcut(shortcutToActivate);
 		}
 
 		// TODO: Spell Expired
@@ -553,6 +688,37 @@ namespace DHDM
 			return commandParsers.Find(x => x.ListensTo(userId));
 		}
 
+		public string GetPlayFirstNameFromId(int playerId)
+		{
+			if (game == null)
+				return string.Empty;
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return string.Empty;
+			return player.firstName;
+		}
+
+		public void SetBoolProperty(int playerId, string propertyName, bool value)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				Character player = game.GetPlayerFromId(playerId);
+				if (player == null)
+					return;
+				Character.SetBoolProperty(player, propertyName, value);
+				SetShortcutVisibility();
+				UpdateAskUI(player);
+			});
+		}
+
+		public bool GetBoolProperty(int playerId, string propertyName)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return false;
+			return Character.GetBoolProperty(player, propertyName);
+		}
+
 		public void SetHiddenThreshold(int hiddenThreshold)
 		{
 			Dispatcher.Invoke(() =>
@@ -651,6 +817,10 @@ namespace DHDM
 		{
 			if (string.IsNullOrWhiteSpace(description))
 				return null;
+			if (description.StartsWith("$"))
+			{
+				description = Expressions.GetStr(description, ActivePlayer);
+			}
 			ToolTip toolTip = new ToolTip();
 			TextBlock textBlock = new TextBlock();
 			textBlock.Text = description;
@@ -688,6 +858,7 @@ namespace DHDM
 
 		PlayerActionShortcut GetActionShortcut(object tag)
 		{
+			//PlayerActionShortcut sneak = actionShortcuts.LastOrDefault(x => x.Name.StartsWith("Sneak"));
 			if (int.TryParse(tag.ToString(), out int index))
 				return actionShortcuts.FirstOrDefault(x => x.Index == index);
 			return null;
@@ -712,9 +883,14 @@ namespace DHDM
 
 		void SetVantageForActivePlayer(VantageKind vantageMod)
 		{
+			SetVantageForPlayer(vantageMod, ActivePlayerId);
+		}
+
+		public void SetVantageForPlayer(VantageKind vantageMod, int playerId)
+		{
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 			{
-				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == ActivePlayerId)
+				if (uIElement is PlayerRollCheckBox checkbox && checkbox.PlayerId == playerId)
 				{
 					switch (vantageMod)
 					{
@@ -732,8 +908,6 @@ namespace DHDM
 				}
 			}
 		}
-
-
 
 		private void Game_SpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
@@ -911,110 +1085,119 @@ namespace DHDM
 
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
-			if (actionShortcut.Type == DiceRollType.WildMagic)
-			{
-				Character activePlayer = GetPlayer(actionShortcut.PlayerId);
-				if (activePlayer != null)
-					activePlayer.NumWildMagicChecks = 0;
-			}
-			ActivatePendingShortcuts();
-			activeTrailingEffects = string.Empty;
-			activeDieRollEffects = string.Empty;
-			activeIsSpell = null;
-			if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
-				activeTrailingEffects = actionShortcut.TrailingEffects;
-			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
-				activeDieRollEffects = actionShortcut.DieRollEffects;
-
-			SetRollTypeCheckbox(actionShortcut);
-
-			//diceRoll.TrailingEffects
-			if (actionShortcut.ModifiesExistingRoll)
-			{
-				switch (actionShortcut.VantageMod)
-				{
-					case VantageKind.Advantage:
-					case VantageKind.Disadvantage:
-						SetVantageForActivePlayer(actionShortcut.VantageMod);
-						break;
-				}
-				if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
-					tbxDamageDice.Text += "," + actionShortcut.AddDice;
-				return;
-			}
-
-			// TODO: Clear the weapons, but not the spells...
-			HubtasticBaseStation.ClearWindup("Weapon.*");
-			HubtasticBaseStation.ClearWindup("Windup.*");
-
-
 			Character player = GetPlayer(actionShortcut.PlayerId);
-			player.ClearAdditionalSpellEffects();
-			if (actionShortcut.Part != TurnPart.Reaction)
-				game.CreatureTakingAction(player);
 
-			// TODO: Fix the targeting.
-			if (DndUtils.IsAttack(actionShortcut.Type))
-				player.WillAttack(null, actionShortcut);
-
-			Spell spell = actionShortcut.Spell;
-			if (spell != null)
-			{
-				if (tbTabs.SelectedItem == tbDebug)
-					UpdateSpellEvents(spell);
-				ActivateSpellShortcut(actionShortcut, player, spell);
-			}
-			else
-			{
-				if (DndUtils.IsAttack(actionShortcut.Type) && actionShortcut.WeaponProperties != WeaponProperties.None)
-				{
-					game.CreatureRaisingWeapon(player, actionShortcut);
-				}
-
-				// TODO: Add support for shortcut buttons that can activate a particular scroll page (e.g., a wand that activates the items page?)
-				if (actionShortcut.Name.IndexOf("Wild Magic") < 0)
-					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
-
-				SendShortcutWindups(actionShortcut, player);
-			}
-
-			actionShortcut.ExecuteCommands(player);
-			player.Use(actionShortcut);
-
-			// TODO: keepExistingModifier????
-			// if (actionShortcut.PlusModifier != keepExistingModifier)
-			if (actionShortcut.ToHitModifier > 0)
-				tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
-			else
-				tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
-
-			settingInternally = true;
 			try
 			{
-				HighlightPlayerShortcut(actionShortcut.Index);
-				SetControlsFromShortcut(actionShortcut, spell);
-				NextDieRollType = actionShortcut.Type;
-
-				if (actionShortcut.VantageMod != VantageKind.Normal)
-					SetVantageForActivePlayer(actionShortcut.VantageMod);
-
-				if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
+				if (actionShortcut.Type == DiceRollType.WildMagic)
 				{
-					DiceRollType type = actionShortcut.Type;
-					if (type == DiceRollType.None)
-						type = DiceRollType.DamageOnly;
-					DiceRoll diceRoll = PrepareRoll(type);
-					diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+					Character activePlayer = GetPlayer(actionShortcut.PlayerId);
+					if (activePlayer != null)
+						activePlayer.NumWildMagicChecks = 0;
+				}
+				ActivatePendingShortcuts();
+				activeTrailingEffects = string.Empty;
+				activeDieRollEffects = string.Empty;
+				activeIsSpell = null;
+				if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
+					activeTrailingEffects = actionShortcut.TrailingEffects;
+				if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
+					activeDieRollEffects = actionShortcut.DieRollEffects;
+
+				if (actionShortcut.ModifiesExistingRoll)
+				{
+					switch (actionShortcut.VantageMod)
+					{
+						case VantageKind.Advantage:
+						case VantageKind.Disadvantage:
+							SetVantageForActivePlayer(actionShortcut.VantageMod);
+							break;
+					}
+					if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+						tbxDamageDice.Text += "," + actionShortcut.AddDice;
+					actionShortcut.ExecuteCommands(player);
+					return;
+				}
+
+				SetRollTypeCheckbox(actionShortcut);
 
 
-					diceRoll.DamageDice = actionShortcut.InstantDice;
-					RollTheDice(diceRoll);
+				// TODO: Clear the weapons, but not the spells...
+				HubtasticBaseStation.ClearWindup("Weapon.*");
+				HubtasticBaseStation.ClearWindup("Windup.*");
+
+				player.ClearAdditionalSpellEffects();
+				if (actionShortcut.Part != TurnPart.Reaction)
+					game.CreatureTakingAction(player);
+
+				// TODO: Fix the targeting.
+				if (DndUtils.IsAttack(actionShortcut.Type))
+					player.WillAttack(null, actionShortcut);
+
+				Spell spell = actionShortcut.Spell;
+				if (spell != null)
+				{
+					player.IsAboutToCastSpell();
+					if (tbTabs.SelectedItem == tbDebug)
+						UpdateSpellEvents(spell);
+					ActivateSpellShortcut(actionShortcut, player, spell);
+				}
+				else
+				{
+					if (DndUtils.IsAttack(actionShortcut.Type) && actionShortcut.WeaponProperties != WeaponProperties.None)
+					{
+						game.CreatureRaisingWeapon(player, actionShortcut);
+					}
+
+					// TODO: Add support for shortcut buttons that can activate a particular scroll page (e.g., a wand that activates the items page?)
+					if (actionShortcut.Name.IndexOf("Wild Magic") < 0)
+						HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
+
+					SendShortcutWindups(actionShortcut, player);
+				}
+
+				player.Use(actionShortcut);
+
+				// TODO: keepExistingModifier????
+				// if (actionShortcut.PlusModifier != keepExistingModifier)
+				if (actionShortcut.ToHitModifier > 0)
+					tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
+				else
+					tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
+
+				settingInternally = true;
+				try
+				{
+					HighlightPlayerShortcut(actionShortcut.Index);
+					SetControlsFromShortcut(actionShortcut, spell);
+					NextDieRollType = actionShortcut.Type;
+
+					if (actionShortcut.VantageMod != VantageKind.Normal)
+						SetVantageForActivePlayer(actionShortcut.VantageMod);
+
+					if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
+					{
+						DiceRollType type = actionShortcut.Type;
+						if (type == DiceRollType.None)
+							type = DiceRollType.DamageOnly;
+						DiceRoll diceRoll = PrepareRoll(type);
+						diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+
+
+						diceRoll.DamageDice = actionShortcut.InstantDice;
+						RollTheDice(diceRoll);
+					}
+				}
+				finally
+				{
+					settingInternally = false;
+					UpdateStateUIForPlayer(player);
 				}
 			}
 			finally
 			{
-				settingInternally = false;
-				UpdateStateUIForPlayer(player);
+				SetShortcutVisibility();
+				UpdateAskUI(player);
 			}
 		}
 
@@ -1196,6 +1379,7 @@ namespace DHDM
 		{
 			UpdateStateUIForPlayer(player);
 			UpdateEventsUIForPlayer(player);
+			RebuildAskUI(player);
 		}
 
 		void UpdateEventsUIForPlayer(Character player)
@@ -1310,6 +1494,7 @@ namespace DHDM
 				}
 			}
 
+			secondToLastRoll = lastRoll;
 			lastRoll = diceRoll;
 			Character player = null;
 			CompleteCast(diceRoll);
@@ -1417,8 +1602,17 @@ namespace DHDM
 			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.SkillCheck);
 		}
 
+		void BeforePlayerRolls(int playerId)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			player.BeforePlayerRollsDice();
+		}
+
 		private DiceRoll PrepareRoll(DiceRollType type)
 		{
+
 			VantageKind diceRollKind = VantageKind.Normal;
 
 			if (CanIncludeVantageDice(type))
@@ -1500,6 +1694,7 @@ namespace DHDM
 				}
 			}
 
+			bool foundPlayer = false;
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 			{
 				if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
@@ -1514,8 +1709,13 @@ namespace DHDM
 
 					string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
 					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
+					BeforePlayerRolls(checkbox.PlayerId);
+					foundPlayer = true;
 				}
 			}
+
+			if (!foundPlayer)
+				BeforePlayerRolls(ActivePlayerId);
 
 			switch (type)
 			{
@@ -1568,9 +1768,10 @@ namespace DHDM
 			diceRoll.AddDieRollEffects(activeDieRollEffects);
 
 			// TODO: Make this data-driven:
+			
 			if (type == DiceRollType.WildMagicD20Check)
 			{
-				diceRoll.NumHalos = 3;
+				diceRoll.IsMagic = true;
 				diceRoll.AddTrailingEffects("SmallSparks");
 				if (diceRoll.PlayerRollOptions != null && diceRoll.PlayerRollOptions.Count == 1)
 				{
@@ -1604,14 +1805,43 @@ namespace DHDM
 
 		private void BtnAddLongRest_Click(object sender, RoutedEventArgs e)
 		{
-			game?.RechargePlayersAfterLongRest();
-			Rest(8);
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))  // Ctrl + Click affects only the active player.
+			{
+				if (ActivePlayer == null)
+					return;
+				ActivePlayer.RechargeAfterLongRest();
+				TellDungeonMaster($"{ActivePlayer.firstName} has had a long rest.");
+			}
+			else
+			{
+				TellDungeonMaster("All players have recharged after a long rest.");
+				game?.RechargePlayersAfterLongRest();
+				Rest(8);
+				TellDungeonMasterTheTime();
+			}
 		}
 
 		private void BtnAddShortRest_Click(object sender, RoutedEventArgs e)
 		{
-			game?.RechargePlayersAfterShortRest();
-			Rest(2);
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))  // Ctrl + Click affects only the active player.
+			{
+				if (ActivePlayer == null)
+					return;
+				ActivePlayer.RechargeAfterShortRest();
+				TellDungeonMaster($"{ActivePlayer.firstName} has had a short rest.");
+			}
+			else
+			{
+				TellDungeonMaster("All players have had a short rest.");
+				game?.RechargePlayersAfterShortRest();
+				Rest(2);
+				TellDungeonMasterTheTime();
+			}
+		}
+
+		void TellDungeonMasterTheTime()
+		{
+			TellDungeonMaster($"The time is now {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
 		private void Rest(int hours)
@@ -1970,6 +2200,12 @@ namespace DHDM
 			if (ChaosBoltRolledDoubles(diceStoppedRollingData))
 			{
 				DiceRoll chaosBoltRoll = lastRoll;
+				if (lastRoll.Type == DiceRollType.WildMagicD20Check)
+					chaosBoltRoll = secondToLastRoll;
+				if (chaosBoltRoll == null)
+				{
+					return;
+				}
 				Dispatcher.Invoke(() =>
 				{
 					if (AnswersYes("Doubles! Fire Chaos Bolt again?"))
@@ -1992,7 +2228,7 @@ namespace DHDM
 				singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
 			else if (diceStoppedRollingData.type == DiceRollType.Attack)
 			{
-				singlePlayer.JustSwungWeapon();
+				singlePlayer.AfterPlayerSwingsWeapon();
 			}
 
 			// TODO: pass **targeted creatures** into RollIsComplete...
@@ -2669,8 +2905,10 @@ namespace DHDM
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				EffectType = "PawPrint",
-				LeftRightDistanceBetweenPrints = 50,
-				MinForwardDistanceBetweenPrints = 90,
+				Scale = 0.5,
+				LeftRightDistanceBetweenPrints = 25,
+				MinForwardDistanceBetweenPrints = 45,
+				Lifespan = 3000
 			});
 
 			RollTheDice(diceRoll);
@@ -3206,18 +3444,24 @@ namespace DHDM
 				RadioButton rbNormalRoll = new RadioButton();
 				rbNormalRoll.Content = "Normal";
 				rbNormalRoll.IsChecked = true;
+				rbNormalRoll.Tag = playerId;
+				rbNormalRoll.Checked += RbNormalRoll_Checked;
 				spOptions.Children.Add(rbNormalRoll);
 				checkBox.RbNormal = rbNormalRoll;
 
 				RadioButton rbAdvantageRoll = new RadioButton();
 				rbAdvantageRoll.Content = "Adv.";
 				rbAdvantageRoll.Margin = new Thickness(14, 0, 0, 0);
+				rbAdvantageRoll.Tag = playerId;
+				rbAdvantageRoll.Checked += RbAdvantageRoll_Checked;
 				spOptions.Children.Add(rbAdvantageRoll);
 				checkBox.RbAdvantage = rbAdvantageRoll;
 
 				RadioButton rbDisadvantageRoll = new RadioButton();
 				rbDisadvantageRoll.Content = "Disadv.";
 				rbDisadvantageRoll.Margin = new Thickness(14, 0, 0, 0);
+				rbDisadvantageRoll.Tag = playerId;
+				rbDisadvantageRoll.Checked += RbDisadvantageRoll_Checked;
 				spOptions.Children.Add(rbDisadvantageRoll);
 				checkBox.RbDisadvantage = rbDisadvantageRoll;
 
@@ -3249,6 +3493,48 @@ namespace DHDM
 
 				playerId++;
 			}
+		}
+
+		private void RbNormalRoll_Checked(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is RadioButton radioButton))
+				return;
+			int playerID = (int)radioButton.Tag;
+			Character player = game.GetPlayerFromId(playerID);
+			if (player == null)
+				return;
+			player.advantageDiceThisRoll = 0;
+			player.disadvantageDiceThisRoll = 0;
+			UpdateAskUI(player);
+			SetShortcutVisibility();
+		}
+
+		private void RbDisadvantageRoll_Checked(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is RadioButton radioButton))
+				return;
+			int playerID = (int)radioButton.Tag;
+			Character player = game.GetPlayerFromId(playerID);
+			if (player == null)
+				return;
+			player.advantageDiceThisRoll = 0;
+			player.disadvantageDiceThisRoll = 1;
+			UpdateAskUI(player);
+			SetShortcutVisibility();
+		}
+
+		private void RbAdvantageRoll_Checked(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is RadioButton radioButton))
+				return;
+			int playerID = (int)radioButton.Tag;
+			Character player = game.GetPlayerFromId(playerID);
+			if (player == null)
+				return;
+			player.advantageDiceThisRoll = 1;
+			player.disadvantageDiceThisRoll = 0;
+			UpdateAskUI(player);
+			SetShortcutVisibility();
 		}
 
 		private void InspirationTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -3500,6 +3786,7 @@ namespace DHDM
 		string lastScenePlayed;
 		PlayerActionShortcut shortcutToActivateAfterClearingDice;
 		DiceRoll lastRoll;
+		DiceRoll secondToLastRoll;
 		DateTime lastChatMessageSent;
 		bool waitingForAnswerToQuestion;
 		void CheckAllPlayers()
@@ -3613,11 +3900,11 @@ namespace DHDM
 			});
 		}
 
-		public void SetVantage(VantageKind vantageKind)
+		public void SetVantage(VantageKind vantageKind, int playerId)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				SetVantageForActivePlayer(vantageKind);
+				SetVantageForPlayer(vantageKind, playerId);
 			});
 		}
 

@@ -301,6 +301,8 @@ namespace DndCore
 
 			if (lastPlayer != player)
 			{
+				if (player is Character character)
+					character.PlayerStartsTurn();
 				player.StartTurnResetState();
 				StartingTurnFor(player);
 			}

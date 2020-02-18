@@ -8,17 +8,34 @@ using System.Runtime.Remoting;
 
 namespace MapCore
 {
-	public class ReconstituteStampsEventArgs : EventArgs
-	{
-		public List<IStampProperties> Stamps { get; set; }
-		public SerializedStamp SerializedStamp { get; set; }
-		public ReconstituteStampsEventArgs()
-		{
-			
-		}
-	}
 	public class Map : IMapInterface, IStampsManager
 	{
+		List<IStampProperties> selectedStamps;
+		public List<IStampProperties> SelectedStamps
+		{
+			get
+			{
+				if (selectedStamps == null)
+					selectedStamps = new List<IStampProperties>();
+
+				return selectedStamps;
+			}
+			set
+			{
+				selectedStamps = value;
+			}
+		}
+
+		public delegate void CreateGroupEventHandler(object sender, CreateGroupEventArgs ea);
+		public event CreateGroupEventHandler CreatingGroup;
+
+		public IStampGroup CreateGroup(List<IStampProperties> stampsToGroup)
+		{
+			CreateGroupEventArgs ea = new CreateGroupEventArgs(stampsToGroup);
+			CreatingGroup?.Invoke(this, ea);
+			return ea.Group;
+		}
+
 		public delegate void SelectStampsEventHandler(object sender, SelectStampsEventArgs ea);
 		public event SelectStampsEventHandler SelectingStamps;
 

@@ -590,7 +590,7 @@
 		brightness.binding = anyTargetValue.targetBinding;
 	}
 
-	protected triggerAnimation(dto: any, center: Vector) {
+	protected triggerAnimationDto(dto: any, center: Vector) {
 		let sprites: Sprites;
 		let horizontallyFlippable: boolean = false;
 		//console.log('dto.spriteName: ' + dto.spriteName);
@@ -746,32 +746,35 @@
 		let fredIsTakingDamage: boolean = false;
 		let fredIsGettingHitByBlood: boolean = false;
 		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
-			let splatterDirection: SplatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
-			console.log('splatterDirection: ' + splatterDirection);
+			let splatterDirection: SplatterDirection;
+			if (playerHealth.DamageHealth < 0) {
+				splatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
 
-			if (playerHealth.PlayerIds[i] === this.Player_Fred) {
-				fredIsTakingDamage = true;
-				console.log('fredIsTakingDamage = true');
-			}
-			else {
-				if (!fredIsTakingDamage && playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
+				if (playerHealth.PlayerIds[i] === this.Player_Fred) {
+					fredIsTakingDamage = true;
+				}
+				else {
+					if (!fredIsTakingDamage && playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
 
-					let absDamage: number = -playerHealth.DamageHealth;
+						let absDamage: number = -playerHealth.DamageHealth;
 
-					if (absDamage >= this.heavyDamageThreshold)
-						fredIsGettingHitByBlood = true;
-					else if (absDamage >= this.mediumDamageThreshold) {
-						let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
-						if (playerX < 900)
+						if (absDamage >= this.heavyDamageThreshold)
 							fredIsGettingHitByBlood = true;
-					}
-					else if (absDamage >= this.lightDamageThreshold) {
-						let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
-						if (playerX < 600)
-							fredIsGettingHitByBlood = true;
+						else if (absDamage >= this.mediumDamageThreshold) {
+							let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+							if (playerX < 900)
+								fredIsGettingHitByBlood = true;
+						}
+						else if (absDamage >= this.lightDamageThreshold) {
+							let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+							if (playerX < 600)
+								fredIsGettingHitByBlood = true;
+						}
 					}
 				}
 			}
+			else
+				this.showHealthGain(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
 		}
 
 		if (!fredIsTakingDamage && fredIsGettingHitByBlood)
@@ -792,53 +795,53 @@
 			flipHorizontally = true;
 		let damageHealthSprites: BloodSprites;
 		let scale: number = 1;
-		if (damageHealth < 0) {
-			let absDamage: number = -damageHealth;
+		if (damageHealth > 0)
+			return SplatterDirection.None;
 
-			if (absDamage >= this.heavyDamageThreshold)
-				this.dragonFrontSounds.playRandom('Damage/Heavy/GushHeavy', 13);
-			else if (absDamage >= this.mediumDamageThreshold)
-				this.dragonFrontSounds.playRandom('Damage/Medium/GushMedium', 29);
-			else
-				this.dragonFrontSounds.playRandom('Damage/Light/GushLight', 15);
+		let absDamage: number = -damageHealth;
+
+		if (absDamage >= this.heavyDamageThreshold)
+			this.dragonFrontSounds.playRandom('Damage/Heavy/GushHeavy', 13);
+		else if (absDamage >= this.mediumDamageThreshold)
+			this.dragonFrontSounds.playRandom('Damage/Medium/GushMedium', 29);
+		else
+			this.dragonFrontSounds.playRandom('Damage/Light/GushLight', 15);
 
 
-			if (absDamage < this.fullScreenDamageThreshold) {
-				damageHealthSprites = this.getScalableBlood();
+		if (absDamage < this.fullScreenDamageThreshold) {
+			damageHealthSprites = this.getScalableBlood();
 
-				let desiredBloodHeight: number = 1080 * absDamage / this.fullScreenDamageThreshold;
-				scale = desiredBloodHeight / damageHealthSprites.height;
+			let desiredBloodHeight: number = 1080 * absDamage / this.fullScreenDamageThreshold;
+			scale = desiredBloodHeight / damageHealthSprites.height;
+		}
+		else {
+			if (Random.chancePercent(25)) {
+				damageHealthSprites = this.bloodGushB;
+			}
+			else if (Random.chancePercent(33)) {
+				damageHealthSprites = this.bloodGushC;
+			}
+			else if (Random.chancePercent(50)) {
+				damageHealthSprites = this.bloodGushA;
 			}
 			else {
-				if (Random.chancePercent(25)) {
-					damageHealthSprites = this.bloodGushB;
-				}
-				else if (Random.chancePercent(33)) {
-					damageHealthSprites = this.bloodGushC;
-				}
-				else if (Random.chancePercent(50)) {
-					damageHealthSprites = this.bloodGushA;
-				}
-				else {
-					damageHealthSprites = this.bloodGushD;
-				}
-				scale = 1080 / damageHealthSprites.height;
+				damageHealthSprites = this.bloodGushD;
 			}
-
-			let playerIndex: number = this.getPlayerIndex(playerId);
-
-			let x: number = this.getPlayerX(playerIndex);
-			let center: Vector = new Vector(x, 1080);
-			if (x < 300 && flipHorizontally && Random.chancePercent(70))
-				flipHorizontally = false;
-			let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
-			spritesEffect.scale = scale;
-			spritesEffect.start();
-			if (flipHorizontally)
-				return SplatterDirection.Left;
-			return SplatterDirection.Right;
+			scale = 1080 / damageHealthSprites.height;
 		}
-		return SplatterDirection.None;
+
+		let playerIndex: number = this.getPlayerIndex(playerId);
+
+		let x: number = this.getPlayerX(playerIndex);
+		let center: Vector = new Vector(x, 1080);
+		if (x < 300 && flipHorizontally && Random.chancePercent(70))
+			flipHorizontally = false;
+		let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
+		spritesEffect.scale = scale;
+		spritesEffect.start();
+		if (flipHorizontally)
+			return SplatterDirection.Left;
+		return SplatterDirection.Right;
 	}
 
 	getScalableBlood(): BloodSprites {

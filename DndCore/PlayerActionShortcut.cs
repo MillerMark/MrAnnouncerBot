@@ -77,6 +77,8 @@ namespace DndCore
 		public string DieRollEffects { get; set; }
 		public CarriedWeapon CarriedWeapon { get; set; }
 		public string AvailableWhen { get; set; }
+		public Feature SourceFeature { get; set; }
+		public bool Available { get; set; }
 		public string lastPrefix;
 
 		public PlayerActionShortcut()
@@ -624,9 +626,11 @@ namespace DndCore
 				result.Name = feature.ShortcutName;
 			result.AvailableWhen = feature.ShortcutAvailableWhen;
 			result.UsesMagic = feature.Magic;
+			result.ModifiesExistingRoll = feature.ModifiesExistingRoll;
 			result.Part = feature.ActivationTime;
 			result.PlayerId = player.playerID;
 			result.Commands = $"ActivateFeature({feature.Name})";
+			result.SourceFeature = feature;
 			return result;
 		}
 

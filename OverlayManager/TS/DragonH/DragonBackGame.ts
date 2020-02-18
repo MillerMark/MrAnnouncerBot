@@ -52,7 +52,7 @@ class DragonBackGame extends DragonGame {
 		}
 	}
 
-	protected triggerAnimation(dto: any, center: Vector) {
+	protected triggerAnimationw(dto: any, center: Vector) {
 		let sprites: Sprites;
 		for (let i = 0; i < this.allWindupEffects.allSprites.length; i++) {
 			if (dto.spriteName === this.allWindupEffects.allSprites[i].name) {
@@ -64,7 +64,7 @@ class DragonBackGame extends DragonGame {
 		if (!sprites) {
 			console.error(`"${dto.spriteName}" sprite not found.`);
 			return;
-		}	
+		}
 
 		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
 			dto.horizontalFlip, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
@@ -72,8 +72,26 @@ class DragonBackGame extends DragonGame {
 		spritesEffect.start();
 	}
 
-	changePlayerHealth(playerData: string): void {
-		//this.characterStatsScroll.changePlayerHealth(playerData);
+	protected triggerAnimationDto(dto: any, center: Vector) {
+		let spriteName: string = dto.spriteName;
+		let startFrameIndex: number = dto.startFrameIndex;
+		let hueShift: number = dto.hueShift;
+		let saturation: number = dto.saturation;
+		let brightness: number = dto.brightness;
+		let horizontalFlip: boolean = dto.horizontalFlip;
+		let verticalFlip: boolean = dto.verticalFlip;
+		let scale: number = dto.scale;
+		let rotation: number = dto.rotation;
+		let autoRotation: number = dto.autoRotation;
+		this.triggerAnimation(spriteName, center, startFrameIndex, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation);
+	}
+
+	changePlayerHealth(playerHealthDto: string): void {
+		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
+
+		for (var i = 0; i < playerHealth.PlayerIds.length; i++)
+			if (playerHealth.DamageHealth > 0)
+				this.showHealthGain(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
 	}
 
 	exitingCombat() {
@@ -131,8 +149,7 @@ class DragonBackGame extends DragonGame {
 		context.font = dateHeight + timeFont;
 		let dateFontScale: number = 1;
 		let tryFontSize: number = dateHeight * dateFontScale;
-		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6)
-		{
+		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6) {
 			dateFontScale *= 0.95;
 			tryFontSize = dateHeight * dateFontScale;
 			context.font = tryFontSize + timeFont;

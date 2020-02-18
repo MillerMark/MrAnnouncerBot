@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace DndCore
 {
@@ -713,8 +714,18 @@ namespace DndCore
 				return this.getModFromAbility(this.Strength);
 			}
 		}
+
+		[Ask("Weapon is Two-handed")]
 		public bool TwoHanded { get; set; }  // TODO: Implement this + test cases.
+
+		[Ask("Weapon is Heavy")]
 		public bool WeaponIsHeavy { get; set; }  // TODO: Implement this + test cases.
+
+		[Ask("Weapon is Ranged")]
+		public bool WeaponIsRanged { get; set; } // TODO: Implement this + test cases.
+
+		[Ask("Weapon is Finesse")]
+		public bool WeaponIsFinesse { get; set; } // TODO: Implement this + test cases.
 		public Weapons weaponProficiency { get; set; }
 		public int WeaponsInHand { get; set; }  // TODO: Implement this (0, 1 or 2) + test cases.
 		public double wisdomMod
@@ -785,6 +796,10 @@ namespace DndCore
 		static List<AssignedFeature> GetFeatures(string featureListStr, Character player)
 		{
 			List<AssignedFeature> results = new List<AssignedFeature>();
+			if (featureListStr.IndexOf(',') >= 0)  // Features need to be semicolon-delimited
+			{
+				System.Diagnostics.Debugger.Break();
+			}
 			List<string> features = featureListStr.Split(';').ToList();
 			foreach (string feature in features)
 			{
@@ -1380,19 +1395,27 @@ namespace DndCore
 			return (int)result;
 		}
 
-		// TODO: Incorporate GetVantageThisRoll into die rolls.
-		public VantageKind GetVantageThisRoll()
+		// TODO: Implement TargetIsFlanked when map is built and integrated into the game.
+		[Ask("Target is flanked")]
+		public bool TargetIsFlanked { get; set; }
+
+
+		// TODO: Incorporate VantageThisRoll into die rolls.
+		public VantageKind VantageThisRoll
 		{
-			if (advantageDiceThisRoll > 0 && disadvantageDiceThisRoll > 0)
+			get
+			{
+				if (advantageDiceThisRoll > 0 && disadvantageDiceThisRoll > 0)
+					return VantageKind.Normal;
+
+				if (advantageDiceThisRoll > 0)
+					return VantageKind.Advantage;
+
+				if (disadvantageDiceThisRoll > 0)
+					return VantageKind.Disadvantage;
+
 				return VantageKind.Normal;
-
-			if (advantageDiceThisRoll > 0)
-				return VantageKind.Advantage;
-
-			if (disadvantageDiceThisRoll > 0)
-				return VantageKind.Disadvantage;
-
-			return VantageKind.Normal;
+			}
 		}
 
 		public void GiveAdvantageThisRoll()
@@ -1503,14 +1526,30 @@ namespace DndCore
 			}
 		}
 
-		public void JustSwungWeapon()
+		public void AfterPlayerSwingsWeapon()
 		{
 			Expressions.BeginUpdate();
 			try
 			{
 				foreach (AssignedFeature assignedFeature in features)
 				{
-					assignedFeature.WeaponJustSwung(this);
+					assignedFeature.AfterPlayerSwings(this);
+				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
+			}
+		}
+
+		public void BeforePlayerRollsDice()
+		{
+			Expressions.BeginUpdate();
+			try
+			{
+				foreach (AssignedFeature assignedFeature in features)
+				{
+					assignedFeature.BeforePlayerRolls(this);
 				}
 			}
 			finally
@@ -1802,6 +1841,8 @@ namespace DndCore
 			OneHanded = false;
 			TwoHanded = false;
 			WeaponIsHeavy = false;
+			WeaponIsRanged = false;
+			WeaponIsFinesse = false;
 			checkingAbilities = Ability.none;
 			savingAgainst = Ability.none;
 			checkingSkills = Skills.none;
@@ -1830,6 +1871,16 @@ namespace DndCore
 				attackingAbilityModifier = playerActionShortcut.AttackingAbilityModifier;
 				attackingAbility = playerActionShortcut.AttackingAbility;
 				attackingType = playerActionShortcut.AttackingType;
+				if (playerActionShortcut.Type == DiceRollType.Attack)
+				{
+					if (playerActionShortcut.CarriedWeapon != null)
+					{
+						Weapon weapon = AllWeapons.Get(playerActionShortcut.CarriedWeapon.Weapon.Name);
+						WeaponIsFinesse = (weapon.weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse;
+						WeaponIsHeavy = (weapon.weaponProperties & WeaponProperties.Heavy) == WeaponProperties.Heavy;
+						WeaponIsRanged = (weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged;
+					}
+				}
 				playerActionShortcut.ExecuteCommands(this);
 			}
 
@@ -2294,7 +2345,7 @@ namespace DndCore
 
 			foreach (AssignedFeature assignedFeature in player.features)
 			{
-				eventCategory.Add(new EventGroup(assignedFeature.Feature, assignedFeature.Feature.Name, eventType, DndEventManager.knownEvents[type]));
+				eventCategory.Add(new EventGroup(assignedFeature.Feature, assignedFeature.Feature?.Name, eventType, DndEventManager.knownEvents[type]));
 			}
 
 			return eventCategory;
@@ -2380,9 +2431,51 @@ namespace DndCore
 			return foundEvent.BreakAtStart;
 		}
 
+		public void IsAboutToCastSpell()
+		{
+			WeaponIsFinesse = false;
+			WeaponIsHeavy = false;
+			WeaponIsRanged = false;
+		}
+
 		public event CastedSpellEventHandler SpellDispelled;
 		public event RollDiceEventHandler RollDiceRequest;
 		public event StateChangedEventHandler StateChanged;
 		public event MessageEventHandler RequestMessageToDungeonMaster;
+
+		public static void SetBoolProperty(Character player, string memberName, bool value)
+		{
+			if (player == null)
+				return;
+
+			PropertyInfo propertyInfo = player.GetType().GetProperty(memberName, BindingFlags.Public | BindingFlags.Instance);
+			if (null != propertyInfo && propertyInfo.CanWrite)
+			{
+				propertyInfo.SetValue(player, value, null);
+				return;
+			}
+
+			FieldInfo fieldInfo = player.GetType().GetField(memberName, BindingFlags.Public | BindingFlags.Instance);
+			if (null != fieldInfo)
+			{
+				fieldInfo.SetValue(player, value);
+			}
+		}
+
+		public static bool GetBoolProperty(Character player, string memberName)
+		{
+			if (player == null)
+				return false;
+
+			PropertyInfo propertyInfo = player.GetType().GetProperty(memberName, BindingFlags.Public | BindingFlags.Instance);
+			if (null != propertyInfo && propertyInfo.CanWrite)
+				return (bool)propertyInfo.GetValue(player);
+
+			FieldInfo fieldInfo = player.GetType().GetField(memberName, BindingFlags.Public | BindingFlags.Instance);
+			if (null != fieldInfo)
+				return (bool)fieldInfo.GetValue(player);
+
+			return false;
+		}
 	}
 }

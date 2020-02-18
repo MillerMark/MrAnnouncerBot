@@ -11,16 +11,19 @@ namespace DndCore
 		public string ActivationTime { get; set; }
 		public string ShortcutName { get; set; }
 		public string ShortcutAvailableWhen { get; set; }
+		public string rollMod { get; set; }
 		public string Magic { get; set; }
 		public string ActivateWhen { get; set; }
 		public string OnStartGame { get; set; }
+		public string OnShortcutAvailabilityChange { get; set; }
 		public string OnActivate { get; set; }
 		public string ActivationMessage { get; set; }
 		public string OnDeactivate { get; set; }
 		public string DeactivationMessage { get; set; }
 		public string OnPlayerStartsTurn { get; set; }
 		public string OnPlayerRaisesWeapon { get; set; }
-		public string OnPlayerSwingsWeapon { get; set; }
+		public string AfterPlayerSwingsWeapon { get; set; }
+		public string BeforePlayerRollsDice { get; set; }
 		public string OnPlayerCastsSpell { get; set; }
 		public string OnPlayerSaves { get; set; }
 		public string OnRollComplete { get; set; }

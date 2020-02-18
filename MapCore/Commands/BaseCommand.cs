@@ -34,6 +34,49 @@ namespace MapCore
 		// TODO: This has to change to support adding and deleting stamps
 		public List<IStampProperties> SelectedStamps { get; set; }
 		List<Guid> stampGuids = new List<Guid>();
+
+
+		protected void ClearSelectedStamps(Map map)
+		{
+			map.SelectedStamps.Clear();
+			SelectedStamps.Clear();
+			UpdateSelectedStampGuids();
+		}
+
+		void UpdateSelectedStampGuids()
+		{
+			stampGuids.Clear();
+			stampGuids.AddRange(SelectedStamps.Select(stampProperties => stampProperties.Guid));
+		}
+
+		protected void AddSelectedStamp(Map map, IStampProperties stamp)
+		{
+			map.SelectedStamps.Add(stamp);
+			SelectedStamps.Add(stamp);
+			UpdateSelectedStampGuids();
+		}
+
+		protected void RemoveSelectedStamp(Map map, IStampProperties stamp)
+		{
+			map.SelectedStamps.Remove(stamp);
+			SelectedStamps.Remove(stamp);
+			UpdateSelectedStampGuids();
+		}
+
+		protected void SetSelectedStamps(Map map, List<IStampProperties> stamps)
+		{
+			map.SelectedStamps = stamps;
+			SelectedStamps = stamps;
+			UpdateSelectedStampGuids();
+		}
+
+		protected void SetSelectedStamps(Map map, List<Guid> stampGuids)
+		{
+			map.SelectStampsByGuid(stampGuids);
+			SelectedStamps = map.GetStamps(stampGuids);
+			this.stampGuids = stampGuids;
+		}
+
 		void LoadSelectedStamps(Map map)
 		{
 			SelectedStamps = map.GetStamps(stampGuids);
@@ -54,8 +97,7 @@ namespace MapCore
 				OnDataChanged();
 			}
 		}
-		public bool ClearSelectionAfterRedo { get; set; }
-
+		
 		protected virtual void OnDataChanged()
 		{
 			

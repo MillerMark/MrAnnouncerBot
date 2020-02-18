@@ -76,15 +76,27 @@ namespace DndCore
 		{
 			Feature.SpellJustCast(GetArgStr(), player, spell);
 		}
+
 		public void StartGame(Character player)
 		{
-			Feature.StartGame(GetArgStr(), player);
+			Feature?.StartGame(GetArgStr(), player);
 		}
 
-		public void WeaponJustSwung(Character player)
+		public void ShortcutAvailabilityChange(Character player)
 		{
-			Feature.WeaponJustSwung(GetArgStr(), player);
+			Feature?.ShortcutAvailabilityChange(GetArgStr(), player);
 		}
+
+		public void AfterPlayerSwings(Character player)
+		{
+			Feature.AfterPlayerSwings(GetArgStr(), player);
+		}
+
+		public void BeforePlayerRolls(Character player)
+		{
+			Feature.BeforePlayerRolls(GetArgStr(), player);
+		}
+
 		public void PlayerStartsTurn(Character player)
 		{
 			Feature.PlayerStartsTurn(GetArgStr(), player);
@@ -96,6 +108,8 @@ namespace DndCore
 
 		public void ActivateIfAlwaysOn()
 		{
+			if (Feature == null)
+				return;
 			if (Feature.AlwaysOn)
 				Activate(true);
 		}
@@ -121,7 +135,7 @@ namespace DndCore
 			Activate(true);
 			CastedSpell castedSpell = new CastedSpell(AllSpells.Get("Magic Missile"), player);
 			SpellJustCast(player, castedSpell);
-			WeaponJustSwung(player);
+			AfterPlayerSwings(player);
 			PlayerStartsTurn(player);
 			RollIsComplete(player);
 			Deactivate(true);

@@ -199,6 +199,9 @@
 			<TabControl x:Name="tbTabs" HorizontalAlignment="Left" VerticalAlignment="Top" Height="Auto" Width="Auto" SelectionChanged="TabControl_SelectionChanged">
 				<TabItem Header="Play" x:Name="tbDice">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
+						<WrapPanel x:Name="wpAskUI">
+							
+						</WrapPanel>
 						<WrapPanel x:Name="wpActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" Width="Auto">
 							<TextBlock Text="Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<StackPanel Margin="2" >
@@ -539,15 +542,6 @@
 							<TextBlock Text="Special attacks: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnWildAnimalForm" Margin="8" Padding="8" MinWidth="100" Click="BtnWildAnimalForm_Click" >
 								Wild Animal Form Attack
-							</Button>
-							<Button x:Name="btnWildMagic" Margin="8" Padding="8" MinWidth="100" Click="BtnWildMagic_Click" >
-								Wild Magic
-							</Button>
-							<Button x:Name="btnPaladinSmite" Margin="8" Padding="8" MinWidth="100" Click="BtnPaladinSmite_Click" >
-								Paladin Smite
-							</Button>
-							<Button x:Name="btnSneakAttack" Margin="8" Padding="8" MinWidth="100" Click="BtnSneakAttack_Click" >
-								Sneak Attack
 							</Button>
 							<Button x:Name="btnLongtoothShiftingStrike" Margin="8" Padding="8" MinWidth="100" Click="BtnLongtoothShiftingStrike_Click" >
 								Longtooth Shifting Strike

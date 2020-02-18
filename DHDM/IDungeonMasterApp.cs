@@ -7,6 +7,9 @@ namespace DHDM
 {
 	public interface IDungeonMasterApp
 	{
+		string GetPlayFirstNameFromId(int playerId);
+		void SetBoolProperty(int playerId, string propertyName, bool value);
+		bool GetBoolProperty(int playerId, string propertyName);
 		void SetHiddenThreshold(int hiddenThreshold);
 		int GetPlayerIdFromNameStart(string characterName);
 		int GetActivePlayerId();
@@ -16,7 +19,7 @@ namespace DHDM
 		void SelectCharacter(int playerId);
 		void SelectPlayerShortcut(string shortcutName, int playerId);
 		void GetData(string dataId);
-		void SetVantage(VantageKind dataId);
+		void SetVantage(VantageKind dataId, int playerId);
 		void RollSkillCheck(Skills skill, List<int> playerIds);
 		void RollSavingThrow(Ability ability, List<int> playerIds);
 		void RollAttack();

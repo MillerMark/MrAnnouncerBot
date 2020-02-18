@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
-	public class StampGroup : BaseStamp, IStamp
+	public class StampGroup : BaseStamp, IStamp, IStampGroup
 	{
 		List<IStampProperties> stamps = new List<IStampProperties>();
 		public StampGroup()
@@ -36,6 +36,8 @@ namespace DndMapSpike
 		{
 			get
 			{
+				if (!stamps.Any())
+					return 0;
 				return stamps.FirstOrDefault().Contrast;
 			}
 			set
@@ -97,6 +99,8 @@ namespace DndMapSpike
 		{
 			get
 			{
+				if (stamps.Count == 0)
+					return 0;
 				return stamps.FirstOrDefault().HueShift;
 			}
 			set
@@ -123,6 +127,8 @@ namespace DndMapSpike
 		{
 			get
 			{
+				if (!stamps.Any())
+					return 0;
 				return stamps.FirstOrDefault().Lightness;
 			}
 			set
@@ -153,6 +159,8 @@ namespace DndMapSpike
 		{
 			get
 			{
+				if (!stamps.Any())
+					return 0;
 				return stamps.FirstOrDefault().Saturation;
 			}
 			set
@@ -254,6 +262,8 @@ namespace DndMapSpike
 
 		void CalculateSizeAndPosition(int xOffset = 0, int yOffset = 0)
 		{
+			if (stamps.Count == 0)
+				return;
 			int leftMost = stamps.Min(x => x.GetLeft() + xOffset);
 			int topMost = stamps.Min(x => x.GetTop() + yOffset);
 			int rightMost = stamps.Max(x => x.GetLeft() + xOffset + x.Width);

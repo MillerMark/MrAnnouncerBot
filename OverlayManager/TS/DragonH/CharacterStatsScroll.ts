@@ -1054,10 +1054,9 @@
 		let character: Character = this.getCharacter(sentChar.playerID);
 		if (character != null) {
 			character.copyAttributesFrom(sentChar);
+			if (!character.spellActivelyCasting && !character.spellPreviouslyCasting)
+				this.spellBook.lastSpellName = '';
 		}
-
-		if (!character.spellActivelyCasting && !character.spellPreviouslyCasting)
-			this.spellBook.lastSpellName = '';
 
 		return character;
 	}

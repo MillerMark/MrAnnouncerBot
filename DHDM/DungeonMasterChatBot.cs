@@ -36,6 +36,7 @@ namespace DHDM
 			Commands.Add(new ScrollCloseCommand());
 			Commands.Add(new SkillCheckCommand());
 			Commands.Add(new SavingThrowCommand());
+			Commands.Add(new SetPropertyCommand());
 			Commands.Add(new AdvanceClockCommand());
 			Commands.Add(new SelectShortcutCommand());
 			Commands.Add(new StaticCommands());

@@ -1,15 +1,13 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	/// <summary>
-	/// Activates the specified feature.
-	/// </summary>
-	public class ActivateFeatureFunction : DndFunction
+	public class DeactivateFeatureFunction : DndFunction
 	{
-		public override string Name { get; set; } = "ActivateFeature";
+		public override string Name { get; set; } = "DeactivateFeature";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
 		{
@@ -17,7 +15,7 @@ namespace DndCore
 			Feature feature = AllFeatures.Get(args[0]);
 
 			if (feature != null)
-				feature.Activate("", player, true);
+				feature.Deactivate("", player);
 
 			return null;
 		}

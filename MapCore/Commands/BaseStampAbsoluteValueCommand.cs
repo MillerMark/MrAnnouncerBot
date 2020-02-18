@@ -12,7 +12,10 @@ namespace MapCore
 
 		protected void SaveValue(IStampProperties stampProperties, double value)
 		{
-			undoValues.Add(stampProperties.Guid, value);
+			if (undoValues.ContainsKey(stampProperties.Guid))
+				undoValues[stampProperties.Guid] = value;
+			else
+				undoValues.Add(stampProperties.Guid, value);
 		}
 
 		protected double GetValue(IStampProperties stampProperties)
