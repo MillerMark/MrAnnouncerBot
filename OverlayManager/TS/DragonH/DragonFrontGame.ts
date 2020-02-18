@@ -774,7 +774,7 @@
 				}
 			}
 			else
-				this.showHealthGain(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
 		}
 
 		if (!fredIsTakingDamage && fredIsGettingHitByBlood)
@@ -979,6 +979,7 @@
 class PlayerHealth {
 	PlayerIds: Array<number> = new Array<number>();
 	DamageHealth: number;
+	IsTempHitPoints: boolean;
 	constructor() {
 	}
 }

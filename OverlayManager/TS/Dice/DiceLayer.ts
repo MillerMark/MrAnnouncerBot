@@ -2008,7 +2008,6 @@ class DiceLayer {
 	}
 
 	getHueShift(playerID: number): number {
-
 		let player: Character = this.getPlayer(playerID);
 		if (player)
 			return player.hueShift;

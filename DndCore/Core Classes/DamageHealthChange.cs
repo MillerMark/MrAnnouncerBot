@@ -8,6 +8,7 @@ namespace DndCore
 	{
 		public List<int> PlayerIds = new List<int>();
 		public int DamageHealth { get; set; }
+		public bool IsTempHitPoints { get; set; }
 		public DamageHealthChange()
 		{
 

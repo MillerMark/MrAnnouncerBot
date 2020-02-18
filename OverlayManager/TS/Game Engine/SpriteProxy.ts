@@ -29,8 +29,8 @@ class AnimatedElement {
 	startY: number;
 	lastX: number;
 	lastY: number;
-	initialHorizontalScale: number;
-	initialVerticalScale: number;
+	initialHorizontalScale: number = 1;
+	initialVerticalScale: number = 1;
 	verticalThrustOverride: number = undefined;
 	horizontalThrustOverride: number = undefined;
 	onExpire: () => void;
@@ -136,8 +136,11 @@ class AnimatedElement {
 		}
 
 		if (this.autoScaleFactorPerSecond != 1) {
-			if (!this.scaleStartTime || this.scaleStartTime == 0)
+			if (!this.scaleStartTime || this.scaleStartTime == 0) {
 				this.scaleStartTime = nowMs;
+				this._horizontalScale = this.initialHorizontalScale;
+				this._verticalScale = this.initialVerticalScale;
+			}
 			else {
 				let timeSpentScalingSeconds: number = (nowMs - this.scaleStartTime) / 1000;
 				let scaleFactor: number = Math.pow(this.autoScaleFactorPerSecond, timeSpentScalingSeconds);

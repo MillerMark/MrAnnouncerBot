@@ -91,7 +91,7 @@ class DragonBackGame extends DragonGame {
 
 		for (var i = 0; i < playerHealth.PlayerIds.length; i++)
 			if (playerHealth.DamageHealth > 0)
-				this.showHealthGain(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
 	}
 
 	exitingCombat() {

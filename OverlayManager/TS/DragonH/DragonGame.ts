@@ -149,21 +149,38 @@ abstract class DragonGame extends GamePlusQuiz {
 		console.log('triggerPlaceholder - dto: ' + dto);
 	}
 
-	protected showHealthGain(healthGain: number, playerId: number) {
+	protected showHealthGain(playerId: number, healthGain: number, isTempHitPoints: boolean) {
+		if (healthGain < 0)
+			return;
 		let playerIndex: number = this.getPlayerIndex(playerId);
 
+		let timeOffset: number = 0;
+		let numPlusses: number = Math.round((healthGain + 4) / 5); // More health == more plusses!
+		for (let i = 0; i < numPlusses; i++) {
+			this.launchPlus(playerId, playerIndex, isTempHitPoints, timeOffset);
+			const fullSpinTime: number = 4000;
+			timeOffset += fullSpinTime / 6 + fullSpinTime / 30;  // Each plus is *about* 1/6 of a full spin (plus a little more) behind the other.
+		}
+	}
+
+	private launchPlus(playerId: number, playerIndex: number, isTempHitPoints: boolean, timeOffset: number) {
 		let humanoidSizeScaleFactor: number = 1;
 		let humanoidThrustScaleFactor: number = 1;
 		let humanoidScaleOffset: number = 0;
 		if (playerIndex == 0) {
 			// It's Fred. Make it bigger and taller.
-			humanoidSizeScaleFactor = 2;
+			humanoidSizeScaleFactor = 2.4;
 			humanoidThrustScaleFactor = 2.6;
 			humanoidScaleOffset = 0.06;
 		}
 		let x: number = this.getPlayerX(playerIndex);
 		let center: Vector = new Vector(x, 1000);
 		let hueShift: number = 220;
+		if (isTempHitPoints)
+			hueShift = 330;
+
+		hueShift += Random.plusMinus(30);  // this.getHueShift(playerId)
+
 		let saturation: number = 100;
 		let brightness: number = 100;
 		let horizontalFlip: boolean = false;
@@ -172,14 +189,35 @@ abstract class DragonGame extends GamePlusQuiz {
 		let rotation: number = 0;
 		let autoRotation: number = 0;
 		let velocityX: number = 0;
-		let velocityY: number = -0.1;
-		let sprite: SpriteProxy = this.triggerAnimation('Health', center, 0, hueShift, saturation, brightness,
-			horizontalFlip, verticalFlip,
-			scale, rotation, autoRotation, velocityX, velocityY, 7500);
+		let velocityY: number = -0.14;
+		let sprite: SpriteProxy = this.triggerAnimation('Health', center, 0, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation, velocityX, velocityY, 7500);
 		sprite.fadeInTime = 400;
 		sprite.fadeOutTime = 800;
 		sprite.verticalThrustOverride = -0.09 * humanoidThrustScaleFactor;
 		sprite.autoScaleFactorPerSecond = 0.89 + humanoidScaleOffset;
+		sprite.timeStart = performance.now() + timeOffset;
+		sprite.expirationDate += timeOffset;
+	}
+
+	getPlayer(playerID: number): Character {
+		if (playerID < 0)
+			return null;
+
+		for (var i = 0; i < this.players.length; i++) {
+			let player: Character = this.players[i];
+			if (player.playerID == playerID)
+				return player;
+		}
+
+		return null;
+	}
+
+	getHueShift(playerID: number): number {
+		let player: Character = this.getPlayer(playerID);
+		if (player)
+			return player.hueShift;
+
+		return 0;
 	}
 
 	protected triggerAnimation(spriteName: string, center: Vector, startFrameIndex: number, hueShift: number, saturation: number, brightness: number, horizontalFlip: boolean, verticalFlip: boolean, scale: number, rotation: number, autoRotation: number, velocityX: number = 0, velocityY: number = 0, lifespan: number = 0): SpriteProxy {
@@ -503,6 +541,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	initialize() {
 		let saveAssets: string = Folders.assets;
 		super.initialize();
+		let saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = false;
 		Folders.assets = 'GameDev/Assets/DragonH/';
 		this.loadSpell('Smoke');
@@ -516,6 +555,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.loadSpell('Trails');
 		this.loadSpell('Wide');
 		this.loadHealthSpinUp();
+		globalBypassFrameSkip = saveBypassFrameSkip;
 		Folders.assets = saveAssets;
 	}
 }
