@@ -5,6 +5,33 @@ namespace MapCore
 {
 	public abstract class BaseStampProperties
 	{
+		[EditableProperty]
+		public string Name { get; set; }
+
+		[EditableProperty]
+		public bool Collectible { get; set; }
+
+		[EditableProperty]
+		public bool Hideable { get; set; }
+
+		[EditableProperty("Strength to Move")]
+		public double StrengthToMove { get; set; } = double.MaxValue;
+
+		[EditableProperty]
+		public Cover Cover { get; set; }
+
+		[EditableProperty]
+		public StampAltitude Altitude { get; set; } = StampAltitude.Mid;
+
+		[EditableProperty]
+		public double Weight { get; set; }
+
+		/// <summary>
+		/// In Gold Pieces
+		/// </summary>
+		[EditableProperty]
+		public double Value { get; set; } = 1; // GP
+
 		public Guid Guid { get; set; }
 
 		public string TypeName { get; set; }
@@ -53,6 +80,14 @@ namespace MapCore
 			Saturation = stampProperties.Saturation;
 			Lightness = stampProperties.Lightness;
 			Contrast = stampProperties.Contrast;
+			Name = stampProperties.Name;
+			Collectible = stampProperties.Collectible;
+			Hideable = stampProperties.Hideable;
+			StrengthToMove = stampProperties.StrengthToMove;
+			Cover = stampProperties.Cover;
+			Altitude = stampProperties.Altitude;
+			Weight = stampProperties.Weight;
+			Value = stampProperties.Value;
 		}
 		protected virtual void TransferFrom(SerializedStamp serializedStamp)
 		{
@@ -73,6 +108,14 @@ namespace MapCore
 			Saturation = serializedStamp.Saturation;
 			Lightness = serializedStamp.Lightness;
 			Contrast = serializedStamp.Contrast;
+			Name = serializedStamp.Name;
+			Collectible = serializedStamp.Collectible;
+			Hideable = serializedStamp.Hideable;
+			StrengthToMove = serializedStamp.StrengthToMove;
+			Cover = serializedStamp.Cover;
+			Altitude = serializedStamp.Altitude;
+			Weight = serializedStamp.Weight;
+			Value = serializedStamp.Value;
 		}
 	}
 }

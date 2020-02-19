@@ -76,9 +76,11 @@
     <Compile Include="Commands\StampRestoreBaseCommand.cs" />
     <Compile Include="Commands\VerticalFlipCommand.cs" />
     <Compile Include="Commands\ZOrderCommand.cs" />
+    <Compile Include="Cover.cs" />
     <Compile Include="CreateGroupEventArgs.cs" />
     <Compile Include="Door.cs" />
     <Compile Include="DoorPosition.cs" />
+    <Compile Include="EditablePropertyAttribute.cs" />
     <Compile Include="EndCapKind.cs" />
     <Compile Include="Commands\BaseFlipCommand.cs" />
     <Compile Include="IFlyweight.cs" />
@@ -90,6 +92,7 @@
     <Compile Include="SelectStampsEventArgs.cs" />
     <Compile Include="SerializedStamp.cs" />
     <Compile Include="SerializedStampEventArgs.cs" />
+    <Compile Include="StampAltitude.cs" />
     <Compile Include="StampRotation.cs" />
     <Compile Include="UngroupedStamps.cs" />
     <Compile Include="VoidCornerKind.cs" />

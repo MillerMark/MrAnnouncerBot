@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndMapSpike", "DndMapSpike.csproj", "{7F0C6802-B4F2-4F63-A204-3725C3664EB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DndMapEditor", "DndMapEditor.csproj", "{7F0C6802-B4F2-4F63-A204-3725C3664EB1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapTests", "..\MapTestsf\MapTests.csproj", "{DB3EA36E-276D-4A39-9979-606C556BF673}"
 EndProject

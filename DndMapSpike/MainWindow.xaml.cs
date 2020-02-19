@@ -1757,12 +1757,16 @@ namespace DndMapSpike
 			double pixelWidth = width * zoomAndPanControl.ContentScale;
 			const double maxPixelWidth = 400;
 			ContentControl ccColorControls = null;
-			if (pixelWidth > 60)
+			if (pixelWidth > 150)
 			{
+				double newWidth = pixelWidth;
+				double maxColorControlWidth = 160 / zoomAndPanControl.ContentScale;
+				if (newWidth > maxColorControlWidth)
+					newWidth = maxColorControlWidth;
+
 				ccColorControls = GetColorControls();
-				ccColorControls.FontSize = 15 / zoomAndPanControl.ContentScale;
 				ccColorControls.Visibility = Visibility.Visible;
-				ccColorControls.Width = Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
+				ccColorControls.Width = newWidth; // Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
 				stampSelectionCanvas.Children.Add(ccColorControls);
 				Canvas.SetLeft(ccColorControls, left + (width - ccColorControls.Width) / 2);
 				Canvas.SetTop(ccColorControls, bottomRow);

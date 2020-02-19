@@ -5,6 +5,33 @@ namespace MapCore
 {
 	public interface IStampProperties
 	{
+		[EditableProperty]
+		string Name { get; set; }
+
+		[EditableProperty]
+		bool Collectible { get; set; }
+
+		[EditableProperty]
+		bool Hideable { get; set; }
+
+		[EditableProperty("Strength to Move")]
+		double StrengthToMove { get; set; }
+
+		[EditableProperty]
+		Cover Cover { get; set; }
+
+		[EditableProperty]
+		StampAltitude Altitude { get; set; }
+
+		[EditableProperty]
+		double Weight { get; set; }
+
+		/// <summary>
+		/// In Gold Pieces
+		/// </summary>
+		[EditableProperty]
+		double Value { get; set; }
+
 		Guid Guid { get; set; }
 		string TypeName { get; set; }
 		IStampProperties Copy(int deltaX, int deltaY);
