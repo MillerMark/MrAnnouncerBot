@@ -1,4 +1,8 @@
 ﻿class CharacterStatsScroll extends WorldObject {
+
+	setSoundManager(dragonBackSounds: DragonBackSounds): any {
+		this.spellBook.setSoundManager(dragonBackSounds);
+	}
 	scrollOpenSfx: HTMLAudioElement;
 	scrollWooshSfx: HTMLAudioElement;
 	scrollPoofSfx: HTMLAudioElement;
@@ -68,6 +72,7 @@
 		let browserIsObs: boolean = this.browserIsOBS();
 
 		this.spellBook = new SpellBook(browserIsObs);
+
 		if (browserIsObs)
 			this.spellIconYOffset = 4;
 
@@ -395,7 +400,7 @@
 		const picY: number = 24;
 		const picHeight: number = 90;
 
-		 if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
+		if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
 			let elapsedTime: number = nowSec - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
 			let scrollRollsFrameIndex: number = this.scrollRolls.sprites[0].frameIndex;
 
@@ -767,7 +772,7 @@
 			this.rightMostTextX = spellNameRight;
 		}
 
-		
+
 		if (spellDataItem.FromChargedItem) {
 			spellNameRight += CharacterStatsScroll.iconIndent;
 			this.spellItemIcon.x = spellNameRight;
@@ -1013,7 +1018,7 @@
 
 			if (okayToChangePage) {
 				let needToImmediatelyOpen: boolean = this.state === ScrollState.disappearing;
-				 this.page = newPageId;
+				this.page = newPageId;
 				if (needToImmediatelyOpen) {
 					this.state = ScrollState.none;
 					this.needImmediateReopen = false;

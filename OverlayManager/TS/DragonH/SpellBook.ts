@@ -232,8 +232,8 @@ class SpellBook {
 	static readonly emphasisFontStyleAscender: number = 19;
 	static readonly bulletIndent: number = SpellBook.detailFontSize * 1.2;
 
-	static readonly fadeInTime: number = 2000;
-	
+	static readonly fadeInTime: number = 500;
+
 
 	static styleDelimiters: Array<LayoutDelimiters>;
 
@@ -250,7 +250,7 @@ class SpellBook {
 
 	// ![](2DF27D9DAA37DB8F3F1EF93291E493C7.png;;;0.01472,0.01472)
 	static readonly bookGlowHeight: number = 626;
-	
+
 
 	// ![](EC5995AEDA28089361922471641200D0.png;;;0.00982,0.00982)
 	static readonly fredHeadX: number = 355;  // right side of Fred's arrows.
@@ -1054,11 +1054,12 @@ class SpellBook {
 				scale += 0.01;
 			}
 			this.spellbookAppearTime = nowMs;
+			this.addSpellBookAppearSoundEffects(spell);
 			// TODO: Set spellbook opacity here and fade everything in.
 		}
 		let timeIn: number = nowMs - this.spellbookAppearTime;
 		if (timeIn < SpellBook.fadeInTime) {
-			let percentThroughFadeIn: number = SpellBook.fadeInTime;
+			let percentThroughFadeIn: number = timeIn / SpellBook.fadeInTime;
 			this.bookAlpha = percentThroughFadeIn;
 		}
 		else
@@ -1089,8 +1090,47 @@ class SpellBook {
 		this.drawSpellBookAppear(nowSec, context, spell);
 	}
 
+	soundManager: DragonBackSounds;
+	setSoundManager(dragonBackSounds: DragonBackSounds): any {
+		this.soundManager = dragonBackSounds;
+	}
+
+	addSpellBookAppearSoundEffects(spell: ActiveSpellData): void {
+		if (spell.schoolOfMagic == SchoolOfMagic.None)
+			return;
+		this.soundManager.safePlayMp3('SpellBook/PageFlip[2]');
+		this.soundManager.playMp3In(380, 'SpellBook/SpellBookOpen[5]');
+		const schoolOfMagicStartTime: number = 1150;
+		switch (spell.schoolOfMagic) {
+			case SchoolOfMagic.Abjuration:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Abjuration');
+				break;
+			case SchoolOfMagic.Illusion:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Illusion');
+				break;
+			case SchoolOfMagic.Conjuration:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Conjuration');
+				break;
+			case SchoolOfMagic.Enchantment:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Enchantment');
+				break;
+			case SchoolOfMagic.Necromancy:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Necromancy');
+				break;
+			case SchoolOfMagic.Evocation:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Evocation');
+				break;
+			case SchoolOfMagic.Transmutation:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Transmutation');
+				break;
+			case SchoolOfMagic.Divination:
+				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Divination');
+				break;
+		}
+	}
+
 	drawSpellBookAppear(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): void {
-    let timeSec: number = now * 1000;
+		let timeSec: number = now * 1000;
 		this.spellBookAppearBig.draw(context, timeSec);
 		this.spellBookAppearMedium.draw(context, timeSec);
 		this.spellBookAppearSmall.draw(context, timeSec);
@@ -1146,15 +1186,15 @@ class SpellBook {
 		this.spellBookAppearSmall = new Sprites("Scroll/Spells/Appear/Small/Small", 83, fps50, AnimationStyle.Sequential, true);
 		globalBypassFrameSkip = saveBypassFrameSkip;
 
-		this.spellBookAppearBig.originX = 399; 
+		this.spellBookAppearBig.originX = 399;
 		this.spellBookAppearBig.originY = 429
 
-		this.spellBookAppearMedium.originX = 324; 
+		this.spellBookAppearMedium.originX = 324;
 		this.spellBookAppearMedium.originY = 346
 
-		this.spellBookAppearSmall.originX = 171; 
+		this.spellBookAppearSmall.originX = 171;
 		this.spellBookAppearSmall.originY = 171
-		
+
 	}
 
 	createSpellPage(context: CanvasRenderingContext2D, x: number, y: number, spell: ActiveSpellData, horizontalScale: number): boolean {
@@ -1306,20 +1346,24 @@ class SpellBook {
 
 		let bookGlowWidth: number = horizontalScale * (this.bookGlow.spriteWidth - SpellBook.bookGlowLeftMargin * 2);
 
-		let centerX: number = left + bookGlowWidth / 2.0; 
+		let centerX: number = left + bookGlowWidth / 2.0;
 		let centerY: number = top + totalSpellPageHeight / 2.0;
 
 		let verticalScaleBig: number = 1.2 * totalSpellPageHeight / this.spellBookAppearBig.spriteHeight;
 		let horizontalScaleBig: number = 1.2 * bookGlowWidth / this.spellBookAppearBig.spriteWidth;
 
+		let big: SpriteProxy = this.spellBookAppearBig.addShifted(centerX, centerY, 0, 21);
 		hueShift = Random.max(360);
-		let big: SpriteProxy = this.spellBookAppearBig.addShifted(centerX, centerY, 0, hueShift + Random.plusMinus(40));
 		big.horizontalScale = horizontalScaleBig;
 		big.verticalScale = verticalScaleBig;
 		let medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, hueShift + Random.plusMinus(40));
 		let small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, hueShift + Random.plusMinus(40));
 		medium.timeStart = performance.now() + 9 * fps50;  // medium starts 9 frames in.
-		small.timeStart = performance.now() + 18 * fps50;  // small starts 18 frames in.
+		medium.horizontalScale = horizontalScaleBig;
+		medium.verticalScale = verticalScaleBig;
+		small.timeStart = performance.now() + 25 * fps50;  // small starts 25 frames in.
+		small.horizontalScale = horizontalScaleBig;
+		small.verticalScale = verticalScaleBig;
 		return true;
 	}
 

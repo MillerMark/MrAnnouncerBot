@@ -303,6 +303,7 @@ class DragonBackGame extends DragonGame {
 		this.characterStatsScroll.selectedStatPageIndex = 0;
 
 		this.characterStatsScroll.state = ScrollState.none;
+		this.characterStatsScroll.setSoundManager(this.dragonBackSounds);
 	}
 
 	start() {
