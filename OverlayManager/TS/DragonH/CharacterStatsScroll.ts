@@ -385,8 +385,8 @@
 			this.state === ScrollState.paused;
 	}
 
-	render(now: number, timeScale: number, world: World): void {
-		super.render(now, timeScale, world);
+	render(nowSec: number, timeScale: number, world: World): void {
+		super.render(nowSec, timeScale, world);
 
 		let justClosed: boolean = false;
 
@@ -396,7 +396,7 @@
 		const picHeight: number = 90;
 
 		 if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
-			let elapsedTime: number = now - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
+			let elapsedTime: number = nowSec - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
 			let scrollRollsFrameIndex: number = this.scrollRolls.sprites[0].frameIndex;
 
 			if (this.state === ScrollState.paused) {
@@ -461,7 +461,7 @@
 
 					this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.headshotIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
 				}
-				this.drawHighlighting(now, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
+				this.drawHighlighting(nowSec, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
 
 				//if (this.state === ScrollState.closing && frameIndex <= 7) {
 				//  this.state = ScrollState.paused;
@@ -483,9 +483,9 @@
 				this.bottomEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY + superPreciseOffset);
 			}
 			else {
-				this.scrollBacks.draw(world.ctx, now * 1000);
+				this.scrollBacks.draw(world.ctx, nowSec * 1000);
 				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.headshotIndex);
-				this.drawHighlighting(now, timeScale, world);
+				this.drawHighlighting(nowSec, timeScale, world);
 				this.topEmitter.stop();
 				this.bottomEmitter.stop();
 				this.state = ScrollState.unrolled;
@@ -493,23 +493,23 @@
 				this.startQueuedEmitters();
 			}
 
-			this.topEmitter.render(now, timeScale, world);
-			this.bottomEmitter.render(now, timeScale, world);
+			this.topEmitter.render(nowSec, timeScale, world);
+			this.bottomEmitter.render(nowSec, timeScale, world);
 
-			this.drawCharacterStats(now, world.ctx, topData, bottomData);
+			this.drawCharacterStats(nowSec, world.ctx, topData, bottomData);
 
-			this.scrollRolls.draw(world.ctx, now * 1000);
+			this.scrollRolls.draw(world.ctx, nowSec * 1000);
 
 			if (this.activeCharacter) {
 				let activeCharacter: Character = this.activeCharacter;
-				this.drawAdditionalData(now, world.ctx, activeCharacter, topData, bottomData);
+				this.drawAdditionalData(nowSec, world.ctx, activeCharacter, topData, bottomData);
 			}
 
 		}
 		else if (this.state === ScrollState.disappearing) {
-			this.scrollRolls.draw(world.ctx, now * 1000);
-			this.scrollPoofBack.draw(world.ctx, now * 1000);
-			this.scrollPoofFront.draw(world.ctx, now * 1000);
+			this.scrollRolls.draw(world.ctx, nowSec * 1000);
+			this.scrollPoofBack.draw(world.ctx, nowSec * 1000);
+			this.scrollPoofFront.draw(world.ctx, nowSec * 1000);
 			if (this.scrollPoofFront.sprites.length > 0) {
 				let poofFrameIndex: number = this.scrollPoofFront.sprites[0].frameIndex;
 				if (poofFrameIndex === 0) {
@@ -522,7 +522,7 @@
 		}
 
 		if (this.state === ScrollState.slamming) {
-			this.scrollSlam.draw(world.ctx, now * 1000);
+			this.scrollSlam.draw(world.ctx, nowSec * 1000);
 			if (this.scrollSlam.sprites.length > 0) {
 				if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
 					this.state = ScrollState.slammed;
@@ -534,11 +534,11 @@
 		if (justClosed) {
 			if (this.needImmediateReopen) {
 				this.state = ScrollState.closed;
-				this.open(now);
+				this.open(nowSec);
 				this.needImmediateReopen = false;
 			}
 			else
-				this.makeScrollDisappear(now * 1000);
+				this.makeScrollDisappear(nowSec * 1000);
 		}
 	}
 
@@ -737,11 +737,11 @@
 		return this.selectedStatPageIndex + 1 == page;
 	}
 
-	drawAdditionalData(now: number, context: CanvasRenderingContext2D, activeCharacter: Character, topData: number, bottomData: number): any {
+	drawAdditionalData(nowSec: number, context: CanvasRenderingContext2D, activeCharacter: Character, topData: number, bottomData: number): any {
 		if (!activeCharacter.SpellData)
 			return;
 		if (this.isOnPage(ScrollPage.spells)) {
-			this.drawSpellData(now, activeCharacter, context, topData, bottomData);
+			this.drawSpellData(nowSec, activeCharacter, context, topData, bottomData);
 		}
 	}
 
@@ -842,7 +842,7 @@
 	drawActiveSpellData: boolean = false;
 	activeSpellData: ActiveSpellData;
 
-	private drawSpellData(now: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
+	private drawSpellData(nowSec: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
 		let x: number = CharacterStatsScroll.spellDataLeft;
 		let y: number = CharacterStatsScroll.spellDataTop;
 
@@ -853,17 +853,17 @@
 		this.activeSpellData = activeCharacter.getActiveSpell();
 
 		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
-			y = this.drawSpellGroup(now, context, item, x, y, topData, bottomData);
+			y = this.drawSpellGroup(nowSec, context, item, x, y, topData, bottomData);
 		}, this);
 
 		if (this.drawActiveSpellData) {
 			if (this.calloutPointY >= topData && this.calloutPointY <= bottomData) {
 				this.calloutPointX += this.drawActiveSpellIndicator(context, this.calloutPointX, this.calloutPointY, this.activeSpellData);
-				this.spellBook.draw(now, context, Math.max(this.rightMostTextX, this.calloutPointX), this.calloutPointY, activeCharacter);
+				this.spellBook.draw(nowSec, context, Math.max(this.rightMostTextX, this.calloutPointX), this.calloutPointY, activeCharacter);
 			}
 		}
 		else if (activeCharacter.forceShowSpell)
-			this.spellBook.draw(now, context, 600, 200, activeCharacter);
+			this.spellBook.draw(nowSec, context, 600, 200, activeCharacter);
 	}
 
 	readonly spellNameFontHeight: number = 18;
