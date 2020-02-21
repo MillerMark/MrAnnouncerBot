@@ -28,7 +28,7 @@ namespace MapCore
 		protected override void ActivateUndo(Map map)
 		{
 			foreach (IStampProperties stampProperties in SelectedStamps)
-				stampProperties.SetAbsoluteScaleTo(GetValue(stampProperties));
+				stampProperties.SetAbsoluteScaleTo(GetSavedValue(stampProperties));
 		}
 	}
 }

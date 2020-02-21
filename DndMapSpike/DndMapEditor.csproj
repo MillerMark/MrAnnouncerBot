@@ -62,6 +62,7 @@
     <Compile Include="BaseStamp.cs" />
     <Compile Include="BaseTexture.cs" />
     <Compile Include="BigTexture.cs" />
+    <Compile Include="BooleanEditor.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
     <Compile Include="IStamp.cs" />
@@ -69,6 +70,11 @@
     <Compile Include="Layers.cs" />
     <Compile Include="MapEditModes.cs" />
     <Compile Include="MapSelection.cs" />
+    <Compile Include="OpenClosedStatus.cs" />
+    <Compile Include="PropertyEditorStatus.cs" />
+    <Compile Include="PropertyType.cs" />
+    <Compile Include="PropertyValueComparer.cs" />
+    <Compile Include="PropertyValueData.cs" />
     <Compile Include="RandomTexture.cs" />
     <Compile Include="ResizeTracker.cs" />
     <Compile Include="SelectionType.cs" />

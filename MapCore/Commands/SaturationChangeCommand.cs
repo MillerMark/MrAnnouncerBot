@@ -28,7 +28,7 @@ namespace MapCore
 		protected override void ActivateUndo(Map map)
 		{
 			foreach (IStampProperties stampProperties in SelectedStamps)
-				stampProperties.Saturation = GetValue(stampProperties);
+				stampProperties.Saturation = GetSavedValue(stampProperties);
 		}
 	}
 }

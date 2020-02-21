@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using TwitchLib.Client;
+using DndCore;
 using TwitchLib.Client.Models;
 
 namespace DHDM

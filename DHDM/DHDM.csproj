@@ -304,6 +304,7 @@
     <Compile Include="StreamDeck Commands\PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />
+    <Compile Include="StreamDeck Commands\PlaySceneCommand.cs" />
     <Compile Include="StreamDeck Commands\RollDiceCommand.cs" />
     <Compile Include="StreamDeck Commands\SavingThrowCommand.cs" />
     <Compile Include="StreamDeck Commands\ScrollCloseCommand.cs" />

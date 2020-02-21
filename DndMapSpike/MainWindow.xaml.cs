@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -1715,6 +1716,88 @@ namespace DndMapSpike
 			return Map.SelectedStamps.Any(x => x is StampGroup);
 		}
 
+		Dictionary<ContentControl, PropertyEditorStatus> propEdStatus = new Dictionary<ContentControl, PropertyEditorStatus>();
+
+		StackPanel GetPropertyEditors(ContentControl propertyGrid)
+		{
+			if (propertyGrid == null)
+				return null;
+
+			if (!(propertyGrid.Content is Viewbox viewbox))
+				return null;
+
+			if (!(viewbox.Child is Grid grid))
+				return null;
+
+			foreach (FrameworkElement uIElement in grid.Children)
+			{
+				if (uIElement.Name == "spPropertyEditors")
+					return uIElement as StackPanel;
+			}
+			return null;
+		}
+
+		UIElement GetBooleanEditor(PropertyValueData propertyValueData)
+		{
+			BooleanEditor checkBox = new BooleanEditor();
+			checkBox.PropertyName = propertyValueData.Name;
+			checkBox.PropertyType = propertyValueData.Type;
+			checkBox.Content = propertyValueData.DisplayText;
+			checkBox.Foreground = Brushes.White;
+			checkBox.Margin = new Thickness(4, 0, 4, 0);
+			if (propertyValueData.BoolValue.HasValue)
+				checkBox.IsChecked = propertyValueData.BoolValue.Value;
+			checkBox.Checked += BooleanCheckBox_Changed;
+			checkBox.Unchecked += BooleanCheckBox_Changed;
+			return checkBox;
+		}
+
+		private void BooleanCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is BooleanEditor booleanEditor))
+				return;
+			ExecuteCommand("ChangeBooleanProperty", new BoolChangeData(booleanEditor.PropertyName, booleanEditor.IsChecked == true));
+		}
+
+		UIElement GetEditor(PropertyValueData propertyValueData)
+		{
+			switch (propertyValueData.Type)
+			{
+				case PropertyType.Boolean:
+					return GetBooleanEditor(propertyValueData);
+				//case PropertyType.String:
+				//	return GetStringEditor(propertyValueData);
+				//case PropertyType.Integer:
+				//	return GetIntegerEditor(propertyValueData);
+				//case PropertyType.Decimal:
+				//	return GetDecimalEditor(propertyValueData);
+				//case PropertyType.Double:
+				//	return GetDoubleEditor(propertyValueData);
+			}
+			return null;
+		}
+
+		void PopulatePropertyGrid(ContentControl propertyGrid)
+		{
+			StackPanel spPropertyEditors = GetPropertyEditors(propertyGrid);
+
+			spPropertyEditors.Children.Clear();
+
+			PropertyValueComparer propertyValueComparer = new PropertyValueComparer();
+
+			// TODO: First collect all properties and whether they are the same or not.
+			foreach (IStampProperties stampProperties in Map.SelectedStamps)
+			{
+				propertyValueComparer.Compare(stampProperties);
+			}
+
+			foreach (PropertyValueData propertyValueData in propertyValueComparer.Comparisons)
+			{
+				UIElement editor = GetEditor(propertyValueData);
+				if (editor != null)
+					spPropertyEditors.Children.Add(editor);
+			}
+		}
 		void AddStampSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, int left, int top, int width, int height)
 		{
 			double rowColumnSpacer = 3 / zoomAndPanControl.ContentScale;
@@ -1756,31 +1839,37 @@ namespace DndMapSpike
 
 			double pixelWidth = width * zoomAndPanControl.ContentScale;
 			const double maxPixelWidth = 400;
-			ContentControl ccColorControls = null;
-			if (pixelWidth > 150)
+			ContentControl colorControls = null;
+			if (pixelWidth > minWidthPropertyEditor)
 			{
 				double newWidth = pixelWidth;
-				double maxColorControlWidth = 160 / zoomAndPanControl.ContentScale;
-				if (newWidth > maxColorControlWidth)
-					newWidth = maxColorControlWidth;
+				double maxPropertyEditorWidth = minWidthPropertyEditor / zoomAndPanControl.ContentScale;
+				if (newWidth > maxPropertyEditorWidth)
+					newWidth = maxPropertyEditorWidth;
 
-				ccColorControls = GetColorControls();
-				ccColorControls.Visibility = Visibility.Visible;
-				ccColorControls.Width = newWidth; // Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
-				stampSelectionCanvas.Children.Add(ccColorControls);
-				Canvas.SetLeft(ccColorControls, left + (width - ccColorControls.Width) / 2);
-				Canvas.SetTop(ccColorControls, bottomRow);
-				SetSlider(GetActiveHueSlider(), selectedHueShift);
-				SetSlider(GetActiveSaturationSlider(), selectedSaturation);
-				SetSlider(GetActiveLightnessSlider(), selectedLightness);
-				SetSlider(GetActiveContrastSlider(), selectedContrast);
+
+
+				double propGridRightEdge = right - rowColumnSpacer;
+				ContentControl propertyGrid = GetPropertyGrid();
+				propertyGrid.Width = newWidth;
+				stampSelectionCanvas.Children.Add(propertyGrid);
+				Canvas.SetZIndex(propertyGrid, int.MaxValue);
+				Canvas.SetLeft(propertyGrid, propGridRightEdge - propertyGrid.Width);
+				Canvas.SetTop(propertyGrid, bottomRow);
+				CreateButton("btnShowPropertyEditor", propGridRightEdge - buttonSize, bottomRow, buttonSize);
+				if (!propEdStatus.ContainsKey(propertyGrid))
+					propEdStatus.Add(propertyGrid, new PropertyEditorStatus("btnShowPropertyEditor"));
+				ShowPropertyEditor(propertyGrid);
+				PopulatePropertyGrid(propertyGrid);
+
+				colorControls = CreateColorControls(selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, bottomRow, buttonSize, newWidth);
 			}
 
-			if (!hasColorMod)
+			
+
+			if (colorControls != null)
 			{
-				if (ccColorControls != null)
-					ccColorControls.Visibility = Visibility.Hidden;
-				CreateButton("btnShowColorControls", left, bottomRow, buttonSize);
+				ShowPropertyEditor(colorControls);
 			}
 
 			bool hasMoreThanOneSelected = Map.SelectedStamps.Count > 1;
@@ -1824,6 +1913,28 @@ namespace DndMapSpike
 					}
 				}
 			}
+		}
+
+		private const int minWidthPropertyEditor = 150;
+
+		private ContentControl CreateColorControls(double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, int left, double bottomRow, double buttonSize, double newWidth)
+		{
+			ContentControl colorControls = GetColorControls();
+			colorControls.Width = newWidth; // Math.Min(width, maxPixelWidth / zoomAndPanControl.ContentScale);
+			stampSelectionCanvas.Children.Add(colorControls);
+			//Canvas.SetLeft(colorControls, left + (width - colorControls.Width) / 2);
+			Canvas.SetLeft(colorControls, left);
+			Canvas.SetTop(colorControls, bottomRow);
+			SetSlider(GetActiveHueSlider(), selectedHueShift);
+			SetSlider(GetActiveSaturationSlider(), selectedSaturation);
+			SetSlider(GetActiveLightnessSlider(), selectedLightness);
+			SetSlider(GetActiveContrastSlider(), selectedContrast);
+			CreateButton("btnShowColorControls", left, bottomRow, buttonSize);
+
+			if (!propEdStatus.ContainsKey(colorControls))
+				propEdStatus.Add(colorControls, new PropertyEditorStatus("btnShowColorControls"));
+
+			return colorControls;
 		}
 
 		bool changingInternally;
@@ -2754,21 +2865,52 @@ namespace DndMapSpike
 				activeContrastSlider.Value = 0;
 		}
 
+		void CloseTheRest(ContentControl notThisContentControl)
+		{
+			foreach (ContentControl contentControl in propEdStatus.Keys)
+			{
+				if (contentControl != notThisContentControl)
+					ShowPropertyEditor(contentControl, OpenClosedStatus.Closed);
+			}
+		}
+
+		void ShowPropertyEditor(ContentControl contentControl)
+		{
+			PropertyEditorStatus propertyEditorStatus = propEdStatus[contentControl];
+			ShowPropertyEditor(contentControl, propertyEditorStatus.OpenClosed);
+		}
+
+		void ShowPropertyEditor(ContentControl contentControl, OpenClosedStatus newStatus)
+		{
+			Viewbox launchButton = FindResource(propEdStatus[contentControl].LaunchButtonName) as Viewbox;
+			switch (newStatus)
+			{
+				case OpenClosedStatus.Open:
+					contentControl.Visibility = Visibility.Visible;
+					launchButton.Visibility = Visibility.Hidden;
+					CloseTheRest(contentControl);
+					break;
+				case OpenClosedStatus.Closed:
+					contentControl.Visibility = Visibility.Hidden;
+					launchButton.Visibility = Visibility.Visible;
+					break;
+			}
+			propEdStatus[contentControl].OpenClosed = newStatus;
+		}
+
 		private void btnShowColorControls_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			ContentControl ccColorControls = GetColorControls();
-			if (ccColorControls != null)
-			{
-				ccColorControls.Visibility = Visibility.Visible;
-				Viewbox btnShowColorControls = FindResource("btnShowColorControls") as Viewbox;
-				if (btnShowColorControls != null)
-					btnShowColorControls.Visibility = Visibility.Hidden;
-			}
+			ShowPropertyEditor(GetColorControls(), OpenClosedStatus.Open);
 		}
 
 		private ContentControl GetColorControls()
 		{
 			return FindResource("ccColorControls") as ContentControl;
+		}
+
+		private ContentControl GetPropertyGrid()
+		{
+			return FindResource("ccPropertyGrid") as ContentControl;
 		}
 
 		private void DeleteSelected_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -3228,6 +3370,21 @@ namespace DndMapSpike
 		private void LightnessSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
 		{
 			StopInteractiveChange();
+		}
+
+		private void BtnCloseColorProps_Click(object sender, RoutedEventArgs e)
+		{
+			ShowPropertyEditor(GetColorControls(), OpenClosedStatus.Closed);
+		}
+
+		private void BtnClosePropertyGrid_Click(object sender, RoutedEventArgs e)
+		{
+			ShowPropertyEditor(GetPropertyGrid(), OpenClosedStatus.Closed);
+		}
+
+		private void BtnOpenPropertyGrid_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			ShowPropertyEditor(GetPropertyGrid(), OpenClosedStatus.Open);
 		}
 	}
 }

@@ -5,9 +5,9 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class AddAnimation : DndFunction
+	public class AddSpellHitEffect : DndFunction
 	{
-		public override string Name { get; set; } = "AddAnimation";
+		public override string Name { get; set; } = "AddSpellHitEffect";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target = null, CastedSpell spell = null)
 		{

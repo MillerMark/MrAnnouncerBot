@@ -18,7 +18,7 @@ namespace MapCore
 				undoValues.Add(stampProperties.Guid, value);
 		}
 
-		protected double GetValue(IStampProperties stampProperties)
+		protected double GetSavedValue(IStampProperties stampProperties)
 		{
 			if (!undoValues.ContainsKey(stampProperties.Guid))
 			{

@@ -93,6 +93,25 @@
 			</Canvas>
 		</Viewbox>
 
+		<Viewbox x:Key="btnShowPropertyEditor" MouseDown="BtnOpenPropertyGrid_MouseDown" >
+			<Canvas Width="158" Height="158">
+				<Path Fill="#FF2B4D89">
+					<Path.Data>
+						<PathGeometry Figures="M-0.5,10.6875C-0.5,4.5625,4.5625,-0.5,10.6875,-0.5L147.375,-0.5C153.5,-0.5,158.5,4.5625,158.5,10.6875L158.5,147.375C158.5,153.5,153.5,158.5,147.375,158.5L10.6875,158.5C4.5625,158.5,-0.5,153.5,-0.5,147.375z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FF4472C4">
+					<Path.Data>
+						<PathGeometry Figures="M2.5,10.8125C2.5,6.25,6.25,2.5,10.8125,2.5L146.25,2.5C150.8125,2.5,154.5,6.25,154.5,10.8125L154.5,146.25C154.5,150.8125,150.8125,154.5,146.25,154.5L10.8125,154.5C6.25,154.5,2.5,150.8125,2.5,146.25z" />
+					</Path.Data>
+				</Path>
+				<Path Fill="#FFFFFFFF">
+					<Path.Data>
+						<PathGeometry Figures="M36,109.625L122.0625,109.625C129.5,109.625,135.5,115.625,135.5,123.0625L135.5,123.0625C135.5,130.5,129.5,136.5,122.0625,136.5L36,136.5C30.4375,136.5,25.625,133.125,23.5625,128.3125L22.5,123.0625 23.5625,117.875C25.625,113,30.4375,109.625,36,109.625z M36,65.0625L122.0625,65.0625C129.5,65.0625,135.5,71.125,135.5,78.5L135.5,78.5C135.5,85.9375,129.5,92,122.0625,92L36,92C30.4375,92,25.625,88.5625,23.5625,83.75L22.5,78.5 23.5625,73.3125C25.625,68.4375,30.4375,65.0625,36,65.0625z M22.5,34L22.5,34 22.5,34z M36,20.5L122.0625,20.5C129.5,20.5,135.5,26.5625,135.5,34L135.5,34C135.5,41.375,129.5,47.4375,122.0625,47.4375L36,47.4375C30.4375,47.4375,25.625,44.0625,23.5625,39.1875L22.5,34 23.5625,28.75C25.625,23.9375,30.4375,20.5,36,20.5z" />
+					</Path.Data>
+				</Path>
+			</Canvas>
+		</Viewbox>
 
 		<Viewbox x:Key="btnDistributeHorizontally" MouseDown="btnDistributeHorizontally_MouseDown" ToolTip="Distribute Horizontally">
 			<Canvas Width="364" Height="227">
@@ -581,6 +600,20 @@
 			</Canvas>
 		</Viewbox>
 
+		<ContentControl x:Key="ccPropertyGrid" FontSize="11" Width="200" FontWeight="Normal" Foreground="White">
+			<Viewbox >
+				<Grid Height="Auto" Width="Auto" Background="#FF4472C4" >
+					<StackPanel x:Name="spPropertyEditors" Orientation="Vertical" Background="#FF4472C4" Margin="0, 10, 0, 0">
+						
+					</StackPanel>
+					<Button x:Name="btnClosePropertyGrid" Width="10" Height="10" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="-6, -8, -4, -4" Click="BtnClosePropertyGrid_Click" 
+							ToolTip="Close the property grid.">
+						x
+					</Button>
+				</Grid>
+			</Viewbox>
+		</ContentControl>
+
 		<ContentControl x:Key="ccColorControls" FontSize="11" Width="200" FontWeight="Normal">
 			<Viewbox>
 				<Grid Height="Auto" Width="Auto">
@@ -670,7 +703,8 @@
 							<TextBlock Grid.Column="2" Text="100" Width="Auto" Height="Auto" HorizontalAlignment="Right" Margin="0, 0, 6, 0" Foreground="White"/>
 						</Grid>
 					</StackPanel>
-					<Button x:Name="btnClose" Width="10" Height="10" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="-6, -8, -4, -4" >
+					<Button x:Name="btnClose" Width="10" Height="10" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="-6, -8, -4, -4" Click="BtnCloseColorProps_Click" 
+							ToolTip="Close the color prop editor.">
 						x
 					</Button>
 				</Grid>

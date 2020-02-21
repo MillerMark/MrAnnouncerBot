@@ -107,13 +107,13 @@ namespace MapCore
 					case StampAlignment.HorizontalCenter:
 					case StampAlignment.DistributeHorizontally:
 					case StampAlignment.Right:
-						stampProperties.X = (int)Math.Round(GetValue(stampProperties));
+						stampProperties.X = (int)Math.Round(GetSavedValue(stampProperties));
 						break;
 					case StampAlignment.Top:
 					case StampAlignment.VerticalCenter:
 					case StampAlignment.DistributeVertically:
 					case StampAlignment.Bottom:
-						stampProperties.Y = (int)Math.Round(GetValue(stampProperties));
+						stampProperties.Y = (int)Math.Round(GetSavedValue(stampProperties));
 						break;
 				}
 		}
