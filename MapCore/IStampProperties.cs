@@ -12,6 +12,9 @@ namespace MapCore
 		bool Collectible { get; set; }
 
 		[EditableProperty]
+		bool Locked { get; set; }
+
+		[EditableProperty]
 		bool Hideable { get; set; }
 
 		[EditableProperty("Strength to Move")]

@@ -29,6 +29,9 @@ namespace DndMapSpike
 			get { return flipHorizontally; }
 			set
 			{
+				if (Locked)
+					return;
+
 				if (flipHorizontally == value)
 					return;
 
@@ -41,6 +44,9 @@ namespace DndMapSpike
 			get { return flipVertically; }
 			set
 			{
+				if (Locked)
+					return;
+
 				if (flipVertically == value)
 					return;
 
@@ -59,6 +65,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				if (rotation == value)
 					return;
 
@@ -76,6 +85,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				if (scale == value)
 					return;
 
@@ -92,6 +104,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				if (hueShift == value)
 					return;
 
@@ -109,6 +124,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				if (saturation == value)
 					return;
 
@@ -125,6 +143,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				if (lightness == value)
 					return;
 
@@ -142,6 +163,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				if (contrast == value)
 					return;
 
@@ -199,6 +223,9 @@ namespace DndMapSpike
 
 		public virtual void RotateRight()
 		{
+			if (Locked)
+				return;
+
 			if (FlipHorizontally ^ FlipVertically)
 				DoRotateLeft();
 			else
@@ -226,6 +253,9 @@ namespace DndMapSpike
 
 		public virtual void RotateLeft()
 		{
+			if (Locked)
+				return;
+
 			if (FlipHorizontally ^ FlipVertically)
 				DoRotateRight();
 			else
@@ -234,6 +264,7 @@ namespace DndMapSpike
 
 		private void DoRotateLeft()
 		{
+
 			switch (Rotation)
 			{
 				case StampRotation.Zero:
@@ -253,15 +284,24 @@ namespace DndMapSpike
 
 		public virtual void Move(int deltaX, int deltaY)
 		{
+			if (Locked)
+				return;
+
 			X += deltaX;
 			Y += deltaY;
 		}
 		public virtual void AdjustScale(double scaleAdjust)
 		{
+			if (Locked)
+				return;
+
 			Scale *= scaleAdjust;
 		}
 		public virtual void SetAbsoluteScaleTo(double newScale)
 		{
+			if (Locked)
+				return;
+
 			Scale = newScale;
 		}
 

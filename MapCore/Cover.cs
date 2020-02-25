@@ -24,11 +24,13 @@ namespace MapCore
 		/// <summary>
 		/// +2 bonus to AC and Dexterity saving throws
 		/// </summary>
+		[DisplayText("½")]
 		OneHalf,
 
 		/// <summary>
 		/// +5 bonus to AC and Dexterity saving throws
 		/// </summary>
+		[DisplayText("¾")]
 		ThreeQuarters,
 
 		/// <summary>

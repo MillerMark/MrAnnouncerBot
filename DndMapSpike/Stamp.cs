@@ -42,15 +42,7 @@ namespace DndMapSpike
 		static Stamp Clone(Stamp stamp)
 		{
 			Stamp result = new Stamp(stamp.FileName, stamp.X, stamp.Y);
-			result.Contrast = stamp.Contrast;
-			result.Visible = stamp.Visible;
-			result.FlipHorizontally = stamp.FlipHorizontally;
-			result.FlipVertically = stamp.FlipVertically;
-			result.HueShift = stamp.HueShift;
-			result.Lightness = stamp.Lightness;
-			result.Rotation = stamp.Rotation;
-			result.Saturation = stamp.Saturation;
-			result.Scale = stamp.Scale;
+			result.CloneFrom(stamp);
 			return result;
 		}
 

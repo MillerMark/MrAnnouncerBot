@@ -5,11 +5,15 @@ namespace MapCore
 {
 	public abstract class BaseStampProperties
 	{
+		//! TODO: Make sure new properties are dealt with in the Clone method!!!
+
 		[EditableProperty]
 		public string Name { get; set; }
 
 		[EditableProperty]
 		public bool Collectible { get; set; }
+		[EditableProperty]
+		public bool Locked { get; set; }
 
 		[EditableProperty]
 		public bool Hideable { get; set; }
@@ -55,6 +59,33 @@ namespace MapCore
 		public virtual double Saturation { get; set; }
 		public virtual double Lightness { get; set; }
 		public virtual double Contrast { get; set; }
+
+		public void CloneFrom(BaseStampProperties stamp)
+		{
+			Contrast = stamp.Contrast;
+			Visible = stamp.Visible;
+			FlipHorizontally = stamp.FlipHorizontally;
+			FlipVertically = stamp.FlipVertically;
+			HueShift = stamp.HueShift;
+			Lightness = stamp.Lightness;
+			Rotation = stamp.Rotation;
+			Saturation = stamp.Saturation;
+			Scale = stamp.Scale;
+			X = stamp.X;
+			Y = stamp.Y;
+			Height = stamp.Height;
+			Width = stamp.Width;
+			Name = stamp.Name;
+			Collectible = stamp.Collectible;
+			Locked = stamp.Locked;
+			Hideable = stamp.Hideable;
+			StrengthToMove = stamp.StrengthToMove;
+			Cover = stamp.Cover;
+			Altitude = stamp.Altitude;
+			Weight = stamp.Weight;
+			Value = stamp.Value;
+			TypeName = stamp.TypeName;
+		}
 
 		public BaseStampProperties()
 		{

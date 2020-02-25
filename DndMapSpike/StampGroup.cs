@@ -42,6 +42,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.Contrast = value;
@@ -71,6 +74,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.FlipHorizontally = !stamp.FlipHorizontally;
@@ -87,6 +93,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.FlipVertically = !stamp.FlipVertically;
@@ -105,6 +114,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.HueShift = value;
@@ -133,6 +145,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.Lightness = value;
@@ -148,6 +163,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.Rotation = value;
@@ -165,6 +183,9 @@ namespace DndMapSpike
 			}
 			set
 			{
+				if (Locked)
+					return;
+
 				foreach (IStampProperties stamp in stamps)
 				{
 					stamp.Saturation = value;
@@ -206,14 +227,20 @@ namespace DndMapSpike
 
 		public override void Move(int deltaX, int deltaY)
 		{
+			if (Locked)
+				return;
 			X += deltaX;
 			Y += deltaY;
 		}
 
 		public override void RotateLeft()
 		{
+			if (Locked)
+				return;
+
 			foreach (IStampProperties stamp in stamps)
 			{
+
 				stamp.SwapXY();
 				stamp.Y *= -1;
 				stamp.RotateLeft();
@@ -223,6 +250,8 @@ namespace DndMapSpike
 
 		public override void RotateRight()
 		{
+			if (Locked)
+				return;
 			foreach (IStampProperties stamp in stamps)
 			{
 				stamp.SwapXY();
@@ -315,6 +344,9 @@ namespace DndMapSpike
 
 		public void Ungroup(List<IStampProperties> ungroupedStamps)
 		{
+			if (Locked)
+				return;
+
 			for (int i = 0; i < stamps.Count; i++)
 			{
 				IStampProperties stamp = stamps[i];
@@ -325,6 +357,9 @@ namespace DndMapSpike
 		}
 		public override void AdjustScale(double scaleAdjust)
 		{
+			if (Locked)
+				return;
+
 			Scale *= scaleAdjust;
 			foreach (IStampProperties stamp in stamps)
 			{
@@ -337,6 +372,9 @@ namespace DndMapSpike
 
 		public override void SetAbsoluteScaleTo(double newScale)
 		{
+			if (Locked)
+				return;
+
 			double scaleAdjust = newScale / Scale;
 			Scale = newScale;
 			foreach (IStampProperties stamp in stamps)

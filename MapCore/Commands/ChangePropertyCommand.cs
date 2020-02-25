@@ -5,22 +5,22 @@ using System.Collections.Generic;
 
 namespace MapCore
 {
-	public class ChangeIntPropertyCommand : BaseStampIntValueCommand
+	public class ChangePropertyCommand<T> : BaseStampValueCommand<T>
 	{
-		public ChangeIntPropertyCommand()
+		public ChangePropertyCommand()
 		{
 
 		}
 
-		int GetIntValue(IStampProperties instance, string propertyName)
+		T GetValue(IStampProperties instance, string propertyName)
 		{
 			PropertyInfo property = instance.GetType().GetProperty(propertyName);
 			if (property == null)
-				return 0;
-			return (int)property.GetValue(instance);
+				return default;
+			return (T)property.GetValue(instance);
 		}
 
-		void SetIntValue(IStampProperties instance, string propertyName, int value)
+		void SetValue(IStampProperties instance, string propertyName, T value)
 		{
 			PropertyInfo property = instance.GetType().GetProperty(propertyName);
 			if (property == null)
@@ -33,20 +33,20 @@ namespace MapCore
 			base.PrepareForExecution(map, selectedStamps);
 
 			foreach (IStampProperties stampProperties in selectedStamps)
-				SaveValue(stampProperties, GetIntValue(stampProperties, PropertyName));
+				SaveValue(stampProperties, GetValue(stampProperties, PropertyName));
 		}
 
 		protected override void ActivateRedo(Map map)
 		{
 
 			foreach (IStampProperties stampProperties in SelectedStamps)
-				SetIntValue(stampProperties, PropertyName, RedoValue);
+				SetValue(stampProperties, PropertyName, RedoValue);
 		}
 
 		protected override void ActivateUndo(Map map)
 		{
 			foreach (IStampProperties stampProperties in SelectedStamps)
-				SetIntValue(stampProperties, PropertyName, GetSavedValue(stampProperties));
+				SetValue(stampProperties, PropertyName, GetSavedValue(stampProperties));
 		}
 	}
 }

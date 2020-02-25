@@ -4,22 +4,22 @@ using System.Collections.Generic;
 
 namespace MapCore
 {
-	public abstract class BaseStampIntValueCommand : BaseStampCommand
+	public abstract class BaseStampValueCommand<T> : BaseStampCommand
 	{
-		Dictionary<Guid, int> undoValues = new Dictionary<Guid, int>();
+		Dictionary<Guid, T> undoValues = new Dictionary<Guid, T>();
 
-		public int RedoValue { get; set; }
+		public T RedoValue { get; set; }
 		public string PropertyName { get; set; }
 
 		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
 		{
 			base.PrepareForExecution(map, selectedStamps);
-			if (!(Data is EnumChangeData enumChangeData))
+			if (!(Data is ChangeData<T> textChangeData))
 				return;
-			PropertyName = enumChangeData.PropertyName;
+			PropertyName = textChangeData.PropertyName;
 		}
 
-		protected void SaveValue(IStampProperties stampProperties, int value)
+		protected void SaveValue(IStampProperties stampProperties, T value)
 		{
 			if (undoValues.ContainsKey(stampProperties.Guid))
 				undoValues[stampProperties.Guid] = value;
@@ -27,12 +27,12 @@ namespace MapCore
 				undoValues.Add(stampProperties.Guid, value);
 		}
 
-		protected int GetSavedValue(IStampProperties stampProperties)
+		protected T GetSavedValue(IStampProperties stampProperties)
 		{
 			if (!undoValues.ContainsKey(stampProperties.Guid))
 			{
 				System.Diagnostics.Debugger.Break();
-				return 0;
+				return default;
 			}
 
 			return undoValues[stampProperties.Guid];
@@ -40,10 +40,10 @@ namespace MapCore
 
 		public override void Redo(Map map)
 		{
-			if (Data is EnumChangeData enumChangeData)
+			if (Data is ChangeData<T> textChangeData)
 			{
-				RedoValue = enumChangeData.Value;
-				PropertyName = enumChangeData.PropertyName;
+				RedoValue = textChangeData.Value;
+				PropertyName = textChangeData.PropertyName;
 			}
 
 			base.Redo(map);

@@ -1754,6 +1754,24 @@ namespace DndMapSpike
 			checkBox.Unchecked += BooleanCheckBox_Changed;
 			return checkBox;
 		}
+
+		UIElement GetTextEditor(PropertyValueData propertyValueData)
+		{
+			TextEditor textEditor = new TextEditor();
+			textEditor.TextChanged += TextEditor_TextChanged;
+			textEditor.PropertyName = propertyValueData.Name;
+			textEditor.PropertyType = propertyValueData.Type;
+
+			PropertyInfo propertyInfo = propertyValueData.FirstInstance.GetType().GetProperty(propertyValueData.Name);
+			//propertyInfo.PropertyType
+			textEditor.AddLabel(propertyValueData.DisplayText);
+			string text = propertyValueData.StringValue;
+			if (propertyValueData.HasInconsistentValues)
+				text = "";
+			textEditor.AddText(text);
+			return textEditor;
+		}
+
 		UIElement GetEnumEditor(PropertyValueData propertyValueData)
 		{
 			EnumEditor enumEditor = new EnumEditor();
@@ -1764,10 +1782,24 @@ namespace DndMapSpike
 			PropertyInfo propertyInfo = propertyValueData.FirstInstance.GetType().GetProperty(propertyValueData.Name);
 			//propertyInfo.PropertyType
 			enumEditor.AddDisplayText(propertyValueData.DisplayText);
-			foreach (object value in Enum.GetValues(propertyInfo.PropertyType))
+			Type propType = propertyInfo.PropertyType;
+			foreach (object value in Enum.GetValues(propType))
 			{
-				string name = Enum.GetName(propertyInfo.PropertyType, value);
-				enumEditor.AddOption(name, (int)value, (int)value == propertyValueData.NumericValue);
+				MemberInfo[] memberInfo = propType.GetMember(value.ToString());
+				string name = Enum.GetName(propType, value);
+				if (memberInfo.Length > 0)
+				{
+					object[] attributes = memberInfo[0].GetCustomAttributes(typeof(DisplayTextAttribute), false);
+					if (attributes != null && attributes.Length > 0)
+						if (attributes[0] is DisplayTextAttribute displayTextAttribute)
+							name = displayTextAttribute.DisplayText;
+				}
+
+
+				bool optionChecked = (int)value == propertyValueData.NumericValue;
+				if (propertyValueData.HasInconsistentValues)
+					optionChecked = false;
+				enumEditor.AddOption(name, (int)value, optionChecked);
 			}
 
 			//Foreground = Brushes.White;
@@ -1779,19 +1811,32 @@ namespace DndMapSpike
 			return enumEditor;
 		}
 
+		private void ChangeProperty<T>(string propertyName, T value)
+		{
+			ExecuteCommand<T>("ChangeProperty", new ChangeData<T>(propertyName, value));
+		}
+
+		private void TextEditor_TextChanged(object sender, TextChangedEventArgs ea)
+		{
+			if (!(sender is TextEditor textEditor))
+				return;
+			if (textEditor.Value != null)
+				ChangeProperty(textEditor.PropertyName, textEditor.Value);
+		}
+
 		private void EnumEditor_ValueChanged(object sender, ValueChangedEventArgs ea)
 		{
 			if (!(sender is EnumEditor enumEditor))
 				return;
 			if (enumEditor.Value.HasValue)
-				ExecuteCommand("ChangeIntProperty", new EnumChangeData(enumEditor.PropertyName, enumEditor.Value.Value));
+				ChangeProperty(enumEditor.PropertyName, enumEditor.Value.Value);
 		}
 
 		private void BooleanCheckBox_Changed(object sender, RoutedEventArgs e)
 		{
 			if (!(sender is BooleanEditor booleanEditor))
 				return;
-			ExecuteCommand("ChangeBooleanProperty", new BoolChangeData(booleanEditor.PropertyName, booleanEditor.IsChecked == true));
+			ChangeProperty(booleanEditor.PropertyName, booleanEditor.IsChecked == true);
 		}
 
 		UIElement GetEditor(PropertyValueData propertyValueData)
@@ -1802,8 +1847,8 @@ namespace DndMapSpike
 					return GetBooleanEditor(propertyValueData);
 				case PropertyType.Enum:
 					return GetEnumEditor(propertyValueData);
-					//case PropertyType.String:
-					//	return GetStringEditor(propertyValueData);
+				case PropertyType.String:
+					return GetTextEditor(propertyValueData);
 					//case PropertyType.Integer:
 					//	return GetIntegerEditor(propertyValueData);
 					//case PropertyType.Decimal:
@@ -2613,7 +2658,13 @@ namespace DndMapSpike
 		}
 
 		string lastCommandChangeID;
-		void ExecuteCommand(string commandType, object data = null)
+		void ExecuteCommand<T>(string commandType, object data = null)
+		{
+			ExecutingCommand();
+			ExecuteCommand(CommandFactory.Create<T>(commandType, data));
+		}
+
+		private void ExecutingCommand()
 		{
 			if (interactiveChangeID != null && lastCommandChangeID == interactiveChangeID)
 			{
@@ -2622,6 +2673,11 @@ namespace DndMapSpike
 			}
 
 			lastCommandChangeID = interactiveChangeID;
+		}
+
+		void ExecuteCommand(string commandType, object data = null)
+		{
+			ExecutingCommand();
 			ExecuteCommand(CommandFactory.Create(commandType, data));
 		}
 

@@ -1,14 +1,14 @@
 ﻿namespace MapCore
 {
-	public class EnumChangeData
+	public class ChangeData<T>
 	{
-		public EnumChangeData(string propertyName, int value)
+		public ChangeData(string propertyName, T value)
 		{
 			Value = value;
 			PropertyName = propertyName;
 		}
 
 		public string PropertyName { get; set; }
-		public int Value { get; set; }
+		public T Value { get; set; }
 	}
 }
