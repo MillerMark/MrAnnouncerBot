@@ -290,6 +290,7 @@ class SpellBook {
 	concentrationIcon: Sprites;
 	morePowerIcon: Sprites;
 	bookGlow: Sprites;
+	bookBurn: Sprites;
 	spellBookAppearBig: Sprites;
 	spellBookAppearMedium: Sprites;
 	spellBookAppearSmall: Sprites;
@@ -353,9 +354,11 @@ class SpellBook {
 		this.titleColors.push('#216333'); // Evocation			
 		this.titleColors.push('#2c5818'); // Transmutation	
 		this.titleColors.push('#594f09'); // Divination
+		this.titleColors.push('#7c5d0c'); // Heavenly
+		this.titleColors.push('#9a2c3d'); // Satanic
 
 		this.hueShifts = [];
-		this.hueShifts.push(0); // None
+		this.hueShifts.push(0);		// None
 		this.hueShifts.push(191); // Abjuration     
 		this.hueShifts.push(238); // Illusion			 
 		this.hueShifts.push(277); // Conjuration	   
@@ -364,6 +367,8 @@ class SpellBook {
 		this.hueShifts.push(137); // Evocation			 
 		this.hueShifts.push(101); // Transmutation	 
 		this.hueShifts.push(52);  // Divination		 
+		this.hueShifts.push(44);  // Heavenly
+		this.hueShifts.push(352); // Satanic
 	}
 
 	private getWordWrappedLines(context: CanvasRenderingContext2D, text: string, maxScaledWidth: number): Array<LineWrapData> {
@@ -583,11 +588,13 @@ class SpellBook {
 	}
 
 	private getLevelStr(spell: ActiveSpellData) {
+		if (spell.spellLevel == -1)
+			return 'Special';
+
 		if (spell.spellLevel == 0)
 			return 'Cantrip';
-		else {
-			return `Level ${spell.spellLevel}`;
-		}
+
+		return `Level ${spell.spellLevel}`;
 	}
 
 	drawSpellLevelSchool(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): any {
@@ -1002,6 +1009,8 @@ class SpellBook {
 			case SchoolOfMagic.Illusion: return 'illusion';
 			case SchoolOfMagic.Necromancy: return 'necromancy';
 			case SchoolOfMagic.Transmutation: return 'transmutation';
+			case SchoolOfMagic.Heavenly: return 'heavenly power';
+			case SchoolOfMagic.Satanic: return 'satanic power';
 		}
 		return '';
 	}
@@ -1087,6 +1096,7 @@ class SpellBook {
 		this.drawSpellDetails(nowSec, context, spell);
 		this.drawSpellDescription(nowSec, context, spell);
 
+		this.bookBurn.draw(context, nowMs);
 		this.drawSpellBookAppear(nowSec, context, spell);
 	}
 
@@ -1115,6 +1125,7 @@ class SpellBook {
 				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Enchantment');
 				break;
 			case SchoolOfMagic.Necromancy:
+			case SchoolOfMagic.Satanic:
 				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Necromancy');
 				break;
 			case SchoolOfMagic.Evocation:
@@ -1124,13 +1135,14 @@ class SpellBook {
 				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Transmutation');
 				break;
 			case SchoolOfMagic.Divination:
+			case SchoolOfMagic.Heavenly:
 				this.soundManager.playMp3In(schoolOfMagicStartTime, 'SpellBook/Divination');
 				break;
 		}
 	}
 
-	drawSpellBookAppear(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): void {
-		let timeSec: number = now * 1000;
+	drawSpellBookAppear(nowMs: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): void {
+		let timeSec: number = nowMs * 1000;
 		this.spellBookAppearBig.draw(context, timeSec);
 		this.spellBookAppearMedium.draw(context, timeSec);
 		this.spellBookAppearSmall.draw(context, timeSec);
@@ -1170,14 +1182,15 @@ class SpellBook {
 		this.spellBookBack.originX = 0;
 		this.spellBookBack.originY = 999;
 		this.spellBookTop = new Sprites("Scroll/Spells/BookTop", 1, 0, AnimationStyle.Static);
-		this.schoolOfMagic = new Sprites("Scroll/Spells/SchoolsOfMagic", 8, 0, AnimationStyle.Static);
-		this.concentrationIcon = new Sprites("Scroll/Spells/Concentration/Concentration", 8, 0, AnimationStyle.Static);
+		this.schoolOfMagic = new Sprites("Scroll/Spells/SchoolsOfMagic", 10, 0, AnimationStyle.Static);
+		this.concentrationIcon = new Sprites("Scroll/Spells/Concentration/Concentration", 10, 0, AnimationStyle.Static);
 		this.concentrationIcon.originX = 0;
 		this.concentrationIcon.originY = SpellBook.iconSize;
-		this.morePowerIcon = new Sprites("Scroll/Spells/MorePower/MorePower", 8, 0, AnimationStyle.Static);
+		this.morePowerIcon = new Sprites("Scroll/Spells/MorePower/MorePower", 10, 0, AnimationStyle.Static);
 		this.morePowerIcon.originX = 0;
 		this.morePowerIcon.originY = SpellBook.iconSize;
 		this.bookGlow = new Sprites("Scroll/Spells/BookMagic/BookMagic", 119, fps30, AnimationStyle.Loop, true);
+		this.bookBurn = new Sprites("Scroll/Spells/Appear/BookBurn/BookBurn", 28, fps30, AnimationStyle.Sequential, true);
 
 		let saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = false;
@@ -1281,10 +1294,6 @@ class SpellBook {
 			left = Math.max(left, SpellBook.fredHeadX);
 		}
 
-		if (spell.schoolOfMagic == SchoolOfMagic.Abjuration) {
-
-		}
-
 		this.spellDescriptionTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + SpellBook.spellHeaderHeight + detailsHeight);
 		this.titleTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + 27);
 		this.levelSchoolTopLeft = new Vector(left + SpellBook.titleLeftMargin, this.titleTopLeft.y + this.titleFontSize + SpellBook.titleLevelMargin);
@@ -1344,6 +1353,10 @@ class SpellBook {
 		bookGlow.horizontalScale = this.horizontalScale;
 		bookGlow.verticalScale = verticalScaleGlow;
 
+		let bookBurn: ColorShiftingSpriteProxy = this.bookBurn.addShifted(left - SpellBook.bookGlowLeftMargin * this.horizontalScale, top - topScaledMargin, 0, hueShift);
+		bookBurn.horizontalScale = this.horizontalScale;
+		bookBurn.verticalScale = verticalScaleGlow;
+
 		let bookGlowWidth: number = horizontalScale * (this.bookGlow.spriteWidth - SpellBook.bookGlowLeftMargin * 2);
 
 		let centerX: number = left + bookGlowWidth / 2.0;
@@ -1353,11 +1366,13 @@ class SpellBook {
 		let horizontalScaleBig: number = 1.2 * bookGlowWidth / this.spellBookAppearBig.spriteWidth;
 
 		let big: SpriteProxy = this.spellBookAppearBig.addShifted(centerX, centerY, 0, 21);
-		hueShift = Random.max(360);
+		//hueShift = Random.max(360);
 		big.horizontalScale = horizontalScaleBig;
 		big.verticalScale = verticalScaleBig;
-		let medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, hueShift + Random.plusMinus(40));
-		let small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, hueShift + Random.plusMinus(40));
+		let bigHueShift: number = Random.plusMinusBetween(20, 40);
+		let mediumHueShift: number = -bigHueShift;
+		let medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, hueShift + mediumHueShift);
+		let small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, hueShift + bigHueShift);
 		medium.timeStart = performance.now() + 9 * fps50;  // medium starts 9 frames in.
 		medium.horizontalScale = horizontalScaleBig;
 		medium.verticalScale = verticalScaleBig;

@@ -159,6 +159,7 @@ class DiceLayer {
 	damageRadiant: Sprites;
 	damageForce: Sprites;
 	damageBludgeoningMace: Sprites;
+	damageBludgeoningFist: Sprites;
 	damageBludgeoningWeapon: Sprites;
 	damageSpinningCloudTrail: Sprites;
 	damagePoison: Sprites;
@@ -375,6 +376,11 @@ class DiceLayer {
 		this.damageBludgeoningMace.originX = 0;
 		this.damageBludgeoningMace.originY = 52;
 		this.allBackLayerEffects.add(this.damageBludgeoningMace);
+
+		this.damageBludgeoningFist = new Sprites("/Dice/Damage/Bludgeoning/Punch", 43, fps30, AnimationStyle.Loop, true);
+		this.damageBludgeoningFist.originX = 64;
+		this.damageBludgeoningFist.originY = 246;
+		this.allBackLayerEffects.add(this.damageBludgeoningFist);
 
 		this.damageBludgeoningWeapon = new Sprites("/Dice/Damage/Bludgeoning/weapon", 2, fps30, AnimationStyle.Static, true);
 		this.damageBludgeoningWeapon.originX = 0;
@@ -794,23 +800,39 @@ class DiceLayer {
 	attachDamageBludgeoning(die: any): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.plusMinus(60);
-		let autoRotationDegeesPerSecond: number = Random.between(60, 100);
+		let autoRotationDegeesPerSecond: number = -Random.between(60, 100);
 
 		this.addBludgeoningCloud(die, rotationOffset, autoRotationDegeesPerSecond);
 		this.addBludgeoningCloud(die, rotationOffset + 120, autoRotationDegeesPerSecond);
 		this.addBludgeoningCloud(die, rotationOffset + 240, autoRotationDegeesPerSecond);
 
-
-		die.attachedSprites.push(this.addDamageBludgeoningMace(960, 540, rotationOffset, autoRotationDegeesPerSecond));
-		die.origins.push(this.damageBludgeoningMace.getOrigin());
-
-		die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset + 120, autoRotationDegeesPerSecond, 0));
-		die.origins.push(this.damageBludgeoningWeapon.getOrigin());
-
-		die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset + 240, autoRotationDegeesPerSecond, 1));
-		die.origins.push(this.damageBludgeoningWeapon.getOrigin());
+		const numWeapons: number = 3;
+		for (let i = 0; i < numWeapons; i++) {
+			this.addRandomBludgeoningWeapon(die, rotationOffset, autoRotationDegeesPerSecond);
+			rotationOffset += 360 / numWeapons;
+		}
 
 		diceSounds.safePlayMp3('Dice/Damage/Bludgeoning');
+	}
+
+	addRandomBludgeoningWeapon(die: any, rotationOffset: number, autoRotationDegeesPerSecond: number): any {
+		if (Random.chancePercent(25)) {
+			die.attachedSprites.push(this.addDamageBludgeoningMace(960, 540, rotationOffset, autoRotationDegeesPerSecond));
+			die.origins.push(this.damageBludgeoningMace.getOrigin());
+		}
+		else if (Random.chancePercent(33)) {
+			let fist: SpriteProxy = this.addDamageBludgeoningFist(960, 540, rotationOffset, autoRotationDegeesPerSecond);
+			die.attachedSprites.push(fist);
+			die.origins.push(this.damageBludgeoningFist.getOrigin());
+		}
+		else if (Random.chancePercent(50)) {
+			die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset, autoRotationDegeesPerSecond, 0));
+			die.origins.push(this.damageBludgeoningWeapon.getOrigin());
+		}
+		else {
+			die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset, autoRotationDegeesPerSecond, 1));
+			die.origins.push(this.damageBludgeoningWeapon.getOrigin());
+		}
 	}
 
 	addBludgeoningCloud(die: any, rotationOffset: number, autoRotationDegeesPerSecond: number): void {
@@ -1405,6 +1427,24 @@ class DiceLayer {
 		damageBludgeoningMace.fadeOutTime = 500;
 		damageBludgeoningMace.fadeOnDestroy = true;
 		return damageBludgeoningMace;
+	}
+
+
+	addDamageBludgeoningFist(x: number, y: number, angle: number, autoRotationDegeesPerSecond: number): SpriteProxy {
+		let hueShift: number = 0;
+		if (Random.chancePercent(33))
+			hueShift = 180 + Random.plusMinus(30);
+		else if (Random.chancePercent(50))
+			hueShift = -132 + Random.plusMinus(30);
+		let damageBludgeoningFist = this.damageBludgeoningFist.addShifted(x, y, -1, hueShift);
+		angle += 90;
+		damageBludgeoningFist.rotation = angle;
+		damageBludgeoningFist.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
+		damageBludgeoningFist.initialRotation = angle;
+		damageBludgeoningFist.fadeInTime = 500;
+		damageBludgeoningFist.fadeOutTime = 500;
+		damageBludgeoningFist.fadeOnDestroy = true;
+		return damageBludgeoningFist;
 	}
 
 	addDamageBludgeoningWeapon(x: number, y: number, angle: number, autoRotationDegeesPerSecond: number, startingFrame: number): SpriteProxy {
@@ -2038,7 +2078,7 @@ class PlayerRollOptions {
 
 class IndividualRoll {
 	constructor(public value: number, public numSides: number, public type: string) {
-		
+
 	}
 }
 

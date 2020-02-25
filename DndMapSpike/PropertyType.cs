@@ -5,6 +5,8 @@ namespace DndMapSpike
 {
 	public enum PropertyType
 	{
+		Unknown,
+		Enum,
 		Boolean,
 		String,
 		Integer,

@@ -408,6 +408,9 @@
 										<RadioButton x:Name="rbFlatD20" MinHeight="22" Checked="RbFlatD20_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >
 											Flat d20
 										</RadioButton>
+										<RadioButton x:Name="rbCastOtherSpell" MinHeight="22" Checked="RbCastOtherSpell_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >
+											Cast (no die roll required)
+										</RadioButton>
 										<StackPanel Orientation="Horizontal" Margin="0, -4, 0, 0">
 											<RadioButton x:Name="rbSavingThrow" VerticalAlignment="Center" Click="RbSavingThrow_Click" GroupName="DieRollTypes" >
 												Saving Throw:

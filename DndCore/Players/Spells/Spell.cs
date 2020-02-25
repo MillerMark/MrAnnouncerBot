@@ -36,7 +36,7 @@ namespace DndCore
 		public string Material { get; set; }
 		public int OwnerId { get; set; }
 		public bool RequiresConcentration { get; set; }
-		public int Level { get; set; }  // 0 == cantrip
+		public int Level { get; set; }  // 0 == cantrip, -1 == special power (like Heavenly Smite)
 		public int SpellSlotLevel { get; set; }
 		public int SpellCasterLevel { get; set; }
 		public string DieStr { get; set; }
@@ -48,6 +48,8 @@ namespace DndCore
 		public double PerLevelBonus { get; set; }
 		[DndEvent]
 		public string OnCast { get; set; }
+		[DndEvent]
+		public string OnReceived { get; set; }
 		[DndEvent]
 		public string OnCasting { get; set; }
 		[DndEvent]
@@ -141,6 +143,8 @@ namespace DndCore
 			levelStr = levelStr.ToLower();
 			if (levelStr.IndexOf("cantrip") > 0)
 				return 0;
+			if (levelStr == "*")
+				return -1;
 			return levelStr.GetFirstInt();
 		}
 
@@ -334,6 +338,7 @@ namespace DndCore
 				SpellCasterLevel = spellCasterLevel,
 				SpellSlotLevel = spellSlotLevel >= 0 ? spellSlotLevel : spellLevel,
 				OnCast = spellDto.onCast,
+				OnReceived = spellDto.onReceived,
 				OnCasting = spellDto.onCasting,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
 				OnPlayerHitsTarget = spellDto.onPlayerHitsTarget,
@@ -409,9 +414,17 @@ namespace DndCore
 
 		public bool MustRollDiceToCast()
 		{
-			return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || SpellType == SpellType.DamageSpell ||
-				(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr) && 
-				(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
+			bool hasDieStr = !string.IsNullOrWhiteSpace(DieStr) && (OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+"));
+			return
+				SpellType == SpellType.MeleeSpell ||
+				SpellType == SpellType.RangedSpell ||
+				SpellType == SpellType.DamageSpell ||
+				(SpellType == SpellType.SavingThrowSpell && hasDieStr) ||
+				(SpellType == SpellType.HpCapacitySpell && hasDieStr);
+
+			//return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || SpellType == SpellType.DamageSpell ||
+			//	(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr) && 
+			//	(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
 		public void TriggerCasting(Character player, Creature targetCreature, CastedSpell castedSpell)
@@ -424,6 +437,12 @@ namespace DndCore
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnCast, player, targetCreature, castedSpell);
+		}
+
+		public void TriggerReceived(Character player, Creature targetCreature, CastedSpell castedSpell)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnReceived, player, targetCreature, castedSpell);
 		}
 
 		public void TriggerDispel(Character player, Creature targetCreature, CastedSpell castedSpell)
@@ -458,6 +477,7 @@ namespace DndCore
 			result.Material = Material;
 			result.Name = Name;
 			result.OnCast = OnCast;
+			result.OnReceived = OnReceived;
 			result.OnCasting = OnCasting;
 			result.OnDispel = OnDispel;
 			result.OnPlayerAttacks = OnPlayerAttacks;
@@ -490,6 +510,18 @@ namespace DndCore
 			result.RecalculateDiceAndAmmo(spellSlotLevel, player.level, player.GetSpellcastingAbilityModifier());
 
 			return result;
+		}
+
+		public void TriggerSpellReceived(Character recipient, Spell givenSpell, object data1 = null, object data2 = null, object data3 = null, object data4 = null, object data5 = null, object data6 = null, object data7 = null)
+		{
+			DndProperty.Set("data1", data1);
+			DndProperty.Set("data2", data2);
+			DndProperty.Set("data3", data3);
+			DndProperty.Set("data4", data4);
+			DndProperty.Set("data5", data5);
+			DndProperty.Set("data6", data6);
+			DndProperty.Set("data7", data7);
+			TriggerReceived(recipient, null, new CastedSpell(givenSpell, recipient));
 		}
 	}
 }

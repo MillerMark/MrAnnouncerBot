@@ -27,6 +27,12 @@ namespace DndCore
 			Spell.TriggerCasting(SpellCaster, TargetCreature, this);
 		}
 
+		public void ConsiderCasting()
+		{
+			SpellCaster.CheckConcentration(this);
+			SpellCaster.PlayerConsidersCasting(this);
+		}
+
 		public void CastingWithItem()
 		{
 			SpellCaster.ShowPlayerCasting(this);

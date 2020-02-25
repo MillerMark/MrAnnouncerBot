@@ -52,14 +52,17 @@
     <Compile Include="Commands\BaseStampAbsoluteValueCommand.cs" />
     <Compile Include="Commands\BaseStampBooleanValueCommand.cs" />
     <Compile Include="Commands\BaseStampCommand.cs" />
+    <Compile Include="Commands\BaseStampIntValueCommand.cs" />
     <Compile Include="Commands\BoolChangeData.cs" />
     <Compile Include="Commands\BringToFrontCommand.cs" />
     <Compile Include="Commands\ChangeBooleanPropertyCommand.cs" />
+    <Compile Include="Commands\ChangeIntPropertyCommand.cs" />
     <Compile Include="Commands\CommandFactory.cs" />
     <Compile Include="Commands\ContrastChangeCommand.cs" />
     <Compile Include="Commands\CopyCommand.cs" />
     <Compile Include="Commands\DeleteStampsCommand.cs" />
     <Compile Include="Commands\DoubleData.cs" />
+    <Compile Include="Commands\EnumChangeData.cs" />
     <Compile Include="Commands\GroupOperation.cs" />
     <Compile Include="Commands\StampGroupingCommand.cs" />
     <Compile Include="Commands\HorizontalFlipCommand.cs" />

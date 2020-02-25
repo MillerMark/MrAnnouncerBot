@@ -313,7 +313,10 @@ namespace DndCore
 				if (spell.MorePowerfulWhenCastAtHigherLevels)
 				{
 					int[] spellSlotLevels = player.GetSpellSlotLevels();
-					int availableSlots = spellSlotLevels[spell.Level];
+					int availableSlots = 0;
+					if (spell.Level >= 0)
+						availableSlots = spellSlotLevels[spell.Level];
+
 					if (availableSlots > 0)
 					{
 						bool needToDisambiguateMultipleSpells = false;
@@ -447,6 +450,8 @@ namespace DndCore
 				return DndUtils.DiceRollTypeToStr(DiceRollType.DamageOnly);
 			else if (spell.SpellType == SpellType.OtherSpell)
 				return DndUtils.DiceRollTypeToStr(DiceRollType.None);
+			else if (spell.SpellType == SpellType.HealingSpell)
+				return DndUtils.DiceRollTypeToStr(DiceRollType.HealthOnly);
 			else if (spell.SpellType == SpellType.HpCapacitySpell)
 				return DndUtils.DiceRollTypeToStr(DiceRollType.ExtraOnly);
 			else
@@ -543,11 +548,14 @@ namespace DndCore
 			result.Description = spell.Description;
 			result.AttackingAbility = player == null ? Ability.none : player.spellCastingAbility;
 			result.ProcessDieStr(shortcutDto, damageStr);
-			bool isWindup = result.Spell != null && !result.Spell.Duration.HasValue() && result.Spell.MustRollDiceToCast();
+			bool mustRollDiceToCast = result.Spell.MustRollDiceToCast();
+			bool isWindup = result.Spell != null && !result.Spell.Duration.HasValue() && mustRollDiceToCast;
 			result.AddEffect(shortcutDto, SpellWindupPrefix, player, spellSlotLevel, isWindup);
+			if (!mustRollDiceToCast)
+				result.Type = DiceRollType.CastSimpleSpell;
 			return result;
 		}
-
+ 
 		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string weaponDamage = "", string suffix = "", int slotLevel = 0)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
@@ -604,6 +612,8 @@ namespace DndCore
 
 		void ExecuteCommand(string command, Character player)
 		{
+			if (string.IsNullOrWhiteSpace(command))
+				return;
 			Expressions.Do(command, player);
 		}
 		public void ExecuteCommands(Character player)

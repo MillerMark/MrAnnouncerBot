@@ -13,6 +13,8 @@ namespace DndCore
 		Necromancy,
 		Evocation,
 		Transmutation,
-		Divination
+		Divination,
+		Heavenly,
+		Satanic
 	}
 }

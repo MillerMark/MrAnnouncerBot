@@ -41,6 +41,10 @@ namespace DndCore
 					return 101;
 				case SchoolOfMagic.Divination:
 					return 52;
+				case SchoolOfMagic.Heavenly:
+					return 44;
+				case SchoolOfMagic.Satanic:
+					return 352;
 			}
 			return 0;
 		}
@@ -425,6 +429,8 @@ namespace DndCore
 				case "evocation": return SchoolOfMagic.Evocation;
 				case "transmutation": return SchoolOfMagic.Transmutation;
 				case "divination": return SchoolOfMagic.Divination;
+				case "heavenly": return SchoolOfMagic.Heavenly;
+				case "satanic": return SchoolOfMagic.Satanic;
 			}
 			return SchoolOfMagic.None;
 		}

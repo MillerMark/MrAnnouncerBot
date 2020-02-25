@@ -43,6 +43,7 @@ class Character {
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
 	forceShowSpell: boolean;
+	spellTentativelyCasting: ActiveSpellData;
 	spellActivelyCasting: ActiveSpellData;
 	spellPreviouslyCasting: ActiveSpellData;
 	level: number;
@@ -183,6 +184,11 @@ class Character {
 			this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);
 		else
 			this.spellActivelyCasting = null;
+
+		if (sourceCharacter.spellTentativelyCasting)
+			this.spellTentativelyCasting = new ActiveSpellData(sourceCharacter.spellTentativelyCasting);
+		else
+			this.spellTentativelyCasting = null;
 
 		if (sourceCharacter.spellPreviouslyCasting)
 			this.spellPreviouslyCasting = new ActiveSpellData(sourceCharacter.spellPreviouslyCasting);
@@ -872,9 +878,16 @@ class Character {
 	}
 
 	getActiveSpell(): ActiveSpellData {
-		let activeSpellData: ActiveSpellData = this.spellActivelyCasting;
+		let activeSpellData: ActiveSpellData; 
+
+		activeSpellData = this.spellTentativelyCasting;
+		if (activeSpellData != null)
+			return activeSpellData;
+
+		activeSpellData = this.spellActivelyCasting;
 		if (activeSpellData)
 			return activeSpellData;
+
 		return this.spellPreviouslyCasting;
 	}
 }

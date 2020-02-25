@@ -35,6 +35,5 @@ namespace DndCore
 		{
 			properties = null;
 		}
-
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿//#define profiling
+using Microsoft.AspNetCore.SignalR.Client;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using System;
@@ -1018,7 +1019,12 @@ namespace DHDM
 		void SetRollTypeCheckbox(PlayerActionShortcut actionShortcut)
 		{
 			btnRollDice.IsEnabled = actionShortcut.Type != DiceRollType.None;
-			switch (actionShortcut.Type)
+			SetRollTypeRadioButton(actionShortcut.Type);
+		}
+
+		private void SetRollTypeRadioButton(DiceRollType rollType)
+		{
+			switch (rollType)
 			{
 				case DiceRollType.SkillCheck:
 					rbSkillCheck.IsChecked = true;
@@ -1069,7 +1075,7 @@ namespace DHDM
 					rbInitiative.IsChecked = true;
 					break;
 				case DiceRollType.WildMagicD20Check:
-
+					rbWildMagicD20Check.IsChecked = true;
 					break;
 				case DiceRollType.InspirationOnly:
 
@@ -1078,15 +1084,42 @@ namespace DHDM
 
 					break;
 				case DiceRollType.NonCombatInitiative:
-					
+
+					break;
+				case DiceRollType.CastSimpleSpell:
+					rbCastOtherSpell.IsChecked = true;
 					break;
 			}
 		}
 
+#if profiling
+		long lastTimeCheck;
+		long longestDifference;
+
+		void StartProfiling()
+		{
+			lastTimeCheck = DateTime.Now.Ticks;
+			longestDifference = 0;
+		}
+
+		void CheckTime()
+		{
+			long currentTime = DateTime.Now.Ticks;
+			long difference = currentTime - lastTimeCheck;
+			if (difference > longestDifference)
+			{
+				longestDifference = difference;
+				if (longestDifference > 10_000_000)
+				{
+					
+				}
+			}
+		}
+#endif
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
+			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
-
 			try
 			{
 				if (actionShortcut.Type == DiceRollType.WildMagic)
@@ -1121,7 +1154,6 @@ namespace DHDM
 
 				SetRollTypeCheckbox(actionShortcut);
 
-
 				// TODO: Clear the weapons, but not the spells...
 				HubtasticBaseStation.ClearWindup("Weapon.*");
 				HubtasticBaseStation.ClearWindup("Windup.*");
@@ -1140,7 +1172,13 @@ namespace DHDM
 					player.IsAboutToCastSpell();
 					if (tbTabs.SelectedItem == tbDebug)
 						UpdateSpellEvents(spell);
-					ActivateSpellShortcut(actionShortcut, player, spell);
+					spellToCastOnRoll = actionShortcut;
+					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
+
+					// TODO: Fix the targeting.
+					ShowCastingEffects(actionShortcut, spell);
+					CastedSpell castedSpell = new CastedSpell(spell, player, null);
+					castedSpell.ConsiderCasting();
 				}
 				else
 				{
@@ -1166,6 +1204,7 @@ namespace DHDM
 					tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
 
 				settingInternally = true;
+
 				try
 				{
 					HighlightPlayerShortcut(actionShortcut.Index);
@@ -1228,9 +1267,10 @@ namespace DHDM
 			}
 		}
 
-		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut, Character player, Spell spell)
+		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
 		{
-			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
+			Character player = GetPlayer(actionShortcut.PlayerId);
+			Spell spell = actionShortcut.Spell;
 			activeIsSpell = spell;
 			KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
 			if (matchingSpell != null && matchingSpell.CanBeRecharged())
@@ -1284,11 +1324,7 @@ namespace DHDM
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 			// TODO: Fix the targeting.
-			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
-
-			spellToCastDto.Windups = actionShortcut.WindupsReversed;
-			string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
-			HubtasticBaseStation.CastSpell(serializedObject);
+			//ShowCastingEffects(actionShortcut, spell);
 
 			CastedSpell castedSpell = game.Cast(player, spell);
 			SetClearSpellVisibility(player);
@@ -1304,6 +1340,15 @@ namespace DHDM
 				ShowSpellHit(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
 				player.JustCastSpell(spell.Name);
 			}
+		}
+
+		private static void ShowCastingEffects(PlayerActionShortcut actionShortcut, Spell spell)
+		{
+			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
+
+			spellToCastDto.Windups = actionShortcut.WindupsReversed;
+			string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
+			HubtasticBaseStation.CastSpell(serializedObject);
 		}
 
 		private void SetClearSpellVisibility(Character player)
@@ -1761,7 +1806,7 @@ namespace DHDM
 			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
 				diceRoll.HiddenThreshold = thresholdResult;
 
-			diceRoll.IsMagic = (ckbUseMagic.IsChecked == true && DndUtils.IsAttack(type)) || type == DiceRollType.WildMagicD20Check;
+			diceRoll.IsMagic = ckbUseMagic.IsChecked == true || type == DiceRollType.WildMagicD20Check;
 			diceRoll.Type = type;
 
 			diceRoll.AddTrailingEffects(activeTrailingEffects);
@@ -4310,6 +4355,15 @@ namespace DHDM
 
 		private void BtnRollDice_Click(object sender, RoutedEventArgs e)
 		{
+			if (spellToCastOnRoll != null)
+			{
+				ActivateSpellShortcut(spellToCastOnRoll);
+				bool isSimpleSpell = spellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
+				spellToCastOnRoll = null;
+				if (isSimpleSpell)
+					return;  // No need to roll the dice
+			}
+
 			UnleashTheDice();
 		}
 
@@ -4488,6 +4542,7 @@ namespace DHDM
 		}
 
 		bool changingInternally;
+		PlayerActionShortcut spellToCastOnRoll;
 		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			if (changingInternally)
@@ -4526,10 +4581,17 @@ namespace DHDM
 			if (latestSpell == null)
 				return;
 			spell.OnCast = latestSpell.OnCast;
+			spell.OnReceived = latestSpell.OnReceived;
 			spell.OnCasting = latestSpell.OnCasting;
 			spell.OnDispel = latestSpell.OnDispel;
 			spell.OnPlayerAttacks = latestSpell.OnPlayerAttacks;
 			spell.OnPlayerHitsTarget = latestSpell.OnPlayerHitsTarget;
+		}
+
+		private void RbCastOtherSpell_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.CastSimpleSpell;
+			btnRollDice.Content = "Cast Spell";
 		}
 	}
 

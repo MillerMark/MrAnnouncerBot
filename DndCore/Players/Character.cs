@@ -13,6 +13,9 @@ namespace DndCore
 	public class Character : Creature
 	{
 		[JsonIgnore]
+		List<KnownSpell> temporarySpells = new List<KnownSpell>();
+
+		[JsonIgnore]
 		public Queue<SpellHit> additionalSpellEffects = new Queue<SpellHit>();
 
 		[JsonIgnore]
@@ -79,6 +82,7 @@ namespace DndCore
 		[JsonIgnore]
 		public int damageOffsetThisRoll = 0;
 
+		public ActiveSpellData spellTentativelyCasting;
 		public ActiveSpellData spellActivelyCasting;
 		public ActiveSpellData spellPreviouslyCasting;
 
@@ -929,7 +933,8 @@ namespace DndCore
 
 		private bool HasSpell(string spellName)
 		{
-			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName) != null;
+			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName) != null ||
+				 temporarySpells.FirstOrDefault(x => x.SpellName == spellName) != null;
 		}
 
 		public void AddSpellsFrom(string spellsStr)
@@ -1085,12 +1090,22 @@ namespace DndCore
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
+		public void PlayerConsidersCasting(CastedSpell castedSpell)
+		{
+			forceShowSpell = true;
+			spellPreviouslyCasting = null;
+			spellActivelyCasting = null;
+			spellTentativelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
+			OnStateChanged(this, new StateChangedEventArgs("spellTentativelyCasting", null, null));
+		}
+
 		public void ClearAllCasting()
 		{
 			if (spellPreviouslyCasting == null && spellActivelyCasting == null)
 				return;
 			spellPreviouslyCasting = null;
 			spellActivelyCasting = null;
+			spellTentativelyCasting = null;
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
@@ -1638,9 +1653,13 @@ namespace DndCore
 					if (!assignedFeature.ActivatesConditionally())
 						continue;
 					if (assignedFeature.ShouldActivateNow())
+					{
 						assignedFeature.Activate(forceApply);
+					}
 					else
+					{
 						assignedFeature.Deactivate(forceApply);
+					}
 				}
 			}
 			finally
@@ -1648,15 +1667,16 @@ namespace DndCore
 				Expressions.EndUpdate(this);
 				reapplyingActiveFeatures = false;
 				if (queuedRecalcOptions != RecalcOptions.None)
+				{
 					Recalculate(queuedRecalcOptions);
+				}
 			}
 		}
 		public void Recalculate(RecalcOptions recalcOptions)
 		{
 			//if (recalcOptions == RecalcOptions.None)
 			//	return;
-
-			if (reapplyingActiveFeatures || evaluatingExpression)
+			if (reapplyingActiveFeatures || evaluatingExpression || Expressions.IsUpdating)
 			{
 				queuedRecalcOptions |= recalcOptions;
 				return;
@@ -1676,7 +1696,7 @@ namespace DndCore
 				ResetPlayerResistance();
 			}
 
-			ReapplyActiveFeatures(false);
+			// ReapplyActiveFeatures(false);  // Causes perf issue in characters with features that call Recalculate(...)
 		}
 
 		public void RemoveStateVar(string varName)
@@ -1883,7 +1903,6 @@ namespace DndCore
 				}
 				playerActionShortcut.ExecuteCommands(this);
 			}
-
 			ReapplyActiveFeatures();
 		}
 
@@ -2012,6 +2031,9 @@ namespace DndCore
 		[JsonIgnore]
 		public int NumWildMagicChecks { get; set;  }
 
+		[JsonIgnore]
+		public object ActiveTarget { get; set; }
+
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{
 			string varName = DndUtils.ToVarName(itemName);
@@ -2113,6 +2135,8 @@ namespace DndCore
 			{
 				switch (level)
 				{
+					case -1:
+						return "Special: ";
 					case 0:
 						return "Cantrips: ";
 					case 1:
@@ -2124,6 +2148,7 @@ namespace DndCore
 				}
 				return $"{level}th: ";
 			}
+
 			SpellGroup GetSpellGroupByLevel(int level)
 			{
 				if (!spellGroupsByLevel.ContainsKey(level))
@@ -2144,7 +2169,7 @@ namespace DndCore
 				return spellGroupsByLevel[level];
 			}
 
-			foreach (KnownSpell knownSpell in KnownSpells)
+			void AddKnownSpellToGroup(KnownSpell knownSpell)
 			{
 				Spell spell = AllSpells.Get(knownSpell.SpellName);
 
@@ -2161,25 +2186,26 @@ namespace DndCore
 					}
 
 					bool isConcentratingNow = concentratedSpell != null && concentratedSpell.Spell.Name == knownSpell.SpellName;
-					
+
 					bool powerComesFromItem = knownSpell.CanBeRecharged();
 
 					spellGroup.SpellDataItems.Add(new SpellDataItem(knownSpell.SpellName, requiresConcentration, morePowerfulAtHigherLevels, isConcentratingNow, powerComesFromItem));
 				}
-
 			}
+
+			foreach (KnownSpell knownSpell in KnownSpells)
+				AddKnownSpellToGroup(knownSpell);
+
+			foreach (KnownSpell temporarySpell in temporarySpells)
+				AddKnownSpellToGroup(temporarySpell);
 
 			for (int i = 1; i <= HighestSpellSlot; i++)
-			{
 				GetSpellGroupByLevel(i); // Ensures we have groups even for spell levels that have no spells (e.g., if a character only has first and third-level spells, this ensures we'll generate a group of second-level spell slots).
-			}
 
 			SpellData = new List<SpellGroup>();
 
 			foreach (int key in spellGroupsByLevel.Keys)
-			{
 				SpellData.Add(spellGroupsByLevel[key]);
-			}
 		}
 
 		public void ActivateConditionallySatisfiedFeatures()
@@ -2325,6 +2351,7 @@ namespace DndCore
 			{
 				spellPreviouslyCasting = spellActivelyCasting; // So we can show the spell for a longer time before we hide it.
 				spellActivelyCasting = null;
+				spellTentativelyCasting = null;
 				OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 			}
 		}
@@ -2361,6 +2388,11 @@ namespace DndCore
 			{
 				Spell spell = AllSpells.Get(knownSpell.SpellName);
 				eventCategory.Add(new EventGroup(spell, knownSpell.SpellName, eventType, DndEventManager.knownEvents[type]));
+			}
+
+			foreach (KnownSpell spell in player.temporarySpells)
+			{
+				eventCategory.Add(new EventGroup(spell, spell.SpellName, eventType, DndEventManager.knownEvents[type]));
 			}
 
 			return eventCategory;
@@ -2476,6 +2508,26 @@ namespace DndCore
 				return (bool)fieldInfo.GetValue(player);
 
 			return false;
+		}
+
+		public void GiveSpell(KnownSpell givenSpell, object data1, object data2, object data3, object data4, object data5, object data6, object data7)
+		{
+			if (givenSpell == null)
+				return;
+			Spell giftedSpell = AllSpells.Get(givenSpell.SpellName, this);
+			if (giftedSpell != null)
+				giftedSpell.TriggerSpellReceived(this, giftedSpell, data1, data2, data3, data4, data5, data6, data7);
+			temporarySpells.Add(givenSpell);
+			OnStateChanged(this, new StateChangedEventArgs("temporarySpells", null, null));
+		}
+
+		public void TakeSpell(string spellName)
+		{
+			KnownSpell knownSpell = temporarySpells.FirstOrDefault(x => x.SpellName == spellName);
+			if (knownSpell == null)
+				return;
+			temporarySpells.Remove(knownSpell);
+			OnStateChanged(this, new StateChangedEventArgs("temporarySpells", null, null));
 		}
 	}
 }

@@ -63,6 +63,7 @@
     <Compile Include="BaseTexture.cs" />
     <Compile Include="BigTexture.cs" />
     <Compile Include="BooleanEditor.cs" />
+    <Compile Include="EnumEditor.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
     <Compile Include="IStamp.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="StampGroup.cs" />
     <Compile Include="StampsLayer.cs" />
     <Compile Include="TextureUtils.cs" />
+    <Compile Include="ValueChangedEventArgs.cs" />
     <Compile Include="WallBuilder.cs" />
     <Compile Include="Walls.cs" />
     <Page Include="MainWindow.xaml">

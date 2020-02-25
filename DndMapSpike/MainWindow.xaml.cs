@@ -1744,12 +1744,47 @@ namespace DndMapSpike
 			checkBox.PropertyType = propertyValueData.Type;
 			checkBox.Content = propertyValueData.DisplayText;
 			checkBox.Foreground = Brushes.White;
-			checkBox.Margin = new Thickness(4, 0, 4, 0);
-			if (propertyValueData.BoolValue.HasValue)
+			checkBox.Margin = new Thickness(4, 0, 4, 4);
+			if (!propertyValueData.HasInconsistentValues)
 				checkBox.IsChecked = propertyValueData.BoolValue.Value;
+			else
+				checkBox.IsChecked = null;
+
 			checkBox.Checked += BooleanCheckBox_Changed;
 			checkBox.Unchecked += BooleanCheckBox_Changed;
 			return checkBox;
+		}
+		UIElement GetEnumEditor(PropertyValueData propertyValueData)
+		{
+			EnumEditor enumEditor = new EnumEditor();
+			enumEditor.ValueChanged += EnumEditor_ValueChanged;
+			enumEditor.PropertyName = propertyValueData.Name;
+			enumEditor.PropertyType = propertyValueData.Type;
+
+			PropertyInfo propertyInfo = propertyValueData.FirstInstance.GetType().GetProperty(propertyValueData.Name);
+			//propertyInfo.PropertyType
+			enumEditor.AddDisplayText(propertyValueData.DisplayText);
+			foreach (object value in Enum.GetValues(propertyInfo.PropertyType))
+			{
+				string name = Enum.GetName(propertyInfo.PropertyType, value);
+				enumEditor.AddOption(name, (int)value, (int)value == propertyValueData.NumericValue);
+			}
+
+			//Foreground = Brushes.White;
+			// .Margin = new Thickness(4, 0, 4, 4);
+			//if (propertyValueData.BoolValue.HasValue)
+			//	enumEditor.IsChecked = propertyValueData.BoolValue.Value;
+			//enumEditor.Checked += BooleanCheckBox_Changed;
+			//enumEditor.Unchecked += BooleanCheckBox_Changed;
+			return enumEditor;
+		}
+
+		private void EnumEditor_ValueChanged(object sender, ValueChangedEventArgs ea)
+		{
+			if (!(sender is EnumEditor enumEditor))
+				return;
+			if (enumEditor.Value.HasValue)
+				ExecuteCommand("ChangeIntProperty", new EnumChangeData(enumEditor.PropertyName, enumEditor.Value.Value));
 		}
 
 		private void BooleanCheckBox_Changed(object sender, RoutedEventArgs e)
@@ -1765,14 +1800,16 @@ namespace DndMapSpike
 			{
 				case PropertyType.Boolean:
 					return GetBooleanEditor(propertyValueData);
-				//case PropertyType.String:
-				//	return GetStringEditor(propertyValueData);
-				//case PropertyType.Integer:
-				//	return GetIntegerEditor(propertyValueData);
-				//case PropertyType.Decimal:
-				//	return GetDecimalEditor(propertyValueData);
-				//case PropertyType.Double:
-				//	return GetDoubleEditor(propertyValueData);
+				case PropertyType.Enum:
+					return GetEnumEditor(propertyValueData);
+					//case PropertyType.String:
+					//	return GetStringEditor(propertyValueData);
+					//case PropertyType.Integer:
+					//	return GetIntegerEditor(propertyValueData);
+					//case PropertyType.Decimal:
+					//	return GetDecimalEditor(propertyValueData);
+					//case PropertyType.Double:
+					//	return GetDoubleEditor(propertyValueData);
 			}
 			return null;
 		}
@@ -1838,16 +1875,12 @@ namespace DndMapSpike
 												 selectedContrast.HasValue && selectedContrast.Value != 0;
 
 			double pixelWidth = width * zoomAndPanControl.ContentScale;
-			const double maxPixelWidth = 400;
+
 			ContentControl colorControls = null;
+
 			if (pixelWidth > minWidthPropertyEditor)
 			{
-				double newWidth = pixelWidth;
-				double maxPropertyEditorWidth = minWidthPropertyEditor / zoomAndPanControl.ContentScale;
-				if (newWidth > maxPropertyEditorWidth)
-					newWidth = maxPropertyEditorWidth;
-
-
+				double newWidth = GetNewWidth(pixelWidth, minWidthPropertyEditor, maxWidthPropertyEditor);
 
 				double propGridRightEdge = right - rowColumnSpacer;
 				ContentControl propertyGrid = GetPropertyGrid();
@@ -1861,11 +1894,13 @@ namespace DndMapSpike
 					propEdStatus.Add(propertyGrid, new PropertyEditorStatus("btnShowPropertyEditor"));
 				ShowPropertyEditor(propertyGrid);
 				PopulatePropertyGrid(propertyGrid);
-
-				colorControls = CreateColorControls(selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, bottomRow, buttonSize, newWidth);
 			}
 
-			
+			if (pixelWidth > minWidthColorControlEditor)
+			{
+				double newWidth = GetNewWidth(pixelWidth, minWidthColorControlEditor, maxWidthColorControlEditor);
+				colorControls = CreateColorControls(selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, bottomRow, buttonSize, newWidth);
+			}
 
 			if (colorControls != null)
 			{
@@ -1915,7 +1950,22 @@ namespace DndMapSpike
 			}
 		}
 
+		private double GetNewWidth(double pixelWidth, int minimumWidth, int maximumWidth)
+		{
+			double newWidth = pixelWidth;
+			double maxWidth = maximumWidth / zoomAndPanControl.ContentScale;
+			double minWidth = minimumWidth / zoomAndPanControl.ContentScale;
+			if (newWidth > maxWidth)
+				newWidth = maxWidth;
+			if (newWidth < minWidth)
+				newWidth = minWidth;
+			return newWidth;
+		}
+
 		private const int minWidthPropertyEditor = 150;
+		private const int maxWidthPropertyEditor = 500;
+		private const int minWidthColorControlEditor = 150;
+		private const int maxWidthColorControlEditor = 220;
 
 		private ContentControl CreateColorControls(double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, int left, double bottomRow, double buttonSize, double newWidth)
 		{

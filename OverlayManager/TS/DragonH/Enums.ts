@@ -253,7 +253,9 @@ enum SchoolOfMagic {
 	Necromancy,
 	Evocation,
 	Transmutation,
-	Divination
+	Divination,
+	Heavenly,
+	Satanic
 }
 
 enum TimeMeasure {

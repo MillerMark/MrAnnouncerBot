@@ -1862,6 +1862,7 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 		let thisBackgroundColor: string = backgroundColor;
 		let thisFontColor: string = fontColor;
 		let thisDieCountsAs: DieCountsAs = dieCountsAs;
+		
 		let parenIndex: number = dieSpec.indexOf('(');
 		if (parenIndex >= 0) {
 			var damageStr: string = dieSpec.substring(parenIndex + 1);
@@ -1877,11 +1878,13 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 						thisDieCountsAs = DieCountsAs.health;
 						thisBackgroundColor = DiceLayer.healthDieBackgroundColor;
 						thisFontColor = DiceLayer.healthDieFontColor;
+						isMagic = false;
 					}
 					else if (rollTypeOverrideLowerCase == 'damage') {
 						thisDieCountsAs = DieCountsAs.damage;
 						thisBackgroundColor = DiceLayer.damageDieBackgroundColor;
 						thisFontColor = DiceLayer.damageDieFontColor;
+						isMagic = false;
 					}
 					else if (rollTypeOverrideLowerCase == 'roll') {
 						thisDieCountsAs = DieCountsAs.totalScore;
@@ -1902,7 +1905,11 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 			dieSpec = dieSpec.substr(0, parenIndex);
 		}
 
+		if (damageType !== DamageType.None)
+			isMagic = false;  // No magic rings around damage die.
+
 		let dieAndModifier = dieSpec.split('+');
+
 		if (dieAndModifier.length == 2)
 			modifier += +dieAndModifier[1];
 		let dieStr: string = dieAndModifier[0];
@@ -3251,17 +3258,17 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	else if (diceRollData.type == DiceRollType.DamageOnly) {
 		diceRollData.modifier = 0;
 		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier);
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier, undefined, undefined, diceRollData.isMagic);
 	}
 	else if (diceRollData.type == DiceRollType.HealthOnly) {
 		diceRollData.modifier = 0;
 		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, diceRollData.isMagic);
 	}
 	else if (diceRollData.type == DiceRollType.ExtraOnly) {
 		diceRollData.modifier = 0;
 		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, diceRollData.isMagic);
 	}
 	else if (diceRollData.type == DiceRollType.InspirationOnly) {
 		diceRollData.modifier = 0;

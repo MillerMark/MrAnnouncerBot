@@ -392,6 +392,14 @@ namespace DndCore
 		{
 			history.Clear();
 		}
+
+		public static bool IsUpdating
+		{
+			get
+			{
+				return callDepth > 0;
+			}
+		}
 		public static void BeginUpdate()
 		{
 			callDepth++;

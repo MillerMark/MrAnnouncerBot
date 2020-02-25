@@ -334,6 +334,7 @@ namespace DndCore
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
+			castedSpell.TargetCreature = player.ActiveTarget as Creature;
 			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			if (castingSpells.IndexOf(castedSpell) >= 0)

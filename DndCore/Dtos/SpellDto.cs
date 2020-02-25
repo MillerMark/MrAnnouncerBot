@@ -45,6 +45,7 @@ namespace DndCore
 		public string bright1 { get; set; }
 		public string hue2 { get; set; }
 		public string bright2 { get; set; }
+		public string onReceived { get; set; }
 		public string onCast { get; set; }
 		public string onCasting { get; set; }
 		public string onPlayerAttacks { get; set; }

@@ -21,6 +21,7 @@ namespace DndMapSpike
 		void CreateComparison(IStampProperties instance, PropertyInfo propertyInfo, string displayText)
 		{
 			PropertyValueData propertyValueData = new PropertyValueData(instance, propertyInfo, displayText);
+			propertyValueData.FirstInstance = instance;
 			Comparisons.Add(propertyValueData);
 		}
 

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace DndCore
+﻿namespace DndCore
 {
 	public enum DiceRollType
 	{
@@ -26,7 +23,8 @@ namespace DndCore
 		InspirationOnly,
 		AddOnDice,
 		NonCombatInitiative,
-		HPCapacity
+		HPCapacity, 
+		CastSimpleSpell
 	}
 
 }
