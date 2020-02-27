@@ -73,6 +73,7 @@
     <Compile Include="IPropertyEditor.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
+    <Compile Include="MapCharacter.cs" />
     <Compile Include="MapEditModes.cs" />
     <Compile Include="MapSelection.cs" />
     <Compile Include="OpenClosedStatus.cs" />

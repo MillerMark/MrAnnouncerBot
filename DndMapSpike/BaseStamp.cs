@@ -17,8 +17,6 @@ namespace DndMapSpike
 
 		public abstract IStampProperties Copy(double deltaX, double deltaY);
 		public abstract bool ContainsPoint(double x, double y);
-		public abstract double GetLeft();
-		public abstract double GetTop();
 		public abstract double GetBottom();
 		public abstract double GetRight();
 

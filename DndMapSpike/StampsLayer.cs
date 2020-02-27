@@ -39,6 +39,23 @@ namespace DndMapSpike
 					// TODO: Error placing stamp (likely out of bounds) - should we save it/remove it?
 				}
 			}
+
+			foreach (IItemProperties item in Map.Characters)
+			{
+				try
+				{
+					if (item is MapCharacter character)
+					{
+						double x = character.GetLeft();
+						double y = character.GetTop();
+						BlendImage(character.Image, x, y);
+					}
+				}
+				catch
+				{
+					// TODO: Error placing character (likely out of bounds) - should we save it/remove it?
+				}
+			}
 		}
 
 		public void BeginUpdate()

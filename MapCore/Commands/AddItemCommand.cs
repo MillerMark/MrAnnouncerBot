@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace MapCore
 {
-	public class AddStampCommand : BaseStampCommand
+	public class AddItemCommand : BaseStampCommand
 	{
 
 		Guid stampGuid;
-		public AddStampCommand()
+		public AddItemCommand()
 		{
 
 		}
@@ -16,18 +16,18 @@ namespace MapCore
 		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
 		{
 			base.PrepareForExecution(map, selectedStamps);
-			if (Data is StampPropertiesData stampData)
+			if (Data is ItemPropertiesData stampData)
 			{
-				stampGuid = stampData.StampProperties.Guid;
+				stampGuid = stampData.ItemProperties.Guid;
 			}
 		}
 
 		protected override void ActivateRedo(Map map)
 		{
-			if (Data is StampPropertiesData stampData)
+			if (Data is ItemPropertiesData stampData)
 			{
-				map.AddStamp(stampData.StampProperties);
-				map.SelectStampsByGuid(stampData.StampProperties.Guid);
+				map.AddItem(stampData.ItemProperties);
+				map.SelectItemsByGuid(stampData.ItemProperties.Guid);
 			}
 		}
 
@@ -36,7 +36,7 @@ namespace MapCore
 			IStampProperties stampFromGuid = map.GetStampFromGuid(stampGuid);
 			if (stampFromGuid != null)
 			{
-				map.RemoveStamp(stampFromGuid);
+				map.RemoveItem(stampFromGuid);
 				map.ClearStampSelection();
 			}
 		}

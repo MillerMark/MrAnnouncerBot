@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
-	public interface IStampProperties
+	public interface IStampProperties : IItemProperties
 	{
 		string Name { get; set; }
 
@@ -26,20 +26,14 @@ namespace MapCore
 		/// </summary>
 		double Value { get; set; }
 
-		Guid Guid { get; set; }
 		string TypeName { get; set; }
 		IStampProperties Copy(double deltaX, double deltaY);
-		double Height { get; set; }
-		double Width { get; set; }
-		double GetLeft();
-		double GetTop();
+
 		double GetBottom();
 		double GetRight();
 
-		bool ContainsPoint(double x, double y);
 		void ResetImage();
 		double Contrast { get; set; }
-		string FileName { get; set; }
 		bool FlipHorizontally { get; set; }
 		bool FlipVertically { get; set; }
 		double HueShift { get; set; }
@@ -47,10 +41,7 @@ namespace MapCore
 		StampRotation Rotation { get; set; }
 		double Saturation { get; set; }
 		double Scale { get; set; }
-		double X { get; set; }
-		double Y { get; set; }
 		int ZOrder { get; set; }
-		bool Visible { get; set; }
 
 		double ScaleX { get; }
 		double ScaleY { get; }

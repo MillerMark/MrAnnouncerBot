@@ -8,7 +8,7 @@ namespace MapCore
 {
 	public interface IStampsManager
 	{
-		void AddStamp(IStampProperties stamp);
+		void AddItem(IItemProperties stamp);
 		void AddStamps(List<IStampProperties> stamps);
 
 		/// <summary>
@@ -17,13 +17,15 @@ namespace MapCore
 		/// </summary>
 		/// <returns>Returns the stamp if found, or null.</returns>
 		IStampProperties GetStampAt(double x, double y);
+		IItemProperties GetItemAt(double x, double y);
 		void InsertStamp(int startIndex, IStampProperties stamp);
 		void InsertStamps(int startIndex, List<IStampProperties> stamps);
 		void RemoveAllStamps(List<IStampProperties> stamps);
-		void RemoveStamp(IStampProperties stamp);
+		void RemoveItem(IItemProperties item);
 		void SortStampsByZOrder(int zOrderOffset = 0);
 		void NormalizeZOrder(int zOrderOffset = 0);
 		List<IStampProperties> Stamps { get; set; }
+		List<IItemProperties> Characters { get; set; }
 	}
 }
 

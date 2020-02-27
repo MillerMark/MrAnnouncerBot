@@ -34,6 +34,7 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\DndMapSpike\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseItemProperties.cs" />
-    <Compile Include="Commands\AddStampCommand.cs" />
+    <Compile Include="Commands\AddItemCommand.cs" />
     <Compile Include="Commands\AlignmentData.cs" />
     <Compile Include="Commands\AlignOrDistributeCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
@@ -89,13 +90,15 @@
     <Compile Include="EndCapKind.cs" />
     <Compile Include="Commands\BaseFlipCommand.cs" />
     <Compile Include="IFlyweight.cs" />
+    <Compile Include="IItemProperties.cs" />
     <Compile Include="IStampGroup.cs" />
     <Compile Include="IStampProperties.cs" />
     <Compile Include="IStampsManager.cs" />
-    <Compile Include="MapCharacter.cs" />
+    <Compile Include="ReconstituteCharacterEventArgs.cs" />
     <Compile Include="ReconstituteStampsEventArgs.cs" />
     <Compile Include="RegionType.cs" />
     <Compile Include="SelectStampsEventArgs.cs" />
+    <Compile Include="SerializedCharacter.cs" />
     <Compile Include="SerializedStamp.cs" />
     <Compile Include="SerializedStampEventArgs.cs" />
     <Compile Include="StampAltitude.cs" />

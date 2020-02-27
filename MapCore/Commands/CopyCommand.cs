@@ -22,7 +22,7 @@ namespace MapCore
 				IStampProperties newStamp = stamp.Copy(deltaX, deltaY);
 				if (newStamp != null)
 				{
-					map.AddStamp(newStamp);
+					map.AddItem(newStamp);
 					copiedStamps.Add(newStamp);
 				}
 			}

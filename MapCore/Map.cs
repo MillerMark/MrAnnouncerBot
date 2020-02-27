@@ -11,6 +11,7 @@ namespace MapCore
 	public class Map : IMapInterface, IStampsManager
 	{
 		List<IStampProperties> selectedStamps;
+		List<IItemProperties> selectedCharacters;
 
 		[JsonIgnore]
 		public List<IStampProperties> SelectedStamps
@@ -25,6 +26,21 @@ namespace MapCore
 			set
 			{
 				selectedStamps = value;
+			}
+		}
+		[JsonIgnore]
+		public List<IItemProperties> SelectedCharacters
+		{
+			get
+			{
+				if (selectedCharacters == null)
+					selectedCharacters = new List<IItemProperties>();
+
+				return selectedCharacters;
+			}
+			set
+			{
+				selectedCharacters = value;
 			}
 		}
 
@@ -42,15 +58,25 @@ namespace MapCore
 		public event SelectStampsEventHandler SelectingStamps;
 
 		public delegate void ReconstituteStampsEventHandler(object sender, ReconstituteStampsEventArgs ea);
+		public delegate void ReconstituteCharacterEventHandler(object sender, ReconstituteCharacterEventArgs ea);
 		public event ReconstituteStampsEventHandler ReconstitutingStamps;
-		void OnAddStamp(List<IStampProperties> Stamps, SerializedStamp serializedStamp)
+		public event ReconstituteCharacterEventHandler ReconstitutingCharacter;
+		void OnAddStamp(List<IStampProperties> stamps, SerializedStamp serializedStamp)
 		{
-			reconstituteStampsEventArgs.Stamps = Stamps;
+			reconstituteStampsEventArgs.Stamps = stamps;
 			reconstituteStampsEventArgs.SerializedStamp = serializedStamp;
 			ReconstitutingStamps?.Invoke(this, reconstituteStampsEventArgs);
 		}
 
+		void OnAddCharacter(List<IItemProperties> characters, SerializedCharacter serializedCharacter)
+		{
+			reconstituteCharacterEventArgs.Characters = characters;
+			reconstituteCharacterEventArgs.SerializedCharacter = serializedCharacter;
+			ReconstitutingCharacter?.Invoke(this, reconstituteCharacterEventArgs);
+		}
+
 		static ReconstituteStampsEventArgs reconstituteStampsEventArgs = new ReconstituteStampsEventArgs();
+		static ReconstituteCharacterEventArgs reconstituteCharacterEventArgs = new ReconstituteCharacterEventArgs();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
@@ -103,7 +129,12 @@ namespace MapCore
 		[JsonIgnore]
 		public List<IStampProperties> Stamps { get; set; } = new List<IStampProperties>();
 
+		[JsonIgnore]
+		// TODO: Serialize the character guids.
+		public List<IItemProperties> Characters { get; set; } = new List<IItemProperties>();
+
 		public List<SerializedStamp> SerializedStamps { get; set; }
+		public List<SerializedCharacter> SerializedCharacters { get; set; }
 
 		static void ClearAllSpaces(Tile[,] mapArray, int numColumns, int numRows)
 		{
@@ -816,15 +847,26 @@ namespace MapCore
 			BuildMapArrays();
 			ReconstituteRoomsAndCorridors();
 			ReconstituteStamps(Stamps, SerializedStamps);
+			ReconstituteCharacters(Characters, SerializedCharacters);
 		}
 
-		public void ReconstituteStamps(List<IStampProperties> Stamps, List<SerializedStamp> SerializedStamps)
+		public void ReconstituteStamps(List<IStampProperties> stamps, List<SerializedStamp> serializedStamps)
 		{
-			if (SerializedStamps == null)
+			if (serializedStamps == null)
 				return;
-			foreach (SerializedStamp serializedStamp in SerializedStamps)
+			foreach (SerializedStamp serializedStamp in serializedStamps)
 			{
-				OnAddStamp(Stamps, serializedStamp);
+				OnAddStamp(stamps, serializedStamp);
+			}
+		}
+
+		void ReconstituteCharacters(List<IItemProperties> characters, List<SerializedCharacter> serializedCharacters)
+		{
+			if (serializedCharacters == null)
+				return;
+			foreach (SerializedCharacter serializedCharacter in serializedCharacters)
+			{
+				OnAddCharacter(characters, serializedCharacter);
 			}
 		}
 
@@ -846,6 +888,7 @@ namespace MapCore
 		void WrapupSerialization()
 		{
 			SerializedStamps = null;
+			SerializedCharacters = null;
 		}
 
 		public void Save()
@@ -902,7 +945,13 @@ namespace MapCore
 		public void PrepareForSerialization()
 		{
 			PrepareStampsForSerialization();
+			PrepareCharactersForSerialization();
 			PrepareTilesForSerialization();
+		}
+
+		SerializedCharacter NewSerializedCharacter(IItemProperties itemProperties)
+		{
+			return SerializedCharacter.From(itemProperties);
 		}
 
 		SerializedStamp NewSerializedStamp(IStampProperties stampProperties)
@@ -918,6 +967,14 @@ namespace MapCore
 				SerializedStamps.Add(NewSerializedStamp(stampProperties));
 			}
 		}
+
+		void PrepareCharactersForSerialization()
+		{
+			SerializedCharacters = new List<SerializedCharacter>();
+			foreach (IItemProperties itemProperties in Characters)
+				SerializedCharacters.Add(NewSerializedCharacter(itemProperties));
+		}
+
 
 		private void PrepareTilesForSerialization()
 		{
@@ -941,11 +998,18 @@ namespace MapCore
 			}
 		}
 
-		public void AddStamp(IStampProperties stamp)
+		public void AddItem(IItemProperties item)
 		{
-			if (stamp.HasNoZOrder())
-				stamp.ZOrder = Stamps.Count;
-			Stamps.Add(stamp);
+			if (item is IStampProperties stamp)
+			{
+				if (stamp.HasNoZOrder())
+					stamp.ZOrder = Stamps.Count;
+				Stamps.Add(stamp);
+			}
+			else
+			{
+				Characters.Add(item);
+			}
 		}
 
 		public void AddStamps(List<IStampProperties> stamps)
@@ -953,7 +1017,7 @@ namespace MapCore
 			foreach (IStampProperties stamp in stamps)
 			{
 				stamp.ResetZOrder();
-				AddStamp(stamp);
+				AddItem(stamp);
 			}
 		}
 
@@ -964,6 +1028,17 @@ namespace MapCore
 				IStampProperties stamp = Stamps[i];
 				if (stamp.ContainsPoint(x, y))
 					return stamp;
+			}
+			return null;
+		}
+
+		public IItemProperties GetItemAt(double x, double y)
+		{
+			for (int i = Characters.Count - 1; i >= 0; i--)
+			{
+				IItemProperties item = Characters[i];
+				if (item.ContainsPoint(x, y))
+					return item;
 			}
 			return null;
 		}
@@ -988,12 +1063,15 @@ namespace MapCore
 		public void RemoveAllStamps(List<IStampProperties> stamps)
 		{
 			foreach (IStampProperties stamp in stamps)
-				RemoveStamp(stamp);
+				RemoveItem(stamp);
 		}
 
-		public void RemoveStamp(IStampProperties stamp)
+		public void RemoveItem(IItemProperties item)
 		{
-			Stamps.Remove(stamp);
+			if (item is IStampProperties stamp)
+				Stamps.Remove(stamp);
+			else
+				Characters.Remove(item);
 		}
 
 		public void SortStampsByZOrder(int zOrderOffset = 0)
@@ -1024,7 +1102,7 @@ namespace MapCore
 			SelectingStamps?.Invoke(this, new SelectStampsEventArgs(stampGuids));
 		}
 
-		public void SelectStampsByGuid(Guid stampGuid)
+		public void SelectItemsByGuid(Guid stampGuid)
 		{
 			List<Guid> guids = new List<Guid>();
 			if (stampGuid != null)
@@ -1035,6 +1113,11 @@ namespace MapCore
 		public IStampProperties GetStampFromGuid(Guid guid)
 		{
 			return Stamps.FirstOrDefault(x => x.Guid == guid); ;
+		}
+
+		public IItemProperties GetCharacterFromGuid(Guid guid)
+		{
+			return Characters.FirstOrDefault(x => x.Guid == guid); ;
 		}
 
 		public void ClearStampSelection()

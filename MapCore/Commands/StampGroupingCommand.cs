@@ -18,7 +18,7 @@ namespace MapCore
 			stampsToGroup.AddRange(SelectedStamps);
 			map.RemoveAllStamps(SelectedStamps);
 			IStampGroup stampGroup = map.CreateGroup(stampsToGroup);
-			map.AddStamp(stampGroup);
+			map.AddItem(stampGroup);
 			map.SortStampsByZOrder();
 			map.NormalizeZOrder();
 			ClearSelectedStamps(map);
@@ -36,7 +36,7 @@ namespace MapCore
 					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;
 					stampGroup.Ungroup(ungroupedStampsThisGroup.Stamps);
 					ungroupedStamps.Add(ungroupedStampsThisGroup);
-					map.RemoveStamp(stampGroup);
+					map.RemoveItem(stampGroup);
 				}
 			}
 
@@ -49,7 +49,7 @@ namespace MapCore
 				{
 					AddSelectedStamp(map, stamp);
 
-					map.AddStamp(stamp);
+					map.AddItem(stamp);
 				}
 			}
 		}

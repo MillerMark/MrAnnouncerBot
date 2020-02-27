@@ -39,8 +39,6 @@ namespace MapCore
 		[EditableProperty(2)]
 		public double Value { get; set; } = 1; // GP
 
-		public Guid Guid { get; set; }
-
 		public string TypeName { get; set; }
 
 		public int ZOrder { get; set; } = -1;
@@ -88,18 +86,12 @@ namespace MapCore
 
 		public virtual void TransferProperties(IStampProperties stampProperties)
 		{
+			base.TransferProperties(stampProperties);
 			TypeName = stampProperties.TypeName;
-			Guid = stampProperties.Guid;
-			Visible = stampProperties.Visible;
-			X = stampProperties.X;
-			Y = stampProperties.Y;
 			ZOrder = stampProperties.ZOrder;
-			Height = stampProperties.Height;
-			Width = stampProperties.Width;
 			FlipHorizontally = stampProperties.FlipHorizontally;
 			FlipVertically = stampProperties.FlipVertically;
 			Rotation = stampProperties.Rotation;
-			FileName = stampProperties.FileName;
 			Scale = stampProperties.Scale;
 			HueShift = stampProperties.HueShift;
 			Saturation = stampProperties.Saturation;

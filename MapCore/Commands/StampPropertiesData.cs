@@ -3,14 +3,14 @@ using System.Linq;
 
 namespace MapCore
 {
-	public class StampPropertiesData
+	public class ItemPropertiesData
 	{
-		public IStampProperties StampProperties { get; set; }
-		public StampPropertiesData(IStampProperties stampProperties)
+		public IItemProperties ItemProperties { get; set; }
+		public ItemPropertiesData(IItemProperties itemProperties)
 		{
-			StampProperties = stampProperties;
+			ItemProperties = itemProperties;
 		}
-		public StampPropertiesData()
+		public ItemPropertiesData()
 		{
 
 		}
