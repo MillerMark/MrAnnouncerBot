@@ -20,8 +20,8 @@ namespace MapCore
 		// TODO: Consider hiding Children BUT still JSON serialize:
 		public List<SerializedStamp> Children { get; set; }
 
-		public override int Height { get; set; }
-		public override int Width { get; set; }
+		public override double Height { get; set; }
+		public override double Width { get; set; }
 
 		public override void TransferProperties(IStampProperties stampProperties)
 		{

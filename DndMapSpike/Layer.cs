@@ -27,9 +27,9 @@ namespace DndMapSpike
 			ImageUtils.CopyImageTo(image, x, y, WriteableBitmap, cropWidth, cropHeight);
 		}
 
-		public void BlendImage(Image image, int x, int y, int cropWidth = -1, int cropHeight = -1)
+		public void BlendImage(Image image, double x, double y, double cropWidth = -1, double cropHeight = -1)
 		{
-			ImageUtils.MergeImageWith(image, x, y, WriteableBitmap, cropWidth, cropHeight);
+			ImageUtils.MergeImageWith(image, (int)Math.Round(x), (int)Math.Round(y), WriteableBitmap, (int)Math.Round(cropWidth), (int)Math.Round(cropHeight));
 		}
 
 		public void BlendImageOverTile(Image image, Tile tile, int xOffset = 0, int yOffset = 0, int cropWidth = -1)

@@ -18,9 +18,9 @@ namespace DndMapSpike
 			return Comparisons.FirstOrDefault(x => x.Name == name);
 		}
 
-		void CreateComparison(IStampProperties instance, PropertyInfo propertyInfo, string displayText)
+		void CreateComparison(IStampProperties instance, PropertyInfo propertyInfo, EditablePropertyAttribute editablePropertyAttribute)
 		{
-			PropertyValueData propertyValueData = new PropertyValueData(instance, propertyInfo, displayText);
+			PropertyValueData propertyValueData = new PropertyValueData(instance, propertyInfo, editablePropertyAttribute.DisplayText, editablePropertyAttribute.NumDecimalPlaces, editablePropertyAttribute.DependentProperty);
 			propertyValueData.FirstInstance = instance;
 			Comparisons.Add(propertyValueData);
 		}
@@ -36,7 +36,7 @@ namespace DndMapSpike
 					{
 						PropertyValueData existingComparison = GetComparison(propertyInfo.Name);
 						if (existingComparison == null)
-							CreateComparison(stampProperties, propertyInfo, editablePropertyAttribute.DisplayText);
+							CreateComparison(stampProperties, propertyInfo, editablePropertyAttribute);
 						else
 							existingComparison.Compare(stampProperties, propertyInfo);
 					}

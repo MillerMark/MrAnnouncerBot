@@ -51,7 +51,7 @@ namespace MapCore
 			List<IStampProperties> sortedStamps = SelectedStamps.OrderBy(s => s.X).ToList();
 			foreach (IStampProperties stamp in sortedStamps)
 			{
-				stamp.X = (int)Math.Round(stampX);
+				stamp.X = stampX;
 				stampX += SpaceBetween;
 			}
 		}
@@ -62,7 +62,7 @@ namespace MapCore
 			List<IStampProperties> sortedStamps = SelectedStamps.OrderBy(s => s.Y).ToList();
 			foreach (IStampProperties stamp in sortedStamps)
 			{
-				stamp.Y = (int)Math.Round(stampY);
+				stamp.Y = stampY;
 				stampY += SpaceBetween;
 			}
 		}
@@ -83,18 +83,18 @@ namespace MapCore
 				switch (Alignment)
 				{
 					case StampAlignment.Left:
-						stamp.X = (int)Math.Round(RedoValue + stamp.Width / 2);  break;
+						stamp.X = RedoValue + stamp.Width / 2.0;  break;
 					case StampAlignment.Right:
-						stamp.X = (int)Math.Round(RedoValue - stamp.Width / 2);  break;
+						stamp.X = RedoValue - stamp.Width / 2.0;  break;
 					case StampAlignment.Top:
-						stamp.Y = (int)Math.Round(RedoValue + stamp.Height / 2); break;
+						stamp.Y = RedoValue + stamp.Height / 2.0; break;
 					case StampAlignment.Bottom:
-						stamp.Y = (int)Math.Round(RedoValue - stamp.Height / 2); break;
+						stamp.Y = RedoValue - stamp.Height / 2.0; break;
 
 					case StampAlignment.HorizontalCenter:
-						stamp.X = (int)Math.Round(RedoValue);  break;
+						stamp.X = RedoValue;  break;
 					case StampAlignment.VerticalCenter:
-						stamp.Y = (int)Math.Round(RedoValue);  break;
+						stamp.Y = RedoValue;  break;
 				}
 		}
 
@@ -107,13 +107,13 @@ namespace MapCore
 					case StampAlignment.HorizontalCenter:
 					case StampAlignment.DistributeHorizontally:
 					case StampAlignment.Right:
-						stampProperties.X = (int)Math.Round(GetSavedValue(stampProperties));
+						stampProperties.X = GetSavedValue(stampProperties);
 						break;
 					case StampAlignment.Top:
 					case StampAlignment.VerticalCenter:
 					case StampAlignment.DistributeVertically:
 					case StampAlignment.Bottom:
-						stampProperties.Y = (int)Math.Round(GetSavedValue(stampProperties));
+						stampProperties.Y = GetSavedValue(stampProperties);
 						break;
 				}
 		}

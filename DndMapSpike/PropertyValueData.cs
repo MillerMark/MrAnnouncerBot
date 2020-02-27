@@ -15,6 +15,8 @@ namespace DndMapSpike
 		public string StringValue { get; set; }
 		public bool ComparedOnce { get; set; }
 		public object FirstInstance { get; set; }
+		public int NumDecimalPlaces { get; set; }
+		public string DependentProperty { get; set; }
 
 		public void Compare(object instance, PropertyInfo propertyInfo)
 		{
@@ -51,10 +53,12 @@ namespace DndMapSpike
 			ComparedOnce = true;
 		}
 
-		public PropertyValueData(object instance, PropertyInfo propertyInfo, string displayText)
+		public PropertyValueData(object instance, PropertyInfo propertyInfo, string displayText, int numDecimalPlaces, string dependentProperty)
 		{
+			DependentProperty = dependentProperty;
 			Name = propertyInfo.Name;
 			DisplayText = displayText;
+			NumDecimalPlaces = numDecimalPlaces;
 			object value = propertyInfo.GetValue(instance);
 			string fullTypeName = propertyInfo.PropertyType.FullName;
 			switch (fullTypeName)
@@ -64,15 +68,16 @@ namespace DndMapSpike
 					StringValue = value as string;
 					break;
 				case "System.Int32":
-					Type = PropertyType.Integer;
-					NumericValue = (int)value;
-					break;
-				case "System.Double":
-					Type = PropertyType.Double;
-					NumericValue = (double)value;
+					Type = PropertyType.Number;
+					NumDecimalPlaces = 0;
+					NumericValue = (double)(int)value;
 					break;
 				case "System.Decimal":
-					Type = PropertyType.Decimal;
+					Type = PropertyType.Number;
+					NumericValue = (double)(decimal)value;
+					break;
+				case "System.Double":
+					Type = PropertyType.Number;
 					NumericValue = (double)value;
 					break;
 				case "System.Boolean":
@@ -90,10 +95,11 @@ namespace DndMapSpike
 					}
 			}
 
-			if (DisplayText == null && fullTypeName != "System.Boolean")
-				DisplayText = $"{Name}: ";
-			else
-				DisplayText = Name;
+			if (DisplayText == null)
+				if (fullTypeName != "System.Boolean")
+					DisplayText = $"{Name}: ";
+				else
+					DisplayText = Name;
 		}
 	}
 }

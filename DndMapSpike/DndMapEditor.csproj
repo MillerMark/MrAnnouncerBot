@@ -63,10 +63,13 @@
     <Compile Include="BaseTexture.cs" />
     <Compile Include="BigTexture.cs" />
     <Compile Include="BooleanEditor.cs" />
+    <Compile Include="DoubleEditor.cs" />
     <Compile Include="EnumEditor.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
+    <Compile Include="IHasDependentProperty.cs" />
     <Compile Include="IStamp.cs" />
+    <Compile Include="IPropertyEditor.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapEditModes.cs" />
@@ -85,6 +88,7 @@
     <Compile Include="StampFolder.cs" />
     <Compile Include="StampGroup.cs" />
     <Compile Include="StampsLayer.cs" />
+    <Compile Include="TextEditor.cs" />
     <Compile Include="TextureUtils.cs" />
     <Compile Include="ValueChangedEventArgs.cs" />
     <Compile Include="WallBuilder.cs" />

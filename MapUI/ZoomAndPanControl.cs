@@ -630,6 +630,10 @@ namespace MapUI
 			// When zooming about a point make updates to ContentScale also update content offset.
 			//
 			enableContentOffsetUpdateFromScale = true;
+			if (ContentScale == newContentScale)
+			{
+				ContentScale *= 1.0000000001; // Change the scale slightly so our animation still works.
+			}
 
 			AnimationHelper.StartAnimation(this, ContentScaleProperty, newContentScale, AnimationDuration,
 					delegate (object sender, EventArgs e)
@@ -642,8 +646,14 @@ namespace MapUI
 						}
 					});
 
-			AnimationHelper.StartAnimation(this, ViewportZoomFocusXProperty, ViewportWidth / 2, AnimationDuration);
-			AnimationHelper.StartAnimation(this, ViewportZoomFocusYProperty, ViewportHeight / 2, AnimationDuration);
+			double newViewportZoomFocusX = ViewportWidth / 2;
+			double newViewportZoomFocusY = ViewportHeight / 2;
+			if (newViewportZoomFocusY == ViewportZoomFocusY)
+				ViewportZoomFocusY += 1;
+			if (newViewportZoomFocusX == ViewportZoomFocusX)
+				ViewportZoomFocusX += 1;
+			AnimationHelper.StartAnimation(this, ViewportZoomFocusXProperty, newViewportZoomFocusX, AnimationDuration);
+			AnimationHelper.StartAnimation(this, ViewportZoomFocusYProperty, newViewportZoomFocusY, AnimationDuration);
 		}
 
 		/// <summary>

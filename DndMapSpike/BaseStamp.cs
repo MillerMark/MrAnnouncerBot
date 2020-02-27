@@ -15,10 +15,10 @@ namespace DndMapSpike
 			return Stamp.From(stamp);
 		}
 
-		public abstract IStampProperties Copy(int deltaX, int deltaY);
+		public abstract IStampProperties Copy(double deltaX, double deltaY);
 		public abstract bool ContainsPoint(double x, double y);
-		public abstract int GetLeft();
-		public abstract int GetTop();
+		public abstract double GetLeft();
+		public abstract double GetTop();
 		public abstract double GetBottom();
 		public abstract double GetRight();
 
@@ -176,7 +176,7 @@ namespace DndMapSpike
 
 		public void SwapXY()
 		{
-			int oldX = X;
+			double oldX = X;
 			X = Y;
 			Y = oldX;
 		}
@@ -282,7 +282,7 @@ namespace DndMapSpike
 			}
 		}
 
-		public virtual void Move(int deltaX, int deltaY)
+		public virtual void Move(double deltaX, double deltaY)
 		{
 			if (Locked)
 				return;

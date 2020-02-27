@@ -21,7 +21,7 @@ namespace MapCore
 		protected override void ActivateUndo(Map map)
 		{
 			foreach (IStampProperties stampProperties in map.Stamps)
-				stampProperties.ZOrder = (int)Math.Round(GetSavedValue(stampProperties));
+				stampProperties.ZOrder = GetSavedInt(stampProperties);
 		}
 	}
 }

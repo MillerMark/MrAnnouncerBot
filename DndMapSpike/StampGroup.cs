@@ -210,7 +210,7 @@ namespace DndMapSpike
 			}
 		}
 
-		public void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0)
+		public void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
 		{
 			if (!Visible)
 				return;
@@ -225,7 +225,7 @@ namespace DndMapSpike
 			return stamps.Any(s => s.ContainsPoint(relativeTestPoint.X, relativeTestPoint.Y));
 		}
 
-		public override void Move(int deltaX, int deltaY)
+		public override void Move(double deltaX, double deltaY)
 		{
 			if (Locked)
 				return;
@@ -263,48 +263,46 @@ namespace DndMapSpike
 
 		private void SwapHeightAndWidth()
 		{
-			int oldWidth = Width;
+			double oldWidth = Width;
 			Width = Height;
 			Height = oldWidth;
 		}
 
-		public override int GetLeft()
+		public override double GetLeft()
 		{
-			return (int)Math.Round(X - Width / 2.0);
+			return X - Width / 2.0;
 		}
 
 		/// <summary>
 		/// Gets the top of this group (X and Y are center points)
 		/// </summary>
 		/// <returns></returns>
-		public override int GetTop()
+		public override double GetTop()
 		{
-			return (int)Math.Round(Y - Height / 2.0);
+			return Y - Height / 2.0;
 		}
 
-		public override IStampProperties Copy(int deltaX, int deltaY)
+		public override IStampProperties Copy(double deltaX, double deltaY)
 		{
 			StampGroup result = new StampGroup(this);
 			result.Move(deltaX, deltaY);
 			return result;
 		}
 
-		void CalculateSizeAndPosition(int xOffset = 0, int yOffset = 0)
+		void CalculateSizeAndPosition(double xOffset = 0, double yOffset = 0)
 		{
 			if (stamps.Count == 0)
 				return;
-			int leftMost = stamps.Min(x => x.GetLeft() + xOffset);
-			int topMost = stamps.Min(x => x.GetTop() + yOffset);
-			int rightMost = stamps.Max(x => x.GetLeft() + xOffset + x.Width);
-			int bottomMost = stamps.Max(x => x.GetTop() + yOffset + x.Height);
+			double leftMost = stamps.Min(x => x.GetLeft() + xOffset);
+			double topMost = stamps.Min(x => x.GetTop() + yOffset);
+			double rightMost = stamps.Max(x => x.GetLeft() + xOffset + x.Width);
+			double bottomMost = stamps.Max(x => x.GetTop() + yOffset + x.Height);
 			ZOrder = stamps.Max(x => x.ZOrder);
 
 			Width = rightMost - leftMost;
 			Height = bottomMost - topMost;
-			int middleX = (leftMost + rightMost) / 2;
-			int middleY = (topMost + bottomMost) / 2;
-			X = middleX;
-			Y = middleY;
+			X = (leftMost + rightMost) / 2.0;
+			Y = (topMost + bottomMost) / 2.0;
 		}
 
 		private void PositionContainedStampsRelativeToCenter()
@@ -335,11 +333,11 @@ namespace DndMapSpike
 		{
 			
 		}
-		public void CreateFloating(Canvas canvas, int left = 0, int top = 0)
+		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
 			foreach (IStampProperties stamp in stamps)
 				if (stamp is IStamp wpfStamp)
-					wpfStamp.CreateFloating(canvas, stamp.GetLeft() + left + Width / 2, stamp.GetTop() + top + Height / 2);
+					wpfStamp.CreateFloating(canvas, stamp.GetLeft() + left + Width / 2.0, stamp.GetTop() + top + Height / 2.0);
 		}
 
 		public void Ungroup(List<IStampProperties> ungroupedStamps)
@@ -363,8 +361,8 @@ namespace DndMapSpike
 			Scale *= scaleAdjust;
 			foreach (IStampProperties stamp in stamps)
 			{
-				stamp.X = (int)Math.Round(stamp.X * scaleAdjust);
-				stamp.Y = (int)Math.Round(stamp.Y * scaleAdjust);
+				stamp.X = stamp.X * scaleAdjust;
+				stamp.Y = stamp.Y * scaleAdjust;
 				stamp.AdjustScale(scaleAdjust);
 			}
 			CalculateSizeAndPosition(X, Y);
@@ -379,8 +377,8 @@ namespace DndMapSpike
 			Scale = newScale;
 			foreach (IStampProperties stamp in stamps)
 			{
-				stamp.X = (int)Math.Round(stamp.X * scaleAdjust);
-				stamp.Y = (int)Math.Round(stamp.Y * scaleAdjust);
+				stamp.X = stamp.X * scaleAdjust;
+				stamp.Y = stamp.Y * scaleAdjust;
 				stamp.AdjustScale(scaleAdjust);
 			}
 			CalculateSizeAndPosition(X, Y);
@@ -405,9 +403,9 @@ namespace DndMapSpike
 			return stampGroup;
 		}
 
-		public override int Width { get; set; }
+		public override double Width { get; set; }
 
-		public override int Height { get; set; }
+		public override double Height { get; set; }
 		public List<IStampProperties> Stamps { get => stamps; set => stamps = value; }
 	}
 }

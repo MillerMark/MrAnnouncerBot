@@ -763,7 +763,7 @@
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<ScrollViewer Grid.Column="0" Grid.Row="0"  x:Name="scroller" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+		<ScrollViewer Grid.Column="0" Grid.Row="0"  x:Name="scroller" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" PreviewKeyDown="ZoomAndPanControl_PreviewKeyDown">
 			<!--
             This is the control that handles zooming and panning.
             -->

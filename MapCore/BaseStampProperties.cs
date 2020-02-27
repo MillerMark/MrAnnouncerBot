@@ -18,8 +18,11 @@ namespace MapCore
 		[EditableProperty]
 		public bool Hideable { get; set; }
 
-		[EditableProperty("Strength to Move")]
-		public double StrengthToMove { get; set; } = double.MaxValue;
+		[EditableProperty]
+		public bool Moveable { get; set; }
+
+		[EditableProperty("Min Strength to Move:", "Moveable", 0)]
+		public double MinStrengthToMove { get; set; } = 0;
 
 		[EditableProperty]
 		public Cover Cover { get; set; }
@@ -33,7 +36,7 @@ namespace MapCore
 		/// <summary>
 		/// In Gold Pieces
 		/// </summary>
-		[EditableProperty]
+		[EditableProperty(2)]
 		public double Value { get; set; } = 1; // GP
 
 		public Guid Guid { get; set; }
@@ -41,14 +44,14 @@ namespace MapCore
 		public string TypeName { get; set; }
 
 		public bool Visible { get; set; } = true;
-		public int X { get; set; }
+		public double X { get; set; }
 
-		public int Y { get; set; }
+		public double Y { get; set; }
 
 		public int ZOrder { get; set; } = -1;
 
-		public abstract int Height { get; set; }
-		public abstract int Width { get; set; }
+		public abstract double Height { get; set; }
+		public abstract double Width { get; set; }
 
 		public virtual bool FlipHorizontally { get; set; }
 		public virtual bool FlipVertically { get; set; }
@@ -79,7 +82,7 @@ namespace MapCore
 			Collectible = stamp.Collectible;
 			Locked = stamp.Locked;
 			Hideable = stamp.Hideable;
-			StrengthToMove = stamp.StrengthToMove;
+			MinStrengthToMove = stamp.MinStrengthToMove;
 			Cover = stamp.Cover;
 			Altitude = stamp.Altitude;
 			Weight = stamp.Weight;
@@ -114,7 +117,7 @@ namespace MapCore
 			Name = stampProperties.Name;
 			Collectible = stampProperties.Collectible;
 			Hideable = stampProperties.Hideable;
-			StrengthToMove = stampProperties.StrengthToMove;
+			MinStrengthToMove = stampProperties.MinStrengthToMove;
 			Cover = stampProperties.Cover;
 			Altitude = stampProperties.Altitude;
 			Weight = stampProperties.Weight;
@@ -142,7 +145,7 @@ namespace MapCore
 			Name = serializedStamp.Name;
 			Collectible = serializedStamp.Collectible;
 			Hideable = serializedStamp.Hideable;
-			StrengthToMove = serializedStamp.StrengthToMove;
+			MinStrengthToMove = serializedStamp.MinStrengthToMove;
 			Cover = serializedStamp.Cover;
 			Altitude = serializedStamp.Altitude;
 			Weight = serializedStamp.Weight;

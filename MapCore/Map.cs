@@ -11,6 +11,8 @@ namespace MapCore
 	public class Map : IMapInterface, IStampsManager
 	{
 		List<IStampProperties> selectedStamps;
+
+		[JsonIgnore]
 		public List<IStampProperties> SelectedStamps
 		{
 			get

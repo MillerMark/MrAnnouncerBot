@@ -86,13 +86,13 @@ namespace DndMapSpike
 			DrawHorizontalWall(horizontalWallImage, x, horizontalWallData.Y, pixelLengthToDraw, layer);
 		}
 
-		void DrawHorizontalWall(Image image, double x, int y, double pixelLengthToDraw, Layer layer)
+		void DrawHorizontalWall(Image image, double x, double y, double pixelLengthToDraw, Layer layer)
 		{
-			int yAdjust = GetWallYAdjust(image);
+			double yAdjust = GetWallYAdjust(image);
 			double imageWidth = image.Source.Width;
 			while (Math.Round(pixelLengthToDraw) > 0)
 			{
-				layer.BlendImage(image, (int)Math.Round(x), y + yAdjust, (int)Math.Min(Math.Round(pixelLengthToDraw), imageWidth));
+				layer.BlendImage(image, x, y + yAdjust, Math.Min(pixelLengthToDraw, imageWidth));
 				pixelLengthToDraw -= imageWidth;
 				x += imageWidth;
 			}
@@ -105,14 +105,13 @@ namespace DndMapSpike
 			DrawVerticalWall(verticalWallImage, wallData.X, y, pixelLengthToDraw, layer);
 		}
 
-		void DrawVerticalWall(Image image, int x, double y, double pixelLengthToDraw, Layer layer)
+		void DrawVerticalWall(Image image, double x, double y, double pixelLengthToDraw, Layer layer)
 		{
-			int xAdjust = GetWallXAdjust(image);
+			double xAdjust = GetWallXAdjust(image);
 			double imageHeight = image.Source.Height;
 			while (Math.Round(pixelLengthToDraw) > 0)
 			{
-				//layer.DrawImageAt(image, x + xAdjust, (int)Math.Round(y), -1, (int)Math.Min(Math.Round(pixelLengthToDraw), imageHeight));
-				layer.BlendImage(image, x + xAdjust, (int)Math.Round(y), -1, (int)Math.Min(Math.Round(pixelLengthToDraw), imageHeight));
+				layer.BlendImage(image, x + xAdjust, y, -1, Math.Min(pixelLengthToDraw, imageHeight));
 				pixelLengthToDraw -= imageHeight;
 				y += imageHeight;
 			}
@@ -177,33 +176,33 @@ namespace DndMapSpike
 		{
 			if (image == null)
 				return;
-			int x = GetWallImageStartX(startColumn, image);
-			int y = GetWallImageStartY(startRow, image);
+			double x = GetWallImageStartX(startColumn, image);
+			double y = GetWallImageStartY(startRow, image);
 			layer.BlendImage(image, x, y);
 		}
 
-		int GetWallImageStartY(int startRow, Image image)
+		double GetWallImageStartY(int startRow, Image image)
 		{
-			int yAdjust = GetWallYAdjust(image);
-			int y = startRow * Tile.Height;
+			double yAdjust = GetWallYAdjust(image);
+			double y = startRow * Tile.Height;
 			return y + yAdjust;
 		}
 
-		private int GetWallImageStartX(int startColumn, Image image)
+		private double GetWallImageStartX(int startColumn, Image image)
 		{
-			int xAdjust = GetWallXAdjust(image);
-			int x = startColumn * Tile.Width + 2;
+			double xAdjust = GetWallXAdjust(image);
+			double x = startColumn * Tile.Width + 2;
 			return x + xAdjust;
 		}
 
-		private int GetWallXAdjust(Image image)
+		private double GetWallXAdjust(Image image)
 		{
-			return (3 * Tile.Width - (int)Math.Round(image.Source.Width)) / 2;
+			return (3 * Tile.Width - image.Source.Width) / 2;
 		}
 
-		private int GetWallYAdjust(Image image)
+		private double GetWallYAdjust(Image image)
 		{
-			return (3 * Tile.Height - (int)Math.Round(image.Source.Height)) / 2;
+			return (3 * Tile.Height - image.Source.Height) / 2;
 		}
 
 		void DrawVoidCap(int column, int row, VoidCornerKind voidKind, Layer voidLayer)
@@ -231,8 +230,8 @@ namespace DndMapSpike
 			}
 			if (voidCapImage != null)   // It's a T
 			{
-				int x = GetWallImageStartX(column, voidCapImage);
-				int y = GetWallImageStartY(row, voidCapImage);
+				double x = GetWallImageStartX(column, voidCapImage);
+				double y = GetWallImageStartY(row, voidCapImage);
 				voidLayer.BlendImage(voidCapImage, x, y);
 			}
 			else

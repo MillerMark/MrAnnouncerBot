@@ -17,10 +17,10 @@ namespace DndMapSpike
 		{
 		}
 
-		public void BlendStampImage(Stamp stamp, int xOffset = 0, int yOffset = 0)
+		public void BlendStampImage(Stamp stamp, double xOffset = 0, double yOffset = 0)
 		{
-			int x = stamp.GetLeft() + xOffset;
-			int y = stamp.GetTop() + yOffset;
+			double x = stamp.GetLeft() + xOffset;
+			double y = stamp.GetTop() + yOffset;
 			BlendImage(stamp.Image, x, y);
 		}
 

@@ -12,7 +12,7 @@ namespace MapCore
 
 		}
 
-		void Copy(Map map, int deltaX, int deltaY)
+		void Copy(Map map, double deltaX, double deltaY)
 		{
 			List<IStampProperties> copiedStamps = new List<IStampProperties>();
 
@@ -42,7 +42,7 @@ namespace MapCore
 			if (!(Data is MoveData moveData))
 				return;
 
-			Copy(map, moveData.DeltaX, moveData.DeltaX);
+			Copy(map, moveData.DeltaX, moveData.DeltaY);
 		}
 		protected override void ActivateUndo(Map map)
 		{

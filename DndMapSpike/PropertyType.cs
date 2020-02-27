@@ -9,9 +9,7 @@ namespace DndMapSpike
 		Enum,
 		Boolean,
 		String,
-		Integer,
-		Decimal,
-		Double
+		Number
 	}
 }
 

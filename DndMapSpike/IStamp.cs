@@ -11,8 +11,8 @@ namespace DndMapSpike
 	{
 		[JsonIgnore]
 		Image Image { get; }
-		void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0);
-		void CreateFloating(Canvas canvas, int left = 0, int top = 0);
+		void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0);
+		void CreateFloating(Canvas canvas, double left = 0, double top = 0);
 	}
 }
 

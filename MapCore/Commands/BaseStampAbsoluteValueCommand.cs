@@ -29,6 +29,17 @@ namespace MapCore
 			return undoValues[stampProperties.Guid];
 		}
 
+		protected int GetSavedInt(IStampProperties stampProperties)
+		{
+			if (!undoValues.ContainsKey(stampProperties.Guid))
+			{
+				System.Diagnostics.Debugger.Break();
+				return 0;
+			}
+
+			return (int)Math.Round(undoValues[stampProperties.Guid]);
+		}
+
 		public override void Redo(Map map)
 		{
 			if (Data is DoubleData doubleData)

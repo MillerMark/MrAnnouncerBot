@@ -6,9 +6,9 @@ namespace MapCore
 	public class WallData
 	{
 		public WallOrientation Orientation { get; set; }
-		public int X { get; set; }
-		public int Y { get; set; }
-		public int WallLength { get; set; }
+		public double X { get; set; }
+		public double Y { get; set; }
+		public double WallLength { get; set; }
 
 		public int StartColumn { get; set; }
 		public int StartRow { get; set; }

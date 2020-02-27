@@ -15,7 +15,7 @@ namespace DndMapSpike
 	{
 		// TODO: Any new writeable properties added need to be copied in the Clone method.
 
-		public void BlendStampImage(StampsLayer stampsLayer, int xOffset = 0, int yOffset = 0)
+		public void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
 		{
 			if (!Visible)
 				return;
@@ -31,7 +31,7 @@ namespace DndMapSpike
 			TypeName = nameof(Stamp);
 		}
 
-		public Stamp(string fileName, int x = 0, int y = 0) : this()
+		public Stamp(string fileName, double x = 0, double y = 0) : this()
 		{
 			X = x;
 			Y = y;
@@ -80,8 +80,8 @@ namespace DndMapSpike
 
 		public override bool ContainsPoint(double x, double y)
 		{
-			int left = GetLeft();
-			int top = GetTop();
+			double left = GetLeft();
+			double top = GetTop();
 			if (x < left)
 				return false;
 			if (y < top)
@@ -95,14 +95,14 @@ namespace DndMapSpike
 			return ImageUtils.HasPixelAt(Image, (int)(x - left), (int)(y - top));
 		}
 
-		public override IStampProperties Copy(int deltaX, int deltaY)
+		public override IStampProperties Copy(double deltaX, double deltaY)
 		{
 			Stamp result = Clone(this);
 			result.Move(deltaX, deltaY);
 			return result;
 		}
 
-		public void CreateFloating(Canvas canvas, int left = 0, int top = 0)
+		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
 			Image image = new Image();
 			image.Source = new BitmapImage(new Uri(FileName));
@@ -148,16 +148,16 @@ namespace DndMapSpike
 		/// Gets the left of this stamp (X and Y are the center points)
 		/// </summary>
 		/// <returns></returns>
-		public override int GetLeft()
+		public override double GetLeft()
 		{
-			return (int)Math.Round(X - Width / 2.0);
+			return X - Width / 2.0;
 		}
 
-		public override int Width
+		public override double Width
 		{
 			get
 			{
-				return (int)Math.Round(Image.Source.Width);
+				return Image.Source.Width;
 			}
 			set
 			{
@@ -165,11 +165,11 @@ namespace DndMapSpike
 			}
 		}
 
-		public override int Height
+		public override double Height
 		{
 			get
 			{
-				return (int)Math.Round(Image.Source.Height);
+				return Image.Source.Height;
 			}
 			set
 			{
@@ -192,9 +192,9 @@ namespace DndMapSpike
 		/// Gets the top of this group(X and Y are center points)
 		/// </summary>
 		/// <returns></returns>
-		public override int GetTop()
+		public override double GetTop()
 		{
-			return (int)Math.Round(Y - Height / 2.0);
+			return Y - Height / 2.0;
 		}
 		protected override void TransferFrom(SerializedStamp serializedStamp)
 		{

@@ -5,10 +5,10 @@ namespace MapCore
 {
 	public class MoveData
 	{
-		public int DeltaX { get; set; }
-		public int DeltaY { get; set; }
+		public double DeltaX { get; set; }
+		public double DeltaY { get; set; }
 
-		public MoveData(int deltaX, int deltaY)
+		public MoveData(double deltaX, double deltaY)
 		{
 			DeltaX = deltaX;
 			DeltaY = deltaY;

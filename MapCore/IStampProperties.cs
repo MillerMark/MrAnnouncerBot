@@ -5,43 +5,34 @@ namespace MapCore
 {
 	public interface IStampProperties
 	{
-		[EditableProperty]
 		string Name { get; set; }
 
-		[EditableProperty]
 		bool Collectible { get; set; }
 
-		[EditableProperty]
 		bool Locked { get; set; }
 
-		[EditableProperty]
 		bool Hideable { get; set; }
 
-		[EditableProperty("Strength to Move")]
-		double StrengthToMove { get; set; }
+		double MinStrengthToMove { get; set; }
 
-		[EditableProperty]
 		Cover Cover { get; set; }
 
-		[EditableProperty]
 		StampAltitude Altitude { get; set; }
 
-		[EditableProperty]
 		double Weight { get; set; }
 
 		/// <summary>
 		/// In Gold Pieces
 		/// </summary>
-		[EditableProperty]
 		double Value { get; set; }
 
 		Guid Guid { get; set; }
 		string TypeName { get; set; }
-		IStampProperties Copy(int deltaX, int deltaY);
-		int Height { get; set; }
-		int Width { get; set; }
-		int GetLeft();
-		int GetTop();
+		IStampProperties Copy(double deltaX, double deltaY);
+		double Height { get; set; }
+		double Width { get; set; }
+		double GetLeft();
+		double GetTop();
 		double GetBottom();
 		double GetRight();
 
@@ -56,15 +47,15 @@ namespace MapCore
 		StampRotation Rotation { get; set; }
 		double Saturation { get; set; }
 		double Scale { get; set; }
-		int X { get; set; }
-		int Y { get; set; }
+		double X { get; set; }
+		double Y { get; set; }
 		int ZOrder { get; set; }
 		bool Visible { get; set; }
 
 		double ScaleX { get; }
 		double ScaleY { get; }
 		bool HasNoZOrder();
-		void Move(int deltaX, int deltaY);
+		void Move(double deltaX, double deltaY);
 		void ResetZOrder();
 		void RotateLeft();
 		void RotateRight();
