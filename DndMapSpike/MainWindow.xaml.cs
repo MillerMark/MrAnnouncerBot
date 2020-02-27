@@ -1352,7 +1352,45 @@ namespace DndMapSpike
 			IStampProperties stamp = GetStampAt(lastMouseDownPoint.X, lastMouseDownPoint.Y);
 			if (stamp != null)
 			{
-				NewMethod(stamp);
+				ClearSelection();
+
+				if (lastMouseDownWasRightButton)
+				{
+					if (Map.SelectedStamps.IndexOf(stamp) < 0)
+					{
+						Map.SelectedStamps.Clear();
+						Map.SelectedStamps.Add(stamp);
+					}
+					ShowStampContextMenu(stamp as IStamp);
+					return;
+				}
+				SelectionType selectionType = GetSelectionType(Map.SelectedStamps.Count > 0);
+				if (selectionType == SelectionType.Replace)
+				{
+					if (Map.SelectedStamps.IndexOf(stamp) < 0)
+						Map.SelectedStamps.Clear();
+				}
+
+				if (selectionType == SelectionType.Remove)
+				{
+					Map.SelectedStamps.Remove(stamp);
+				}
+				else if (Map.SelectedStamps.IndexOf(stamp) < 0)
+					Map.SelectedStamps.Add(stamp);
+
+
+				if (Map.SelectedStamps.Count > 0)
+				{
+					draggingStamps = true;
+					needToHideOriginalStamps = true;
+					UpdateStampSelection();
+					GetTopLeftOfStampSelection(out double left, out double top);
+
+					mouseDragAdjustX = lastMouseDownPoint.X - left;
+					mouseDragAdjustY = lastMouseDownPoint.Y - top;
+				}
+				else
+					StampsAreNotSelected();
 				return;
 			}
 			else
@@ -1364,50 +1402,6 @@ namespace DndMapSpike
 			Tile baseSpace = GetTile(mouseDownSender);
 			if (baseSpace != null)
 				HandleTileClick(baseSpace);
-		}
-
-		private void NewMethod(IStampProperties stamp)
-		{
-			ClearSelection();
-
-			if (lastMouseDownWasRightButton)
-			{
-				if (Map.SelectedStamps.IndexOf(stamp) < 0)
-				{
-					Map.SelectedStamps.Clear();
-					Map.SelectedStamps.Add(stamp);
-				}
-				ShowStampContextMenu(stamp as IStamp);
-				return;
-			}
-			SelectionType selectionType = GetSelectionType(Map.SelectedStamps.Count > 0);
-			if (selectionType == SelectionType.Replace)
-			{
-				if (Map.SelectedStamps.IndexOf(stamp) < 0)
-					Map.SelectedStamps.Clear();
-			}
-
-			if (selectionType == SelectionType.Remove)
-			{
-				Map.SelectedStamps.Remove(stamp);
-			}
-			else if (Map.SelectedStamps.IndexOf(stamp) < 0)
-				Map.SelectedStamps.Add(stamp);
-
-
-			if (Map.SelectedStamps.Count > 0)
-			{
-				draggingStamps = true;
-				needToHideOriginalStamps = true;
-				UpdateStampSelection();
-				GetTopLeftOfStampSelection(out double left, out double top);
-
-				mouseDragAdjustX = lastMouseDownPoint.X - left;
-				mouseDragAdjustY = lastMouseDownPoint.Y - top;
-			}
-			else
-				StampsAreNotSelected();
-			return;
 		}
 
 		private void StampsAreNotSelected()
