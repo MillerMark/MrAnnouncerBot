@@ -604,7 +604,7 @@
 			<Viewbox >
 				<Grid Height="Auto" Width="Auto" Background="#FF4472C4" >
 					<StackPanel x:Name="spPropertyEditors" Orientation="Vertical" Background="#FF4472C4" Margin="0, 10, 0, 0">
-						
+
 					</StackPanel>
 					<Button x:Name="btnClosePropertyGrid" Width="10" Height="10" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="-6, -8, -4, -4" Click="BtnClosePropertyGrid_Click" 
 							ToolTip="Close the property grid.">
@@ -717,7 +717,7 @@
 			<Separator></Separator>
 			<MenuItem Header="Reset All Color Mods" Click="ResetAllColorMods_Click"></MenuItem>
 		</ContextMenu>
-		
+
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>
@@ -826,35 +826,53 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
-			<StackPanel Grid.Row="1" x:Name="spStamps">
-				<TabControl x:Name="tbcStamps" Width="480" TabStripPlacement="Left">
-					<TabControl.ItemTemplate>
-						<DataTemplate>
-							<TextBlock>                            
-								<TextBlock Text="{Binding Name}"/>
-							</TextBlock>
-						</DataTemplate>
-					</TabControl.ItemTemplate>
-					<TabControl.ContentTemplate>
-						<DataTemplate>
-							<ListBox ItemsSource="{Binding Stamps}" Width="400" MaxHeight="980">
-								<ListBox.ItemsPanel>
-									<ItemsPanelTemplate>
-										<WrapPanel Orientation="Horizontal" Width="400"/>
-									</ItemsPanelTemplate>
-								</ListBox.ItemsPanel>
-								<ListBox.ItemTemplate>
-									<DataTemplate>
-										<Button Click="StampButton_Click" Tag="{Binding}">
-											<Image Source="{Binding Path=FileName}" Width="64" Height="64"></Image>
-										</Button>
-									</DataTemplate>
-								</ListBox.ItemTemplate>
-							</ListBox>
-						</DataTemplate>
-					</TabControl.ContentTemplate>
-				</TabControl>
-			</StackPanel>
+			<TabControl Grid.Row="1" x:Name="tbcStampsAndCharacters">
+				<TabItem Header="Stamps">
+					<TabControl x:Name="tbcStamps" Width="480" TabStripPlacement="Left">
+						<TabControl.ItemTemplate>
+							<DataTemplate>
+								<TextBlock>                            
+										<TextBlock Text="{Binding Name}"/>
+									</TextBlock>
+							</DataTemplate>
+						</TabControl.ItemTemplate>
+						<TabControl.ContentTemplate>
+							<DataTemplate>
+								<ListBox ItemsSource="{Binding Stamps}" Width="400" MaxHeight="980">
+									<ListBox.ItemsPanel>
+										<ItemsPanelTemplate>
+											<WrapPanel Orientation="Horizontal" Width="400"/>
+										</ItemsPanelTemplate>
+									</ListBox.ItemsPanel>
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Button Click="StampButton_Click" Tag="{Binding}">
+												<Image Source="{Binding Path=FileName}" Width="64" Height="64"></Image>
+											</Button>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</DataTemplate>
+						</TabControl.ContentTemplate>
+					</TabControl>
+				</TabItem>
+				<TabItem Header="Characters">
+					<ListBox x:Name="lbCharacters" Width="480" MaxHeight="980">
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel Orientation="Horizontal" Width="480"/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Button Click="BtnAddCharacter_Click" Tag="{Binding}">
+									<Image Source="{Binding Path=FileName}" Width="64" Height="64"></Image>
+								</Button>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</TabItem>
+			</TabControl>
 			<StackPanel x:Name="spWallDoorControls" Grid.Row="2" Orientation="Vertical">
 				<StackPanel x:Name="spWallLabels" Orientation="Horizontal" Margin="4, 4, 0, 0" >
 					<TextBlock Text="Walls: " Width="Auto" Height="Auto"/>

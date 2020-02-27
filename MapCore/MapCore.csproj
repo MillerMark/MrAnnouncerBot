@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseItemProperties.cs" />
     <Compile Include="Commands\AddStampCommand.cs" />
     <Compile Include="Commands\AlignmentData.cs" />
     <Compile Include="Commands\AlignOrDistributeCommand.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="IStampGroup.cs" />
     <Compile Include="IStampProperties.cs" />
     <Compile Include="IStampsManager.cs" />
+    <Compile Include="MapCharacter.cs" />
     <Compile Include="ReconstituteStampsEventArgs.cs" />
     <Compile Include="RegionType.cs" />
     <Compile Include="SelectStampsEventArgs.cs" />

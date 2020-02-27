@@ -21,7 +21,7 @@ namespace Imaging
 		/// </summary>
 		public int MinOpacityToKeep { get; set; } = 1;
 
-		public string CroppedFolder { get; set; }
+		public string TargetFolder { get; set; }
 
 		public event EventHandler ProgressChanged;
 		public void OnProgressChanged()
@@ -126,7 +126,7 @@ namespace Imaging
 			string workFile = file;
 			bool workFileIsTemporary = false;
 
-			if (string.IsNullOrEmpty(CroppedFolder))  // Replacing this file.
+			if (string.IsNullOrEmpty(TargetFolder))  // Replacing this file.
 			{
 				workFileIsTemporary = true;
 				string tempFileName = Path.GetTempFileName();
@@ -144,9 +144,9 @@ namespace Imaging
 						targetFileName = Path.GetFileName(file);
 					string path = Path.GetDirectoryName(file);
 					string targetPath;
-					if (!string.IsNullOrEmpty(CroppedFolder))
+					if (!string.IsNullOrEmpty(TargetFolder))
 					{
-						targetPath = Path.Combine(path, CroppedFolder);
+						targetPath = TargetFolder;
 						if (!Directory.Exists(targetPath))
 							Directory.CreateDirectory(targetPath);
 					}

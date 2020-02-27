@@ -19,7 +19,6 @@ namespace DndMapSpike
 			{
 				Stamps.Add(new Stamp(file));
 			}
-			
 		}
 	}
 }

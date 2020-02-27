@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
-	public abstract class BaseStampProperties
+	public abstract class BaseStampProperties: BaseItemProperties
 	{
 		//! TODO: Make sure new properties are dealt with in the Clone method!!!
 
@@ -43,20 +43,11 @@ namespace MapCore
 
 		public string TypeName { get; set; }
 
-		public bool Visible { get; set; } = true;
-		public double X { get; set; }
-
-		public double Y { get; set; }
-
 		public int ZOrder { get; set; } = -1;
-
-		public abstract double Height { get; set; }
-		public abstract double Width { get; set; }
 
 		public virtual bool FlipHorizontally { get; set; }
 		public virtual bool FlipVertically { get; set; }
 		public virtual StampRotation Rotation { get; set; }
-		public virtual string FileName { get; set; }
 		public virtual double Scale { get; set; } = 1;
 		public virtual double HueShift { get; set; }
 		public virtual double Saturation { get; set; }

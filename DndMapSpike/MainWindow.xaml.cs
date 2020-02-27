@@ -35,7 +35,6 @@ namespace DndMapSpike
 		bool ctrlKeyDown;
 		private const int StampButtonSize = 36;
 		const string MapSaveFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Data";
-		public const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
 		MapEditModes mapEditMode = MapEditModes.Select;
 		const double DBL_SelectionLineThickness = 10;
 		const double DBL_HalfSelectionLineThickness = DBL_SelectionLineThickness / 2;
@@ -120,8 +119,8 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Dark Lair of Sorrows.txt");
 			//ImportDonJonMap("The Dark Crypts of the Shadow Countess.txt");
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
-			ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
-			//ImportDonJonMap("SmallMap.txt");
+			//ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
+			ImportDonJonMap("SmallMap.txt");
 			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();
@@ -190,17 +189,33 @@ namespace DndMapSpike
 				UpdateStampSelectionUI();
 		}
 
-		public List<StampFolder> Directories = new List<StampFolder>();
+		public List<StampFolder> StampDirectories = new List<StampFolder>();
+		public List<StampFolder> CharacterDirectories = new List<StampFolder>();
 
 		void BuildStampsUI()
 		{
-			Directories.Clear();
-			IEnumerable<string> directories = System.IO.Directory.EnumerateDirectories(StampsPath);
+			const string StampsPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Stamps";
+
+			StampDirectories.Clear();
+			IEnumerable<string> directories = Directory.EnumerateDirectories(StampsPath);
 			foreach (string directory in directories)
 			{
-				Directories.Add(new StampFolder(directory));
+				StampDirectories.Add(new StampFolder(directory));
 			}
-			tbcStamps.ItemsSource = Directories;
+			tbcStamps.ItemsSource = StampDirectories;
+		}
+
+		void BuildCharacterUI()
+		{
+			const string CharacterFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps\Miniatures";
+			CharacterDirectories.Clear();
+			IEnumerable<string> directories = Directory.EnumerateDirectories(CharacterFolder);
+			foreach (string directory in directories)
+			{
+				CharacterFinder.FindCharacters(directory, );
+				CharacterDirectories.Add(new StampFolder(directory));
+			}
+			tbcStamps.ItemsSource = CharacterDirectories;
 		}
 
 		private void Map_WallsChanged(object sender, EventArgs e)
@@ -325,7 +340,7 @@ namespace DndMapSpike
 			Visibility tileSelectionControlVisibility = tileSelectionExists ? Visibility.Visible : Visibility.Collapsed;
 			Visibility stampControlVisibility = !tileSelectionExists ? Visibility.Visible : Visibility.Collapsed;
 
-			tbcStamps.Visibility = stampControlVisibility;
+			tbcStampsAndCharacters.Visibility = stampControlVisibility;
 			lstFlooring.Visibility = tileSelectionControlVisibility;
 			spWallDoorControls.Visibility = tileSelectionControlVisibility;
 		}
@@ -2566,7 +2581,6 @@ namespace DndMapSpike
 			SetRubberBandVisibility(Visibility.Hidden);
 			Cursor = Cursors.Hand;
 			lstFlooring.Visibility = Visibility.Collapsed;
-			spStamps.Visibility = Visibility.Visible;
 			MoveFloatingCanvasesToTop();
 		}
 
@@ -3572,6 +3586,11 @@ namespace DndMapSpike
 				MoveSelectedStamps(0, 1 * multiplier);
 				e.Handled = true;
 			}
+		}
+
+		private void BtnAddCharacter_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }
