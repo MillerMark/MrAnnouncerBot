@@ -718,6 +718,10 @@
 			<MenuItem Header="Reset All Color Mods" Click="ResetAllColorMods_Click"></MenuItem>
 		</ContextMenu>
 
+		<ContextMenu x:Key="ctxCharacter" >
+			<MenuItem Header="Sample Character Menu Item"></MenuItem>
+		</ContextMenu>
+
 	</Window.Resources>
 	<Window.InputBindings>
 		<KeyBinding Key="Minus" Command="{StaticResource Commands.ZoomOut}"/>

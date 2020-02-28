@@ -5,21 +5,21 @@ namespace MapCore
 {
 	public abstract class BaseItemProperties: IItemProperties
 	{
-
 		static BaseItemProperties()
 		{
 
 		}
 
-		public virtual void TransferProperties(IItemProperties stampProperties)
+		public virtual void TransferProperties(IItemProperties itemProperties)
 		{
-			Guid = stampProperties.Guid;
-			X = stampProperties.X;
-			Y = stampProperties.Y;
-			Visible = stampProperties.Visible;
-			FileName = stampProperties.FileName;
-			Height = stampProperties.Height;
-			Width = stampProperties.Width;
+			Guid = itemProperties.Guid;
+			X = itemProperties.X;
+			Y = itemProperties.Y;
+			ZOrder = itemProperties.ZOrder;
+			Visible = itemProperties.Visible;
+			FileName = itemProperties.FileName;
+			Height = itemProperties.Height;
+			Width = itemProperties.Width;
 		}
 
 		public bool Visible { get; set; } = true;
@@ -46,7 +46,10 @@ namespace MapCore
 			return false;
 		}
 
+
 		public Guid Guid { get; set; }
+
+		public int ZOrder { get; set; } = -1;
 
 	}
 }

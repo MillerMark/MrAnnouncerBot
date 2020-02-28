@@ -24,8 +24,7 @@ namespace MapCore
 		void RemoveItem(IItemProperties item);
 		void SortStampsByZOrder(int zOrderOffset = 0);
 		void NormalizeZOrder(int zOrderOffset = 0);
-		List<IStampProperties> Stamps { get; set; }
-		List<IItemProperties> Characters { get; set; }
+		List<IItemProperties> Stamps { get; set; }
 	}
 }
 

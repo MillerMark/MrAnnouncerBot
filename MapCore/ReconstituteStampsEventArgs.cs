@@ -6,7 +6,7 @@ namespace MapCore
 {
 	public class ReconstituteStampsEventArgs : EventArgs
 	{
-		public List<IStampProperties> Stamps { get; set; }
+		public List<IItemProperties> Stamps { get; set; }
 		public SerializedStamp SerializedStamp { get; set; }
 		public ReconstituteStampsEventArgs()
 		{

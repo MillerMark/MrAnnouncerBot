@@ -9,10 +9,31 @@ using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
-	public class MapCharacter : BaseItemProperties
+	public class MapCharacter : BaseItemProperties, IFloatingItem
 	{
-		public override double Height { get; set; }
-		public override double Width { get; set; }
+		public override double Width
+		{
+			get
+			{
+				return Image.Source.Width;
+			}
+			set
+			{
+				// Do nothing. Width is read-only (from the Image) in Stamp.
+			}
+		}
+
+		public override double Height
+		{
+			get
+			{
+				return Image.Source.Height;
+			}
+			set
+			{
+				// Do nothing. Height is read-only (from the Image) in Stamp.
+			}
+		}
 
 		public MapCharacter()
 		{
@@ -36,7 +57,7 @@ namespace DndMapSpike
 			return ImageUtils.HasPixelAt(Image, (int)(x - left), (int)(y - top));
 		}
 
-		public MapCharacter(string fileName, double x, double y): this()
+		public MapCharacter(string fileName, double x, double y) : this()
 		{
 			FileName = fileName;
 			X = x;
@@ -55,9 +76,9 @@ namespace DndMapSpike
 		}
 		public static IItemProperties CreateCharacterFrom(SerializedCharacter character)
 		{
-				MapCharacter mapCharacter = new MapCharacter();
-				mapCharacter.TransferFrom(character);
-				return mapCharacter;
+			MapCharacter mapCharacter = new MapCharacter();
+			mapCharacter.TransferFrom(character);
+			return mapCharacter;
 		}
 
 		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
@@ -74,6 +95,13 @@ namespace DndMapSpike
 			canvas.Children.Add(image);
 			Canvas.SetLeft(image, left);
 			Canvas.SetTop(image, top);
+		}
+
+		public void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
+		{
+			if (!Visible)
+				return;
+			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
 		public MapCharacter(string fileName)

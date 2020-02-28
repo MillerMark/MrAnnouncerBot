@@ -13,7 +13,7 @@ namespace MapCore
 		protected override void ActivateRedo(Map map)
 		{
 			map.RemoveAllStamps(SelectedStamps);
-			map.SelectedStamps.Clear();
+			map.SelectedItems.Clear();
 		}
 	}
 }

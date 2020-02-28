@@ -38,7 +38,7 @@ namespace MapCore
 
 		protected void ClearSelectedStamps(Map map)
 		{
-			map.SelectedStamps.Clear();
+			map.SelectedItems.Clear();
 			SelectedStamps.Clear();
 			UpdateSelectedStampGuids();
 		}
@@ -51,21 +51,21 @@ namespace MapCore
 
 		protected void AddSelectedStamp(Map map, IStampProperties stamp)
 		{
-			map.SelectedStamps.Add(stamp);
+			map.SelectedItems.Add(stamp);
 			SelectedStamps.Add(stamp);
 			UpdateSelectedStampGuids();
 		}
 
 		protected void RemoveSelectedStamp(Map map, IStampProperties stamp)
 		{
-			map.SelectedStamps.Remove(stamp);
+			map.SelectedItems.Remove(stamp);
 			SelectedStamps.Remove(stamp);
 			UpdateSelectedStampGuids();
 		}
 
 		protected void SetSelectedStamps(Map map, List<IStampProperties> stamps)
 		{
-			map.SelectedStamps = stamps;
+			map.SelectedItems = stamps;
 			SelectedStamps = stamps;
 			UpdateSelectedStampGuids();
 		}

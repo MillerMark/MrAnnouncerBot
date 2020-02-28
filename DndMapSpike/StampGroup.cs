@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
-	public class StampGroup : BaseStamp, IStamp, IStampGroup
+	public class StampGroup : BaseStamp, IFloatingItem, IStampProperties, IStampGroup
 	{
 		List<IStampProperties> stamps = new List<IStampProperties>();
 		public StampGroup()
@@ -51,10 +51,13 @@ namespace DndMapSpike
 				}
 			}
 		}
+
 		public override string FileName
 		{
 			get
 			{
+				if (!stamps.Any())
+					return string.Empty;
 				return stamps.FirstOrDefault().FileName;
 			}
 			set
@@ -129,7 +132,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (stamps.FirstOrDefault() is IStamp stamp)
+				if (stamps.FirstOrDefault() is IFloatingItem stamp)
 					return stamp.Image;
 				return null;
 			}
@@ -215,8 +218,8 @@ namespace DndMapSpike
 			if (!Visible)
 				return;
 			foreach (IStampProperties stamp in stamps)
-				if (stamp is IStamp wpfStamp)
-					wpfStamp.BlendStampImage(stampsLayer, xOffset + X, yOffset + Y);
+				if (stamp is IFloatingItem floatingItem)
+					floatingItem.BlendStampImage(stampsLayer, xOffset + X, yOffset + Y);
 		}
 
 		public override bool ContainsPoint(double x, double y)
@@ -336,8 +339,8 @@ namespace DndMapSpike
 		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
 			foreach (IStampProperties stamp in stamps)
-				if (stamp is IStamp wpfStamp)
-					wpfStamp.CreateFloating(canvas, stamp.GetLeft() + left + Width / 2.0, stamp.GetTop() + top + Height / 2.0);
+				if (stamp is IFloatingItem floatingItem)
+					floatingItem.CreateFloating(canvas, stamp.GetLeft() + left + Width / 2.0, stamp.GetTop() + top + Height / 2.0);
 		}
 
 		public void Ungroup(List<IStampProperties> ungroupedStamps)
@@ -399,7 +402,7 @@ namespace DndMapSpike
 			stampGroup.TransferFrom(stamp);
 			if (stamp.Children != null)
 				foreach (SerializedStamp childStamp in stamp.Children)
-					stampGroup.Stamps.Add(CreateStampFrom(childStamp));
+					stampGroup.Stamps.Add(ItemFactory.CreateStampFrom(childStamp));
 			return stampGroup;
 		}
 

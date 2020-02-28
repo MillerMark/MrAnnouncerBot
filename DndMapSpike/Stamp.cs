@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
-	public class Stamp : BaseStamp, IStamp
+	public class Stamp : BaseStamp, IFloatingItem, IStampProperties
 	{
 		// TODO: Any new writeable properties added need to be copied in the Clone method.
 
@@ -137,8 +137,6 @@ namespace DndMapSpike
 				image.LayoutTransform = transformGroup;
 			image.Opacity = 0.5;
 			image.IsHitTestVisible = false;
-			//mouseDragAdjustX = image.Source.Width / 2;
-			//mouseDragAdjustY = image.Source.Height / 2;
 			canvas.Children.Add(image);
 			Canvas.SetLeft(image, left);
 			Canvas.SetTop(image, top);

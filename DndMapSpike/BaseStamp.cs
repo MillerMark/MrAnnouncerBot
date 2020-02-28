@@ -8,13 +8,6 @@ namespace DndMapSpike
 {
 	public abstract class BaseStamp : BaseStampProperties, IStampProperties
 	{
-		public static IStampProperties CreateStampFrom(SerializedStamp stamp)
-		{
-			if (stamp.TypeName == "StampGroup")
-				return StampGroup.From(stamp);
-			return Stamp.From(stamp);
-		}
-
 		public abstract IStampProperties Copy(double deltaX, double deltaY);
 		public abstract bool ContainsPoint(double x, double y);
 		public abstract double GetBottom();

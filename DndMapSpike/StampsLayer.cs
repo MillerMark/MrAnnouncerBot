@@ -17,11 +17,11 @@ namespace DndMapSpike
 		{
 		}
 
-		public void BlendStampImage(Stamp stamp, double xOffset = 0, double yOffset = 0)
+		public void BlendStampImage(IFloatingItem floatingItem, double xOffset = 0, double yOffset = 0)
 		{
-			double x = stamp.GetLeft() + xOffset;
-			double y = stamp.GetTop() + yOffset;
-			BlendImage(stamp.Image, x, y);
+			double x = floatingItem.GetLeft() + xOffset;
+			double y = floatingItem.GetTop() + yOffset;
+			BlendImage(floatingItem.Image, x, y);
 		}
 
 		void Refresh()
@@ -31,8 +31,8 @@ namespace DndMapSpike
 			{
 				try
 				{
-					if (stamp is IStamp wpfStamp)
-						wpfStamp.BlendStampImage(this);
+					if (stamp is IFloatingItem floatingItem)
+						floatingItem.BlendStampImage(this);
 				}
 				catch
 				{
@@ -44,12 +44,14 @@ namespace DndMapSpike
 			{
 				try
 				{
-					if (item is MapCharacter character)
-					{
-						double x = character.GetLeft();
-						double y = character.GetTop();
-						BlendImage(character.Image, x, y);
-					}
+					if (item is IFloatingItem floatingItem)
+						floatingItem.BlendStampImage(this);
+					//if (item is MapCharacter character)
+					//{
+					//	double x = character.GetLeft();
+					//	double y = character.GetTop();
+					//	BlendImage(character.Image, x, y);
+					//}
 				}
 				catch
 				{
@@ -82,6 +84,11 @@ namespace DndMapSpike
 		public IStampProperties GetStampAt(double x, double y)
 		{
 			return Map.GetStampAt(x, y);
+		}
+
+		public IItemProperties GetItemAt(double x, double y)
+		{
+			return Map.GetItemAt(x, y);
 		}
 	}
 }

@@ -7,6 +7,7 @@ namespace MapCore
 	{
 		Guid Guid { get; set; }
 		string FileName { get; set; }
+		int ZOrder { get; set; }
 		double X { get; set; }
 		double Y { get; set; }
 		double GetTop();

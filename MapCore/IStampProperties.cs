@@ -41,8 +41,7 @@ namespace MapCore
 		StampRotation Rotation { get; set; }
 		double Saturation { get; set; }
 		double Scale { get; set; }
-		int ZOrder { get; set; }
-
+	
 		double ScaleX { get; }
 		double ScaleY { get; }
 		bool HasNoZOrder();

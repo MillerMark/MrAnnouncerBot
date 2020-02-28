@@ -10,38 +10,27 @@ namespace MapCore
 {
 	public class Map : IMapInterface, IStampsManager
 	{
-		List<IStampProperties> selectedStamps;
-		List<IItemProperties> selectedCharacters;
+		List<IItemProperties> selectedItems;
 
 		[JsonIgnore]
-		public List<IStampProperties> SelectedStamps
+		public List<IItemProperties> SelectedItems
 		{
 			get
 			{
-				if (selectedStamps == null)
-					selectedStamps = new List<IStampProperties>();
+				if (selectedItems == null)
+					selectedItems = new List<IItemProperties>();
 
-				return selectedStamps;
+				return selectedItems;
 			}
 			set
 			{
-				selectedStamps = value;
+				selectedItems = value;
 			}
 		}
-		[JsonIgnore]
-		public List<IItemProperties> SelectedCharacters
-		{
-			get
-			{
-				if (selectedCharacters == null)
-					selectedCharacters = new List<IItemProperties>();
 
-				return selectedCharacters;
-			}
-			set
-			{
-				selectedCharacters = value;
-			}
+		public List<T> Filter<T>() where T : class, IItemProperties
+		{
+			return SelectedItems.ConvertAll(x => x as T).Where(x => x is T).ToList(); ;
 		}
 
 		public delegate void CreateGroupEventHandler(object sender, CreateGroupEventArgs ea);
@@ -58,25 +47,15 @@ namespace MapCore
 		public event SelectStampsEventHandler SelectingStamps;
 
 		public delegate void ReconstituteStampsEventHandler(object sender, ReconstituteStampsEventArgs ea);
-		public delegate void ReconstituteCharacterEventHandler(object sender, ReconstituteCharacterEventArgs ea);
 		public event ReconstituteStampsEventHandler ReconstitutingStamps;
-		public event ReconstituteCharacterEventHandler ReconstitutingCharacter;
-		void OnAddStamp(List<IStampProperties> stamps, SerializedStamp serializedStamp)
+		void OnAddStamp(List<IItemProperties> stamps, SerializedStamp serializedStamp)
 		{
 			reconstituteStampsEventArgs.Stamps = stamps;
 			reconstituteStampsEventArgs.SerializedStamp = serializedStamp;
 			ReconstitutingStamps?.Invoke(this, reconstituteStampsEventArgs);
 		}
 
-		void OnAddCharacter(List<IItemProperties> characters, SerializedCharacter serializedCharacter)
-		{
-			reconstituteCharacterEventArgs.Characters = characters;
-			reconstituteCharacterEventArgs.SerializedCharacter = serializedCharacter;
-			ReconstitutingCharacter?.Invoke(this, reconstituteCharacterEventArgs);
-		}
-
 		static ReconstituteStampsEventArgs reconstituteStampsEventArgs = new ReconstituteStampsEventArgs();
-		static ReconstituteCharacterEventArgs reconstituteCharacterEventArgs = new ReconstituteCharacterEventArgs();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
@@ -127,11 +106,7 @@ namespace MapCore
 		public string FileName { get; set; }
 
 		[JsonIgnore]
-		public List<IStampProperties> Stamps { get; set; } = new List<IStampProperties>();
-
-		[JsonIgnore]
-		// TODO: Serialize the character guids.
-		public List<IItemProperties> Characters { get; set; } = new List<IItemProperties>();
+		public List<IItemProperties> Stamps { get; set; } = new List<IItemProperties>();
 
 		public List<SerializedStamp> SerializedStamps { get; set; }
 		public List<SerializedCharacter> SerializedCharacters { get; set; }
@@ -847,10 +822,9 @@ namespace MapCore
 			BuildMapArrays();
 			ReconstituteRoomsAndCorridors();
 			ReconstituteStamps(Stamps, SerializedStamps);
-			ReconstituteCharacters(Characters, SerializedCharacters);
 		}
 
-		public void ReconstituteStamps(List<IStampProperties> stamps, List<SerializedStamp> serializedStamps)
+		public void ReconstituteStamps(List<IItemProperties> stamps, List<SerializedStamp> serializedStamps)
 		{
 			if (serializedStamps == null)
 				return;
@@ -1034,9 +1008,9 @@ namespace MapCore
 
 		public IItemProperties GetItemAt(double x, double y)
 		{
-			for (int i = Characters.Count - 1; i >= 0; i--)
+			for (int i = Stamps.Count - 1; i >= 0; i--)
 			{
-				IItemProperties item = Characters[i];
+				IItemProperties item = Stamps[i];
 				if (item.ContainsPoint(x, y))
 					return item;
 			}
@@ -1123,6 +1097,11 @@ namespace MapCore
 		public void ClearStampSelection()
 		{
 			SelectStampsByGuid(null);
+		}
+
+		public bool SelectionHasAtLeast<T>(int minCount)
+		{
+			return SelectedItems.Where(x => x is T).ToList().Count >= minCount;
 		}
 
 		public event EventHandler WallsChanged;

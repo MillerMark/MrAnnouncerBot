@@ -41,8 +41,6 @@ namespace MapCore
 
 		public string TypeName { get; set; }
 
-		public int ZOrder { get; set; } = -1;
-
 		public virtual bool FlipHorizontally { get; set; }
 		public virtual bool FlipVertically { get; set; }
 		public virtual StampRotation Rotation { get; set; }

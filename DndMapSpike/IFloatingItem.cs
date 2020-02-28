@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
-	public interface IStamp: IStampProperties
+	public interface IFloatingItem: IItemProperties
 	{
 		[JsonIgnore]
 		Image Image { get; }

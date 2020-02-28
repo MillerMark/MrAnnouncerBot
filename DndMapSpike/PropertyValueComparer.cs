@@ -18,14 +18,14 @@ namespace DndMapSpike
 			return Comparisons.FirstOrDefault(x => x.Name == name);
 		}
 
-		void CreateComparison(IStampProperties instance, PropertyInfo propertyInfo, EditablePropertyAttribute editablePropertyAttribute)
+		void CreateComparison(object instance, PropertyInfo propertyInfo, EditablePropertyAttribute editablePropertyAttribute)
 		{
 			PropertyValueData propertyValueData = new PropertyValueData(instance, propertyInfo, editablePropertyAttribute.DisplayText, editablePropertyAttribute.NumDecimalPlaces, editablePropertyAttribute.DependentProperty);
 			propertyValueData.FirstInstance = instance;
 			Comparisons.Add(propertyValueData);
 		}
 
-		public void Compare(IStampProperties stampProperties)
+		public void Compare(object stampProperties)
 		{
 			PropertyInfo[] properties = stampProperties.GetType().GetProperties();
 			foreach (PropertyInfo propertyInfo in properties)

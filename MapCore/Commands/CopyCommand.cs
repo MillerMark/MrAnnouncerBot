@@ -16,8 +16,8 @@ namespace MapCore
 		{
 			List<IStampProperties> copiedStamps = new List<IStampProperties>();
 
-			List<IStampProperties> zOrderedSelection = map.SelectedStamps.OrderBy(x => x.ZOrder).ToList();
-			foreach (IStampProperties stamp in zOrderedSelection)
+			List<IItemProperties> zOrderedSelection = map.SelectedItems.OrderBy(x => x.ZOrder).ToList();
+			foreach (IItemProperties stamp in zOrderedSelection)
 			{
 				IStampProperties newStamp = stamp.Copy(deltaX, deltaY);
 				if (newStamp != null)
@@ -27,7 +27,7 @@ namespace MapCore
 				}
 			}
 
-			originalStampSelection.AddRange(map.SelectedStamps.Select(stampProperties => stampProperties.Guid));
+			originalStampSelection.AddRange(map.SelectedItems.Select(stampProperties => stampProperties.Guid));
 			SetSelectedStamps(map, copiedStamps);
 		}
 
@@ -47,7 +47,7 @@ namespace MapCore
 		protected override void ActivateUndo(Map map)
 		{
 			map.RemoveAllStamps(SelectedStamps);
-			map.SelectedStamps.Clear();
+			map.SelectedItems.Clear();
 			SetSelectedStamps(map, originalStampSelection);
 		}
 	}
