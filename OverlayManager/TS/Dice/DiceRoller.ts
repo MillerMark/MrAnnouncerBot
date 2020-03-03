@@ -1156,9 +1156,9 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 
 function getRandomEffect() {
 	let random: number = Math.random() * 100;
-	if (random < 15)
+	if (random < 18)
 		return DieEffect.Bomb;
-	else if (random < 20)
+	else if (random < 25)
 		return DieEffect.ColoredSmoke;
 	else if (random < 45)
 		return DieEffect.Burst;
@@ -1446,7 +1446,11 @@ function highlightSpecialDice() {
 					diceSounds.playFireball();
 				}
 				else if (dieObject.effectKind === DieEffect.Bomb) {
-					diceLayer.addDiceBomb(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+					let hueShift: number = Math.floor(Math.random() * 360);
+					let saturation: number = 75;  // Reduce saturation for significant hue shifts 
+					if (hueShift < 15 || hueShift > 345)
+						saturation = 100;
+					diceLayer.addDiceBomb(screenPos.x, screenPos.y, hueShift, saturation, 100);
 					diceSounds.playDieBomb();
 					hideDieIn(dieObject, 700);
 				}

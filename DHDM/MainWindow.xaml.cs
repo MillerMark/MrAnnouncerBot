@@ -3075,12 +3075,12 @@ namespace DHDM
 					tabPlayers.Items.Add(tabItem);
 					tabItem.PlayerId = player.playerID;
 
-					StackPanel stackPanel = new StackPanel();
-					tabItem.Content = stackPanel;
+					StackPanel scrollControlStack = new StackPanel();
+					tabItem.Content = scrollControlStack;
 
 					ScrollViewer scrollViewer = new ScrollViewer();
 					scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-					stackPanel.Children.Add(scrollViewer);
+					scrollControlStack.Children.Add(scrollViewer);
 
 					Grid grid = new Grid();
 					grid.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
@@ -3099,22 +3099,50 @@ namespace DHDM
 					grid.Children.Add(characterSheets);
 					tabItem.CharacterSheets = characterSheets;
 
+					StackPanel playerControls = new StackPanel();
+					playerControls.HorizontalAlignment = HorizontalAlignment.Center;
+					playerControls.Orientation = Orientation.Horizontal;
+					scrollControlStack.Children.Add(playerControls);
 					Button button = new Button();
 					button.Content = "Hide Scroll";
 					button.Click += Button_ClearScrollClick;
-					button.MaxWidth = 200;
+					button.Width = 200;
 					button.MinHeight = 45;
-					stackPanel.Children.Add(button);
+					playerControls.Children.Add(button);
+
+
+					CheckBox chkShowPlayerNameplate = new CheckBox();
+					chkShowPlayerNameplate.Margin = new Thickness(20, 10, 0, 0);
+					chkShowPlayerNameplate.Content = "Show Player Nameplate";
+					chkShowPlayerNameplate.Checked += ShowPlayerNameplate_CheckedChanged;
+					chkShowPlayerNameplate.Unchecked += ShowPlayerNameplate_CheckedChanged;
+					chkShowPlayerNameplate.MaxWidth = 200;
+					chkShowPlayerNameplate.MinHeight = 45;
+					chkShowPlayerNameplate.IsChecked = player.ShowingNameplate;
+					chkShowPlayerNameplate.Tag = player.playerID;
+					playerControls.Children.Add(chkShowPlayerNameplate);
+
 
 					ListBox stateList = new ListBox();
 					tabItem.StateList = stateList;
-					stackPanel.Children.Add(stateList);
+					scrollControlStack.Children.Add(stateList);
 				}
 			}
 			finally
 			{
 				buildingTabs = false;
 			}
+		}
+
+		private void ShowPlayerNameplate_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is CheckBox checkBox))
+				return;
+			if (!(checkBox.Tag is int playerID))
+				return;
+			Character player = game.GetPlayerFromId(playerID);
+			player.ShowingNameplate = checkBox.IsChecked == true;
+			SendPlayerData();
 		}
 
 		private void CharacterSheets_ChargesChanged(object sender, ChargesChangedEventArgs e)
@@ -4170,7 +4198,7 @@ namespace DHDM
 			if (selectedItem == null)
 				return;
 			Spell spell = AllSpells.Get(selectedItem.name, player, lastSpellSlotTested);
-			player.ShowPlayerCasting(new CastedSpell(spell, player));
+			player.PlayerConsidersCasting(new CastedSpell(spell, player));
 		}
 
 		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e)

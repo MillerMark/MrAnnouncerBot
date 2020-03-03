@@ -1438,6 +1438,7 @@ class DiceLayer {
 			hueShift = -132 + Random.plusMinus(30);
 		let damageBludgeoningFist = this.damageBludgeoningFist.addShifted(x, y, -1, hueShift);
 		angle += 90;
+		damageBludgeoningFist.scale = 0.8;
 		damageBludgeoningFist.rotation = angle;
 		damageBludgeoningFist.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
 		damageBludgeoningFist.initialRotation = angle;
@@ -1751,6 +1752,7 @@ class DiceLayer {
 		this.damageRadiant.sprites = [];
 		this.damageForce.sprites = [];
 		this.damageBludgeoningMace.sprites = [];
+		this.damageBludgeoningFist.sprites = [];
 		this.damageBludgeoningWeapon.sprites = [];
 		this.damageSpinningCloudTrail.sprites = [];
 		this.damagePoison.sprites = [];

@@ -1054,17 +1054,7 @@ class SpellBook {
 
 		let nowMs: number = nowSec * 1000;
 		if (this.lastSpellName != spell.name || this.lastSpellSlotLevel != spell.spellSlotLevel) {
-			this.lastSpellName = spell.name;
-			this.lastSpellSlotLevel = spell.spellSlotLevel;
-			this.lastPlayerId = player.playerID;
-
-			let scale: number = 1;
-			while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
-				scale += 0.01;
-			}
-			this.spellbookAppearTime = nowMs;
-			this.addSpellBookAppearSoundEffects(spell);
-			// TODO: Set spellbook opacity here and fade everything in.
+			this.createSpellBook(spell, player, context, x, y, nowMs);
 		}
 		let timeIn: number = nowMs - this.spellbookAppearTime;
 		if (timeIn < SpellBook.fadeInTime) {
@@ -1101,6 +1091,18 @@ class SpellBook {
 	}
 
 	soundManager: DragonBackSounds;
+    private createSpellBook(spell: ActiveSpellData, player: Character, context: CanvasRenderingContext2D, x: number, y: number, nowMs: number) {
+        this.lastSpellName = spell.name;
+        this.lastSpellSlotLevel = spell.spellSlotLevel;
+        this.lastPlayerId = player.playerID;
+        let scale: number = 1;
+        while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
+            scale += 0.01;
+        }
+        this.spellbookAppearTime = nowMs;
+        this.addSpellBookAppearSoundEffects(spell);
+    }
+
 	setSoundManager(dragonBackSounds: DragonBackSounds): any {
 		this.soundManager = dragonBackSounds;
 	}
@@ -1190,12 +1192,12 @@ class SpellBook {
 		this.morePowerIcon.originX = 0;
 		this.morePowerIcon.originY = SpellBook.iconSize;
 		this.bookGlow = new Sprites("Scroll/Spells/BookMagic/BookMagic", 119, fps30, AnimationStyle.Loop, true);
-		this.bookBurn = new Sprites("Scroll/Spells/Appear/BookBurn/BookBurn", 28, fps30, AnimationStyle.Sequential, true);
+		this.bookBurn = new Sprites("Scroll/Spells/Appear/BookBurn/BookBurn", 28, fps40, AnimationStyle.Sequential, true);
 
 		let saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = false;
-		this.spellBookAppearBig = new Sprites("Scroll/Spells/Appear/Big/Big", 129, fps50, AnimationStyle.Sequential, true);
-		this.spellBookAppearMedium = new Sprites("Scroll/Spells/Appear/Medium/Medium", 116, fps50, AnimationStyle.Sequential, true);
+		this.spellBookAppearBig = new Sprites("Scroll/Spells/Appear/Big/Big", 129, fps100, AnimationStyle.Sequential, true);
+		this.spellBookAppearMedium = new Sprites("Scroll/Spells/Appear/Medium/Medium", 116, fps100, AnimationStyle.Sequential, true);
 		this.spellBookAppearSmall = new Sprites("Scroll/Spells/Appear/Small/Small", 83, fps50, AnimationStyle.Sequential, true);
 		globalBypassFrameSkip = saveBypassFrameSkip;
 
@@ -1229,6 +1231,7 @@ class SpellBook {
 		this.concentrationIcon.sprites = [];
 		this.morePowerIcon.sprites = [];
 		this.bookGlow.sprites = [];
+		this.bookBurn.sprites = [];
 
 		this.spellBookAppearBig.sprites = [];
 		this.spellBookAppearMedium.sprites = [];
@@ -1366,20 +1369,27 @@ class SpellBook {
 		let horizontalScaleBig: number = 1.2 * bookGlowWidth / this.spellBookAppearBig.spriteWidth;
 
 		let big: SpriteProxy = this.spellBookAppearBig.addShifted(centerX, centerY, 0, 21);
-		//hueShift = Random.max(360);
 		big.horizontalScale = horizontalScaleBig;
 		big.verticalScale = verticalScaleBig;
-		let bigHueShift: number = Random.plusMinusBetween(20, 40);
-		let mediumHueShift: number = -bigHueShift;
-		let medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, hueShift + mediumHueShift);
-		let small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, hueShift + bigHueShift);
-		medium.timeStart = performance.now() + 9 * fps50;  // medium starts 9 frames in.
+		let hueShiftDelta: number = Random.plusMinusBetween(20, 40);
+		let mediumHueShift: number = hueShift - hueShiftDelta;
+		let medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, mediumHueShift, this.getSaturation(mediumHueShift));
+		medium.timeStart = performance.now() + 9 * fps30;  // medium starts 9 frames in.
 		medium.horizontalScale = horizontalScaleBig;
 		medium.verticalScale = verticalScaleBig;
-		small.timeStart = performance.now() + 25 * fps50;  // small starts 25 frames in.
+		let smallHueShift: number = hueShift + hueShiftDelta;
+		let small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, smallHueShift, this.getSaturation(smallHueShift));
+		small.timeStart = performance.now() + 16 * fps30;  // small starts 16 frames in.
 		small.horizontalScale = horizontalScaleBig;
 		small.verticalScale = verticalScaleBig;
 		return true;
+	}
+
+	getSaturation(hueShift: number): number {
+		let saturation: number = 75;  // Reduce saturation for significant hue shifts 
+		if (hueShift < 15 || hueShift > 345)
+			saturation = 100;
+		return saturation;
 	}
 
 	private getIconScale(titleFontSize: number): number {

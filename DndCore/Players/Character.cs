@@ -1086,6 +1086,7 @@ namespace DndCore
 		{
 			forceShowSpell = true;
 			spellPreviouslyCasting = null;
+			spellTentativelyCasting = null;
 			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
@@ -2033,6 +2034,8 @@ namespace DndCore
 
 		[JsonIgnore]
 		public object ActiveTarget { get; set; }
+
+		public bool ShowingNameplate { get; set; } = true;
 
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{

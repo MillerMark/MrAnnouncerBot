@@ -59,6 +59,7 @@ class Character {
 	experiencePoints: number;
 	raceClass: string;
 	race: string;
+	ShowingNameplate: boolean;
 	alignment: string;
 	SpellCastingAbilityStr: string;
 	SpellSaveDC: number = 0;
@@ -140,6 +141,7 @@ class Character {
 		this.copyClassDataFrom(sourceCharacter);
 
 		this.alignment = sourceCharacter.alignment;
+		this.ShowingNameplate = sourceCharacter.ShowingNameplate;
 		this.SpellCastingAbilityStr = sourceCharacter.SpellCastingAbilityStr;
 		this.SpellSaveDC = sourceCharacter.SpellSaveDC;
 		this.SpellAttackBonusStr = sourceCharacter.SpellAttackBonusStr;

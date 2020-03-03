@@ -1,9 +1,11 @@
 ﻿const globalFramesToLoad: number = 1;
 const globalFramesToCount: number = 2;
 
+const fps100: number = 10;
+const fps60: number = 16.66666667;
 const fps50: number = 20;
 const fps40: number = 25;
-const fps30: number = 33;
+const fps30: number = 33.33333333;
 const fps20: number = 50;
 const fps25: number = 40;
 const fps15: number = 66.66666667;

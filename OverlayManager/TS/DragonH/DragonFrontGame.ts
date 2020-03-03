@@ -773,8 +773,10 @@
 					}
 				}
 			}
-			else
+			else {
 				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
+				this.dragonFrontSounds.playRandom('Healing/Healing', 5);
+			}
 		}
 
 		if (!fredIsTakingDamage && fredIsGettingHitByBlood)
@@ -860,7 +862,10 @@
 		this.inCombat = dto.InCombat;
 	}
 
-	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number) {
+	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number): void {
+		if (!player.ShowingNameplate)
+			return;
+
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
 		context.fillStyle = '#ffffff';
@@ -888,15 +893,7 @@
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 
 		let centerX: number = this.getPlayerX(playerIndex);
-		//const drawLines: boolean = false;
-		//if (drawLines) {
-		//	context.beginPath();
-		//	context.moveTo(centerX, 1080);
-		//	context.lineTo(centerX, 980);
-		//	context.strokeStyle = '#ff0000';
-		//	context.stroke();
-		//}
-
+	
 		let hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
 		let hpWidth: number = context.measureText(hpStr).width;
 		let nameWidth: number = context.measureText(playerName).width;
