@@ -31,55 +31,64 @@ namespace MapCore
 			}
 		}
 		public bool WorksOnStamps { get; set; }
-		// TODO: This has to change to support adding and deleting stamps
-		public List<IStampProperties> SelectedStamps { get; set; }
+
+		public List<IItemProperties> SelectedItems { get; set; }
+		
+		public List<IStampProperties> SelectedStamps
+		{
+			get
+			{
+				return SelectedItems.OfType<IStampProperties>().ToList();
+			}
+		}
+
 		List<Guid> stampGuids = new List<Guid>();
 
 
 		protected void ClearSelectedStamps(Map map)
 		{
 			map.SelectedItems.Clear();
-			SelectedStamps.Clear();
+			SelectedItems.Clear();
 			UpdateSelectedStampGuids();
 		}
 
 		void UpdateSelectedStampGuids()
 		{
 			stampGuids.Clear();
-			stampGuids.AddRange(SelectedStamps.Select(stampProperties => stampProperties.Guid));
+			stampGuids.AddRange(SelectedItems.Select(stampProperties => stampProperties.Guid));
 		}
 
-		protected void AddSelectedStamp(Map map, IStampProperties stamp)
+		protected void AddSelectedItem(Map map, IItemProperties item)
 		{
-			map.SelectedItems.Add(stamp);
-			SelectedStamps.Add(stamp);
+			map.SelectedItems.Add(item);
+			SelectedItems.Add(item);
 			UpdateSelectedStampGuids();
 		}
 
-		protected void RemoveSelectedStamp(Map map, IStampProperties stamp)
+		protected void RemoveSelectedItem(Map map, IItemProperties item)
 		{
-			map.SelectedItems.Remove(stamp);
-			SelectedStamps.Remove(stamp);
+			map.SelectedItems.Remove(item);
+			SelectedItems.Remove(item);
 			UpdateSelectedStampGuids();
 		}
 
-		protected void SetSelectedStamps(Map map, List<IStampProperties> stamps)
+		protected void SetSelectedItems(Map map, List<IItemProperties> items)
 		{
-			map.SelectedItems = stamps;
-			SelectedStamps = stamps;
+			map.SelectedItems = items;
+			SelectedItems = items;
 			UpdateSelectedStampGuids();
 		}
 
-		protected void SetSelectedStamps(Map map, List<Guid> stampGuids)
+		protected void SetSelectedItems(Map map, List<Guid> stampItems)
 		{
-			map.SelectStampsByGuid(stampGuids);
-			SelectedStamps = map.GetStamps(stampGuids);
-			this.stampGuids = stampGuids;
+			map.SelectStampsByGuid(stampItems);
+			SelectedItems = map.GetStamps(stampItems);
+			this.stampGuids = stampItems;
 		}
 
 		void LoadSelectedStamps(Map map)
 		{
-			SelectedStamps = map.GetStamps(stampGuids);
+			SelectedItems = map.GetStamps(stampGuids);
 		}
 		object data;
 		public object Data
@@ -97,16 +106,16 @@ namespace MapCore
 				OnDataChanged();
 			}
 		}
-		
+
 		protected virtual void OnDataChanged()
 		{
-			
+
 		}
 
-		public void Execute(Map map, List<IStampProperties> selectedStamps)
+		public void Execute(Map map, List<IItemProperties> selectedStamps)
 		{
-			SelectedStamps = selectedStamps;
-			PrepareForExecution(map, selectedStamps);
+			SelectedItems = selectedStamps;
+			PrepareForExecution(map);
 			Redo(map);
 			// TODO: consider adding a diff virtual method call here to optimize undo data.
 		}
@@ -115,13 +124,12 @@ namespace MapCore
 		/// Called just before the first time execution of a command.
 		/// This is your chance to save data for the undo.
 		/// </summary>
-		/// <param name="selectedStamps"></param>
 		/// <param name="map"></param>
-		protected virtual void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected virtual void PrepareForExecution(Map map)
 		{
 			stampGuids.Clear();
-			foreach (IStampProperties stampProperties in selectedStamps)
-				stampGuids.Add(stampProperties.Guid);
+			foreach (IItemProperties itemProperties in SelectedItems)
+				stampGuids.Add(itemProperties.Guid);
 		}
 
 		protected abstract void ActivateRedo(Map map);
@@ -142,11 +150,6 @@ namespace MapCore
 		public BaseCommand()
 		{
 
-		}
-
-		public static explicit operator BaseCommand(ObjectHandle v)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

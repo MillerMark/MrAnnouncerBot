@@ -17,7 +17,7 @@ namespace MapCore
 			if (!(Data is MoveData moveData))
 				return;
 
-			foreach (IStampProperties stamp in SelectedStamps)
+			foreach (IItemProperties stamp in SelectedItems)
 				stamp.Move(moveData.DeltaX, moveData.DeltaY);
 		}
 
@@ -26,7 +26,7 @@ namespace MapCore
 			if (!(Data is MoveData moveData))
 				return;
 
-			foreach (IStampProperties stamp in SelectedStamps)
+			foreach (IItemProperties stamp in SelectedItems)
 				stamp.Move(-moveData.DeltaX, -moveData.DeltaY);
 		}
 	}

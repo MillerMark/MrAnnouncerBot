@@ -10,6 +10,31 @@ namespace MapCore
 
 		}
 
+		public abstract IItemProperties Copy(double deltaX, double deltaY);
+
+
+		[EditableProperty]
+		public bool Locked { get; set; }
+
+		public virtual void Move(double deltaX, double deltaY)
+		{
+			if (Locked)
+				return;
+
+			X += deltaX;
+			Y += deltaY;
+		}
+
+		public void ResetZOrder()
+		{
+			ZOrder = -1;
+		}
+
+		public bool HasNoZOrder()
+		{
+			return ZOrder == -1;
+		}
+
 		public virtual void TransferProperties(IItemProperties itemProperties)
 		{
 			Guid = itemProperties.Guid;
@@ -41,11 +66,20 @@ namespace MapCore
 			return Y - Height / 2.0;
 		}
 
+		public virtual double GetRight()
+		{
+			return X + Width / 2.0;
+		}
+
+		public virtual double GetBottom()
+		{
+			return Y + Height / 2.0;
+		}
+
 		public virtual bool ContainsPoint(double x, double y)
 		{
 			return false;
 		}
-
 
 		public Guid Guid { get; set; }
 

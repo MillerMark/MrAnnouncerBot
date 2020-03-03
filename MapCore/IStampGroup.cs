@@ -4,8 +4,9 @@ using System.Linq;
 
 namespace MapCore
 {
-	public interface IStampGroup : IStampProperties
+	// TODO: Check this ancestry. IStampProperties feels way too specific.
+	public interface IItemGroup : IStampProperties
 	{
-		void Ungroup(List<IStampProperties> ungroupedStamps);
+		void Ungroup(List<IItemProperties> ungroupedStamps);
 	}
 }

@@ -11,16 +11,16 @@ namespace MapCore
 		{
 
 		}
-		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map)
 		{
-			base.PrepareForExecution(map, selectedStamps);
-			foreach (IStampProperties stampProperties in map.Stamps)
+			base.PrepareForExecution(map);
+			foreach (IItemProperties stampProperties in map.Stamps)
 				SaveValue(stampProperties, stampProperties.ZOrder);
 		}
 
 		protected override void ActivateUndo(Map map)
 		{
-			foreach (IStampProperties stampProperties in map.Stamps)
+			foreach (IItemProperties stampProperties in map.Stamps)
 				stampProperties.ZOrder = GetSavedInt(stampProperties);
 		}
 	}

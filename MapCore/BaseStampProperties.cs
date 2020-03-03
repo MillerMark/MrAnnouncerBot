@@ -12,9 +12,7 @@ namespace MapCore
 
 		[EditableProperty]
 		public bool Collectible { get; set; }
-		[EditableProperty]
-		public bool Locked { get; set; }
-
+		
 		[EditableProperty]
 		public bool Hideable { get; set; }
 
@@ -50,7 +48,7 @@ namespace MapCore
 		public virtual double Lightness { get; set; }
 		public virtual double Contrast { get; set; }
 
-		public void CloneFrom(BaseStampProperties stamp)
+		public virtual void CloneFrom(IStampProperties stamp)
 		{
 			Contrast = stamp.Contrast;
 			Visible = stamp.Visible;

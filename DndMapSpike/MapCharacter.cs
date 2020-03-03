@@ -104,6 +104,25 @@ namespace DndMapSpike
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
+		public void CloneFrom(IItemProperties item)
+		{
+			TransferProperties(item);
+		}
+
+		static MapCharacter Clone(MapCharacter character)
+		{
+			MapCharacter result = new MapCharacter(character.FileName, character.X, character.Y);
+			result.CloneFrom(character);
+			return result;
+		}
+
+		public override IItemProperties Copy(double deltaX, double deltaY)
+		{
+			MapCharacter result = Clone(this);
+			result.Move(deltaX, deltaY);
+			return result;
+		}
+
 		public MapCharacter(string fileName)
 		{
 			FileName = fileName;

@@ -8,11 +8,6 @@ namespace DndMapSpike
 {
 	public abstract class BaseStamp : BaseStampProperties, IStampProperties
 	{
-		public abstract IStampProperties Copy(double deltaX, double deltaY);
-		public abstract bool ContainsPoint(double x, double y);
-		public abstract double GetBottom();
-		public abstract double GetRight();
-
 		public abstract void ResetImage();
 
 		public override bool FlipHorizontally
@@ -171,15 +166,6 @@ namespace DndMapSpike
 			X = Y;
 			Y = oldX;
 		}
-		public bool HasNoZOrder()
-		{
-			return ZOrder == -1;
-		}
-
-		public void ResetZOrder()
-		{
-			ZOrder = -1;
-		}
 
 		public virtual double ScaleX
 		{
@@ -273,14 +259,6 @@ namespace DndMapSpike
 			}
 		}
 
-		public virtual void Move(double deltaX, double deltaY)
-		{
-			if (Locked)
-				return;
-
-			X += deltaX;
-			Y += deltaY;
-		}
 		public virtual void AdjustScale(double scaleAdjust)
 		{
 			if (Locked)

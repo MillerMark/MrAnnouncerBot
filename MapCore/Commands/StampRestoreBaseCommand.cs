@@ -14,16 +14,16 @@ namespace MapCore
 
 		}
 
-		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map)
 		{
-			base.PrepareForExecution(map, selectedStamps);
-			SerializeStamps(selectedStamps);
+			base.PrepareForExecution(map);
+			SerializeStamps(SelectedItems);
 		}
 
-		void SerializeStamps(List<IStampProperties> selectedStamps)
+		void SerializeStamps(List<IItemProperties> selectedStamps)
 		{
 			storedStamps.Clear();
-			foreach (IStampProperties stampProperties in selectedStamps)
+			foreach (IItemProperties stampProperties in selectedStamps)
 			{
 				SerializedStamp serializedStamp = SerializedStamp.From(stampProperties);
 				storedStamps.Add(JsonConvert.SerializeObject(serializedStamp));
@@ -40,7 +40,7 @@ namespace MapCore
 				serializedStamps.Add(serializedStamp);
 				guidsRestored.Add(serializedStamp.Guid);
 			}
-			map.ReconstituteStamps(map.Stamps, serializedStamps);
+			map.ReconstituteItems(map.Stamps, serializedStamps);
 			return guidsRestored;
 		}
 

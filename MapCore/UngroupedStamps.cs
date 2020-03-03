@@ -8,15 +8,15 @@ namespace MapCore
 	public class UngroupedStamps
 	{
 		public int StartingZOrder { get; set; }
-		public List<IStampProperties> Stamps { get; set; } = new List<IStampProperties>();
-		public IStampProperties StampGroup { get; set; }
+		public List<IItemProperties> Stamps { get; set; } = new List<IItemProperties>();
+		public IItemProperties StampGroup { get; set; }
 
 		public UngroupedStamps()
 		{
 
 		}
 
-		public UngroupedStamps(IStampProperties stampGroup)
+		public UngroupedStamps(IItemProperties stampGroup)
 		{
 			StampGroup = stampGroup;
 		}

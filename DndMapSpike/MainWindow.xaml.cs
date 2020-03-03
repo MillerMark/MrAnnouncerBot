@@ -148,7 +148,7 @@ namespace DndMapSpike
 			if (ea.StampGuids != null)
 				foreach (Guid guid in ea.StampGuids)
 				{
-					IStampProperties stampFromGuid = Map.GetStampFromGuid(guid);
+					IItemProperties stampFromGuid = Map.GetStampFromGuid(guid);
 					if (stampFromGuid == null)
 					{
 						System.Diagnostics.Debugger.Break();
@@ -166,7 +166,7 @@ namespace DndMapSpike
 
 		private static void ReconstituteStamp(SerializedStamp serializedStamp, List<IItemProperties> stamps)
 		{
-			stamps.Add(ItemFactory.CreateStampFrom(serializedStamp));
+			stamps.Add(MapElementFactory.CreateStampFrom(serializedStamp));
 		}
 
 		private void PrepareStampForSerialization(object sender, SerializedStampEventArgs ea)
@@ -174,10 +174,10 @@ namespace DndMapSpike
 			PrepareStampForSerialization(ea.Properties, ea.Stamp);
 		}
 
-		private static void PrepareStampForSerialization(IStampProperties stampInstance, SerializedStamp stamp)
+		private static void PrepareStampForSerialization(IItemProperties stampInstance, SerializedStamp stamp)
 		{
 			if (stamp.TypeName == "StampGroup" && stampInstance is StampGroup stampGroup)
-				foreach (IStampProperties childStamp in stampGroup.Stamps)
+				foreach (IItemProperties childStamp in stampGroup.Stamps)
 				{
 					SerializedStamp serializedStamp = SerializedStamp.From(childStamp);
 					stamp.AddChild(serializedStamp);
@@ -1278,7 +1278,7 @@ namespace DndMapSpike
 			}
 		}
 
-		void SelectStamp(Stamp stamp)
+		void SelectItem(IItemProperties stamp)
 		{
 			if (Map.SelectedItems.IndexOf(stamp) < 0)
 			{
@@ -1298,15 +1298,14 @@ namespace DndMapSpike
 			});
 		}
 
-		IStampProperties GetStampAt(double x, double y)
-		{
-			return stampsLayer.GetItemAt(x, y) as IStampProperties;
-		}
+		//IStampProperties GetStampAt(double x, double y)
+		//{
+		//	return stampsLayer.GetItemAt(x, y) as IStampProperties;
+		//}
 
 		IItemProperties GetItemAt(double x, double y)
 		{
-			IItemProperties item = stampsLayer.GetItemAt(x, y);
-			return item;
+			return stampsLayer.GetItemAt(x, y);
 		}
 
 
@@ -1355,7 +1354,7 @@ namespace DndMapSpike
 			IItemProperties item = GetItemAt(lastMouseDownPoint.X, lastMouseDownPoint.Y);
 			if (item != null)
 			{
-				SelectStamp(item);
+				SelectItem(item);
 				return;
 			}
 
@@ -1368,7 +1367,7 @@ namespace DndMapSpike
 				HandleTileClick(baseSpace);
 		}
 
-		private void SelectStamp(IStampProperties stamp)
+		private void SelectStamp(IItemProperties stamp)
 		{
 			ClearSelection();
 
@@ -1431,7 +1430,7 @@ namespace DndMapSpike
 		{
 			left = int.MaxValue;
 			top = int.MaxValue;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double stampLeft = stamp.GetLeft();
 				double stampTop = stamp.GetTop();
@@ -2014,7 +2013,7 @@ namespace DndMapSpike
 				ShowPropertyEditor(colorControls);
 			}
 
-			bool hasMoreThanOneSelected = Map.SelectionHasAtLeast<IStampProperties>(2);
+			bool hasMoreThanOneSelected = Map.SelectionHasAtLeast<IItemProperties>(2);
 			bool hasAtLeastOneGroupSelected = HasAtLeastOneGroupSelected();
 			double secondRow = bottomRow + buttonSize + rowColumnSpacer;
 			double groupUngroupLeft = right;
@@ -2035,7 +2034,7 @@ namespace DndMapSpike
 				if (width >= buttonSize)
 				{
 					CreateButton("btnAlignHorizontalCenter", middleButtonX, alignRow, buttonSize);
-					if (Map.SelectionHasAtLeast<IStampProperties>(3))
+					if (Map.SelectionHasAtLeast<IItemProperties>(3))
 						CreateButton("btnDistributeHorizontally", middleButtonX - longButtonIndent, distributeRow, longButtonLength, buttonSize);
 					if (width >= 3 * buttonSize + 2 * rowColumnSpacer)
 					{
@@ -2046,7 +2045,7 @@ namespace DndMapSpike
 				if (height >= buttonSize)
 				{
 					CreateButton("btnAlignVerticalCenter", alignColumn, middleButtonY, buttonSize);
-					if (Map.SelectionHasAtLeast<IStampProperties>(3))
+					if (Map.SelectionHasAtLeast<IItemProperties>(3))
 						CreateButton("btnDistributeVertically", distributeColumn, middleButtonY - longButtonIndent, buttonSize, longButtonLength);
 					if (height >= 3 * buttonSize + 2 * rowColumnSpacer)
 					{
@@ -2193,7 +2192,7 @@ namespace DndMapSpike
 			GetConsistentModSettings(out selectedButtonScale, out selectedHueShift, out selectedSaturation, out selectedLightness, out selectedContrast);
 
 			AddStampSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast);
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 				AddStampSelectionUI(stamp);
 
 			MoveSelectionCanvasToTop();
@@ -2206,7 +2205,7 @@ namespace DndMapSpike
 			selectedSaturation = null;
 			selectedLightness = null;
 			selectedContrast = null;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 			{
 				if (selectedButtonScale == null)
 					selectedButtonScale = stamp.Scale;
@@ -2967,11 +2966,12 @@ namespace DndMapSpike
 
 		private void HueShiftReset_Click(object sender, RoutedEventArgs e)
 		{
+			//! TODO: Needs to play with undo/redo!
 			ResetHueSlider();
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (IStampProperties stamp in Map.SelectedItems)
+				foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 					stamp.HueShift = 0;
 			}
 			finally
@@ -2990,11 +2990,13 @@ namespace DndMapSpike
 
 		private void SaturationReset_Click(object sender, RoutedEventArgs e)
 		{
+			//! TODO: Needs to play with undo/redo!
+
 			ResetSaturationSlider();
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (IStampProperties stamp in Map.SelectedItems)
+				foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 					stamp.Saturation = 0;
 			}
 			finally
@@ -3013,11 +3015,13 @@ namespace DndMapSpike
 
 		private void LightnessReset_Click(object sender, RoutedEventArgs e)
 		{
+			//! TODO: Needs to play with undo/redo!
+
 			ResetLightnessSlider();
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (IStampProperties stamp in Map.SelectedItems)
+				foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 					stamp.Lightness = 0;
 			}
 			finally
@@ -3036,11 +3040,13 @@ namespace DndMapSpike
 
 		private void ContrastReset_Click(object sender, RoutedEventArgs e)
 		{
+			//! TODO: Needs to play with undo/redo!
+
 			ResetContrastSlider();
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (IStampProperties stamp in Map.SelectedItems)
+				foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 					stamp.Contrast = 0;
 			}
 			finally
@@ -3135,7 +3141,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (IStampProperties stamp in Map.SelectedItems)
+				foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 				{
 					if (clipboardLightness.HasValue)
 						stamp.Lightness = clipboardLightness.Value;
@@ -3164,7 +3170,7 @@ namespace DndMapSpike
 			stampsLayer.BeginUpdate();
 			try
 			{
-				foreach (IStampProperties stamp in Map.SelectedItems)
+				foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
 				{
 					stamp.HueShift = 0;
 					stamp.Saturation = 0;
@@ -3230,7 +3236,7 @@ namespace DndMapSpike
 		private double GetAverageHorizontalCenterInSelection()
 		{
 			double totalCenterX = 0;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 				totalCenterX += stamp.X;
 
 			return totalCenterX / Map.SelectedItems.Count;
@@ -3238,7 +3244,7 @@ namespace DndMapSpike
 		private double GetAverageVerticalCenterInSelection()
 		{
 			double totalCenterY = 0;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 				totalCenterY += stamp.Y;
 
 			return totalCenterY / Map.SelectedItems.Count;
@@ -3260,7 +3266,7 @@ namespace DndMapSpike
 		private double GetFurthestLeftInSelection()
 		{
 			double furthestLeft = int.MaxValue;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double left = stamp.GetLeft();
 				if (left < furthestLeft)
@@ -3278,7 +3284,7 @@ namespace DndMapSpike
 		private double GetFurthestRightInSelection()
 		{
 			double furthestRight = 0;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double right = stamp.GetRight();
 				if (right > furthestRight)
@@ -3309,7 +3315,7 @@ namespace DndMapSpike
 		private double GetFurthestTopInSelection()
 		{
 			double furthestTop = int.MaxValue;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double top = stamp.GetTop();
 				if (top < furthestTop)
@@ -3327,7 +3333,7 @@ namespace DndMapSpike
 		private double GetFurthestBottomInSelection()
 		{
 			double furthestBottom = 0;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double bottom = stamp.GetBottom();
 				if (bottom > furthestBottom)
@@ -3348,7 +3354,7 @@ namespace DndMapSpike
 		{
 			double furthestRight = 0;
 			furthestLeft = double.MaxValue;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double centerX = stamp.X;
 				double top = stamp.GetLeft();
@@ -3371,7 +3377,7 @@ namespace DndMapSpike
 		{
 			double furthestBottom = 0;
 			furthestTop = double.MaxValue;
-			foreach (IStampProperties stamp in Map.SelectedItems)
+			foreach (IItemProperties stamp in Map.SelectedItems)
 			{
 				double centerY = stamp.Y;
 				double top = stamp.GetTop();

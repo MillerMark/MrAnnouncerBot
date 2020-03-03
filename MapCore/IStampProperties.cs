@@ -9,8 +9,6 @@ namespace MapCore
 
 		bool Collectible { get; set; }
 
-		bool Locked { get; set; }
-
 		bool Hideable { get; set; }
 
 		double MinStrengthToMove { get; set; }
@@ -27,10 +25,6 @@ namespace MapCore
 		double Value { get; set; }
 
 		string TypeName { get; set; }
-		IStampProperties Copy(double deltaX, double deltaY);
-
-		double GetBottom();
-		double GetRight();
 
 		void ResetImage();
 		double Contrast { get; set; }
@@ -44,9 +38,6 @@ namespace MapCore
 	
 		double ScaleX { get; }
 		double ScaleY { get; }
-		bool HasNoZOrder();
-		void Move(double deltaX, double deltaY);
-		void ResetZOrder();
 		void RotateLeft();
 		void RotateRight();
 		void SwapXY();

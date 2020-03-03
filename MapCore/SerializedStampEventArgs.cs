@@ -6,7 +6,7 @@ namespace MapCore
 	public class SerializedStampEventArgs : EventArgs
 	{
 		public SerializedStamp Stamp { get; set; }
-		public IStampProperties Properties { get; set; }
+		public IItemProperties Properties { get; set; }
 		public SerializedStampEventArgs()
 		{
 

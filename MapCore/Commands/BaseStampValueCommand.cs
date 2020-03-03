@@ -11,15 +11,15 @@ namespace MapCore
 		public T RedoValue { get; set; }
 		public string PropertyName { get; set; }
 
-		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map)
 		{
-			base.PrepareForExecution(map, selectedStamps);
+			base.PrepareForExecution(map);
 			if (!(Data is ChangeData<T> textChangeData))
 				return;
 			PropertyName = textChangeData.PropertyName;
 		}
 
-		protected void SaveValue(IStampProperties stampProperties, T value)
+		protected void SaveValue(IItemProperties stampProperties, T value)
 		{
 			if (undoValues.ContainsKey(stampProperties.Guid))
 				undoValues[stampProperties.Guid] = value;
@@ -27,7 +27,7 @@ namespace MapCore
 				undoValues.Add(stampProperties.Guid, value);
 		}
 
-		protected T GetSavedValue(IStampProperties stampProperties)
+		protected T GetSavedValue(IItemProperties stampProperties)
 		{
 			if (!undoValues.ContainsKey(stampProperties.Guid))
 			{

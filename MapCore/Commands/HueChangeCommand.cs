@@ -12,23 +12,25 @@ namespace MapCore
 
 		}
 
-		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map)
 		{
-			base.PrepareForExecution(map, selectedStamps);
-			foreach (IStampProperties stampProperties in selectedStamps)
-				SaveValue(stampProperties, stampProperties.HueShift);
+			base.PrepareForExecution(map);
+			foreach (IStampProperties stampProperties in SelectedStamps)
+					SaveValue(stampProperties, stampProperties.HueShift);
 		}
 
 		protected override void ActivateRedo(Map map)
 		{
-			foreach (IStampProperties stampProperties in SelectedStamps)
-				stampProperties.HueShift = RedoValue;
+			foreach (IItemProperties itemProperties in SelectedItems)
+				if (itemProperties is IStampProperties stampProperties)
+					stampProperties.HueShift = RedoValue;
 		}
 
 		protected override void ActivateUndo(Map map)
 		{
-			foreach (IStampProperties stampProperties in SelectedStamps)
-				stampProperties.HueShift = GetSavedValue(stampProperties);
+			foreach (IItemProperties itemProperties in SelectedItems)
+				if (itemProperties is IStampProperties stampProperties)
+					stampProperties.HueShift = GetSavedValue(stampProperties);
 		}
 	}
 }

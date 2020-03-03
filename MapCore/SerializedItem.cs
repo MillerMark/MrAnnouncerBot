@@ -10,7 +10,7 @@ namespace MapCore
 		public delegate void SerializedStampEventHandler(object sender, SerializedStampEventArgs ea);
 		public static event SerializedStampEventHandler PrepareStampForSerialization;
 
-		static void OnPrepareStampForSerialization(SerializedStamp stamp, IStampProperties properties)
+		static void OnPrepareStampForSerialization(SerializedStamp stamp, IItemProperties properties)
 		{
 			serializedStampEventArgs.Stamp = stamp;
 			serializedStampEventArgs.Properties = properties;
@@ -41,12 +41,19 @@ namespace MapCore
 			Children.Add(serializedStamp);
 		}
 
-		public static SerializedStamp From(IStampProperties stampProperties)
+		public static SerializedStamp From(IItemProperties item)
 		{
 			SerializedStamp result = new SerializedStamp();
-			result.TransferProperties(stampProperties);
-			OnPrepareStampForSerialization(result, stampProperties);
+			result.TransferProperties(item);
+			OnPrepareStampForSerialization(result, item);
 			return result;
+		}
+
+		public override IItemProperties Copy(double deltaX, double deltaY)
+		{
+			// Do nothing. Serialized items are never copied. Only live instances are copied.
+			// Note: This may be a smell that the architecture is wrong.
+			throw new NotSupportedException("Serialized items should never be copied.");
 		}
 	}
 }

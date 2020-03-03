@@ -6,10 +6,10 @@ namespace MapCore
 {
 	public class CreateGroupEventArgs : EventArgs
 	{
-		public List<IStampProperties> Stamps { get; set; }
-		public IStampGroup Group { get; set; }
+		public List<IItemProperties> Stamps { get; set; }
+		public IItemGroup Group { get; set; }
 
-		public CreateGroupEventArgs(List<IStampProperties> stamps)
+		public CreateGroupEventArgs(List<IItemProperties> stamps)
 		{
 			Stamps = stamps;
 		}

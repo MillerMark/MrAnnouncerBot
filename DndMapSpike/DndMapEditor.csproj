@@ -71,11 +71,11 @@
     <Compile Include="IHasDependentProperty.cs" />
     <Compile Include="IFloatingItem.cs" />
     <Compile Include="IPropertyEditor.cs" />
-    <Compile Include="ItemFactory.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapCharacter.cs" />
     <Compile Include="MapEditModes.cs" />
+    <Compile Include="MapElementFactory.cs" />
     <Compile Include="MapSelection.cs" />
     <Compile Include="OpenClosedStatus.cs" />
     <Compile Include="PropertyEditorStatus.cs" />

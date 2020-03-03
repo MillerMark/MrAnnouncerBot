@@ -23,10 +23,10 @@ namespace MapCore
 			}
 		}
 
-		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map)
 		{
-			base.PrepareForExecution(map, selectedStamps);
-			foreach (IStampProperties stampProperties in selectedStamps)
+			base.PrepareForExecution(map);
+			foreach (IItemProperties stampProperties in SelectedItems)
 				switch (Alignment)
 				{
 					case StampAlignment.Left:
@@ -42,14 +42,13 @@ namespace MapCore
 						SaveValue(stampProperties, stampProperties.Y);
 						break;
 				}
-			
 		}
 
 		void DistributeHorizontally()
 		{
 			double stampX = RedoValue;
-			List<IStampProperties> sortedStamps = SelectedStamps.OrderBy(s => s.X).ToList();
-			foreach (IStampProperties stamp in sortedStamps)
+			List<IItemProperties> sortedStamps = SelectedItems.OrderBy(s => s.X).ToList();
+			foreach (IItemProperties stamp in sortedStamps)
 			{
 				stamp.X = stampX;
 				stampX += SpaceBetween;
@@ -59,8 +58,8 @@ namespace MapCore
 		void DistributeVertically()
 		{
 			double stampY = RedoValue;
-			List<IStampProperties> sortedStamps = SelectedStamps.OrderBy(s => s.Y).ToList();
-			foreach (IStampProperties stamp in sortedStamps)
+			List<IItemProperties> sortedStamps = SelectedItems.OrderBy(s => s.Y).ToList();
+			foreach (IItemProperties stamp in sortedStamps)
 			{
 				stamp.Y = stampY;
 				stampY += SpaceBetween;
@@ -79,7 +78,7 @@ namespace MapCore
 				DistributeVertically();
 				return;
 			}
-			foreach (IStampProperties stamp in SelectedStamps)
+			foreach (IItemProperties stamp in SelectedItems)
 				switch (Alignment)
 				{
 					case StampAlignment.Left:
@@ -100,7 +99,7 @@ namespace MapCore
 
 		protected override void ActivateUndo(Map map)
 		{
-			foreach (IStampProperties stampProperties in SelectedStamps)
+			foreach (IItemProperties stampProperties in SelectedItems)
 				switch (Alignment)
 				{
 					case StampAlignment.Left:

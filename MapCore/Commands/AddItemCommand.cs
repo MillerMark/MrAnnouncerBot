@@ -13,9 +13,9 @@ namespace MapCore
 
 		}
 
-		protected override void PrepareForExecution(Map map, List<IStampProperties> selectedStamps)
+		protected override void PrepareForExecution(Map map)
 		{
-			base.PrepareForExecution(map, selectedStamps);
+			base.PrepareForExecution(map);
 			if (Data is ItemPropertiesData stampData)
 			{
 				stampGuid = stampData.ItemProperties.Guid;
@@ -33,7 +33,7 @@ namespace MapCore
 
 		protected override void ActivateUndo(Map map)
 		{
-			IStampProperties stampFromGuid = map.GetStampFromGuid(stampGuid);
+			IItemProperties stampFromGuid = map.GetStampFromGuid(stampGuid);
 			if (stampFromGuid != null)
 			{
 				map.RemoveItem(stampFromGuid);

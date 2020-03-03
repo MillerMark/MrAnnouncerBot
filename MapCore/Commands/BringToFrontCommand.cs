@@ -8,10 +8,10 @@ namespace MapCore
 
 		protected override void ActivateRedo(Map map)
 		{
-			map.RemoveAllStamps(SelectedStamps);
+			map.RemoveAllStamps(SelectedItems);
 			map.SortStampsByZOrder();
 			map.NormalizeZOrder();
-			map.AddStamps(SelectedStamps);
+			map.AddStamps(SelectedItems);
 		}
 
 		public BringToFrontCommand()

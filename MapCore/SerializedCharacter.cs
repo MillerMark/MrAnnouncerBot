@@ -25,5 +25,12 @@ namespace MapCore
 			result.TransferProperties(itemProperties);
 			return result;
 		}
+
+		public override IItemProperties Copy(double deltaX, double deltaY)
+		{
+			// Do nothing. Serialized items are never copied. Only live instances are copied.
+			// Note: This may be a smell that the architecture is wrong.
+			throw new NotSupportedException("Serialized items should never be copied.");
+		}
 	}
 }

@@ -95,7 +95,7 @@ namespace DndMapSpike
 			return ImageUtils.HasPixelAt(Image, (int)(x - left), (int)(y - top));
 		}
 
-		public override IStampProperties Copy(double deltaX, double deltaY)
+		public override IItemProperties Copy(double deltaX, double deltaY)
 		{
 			Stamp result = Clone(this);
 			result.Move(deltaX, deltaY);
@@ -203,6 +203,11 @@ namespace DndMapSpike
 			Stamp stamp = new Stamp();
 			stamp.TransferFrom(serializedStamp);
 			return stamp;
+		}
+
+		public static implicit operator Stamp(MapCharacter v)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

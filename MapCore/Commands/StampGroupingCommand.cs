@@ -14,23 +14,23 @@ namespace MapCore
 		void GroupSelection(Map map)
 		{
 			// ![](AD557BE1AE706B2524FC0A86843645DC.png) CodeBase Alpha!!!
-			List<IStampProperties> stampsToGroup = new List<IStampProperties>();
-			stampsToGroup.AddRange(SelectedStamps);
-			map.RemoveAllStamps(SelectedStamps);
-			IStampGroup stampGroup = map.CreateGroup(stampsToGroup);
+			List<IItemProperties> stampsToGroup = new List<IItemProperties>();
+			stampsToGroup.AddRange(SelectedItems);
+			map.RemoveAllStamps(SelectedItems);
+			IItemGroup stampGroup = map.CreateGroup(stampsToGroup);
 			map.AddItem(stampGroup);
 			map.SortStampsByZOrder();
 			map.NormalizeZOrder();
 			ClearSelectedStamps(map);
-			AddSelectedStamp(map, stampGroup);
+			AddSelectedItem(map, stampGroup);
 		}
 
 		void UngroupSelection(Map map)
 		{
 			List<UngroupedStamps> ungroupedStamps = new List<UngroupedStamps>();
-			foreach (IStampProperties stamp in SelectedStamps)
+			foreach (IItemProperties stamp in SelectedItems)
 			{
-				if (stamp is IStampGroup stampGroup)
+				if (stamp is IItemGroup stampGroup)
 				{
 					UngroupedStamps ungroupedStampsThisGroup = new UngroupedStamps(stampGroup);
 					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;
@@ -44,10 +44,10 @@ namespace MapCore
 
 			foreach (UngroupedStamps ungroup in sortedUngroups)
 			{
-				RemoveSelectedStamp(map, ungroup.StampGroup);
-				foreach (IStampProperties stamp in ungroup.Stamps)
+				RemoveSelectedItem(map, ungroup.StampGroup);
+				foreach (IItemProperties stamp in ungroup.Stamps)
 				{
-					AddSelectedStamp(map, stamp);
+					AddSelectedItem(map, stamp);
 
 					map.AddItem(stamp);
 				}
