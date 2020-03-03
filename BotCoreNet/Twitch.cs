@@ -30,6 +30,11 @@ namespace BotCore
 			UnhookEvents();
 			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
 			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
+			if (Client.IsConnected)
+			{
+				System.Diagnostics.Debugger.Break();
+				Client.Disconnect();
+			}
 			Client.Initialize(connectionCredentials, STR_ChannelName);
 			Client.Connect();
 			//Client.JoinRoom(STR_ChannelName, "#botcontrol");

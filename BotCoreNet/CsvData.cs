@@ -13,8 +13,8 @@ namespace BotCore
 			List<T> result = new List<T>();
 			try
 			{
-				var textReader = File.OpenText(dataFileName);
-
+				StreamReader textReader = File.OpenText(dataFileName);
+				
 				using (var csvReader = new CsvReader(textReader))
 					result = csvReader.GetRecords<T>().ToList();
 			}
