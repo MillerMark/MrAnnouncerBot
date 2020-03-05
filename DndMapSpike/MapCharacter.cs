@@ -11,6 +11,11 @@ namespace DndMapSpike
 {
 	public class MapCharacter : BaseItemProperties, IFloatingItem
 	{
+		protected override void Deserialize(SerializedStamp serializedStamp)
+		{
+			base.Deserialize(serializedStamp);
+		}
+
 		public override double Width
 		{
 			get
@@ -38,6 +43,7 @@ namespace DndMapSpike
 		public MapCharacter()
 		{
 			Guid = Guid.NewGuid();
+			TypeName = nameof(MapCharacter);
 		}
 
 		public override bool ContainsPoint(double x, double y)
@@ -81,7 +87,7 @@ namespace DndMapSpike
 			return mapCharacter;
 		}
 
-		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
+		public virtual void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
 			Image image = new Image();
 			image.Source = new BitmapImage(new Uri(FileName));
@@ -97,22 +103,17 @@ namespace DndMapSpike
 			Canvas.SetTop(image, top);
 		}
 
-		public void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
+		public virtual void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
 		{
 			if (!Visible)
 				return;
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
-		public void CloneFrom(IItemProperties item)
-		{
-			TransferProperties(item);
-		}
-
 		static MapCharacter Clone(MapCharacter character)
 		{
 			MapCharacter result = new MapCharacter(character.FileName, character.X, character.Y);
-			result.CloneFrom(character);
+			result.TransferProperties(character, false);
 			return result;
 		}
 
@@ -122,8 +123,14 @@ namespace DndMapSpike
 			result.Move(deltaX, deltaY);
 			return result;
 		}
+		public static IItemProperties From(SerializedStamp stamp)
+		{
+			MapCharacter mapCharacter = new MapCharacter();
+			mapCharacter.TransferProperties(stamp);
+			return mapCharacter;
+		}
 
-		public MapCharacter(string fileName)
+		public MapCharacter(string fileName) : this()
 		{
 			FileName = fileName;
 		}
@@ -131,7 +138,7 @@ namespace DndMapSpike
 		Image image;
 
 		[JsonIgnore]
-		public Image Image
+		public virtual Image Image
 		{
 			get
 			{

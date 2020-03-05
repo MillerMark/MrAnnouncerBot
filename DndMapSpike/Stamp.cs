@@ -194,20 +194,15 @@ namespace DndMapSpike
 		{
 			return Y - Height / 2.0;
 		}
-		protected override void TransferFrom(SerializedStamp serializedStamp)
+		protected override void Deserialize(SerializedStamp serializedStamp)
 		{
-			base.TransferFrom(serializedStamp);
+			base.Deserialize(serializedStamp);
 		}
 		public static Stamp From(SerializedStamp serializedStamp)
 		{
 			Stamp stamp = new Stamp();
-			stamp.TransferFrom(serializedStamp);
+			stamp.Deserialize(serializedStamp);
 			return stamp;
-		}
-
-		public static implicit operator Stamp(MapCharacter v)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

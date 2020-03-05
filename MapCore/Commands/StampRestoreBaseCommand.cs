@@ -49,7 +49,7 @@ namespace MapCore
 			List<Guid> deserializeStoredStamps = DeserializeStoredStamps(map);
 			map.SortStampsByZOrder();
 			base.ActivateUndo(map);
-			map.SelectStampsByGuid(deserializeStoredStamps);
+			map.SelectItemsByGuid(deserializeStoredStamps);
 		}
 	}
 }

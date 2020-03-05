@@ -33,7 +33,7 @@ namespace MapCore
 
 		protected override void ActivateUndo(Map map)
 		{
-			IItemProperties stampFromGuid = map.GetStampFromGuid(stampGuid);
+			IItemProperties stampFromGuid = map.GetItemFromGuid(stampGuid);
 			if (stampFromGuid != null)
 			{
 				map.RemoveItem(stampFromGuid);

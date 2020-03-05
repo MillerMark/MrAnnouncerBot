@@ -7,6 +7,7 @@ namespace MapCore
 	{
 		IItemProperties Copy(double deltaX, double deltaY);
 		Guid Guid { get; set; }
+		string TypeName { get; set; }
 		string FileName { get; set; }
 		int ZOrder { get; set; }
 		double X { get; set; }

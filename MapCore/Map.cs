@@ -36,15 +36,15 @@ namespace MapCore
 		public delegate void CreateGroupEventHandler(object sender, CreateGroupEventArgs ea);
 		public event CreateGroupEventHandler CreatingGroup;
 
-		public IItemGroup CreateGroup(List<IItemProperties> stampsToGroup)
+		public IGroup CreateGroup(List<IItemProperties> stampsToGroup)
 		{
 			CreateGroupEventArgs ea = new CreateGroupEventArgs(stampsToGroup);
 			CreatingGroup?.Invoke(this, ea);
 			return ea.Group;
 		}
 
-		public delegate void SelectStampsEventHandler(object sender, SelectStampsEventArgs ea);
-		public event SelectStampsEventHandler SelectingStamps;
+		public delegate void SelectStampsEventHandler(object sender, SelectItemsEventArgs ea);
+		public event SelectStampsEventHandler SelectingItems;
 
 		public delegate void ReconstituteStampsEventHandler(object sender, ReconstituteStampsEventArgs ea);
 		public event ReconstituteStampsEventHandler ReconstitutingStamps;
@@ -1019,22 +1019,22 @@ namespace MapCore
 				Stamps[i].ZOrder = i + zOrderOffset;
 		}
 
-		public List<IItemProperties> GetStamps(List<Guid> stampGuids)
+		public List<IItemProperties> GetItems(List<Guid> itemGuids)
 		{
 			List<IItemProperties> result = new List<IItemProperties>();
 
-			foreach (Guid guid in stampGuids)
+			foreach (Guid guid in itemGuids)
 			{
-				IItemProperties foundStamp = GetStampFromGuid(guid);
-				if (foundStamp != null)
-					result.Add(foundStamp);
+				IItemProperties foundItem = GetItemFromGuid(guid);
+				if (foundItem != null)
+					result.Add(foundItem);
 			}
 			return result;
 		}
 
-		public void SelectStampsByGuid(List<Guid> stampGuids)
+		public void SelectItemsByGuid(List<Guid> stampGuids)
 		{
-			SelectingStamps?.Invoke(this, new SelectStampsEventArgs(stampGuids));
+			SelectingItems?.Invoke(this, new SelectItemsEventArgs(stampGuids));
 		}
 
 		public void SelectItemsByGuid(Guid stampGuid)
@@ -1042,7 +1042,7 @@ namespace MapCore
 			List<Guid> guids = new List<Guid>();
 			if (stampGuid != null)
 				guids.Add(stampGuid);
-			SelectStampsByGuid(guids);
+			SelectItemsByGuid(guids);
 		}
 
 		public IStampProperties GetStampFromGuid(Guid guid)
@@ -1050,14 +1050,14 @@ namespace MapCore
 			return Stamps.FirstOrDefault(x => x.Guid == guid) as IStampProperties;
 		}
 
-		public IItemProperties GetCharacterFromGuid(Guid guid)
+		public IItemProperties GetItemFromGuid(Guid guid)
 		{
 			return Stamps.FirstOrDefault(x => x.Guid == guid); ;
 		}
 
 		public void ClearStampSelection()
 		{
-			SelectStampsByGuid(null);
+			SelectItemsByGuid(null);
 		}
 
 		public bool SelectionHasAtLeast<T>(int minCount)

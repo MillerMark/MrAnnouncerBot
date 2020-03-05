@@ -10,6 +10,8 @@ namespace MapCore
 
 		}
 
+		public string TypeName { get; set; }
+
 		public abstract IItemProperties Copy(double deltaX, double deltaY);
 
 
@@ -35,9 +37,10 @@ namespace MapCore
 			return ZOrder == -1;
 		}
 
-		public virtual void TransferProperties(IItemProperties itemProperties)
+		public virtual void TransferProperties(IItemProperties itemProperties, bool transferGuid = true)
 		{
-			Guid = itemProperties.Guid;
+			if (transferGuid)
+				Guid = itemProperties.Guid;
 			X = itemProperties.X;
 			Y = itemProperties.Y;
 			ZOrder = itemProperties.ZOrder;
@@ -45,6 +48,7 @@ namespace MapCore
 			FileName = itemProperties.FileName;
 			Height = itemProperties.Height;
 			Width = itemProperties.Width;
+			TypeName = itemProperties.TypeName;
 		}
 
 		public bool Visible { get; set; } = true;
@@ -85,5 +89,17 @@ namespace MapCore
 
 		public int ZOrder { get; set; } = -1;
 
+		protected virtual void Deserialize(SerializedStamp serializedStamp)
+		{
+			TypeName = serializedStamp.TypeName;
+			Guid = serializedStamp.Guid;
+			Visible = serializedStamp.Visible;
+			X = serializedStamp.X;
+			Y = serializedStamp.Y;
+			ZOrder = serializedStamp.ZOrder;
+			Height = serializedStamp.Height;
+			Width = serializedStamp.Width;
+			FileName = serializedStamp.FileName;
+		}
 	}
 }

@@ -12,9 +12,9 @@ namespace MapCore
 
 		}
 
-		public override void TransferProperties(IItemProperties itemProperties)
+		public override void TransferProperties(IItemProperties itemProperties, bool transferGuid = true)
 		{
-			base.TransferProperties(itemProperties);
+			base.TransferProperties(itemProperties, transferGuid);
 			Height = itemProperties.Height;
 			Width = itemProperties.Width;
 		}

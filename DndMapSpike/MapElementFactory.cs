@@ -13,6 +13,12 @@ namespace DndMapSpike
 			// TODO: Also be able to reconstruct Characters and CharacterGroups
 			if (stamp.TypeName == "StampGroup")
 				return StampGroup.From(stamp);
+
+			if (stamp.TypeName == "MapCharacterGroup")
+				return MapCharacterGroup.From(stamp);
+
+			if (stamp.TypeName == "MapCharacter")
+				return MapCharacter.From(stamp);
 			return Stamp.From(stamp);
 		}
 	}

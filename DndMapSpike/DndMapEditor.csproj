@@ -68,12 +68,15 @@
     <Compile Include="EnumEditor.cs" />
     <Compile Include="EvenOddTexture.cs" />
     <Compile Include="FourPartTexture.cs" />
+    <Compile Include="GroupHelper.cs" />
     <Compile Include="IHasDependentProperty.cs" />
     <Compile Include="IFloatingItem.cs" />
     <Compile Include="IPropertyEditor.cs" />
+    <Compile Include="Known.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapCharacter.cs" />
+    <Compile Include="MapCharacterGroup.cs" />
     <Compile Include="MapEditModes.cs" />
     <Compile Include="MapElementFactory.cs" />
     <Compile Include="MapSelection.cs" />

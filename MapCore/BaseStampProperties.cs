@@ -37,8 +37,6 @@ namespace MapCore
 		[EditableProperty(2)]
 		public double Value { get; set; } = 1; // GP
 
-		public string TypeName { get; set; }
-
 		public virtual bool FlipHorizontally { get; set; }
 		public virtual bool FlipVertically { get; set; }
 		public virtual StampRotation Rotation { get; set; }
@@ -102,20 +100,12 @@ namespace MapCore
 			Weight = stampProperties.Weight;
 			Value = stampProperties.Value;
 		}
-		protected virtual void TransferFrom(SerializedStamp serializedStamp)
+		protected override void Deserialize(SerializedStamp serializedStamp)
 		{
-			TypeName = serializedStamp.TypeName;
-			Guid = serializedStamp.Guid;
-			Visible = serializedStamp.Visible;
-			X = serializedStamp.X;
-			Y = serializedStamp.Y;
-			ZOrder = serializedStamp.ZOrder;
-			Height = serializedStamp.Height;
-			Width = serializedStamp.Width;
+			base.Deserialize(serializedStamp);
 			FlipHorizontally = serializedStamp.FlipHorizontally;
 			FlipVertically = serializedStamp.FlipVertically;
 			Rotation = serializedStamp.Rotation;
-			FileName = serializedStamp.FileName;
 			Scale = serializedStamp.Scale;
 			HueShift = serializedStamp.HueShift;
 			Saturation = serializedStamp.Saturation;
