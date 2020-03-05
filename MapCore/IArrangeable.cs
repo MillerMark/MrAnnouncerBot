@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
+	[Feature]
 	public interface IArrangeable
 	{
 		bool FlipHorizontally { get; set; }

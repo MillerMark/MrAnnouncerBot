@@ -1,59 +1,125 @@
 ﻿using System;
+using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
 
 namespace MapCore
 {
-	public class SerializedStamp : BaseStampProperties
+	public class SerializedItem
 	{
 		static SerializedStampEventArgs serializedStampEventArgs = new SerializedStampEventArgs();
 		public delegate void SerializedStampEventHandler(object sender, SerializedStampEventArgs ea);
-		public static event SerializedStampEventHandler PrepareStampForSerialization;
+		public static event SerializedStampEventHandler PrepareItemForSerialization;
 
-		static void OnPrepareStampForSerialization(SerializedStamp stamp, IItemProperties properties)
+		static void OnPrepareStampForSerialization(SerializedItem stamp, IItemProperties properties)
 		{
-			serializedStampEventArgs.Stamp = stamp;
+			serializedStampEventArgs.Item = stamp;
 			serializedStampEventArgs.Properties = properties;
-			PrepareStampForSerialization?.Invoke(null, serializedStampEventArgs);
+			PrepareItemForSerialization?.Invoke(null, serializedStampEventArgs);
 		}
 
-		// TODO: Consider hiding Children BUT still JSON serialize:
-		public List<SerializedStamp> Children { get; set; }
-
-		public override double Height { get; set; }
-		public override double Width { get; set; }
-
-		public override void TransferProperties(IStampProperties stampProperties)
+		public Guid Guid { get; set; }
+		public List<SerializedItem> Children { get; set; }
+		public Dictionary<string, object> Properties { get; set; }
+		public string TypeName { get; set; }
+		public SerializedItem()
 		{
-			base.TransferProperties(stampProperties);
-			Height = stampProperties.Height;
-			Width = stampProperties.Width;
+
 		}
 
-		public SerializedStamp()
+		public void GetValuesFrom(object instance)
 		{
+			Properties = new Dictionary<string, object>();
+			TypeName = instance.GetType().Name;
+			if (instance is IGuid guidable)
+				Guid = guidable.Guid;
+
+			PropertyInfo[] properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			foreach (PropertyInfo propertyInfo in properties)
+			{
+				if (!propertyInfo.CanWrite || !propertyInfo.CanRead)
+					continue;
+
+				Newtonsoft.Json.JsonIgnoreAttribute jsonIgnore = propertyInfo.GetCustomAttribute<Newtonsoft.Json.JsonIgnoreAttribute>();
+				if (jsonIgnore != null)
+					continue;
+
+				Properties.Add(propertyInfo.Name, propertyInfo.GetValue(instance));
+			}
+			// TODO: More here...
 		}
 
-		public void AddChild(SerializedStamp serializedStamp)
+		public object GetValue(string propertyName)
+		{
+			throw new NotImplementedException();
+		}
+		public void AssignPropertiesTo(object target)
+		{
+			if (target is IGuid guidable)
+				guidable.Guid = Guid;
+
+			Type targetType = target.GetType();
+
+			foreach (string key in Properties.Keys)
+			{
+				SetValue(targetType, target, key, Properties[key]);
+			}
+		}
+
+		private void SetValue(Type type, object target, string propertyName, object value)
+		{
+
+			// get the property information based on the type
+			PropertyInfo property = type.GetProperty(propertyName);
+
+			// Convert.ChangeType does not handle conversion to nullable types
+			// if the property type is nullable, we need to get the underlying type of the property
+			Type propertyType = property.PropertyType;
+			var targetType = IsNullableType(propertyType) ? Nullable.GetUnderlyingType(propertyType) : propertyType;
+
+			// special case for enums
+			if (targetType.IsEnum)
+			{
+				// we could be going from an int -> enum so specifically let
+				// the Enum object take care of this conversion
+				if (value != null)
+				{
+					value = Enum.ToObject(targetType, value);
+				}
+			}
+			else if (targetType.FullName == "System.Guid")
+			{
+				value = Guid.Parse((string)value);
+			}
+			else
+			{
+				// returns an System.Object with the specified System.Type and whose value is
+				// equivalent to the specified object.
+				value = Convert.ChangeType(value, targetType);
+			}
+
+			// set the value of the property
+			property.SetValue(target, value, null);
+		}
+
+		private bool IsNullableType(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
+		}
+
+
+		public static SerializedItem From(IItemProperties itemProperties)
+		{
+			SerializedItem serializedItem = new SerializedItem();
+			serializedItem.GetValuesFrom(itemProperties);
+			OnPrepareStampForSerialization(serializedItem, itemProperties);
+			return serializedItem;
+		}
+		public void AddChild(SerializedItem serializedStamp)
 		{
 			if (Children == null)
-				Children = new List<SerializedStamp>();
+				Children = new List<SerializedItem>();
 			Children.Add(serializedStamp);
-		}
-
-		public static SerializedStamp From(IItemProperties item)
-		{
-			SerializedStamp result = new SerializedStamp();
-			result.TransferProperties(item);
-			OnPrepareStampForSerialization(result, item);
-			return result;
-		}
-
-		public override IItemProperties Copy(double deltaX, double deltaY)
-		{
-			// Do nothing. Serialized items are never copied. Only live instances are copied.
-			// Note: This may be a smell that the architecture is wrong.
-			throw new NotSupportedException("Serialized items should never be copied.");
 		}
 	}
 }

@@ -11,10 +11,12 @@ namespace DndMapSpike
 {
 	public class MapCharacter : BaseItemProperties, IFloatingItem
 	{
-		protected override void Deserialize(SerializedStamp serializedStamp)
-		{
-			base.Deserialize(serializedStamp);
-		}
+		
+
+		//void TransferFrom(SerializedCharacter character)
+		//{
+		//	base.GetPropertiesFrom(character);
+		//}
 
 		public override double Width
 		{
@@ -70,23 +72,6 @@ namespace DndMapSpike
 			Y = y;
 		}
 
-		void TransferFrom(SerializedCharacter character)
-		{
-			X = character.X;
-			Y = character.Y;
-			Visible = character.Visible;
-			FileName = character.FileName;
-			Guid = character.Guid;
-			Height = character.Height;
-			Width = character.Width;
-		}
-		public static IItemProperties CreateCharacterFrom(SerializedCharacter character)
-		{
-			MapCharacter mapCharacter = new MapCharacter();
-			mapCharacter.TransferFrom(character);
-			return mapCharacter;
-		}
-
 		public virtual void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
 			Image image = new Image();
@@ -113,7 +98,7 @@ namespace DndMapSpike
 		static MapCharacter Clone(MapCharacter character)
 		{
 			MapCharacter result = new MapCharacter(character.FileName, character.X, character.Y);
-			result.TransferProperties(character, false);
+			result.GetPropertiesFrom(character, false);
 			return result;
 		}
 
@@ -123,10 +108,10 @@ namespace DndMapSpike
 			result.Move(deltaX, deltaY);
 			return result;
 		}
-		public static IItemProperties From(SerializedStamp stamp)
+		public static IItemProperties From(SerializedItem stamp)
 		{
 			MapCharacter mapCharacter = new MapCharacter();
-			mapCharacter.TransferProperties(stamp);
+			stamp.AssignPropertiesTo(mapCharacter);
 			return mapCharacter;
 		}
 

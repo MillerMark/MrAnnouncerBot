@@ -365,19 +365,17 @@ namespace DndMapSpike
 		{
 			return X + Width / 2;
 		}
-		public static StampGroup From(SerializedStamp stamp)
+
+		public static StampGroup From(SerializedItem stamp)
 		{
 			return GroupHelper.DeserializeGroup<StampGroup>(stamp);
-		}
-
-		void IGroup.Deserialize(SerializedStamp serializedStamp)
-		{
-			base.Deserialize(serializedStamp);
 		}
 
 		public override double Width { get; set; }
 
 		public override double Height { get; set; }
+
+		[JsonIgnore]
 		public List<IItemProperties> Children { get => children; set => children = value; }
 	}
 }

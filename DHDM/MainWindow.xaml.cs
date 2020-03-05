@@ -3140,8 +3140,21 @@ namespace DHDM
 				return;
 			if (!(checkBox.Tag is int playerID))
 				return;
-			Character player = game.GetPlayerFromId(playerID);
-			player.ShowingNameplate = checkBox.IsChecked == true;
+
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+			{
+				checkBox.IsChecked = true;
+				foreach (Character player in game.Players)
+				{
+					player.ShowingNameplate = player.playerID == playerID;
+				}
+			}
+			else
+			{
+				Character singlePlayer = game.GetPlayerFromId(playerID);
+				singlePlayer.ShowingNameplate = checkBox.IsChecked == true;
+			}
+
 			SendPlayerData();
 		}
 

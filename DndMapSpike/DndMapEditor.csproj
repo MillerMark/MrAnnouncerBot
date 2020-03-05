@@ -72,7 +72,6 @@
     <Compile Include="IHasDependentProperty.cs" />
     <Compile Include="IFloatingItem.cs" />
     <Compile Include="IPropertyEditor.cs" />
-    <Compile Include="Known.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="Layers.cs" />
     <Compile Include="MapCharacter.cs" />

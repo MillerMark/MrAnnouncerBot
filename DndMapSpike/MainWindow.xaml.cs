@@ -82,7 +82,7 @@ namespace DndMapSpike
 		public Map Map { get; set; }
 		public MainWindow()
 		{
-			SerializedStamp.PrepareStampForSerialization += PrepareStampForSerialization;
+			SerializedItem.PrepareItemForSerialization += PrepareItemForSerialization;
 			hueShiftUpdateTimer = new Timer(125);
 			hueShiftUpdateTimer.Elapsed += HueShiftUpdateTimer_Elapsed;
 			saturationUpdateTimer = new Timer(125);
@@ -121,6 +121,7 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
 			//ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
 			ImportDonJonMap("SmallMap.txt");
+			//ImportDonJonMap("The Lost Cyst of Annihilation.txt");
 			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();
@@ -132,7 +133,7 @@ namespace DndMapSpike
 		private void HookupMapEvents()
 		{
 			Map.WallsChanged += Map_WallsChanged;
-			Map.ReconstitutingStamps += ReconstituteStamps;
+			Map.ReconstitutingItems += ReconstituteItems;
 			Map.SelectingItems += Map_SelectingItems;
 			Map.CreatingGroup += Map_CreatingGroup;
 		}
@@ -163,30 +164,21 @@ namespace DndMapSpike
 			UpdateItemSelectionUI();
 		}
 
-		private void ReconstituteStamps(object sender, ReconstituteStampsEventArgs ea)
+		private void ReconstituteItems(object sender, ReconstituteItemsEventArgs ea)
 		{
-			ReconstituteStamp(ea.SerializedStamp, ea.Stamps);
+			ea.Items.Add(MapElementFactory.CreateItemFrom(ea.SerializedItem));
 		}
 
-		private static void ReconstituteStamp(SerializedStamp serializedStamp, List<IItemProperties> stamps)
+		private void PrepareItemForSerialization(object sender, SerializedStampEventArgs ea)
 		{
-			stamps.Add(MapElementFactory.CreateStampFrom(serializedStamp));
-		}
+			if (!(ea.Properties is IGroup group))
+				return;
 
-		private void PrepareStampForSerialization(object sender, SerializedStampEventArgs ea)
-		{
-			PrepareStampForSerialization(ea.Properties, ea.Stamp);
-		}
-
-		private static void PrepareStampForSerialization(IItemProperties stampInstance, SerializedStamp stamp)
-		{
-			//if (stamp.TypeName == "StampGroup" && stampInstance is StampGroup stampGroup)
-			if (stampInstance is IGroup group)
-				foreach (IItemProperties childStamp in group.Children)
-				{
-					SerializedStamp serializedStamp = SerializedStamp.From(childStamp);
-					stamp.AddChild(serializedStamp);
-				}
+			foreach (IItemProperties childStamp in group.Children)
+			{
+				SerializedItem serializedStamp = SerializedItem.From(childStamp);
+				ea.Item.AddChild(serializedStamp);
+			}
 		}
 
 		private void ZoomAndPanControl_ZoomLevelChanged(object sender, EventArgs e)
@@ -1750,9 +1742,9 @@ namespace DndMapSpike
 				btnScale.Visibility = Visibility.Hidden;
 		}
 
-		bool HasAtLeastOneGroupSelected()
+		bool HasAtLeastOneUnlockedGroupSelected()
 		{
-			return Map.SelectedItems.Any(x => x is IGroup);
+			return Map.SelectedItems.Any(x => x is IGroup group && !group.Locked);
 		}
 
 		Dictionary<ContentControl, PropertyEditorStatus> propEdStatus = new Dictionary<ContentControl, PropertyEditorStatus>();
@@ -2031,7 +2023,7 @@ namespace DndMapSpike
 			}
 
 			bool hasMoreThanOneSelected = Map.SelectionHasAtLeast<IItemProperties>(2);
-			bool hasAtLeastOneGroupSelected = HasAtLeastOneGroupSelected();
+			bool hasAtLeastOneGroupSelected = HasAtLeastOneUnlockedGroupSelected();
 			double secondRow = bottomRow + buttonSize + rowColumnSpacer;
 			double groupUngroupLeft = right;
 			if (hasMoreThanOneSelected && selectionContents != SelectionContents.Mix)
@@ -2220,12 +2212,8 @@ namespace DndMapSpike
 		void AddAllInterfaces(List<Type> consistentInterfaces, IItemProperties item)
 		{
 			foreach (Type type in Known.Interfaces)
-			{
 				if (type.IsAssignableFrom(item.GetType()))
-				{
 					consistentInterfaces.Add(type);
-				}
-			}
 		}
 
 		void RemoveMissingInterfaces(List<Type> consistentInterfaces, IItemProperties item)

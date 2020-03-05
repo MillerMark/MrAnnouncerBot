@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
+	[Feature]
 	public interface IScalable
 	{
 		double Scale { get; set; }

@@ -3,10 +3,9 @@ using System.Linq;
 
 namespace MapCore
 {
-	public interface IItemProperties
+	public interface IItemProperties: IGuid
 	{
 		IItemProperties Copy(double deltaX, double deltaY);
-		Guid Guid { get; set; }
 		string TypeName { get; set; }
 		string FileName { get; set; }
 		int ZOrder { get; set; }

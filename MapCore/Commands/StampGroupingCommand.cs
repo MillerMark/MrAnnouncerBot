@@ -30,7 +30,7 @@ namespace MapCore
 			List<UngroupedStamps> ungroupedStamps = new List<UngroupedStamps>();
 			foreach (IItemProperties stamp in SelectedItems)
 			{
-				if (stamp is IGroup stampGroup)
+				if (stamp is IGroup stampGroup && !stampGroup.Locked)
 				{
 					UngroupedStamps ungroupedStampsThisGroup = new UngroupedStamps(stampGroup);
 					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;

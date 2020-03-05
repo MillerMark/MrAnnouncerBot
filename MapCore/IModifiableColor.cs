@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
+	[Feature]
 	public interface IModifiableColor
 	{
 		double Contrast { get; set; }

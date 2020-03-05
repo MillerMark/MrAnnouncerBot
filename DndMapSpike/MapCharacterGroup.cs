@@ -56,16 +56,12 @@ namespace DndMapSpike
 			return GroupHelper.ContainsPoint(this, x, y);
 		}
 
+		[JsonIgnore]
 		public List<IItemProperties> Children { get => children; set => children = value; }
 
-		public static new MapCharacterGroup From(SerializedStamp stamp)
+		public static new MapCharacterGroup From(SerializedItem stamp)
 		{
 			return GroupHelper.DeserializeGroup<MapCharacterGroup>(stamp);
-		}
-
-		void IGroup.Deserialize(SerializedStamp serializedStamp)
-		{
-			base.Deserialize(serializedStamp);
 		}
 
 		public void Ungroup(List<IItemProperties> ungroupedStamps)

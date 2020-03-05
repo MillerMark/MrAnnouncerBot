@@ -32,13 +32,13 @@ namespace DndMapSpike
 			Point relativeTestPoint = new Point(x - stampGroup.X, y - stampGroup.Y);
 			return stampGroup.Children.Any(s => s.ContainsPoint(relativeTestPoint.X, relativeTestPoint.Y));
 		}
-		public static TGroup DeserializeGroup<TGroup>(SerializedStamp stamp) where TGroup : IGroup, new()
+		public static TGroup DeserializeGroup<TGroup>(SerializedItem stamp) where TGroup : IGroup, new()
 		{
 			TGroup result = new TGroup();
-			result.Deserialize(stamp);
+			stamp.AssignPropertiesTo(result);
 			if (stamp.Children != null)
-				foreach (SerializedStamp childStamp in stamp.Children)
-					result.Children.Add(MapElementFactory.CreateStampFrom(childStamp));
+				foreach (SerializedItem childStamp in stamp.Children)
+					result.Children.Add(MapElementFactory.CreateItemFrom(childStamp));
 			return result;
 		}
 

@@ -5,6 +5,7 @@ namespace MapCore
 {
 	public abstract class BaseItemProperties: IItemProperties
 	{
+		//! Very important: Any new serialized properties need to be set in the Deserialize & TransferProperties procs.
 		static BaseItemProperties()
 		{
 
@@ -35,20 +36,6 @@ namespace MapCore
 		public bool HasNoZOrder()
 		{
 			return ZOrder == -1;
-		}
-
-		public virtual void TransferProperties(IItemProperties itemProperties, bool transferGuid = true)
-		{
-			if (transferGuid)
-				Guid = itemProperties.Guid;
-			X = itemProperties.X;
-			Y = itemProperties.Y;
-			ZOrder = itemProperties.ZOrder;
-			Visible = itemProperties.Visible;
-			FileName = itemProperties.FileName;
-			Height = itemProperties.Height;
-			Width = itemProperties.Width;
-			TypeName = itemProperties.TypeName;
 		}
 
 		public bool Visible { get; set; } = true;
@@ -89,17 +76,19 @@ namespace MapCore
 
 		public int ZOrder { get; set; } = -1;
 
-		protected virtual void Deserialize(SerializedStamp serializedStamp)
+		public virtual void GetPropertiesFrom(IItemProperties itemProperties, bool transferGuid = true)
 		{
-			TypeName = serializedStamp.TypeName;
-			Guid = serializedStamp.Guid;
-			Visible = serializedStamp.Visible;
-			X = serializedStamp.X;
-			Y = serializedStamp.Y;
-			ZOrder = serializedStamp.ZOrder;
-			Height = serializedStamp.Height;
-			Width = serializedStamp.Width;
-			FileName = serializedStamp.FileName;
+			if (transferGuid)
+				Guid = itemProperties.Guid;
+			X = itemProperties.X;
+			Y = itemProperties.Y;
+			Locked = itemProperties.Locked;
+			ZOrder = itemProperties.ZOrder;
+			Visible = itemProperties.Visible;
+			FileName = itemProperties.FileName;
+			Height = itemProperties.Height;
+			Width = itemProperties.Width;
+			TypeName = itemProperties.TypeName;
 		}
 	}
 }
