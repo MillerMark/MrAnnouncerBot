@@ -7,34 +7,36 @@ namespace MapCore
 	{
 		//! TODO: Make sure new properties are dealt with in the Clone method!!!
 
-		[EditableProperty]
+		[Editable]
 		public string Name { get; set; }
 
-		[EditableProperty]
+		[Editable]
 		public bool Collectible { get; set; }
 		
-		[EditableProperty]
+		[Editable]
 		public bool Hideable { get; set; }
 
-		[EditableProperty]
+		[Editable]
 		public bool Moveable { get; set; }
 
-		[EditableProperty("Min Strength to Move:", "Moveable", 0)]
+		[DisplayText("Min Strength to Move:")]
+		[DependentProperty("Moveable")]
+		[Precision(0)]
 		public double MinStrengthToMove { get; set; } = 0;
 
-		[EditableProperty]
+		[Editable]
 		public Cover Cover { get; set; }
 
-		[EditableProperty]
+		[Editable]
 		public StampAltitude Altitude { get; set; } = StampAltitude.Mid;
 
-		[EditableProperty]
+		[Editable]
 		public double Weight { get; set; }
 
 		/// <summary>
 		/// In Gold Pieces
 		/// </summary>
-		[EditableProperty(2)]
+		[Precision(2)]
 		public double Value { get; set; } = 1; // GP
 
 		public virtual bool FlipHorizontally { get; set; }
@@ -55,7 +57,7 @@ namespace MapCore
 
 		public virtual void TransferProperties(IStampProperties stamp)
 		{
-			base.GetPropertiesFrom(stamp);
+			base.GetPropertiesFrom(stamp, false);
 			Visible = stamp.Visible;
 			X = stamp.X;
 			Y = stamp.Y;

@@ -1927,9 +1927,9 @@ namespace DndMapSpike
 			PropertyValueComparer propertyValueComparer = new PropertyValueComparer();
 
 			// TODO: First collect all properties and whether they are the same or not.
-			foreach (IItemProperties stampProperties in Map.SelectedItems)
+			foreach (IItemProperties itemProperties in Map.SelectedItems)
 			{
-				propertyValueComparer.Compare(stampProperties);
+				propertyValueComparer.Compare(itemProperties);
 			}
 
 			List<UIElement> editors = new List<UIElement>();

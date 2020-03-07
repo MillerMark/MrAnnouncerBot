@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MapCore
 {
-	public class DisplayTextAttribute : Attribute
+	public class DisplayTextAttribute : DesignTimeAttribute
 	{
 
 		public DisplayTextAttribute(string displayText)

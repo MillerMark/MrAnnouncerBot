@@ -9,6 +9,42 @@ namespace DndMapSpike
 {
 	public class MapCharacterGroup : MapCharacter, IGroup
 	{
+		public override double HitPoints
+		{
+			get
+			{
+				if (!HasAnyChildren)
+					return 0;
+				return FirstChild.HitPoints;
+			}
+			set
+			{
+				if (Locked)
+					return;
+
+				foreach (MapCharacter item in children)
+				{
+					item.HitPoints = value;
+				}
+			}
+		}
+
+		private MapCharacter FirstChild
+		{
+			get
+			{
+				return (children.FirstOrDefault(x => x is MapCharacter) as MapCharacter);
+			}
+		}
+
+		private bool HasAnyChildren
+		{
+			get
+			{
+				return children.Any(x => x is MapCharacter);
+			}
+		}
+
 		public override string FileName
 		{
 			get

@@ -40,7 +40,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Contrast;
 			}
@@ -56,7 +56,7 @@ namespace DndMapSpike
 			}
 		}
 
-		private bool HasAnyStamps
+		private bool HasAnyChildren
 		{
 			get
 			{
@@ -93,7 +93,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return false;
 				return FirstStamp.FlipHorizontally;
 			}
@@ -114,7 +114,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return false;
 				return FirstStamp.FlipVertically;
 			}
@@ -135,7 +135,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.HueShift;
 			}
@@ -164,7 +164,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Lightness;
 			}
@@ -184,7 +184,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Rotation;
 			}
@@ -204,7 +204,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Saturation;
 			}
@@ -226,7 +226,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 1;
 				return FirstStamp.ScaleX;
 			}
@@ -235,7 +235,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 1;
 				return FirstStamp.ScaleY;
 			}

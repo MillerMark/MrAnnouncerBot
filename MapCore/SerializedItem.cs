@@ -7,19 +7,19 @@ namespace MapCore
 {
 	public class SerializedItem
 	{
-		static SerializedStampEventArgs serializedStampEventArgs = new SerializedStampEventArgs();
 		public delegate void SerializedStampEventHandler(object sender, SerializedStampEventArgs ea);
 		public static event SerializedStampEventHandler PrepareItemForSerialization;
 
 		static void OnPrepareStampForSerialization(SerializedItem stamp, IItemProperties properties)
 		{
+			SerializedStampEventArgs serializedStampEventArgs = new SerializedStampEventArgs();
 			serializedStampEventArgs.Item = stamp;
 			serializedStampEventArgs.Properties = properties;
 			PrepareItemForSerialization?.Invoke(null, serializedStampEventArgs);
 		}
 
 		public Guid Guid { get; set; }
-		public List<SerializedItem> Children { get; set; }
+		public List<SerializedItem> Children { get; set; } = new List<SerializedItem>();
 		public Dictionary<string, object> Properties { get; set; }
 		public string TypeName { get; set; }
 		public SerializedItem()
@@ -117,8 +117,6 @@ namespace MapCore
 		}
 		public void AddChild(SerializedItem serializedStamp)
 		{
-			if (Children == null)
-				Children = new List<SerializedItem>();
 			Children.Add(serializedStamp);
 		}
 	}

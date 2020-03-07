@@ -83,6 +83,8 @@
     <Compile Include="Commands\ZOrderCommand.cs" />
     <Compile Include="Cover.cs" />
     <Compile Include="CreateGroupEventArgs.cs" />
+    <Compile Include="DependentPropertyAttribute.cs" />
+    <Compile Include="DesignTimeAttribute.cs" />
     <Compile Include="DisplayTextAttribute.cs" />
     <Compile Include="Door.cs" />
     <Compile Include="DoorPosition.cs" />
@@ -101,8 +103,10 @@
     <Compile Include="IItemsManager.cs" />
     <Compile Include="ItemFactory.cs" />
     <Compile Include="Known.cs" />
+    <Compile Include="PrecisionAttribute.cs" />
     <Compile Include="ReconstituteCharacterEventArgs.cs" />
     <Compile Include="ReconstituteStampsEventArgs.cs" />
+    <Compile Include="ReflectionHelper.cs" />
     <Compile Include="RegionType.cs" />
     <Compile Include="SelectItemsEventArgs.cs" />
     <Compile Include="SerializedCharacter.cs" />

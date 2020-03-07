@@ -11,12 +11,12 @@ namespace DndMapSpike
 {
 	public class MapCharacter : BaseItemProperties, IFloatingItem
 	{
-		
+		[Editable]
+		public string Name { get; set; }
 
-		//void TransferFrom(SerializedCharacter character)
-		//{
-		//	base.GetPropertiesFrom(character);
-		//}
+		[DisplayText("HP:")]
+		[Precision(0)]
+		public virtual double HitPoints { get; set; }
 
 		public override double Width
 		{
@@ -93,6 +93,13 @@ namespace DndMapSpike
 			if (!Visible)
 				return;
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
+		}
+
+		public override void GetPropertiesFrom(IItemProperties itemProperties, bool transferGuid = true)
+		{
+			base.GetPropertiesFrom(itemProperties, transferGuid);
+			if (itemProperties is MapCharacter mapCharacter)
+				this.GetPropertiesFrom<MapCharacter>(mapCharacter);
 		}
 
 		static MapCharacter Clone(MapCharacter character)

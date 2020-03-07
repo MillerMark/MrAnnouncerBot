@@ -80,6 +80,7 @@
     <Compile Include="MapElementFactory.cs" />
     <Compile Include="MapSelection.cs" />
     <Compile Include="OpenClosedStatus.cs" />
+    <Compile Include="DesignTimePropertyAttributes.cs" />
     <Compile Include="PropertyEditorStatus.cs" />
     <Compile Include="PropertyType.cs" />
     <Compile Include="PropertyValueComparer.cs" />

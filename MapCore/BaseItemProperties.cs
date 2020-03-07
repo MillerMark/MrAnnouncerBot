@@ -16,7 +16,7 @@ namespace MapCore
 		public abstract IItemProperties Copy(double deltaX, double deltaY);
 
 
-		[EditableProperty]
+		[Editable]
 		public bool Locked { get; set; }
 
 		public virtual void Move(double deltaX, double deltaY)
