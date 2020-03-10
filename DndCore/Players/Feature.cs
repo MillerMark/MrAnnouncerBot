@@ -131,7 +131,7 @@ namespace DndCore
 				string alarmName = $"{player.name}.{Name}";
 				TimeSpan duration = Duration.GetTimeSpan();
 				if (player.Game != null)
-					player.Game.CreateAlarm(duration, alarmName, player, this).AlarmFired += Feature_Expired;
+					player.Game.CreateAlarm(alarmName, duration, Feature_Expired, this, player);
 				else
 					History.TimeClock.CreateAlarm(duration, alarmName, player, this).AlarmFired += Feature_Expired;
 			}

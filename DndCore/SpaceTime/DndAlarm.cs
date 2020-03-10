@@ -3,6 +3,8 @@ using System.Linq;
 
 namespace DndCore
 {
+	public delegate void DndTimeEventHandler(object sender, DndTimeEventArgs ea);
+
 	public class DndAlarm
 	{
 		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name, Character player, object data = null)
@@ -25,7 +27,6 @@ namespace DndCore
 			AlarmFired?.Invoke(this, new DndTimeEventArgs(dndTimeClock, this));
 		}
 
-		public delegate void DndTimeEventHandler(object sender, DndTimeEventArgs ea);
 		public event DndTimeEventHandler AlarmFired;
 	}
 }

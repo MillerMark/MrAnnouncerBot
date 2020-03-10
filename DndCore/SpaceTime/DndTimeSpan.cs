@@ -21,6 +21,26 @@ namespace DndCore
 			return !(left == right);
 		}
 
+		public static bool operator >(DndTimeSpan left, DndTimeSpan right)
+		{
+			return left.ToSeconds() > right.ToSeconds();
+		}
+
+		public static bool operator <(DndTimeSpan left, DndTimeSpan right)
+		{
+			return left.ToSeconds() < right.ToSeconds();
+		}
+
+		public static bool operator >=(DndTimeSpan left, DndTimeSpan right)
+		{
+			return left.ToSeconds() >= right.ToSeconds();
+		}
+
+		public static bool operator <=(DndTimeSpan left, DndTimeSpan right)
+		{
+			return left.ToSeconds() <= right.ToSeconds();
+		}
+
 		public DndTimeSpan(TimeMeasure timeMeasure, int count)
 		{
 			Count = count;
@@ -92,24 +112,29 @@ namespace DndCore
 			}
 		}
 
+		/// <summary>
+		/// Implicitly converts an instance of type DndTimeSpan to a new instance of type TimeSpan.
+		/// </summary>
+		/// <param name="obj">An instance of type DndTimeSpan to convert.</param>
+		/// <returns>Returns a new instance of type TimeSpan, derived from the specified DndTimeSpan instance.</returns>
+		public static implicit operator TimeSpan(DndTimeSpan obj)
+		{
+			return obj.GetTimeSpan();
+		}
+
 		public TimeSpan GetTimeSpan()
 		{
 			switch (TimeMeasure)
 			{
-				case TimeMeasure.round:
-					return TimeSpan.FromSeconds(6);
-				case TimeMeasure.seconds:
-					return TimeSpan.FromSeconds(Count);
-				case TimeMeasure.minutes:
-					return TimeSpan.FromMinutes(Count);
-				case TimeMeasure.hours:
-					return TimeSpan.FromHours(Count);
-				case TimeMeasure.days:
-					return TimeSpan.FromDays(Count);
 				case TimeMeasure.forever:
 					return Timeout.InfiniteTimeSpan;
+				case TimeMeasure.never:
+					return TimeSpan.MinValue;
+				case TimeMeasure.instant:
+					return TimeSpan.FromSeconds(0);
+				default:
+					return TimeSpan.FromSeconds(ToSeconds());
 			}
-			return TimeSpan.Zero;
 		}
 
 		public bool IsForever()
@@ -193,13 +218,60 @@ namespace DndCore
 
 		}
 
+		private const double DurationSeconds = 1;
+		private const double DurationInstant = 0d;
+		private const double DurationActions = DurationSeconds / 10d;
+		private const double DurationBonusActions = DurationSeconds / 100d;
+		private const double DurationReactions = DurationSeconds / 1000d;
+		private const double DurationRound = 6 * DurationSeconds;
+		private const double DurationMinutes = DurationSeconds * 60;
+		private const double DurationHours = DurationMinutes * 60;
+		private const double DurationDays = DurationHours * 24;
+		private const double DurationForever = double.MaxValue;
+		private const double DurationNever = double.MinValue;
+
+		public double ToSeconds()
+		{
+			switch (TimeMeasure)
+			{
+				case TimeMeasure.instant:
+					return DurationInstant;
+				case TimeMeasure.actions:
+					return Count * DurationActions;
+				case TimeMeasure.seconds:
+					return Count * DurationSeconds;
+				case TimeMeasure.minutes:
+					return Count * DurationMinutes;
+				case TimeMeasure.hours:
+					return Count * DurationHours;
+				case TimeMeasure.days:
+					return Count * DurationDays;
+				case TimeMeasure.forever:
+					return DurationForever;
+				case TimeMeasure.never:
+					return DurationNever;
+				case TimeMeasure.round:
+					return Count * DurationRound;
+				case TimeMeasure.bonusActions:
+					return Count * DurationBonusActions;
+				case TimeMeasure.reaction:
+					return Count * DurationReactions;
+			}
+			return 0;
+		}
+
 		public static readonly DndTimeSpan Zero = FromActions(0);
 		public static readonly DndTimeSpan OneAction = FromActions(1);
 		public static readonly DndTimeSpan OneBonusAction = new DndTimeSpan(TimeMeasure.bonusActions, 1);
 		public static readonly DndTimeSpan OneReaction = new DndTimeSpan(TimeMeasure.reaction, 1);
+
+
+		// TODO: Consider swapping initialized values for Never and Unknown (with ripple effects).
 		public static readonly DndTimeSpan Never = Zero;
-		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
 		public static readonly DndTimeSpan Unknown = FromActions(int.MinValue);
+
+
+		public static readonly DndTimeSpan Forever = FromActions(int.MaxValue);
 		public static readonly DndTimeSpan OneMinute = FromMinutes(1);
 	}
 }

@@ -469,9 +469,12 @@ namespace DndCore
 			timeClock.Advance(dndTimeSpan);
 		}
 
-		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Character player = null, object data = null)
+		public DndAlarm CreateAlarm(string name, TimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Character player = null)
 		{
-			return timeClock.CreateAlarm(fromNow, name, player, data);
+			DndAlarm dndAlarm = timeClock.CreateAlarm(fromNow, name, player, data);
+			if (alarmHandler != null)
+				dndAlarm.AlarmFired += alarmHandler;
+			return dndAlarm;
 		}
 		public int SecondsSince(DateTime startTime)
 		{
