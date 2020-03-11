@@ -250,6 +250,8 @@ class DragonBackGame extends DragonGame {
 			this.ShowWaitingForInitializationMessage(context, '#0000ff', 'Back Overlay is waiting for player data to be initialized.', 300);
 		}
 
+		this.drawSprinkles(context, now, Layer.Back);
+
 		this.drawTime(context);
 
 		//backgroundBanner.draw(myContext, 0, 0);

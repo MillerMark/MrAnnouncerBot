@@ -4676,6 +4676,16 @@ namespace DHDM
 			NextDieRollType = DiceRollType.CastSimpleSpell;
 			btnRollDice.Content = "Cast Spell";
 		}
+
+		private void BtnTestShowSprinkles_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Show Sprinkles");
+		}
+
+		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Hide Sprinkles");
+		}
 	}
 
 	// TODO: Reintegrate wand/staff animations....

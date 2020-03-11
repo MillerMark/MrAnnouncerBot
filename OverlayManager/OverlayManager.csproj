@@ -35,6 +35,7 @@
     <None Remove="TS\DragonH\SavingThrow.ts" />
     <None Remove="TS\DragonH\ScreenPosTarget.ts" />
     <None Remove="TS\DragonH\SpellBook.ts" />
+    <None Remove="TS\DragonH\Sprinkles.ts" />
     <None Remove="TS\DragonH\SpritesEffect.ts" />
     <None Remove="TS\DragonH\StatPage.ts" />
     <None Remove="TS\DragonH\TimeSpan.ts" />
@@ -127,6 +128,7 @@
     <TypeScriptCompile Include="TS\DragonH\MapGame.ts" />
     <TypeScriptCompile Include="TS\DragonH\Fred.ts" />
     <TypeScriptCompile Include="TS\DragonH\HighlightEmitter.ts" />
+    <TypeScriptCompile Include="TS\DragonH\Sprinkles.ts" />
     <TypeScriptCompile Include="TS\DragonH\SpellBook.ts" />
     <TypeScriptCompile Include="TS\DragonH\Character.ts" />
     <TypeScriptCompile Include="TS\DragonH\CurseBlessingDisease.ts" />

@@ -68,6 +68,11 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.TriggerEffect(effectData);
 		}
+
+		public void AnimateSprinkles(string commandData)
+		{
+			coderushedHub.Clients.All.AnimateSprinkles(commandData);
+		}
 		
 		public void UpdateClock(string clockData)
 		{

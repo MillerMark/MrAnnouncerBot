@@ -30,6 +30,7 @@ namespace OverlayManager.Hubs
 		Task FocusItem(int playerID, int pageID, string itemID);
 		Task UnfocusItem(int playerID, int pageID, string itemID);
 		Task TriggerEffect(string effectData);
+		Task AnimateSprinkles(string commandData);
 		Task UpdateClock(string clockData);
 		Task RollDice(string diceRollData);
 		Task ClearDice();

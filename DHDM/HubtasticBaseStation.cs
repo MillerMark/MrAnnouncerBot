@@ -127,6 +127,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("TriggerEffect", effectData);
 		}
 
+		public static void AnimateSprinkles(string commandData)
+		{
+			HubConnection.InvokeAsync("AnimateSprinkles", commandData);
+		}
+
 		public static void UpdateClock(string clockData)
 		{
 			HubConnection.InvokeAsync("UpdateClock", clockData);
