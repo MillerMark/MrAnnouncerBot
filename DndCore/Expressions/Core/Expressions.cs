@@ -46,6 +46,15 @@ namespace DndCore
 
 		public static void OnExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
 		{
+			Log($"  Exception: {ea.Ex.Message};");
+			Exception innerException = ea.Ex.InnerException;
+			string indent = "  ";
+			while (innerException != null)
+			{
+				Log($"{indent}  Inner Exception: {innerException.Message};");
+				innerException = innerException.InnerException;
+				indent += "  ";
+			}
 			ExceptionThrown?.Invoke(sender, ea);
 		}
 
@@ -69,9 +78,17 @@ namespace DndCore
 			StartEvaluation(player, $"Get({expression})", target, spell);
 			try
 			{
-				object result = expressionEvaluator.Evaluate(Clean(expression));
-				Log($"  returns {result};");
-				return result;
+				try
+				{
+					object result = expressionEvaluator.Evaluate(Clean(expression));
+					Log($"  returns {result};");
+					return result;
+				}
+				catch (Exception ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+					return null;
+				}
 			}
 			finally
 			{
@@ -146,8 +163,17 @@ namespace DndCore
 			StartEvaluation(player, $"GetInt({expression})", target, spell);
 			try
 			{
-				object result = expressionEvaluator.Evaluate(Clean(expression));
-				Log($"  returns {result};");
+				object result = 0;
+				try
+				{
+					result = expressionEvaluator.Evaluate(Clean(expression));
+					Log($"  returns {result};");
+				}
+				catch (Exception ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+					return 0;
+				}
 
 				if (result is int)
 					return (int)result;
@@ -171,8 +197,18 @@ namespace DndCore
 			StartEvaluation(player, $"GetDouble({expression})", target, spell);
 			try
 			{
-				object result = expressionEvaluator.Evaluate(Clean(expression));
-				Log($"  returns {result};");
+				object result = 0.0;
+
+				try
+				{
+					result = expressionEvaluator.Evaluate(Clean(expression));
+					Log($"  returns {result};");
+				}
+				catch (Exception ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+					return 0;
+				}
 
 				if (result is int)
 					return (int)result;
@@ -198,7 +234,18 @@ namespace DndCore
 			StartEvaluation(player, $"GetBool({expression})", target, spell);
 			try
 			{
-				object result = expressionEvaluator.Evaluate(Clean(expression));
+				object result = false;
+
+				try
+				{
+					result = expressionEvaluator.Evaluate(Clean(expression));
+				}
+				catch (Exception ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+					return false;
+				}
+
 				bool resultBool;
 				if (result is int)
 					resultBool = (int)result == 1;
@@ -227,7 +274,18 @@ namespace DndCore
 			StartEvaluation(player, $"GetStr({expression})", target, spell);
 			try
 			{
-				object result = expressionEvaluator.Evaluate(Clean(expression));
+				object result = string.Empty;
+
+				try
+				{
+					result = expressionEvaluator.Evaluate(Clean(expression));
+				}
+				catch (Exception ex)
+				{
+					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
+					return string.Empty;
+				}
+
 				string resultStr = string.Empty;
 				if (result is string)
 				{

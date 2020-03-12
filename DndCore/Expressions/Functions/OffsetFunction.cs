@@ -17,7 +17,12 @@ namespace DndCore
 			ExpectingArguments(args, 2);
 
 			string variableName = args[0];
-			double valueDouble = MathUtils.GetDouble(Expressions.Get<object>(args[1], player, target, spell).ToString());
+			object rawValue = Expressions.Get<object>(args[1], player, target, spell);
+			double valueDouble;
+			if (rawValue == null)
+				valueDouble = 0;
+			else
+				valueDouble = MathUtils.GetDouble(rawValue.ToString());
 			int valueInt = (int)Math.Round(valueDouble);
 
 			// TODO: Wil says Convert.ConvertTo() can simplify this.
