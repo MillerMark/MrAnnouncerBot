@@ -4679,7 +4679,7 @@ namespace DHDM
 
 		private void BtnTestShowSprinkles_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Show Sprinkles");
+			HubtasticBaseStation.AnimateSprinkles("Appear Behind");
 		}
 
 		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e)

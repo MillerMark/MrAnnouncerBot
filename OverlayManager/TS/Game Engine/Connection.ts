@@ -60,7 +60,12 @@ function moveFred(movement: string): void {
 }
 
 function animateSprinkles(commandData: string) {
-	console.log('animateSprinkles: ' + commandData);
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.animateSprinkles(commandData);
+	}
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.animateSprinkles(commandData);
+	}
 }
 
 function triggerEffect(effectData: string) {

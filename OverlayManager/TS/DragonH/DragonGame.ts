@@ -137,6 +137,10 @@ abstract class DragonGame extends GamePlusQuiz {
 		context.globalAlpha = 1;
 	}
 
+	animateSprinkles(commandData: string): any {
+		this.sprinkles.executeCommand(commandData);
+	}
+
 	drawSprinkles(context: CanvasRenderingContext2D, now: number, layer: Layer): void {
 		this.sprinkles.draw(context, now, layer);
 	}

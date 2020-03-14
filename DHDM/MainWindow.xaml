@@ -741,10 +741,10 @@
 				</TabItem>
 				<TabItem x:Name="tbTest" Header="Test">
 					<StackPanel Orientation="Vertical">
-						<Button x:Name="btnTestShowSprinkles" MaxWidth="160" Margin="8" >
+						<Button x:Name="btnTestShowSprinkles" MaxWidth="160" Margin="8" Click="BtnTestShowSprinkles_Click">
 							Show Sprinkles!
 						</Button>
-						<Button x:Name="btnTestHideSprinkles" MaxWidth="160" Margin="8" >
+						<Button x:Name="btnTestHideSprinkles" MaxWidth="160" Margin="8" Click="BtnTestHideSprinkles_Click">
 							Hide Sprinkles!
 						</Button>
 					</StackPanel>
