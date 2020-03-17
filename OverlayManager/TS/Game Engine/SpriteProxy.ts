@@ -333,6 +333,10 @@ class SpriteProxy extends AnimatedElement {
 			this.oncycleCallbacks = null;
 	}
 
+	removeAllCycleCallbacks(): void {
+		this.oncycleCallbacks = null;
+	}
+
 	okayToDie(frameCount: number): boolean {
 		return !this.playToEndOnExpire || this.frameIndex >= frameCount;
 	}
