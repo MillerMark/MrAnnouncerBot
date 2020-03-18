@@ -137,11 +137,20 @@ class Sprinkles {
 	changeVelocity(velocityX: number, now: number) {
 		this.timeStart = now;
 		this.velocityX = velocityX;
+		let previousStartX: number = this.startX;
 		this.startX = this.x;
+
+		if (previousStartX !== this.startX)
+			console.log('changeVelocity - this.startX: ' + this.startX);
 	}
 
 	updatePosition(now: number) {
 		this.dequeueVelocityDeltas();
+
+		if (this.velocityX == 0) {
+			return;
+		}
+
 		var secondsPassed = (now - this.timeStart) / 1000;
 		var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, 0);
 		this.x = this.startX + Physics.metersToPixels(xDisplacement);
@@ -154,11 +163,15 @@ class Sprinkles {
 		}
 	}
 
-	dequeueAnimations(now: number): void {
+	dequeueAnimations(now: number): boolean {
+		let dequeuedAnimations: boolean = false;
 		while (this.animationQueue.length > 0) {
 			let queuedAnimation: QueuedAnimation = this.animationQueue.shift();
 			this.addAnimation(queuedAnimation.hornBodyPair, now, queuedAnimation.reverse);
+			dequeuedAnimations = true;
 		}
+
+		return dequeuedAnimations;
 	}
 
 	loadParts(): any {
@@ -185,10 +198,14 @@ class Sprinkles {
 		return false;
 	}
 
-	executeCommand(commandData: string): any {
-		this.commandQueue.push(commandData);
+	executeCommand(commandData: string): void {
+		this.addCommand(commandData);
 		if (!this.hasAnimationsRunning())
 			this.executeNextCommand();
+	}
+
+	addCommand(commandData: string): void {
+		this.commandQueue.push(commandData);
 	}
 
 	clearAnimations() {
@@ -228,11 +245,41 @@ class Sprinkles {
 		}
 	}
 
-	executeNextCommand(): void {
-		if (this.commandQueue.length == 0)
-			return;
+	doSomethingCreative() {
+		switch (this.state) {
+			case SprinkleState.Idle:
+				if (this.lastAnimationCycled && this.lastAnimationCycled.startsWith(Sprinkles_Idle)) {
+					this.addCommand(Sprinkles_Graze);
+				}
+				else if (!this.lastAnimationCycled || this.lastAnimationCycled.startsWith(Sprinkles_Graze)) {
+					this.addCommand(Sprinkles_Idle);
+				}
+				break;
+		}
 
-		let commandData: string = this.commandQueue.shift();
+		if (this.hasCommandsInQueue())
+			this.executeNextCommand();
+	}
+
+	private hasCommandsInQueue() {
+		return this.commandQueue.length > 0;
+	}
+
+	getNextCommand(): string {
+		return this.commandQueue.shift();
+	}
+
+	clearCommandQueue(): void {
+		this.commandQueue = [];
+	}
+
+	executeNextCommand(): void {
+		if (!this.hasCommandsInQueue()) {
+			this.doSomethingCreative();
+			return;
+		}
+
+		let commandData: string = this.getNextCommand();
 		switch (commandData) {
 			case 'Walk Left':
 				this.walkLeft();
@@ -245,10 +292,10 @@ class Sprinkles {
 			this.x = 2020;
 			this.queueVelocityChange(0, performance.now());
 			this.layer = Layer.Back;
-			this.commandQueue.push(Sprinkles_Walk);
-			this.commandQueue.push(Sprinkles_Walk);
-			this.commandQueue.push(Sprinkles_WalkToIdle);
-			this.commandQueue.push(Sprinkles_Idle);
+			this.addCommand(Sprinkles_Walk);
+			this.addCommand(Sprinkles_Walk);
+			this.addCommand(Sprinkles_WalkToIdle);
+			this.addCommand(Sprinkles_Idle);
 			this.executeNextCommand();
 			return;
 		}
@@ -316,29 +363,28 @@ class Sprinkles {
 		switch (this.state) {
 			case SprinkleState.TransitioningToAttack:
 			case SprinkleState.Attack:
-				this.commandQueue = [];
-				this.commandQueue.push(Sprinkles_AttackToIdle);
-				this.commandQueue.push(Sprinkles_IdleToWalk);
-				this.commandQueue.push(walkCommand);
+				this.clearCommandQueue()
+				this.addCommand(Sprinkles_AttackToIdle);
+				this.addCommand(Sprinkles_IdleToWalk);
+				this.addCommand(walkCommand);
 				break;
 
 
 			case SprinkleState.TransitioningToIdle:
 			case SprinkleState.Idle:
-				this.commandQueue = [];
-				this.commandQueue.push(Sprinkles_IdleToWalk);
-				this.commandQueue.push(walkCommand);
+				this.clearCommandQueue()
+				this.addCommand(Sprinkles_IdleToWalk);
+				this.addCommand(walkCommand);
 				break;
 
 			default:
-				this.commandQueue = [];
-				this.commandQueue.push(walkCommand);
+				this.clearCommandQueue();
+				this.addCommand(walkCommand);
 				break;
 		}
 	}
 
-
-
+	
 	private addAnimation(hornBodyPair: HornBodyPair, now: number, reverse: boolean) {
 		if (!hornBodyPair)
 			return;
@@ -349,7 +395,6 @@ class Sprinkles {
 			startingFrameIndex = hornBodyPair.body.baseAnimation.frameCount - 1;
 		}
 
-		this.changeVelocity(this.velocityX, performance.now());
 		// TODO: We could simplify this and make it more flexible so individual sprites can be reversed.
 		hornBodyPair.body.baseAnimation.reverse = reverse;
 		hornBodyPair.horn.baseAnimation.reverse = reverse;
@@ -378,7 +423,10 @@ class Sprinkles {
 
 	animationJustCycled: boolean;
 
+
+	lastAnimationCycled: string;
 	animationCycled(sprite: SpriteProxy) {
+		this.lastAnimationCycled = sprite.name;
 		console.log('Animation Cycled: ' + sprite.name);
 		if (sprite.name == Sprinkles_Dies + Sprinkles.HornModifier) {
 			this.sayGoodbye();
@@ -429,12 +477,15 @@ class Sprinkles {
 
 		this.newAnimationsAdded = false;
 
-		this.dequeueAnimations(now);
+		let dequeuedAnimations: boolean = this.dequeueAnimations(now);
 		if (!this.hasAnimationsRunning()) {
 			return;
 		}
 
 		this.updatePosition(now);
+
+		if (dequeuedAnimations)
+			this.changeVelocity(this.velocityX, now);
 
 		let numSpritesDrawn: number = 0;
 		this.parts.forEach(function (hornBodyPair: HornBodyPair) {
