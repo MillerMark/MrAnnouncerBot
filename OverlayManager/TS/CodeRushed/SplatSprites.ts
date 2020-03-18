@@ -10,10 +10,12 @@
     this.shortDrips = new Sprites(`Paint/Drips/Short/${color}/Drip`, 119, 15, AnimationStyle.SequentialStop, true);
   }
 
-  draw(context: CanvasRenderingContext2D, now: number) {
-    super.draw(context, now);
-    this.longDrips.draw(context, now);
-    this.mediumDrips.draw(context, now);
-    this.shortDrips.draw(context, now);
+  draw(context: CanvasRenderingContext2D, now: number): number {
+		super.draw(context, now);
+		let numSpritesDrawn: number = 0;
+    numSpritesDrawn += this.longDrips.draw(context, now);
+    numSpritesDrawn += this.mediumDrips.draw(context, now);
+		numSpritesDrawn += this.shortDrips.draw(context, now);
+		return numSpritesDrawn;
   }
 }

@@ -109,7 +109,7 @@ class Sprinkles {
 	}
 
 	hornHue: number = 0;
-	lastAnimationTimeStart: number = 0;
+	//lastAnimationTimeStart: number = 0;
 	parts: Array<HornBodyPair>;
 	commandQueue: Array<string>;
 
@@ -388,7 +388,7 @@ class Sprinkles {
 		if (sprite.name.endsWith(Sprinkles.HornModifier)) {
 			let colorShiftingSpriteProxy: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>(sprite);
 			this.hornHue = colorShiftingSpriteProxy.getCurrentHueShift(performance.now());
-			this.lastAnimationTimeStart = colorShiftingSpriteProxy.timeStart;
+			//this.lastAnimationTimeStart = colorShiftingSpriteProxy.timeStart;
 		}
 		this.executeNextCommand();
 		this.animationJustCycled = true;
