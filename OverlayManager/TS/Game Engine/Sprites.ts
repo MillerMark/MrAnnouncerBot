@@ -279,41 +279,64 @@
 		if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
 			return;
 
-		let startOffset: number = 0;
+		let startOffset: number = this.returnFrameIndex;
 		let frameCount = this.baseAnimation.frameCount;
+		let returnFrameIndex = this.getReturnIndex(frameCount, this.baseAnimation.reverse);
+
+		for (var i = this.sprites.length - 1; i >= 0; i--) {
+			let sprite: SpriteProxy = this.sprites[i];
+
+			let frameInterval: number = this.frameInterval;
+			if (sprite.frameIntervalOverride) {
+				frameInterval = sprite.frameIntervalOverride;
+			}
+
+			let reverse: boolean = this.baseAnimation.reverse;
+			if (sprite.animationReverseOverride) {
+				reverse = sprite.animationReverseOverride;
+				returnFrameIndex = this.getReturnIndex(frameCount, reverse);
+			}
+
+			let originalFrameIndex: number = sprite.frameIndex;
+
+			if (this.segmentSize > 0 && sprite.frameIndex >= startOffset) {
+				let startIndex: number = sprite.frameIndex - (sprite.frameIndex - startOffset) % this.segmentSize;
+				let endBounds: number = startIndex + this.segmentSize;
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, reverse, frameInterval, this.baseAnimation.fileName);
+			}
+			else
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, reverse, frameInterval, this.baseAnimation.fileName);
+
+
+			if (originalFrameIndex !== sprite.frameIndex)
+				sprite.frameAdvanced(returnFrameIndex, reverse);
+
+			this.cleanupFinishedAnimations(i, sprite);
+
+			if (sprite.animationReverseOverride) {
+				// Restore returnFrameIndex in case we overrode it.
+				returnFrameIndex = this.getReturnIndex(frameCount, this.baseAnimation.reverse);
+			}
+		}
+
+		this.lastTimeWeAdvancedTheFrame = nowMs;
+	}
+
+	private getReturnIndex(frameCount: number, reverse: boolean) {
 		let returnFrameIndex = this.returnFrameIndex;
-		startOffset = returnFrameIndex;
 		if (this.animationStyle == AnimationStyle.SequentialStop) {
-			if (this.baseAnimation.reverse) {
+			if (reverse) {
 				returnFrameIndex = 0;
 			}
 			else {
 				returnFrameIndex = frameCount - 1;
 			}
 		}
-
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			let sprite: SpriteProxy = this.sprites[i];
-
-			if (this.segmentSize > 0 && sprite.frameIndex >= startOffset) {
-				let startIndex: number = sprite.frameIndex - (sprite.frameIndex - startOffset) % this.segmentSize;
-
-				if (startIndex >= 73) {
-					console.error('Error');
-				}
-				//if (startIndex > startOffset + this.segmentSize) {
-				//	startIndex = startOffset;
-				//}
-
-				let endBounds: number = startIndex + this.segmentSize;
-				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);
-			}
-			else
-				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, this.baseAnimation.reverse, this.frameInterval, this.baseAnimation.fileName);
-			this.cleanupFinishedAnimations(i, sprite);
+		else if (reverse) {
+			// TODO: Check for endBounds and this.segmentSize and startIndex to calculate the returnFrameIndex for bounded animations.
+			returnFrameIndex = frameCount - 1;
 		}
-
-		this.lastTimeWeAdvancedTheFrame = nowMs;
+		return returnFrameIndex;
 	}
 
 	updatePositions(now: number): void {
