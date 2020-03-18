@@ -4686,6 +4686,16 @@ namespace DHDM
 		{
 			HubtasticBaseStation.AnimateSprinkles("Hide Sprinkles");
 		}
+
+		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Walk Left");
+		}
+
+		private void BtnTestWalkRight_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Walk Right");
+		}
 	}
 
 	// TODO: Reintegrate wand/staff animations....

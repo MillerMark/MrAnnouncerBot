@@ -3,6 +3,17 @@
 	Front
 }
 
+class VelocityDelta {
+	constructor(public newVelocity: number, public time: number) {
+
+	}
+}
+
+class QueuedAnimation {
+	constructor(public hornBodyPair: HornBodyPair, public reverse: boolean) {
+
+	}
+}
 
 class HornBodyPair {
 	name: string;
@@ -20,10 +31,10 @@ class HornBodyPair {
 		this.horn.originY = originY - hornDeltaY;
 	}
 
-	draw(context: CanvasRenderingContext2D, now: number): void {
+	draw(context: CanvasRenderingContext2D, now: number): number {
 		this.updatePositions(now);
 		this.body.draw(context, now);
-		this.horn.draw(context, now);
+		return this.horn.draw(context, now);
 	}
 
 	updatePositions(now: number): void {
@@ -39,6 +50,7 @@ enum SprinkleState {
 	Idle, // Idle or Graze
 	Attack, // Dies, BattleCry, PushUpAttack, ScoopAttack, Stab Attack
 	Walking,
+	WalkingBackwards,
 	TransitioningToIdle,
 	TransitioningToWalk,
 	TransitioningToAttack
@@ -54,6 +66,7 @@ const Sprinkles_PushUpAttack = 'PushUpAttack';
 const Sprinkles_ScoopAttack = 'ScoopAttack';
 const Sprinkles_StabAttack = 'StabAttack';
 const Sprinkles_Walk = 'Walk';
+const Sprinkles_WalkBackwards = 'WalkBackwards';
 const Sprinkles_Dies = 'Dies';
 const Sprinkles_Graze = 'Graze';
 const Sprinkles_Idle = 'Idle';
@@ -64,9 +77,12 @@ const Sprinkles_WalkToIdle = 'WalkToIdle';
 
 
 class Sprinkles {
+	static readonly BodyModifier: string = '.Body';
+	static readonly HornModifier: string = '.Horn';
 	state: SprinkleState = SprinkleState.Offscreen;
 	layer: Layer;
 	private _x: number = 200;
+	bodyHueShift: number = 0;
 	startX: number;
 	timeStart: number;
 	velocityX: number = 0;
@@ -107,6 +123,17 @@ class Sprinkles {
 		this.loadParts();
 	}
 
+	velocityQueue: Array<VelocityDelta> = new Array<VelocityDelta>();
+	animationQueue: Array<QueuedAnimation> = new Array<QueuedAnimation>();
+
+	queueVelocityChange(velocityX: number, now: number) {
+		this.velocityQueue.push(new VelocityDelta(velocityX, now));
+	}
+
+	private queueAnimation(hornBodyPair: HornBodyPair, reverse: boolean = false) {
+		this.animationQueue.push(new QueuedAnimation(hornBodyPair, reverse));
+	}
+
 	changeVelocity(velocityX: number, now: number) {
 		this.timeStart = now;
 		this.velocityX = velocityX;
@@ -114,10 +141,24 @@ class Sprinkles {
 	}
 
 	updatePosition(now: number) {
+		this.dequeueVelocityDeltas();
 		var secondsPassed = (now - this.timeStart) / 1000;
-
 		var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, 0);
 		this.x = this.startX + Physics.metersToPixels(xDisplacement);
+	}
+
+	dequeueVelocityDeltas(): void {
+		while (this.velocityQueue.length > 0) {
+			let velocityDelta: VelocityDelta = this.velocityQueue.shift();
+			this.changeVelocity(velocityDelta.newVelocity, velocityDelta.time);
+		}
+	}
+
+	dequeueAnimations(now: number): void {
+		while (this.animationQueue.length > 0) {
+			let queuedAnimation: QueuedAnimation = this.animationQueue.shift();
+			this.addAnimation(queuedAnimation.hornBodyPair, now, queuedAnimation.reverse);
+		}
 	}
 
 	loadParts(): any {
@@ -146,9 +187,8 @@ class Sprinkles {
 
 	executeCommand(commandData: string): any {
 		this.commandQueue.push(commandData);
-		if (this.hasAnimationsRunning())
-			return;
-		this.executeNextCommand();
+		if (!this.hasAnimationsRunning())
+			this.executeNextCommand();
 	}
 
 	clearAnimations() {
@@ -193,77 +233,113 @@ class Sprinkles {
 			return;
 
 		let commandData: string = this.commandQueue.shift();
+		switch (commandData) {
+			case 'Walk Left':
+				this.walkLeft();
+				return;
+			case 'Walk Right':
+				this.walkRight();
+				return;
+		}
 		if (commandData === 'Appear Behind') {
-			this.x = 1920;
-			this.velocityX = 0;
-			this.timeStart = performance.now();
-			this.startX = this.x;
+			this.x = 2020;
+			this.queueVelocityChange(0, performance.now());
 			this.layer = Layer.Back;
-			this.commandQueue.push('Walk');
-			this.commandQueue.push('Walk');
-			this.commandQueue.push('WalkToIdle');
+			this.commandQueue.push(Sprinkles_Walk);
+			this.commandQueue.push(Sprinkles_Walk);
+			this.commandQueue.push(Sprinkles_WalkToIdle);
 			this.commandQueue.push(Sprinkles_Idle);
 			this.executeNextCommand();
-			//this.commandQueue.push('Graze');
-			//this.commandQueue.push('Idle');
-			//this.commandQueue.push('IdleToWalk');
-			//this.commandQueue.push('Walk');
-			//this.commandQueue.push('Walk');
-			//this.commandQueue.push('Walk');
-			//this.commandQueue.push('WalkToIdle');
-			//this.commandQueue.push('Idle');
-			//this.commandQueue.push('IdleToAttack');
-			//this.commandQueue.push('Dies');
-			//this.commandQueue.push('IdleToAttack');
-			//this.commandQueue.push('PushUpAttack');
-			//this.commandQueue.push('ScoopAttack');
-			//this.commandQueue.push('StabAttack');
-			//this.commandQueue.push('BattleCry');
-			//this.commandQueue.push(Sprinkles_Dies);
+			return;
 		}
-		else if (commandData == Sprinkles_WalkToIdle) {
-			this.addAnimation(this.getHornBodyPair(Sprinkles_IdleToWalk), true);  // Reversing 
-			this.changeVelocity(0, performance.now());
-		}
-		else if (commandData == Sprinkles_AttackToIdle) {
-			this.addAnimation(this.getHornBodyPair(Sprinkles_IdleToAttack), true);  // Reversing 
-			this.changeVelocity(0, performance.now());
-		}
-		else {
-			switch (commandData) {
-				case Sprinkles_PushUpAttack:
-				case Sprinkles_ScoopAttack:
-				case Sprinkles_BattleCry:
-				case Sprinkles_StabAttack:
-					this.state = SprinkleState.Attack;
-					this.changeVelocity(0, performance.now());
-					break;
-				case Sprinkles_Walk:
-					if (this.state == SprinkleState.Walking)
-						return;
-					this.state = SprinkleState.Walking;
-					this.changeVelocity(-Sprinkles.WalkingVelocity, performance.now());
-					break;
-				case Sprinkles_Idle:
-				case Sprinkles_Graze:
-					this.state = SprinkleState.Idle;
-					this.changeVelocity(0, performance.now());
-					break;
-				case Sprinkles_IdleToAttack:
-					this.state = SprinkleState.TransitioningToAttack;
-					this.changeVelocity(0, performance.now());
-					break;
-				case Sprinkles_AttackToIdle:
-					this.state = SprinkleState.TransitioningToAttack;
-					this.changeVelocity(0, performance.now());
-					break;
-			}
 
-			this.addAnimation(this.getHornBodyPair(commandData));
+		var reverse: boolean = false;
+
+		switch (commandData) {
+			case Sprinkles_AttackToIdle:
+				this.state = SprinkleState.TransitioningToIdle;
+				commandData = Sprinkles_IdleToAttack;
+				reverse = true;
+				this.queueVelocityChange(0, performance.now());
+				break;
+			case Sprinkles_WalkToIdle:
+				this.state = SprinkleState.TransitioningToIdle;
+				commandData = Sprinkles_IdleToWalk;
+				reverse = true;
+				// TODO: consider slowing down velocity as we transition to idle.
+				this.queueVelocityChange(0, performance.now());
+				break;
+			case Sprinkles_PushUpAttack:
+			case Sprinkles_ScoopAttack:
+			case Sprinkles_BattleCry:
+			case Sprinkles_StabAttack:
+				this.state = SprinkleState.Attack;
+				this.queueVelocityChange(0, performance.now());
+				break;
+			case Sprinkles_Walk:
+				this.state = SprinkleState.Walking;
+				this.queueVelocityChange(-Sprinkles.WalkingVelocity, performance.now());
+				break;
+			case Sprinkles_WalkBackwards:
+				this.state = SprinkleState.WalkingBackwards;
+				this.queueVelocityChange(Sprinkles.WalkingVelocity, performance.now());
+				commandData = Sprinkles_Walk;
+				reverse = true;
+				break;
+			case Sprinkles_Idle:
+			case Sprinkles_Graze:
+				this.state = SprinkleState.Idle;
+				this.queueVelocityChange(0, performance.now());
+				break;
+			case Sprinkles_IdleToAttack:
+				this.state = SprinkleState.TransitioningToAttack;
+				this.queueVelocityChange(0, performance.now());
+				break;
+			case Sprinkles_AttackToIdle:
+				this.state = SprinkleState.TransitioningToAttack;
+				this.queueVelocityChange(0, performance.now());
+				break;
+		}
+
+		this.queueAnimation(this.getHornBodyPair(commandData), reverse);
+	}
+
+	walkLeft(): void {
+		this.transitionToWalk(Sprinkles_Walk);
+	}
+
+	walkRight(): void {
+		this.transitionToWalk(Sprinkles_WalkBackwards);
+	}
+
+	transitionToWalk(walkCommand: string): void {
+		switch (this.state) {
+			case SprinkleState.TransitioningToAttack:
+			case SprinkleState.Attack:
+				this.commandQueue = [];
+				this.commandQueue.push(Sprinkles_AttackToIdle);
+				this.commandQueue.push(Sprinkles_IdleToWalk);
+				this.commandQueue.push(walkCommand);
+				break;
+
+
+			case SprinkleState.TransitioningToIdle:
+			case SprinkleState.Idle:
+				this.commandQueue = [];
+				this.commandQueue.push(Sprinkles_IdleToWalk);
+				this.commandQueue.push(walkCommand);
+				break;
+
+			default:
+				this.commandQueue = [];
+				this.commandQueue.push(walkCommand);
+				break;
 		}
 	}
 
-	private addAnimation(hornBodyPair: HornBodyPair, reverse: boolean = false) {
+
+
+	private addAnimation(hornBodyPair: HornBodyPair, now: number, reverse: boolean) {
 		if (!hornBodyPair)
 			return;
 		this.clearAnimations();
@@ -273,36 +349,49 @@ class Sprinkles {
 			startingFrameIndex = hornBodyPair.body.baseAnimation.frameCount - 1;
 		}
 
-
+		this.changeVelocity(this.velocityX, performance.now());
 		// TODO: We could simplify this and make it more flexible so individual sprites can be reversed.
 		hornBodyPair.body.baseAnimation.reverse = reverse;
 		hornBodyPair.horn.baseAnimation.reverse = reverse;
 
-		let body: SpriteProxy = hornBodyPair.body.add(this.x, this.y, startingFrameIndex);
-		body.name = hornBodyPair.name;
-		body.timeStart--;
+		let body: SpriteProxy = hornBodyPair.body.addShifted(this.x, this.y, startingFrameIndex, this.bodyHueShift);
+		body.name = hornBodyPair.name + Sprinkles.BodyModifier;
+		body.timeStart = now;
 
 		let horn = hornBodyPair.horn.addShifted(this.x, this.y, startingFrameIndex, this.hornHue); // 30 degrees of hue shift every second.
-		horn.name = hornBodyPair.name;
+		horn.name = hornBodyPair.name + Sprinkles.HornModifier;
 		horn.addOnCycleCallback(this.animationCycled.bind(this));
+		horn.onExpire = this.onSpriteExpire.bind(this)
 		horn.hueShiftPerSecond = 30;
-		horn.timeStart--;  // Needed to eliminate flicker for chained animations.
+		horn.timeStart = now;
+
 		hornBodyPair.justAdded = true;
 		this.newAnimationsAdded = true;
 	}
 
+
+	needToDrawNewAnimations: boolean;
+
+	onSpriteExpire() {
+		this.needToDrawNewAnimations = !this.hasAnimationsRunning();
+	}
+
+	animationJustCycled: boolean;
+
 	animationCycled(sprite: SpriteProxy) {
-		if (sprite.name == Sprinkles_Dies) {
+		console.log('Animation Cycled: ' + sprite.name);
+		if (sprite.name == Sprinkles_Dies + Sprinkles.HornModifier) {
 			this.sayGoodbye();
+			return;
 		}
-		//console.log('Animation Cycled: ' + sprite.name);
-		//this.changeVelocity(0, performance.now());
-		if (sprite instanceof ColorShiftingSpriteProxy) {
+
+		if (sprite.name.endsWith(Sprinkles.HornModifier)) {
 			let colorShiftingSpriteProxy: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>(sprite);
 			this.hornHue = colorShiftingSpriteProxy.getCurrentHueShift(performance.now());
 			this.lastAnimationTimeStart = colorShiftingSpriteProxy.timeStart;
 		}
 		this.executeNextCommand();
+		this.animationJustCycled = true;
 	}
 
 	sayGoodbye(): any {
@@ -338,27 +427,38 @@ class Sprinkles {
 		if (layer != this.layer)
 			return;
 
-		if (this.hasAnimationsRunning()) {
-			this.updatePosition(now);
+		this.newAnimationsAdded = false;
+
+		this.dequeueAnimations(now);
+		if (!this.hasAnimationsRunning()) {
+			return;
 		}
 
-		this.newAnimationsAdded = false;
+		this.updatePosition(now);
+
+		let numSpritesDrawn: number = 0;
 		this.parts.forEach(function (hornBodyPair: HornBodyPair) {
-			hornBodyPair.draw(context, now);
+			numSpritesDrawn += hornBodyPair.draw(context, now);
 		});
 
+		if (this.animationJustCycled) {
+			this.animationJustCycled = false;
+		}
+
 		if (this.newAnimationsAdded) {
-			this.drawNewAnimations(context, now);
+			numSpritesDrawn += this.drawNewAnimations(context, now);
 		}
 	}
 
-	drawNewAnimations(context: CanvasRenderingContext2D, now: number): any {
+	drawNewAnimations(context: CanvasRenderingContext2D, now: number): number {
+		let numSpritesDrawn: number = 0;
 		for (let i = 0; i < this.parts.length; i++) {
 			let hornBodyPair: HornBodyPair = this.parts[i];
 			if (hornBodyPair.justAdded) {
 				hornBodyPair.justAdded = false;
-				hornBodyPair.draw(context, now);
+				numSpritesDrawn += hornBodyPair.draw(context, now);
 			}
 		}
+		return numSpritesDrawn;
 	}
 }

@@ -342,9 +342,9 @@
 		this.removeExpiredSprites(now);
 	}
 
-	draw(context: CanvasRenderingContext2D, now: number): void {
+	draw(context: CanvasRenderingContext2D, now: number): number {
 		if (this.sprites.length == 0) {
-			return;
+			return 0;
 		}
 
 		//if (this.name == 'Clock' && this.sprites[0].rotation != 0) {
@@ -354,11 +354,13 @@
 		this.advanceFrames(now);
 		let self: Sprites = this;
 
+		let numSpritesDrawn: number = 0;
 		this.sprites.forEach(function (sprite: SpriteProxy) {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
 			if (sprite.stillAlive(now, self.baseAnimation.frameCount) && sprite.systemDrawn) {
 				if (now >= sprite.timeStart) {
+					numSpritesDrawn++;
 					sprite.drawBackground(context, now);
 					sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight, self.originX, self.originY);
 					sprite.drawAdornments(context, now);
@@ -369,6 +371,7 @@
 
 		context.globalAlpha = 1.0;
 		this.removeExpiredSprites(now);
+		return numSpritesDrawn;
 	}
 
 	removeExpiredSprites(now: number): void {

@@ -373,6 +373,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		super(context);
 		this.allWindupEffects = new SpriteCollection();
 		this.backLayerEffects = new SpriteCollection();
+		this.clockLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
 		this.sprinkles = new Sprinkles();
 	}

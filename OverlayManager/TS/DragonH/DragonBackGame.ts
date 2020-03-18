@@ -25,6 +25,7 @@ class DragonBackGame extends DragonGame {
 	fireWall: Sprites;
 	dndClock: SpriteProxy;
 	dndTimeDatePanel: SpriteProxy;
+	clockLayerEffects: SpriteCollection;
 	dndTimeStr: string;
 	dndDateStr: string;
 	characterStatsScroll: CharacterStatsScroll;
@@ -112,9 +113,12 @@ class DragonBackGame extends DragonGame {
 		return screenWidth - this.clockScale * this.clockPanel.originX - this.clockMargin + this.clockOffsetX;
 	}
 
-	private drawTime(context: CanvasRenderingContext2D) {
+	private drawTime(context: CanvasRenderingContext2D, now: number) {
 		if (!this.dndTimeStr)
 			return;
+
+		this.clockLayerEffects.updatePositions(now);
+		this.clockLayerEffects.draw(context, now);
 
 		const timeFont: string = 'px Baskerville Old Face';
 		const verticalMargin: number = 10;
@@ -252,7 +256,7 @@ class DragonBackGame extends DragonGame {
 
 		this.drawSprinkles(context, now, Layer.Back);
 
-		this.drawTime(context);
+		this.drawTime(context, now);
 
 		//backgroundBanner.draw(myContext, 0, 0);
 
@@ -373,9 +377,9 @@ class DragonBackGame extends DragonGame {
 		this.dndClock = this.clock.add(clockX, clockY).setScale(this.clockScale);
 
 
-		this.backLayerEffects.add(this.clock);
-		this.backLayerEffects.add(this.fireWall);
-		this.backLayerEffects.add(this.clockPanel);
+		this.clockLayerEffects.add(this.clock);
+		this.clockLayerEffects.add(this.fireWall);
+		this.clockLayerEffects.add(this.clockPanel);
 	}
 
 	buildTestGoldParticle(): any {
