@@ -335,6 +335,8 @@ class DragonBackGame extends DragonGame {
 	}
 
 	loadResources(): void {
+		this.clockLayerEffects = new SpriteCollection();
+
 		//this.blueBall();
 		//this.purpleMagic();
 		//this.purpleBurst();

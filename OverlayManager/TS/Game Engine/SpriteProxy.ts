@@ -308,7 +308,7 @@ class SpriteProxy extends AnimatedElement {
 	cropRight: number;
 	cropBottom: number;
 	numFramesDrawn: number = 0;
-	onCycleCallbacks: Array<(sprite: SpriteProxy) => void>;
+	onCycleCallbacks: Array<(sprite: SpriteProxy, now: number) => void>;
 	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean) => void>;
 	
 
@@ -319,9 +319,9 @@ class SpriteProxy extends AnimatedElement {
 		this.frameIndex = Math.floor(startingFrameNumber);
 	}
 
-	addOnCycleCallback(onAnimationCycled: (sprite: SpriteProxy) => void): void {
+	addOnCycleCallback(onAnimationCycled: (sprite: SpriteProxy, now: number) => void): void {
 		if (!this.onCycleCallbacks)
-			this.onCycleCallbacks = new Array<(sprite: SpriteProxy) => void>();
+			this.onCycleCallbacks = new Array<(sprite: SpriteProxy, now: number) => void>();
 		this.onCycleCallbacks.push(onAnimationCycled);
 	}
 
@@ -349,7 +349,7 @@ class SpriteProxy extends AnimatedElement {
 		if (this.onCycleCallbacks) {
 			let thisInstance = this;
 			this.onCycleCallbacks.forEach(function (oncycleCallback) {
-				oncycleCallback(thisInstance);
+				oncycleCallback(thisInstance, now);
 			});
 		}
 	}

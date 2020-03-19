@@ -138,7 +138,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 	animateSprinkles(commandData: string): any {
-		this.sprinkles.executeCommand(commandData);
+		this.sprinkles.executeCommand(commandData, performance.now());
 	}
 
 	drawSprinkles(context: CanvasRenderingContext2D, now: number, layer: Layer): void {
@@ -373,7 +373,6 @@ abstract class DragonGame extends GamePlusQuiz {
 		super(context);
 		this.allWindupEffects = new SpriteCollection();
 		this.backLayerEffects = new SpriteCollection();
-		this.clockLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
 		this.sprinkles = new Sprinkles();
 	}
