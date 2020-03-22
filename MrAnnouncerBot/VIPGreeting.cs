@@ -71,6 +71,34 @@ namespace MrAnnouncerBot
                     Greet_Codeman_Codes();
                     break;
 
+                case "sxpositive":
+                    Greet_sxPositive();
+                    break;
+
+                case "codebasealpha":
+                    Greet_CodeBaseAlpha();
+                    break;
+
+                case "copperbeardy":
+                    Greet_CopperBeardy();
+                    break;
+
+                case "jtsom":
+                    Greet_JTsom();
+                    break;
+
+                case "baldbeardedbuilder":
+                    Greet_BaldBeardedBuilder();
+                    break;
+
+                case "phrakberg":
+                    Greet_Phrakberg();
+                    break;
+
+                case "tehpudding":
+                    Greet_TehPudding();
+                    break;
+
                 default:
                     GreetVip();
                     break;
@@ -80,7 +108,7 @@ namespace MrAnnouncerBot
 
         private void GreetVip()
         {
-            switch (new Random().Next(41))
+            switch (new Random().Next(43))
             {
                 case 0:
                     Greeting = $"@{DisplayName} is in the house!";
@@ -205,13 +233,17 @@ namespace MrAnnouncerBot
                 case 40:
                     Greeting = $"Greetings @{DisplayName}!";
                     break;
-
+                case 41:
+                    Greeting = $"They are no Rory Becker, but we are still glad you are here @{DisplayName}!";
+                    break;
+                case 42:
+                    Greeting = $"They are no Wil Bennett, but we are still glad you are here @{DisplayName}!";
+                    break;
             }
         }
 
 
         #region SuperVIP Greetings
-
         private void Greet_SurlyDev()
         {
             switch (new Random().Next(11))
@@ -245,6 +277,35 @@ namespace MrAnnouncerBot
                     break;
                 case 9:
                     Greeting = $"Drone, drone, drone. That's all  @{DisplayName} ever does. Not talking about the game; I'm sayin' that guy never shuts his trap.";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+        private void Greet_CopperBeardy()
+        {
+            switch (new Random().Next(2))
+            {
+                case 0:
+                    Greeting = $"You should checkout @{DisplayName}, he has a stream too, it's not bad. I mean it's not good either, but definitely go and check it out. Not NOW! I mean LATER !!!";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+        private void Greet_JTsom()
+        {
+            switch (new Random().Next(3))
+            {
+                case 0:
+                    Greeting = $"He likes to fly low and slow, it's @{DisplayName}!";
+                    break;
+                case 1:
+                    Greeting = $"DUCK MARK! @{DisplayName} is flying low again!";
                     break;
                 default:
                     GreetVip();
@@ -323,6 +384,99 @@ namespace MrAnnouncerBot
                     GreetVip();
                     break;
 
+            }
+        }
+
+        private void Greet_Phrakberg()
+        {
+            switch (new Random().Next(2))
+            {
+                case 0:
+                    Greeting = $"Hey Mark! here's some ice for your drink, oh no @{DisplayName} just flew into it!";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+        private void Greet_sxPositive()
+        {
+            switch (new Random().Next(4))
+            {
+                case 0:
+                    Greeting = $"Hide your wallet Mark!  @{DisplayName} just showed up!";
+                    break;
+                case 1:
+                    Greeting = $"Oh no!  @{DisplayName} is here! oh YES, I mean, OH YES !!! @{DisplayName} is here!";
+                    break;
+                case 2:
+                    Greeting = $"Mark! Your L'il cutie is here, ready to kick ... oh wait, that's that other stream. Hi (@{DisplayName}.";
+                    break;
+                case 3:
+                    Greeting = $"Here she is ladies and gentlemen, the lady that tries to tame this bundle of craziness, i-i-i-i-i-i-i-i-i-i-i-t-t-t-t-s-s-s-s-s-s-s (@{DisplayName}.";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+        private void Greet_BaldBeardedBuilder()
+        {
+            switch (new Random().Next(7))
+            {
+                case 0:
+                    Greeting = $"Hide your wallet Mark!  @{DisplayName} just showed up!";
+                    break;
+                case 1:
+                    Greeting = $"Us bald, bearded builders gotta stick together, and here's JUST the guy, it's @{DisplayName}";
+                    break;
+                case 2:
+                    Greeting = $"Who would have thought there were TWO awesome bald, bearded builders on Twitch. Hi @{DisplayName}";
+                    break;
+                case 3:
+                    Greeting = $"He's bald, he's bearded, he's a builder, he's not called Mark, I'm talking about @{DisplayName}";
+                    break;
+                case 4:
+                    Greeting = $"You should checkout @{DisplayName}, he has a stream too, it's not bad. I mean it's not good either, but definitely go and check it out. Not NOW! I mean LATER !!!";
+                    break;
+                case 5:
+                    Greeting = $"I always said Mark has a magnetic personality, and now he's attracted another bald, bearded builder. You could do with a little colour in yours though @{DisplayName}, and by colour I don't mean that shade of grey that is starting to make you look a little distinguished.";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+        private void Greet_CodeBaseAlpha()
+        {
+            switch (new Random().Next(2))
+            {
+                case 0:
+                    Greeting = $"You should checkout @{DisplayName}, he has a stream too, it's not bad. I mean it's not good either, but definitely go and check it out. Not NOW! I mean LATER !!!";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+            }
+        }
+
+
+        private void Greet_TehPudding()
+        {
+            switch (new Random().Next(3))
+            {
+                case 0:
+                    Greeting = $"You know what would go well with this sweet, sweet, stream Mark?, Some pudding, just NOT A TON OF IT @{DisplayName}!";
+                    break;
+                case 1:
+                    Greeting = $"Hey @{DisplayName} you're right on time, your segment is just coming up now!";
+                    break;
+                default:
+                    GreetVip();
+                    break;
             }
         }
 
