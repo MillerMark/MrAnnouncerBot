@@ -99,6 +99,10 @@ namespace MrAnnouncerBot
                     Greet_TehPudding();
                     break;
 
+                case "chaelcodes":
+                    Greet_ChaelCodes();
+                    break;
+
                 default:
                     GreetVip();
                     break;
@@ -341,6 +345,23 @@ namespace MrAnnouncerBot
                     break;
                 case 1:
                     Greeting = $"Oh hi @{DisplayName} nice of you to join us today";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+
+            }
+        }
+
+        private void Greet_ChaelCodes()
+        {
+            switch (new Random().Next(3))
+            {
+                case 0:
+                    Greeting = $"Heya @{DisplayName} I hope you are sat with your feet up enjoying some CAT SNUGGLE TIME";
+                    break;
+                case 1:
+                    Greeting = $"Hi @{DisplayName} I hope Perl and Ruby are snuggled up watching with you.";
                     break;
                 default:
                     GreetVip();
