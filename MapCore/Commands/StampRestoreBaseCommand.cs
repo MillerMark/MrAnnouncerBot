@@ -25,7 +25,7 @@ namespace MapCore
 			storedStamps.Clear();
 			foreach (IItemProperties stampProperties in selectedStamps)
 			{
-				SerializedStamp serializedStamp = SerializedStamp.From(stampProperties);
+				SerializedItem serializedStamp = SerializedItem.From(stampProperties);
 				storedStamps.Add(JsonConvert.SerializeObject(serializedStamp));
 			}
 		}
@@ -33,14 +33,14 @@ namespace MapCore
 		List<Guid> DeserializeStoredStamps(Map map)
 		{
 			List<Guid> guidsRestored = new List<Guid>();
-			List<SerializedStamp> serializedStamps = new List<SerializedStamp>();
+			List<SerializedItem> serializedStamps = new List<SerializedItem>();
 			foreach (string storedStamp in storedStamps)
 			{
-				SerializedStamp serializedStamp = JsonConvert.DeserializeObject<SerializedStamp>(storedStamp);
+				SerializedItem serializedStamp = JsonConvert.DeserializeObject<SerializedItem>(storedStamp);
 				serializedStamps.Add(serializedStamp);
 				guidsRestored.Add(serializedStamp.Guid);
 			}
-			map.ReconstituteItems(map.Stamps, serializedStamps);
+			map.ReconstituteItems(map.Items, serializedStamps);
 			return guidsRestored;
 		}
 
@@ -49,7 +49,7 @@ namespace MapCore
 			List<Guid> deserializeStoredStamps = DeserializeStoredStamps(map);
 			map.SortStampsByZOrder();
 			base.ActivateUndo(map);
-			map.SelectStampsByGuid(deserializeStoredStamps);
+			map.SelectItemsByGuid(deserializeStoredStamps);
 		}
 	}
 }

@@ -8,36 +8,31 @@ using Newtonsoft.Json;
 
 namespace DndMapSpike
 {
-	public class StampGroup : BaseStamp, IFloatingItem, IStampProperties, IItemGroup
+	public class StampGroup : BaseStamp, IGroup, IFloatingItem, IStampProperties
 	{
-		List<IItemProperties> items = new List<IItemProperties>();
-		public StampGroup()
+		List<IItemProperties> children = new List<IItemProperties>();
+		public StampGroup(): base()
 		{
 			TypeName = nameof(StampGroup);
 		}
 
 		public override void ResetImage()
 		{
-			foreach (IItemProperties item in items)
+			foreach (IItemProperties item in children)
 				if (item is IStampProperties stamp)
 					stamp.ResetImage();
 		}
 
-		public StampGroup(StampGroup stampGroup): base()
+		public StampGroup(StampGroup stampGroup): this()
 		{
-			X = stampGroup.X;
-			Y = stampGroup.Y;
-			Width = stampGroup.Width;
-			Height = stampGroup.Height;
-			foreach (IItemProperties item in items)
-				items.Add(item.Clone());
+			this.CloneGroupFrom(stampGroup);
 		}
 
 		public List<IStampProperties> OnlyStamps
 		{
 			get
 			{
-				return items.OfType<IStampProperties>().ToList();
+				return children.OfType<IStampProperties>().ToList();
 			}
 		}
 
@@ -45,7 +40,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Contrast;
 			}
@@ -61,11 +56,11 @@ namespace DndMapSpike
 			}
 		}
 
-		private bool HasAnyStamps
+		private bool HasAnyChildren
 		{
 			get
 			{
-				return items.Any(x => x is IStampProperties);
+				return children.Any(x => x is IStampProperties);
 			}
 		}
 
@@ -73,7 +68,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				return (items.FirstOrDefault(x => x is IStampProperties) as IStampProperties);
+				return (children.FirstOrDefault(x => x is IStampProperties) as IStampProperties);
 			}
 		}
 
@@ -81,13 +76,13 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!items.Any())
+				if (!children.Any())
 					return string.Empty;
-				return items.FirstOrDefault().FileName;
+				return children.FirstOrDefault().FileName;
 			}
 			set
 			{
-				foreach (IItemProperties stamp in items)
+				foreach (IItemProperties stamp in children)
 				{
 					stamp.FileName = value;
 				}
@@ -98,7 +93,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return false;
 				return FirstStamp.FlipHorizontally;
 			}
@@ -119,7 +114,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return false;
 				return FirstStamp.FlipVertically;
 			}
@@ -140,7 +135,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.HueShift;
 			}
@@ -161,9 +156,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (items.FirstOrDefault() is IFloatingItem stamp)
-					return stamp.Image;
-				return null;
+				return this.GetImage();
 			}
 		}
 
@@ -171,7 +164,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Lightness;
 			}
@@ -191,7 +184,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Rotation;
 			}
@@ -211,7 +204,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 0;
 				return FirstStamp.Saturation;
 			}
@@ -233,7 +226,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 1;
 				return FirstStamp.ScaleX;
 			}
@@ -242,7 +235,7 @@ namespace DndMapSpike
 		{
 			get
 			{
-				if (!HasAnyStamps)
+				if (!HasAnyChildren)
 					return 1;
 				return FirstStamp.ScaleY;
 			}
@@ -250,17 +243,12 @@ namespace DndMapSpike
 
 		public void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
 		{
-			if (!Visible)
-				return;
-			foreach (IItemProperties stamp in items)
-				if (stamp is IFloatingItem floatingItem)
-					floatingItem.BlendStampImage(stampsLayer, xOffset + X, yOffset + Y);
+			GroupHelper.BlendStampImage(this, stampsLayer, xOffset, yOffset);
 		}
 
 		public override bool ContainsPoint(double x, double y)
 		{
-			Point relativeTestPoint = new Point(x - X, y - Y);
-			return items.Any(s => s.ContainsPoint(relativeTestPoint.X, relativeTestPoint.Y));
+			return GroupHelper.ContainsPoint(this, x, y);
 		}
 
 		public override void Move(double deltaX, double deltaY)
@@ -321,49 +309,7 @@ namespace DndMapSpike
 
 		public override IItemProperties Copy(double deltaX, double deltaY)
 		{
-			StampGroup result = new StampGroup(this);
-			result.Move(deltaX, deltaY);
-			return result;
-		}
-
-		void CalculateSizeAndPosition(double xOffset = 0, double yOffset = 0)
-		{
-			if (items.Count == 0)
-				return;
-			double leftMost = items.Min(x => x.GetLeft() + xOffset);
-			double topMost = items.Min(x => x.GetTop() + yOffset);
-			double rightMost = items.Max(x => x.GetLeft() + xOffset + x.Width);
-			double bottomMost = items.Max(x => x.GetTop() + yOffset + x.Height);
-			ZOrder = items.Max(x => x.ZOrder);
-
-			Width = rightMost - leftMost;
-			Height = bottomMost - topMost;
-			X = (leftMost + rightMost) / 2.0;
-			Y = (topMost + bottomMost) / 2.0;
-		}
-
-		private void PositionContainedStampsRelativeToCenter()
-		{
-			foreach (IItemProperties stamp in items)
-			{
-				stamp.X -= X;
-				stamp.Y -= Y;
-			}
-		}
-
-		public static StampGroup Create(List<IItemProperties> stamps)
-		{
-			StampGroup result = new StampGroup();
-			List<IItemProperties> sortedStamps = stamps.OrderBy(x => x.ZOrder).ToList();
-			for (int i = 0; i < sortedStamps.Count; i++)
-			{
-				sortedStamps[i].ZOrder = i + 1;
-			}
-			result.items = sortedStamps;
-
-			result.CalculateSizeAndPosition();
-			result.PositionContainedStampsRelativeToCenter();
-			return result;
+			return this.Copy<StampGroup>(deltaX, deltaY);
 		}
 
 		public void Vanquish()
@@ -372,23 +318,12 @@ namespace DndMapSpike
 		}
 		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
-			foreach (IItemProperties stamp in items)
-				if (stamp is IFloatingItem floatingItem)
-					floatingItem.CreateFloating(canvas, stamp.GetLeft() + left + Width / 2.0, stamp.GetTop() + top + Height / 2.0);
+			this.CreateFloatingImages(canvas, left, top);
 		}
 
 		public void Ungroup(List<IItemProperties> ungroupedStamps)
 		{
-			if (Locked)
-				return;
-
-			for (int i = 0; i < items.Count; i++)
-			{
-				IItemProperties stamp = items[i];
-				stamp.Move(X, Y);
-				stamp.ZOrder = ZOrder + i;
-				ungroupedStamps.Add(stamp);
-			}
+			GroupHelper.Ungroup(this, ungroupedStamps);
 		}
 		public override void AdjustScale(double scaleAdjust)
 		{
@@ -402,7 +337,7 @@ namespace DndMapSpike
 				stamp.Y = stamp.Y * scaleAdjust;
 				stamp.AdjustScale(scaleAdjust);
 			}
-			CalculateSizeAndPosition(X, Y);
+			this.CalculateSizeAndPosition(X, Y);
 		}
 
 		public override void SetAbsoluteScaleTo(double newScale)
@@ -418,7 +353,7 @@ namespace DndMapSpike
 				stamp.Y = stamp.Y * scaleAdjust;
 				stamp.AdjustScale(scaleAdjust);
 			}
-			CalculateSizeAndPosition(X, Y);
+			this.CalculateSizeAndPosition(X, Y);
 		}
 
 		public override double GetBottom()
@@ -430,20 +365,18 @@ namespace DndMapSpike
 		{
 			return X + Width / 2;
 		}
-		public static StampGroup From(SerializedStamp stamp)
+
+		public static StampGroup From(SerializedItem stamp)
 		{
-			StampGroup stampGroup = new StampGroup();
-			stampGroup.TransferFrom(stamp);
-			if (stamp.Children != null)
-				foreach (SerializedStamp childStamp in stamp.Children)
-					stampGroup.Stamps.Add(MapElementFactory.CreateStampFrom(childStamp));
-			return stampGroup;
+			return GroupHelper.DeserializeGroup<StampGroup>(stamp);
 		}
 
 		public override double Width { get; set; }
 
 		public override double Height { get; set; }
-		public List<IItemProperties> Stamps { get => items; set => items = value; }
+
+		[JsonIgnore]
+		public List<IItemProperties> Children { get => children; set => children = value; }
 	}
 }
 

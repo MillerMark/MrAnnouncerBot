@@ -181,6 +181,15 @@ class AnimatedElement {
 		return true;
 	}
 
+	fadingOut(now: number): boolean {
+		let lifeRemaining: number = this.getLifeRemaining(now);
+		return this.isFadingOut(lifeRemaining);
+	}
+
+	private isFadingOut(lifeRemaining: number): boolean {
+		return lifeRemaining < this.fadeOutTime && this.fadeOnDestroy;
+	}
+
 	getAlpha(now: number): number {
 		let msAlive: number = now - this.timeStart;
 
@@ -190,8 +199,8 @@ class AnimatedElement {
 		if (!this.expirationDate)
 			return this.opacity;
 
-		let lifeRemaining: number = this.expirationDate - now;
-		if (lifeRemaining < this.fadeOutTime && this.fadeOnDestroy) {
+		let lifeRemaining: number = this.getLifeRemaining(now);
+		if (this.isFadingOut(lifeRemaining)) {
 			return this.opacity * lifeRemaining / this.fadeOutTime;
 		}
 		return this.opacity;
@@ -292,6 +301,8 @@ class AnimatedElement {
 }
 
 class SpriteProxy extends AnimatedElement {
+	frameIntervalOverride: number;
+	animationReverseOverride: boolean;
 	data: any;
 	haveCycledOnce: boolean;
 	flipHorizontally: boolean;
@@ -306,6 +317,9 @@ class SpriteProxy extends AnimatedElement {
 	cropRight: number;
 	cropBottom: number;
 	numFramesDrawn: number = 0;
+	onCycleCallbacks: Array<(sprite: SpriteProxy, now: number) => void>;
+	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>;
+	
 
 	lastTimeWeAdvancedTheFrame: number;
 
@@ -314,6 +328,25 @@ class SpriteProxy extends AnimatedElement {
 		this.frameIndex = Math.floor(startingFrameNumber);
 	}
 
+	addOnCycleCallback(onAnimationCycled: (sprite: SpriteProxy, now: number) => void): void {
+		if (!this.onCycleCallbacks)
+			this.onCycleCallbacks = new Array<(sprite: SpriteProxy, now: number) => void>();
+		this.onCycleCallbacks.push(onAnimationCycled);
+	}
+
+	removeAllCycleCallbacks(): void {
+		this.onCycleCallbacks = null;
+	}
+
+	addOnFrameAdvanceCallback(onFrameAdvanced: (sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void): void {
+		if (!this.onFrameAdvanceCallbacks)
+			this.onFrameAdvanceCallbacks = new Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>();
+		this.onFrameAdvanceCallbacks.push(onFrameAdvanced);
+	}
+
+	removeAllFrameAdvanceCallbacks(): void {
+		this.onFrameAdvanceCallbacks = null;
+	}
 
 	okayToDie(frameCount: number): boolean {
 		return !this.playToEndOnExpire || this.frameIndex >= frameCount;
@@ -322,8 +355,22 @@ class SpriteProxy extends AnimatedElement {
 
 	cycled(now: number) {
 		this.haveCycledOnce = true;
+		if (this.onCycleCallbacks) {
+			let thisInstance = this;
+			this.onCycleCallbacks.forEach(function (oncycleCallback) {
+				oncycleCallback(thisInstance, now);
+			});
+		}
 	}
 
+	frameAdvanced(returnFrameIndex: number, reverse: boolean, nowMs: number) {
+		if (this.onFrameAdvanceCallbacks) {
+			let thisInstance = this;
+			this.onFrameAdvanceCallbacks.forEach(function (onFrameAdvanceCallback) {
+				onFrameAdvanceCallback(thisInstance, returnFrameIndex, reverse, nowMs);
+			});
+		}
+	}
 
 	advanceFrame(frameCount: number, nowMs: number, returnFrameIndex: number = 0, startIndex: number = 0, endBounds: number = 0, reverse: boolean = false, frameInterval: number = fps30, fileName: string = '') {
 		if (nowMs < this.timeStart)
@@ -374,7 +421,6 @@ class SpriteProxy extends AnimatedElement {
 				this.cycled(nowMs);
 			}
 		}
-
 	}
 
 	getHalfWidth(): number {
@@ -445,12 +491,20 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 		}
 	}
 
-	shiftColor(context: CanvasRenderingContext2D, now: number) {
-		let hueShift: number = this.hueShift;
+	getCurrentHueShiftDelta(now: number): number {
 		if (this.hueShiftPerSecond != 0) {
 			let secondsPassed: number = (now - this.timeStart) / 1000;
-			hueShift = secondsPassed * this.hueShiftPerSecond % 360;
+			return secondsPassed * this.hueShiftPerSecond % 360;
 		}
+		return 0;
+	}
+
+	getCurrentHueShift(now: number): number {
+		return this.hueShift + this.getCurrentHueShiftDelta(now);
+	}
+
+	shiftColor(context: CanvasRenderingContext2D, now: number) {
+		let hueShift: number = this.getCurrentHueShift(now);
 
 		(context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
 	}
@@ -464,5 +518,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 		return this;
 	}
 
-
+	setColorShiftMilestone(now: number): void {
+		this.hueShift = this.getCurrentHueShift(now);
+		this.changeVelocity(this.velocityX, this.velocityY, now); // Resets timeStart, used for calculating hue shifts.
+	}
 }

@@ -324,7 +324,7 @@
 		return 0;
 	}
 
-
+	showingGoldDustEmitters: boolean = true;
 
 	private unroll(): void {
 		this.state = ScrollState.unrolling;
@@ -337,8 +337,10 @@
 		this.playerHeadshots.add(0, 0, this.headshotIndex);
 		this.pageIndex = this._page;
 		this.selectedStatPageIndex = this._page - 1;
-		this.topEmitter.start();
-		this.bottomEmitter.start();
+		if (this.showingGoldDustEmitters) {
+			this.topEmitter.start();
+			this.bottomEmitter.start();
+		}
 		this.play(this.scrollOpenSfx);
 
 		if (this.emphasisSprites) {
@@ -357,18 +359,18 @@
 
 	preUpdate(now: number, timeScale: number, world: World): void {
 		super.preUpdate(now, timeScale, world);
-		this.topEmitter.preUpdate(now, timeScale, world);
-		this.bottomEmitter.preUpdate(now, timeScale, world);
-		this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
-			highlightEmitter.preUpdate(now, timeScale, world);
-		});
+		if (this.showingGoldDustEmitters) {
+			this.topEmitter.preUpdate(now, timeScale, world);
+			this.bottomEmitter.preUpdate(now, timeScale, world);
+			this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
+				highlightEmitter.preUpdate(now, timeScale, world);
+			});
+		}
 	}
-
-	static readonly showEmitters: boolean = true; // Related to perf issue.
 
 	update(now: number, timeScale: number, world: World): void {
 		super.update(now, timeScale, world);
-		if (CharacterStatsScroll.showEmitters) {
+		if (this.showingGoldDustEmitters) {
 			this.topEmitter.update(now, timeScale, world);
 			this.bottomEmitter.update(now, timeScale, world);
 		}
@@ -377,7 +379,7 @@
 			this.unroll(); // do we queue?
 		}
 
-		if (CharacterStatsScroll.showEmitters) {
+		if (this.showingGoldDustEmitters) {
 			this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
 				highlightEmitter.update(now, timeScale, world);
 			});
@@ -475,7 +477,7 @@
 				//  this.lastElapsedTime = elapsedTime;
 				//}
 
-				if (scrollRollsFrameIndex === 0 && this.state === ScrollState.unrolling) {
+				if (this.showingGoldDustEmitters && scrollRollsFrameIndex === 0 && this.state === ScrollState.unrolling) {
 					this.topEmitter.start();
 					this.bottomEmitter.start();
 				}
@@ -484,22 +486,28 @@
 					justClosed = true;
 				}
 
-				this.topEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY - superPreciseOffset);
-				this.bottomEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY + superPreciseOffset);
+				if (this.showingGoldDustEmitters) {
+					this.topEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY - superPreciseOffset);
+					this.bottomEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY + superPreciseOffset);
+				}
 			}
 			else {
 				this.scrollBacks.draw(world.ctx, nowSec * 1000);
 				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.headshotIndex);
 				this.drawHighlighting(nowSec, timeScale, world);
-				this.topEmitter.stop();
-				this.bottomEmitter.stop();
 				this.state = ScrollState.unrolled;
 
-				this.startQueuedEmitters();
+				if (this.showingGoldDustEmitters) {
+					this.topEmitter.stop();
+					this.bottomEmitter.stop();
+					this.startQueuedEmitters();
+				}
 			}
 
-			this.topEmitter.render(nowSec, timeScale, world);
-			this.bottomEmitter.render(nowSec, timeScale, world);
+			if (this.showingGoldDustEmitters) {
+				this.topEmitter.render(nowSec, timeScale, world);
+				this.bottomEmitter.render(nowSec, timeScale, world);
+			}
 
 			this.drawCharacterStats(nowSec, world.ctx, topData, bottomData);
 
@@ -523,16 +531,14 @@
 			}
 		}
 		else {
-			// console.log('Scroll is not visible!');
+			//console.log('Scroll is not visible!');
 		}
 
 		if (this.state === ScrollState.slamming) {
 			this.scrollSlam.draw(world.ctx, nowSec * 1000);
-			if (this.scrollSlam.sprites.length > 0) {
-				if (this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
-					this.state = ScrollState.slammed;
-					this.play(this.scrollSlamSfx);
-				}
+			if (this.scrollSlam.sprites.length === 0 || this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
+				this.state = ScrollState.slammed;
+				this.play(this.scrollSlamSfx);
 			}
 		}
 
@@ -574,11 +580,13 @@
 		this.state = ScrollState.disappearing;
 	}
 
-	startQueuedEmitters(): void {
-		while (this.emitterIndices.length > 0) {
-			let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(this.emitterIndices.pop());
-			if (emitter) {
-				emitter.start();
+	private startQueuedEmitters(): void {
+		if (this.showingGoldDustEmitters) {
+			while (this.emitterIndices.length > 0) {
+				let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(this.emitterIndices.pop());
+				if (emitter) {
+					emitter.start();
+				}
 			}
 		}
 	}
@@ -589,9 +597,11 @@
 
 		this.drawDeEmphasisLayer(world, now, sx, sy, dx, dy, sw, sh, dw, dh);
 
-		this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
-			highlightEmitter.render(now, timeScale, world);
-		});
+		if (this.showingGoldDustEmitters) {
+			this.highlightEmitterPages[this.page].emitters.forEach(function (highlightEmitter: HighlightEmitter) {
+				highlightEmitter.render(now, timeScale, world);
+			});
+		}
 
 		if (dh > 0) {
 			if (this.page === ScrollPage.main)
@@ -661,8 +671,8 @@
 		emitter.hue.absoluteVariance = 10;
 		emitter.brightness.target = 0.7;
 		emitter.brightness.relativeVariance = 0.5;
-		emitter.particlesPerSecond = 1250;
-		emitter.maxTotalParticles = 3000;
+		emitter.particlesPerSecond = 500;
+		emitter.maxTotalParticles = 1000;
 		emitter.particleRadius.target = 0.8;
 		emitter.particleRadius.relativeVariance = 2;
 		emitter.particleLifeSpanSeconds = 1;
@@ -1088,14 +1098,18 @@
 
 
 	addParticleEmphasis(itemID: string): void {
-		let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
-		if (emitter) {
-			emitter.start();
+		if (this.showingGoldDustEmitters) {
+			let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
+			if (emitter) {
+				emitter.start();
+			}
 		}
 	}
 
 	queueParticleEmphasis(itemID: string): void {
-		this.emitterIndices.push(itemID);
+		if (this.showingGoldDustEmitters) {
+			this.emitterIndices.push(itemID);
+		}
 	}
 
 

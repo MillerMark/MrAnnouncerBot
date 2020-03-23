@@ -5,15 +5,18 @@ namespace MapCore
 {
 	public abstract class BaseItemProperties: IItemProperties
 	{
+		//! Very important: Any new serialized properties need to be set in the Deserialize & TransferProperties procs.
 		static BaseItemProperties()
 		{
 
 		}
 
+		public string TypeName { get; set; }
+
 		public abstract IItemProperties Copy(double deltaX, double deltaY);
 
 
-		[EditableProperty]
+		[Editable]
 		public bool Locked { get; set; }
 
 		public virtual void Move(double deltaX, double deltaY)
@@ -33,18 +36,6 @@ namespace MapCore
 		public bool HasNoZOrder()
 		{
 			return ZOrder == -1;
-		}
-
-		public virtual void TransferProperties(IItemProperties itemProperties)
-		{
-			Guid = itemProperties.Guid;
-			X = itemProperties.X;
-			Y = itemProperties.Y;
-			ZOrder = itemProperties.ZOrder;
-			Visible = itemProperties.Visible;
-			FileName = itemProperties.FileName;
-			Height = itemProperties.Height;
-			Width = itemProperties.Width;
 		}
 
 		public bool Visible { get; set; } = true;
@@ -85,5 +76,19 @@ namespace MapCore
 
 		public int ZOrder { get; set; } = -1;
 
+		public virtual void GetPropertiesFrom(IItemProperties itemProperties, bool transferGuid = true)
+		{
+			if (transferGuid)
+				Guid = itemProperties.Guid;
+			X = itemProperties.X;
+			Y = itemProperties.Y;
+			Locked = itemProperties.Locked;
+			ZOrder = itemProperties.ZOrder;
+			Visible = itemProperties.Visible;
+			FileName = itemProperties.FileName;
+			Height = itemProperties.Height;
+			Width = itemProperties.Width;
+			TypeName = itemProperties.TypeName;
+		}
 	}
 }

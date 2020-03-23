@@ -42,7 +42,7 @@ namespace DndMapSpike
 		static Stamp Clone(Stamp stamp)
 		{
 			Stamp result = new Stamp(stamp.FileName, stamp.X, stamp.Y);
-			result.CloneFrom(stamp);
+			result.TransferProperties(stamp);
 			return result;
 		}
 
@@ -194,20 +194,12 @@ namespace DndMapSpike
 		{
 			return Y - Height / 2.0;
 		}
-		protected override void TransferFrom(SerializedStamp serializedStamp)
-		{
-			base.TransferFrom(serializedStamp);
-		}
-		public static Stamp From(SerializedStamp serializedStamp)
+
+		public static Stamp From(SerializedItem serializedStamp)
 		{
 			Stamp stamp = new Stamp();
-			stamp.TransferFrom(serializedStamp);
+			serializedStamp.AssignPropertiesTo(stamp);
 			return stamp;
-		}
-
-		public static implicit operator Stamp(MapCharacter v)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

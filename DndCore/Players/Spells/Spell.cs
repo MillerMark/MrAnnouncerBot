@@ -420,7 +420,8 @@ namespace DndCore
 				SpellType == SpellType.RangedSpell ||
 				SpellType == SpellType.DamageSpell ||
 				(SpellType == SpellType.SavingThrowSpell && hasDieStr) ||
-				(SpellType == SpellType.HpCapacitySpell && hasDieStr);
+				(SpellType == SpellType.HpCapacitySpell && hasDieStr) ||
+				(SpellType == SpellType.HealingSpell && hasDieStr);
 
 			//return SpellType == SpellType.MeleeSpell || SpellType == SpellType.RangedSpell || SpellType == SpellType.DamageSpell ||
 			//	(SpellType == SpellType.SavingThrowSpell && !string.IsNullOrWhiteSpace(DieStr) && 

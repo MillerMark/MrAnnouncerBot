@@ -74,6 +74,8 @@
 
 		this.fred.draw(context, now);
 
+		this.drawSprinkles(context, now, Layer.Front);
+
 		this.bloodEffects.draw(context, now);
 
 		this.showNameplates(context, now);

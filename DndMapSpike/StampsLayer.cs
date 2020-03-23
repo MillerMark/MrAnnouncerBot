@@ -9,7 +9,7 @@ namespace DndMapSpike
 	public class StampsLayer : Layer
 	{
 		public IItemsManager Map { get; set; }
-		public List<IItemProperties> Stamps { get => Map.Stamps; set => Map.Stamps = value; }
+		public List<IItemProperties> Stamps { get => Map.Items; set => Map.Items = value; }
 
 		int updateCount;
 
@@ -27,7 +27,7 @@ namespace DndMapSpike
 		void Refresh()
 		{
 			ClearAll();
-			foreach (IItemProperties stamp in Map.Stamps)
+			foreach (IItemProperties stamp in Map.Items)
 			{
 				try
 				{

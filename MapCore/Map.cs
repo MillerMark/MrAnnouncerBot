@@ -36,26 +36,26 @@ namespace MapCore
 		public delegate void CreateGroupEventHandler(object sender, CreateGroupEventArgs ea);
 		public event CreateGroupEventHandler CreatingGroup;
 
-		public IItemGroup CreateGroup(List<IItemProperties> stampsToGroup)
+		public IGroup CreateGroup(List<IItemProperties> stampsToGroup)
 		{
 			CreateGroupEventArgs ea = new CreateGroupEventArgs(stampsToGroup);
 			CreatingGroup?.Invoke(this, ea);
 			return ea.Group;
 		}
 
-		public delegate void SelectStampsEventHandler(object sender, SelectStampsEventArgs ea);
-		public event SelectStampsEventHandler SelectingStamps;
+		public delegate void SelectStampsEventHandler(object sender, SelectItemsEventArgs ea);
+		public event SelectStampsEventHandler SelectingItems;
 
-		public delegate void ReconstituteStampsEventHandler(object sender, ReconstituteStampsEventArgs ea);
-		public event ReconstituteStampsEventHandler ReconstitutingStamps;
-		void OnAddStamp(List<IItemProperties> stamps, SerializedStamp serializedStamp)
+		public delegate void ReconstituteItemsEventHandler(object sender, ReconstituteItemsEventArgs ea);
+		public event ReconstituteItemsEventHandler ReconstitutingItems;
+		void OnAddItem(List<IItemProperties> items, SerializedItem serializedItem)
 		{
-			reconstituteStampsEventArgs.Stamps = stamps;
-			reconstituteStampsEventArgs.SerializedStamp = serializedStamp;
-			ReconstitutingStamps?.Invoke(this, reconstituteStampsEventArgs);
+			reconstituteStampsEventArgs.Items = items;
+			reconstituteStampsEventArgs.SerializedItem = serializedItem;
+			ReconstitutingItems?.Invoke(this, reconstituteStampsEventArgs);
 		}
 
-		static ReconstituteStampsEventArgs reconstituteStampsEventArgs = new ReconstituteStampsEventArgs();
+		static ReconstituteItemsEventArgs reconstituteStampsEventArgs = new ReconstituteItemsEventArgs();
 		private const string MapFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Maps";
 
 		int lastColumnIndex;
@@ -106,10 +106,9 @@ namespace MapCore
 		public string FileName { get; set; }
 
 		[JsonIgnore]
-		public List<IItemProperties> Stamps { get; set; } = new List<IItemProperties>();
+		public List<IItemProperties> Items { get; set; } = new List<IItemProperties>();
 
-		public List<SerializedStamp> SerializedStamps { get; set; }
-		public List<SerializedCharacter> SerializedCharacters { get; set; }
+		public List<SerializedItem> SerializedItems { get; set; }
 
 		static void ClearAllSpaces(Tile[,] mapArray, int numColumns, int numRows)
 		{
@@ -145,10 +144,16 @@ namespace MapCore
 				else
 					break;
 			}
+
+			//if (endLinesToSkip > 0)
+			//	endLinesToSkip--;  // Leave one empty line.
 			int startLinesToSkip = lines.TakeWhile(x => string.IsNullOrWhiteSpace(x)).ToList().Count;
 
+			//if (startLinesToSkip > 0)
+			//	startLinesToSkip--;  // Leave one empty start line.
+
 			int endIndex = lines.Length - endLinesToSkip - startLinesToSkip - 1;
-			string[] result = lines.SkipWhile(x => string.IsNullOrWhiteSpace(x))
+			string[] result = lines.SkipWhile((x, index) => string.IsNullOrWhiteSpace(x) /* && index < startLinesToSkip */)
 				.TakeWhile((line, index) => index <= endIndex)
 				.ToArray();
 			return result;
@@ -821,16 +826,16 @@ namespace MapCore
 		{
 			BuildMapArrays();
 			ReconstituteRoomsAndCorridors();
-			ReconstituteItems(Stamps, SerializedStamps);
+			ReconstituteItems(Items, SerializedItems);
 		}
 
-		public void ReconstituteItems(List<IItemProperties> stamps, List<SerializedStamp> serializedStamps)
+		public void ReconstituteItems(List<IItemProperties> stamps, List<SerializedItem> serializedItems)
 		{
-			if (serializedStamps == null)
+			if (serializedItems == null)
 				return;
-			foreach (SerializedStamp serializedStamp in serializedStamps)
+			foreach (SerializedItem serializedItem in serializedItems)
 			{
-				OnAddStamp(stamps, serializedStamp);
+				OnAddItem(stamps, serializedItem);
 			}
 		}
 
@@ -851,8 +856,7 @@ namespace MapCore
 
 		void WrapupSerialization()
 		{
-			SerializedStamps = null;
-			SerializedCharacters = null;
+			SerializedItems = null;
 		}
 
 		public void Save()
@@ -912,22 +916,17 @@ namespace MapCore
 			PrepareTilesForSerialization();
 		}
 
-		SerializedCharacter NewSerializedCharacter(IItemProperties itemProperties)
+		SerializedItem NewSerializedStamp(IItemProperties stampProperties)
 		{
-			return SerializedCharacter.From(itemProperties);
-		}
-
-		SerializedStamp NewSerializedStamp(IItemProperties stampProperties)
-		{
-			return SerializedStamp.From(stampProperties);
+			return SerializedItem.From(stampProperties);
 		}
 
 		void PrepareItemsForSerialization()
 		{
-			SerializedStamps = new List<SerializedStamp>();
-			foreach (IItemProperties stampProperties in Stamps)
+			SerializedItems = new List<SerializedItem>();
+			foreach (IItemProperties stampProperties in Items)
 			{
-				SerializedStamps.Add(NewSerializedStamp(stampProperties));
+				SerializedItems.Add(NewSerializedStamp(stampProperties));
 			}
 		}
 
@@ -956,8 +955,8 @@ namespace MapCore
 		public void AddItem(IItemProperties item)
 		{
 			if (item.HasNoZOrder())
-				item.ZOrder = Stamps.Count;
-			Stamps.Add(item);
+				item.ZOrder = Items.Count;
+			Items.Add(item);
 		}
 
 		public void AddStamps(List<IItemProperties> items)
@@ -971,9 +970,9 @@ namespace MapCore
 
 		public IItemProperties GetItemAt(double x, double y)
 		{
-			for (int i = Stamps.Count - 1; i >= 0; i--)
+			for (int i = Items.Count - 1; i >= 0; i--)
 			{
-				IItemProperties item = Stamps[i];
+				IItemProperties item = Items[i];
 				if (item.ContainsPoint(x, y))
 					return item;
 			}
@@ -984,7 +983,7 @@ namespace MapCore
 		{
 			if (item.HasNoZOrder())
 				item.ZOrder = startIndex;
-			Stamps.Insert(startIndex, item);
+			Items.Insert(startIndex, item);
 		}
 
 		public void InsertStamps(int startIndex, List<IItemProperties> items)
@@ -1005,36 +1004,36 @@ namespace MapCore
 
 		public void RemoveItem(IItemProperties item)
 		{
-			Stamps.Remove(item);
+			Items.Remove(item);
 		}
 
 		public void SortStampsByZOrder(int zOrderOffset = 0)
 		{
-			Stamps = Stamps.OrderBy(o => o.ZOrder).ToList();
+			Items = Items.OrderBy(o => o.ZOrder).ToList();
 		}
 
 		public void NormalizeZOrder(int zOrderOffset = 0)
 		{
-			for (int i = 0; i < Stamps.Count; i++)
-				Stamps[i].ZOrder = i + zOrderOffset;
+			for (int i = 0; i < Items.Count; i++)
+				Items[i].ZOrder = i + zOrderOffset;
 		}
 
-		public List<IItemProperties> GetStamps(List<Guid> stampGuids)
+		public List<IItemProperties> GetItems(List<Guid> itemGuids)
 		{
 			List<IItemProperties> result = new List<IItemProperties>();
 
-			foreach (Guid guid in stampGuids)
+			foreach (Guid guid in itemGuids)
 			{
-				IItemProperties foundStamp = GetStampFromGuid(guid);
-				if (foundStamp != null)
-					result.Add(foundStamp);
+				IItemProperties foundItem = GetItemFromGuid(guid);
+				if (foundItem != null)
+					result.Add(foundItem);
 			}
 			return result;
 		}
 
-		public void SelectStampsByGuid(List<Guid> stampGuids)
+		public void SelectItemsByGuid(List<Guid> stampGuids)
 		{
-			SelectingStamps?.Invoke(this, new SelectStampsEventArgs(stampGuids));
+			SelectingItems?.Invoke(this, new SelectItemsEventArgs(stampGuids));
 		}
 
 		public void SelectItemsByGuid(Guid stampGuid)
@@ -1042,22 +1041,22 @@ namespace MapCore
 			List<Guid> guids = new List<Guid>();
 			if (stampGuid != null)
 				guids.Add(stampGuid);
-			SelectStampsByGuid(guids);
+			SelectItemsByGuid(guids);
 		}
 
 		public IStampProperties GetStampFromGuid(Guid guid)
 		{
-			return Stamps.FirstOrDefault(x => x.Guid == guid) as IStampProperties;
+			return Items.FirstOrDefault(x => x.Guid == guid) as IStampProperties;
 		}
 
-		public IItemProperties GetCharacterFromGuid(Guid guid)
+		public IItemProperties GetItemFromGuid(Guid guid)
 		{
-			return Stamps.FirstOrDefault(x => x.Guid == guid); ;
+			return Items.FirstOrDefault(x => x.Guid == guid); ;
 		}
 
 		public void ClearStampSelection()
 		{
-			SelectStampsByGuid(null);
+			SelectItemsByGuid(null);
 		}
 
 		public bool SelectionHasAtLeast<T>(int minCount)

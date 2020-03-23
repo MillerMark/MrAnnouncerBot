@@ -115,6 +115,7 @@ class KnownSpellsEffects {
 
 abstract class DragonGame extends GamePlusQuiz {
 	abstract layerSuffix: string;
+	sprinkles: Sprinkles;
 
 	fireBallBack: Sprites;
 	fireBallFront: Sprites;
@@ -134,6 +135,14 @@ abstract class DragonGame extends GamePlusQuiz {
 		context.globalAlpha = 0.5;
 		context.fillText(message, 100, yTop);
 		context.globalAlpha = 1;
+	}
+
+	animateSprinkles(commandData: string): any {
+		this.sprinkles.executeCommand(commandData, performance.now());
+	}
+
+	drawSprinkles(context: CanvasRenderingContext2D, now: number, layer: Layer): void {
+		this.sprinkles.draw(context, now, layer);
 	}
 
 	protected triggerSoundEffect(dto: any): void {
@@ -365,7 +374,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.allWindupEffects = new SpriteCollection();
 		this.backLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
-
+		this.sprinkles = new Sprinkles();
 	}
 
 	initializePlayerData(playerData: string): any {

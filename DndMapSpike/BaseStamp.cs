@@ -274,11 +274,6 @@ namespace DndMapSpike
 			Scale = newScale;
 		}
 
-		protected override void TransferFrom(SerializedStamp serializedStamp)
-		{
-			base.TransferFrom(serializedStamp);
-		}
-
 		public BaseStamp()
 		{
 			Guid = Guid.NewGuid();

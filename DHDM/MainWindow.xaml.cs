@@ -119,7 +119,13 @@ namespace DHDM
 			dmChatBot.DungeonMasterApp = this;
 			commandParsers.Add(dmChatBot);
 			ConnectToObs();
+			HookEvents();
 
+			SetupSpellsChangedFileWatcher();
+		}
+
+		private void HookEvents()
+		{
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
 			Expressions.ExecutionChanged += Expressions_ExecutionChanged;
 			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
@@ -128,10 +134,13 @@ namespace DHDM
 			Feature.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
 			AddReminderFunction.AddReminderRequest += AddReminderFunction_AddReminderRequest;
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
-
 			DndCharacterProperty.AskingValue += DndCharacterProperty_AskingValue;
+			PlaySceneFunction.RequestPlayScene += PlaySceneFunction_RequestPlayScene;
+		}
 
-			SetupSpellsChangedFileWatcher();
+		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
+		{
+			PlayScene(ea.SceneName);
 		}
 
 		void AddBooleanAsk(AskUI askUI)
@@ -1267,7 +1276,41 @@ namespace DHDM
 			}
 		}
 
+		void CastingSpell(DndTimeSpan castingTime, PlayerActionShortcut actionShortcut)
+		{
+
+			string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
+			string spellName = actionShortcut.Spell.Name;
+			string timeSpanStr = actionShortcut.Spell.CastingTimeStr;
+			TellDungeonMaster($"{playerName} is preparing to cast {spellName} (takes {timeSpanStr}).");
+			string alarmName = DndGame.GetSpellAlarmName(actionShortcut.Spell, actionShortcut.PlayerId);
+			game.CreateAlarm(alarmName, castingTime, DndAlarm_CastSpellNow, actionShortcut, null);
+		}
+
+		private void DndAlarm_CastSpellNow(object sender, DndTimeEventArgs ea)
+		{
+			if (ea.Alarm.Data is PlayerActionShortcut actionShortcut)
+			{
+				string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
+				string spellName = actionShortcut.Spell.Name;
+				TellDungeonMaster($"{playerName} is now casting {spellName}!");
+				CastSpellNow(actionShortcut);
+			}
+		}
+
 		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
+		{
+			if (actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
+			{
+				CastingSpell(actionShortcut.Spell.CastingTime, actionShortcut);
+				return;
+			}
+			Spell spell = CastSpellNow(actionShortcut);
+
+			tbxDamageDice.Text = spell.DieStr;
+		}
+
+		private Spell CastSpellNow(PlayerActionShortcut actionShortcut)
 		{
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			Spell spell = actionShortcut.Spell;
@@ -1284,9 +1327,8 @@ namespace DHDM
 			{
 				CastActionSpell(actionShortcut, player, spell);
 			}
-
-			tbxDamageDice.Text = spell.DieStr;
 			spellCaster = player;
+			return spell;
 		}
 
 		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell)
@@ -2019,7 +2061,8 @@ namespace DHDM
 
 		public DiceRollType NextDieRollType
 		{
-			get => nextDieRollType; set
+			get => nextDieRollType;
+			set
 			{
 				if (nextDieRollType == value)
 					return;
@@ -2029,6 +2072,7 @@ namespace DHDM
 					tbNextDieRoll.Text = $"({nextDieRollType})";
 				else
 					tbNextDieRoll.Text = "";
+				btnRollDice.IsEnabled = true;
 			}
 		}
 
@@ -2128,11 +2172,7 @@ namespace DHDM
 				TellDungeonMaster($"Wild Magic roll: {individualRoll.value}.");
 			}
 		}
-		// TODO: Delete this.
-		void NeedToRollWildMagic(IndividualRoll individualRoll)
-		{
 
-		}
 		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
 		{
 			switch (individualRoll.type)
@@ -2143,6 +2183,7 @@ namespace DHDM
 				case "WildMagicD20Check":
 				case "Wild Magic Check":
 				case "\"Wild Magic Check\"":
+					History.Log("IndividualDiceStoppedRolling: " + individualRoll.type);
 					HandleWildMagicD20Check(individualRoll);
 					break;
 			}
@@ -2718,6 +2759,7 @@ namespace DHDM
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
+				ckbUseMagic.IsChecked = false;
 				game.EnteringCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollInitiative();
@@ -3140,8 +3182,21 @@ namespace DHDM
 				return;
 			if (!(checkBox.Tag is int playerID))
 				return;
-			Character player = game.GetPlayerFromId(playerID);
-			player.ShowingNameplate = checkBox.IsChecked == true;
+
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+			{
+				checkBox.IsChecked = true;
+				foreach (Character player in game.Players)
+				{
+					player.ShowingNameplate = player.playerID == playerID;
+				}
+			}
+			else
+			{
+				Character singlePlayer = game.GetPlayerFromId(playerID);
+				singlePlayer.ShowingNameplate = checkBox.IsChecked == true;
+			}
+
 			SendPlayerData();
 		}
 
@@ -4389,7 +4444,10 @@ namespace DHDM
 				bool isSimpleSpell = spellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
 				if (isSimpleSpell)
+				{
+					btnRollDice.IsEnabled = false;
 					return;  // No need to roll the dice
+				}
 			}
 
 			UnleashTheDice();
@@ -4620,6 +4678,31 @@ namespace DHDM
 		{
 			NextDieRollType = DiceRollType.CastSimpleSpell;
 			btnRollDice.Content = "Cast Spell";
+		}
+
+		private void BtnTestShowSprinkles_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Appear Behind");
+		}
+
+		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Hide Sprinkles");
+		}
+
+		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Walk Forwards");
+		}
+
+		private void BtnTestWalkRight_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Walk Backwards");
+		}
+
+		private void BtnSprinkleBlast_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("SprinklesBlast");
 		}
 	}
 

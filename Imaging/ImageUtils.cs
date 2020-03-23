@@ -77,7 +77,14 @@ namespace Imaging
 			// copy the dest image into a byte buffer
 			int dest_stride = source.PixelWidth * (target.Format.BitsPerPixel >> 3);
 			byte[] target_buffer = new byte[(source.PixelWidth * source.PixelHeight) << 2];
-			target.CopyPixels(new Int32Rect(x, y, cropWidth, cropHeight), target_buffer, dest_stride, 0);
+			int offset = 0;
+			if (y < 0)
+			{
+				int yAdjust = -y;
+				y = 0;
+				cropHeight -= yAdjust;
+			}
+			target.CopyPixels(new Int32Rect(x, y, cropWidth, cropHeight), target_buffer, dest_stride, offset);
 
 			// merge
 			for (int i = 0; i < src_buffer.Length; i = i + 4)

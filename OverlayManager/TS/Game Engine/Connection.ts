@@ -15,7 +15,8 @@ function connectToSignalR(signalR) {
     connection.on("CastSpell", castSpell);
     connection.on("ClearWindup", clearWindup);
 		connection.on("MoveFred", moveFred);
-    connection.on("TriggerEffect", triggerEffect);
+		connection.on("TriggerEffect", triggerEffect);
+		connection.on("AnimateSprinkles", animateSprinkles);
     connection.on("UpdateClock", updateClock);
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
@@ -55,6 +56,15 @@ function clearWindup(windupName: string): void {
 function moveFred(movement: string): void {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.moveFred(movement);
+	}
+}
+
+function animateSprinkles(commandData: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.animateSprinkles(commandData);
+	}
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.animateSprinkles(commandData);
 	}
 }
 

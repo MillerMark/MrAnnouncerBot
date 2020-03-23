@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace MapCore
 {
-	public class ReconstituteStampsEventArgs : EventArgs
+	public class ReconstituteItemsEventArgs : EventArgs
 	{
-		public List<IItemProperties> Stamps { get; set; }
-		public SerializedStamp SerializedStamp { get; set; }
-		public ReconstituteStampsEventArgs()
+		public List<IItemProperties> Items { get; set; }
+		public SerializedItem SerializedItem { get; set; }
+		public ReconstituteItemsEventArgs()
 		{
 
 		}

@@ -81,14 +81,14 @@ namespace MapCore
 
 		protected void SetSelectedItems(Map map, List<Guid> stampItems)
 		{
-			map.SelectStampsByGuid(stampItems);
-			SelectedItems = map.GetStamps(stampItems);
+			map.SelectItemsByGuid(stampItems);
+			SelectedItems = map.GetItems(stampItems);
 			this.stampGuids = stampItems;
 		}
 
 		void LoadSelectedStamps(Map map)
 		{
-			SelectedItems = map.GetStamps(stampGuids);
+			SelectedItems = map.GetItems(stampGuids);
 		}
 		object data;
 		public object Data

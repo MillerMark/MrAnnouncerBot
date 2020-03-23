@@ -35,6 +35,7 @@
     <None Remove="TS\DragonH\SavingThrow.ts" />
     <None Remove="TS\DragonH\ScreenPosTarget.ts" />
     <None Remove="TS\DragonH\SpellBook.ts" />
+    <None Remove="TS\DragonH\Sprinkles.ts" />
     <None Remove="TS\DragonH\SpritesEffect.ts" />
     <None Remove="TS\DragonH\StatPage.ts" />
     <None Remove="TS\DragonH\TimeSpan.ts" />
@@ -98,23 +99,24 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="3.0.0-preview.18572.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="obs-websocket-dotnet" Version="4.2.0-beta3" />
-    <PackageReference Include="TwitchLib" Version="3.0.1" />
-    <PackageReference Include="TwitchLib.Api" Version="3.0.0" />
-    <PackageReference Include="TwitchLib.Api.Core" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Api.Core.Enums" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Api.Core.Interfaces" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Api.Core.Models" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Api.Helix" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Api.Helix.Models" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Api.V5" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Client" Version="3.0.4" />
-    <PackageReference Include="TwitchLib.Client.Enums" Version="1.1.0" />
-    <PackageReference Include="TwitchLib.Client.Models" Version="1.1.0" />
+    <PackageReference Include="TwitchLib" Version="3.1.0" />
+    <PackageReference Include="TwitchLib.Api" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.Core" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.Core.Enums" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.Core.Interfaces" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.Core.Models" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.Helix" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.Helix.Models" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Api.V5" Version="3.1.2" />
+    <PackageReference Include="TwitchLib.Client" Version="3.1.4" />
+    <PackageReference Include="TwitchLib.Client.Enums" Version="3.1.4" />
+    <PackageReference Include="TwitchLib.Client.Models" Version="3.1.4" />
     <PackageReference Include="TwitchLib.Communication" Version="1.0.3" />
-    <PackageReference Include="TwitchLib.PubSub" Version="3.0.2" />
+    <PackageReference Include="TwitchLib.PubSub" Version="3.1.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj" />
@@ -126,6 +128,7 @@
     <TypeScriptCompile Include="TS\DragonH\MapGame.ts" />
     <TypeScriptCompile Include="TS\DragonH\Fred.ts" />
     <TypeScriptCompile Include="TS\DragonH\HighlightEmitter.ts" />
+    <TypeScriptCompile Include="TS\DragonH\Sprinkles.ts" />
     <TypeScriptCompile Include="TS\DragonH\SpellBook.ts" />
     <TypeScriptCompile Include="TS\DragonH\Character.ts" />
     <TypeScriptCompile Include="TS\DragonH\CurseBlessingDisease.ts" />

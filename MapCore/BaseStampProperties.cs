@@ -7,37 +7,37 @@ namespace MapCore
 	{
 		//! TODO: Make sure new properties are dealt with in the Clone method!!!
 
-		[EditableProperty]
+		[Editable]
 		public string Name { get; set; }
 
-		[EditableProperty]
+		[Editable]
 		public bool Collectible { get; set; }
 		
-		[EditableProperty]
+		[Editable]
 		public bool Hideable { get; set; }
 
-		[EditableProperty]
+		[Editable]
 		public bool Moveable { get; set; }
 
-		[EditableProperty("Min Strength to Move:", "Moveable", 0)]
+		[DisplayText("Min Strength to Move:")]
+		[DependentProperty("Moveable")]
+		[Precision(0)]
 		public double MinStrengthToMove { get; set; } = 0;
 
-		[EditableProperty]
+		[Editable]
 		public Cover Cover { get; set; }
 
-		[EditableProperty]
+		[Editable]
 		public StampAltitude Altitude { get; set; } = StampAltitude.Mid;
 
-		[EditableProperty]
+		[Editable]
 		public double Weight { get; set; }
 
 		/// <summary>
 		/// In Gold Pieces
 		/// </summary>
-		[EditableProperty(2)]
+		[Precision(2)]
 		public double Value { get; set; } = 1; // GP
-
-		public string TypeName { get; set; }
 
 		public virtual bool FlipHorizontally { get; set; }
 		public virtual bool FlipVertically { get; set; }
@@ -48,87 +48,41 @@ namespace MapCore
 		public virtual double Lightness { get; set; }
 		public virtual double Contrast { get; set; }
 
-		public virtual void CloneFrom(IStampProperties stamp)
-		{
-			Contrast = stamp.Contrast;
-			Visible = stamp.Visible;
-			FlipHorizontally = stamp.FlipHorizontally;
-			FlipVertically = stamp.FlipVertically;
-			HueShift = stamp.HueShift;
-			Lightness = stamp.Lightness;
-			Rotation = stamp.Rotation;
-			Saturation = stamp.Saturation;
-			Scale = stamp.Scale;
-			X = stamp.X;
-			Y = stamp.Y;
-			Height = stamp.Height;
-			Width = stamp.Width;
-			Name = stamp.Name;
-			Collectible = stamp.Collectible;
-			Locked = stamp.Locked;
-			Hideable = stamp.Hideable;
-			MinStrengthToMove = stamp.MinStrengthToMove;
-			Cover = stamp.Cover;
-			Altitude = stamp.Altitude;
-			Weight = stamp.Weight;
-			Value = stamp.Value;
-			TypeName = stamp.TypeName;
-		}
+
 
 		public BaseStampProperties()
 		{
 
 		}
 
-		public virtual void TransferProperties(IStampProperties stampProperties)
+		public virtual void TransferProperties(IStampProperties stamp)
 		{
-			base.TransferProperties(stampProperties);
-			TypeName = stampProperties.TypeName;
-			ZOrder = stampProperties.ZOrder;
-			FlipHorizontally = stampProperties.FlipHorizontally;
-			FlipVertically = stampProperties.FlipVertically;
-			Rotation = stampProperties.Rotation;
-			Scale = stampProperties.Scale;
-			HueShift = stampProperties.HueShift;
-			Saturation = stampProperties.Saturation;
-			Lightness = stampProperties.Lightness;
-			Contrast = stampProperties.Contrast;
-			Name = stampProperties.Name;
-			Collectible = stampProperties.Collectible;
-			Hideable = stampProperties.Hideable;
-			MinStrengthToMove = stampProperties.MinStrengthToMove;
-			Cover = stampProperties.Cover;
-			Altitude = stampProperties.Altitude;
-			Weight = stampProperties.Weight;
-			Value = stampProperties.Value;
-		}
-		protected virtual void TransferFrom(SerializedStamp serializedStamp)
-		{
-			TypeName = serializedStamp.TypeName;
-			Guid = serializedStamp.Guid;
-			Visible = serializedStamp.Visible;
-			X = serializedStamp.X;
-			Y = serializedStamp.Y;
-			ZOrder = serializedStamp.ZOrder;
-			Height = serializedStamp.Height;
-			Width = serializedStamp.Width;
-			FlipHorizontally = serializedStamp.FlipHorizontally;
-			FlipVertically = serializedStamp.FlipVertically;
-			Rotation = serializedStamp.Rotation;
-			FileName = serializedStamp.FileName;
-			Scale = serializedStamp.Scale;
-			HueShift = serializedStamp.HueShift;
-			Saturation = serializedStamp.Saturation;
-			Lightness = serializedStamp.Lightness;
-			Contrast = serializedStamp.Contrast;
-			Name = serializedStamp.Name;
-			Collectible = serializedStamp.Collectible;
-			Hideable = serializedStamp.Hideable;
-			MinStrengthToMove = serializedStamp.MinStrengthToMove;
-			Cover = serializedStamp.Cover;
-			Altitude = serializedStamp.Altitude;
-			Weight = serializedStamp.Weight;
-			Value = serializedStamp.Value;
+			base.GetPropertiesFrom(stamp, false);
+			Visible = stamp.Visible;
+			X = stamp.X;
+			Y = stamp.Y;
+			Height = stamp.Height;
+			Width = stamp.Width;
+			Locked = stamp.Locked;
+
+			TypeName = stamp.TypeName;
+			ZOrder = stamp.ZOrder;
+			FlipHorizontally = stamp.FlipHorizontally;
+			FlipVertically = stamp.FlipVertically;
+			Rotation = stamp.Rotation;
+			Scale = stamp.Scale;
+			HueShift = stamp.HueShift;
+			Saturation = stamp.Saturation;
+			Lightness = stamp.Lightness;
+			Contrast = stamp.Contrast;
+			Name = stamp.Name;
+			Collectible = stamp.Collectible;
+			Hideable = stamp.Hideable;
+			MinStrengthToMove = stamp.MinStrengthToMove;
+			Cover = stamp.Cover;
+			Altitude = stamp.Altitude;
+			Weight = stamp.Weight;
+			Value = stamp.Value;
 		}
 	}
 }

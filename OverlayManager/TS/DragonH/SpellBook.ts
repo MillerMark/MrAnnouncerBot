@@ -554,6 +554,8 @@ class SpellBook {
 
 	drawSpellTitle(now: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): any {
 		this.setTitleFont(context, this.titleFontSize);
+		context.textBaseline = 'top';
+		context.textAlign = 'left';
 		context.fillStyle = this.titleColors[spell.schoolOfMagic];
 		context.fillText(spell.name, this.titleTopLeft.x, this.titleTopLeft.y);
 	}

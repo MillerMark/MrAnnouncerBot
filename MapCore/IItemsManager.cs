@@ -23,7 +23,7 @@ namespace MapCore
 		void RemoveItem(IItemProperties item);
 		void SortStampsByZOrder(int zOrderOffset = 0);
 		void NormalizeZOrder(int zOrderOffset = 0);
-		List<IItemProperties> Stamps { get; set; }
+		List<IItemProperties> Items { get; set; }
 	}
 }
 

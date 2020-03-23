@@ -82,7 +82,7 @@ namespace DndMapSpike
 		public Map Map { get; set; }
 		public MainWindow()
 		{
-			SerializedStamp.PrepareStampForSerialization += PrepareStampForSerialization;
+			SerializedItem.PrepareItemForSerialization += PrepareItemForSerialization;
 			hueShiftUpdateTimer = new Timer(125);
 			hueShiftUpdateTimer.Elapsed += HueShiftUpdateTimer_Elapsed;
 			saturationUpdateTimer = new Timer(125);
@@ -121,6 +121,7 @@ namespace DndMapSpike
 			//ImportDonJonMap("The Forsaken Tunnels of Death.txt");
 			//ImportDonJonMap("The Dark Lair of the Demon Baron.txt");
 			ImportDonJonMap("SmallMap.txt");
+			//ImportDonJonMap("The Lost Cyst of Annihilation.txt");
 			//ImportDonJonMap("The Dungeon of Selima the Awesome.txt");
 			LoadFloorTiles();
 			//LoadDebris();
@@ -132,62 +133,58 @@ namespace DndMapSpike
 		private void HookupMapEvents()
 		{
 			Map.WallsChanged += Map_WallsChanged;
-			Map.ReconstitutingStamps += ReconstituteStamps;
-			Map.SelectingStamps += Map_SelectingStamps;
+			Map.ReconstitutingItems += ReconstituteItems;
+			Map.SelectingItems += Map_SelectingItems;
 			Map.CreatingGroup += Map_CreatingGroup;
 		}
 
 		private void Map_CreatingGroup(object sender, CreateGroupEventArgs ea)
 		{
-			ea.Group = StampGroup.Create(ea.Stamps);
+			SelectionContents selectionContents = GetSelectionContents(Map.SelectedItems);
+			if (selectionContents == SelectionContents.AllStamps)
+				ea.Group = GroupHelper.Create<StampGroup>(ea.Stamps);
+			else
+				ea.Group = GroupHelper.Create<MapCharacterGroup>(ea.Stamps);
 		}
 
-		private void Map_SelectingStamps(object sender, SelectStampsEventArgs ea)
+		private void Map_SelectingItems(object sender, SelectItemsEventArgs ea)
 		{
 			Map.SelectedItems.Clear();
-			if (ea.StampGuids != null)
-				foreach (Guid guid in ea.StampGuids)
+			if (ea.ItemsGuids != null)
+				foreach (Guid guid in ea.ItemsGuids)
 				{
-					IItemProperties stampFromGuid = Map.GetStampFromGuid(guid);
-					if (stampFromGuid == null)
+					IItemProperties itemFromGuid = Map.GetItemFromGuid(guid);
+					if (itemFromGuid == null)
 					{
 						System.Diagnostics.Debugger.Break();
 					}
 					else
-						Map.SelectedItems.Add(stampFromGuid);
+						Map.SelectedItems.Add(itemFromGuid);
 				}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
-		private void ReconstituteStamps(object sender, ReconstituteStampsEventArgs ea)
+		private void ReconstituteItems(object sender, ReconstituteItemsEventArgs ea)
 		{
-			ReconstituteStamp(ea.SerializedStamp, ea.Stamps);
+			ea.Items.Add(MapElementFactory.CreateItemFrom(ea.SerializedItem));
 		}
 
-		private static void ReconstituteStamp(SerializedStamp serializedStamp, List<IItemProperties> stamps)
+		private void PrepareItemForSerialization(object sender, SerializedStampEventArgs ea)
 		{
-			stamps.Add(MapElementFactory.CreateStampFrom(serializedStamp));
-		}
+			if (!(ea.Properties is IGroup group))
+				return;
 
-		private void PrepareStampForSerialization(object sender, SerializedStampEventArgs ea)
-		{
-			PrepareStampForSerialization(ea.Properties, ea.Stamp);
-		}
-
-		private static void PrepareStampForSerialization(IItemProperties stampInstance, SerializedStamp stamp)
-		{
-			if (stamp.TypeName == "StampGroup" && stampInstance is StampGroup stampGroup)
-				foreach (IItemProperties childStamp in stampGroup.Stamps)
-				{
-					SerializedStamp serializedStamp = SerializedStamp.From(childStamp);
-					stamp.AddChild(serializedStamp);
-				}
+			foreach (IItemProperties childStamp in group.Children)
+			{
+				SerializedItem serializedStamp = SerializedItem.From(childStamp);
+				ea.Item.AddChild(serializedStamp);
+			}
 		}
 
 		private void ZoomAndPanControl_ZoomLevelChanged(object sender, EventArgs e)
 		{
 			if (Map.SelectedItems.Count > 0)
-				UpdateStampSelectionUI();
+				UpdateItemSelectionUI();
 		}
 
 		public List<StampFolder> StampDirectories = new List<StampFolder>();
@@ -1354,11 +1351,11 @@ namespace DndMapSpike
 			IItemProperties item = GetItemAt(lastMouseDownPoint.X, lastMouseDownPoint.Y);
 			if (item != null)
 			{
-				SelectItem(item);
+				SelectStamp(item);
 				return;
 			}
 
-			
+
 			ClearStampSelection();
 			Map.SelectedItems.Clear();
 
@@ -1473,7 +1470,7 @@ namespace DndMapSpike
 		{
 			HideTilingControls();
 			AddSelectedStampsToFloatingUI();
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		void CreateResizeCorner(ResizeTracker resizeTracker, double left, double top, SizeDirection sizeDirection)
@@ -1745,9 +1742,9 @@ namespace DndMapSpike
 				btnScale.Visibility = Visibility.Hidden;
 		}
 
-		bool HasAtLeastOneGroupSelected()
+		bool HasAtLeastOneUnlockedGroupSelected()
 		{
-			return Map.SelectedItems.Any(x => x is StampGroup);
+			return Map.SelectedItems.Any(x => x is IGroup group && !group.Locked);
 		}
 
 		Dictionary<ContentControl, PropertyEditorStatus> propEdStatus = new Dictionary<ContentControl, PropertyEditorStatus>();
@@ -1930,9 +1927,9 @@ namespace DndMapSpike
 			PropertyValueComparer propertyValueComparer = new PropertyValueComparer();
 
 			// TODO: First collect all properties and whether they are the same or not.
-			foreach (IItemProperties stampProperties in Map.SelectedItems)
+			foreach (IItemProperties itemProperties in Map.SelectedItems)
 			{
-				propertyValueComparer.Compare(stampProperties);
+				propertyValueComparer.Compare(itemProperties);
 			}
 
 			List<UIElement> editors = new List<UIElement>();
@@ -1953,7 +1950,12 @@ namespace DndMapSpike
 				}
 		}
 
-		void AddStampSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, double left, double top, double width, double height)
+		bool HasInterface<T>(List<Type> interfaces)
+		{
+			return interfaces.Contains(typeof(T));
+		}
+
+		void AddItemSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, double left, double top, double width, double height, List<Type> consistentInterfaces, SelectionContents selectionContents)
 		{
 			double contentScale = zoomAndPanControl.ContentScale;
 			double rowColumnSpacer = 3 / contentScale;
@@ -1966,24 +1968,30 @@ namespace DndMapSpike
 			double distributeRow = alignRow - buttonSize - rowColumnSpacer;
 			double alignColumn = right + buttonSize + rowColumnSpacer;
 			double distributeColumn = alignColumn + buttonSize + rowColumnSpacer;
-			CreateButton("btnRotateLeft", left - buttonSize, topRow, buttonSize);
-			CreateButton("btnRotateRight", right, topRow, buttonSize);
+			if (HasInterface<IArrangeable>(consistentInterfaces))
+			{
+				CreateButton("btnRotateLeft", left - buttonSize, topRow, buttonSize);
+				CreateButton("btnRotateRight", right, topRow, buttonSize);
+			}
 			double middleButtonX = left + width / 2 - buttonSize / 2;
 			double middleButtonY = top + height / 2 - buttonSize / 2;
 
-			if (width >= buttonSize)
+			if (width >= buttonSize && HasInterface<IArrangeable>(consistentInterfaces))
 			{
 				CreateButton("btnFlipVertical", middleButtonX, topRow, buttonSize);
 			}
 
-			if (height >= buttonSize)
+			if (height >= buttonSize && HasInterface<IArrangeable>(consistentInterfaces))
 				CreateButton("btnFlipHorizontal", right, middleButtonY, buttonSize);
 
 			double yPos = bottom - buttonSize;
-			StackScaleButtons("btnScale33Percent", (double)1 / 3, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
-			StackScaleButtons("btnScale50Percent", (double)1 / 2, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
-			StackScaleButtons("btnScale100Percent", 1, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
-			StackScaleButtons("btnScale200Percent", 2, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+			if (HasInterface<IScalable>(consistentInterfaces))
+			{
+				StackScaleButtons("btnScale33Percent", (double)1 / 3, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+				StackScaleButtons("btnScale50Percent", (double)1 / 2, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+				StackScaleButtons("btnScale100Percent", 1, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+				StackScaleButtons("btnScale200Percent", 2, selectedButtonScale, buttonSize, rowColumnSpacer, left, ref yPos, top);
+			}
 
 			CreateButton("btnSendToBack", right, bottomRow, buttonSize);
 			CreateButton("btnBringToFront", right + buttonSize + rowColumnSpacer, bottomRow, buttonSize);
@@ -2005,7 +2013,8 @@ namespace DndMapSpike
 			if (pixelWidth > minWidthColorControlEditor)
 			{
 				double newWidth = GetNewWidth(pixelWidth, minWidthColorControlEditor, maxWidthColorControlEditor);
-				colorControls = CreateColorControls(selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, bottomRow, buttonSize, newWidth);
+				if (HasInterface<IModifiableColor>(consistentInterfaces))
+					colorControls = CreateColorControls(selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, bottomRow, buttonSize, newWidth);
 			}
 
 			if (colorControls != null)
@@ -2014,10 +2023,10 @@ namespace DndMapSpike
 			}
 
 			bool hasMoreThanOneSelected = Map.SelectionHasAtLeast<IItemProperties>(2);
-			bool hasAtLeastOneGroupSelected = HasAtLeastOneGroupSelected();
+			bool hasAtLeastOneGroupSelected = HasAtLeastOneUnlockedGroupSelected();
 			double secondRow = bottomRow + buttonSize + rowColumnSpacer;
 			double groupUngroupLeft = right;
-			if (hasMoreThanOneSelected)
+			if (hasMoreThanOneSelected && selectionContents != SelectionContents.Mix)
 			{
 				CreateButton("btnGroup", groupUngroupLeft, secondRow, buttonSize);
 				groupUngroupLeft += buttonSize + rowColumnSpacer;
@@ -2179,69 +2188,140 @@ namespace DndMapSpike
 			itemSelectionCanvas.Children.Add(selectionRect);
 		}
 
-		void AddStampSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast)
+		void AddItemSelectionButtons(double? selectedButtonScale, double? selectedHueShift, double? selectedSaturation, double? selectedLightness, double? selectedContrast, List<Type> consistentInterfaces, SelectionContents selectionContents)
 		{
 			GetItemSelectionBounds(Map.SelectedItems, out double left, out double top, out double width, out double height);
-			AddStampSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, top, width, height);
+			AddItemSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, left, top, width, height, consistentInterfaces, selectionContents);
 		}
 
-		void UpdateStampSelectionUI()
+		void UpdateItemSelectionUI()
 		{
 			ClearSelectionUI();
 			double? selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast;
-			GetConsistentModSettings(out selectedButtonScale, out selectedHueShift, out selectedSaturation, out selectedLightness, out selectedContrast);
+			List<Type> consistentInterfaces;
+			SelectionContents selectionContents;
+			GetConsistentModSettings(out selectedButtonScale, out selectedHueShift, out selectedSaturation, out selectedLightness, out selectedContrast, out consistentInterfaces, out selectionContents);
 
-			AddStampSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast);
+			AddItemSelectionButtons(selectedButtonScale, selectedHueShift, selectedSaturation, selectedLightness, selectedContrast, consistentInterfaces, selectionContents);
 			foreach (IItemProperties stamp in Map.SelectedItems)
 				AddStampSelectionUI(stamp);
 
 			MoveSelectionCanvasToTop();
 		}
 
-		private void GetConsistentModSettings(out double? selectedButtonScale, out double? selectedHueShift, out double? selectedSaturation, out double? selectedLightness, out double? selectedContrast)
+		void AddAllInterfaces(List<Type> consistentInterfaces, IItemProperties item)
 		{
+			foreach (Type type in Known.Interfaces)
+				if (type.IsAssignableFrom(item.GetType()))
+					consistentInterfaces.Add(type);
+		}
+
+		void RemoveMissingInterfaces(List<Type> consistentInterfaces, IItemProperties item)
+		{
+			if (consistentInterfaces.Count == 0)
+				return;
+
+			List<Type> interfacesToRemove = new List<Type>();
+
+			foreach (Type type in consistentInterfaces)
+				if (!type.IsAssignableFrom(item.GetType()))
+					interfacesToRemove.Add(type);
+
+			foreach (Type type in interfacesToRemove)
+				consistentInterfaces.Remove(type);
+		}
+		public enum SelectionContents
+		{
+			AllStamps,
+			AllCharacters,
+			Mix
+		}
+
+		SelectionContents GetSelectionContents(List<IItemProperties> selectedItems)
+		{
+			SelectionContents selectionContents = SelectionContents.Mix;
+			bool firstTime = true;
+			foreach (IItemProperties item in selectedItems)
+			{
+				if (firstTime)
+				{
+					if (item is IStampProperties)
+						selectionContents = SelectionContents.AllStamps;
+					else
+						selectionContents = SelectionContents.AllCharacters;
+					firstTime = false;
+				}
+				else
+				{
+					if (item is IStampProperties)
+					{
+						if (selectionContents != SelectionContents.AllStamps)
+							return SelectionContents.Mix;
+					}
+					else if (selectionContents == SelectionContents.AllStamps)
+						return SelectionContents.Mix;
+				}
+			}
+			return selectionContents;
+		}
+
+		private void GetConsistentModSettings(out double? selectedButtonScale, out double? selectedHueShift, out double? selectedSaturation, out double? selectedLightness, out double? selectedContrast, out List<Type> consistentInterfaces, out SelectionContents selectionContents)
+		{
+			consistentInterfaces = new List<Type>();
 			selectedButtonScale = null;
 			selectedHueShift = null;
 			selectedSaturation = null;
 			selectedLightness = null;
 			selectedContrast = null;
-			foreach (IStampProperties stamp in Map.Filter<IStampProperties>())
+			selectionContents = GetSelectionContents(Map.SelectedItems);
+			bool firstTime = true;
+			foreach (IItemProperties item in Map.SelectedItems)
 			{
-				if (selectedButtonScale == null)
-					selectedButtonScale = stamp.Scale;
-				else if (selectedButtonScale != stamp.Scale)
+				if (firstTime)
+					AddAllInterfaces(consistentInterfaces, item);
+				else
+					RemoveMissingInterfaces(consistentInterfaces, item);
+
+				if (item is IScalable scalable)
 				{
-					selectedButtonScale = null;
-					break;
+					if (firstTime)
+						selectedButtonScale = scalable.Scale;
+					else if (selectedButtonScale != scalable.Scale)
+						selectedButtonScale = null;
 				}
-				if (selectedHueShift == null)
-					selectedHueShift = stamp.HueShift;
-				else if (selectedHueShift != stamp.HueShift)
+				else
+					selectedButtonScale = null;
+
+				if (item is IModifiableColor color)
+				{
+					if (firstTime)
+					{
+						selectedHueShift = color.HueShift;
+						selectedSaturation = color.Saturation;
+						selectedLightness = color.Lightness;
+						selectedContrast = color.Contrast;
+					}
+					else
+					{
+						if (selectedHueShift != color.HueShift)
+							selectedHueShift = null;
+						if (selectedSaturation != color.Saturation)
+							selectedSaturation = null;
+						if (selectedLightness != color.Lightness)
+							selectedLightness = null;
+						if (selectedContrast != color.Contrast)
+							selectedContrast = null;
+					}
+				}
+				else
 				{
 					selectedHueShift = null;
-					break;
-				}
-				if (selectedSaturation == null)
-					selectedSaturation = stamp.Saturation;
-				else if (selectedSaturation != stamp.Saturation)
-				{
 					selectedSaturation = null;
-					break;
-				}
-				if (selectedLightness == null)
-					selectedLightness = stamp.Lightness;
-				else if (selectedLightness != stamp.Lightness)
-				{
 					selectedLightness = null;
-					break;
-				}
-				if (selectedContrast == null)
-					selectedContrast = stamp.Contrast;
-				else if (selectedContrast != stamp.Contrast)
-				{
 					selectedContrast = null;
-					break;
 				}
+
+				firstTime = false;
 			}
 		}
 
@@ -2794,7 +2874,7 @@ namespace DndMapSpike
 				{
 					stampsLayer.EndUpdate();
 				}
-				UpdateStampSelectionUI();
+				UpdateItemSelectionUI();
 			}
 		}
 
@@ -2978,7 +3058,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		private void ResetHueSlider()
@@ -3003,7 +3083,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		private void ResetSaturationSlider()
@@ -3028,7 +3108,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		private void ResetLightnessSlider()
@@ -3053,7 +3133,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		private void ResetContrastSlider()
@@ -3124,7 +3204,9 @@ namespace DndMapSpike
 		void CopyColorModifications()
 		{
 			double? selectedButtonScale;
-			GetConsistentModSettings(out selectedButtonScale, out clipboardHue, out clipboardSaturation, out clipboardLightness, out clipboardContrast);
+			List<Type> consistentInterfaces;
+			SelectionContents selectionContents;
+			GetConsistentModSettings(out selectedButtonScale, out clipboardHue, out clipboardSaturation, out clipboardLightness, out clipboardContrast, out consistentInterfaces, out selectionContents);
 		}
 		private void CopyColorMod_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
@@ -3158,7 +3240,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		private void ResetAllColorMods_Click(object sender, RoutedEventArgs e)
@@ -3182,7 +3264,7 @@ namespace DndMapSpike
 			{
 				stampsLayer.EndUpdate();
 			}
-			UpdateStampSelectionUI();
+			UpdateItemSelectionUI();
 		}
 
 		private void CopyColorModMenuItem_Click(object sender, RoutedEventArgs e)

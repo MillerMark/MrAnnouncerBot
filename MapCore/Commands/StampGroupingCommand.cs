@@ -17,7 +17,7 @@ namespace MapCore
 			List<IItemProperties> stampsToGroup = new List<IItemProperties>();
 			stampsToGroup.AddRange(SelectedItems);
 			map.RemoveAllStamps(SelectedItems);
-			IItemGroup stampGroup = map.CreateGroup(stampsToGroup);
+			IGroup stampGroup = map.CreateGroup(stampsToGroup);
 			map.AddItem(stampGroup);
 			map.SortStampsByZOrder();
 			map.NormalizeZOrder();
@@ -30,7 +30,7 @@ namespace MapCore
 			List<UngroupedStamps> ungroupedStamps = new List<UngroupedStamps>();
 			foreach (IItemProperties stamp in SelectedItems)
 			{
-				if (stamp is IItemGroup stampGroup)
+				if (stamp is IGroup stampGroup && !stampGroup.Locked)
 				{
 					UngroupedStamps ungroupedStampsThisGroup = new UngroupedStamps(stampGroup);
 					ungroupedStampsThisGroup.StartingZOrder = stampGroup.ZOrder;

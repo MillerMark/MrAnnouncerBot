@@ -25,6 +25,7 @@ class DragonBackGame extends DragonGame {
 	fireWall: Sprites;
 	dndClock: SpriteProxy;
 	dndTimeDatePanel: SpriteProxy;
+	clockLayerEffects: SpriteCollection;
 	dndTimeStr: string;
 	dndDateStr: string;
 	characterStatsScroll: CharacterStatsScroll;
@@ -112,9 +113,12 @@ class DragonBackGame extends DragonGame {
 		return screenWidth - this.clockScale * this.clockPanel.originX - this.clockMargin + this.clockOffsetX;
 	}
 
-	private drawTime(context: CanvasRenderingContext2D) {
+	private drawTime(context: CanvasRenderingContext2D, now: number) {
 		if (!this.dndTimeStr)
 			return;
+
+		this.clockLayerEffects.updatePositions(now);
+		this.clockLayerEffects.draw(context, now);
 
 		const timeFont: string = 'px Baskerville Old Face';
 		const verticalMargin: number = 10;
@@ -250,7 +254,9 @@ class DragonBackGame extends DragonGame {
 			this.ShowWaitingForInitializationMessage(context, '#0000ff', 'Back Overlay is waiting for player data to be initialized.', 300);
 		}
 
-		this.drawTime(context);
+		this.drawSprinkles(context, now, Layer.Back);
+
+		this.drawTime(context, now);
 
 		//backgroundBanner.draw(myContext, 0, 0);
 
@@ -329,6 +335,8 @@ class DragonBackGame extends DragonGame {
 	}
 
 	loadResources(): void {
+		this.clockLayerEffects = new SpriteCollection();
+
 		//this.blueBall();
 		//this.purpleMagic();
 		//this.purpleBurst();
@@ -371,9 +379,9 @@ class DragonBackGame extends DragonGame {
 		this.dndClock = this.clock.add(clockX, clockY).setScale(this.clockScale);
 
 
-		this.backLayerEffects.add(this.clock);
-		this.backLayerEffects.add(this.fireWall);
-		this.backLayerEffects.add(this.clockPanel);
+		this.clockLayerEffects.add(this.clock);
+		this.clockLayerEffects.add(this.fireWall);
+		this.clockLayerEffects.add(this.clockPanel);
 	}
 
 	buildTestGoldParticle(): any {
@@ -631,14 +639,12 @@ class DragonBackGame extends DragonGame {
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
 		if (super.executeCommand(command, params, userInfo, now))
 			return true;
-		//if (command === "Launch") {
-		//  if (!myRocket.started || myRocket.isDocked) {
-		//    myRocket.started = true;
-		//    myRocket.launch(now);
-		//    gravityGames.newGame();
-		//    chat('Launching...');
-		//  }
-		//}
+		if (command === 'Emitter particles - off') {
+			this.characterStatsScroll.showingGoldDustEmitters = false;
+		}
+		else if (command === 'Emitter particles - on') {
+			this.characterStatsScroll.showingGoldDustEmitters = true;
+		}
 		//else if (command === "Dock") {
 		//  if (this.isSuperUser(userName)) {
 		//    this.removeAllGameElements(now);

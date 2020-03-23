@@ -739,6 +739,27 @@
 						</StackPanel>
 					</StackPanel>
 				</TabItem>
+				<TabItem x:Name="tbTest" Header="Test">
+					<StackPanel Orientation="Vertical">
+						<Button x:Name="btnTestShowSprinkles" MaxWidth="160" Margin="8" Click="BtnTestShowSprinkles_Click">
+							Show Sprinkles!
+						</Button>
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+							<Button x:Name="btnTestWalkLeft" Width="120" Margin="8" Click="BtnTestWalkLeft_Click">
+								Walk Forwards
+							</Button>
+							<Button x:Name="btnTestWalkRight" Width="120" Margin="8" Click="BtnTestWalkRight_Click">
+								Walk Backwards
+							</Button>
+						</StackPanel>
+						<Button x:Name="btnTestHideSprinkles" MaxWidth="160" Margin="8" Click="BtnTestHideSprinkles_Click">
+							Hide Sprinkles!
+						</Button>
+						<Button x:Name="btnSprinkleBlast" MaxWidth="160" Margin="8" Click="BtnSprinkleBlast_Click">
+							Sprinkle Blast!
+						</Button>
+					</StackPanel>
+				</TabItem>
 			</TabControl>
 		</StackPanel>
 	</Grid>

@@ -11,6 +11,13 @@ namespace DndMapSpike
 {
 	public class MapCharacter : BaseItemProperties, IFloatingItem
 	{
+		[Editable]
+		public string Name { get; set; }
+
+		[DisplayText("HP:")]
+		[Precision(0)]
+		public virtual double HitPoints { get; set; }
+
 		public override double Width
 		{
 			get
@@ -38,6 +45,7 @@ namespace DndMapSpike
 		public MapCharacter()
 		{
 			Guid = Guid.NewGuid();
+			TypeName = nameof(MapCharacter);
 		}
 
 		public override bool ContainsPoint(double x, double y)
@@ -64,24 +72,7 @@ namespace DndMapSpike
 			Y = y;
 		}
 
-		void TransferFrom(SerializedCharacter character)
-		{
-			X = character.X;
-			Y = character.Y;
-			Visible = character.Visible;
-			FileName = character.FileName;
-			Guid = character.Guid;
-			Height = character.Height;
-			Width = character.Width;
-		}
-		public static IItemProperties CreateCharacterFrom(SerializedCharacter character)
-		{
-			MapCharacter mapCharacter = new MapCharacter();
-			mapCharacter.TransferFrom(character);
-			return mapCharacter;
-		}
-
-		public void CreateFloating(Canvas canvas, double left = 0, double top = 0)
+		public virtual void CreateFloating(Canvas canvas, double left = 0, double top = 0)
 		{
 			Image image = new Image();
 			image.Source = new BitmapImage(new Uri(FileName));
@@ -97,22 +88,24 @@ namespace DndMapSpike
 			Canvas.SetTop(image, top);
 		}
 
-		public void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
+		public virtual void BlendStampImage(StampsLayer stampsLayer, double xOffset = 0, double yOffset = 0)
 		{
 			if (!Visible)
 				return;
 			stampsLayer.BlendStampImage(this, xOffset, yOffset);
 		}
 
-		public void CloneFrom(IItemProperties item)
+		public override void GetPropertiesFrom(IItemProperties itemProperties, bool transferGuid = true)
 		{
-			TransferProperties(item);
+			base.GetPropertiesFrom(itemProperties, transferGuid);
+			if (itemProperties is MapCharacter mapCharacter)
+				this.GetPropertiesFrom<MapCharacter>(mapCharacter);
 		}
 
 		static MapCharacter Clone(MapCharacter character)
 		{
 			MapCharacter result = new MapCharacter(character.FileName, character.X, character.Y);
-			result.CloneFrom(character);
+			result.GetPropertiesFrom(character, false);
 			return result;
 		}
 
@@ -122,8 +115,14 @@ namespace DndMapSpike
 			result.Move(deltaX, deltaY);
 			return result;
 		}
+		public static IItemProperties From(SerializedItem stamp)
+		{
+			MapCharacter mapCharacter = new MapCharacter();
+			stamp.AssignPropertiesTo(mapCharacter);
+			return mapCharacter;
+		}
 
-		public MapCharacter(string fileName)
+		public MapCharacter(string fileName) : this()
 		{
 			FileName = fileName;
 		}
@@ -131,7 +130,7 @@ namespace DndMapSpike
 		Image image;
 
 		[JsonIgnore]
-		public Image Image
+		public virtual Image Image
 		{
 			get
 			{
