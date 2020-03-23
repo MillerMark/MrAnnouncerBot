@@ -1,27 +1,22 @@
-﻿using System.Net.Http;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.IO;
+using System.Net;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Mail;
+using System.Threading;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using BotCore;
 using CsvHelper;
-using Microsoft.Extensions.Configuration;
-using MrAnnouncerBot.Games.Zork;
-using OBSWebsocketDotNet;
-using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
-using System.Threading;
-using Newtonsoft.Json;
-using TwitchLib.Api;
-using System.Reflection;
-using System.Text;
-using BotCore;
 using Microsoft.AspNetCore.SignalR.Client;
-using System.Net.Mail;
-using System.Net;
-using System.Threading.Tasks;
-using System.IO.Compression;
+using Newtonsoft.Json;
+using MrAnnouncerBot.Games.Zork;
+using OBSWebsocketDotNet;
 
 namespace MrAnnouncerBot
 {
@@ -461,11 +456,6 @@ namespace MrAnnouncerBot
 			MarkCodeRushIssue(message, attachLogFiles, attachSettingsFiles, sendPrz, sendAlex, sendPerf, sendAllDevs, backTrackStr);
 		}
 
-		void CompressFiles(string[] files)
-		{
-
-		}
-
 		private void TwitchClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
 		{
 			HandleUserFanfare(e.ChatMessage);
@@ -546,10 +536,11 @@ namespace MrAnnouncerBot
 				// 
 			}
 
-			Email($"CodeRush Issue - {title}", $"{title}:\n{showStartURL} {durationStr}{errors}", attachedFiles, sendPrz, sendAlex, sendPerf, sendAllDevs);
+			string htmlBody = $"{title}:\n{showStartURL} {durationStr}{errors}\nEmail sent at {DateTime.Now.ToLongTimeString()}, local time.";
+			Email($"CodeRush Issue - {title}", htmlBody, attachedFiles);
 		}
 
-		public static void Email(string subject, string htmlBody, List<string> attachedFiles, bool sendPrz, bool sendAlex, bool sendPerf, bool sendAllDevs)
+		public static void Email(string subject, string htmlBody, List<string> attachedFiles)
 		{
 			try
 			{
@@ -564,14 +555,14 @@ namespace MrAnnouncerBot
 				message.From = new MailAddress(Twitch.Configuration["Secrets:EmailFromAddress"]);
 				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailMark"]));
 				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailRory"]));
-				if (sendPrz)
-					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPrz"]));
-				if (sendAlex)
-					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAlex"]));
-				if (sendPerf)
-					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPerf"]));
-				if (sendAllDevs)
-					message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAllDevs"]));
+				//if (sendPrz)
+				//	message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPrz"]));
+				//if (sendAlex)
+				message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAlex"]));
+				//if (sendPerf)
+				//	message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailPerf"]));
+				//if (sendAllDevs)
+				//	message.To.Add(new MailAddress(Twitch.Configuration["Secrets:EmailAllDevs"]));
 				message.Subject = subject;
 				message.IsBodyHtml = true; //to make message body as html  
 				message.Body = htmlBody;
@@ -706,12 +697,6 @@ namespace MrAnnouncerBot
 			Twitch.Chat(TruncateForTwitch(msg));
 		}
 
-		private void Whisper(string userName, string msg)
-		{
-			//Twitch.Whisper(userName, "yo");
-			Twitch.Whisper(userName, TruncateForTwitch(msg));
-		}
-
 		public void Run()
 		{
 			Twitch.InitializeConnections();
@@ -763,27 +748,6 @@ namespace MrAnnouncerBot
 					return "Maybe later.";
 				default:
 					return "Gimme a sec...";
-			}
-		}
-
-		string GetWhatMessage()
-		{
-			switch (RandomInt(6))
-			{
-				case 0:
-					return "Sorry?";
-				case 1:
-					return "Didn't get that.";
-				case 2:
-					return "Unknown command.";
-				case 3:
-					return "You talking to me?";
-				case 4:
-					return "That's not gonna work.";
-				case 5:
-					return "Nobody understands what you're saying.";
-				default:
-					return "I don't think so.";
 			}
 		}
 
@@ -1058,32 +1022,6 @@ namespace MrAnnouncerBot
 				Console.WriteLine("Generating updated readme...");
 				ReadmeManager.GenerateNewReadme();
 			}
-		}
-
-
-		private string GetTimeParseFormatExpression(string timeString)
-		{
-
-			if (timeString.Contains("h"))
-			{
-				return "h\\hm\\mss\\s";
-			}
-			else if (timeString.Contains("m"))
-			{
-				if (timeString.Contains("s"))
-					return "m\\mss\\s";
-				else
-					return "m\\m";
-			}
-			else if (timeString.Contains("s"))
-			{
-				return "ss\\s";
-			}
-			else
-			{
-				throw new ArgumentException("Invalid timeString received");
-			}
-
 		}
 
 		private string GetTimeParseFormatExpressionFromWilBennett(string timeString)
