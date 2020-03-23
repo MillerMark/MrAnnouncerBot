@@ -85,11 +85,11 @@ namespace Imaging
 		{
 			right = 0;
 			bottom = 0;
-
+			// TODO: Fix a bug when last frames are entirely empty. 
 			using (DirectBitmap bitmap = DirectBitmap.FromFile(file))
 			{
 				int line = 0;
-				while (VerticalLineEmpty(bitmap, line))
+				while (line < bitmap.Width && VerticalLineEmpty(bitmap, line))
 				{
 					line++;
 				}
@@ -97,15 +97,17 @@ namespace Imaging
 				if (line < bitmap.Width)
 				{
 					line = 0;
-					while (VerticalLineEmpty(bitmap, bitmap.Width - line - 1))
+					int lineToCheck = bitmap.Width - line - 1;
+					while (lineToCheck >= 0 && VerticalLineEmpty(bitmap, lineToCheck))
 					{
 						line++;
+						lineToCheck = bitmap.Width - line - 1;
 					}
 					right = line;
 				}
 
 				line = 0;
-				while (HorizontalLineEmpty(bitmap, line))
+				while (line < bitmap.Height && HorizontalLineEmpty(bitmap, line))
 				{
 					line++;
 				}
@@ -113,9 +115,11 @@ namespace Imaging
 				if (line < bitmap.Height)
 				{
 					line = 0;
-					while (HorizontalLineEmpty(bitmap, bitmap.Height - line - 1))
+					int lineToCheck = bitmap.Height - line - 1;
+					while (lineToCheck >= 0 && HorizontalLineEmpty(bitmap, lineToCheck))
 					{
 						line++;
+						lineToCheck = bitmap.Height - line - 1;
 					}
 					bottom = line;
 				}

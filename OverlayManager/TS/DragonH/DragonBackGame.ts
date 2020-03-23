@@ -639,14 +639,12 @@ class DragonBackGame extends DragonGame {
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
 		if (super.executeCommand(command, params, userInfo, now))
 			return true;
-		//if (command === "Launch") {
-		//  if (!myRocket.started || myRocket.isDocked) {
-		//    myRocket.started = true;
-		//    myRocket.launch(now);
-		//    gravityGames.newGame();
-		//    chat('Launching...');
-		//  }
-		//}
+		if (command === 'Emitter particles - off') {
+			this.characterStatsScroll.showingGoldDustEmitters = false;
+		}
+		else if (command === 'Emitter particles - on') {
+			this.characterStatsScroll.showingGoldDustEmitters = true;
+		}
 		//else if (command === "Dock") {
 		//  if (this.isSuperUser(userName)) {
 		//    this.removeAllGameElements(now);

@@ -15,6 +15,14 @@
 
 	sprites: SpriteProxy[];
 
+	getSprite(name: string): SpriteProxy {
+		for (let i = 0; i < this.sprites.length; i++) {
+			if (this.sprites[i].name === name)
+				return this.sprites[i];
+		}
+		return null;
+	}
+
 	constructor(baseAnimationName: string, expectedFrameCount: number, private frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
 		this.opacity = 1;
 		this.sprites = [];
@@ -78,9 +86,19 @@
 	}
 
 	addShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
-		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
-		let sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
+		let sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
 		this.sprites.push(sprite);
+		return sprite;
+	}
+
+	private createColorShiftingSprite(startingFrameIndex: number, x: number, y: number, hueShift: number, saturationPercent: number, brightness: number): ColorShiftingSpriteProxy {
+		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
+		return new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
+	}
+
+	insertShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
+		let sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
+		this.sprites.unshift(sprite);
 		return sprite;
 	}
 
@@ -309,7 +327,7 @@
 
 
 			if (originalFrameIndex !== sprite.frameIndex)
-				sprite.frameAdvanced(returnFrameIndex, reverse);
+				sprite.frameAdvanced(returnFrameIndex, reverse, nowMs);
 
 			this.cleanupFinishedAnimations(i, sprite);
 

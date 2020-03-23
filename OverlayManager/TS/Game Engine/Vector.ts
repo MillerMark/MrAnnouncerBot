@@ -13,11 +13,22 @@ class Vector {
   // The magnitude is typically calculated using the dot product. That is one of
   // the key operations when working with vectors. Probably best to implement
   // that (basically the same as length but allowing two vectors to be dotted). It
-  // will make it easier when looking up information/formulas on the web.
-  length: number;
+	// will make it easier when looking up information/formulas on the web.
+	private _length: number = undefined;
+	
+	get length(): number {
+		if (this._length === undefined) {
+			this._length = Math.sqrt(this.x * this.x + this.y * this.y);
+		}
+		return this._length;
+	}
+	
+	set length(newValue: number) {
+		this._length = newValue;
+	}
 
   constructor(public x: number, public y: number) {
-    this.length = Math.sqrt(this.x * this.x + this.y * this.y);
+    //this.length = Math.sqrt(this.x * this.x + this.y * this.y);
   }
 
   add(vector: Vector): Vector {

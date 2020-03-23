@@ -181,6 +181,15 @@ class AnimatedElement {
 		return true;
 	}
 
+	fadingOut(now: number): boolean {
+		let lifeRemaining: number = this.getLifeRemaining(now);
+		return this.isFadingOut(lifeRemaining);
+	}
+
+	private isFadingOut(lifeRemaining: number): boolean {
+		return lifeRemaining < this.fadeOutTime && this.fadeOnDestroy;
+	}
+
 	getAlpha(now: number): number {
 		let msAlive: number = now - this.timeStart;
 
@@ -190,8 +199,8 @@ class AnimatedElement {
 		if (!this.expirationDate)
 			return this.opacity;
 
-		let lifeRemaining: number = this.expirationDate - now;
-		if (lifeRemaining < this.fadeOutTime && this.fadeOnDestroy) {
+		let lifeRemaining: number = this.getLifeRemaining(now);
+		if (this.isFadingOut(lifeRemaining)) {
 			return this.opacity * lifeRemaining / this.fadeOutTime;
 		}
 		return this.opacity;
@@ -309,7 +318,7 @@ class SpriteProxy extends AnimatedElement {
 	cropBottom: number;
 	numFramesDrawn: number = 0;
 	onCycleCallbacks: Array<(sprite: SpriteProxy, now: number) => void>;
-	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean) => void>;
+	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>;
 	
 
 	lastTimeWeAdvancedTheFrame: number;
@@ -329,9 +338,9 @@ class SpriteProxy extends AnimatedElement {
 		this.onCycleCallbacks = null;
 	}
 
-	addOnFrameAdvanceCallback(onFrameAdvanced: (sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean) => void): void {
+	addOnFrameAdvanceCallback(onFrameAdvanced: (sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void): void {
 		if (!this.onFrameAdvanceCallbacks)
-			this.onFrameAdvanceCallbacks = new Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean) => void>();
+			this.onFrameAdvanceCallbacks = new Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>();
 		this.onFrameAdvanceCallbacks.push(onFrameAdvanced);
 	}
 
@@ -354,11 +363,11 @@ class SpriteProxy extends AnimatedElement {
 		}
 	}
 
-	frameAdvanced(returnFrameIndex: number, reverse: boolean) {
+	frameAdvanced(returnFrameIndex: number, reverse: boolean, nowMs: number) {
 		if (this.onFrameAdvanceCallbacks) {
 			let thisInstance = this;
 			this.onFrameAdvanceCallbacks.forEach(function (onFrameAdvanceCallback) {
-				onFrameAdvanceCallback(thisInstance, returnFrameIndex, reverse);
+				onFrameAdvanceCallback(thisInstance, returnFrameIndex, reverse, nowMs);
 			});
 		}
 	}
@@ -482,13 +491,16 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 		}
 	}
 
-	getCurrentHueShift(now: number): number {
-		let result: number = this.hueShift;
+	getCurrentHueShiftDelta(now: number): number {
 		if (this.hueShiftPerSecond != 0) {
 			let secondsPassed: number = (now - this.timeStart) / 1000;
-			result = this.hueShift + secondsPassed * this.hueShiftPerSecond % 360;
+			return secondsPassed * this.hueShiftPerSecond % 360;
 		}
-		return result;
+		return 0;
+	}
+
+	getCurrentHueShift(now: number): number {
+		return this.hueShift + this.getCurrentHueShiftDelta(now);
 	}
 
 	shiftColor(context: CanvasRenderingContext2D, now: number) {
@@ -506,5 +518,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 		return this;
 	}
 
-
+	setColorShiftMilestone(now: number): void {
+		this.hueShift = this.getCurrentHueShift(now);
+		this.changeVelocity(this.velocityX, this.velocityY, now); // Resets timeStart, used for calculating hue shifts.
+	}
 }

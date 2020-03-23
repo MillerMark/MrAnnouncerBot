@@ -2061,7 +2061,8 @@ namespace DHDM
 
 		public DiceRollType NextDieRollType
 		{
-			get => nextDieRollType; set
+			get => nextDieRollType;
+			set
 			{
 				if (nextDieRollType == value)
 					return;
@@ -2071,6 +2072,7 @@ namespace DHDM
 					tbNextDieRoll.Text = $"({nextDieRollType})";
 				else
 					tbNextDieRoll.Text = "";
+				btnRollDice.IsEnabled = true;
 			}
 		}
 
@@ -2170,11 +2172,7 @@ namespace DHDM
 				TellDungeonMaster($"Wild Magic roll: {individualRoll.value}.");
 			}
 		}
-		// TODO: Delete this.
-		void NeedToRollWildMagic(IndividualRoll individualRoll)
-		{
 
-		}
 		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
 		{
 			switch (individualRoll.type)
@@ -2185,6 +2183,7 @@ namespace DHDM
 				case "WildMagicD20Check":
 				case "Wild Magic Check":
 				case "\"Wild Magic Check\"":
+					History.Log("IndividualDiceStoppedRolling: " + individualRoll.type);
 					HandleWildMagicD20Check(individualRoll);
 					break;
 			}
@@ -2760,6 +2759,7 @@ namespace DHDM
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
+				ckbUseMagic.IsChecked = false;
 				game.EnteringCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
 				RollInitiative();
@@ -4444,7 +4444,10 @@ namespace DHDM
 				bool isSimpleSpell = spellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
 				if (isSimpleSpell)
+				{
+					btnRollDice.IsEnabled = false;
 					return;  // No need to roll the dice
+				}
 			}
 
 			UnleashTheDice();
@@ -4689,12 +4692,17 @@ namespace DHDM
 
 		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Walk Left");
+			HubtasticBaseStation.AnimateSprinkles("Walk Forwards");
 		}
 
 		private void BtnTestWalkRight_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Walk Right");
+			HubtasticBaseStation.AnimateSprinkles("Walk Backwards");
+		}
+
+		private void BtnSprinkleBlast_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("SprinklesBlast");
 		}
 	}
 
