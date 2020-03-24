@@ -13,7 +13,7 @@ namespace DHDM
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.SetVantage(vantageKind, dungeonMasterApp.GetPlayerIdFromNameStart(playerInitial));
+			dungeonMasterApp.SetVantage(vantageKind, dungeonMasterApp.GetPlayerIdFromName(playerInitial));
 		}
 
 		public bool Matches(string message)

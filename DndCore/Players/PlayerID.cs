@@ -12,25 +12,25 @@ namespace DndCore
 		public const int Fred = 4;
 		public const int Willy = 5;
 		
-		public static int FromName(string name)
-		{
-			if (name == null)
-				return -1;
+		//public static int FromName(string name)
+		//{
+		//	if (name == null)
+		//		return -1;
 
-			string lowerCaseName = name.ToLower();
-			if (lowerCaseName.StartsWith("willy"))
-				return Willy;
-			if (lowerCaseName.StartsWith("shemo"))
-				return Shemo;
-			if (lowerCaseName.StartsWith("merkin"))
-				return Merkin;
-			if (lowerCaseName.StartsWith("ava") || lowerCaseName.StartsWith("l'il"))
-				return LilCutie;
-			if (lowerCaseName.StartsWith("fred"))
-				return Fred;
-			if (lowerCaseName.StartsWith("lady"))
-				return Lady;
-			return -1;
-		}
+		//	string lowerCaseName = name.ToLower();
+		//	if (lowerCaseName.StartsWith("willy"))
+		//		return Willy;
+		//	if (lowerCaseName.StartsWith("shemo"))
+		//		return Shemo;
+		//	if (lowerCaseName.StartsWith("merkin"))
+		//		return Merkin;
+		//	if (lowerCaseName.StartsWith("ava") || lowerCaseName.StartsWith("l'il"))
+		//		return LilCutie;
+		//	if (lowerCaseName.StartsWith("fred"))
+		//		return Fred;
+		//	if (lowerCaseName.StartsWith("lady"))
+		//		return Lady;
+		//	return -1;
+		//}
 	}
 }

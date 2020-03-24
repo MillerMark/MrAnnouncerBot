@@ -30,7 +30,7 @@ namespace DHDM
 			else if(TargetPlayer == null)
 				playerIds.Add(dungeonMasterApp.GetActivePlayerId());
 			else 
-				playerIds.Add(dungeonMasterApp.GetPlayerIdFromNameStart(TargetPlayer));
+				playerIds.Add(dungeonMasterApp.GetPlayerIdFromName(TargetPlayer));
 			return playerIds;
 		}
 	}

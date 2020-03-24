@@ -11,7 +11,7 @@ namespace DHDM
 		void SetBoolProperty(int playerId, string propertyName, bool value);
 		bool GetBoolProperty(int playerId, string propertyName);
 		void SetHiddenThreshold(int hiddenThreshold);
-		int GetPlayerIdFromNameStart(string characterName);
+		int GetPlayerIdFromName(string characterName);
 		int GetActivePlayerId();
 		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
 		void RollWildMagicCheck();

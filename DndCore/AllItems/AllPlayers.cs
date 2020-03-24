@@ -38,13 +38,15 @@ namespace DndCore
 			return Players.Where(x => x.playingNow).OrderBy(x => x.leftMostPriority).ToList();
 		}
 
-		public static int GetPlayerIdFromNameStart(List<Character> players, string characterName)
+		public static int GetPlayerIdFromName(List<Character> players, string characterName)
 		{
 			if (characterName == "c")
 				characterName = "L'il Cutie";
 
 			string lowerName = characterName.ToLower();
-			
+			if (lowerName == "ava")
+				lowerName = "l'il cutie";
+
 			foreach (Character character in players)
 			{
 				if (character.name.ToLower().StartsWith(lowerName))
@@ -58,6 +60,19 @@ namespace DndCore
 		public static Character GetFromId(int playerId)
 		{
 			return Players.FirstOrDefault(x => x.playerID == playerId);
+		}
+
+		public static Character GetFromName(string name)
+		{
+			int playerId = GetPlayerIdFromName(name);
+			if (playerId == -1)
+				return null;
+			return GetFromId(playerId);
+		}
+
+		public static int GetPlayerIdFromName(string name)
+		{
+			return GetPlayerIdFromName(Players, name);
 		}
 
 		public static List<Character> Players

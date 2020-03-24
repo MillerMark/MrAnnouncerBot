@@ -3800,9 +3800,9 @@ namespace DHDM
 			ChangePlayerHealth(tbxDamage, -1);
 		}
 
-		public int GetPlayerIdFromNameStart(string characterName)
+		public int GetPlayerIdFromName(string characterName)
 		{
-			return AllPlayers.GetPlayerIdFromNameStart(game.Players, characterName);
+			return AllPlayers.GetPlayerIdFromName(game.Players, characterName);
 		}
 
 		public int GetActivePlayerId()
@@ -4687,7 +4687,7 @@ namespace DHDM
 
 		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Hide Sprinkles");
+			HubtasticBaseStation.AnimateSprinkles("Dies");
 		}
 
 		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)

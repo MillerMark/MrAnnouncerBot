@@ -743,7 +743,7 @@ namespace DndCore
 		public static Character From(CharacterDto characterDto)
 		{
 			var character = new Character();
-			character.playerID = PlayerID.FromName(characterDto.name);
+			//character.playerID = AllPlayers.GetPlayerIdFromName(characterDto.name);
 			character.features = GetFeatures(characterDto.features, character);
 			character.name = characterDto.name;
 			character.playingNow = !string.IsNullOrWhiteSpace(characterDto.playingNow);
@@ -766,6 +766,7 @@ namespace DndCore
 				character.AddClass(class2, level2).SubClass = subClass2;
 
 			character.hitPoints = characterDto.hitPoints;
+			character.playerID = characterDto.playerId;
 			character.maxHitPoints = characterDto.maxHitPoints;
 			character.baseArmorClass = characterDto.baseArmorClass;
 			character.goldPieces = characterDto.goldPieces;

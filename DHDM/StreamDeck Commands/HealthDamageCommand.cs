@@ -17,7 +17,7 @@ namespace DHDM
 			damageHealthChange.DamageHealth = healthDamageValue;
 			if (TargetPlayer != null)
 			{
-				int playerId = dungeonMasterApp.GetPlayerIdFromNameStart(TargetPlayer);
+				int playerId = dungeonMasterApp.GetPlayerIdFromName(TargetPlayer);
 				if (playerId != -1)
 					damageHealthChange.PlayerIds.Add(playerId);
 			}

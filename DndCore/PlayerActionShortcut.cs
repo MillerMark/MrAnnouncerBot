@@ -280,7 +280,7 @@ namespace DndCore
 				cleanName = cleanName.EverythingBefore(" of ");
 				weapon = AllWeapons.Get(cleanName);
 			}
-			Character player = AllPlayers.GetFromId(PlayerID.FromName(shortcutDto.player));
+			Character player = AllPlayers.GetFromName(shortcutDto.player);
 
 			if (weapon != null)
 			{
@@ -571,7 +571,7 @@ namespace DndCore
 			result.Name = shortcutDto.name + suffix;
 
 			result.Part = GetTurnPart(shortcutDto.time);
-			result.PlayerId = PlayerID.FromName(shortcutDto.player);
+			result.PlayerId = AllPlayers.GetPlayerIdFromName(shortcutDto.player);
 			result.Type = GetDiceRollType(shortcutDto.type);
 			result.VantageMod = DndUtils.ToVantage(shortcutDto.vantageMod);
 			result.ModifiesExistingRoll = MathUtils.IsChecked(shortcutDto.rollMod);

@@ -14,7 +14,7 @@ namespace DHDM
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			const bool verbose = false;
-			int playerId = dungeonMasterApp.GetPlayerIdFromNameStart(TargetPlayer);
+			int playerId = dungeonMasterApp.GetPlayerIdFromName(TargetPlayer);
 			string valueUppercase = valueAsStr.ToUpper().Trim();
 			if (valueUppercase == "TRUE" || valueUppercase == "FALSE")
 			{

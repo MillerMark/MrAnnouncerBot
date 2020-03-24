@@ -13,7 +13,7 @@ namespace DHDM
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.SelectPlayerShortcut(shortcutName, dungeonMasterApp.GetPlayerIdFromNameStart(playerInitial));
+			dungeonMasterApp.SelectPlayerShortcut(shortcutName, dungeonMasterApp.GetPlayerIdFromName(playerInitial));
 		}
 
 		public bool Matches(string message)
