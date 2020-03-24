@@ -745,13 +745,44 @@
 							Show Sprinkles!
 						</Button>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-							<Button x:Name="btnTestWalkLeft" Width="120" Margin="8" Click="BtnTestWalkLeft_Click">
-								Walk Forwards
-							</Button>
 							<Button x:Name="btnTestWalkRight" Width="120" Margin="8" Click="BtnTestWalkRight_Click">
 								Walk Backwards
 							</Button>
+							<Button x:Name="btnStandIdle" Width="120" Margin="8" Click="BtnStandIdle_Click">
+								Stand
+							</Button>
+							<Button x:Name="btnThreatened" Width="120" Margin="8" Click="BtnThreatened_Click">
+								Threatened
+							</Button>
+							<Button x:Name="btnTestWalkLeft" Width="120" Margin="8" Click="BtnTestWalkLeft_Click">
+								Walk Forwards
+							</Button>
 						</StackPanel>
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+							<Button x:Name="btnCry" Width="120" Margin="8" Click="BtnCry_Click">
+								Cry!
+							</Button>
+							<Button x:Name="btnBabyEyes" Width="120" Margin="8" Click="BtnBabyEyes_Click">
+								Baby Eyes
+							</Button>
+							<Button x:Name="btnFart" Width="120" Margin="8" Click="BtnFart_Click">
+								Fart!
+							</Button>
+						</StackPanel>
+						<StackPanel x:Name="spAttack" Orientation="Horizontal" HorizontalAlignment="Center">
+							<Button x:Name="btnScoopAttack" Width="120" Margin="8" Click="BtnScoopAttack_Click">
+								Scoop Attack
+							</Button>
+							<Button x:Name="btnStabAttack" Width="120" Margin="8" Click="BtnStabAttack_Click">
+								Stab Attack
+							</Button>
+							<Button x:Name="btnPushUpAttack" Width="120" Margin="8" Click="BtnPushUpAttack_Click">
+								Push Up Attack
+							</Button>
+						</StackPanel>
+						<Button x:Name="btnDies" Width="120" Margin="8" Click="">
+							Dies!
+						</Button>
 						<Button x:Name="btnTestHideSprinkles" MaxWidth="160" Margin="8" Click="BtnTestHideSprinkles_Click">
 							Hide Sprinkles!
 						</Button>

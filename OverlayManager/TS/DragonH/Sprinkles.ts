@@ -95,11 +95,26 @@ class Sprinkles {
 	static readonly WalkForwards: string = 'Walk Forwards';
 	static readonly WalkBackwards: string = 'Walk Backwards';
 	static readonly SprinklesBlast: string = 'SprinklesBlast';
+	static readonly SprinklesTears: string = 'SprinklesTears';
 	static readonly BodyModifier: string = '.Body';
 	static readonly HornModifier: string = '.Horn';
 	static readonly forwardsBodyHueShiftMaxValue: number = 30;
 	static readonly backwardsBodyHueShiftMinValue: number = -30;
-	state: SprinkleState = SprinkleState.Offscreen;
+
+	private _state: SprinkleState = SprinkleState.Offscreen;
+
+	get state(): SprinkleState {
+		return this._state;
+	}
+
+	set state(newValue: SprinkleState) {
+		if (this._state === newValue)
+			return;
+		this._state;
+		let oldState: SprinkleState = this._state;
+		this._state = newValue;
+		this.stateChanged(oldState, newValue);
+	}
 	layer: Layer;
 	private _x: number = 200;
 	startX: number;
@@ -206,6 +221,7 @@ class Sprinkles {
 		let dequeuedAnimations: boolean = false;
 		while (this.animationQueue.length > 0) {
 			let queuedAnimation: QueuedAnimation = this.animationQueue.shift();
+			console.log(`Starting animation: ${queuedAnimation.hornBodyPair.name} at ${new Date()}`);
 			this.addAnimation(queuedAnimation.hornBodyPair, now, queuedAnimation.reverse, queuedAnimation.frameIntervalOverride);
 			dequeuedAnimations = true;
 		}
@@ -231,15 +247,17 @@ class Sprinkles {
 		this.parts.push(new HornBodyPair(Sprinkles_StabAttack, 'StabAttack - ', 79, originX + 113, originY + 3, 0, 39));
 		this.parts.push(new HornBodyPair(Sprinkles_Walk, 'Walk - ', 81, originX - 4, originY + 12, 0, 257));
 		this.addAdornment('/Sprinkles/FireExhale/FireExhale', 125, originX - 165, originY - 400, 'FireBreath');
-		this.addAdornment('/Sprinkles/Idle/IdleSprinkleBlast', 55, originX + 97, originY + 4, 'SprinklesBlast');
+		this.addAdornment('/Sprinkles/Idle/IdleSprinkleBlast', 55, originX + 97, originY + 4, Sprinkles.SprinklesBlast);
+		this.addAdornment('/Sprinkles/Tears/Tears', 91, originX + -75, originY - 289, Sprinkles.SprinklesTears, AnimationStyle.Loop);
 	}
 
-	addAdornment(baseAnimationName: string, frameCount: number, originX: number, originY: number, name: string): any {
-		let fireBreath: Sprites = new Sprites(baseAnimationName, frameCount, fps30, AnimationStyle.Sequential, true);
-		fireBreath.originX = originX;
-		fireBreath.originY = originY;
-		fireBreath.name = name;
-		this.adornments.add(fireBreath);
+	addAdornment(baseAnimationName: string, frameCount: number, originX: number, originY: number, name: string, animationStyle: AnimationStyle = AnimationStyle.Sequential): Sprites {
+		let adornment: Sprites = new Sprites(baseAnimationName, frameCount, fps30, animationStyle, true);
+		adornment.originX = originX;
+		adornment.originY = originY;
+		adornment.name = name;
+		this.adornments.add(adornment);
+		return adornment;
 	}
 
 	hasAnimationsRunning(): boolean {
@@ -270,7 +288,14 @@ class Sprinkles {
 				}
 				break;
 			case Sprinkles.SprinklesBlast:
-				this.sprinkleBlast();
+				this.addIdleAdornment(commandData);
+				return true;
+			case Sprinkles.SprinklesTears:
+				let sprite: SpriteProxy = this.addIdleAdornment(commandData);
+				if (sprite != null) {
+					sprite.fadeInTime = 600;
+					sprite.fadeOutTime = 1000;
+				}
 				return true;
 		}
 		return false;
@@ -284,10 +309,26 @@ class Sprinkles {
 			this.executeNextCommand(now);
 	}
 
+	showQueue() {
+		if (!this.commandQueue || this.commandQueue.length <= 0)
+			console.log('commandQueue - []');
+		else {
+			let commands: string = '';
+			for (let i = 0; i < this.commandQueue.length; i++) {
+				let animationCommand: AnimationCommand = this.commandQueue[i];
+				commands += animationCommand.animationName;
+				if (i < this.commandQueue.length - 1)
+				commands += ', ';
+			}
+			console.log(`commandQueue - [${commands}]`);
+		}
+	}
+
 	addCommand(commandData: string, velocity: number = 0): AnimationCommand {
 		let animationCommand: AnimationCommand = new AnimationCommand(commandData, velocity);
 		console.log('addCommand: ' + commandData);
 		this.commandQueue.push(animationCommand);
+		this.showQueue();
 		return animationCommand;
 	}
 
@@ -393,19 +434,22 @@ class Sprinkles {
 			fireBreath.addShifted(this.x, this.y, 0, hueShift);
 	}
 
-	sprinkleBlast(): void {
-		if (this.state !== SprinkleState.IdleStand && this.state !== SprinkleState.WalkingBackwards && this.state !== SprinkleState.WalkingForwards)
-			return;
-		let sprinklesBlast: Sprites = this.adornments.getSpritesByName('SprinklesBlast');
-		if (!sprinklesBlast)
-			return;
+	addIdleAdornment(animationName: string): SpriteProxy {
+		if (!this.isIdle())
+			return null;
+		let sprites: Sprites = this.adornments.getSpritesByName(animationName);
+		if (!sprites)
+			return null;
+
+		let yOffset: number = 0;
+		if (this.state === SprinkleState.WalkingBackwards || this.state === SprinkleState.WalkingForwards)
+			yOffset += 70;
+
 		let hueShift: number = this.getCurrentHornHueShift(performance.now());
-		if (hueShift) {
-			let yOffset: number = 0;
-			if (this.state === SprinkleState.WalkingBackwards || this.state === SprinkleState.WalkingForwards)
-				yOffset += 70;
-			sprinklesBlast.insertShifted(this.x, this.y + yOffset, 0, hueShift);
-		}
+		if (hueShift)
+			return sprites.insertShifted(this.x, this.y + yOffset, 0, hueShift);
+		else
+			return sprites.insert(this.x, this.y + yOffset, 0);
 	}
 
 	getSprite(name: string): SpriteProxy {
@@ -464,7 +508,12 @@ class Sprinkles {
 	}
 
 	getNextCommand(): AnimationCommand {
-		return this.commandQueue.shift();
+		let animationCommand: AnimationCommand;
+		animationCommand = this.commandQueue.shift()
+		if (animationCommand)
+			console.log('getNextCommand: ' + animationCommand.animationName);
+		this.showQueue();
+		return animationCommand;
 	}
 
 	clearCommandQueue(): void {
@@ -474,7 +523,7 @@ class Sprinkles {
 
 	executeHighLevelCommand(command: AnimationCommand, now: number): boolean {
 		if (!command)
-			return;
+			return true;
 		switch (command.animationName) {
 			case Sprinkles.WalkForwards:
 				this.walkForwards();
@@ -498,6 +547,7 @@ class Sprinkles {
 			this.executeNextCommand(now);
 			return true;
 		}
+		return false;
 	}
 
 	getActiveAnimationPair(now: number): AnimationPair {
@@ -563,6 +613,9 @@ class Sprinkles {
 		}
 
 		let command: AnimationCommand = this.getNextCommand();
+		if (!command)
+			return;
+
 		console.log('Executing command: ' + command.animationName);
 
 		if (this.executeHighLevelCommand(command, now))
@@ -593,6 +646,7 @@ class Sprinkles {
 			case Sprinkles_PushUpAttack:
 			case Sprinkles_ScoopAttack:
 			case Sprinkles_BattleCry:
+			case Sprinkles_Dies:
 			case Sprinkles_StabAttack:
 				this.state = SprinkleState.Attack;
 				this.queueVelocityChange(command.velocity, now);
@@ -625,6 +679,7 @@ class Sprinkles {
 				break;
 		}
 
+		console.log(`this.queueAnimation(${command.animationName})`);
 		this.queueAnimation(this.getHornBodyPair(command.animationName), reverse, now, command.frameIntervalOverride);
 	}
 
@@ -739,7 +794,7 @@ class Sprinkles {
 		if (sprite.frameIntervalOverride)
 			this.lastAnimationFrameInterval = sprite.frameIntervalOverride;
 
-		console.log('Animation finished a cycle: ' + sprite.name);
+		//console.log('Animation finished a cycle: ' + sprite.name);
 		if (sprite.name == Sprinkles_Dies + Sprinkles.HornModifier) {
 			this.sayGoodbye();
 			this.alive = false;
@@ -818,6 +873,34 @@ class Sprinkles {
 		if (this.newAnimationsAdded) {
 			this.drawNewAnimations(context, now);
 		}
+	}
+
+	enumToStr(enumeration: any, value: any): string {
+		for (var k in enumeration) if (enumeration[k] == value) return <string>k;
+		return null;
+	}
+
+	private isStateIdle(state: SprinkleState) {
+		return state === SprinkleState.IdleStand || state === SprinkleState.WalkingBackwards || state === SprinkleState.WalkingForwards;
+	}
+
+	private isIdle() {
+		return this.isStateIdle(this.state);
+	}
+
+
+	stateChanged(oldState: SprinkleState, newState: SprinkleState): void {
+		//console.log(`Changing state from ${this.enumToStr(SprinkleState, oldState)} to ${this.enumToStr(SprinkleState, newState)}`);
+		if (this.isAdornable(oldState) && !this.isAdornable(newState))
+			this.removeLoopingAdornments();
+	}
+
+	removeLoopingAdornments(): any {
+		this.adornments.destroyAllInExactly(2000);
+	}
+
+	isAdornable(state: SprinkleState): any {
+		return this.isStateIdle(state);
 	}
 
 	drawNewAnimations(context: CanvasRenderingContext2D, now: number): number {

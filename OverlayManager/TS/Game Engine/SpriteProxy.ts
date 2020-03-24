@@ -165,6 +165,11 @@ class AnimatedElement {
 			this.expirationDate = performance.now() + Math.round(Math.random() * lifeTimeMs);
 	}
 
+	destroyAllInExactly(lifeTimeMs: number): any {
+		if (!this.expirationDate)
+			this.expirationDate = performance.now() + lifeTimeMs;
+	}
+
 	stillAlive(now: number, frameCount: number = 0): boolean {
 		return this.getLifeRemaining(now) >= 0 || !this.okayToDie(frameCount);
 	}
@@ -293,8 +298,8 @@ class AnimatedElement {
 	}
 
 	destroying(): void {
-		if (this.name)
-			console.log('destroying this sprite: ' + this.name);
+		//if (this.name)
+		//	console.log('destroying this sprite: ' + this.name);
 		if (this.onExpire)
 			this.onExpire();
 	}

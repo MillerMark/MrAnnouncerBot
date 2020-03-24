@@ -4687,7 +4687,7 @@ namespace DHDM
 
 		private void BtnTestHideSprinkles_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Dies");
+			HubtasticBaseStation.AnimateSprinkles("Hide Sprinkles");
 		}
 
 		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)
@@ -4703,6 +4703,51 @@ namespace DHDM
 		private void BtnSprinkleBlast_Click(object sender, RoutedEventArgs e)
 		{
 			HubtasticBaseStation.AnimateSprinkles("SprinklesBlast");
+		}
+
+		private void BtnStandIdle_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Idle");
+		}
+
+		private void BtnThreatened_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Threatened");
+		}
+
+		private void BtnCry_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("SprinklesTears");
+		}
+
+		private void BtnBabyEyes_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("BabyEyes");
+		}
+
+		private void BtnFart_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Fart");
+		}
+
+		private void BtnScoopAttack_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("ScoopAttack");
+		}
+
+		private void BtnStabAttack_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("StabAttack");
+		}
+
+		private void BtnPushUpAttack_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("PushUpAttack");
+		}
+
+		private void BtnDies_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Dies");
 		}
 	}
 

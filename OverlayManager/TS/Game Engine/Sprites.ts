@@ -96,8 +96,19 @@
 		return new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
 	}
 
+	private createSprite(startingFrameIndex: number, x: number, y: number): SpriteProxy {
+		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
+		return new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
+	}
+
 	insertShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
 		let sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
+		this.sprites.unshift(sprite);
+		return sprite;
+	}
+
+	insert(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
+		let sprite: SpriteProxy = this.createSprite(startingFrameIndex, x, y);
 		this.sprites.unshift(sprite);
 		return sprite;
 	}
@@ -133,6 +144,12 @@
 	destroyAllBy(lifeTimeMs: number): any {
 		this.sprites.forEach(function (sprite: SpriteProxy) {
 			sprite.destroyBy(lifeTimeMs);
+		});
+	}
+
+	destroyAllInExactly(lifeTimeMs: number): any {
+		this.sprites.forEach(function (sprite: SpriteProxy) {
+			sprite.destroyAllInExactly(lifeTimeMs);
 		});
 	}
 

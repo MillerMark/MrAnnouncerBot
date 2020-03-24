@@ -61,7 +61,17 @@
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) {
         spriteCollection.destroyAllBy(lifeTimeMs);
       });
-  }
+	}
+
+	destroyAllInExactly(lifeTimeMs: number): any {
+		this.allSprites.forEach(function (theseSprites: Sprites) {
+			theseSprites.destroyAllInExactly(lifeTimeMs);
+		});
+
+		this.childCollections.forEach(function (spriteCollection: SpriteCollection) {
+			spriteCollection.destroyAllInExactly(lifeTimeMs);
+		});
+	}
 
   draw(context: CanvasRenderingContext2D, now: number): void {
     this.allSprites.forEach(function (sprites: Sprites) { sprites.draw(context, now) });
