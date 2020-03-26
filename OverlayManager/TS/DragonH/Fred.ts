@@ -8,6 +8,8 @@
 	fistUp: Sprites;
 	pointRight: Sprites;
 	pointToViewer: Sprites;
+	wave: Sprites;
+	killEm: Sprites;
 	allAnimations: SpriteCollection;
 	constructor() {
 
@@ -60,6 +62,16 @@
 		this.pointToViewer.originX = 223;
 		this.pointToViewer.originY = 248;
 
+		this.wave = new Sprites('Fred/Wave/Wave', 104, fps30, AnimationStyle.Sequential, true);
+		this.wave.name = 'Wave';
+		this.wave.originX = 196;
+		this.wave.originY = 297;
+
+		this.killEm = new Sprites('Fred/KillEm/KillEm', 88, fps30, AnimationStyle.Sequential, true);
+		this.killEm.name = 'KillEm';
+		this.killEm.originX = 223;
+		this.killEm.originY = 208;
+
 		this.allAnimations.add(this.thumbsUp);
 		this.allAnimations.add(this.thumbsDown);
 		this.allAnimations.add(this.noIdea);
@@ -69,6 +81,8 @@
 		this.allAnimations.add(this.fistUp);
 		this.allAnimations.add(this.pointRight);
 		this.allAnimations.add(this.pointToViewer);
+		this.allAnimations.add(this.wave);
+		this.allAnimations.add(this.killEm);
 	}
 
 	draw(context: CanvasRenderingContext2D, now: number): any {
@@ -76,10 +90,20 @@
 	}
 
 	playAnimation(animationName: string, playerX: number): void {
+		let underscorePos: number = animationName.indexOf('_');
+		let flipped: boolean = false;
+		if (underscorePos >= 0) {
+			flipped = animationName.substring(underscorePos + 1) === 'flipped';
+			animationName = animationName.substr(0, underscorePos);
+			playerX -= 40;
+		}
+
 		let sprites: Sprites = this.allAnimations.getSpritesByName(animationName);
 		if (!sprites)
 			return;
-		sprites.add(playerX, 1080);
+		let sprite: SpriteProxy = sprites.add(playerX, 1080);
+		if (flipped)
+			sprite.horizontalScale = -1;
 	}
 }
 

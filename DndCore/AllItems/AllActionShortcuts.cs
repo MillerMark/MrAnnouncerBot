@@ -82,7 +82,8 @@ namespace DndCore
 
 			List<ItemEffect> weaponEffects = AllWeaponEffects.GetAll(carriedWeapon.Name).OrderBy(x => x.index).ToList();
 			if (!weaponEffects.Any())
-				weaponEffects = AllWeaponEffects.GetAll(carriedWeapon.Weapon.Name).OrderBy(x => x.index).ToList(); ;
+				if (carriedWeapon.Weapon != null)
+					weaponEffects = AllWeaponEffects.GetAll(carriedWeapon.Weapon.Name).OrderBy(x => x.index).ToList(); ;
 			if (weaponEffects.Count == 0)
 			{
 				lastShortcuts = PlayerActionShortcut.FromWeapon(carriedWeapon, null, player);

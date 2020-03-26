@@ -745,8 +745,8 @@
 							Show Sprinkles!
 						</Button>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-							<Button x:Name="btnTestWalkRight" Width="120" Margin="8" Click="BtnTestWalkRight_Click">
-								Walk Backwards
+							<Button x:Name="btnTestWalkLeft" Width="120" Margin="8" Click="BtnTestWalkLeft_Click">
+								Walk Left
 							</Button>
 							<Button x:Name="btnStandIdle" Width="120" Margin="8" Click="BtnStandIdle_Click">
 								Stand
@@ -754,8 +754,8 @@
 							<Button x:Name="btnThreatened" Width="120" Margin="8" Click="BtnThreatened_Click">
 								Threatened
 							</Button>
-							<Button x:Name="btnTestWalkLeft" Width="120" Margin="8" Click="BtnTestWalkLeft_Click">
-								Walk Forwards
+							<Button x:Name="btnTestWalkRight" Width="120" Margin="8" Click="BtnTestWalkRight_Click">
+								Walk Right
 							</Button>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -780,7 +780,10 @@
 								Push Up Attack
 							</Button>
 						</StackPanel>
-						<Button x:Name="btnDies" Width="120" Margin="8" Click="">
+						<Button x:Name="btnFlip" Width="120" Margin="8" Click="BtnFlip_Click">
+							Flip
+						</Button>
+						<Button x:Name="btnDies" Width="120" Margin="8" Click="BtnDies_Click">
 							Dies!
 						</Button>
 						<Button x:Name="btnTestHideSprinkles" MaxWidth="160" Margin="8" Click="BtnTestHideSprinkles_Click">

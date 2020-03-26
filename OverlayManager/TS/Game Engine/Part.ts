@@ -104,14 +104,13 @@ class PartBackgroundLoader {
 
 	static nextInterval: number = 5000;
 
+	static okayToStartLoading: boolean = false;
+
 	static initialize() {
-		if (PartBackgroundLoader.intervalHandle === undefined)
+		if (PartBackgroundLoader.okayToStartLoading && PartBackgroundLoader.intervalHandle === undefined)
 			PartBackgroundLoader.intervalHandle = setInterval(PartBackgroundLoader.loadImages, PartBackgroundLoader.nextInterval);
 	}
 }
-
-PartBackgroundLoader.initialize();
-
 
 class Part {
 	static loadSprites: boolean;

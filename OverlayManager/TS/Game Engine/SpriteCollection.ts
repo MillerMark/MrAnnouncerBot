@@ -20,6 +20,16 @@
     this.childCollections.forEach(function (spriteCollection: SpriteCollection) { spriteCollection.bounce(left, top, right, bottom, now) });
 	}
 
+	setHorizontalScale(horizontalScale: number): void {
+		for (let i = 0; i < this.allSprites.length; i++) {
+			this.allSprites[i].setHorizontalScale(horizontalScale);
+		}
+		for (let i = 0; i < this.childCollections.length; i++) {
+			this.childCollections[i].setHorizontalScale(horizontalScale);
+		}
+
+		return null;
+	}
 	getSpritesByName(name: string): Sprites {
 		for (let i = 0; i < this.allSprites.length; i++) {
 			if (this.allSprites[i].name == name)

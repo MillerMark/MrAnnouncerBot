@@ -1029,7 +1029,8 @@ namespace DndCore
 			Weapon weapon = AllWeapons.Get(weaponName);
 			carriedWeapon.Weapon = weapon;
 			carriedWeapon.Count = count;
-			CarriedWeapons.Add(carriedWeapon);
+			if (weapon != null)
+				CarriedWeapons.Add(carriedWeapon);
 		}
 
 		void AddWeaponsFrom(string weaponsStr)
@@ -1374,6 +1375,10 @@ namespace DndCore
 
 		private static void AddAvailableSpellSlots(int[] results, string name, int level)
 		{
+			//if (name == "Bard")
+			//{
+			//	results[1] += 2;
+			//}
 			if (DndUtils.CanCastSpells(name))
 			{
 				// BUG: If a character multi-classes in two classes that can both cast spells, should we keep the spell slots separate?

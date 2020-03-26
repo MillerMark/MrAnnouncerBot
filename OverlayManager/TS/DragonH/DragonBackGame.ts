@@ -5,29 +5,13 @@
 }
 
 class DragonBackGame extends DragonGame {
-	readonly clockMargin: number = 0;
-	readonly clockOffsetX: number = -20;
-	//readonly clockWidth: number = 556;
-	readonly clockBottomY: number = screenHeight - 26; // 232
-	readonly clockScale: number = 0.52;
-	readonly panelScale: number = 0.67;
-	readonly panelShiftY: number = 16;
-	readonly panelWidth: number = 391;
-	readonly panelMargin: number = 34;
-	readonly maxPanelWidth: number = (this.panelWidth - this.panelMargin * 2) * this.panelScale;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
 	shouldDrawCenterCrossHairs: boolean = false;
-	clock: Sprites;
-	clockPanel: Sprites;
+	sunMoonDials: Sprites;
 	lightning: Sprites;
-	fireWall: Sprites;
-	dndClock: SpriteProxy;
-	dndTimeDatePanel: SpriteProxy;
-	clockLayerEffects: SpriteCollection;
-	dndTimeStr: string;
-	dndDateStr: string;
+	sunMookDial: SpriteProxy;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
 	playerDataSet: boolean = false;
@@ -96,89 +80,11 @@ class DragonBackGame extends DragonGame {
 	}
 
 	exitingCombat() {
-		this.dndClock.frameIndex = 0;
-		this.dndTimeDatePanel.frameIndex = 0;
-		this.fireWall.sprites = [];
-		this.createFireBallBehindClock(200);
+		this.sunMookDial.frameIndex = 0;
 	}
 
 	enteringCombat() {
-		this.dndClock.frameIndex = 1;
-		this.dndTimeDatePanel.frameIndex = 1;
-		this.createFireWallBehindClock();
-		this.createFireBallBehindClock(330);
-	}
-
-	private getClockX(): number {
-		return screenWidth - this.clockScale * this.clockPanel.originX - this.clockMargin + this.clockOffsetX;
-	}
-
-	private drawTime(context: CanvasRenderingContext2D, now: number) {
-		if (!this.dndTimeStr)
-			return;
-
-		this.clockLayerEffects.updatePositions(now);
-		this.clockLayerEffects.draw(context, now);
-
-		const timeFont: string = 'px Baskerville Old Face';
-		const verticalMargin: number = 10;
-		const timeHeight: number = 32;
-		const dateHeight: number = 24;
-		context.font = timeHeight + timeFont;
-		let timeWidth: number = context.measureText(this.dndTimeStr.trim()).width;
-		let timeHalfWidth: number = timeWidth / 2;
-
-		let centerX: number = this.getClockX();
-		let centerY: number = this.clockBottomY - timeHeight / 2 - verticalMargin;
-
-		if (this.inCombat)
-			context.fillStyle = '#500506';
-		else
-			context.fillStyle = '#0b0650';
-
-		let lastColonPos: number = this.dndTimeStr.lastIndexOf(':');
-		let firstTimePart: string = this.dndTimeStr.substr(0, lastColonPos).trim();
-		let lastTimePart: string = this.dndTimeStr.substr(lastColonPos).trim();
-		let leftX: number = centerX - timeHalfWidth;
-		context.textAlign = 'left';
-		context.textBaseline = 'middle';
-		context.fillText(firstTimePart, leftX, centerY);
-		let firstTimePartWidth: number = context.measureText(firstTimePart).width;
-		context.globalAlpha = 0.75;
-		context.fillText(lastTimePart, leftX + firstTimePartWidth, centerY);
-		context.globalAlpha = 1;
-
-		context.textAlign = 'center';
-		centerY += timeHeight;
-		context.font = dateHeight + timeFont;
-		let dateFontScale: number = 1;
-		let tryFontSize: number = dateHeight * dateFontScale;
-		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6) {
-			dateFontScale *= 0.95;
-			tryFontSize = dateHeight * dateFontScale;
-			context.font = tryFontSize + timeFont;
-		}
-		context.fillText(this.dndDateStr, centerX, centerY);
-	}
-
-	private createFireBallBehindClock(hue: number): any {
-		let x: number;
-		let y: number;
-		x = this.getClockX() - 90 * this.clockScale;
-		y = this.clockBottomY - this.clockPanel.originY;
-		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
-		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
-		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
-		this.dragonBackSounds.safePlayMp3('HeavyPoof');
-	}
-
-	private createFireWallBehindClock() {
-		const displayMargin: number = -10;
-		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.panelScale * this.clockPanel.originY + displayMargin);
-		fireWall.scale = 0.6 * this.clockScale;
-		fireWall.opacity = 0.8;
-		fireWall.fadeOutTime = 400;
-		this.dragonBackSounds.safePlayMp3('FlameOn');
+		this.sunMookDial.frameIndex = 1;
 	}
 
 	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
@@ -190,16 +96,11 @@ class DragonBackGame extends DragonGame {
 		return degreesToMove;
 	}
 
-	updateClock(clockData: string): void {
-		let dto: any = JSON.parse(clockData);
-		this.inCombat = dto.InCombat;
-		let timeStrs: string[] = dto.Time.split(',');
-		this.dndTimeStr = timeStrs[0];
-		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
+	protected updateClockFromDto(dto: any) {
+		super.updateClockFromDto(dto);
 		let fullSpins: number = dto.FullSpins;
 		let afterSpinMp3: string = dto.AfterSpinMp3;
-
-		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.dndClock);
+		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.sunMookDial);
 		let timeToRotate: number;
 		if (degreesToMove < 1) {
 			if (fullSpins >= 1) {
@@ -234,12 +135,10 @@ class DragonBackGame extends DragonGame {
 			timeToRotate = 2600;
 			this.dragonBackSounds.safePlayMp3('Gear2_6');
 		}
-
 		if (afterSpinMp3) {
 			this.dragonBackSounds.playMp3In(timeToRotate + 500, `TimeAmbiance/${afterSpinMp3}`);
 		}
-
-		this.dndClock.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
+		this.sunMookDial.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
 	}
 
 	update(timestamp: number) {
@@ -248,17 +147,14 @@ class DragonBackGame extends DragonGame {
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
+		this.drawSprinkles(context, now, Layer.Back);
+
+		this.drawClockLayerEffects(context, now);
 		super.updateScreen(context, now);
 
 		if (!this.playerDataSet) {
 			this.ShowWaitingForInitializationMessage(context, '#0000ff', 'Back Overlay is waiting for player data to be initialized.', 300);
 		}
-
-		this.drawSprinkles(context, now, Layer.Back);
-
-		this.drawTime(context, now);
-
-		//backgroundBanner.draw(myContext, 0, 0);
 
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
@@ -335,8 +231,6 @@ class DragonBackGame extends DragonGame {
 	}
 
 	loadResources(): void {
-		this.clockLayerEffects = new SpriteCollection();
-
 		//this.blueBall();
 		//this.purpleMagic();
 		//this.purpleBurst();
@@ -351,37 +245,18 @@ class DragonBackGame extends DragonGame {
 		//Folders.assets = 'GameDev/Assets/DroneGame/';
 		this.loadDragonAssets();
 
-		Folders.assets = 'GameDev/Assets/DragonH/';
-		this.fireWall = new Sprites('FireWall/FireWall', 121, fps20, AnimationStyle.Loop, true);
-		this.fireWall.name = 'FireWall';
-		this.fireWall.originX = 300;
-		this.fireWall.originY = 300;
-
 
 		Part.loadSprites = true;
 
-		//this.backgroundBanner = new Part("CodeRushedBanner", 1, AnimationStyle.Static, 200, 300);
+		this.sunMoonDials = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
+		this.sunMoonDials.name = 'Clock';
+		this.sunMoonDials.originX = 247;
+		this.sunMoonDials.originY = 251;
 
-		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
-		this.clockPanel.name = 'ClockPanel';
-		this.clockPanel.originX = 196;
-		this.clockPanel.originY = 67;
-
-		let clockX: number = this.getClockX();
-		let clockY: number = this.clockBottomY - 30;
-		this.dndTimeDatePanel = this.clockPanel.add(clockX, this.panelShiftY + clockY).setScale(this.panelScale);
-
-		this.clock = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
-		this.clock.name = 'Clock';
-		this.clock.originX = 247;
-		this.clock.originY = 251;
-
-		this.dndClock = this.clock.add(clockX, clockY).setScale(this.clockScale);
+		this.sunMookDial = this.sunMoonDials.add(this.getClockX(), this.getClockY()).setScale(this.clockScale);
 
 
-		this.clockLayerEffects.add(this.clock);
-		this.clockLayerEffects.add(this.fireWall);
-		this.clockLayerEffects.add(this.clockPanel);
+		this.clockLayerEffects.add(this.sunMoonDials);
 	}
 
 	buildTestGoldParticle(): any {

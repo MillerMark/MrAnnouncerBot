@@ -116,6 +116,8 @@ class KnownSpellsEffects {
 abstract class DragonGame extends GamePlusQuiz {
 	abstract layerSuffix: string;
 	sprinkles: Sprinkles;
+	dndTimeStr: string;
+	dndDateStr: string;
 
 	fireBallBack: Sprites;
 	fireBallFront: Sprites;
@@ -135,6 +137,18 @@ abstract class DragonGame extends GamePlusQuiz {
 		context.globalAlpha = 0.5;
 		context.fillText(message, 100, yTop);
 		context.globalAlpha = 1;
+	}
+
+	updateClock(clockData: string): void {
+		let dto: any = JSON.parse(clockData);
+		this.inCombat = dto.InCombat;
+		let timeStrs: string[] = dto.Time.split(',');
+		this.dndTimeStr = timeStrs[0];
+		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
+		this.updateClockFromDto(dto);
+	}
+
+	protected updateClockFromDto(dto: any) {
 	}
 
 	animateSprinkles(commandData: string): any {
@@ -313,6 +327,26 @@ abstract class DragonGame extends GamePlusQuiz {
 		}
 	}
 
+	clockLayerEffects: SpriteCollection;
+	readonly clockMargin: number = 0;
+	readonly clockOffsetX: number = -20;
+	readonly clockBottomY: number = screenHeight - 26; // 232
+	readonly clockScale: number = 0.52;
+	static readonly ClockOriginX: number = 196;
+
+	protected getClockX(): number {
+		return screenWidth - this.clockScale * DragonGame.ClockOriginX - this.clockMargin + this.clockOffsetX;
+	}
+
+	protected getClockY(): number {
+		return this.clockBottomY - 30;
+	}
+
+	protected drawClockLayerEffects(context: CanvasRenderingContext2D, now: number) {
+		this.clockLayerEffects.updatePositions(now);
+		this.clockLayerEffects.draw(context, now);
+	}
+
 	exitingCombat() {
 	}
 
@@ -336,6 +370,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.backLayerEffects.add(this.fireBallBack);
 		this.backLayerEffects.add(this.fireBallFront);
 		KnownSpellsEffects.initializeSpells();
+		this.clockLayerEffects = new SpriteCollection();
 	}
 
 	loadSpell(spellName: string): Sprites {
@@ -375,6 +410,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.backLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
 		this.sprinkles = new Sprinkles();
+		this.sprinkles.dragonSharedSounds = this.dragonSharedSounds;
 	}
 
 	initializePlayerData(playerData: string): any {

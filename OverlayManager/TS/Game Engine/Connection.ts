@@ -1,10 +1,12 @@
 ﻿var connection;
 
 function connectToSignalR(signalR) {
+	console.log('connecting to signalR...');
 	connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
 	connection.serverTimeoutInMilliseconds = 1000000; // 1000 second
-  window.onload = function () {
-    connection.start().catch(err => console.error(err.toString()));
+	window.onload = function () {
+		console.log('signalR loaded...');
+		connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
 		connection.on("ChangePlayerHealth", changePlayerHealth);
     connection.on("UserHasCoins", userHasCoins);
@@ -24,6 +26,9 @@ function connectToSignalR(signalR) {
 		connection.on("PlayerDataChanged", playerDataChanged);
 		connection.on("MapDataChanged", mapDataChanged);
 		connection.on("SetPlayerData", initializePlayerData);
+		console.log('PartBackgroundLoader.initialize();');
+		PartBackgroundLoader.okayToStartLoading = true;
+		PartBackgroundLoader.initialize();
   };
 }
 

@@ -4,6 +4,12 @@
 	readonly mediumDamageThreshold: number = 6;
 	readonly lightDamageThreshold: number = 4;
 
+	readonly panelScale: number = 0.67;
+	readonly panelShiftY: number = 16;
+	readonly panelWidth: number = 391;
+	readonly panelMargin: number = 34;
+	readonly maxPanelWidth: number = (this.panelWidth - this.panelMargin * 2) * this.panelScale;
+
 	layerSuffix: string = 'Front';
 	emitter: Emitter;
 	shouldDrawCenterCrossHairs: boolean = false;
@@ -17,6 +23,8 @@
 	bloodGushD: BloodSprites;  // Totally contained, 575 pixels high.
 	bloodGushE: BloodSprites;  // Totally contained, 700 pixels high.
 
+	dndTimeDatePanel: SpriteProxy;
+	clockPanel: Sprites;
 	charmed: Sprites;
 	restrained: Sprites;
 	sparkShower: Sprites;
@@ -61,6 +69,7 @@
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
+		this.drawTimePlusEffects(context, now);
 		this.allBackEffects.draw(context, now);
 
 		if (!this.playerDataSet) {
@@ -80,6 +89,51 @@
 
 		this.showNameplates(context, now);
 		this.allFrontEffects.draw(context, now);
+	}
+
+	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
+		super.drawClockLayerEffects(context, now);
+		this.drawGameTime(context);
+	}
+
+	private drawGameTime(context: CanvasRenderingContext2D) {
+		if (!this.dndTimeStr)
+			return;
+		const timeFont: string = 'px Baskerville Old Face';
+		const verticalMargin: number = 10;
+		const timeHeight: number = 32;
+		const dateHeight: number = 24;
+		context.font = timeHeight + timeFont;
+		let timeWidth: number = context.measureText(this.dndTimeStr.trim()).width;
+		let timeHalfWidth: number = timeWidth / 2;
+		let centerX: number = this.getClockX();
+		let centerY: number = this.clockBottomY - timeHeight / 2 - verticalMargin;
+		if (this.inCombat)
+			context.fillStyle = '#500506';
+		else
+			context.fillStyle = '#0b0650';
+		let lastColonPos: number = this.dndTimeStr.lastIndexOf(':');
+		let firstTimePart: string = this.dndTimeStr.substr(0, lastColonPos).trim();
+		let lastTimePart: string = this.dndTimeStr.substr(lastColonPos).trim();
+		let leftX: number = centerX - timeHalfWidth;
+		context.textAlign = 'left';
+		context.textBaseline = 'middle';
+		context.fillText(firstTimePart, leftX, centerY);
+		let firstTimePartWidth: number = context.measureText(firstTimePart).width;
+		context.globalAlpha = 0.75;
+		context.fillText(lastTimePart, leftX + firstTimePartWidth, centerY);
+		context.globalAlpha = 1;
+		context.textAlign = 'center';
+		centerY += timeHeight;
+		context.font = dateHeight + timeFont;
+		let dateFontScale: number = 1;
+		let tryFontSize: number = dateHeight * dateFontScale;
+		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6) {
+			dateFontScale *= 0.95;
+			tryFontSize = dateHeight * dateFontScale;
+			context.font = tryFontSize + timeFont;
+		}
+		context.fillText(this.dndDateStr, centerX, centerY);
 	}
 
 	removeAllGameElements(now: number): void {
@@ -164,7 +218,6 @@
 	loadResources(): void {
 		super.loadResources();
 		Folders.assets = 'GameDev/Assets/DragonH/';
-
 		this.fred.loadResources();
 
 		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
@@ -357,6 +410,12 @@
 		this.restrained.originX = 213;
 		this.restrained.originY = 299;
 
+		Folders.assets = 'GameDev/Assets/DragonH/';
+		this.fireWall = new Sprites('FireWall/FireWall', 121, fps20, AnimationStyle.Loop, true);
+		this.fireWall.name = 'FireWall';
+		this.fireWall.originX = 300;
+		this.fireWall.originY = 300;
+
 		this.allBackEffects = new SpriteCollection();
 		this.allFrontEffects = new SpriteCollection();
 		this.bloodEffects = new SpriteCollection();
@@ -391,6 +450,51 @@
 		this.allBackEffects.add(this.charmed);
 		this.allBackEffects.add(this.restrained);
 		this.allWindupEffects.add(this.shield);
+
+		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
+		this.clockPanel.name = 'ClockPanel';
+		this.clockPanel.originX = DragonGame.ClockOriginX;
+		this.clockPanel.originY = 67;
+
+		this.dndTimeDatePanel = this.clockPanel.add(this.getClockX(), this.panelShiftY + this.getClockY()).setScale(this.panelScale);
+
+		this.clockLayerEffects.add(this.fireWall);
+		this.clockLayerEffects.add(this.clockPanel);
+	}
+
+	private createFireBallBehindClock(hue: number): any {
+		let x: number;
+		let y: number;
+		x = this.getClockX() - 90 * this.clockScale;
+		const fireBallAdjust: number = 11;
+		y = this.clockBottomY - this.clockPanel.originY + fireBallAdjust;
+		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
+		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.dragonFrontSounds.safePlayMp3('HeavyPoof');
+	}
+
+	private createFireWallBehindClock() {
+		const displayMargin: number = -10;
+		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.panelScale * this.clockPanel.originY + displayMargin);
+		fireWall.scale = 0.6 * this.clockScale;
+		fireWall.opacity = 0.8;
+		fireWall.fadeOutTime = 400;
+		this.dragonFrontSounds.safePlayMp3('FlameOn');
+	}
+
+	exitingCombat() {
+		super.exitingCombat();
+		this.dndTimeDatePanel.frameIndex = 0;
+		this.fireWall.sprites = [];
+		this.createFireBallBehindClock(200);
+	}
+
+	enteringCombat() {
+		super.enteringCombat();
+		this.dndTimeDatePanel.frameIndex = 1;
+		this.createFireWallBehindClock();
+		this.createFireBallBehindClock(330);
 	}
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
@@ -446,6 +550,41 @@
 		if (testCommand === "Cross2") {
 			console.log('draw Cross Hairs');
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
+		}
+
+		if (testCommand.toLowerCase() === 'wave') {
+			this.moveFred('Wave');
+			return true;
+		}
+
+		if (testCommand.toLowerCase() === 'thumbsup') {
+			this.moveFred('ThumbsUp');
+			return true;
+		}
+
+		if (testCommand.toLowerCase() === 'thumbsdown') {
+			this.moveFred('ThumbsDown');
+			return true;
+		}
+
+		if (testCommand.toLowerCase() === 'noidea') {
+			this.moveFred('NoIdea');
+			return true;
+		}
+
+		if (testCommand.toLowerCase() === 'fistup') {
+			this.moveFred('FistUp');
+			return true;
+		}
+
+		if (testCommand.toLowerCase() === 'clasped') {
+			this.moveFred('HandsClasped');
+			return true;
+		}
+
+		if (testCommand.toLowerCase() === 'killem') {
+			this.moveFred('KillEm');
+			return true;
 		}
 
 		if (testCommand === 'clear') {
@@ -859,13 +998,8 @@
 			return this.bloodGushE;
 	}
 
-	updateClock(clockData: string): void {
-		let dto: any = JSON.parse(clockData);
-		this.inCombat = dto.InCombat;
-	}
-
 	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number): void {
-		if (!player.ShowingNameplate)
+		if (!player || !player.ShowingNameplate)
 			return;
 
 		context.textAlign = 'center';
@@ -895,7 +1029,7 @@
 			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
 
 		let centerX: number = this.getPlayerX(playerIndex);
-	
+
 		let hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
 		let hpWidth: number = context.measureText(hpStr).width;
 		let nameWidth: number = context.measureText(playerName).width;

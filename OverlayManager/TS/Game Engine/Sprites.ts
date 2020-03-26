@@ -120,6 +120,12 @@
 		return sprite;
 	}
 
+	setHorizontalScale(horizontalScale: number): void {
+		for (let i = 0; i < this.sprites.length; i++) {
+			this.sprites[i].horizontalScale = horizontalScale;
+		}
+	}
+
 	checkCollisionAgainst(compareSprites: Sprites, collisionFoundFunction: (thisSprite: SpriteProxy, testSprite: SpriteProxy, now: number) => void, now: number): any {
 		this.sprites.forEach(function (thisSprite: SpriteProxy) {
 			compareSprites.sprites.forEach(function (testSprite: SpriteProxy) {

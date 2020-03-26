@@ -92,16 +92,24 @@ const Sprinkles_WalkToIdle = 'WalkToIdle';
 
 
 class Sprinkles {
+	static readonly hornHueDegreesShiftPerSecond: number = 30;
+	static readonly WalkRight: string = 'Walk Right';
+	static readonly WalkLeft: string = 'Walk Left';
 	static readonly WalkForwards: string = 'Walk Forwards';
 	static readonly WalkBackwards: string = 'Walk Backwards';
 	static readonly SprinklesBlast: string = 'SprinklesBlast';
+	static readonly Flip: string = 'Flip';
 	static readonly SprinklesTears: string = 'SprinklesTears';
 	static readonly BodyModifier: string = '.Body';
 	static readonly HornModifier: string = '.Horn';
 	static readonly forwardsBodyHueShiftMaxValue: number = 30;
 	static readonly backwardsBodyHueShiftMinValue: number = -30;
 
+	direction: Direction = Direction.FacingLeft;
+
 	private _state: SprinkleState = SprinkleState.Offscreen;
+
+	dragonSharedSounds: SoundManager;
 
 	get state(): SprinkleState {
 		return this._state;
@@ -198,6 +206,9 @@ class Sprinkles {
 	}
 
 	private queueAnimation(hornBodyPair: HornBodyPair, reverse: boolean, now: number, frameIntervalOverride: number = undefined) {
+		if (!hornBodyPair) {
+			debugger;
+		}
 		this.animationQueue.push(new QueuedAnimation(hornBodyPair, reverse, now, frameIntervalOverride));
 	}
 
@@ -219,9 +230,13 @@ class Sprinkles {
 
 	dequeueAnimations(now: number): boolean {
 		let dequeuedAnimations: boolean = false;
-		while (this.animationQueue.length > 0) {
+		if (this.animationQueue.length > 0) {
 			let queuedAnimation: QueuedAnimation = this.animationQueue.shift();
-			console.log(`Starting animation: ${queuedAnimation.hornBodyPair.name} at ${new Date()}`);
+			while (!queuedAnimation || !queuedAnimation.hornBodyPair) {
+				queuedAnimation = this.animationQueue.shift();
+			}
+			if (queuedAnimation && queuedAnimation.hornBodyPair)
+				console.log(`Starting animation: ${queuedAnimation.hornBodyPair.name} at ${new Date()}`);
 			this.addAnimation(queuedAnimation.hornBodyPair, now, queuedAnimation.reverse, queuedAnimation.frameIntervalOverride);
 			dequeuedAnimations = true;
 		}
@@ -234,6 +249,7 @@ class Sprinkles {
 	static readonly idleHighSpeedFrameInterval: number = Sprinkles.idleFrameInterval * 0.8;
 
 	loadParts(): any {
+		Folders.assets = 'GameDev/Assets/DragonH/';
 		const originX: number = 123;
 		const originY: number = 659;
 		this.parts.push(new HornBodyPair(Sprinkles_BattleCry, 'BattleCry - ', 139, originX, originY, 0, 55));
@@ -271,33 +287,96 @@ class Sprinkles {
 
 	executesCommandNow(commandData: string, now: number): boolean {
 		switch (commandData) {
-			case Sprinkles.WalkForwards:
-				if (this.state === SprinkleState.WalkingBackwards) {
-					this.clearCommandQueue();
-					this.addCommand(Sprinkles.WalkForwards);
-					this.finishActiveAnimation(now);
-					return true;
-				}
-				break;
-			case Sprinkles.WalkBackwards:
-				if (this.state === SprinkleState.WalkingForwards) {
-					this.clearCommandQueue();
-					this.addCommand(Sprinkles.WalkBackwards);
-					this.finishActiveAnimation(now);
-					return true;
-				}
-				break;
+			case Sprinkles.WalkRight:
+				return this.walkRight(now);
+			case Sprinkles.WalkLeft:
+				return this.walkLeft(now);
+
 			case Sprinkles.SprinklesBlast:
 				this.addIdleAdornment(commandData);
 				return true;
+			case Sprinkles.Flip:
+				this.flip();
+				return true;
 			case Sprinkles.SprinklesTears:
-				let sprite: SpriteProxy = this.addIdleAdornment(commandData);
-				if (sprite != null) {
-					sprite.fadeInTime = 600;
-					sprite.fadeOutTime = 1000;
-				}
+				this.addTears(commandData);
 				return true;
 		}
+		return false;
+	}
+
+	horizontalScale: number = 1;
+
+	flip(): void {
+		if (this.direction === Direction.FacingLeft) {
+			this.direction = Direction.FacingRight;
+			this.horizontalScale = -1;
+		}
+		else {
+			this.direction = Direction.FacingLeft;
+			this.horizontalScale = 1;
+		}
+
+		for (let i = 0; i < this.parts.length; i++) {
+			let hornBodyPair: HornBodyPair = this.parts[i];
+			for (let j = 0; j < hornBodyPair.body.sprites.length; j++) {
+				let sprite: SpriteProxy = hornBodyPair.body.sprites[j];
+				sprite.horizontalScale = this.horizontalScale;
+			}
+			for (let j = 0; j < hornBodyPair.horn.sprites.length; j++) {
+				let sprite: SpriteProxy = hornBodyPair.horn.sprites[j];
+				sprite.horizontalScale = this.horizontalScale;
+			}
+		}
+		this.adornments.setHorizontalScale(this.horizontalScale);
+	}
+
+	private addTears(commandData: string) {
+		let sprite: SpriteProxy = this.addIdleAdornment(commandData);
+		if (!sprite) 
+			return;
+
+		sprite.fadeInTime = 600;
+		sprite.fadeOutTime = 1000;
+
+		if (sprite instanceof ColorShiftingSpriteProxy)
+		{
+			let colorShiftingSprite: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>sprite;
+			colorShiftingSprite.hueShiftPerSecond = Sprinkles.hornHueDegreesShiftPerSecond;
+		}
+	}
+
+	changeWalkingDirection(now: number, compareState: SprinkleState, command: string): boolean {
+		if (this.state === compareState) {
+			this.clearCommandQueue();
+			this.addCommand(command);
+			this.finishActiveAnimation(now);
+			return true;
+		}
+		return false;
+	}
+
+	walkRight(now: number): boolean {
+		if (this.direction === Direction.FacingLeft)
+			if (this.changeWalkingDirection(now, SprinkleState.WalkingBackwards, Sprinkles.WalkForwards))
+				return true;
+
+		if (this.direction === Direction.FacingRight)
+			if (this.changeWalkingDirection(now, SprinkleState.WalkingForwards, Sprinkles.WalkBackwards))
+				return true;
+
+		return false;
+	}
+
+	walkLeft(now: number): boolean {
+		if (this.direction === Direction.FacingLeft)
+			if (this.changeWalkingDirection(now, SprinkleState.WalkingForwards, Sprinkles.WalkBackwards))
+				return true;
+
+		if (this.direction === Direction.FacingRight)
+			if (this.changeWalkingDirection(now, SprinkleState.WalkingBackwards, Sprinkles.WalkForwards))
+				return true;
+
 		return false;
 	}
 
@@ -318,13 +397,17 @@ class Sprinkles {
 				let animationCommand: AnimationCommand = this.commandQueue[i];
 				commands += animationCommand.animationName;
 				if (i < this.commandQueue.length - 1)
-				commands += ', ';
+					commands += ', ';
 			}
 			console.log(`commandQueue - [${commands}]`);
 		}
 	}
 
-	addCommand(commandData: string, velocity: number = 0): AnimationCommand {
+	shouldReverseWalkAnimation(): boolean {
+		return this.direction === Direction.FacingRight;
+	}
+
+	addCommand(commandData: string, velocity: number = 0, reversed: boolean = false): AnimationCommand {
 		let animationCommand: AnimationCommand = new AnimationCommand(commandData, velocity);
 		console.log('addCommand: ' + commandData);
 		this.commandQueue.push(animationCommand);
@@ -431,7 +514,8 @@ class Sprinkles {
 			return;
 		let hueShift: number = this.getCurrentHornHueShift(performance.now());
 		if (hueShift)
-			fireBreath.addShifted(this.x, this.y, 0, hueShift);
+			fireBreath.addShifted(this.x, this.y, 0, hueShift).horizontalScale = this.horizontalScale;
+		this.dragonSharedSounds.safePlayMp3('Sprinkles/Breath[6]');
 	}
 
 	addIdleAdornment(animationName: string): SpriteProxy {
@@ -446,10 +530,13 @@ class Sprinkles {
 			yOffset += 70;
 
 		let hueShift: number = this.getCurrentHornHueShift(performance.now());
+		let adornment: SpriteProxy;
 		if (hueShift)
-			return sprites.insertShifted(this.x, this.y + yOffset, 0, hueShift);
+			adornment = sprites.insertShifted(this.x, this.y + yOffset, 0, hueShift);
 		else
-			return sprites.insert(this.x, this.y + yOffset, 0);
+			adornment = sprites.insert(this.x, this.y + yOffset, 0);
+		adornment.horizontalScale = this.horizontalScale;
+		return adornment;
 	}
 
 	getSprite(name: string): SpriteProxy {
@@ -466,8 +553,13 @@ class Sprinkles {
 		return null;
 	}
 
-	private randomFrameRate(animationName: string, allowReverse: boolean = true): AnimationCommand {
-		let animationCommand: AnimationCommand = this.addCommand(animationName);
+	private randomFrameRate(animationName: string, allowRandomReverse: boolean = true): AnimationCommand {
+		let reverseAnimation: boolean = false;
+		if (animationName === Sprinkles.WalkForwards || animationName === Sprinkles.WalkBackwards)
+			reverseAnimation = this.shouldReverseWalkAnimation();
+
+		let animationCommand: AnimationCommand = this.addCommand(animationName, 0, reverseAnimation);
+
 		if (Random.chancePercent(10)) {
 			animationCommand.frameIntervalOverride = this.lastAnimationFrameInterval;
 		}
@@ -494,8 +586,10 @@ class Sprinkles {
 				animationCommand.frameIntervalOverride = Sprinkles.idleLowSpeedFrameInterval;
 			}
 
-		if (allowReverse && Random.chancePercent(50))
-			animationCommand.reversed = true;
+		animationCommand.reversed = reverseAnimation;
+
+		if (allowRandomReverse && Random.chancePercent(50))
+			animationCommand.reversed = !animationCommand.reversed;
 
 		if (animationCommand.frameIntervalOverride)
 			this.lastAnimationFrameInterval = animationCommand.frameIntervalOverride;
@@ -540,6 +634,8 @@ class Sprinkles {
 			//this.x = 1220;
 			this.queueVelocityChange(0, performance.now());
 			this.layer = Layer.Back;
+			if (this.direction === Direction.FacingRight)
+				this.flip();
 			this.addCommand(Sprinkles_Walk, -Sprinkles.WalkingVelocity);
 			this.addCommand(Sprinkles_Walk, -Sprinkles.WalkingVelocity);
 			this.addCommand(Sprinkles_WalkToIdle, -Sprinkles.WalkingVelocity / 2.0);
@@ -629,6 +725,25 @@ class Sprinkles {
 			return;
 		let reverse: boolean = command.reversed;
 
+		if (command.animationName === Sprinkles.WalkLeft) {
+			command.velocity = -Sprinkles.WalkingVelocity;
+			if (this.direction == Direction.FacingLeft) {
+				command.animationName = Sprinkles_Walk;
+			}
+			else {
+				command.animationName = Sprinkles_WalkBackwards;
+			}
+		}
+		else if (command.animationName === Sprinkles.WalkRight) {
+			command.velocity = Sprinkles.WalkingVelocity;
+			if (this.direction == Direction.FacingLeft) {
+				command.animationName = Sprinkles_WalkBackwards;
+			}
+			else {
+				command.animationName = Sprinkles_Walk;
+			}
+		}
+
 		switch (command.animationName) {
 			case Sprinkles_AttackToIdle:
 				this.state = SprinkleState.TransitioningToIdle;
@@ -697,8 +812,8 @@ class Sprinkles {
 			case SprinkleState.Attack:
 				this.clearCommandQueue()
 				this.addCommand(Sprinkles_AttackToIdle);
-				this.addCommand(Sprinkles_IdleToWalk, walkingVelocity / 2.0);
-				this.addCommand(walkCommand, walkingVelocity);
+				this.addCommand(Sprinkles_IdleToWalk, walkingVelocity / 2.0, this.shouldReverseWalkAnimation());
+				this.addCommand(walkCommand, walkingVelocity, this.shouldReverseWalkAnimation());
 				break;
 
 
@@ -706,13 +821,13 @@ class Sprinkles {
 			case SprinkleState.IdleStand:
 			case SprinkleState.IdleGraze:
 				this.clearCommandQueue()
-				this.addCommand(Sprinkles_IdleToWalk, walkingVelocity / 2.0);
-				this.addCommand(walkCommand, walkingVelocity);
+				this.addCommand(Sprinkles_IdleToWalk, walkingVelocity / 2.0, this.shouldReverseWalkAnimation());
+				this.addCommand(walkCommand, walkingVelocity, this.shouldReverseWalkAnimation());
 				break;
 
 			default:
 				this.clearCommandQueue();
-				this.addCommand(walkCommand, walkingVelocity);
+				this.addCommand(walkCommand, walkingVelocity, this.shouldReverseWalkAnimation());
 				break;
 		}
 	}
@@ -733,6 +848,7 @@ class Sprinkles {
 		hornBodyPair.horn.baseAnimation.reverse = reverse;
 
 		let body = hornBodyPair.body.addShifted(this.x, this.y, startingFrameIndex, this.bodyHue);
+		body.horizontalScale = this.horizontalScale;
 		body.name = hornBodyPair.name + Sprinkles.BodyModifier;
 		body.hueShiftPerSecond = this.bodyHueShiftPerSecond;
 		body.timeStart = now;
@@ -741,10 +857,11 @@ class Sprinkles {
 		body.addOnCycleCallback(this.animationCycled.bind(this));
 
 		let horn = hornBodyPair.horn.addShifted(this.x, this.y, startingFrameIndex, this.hornHue); // 30 degrees of hue shift every second.
+		horn.horizontalScale = this.horizontalScale;
 		horn.name = hornBodyPair.name + Sprinkles.HornModifier;
 		horn.addOnCycleCallback(this.animationCycled.bind(this));
 		horn.onExpire = this.onSpriteExpire.bind(this)
-		horn.hueShiftPerSecond = 30;
+		horn.hueShiftPerSecond = Sprinkles.hornHueDegreesShiftPerSecond;
 		horn.timeStart = now;
 		horn.frameIntervalOverride = frameIntervalOverride;
 
@@ -755,21 +872,21 @@ class Sprinkles {
 	onFrameAdvanced(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number): void {
 		if (sprite.name.endsWith(Sprinkles.BodyModifier)) {
 			if (sprite instanceof ColorShiftingSpriteProxy) {
-				let colorShiftingSpriteProxy: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>sprite;
-				if (colorShiftingSpriteProxy.hueShiftPerSecond == 0)
+				let bodySprite: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>sprite;
+				if (bodySprite.hueShiftPerSecond == 0)
 					return;
 
-				let currentHueShift: number = colorShiftingSpriteProxy.getCurrentHueShift(now);
-				let exceededForwardLimit: boolean = colorShiftingSpriteProxy.hueShiftPerSecond > 0 && currentHueShift > Sprinkles.forwardsBodyHueShiftMaxValue;
+				let currentHueShift: number = bodySprite.getCurrentHueShift(now);
+				let exceededForwardLimit: boolean = bodySprite.hueShiftPerSecond > 0 && currentHueShift > Sprinkles.forwardsBodyHueShiftMaxValue;
 				if (exceededForwardLimit) {
-					colorShiftingSpriteProxy.setColorShiftMilestone(now);
-					colorShiftingSpriteProxy.hueShiftPerSecond = -Math.abs(colorShiftingSpriteProxy.hueShiftPerSecond);
+					bodySprite.setColorShiftMilestone(now);
+					bodySprite.hueShiftPerSecond = -Math.abs(bodySprite.hueShiftPerSecond);
 				}
 				else {
-					let exceededBackwardLimit: boolean = colorShiftingSpriteProxy.hueShiftPerSecond < 0 && currentHueShift < Sprinkles.backwardsBodyHueShiftMinValue;
+					let exceededBackwardLimit: boolean = bodySprite.hueShiftPerSecond < 0 && currentHueShift < Sprinkles.backwardsBodyHueShiftMinValue;
 					if (exceededBackwardLimit) {
-						colorShiftingSpriteProxy.setColorShiftMilestone(now);
-						colorShiftingSpriteProxy.hueShiftPerSecond = Math.abs(colorShiftingSpriteProxy.hueShiftPerSecond);
+						bodySprite.setColorShiftMilestone(now);
+						bodySprite.hueShiftPerSecond = Math.abs(bodySprite.hueShiftPerSecond);
 					}
 				}
 			}

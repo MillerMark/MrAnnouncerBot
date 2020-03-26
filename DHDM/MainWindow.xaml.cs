@@ -4692,12 +4692,12 @@ namespace DHDM
 
 		private void BtnTestWalkLeft_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Walk Forwards");
+			HubtasticBaseStation.AnimateSprinkles("Walk Left");
 		}
 
 		private void BtnTestWalkRight_Click(object sender, RoutedEventArgs e)
 		{
-			HubtasticBaseStation.AnimateSprinkles("Walk Backwards");
+			HubtasticBaseStation.AnimateSprinkles("Walk Right");
 		}
 
 		private void BtnSprinkleBlast_Click(object sender, RoutedEventArgs e)
@@ -4748,6 +4748,11 @@ namespace DHDM
 		private void BtnDies_Click(object sender, RoutedEventArgs e)
 		{
 			HubtasticBaseStation.AnimateSprinkles("Dies");
+		}
+
+		private void BtnFlip_Click(object sender, RoutedEventArgs e)
+		{
+			HubtasticBaseStation.AnimateSprinkles("Flip");
 		}
 	}
 
