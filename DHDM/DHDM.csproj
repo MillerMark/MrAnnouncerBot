@@ -339,7 +339,6 @@
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
-    <Compile Include="WealthChange.cs" />
     <Page Include="FrmAsk.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

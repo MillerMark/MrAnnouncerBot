@@ -202,8 +202,6 @@ class DragonFrontGame extends DragonGame {
 
 		this.fred.draw(context, now);
 
-		//this.drawSprinkles(context, now, Layer.Front);
-
 		this.bloodEffects.draw(context, now);
 
 		this.coinManager.draw(context, now);
@@ -1259,12 +1257,14 @@ class DragonFrontGame extends DragonGame {
 			this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
 
 			let leftX: number = centerX - plateWidth / 2;
-			this.nameplateParts.baseAnimation.drawByIndex(context, leftX - this.nameplateParts.originX, sprite.y - this.nameplateParts.originY, 0);
+			let yPos: number = sprite.y - this.nameplateParts.originY;
+			let originX: number = this.nameplateParts.originX;
+			this.nameplateParts.baseAnimation.drawByIndex(context, leftX - originX, yPos, 0);
 			let rightX: number = centerX + plateWidth / 2;
-			this.nameplateParts.baseAnimation.drawByIndex(context, rightX - this.nameplateParts.originX, sprite.y - this.nameplateParts.originY, 1);
+			this.nameplateParts.baseAnimation.drawByIndex(context, rightX - originX, yPos, 1);
 			if (!hidingHitPoints) {
 				let separatorX: number = nameCenter + nameWidth / 2 + nameHpMargin / 2;
-				this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - this.nameplateParts.originX, sprite.y - this.nameplateParts.originY, 2);
+				this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - originX, yPos, 2);
 			}
 		}
 		finally {

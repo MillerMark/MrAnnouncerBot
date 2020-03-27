@@ -745,7 +745,7 @@ class SpellBook {
 	}
 
 	drawTableRow(context: CanvasRenderingContext2D, x: number, y: number, lineData: LineWrapData): any {
-		let cells: string[] = lineData.line.split('|').filter(Boolean);
+		let cells: string[] = lineData.line.trim().split('|').filter(Boolean);
 		let offset: number = 0;
 		context.save();
 		for (let i = 0; i < cells.length; i++) {
@@ -768,11 +768,11 @@ class SpellBook {
 				context.globalAlpha = 1;
 			}
 			else {
-				if (column.justification === Justification.right) {
+				if (column && column.justification === Justification.right) {
 					context.textAlign = 'right';
 					textX += column.width;
 				}
-				else if (column.justification === Justification.center) {
+				else if (column && column.justification === Justification.center) {
 					context.textAlign = 'center';
 					textX += column.width / 2;
 				}

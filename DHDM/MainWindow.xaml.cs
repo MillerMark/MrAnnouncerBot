@@ -3851,7 +3851,10 @@ namespace DHDM
 				else
 					playerNames += firstName;
 
-				player.ChangeHealth(damageHealthChange.DamageHealth);
+				if (damageHealthChange.IsTempHitPoints)
+					player.ChangeTempHP(damageHealthChange.DamageHealth);
+				else
+					player.ChangeHealth(damageHealthChange.DamageHealth);
 				UpdatePlayerScrollOnStream(player);
 			}
 
@@ -4781,6 +4784,7 @@ namespace DHDM
 			wealthChange.Coins.SetFromText(tbxWealthDelta.Text);
 			AddPlayerIds(wealthChange.PlayerIds);
 			HubtasticBaseStation.ChangePlayerWealth(JsonConvert.SerializeObject(wealthChange));
+			game.ChangeWealth(wealthChange);
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

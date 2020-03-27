@@ -647,5 +647,19 @@ namespace DndCore
 			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(castedSpell.Spell, playerId));
 			return alarm != null;
 		}
+		void ChangeWealth(int playerId, double totalGold)
+		{
+			Character player = GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			player.ChangeWealth(totalGold);
+		}
+		public void ChangeWealth(WealthChange wealthChange)
+		{
+			foreach (int playerId in wealthChange.PlayerIds)
+			{
+				ChangeWealth(playerId, wealthChange.Coins.TotalGold);
+			}
+		}
 	}
 }

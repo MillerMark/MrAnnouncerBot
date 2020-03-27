@@ -1494,6 +1494,21 @@ namespace DndCore
 			return states.ContainsKey(key);
 		}
 
+		public void ChangeTempHP(double deltaTempHp)
+		{
+			double saveTempHitPoints = tempHitPoints;
+			tempHitPoints += deltaTempHp;
+			if (tempHitPoints < 0)
+			{
+				tempHitPoints = 0;
+			}
+
+			if (tempHitPoints != saveTempHitPoints)
+			{
+				OnStateChanged(this, new StateChangedEventArgs("tempHitPoints", saveTempHitPoints, tempHitPoints));
+			}
+		}
+
 		public void InflictDamage(double deltaDamage)
 		{
 			double damageToSubtract = deltaDamage;
@@ -2537,6 +2552,17 @@ namespace DndCore
 				return;
 			temporarySpells.Remove(knownSpell);
 			OnStateChanged(this, new StateChangedEventArgs("temporarySpells", null, null));
+		}
+
+		public void ChangeWealth(double deltaGoldPieces)
+		{
+			double oldValue = goldPieces;
+			goldPieces += deltaGoldPieces;
+			// TODO: Add Debt to solve this so Debt and gold are both non negative.
+			if (goldPieces < 0)  // 
+				goldPieces = 0;
+			if (goldPieces != oldValue)
+				OnStateChanged(this, new StateChangedEventArgs("goldPieces", oldValue, goldPieces));
 		}
 	}
 }

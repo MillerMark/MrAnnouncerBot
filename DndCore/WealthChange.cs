@@ -1,10 +1,8 @@
-﻿//#define profiling
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using DndCore;
+using System.Linq;
 
-namespace DHDM
+namespace DndCore
 {
 	public class WealthChange
 	{
