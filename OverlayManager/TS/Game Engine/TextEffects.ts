@@ -124,6 +124,8 @@ class TextEffect extends ScalableAnimation {
 	fontColor: string;
 	fontName: string;
 	outlineColor: string;
+	verticalThrust: number = 0;
+	horizontalThrust: number = 0;
 	textAlign: string = 'center';
 	textBaseline: string = 'middle';
 	outlineThickness: number;
@@ -143,7 +145,11 @@ class TextEffect extends ScalableAnimation {
 	}
 
 	getVerticalThrust(now: number): number {
-		return 0;
+		return this.verticalThrust;
+	}
+
+	getHorizontalThrust(now: number): number {
+		return this.horizontalThrust;
 	}
 
 	render(context: CanvasRenderingContext2D, now: number) {

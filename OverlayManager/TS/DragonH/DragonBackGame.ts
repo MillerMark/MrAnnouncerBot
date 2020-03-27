@@ -5,6 +5,7 @@
 }
 
 class DragonBackGame extends DragonGame {
+	sprinkles: Sprinkles;
 	layerSuffix: string = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
@@ -20,6 +21,16 @@ class DragonBackGame extends DragonGame {
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
 		this.dragonBackSounds = new DragonBackSounds('GameDev/Assets/DragonH/SoundEffects');
+		this.sprinkles = new Sprinkles();
+		this.sprinkles.dragonSharedSounds = this.dragonBackSounds;
+	}
+
+	animateSprinkles(commandData: string): any {
+		this.sprinkles.executeCommand(commandData, performance.now());
+	}
+
+	drawSprinkles(context: CanvasRenderingContext2D, now: number, layer: Layer): void {
+		this.sprinkles.draw(context, now, layer);
 	}
 
 	initializePlayerData(playerData: string): any {
@@ -77,6 +88,10 @@ class DragonBackGame extends DragonGame {
 		for (var i = 0; i < playerHealth.PlayerIds.length; i++)
 			if (playerHealth.DamageHealth > 0)
 				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
+	}
+
+	changePlayerWealth(playerWealthDto: string): void {
+		// TODO: update the player scroll.
 	}
 
 	exitingCombat() {

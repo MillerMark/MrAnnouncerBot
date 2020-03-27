@@ -1,4 +1,123 @@
-﻿class DragonFrontGame extends DragonGame {
+﻿class CoinManager {
+	constructor() {
+
+	}
+	allCoins: SpriteCollection = new SpriteCollection();
+
+	loadCoin(name: string): Sprites {
+		let coins: Sprites = new Sprites(`Coins/${name}`, 60, fps30, AnimationStyle.Loop, true);
+		coins.name = name;
+		coins.originX = 17;
+		coins.originY = 17;
+		coins.moves = true;
+		return coins;
+	}
+
+	loadResources() {
+		this.allCoins.add(this.loadCoin('Gold'));
+		this.allCoins.add(this.loadCoin('Silver'));
+		this.allCoins.add(this.loadCoin('Copper'));
+		this.allCoins.add(this.loadCoin('Electrum'));
+		this.allCoins.add(this.loadCoin('Platinum'));
+	}
+
+	addCoinsByName(numCoins: number, coinName: string, x: number): any {
+		let sprites: Sprites = this.allCoins.getSpritesByName(coinName);
+		if (!sprites)
+			return;
+		let now: number = performance.now();
+		if (numCoins > 0) {
+			for (let i = 0; i < numCoins; i++)
+				this.addDroppingCoin(sprites, x, now);
+		}
+		else {
+			numCoins = Math.abs(numCoins);
+			for (let i = 0; i < numCoins; i++)
+				this.addFlyingCoin(sprites, x, now);
+		}
+	}
+
+	private addDroppingCoin(sprites: Sprites, x: number, now: number) {
+		let y: number = 0;
+		let sprite: SpriteProxy = sprites.add(x, y, -1);
+		sprite.verticalThrustOverride = 9.8;
+		if (Random.chancePercent(50))
+			sprite.animationReverseOverride = true;
+		sprite.frameIntervalOverride = fps30 * Random.between(0.5, 2);
+		sprite.timeStart = now + Random.between(0, 800);
+		sprite.velocityX = Random.between(-1.75, 1.75);
+		sprite.velocityY = Random.between(0, -3);
+		sprite.rotation = Random.max(360);
+		sprite.autoRotationDegeesPerSecond = Random.between(-10, 10);
+		sprite.initialRotation = sprite.rotation;
+		sprite.expirationDate = sprite.timeStart + 3000;
+		sprite.fadeOutTime = 0;
+		sprite.fadeInTime = 0;
+	}
+
+	static readonly halfHeightDmFrame: number = 212;
+	static readonly halfWidthDmFrame: number = 213;
+	static readonly gravity: number = 9.8;
+
+	private addFlyingCoin(sprites: Sprites, x: number, now: number) {
+		let y: number = screenHeight;
+		x += Random.between(-100, 100);
+		let sprite: SpriteProxy = sprites.add(x, y, -1);
+		sprite.verticalThrustOverride = CoinManager.gravity;
+		if (Random.chancePercent(50))
+			sprite.animationReverseOverride = true;
+		sprite.frameIntervalOverride = fps30 * Random.between(0.5, 2);
+		sprite.timeStart = now + Random.between(0, 800);
+
+		let airTime: number = CoinManager.getAirTimeToDmBoxSec();
+
+		sprite.rotation = Random.max(360);
+		sprite.autoRotationDegeesPerSecond = Random.between(-10, 10);
+		sprite.initialRotation = sprite.rotation;
+
+		sprite.velocityX = Physics.pixelsToMeters(screenWidth - CoinManager.halfWidthDmFrame - x) / airTime;
+		sprite.velocityY = -Physics.getFinalVelocity(airTime, 0, CoinManager.gravity);
+		sprite.expirationDate = sprite.timeStart + airTime * 1000;
+		sprite.fadeOutTime = 300;
+		sprite.fadeInTime = 0;
+	}
+
+  static getAirTimeToDmBoxSec(): number {
+		return CoinManager.getAirTimeSec(screenHeight - CoinManager.halfHeightDmFrame);
+  }
+
+	static getAirTimeFullDropSec(): number {
+		return CoinManager.getAirTimeSec(screenHeight);
+  }
+
+	static getAirTimeSec(totalHeightPx: number) {
+		let heightMeters: number = Physics.pixelsToMeters(totalHeightPx);
+		return Physics.getDropTime(heightMeters, CoinManager.gravity);
+	}
+
+	addCoins(coins: Coins, x: number) {
+		if (coins.NumGold != 0)
+			this.addCoinsByName(coins.NumGold, 'Gold', x);
+		if (coins.NumSilver != 0)
+			this.addCoinsByName(coins.NumSilver, 'Silver', x);
+		if (coins.NumCopper != 0)
+			this.addCoinsByName(coins.NumCopper, 'Copper', x);
+		if (coins.NumElectrum != 0)
+			this.addCoinsByName(coins.NumElectrum, 'Electrum', x);
+		if (coins.NumPlatinum != 0)
+			this.addCoinsByName(coins.NumPlatinum, 'Platinum', x);
+	}
+
+	draw(context: CanvasRenderingContext2D, now: number) {
+		context.globalAlpha = 1;
+		this.allCoins.updatePositions(now);
+		this.allCoins.draw(context, now);
+	}
+}
+
+class DragonFrontGame extends DragonGame {
+	coinManager: CoinManager = new CoinManager();
+	textAnimations: Animations = new Animations();
 	readonly fullScreenDamageThreshold: number = 15;
 	readonly heavyDamageThreshold: number = 15;
 	readonly mediumDamageThreshold: number = 6;
@@ -83,12 +202,16 @@
 
 		this.fred.draw(context, now);
 
-		this.drawSprinkles(context, now, Layer.Front);
+		//this.drawSprinkles(context, now, Layer.Front);
 
 		this.bloodEffects.draw(context, now);
 
+		this.coinManager.draw(context, now);
 		this.showNameplates(context, now);
 		this.allFrontEffects.draw(context, now);
+		this.textAnimations.removeExpiredAnimations(now);
+		this.textAnimations.updatePositions(now);
+		this.textAnimations.render(context, now);
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -219,6 +342,7 @@
 		super.loadResources();
 		Folders.assets = 'GameDev/Assets/DragonH/';
 		this.fred.loadResources();
+		this.coinManager.loadResources();
 
 		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
 		this.denseSmoke.name = 'DenseSmoke';
@@ -881,47 +1005,119 @@
 	readonly Player_Fred: number = 4;
 	readonly Player_Willy: number = 5;
 
+	changePlayerWealth(playerWealthDto: string): void {
+		let wealthChange: WealthChange = JSON.parse(playerWealthDto);
+
+		let timeoutMs: number = 2000;
+		let airTimeSec: number = CoinManager.getAirTimeFullDropSec();
+		if (wealthChange.Coins.TotalGold < 0) {
+			timeoutMs = 500;
+			airTimeSec = CoinManager.getAirTimeToDmBoxSec();
+		}
+		for (let i = 0; i < wealthChange.PlayerIds.length; i++) {
+			let playerId = wealthChange.PlayerIds[i];
+			let playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
+			this.coinManager.addCoins(wealthChange.Coins, playerX);
+			let prefix: string = '';
+			this.dragonFrontSounds.safePlayMp3('Coins/Coins[3]');
+			if (wealthChange.Coins.TotalGold > 0)
+				prefix = '+';
+			setTimeout(() => {
+				this.addFloatingText(playerX, `${prefix}${wealthChange.Coins.TotalGold} gp`, DragonFrontGame.FontColorGold, DragonFrontGame.FontOutlineGold);
+			}, timeoutMs);
+
+			setTimeout(() => {
+				this.dragonFrontSounds.safePlayMp3('Coins/Coins[3]');
+			}, airTimeSec * 1000);
+		}
+	}
+
 	changePlayerHealth(playerHealthDto: string): void {
 		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
 
-		let fredIsTakingDamage: boolean = false;
-		let fredIsGettingHitByBlood: boolean = false;
 		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
-			let splatterDirection: SplatterDirection;
 			if (playerHealth.DamageHealth < 0) {
-				splatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
-
-				if (playerHealth.PlayerIds[i] === this.Player_Fred) {
-					fredIsTakingDamage = true;
-				}
-				else {
-					if (!fredIsTakingDamage && playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
-
-						let absDamage: number = -playerHealth.DamageHealth;
-
-						if (absDamage >= this.heavyDamageThreshold)
-							fredIsGettingHitByBlood = true;
-						else if (absDamage >= this.mediumDamageThreshold) {
-							let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
-							if (playerX < 900)
-								fredIsGettingHitByBlood = true;
-						}
-						else if (absDamage >= this.lightDamageThreshold) {
-							let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
-							if (playerX < 600)
-								fredIsGettingHitByBlood = true;
-						}
-					}
-				}
+				this.showDamage(playerHealth, i);
 			}
 			else {
-				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
-				this.dragonFrontSounds.playRandom('Healing/Healing', 5);
+				this.showHealth(playerHealth, i);
 			}
 		}
+	}
 
+	private showHealth(playerHealth: PlayerHealth, i: number) {
+		setTimeout(() => {
+			let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+			let fontColor: string = DragonFrontGame.FontColorHealth;
+			let outlineColor: string = DragonFrontGame.FontOutlineHealth;
+			let suffix: string = 'hp';
+			if (playerHealth.IsTempHitPoints) {
+				fontColor = DragonFrontGame.FontColorTempHp;
+				outlineColor = DragonFrontGame.FontOutlineTempHp;
+				suffix = 'temp hp';
+			}
+
+			this.addFloatingText(playerX, `+${playerHealth.DamageHealth} ${suffix}`, fontColor, outlineColor);
+		}, 2000);
+		this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
+		this.dragonFrontSounds.playRandom('Healing/Healing', 5);
+	}
+
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string) {
+		let textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, 1080), text, 3500);
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = outlineColor;
+		textEffect.scale = 1;
+		textEffect.targetScale = 6;
+		textEffect.fadeOutTime = 2500;
+		textEffect.fadeInTime = 600;
+		textEffect.velocityX = 0;
+		textEffect.velocityY = -6;
+		textEffect.verticalThrust = 1.3;
+	}
+
+	static readonly FontColorDamage: string = '#ca0000';
+	static readonly FontOutlineDamage: string = '#000000';
+	static readonly FontColorHealth: string = '#5681d4';
+	static readonly FontOutlineHealth: string = '#ffffff';
+	static readonly FontColorTempHp: string = '#d4569d';
+	static readonly FontOutlineTempHp: string = '#ffffff';
+	static readonly FontColorGold: string = '#fedf80';
+	static readonly FontOutlineGold: string = '#5f4527';
+
+
+	private showDamage(playerHealth: PlayerHealth, i: number) {
+		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+		this.addFloatingText(playerX, `${playerHealth.DamageHealth} hp`, DragonFrontGame.FontColorDamage, DragonFrontGame.FontOutlineDamage);
+		let fredIsTakingDamage: boolean = false;
+		let fredIsGettingHitByBlood: boolean = false;
+		let splatterDirection: SplatterDirection;
+		splatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+		if (playerHealth.PlayerIds[i] === this.Player_Fred) {
+			fredIsTakingDamage = true;
+		}
+		else {
+			fredIsGettingHitByBlood = this.fredIsGettingHitByBlood(playerHealth, splatterDirection, fredIsGettingHitByBlood, playerX);
+		}
 		if (!fredIsTakingDamage && fredIsGettingHitByBlood)
 			setTimeout(this.raiseShield.bind(this), 700);
+	}
+
+	private fredIsGettingHitByBlood(playerHealth: PlayerHealth, splatterDirection: SplatterDirection, fredIsGettingHitByBlood: boolean, playerX: number) {
+		if (playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
+			let absDamage: number = -playerHealth.DamageHealth;
+			if (absDamage >= this.heavyDamageThreshold)
+				fredIsGettingHitByBlood = true;
+			else if (absDamage >= this.mediumDamageThreshold) {
+				if (playerX < 900)
+					fredIsGettingHitByBlood = true;
+			}
+			else if (absDamage >= this.lightDamageThreshold) {
+				if (playerX < 600)
+					fredIsGettingHitByBlood = true;
+			}
+		}
+		return fredIsGettingHitByBlood;
 	}
 
 	raiseShield() {

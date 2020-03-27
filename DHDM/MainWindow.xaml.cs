@@ -3835,10 +3835,7 @@ namespace DHDM
 			if (damageHealthChange == null)
 				return;
 			string playerNames = string.Empty;
-			if (damageHealthChange.PlayerIds.Count == 0)
-			{
-				damageHealthChange.PlayerIds.Add(ActivePlayerId);
-			}
+			
 			int numPlayers = damageHealthChange.PlayerIds.Count;
 			for (int i = 0; i < numPlayers; i++)
 			{
@@ -3871,6 +3868,8 @@ namespace DHDM
 
 		private DamageHealthChange GetDamageHealthChange(int multiplier, TextBox textBox)
 		{
+			if (textBox == null)
+				return null;
 			DamageHealthChange damageHealthChange;
 			int damage;
 
@@ -3878,15 +3877,24 @@ namespace DHDM
 			{
 				damageHealthChange = new DamageHealthChange();
 				damageHealthChange.DamageHealth = damage * multiplier;
-				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
-					if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
-						damageHealthChange.PlayerIds.Add(checkbox.PlayerId);
+				AddPlayerIds(damageHealthChange.PlayerIds);
 			}
 			else
 				damageHealthChange = null;
 			return damageHealthChange;
 		}
 
+		private void AddPlayerIds(List<int> playerIds)
+		{
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+				if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
+					playerIds.Add(checkbox.PlayerId);
+
+			if (playerIds.Count == 0)
+			{
+				playerIds.Add(ActivePlayerId);
+			}
+		}
 
 		private void RbActivePlayer_Checked(object sender, RoutedEventArgs e)
 		{
@@ -4754,8 +4762,27 @@ namespace DHDM
 		{
 			HubtasticBaseStation.AnimateSprinkles("Flip");
 		}
-	}
 
+		private void BtnApplyTempHp_Click(object sender, RoutedEventArgs e)
+		{
+			DamageHealthChange damageHealthChange = GetDamageHealthChange(+1, tbxTempHp);
+			
+			if (damageHealthChange != null)
+			{
+				damageHealthChange.IsTempHitPoints = true;
+				ApplyDamageHealthChange(damageHealthChange);
+			}
+		}
+
+		private void BtnChangeWealth_Click(object sender, RoutedEventArgs e)
+		{
+			//game.Clock.SetTime(game.Clock.Time - TimeSpan.FromDays(365 * 900));
+			WealthChange wealthChange = new WealthChange();
+			wealthChange.Coins.SetFromText(tbxWealthDelta.Text);
+			AddPlayerIds(wealthChange.PlayerIds);
+			HubtasticBaseStation.ChangePlayerWealth(JsonConvert.SerializeObject(wealthChange));
+		}
+	}
 	// TODO: Reintegrate wand/staff animations....
 	/* 
 	  Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown

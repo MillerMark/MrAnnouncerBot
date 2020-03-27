@@ -517,12 +517,32 @@
 							</StackPanel>
 
 							<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
+								<TextBlock x:Name="txtTempHp" Text="Temp HP: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
+								<TextBox x:Name="tbxTempHp" MinWidth="90" Margin="0, 0, 8, 0">
+
+								</TextBox>
+								<Button x:Name="btnApplyTempHp" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnApplyTempHp_Click">
+									Add Temp Hit Points!
+								</Button>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
 								<TextBlock x:Name="txtDamage" Text="Damage: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
 								<TextBox x:Name="tbxDamage" MinWidth="90" Margin="0, 0, 8, 0">
 
 								</TextBox>
 								<Button x:Name="btnInflictDamage" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnInflictDamage_Click" >
 									Inflict Damage!
+								</Button>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
+								<TextBlock x:Name="txtWealth" Text="Wealth Change: " Width="Auto" Height="Auto" Margin="0, 0, 4, 0"/>
+								<TextBox x:Name="tbxWealthDelta" MinWidth="90" Margin="0, 0, 8, 0">
+
+								</TextBox>
+								<Button x:Name="btnChangeWealth" MaxWidth="150" HorizontalAlignment="Left" Margin="0, 0, 0, 0" Padding="4" Click="BtnChangeWealth_Click" >
+									Change Wealth!
 								</Button>
 							</StackPanel>
 						</StackPanel>

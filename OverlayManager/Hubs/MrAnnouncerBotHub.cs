@@ -35,6 +35,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.ChangePlayerHealth(playerData);
 		}
 
+		public void ChangePlayerWealth(string playerData)
+		{
+			coderushedHub.Clients.All.ChangePlayerWealth(playerData);
+		}
+
 		public void AddWindup(string windupData)
 		{
 			coderushedHub.Clients.All.AddWindup(windupData);

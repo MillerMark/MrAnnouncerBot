@@ -1,4 +1,24 @@
-﻿enum SpellTargetType {
+﻿class WealthChange {
+	PlayerIds: Array<number>;
+	Coins: Coins;
+	constructor() {
+		
+	}
+}
+
+class Coins {
+	NumGold: number;
+	NumSilver: number;
+	NumCopper: number;
+	NumElectrum: number;
+	NumPlatinum: number;
+	TotalGold: number;
+	constructor() {
+
+	}
+}
+
+enum SpellTargetType {
 	Player,
 	Location,
 	Enemy
@@ -115,7 +135,6 @@ class KnownSpellsEffects {
 
 abstract class DragonGame extends GamePlusQuiz {
 	abstract layerSuffix: string;
-	sprinkles: Sprinkles;
 	dndTimeStr: string;
 	dndDateStr: string;
 
@@ -149,14 +168,6 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 	protected updateClockFromDto(dto: any) {
-	}
-
-	animateSprinkles(commandData: string): any {
-		this.sprinkles.executeCommand(commandData, performance.now());
-	}
-
-	drawSprinkles(context: CanvasRenderingContext2D, now: number, layer: Layer): void {
-		this.sprinkles.draw(context, now, layer);
 	}
 
 	protected triggerSoundEffect(dto: any): void {
@@ -409,8 +420,6 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.allWindupEffects = new SpriteCollection();
 		this.backLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
-		this.sprinkles = new Sprinkles();
-		this.sprinkles.dragonSharedSounds = this.dragonSharedSounds;
 	}
 
 	initializePlayerData(playerData: string): any {

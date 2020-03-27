@@ -9,6 +9,7 @@ function connectToSignalR(signalR) {
 		connection.start().catch(err => console.error(err.toString()));
     connection.on("ExecuteCommand", executeCommand);
 		connection.on("ChangePlayerHealth", changePlayerHealth);
+		connection.on("changePlayerWealth", changePlayerWealth);
     connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
     connection.on("FocusItem", focusItem);
@@ -65,9 +66,6 @@ function moveFred(movement: string): void {
 }
 
 function animateSprinkles(commandData: string) {
-	if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.animateSprinkles(commandData);
-	}
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.animateSprinkles(commandData);
 	}
@@ -146,6 +144,17 @@ function changePlayerHealth(playerHealth: string) {
 	
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.changePlayerHealth(playerHealth);
+  }
+}
+
+function changePlayerWealth(playerWealth: string) {
+  console.log('changePlayerWealth from Connection.ts');
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.changePlayerWealth(playerWealth);
+  }
+	
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.changePlayerWealth(playerWealth);
   }
 }
 
