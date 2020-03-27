@@ -99,6 +99,9 @@ namespace MrAnnouncerBot
 					Greet_TehPudding();
 					break;
 
+				case "chaelcodes":
+					Greet_ChaelCodes();
+					break;
 
 				default:
 					GreetVip();
@@ -288,6 +291,27 @@ namespace MrAnnouncerBot
 					break;
 			}
 		}
+
+        private void Greet_ChaelCodes()
+        {
+            switch (new Random().Next(4))
+            {
+                case 0:
+                    Greeting = $"Heya @{DisplayName} I hope you are sat with your feet up enjoying some CAT SNUGGLE TIME";
+                    break;
+                case 1:
+                    Greeting = $"Hi @{DisplayName} I hope Perl and Ruby are snuggled up watching with you.";
+                    break;
+                case 2:
+                    Greeting = $"https://clips.twitch.tv/CarefulExuberantNightingaleBleedPurple";
+                    break;
+                default:
+                    GreetVip();
+                    break;
+
+            }
+        }
+
 
 		private void Greet_CopperBeardy()
 		{
