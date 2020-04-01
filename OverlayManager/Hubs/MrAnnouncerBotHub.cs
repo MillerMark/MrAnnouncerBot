@@ -40,6 +40,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.ChangePlayerWealth(playerData);
 		}
 
+		public void ChangeFrameRate(string frameRateData)
+		{
+			coderushedHub.Clients.All.ChangeFrameRate(frameRateData);
+		}
+
 		public void AddWindup(string windupData)
 		{
 			coderushedHub.Clients.All.AddWindup(windupData);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,8 +18,19 @@ namespace OverlayManager
 			CreateWebHostBuilder(args).Build().Run();
 		}
 
+		public static string WebRootFolder
+		{
+			get
+			{
+				if (Debugger.IsAttached)
+					return "wwwroot";
+				else
+					return "..\\..\\..\\wwwroot";
+			}
+		}
+
 		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-				WebHost.CreateDefaultBuilder(args)
+				WebHost.CreateDefaultBuilder(args).UseUrls("http://localhost:44303/").UseWebRoot(WebRootFolder)
 						.UseStartup<Startup>();
 	}
 }

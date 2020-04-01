@@ -90,9 +90,10 @@ class DragonBackGame extends DragonGame {
 				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
 	}
 
-	changePlayerWealth(playerWealthDto: string): void {
-		// TODO: update the player scroll.
-	}
+	//changePlayerWealth(playerWealthDto: string): void {
+	//}
+
+	
 
 	exitingCombat() {
 		this.sunMookDial.frameIndex = 0;
@@ -221,6 +222,11 @@ class DragonBackGame extends DragonGame {
 
 		this.characterStatsScroll.state = ScrollState.none;
 		this.characterStatsScroll.setSoundManager(this.dragonBackSounds);
+	}
+
+	drawGame(nowMs: DOMHighResTimeStamp) {
+		this.nowMs = nowMs;
+		this.update(nowMs);
 	}
 
 	start() {

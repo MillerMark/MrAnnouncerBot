@@ -10,6 +10,7 @@ function connectToSignalR(signalR) {
     connection.on("ExecuteCommand", executeCommand);
 		connection.on("ChangePlayerHealth", changePlayerHealth);
 		connection.on("changePlayerWealth", changePlayerWealth);
+		connection.on("ChangeFrameRate", changeFrameRate);
     connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
     connection.on("FocusItem", focusItem);
@@ -149,12 +150,33 @@ function changePlayerHealth(playerHealth: string) {
 
 function changePlayerWealth(playerWealth: string) {
   console.log('changePlayerWealth from Connection.ts');
-	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.changePlayerWealth(playerWealth);
-  }
+	//if (activeBackGame instanceof DragonBackGame) {
+	//	activeBackGame.changePlayerWealth(playerWealth);
+ // }
 	
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.changePlayerWealth(playerWealth);
+  }
+}
+
+function changeFrameRate(frameRateData: string) {
+	console.log('changeFrameRate from Connection.ts');
+
+	let frameRateChangeData: FrameRateChangeData = JSON.parse(frameRateData);
+	//frameRateData
+
+	let message: string = `${frameRateChangeData.OverlayName} overlay: ${frameRateChangeData.FrameRate} fps `;
+	if (activeBackGame instanceof DragonBackGame) {
+		if (frameRateChangeData.OverlayName === 'Back') {
+			activeBackGame.changeFramerate(frameRateChangeData.FrameRate);
+		}
+	}
+	
+	if (activeFrontGame instanceof DragonFrontGame) {
+		if (frameRateChangeData.OverlayName === 'Front') {
+			activeFrontGame.changeFramerate(frameRateChangeData.FrameRate);
+		}
+		activeFrontGame.showFpsMessage(message);
   }
 }
 

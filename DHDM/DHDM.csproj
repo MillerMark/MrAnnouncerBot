@@ -286,6 +286,7 @@
     <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
+    <Compile Include="FrameRateChangeData.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />

@@ -24,6 +24,7 @@ namespace OverlayManager.Hubs
 		Task MapDataChanged(string mapData);
 		Task ChangePlayerHealth(string playerData);
 		Task ChangePlayerWealth(string playerData);
+		Task ChangeFrameRate(string frameRateData);
 		Task ClearWindup(string windupName);
 		Task MoveFred(string movement);
 		Task AddWindup(string windupData);

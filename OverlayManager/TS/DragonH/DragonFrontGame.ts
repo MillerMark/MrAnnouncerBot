@@ -82,13 +82,13 @@
 		sprite.fadeInTime = 0;
 	}
 
-  static getAirTimeToDmBoxSec(): number {
+	static getAirTimeToDmBoxSec(): number {
 		return CoinManager.getAirTimeSec(screenHeight - CoinManager.halfHeightDmFrame);
-  }
+	}
 
 	static getAirTimeFullDropSec(): number {
 		return CoinManager.getAirTimeSec(screenHeight);
-  }
+	}
 
 	static getAirTimeSec(totalHeightPx: number) {
 		let heightMeters: number = Physics.pixelsToMeters(totalHeightPx);
@@ -118,6 +118,11 @@
 class DragonFrontGame extends DragonGame {
 	coinManager: CoinManager = new CoinManager();
 	textAnimations: Animations = new Animations();
+
+	showFpsMessage(message: string): any {
+		this.addUpperRightStatusMessage(message, '#000000', '#ffffff');
+	}
+
 	readonly fullScreenDamageThreshold: number = 15;
 	readonly heavyDamageThreshold: number = 15;
 	readonly mediumDamageThreshold: number = 6;
@@ -1021,7 +1026,7 @@ class DragonFrontGame extends DragonGame {
 			if (wealthChange.Coins.TotalGold > 0)
 				prefix = '+';
 			setTimeout(() => {
-				this.addFloatingText(playerX, `${prefix}${wealthChange.Coins.TotalGold} gp`, DragonFrontGame.FontColorGold, DragonFrontGame.FontOutlineGold);
+				this.addFloatingPlayerText(playerX, `${prefix}${wealthChange.Coins.TotalGold} gp`, DragonFrontGame.FontColorGold, DragonFrontGame.FontOutlineGold);
 			}, timeoutMs);
 
 			setTimeout(() => {
@@ -1055,13 +1060,24 @@ class DragonFrontGame extends DragonGame {
 				suffix = 'temp hp';
 			}
 
-			this.addFloatingText(playerX, `+${playerHealth.DamageHealth} ${suffix}`, fontColor, outlineColor);
+			this.addFloatingPlayerText(playerX, `+${playerHealth.DamageHealth} ${suffix}`, fontColor, outlineColor);
 		}, 2000);
 		this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
 		this.dragonFrontSounds.playRandom('Healing/Healing', 5);
 	}
 
-	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string) {
+	addUpperRightStatusMessage(text: string, outlineColor: string, fontColor: string): any {
+		let textEffect: TextEffect = this.textAnimations.addText(new Vector(1920, 0), text, 3500);
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = outlineColor;
+		textEffect.scale = 1;
+		textEffect.fadeOutTime = 2500;
+		textEffect.fadeInTime = 600;
+		textEffect.textAlign = 'right';
+		textEffect.textBaseline = 'top';
+	}
+
+	addFloatingPlayerText(xPos: number, text: string, fontColor: string, outlineColor: string) {
 		let textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, 1080), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
@@ -1086,7 +1102,7 @@ class DragonFrontGame extends DragonGame {
 
 	private showDamage(playerHealth: PlayerHealth, i: number) {
 		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
-		this.addFloatingText(playerX, `${playerHealth.DamageHealth} hp`, DragonFrontGame.FontColorDamage, DragonFrontGame.FontOutlineDamage);
+		this.addFloatingPlayerText(playerX, `${playerHealth.DamageHealth} hp`, DragonFrontGame.FontColorDamage, DragonFrontGame.FontOutlineDamage);
 		let fredIsTakingDamage: boolean = false;
 		let fredIsGettingHitByBlood: boolean = false;
 		let splatterDirection: SplatterDirection;
@@ -1190,6 +1206,11 @@ class DragonFrontGame extends DragonGame {
 		}
 		else
 			return this.bloodGushE;
+	}
+
+	drawGame(nowMs: DOMHighResTimeStamp) {
+		this.nowMs = nowMs;
+		this.update(nowMs);
 	}
 
 	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number): void {

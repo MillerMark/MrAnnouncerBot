@@ -5,16 +5,3 @@ activeBackGame = new DragonBackGame(myContext);
 
 // Suggestion: This is too much outside knowledge of inner workings... Should just call start().
 activeBackGame.run();
-
-requestAnimationFrame(gameLoop);
-
-// Consider moving to Game so each game has its own loop, it's encapsulated and multiple games can
-// run concurrently if needed.
-function gameLoop(nowMs: DOMHighResTimeStamp) {
-  requestAnimationFrame(gameLoop);
-
-  if (activeBackGame) {
-    activeBackGame.nowMs = nowMs;
-    activeBackGame.update(nowMs);
-  }
-}

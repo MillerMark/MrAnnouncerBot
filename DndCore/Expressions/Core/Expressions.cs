@@ -389,8 +389,17 @@ namespace DndCore
 			DndFunction function = functions.FirstOrDefault(x => x.Handles(e.Name, player, castedSpell));
 			if (function != null)
 			{
-				e.Value = function.Evaluate(e.Args, e.Evaluator, player, target, castedSpell);
-				Log($"  {e.Name}({GetArgsStr(e.Args)}) => {GetValueStr(e.Value)}");
+				try
+				{
+					e.Value = function.Evaluate(e.Args, e.Evaluator, player, target, castedSpell);
+					Log($"  {e.Name}({GetArgsStr(e.Args)}) => {GetValueStr(e.Value)}");
+				}
+				catch (Exception ex)
+				{
+					e.Value = null;
+					Log($"  Exception thrown trying to evaluate {e.Name}({GetArgsStr(e.Args)})");
+				}
+				
 			}
 		}
 

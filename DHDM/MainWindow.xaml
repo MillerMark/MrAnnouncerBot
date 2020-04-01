@@ -759,6 +759,52 @@
 						</StackPanel>
 					</StackPanel>
 				</TabItem>
+				<TabItem Header="FPS">
+					<StackPanel Orientation="Vertical">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Front Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
+							<RadioButton x:Name="rbnFront5" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								5
+							</RadioButton>
+							<RadioButton x:Name="rbnFront10" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								10
+							</RadioButton>
+							<RadioButton x:Name="rbnFront15" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								15
+							</RadioButton>
+							<RadioButton x:Name="rbnFront20" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								20
+							</RadioButton>
+							<RadioButton x:Name="rbnFront25" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								25
+							</RadioButton>
+							<RadioButton x:Name="rbnFront30" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								30
+							</RadioButton>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Back Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
+							<RadioButton x:Name="rbnBack5" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								5
+							</RadioButton>
+							<RadioButton x:Name="rbnBack10" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								10
+							</RadioButton>
+							<RadioButton x:Name="rbnBack15" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								15
+							</RadioButton>
+							<RadioButton x:Name="rbnBack20" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								20
+							</RadioButton>
+							<RadioButton x:Name="rbnBack25" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								25
+							</RadioButton>
+							<RadioButton x:Name="rbnBack30" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								30
+							</RadioButton>
+						</StackPanel>
+					</StackPanel>
+				</TabItem>
 				<TabItem x:Name="tbTest" Header="Test">
 					<StackPanel Orientation="Vertical">
 						<Button x:Name="btnTestShowSprinkles" MaxWidth="160" Margin="8" Click="BtnTestShowSprinkles_Click">

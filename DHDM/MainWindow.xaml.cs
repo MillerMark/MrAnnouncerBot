@@ -4786,6 +4786,33 @@ namespace DHDM
 			HubtasticBaseStation.ChangePlayerWealth(JsonConvert.SerializeObject(wealthChange));
 			game.ChangeWealth(wealthChange);
 		}
+
+		int GetFrameRate(object sender)
+		{
+			if (sender is RadioButton radioButton)
+				if (radioButton.Content != null && radioButton.Content is string rbText)
+					if (int.TryParse(rbText, out int result))
+						return result;
+			return 30;
+		}
+
+		private void RbnFrontFpsChange_Click(object sender, RoutedEventArgs e)
+		{
+			ChangeFps(sender, "Front");
+		}
+
+		private void RbnBackFpsChange_Click(object sender, RoutedEventArgs e)
+		{
+			ChangeFps(sender, "Back");
+		}
+
+		private void ChangeFps(object sender, string overlayName)
+		{
+			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
+			frameRateChangeData.OverlayName = overlayName;
+			frameRateChangeData.FrameRate = GetFrameRate(sender);
+			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
+		}
 	}
 	// TODO: Reintegrate wand/staff animations....
 	/* 

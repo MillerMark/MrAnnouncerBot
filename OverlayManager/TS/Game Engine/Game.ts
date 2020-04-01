@@ -1,105 +1,154 @@
-﻿﻿let loadCopyrightedContent: boolean = true;
+﻿class FrameRateChangeData {
+	OverlayName: string;
+	FrameRate: number;
+	constructor() {
+
+	}
+}
+
+
+﻿let loadCopyrightedContent: boolean = true;
 
 const screenWidth: number = 1920;
 const screenHeight: number = 1080;
 
 class Game {
-  protected framesPerSecond: number = 100; // Defaulting to 100 because main is hardcoded to 10ms;
-  protected secondsPerFrame: number;
-  protected world: World;
-  protected gravity: GravityForce;
-  protected planetName: string;
+	//frontGameLoop(nowMs: DOMHighResTimeStamp) {
+	//	this.drawGame(nowMs);
+	//	requestAnimationFrame(this.frontGameLoop);
+	//}
 
-  protected now: number;
-  protected priorNow: number;
-  protected secondsToUpdate: number = 0;
+	drawGame(nowMs: DOMHighResTimeStamp) {
+	}
 
-  public nowMs: number = 0;
+	fpsInterval: number;
+	startTime: number;
+	lastDrawTime: number;
 
-  constructor(protected readonly context: CanvasRenderingContext2D) {
-    this.world = new World(this.context);
-  }
+	startAnimating(fps: number): void {
+		this.changeFramerate(fps);
+		requestAnimationFrame(this.animateFps.bind(this));
+	}
 
-  run(): void {
-    this.initialize();
-    this.loadResources();
-    this.start();
-  }
+	changeFramerate(fps: number): any {
+		this.fpsInterval = 1000 / fps;
+		this.secondsPerFrame = 1 / fps;
+		this.lastDrawTime = Date.now();
+		this.startTime = this.lastDrawTime;
+	}
 
-  update(timestamp: number) {
-    // All game objects deal with seconds so do the conversion from milliseconds now pass it down.
-    // That way there's no guesswork as to what a time represents.
-    let now = timestamp / 1000;
+	animateFps(nowMs: DOMHighResTimeStamp) {
+		try
+		{
+			let now: number = Date.now();
+			let elapsed: number = now - this.lastDrawTime;
 
-    const elapsed = now - this.priorNow || now;
-    this.secondsToUpdate += elapsed;
-    this.priorNow = now;
+			if (elapsed > this.fpsInterval) {
+				this.lastDrawTime = now - (elapsed % this.fpsInterval);
+				this.drawGame(nowMs);
+			}
+		}
+		finally
+		{
+			requestAnimationFrame(this.animateFps.bind(this));
+		}
+	}
 
-    // We got called back too early (and not enough prior time to offset)... wait until the next call.
-    if (this.secondsToUpdate < this.secondsPerFrame)
-      return;
+	protected secondsPerFrame: number;
+	protected world: World;
+	protected gravity: GravityForce;
+	protected planetName: string;
 
-    // Adjust to the start of the updates.
-    this.now = now - this.secondsToUpdate;
+	protected now: number;
+	protected priorNow: number;
+	protected secondsToUpdate: number = 0;
 
-    // Update in secondsPerFrame increments. This reduces floating point errors.
-    while (this.secondsToUpdate >= this.secondsPerFrame) {
-      this.world.update(this.now, this.secondsPerFrame);
+	public nowMs: number = 0;
 
-      this.secondsToUpdate -= this.secondsPerFrame;
-      this.now += this.secondsPerFrame;
-    }
+	constructor(protected readonly context: CanvasRenderingContext2D) {
+		this.world = new World(this.context);
+	}
 
-    this.now = now;
+	run(): void {
+		this.initialize();
+		this.loadResources();
+		this.start();
+		this.startAnimating(30);
+	}
 
-    this.world.ctx.clearRect(0, 0, screenWidth, screenHeight);
-    this.world.render(this.now, this.secondsPerFrame);
-    this.updateScreen(this.world.ctx, this.nowMs);
-  }
+	update(timestamp: number) {
+		// All game objects deal with seconds so do the conversion from milliseconds now pass it down.
+		// That way there's no guesswork as to what a time represents.
+		let now = timestamp / 1000;
 
-  updateScreen(context: CanvasRenderingContext2D, now: number): any {
+		const elapsed = now - this.priorNow || now;
+		this.secondsToUpdate += elapsed;
+		this.priorNow = now;
 
-  }
+		// We got called back too early (and not enough prior time to offset)... wait until the next call.
+		if (this.secondsToUpdate < this.secondsPerFrame)
+			return;
 
-  start() {
-    this.secondsPerFrame = 1 / this.framesPerSecond;
-  }
+		// Adjust to the start of the updates.
+		this.now = now - this.secondsToUpdate;
 
-  initialize(): void {
-    Part.loadSprites = loadCopyrightedContent;
-  }
+		// Update in secondsPerFrame increments. This reduces floating point errors.
+		while (this.secondsToUpdate >= this.secondsPerFrame) {
+			this.world.update(this.now, this.secondsPerFrame);
+
+			this.secondsToUpdate -= this.secondsPerFrame;
+			this.now += this.secondsPerFrame;
+		}
+
+		this.now = now;
+
+		this.world.ctx.clearRect(0, 0, screenWidth, screenHeight);
+		this.world.render(this.now, this.secondsPerFrame);
+		this.updateScreen(this.world.ctx, this.nowMs);
+	}
+
+	updateScreen(context: CanvasRenderingContext2D, now: number): any {
+
+	}
+
+	start() {
+	}
+
+	initialize(): void {
+		Part.loadSprites = loadCopyrightedContent;
+	}
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number) {
-    if (command === "TestCommand") {
+		if (command === "TestCommand") {
 			return this.test(params, userInfo, now);
-    }
-    return false;
-  }
+		}
+		return false;
+	}
 
 	test(testCommand: string, userInfo: UserInfo, now: number): boolean {
-    return false;
-  }
+		return false;
+	}
 
-  removeAllGameElements(now: number): void {
-  }
+	removeAllGameElements(now: number): void {
+	}
 
-  loadResources(): void {
+	loadResources(): void {
 
-  }
+	}
 
-  protected updateGravity() {
-    if (!gravityGames || !gravityGames.activePlanet)
-      return;
+	protected updateGravity() {
+		if (!gravityGames || !gravityGames.activePlanet)
+			return;
 
-    if (this.gravity) {
-      if (this.planetName === gravityGames.activePlanet.name)
-        return;
+		if (this.gravity) {
+			if (this.planetName === gravityGames.activePlanet.name)
+				return;
 
-      this.world.removeForce(this.gravity);
-    }
+			this.world.removeForce(this.gravity);
+		}
 
-    this.gravity = new GravityForce(gravityGames.activePlanet.gravity);
-    this.planetName = gravityGames.activePlanet.name;
-    this.world.addForce(this.gravity);
-  }
+		this.gravity = new GravityForce(gravityGames.activePlanet.gravity);
+		this.planetName = gravityGames.activePlanet.name;
+		this.world.addForce(this.gravity);
+	}
 }

@@ -97,6 +97,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("ChangePlayerWealth", playerData);
 		}
 
+		public static void ChangeFrameRate(string frameRateData)
+		{
+			HubConnection.InvokeAsync("ChangeFrameRate", frameRateData);
+		}
+
 		public static void AddWindup(string windupData)
 		{
 			HubConnection.InvokeAsync("AddWindup", windupData);
