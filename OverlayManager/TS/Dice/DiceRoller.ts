@@ -398,7 +398,7 @@ function init() { // From Rolling.html example.
 		randomDiceThrowIntervalId = setInterval(randomDiceThrow, secondsBetweenRolls * 1000);
 		randomDiceThrow();
 	}
-	requestAnimationFrame(animate);
+	startAnimatingDiceRoller(30);
 }
 
 function movePointAtAngle(point: Vector, angleInDegrees: number, distance): Vector {
@@ -564,15 +564,58 @@ function old_positionTrailingSprite(die: any, addPrintFunc: (x: number, y: numbe
 //  }
 //}
 
-function animate() {
-	if (!testing) {
-		updatePhysics();
-		render();
+//function animate() {
+//	if (!testing) {
+//		updatePhysics();
+//		render();
+//		update();
+//	}
+
+//	requestAnimationFrame(animate);
+//}
+
+
+var fpsIntervalDiceRoller: number;
+var startTimeDiceRoller: number;
+var lastDrawTimeDiceRoller: number;
+
+function startAnimatingDiceRoller(fps: number): void {
+	changeFramerateDiceRoller(fps);
+	requestAnimationFrame(animateDiceRollerFps);
+}
+
+function changeFramerateDiceRoller(fps: number): any {
+	fpsIntervalDiceRoller = 1000 / fps;
+	lastDrawTimeDiceRoller = Date.now();
+	startTimeDiceRoller = lastDrawTimeDiceRoller;
+}
+
+function animateDiceRollerFps(nowMs: DOMHighResTimeStamp) {
+	try {
+		let now: number = Date.now();
+		let elapsed: number = now - lastDrawTimeDiceRoller;
+
+		if (!testingDiceRoller) {
+			updatePhysics();
+			renderer.render(scene, camera);
+		}
+
+		let okayToDrawImages: boolean = elapsed > fpsIntervalDiceRoller;
+
+		if (okayToDrawImages) {
+			console.log('drawImage');
+			lastDrawTimeDiceRoller = now - (elapsed % fpsIntervalDiceRoller);
+			updateDieRollSpecialEffects();
+			diceLayer.renderCanvas();
+		}
+
 		update();
 	}
-
-	requestAnimationFrame(animate);
+	finally {
+		requestAnimationFrame(animateDiceRollerFps);
+	}
 }
+
 
 function anyDiceStillRolling(): boolean {
 	for (var i = 0; i < dice.length; i++) {
@@ -1980,13 +2023,13 @@ function update() {
 	}
 }
 
-function render() {
-	renderer.render(scene, camera);
+//function render() {
+//	renderer.render(scene, camera);
 
-	updateDieRollSpecialEffects();
+//	updateDieRollSpecialEffects();
 
-	diceLayer.renderCanvas();
-}
+//	diceLayer.renderCanvas();
+//}
 
 init();
 
@@ -2229,7 +2272,7 @@ class MockDie {
 	}
 }
 
-var testing: boolean = false;
+var testingDiceRoller: boolean = false;
 
 function getDiceInPlay(): number {
 	let diceInPlay: number = 0;

@@ -40,6 +40,11 @@ namespace DHDM
 		const string DragonHumpersChannel = "DragonHumpers";
 		const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";  // This sequence allows indentation in Twitch chats!
 
+
+		const string STR_FrontOverlay = "Front";
+		const string STR_BackOverlay = "Back";
+		const string STR_DiceOverlay = "Dice";
+
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
@@ -955,7 +960,7 @@ namespace DHDM
 			}
 			if (spellToEnd.StartsWith(PlayerActionShortcut.SpellWindupPrefix))
 				spellToEnd = spellToEnd.Substring(PlayerActionShortcut.SpellWindupPrefix.Length);
-			
+
 			TellDungeonMaster($"{casterEmote}{casterId} {spellToEnd} spell ends at {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
@@ -1631,6 +1636,17 @@ namespace DHDM
 				}
 			}
 
+			SeriouslyRollTheDice(diceRoll);
+		}
+
+		private void SeriouslyRollTheDice(DiceRoll diceRoll)
+		{
+			if (dynamicThrottling)
+			{
+				ChangeFrameRateAndUI(STR_BackOverlay, 5);
+				ChangeFrameRateAndUI(STR_FrontOverlay, 10);
+				ChangeFrameRateAndUI(STR_DiceOverlay, 15);
+			}
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
@@ -1855,7 +1871,7 @@ namespace DHDM
 			diceRoll.AddDieRollEffects(activeDieRollEffects);
 
 			// TODO: Make this data-driven:
-			
+
 			if (type == DiceRollType.WildMagicD20Check)
 			{
 				diceRoll.IsMagic = true;
@@ -2354,7 +2370,7 @@ namespace DHDM
 				return;
 			int hueShift = DndUtils.GetHueShift(spell.SchoolOfMagic);
 			EffectGroup effectGroup = new EffectGroup();
-			
+
 			VisualEffectTarget chestTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
 			VisualEffectTarget bottomTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
 
@@ -2501,7 +2517,7 @@ namespace DHDM
 		{
 			if (!DndUtils.IsAttack(stopRollingData.type))
 				return;
-			
+
 			if (string.IsNullOrWhiteSpace(stopRollingData.spellName))
 				return;
 			if (stopRollingData.success)
@@ -2515,6 +2531,13 @@ namespace DHDM
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
+			if (dynamicThrottling)
+			{
+				ChangeFrameRateAndUI(STR_BackOverlay, 25);
+				ChangeFrameRateAndUI(STR_FrontOverlay, 25);
+				ChangeFrameRateAndUI(STR_DiceOverlay, 15);
+			}
+
 			waitingToClearDice = true;
 			if (ea.StopRollingData.individualRolls?.Count > 0)
 			{
@@ -3827,7 +3850,7 @@ namespace DHDM
 			if (player == null)
 				return;
 			//if (ActivePlayerId == player.playerID)
-				HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
+			HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
 		}
 
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
@@ -3835,7 +3858,7 @@ namespace DHDM
 			if (damageHealthChange == null)
 				return;
 			string playerNames = string.Empty;
-			
+
 			int numPlayers = damageHealthChange.PlayerIds.Count;
 			for (int i = 0; i < numPlayers; i++)
 			{
@@ -4132,7 +4155,7 @@ namespace DHDM
 				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), ShiftKeyDown);
 			});
 		}
-		
+
 
 		public void RollDice()
 		{
@@ -4769,7 +4792,7 @@ namespace DHDM
 		private void BtnApplyTempHp_Click(object sender, RoutedEventArgs e)
 		{
 			DamageHealthChange damageHealthChange = GetDamageHealthChange(+1, tbxTempHp);
-			
+
 			if (damageHealthChange != null)
 			{
 				damageHealthChange.IsTempHitPoints = true;
@@ -4798,20 +4821,124 @@ namespace DHDM
 
 		private void RbnFrontFpsChange_Click(object sender, RoutedEventArgs e)
 		{
-			ChangeFps(sender, "Front");
+			if (changingFrameRateInternally)
+				return;
+			ChangeFps(sender, STR_FrontOverlay);
 		}
+
+		bool changingFrameRateInternally;
 
 		private void RbnBackFpsChange_Click(object sender, RoutedEventArgs e)
 		{
-			ChangeFps(sender, "Back");
+			if (changingFrameRateInternally)
+				return;
+			ChangeFps(sender, STR_BackOverlay);
+		}
+
+		private void RbnDiceFpsChange_Click(object sender, RoutedEventArgs e)
+		{
+			if (changingFrameRateInternally)
+				return;
+			ChangeFps(sender, STR_DiceOverlay);
 		}
 
 		private void ChangeFps(object sender, string overlayName)
 		{
+			ChangeFrameRate(overlayName, GetFrameRate(sender));
+		}
+
+		private static void ChangeFrameRate(string overlayName, int frameRate)
+		{
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
+			frameRateChangeData.FrameRate = frameRate;
 			frameRateChangeData.OverlayName = overlayName;
-			frameRateChangeData.FrameRate = GetFrameRate(sender);
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
+		}
+
+		RadioButton GetFrameRateRadioButton(string overlayName, int frameRate)
+		{
+			switch (overlayName)
+			{
+				case STR_BackOverlay:
+					switch (frameRate)
+					{
+						case 5:
+							return rbnBack5;
+						case 10:
+							return rbnBack10;
+						case 15:
+							return rbnBack15;
+						case 20:
+							return rbnBack20;
+						case 25:
+							return rbnBack25;
+						case 30:
+							return rbnBack30;
+					}
+					break;
+				case STR_DiceOverlay:
+					switch (frameRate)
+					{
+						case 5:
+							return rbnDice5;
+						case 10:
+							return rbnDice10;
+						case 15:
+							return rbnDice15;
+						case 20:
+							return rbnDice20;
+						case 25:
+							return rbnDice25;
+						case 30:
+							return rbnDice30;
+					}
+					break;
+				case STR_FrontOverlay:
+					switch (frameRate)
+					{
+						case 5:
+							return rbnFront5;
+						case 10:
+							return rbnFront10;
+						case 15:
+							return rbnFront15;
+						case 20:
+							return rbnFront20;
+						case 25:
+							return rbnFront25;
+						case 30:
+							return rbnFront30;
+					}
+					break;
+			}
+			return null;
+		}
+		private void ChangeFrameRateAndUI(string overlayName, int frameRate)
+		{
+			RadioButton radioButton = GetFrameRateRadioButton(overlayName, frameRate);
+			if (radioButton != null)
+			{
+				try
+				{
+					changingFrameRateInternally = true;
+					Dispatcher.Invoke(() =>
+					{
+						radioButton.IsChecked = true;
+					});
+				}
+				finally
+				{
+					changingFrameRateInternally = false;
+				}
+			}
+			ChangeFrameRate(overlayName, frameRate);
+		}
+
+		bool dynamicThrottling;
+
+		private void CkDynamicThrottling_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			dynamicThrottling = ckDynamicThrottling.IsChecked == true;
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

@@ -783,6 +783,27 @@
 							</RadioButton>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Dice Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
+							<RadioButton x:Name="rbnDice5" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								5
+							</RadioButton>
+							<RadioButton x:Name="rbnDice10" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								10
+							</RadioButton>
+							<RadioButton x:Name="rbnDice15" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								15
+							</RadioButton>
+							<RadioButton x:Name="rbnDice20" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								20
+							</RadioButton>
+							<RadioButton x:Name="rbnDice25" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								25
+							</RadioButton>
+							<RadioButton x:Name="rbnDice30" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								30
+							</RadioButton>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Back Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
 							<RadioButton x:Name="rbnBack5" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
 								5
@@ -803,6 +824,9 @@
 								30
 							</RadioButton>
 						</StackPanel>
+						<CheckBox x:Name="ckDynamicThrottling" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
+							DynamicThrottling
+						</CheckBox>
 					</StackPanel>
 				</TabItem>
 				<TabItem x:Name="tbTest" Header="Test">

@@ -172,12 +172,18 @@ function changeFrameRate(frameRateData: string) {
 		}
 	}
 	
+	if (diceLayer) {
+		if (frameRateChangeData.OverlayName === 'Dice') {
+			changeFramerateDiceRoller(frameRateChangeData.FrameRate);
+		}
+	}
+
 	if (activeFrontGame instanceof DragonFrontGame) {
 		if (frameRateChangeData.OverlayName === 'Front') {
 			activeFrontGame.changeFramerate(frameRateChangeData.FrameRate);
 		}
 		activeFrontGame.showFpsMessage(message);
-  }
+	}
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
