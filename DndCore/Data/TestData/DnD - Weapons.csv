@@ -1,6 +1,7 @@
 Name,DamageOneHanded,DamageTwoHanded,Range,DisadvantageRange,Weight,Ammo,Light,Heavy,TwoHanded,Loading,Martial,Ranged,Melee,Finesse,Reach,Thrown,Special,Versatile,Cost,PropertyDescription
 Battleaxe,1d8(slashing),1d10(slashing),,,4,,,,,,x,,x,,,,,x,10 gp,Versatile (1d10)
 Blowgun,1(piercing),,25,100,1,Dart,,,,x,x,x,,,,,,,10 gp,"Ammunition (range 25/100), loading"
+Boomerang,1d4(bludgeoning),,60,120,0,,x,,,,,x,,,,x,,,0,"Light, thrown (range 60/120)"
 Club,1d4(bludgeoning),,,,2,,x,,,,,,x,,,,,,1 sp,Light
 "Crossbow, Hand",1d6(piercing),,30,120,3,Bolt,x,,,x,x,x,,,,,,,75 gp,"Ammunition (range 30/120), light, loading"
 "Crossbow, Heavy",,1d10(piercing),100,400,18,Bolt,,x,x,x,x,x,,,,,,,50 gp,"Ammunition (range 100/400), heavy, loading, two-handed"

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
-	//+ Any changes here should be reflected in getDiceRollData inside DiceLayers.ts
+	//+ Any property/field changes here should be reflected in getDiceRollData inside DiceLayers.ts
 	public class DiceRoll
 	{
 		public List<PlayerRollOptions> PlayerRollOptions = new List<PlayerRollOptions>();
@@ -17,17 +17,25 @@ namespace DndCore
 		public string OnFirstContactSound { get; set; }
 		public string OnRollSound { get; set; }
 
-		public DiceRoll(VantageKind kind = VantageKind.Normal, string damageDice = "")
+		public DiceRoll(DiceRollType diceRollType, VantageKind kind = VantageKind.Normal, string damageDice = "")
 		{
+			Type = diceRollType;
 			DamageDice = damageDice;
 			VantageKind = kind;
 			ThrowPower = 1.0;
 			MinCrit = 20;  // Some feats allow for a 19 to crit.
-			SuccessMessage = "Success!";
-			FailMessage = "Fail!";
-			CritFailMessage = "Critical Fail!";
-			CritSuccessMessage = "Critical Success!";
+			//SuccessMessage = "Success!";
+			//FailMessage = "Fail!";
+			//CritFailMessage = "Critical Fail!";
+			//CritSuccessMessage = "Critical Success!";
 			MinDamage = 0;
+			CritFailMessage = "";
+			CritSuccessMessage = "";
+			SuccessMessage = "";
+			FailMessage = "";
+			SkillCheck = Skills.none;
+			SavingThrow = Ability.none;
+			SpellName = "";
 		}
 
 		public string CritFailMessage { get; set; }
@@ -113,13 +121,79 @@ namespace DndCore
 				AddDieRollEffect(effect);
 			}
 		}
+
 		public void Modify(PlayerActionShortcut actionShortcut)
 		{
 			
 		}
-		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut)
+
+		// TODO: Put DiceRollType as a property on actionShortcut
+		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut, DiceRollType diceRollType = DiceRollType.None)
 		{
+			DiceRoll diceRoll = new DiceRoll(diceRollType);
+			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
+			diceRoll.AdditionalDiceOnHitMessage = actionShortcut.AddDiceOnHitMessage;
+			diceRoll.AddCritFailMessages(diceRollType);
+			if (actionShortcut.HasInstantDice())
+				diceRoll.DamageDice = actionShortcut.InstantDice;
 			
+			diceRoll.DamageType = DamageType.None;  // Consider deprecating.
+			diceRoll.IsMagic = actionShortcut.UsesMagic || diceRollType == DiceRollType.WildMagicD20Check;
+			diceRoll.MinDamage = actionShortcut.MinDamage;
+			diceRoll.Modifier = actionShortcut.ToHitModifier;
+			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+			if (actionShortcut.Spell != null)
+			{
+				diceRoll.SpellName = actionShortcut.Spell.Name;
+				if (actionShortcut.Spell.MustRollDiceToCast())
+					diceRoll.DamageDice = actionShortcut.Spell.DieStr;
+			}
+
+			return diceRoll;
+		}
+
+		public void AddCritFailMessages(DiceRollType type)
+		{
+			switch (type)
+			{
+				// TODO: Make this data-driven:
+				case DiceRollType.SkillCheck:
+					CritFailMessage = "COMPLETE FAILURE!";
+					CritSuccessMessage = "Nat 20!";
+					SuccessMessage = "Success!";
+					FailMessage = "Fail!";
+					break;
+				case DiceRollType.Attack:
+				case DiceRollType.ChaosBolt:
+					CritFailMessage = "SPECTACULAR MISS!";
+					CritSuccessMessage = "Critical Hit!";
+					SuccessMessage = "Hit!";
+					FailMessage = "Miss!";
+					break;
+				case DiceRollType.SavingThrow:
+					CritFailMessage = "COMPLETE FAILURE!";
+					CritSuccessMessage = "Critical Success!";
+					SuccessMessage = "Success!";
+					FailMessage = "Fail!";
+					break;
+				case DiceRollType.DeathSavingThrow:
+					CritFailMessage = "COMPLETE FAILURE!";
+					CritSuccessMessage = "Critical Success!";
+					SuccessMessage = "Success!";
+					FailMessage = "Fail!";
+					break;
+			}
+		}
+		public void SetHiddenThreshold(string fromText = "10")
+		{
+			if (Type == DiceRollType.DeathSavingThrow)
+				HiddenThreshold = 10;
+			else if (Type == DiceRollType.Initiative || Type == DiceRollType.NonCombatInitiative)
+				HiddenThreshold = -100;
+			else if (Type == DiceRollType.DamageOnly || Type == DiceRollType.HealthOnly || Type == DiceRollType.ExtraOnly)
+				HiddenThreshold = 0;
+			else if (double.TryParse(fromText, out double thresholdResult))
+				HiddenThreshold = thresholdResult;
 		}
 		public bool IsOnePlayer
 		{

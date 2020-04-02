@@ -643,6 +643,10 @@ namespace DndCore
 			result.SourceFeature = feature;
 			return result;
 		}
+		public bool HasInstantDice()
+		{
+			return !string.IsNullOrWhiteSpace(InstantDice);
+		}
 
 	}
 }

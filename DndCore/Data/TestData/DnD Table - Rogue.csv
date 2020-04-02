@@ -1,0 +1,21 @@
+Level,ProficiencyBonus,SneakAttack,Features
+1,2,1d6,"Expertise, Sneak Attack, Thieves’ Cant"
+2,2,1d6,Cunning Action
+3,2,2d6,Roguish Archetype
+4,2,2d6,Ability Score Improvement
+5,3,3d6,Uncanny Dodge
+6,3,3d6,Expertise
+7,3,4d6,Evasion
+8,3,4d6,Ability Score Improvement
+9,4,5d6,Roguish Archetype Feature
+10,4,5d6,Ability Score Improvement
+11,4,6d6,Reliable Talent
+12,4,6d6,Ability Score Improvement
+13,5,7d6,Roguish Archetype Feature
+14,5,7d6,Blindsense
+15,5,8d6,Slippery Mind
+16,5,8d6,Ability Score Improvement
+17,6,9d6,Roguish Archetype Feature
+18,6,9d6,Elusive
+19,6,10d6,Ability Score Improvement
+20,6,10d6,Stroke of Luck

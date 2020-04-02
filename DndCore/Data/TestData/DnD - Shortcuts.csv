@@ -1,14 +1,8 @@
 player,name,type,magic,rollMod,commands,vantageMod,time,dieStr,plusModifier,addDice,addDiceTitle,addDiceOnHit,addDiceOnHitMessage,minDamage,dieRollEffects,trailingEffects,startSound,endSound,description
-Ava,Divine Smite (undead/fiends),,x,,,,*,,,,,,,,PaladinSmite,Ravens;Spirals,,,"Starting at 2nd level, when you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon’s damage. The extra damage is 2d8 for a 1st-level spell slot, plus 1d8 for each spell level higher than 1st, to a maximum of 5d8. The damage increases by 1d8 if the target is an undead or a fiend, to a maximum of 6d8."
-Ava,Channel Divinity: Rebuke the Violent,,x,,,,1R,,,,,,,,,,,,
-Ava,Channel Divinity: Emissary of Peace,,x,,,,1BA,,,,,,,,,,,,
-Ava,Lay on Hands Pool,,x,,,,,,,,,,,,,,,,
-Ava,Divine Smite,,,,,,,,,,,,,,PaladinSmite,Ravens;Spirals,,,
 Fred,Hungry Jaws,Attack,,,,,1BA,1d6+4,,,,,,,,,,,"Once per short rest as a bonus action, you can make a bite attack. If it hits, you gain CON modifier (min 1) temporary HP."
 Fred,Great Weapon Master Attack,,,,,,*,,,,,,,,,,,,"On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 HP with one, you can make one melee weapon attack as a bonus action."
 Merkin,Wild Magic,WildMagic,x,,,,,"!d1001(:roll),d1010(:roll)",,,,,,,WildMagic,Sparks,,,
-Merkin,Check Wild Magic,WildMagicD20Check,x,,,,*,!1d20,,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.
-Willy,Sneak Attack,,,,,,,,,3d6,,,,,SmokeBomb,Smoke,,,
+Merkin,Check Wild Magic,WildMagicD20Check,x,,,,*,"!1d20(""Wild Magic Check"")",,,,,,,Halos3,SmallSparks,,,Rolls a d20 to see if the Wild Magic Surge occurs.
 Willy,Cunning Dash,,,,,,1BA,,,,,,,,,,,,
 Willy,Cunning Disengage,,,,,,1BA,,,,,,,,,,,,
 Willy,Cunning Hide,,,,,,1BA,,,,,,,,,,,,

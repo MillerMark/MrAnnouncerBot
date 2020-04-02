@@ -68,6 +68,7 @@
     <Compile Include="ActionShortcutsTests.cs" />
     <Compile Include="AlarmTests.cs" />
     <Compile Include="CoinTests.cs" />
+    <Compile Include="DiceRollTests.cs" />
     <Compile Include="Expression Evaluation\ExpressionCompilationTests.cs" />
     <Compile Include="Support\AlignmentNames.cs" />
     <Compile Include="AttackTests.cs" />

@@ -878,7 +878,7 @@ namespace DHDM
 				return actionShortcuts.FirstOrDefault(x => x.Index == index);
 			return null;
 		}
-		void HidePlayerShortcutHighlights()
+		void HidePlayerShortcutHighlightsUI()
 		{
 			if (highlightRectangles == null)
 				return;
@@ -887,21 +887,21 @@ namespace DHDM
 				rectangle.Visibility = Visibility.Hidden;
 			}
 		}
-		void HighlightPlayerShortcut(int index)
+		void HighlightPlayerShortcutUI(int index)
 		{
-			HidePlayerShortcutHighlights();
+			HidePlayerShortcutHighlightsUI();
 			if (highlightRectangles == null)
 				return;
 			if (highlightRectangles.ContainsKey(index))
 				highlightRectangles[index].Visibility = Visibility.Visible;
 		}
 
-		void SetVantageForActivePlayer(VantageKind vantageMod)
+		void SetActivePlayerVantageUI(VantageKind vantageMod)
 		{
-			SetVantageForPlayer(vantageMod, ActivePlayerId);
+			SetPlayerVantageUI(vantageMod, ActivePlayerId);
 		}
 
-		public void SetVantageForPlayer(VantageKind vantageMod, int playerId)
+		public void SetPlayerVantageUI(VantageKind vantageMod, int playerId)
 		{
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 			{
@@ -1136,7 +1136,12 @@ namespace DHDM
 		}
 #endif
 		DiceRoll currentRoll;
-		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
+		void UpdateRollUI(DiceRoll diceRoll)
+		{
+			
+		}
+
+		private void ActivateShortcut_new(PlayerActionShortcut actionShortcut)
 		{
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
@@ -1155,6 +1160,7 @@ namespace DHDM
 				finally
 				{
 					settingInternally = false;
+					UpdateRollUI(currentRoll);
 					UpdateStateUIForPlayer(player);
 				}
 			}
@@ -1165,38 +1171,24 @@ namespace DHDM
 			}
 		}
 
-		private void ActivateShortcut_Old(PlayerActionShortcut actionShortcut)
+		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
 			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
 			{
-				if (!NewMethod(actionShortcut, player))
+				if (ActivateShortcutForPlayer(actionShortcut, player) == ActionType.ModifiesExisting)
 					return;
 
 				settingInternally = true;
 
 				try
 				{
-					HighlightPlayerShortcut(actionShortcut.Index);
-					SetControlsFromShortcut(actionShortcut);
+					HighlightPlayerShortcutUI(actionShortcut.Index);
+					SetControlUiFromShortcut(actionShortcut);
 					NextDieRollType = actionShortcut.Type;
-
-					if (actionShortcut.VantageMod != VantageKind.Normal)
-						SetVantageForActivePlayer(actionShortcut.VantageMod);
-
-					if (!string.IsNullOrWhiteSpace(actionShortcut.InstantDice))
-					{
-						DiceRollType type = actionShortcut.Type;
-						if (type == DiceRollType.None)
-							type = DiceRollType.DamageOnly;
-						DiceRoll diceRoll = PrepareRoll(type);
-						diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
-
-
-						diceRoll.DamageDice = actionShortcut.InstantDice;
-						RollTheDice(diceRoll);
-					}
+					SetActivePlayerVantageUI(actionShortcut.VantageMod);
+					RollInstantDiceIfNecessary(actionShortcut);
 				}
 				finally
 				{
@@ -1211,20 +1203,28 @@ namespace DHDM
 			}
 		}
 
+		private void RollInstantDiceIfNecessary(PlayerActionShortcut actionShortcut)
+		{
+			if (!actionShortcut.HasInstantDice())
+				return;
+			DiceRollType type = actionShortcut.Type;
+			if (type == DiceRollType.None)
+				type = DiceRollType.DamageOnly;
+			DiceRoll diceRoll = PrepareRoll(type);
+			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
+			diceRoll.DamageDice = actionShortcut.InstantDice;
+			RollTheDice(diceRoll);
+		}
+
 		public enum ActionType
 		{
 			ModifiesExisting,
 			CreatesNew
 		}
 
-		private bool NewMethod(PlayerActionShortcut actionShortcut, Character player)
+		private ActionType ActivateShortcutForPlayer(PlayerActionShortcut actionShortcut, Character player)
 		{
-			if (actionShortcut.Type == DiceRollType.WildMagic)
-			{
-				Character activePlayer = GetPlayer(actionShortcut.PlayerId);
-				if (activePlayer != null)
-					activePlayer.NumWildMagicChecks = 0;
-			}
+			ResetWildMagicChecks(actionShortcut);
 			ActivatePendingShortcuts();  // ??? Should this be here.
 			ResetActiveFields();
 			AssignDieRollEffects(actionShortcut);
@@ -1233,7 +1233,7 @@ namespace DHDM
 			{
 				ModifyExistingRollUI(actionShortcut, player);
 				actionShortcut.ExecuteCommands(player);
-				return false;
+				return ActionType.ModifiesExisting;
 			}
 
 			SetRollTypeUI(actionShortcut);
@@ -1247,7 +1247,16 @@ namespace DHDM
 
 			player.Use(actionShortcut);
 			SetModifierUI(actionShortcut);
-			return true;
+			return ActionType.CreatesNew;
+		}
+
+		private void ResetWildMagicChecks(PlayerActionShortcut actionShortcut)
+		{
+			if (actionShortcut.Type != DiceRollType.WildMagic)
+				return;
+			Character activePlayer = GetPlayer(actionShortcut.PlayerId);
+			if (activePlayer != null)
+				activePlayer.NumWildMagicChecks = 0;
 		}
 
 		private void SetModifierUI(PlayerActionShortcut actionShortcut)
@@ -1340,7 +1349,7 @@ namespace DHDM
 			{
 				case VantageKind.Advantage:
 				case VantageKind.Disadvantage:
-					SetVantageForActivePlayer(actionShortcut.VantageMod);
+					SetActivePlayerVantageUI(actionShortcut.VantageMod);
 					break;
 			}
 			if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
@@ -1362,7 +1371,7 @@ namespace DHDM
 			activeIsSpell = null;
 		}
 
-		private void SetControlsFromShortcut(PlayerActionShortcut actionShortcut)
+		private void SetControlUiFromShortcut(PlayerActionShortcut actionShortcut)
 		{
 			if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
 				tbxDamageDice.Text += "," + actionShortcut.AddDice;
@@ -1492,7 +1501,7 @@ namespace DHDM
 			}
 			else
 			{
-				ShowSpellHit(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
+				ShowSpellHitInGame(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
 				player.JustCastSpell(spell.Name);
 			}
 		}
@@ -1681,6 +1690,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			diceRoll.GroupInspiration = tbxInspiration.Text;
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
 			{
@@ -1689,7 +1699,7 @@ namespace DHDM
 				{
 					DiceRollType diceRollType = PlayerActionShortcut.GetDiceRollType(PlayerActionShortcut.GetDiceRollTypeStr(spell));
 					if (!DndUtils.IsAttack(diceRollType) && diceRoll.PlayerRollOptions.Count == 1)
-						ShowSpellHit(diceRoll.PlayerRollOptions[0].PlayerID, SpellHitType.Hit, spell.Name);
+						ShowSpellHitInGame(diceRoll.PlayerRollOptions[0].PlayerID, SpellHitType.Hit, spell.Name);
 				}
 			}
 
@@ -1837,17 +1847,9 @@ namespace DHDM
 			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
 				damageDice = tbxDamageDice.Text;
 
-			DiceRoll diceRoll = new DiceRoll(diceRollKind, damageDice);
-			diceRoll.GroupInspiration = tbxInspiration.Text;
+			DiceRoll diceRoll = new DiceRoll(type, diceRollKind, damageDice);
 			diceRoll.AdditionalDiceOnHit = tbxAddDiceOnHit.Text;
 			diceRoll.AdditionalDiceOnHitMessage = tbxMessageAddDiceOnHit.Text;
-			diceRoll.CritFailMessage = "";
-			diceRoll.CritSuccessMessage = "";
-			diceRoll.SuccessMessage = "";
-			diceRoll.FailMessage = "";
-			diceRoll.SkillCheck = Skills.none;
-			diceRoll.SavingThrow = Ability.none;
-			diceRoll.SpellName = "";
 			if (activeIsSpell != null)
 				diceRoll.SpellName = activeIsSpell.Name;
 
@@ -1927,52 +1929,17 @@ namespace DHDM
 			if (!foundPlayer)
 				BeforePlayerRolls(ActivePlayerId);
 
-			switch (type)
-			{
-				case DiceRollType.SkillCheck:
-					diceRoll.CritFailMessage = "COMPLETE FAILURE!";
-					diceRoll.CritSuccessMessage = "Nat 20!";
-					diceRoll.SuccessMessage = "Success!";
-					diceRoll.FailMessage = "Fail!";
-					break;
-				case DiceRollType.Attack:
-				case DiceRollType.ChaosBolt:
-					diceRoll.CritFailMessage = "SPECTACULAR MISS!";
-					diceRoll.CritSuccessMessage = "Critical Hit!";
-					diceRoll.SuccessMessage = "Hit!";
-					diceRoll.FailMessage = "Miss!";
-					break;
-				case DiceRollType.SavingThrow:
-					diceRoll.CritFailMessage = "COMPLETE FAILURE!";
-					diceRoll.CritSuccessMessage = "Critical Success!";
-					diceRoll.SuccessMessage = "Success!";
-					diceRoll.FailMessage = "Fail!";
-					break;
-				case DiceRollType.DeathSavingThrow:
-					diceRoll.CritFailMessage = "COMPLETE FAILURE!";
-					diceRoll.CritSuccessMessage = "Critical Success!";
-					diceRoll.SuccessMessage = "Success!";
-					diceRoll.FailMessage = "Fail!";
-					diceRoll.HiddenThreshold = 10;
-					break;
-			}
+			diceRoll.AddCritFailMessages(type);
+			
 
 
 			diceRoll.ThrowPower = new Random().Next() * 2.8;
 			if (diceRoll.ThrowPower < 0.3)
 				diceRoll.ThrowPower = 0.3;
 
-			if (type == DiceRollType.DeathSavingThrow)
-				diceRoll.HiddenThreshold = 10;
-			else if (type == DiceRollType.Initiative || type == DiceRollType.NonCombatInitiative)
-				diceRoll.HiddenThreshold = -100;
-			else if (type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
-				diceRoll.HiddenThreshold = 0;
-			else if (double.TryParse(tbxHiddenThreshold.Text, out double thresholdResult))
-				diceRoll.HiddenThreshold = thresholdResult;
+			diceRoll.SetHiddenThreshold(tbxHiddenThreshold.Text);
 
 			diceRoll.IsMagic = ckbUseMagic.IsChecked == true || type == DiceRollType.WildMagicD20Check;
-			diceRoll.Type = type;
 
 			diceRoll.AddTrailingEffects(activeTrailingEffects);
 			diceRoll.AddDieRollEffects(activeDieRollEffects);
@@ -2191,12 +2158,17 @@ namespace DHDM
 					return;
 
 				nextDieRollType = value;
-				if (nextDieRollType != DiceRollType.None)
-					tbNextDieRoll.Text = $"({nextDieRollType})";
-				else
-					tbNextDieRoll.Text = "";
-				btnRollDice.IsEnabled = true;
+				SetNextRollTypeUI();
 			}
+		}
+
+		private void SetNextRollTypeUI()
+		{
+			if (nextDieRollType != DiceRollType.None)
+				tbNextDieRoll.Text = $"({nextDieRollType})";
+			else
+				tbNextDieRoll.Text = "";
+			btnRollDice.IsEnabled = true;
 		}
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
@@ -2470,7 +2442,7 @@ namespace DHDM
 			Hit
 		}
 
-		void ShowSpellHit(int playerId, SpellHitType spellHitType, string spellName)
+		void ShowSpellHitInGame(int playerId, SpellHitType spellHitType, string spellName)
 		{
 			Spell spell = AllSpells.Get(spellName);
 			if (spell == null)
@@ -2629,11 +2601,11 @@ namespace DHDM
 				return;
 			if (stopRollingData.success)
 			{
-				ShowSpellHit(stopRollingData.playerID, SpellHitType.Hit, stopRollingData.spellName);
+				ShowSpellHitInGame(stopRollingData.playerID, SpellHitType.Hit, stopRollingData.spellName);
 			}
 			else
 			{
-				ShowSpellHit(stopRollingData.playerID, SpellHitType.Miss, stopRollingData.spellName);
+				ShowSpellHitInGame(stopRollingData.playerID, SpellHitType.Miss, stopRollingData.spellName);
 			}
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
@@ -3147,21 +3119,21 @@ namespace DHDM
 		{
 			if (settingInternally)
 				return;
-			HidePlayerShortcutHighlights();
+			HidePlayerShortcutHighlightsUI();
 		}
 
 		private void TbxModifier_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			if (settingInternally)
 				return;
-			HidePlayerShortcutHighlights();
+			HidePlayerShortcutHighlightsUI();
 		}
 
 		private void CkbUseMagic_Checked(object sender, RoutedEventArgs e)
 		{
 			if (settingInternally)
 				return;
-			HidePlayerShortcutHighlights();
+			HidePlayerShortcutHighlightsUI();
 		}
 
 		Character GetPlayer(int playerId)
@@ -3294,7 +3266,7 @@ namespace DHDM
 		{
 			SelectSavingThrowAbility(e.Ability);
 			rbActivePlayer.IsChecked = true;
-			SetVantageForActivePlayer(e.VantageKind);
+			SetActivePlayerVantageUI(e.VantageKind);
 			RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
 		}
 
@@ -3345,7 +3317,7 @@ namespace DHDM
 
 		private void CharacterSheets_SkillCheckRequested(object sender, SkillCheckEventArgs e)
 		{
-			SetVantageForActivePlayer(e.VantageKind);
+			SetActivePlayerVantageUI(e.VantageKind);
 			List<int> playerIds = new List<int>();
 			playerIds.Add(ActivePlayerId);
 			InvokeSkillCheck(e.Skill, playerIds);
@@ -4113,7 +4085,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				SetVantageForPlayer(vantageKind, playerId);
+				SetPlayerVantageUI(vantageKind, playerId);
 			});
 		}
 
@@ -4160,12 +4132,11 @@ namespace DHDM
 
 		public void RollWildMagic()
 		{
-			DiceRoll diceRoll = new DiceRoll();
+			DiceRoll diceRoll = new DiceRoll(DiceRollType.WildMagic);
 			diceRoll.Modifier = 0;
 			diceRoll.HiddenThreshold = 0;
 			diceRoll.IsMagic = true;
 			diceRoll.OnThrowSound = "WildMagicRoll";
-			diceRoll.Type = DiceRollType.WildMagic;
 			diceRoll.TrailingEffects.Add(new TrailingEffect()
 			{
 				EffectType = "SparkTrail",

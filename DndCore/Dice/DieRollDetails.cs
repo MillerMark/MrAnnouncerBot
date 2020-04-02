@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace DndCore
 {
+	/// <summary>
+	/// Converts a text representation of dice - like "1d4(fire)" -- to an object.
+	/// </summary>
 	public class DieRollDetails
 	{
 		List<Roll> rolls = new List<Roll>();

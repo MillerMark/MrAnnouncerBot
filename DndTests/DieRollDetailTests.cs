@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DndTests
 {
+
 	[TestClass]
 	public class DieRollDetailTests
 	{
