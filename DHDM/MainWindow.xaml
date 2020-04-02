@@ -824,8 +824,8 @@
 								30
 							</RadioButton>
 						</StackPanel>
-						<CheckBox x:Name="ckDynamicThrottling" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
-							DynamicThrottling
+						<CheckBox x:Name="ckDynamicThrottling" IsChecked="True" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
+							Dynamic Throttling
 						</CheckBox>
 					</StackPanel>
 				</TabItem>

@@ -1030,10 +1030,15 @@ namespace DHDM
 			HideShortcutUI(spSpecialActivePlayer, actionShortcut);
 		}
 
-		void SetRollTypeCheckbox(PlayerActionShortcut actionShortcut)
+		void SetRollTypeUI(PlayerActionShortcut actionShortcut)
 		{
-			btnRollDice.IsEnabled = actionShortcut.Type != DiceRollType.None;
+			EnableRollDiceButton(actionShortcut.Type);
 			SetRollTypeRadioButton(actionShortcut.Type);
+		}
+
+		private void EnableRollDiceButton(DiceRollType type)
+		{
+			btnRollDice.IsEnabled = type != DiceRollType.None;
 		}
 
 		private void SetRollTypeRadioButton(DiceRollType rollType)
@@ -1130,99 +1135,51 @@ namespace DHDM
 			}
 		}
 #endif
+		DiceRoll currentRoll;
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
+		{
+			Character player = GetPlayer(actionShortcut.PlayerId);
+			try
+			{
+				settingInternally = true;
+				try
+				{
+					if (actionShortcut.ModifiesExistingRoll)
+					{
+						currentRoll.Modify(actionShortcut);
+						actionShortcut.ExecuteCommands(player);
+					}
+					else
+						currentRoll = DiceRoll.GetFrom(actionShortcut);
+				}
+				finally
+				{
+					settingInternally = false;
+					UpdateStateUIForPlayer(player);
+				}
+			}
+			finally
+			{
+				SetShortcutVisibility();
+				UpdateAskUI(player);
+			}
+		}
+
+		private void ActivateShortcut_Old(PlayerActionShortcut actionShortcut)
 		{
 			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
 			{
-				if (actionShortcut.Type == DiceRollType.WildMagic)
-				{
-					Character activePlayer = GetPlayer(actionShortcut.PlayerId);
-					if (activePlayer != null)
-						activePlayer.NumWildMagicChecks = 0;
-				}
-				ActivatePendingShortcuts();
-				activeTrailingEffects = string.Empty;
-				activeDieRollEffects = string.Empty;
-				activeIsSpell = null;
-				if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
-					activeTrailingEffects = actionShortcut.TrailingEffects;
-				if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
-					activeDieRollEffects = actionShortcut.DieRollEffects;
-
-				if (actionShortcut.ModifiesExistingRoll)
-				{
-					switch (actionShortcut.VantageMod)
-					{
-						case VantageKind.Advantage:
-						case VantageKind.Disadvantage:
-							SetVantageForActivePlayer(actionShortcut.VantageMod);
-							break;
-					}
-					if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
-						tbxDamageDice.Text += "," + actionShortcut.AddDice;
-					actionShortcut.ExecuteCommands(player);
+				if (!NewMethod(actionShortcut, player))
 					return;
-				}
-
-				SetRollTypeCheckbox(actionShortcut);
-
-				// TODO: Clear the weapons, but not the spells...
-				HubtasticBaseStation.ClearWindup("Weapon.*");
-				HubtasticBaseStation.ClearWindup("Windup.*");
-
-				player.ClearAdditionalSpellEffects();
-				if (actionShortcut.Part != TurnPart.Reaction)
-					game.CreatureTakingAction(player);
-
-				// TODO: Fix the targeting.
-				if (DndUtils.IsAttack(actionShortcut.Type))
-					player.WillAttack(null, actionShortcut);
-
-				Spell spell = actionShortcut.Spell;
-				if (spell != null)
-				{
-					player.IsAboutToCastSpell();
-					if (tbTabs.SelectedItem == tbDebug)
-						UpdateSpellEvents(spell);
-					spellToCastOnRoll = actionShortcut;
-					HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
-
-					// TODO: Fix the targeting.
-					ShowCastingEffects(actionShortcut, spell);
-					CastedSpell castedSpell = new CastedSpell(spell, player, null);
-					castedSpell.ConsiderCasting();
-				}
-				else
-				{
-					if (DndUtils.IsAttack(actionShortcut.Type) && actionShortcut.WeaponProperties != WeaponProperties.None)
-					{
-						game.CreatureRaisingWeapon(player, actionShortcut);
-					}
-
-					// TODO: Add support for shortcut buttons that can activate a particular scroll page (e.g., a wand that activates the items page?)
-					if (actionShortcut.Name.IndexOf("Wild Magic") < 0)
-						HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
-
-					SendShortcutWindups(actionShortcut, player);
-				}
-
-				player.Use(actionShortcut);
-
-				// TODO: keepExistingModifier????
-				// if (actionShortcut.PlusModifier != keepExistingModifier)
-				if (actionShortcut.ToHitModifier > 0)
-					tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
-				else
-					tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
 
 				settingInternally = true;
 
 				try
 				{
 					HighlightPlayerShortcut(actionShortcut.Index);
-					SetControlsFromShortcut(actionShortcut, spell);
+					SetControlsFromShortcut(actionShortcut);
 					NextDieRollType = actionShortcut.Type;
 
 					if (actionShortcut.VantageMod != VantageKind.Normal)
@@ -1254,11 +1211,162 @@ namespace DHDM
 			}
 		}
 
-		private void SetControlsFromShortcut(PlayerActionShortcut actionShortcut, Spell spell)
+		public enum ActionType
+		{
+			ModifiesExisting,
+			CreatesNew
+		}
+
+		private bool NewMethod(PlayerActionShortcut actionShortcut, Character player)
+		{
+			if (actionShortcut.Type == DiceRollType.WildMagic)
+			{
+				Character activePlayer = GetPlayer(actionShortcut.PlayerId);
+				if (activePlayer != null)
+					activePlayer.NumWildMagicChecks = 0;
+			}
+			ActivatePendingShortcuts();  // ??? Should this be here.
+			ResetActiveFields();
+			AssignDieRollEffects(actionShortcut);
+
+			if (actionShortcut.ModifiesExistingRoll)
+			{
+				ModifyExistingRollUI(actionShortcut, player);
+				actionShortcut.ExecuteCommands(player);
+				return false;
+			}
+
+			SetRollTypeUI(actionShortcut);
+			ClearWeaponAndSpellEffects(player);
+			PlayerTakingAction(actionShortcut, player);
+
+			if (actionShortcut.Spell != null)
+				AboutToCastSpell(actionShortcut, player);
+			else
+				AboutToTakePhysicalAction(actionShortcut, player);
+
+			player.Use(actionShortcut);
+			SetModifierUI(actionShortcut);
+			return true;
+		}
+
+		private void SetModifierUI(PlayerActionShortcut actionShortcut)
+		{
+			if (actionShortcut.ToHitModifier > 0)
+				tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
+			else
+				tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
+		}
+
+		private void AboutToTakePhysicalAction(PlayerActionShortcut actionShortcut, Character player)
+		{
+			if (!IsWildMagicRoll(actionShortcut))
+				SwitchToMainPageInGame();
+
+			SendShortcutWindups(actionShortcut, player);
+		}
+
+		private static bool IsWildMagicRoll(PlayerActionShortcut actionShortcut)
+		{
+			return actionShortcut.Name.IndexOf("Wild Magic") >= 0;
+		}
+
+		private void SwitchToMainPageInGame()
+		{
+			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
+		}
+
+		private void AboutToCastSpell(PlayerActionShortcut actionShortcut, Character player)
+		{
+			Spell spell = actionShortcut.Spell;
+			if (spell == null)
+				return;
+			player.IsAboutToCastSpell();
+			UpdateSpellPageUI(spell);
+			spellToCastOnRoll = actionShortcut;
+			SwitchToSpellPageInGame();
+
+			// TODO: Fix the targeting.
+			ShowCastingEffects(actionShortcut, spell);
+			ConsiderCasting(player, spell);
+		}
+
+		private static void ConsiderCasting(Character player, Spell spell)
+		{
+			CastedSpell castedSpell = new CastedSpell(spell, player, null);
+			castedSpell.ConsiderCasting();
+		}
+
+		private void SwitchToSpellPageInGame()
+		{
+			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.spells, string.Empty);
+		}
+
+		private void UpdateSpellPageUI(Spell spell)
+		{
+			if (tbTabs.SelectedItem == tbDebug)
+				UpdateSpellEvents(spell);
+		}
+
+		private void PlayerTakingAction(PlayerActionShortcut actionShortcut, Character player)
+		{
+			if (actionShortcut.Part != TurnPart.Reaction)
+				game.CreatureTakingAction(player);
+
+			// TODO: Fix the targeting.
+			if (DndUtils.IsAttack(actionShortcut.Type))
+			{
+				if (actionShortcut.Spell == null && actionShortcut.WeaponProperties != WeaponProperties.None)
+					game.CreatureRaisingWeapon(player, actionShortcut);
+				player.WillAttack(null, actionShortcut);
+			}
+		}
+
+		private static void ClearWeaponAndSpellEffects(Character player)
+		{
+			ClearExistingWindupsInGame();
+			player.ClearAdditionalSpellEffects();
+		}
+
+		private static void ClearExistingWindupsInGame()
+		{
+			HubtasticBaseStation.ClearWindup("Weapon.*");
+			HubtasticBaseStation.ClearWindup("Windup.*");
+		}
+
+		private void ModifyExistingRollUI(PlayerActionShortcut actionShortcut, Character player)
+		{
+			switch (actionShortcut.VantageMod)
+			{
+				case VantageKind.Advantage:
+				case VantageKind.Disadvantage:
+					SetVantageForActivePlayer(actionShortcut.VantageMod);
+					break;
+			}
+			if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
+				tbxDamageDice.Text += "," + actionShortcut.AddDice;
+		}
+
+		private void AssignDieRollEffects(PlayerActionShortcut actionShortcut)
+		{
+			if (!string.IsNullOrWhiteSpace(actionShortcut.TrailingEffects))
+				activeTrailingEffects = actionShortcut.TrailingEffects;
+			if (!string.IsNullOrWhiteSpace(actionShortcut.DieRollEffects))
+				activeDieRollEffects = actionShortcut.DieRollEffects;
+		}
+
+		private void ResetActiveFields()
+		{
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
+			activeIsSpell = null;
+		}
+
+		private void SetControlsFromShortcut(PlayerActionShortcut actionShortcut)
 		{
 			if (!string.IsNullOrWhiteSpace(actionShortcut.AddDice))
 				tbxDamageDice.Text += "," + actionShortcut.AddDice;
-			else if (spell == null)
+			else if (actionShortcut.Spell == null)
 				tbxDamageDice.Text = actionShortcut.Dice;
 
 			if (actionShortcut.MinDamage != keepExistingModifier)
@@ -1457,8 +1565,7 @@ namespace DHDM
 				sheetForCharacter.Page = ScrollPage.main;
 			InitializeActivePlayerData();
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
-			HubtasticBaseStation.ClearWindup("Weapon.*");
-			HubtasticBaseStation.ClearWindup("Windup.*");
+			ClearExistingWindupsInGame();
 			SetActionShortcuts(ActivePlayerId);
 			Character player = game.GetPlayerFromId(ActivePlayerId);
 
@@ -2337,10 +2444,10 @@ namespace DHDM
 			singlePlayer.RollIsComplete(diceStoppedRollingData.wasCriticalHit);
 		}
 
-		void RepeatLastRoll()
-		{
-			RollTheDice(lastRoll);
-		}
+		//void RepeatLastRoll()
+		//{
+		//	RollTheDice(lastRoll);
+		//}
 
 		void NotifyPlayersRollHasStopped(DiceStoppedRollingData stopRollingData)
 		{
@@ -2549,8 +2656,7 @@ namespace DHDM
 			SaveNamedResults(ea);
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
-			HubtasticBaseStation.ClearWindup("Windup.*");
-			HubtasticBaseStation.ClearWindup("Weapon.*");
+			ClearExistingWindupsInGame();
 			ReportOnDieRoll(ea);
 			CheckSpellHitResults(ea.StopRollingData);
 
@@ -2947,65 +3053,6 @@ namespace DHDM
 			Chocolate,
 			Strawberry,
 			Mint
-		}
-
-		private void BtnPaladinSmite_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.OnThrowSound = "PaladinThunder";
-			diceRoll.NumHalos = 3;
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
-				EffectType = "Raven",
-				LeftRightDistanceBetweenPrints = 15,
-				MinForwardDistanceBetweenPrints = 5,
-				OnPrintPlaySound = "Flap[6]",
-				MedianSoundInterval = 600,
-				PlusMinusSoundInterval = 300
-			});
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
-				EffectType = "Spiral",
-				LeftRightDistanceBetweenPrints = 0,
-				MinForwardDistanceBetweenPrints = 150,
-				OnPrintPlaySound = "Crow[3]",
-				MedianSoundInterval = 500,
-				PlusMinusSoundInterval = 300
-			});
-			RollTheDice(diceRoll);
-		}
-
-		private void BtnSneakAttack_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = PrepareRoll(DiceRollType.Attack);
-			diceRoll.OnThrowSound = "SneakAttackWhoosh";
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
-				EffectType = "Smoke",
-				LeftRightDistanceBetweenPrints = 0,
-				MinForwardDistanceBetweenPrints = 120,  // 120 + Random.plusMinus(30)
-			});
-			diceRoll.OnFirstContactSound = "SneakAttack";
-			diceRoll.OnFirstContactEffect = "SmokeExplosion";
-			RollTheDice(diceRoll);
-		}
-
-		private void BtnWildMagic_Click(object sender, RoutedEventArgs e)
-		{
-			DiceRoll diceRoll = new DiceRoll();
-			diceRoll.Modifier = 0;
-			diceRoll.HiddenThreshold = 0;
-			diceRoll.IsMagic = true;
-			diceRoll.OnThrowSound = "WildMagicRoll";
-			diceRoll.Type = DiceRollType.WildMagic;
-			diceRoll.TrailingEffects.Add(new TrailingEffect()
-			{
-				EffectType = "SparkTrail",
-				LeftRightDistanceBetweenPrints = 0,
-				MinForwardDistanceBetweenPrints = 84
-			});
-
-			RollTheDice(diceRoll);
 		}
 
 		private void BtnWildAnimalForm_Click(object sender, RoutedEventArgs e)
@@ -4113,7 +4160,20 @@ namespace DHDM
 
 		public void RollWildMagic()
 		{
-			BtnWildMagic_Click(null, null);
+			DiceRoll diceRoll = new DiceRoll();
+			diceRoll.Modifier = 0;
+			diceRoll.HiddenThreshold = 0;
+			diceRoll.IsMagic = true;
+			diceRoll.OnThrowSound = "WildMagicRoll";
+			diceRoll.Type = DiceRollType.WildMagic;
+			diceRoll.TrailingEffects.Add(new TrailingEffect()
+			{
+				EffectType = "SparkTrail",
+				LeftRightDistanceBetweenPrints = 0,
+				MinForwardDistanceBetweenPrints = 84
+			});
+
+			RollTheDice(diceRoll);
 			TellDungeonMaster("Rolling wild magic...");
 		}
 
@@ -4161,7 +4221,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				UnleashTheDice();
+				UnleashTheNextRoll();
 				TellDungeonMaster("Rolling the dice...");
 			});
 		}
@@ -4484,13 +4544,16 @@ namespace DHDM
 				}
 			}
 
-			UnleashTheDice();
+			UnleashTheNextRoll();
 		}
 
-		private void UnleashTheDice()
+		private void UnleashTheNextRoll()
 		{
 			if (NextDieRollType != DiceRollType.None)
+			{
 				RollTheDice(PrepareRoll(NextDieRollType));
+				NextDieRollType = DiceRollType.None;
+			}
 		}
 
 		private void RbSkillCheck_Checked(object sender, RoutedEventArgs e)
@@ -4934,7 +4997,7 @@ namespace DHDM
 			ChangeFrameRate(overlayName, frameRate);
 		}
 
-		bool dynamicThrottling;
+		bool dynamicThrottling = true;
 
 		private void CkDynamicThrottling_CheckedChanged(object sender, RoutedEventArgs e)
 		{

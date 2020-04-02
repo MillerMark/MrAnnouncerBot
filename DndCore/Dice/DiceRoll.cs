@@ -113,6 +113,14 @@ namespace DndCore
 				AddDieRollEffect(effect);
 			}
 		}
+		public void Modify(PlayerActionShortcut actionShortcut)
+		{
+			
+		}
+		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut)
+		{
+			
+		}
 		public bool IsOnePlayer
 		{
 			get
