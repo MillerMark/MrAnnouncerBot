@@ -13,6 +13,7 @@ namespace DHDM
 		void SetHiddenThreshold(int hiddenThreshold);
 		int GetPlayerIdFromName(string characterName);
 		int GetActivePlayerId();
+		int GetLastSpellSave();
 		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
 		void RollWildMagicCheck();
 		void RollWildMagic();
@@ -29,7 +30,10 @@ namespace DHDM
 		void RollDice();
 		void HideScroll();
 		void DropWindup();
+		void GetSavingThrowStats();
 		void BreakConcentration(int playerId);
+		void SetModifier(int modifier);
+		void RollSave(int diceId);
 		void PlayScene(string sceneName);
 		void MoveFred(string movement);
 		void Speak(int playerId, string message);

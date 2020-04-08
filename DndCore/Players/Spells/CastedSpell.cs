@@ -19,6 +19,7 @@ namespace DndCore
 		public string DieStrRaw { get => Spell.DieStrRaw; set { } }
 		public int SpellSlotLevel { get => Spell.SpellSlotLevel; set => Spell.SpellSlotLevel = value; }
 		public int Level { get => Spell.Level; set => Spell.Level = value; }
+		public bool Active { get; set; }
 
 		public void Casting()
 		{
@@ -29,7 +30,7 @@ namespace DndCore
 
 		public void ConsiderCasting()
 		{
-			SpellCaster.CheckConcentration(this);
+			//SpellCaster.CheckConcentration(this);
 			SpellCaster.PlayerConsidersCasting(this);
 		}
 
@@ -41,11 +42,15 @@ namespace DndCore
 
 		public void Cast()
 		{
+			Active = true;
 			Spell.TriggerCast(SpellCaster, TargetCreature, this);
 		}
 
 		public void Dispel()
 		{
+			if (!Active)
+				return;
+			Active = false;
 			Spell.TriggerDispel(SpellCaster, TargetCreature, this);
 		}
 

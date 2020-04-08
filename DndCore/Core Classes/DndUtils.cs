@@ -463,5 +463,62 @@ namespace DndCore
 			}
 			return count.ToString();
 		}
+		public static int DamageTypeToIndex(DamageType damageType)
+		{
+			switch (damageType)
+			{
+				case DamageType.Acid: return 1;
+				case DamageType.Bludgeoning: return 2;
+				case DamageType.Cold: return 3;
+				case DamageType.Fire: return 4;
+				case DamageType.Force: return 5;
+				case DamageType.Lightning: return 6;
+				case DamageType.Necrotic: return 7;
+				case DamageType.Piercing: return 8;
+				case DamageType.Poison: return 9;
+				case DamageType.Psychic: return 10;
+				case DamageType.Radiant: return 11;
+				case DamageType.Slashing: return 12;
+				case DamageType.Thunder: return 13;
+				default:
+					return 0;
+			}
+		}
+
+		public static int SavingThrowToIndex(Ability savingThrow)
+		{
+			switch (savingThrow)
+			{
+				case Ability.strength: return 1;
+				case Ability.dexterity: return 2;
+				case Ability.constitution: return 3;
+				case Ability.intelligence: return 4;
+				case Ability.wisdom: return 5;
+				case Ability.charisma: return 6;
+				default:
+					return 0;
+			}
+		}
+
+		public static string Plural(int count, string suffix)
+		{
+			if (count == 1)
+				return $"{count} {suffix}";
+			return $"{count} {suffix}s";
+		}
+
+		public static string GetTimeSpanStr(TimeSpan time)
+		{
+			string result;
+			if (time.TotalDays >= 1)
+				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalHours >= 1)
+				result = $"{Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else if (time.TotalMinutes >= 1)
+				result = $"{Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
+			else
+				result = Plural(time.Seconds, "second");
+			return result;
+		}
 	}
 }

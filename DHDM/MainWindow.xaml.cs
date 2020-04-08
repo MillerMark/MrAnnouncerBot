@@ -492,7 +492,7 @@ namespace DHDM
 						List<string> stateReport = player.GetStateReport();
 						stateReport.Sort();
 						if (player.concentratedSpell != null)
-							stateReport.Add($"*Concentrating on {player.concentratedSpell.Spell.Name} with {game.GetSpellTimeLeft(player.playerID, player.concentratedSpell.Spell)} remaining.");
+							stateReport.Add($"*Concentrating on {player.concentratedSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell.Spell)} remaining.");
 						foreach (string item in stateReport)
 							stateList.Items.Add(item);
 					}
@@ -681,7 +681,7 @@ namespace DHDM
 		private void Game_PlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.ExtraOnly);
-			diceRoll.DamageDice = ea.DiceRollStr;
+			diceRoll.DamageHealthExtraDice = ea.DiceRollStr;
 			RollTheDice(diceRoll);
 		}
 
@@ -929,6 +929,9 @@ namespace DHDM
 			if (ea.CastedSpell.SpellCaster == null)
 				return;
 
+			if (!ea.CastedSpell.Active)
+				return;
+
 			Dispel(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 
 			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
@@ -1033,7 +1036,29 @@ namespace DHDM
 		void SetRollTypeUI(PlayerActionShortcut actionShortcut)
 		{
 			EnableRollDiceButton(actionShortcut.Type);
-			SetRollTypeRadioButton(actionShortcut.Type);
+		}
+
+		void SetSelectedItemFromText(ComboBox comboBox, string str)
+		{
+
+			foreach (object item in comboBox.Items)
+			{
+				if (item is ComboBoxItem comboBoxItem)
+				{
+					if (comboBoxItem.Content.ToString().ToLower() == str.ToLower())
+					{
+						comboBox.SelectedItem = comboBoxItem;
+						return;
+					}
+				}
+			}
+			comboBox.SelectedItem = null;
+		}
+		void SetRollComboBoxUI(DiceRoll diceRoll)
+		{
+			SetSelectedItemFromText(cbDamage, diceRoll.DamageType.ToString());
+			SetSelectedItemFromText(cbAbility, diceRoll.SavingThrow.ToString());
+			SetSelectedItemFromText(cbSkillFilter, DndUtils.ToSkillDisplayString(diceRoll.SkillCheck));
 		}
 
 		private void EnableRollDiceButton(DiceRollType type)
@@ -1041,9 +1066,71 @@ namespace DHDM
 			btnRollDice.IsEnabled = type != DiceRollType.None;
 		}
 
-		private void SetRollTypeRadioButton(DiceRollType rollType)
+
+#if profiling
+		long lastTimeCheck;
+		long longestDifference;
+
+		void StartProfiling()
 		{
-			switch (rollType)
+			lastTimeCheck = DateTime.Now.Ticks;
+			longestDifference = 0;
+		}
+
+		void CheckTime()
+		{
+			long currentTime = DateTime.Now.Ticks;
+			long difference = currentTime - lastTimeCheck;
+			if (difference > longestDifference)
+			{
+				longestDifference = difference;
+				if (longestDifference > 10_000_000)
+				{
+					
+				}
+			}
+		}
+#endif
+		DiceRoll currentRoll;
+
+		void SetRollScopeUI(DiceRoll diceRoll)
+		{
+			// Mark says this method will never need to change. CodeBaseAlpha says "Let's see."
+			// ![](9920C0D4E763C7314FD8A6EAF74D5FB3.png)
+			if (diceRoll.RollScope == RollScope.ActivePlayer)
+				rbActivePlayer.IsChecked = true;
+			else
+				rbIndividuals.IsChecked = true;
+		}
+
+		void SetControlUIFromRoll(DiceRoll diceRoll)
+		{
+			settingInternally = true;
+			try
+			{
+				// ![](CC2A109973BFCC3ADA17563004698A52.png;;968,241,1780,655;0.04000,0.04000)
+
+				ckbUseMagic.IsChecked = diceRoll.IsMagic;
+				tbxGroupInspiration.Text = diceRoll.GroupInspiration;
+				tbxModifier.Text = diceRoll.Modifier.ToString();
+				SetRollTypeUI(diceRoll.Type);
+				tbxDamageDice.Text = diceRoll.DamageHealthExtraDice;
+				tbxMinDamage.Text = diceRoll.MinDamage.ToString();
+				tbxAddDiceOnHit.Text = diceRoll.AdditionalDiceOnHit;
+				tbxMessageAddDiceOnHit.Text = diceRoll.AdditionalDiceOnHitMessage;
+				SetRollComboBoxUI(diceRoll);
+				SetRollScopeUI(diceRoll);
+			}
+			finally
+			{
+				settingInternally = false;
+			}
+
+		}
+
+		private void SetRollTypeUI(DiceRollType type)
+		{
+			switch (type)
 			{
 				case DiceRollType.SkillCheck:
 					rbSkillCheck.IsChecked = true;
@@ -1064,7 +1151,7 @@ namespace DHDM
 					rbPercentageRoll.IsChecked = true;
 					break;
 				case DiceRollType.WildMagic:
-					rbWildMagicD20Check.IsChecked = true;
+					rbWildMagic.IsChecked = true;
 					break;
 				case DiceRollType.BendLuckAdd:
 					rbBendLuckAdd.IsChecked = true;
@@ -1094,58 +1181,55 @@ namespace DHDM
 					rbInitiative.IsChecked = true;
 					break;
 				case DiceRollType.WildMagicD20Check:
-					rbWildMagicD20Check.IsChecked = true;
+					rbWildMagic.IsChecked = true;
 					break;
 				case DiceRollType.InspirationOnly:
-
+					rbInspirationOnly.IsChecked = true;
 					break;
 				case DiceRollType.AddOnDice:
-
+					rbExtra.IsChecked = true;
 					break;
 				case DiceRollType.NonCombatInitiative:
-
+					rbNonCombatInitiative.IsChecked = true;
+					break;
+				case DiceRollType.HPCapacity:
+					rbHitPointCapacity.IsChecked = true;
 					break;
 				case DiceRollType.CastSimpleSpell:
-					rbCastOtherSpell.IsChecked = true;
+					rbCastSimpleSpell.IsChecked = true;
 					break;
 			}
 		}
 
-#if profiling
-		long lastTimeCheck;
-		long longestDifference;
-
-		void StartProfiling()
+		void TellDmWeAreReady(Character player, PlayerActionShortcut actionShortcut)
 		{
-			lastTimeCheck = DateTime.Now.Ticks;
-			longestDifference = 0;
-		}
-
-		void CheckTime()
-		{
-			long currentTime = DateTime.Now.Ticks;
-			long difference = currentTime - lastTimeCheck;
-			if (difference > longestDifference)
+			if (actionShortcut.Spell != null)
+				if (actionShortcut.Spell.MorePowerfulWhenCastAtHigherLevels)
+					TellDungeonMaster($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} in spell slot {actionShortcut.Spell.SpellSlotLevel}...");
+				else
+					TellDungeonMaster($"{player.firstName} is ready to cast {actionShortcut.Spell.Name}...");
+			else if (actionShortcut.CarriedWeapon != null)
 			{
-				longestDifference = difference;
-				if (longestDifference > 10_000_000)
-				{
-					
-				}
+				string weaponName = actionShortcut.CarriedWeapon.Name;
+				if (string.IsNullOrEmpty(weaponName))
+					weaponName = actionShortcut.CarriedWeapon.Weapon.Name;
+				TellDungeonMaster($"{player.firstName} is ready to attack with {player.hisHer} {weaponName}...");
+			}
+			else
+			{
+				
 			}
 		}
-#endif
-		DiceRoll currentRoll;
-		void UpdateRollUI(DiceRoll diceRoll)
-		{
-			
-		}
 
-		private void ActivateShortcut_new(PlayerActionShortcut actionShortcut)
+		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
+			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
 			{
+				if (ActivateShortcutForPlayer(actionShortcut, player) == ActionType.ModifiesExisting)
+					return;
+
 				settingInternally = true;
 				try
 				{
@@ -1155,23 +1239,29 @@ namespace DHDM
 						actionShortcut.ExecuteCommands(player);
 					}
 					else
+					{
 						currentRoll = DiceRoll.GetFrom(actionShortcut);
+						TellDmWeAreReady(player, actionShortcut);
+						NextDieRollType = actionShortcut.Type;
+					}
 				}
 				finally
 				{
 					settingInternally = false;
-					UpdateRollUI(currentRoll);
+					HighlightPlayerShortcutUI(actionShortcut.Index);
+					SetControlUIFromRoll(currentRoll);
 					UpdateStateUIForPlayer(player);
 				}
 			}
 			finally
 			{
+				SetPlayerShortcutUI(actionShortcut, player);
 				SetShortcutVisibility();
 				UpdateAskUI(player);
 			}
 		}
 
-		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
+		private void ActivateShortcut_old(PlayerActionShortcut actionShortcut)
 		{
 			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
@@ -1212,7 +1302,7 @@ namespace DHDM
 				type = DiceRollType.DamageOnly;
 			DiceRoll diceRoll = PrepareRoll(type);
 			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
-			diceRoll.DamageDice = actionShortcut.InstantDice;
+			diceRoll.DamageHealthExtraDice = actionShortcut.InstantDice;
 			RollTheDice(diceRoll);
 		}
 
@@ -1222,21 +1312,30 @@ namespace DHDM
 			CreatesNew
 		}
 
+		private void SetPlayerShortcutUI(PlayerActionShortcut actionShortcut, Character player)
+		{
+			if (actionShortcut.ModifiesExistingRoll)
+				ModifyExistingRollUI(actionShortcut, player);
+			else
+			{
+				SetRollTypeUI(actionShortcut);
+				SetModifierUI(actionShortcut);
+			}
+		}
+
 		private ActionType ActivateShortcutForPlayer(PlayerActionShortcut actionShortcut, Character player)
 		{
 			ResetWildMagicChecks(actionShortcut);
-			ActivatePendingShortcuts();  // ??? Should this be here.
+			ActivatePendingShortcuts();  //? ?? Should this be here?
 			ResetActiveFields();
 			AssignDieRollEffects(actionShortcut);
 
 			if (actionShortcut.ModifiesExistingRoll)
 			{
-				ModifyExistingRollUI(actionShortcut, player);
 				actionShortcut.ExecuteCommands(player);
 				return ActionType.ModifiesExisting;
 			}
 
-			SetRollTypeUI(actionShortcut);
 			ClearWeaponAndSpellEffects(player);
 			PlayerTakingAction(actionShortcut, player);
 
@@ -1246,7 +1345,6 @@ namespace DHDM
 				AboutToTakePhysicalAction(actionShortcut, player);
 
 			player.Use(actionShortcut);
-			SetModifierUI(actionShortcut);
 			return ActionType.CreatesNew;
 		}
 
@@ -1474,9 +1572,16 @@ namespace DHDM
 					if (concentratedSpell.Name == spell.Name)
 					{
 						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
-						return;
+						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, concentratedSpell);
+						if (remainingSpellTime.TotalSeconds > 0)
+						{
+							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining)");
+							return;
+						}
+						else  // No time remaining. No longer concentrating on this spell.
+							concentratedSpell = null;
 					}
-					if (AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetSpellTimeLeft(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
+					if (concentratedSpell != null && AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
 						return;
 				}
 				finally
@@ -1690,7 +1795,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-			diceRoll.GroupInspiration = tbxInspiration.Text;
+			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
 			{
@@ -1716,7 +1821,7 @@ namespace DHDM
 				{
 					if (!string.IsNullOrWhiteSpace(player.additionalDiceThisRoll))
 					{
-						diceRoll.DamageDice += "," + player.additionalDiceThisRoll;
+						diceRoll.DamageHealthExtraDice += "," + player.additionalDiceThisRoll;
 					}
 					if (!string.IsNullOrWhiteSpace(player.dieRollEffectsThisRoll))
 					{
@@ -1730,7 +1835,7 @@ namespace DHDM
 			}
 
 			if (diceRoll.IsOnePlayer && player != null)
-				player.ReadyRollDice(diceRoll.Type, diceRoll.DamageDice, (int)Math.Round(diceRoll.HiddenThreshold));
+				player.ReadyRollDice(diceRoll.Type, diceRoll.DamageHealthExtraDice, (int)Math.Round(diceRoll.HiddenThreshold));
 
 
 			Dispatcher.Invoke(() =>
@@ -1773,7 +1878,7 @@ namespace DHDM
 			if (castedSpellNeedingCompletion != null)
 			{
 				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
-				diceRoll.DamageDice = castedSpellNeedingCompletion.DieStr;
+				diceRoll.DamageHealthExtraDice = castedSpellNeedingCompletion.DieStr;
 				spellCaster = null;
 				castedSpellNeedingCompletion = null;
 			}
@@ -1930,7 +2035,7 @@ namespace DHDM
 				BeforePlayerRolls(ActivePlayerId);
 
 			diceRoll.AddCritFailMessages(type);
-			
+
 
 
 			diceRoll.ThrowPower = new Random().Next() * 2.8;
@@ -2965,7 +3070,7 @@ namespace DHDM
 
 		void UpdateClearButton(object sender, EventArgs e)
 		{
-			const double timeToAutoClear = 9000;
+			const double timeToAutoClear = 14000;
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
@@ -3329,6 +3434,7 @@ namespace DHDM
 			{
 				SelectSkill(skill);
 				SetRollScopeForPlayers(playerIds);
+				ckbUseMagic.IsChecked = false;
 				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 			});
 		}
@@ -4605,6 +4711,12 @@ namespace DHDM
 			btnRollDice.Content = "Roll Initiative";
 		}
 
+		private void RbNonCombatInitiative_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.NonCombatInitiative;
+			btnRollDice.Content = "Roll Non-combat Initiative";
+		}
+
 		private void RbBendLuckAdd_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.BendLuckAdd;
@@ -4635,10 +4747,16 @@ namespace DHDM
 			btnRollDice.Content = "Roll Extra";
 		}
 
+		private void RbChaosBolt_Checked(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.ChaosBolt;
+			btnRollDice.Content = "Roll Chaos Bolt";
+		}
+
 		private void DamageContextTestAllMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
-			diceRoll.DamageDice = "1d20(fire),1d20(acid),1d20(cold),1d20(force),1d20(necrotic),1d20(piercing),1d20(bludgeoning),1d20(slashing),1d20(lightning),1d20(radiant),1d20(thunder)";
+			diceRoll.DamageHealthExtraDice = "1d20(fire),1d20(acid),1d20(cold),1d20(force),1d20(necrotic),1d20(piercing),1d20(bludgeoning),1d20(slashing),1d20(lightning),1d20(radiant),1d20(thunder)";
 			RollTheDice(diceRoll);
 			// 1d20(superiority),
 		}
@@ -4974,6 +5092,30 @@ namespace DHDM
 		{
 			dynamicThrottling = ckDynamicThrottling.IsChecked == true;
 		}
+
+		public void GetSavingThrowStats()
+		{
+
+		}
+
+		public void SetModifier(int modifier)
+		{
+
+		}
+
+		public void RollSave(int diceId)
+		{
+
+		}
+
+		// TODO: Set this when a spell is cast.
+		int lastSpellSave;
+		public int GetLastSpellSave()
+		{
+			return lastSpellSave;
+		}
+
+
 	}
 	// TODO: Reintegrate wand/staff animations....
 	/* 

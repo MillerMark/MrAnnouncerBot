@@ -6,6 +6,6 @@ namespace DndCore
 	public enum RollScope
 	{
 		ActivePlayer,
-		Individuals
+		Individuals  // Everyone is included in this scope.
 	}
 }

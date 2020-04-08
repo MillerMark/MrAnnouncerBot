@@ -1059,7 +1059,11 @@ namespace DndCore
 			if (concentratedSpell == null)
 				return;
 
-			OnSpellDispelled(this, new CastedSpellEventArgs(Game, concentratedSpell));
+			if (concentratedSpell.Active)
+			{
+				OnSpellDispelled(this, new CastedSpellEventArgs(Game, concentratedSpell));
+				concentratedSpell.Dispel();
+			}
 			concentratedSpell = null;
 		}
 		public CastedSpell Cast(Spell spell, Creature targetCreature = null)

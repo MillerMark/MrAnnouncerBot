@@ -20,7 +20,7 @@ namespace DndCore
 		public DiceRoll(DiceRollType diceRollType, VantageKind kind = VantageKind.Normal, string damageDice = "")
 		{
 			Type = diceRollType;
-			DamageDice = damageDice;
+			DamageHealthExtraDice = damageDice;
 			VantageKind = kind;
 			ThrowPower = 1.0;
 			MinCrit = 20;  // Some feats allow for a 19 to crit.
@@ -40,7 +40,7 @@ namespace DndCore
 
 		public string CritFailMessage { get; set; }
 		public string CritSuccessMessage { get; set; }
-		public string DamageDice { get; set; }
+		public string DamageHealthExtraDice { get; set; }
 		public string GroupInspiration { get; set; }
 		public string AdditionalDiceOnHit { get; set; }
 		public string AdditionalDiceOnHitMessage { get; set; }
@@ -128,17 +128,19 @@ namespace DndCore
 		}
 
 		// TODO: Put DiceRollType as a property on actionShortcut
-		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut, DiceRollType diceRollType = DiceRollType.None)
+		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut)
 		{
-			DiceRoll diceRoll = new DiceRoll(diceRollType);
+			DiceRoll diceRoll = new DiceRoll(actionShortcut.Type);
 			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
 			diceRoll.AdditionalDiceOnHitMessage = actionShortcut.AddDiceOnHitMessage;
-			diceRoll.AddCritFailMessages(diceRollType);
+			diceRoll.AddCritFailMessages(actionShortcut.Type);
 			if (actionShortcut.HasInstantDice())
-				diceRoll.DamageDice = actionShortcut.InstantDice;
-			
+				diceRoll.DamageHealthExtraDice = actionShortcut.InstantDice;
+			else
+				diceRoll.DamageHealthExtraDice = actionShortcut.Dice;
+
 			diceRoll.DamageType = DamageType.None;  // Consider deprecating.
-			diceRoll.IsMagic = actionShortcut.UsesMagic || diceRollType == DiceRollType.WildMagicD20Check;
+			diceRoll.IsMagic = actionShortcut.UsesMagic || actionShortcut.Type == DiceRollType.WildMagicD20Check;
 			diceRoll.MinDamage = actionShortcut.MinDamage;
 			diceRoll.Modifier = actionShortcut.ToHitModifier;
 			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
@@ -146,7 +148,7 @@ namespace DndCore
 			{
 				diceRoll.SpellName = actionShortcut.Spell.Name;
 				if (actionShortcut.Spell.MustRollDiceToCast())
-					diceRoll.DamageDice = actionShortcut.Spell.DieStr;
+					diceRoll.DamageHealthExtraDice = actionShortcut.Spell.DieStr;
 			}
 
 			return diceRoll;

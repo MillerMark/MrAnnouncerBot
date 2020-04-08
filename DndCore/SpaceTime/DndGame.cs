@@ -258,7 +258,8 @@ namespace DndCore
 			roundIndex = 0;
 			firstPlayer = player;
 			OnRoundStarting(this, dndGameEventArgs);
-			TellDungeonMasterWhichRound();
+			if (InCombat)
+				TellDungeonMasterWhichRound();
 		}
 
 		void AdvanceRound()
@@ -359,10 +360,10 @@ namespace DndCore
 			if (activeSpells.IndexOf(castedSpell) < 0)
 				return;
 
-			castedSpell.Dispel();
 			activeSpells.Remove(castedSpell);
 			timeClock.RemoveAlarm(GetSpellAlarmName(castedSpell.Spell, castedSpell.SpellCaster.playerID));
-			OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));
+			OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));  // Triggers the event.
+			castedSpell.Dispel();  // Sets its Active state to false and evaluates low-level dispel code associated with this spell.
 		}
 
 		private void DndAlarm_SpellDurationExpired(object sender, DndTimeEventArgs ea)
@@ -535,29 +536,18 @@ namespace DndCore
 		//	
 		//}
 
-		string Plural(int count, string suffix)
+		public string GetRemainingSpellTimeStr(int playerId, Spell spell)
 		{
-			if (count == 1)
-				return $"{count} {suffix}";
-			return $"{count} {suffix}s";
+			return DndUtils.GetTimeSpanStr(GetRemainingSpellTime(playerId, spell));
 		}
 
-		public string GetSpellTimeLeft(int playerId, Spell spell)
+		public TimeSpan GetRemainingSpellTime(int playerId, Spell spell)
 		{
 			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(spell, playerId));
 			if (alarm == null)
-				return "0 seconds";
-			TimeSpan time = alarm.TriggerTime - Clock.Time;
-			string result;
-			if (time.TotalDays >= 1)
-				result = $"{Plural(time.Days, "day")}, {Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
-			else if (time.TotalHours >= 1)
-				result = $"{Plural(time.Hours, "hour")}, {Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
-			else if (time.TotalMinutes >= 1)
-				result = $"{Plural(time.Minutes, "minute")}, {Plural(time.Seconds, "second")}";
-			else
-				result = Plural(time.Seconds, "second");
-			return result;
+				return TimeSpan.FromSeconds(0);
+
+			return alarm.TriggerTime - Clock.Time;
 		}
 
 		public string GetConcentrationReport()
@@ -570,7 +560,7 @@ namespace DndCore
 					continue;
 				Spell spell = concentratedCastedSpell.Spell;
 				if (concentratedCastedSpell != null)
-				concentrationReport += $"{player.emoticon} {player.name} is casting {spell.Name} with {GetSpellTimeLeft(player.playerID, spell)} remaining; ";
+					concentrationReport += $"{player.emoticon} {player.name} is casting {spell.Name} with {GetRemainingSpellTimeStr(player.playerID, spell)} remaining; ";
 			}
 			if (concentrationReport == string.Empty)
 				concentrationReport = "No players are concentrating on any spells at this time.";

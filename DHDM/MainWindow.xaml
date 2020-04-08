@@ -249,7 +249,7 @@
 								Uses Magic
 							</CheckBox>
 							<TextBlock Text="Group Inspiration: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0" VerticalAlignment="Center"/>
-							<TextBox x:Name="tbxInspiration" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" VerticalAlignment="Center">
+							<TextBox x:Name="tbxGroupInspiration" MinWidth="120" TextChanged="TbxDamageDice_TextChanged" VerticalAlignment="Center">
 
 							</TextBox>
 						</StackPanel>
@@ -317,6 +317,9 @@
 										</RadioButton>
 										<RadioButton x:Name="rbExtra" Checked="RbExtra_Checked" GroupName="DieRollTypes" Margin="8, 3, 0, 0" >
 											Extra
+										</RadioButton>
+										<RadioButton x:Name="rbChaosBolt" Checked="RbChaosBolt_Checked" GroupName="DieRollTypes" Margin="8, 3, 0, 0" >
+											Chaos Bolt
 										</RadioButton>
 									</StackPanel>
 									<StackPanel Orientation="Horizontal">
@@ -408,7 +411,7 @@
 										<RadioButton x:Name="rbFlatD20" MinHeight="22" Checked="RbFlatD20_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >
 											Flat d20
 										</RadioButton>
-										<RadioButton x:Name="rbCastOtherSpell" MinHeight="22" Checked="RbCastOtherSpell_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >
+										<RadioButton x:Name="rbCastSimpleSpell" MinHeight="22" Checked="RbCastOtherSpell_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >
 											Cast (no die roll required)
 										</RadioButton>
 										<StackPanel Orientation="Horizontal" Margin="0, -4, 0, 0">
@@ -437,6 +440,9 @@
 											</RadioButton>
 											<RadioButton x:Name="rbInitiative" MinHeight="22" Checked="RbInitiative_Checked" GroupName="DieRollTypes" Margin="20, 0, 0, 0" >
 												Initiative
+											</RadioButton>
+											<RadioButton x:Name="rbNonCombatInitiative" MinHeight="22" Checked="RbNonCombatInitiative_Checked" GroupName="DieRollTypes" Margin="40, 0, 0, 0" >
+												Non-combat Initiative
 											</RadioButton>
 										</StackPanel>
 										<StackPanel Orientation="Horizontal">

@@ -27,7 +27,7 @@ namespace DndTests
 		}
 
 		[TestMethod]
-		public void TestOne()
+		public void TestChaosBolt()
 		{
 			AllPlayers.Invalidate();
 			DndGame game = DndGame.Instance;
@@ -37,10 +37,10 @@ namespace DndTests
 
 			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(AllPlayers.GetPlayerIdFromName("Merkin"), "Chaos Bolt");
 			Assert.AreEqual(3, actionShortcuts.Count);
-			DiceRoll chaosBoltLevel3 = DiceRoll.GetFrom(actionShortcuts[2], DiceRollType.ChaosBolt);
+			DiceRoll chaosBoltLevel3 = DiceRoll.GetFrom(actionShortcuts[2]);
 			Assert.IsTrue(chaosBoltLevel3.IsMagic);
 			Assert.AreEqual(DiceRollType.ChaosBolt, chaosBoltLevel3.Type);
-			Assert.AreEqual("2d8(),3d6()", chaosBoltLevel3.DamageDice);
+			Assert.AreEqual("2d8(),3d6()", chaosBoltLevel3.DamageHealthExtraDice);
 		}
 	}
 }

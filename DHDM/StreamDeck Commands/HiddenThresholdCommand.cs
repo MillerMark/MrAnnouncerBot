@@ -11,12 +11,26 @@ namespace DHDM
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
+			if (hiddenThreshold == int.MinValue)
+			{
+				hiddenThreshold = dungeonMasterApp.GetLastSpellSave();
+				dungeonMasterApp.TellDungeonMaster($"Setting hidden threshold to last Spell Save ({hiddenThreshold})...");
+			}
 			dungeonMasterApp.SetHiddenThreshold(hiddenThreshold);
 		}
 
 		public bool Matches(string message)
 		{
-			return int.TryParse(message, out hiddenThreshold);
+			if (int.TryParse(message, out hiddenThreshold))
+				return true;
+
+			if (message == "SetHiddenThreshold(LastSpell)")
+			{
+				hiddenThreshold = int.MinValue;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
