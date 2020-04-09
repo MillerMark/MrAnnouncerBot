@@ -59,6 +59,7 @@ namespace MrAnnouncerBot
 			new BotCommand("suppressFanfare", HandleSuppressFanfareCommand);
 			new BotCommand("crIssue", MarkCodeRushIssue);
 			new BotCommand("crIssueStart", MarkCodeRushIssueStart);
+			new BotCommand("discord", HandleDiscordCommand);
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
@@ -984,6 +985,12 @@ namespace MrAnnouncerBot
 			Chat($"Active Projects: ");
 			Chat($"https://github.com/MillerMark/MrAnnouncerBot");
 			Chat($"https://github.com/MillerMark/TimeLine");
+		}
+
+		void HandleDiscordCommand(OnChatCommandReceivedArgs obj)
+		{
+			Chat($"Please come and check out our shiny new Discord: ");
+			Chat($"https://discord.gg/B7WSz6Q");
 		}
 
 		void HandleVsCodeCommand(OnChatCommandReceivedArgs obj)
