@@ -188,7 +188,7 @@ namespace DndCore
 				return OneBonusAction;
 
 			if (duration.EndsWith(" action"))
-				return OneAction;
+				return FromActions(duration.GetFirstInt(1));
 
 			if (duration.IndexOf("reaction") > 0)
 				return OneReaction;

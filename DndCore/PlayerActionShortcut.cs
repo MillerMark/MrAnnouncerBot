@@ -319,9 +319,7 @@ namespace DndCore
 
 					if (availableSlots > 0)
 					{
-						bool needToDisambiguateMultipleSpells = false;
-						if (spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0)
-							needToDisambiguateMultipleSpells = true;
+						bool needToDisambiguateMultipleSpells = spell.Level < 9 && spellSlotLevels[spell.Level + 1] > 0;
 
 						for (int slotLevel = spell.Level; slotLevel <= 9; slotLevel++)
 						{
@@ -412,6 +410,18 @@ namespace DndCore
 				playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.Name));
 		}
 
+		public static PlayerActionShortcut FromSpell(string spellName, Character player, int spellSlotLevel = -1)
+		{
+			List<PlayerActionShortcut> allShortcuts = FromItemSpellEffect(spellName, null, player);
+			if (allShortcuts == null || allShortcuts.Count == 0)
+				return null;
+
+			if (spellSlotLevel == -1)
+				return allShortcuts[0];
+
+			return allShortcuts.FirstOrDefault(x => x.SpellSlotLevel == -1 || x.SpellSlotLevel == spellSlotLevel);
+		}
+
 		public static List<PlayerActionShortcut> FromItemSpellEffect(string spellName, ItemEffect spellEffect, Character player)
 		{
 			List<PlayerActionShortcut> results = new List<PlayerActionShortcut>();
@@ -423,12 +433,12 @@ namespace DndCore
 				PlayerActionShortcutDto dto = new PlayerActionShortcutDto();
 				dto.name = spell.Name;
 				dto.player = player.name;
+				SetSpellCastingTime(dto, spell);
 
 				//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
 
 				SetDtoFromEffect(dto, spellEffect);
 				dto.type = GetDiceRollTypeStr(spell);
-				SetSpellCastingTime(dto, spell);
 				List<Spell> oneSpell = new List<Spell>();
 				oneSpell.Add(spell);
 				AddSpellShortcuts(dto, results, player, oneSpell);
@@ -535,7 +545,7 @@ namespace DndCore
 				dto.time = "*";
 		}
 
-		private static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
+		public static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
 			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix, slotLevelOverride);
 			result.ProcessDieStr(shortcutDto, damageStr);
@@ -555,8 +565,8 @@ namespace DndCore
 				result.Type = DiceRollType.CastSimpleSpell;
 			return result;
 		}
- 
-		private static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string weaponDamage = "", string suffix = "", int slotLevel = 0)
+
+		public static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string weaponDamage = "", string suffix = "", int slotLevel = 0)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
 			result.WeaponDamage = weaponDamage;

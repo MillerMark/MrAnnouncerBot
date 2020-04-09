@@ -466,6 +466,7 @@ namespace DndCore
 		public Spell Clone(Character player, int spellSlotLevel)
 		{
 			Spell result = new Spell();
+			RecalculateDiceAndAmmo(spellSlotLevel, player.level, player.SpellcastingAbilityModifier);
 			result.BonusPerLevel = BonusPerLevel;
 			result.BonusThreshold = BonusThreshold;
 			result.BonusMax = BonusMax;

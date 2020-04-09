@@ -10,6 +10,7 @@ namespace DndCore
 		public string Descriptor { get; set; }  // e.g., "necrotic", "fire", "cold", etc.
 		public int Offset { get; set; }
 		public int Sides { get; set; }
+		public bool Instant { get; set; }
 		public Roll()
 		{
 
@@ -34,6 +35,12 @@ namespace DndCore
 		
 		public static Roll From(string dieStr, int spellcastingAbilityModifier = int.MinValue)
 		{
+			bool isInstant = false;
+			if (dieStr.StartsWith("!"))
+			{
+				dieStr = dieStr.Substring(1);
+				isInstant = true;
+			}
 			int dPos = dieStr.IndexOf("d");
 			if (dPos < 0)
 			{
@@ -75,6 +82,7 @@ namespace DndCore
 			roll.Sides = sides;
 			roll.Offset = offset;
 			roll.Descriptor = descriptor;
+			roll.Instant = isInstant;
 
 			return roll;
 		}
