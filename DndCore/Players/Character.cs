@@ -1108,7 +1108,7 @@ namespace DndCore
 
 		public void ClearAllCasting()
 		{
-			if (spellPreviouslyCasting == null && spellActivelyCasting == null)
+			if (spellPreviouslyCasting == null && spellActivelyCasting == null && spellTentativelyCasting == null)
 				return;
 			spellPreviouslyCasting = null;
 			spellActivelyCasting = null;

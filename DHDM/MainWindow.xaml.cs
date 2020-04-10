@@ -1223,6 +1223,7 @@ namespace DHDM
 
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
+			spellConsidered = null;
 			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
@@ -1397,11 +1398,11 @@ namespace DHDM
 			ShowCastingEffects(actionShortcut, spell);
 			ConsiderCasting(player, spell);
 		}
-
-		private static void ConsiderCasting(Character player, Spell spell)
+		CastedSpell spellConsidered;
+		private void ConsiderCasting(Character player, Spell spell)
 		{
-			CastedSpell castedSpell = new CastedSpell(spell, player, null);
-			castedSpell.ConsiderCasting();
+			spellConsidered = new CastedSpell(spell, player, null);
+			spellConsidered.ConsiderCasting();
 		}
 
 		private void SwitchToSpellPageInGame()
@@ -4406,6 +4407,11 @@ namespace DHDM
 
 		private void BtnClearSpell_Click(object sender, RoutedEventArgs e)
 		{
+			ClearPlayerSpell();
+		}
+
+		private void ClearPlayerSpell()
+		{
 			Character player = game.GetPlayerFromId(ActivePlayerId);
 			if (player == null)
 				return;
@@ -4428,6 +4434,11 @@ namespace DHDM
 		}
 
 		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			ShowActiveSpell();
+		}
+
+		private void ShowActiveSpell()
 		{
 			SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
 			if (selectedItem == null)
@@ -5115,7 +5126,59 @@ namespace DHDM
 			return lastSpellSave;
 		}
 
+		private void LstAllSpells_Drop(object sender, DragEventArgs e)
+		{
+			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+				return;
+			
+			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+			ActivePlayer.ClearAllCasting();
+			if (files.Length > 0)
+				AssignImageToSpell(files[0]);
+		}
 
+		void AssignImageToSpell(string fileName)
+		{
+			SpellDto spellDto = lstAllSpells.SelectedItem as SpellDto;
+			if (spellDto == null)
+				return;
+			AssignImageToSpell(fileName, spellDto.name);
+		}
+
+		string GetValidFileName(string fileName)
+		{
+			string result = fileName;
+
+			foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+				result = result.Replace(c, '_');
+
+			return result;
+		}
+
+		private void AssignImageToSpell(string fileName, string spellName)
+		{
+			const string targetPath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons";
+			File.Copy(fileName, System.IO.Path.Combine(targetPath, GetValidFileName(spellName) + ".png"), true);
+
+			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ActivePlayer.ToJson());
+			ShowActiveSpell();
+		}
+
+		private void TbDice_Drop(object sender, DragEventArgs e)
+		{
+			if (spellConsidered == null)
+				return;
+
+			ActivePlayer.ClearAllCasting();
+			ActivePlayer.spellTentativelyCasting = ActiveSpellData.FromCastedSpell(spellConsidered);
+			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+				return;
+
+			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+			if (files.Length > 0)
+				AssignImageToSpell(files[0], spellConsidered.Spell.Name);
+		}
 	}
 	// TODO: Reintegrate wand/staff animations....
 	/* 

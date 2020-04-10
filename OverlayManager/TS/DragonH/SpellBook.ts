@@ -320,6 +320,7 @@ class SpellBook {
 	schoolOfMagicAdjust: number;
 	underlineOffset: number;
 	browserIsObs: boolean;
+	spellIcon: HTMLImageElement;
 
 	constructor(browserIsObs: boolean) {
 		this.browserIsObs = browserIsObs;
@@ -1079,7 +1080,7 @@ class SpellBook {
 
 		this.spellBookTop.opacity = this.bookAlpha;
 		this.spellBookTop.draw(context, nowMs);
-		this.schoolOfMagic.draw(context, nowMs);
+		this.drawSchoolOfMagic(context, nowMs);
 		this.concentrationIcon.draw(context, nowMs);
 		this.morePowerIcon.draw(context, nowMs);
 
@@ -1092,18 +1093,58 @@ class SpellBook {
 		this.drawSpellBookAppear(nowSec, context, spell);
 	}
 
+	drawSchoolOfMagic(context: CanvasRenderingContext2D, nowMs: number): void {
+		if (this.hasCustomIcon) {
+			//context.save();
+			//context.scale(SpellBook.spellIconScale, SpellBook.spellIconScale);
+			let x: number = this.schoolOfMagicTopLeft.x;
+			let y: number = this.schoolOfMagicTopLeft.y;
+			//context.translate(x, y);
+			context.drawImage(this.spellIcon, SpellBook.spellIconMarginLeft + x, SpellBook.spellIconMarginTop + y, SpellBook.spellIconTargetWidth, SpellBook.spellIconTargetWidth);
+			//context.restore();
+		}
+		else
+			this.schoolOfMagic.draw(context, nowMs);
+	}
+
 	soundManager: DragonBackSounds;
-    private createSpellBook(spell: ActiveSpellData, player: Character, context: CanvasRenderingContext2D, x: number, y: number, nowMs: number) {
-        this.lastSpellName = spell.name;
-        this.lastSpellSlotLevel = spell.spellSlotLevel;
-        this.lastPlayerId = player.playerID;
-        let scale: number = 1;
-        while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
-            scale += 0.01;
-        }
-        this.spellbookAppearTime = nowMs;
-        this.addSpellBookAppearSoundEffects(spell);
-    }
+	private createSpellBook(spell: ActiveSpellData, player: Character, context: CanvasRenderingContext2D, x: number, y: number, nowMs: number) {
+		this.lastSpellName = spell.name;
+		this.lastSpellSlotLevel = spell.spellSlotLevel;
+		this.lastPlayerId = player.playerID;
+		let scale: number = 1;
+		while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
+			scale += 0.01;
+		}
+		this.findSpellIcon(spell);
+		this.spellbookAppearTime = nowMs;
+		this.addSpellBookAppearSoundEffects(spell);
+	}
+
+	hasCustomIcon: boolean;
+
+	static readonly spellIconTargetWidth: number = 100;
+	static readonly spellIconMarginLeft: number = 5;
+	static readonly spellIconMarginTop: number = 2;
+
+	convertToValidFilename(string): string {
+		return (string.replace(/[\/|\\:*?"<>]/g, "_"));
+	}
+
+
+	findSpellIcon(spell: ActiveSpellData): any {
+		this.spellIcon = new Image();
+
+		this.hasCustomIcon = false;
+		let self: SpellBook = this;
+		let spellIconName: string = 'GameDev/Assets/DragonH/Scroll/Spells/Icons/' + this.convertToValidFilename(spell.name) + '.png';
+		console.log('spellIconName: ' + spellIconName);
+		this.spellIcon.onload = function () {
+			self.hasCustomIcon = true;
+			console.log('spell icon loaded: ' + spell.name);
+		};
+		this.spellIcon.src = spellIconName;
+	}
 
 	setSoundManager(dragonBackSounds: DragonBackSounds): any {
 		this.soundManager = dragonBackSounds;
@@ -1180,6 +1221,8 @@ class SpellBook {
 		}
 		return fontSize;
 	}
+
+	schoolOfMagicTopLeft: Vector;
 
 	loadResources(): any {
 		this.spellBookBack = new Sprites("Scroll/Spells/BookBottom", 1, 0, AnimationStyle.Static);
@@ -1302,9 +1345,9 @@ class SpellBook {
 		this.spellDescriptionTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + SpellBook.spellHeaderHeight + detailsHeight);
 		this.titleTopLeft = new Vector(left + SpellBook.titleLeftMargin, top + 27);
 		this.levelSchoolTopLeft = new Vector(left + SpellBook.titleLeftMargin, this.titleTopLeft.y + this.titleFontSize + SpellBook.titleLevelMargin);
-		let schoolOfMagicTopLeft: Vector = new Vector(left + schoolOfMagicIndent, this.levelSchoolTopLeft.y + SpellBook.detailFontSize + SpellBook.levelDetailsMargin);
+		this.schoolOfMagicTopLeft = new Vector(left + schoolOfMagicIndent, this.levelSchoolTopLeft.y + SpellBook.detailFontSize + SpellBook.levelDetailsMargin);
 
-		this.spellDetailsTopLeft = new Vector(left + schoolOfMagicWidth, schoolOfMagicTopLeft.y);
+		this.spellDetailsTopLeft = new Vector(left + schoolOfMagicWidth, this.schoolOfMagicTopLeft.y);
 		if (detailSize.x > this.availableSpellDetailsWidth * horizontalScale)
 			return false;
 
@@ -1322,7 +1365,7 @@ class SpellBook {
 
 		let schoolOfMagicIndex = spell.schoolOfMagic - 1;
 		if (spell.schoolOfMagic > SchoolOfMagic.None) {
-			let schoolOfMagicIcon: SpriteProxy = this.schoolOfMagic.add(schoolOfMagicTopLeft.x, schoolOfMagicTopLeft.y, schoolOfMagicIndex);
+			let schoolOfMagicIcon: SpriteProxy = this.schoolOfMagic.add(this.schoolOfMagicTopLeft.x, this.schoolOfMagicTopLeft.y, schoolOfMagicIndex);
 			schoolOfMagicIcon.timeStart = 0;
 			schoolOfMagicIcon.fadeInTime = SpellBook.fadeInTime;
 		}

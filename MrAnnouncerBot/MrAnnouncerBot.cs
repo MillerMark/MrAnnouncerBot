@@ -60,6 +60,7 @@ namespace MrAnnouncerBot
 			new BotCommand("crIssue", MarkCodeRushIssue);
 			new BotCommand("crIssueStart", MarkCodeRushIssueStart);
 			new BotCommand("discord", HandleDiscordCommand);
+			new BotCommand("dh", HandleDragonHCommand);
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
@@ -989,8 +990,15 @@ namespace MrAnnouncerBot
 
 		void HandleDiscordCommand(OnChatCommandReceivedArgs obj)
 		{
-			Chat($"Please come and check out our shiny new Discord: ");
+			Chat($"Join the CodeRush community on Discord: ");
 			Chat($"https://discord.gg/B7WSz6Q");
+		}
+
+		void HandleDragonHCommand(OnChatCommandReceivedArgs obj)
+		{
+			Chat($"Live comedy Dungeons and Dragons with over-the-top special effects (built right here), every Thursday and Sunday: ");
+			Chat($"https://twitch.tv/DragonHumpers");
+			Chat($"9p ET / 6p PT / 1a GMT / 11a AEST");
 		}
 
 		void HandleVsCodeCommand(OnChatCommandReceivedArgs obj)
