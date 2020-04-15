@@ -334,7 +334,7 @@ namespace DndTests
 			merkin.ReadyRollDice(DiceRollType.DamageOnly, "1d6(fire)");
 			Assert.AreEqual("onCast", Expressions.GetStr("Get(_spellState)", merkin));
 
-			merkin.WillAttack(joeVineBlight, Attack.Melee("Unarmed Strike", 5, 5));
+			merkin.PrepareAttack(joeVineBlight, Attack.Melee("Unarmed Strike", 5, 5));
 			Assert.AreEqual("onPlayerAttacks", Expressions.GetStr("Get(_spellState)", merkin));
 
 			merkin.ReadyRollDice(DiceRollType.Attack, "1d20(:score),2d8(:damage),1d6(:damage)", hiddenThreshold);

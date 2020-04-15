@@ -4,16 +4,24 @@ namespace DndCore
 {
 	public class CastedSpell
 	{
-		public CastedSpell(Spell spell, Character spellCaster, Creature targetCreature = null)
+		public CastedSpell(Spell spell, Character spellCaster, object target = null)
 		{
 			TimeSpellWasCast = DndTimeClock.Instance.Time;
-			TargetCreature = targetCreature;
+			Target = target;
 			SpellCaster = spellCaster;
 			Spell = spell;
 		}
 		public Spell Spell { get; set; }
 		public Character SpellCaster { get; set; }
-		public Creature TargetCreature { get; set; }
+		public object Target { get; set; }
+
+		public Creature TargetCreature
+		{
+			get
+			{
+				return Target as Creature;
+			}
+		}
 		public DateTime TimeSpellWasCast { get; set; }
 		public string DieStr { get => Spell.DieStr; set => Spell.DieStr = value; }
 		public string DieStrRaw { get => Spell.DieStrRaw; set { } }
@@ -25,25 +33,25 @@ namespace DndCore
 		{
 			SpellCaster.CheckConcentration(this);
 			SpellCaster.ShowPlayerCasting(this);
-			Spell.TriggerCasting(SpellCaster, TargetCreature, this);
+			Spell.TriggerCasting(SpellCaster, Target, this);
 		}
 
-		public void ConsiderCasting()
+		public void Prepare()
 		{
 			//SpellCaster.CheckConcentration(this);
-			SpellCaster.PlayerConsidersCasting(this);
+			SpellCaster.PrepareSpell(this);
 		}
 
 		public void CastingWithItem()
 		{
 			SpellCaster.ShowPlayerCasting(this);
-			Spell.TriggerCasting(SpellCaster, TargetCreature, this);
+			Spell.TriggerCasting(SpellCaster, Target, this);
 		}
 
 		public void Cast()
 		{
 			Active = true;
-			Spell.TriggerCast(SpellCaster, TargetCreature, this);
+			Spell.TriggerCast(SpellCaster, Target, this);
 		}
 
 		public void Dispel()
@@ -51,7 +59,7 @@ namespace DndCore
 			if (!Active)
 				return;
 			Active = false;
-			Spell.TriggerDispel(SpellCaster, TargetCreature, this);
+			Spell.TriggerDispel(SpellCaster, Target, this);
 		}
 
 		public void Dispel(Character player)

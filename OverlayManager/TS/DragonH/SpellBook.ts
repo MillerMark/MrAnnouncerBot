@@ -321,6 +321,7 @@ class SpellBook {
 	underlineOffset: number;
 	browserIsObs: boolean;
 	spellIcon: HTMLImageElement;
+  spellIconFrame: HTMLImageElement;
 
 	constructor(browserIsObs: boolean) {
 		this.browserIsObs = browserIsObs;
@@ -342,6 +343,8 @@ class SpellBook {
 
 		this.loadFonts();
 		this.loadColors();
+		this.spellIconFrame = new Image();
+		this.spellIconFrame.src = 'GameDev/Assets/DragonH/Scroll/Spells/SpellIconFrame.png';
 	}
 
 	private loadColors() {
@@ -557,7 +560,8 @@ class SpellBook {
 		this.setTitleFont(context, this.titleFontSize);
 		context.textBaseline = 'top';
 		context.textAlign = 'left';
-		context.fillStyle = this.titleColors[spell.schoolOfMagic];
+		//context.fillStyle = this.titleColors[spell.schoolOfMagic];
+		context.fillStyle = this.titleColors[SchoolOfMagic.Necromancy];
 		context.fillText(spell.name, this.titleTopLeft.x, this.titleTopLeft.y);
 	}
 
@@ -1095,13 +1099,10 @@ class SpellBook {
 
 	drawSchoolOfMagic(context: CanvasRenderingContext2D, nowMs: number): void {
 		if (this.hasCustomIcon) {
-			//context.save();
-			//context.scale(SpellBook.spellIconScale, SpellBook.spellIconScale);
-			let x: number = this.schoolOfMagicTopLeft.x;
-			let y: number = this.schoolOfMagicTopLeft.y;
-			//context.translate(x, y);
-			context.drawImage(this.spellIcon, SpellBook.spellIconMarginLeft + x, SpellBook.spellIconMarginTop + y, SpellBook.spellIconTargetWidth, SpellBook.spellIconTargetWidth);
-			//context.restore();
+			let x: number = SpellBook.spellIconMarginLeft + this.schoolOfMagicTopLeft.x;
+			let y: number = SpellBook.spellIconMarginTop + this.schoolOfMagicTopLeft.y;
+			context.drawImage(this.spellIcon, x, y, SpellBook.spellIconTargetWidth, SpellBook.spellIconTargetWidth);
+			context.drawImage(this.spellIconFrame, x - 2, y - 2);
 		}
 		else
 			this.schoolOfMagic.draw(context, nowMs);
@@ -1375,14 +1376,16 @@ class SpellBook {
 		let iconY = this.titleTopLeft.y + this.titleFontSize;
 
 		if (spell.requiresConcentration) {
-			let concentratingIcon: SpriteProxy = this.concentrationIcon.add(iconX, iconY, schoolOfMagicIndex);
+			//let concentratingIcon: SpriteProxy = this.concentrationIcon.add(iconX, iconY, schoolOfMagicIndex);
+			let concentratingIcon: SpriteProxy = this.concentrationIcon.add(iconX, iconY, SchoolOfMagic.Necromancy - 1);
 			concentratingIcon.scale = iconScale;
 			concentratingIcon.fadeInTime = SpellBook.fadeInTime;
 			iconX += SpellBook.iconSize * iconScale + SpellBook.iconSpacing * this.horizontalScale;
 		}
 
 		if (spell.morePowerfulAtHigherLevels) {
-			let morePowerful: SpriteProxy = this.morePowerIcon.add(iconX, iconY, schoolOfMagicIndex);
+			//let morePowerful: SpriteProxy = this.morePowerIcon.add(iconX, iconY, schoolOfMagicIndex);
+			let morePowerful: SpriteProxy = this.morePowerIcon.add(iconX, iconY, SchoolOfMagic.Necromancy - 1);
 			morePowerful.scale = iconScale;
 			morePowerful.fadeInTime = SpellBook.fadeInTime;
 		}

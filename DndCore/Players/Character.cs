@@ -12,6 +12,16 @@ namespace DndCore
 {
 	public class Character : Creature
 	{
+		public event PickWeaponEventHandler PickWeapon;
+
+		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
+		{
+			PickWeapon?.Invoke(sender, ea);
+		}
+
+		[JsonIgnore]
+		public CarriedWeapon ReadiedWeapon;
+
 		[JsonIgnore]
 		List<KnownSpell> temporarySpells = new List<KnownSpell>();
 
@@ -50,17 +60,26 @@ namespace DndCore
 		public List<Rechargeable> rechargeables = new List<Rechargeable>();
 
 		[JsonIgnore]
+		public List<string> additionalDice { get; set; } = new List<string>();
+
+		[JsonIgnore]
 		public string additionalDiceThisRoll = string.Empty;
+
 		[JsonIgnore]
 		public int advantageDiceThisRoll = 0;
+
 		[JsonIgnore]
 		public Ability attackingAbility = Ability.none;
+
 		[JsonIgnore]
 		public double attackingAbilityModifier = 0; // TODO: Set for spells?
+
 		[JsonIgnore]
 		public AttackKind attackingKind = AttackKind.Any;
+
 		[JsonIgnore]
 		public AttackType attackingType = AttackType.None;
+
 		[JsonIgnore]
 		public int attackOffsetThisRoll = 0;
 		[JsonIgnore]
@@ -82,7 +101,7 @@ namespace DndCore
 		[JsonIgnore]
 		public int damageOffsetThisRoll = 0;
 
-		public ActiveSpellData spellTentativelyCasting;
+		public ActiveSpellData spellPrepared;
 		public ActiveSpellData spellActivelyCasting;
 		public ActiveSpellData spellPreviouslyCasting;
 
@@ -723,13 +742,15 @@ namespace DndCore
 		public bool TwoHanded { get; set; }  // TODO: Implement this + test cases.
 
 		[Ask("Weapon is Heavy")]
-		public bool WeaponIsHeavy { get; set; }  // TODO: Implement this + test cases.
+		public bool WeaponIsHeavy { get; set; }  // TODO: test cases.
 
 		[Ask("Weapon is Ranged")]
-		public bool WeaponIsRanged { get; set; } // TODO: Implement this + test cases.
+		public bool WeaponIsRanged { get; set; } // TODO: test cases.
 
 		[Ask("Weapon is Finesse")]
-		public bool WeaponIsFinesse { get; set; } // TODO: Implement this + test cases.
+		public bool WeaponIsFinesse { get; set; } // TODO: test cases.
+
+		public bool HasWeaponInHand { get; set; } // TODO: test cases.
 		public Weapons weaponProficiency { get; set; }
 		public int WeaponsInHand { get; set; }  // TODO: Implement this (0, 1 or 2) + test cases.
 		public double wisdomMod
@@ -864,7 +885,8 @@ namespace DndCore
 
 		public void AddDice(string diceStr)
 		{
-			additionalDiceThisRoll = diceStr;
+			additionalDice.Add(diceStr);
+			additionalDiceThisRoll = string.Join("; ", additionalDice);
 		}
 
 		public void AddDieRollEffects(string dieRollEffects)
@@ -1092,27 +1114,27 @@ namespace DndCore
 		{
 			forceShowSpell = true;
 			spellPreviouslyCasting = null;
-			spellTentativelyCasting = null;
+			spellPrepared = null;
 			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
-		public void PlayerConsidersCasting(CastedSpell castedSpell)
+		public void PrepareSpell(CastedSpell castedSpell)
 		{
 			forceShowSpell = true;
 			spellPreviouslyCasting = null;
 			spellActivelyCasting = null;
-			spellTentativelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
-			OnStateChanged(this, new StateChangedEventArgs("spellTentativelyCasting", null, null));
+			spellPrepared = ActiveSpellData.FromCastedSpell(castedSpell);
+			OnStateChanged(this, new StateChangedEventArgs("spellPrepared", null, null));
 		}
 
 		public void ClearAllCasting()
 		{
-			if (spellPreviouslyCasting == null && spellActivelyCasting == null && spellTentativelyCasting == null)
+			if (spellPreviouslyCasting == null && spellActivelyCasting == null && spellPrepared == null)
 				return;
 			spellPreviouslyCasting = null;
 			spellActivelyCasting = null;
-			spellTentativelyCasting = null;
+			spellPrepared = null;
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 		}
 
@@ -1192,6 +1214,20 @@ namespace DndCore
 
 		public int GetAttackingAbilityModifier(WeaponProperties weaponProperties, AttackType attackType)
 		{
+			CheckForAttackingAbilityOverride();
+
+			if (OverrideAttackingAbility != Ability.none)
+				attackingAbility = OverrideAttackingAbility;
+			else
+				GetAttackingAbility(weaponProperties, attackType);
+
+			attackingAbilityModifier = GetAbilityModifier(attackingAbility);
+
+			return (int)Math.Round(attackingAbilityModifier);
+		}
+
+		private void GetAttackingAbility(WeaponProperties weaponProperties, AttackType attackType)
+		{
 			double dexterityModifier = GetAbilityModifier(Ability.dexterity);
 			double strengthModifier = GetAbilityModifier(Ability.strength);
 
@@ -1199,8 +1235,6 @@ namespace DndCore
 
 			if ((weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse)
 			{
-				attackingAbilityModifier = Math.Max(dexterityModifier, strengthModifier);
-
 				if (dexterityModifier > strengthModifier)
 					attackingAbility = Ability.dexterity;
 				else
@@ -1209,16 +1243,22 @@ namespace DndCore
 			}
 			else if (attackType == AttackType.Range)
 			{
-				attackingAbilityModifier = dexterityModifier;
 				attackingAbility = Ability.dexterity;
 			}
 			else
 			{
-				attackingAbilityModifier = strengthModifier;
 				attackingAbility = Ability.strength;
 			}
+		}
 
-			return (int)Math.Round(attackingAbilityModifier);
+		private void CheckForAttackingAbilityOverride()
+		{
+			OverrideAttackingAbility = Ability.none;
+			List<CastedSpell> activeSpells = GetActiveSpells();
+			foreach (CastedSpell castedSpell in activeSpells)
+			{
+				castedSpell.Spell.TriggerGetAttackAbility(this, null, castedSpell);
+			}
 		}
 
 		public AssignedFeature GetFeature(string name)
@@ -1424,6 +1464,10 @@ namespace DndCore
 		// TODO: Implement TargetIsFlanked when map is built and integrated into the game.
 		[Ask("Target is flanked")]
 		public bool TargetIsFlanked { get; set; }
+
+		// TODO: Implement TargetIsMarked when map is built and integrated into the game as well as targets.
+		[Ask("Target is Marked")]
+		public bool TargetIsMarked { get; set; }
 
 
 		// TODO: Incorporate VantageThisRoll into die rolls.
@@ -1758,6 +1802,7 @@ namespace DndCore
 			usesMagicThisRoll = false;
 			targetedCreatureHitPoints = 0;
 			hitWasCritical = false;
+			additionalDice = new List<string>();
 			additionalDiceThisRoll = string.Empty;
 			trailingEffectsThisRoll = string.Empty;
 			dieRollEffectsThisRoll = string.Empty;
@@ -1919,7 +1964,8 @@ namespace DndCore
 				attackingType = playerActionShortcut.AttackingType;
 				if (playerActionShortcut.Type == DiceRollType.Attack)
 				{
-					if (playerActionShortcut.CarriedWeapon != null)
+					HasWeaponInHand = playerActionShortcut.CarriedWeapon != null;
+					if (HasWeaponInHand)
 					{
 						Weapon weapon = AllWeapons.Get(playerActionShortcut.CarriedWeapon.Weapon.Name);
 						WeaponIsFinesse = (weapon.weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse;
@@ -1996,8 +2042,21 @@ namespace DndCore
 					}
 			}
 
+			if (tempHitPoints != 0)
+			{
+				tempHitPoints = 0;
+				stateChanged = true;
+			}
+
+			if (hitPoints != maxHitPoints)
+			{
+				hitPoints = maxHitPoints;
+				stateChanged = true;
+			}
+
 			if (stateChanged)
 				OnStateChanged(this, new StateChangedEventArgs(string.Join(",", keys), 1, 0, true));
+			
 		}
 
 		public bool HasRemainingSpellSlotCharges(int spellSlotLevel)
@@ -2061,6 +2120,9 @@ namespace DndCore
 		public object ActiveTarget { get; set; }
 
 		public bool ShowingNameplate { get; set; } = true;
+
+		[JsonIgnore]
+		public Ability OverrideAttackingAbility { get; set; }
 
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{
@@ -2379,7 +2441,7 @@ namespace DndCore
 			{
 				spellPreviouslyCasting = spellActivelyCasting; // So we can show the spell for a longer time before we hide it.
 				spellActivelyCasting = null;
-				spellTentativelyCasting = null;
+				spellPrepared = null;
 				OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
 			}
 		}
@@ -2491,7 +2553,7 @@ namespace DndCore
 			return foundEvent.BreakAtStart;
 		}
 
-		public void IsAboutToCastSpell()
+		public void PreparingSpell()
 		{
 			WeaponIsFinesse = false;
 			WeaponIsHeavy = false;
@@ -2568,5 +2630,21 @@ namespace DndCore
 			if (goldPieces != oldValue)
 				OnStateChanged(this, new StateChangedEventArgs("goldPieces", oldValue, goldPieces));
 		}
+		public void AttackingNow(Creature targetCreature)
+		{
+			List<CastedSpell> activeSpells = GetActiveSpells();
+			foreach (CastedSpell castedSpell in activeSpells)
+			{
+				castedSpell.Spell.TriggerPlayerAttacks(this as Character, targetCreature, castedSpell);
+			}
+		}
+
+		public CarriedWeapon ChooseWeapon()
+		{
+			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this);
+			OnPickWeapon(this, pickWeaponEventArgs);
+			return pickWeaponEventArgs.Weapon;
+		}
+
 	}
 }

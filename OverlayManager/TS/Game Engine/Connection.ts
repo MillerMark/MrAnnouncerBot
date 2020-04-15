@@ -182,7 +182,7 @@ function changeFrameRate(frameRateData: string) {
 		if (frameRateChangeData.OverlayName === 'Front') {
 			activeFrontGame.changeFramerate(frameRateChangeData.FrameRate);
 		}
-		activeFrontGame.showFpsMessage(message);
+		//activeFrontGame.showFpsMessage(message);
 	}
 }
 

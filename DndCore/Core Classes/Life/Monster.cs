@@ -149,9 +149,9 @@ namespace DndCore
 			abilityMod = abilityModStr.ToDouble();
 		}
 
-		public void WillAttack(Creature creature, string attackName)
+		public void PrepareAttack(Creature creature, string attackName)
 		{
-			WillAttack(creature, GetAttack(attackName));
+			PrepareAttack(creature, GetAttack(attackName));
 		}
 	}
 }

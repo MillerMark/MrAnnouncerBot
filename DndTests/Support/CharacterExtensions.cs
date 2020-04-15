@@ -25,19 +25,19 @@ namespace DndTests
 
 		public static void Hits(this Creature creature, Creature target, PlayerActionShortcut weapon)
 		{
-			creature.WillAttack(target, weapon);
+			creature.PrepareAttack(target, weapon);
 			creature.HitsTarget();
 		}
 
 		public static void Misses(this Creature creature, Creature target, PlayerActionShortcut weapon)
 		{
-			creature.WillAttack(target, weapon);
+			creature.PrepareAttack(target, weapon);
 			creature.MissesTarget();
 		}
 
 		public static void Misses(this Creature creature, Creature target, string attackName)
 		{
-			creature.WillAttack(target, creature.GetAttack(attackName));
+			creature.PrepareAttack(target, creature.GetAttack(attackName));
 			creature.MissesTarget();
 		}
 	}

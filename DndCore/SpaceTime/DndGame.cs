@@ -25,7 +25,9 @@ namespace DndCore
 		}
 
 		public event MessageEventHandler RequestMessageToDungeonMaster;
+		public event MessageEventHandler RequestMessageToAll;
 		public event CastedSpellEventHandler SpellDispelled;
+		public event PickWeaponEventHandler PickWeapon;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
 		public event DndGameEventHandler RoundEnded;
@@ -37,6 +39,10 @@ namespace DndCore
 		protected virtual void OnPlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
 		{
 			PlayerRequestsRoll?.Invoke(sender, ea);
+		}
+		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
+		{
+			PickWeapon?.Invoke(sender, ea);
 		}
 		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
@@ -167,10 +173,16 @@ namespace DndCore
 
 		private void HookPlayerEvents(Character player)
 		{
+			player.PickWeapon += Player_PickWeapon;
 			player.StateChanged += Player_StateChanged;
 			player.RollDiceRequest += Player_RollDiceRequest;
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
+		}
+
+		private void Player_PickWeapon(object sender, PickWeaponEventArgs ea)
+		{
+			OnPickWeapon(this, ea);
 		}
 
 		private void Player_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
@@ -335,7 +347,8 @@ namespace DndCore
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
-			castedSpell.TargetCreature = player.ActiveTarget as Creature;
+			if (castedSpell.Target == null)
+				castedSpell.Target = player.ActiveTarget as Creature;
 			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			if (castingSpells.IndexOf(castedSpell) >= 0)
@@ -386,19 +399,20 @@ namespace DndCore
 		{
 			player.ActiveWeaponName = actionShortcut.Name;
 		}
-		public void CreatureWillAttack(Creature creature, Creature target, Attack attack, bool usesMagic)
+		public void CreaturePreparesAttack(Creature creature, Creature target, Attack attack, bool usesMagic)
 		{
-			if (creature is Character player)
+			if (!(creature is Character player))
+				return;
+
+			player.targetThisRollIsCreature = target != null;
+			player.usesMagicThisRoll = usesMagic;
+			List<CastedSpell> playersActiveSpells = GetActiveSpells(player);
+			
+			// Triggering in reverse order in case any of these spells are dispelled.
+			for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
 			{
-				player.targetThisRollIsCreature = target != null;
-				player.usesMagicThisRoll = usesMagic;
-				List<CastedSpell> playersActiveSpells = GetActiveSpells(player);
-				// Trigger in reverse order in case any of these spells are dispelled.
-				for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
-				{
-					CastedSpell castedSpell = playersActiveSpells[i];
-					castedSpell.Spell.TriggerPlayerAttacks(player, WaitingForRollTarget, castedSpell);
-				}
+				CastedSpell castedSpell = playersActiveSpells[i];
+				castedSpell.Spell.TriggerPlayerPreparesAttack(player, WaitingForRollTarget, castedSpell);
 			}
 		}
 
@@ -497,6 +511,11 @@ namespace DndCore
 			lastMessageSentToDungeonMaster = message;
 			OnRequestMessageToDungeonMaster(this, new MessageEventArgs(message));
 		}
+		public void TellAll(string message)
+		{
+			lastMessageSentToDungeonMaster = message;
+			OnRequestMessageToAll(this, new MessageEventArgs(message));
+		}
 
 		public Character GetPlayerFromId(int playerID)
 		{
@@ -588,6 +607,10 @@ namespace DndCore
 		protected virtual void OnRequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
 		{
 			RequestMessageToDungeonMaster?.Invoke(sender, ea);
+		}
+		protected virtual void OnRequestMessageToAll(object sender, MessageEventArgs ea)
+		{
+			RequestMessageToAll?.Invoke(sender, ea);
 		}
 		public void Start()
 		{

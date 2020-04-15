@@ -105,7 +105,7 @@ namespace DndTests
 			Assert.IsNull(game.ActiveCreature);
 			ava.TestStartTurn();
 			Assert.AreEqual(ava, game.ActiveCreature);
-			ava.WillAttack(joe, greatsword);
+			ava.PrepareAttack(joe, greatsword);
 			game.SetHiddenThreshold(ava, 12, DiceRollType.Attack);
 			//DiceRoll diceRoll = ava.GetRoll();
 			

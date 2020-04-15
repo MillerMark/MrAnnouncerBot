@@ -593,22 +593,22 @@ namespace DndCore
 			return null;
 		}
 
-		public void WillAttack(Creature creature, Attack attack)
+		public void PrepareAttack(Creature creature, Attack attack)
 		{
 			if (Game != null)
 			{
 				Game.CreatureTakingAction(this);
-				Game.CreatureWillAttack(this, creature, attack, false);
+				Game.CreaturePreparesAttack(this, creature, attack, false);
 			}
 		}
 
-		public void WillAttack(Creature target, PlayerActionShortcut shortcut)
+		public void PrepareAttack(Creature target, PlayerActionShortcut shortcut)
 		{
 			if (Game != null)
 				Game.CreatureTakingAction(this);
 			Use(shortcut);
 			if (Game != null)
-				Game.CreatureWillAttack(this, target, null, shortcut.UsesMagic);
+				Game.CreaturePreparesAttack(this, target, null, shortcut.UsesMagic);
 		}
 
 		public virtual void Target(Creature target)
@@ -616,7 +616,7 @@ namespace DndCore
 			if (Game != null)
 			{
 				Game.CreatureTakingAction(this);
-				Game.CreatureWillAttack(this, target, null, false);
+				Game.CreaturePreparesAttack(this, target, null, false);
 			}
 		}
 

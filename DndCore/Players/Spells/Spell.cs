@@ -53,6 +53,10 @@ namespace DndCore
 		[DndEvent]
 		public string OnCasting { get; set; }
 		[DndEvent]
+		public string OnGetAttackAbility { get; set; }
+		[DndEvent]
+		public string OnPlayerPreparesAttack { get; set; }
+		[DndEvent]
 		public string OnPlayerAttacks { get; set; }
 		[DndEvent]
 		public string OnPlayerHitsTarget { get; set; }
@@ -340,6 +344,8 @@ namespace DndCore
 				OnCast = spellDto.onCast,
 				OnReceived = spellDto.onReceived,
 				OnCasting = spellDto.onCasting,
+				OnGetAttackAbility = spellDto.onGetAttackAbility,
+				OnPlayerPreparesAttack = spellDto.onPlayerPreparesAttack,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
 				OnPlayerHitsTarget = spellDto.onPlayerHitsTarget,
 				OnDispel = spellDto.onDispel,
@@ -428,40 +434,52 @@ namespace DndCore
 			//	(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
-		public void TriggerCasting(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerCasting(Character player, object target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnCasting, player, targetCreature, castedSpell);
+			Expressions.Do(OnCasting, player, target, castedSpell);
 		}
 
-		public void TriggerCast(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerGetAttackAbility(Character player, object target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnCast, player, targetCreature, castedSpell);
+			Expressions.Do(OnGetAttackAbility, player, target, castedSpell);
 		}
 
-		public void TriggerReceived(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerCast(Character player, object target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnReceived, player, targetCreature, castedSpell);
+			Expressions.Do(OnCast, player, target, castedSpell);
 		}
 
-		public void TriggerDispel(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerReceived(Character player, object target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnDispel, player, targetCreature, castedSpell);
+			Expressions.Do(OnReceived, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerAttacks(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerDispel(Character player, object target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnPlayerAttacks, player, targetCreature, castedSpell);
+			Expressions.Do(OnDispel, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerHitsTarget(Character player, Creature targetCreature, CastedSpell castedSpell)
+		public void TriggerPlayerPreparesAttack(Character player, object target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnPlayerHitsTarget, player, targetCreature, castedSpell);
+			Expressions.Do(OnPlayerPreparesAttack, player, target, castedSpell);
+		}
+
+		public void TriggerPlayerAttacks(Character player, object target, CastedSpell castedSpell)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnPlayerAttacks, player, target, castedSpell);
+		}
+
+		public void TriggerPlayerHitsTarget(Character player, object target, CastedSpell castedSpell)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnPlayerHitsTarget, player, target, castedSpell);
 		}
 		public Spell Clone(Character player, int spellSlotLevel)
 		{
@@ -481,7 +499,9 @@ namespace DndCore
 			result.OnCast = OnCast;
 			result.OnReceived = OnReceived;
 			result.OnCasting = OnCasting;
+			result.OnGetAttackAbility = OnGetAttackAbility;
 			result.OnDispel = OnDispel;
+			result.OnPlayerPreparesAttack = OnPlayerPreparesAttack;
 			result.OnPlayerAttacks = OnPlayerAttacks;
 			result.OnPlayerHitsTarget = OnPlayerHitsTarget;
 			result.OriginalDieStr = OriginalDieStr;

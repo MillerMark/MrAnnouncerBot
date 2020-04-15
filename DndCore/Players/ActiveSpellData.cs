@@ -46,7 +46,7 @@ namespace DndCore
 			if (castedSpell.Spell.Description.IndexOf('{') < 0)
 				return castedSpell.Spell.Description;
 
-			string result = Expressions.GetStr("$\"" + EmphasizeCalculatedProperties(castedSpell) + "\"", castedSpell.SpellCaster, castedSpell.TargetCreature, castedSpell);
+			string result = Expressions.GetStr("$\"" + EmphasizeCalculatedProperties(castedSpell) + "\"", castedSpell.SpellCaster, castedSpell.Target, castedSpell);
 			return result;
 		}
 

@@ -23,5 +23,6 @@ namespace DndCore
 	public delegate void LevelChangedEventHandler(object sender, LevelChangedEventArgs ea);
 	public delegate void ShortcutEventHandler(object sender, ShortcutEventArgs ea);
 	public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
+	public delegate void PickWeaponEventHandler(object sender, PickWeaponEventArgs ea);
 
 }

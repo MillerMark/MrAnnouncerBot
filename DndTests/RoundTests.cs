@@ -39,7 +39,7 @@ namespace DndTests
 			Assert.AreEqual(0, game.roundIndex);
 			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
 			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
-			joeTheVineBlight.WillAttack(merkin, joeTheVineBlight.GetAttack(AttackNames.Constrict));
+			joeTheVineBlight.PrepareAttack(merkin, joeTheVineBlight.GetAttack(AttackNames.Constrict));
 			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
 			Assert.AreEqual(1, game.roundIndex);
 

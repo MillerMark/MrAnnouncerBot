@@ -26,6 +26,18 @@ namespace DndCore
 			if (property != null)
 				return property.GetValue(player);
 
+			if (KnownQualifiers.IsSpellQualifier(propertyName))
+			{
+				if (evaluator.Variables.ContainsKey(Expressions.STR_CastedSpell))
+				{
+					object castedSpell = evaluator.Variables[Expressions.STR_CastedSpell];
+					Type instanceType = typeof(CastedSpell);
+					propertyName = propertyName.EverythingAfter(KnownQualifiers.Spell);
+					property = instanceType.GetProperty(propertyName);
+					return property.GetValue(castedSpell);
+				}
+			}
+
 			if (player != null)
 				return player.GetState(propertyName);
 

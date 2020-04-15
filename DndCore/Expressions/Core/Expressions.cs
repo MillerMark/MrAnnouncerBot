@@ -119,7 +119,7 @@ namespace DndCore
 			}
 		}
 
-		public static void Do(string expression, Character player = null, Creature target = null, CastedSpell castedSpell = null)
+		public static void Do(string expression, Character player = null, object target = null, CastedSpell castedSpell = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return;
@@ -269,7 +269,7 @@ namespace DndCore
 			}
 		}
 
-		public static string GetStr(string expression, Character player = null, Creature target = null, CastedSpell spell = null)
+		public static string GetStr(string expression, Character player = null, object target = null, CastedSpell spell = null)
 		{
 			StartEvaluation(player, $"GetStr({expression})", target, spell);
 			try
@@ -306,7 +306,7 @@ namespace DndCore
 		}
 
 		static Stack<IDictionary<string, object>> variableStack = new Stack<IDictionary<string, object>>();
-		private static void StartEvaluation(Character player, string callingProc, Creature target = null, CastedSpell spell = null)
+		private static void StartEvaluation(Character player, string callingProc, object target = null, CastedSpell spell = null)
 		{
 			//historyStack.Push(history);
 			//history = new List<string>();
@@ -317,7 +317,7 @@ namespace DndCore
 			BeginUpdate();
 		}
 
-		private static void AddPlayerVariables(Character player, Creature target, CastedSpell spell)
+		private static void AddPlayerVariables(Character player, object target, CastedSpell spell)
 		{
 			variableStack.Push(expressionEvaluator.Variables);
 			expressionEvaluator.Variables = new Dictionary<string, object>()

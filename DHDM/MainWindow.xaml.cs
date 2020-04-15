@@ -38,6 +38,7 @@ namespace DHDM
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
 		const string DragonHumpersChannel = "DragonHumpers";
+		const string CodeRushedChannel = "CodeRushed";
 		const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";  // This sequence allows indentation in Twitch chats!
 
 
@@ -67,10 +68,7 @@ namespace DHDM
 		public MainWindow()
 		{
 			game = new DndGame();
-			game.SpellDispelled += Game_SpellDispelled;
-			game.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
-			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
-			game.PlayerStateChanged += Game_PlayerStateChanged;
+			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
@@ -127,6 +125,32 @@ namespace DHDM
 			HookEvents();
 
 			SetupSpellsChangedFileWatcher();
+		}
+
+		private void HookGameEvents()
+		{
+			game.SpellDispelled += Game_SpellDispelled;
+			game.PickWeapon += Game_PickWeapon;
+			game.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
+			game.RequestMessageToAll += Game_RequestMessageToAll;
+			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
+			game.PlayerStateChanged += Game_PlayerStateChanged;
+		}
+
+		private void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
+		{
+			List<string> weapons = new List<string>();
+			for (int i = 0; i < ea.Player.CarriedWeapons.Count; i++)
+			{
+				CarriedWeapon carriedWeapon = ea.Player.CarriedWeapons[i];
+				string weaponName = carriedWeapon.Name;
+				if (string.IsNullOrEmpty(weaponName))
+					weaponName = carriedWeapon.Weapon.Name;
+				weapons.Add($"{i + 1}: {weaponName}");
+			}
+			int result = AskQuestion("Target which weapon: ", weapons);
+			if (result > 0)
+				ea.Weapon = ea.Player.CarriedWeapons[result - 1];
 		}
 
 		private void HookEvents()
@@ -362,6 +386,11 @@ namespace DHDM
 			TellDungeonMaster(ea.Message);
 		}
 
+		private void Game_RequestMessageToAll(object sender, MessageEventArgs ea)
+		{
+			TellAll(ea.Message);
+		}
+
 		void EnsureEverythingRemainsHookedUpAsExpected()
 		{
 			game.Clock.TimeChanged -= DndTimeClock_TimeChanged;
@@ -543,6 +572,7 @@ namespace DHDM
 			PlayerActionShortcut shortcutToActivate = shortcutTimers[dispatcherTimer];
 			shortcutTimers.Remove(dispatcherTimer);
 			ActivateShortcut(shortcutToActivate);
+			UnleashTheNextRoll();
 		}
 
 		// TODO: Spell Expired
@@ -983,7 +1013,7 @@ namespace DHDM
 		void PrepareToCastSpell(Spell spell, int playerId)
 		{
 			spell.OwnerId = playerId;
-			TellDungeonMaster($"{GetPlayerName(playerId)} casts {spell.Name} at {game.Clock.AsFullDndDateTimeString()}.");
+			TellAll($"{GetPlayerName(playerId)} casts {spell.Name} at {game.Clock.AsFullDndDateTimeString()}.");
 		}
 
 		private void PlayerShortcutButton_Click(object sender, RoutedEventArgs e)
@@ -1181,7 +1211,7 @@ namespace DHDM
 					rbInitiative.IsChecked = true;
 					break;
 				case DiceRollType.WildMagicD20Check:
-					rbWildMagic.IsChecked = true;
+					rbWildMagicD20Check.IsChecked = true;
 					break;
 				case DiceRollType.InspirationOnly:
 					rbInspirationOnly.IsChecked = true;
@@ -1205,25 +1235,29 @@ namespace DHDM
 		{
 			if (actionShortcut.Spell != null)
 				if (actionShortcut.Spell.MorePowerfulWhenCastAtHigherLevels)
-					TellDungeonMaster($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} in spell slot {actionShortcut.Spell.SpellSlotLevel}...");
+					TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} in spell slot {actionShortcut.Spell.SpellSlotLevel}...");
 				else
-					TellDungeonMaster($"{player.firstName} is ready to cast {actionShortcut.Spell.Name}...");
+					TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name}...");
 			else if (actionShortcut.CarriedWeapon != null)
 			{
 				string weaponName = actionShortcut.CarriedWeapon.Name;
 				if (string.IsNullOrEmpty(weaponName))
 					weaponName = actionShortcut.CarriedWeapon.Weapon.Name;
-				TellDungeonMaster($"{player.firstName} is ready to attack with {player.hisHer} {weaponName}...");
+				TellAll($"{player.firstName} is ready to attack with {player.hisHer} {weaponName}...");
 			}
-			else
+			else if (actionShortcut.Type == DiceRollType.WildMagicD20Check)
 			{
-				
+				TellAll($"{player.firstName} is checking wild magic...");
+			}
+			else if (actionShortcut.Type == DiceRollType.WildMagic)
+			{
+				TellAll($"{player.firstName}'s wild magic roll...");
 			}
 		}
 
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
-			spellConsidered = null;
+			preparedSpell = null;
 			spellToCastOnRoll = null;
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
@@ -1327,7 +1361,6 @@ namespace DHDM
 		private ActionType ActivateShortcutForPlayer(PlayerActionShortcut actionShortcut, Character player)
 		{
 			ResetWildMagicChecks(actionShortcut);
-			ActivatePendingShortcuts();  //? ?? Should this be here?
 			ResetActiveFields();
 			AssignDieRollEffects(actionShortcut);
 
@@ -1341,7 +1374,7 @@ namespace DHDM
 			PlayerTakingAction(actionShortcut, player);
 
 			if (actionShortcut.Spell != null)
-				AboutToCastSpell(actionShortcut, player);
+				PrepareSpell(actionShortcut, player);
 			else
 				AboutToTakePhysicalAction(actionShortcut, player);
 
@@ -1384,26 +1417,22 @@ namespace DHDM
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
 		}
 
-		private void AboutToCastSpell(PlayerActionShortcut actionShortcut, Character player)
+		private void PrepareSpell(PlayerActionShortcut actionShortcut, Character player)
 		{
 			Spell spell = actionShortcut.Spell;
 			if (spell == null)
 				return;
-			player.IsAboutToCastSpell();
+			player.PreparingSpell();
 			UpdateSpellPageUI(spell);
 			spellToCastOnRoll = actionShortcut;
 			SwitchToSpellPageInGame();
 
-			// TODO: Fix the targeting.
-			ShowCastingEffects(actionShortcut, spell);
-			ConsiderCasting(player, spell);
+			ShowSpellPreparingWindups(actionShortcut, spell);
+			preparedSpell = new CastedSpell(spell, player, null);
+			preparedSpell.Prepare();
 		}
-		CastedSpell spellConsidered;
-		private void ConsiderCasting(Character player, Spell spell)
-		{
-			spellConsidered = new CastedSpell(spell, player, null);
-			spellConsidered.ConsiderCasting();
-		}
+
+		CastedSpell preparedSpell;
 
 		private void SwitchToSpellPageInGame()
 		{
@@ -1418,15 +1447,20 @@ namespace DHDM
 
 		private void PlayerTakingAction(PlayerActionShortcut actionShortcut, Character player)
 		{
+			player.ReadiedWeapon = null;
 			if (actionShortcut.Part != TurnPart.Reaction)
 				game.CreatureTakingAction(player);
 
 			// TODO: Fix the targeting.
 			if (DndUtils.IsAttack(actionShortcut.Type))
 			{
+				player.ReadiedWeapon = actionShortcut.CarriedWeapon;
+				actionShortcut.UpdatePlayerAttackingAbility(player);
+
+
 				if (actionShortcut.Spell == null && actionShortcut.WeaponProperties != WeaponProperties.None)
 					game.CreatureRaisingWeapon(player, actionShortcut);
-				player.WillAttack(null, actionShortcut);
+				player.PrepareAttack(null, actionShortcut);
 			}
 		}
 
@@ -1503,7 +1537,7 @@ namespace DHDM
 			string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
 			string spellName = actionShortcut.Spell.Name;
 			string timeSpanStr = actionShortcut.Spell.CastingTimeStr;
-			TellDungeonMaster($"{playerName} is preparing to cast {spellName} (takes {timeSpanStr}).");
+			TellAll($"{playerName} is preparing to cast {spellName} (takes {timeSpanStr}).");
 			string alarmName = DndGame.GetSpellAlarmName(actionShortcut.Spell, actionShortcut.PlayerId);
 			game.CreateAlarm(alarmName, castingTime, DndAlarm_CastSpellNow, actionShortcut, null);
 		}
@@ -1514,7 +1548,7 @@ namespace DHDM
 			{
 				string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
 				string spellName = actionShortcut.Spell.Name;
-				TellDungeonMaster($"{playerName} is now casting {spellName}!");
+				TellAll($"{playerName} is now casting {spellName}!");
 				CastSpellNow(actionShortcut);
 			}
 		}
@@ -1610,13 +1644,21 @@ namespace DHDM
 				ShowSpellHitInGame(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
 				player.JustCastSpell(spell.Name);
 			}
+			ShowSpellEffects(actionShortcut, spell, "Spell");
 		}
 
-		private static void ShowCastingEffects(PlayerActionShortcut actionShortcut, Spell spell)
+		private static void ShowSpellPreparingWindups(PlayerActionShortcut actionShortcut, Spell spell)
+		{
+			ShowSpellEffects(actionShortcut, spell, "Windup");
+		}
+
+		private static void ShowSpellEffects(PlayerActionShortcut actionShortcut, Spell spell, string prefix)
 		{
 			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
 
-			spellToCastDto.Windups = actionShortcut.WindupsReversed;
+			spellToCastDto.Windups = actionShortcut.WindupsReversed.Where(x => x != null && x.Name != null && x.Name.StartsWith(prefix)).ToList();
+			if (!spellToCastDto.Windups.Any())
+				return;
 			string serializedObject = JsonConvert.SerializeObject(spellToCastDto);
 			HubtasticBaseStation.CastSpell(serializedObject);
 		}
@@ -1796,6 +1838,8 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
+			
+
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
@@ -1818,6 +1862,13 @@ namespace DHDM
 			{
 				PlayerRollOptions playerRollOptions = diceRoll.PlayerRollOptions[0];
 				player = game.GetPlayerFromId(playerRollOptions.PlayerID);
+
+				if (DndUtils.IsAttack(diceRoll.Type))
+				{
+					// TODO: Pass the targetCreature into AttackingNow when mapping is complete and targets are known.
+					player.AttackingNow(null);
+				}
+
 				if (player != null)
 				{
 					if (!string.IsNullOrWhiteSpace(player.additionalDiceThisRoll))
@@ -1836,7 +1887,9 @@ namespace DHDM
 			}
 
 			if (diceRoll.IsOnePlayer && player != null)
+			{
 				player.ReadyRollDice(diceRoll.Type, diceRoll.DamageHealthExtraDice, (int)Math.Round(diceRoll.HiddenThreshold));
+			}
 
 
 			Dispatcher.Invoke(() =>
@@ -2093,11 +2146,11 @@ namespace DHDM
 				if (ActivePlayer == null)
 					return;
 				ActivePlayer.RechargeAfterLongRest();
-				TellDungeonMaster($"{ActivePlayer.firstName} has had a long rest.");
+				TellAll($"{ActivePlayer.firstName} has had a long rest.");
 			}
 			else
 			{
-				TellDungeonMaster("All players have recharged after a long rest.");
+				TellAll("All players have recharged after a long rest.");
 				game?.RechargePlayersAfterLongRest();
 				Rest(8);
 				TellDungeonMasterTheTime();
@@ -2111,11 +2164,11 @@ namespace DHDM
 				if (ActivePlayer == null)
 					return;
 				ActivePlayer.RechargeAfterShortRest();
-				TellDungeonMaster($"{ActivePlayer.firstName} has had a short rest.");
+				TellAll($"{ActivePlayer.firstName} has had a short rest.");
 			}
 			else
 			{
-				TellDungeonMaster("All players have had a short rest.");
+				TellAll("All players have had a short rest.");
 				game?.RechargePlayersAfterShortRest();
 				Rest(2);
 				TellDungeonMasterTheTime();
@@ -2366,11 +2419,11 @@ namespace DHDM
 				forcedWildMagicThisRoll = true;
 				PlayScene("DH.WildMagicRoll");
 				wildMagicRollTimer.Start();
-				TellDungeonMaster("It's a one! Need to roll wild magic!");
+				TellAll("It's a one! Need to roll wild magic!");
 			}
 			else
 			{
-				TellDungeonMaster($"Wild Magic roll: {individualRoll.value}.");
+				TellAll($"Wild Magic roll: {individualRoll.value}.");
 			}
 		}
 
@@ -2757,7 +2810,7 @@ namespace DHDM
 				return;
 			}
 
-			TellDungeonMaster("Initiative: ");
+			TellAll("Initiative: ");
 			int count = 1;
 			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 			{
@@ -2765,7 +2818,7 @@ namespace DHDM
 				string emoticon = GetPlayerEmoticon(playerRoll.playerId);
 				int rollValue = playerRoll.modifier + playerRoll.roll;
 				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.");
+				TellAll($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.");
 				count++;
 			}
 		}
@@ -2910,8 +2963,7 @@ namespace DHDM
 			message += additionalMessage;
 			if (!string.IsNullOrWhiteSpace(message))
 			{
-				TellDungeonMaster(message);
-				TellViewers(message);
+				TellAll(message);
 			}
 		}
 
@@ -3479,7 +3531,7 @@ namespace DHDM
 					TellDungeonMaster($"{Icons.WarningSign} Already in combat!");
 				else
 				{
-					TellDungeonMaster($"{Icons.EnteringCombat} Entering combat...");
+					TellAll($"{Icons.EnteringCombat} Entering combat...");
 					BtnEnterExitCombat_Click(null, null);
 				}
 			});
@@ -3492,7 +3544,7 @@ namespace DHDM
 					TellDungeonMaster($"{Icons.WarningSign} Already NOT in combat!");
 				else
 				{
-					TellDungeonMaster($"{Icons.ExitCombat} Exiting combat...");
+					TellAll($"{Icons.ExitCombat} Exiting combat...");
 					BtnEnterExitCombat_Click(null, null);
 				}
 			});
@@ -4352,14 +4404,19 @@ namespace DHDM
 				return;
 
 			History.Log(message);
-			if (JoinedChannel(DungeonMasterChannel))
-				dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+			SendMessage(message, DungeonMasterChannel);
+		}
+
+		private void SendMessage(string message, string channel)
+		{
+			if (JoinedChannel(channel))
+				dungeonMasterClient.SendMessage(channel, message);
 			else
 			{
 				try
 				{
-					dungeonMasterClient.JoinChannel(DungeonMasterChannel);
-					dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+					dungeonMasterClient.JoinChannel(channel);
+					dungeonMasterClient.SendMessage(channel, message);
 				}
 				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)
 				{
@@ -4368,8 +4425,8 @@ namespace DHDM
 					{
 						if (dungeonMasterClient == null)
 							return;
-						dungeonMasterClient.JoinChannel(DungeonMasterChannel);
-						dungeonMasterClient.SendMessage(DungeonMasterChannel, message);
+						dungeonMasterClient.JoinChannel(channel);
+						dungeonMasterClient.SendMessage(channel, message);
 					}
 					catch (Exception ex)
 					{
@@ -4385,17 +4442,21 @@ namespace DHDM
 
 		public void TellViewers(string message)
 		{
-			if (!JoinedChannel(DragonHumpersChannel))
-			{
-				try
-				{
-					dungeonMasterClient.JoinChannel(DragonHumpersChannel);
-					dungeonMasterClient.SendMessage(DragonHumpersChannel, message);
-				}
-				catch (Exception ex)
-				{
+			SendMessage(message, DragonHumpersChannel);
+		}
 
-				}
+		public void TellCodeRushed(string message)
+		{
+			SendMessage(message, CodeRushedChannel);
+		}
+
+		public void TellAll(string message)
+		{
+			TellDungeonMaster(message);
+			TellViewers(message);
+			if (System.Diagnostics.Debugger.IsAttached)
+			{
+				TellCodeRushed(message);
 			}
 		}
 
@@ -4430,7 +4491,7 @@ namespace DHDM
 			if (selectedItem == null)
 				return;
 			Spell spell = AllSpells.Get(selectedItem.name, player, lastSpellSlotTested);
-			player.PlayerConsidersCasting(new CastedSpell(spell, player));
+			player.PrepareSpell(new CastedSpell(spell, player));
 		}
 
 		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -4866,7 +4927,9 @@ namespace DHDM
 			spell.OnCast = latestSpell.OnCast;
 			spell.OnReceived = latestSpell.OnReceived;
 			spell.OnCasting = latestSpell.OnCasting;
+			spell.OnGetAttackAbility = latestSpell.OnGetAttackAbility;
 			spell.OnDispel = latestSpell.OnDispel;
+			spell.OnPlayerPreparesAttack = latestSpell.OnPlayerPreparesAttack;
 			spell.OnPlayerAttacks = latestSpell.OnPlayerAttacks;
 			spell.OnPlayerHitsTarget = latestSpell.OnPlayerHitsTarget;
 		}
@@ -5166,18 +5229,18 @@ namespace DHDM
 
 		private void TbDice_Drop(object sender, DragEventArgs e)
 		{
-			if (spellConsidered == null)
+			if (preparedSpell == null)
 				return;
 
 			ActivePlayer.ClearAllCasting();
-			ActivePlayer.spellTentativelyCasting = ActiveSpellData.FromCastedSpell(spellConsidered);
+			ActivePlayer.spellPrepared = ActiveSpellData.FromCastedSpell(preparedSpell);
 			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
 				return;
 
 			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
 			if (files.Length > 0)
-				AssignImageToSpell(files[0], spellConsidered.Spell.Name);
+				AssignImageToSpell(files[0], preparedSpell.Spell.Name);
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....
