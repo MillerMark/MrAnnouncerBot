@@ -140,17 +140,34 @@ namespace DHDM
 		private void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
 		{
 			List<string> weapons = new List<string>();
+			List<CarriedWeapon> filteredWeapons = new List<CarriedWeapon>();
+			int weaponNumber = 1;
+			string filterLower = null;
+			if (ea.WeaponFilter != null)
+				filterLower = ea.WeaponFilter.ToLower();
 			for (int i = 0; i < ea.Player.CarriedWeapons.Count; i++)
 			{
 				CarriedWeapon carriedWeapon = ea.Player.CarriedWeapons[i];
 				string weaponName = carriedWeapon.Name;
+				string weaponKind = carriedWeapon.Weapon.Name;
+				string weaponKindLower = weaponKind.ToLower();
+				if (!string.IsNullOrEmpty(filterLower))
+				{
+					if (!filterLower.Contains(weaponKindLower))
+						continue;
+				}
 				if (string.IsNullOrEmpty(weaponName))
-					weaponName = carriedWeapon.Weapon.Name;
-				weapons.Add($"{i + 1}: {weaponName}");
+					weaponName = weaponKind;
+				weapons.Add($"{weaponNumber}: {weaponName}");
+				filteredWeapons.Add(carriedWeapon);
+				weaponNumber++;
 			}
+
+			if (weapons.Count <= 0)
+				return;
 			int result = AskQuestion("Target which weapon: ", weapons);
 			if (result > 0)
-				ea.Weapon = ea.Player.CarriedWeapons[result - 1];
+				ea.Weapon = filteredWeapons[result - 1];
 		}
 
 		private void HookEvents()
@@ -1255,6 +1272,11 @@ namespace DHDM
 			}
 		}
 
+		void SetPlayerPropertiesBasedOnShortcut(PlayerActionShortcut actionShortcut, Character player)
+		{
+			player.TwoHanded = actionShortcut.HandsOnWeapon == HandsOnWeapon.Two;
+			UpdateAskUI(player);
+		}
 		private void ActivateShortcut(PlayerActionShortcut actionShortcut)
 		{
 			preparedSpell = null;
@@ -1262,6 +1284,8 @@ namespace DHDM
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			try
 			{
+				SetPlayerPropertiesBasedOnShortcut(actionShortcut, player);
+
 				if (ActivateShortcutForPlayer(actionShortcut, player) == ActionType.ModifiesExisting)
 					return;
 
@@ -1275,7 +1299,7 @@ namespace DHDM
 					}
 					else
 					{
-						currentRoll = DiceRoll.GetFrom(actionShortcut);
+						currentRoll = DiceRoll.GetFrom(actionShortcut, player);
 						TellDmWeAreReady(player, actionShortcut);
 						NextDieRollType = actionShortcut.Type;
 					}
@@ -1296,37 +1320,37 @@ namespace DHDM
 			}
 		}
 
-		private void ActivateShortcut_old(PlayerActionShortcut actionShortcut)
-		{
-			spellToCastOnRoll = null;
-			Character player = GetPlayer(actionShortcut.PlayerId);
-			try
-			{
-				if (ActivateShortcutForPlayer(actionShortcut, player) == ActionType.ModifiesExisting)
-					return;
+		//private void ActivateShortcut_old(PlayerActionShortcut actionShortcut)
+		//{
+		//	spellToCastOnRoll = null;
+		//	Character player = GetPlayer(actionShortcut.PlayerId);
+		//	try
+		//	{
+		//		if (ActivateShortcutForPlayer(actionShortcut, player) == ActionType.ModifiesExisting)
+		//			return;
 
-				settingInternally = true;
+		//		settingInternally = true;
 
-				try
-				{
-					HighlightPlayerShortcutUI(actionShortcut.Index);
-					SetControlUiFromShortcut(actionShortcut);
-					NextDieRollType = actionShortcut.Type;
-					SetActivePlayerVantageUI(actionShortcut.VantageMod);
-					RollInstantDiceIfNecessary(actionShortcut);
-				}
-				finally
-				{
-					settingInternally = false;
-					UpdateStateUIForPlayer(player);
-				}
-			}
-			finally
-			{
-				SetShortcutVisibility();
-				UpdateAskUI(player);
-			}
-		}
+		//		try
+		//		{
+		//			HighlightPlayerShortcutUI(actionShortcut.Index);
+		//			SetControlUiFromShortcut(actionShortcut);
+		//			NextDieRollType = actionShortcut.Type;
+		//			SetActivePlayerVantageUI(actionShortcut.VantageMod);
+		//			RollInstantDiceIfNecessary(actionShortcut);
+		//		}
+		//		finally
+		//		{
+		//			settingInternally = false;
+		//			UpdateStateUIForPlayer(player);
+		//		}
+		//	}
+		//	finally
+		//	{
+		//		SetShortcutVisibility();
+		//		UpdateAskUI(player);
+		//	}
+		//}
 
 		private void RollInstantDiceIfNecessary(PlayerActionShortcut actionShortcut)
 		{
@@ -1371,6 +1395,7 @@ namespace DHDM
 			}
 
 			ClearWeaponAndSpellEffects(player);
+
 			PlayerTakingAction(actionShortcut, player);
 
 			if (actionShortcut.Spell != null)
@@ -1393,10 +1418,18 @@ namespace DHDM
 
 		private void SetModifierUI(PlayerActionShortcut actionShortcut)
 		{
-			if (actionShortcut.ToHitModifier > 0)
-				tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
-			else
-				tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
+			settingInternally = true;
+			try
+			{
+				if (actionShortcut.ToHitModifier > 0)
+					tbxModifier.Text = "+" + actionShortcut.ToHitModifier.ToString();
+				else
+					tbxModifier.Text = actionShortcut.ToHitModifier.ToString();
+			}
+			finally
+			{
+				settingInternally = false;
+			}
 		}
 
 		private void AboutToTakePhysicalAction(PlayerActionShortcut actionShortcut, Character player)

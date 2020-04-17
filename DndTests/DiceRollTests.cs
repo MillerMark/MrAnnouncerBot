@@ -32,10 +32,10 @@ namespace DndTests
 			AllPlayers.Invalidate();
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
-			Character merkin = AllPlayers.GetFromId(PlayerID.Merkin);
+			Character merkin = AllPlayers.GetFromName("Merkin");
 			game.AddPlayer(merkin);
 
-			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(AllPlayers.GetPlayerIdFromName("Merkin"), "Chaos Bolt");
+			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(merkin.playerID, "Chaos Bolt");
 			Assert.AreEqual(3, actionShortcuts.Count);
 			DiceRoll chaosBoltLevel3 = DiceRoll.GetFrom(actionShortcuts[2]);
 			Assert.IsTrue(chaosBoltLevel3.IsMagic);
