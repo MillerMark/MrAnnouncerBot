@@ -128,7 +128,7 @@ namespace DndCore
 		}
 
 		// TODO: Put DiceRollType as a property on actionShortcut
-		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut)
+		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut, Character player = null)
 		{
 			DiceRoll diceRoll = new DiceRoll(actionShortcut.Type);
 			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
@@ -137,10 +137,34 @@ namespace DndCore
 			if (actionShortcut.HasInstantDice())
 				diceRoll.DamageHealthExtraDice = actionShortcut.InstantDice;
 			else
-				diceRoll.DamageHealthExtraDice = actionShortcut.Dice;
+			{
+				string modStr = "";
+				if (actionShortcut.DamageModifier > 0)
+					modStr = "+" + actionShortcut.DamageModifier.ToString();
+				else if (actionShortcut.DamageModifier < 0)
+					modStr = actionShortcut.DamageModifier.ToString();
+				diceRoll.DamageHealthExtraDice = actionShortcut.Dice + modStr;
+			}
+
+			string overrideReplaceDamageDice = null;
+			if (player != null)
+				overrideReplaceDamageDice = player.overrideReplaceDamageDice;
+			if (!string.IsNullOrEmpty(overrideReplaceDamageDice))
+			{
+				DieRollDetails originalRoll = DieRollDetails.From(diceRoll.DamageHealthExtraDice);
+				DieRollDetails replacementRoll = DieRollDetails.From(overrideReplaceDamageDice);
+				if (replacementRoll.FirstDescriptor == "()")
+					replacementRoll.FirstDescriptor = originalRoll.FirstDescriptor;
+
+				if (replacementRoll.FirstOffset == 0)
+					replacementRoll.FirstOffset = originalRoll.FirstOffset;
+
+				overrideReplaceDamageDice = replacementRoll.ToString();
+				diceRoll.DamageHealthExtraDice = overrideReplaceDamageDice;
+			}
 
 			diceRoll.DamageType = DamageType.None;  // Consider deprecating.
-			diceRoll.IsMagic = actionShortcut.UsesMagic || actionShortcut.Type == DiceRollType.WildMagicD20Check;
+			diceRoll.IsMagic = actionShortcut.UsesMagic || actionShortcut.Type == DiceRollType.WildMagicD20Check || player.usesMagicThisRoll;
 			diceRoll.MinDamage = actionShortcut.MinDamage;
 			diceRoll.Modifier = actionShortcut.ToHitModifier;
 			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;

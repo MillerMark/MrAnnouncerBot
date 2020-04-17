@@ -686,7 +686,7 @@ namespace DndUI
 			//character.equipment = 
 			character.experiencePoints = statExperiencePoints.ToInt();
 			//character.flyingSpeed = 
-			character.goldPieces = statGoldPieces.ToDouble();
+			character.goldPieces = statGoldPieces.ToDecimal();
 			character.hitPoints = statHitPoints.ToInt();
 			character.initiative = statInitiative.ToInt();
 			character.inspiration = statInspiration.Text;

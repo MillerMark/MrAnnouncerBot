@@ -15,6 +15,7 @@ namespace DndCore
 		public int FadeIn { get; set; }
 		public int FadeOut { get; set; }
 		public int Hue { get; set; }
+		public string HueStr { get; set; }
 		public int Saturation { get; set; }
 		public int Brightness { get; set; }
 		public string StartSound { get; set; }
@@ -48,6 +49,7 @@ namespace DndCore
 			result.Force = this.Force;
 			result.ForceAmount = this.ForceAmount;
 			result.Hue = this.Hue;
+			result.HueStr = this.HueStr;
 			result.Lifespan = this.Lifespan;
 			result.Name = this.Name;
 			result.Offset = this.Offset;
@@ -191,6 +193,7 @@ namespace DndCore
 			}
 			result.Lifespan = itemEffect.Lifespan;
 
+			result.HueStr = itemEffect.hue;
 			result.Hue = MathUtils.GetInt(itemEffect.hue);
 			result.Saturation = itemEffect.saturation;
 			result.Brightness = itemEffect.brightness;

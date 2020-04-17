@@ -66,7 +66,7 @@ namespace DndCore
 		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
 
 		public double flyingSpeed = 0;
-		public double goldPieces = 0;
+		public decimal goldPieces = 0;
 
 		public double hitPoints = 0;
 		public double initiative = 0;

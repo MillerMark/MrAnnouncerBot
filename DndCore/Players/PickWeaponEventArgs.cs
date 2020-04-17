@@ -7,8 +7,10 @@ namespace DndCore
 	{
 		public CarriedWeapon Weapon { get; set; }
 		public Character Player { get; set; }
-		public PickWeaponEventArgs(Character player)
+		public string WeaponFilter { get; set; }
+		public PickWeaponEventArgs(Character player, string weaponFilter)
 		{
+			WeaponFilter = weaponFilter;
 			Player = player;
 		}
 	}

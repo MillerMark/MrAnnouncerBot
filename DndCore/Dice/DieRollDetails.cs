@@ -48,6 +48,34 @@ namespace DndCore
 		public List<Roll> Rolls { get => rolls; set => rolls = value; }
 		public bool ImpactsTargetOnStartOfTurn { get; set; }
 
+		public string FirstDescriptor
+		{
+			get
+			{
+				return Rolls.FirstOrDefault()?.Descriptor;
+			}
+			set
+			{
+				Roll first = Rolls.FirstOrDefault();
+				if (first != null)
+					first.Descriptor = value;
+			}
+		}
+
+		public int FirstOffset
+		{
+			get
+			{
+				return (int)Rolls.FirstOrDefault()?.Offset;
+			}
+			set
+			{
+				Roll first = Rolls.FirstOrDefault();
+				if (first != null)
+					first.Offset = value;
+			}
+		}
+
 		public void AddRoll(string dieStr, int spellcastingAbilityModifier = int.MinValue)
 		{
 			if (string.IsNullOrEmpty(dieStr))

@@ -63,6 +63,9 @@ namespace DndCore
 		public List<string> additionalDice { get; set; } = new List<string>();
 
 		[JsonIgnore]
+		public string overrideReplaceDamageDice { get; set; } = string.Empty;
+
+		[JsonIgnore]
 		public string additionalDiceThisRoll = string.Empty;
 
 		[JsonIgnore]
@@ -888,6 +891,10 @@ namespace DndCore
 			additionalDice.Add(diceStr);
 			additionalDiceThisRoll = string.Join("; ", additionalDice);
 		}
+		public void ReplaceDamageDice(string diceStr)
+		{
+			overrideReplaceDamageDice = diceStr;
+		}
 
 		public void AddDieRollEffects(string dieRollEffects)
 		{
@@ -1254,6 +1261,7 @@ namespace DndCore
 		private void CheckForAttackingAbilityOverride()
 		{
 			OverrideAttackingAbility = Ability.none;
+			OverrideWeaponMagicHue = int.MinValue;
 			List<CastedSpell> activeSpells = GetActiveSpells();
 			foreach (CastedSpell castedSpell in activeSpells)
 			{
@@ -1803,6 +1811,7 @@ namespace DndCore
 			targetedCreatureHitPoints = 0;
 			hitWasCritical = false;
 			additionalDice = new List<string>();
+			overrideReplaceDamageDice = string.Empty;
 			additionalDiceThisRoll = string.Empty;
 			trailingEffectsThisRoll = string.Empty;
 			dieRollEffectsThisRoll = string.Empty;
@@ -2124,6 +2133,9 @@ namespace DndCore
 		[JsonIgnore]
 		public Ability OverrideAttackingAbility { get; set; }
 
+		[JsonIgnore]
+		public int OverrideWeaponMagicHue { get; set; } = int.MinValue;
+
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{
 			string varName = DndUtils.ToVarName(itemName);
@@ -2377,6 +2389,15 @@ namespace DndCore
 			stateChangedEventArgs.Add(fieldName, field, newValue, isRechargeable);
 			field = newValue;
 		}
+
+		void SetField(string fieldName, ref decimal field, decimal newValue, bool isRechargeable = false)
+		{
+			if (field == newValue)
+				return;
+			stateChangedEventArgs.Add(fieldName, field, newValue, isRechargeable);
+			field = newValue;
+		}
+
 		void SetField(string fieldName, ref int field, int newValue, bool isRechargeable = false)
 		{
 			if (field == newValue)
@@ -2620,9 +2641,9 @@ namespace DndCore
 			OnStateChanged(this, new StateChangedEventArgs("temporarySpells", null, null));
 		}
 
-		public void ChangeWealth(double deltaGoldPieces)
+		public void ChangeWealth(decimal deltaGoldPieces)
 		{
-			double oldValue = goldPieces;
+			decimal oldValue = goldPieces;
 			goldPieces += deltaGoldPieces;
 			// TODO: Add Debt to solve this so Debt and gold are both non negative.
 			if (goldPieces < 0)  // 
@@ -2639,9 +2660,9 @@ namespace DndCore
 			}
 		}
 
-		public CarriedWeapon ChooseWeapon()
+		public CarriedWeapon ChooseWeapon(string weaponFilter = null)
 		{
-			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this);
+			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this, weaponFilter);
 			OnPickWeapon(this, pickWeaponEventArgs);
 			return pickWeaponEventArgs.Weapon;
 		}

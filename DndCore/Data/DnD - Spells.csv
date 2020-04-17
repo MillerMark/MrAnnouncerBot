@@ -1498,12 +1498,21 @@ A nonmagical object that isn't being worn or carried also takes the damage if it
 Shield,1,abjuration,FALSE,"1 reaction, which you take when you are hit by an attack or targeted by the magic missile spell",Self,1 round,,,,,,,"AddSound(""Spells/Shield"");
 AddSpellHitEffect(""SparkBurst"", 180);",,,,,,,,1,,,,,,,,"An **invisible** barrier of magical force appears and protects you. Until the start of your next turn, you have a **+5 bonus** to **AC**, including against the triggering attack, and you take no damage from magic missile.",,FALSE,TRUE,TRUE,,sorcerer,wizard,,,,,,sorcerer,wizard,level1,,,,,
 Shield of Faith,1,abjuration,FALSE,1 bonus action,60 feet,"Concentration, up to 10 minutes",,,,,,,,,,,,,,,1,,,,,,,,"A shimmering field appears and surrounds a creature of your choice within range, granting it a **+2 bonus** to **AC** for the duration.",,TRUE,TRUE,TRUE,a small parchment with a bit of holy text written on it,cleric,paladin,,,,,,cleric,paladin,level1,,,,,
-Shillelagh,cantrip,transmutation,FALSE,1 bonus action,Touch,1 minute,,,,,,,"Set(spell_Target, GetWeaponTarget());
-","if (Get(spell_Target) == ReadiedWeapon)
+Shillelagh,cantrip,transmutation,FALSE,1 bonus action,Touch,1 minute,,,,,,,"Set(spell_Target, GetWeaponTarget(""Club;Quarterstaff""));
+if (Get(spell_Target) == null)
+  TellAll($""{firstName}'s Shillelagh failed because a suitable target weapon was not selected."");","if (spell_Target == ReadiedWeapon)
 {
   Set(OverrideAttackingAbility, spellCastingAbility);
+  Set(OverrideWeaponMagicHue, 160);
   TellAll($""{firstName} is attacking with {hisHer} Shillelagh-imbued weapon, using {hisHer} Spell Casting Ability ({spellCastingAbility}) to get a {SpellcastingAbilityModifierStr} modifier to the attack and damage rolls."");
-}",,,,,,,1,,,,,,,buff,"The wood of a club or a quarterstaff you are holding is imbued with nature's power. For the duration, you can use **your spellcasting ability** instead of Strength for the attack and damage rolls of melee attacks using that weapon, and the weapon's damage die becomes a d8 («1d8{SpellcastingAbilityModifierStr}»). The weapon also becomes magical, if it isn't already. The spell ends if you cast it again or if you let go of the weapon.",,TRUE,TRUE,TRUE,"mistletoe, a shamrock leaf, and a club or quarterstaff",druid,,,,,,,druid,cantrip,,,,,,
+}",,,"if (spell_Target == ReadiedWeapon)
+{
+  Set(usesMagicThisRoll, true);
+  if (TwoHanded == true)
+    ReplaceDamageDice(""1d10"");
+  else
+    ReplaceDamageDice(""1d8"");
+}",,,,1,,,,,,,buff,"The wood of a club or a quarterstaff you are holding is imbued with nature's power. For the duration, you can use **your spellcasting ability** instead of Strength for the attack and damage rolls of melee attacks using that weapon, and the weapon's damage die becomes a **d8** («1d8{SpellcastingAbilityModifierStr}») (or a **d10** if used two-handed). The weapon also becomes magical, if it isn't already. The spell ends if you cast it again or if you let go of the weapon.",,TRUE,TRUE,TRUE,"mistletoe, a shamrock leaf, and a club or quarterstaff",druid,,,,,,,druid,cantrip,,,,,,
 Shocking Grasp,cantrip,evocation,FALSE,1 action,Touch,Instantaneous,,,,,,,,,,,,,,,1,c-1,0.166667d8,damage,,1d8(lightning),,meiee,"Lightning springs from your hand to deliver a shock to a creature you try to touch. Make a melee spell attack against the target. You have **advantage** on the attack roll if the target is wearing armor made of metal. On a hit, the target takes {spell_DieStrRaw} **lightning damage**, and it can’t take reactions until the start of its next turn.","The spell’s damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8).",FALSE,TRUE,TRUE,,sorcerer,wizard,,,,,,sorcerer,wizard,cantrip,,,,,
 Silence,2,illusion,TRUE,1 action,120 feet,"Concentration, up to 10 minutes",,,,,,,,,,,,,,,1,,,,,,,,"For the duration, no sound can be created within or pass through a **20-foot** radius sphere centered on a point you choose within range. Any creature or object entirely inside the sphere is immune to **thunder damage**, and creatures are **deafened** while entirely inside it.",,FALSE,TRUE,TRUE,,bard,cleric,ranger,,,,,bard,cleric,ranger,level2,,,,
 Silent Image,1,illusion,FALSE,1 action,60 feet,"Concentration, up to 10 minutes",,,,,,,,,,,,,,,1,,,,,,,,"You create the image of an object, a creature, or some other visible phenomenon that is no larger than a **15-foot** cube. The image appears at a spot within range and lasts for the duration. The image is purely visual; it isn’t accompanied by sound, smell, or other sensory effects.

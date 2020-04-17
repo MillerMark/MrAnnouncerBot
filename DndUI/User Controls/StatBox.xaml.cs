@@ -238,5 +238,9 @@ namespace DndUI
 		{
 			return Text.ToDouble();
 		}
+		public decimal ToDecimal()
+		{
+			return Text.ToDecimal();
+		}
 	}
 }

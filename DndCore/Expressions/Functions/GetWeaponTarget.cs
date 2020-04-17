@@ -11,10 +11,14 @@ namespace DndCore
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target = null, CastedSpell spell = null)
 		{
-			ExpectingArguments(args, 0);
+			ExpectingArguments(args, 0, 1);
+
+			string weaponFilter = null;
+			if (args.Count > 0)
+				weaponFilter = Expressions.GetStr(args[0], player, target, spell);
 			if (player != null)
 			{
-				return player.ChooseWeapon();
+				return player.ChooseWeapon(weaponFilter);
 			}
 
 			return null;

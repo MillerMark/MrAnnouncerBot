@@ -12,6 +12,13 @@ namespace DndCore
 			return 0;
 		}
 
+		public static decimal ToDecimal(this string str)
+		{
+			if (decimal.TryParse(str.Trim(), out decimal result))
+				return result;
+			return 0;
+		}
+
 		public static int ToInt(this string str)
 		{
 			if (int.TryParse(str.Trim(), out int result))

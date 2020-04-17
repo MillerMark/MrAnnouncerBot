@@ -7,6 +7,7 @@ namespace DndCore
 {
 	public class PlayerActionShortcut
 	{
+		public HandsOnWeapon HandsOnWeapon { get; set; } = HandsOnWeapon.Zero;
 		public const string SpellWindupPrefix = "Spell.";
 		public const string WeaponWindupPrefix = "Weapon.";
 		public const string STR_OtherPrefix = "Other.";
@@ -117,6 +118,13 @@ namespace DndCore
 
 		void SetHueFromStr(WindupDto item, Character player, string hueStr)
 		{
+			if (item.Effect.EndsWith(".Magic") && player.OverrideWeaponMagicHue != int.MinValue)
+			{
+				item.Hue = player.OverrideWeaponMagicHue;
+				return;
+			}
+			if (hueStr == null)
+				hueStr = item.HueStr;
 			if (hueStr == null)
 				return;
 			string hueTrim = hueStr.Trim();
@@ -348,26 +356,27 @@ namespace DndCore
 				if ((weapon.weaponProperties & WeaponProperties.Melee) == WeaponProperties.Melee &&
 						(weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged)
 				{
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.One, player, weapon.damageOneHanded, " (1H Stabbed)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.Two, player, weapon.damageTwoHanded, " (2H Slice)", weapon.weaponProperties, AttackType.Melee));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.One, player, weapon.damageOneHanded, " (1H Thrown)", weapon.weaponProperties, AttackType.Range));
 				}
 				else
 				{
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
-					results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.One, player, weapon.damageOneHanded, " (1H)", weapon.weaponProperties));
+					results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.Two, player, weapon.damageTwoHanded, " (2H)", weapon.weaponProperties));
 				}
 
 			}
 			else if ((weapon.weaponProperties & WeaponProperties.TwoHanded) == WeaponProperties.TwoHanded)
-				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
+				results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.Two, player, weapon.damageTwoHanded, "", weapon.weaponProperties));
 			else
-				results.Add(FromWeapon(weapon.Name, shortcutDto, player, weapon.damageOneHanded, "", weapon.weaponProperties));
+				results.Add(FromWeapon(weapon.Name, shortcutDto, HandsOnWeapon.One, player, weapon.damageOneHanded, "", weapon.weaponProperties));
 		}
 
-		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, Character player, string weaponDamage = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
+		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, HandsOnWeapon handsOnWeapon, Character player, string weaponDamage = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
 			PlayerActionShortcut result = FromAction(shortcutDto, weaponDamage, suffix);
+			result.HandsOnWeapon = handsOnWeapon;
 			result.WeaponProperties = weaponProperties;
 
 			if (attackType == AttackType.None && weaponProperties != WeaponProperties.None)
@@ -402,6 +411,7 @@ namespace DndCore
 		{
 			AttackingAbilityModifier = player.GetAttackingAbilityModifier(WeaponProperties, AttackingType);
 			AttackingAbility = player.attackingAbility;
+
 		}
 
 		static void AddItemEffect(List<PlayerActionShortcut> shortcuts, ItemEffect itemEffect)

@@ -351,11 +351,8 @@ namespace DndCore
 				castedSpell.Target = player.ActiveTarget as Creature;
 			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
-			if (castingSpells.IndexOf(castedSpell) >= 0)
-				castingSpells.Remove(castedSpell);
-
-			if (activeSpells.IndexOf(castedSpell) >= 0)
-				activeSpells.Remove(castedSpell);
+			RemoveSpellFromCasting(castedSpell);
+			RemoveActiveSpell(castedSpell);
 
 			Spell spell = castedSpell.Spell;
 			if (spell.Duration.HasValue())
@@ -363,9 +360,27 @@ namespace DndCore
 				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, player.playerID), player, castedSpell);
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
-			
+
 			activeSpells.Add(castedSpell);
 			castedSpell.Cast();
+		}
+
+		private void RemoveActiveSpell(CastedSpell castedSpell)
+		{
+			if (activeSpells.IndexOf(castedSpell) >= 0)
+				activeSpells.Remove(castedSpell);
+			for (int i = activeSpells.Count - 1; i >= 0; i--)  // Counting backwards because we might be removing duplicate spells.
+			{
+				CastedSpell x = activeSpells[i];
+				if (x.Spell.Name == castedSpell.Spell.Name && x.SpellCaster == castedSpell.SpellCaster)
+					x.Dispel(castedSpell.SpellCaster); // Removes the spell if active.
+			}
+		}
+
+		private void RemoveSpellFromCasting(CastedSpell castedSpell)
+		{
+			if (castingSpells.IndexOf(castedSpell) >= 0)
+				castingSpells.Remove(castedSpell);
 		}
 
 		public void Dispel(CastedSpell castedSpell)
@@ -660,7 +675,7 @@ namespace DndCore
 			DndAlarm alarm = Clock.GetAlarm(GetSpellAlarmName(castedSpell.Spell, playerId));
 			return alarm != null;
 		}
-		void ChangeWealth(int playerId, double totalGold)
+		void ChangeWealth(int playerId, decimal totalGold)
 		{
 			Character player = GetPlayerFromId(playerId);
 			if (player == null)

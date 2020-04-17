@@ -7,7 +7,7 @@ Battleaxe,2,Windup,BattleAxe.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,,,,,,,,
 Shortsword,0,Windup,LongSword.Weapon,,x,player,,,,0.7,,,,,150,,,,,,,SwordDraw,SwordSlash
 Shortsword,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,0.7,,,,,150,,,,,,,,
 Shortsword,2,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,0.7,,,,,150,,,,,,,,
-Javelin,0,Windup,Javelin.Weapon,,x,,,,,,,,,,150,,,,,,,,
+Javelin,0,Windup,Javelin.Weapon,,x,,,,,,,,,,150,,,,,,,SwordDraw,SwordSlash
 Javelin,1,Windup,Javelin.Magic,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
 Dagger,0,Windup,LongSword.Weapon,,x,player,,,,0.35,,,,,150,,,,,,,,
 Dagger,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,,,,
@@ -30,3 +30,7 @@ Unich-er,1,Windup,LongSword.MagicA,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,
 Unich-er,2,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,,,,,,150,,,,,,,,
 Dagger of Warning,0,Windup,LongSword.Weapon,,x,player,,,,0.35,,,,,150,,,,,,,,
 Dagger of Warning,1,Windup,LongSword.MagicB,usesMagicThisRoll == true,x,,,,,0.35,,,,,150,,,,,,,,
+Quarterstaff,0,Windup,Javelin.Weapon,,x,,,,,0.8,,,,,150,,,,,,,SwordDraw,SwordSlash
+Quarterstaff,1,Windup,Javelin.Magic,usesMagicThisRoll == true,x,player,,,,0.8,,,,,150,,,,,,,,
+Club,0,Windup,Club.Weapon,,x,player,50,,,,,,,,150,,,,,,,SwordDraw,SwordSlash
+Club,1,Windup,Club.Magic,usesMagicThisRoll == true,x,player,,,,,,,,,150,,,,,,,,

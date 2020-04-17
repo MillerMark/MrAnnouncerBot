@@ -64,13 +64,26 @@ namespace DndTests
 		public void TestNegative41_99()
 		{
 			Coins coins = new Coins();
-			coins.SetFromGold(-41.99);
+			coins.SetFromGold(-41.99m);
 			Assert.AreEqual(-1, coins.NumGold);
 			Assert.AreEqual(-1, coins.NumElectrum);
 			Assert.AreEqual(-4, coins.NumSilver);
 			Assert.AreEqual(-9, coins.NumCopper);
 			Assert.AreEqual(-4, coins.NumPlatinum);
 		}
+
+		[TestMethod]
+		public void TestNegative29_99()
+		{
+			Coins coins = new Coins();
+			coins.SetFromGold(29.99m);
+			Assert.AreEqual(2, coins.NumPlatinum);
+			Assert.AreEqual(9, coins.NumGold);
+			Assert.AreEqual(1, coins.NumElectrum);
+			Assert.AreEqual(4, coins.NumSilver);
+			Assert.AreEqual(9, coins.NumCopper);
+		}
+
 
 		[TestMethod]
 		public void TestTotalGold()
@@ -81,7 +94,7 @@ namespace DndTests
 			coins.NumElectrum = 1;
 			coins.NumGold = 3;
 			coins.NumPlatinum = 5;
-			Assert.AreEqual(53.93, coins.TotalGold);
+			Assert.AreEqual(53.93m, coins.TotalGold);
 		}
 	}
 }

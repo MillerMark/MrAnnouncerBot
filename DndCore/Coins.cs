@@ -16,7 +16,7 @@ namespace DndCore
 			{
 				if (numGold == value)
 					return;
-				totalGold = double.NaN;
+				totalGold = decimal.MinValue;
 				numGold = value;
 			}
 		}
@@ -31,7 +31,7 @@ namespace DndCore
 			{
 				if (numSilver == value)
 					return;
-				totalGold = double.NaN;
+				totalGold = decimal.MinValue;
 				numSilver = value;
 			}
 		}
@@ -46,7 +46,7 @@ namespace DndCore
 			{
 				if (numCopper == value)
 					return;
-				totalGold = double.NaN;
+				totalGold = decimal.MinValue;
 				numCopper = value;
 			}
 		}
@@ -61,7 +61,7 @@ namespace DndCore
 			{
 				if (numElectrum == value)
 					return;
-				totalGold = double.NaN;
+				totalGold = decimal.MinValue;
 				numElectrum = value;
 			}
 		}
@@ -76,22 +76,23 @@ namespace DndCore
 			{
 				if (numPlatinum == value)
 					return;
-				totalGold = double.NaN;
+				totalGold = decimal.MinValue;
 				numPlatinum = value;
 			}
 		}
 
-		double totalGold = double.NaN;
-		public static double ConvertToGold(double numPlatinum, double numGold, double numElectrum, double numSilver, double numCopper)
+		decimal totalGold = decimal.MinValue;
+		public static decimal ConvertToGold(decimal numPlatinum, decimal numGold, decimal numElectrum, decimal numSilver, decimal numCopper)
 		{
-			double totalGold = numPlatinum * 10.0 + numGold + numElectrum / 2.0 + numSilver / 10.0 + numCopper / 100.0;
-			return totalGold;
+			return numPlatinum * 10.0m + numGold + numElectrum / 2.0m + numSilver / 10.0m + numCopper / 100.0m;
 		}
-		public double TotalGold
+
+		
+		public decimal TotalGold
 		{
 			get
 			{
-				if (double.IsNaN(totalGold))
+				if (totalGold == decimal.MinValue)
 					totalGold = ConvertToGold(NumPlatinum, NumGold, NumElectrum, NumSilver, NumCopper);
 				return totalGold;
 			}
@@ -111,13 +112,13 @@ namespace DndCore
 
 		public void SetFromText(string text)
 		{
-			if (!double.TryParse(text, out double result))
+			if (!decimal.TryParse(text, out decimal result))
 				return;
 
 			SetFromGold(result);
 		}
 
-		public void SetFromGold(double totalGold)
+		public void SetFromGold(decimal totalGold)
 		{
 			int multiplier = 1;
 			if (totalGold < 0)
