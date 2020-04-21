@@ -375,7 +375,7 @@ namespace DndCore
 
 		private static PlayerActionShortcut FromWeapon(string weaponName, PlayerActionShortcutDto shortcutDto, HandsOnWeapon handsOnWeapon, Character player, string weaponDamage = null, string suffix = "", WeaponProperties weaponProperties = WeaponProperties.None, AttackType attackType = AttackType.None)
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, weaponDamage, suffix);
+			PlayerActionShortcut result = FromAction(shortcutDto, weaponDamage, suffix, 0, player);
 			result.HandsOnWeapon = handsOnWeapon;
 			result.WeaponProperties = weaponProperties;
 
@@ -557,7 +557,8 @@ namespace DndCore
 
 		public static PlayerActionShortcut FromSpell(PlayerActionShortcutDto shortcutDto, Character player, Spell spell, int slotLevelOverride = 0, string damageStr = null, string suffix = "")
 		{
-			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix, slotLevelOverride);
+			PlayerActionShortcut result = FromAction(shortcutDto, damageStr, suffix, slotLevelOverride, player);
+			result.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 			result.ProcessDieStr(shortcutDto, damageStr);
 			result.Type = GetDiceRollType(GetDiceRollTypeStr(spell));
 			result.UsesMagic = true;
@@ -573,10 +574,14 @@ namespace DndCore
 			result.AddEffect(shortcutDto, SpellWindupPrefix, player, spellSlotLevel, isWindup);
 			if (!mustRollDiceToCast)
 				result.Type = DiceRollType.CastSimpleSpell;
+
+			if (player != null)
+				result.AttackingAbilityModifier = player.GetSpellcastingAbilityModifier();
+
 			return result;
 		}
 
-		public static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string weaponDamage = "", string suffix = "", int slotLevel = 0)
+		public static PlayerActionShortcut FromAction(PlayerActionShortcutDto shortcutDto, string weaponDamage = "", string suffix = "", int slotLevel = 0, Character player = null)
 		{
 			PlayerActionShortcut result = new PlayerActionShortcut();
 			result.WeaponDamage = weaponDamage;
@@ -591,7 +596,11 @@ namespace DndCore
 			result.Name = shortcutDto.name + suffix;
 
 			result.Part = GetTurnPart(shortcutDto.time);
-			result.PlayerId = AllPlayers.GetPlayerIdFromName(shortcutDto.player);
+			if (player != null)
+				result.PlayerId = player.playerID;
+			else
+				result.PlayerId = AllPlayers.GetPlayerIdFromName(shortcutDto.player);
+
 			result.Type = GetDiceRollType(shortcutDto.type);
 			result.VantageMod = DndUtils.ToVantage(shortcutDto.vantageMod);
 			result.ModifiesExistingRoll = MathUtils.IsChecked(shortcutDto.rollMod);

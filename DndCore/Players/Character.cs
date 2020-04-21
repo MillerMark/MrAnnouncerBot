@@ -141,6 +141,7 @@ namespace DndCore
 		public double load = 0;
 		public double proficiencyBonus = 0;
 		public Skills proficientSkills = 0;
+		public Skills halfProficiency = 0;
 
 		[JsonIgnore]
 		RecalcOptions queuedRecalcOptions = RecalcOptions.None;
@@ -766,10 +767,11 @@ namespace DndCore
 
 		public static Character From(CharacterDto characterDto)
 		{
-			var character = new Character();
+			Character character = new Character();
 			//character.playerID = AllPlayers.GetPlayerIdFromName(characterDto.name);
 			character.features = GetFeatures(characterDto.features, character);
 			character.name = characterDto.name;
+			character.playerShortcut = characterDto.playerShortcut;
 			character.playingNow = !string.IsNullOrWhiteSpace(characterDto.playingNow);
 			character.race = characterDto.race;
 			character.heShe = characterDto.heShe;
@@ -804,6 +806,7 @@ namespace DndCore
 			character.emoticon = characterDto.emoticon;
 			character.baseWalkingSpeed = characterDto.walking;
 			character.proficientSkills = DndUtils.ToSkill(characterDto.proficientSkills);
+			character.halfProficiency = DndUtils.ToSkill(characterDto.halfProficiency);
 			character.doubleProficiency = DndUtils.ToSkill(characterDto.doubleProficiency);
 			character.savingThrowProficiency = DndUtils.ToAbility(characterDto.savingThrowProficiency);
 			character.spellCastingAbility = DndUtils.ToAbility(characterDto.spellCastingAbility);
@@ -1208,6 +1211,8 @@ namespace DndCore
 
 		public List<CastedSpell> GetActiveSpells()
 		{
+			if (Game == null)
+				return null;
 			return Game.GetActiveSpells(this);
 		}
 
@@ -1263,10 +1268,11 @@ namespace DndCore
 			OverrideAttackingAbility = Ability.none;
 			OverrideWeaponMagicHue = int.MinValue;
 			List<CastedSpell> activeSpells = GetActiveSpells();
-			foreach (CastedSpell castedSpell in activeSpells)
-			{
-				castedSpell.Spell.TriggerGetAttackAbility(this, null, castedSpell);
-			}
+			if (activeSpells != null)
+				foreach (CastedSpell castedSpell in activeSpells)
+				{
+					castedSpell.Spell.TriggerGetAttackAbility(this, null, castedSpell);
+				}
 		}
 
 		public AssignedFeature GetFeature(string name)
@@ -1316,6 +1322,8 @@ namespace DndCore
 		{
 			if (hasDoubleProficiencyBonusForSkill(skill))
 				return 2;
+			if (hasHalfProficiencyBonusForSkill(skill))
+				return 0.5;
 			return 1;
 		}
 		public Vector GetRoomCoordinates()
@@ -1510,6 +1518,10 @@ namespace DndCore
 		{
 			return (doubleProficiency & skill) == skill;
 		}
+		bool hasHalfProficiencyBonusForSkill(Skills skill)
+		{
+			return (halfProficiency & skill) == skill;
+		}
 
 		/* 
 			savingThrowModStrength
@@ -1522,7 +1534,7 @@ namespace DndCore
 
 		bool hasProficiencyBonusForSkill(Skills skill)
 		{
-			return hasDoubleProficiencyBonusForSkill(skill) || (proficientSkills & skill) == skill;
+			return hasDoubleProficiencyBonusForSkill(skill) || (proficientSkills & skill) == skill || (halfProficiency & skill) == skill;
 		}
 
 		bool hasSavingThrowProficiency(Ability ability)
@@ -1909,7 +1921,10 @@ namespace DndCore
 		}
 		public bool SpellIsActive(string spellName)
 		{
-			return GetActiveSpells().FirstOrDefault(x => x.Spell.Name == spellName) != null;
+			List<CastedSpell> spells = GetActiveSpells();
+			if (spells == null)
+				return false;
+			return spells.FirstOrDefault(x => x.Spell.Name == spellName) != null;
 		}
 
 		public void StartAction()
@@ -2135,6 +2150,9 @@ namespace DndCore
 
 		[JsonIgnore]
 		public int OverrideWeaponMagicHue { get; set; } = int.MinValue;
+
+		[JsonIgnore]
+		public string playerShortcut { get; set; }
 
 		public void SetRemainingChargesOnItem(string itemName, int value)
 		{
@@ -2654,6 +2672,8 @@ namespace DndCore
 		public void AttackingNow(Creature targetCreature)
 		{
 			List<CastedSpell> activeSpells = GetActiveSpells();
+			if (activeSpells == null)
+				return;
 			foreach (CastedSpell castedSpell in activeSpells)
 			{
 				castedSpell.Spell.TriggerPlayerAttacks(this as Character, targetCreature, castedSpell);

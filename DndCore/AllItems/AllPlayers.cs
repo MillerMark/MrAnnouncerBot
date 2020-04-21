@@ -40,6 +40,10 @@ namespace DndCore
 
 		public static int GetPlayerIdFromName(List<Character> players, string characterName)
 		{
+			foreach (Character character in players)
+				if (character.playerShortcut == characterName)
+					return character.playerID;
+
 			if (characterName == "c")
 				characterName = "L'il Cutie";
 
@@ -53,7 +57,7 @@ namespace DndCore
 				{
 					return character.playerID;
 				}
-				
+
 			}
 			return -1;
 		}

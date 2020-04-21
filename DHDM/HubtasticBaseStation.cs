@@ -1,4 +1,5 @@
-﻿using DndUI;
+﻿using DndCore;
+using DndUI;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Linq;
@@ -9,13 +10,20 @@ namespace DHDM
 	public static class HubtasticBaseStation
 	{
 		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);
+		public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
+
 		static readonly object hubConnectionLock = new object();
 		static HubConnection hubConnection;
 		public static event DiceEventHandler DiceStoppedRolling;
+		public static event MessageEventHandler TellDungeonMaster;
 		public static event DiceEventHandler AllDiceDestroyed;
 		public static void OnDiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			DiceStoppedRolling?.Invoke(sender, ea);
+		}
+		public static void OnTellDM(object sender, MessageEventArgs ea)
+		{
+			TellDungeonMaster?.Invoke(sender, ea);
 		}
 
 		public static void OnAllDiceDestroyed(object sender, DiceEventArgs ea)
@@ -31,6 +39,10 @@ namespace DHDM
 
 			diceEventArgs.SetDiceData(diceData);
 			OnDiceStoppedRolling(null, diceEventArgs);
+		}
+		static void TellTheDungeonMaster(string message)
+		{
+			OnTellDM(null, new MessageEventArgs(message));
 		}
 		static void AllDiceHaveBeenDestroyed(string diceData)
 		{
@@ -57,6 +69,7 @@ namespace DHDM
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
 								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
 								hubConnection.On<string>("AllDiceHaveBeenDestroyed", AllDiceHaveBeenDestroyed);
+								hubConnection.On<string>("TellDM", TellTheDungeonMaster);
 								hubConnection.StartAsync();
 							}
 						}
@@ -164,6 +177,10 @@ namespace DHDM
 		public static void SendScrollLayerCommand(string commandData)
 		{
 			HubConnection.InvokeAsync("SendScrollLayerCommand", commandData);
+		}
+		public static void ExecuteSoundCommand(string commandData)
+		{
+			HubConnection.InvokeAsync("ExecuteSoundCommand", commandData);
 		}
 	}
 }

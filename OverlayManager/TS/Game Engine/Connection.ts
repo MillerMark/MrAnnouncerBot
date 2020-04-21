@@ -25,6 +25,7 @@ function connectToSignalR(signalR) {
     connection.on("RollDice", rollDice);
     connection.on("ClearDice", clearDice);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
+		connection.on("ExecuteSoundCommand", executeSoundCommand);
 		connection.on("PlayerDataChanged", playerDataChanged);
 		connection.on("MapDataChanged", mapDataChanged);
 		connection.on("SetPlayerData", initializePlayerData);
@@ -104,6 +105,12 @@ function initializePlayerData(playerData: string) {
 function sendScrollLayerCommand(commandData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.characterStatsScroll.sendScrollLayerCommand(commandData);
+	}
+}
+
+function executeSoundCommand(commandData: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.executeSoundCommand(commandData);
 	}
 }
 
@@ -259,4 +266,8 @@ function disarm(userId: string) {
 
 function fire(userId: string) {
   connection.invoke("Fire", userId);
+}
+
+function tellDM(message: string) {
+	connection.invoke("TellDM", message);
 }

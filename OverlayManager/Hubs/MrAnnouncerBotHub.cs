@@ -105,6 +105,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.SendScrollLayerCommand(commandData);
 		}
+		public void ExecuteSoundCommand(string commandData)
+		{
+			coderushedHub.Clients.All.ExecuteSoundCommand(commandData);
+		}
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)

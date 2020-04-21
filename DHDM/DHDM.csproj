@@ -287,6 +287,10 @@
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <Compile Include="FrameRateChangeData.cs" />
+    <Compile Include="SoundCommand.cs" />
+    <Compile Include="SoundCommandType.cs" />
+    <Compile Include="StreamDeck Commands\ChangeThemeCommand.cs" />
+    <Compile Include="StreamDeck Commands\ChangeThemeVolumeCommand.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />

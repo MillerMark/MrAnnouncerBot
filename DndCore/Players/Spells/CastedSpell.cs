@@ -66,5 +66,10 @@ namespace DndCore
 		{
 			player.Dispel(this);
 		}
+
+		public string GetSpellRawDieStr(string filter = null)
+		{
+			return Spell.GetSpellRawDieStr(filter);
+		}
 	}
 }

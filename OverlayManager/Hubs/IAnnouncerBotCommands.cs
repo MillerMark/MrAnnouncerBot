@@ -9,6 +9,7 @@ namespace OverlayManager.Hubs
 		Task AddCoins(string userID, int amount);
 		Task NeedToGetCoins(string userID);
 		Task DiceHaveStoppedRolling(string diceData);
+		Task TellDM(string message);
 		Task AllDiceHaveBeenDestroyed(string diceData);
 
 		Task Arm(string userID);
@@ -38,6 +39,7 @@ namespace OverlayManager.Hubs
 		Task ClearDice();
 		Task SetPlayerData(string playerData);
 		Task SendScrollLayerCommand(string commandData);
+		Task ExecuteSoundCommand(string commandData);
 
 	}
 }

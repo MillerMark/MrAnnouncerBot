@@ -2308,9 +2308,15 @@ namespace DHDM
 		{
 			HubtasticBaseStation.DiceStoppedRolling += HubtasticBaseStation_DiceStoppedRolling;
 			HubtasticBaseStation.AllDiceDestroyed += HubtasticBaseStation_AllDiceDestroyed;
+			HubtasticBaseStation.TellDungeonMaster += HubtasticBaseStation_TellDM;
 			OnCombatChanged();
 			UpdateClock();
 			StartRealTimeTimer();
+		}
+
+		private void HubtasticBaseStation_TellDM(object sender, MessageEventArgs ea)
+		{
+			TellDungeonMaster(ea.Message);
 		}
 
 		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
@@ -4861,9 +4867,9 @@ namespace DHDM
 		private void DamageContextTestAllMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.DamageOnly);
-			diceRoll.DamageHealthExtraDice = "1d20(fire),1d20(acid),1d20(cold),1d20(force),1d20(necrotic),1d20(piercing),1d20(bludgeoning),1d20(slashing),1d20(lightning),1d20(radiant),1d20(thunder)";
+			diceRoll.DamageHealthExtraDice = "1d12(fire),1d12(psychic),1d12(acid),1d12(cold),1d12(force),1d12(necrotic),1d12(piercing),1d12(bludgeoning),1d12(slashing),1d12(lightning),1d12(radiant),1d12(thunder)";
 			RollTheDice(diceRoll);
-			// 1d20(superiority),
+			// 1d12(superiority),
 		}
 
 		EventGroup activeEventGroup;
@@ -5220,6 +5226,28 @@ namespace DHDM
 		public int GetLastSpellSave()
 		{
 			return lastSpellSave;
+		}
+
+		public void SetThemeVolume(int newVolume)
+		{
+			SoundCommand soundCommand = new SoundCommand();
+			soundCommand.type = SoundCommandType.SetVolume;
+			soundCommand.numericData = newVolume;
+			Execute(soundCommand);
+		}
+
+		public void SetTheme(string newTheme)
+		{
+			SoundCommand soundCommand = new SoundCommand();
+			soundCommand.type = SoundCommandType.ChangeTheme;
+			soundCommand.strData = newTheme;
+			Execute(soundCommand);
+		}
+
+		private static void Execute(SoundCommand soundCommand)
+		{
+			string serializedObject = JsonConvert.SerializeObject(soundCommand);
+			HubtasticBaseStation.ExecuteSoundCommand(serializedObject);
 		}
 
 		private void LstAllSpells_Drop(object sender, DragEventArgs e)

@@ -942,9 +942,7 @@ Hunter's Mark,1,divination,FALSE,1 bonus action,90 feet,"Concentration, up to 1 
 Hypnotic Pattern,3,illusion,FALSE,1 action,120 feet,"Concentration, up to 1 minute",,,,,,,,,,,,,,,1,,,,,,Wisdom,,"You create a twisting pattern of colors that weaves through the air inside a **30-foot** cube within range. The pattern appears for a moment and vanishes. Each creature in the area who sees the pattern must make a **Wisdom** saving throw. On a failed save, the creature becomes **charmed** for the duration. While **charmed** by this spell, the creature is **incapacitated** and has a speed of 0.
 
 The spell ends for an affected creature if it takes any damage or if someone else uses an action to shake the creature out of its stupor.",,TRUE,TRUE,FALSE,a glowing stick of incense or a crystal vial filled with phosphorescent material,bard,sorcerer,warlock,wizard,,,,bard,sorcerer,warlock,wizard,level3,,,
-Ice Knife,1,conjuration,FALSE,1 action,60 feet,Instantaneous,,,,,,,,,,,,,,,1,1,1d6,damage,,1d10(piercing),Dexterity,ranged,"You create a shard of ice and fling it at one creature within range. Make a ranged spell attack against the target. On a hit, the target takes **1d10 piercing damage**. Hit or miss, the shard then explodes. The target and each creature within **5 feet** of the point where the ice exploded must succeed on a **Dexterity** saving throw or take **2d6 cold damage**.
-
-When you cast this spell using a spell slot of 2nd level or higher, the **cold damage** increases by **1d6** for each slot level above 1st.","When you cast this spell using a spell slot of 2nd level or higher, the cold damage increases by 1d6 for each slot level above 1st.",TRUE,TRUE,FALSE,a drop of water or piece of ice,druid,sorcerer,wizard,,,,,druid,sorcerer,wizard,level1,,,,
+Ice Knife,1,conjuration,FALSE,1 action,60 feet,Instantaneous,,,,,,,,,,,,,,,1,1,1d6(cold),damage,,"1d10(piercing),2d6(cold)",Dexterity,ranged,"You create a shard of ice and fling it at one creature within range. Make a ranged spell attack against the target. On a hit, the target takes **1d10 piercing damage**. Hit or miss, the shard then explodes. The target and each creature within **5 feet** of the point where the ice exploded must succeed on a **Dexterity** saving throw or take «{GetSpellRawDieStr(cold)}» **cold damage**.","When you cast this spell using a spell slot of 2nd level or higher, the cold damage increases by 1d6 for each slot level above 1st.",TRUE,TRUE,FALSE,a drop of water or piece of ice,druid,sorcerer,wizard,,,,,druid,sorcerer,wizard,level1,,,,
 Ice Storm,4,evocation,FALSE,1 action,300 feet,Instantaneous,,,,,,,,,,,,,,,1,4,1d8,damage,,"2d8(bludgeoning),4d6(cold)",Dexterity,,"A hail of rock-hard ice pounds to the ground in a **20-foot** radius, **40-foot** high cylinder centered on a point within range. Each creature in the cylinder must make a **Dexterity** saving throw. A creature takes **2d8 bludgeoning damage** and **4d6 cold damage** on a failed save, or half as much damage on a successful one.
 
 Hailstones turn the storm’s area of effect into difficult terrain until the end of your next turn.
@@ -1500,12 +1498,12 @@ AddSpellHitEffect(""SparkBurst"", 180);",,,,,,,,1,,,,,,,,"An **invisible** barri
 Shield of Faith,1,abjuration,FALSE,1 bonus action,60 feet,"Concentration, up to 10 minutes",,,,,,,,,,,,,,,1,,,,,,,,"A shimmering field appears and surrounds a creature of your choice within range, granting it a **+2 bonus** to **AC** for the duration.",,TRUE,TRUE,TRUE,a small parchment with a bit of holy text written on it,cleric,paladin,,,,,,cleric,paladin,level1,,,,,
 Shillelagh,cantrip,transmutation,FALSE,1 bonus action,Touch,1 minute,,,,,,,"Set(spell_Target, GetWeaponTarget(""Club;Quarterstaff""));
 if (Get(spell_Target) == null)
-  TellAll($""{firstName}'s Shillelagh failed because a suitable target weapon was not selected."");","if (spell_Target == ReadiedWeapon)
+  TellAll($""{firstName}'s Shillelagh failed because a suitable target weapon was not selected."");","if (Get(spell_Target) == ReadiedWeapon)
 {
   Set(OverrideAttackingAbility, spellCastingAbility);
   Set(OverrideWeaponMagicHue, 160);
   TellAll($""{firstName} is attacking with {hisHer} Shillelagh-imbued weapon, using {hisHer} Spell Casting Ability ({spellCastingAbility}) to get a {SpellcastingAbilityModifierStr} modifier to the attack and damage rolls."");
-}",,,"if (spell_Target == ReadiedWeapon)
+}",,,"if (Get(spell_Target) == ReadiedWeapon)
 {
   Set(usesMagicThisRoll, true);
   if (TwoHanded == true)

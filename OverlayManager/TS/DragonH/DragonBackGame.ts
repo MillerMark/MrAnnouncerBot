@@ -93,7 +93,7 @@ class DragonBackGame extends DragonGame {
 	//changePlayerWealth(playerWealthDto: string): void {
 	//}
 
-	
+
 
 	exitingCombat() {
 		this.sunMookDial.frameIndex = 0;
@@ -738,5 +738,12 @@ class DragonBackGame extends DragonGame {
 		return false;
 	}
 
+	executeSoundCommand(commandData: string): void {
+		let soundCommand: SoundCommand = JSON.parse(commandData);
+		if (soundCommand.type === SoundCommandType.ChangeTheme)
+			MusicPlayer.changeGenre(soundCommand.strData);
+		else if (soundCommand.type === SoundCommandType.SetVolume)
+			MusicPlayer.setVolumeTo(soundCommand.numericData);
+	}
 
 } 

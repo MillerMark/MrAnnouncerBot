@@ -113,7 +113,7 @@ namespace DndCore
 			AllShortcuts.Add(shortcut);
 		}
 
-		static void AddShortcutsFor(Character player)
+		public static void AddShortcutsFor(Character player)
 		{
 			if (!player.playingNow)
 				return;
@@ -129,6 +129,8 @@ namespace DndCore
 
 		static void AddFeatureShortcutsFor(Character player)
 		{
+			if (player.features == null)
+				return;
 			List<AssignedFeature> featuresRequiringActivation = player.features.Where(x => x.Feature.RequiresPlayerActivation).ToList();
 			foreach (AssignedFeature assignedFeature in featuresRequiringActivation)
 			{

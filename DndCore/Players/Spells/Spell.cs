@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace DndCore
 {
@@ -290,20 +291,7 @@ namespace DndCore
 		{
 			get
 			{
-				string workStr = DieStr;
-				if (workStr.StartsWith("^"))
-					workStr = workStr.Substring(1);
-				string[] dieStrs = workStr.Split(',');
-				for (int i = 0; i < dieStrs.Length; i++)
-				{
-					if (dieStrs[i].Contains("("))
-						dieStrs[i] = dieStrs[i].EverythingBefore("(").Trim();
-					else
-						dieStrs[i] = dieStrs[i].Trim();
-				}
-				string result = string.Join(" + ", dieStrs);
-
- 				return result;
+				return GetSpellRawDieStr();
 			}
 		}
 		
@@ -544,6 +532,28 @@ namespace DndCore
 			DndProperty.Set("data6", data6);
 			DndProperty.Set("data7", data7);
 			TriggerReceived(recipient, null, new CastedSpell(givenSpell, recipient));
+		}
+
+		public string GetSpellRawDieStr(string filter = null)
+		{
+			string workStr = DieStr;
+			if (workStr.StartsWith("^"))
+				workStr = workStr.Substring(1);
+			string[] dieStrs = workStr.Split(',');
+			List<string> results = new List<string>();
+			for (int i = 0; i < dieStrs.Length; i++)
+			{
+				if (dieStrs[i].Contains("("))
+				{
+					if (filter == null || dieStrs[i].Contains(filter))
+						results.Add(dieStrs[i].EverythingBefore("(").Trim());
+				}
+				else
+					results.Add(dieStrs[i].Trim());
+			}
+			string result = string.Join(" + ", results);
+
+			return result;
 		}
 	}
 }

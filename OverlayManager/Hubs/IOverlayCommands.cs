@@ -35,5 +35,6 @@ namespace OverlayManager.Hubs
 		Task ClearDice();
 		Task SetPlayerData(string playerData);
 		Task SendScrollLayerCommand(string commandData);
+		Task ExecuteSoundCommand(string commandData);
 	}
 }

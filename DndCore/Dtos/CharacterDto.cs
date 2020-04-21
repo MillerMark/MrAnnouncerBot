@@ -8,6 +8,7 @@ namespace DndCore
 		public string name { get; set; }
 		public string features { get; set; }
 		public string playingNow { get; set; }
+		public string playerShortcut { get; set; }
 		public string race { get; set; }
 		public string heShe { get; set; }
 		public string hisHer { get; set; }
@@ -32,6 +33,7 @@ namespace DndCore
 		public int proficiencyBonus { get; set; }
 		public int walking { get; set; }
 		public string proficientSkills { get; set; }
+		public string halfProficiency { get; set; }
 		public string emoticon { get; set; }
 		public string doubleProficiency { get; set; }
 		public string savingThrowProficiency { get; set; }

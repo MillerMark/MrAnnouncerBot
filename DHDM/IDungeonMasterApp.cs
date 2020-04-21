@@ -14,6 +14,8 @@ namespace DHDM
 		int GetPlayerIdFromName(string characterName);
 		int GetActivePlayerId();
 		int GetLastSpellSave();
+		void SetThemeVolume(int newVolume);
+		void SetTheme(string newTheme);
 		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
 		void RollWildMagicCheck();
 		void RollWildMagic();

@@ -1270,7 +1270,6 @@ class DroneGame extends GamePlusQuiz {
 	}
 }
 
-
 class Genre {
 	constructor(public name: string, public count: number) {
 
