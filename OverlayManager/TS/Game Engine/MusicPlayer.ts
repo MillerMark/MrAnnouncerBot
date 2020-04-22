@@ -57,6 +57,8 @@ class MusicPlayer {
 		MusicPlayer.addSongs('Battle', 42);
 		MusicPlayer.addSongs('Travel', 34);
 		MusicPlayer.addSongs('Suspense', 60);
+		MusicPlayer.addSongs('TestBattle', 10);
+		MusicPlayer.addSongs('TestSuspense', 10);
 	}
 
 	private static changeActiveGenre(newGenre: string): void {
@@ -82,6 +84,7 @@ class MusicPlayer {
 		if (MusicPlayer.thisMusicPlayer) {
 			MusicPlayer.thisMusicPlayer.cancelFutureSongs();
 			MusicPlayer.thisMusicPlayer.expirationDate = performance.now() + MusicPlayer.crossFadeTime;
+			MusicPlayer.nextMusicPlayer.playRandomSong();
 		}
 		else {
 			MusicPlayer.thisMusicPlayer = MusicPlayer.nextMusicPlayer;
