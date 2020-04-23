@@ -3057,6 +3057,7 @@ namespace DHDM
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
+				ChangeThemeMusic("Battle");
 				ckbUseMagic.IsChecked = false;
 				game.EnteringCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
@@ -3064,11 +3065,20 @@ namespace DHDM
 			}
 			else
 			{
+				ChangeThemeMusic("Travel");
 				game.ExitingCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
 			}
 
 			OnCombatChanged();
+		}
+
+		private static void ChangeThemeMusic(string theme)
+		{
+			SoundCommand soundCommand = new SoundCommand();
+			soundCommand.strData = theme;
+			soundCommand.type = SoundCommandType.ChangeTheme;
+			Execute(soundCommand);
 		}
 
 		private void OnCombatChanged()

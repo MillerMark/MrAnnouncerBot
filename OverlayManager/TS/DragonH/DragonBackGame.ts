@@ -160,6 +160,7 @@ class DragonBackGame extends DragonGame {
 	update(timestamp: number) {
 		this.updateGravity();
 		super.update(timestamp);
+		MusicPlayer.updateMusicPlayers(timestamp);
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {

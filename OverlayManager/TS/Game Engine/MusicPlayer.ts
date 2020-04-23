@@ -10,9 +10,16 @@ enum SoundCommandType {
 	//ChangeLocationAmbience
 }
 
+enum SongState {
+	fadingIn,
+	playingNormal,
+	fadingOut,
+	finishedPlaying
+}
+
 class SoundCommand {
 	constructor(public type: SoundCommandType, public numericData: number, public strData: string) {
-		
+
 	}
 }
 
@@ -24,7 +31,7 @@ class Theme {
 
 class MusicPlayer {
 	static themes: Array<Theme> = [];
-	static activeGenre: string;
+	static activeGenre: string = 'Travel';
 	static activeSongCount: number;
 	static volume: number = 2;
 	static saveVolume: number = 0;
@@ -34,6 +41,7 @@ class MusicPlayer {
 	static nextMusicPlayer: MusicPlayer;
 	static thisMusicPlayer: MusicPlayer;
 
+	state: SongState;
 	fadeInTime: number = MusicPlayer.crossFadeTime;
 	fadeOutTime: number = MusicPlayer.crossFadeTime;
 	expirationDate: number;
@@ -45,9 +53,8 @@ class MusicPlayer {
 	static suppressingVolumeEnds: number;
 	timeStart: number;
 
-	constructor(genre: string) {
+	constructor() {
 		this.timeStart = performance.now();
-		MusicPlayer.changeActiveGenre(genre);
 		const minSecondsToPlay: number = 10;
 		this.expirationDate = this.timeStart + minSecondsToPlay * 1000 + this.fadeOutTime;
 	}
@@ -67,6 +74,11 @@ class MusicPlayer {
 				MusicPlayer.activeGenre = theme.name;
 				MusicPlayer.activeSongCount = theme.count;
 				tellDM(`Switching theme music to ${MusicPlayer.activeGenre}...`);
+				if (!MusicPlayer.thisMusicPlayer && !MusicPlayer.nextMusicPlayer) {
+					MusicPlayer.thisMusicPlayer = new MusicPlayer();
+					MusicPlayer.thisMusicPlayer.playRandomSong();
+				}
+				return;
 			}
 		}, this);
 	}
@@ -76,18 +88,19 @@ class MusicPlayer {
 		// Cross-fade songs now. That means create a second MusicPlayer and expire the current song.
 		if (MusicPlayer.nextMusicPlayer) {
 			MusicPlayer.nextMusicPlayer.pauseActiveSong();
-			MusicPlayer.nextMusicPlayer.cancelFutureSongs();
 		}
 
-		MusicPlayer.nextMusicPlayer = new MusicPlayer(newGenre);
-
 		if (MusicPlayer.thisMusicPlayer) {
-			MusicPlayer.thisMusicPlayer.cancelFutureSongs();
 			MusicPlayer.thisMusicPlayer.expirationDate = performance.now() + MusicPlayer.crossFadeTime;
+
+			MusicPlayer.nextMusicPlayer = new MusicPlayer();
 			MusicPlayer.nextMusicPlayer.playRandomSong();
 		}
 		else {
 			MusicPlayer.thisMusicPlayer = MusicPlayer.nextMusicPlayer;
+			if (!MusicPlayer.thisMusicPlayer)
+				MusicPlayer.thisMusicPlayer = new MusicPlayer();
+
 			MusicPlayer.thisMusicPlayer.playRandomSong();
 			MusicPlayer.nextMusicPlayer = null;
 		}
@@ -171,6 +184,36 @@ class MusicPlayer {
 		MusicPlayer.themes.push(new Theme(theme, count));
 	}
 
+	static updateMusicPlayers(now: number) {
+		let thisPlayer: MusicPlayer = MusicPlayer.thisMusicPlayer;
+		if (thisPlayer) {
+			thisPlayer.update(now);
+			if (thisPlayer.state === SongState.playingNormal && MusicPlayer.nextMusicPlayer) {
+				MusicPlayer.nextMusicPlayer.pauseActiveSong();
+				MusicPlayer.nextMusicPlayer = null;  // next player is null as long as this song is normally playing.
+			}
+			if (thisPlayer.state === SongState.fadingOut && MusicPlayer.nextMusicPlayer === null) {
+				MusicPlayer.nextMusicPlayer = new MusicPlayer();
+				MusicPlayer.nextMusicPlayer.playRandomSong();
+			}
+			if (thisPlayer.state === SongState.finishedPlaying) {
+				MusicPlayer.thisMusicPlayer = MusicPlayer.nextMusicPlayer;
+				if (!MusicPlayer.thisMusicPlayer || MusicPlayer.thisMusicPlayer.state == SongState.finishedPlaying)
+					MusicPlayer.thisMusicPlayer = new MusicPlayer();
+				MusicPlayer.nextMusicPlayer = null;
+			}
+		}
+		if (MusicPlayer.nextMusicPlayer) {
+			MusicPlayer.nextMusicPlayer.update(now);
+			if (MusicPlayer.nextMusicPlayer.state !== SongState.fadingIn) {
+				if (thisPlayer)
+					thisPlayer.pauseActiveSong();
+				MusicPlayer.thisMusicPlayer = MusicPlayer.nextMusicPlayer;
+				MusicPlayer.nextMusicPlayer = null;
+			}
+		}
+	}
+
 	playRandomSong() {
 		const fiveMinutes: number = 5 * 60 * 1000;
 		let index: number = Random.intBetween(1, MusicPlayer.activeSongCount);
@@ -192,31 +235,14 @@ class MusicPlayer {
 
 		this.setVolumeForActiveSong();
 
-		this.cancelFutureSongs();
-
 		this.activeSong.addEventListener('loadedmetadata', function () {
+			console.log(`${fileName} duration: ` + this.activeSong.duration);
 			let durationSec: number = this.activeSong.duration * 1000;
 			this.expirationDate = this.timeStart + durationSec;
-			this.activeTimeout = setTimeout(this.playNextSong.bind(this), durationSec - MusicPlayer.crossFadeTime);
 		}.bind(this), false);
 	}
 
-	cancelFutureSongs(): any {
-		if (this.activeTimeout) {
-			clearTimeout(this.activeTimeout);
-			this.activeTimeout = null;
-		}
-	}
-
-	activeTimeout: any;
-
-	// for interrupting an existing song.
-	playNextSong() {
-		MusicPlayer.nextMusicPlayer = new MusicPlayer(MusicPlayer.activeGenre);
-		MusicPlayer.nextMusicPlayer.playRandomSong();
-	}
-
-	private isFadingOut(lifeRemaining: number): boolean {
+	private isInFadeOut(lifeRemaining: number): boolean {
 		return lifeRemaining < this.fadeOutTime;
 	}
 
@@ -229,25 +255,32 @@ class MusicPlayer {
 		return lifeRemaining;
 	}
 
-	// TODO: consolidate duplication with similar function in AnimatedElement.
-	getFadeMultiplier(now: number): number {
+	getVolumeMultiplier(now: number): number {
 		let msAlive: number = now - this.timeStart;
 
-		if (msAlive < this.fadeInTime)
+		if (msAlive < this.fadeInTime) {
+			this.state = SongState.fadingIn;
 			return msAlive / this.fadeInTime;
-
-		if (!this.expirationDate)
-			return 1;
-
-		let lifeRemaining: number = this.getLifeRemaining(now);
-		if (this.isFadingOut(lifeRemaining)) {
-			return lifeRemaining / this.fadeOutTime;
 		}
+
+		if (this.expirationDate) {
+			let lifeRemaining: number = this.getLifeRemaining(now);
+			if (lifeRemaining < 0) {
+				this.state = SongState.finishedPlaying;
+				return 0;
+			}
+			if (this.isInFadeOut(lifeRemaining)) {
+				this.state = SongState.fadingOut;
+				return lifeRemaining / this.fadeOutTime;
+			}
+		}
+
+		this.state = SongState.playingNormal;
 		return 1;
 	}
 
 	update(now: number): void {
-		let newFadeVolumeMultiplier: number = Math.round(this.getFadeMultiplier(now) * 10) / 10;
+		let newFadeVolumeMultiplier: number = Math.round(this.getVolumeMultiplier(now) * 10) / 10;
 		if (newFadeVolumeMultiplier != this.fadeVolumeMultiplier) {
 			this.fadeVolumeMultiplier = newFadeVolumeMultiplier;
 			this.setVolumeForActiveSong();
