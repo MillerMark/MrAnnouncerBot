@@ -2841,6 +2841,7 @@ namespace DHDM
 				return string.Empty;
 			return player.emoticon;
 		}
+		List<string> lastCombatInitiativeResults = new List<string>();
 		void ReportInitiativeResults(DiceEventArgs ea)
 		{
 			if (ea.StopRollingData.multiplayerSummary == null)
@@ -2850,6 +2851,7 @@ namespace DHDM
 			}
 
 			TellAll("Initiative: ");
+			lastCombatInitiativeResults.Clear();
 			int count = 1;
 			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 			{
@@ -2857,7 +2859,9 @@ namespace DHDM
 				string emoticon = GetPlayerEmoticon(playerRoll.playerId);
 				int rollValue = playerRoll.modifier + playerRoll.roll;
 				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-				TellAll($"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.");
+				string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.";
+				lastCombatInitiativeResults.Add(initiativeLine);
+				TellAll(initiativeLine);
 				count++;
 			}
 		}
@@ -3075,9 +3079,9 @@ namespace DHDM
 
 		private static void ChangeThemeMusic(string theme)
 		{
-			SoundCommand soundCommand = new SoundCommand();
+			SoundCommand soundCommand = new SoundCommand(SoundPlayerFolders.Music);
 			soundCommand.strData = theme;
-			soundCommand.type = SoundCommandType.ChangeTheme;
+			soundCommand.type = SoundCommandType.ChangeFolder;
 			Execute(soundCommand);
 		}
 
@@ -3572,12 +3576,23 @@ namespace DHDM
 			});
 		}
 
+		void ReportLastInitiativeResults()
+		{
+			foreach (string initiativeResult in lastCombatInitiativeResults)
+			{
+				TellDungeonMaster(initiativeResult);
+			}
+		}
+
 		void EnterCombat()
 		{
 			Dispatcher.Invoke(() =>
 			{
 				if (game.Clock.InCombat)
+				{
 					TellDungeonMaster($"{Icons.WarningSign} Already in combat!");
+					ReportLastInitiativeResults();
+				}
 				else
 				{
 					TellAll($"{Icons.EnteringCombat} Entering combat...");
@@ -4438,6 +4453,11 @@ namespace DHDM
 			TellDungeonMaster(dmMessage);
 		}
 
+		public void PlaySound(string soundFileName)
+		{
+			HubtasticBaseStation.PlaySound(soundFileName);
+		}
+
 		public void Speak(int playerId, string message)
 		{
 			Dispatcher.Invoke(() =>
@@ -5238,18 +5258,25 @@ namespace DHDM
 			return lastSpellSave;
 		}
 
-		public void SetThemeVolume(int newVolume)
+		public void StopPlayer(string mainFolder)
 		{
-			SoundCommand soundCommand = new SoundCommand();
+			SoundCommand soundCommand = new SoundCommand(mainFolder);
+			soundCommand.type = SoundCommandType.StopPlaying;
+			Execute(soundCommand);
+		}
+
+		public void SetPlayerVolume(string mainFolder, int newVolume)
+		{
+			SoundCommand soundCommand = new SoundCommand(mainFolder);
 			soundCommand.type = SoundCommandType.SetVolume;
 			soundCommand.numericData = newVolume;
 			Execute(soundCommand);
 		}
 
-		public void SetTheme(string newTheme)
+		public void SetPlayerFolder(string mainFolder, string newTheme)
 		{
-			SoundCommand soundCommand = new SoundCommand();
-			soundCommand.type = SoundCommandType.ChangeTheme;
+			SoundCommand soundCommand = new SoundCommand(mainFolder);
+			soundCommand.type = SoundCommandType.ChangeFolder;
 			soundCommand.strData = newTheme;
 			Execute(soundCommand);
 		}

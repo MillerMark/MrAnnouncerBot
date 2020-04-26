@@ -1228,7 +1228,8 @@ class DragonFrontGame extends DragonGame {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
 		context.fillStyle = '#ffffff';
-		context.font = '31px Blackadder ITC';
+		//context.font = '31px Blackadder ITC';
+		context.font = '31px Enchanted Land';
 
 		if (!player)
 			return;

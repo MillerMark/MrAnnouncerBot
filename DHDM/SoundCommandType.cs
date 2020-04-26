@@ -10,7 +10,8 @@ namespace DHDM
 		VolumeDown,
 		SetVolume,
 		SuppressVolume,
-		ChangeTheme,
+		ChangeFolder,
+		StopPlaying
 		//PlaySoundFile,
 		//ChangeWeather,
 		//ChangeLocationAmbience

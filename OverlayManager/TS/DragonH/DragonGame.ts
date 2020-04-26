@@ -316,8 +316,6 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 
-
-
 	private _inCombat: boolean;
 
 	get inCombat(): boolean {

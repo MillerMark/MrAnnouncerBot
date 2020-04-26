@@ -79,6 +79,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.TriggerEffect(effectData);
 		}
 
+		public void PlaySound(string soundFileName)
+		{
+			coderushedHub.Clients.All.PlaySound(soundFileName);
+		}
+
 		public void AnimateSprinkles(string commandData)
 		{
 			coderushedHub.Clients.All.AnimateSprinkles(commandData);

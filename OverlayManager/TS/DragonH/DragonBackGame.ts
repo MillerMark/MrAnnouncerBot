@@ -25,7 +25,12 @@ class DragonBackGame extends DragonGame {
 		this.sprinkles.dragonSharedSounds = this.dragonBackSounds;
 	}
 
-	animateSprinkles(commandData: string): any {
+
+	playSound(soundFileName: string): void {
+		this.dragonBackSounds.safePlayMp3('SFX for DMs/' + soundFileName);
+	}
+
+	animateSprinkles(commandData: string): void {
 		this.sprinkles.executeCommand(commandData, performance.now());
 	}
 
@@ -160,7 +165,7 @@ class DragonBackGame extends DragonGame {
 	update(timestamp: number) {
 		this.updateGravity();
 		super.update(timestamp);
-		MusicPlayer.updateMusicPlayers(timestamp);
+		CrossfadePlayer.updateMusicPlayers(timestamp);
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, now: number) {
@@ -741,10 +746,12 @@ class DragonBackGame extends DragonGame {
 
 	executeSoundCommand(commandData: string): void {
 		let soundCommand: SoundCommand = JSON.parse(commandData);
-		if (soundCommand.type === SoundCommandType.ChangeTheme)
-			MusicPlayer.changeGenre(soundCommand.strData);
+		if (soundCommand.type === SoundCommandType.ChangeFolder)
+			CrossfadePlayer.changePlayerFolder(soundCommand.mainFolder, soundCommand.strData);
 		else if (soundCommand.type === SoundCommandType.SetVolume)
-			MusicPlayer.setVolumeTo(soundCommand.numericData);
+			CrossfadePlayer.setVolumeTo(soundCommand.mainFolder, soundCommand.numericData);
+		else if (soundCommand.type === SoundCommandType.StopPlaying)
+			CrossfadePlayer.stopPlayer(soundCommand.mainFolder);
 	}
 
 } 

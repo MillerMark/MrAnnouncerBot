@@ -176,6 +176,13 @@ function init() { // From Rolling.html example.
 				color: 0xA00050
 			});
 
+	const tealWallMaterial =
+		// @ts-ignore - THREE
+		new THREE.MeshLambertMaterial(
+			{
+				color: 0x00de7b
+			});
+
 	const blueWallMaterial =
 		// @ts-ignore - THREE
 		new THREE.MeshLambertMaterial(
@@ -183,9 +190,9 @@ function init() { // From Rolling.html example.
 				color: 0x2000C0
 			});
 
-	const wallHeight = 48;
-	const leftWallHeight = 48;
-	const topWallHeight = 96;
+	const wallHeight = 68;
+	const leftWallHeight = 68;
+	const topWallHeight = 146;
 
 	const wallThickness = 1;
 	const leftWallWidth = 80;
@@ -195,8 +202,8 @@ function init() { // From Rolling.html example.
 	const dmLeftWallX = 13;
 	const dmLeftWallZ = -26;
 
-	const topWallWidth = 50;
-	const topWallZ = -12.5;
+	const topWallWidth = 80;
+	const topWallZ = -10.5;
 
 	const playerTopWallWidth = 38;
 	const playerTopWallZ = 5;
@@ -222,7 +229,7 @@ function init() { // From Rolling.html example.
 		scene.add(leftWall);
 
 		// @ts-ignore - THREE
-		const topWall = new THREE.Mesh(new THREE.BoxGeometry(topWallWidth, topWallHeight, wallThickness), redWallMaterial);
+		const topWall = new THREE.Mesh(new THREE.BoxGeometry(topWallWidth, topWallHeight, wallThickness), tealWallMaterial);
 		topWall.position.z = topWallZ;
 		// @ts-ignore - THREE
 		topWall.rotateOnAxis(new THREE.Vector3(1, 0, 0), -45)

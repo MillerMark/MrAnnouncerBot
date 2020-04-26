@@ -5,21 +5,20 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class ChangeThemeCommand : BaseStreamDeckCommand, IDungeonMasterCommand
+	public class StopPlaying : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		string newTheme;
-
+		string mainFolder;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.SetTheme(newTheme);
+			dungeonMasterApp.StopPlayer(mainFolder);
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, @"^ChangeTheme\s+(\w+)");
+			Match match = Regex.Match(message, @"^StopPlaying\s+(\w+)");
 			if (match.Success)
 			{
-				newTheme = match.Groups[1].Value;
+				mainFolder = match.Groups[1].Value;
 				return true;
 			}
 			return false;

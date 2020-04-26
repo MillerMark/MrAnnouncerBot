@@ -33,12 +33,14 @@ namespace DHDM
 			Commands.Clear();
 			Commands.Add(new PlayerSelectorCommand());
 			Commands.Add(new PlaySceneCommand());
+			Commands.Add(new StopPlaying());
+			Commands.Add(new PlaySoundCommand());
 			Commands.Add(new HealthDamageCommand());
 			Commands.Add(new ScrollCloseCommand());
 			Commands.Add(new SkillCheckCommand());
 			Commands.Add(new SavingThrowCommand());
-			Commands.Add(new ChangeThemeVolumeCommand());
-			Commands.Add(new ChangeThemeCommand());
+			Commands.Add(new ChangeVolumeCommand());
+			Commands.Add(new ChangeCommand());
 			Commands.Add(new SetPropertyCommand());
 			Commands.Add(new AdvanceClockCommand());
 			Commands.Add(new SelectShortcutCommand());

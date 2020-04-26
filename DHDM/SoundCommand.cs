@@ -7,10 +7,11 @@ namespace DHDM
 	{
 		public SoundCommandType type { get; set; }
 		public string strData { get; set; }
+		public string mainFolder { get; set; }
 		public double numericData { get; set; }
-		public SoundCommand()
+		public SoundCommand(string mainFolder = "")
 		{
-
+			this.mainFolder = mainFolder;
 		}
 	}
 }

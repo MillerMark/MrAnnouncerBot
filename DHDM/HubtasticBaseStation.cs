@@ -150,6 +150,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("TriggerEffect", effectData);
 		}
 
+		public static void PlaySound(string soundFileName)
+		{
+			HubConnection.InvokeAsync("PlaySound", soundFileName);
+		}
+
 		public static void AnimateSprinkles(string commandData)
 		{
 			HubConnection.InvokeAsync("AnimateSprinkles", commandData);

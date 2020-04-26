@@ -289,8 +289,9 @@
     <Compile Include="FrameRateChangeData.cs" />
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
-    <Compile Include="StreamDeck Commands\ChangeThemeCommand.cs" />
-    <Compile Include="StreamDeck Commands\ChangeThemeVolumeCommand.cs" />
+    <Compile Include="SoundPlayerFolders.cs" />
+    <Compile Include="StreamDeck Commands\ChangeCommand.cs" />
+    <Compile Include="StreamDeck Commands\ChangeVolumeCommand.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />
@@ -322,6 +323,7 @@
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />
     <Compile Include="StreamDeck Commands\PlaySceneCommand.cs" />
+    <Compile Include="StreamDeck Commands\PlaySoundCommand.cs" />
     <Compile Include="StreamDeck Commands\RollDiceCommand.cs" />
     <Compile Include="StreamDeck Commands\RollSaveCommand.cs" />
     <Compile Include="StreamDeck Commands\SavingThrowCommand.cs" />
@@ -333,6 +335,7 @@
     <Compile Include="ShortcutButton.cs" />
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
+    <Compile Include="StreamDeck Commands\StopPlaying.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

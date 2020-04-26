@@ -7,23 +7,24 @@ function connectToSignalR(signalR) {
 	window.onload = function () {
 		console.log('signalR loaded...');
 		connection.start().catch(err => console.error(err.toString()));
-    connection.on("ExecuteCommand", executeCommand);
+		connection.on("ExecuteCommand", executeCommand);
 		connection.on("ChangePlayerHealth", changePlayerHealth);
 		connection.on("changePlayerWealth", changePlayerWealth);
 		connection.on("ChangeFrameRate", changeFrameRate);
-    connection.on("UserHasCoins", userHasCoins);
+		connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
-    connection.on("FocusItem", focusItem);
-    connection.on("UnfocusItem", unfocusItem);
-    connection.on("AddWindup", addWindup);
-    connection.on("CastSpell", castSpell);
-    connection.on("ClearWindup", clearWindup);
+		connection.on("FocusItem", focusItem);
+		connection.on("UnfocusItem", unfocusItem);
+		connection.on("AddWindup", addWindup);
+		connection.on("CastSpell", castSpell);
+		connection.on("ClearWindup", clearWindup);
 		connection.on("MoveFred", moveFred);
 		connection.on("TriggerEffect", triggerEffect);
+		connection.on("PlaySound", playSound);
 		connection.on("AnimateSprinkles", animateSprinkles);
-    connection.on("UpdateClock", updateClock);
-    connection.on("RollDice", rollDice);
-    connection.on("ClearDice", clearDice);
+		connection.on("UpdateClock", updateClock);
+		connection.on("RollDice", rollDice);
+		connection.on("ClearDice", clearDice);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
 		connection.on("ExecuteSoundCommand", executeSoundCommand);
 		connection.on("PlayerDataChanged", playerDataChanged);
@@ -32,7 +33,7 @@ function connectToSignalR(signalR) {
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;
 		PartBackgroundLoader.initialize();
-  };
+	};
 }
 
 function addWindup(windupData: string): void {
@@ -74,8 +75,8 @@ function animateSprinkles(commandData: string) {
 }
 
 function triggerEffect(effectData: string) {
-  if (activeFrontGame instanceof DragonFrontGame) {
-    activeFrontGame.triggerEffect(effectData);
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.triggerEffect(effectData);
 	}
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.triggerEffect(effectData);
@@ -83,11 +84,17 @@ function triggerEffect(effectData: string) {
 }
 function updateClock(clockData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
-    activeBackGame.updateClock(clockData);
-  }
+		activeBackGame.updateClock(clockData);
+	}
 	if (activeFrontGame instanceof DragonFrontGame) {
-    activeFrontGame.updateClock(clockData);
-  }
+		activeFrontGame.updateClock(clockData);
+	}
+}
+
+function playSound(soundFileName: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.playSound(soundFileName);
+	}
 }
 
 function initializePlayerData(playerData: string) {
@@ -115,55 +122,55 @@ function executeSoundCommand(commandData: string) {
 }
 
 function clearDice() {
-  if (diceLayer) {
-    diceLayer.clearDice();
-  }
+	if (diceLayer) {
+		diceLayer.clearDice();
+	}
 }
 
 function rollDice(diceRollData: string) {
-  if (diceLayer) {
-    diceLayer.rollDice(diceRollData);
-  }
+	if (diceLayer) {
+		diceLayer.rollDice(diceRollData);
+	}
 }
 
 class UserInfo {
 	constructor(public userId: string, public userName: string, public displayName: string, public color: string, public showsWatched: number) {
-		
+
 	}
 }
 
 function executeCommand(command: string, params: string, userInfo: UserInfo) {
-  console.log('executeCommand from Connection.ts');
-  if (activeBackGame) {
+	console.log('executeCommand from Connection.ts');
+	if (activeBackGame) {
 		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
-  }
-  if (activeFrontGame) {
+	}
+	if (activeFrontGame) {
 		activeFrontGame.executeCommand(command, params, userInfo, activeFrontGame.nowMs);
-  }
-  if (activeDroneGame) {
+	}
+	if (activeDroneGame) {
 		activeDroneGame.executeCommand(command, params, userInfo, activeDroneGame.nowMs);
-  }
+	}
 }
 function changePlayerHealth(playerHealth: string) {
-  console.log('changePlayerHealth from Connection.ts');
+	console.log('changePlayerHealth from Connection.ts');
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.changePlayerHealth(playerHealth);
-  }
-	
+	}
+
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.changePlayerHealth(playerHealth);
-  }
+	}
 }
 
 function changePlayerWealth(playerWealth: string) {
-  console.log('changePlayerWealth from Connection.ts');
+	console.log('changePlayerWealth from Connection.ts');
 	//if (activeBackGame instanceof DragonBackGame) {
 	//	activeBackGame.changePlayerWealth(playerWealth);
- // }
-	
+	// }
+
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.changePlayerWealth(playerWealth);
-  }
+	}
 }
 
 function changeFrameRate(frameRateData: string) {
@@ -178,7 +185,7 @@ function changeFrameRate(frameRateData: string) {
 			activeBackGame.changeFramerate(frameRateChangeData.FrameRate);
 		}
 	}
-	
+
 	if (diceLayer) {
 		if (frameRateChangeData.OverlayName === 'Dice') {
 			changeFramerateDiceRoller(frameRateChangeData.FrameRate);
@@ -194,39 +201,39 @@ function changeFrameRate(frameRateData: string) {
 }
 
 function focusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonBackGame) {
-    activeBackGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
-  }
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.characterStatsScroll.focusItem(playerID, pageID, itemID);
+	}
 }
 
 function unfocusItem(playerID: number, pageID: number, itemID: string) {
-  if (activeBackGame instanceof DragonBackGame) {
-    activeBackGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
-  }
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.characterStatsScroll.unfocusItem(playerID, pageID, itemID);
+	}
 }
 
 function mapDataChanged(mapData: string) {
-	
+
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
 	if (activeBackGame instanceof DragonGame) {
 		activeBackGame.playerChanged(playerID, pageID, playerData);
-  }
-  if (activeFrontGame instanceof DragonGame) {
+	}
+	if (activeFrontGame instanceof DragonGame) {
 		activeFrontGame.playerChanged(playerID, pageID, playerData);
-  }
-  if (diceLayer) {
-    diceLayer.playerChanged(playerID);
-  }
+	}
+	if (diceLayer) {
+		diceLayer.playerChanged(playerID);
+	}
 }
 
 function userHasCoins(userId: string, amount: number) {
-  if (activeDroneGame instanceof DroneGame) {
-    let userDrone: Drone = <Drone>activeDroneGame.allDrones.find(userId);
-    if (userDrone)
-      userDrone.coinCount += amount;
-  }
+	if (activeDroneGame instanceof DroneGame) {
+		let userDrone: Drone = <Drone>activeDroneGame.allDrones.find(userId);
+		if (userDrone)
+			userDrone.coinCount += amount;
+	}
 }
 function suppressVolume(seconds: number) {
 	if (activeDroneGame instanceof DroneGame) {
@@ -235,37 +242,37 @@ function suppressVolume(seconds: number) {
 }
 
 function chat(message: string) {
-  connection.invoke("Chat", message);
+	connection.invoke("Chat", message);
 }
 
 function whisper(userName: string, message: string) {
-  connection.invoke("Whisper", userName, message);
+	connection.invoke("Whisper", userName, message);
 }
 
 function needToGetCoins(userId: string) {
-  connection.invoke("NeedToGetCoins", userId);
+	connection.invoke("NeedToGetCoins", userId);
 }
 
 function diceHaveStoppedRolling(diceData: string) {
-  if (connection.connectionState == 1)
-    connection.invoke("DiceHaveStoppedRolling", diceData);
+	if (connection.connectionState == 1)
+		connection.invoke("DiceHaveStoppedRolling", diceData);
 }
 
 function allDiceHaveBeenDestroyed(diceData: string) {
-  if (connection.connectionState == 1)
-    connection.invoke("AllDiceHaveBeenDestroyed", diceData);
+	if (connection.connectionState == 1)
+		connection.invoke("AllDiceHaveBeenDestroyed", diceData);
 }
 
 function arm(userId: string) {
-  connection.invoke("Arm", userId);
+	connection.invoke("Arm", userId);
 }
 
 function disarm(userId: string) {
-  connection.invoke("Disarm", userId);
+	connection.invoke("Disarm", userId);
 }
 
 function fire(userId: string) {
-  connection.invoke("Fire", userId);
+	connection.invoke("Fire", userId);
 }
 
 function tellDM(message: string) {

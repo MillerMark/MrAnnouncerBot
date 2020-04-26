@@ -14,8 +14,9 @@ namespace DHDM
 		int GetPlayerIdFromName(string characterName);
 		int GetActivePlayerId();
 		int GetLastSpellSave();
-		void SetThemeVolume(int newVolume);
-		void SetTheme(string newTheme);
+		void SetPlayerVolume(string mainFolder, int newVolume);
+		void SetPlayerFolder(string mainFolder, string newTheme);
+		void StopPlayer(string mainFolder);
 		void ApplyDamageHealthChange(DamageHealthChange damageHealthChange);
 		void RollWildMagicCheck();
 		void RollWildMagic();
@@ -37,6 +38,7 @@ namespace DHDM
 		void SetModifier(int modifier);
 		void RollSave(int diceId);
 		void PlayScene(string sceneName);
+		void PlaySound(string soundFileName);
 		void MoveFred(string movement);
 		void Speak(int playerId, string message);
 		void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand);
