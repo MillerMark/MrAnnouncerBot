@@ -10,12 +10,17 @@ namespace DHDM
 	public class HealthDamageCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		int healthDamageValue;
+		bool changeAllPlayers;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			DamageHealthChange damageHealthChange = new DamageHealthChange();
 			damageHealthChange.DamageHealth = healthDamageValue;
-			if (TargetPlayer != null)
+			if (TargetPlayer == null)
+			{
+				damageHealthChange.PlayerIds.Add(int.MaxValue);
+			}
+			else
 			{
 				int playerId = dungeonMasterApp.GetPlayerIdFromName(TargetPlayer);
 				if (playerId != -1)
@@ -27,6 +32,12 @@ namespace DHDM
 		public bool Matches(string message)
 		{
 			Match match = Regex.Match(message, @"(^[\-\+]\d+)" + PlayerSpecifier);
+			changeAllPlayers = false;
+			if (!match.Success)
+			{
+				changeAllPlayers = true;
+				match = Regex.Match(message, @"(^[\-\+]\d+)");
+			}
 			if (match.Success)
 			{
 				SetTargetPlayer(match.Groups);

@@ -1871,7 +1871,7 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-			
+
 
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 			forcedWildMagicThisRoll = false;
@@ -3749,6 +3749,32 @@ namespace DHDM
 			TellViewers($"{firstPart}...");
 		}
 
+		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds)
+		{
+			string who;
+			if (IncludesAllPlayers(playerIds))
+				who = "all players";
+			else
+				who = GetPlayerName(ActivePlayerId);
+
+			TellAll($"Rolling {dieStr} for {who}...");
+
+			Dispatcher.Invoke(() =>
+			{
+				SetRollTypeUI(diceRollType);
+				SetRollScopeForPlayers(playerIds);
+				DiceRoll diceRoll = PrepareRoll(diceRollType);
+				if (diceRollType == DiceRollType.InspirationOnly)
+					foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
+					{
+						playerRollOption.Inspiration = dieStr;
+					}
+				else
+					diceRoll.DamageHealthExtraDice = dieStr;
+				RollTheDice(diceRoll);
+			});
+		}
+
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
 		{
 			HubtasticBaseStation.SendScrollLayerCommand("ClearHighlighting");
@@ -4095,11 +4121,24 @@ namespace DHDM
 			HubtasticBaseStation.PlayerDataChanged(player.playerID, player.ToJson());
 		}
 
+		List<int> GetAllPlayerIds()
+		{
+			List<int> results = new List<int>();
+			foreach (Character player in game.Players)
+			{
+				results.Add(player.playerID);
+			}
+			return results;
+		}
+
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
 			if (damageHealthChange == null)
 				return;
 			string playerNames = string.Empty;
+
+			if (damageHealthChange.PlayerIds.Count == 1 && damageHealthChange.PlayerIds[0] == int.MaxValue)
+				damageHealthChange.PlayerIds = GetAllPlayerIds();
 
 			int numPlayers = damageHealthChange.PlayerIds.Count;
 			for (int i = 0; i < numPlayers; i++)
@@ -4416,7 +4455,6 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				UnleashTheNextRoll();
-				TellDungeonMaster("Rolling the dice...");
 			});
 		}
 
@@ -4750,6 +4788,11 @@ namespace DHDM
 
 		private void BtnRollDice_Click(object sender, RoutedEventArgs e)
 		{
+			UnleashTheNextRoll();
+		}
+
+		private void UnleashTheNextRoll()
+		{
 			if (spellToCastOnRoll != null)
 			{
 				ActivateSpellShortcut(spellToCastOnRoll);
@@ -4762,11 +4805,6 @@ namespace DHDM
 				}
 			}
 
-			UnleashTheNextRoll();
-		}
-
-		private void UnleashTheNextRoll()
-		{
 			if (NextDieRollType != DiceRollType.None)
 			{
 				RollTheDice(PrepareRoll(NextDieRollType));
@@ -5291,7 +5329,7 @@ namespace DHDM
 		{
 			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
 				return;
-			
+
 			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 			ActivePlayer.ClearAllCasting();
 			if (files.Length > 0)
@@ -5339,6 +5377,25 @@ namespace DHDM
 
 			if (files.Length > 0)
 				AssignImageToSpell(files[0], preparedSpell.Spell.Name);
+		}
+
+		public void ChangeWealth(List<int> playerIds, decimal deltaAmount)
+		{
+			WealthChange wealthChange = new WealthChange();
+			wealthChange.Coins.SetFromGold(deltaAmount);
+			if (playerIds.First() == int.MaxValue)
+			{
+				wealthChange.PlayerIds = new List<int>();
+				foreach (Character player in game.Players)
+				{
+					wealthChange.PlayerIds.Add(player.playerID);
+				}
+			}
+			else
+				wealthChange.PlayerIds = playerIds;
+
+			HubtasticBaseStation.ChangePlayerWealth(JsonConvert.SerializeObject(wealthChange));
+			game.ChangeWealth(wealthChange);
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

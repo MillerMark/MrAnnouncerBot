@@ -10,13 +10,13 @@ namespace DndCore
 	public enum Currency
 	{
 		None = 0,
-		CopperPieces = 1000,  
+		CopperPieces = 1000,
 		SilverPieces = 100,
 		ElectrumPieces = 20,
 		GoldPieces = 10,
 		PlatinumPieces = 1
 	}
-	
+
 	public static class DndUtils
 	{
 		public static int GetHueShift(SchoolOfMagic schoolOfMagic)
@@ -519,6 +519,11 @@ namespace DndCore
 			else
 				result = Plural(time.Seconds, "second");
 			return result;
+		}
+
+		public static DiceRollType ToDiceRollType(string value)
+		{
+			return GetElement<DiceRollType>(value);
 		}
 	}
 }

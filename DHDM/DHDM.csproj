@@ -292,6 +292,7 @@
     <Compile Include="SoundPlayerFolders.cs" />
     <Compile Include="StreamDeck Commands\ChangeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeVolumeCommand.cs" />
+    <Compile Include="StreamDeck Commands\ChangeWealthCommand.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />
@@ -314,6 +315,7 @@
     <Compile Include="StreamDeck Commands\Core\IDungeonMasterCommand.cs" />
     <Compile Include="IDungeonMasterApp.cs" />
     <Compile Include="InspirationTextBox.cs" />
+    <Compile Include="StreamDeck Commands\InstantRollCommand.cs" />
     <Compile Include="StreamDeck Commands\MoveFredCommand.cs" />
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerFactory.cs" />

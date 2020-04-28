@@ -26,6 +26,8 @@ namespace DHDM
 		void SetVantage(VantageKind dataId, int playerId);
 		void RollSkillCheck(Skills skill, List<int> playerIds);
 		void RollSavingThrow(Ability ability, List<int> playerIds);
+		void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds);
+		void ChangeWealth(List<int> playerIds, decimal deltaAmount);
 		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
 		void AdvanceClock(int hours, int minutes, int seconds);

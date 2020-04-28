@@ -40,6 +40,8 @@ namespace DHDM
 			Commands.Add(new SkillCheckCommand());
 			Commands.Add(new SavingThrowCommand());
 			Commands.Add(new ChangeVolumeCommand());
+			Commands.Add(new ChangeWealthCommand());
+			Commands.Add(new InstantRollCommand());
 			Commands.Add(new ChangeCommand());
 			Commands.Add(new SetPropertyCommand());
 			Commands.Add(new AdvanceClockCommand());

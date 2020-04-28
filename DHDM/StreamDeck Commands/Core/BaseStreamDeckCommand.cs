@@ -27,7 +27,7 @@ namespace DHDM
 			List<int> playerIds = new List<int>();
 			if (testAllPlayers)
 				playerIds.Add(int.MaxValue);
-			else if(TargetPlayer == null)
+			else if (TargetPlayer == null)
 				playerIds.Add(dungeonMasterApp.GetActivePlayerId());
 			else 
 				playerIds.Add(dungeonMasterApp.GetPlayerIdFromName(TargetPlayer));
