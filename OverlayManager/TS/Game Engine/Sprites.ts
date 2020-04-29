@@ -23,7 +23,7 @@
 		return null;
 	}
 
-	constructor(baseAnimationName: string, expectedFrameCount: number, private frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
+	constructor(baseAnimationName: string, expectedFrameCount: number, public frameInterval: number, public animationStyle: AnimationStyle, padFileIndex: boolean = false, private hitFloorFunc?, onLoadedFunc?) {
 		this.opacity = 1;
 		this.sprites = [];
 		this.baseAnimation = new Part(baseAnimationName, expectedFrameCount, animationStyle, 0, 0, 5, 0, 0, padFileIndex);

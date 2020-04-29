@@ -205,6 +205,10 @@ namespace DndCore
 		public string totalHitDice = string.Empty;
 		public string trailingEffectsThisRoll = string.Empty;
 		public bool usesMagicThisRoll = false;
+
+		// TODO: When magic ammunition is loaded, set this to true before firing!
+		public bool usesMagicAmmunitionThisRoll = false;
+		public bool ammunitionOnFire = false;
 		public double weight = 0;
 
 		[JsonIgnore]
@@ -1820,6 +1824,8 @@ namespace DndCore
 		{
 			lastRollWasSuccessful = false;
 			usesMagicThisRoll = false;
+			usesMagicAmmunitionThisRoll = false;
+			ammunitionOnFire = false;
 			targetedCreatureHitPoints = 0;
 			hitWasCritical = false;
 			additionalDice = new List<string>();

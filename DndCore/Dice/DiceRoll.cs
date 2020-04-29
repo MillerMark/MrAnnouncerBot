@@ -164,7 +164,7 @@ namespace DndCore
 			}
 
 			diceRoll.DamageType = DamageType.None;  // Consider deprecating.
-			diceRoll.IsMagic = actionShortcut.UsesMagic || actionShortcut.Type == DiceRollType.WildMagicD20Check || player.usesMagicThisRoll;
+			diceRoll.IsMagic = actionShortcut.UsesMagic || actionShortcut.Type == DiceRollType.WildMagicD20Check || player.usesMagicThisRoll || player.usesMagicAmmunitionThisRoll;
 			diceRoll.MinDamage = actionShortcut.MinDamage;
 			diceRoll.Modifier = actionShortcut.ToHitModifier;
 			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;

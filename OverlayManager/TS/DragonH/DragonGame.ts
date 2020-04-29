@@ -407,8 +407,8 @@ abstract class DragonGame extends GamePlusQuiz {
 		weapon.name = weaponName + '.' + animationName;
 		weapon.originX = originX;
 		weapon.originY = originY;
-		weapon.returnFrameIndex = 11;
-		weapon.segmentSize = 60;
+		weapon.returnFrameIndex = 13;
+		weapon.segmentSize = 57;
 		this.allWindupEffects.add(weapon);
 		return weapon;
 	}

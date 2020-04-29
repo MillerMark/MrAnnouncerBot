@@ -281,6 +281,8 @@ class DragonFrontGame extends DragonGame {
 		this.loadStaff();
 		this.loadBattleAxe();
 		this.loadClub();
+		this.loadBow();
+		this.loadRapier();
 		this.loadWarHammer();
 		this.loadLongSword();
 		this.loadJavelin();
@@ -330,6 +332,23 @@ class DragonFrontGame extends DragonGame {
 		const clubOriginY: number = 745;
 		this.loadWeapon('Club', 'Weapon', clubOriginX, clubOriginY);
 		this.loadWeapon('Club', 'Magic', clubOriginX, clubOriginY);
+	}
+
+	private loadBow() {
+		const bowOriginX: number = 380;
+		const bowOriginY: number = 570;
+		this.loadWeapon('Bow', 'BowMagic', bowOriginX, bowOriginY);
+		this.loadWeapon('Bow', 'Bow', bowOriginX, bowOriginY);
+		this.loadWeapon('Bow', 'MagicArrow', bowOriginX, bowOriginY);
+		this.loadWeapon('Bow', 'ArrowFlame', bowOriginX, bowOriginY);
+	}
+
+	private loadRapier() {
+		const rapierOriginX: number = 423;
+		const rapierOriginY: number = 600;
+		this.loadWeapon('Rapier', 'MagicBack', rapierOriginX, rapierOriginY);
+		this.loadWeapon('Rapier', 'Weapon', rapierOriginX, rapierOriginY);
+		this.loadWeapon('Rapier', 'MagicFront', rapierOriginX, rapierOriginY);
 	}
 
 	private loadGreatSword() {

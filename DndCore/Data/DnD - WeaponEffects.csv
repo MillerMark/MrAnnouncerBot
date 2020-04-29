@@ -34,3 +34,14 @@ Quarterstaff,0,Windup,Javelin.Weapon,,x,,,,,0.8,,,,,150,,,,,,,SwordDraw,SwordSla
 Quarterstaff,1,Windup,Javelin.Magic,usesMagicThisRoll == true,x,player,,,,0.8,,,,,150,,,,,,,,
 Club,0,Windup,Club.Weapon,,x,player,50,,,,,,,,150,,,,,,,SwordDraw,SwordSlash
 Club,1,Windup,Club.Magic,usesMagicThisRoll == true,x,player,,,,,,,,,150,,,,,,,,
+Longbow,0,Windup,Bow.Bow,,x,player,,,,,,,,,,,,,,,,ArrowDraw,ArrowFire
+Longbow,1,Windup,Bow.BowMagic,usesMagicThisRoll == true,x,player,,,,,,,,,,,,,,,,,
+Longbow,2,Windup,Bow.MagicArrow,usesMagicAmmunitionThisRoll == true,x,player,,,,,,,,,,,,,,,,,
+Longbow,3,Windup,Bow.ArrowFlame,,x,30,,,,,,,,,,,,,,,,,
+Shortbow,0,Windup,Bow.Bow,,x,player,,,,0.6,,,,,,,,,,,,ArrowDraw,ArrowFire
+Shortbow,1,Windup,Bow.BowMagic,usesMagicThisRoll == true,x,player,,,,0.6,,,,,,,,,,,,,
+Shortbow,2,Windup,Bow.MagicArrow,usesMagicAmmunitionThisRoll == true,x,player,,,,0.6,,,,,,,,,,,,,
+Shortbow,3,Windup,Bow.ArrowFlame,ammunitionOnFire == true,x,player,,,,0.6,,,,,,,,,,,,,
+Rapier,0,Windup,Rapier.Weapon,,x,player,,,,,,,,,,,,,,,,SwordDraw,SwordSlash
+Rapier,1,Windup,Rapier.MagicBack,usesMagicThisRoll == true,x,220,,,,,,,,,,,,,,,,,
+Rapier,2,Windup,Rapier.MagicFront,usesMagicThisRoll == true,x,25,,,,,,,,,,,,,,,,,
