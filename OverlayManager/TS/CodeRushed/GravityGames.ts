@@ -85,6 +85,9 @@ class GravityGames {
 		let coin: SpriteProxy = new SpriteProxy(Random.intMax(activeDroneGame.coins.baseAnimation.frameCount), x, y);
 		//coin.scale = 2;
 		activeDroneGame.coins.sprites.push(coin);
+
+		let spinFramerate: number = activeDroneGame.coins.frameInterval;
+		coin.frameIntervalOverride = Random.between(spinFramerate * 0.8, spinFramerate * 1.2);
   }
 
   addGateway(column: number, row: number): void {

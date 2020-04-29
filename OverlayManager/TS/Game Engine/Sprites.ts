@@ -170,6 +170,8 @@
 					let y: number = margin + lineIndex * (this.spriteHeight + margin);
 					let coin: SpriteProxy = new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y);
 					//coin.scale = 1.5;
+					coin.frameIntervalOverride = Random.between(this.frameInterval * 0.8, this.frameInterval * 1.2);
+
 					this.sprites.push(coin);
 				}
 			}
