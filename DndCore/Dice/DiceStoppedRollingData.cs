@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using DndCore;
 
-namespace DHDM
+namespace DndCore
 {
 	public class DiceStoppedRollingData
 	{
@@ -36,7 +36,7 @@ namespace DHDM
 				return AllPlayers.GetFromId(playerID);
 
 			if (multiplayerSummary.Count == 1)
-				return AllPlayers.GetFromId(multiplayerSummary[0].playerId);
+				return AllPlayers.GetFromId(multiplayerSummary[0].id);
 
 			return null;
 		}

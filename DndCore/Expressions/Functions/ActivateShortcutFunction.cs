@@ -15,7 +15,7 @@ namespace DndCore
 			ActivateShortcutRequest?.Invoke(sender, ea);
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1);
 			char[] trimChars = { '"', ' ' };

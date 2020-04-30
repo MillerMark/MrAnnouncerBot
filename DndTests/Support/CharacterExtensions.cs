@@ -11,7 +11,7 @@ namespace DndTests
 			const int successfulAttackRoll = 12;
 			const int damage = 7;
 			creature.ReadyRollDice(DiceRollType.Attack, "1d20(:score),1d6(:damage)", hiddenThreshold);
-			creature.DieRollStopped(successfulAttackRoll, damage);  // Hits target!
+			creature.DieRollStoppedForTestCases(successfulAttackRoll, damage);  // Hits target!
 		}
 
 		public static void MissesTarget(this Creature creature)
@@ -20,7 +20,7 @@ namespace DndTests
 			const int failedAttackRoll = 11;
 			const int damage = 7;
 			creature.ReadyRollDice(DiceRollType.Attack, "1d20(:score),1d6(:damage)", hiddenThreshold);
-			creature.DieRollStopped(failedAttackRoll, damage);  // Fails to hit.
+			creature.DieRollStoppedForTestCases(failedAttackRoll, damage);  // Fails to hit.
 		}
 
 		public static void Hits(this Creature creature, Creature target, PlayerActionShortcut weapon)

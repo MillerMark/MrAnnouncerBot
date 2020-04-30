@@ -115,7 +115,7 @@ namespace DndCore
 		private DndTimeClock timeClock = new DndTimeClock();
 		public Creature WaitingForRollCreature { get; set; }
 		public DiceRollType WaitingForRollType { get; set; }
-		public Creature WaitingForRollTarget { get; set; }
+		public Target WaitingForRollTarget { get; set; }
 
 		public DateTime Time
 		{
@@ -125,7 +125,7 @@ namespace DndCore
 			}
 		}
 
-		public Creature nextTarget;
+		public Target nextTarget;
 
 		public DndMap ActivateMap(DndMap map)
 		{
@@ -322,18 +322,23 @@ namespace DndCore
 
 			lastPlayer = player;
 		}
-
-		public CastedSpell Cast(Character player, Spell spell, Creature targetCreature = null)
+		public CastedSpell Cast(Character player, Spell spell, Creature targetCreature)
+		{
+			if (targetCreature != null && player.ActiveTarget == null)
+				player.ActiveTarget = new Target(AttackTargetType.Spell, targetCreature);
+			return Cast(player, spell);
+		}
+		public CastedSpell Cast(Character player, Spell spell)
 		{
 			if (spell.CastingTime == DndTimeSpan.OneAction || spell.CastingTime == DndTimeSpan.OneBonusAction)
 			{
 				CreatureTakingAction(player);
 			}
 
-			CastedSpell castedSpell = new CastedSpell(spell, player, targetCreature);
+			CastedSpell castedSpell = new CastedSpell(spell, player);
 			castedSpell.Casting();
 
-			nextTarget = targetCreature;
+			nextTarget = player.ActiveTarget;
 
 			if (spell.MustRollDiceToCast())
 			{
@@ -348,7 +353,7 @@ namespace DndCore
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
 			if (castedSpell.Target == null)
-				castedSpell.Target = player.ActiveTarget as Creature;
+				castedSpell.Target = player.ActiveTarget;
 			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			RemoveSpellFromCasting(castedSpell);
@@ -431,18 +436,14 @@ namespace DndCore
 			}
 		}
 
-		public void OnSuccessfulRoll(Character character, int thisDieRollHiddenThreshold, int score, int damage)
+		public void DieRollStopped(Creature creature, int score, DiceStoppedRollingData diceStoppedRollingData)
 		{
-			throw new NotImplementedException();
-		}
-
-		public void DieRollStopped(Creature creature, int score, int damage)
-		{
+			OnDieRollStopped(creature, diceStoppedRollingData);
 			if (WaitingForRollHiddenThreshold != int.MinValue && creature == WaitingForRollCreature)
 			{
 				if (DndUtils.IsAttack(WaitingForRollType) && score >= WaitingForRollHiddenThreshold)
 				{
-					OnCreatureHitsTarget(creature, damage);
+					OnCreatureHitsTarget(creature);
 				}
 			}
 
@@ -457,7 +458,7 @@ namespace DndCore
 			WaitingForRollType = DiceRollType.None;
 		}
 
-		void OnCreatureHitsTarget(Creature creature, int damage)
+		void OnCreatureHitsTarget(Creature creature)
 		{
 			if (!(creature is Character player))
 				return;
@@ -468,6 +469,21 @@ namespace DndCore
 			{
 				CastedSpell castedSpell = playersActiveSpells[i];
 				castedSpell.Spell.TriggerPlayerHitsTarget(player, WaitingForRollTarget, castedSpell);
+			}
+		}
+		void OnDieRollStopped(Creature creature, DiceStoppedRollingData diceStoppedRollingData)
+		{
+			if (WaitingForRollHiddenThreshold == int.MinValue || creature != WaitingForRollCreature)
+				return;
+
+			if (!(creature is Character player))
+				return;
+
+			List<CastedSpell> playersActiveSpells = activeSpells.FindAll(x => x.SpellCaster == player);
+			for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
+			{
+				CastedSpell castedSpell = playersActiveSpells[i];
+				castedSpell.Spell.TriggerDieRollStopped(player, WaitingForRollTarget, castedSpell, diceStoppedRollingData);
 			}
 		}
 

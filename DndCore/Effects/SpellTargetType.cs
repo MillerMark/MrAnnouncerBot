@@ -5,8 +5,9 @@ namespace DndCore
 {
 	public enum SpellTargetType
 	{
-		Player,
-		Location,
-		Enemy
+		None = 0,
+		Creatures = 1,
+		AreaOfEffect = 2,
+		Item = 4
 	}
 }

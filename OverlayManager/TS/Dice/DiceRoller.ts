@@ -2922,7 +2922,7 @@ function getRollResults(): RollResults {
 		if (diceRollData.hasMultiPlayerDice) {
 			if (diceRollData.multiplayerSummary == null)
 				diceRollData.multiplayerSummary = [];
-			let playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.playerId == die.playerID);
+			let playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.id == die.playerID);
 			if (playerRoll) {
 				playerRoll.roll += topNumber;
 				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
@@ -3429,7 +3429,7 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 }
 
 class PlayerRoll {
-	constructor(public roll: number, public name: string, public playerId: number, public modifier: number = 0, public success: boolean = false) {
+	constructor(public roll: number, public name: string, public id: number, public modifier: number = 0, public success: boolean = false) {
 
 	}
 }

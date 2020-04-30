@@ -14,7 +14,7 @@ namespace DndCore
 		}
 		public override string Name { get; set; } = "AddReminder";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target = null, CastedSpell spell = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			AddReminderEventArgs ea = new AddReminderEventArgs(Expressions.GetStr(args[0], player, target, spell), Expressions.GetStr(args[1], player, target, spell));
 			AddReminder(player, ea);

@@ -16,7 +16,7 @@ namespace DndCore
 			return feature != null;
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target, CastedSpell spell)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			if (feature == null)
 				return null;

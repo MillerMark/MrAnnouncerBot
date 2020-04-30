@@ -182,6 +182,12 @@ namespace DHDM
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
 			DndCharacterProperty.AskingValue += DndCharacterProperty_AskingValue;
 			PlaySceneFunction.RequestPlayScene += PlaySceneFunction_RequestPlayScene;
+			SelectTargetFunction.RequestSelectTarget += SelectTargetFunction_RequestSelectTarget;
+		}
+
+		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
+		{
+			
 		}
 
 		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
@@ -1461,7 +1467,7 @@ namespace DHDM
 			SwitchToSpellPageInGame();
 
 			ShowSpellPreparingWindups(actionShortcut, spell);
-			preparedSpell = new CastedSpell(spell, player, null);
+			preparedSpell = new CastedSpell(spell, player);
 			preparedSpell.Prepare();
 		}
 
@@ -1608,7 +1614,7 @@ namespace DHDM
 			{
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 				UseRechargeableItem(actionShortcut, matchingSpell);
-				CastedSpell castedSpell = new CastedSpell(spell, player, null);
+				CastedSpell castedSpell = new CastedSpell(spell, player);
 				castedSpell.CastingWithItem();
 			}
 			else
@@ -1660,9 +1666,6 @@ namespace DHDM
 			}
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
-			// TODO: Fix the targeting.
-			//ShowCastingEffects(actionShortcut, spell);
-
 			CastedSpell castedSpell = game.Cast(player, spell);
 			SetClearSpellVisibility(player);
 
@@ -1687,7 +1690,7 @@ namespace DHDM
 
 		private static void ShowSpellEffects(PlayerActionShortcut actionShortcut, Spell spell, string prefix)
 		{
-			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new SpellTarget() { Target = SpellTargetType.Player, PlayerId = actionShortcut.PlayerId });
+			CastedSpellDto spellToCastDto = new CastedSpellDto(spell, new Target() { CasterId = actionShortcut.PlayerId });
 
 			spellToCastDto.Windups = actionShortcut.WindupsReversed.Where(x => x != null && x.Name != null && x.Name.StartsWith(prefix)).ToList();
 			if (!spellToCastDto.Windups.Any())
@@ -2565,7 +2568,7 @@ namespace DHDM
 			else if (diceStoppedRollingData.multiplayerSummary != null)
 				foreach (PlayerRoll playerRoll in diceStoppedRollingData.multiplayerSummary)
 				{
-					Character player = game.GetPlayerFromId(playerRoll.playerId);
+					Character player = game.GetPlayerFromId(playerRoll.id);
 					TriggerAfterRollEffects(diceStoppedRollingData, player);
 				}
 
@@ -2624,7 +2627,7 @@ namespace DHDM
 			if (stopRollingData.multiplayerSummary != null)
 				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
 				{
-					Character player = game.GetPlayerFromId(playerRoll.playerId);
+					Character player = game.GetPlayerFromId(playerRoll.id);
 					player?.RollHasStopped();
 				}
 			else
@@ -2856,7 +2859,7 @@ namespace DHDM
 			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 			{
 				string playerName = DndUtils.GetFirstName(playerRoll.name);
-				string emoticon = GetPlayerEmoticon(playerRoll.playerId);
+				string emoticon = GetPlayerEmoticon(playerRoll.id);
 				int rollValue = playerRoll.modifier + playerRoll.roll;
 				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
 				string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.";
@@ -2966,7 +2969,7 @@ namespace DHDM
 			if (ea.StopRollingData.multiplayerSummary != null && ea.StopRollingData.multiplayerSummary.Count > 0)
 			{
 				if (ea.StopRollingData.multiplayerSummary.Count == 1)
-					singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.multiplayerSummary[0].playerId);
+					singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.multiplayerSummary[0].id);
 				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 				{
 					string playerName = DndUtils.GetFirstName(playerRoll.name);
@@ -2999,7 +3002,7 @@ namespace DHDM
 			}
 
 			if (singlePlayer != null)
-				game.DieRollStopped(singlePlayer, rollValue, ea.StopRollingData.damage);
+				game.DieRollStopped(singlePlayer, rollValue, ea.StopRollingData);
 
 			//DieRollStopped
 
@@ -5037,6 +5040,7 @@ namespace DHDM
 			spell.OnGetAttackAbility = latestSpell.OnGetAttackAbility;
 			spell.OnDispel = latestSpell.OnDispel;
 			spell.OnPlayerPreparesAttack = latestSpell.OnPlayerPreparesAttack;
+			spell.OnDieRollStopped = latestSpell.OnDieRollStopped;
 			spell.OnPlayerAttacks = latestSpell.OnPlayerAttacks;
 			spell.OnPlayerHitsTarget = latestSpell.OnPlayerHitsTarget;
 		}

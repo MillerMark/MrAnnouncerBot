@@ -38,9 +38,9 @@ namespace DndTests
 			DateTime enterCombatTime = game.Time;
 			Assert.AreEqual(0, game.roundIndex);
 			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
-			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
+			merkin.CastTest(zzzSaveSpell, joeTheVineBlight);
 			joeTheVineBlight.PrepareAttack(merkin, joeTheVineBlight.GetAttack(AttackNames.Constrict));
-			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
+			merkin.CastTest(zzzSaveSpell, joeTheVineBlight);
 			Assert.AreEqual(1, game.roundIndex);
 
 			DateTime exitCombatTime = game.Time;

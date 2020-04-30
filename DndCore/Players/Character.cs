@@ -1102,7 +1102,8 @@ namespace DndCore
 			}
 			concentratedSpell = null;
 		}
-		public CastedSpell Cast(Spell spell, Creature targetCreature = null)
+
+		public CastedSpell CastTest(Spell spell, Creature targetCreature = null)
 		{
 			spellToCast = null;
 
@@ -1801,6 +1802,7 @@ namespace DndCore
 
 		public void ResetPlayerActionBasedState()
 		{
+			ActiveTarget = null;
 			attackingAbility = Ability.none;
 			attackingAbilityModifier = 0;
 			attackingType = AttackType.None;
@@ -2147,7 +2149,7 @@ namespace DndCore
 		public int NumWildMagicChecks { get; set;  }
 
 		[JsonIgnore]
-		public object ActiveTarget { get; set; }
+		public Target ActiveTarget { get; set; }
 
 		public bool ShowingNameplate { get; set; } = true;
 
@@ -2675,14 +2677,14 @@ namespace DndCore
 			if (goldPieces != oldValue)
 				OnStateChanged(this, new StateChangedEventArgs("goldPieces", oldValue, goldPieces));
 		}
-		public void AttackingNow(Creature targetCreature)
+		public void AttackingNow(Target target)
 		{
 			List<CastedSpell> activeSpells = GetActiveSpells();
 			if (activeSpells == null)
 				return;
 			foreach (CastedSpell castedSpell in activeSpells)
 			{
-				castedSpell.Spell.TriggerPlayerAttacks(this as Character, targetCreature, castedSpell);
+				castedSpell.Spell.TriggerPlayerAttacks(this as Character, target, castedSpell);
 			}
 		}
 

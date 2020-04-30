@@ -58,6 +58,8 @@ namespace DndCore
 		[DndEvent]
 		public string OnPlayerPreparesAttack { get; set; }
 		[DndEvent]
+		public string OnDieRollStopped { get; set; }
+		[DndEvent]
 		public string OnPlayerAttacks { get; set; }
 		[DndEvent]
 		public string OnPlayerHitsTarget { get; set; }
@@ -334,6 +336,7 @@ namespace DndCore
 				OnCasting = spellDto.onCasting,
 				OnGetAttackAbility = spellDto.onGetAttackAbility,
 				OnPlayerPreparesAttack = spellDto.onPlayerPreparesAttack,
+				OnDieRollStopped = spellDto.onDieRollStopped,
 				OnPlayerAttacks = spellDto.onPlayerAttacks,
 				OnPlayerHitsTarget = spellDto.onPlayerHitsTarget,
 				OnDispel = spellDto.onDispel,
@@ -422,49 +425,55 @@ namespace DndCore
 			//	(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
-		public void TriggerCasting(Character player, object target, CastedSpell castedSpell)
+		public void TriggerCasting(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnCasting, player, target, castedSpell);
 		}
 
-		public void TriggerGetAttackAbility(Character player, object target, CastedSpell castedSpell)
+		public void TriggerGetAttackAbility(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnGetAttackAbility, player, target, castedSpell);
 		}
 
-		public void TriggerCast(Character player, object target, CastedSpell castedSpell)
+		public void TriggerCast(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnCast, player, target, castedSpell);
 		}
 
-		public void TriggerReceived(Character player, object target, CastedSpell castedSpell)
+		public void TriggerReceived(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnReceived, player, target, castedSpell);
 		}
 
-		public void TriggerDispel(Character player, object target, CastedSpell castedSpell)
+		public void TriggerDispel(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnDispel, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerPreparesAttack(Character player, object target, CastedSpell castedSpell)
+		public void TriggerPlayerPreparesAttack(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPlayerPreparesAttack, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerAttacks(Character player, object target, CastedSpell castedSpell)
+		public void TriggerDieRollStopped(Character player, Target target, CastedSpell castedSpell, DiceStoppedRollingData dice)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnDieRollStopped, player, target, castedSpell, dice);
+		}
+
+		public void TriggerPlayerAttacks(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPlayerAttacks, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerHitsTarget(Character player, object target, CastedSpell castedSpell)
+		public void TriggerPlayerHitsTarget(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPlayerHitsTarget, player, target, castedSpell);
@@ -490,6 +499,7 @@ namespace DndCore
 			result.OnGetAttackAbility = OnGetAttackAbility;
 			result.OnDispel = OnDispel;
 			result.OnPlayerPreparesAttack = OnPlayerPreparesAttack;
+			result.OnDieRollStopped = OnDieRollStopped;
 			result.OnPlayerAttacks = OnPlayerAttacks;
 			result.OnPlayerHitsTarget = OnPlayerHitsTarget;
 			result.OriginalDieStr = OriginalDieStr;

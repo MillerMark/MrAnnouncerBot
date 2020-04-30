@@ -14,7 +14,7 @@ namespace DndCore
 		}
 		public override string Name { get; set; } = "Ask";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Creature target = null, CastedSpell spell = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			AskEventArgs ea = new AskEventArgs(Expressions.GetStr(args[0], player, target, spell), args.Skip(1).ToList());
 			OnAskQuestion(player, ea);

@@ -300,7 +300,6 @@
     <Compile Include="BaseChatBot.cs" />
     <Compile Include="DebugLine.cs" />
     <Compile Include="DiceEventArgs.cs" />
-    <Compile Include="DiceStoppedRollingData.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="StreamDeck Commands\DungeonMasterCommand.cs" />
     <Compile Include="EventManager.cs" />
@@ -319,7 +318,6 @@
     <Compile Include="StreamDeck Commands\MoveFredCommand.cs" />
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerFactory.cs" />
-    <Compile Include="PlayerRoll.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="StreamDeck Commands\PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />

@@ -264,7 +264,7 @@ namespace DndTests
 			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
 			game.AddMonster(joeTheVineBlight);
-			merkin.Cast(zzzSaveSpell, joeTheVineBlight);
+			merkin.CastTest(zzzSaveSpell, joeTheVineBlight);
 			merkin.ReadyRollDice(DiceRollType.DamageOnly, "3d6(fire)", 12);
 			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
 			Assert.IsNotNull(activeSpells);
@@ -291,7 +291,7 @@ namespace DndTests
 			game.AddPlayer(merkin);
 			game.AddMonster(joeTheVineBlight);
 			game.EnteringCombat();
-			merkin.Cast(zzzRangeSpell, joeTheVineBlight);
+			merkin.CastTest(zzzRangeSpell, joeTheVineBlight);
 			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
 			Assert.IsNotNull(activeSpells);
 			Assert.AreEqual(0, activeSpells.Count);
@@ -301,7 +301,7 @@ namespace DndTests
 			merkin.ReadyRollDice(DiceRollType.Attack, "1d20(:score),2d8(:damage),1d6(:damage)", hiddenThreshold);
 			Assert.AreEqual("onCast", Expressions.GetStr("Get(_spellState)", merkin));
 			const int damage = 7;
-			merkin.DieRollStopped(hiddenThreshold, damage);
+			merkin.DieRollStoppedForTestCases(hiddenThreshold, damage);
 
 			game.AdvanceClock(DndTimeSpan.FromMinutes(1));
 			Assert.AreEqual("onDispel", Expressions.GetStr("Get(_spellState)", merkin));
@@ -325,7 +325,7 @@ namespace DndTests
 			game.AddPlayer(merkin);
 			game.AddMonster(joeVineBlight);
 			game.EnteringCombat();
-			merkin.Cast(zzzSaveSpell, joeVineBlight);
+			merkin.CastTest(zzzSaveSpell, joeVineBlight);
 
 			const int hiddenThreshold = 12;
 			const int damage = 7;
@@ -338,7 +338,7 @@ namespace DndTests
 			Assert.AreEqual("onPlayerAttacks", Expressions.GetStr("Get(_spellState)", merkin));
 
 			merkin.ReadyRollDice(DiceRollType.Attack, "1d20(:score),2d8(:damage),1d6(:damage)", hiddenThreshold);
-			merkin.DieRollStopped(hiddenThreshold, damage);
+			merkin.DieRollStoppedForTestCases(hiddenThreshold, damage);
 			Assert.AreEqual("onPlayerHitsTarget", Expressions.GetStr("Get(_spellState)", merkin));
 
 			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
@@ -379,7 +379,7 @@ namespace DndTests
 			game.EnteringCombat();
 
 			ava.Hits(joeVineBlight, greatsword);  // Action. Ava is first to fight.
-			ava.Cast(wrathfulSmite.Spell);  // Bonus Action - Wrathful Smite lasts for one minute.
+			ava.CastTest(wrathfulSmite.Spell);  // Bonus Action - Wrathful Smite lasts for one minute.
 			Assert.IsTrue(ava.SpellIsActive(SpellNames.WrathfulSmite));
 
 			joeVineBlight.Misses(ava, AttackNames.Constrict);

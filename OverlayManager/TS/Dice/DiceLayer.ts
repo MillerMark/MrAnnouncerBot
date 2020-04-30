@@ -999,7 +999,7 @@ class DiceLayer {
 
 	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
 		if (!playerRoll.name)
-			playerRoll.name = diceLayer.getPlayerName(playerRoll.playerId);
+			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
 		var message: string = `${playerRoll.name}: ${playerRoll.roll + playerRoll.modifier}`;
 		if (playerRoll.modifier > 0)
 			message += ` (+${playerRoll.modifier})`;
@@ -1007,8 +1007,8 @@ class DiceLayer {
 			message += ` (${playerRoll.modifier})`;
 
 		let textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
-		textEffect.fontColor = this.getDieColor(playerRoll.playerId);
-		textEffect.outlineColor = this.getDieFontColor(playerRoll.playerId);
+		textEffect.fontColor = this.getDieColor(playerRoll.id);
+		textEffect.outlineColor = this.getDieFontColor(playerRoll.id);
 		this.setMultiplayerResultText(textEffect);
 		return textEffect;
 	}

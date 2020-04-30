@@ -4,24 +4,17 @@ namespace DndCore
 {
 	public class CastedSpell
 	{
-		public CastedSpell(Spell spell, Character spellCaster, object target = null)
+		public CastedSpell(Spell spell, Character spellCaster)
 		{
 			TimeSpellWasCast = DndTimeClock.Instance.Time;
-			Target = target;
+			Target = spellCaster.ActiveTarget;
 			SpellCaster = spellCaster;
 			Spell = spell;
 		}
 		public Spell Spell { get; set; }
 		public Character SpellCaster { get; set; }
-		public object Target { get; set; }
+		public Target Target { get; set; }
 
-		public Creature TargetCreature
-		{
-			get
-			{
-				return Target as Creature;
-			}
-		}
 		public DateTime TimeSpellWasCast { get; set; }
 		public string DieStr { get => Spell.DieStr; set => Spell.DieStr = value; }
 		public string DieStrRaw { get => Spell.DieStrRaw; set { } }

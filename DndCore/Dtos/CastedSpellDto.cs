@@ -5,10 +5,10 @@ namespace DndCore
 	public class CastedSpellDto
 	{
 		public Spell Spell { get; set; }
-		public SpellTarget Target { get; set; }
+		public Target Target { get; set; }
 		public List<WindupDto> Windups = new List<WindupDto>();
 
-		public CastedSpellDto(Spell spell, SpellTarget target)
+		public CastedSpellDto(Spell spell, Target target)
 		{
 			Spell = spell;
 			Target = target;

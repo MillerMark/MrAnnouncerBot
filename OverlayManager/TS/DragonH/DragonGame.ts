@@ -18,10 +18,21 @@ class Coins {
 	}
 }
 
+enum SpellTargetShape {
+	None,
+	Point,
+	Line,
+	Cone,
+	Sphere,
+	Circle,
+	Cube
+}
+
 enum SpellTargetType {
-	Player,
-	Location,
-	Enemy
+	None,
+	Creatures,
+	AreaOfEffect,
+	Item
 }
 
 enum SpellComponents {
@@ -43,9 +54,17 @@ class Spell {
 	}
 }
 
-class SpellTarget {
-	Target: SpellTargetType;
-	PlayerId: number;
+enum AttackTargetType {
+	Spell,
+	Weapon
+}
+
+class Target {
+	Type: AttackTargetType;
+	SpellType: SpellTargetType;
+	Shape: SpellTargetShape;
+	CasterId: number;
+	PlayerIds: Array<number>;
 	Location: Vector;
 	Range: number;
 	constructor() {
@@ -55,7 +74,7 @@ class SpellTarget {
 
 class CastedSpellDataDto {
 	Spell: Spell;
-	Target: SpellTarget;
+	Target: Target;
 	Windups: Array<WindupData> = new Array<WindupData>();
 	constructor() {
 
@@ -464,7 +483,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	castSpell(spellData: string): void {
 		let spell: CastedSpellDataDto = JSON.parse(spellData);
 
-		let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.PlayerId));
+		let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.CasterId));
 		//this.addWindups(spell.Windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
 		this.addWindups(spell.Windups, playerX, `(${spell.Spell.OwnerId})`);
 	}

@@ -9,5 +9,6 @@ namespace DndCore
 		public string name;
 		public int id;
 		public int modifier;
+		public bool success;
 	}
 }
