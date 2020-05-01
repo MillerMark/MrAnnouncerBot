@@ -62,6 +62,17 @@ namespace DndCore
 			}
 		}
 
+		public string FirstDieStr
+		{
+			get
+			{
+				Roll roll = Rolls.FirstOrDefault();
+				if (roll == null)
+					return string.Empty;
+				return $"{roll.Count}d{roll.Sides}{roll.Descriptor}";
+			}
+		}
+
 		public int FirstOffset
 		{
 			get

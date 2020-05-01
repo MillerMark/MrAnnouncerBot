@@ -354,6 +354,7 @@ class CrossfadePlayer {
 		themeMusicPlayer.addFolder('Ethereal', 47);
 		themeMusicPlayer.addFolder('Foreboding', 38);
 		themeMusicPlayer.addFolder('Happy', 39);
+		themeMusicPlayer.addFolder('Funk', 105);
 		CrossfadePlayer.allCrossfadePlayers.push(themeMusicPlayer);
 	}
 	static InitializeWeatherPlayer(): void {

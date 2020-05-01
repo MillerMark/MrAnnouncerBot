@@ -24,5 +24,6 @@ namespace DndCore
 	public delegate void ShortcutEventHandler(object sender, ShortcutEventArgs ea);
 	public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
 	public delegate void PickWeaponEventHandler(object sender, PickWeaponEventArgs ea);
+	public delegate void PickAmmunitionEventHandler(object sender, PickAmmunitionEventArgs ea);
 
 }

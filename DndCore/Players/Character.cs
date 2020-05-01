@@ -13,14 +13,62 @@ namespace DndCore
 	public class Character : Creature
 	{
 		public event PickWeaponEventHandler PickWeapon;
+		public event PickAmmunitionEventHandler PickAmmunition;
 
 		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
 		{
 			PickWeapon?.Invoke(sender, ea);
 		}
 
+		protected virtual void OnPickAmmunition(object sender, PickAmmunitionEventArgs ea)
+		{
+			PickAmmunition?.Invoke(sender, ea);
+		}
+
+		CarriedWeapon readiedWeapon;
 		[JsonIgnore]
-		public CarriedWeapon ReadiedWeapon;
+		public CarriedWeapon ReadiedWeapon
+		{
+			get
+			{
+				return readiedWeapon;
+			}
+			set
+			{
+				if (readiedWeapon == value)
+					return;
+
+				readiedWeapon = value;
+				if (readiedWeapon == null)
+					ReadiedAmmunition = null;
+				else
+				{
+					string ammunitionKind = readiedWeapon.Weapon.AmmunitionKind;
+					if (!HasAmmunition(ammunitionKind))
+						ReadiedAmmunition = null;
+					else
+					{
+						List<CarriedAmmunition> allMatchingAmmunition = GetAllAmmunition(ammunitionKind);
+						if (allMatchingAmmunition.Count > 1)
+						{
+							ReadiedAmmunition = ChooseAmmunition(ammunitionKind);
+						}
+						else
+						{
+							ReadiedAmmunition = allMatchingAmmunition[0];
+						}
+						if (ReadiedAmmunition != null)
+						{
+							usesMagicAmmunitionThisRoll = !string.IsNullOrEmpty(ReadiedAmmunition.DamageBonusStr);
+						}
+					}
+
+				}
+			}
+		}
+
+		[JsonIgnore]
+		public CarriedAmmunition ReadiedAmmunition;
 
 		[JsonIgnore]
 		List<KnownSpell> temporarySpells = new List<KnownSpell>();
@@ -869,8 +917,20 @@ namespace DndCore
 				int.TryParse(ammunitionStr.EverythingBetween("[", "]").Trim(), out count);
 			}
 
+		 	string ammoParameters = "";
+
+			if (ammunitionName.Has("("))
+			{
+				if (ammunitionName.Has(")"))
+				{
+					ammoParameters = ammunitionName.EverythingAfter("(").TrimEnd(')');
+					ammunitionName = ammunitionName.EverythingBefore("(");
+				}
+			}
+
 			CarriedAmmunition carriedAmmunition = new CarriedAmmunition();
-			carriedAmmunition.Name = ammunitionName;
+			carriedAmmunition.Kind = ammunitionName;
+			carriedAmmunition.SetAmmunitionParameters(ammoParameters, this);
 			carriedAmmunition.Count = count;
 			CarriedAmmunition.Add(carriedAmmunition);
 		}
@@ -1221,9 +1281,9 @@ namespace DndCore
 			return Game.GetActiveSpells(this);
 		}
 
-		public int GetAmmunitionCount(string str)
+		public int GetAmmunitionCount(string kind)
 		{
-			CarriedAmmunition ammo = CarriedAmmunition.FirstOrDefault(x => x.Name == str);
+			CarriedAmmunition ammo = GetAmmunition(kind);
 			if (ammo == null)
 				return 0;
 			return ammo.Count;
@@ -2188,6 +2248,11 @@ namespace DndCore
 		{
 			RequestMessageToDungeonMaster?.Invoke(this, new MessageEventArgs(message));
 		}
+		protected virtual void OnRequestMessageToAll(string message)
+		{
+			RequestMessageToAll?.Invoke(this, new MessageEventArgs(message));
+		}
+
 		public int GetSpellcastingLevel()
 		{
 			return level;
@@ -2611,6 +2676,7 @@ namespace DndCore
 		public event RollDiceEventHandler RollDiceRequest;
 		public event StateChangedEventHandler StateChanged;
 		public event MessageEventHandler RequestMessageToDungeonMaster;
+		public event MessageEventHandler RequestMessageToAll;
 
 		public static void SetBoolProperty(Character player, string memberName, bool value)
 		{
@@ -2677,6 +2743,42 @@ namespace DndCore
 			if (goldPieces != oldValue)
 				OnStateChanged(this, new StateChangedEventArgs("goldPieces", oldValue, goldPieces));
 		}
+
+		CarriedWeapon GetActiveWeapon()
+		{
+			if (!ActiveWeaponName.HasSomething())
+				return null;
+			return CarriedWeapons.FirstOrDefault(x => x.Name == ActiveWeaponName || x.Weapon.Name == ActiveWeaponName);
+		}
+
+		public void UseAmmunition(string kind, int value)
+		{
+			CarriedAmmunition carriedAmmunition = ReadiedAmmunition;
+			if (carriedAmmunition == null)
+				carriedAmmunition = GetAmmunition(kind);
+			carriedAmmunition.Count -= value;
+			if (carriedAmmunition.Count < 0)
+				carriedAmmunition.Count = 0;
+			string ammunitionName;
+			
+			if (carriedAmmunition.Name.HasSomething())
+				ammunitionName = carriedAmmunition.Name;
+			else
+				ammunitionName = $"normal {carriedAmmunition.Kind.ToLower()}";
+
+			OnRequestMessageToAll($"{firstName}'s remaining {ammunitionName} count: {carriedAmmunition.Count}");
+		}
+		
+		public CarriedAmmunition GetAmmunition(string kind)
+		{
+			return CarriedAmmunition.FirstOrDefault(x => x.Kind == kind);
+		}
+
+		public List<CarriedAmmunition> GetAllAmmunition(string kind)
+		{
+			return CarriedAmmunition.Where(x => x.Kind == kind).ToList();
+		}
+
 		public void AttackingNow(Target target)
 		{
 			List<CastedSpell> activeSpells = GetActiveSpells();
@@ -2686,6 +2788,11 @@ namespace DndCore
 			{
 				castedSpell.Spell.TriggerPlayerAttacks(this as Character, target, castedSpell);
 			}
+			CarriedWeapon activeWeapon = GetActiveWeapon();
+			if (activeWeapon != null && activeWeapon.Weapon.RequiresAmmunition())
+			{
+				UseAmmunition(activeWeapon.Weapon.AmmunitionKind, 1);
+			}
 		}
 
 		public CarriedWeapon ChooseWeapon(string weaponFilter = null)
@@ -2693,6 +2800,17 @@ namespace DndCore
 			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this, weaponFilter);
 			OnPickWeapon(this, pickWeaponEventArgs);
 			return pickWeaponEventArgs.Weapon;
+		}
+		public CarriedAmmunition ChooseAmmunition(string ammunitionKind)
+		{
+			PickAmmunitionEventArgs pickAmmunitionEventArgs = new PickAmmunitionEventArgs(this, ammunitionKind);
+			OnPickAmmunition(this, pickAmmunitionEventArgs);
+			return pickAmmunitionEventArgs.Ammunition;
+		}
+
+		public bool HasAmmunition(string kind)
+		{
+			return GetAmmunitionCount(kind) > 0;
 		}
 
 	}

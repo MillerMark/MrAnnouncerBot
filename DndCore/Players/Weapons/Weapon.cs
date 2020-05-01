@@ -12,7 +12,7 @@ namespace DndCore
 		public WeaponProperties weaponProperties = WeaponProperties.None;
 		public string damageOneHanded = string.Empty;
 		public string damageTwoHanded = string.Empty;
-
+		public string AmmunitionKind{ get; set; }
 		public static Weapon From(WeaponDto weaponDto)
 		{
 			Weapon weapon = new Weapon();
@@ -23,13 +23,14 @@ namespace DndCore
 			weapon.damageOneHanded = weaponDto.DamageOneHanded;
 			weapon.damageTwoHanded = weaponDto.DamageTwoHanded;
 			weapon.Name = weaponDto.Name;
+			weapon.AmmunitionKind = weaponDto.Ammo;
 			return weapon;
 		}
 
 		static WeaponProperties GetWeaponProperties(WeaponDto weaponDto)
 		{
 			WeaponProperties result = WeaponProperties.None;
-			if (MathUtils.IsChecked(weaponDto.Ammo))
+			if (weaponDto.Ammo.HasSomething())
 				result |= WeaponProperties.Ammunition;
 			if (MathUtils.IsChecked(weaponDto.Finesse))
 				result |= WeaponProperties.Finesse;
@@ -58,7 +59,10 @@ namespace DndCore
 
 		}
 
-
+		public bool RequiresAmmunition()
+		{
+			return weaponProperties.HasFlag(WeaponProperties.Ammunition);
+		}
 
 		public static Weapon buildBlowgun()
 		{

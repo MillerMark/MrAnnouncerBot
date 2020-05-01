@@ -131,6 +131,7 @@ namespace DHDM
 		{
 			game.SpellDispelled += Game_SpellDispelled;
 			game.PickWeapon += Game_PickWeapon;
+			game.PickAmmunition += Game_PickAmmunition;
 			game.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
 			game.RequestMessageToAll += Game_RequestMessageToAll;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
@@ -168,6 +169,41 @@ namespace DHDM
 			int result = AskQuestion("Target which weapon: ", weapons);
 			if (result > 0)
 				ea.Weapon = filteredWeapons[result - 1];
+		}
+
+		private void Game_PickAmmunition(object sender, PickAmmunitionEventArgs ea)
+		{
+			List<string> ammunitionList = new List<string>();
+			
+			List<CarriedAmmunition> filteredAmmunition = new List<CarriedAmmunition>();
+			int ammunitionNumber = 1;
+			string filterLower = null;
+			if (ea.AmmunitionKind != null)
+				filterLower = ea.AmmunitionKind.ToLower();
+			for (int i = 0; i < ea.Player.CarriedAmmunition.Count; i++)
+			{
+				CarriedAmmunition carriedAmmunition = ea.Player.CarriedAmmunition[i];
+				if (carriedAmmunition.Count <= 0)
+					continue;
+				string ammunitionName = carriedAmmunition.Name;
+				string ammunitionKind = carriedAmmunition.Kind;
+				if (!string.IsNullOrEmpty(filterLower))
+				{
+					if (!filterLower.Contains(ammunitionKind.ToLower()))
+						continue;
+				}
+				if (string.IsNullOrEmpty(ammunitionName))
+					ammunitionName = ammunitionKind;
+				ammunitionList.Add($"{ammunitionNumber}: {ammunitionName} ({carriedAmmunition.Count})");
+				filteredAmmunition.Add(carriedAmmunition);
+				ammunitionNumber++;
+			}
+
+			if (ammunitionList.Count <= 0)
+				return;
+			int result = AskQuestion("Choose ammunition: ", ammunitionList);
+			if (result > 0)
+				ea.Ammunition = filteredAmmunition[result - 1];
 		}
 
 		private void HookEvents()
@@ -1292,37 +1328,37 @@ namespace DHDM
 			{
 				SetPlayerPropertiesBasedOnShortcut(actionShortcut, player);
 
-				if (ActivateShortcutForPlayer(actionShortcut, player) == ActionType.ModifiesExisting)
+				ActionType activationResult = ActivateShortcutForPlayer(actionShortcut, player);
+
+				if (activationResult == ActionType.Abort)
 					return;
 
-				settingInternally = true;
-				try
-				{
-					if (actionShortcut.ModifiesExistingRoll)
-					{
-						currentRoll.Modify(actionShortcut);
-						actionShortcut.ExecuteCommands(player);
-					}
-					else
-					{
-						currentRoll = DiceRoll.GetFrom(actionShortcut, player);
-						TellDmWeAreReady(player, actionShortcut);
-						NextDieRollType = actionShortcut.Type;
-					}
-				}
-				finally
-				{
-					settingInternally = false;
-					HighlightPlayerShortcutUI(actionShortcut.Index);
-					SetControlUIFromRoll(currentRoll);
-					UpdateStateUIForPlayer(player);
-				}
+				if (activationResult == ActionType.CreatesNew)
+					NewShortcutActivated(actionShortcut, player);
 			}
 			finally
 			{
 				SetPlayerShortcutUI(actionShortcut, player);
 				SetShortcutVisibility();
 				UpdateAskUI(player);
+			}
+		}
+
+		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
+		{
+			settingInternally = true;
+			try
+			{
+				currentRoll = DiceRoll.GetFrom(actionShortcut, player);
+				TellDmWeAreReady(player, actionShortcut);
+				NextDieRollType = actionShortcut.Type;
+			}
+			finally
+			{
+				settingInternally = false;
+				HighlightPlayerShortcutUI(actionShortcut.Index);
+				SetControlUIFromRoll(currentRoll);
+				UpdateStateUIForPlayer(player);
 			}
 		}
 
@@ -1373,6 +1409,7 @@ namespace DHDM
 
 		public enum ActionType
 		{
+			Abort,
 			ModifiesExisting,
 			CreatesNew
 		}
@@ -1402,12 +1439,14 @@ namespace DHDM
 
 			ClearWeaponAndSpellEffects(player);
 
-			PlayerTakingAction(actionShortcut, player);
+			ActionResult actionResult = PlayerTakingAction(actionShortcut, player);
+			if (actionResult == ActionResult.MustAbort)
+				return ActionType.Abort;
 
 			if (actionShortcut.Spell != null)
-				PrepareSpell(actionShortcut, player);
+				ShowPreparedSpellInGame(actionShortcut, player);
 			else
-				AboutToTakePhysicalAction(actionShortcut, player);
+				ShowPreparedPhysicalActionInGame(actionShortcut, player);
 
 			player.Use(actionShortcut);
 			return ActionType.CreatesNew;
@@ -1438,7 +1477,7 @@ namespace DHDM
 			}
 		}
 
-		private void AboutToTakePhysicalAction(PlayerActionShortcut actionShortcut, Character player)
+		private void ShowPreparedPhysicalActionInGame(PlayerActionShortcut actionShortcut, Character player)
 		{
 			if (!IsWildMagicRoll(actionShortcut))
 				SwitchToMainPageInGame();
@@ -1456,7 +1495,7 @@ namespace DHDM
 			HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, ScrollPage.main, string.Empty);
 		}
 
-		private void PrepareSpell(PlayerActionShortcut actionShortcut, Character player)
+		private void ShowPreparedSpellInGame(PlayerActionShortcut actionShortcut, Character player)
 		{
 			Spell spell = actionShortcut.Spell;
 			if (spell == null)
@@ -1484,7 +1523,13 @@ namespace DHDM
 				UpdateSpellEvents(spell);
 		}
 
-		private void PlayerTakingAction(PlayerActionShortcut actionShortcut, Character player)
+		public enum ActionResult
+		{
+			GoodToGo,
+			MustAbort
+		}
+
+		private ActionResult PlayerTakingAction(PlayerActionShortcut actionShortcut, Character player)
 		{
 			player.ReadiedWeapon = null;
 			if (actionShortcut.Part != TurnPart.Reaction)
@@ -1493,14 +1538,24 @@ namespace DHDM
 			// TODO: Fix the targeting.
 			if (DndUtils.IsAttack(actionShortcut.Type))
 			{
+				if (actionShortcut.CarriedWeapon != null && actionShortcut.CarriedWeapon.Weapon.RequiresAmmunition())
+				{
+					string ammunitionKind = actionShortcut.CarriedWeapon.Weapon.AmmunitionKind;
+					if (!player.HasAmmunition(ammunitionKind))
+					{
+						TellAll($"{player.firstName} is out of {ammunitionKind}s.");
+						return ActionResult.MustAbort;
+					}
+				}
 				player.ReadiedWeapon = actionShortcut.CarriedWeapon;
 				actionShortcut.UpdatePlayerAttackingAbility(player);
-
 
 				if (actionShortcut.Spell == null && actionShortcut.WeaponProperties != WeaponProperties.None)
 					game.CreatureRaisingWeapon(player, actionShortcut);
 				player.PrepareAttack(null, actionShortcut);
 			}
+
+			return ActionResult.GoodToGo;
 		}
 
 		private static void ClearWeaponAndSpellEffects(Character player)
@@ -1564,6 +1619,21 @@ namespace DHDM
 			if (actionShortcut.Windups.Count > 0)
 			{
 				List<WindupDto> windups = actionShortcut.GetAvailableWindups(player);
+				foreach (WindupDto windupDto in windups)
+				{
+					if (windupDto.EffectAvailableWhen == "usesMagicAmmunitionThisRoll == true")
+					{
+						if (player.ReadiedAmmunition != null)
+						{
+							if (!string.IsNullOrEmpty(player.ReadiedAmmunition.HueShift))
+							{
+								windupDto.HueStr = player.ReadiedAmmunition.HueShift;
+								if (int.TryParse(player.ReadiedAmmunition.HueShift, out int result))
+									windupDto.Hue = result;
+							}
+						}
+					}
+				}
 
 				string serializedObject = JsonConvert.SerializeObject(windups);
 				HubtasticBaseStation.AddWindup(serializedObject);
@@ -1874,8 +1944,6 @@ namespace DHDM
 
 		public void RollTheDice(DiceRoll diceRoll)
 		{
-
-
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
@@ -1937,6 +2005,9 @@ namespace DHDM
 				btnClearDice.Visibility = Visibility.Hidden;
 				PrepareForClear();
 			});
+
+			SeriouslyRollTheDice(diceRoll);
+
 			if (diceRoll.IsOnePlayer)
 				player?.ResetPlayerRollBasedState();
 			else
@@ -1947,8 +2018,6 @@ namespace DHDM
 					player?.ResetPlayerRollBasedState();
 				}
 			}
-
-			SeriouslyRollTheDice(diceRoll);
 		}
 
 		private void SeriouslyRollTheDice(DiceRoll diceRoll)
@@ -1957,7 +2026,7 @@ namespace DHDM
 			{
 				ChangeFrameRateAndUI(STR_BackOverlay, 5);
 				ChangeFrameRateAndUI(STR_FrontOverlay, 10);
-				ChangeFrameRateAndUI(STR_DiceOverlay, 15);
+				ChangeFrameRateAndUI(STR_DiceOverlay, 25);
 			}
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
@@ -2815,7 +2884,7 @@ namespace DHDM
 			{
 				ChangeFrameRateAndUI(STR_BackOverlay, 25);
 				ChangeFrameRateAndUI(STR_FrontOverlay, 25);
-				ChangeFrameRateAndUI(STR_DiceOverlay, 15);
+				ChangeFrameRateAndUI(STR_DiceOverlay, 10);
 			}
 
 			waitingToClearDice = true;

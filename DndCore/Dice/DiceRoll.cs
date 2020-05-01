@@ -130,6 +130,21 @@ namespace DndCore
 		// TODO: Put DiceRollType as a property on actionShortcut
 		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut, Character player = null)
 		{
+			int modFromAmmunition = 0;
+			string ammunitionBonus = string.Empty;
+			if (actionShortcut.CarriedWeapon != null)
+			{
+				if (actionShortcut.CarriedWeapon.Weapon.RequiresAmmunition() && player != null && player.ReadiedAmmunition != null)
+				{
+					if (!string.IsNullOrEmpty(player.ReadiedAmmunition.DamageBonusStr))
+					{
+						DieRollDetails dieRollDetails = DieRollDetails.From(player.ReadiedAmmunition.DamageBonusStr);
+						modFromAmmunition = dieRollDetails.FirstOffset;
+						ammunitionBonus = dieRollDetails.FirstDieStr;
+					}
+				}
+			}
+
 			DiceRoll diceRoll = new DiceRoll(actionShortcut.Type);
 			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
 			diceRoll.AdditionalDiceOnHitMessage = actionShortcut.AddDiceOnHitMessage;
@@ -138,14 +153,25 @@ namespace DndCore
 				diceRoll.DamageHealthExtraDice = actionShortcut.InstantDice;
 			else
 			{
-				string modStr = "";
-				if (actionShortcut.DamageModifier > 0)
-					modStr = "+" + actionShortcut.DamageModifier.ToString();
-				else if (actionShortcut.DamageModifier < 0)
-					modStr = actionShortcut.DamageModifier.ToString();
-				diceRoll.DamageHealthExtraDice = actionShortcut.Dice + modStr;
-			}
+				//string modStr = "";
+				int modifier = modFromAmmunition + actionShortcut.DamageModifier;
+				//if (modifier > 0)
+				//	modStr = "+" + modifier.ToString();
+				//else if (modifier < 0)
+				//	modStr = modifier.ToString();
 
+				if (modFromAmmunition != 0 || ammunitionBonus.HasSomething())
+				{
+					DieRollDetails tempDiceRoll = DieRollDetails.From(actionShortcut.Dice);
+					tempDiceRoll.FirstOffset += modFromAmmunition;
+					string dieStr = tempDiceRoll.ToString();
+					if (!string.IsNullOrEmpty(ammunitionBonus))
+						dieStr = string.Join(",", dieStr, ammunitionBonus);
+					diceRoll.DamageHealthExtraDice = dieStr;
+				}
+				else
+					diceRoll.DamageHealthExtraDice = actionShortcut.Dice;
+			}
 			string overrideReplaceDamageDice = null;
 			if (player != null)
 				overrideReplaceDamageDice = player.overrideReplaceDamageDice;

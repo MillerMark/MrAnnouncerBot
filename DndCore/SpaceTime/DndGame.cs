@@ -28,6 +28,7 @@ namespace DndCore
 		public event MessageEventHandler RequestMessageToAll;
 		public event CastedSpellEventHandler SpellDispelled;
 		public event PickWeaponEventHandler PickWeapon;
+		public event PickAmmunitionEventHandler PickAmmunition;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
 		public event DndGameEventHandler RoundEnded;
@@ -43,6 +44,10 @@ namespace DndCore
 		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
 		{
 			PickWeapon?.Invoke(sender, ea);
+		}
+		protected virtual void OnPickAmmunition(object sender, PickAmmunitionEventArgs ea)
+		{
+			PickAmmunition?.Invoke(sender, ea);
 		}
 		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
@@ -174,20 +179,31 @@ namespace DndCore
 		private void HookPlayerEvents(Character player)
 		{
 			player.PickWeapon += Player_PickWeapon;
+			player.PickAmmunition += Player_PickAmmunition;
 			player.StateChanged += Player_StateChanged;
 			player.RollDiceRequest += Player_RollDiceRequest;
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
+			player.RequestMessageToAll += Player_RequestMessageToAll;
 		}
 
 		private void Player_PickWeapon(object sender, PickWeaponEventArgs ea)
 		{
 			OnPickWeapon(this, ea);
 		}
+		private void Player_PickAmmunition(object sender, PickAmmunitionEventArgs ea)
+		{
+			OnPickAmmunition(this, ea);
+		}
 
 		private void Player_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
 		{
 			TellDungeonMaster(ea.Message);
+		}
+
+		private void Player_RequestMessageToAll(object sender, MessageEventArgs ea)
+		{
+			TellAll(ea.Message);
 		}
 
 		private void Player_SpellDispelled(object sender, CastedSpellEventArgs ea)
@@ -306,7 +322,7 @@ namespace DndCore
 				AdvanceRound();
 			}
 
-			if (lastPlayer != null)
+			if (lastPlayer != null && lastPlayer != player)
 			{
 				lastPlayer.EndTurnResetState();
 				EndingTurnFor(player);
@@ -417,6 +433,7 @@ namespace DndCore
 
 		public void CreatureRaisingWeapon(Character player, PlayerActionShortcut actionShortcut)
 		{
+			// I'm not liking - this I think was for test cases. We should set an ActiveWeapon property.
 			player.ActiveWeaponName = actionShortcut.Name;
 		}
 		public void CreaturePreparesAttack(Creature creature, Creature target, Attack attack, bool usesMagic)
@@ -542,6 +559,7 @@ namespace DndCore
 			lastMessageSentToDungeonMaster = message;
 			OnRequestMessageToDungeonMaster(this, new MessageEventArgs(message));
 		}
+
 		public void TellAll(string message)
 		{
 			lastMessageSentToDungeonMaster = message;
