@@ -63,8 +63,11 @@ namespace DndCore
 		public string ActivationMessage { get; set; }
 		public string DeactivationMessage { get; set; }
 		public TurnPart ActivationTime { get; set; }
-		public string ShortcutName { get; set; }
-		public string ShortcutAvailableWhen { get; set; }
+		public TurnPart DeactivationTime { get; set; }
+		public string ActivateShortcutDisplayText { get; set; }
+		public string DeactivateShortcutDisplayText { get; set; }
+		public string ActivateShortcutAvailableWhen { get; set; }
+		public string DeactivateShortcutAvailableWhen { get; set; }
 		public bool Magic { get; set; }
 		public bool ModifiesExistingRoll { get; set; }
 
@@ -98,11 +101,14 @@ namespace DndCore
 			result.OnPlayerStartsTurn = featureDto.OnPlayerStartsTurn;
 			result.OnPlayerSaves = featureDto.OnPlayerSaves;
 			result.OnRollComplete = featureDto.OnRollComplete;
-			result.ShortcutName = featureDto.ShortcutName;
-			result.ShortcutAvailableWhen = featureDto.ShortcutAvailableWhen;
+			result.ActivateShortcutDisplayText = featureDto.ActivateShortcutDisplayText;
+			result.DeactivateShortcutDisplayText = featureDto.DeactivateShortcutDisplayText;
+			result.ActivateShortcutAvailableWhen = featureDto.ActivateShortcutAvailableWhen;
+			result.DeactivateShortcutAvailableWhen = featureDto.DeactivateShortcutAvailableWhen;
 			result.ModifiesExistingRoll = MathUtils.IsChecked(featureDto.rollMod);
 			result.Magic = MathUtils.IsChecked(featureDto.Magic);
 			result.ActivationTime = PlayerActionShortcut.GetTurnPart(featureDto.ActivationTime);
+			result.DeactivationTime = PlayerActionShortcut.GetTurnPart(featureDto.DeactivationTime);
 			result.RequiresPlayerActivation = MathUtils.IsChecked(featureDto.RequiresActivation);
 			result.Duration = DndTimeSpan.FromDurationStr(featureDto.Duration);
 			result.Per = DndTimeSpan.FromDurationStr(featureDto.Per);
@@ -259,6 +265,11 @@ namespace DndCore
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerRaisesWeapon))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerRaisesWeapon, Parameters, arguments), player);
+		}
+
+		public void WeaponRaised(string arguments, Character player)
+		{
+			TriggerPlayerRaisesWeapon(arguments, player);
 		}
 
 		public void PlayerStartsTurn(string arguments, Character player)

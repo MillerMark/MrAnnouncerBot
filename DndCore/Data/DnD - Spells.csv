@@ -437,6 +437,10 @@ The duration depends on the object's material. If the object is composed of mult
 | Adamantine or mithral | 1 minute   |
 
 Using any material created by this spell as another spell's material component causes that spell to fail.","When you cast this spell using a spell slot of 6th level or higher, the cube increases by 5 feet for each slot level above 5th.",TRUE,TRUE,TRUE,a tiny piece of matter of the same type of the item you plan to create,sorcerer,wizard,,,,,,sorcerer,wizard,level5,,,,,
+Crimson King's Call,magic,transmutation,FALSE,1 action,Touch,1 minute,,,,,,,,,,,"if (Get(ActiveWeaponName) == ""Frost Bow"" && AttackIsRange)
+{
+  AddDice(""1d6(cold:\""Crimson King's Call\"")"");
+}",,,,,1,,,,,,,,"After attuning to the bow, the Crimson King will lend you his biting cold power. Once per day(long rest) you may utter the command word activating the Crimson King's Call. As an action, when you are attuned, you may use the command word, awakening the enchantment within, the bow freezes over in jagged white ice, to deal an extra 1d6 cold damage for 1 minute. Maintaining this does not count as concentration, but will end if any of these conditions are met: you are reduced to 0 hit points, the minute expires, or you choose to end it on your turn (no action).",,FALSE,FALSE,FALSE,,,,,,,,,,,,,,,,
 Crown of Madness,2,enchantment,FALSE,1 action,120 feet,"Concentration, up to 1 minute",,,,,,,,,,,,,,,,1,,,,,,Wisdom,,"One humanoid of your choice that you can see within range must succeed on a **Wisdom** saving throw or become **charmed** by you for the duration. While the target is **charmed** in this way, a twisted crown of jagged iron appears on its head, and a madness glows in its eyes. The **charmed** target must use its action before moving on each of its turns to make a melee attack against a creature other than itself that you mentally choose.",,FALSE,TRUE,TRUE,,bard,sorcerer,warlock,wizard,,,,bard,sorcerer,warlock,wizard,level2,,,
 Crusader's Mantle,3,evocation,FALSE,1 action,Self,"Concentration, up to 1 minute",,,,,,,,,,,,,,,,1,,,,,+1d4,,,"Holy power radiates from you in an aura with a **30-foot** radius, awakening boldness in friendly creatures. Until the spell ends, the aura moves with you, centered on you. While in the aura, each nonhostile creature in the aura (including you) deals an extra {spell_DieStrRaw} **radiant damage** when it hits with a weapon attack.",,FALSE,FALSE,TRUE,,paladin,,,,,,,paladin,level3,,,,,,
 Cure Wounds,1,evocation,FALSE,1 action,Touch,Instantaneous,,,,,,,,,,"SelectTarget(""Creature"", 1);",,,"ChangeTarget(""HitPoints"", dice_health);",,,1,1,1d8,healing,,1d8+SAM(healing),,,A creature you touch regains a number of hit points equal to {spell_DieStrRaw}. This spell has no effect on undead or constructs.,"When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st.",FALSE,TRUE,TRUE,,bard,cleric,druid,paladin,ranger,,,bard,cleric,druid,paladin,ranger,level1,,
@@ -937,7 +941,7 @@ Holy Aura,8,abjuration,FALSE,1 action,Self,"Concentration, up to 1 minute",,,,,,
 Hunter's Mark,1,divination,FALSE,1 bonus action,90 feet,"Concentration, up to 1 hour",,,,,,,,,,,TargetIsMarked;,"if (HasWeaponInHand && TargetIsMarked) 
 {
   TellAll(""Hunter's Mark is targeted - extra 1d6 added to damage dice."");
-  AddDice(""1d6"");
+  AddDice(""1d6(\""Hunter's Mark\"")"");
 }",,,,1,*,,,,+1d6,,,"You choose a creature you can see within range and mystically mark it as your quarry. Until the spell ends, you deal an extra 1d6 damage to the target whenever you hit it with a weapon attack, and you have **advantage** on any Wisdom **(Perception)** or Wisdom **(Survival)** check you make to find it. If the target drops to **0 hit points** before this spell ends, you can use a **bonus action** on a subsequent turn of yours to mark a new creature.","When you cast this spell using a spell slot of 3rd or 4th level, you can maintain your concentration on the spell for up to 8 hours. When you use a spell slot of 5th level or higher, you can maintain your concentration on the spell for up to 24 hours.",FALSE,FALSE,TRUE,,ranger,,,,,,,ranger,level1,,,,,,
 Hypnotic Pattern,3,illusion,FALSE,1 action,120 feet,"Concentration, up to 1 minute",,,,,,,,,,,,,,,,1,,,,,,Wisdom,,"You create a twisting pattern of colors that weaves through the air inside a **30-foot** cube within range. The pattern appears for a moment and vanishes. Each creature in the area who sees the pattern must make a **Wisdom** saving throw. On a failed save, the creature becomes **charmed** for the duration. While **charmed** by this spell, the creature is **incapacitated** and has a speed of 0.
 
@@ -1497,13 +1501,13 @@ Shield,1,abjuration,FALSE,"1 reaction, which you take when you are hit by an att
 AddSpellHitEffect(""SparkBurst"", 180);",,,,,,,,,1,,,,,,,,"An **invisible** barrier of magical force appears and protects you. Until the start of your next turn, you have a **+5 bonus** to **AC**, including against the triggering attack, and you take no damage from magic missile.",,FALSE,TRUE,TRUE,,sorcerer,wizard,,,,,,sorcerer,wizard,level1,,,,,
 Shield of Faith,1,abjuration,FALSE,1 bonus action,60 feet,"Concentration, up to 10 minutes",,,,,,,,,,,,,,,,1,,,,,,,,"A shimmering field appears and surrounds a creature of your choice within range, granting it a **+2 bonus** to **AC** for the duration.",,TRUE,TRUE,TRUE,a small parchment with a bit of holy text written on it,cleric,paladin,,,,,,cleric,paladin,level1,,,,,
 Shillelagh,cantrip,transmutation,FALSE,1 bonus action,Touch,1 minute,,,,,,,"Set(spell_Target, GetWeaponTarget(""Club;Quarterstaff""));
-if (Get(spell_Target) == null)
-  TellAll($""{firstName}'s Shillelagh failed because a suitable target weapon was not selected."");","if (Get(spell_Target) == ReadiedWeapon)
+if (Get(spell_TargetWeapon) == null)
+  TellAll($""{firstName}'s Shillelagh failed because a suitable target weapon was not selected."");","if (Get(spell_TargetWeapon) == ReadiedWeapon)
 {
   Set(OverrideAttackingAbility, spellCastingAbility);
   Set(OverrideWeaponMagicHue, 160);
   TellAll($""{firstName} is attacking with {hisHer} Shillelagh-imbued weapon, using {hisHer} Spell Casting Ability ({spellCastingAbility}) to get a {SpellcastingAbilityModifierStr} modifier to the attack and damage rolls."");
-}",,,"if (Get(spell_Target) == ReadiedWeapon)
+}",,,"if (Get(spell_TargetWeapon) == ReadiedWeapon)
 {
   Set(usesMagicThisRoll, true);
   if (TwoHanded == true)

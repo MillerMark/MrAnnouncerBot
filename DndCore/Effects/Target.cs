@@ -5,12 +5,6 @@ using DndCore;
 
 namespace DndCore
 {
-	public enum AttackTargetType
-	{
-		Spell,
-		Weapon
-	}
-
 	public class Target
 	{
 		public AttackTargetType Type { get; set; }
@@ -20,6 +14,7 @@ namespace DndCore
 		public List<int> PlayerIds { get; set; }
 		public Vector Location { get; set; }
 		public int Range { get; set; }
+		public CarriedWeapon Weapon { get; set; }
 		public Target()
 		{
 
@@ -31,6 +26,13 @@ namespace DndCore
 			SpellType = SpellTargetType.Creatures;
 			if (targetCreature is Character player)
 				PlayerIds.Add(player.playerID);
+		}
+
+		public Target(CarriedWeapon weapon)
+		{
+			Type = AttackTargetType.Weapon;
+			SpellType = SpellTargetType.None;
+			Weapon = weapon;
 		}
 	}
 }

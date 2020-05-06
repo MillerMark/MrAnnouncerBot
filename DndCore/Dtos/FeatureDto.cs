@@ -9,8 +9,11 @@ namespace DndCore
 		public string Index { get; set; }
 		public string RequiresActivation { get; set; }
 		public string ActivationTime { get; set; }
-		public string ShortcutName { get; set; }
-		public string ShortcutAvailableWhen { get; set; }
+		public string DeactivationTime { get; set; }
+		public string ActivateShortcutDisplayText { get; set; }
+		public string DeactivateShortcutDisplayText { get; set; }
+		public string ActivateShortcutAvailableWhen { get; set; }
+		public string DeactivateShortcutAvailableWhen { get; set; }
 		public string rollMod { get; set; }
 		public string Magic { get; set; }
 		public string ActivateWhen { get; set; }

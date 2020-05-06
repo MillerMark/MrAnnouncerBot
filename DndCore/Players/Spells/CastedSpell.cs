@@ -14,6 +14,13 @@ namespace DndCore
 		public Spell Spell { get; set; }
 		public Character SpellCaster { get; set; }
 		public Target Target { get; set; }
+		public CarriedWeapon TargetWeapon
+		{
+			get
+			{
+				return Target?.Weapon;
+			}
+		}
 
 		public DateTime TimeSpellWasCast { get; set; }
 		public string DieStr { get => Spell.DieStr; set => Spell.DieStr = value; }

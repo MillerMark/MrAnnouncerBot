@@ -77,7 +77,10 @@ namespace DndCore
 		{
 			get
 			{
-				return (int)Rolls.FirstOrDefault()?.Offset;
+				Roll roll = Rolls.FirstOrDefault();
+				if (roll == null)
+					return 0;
+				return roll.Offset;
 			}
 			set
 			{
@@ -87,11 +90,26 @@ namespace DndCore
 			}
 		}
 
+		public int DieCount
+		{
+			get
+			{
+				if (Rolls == null)
+					return 0;
+				return Rolls.Count;
+			}
+		}
+		
 		public void AddRoll(string dieStr, int spellcastingAbilityModifier = int.MinValue)
 		{
 			if (string.IsNullOrEmpty(dieStr))
 				return;
 			Roll roll = Roll.From(dieStr, spellcastingAbilityModifier);
+			AddRoll(roll);
+		}
+
+		private void AddRoll(Roll roll)
+		{
 			if (roll == null)
 				return;
 			Roll existingRollSameDie = GetRoll(roll.Instant, roll.Sides, roll.Descriptor);
@@ -103,7 +121,7 @@ namespace DndCore
 			}
 			rolls.Add(roll);
 		}
-		
+
 		public static DieRollDetails From(string str, int spellcastingAbilityModifier = int.MinValue)
 		{
 			DieRollDetails dieRollDetails = new DieRollDetails();
@@ -117,6 +135,12 @@ namespace DndCore
 				dieRollDetails.AddRoll(dieStr, spellcastingAbilityModifier);
 			return dieRollDetails;
 		}
-		
+
+		public void AddDetails(DieRollDetails rollDetails)
+		{
+			foreach (Roll roll in rollDetails.Rolls)
+				AddRoll(roll);
+		}
+
 	}
 }

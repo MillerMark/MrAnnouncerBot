@@ -5,21 +5,20 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class DeactivateFeatureFunction : DndFunction
+	public class RemoveTimerFunction : DndFunction
 	{
-		public override string Name { get; set; } = "DeactivateFeature";
+		public override string Name { get; set; } = "RemoveTimer";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1);
-			string featureName = args[0];
-			if (featureName.StartsWith("\""))
-				featureName = Expressions.GetStr(featureName);
-			Feature feature = AllFeatures.Get(featureName);
+			string timerName = Expressions.GetStr(args[0], player, target, spell);
 
-			if (feature != null)
-				feature.Deactivate("", player);
-
+			if (player == null)
+				return null;
+			if (player.Game == null)
+				return null;
+			player.Game.Clock.RemoveAlarm(timerName);
 			return null;
 		}
 	}

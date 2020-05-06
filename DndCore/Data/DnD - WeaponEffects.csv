@@ -45,3 +45,5 @@ Shortbow,3,Windup,Bow.ArrowFlame,ammunitionOnFire == true,x,player,,,,0.6,,,,,,,
 Rapier,0,Windup,Rapier.Weapon,,x,player,,,,,,,,,,,,,,,,SwordDraw,SwordSlash
 Rapier,1,Windup,Rapier.MagicBack,usesMagicThisRoll == true,x,220,,,,,,,,,,,,,,,,,
 Rapier,2,Windup,Rapier.MagicFront,usesMagicThisRoll == true,x,25,,,,,,,,,,,,,,,,,
+Spear,0,Windup,Javelin.Weapon,,x,,,,,0.8,,,,,150,,,,,,,SwordDraw,SwordSlash
+Spear,1,Windup,Javelin.Magic,usesMagicThisRoll == true,x,,,,,0.8,,,,,150,,,,,,,,

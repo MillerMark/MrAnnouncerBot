@@ -69,7 +69,7 @@ namespace DndCore
 					else
 						foreach (PlayerActionShortcut playerActionShortcut in lastShortcuts)
 						{
-							playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.Name));
+							playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.DisplayText));
 						}
 				}
 			if (lastShortcuts != null)
@@ -99,7 +99,7 @@ namespace DndCore
 					else
 						foreach (PlayerActionShortcut playerActionShortcut in lastShortcuts)
 						{
-							playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, PlayerActionShortcut.WeaponWindupPrefix + playerActionShortcut.Name));
+							playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, PlayerActionShortcut.WeaponWindupPrefix + playerActionShortcut.DisplayText));
 						}
 				}
 
@@ -109,8 +109,12 @@ namespace DndCore
 
 		static void AddFeatureShortcutsFor(Character player, Feature feature)
 		{
-			PlayerActionShortcut shortcut = PlayerActionShortcut.FromFeature(feature, player);
+			PlayerActionShortcut shortcut = PlayerActionShortcut.FromFeature(feature, player, ActivationShortcutKind.Activate);
 			AllShortcuts.Add(shortcut);
+
+			shortcut = PlayerActionShortcut.FromFeature(feature, player, ActivationShortcutKind.Deactivate);
+			if (shortcut != null)
+				AllShortcuts.Add(shortcut);
 		}
 
 		public static void AddShortcutsFor(Character player)
@@ -164,7 +168,7 @@ namespace DndCore
 		public static List<PlayerActionShortcut> Get(int playerId, string nameStart)
 		{
 			string lowerName = nameStart.ToLower();
-			return AllShortcuts.Where(x => x.PlayerId == playerId).Where(x => x.Name.ToLower().StartsWith(lowerName)).ToList();
+			return AllShortcuts.Where(x => x.PlayerId == playerId).Where(x => x.DisplayText.ToLower().StartsWith(lowerName)).ToList();
 		}
 
 		public static List<PlayerActionShortcut> AllShortcuts {

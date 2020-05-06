@@ -1,3 +1,4 @@
 Name,Expression
 AttackingWith($Ability),attackingAbility == $Ability
 ArmorWorn($Armor),true
+ExitWildShape(),"DeactivateFeature(""Wild Shape"")"

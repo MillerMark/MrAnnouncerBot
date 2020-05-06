@@ -19,8 +19,8 @@ namespace DndTests
 		public void TestToHitBonusAndDamageDie()
 		{
 			List<PlayerActionShortcut> battleaxes = AllActionShortcuts.Get(PlayerID.LilCutie, "Battleaxe");
-			PlayerActionShortcut battleaxe2H = battleaxes.FirstOrDefault(x => x.Name.IndexOf("(2H)") > 0);
-			PlayerActionShortcut battleaxe1H = battleaxes.FirstOrDefault(x => x.Name.IndexOf("(1H)") > 0);
+			PlayerActionShortcut battleaxe2H = battleaxes.FirstOrDefault(x => x.DisplayText.IndexOf("(2H)") > 0);
+			PlayerActionShortcut battleaxe1H = battleaxes.FirstOrDefault(x => x.DisplayText.IndexOf("(1H)") > 0);
 			Assert.IsNotNull(battleaxe1H);
 			Assert.IsNotNull(battleaxe2H);
 			Assert.AreEqual("1d8+3(slashing)", battleaxe1H.Dice);

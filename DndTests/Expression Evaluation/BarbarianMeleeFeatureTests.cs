@@ -206,7 +206,7 @@ namespace DndTests
 
 			fred.baseDexterity = 18;
 			fred.baseStrength = 10;
-			dagger.UpdatePlayerAttackingAbility(fred);
+			dagger.UpdatePlayerAttackingAbility(fred, false);
 			fred.Use(dagger);
 			Assert.IsFalse(barbarianMelee.ShouldActivateNow());  // Should not be satisfied because dexterity is now the ability of choice to use with this finesse weapon.
 		}

@@ -368,7 +368,7 @@ namespace DndCore
 
 		public void CompleteCast(Character player, CastedSpell castedSpell)
 		{
-			if (castedSpell.Target == null)
+			if (castedSpell.Target == null && player != null)
 				castedSpell.Target = player.ActiveTarget;
 			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
@@ -431,11 +431,6 @@ namespace DndCore
 			return activeSpells.FindAll(x => x.SpellCaster == character);
 		}
 
-		public void CreatureRaisingWeapon(Character player, PlayerActionShortcut actionShortcut)
-		{
-			// I'm not liking - this I think was for test cases. We should set an ActiveWeapon property.
-			player.ActiveWeaponName = actionShortcut.Name;
-		}
 		public void CreaturePreparesAttack(Creature creature, Creature target, Attack attack, bool usesMagic)
 		{
 			if (!(creature is Character player))

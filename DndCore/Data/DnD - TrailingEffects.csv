@@ -3,7 +3,7 @@ Ravens,Raven,,,,,,,player,35,,,180,45,,15,5,600,300,Flap[6]
 Spirals,Spiral,,,,,,,player,20,,,,,,0,150,500,300,Crow[3]
 Smoke,Smoke,,,,,,,player,10,,,,,x,0,120,,,
 Sparks,SparkTrail,,,,,,,player,35,,,180,15,,0,84,,,
-WildAnimalForm,PawPrint,-1,500,4000,2000,0.8,,player,20,,,,,,50,90,,,
+WildAnimalForm,PawPrint,-1,500,4000,2000,0.8,0.7,player,20,,,,,,25,45,,,
 Fangs,Fangs,-1,500,4000,2000,0.9,,player,20,,,,,,0,120,,,
 SmallSparks,Spark,-1,0,450,300,1,0.5,,180,,,,,,0,5,200,100,Dice/Zap[4]
 FireTrail,FireTrails,,,,,,0.8,-10,20,,,180,30,,,50,,,

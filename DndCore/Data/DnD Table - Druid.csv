@@ -1,21 +1,21 @@
-Level,ProficiencyBonus,Features,CantripsKnown,Slot1Spells,Slot2Spells,Slot3Spells,Slot4Spells,Slot5Spells,Slot6Spells,Slot7Spells,Slot8Spells,Slot9Spells
-1,2,"Druidic,Spellcasting",2,2,0,0,0,0,0,0,0,0
-2,2,"Wild Shape,DruidCircle",2,3,0,0,0,0,0,0,0,0
-3,2,,2,4,2,0,0,0,0,0,0,0
-4,2,"Wild Shape improvement, Ability Score Improvement",3,4,3,0,0,0,0,0,0,0
-5,3,,3,4,3,2,0,0,0,0,0,0
-6,3,DruidCircle feature,3,4,3,3,0,0,0,0,0,0
-7,3,,3,4,3,3,1,0,0,0,0,0
-8,3,"Wild Shape improvement, Ability Score Improvement",3,4,3,3,2,0,0,0,0,0
-9,4,,3,4,3,3,3,1,0,0,0,0
-10,4,DruidCircle feature,4,4,3,3,3,2,0,0,0,0
-11,4,,4,4,3,3,3,2,1,0,0,0
-12,4,Ability Score Improvement,4,4,3,3,3,2,1,0,0,0
-13,5,,4,4,3,3,3,2,1,1,0,0
-14,5,DruidCircle feature,4,4,3,3,3,2,1,1,0,0
-15,5,,4,4,3,3,3,2,1,1,1,0
-16,5,Ability Score Improvement,4,4,3,3,3,2,1,1,1,0
-17,6,,4,4,3,3,3,2,1,1,1,1
-18,6,"Timeless Body, BeastSpells",4,4,3,3,3,3,1,1,1,1
-19,6,Ability Score Improvement,4,4,3,3,3,3,2,1,1,1
-20,6,Archdruid,4,4,3,3,3,3,2,2,1,1
+Level,ProficiencyBonus,Features,WildShapeCR,WildShapeLimitations,CantripsKnown,Slot1Spells,Slot2Spells,Slot3Spells,Slot4Spells,Slot5Spells,Slot6Spells,Slot7Spells,Slot8Spells,Slot9Spells
+1,2,"Druidic,Spellcasting",0,,2,2,0,0,0,0,0,0,0,0
+2,2,"Wild Shape,DruidCircle",1/4,"flying,swimming",2,3,0,0,0,0,0,0,0,0
+3,2,,1/4,"flying,swimming",2,4,2,0,0,0,0,0,0,0
+4,2,"Wild Shape improvement, Ability Score Improvement",1/2,flying,3,4,3,0,0,0,0,0,0,0
+5,3,,1/2,flying,3,4,3,2,0,0,0,0,0,0
+6,3,DruidCircle feature,1/2,flying,3,4,3,3,0,0,0,0,0,0
+7,3,,1/2,flying,3,4,3,3,1,0,0,0,0,0
+8,3,"Wild Shape improvement, Ability Score Improvement",1,,3,4,3,3,2,0,0,0,0,0
+9,4,,1,,3,4,3,3,3,1,0,0,0,0
+10,4,DruidCircle feature,1,,4,4,3,3,3,2,0,0,0,0
+11,4,,1,,4,4,3,3,3,2,1,0,0,0
+12,4,Ability Score Improvement,1,,4,4,3,3,3,2,1,0,0,0
+13,5,,1,,4,4,3,3,3,2,1,1,0,0
+14,5,DruidCircle feature,1,,4,4,3,3,3,2,1,1,0,0
+15,5,,1,,4,4,3,3,3,2,1,1,1,0
+16,5,Ability Score Improvement,1,,4,4,3,3,3,2,1,1,1,0
+17,6,,1,,4,4,3,3,3,2,1,1,1,1
+18,6,"Timeless Body, BeastSpells",1,,4,4,3,3,3,3,1,1,1,1
+19,6,Ability Score Improvement,1,,4,4,3,3,3,3,2,1,1,1
+20,6,Archdruid,1,,4,4,3,3,3,3,2,2,1,1

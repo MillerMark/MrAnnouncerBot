@@ -130,48 +130,33 @@ namespace DndCore
 		// TODO: Put DiceRollType as a property on actionShortcut
 		public static DiceRoll GetFrom(PlayerActionShortcut actionShortcut, Character player = null)
 		{
-			int modFromAmmunition = 0;
-			string ammunitionBonus = string.Empty;
+			DieRollDetails bonusDie = DieRollDetails.From("");
 			if (actionShortcut.CarriedWeapon != null)
 			{
 				if (actionShortcut.CarriedWeapon.Weapon.RequiresAmmunition() && player != null && player.ReadiedAmmunition != null)
-				{
 					if (!string.IsNullOrEmpty(player.ReadiedAmmunition.DamageBonusStr))
-					{
-						DieRollDetails dieRollDetails = DieRollDetails.From(player.ReadiedAmmunition.DamageBonusStr);
-						modFromAmmunition = dieRollDetails.FirstOffset;
-						ammunitionBonus = dieRollDetails.FirstDieStr;
-					}
-				}
+						bonusDie.AddRoll(player.ReadiedAmmunition.DamageBonusStr);
 			}
 
 			DiceRoll diceRoll = new DiceRoll(actionShortcut.Type);
 			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
 			diceRoll.AdditionalDiceOnHitMessage = actionShortcut.AddDiceOnHitMessage;
 			diceRoll.AddCritFailMessages(actionShortcut.Type);
+			string dieToRoll;
 			if (actionShortcut.HasInstantDice())
-				diceRoll.DamageHealthExtraDice = actionShortcut.InstantDice;
+				dieToRoll = actionShortcut.InstantDice;
 			else
-			{
-				//string modStr = "";
-				int modifier = modFromAmmunition + actionShortcut.DamageModifier;
-				//if (modifier > 0)
-				//	modStr = "+" + modifier.ToString();
-				//else if (modifier < 0)
-				//	modStr = modifier.ToString();
+				dieToRoll = actionShortcut.Dice;
 
-				if (modFromAmmunition != 0 || ammunitionBonus.HasSomething())
-				{
-					DieRollDetails tempDiceRoll = DieRollDetails.From(actionShortcut.Dice);
-					tempDiceRoll.FirstOffset += modFromAmmunition;
-					string dieStr = tempDiceRoll.ToString();
-					if (!string.IsNullOrEmpty(ammunitionBonus))
-						dieStr = string.Join(",", dieStr, ammunitionBonus);
-					diceRoll.DamageHealthExtraDice = dieStr;
-				}
-				else
-					diceRoll.DamageHealthExtraDice = actionShortcut.Dice;
+			if (bonusDie.DieCount > 0)
+			{
+				DieRollDetails tempDiceRoll = DieRollDetails.From(dieToRoll);
+				tempDiceRoll.AddDetails(bonusDie);
+				diceRoll.DamageHealthExtraDice = tempDiceRoll.ToString();
 			}
+			else
+				diceRoll.DamageHealthExtraDice = dieToRoll;
+
 			string overrideReplaceDamageDice = null;
 			if (player != null)
 				overrideReplaceDamageDice = player.overrideReplaceDamageDice;
@@ -196,6 +181,7 @@ namespace DndCore
 			diceRoll.SecondRollTitle = actionShortcut.AdditionalRollTitle;
 			if (actionShortcut.Spell != null)
 			{
+				diceRoll.Modifier = player.SpellAttackBonus;
 				diceRoll.SpellName = actionShortcut.Spell.Name;
 				if (actionShortcut.Spell.MustRollDiceToCast())
 					diceRoll.DamageHealthExtraDice = actionShortcut.Spell.DieStr;

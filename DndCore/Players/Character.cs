@@ -25,6 +25,22 @@ namespace DndCore
 			PickAmmunition?.Invoke(sender, ea);
 		}
 
+		[JsonIgnore]
+		public string ActiveWeaponName
+		{
+			get
+			{
+				if (ReadiedWeapon != null)
+					if (!string.IsNullOrEmpty(ReadiedWeapon.Name))
+						return ReadiedWeapon.Name;
+					else
+						return ReadiedWeapon.Weapon.Name;  // Weapon kind, like "Bow", "Dagger", etc.
+
+				return string.Empty;
+			}
+		}
+		
+
 		CarriedWeapon readiedWeapon;
 		[JsonIgnore]
 		public CarriedWeapon ReadiedWeapon
@@ -120,6 +136,9 @@ namespace DndCore
 		public int advantageDiceThisRoll = 0;
 
 		[JsonIgnore]
+		public double attackingAbilityModifierBonusThisRoll = 0;
+
+		[JsonIgnore]
 		public Ability attackingAbility = Ability.none;
 
 		[JsonIgnore]
@@ -134,7 +153,7 @@ namespace DndCore
 		[JsonIgnore]
 		public int attackOffsetThisRoll = 0;
 		[JsonIgnore]
-		bool casting;
+		bool casting; // TODO: Delete this.
 		[JsonIgnore]
 		public Ability checkingAbilities = Ability.none;
 		[JsonIgnore]
@@ -956,7 +975,7 @@ namespace DndCore
 		public void AddDice(string diceStr)
 		{
 			additionalDice.Add(diceStr);
-			additionalDiceThisRoll = string.Join("; ", additionalDice);
+			additionalDiceThisRoll = string.Join(",", additionalDice);
 		}
 		public void ReplaceDamageDice(string diceStr)
 		{
@@ -984,6 +1003,7 @@ namespace DndCore
 			string spellName = spellStr;
 			string itemName = string.Empty;
 			DndTimeSpan rechargesAt = DndTimeSpan.FromSeconds(0);  // midnight;
+			string durationStr = string.Empty;
 			if (spellName.Has("("))
 			{
 				spellName = spellName.EverythingBefore("(");
@@ -1007,7 +1027,7 @@ namespace DndCore
 						if (chargeDetails.Length == 2)
 						{
 							int.TryParse(chargeDetails[0], out totalCharges);
-							string durationStr = chargeDetails[1];
+							durationStr = chargeDetails[1];
 							chargeResetSpan = DndTimeSpan.FromDurationStr(durationStr);
 							if (durationStr == "dawn")
 								rechargesAt = DndTimeSpan.FromHours(6);  // 6:00 am
@@ -1021,10 +1041,16 @@ namespace DndCore
 			knownSpell.SpellName = spellName;
 			knownSpell.RechargesAt = rechargesAt.GetTimeSpan();
 			knownSpell.TotalCharges = totalCharges;
-			knownSpell.ChargesRemaining = totalCharges;
 			knownSpell.ResetSpan = chargeResetSpan;
 			knownSpell.ItemName = itemName;
 			knownSpell.Player = this;
+			if (knownSpell.RechargesAt == TimeSpan.Zero && durationStr.HasSomething())
+			{
+				AddRechargeable(itemName, DndUtils.ToVarName(itemName), totalCharges, durationStr);
+			}
+
+
+			knownSpell.ChargesRemaining = totalCharges;  // setter Requires both ItemName and Player to be valid before setting.
 			KnownSpells.Add(knownSpell);
 		}
 
@@ -1300,7 +1326,7 @@ namespace DndCore
 
 			attackingAbilityModifier = GetAbilityModifier(attackingAbility);
 
-			return (int)Math.Round(attackingAbilityModifier);
+			return (int)Math.Round(attackingAbilityModifier + attackingAbilityModifierBonusThisRoll);
 		}
 
 		private void GetAttackingAbility(WeaponProperties weaponProperties, AttackType attackType)
@@ -1872,6 +1898,7 @@ namespace DndCore
 			damageOffsetThisRoll = 0;
 			attackOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
+			attackingAbilityModifierBonusThisRoll = 0;
 			disadvantageDiceThisRoll = 0;
 		}
 
@@ -2015,7 +2042,6 @@ namespace DndCore
 
 		public override void StartTurnResetState()
 		{
-			ActiveWeaponName = "";
 			forceShowSpell = false;
 			ActionsPerTurn = 1;
 			enemyAdvantage = 0;
@@ -2059,6 +2085,19 @@ namespace DndCore
 					HasWeaponInHand = playerActionShortcut.CarriedWeapon != null;
 					if (HasWeaponInHand)
 					{
+						Expressions.BeginUpdate();
+						try
+						{
+							foreach (AssignedFeature assignedFeature in features)
+							{
+								assignedFeature.WeaponRaised(this);
+							}
+						}
+						finally
+						{
+							Expressions.EndUpdate(this);
+						}
+
 						Weapon weapon = AllWeapons.Get(playerActionShortcut.CarriedWeapon.Weapon.Name);
 						WeaponIsFinesse = (weapon.weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse;
 						WeaponIsHeavy = (weapon.weaponProperties & WeaponProperties.Heavy) == WeaponProperties.Heavy;
@@ -2204,8 +2243,6 @@ namespace DndCore
 		public bool lastRollWasSuccessful { get; set; }
 
 		[JsonIgnore]
-		public string ActiveWeaponName { get; set; }
-		[JsonIgnore]
 		public int NumWildMagicChecks { get; set;  }
 
 		[JsonIgnore]
@@ -2226,8 +2263,7 @@ namespace DndCore
 		{
 			string varName = DndUtils.ToVarName(itemName);
 			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
-			int oldChargesRemaining = rechargeable.ChargesRemaining;
-			if (rechargeable != null && oldChargesRemaining != value)
+			if (rechargeable != null && rechargeable.ChargesRemaining != value)
 			{
 				int oldChargesUsed = rechargeable.ChargesUsed;
 				rechargeable.SetRemainingCharges(value);
@@ -2746,9 +2782,10 @@ namespace DndCore
 
 		CarriedWeapon GetActiveWeapon()
 		{
-			if (!ActiveWeaponName.HasSomething())
+			string activeWeaponName = ActiveWeaponName;
+			if (!activeWeaponName.HasSomething())
 				return null;
-			return CarriedWeapons.FirstOrDefault(x => x.Name == ActiveWeaponName || x.Weapon.Name == ActiveWeaponName);
+			return CarriedWeapons.FirstOrDefault(x => x.Name == activeWeaponName || x.Weapon.Name == activeWeaponName);
 		}
 
 		public void UseAmmunition(string kind, int value)
@@ -2795,12 +2832,13 @@ namespace DndCore
 			}
 		}
 
-		public CarriedWeapon ChooseWeapon(string weaponFilter = null)
+		public Target ChooseWeapon(string weaponFilter = null)
 		{
 			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this, weaponFilter);
 			OnPickWeapon(this, pickWeaponEventArgs);
-			return pickWeaponEventArgs.Weapon;
+			return new Target(pickWeaponEventArgs.Weapon);
 		}
+
 		public CarriedAmmunition ChooseAmmunition(string ammunitionKind)
 		{
 			PickAmmunitionEventArgs pickAmmunitionEventArgs = new PickAmmunitionEventArgs(this, ammunitionKind);
@@ -2811,6 +2849,24 @@ namespace DndCore
 		public bool HasAmmunition(string kind)
 		{
 			return GetAmmunitionCount(kind) > 0;
+		}
+		public List<string> Languages { get; set; }
+
+		public void AddLanguage(string language)
+		{
+			if (Languages == null)
+				Languages = new List<string>();
+			if (Languages.Contains(language))
+				return;
+			Languages.AddRange(language.Split(',').Select(x => x.Trim()).Except(Languages).Distinct());
+		}
+
+		public void AddLanguages(string languageStr)
+		{
+			string[] languages = languageStr.Split(',');
+
+			foreach (string language in languages)
+				AddLanguage(language);
 		}
 
 	}

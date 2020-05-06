@@ -91,6 +91,10 @@ namespace DndCore
 		{
 			Feature.AfterPlayerSwings(GetArgStr(), player);
 		}
+		public void WeaponRaised(Character player)
+		{
+			Feature.WeaponRaised(GetArgStr(), player);
+		}
 
 		public void BeforePlayerRolls(Character player)
 		{

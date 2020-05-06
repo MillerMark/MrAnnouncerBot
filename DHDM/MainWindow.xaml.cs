@@ -581,6 +581,12 @@ namespace DHDM
 						stateReport.Sort();
 						if (player.concentratedSpell != null)
 							stateReport.Add($"*Concentrating on {player.concentratedSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, player.concentratedSpell.Spell)} remaining.");
+
+						List<CastedSpell> activeSpells = game.GetActiveSpells(player);
+						if (activeSpells != null && activeSpells.Count > 0)
+							foreach (CastedSpell activeSpell in activeSpells)
+								stateReport.Add($"Active spell: {activeSpell.Spell.Name} with {game.GetRemainingSpellTimeStr(player.playerID, activeSpell.Spell)} remaining.");
+
 						foreach (string item in stateReport)
 							stateList.Items.Add(item);
 					}
@@ -945,7 +951,7 @@ namespace DHDM
 			Button button = new Button();
 			button.Padding = new Thickness(4, 2, 4, 2);
 			shortcutPanel.Children.Add(button);
-			button.Content = playerActionShortcut.Name;
+			button.Content = playerActionShortcut.DisplayText;
 			button.ToolTip = GetToolTip(playerActionShortcut.Description);
 			button.Tag = playerActionShortcut.Index;
 			button.Click += PlayerShortcutButton_Click;
@@ -1094,9 +1100,9 @@ namespace DHDM
 
 		private void ActivateShortcut(string shortcutName)
 		{
-			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == ActivePlayerId);
+			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == ActivePlayerId);
 			if (shortcut == null && tbTabs.SelectedItem == tbDebug)
-				shortcut = actionShortcuts.FirstOrDefault(x => x.Name.StartsWith(shortcutName) && x.PlayerId == ActivePlayerId);
+				shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText.StartsWith(shortcutName) && x.PlayerId == ActivePlayerId);
 			if (shortcut != null)
 				Dispatcher.Invoke(() =>
 				{
@@ -1487,7 +1493,7 @@ namespace DHDM
 
 		private static bool IsWildMagicRoll(PlayerActionShortcut actionShortcut)
 		{
-			return actionShortcut.Name.IndexOf("Wild Magic") >= 0;
+			return actionShortcut.DisplayText.IndexOf("Wild Magic") >= 0;
 		}
 
 		private void SwitchToMainPageInGame()
@@ -1548,10 +1554,11 @@ namespace DHDM
 					}
 				}
 				player.ReadiedWeapon = actionShortcut.CarriedWeapon;
-				actionShortcut.UpdatePlayerAttackingAbility(player);
+				actionShortcut.UpdatePlayerAttackingAbility(player, actionShortcut.Spell != null);
 
-				if (actionShortcut.Spell == null && actionShortcut.WeaponProperties != WeaponProperties.None)
-					game.CreatureRaisingWeapon(player, actionShortcut);
+				//if (actionShortcut.Spell == null && actionShortcut.WeaponProperties != WeaponProperties.None)
+				//	game.CreatureRaisingWeapon(player, actionShortcut);
+
 				player.PrepareAttack(null, actionShortcut);
 			}
 
@@ -1686,6 +1693,9 @@ namespace DHDM
 				UseRechargeableItem(actionShortcut, matchingSpell);
 				CastedSpell castedSpell = new CastedSpell(spell, player);
 				castedSpell.CastingWithItem();
+				if (spellCaster == null)
+					spellCaster = player;
+				game.CompleteCast(spellCaster, castedSpell);
 			}
 			else
 			{
@@ -4428,7 +4438,7 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				ActivePlayerId = playerId;
-				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.Name == shortcutName && x.PlayerId == playerId);
+				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId);
 				if (shortcut != null)
 				{
 					ActivateShortcut(shortcut);

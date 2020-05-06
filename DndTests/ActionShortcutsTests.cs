@@ -39,8 +39,8 @@ namespace DndTests
 			List<PlayerActionShortcut> actionShortcuts = AllActionShortcuts.Get(PlayerID.LilCutie, "Battleaxe");
 			Assert.IsNotNull(actionShortcuts);
 			Assert.AreEqual(2, actionShortcuts.Count);
-			Assert.AreEqual("Battleaxe (1H)", actionShortcuts[0].Name);
-			Assert.AreEqual("Battleaxe (2H)", actionShortcuts[1].Name);
+			Assert.AreEqual("Battleaxe (1H)", actionShortcuts[0].DisplayText);
+			Assert.AreEqual("Battleaxe (2H)", actionShortcuts[1].DisplayText);
 		}
 
 		[TestMethod]
@@ -58,10 +58,10 @@ namespace DndTests
 		public void TestAvaActionShortcuts()
 		{
 			List<PlayerActionShortcut> avaShortcuts = AllActionShortcuts.Get(PlayerID.LilCutie);
-			PlayerActionShortcut javelin = avaShortcuts.FirstOrDefault(x => x.Name == "Javelin");
+			PlayerActionShortcut javelin = avaShortcuts.FirstOrDefault(x => x.DisplayText == "Javelin");
 			Assert.IsNotNull(javelin);
 
-			PlayerActionShortcut thunderousSmite = avaShortcuts.FirstOrDefault(x => x.Name == "Thunderous Smite");
+			PlayerActionShortcut thunderousSmite = avaShortcuts.FirstOrDefault(x => x.DisplayText == "Thunderous Smite");
 			Assert.AreEqual(3, thunderousSmite.Windups.Count);
 			Assert.IsNotNull(thunderousSmite);
 		}
@@ -70,7 +70,7 @@ namespace DndTests
 		public void TestSpellCastingTimeTransitionToShortcut()
 		{
 			List<PlayerActionShortcut> merkinShortcuts = AllActionShortcuts.Get(PlayerID.Merkin);
-			PlayerActionShortcut shieldShortcut = merkinShortcuts.FirstOrDefault(x => x.Name == "Shield");
+			PlayerActionShortcut shieldShortcut = merkinShortcuts.FirstOrDefault(x => x.DisplayText == "Shield");
 			Assert.AreEqual(TurnPart.Reaction, shieldShortcut.Part);
 		}
 	}

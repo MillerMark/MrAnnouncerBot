@@ -29,7 +29,7 @@ namespace DndCore
 		public int AttackingAbilityModifier { get; set; }
 		public int ProficiencyBonus { get; set; }
 		public string Dice { get; set; }
-		public string Name { get; set; }
+		public string DisplayText { get; set; }
 		public bool UsesMagic { get; set; }
 		public int PlayerId { get; set; }
 		public int SpellSlotLevel { get; set; }
@@ -400,24 +400,31 @@ namespace DndCore
 				if (player.IsProficientWith(weaponName))
 					result.ProficiencyBonus = (int)Math.Round(player.proficiencyBonus);
 			}
-			result.UpdatePlayerAttackingAbility(player);
+			result.UpdatePlayerAttackingAbility(player, false);
 
 			result.AddEffect(shortcutDto, WeaponWindupPrefix, player);
 
 			return result;
 		}
 
-		public void UpdatePlayerAttackingAbility(Character player)
+		public void UpdatePlayerAttackingAbility(Character player, bool isSpell)
 		{
-			AttackingAbilityModifier = player.GetAttackingAbilityModifier(WeaponProperties, AttackingType);
-			AttackingAbility = player.attackingAbility;
-
+			if (isSpell)
+			{
+				AttackingAbilityModifier = player.SpellcastingAbilityModifier;
+				AttackingAbility = player.spellCastingAbility;
+			}
+			else
+			{
+				AttackingAbilityModifier = player.GetAttackingAbilityModifier(WeaponProperties, AttackingType);
+				AttackingAbility = player.attackingAbility;
+			}
 		}
 
 		static void AddItemEffect(List<PlayerActionShortcut> shortcuts, ItemEffect itemEffect)
 		{
 			foreach (PlayerActionShortcut playerActionShortcut in shortcuts)
-				playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.Name));
+				playerActionShortcut.Windups.Add(WindupDto.FromItemEffect(itemEffect, playerActionShortcut.DisplayText));
 		}
 
 		public static PlayerActionShortcut FromSpell(string spellName, Character player, int spellSlotLevel = -1)
@@ -593,7 +600,7 @@ namespace DndCore
 
 			result.MinDamage = MathUtils.GetInt(shortcutDto.minDamage);
 			result.PlusModifier = MathUtils.GetInt(shortcutDto.plusModifier);
-			result.Name = shortcutDto.name + suffix;
+			result.DisplayText = shortcutDto.name + suffix;
 
 			result.Part = GetTurnPart(shortcutDto.time);
 			if (player != null)
@@ -654,21 +661,44 @@ namespace DndCore
 			}
 		}
 
-		public static PlayerActionShortcut FromFeature(Feature feature, Character player)
+		public static PlayerActionShortcut FromFeature(Feature feature, Character player, ActivationShortcutKind activationShortcutKind)
 		{
+			if (activationShortcutKind == ActivationShortcutKind.Deactivate)
+				if (string.IsNullOrWhiteSpace(feature.DeactivateShortcutDisplayText))
+					return null;
+
+			string availableWhen;
+			string displayText;
+			TurnPart executionTime;
+			string commands;
+			if (activationShortcutKind == ActivationShortcutKind.Deactivate)
+			{
+				availableWhen = feature.DeactivateShortcutAvailableWhen;
+				displayText = feature.DeactivateShortcutDisplayText;
+				executionTime = feature.DeactivationTime;
+				commands = $"DeactivateFeature({feature.Name})";
+			}
+			else
+			{
+				availableWhen = feature.ActivateShortcutAvailableWhen;
+				displayText = feature.ActivateShortcutDisplayText;
+				executionTime = feature.ActivationTime;
+				commands = $"ActivateFeature({feature.Name})";
+			}
+
 			PlayerActionShortcut result = new PlayerActionShortcut();
 			result.Description = feature.Description;
 
-			if (string.IsNullOrEmpty(feature.ShortcutName))
-				result.Name = feature.Name;
+			if (string.IsNullOrEmpty(displayText))
+				result.DisplayText = feature.Name;
 			else
-				result.Name = feature.ShortcutName;
-			result.AvailableWhen = feature.ShortcutAvailableWhen;
+				result.DisplayText = displayText;
+			result.AvailableWhen = availableWhen;
 			result.UsesMagic = feature.Magic;
 			result.ModifiesExistingRoll = feature.ModifiesExistingRoll;
-			result.Part = feature.ActivationTime;
+			result.Part = executionTime;
 			result.PlayerId = player.playerID;
-			result.Commands = $"ActivateFeature({feature.Name})";
+			result.Commands = commands;
 			result.SourceFeature = feature;
 			return result;
 		}
