@@ -222,6 +222,17 @@ class DragonFrontGame extends DragonGame {
 		this.drawGameTime(context);
 	}
 
+	protected updateClockFromDto(dto: any) {
+		super.updateClockFromDto(dto);
+		if (dto.Message) {
+			this.showClockMessage(dto.Message);
+		}
+	}
+
+	showClockMessage(message: string): void {
+		this.addFloatingPlayerText(1760, message, '#deeffe', '#2d4c75');
+	}
+
 	private drawGameTime(context: CanvasRenderingContext2D) {
 		if (!this.dndTimeStr)
 			return;

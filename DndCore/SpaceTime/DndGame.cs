@@ -290,7 +290,7 @@ namespace DndCore
 				TellDungeonMasterWhichRound();
 		}
 
-		void AdvanceRound()
+		public void AdvanceRound()
 		{
 			OnRoundEnded(this, dndGameEventArgs);
 			roundIndex++;

@@ -2,7 +2,7 @@
 	PlayerIds: Array<number>;
 	Coins: Coins;
 	constructor() {
-		
+
 	}
 }
 

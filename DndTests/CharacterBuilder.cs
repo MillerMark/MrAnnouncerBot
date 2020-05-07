@@ -17,7 +17,7 @@ namespace DndTests
 
 			elf.race = "Wood Elf Barbarian";
 			elf.AddClass("Barbarian", 1);
-			elf.alignment = "Chaotic Good";
+			elf.alignmentStr = "Chaotic Good";
 			elf.baseArmorClass = 12;
 			GenerateRandomAttributes(elf);
 			elf.remainingHitDice = "1 d10";
@@ -65,7 +65,7 @@ namespace DndTests
 				barbarian.name = name;
 			barbarian.race = "Dragonborn";
 			barbarian.AddClass("Barbarian", 1);
-			barbarian.alignment = "Chaotic Evil";
+			barbarian.alignmentStr = "Chaotic Evil";
 			barbarian.baseArmorClass = 14;
 			GenerateRandomAttributes(barbarian);
 			barbarian.remainingHitDice = "1 d10";
@@ -100,7 +100,7 @@ namespace DndTests
 			
 			wizard.race = "Human";
 			wizard.AddClass("Wizard", 1);
-			wizard.alignment = "Chaotic Neutral";
+			wizard.alignmentStr = "Chaotic Neutral";
 			wizard.baseArmorClass = 10;
 			GenerateRandomAttributes(wizard);
 			wizard.remainingHitDice = "1 d8";
@@ -131,7 +131,7 @@ namespace DndTests
 			
 			druid.race = "Wood Elf";
 			druid.AddClass("Druid", 1);
-			druid.alignment = "Lawful Good";
+			druid.alignmentStr = "Lawful Good";
 			druid.baseArmorClass = 10;
 			GenerateRandomAttributes(druid);
 			druid.remainingHitDice = "1 d8";

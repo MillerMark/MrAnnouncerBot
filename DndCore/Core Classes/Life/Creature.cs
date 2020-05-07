@@ -25,7 +25,8 @@ namespace DndCore
 
 		private Conditions activeConditions = Conditions.None;
 		public Against advantages = Against.none;
-		public string alignment = string.Empty;
+		public string alignmentStr = string.Empty;
+		public Alignment Alignment { get; set; }
 		public string race { get; set; }
 
 		[JsonIgnore]

@@ -153,5 +153,135 @@ namespace DndCore
 		{
 			PrepareAttack(creature, GetAttack(attackName));
 		}
+
+		void SetFromMeta(string meta)
+		{
+			string[] parts = meta.Split(',');
+			if (parts.Length != 2)
+			{
+				System.Diagnostics.Debugger.Break();
+			}
+			alignmentStr = parts[1].Trim();
+			string[] sizeCreatureKind = parts[0].Split(' ');
+			if (sizeCreatureKind.Length != 2)
+			{
+				System.Diagnostics.Debugger.Break();
+			}
+			Alignment = DndUtils.ToAlignment(alignmentStr);
+			creatureSize = DndUtils.ToCreatureSize(sizeCreatureKind[0]);
+			kind = DndUtils.ToCreatureKind(sizeCreatureKind[1]);
+		}
+
+		void SetArmorClassFromStr(string armorClass)
+		{
+			// TODO: Add support for alternate forms, e.g., "10 In Humanoid Form, 11 In Bear Or Hybrid Form"
+			string[] acDetails = armorClass.Split(' ');
+			if (acDetails.Length == 0)
+				return;
+			if (int.TryParse(acDetails[0], out int result))
+				baseArmorClass = result;
+		}
+
+		void SetHitPointsFromStr(string hitPointsStr)
+		{
+			string[] hpDetails = hitPointsStr.Split(' ');
+			if (hpDetails.Length == 0)
+				return;
+			if (int.TryParse(hpDetails[0], out int result))
+			{
+				maxHitPoints = result;
+				hitPoints = result;
+			}
+			if (hpDetails.Length > 1)
+				hitPointsDice = hpDetails[1].Trim('(', ')');
+		}
+
+		void SetAbilitiesFrom(MonsterDto monsterDto)
+		{
+			baseStrength = MathUtils.GetInt(monsterDto.STR);
+			strengthMod = GetNumberInParens(monsterDto.STR_mod);
+			baseIntelligence = MathUtils.GetInt(monsterDto.INT);
+			intelligenceMod = GetNumberInParens(monsterDto.INT_mod);
+			baseDexterity = MathUtils.GetInt(monsterDto.DEX);
+			dexterityMod = GetNumberInParens(monsterDto.DEX_mod);
+			baseConstitution = MathUtils.GetInt(monsterDto.CON);
+			constitutionMod = GetNumberInParens(monsterDto.CON_mod);
+			baseWisdom = MathUtils.GetInt(monsterDto.WIS);
+			wisdomMod = GetNumberInParens(monsterDto.WIS_mod);
+			baseCharisma = MathUtils.GetInt(monsterDto.CHA);
+			charismaMod = GetNumberInParens(monsterDto.CHA_mod);
+		}
+
+		private static int GetNumberInParens(string numStr)
+		{
+			return MathUtils.GetInt(numStr.Trim('(', ')', ' '));
+		}
+
+		void SetSpeed(string movementKind, string valueStr)
+		{
+			if (!int.TryParse(valueStr.Trim(), out int value))
+				return;
+			switch (movementKind)
+			{
+				case "walk":
+					baseWalkingSpeed = value;
+					break;
+				case "fly":
+					flyingSpeed = value;
+					break;
+				case "burrow":
+					burrowingSpeed = value;
+					break;
+				case "climb":
+					climbingSpeed = value;
+					break;
+				case "swim":
+					swimmingSpeed = value;
+					break;
+				default:
+					System.Diagnostics.Debugger.Break();
+					break;
+			}
+		}
+
+		void SetIndividualSpeedFromStr(string individualSpeed)
+		{
+			int unitPos = individualSpeed.IndexOf("ft.");
+			if (unitPos <= 0)
+				return;
+			string numberStr = individualSpeed.Substring(0, unitPos).Trim();
+			// TODO: Add support for descriptive speed modifiers beyond the unit (e.g., "(hover)" or "in bear form").
+			string[] parts = numberStr.Split(' ');
+			if (parts.Length > 0)
+				if (parts.Length > 1)
+				{
+					// First part is expected to describe the kind of movement (climb, burrow, fly, etc.). 
+					// Second part is the value in feet of movement. (e.g., "burrow 40").
+					SetSpeed(parts[0], parts[1]);
+				}
+				else
+					SetSpeed("walk", parts[0]);
+		}
+
+		void SetSpeedFromStr(string speed)
+		{
+			string[] speeds = speed.Split(',');
+			foreach (string individualSpeed in speeds)
+			{
+				SetIndividualSpeedFromStr(individualSpeed);
+			}
+		}
+
+		public static Monster From(MonsterDto monsterDto)
+		{
+			Monster monster = new Monster();
+			monster.SetFromMeta(monsterDto.Meta);
+			monster.name = monsterDto.Name;
+			monster.SetArmorClassFromStr(monsterDto.ArmorClass);
+			monster.SetHitPointsFromStr(monsterDto.HitPoints);
+			monster.SetAbilitiesFrom(monsterDto);
+			monster.SetSpeedFromStr(monsterDto.Speed);
+			return monster;
+		}
 	}
 }

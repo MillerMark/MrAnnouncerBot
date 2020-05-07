@@ -11,7 +11,7 @@ namespace DndCore
 		Blinded = 1,
 		Charmed = 2,
 		Deafened = 4,
-		Fatigued = 8,
+		Fatigued = 8,  // Exhaustion
 		Frightened = 16,
 		Grappled = 32,
 		Incapacitated = 64,

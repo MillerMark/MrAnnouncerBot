@@ -136,6 +136,12 @@ namespace DHDM
 			game.RequestMessageToAll += Game_RequestMessageToAll;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
+			game.RoundStarting += Game_RoundStarting;
+		}
+
+		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
+		{
+			clockMessage = $"Round {ea.Game.roundIndex + 1}";
 		}
 
 		private void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
@@ -2300,6 +2306,7 @@ namespace DHDM
 			resting = true;
 			try
 			{
+				clockMessage = $"+{hours} hours";
 				game.Clock.Advance(DndTimeSpan.FromHours(hours));
 			}
 			finally
@@ -2319,6 +2326,8 @@ namespace DHDM
 				// TODO: Update character stats.
 			}
 		}
+
+		string clockMessage;
 
 		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
 		{
@@ -2369,6 +2378,7 @@ namespace DHDM
 
 			ClockDto clockDto = new ClockDto()
 			{
+				Message = clockMessage,
 				Time = timeStr,
 				BigUpdate = bigUpdate,
 				Rotation = percentageRotation,
@@ -2377,13 +2387,15 @@ namespace DHDM
 				AfterSpinMp3 = afterSpinMp3
 			};
 
+			clockMessage = null;
+
 			string serializedObject = JsonConvert.SerializeObject(clockDto);
 			HubtasticBaseStation.UpdateClock(serializedObject);
 		}
 
 		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
 		{
-			game.Clock.Advance(DndTimeSpan.FromSeconds(6));
+			game.AdvanceRound();
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -2408,16 +2420,19 @@ namespace DHDM
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
 		{
+			clockMessage = "+1 Day";
 			game.Clock.Advance(DndTimeSpan.FromDays(1), ShiftKeyDown);
 		}
 
 		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
 		{
+			clockMessage = "+10 Days";
 			game.Clock.Advance(DndTimeSpan.FromDays(10), ShiftKeyDown);
 		}
 
 		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
 		{
+			clockMessage = "+1 Month";
 			game.Clock.Advance(DndTimeSpan.FromDays(30), ShiftKeyDown);
 		}
 
@@ -2453,16 +2468,19 @@ namespace DHDM
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
+			clockMessage = "+1 Hour";
 			game.Clock.Advance(DndTimeSpan.FromHours(1), ShiftKeyDown);
 		}
 
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
+			clockMessage = "+10 Minutes";
 			game.Clock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
 		}
 
 		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
 		{
+			clockMessage = "+1 Minute";
 			game.Clock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
 		}
 
@@ -3143,6 +3161,7 @@ namespace DHDM
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
+				clockMessage = "Combat";
 				ChangeThemeMusic("Battle");
 				ckbUseMagic.IsChecked = false;
 				game.EnteringCombat();
@@ -3151,6 +3170,7 @@ namespace DHDM
 			}
 			else
 			{
+				clockMessage = "It's Cool";
 				ChangeThemeMusic("Travel");
 				game.ExitingCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
@@ -4515,6 +4535,7 @@ namespace DHDM
 		{
 			if (hours == 0 && minutes == 0 && seconds == 0)
 				return;
+			// TODO: Calculate clockMessage based on the delta here.
 			Dispatcher.Invoke(() =>
 			{
 				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), ShiftKeyDown);

@@ -5,6 +5,7 @@ namespace DHDM
 {
 	public class ClockDto
 	{
+		public string Message { get; set; }
 		public string Time { get; set; }
 		public bool BigUpdate { get; set; }
 		public double Rotation { get; set; }

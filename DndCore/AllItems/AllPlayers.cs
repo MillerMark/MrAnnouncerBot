@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -25,7 +26,8 @@ namespace DndCore
 
 		public static List<CharacterDto> LoadData(string dataFile)
 		{
-			return CsvData.Get<CharacterDto>(dataFile);
+			return GoogleSheets.Get<CharacterDto>(dataFile);
+			//return CsvData.Get<CharacterDto>(dataFile);
 		}
 
 		public static Character Get(string playerName)

@@ -538,7 +538,7 @@ namespace DndUI
 				statGoldPieces3.Text = statGoldPieces.Text;
 				//character.activeConditions = 
 				//character.advantages = ;
-				statAlignment.Text = character.alignment;
+				statAlignment.Text = character.alignmentStr;
 				statArmorClass.Text = character.baseArmorClass.ToString();
 				//character.blindsightRadius = 
 				//character.burrowingSpeed = 
@@ -660,7 +660,7 @@ namespace DndUI
 			character.headshotIndex = headshotIndex;
 			//character.activeConditions = 
 			//character.advantages = ;
-			character.alignment = statAlignment.Text;
+			character.alignmentStr = statAlignment.Text;
 			character.baseArmorClass = statArmorClass.ToInt();
 			//character.blindsightRadius = 
 			//character.burrowingSpeed = 

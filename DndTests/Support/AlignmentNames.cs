@@ -11,7 +11,7 @@ namespace DndTests
 		public static readonly string ChaoticGood = "Chaotic Good";
 
 		public static readonly string LawfulNeutral = "Lawful Neutral";
-		public static readonly string TrueNeutral = "TrueNeutral";
+		public static readonly string TrueNeutral = "True Neutral";
 		public static readonly string ChaoticNeutral = "Chaotic Neutral";
 
 		public static readonly string LawfulEvil = "Lawful Evil";

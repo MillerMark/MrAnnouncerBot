@@ -105,7 +105,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.burrowingSpeed, loadedCharacter.burrowingSpeed);
 			Assert.AreEqual(originalTestWizard.blindsightRadius, loadedCharacter.blindsightRadius);
 			Assert.AreEqual(originalTestWizard.ArmorClass, loadedCharacter.ArmorClass);
-			Assert.AreEqual(originalTestWizard.alignment, loadedCharacter.alignment);
+			Assert.AreEqual(originalTestWizard.alignmentStr, loadedCharacter.alignmentStr);
 			Assert.AreEqual(originalTestWizard.advantages, loadedCharacter.advantages);
 			Assert.AreEqual(originalTestWizard.proficiencyBonus, loadedCharacter.proficiencyBonus);
 			Assert.AreEqual(originalTestWizard.proficientSkills, loadedCharacter.proficientSkills);

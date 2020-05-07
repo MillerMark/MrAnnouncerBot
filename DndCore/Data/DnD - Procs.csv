@@ -3,3 +3,4 @@ TellDmHowManyMeteorsAreComing(),"if (_numMelfMeteorsToSend == 1)
   TellDm(""Ready to send one meteor..."");
 else if (_numMelfMeteorsToSend == 2)
   TellDm(""Ready to send two meteors..."");"
+ExitWildShape(),"DeactivateFeature(""Wild Shape"")"

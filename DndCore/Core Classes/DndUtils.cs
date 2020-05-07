@@ -525,5 +525,64 @@ namespace DndCore
 		{
 			return GetElement<DiceRollType>(value);
 		}
+
+		public static Alignment ToAlignment(string alignmentStr)
+		{
+			string matchingName = alignmentStr.Replace(" ", "").ToLower();
+			if (matchingName == "neutral")
+				matchingName = "trueneutral";
+			Array values = Enum.GetValues(typeof(Alignment));
+			foreach (Alignment value in values)
+			{
+				string compareValue = value.ToString().ToLower();
+				if (matchingName == compareValue)
+					return value;
+			}
+			return Alignment.Unaligned;
+		}
+
+		public static CreatureSize ToCreatureSize(string sizeStr)
+		{
+			string matchingName = sizeStr.ToLower();
+			Array values = Enum.GetValues(typeof(CreatureSize));
+			foreach (CreatureSize value in values)
+			{
+				string compareValue = value.ToString().ToLower();
+				if (matchingName == compareValue)
+					return value;
+			}
+			return CreatureSize.None;
+		}
+
+		public static CreatureKinds ToCreatureKind(string kindStr)
+		{
+			string matchingName = kindStr.ToLower();
+			switch (matchingName)
+			{
+				case "aberration":
+				case "beast":
+				case "celestial":
+				case "construct":
+				case "dragon":
+				case "fiend":
+				case "giant":
+				case "humanoid":
+				case "ooze":
+				case "plant":
+					matchingName += "s";
+					break;
+				case "monstrocity":
+					matchingName = "monstrosities";
+					break;
+			}
+			Array values = Enum.GetValues(typeof(CreatureKinds));
+			foreach (CreatureKinds value in values)
+			{
+				string compareValue = value.ToString().ToLower();
+				if (matchingName == compareValue)
+					return value;
+			}
+			return CreatureKinds.None;
+		}
 	}
 }

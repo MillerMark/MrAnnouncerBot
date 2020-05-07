@@ -887,7 +887,7 @@ namespace DndCore
 			character.dieBackColor = characterDto.dieBackColor;
 			character.dieFontColor = characterDto.dieFontColor;
 			character.headshotIndex = characterDto.headshotIndex;
-			character.alignment = characterDto.alignment;
+			character.alignmentStr = characterDto.alignment;
 			character.AddWeaponsFrom(characterDto.weapons);
 			character.AddAmmunitionFrom(characterDto.ammunition);
 			character.AddSpellsFrom(characterDto.spells);
@@ -2556,7 +2556,7 @@ namespace DndCore
 			SetField("baseDexterity",    ref baseDexterity,                   character.baseDexterity);
 			SetField("baseIntelligence", ref baseIntelligence,                   character.baseIntelligence);
 			SetField("baseStrength",     ref baseStrength,                   character.baseStrength);
-			SetField("alignment",        ref alignment,                   character.alignment);
+			SetField("alignment",        ref alignmentStr,                   character.alignmentStr);
 			SetField("deathSaveDeath1",  ref deathSaveDeath1,                   character.deathSaveDeath1);
 			SetField("deathSaveDeath2",  ref deathSaveDeath2,                   character.deathSaveDeath2);
 			SetField("deathSaveDeath3",  ref deathSaveDeath3,                   character.deathSaveDeath3);
