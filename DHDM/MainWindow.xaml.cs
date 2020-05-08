@@ -4861,12 +4861,17 @@ namespace DHDM
 		}
 
 		EventData activeEventData;
+		void UpdateTheUpdateButton(EventData eventData)
+		{
+			btnUpdateEventHandler.Content = $"Update \"{eventData.ParentGroup.Name}\" {eventData.Name} handler";
+		}
 		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
 				if (e.AddedItems[0] is EventData eventData)
 				{
 					activeEventData = eventData;
+					UpdateTheUpdateButton(activeEventData);
 					string code = GetPlayerEventCode(eventData.ParentGroup, eventData.Name);
 					SetEventCode(code);
 
@@ -5500,6 +5505,22 @@ namespace DHDM
 
 			HubtasticBaseStation.ChangePlayerWealth(JsonConvert.SerializeObject(wealthChange));
 			game.ChangeWealth(wealthChange);
+		}
+
+		private void BtnUpdateEventHandler_Click(object sender, RoutedEventArgs e)
+		{
+			if (activeEventData == null)
+				return;
+			// Spells only...
+			string spellName = activeEventData.ParentGroup.Name;
+			string eventName = activeEventData.Name;
+			string code = tbxCode.Text;
+			List<Spell> allSpells = AllSpells.GetAll(spellName);
+			if (allSpells.Count == 1)
+			{
+				Spell spell = allSpells[0];
+				AllSpells.Update(spell);
+			}
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

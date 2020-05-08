@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -8,7 +9,7 @@ namespace DndCore
 	{
 		static void LoadData()
 		{
-			Properties = CsvData.Get<PropertyDto>(Folders.InCoreData("DnD - Properties.csv"));
+			Properties = GoogleSheets.Get<PropertyDto>(Folders.InCoreData("DnD - Properties.csv"));
 		}
 		static List<PropertyDto> properties;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -14,7 +15,7 @@ namespace DndCore
 		static void LoadData()
 		{
 			trailingEffects = new List<TrailingEffect>();
-			List<TrailingEffectsDto> trailingEffectsDtos = CsvData.Get<TrailingEffectsDto>(Folders.InCoreData("DnD - TrailingEffects.csv"), false);
+			List<TrailingEffectsDto> trailingEffectsDtos = GoogleSheets.Get<TrailingEffectsDto>(Folders.InCoreData("DnD - TrailingEffects.csv"), false);
 			foreach (TrailingEffectsDto trailingEffect in trailingEffectsDtos)
 			{
 				TrailingEffects.Add(TrailingEffect.From(trailingEffect));

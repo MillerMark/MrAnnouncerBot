@@ -78,13 +78,62 @@ namespace GoogleHelper
 						property.SetValue(instance, row[i]);
 						break;
 					case "System.Boolean":
-						System.Diagnostics.Debugger.Break();
+						bool newValue = value.ToLower().Trim() == "true";
+						property.SetValue(instance, newValue);
 						break;
 					default:
 						System.Diagnostics.Debugger.Break();
 						break;
 				}
 			}
+
+			SetDefaultsForEmptyCells(instance, headers, row, type);
+		}
+
+		private static void SetDefaultsForEmptyCells<T>(T instance, Dictionary<int, string> headers, IList<object> row, Type type) where T : new()
+		{
+			for (int i = row.Count; i < headers.Count; i++)  // There may be fewer rows than headers.
+			{
+				PropertyInfo property = type.GetProperty(headers[i]);
+				if (property == null)
+					continue;
+
+				switch (property.PropertyType.FullName)
+				{
+					case "System.Int32":
+						property.SetValue(instance, default(int));
+						break;
+					case "System.String":
+						property.SetValue(instance, string.Empty);
+						break;
+					case "System.Boolean":
+						property.SetValue(instance, default(bool));
+						break;
+					default:
+						System.Diagnostics.Debugger.Break();
+						break;
+				}
+			}
+		}
+		static Dictionary<string, List<string>> sheetTabMap = new Dictionary<string, List<string>>();
+		static void Track(string docName, string tabName)
+		{
+			if (!sheetTabMap.ContainsKey(docName))
+				sheetTabMap.Add(docName, new List<string>());
+			List<string> tabs = sheetTabMap[docName];
+			if (!tabs.Contains(tabName))
+				tabs.Add(tabName);
+		}
+
+		static string GetDocumentName(string tabName)
+		{
+			foreach (string docName in sheetTabMap.Keys)
+			{
+				List<string> tabs = sheetTabMap[docName];
+				if (tabs.Contains(tabName))
+					return docName;
+			}
+			return null;
 		}
 
 		static T newItem<T>(Dictionary<int, string> headers, IList<object> row) where T: new()
@@ -96,6 +145,7 @@ namespace GoogleHelper
 
 		static List<T> Get<T>(string docName, string tabName) where T: new()
 		{
+			Track(docName, tabName);
 			List<T> result = new List<T>();
 			try
 			{
@@ -158,6 +208,23 @@ namespace GoogleHelper
 		{
 			spreadsheetIDs.Add("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
 			spreadsheetIDs.Add("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
+		}
+
+		public static void Update<T>(string tabName, List<T> dtos)
+		{
+			string docName = GetDocumentName(tabName);
+
+			if (docName == null)
+				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
+
+			if (!spreadsheetIDs.ContainsKey(docName))
+				throw new InvalidDataException($"docName (\"{docName}\") not found!");
+
+			string spreadsheetId = spreadsheetIDs[docName];
+
+			ValueRange body = new ValueRange();
+			SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, tabName);
+			UpdateValuesResponse response = request.Execute();
 		}
 	}
 }

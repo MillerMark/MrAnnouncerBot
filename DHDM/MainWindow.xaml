@@ -721,7 +721,7 @@
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<TextBox x:Name="tbxCode" AcceptsReturn="True" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_TextChanged">
+								<TextBox x:Name="tbxCode" AcceptsReturn="True" MinWidth="200" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_TextChanged">
 									
 								</TextBox>
 								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
@@ -760,6 +760,10 @@
 
 								<Button x:Name="btnRollDiceRemote" Click="BtnRollDice_Click" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
 									Roll Dice
+								</Button>
+
+								<Button x:Name="btnUpdateEventHandler" Click="BtnUpdateEventHandler_Click" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
+									Update
 								</Button>
 							</StackPanel>
 						</StackPanel>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -14,7 +15,7 @@ namespace DndCore
 		public static void LoadData()
 		{
 			dieRollEffects = new List<DieRollEffect>();
-			List<DieRollEffectDto> dieRollEffectDtos = CsvData.Get<DieRollEffectDto>(Folders.InCoreData("DnD - DieRollEffects.csv"), false);
+			List<DieRollEffectDto> dieRollEffectDtos = GoogleSheets.Get<DieRollEffectDto>(Folders.InCoreData("DnD - DieRollEffects.csv"), false);
 			foreach (DieRollEffectDto dieRollEffect in dieRollEffectDtos)
 			{
 				DieRollEffects.Add(DieRollEffect.From(dieRollEffect));

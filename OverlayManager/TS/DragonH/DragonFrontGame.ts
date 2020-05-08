@@ -230,7 +230,18 @@ class DragonFrontGame extends DragonGame {
 	}
 
 	showClockMessage(message: string): void {
-		this.addFloatingPlayerText(1760, message, '#deeffe', '#2d4c75');
+		let fillColor: string;
+		let outlineColor: string;
+		if (this.inCombat) {
+			fillColor = '#fedeec';
+			outlineColor = '#5e2a2a';
+		}
+		else {
+			fillColor = '#deeffe';
+			outlineColor = '#2d4c75';
+		}
+
+		this.addFloatingPlayerText(1760, message, fillColor, outlineColor);
 	}
 
 	private drawGameTime(context: CanvasRenderingContext2D) {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -42,7 +43,7 @@ namespace DndCore
 			LoadTable<Druid>();
 		}
 
-		static void LoadTable<T>() where T : BaseRow
+		static void LoadTable<T>() where T : BaseRow, new()
 		{
 			string tableName = typeof(T).ToString().EverythingAfter(".");
 
@@ -52,9 +53,9 @@ namespace DndCore
 			tables.Add(table);
 		}
 
-		public static List<T> LoadTable<T>(string tableName)
+		public static List<T> LoadTable<T>(string tableName) where T : new()
 		{
-			return CsvData.Get<T>(Folders.InCoreData($"DnD Table - {tableName}.csv"));
+			return GoogleSheets.Get<T>(Folders.InCoreData($"DnD Table - {tableName}.csv"));
 		}
 		static object GetValue(object entry, string fieldLookup)
 		{

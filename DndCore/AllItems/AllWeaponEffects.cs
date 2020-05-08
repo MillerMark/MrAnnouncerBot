@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -14,7 +15,7 @@ namespace DndCore
 		static void LoadData()
 		{
 			weaponEffects = new List<ItemEffect>();
-			List<ItemEffectDto> weaponEffectDtos = CsvData.Get<ItemEffectDto>(Folders.InCoreData("DnD - WeaponEffects.csv"), false);
+			List<ItemEffectDto> weaponEffectDtos = GoogleSheets.Get<ItemEffectDto>(Folders.InCoreData("DnD - WeaponEffects.csv"), false);
 			foreach (ItemEffectDto itemEffect in weaponEffectDtos)
 			{
 				WeaponEffects.Add(ItemEffect.From(itemEffect));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -13,7 +14,7 @@ namespace DndCore
 
 		static void LoadData()
 		{
-			Procs = CsvData.Get<ProcDto>(Folders.InCoreData("DnD - Procs.csv"), false);
+			Procs = GoogleSheets.Get<ProcDto>(Folders.InCoreData("DnD - Procs.csv"), false);
 			foreach (ProcDto procDto in Procs)
 			{
 				procDto.ProcessArguments();

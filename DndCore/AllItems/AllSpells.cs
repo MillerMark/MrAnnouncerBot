@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -12,7 +13,7 @@ namespace DndCore
 		}
 		static void LoadData()
 		{
-			Spells = CsvData.Get<SpellDto>(Folders.InCoreData("DnD - Spells.csv"));
+			Spells = GoogleSheets.Get<SpellDto>(Folders.InCoreData("DnD - Spells.csv"));
 		}
 
 		static List<SpellDto> spells;
@@ -68,6 +69,10 @@ namespace DndCore
 				spellcastingAbilityModifier = character.GetSpellcastingAbilityModifier();
 			}
 			return GetAll(spellName, spellSlotLevel, spellLevel, spellcastingAbilityModifier);
+		}
+		public static void Update(Spell spell)
+		{
+			// TODO: Implement this.
 		}
 	}
 }
