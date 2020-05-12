@@ -209,6 +209,9 @@ abstract class DragonGame extends GamePlusQuiz {
 
 		let timeOffset: number = 0;
 		let numPlusses: number = Math.round((healthGain + 4) / 5); // More health == more plusses!
+		const maxPlusses: number = 10;
+		if (numPlusses > maxPlusses)
+			numPlusses = maxPlusses;
 		for (let i = 0; i < numPlusses; i++) {
 			this.launchPlus(playerId, playerIndex, isTempHitPoints, timeOffset);
 			const fullSpinTime: number = 4000;

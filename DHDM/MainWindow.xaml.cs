@@ -141,7 +141,8 @@ namespace DHDM
 
 		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
 		{
-			clockMessage = $"Round {ea.Game.roundIndex + 1}";
+			if (game.InCombat)
+				clockMessage = $"Round {ea.Game.roundIndex + 1}";
 		}
 
 		private void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
@@ -835,14 +836,14 @@ namespace DHDM
 			return Character.GetBoolProperty(player, propertyName);
 		}
 
-		public void SetHiddenThreshold(int hiddenThreshold)
+		public void SetSaveHiddenThreshold(int hiddenThreshold)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				tbxHiddenThreshold.Text = hiddenThreshold.ToString();
+				tbxSaveThreshold.Text = hiddenThreshold.ToString();
 			});
 
-			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{hiddenThreshold} {twitchIndent} <-- hidden threshold");
+			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{hiddenThreshold} {twitchIndent} <-- hidden SAVE threshold");
 		}
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -2217,7 +2218,12 @@ namespace DHDM
 			if (diceRoll.ThrowPower < 0.3)
 				diceRoll.ThrowPower = 0.3;
 
-			diceRoll.SetHiddenThreshold(tbxHiddenThreshold.Text);
+			if (type == DiceRollType.SavingThrow)
+				diceRoll.SetHiddenThreshold(tbxSaveThreshold.Text);
+			else if (type == DiceRollType.SkillCheck)
+				diceRoll.SetHiddenThreshold(tbxSkillCheckThreshold.Text);
+			else
+				diceRoll.SetHiddenThreshold(tbxAttackThreshold.Text);
 
 			diceRoll.IsMagic = ckbUseMagic.IsChecked == true || type == DiceRollType.WildMagicD20Check;
 
@@ -3745,12 +3751,12 @@ namespace DHDM
 			}
 		}
 
-		string PlusHiddenThresholdDisplayStr()
+		string PlusHiddenThresholdDisplayStr(TextBox textBox)
 		{
 			string returnMessage = string.Empty;
 			Dispatcher.Invoke(() =>
 			{
-				returnMessage = $" (against a hidden threshold of {tbxHiddenThreshold.Text})";
+				returnMessage = $" (against a hidden threshold of {textBox.Text})";
 			});
 
 			return returnMessage;
@@ -3806,7 +3812,7 @@ namespace DHDM
 				icon = Icons.MultiplayerSkillCheck;
 			}
 			string firstPart = $"Rolling {articlePlusSkillDisplay} skill check for {who}";
-			TellDungeonMaster($"{icon} {firstPart}{PlusHiddenThresholdDisplayStr()}.");
+			TellDungeonMaster($"{icon} {firstPart}{PlusHiddenThresholdDisplayStr(tbxSkillCheckThreshold)}.");
 			TellViewers($"{firstPart}...");
 		}
 
@@ -3819,7 +3825,7 @@ namespace DHDM
 				BtnRollDice_Click(null, null);
 			});
 			// TODO: Add report on advantage/disadvantage.
-			TellDungeonMaster($"Rolling {GetPlayerName(ActivePlayerId)}'s attack with a hidden threshold of {tbxHiddenThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
+			TellDungeonMaster($"Rolling {GetPlayerName(ActivePlayerId)}'s attack with a hidden threshold of {tbxSaveThreshold.Text} and damage dice of {tbxDamageDice.Text}.");
 		}
 
 		public void RollSavingThrow(Ability ability, List<int> playerIds)
@@ -3847,7 +3853,7 @@ namespace DHDM
 				who = GetPlayerName(ActivePlayerId);
 
 			string firstPart = $"Rolling {abilityStr} saving throw for {who}";
-			TellDungeonMaster($"{Icons.SavingThrow} {firstPart}{PlusHiddenThresholdDisplayStr()}...");
+			TellDungeonMaster($"{Icons.SavingThrow} {firstPart}{PlusHiddenThresholdDisplayStr(tbxSaveThreshold)}...");
 			TellViewers($"{firstPart}...");
 		}
 
@@ -5520,6 +5526,77 @@ namespace DHDM
 			{
 				Spell spell = allSpells[0];
 				AllSpells.Update(spell);
+			}
+		}
+
+		private void BtnTestPlayerSave_Click(object sender, RoutedEventArgs e)
+		{
+			AllPlayers.SaveChanges();
+		}
+
+		DamageHealthChange NewDamageHealthChange(List<int> playerIds, int value)
+		{
+			DamageHealthChange damageHealthChange = new DamageHealthChange();
+			damageHealthChange.PlayerIds = playerIds;
+			damageHealthChange.DamageHealth = value;
+			return damageHealthChange;
+		}
+
+		void IncreasePlayerHealth(List<int> playerIds, int value)
+		{
+			ApplyDamageHealthChange(NewDamageHealthChange(playerIds, value));
+		}
+
+		void ApplyPlayerDamage(List<int> playerIds, int value)
+		{
+			ApplyDamageHealthChange(NewDamageHealthChange(playerIds, -value));
+		}
+
+		void SetAttackThreshold(int value)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				tbxAttackThreshold.Text = value.ToString();
+			});
+			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden ATTACK threshold");
+		}
+		void SetSavingThrowThreshold(int value)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				tbxSaveThreshold.Text = value.ToString();
+			});
+			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SAVE threshold");
+		}
+
+		void SetSkillCheckThreshold(int value)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				tbxSkillCheckThreshold.Text = value.ToString();
+			});
+			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SKILL CHECK threshold");
+		}
+
+		public void Apply(string command, int value, List<int> playerIds)
+		{
+			switch (command)
+			{
+				case "Health":
+					IncreasePlayerHealth(playerIds, value);
+					break;
+				case "Damage":
+					ApplyPlayerDamage(playerIds, value);
+					break;
+				case "SaveThreshold":
+					SetSavingThrowThreshold(value);
+					break;
+				case "SkillThreshold":
+					SetSkillCheckThreshold(value);
+					break;
+				case "AttackThreshold":
+					SetAttackThreshold(value);
+					break;
 			}
 		}
 	}

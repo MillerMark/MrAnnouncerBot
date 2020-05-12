@@ -7,10 +7,11 @@ namespace DHDM
 {
 	public interface IDungeonMasterApp
 	{
+		void Apply(string command, int value, List<int> playerIds);
 		string GetPlayFirstNameFromId(int playerId);
 		void SetBoolProperty(int playerId, string propertyName, bool value);
 		bool GetBoolProperty(int playerId, string propertyName);
-		void SetHiddenThreshold(int hiddenThreshold);
+		void SetSaveHiddenThreshold(int hiddenThreshold);
 		int GetPlayerIdFromName(string characterName);
 		int GetActivePlayerId();
 		int GetLastSpellSave();

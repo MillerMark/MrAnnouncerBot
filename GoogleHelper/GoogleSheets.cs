@@ -18,7 +18,7 @@ namespace GoogleHelper
 		static Dictionary<string, string> spreadsheetIDs = new Dictionary<string, string>();
 
 		static string ApplicationName = "Google Sheets .NET Helper";
-		public static List<T> Get<T>(string dataFileName, bool validateHeaders = true) where T: new()
+		public static List<T> Get<T>(string dataFileName, bool validateHeaders = true) where T : new()
 		{
 			string fileNameOnly = Path.GetFileNameWithoutExtension(dataFileName);
 
@@ -69,6 +69,14 @@ namespace GoogleHelper
 					case "System.Int32":
 						if (int.TryParse(value, out int intValue))
 							property.SetValue(instance, intValue);
+						else
+						{
+							System.Diagnostics.Debugger.Break();
+						}
+						break;
+					case "System.Decimal":
+						if (decimal.TryParse(value, out decimal decimalValue))
+							property.SetValue(instance, decimalValue);
 						else
 						{
 							System.Diagnostics.Debugger.Break();
@@ -136,14 +144,14 @@ namespace GoogleHelper
 			return null;
 		}
 
-		static T newItem<T>(Dictionary<int, string> headers, IList<object> row) where T: new()
+		static T newItem<T>(Dictionary<int, string> headers, IList<object> row) where T : new()
 		{
 			T result = new T();
 			TransferValues(result, headers, row);
 			return result;
 		}
 
-		static List<T> Get<T>(string docName, string tabName) where T: new()
+		static List<T> Get<T>(string docName, string tabName) where T : new()
 		{
 			Track(docName, tabName);
 			List<T> result = new List<T>();
@@ -210,21 +218,163 @@ namespace GoogleHelper
 			spreadsheetIDs.Add("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
 		}
 
-		public static void Update<T>(string tabName, List<T> dtos)
+		static MemberInfo[] GetFields<TAttribute>(Type instanceType) where TAttribute : Attribute
 		{
-			string docName = GetDocumentName(tabName);
+			List<MemberInfo> memberInfo = new List<MemberInfo>();
+			IEnumerable<PropertyInfo> properties = instanceType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => x.GetCustomAttribute<TAttribute>() != null);
+			IEnumerable<FieldInfo> fields = instanceType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(x => x.GetCustomAttribute<TAttribute>() != null);
+			memberInfo.AddRange(properties);
+			memberInfo.AddRange(fields);
+			return memberInfo.ToArray();
+		}
 
-			if (docName == null)
-				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
+		static string GetColumnName<TColumnAttribute>(MemberInfo memberInfo) where TColumnAttribute: ColumnNameAttribute
+		{
+			TColumnAttribute customAttribute = memberInfo.GetCustomAttribute<TColumnAttribute>();
+			if (customAttribute == null || string.IsNullOrEmpty(customAttribute.ColumnName))
+				return memberInfo.Name;
+			return customAttribute.ColumnName;
+		}
+
+		static int GetColumnIndex(List<string> headerRow, string indexColumnName)
+		{
+			for (int i = 0; i < headerRow.Count; i++)
+				if (headerRow[i] == indexColumnName)
+					return i;
+			return -1;
+		}
+
+		static string GetValue(object obj, MemberInfo memberInfo)
+		{
+			if (memberInfo is PropertyInfo propInfo)
+				return propInfo.GetValue(obj).ToString();
+			if (memberInfo is FieldInfo fieldInfo)
+				return fieldInfo.GetValue(obj).ToString();
+			return null;
+		}
+
+		static int GetInstanceRowIndex(object obj, MemberInfo[] indexFields, IList<IList<object>> allRows, List<string> headerRow)
+		{
+			if (indexFields == null || indexFields.Length == 0)
+				throw new InvalidDataException($"indexFields must contain data!");
+
+			for (int rowIndex = 1; rowIndex < allRows.Count; rowIndex++)
+			{
+
+				bool found = false;
+				for (int i = 0; i < indexFields.Length; i++)
+				{
+					string indexColumnName = GetColumnName<IndexerAttribute>(indexFields[i]);
+					int column = GetColumnIndex(headerRow, indexColumnName);
+					if (column == -1)
+						throw new Exception($"Header not found in sheet: {indexColumnName}!");
+					IList<object> thisRow = allRows[rowIndex];
+					if (thisRow[column].ToString() == GetValue(obj, indexFields[i]))
+						found = true;
+					else
+					{
+						found = false;
+						break;
+					}
+				}
+				if (found)
+					return rowIndex;
+			}
+
+			return -1;
+		}
+
+		static string GetColumnId(int column)
+		{
+			int secondDigit = column / 26;
+			int firstDigit = column % 26;
+			string secondDigitStr = "";
+			if (secondDigit > 0)
+				secondDigitStr = GetColumnId(secondDigit);
+			return secondDigitStr + ((char)((byte)firstDigit + 65)).ToString();
+		}
+
+		static string GetRange(int columnIndex, int rowIndex)
+		{
+			return $"{GetColumnId(columnIndex)}{rowIndex + 1}";
+		}
+
+		static string GetExistingValue(IList<IList<object>> allRows, int columnIndex, int rowIndex)
+		{
+			return allRows[rowIndex][columnIndex].ToString();
+		}
+
+		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType)
+		{
+			if (instances == null || instances.Length == 0)
+				return;
 
 			if (!spreadsheetIDs.ContainsKey(docName))
 				throw new InvalidDataException($"docName (\"{docName}\") not found!");
 
-			string spreadsheetId = spreadsheetIDs[docName];
+			if (sheetTabMap[docName].IndexOf(tabName) < 0)
+				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
 
-			ValueRange body = new ValueRange();
-			SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, tabName);
-			UpdateValuesResponse response = request.Execute();
+			string spreadsheetId = spreadsheetIDs[docName];
+			List<string> headerRow;
+			IList<IList<object>> allRows;
+			GetHeaderRow(docName, tabName, out headerRow, out allRows);
+
+			MemberInfo[] indexFields = GetFields<IndexerAttribute>(instanceType);
+
+			MemberInfo[] serializableFields = GetFields<ColumnAttribute>(instanceType);
+
+			for (int i = 0; i < instances.Length; i++)
+			{
+				int rowIndex = GetInstanceRowIndex(instances[i], indexFields, allRows, headerRow);
+				for (int j = 0; j < serializableFields.Length; j++)
+				{
+					MemberInfo memberInfo = serializableFields[j];
+					int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
+					string range = GetRange(columnIndex, rowIndex);
+					ValueRange body = new ValueRange();
+					body.MajorDimension = "ROWS";
+					body.Range = $"{tabName}!{range}";
+					body.Values = new List<IList<object>>();
+					body.Values.Add(new List<object>());
+					string value = GetValue(instances[i], memberInfo);
+					string existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
+					if (value != existingValue)
+					{
+						body.Values[0].Add(value);
+						SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
+						request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+						UpdateValuesResponse response = request.Execute();
+						if (response != null)
+						{
+
+						}
+					}
+				}
+			}
+		}
+
+		private static void GetHeaderRow(string docName, string tabName, out List<string> headerRow, out IList<IList<object>> allRows)
+		{
+			allRows = GetCells(docName, tabName);
+			Dictionary<int, string> headers = new Dictionary<int, string>();
+			IList<object> headerRowObjects = allRows[0];
+			headerRow = headerRowObjects.Select(x => x.ToString()).ToList();
+		}
+
+		public static void SaveChanges(object[] instances)
+		{
+			if (instances == null || instances.Length == 0)
+				return;
+			Type instanceType = instances[0].GetType();
+			SheetNameAttribute sheetNameAttribute = instanceType.GetCustomAttribute<SheetNameAttribute>();
+			if (sheetNameAttribute == null)
+				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"SheetName\" attribute.");
+			TabNameAttribute tabNameAttribute = instanceType.GetCustomAttribute<TabNameAttribute>();
+			if (tabNameAttribute == null)
+				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
+
+			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType);
 		}
 	}
 }

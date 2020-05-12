@@ -240,8 +240,20 @@
 						</StackPanel>
 						<StackPanel x:Name="spAttackDieStr" Orientation="Horizontal" Margin="0, 0, 0, 8">
 							<StackPanel x:Name="spHiddenThreshold" Orientation="Horizontal" Margin="0, 0, 0, 8">
-								<TextBlock Text="Hidden Threshold: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
-								<TextBox x:Name="tbxHiddenThreshold" MinWidth="50" FontSize="22">
+								<TextBlock Text="Save: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+								<TextBox x:Name="tbxSaveThreshold" MinWidth="50" FontSize="22">
+									12
+								</TextBox>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" Margin="16, 0, 0, 8">
+								<TextBlock Text="Skill Check: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+								<TextBox x:Name="tbxSkillCheckThreshold" MinWidth="50" FontSize="22">
+									12
+								</TextBox>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" Margin="16, 0, 0, 8">
+								<TextBlock Text="Attack: " Width="Auto" Height="Auto" FontSize="22" Foreground="SlateGray"/>
+								<TextBox x:Name="tbxAttackThreshold" MinWidth="50" FontSize="22">
 									12
 								</TextBox>
 							</StackPanel>
@@ -839,7 +851,7 @@
 						</CheckBox>
 					</StackPanel>
 				</TabItem>
-				<TabItem x:Name="tbTest" Header="Test">
+				<TabItem x:Name="tbSprinkles" Header="Sprinkles">
 					<StackPanel Orientation="Vertical">
 						<Button x:Name="btnTestShowSprinkles" MaxWidth="160" Margin="8" Click="BtnTestShowSprinkles_Click">
 							Show Sprinkles!
@@ -893,6 +905,11 @@
 							Sprinkle Blast!
 						</Button>
 					</StackPanel>
+				</TabItem>
+				<TabItem x:Name="tbTest" Header="Test">
+					<Button x:Name="btnTestPlayerSave" MaxWidth="200" MinHeight="40" Click="BtnTestPlayerSave_Click" >
+						Save Player Data
+					</Button>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

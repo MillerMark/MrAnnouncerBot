@@ -7,9 +7,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using System.Reflection;
+using GoogleHelper;
 
 namespace DndCore
 {
+	[SheetName("DnD")]
+	[TabName("Players")]
 	public class Character : Creature
 	{
 		public event PickWeaponEventHandler PickWeapon;

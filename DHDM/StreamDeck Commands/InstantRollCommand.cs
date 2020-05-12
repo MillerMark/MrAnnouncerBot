@@ -22,11 +22,11 @@ namespace DHDM
 		public bool Matches(string message)
 		{
 			testAllPlayers = false;
-			Match match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+(\w+)" + PlayerSpecifier);
+			Match match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\(\)\:""\s]+)" + PlayerSpecifier);
 			if (!match.Success)
 			{
 				testAllPlayers = true;
-				match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+(\w+)");
+				match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\(\)\:""\s]+)");
 			}
 			if (match.Success)
 			{

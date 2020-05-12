@@ -305,6 +305,7 @@
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
     <Compile Include="SoundPlayerFolders.cs" />
+    <Compile Include="StreamDeck Commands\ApplyCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeVolumeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeWealthCommand.cs" />
@@ -334,6 +335,7 @@
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerFactory.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
+    <Compile Include="StreamDeck Commands\OnesCommand.cs" />
     <Compile Include="StreamDeck Commands\PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />
@@ -351,6 +353,7 @@
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="StreamDeck Commands\StopPlaying.cs" />
+    <Compile Include="StreamDeck Commands\TensCommand.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

@@ -42,6 +42,9 @@ namespace DHDM
 			Commands.Add(new ChangeVolumeCommand());
 			Commands.Add(new ChangeWealthCommand());
 			Commands.Add(new InstantRollCommand());
+			Commands.Add(new OnesCommand());
+			Commands.Add(new TensCommand());
+			Commands.Add(new ApplyCommand());
 			Commands.Add(new ChangeCommand());
 			Commands.Add(new SetPropertyCommand());
 			Commands.Add(new AdvanceClockCommand());

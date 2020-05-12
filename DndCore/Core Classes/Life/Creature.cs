@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using GoogleHelper;
 
 namespace DndCore
 {
@@ -67,8 +68,11 @@ namespace DndCore
 		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
 
 		public double flyingSpeed = 0;
+
+		[Column]
 		public decimal goldPieces = 0;
 
+		[Column]
 		public double hitPoints = 0;
 		public double initiative = 0;
 		public CreatureKinds kind = CreatureKinds.None;
@@ -77,6 +81,8 @@ namespace DndCore
 		public double maxHitPoints = 0;
 		public List<Attack> multiAttack = new List<Attack>();
 		public MultiAttackCount multiAttackCount = MultiAttackCount.oneEach;
+
+		[Indexer]
 		public string name = string.Empty;
 
 		protected bool needToRecalculateMods;

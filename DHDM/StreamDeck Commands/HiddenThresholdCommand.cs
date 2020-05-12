@@ -14,9 +14,9 @@ namespace DHDM
 			if (hiddenThreshold == int.MinValue)
 			{
 				hiddenThreshold = dungeonMasterApp.GetLastSpellSave();
-				dungeonMasterApp.TellDungeonMaster($"Setting hidden threshold to last Spell Save ({hiddenThreshold})...");
+				dungeonMasterApp.TellDungeonMaster($"Setting SAVE hidden threshold to last Spell Save ({hiddenThreshold})...");
 			}
-			dungeonMasterApp.SetHiddenThreshold(hiddenThreshold);
+			dungeonMasterApp.SetSaveHiddenThreshold(hiddenThreshold);
 		}
 
 		public bool Matches(string message)

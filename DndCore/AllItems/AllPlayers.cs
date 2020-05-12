@@ -80,17 +80,6 @@ namespace DndCore
 			return GetPlayerIdFromName(Players, name);
 		}
 
-		static void Update()
-		{
-			// mkm
-			//List<CharacterDto> characterDtos = new List<CharacterDto>();
-			//foreach (Character player in Players)
-			//{
-			//	characterDtos.Add(CharacterDto.From(player));
-			//}
-			//GoogleSheets.Update("Players", characterDtos);
-		}
-
 		public static List<Character> Players
 		{
 			get
@@ -100,6 +89,11 @@ namespace DndCore
 				return players;
 			}
 			private set => players = value;
+		}
+
+		public static void SaveChanges()
+		{
+			GoogleSheets.SaveChanges(Players.ToArray());
 		}
 	}
 }
