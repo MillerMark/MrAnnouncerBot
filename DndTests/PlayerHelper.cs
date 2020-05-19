@@ -6,10 +6,10 @@ namespace DndTests
 	public static class PlayerHelper
 	{
 
-		public static Character GetPlayerAtLevel(string className, int spellCasterLevel)
+		public static Character GetPlayerAtLevel(string className, int level)
 		{
 			Character character = new Character();
-			character.AddClass(className, spellCasterLevel);
+			character.AddClass(className, level);
 			character.playingNow = true;
 			return character;
 		}

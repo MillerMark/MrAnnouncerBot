@@ -239,7 +239,7 @@ namespace GoogleHelper
 		static int GetColumnIndex(List<string> headerRow, string indexColumnName)
 		{
 			for (int i = 0; i < headerRow.Count; i++)
-				if (headerRow[i] == indexColumnName)
+				if (string.Compare(headerRow[i], indexColumnName, StringComparison.OrdinalIgnoreCase) == 0)
 					return i;
 			return -1;
 		}
@@ -375,6 +375,12 @@ namespace GoogleHelper
 				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
 
 			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType);
+		}
+
+		public static void SaveChanges(object instance)
+		{
+			object[] array = { instance };
+			SaveChanges(array);
 		}
 	}
 }

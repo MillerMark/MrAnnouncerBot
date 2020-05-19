@@ -7,60 +7,69 @@ namespace DHDM
 {
 	public class ApplyCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		static int oneValue = int.MinValue;
-		static int tenValue = int.MinValue;
-		static DateTime lastTenSetTime = DateTime.MinValue;
-		public static void SetOnes(string value)
+		static decimal digitsEntered = decimal.MinValue;
+		static DateTime lastDigitSetTime = DateTime.MinValue;
+		public static void AddDigit(string value)
 		{
-			if (int.TryParse(value, out int asInt))
-				oneValue = asInt;
-		}
-
-		public static void SetTens(string value)
-		{
-			if (int.TryParse(value, out int asInt))
+			if (lastDigitSetTime == DateTime.MinValue || (DateTime.Now - lastDigitSetTime).TotalSeconds > 12)
 			{
-				tenValue = asInt;
-				lastTenSetTime = DateTime.Now;
+				digitsEntered = decimal.MinValue;
+			}
+
+			lastDigitSetTime = DateTime.Now;
+			if (value == ".")
+			{
+				decimalMultiplier = 0.1m;
+				if (digitsEntered == decimal.MinValue)
+					digitsEntered = 0;
+			}
+			else
+			{
+				if (int.TryParse(value, out int asInt))
+					if (digitsEntered == decimal.MinValue)
+						digitsEntered = asInt;
+					else
+					{
+						if (decimalMultiplier == 1m)
+						{
+							digitsEntered *= 10m;
+							digitsEntered += asInt;
+						}
+						else
+						{
+							digitsEntered += asInt * decimalMultiplier;
+							decimalMultiplier *= 0.1m;
+						}
+					}
 			}
 		}
 
-		public static int GetValue()
+		public static decimal GetValue()
 		{
-			int tens;
-			int ones;
-
-			if (lastTenSetTime == DateTime.MinValue || (DateTime.Now - lastTenSetTime).TotalSeconds > 15)
-				tens = 0;
-			else
-			{
-				if (tenValue == int.MinValue)
-					tens = 0;
-				else
-					tens = tenValue;
-			}
-
-			if (oneValue == int.MinValue)
-				ones = 0;
-			else
-				ones = oneValue;
-			return tens + ones;
+			return digitsEntered;
 		}
 
-		void ResetValue()
+		public static void ResetValue()
 		{
-			tenValue = 0;
-			oneValue = 0;
+			digitsEntered = decimal.MinValue;
+			decimalMultiplier = 1m;
 		}
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.Apply(applyCommand, GetValue(), GetPlayerIds(dungeonMasterApp, applyToAllPlayers));
+			decimal value = GetValue();
+			if (value == decimal.MinValue)
+			{
+				dungeonMasterApp.TellDungeonMaster($"Set numeric value first before applying {applyCommand}.");
+				return;
+			}
+			dungeonMasterApp.Apply(applyCommand, value, GetPlayerIds(dungeonMasterApp, applyToAllPlayers));
 			ResetValue();
 		}
 
 		string applyCommand;
 		bool applyToAllPlayers;
+		static decimal decimalMultiplier = 1m;
 		public bool Matches(string message)
 		{
 			applyToAllPlayers = false;
@@ -81,6 +90,8 @@ namespace DHDM
 				}
 
 				applyCommand = match.Groups[1].Value;
+				if (applyCommand == "LastDamage" || applyCommand == "LastHealth")
+					digitsEntered = -1;
 				return true;
 			}
 			

@@ -302,13 +302,18 @@
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <Compile Include="FrameRateChangeData.cs" />
+    <Compile Include="FrmMonsterPicker.xaml.cs">
+      <DependentUpon>FrmMonsterPicker.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
     <Compile Include="SoundPlayerFolders.cs" />
     <Compile Include="StreamDeck Commands\ApplyCommand.cs" />
+    <Compile Include="StreamDeck Commands\ApplyLastDamageCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeVolumeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeWealthCommand.cs" />
+    <Compile Include="StreamDeck Commands\ClearNumbersCommand.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
     <Compile Include="StreamDeck Commands\BreakConcentrationCommand.cs" />
@@ -335,7 +340,7 @@
     <Compile Include="PlayerButton.cs" />
     <Compile Include="PlayerFactory.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
-    <Compile Include="StreamDeck Commands\OnesCommand.cs" />
+    <Compile Include="StreamDeck Commands\DigitCommand.cs" />
     <Compile Include="StreamDeck Commands\PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />
@@ -353,7 +358,6 @@
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="StreamDeck Commands\StopPlaying.cs" />
-    <Compile Include="StreamDeck Commands\TensCommand.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>
@@ -369,6 +373,10 @@
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Page Include="FrmAsk.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FrmMonsterPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

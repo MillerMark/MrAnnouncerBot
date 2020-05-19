@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using DndCore;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 
@@ -29,7 +30,7 @@ namespace DHDM
 			return userIds.Contains(userId);
 		}
 
-		public virtual void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient)
+		public virtual void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient, Character activePlayer)
 		{
 
 		}

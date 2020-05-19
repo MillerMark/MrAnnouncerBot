@@ -23,6 +23,7 @@ function connectToSignalR(signalR) {
 		connection.on("PlaySound", playSound);
 		connection.on("AnimateSprinkles", animateSprinkles);
 		connection.on("UpdateClock", updateClock);
+		connection.on("FloatPlayerText", floatPlayerText);
 		connection.on("RollDice", rollDice);
 		connection.on("ClearDice", clearDice);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
@@ -88,6 +89,11 @@ function updateClock(clockData: string) {
 	}
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.updateClock(clockData);
+	}
+}
+function floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.floatPlayerText(playerId, message, fillColor, outlineColor);
 	}
 }
 

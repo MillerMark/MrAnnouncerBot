@@ -94,6 +94,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.UpdateClock(clockData);
 		}
 
+		public void FloatPlayerText(int playerID, string message, string fillColor, string outlineColor)
+		{
+			coderushedHub.Clients.All.FloatPlayerText(playerID, message, fillColor, outlineColor);
+		}
+
 		public void RollDice(string diceRollData)
 		{
 			coderushedHub.Clients.All.RollDice(diceRollData);

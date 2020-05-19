@@ -18,7 +18,7 @@ namespace DHDM
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, $"^ss\\s+({RegexConstants.PlayerFirstInitials})\\s+([\\[\\]\\-\\,\\+\\:\\(\\)\\s\\w']+)$");
+			Match match = Regex.Match(message, $"^ss\\s+({RegexConstants.PlayerFirstInitials})\\s+([\\[\\]\\-\\,\\/\\+\\:\\(\\)\\s\\w']+)$");
 			if (match.Success)
 			{
 				playerInitial = match.Groups[1].Value;

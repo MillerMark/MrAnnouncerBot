@@ -1374,6 +1374,10 @@ class DragonFrontGame extends DragonGame {
 		this.fred.playAnimation(movement, this.getPlayerX(this.getPlayerIndex(this.Player_Fred)));
 	}
 
+	floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string): void {
+		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
+		this.addFloatingPlayerText(playerX, message, fillColor, outlineColor);
+	}
 }
 
 class PlayerHealth {

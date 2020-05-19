@@ -44,7 +44,6 @@ namespace DndCore
 		
 		public double baseStrength;
 		public double baseWisdom;
-		public double blindsightRadius = 0;
 		public double baseWalkingSpeed = 0;
 		public double burrowingSpeed = 0;
 
@@ -63,7 +62,11 @@ namespace DndCore
 		[JsonIgnore]
 		public ObservableCollection<DamageFilter> damageVulnerability = new ObservableCollection<DamageFilter>();
 
-		public double darkvisionRadius = 0;
+		public virtual double darkvisionRadius { get; set; } = 0;
+		public virtual double tremorSenseRadius { get; set; } = 0;
+		public virtual double truesightRadius { get; set; } = 0;
+		public virtual double blindsightRadius { get; set; } = 0;
+
 		public Against disadvantages = Against.none;
 		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
 
@@ -93,9 +96,7 @@ namespace DndCore
 		public double swimmingSpeed = 0;
 		public double telepathyRadius = 0; // feet
 		public double tempHitPoints = 0;
-		public double tremorSenseRadius = 0;
-		public double truesightRadius = 0;
-
+		
 		public Creature()
 		{
 			equipment.CollectionChanged += ItemCollectionChanged;
@@ -126,14 +127,31 @@ namespace DndCore
 			}
 			set => calculatedMods = value;
 		}
-		public double Charisma
+		public virtual double Strength
+		{
+			get
+			{
+				return baseStrength + GetMods(Ability.strength);
+			}
+		}
+		public virtual double Wisdom
+		{
+			get
+			{
+				return baseWisdom + GetMods(Ability.wisdom);
+			}
+
+		}
+
+
+		public virtual double Charisma
 		{
 			get
 			{
 				return baseCharisma + GetMods(Ability.charisma);
 			}
 		}
-		public double Constitution
+		public virtual double Constitution
 		{
 			get
 			{
@@ -143,7 +161,7 @@ namespace DndCore
 		}
 
 
-		public double Dexterity
+		public virtual double Dexterity
 		{
 			get
 			{
@@ -172,22 +190,6 @@ namespace DndCore
 				return baseWalkingSpeed + GetMods();
 			}
 		}
-		public double Strength
-		{
-			get
-			{
-				return baseStrength + GetMods(Ability.strength);
-			}
-		}
-		public double Wisdom
-		{
-			get
-			{
-				return baseWisdom + GetMods(Ability.wisdom);
-			}
-
-		}
-
 		public Conditions ActiveConditions
 		{
 			get => activeConditions;

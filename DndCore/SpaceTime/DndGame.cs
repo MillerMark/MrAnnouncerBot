@@ -28,6 +28,7 @@ namespace DndCore
 		public event MessageEventHandler RequestMessageToAll;
 		public event CastedSpellEventHandler SpellDispelled;
 		public event PickWeaponEventHandler PickWeapon;
+		public event PlayerShowStateEventHandler PlayerShowState;
 		public event PickAmmunitionEventHandler PickAmmunition;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
@@ -37,6 +38,10 @@ namespace DndCore
 		public event DndCharacterEventHandler TurnStarting;
 		public event PlayerStateChangedEventHandler PlayerStateChanged;
 		public event PlayerRollRequestEventHandler PlayerRequestsRoll;
+		protected virtual void OnPlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		{
+			PlayerShowState?.Invoke(sender, ea);
+		}
 		protected virtual void OnPlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
 		{
 			PlayerRequestsRoll?.Invoke(sender, ea);
@@ -180,11 +185,17 @@ namespace DndCore
 		{
 			player.PickWeapon += Player_PickWeapon;
 			player.PickAmmunition += Player_PickAmmunition;
+			player.PlayerShowState += Player_PlayerShowState;
 			player.StateChanged += Player_StateChanged;
 			player.RollDiceRequest += Player_RollDiceRequest;
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
 			player.RequestMessageToAll += Player_RequestMessageToAll;
+		}
+
+		private void Player_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		{
+			OnPlayerShowState(this, ea);
 		}
 
 		private void Player_PickWeapon(object sender, PickWeaponEventArgs ea)

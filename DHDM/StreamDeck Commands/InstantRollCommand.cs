@@ -16,17 +16,30 @@ namespace DHDM
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			List<int> playerIds = GetPlayerIds(dungeonMasterApp, testAllPlayers);
-			dungeonMasterApp.InstantDice(diceRollType, dieStr, playerIds);
+			if (dieStr.Contains("{count}"))
+			{
+				decimal value = ApplyCommand.GetValue();
+				if (value == decimal.MinValue)
+					value = 1;
+				if (value > 20)
+				{
+					value = 20;
+					dungeonMasterApp.TellDungeonMaster($"Unable to roll {value} dice at once. Maximum on-screen dice is limited to 20.");
+				}
+				dieStr = dieStr.Replace("{count}", value.ToString());
+				ApplyCommand.ResetValue();
+			}
+			dungeonMasterApp.InstantDice(diceRollType, dieStr.Trim(), playerIds);
 		}
 
 		public bool Matches(string message)
 		{
 			testAllPlayers = false;
-			Match match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\(\)\:""\s]+)" + PlayerSpecifier);
+			Match match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\(\)\{\}\:""\s]+)" + PlayerSpecifier);
 			if (!match.Success)
 			{
 				testAllPlayers = true;
-				match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\(\)\:""\s]+)");
+				match = Regex.Match(message, @"^InstantRoll\s+(\w+)\s+([\w\(\)\{\}\:""\s]+)");
 			}
 			if (match.Success)
 			{

@@ -4,7 +4,6 @@ using System;
 
 namespace DndTests
 {
-
 	[TestClass]
 	public class DiceTests
 	{

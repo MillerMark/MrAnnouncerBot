@@ -4,23 +4,6 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public enum TargetKind
-	{
-		Player,
-		Weapon
-	}
-	
-	public class TargetEventArgs : EventArgs
-	{
-		public Target Target { get; set; }
-		public Character Player { get; set; }
-		public bool AllowSelf { get; set; }
-		public TargetEventArgs()
-		{
-			
-		}
-	}
-	public delegate void TargetEventHandler(TargetEventArgs ea);
 	public class SelectTargetFunction : DndFunction
 	{
 		public static event TargetEventHandler RequestSelectTarget;

@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
 	[HasDndEvents]
+	[SheetName("DnD")]
+	[TabName("Spells")]
 	public class Spell
 	{
 		public int Range { get; set; }
@@ -31,7 +34,12 @@ namespace DndCore
 		public SpellType SpellType { get; set; }
 		public DndTimeSpan Duration { get; set; }
 		public DndTimeSpan CastingTime { get; set; }
+
+		[Indexer("name")]
 		public string Name { get; set; }
+		[Indexer("index")]
+		public string Index { get; set; }
+
 		public string Description { get; set; }
 		public SpellComponents Components { get; set; }
 		public string Material { get; set; }
@@ -47,23 +55,41 @@ namespace DndCore
 		public string OriginalDieStr { get; set; }
 		public string BonusPerLevel { get; set; }
 		public double PerLevelBonus { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnCast { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnReceived { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnCasting { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnGetAttackAbility { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerPreparesAttack { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnDieRollStopped { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerAttacks { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerHitsTarget { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnDispel { get; set; }
 		public string AvailableWhen { get; set; }
 
@@ -320,6 +346,7 @@ namespace DndCore
 				Material = spellDto.components_materials_description,
 				Level = spellLevel,
 				Name = spellDto.name,
+				Index = spellDto.index,
 				RangeType = GetRangeType(spellDto),
 				SpellType = GetSpellType(spellDto),
 				SavingThrowAbility = GetSavingThrowAbility(spellDto),
@@ -493,6 +520,7 @@ namespace DndCore
 			result.Level = Level;
 			result.Material = Material;
 			result.Name = Name;
+			result.Index = Index;
 			result.OnCast = OnCast;
 			result.OnReceived = OnReceived;
 			result.OnCasting = OnCasting;

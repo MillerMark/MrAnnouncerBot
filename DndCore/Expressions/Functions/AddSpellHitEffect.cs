@@ -10,8 +10,8 @@ namespace DndCore
 		public override string Name { get; set; } = "AddSpellHitEffect";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
-		{
-			ExpectingArguments(args, 1, 8);
+			{
+			ExpectingArguments(args, 1, 11);
 			if (player != null)
 			{
 				string effectName = Expressions.GetStr(args[0], player, target, spell);
@@ -45,8 +45,21 @@ namespace DndCore
 				if (args.Count > 7)
 					timeOffset = Expressions.GetInt(args[7], player, target, spell);
 
+				int secondaryHue = 0;
+				if (args.Count > 8)
+					secondaryHue = Expressions.GetInt(args[8], player, target, spell);
 
-				player.AddSpellEffect(effectName, hue, saturation, brightness, scale, rotation, autoRotation, timeOffset);
+				int secondarySaturation = 100;
+				if (args.Count > 9)
+					secondarySaturation = Expressions.GetInt(args[9], player, target, spell);
+
+				int secondaryBrightness = 100;
+				if (args.Count > 10)
+					secondaryBrightness = Expressions.GetInt(args[10], player, target, spell);
+
+				player.AddSpellEffect(effectName, hue, saturation, brightness, 
+					scale, rotation, autoRotation, timeOffset,
+					secondaryHue, secondarySaturation, secondaryBrightness);
 			}
 
 			return null;

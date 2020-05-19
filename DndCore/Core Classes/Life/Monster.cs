@@ -7,28 +7,57 @@ namespace DndCore
 	public class Monster : Creature
 	{
 		public double challengeRating;
+
 		public double charismaMod;
 		public double constitutionMod;
 		public double dexterityMod;
-		public double experiencePoints;
-		public string hitPointsDice;
+		public double strengthMod;
+		public double wisdomMod;
 		public double intelligenceMod;
 
-		public bool naturalArmor;
-		public int passivePerception;
-		public double savingCharismaMod;
-		public double savingConstitutionMod;
-		public double savingDexterityMod;
-		public double savingIntelligenceMod;
+		public double experiencePoints;
+		public string hitPointsDice;
 
-		public double savingStrengthMod;
-		public double savingWisdomMod;
+		public string Name
+		{
+			get
+			{
+				return name;
+			}
+			set
+			{
+				name = value;
+			}
+		}
 
-		public int skillsModStealth;
 
-		public double strengthMod;
+		public bool naturalArmor { get; set; }
+
+		public int passivePerception
+		{
+			get
+			{
+				if (PassivePerceptionOverride != int.MinValue)
+					return PassivePerceptionOverride;
+				return 10 + (int)Math.Round(wisdomMod);
+			}
+			set
+			{
+				PassivePerceptionOverride = value;
+			}
+		}
+
+		public double savingCharismaMod { get; set; }
+		public double savingConstitutionMod { get; set; }
+		public double savingDexterityMod { get; set; }
+		public double savingIntelligenceMod { get; set; }
+
+		public double savingStrengthMod { get; set; }
+		public double savingWisdomMod { get; set; }
+
+		public int skillsModStealth { get; set; }
+
 		public List<string> traits = new List<string>();
-		public double wisdomMod;
 
 		public void AddAttack(Attack attack)
 		{
@@ -272,6 +301,134 @@ namespace DndCore
 			}
 		}
 
+		Dictionary<Skills, int> skillCheckOverrides = new Dictionary<Skills, int>();
+
+		void AddSkillCheckOverride(Skills skill, int value)
+		{
+			if (!skillCheckOverrides.ContainsKey(skill))
+				skillCheckOverrides.Add(skill, value);
+			else
+				skillCheckOverrides[skill] = value;
+		}
+
+		public int PassivePerceptionOverride = int.MinValue;
+		void SetSkillCheckBonus(string skillStr)
+		{
+			skillStr = skillStr.Trim();
+			if (string.IsNullOrEmpty(skillStr))
+				return;
+			int lastSpacePos = skillStr.LastIndexOf(' ');
+			if (lastSpacePos < 0)
+				return;
+
+			string skillName = skillStr.Substring(0, lastSpacePos).Trim();
+			string bonusStr = skillStr.Substring(lastSpacePos).Trim();
+
+
+			if (!int.TryParse(bonusStr, out int bonus))
+				return;
+
+			Skills skill = DndUtils.ToSkill(skillName);
+			AddSkillCheckOverride(skill, bonus);
+		}
+		void SetSkillCheckBonuses(string skillListStr)
+		{
+			string[] skills = skillListStr.Split(',');
+			foreach (string skill in skills)
+			{
+				SetSkillCheckBonus(skill);
+			}
+		}
+
+		void SetSenseFromStr(string sense)
+		{
+			sense = sense.Trim();
+			if (sense.Contains(" ft"))
+				sense = sense.EverythingBefore(" ft");
+			int lastSpacePos = sense.LastIndexOf(" ");
+			if (lastSpacePos < 0)
+				return;
+			string senseName = sense.Substring(0, lastSpacePos);
+			string valueStr = sense.Substring(lastSpacePos + 1);
+			if (!int.TryParse(valueStr, out int value))
+				return;
+
+			switch (senseName)
+			{
+				case "Passive Perception":
+					PassivePerceptionOverride = value;
+					break;
+				case "Blindsight":
+					blindsightRadius = value;
+					break;
+				case "Darkvision":
+					darkvisionRadius = value;
+					break;
+				case "Truesight":
+					truesightRadius = value;
+					break;
+				case "Tremorsense":
+					tremorSenseRadius = value;
+					break;
+				default:
+					System.Diagnostics.Debugger.Break();
+					break;
+			}
+		}
+
+		void SetSensesFromStr(string senseListStr)
+		{
+			if (string.IsNullOrEmpty(senseListStr))
+				return;
+			string[] senseStrs = senseListStr.Split(',');
+			foreach (string sense in senseStrs)
+			{
+				SetSenseFromStr(sense);
+			}
+		}
+
+		void SetChallengeRatingFromStr(string challengeStr)
+		{
+			switch (challengeStr)
+			{
+				case "1/8":
+					challengeRating = 1d / 8d;
+					break;
+				case "1/4":
+					challengeRating = 1d / 4d;
+					break;
+				case "1/2":
+					challengeRating = 1d / 2d;
+					break;
+				default:
+					if (double.TryParse(challengeStr, out double value))
+						challengeRating = value;
+					break;
+			}
+		}
+
+		void SetExperiencePointsFromStr(string str)
+		{
+			if (int.TryParse(str, out int value))
+				experiencePoints = value;
+		}
+
+		void SetChallengeRatingXpFromStr(string challenge)
+		{
+			if (string.IsNullOrEmpty(challenge))
+				return;
+			challenge = challenge.Replace(" XP)", "");
+			challenge = challenge.Replace("(", "");
+			challenge = challenge.Replace(",", "");
+			string[] parts = challenge.Split(' ');
+			if (parts.Length != 2)
+			{
+				System.Diagnostics.Debugger.Break();
+				return;
+			}
+			SetChallengeRatingFromStr(parts[0]);
+			SetExperiencePointsFromStr(parts[1]);
+		}
 		public static Monster From(MonsterDto monsterDto)
 		{
 			Monster monster = new Monster();
@@ -281,7 +438,20 @@ namespace DndCore
 			monster.SetHitPointsFromStr(monsterDto.HitPoints);
 			monster.SetAbilitiesFrom(monsterDto);
 			monster.SetSpeedFromStr(monsterDto.Speed);
+			monster.SetSkillCheckBonuses(monsterDto.Skills);
+			monster.SetSensesFromStr(monsterDto.Senses);
+			monster.SetChallengeRatingXpFromStr(monsterDto.Challenge);
 			return monster;
+		}
+
+		public bool HasOverridingSkillMod(Skills skill)
+		{
+			return skillCheckOverrides.ContainsKey(skill);
+		}
+
+		public int GetOverridingSkillMod(Skills skill)
+		{
+			return skillCheckOverrides[skill];
 		}
 	}
 }

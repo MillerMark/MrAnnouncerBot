@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
 	[HasDndEvents]
+	[SheetName("DnD")]
+	[TabName("Features")]
 	public class Feature
 	{
 		public static event FeatureEventHandler FeatureActivated;
@@ -29,32 +32,56 @@ namespace DndCore
 		}
 
 		public string ActivateWhen { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnStartGame { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnShortcutAvailabilityChange { get; set; }
 
 		public DndTimeSpan Duration { get; set; }
 		public bool IsActive { get; private set; }
 		public string Limit { get; set; }  // Could be an expression.
+
+		[Indexer]
 		public string Name { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnActivate { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnDeactivate { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerCastsSpell { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string AfterPlayerSwingsWeapon { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string BeforePlayerRollsDice { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerRaisesWeapon { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerStartsTurn { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnPlayerSaves { get; set; }
+
 		[DndEvent]
+		[Column]
 		public string OnRollComplete { get; set; }
 		public DndTimeSpan Per { get; set; }
 		public bool RequiresPlayerActivation { get; set; }

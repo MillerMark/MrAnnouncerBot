@@ -26,6 +26,7 @@ using System.Threading;
 using OBSWebsocketDotNet;
 using Newtonsoft.Json;
 using System.IO;
+using GoogleHelper;
 
 namespace DHDM
 {
@@ -132,11 +133,23 @@ namespace DHDM
 			game.SpellDispelled += Game_SpellDispelled;
 			game.PickWeapon += Game_PickWeapon;
 			game.PickAmmunition += Game_PickAmmunition;
+			game.PlayerShowState += Game_PlayerShowState;
 			game.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
 			game.RequestMessageToAll += Game_RequestMessageToAll;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
 			game.RoundStarting += Game_RoundStarting;
+		}
+
+		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		{
+			string outlineColor = ea.OutlineColor;
+			string fillColor = ea.FillColor;
+			if (outlineColor == "player")
+				outlineColor = ea.Player.dieFontColor;
+			if (fillColor == "player")
+				fillColor = ea.Player.dieBackColor;
+			HubtasticBaseStation.FloatPlayerText(ea.Player.playerID, ea.Message, fillColor, outlineColor);
 		}
 
 		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
@@ -226,6 +239,12 @@ namespace DHDM
 			DndCharacterProperty.AskingValue += DndCharacterProperty_AskingValue;
 			PlaySceneFunction.RequestPlayScene += PlaySceneFunction_RequestPlayScene;
 			SelectTargetFunction.RequestSelectTarget += SelectTargetFunction_RequestSelectTarget;
+			SelectMonsterFunction.RequestSelectMonster += SelectMonsterFunction_RequestSelectMonster;
+		}
+
+		private void SelectMonsterFunction_RequestSelectMonster(object sender, SelectMonsterEventArgs ea)
+		{
+			ea.Monster = AllMonsters.Get("Giant Ape");
 		}
 
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
@@ -699,7 +718,7 @@ namespace DHDM
 				if (colonPos > 0)
 				{
 					string valueStr = workStr.EverythingBefore(":");
-					result.AnswerText = workStr.EverythingAfter(":");
+					result.AnswerText = workStr.EverythingAfter(":").Trim();
 					if (int.TryParse(valueStr, out int value))
 						result.Value = value;
 				}
@@ -721,21 +740,17 @@ namespace DHDM
 			waitingForAnswerToQuestion = true;
 			try
 			{
-				answerMap = new List<AnswerMap>();
-				List<string> textAnswers = new List<string>();
-				int index = 1;
-				bool firstTimeIn = true;
-				foreach (string answer in answers)
-				{
-					if (firstTimeIn && answer.ToLower().IndexOf("zero") >= 0)
-						index = 0;
-					firstTimeIn = false;
+				BuildAnswerMap(answers);
 
-					AnswerMap thisAnswer = AnswerMap.FromAnswer(answer, index);
-					answerMap.Add(thisAnswer);
-					textAnswers.Add($"{index}. " + thisAnswer.AnswerText);
-					index++;
+				if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
+				{
+					AnswerMap selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
+					ActivePlayer.NextAnswer = null;
+					if (selectedAnswer != null)
+						return selectedAnswer.Index;
 				}
+
+
 				TellDungeonMaster($"{Icons.QuestionBlock} {twitchIndent}" + question);
 				foreach (AnswerMap answer in answerMap)
 				{
@@ -750,6 +765,25 @@ namespace DHDM
 				answerMap = null;
 				if (timerWasRunning)
 					StartRealTimeTimer();
+			}
+		}
+
+		private void BuildAnswerMap(List<string> answers)
+		{
+			answerMap = new List<AnswerMap>();
+			List<string> textAnswers = new List<string>();
+			int index = 1;
+			bool firstTimeIn = true;
+			foreach (string answer in answers)
+			{
+				if (firstTimeIn && answer.ToLower().IndexOf("zero") >= 0)
+					index = 0;
+				firstTimeIn = false;
+
+				AnswerMap thisAnswer = AnswerMap.FromAnswer(answer, index);
+				answerMap.Add(thisAnswer);
+				textAnswers.Add($"{index}. " + thisAnswer.AnswerText);
+				index++;
 			}
 		}
 
@@ -860,7 +894,7 @@ namespace DHDM
 			BaseChatBot commandParser = GetCommandParser(e.ChatMessage.UserId);
 			if (commandParser == null)
 				return;
-			commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient);
+			commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient, ActivePlayer);
 		}
 
 		private void History_LogUpdated(object sender, EventArgs e)
@@ -2759,14 +2793,14 @@ namespace DHDM
 
 			if (spellHitType == SpellHitType.Miss)
 			{
-				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, hueShift, 20));
+				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, hueShift, 100, 20));
 			}
 			else
 			{
 				double scale = 1;
 				double autoRotation = 140;
 				const double scaleIncrement = 1.1;
-				AnimationEffect effect = CreateEffect(GetRandomHitSpellName(), chestTarget, hueShift);
+				AnimationEffect effect = CreateEffect(GetRandomHitSpellName(), chestTarget, hueShift, 100);
 				effect.autoRotation = autoRotation;
 				autoRotation *= -1;
 				effectGroup.Add(effect);
@@ -2835,7 +2869,9 @@ namespace DHDM
 					effectName = GetRandomHitSpellName();
 					target = chestTarget;
 				}
-				AnimationEffect effectBonus = CreateEffect(effectName, target, spellHit.Hue, spellHit.Brightness);
+				AnimationEffect effectBonus = CreateEffect(effectName, target, 
+					spellHit.Hue, spellHit.Saturation, spellHit.Brightness,
+					spellHit.SecondaryHue, spellHit.SecondarySaturation, spellHit.SecondaryBrightness);
 				if (usingSpellHits)
 				{
 					effectBonus.timeOffsetMs = timeOffset;
@@ -2883,15 +2919,21 @@ namespace DHDM
 			}
 			if (!int.TryParse(brightnessStr, out int brightness))
 				brightness = 100;
-			return CreateEffect(spriteName, target, hueShift, brightness);
+			return CreateEffect(spriteName, target, hueShift, 100, brightness);
 		}
 
-		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target, int hueShift, int brightness = 100)
+		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target, 
+			int hueShift = 0, int saturation = 100, int brightness = 100,
+			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
 			AnimationEffect spellEffect = new AnimationEffect();
 			spellEffect.spriteName = spriteName;
 			spellEffect.hueShift = hueShift;
+			spellEffect.saturation = saturation;
 			spellEffect.brightness = brightness;
+			spellEffect.secondaryHueShift = secondaryHueShift;
+			spellEffect.secondarySaturation = secondarySaturation;
+			spellEffect.secondaryBrightness = secondaryBrightness;
 			spellEffect.target = target;
 			return spellEffect;
 		}
@@ -2912,6 +2954,8 @@ namespace DHDM
 				ShowSpellHitInGame(stopRollingData.playerID, SpellHitType.Miss, stopRollingData.spellName);
 			}
 		}
+		int lastDamage;
+		int lastHealth;
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			if (dynamicThrottling)
@@ -2922,6 +2966,17 @@ namespace DHDM
 			}
 
 			waitingToClearDice = true;
+			if (ea.StopRollingData.type == DiceRollType.DamageOnly)
+			{
+				// TODO: Store last damage type...
+				lastDamage = ea.StopRollingData.damage;
+			}
+			else if (ea.StopRollingData.type == DiceRollType.HealthOnly)
+			{
+				lastHealth = ea.StopRollingData.health;
+			}
+
+
 			if (ea.StopRollingData.individualRolls?.Count > 0)
 			{
 				IndividualDiceStoppedRolling(ea.StopRollingData.individualRolls);
@@ -4464,7 +4519,7 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				ActivePlayerId = playerId;
-				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId);
+				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId && x.Available);
 				if (shortcut != null)
 				{
 					ActivateShortcut(shortcut);
@@ -4776,53 +4831,10 @@ namespace DHDM
 
 		private void BtnDebugTest_Click(object sender, RoutedEventArgs e)
 		{
-			//ckBreakTest.IsChecked = true;
-			Expressions.Debugging = true;
-			const string script =
-@"if (Get(_justEnteredWildSurgeRage) == true)
-{
-	Set(_rageDeactivationMessage, """");
-	Set(_justEnteredWildSurgeRage, false);
-	result = GetRoll(BarbarianWildSurge);
-	if (result == 1)
-		TellDm(WildSurgeNecrotic);
-	else if (result == 2)
-	{
-		Set(_rageDeactivationMessage, $""{firstName} can no longer teleport."");
-		TellDm(WildSurgeTeleport);
-	}
-	else if (result == 3)
-	{
-		AddReminder(""All flumph - like spirits explode and each creature within 5 feet of one or more of them must succeed on a * *Dexterity * *saving throw or take 2d8 force damage."", ""end of turn"");
-		TellDm(WildSurgeFlumphs);
-	}
-	else if (result == 4)
-	{
-		Set(_rageDeactivationMessage, $""{firstName}'s AC is back to normal."");
-		TellDm(WildSurgeArcaneShroud);
-	}
-	else if (result == 5)
-	{
-		Set(_rageDeactivationMessage, $""{firstName}'s weapons are back to normal."");
-		TellDm(WildSurgePlantGrowth);
-	}
-	else if (result == 6)
-	{
-		TellDm(WildSurgeReadThoughts);
-		AddReminder($""Creatures whose thoughts were detected by {firstName} no longer have disadvantage against {firstName}."", ""1 round"");
-	}
-	else if (result == 7)
-	{
-		Set(_rageDeactivationMessage, $""{firstName}'s weapons are back to normal."");
-		TellDm(WildSurgeShadowWeapon);
-	}
-	else if (result == 8)
-	{
-		TellDm(WildSurgeRadiantLight);
-		AddReminder($""Blinded creatures from {firstName}'s Wild Surge Radiance can now see"", ""1 round"");
-	}
-}";
-			Expressions.Do(script, ActivePlayer);
+			if (activeEventData == null)
+				return;
+			TestCastSpell(activeEventData.ParentGroup.Name);
+			UnleashTheNextRoll();
 		}
 
 		private void LstEventCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -5081,22 +5093,35 @@ namespace DHDM
 			object instance = null;
 
 			if (parentGroup.Type == EventType.FeatureEvents)
+			{
 				instance = AllFeatures.Get(groupName);
+				SetValue(instance, name, code);
+			}
 			else if (parentGroup.Type == EventType.SpellEvents)
 			{
 				instance = AllSpells.GetDto(groupName);
-				name = Char.ToLower(name[0]) + name.Substring(1);  // SpellDto events start with a lower case letter.
+				string lowerEventName = Char.ToLower(name[0]) + name.Substring(1); // SpellDto events start with a lower case letter.
+				SetValue(instance, lowerEventName, code);
+
+				List<Spell> matchingSpells = AllSpells.GetAll(groupName, ActivePlayer);
+				if (matchingSpells.Count == 1)
+					SetValue(matchingSpells[0], name, code);
 			}
 
-			if (instance == null)
-				return;
-
-			instance.GetType().GetProperty(name).SetValue(instance, code);
+			
 
 			//if (parentGroup.Type == EventType.FeatureEvents)
 			//	
 			//else if (parentGroup.Type == EventType.SpellEvents)
 			//	
+		}
+
+		private static void SetValue(object instance, string name, object value)
+		{
+			if (instance == null)
+				return;
+
+			instance.GetType().GetProperty(name).SetValue(instance, value);
 		}
 
 		void UpdateSelectedEvent(string text)
@@ -5518,14 +5543,18 @@ namespace DHDM
 			if (activeEventData == null)
 				return;
 			// Spells only...
-			string spellName = activeEventData.ParentGroup.Name;
-			string eventName = activeEventData.Name;
-			string code = tbxCode.Text;
-			List<Spell> allSpells = AllSpells.GetAll(spellName);
+			string spellOrFeatureName = activeEventData.ParentGroup.Name;
+			List<Spell> allSpells = AllSpells.GetAll(spellOrFeatureName);
 			if (allSpells.Count == 1)
 			{
 				Spell spell = allSpells[0];
-				AllSpells.Update(spell);
+				GoogleSheets.SaveChanges(spell);
+			}
+			else
+			{
+				Feature feature = AllFeatures.Get(spellOrFeatureName);
+				if (feature != null)
+					GoogleSheets.SaveChanges(feature);
 			}
 		}
 
@@ -5577,27 +5606,57 @@ namespace DHDM
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SKILL CHECK threshold");
 		}
-
-		public void Apply(string command, int value, List<int> playerIds)
+		public void Apply(string command, decimal value, List<int> playerIds)
 		{
+			int intValue = (int)Math.Round(value);
 			switch (command)
 			{
 				case "Health":
-					IncreasePlayerHealth(playerIds, value);
+					IncreasePlayerHealth(playerIds, intValue);
 					break;
 				case "Damage":
-					ApplyPlayerDamage(playerIds, value);
+					ApplyPlayerDamage(playerIds, intValue);
+					break;
+				case "AddCoins":
+					ChangeWealth(playerIds, value);
+					break;
+				case "RemoveCoins":
+					ChangeWealth(playerIds, -value);
 					break;
 				case "SaveThreshold":
-					SetSavingThrowThreshold(value);
+					SetSavingThrowThreshold(intValue);
 					break;
 				case "SkillThreshold":
-					SetSkillCheckThreshold(value);
+					SetSkillCheckThreshold(intValue);
 					break;
 				case "AttackThreshold":
-					SetAttackThreshold(value);
+					SetAttackThreshold(intValue);
+					break;
+				case "LastDamage":
+					ApplyPlayerDamage(playerIds, lastDamage);
+					break;
+				case "LastHealth":
+					IncreasePlayerHealth(playerIds, lastHealth);
+					break;
+				case "TempHp":
+					AddTempHitPoints(playerIds, intValue);
 					break;
 			}
+		}
+
+		private void AddTempHitPoints(List<int> playerIds, int intValue)
+		{
+			DamageHealthChange damageHealthChange = NewDamageHealthChange(playerIds, intValue);
+			damageHealthChange.IsTempHitPoints = true;
+			ApplyDamageHealthChange(damageHealthChange);
+		}
+
+		private void BtnPickMonster_Click(object sender, RoutedEventArgs e)
+		{
+			FrmMonsterPicker frmMonsterPicker = new FrmMonsterPicker();
+			frmMonsterPicker.Owner = this;
+			frmMonsterPicker.lbMonsters.ItemsSource = AllMonsters.Monsters;
+			frmMonsterPicker.ShowDialog();
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

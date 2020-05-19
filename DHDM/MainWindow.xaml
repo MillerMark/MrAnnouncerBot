@@ -8,7 +8,8 @@
         mc:Ignorable="d"
 		xmlns:dh="clr-namespace:DndUI"
 		xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
-		Title="MainWindow" Height="1080" Width="1920" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+		Title="MainWindow" Height="1080" Width="1920" Loaded="Window_Loaded" Unloaded="Window_Unloaded"
+		WindowStartupLocation="CenterOwner">
 	<Window.Resources>
 		<Style TargetType="{x:Type CheckBox}" x:Key="Breakpoint">
 			<Setter Property="Template">
@@ -754,18 +755,6 @@
 								</ListBox>
 							</StackPanel>
 							<StackPanel Orientation="Horizontal">
-								<Button x:Name="btnDebugStep" MaxWidth="132" MinWidth="66" MinHeight="24" Click="BtnDebugStep_Click" Margin="8" VerticalAlignment="Center">
-									Step
-								</Button>
-
-								<Button x:Name="btnDebugRun" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugRun_Click" Margin="8" VerticalAlignment="Center">
-									Run
-								</Button>
-
-								<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
-									Test
-								</Button>
-
 								<Button x:Name="btnRepeatLastCast" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Click="BtnRepeatLastCast_Click" Margin="8" VerticalAlignment="Center">
 									Cast
 								</Button>
@@ -774,6 +763,10 @@
 									Roll Dice
 								</Button>
 
+								<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
+									Fire Event
+								</Button>
+								
 								<Button x:Name="btnUpdateEventHandler" Click="BtnUpdateEventHandler_Click" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
 									Update
 								</Button>
@@ -907,9 +900,14 @@
 					</StackPanel>
 				</TabItem>
 				<TabItem x:Name="tbTest" Header="Test">
-					<Button x:Name="btnTestPlayerSave" MaxWidth="200" MinHeight="40" Click="BtnTestPlayerSave_Click" >
-						Save Player Data
-					</Button>
+					<StackPanel Orientation="Horizontal">
+						<Button x:Name="btnTestPlayerSave" Width="140" Height="40" Click="BtnTestPlayerSave_Click" >
+							Save Player Data
+						</Button>
+						<Button x:Name="btnPickMonster" Width="140" Height="40" Click="BtnPickMonster_Click" Margin="40, 0, 0, 0">
+							Pick Monster
+						</Button>
+					</StackPanel>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

@@ -60,10 +60,6 @@ namespace DndTests
 			List<PlayerActionShortcut> avaShortcuts = AllActionShortcuts.Get(PlayerID.LilCutie);
 			PlayerActionShortcut javelin = avaShortcuts.FirstOrDefault(x => x.DisplayText == "Javelin");
 			Assert.IsNotNull(javelin);
-
-			PlayerActionShortcut thunderousSmite = avaShortcuts.FirstOrDefault(x => x.DisplayText == "Thunderous Smite");
-			Assert.AreEqual(3, thunderousSmite.Windups.Count);
-			Assert.IsNotNull(thunderousSmite);
 		}
 
 		[TestMethod]

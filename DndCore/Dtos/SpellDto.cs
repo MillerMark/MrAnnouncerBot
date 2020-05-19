@@ -6,6 +6,7 @@ namespace DndCore
 	public class SpellDto
 	{
 		public string name { get; set; }
+		public string index { get; set; }
 		public string level { get; set; }
 		public string school { get; set; }
 		public string ritual { get; set; }

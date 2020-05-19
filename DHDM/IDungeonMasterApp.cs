@@ -7,7 +7,7 @@ namespace DHDM
 {
 	public interface IDungeonMasterApp
 	{
-		void Apply(string command, int value, List<int> playerIds);
+		void Apply(string command, decimal value, List<int> playerIds);
 		string GetPlayFirstNameFromId(int playerId);
 		void SetBoolProperty(int playerId, string propertyName, bool value);
 		bool GetBoolProperty(int playerId, string propertyName);

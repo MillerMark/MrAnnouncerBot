@@ -70,9 +70,5 @@ namespace DndCore
 			}
 			return GetAll(spellName, spellSlotLevel, spellLevel, spellcastingAbilityModifier);
 		}
-		public static void Update(Spell spell)
-		{
-			// TODO: Implement this.
-		}
 	}
 }

@@ -10,6 +10,7 @@ namespace DHDM
 {
 	public class DungeonMasterChatBot : BaseChatBot
 	{
+		private const string commandSeparator = " | ";
 		List<IDungeonMasterCommand> commands;
 		
 		public List<IDungeonMasterCommand> Commands
@@ -42,9 +43,10 @@ namespace DHDM
 			Commands.Add(new ChangeVolumeCommand());
 			Commands.Add(new ChangeWealthCommand());
 			Commands.Add(new InstantRollCommand());
-			Commands.Add(new OnesCommand());
-			Commands.Add(new TensCommand());
+			Commands.Add(new DigitCommand());
 			Commands.Add(new ApplyCommand());
+			Commands.Add(new ApplyLastDamageCommand());
+			Commands.Add(new ClearNumbersCommand());
 			Commands.Add(new ChangeCommand());
 			Commands.Add(new SetPropertyCommand());
 			Commands.Add(new AdvanceClockCommand());
@@ -57,12 +59,26 @@ namespace DHDM
 			Commands.Add(new MoveFredCommand());
 			Commands.Add(new HiddenThresholdCommand());
 		}
-		public override void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient)
+
+		string StripCommandsFromMessage(string message, out string commands)
+		{
+			if (message.Contains(commandSeparator))
+			{
+				commands = message.EverythingAfter(commandSeparator);
+				return message.EverythingBefore(commandSeparator);
+			}
+			commands = "";
+			return message;
+		}
+
+		public override void HandleMessage(ChatMessage chatMessage, TwitchClient twitchClient, Character activePlayer)
 		{
 			foreach (IDungeonMasterCommand dungeonMasterCommand in Commands)
 			{
-				if (dungeonMasterCommand.Matches(chatMessage.Message))
+				string streamDeckCommand = StripCommandsFromMessage(chatMessage.Message, out string commands);
+				if (dungeonMasterCommand.Matches(streamDeckCommand))
 				{
+					Expressions.Do(commands, activePlayer);
 					dungeonMasterCommand.Execute(DungeonMasterApp, chatMessage);
 					return;
 				}

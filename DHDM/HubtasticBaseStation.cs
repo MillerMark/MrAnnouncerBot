@@ -187,5 +187,9 @@ namespace DHDM
 		{
 			HubConnection.InvokeAsync("ExecuteSoundCommand", commandData);
 		}
+		public static void FloatPlayerText(int playerID, string message, string fillColor, string outlineColor)
+		{
+			HubConnection.InvokeAsync("FloatPlayerText", playerID, message, fillColor, outlineColor);
+		}
 	}
 }

@@ -36,7 +36,9 @@ namespace DndCore
 			target = new VisualEffectTarget();
 		}
 
-		public AnimationEffect(string spriteName, VisualEffectTarget target, int startFrameIndex, double hueShift = 0, double saturation = -1, double brightness = -1)
+		public AnimationEffect(string spriteName, VisualEffectTarget target, int startFrameIndex, 
+			double hueShift = 0, double saturation = 100, double brightness = 100,
+			double secondaryHueShift = 0, double secondarySaturation = 100, double secondaryBrightness = 100)
 		{
 			this.spriteName = spriteName;
 			this.target = target;
@@ -44,6 +46,9 @@ namespace DndCore
 			this.hueShift = hueShift;
 			this.saturation = saturation;
 			this.brightness = brightness;
+			this.secondaryHueShift = secondaryHueShift;
+			this.secondarySaturation = secondarySaturation;
+			this.secondaryBrightness = secondaryBrightness;
 			effectKind = EffectKind.Animation;
 		}
 	}

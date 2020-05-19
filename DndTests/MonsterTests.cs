@@ -65,9 +65,72 @@ namespace DndTests
 			Assert.AreEqual(9, skeleton.passivePerception);
 			Assert.AreEqual(1/4, skeleton.challengeRating);
 			Assert.AreEqual(DamageType.Poison, skeleton.damageImmunities);
-			Assert.AreEqual(Conditions.Fatigued, skeleton.damageImmunities);
-			
-			
+			Assert.AreEqual(Conditions.Fatigued, skeleton.conditionImmunities);
+		}
+
+		[TestMethod]
+		public void TestGiantBat()
+		{
+			Monster giantBat = AllMonsters.Get("Giant Bat");
+			Assert.AreEqual(13, giantBat.ArmorClass);
+			Assert.AreEqual(22, giantBat.maxHitPoints);
+			Assert.AreEqual(CreatureSize.Large, giantBat.creatureSize);
+			Assert.AreEqual(CreatureKinds.Beasts, giantBat.kind);
+			Assert.AreEqual(Alignment.Unaligned, giantBat.Alignment);
+			Assert.AreEqual("unaligned", giantBat.alignmentStr);
+			Assert.AreEqual(10, giantBat.baseWalkingSpeed);
+			Assert.AreEqual(60, giantBat.flyingSpeed);
+			Assert.AreEqual(15, giantBat.baseStrength);
+			Assert.AreEqual(2, giantBat.strengthMod);
+			Assert.AreEqual(16, giantBat.baseDexterity);
+			Assert.AreEqual(3, giantBat.dexterityMod);
+			Assert.AreEqual(11, giantBat.baseConstitution);
+			Assert.AreEqual(0, giantBat.constitutionMod);
+			Assert.AreEqual(2, giantBat.baseIntelligence);
+			Assert.AreEqual(-4, giantBat.intelligenceMod);
+			Assert.AreEqual(12, giantBat.baseWisdom);
+			Assert.AreEqual(1, giantBat.wisdomMod);
+			Assert.AreEqual(6, giantBat.baseCharisma);
+			Assert.AreEqual(-2, giantBat.charismaMod);
+			Assert.AreEqual(0, giantBat.darkvisionRadius);
+			Assert.AreEqual(60, giantBat.blindsightRadius);
+			Assert.AreEqual(11, giantBat.passivePerception);
+			Assert.AreEqual(1/4, giantBat.challengeRating);
+			Assert.AreEqual(DamageType.None, giantBat.damageImmunities);
+			Assert.AreEqual(Conditions.None, giantBat.conditionImmunities);
+		}
+
+		[TestMethod]
+		public void TestGiantApe()
+		{
+			Monster giantApe = AllMonsters.Get("Giant Ape");
+			Assert.AreEqual(12, giantApe.ArmorClass);
+			Assert.AreEqual(157, giantApe.maxHitPoints);
+			Assert.AreEqual(CreatureSize.Huge, giantApe.creatureSize);
+			Assert.AreEqual(CreatureKinds.Beasts, giantApe.kind);
+			Assert.AreEqual(Alignment.Unaligned, giantApe.Alignment);
+			Assert.AreEqual("unaligned", giantApe.alignmentStr);
+			Assert.AreEqual(40, giantApe.baseWalkingSpeed);
+			Assert.AreEqual(0, giantApe.flyingSpeed);
+			Assert.AreEqual(40, giantApe.climbingSpeed);
+			Assert.AreEqual(23, giantApe.baseStrength);
+			Assert.AreEqual(6, giantApe.strengthMod);
+			Assert.AreEqual(14, giantApe.baseDexterity);
+			Assert.AreEqual(2, giantApe.dexterityMod);
+			Assert.AreEqual(18, giantApe.baseConstitution);
+			Assert.AreEqual(4, giantApe.constitutionMod);
+			Assert.AreEqual(7, giantApe.baseIntelligence);
+			Assert.AreEqual(-2, giantApe.intelligenceMod);
+			Assert.AreEqual(12, giantApe.baseWisdom);
+			Assert.AreEqual(1, giantApe.wisdomMod);
+			Assert.AreEqual(7, giantApe.baseCharisma);
+			Assert.AreEqual(-2, giantApe.charismaMod);
+			Assert.AreEqual(0, giantApe.darkvisionRadius);
+			Assert.AreEqual(0, giantApe.blindsightRadius);
+			Assert.AreEqual(14, giantApe.passivePerception);
+			Assert.AreEqual(9, giantApe.GetOverridingSkillMod(Skills.athletics));
+			Assert.AreEqual(4, giantApe.GetOverridingSkillMod(Skills.perception));
+			Assert.AreEqual(7, giantApe.challengeRating);
 		}
 	}
 }

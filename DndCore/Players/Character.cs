@@ -15,9 +15,59 @@ namespace DndCore
 	[TabName("Players")]
 	public class Character : Creature
 	{
+		string wildShapeCreatureName;
+		Creature wildShape;
+		public Creature WildShape
+		{
+			get
+			{
+				return wildShape;
+			}
+			set
+			{
+				if (wildShape == value)
+					return;
+				//if (value == null)
+				//	OnOriginalShapeRestoring();
+				//else
+				//	OnShapeChanging();
+				wildShape = value;
+			}
+		}
+
+		
+		public string WildShapeCreatureName
+		{
+			get
+			{
+				if (WildShape is Monster monster)
+					return monster.name;
+				return "";
+			}
+		}
+		
+		/* 
+		 * You automatically revert if you fall Unconscious, drop to 0 Hit Points, or die.
+		 * Replaced:
+		 *	Senses
+		 *	Strength, Dexterity, Constitution
+		 *	Speed stats (unless you are a water genasi - in which case you retain your swim speed)
+		 *	
+		 *	Hit Points (and Hit Dice). 
+		 *	   When you revert to your normal form, you return to the number of Hit Points you had before you transformed.
+		 *     However, if you revert as a result of Dropping to 0 Hit Points, any excess damage carries over to your normal form. 
+		 *     For example, if you take 10 damage in animal form and have only 1 hit point left, you revert and take 9 damage. 
+		 *     As long as the excess damage doesn't reduce your normal form to 0 Hit Points, you aren't knocked Unconscious.
+	 
+		 * Use the highest:
+		 *	skill and saving throw Proficiency
+		 
+		 * You can't cast Spells.
+		 * 
+		 */
 		public event PickWeaponEventHandler PickWeapon;
 		public event PickAmmunitionEventHandler PickAmmunition;
-
+		public event PlayerShowStateEventHandler PlayerShowState;
 		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
 		{
 			PickWeapon?.Invoke(sender, ea);
@@ -27,6 +77,9 @@ namespace DndCore
 		{
 			PickAmmunition?.Invoke(sender, ea);
 		}
+
+		[JsonIgnore]
+		public string NextAnswer { get; set; }
 
 		[JsonIgnore]
 		public string ActiveWeaponName
@@ -288,30 +341,7 @@ namespace DndCore
 		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
 
 		
-		//// TODO: Set this to true when casting and false when no longer casting.
-		//public bool Casting
-		//{
-		//	get { return casting; }
-		//	set
-		//	{
-		//		bool oldValue = casting;
-		//		bool newValue = value;
 
-		//		if (oldValue == newValue)
-		//			return;
-
-		//		casting = value;
-		//		OnStateChanged("Casting", oldValue, newValue);
-		//	}
-		//}
-
-		public double charismaMod
-		{
-			get
-			{
-				return this.getModFromAbility(this.Charisma);
-			}
-		}
 		public List<CharacterClass> Classes { get; set; } = new List<CharacterClass>();
 
 		public string ClassLevelStr
@@ -328,18 +358,74 @@ namespace DndCore
 				return result;
 			}
 		}
+
+		public double wisdomMod
+		{
+			get
+			{
+				int mod = getModFromAbility(Wisdom);
+				if (WildShape is Monster monster)
+					return Math.Max(mod, monster.wisdomMod);
+
+				return mod;
+			}
+		}
+
+
+		public double intelligenceMod
+		{
+			get
+			{
+				int mod = getModFromAbility(Intelligence);
+				if (WildShape is Monster monster)
+					return Math.Max(mod, monster.intelligenceMod);
+
+				return mod;
+			}
+		}
 		public double constitutionMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.Constitution);
+				int mod = getModFromAbility(Constitution);
+				if (WildShape is Monster monster)
+					return Math.Max(mod, monster.constitutionMod);
+
+				return mod;
 			}
 		}
 		public double dexterityMod
 		{
 			get
 			{
-				return this.getModFromAbility(this.Dexterity);
+				int mod = getModFromAbility(Dexterity);
+				if (WildShape is Monster monster)
+					return Math.Max(mod, monster.dexterityMod);
+
+				return mod;
+			}
+		}
+		public double strengthMod
+		{
+			get
+			{
+				int mod = getModFromAbility(Strength);
+				if (WildShape is Monster monster)
+					return Math.Max(mod, monster.strengthMod);
+
+				return mod;
+			}
+		}
+
+		public double charismaMod
+		{
+			get
+			{
+				int mod = getModFromAbility(Charisma);
+				if (WildShape is Monster monster)
+					return Math.Max(mod, monster.charismaMod);
+
+				return mod;
 			}
 		}
 
@@ -549,14 +635,6 @@ namespace DndCore
 				return hasProficiencyBonusForSkill(Skills.survival);
 			}
 		}
-		public double intelligenceMod
-		{
-			get
-			{
-				return this.getModFromAbility(this.Intelligence);
-			}
-		}
-
 		[JsonIgnore]
 		public List<KnownSpell> KnownSpells { get; private set; } = new List<KnownSpell>();
 
@@ -579,9 +657,7 @@ namespace DndCore
 		{
 			get
 			{
-				if (this._passivePerception == int.MinValue)
-					this._passivePerception = 10 + this.wisdomMod + this.getProficiencyBonusForSkill(Skills.perception);
-				return this._passivePerception;
+				return _passivePerception = 10 + wisdomMod + getProficiencyBonusForSkill(Skills.perception);
 			}
 		}
 		public int playerID { get; set; }
@@ -645,11 +721,26 @@ namespace DndCore
 		}
 		public int ShieldBonus { get; set; }
 
+
+		bool HasOverridingSkillMod(Skills skill, out int value)
+		{
+			value = 0;
+			if (WildShape is Monster monster)
+				if (monster.HasOverridingSkillMod(skill))
+				{
+					value = monster.GetOverridingSkillMod(skill);
+					return true;
+				}
+			return false;
+		}
+
 		public double skillModAcrobatics
 		{
 			get
 			{
-				return this.getProficiencyBonusForSkill(Skills.acrobatics) + this.dexterityMod + this.tempAcrobaticsMod;
+				if (HasOverridingSkillMod(Skills.acrobatics, out int mod))
+					return mod;
+				return getProficiencyBonusForSkill(Skills.acrobatics) + dexterityMod + this.tempAcrobaticsMod;
 			}
 		}
 
@@ -657,6 +748,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.animalHandling, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.animalHandling) + this.wisdomMod + this.tempAnimalHandlingMod;
 			}
 		}
@@ -665,6 +758,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.arcana, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.arcana) + this.intelligenceMod + this.tempArcanaMod;
 			}
 		}
@@ -673,8 +768,9 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.athletics, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.athletics) + this.strengthMod + this.tempAthleticsMod;
-
 			}
 		}
 
@@ -682,8 +778,9 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.deception, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.deception) + this.charismaMod + this.tempDeceptionMod;
-
 			}
 		}
 
@@ -691,8 +788,9 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.history, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.history) + this.intelligenceMod + this.tempHistoryMod;
-
 			}
 		}
 
@@ -700,6 +798,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.insight, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.insight) + this.wisdomMod + this.tempInsightMod;
 			}
 		}
@@ -708,8 +808,9 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.intimidation, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.intimidation) + this.charismaMod + this.tempIntimidationMod;
-
 			}
 		}
 
@@ -717,6 +818,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.investigation, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.investigation) + this.intelligenceMod + this.tempInvestigationMod;
 			}
 		}
@@ -725,6 +828,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.medicine, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.medicine) + this.wisdomMod + this.tempMedicineMod;
 			}
 		}
@@ -734,6 +839,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.nature, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.nature) + this.intelligenceMod + this.tempNatureMod;
 			}
 		}
@@ -743,6 +850,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.perception, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.perception) + this.wisdomMod + this.tempPerceptionMod;
 			}
 		}
@@ -752,6 +861,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.performance, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.performance) + this.charismaMod + this.tempPerformanceMod;
 			}
 		}
@@ -760,6 +871,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.persuasion, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.persuasion) + this.charismaMod + this.tempPersuasionMod;
 			}
 		}
@@ -769,6 +882,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.religion, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.religion) + this.intelligenceMod + this.tempReligionMod;
 			}
 		}
@@ -778,6 +893,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.sleightOfHand, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.sleightOfHand) + this.dexterityMod + this.tempSleightOfHandMod;
 			}
 		}
@@ -786,6 +903,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.stealth, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.stealth) + this.dexterityMod + this.tempStealthMod;
 			}
 		}
@@ -794,6 +913,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (HasOverridingSkillMod(Skills.survival, out int mod))
+					return mod;
 				return this.getProficiencyBonusForSkill(Skills.survival) + this.wisdomMod + this.tempSurvivalMod;
 			}
 		}
@@ -808,14 +929,6 @@ namespace DndCore
 				return GetSpellSaveDC();
 			}
 		}
-		public double strengthMod
-		{
-			get
-			{
-				return this.getModFromAbility(this.Strength);
-			}
-		}
-
 		[Ask("Weapon is Two-handed")]
 		public bool TwoHanded { get; set; }  // TODO: Implement this + test cases.
 
@@ -831,13 +944,6 @@ namespace DndCore
 		public bool HasWeaponInHand { get; set; } // TODO: test cases.
 		public Weapons weaponProficiency { get; set; }
 		public int WeaponsInHand { get; set; }  // TODO: Implement this (0, 1 or 2) + test cases.
-		public double wisdomMod
-		{
-			get
-			{
-				return this.getModFromAbility(this.Wisdom);
-			}
-		}
 
 		public static Character From(CharacterDto characterDto)
 		{
@@ -2666,9 +2772,14 @@ namespace DndCore
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
 		}
-		public void AddSpellEffect(string effectName = "", int hue = 0, int saturation = 100, int brightness = 100, double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0)
+		public void AddSpellEffect(string effectName = "", 
+			int hue = 0, int saturation = 100, int brightness = 100, 
+			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
+			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
-			additionalSpellEffects.Enqueue(new SpellHit(effectName, hue, saturation, brightness, scale, rotation, autoRotation, timeOffset));
+			additionalSpellEffects.Enqueue(new SpellHit(effectName, hue, saturation, brightness, 
+				scale, rotation, autoRotation, timeOffset, 
+				secondaryHue, secondarySaturation, secondaryBrightness));
 		}
 		public void AddSoundEffect(string fileName, int timeOffset = 0)
 		{
@@ -2872,5 +2983,110 @@ namespace DndCore
 				AddLanguage(language);
 		}
 
+		protected virtual void OnPlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		{
+			PlayerShowState?.Invoke(sender, ea);
+		}
+
+		public void ShowState(string message, string fillColor, string outlineColor)
+		{
+			OnPlayerShowState(this, new PlayerShowStateEventArgs(this, message, fillColor, outlineColor));
+		}
+		public void SetNextAnswer(string answer)
+		{
+			NextAnswer = answer;
+		}
+
+		public override double Strength
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.Strength;
+				return base.Strength;
+			}
+		}
+		public override double Dexterity
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.Dexterity;
+				return base.Dexterity;
+			}
+		}
+		public override double Constitution
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.Constitution;
+				return base.Constitution;
+			}
+		}
+
+		public override double darkvisionRadius
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.darkvisionRadius;
+				return base.darkvisionRadius;
+			}
+			set
+			{
+				if (WildShape != null)
+					WildShape.darkvisionRadius = value;
+				base.darkvisionRadius = value;
+			}
+		}
+
+		public override double tremorSenseRadius
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.tremorSenseRadius;
+				return base.tremorSenseRadius;
+			}
+			set
+			{
+				if (WildShape != null)
+					WildShape.tremorSenseRadius = value;
+				base.tremorSenseRadius = value;
+			}
+		}
+
+		public override double truesightRadius
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.truesightRadius;
+				return base.truesightRadius;
+			}
+			set
+			{
+				if (WildShape != null)
+					WildShape.truesightRadius = value;
+				base.truesightRadius = value;
+			}
+		}
+
+		public override double blindsightRadius
+		{
+			get
+			{
+				if (WildShape != null)
+					return WildShape.blindsightRadius;
+				return base.blindsightRadius;
+			}
+			set
+			{
+				if (WildShape != null)
+					WildShape.blindsightRadius = value;
+				base.blindsightRadius = value;
+			}
+		}
 	}
 }

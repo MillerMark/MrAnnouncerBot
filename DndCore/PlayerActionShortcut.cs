@@ -84,6 +84,7 @@ namespace DndCore
 
 		public PlayerActionShortcut()
 		{
+			Available = true;
 			AvailableWhen = string.Empty;
 			AttackingAbility = Ability.none;  // Calculated later.
 			WeaponProperties = WeaponProperties.None;
