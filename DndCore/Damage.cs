@@ -43,19 +43,19 @@ namespace DndCore
 
 		public void ExcludeCreatureKinds(CreatureKinds creatureKinds)
 		{
-			const CreatureKinds allCreatureKinds = CreatureKinds.Aberrations |
-				CreatureKinds.Beasts |
-				CreatureKinds.Celestials |
-				CreatureKinds.Constructs |
-				CreatureKinds.Dragons |
+			const CreatureKinds allCreatureKinds = CreatureKinds.Aberration |
+				CreatureKinds.Beast |
+				CreatureKinds.Celestial |
+				CreatureKinds.Construct |
+				CreatureKinds.Dragon |
 				CreatureKinds.Elemental |
 				CreatureKinds.Fey |
-				CreatureKinds.Fiends |
-				CreatureKinds.Giants |
-				CreatureKinds.Humanoids |
-				CreatureKinds.Monstrosities |
-				CreatureKinds.Oozes |
-				CreatureKinds.Plants |
+				CreatureKinds.Fiend |
+				CreatureKinds.Giant |
+				CreatureKinds.Humanoid |
+				CreatureKinds.Monstrosity |
+				CreatureKinds.Ooze |
+				CreatureKinds.Plant |
 				CreatureKinds.Undead;
 
 			IncludeCreatures = allCreatureKinds & ~creatureKinds;

@@ -8,6 +8,21 @@ namespace DndCore
 	{
 		public double challengeRating;
 
+		public string ChallengeRatingStr
+		{
+			get
+			{
+				if (challengeRating == 1 / 8d)
+					return "1/8";
+				if (challengeRating == 1 / 4d)
+					return "1/4";
+				if (challengeRating == 1 / 2d)
+					return "1/2";
+				return challengeRating.ToString();
+			}
+		}
+		
+
 		public double charismaMod;
 		public double constitutionMod;
 		public double dexterityMod;
@@ -56,6 +71,7 @@ namespace DndCore
 		public double savingWisdomMod { get; set; }
 
 		public int skillsModStealth { get; set; }
+		public string ImageUrl { get; set; }
 
 		public List<string> traits = new List<string>();
 
@@ -441,6 +457,7 @@ namespace DndCore
 			monster.SetSkillCheckBonuses(monsterDto.Skills);
 			monster.SetSensesFromStr(monsterDto.Senses);
 			monster.SetChallengeRatingXpFromStr(monsterDto.Challenge);
+			monster.ImageUrl = monsterDto.img_url;
 			return monster;
 		}
 

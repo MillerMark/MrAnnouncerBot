@@ -31,7 +31,9 @@ namespace DHDM
 
 		private void BtnOkay_Click(object sender, RoutedEventArgs e)
 		{
+			SelectedMonster = lbMonsters.SelectedItem as DndCore.Monster;
 			Close();
 		}
+		public DndCore.Monster SelectedMonster { get; set; }
 	}
 }

@@ -75,7 +75,7 @@ namespace DndTests
 			Assert.AreEqual(13, giantBat.ArmorClass);
 			Assert.AreEqual(22, giantBat.maxHitPoints);
 			Assert.AreEqual(CreatureSize.Large, giantBat.creatureSize);
-			Assert.AreEqual(CreatureKinds.Beasts, giantBat.kind);
+			Assert.AreEqual(CreatureKinds.Beast, giantBat.kind);
 			Assert.AreEqual(Alignment.Unaligned, giantBat.Alignment);
 			Assert.AreEqual("unaligned", giantBat.alignmentStr);
 			Assert.AreEqual(10, giantBat.baseWalkingSpeed);
@@ -107,7 +107,7 @@ namespace DndTests
 			Assert.AreEqual(12, giantApe.ArmorClass);
 			Assert.AreEqual(157, giantApe.maxHitPoints);
 			Assert.AreEqual(CreatureSize.Huge, giantApe.creatureSize);
-			Assert.AreEqual(CreatureKinds.Beasts, giantApe.kind);
+			Assert.AreEqual(CreatureKinds.Beast, giantApe.kind);
 			Assert.AreEqual(Alignment.Unaligned, giantApe.Alignment);
 			Assert.AreEqual("unaligned", giantApe.alignmentStr);
 			Assert.AreEqual(40, giantApe.baseWalkingSpeed);

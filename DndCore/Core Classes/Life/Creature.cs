@@ -24,8 +24,8 @@ namespace DndCore
 		const string STR_LimitAbilityModifier = ".LimitAbilityModifier";
 		const string STR_Multiplier = ".Multiplier";
 
-		private Conditions activeConditions = Conditions.None;
-		public Against advantages = Against.none;
+		private Conditions activeConditions { get; set; } = Conditions.None;
+		public Against advantages { get; set; } = Against.none;
 		public string alignmentStr = string.Empty;
 		public Alignment Alignment { get; set; }
 		public string race { get; set; }
@@ -41,11 +41,11 @@ namespace DndCore
 
 		public double baseDexterity;
 		public double baseIntelligence;
-		
+
 		public double baseStrength;
 		public double baseWisdom;
 		public double baseWalkingSpeed = 0;
-		public double burrowingSpeed = 0;
+		public double burrowingSpeed { get; set; } = 0;
 
 		[JsonIgnore]
 		Dictionary<string, double> calculatedMods = new Dictionary<string, double>();
@@ -67,21 +67,43 @@ namespace DndCore
 		public virtual double truesightRadius { get; set; } = 0;
 		public virtual double blindsightRadius { get; set; } = 0;
 
-		public Against disadvantages = Against.none;
+		public Against disadvantages { get; set; } = Against.none;
 		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
 
-		public double flyingSpeed = 0;
+		public double flyingSpeed { get; set; } = 0;
 
 		[Column]
 		public decimal goldPieces = 0;
+		
+		public decimal GoldPieces
+		{
+			get { return goldPieces; }
+			set
+			{
+				goldPieces = value;
+			}
+		}
+
 
 		[Column]
 		public double hitPoints = 0;
+
+		
+		public double HitPoints
+		{
+			get { return hitPoints; }
+			set
+			{
+				hitPoints = value;
+			}
+		}
+		
+
 		public double initiative = 0;
 		public CreatureKinds kind = CreatureKinds.None;
 		public Languages languagesSpoken = Languages.None;
 		public Languages languagesUnderstood = Languages.None;
-		public double maxHitPoints = 0;
+		public double maxHitPoints { get; set; } = 0;
 		public List<Attack> multiAttack = new List<Attack>();
 		public MultiAttackCount multiAttackCount = MultiAttackCount.oneEach;
 
@@ -92,9 +114,9 @@ namespace DndCore
 		public int offTurnActions = 0;
 		public int onTurnActions = 1;
 		
-		public Senses senses = Senses.Hearing | Senses.NormalVision | Senses.Smell;
-		public double swimmingSpeed = 0;
-		public double telepathyRadius = 0; // feet
+		public Senses senses { get; set; } = Senses.Hearing | Senses.NormalVision | Senses.Smell;
+		public double swimmingSpeed { get; set; } = 0;
+		public double telepathyRadius { get; set; } = 0; // feet
 		public double tempHitPoints = 0;
 		
 		public Creature()

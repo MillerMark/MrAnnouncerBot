@@ -8,7 +8,7 @@ namespace DndTests
 		public static Character BuildTestElf(string name = "")
 		{
 			Character elf = new Character();
-			elf.kind = CreatureKinds.Humanoids;
+			elf.kind = CreatureKinds.Humanoid;
 			
 			if (string.IsNullOrEmpty(name))
 				elf.name = "Taragon";
@@ -57,7 +57,7 @@ namespace DndTests
 		public static Character BuildTestBarbarian(string name = "")
 		{
 			Character barbarian = new Character();
-			barbarian.kind = CreatureKinds.Humanoids;
+			barbarian.kind = CreatureKinds.Humanoid;
 
 			if (string.IsNullOrEmpty(name))
 				barbarian.name = "Ava";
@@ -92,7 +92,7 @@ namespace DndTests
 		public static Character BuildTestWizard(string name = "")
 		{
 			Character wizard = new Character();
-			wizard.kind = CreatureKinds.Humanoids;
+			wizard.kind = CreatureKinds.Humanoid;
 			if (string.IsNullOrEmpty(name))
 				wizard.name = "Morkin";
 			else
@@ -123,7 +123,7 @@ namespace DndTests
 		public static Character BuildTestDruid(string name = "")
 		{
 			Character druid = new Character();
-			druid.kind = CreatureKinds.Humanoids;
+			druid.kind = CreatureKinds.Humanoid;
 			if (string.IsNullOrEmpty(name))
 				druid.name = "Kylee";
 			else

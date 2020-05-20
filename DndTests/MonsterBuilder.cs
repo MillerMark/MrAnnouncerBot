@@ -16,7 +16,7 @@ namespace DndTests
 			violetFungus.race = "Violet Fungus";
 			violetFungus.creatureSize = CreatureSize.Medium;
 			violetFungus.alignmentStr = AlignmentNames.unaligned;
-			violetFungus.kind = CreatureKinds.Plants;
+			violetFungus.kind = CreatureKinds.Plant;
 			violetFungus.baseArmorClass = 5;
 			violetFungus.hitPoints = 18;
 			violetFungus.hitPointsDice = Dice.d8x4;
@@ -46,7 +46,7 @@ namespace DndTests
 			vineBlight.race = "Vine Blight";
 			vineBlight.creatureSize = CreatureSize.Medium;
 			vineBlight.alignmentStr = AlignmentNames.NeutralEvil;
-			vineBlight.kind = CreatureKinds.Plants;
+			vineBlight.kind = CreatureKinds.Plant;
 			vineBlight.baseArmorClass = 12;
 			vineBlight.naturalArmor = true;
 			vineBlight.hitPoints = 26;
@@ -99,7 +99,7 @@ namespace DndTests
 			vrock.race = "Vrock";
 			vrock.creatureSize = CreatureSize.Large;
 			vrock.alignmentStr = AlignmentNames.ChaoticEvil;
-			vrock.kind = CreatureKinds.Fiends;
+			vrock.kind = CreatureKinds.Fiend;
 			vrock.baseArmorClass = 15;
 			vrock.naturalArmor = true;
 			vrock.hitPoints = 104;
@@ -133,7 +133,7 @@ namespace DndTests
 			Attack screech = Attack.Area(AttackNames.StunningScreech, 20).AddCondition(Conditions.Stunned, 14, Ability.constitution);
 			screech.LastDamage.IncludeTargetSenses = Senses.Hearing;
 			// TODO: Add test to determine if an attack hits a player using screech.includeTargetSenses.
-			screech.LastDamage.ExcludeCreatureKinds(CreatureKinds.Fiends);
+			screech.LastDamage.ExcludeCreatureKinds(CreatureKinds.Fiend);
 			screech.recharges = DndTimeSpan.FromDays(1);
 			vrock.AddAttack(screech);
 

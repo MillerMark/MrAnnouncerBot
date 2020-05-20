@@ -220,8 +220,23 @@ namespace DndCore
 				if (result is double)
 					return (double)result;
 
-				if (result is string resultStr && double.TryParse(resultStr, out double resultDbl))
-					return resultDbl;
+				if (result is string resultStr)
+					if (double.TryParse(resultStr, out double resultDbl))
+						return resultDbl;
+					else  // Support fractions...
+					{
+						const string divideSymbol = "/";
+						if (resultStr.Contains(divideSymbol)) 
+						{
+							string numeratorStr = resultStr.EverythingBefore(divideSymbol).Trim();
+							string denominatorStr = resultStr.EverythingAfter(divideSymbol).Trim();
+							if (double.TryParse(numeratorStr, out double numerator) && double.TryParse(denominatorStr, out double denominator) && denominator != 0)
+							{
+								return numerator/denominator;
+							}
+						}
+					}
+
 				return double.MinValue;
 			}
 			finally

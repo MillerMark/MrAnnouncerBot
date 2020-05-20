@@ -692,7 +692,7 @@ namespace DndUI
 			character.inspiration = statInspiration.Text;
 			character.baseIntelligence = statIntelligence.ToInt();
 			// character.kind = 
-			character.kind = CreatureKinds.Humanoids;   // Allow editing of this prop?
+			character.kind = CreatureKinds.Humanoid;   // Allow editing of this prop?
 																									// character.languagesSpoken = 
 																									// character.languagesUnderstood = 
 			character.languagesSpoken = Languages.Common;

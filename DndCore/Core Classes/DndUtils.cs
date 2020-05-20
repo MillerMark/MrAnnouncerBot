@@ -557,24 +557,6 @@ namespace DndCore
 		public static CreatureKinds ToCreatureKind(string kindStr)
 		{
 			string matchingName = kindStr.ToLower();
-			switch (matchingName)
-			{
-				case "aberration":
-				case "beast":
-				case "celestial":
-				case "construct":
-				case "dragon":
-				case "fiend":
-				case "giant":
-				case "humanoid":
-				case "ooze":
-				case "plant":
-					matchingName += "s";
-					break;
-				case "monstrocity":
-					matchingName = "monstrosities";
-					break;
-			}
 			Array values = Enum.GetValues(typeof(CreatureKinds));
 			foreach (CreatureKinds value in values)
 			{

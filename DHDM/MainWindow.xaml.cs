@@ -244,7 +244,20 @@ namespace DHDM
 
 		private void SelectMonsterFunction_RequestSelectMonster(object sender, SelectMonsterEventArgs ea)
 		{
-			ea.Monster = AllMonsters.Get("Giant Ape");
+			if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
+			{
+				ea.Monster = AllMonsters.Get(ActivePlayer.NextAnswer);
+				ActivePlayer.NextAnswer = null;
+				if (ea.Monster != null)
+					return;
+			}
+			FrmMonsterPicker frmMonsterPicker = new FrmMonsterPicker();
+			frmMonsterPicker.Owner = this;
+			frmMonsterPicker.spMonsters.DataContext = AllMonsters.Monsters.Where(x => x.challengeRating <= ea.MaxChallengeRating && 
+			(x.kind & ea.CreatureKindFilter) == x.kind &&
+			x.swimmingSpeed <= ea.MaxSwimmingSpeed && x.flyingSpeed <= ea.MaxFlyingSpeed).ToList();
+			frmMonsterPicker.ShowDialog();
+			ea.Monster = frmMonsterPicker.SelectedMonster;
 		}
 
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
@@ -5655,7 +5668,7 @@ namespace DHDM
 		{
 			FrmMonsterPicker frmMonsterPicker = new FrmMonsterPicker();
 			frmMonsterPicker.Owner = this;
-			frmMonsterPicker.lbMonsters.ItemsSource = AllMonsters.Monsters;
+			frmMonsterPicker.spMonsters.DataContext = AllMonsters.Monsters;
 			frmMonsterPicker.ShowDialog();
 		}
 	}

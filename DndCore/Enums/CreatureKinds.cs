@@ -7,19 +7,34 @@ namespace DndCore
 	public enum CreatureKinds
 	{
 		None = 0,
-		Aberrations = 1,
-		Beasts = 2,
-		Celestials = 4,
-		Constructs = 8,
-		Dragons = 16,
+		Aberration = 1,
+		Beast = 2,
+		Celestial = 4,
+		Construct = 8,
+		Dragon = 16,
 		Elemental = 32,
 		Fey = 64,
-		Fiends = 128,
-		Giants = 256,
-		Humanoids = 512,
-		Monstrosities = 1024,
-		Oozes = 2048,
-		Plants = 4096,
+		Fiend = 128,
+		Giant = 256,
+		Humanoid = 512,
+		Monstrosity = 1024,
+		Ooze = 2048,
+		Plant = 4096,
 		Undead = 8192,
+		AllCreatures = 
+			Aberration | 
+			Beast | 
+			Celestial | 
+			Construct |
+			Dragon |
+			Elemental |
+			Fey |
+			Fiend |
+			Giant |
+			Humanoid |
+			Monstrosity |
+			Ooze |
+			Plant |
+			Undead
 	}
 }

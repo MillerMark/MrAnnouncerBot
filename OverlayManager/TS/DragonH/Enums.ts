@@ -467,7 +467,7 @@ enum HealthDescriptorCutoffs { // (as a percentage of max hit points)
   Dead = 0
 }
 
-enum CreatureTypes {
+enum CreatureKinds {
   None = 0,
   Aberration = 1,
   Beast = 2,
