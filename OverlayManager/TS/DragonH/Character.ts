@@ -60,7 +60,7 @@ class Character {
 	raceClass: string;
 	race: string;
 	ShowingNameplate: boolean;
-	alignment: string;
+	alignmentStr: string;
 	SpellCastingAbilityStr: string;
 	SpellSaveDC: number = 0;
 	SpellAttackBonusStr: string;
@@ -140,7 +140,7 @@ class Character {
 		this.copySpellDataFrom(sourceCharacter);
 		this.copyClassDataFrom(sourceCharacter);
 
-		this.alignment = sourceCharacter.alignment;
+		this.alignmentStr = sourceCharacter.alignmentStr;
 		this.ShowingNameplate = sourceCharacter.ShowingNameplate;
 		this.SpellCastingAbilityStr = sourceCharacter.SpellCastingAbilityStr;
 		this.SpellSaveDC = sourceCharacter.SpellSaveDC;
@@ -207,7 +207,7 @@ class Character {
 		this.race = sourceCharacter.race;
 		this.remainingHitDice = sourceCharacter.remainingHitDice;
 		this.rollInitiative = sourceCharacter.rollInitiative;
-		this.baseWalkingSpeed = sourceCharacter.speed;
+		this.baseWalkingSpeed = sourceCharacter.baseWalkingSpeed;
 		this.tempAcrobaticsMod = sourceCharacter.tempAcrobaticsMod;
 		this.tempAnimalHandlingMod = sourceCharacter.tempAnimalHandlingMod;
 		this.tempArcanaMod = sourceCharacter.tempArcanaMod;
@@ -730,7 +730,7 @@ class Character {
 		let elf: Character = new Character();
 		elf.name = 'Taragon';
 		elf.raceClass = 'Wood Elf Barbarian';
-		elf.alignment = 'Chaotic Good';
+		elf.alignmentStr = 'Chaotic Good';
 		elf.baseArmorClass = 12;
 		Character.generateRandomAttributes(elf);
 		elf.remainingHitDice = '1 d10';
@@ -772,7 +772,7 @@ class Character {
 		let barbarian: Character = new Character();
 		barbarian.name = 'Ava';
 		barbarian.raceClass = 'Dragonborn Barbarian';
-		barbarian.alignment = 'Chaotic Evil';
+		barbarian.alignmentStr = 'Chaotic Evil';
 		barbarian.baseArmorClass = 14;
 		Character.generateRandomAttributes(barbarian);
 		barbarian.remainingHitDice = '1 d10';
@@ -801,7 +801,7 @@ class Character {
 		let druid: Character = new Character();
 		druid.name = 'Kylee';
 		druid.raceClass = 'Wood Elf Druid';
-		druid.alignment = 'Lawful Good';
+		druid.alignmentStr = 'Lawful Good';
 		druid.baseArmorClass = 10;
 		Character.generateRandomAttributes(druid);
 		druid.remainingHitDice = '1 d8';
@@ -830,7 +830,7 @@ class Character {
 		let wizard: Character = new Character();
 		wizard.name = 'Morkin';
 		wizard.raceClass = 'Human Wizard';
-		wizard.alignment = 'Chaotic Neutral';
+		wizard.alignmentStr = 'Chaotic Neutral';
 		wizard.baseArmorClass = 10;
 		Character.generateRandomAttributes(wizard);
 		wizard.remainingHitDice = '1 d8';

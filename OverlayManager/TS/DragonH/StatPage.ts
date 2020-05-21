@@ -35,12 +35,12 @@
     statPage.addStat('inspiration', 224, levelInspXpY, levelInspXpFontSize);
     statPage.addStat('experiencePoints', 290, levelInspXpY, 52, TextAlign.center, TextDisplay.autoSize);
     statPage.addStat('raceClass', raceClassAlignmentX, 38, raceClassAlignmentFontSize, TextAlign.left);
-    statPage.addStat('alignment', raceClassAlignmentX, 129, raceClassAlignmentFontSize, TextAlign.left);
+    statPage.addStat('alignmentStr', raceClassAlignmentX, 129, raceClassAlignmentFontSize, TextAlign.left);
 
     StatPage.addAbilities(statPage);
     statPage.addStat('armorClass', 135, acInitSpeedY, StatPage.bigNumberFontSize);
     statPage.addStat('initiative', 203, acInitSpeedY, StatPage.bigNumberFontSize, TextAlign.center, TextDisplay.plusMinus);
-    statPage.addStat('speed', 272, acInitSpeedY, StatPage.bigNumberFontSize);
+		statPage.addStat('baseWalkingSpeed', 272, acInitSpeedY, StatPage.bigNumberFontSize);
     statPage.addStat('hitPoints', hpTempHpX, 251, StatPage.bigNumberFontSize);
     statPage.addStat('tempHitPoints', hpTempHpX, 299, tempHpFontSize);
     statPage.addStat('remainingHitDice', 183, 351, hitDiceFontSize, TextAlign.left);
@@ -126,7 +126,7 @@
     StatPage.addName(statPage);
     statPage.addStat('goldPieces', goldPiecesSpeedX, goldPiecesLoadY, 70, TextAlign.center, TextDisplay.autoSize);
     statPage.addStat('load', loadWeightX, goldPiecesLoadY, 58, TextAlign.center, TextDisplay.autoSize);
-    statPage.addStat('speed', goldPiecesSpeedX, speedWeightY, StatPage.bigNumberFontSize);
+		statPage.addStat('baseWalkingSpeed', goldPiecesSpeedX, speedWeightY, StatPage.bigNumberFontSize);
     statPage.addStat('weight', loadWeightX, speedWeightY, StatPage.bigNumberFontSize);
     return statPage;
   }

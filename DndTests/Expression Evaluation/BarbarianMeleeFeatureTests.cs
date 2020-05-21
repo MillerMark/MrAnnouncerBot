@@ -67,7 +67,7 @@ namespace DndTests
 			game.Start();
 
 			PlayerActionShortcut greataxe = fred.GetShortcut("Greataxe");
-			fred.Use(greataxe);
+			fred.PrepareWeaponAttack(greataxe);
 
 			CharacterClass barbarianClass = fred.Classes.FirstOrDefault(x => x.Name == "Barbarian");
 			Assert.IsNotNull(barbarianClass);
@@ -78,7 +78,7 @@ namespace DndTests
 
 			fred.ActivateFeature("WildSurgeRage");
 			Assert.AreEqual(0, fred.damageOffsetThisRoll);
-			fred.Use(greataxe);
+			fred.PrepareWeaponAttack(greataxe);
 			Assert.AreEqual(4, fred.damageOffsetThisRoll);
 
 			AssignedFeature rageFeature = fred.GetFeature("WildSurgeRage");
@@ -88,7 +88,7 @@ namespace DndTests
 
 			Assert.IsFalse(rageFeature.Feature.IsActive);
 			Assert.IsFalse(fred.GetFeature("BarbarianMelee").Feature.IsActive);
-			fred.Use(greataxe);
+			fred.PrepareWeaponAttack(greataxe);
 			Assert.IsFalse(fred.GetFeature("BarbarianMelee").Feature.IsActive);
 
 			Assert.AreEqual(0, fred.damageOffsetThisRoll);
@@ -139,7 +139,7 @@ namespace DndTests
 
 			fred.ActivateFeature("WildSurgeRage");
 			PlayerActionShortcut greataxe = fred.GetShortcut("Greataxe");
-			fred.Use(greataxe);
+			fred.PrepareWeaponAttack(greataxe);
 
 			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 
@@ -170,7 +170,7 @@ namespace DndTests
 
 			PlayerActionShortcut greataxe = fred.GetShortcut("Greataxe");
 			Assert.IsNotNull(greataxe);
-			fred.Use(greataxe);
+			fred.PrepareWeaponAttack(greataxe);
 
 			Assert.IsTrue(Expressions.GetBool("InRage", fred));
 			Assert.IsTrue(Expressions.GetBool("AttackIsMelee", fred));
@@ -178,7 +178,7 @@ namespace DndTests
 			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 
 			PlayerActionShortcut longbow = fred.GetShortcut("Longbow");
-			fred.Use(longbow);
+			fred.PrepareWeaponAttack(longbow);
 			Assert.IsFalse(barbarianMelee.ShouldActivateNow());
 		}
 
@@ -201,13 +201,13 @@ namespace DndTests
 
 			PlayerActionShortcut dagger = fred.GetShortcut("Dagger");
 			Assert.IsNotNull(dagger);
-			fred.Use(dagger);
+			fred.PrepareWeaponAttack(dagger);
 			Assert.IsTrue(barbarianMelee.ShouldActivateNow());
 
 			fred.baseDexterity = 18;
 			fred.baseStrength = 10;
 			dagger.UpdatePlayerAttackingAbility(fred, false);
-			fred.Use(dagger);
+			fred.PrepareWeaponAttack(dagger);
 			Assert.IsFalse(barbarianMelee.ShouldActivateNow());  // Should not be satisfied because dexterity is now the ability of choice to use with this finesse weapon.
 		}
 	}

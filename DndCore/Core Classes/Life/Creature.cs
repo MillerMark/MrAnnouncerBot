@@ -616,7 +616,7 @@ namespace DndCore
 				Game.SetHiddenThreshold(this, hiddenThreshold, rollType);
 		}
 
-		public virtual void Use(PlayerActionShortcut playerActionShortcut)
+		public virtual void PrepareWeaponAttack(PlayerActionShortcut playerActionShortcut)
 		{
 			
 		}
@@ -639,7 +639,7 @@ namespace DndCore
 		{
 			if (Game != null)
 				Game.CreatureTakingAction(this);
-			Use(shortcut);
+			PrepareWeaponAttack(shortcut);
 			if (Game != null)
 				Game.CreaturePreparesAttack(this, target, null, shortcut.UsesMagic);
 		}

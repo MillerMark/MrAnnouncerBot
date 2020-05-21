@@ -68,6 +68,32 @@ namespace DndTests
 		}
 
 		[TestMethod]
+		public void TestArcheryFeatureModsRangedAttacksByTwo()
+		{
+			const string longbow = "Longbow";
+			Character player = StartNewGame("Fighter", 1, longbow);
+			player.TestPrepareWeaponAttack(longbow);
+			Assert.AreEqual(0, player.attackingAbilityModifierBonusThisRoll);
+			player.AddFeature("Archery");
+			player.TestPrepareWeaponAttack(longbow);
+			Assert.AreEqual(2, player.attackingAbilityModifierBonusThisRoll);
+		}
+
+		private static Character StartNewGame(string playerClass, int level, string weapon = null)
+		{
+			AllPlayers.Invalidate();
+			AllFeatures.Invalidate();
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			Character player = PlayerHelper.GetPlayerAtLevel(playerClass, level);
+			game.AddPlayer(player);
+			if (weapon != null)
+				player.AddWeapon(weapon);
+			game.Start();
+			return player;
+		}
+
+		[TestMethod]
 		public void TestAlwaysOnFeatureActivation()
 		{
 			AllPlayers.Invalidate();

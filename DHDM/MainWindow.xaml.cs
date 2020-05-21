@@ -757,7 +757,14 @@ namespace DHDM
 
 				if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
 				{
-					AnswerMap selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
+					AnswerMap selectedAnswer;
+					if (ActivePlayer.NextAnswer.EndsWith("*"))
+					{
+						string searchPattern = ActivePlayer.NextAnswer.EverythingBefore("*");
+						selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
+					}
+					else
+						selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
 					ActivePlayer.NextAnswer = null;
 					if (selectedAnswer != null)
 						return selectedAnswer.Index;
@@ -1508,7 +1515,9 @@ namespace DHDM
 			else
 				ShowPreparedPhysicalActionInGame(actionShortcut, player);
 
-			player.Use(actionShortcut);
+			if (actionShortcut.Type != DiceRollType.Attack)
+				actionShortcut.ExecuteCommands(player);
+
 			return ActionType.CreatesNew;
 		}
 
@@ -1608,12 +1617,14 @@ namespace DHDM
 					}
 				}
 				player.ReadiedWeapon = actionShortcut.CarriedWeapon;
+
+				player.PrepareAttack(null, actionShortcut);
+
 				actionShortcut.UpdatePlayerAttackingAbility(player, actionShortcut.Spell != null);
 
 				//if (actionShortcut.Spell == null && actionShortcut.WeaponProperties != WeaponProperties.None)
 				//	game.CreatureRaisingWeapon(player, actionShortcut);
 
-				player.PrepareAttack(null, actionShortcut);
 			}
 
 			return ActionResult.GoodToGo;
@@ -3235,7 +3246,7 @@ namespace DHDM
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
-				clockMessage = "Combat";
+				GetRandomEnterCombatClockMessage();
 				ChangeThemeMusic("Battle");
 				ckbUseMagic.IsChecked = false;
 				game.EnteringCombat();
@@ -3244,13 +3255,75 @@ namespace DHDM
 			}
 			else
 			{
-				clockMessage = "It's Cool";
+				GetRandomExitCombatClockMessage();
 				ChangeThemeMusic("Travel");
 				game.ExitingCombat();
 				btnEnterExitCombat.Background = new SolidColorBrush(Colors.DarkRed);
 			}
 
 			OnCombatChanged();
+		}
+
+		private void GetRandomEnterCombatClockMessage()
+		{
+			switch (new Random().Next(8))
+			{
+				case 0:
+					clockMessage = "Combat!";
+					break;
+				case 1:
+					clockMessage = "Fight!";
+					break;
+				case 2:
+					clockMessage = "Battle!";
+					break;
+				case 3:
+					clockMessage = "Oh shit!";
+					break;
+				case 4:
+					clockMessage = "Oh no!";
+					break;
+				case 5:
+					clockMessage = "Fuck no!";
+					break;
+				case 6:
+					clockMessage = "Crap!";
+					break;
+				case 7:
+					clockMessage = "Damn!";
+					break;
+			}
+		}
+
+		private void GetRandomExitCombatClockMessage()
+		{
+			switch (new Random().Next(8))
+			{
+				case 0:
+					clockMessage = "It's cool!";
+					break;
+				case 1:
+					clockMessage = "It's over!";
+					break;
+				case 2:
+					clockMessage = "Peace!";
+					break;
+				case 3:
+					clockMessage = "Phew!";
+					break;
+				case 4:
+					clockMessage = "Close one!";
+					break;
+				case 5:
+					clockMessage = "Yes!";
+					break;
+				case 6:
+					clockMessage = "Done!";
+					break;
+				case 7:
+					clockMessage = "We did it!";
+					break;
+			}
 		}
 
 		private static void ChangeThemeMusic(string theme)
@@ -3973,6 +4046,7 @@ namespace DHDM
 			AllDieRollEffects.Invalidate();
 			AllTrailingEffects.Invalidate();
 			PlayerActionShortcut.PrepareForCreation();
+			AllMonsters.Invalidate();
 			AllActionShortcuts.Invalidate();
 			//PlayerFactory.BuildPlayers(players);
 

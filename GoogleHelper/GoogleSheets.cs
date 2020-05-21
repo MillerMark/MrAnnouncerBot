@@ -331,6 +331,9 @@ namespace GoogleHelper
 				{
 					MemberInfo memberInfo = serializableFields[j];
 					int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
+					if (columnIndex >= allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
+						continue;
+
 					string range = GetRange(columnIndex, rowIndex);
 					ValueRange body = new ValueRange();
 					body.MajorDimension = "ROWS";
@@ -338,8 +341,9 @@ namespace GoogleHelper
 					body.Values = new List<IList<object>>();
 					body.Values.Add(new List<object>());
 					string value = GetValue(instances[i], memberInfo);
+
 					string existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
-					if (value != existingValue)
+					if (existingValue != null && value != existingValue)
 					{
 						body.Values[0].Add(value);
 						SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);

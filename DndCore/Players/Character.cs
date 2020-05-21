@@ -35,7 +35,7 @@ namespace DndCore
 			}
 		}
 
-		
+
 		public string WildShapeCreatureName
 		{
 			get
@@ -45,7 +45,7 @@ namespace DndCore
 				return "";
 			}
 		}
-		
+
 		/* 
 		 * You automatically revert if you fall Unconscious, drop to 0 Hit Points, or die.
 		 * Replaced:
@@ -95,7 +95,7 @@ namespace DndCore
 				return string.Empty;
 			}
 		}
-		
+
 
 		CarriedWeapon readiedWeapon;
 		[JsonIgnore]
@@ -174,7 +174,7 @@ namespace DndCore
 				return -1;
 			}
 		}
-		
+
 
 		[JsonIgnore]
 		public List<Rechargeable> rechargeables = new List<Rechargeable>();
@@ -222,7 +222,7 @@ namespace DndCore
 		public CastedSpell concentratedSpell;
 
 		[JsonIgnore]
-		public List<AssignedFeature> features { get; set; }
+		public List<AssignedFeature> features { get; set; } = new List<AssignedFeature>();
 
 		[JsonIgnore]
 		public int damageOffsetThisRoll = 0;
@@ -288,7 +288,7 @@ namespace DndCore
 				return DndUtils.ToAbilityDisplayString(spellCastingAbility);
 			}
 		}
-		
+
 
 		[JsonIgnore]
 		CastedSpell spellToCast;
@@ -340,7 +340,7 @@ namespace DndCore
 		[JsonIgnore]
 		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
 
-		
+
 
 		public List<CharacterClass> Classes { get; set; } = new List<CharacterClass>();
 
@@ -1045,7 +1045,7 @@ namespace DndCore
 				int.TryParse(ammunitionStr.EverythingBetween("[", "]").Trim(), out count);
 			}
 
-		 	string ammoParameters = "";
+			string ammoParameters = "";
 
 			if (ammunitionName.Has("("))
 			{
@@ -1196,10 +1196,10 @@ namespace DndCore
 			trailingEffectsThisRoll += trailingEffects;
 		}
 
-		void AddWeapon(string weaponStr)
+		public CarriedWeapon AddWeapon(string weaponStr)
 		{
 			if (string.IsNullOrWhiteSpace(weaponStr))
-				return;
+				return null;
 
 			string weaponName = weaponStr;
 			string parametersStr = string.Empty;
@@ -1262,6 +1262,7 @@ namespace DndCore
 			carriedWeapon.Count = count;
 			if (weapon != null)
 				CarriedWeapons.Add(carriedWeapon);
+			return carriedWeapon;
 		}
 
 		void AddWeaponsFrom(string weaponsStr)
@@ -1558,7 +1559,7 @@ namespace DndCore
 				return bonusStr;
 			}
 		}
-		
+
 		[JsonIgnore]
 		public int SpellAttackBonus
 		{
@@ -1901,7 +1902,7 @@ namespace DndCore
 
 		public void AboutToCompleteCast()
 		{
-			
+
 		}
 
 		public void CompleteCast()
@@ -2007,7 +2008,7 @@ namespace DndCore
 			damageOffsetThisRoll = 0;
 			attackOffsetThisRoll = 0;
 			advantageDiceThisRoll = 0;
-			attackingAbilityModifierBonusThisRoll = 0;
+			attackingAbilityModifierBonusThisRoll = 0;  // This is only assigned from the expressions evaluator.
 			disadvantageDiceThisRoll = 0;
 		}
 
@@ -2180,7 +2181,21 @@ namespace DndCore
 			return JsonConvert.SerializeObject(this);
 		}
 
-		public override void Use(PlayerActionShortcut playerActionShortcut)
+		public void TestPrepareWeaponAttack(string weaponName)
+		{
+			CarriedWeapon foundWeapon = CarriedWeapons.FirstOrDefault(x => x.Name == weaponName || x.Weapon.Name == weaponName);
+			if (foundWeapon == null)
+			{
+				foundWeapon = AddWeapon(weaponName);
+			}
+			if (foundWeapon == null)
+				return;
+			List<PlayerActionShortcut> shortcut = PlayerActionShortcut.FromWeapon(foundWeapon, null, this);
+			if (shortcut.Count > 0)
+				PrepareWeaponAttack(shortcut[0]);
+		}
+
+		public override void PrepareWeaponAttack(PlayerActionShortcut playerActionShortcut)
 		{
 			_attackNum++;
 			ResetPlayerActionBasedState();
@@ -2194,6 +2209,11 @@ namespace DndCore
 					HasWeaponInHand = playerActionShortcut.CarriedWeapon != null;
 					if (HasWeaponInHand)
 					{
+						Weapon weapon = AllWeapons.Get(playerActionShortcut.CarriedWeapon.Weapon.Name);
+						WeaponIsFinesse = (weapon.weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse;
+						WeaponIsHeavy = (weapon.weaponProperties & WeaponProperties.Heavy) == WeaponProperties.Heavy;
+						WeaponIsRanged = (weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged;
+
 						Expressions.BeginUpdate();
 						try
 						{
@@ -2207,10 +2227,6 @@ namespace DndCore
 							Expressions.EndUpdate(this);
 						}
 
-						Weapon weapon = AllWeapons.Get(playerActionShortcut.CarriedWeapon.Weapon.Name);
-						WeaponIsFinesse = (weapon.weaponProperties & WeaponProperties.Finesse) == WeaponProperties.Finesse;
-						WeaponIsHeavy = (weapon.weaponProperties & WeaponProperties.Heavy) == WeaponProperties.Heavy;
-						WeaponIsRanged = (weapon.weaponProperties & WeaponProperties.Ranged) == WeaponProperties.Ranged;
 					}
 				}
 				playerActionShortcut.ExecuteCommands(this);
@@ -2296,7 +2312,7 @@ namespace DndCore
 
 			if (stateChanged)
 				OnStateChanged(this, new StateChangedEventArgs(string.Join(",", keys), 1, 0, true));
-			
+
 		}
 
 		public bool HasRemainingSpellSlotCharges(int spellSlotLevel)
@@ -2352,7 +2368,7 @@ namespace DndCore
 		public bool lastRollWasSuccessful { get; set; }
 
 		[JsonIgnore]
-		public int NumWildMagicChecks { get; set;  }
+		public int NumWildMagicChecks { get; set; }
 
 		[JsonIgnore]
 		public Target ActiveTarget { get; set; }
@@ -2491,7 +2507,7 @@ namespace DndCore
 			{
 				if (!spellGroupsByLevel.ContainsKey(level))
 				{
-					
+
 					SpellGroup newSpellGroup = new SpellGroup();
 					newSpellGroup.Name = GetSpellGroupName(level);
 					if (level > 0)
@@ -2657,33 +2673,33 @@ namespace DndCore
 		}
 		public void CopyUIChangeableAttributesFrom(Character character)
 		{
-			
+
 			stateChangedEventArgs = new StateChangedEventArgs();
-			SetField("baseArmorClass",   ref baseArmorClass,                   character.baseArmorClass);
-			SetField("baseCharisma",     ref baseCharisma,                   character.baseCharisma);
-			SetField("baseConstitution", ref baseConstitution,                   character.baseConstitution);
-			SetField("baseDexterity",    ref baseDexterity,                   character.baseDexterity);
-			SetField("baseIntelligence", ref baseIntelligence,                   character.baseIntelligence);
-			SetField("baseStrength",     ref baseStrength,                   character.baseStrength);
-			SetField("alignment",        ref alignmentStr,                   character.alignmentStr);
-			SetField("deathSaveDeath1",  ref deathSaveDeath1,                   character.deathSaveDeath1);
-			SetField("deathSaveDeath2",  ref deathSaveDeath2,                   character.deathSaveDeath2);
-			SetField("deathSaveDeath3",  ref deathSaveDeath3,                   character.deathSaveDeath3);
-			SetField("deathSaveLife1",   ref deathSaveLife1,                   character.deathSaveLife1);
-			SetField("deathSaveLife2",   ref deathSaveLife2,                   character.deathSaveLife2);
-			SetField("deathSaveLife3",   ref deathSaveLife3,                   character.deathSaveLife3);
-			SetField("experiencePoints", ref experiencePoints,                   character.experiencePoints);
-			SetField("goldPieces",       ref goldPieces,                   character.goldPieces);
-			SetField("hitPoints",        ref hitPoints,                   character.hitPoints);
-			SetField("initiative",       ref initiative,                   character.initiative);
-			SetField("inspiration",      ref inspiration,                   character.inspiration);
-			SetField("load",             ref load,                   character.load);
-			SetField("name",             ref name,                   character.name);
-			SetField("proficiencyBonus", ref proficiencyBonus,                   character.proficiencyBonus);
-			SetField("baseWalkingSpeed", ref baseWalkingSpeed,                   character.baseWalkingSpeed);
-			SetField("tempHitPoints",    ref tempHitPoints,                   character.tempHitPoints);
-			SetField("totalHitDice",     ref totalHitDice,                   character.totalHitDice);
-			SetField("weight",					 ref weight,                   character.weight);
+			SetField("baseArmorClass", ref baseArmorClass, character.baseArmorClass);
+			SetField("baseCharisma", ref baseCharisma, character.baseCharisma);
+			SetField("baseConstitution", ref baseConstitution, character.baseConstitution);
+			SetField("baseDexterity", ref baseDexterity, character.baseDexterity);
+			SetField("baseIntelligence", ref baseIntelligence, character.baseIntelligence);
+			SetField("baseStrength", ref baseStrength, character.baseStrength);
+			SetField("alignment", ref alignmentStr, character.alignmentStr);
+			SetField("deathSaveDeath1", ref deathSaveDeath1, character.deathSaveDeath1);
+			SetField("deathSaveDeath2", ref deathSaveDeath2, character.deathSaveDeath2);
+			SetField("deathSaveDeath3", ref deathSaveDeath3, character.deathSaveDeath3);
+			SetField("deathSaveLife1", ref deathSaveLife1, character.deathSaveLife1);
+			SetField("deathSaveLife2", ref deathSaveLife2, character.deathSaveLife2);
+			SetField("deathSaveLife3", ref deathSaveLife3, character.deathSaveLife3);
+			SetField("experiencePoints", ref experiencePoints, character.experiencePoints);
+			SetField("goldPieces", ref goldPieces, character.goldPieces);
+			SetField("hitPoints", ref hitPoints, character.hitPoints);
+			SetField("initiative", ref initiative, character.initiative);
+			SetField("inspiration", ref inspiration, character.inspiration);
+			SetField("load", ref load, character.load);
+			SetField("name", ref name, character.name);
+			SetField("proficiencyBonus", ref proficiencyBonus, character.proficiencyBonus);
+			SetField("baseWalkingSpeed", ref baseWalkingSpeed, character.baseWalkingSpeed);
+			SetField("tempHitPoints", ref tempHitPoints, character.tempHitPoints);
+			SetField("totalHitDice", ref totalHitDice, character.totalHitDice);
+			SetField("weight", ref weight, character.weight);
 
 			if (stateChangedEventArgs.ChangeList.Count > 0)
 			{
@@ -2691,6 +2707,7 @@ namespace DndCore
 				stateChangedEventArgs = null;
 			}
 		}
+
 
 		public void RollHasStopped()
 		{
@@ -2772,13 +2789,13 @@ namespace DndCore
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
 		}
-		public void AddSpellEffect(string effectName = "", 
-			int hue = 0, int saturation = 100, int brightness = 100, 
+		public void AddSpellEffect(string effectName = "",
+			int hue = 0, int saturation = 100, int brightness = 100,
 			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
 			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
-			additionalSpellEffects.Enqueue(new SpellHit(effectName, hue, saturation, brightness, 
-				scale, rotation, autoRotation, timeOffset, 
+			additionalSpellEffects.Enqueue(new SpellHit(effectName, hue, saturation, brightness,
+				scale, rotation, autoRotation, timeOffset,
 				secondaryHue, secondarySaturation, secondaryBrightness));
 		}
 		public void AddSoundEffect(string fileName, int timeOffset = 0)
@@ -2795,7 +2812,7 @@ namespace DndCore
 		{
 			foreach (EventCategory eventCategory in eventCategories)
 			{
-				EventData foundEvent = eventCategory.FindEvent(eventType, parentName,  eventName);
+				EventData foundEvent = eventCategory.FindEvent(eventType, parentName, eventName);
 				if (foundEvent != null)
 					return foundEvent;
 			}
@@ -2911,7 +2928,7 @@ namespace DndCore
 			if (carriedAmmunition.Count < 0)
 				carriedAmmunition.Count = 0;
 			string ammunitionName;
-			
+
 			if (carriedAmmunition.Name.HasSomething())
 				ammunitionName = carriedAmmunition.Name;
 			else
@@ -2919,7 +2936,7 @@ namespace DndCore
 
 			OnRequestMessageToAll($"{firstName}'s remaining {ammunitionName} count: {carriedAmmunition.Count}");
 		}
-		
+
 		public CarriedAmmunition GetAmmunition(string kind)
 		{
 			return CarriedAmmunition.FirstOrDefault(x => x.Kind == kind);
@@ -3087,6 +3104,11 @@ namespace DndCore
 					WildShape.blindsightRadius = value;
 				base.blindsightRadius = value;
 			}
+		}
+
+		public void AddFeature(string featureName)
+		{
+			features.Add(AssignedFeature.From(featureName, this));
 		}
 	}
 }

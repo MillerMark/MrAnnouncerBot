@@ -1144,6 +1144,7 @@ class DragonFrontGame extends DragonGame {
 	static readonly FontColorHealth: string = '#5681d4';
 	static readonly FontOutlineHealth: string = '#ffffff';
 	static readonly FontColorTempHp: string = '#d4569d';
+	static readonly FontColorTempHpOnNameplates: string = '#e6a0c8';
 	static readonly FontOutlineTempHp: string = '#ffffff';
 	static readonly FontColorGold: string = '#fedf80';
 	static readonly FontOutlineGold: string = '#5f4527';
@@ -1268,9 +1269,7 @@ class DragonFrontGame extends DragonGame {
 
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
-		context.fillStyle = '#ffffff';
-		//context.font = '31px Blackadder ITC';
-		context.font = '31px Enchanted Land';
+		context.font = '40px Enchanted Land';
 
 		if (!player)
 			return;
@@ -1318,38 +1317,60 @@ class DragonFrontGame extends DragonGame {
 
 		let plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
 
-		let saveFilter: string = (context as any).filter;
-		try {
-			if (sprite instanceof ColorShiftingSpriteProxy) {
-				sprite.hueShift = player.hueShift;
-				sprite.shiftColor(context, now);
-			}
-			let height = this.nameplateMain.spriteHeight;
-			this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
+		//! Today I learned that color-shifting (context switching) a context 15 times in a draw frame SUCKS UP GPU.
+		let height = this.nameplateMain.spriteHeight;
+		this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
 
-			let leftX: number = centerX - plateWidth / 2;
-			let yPos: number = sprite.y - this.nameplateParts.originY;
-			let originX: number = this.nameplateParts.originX;
-			this.nameplateParts.baseAnimation.drawByIndex(context, leftX - originX, yPos, 0);
-			let rightX: number = centerX + plateWidth / 2;
-			this.nameplateParts.baseAnimation.drawByIndex(context, rightX - originX, yPos, 1);
-			if (!hidingHitPoints) {
-				let separatorX: number = nameCenter + nameWidth / 2 + nameHpMargin / 2;
-				this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - originX, yPos, 2);
-			}
-		}
-		finally {
-			(context as any).filter = saveFilter;
-		}
-
-		context.fillText(playerName, nameCenter, DragonFrontGame.nameCenterY);
+		let leftX: number = centerX - plateWidth / 2;
+		let yPos: number = sprite.y - this.nameplateParts.originY;
+		let originX: number = this.nameplateParts.originX;
+		this.nameplateParts.baseAnimation.drawByIndex(context, leftX - originX, yPos, 0);
+		let rightX: number = centerX + plateWidth / 2;
+		this.nameplateParts.baseAnimation.drawByIndex(context, rightX - originX, yPos, 1);
 		if (!hidingHitPoints) {
-			context.fillText(hpStr, hpCenter, DragonFrontGame.nameCenterY);
+			let separatorX: number = nameCenter + nameWidth / 2 + nameHpMargin / 2;
+			this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - originX, yPos, 2);
 		}
 
-		//this.nameplateParts.addShifted(centerX - nameplateHalfWidth, nameplateY, 0, player.hueShift);
-		//this.nameplateParts.addShifted(centerX + nameplateHalfWidth, nameplateY, 1, player.hueShift);
-		//this.nameplateParts.addShifted(centerX + separatorOffset, nameplateY, 2, player.hueShift);
+		this.drawNameText(context, playerName, nameCenter, hidingHitPoints, hpStr, hpCenter);
+	}
+
+	private drawNameText(context: CanvasRenderingContext2D, playerName: string, nameCenter: number, hidingHitPoints: boolean, hpStr: string, hpCenter: number) {
+		context.fillStyle = '#000000';
+		let shadowOffset: number = -2;
+		this.drawNameAndHitPoints(context, playerName, nameCenter, shadowOffset, hidingHitPoints, hpStr, hpCenter);
+		shadowOffset = 2;
+		context.globalAlpha = 0.5;
+		this.drawNameAndHitPoints(context, playerName, nameCenter, shadowOffset, hidingHitPoints, hpStr, hpCenter);
+		context.globalAlpha = 1;
+		context.fillStyle = '#ffffff';
+		this.drawNameAndHitPoints(context, playerName, nameCenter, 0, hidingHitPoints, hpStr, hpCenter);
+	}
+
+	private drawNameAndHitPoints(context: CanvasRenderingContext2D, playerName: string, nameCenter: number, shadowOffset: number, hidingHitPoints: boolean, hpStr: string, hpCenter: number) {
+		context.fillText(playerName, nameCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
+		if (!hidingHitPoints) {
+			
+			let slashIndex: number = hpStr.indexOf('/');
+			if (slashIndex > 0 && context.fillStyle === '#ffffff') {
+				let firstHp: string = hpStr.substr(0, slashIndex);
+				let secondHp: string = hpStr.substr(slashIndex);
+				let firstWidth: number = context.measureText(firstHp).width;
+				let secondWidth: number = context.measureText(secondHp).width;
+				let left: number = hpCenter - (firstWidth + secondWidth) / 2.0;
+				context.textAlign = 'left';
+				context.fillText(firstHp, left + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
+				context.fillStyle = '#b6a89a';
+				context.fillText(secondHp, left + shadowOffset + firstWidth, DragonFrontGame.nameCenterY + shadowOffset);
+				context.textAlign = 'center';
+			}
+			else if (hpStr.startsWith('+') && context.fillStyle === '#ffffff') {
+				context.fillStyle = DragonFrontGame.FontColorTempHpOnNameplates;
+				context.fillText(hpStr, hpCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
+			}
+			else 
+				context.fillText(hpStr, hpCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
+		}
 	}
 
 	showNameplates(context: CanvasRenderingContext2D, now: number) {

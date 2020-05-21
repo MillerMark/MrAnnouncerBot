@@ -1099,9 +1099,15 @@
 
 	addParticleEmphasis(itemID: string): void {
 		if (this.showingGoldDustEmitters) {
-			let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
+			let activeHighlightPage: HighlightEmitterPages = this.highlightEmitterPages[this.page];
+			let emitter: HighlightEmitter = activeHighlightPage.find(itemID);
 			if (emitter) {
 				emitter.start();
+			}
+			for (let i = 0; i < activeHighlightPage.emitters.length; i++) {
+				let highlightEmitter: HighlightEmitter = activeHighlightPage.emitters[i];
+				if (highlightEmitter !== emitter)
+					highlightEmitter.stop();
 			}
 		}
 	}
