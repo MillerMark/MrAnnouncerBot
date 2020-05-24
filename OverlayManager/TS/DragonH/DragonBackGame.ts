@@ -12,7 +12,7 @@ class DragonBackGame extends DragonGame {
 	shouldDrawCenterCrossHairs: boolean = false;
 	sunMoonDials: Sprites;
 	lightning: Sprites;
-	sunMookDial: SpriteProxy;
+	sunMoonDial: SpriteProxy;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
 	playerDataSet: boolean = false;
@@ -101,11 +101,19 @@ class DragonBackGame extends DragonGame {
 
 
 	exitingCombat() {
-		this.sunMookDial.frameIndex = 0;
+		this.sunMoonDial.frameIndex = 0;
 	}
 
 	enteringCombat() {
-		this.sunMookDial.frameIndex = 1;
+		this.sunMoonDial.frameIndex = 1;
+	}
+
+	exitingTimeFreeze() {
+		this.sunMoonDial.frameIndex = 0;
+	}
+
+	enteringTimeFreeze() {
+		this.sunMoonDial.frameIndex = 2;
 	}
 
 	getDegreesToRotate(targetRotation: number, sprite: SpriteProxy): number {
@@ -121,7 +129,7 @@ class DragonBackGame extends DragonGame {
 		super.updateClockFromDto(dto);
 		let fullSpins: number = dto.FullSpins;
 		let afterSpinMp3: string = dto.AfterSpinMp3;
-		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.sunMookDial);
+		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.sunMoonDial);
 		let timeToRotate: number;
 		if (degreesToMove < 1) {
 			if (fullSpins >= 1) {
@@ -159,7 +167,7 @@ class DragonBackGame extends DragonGame {
 		if (afterSpinMp3) {
 			this.dragonBackSounds.playMp3In(timeToRotate + 500, `TimeAmbiance/${afterSpinMp3}`);
 		}
-		this.sunMookDial.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
+		this.sunMoonDial.rotateTo(dto.Rotation, degreesToMove, timeToRotate);
 	}
 
 	update(timestamp: number) {
@@ -168,11 +176,11 @@ class DragonBackGame extends DragonGame {
 		CrossfadePlayer.updateMusicPlayers(timestamp);
 	}
 
-	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		this.drawSprinkles(context, now, Layer.Back);
+	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
+		this.drawSprinkles(context, nowMs, Layer.Back);
 
-		this.drawClockLayerEffects(context, now);
-		super.updateScreen(context, now);
+		this.drawClockLayerEffects(context, nowMs);
+		super.updateScreen(context, nowMs);
 
 		if (!this.playerDataSet) {
 			this.ShowWaitingForInitializationMessage(context, '#0000ff', 'Back Overlay is waiting for player data to be initialized.', 300);
@@ -275,12 +283,12 @@ class DragonBackGame extends DragonGame {
 
 		Part.loadSprites = true;
 
-		this.sunMoonDials = new Sprites('Clock/SunMoonDial', 2, fps30, AnimationStyle.Static);
+		this.sunMoonDials = new Sprites('Clock/SunMoonDial', 3, fps30, AnimationStyle.Static);
 		this.sunMoonDials.name = 'Clock';
 		this.sunMoonDials.originX = 247;
 		this.sunMoonDials.originY = 251;
 
-		this.sunMookDial = this.sunMoonDials.add(this.getClockX(), this.getClockY()).setScale(this.clockScale);
+		this.sunMoonDial = this.sunMoonDials.add(this.getClockX(), this.getClockY()).setScale(this.clockScale);
 
 
 		this.clockLayerEffects.add(this.sunMoonDials);
@@ -742,6 +750,10 @@ class DragonBackGame extends DragonGame {
 		}
 
 		return false;
+	}
+
+	handleFpsChange(frameRateChangeData: FrameRateChangeData): void {
+		this.changeFramerate(frameRateChangeData.FrameRate);
 	}
 
 	executeSoundCommand(commandData: string): void {

@@ -592,9 +592,15 @@ function startAnimatingDiceRoller(fps: number): void {
 }
 
 function changeFramerateDiceRoller(fps: number): any {
+	if (fps === -1)
+		return;
 	fpsIntervalDiceRoller = 1000 / fps;
 	lastDrawTimeDiceRoller = Date.now();
 	startTimeDiceRoller = lastDrawTimeDiceRoller;
+}
+
+function handleFpsChangeDiceRoller(frameRateChangeData: FrameRateChangeData) {
+	changeFramerateDiceRoller(frameRateChangeData.FrameRate);
 }
 
 function animateDiceRollerFps(nowMs: DOMHighResTimeStamp) {

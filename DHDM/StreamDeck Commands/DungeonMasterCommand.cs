@@ -10,6 +10,8 @@ namespace DHDM
 		NonCombatInitiative,
 		EnterCombat,
 		ExitCombat,
+		EnterTimeFreeze,
+		ExitTimeFreeze,
 		RollWildMagicCheck,
 		RollWildMagic
 	}

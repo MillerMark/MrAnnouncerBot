@@ -42,11 +42,6 @@ namespace DHDM
 		const string CodeRushedChannel = "CodeRushed";
 		const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";  // This sequence allows indentation in Twitch chats!
 
-
-		const string STR_FrontOverlay = "Front";
-		const string STR_BackOverlay = "Back";
-		const string STR_DiceOverlay = "Dice";
-
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
@@ -914,7 +909,14 @@ namespace DHDM
 			BaseChatBot commandParser = GetCommandParser(e.ChatMessage.UserId);
 			if (commandParser == null)
 				return;
-			commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient, ActivePlayer);
+			try
+			{
+				commandParser.HandleMessage(e.ChatMessage, dungeonMasterClient, ActivePlayer);
+			}
+			catch (Exception ex)
+			{
+				
+			}
 		}
 
 		private void History_LogUpdated(object sender, EventArgs e)
@@ -1786,7 +1788,7 @@ namespace DHDM
 
 				try
 				{
-					if (!game.Clock.InCombat)
+					if (game.ClockIsRunning())
 						realTimeAdvanceTimer.Stop();
 					if (concentratedSpell.Name == spell.Name)
 					{
@@ -1805,7 +1807,7 @@ namespace DHDM
 				}
 				finally
 				{
-					if (!game.Clock.InCombat)
+					if (game.ClockIsRunning())
 						StartRealTimeTimer();
 				}
 			}
@@ -2099,9 +2101,9 @@ namespace DHDM
 		{
 			if (dynamicThrottling)
 			{
-				ChangeFrameRateAndUI(STR_BackOverlay, 5);
-				ChangeFrameRateAndUI(STR_FrontOverlay, 10);
-				ChangeFrameRateAndUI(STR_DiceOverlay, 25);
+				ChangeFrameRateAndUI(Overlays.Back, 5);
+				ChangeFrameRateAndUI(Overlays.Front, 10);
+				ChangeFrameRateAndUI(Overlays.Dice, 25);
 			}
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
@@ -2399,7 +2401,7 @@ namespace DHDM
 				return;
 			string timeStr = game.Clock.AsFullDndDateTimeString();
 
-			if (game.Clock.InCombat)
+			if (game.ClockHasStopped())
 				timeStr = " " + timeStr + " ";
 
 			if (txtTime.Text == timeStr)
@@ -2447,6 +2449,7 @@ namespace DHDM
 				BigUpdate = bigUpdate,
 				Rotation = percentageRotation,
 				InCombat = game.Clock.InCombat,
+				InTimeFreeze = game.Clock.InTimeFreeze,
 				FullSpins = daysSinceLastUpdate,
 				AfterSpinMp3 = afterSpinMp3
 			};
@@ -2984,9 +2987,9 @@ namespace DHDM
 		{
 			if (dynamicThrottling)
 			{
-				ChangeFrameRateAndUI(STR_BackOverlay, 25);
-				ChangeFrameRateAndUI(STR_FrontOverlay, 25);
-				ChangeFrameRateAndUI(STR_DiceOverlay, 10);
+				ChangeFrameRateAndUI(Overlays.Back, 25);
+				ChangeFrameRateAndUI(Overlays.Front, 25);
+				ChangeFrameRateAndUI(Overlays.Dice, 10);
 			}
 
 			waitingToClearDice = true;
@@ -3026,8 +3029,8 @@ namespace DHDM
 				return string.Empty;
 			return player.emoticon;
 		}
-		List<string> lastCombatInitiativeResults = new List<string>();
-		void ReportInitiativeResults(DiceEventArgs ea)
+		List<string> lastInitiativeResults = new List<string>();
+		void ReportInitiativeResults(DiceEventArgs ea, string title)
 		{
 			if (ea.StopRollingData.multiplayerSummary == null)
 			{
@@ -3035,17 +3038,19 @@ namespace DHDM
 				return;
 			}
 
-			TellAll("Initiative: ");
-			lastCombatInitiativeResults.Clear();
+			TellAll(title);
+			lastInitiativeResults.Clear();
 			int count = 1;
 			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 			{
 				string playerName = DndUtils.GetFirstName(playerRoll.name);
-				string emoticon = GetPlayerEmoticon(playerRoll.id);
+				string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
+				if (emoticon == "Player ")
+					emoticon = "";
 				int rollValue = playerRoll.modifier + playerRoll.roll;
 				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-				string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon} {playerName}, rolled a {rollValue.ToString()}.";
-				lastCombatInitiativeResults.Add(initiativeLine);
+				string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
+				lastInitiativeResults.Add(initiativeLine);
 				TellAll(initiativeLine);
 				count++;
 			}
@@ -3058,7 +3063,13 @@ namespace DHDM
 
 			if (ea.StopRollingData.type == DiceRollType.Initiative)
 			{
-				ReportInitiativeResults(ea);
+				ReportInitiativeResults(ea, "Initiative: ");
+				return;
+			}
+
+			if (ea.StopRollingData.type == DiceRollType.NonCombatInitiative)
+			{
+				ReportInitiativeResults(ea, "Non-combat Initiative: ");
 				return;
 			}
 
@@ -3264,6 +3275,71 @@ namespace DHDM
 			OnCombatChanged();
 		}
 
+		private void BtnEnterExitTimeFreeze_Click(object sender, RoutedEventArgs e)
+		{
+			if (game.Clock.InCombat)
+			{
+				if (game.Clock.InTimeFreeze)
+					game.Clock.InTimeFreeze = false;
+				TellDungeonMaster($"{Icons.WarningSign} -- Exit combat before rolling non-combat initiative.");
+				return;
+			}
+			game.Clock.InTimeFreeze = !game.Clock.InTimeFreeze;
+			if (game.Clock.InTimeFreeze)
+			{
+				GetRandomEnterTimeFreezeClockMessage();
+				ChangeThemeMusic("Suspense");
+				ckbUseMagic.IsChecked = false;
+				game.EnteringTimeFreeze();
+				btnEnterExitTimeFreeze.Background = new SolidColorBrush(Color.FromRgb(42, 42, 102));
+				RollNonCombatInitiative();
+			}
+			else
+			{
+				GetRandomExitTimeFreezeClockMessage();
+				ChangeThemeMusic("Travel");
+				game.ExitingTimeFreeze();
+				btnEnterExitTimeFreeze.Background = new SolidColorBrush(Colors.Gray);
+			}
+
+			OnTimeFreezeChanged();
+		}
+
+		private void GetRandomEnterTimeFreezeClockMessage()
+		{
+			switch (new Random().Next(4))
+			{
+				case 0:
+					clockMessage = "Stopping!";
+					break;
+				case 1:
+					clockMessage = "Freeze!";
+					break;
+				case 2:
+					clockMessage = "Uh oh!";
+					break;
+				case 3:
+					clockMessage = "Stop!";
+					break;
+			}
+		}
+
+		private void GetRandomExitTimeFreezeClockMessage()
+		{
+			switch (new Random().Next(3))
+			{
+				case 0:
+					clockMessage = "Running!";
+					break;
+				case 1:
+					clockMessage = "Go!";
+					break;
+				case 2:
+					clockMessage = "Go go go!";
+					break;
+			}
+		}
+
 		private void GetRandomEnterCombatClockMessage()
 		{
 			switch (new Random().Next(8))
@@ -3326,6 +3402,7 @@ namespace DHDM
 			}
 		}
 
+
 		private static void ChangeThemeMusic(string theme)
 		{
 			SoundCommand soundCommand = new SoundCommand(SoundPlayerFolders.Music);
@@ -3346,6 +3423,25 @@ namespace DHDM
 			else
 			{
 				tbEnterExitCombat.Text = "Enter Combat";
+				StartRealTimeTimer();
+				spTimeDirectModifiers.IsEnabled = true;
+				btnAdvanceTurn.IsEnabled = false;
+			}
+			UpdateClock(true);
+		}
+
+		private void OnTimeFreezeChanged()
+		{
+			if (game.Clock.InTimeFreeze)
+			{
+				tbEnterExitTimeFreeze.Text = "Start Clock";
+				realTimeAdvanceTimer.Stop();
+				spTimeDirectModifiers.IsEnabled = false;
+				btnAdvanceTurn.IsEnabled = true;
+			}
+			else
+			{
+				tbEnterExitTimeFreeze.Text = "Freeze Time";
 				StartRealTimeTimer();
 				spTimeDirectModifiers.IsEnabled = true;
 				btnAdvanceTurn.IsEnabled = false;
@@ -3827,7 +3923,7 @@ namespace DHDM
 
 		void ReportLastInitiativeResults()
 		{
-			foreach (string initiativeResult in lastCombatInitiativeResults)
+			foreach (string initiativeResult in lastInitiativeResults)
 			{
 				TellDungeonMaster(initiativeResult);
 			}
@@ -3844,13 +3940,37 @@ namespace DHDM
 				}
 				else
 				{
+					if (game.Clock.InTimeFreeze)
+						game.Clock.InTimeFreeze = false;
 					TellAll($"{Icons.EnteringCombat} Entering combat...");
 					BtnEnterExitCombat_Click(null, null);
 				}
 			});
 		}
+
+		void EnterTimeFreeze()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (game.Clock.InTimeFreeze)
+				{
+					TellDungeonMaster($"{Icons.WarningSign} Already in a time freeze!");
+					ReportLastInitiativeResults();
+				}
+				else
+				{
+					TellAll($"Entering time freeze...");
+					BtnEnterExitTimeFreeze_Click(null, null);
+				}
+			});
+		}
 		void ExitCombat()
 		{
+			if (!game.Clock.InCombat && game.Clock.InTimeFreeze)
+			{
+				ExitTimeFreeze();
+				return;
+			}
 			Dispatcher.Invoke(() =>
 			{
 				if (!game.Clock.InCombat)
@@ -3859,6 +3979,20 @@ namespace DHDM
 				{
 					TellAll($"{Icons.ExitCombat} Exiting combat...");
 					BtnEnterExitCombat_Click(null, null);
+				}
+			});
+		}
+
+		void ExitTimeFreeze()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (!game.Clock.InTimeFreeze)
+					TellDungeonMaster($"{Icons.WarningSign} Already NOT in a time freeze.");
+				else
+				{
+					TellAll($"{Icons.ExitCombat} Restarting the clock...");
+					BtnEnterExitTimeFreeze_Click(null, null);
 				}
 			});
 		}
@@ -3888,6 +4022,12 @@ namespace DHDM
 					break;
 				case DungeonMasterCommand.ExitCombat:
 					ExitCombat();
+					break;
+				case DungeonMasterCommand.EnterTimeFreeze:
+					EnterTimeFreeze();
+					break;
+				case DungeonMasterCommand.ExitTimeFreeze:
+					ExitTimeFreeze();
 					break;
 			}
 		}
@@ -4768,7 +4908,14 @@ namespace DHDM
 		private void SendMessage(string message, string channel)
 		{
 			if (JoinedChannel(channel))
-				dungeonMasterClient.SendMessage(channel, message);
+				try
+				{
+					dungeonMasterClient.SendMessage(channel, message);
+				}
+				catch (Exception ex)
+				{
+					CreateClientJoinChannelAndSendMessage(channel, message);
+				}
 			else
 			{
 				try
@@ -4778,23 +4925,29 @@ namespace DHDM
 				}
 				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)
 				{
-					CreateDungeonMasterClient();
-					try
-					{
-						if (dungeonMasterClient == null)
-							return;
-						dungeonMasterClient.JoinChannel(channel);
-						dungeonMasterClient.SendMessage(channel, message);
-					}
-					catch (Exception ex)
-					{
-
-					}
+					CreateClientJoinChannelAndSendMessage(channel, message);
 				}
 				catch (Exception ex)
 				{
 
 				}
+			}
+		}
+
+		private void CreateClientJoinChannelAndSendMessage(string channel, string message)
+		{
+			CreateDungeonMasterClient();
+			try
+			{
+				if (dungeonMasterClient != null)
+				{
+					dungeonMasterClient.JoinChannel(channel);
+					dungeonMasterClient.SendMessage(channel, message);
+				}
+			}
+			catch (Exception ex)
+			{
+
 			}
 		}
 
@@ -5383,7 +5536,7 @@ namespace DHDM
 		{
 			if (changingFrameRateInternally)
 				return;
-			ChangeFps(sender, STR_FrontOverlay);
+			ChangeFps(sender, Overlays.Front);
 		}
 
 		bool changingFrameRateInternally;
@@ -5392,14 +5545,14 @@ namespace DHDM
 		{
 			if (changingFrameRateInternally)
 				return;
-			ChangeFps(sender, STR_BackOverlay);
+			ChangeFps(sender, Overlays.Back);
 		}
 
 		private void RbnDiceFpsChange_Click(object sender, RoutedEventArgs e)
 		{
 			if (changingFrameRateInternally)
 				return;
-			ChangeFps(sender, STR_DiceOverlay);
+			ChangeFps(sender, Overlays.Dice);
 		}
 
 		private void ChangeFps(object sender, string overlayName)
@@ -5407,10 +5560,12 @@ namespace DHDM
 			ChangeFrameRate(overlayName, GetFrameRate(sender));
 		}
 
-		private static void ChangeFrameRate(string overlayName, int frameRate)
+		bool showFpsWindow;
+		private void ChangeFrameRate(string overlayName, int frameRate)
 		{
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.FrameRate = frameRate;
+			frameRateChangeData.ShowFpsWindow = showFpsWindow;
 			frameRateChangeData.OverlayName = overlayName;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
@@ -5419,7 +5574,7 @@ namespace DHDM
 		{
 			switch (overlayName)
 			{
-				case STR_BackOverlay:
+				case Overlays.Back:
 					switch (frameRate)
 					{
 						case 5:
@@ -5436,7 +5591,7 @@ namespace DHDM
 							return rbnBack30;
 					}
 					break;
-				case STR_DiceOverlay:
+				case Overlays.Dice:
 					switch (frameRate)
 					{
 						case 5:
@@ -5453,7 +5608,7 @@ namespace DHDM
 							return rbnDice30;
 					}
 					break;
-				case STR_FrontOverlay:
+				case Overlays.Front:
 					switch (frameRate)
 					{
 						case 5:
@@ -5744,6 +5899,17 @@ namespace DHDM
 			frmMonsterPicker.Owner = this;
 			frmMonsterPicker.spMonsters.DataContext = AllMonsters.Monsters;
 			frmMonsterPicker.ShowDialog();
+		}
+
+
+		private void CkShowFPSWindow_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
+			frameRateChangeData.FrameRate = -1;
+			frameRateChangeData.OverlayName = Overlays.Front;
+			showFpsWindow = ckShowFPSWindow.IsChecked == true;
+			frameRateChangeData.ShowFpsWindow = showFpsWindow;
+			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

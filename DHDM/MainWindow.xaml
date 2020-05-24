@@ -181,6 +181,10 @@
 						</Button>
 					</StackPanel>
 
+					<Button x:Name="btnEnterExitTimeFreeze" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitTimeFreeze_Click" Background="Gray" Foreground="White">
+						<TextBlock x:Name="tbEnterExitTimeFreeze" Text="Freeze Time" Width="Auto" Height="Auto" FontWeight="Bold" />
+					</Button>
+
 					<Button x:Name="btnEnterExitCombat" Margin="4" Padding="8, 4, 8, 4" Click="BtnEnterExitCombat_Click" Background="DarkRed" Foreground="White">
 						<TextBlock x:Name="tbEnterExitCombat" Text="Enter Combat" Width="Auto" Height="Auto" FontWeight="Bold" />
 					</Button>
@@ -796,6 +800,18 @@
 							<RadioButton x:Name="rbnFront30" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
 								30
 							</RadioButton>
+							<RadioButton x:Name="rbnFront35" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								35
+							</RadioButton>
+							<RadioButton x:Name="rbnFront40" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								40
+							</RadioButton>
+							<RadioButton x:Name="rbnFront45" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								45
+							</RadioButton>
+							<RadioButton x:Name="rbnFront50" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								50
+							</RadioButton>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Dice Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
@@ -841,6 +857,9 @@
 						</StackPanel>
 						<CheckBox x:Name="ckDynamicThrottling" IsChecked="True" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
 							Dynamic Throttling
+						</CheckBox>
+						<CheckBox x:Name="ckShowFPSWindow" IsChecked="False" Checked="CkShowFPSWindow_CheckedChanged" Unchecked="CkShowFPSWindow_CheckedChanged">
+							Show FPS Window
 						</CheckBox>
 					</StackPanel>
 				</TabItem>

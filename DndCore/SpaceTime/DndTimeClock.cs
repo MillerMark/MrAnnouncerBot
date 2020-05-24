@@ -56,6 +56,7 @@ namespace DndCore
 
 		public static DndTimeClock Instance { get; set; }
 		public bool InCombat { get; set; }
+		public bool InTimeFreeze { get; set; }
 
 		public DateTime Time { get; private set; }
 

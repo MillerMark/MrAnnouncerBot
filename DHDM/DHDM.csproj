@@ -305,6 +305,7 @@
     <Compile Include="FrmMonsterPicker.xaml.cs">
       <DependentUpon>FrmMonsterPicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Overlays.cs" />
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
     <Compile Include="SoundPlayerFolders.cs" />

@@ -185,22 +185,22 @@ function changeFrameRate(frameRateData: string) {
 	let frameRateChangeData: FrameRateChangeData = JSON.parse(frameRateData);
 	//frameRateData
 
-	let message: string = `${frameRateChangeData.OverlayName} overlay: ${frameRateChangeData.FrameRate} fps `;
+	//let message: string = `${frameRateChangeData.OverlayName} overlay: ${frameRateChangeData.FrameRate} fps `;
 	if (activeBackGame instanceof DragonBackGame) {
 		if (frameRateChangeData.OverlayName === 'Back') {
-			activeBackGame.changeFramerate(frameRateChangeData.FrameRate);
+			activeBackGame.handleFpsChange(frameRateChangeData);
 		}
 	}
 
 	if (diceLayer) {
 		if (frameRateChangeData.OverlayName === 'Dice') {
-			changeFramerateDiceRoller(frameRateChangeData.FrameRate);
+			handleFpsChangeDiceRoller(frameRateChangeData);
 		}
 	}
 
 	if (activeFrontGame instanceof DragonFrontGame) {
 		if (frameRateChangeData.OverlayName === 'Front') {
-			activeFrontGame.changeFramerate(frameRateChangeData.FrameRate);
+			activeFrontGame.handleFpsChange(frameRateChangeData);
 		}
 		//activeFrontGame.showFpsMessage(message);
 	}

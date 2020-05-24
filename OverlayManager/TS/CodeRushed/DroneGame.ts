@@ -27,29 +27,29 @@ class DroneGame extends GamePlusQuiz {
 		super(context);
 	}
 
-	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		super.updateScreen(context, now);
+	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
+		super.updateScreen(context, nowMs);
 		this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
 			if (portal instanceof Portal) {
-				portal.checkApproaching(this.allDrones, now);
+				portal.checkApproaching(this.allDrones, nowMs);
 			}
 		});
 
 		//this.emitter.update(now);
-		myRocket.updatePosition(now);
-		myRocket.bounce(0, 0, screenWidth, screenHeight, now);
+		myRocket.updatePosition(nowMs);
+		myRocket.bounce(0, 0, screenWidth, screenHeight, nowMs);
 
-		this.collectCoins(now);
+		this.collectCoins(nowMs);
 
-		this.allSeeds.bounce(0, 0, screenWidth, screenHeight, now);
+		this.allSeeds.bounce(0, 0, screenWidth, screenHeight, nowMs);
 
 		//this.beesYellow.bounce(0, 0, screenWidth, screenHeight, now);
-		this.allDrones.bounce(0, 0, screenWidth, screenHeight, now);
+		this.allDrones.bounce(0, 0, screenWidth, screenHeight, nowMs);
 		//greenSeeds.bounce(0, 0, screenWidth, screenHeight, now);
 
-		this.allMeteors.checkCollisionAgainstSprites(this.boomboxes, this.voteSongDown, now);
-		this.allMeteors.bounce(0, 0, screenWidth, screenHeight, now);
-		this.allMeteors.checkCollisionAgainst(this.allDrones, this.putMeteorOnDrone, now);
+		this.allMeteors.checkCollisionAgainstSprites(this.boomboxes, this.voteSongDown, nowMs);
+		this.allMeteors.bounce(0, 0, screenWidth, screenHeight, nowMs);
+		this.allMeteors.checkCollisionAgainst(this.allDrones, this.putMeteorOnDrone, nowMs);
 		//console.log('this.allMeteors.checkCollisionAgainstSprites(this.boomboxes...');
 
 		//backgroundBanner.draw(myContext, 0, 0);
@@ -57,9 +57,9 @@ class DroneGame extends GamePlusQuiz {
 		if (!myRocket.isDocked)
 			gravityGames.draw(myContext);
 
-		this.allSplats.draw(myContext, now);
-		this.portalBackground.draw(myContext, now);
-		this.purplePortals.draw(myContext, now);
+		this.allSplats.draw(myContext, nowMs);
+		this.portalBackground.draw(myContext, nowMs);
+		this.purplePortals.draw(myContext, nowMs);
 
 		//grass1.draw(myContext, now);
 		//grass2.draw(myContext, now);
@@ -67,49 +67,49 @@ class DroneGame extends GamePlusQuiz {
 		//grass4.draw(myContext, now);
 
 		//this.beesYellow.updatePositions(now);
-		this.allDrones.updatePositions(now);
-		this.allMeteors.updatePositions(now);
-		this.allWalls.updatePositions(now);
-		this.endCaps.updatePositions(now);
-		this.allSeeds.updatePositions(now);
-		this.allSparks.updatePositions(now);
+		this.allDrones.updatePositions(nowMs);
+		this.allMeteors.updatePositions(nowMs);
+		this.allWalls.updatePositions(nowMs);
+		this.endCaps.updatePositions(nowMs);
+		this.allSeeds.updatePositions(nowMs);
+		this.allSparks.updatePositions(nowMs);
 
-		this.wallBounce(now);
+		this.wallBounce(nowMs);
 
 		//this.beesYellow.draw(myContext, now);
-		this.allWalls.draw(myContext, now);
-		this.droneGateways.draw(myContext, now);
-		this.warpIns.draw(myContext, now);
-		this.boomboxes.draw(myContext, now);
-		this.allDrones.draw(myContext, now);
-		this.allMeteors.draw(myContext, now);
+		this.allWalls.draw(myContext, nowMs);
+		this.droneGateways.draw(myContext, nowMs);
+		this.warpIns.draw(myContext, nowMs);
+		this.boomboxes.draw(myContext, nowMs);
+		this.allDrones.draw(myContext, nowMs);
+		this.allMeteors.draw(myContext, nowMs);
 
-		this.endCaps.draw(myContext, now);
+		this.endCaps.draw(myContext, nowMs);
 
-		this.allSeeds.draw(myContext, now);
-		myRocket.draw(myContext, now);
+		this.allSeeds.draw(myContext, nowMs);
+		myRocket.draw(myContext, nowMs);
 		//this.purpleFlowers.draw(myContext, now);
 		//blueFlowers.draw(myContext, now);
 		//this.redFlowers.draw(myContext, now);
-		this.yellowPetunias.draw(myContext, now);
-		this.superFlowerBack.draw(myContext, now);
-		this.superFlowerFront.draw(myContext, now);
+		this.yellowPetunias.draw(myContext, nowMs);
+		this.superFlowerBack.draw(myContext, nowMs);
+		this.superFlowerFront.draw(myContext, nowMs);
 		//yellowFlowers2.draw(myContext, now);
 		//this.yellowFlowers3.draw(myContext, now);
-		this.redExplosions.draw(myContext, now);
+		this.redExplosions.draw(myContext, nowMs);
 		//this.blueExplosions.draw(myContext, now);
 		//this.purpleExplosions.draw(myContext, now);
-		this.droneExplosions.draw(myContext, now);
+		this.droneExplosions.draw(myContext, nowMs);
 		//explosion.draw(myContext, 0, 0);
-		this.allSparks.draw(myContext, now);
-		this.sparkSmoke.draw(myContext, now);
-		this.coins.draw(myContext, now);
+		this.allSparks.draw(myContext, nowMs);
+		this.sparkSmoke.draw(myContext, nowMs);
+		this.coins.draw(myContext, nowMs);
 
 		//this.emitter.draw(myContext, now);
 		//drawCrossHairs(myContext, 830, 540);
 		//drawCrossHairs(myContext, 830 + 340, 540);
-		this.animations.removeExpiredAnimations(now);
-		this.animations.render(myContext, now);
+		this.animations.removeExpiredAnimations(nowMs);
+		this.animations.render(myContext, nowMs);
 	}
 
 	getBoomboxInstance(): Boombox {

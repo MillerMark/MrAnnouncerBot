@@ -32,6 +32,8 @@ namespace DndCore
 		public event PickAmmunitionEventHandler PickAmmunition;
 		public event DndGameEventHandler EnterCombat;
 		public event DndGameEventHandler ExitCombat;
+		public event DndGameEventHandler EnterTimeFreeze;
+		public event DndGameEventHandler ExitTimeFreeze;
 		public event DndGameEventHandler RoundEnded;
 		public event DndGameEventHandler RoundStarting;
 		public event DndCharacterEventHandler TurnEnded;
@@ -66,9 +68,17 @@ namespace DndCore
 		{
 			EnterCombat?.Invoke(sender, ea);
 		}
+		protected virtual void OnEnterTimeFreeze(object sender, DndGameEventArgs ea)
+		{
+			EnterTimeFreeze?.Invoke(sender, ea);
+		}
 		protected virtual void OnExitCombat(object sender, DndGameEventArgs ea)
 		{
 			ExitCombat?.Invoke(sender, ea);
+		}
+		protected virtual void OnExitTimeFreeze(object sender, DndGameEventArgs ea)
+		{
+			ExitTimeFreeze?.Invoke(sender, ea);
 		}
 		protected virtual void OnRoundEnded(object sender, DndGameEventArgs ea)
 		{
@@ -119,6 +129,8 @@ namespace DndCore
 
 		public List<Character> Players { get; } = new List<Character>();
 		public bool InCombat { get; set; }
+		public bool InTimeFreeze { get; set; }
+		public bool InNonCombatInitiative { get; set; }
 		public Creature ActiveCreature { get => activeCreature; private set => activeCreature = value; }
 		public int WaitingForRollHiddenThreshold { get; set; }
 
@@ -245,6 +257,16 @@ namespace DndCore
 			TellDungeonMaster("Entering combat...");
 		}
 
+		public void EnteringTimeFreeze()
+		{
+			firstPlayer = null;
+			lastPlayer = null;
+			InTimeFreeze = true;
+			OnEnterTimeFreeze(this, dndGameEventArgs);
+			TellDungeonMaster("---");
+			TellDungeonMaster("Stopping the clock...");
+		}
+
 		public void MoveAllPlayersToActiveRoom()
 		{
 			throw new NotImplementedException();
@@ -260,6 +282,14 @@ namespace DndCore
 			InCombat = false;
 			OnExitCombat(this, dndGameEventArgs);
 			TellDungeonMaster("Exiting combat...");
+		}
+		public void ExitingTimeFreeze()
+		{
+			// TODO: Tell DM: "Ending {} rounds of time freeze...."
+			roundIndex = 0;
+			InTimeFreeze = false;
+			OnExitTimeFreeze(this, dndGameEventArgs);
+			TellDungeonMaster("Restarting the clock...");
 		}
 		Creature activeCreature;
 
@@ -728,6 +758,16 @@ namespace DndCore
 			{
 				ChangeWealth(playerId, wealthChange.Coins.TotalGold);
 			}
+		}
+
+		public bool ClockIsRunning()
+		{
+			return !Clock.InCombat && !Clock.InTimeFreeze;
+		}
+
+		public bool ClockHasStopped()
+		{
+			return Clock.InCombat || Clock.InTimeFreeze;
 		}
 	}
 }

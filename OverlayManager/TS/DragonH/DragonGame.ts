@@ -180,6 +180,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	updateClock(clockData: string): void {
 		let dto: any = JSON.parse(clockData);
 		this.inCombat = dto.InCombat;
+		this.inTimeFreeze = dto.InTimeFreeze;
 		let timeStrs: string[] = dto.Time.split(',');
 		this.dndTimeStr = timeStrs[0];
 		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
@@ -358,6 +359,27 @@ abstract class DragonGame extends GamePlusQuiz {
 		}
 	}
 
+	
+	private _inTimeFreeze: boolean;
+
+	get inTimeFreeze(): boolean {
+		return this._inTimeFreeze;
+	}
+
+	set inTimeFreeze(newValue: boolean) {
+		if (this._inTimeFreeze == newValue)
+			return;
+
+
+		this._inTimeFreeze = newValue;
+		if (this._inTimeFreeze) {
+			this.enteringTimeFreeze();
+		}
+		else {
+			this.exitingTimeFreeze();
+		}
+	}
+
 	clockLayerEffects: SpriteCollection;
 	readonly clockMargin: number = 0;
 	readonly clockOffsetX: number = -20;
@@ -382,6 +404,13 @@ abstract class DragonGame extends GamePlusQuiz {
 	}
 
 	enteringCombat() {
+	}
+
+	
+	exitingTimeFreeze() {
+	}
+
+	enteringTimeFreeze() {
 	}
 
 	loadResources() {
@@ -551,11 +580,11 @@ abstract class DragonGame extends GamePlusQuiz {
 		this.dragonSharedSounds.safePlayMp3('Windups/' + soundFileName);
 	}
 
-	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		this.backLayerEffects.updatePositions(now);
-		this.backLayerEffects.draw(context, now);
-		this.allWindupEffects.updatePositions(now);
-		this.allWindupEffects.draw(context, now);
+	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
+		this.backLayerEffects.updatePositions(nowMs);
+		this.backLayerEffects.draw(context, nowMs);
+		this.allWindupEffects.updatePositions(nowMs);
+		this.allWindupEffects.draw(context, nowMs);
 	}
 
 	playerVideoLeftMargin = 10;

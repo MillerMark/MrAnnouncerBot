@@ -1,6 +1,9 @@
 ﻿class FrameRateChangeData {
 	OverlayName: string;
 	FrameRate: number;
+	ShowFpsWindow: boolean;
+	AllowColorShifting: boolean;
+	BackgroundCanvasPainting: boolean;
 	constructor() {
 
 	}
@@ -13,6 +16,7 @@ const screenWidth: number = 1920;
 const screenHeight: number = 1080;
 
 class Game {
+  lastFrameUpdate: number;
 	//frontGameLoop(nowMs: DOMHighResTimeStamp) {
 	//	this.drawGame(nowMs);
 	//	requestAnimationFrame(this.frontGameLoop);
@@ -30,7 +34,14 @@ class Game {
 		requestAnimationFrame(this.animateFps.bind(this));
 	}
 
-	changeFramerate(fps: number): any {
+	fps: number;
+
+	changeFramerate(fps: number): void {
+		if (fps === -1)
+			return;
+		if (this.fps === fps)
+			return;
+		this.fps = fps;
 		this.fpsInterval = 1000 / fps;
 		this.secondsPerFrame = 1 / fps;
 		this.lastDrawTime = Date.now();
@@ -38,8 +49,7 @@ class Game {
 	}
 
 	animateFps(nowMs: DOMHighResTimeStamp) {
-		try
-		{
+		try {
 			let now: number = Date.now();
 			let elapsed: number = now - this.lastDrawTime;
 
@@ -48,8 +58,7 @@ class Game {
 				this.drawGame(nowMs);
 			}
 		}
-		finally
-		{
+		finally {
 			requestAnimationFrame(this.animateFps.bind(this));
 		}
 	}
@@ -104,10 +113,33 @@ class Game {
 
 		this.world.ctx.clearRect(0, 0, screenWidth, screenHeight);
 		this.world.render(this.now, this.secondsPerFrame);
+		let startUpdate: number = performance.now();
 		this.updateScreen(this.world.ctx, this.nowMs);
+		let endUpdate: number = performance.now();
+		this.calculateFramerate(startUpdate, endUpdate);
 	}
 
-	updateScreen(context: CanvasRenderingContext2D, now: number): any {
+	static readonly fpsHistoryCount: number = 150;
+	timeBetweenFramesQueue = [];
+	drawTimeForEachFrameQueue = [];
+
+	calculateFramerate(startUpdate: number, endUpdate: number): any {
+		if (this.lastFrameUpdate) {
+			let timeBetweenFrames: number = endUpdate - this.lastFrameUpdate;
+			this.timeBetweenFramesQueue.push(timeBetweenFrames);
+			if (this.timeBetweenFramesQueue.length > Game.fpsHistoryCount)
+				this.timeBetweenFramesQueue.shift();
+		}
+
+		let drawTimeForThisFrame: number = endUpdate - startUpdate;
+		this.drawTimeForEachFrameQueue.push(drawTimeForThisFrame);
+		if (this.drawTimeForEachFrameQueue.length > Game.fpsHistoryCount)
+			this.drawTimeForEachFrameQueue.shift();
+
+		this.lastFrameUpdate = endUpdate;
+	}
+
+	updateScreen(context: CanvasRenderingContext2D, nowMs: number): any {
 
 	}
 

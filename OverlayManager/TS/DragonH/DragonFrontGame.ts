@@ -1,4 +1,126 @@
-﻿class CoinManager {
+﻿class FpsWindow {
+	static readonly lineColor: string = '#92a5d6';
+	static readonly titleColor: string = '#3467eb';
+	static readonly fpsActualColor: string = '#eb6734';
+	static readonly titleSize: number = 24;
+	static readonly titleMargin: number = 3;
+	static readonly sectionWidth: number = 220;
+	static readonly frameHeight: number = 330;
+
+	left: number;
+	right: number;
+	top: number;
+	titleUnderlineY: number;
+	graphTopY: number;
+	graphBottomY: number;
+	graphHeight: number;
+
+	constructor(public title: string, public column: number) {
+		this.left = screenWidth - FpsWindow.sectionWidth * (3 - this.column);
+		this.right = this.left + FpsWindow.sectionWidth;
+		this.top = screenHeight - FpsWindow.frameHeight;
+		this.titleUnderlineY = this.top + FpsWindow.titleSize + 2 * FpsWindow.titleMargin;
+		let titleHalfHeightPlusMargin: number = FpsWindow.titleSize / 2 + FpsWindow.titleMargin;
+		this.graphTopY = this.titleUnderlineY + titleHalfHeightPlusMargin;
+		this.graphBottomY = screenHeight - titleHalfHeightPlusMargin;
+		this.graphHeight = this.graphBottomY - this.graphTopY;
+	}
+
+	showAllFramerates(game: Game, context: CanvasRenderingContext2D, now: number): any {
+		this.drawBorderlines(context);
+		this.drawTitles(context);
+		this.graphFramerates(2, game, context);
+	}
+
+	graphFramerates(column: number, game: Game, context: CanvasRenderingContext2D): void {
+		const maxFrameRate: number = 30;
+
+		let averageTimeBetweenFrames: number = this.getAverage(game.timeBetweenFramesQueue, 10);
+		let actualAverageFps: number = Math.round(1000 / averageTimeBetweenFrames);
+
+		let clampedFps: number = MathEx.clamp(actualAverageFps, 0, 30);
+		let yPos: number = screenHeight - clampedFps * this.graphHeight / maxFrameRate;
+
+		//let mostRecentFps: number = game.timeBetweenFramesQueue[game.timeBetweenFramesQueue.length - 1];
+		//let mostRecentDrawsPerSec: number = Math.round(1000 / game.drawTimeForEachFrameQueue[game.drawTimeForEachFrameQueue.length - 1]);
+
+		// Average draw time calculation....
+		//context.fillStyle = FpsWindow.titleColor;
+		//let averageDrawTimeForEachFrame: number = this.getAverage(game.drawTimeForEachFrameQueue);
+		//let calculatedFpsBasedOnDrawTime: number = Math.round(1000 / averageDrawTimeForEachFrame);
+		//context.fillText(calculatedFpsBasedOnDrawTime.toString(), x, this.top + FpsWindow.titleSize + 50);
+
+		context.fillStyle = FpsWindow.fpsActualColor;
+		context.textAlign = 'right';
+		context.fillText(actualAverageFps.toString(), this.right, yPos);
+		let textWidth: number = context.measureText('000').width;
+		let rightEdge: number = this.right - textWidth;
+		let rightTime: number = 0;
+		let graphWidth: number = rightEdge - this.left;
+		const graphTimeSpan: number = 5000;  // ms
+		let timeToPixelFactor: number = graphWidth / graphTimeSpan;
+		for (let i = 0; i < game.timeBetweenFramesQueue.length; i++) {
+			let timeThisFrame: number = game.timeBetweenFramesQueue[i];
+			if (timeThisFrame == 0)
+				continue;
+			let y: number = screenHeight - MathEx.clamp(1000 / timeThisFrame, 0, 30) * this.graphHeight / maxFrameRate;
+			let leftTime: number = rightTime - timeThisFrame;
+			let lineLeft: number = rightEdge - leftTime * timeToPixelFactor;
+			if (lineLeft < this.left)
+				break;
+			let lineRight: number = rightEdge - rightTime * timeToPixelFactor;
+			if (i === 0)
+				context.moveTo(lineRight, y);
+			context.lineTo(lineLeft, y);
+			rightTime = leftTime;
+		}
+
+		context.strokeStyle = FpsWindow.lineColor;
+		context.stroke();
+	}
+
+	getAverage(queue: number[], entriesToCount: number): number {
+		if (!queue || !queue.length)
+			return 0;
+		let total: number = 0;
+		if (queue.length < entriesToCount)
+			entriesToCount = queue.length;
+		for (let i = 0; i < entriesToCount; i++) {
+			total += queue[i];
+		}
+		return total / entriesToCount;
+	}
+
+	private drawTitles(context: CanvasRenderingContext2D) {
+		const titleFont: string = 'px Calibri';
+		let titleCenterY: number = this.top + FpsWindow.titleSize / 2 + FpsWindow.titleMargin;
+		context.font = FpsWindow.titleSize + titleFont;
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+		context.fillStyle = FpsWindow.titleColor;
+		let x: number = this.left + FpsWindow.sectionWidth / 2.0;
+		context.fillText(this.title, x, titleCenterY);
+	}
+
+	private drawBorderlines(context: CanvasRenderingContext2D) {
+		context.fillStyle = '#ffffff';
+		let right: number = this.left + FpsWindow.sectionWidth;
+		context.fillRect(this.left, this.top, FpsWindow.sectionWidth, FpsWindow.frameHeight);
+
+		context.strokeStyle = FpsWindow.lineColor;
+		context.beginPath();
+
+		// Draw title underline...
+		context.moveTo(this.left, this.titleUnderlineY);
+		context.lineTo(right, this.titleUnderlineY);
+		context.stroke();
+
+		// Draw window outline...
+		context.strokeRect(this.left, this.top, FpsWindow.sectionWidth, FpsWindow.frameHeight);
+	}
+}
+
+class CoinManager {
 	constructor() {
 
 	}
@@ -123,6 +245,7 @@ class DragonFrontGame extends DragonGame {
 		this.addUpperRightStatusMessage(message, '#000000', '#ffffff');
 	}
 
+	fpsWindow: FpsWindow;
 	readonly fullScreenDamageThreshold: number = 15;
 	readonly heavyDamageThreshold: number = 15;
 	readonly mediumDamageThreshold: number = 6;
@@ -192,29 +315,36 @@ class DragonFrontGame extends DragonGame {
 		super.update(timestamp);
 	}
 
-	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		this.drawTimePlusEffects(context, now);
-		this.allBackEffects.draw(context, now);
+	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
+		this.drawTimePlusEffects(context, nowMs);
+		this.allBackEffects.draw(context, nowMs);
 
 		if (!this.playerDataSet) {
 			this.ShowWaitingForInitializationMessage(context, '#00ff00', 'Front Overlay is waiting for player data to be initialized.', 200);
 		}
 
-		super.updateScreen(context, now);
+		super.updateScreen(context, nowMs);
 
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
 
-		this.fred.draw(context, now);
+		this.fred.draw(context, nowMs);
 
-		this.bloodEffects.draw(context, now);
+		this.bloodEffects.draw(context, nowMs);
 
-		this.coinManager.draw(context, now);
-		this.showNameplates(context, now);
-		this.allFrontEffects.draw(context, now);
-		this.textAnimations.removeExpiredAnimations(now);
-		this.textAnimations.updatePositions(now);
-		this.textAnimations.render(context, now);
+		this.coinManager.draw(context, nowMs);
+		this.showNameplates(context, nowMs);
+		this.allFrontEffects.draw(context, nowMs);
+		this.textAnimations.removeExpiredAnimations(nowMs);
+		this.textAnimations.updatePositions(nowMs);
+		this.textAnimations.render(context, nowMs);
+
+		if (this.showFpsWindow) {
+			if (!this.fpsWindow) {
+				this.fpsWindow = new FpsWindow('Front', 2);
+			}
+			this.fpsWindow.showAllFramerates(this, context, nowMs);
+		}
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -627,7 +757,7 @@ class DragonFrontGame extends DragonGame {
 		this.allBackEffects.add(this.restrained);
 		this.allWindupEffects.add(this.shield);
 
-		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 2, fps30, AnimationStyle.Static);
+		this.clockPanel = new Sprites('Clock/TimeDisplayPanel', 3, fps30, AnimationStyle.Static);
 		this.clockPanel.name = 'ClockPanel';
 		this.clockPanel.originX = DragonGame.ClockOriginX;
 		this.clockPanel.originY = 67;
@@ -671,6 +801,19 @@ class DragonFrontGame extends DragonGame {
 		this.dndTimeDatePanel.frameIndex = 1;
 		this.createFireWallBehindClock();
 		this.createFireBallBehindClock(330);
+	}
+
+	exitingTimeFreeze() {
+		super.exitingTimeFreeze();
+		this.dndTimeDatePanel.frameIndex = 0;
+		this.fireWall.sprites = [];
+		this.createFireBallBehindClock(200);
+	}
+
+	enteringTimeFreeze() {
+		super.enteringTimeFreeze();
+		this.dndTimeDatePanel.frameIndex = 2;
+		this.createFireBallBehindClock(270);
 	}
 
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
@@ -1350,7 +1493,7 @@ class DragonFrontGame extends DragonGame {
 	private drawNameAndHitPoints(context: CanvasRenderingContext2D, playerName: string, nameCenter: number, shadowOffset: number, hidingHitPoints: boolean, hpStr: string, hpCenter: number) {
 		context.fillText(playerName, nameCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
 		if (!hidingHitPoints) {
-			
+
 			let slashIndex: number = hpStr.indexOf('/');
 			if (slashIndex > 0 && context.fillStyle === '#ffffff') {
 				let firstHp: string = hpStr.substr(0, slashIndex);
@@ -1368,7 +1511,7 @@ class DragonFrontGame extends DragonGame {
 				context.fillStyle = DragonFrontGame.FontColorTempHpOnNameplates;
 				context.fillText(hpStr, hpCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
 			}
-			else 
+			else
 				context.fillText(hpStr, hpCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
 		}
 	}
@@ -1398,6 +1541,12 @@ class DragonFrontGame extends DragonGame {
 	floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string): void {
 		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
 		this.addFloatingPlayerText(playerX, message, fillColor, outlineColor);
+	}
+
+	showFpsWindow: boolean;
+	handleFpsChange(frameRateChangeData: FrameRateChangeData): void {
+		this.changeFramerate(frameRateChangeData.FrameRate);
+		this.showFpsWindow = frameRateChangeData.ShowFpsWindow;
 	}
 }
 

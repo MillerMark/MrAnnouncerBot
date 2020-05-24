@@ -7,8 +7,8 @@
 		super.update(timestamp);
 	}
 
-	updateScreen(context: CanvasRenderingContext2D, now: number) {
-		super.updateScreen(context, now);
+	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
+		super.updateScreen(context, nowMs);
 	}
 
 	removeAllGameElements(now: number): void {
