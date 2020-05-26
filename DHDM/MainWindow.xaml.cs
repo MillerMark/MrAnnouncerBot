@@ -189,7 +189,7 @@ namespace DHDM
 		private void Game_PickAmmunition(object sender, PickAmmunitionEventArgs ea)
 		{
 			List<string> ammunitionList = new List<string>();
-			
+
 			List<CarriedAmmunition> filteredAmmunition = new List<CarriedAmmunition>();
 			int ammunitionNumber = 1;
 			string filterLower = null;
@@ -248,7 +248,7 @@ namespace DHDM
 			}
 			FrmMonsterPicker frmMonsterPicker = new FrmMonsterPicker();
 			frmMonsterPicker.Owner = this;
-			frmMonsterPicker.spMonsters.DataContext = AllMonsters.Monsters.Where(x => x.challengeRating <= ea.MaxChallengeRating && 
+			frmMonsterPicker.spMonsters.DataContext = AllMonsters.Monsters.Where(x => x.challengeRating <= ea.MaxChallengeRating &&
 			(x.kind & ea.CreatureKindFilter) == x.kind &&
 			x.swimmingSpeed <= ea.MaxSwimmingSpeed && x.flyingSpeed <= ea.MaxFlyingSpeed).ToList();
 			frmMonsterPicker.ShowDialog();
@@ -257,7 +257,7 @@ namespace DHDM
 
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
-			
+
 		}
 
 		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
@@ -688,8 +688,71 @@ namespace DHDM
 		{
 			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
 
-			if (dungeonMasterClient != null)
-				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+			if (dungeonMasterClient == null)
+				return;
+
+			dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+			dungeonMasterClient.OnConnectionError += DungeonMasterClient_OnConnectionError;
+			dungeonMasterClient.OnDisconnected += DungeonMasterClient_OnDisconnected;
+			dungeonMasterClient.OnError += DungeonMasterClient_OnError;
+			dungeonMasterClient.OnFailureToReceiveJoinConfirmation += DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
+			dungeonMasterClient.OnJoinedChannel += DungeonMasterClient_OnJoinedChannel;
+			dungeonMasterClient.OnLeftChannel += DungeonMasterClient_OnLeftChannel;
+			dungeonMasterClient.OnLog += DungeonMasterClient_OnLog;
+			dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
+			dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
+			dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
+		}
+
+		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e)
+		{
+			History.Log($"Channel ({e.Channel}) state changed ({e.ChannelState.Channel})");
+		}
+
+		private void DungeonMasterClient_OnNoPermissionError(object sender, EventArgs e)
+		{
+			History.Log("DungeonMasterClient_OnNoPermissionError");
+		}
+
+		private void DungeonMasterClient_OnMessageThrottled(object sender, TwitchLib.Communication.Events.OnMessageThrottledEventArgs e)
+		{
+			History.Log($"Message (\"{e.Message}\") throttled ({e.SentMessageCount} messages sent in {e.Period.TotalSeconds} seconds - only {e.AllowedInPeriod} allowed)");
+		}
+
+		private void DungeonMasterClient_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
+		{
+			History.Log($"BotUsername (\"{e.BotUsername}\") logged ({e.Data})");
+		}
+
+		private void DungeonMasterClient_OnLeftChannel(object sender, TwitchLib.Client.Events.OnLeftChannelArgs e)
+		{
+			History.Log($"User (\"{e.BotUsername}\") left channel ({e.Channel})");
+		}
+
+		private void DungeonMasterClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
+		{
+			History.Log($"User (\"{e.BotUsername}\") joined channel ({e.Channel})");
+		}
+
+		private void DungeonMasterClient_OnFailureToReceiveJoinConfirmation(object sender, TwitchLib.Client.Events.OnFailureToReceiveJoinConfirmationArgs e)
+		{
+			History.Log($"Channel (\"{e.Exception.Channel}\") FailureToReceiveJoinConfirmation ({e.Exception.Details})");
+		}
+
+		private void DungeonMasterClient_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)
+		{
+			if (System.Diagnostics.Debugger.IsAttached)
+				System.Diagnostics.Debugger.Break();
+		}
+
+		private void DungeonMasterClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
+		{
+			History.Log($"DungeonMasterClient_OnDisconnected");
+		}
+
+		private void DungeonMasterClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)
+		{
+			History.Log($"Connection error for \"{e.BotUsername}\" with message \"{e.Error.Message}\"");
 		}
 
 		private void Feature_FeatureDeactivated(object sender, FeatureEventArgs ea)
@@ -915,7 +978,7 @@ namespace DHDM
 			}
 			catch (Exception ex)
 			{
-				
+
 			}
 		}
 
@@ -2896,7 +2959,7 @@ namespace DHDM
 					effectName = GetRandomHitSpellName();
 					target = chestTarget;
 				}
-				AnimationEffect effectBonus = CreateEffect(effectName, target, 
+				AnimationEffect effectBonus = CreateEffect(effectName, target,
 					spellHit.Hue, spellHit.Saturation, spellHit.Brightness,
 					spellHit.SecondaryHue, spellHit.SecondarySaturation, spellHit.SecondaryBrightness);
 				if (usingSpellHits)
@@ -2949,7 +3012,7 @@ namespace DHDM
 			return CreateEffect(spriteName, target, hueShift, 100, brightness);
 		}
 
-		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target, 
+		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target,
 			int hueShift = 0, int saturation = 100, int brightness = 100,
 			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
@@ -3030,6 +3093,9 @@ namespace DHDM
 			return player.emoticon;
 		}
 		List<string> lastInitiativeResults = new List<string>();
+
+		bool suppressMessagesToCodeRushedChannel;
+
 		void ReportInitiativeResults(DiceEventArgs ea, string title)
 		{
 			if (ea.StopRollingData.multiplayerSummary == null)
@@ -3038,21 +3104,30 @@ namespace DHDM
 				return;
 			}
 
-			TellAll(title);
-			lastInitiativeResults.Clear();
-			int count = 1;
-			foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+			suppressMessagesToCodeRushedChannel = true;
+
+			try
 			{
-				string playerName = DndUtils.GetFirstName(playerRoll.name);
-				string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
-				if (emoticon == "Player ")
-					emoticon = "";
-				int rollValue = playerRoll.modifier + playerRoll.roll;
-				bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-				string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
-				lastInitiativeResults.Add(initiativeLine);
-				TellAll(initiativeLine);
-				count++;
+				TellDungeonMaster(title);
+				lastInitiativeResults.Clear();
+				int count = 1;
+				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+				{
+					string playerName = DndUtils.GetFirstName(playerRoll.name);
+					string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
+					if (emoticon == "Player ")
+						emoticon = "";
+					int rollValue = playerRoll.modifier + playerRoll.roll;
+					bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
+					string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
+					lastInitiativeResults.Add(initiativeLine);
+					TellDungeonMaster(initiativeLine);
+					count++;
+				}
+			}
+			finally
+			{
+				suppressMessagesToCodeRushedChannel = false;
 			}
 		}
 
@@ -3966,11 +4041,6 @@ namespace DHDM
 		}
 		void ExitCombat()
 		{
-			if (!game.Clock.InCombat && game.Clock.InTimeFreeze)
-			{
-				ExitTimeFreeze();
-				return;
-			}
 			Dispatcher.Invoke(() =>
 			{
 				if (!game.Clock.InCombat)
@@ -4020,14 +4090,14 @@ namespace DHDM
 				case DungeonMasterCommand.EnterCombat:
 					EnterCombat();
 					break;
-				case DungeonMasterCommand.ExitCombat:
-					ExitCombat();
+				case DungeonMasterCommand.RestartClock:
+					if (game.Clock.InTimeFreeze)
+						ExitTimeFreeze();
+					if (game.Clock.InCombat)
+						ExitCombat();
 					break;
 				case DungeonMasterCommand.EnterTimeFreeze:
 					EnterTimeFreeze();
-					break;
-				case DungeonMasterCommand.ExitTimeFreeze:
-					ExitTimeFreeze();
 					break;
 			}
 		}
@@ -4907,6 +4977,43 @@ namespace DHDM
 
 		private void SendMessage(string message, string channel)
 		{
+			History.Log($"Sending \"{message}\" to {channel} at {DateTime.Now.ToLongTimeString()}");
+			if (JoinedChannel(channel))
+				dungeonMasterClient.SendMessage(channel, message);
+			else
+			{
+				try
+				{
+					dungeonMasterClient.JoinChannel(channel);
+					dungeonMasterClient.SendMessage(channel, message);
+				}
+				catch (TwitchLib.Client.Exceptions.ClientNotConnectedException)
+				{
+					CreateDungeonMasterClient();
+					try
+					{
+						if (dungeonMasterClient == null)
+							return;
+						dungeonMasterClient.JoinChannel(channel);
+						dungeonMasterClient.SendMessage(channel, message);
+					}
+					catch (Exception ex)
+					{
+
+					}
+				}
+				catch (Exception ex)
+				{
+
+				}
+			}
+		}
+
+
+		/* Potentially problematic, or was this my attempt to fix a disconnect issue that existed before this change?
+		 
+		private void SendMessage(string message, string channel)
+		{
 			if (JoinedChannel(channel))
 				try
 				{
@@ -4950,6 +5057,12 @@ namespace DHDM
 
 			}
 		}
+			 
+			 
+			 
+			 
+			 
+			 */
 
 		public void TellViewers(string message)
 		{
@@ -4965,7 +5078,7 @@ namespace DHDM
 		{
 			TellDungeonMaster(message);
 			TellViewers(message);
-			if (System.Diagnostics.Debugger.IsAttached)
+			if (System.Diagnostics.Debugger.IsAttached && !suppressMessagesToCodeRushedChannel)
 			{
 				TellCodeRushed(message);
 			}
@@ -5348,7 +5461,7 @@ namespace DHDM
 					SetValue(matchingSpells[0], name, code);
 			}
 
-			
+
 
 			//if (parentGroup.Type == EventType.FeatureEvents)
 			//	

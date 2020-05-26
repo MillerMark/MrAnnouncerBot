@@ -9,9 +9,8 @@ namespace DHDM
 		ClearScrollEmphasis,
 		NonCombatInitiative,
 		EnterCombat,
-		ExitCombat,
 		EnterTimeFreeze,
-		ExitTimeFreeze,
+		RestartClock,
 		RollWildMagicCheck,
 		RollWildMagic
 	}

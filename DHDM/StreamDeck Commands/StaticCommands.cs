@@ -19,12 +19,10 @@ namespace DHDM
 		{
 			if (message == "Enter Combat")
 				return DungeonMasterCommand.EnterCombat;
-			else if (message == "Exit Combat")
-				return DungeonMasterCommand.ExitCombat;
+			else if (message == "RestartClock")
+				return DungeonMasterCommand.RestartClock;
 			else if (message == "Enter Time Freeze")
 				return DungeonMasterCommand.EnterTimeFreeze;
-			else if (message == "Exit Time Freeze")
-				return DungeonMasterCommand.ExitTimeFreeze;
 			else if (message == "Clear Scroll Emphasis")
 				return DungeonMasterCommand.ClearScrollEmphasis;
 			else if (message == "Non-combat Initiative")
