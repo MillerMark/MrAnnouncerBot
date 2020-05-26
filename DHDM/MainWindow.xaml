@@ -861,6 +861,9 @@
 						<CheckBox x:Name="ckShowFPSWindow" IsChecked="False" Checked="CkShowFPSWindow_CheckedChanged" Unchecked="CkShowFPSWindow_CheckedChanged">
 							Show FPS Window
 						</CheckBox>
+						<CheckBox x:Name="ckEnableHueShift" IsChecked="True" Checked="CkEnableHueShift_CheckedChanged" Unchecked="CkEnableHueShift_CheckedChanged">
+							Enable Hue Shift
+						</CheckBox>
 					</StackPanel>
 				</TabItem>
 				<TabItem x:Name="tbSprinkles" Header="Sprinkles">

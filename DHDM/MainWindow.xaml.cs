@@ -3108,7 +3108,7 @@ namespace DHDM
 
 			try
 			{
-				TellDungeonMaster(title);
+				TellAll(title);
 				lastInitiativeResults.Clear();
 				int count = 1;
 				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
@@ -3121,7 +3121,7 @@ namespace DHDM
 					bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
 					string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
 					lastInitiativeResults.Add(initiativeLine);
-					TellDungeonMaster(initiativeLine);
+					TellAll(initiativeLine);
 					count++;
 				}
 			}
@@ -5673,12 +5673,10 @@ namespace DHDM
 			ChangeFrameRate(overlayName, GetFrameRate(sender));
 		}
 
-		bool showFpsWindow;
 		private void ChangeFrameRate(string overlayName, int frameRate)
 		{
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.FrameRate = frameRate;
-			frameRateChangeData.ShowFpsWindow = showFpsWindow;
 			frameRateChangeData.OverlayName = overlayName;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
@@ -6014,14 +6012,21 @@ namespace DHDM
 			frmMonsterPicker.ShowDialog();
 		}
 
-
 		private void CkShowFPSWindow_CheckedChanged(object sender, RoutedEventArgs e)
 		{
+			FrameRateChangeData.GlobalShowFpsWindow = ckShowFPSWindow.IsChecked == true;
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.FrameRate = -1;
 			frameRateChangeData.OverlayName = Overlays.Front;
-			showFpsWindow = ckShowFPSWindow.IsChecked == true;
-			frameRateChangeData.ShowFpsWindow = showFpsWindow;
+			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
+		}
+
+		private void CkEnableHueShift_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			FrameRateChangeData.GlobalAllowColorShifting = ckEnableHueShift.IsChecked == true;
+			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
+			frameRateChangeData.FrameRate = -1;
+			frameRateChangeData.OverlayName = Overlays.Front;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
 	}

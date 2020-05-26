@@ -188,7 +188,16 @@ class DragonBackGame extends DragonGame {
 
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
+
+		if (this.showFpsWindow) {
+			if (!this.fpsWindow) {
+				this.fpsWindow = new FpsWindow('Back', 1);
+			}
+			this.fpsWindow.showAllFramerates(this, context, nowMs);
+		}
 	}
+
+	fpsWindow: FpsWindow;
 
 	removeAllGameElements(now: number): void {
 		super.removeAllGameElements(now);
@@ -752,6 +761,7 @@ class DragonBackGame extends DragonGame {
 		return false;
 	}
 
+	showFpsWindow: boolean;
 	handleFpsChange(frameRateChangeData: FrameRateChangeData): void {
 		this.changeFramerate(frameRateChangeData.FrameRate);
 	}

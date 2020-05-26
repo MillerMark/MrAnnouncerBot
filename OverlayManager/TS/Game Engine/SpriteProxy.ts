@@ -480,6 +480,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	brightness: number = 100;
 	hueShiftPerSecond: number = 0;
 
+	static globalAllowColorShifting: boolean = true;
+
 	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
 		super(startingFrameNumber, center.x, center.y, lifeSpanMs);
 	}
@@ -487,12 +489,15 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
 		originX: number = 0, originY: number = 0): void {
 		let saveFilter: string = (context as any).filter;
-		this.shiftColor(context, now);
+		let allowColorShifting: boolean = ColorShiftingSpriteProxy.globalAllowColorShifting;
+		if (allowColorShifting)
+			this.shiftColor(context, now);
 		try {
 			super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
 		}
 		finally {
-			(context as any).filter = saveFilter;
+			if (allowColorShifting)
+				(context as any).filter = saveFilter;
 		}
 	}
 
@@ -509,6 +514,9 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	shiftColor(context: CanvasRenderingContext2D, now: number) {
+		if (!ColorShiftingSpriteProxy.globalAllowColorShifting)
+			return;
+
 		let hueShift: number = this.getCurrentHueShift(now);
 
 		(context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";

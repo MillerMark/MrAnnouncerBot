@@ -185,8 +185,11 @@ function changeFrameRate(frameRateData: string) {
 	let frameRateChangeData: FrameRateChangeData = JSON.parse(frameRateData);
 	//frameRateData
 
+	ColorShiftingSpriteProxy.globalAllowColorShifting = frameRateChangeData.AllowColorShifting;
+
 	//let message: string = `${frameRateChangeData.OverlayName} overlay: ${frameRateChangeData.FrameRate} fps `;
 	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.showFpsWindow = frameRateChangeData.ShowFpsWindow;
 		if (frameRateChangeData.OverlayName === 'Back') {
 			activeBackGame.handleFpsChange(frameRateChangeData);
 		}
@@ -199,6 +202,7 @@ function changeFrameRate(frameRateData: string) {
 	}
 
 	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.showFpsWindow = frameRateChangeData.ShowFpsWindow;
 		if (frameRateChangeData.OverlayName === 'Front') {
 			activeFrontGame.handleFpsChange(frameRateChangeData);
 		}
