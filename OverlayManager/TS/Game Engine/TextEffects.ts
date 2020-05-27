@@ -126,8 +126,8 @@ class TextEffect extends ScalableAnimation {
 	outlineColor: string;
 	verticalThrust: number = 0;
 	horizontalThrust: number = 0;
-	textAlign: string = 'center';
-	textBaseline: string = 'middle';
+	textAlign: CanvasTextAlign = 'center';
+	textBaseline: CanvasTextBaseline = 'middle';
 	outlineThickness: number;
 	fontSize: number;
 	offsetX: number = 0;
@@ -173,7 +173,7 @@ class TextEffect extends ScalableAnimation {
 			let left: number;
 			if (this.textAlign == 'left')
 				left = this.x;
-			else if (this.textAlign == 'center' || this.textAlign == 'justify')
+			else if (this.textAlign == 'center')  //  || this.textAlign === 'justify'
 				left = this.x - width / 2;
 			else if (this.textAlign == 'right')
 				left = this.x - width;
