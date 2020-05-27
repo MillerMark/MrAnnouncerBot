@@ -1078,7 +1078,8 @@ namespace MrAnnouncerBot
 			try
 			{
 				var client = new HttpClient();
-				client.DefaultRequestHeaders.Add("Client-ID", Twitch.CodeRushedBotApiClientId);
+				client.DefaultRequestHeaders.Add("Client-ID", Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
+				client.DefaultRequestHeaders.Add("Authorization", $"Bearer {Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]}");
 				string requestUri = $"https://api.twitch.tv/helix/videos?user_id={STR_CodeRushedUserId}";
 				HttpResponseMessage response = await client.GetAsync(requestUri);
 				string responseBody = await response.Content.ReadAsStringAsync();
@@ -1091,7 +1092,7 @@ namespace MrAnnouncerBot
 
 					if (string.IsNullOrWhiteSpace(backTrackStr))
 					{
-						rewindTimeSpan = new TimeSpan(hours: 0, minutes: 1, seconds: 30);
+						rewindTimeSpan = new TimeSpan(hours: 0, minutes: 0, seconds: 10);
 					}
 					else
 					{

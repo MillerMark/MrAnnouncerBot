@@ -603,26 +603,60 @@ function handleFpsChangeDiceRoller(frameRateChangeData: FrameRateChangeData) {
 	changeFramerateDiceRoller(frameRateChangeData.FrameRate);
 }
 
+var diceRollerTimeBetweenFramesQueue = [];
+var diceRollerDrawTimeForEachFrameQueue = [];
+var diceRollerLastFrameUpdate: number;
+var diceRollerShowFpsWindow: boolean;
+var diceRollerFpsWindow: FpsWindow;
+
+function calculateFramerate(startUpdate: number, endUpdate: number): any {
+	if (diceRollerLastFrameUpdate) {
+		let timeBetweenFrames: number = endUpdate - diceRollerLastFrameUpdate;
+		diceRollerTimeBetweenFramesQueue.push(timeBetweenFrames);
+		if (diceRollerTimeBetweenFramesQueue.length > Game.fpsHistoryCount)
+			diceRollerTimeBetweenFramesQueue.shift();
+	}
+
+	let drawTimeForThisFrame: number = endUpdate - startUpdate;
+	diceRollerDrawTimeForEachFrameQueue.push(drawTimeForThisFrame);
+	if (diceRollerDrawTimeForEachFrameQueue.length > Game.fpsHistoryCount)
+		diceRollerDrawTimeForEachFrameQueue.shift();
+
+	diceRollerLastFrameUpdate = endUpdate;
+}
+
 function animateDiceRollerFps(nowMs: DOMHighResTimeStamp) {
 	try {
 		let now: number = Date.now();
 		let elapsed: number = now - lastDrawTimeDiceRoller;
 
+		let okayToDrawImages: boolean = elapsed > fpsIntervalDiceRoller;
+		if (!okayToDrawImages)
+			return;
+
+		let startUpdate: number = performance.now();
 		if (!testingDiceRoller) {
 			updatePhysics();
 			renderer.render(scene, camera);
 		}
 
-		let okayToDrawImages: boolean = elapsed > fpsIntervalDiceRoller;
-
-		if (okayToDrawImages) {
-			console.log('drawImage');
-			lastDrawTimeDiceRoller = now - (elapsed % fpsIntervalDiceRoller);
-			updateDieRollSpecialEffects();
-			diceLayer.renderCanvas();
-		}
+		lastDrawTimeDiceRoller = now - (elapsed % fpsIntervalDiceRoller);
+		updateDieRollSpecialEffects();
+		diceLayer.renderCanvas();
 
 		update();
+
+		if (diceRollerShowFpsWindow)
+		{
+			if (!diceRollerFpsWindow) {
+				diceRollerFpsWindow = new FpsWindow('Dice', 1);
+			}
+			diceRollerFpsWindow.showAllFramerates(diceRollerTimeBetweenFramesQueue, diceRollerDrawTimeForEachFrameQueue, diceLayer.diceFrontContext, now);
+		}
+
+
+		let endUpdate: number = performance.now();
+		calculateFramerate(startUpdate, endUpdate);
 	}
 	finally {
 		requestAnimationFrame(animateDiceRollerFps);

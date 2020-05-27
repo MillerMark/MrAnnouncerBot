@@ -221,7 +221,7 @@ class DragonFrontGame extends DragonGame {
 			if (!this.fpsWindow) {
 				this.fpsWindow = new FpsWindow('Front', 2);
 			}
-			this.fpsWindow.showAllFramerates(this, context, nowMs);
+			this.fpsWindow.showAllFramerates(this.timeBetweenFramesQueue, this.drawTimeForEachFrameQueue, context, nowMs);
 		}
 	}
 

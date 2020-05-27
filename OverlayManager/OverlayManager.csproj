@@ -44,6 +44,9 @@
     <None Remove="TS\DragonH\WeaponProperties.ts" />
     <None Remove="TS\DragonH\Windups - Copy.ts" />
     <None Remove="TS\DragonH\Windups.ts" />
+    <None Remove="TS\DragonH\WorkerBack.ts" />
+    <None Remove="TS\DragonH\WorkerDice.ts" />
+    <None Remove="TS\DragonH\WorkerFront.ts" />
     <None Remove="TS\Drone.ts" />
     <None Remove="TS\DroneProxy.ts" />
     <None Remove="TS\FrontMain.ts" />
@@ -125,6 +128,13 @@
   <ItemGroup>
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
+    <TypeScriptCompile Include="TS\DragonH\WorkerFront.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="TS\DragonH\WorkerBack.ts" />
+    <TypeScriptCompile Include="TS\Dice\WorkerDice.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="TS\DragonH\BloodSprites.ts" />
     <TypeScriptCompile Include="TS\DragonH\MapGame.ts" />
     <TypeScriptCompile Include="TS\DragonH\Fred.ts" />

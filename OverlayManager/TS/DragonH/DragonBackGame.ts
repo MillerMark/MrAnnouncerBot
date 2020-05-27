@@ -191,9 +191,9 @@ class DragonBackGame extends DragonGame {
 
 		if (this.showFpsWindow) {
 			if (!this.fpsWindow) {
-				this.fpsWindow = new FpsWindow('Back', 1);
+				this.fpsWindow = new FpsWindow('Back', 0);
 			}
-			this.fpsWindow.showAllFramerates(this, context, nowMs);
+			this.fpsWindow.showAllFramerates(this.timeBetweenFramesQueue, this.drawTimeForEachFrameQueue, context, nowMs);
 		}
 	}
 

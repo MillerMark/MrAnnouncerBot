@@ -29,16 +29,16 @@
 		this.graphHeight = this.graphBottomY - this.graphTopY;
 	}
 
-	showAllFramerates(game: Game, context: CanvasRenderingContext2D, now: number): any {
+	showAllFramerates(timeBetweenFramesQueue: number[], drawTimeForEachFrameQueue: number[], context: CanvasRenderingContext2D, now: number): any {
 		this.drawBorderlines(context);
 		this.drawTitles(context);
-		this.graphFramerates(2, game, context);
+		this.graphFramerates(timeBetweenFramesQueue, drawTimeForEachFrameQueue, context);
 	}
 
-	graphFramerates(column: number, game: Game, context: CanvasRenderingContext2D): void {
+	graphFramerates(timeBetweenFramesQueue: number[], drawTimeForEachFrameQueue: number[], context: CanvasRenderingContext2D): void {
 		const maxFrameRate: number = 30;
 
-		let averageTimeBetweenFrames: number = this.getAverage(game.timeBetweenFramesQueue, 3000);
+		let averageTimeBetweenFrames: number = this.getAverage(timeBetweenFramesQueue, 3000);
 		let actualAverageFps: number = Math.round(1000 / averageTimeBetweenFrames);
 
 		let clampedFps: number = MathEx.clamp(actualAverageFps, 0, 30);
@@ -62,8 +62,8 @@
 		let graphWidth: number = rightEdge - this.left;
 		const graphTimeSpan: number = 5000;  // ms
 		let timeToPixelFactor: number = graphWidth / graphTimeSpan;
-		for (let i = game.timeBetweenFramesQueue.length - 1; i >= 0; i--) {
-			let timeThisFrame: number = game.timeBetweenFramesQueue[i];
+		for (let i = timeBetweenFramesQueue.length - 1; i >= 0; i--) {
+			let timeThisFrame: number = timeBetweenFramesQueue[i];
 			if (timeThisFrame == 0)
 				continue;
 			let y: number = this.bottom - MathEx.clamp(1000 / timeThisFrame, 0, 30) * this.graphHeight / maxFrameRate;
@@ -72,7 +72,7 @@
 			if (lineLeft < this.left)
 				break;
 			let lineRight: number = rightEdge + rightTime * timeToPixelFactor;
-			if (i === game.timeBetweenFramesQueue.length - 1)
+			if (i === timeBetweenFramesQueue.length - 1)
 				context.moveTo(lineRight, y);
 			context.lineTo(lineLeft, y);
 			rightTime = leftTime;
@@ -120,6 +120,7 @@
 
 	private drawBorderlines(context: CanvasRenderingContext2D) {
 		context.fillStyle = '#ffffff';
+		context.lineWidth = 1;
 		let right: number = this.left + FpsWindow.sectionWidth;
 		context.fillRect(this.left, this.top, FpsWindow.sectionWidth, FpsWindow.frameHeight);
 

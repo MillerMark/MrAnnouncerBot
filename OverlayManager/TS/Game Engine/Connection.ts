@@ -196,6 +196,7 @@ function changeFrameRate(frameRateData: string) {
 	}
 
 	if (diceLayer) {
+		diceRollerShowFpsWindow = frameRateChangeData.ShowFpsWindow;
 		if (frameRateChangeData.OverlayName === 'Dice') {
 			handleFpsChangeDiceRoller(frameRateChangeData);
 		}
