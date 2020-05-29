@@ -227,8 +227,6 @@ namespace DndCore
 
 		private static SpellType GetSpellType(SpellDto spellDto)
 		{
-			if (!string.IsNullOrWhiteSpace(spellDto.saving_throw))
-				return SpellType.SavingThrowSpell;
 			if (!string.IsNullOrWhiteSpace(spellDto.attack_type))
 			{
 				string attackType = spellDto.attack_type.ToLower();
@@ -239,6 +237,10 @@ namespace DndCore
 				if (attackType.IndexOf("damage") >= 0)
 					return SpellType.DamageSpell;
 			}
+
+			if (!string.IsNullOrWhiteSpace(spellDto.saving_throw))  // Some spells, like Ice Knife, can be both a saving throw and a ranged attack.
+																															// TODO: Remove enum element SpellType.SavingThrowSpell and make it a boolean property of Spell.
+				return SpellType.SavingThrowSpell;
 
 			string dieStr = spellDto.die_str.ToLower();
 			if (!string.IsNullOrWhiteSpace(dieStr))

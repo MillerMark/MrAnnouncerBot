@@ -183,9 +183,27 @@ class DragonFrontGame extends DragonGame {
 	activePlayerId: number;
 	playerDataSet: boolean = false;
 
+	nameplatesCanvas: HTMLCanvasElement;
+	nameplatesContext: CanvasRenderingContext2D;
+	clockCanvas: HTMLCanvasElement;
+	clockContext: CanvasRenderingContext2D;
+
+	initializeOffscreenCanvases() {
+		this.nameplatesCanvas = document.createElement('canvas');
+		this.nameplatesCanvas.width = myCanvas.width;
+		this.nameplatesCanvas.height = myCanvas.height;
+		this.nameplatesContext = this.nameplatesCanvas.getContext('2d');
+
+		this.clockCanvas = document.createElement('canvas');
+		this.clockCanvas.width = myCanvas.width;
+		this.clockCanvas.height = myCanvas.height;
+		this.clockContext = this.clockCanvas.getContext('2d');
+	}
+
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
+		this.initializeOffscreenCanvases();
 	}
 
 	update(timestamp: number) {
@@ -211,7 +229,6 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects.draw(context, nowMs);
 
 		this.coinManager.draw(context, nowMs);
-		this.showNameplates(context, nowMs);
 		this.allFrontEffects.draw(context, nowMs);
 		this.textAnimations.removeExpiredAnimations(nowMs);
 		this.textAnimations.updatePositions(nowMs);
@@ -223,11 +240,14 @@ class DragonFrontGame extends DragonGame {
 			}
 			this.fpsWindow.showAllFramerates(this.timeBetweenFramesQueue, this.drawTimeForEachFrameQueue, context, nowMs);
 		}
+
+		context.drawImage(this.clockCanvas, 0, 0);
+		context.drawImage(this.nameplatesCanvas, 0, 0);
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
 		super.drawClockLayerEffects(context, now);
-		this.drawGameTime(context);
+		//this.drawGameTime(context);
 	}
 
 	protected updateClockFromDto(dto: any) {
@@ -235,6 +255,7 @@ class DragonFrontGame extends DragonGame {
 		if (dto.Message) {
 			this.showClockMessage(dto.Message);
 		}
+		this.refreshClock();
 	}
 
 	showClockMessage(message: string): void {
@@ -643,7 +664,7 @@ class DragonFrontGame extends DragonGame {
 		this.dndTimeDatePanel = this.clockPanel.add(this.getClockX(), this.panelShiftY + this.getClockY()).setScale(this.panelScale);
 
 		this.clockLayerEffects.add(this.fireWall);
-		this.clockLayerEffects.add(this.clockPanel);
+		//this.clockLayerEffects.add(this.clockPanel);
 	}
 
 	private createFireBallBehindClock(hue: number): any {
@@ -672,6 +693,18 @@ class DragonFrontGame extends DragonGame {
 		this.dndTimeDatePanel.frameIndex = 0;
 		this.fireWall.sprites = [];
 		this.createFireBallBehindClock(200);
+		this.refreshNameplates();
+	}
+
+	refreshNameplates() {
+		this.nameplatesContext.clearRect(0, 0, 1920, 1080);
+		this.drawNameplates(this.nameplatesContext);
+	}
+
+	refreshClock() {
+		this.clockContext.clearRect(0, 0, 1920, 1080);
+		this.clockPanel.draw(this.clockContext, performance.now());
+		this.drawGameTime(this.clockContext);
 	}
 
 	enteringCombat() {
@@ -679,6 +712,7 @@ class DragonFrontGame extends DragonGame {
 		this.dndTimeDatePanel.frameIndex = 1;
 		this.createFireWallBehindClock();
 		this.createFireBallBehindClock(330);
+		this.refreshNameplates();
 	}
 
 	exitingTimeFreeze() {
@@ -1063,11 +1097,14 @@ class DragonFrontGame extends DragonGame {
 			let centerX: number = this.getPlayerX(i);
 			this.nameplateMain.addShifted(centerX, DragonFrontGame.nameCenterY - DragonFrontGame.nameplateHalfHeight, 0, 0);
 		}
+
+		this.refreshNameplates();
 	}
 
 	playerChanged(playerID: number, pageID: number, playerData: string): void {
 		super.playerChanged(playerID, pageID, playerData);
 		this.activePlayerId = playerID;
+		this.refreshNameplates();
 	}
 
 	// TODO: Keep these in sync with those MainWindow.xaml.cs
@@ -1284,7 +1321,7 @@ class DragonFrontGame extends DragonGame {
 		this.update(nowMs);
 	}
 
-	showNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number, now: number): void {
+	drawNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number): void {
 		if (!player || !player.ShowingNameplate)
 			return;
 
@@ -1394,7 +1431,7 @@ class DragonFrontGame extends DragonGame {
 		}
 	}
 
-	showNameplates(context: CanvasRenderingContext2D, now: number) {
+	drawNameplates(context: CanvasRenderingContext2D) {
 		let activePlayer: Character = null;
 		let playerIndex: number = 0;
 		for (var i = 0; i < this.players.length; i++) {
@@ -1404,11 +1441,11 @@ class DragonFrontGame extends DragonGame {
 				playerIndex = i;
 				continue;
 			}
-			this.showNameplate(context, player, i, now);
+			this.drawNameplate(context, player, i);
 		}
 
 		// Place active player on top:
-		this.showNameplate(context, activePlayer, playerIndex, now);
+		this.drawNameplate(context, activePlayer, playerIndex);
 	}
 
 	moveFred(movement: string): void {

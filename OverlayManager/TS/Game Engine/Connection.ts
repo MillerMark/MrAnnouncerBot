@@ -186,6 +186,7 @@ function changeFrameRate(frameRateData: string) {
 	//frameRateData
 
 	ColorShiftingSpriteProxy.globalAllowColorShifting = frameRateChangeData.AllowColorShifting;
+	ColorShiftingSpriteProxy.globalAllowCanvasFilterCaching = frameRateChangeData.AllowCanvasFilterCaching;
 
 	//let message: string = `${frameRateChangeData.OverlayName} overlay: ${frameRateChangeData.FrameRate} fps `;
 	if (activeBackGame instanceof DragonBackGame) {

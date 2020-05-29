@@ -686,11 +686,19 @@ namespace DHDM
 
 		private void CreateDungeonMasterClient()
 		{
+			Dispatcher.Invoke(() =>
+			{
+				Background = Brushes.White;
+				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
+			});
 			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+			HookTwitchClientEvents();
+		}
 
+		private void HookTwitchClientEvents()
+		{
 			if (dungeonMasterClient == null)
 				return;
-
 			dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
 			dungeonMasterClient.OnConnectionError += DungeonMasterClient_OnConnectionError;
 			dungeonMasterClient.OnDisconnected += DungeonMasterClient_OnDisconnected;
@@ -702,6 +710,22 @@ namespace DHDM
 			dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
 			dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
 			dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
+		}
+		private void UnhookTwitchClientEvents()
+		{
+			if (dungeonMasterClient == null)
+				return;
+			dungeonMasterClient.OnMessageReceived -= HumperBotClient_OnMessageReceived;
+			dungeonMasterClient.OnConnectionError -= DungeonMasterClient_OnConnectionError;
+			dungeonMasterClient.OnDisconnected -= DungeonMasterClient_OnDisconnected;
+			dungeonMasterClient.OnError -= DungeonMasterClient_OnError;
+			dungeonMasterClient.OnFailureToReceiveJoinConfirmation -= DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
+			dungeonMasterClient.OnJoinedChannel -= DungeonMasterClient_OnJoinedChannel;
+			dungeonMasterClient.OnLeftChannel -= DungeonMasterClient_OnLeftChannel;
+			dungeonMasterClient.OnLog -= DungeonMasterClient_OnLog;
+			dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
+			dungeonMasterClient.OnNoPermissionError -= DungeonMasterClient_OnNoPermissionError;
+			dungeonMasterClient.OnChannelStateChanged -= DungeonMasterClient_OnChannelStateChanged;
 		}
 
 		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e)
@@ -747,6 +771,13 @@ namespace DHDM
 
 		private void DungeonMasterClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
 		{
+			Dispatcher.Invoke(() =>
+			{
+				Background = Brushes.Red;
+				btnReconnectTwitchClient.Visibility = Visibility.Visible;
+			});
+			UnhookTwitchClientEvents();
+			dungeonMasterClient = null;
 			History.Log($"DungeonMasterClient_OnDisconnected");
 		}
 
@@ -6024,6 +6055,20 @@ namespace DHDM
 		private void CkEnableHueShift_CheckedChanged(object sender, RoutedEventArgs e)
 		{
 			FrameRateChangeData.GlobalAllowColorShifting = ckEnableHueShift.IsChecked == true;
+			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
+			frameRateChangeData.FrameRate = -1;
+			frameRateChangeData.OverlayName = Overlays.Front;
+			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
+		}
+
+		private void BtnReconnectTwitchClient_Click(object sender, RoutedEventArgs e)
+		{
+			CreateDungeonMasterClient();
+		}
+
+		private void CkEnableCanvasFilterCaching_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			FrameRateChangeData.GlobalAllowCanvasFilterCaching = ckEnableCanvasFilterCaching.IsChecked == true;
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
 			frameRateChangeData.FrameRate = -1;
 			frameRateChangeData.OverlayName = Overlays.Front;

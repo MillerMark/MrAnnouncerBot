@@ -110,6 +110,9 @@
 			<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click" Height="44" Width="222" FontSize="22" Margin="22" >
 				Initialize Player Data
 			</Button>
+			<Button x:Name="btnReconnectTwitchClient" Click="BtnReconnectTwitchClient_Click" Height="44" Width="262" FontSize="22" Margin="22" >
+				Reconnect Twitch Client
+			</Button>
 		</StackPanel>
 
 		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
@@ -812,6 +815,12 @@
 							<RadioButton x:Name="rbnFront50" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
 								50
 							</RadioButton>
+							<RadioButton x:Name="rbnFront55" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								55
+							</RadioButton>
+							<RadioButton x:Name="rbnFront60" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								60
+							</RadioButton>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Dice Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
@@ -832,6 +841,24 @@
 							</RadioButton>
 							<RadioButton x:Name="rbnDice30" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
 								30
+							</RadioButton>
+							<RadioButton x:Name="rbnDice35" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								35
+							</RadioButton>
+							<RadioButton x:Name="rbnDice40" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								40
+							</RadioButton>
+							<RadioButton x:Name="rbnDice45" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								45
+							</RadioButton>
+							<RadioButton x:Name="rbnDice50" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								50
+							</RadioButton>
+							<RadioButton x:Name="rbnDice55" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								55
+							</RadioButton>
+							<RadioButton x:Name="rbnDice60" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								60
 							</RadioButton>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
@@ -854,6 +881,24 @@
 							<RadioButton x:Name="rbnBack30" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
 								30
 							</RadioButton>
+							<RadioButton x:Name="rbnBack35" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								35
+							</RadioButton>
+							<RadioButton x:Name="rbnBack40" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								40
+							</RadioButton>
+							<RadioButton x:Name="rbnBack45" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								45
+							</RadioButton>
+							<RadioButton x:Name="rbnBack50" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								50
+							</RadioButton>
+							<RadioButton x:Name="rbnBack55" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								55
+							</RadioButton>
+							<RadioButton x:Name="rbnBack60" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								60
+							</RadioButton>
 						</StackPanel>
 						<CheckBox x:Name="ckDynamicThrottling" IsChecked="True" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
 							Dynamic Throttling
@@ -863,6 +908,9 @@
 						</CheckBox>
 						<CheckBox x:Name="ckEnableHueShift" IsChecked="True" Checked="CkEnableHueShift_CheckedChanged" Unchecked="CkEnableHueShift_CheckedChanged">
 							Enable Hue Shift
+						</CheckBox>
+						<CheckBox x:Name="ckEnableCanvasFilterCaching" IsChecked="False" Checked="CkEnableCanvasFilterCaching_CheckedChanged" Unchecked="CkEnableCanvasFilterCaching_CheckedChanged">
+							Enable Canvas Filter Caching
 						</CheckBox>
 					</StackPanel>
 				</TabItem>

@@ -324,7 +324,7 @@ class SpriteProxy extends AnimatedElement {
 	numFramesDrawn: number = 0;
 	onCycleCallbacks: Array<(sprite: SpriteProxy, now: number) => void>;
 	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>;
-	
+
 
 	lastTimeWeAdvancedTheFrame: number;
 
@@ -475,28 +475,106 @@ class SpriteProxy extends AnimatedElement {
 
 
 class ColorShiftingSpriteProxy extends SpriteProxy {
-	hueShift: number = 0;
-	saturationPercent: number = 100;
-	brightness: number = 100;
+	private _hueShift: number = 0;
+
+	get hueShift(): number {
+		return this._hueShift;
+	}
+
+	set hueShift(newValue: number) {
+		this._hueShift = newValue;
+		this.recalculateFilter(performance.now());
+	}
+
+
+	private _saturationPercent: number = 100;
+
+	get saturationPercent(): number {
+		return this._saturationPercent;
+	}
+
+	set saturationPercent(newValue: number) {
+		this._saturationPercent = newValue;
+		this.recalculateFilter(performance.now());
+	}
+
+	private _brightness: number = 100;
+
+	get brightness(): number {
+		return this._brightness;
+	}
+
+	set brightness(newValue: number) {
+		this._brightness = newValue;
+		this.recalculateFilter(performance.now());
+	}
+
 	hueShiftPerSecond: number = 0;
 
 	static globalAllowColorShifting: boolean = true;
+	static globalAllowCanvasFilterCaching: boolean = false;
 
 	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
 		super(startingFrameNumber, center.x, center.y, lifeSpanMs);
 	}
 
+	filter: string;
+
+	recalculateFilter(now: number) {
+		this.filter = '';
+		let hueShift: number = this.getCurrentHueShift(now);45
+		if (hueShift !== ColorShiftingSpriteProxy.defaultHueShift)
+			this.filter += `hue-rotate(${hueShift}deg) `;
+		let grayScale: number = 100 - this.saturationPercent;
+		if (grayScale !== ColorShiftingSpriteProxy.defaultGrayscale)
+			this.filter += `grayscale(${(grayScale).toString()}%) `;
+		if (this.brightness !== ColorShiftingSpriteProxy.defaultBrightness)
+			this.filter += `brightness(${this.brightness}%)`;
+
+		this.filter = this.filter.trim();
+	}
+
+	shiftColor(baseAnimation: Part, context: CanvasRenderingContext2D, now: number): string {
+		if (!ColorShiftingSpriteProxy.globalAllowColorShifting)
+			return null;
+
+		if (this.hueShiftPerSecond != 0)
+			this.recalculateFilter(now);
+
+		if (this.filter) {
+			let oldFilter: string = (context as any).filter;
+			if (ColorShiftingSpriteProxy.globalAllowCanvasFilterCaching) {
+				baseAnimation.filterImages(this.filter);
+				return null;
+			}
+			(context as any).filter = this.filter;  // Brings the pain!
+			return oldFilter;
+		}
+		return null;
+	}
+
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
 		originX: number = 0, originY: number = 0): void {
-		let saveFilter: string = (context as any).filter;
+		let saveFilter: string;
 		let allowColorShifting: boolean = ColorShiftingSpriteProxy.globalAllowColorShifting;
 		if (allowColorShifting)
-			this.shiftColor(context, now);
+			saveFilter = this.shiftColor(baseAnimation, context, now);
 		try {
-			super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
+			/* 
+			 * Knowing the frameIndex, the hueShift, the brightness, and the saturationPercent,
+			 * we could look up the equivalent in a dictionary of cached Sprites.
+			 * baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
+			 * 
+			 * Note that we CAN NOT cache if this.hueShiftPerSecond != 0
+			 * */
+			let cachedImages: CachedImages;
+			if (this.filter)
+				cachedImages = baseAnimation.filteredImages[this.filter];
+			baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically, cachedImages);
+			//super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
 		}
 		finally {
-			if (allowColorShifting)
+			if (allowColorShifting && saveFilter)
 				(context as any).filter = saveFilter;
 		}
 	}
@@ -513,14 +591,9 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 		return this.hueShift + this.getCurrentHueShiftDelta(now);
 	}
 
-	shiftColor(context: CanvasRenderingContext2D, now: number) {
-		if (!ColorShiftingSpriteProxy.globalAllowColorShifting)
-			return;
-
-		let hueShift: number = this.getCurrentHueShift(now);
-
-		(context as any).filter = "hue-rotate(" + hueShift + "deg) grayscale(" + (100 - this.saturationPercent).toString() + "%) brightness(" + this.brightness + "%)";
-	}
+	static readonly defaultGrayscale: number = 0;
+	static readonly defaultBrightness: number = 100;
+	static readonly defaultHueShift: number = 0;
 
 	setHueSatBrightness(hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
 		this.hueShift = hueShift;

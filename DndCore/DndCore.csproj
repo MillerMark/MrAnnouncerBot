@@ -25,7 +25,10 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="12.1.2" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.45.0.1930" />
+    <PackageReference Include="Google.Apis" Version="1.45.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.45.0" />
+    <PackageReference Include="Google.Apis.Core" Version="1.45.0" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.45.0.1965" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 

@@ -24,7 +24,7 @@
 		this.top = this.bottom - FpsWindow.frameHeight;
 		this.titleUnderlineY = this.top + FpsWindow.titleSize + 2 * FpsWindow.titleMargin;
 		let titleHalfHeightPlusMargin: number = FpsWindow.titleSize / 2 + FpsWindow.titleMargin;
-		this.graphTopY = this.titleUnderlineY + titleHalfHeightPlusMargin;
+		this.graphTopY = this.titleUnderlineY + FpsWindow.titleMargin;
 		this.graphBottomY = this.bottom - titleHalfHeightPlusMargin;
 		this.graphHeight = this.graphBottomY - this.graphTopY;
 	}
@@ -36,12 +36,12 @@
 	}
 
 	graphFramerates(timeBetweenFramesQueue: number[], drawTimeForEachFrameQueue: number[], context: CanvasRenderingContext2D): void {
-		const maxFrameRate: number = 30;
+		const maxFrameRate: number = 60;
 
 		let averageTimeBetweenFrames: number = this.getAverage(timeBetweenFramesQueue, 3000);
 		let actualAverageFps: number = Math.round(1000 / averageTimeBetweenFrames);
 
-		let clampedFps: number = MathEx.clamp(actualAverageFps, 0, 30);
+		let clampedFps: number = MathEx.clamp(actualAverageFps, 0, maxFrameRate);
 		let yPos: number = this.bottom - clampedFps * this.graphHeight / maxFrameRate;
 
 		//let mostRecentFps: number = game.timeBetweenFramesQueue[game.timeBetweenFramesQueue.length - 1];
@@ -66,7 +66,7 @@
 			let timeThisFrame: number = timeBetweenFramesQueue[i];
 			if (timeThisFrame == 0)
 				continue;
-			let y: number = this.bottom - MathEx.clamp(1000 / timeThisFrame, 0, 30) * this.graphHeight / maxFrameRate;
+			let y: number = this.bottom - MathEx.clamp(1000 / timeThisFrame, 0, maxFrameRate) * this.graphHeight / maxFrameRate;
 			let leftTime: number = rightTime - timeThisFrame;
 			let lineLeft: number = rightEdge + leftTime * timeToPixelFactor;
 			if (lineLeft < this.left)

@@ -3,6 +3,7 @@
 	FrameRate: number;
 	ShowFpsWindow: boolean;
 	AllowColorShifting: boolean;
+	AllowCanvasFilterCaching: boolean;
 	BackgroundCanvasPainting: boolean;
 	constructor() {
 

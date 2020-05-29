@@ -112,7 +112,103 @@ class PartBackgroundLoader {
 	}
 }
 
+// New idea: create offscreen canvases and contexts for EACH image frame!!!
+
+class CanvasContextPair {
+	originalImage: HTMLImageElement;
+	index: number;
+	sourceOffsetX: number;
+	sourceOffsetY: number;
+	row: number;
+	column: number;
+
+	constructor(context: CanvasRenderingContext2D, images: HTMLImageElement[], index: number) {
+		this.index = index;
+		this.originalImage = images[index];
+		this.cacheImage(context);
+	}
+
+	cacheImage(context: CanvasRenderingContext2D) {
+		if (!this.originalImage)
+			return;
+		let imageWidth: number = this.originalImage.width;
+		let imageHeight: number = this.originalImage.height;
+		if (imageWidth == 0)
+			return;
+		const maxCanvasWidth: number = 32000;
+		var numImagesPerRow: number = maxCanvasWidth / imageWidth;
+		this.row = Math.floor(this.index / numImagesPerRow);
+		this.column = this.index - this.row * numImagesPerRow;
+		this.sourceOffsetX = this.column * imageWidth;
+		this.sourceOffsetY = this.row * imageHeight;
+		this.originalImage = null;
+	}
+
+	imageHasBeenCached(context: CanvasRenderingContext2D): boolean {
+		if (!this.originalImage)
+			return true;
+		this.cacheImage(context);
+		return this.originalImage == null;
+	}
+}
+
+class CachedImages {
+	cachedImages: CanvasContextPair[] = [];
+	canvas: HTMLCanvasElement;
+	context: CanvasRenderingContext2D;
+	lastRead: Date;
+	imageWidth: number;
+	imageHeight: number;
+
+	constructor(images: HTMLImageElement[], filter) {
+		this.canvas = document.createElement('canvas');
+		if (images[0].width === 0) {
+			throw new DOMException('images[0].width is 0!!!!')
+		}
+		this.imageWidth = images[0].width;
+		this.imageHeight = images[0].height;
+		this.canvas.width = this.imageWidth * images.length;
+		this.canvas.height = this.imageHeight;
+		this.context = this.canvas.getContext('2d');
+		this.context.filter = filter;
+		for (let i = 0; i < images.length; i++) {
+			this.cachedImages.push(new CanvasContextPair(this.context, images, i));
+		}
+	}
+
+	getSourceOffsetX(frameIndex: number): number {
+		return this.cachedImages[frameIndex].sourceOffsetX;
+	}
+
+	getSourceOffsetY(frameIndex: number): number {
+		return this.cachedImages[frameIndex].sourceOffsetY;
+	}
+
+
+	getCanvas(frameIndex: number): CanvasImageSource {
+		// TODO: garbage-collect this based on age of lastRead!!!!
+		this.lastRead = new Date();
+		if (this.cachedImages[frameIndex].imageHasBeenCached(this.context))
+			return this.canvas;
+		return null;
+	}
+}
+
 class Part {
+	// TODO: Move filteredImages to it's own static class.
+	filteredImages: Map<string, CachedImages> = new Map<string, CachedImages>();
+
+	filterImages(filter: string) {
+		if (this.filteredImages[filter])
+			return;
+		this.createFilteredImages(filter);
+	}
+
+	createFilteredImages(filter: string) {
+		this.filteredImages[filter] = new CachedImages(this.images, filter);
+	}
+
+
 	static loadSprites: boolean;
 	loadedAllImages: boolean;
 	frameIndex: number;
@@ -191,8 +287,7 @@ class Part {
 						self.onImageLoaded(self._images[0]);
 					}
 				}
-				catch (ex)
-				{
+				catch (ex) {
 					console.log('self: ' + self);
 					console.error('ex: ' + ex);
 				}
@@ -290,7 +385,7 @@ class Part {
 		this.lastUpdateTime = performance.now();
 	}
 
-	getJiggle(amount: number) {
+	getWiggle(amount: number) {
 		if (amount == 0 || !amount)
 			return 0;
 		return Random.intBetween(-amount, amount);
@@ -304,20 +399,22 @@ class Part {
 		this.drawByIndex(context, x, y, this.frameIndex, horizontalScale, verticalScale);
 	}
 
-	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale: number = 1, verticalScale: number = -1,  rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false): void {
+	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale: number = 1, verticalScale: number = -1, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false, filterCache: CachedImages = null): void {
 		if (frameIndex < 0)
 			return;
-		if (!this.images[frameIndex]) {
-			console.error('frameIndex: ' + frameIndex + ', fileName: ' + this.fileName);
-			return;
-		}
+
+		if (!filterCache)
+			if (!this.images[frameIndex]) {
+				console.error('frameIndex: ' + frameIndex + ', fileName: ' + this.fileName);
+				return;
+			}
 
 		if (verticalScale == -1)
 			verticalScale = horizontalScale;
 
 		let scaling: boolean = flipHorizontally || flipVertically || horizontalScale != 1 || verticalScale != 1;
 		let rotating: boolean = rotation != 0;
-		let transforming: boolean = rotating || scaling; 
+		let transforming: boolean = rotating || scaling;
 
 		if (transforming) {
 			context.save();
@@ -343,9 +440,31 @@ class Part {
 			context.translate(-centerX, -centerY);
 		}
 
-		context.drawImage(this.images[frameIndex],
-			x + this.offsetX + this.getJiggle(this.jiggleX),
-			y + this.offsetY + this.getJiggle(this.jiggleY));
+		let wiggleX: number = this.getWiggle(this.jiggleX);
+		let wiggleY: number = this.getWiggle(this.jiggleY);
+
+		let dx: number = x + this.offsetX + wiggleX;
+		let dy: number = y + this.offsetY + wiggleY;
+
+		let canvasImageSource: CanvasImageSource;
+		if (filterCache) {
+			canvasImageSource = filterCache.getCanvas(frameIndex);
+			if (canvasImageSource === null)
+				console.error(`canvasImageSource for ${this.fileName} at frameIndex ${frameIndex} not found.`);
+		}
+		if (canvasImageSource) {
+			// TODO: If we change to a single-canvas solution, then we should call context.cropImage instead.
+			console.log(`drawing cached image for ${this.fileName} at frameIndex ${frameIndex}.`);
+			let sourceOffsetX: number = filterCache.getSourceOffsetX(frameIndex);
+			let sourceOffsetY: number = filterCache.getSourceOffsetY(frameIndex);
+			let width: number = filterCache.imageWidth;
+			let height: number = filterCache.imageHeight;
+			//` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+			context.drawImage(canvasImageSource, sourceOffsetX, sourceOffsetY, width, height, dx, dy, width, height);
+		}
+		else
+			context.drawImage(this.images[frameIndex], dx, dy);
+
 
 		if (transforming) {
 			context.restore();
@@ -355,8 +474,8 @@ class Part {
 	drawCroppedByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number,
 		sx: number, sy: number, sw: number, sh: number, dw: number, dh: number): void {
 		//` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
-		let dx: number = x + this.offsetX + this.getJiggle(this.jiggleX);
-		let dy: number = y + this.offsetY + this.getJiggle(this.jiggleY);
+		let dx: number = x + this.offsetX + this.getWiggle(this.jiggleX);
+		let dy: number = y + this.offsetY + this.getWiggle(this.jiggleY);
 		context.drawImage(this.images[frameIndex], sx, sy, sw, sh, dx, dy, dw, dh);
 	}
 }
