@@ -482,6 +482,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	set hueShift(newValue: number) {
+		if (this._hueShift === newValue)
+			return;
 		this._hueShift = newValue;
 		this.recalculateFilter(performance.now());
 	}
@@ -494,6 +496,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	set saturationPercent(newValue: number) {
+		if (this._saturationPercent === newValue)
+			return;
 		this._saturationPercent = newValue;
 		this.recalculateFilter(performance.now());
 	}
@@ -505,6 +509,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	set brightness(newValue: number) {
+		if (this._brightness === newValue)
+			return;
 		this._brightness = newValue;
 		this.recalculateFilter(performance.now());
 	}
@@ -512,7 +518,7 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	hueShiftPerSecond: number = 0;
 
 	static globalAllowColorShifting: boolean = true;
-	static globalAllowCanvasFilterCaching: boolean = false;
+	//static globalAllowCanvasFilterCaching: boolean = false;
 
 	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
 		super(startingFrameNumber, center.x, center.y, lifeSpanMs);
@@ -543,10 +549,10 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 
 		if (this.filter) {
 			let oldFilter: string = (context as any).filter;
-			if (ColorShiftingSpriteProxy.globalAllowCanvasFilterCaching) {
-				baseAnimation.filterImages(this.filter);
-				return null;
-			}
+			//if (ColorShiftingSpriteProxy.globalAllowCanvasFilterCaching) {
+			//	baseAnimation.filterImages(this.filter);
+			//	return null;
+			//}
 			(context as any).filter = this.filter;  // Brings the pain!
 			return oldFilter;
 		}
@@ -567,11 +573,11 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 			 * 
 			 * Note that we CAN NOT cache if this.hueShiftPerSecond != 0
 			 * */
-			let cachedImages: CachedImages;
-			if (this.filter)
-				cachedImages = baseAnimation.filteredImages[this.filter];
-			baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically, cachedImages);
-			//super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
+			//let cachedImages: CachedImages;
+			//if (this.filter && ColorShiftingSpriteProxy.globalAllowCanvasFilterCaching)
+			//	cachedImages = baseAnimation.filteredImages[this.filter];
+			//baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically, cachedImages);
+			super.draw(baseAnimation, context, now, spriteWidth, spriteHeight, originX, originY);
 		}
 		finally {
 			if (allowColorShifting && saveFilter)
