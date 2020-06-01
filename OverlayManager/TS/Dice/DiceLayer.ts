@@ -153,11 +153,15 @@ class DiceLayer {
 	damageFire: Sprites;
 	damageCold: Sprites;
 	damageNecroticHead: Sprites;
+	damageNecroticHeadB: Sprites;
+	damageNecroticHeadC: Sprites;
 	damageNecroticFog: Sprites;
 	damageAcid: Sprites;
+	damageAcidB: Sprites;
 	topDieCloud: Sprites;
 	damageRadiant: Sprites;
 	damageForce: Sprites;
+	damageForceB: Sprites;
 	damageBludgeoningMace: Sprites;
 	damageBludgeoningFist: Sprites;
 	damageBludgeoningWeapon: Sprites;
@@ -170,12 +174,14 @@ class DiceLayer {
 	damageSlashingSword: Sprites;
 	damageSlashingLance: Sprites;
 	health: Sprites;
+	healthB: Sprites;
 	damageSlashingAx: Sprites;
 	damageThunder: Sprites;
 	superiorityFire: Sprites;
 	superiorityDragonHead: Sprites;
 	superiorityDragonMouth: Sprites;
 	damagePsychic: Sprites;
+	damagePsychicB: Sprites;
 	damageLightningA: Sprites;
 	damageLightningB: Sprites;
 	damageLightningC: Sprites;
@@ -339,6 +345,17 @@ class DiceLayer {
 		this.damageNecroticHead.originY = 98;
 		this.allBackLayerEffects.add(this.damageNecroticHead);
 
+		this.damageNecroticHeadB = new Sprites("/Dice/Damage/Necrotic/NecroticHeadB", 195, fps30, AnimationStyle.Loop, true);
+		this.damageNecroticHeadB.originX = 143;
+		this.damageNecroticHeadB.originY = 98;
+		this.allBackLayerEffects.add(this.damageNecroticHeadB);
+
+
+		this.damageNecroticHeadC = new Sprites("/Dice/Damage/Necrotic/NecroticHeadC", 195, fps30, AnimationStyle.Loop, true);
+		this.damageNecroticHeadC.originX = 143;
+		this.damageNecroticHeadC.originY = 98;
+		this.allBackLayerEffects.add(this.damageNecroticHeadC);
+
 		this.damageNecroticFog = new Sprites("/Dice/Damage/Necrotic/NecroticFog", 103, fps20, AnimationStyle.Loop, true);
 		this.damageNecroticFog.originX = 86;
 		this.damageNecroticFog.originY = 86;
@@ -350,7 +367,13 @@ class DiceLayer {
 		this.damageAcid.originY = 103;
 		this.allBackLayerEffects.add(this.damageAcid);
 
-		this.topDieCloud = new Sprites("/Dice/Damage/TopCloud/TopCloud", 96, fps30, AnimationStyle.Loop, true);
+		this.damageAcidB = new Sprites("/Dice/Damage/Acid/AcidB", 93, fps30, AnimationStyle.Loop, true);
+		this.damageAcidB.returnFrameIndex = 19;
+		this.damageAcidB.originX = 93;
+		this.damageAcidB.originY = 103;
+		this.allBackLayerEffects.add(this.damageAcidB);
+
+		this.topDieCloud = new Sprites("/Dice/Damage/TopCloud/TopCloud", 45, fps30, AnimationStyle.Loop, true);
 		this.topDieCloud.name = 'TopCloud';
 		this.topDieCloud.originX = 61;
 		this.topDieCloud.originY = 90;
@@ -365,6 +388,11 @@ class DiceLayer {
 		this.damageForce.originX = 176;
 		this.damageForce.originY = 64;
 		this.allBackLayerEffects.add(this.damageForce);
+
+		this.damageForceB = new Sprites("/Dice/Damage/Force/ForceB", 90, fps30, AnimationStyle.Loop, true);
+		this.damageForceB.originX = 176;
+		this.damageForceB.originY = 64;
+		this.allBackLayerEffects.add(this.damageForceB);
 
 		this.damageSpinningCloudTrail = new Sprites("/Dice/Damage/Bludgeoning/CloudTrail", 96, fps30, AnimationStyle.Loop, true);
 		this.damageSpinningCloudTrail.name = 'CloudTrail';
@@ -428,6 +456,11 @@ class DiceLayer {
 		this.health.originY = 175;
 		this.allFrontLayerEffects.add(this.health);
 
+		this.healthB = new Sprites("/Dice/Health/HealthB", 77, fps30, AnimationStyle.Loop, true);
+		this.healthB.originX = 140;
+		this.healthB.originY = 175;
+		this.allFrontLayerEffects.add(this.healthB);
+
 		this.damageSlashingAx = new Sprites("/Dice/Damage/Slashing/SlashingAx", 68, fps30, AnimationStyle.Loop, true);
 		this.damageSlashingAx.originX = 174;
 		this.damageSlashingAx.originY = 31;
@@ -457,6 +490,11 @@ class DiceLayer {
 		this.damagePsychic.originX = 145;
 		this.damagePsychic.originY = 143;
 		this.allBackLayerEffects.add(this.damagePsychic);
+
+		this.damagePsychicB = new Sprites("/Dice/Damage/Psychic/PsychicB", 75, fps30, AnimationStyle.Loop, true);
+		this.damagePsychicB.originX = 145;
+		this.damagePsychicB.originY = 143;
+		this.allBackLayerEffects.add(this.damagePsychicB);
 
 		this.damageLightningA = new Sprites("/Dice/Damage/Lightning/LightningA", 54, fps30, AnimationStyle.Loop, true);
 		this.damageLightningA.originX = 34;
@@ -1370,7 +1408,15 @@ class DiceLayer {
 
 
 	addDamageNecroticHead(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
-		let damageNecroticHead = this.damageNecroticHead.addShifted(x, y, -1, Random.plusMinus(70) - 20, Random.max(50) + 50);
+		let damageNecroticHead: SpriteProxy;
+
+		if (Random.chancePercent(33))
+			damageNecroticHead = this.damageNecroticHead.add(x, y, -1);
+		else if (Random.chancePercent(50))
+			damageNecroticHead = this.damageNecroticHeadB.add(x, y, -1);
+		else 
+			damageNecroticHead = this.damageNecroticHeadC.add(x, y, -1);
+
 		damageNecroticHead.rotation = angle;
 		damageNecroticHead.autoRotationDegeesPerSecond = autoRotation;
 		damageNecroticHead.initialRotation = angle;
@@ -1390,7 +1436,12 @@ class DiceLayer {
 	}
 
 	addDamageAcid(x: number, y: number, angle: number): SpriteProxy {
-		let damageAcid = this.damageAcid.add(x, y, 0);
+		let damageAcid: SpriteProxy;
+		if (Random.chancePercent(50))
+			damageAcid = this.damageAcid.add(x, y, 0);
+		else 
+			damageAcid = this.damageAcidB.add(x, y, 0);
+
 		damageAcid.rotation = angle;
 		damageAcid.fadeInTime = 500;
 		damageAcid.fadeOutTime = 500;
@@ -1408,7 +1459,12 @@ class DiceLayer {
 	}
 
 	addDamageForce(x: number, y: number, angle: number): SpriteProxy {
-		let damageForce = this.damageForce.addShifted(x, y, -1, Random.plusMinus(30));
+		let damageForce: SpriteProxy;
+		if (Random.chancePercent(50))
+			damageForce = this.damageForce.add(x, y, -1);
+		else 
+			damageForce = this.damageForceB.add(x, y, -1);
+		
 		damageForce.rotation = angle;
 		damageForce.autoRotationDegeesPerSecond = 5;
 		damageForce.initialRotation = angle;
@@ -1559,13 +1615,16 @@ class DiceLayer {
 	}
 
 	addHealth(x: number, y: number): SpriteProxy {
-		let health = this.health.addShifted(x, y, -1, Random.max(40) - 10);
+		let health: SpriteProxy;
+		if (Random.chancePercent(50))
+			health = this.health.add(x, y, -1);
+		else 
+			health = this.healthB.add(x, y, -1);
 		health.fadeInTime = 500;
 		health.fadeOutTime = 500;
 		health.fadeOnDestroy = true;
 		return health;
 	}
-
 
 	addDamageThunder(x: number, y: number, angle: number): SpriteProxy {
 		let damageThunder = this.damageThunder.addShifted(x, y, -1, Random.plusMinus(30));
@@ -1618,7 +1677,11 @@ class DiceLayer {
 	}
 
 	addDamagePsychic(x: number, y: number, angle: number): SpriteProxy {
-		let damagePsychic = this.damagePsychic.addShifted(x, y, -1, Random.plusMinus(60));
+		let damagePsychic: SpriteProxy;
+		if (Random.chancePercent(50))
+			damagePsychic = this.damagePsychic.add(x, y, -1);
+		else 
+			damagePsychic = this.damagePsychicB.add(x, y, -1);
 		damagePsychic.rotation = angle;
 		damagePsychic.autoRotationDegeesPerSecond = Random.plusMinusBetween(5, 25);
 		damagePsychic.initialRotation = angle;
@@ -1746,11 +1809,15 @@ class DiceLayer {
 		this.damageFire.sprites = [];
 		this.damageCold.sprites = [];
 		this.damageNecroticHead.sprites = [];
+		this.damageNecroticHeadB.sprites = [];
+		this.damageNecroticHeadC.sprites = [];
 		this.damageNecroticFog.sprites = [];
 		this.damageAcid.sprites = [];
+		this.damageAcidB.sprites = [];
 		this.topDieCloud.sprites = [];
 		this.damageRadiant.sprites = [];
 		this.damageForce.sprites = [];
+		this.damageForceB.sprites = [];
 		this.damageBludgeoningMace.sprites = [];
 		this.damageBludgeoningFist.sprites = [];
 		this.damageBludgeoningWeapon.sprites = [];
@@ -1768,7 +1835,9 @@ class DiceLayer {
 		this.superiorityDragonHead.sprites = [];
 		this.superiorityDragonMouth.sprites = [];
 		this.health.sprites = [];
+		this.healthB.sprites = [];
 		this.damagePsychic.sprites = [];
+		this.damagePsychicB.sprites = [];
 		this.damageLightningA.sprites = [];
 		this.damageLightningB.sprites = [];
 		this.damageLightningC.sprites = [];
