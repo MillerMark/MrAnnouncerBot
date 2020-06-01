@@ -114,99 +114,115 @@ class PartBackgroundLoader {
 
 // New idea: create offscreen canvases and contexts for EACH image frame!!!
 
-class CanvasContextPair {
-	originalImage: HTMLImageElement;
-	index: number;
-	sourceOffsetX: number;
-	sourceOffsetY: number;
-	row: number;
-	column: number;
+//class CanvasContextPair {
+//	originalImage: HTMLImageElement;
+//	index: number;
+//	sourceOffsetX: number;
+//	sourceOffsetY: number;
+//	row: number;
+//	column: number;
+//	static readonly maxCanvasWidth: number = 16000;
+//	static readonly maxCanvasHeight: number = 16000;
+//	numImagesPerRow: number;
+//	numImagesPerColumn: number;
 
-	constructor(context: CanvasRenderingContext2D, images: HTMLImageElement[], index: number) {
-		this.index = index;
-		this.originalImage = images[index];
-		this.cacheImage(context);
-	}
+//	constructor(context: CanvasRenderingContext2D, images: HTMLImageElement[], index: number) {
+//		this.index = index;
+//		this.originalImage = images[index];
+//		this.numImagesPerRow = Math.floor(CanvasContextPair.maxCanvasWidth / this.originalImage.width)
+//		this.numImagesPerColumn = Math.floor(CanvasContextPair.maxCanvasHeight / this.originalImage.height)
+//		this.cacheImage(context);
+//	}
 
-	cacheImage(context: CanvasRenderingContext2D) {
-		if (!this.originalImage)
-			return;
-		let imageWidth: number = this.originalImage.width;
-		let imageHeight: number = this.originalImage.height;
-		if (imageWidth == 0)
-			return;
-		const maxCanvasWidth: number = 32000;
-		var numImagesPerRow: number = maxCanvasWidth / imageWidth;
-		this.row = Math.floor(this.index / numImagesPerRow);
-		this.column = this.index - this.row * numImagesPerRow;
-		this.sourceOffsetX = this.column * imageWidth;
-		this.sourceOffsetY = this.row * imageHeight;
-		this.originalImage = null;
-	}
+//	cacheImage(context: CanvasRenderingContext2D) {
+//		if (!context)
+//			return;
+//		if (!this.originalImage)
+//			return;
+//		let imageWidth: number = this.originalImage.width;
+//		let imageHeight: number = this.originalImage.height;
+//		if (imageWidth == 0)
+//			return;
+//		this.row = Math.floor(this.index / this.numImagesPerRow);
+//		this.column = Math.round(this.index - this.row * this.numImagesPerRow);
+//		this.sourceOffsetX = this.column * imageWidth;
+//		this.sourceOffsetY = this.row * imageHeight;
+//		// Draw the image at the cached location....
+//		context.drawImage(this.originalImage, this.sourceOffsetX, this.sourceOffsetY);
+//		this.originalImage = null;
+//	}
 
-	imageHasBeenCached(context: CanvasRenderingContext2D): boolean {
-		if (!this.originalImage)
-			return true;
-		this.cacheImage(context);
-		return this.originalImage == null;
-	}
-}
+//	imageHasBeenCached(context: CanvasRenderingContext2D): boolean {
+//		if (!this.originalImage)
+//			return true;
+//		this.cacheImage(context);
+//		return this.originalImage == null;
+//	}
+//}
 
-class CachedImages {
-	cachedImages: CanvasContextPair[] = [];
-	canvas: HTMLCanvasElement;
-	context: CanvasRenderingContext2D;
-	lastRead: Date;
-	imageWidth: number;
-	imageHeight: number;
+//class CachedImages {
+//	cachedImages: CanvasContextPair[] = [];
+//	canvas: HTMLCanvasElement;
+//	context: CanvasRenderingContext2D;
+//	lastRead: Date;
+//	imageWidth: number;
+//	imageHeight: number;
 
-	constructor(images: HTMLImageElement[], filter) {
-		this.canvas = document.createElement('canvas');
-		if (images[0].width === 0) {
-			throw new DOMException('images[0].width is 0!!!!')
-		}
-		this.imageWidth = images[0].width;
-		this.imageHeight = images[0].height;
-		this.canvas.width = this.imageWidth * images.length;
-		this.canvas.height = this.imageHeight;
-		this.context = this.canvas.getContext('2d');
-		this.context.filter = filter;
-		for (let i = 0; i < images.length; i++) {
-			this.cachedImages.push(new CanvasContextPair(this.context, images, i));
-		}
-	}
+//	constructor(images: HTMLImageElement[], filter) {
+//		this.canvas = document.createElement('canvas');
+//		if (images[0].width === 0) {
+//			throw new DOMException('images[0].width is 0!!!!')
+//		}
+//		this.imageWidth = images[0].width;
+//		this.imageHeight = images[0].height;
+//		let canvasContextPair: CanvasContextPair = new CanvasContextPair(null, images, 0)
+//		this.cachedImages.push(canvasContextPair);
 
-	getSourceOffsetX(frameIndex: number): number {
-		return this.cachedImages[frameIndex].sourceOffsetX;
-	}
+//		this.canvas.width = this.imageWidth * canvasContextPair.numImagesPerRow;
+//		this.canvas.height = this.imageHeight * canvasContextPair.numImagesPerColumn;
+//		this.context = this.canvas.getContext('2d');
+//		this.context.filter = filter;
 
-	getSourceOffsetY(frameIndex: number): number {
-		return this.cachedImages[frameIndex].sourceOffsetY;
-	}
+//		canvasContextPair.cacheImage(this.context);
+
+//		for (let i = 1; i < images.length; i++) {
+//			this.cachedImages.push(new CanvasContextPair(this.context, images, i));
+//		}
+//	}
+
+//	getSourceOffsetX(frameIndex: number): number {
+//		return this.cachedImages[frameIndex].sourceOffsetX;
+//	}
+
+//	getSourceOffsetY(frameIndex: number): number {
+//		return this.cachedImages[frameIndex].sourceOffsetY;
+//	}
 
 
-	getCanvas(frameIndex: number): CanvasImageSource {
-		// TODO: garbage-collect this based on age of lastRead!!!!
-		this.lastRead = new Date();
-		if (this.cachedImages[frameIndex].imageHasBeenCached(this.context))
-			return this.canvas;
-		return null;
-	}
-}
+//	getCanvas(frameIndex: number): CanvasImageSource {
+//		// TODO: garbage-collect this based on age of lastRead!!!!
+//		this.lastRead = new Date();
+//		if (this.cachedImages[frameIndex].imageHasBeenCached(this.context))
+//			return this.canvas;
+//		return null;
+//	}
+//}
 
 class Part {
 	// TODO: Move filteredImages to it's own static class.
-	filteredImages: Map<string, CachedImages> = new Map<string, CachedImages>();
+	//filteredImages: Map<string, CachedImages> = new Map<string, CachedImages>();
 
-	filterImages(filter: string) {
-		if (this.filteredImages[filter])
-			return;
-		this.createFilteredImages(filter);
-	}
+	//filterImages(filter: string) {
+	//	if (this.filteredImages[filter])
+	//		return;
+	//	this.createFilteredImages(filter);
+	//}
 
-	createFilteredImages(filter: string) {
-		this.filteredImages[filter] = new CachedImages(this.images, filter);
-	}
+	//createFilteredImages(filter: string) {
+	//	console.log(`Filtering images for ${filter}...`);
+	//	this.filteredImages[filter] = new CachedImages(this.images, filter);
+	//	console.log(`Done filtering images for ${filter}...`);
+	//}
 
 
 	static loadSprites: boolean;
@@ -443,8 +459,8 @@ class Part {
 		let wiggleX: number = this.getWiggle(this.jiggleX);
 		let wiggleY: number = this.getWiggle(this.jiggleY);
 
-		let dx: number = x + this.offsetX + wiggleX;
-		let dy: number = y + this.offsetY + wiggleY;
+		let dx: number = Math.round(x + this.offsetX + wiggleX);
+		let dy: number = Math.round(y + this.offsetY + wiggleY);
 
 		let canvasImageSource: CanvasImageSource;
 		if (filterCache) {
