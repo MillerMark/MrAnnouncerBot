@@ -415,11 +415,11 @@ class Part {
 		this.drawByIndex(context, x, y, this.frameIndex, horizontalScale, verticalScale);
 	}
 
-	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale: number = 1, verticalScale: number = -1, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false, filterCache: CachedImages = null): void {
+	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale: number = 1, verticalScale: number = -1, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false /* , filterCache: CachedImages = null */): void {
 		if (frameIndex < 0)
 			return;
 
-		if (!filterCache)
+		//if (!filterCache)
 			if (!this.images[frameIndex]) {
 				console.error('frameIndex: ' + frameIndex + ', fileName: ' + this.fileName);
 				return;
@@ -462,23 +462,23 @@ class Part {
 		let dx: number = Math.round(x + this.offsetX + wiggleX);
 		let dy: number = Math.round(y + this.offsetY + wiggleY);
 
-		let canvasImageSource: CanvasImageSource;
-		if (filterCache) {
-			canvasImageSource = filterCache.getCanvas(frameIndex);
-			if (canvasImageSource === null)
-				console.error(`canvasImageSource for ${this.fileName} at frameIndex ${frameIndex} not found.`);
-		}
-		if (canvasImageSource) {
-			// TODO: If we change to a single-canvas solution, then we should call context.cropImage instead.
-			console.log(`drawing cached image for ${this.fileName} at frameIndex ${frameIndex}.`);
-			let sourceOffsetX: number = filterCache.getSourceOffsetX(frameIndex);
-			let sourceOffsetY: number = filterCache.getSourceOffsetY(frameIndex);
-			let width: number = filterCache.imageWidth;
-			let height: number = filterCache.imageHeight;
-			//` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
-			context.drawImage(canvasImageSource, sourceOffsetX, sourceOffsetY, width, height, dx, dy, width, height);
-		}
-		else
+		//let canvasImageSource: CanvasImageSource;
+		//if (filterCache) {
+		//	canvasImageSource = filterCache.getCanvas(frameIndex);
+		//	if (canvasImageSource === null)
+		//		console.error(`canvasImageSource for ${this.fileName} at frameIndex ${frameIndex} not found.`);
+		//}
+		//if (canvasImageSource) {
+		//	// TODO: If we change to a single-canvas solution, then we should call context.cropImage instead.
+		//	console.log(`drawing cached image for ${this.fileName} at frameIndex ${frameIndex}.`);
+		//	let sourceOffsetX: number = filterCache.getSourceOffsetX(frameIndex);
+		//	let sourceOffsetY: number = filterCache.getSourceOffsetY(frameIndex);
+		//	let width: number = filterCache.imageWidth;
+		//	let height: number = filterCache.imageHeight;
+		//	//` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+		//	context.drawImage(canvasImageSource, sourceOffsetX, sourceOffsetY, width, height, dx, dy, width, height);
+		//}
+		//else
 			context.drawImage(this.images[frameIndex], dx, dy);
 
 
