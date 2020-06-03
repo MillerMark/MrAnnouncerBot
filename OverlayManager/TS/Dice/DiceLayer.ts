@@ -111,6 +111,10 @@ const failFontColor: string = '#000000';
 const failOutlineColor: string = '#ffffff';
 
 class DiceLayer {
+	static numHueShiftsOnDieCleanup: number;
+	static numHueShiftsOnRoll: number;
+	static maxFiltersOnRoll: number = 6;
+	static maxFiltersOnDieCleanup: number = 6;
 	players: Array<Character> = [];
 	private readonly totalDamageTime: number = 7000;
 	private readonly totalRollScoreTime: number = 7000;
@@ -143,22 +147,55 @@ class DiceLayer {
 	diceFrontContext: CanvasRenderingContext2D;
 	diceBackContext: CanvasRenderingContext2D;
 	diceFireball: Sprites;
-	diceShockwave: Sprites;
-	diceBurst: Sprites;
-	diceSmoke: Sprites;
+	diceShockwaveRed: Sprites;
+	diceShockwaveYellow: Sprites;
+	diceShockwaveGreen: Sprites;
+	diceShockwaveTeal: Sprites;
+	diceShockwaveBlue: Sprites;
+	diceShockwavePurple: Sprites;
+	diceShockwaveMaroon: Sprites;
+	diceShockwaveBlack: Sprites;
+	diceBurstRed: Sprites;
+	diceBurstYellow: Sprites;
+	diceBurstGreen: Sprites;
+	diceBurstTeal: Sprites;
+	diceBurstBlue: Sprites;
+	diceBurstPurple: Sprites;
+	diceBurstMaroon: Sprites;
+	diceBurstBlack: Sprites;
+	diceSmokeRed: Sprites;
+	diceSmokeYellow: Sprites;
+	diceSmokeGreen: Sprites;
+	diceSmokeTeal: Sprites;
+	diceSmokeBlue: Sprites;
+	diceSmokePurple: Sprites;
+	diceSmokeMaroon: Sprites;
 	cloverRing: Sprites;
 	badLuckRing: Sprites;
 	sparkTrail: Sprites;
-	haloSpins: Sprites;
+	haloSpinRed: Sprites;
+	haloSpinYellow: Sprites;
+	haloSpinGreen: Sprites;
+	haloSpinTeal: Sprites;
+	haloSpinBlue: Sprites;
+	haloSpinPurple: Sprites;
+	haloSpinLavender: Sprites;
+	haloSpinMaroon: Sprites;
+	haloSpinFuschia: Sprites;
 	damageFire: Sprites;
+	damageFireB: Sprites;
 	damageCold: Sprites;
 	damageNecroticHead: Sprites;
 	damageNecroticHeadB: Sprites;
-	damageNecroticHeadC: Sprites;
 	damageNecroticFog: Sprites;
 	damageAcid: Sprites;
 	damageAcidB: Sprites;
-	topDieCloud: Sprites;
+	topDieCloudRed: Sprites;
+	topDieCloudWhite: Sprites;
+	topDieCloudBlack: Sprites;
+	topDieCloudBlue: Sprites;
+	topDieCloudPurple: Sprites;
+	topDieCloudGreen: Sprites;
 	damageRadiant: Sprites;
 	damageForce: Sprites;
 	damageForceB: Sprites;
@@ -179,7 +216,9 @@ class DiceLayer {
 	damageThunder: Sprites;
 	superiorityFire: Sprites;
 	superiorityDragonHead: Sprites;
-	superiorityDragonMouth: Sprites;
+	superiorityDragonHeadB: Sprites;
+	superiorityDragonHeadC: Sprites;
+	superiorityDragonHeadD: Sprites;
 	damagePsychic: Sprites;
 	damagePsychicB: Sprites;
 	damageLightningA: Sprites;
@@ -202,10 +241,15 @@ class DiceLayer {
 	handGrabsDiceTop: Sprites;
 	handGrabsDiceBottom: Sprites;
 	dicePortalTop: Sprites;
-	magicRing: Sprites;
+	magicRingRed: Sprites;
+	magicRingGold: Sprites;
+	magicRingGreen: Sprites;
+	magicRingBlue: Sprites;
+	magicRingPurple: Sprites;
+	magicRingMaroon: Sprites;
 	spirals: Sprites;
 	fangs: Sprites;
-	halos: Sprites;
+	//halos: Sprites;
 	ravens: Sprites[];
 	fireTrails: Sprites[];
 	diceBlowColoredSmoke: Sprites;
@@ -247,24 +291,9 @@ class DiceLayer {
 		this.diceFireball.originY = 155;
 		this.allFrontLayerEffects.add(this.diceFireball);
 
-
-		this.diceShockwave = new Sprites("/Dice/BlowToDust/Shockwave", 44, fps30, AnimationStyle.Sequential, true);
-		this.diceShockwave.originX = 188;
-		this.diceShockwave.originY = 188;
-		this.allBackLayerEffects.add(this.diceShockwave);
-
-
-		this.diceBurst = new Sprites("/Dice/BlowToDust/DieBurst", 66, fps30, AnimationStyle.SequentialStop, true);
-		this.diceBurst.originX = 188;
-		this.diceBurst.originY = 188;
-		this.allFrontLayerEffects.add(this.diceBurst);
-
-
-		this.diceSmoke = new Sprites("/Dice/BlowToDust/SmokeTop", 62, fps30, AnimationStyle.Sequential, true);
-		this.diceSmoke.originX = 188;
-		this.diceSmoke.originY = 188;
-		this.allFrontLayerEffects.add(this.diceSmoke);
-
+		this.loadDieBurstShockwaves();
+		this.loadDieBursts();
+		this.loadDieBurstSmokes();
 
 		this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
 		this.sparkTrail.name = 'SparkTrail';
@@ -311,29 +340,50 @@ class DiceLayer {
 		this.diceSparks.originY = 158;
 		this.allBackLayerEffects.add(this.diceSparks);
 
-		this.magicRing = new Sprites("/Dice/MagicRing/MagicRing", 180, fps40, AnimationStyle.Loop, true);
-		this.magicRing.name = 'MagicRing';
-		this.magicRing.returnFrameIndex = 60;
-		this.magicRing.originX = 140;
-		this.magicRing.originY = 112;
-		this.allFrontLayerEffects.add(this.magicRing);
+		//this.magicRing = new Sprites("/Dice/MagicRing/MagicRing", 180, fps40, AnimationStyle.Loop, true);
+		//this.magicRing.name = 'MagicRing';
+		//this.magicRing.returnFrameIndex = 60;
+		//this.magicRing.originX = 140;
+		//this.magicRing.originY = 112;
+		//this.allFrontLayerEffects.add(this.magicRing);
 
-		this.halos = new Sprites("/Dice/Halo/Halo", 90, fps30, AnimationStyle.Loop, true);
-		this.halos.name = 'Halo';
-		this.halos.originX = 190;
-		this.halos.originY = 190;
-		this.allFrontLayerEffects.add(this.halos);
+		this.magicRingRed = this.createMagicRing('Red');
+		this.magicRingGold = this.createMagicRing('Gold');
+		this.magicRingGreen = this.createMagicRing('Green');
+		this.magicRingBlue = this.createMagicRing('Blue');
+		this.magicRingPurple = this.createMagicRing('Purple');
+		this.magicRingMaroon = this.createMagicRing('Maroon');
 
-		this.haloSpins = new Sprites("/Dice/PaladinSpin/PaladinSpin", 85, fps30, AnimationStyle.Loop, true);
-		this.haloSpins.name = 'HaloSpin';
-		this.haloSpins.originX = 200;
-		this.haloSpins.originY = 200;
-		this.allFrontLayerEffects.add(this.haloSpins);
+		//this.halos = new Sprites("/Dice/Halo/Halo", 90, fps30, AnimationStyle.Loop, true);
+		//this.halos.name = 'Halo';
+		//this.halos.originX = 190;
+		//this.halos.originY = 190;
+		//this.allFrontLayerEffects.add(this.halos);
+
+		//this.haloSpins = new Sprites("/Dice/PaladinSpin/PaladinSpin", 85, fps30, AnimationStyle.Loop, true);
+		//this.haloSpins.name = 'HaloSpin';
+		//this.haloSpins.originX = 200;
+		//this.haloSpins.originY = 200;
+		//this.allFrontLayerEffects.add(this.haloSpins);
+		this.haloSpinRed = this.addHalo('Red');
+		this.haloSpinYellow = this.addHalo('Yellow');
+		this.haloSpinGreen = this.addHalo('Green');
+		this.haloSpinTeal = this.addHalo('Teal');
+		this.haloSpinBlue = this.addHalo('Blue');
+		this.haloSpinPurple = this.addHalo('Purple');
+		this.haloSpinLavender = this.addHalo('Lavendar');
+		this.haloSpinMaroon = this.addHalo('Maroon');
+		this.haloSpinFuschia = this.addHalo('Fuschia');
 
 		this.damageFire = new Sprites("/Dice/Damage/Fire/Fire", 89, fps30, AnimationStyle.Loop, true);
 		this.damageFire.originX = 133;
 		this.damageFire.originY = 133;
 		this.allBackLayerEffects.add(this.damageFire);
+
+		this.damageFireB = new Sprites("/Dice/Damage/Fire/FireB", 89, fps30, AnimationStyle.Loop, true);
+		this.damageFireB.originX = 133;
+		this.damageFireB.originY = 133;
+		this.allBackLayerEffects.add(this.damageFireB);
 
 		this.damageCold = new Sprites("/Dice/Damage/Cold/Cold", 58, fps30, AnimationStyle.Loop, true);
 		this.damageCold.originX = 123;
@@ -349,12 +399,6 @@ class DiceLayer {
 		this.damageNecroticHeadB.originX = 143;
 		this.damageNecroticHeadB.originY = 98;
 		this.allBackLayerEffects.add(this.damageNecroticHeadB);
-
-
-		this.damageNecroticHeadC = new Sprites("/Dice/Damage/Necrotic/NecroticHeadC", 195, fps30, AnimationStyle.Loop, true);
-		this.damageNecroticHeadC.originX = 143;
-		this.damageNecroticHeadC.originY = 98;
-		this.allBackLayerEffects.add(this.damageNecroticHeadC);
 
 		this.damageNecroticFog = new Sprites("/Dice/Damage/Necrotic/NecroticFog", 103, fps20, AnimationStyle.Loop, true);
 		this.damageNecroticFog.originX = 86;
@@ -373,11 +417,42 @@ class DiceLayer {
 		this.damageAcidB.originY = 103;
 		this.allBackLayerEffects.add(this.damageAcidB);
 
-		this.topDieCloud = new Sprites("/Dice/Damage/TopCloud/TopCloud", 45, fps30, AnimationStyle.Loop, true);
-		this.topDieCloud.name = 'TopCloud';
-		this.topDieCloud.originX = 61;
-		this.topDieCloud.originY = 90;
-		this.allFrontLayerEffects.add(this.topDieCloud);
+		this.topDieCloudRed = new Sprites("/Dice/Damage/TopCloud/TopCloud_Red", 45, fps30, AnimationStyle.Loop, true);
+		this.topDieCloudRed.name = 'TopCloud';
+		this.topDieCloudRed.originX = 61;
+		this.topDieCloudRed.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloudRed);
+
+		this.topDieCloudWhite = new Sprites("/Dice/Damage/TopCloud/TopCloud_White", 45, fps30, AnimationStyle.Loop, true);
+		this.topDieCloudWhite.name = 'TopCloud';
+		this.topDieCloudWhite.originX = 61;
+		this.topDieCloudWhite.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloudWhite);
+
+
+		this.topDieCloudBlack = new Sprites("/Dice/Damage/TopCloud/TopCloud_Black", 45, fps30, AnimationStyle.Loop, true);
+		this.topDieCloudBlack.name = 'TopCloud';
+		this.topDieCloudBlack.originX = 61;
+		this.topDieCloudBlack.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloudBlack);
+
+		this.topDieCloudBlue = new Sprites("/Dice/Damage/TopCloud/TopCloud_Blue", 45, fps30, AnimationStyle.Loop, true);
+		this.topDieCloudBlue.name = 'TopCloud';
+		this.topDieCloudBlue.originX = 61;
+		this.topDieCloudBlue.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloudBlue);
+
+		this.topDieCloudPurple = new Sprites("/Dice/Damage/TopCloud/TopCloud_Purple", 45, fps30, AnimationStyle.Loop, true);
+		this.topDieCloudPurple.name = 'TopCloud';
+		this.topDieCloudPurple.originX = 61;
+		this.topDieCloudPurple.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloudPurple);
+
+		this.topDieCloudGreen = new Sprites("/Dice/Damage/TopCloud/TopCloud_Green", 45, fps30, AnimationStyle.Loop, true);
+		this.topDieCloudGreen.name = 'TopCloud';
+		this.topDieCloudGreen.originX = 61;
+		this.topDieCloudGreen.originY = 90;
+		this.allFrontLayerEffects.add(this.topDieCloudGreen);
 
 		this.damageRadiant = new Sprites("/Dice/Damage/Radiant/Radiant", 38, fps30, AnimationStyle.Loop, true);
 		this.damageRadiant.originX = 100;
@@ -476,10 +551,25 @@ class DiceLayer {
 		this.superiorityDragonHead.originY = 205;
 		this.allBackLayerEffects.add(this.superiorityDragonHead);
 
-		this.superiorityDragonMouth = new Sprites("/Dice/Damage/Superiority/SuperiorityMouth", 81, fps20, AnimationStyle.Loop, true);
-		this.superiorityDragonMouth.originX = 74;
-		this.superiorityDragonMouth.originY = 205;
-		this.allBackLayerEffects.add(this.superiorityDragonMouth);
+		this.superiorityDragonHeadB = new Sprites("/Dice/Damage/Superiority/SuperiorityDragonB", 81, fps20, AnimationStyle.Loop, true);
+		this.superiorityDragonHeadB.originX = 74;
+		this.superiorityDragonHeadB.originY = 205;
+		this.allBackLayerEffects.add(this.superiorityDragonHeadB);
+
+		this.superiorityDragonHeadC = new Sprites("/Dice/Damage/Superiority/SuperiorityDragonC", 81, fps20, AnimationStyle.Loop, true);
+		this.superiorityDragonHeadC.originX = 74;
+		this.superiorityDragonHeadC.originY = 205;
+		this.allBackLayerEffects.add(this.superiorityDragonHeadC);
+
+		this.superiorityDragonHeadD = new Sprites("/Dice/Damage/Superiority/SuperiorityDragonD", 81, fps20, AnimationStyle.Loop, true);
+		this.superiorityDragonHeadD.originX = 74;
+		this.superiorityDragonHeadD.originY = 205;
+		this.allBackLayerEffects.add(this.superiorityDragonHeadD);
+
+		//this.superiorityDragonMouth = new Sprites("/Dice/Damage/Superiority/SuperiorityMouth", 81, fps20, AnimationStyle.Loop, true);
+		//this.superiorityDragonMouth.originX = 74;
+		//this.superiorityDragonMouth.originY = 205;
+		//this.allBackLayerEffects.add(this.superiorityDragonMouth);
 
 		this.superiorityFire = new Sprites("/Dice/Damage/Superiority/SuperiorityFire", 103, fps30, AnimationStyle.Loop, true);
 		this.superiorityFire.originX = 82;
@@ -613,12 +703,86 @@ class DiceLayer {
 		this.allFrontLayerEffects.add(this.freezePop);
 	}
 
+	private loadDieBurstSmokes() {
+		this.diceSmokeRed = this.loadDieBurstSmoke('Red');
+		this.diceSmokeYellow = this.loadDieBurstSmoke('Yellow');
+		this.diceSmokeGreen = this.loadDieBurstSmoke('Green');
+		this.diceSmokeTeal = this.loadDieBurstSmoke('Teal');
+		this.diceSmokeBlue = this.loadDieBurstSmoke('Blue');
+		this.diceSmokePurple = this.loadDieBurstSmoke('Purple');
+		this.diceSmokeMaroon = this.loadDieBurstSmoke('Maroon');
+	}
+
+	private loadDieBurstSmoke(color: string): Sprites {
+		let result: Sprites = new Sprites(`/Dice/DieBurst/DieBurstSmoke_${color}`, 28, fps30, AnimationStyle.Sequential, true);
+		result.originX = 136;
+		result.originY = 170;
+		this.allFrontLayerEffects.add(result);
+		return result;
+	}
+
+	private loadDieBursts() {
+		this.diceBurstRed = this.loadDieBurst('Red');
+		this.diceBurstYellow = this.loadDieBurst('Yellow');
+		this.diceBurstGreen = this.loadDieBurst('Green');
+		this.diceBurstTeal = this.loadDieBurst('Teal');
+		this.diceBurstBlue = this.loadDieBurst('Blue');
+		this.diceBurstPurple = this.loadDieBurst('Purple');
+		this.diceBurstMaroon = this.loadDieBurst('Maroon');
+		this.diceBurstBlack = this.loadDieBurst('Black');
+	}
+
+	private loadDieBurstShockwaves() {
+		this.diceShockwaveRed = this.loadDieBurstShockwave('Red');
+		this.diceShockwaveYellow = this.loadDieBurstShockwave('Yellow');
+		this.diceShockwaveGreen = this.loadDieBurstShockwave('Green');
+		this.diceShockwaveTeal = this.loadDieBurstShockwave('Teal');
+		this.diceShockwaveBlue = this.loadDieBurstShockwave('Blue');
+		this.diceShockwavePurple = this.loadDieBurstShockwave('Purple');
+		this.diceShockwaveMaroon = this.loadDieBurstShockwave('Maroon');
+		this.diceShockwaveBlack = this.loadDieBurstShockwave('Black');
+	}
+
+	private loadDieBurstShockwave(color: string): Sprites {
+		let sprites: Sprites = new Sprites(`/Dice/DieBurst/DieBurstShockwave_${color}`, 44, fps30, AnimationStyle.Sequential, true);
+		sprites.originX = 188;
+		sprites.originY = 188;
+		this.allBackLayerEffects.add(sprites);
+		return sprites;
+	}
+
+	private loadDieBurst(color: string): Sprites {
+		let sprites: Sprites;
+		sprites = new Sprites(`/Dice/DieBurst/DieBurst_${color}`, 66, fps30, AnimationStyle.SequentialStop, true);
+		sprites.originX = 145;
+		sprites.originY = 145;
+		this.allFrontLayerEffects.add(sprites);
+		return sprites;
+	}
+
+	private addHalo(color: string) {
+		let sprites: Sprites = new Sprites(`/Dice/PaladinSpin/PaladinSpin_${color}`, 85, fps30, AnimationStyle.Loop, true);
+		sprites.name = 'HaloSpin';
+		sprites.originX = 200;
+		sprites.originY = 200;
+		this.allFrontLayerEffects.add(sprites);
+		return sprites;
+	}
+
+	private createMagicRing(color: string): Sprites {
+		let rings: Sprites = new Sprites(`/Dice/MagicRing/MagicRing_${color}`, 120, fps30, AnimationStyle.Loop, true);
+		rings.originX = 140;
+		rings.originY = 112;
+		this.allFrontLayerEffects.add(rings);
+		return rings;
+	}
+
 	attachDamageFire(die: any, hueShift: number = 0): void {
 		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360), hueShift));
 		die.origins.push(this.damageFire.getOrigin());
 
-		this.addTopDieCloud(die, 5, Random.between(20, 45), 0.4, 0, 0, 0);
+		this.addTopDieCloud(die, 5, Random.between(20, 45), 0.6, 0, 0, 0);
 
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
@@ -672,7 +836,22 @@ class DiceLayer {
 		let angleBetweenClouds: number = 360 / count;
 		let rotationOffset: number = Random.between(0, angleBetweenClouds);
 		for (var i = 0; i < count; i++) {
-			let topDieCloud = this.topDieCloud.addShifted(0, 0, -1, hueShift, saturation, brightness);
+			hueShift = hueShift % 360;
+			let topDieCloud: SpriteProxy;
+			if (saturation < 60)
+				if (brightness < 100)
+					topDieCloud = this.topDieCloudBlack.add(0, 0, -1);
+				else
+					topDieCloud = this.topDieCloudWhite.add(0, 0, -1);
+			else if (hueShift < 70)
+				topDieCloud = this.topDieCloudRed.add(0, 0, -1);
+			else if (hueShift < 160)
+				topDieCloud = this.topDieCloudGreen.add(0, 0, -1);
+			else if (hueShift < 250)
+				topDieCloud = this.topDieCloudBlue.add(0, 0, -1);
+			else
+				topDieCloud = this.topDieCloudPurple.add(0, 0, -1);
+
 			topDieCloud.rotation = rotationOffset;
 			topDieCloud.initialRotation = rotationOffset;
 			rotationOffset += angleBetweenClouds;
@@ -683,7 +862,7 @@ class DiceLayer {
 			topDieCloud.fadeOnDestroy = true;
 
 			die.attachedSprites.push(topDieCloud);
-			die.origins.push(this.topDieCloud.getOrigin());
+			die.origins.push(this.topDieCloudRed.getOrigin());
 		}
 	}
 
@@ -703,7 +882,8 @@ class DiceLayer {
 		let rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageRadiant(960, 540, rotationOffset));
 		die.origins.push(this.damageRadiant.getOrigin());
-		this.addTopDieCloud(die, 4, Random.between(20, 45), 0.5, 50, 100, 150);
+		let cloudCount: number = Random.between(3, 5);
+		this.addTopDieCloud(die, cloudCount, Random.between(20, 45), 0.4, 50, 0, 200);
 		diceSounds.safePlayMp3('Dice/Damage/Radiant');
 	}
 
@@ -804,12 +984,9 @@ class DiceLayer {
 		die.origins.push(this.superiorityFire.getOrigin());
 
 		for (var i = 0; i < numHeads; i++) {
-			var startingFrameIndex: number = Random.intMax(this.superiorityDragonHead.baseAnimation.frameCount);
-			die.attachedSprites.push(this.addSuperiorityDragonHead(960, 540, startingFrameIndex, rotationOffset + 0, autoRotation));
+			die.attachedSprites.push(this.addSuperiorityDragonHead(960, 540, rotationOffset + 0, autoRotation));
 			die.origins.push(this.superiorityDragonHead.getOrigin());
 
-			die.attachedSprites.push(this.addSuperiorityDragonMouth(960, 540, startingFrameIndex, rotationOffset + 0, autoRotation));
-			die.origins.push(this.superiorityDragonMouth.getOrigin());
 			rotationOffset += 360 / numHeads;
 		}
 
@@ -830,7 +1007,7 @@ class DiceLayer {
 		die.attachedSprites.push(this.addDamageForce(960, 540, rotationOffset + 240));
 		die.origins.push(this.damageForce.getOrigin());
 
-		this.addTopDieCloud(die, 2, Random.between(20, 45), 0.4, 250 + Random.plusMinus(20), 100, 50);
+		this.addTopDieCloud(die, 2, Random.between(20, 45), 0.7, 250 + Random.plusMinus(20), 100, 50);
 
 		diceSounds.safePlayMp3('Dice/Damage/Force');
 	}
@@ -1326,21 +1503,118 @@ class DiceLayer {
 		this.diceFireball.add(x, y, 0).rotation = 90;
 	}
 
-	addDiceBurst(x: number, y: number, hueShift: number, saturation: number = 100, lightness: number = 100) {
-		let shockwave: SpriteProxy = this.diceShockwave.addShifted(x, y, 0, hueShift + Random.plusMinus(50), saturation, lightness);
-		shockwave.rotation = Math.random() * 360;
-		let dieBurst: SpriteProxy = this.diceBurst.addShifted(x, y, 0, hueShift, saturation, lightness);
-		dieBurst.rotation = Math.random() * 360;
-		dieBurst.fadeOutTime = 800;
-		dieBurst.expirationDate = performance.now() + 2400;
-		let smokeTop: SpriteProxy = this.diceSmoke.addShifted(x, y, 0, hueShift + Random.plusMinus(50), saturation, lightness);
-		smokeTop.rotation = Math.random() * 360;
+	addDiceBurst(x: number, y: number, hueShift: number, saturation: number = 100, brightness: number = 100) {
+		this.addDieBurst(x, y, hueShift + Random.plusMinus(30), saturation, brightness);
+		let shockwave: SpriteProxy = this.addShockwave(x, y, hueShift + Random.plusMinus(30), saturation, brightness);
+		let smokeTop: SpriteProxy = this.addDieSmoke(x, y, hueShift + Random.plusMinus(50), saturation, brightness);
+
 		smokeTop.delayStart = 3 * fps30;
 		shockwave.delayStart = 6 * fps30;
 	}
 
-	addMagicRing(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
-		let magicRing = this.magicRing.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+	private addDieSmoke(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
+		let smokeTop: SpriteProxy;
+		if (DiceLayer.numHueShiftsOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numHueShiftsOnDieCleanup++;
+			smokeTop = this.diceSmokeRed.addShifted(x, y, 0, hueShift, saturation, brightness);
+		}
+		else if (hueShift < 30)
+			smokeTop = this.diceSmokeRed.add(x, y, 0);
+		else if (hueShift < 55)
+			smokeTop = this.diceSmokeYellow.add(x, y, 0);
+		else if (hueShift < 165)
+			smokeTop = this.diceSmokeGreen.add(x, y, 0);
+		else if (hueShift < 185)
+			smokeTop = this.diceSmokeTeal.add(x, y, 0);
+		else if (hueShift < 220)
+			smokeTop = this.diceSmokeBlue.add(x, y, 0);
+		else if (hueShift < 295)
+			smokeTop = this.diceSmokePurple.add(x, y, 0);
+		else if (hueShift < 320)
+			smokeTop = this.diceSmokeMaroon.add(x, y, 0);
+		else 
+			smokeTop = this.diceSmokeRed.add(x, y, 0);
+
+		smokeTop.rotation = Math.random() * 360;
+		return smokeTop;
+	}
+
+	private addShockwave(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
+		hueShift = hueShift % 360;
+		let shockwave: SpriteProxy;
+		if (DiceLayer.numHueShiftsOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numHueShiftsOnDieCleanup++;
+			shockwave = this.diceShockwaveRed.addShifted(x, y, 0, hueShift, saturation, brightness);
+		}
+		else if (saturation < 50)
+			shockwave = this.diceShockwaveBlack.add(x, y, 0);
+		else if (hueShift < 30)
+			shockwave = this.diceShockwaveRed.add(x, y, 0);
+		else if (hueShift < 55)
+			shockwave = this.diceShockwaveYellow.add(x, y, 0);
+		else if (hueShift < 135)
+			shockwave = this.diceShockwaveGreen.add(x, y, 0);
+		else if (hueShift < 210)
+			shockwave = this.diceShockwaveTeal.add(x, y, 0);
+		else if (hueShift < 255)
+			shockwave = this.diceShockwaveBlue.add(x, y, 0);
+		else if (hueShift < 285)
+			shockwave = this.diceShockwavePurple.add(x, y, 0);
+		else if (hueShift < 330)
+			shockwave = this.diceShockwaveMaroon.add(x, y, 0);
+		else 
+			shockwave = this.diceShockwaveRed.add(x, y, 0);
+		shockwave.rotation = Math.random() * 360;
+		return shockwave;
+	}
+
+	private addDieBurst(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
+		hueShift = hueShift % 360;
+		let dieBurst: SpriteProxy;
+
+		if (DiceLayer.numHueShiftsOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numHueShiftsOnDieCleanup++;
+			dieBurst = this.diceBurstRed.addShifted(x, y, 0, hueShift, saturation, brightness);
+		}
+		else if (saturation < 50)
+			dieBurst = this.diceBurstBlack.add(x, y, 0);
+		else if (hueShift < 30)
+			dieBurst = this.diceBurstRed.add(x, y, 0);
+		else if (hueShift < 60)
+			dieBurst = this.diceBurstYellow.add(x, y, 0);
+		else if (hueShift < 150)
+			dieBurst = this.diceBurstGreen.add(x, y, 0);
+		else if (hueShift < 195)
+			dieBurst = this.diceBurstTeal.add(x, y, 0);
+		else if (hueShift < 240)
+			dieBurst = this.diceBurstBlue.add(x, y, 0);
+		else if (hueShift < 285)
+			dieBurst = this.diceBurstPurple.add(x, y, 0);
+		else
+			dieBurst = this.diceBurstMaroon.add(x, y, 0);
+
+		dieBurst.rotation = Math.random() * 360;
+		dieBurst.fadeOutTime = 800;
+		dieBurst.expirationDate = performance.now() + 2400;
+		return dieBurst;
+	}
+
+	addMagicRing(x: number, y: number, hueShift: number = 0): SpriteProxy {
+		hueShift = hueShift % 360;
+		let magicRing: SpriteProxy;
+		if (hueShift < 30)
+			magicRing = this.magicRingRed.add(x, y, 0);
+		else if (hueShift < 50)
+			magicRing = this.magicRingGold.add(x, y, 0);
+		else if (hueShift < 166)
+			magicRing = this.magicRingGreen.add(x, y, 0);
+		else if (hueShift < 232)
+			magicRing = this.magicRingBlue.add(x, y, 0);
+		else if (hueShift < 279)
+			magicRing = this.magicRingPurple.add(x, y, 0);
+		else
+			magicRing = this.magicRingMaroon.add(x, y, 0);
+
 		magicRing.rotation = Math.random() * 360;
 		return magicRing;
 	}
@@ -1368,19 +1642,38 @@ class DiceLayer {
 		return freezePop;
 	}
 
-	addHalo(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
-		let halo = this.halos.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
-		halo.rotation = Math.random() * 360;
-		halo.opacity = 0.9;
-		halo.fadeInTime = 500;
-		halo.fadeOutTime = 500;
-		halo.fadeOnDestroy = true;
-		halo.autoRotationDegeesPerSecond = 10;
-		return halo;
-	}
+	//addHalo(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1): SpriteProxy {
+	//	let halo = this.halos.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+	//	halo.rotation = Math.random() * 360;
+	//	halo.opacity = 0.9;
+	//	halo.fadeInTime = 500;
+	//	halo.fadeOutTime = 500;
+	//	halo.fadeOnDestroy = true;
+	//	halo.autoRotationDegeesPerSecond = 10;
+	//	return halo;
+	//}
 
 	addHaloSpin(x: number, y: number, hueShift: number = 0, angle: number): SpriteProxy {
-		let haloSpin = this.haloSpins.addShifted(x, y, 0, hueShift);
+		let haloSpin: SpriteProxy;
+		hueShift = hueShift % 360;
+		if (hueShift < 30 || hueShift >= 352)
+			haloSpin = this.haloSpinRed.add(x, y, 0);
+		else if (hueShift < 58)
+			haloSpin = this.haloSpinYellow.add(x, y, 0);
+		else if (hueShift < 131)
+			haloSpin = this.haloSpinGreen.add(x, y, 0);
+		else if (hueShift < 175)
+			haloSpin = this.haloSpinTeal.add(x, y, 0);
+		else if (hueShift < 213)
+			haloSpin = this.haloSpinBlue.add(x, y, 0);
+		else if (hueShift < 265)
+			haloSpin = this.haloSpinPurple.add(x, y, 0);
+		else if (hueShift < 281)
+			haloSpin = this.haloSpinLavender.add(x, y, 0);
+		else if (hueShift < 311)
+			haloSpin = this.haloSpinMaroon.add(x, y, 0);
+		else if (hueShift < 352)
+			haloSpin = this.haloSpinFuschia.add(x, y, 0);
 		haloSpin.rotation = angle;
 		haloSpin.fadeInTime = 500;
 		haloSpin.fadeOutTime = 500;
@@ -1389,7 +1682,13 @@ class DiceLayer {
 	}
 
 	addDamageFire(x: number, y: number, angle: number, hueShift: number = 0): SpriteProxy {
-		let damageFire = this.damageFire.addShifted(x, y, -1, hueShift);
+		let damageFire: SpriteProxy;
+		if (hueShift != 0)
+			damageFire = this.damageFire.addShifted(x, y, -1, hueShift);
+		else if (Random.chancePercent(50))
+			damageFire = this.damageFire.add(x, y, -1);
+		else
+			damageFire = this.damageFireB.add(x, y, -1);
 		damageFire.rotation = angle;
 		damageFire.fadeInTime = 500;
 		damageFire.fadeOutTime = 500;
@@ -1398,7 +1697,7 @@ class DiceLayer {
 	}
 
 	addDamageCold(x: number, y: number, angle: number): SpriteProxy {
-		let damageCold = this.damageCold.addShifted(x, y, -1, Random.plusMinus(20));
+		let damageCold = this.damageCold.add(x, y, -1);
 		damageCold.rotation = angle;
 		damageCold.fadeInTime = 500;
 		damageCold.fadeOutTime = 500;
@@ -1410,12 +1709,10 @@ class DiceLayer {
 	addDamageNecroticHead(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
 		let damageNecroticHead: SpriteProxy;
 
-		if (Random.chancePercent(33))
+		if (Random.chancePercent(50))
 			damageNecroticHead = this.damageNecroticHead.add(x, y, -1);
-		else if (Random.chancePercent(50))
+		else
 			damageNecroticHead = this.damageNecroticHeadB.add(x, y, -1);
-		else 
-			damageNecroticHead = this.damageNecroticHeadC.add(x, y, -1);
 
 		damageNecroticHead.rotation = angle;
 		damageNecroticHead.autoRotationDegeesPerSecond = autoRotation;
@@ -1439,7 +1736,7 @@ class DiceLayer {
 		let damageAcid: SpriteProxy;
 		if (Random.chancePercent(50))
 			damageAcid = this.damageAcid.add(x, y, 0);
-		else 
+		else
 			damageAcid = this.damageAcidB.add(x, y, 0);
 
 		damageAcid.rotation = angle;
@@ -1462,9 +1759,9 @@ class DiceLayer {
 		let damageForce: SpriteProxy;
 		if (Random.chancePercent(50))
 			damageForce = this.damageForce.add(x, y, -1);
-		else 
+		else
 			damageForce = this.damageForceB.add(x, y, -1);
-		
+
 		damageForce.rotation = angle;
 		damageForce.autoRotationDegeesPerSecond = 5;
 		damageForce.initialRotation = angle;
@@ -1487,12 +1784,14 @@ class DiceLayer {
 
 
 	addDamageBludgeoningFist(x: number, y: number, angle: number, autoRotationDegeesPerSecond: number): SpriteProxy {
-		let hueShift: number = 0;
-		if (Random.chancePercent(33))
-			hueShift = 180 + Random.plusMinus(30);
-		else if (Random.chancePercent(50))
-			hueShift = -132 + Random.plusMinus(30);
-		let damageBludgeoningFist = this.damageBludgeoningFist.addShifted(x, y, -1, hueShift);
+		//let hueShift: number = 0;
+		//if (Random.chancePercent(33))
+		//	hueShift = 180 + Random.plusMinus(30);
+		//else if (Random.chancePercent(50))
+		//	hueShift = -132 + Random.plusMinus(30);
+		let damageBludgeoningFist: SpriteProxy;
+		//damageBludgeoningFist = this.damageBludgeoningFist.addShifted(x, y, -1, hueShift);
+		damageBludgeoningFist = this.damageBludgeoningFist.add(x, y, -1);
 		angle += 90;
 		damageBludgeoningFist.scale = 0.8;
 		damageBludgeoningFist.rotation = angle;
@@ -1516,7 +1815,7 @@ class DiceLayer {
 	}
 
 	addDamageSpinningCloudTrail(x: number, y: number, angle: number, autoRotationDegeesPerSecond: number, startingFrame: number): SpriteProxy {
-		let damageSpinningCloudTrail = this.damageSpinningCloudTrail.addShifted(x, y, startingFrame, this.activePlayerHueShift);
+		let damageSpinningCloudTrail = this.damageSpinningCloudTrail.add(x, y, startingFrame);
 		damageSpinningCloudTrail.rotation = angle;
 		damageSpinningCloudTrail.opacity = 0.5;
 		damageSpinningCloudTrail.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
@@ -1528,7 +1827,7 @@ class DiceLayer {
 	}
 
 	addDamagePoison(x: number, y: number, angle: number, hueShift: number): SpriteProxy {
-		let damagePoison = this.damagePoison.addShifted(x, y, -1, hueShift);
+		let damagePoison = this.damagePoison.add(x, y, -1);
 		damagePoison.rotation = angle;
 		damagePoison.fadeInTime = 500;
 		damagePoison.fadeOutTime = 500;
@@ -1618,7 +1917,7 @@ class DiceLayer {
 		let health: SpriteProxy;
 		if (Random.chancePercent(50))
 			health = this.health.add(x, y, -1);
-		else 
+		else
 			health = this.healthB.add(x, y, -1);
 		health.fadeInTime = 500;
 		health.fadeOutTime = 500;
@@ -1627,7 +1926,7 @@ class DiceLayer {
 	}
 
 	addDamageThunder(x: number, y: number, angle: number): SpriteProxy {
-		let damageThunder = this.damageThunder.addShifted(x, y, -1, Random.plusMinus(30));
+		let damageThunder = this.damageThunder.add(x, y, -1);
 		damageThunder.rotation = angle;
 		damageThunder.fadeInTime = 500;
 		damageThunder.fadeOutTime = 500;
@@ -1635,7 +1934,7 @@ class DiceLayer {
 		return damageThunder;
 	}
 	addSuperiorityFire(x: number, y: number, angle: number): SpriteProxy {
-		let superiorityFire = this.superiorityFire.addShifted(x, y, -1, Random.plusMinus(30));
+		let superiorityFire = this.superiorityFire.add(x, y, -1);
 		superiorityFire.rotation = angle;
 		superiorityFire.fadeInTime = 500;
 		superiorityFire.fadeOutTime = 500;
@@ -1643,19 +1942,17 @@ class DiceLayer {
 		return superiorityFire;
 	}
 
-	addSuperiorityDragonHead(x: number, y: number, startingFrameIndex: number, angle: number, autoRotation: number): SpriteProxy {
-		var headSaturation: number = 100;
-		var headBrightness: number = 100;
-		if (Random.chancePercent(20)) {
-			headSaturation = 0;
-			if (Random.chancePercent(33)) {
-				headBrightness = 60;
-			}
-			else if (Random.chancePercent(33)) {
-				headBrightness = 200;
-			}
-		}
-		let superiorityDragonHead = this.superiorityDragonHead.addShifted(x, y, startingFrameIndex, Random.max(360), headSaturation, headBrightness);
+	addSuperiorityDragonHead(x: number, y: number, angle: number, autoRotation: number): SpriteProxy {
+		let superiorityDragonHead: SpriteProxy;
+		if (Random.chancePercent(25))
+			superiorityDragonHead = this.superiorityDragonHead.add(x, y, -1);
+		else if (Random.chancePercent(33))
+			superiorityDragonHead = this.superiorityDragonHeadB.add(x, y, -1);
+		else if (Random.chancePercent(50))
+			superiorityDragonHead = this.superiorityDragonHeadC.add(x, y, -1);
+		else
+			superiorityDragonHead = this.superiorityDragonHeadD.add(x, y, -1);
+
 		superiorityDragonHead.rotation = angle;
 		superiorityDragonHead.initialRotation = angle;
 		superiorityDragonHead.autoRotationDegeesPerSecond = autoRotation;
@@ -1665,22 +1962,22 @@ class DiceLayer {
 		return superiorityDragonHead;
 	}
 
-	addSuperiorityDragonMouth(x: number, y: number, startingFrameIndex: number, angle: number, autoRotation: number): SpriteProxy {
-		let superiorityMouth = this.superiorityDragonMouth.add(x, y, startingFrameIndex);
-		superiorityMouth.rotation = angle;
-		superiorityMouth.initialRotation = angle;
-		superiorityMouth.autoRotationDegeesPerSecond = autoRotation;
-		superiorityMouth.fadeInTime = 500;
-		superiorityMouth.fadeOutTime = 500;
-		superiorityMouth.fadeOnDestroy = true;
-		return superiorityMouth;
-	}
+	//addSuperiorityDragonMouth(x: number, y: number, startingFrameIndex: number, angle: number, autoRotation: number): SpriteProxy {
+	//	let superiorityMouth = this.superiorityDragonMouth.add(x, y, startingFrameIndex);
+	//	superiorityMouth.rotation = angle;
+	//	superiorityMouth.initialRotation = angle;
+	//	superiorityMouth.autoRotationDegeesPerSecond = autoRotation;
+	//	superiorityMouth.fadeInTime = 500;
+	//	superiorityMouth.fadeOutTime = 500;
+	//	superiorityMouth.fadeOnDestroy = true;
+	//	return superiorityMouth;
+	//}
 
 	addDamagePsychic(x: number, y: number, angle: number): SpriteProxy {
 		let damagePsychic: SpriteProxy;
 		if (Random.chancePercent(50))
 			damagePsychic = this.damagePsychic.add(x, y, -1);
-		else 
+		else
 			damagePsychic = this.damagePsychicB.add(x, y, -1);
 		damagePsychic.rotation = angle;
 		damagePsychic.autoRotationDegeesPerSecond = Random.plusMinusBetween(5, 25);
@@ -1693,10 +1990,10 @@ class DiceLayer {
 
 
 	addDamageLightningA(x: number, y: number, angle: number, autoRotateDegreesPerSecond: number): SpriteProxy {
-		let damageLightningA = this.damageLightningA.addShifted(x, y, 0, Random.plusMinus(20));
-		damageLightningA.rotation = angle;
+		let damageLightningA = this.damageLightningA.add(x, y, -1);
+		damageLightningA.rotation = angle + Random.plusMinus(10);
 		damageLightningA.autoRotationDegeesPerSecond = autoRotateDegreesPerSecond;
-		damageLightningA.initialRotation = angle;
+		damageLightningA.initialRotation = damageLightningA.rotation;
 		damageLightningA.fadeInTime = 500;
 		damageLightningA.fadeOutTime = 500;
 		damageLightningA.fadeOnDestroy = true;
@@ -1705,10 +2002,10 @@ class DiceLayer {
 
 
 	addDamageLightningB(x: number, y: number, angle: number, autoRotateDegreesPerSecond: number): SpriteProxy {
-		let damageLightningB = this.damageLightningB.addShifted(x, y, 0, Random.plusMinus(20));
-		damageLightningB.rotation = angle;
+		let damageLightningB = this.damageLightningB.add(x, y, -1);
+		damageLightningB.rotation = angle + Random.plusMinus(10);
 		damageLightningB.autoRotationDegeesPerSecond = autoRotateDegreesPerSecond;
-		damageLightningB.initialRotation = angle;
+		damageLightningB.initialRotation = damageLightningB.rotation;
 		damageLightningB.fadeInTime = 500;
 		damageLightningB.fadeOutTime = 500;
 		damageLightningB.fadeOnDestroy = true;
@@ -1716,10 +2013,10 @@ class DiceLayer {
 	}
 
 	addDamageLightningC(x: number, y: number, angle: number, autoRotateDegreesPerSecond: number): SpriteProxy {
-		let damageLightningC = this.damageLightningC.addShifted(x, y, 0, Random.plusMinus(20));
-		damageLightningC.rotation = angle;
+		let damageLightningC = this.damageLightningC.add(x, y, -1);
+		damageLightningC.rotation = angle + Random.plusMinus(10);
 		damageLightningC.autoRotationDegeesPerSecond = autoRotateDegreesPerSecond;
-		damageLightningC.initialRotation = angle;
+		damageLightningC.initialRotation = damageLightningC.rotation;
 		damageLightningC.fadeInTime = 500;
 		damageLightningC.fadeOutTime = 500;
 		damageLightningC.fadeOnDestroy = true;
@@ -1727,7 +2024,7 @@ class DiceLayer {
 	}
 
 	addDamageLightningCloud(x: number, y: number, angle: number): SpriteProxy {
-		let damageLightningCloud = this.damageLightningCloud.addShifted(x, y, 0, Random.plusMinus(20));
+		let damageLightningCloud = this.damageLightningCloud.add(x, y, -1);
 		damageLightningCloud.rotation = angle;
 		damageLightningCloud.fadeInTime = 500;
 		damageLightningCloud.fadeOutTime = 500;
@@ -1801,20 +2098,30 @@ class DiceLayer {
 
 	clearResidualEffects(): any {
 		this.cloverRing.sprites = [];
-		this.magicRing.sprites = [];
+		this.magicRingRed.sprites = [];
+		this.magicRingGold.sprites = [];
+		this.magicRingGreen.sprites = [];
+		this.magicRingBlue.sprites = [];
+		this.magicRingPurple.sprites = [];
+		this.magicRingMaroon.sprites = [];
 		this.badLuckRing.sprites = [];
 		this.freeze.sprites = [];
-		this.halos.sprites = [];
-		this.haloSpins.sprites = [];
+		//this.halos.sprites = [];
+		this.haloSpinRed.sprites = [];
 		this.damageFire.sprites = [];
+		this.damageFireB.sprites = [];
 		this.damageCold.sprites = [];
 		this.damageNecroticHead.sprites = [];
 		this.damageNecroticHeadB.sprites = [];
-		this.damageNecroticHeadC.sprites = [];
 		this.damageNecroticFog.sprites = [];
 		this.damageAcid.sprites = [];
 		this.damageAcidB.sprites = [];
-		this.topDieCloud.sprites = [];
+		this.topDieCloudRed.sprites = [];
+		this.topDieCloudWhite.sprites = [];
+		this.topDieCloudBlack.sprites = [];
+		this.topDieCloudBlue.sprites = [];
+		this.topDieCloudPurple.sprites = [];
+		this.topDieCloudGreen.sprites = [];
 		this.damageRadiant.sprites = [];
 		this.damageForce.sprites = [];
 		this.damageForceB.sprites = [];
@@ -1833,7 +2140,9 @@ class DiceLayer {
 		this.damageThunder.sprites = [];
 		this.superiorityFire.sprites = [];
 		this.superiorityDragonHead.sprites = [];
-		this.superiorityDragonMouth.sprites = [];
+		this.superiorityDragonHeadB.sprites = [];
+		this.superiorityDragonHeadC.sprites = [];
+		this.superiorityDragonHeadD.sprites = [];
 		this.health.sprites = [];
 		this.healthB.sprites = [];
 		this.damagePsychic.sprites = [];
@@ -1866,8 +2175,10 @@ class DiceLayer {
 	}
 
 	addDiceBomb(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-		this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
-		this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
+		//this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
+		//this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
+		this.diceBombBase.add(x, y, 0).rotation = Math.random() * 360;
+		this.diceBombTop.add(x, y, 0).rotation = Math.random() * 360;
 	}
 
 	addPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
@@ -1937,10 +2248,13 @@ class DiceLayer {
 	smallSpark(x: number, y: number, angle: number = -1): SpriteProxy {
 		if (angle == -1)
 			angle = Math.random() * 360;
-		let spark = this.diceSparks.addShifted(x, y, Math.round(Math.random() * this.diceSparks.sprites.length), Math.random() * 360);
-		spark.expirationDate = performance.now() + 180;
+		//let spark = this.diceSparks.addShifted(x, y, Math.round(Math.random() * this.diceSparks.sprites.length), Math.random() * 360);
+		let spark = this.diceSparks.add(x, y, -1);
+		spark.expirationDate = performance.now() + 500;
 		spark.fadeOutTime = 0;
-		spark.opacity = 0.8;
+		spark.scale = 0.8;
+		spark.autoScaleFactorPerSecond = 0.05;
+		spark.opacity = 1;
 		spark.rotation = angle;
 		return spark;
 	}
@@ -1972,11 +2286,8 @@ class DiceLayer {
 	}
 
 	AddTrailingEffectFrom(sprites: Sprites, trailingEffect: TrailingEffect, x: number, y: number, angle: number): SpriteProxy {
-		let index: number = 0;
-		if (trailingEffect.StartIndex == -1)
-			index = Math.round(Math.random() * sprites.sprites.length);
-		else
-			index = trailingEffect.StartIndex;
+		if (sprites.name === 'Spark')
+			return this.smallSpark(x, y, angle);
 
 		let hue: number = 0;
 		if (trailingEffect.HueShift == "player")
@@ -1986,6 +2297,16 @@ class DiceLayer {
 
 		if (trailingEffect.HueShiftRandom != 0)
 			hue += Random.plusMinus(trailingEffect.HueShiftRandom);
+		hue = Math.round(hue);
+
+		if (sprites.name === 'HaloSpin')
+			return this.addHaloSpin(x, y, hue, angle);
+
+		let index: number = 0;
+		if (trailingEffect.StartIndex == -1)
+			index = Math.round(Math.random() * sprites.sprites.length);
+		else
+			index = trailingEffect.StartIndex;
 
 		let effect: ColorShiftingSpriteProxy = sprites.addShifted(x, y, index, hue);
 		effect.rotation = angle + trailingEffect.RotationOffset + Random.plusMinus(trailingEffect.RotationOffsetRandom);
@@ -1994,8 +2315,8 @@ class DiceLayer {
 		effect.fadeOutTime = trailingEffect.FadeOut;
 		effect.fadeInTime = trailingEffect.FadeIn;
 		effect.opacity = trailingEffect.Opacity;
-		effect.brightness = trailingEffect.Brightness;
-		effect.saturationPercent = trailingEffect.Saturation;
+		effect.brightness = Math.round(trailingEffect.Brightness);
+		effect.saturationPercent = Math.round(trailingEffect.Saturation);
 		effect.scale = trailingEffect.Scale;
 		return effect;
 	}
@@ -2049,8 +2370,8 @@ class DiceLayer {
 	AddEffectFrom(sprites: Sprites, x: number, y: number, scale: number, hueShift: number, saturation: number = 100, brightness: number = 100, angle: number = 0): SpriteProxy {
 		let effect: ColorShiftingSpriteProxy = sprites.addShifted(x, y, 0, hueShift);
 		effect.rotation = angle;
-		effect.brightness = brightness;
-		effect.saturationPercent = saturation;
+		effect.brightness = Math.round(brightness);
+		effect.saturationPercent = Math.round(saturation);
 		effect.scale = scale;
 		return effect;
 	}

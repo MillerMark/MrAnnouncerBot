@@ -59,7 +59,8 @@ function setNormalGravity() {
 function restoreDieScale() {
 	for (var i = 0; i < dice.length; i++) {
 		let die = dice[i].getObject();
-		die.scale.set(1, 1, 1);
+		if (die)
+			die.scale.set(1, 1, 1);
 	}
 }
 
@@ -69,8 +70,10 @@ function clearAllDice() {
 	for (var i = 0; i < dice.length; i++) {
 		let die = dice[i];
 		let dieObject = die.getObject();
-		scene.remove(dieObject);
-		die.clear();
+		if (dieObject) {
+			scene.remove(dieObject);
+			die.clear();
+		}
 	}
 	dice = [];
 	specialDice = [];
@@ -473,13 +476,14 @@ function dieFirstHitsFloor(die: any) {
 
 		if (diceRollData.onFirstContactEffect) {
 			let pos: Vector = getScreenCoordinates(die.getObject());
+			if (pos) {
+				var x: number = pos.x * percentageOnDie + percentageOffDie * 960;
+				var y: number = pos.y * percentageOnDie + percentageOffDie * 540;
 
-			var x: number = pos.x * percentageOnDie + percentageOffDie * 960;
-			var y: number = pos.y * percentageOnDie + percentageOffDie * 540;
-
-			diceLayer.AddEffect(diceRollData.onFirstContactEffect, x, y, diceRollData.effectScale,
-				diceRollData.effectHueShift, diceRollData.effectSaturation,
-				diceRollData.effectBrightness, diceRollData.effectRotation);
+				diceLayer.AddEffect(diceRollData.onFirstContactEffect, x, y, diceRollData.effectScale,
+					diceRollData.effectHueShift, diceRollData.effectSaturation,
+					diceRollData.effectBrightness, diceRollData.effectRotation);
+			}
 		}
 	}
 }
@@ -646,8 +650,7 @@ function animateDiceRollerFps(nowMs: DOMHighResTimeStamp) {
 
 		update();
 
-		if (diceRollerShowFpsWindow)
-		{
+		if (diceRollerShowFpsWindow) {
 			if (!diceRollerFpsWindow) {
 				diceRollerFpsWindow = new FpsWindow('Dice', 1);
 			}
@@ -978,7 +981,10 @@ function modifyTotalRollForTestingPurposes() {
 const bubbleId: string = 'bubble';
 
 function freezeDie(die: any) {
-	let body: any = die.getObject().body;
+	let dieObject: any = die.getObject();
+	if (!dieObject)
+		return;
+	let body: any = dieObject.body;
 	body.mass = 0;
 	body.updateMassProperties();
 	body.velocity.set(0, 0, 0);
@@ -1383,6 +1389,7 @@ function scaleFallingDice() {
 	}
 	removeDiceFromArray(hiddenDie, scalingDice);
 	removeDiceFromArray(hiddenDie, dice);
+	clearTheseDice(hiddenDie);
 }
 
 function getNonGreenHueShift() {
@@ -1411,6 +1418,8 @@ function clearAllDiceIfHidden() {
 	for (var i = 0; i < dice.length; i++) {
 		let die: any = dice[i];
 		let dieObject = die.getObject();
+		if (dieObject === null)
+			continue;
 		if (!dieObject.isHidden)
 			return;
 	}
@@ -1504,6 +1513,8 @@ function highlightSpecialDice() {
 	var hiddenDie = [];
 	for (var i = 0; i < specialDice.length; i++) {
 		let dieObject = specialDice[i].getObject();
+		if (dieObject === null)
+			continue;
 
 		if (dieObject.needToHideDie) {
 			if (dieObject.hideTime < now) {
@@ -1519,6 +1530,8 @@ function highlightSpecialDice() {
 
 				dieObject.needToStartEffect = false;
 
+				dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
+
 				// die.dieValue is also available.
 				let screenPos: Vector = getScreenCoordinates(dieObject);
 				if (!screenPos)
@@ -1528,7 +1541,7 @@ function highlightSpecialDice() {
 					diceLayer.addLuckyRing(screenPos.x, screenPos.y);
 				}
 				if (dieObject.effectKind === DieEffect.Ring) {
-					diceLayer.addMagicRing(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+					diceLayer.addMagicRing(screenPos.x, screenPos.y, Math.floor(Math.random() * 360));
 				}
 				else if (dieObject.effectKind === DieEffect.Fireball) {
 					//diceLayer.addD20Fire(screenPos.x, screenPos.y);
@@ -1549,15 +1562,15 @@ function highlightSpecialDice() {
 					let die: any = specialDice[i];
 					let hsl = rgbToHSL(die.diceColor);
 					let saturation: number = 100;
-					let lightness: number = 100;
+					let brightness: number = 100;
 					if (hsl) {
 						hueShift = hsl.h;
 						saturation = hsl.s * 100;
-						lightness = hsl.l * 100 + 60;
+						brightness = (hsl.l - 0.5) * 100 + 100;
 					}
 					else if (die.playerID >= 0)
 						hueShift = diceLayer.getHueShift(die.playerID);
-					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, lightness);
+					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, brightness);
 					diceSounds.playDieBurst();
 					hideDieIn(dieObject, 100);
 				}
@@ -1602,20 +1615,36 @@ function highlightSpecialDice() {
 	}
 	removeDiceFromArray(hiddenDie, specialDice);
 	removeDiceFromArray(hiddenDie, dice);
+	clearTheseDice(hiddenDie);
 }
 
-function removeSingleDieFromArray(dieToRemove: any, list: any) {
-	for (var i = 0; i < list.length; i++) {
-		if (dieToRemove == list[i]) {
-			list.splice(i, 1);
+function clearTheseDice(diceList: any) {
+	if (!diceList || diceList.length === 0)
+		return;
+	for (var i = 0; i < diceList.length; i++) {
+		let die = diceList[i];
+		if (!die)
+			continue;
+		let dieObject = die.getObject();
+		if (!dieObject)
+			continue;
+		scene.remove(dieObject);
+		die.clear();
+	}
+}
+
+function removeSingleDieFromArray(dieToRemove: any, listToChange: any) {
+	for (var i = 0; i < listToChange.length; i++) {
+		if (dieToRemove === listToChange[i]) {
+			listToChange.splice(i, 1);
 			return;
 		}
 	}
 }
 
-function removeDiceFromArray(dieToRemove: any, list: any) {
+function removeDiceFromArray(dieToRemove: any, listToChange: any) {
 	for (var i = 0; i < dieToRemove; i++) {
-		removeSingleDieFromArray(dieToRemove[i], list);
+		removeSingleDieFromArray(dieToRemove[i], listToChange);
 	}
 }
 
@@ -1646,6 +1675,7 @@ function updatePhysics() {
 		animationsShouldBeDone = true;
 		//console.log('animationsShouldBeDone = true;');
 		diceRollData = null;
+		dice = [];
 		allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
 	}
 }
@@ -1760,8 +1790,8 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	prepareD10x10Die(die, throwPower, xPositionModifier);
 	die.rollType = DieCountsAs.totalScore;
 	if (diceRollData.isMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
-		die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
+		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 	}
 
 	// @ts-ignore - DiceD10x01
@@ -1770,8 +1800,8 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	prepareD10x01Die(die, throwPower, xPositionModifier);
 	die.rollType = DieCountsAs.totalScore;
 	if (diceRollData.isMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
-		die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
+		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 	}
 }
 
@@ -1913,8 +1943,8 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		}
 
 		if (isMagic) {
-			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
-			die.origins.push(diceLayer.magicRing.getOrigin());
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+			die.origins.push(diceLayer.magicRingRed.getOrigin());
 		}
 	}
 	return lastDieAdded;
@@ -1956,7 +1986,7 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 		let thisBackgroundColor: string = backgroundColor;
 		let thisFontColor: string = fontColor;
 		let thisDieCountsAs: DieCountsAs = dieCountsAs;
-		
+
 		let parenIndex: number = dieSpec.indexOf('(');
 		if (parenIndex >= 0) {
 			var damageStr: string = dieSpec.substring(parenIndex + 1);
@@ -2101,7 +2131,7 @@ function updateDieRollSpecialEffects() {
 
 		let screenPos: Vector = getScreenCoordinates(die.getObject());
 
-		if (die.attachedSprites && die.attachedSprites.length > 0) {
+		if (die.attachedSprites && die.attachedSprites.length > 0 && screenPos) {
 			for (let j = 0; j < die.attachedSprites.length; j++) {
 				let centerX: number = screenPos.x - die.origins[j].x;
 				let centerY: number = screenPos.y - die.origins[j].y;
@@ -2111,7 +2141,7 @@ function updateDieRollSpecialEffects() {
 			}
 		}
 
-		if (die.attachedLabels && die.attachedLabels.length > 0) {
+		if (die.attachedLabels && die.attachedLabels.length > 0 && screenPos) {
 			for (let k = 0; k < die.attachedLabels.length; k++) {
 				let textEffect: TextEffect = die.attachedLabels[k];
 				textEffect.x = screenPos.x;
@@ -2121,7 +2151,7 @@ function updateDieRollSpecialEffects() {
 			}
 		}
 
-		if (die.sparks) {
+		if (die.sparks && screenPos) {
 			let newX: number = screenPos.x - diceLayer.diceSparks.originX;
 			let newY: number = screenPos.y - diceLayer.diceSparks.originY;
 			die.sparks.forEach(function (spark: SpriteProxy) {
@@ -3257,6 +3287,8 @@ function showSuccessFailMessages(title: string, rawD20RollValue: number) {
 }
 
 function pleaseRollDice(diceRollDto: DiceRollData) {
+	DiceLayer.numHueShiftsOnDieCleanup = 0;
+	DiceLayer.numHueShiftsOnRoll = 0;
 	//testing = true;
 	//diceRollData = diceRollDto;
 
@@ -3449,15 +3481,15 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 		die.playerName = diceLayer.getPlayerName(playerID);
 		die.kind = kind;
 		if (diceRollData.isMagic) {
-			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360), 100, 100));
-			die.origins.push(new Vector(diceLayer.magicRing.originX, diceLayer.magicRing.originY));
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+			die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 		if (diceRollData.numHalos > 0) {
 			let angleDelta: number = 360 / diceRollData.numHalos;
 			let angle: number = Math.random() * 360;
 			for (var j = 0; j < diceRollData.numHalos; j++) {
 				die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
-				die.origins.push(diceLayer.haloSpins.getOrigin());
+				die.origins.push(diceLayer.haloSpinRed.getOrigin());
 				angle += angleDelta;
 			}
 		}

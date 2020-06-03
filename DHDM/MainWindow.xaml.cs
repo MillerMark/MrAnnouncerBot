@@ -6047,7 +6047,6 @@ namespace DHDM
 		{
 			FrameRateChangeData.GlobalShowFpsWindow = ckShowFPSWindow.IsChecked == true;
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
-			frameRateChangeData.FrameRate = -1;
 			frameRateChangeData.OverlayName = Overlays.Front;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
@@ -6056,7 +6055,6 @@ namespace DHDM
 		{
 			FrameRateChangeData.GlobalAllowColorShifting = ckEnableHueShift.IsChecked == true;
 			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
-			frameRateChangeData.FrameRate = -1;
 			frameRateChangeData.OverlayName = Overlays.Front;
 			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
 		}
@@ -6068,11 +6066,40 @@ namespace DHDM
 
 		private void CkEnableCanvasFilterCaching_CheckedChanged(object sender, RoutedEventArgs e)
 		{
-			FrameRateChangeData.GlobalAllowCanvasFilterCaching = ckEnableCanvasFilterCaching.IsChecked == true;
-			FrameRateChangeData frameRateChangeData = new FrameRateChangeData();
-			frameRateChangeData.FrameRate = -1;
-			frameRateChangeData.OverlayName = Overlays.Front;
-			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(frameRateChangeData));
+			//FrameRateChangeData.GlobalAllowCanvasFilterCaching = ckEnableCanvasFilterCaching.IsChecked == true;
+			UpdateOverlayPerformanceOptions();
+		}
+
+		private static void UpdateOverlayPerformanceOptions()
+		{
+			HubtasticBaseStation.ChangeFrameRate(JsonConvert.SerializeObject(new FrameRateChangeData()));
+		}
+
+		private void TbxMaxFiltersOnWindup_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (!int.TryParse(tbxMaxFiltersOnWindup.Text, out int num))
+				return;
+
+			FrameRateChangeData.GlobalMaxFiltersOnWindup = num;
+			UpdateOverlayPerformanceOptions();
+		}
+
+		private void TbxMaxFiltersOnDieCleanup_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (!int.TryParse(tbxMaxFiltersOnDieCleanup.Text, out int num))
+				return;
+
+			FrameRateChangeData.GlobalMaxFiltersOnDieCleanup = num;
+			UpdateOverlayPerformanceOptions();
+		}
+
+		private void TbxMaxFiltersOnRoll_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (!int.TryParse(tbxMaxFiltersOnRoll.Text, out int num))
+				return;
+
+			FrameRateChangeData.GlobalMaxFiltersOnRoll = num;
+			UpdateOverlayPerformanceOptions();
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

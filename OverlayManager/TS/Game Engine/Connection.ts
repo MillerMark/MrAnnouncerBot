@@ -186,6 +186,9 @@ function changeFrameRate(frameRateData: string) {
 	//frameRateData
 
 	ColorShiftingSpriteProxy.globalAllowColorShifting = frameRateChangeData.AllowColorShifting;
+	DiceLayer.maxFiltersOnDieCleanup = frameRateChangeData.MaxFiltersOnDieCleanup;
+	DiceLayer.maxFiltersOnRoll = frameRateChangeData.MaxFiltersOnRoll;
+	DragonGame.maxFiltersPerWindup = frameRateChangeData.MaxFiltersPerWindup;
 	//ColorShiftingSpriteProxy.globalAllowCanvasFilterCaching = frameRateChangeData.AllowCanvasFilterCaching;
 
 	//let message: string = `${frameRateChangeData.OverlayName} overlay: ${frameRateChangeData.FrameRate} fps `;

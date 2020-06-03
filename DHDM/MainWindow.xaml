@@ -782,137 +782,177 @@
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="FPS">
-					<StackPanel Orientation="Vertical">
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Front Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
-							<RadioButton x:Name="rbnFront5" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								5
-							</RadioButton>
-							<RadioButton x:Name="rbnFront10" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								10
-							</RadioButton>
-							<RadioButton x:Name="rbnFront15" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								15
-							</RadioButton>
-							<RadioButton x:Name="rbnFront20" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								20
-							</RadioButton>
-							<RadioButton x:Name="rbnFront25" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								25
-							</RadioButton>
-							<RadioButton x:Name="rbnFront30" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								30
-							</RadioButton>
-							<RadioButton x:Name="rbnFront35" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								35
-							</RadioButton>
-							<RadioButton x:Name="rbnFront40" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								40
-							</RadioButton>
-							<RadioButton x:Name="rbnFront45" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								45
-							</RadioButton>
-							<RadioButton x:Name="rbnFront50" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								50
-							</RadioButton>
-							<RadioButton x:Name="rbnFront55" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								55
-							</RadioButton>
-							<RadioButton x:Name="rbnFront60" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
-								60
-							</RadioButton>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Dice Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
-							<RadioButton x:Name="rbnDice5" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								5
-							</RadioButton>
-							<RadioButton x:Name="rbnDice10" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								10
-							</RadioButton>
-							<RadioButton x:Name="rbnDice15" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								15
-							</RadioButton>
-							<RadioButton x:Name="rbnDice20" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								20
-							</RadioButton>
-							<RadioButton x:Name="rbnDice25" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								25
-							</RadioButton>
-							<RadioButton x:Name="rbnDice30" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								30
-							</RadioButton>
-							<RadioButton x:Name="rbnDice35" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								35
-							</RadioButton>
-							<RadioButton x:Name="rbnDice40" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								40
-							</RadioButton>
-							<RadioButton x:Name="rbnDice45" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								45
-							</RadioButton>
-							<RadioButton x:Name="rbnDice50" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								50
-							</RadioButton>
-							<RadioButton x:Name="rbnDice55" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								55
-							</RadioButton>
-							<RadioButton x:Name="rbnDice60" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
-								60
-							</RadioButton>
-						</StackPanel>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="Back Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
-							<RadioButton x:Name="rbnBack5" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								5
-							</RadioButton>
-							<RadioButton x:Name="rbnBack10" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								10
-							</RadioButton>
-							<RadioButton x:Name="rbnBack15" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								15
-							</RadioButton>
-							<RadioButton x:Name="rbnBack20" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								20
-							</RadioButton>
-							<RadioButton x:Name="rbnBack25" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								25
-							</RadioButton>
-							<RadioButton x:Name="rbnBack30" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								30
-							</RadioButton>
-							<RadioButton x:Name="rbnBack35" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								35
-							</RadioButton>
-							<RadioButton x:Name="rbnBack40" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								40
-							</RadioButton>
-							<RadioButton x:Name="rbnBack45" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								45
-							</RadioButton>
-							<RadioButton x:Name="rbnBack50" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								50
-							</RadioButton>
-							<RadioButton x:Name="rbnBack55" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								55
-							</RadioButton>
-							<RadioButton x:Name="rbnBack60" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
-								60
-							</RadioButton>
-						</StackPanel>
-						<CheckBox x:Name="ckDynamicThrottling" IsChecked="True" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
-							Dynamic Throttling
-						</CheckBox>
-						<CheckBox x:Name="ckShowFPSWindow" IsChecked="False" Checked="CkShowFPSWindow_CheckedChanged" Unchecked="CkShowFPSWindow_CheckedChanged">
-							Show FPS Window
-						</CheckBox>
-						<CheckBox x:Name="ckEnableHueShift" IsChecked="True" Checked="CkEnableHueShift_CheckedChanged" Unchecked="CkEnableHueShift_CheckedChanged">
-							Enable Hue Shift
-						</CheckBox>
+					<Border Padding="4">
+						<StackPanel Orientation="Vertical">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Front Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
+								<RadioButton x:Name="rbnFront1" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									1
+								</RadioButton>
+								<RadioButton x:Name="rbnFront2" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									2
+								</RadioButton>
+								<RadioButton x:Name="rbnFront5" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									5
+								</RadioButton>
+								<RadioButton x:Name="rbnFront10" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									10
+								</RadioButton>
+								<RadioButton x:Name="rbnFront15" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									15
+								</RadioButton>
+								<RadioButton x:Name="rbnFront20" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									20
+								</RadioButton>
+								<RadioButton x:Name="rbnFront25" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									25
+								</RadioButton>
+								<RadioButton x:Name="rbnFront30" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									30
+								</RadioButton>
+								<RadioButton x:Name="rbnFront35" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									35
+								</RadioButton>
+								<RadioButton x:Name="rbnFront40" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									40
+								</RadioButton>
+								<RadioButton x:Name="rbnFront45" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									45
+								</RadioButton>
+								<RadioButton x:Name="rbnFront50" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									50
+								</RadioButton>
+								<RadioButton x:Name="rbnFront55" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									55
+								</RadioButton>
+								<RadioButton x:Name="rbnFront60" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+									60
+								</RadioButton>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Dice Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
+								<RadioButton x:Name="rbnDice1" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									1
+								</RadioButton>
+								<RadioButton x:Name="rbnDice2" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									2
+								</RadioButton>
+								<RadioButton x:Name="rbnDice5" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									5
+								</RadioButton>
+								<RadioButton x:Name="rbnDice10" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									10
+								</RadioButton>
+								<RadioButton x:Name="rbnDice15" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									15
+								</RadioButton>
+								<RadioButton x:Name="rbnDice20" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									20
+								</RadioButton>
+								<RadioButton x:Name="rbnDice25" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									25
+								</RadioButton>
+								<RadioButton x:Name="rbnDice30" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									30
+								</RadioButton>
+								<RadioButton x:Name="rbnDice35" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									35
+								</RadioButton>
+								<RadioButton x:Name="rbnDice40" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									40
+								</RadioButton>
+								<RadioButton x:Name="rbnDice45" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									45
+								</RadioButton>
+								<RadioButton x:Name="rbnDice50" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									50
+								</RadioButton>
+								<RadioButton x:Name="rbnDice55" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									55
+								</RadioButton>
+								<RadioButton x:Name="rbnDice60" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+									60
+								</RadioButton>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="Back Overlay: " Width="Auto" Height="Auto" Margin="0, 0, 8, 0"/>
+								<RadioButton x:Name="rbnBack1" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									1
+								</RadioButton>
+								<RadioButton x:Name="rbnBack2" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									2
+								</RadioButton>
+								<RadioButton x:Name="rbnBack5" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									5
+								</RadioButton>
+								<RadioButton x:Name="rbnBack10" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									10
+								</RadioButton>
+								<RadioButton x:Name="rbnBack15" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									15
+								</RadioButton>
+								<RadioButton x:Name="rbnBack20" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									20
+								</RadioButton>
+								<RadioButton x:Name="rbnBack25" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									25
+								</RadioButton>
+								<RadioButton x:Name="rbnBack30" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									30
+								</RadioButton>
+								<RadioButton x:Name="rbnBack35" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									35
+								</RadioButton>
+								<RadioButton x:Name="rbnBack40" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									40
+								</RadioButton>
+								<RadioButton x:Name="rbnBack45" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									45
+								</RadioButton>
+								<RadioButton x:Name="rbnBack50" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									50
+								</RadioButton>
+								<RadioButton x:Name="rbnBack55" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									55
+								</RadioButton>
+								<RadioButton x:Name="rbnBack60" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+									60
+								</RadioButton>
+							</StackPanel>
+							<CheckBox x:Name="ckDynamicThrottling" Margin="0, 6, 0, 0" IsChecked="True" Checked="CkDynamicThrottling_CheckedChanged" Unchecked="CkDynamicThrottling_CheckedChanged">
+								Dynamic Throttling
+							</CheckBox>
+							<CheckBox x:Name="ckEnableHueShift" IsChecked="True" Checked="CkEnableHueShift_CheckedChanged" Unchecked="CkEnableHueShift_CheckedChanged">
+								Enable Filters
+							</CheckBox>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="MaxFiltersOnRoll: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0"/>
+								<TextBox x:Name="tbxMaxFiltersOnRoll" TextChanged="TbxMaxFiltersOnRoll_TextChanged">
+									6
+								</TextBox>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="MaxFiltersOnDieCleanup: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0"/>
+								<TextBox x:Name="tbxMaxFiltersOnDieCleanup" TextChanged="TbxMaxFiltersOnDieCleanup_TextChanged">
+									6
+								</TextBox>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="MaxFiltersOnWindup: " Width="Auto" Height="Auto" Margin="20, 0, 0, 0"/>
+								<TextBox x:Name="tbxMaxFiltersOnWindup" TextChanged="TbxMaxFiltersOnWindup_TextChanged">
+									6
+								</TextBox>
+							</StackPanel>
+							<!-- 
 						<CheckBox x:Name="ckEnableCanvasFilterCaching" IsChecked="False" Checked="CkEnableCanvasFilterCaching_CheckedChanged" Unchecked="CkEnableCanvasFilterCaching_CheckedChanged">
 							Enable Canvas Filter Caching
-						</CheckBox>
-					</StackPanel>
+						</CheckBox> 
+						-->
+							<CheckBox x:Name="ckShowFPSWindow" Margin="0, 6, 0, 0" IsChecked="False" Checked="CkShowFPSWindow_CheckedChanged" Unchecked="CkShowFPSWindow_CheckedChanged">
+								Show FPS Window
+							</CheckBox>
+						</StackPanel>
+					</Border>
 				</TabItem>
 				<TabItem x:Name="tbSprinkles" Header="Sprinkles">
 					<StackPanel Orientation="Vertical">

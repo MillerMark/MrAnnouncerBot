@@ -3,6 +3,9 @@
 	FrameRate: number;
 	ShowFpsWindow: boolean;
 	AllowColorShifting: boolean;
+	MaxFiltersOnRoll: number;
+	MaxFiltersPerWindup: number;
+	MaxFiltersOnDieCleanup: number;
 	AllowCanvasFilterCaching: boolean;
 	BackgroundCanvasPainting: boolean;
 	constructor() {

@@ -602,11 +602,11 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	static readonly defaultHueShift: number = 0;
 
 	setHueSatBrightness(hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
-		this.hueShift = hueShift;
+		this.hueShift = Math.round(hueShift);
 		if (saturationPercent >= 0)
-			this.saturationPercent = saturationPercent;
+			this.saturationPercent = Math.round(saturationPercent);
 		if (brightness >= 0)
-			this.brightness = brightness;
+			this.brightness = Math.round(brightness);
 		return this;
 	}
 

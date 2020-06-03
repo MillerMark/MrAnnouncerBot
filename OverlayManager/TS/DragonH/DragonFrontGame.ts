@@ -561,9 +561,9 @@ class DragonFrontGame extends DragonGame {
 		this.nameplateMain.originX = 179;
 		this.nameplateMain.originY = 4;
 
-		this.nameplateParts.addShifted(0, DragonFrontGame.nameCenterY, 0, 0);
-		this.nameplateParts.addShifted(0, DragonFrontGame.nameCenterY, 1, 0);
-		this.nameplateParts.addShifted(0, DragonFrontGame.nameCenterY, 2, 0);
+		this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 0);
+		this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 1);
+		this.nameplateParts.add(0, DragonFrontGame.nameCenterY, 2);
 
 		this.stars = new Sprites('SpinningStars/SpinningStars', 120, fps20, AnimationStyle.Loop, true);
 		this.stars.name = 'Stars';

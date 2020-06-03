@@ -118,20 +118,24 @@ class DiceObject {
     this.diceColor = options.backColor;
   }
 
-  clear() {
-    this.object.body.removeEventListener("collide", handleDieCollision);
-    DiceManager.world.remove(this.object.body);
+	clear() {
+		if (this.object) {
+			this.object.body.removeEventListener("collide", handleDieCollision);
+			DiceManager.world.remove(this.object.body);
+		}
     this.size = null;
     this.materialOptions = null;
     this.vertices = null;
     this.faces = null;
     this.faceTexts = null;
-    this.customTextTextureFunction = null;
-    this.object.geometry.dispose();
-    this.object.diceObject = null;
-    this.object.body.parentDie = null;
-    this.object.body = null;
-    this.object = null;
+		this.customTextTextureFunction = null;
+		if (this.object) {
+			this.object.geometry.dispose();
+			this.object.diceObject = null;
+			this.object.body.parentDie = null;
+			this.object.body = null;
+			this.object = null;
+		}
   }
 
   setDefaults(options, defaults) {
@@ -176,7 +180,7 @@ class DiceObject {
   isFinished() {
     let threshold = 1;
 
-    if (this.object.body === null)
+		if (this.object === null || this.object.body === null)
       return true;
 
     let angularVelocity = this.object.body.angularVelocity;
@@ -433,7 +437,8 @@ class DiceObject {
   }
 
   updateMeshFromBody() {
-    if (!this.simulationRunning) {
+    //if (!this.simulationRunning) {
+		if (this.object) {
       this.object.position.copy(this.object.body.position);
       this.object.quaternion.copy(this.object.body.quaternion);
     }

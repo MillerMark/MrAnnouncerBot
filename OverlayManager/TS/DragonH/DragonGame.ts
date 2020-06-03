@@ -153,6 +153,7 @@ class KnownSpellsEffects {
 
 
 abstract class DragonGame extends GamePlusQuiz {
+	static maxFiltersPerWindup: number = 6;
 	abstract layerSuffix: string;
 	dndTimeStr: string;
 	dndDateStr: string;
