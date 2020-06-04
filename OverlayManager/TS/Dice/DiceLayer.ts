@@ -111,8 +111,8 @@ const failFontColor: string = '#000000';
 const failOutlineColor: string = '#ffffff';
 
 class DiceLayer {
-	static numHueShiftsOnDieCleanup: number;
-	static numHueShiftsOnRoll: number;
+	static numFiltersOnDieCleanup: number;
+	static numFiltersOnRoll: number;
 	static maxFiltersOnRoll: number = 6;
 	static maxFiltersOnDieCleanup: number = 6;
 	players: Array<Character> = [];
@@ -1514,8 +1514,8 @@ class DiceLayer {
 
 	private addDieSmoke(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
 		let smokeTop: SpriteProxy;
-		if (DiceLayer.numHueShiftsOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
-			DiceLayer.numHueShiftsOnDieCleanup++;
+		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numFiltersOnDieCleanup++;
 			smokeTop = this.diceSmokeRed.addShifted(x, y, 0, hueShift, saturation, brightness);
 		}
 		else if (hueShift < 30)
@@ -1542,8 +1542,8 @@ class DiceLayer {
 	private addShockwave(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
 		hueShift = hueShift % 360;
 		let shockwave: SpriteProxy;
-		if (DiceLayer.numHueShiftsOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
-			DiceLayer.numHueShiftsOnDieCleanup++;
+		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numFiltersOnDieCleanup++;
 			shockwave = this.diceShockwaveRed.addShifted(x, y, 0, hueShift, saturation, brightness);
 		}
 		else if (saturation < 50)
@@ -1572,8 +1572,8 @@ class DiceLayer {
 		hueShift = hueShift % 360;
 		let dieBurst: SpriteProxy;
 
-		if (DiceLayer.numHueShiftsOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
-			DiceLayer.numHueShiftsOnDieCleanup++;
+		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numFiltersOnDieCleanup++;
 			dieBurst = this.diceBurstRed.addShifted(x, y, 0, hueShift, saturation, brightness);
 		}
 		else if (saturation < 50)
@@ -1602,7 +1602,12 @@ class DiceLayer {
 	addMagicRing(x: number, y: number, hueShift: number = 0): SpriteProxy {
 		hueShift = hueShift % 360;
 		let magicRing: SpriteProxy;
-		if (hueShift < 30)
+
+		if (DiceLayer.numFiltersOnRoll < DiceLayer.maxFiltersOnRoll) {
+			DiceLayer.numFiltersOnRoll++;
+			magicRing = this.magicRingRed.addShifted(x, y, 0, hueShift);
+		}
+		else if (hueShift < 30)
 			magicRing = this.magicRingRed.add(x, y, 0);
 		else if (hueShift < 50)
 			magicRing = this.magicRingGold.add(x, y, 0);
@@ -2108,6 +2113,14 @@ class DiceLayer {
 		this.freeze.sprites = [];
 		//this.halos.sprites = [];
 		this.haloSpinRed.sprites = [];
+		this.haloSpinBlue.sprites = [];
+		this.haloSpinFuschia.sprites = [];
+		this.haloSpinGreen.sprites = [];
+		this.haloSpinLavender.sprites = [];
+		this.haloSpinMaroon.sprites = [];
+		this.haloSpinPurple.sprites = [];
+		this.haloSpinTeal.sprites = [];
+		this.haloSpinYellow.sprites = [];
 		this.damageFire.sprites = [];
 		this.damageFireB.sprites = [];
 		this.damageCold.sprites = [];
@@ -2165,7 +2178,14 @@ class DiceLayer {
 
 	addSteampunkTunnel(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
 		// no rotation on SteampunkTunnel - shadows expect light source from above.
-		this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		
+		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
+			DiceLayer.numFiltersOnDieCleanup++;
+			this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		}
+		else {
+			this.dieSteampunkTunnel.add(x, y, 0);
+		}
 	}
 
 	addSneakAttack(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
@@ -2182,8 +2202,16 @@ class DiceLayer {
 	}
 
 	addPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-		this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
-		this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup)
+		{
+			DiceLayer.numFiltersOnDieCleanup += 2;
+			this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+			this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		}
+		else {
+			this.dicePortal.add(x, y, 0);
+			this.dicePortalTop.add(x, y, 0);
+		}
 	}
 
 	testDiceGrab(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {

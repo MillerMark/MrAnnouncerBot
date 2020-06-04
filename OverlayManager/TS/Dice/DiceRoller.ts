@@ -1511,6 +1511,9 @@ function highlightSpecialDice() {
 	let now: number = performance.now();
 
 	var hiddenDie = [];
+
+	let magicRingHueShift: number = Math.floor(Math.random() * 360);
+
 	for (var i = 0; i < specialDice.length; i++) {
 		let dieObject = specialDice[i].getObject();
 		if (dieObject === null)
@@ -1541,7 +1544,7 @@ function highlightSpecialDice() {
 					diceLayer.addLuckyRing(screenPos.x, screenPos.y);
 				}
 				if (dieObject.effectKind === DieEffect.Ring) {
-					diceLayer.addMagicRing(screenPos.x, screenPos.y, Math.floor(Math.random() * 360));
+					diceLayer.addMagicRing(screenPos.x, screenPos.y, magicRingHueShift + Random.plusMinusBetween(10, 25));
 				}
 				else if (dieObject.effectKind === DieEffect.Fireball) {
 					//diceLayer.addD20Fire(screenPos.x, screenPos.y);
@@ -1676,8 +1679,12 @@ function updatePhysics() {
 		//console.log('animationsShouldBeDone = true;');
 		diceRollData = null;
 		dice = [];
-		allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
+		setTimeout(allDiceShouldBeDestroyedByNow, 3000);
 	}
+}
+
+function allDiceShouldBeDestroyedByNow() {
+	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
 }
 
 function diceRemainingInPlay(): number {
@@ -1783,14 +1790,14 @@ function queueRoll(diceRollData: DiceRollData) {
 }
 
 function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor: string, playerID: number, throwPower: number = 1, xPositionModifier: number = 0) {
-
+	let magicRingHueShift: number = Math.floor(Math.random() * 360);
 	// @ts-ignore - DiceD10x10
 	var die = new DiceD10x10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 	die.playerID = playerID;
 	prepareD10x10Die(die, throwPower, xPositionModifier);
 	die.rollType = DieCountsAs.totalScore;
 	if (diceRollData.isMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift));
 		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 	}
 
@@ -1800,7 +1807,7 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	prepareD10x01Die(die, throwPower, xPositionModifier);
 	die.rollType = DieCountsAs.totalScore;
 	if (diceRollData.isMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 	}
 }
@@ -1814,6 +1821,7 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		count = +countPlusDie[0];
 	let dieKind: string = countPlusDie[1];
 	let lastDieAdded: any = null;
+	let magicRingHueShift: number = Math.floor(Math.random() * 360);
 	for (var i = 0; i < count; i++) {
 		// @ts-ignore - DiceD4
 		let die: DiceObject = null;
@@ -1943,7 +1951,7 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		}
 
 		if (isMagic) {
-			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 			die.origins.push(diceLayer.magicRingRed.getOrigin());
 		}
 	}
@@ -3287,8 +3295,8 @@ function showSuccessFailMessages(title: string, rawD20RollValue: number) {
 }
 
 function pleaseRollDice(diceRollDto: DiceRollData) {
-	DiceLayer.numHueShiftsOnDieCleanup = 0;
-	DiceLayer.numHueShiftsOnRoll = 0;
+	DiceLayer.numFiltersOnDieCleanup = 0;
+	DiceLayer.numFiltersOnRoll = 0;
 	//testing = true;
 	//diceRollData = diceRollDto;
 
@@ -3470,6 +3478,8 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 	if (kind !== VantageKind.Normal)
 		numD20s = 2;
 
+	let magicRingHueShift: number = Math.floor(Math.random() * 360);
+
 	for (var i = 0; i < numD20s; i++) {
 		var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
 		if (dieLabelOverride)
@@ -3481,7 +3491,7 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 		die.playerName = diceLayer.getPlayerName(playerID);
 		die.kind = kind;
 		if (diceRollData.isMagic) {
-			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Math.floor(Math.random() * 360)));
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 			die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 		if (diceRollData.numHalos > 0) {

@@ -421,6 +421,7 @@
 		let self: Sprites = this;
 
 		let numSpritesDrawn: number = 0;
+
 		this.sprites.forEach(function (sprite: SpriteProxy) {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 

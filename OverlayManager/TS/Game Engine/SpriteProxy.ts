@@ -527,17 +527,8 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	filter: string;
 
 	recalculateFilter(now: number) {
-		this.filter = '';
-		let hueShift: number = this.getCurrentHueShift(now);45
-		if (hueShift !== ColorShiftingSpriteProxy.defaultHueShift)
-			this.filter += `hue-rotate(${hueShift}deg) `;
-		let grayScale: number = 100 - this.saturationPercent;
-		if (grayScale !== ColorShiftingSpriteProxy.defaultGrayscale)
-			this.filter += `grayscale(${(grayScale).toString()}%) `;
-		if (this.brightness !== ColorShiftingSpriteProxy.defaultBrightness)
-			this.filter += `brightness(${this.brightness}%)`;
-
-		this.filter = this.filter.trim();
+		let hueShift: number = this.getCurrentHueShift(now);
+		this.filter = ColorShiftingSpriteProxy.getFilter(hueShift, this.saturationPercent, this.brightness);
 	}
 
 	shiftColor(baseAnimation: Part, context: CanvasRenderingContext2D, now: number): string {
@@ -613,5 +604,19 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	setColorShiftMilestone(now: number): void {
 		this.hueShift = this.getCurrentHueShift(now);
 		this.changeVelocity(this.velocityX, this.velocityY, now); // Resets timeStart, used for calculating hue shifts.
+	}
+
+	static getFilter(hueShift: number, saturationPercent: number, brightness: number): string {
+		let filter: string = '';
+		if (hueShift !== ColorShiftingSpriteProxy.defaultHueShift)
+			filter += `hue-rotate(${hueShift}deg) `;
+		let grayScale: number = 100 - saturationPercent;
+		if (grayScale !== ColorShiftingSpriteProxy.defaultGrayscale)
+			filter += `grayscale(${(grayScale).toString()}%) `;
+		if (brightness !== ColorShiftingSpriteProxy.defaultBrightness)
+			filter += `brightness(${brightness}%)`;
+
+		filter = filter.trim();
+		return filter;
 	}
 }

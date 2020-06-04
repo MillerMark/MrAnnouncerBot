@@ -2191,13 +2191,15 @@ namespace DHDM
 			}
 		}
 
+		DateTime lastDieRollTime;
 		private void SeriouslyRollTheDice(DiceRoll diceRoll)
 		{
+			lastDieRollTime = DateTime.Now;
 			if (dynamicThrottling)
 			{
-				ChangeFrameRateAndUI(Overlays.Back, 5);
-				ChangeFrameRateAndUI(Overlays.Front, 10);
-				ChangeFrameRateAndUI(Overlays.Dice, 25);
+				ChangeFrameRateAndUI(Overlays.Back, 6);
+				ChangeFrameRateAndUI(Overlays.Front, 8);
+				ChangeFrameRateAndUI(Overlays.Dice, 30);
 			}
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
@@ -2577,6 +2579,12 @@ namespace DHDM
 		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
 		{
 			CheckForFollowUpRolls(ea.StopRollingData);
+			if (dynamicThrottling && DateTime.Now - lastDieRollTime > TimeSpan.FromSeconds(3))
+			{
+				ChangeFrameRateAndUI(Overlays.Back, 30);
+				ChangeFrameRateAndUI(Overlays.Front, 30);
+				ChangeFrameRateAndUI(Overlays.Dice, 1);
+			}
 		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
@@ -3081,9 +3089,8 @@ namespace DHDM
 		{
 			if (dynamicThrottling)
 			{
-				ChangeFrameRateAndUI(Overlays.Back, 25);
-				ChangeFrameRateAndUI(Overlays.Front, 25);
-				ChangeFrameRateAndUI(Overlays.Dice, 10);
+				ChangeFrameRateAndUI(Overlays.Back, 15);
+				ChangeFrameRateAndUI(Overlays.Front, 15);
 			}
 
 			waitingToClearDice = true;
@@ -5719,6 +5726,10 @@ namespace DHDM
 				case Overlays.Back:
 					switch (frameRate)
 					{
+						case 1:
+							return rbnBack1;
+						case 2:
+							return rbnBack2;
 						case 5:
 							return rbnBack5;
 						case 10:
@@ -5731,11 +5742,27 @@ namespace DHDM
 							return rbnBack25;
 						case 30:
 							return rbnBack30;
+						case 35:
+							return rbnBack35;
+						case 40:
+							return rbnBack40;
+						case 45:
+							return rbnBack45;
+						case 50:
+							return rbnBack50;
+						case 55:
+							return rbnBack55;
+						case 60:
+							return rbnBack60;
 					}
 					break;
 				case Overlays.Dice:
 					switch (frameRate)
 					{
+						case 1:
+							return rbnDice1;
+						case 2:
+							return rbnDice2;
 						case 5:
 							return rbnDice5;
 						case 10:
@@ -5748,11 +5775,27 @@ namespace DHDM
 							return rbnDice25;
 						case 30:
 							return rbnDice30;
+						case 35:
+							return rbnDice35;
+						case 40:
+							return rbnDice40;
+						case 45:
+							return rbnDice45;
+						case 50:
+							return rbnDice50;
+						case 55:
+							return rbnDice55;
+						case 60:
+							return rbnDice60;
 					}
 					break;
 				case Overlays.Front:
 					switch (frameRate)
 					{
+						case 1:
+							return rbnFront1;
+						case 2:
+							return rbnFront2;
 						case 5:
 							return rbnFront5;
 						case 10:
@@ -5765,6 +5808,18 @@ namespace DHDM
 							return rbnFront25;
 						case 30:
 							return rbnFront30;
+						case 35:
+							return rbnFront35;
+						case 40:
+							return rbnFront40;
+						case 45:
+							return rbnFront45;
+						case 50:
+							return rbnFront50;
+						case 55:
+							return rbnFront55;
+						case 60:
+							return rbnFront60;
 					}
 					break;
 			}
