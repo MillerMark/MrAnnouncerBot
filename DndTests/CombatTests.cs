@@ -60,8 +60,8 @@ namespace DndTests
 			Character david = game.AddPlayer(CharacterBuilder.BuildTestWizard("d"));
 			DndMap map = game.AddMap(new DndMap("Caves of the Wandering Winds"));
 			DndRoom dndRoom = map.AddRoom(new DndRoom("Wizard's Workshop"));
-			Assert.AreEqual(new Vector(0, 0), alice.WorldPosition);
-			Assert.AreEqual(Vector.zero, betty.WorldPosition);
+			Assert.AreEqual(new Vector(0, 0), alice.Location);
+			Assert.AreEqual(Vector.zero, betty.Location);
 			dndRoom.PositionCreatures(@"
 ┌───────────────┐
 │               │
@@ -82,10 +82,10 @@ namespace DndTests
 └───────────────┘");
 			game.ActivateMap(map);
 			game.ActivateRoom(dndRoom);
-			Assert.AreEqual(new Vector(DndMap.SquareSide * 5, DndMap.SquareSide * 3), alice.WorldPosition);
-			Assert.AreEqual(new Vector(DndMap.SquareSide * 8, DndMap.SquareSide * 6), betty.WorldPosition);
-			Assert.AreEqual(new Vector(DndMap.SquareSide * 13, DndMap.SquareSide * 4), charlie.WorldPosition);
-			Assert.AreEqual(new Vector(DndMap.SquareSide * 12, DndMap.SquareSide * 11), david.WorldPosition);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 5, DndMap.SquareSide * 3), alice.Location);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 8, DndMap.SquareSide * 6), betty.Location);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 13, DndMap.SquareSide * 4), charlie.Location);
+			Assert.AreEqual(new Vector(DndMap.SquareSide * 12, DndMap.SquareSide * 11), david.Location);
 
 			//dndGame.EnterCombat(true);
 			//ergo.QueueAction(new ActionAttack(alice, AttackNames.Constrict));

@@ -46,8 +46,10 @@ class DragonBackGame extends DragonGame {
 
 	playerChanged(playerID: number, pageID: number, playerData: string): void {
 		super.playerChanged(playerID, pageID, playerData);
+		let time: Date = new Date();
+		let likelyMorningCodeRushedShow: boolean = time.getHours() < 16;
 		if (this.characterStatsScroll.playerDataChanged(playerID, pageID, playerData)) {
-			if (pageID !== -1 && this.characterStatsScroll.activeCharacter) {
+			if (pageID !== -1 && this.characterStatsScroll.activeCharacter && !likelyMorningCodeRushedShow) {
 				this.dragonBackSounds.playRandom('Announcer/PlayerNames/' + this.characterStatsScroll.activeCharacter.firstName, 6);
 			}
 		}

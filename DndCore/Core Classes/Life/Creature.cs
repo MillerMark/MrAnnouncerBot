@@ -33,6 +33,14 @@ namespace DndCore
 		[JsonIgnore]
 		public List<Attack> attacks = new List<Attack>();
 
+		[JsonIgnore]
+		public Vector Location { get; protected set; }
+
+		public void SetLocation(Vector location)
+		{
+			Location = location;
+		}
+
 		public double baseArmorClass = 0;
 		public double tempArmorClassMod = 0;
 		public double baseCharisma;

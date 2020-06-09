@@ -1333,8 +1333,9 @@ class DragonFrontGame extends DragonGame {
 			return;
 
 		let playerName: string = player.name;
-
-		if (this.inCombat) {
+		let time: Date = new Date();
+		let likelyMorningCodeRushedShow: boolean = time.getHours() < 16;
+		if (this.inCombat || likelyMorningCodeRushedShow) {
 			let spaceIndex: number = playerName.indexOf(' ');
 			if (spaceIndex > 0)
 				playerName = playerName.substr(0, spaceIndex).trim();

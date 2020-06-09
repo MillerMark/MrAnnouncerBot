@@ -741,8 +741,11 @@
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<TextBox x:Name="tbxCode" AcceptsReturn="True" MinWidth="200" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_TextChanged">
-									
+								<TextBox x:Name="tbxCode" AcceptsReturn="True" MinWidth="200" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_TextChanged"
+										 KeyDown="TbxCode_KeyDown" SelectionChanged="TbxCode_SelectionChanged"  
+										 PreviewKeyDown="TbxCode_PreviewKeyDown"
+										 Padding="8"
+										 FontFamily="Consolas" FontSize="22">
 								</TextBox>
 								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
 									<ListBox.ItemTemplate>

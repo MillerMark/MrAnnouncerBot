@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Helpers\IVector.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Data\DnD - Players.csv" />
     <None Remove="Data\DnD - Shortcuts.csv" />
     <None Remove="Data\DnD - Spells.csv" />

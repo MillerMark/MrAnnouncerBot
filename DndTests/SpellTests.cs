@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DndCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -55,7 +56,7 @@ namespace DndTests
 				testContextInstance = value;
 			}
 		}
-		
+
 		[TestMethod]
 		public void TestRayOfFrost()
 		{
@@ -354,6 +355,109 @@ namespace DndTests
 			Assert.AreEqual(TimeSpan.FromMinutes(1), wrathfulSmite.Duration.GetTimeSpan());
 		}
 
+		void PositionCreatures(string map2D, List<Creature> creatures, double z = 0)
+		{
+			string[] crlf = { "\r\n" };
+			string[] lines = map2D.Split(crlf, StringSplitOptions.None);
+
+			bool firstLineIsEmpty = lines[0] == string.Empty;
+			int yOffset = 0;
+			if (firstLineIsEmpty)
+				yOffset = -1;
+			for (int y = 0; y < lines.Length; y++)
+			{
+				string line = lines[y];
+				for (int x = 0; x < line.Length; x++)
+				{
+					char creatureStartInitial = line[x];
+					if (char.IsLetterOrDigit(creatureStartInitial))
+					{
+						Creature foundCreature = creatures.FirstOrDefault(creature => creature.name.StartsWith(creatureStartInitial.ToString()));
+						if (foundCreature != null)
+							foundCreature.SetLocation(new Vector(DndMap.SquareSide * x, DndMap.SquareSide * (y + yOffset), z));
+					}
+				}
+			}
+		}
+
+		[TestMethod]
+		public void TestSpellRangeTest()
+		{
+			Spell chaosBolt = AllSpells.Get(SpellNames.ChaosBolt);
+
+			AllPlayers.Invalidate();
+			AllFeatures.Invalidate();
+			DndGame game = DndGame.Instance;
+			game.GetReadyToPlay();
+			Character sorcerer = PlayerHelper.GetPlayerAtLevel("Sorcerer", 6);
+			sorcerer.name = "Mark";
+			game.AddPlayer(sorcerer);
+			Monster joe = MonsterBuilder.BuildVineBlight("Joe");
+			game.AddCreature(joe);
+			game.Start();
+
+			PositionCreatures(@"
+┌───────────────┐
+│               │
+│               │
+│           M   │
+│               │
+│               └───────────────┐
+│                               │
+│               				        │
+│                               │
+│                               │
+│               ┌───────────────┘
+│           J   │
+│               │
+│               │
+│               │
+│               │
+└───────────────┘", game.AllCreatures);
+			Assert.AreEqual(40, sorcerer.CanCast(chaosBolt).DistanceTo(joe));
+			Assert.IsTrue(sorcerer.CanCast(chaosBolt).At(joe));
+
+
+			PositionCreatures(@"
+┌───────────────┐
+│               │
+│               │
+│           M   │
+│               │
+│               └───────────────┐
+│                               │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│               				        │
+│                               │
+│                               │
+│               ┌───────────────┘
+│           J   │
+│               │
+│               │
+│               │
+│               │
+└───────────────┘", game.AllCreatures);
+
+			Assert.AreEqual(125, sorcerer.CanCast(chaosBolt).DistanceTo(joe));
+			Assert.IsFalse(sorcerer.CanCast(chaosBolt).At(joe));
+		}
+
 		[TestMethod]
 		public void TestWrathfulSmite()
 		{
@@ -384,9 +488,9 @@ namespace DndTests
 
 			joeVineBlight.Misses(ava, AttackNames.Constrict);
 
-			AvaMeleeMissesJoe();		// Round 2
+			AvaMeleeMissesJoe();    // Round 2
 			Assert.AreEqual(6, game.SecondsSince(gameStartTime));
-			
+
 			joeVineBlight.Misses(ava, AttackNames.Constrict);
 			Assert.AreEqual(6, game.SecondsSince(gameStartTime));
 

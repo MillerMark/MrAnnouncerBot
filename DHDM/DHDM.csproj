@@ -362,6 +362,7 @@
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="StreamDeck Commands\StopPlaying.cs" />
+    <Compile Include="TemplateEngine.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

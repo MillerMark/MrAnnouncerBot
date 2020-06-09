@@ -7,6 +7,7 @@ namespace DndCore
 {
 	public class DndGame
 	{
+		List<Creature> allCreatures;
 		public const string STR_EndSpell = "EndSpell:";
 
 		public static DndGame Instance
@@ -192,6 +193,25 @@ namespace DndCore
 			Players.Add(player);
 			return player;
 		}
+
+
+		public List<Creature> KnownCreatures { get; set; } = new List<Creature>();
+
+		public void AddCreature(Creature creature)
+		{
+			KnownCreatures.Add(creature);
+		}
+
+
+		public List<Creature> AllCreatures
+		{
+			get
+			{
+				return KnownCreatures.Union(Players.Cast<Creature>()).ToList();
+			}
+		}
+
+		// AllCreatures
 
 		private void HookPlayerEvents(Character player)
 		{
@@ -550,6 +570,7 @@ namespace DndCore
 			monsters.Clear();
 			ActiveMap = null;
 			Players.Clear();
+			KnownCreatures.Clear();
 			ClearAllAlarms();
 			InCombat = false;
 			ActiveCreature = null;
@@ -769,5 +790,6 @@ namespace DndCore
 		{
 			return Clock.InCombat || Clock.InTimeFreeze;
 		}
+
 	}
 }

@@ -5,7 +5,7 @@ using DndCore;
 
 namespace DndCore
 {
-	public class Target
+	public class Target: IPosition
 	{
 		public AttackTargetType Type { get; set; }
 		public SpellTargetType SpellType { get; set; }
@@ -13,7 +13,6 @@ namespace DndCore
 		public int CasterId { get; set; }
 		public List<int> PlayerIds { get; set; }
 		public Vector Location { get; set; }
-		public int Range { get; set; }
 		public CarriedWeapon Weapon { get; set; }
 		public Target()
 		{

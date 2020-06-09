@@ -2613,6 +2613,41 @@ namespace DHDM
 			}
 		}
 
+		public bool AltKeyDown
+		{
+			get
+			{
+				return Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
+			}
+		}
+
+		public bool CtrlKeyDown
+		{
+			get
+			{
+				return Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+			}
+		}
+
+
+		public bool AnyModifierDown
+		{
+			get
+			{
+				return CtrlKeyDown || AltKeyDown || ShiftKeyDown;
+			}
+		}
+
+
+		public bool NoModifiersDown
+		{
+			get
+			{
+				return !AnyModifierDown;
+			}
+		}
+
+
 		public DiceRollType NextDieRollType
 		{
 			get => nextDieRollType;
@@ -3455,6 +3490,8 @@ namespace DHDM
 
 		private void GetRandomEnterCombatClockMessage()
 		{
+			DateTime dateTime = DateTime.Now;
+			bool isLikelyEarlyCodeRushedShow = dateTime.Hour < 16;
 			switch (new Random().Next(8))
 			{
 				case 0:
@@ -3467,19 +3504,31 @@ namespace DHDM
 					clockMessage = "Battle!";
 					break;
 				case 3:
-					clockMessage = "Oh shit!";
+					if (isLikelyEarlyCodeRushedShow)
+						clockMessage = "Oh cram!";
+					else
+						clockMessage = "Oh shit!";
 					break;
 				case 4:
 					clockMessage = "Oh no!";
 					break;
 				case 5:
-					clockMessage = "Fuck no!";
+					if (isLikelyEarlyCodeRushedShow)
+						clockMessage = "Heck no!";
+					else
+						clockMessage = "Fuck no!";
 					break;
 				case 6:
-					clockMessage = "Crap!";
+					if (isLikelyEarlyCodeRushedShow)
+						clockMessage = "Cram!";
+					else
+						clockMessage = "Crap!";
 					break;
 				case 7:
-					clockMessage = "Damn!";
+					if (isLikelyEarlyCodeRushedShow)
+						clockMessage = "Dang!";
+					else
+						clockMessage = "Damn!";
 					break;
 			}
 		}
@@ -5296,6 +5345,8 @@ namespace DHDM
 			try
 			{
 				tbxCode.Text = code;
+				tbxCode.IsUndoEnabled = false;
+				tbxCode.IsUndoEnabled = true;
 			}
 			finally
 			{
@@ -5522,23 +5573,7 @@ namespace DHDM
 			SetEventCode(activeEventData.ParentGroup, activeEventData.Name, text);
 		}
 
-		bool changingInternally;
 		PlayerActionShortcut spellToCastOnRoll;
-		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			if (changingInternally)
-				return;
-			changingInternally = true;
-			try
-			{
-				UpdateSelectedEvent(tbxCode.Text);
-			}
-			finally
-			{
-				changingInternally = false;
-			}
-		}
-
 		private void BtnRepeatLastCast_Click(object sender, RoutedEventArgs e)
 		{
 			const string CastPrefix = "Cast ";
@@ -6155,6 +6190,52 @@ namespace DHDM
 
 			FrameRateChangeData.GlobalMaxFiltersOnRoll = num;
 			UpdateOverlayPerformanceOptions();
+		}
+
+		private void TbxCode_KeyDown(object sender, KeyEventArgs e)
+		{
+
+		}
+
+		private void TbxCode_SelectionChanged(object sender, RoutedEventArgs e)
+		{
+			// This is also called whenever the caret moves.
+		}
+
+		bool changingInternally;
+		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (changingInternally)
+				return;
+			changingInternally = true;
+			try
+			{
+				UpdateSelectedEvent(tbxCode.Text);
+			}
+			finally
+			{
+				changingInternally = false;
+			}
+		}
+
+		TemplateEngine templateEngine;
+
+		public TemplateEngine TemplateEngine
+		{
+			get
+			{
+				if (templateEngine == null)
+					templateEngine = new TemplateEngine();
+				return templateEngine;
+			}
+		}
+		
+		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Space && NoModifiersDown)
+			{
+				e.Handled = TemplateEngine.ExpandTemplate(tbxCode);
+			}
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

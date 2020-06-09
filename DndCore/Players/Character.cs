@@ -216,9 +216,6 @@ namespace DndCore
 		public Skills checkingSkills = Skills.none;
 
 		[JsonIgnore]
-		public Vector WorldPosition { get; private set; }
-
-		[JsonIgnore]
 		public CastedSpell concentratedSpell;
 
 		[JsonIgnore]
@@ -2120,10 +2117,6 @@ namespace DndCore
 				OnStateChanged(key, null, newValue);
 			}
 		}
-		public void SetWorldPosition(Vector worldPosition)
-		{
-			WorldPosition = worldPosition;
-		}
 		public bool SpellIsActive(string spellName)
 		{
 			List<CastedSpell> spells = GetActiveSpells();
@@ -3109,6 +3102,11 @@ namespace DndCore
 		public void AddFeature(string featureName)
 		{
 			features.Add(AssignedFeature.From(featureName, this));
+		}
+
+		public CanCastResult CanCast(Spell spell)
+		{
+			return new CanCastResult(Location, spell.Range);
 		}
 	}
 }
