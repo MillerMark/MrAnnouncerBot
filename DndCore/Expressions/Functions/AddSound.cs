@@ -5,6 +5,9 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Adds the specified sound effect for the next die roll.")]
+	[Param(1, typeof(string), "fileName", "The name of the mp3 sound file (located in wwwroot\\GameDev\\Assets\\DragonH\\SoundEffects or a sub folder) to play.")]
+	[Param(2, typeof(string), "timeOffsetMs", "The amount of time to wait (in ms) until the sound file is played.", ParameterIs.Optional)]
 	public class AddSound : DndFunction
 	{
 		public override string Name { get; set; } = "AddSound";
@@ -16,11 +19,11 @@ namespace DndCore
 			{
 				string fileName = Expressions.GetStr(args[0], player, target, spell);
 
-				int timeOffset = 0;
+				int timeOffsetMs = 0;
 				if (args.Count > 1)
-					timeOffset = Expressions.GetInt(args[1], player, target, spell);
+					timeOffsetMs = Expressions.GetInt(args[1], player, target, spell);
 
-				player.AddSoundEffect(fileName, timeOffset);
+				player.AddSoundEffect(fileName, timeOffsetMs);
 			}
 
 			return null;

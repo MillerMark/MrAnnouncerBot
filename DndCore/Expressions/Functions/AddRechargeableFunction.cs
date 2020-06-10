@@ -4,6 +4,11 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Adds the specified rechargeable to the active player.")]
+	[Param(1, typeof(string), "rechargeableName", "The name of the rechargeable.")]
+	[Param(2, typeof(string), "variableName", "The name of the variable associated with this rechargeable.")]
+	[Param(3, typeof(int), "maxValue", "The number of charges this item has.")]
+	[Param(4, typeof(string), "cycle", "The time required for this item to recharge.")]
 	public class AddRechargeableFunction : DndFunction
 	{
 		public override string Name => "AddRechargeable";

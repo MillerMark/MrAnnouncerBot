@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Adds the specified trailing effects to the active player's next die roll.")]
+	[Param(1, typeof(string), "trailingEffects", "The list of trailing effects to add (separated by semicolons).")]
 	public class AddTrailingEffectsFunction : DndFunction
 	{
 		public override string Name => "AddTrailingEffects";

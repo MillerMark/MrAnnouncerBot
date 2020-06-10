@@ -5,6 +5,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Adds the specified known spells to the active player.")]
+	[Param(1, typeof(string), "spellList", "The list of spells to add, separated by semicolons.")]
 	public class AddSpells : DndFunction
 	{
 		public override string Name { get; set; } = "AddSpells";
@@ -13,7 +15,11 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 1);
 			if (player != null)
-				player.AddSpellsFrom(Expressions.GetStr(args[0], player, target, spell));
+			{
+				string spellList = Expressions.GetStr(args[0], player, target, spell);
+				player.AddSpellsFrom(spellList);
+			}
+
 			return null;
 		}
 	}

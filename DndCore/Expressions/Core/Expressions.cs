@@ -36,8 +36,8 @@ namespace DndCore
 		public const string STR_Target = "target";
 		public const string STR_Dice = "dice";
 		public const string STR_CastedSpell = "castedSpell";
-		static List<DndFunction> functions = new List<DndFunction>();
-		static List<DndVariable> variables = new List<DndVariable>();
+		public static List<DndFunction> functions = new List<DndFunction>();
+		public static List<DndVariable> variables = new List<DndVariable>();
 		public static List<string> history = new List<string>();
 
 		public static void OnExecutionChanged(object sender, ExecutionPointerChangedEventArgs ea)
@@ -501,6 +501,11 @@ namespace DndCore
 			callDepth--;
 			if (player != null && callDepth == 0)
 				player.CompletingExpressionEvaluation();
+		}
+		public static List<DndFunction> GetFunctionsStartingWith(string tokenLeftOfCaret)
+		{
+			string lower = tokenLeftOfCaret.ToLower();
+			return functions.Where(x => x.Name != null && x.Name.ToLower().StartsWith(lower)).ToList(); ;
 		}
 
 		public static string HistoryLog

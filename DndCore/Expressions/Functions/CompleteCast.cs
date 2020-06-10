@@ -5,6 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Completes casting of the prepared spell for the active player.")]
 	public class CompleteCast : DndFunction
 	{
 		public override string Name { get; set; } = "CompleteCast";

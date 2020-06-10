@@ -1166,12 +1166,12 @@ namespace DndCore
 				 temporarySpells.FirstOrDefault(x => x.SpellName == spellName) != null;
 		}
 
-		public void AddSpellsFrom(string spellsStr)
+		public void AddSpellsFrom(string spellList)
 		{
-			if (string.IsNullOrWhiteSpace(spellsStr))
+			if (string.IsNullOrWhiteSpace(spellList))
 				return;
 
-			string[] spellsStrs = spellsStr.Split(';');
+			string[] spellsStrs = spellList.Split(';');
 			foreach (var spell in spellsStrs)
 			{
 				AddSpell(spell.Trim());

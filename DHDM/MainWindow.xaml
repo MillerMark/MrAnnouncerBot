@@ -208,7 +208,7 @@
 				<TabItem Header="Play" x:Name="tbDice" AllowDrop="True" Drop="TbDice_Drop">
 					<StackPanel x:Name="spDiceRoll" Orientation="Vertical" Margin="8" >
 						<WrapPanel x:Name="wpAskUI">
-							
+
 						</WrapPanel>
 						<WrapPanel x:Name="wpActionsActivePlayer" Orientation="Horizontal" Margin="0, 0, 0, 4" AllowDrop="True" Width="Auto">
 							<TextBlock Text="Actions:  " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
@@ -741,13 +741,19 @@
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<TextBox x:Name="tbxCode" AcceptsReturn="True" MinWidth="200" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_TextChanged"
-										 KeyDown="TbxCode_KeyDown" SelectionChanged="TbxCode_SelectionChanged"  
+
+								<!-- SelectionChanged="TbxCode_SelectionChanged" -->
+								<avalonEdit:TextEditor xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+													   SyntaxHighlighting="C#"
+									x:Name="tbxCode" MinWidth="200" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_AvalonTextChanged"
+										 KeyDown="TbxCode_KeyDown" 
 										 PreviewKeyDown="TbxCode_PreviewKeyDown"
 										 Padding="8"
-										 FontFamily="Consolas" FontSize="22">
-								</TextBox>
-								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
+										 FontFamily="Consolas" FontSize="22" 
+									>
+								</avalonEdit:TextEditor>
+
+									<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<Grid>
@@ -776,7 +782,7 @@
 								<Button x:Name="btnDebugTest" MaxWidth="70" MinWidth="66" MinHeight="24" Click="BtnDebugTest_Click" Margin="8" VerticalAlignment="Center">
 									Fire Event
 								</Button>
-								
+
 								<Button x:Name="btnUpdateEventHandler" Click="BtnUpdateEventHandler_Click" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
 									Update
 								</Button>

@@ -7,6 +7,8 @@ namespace DndCore
 	/// <summary>
 	/// Activates the specified feature.
 	/// </summary>
+	[Tooltip("Activates a specified Feature.")]
+	[Param(1, typeof(string), "featureName", "The name of the Feature to activate.")]
 	public class ActivateFeatureFunction : DndFunction
 	{
 		public override string Name { get; set; } = "ActivateFeature";

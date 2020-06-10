@@ -7,6 +7,7 @@ namespace DndCore
 	/// <summary>
 	/// Determines if the specified feature is active.
 	/// </summary>
+	// TODO: Integrate this into the script editor's Code Completion.
 	public class FeatureSatisfiedFunction : DndFunction
 	{
 		Feature feature;

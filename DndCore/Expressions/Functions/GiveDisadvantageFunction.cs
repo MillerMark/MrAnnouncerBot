@@ -4,7 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class DisadvantageFunction : DndFunction
+	[Tooltip("Gives disadvantage to the active player's next roll.")]
+	public class GiveDisadvantageFunction : DndFunction
 	{
 		public override string Name => "GiveDisadvantage";
 

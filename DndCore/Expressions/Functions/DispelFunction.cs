@@ -4,6 +4,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Dispels the casted spell for the active player.")]
 	public class DispelFunction : DndFunction
 	{
 		public override string Name => "Dispel";

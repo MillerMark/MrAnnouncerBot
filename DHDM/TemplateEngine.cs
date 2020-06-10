@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Windows.Controls;
 using DndCore;
+using ICSharpCode.AvalonEdit.Document;
 
 namespace DHDM
 {
@@ -84,6 +85,49 @@ namespace DHDM
 			textBox.Text = textBox.Text.Remove(insertionPoint, template.Length).Insert(insertionPoint, expansion);
 			// TODO: Look for <<Caret>> or <<Cursor>>
 			textBox.CaretIndex = insertionPoint + expansion.Length + finalInsertionPointOffset;
+			return true;
+			// Can only do selections from start to end, (but not end to start).
+			//
+		}
+
+		/// <summary>
+		/// Expands the template to the left of the caret
+		/// </summary>
+		/// <param name="textBox"></param>
+		/// <returns>Returns true if the template was found and expanded.</returns>
+		public bool ExpandTemplate(ICSharpCode.AvalonEdit.TextEditor textBox)
+		{
+			int caretIndex = textBox.TextArea.Caret.Offset;
+			int selectionLength = textBox.SelectionLength;
+			if (selectionLength != 0)
+				return false;
+			//int selectionStart = textBox.SelectionStart;
+			DocumentLine line = textBox.Document.GetLineByOffset(caretIndex);
+
+			//string lineText = line.GetText(textBox.Document);
+			string lineText = textBox.Document.GetText(line.Offset, line.Length);
+			int lineStartIndex = line.Offset;
+			int lineOffset = caretIndex - lineStartIndex;
+			string template = GetWordLeft(lineText, lineOffset);
+			if (string.IsNullOrWhiteSpace(template))
+				return false;
+			string expansion = GetTemplateExpansion(template);
+			if (string.IsNullOrWhiteSpace(expansion))
+				return false;
+
+			int finalInsertionPointOffset = 0;
+			if (expansion.Contains(Caret))
+			{
+				string textAfterCaret = expansion.EverythingAfter(Caret);
+				finalInsertionPointOffset = -textAfterCaret.Length;
+				expansion = expansion.Replace(Caret, string.Empty);
+			}
+
+			int insertionPoint = caretIndex - template.Length;
+
+			textBox.Text = textBox.Text.Remove(insertionPoint, template.Length).Insert(insertionPoint, expansion);
+			// TODO: Look for <<Caret>> or <<Cursor>>
+			textBox.TextArea.Caret.Offset = insertionPoint + expansion.Length + finalInsertionPointOffset;
 			return true;
 			// Can only do selections from start to end, (but not end to start).
 			//

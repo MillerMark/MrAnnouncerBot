@@ -5,6 +5,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Deactivates the specified Feature.")]
+	[Param(1, typeof(string), "featureName", "The name of the feature to deactivate.")]
 	public class DeactivateFeatureFunction : DndFunction
 	{
 		public override string Name { get; set; } = "DeactivateFeature";

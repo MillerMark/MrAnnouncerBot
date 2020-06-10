@@ -25,8 +25,12 @@ using BotCore;
 using System.Threading;
 using OBSWebsocketDotNet;
 using Newtonsoft.Json;
+using ICSharpCode.AvalonEdit;
 using System.IO;
 using GoogleHelper;
+using System.Reflection;
+using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Document;
 
 namespace DHDM
 {
@@ -121,7 +125,17 @@ namespace DHDM
 			HookEvents();
 
 			SetupSpellsChangedFileWatcher();
+			LoadAvalonEditor();
 		}
+
+		private void LoadAvalonEditor()
+		{
+			LoadAvalonSyntaxHighlighter();
+			TextCompletionEngine = new TextCompletionEngine(tbxCode);
+			HookAvalonEvents();
+		}
+
+		public TextCompletionEngine TextCompletionEngine { get; set; }
 
 		private void HookGameEvents()
 		{
@@ -5339,14 +5353,26 @@ namespace DHDM
 				}
 		}
 
+		void ClearUndoStack(object textEditor)
+		{
+			if (textEditor is TextBox textBox)
+			{
+				textBox.IsUndoEnabled = false;
+				textBox.IsUndoEnabled = true;
+			}
+			else if (textEditor is TextEditor avalonEditor)
+			{
+				avalonEditor.Document.UndoStack.ClearAll();
+			}
+		}
+
 		private void SetEventCode(string code)
 		{
 			changingInternally = true;
 			try
 			{
 				tbxCode.Text = code;
-				tbxCode.IsUndoEnabled = false;
-				tbxCode.IsUndoEnabled = true;
+				ClearUndoStack(tbxCode);
 			}
 			finally
 			{
@@ -6205,6 +6231,11 @@ namespace DHDM
 		bool changingInternally;
 		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			CodeChanged();
+		}
+
+		private void CodeChanged()
+		{
 			if (changingInternally)
 				return;
 			changingInternally = true;
@@ -6219,7 +6250,7 @@ namespace DHDM
 		}
 
 		TemplateEngine templateEngine;
-
+		
 		public TemplateEngine TemplateEngine
 		{
 			get
@@ -6229,7 +6260,7 @@ namespace DHDM
 				return templateEngine;
 			}
 		}
-		
+
 		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.Key == Key.Space && NoModifiersDown)
@@ -6237,6 +6268,112 @@ namespace DHDM
 				e.Handled = TemplateEngine.ExpandTemplate(tbxCode);
 			}
 		}
+
+		private void TbxCode_AvalonTextChanged(object sender, EventArgs e)
+		{
+			CodeChanged();
+		}
+		void LoadAvalonSyntaxHighlighter()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var resourceName = "DHDM.CSharp.xml";
+
+			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+				using (System.Xml.XmlReader reader = System.Xml.XmlReader.Create(stream, new System.Xml.XmlReaderSettings()))
+				{
+					tbxCode.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
+				}
+		}
+		void HookAvalonEvents()
+		{
+			tbxCode.TextArea.TextEntered += TextCompletionEngine.TextArea_TextEntered;
+			tbxCode.TextArea.TextEntering += TextCompletionEngine.TextArea_TextEntering;
+		}
+	}
+	public class TextCompletionEngine
+	{
+		
+		public TextCompletionEngine(TextEditor tbxCode)
+		{
+			TbxCode = tbxCode;
+		}
+
+		CompletionWindow completionWindow;
+
+
+		bool IsIdentifierKey(string text)
+		{
+			if (string.IsNullOrWhiteSpace(text))
+				return false;
+			return IsIdentifierCharacter(text[0]); ;
+		}
+
+		public static bool IsIdentifierCharacter(char character)
+		{
+			return char.IsLetterOrDigit(character) || character == '_';
+		}
+
+		public static string GetIdentifierLeftOf(TextDocument document, int caretOffset)
+		{
+			DocumentLine line = document.GetLineByOffset(caretOffset);
+			string lineText = document.GetText(line.Offset, caretOffset - line.Offset); ;
+			string result = string.Empty;
+			int index = lineText.Length - 1;
+			while (index >= 0 && IsIdentifierCharacter(lineText[index]))
+			{
+				result = lineText[index] + result;
+				index--;
+			}
+			return result;
+		}
+
+		public void TextArea_TextEntered(object sender, TextCompositionEventArgs e)
+		{
+			//Expressions.functions
+			if (completionWindow != null)
+				return;
+
+			if (!IsIdentifierKey(e.Text))
+				return;
+			int offset = TbxCode.TextArea.Caret.Offset;
+
+			string tokenLeftOfCaret = GetIdentifierLeftOf(TbxCode.Document, offset);
+
+			if (string.IsNullOrWhiteSpace(tokenLeftOfCaret))
+				return;
+
+			List<DndFunction> dndFunctions = Expressions.GetFunctionsStartingWith(tokenLeftOfCaret);
+			if (dndFunctions == null || dndFunctions.Count == 0)
+				return;
+
+			completionWindow = new CompletionWindow(TbxCode.TextArea);
+			IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+			foreach (DndFunction dndFunction in dndFunctions)
+			{
+				data.Add(new CodeCompletionData(dndFunction.Name));
+			}
+			completionWindow.Show();
+			completionWindow.Closed += delegate
+			{
+				completionWindow = null;
+			};
+		}
+
+		public void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
+		{
+			if (e.Text.Length > 0 && completionWindow != null)
+			{
+				if (!char.IsLetterOrDigit(e.Text[0]))
+				{
+					// Whenever a non-letter is typed while the completion window is open,
+					// insert the currently selected element.
+					completionWindow.CompletionList.RequestInsertion(e);
+				}
+			}
+			// Do not set e.Handled=true.
+			// We still want to insert the character that was typed.
+		}
+		public TextEditor TbxCode { get; set; }
 	}
 	// TODO: Reintegrate wand/staff animations....
 	/* 

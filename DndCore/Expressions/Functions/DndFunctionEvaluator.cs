@@ -5,6 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	// TODO: support code completion with Tooltip 
 	public class DndFunctionEvaluator : DndFunction
 	{
 		FunctionDto function;
