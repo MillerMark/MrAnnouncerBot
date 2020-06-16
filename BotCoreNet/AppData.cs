@@ -10,7 +10,8 @@ namespace BotCore
 	{
 		public static string GetDataFolder()
 		{
-			string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MrAnnouncerBot");
+			//string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MrAnnouncerBot");
+			string path = Path.Combine("D:\\Dropbox\\AppData", "MrAnnouncerBot");
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
 			return path;

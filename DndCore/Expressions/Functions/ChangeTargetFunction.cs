@@ -4,6 +4,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	// TODO: Implement or discard!
 	public class ChangeTargetFunction : DndFunction
 	{
 		public override string Name { get; set; } = "ChangeTarget";
@@ -11,8 +12,6 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 2);
-
-
 
 			return null;
 		}

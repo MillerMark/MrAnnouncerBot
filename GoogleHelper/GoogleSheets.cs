@@ -34,6 +34,18 @@ namespace GoogleHelper
 			throw new InvalidDataException($"DocTabSeparator (\"{DocTabSeparator}\") not found.");
 		}
 
+		public static List<T> Get<T>() where T : new()
+		{
+			SheetNameAttribute sheetAttribute = typeof(T).GetCustomAttribute<SheetNameAttribute>();
+			if (sheetAttribute == null)
+				throw new InvalidDataException($"SheetNameAttribute not found on (\"{typeof(T).Name}\").");
+			TabNameAttribute tabAttribute = typeof(T).GetCustomAttribute<TabNameAttribute>();
+			if (tabAttribute == null)
+				throw new InvalidDataException($"TabNameAttribute not found on (\"{typeof(T).Name}\").");
+
+			return Get<T>(sheetAttribute.SheetName, tabAttribute.TabName);
+		}
+
 		static IList<IList<object>> GetCells(string docName, string tabName, string cellRange = "")
 		{
 			if (!spreadsheetIDs.ContainsKey(docName))

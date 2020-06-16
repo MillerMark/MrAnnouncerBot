@@ -6289,91 +6289,15 @@ namespace DHDM
 			tbxCode.TextArea.TextEntered += TextCompletionEngine.TextArea_TextEntered;
 			tbxCode.TextArea.TextEntering += TextCompletionEngine.TextArea_TextEntering;
 		}
-	}
-	public class TextCompletionEngine
-	{
-		
-		public TextCompletionEngine(TextEditor tbxCode)
+		public void InvokeCodeCompletion()
 		{
-			TbxCode = tbxCode;
+			TextCompletionEngine.InvokeCodeCompletion();
 		}
 
-		CompletionWindow completionWindow;
-
-
-		bool IsIdentifierKey(string text)
+		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e)
 		{
-			if (string.IsNullOrWhiteSpace(text))
-				return false;
-			return IsIdentifierCharacter(text[0]); ;
+			TemplateEngine.ReloadTemplates();
 		}
-
-		public static bool IsIdentifierCharacter(char character)
-		{
-			return char.IsLetterOrDigit(character) || character == '_';
-		}
-
-		public static string GetIdentifierLeftOf(TextDocument document, int caretOffset)
-		{
-			DocumentLine line = document.GetLineByOffset(caretOffset);
-			string lineText = document.GetText(line.Offset, caretOffset - line.Offset); ;
-			string result = string.Empty;
-			int index = lineText.Length - 1;
-			while (index >= 0 && IsIdentifierCharacter(lineText[index]))
-			{
-				result = lineText[index] + result;
-				index--;
-			}
-			return result;
-		}
-
-		public void TextArea_TextEntered(object sender, TextCompositionEventArgs e)
-		{
-			//Expressions.functions
-			if (completionWindow != null)
-				return;
-
-			if (!IsIdentifierKey(e.Text))
-				return;
-			int offset = TbxCode.TextArea.Caret.Offset;
-
-			string tokenLeftOfCaret = GetIdentifierLeftOf(TbxCode.Document, offset);
-
-			if (string.IsNullOrWhiteSpace(tokenLeftOfCaret))
-				return;
-
-			List<DndFunction> dndFunctions = Expressions.GetFunctionsStartingWith(tokenLeftOfCaret);
-			if (dndFunctions == null || dndFunctions.Count == 0)
-				return;
-
-			completionWindow = new CompletionWindow(TbxCode.TextArea);
-			IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-			foreach (DndFunction dndFunction in dndFunctions)
-			{
-				data.Add(new CodeCompletionData(dndFunction.Name));
-			}
-			completionWindow.Show();
-			completionWindow.Closed += delegate
-			{
-				completionWindow = null;
-			};
-		}
-
-		public void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
-		{
-			if (e.Text.Length > 0 && completionWindow != null)
-			{
-				if (!char.IsLetterOrDigit(e.Text[0]))
-				{
-					// Whenever a non-letter is typed while the completion window is open,
-					// insert the currently selected element.
-					completionWindow.CompletionList.RequestInsertion(e);
-				}
-			}
-			// Do not set e.Handled=true.
-			// We still want to insert the character that was typed.
-		}
-		public TextEditor TbxCode { get; set; }
 	}
 	// TODO: Reintegrate wand/staff animations....
 	/* 

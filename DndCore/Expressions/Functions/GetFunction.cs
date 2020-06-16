@@ -8,6 +8,8 @@ namespace DndCore
 	/// <summary>
 	/// Gets the specified property of the player.
 	/// </summary>
+	[Tooltip("Gets the value of the character field or property, spell property (prefixed with \"spell_\"), or state variable.")]
+	[Param(1, typeof(string), "name", "The name of the field, property, or variable to check.")]
 	public class GetFunction : DndFunction
 	{
 		public override string Name => "Get";

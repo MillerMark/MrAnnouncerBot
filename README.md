@@ -160,4 +160,5 @@ This will instantly take you to Level 1 and you gain these botcasting skills:
 | marksick | Mark is sick! | Bad | 
 | mdkwhd | Disclaimer - Mark doesn't know what he's doing! | Disclaimer | 
 | noJack | Disclaimer - Mark doesn't know Jack! | Disclaimer | 
+| party | DH.Sirens | Good | 
 

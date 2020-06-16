@@ -22,7 +22,7 @@ namespace DndCore
 		public override string Name { get; set; } = "AddSpellHitEffect";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
-			{
+		{
 			ExpectingArguments(args, 1, 11);
 			if (player != null)
 			{
@@ -69,7 +69,7 @@ namespace DndCore
 				if (args.Count > 10)
 					secondaryBrightness = Expressions.GetInt(args[10], player, target, spell);
 
-				player.AddSpellEffect(effectName, hue, saturation, brightness, 
+				player.AddSpellEffect(effectName, hue, saturation, brightness,
 					scale, rotation, autoRotation, timeOffset,
 					secondaryHue, secondarySaturation, secondaryBrightness);
 			}

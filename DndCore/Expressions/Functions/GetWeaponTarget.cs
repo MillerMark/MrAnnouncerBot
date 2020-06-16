@@ -5,6 +5,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Selects a weapon from the active player that matches the specified filter.")]
+	[Param(1, typeof(string), "weaponFilter", "A semicolon-separated list of valid weapon types (e.g., \"Club;Quarterstaff\").", ParameterIs.Optional)]
 	public class GetWeaponTarget : DndFunction
 	{
 		public override string Name { get; set; } = "GetWeaponTarget";

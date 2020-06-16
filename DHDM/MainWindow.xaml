@@ -689,7 +689,7 @@
 					</StackPanel>
 				</TabItem>
 
-				<TabItem Header="Debug" x:Name="tbDebug" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="Auto" >
+				<TabItem Header="Code" x:Name="tbDebug" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="Auto" >
 					<StackPanel Orientation="Horizontal">
 						<StackPanel x:Name="spEvents" Orientation="Vertical">
 							<StackPanel Orientation="Horizontal">
@@ -785,6 +785,10 @@
 
 								<Button x:Name="btnUpdateEventHandler" Click="BtnUpdateEventHandler_Click" Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
 									Update
+								</Button>
+
+								<Button x:Name="btnReloadTemplates" Click="btnReloadTemplates_Click"  Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
+									Reload Templates
 								</Button>
 							</StackPanel>
 						</StackPanel>

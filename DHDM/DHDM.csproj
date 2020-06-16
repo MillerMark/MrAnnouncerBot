@@ -308,11 +308,18 @@
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <EmbeddedResource Include="CSharp.xml" />
-    <Compile Include="CodeCompletionData.cs" />
+    <Compile Include="TemplateEngine\CaretCommand.cs" />
+    <Compile Include="TemplateEngine\CodeCompletionCommand.cs" />
+    <Compile Include="TemplateEngine\CodeCompletionData.cs" />
     <Compile Include="FrameRateChangeData.cs" />
     <Compile Include="FrmMonsterPicker.xaml.cs">
       <DependentUpon>FrmMonsterPicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TemplateEngine\CodeTemplate.cs" />
+    <Compile Include="TemplateEngine\ExpansionSegment.cs" />
+    <Compile Include="TemplateEngine\FileCompletionData.cs" />
+    <Compile Include="TemplateEngine\FolderCompletionData.cs" />
+    <Compile Include="TemplateEngine\ITextCommand.cs" />
     <Compile Include="Overlays.cs" />
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
@@ -367,7 +374,11 @@
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="StreamDeck Commands\StopPlaying.cs" />
-    <Compile Include="TemplateEngine.cs" />
+    <Compile Include="TemplateEngine\PositionSaverCommand.cs" />
+    <Compile Include="TemplateEngine\TemplateEngine.cs" />
+    <Compile Include="TemplateEngine\TextCommandEngine.cs" />
+    <Compile Include="TemplateEngine\TextCommandNameAttribute.cs" />
+    <Compile Include="TextCompletionEngine.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

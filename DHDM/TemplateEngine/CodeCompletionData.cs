@@ -1,18 +1,26 @@
 ﻿//#define profiling
 using System;
-using System.Linq;
+using System.Reflection;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using DndCore;
 
 namespace DHDM
 {
+	/// <summary>
 	/// Implements AvalonEdit ICompletionData interface to provide the entries in the
 	/// completion drop down.
-	public class CodeCompletionData : ICompletionData
+	/// </summary>
+	public class FunctionCompletionData : ICompletionData
 	{
-		public CodeCompletionData(string text)
+		public string ToolTip { get; set; }
+		public FunctionCompletionData(DndFunction function)
 		{
-			this.Text = text;
+			Function = function;
+			Text = function.Name;
+			TooltipAttribute tooltipAttribute = function.GetType().GetCustomAttribute<TooltipAttribute>();
+			if (tooltipAttribute != null)
+				ToolTip = tooltipAttribute.DisplayText;
 		}
 
 		public System.Windows.Media.ImageSource Image
@@ -25,20 +33,23 @@ namespace DHDM
 		// Use this property if you want to show a fancy UIElement in the list.
 		public object Content
 		{
-			get { return this.Text; }
+			get { return Text; }
 		}
 
 		public object Description
 		{
-			get { return "Description for " + this.Text; }
+			get { return ToolTip; }
 		}
 
 		public double Priority => 0;
+		public DndFunction Function { get; set; }
 
 		public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{
 			string tokenLeftOfCaret = TextCompletionEngine.GetIdentifierLeftOf(textArea.Document, textArea.Caret.Offset);
-			textArea.Document.Replace(textArea.Caret.Offset - tokenLeftOfCaret.Length, tokenLeftOfCaret.Length, this.Text);
+			textArea.Document.Replace(textArea.Caret.Offset - tokenLeftOfCaret.Length, tokenLeftOfCaret.Length, "");
+			string caret = TemplateEngine.GetCommand("Caret");
+			TemplateEngine.Expand(textArea, $"{Text}({caret});");
 		}
 	}
 }

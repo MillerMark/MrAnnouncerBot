@@ -61,6 +61,7 @@ namespace MrAnnouncerBot
 			new BotCommand("crIssueStart", MarkCodeRushIssueStart);
 			new BotCommand("discord", HandleDiscordCommand);
 			new BotCommand("dh", HandleDragonHCommand);
+			new BotCommand("dhn", HandleDragonHNewTimeCommand);
 			hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:44303/MrAnnouncerBotHub").Build();
 			if (hubConnection != null)
 			{
@@ -996,9 +997,16 @@ namespace MrAnnouncerBot
 
 		void HandleDragonHCommand(OnChatCommandReceivedArgs obj)
 		{
-			Chat($"Live comedy Dungeons and Dragons with over-the-top special effects (built right here), every Thursday and Sunday: ");
+			Chat($"Live comedy Dungeons and Dragons with over-the-top special effects (built right here), every Wednesday and Sunday: ");
 			Chat($"https://twitch.tv/DragonHumpers");
 			Chat($"9p ET / 6p PT / 1a GMT / 11a AEST");
+		}
+
+		void HandleDragonHNewTimeCommand(OnChatCommandReceivedArgs obj)
+		{
+			Chat($"Special time for Dungeons and Dragons today/tonight: ");
+			Chat($"https://twitch.tv/DragonHumpers");
+			Chat($"11p ET / 8p PT / 3a GMT / 13a AEST");
 		}
 
 		void HandleVsCodeCommand(OnChatCommandReceivedArgs obj)

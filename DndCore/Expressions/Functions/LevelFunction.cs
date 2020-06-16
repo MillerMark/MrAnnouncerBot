@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Gets the level of the active player for the specified class.")]
+	[Param(1, typeof(string), "value", "The value to halve.")]
 	public class LevelFunction : DndFunction
 	{
 		public override string Name => "Level";
@@ -12,9 +14,9 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 1);
 
-			string characterClassName = evaluator.Evaluate<string>(args[0]);
+			string className = evaluator.Evaluate<string>(args[0]);
 
-			return player.GetLevel(characterClassName);
+			return player.GetLevel(className);
 		}
 	}
 }

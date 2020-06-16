@@ -5,6 +5,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Returns \"a\" (or \"an\" if the nextWord starts with a vowel).")]
+	[Param(1, typeof(string), "nextWord", "The word to check.")]
 	public class GetArticle : DndFunction
 	{
 		public override string Name { get; set; } = "GetArticle";
