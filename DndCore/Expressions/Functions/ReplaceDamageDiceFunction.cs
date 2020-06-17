@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Replaces the damage dice for the active player's next roll.")]
+	[Param(1, typeof(string), "diceStr", "The new damage die string to roll (e.g., \"3d6(fire)\").")]
 	public class ReplaceDamageDiceFunction : DndFunction
 	{
 		public override string Name => "ReplaceDamageDice";

@@ -4,6 +4,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Selects a target for a spell (currently not implemented in DHDM).")]
 	public class SelectTargetFunction : DndFunction
 	{
 		public static event TargetEventHandler RequestSelectTarget;

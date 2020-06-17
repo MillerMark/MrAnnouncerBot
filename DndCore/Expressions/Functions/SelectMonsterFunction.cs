@@ -4,6 +4,10 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Selects and returns the monster.")]
+	[Param(1, typeof(CreatureKinds), "creatureKindFilter", "The creature kinds (Aberration, Beast, Celestial, Construct, Dragon, Elemental, Fey, Fiend, Giant, Humanoid, Monstrosity, Ooze, Plant, Undead, or AllCreatures) to limit choices to.", ParameterIs.Optional)]
+	[Param(2, typeof(int), "maxChallengeRating", "The maximum challenge rating for the monster.", ParameterIs.Optional)]
+	[Param(3, typeof(string), "speedLimitations", "Any speed limitations (flying, swimming, etc.) for the monster.", ParameterIs.Optional)]
 	public class SelectMonsterFunction : DndFunction
 	{
 		public static event SelectMonsterEventHandler RequestSelectMonster;

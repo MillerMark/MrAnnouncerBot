@@ -308,6 +308,8 @@
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <EmbeddedResource Include="CSharp.xml" />
+    <Compile Include="ParameterCompletionAttribute.cs" />
+    <Compile Include="SoundFileCompletionEditor.cs" />
     <Compile Include="TemplateEngine\CaretCommand.cs" />
     <Compile Include="TemplateEngine\CodeCompletionCommand.cs" />
     <Compile Include="TemplateEngine\CodeCompletionData.cs" />

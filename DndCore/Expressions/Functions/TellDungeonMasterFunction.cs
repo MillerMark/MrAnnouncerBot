@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Sends a specified message to the dungeon master.")]
+	[Param(1, typeof(string), "message", "The message to send.")]
 	public class TellDungeonMasterFunction : DndFunction
 	{
 		public override string Name => "TellDm";

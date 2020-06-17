@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Recalculates the specified recalc option.")]
+	[Param(1, typeof(RecalcOptions), "recalcOptions", "The option to recalculate (can be TurnBasedState, ActionBasedState, or Resistance).")]
 	public class RecalculateFunction : DndFunction
 	{
 		public override string Name => "Recalculate";

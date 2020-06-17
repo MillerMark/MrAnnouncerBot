@@ -37,9 +37,16 @@ namespace DndCore
 
 		public static void UpdateQueuedEntries()
 		{
-			foreach (LogEntry logEntry in queuedEntries)
+			try
 			{
-				Entries.Add(logEntry);
+				foreach (LogEntry logEntry in queuedEntries)
+				{
+					Entries.Add(logEntry);
+				}
+			}
+			catch (Exception ex)
+			{
+				
 			}
 			queuedEntries.Clear();
 		}

@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Tosses the dice for the specified roll immediately.")]
+	[Param(1, typeof(string), "diceStr", "The die string to roll (e.g., \"4d8(force)\").")]
 	public class RollDiceFunction : DndFunction
 	{
 		public override string Name => "RollDice";

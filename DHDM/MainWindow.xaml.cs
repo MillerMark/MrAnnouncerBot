@@ -31,6 +31,8 @@ using GoogleHelper;
 using System.Reflection;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using System.Windows.Controls.Primitives;
+using System.Globalization;
 
 namespace DHDM
 {
@@ -39,6 +41,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		ToolTip parameterToolTip;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
@@ -2971,17 +2974,17 @@ namespace DHDM
 
 			if (spellHitType == SpellHitType.Miss)
 			{
-				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, hueShift, 100, 20));
+				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, 0, 100, 0));
 			}
 			else
 			{
 				double scale = 1;
 				double autoRotation = 140;
 				const double scaleIncrement = 1.1;
-				AnimationEffect effect = CreateEffect(GetRandomHitSpellName(), chestTarget, hueShift, 100);
-				effect.autoRotation = autoRotation;
+				//AnimationEffect effect = CreateEffect(GetRandomHitSpellName(), chestTarget, hueShift, 100);
+				//effect.autoRotation = autoRotation;
 				autoRotation *= -1;
-				effectGroup.Add(effect);
+				//effectGroup.Add(effect);
 				scale *= scaleIncrement;
 
 				int timeOffset = 200;
@@ -6250,7 +6253,7 @@ namespace DHDM
 		}
 
 		TemplateEngine templateEngine;
-		
+
 		public TemplateEngine TemplateEngine
 		{
 			get
@@ -6261,12 +6264,157 @@ namespace DHDM
 			}
 		}
 
+		public ToolTip ParameterToolTip
+		{
+			get
+			{
+				if (parameterToolTip == null)
+					parameterToolTip = new ToolTip()
+					{
+						Placement = PlacementMode.Relative,
+						PlacementTarget = tbxCode
+					};
+				return parameterToolTip;
+			}
+		}
+
+		object lastParameterTooltip;
+
+		private Size MeasureString(string candidate)
+		{
+			var formattedText = new FormattedText(
+					candidate,
+					CultureInfo.CurrentCulture,
+					FlowDirection.LeftToRight,
+					new Typeface(tbxCode.FontFamily, tbxCode.FontStyle, tbxCode.FontWeight, tbxCode.FontStretch),
+					tbxCode.FontSize,
+					Brushes.Black,
+					new NumberSubstitution(),
+					1);
+
+			return new Size(formattedText.Width, formattedText.Height);
+		}
+
+		double spaceWidth = 0;
+		int lastLineShownTooltip;
+		void ShowParameterTooltip(object content, int parameterStartOffset)
+		{
+			int thisLine = tbxCode.TextArea.Caret.Line;
+			if (content is string && (string)lastParameterTooltip == (string)content)
+				if (lastLineShownTooltip == thisLine)
+					if (ParameterToolTip.IsOpen)
+						return;
+
+			lastLineShownTooltip = thisLine;
+			lastParameterTooltip = content;
+			if (spaceWidth == 0)
+				spaceWidth = MeasureString("M").Width;
+			double adjustLeft = tbxCode.TextArea.Caret.Offset - parameterStartOffset - 0.5;
+			Rect caret = tbxCode.TextArea.Caret.CalculateCaretRectangle();
+			ParameterToolTip.HorizontalOffset = Math.Round(caret.Right - adjustLeft * spaceWidth);
+			ParameterToolTip.VerticalOffset = caret.Bottom + 9;
+			ParameterToolTip.Content = content;
+			ParameterToolTip.IsOpen = true;
+		}
+
+		void HideParameterTooltip()
+		{
+			ParameterToolTip.IsOpen = false;
+		}
+
+		bool IsNavKey(Key key)
+		{
+			switch (key)
+			{
+				case Key.End:
+				case Key.Home:
+				case Key.Left:
+				case Key.Up:
+				case Key.Right:
+				case Key.Down:
+				case Key.PageUp:
+				case Key.PageDown:
+					return true;
+			}
+			return false;
+		}
+
+
+
+		int GetParameterNumber()
+		{
+			return TextCompletionEngine.GetParameterNumberAtPosition(tbxCode.Document, tbxCode.TextArea.Caret.Offset);
+		}
+
+		int GetParameterStartOffset()
+		{
+			return TextCompletionEngine.GetParameterStartOffset(tbxCode.Document, tbxCode.TextArea.Caret.Offset);
+		}
+
+		DispatcherTimer tooltipTimer;
+
 		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.Key == Key.Space && NoModifiersDown)
 			{
 				e.Handled = TemplateEngine.ExpandTemplate(tbxCode);
 			}
+			else if (IsNavKey(e.Key) || e.Key == Key.OemComma && NoModifiersDown)
+			{
+				StartTooltipTimer();
+			}
+		}
+
+		private void StartTooltipTimer()
+		{
+			if (tooltipTimer == null)
+			{
+				CreateToolipTimer();
+			}
+			tooltipTimer.Start();
+		}
+
+		private void CreateToolipTimer()
+		{
+			tooltipTimer = new DispatcherTimer();
+			tooltipTimer.Interval = TimeSpan.FromMilliseconds(50);
+			tooltipTimer.Tick += TooltipTimer_Tick;
+		}
+
+		string GetParameterTooltip(int parameterNumber)
+		{
+			string activeMethodCall = TextCompletionEngine.GetActiveMethodCall(tbxCode.Document, tbxCode.TextArea.Caret.Offset);
+
+			DndFunction dndFunction = Expressions.functions.FirstOrDefault(x => x.Name == activeMethodCall);
+			if (dndFunction == null)
+				return null;
+
+			IEnumerable<ParamAttribute> customAttributes = dndFunction.GetType().GetCustomAttributes(typeof(ParamAttribute)).Cast<ParamAttribute>().ToList();
+			if (customAttributes == null)
+				return null;
+
+			ParamAttribute paramAttribute = customAttributes.FirstOrDefault(x => x.Index == parameterNumber);
+			if (paramAttribute == null)
+				return null;
+
+			return paramAttribute.Description;
+		}
+
+		private void TooltipTimer_Tick(object sender, EventArgs e)
+		{
+			tooltipTimer.Stop();
+			Dispatcher.Invoke(() =>
+			{
+				int parameterNumber = GetParameterNumber();
+				if (parameterNumber > 0)
+				{
+					int parameterStartOffset = GetParameterStartOffset();
+					string parameterTooltip = GetParameterTooltip(parameterNumber);
+					ShowParameterTooltip(parameterTooltip, parameterStartOffset);
+				}
+				else
+					HideParameterTooltip();
+			});
 		}
 
 		private void TbxCode_AvalonTextChanged(object sender, EventArgs e)
@@ -6279,10 +6427,10 @@ namespace DHDM
 			var resourceName = "DHDM.CSharp.xml";
 
 			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-				using (System.Xml.XmlReader reader = System.Xml.XmlReader.Create(stream, new System.Xml.XmlReaderSettings()))
-				{
-					tbxCode.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
-				}
+			using (System.Xml.XmlReader reader = System.Xml.XmlReader.Create(stream, new System.Xml.XmlReaderSettings()))
+			{
+				tbxCode.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
+			}
 		}
 		void HookAvalonEvents()
 		{
@@ -6297,6 +6445,11 @@ namespace DHDM
 		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e)
 		{
 			TemplateEngine.ReloadTemplates();
+		}
+
+		private void TbxCode_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			StartTooltipTimer();
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

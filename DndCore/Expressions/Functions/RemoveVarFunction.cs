@@ -4,6 +4,8 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Removes the specified state variable.")]
+	[Param(1, typeof(string), "varName", "The name of the state variable to remove.")]
 	public class RemoveVarFunction : DndFunction
 	{
 		public override string Name => "RemoveVar";

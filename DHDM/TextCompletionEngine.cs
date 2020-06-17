@@ -60,6 +60,29 @@ namespace DHDM
 			return result;
 		}
 
+		public int GetParameterNumberAtPosition(TextDocument document, int caretOffset)
+		{
+			// TODO: Make this work with strings containing parens and commas (if you like).
+			string lineLeft = GetLineLeftOf(document, caretOffset);
+			// HACK: This solves 98% of use cases, but it's very hacky.
+			if (!lineLeft.Contains("(") || lineLeft.Contains("//") || lineLeft.Contains(")"))
+				return 0;
+			string parameters = lineLeft.EverythingAfter("(");
+			string[] allParamsLeft = parameters.Split(',');
+			return allParamsLeft.Length;
+		}
+
+		public int GetParameterStartOffset(TextDocument document, int caretOffset)
+		{
+			string lineLeft = GetLineLeftOf(document, caretOffset);
+			// HACK: This solves 98% of use cases, but it's very hacky.
+			if (!lineLeft.Contains("(") || lineLeft.Contains("//") || lineLeft.Contains(")"))
+				return 0;
+			string parameters = lineLeft.EverythingAfter("(");
+			string[] allParamsLeft = parameters.Split(',');
+			return caretOffset - allParamsLeft[allParamsLeft.Length - 1].Length;
+		}
+
 		static string GetLineLeftOf(TextDocument document, int caretOffset)
 		{
 			DocumentLine line = document.GetLineByOffset(caretOffset);
@@ -188,6 +211,14 @@ namespace DHDM
 		public void InvokeCodeCompletion()
 		{
 			InvokeCodeCompletionIfNecessary(CharacterLeft);
+		}
+		public string GetActiveMethodCall(TextDocument document, int caretOffset)
+		{
+			string lineLeft = GetLineLeftOf(document, caretOffset);
+			if (lineLeft.Contains("//") || lineLeft.Contains(")") || !lineLeft.Contains("("))
+				return null;
+			// HACK: It's a hack, kids. But solves large number of use cases with very little code.
+			return lineLeft.EverythingBefore("(").Trim();
 		}
 		public TextEditor TbxCode { get; set; }
 	}

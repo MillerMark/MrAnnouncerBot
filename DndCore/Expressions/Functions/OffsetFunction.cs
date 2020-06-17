@@ -5,6 +5,9 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[Tooltip("Offsets the specified variable, property or field by the specified value for the active player.")]
+	[Param(1, typeof(string), "variableName", "The variable to modify.")]
+	[Param(2, typeof(double), "deltaValue", "The delta amount to change.")]
 	public class OffsetFunction : DndFunction
 	{
 		public override string Name => "Offset";

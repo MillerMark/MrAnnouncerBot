@@ -748,12 +748,20 @@
 									x:Name="tbxCode" MinWidth="200" MaxWidth="800" MaxHeight="800" TextChanged="TbxCode_AvalonTextChanged"
 										 KeyDown="TbxCode_KeyDown" 
 										 PreviewKeyDown="TbxCode_PreviewKeyDown"
+										 PreviewMouseDown="TbxCode_MouseDown"
 										 Padding="8"
 										 FontFamily="Consolas" FontSize="22" 
 									>
+									<avalonEdit:TextEditor.Resources>
+										<Style TargetType="ToolTip" BasedOn="{StaticResource {x:Type ToolTip}}">
+											<Setter Property="Background" Value="#FFFFFBE8" />
+											<Setter Property="Foreground" Value="#FF211F16" />
+											<Setter Property="BorderBrush" Value="#FFC4BB93" />
+										</Style>
+									</avalonEdit:TextEditor.Resources>
 								</avalonEdit:TextEditor>
 
-									<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
+								<ListBox x:Name="lstCode" MaxWidth="800" MaxHeight="800" Visibility="Collapsed">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<Grid>
