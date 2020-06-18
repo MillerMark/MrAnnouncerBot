@@ -6,13 +6,13 @@ namespace DHDM
 {
 	public class ParameterCompletionAttribute : Attribute
 	{
-		public ParameterCompletionAttribute(Type editorType, int parameterNumber)
+		public ParameterCompletionAttribute(Type editorType, string parameterName)
 		{
-			ParameterOrder = parameterNumber;
+			ParameterName = parameterName;
 			EditorType = editorType;
 		}
 
 		public Type EditorType { get; set; }
-		public int ParameterOrder { get; set; }
+		public string ParameterName { get; set; }
 	}
 }

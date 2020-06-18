@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Plays the specified scene in OBS.")]
-	[Param(1, typeof(string), "sceneName", "The name of scene in OBS.")]
+	[Param(1, typeof(string), "sceneName", "The name of scene in OBS.", ParameterIs.Required)]
 	public class PlaySceneFunction : DndFunction
 	{
 		public delegate void PlaySceneEventHandler(object sender, PlaySceneEventArgs ea);

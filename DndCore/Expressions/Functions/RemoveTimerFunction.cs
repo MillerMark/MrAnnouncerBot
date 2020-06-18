@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Removes the specified timer.")]
-	[Param(1, typeof(string), "timerName", "The name of the timer to remove.")]
+	[Param(1, typeof(string), "timerName", "The name of the timer to remove.", ParameterIs.Required)]
 	public class RemoveTimerFunction : DndFunction
 	{
 		public override string Name { get; set; } = "RemoveTimer";

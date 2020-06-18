@@ -9,8 +9,8 @@ namespace DndCore
 	/// Sets the specified property of the player to the specified value.
 	/// </summary>
 	[Tooltip("Sets the specified property, field, or state variable for the active player to the specified value.")]
-	[Param(1, typeof(string), "variableName", "The field, property, or state variable to change.")]
-	[Param(2, typeof(object), "value", "The value to assign.")]
+	[Param(1, typeof(string), "variableName", "The field, property, or state variable to change.", ParameterIs.Required)]
+	[Param(2, typeof(object), "value", "The value to assign.", ParameterIs.Required)]
 
 	public class SetFunction : DndFunction
 	{

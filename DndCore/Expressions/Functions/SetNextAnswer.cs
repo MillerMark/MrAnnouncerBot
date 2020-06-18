@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Sets the nextAnswer (for the next interactive question) to the specified answer. Useful for Stream Deck buttons that specify spell levels or targets.")]
-	[Param(1, typeof(string), "nextAnswer", "The answer to set.")]
+	[Param(1, typeof(string), "nextAnswer", "The answer to set.", ParameterIs.Required)]
 	public class SetNextAnswer : DndFunction
 	{
 		public override string Name { get; set; } = "SetNextAnswer";

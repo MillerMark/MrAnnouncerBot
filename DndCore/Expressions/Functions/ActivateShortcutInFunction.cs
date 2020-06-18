@@ -6,8 +6,8 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Activates a specified Shortcut after the specified number of milliseconds elapses.")]
-	[Param(1, typeof(string), "shortcutName", "The name of the Shortcut to activate.")]
-	[Param(2, typeof(int), "delayMs", "The delay in ms to wait until activating the shortcut.")]
+	[Param(1, typeof(string), "shortcutName", "The name of the Shortcut to activate.", ParameterIs.Required)]
+	[Param(2, typeof(int), "delayMs", "The delay in ms to wait until activating the shortcut.", ParameterIs.Required)]
 	public class ActivateShortcutInFunction : DndFunction
 	{
 		public override string Name { get; set; } = "ActivateShortcutIn";

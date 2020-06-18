@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Adds the specified die roll effects to the next roll for the active player.")]
-	[Param(1, typeof(string), "dieRollEffects", "The name of the die roll effect (from the DieRollEffects Google sheet) to add.")]
+	[Param(1, typeof(string), "dieRollEffects", "The name of the die roll effect (from the DieRollEffects Google sheet) to add.", ParameterIs.Required)]
 	public class AddDieRollEffectsFunction : DndFunction
 	{
 		public override string Name => "AddDieRollEffects";

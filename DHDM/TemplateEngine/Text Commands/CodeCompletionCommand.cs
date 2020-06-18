@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Windows;
+using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 
 namespace DHDM

@@ -5,14 +5,13 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 
 namespace DHDM
 {
-	public class FileCompletionData : ICompletionData
+	public class TextStringCompletionData : ICompletionData
 	{
 		public string ToolTip { get; set; }
-		public FileCompletionData(string path)
+		public TextStringCompletionData(string text)
 		{
-			Path = path;
-			Text = System.IO.Path.GetFileName(Path);
-			ToolTip = Path;
+			Text = text;
+			ToolTip = Text;
 		}
 
 		public System.Windows.Media.ImageSource Image
@@ -20,7 +19,6 @@ namespace DHDM
 			get { return null; }
 		}
 
-		public string Text { get; private set; }
 
 		// Use this property if you want to show a fancy UIElement in the list.
 		public object Content
@@ -34,13 +32,13 @@ namespace DHDM
 		}
 
 		public double Priority => 0;
-		public string Path { get; set; }
+		public string Text { get; set; }
 
 		public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{
-			string tokenLeftOfCaret = TextCompletionEngine.GetIdentifierLeftOf(textArea.Document, textArea.Caret.Offset);
+			string tokenLeftOfCaret = textArea.Document.GetIdentifierLeftOf(textArea.Caret.Offset);
 			textArea.Document.Replace(textArea.Caret.Offset - tokenLeftOfCaret.Length, tokenLeftOfCaret.Length, "");
-			TemplateEngine.Expand(textArea, $"{System.IO.Path.GetFileNameWithoutExtension(Text)}\"");
+			TemplateEngine.Expand(textArea, $"{Text}\"");
 		}
 	}
 }

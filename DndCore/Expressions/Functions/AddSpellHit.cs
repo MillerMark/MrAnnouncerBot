@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Adds a random spell hit effect in the specified hue for the next die roll for the active player.")]
-	[Param(1, typeof(int), "hue", "The hue of the effect.")]
+	[Param(1, typeof(int), "hue", "The hue of the effect.", ParameterIs.Required)]
 	[Param(2, typeof(int), "saturation", "The saturation of the effect (0 is gray; 100 is full color). Defaults to 100 if not specified.", ParameterIs.Optional)]
 	[Param(3, typeof(int), "brightness", "The brightness of the effect (0 is black; 100 is normal; 200 is white). Defaults to 100 if not specified.", ParameterIs.Optional)]
 	public class AddSpellHit : DndFunction

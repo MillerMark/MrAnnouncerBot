@@ -6,8 +6,8 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Shows a message in the DM chat window at the specified time.")]
-	[Param(1, typeof(string), "reminder", "The message to show the DM.")]
-	[Param(2, typeof(string), "fromNowDuration", "The amount of time to wait until the reminder is shown (e.g., \"1 round\", \"end of turn\", etc.).")]
+	[Param(1, typeof(string), "reminder", "The message to show the DM.", ParameterIs.Required)]
+	[Param(2, typeof(string), "fromNowDuration", "The amount of time to wait until the reminder is shown (e.g., \"1 round\", \"end of turn\", etc.).", ParameterIs.Required)]
 	public class AddReminderFunction : DndFunction
 	{
 		public static event AddReminderEventHandler AddReminderRequest;

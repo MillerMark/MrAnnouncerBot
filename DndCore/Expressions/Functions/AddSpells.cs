@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Adds the specified known spells to the active player.")]
-	[Param(1, typeof(string), "spellList", "The list of spells to add, separated by semicolons.")]
+	[Param(1, typeof(string), "spellList", "The list of spells to add, separated by semicolons.", ParameterIs.Required)]
 	public class AddSpells : DndFunction
 	{
 		public override string Name { get; set; } = "AddSpells";

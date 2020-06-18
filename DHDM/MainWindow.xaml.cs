@@ -33,6 +33,7 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
+using ICSharpCode.AvalonEdit.Editing;
 
 namespace DHDM
 {
@@ -41,7 +42,6 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
-		ToolTip parameterToolTip;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
@@ -6264,20 +6264,6 @@ namespace DHDM
 			}
 		}
 
-		public ToolTip ParameterToolTip
-		{
-			get
-			{
-				if (parameterToolTip == null)
-					parameterToolTip = new ToolTip()
-					{
-						Placement = PlacementMode.Relative,
-						PlacementTarget = tbxCode
-					};
-				return parameterToolTip;
-			}
-		}
-
 		object lastParameterTooltip;
 
 		private Size MeasureString(string candidate)
@@ -6302,7 +6288,7 @@ namespace DHDM
 			int thisLine = tbxCode.TextArea.Caret.Line;
 			if (content is string && (string)lastParameterTooltip == (string)content)
 				if (lastLineShownTooltip == thisLine)
-					if (ParameterToolTip.IsOpen)
+					if (TextCompletionEngine.ParameterToolTip.IsOpen)
 						return;
 
 			lastLineShownTooltip = thisLine;
@@ -6311,15 +6297,19 @@ namespace DHDM
 				spaceWidth = MeasureString("M").Width;
 			double adjustLeft = tbxCode.TextArea.Caret.Offset - parameterStartOffset - 0.5;
 			Rect caret = tbxCode.TextArea.Caret.CalculateCaretRectangle();
-			ParameterToolTip.HorizontalOffset = Math.Round(caret.Right - adjustLeft * spaceWidth);
-			ParameterToolTip.VerticalOffset = caret.Bottom + 9;
-			ParameterToolTip.Content = content;
-			ParameterToolTip.IsOpen = true;
+			TextCompletionEngine.ParameterToolTip.HorizontalOffset = Math.Round(caret.Right - adjustLeft * spaceWidth);
+			TextCompletionEngine.ParameterToolTip.VerticalOffset = caret.Bottom + 9;
+			TextCompletionEngine.ParameterToolTip.Content = content;
+			TextCompletionEngine.ParameterToolTip.IsOpen = true;
+			if (TextCompletionEngine.CompletionWindow != null && TextCompletionEngine.CompletionWindow.IsVisible)
+			{
+				TextCompletionEngine.CompletionWindow.Top += TextCompletionEngine.ParameterToolTip.ActualHeight;
+			}
 		}
 
 		void HideParameterTooltip()
 		{
-			ParameterToolTip.IsOpen = false;
+			TextCompletionEngine.ParameterToolTip.IsOpen = false;
 		}
 
 		bool IsNavKey(Key key)
@@ -6343,12 +6333,12 @@ namespace DHDM
 
 		int GetParameterNumber()
 		{
-			return TextCompletionEngine.GetParameterNumberAtPosition(tbxCode.Document, tbxCode.TextArea.Caret.Offset);
+			return tbxCode.Document.GetParameterNumberAtPosition(tbxCode.TextArea.Caret.Offset);
 		}
 
 		int GetParameterStartOffset()
 		{
-			return TextCompletionEngine.GetParameterStartOffset(tbxCode.Document, tbxCode.TextArea.Caret.Offset);
+			return tbxCode.Document.GetParameterStartOffset(tbxCode.TextArea.Caret.Offset);
 		}
 
 		DispatcherTimer tooltipTimer;
@@ -6383,9 +6373,7 @@ namespace DHDM
 
 		string GetParameterTooltip(int parameterNumber)
 		{
-			string activeMethodCall = TextCompletionEngine.GetActiveMethodCall(tbxCode.Document, tbxCode.TextArea.Caret.Offset);
-
-			DndFunction dndFunction = Expressions.functions.FirstOrDefault(x => x.Name == activeMethodCall);
+			DndFunction dndFunction = TextCompletionEngine.GetActiveDndFunction(tbxCode.TextArea);
 			if (dndFunction == null)
 				return null;
 
@@ -6405,16 +6393,21 @@ namespace DHDM
 			tooltipTimer.Stop();
 			Dispatcher.Invoke(() =>
 			{
-				int parameterNumber = GetParameterNumber();
-				if (parameterNumber > 0)
-				{
-					int parameterStartOffset = GetParameterStartOffset();
-					string parameterTooltip = GetParameterTooltip(parameterNumber);
-					ShowParameterTooltip(parameterTooltip, parameterStartOffset);
-				}
-				else
-					HideParameterTooltip();
+				ShowParameterTooltipIfNecessary();
 			});
+		}
+
+		public void ShowParameterTooltipIfNecessary()
+		{
+			int parameterNumber = GetParameterNumber();
+			if (parameterNumber > 0)
+			{
+				int parameterStartOffset = GetParameterStartOffset();
+				string parameterTooltip = GetParameterTooltip(parameterNumber);
+				ShowParameterTooltip(parameterTooltip, parameterStartOffset);
+			}
+			else
+				HideParameterTooltip();
 		}
 
 		private void TbxCode_AvalonTextChanged(object sender, EventArgs e)

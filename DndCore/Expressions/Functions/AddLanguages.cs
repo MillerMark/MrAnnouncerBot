@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Adds the specified languages to the active player.")]
-	[Param(1, typeof(string), "languageStr", "The languages to add, separated by commas.")]
+	[Param(1, typeof(string), "languageStr", "The languages to add, separated by commas.", ParameterIs.Required)]
 	public class AddLanguages : DndFunction
 	{
 		public override string Name { get; set; } = "AddLanguages";

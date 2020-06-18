@@ -10,9 +10,9 @@ namespace DndCore
 	/// Used in D & D documentation to create singular/plurals
 	/// </summary>
 	[Tooltip("Returns a plural or singular string.")]
-	[Param(1, typeof(int), "amount", "The amount to check for singular/plural.")]
-	[Param(2, typeof(string), "singularStr", "The string to return if the amount equals one.")]
-	[Param(3, typeof(string), "pluralStr", "The string to return if the amount is not equal to one.")]
+	[Param(1, typeof(int), "amount", "The amount to check for singular/plural.", ParameterIs.Required)]
+	[Param(2, typeof(string), "singularStr", "The string to return if the amount equals one.", ParameterIs.Required)]
+	[Param(3, typeof(string), "pluralStr", "The string to return if the amount is not equal to one.", ParameterIs.Required)]
 	public class PluralFunction : DndFunction
 	{
 		public override string Name => "Plural";

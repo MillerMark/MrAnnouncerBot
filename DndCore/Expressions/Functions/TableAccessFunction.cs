@@ -5,10 +5,10 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Gets the data in the specified table from a specified column from the row that has a matching value in a different specified column.")]
-	[Param(1, typeof(string), "tableName", "The name of the table to look up.")]
-	[Param(2, typeof(string), "fieldLookup", "The column to retrieve the value from.")]
-	[Param(3, typeof(string), "matchColumn", "The column to find the match in.")]
-	[Param(4, typeof(string), "matchValue", "The value to match in the specified matchColumn (determines the row for the fieldLookup).")]
+	[Param(1, typeof(string), "tableName", "The name of the table to look up.", ParameterIs.Required)]
+	[Param(2, typeof(string), "fieldLookup", "The column to retrieve the value from.", ParameterIs.Required)]
+	[Param(3, typeof(string), "matchColumn", "The column to find the match in.", ParameterIs.Required)]
+	[Param(4, typeof(string), "matchValue", "The value to match in the specified matchColumn (determines the row for the fieldLookup).", ParameterIs.Required)]
 	public class TableAccessFunction : DndFunction
 	{
 		public override string Name => "Table";

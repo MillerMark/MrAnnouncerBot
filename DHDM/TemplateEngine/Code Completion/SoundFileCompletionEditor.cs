@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace DHDM
 {
-	[ParameterCompletion(typeof(AddSound), 1)]
+	[ParameterCompletion(typeof(AddSound), ParameterNames.AddSound_FileName)]
 	public class SoundFileCompletionEditor //: ICompletionEditor
 	{
 

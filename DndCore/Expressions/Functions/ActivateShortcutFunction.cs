@@ -6,7 +6,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Activates a specified Shortcut.")]
-	[Param(1, typeof(string), "shortcutName", "The name of the Shortcut to activate.")]
+	[Param(1, typeof(string), "shortcutName", "The name of the Shortcut to activate.", ParameterIs.Required)]
 	public class ActivateShortcutFunction : DndFunction
 	{
 		public static event ShortcutEventHandler ActivateShortcutRequest;

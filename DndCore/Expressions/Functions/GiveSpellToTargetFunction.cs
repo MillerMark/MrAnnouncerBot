@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Gives a the specified spell to the target with up to seven optional parameters that will be passed with that spell.")]
-	[Param(1, typeof(string), "spellName", "The name of the spell.")]
+	[Param(1, typeof(string), "spellName", "The name of the spell.", ParameterIs.Required)]
 	[Param(2, typeof(object), "data1", "Optional data parameter 1. Can be accessed by referencing \"data1\" from expressions for the given spell.", ParameterIs.Optional)]
 	[Param(3, typeof(object), "data2", "Optional data parameter 2. Can be accessed by referencing \"data2\" from expressions for the given spell.", ParameterIs.Optional)]
 	[Param(4, typeof(object), "data3", "Optional data parameter 3. Can be accessed by referencing \"data3\" from expressions for the given spell.", ParameterIs.Optional)]

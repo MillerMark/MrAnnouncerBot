@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Takes a specified temporary spell from the players targeted by the last spell.")]
-	[Param(1, typeof(string), "spellName", "The name of the spell to take.")]
+	[Param(1, typeof(string), "spellName", "The name of the spell to take.", ParameterIs.Required)]
 	public class TakeSpellFromTargetFunction : DndFunction
 	{
 		public override string Name { get; set; } = "TakeSpellFromTarget";

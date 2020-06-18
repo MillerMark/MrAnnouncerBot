@@ -6,9 +6,9 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Asks the specified multiple choice question.")]
-	[Param(1, typeof(string), "question", "The question to ask.")]
-	[Param(2, typeof(string), "answer1", "The first answer to the question. Answers should start with the value to return when that answer is selected, a colon, and then the answer (e.g., \"1: Yes\"). Return values need not be sequential.")]
-	[Param(3, typeof(string), "answer2", "The second answer to the question.")]
+	[Param(1, typeof(string), "question", "The question to ask.", ParameterIs.Required)]
+	[Param(2, typeof(string), "answer1", "The first answer to the question. Answers should start with the value to return when that answer is selected, a colon, and then the answer (e.g., \"1: Yes\"). Return values need not be sequential.", ParameterIs.Required)]
+	[Param(3, typeof(string), "answer2", "The second answer to the question.", ParameterIs.Required)]
 	[Param(4, typeof(string), "answer3", "The third answer to the question.", ParameterIs.Optional)]
 	[Param(5, typeof(string), "answer4", "The fourth answer to the question.", ParameterIs.Optional)]
 	[Param(6, typeof(string), "answer5", "The fifth answer to the question.", ParameterIs.Optional)]

@@ -46,10 +46,11 @@ namespace DHDM
 
 		public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{
-			string tokenLeftOfCaret = TextCompletionEngine.GetIdentifierLeftOf(textArea.Document, textArea.Caret.Offset);
+			string tokenLeftOfCaret = textArea.Document.GetIdentifierLeftOf(textArea.Caret.Offset);
 			textArea.Document.Replace(textArea.Caret.Offset - tokenLeftOfCaret.Length, tokenLeftOfCaret.Length, "");
 			string caret = TemplateEngine.GetCommand("Caret");
-			TemplateEngine.Expand(textArea, $"{Text}({caret});");
+			string showTooltip = TemplateEngine.GetCommand("ShowTooltip");
+			TemplateEngine.Expand(textArea, $"{Text}({caret}{showTooltip});");
 		}
 	}
 }

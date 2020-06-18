@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Gets the level of the active player for the specified class.")]
-	[Param(1, typeof(string), "value", "The value to halve.")]
+	[Param(1, typeof(string), "value", "The value to halve.", ParameterIs.Required)]
 	public class LevelFunction : DndFunction
 	{
 		public override string Name => "Level";

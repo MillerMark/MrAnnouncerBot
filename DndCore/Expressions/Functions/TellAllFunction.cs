@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Sends a specified message to both viewers and the dungeon master.")]
-	[Param(1, typeof(string), "message", "The message to send.")]
+	[Param(1, typeof(string), "message", "The message to send.", ParameterIs.Required)]
 	public class TellAllFunction : DndFunction
 	{
 		public override string Name => "TellAll";

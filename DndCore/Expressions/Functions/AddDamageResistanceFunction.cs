@@ -5,8 +5,8 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Adds damage resistance of the specified damage type and attack kind to the active player.")]
-	[Param(1, typeof(DamageType), "damageType", "The name of the Shortcut to activate.")]
-	[Param(2, typeof(AttackKind), "attackKind", "The delay in ms to wait until activating the shortcut.")]
+	[Param(1, typeof(DamageType), "damageType", "The name of the Shortcut to activate.", ParameterIs.Required)]
+	[Param(2, typeof(AttackKind), "attackKind", "The delay in ms to wait until activating the shortcut.", ParameterIs.Required)]
 	public class AddDamageResistanceFunction : DndFunction
 	{
 		public override string Name => "AddDamageResistance";

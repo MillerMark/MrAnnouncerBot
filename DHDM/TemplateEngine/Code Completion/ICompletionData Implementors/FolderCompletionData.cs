@@ -38,7 +38,7 @@ namespace DHDM
 
 		public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
 		{
-			string tokenLeftOfCaret = TextCompletionEngine.GetIdentifierLeftOf(textArea.Document, textArea.Caret.Offset);
+			string tokenLeftOfCaret = textArea.Document.GetIdentifierLeftOf(textArea.Caret.Offset);
 			textArea.Document.Replace(textArea.Caret.Offset - tokenLeftOfCaret.Length, tokenLeftOfCaret.Length, "");
 			TemplateEngine.Expand(textArea, $"{Text}/{TemplateEngine.GetCommand("CodeCompletion")}");
 		}
