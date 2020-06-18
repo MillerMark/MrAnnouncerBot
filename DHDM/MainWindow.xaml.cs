@@ -6429,6 +6429,7 @@ namespace DHDM
 		{
 			tbxCode.TextArea.TextEntered += TextCompletionEngine.TextArea_TextEntered;
 			tbxCode.TextArea.TextEntering += TextCompletionEngine.TextArea_TextEntering;
+			tbxCode.TextArea.KeyDown += TextCompletionEngine.TextArea_KeyDown;
 		}
 		public void InvokeCodeCompletion()
 		{

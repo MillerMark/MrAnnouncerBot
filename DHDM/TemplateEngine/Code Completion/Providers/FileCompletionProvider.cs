@@ -44,9 +44,19 @@ namespace DHDM
 			string filePattern = Path.GetFileName(fullPattern);
 			string folderName = Path.GetDirectoryName(fullPattern);
 			string[] files = Directory.GetFiles(folderName, filePattern);
-			string[] directories = Directory.GetDirectories(folderName);
-			if ((files == null || files.Length == 0) && (directories == null || directories.Length == 0))
-				return null;
+
+			string[] directories = null;
+			if (AllowSubFolders)
+			{
+				directories = Directory.GetDirectories(folderName);
+				if ((directories == null || directories.Length == 0) && (files == null || files.Length == 0))
+					return null;
+			}
+			else
+			{
+				if (files == null || files.Length == 0)
+					return null;
+			}
 
 			CompletionWindow completionWindow = new CompletionWindow(textArea);
 			IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;

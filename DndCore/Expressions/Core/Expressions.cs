@@ -36,6 +36,7 @@ namespace DndCore
 		public const string STR_Target = "target";
 		public const string STR_Dice = "dice";
 		public const string STR_CastedSpell = "castedSpell";
+		public const string STR_CustomData = "customData";
 		public static List<DndFunction> functions = new List<DndFunction>();
 		public static List<DndVariable> variables = new List<DndVariable>();
 		public static List<string> history = new List<string>();
@@ -74,9 +75,9 @@ namespace DndCore
 			return expression.Replace("“", "\"").Replace("”", "\"").Trim();
 
 		}
-		public static object Get(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public static object Get(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
-			StartEvaluation(player, $"Get({expression})", target, spell, dice);
+			StartEvaluation(player, $"Get({expression})", target, spell, dice, customData);
 			try
 			{
 				try
@@ -97,9 +98,9 @@ namespace DndCore
 			}
 		}
 
-		public static object Get<T>(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public static object Get<T>(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
-			StartEvaluation(player, $"Get<{typeof(T).ToString()}>({expression})", target, spell, dice);
+			StartEvaluation(player, $"Get<{typeof(T).ToString()}>({expression})", target, spell, dice, customData);
 			try
 			{
 				try
@@ -120,11 +121,11 @@ namespace DndCore
 			}
 		}
 
-		public static void Do(string expression, Character player = null, Target target = null, CastedSpell castedSpell = null, DiceStoppedRollingData dice = null)
+		public static void Do(string expression, Character player = null, Target target = null, CastedSpell castedSpell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return;
-			StartEvaluation(player, $"Do({expression})", target, castedSpell, dice);
+			StartEvaluation(player, $"Do({expression})", target, castedSpell, dice, customData);
 			try
 			{
 				string script = Clean(expression);
@@ -159,9 +160,9 @@ namespace DndCore
 			}
 		}
 
-		public static int GetInt(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public static int GetInt(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
-			StartEvaluation(player, $"GetInt({expression})", target, spell, dice);
+			StartEvaluation(player, $"GetInt({expression})", target, spell, dice, customData);
 			try
 			{
 				object result = 0;
@@ -193,9 +194,9 @@ namespace DndCore
 			}
 		}
 
-		public static double GetDouble(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public static double GetDouble(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
-			StartEvaluation(player, $"GetDouble({expression})", target, spell, dice);
+			StartEvaluation(player, $"GetDouble({expression})", target, spell, dice, customData);
 			try
 			{
 				object result = 0.0;
@@ -245,9 +246,9 @@ namespace DndCore
 			}
 		}
 
-		public static bool GetBool(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public static bool GetBool(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
-			StartEvaluation(player, $"GetBool({expression})", target, spell, dice);
+			StartEvaluation(player, $"GetBool({expression})", target, spell, dice, customData);
 			try
 			{
 				object result = false;
@@ -285,9 +286,9 @@ namespace DndCore
 			}
 		}
 
-		public static string GetStr(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public static string GetStr(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
-			StartEvaluation(player, $"GetStr({expression})", target, spell, dice);
+			StartEvaluation(player, $"GetStr({expression})", target, spell, dice, customData);
 			try
 			{
 				object result = string.Empty;
@@ -322,18 +323,18 @@ namespace DndCore
 		}
 
 		static Stack<IDictionary<string, object>> variableStack = new Stack<IDictionary<string, object>>();
-		private static void StartEvaluation(Character player, string callingProc, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		private static void StartEvaluation(Character player, string callingProc, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			//historyStack.Push(history);
 			//history = new List<string>();
 			LogCallingProc(callingProc);
-			AddPlayerVariables(player, target, spell, dice);
+			AddPlayerVariables(player, target, spell, dice, customData);
 			if (player != null)
 				player.StartingExpressionEvaluation();
 			BeginUpdate();
 		}
 
-		private static void AddPlayerVariables(Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		private static void AddPlayerVariables(Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			variableStack.Push(expressionEvaluator.Variables);
 			expressionEvaluator.Variables = new Dictionary<string, object>()
@@ -341,7 +342,8 @@ namespace DndCore
 				{ STR_Player, player },
 				{ STR_Target, target },
 				{ STR_Dice, dice },
-				{ STR_CastedSpell, spell }
+				{ STR_CastedSpell, spell },
+				{ STR_CustomData, customData }
 			};
 		}
 
@@ -376,6 +378,13 @@ namespace DndCore
 		{
 			if (variables.ContainsKey(STR_CastedSpell))
 				return variables[STR_CastedSpell] as CastedSpell;
+			return null;
+		}
+
+		public static object GetCustomData(IDictionary<string, object> variables)
+		{
+			if (variables.ContainsKey(STR_CustomData))
+				return variables[STR_CustomData];
 			return null;
 		}
 

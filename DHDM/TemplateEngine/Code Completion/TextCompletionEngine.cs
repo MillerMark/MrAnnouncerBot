@@ -173,8 +173,20 @@ namespace DHDM
 			ShowCompletionWindow();
 		}
 
+		List<ShortcutBinding> shortcutBindings = new List<ShortcutBinding>();
+
 		public void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
 		{
+			foreach (ShortcutBinding shortcutBinding in shortcutBindings)
+			{
+				if (shortcutBinding.IsAvailable(TbxCode.TextArea))
+				{
+					shortcutBinding.Invoke();
+					if (!shortcutBinding.SendKeyToEditorAfter)
+						return;
+					break;
+				}
+			}
 			if (e.Text.Length > 0 && completionWindow != null)
 			{
 				if (!char.IsLetterOrDigit(e.Text[0]))
@@ -211,6 +223,11 @@ namespace DHDM
 		{
 			string activeMethodCall = textArea.Document.GetActiveMethodCall(textArea.Caret.Offset);
 			return Expressions.functions.FirstOrDefault(x => x.Name == activeMethodCall);
+		}
+
+		public void TextArea_KeyDown(object sender, KeyEventArgs e)
+		{
+			
 		}
 	}
 }
