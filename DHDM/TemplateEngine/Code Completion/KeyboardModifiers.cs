@@ -5,7 +5,7 @@ using System.Linq;
 namespace DHDM
 {
 	[Flags]
-	public enum Modifiers
+	public enum KeyboardModifiers
 	{
 		None = 0,
 		Ctrl = 1,

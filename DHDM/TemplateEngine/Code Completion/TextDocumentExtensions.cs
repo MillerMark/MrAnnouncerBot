@@ -71,5 +71,28 @@ namespace DHDM
 			DocumentLine line = document.GetLineByOffset(caretOffset);
 			return document.GetText(line.Offset, caretOffset - line.Offset);
 		}
+
+		public static void GetSelectionBounds(this ICSharpCode.AvalonEdit.Editing.TextArea textArea, out int startLine, out int endLine)
+		{
+			startLine = textArea.Selection.StartPosition.Line;
+			ICSharpCode.AvalonEdit.TextViewPosition endPosition = textArea.Selection.EndPosition;
+			endLine = endPosition.Line;
+
+			if (endLine < startLine)  // Swap
+			{
+				int saveEndLine = endLine;
+				endLine = startLine;
+				startLine = saveEndLine;
+				endPosition = textArea.Selection.StartPosition;
+			}
+
+			TextDocument document = textArea.Document;
+
+			string lineLeft = null;
+			if (endPosition.Location.Line != 0 || endPosition.Location.Column != 0)
+				lineLeft = document.GetLineLeftOf(document.GetOffset(endPosition.Location));
+			if (string.IsNullOrWhiteSpace(lineLeft))
+				endLine--;
+		}
 	}
 }

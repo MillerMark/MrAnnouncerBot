@@ -35,43 +35,50 @@ namespace DHDM
 
 		public override CompletionWindow Complete(TextArea textArea)
 		{
-			int offset = textArea.Caret.Offset;
-
-			string filter = textArea.Document.GetStringLeftOf(offset);
-
-
-			string fullPattern = $"{BaseFolder}{filter}*.{Extension}";
-			string filePattern = Path.GetFileName(fullPattern);
-			string folderName = Path.GetDirectoryName(fullPattern);
-			string[] files = Directory.GetFiles(folderName, filePattern);
-
-			string[] directories = null;
-			if (AllowSubFolders)
+			try
 			{
-				directories = Directory.GetDirectories(folderName);
-				if ((directories == null || directories.Length == 0) && (files == null || files.Length == 0))
-					return null;
-			}
-			else
-			{
-				if (files == null || files.Length == 0)
-					return null;
-			}
+				int offset = textArea.Caret.Offset;
 
-			CompletionWindow completionWindow = new CompletionWindow(textArea);
-			IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-			if (files != null)
-				foreach (string fileName in files)
+				string filter = textArea.Document.GetStringLeftOf(offset);
+
+
+				string fullPattern = $"{BaseFolder}{filter}*.{Extension}";
+				string filePattern = Path.GetFileName(fullPattern);
+				string folderName = Path.GetDirectoryName(fullPattern);
+				string[] files = Directory.GetFiles(folderName, filePattern);
+
+				string[] directories = null;
+				if (AllowSubFolders)
 				{
-					data.Add(new FileCompletionData(fileName));
+					directories = Directory.GetDirectories(folderName);
+					if ((directories == null || directories.Length == 0) && (files == null || files.Length == 0))
+						return null;
 				}
-			if (directories != null)
-				foreach (string directoryName in directories)
+				else
 				{
-					data.Add(new FolderCompletionData(directoryName));
+					if (files == null || files.Length == 0)
+						return null;
 				}
 
-			return completionWindow;
+				CompletionWindow completionWindow = new CompletionWindow(textArea);
+				IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+				if (files != null)
+					foreach (string fileName in files)
+					{
+						data.Add(new FileCompletionData(fileName));
+					}
+				if (directories != null)
+					foreach (string directoryName in directories)
+					{
+						data.Add(new FolderCompletionData(directoryName));
+					}
+
+				return completionWindow;
+			}
+			catch (Exception ex)
+			{
+				return null;
+			}
 		}
 	}
 }

@@ -136,6 +136,7 @@ namespace DHDM
 			LoadAvalonSyntaxHighlighter();
 			TextCompletionEngine = new TextCompletionEngine(tbxCode);
 			HookAvalonEvents();
+			TextCompletionEngine.LoadShortcuts();
 		}
 
 		public TextCompletionEngine TextCompletionEngine { get; set; }
@@ -2607,63 +2608,20 @@ namespace DHDM
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Day";
-			game.Clock.Advance(DndTimeSpan.FromDays(1), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(1), Modifiers.ShiftDown);
 		}
 
 		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+10 Days";
-			game.Clock.Advance(DndTimeSpan.FromDays(10), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(10), Modifiers.ShiftDown);
 		}
 
 		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Month";
-			game.Clock.Advance(DndTimeSpan.FromDays(30), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(30), Modifiers.ShiftDown);
 		}
-
-		public bool ShiftKeyDown
-		{
-			get
-			{
-				return (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-			}
-		}
-
-		public bool AltKeyDown
-		{
-			get
-			{
-				return Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
-			}
-		}
-
-		public bool CtrlKeyDown
-		{
-			get
-			{
-				return Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
-			}
-		}
-
-
-		public bool AnyModifierDown
-		{
-			get
-			{
-				return CtrlKeyDown || AltKeyDown || ShiftKeyDown;
-			}
-		}
-
-
-		public bool NoModifiersDown
-		{
-			get
-			{
-				return !AnyModifierDown;
-			}
-		}
-
 
 		public DiceRollType NextDieRollType
 		{
@@ -2690,19 +2648,19 @@ namespace DHDM
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Hour";
-			game.Clock.Advance(DndTimeSpan.FromHours(1), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromHours(1), Modifiers.ShiftDown);
 		}
 
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+10 Minutes";
-			game.Clock.Advance(DndTimeSpan.FromMinutes(10), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromMinutes(10), Modifiers.ShiftDown);
 		}
 
 		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Minute";
-			game.Clock.Advance(DndTimeSpan.FromMinutes(1), ShiftKeyDown);
+			game.Clock.Advance(DndTimeSpan.FromMinutes(1), Modifiers.ShiftDown);
 		}
 
 
@@ -5000,7 +4958,7 @@ namespace DHDM
 			// TODO: Calculate clockMessage based on the delta here.
 			Dispatcher.Invoke(() =>
 			{
-				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), ShiftKeyDown);
+				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), Modifiers.ShiftDown);
 			});
 		}
 
@@ -5010,7 +4968,7 @@ namespace DHDM
 				return;
 			Dispatcher.Invoke(() =>
 			{
-				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), ShiftKeyDown);
+				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), Modifiers.ShiftDown);
 			});
 		}
 
@@ -6345,11 +6303,11 @@ namespace DHDM
 
 		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Space && NoModifiersDown)
+			if (e.Key == Key.Space && Modifiers.NoModifiersDown)
 			{
 				e.Handled = TemplateEngine.ExpandTemplate(tbxCode);
 			}
-			else if (IsNavKey(e.Key) || e.Key == Key.OemComma && NoModifiersDown)
+			else if (IsNavKey(e.Key) || e.Key == Key.OemComma && Modifiers.NoModifiersDown)
 			{
 				StartTooltipTimer();
 			}

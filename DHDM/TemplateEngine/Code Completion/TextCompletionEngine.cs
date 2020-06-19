@@ -47,16 +47,6 @@ namespace DHDM
 			return CodeUtils.IsIdentifierCharacter(text[0]); ;
 		}
 
-		bool ExpectingSoundPath()
-		{
-			int offset = TbxCode.TextArea.Caret.Offset;
-			string lineLeftOfCaret = TbxCode.Document.GetLineLeftOf(offset);
-			if (lineLeftOfCaret.Contains("AddSound"))
-				return true;
-
-			return false;
-		}
-
 		public void TextArea_TextEntered(object sender, TextCompositionEventArgs e)
 		{
 			//Expressions.functions
@@ -177,16 +167,6 @@ namespace DHDM
 
 		public void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
 		{
-			foreach (ShortcutBinding shortcutBinding in shortcutBindings)
-			{
-				if (shortcutBinding.IsAvailable(TbxCode.TextArea))
-				{
-					shortcutBinding.Invoke();
-					if (!shortcutBinding.SendKeyToEditorAfter)
-						return;
-					break;
-				}
-			}
 			if (e.Text.Length > 0 && completionWindow != null)
 			{
 				if (!char.IsLetterOrDigit(e.Text[0]))
@@ -227,7 +207,29 @@ namespace DHDM
 
 		public void TextArea_KeyDown(object sender, KeyEventArgs e)
 		{
-			
+			foreach (ShortcutBinding shortcutBinding in shortcutBindings)
+			{
+				if (shortcutBinding.Matches(e.Key, Modifiers.Active) && shortcutBinding.IsAvailable(TbxCode.TextArea))
+				{
+					shortcutBinding.InvokeCommand(TbxCode.TextArea);
+					if (!shortcutBinding.SendKeyToEditorAfter)
+					{
+						e.Handled = true;
+					}
+					break;
+				}
+			}
+		}
+		
+		public void LoadShortcuts()
+		{
+			shortcutBindings.Add(new ShortcutBinding(KeyboardModifiers.None, Key.Divide, "MultilineSelection == true && !SelectionIsCommented", new SelectionEmbedding("//")));
+			shortcutBindings.Add(new ShortcutBinding(KeyboardModifiers.None, Key.Divide, "MultilineSelection == true && SelectionIsCommented", new SelectionTrim("//")));
+		}
+
+		static TextCompletionEngine()
+		{
+			BaseContext.LoadAll();
 		}
 	}
 }

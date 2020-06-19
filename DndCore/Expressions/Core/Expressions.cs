@@ -381,11 +381,11 @@ namespace DndCore
 			return null;
 		}
 
-		public static object GetCustomData(IDictionary<string, object> variables)
+		public static T GetCustomData<T>(IDictionary<string, object> variables)
 		{
 			if (variables.ContainsKey(STR_CustomData))
-				return variables[STR_CustomData];
-			return null;
+				return (T)variables[STR_CustomData];
+			return default(T);
 		}
 
 		public static Target GetTargetCreature(IDictionary<string, object> variables)
