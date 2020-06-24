@@ -12,6 +12,15 @@ namespace DndCore
 
 		public bool HasCode { get; set; }
 		bool hasBreakpoints;
+
+		public string ImageUrl
+		{
+			get
+			{
+				return $"D:\\Dropbox\\DX\\Twitch\\Assets\\Stream Deck Icons\\Spells\\{Name.Replace('/', '_')}.png";
+			}
+		}
+
 		public bool HasBreakpoints
 		{
 			get

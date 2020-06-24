@@ -64,6 +64,7 @@ namespace DHDM
 		DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
 		DispatcherTimer updateClearButtonTimer;
+		DispatcherTimer needToSaveCodeTimer;
 		DateTime lastUpdateTime;
 		int keepExistingModifier = int.MaxValue;
 		DndGame game = null;
@@ -135,7 +136,7 @@ namespace DHDM
 		{
 			LoadAvalonSyntaxHighlighter();
 			TextCompletionEngine = new TextCompletionEngine(tbxCode);
-			HookAvalonEvents();
+			TextCompletionEngine.RequestTextSave += SaveCodeChanges;
 			TextCompletionEngine.LoadShortcuts();
 		}
 
@@ -2038,8 +2039,8 @@ namespace DHDM
 			if (player == null)
 				return;
 
-			lstAssignedFeatures.ItemsSource = player.GetEventGroup(typeof(Feature));
-			lstKnownSpells.ItemsSource = player.GetEventGroup(typeof(Spell));
+			//lstAssignedFeatures.ItemsSource = player.GetEventGroup(typeof(Feature));
+			lstKnownSpellsAndFeatures.ItemsSource = player.GetAllEventGroups();
 			lstEvents.ItemsSource = null;
 		}
 
@@ -5252,13 +5253,16 @@ namespace DHDM
 			UnleashTheNextRoll();
 		}
 
-		private void LstEventCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void LstKnownSpellsAndFeatures_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			EventData selectedItem = lstEvents.SelectedItem as EventData;
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
 				if (e.AddedItems[0] is EventGroup eventGroup)
 				{
 					activeEventGroup = eventGroup;
 					lstEvents.ItemsSource = eventGroup.Events;
+					if (selectedItem != null)
+						lstEvents.SelectedItem = eventGroup.Events.FirstOrDefault(x => x.Name == selectedItem.Name);
 				}
 		}
 
@@ -5298,6 +5302,7 @@ namespace DHDM
 		{
 			btnUpdateEventHandler.Content = $"Update \"{eventData.ParentGroup.Name}\" {eventData.Name} handler";
 		}
+		
 		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
@@ -5307,24 +5312,11 @@ namespace DHDM
 					UpdateTheUpdateButton(activeEventData);
 					string code = GetPlayerEventCode(eventData.ParentGroup, eventData.Name);
 					SetEventCode(code);
-
+					
 					// TODO: Remove lstCode and related if no longer used:
 					List<DebugLine> debugLines = GetDebugLines(code);
 					lstCode.ItemsSource = debugLines;
 				}
-		}
-
-		void ClearUndoStack(object textEditor)
-		{
-			if (textEditor is TextBox textBox)
-			{
-				textBox.IsUndoEnabled = false;
-				textBox.IsUndoEnabled = true;
-			}
-			else if (textEditor is TextEditor avalonEditor)
-			{
-				avalonEditor.Document.UndoStack.ClearAll();
-			}
 		}
 
 		private void SetEventCode(string code)
@@ -5332,8 +5324,8 @@ namespace DHDM
 			changingInternally = true;
 			try
 			{
-				tbxCode.Text = code;
-				ClearUndoStack(tbxCode);
+				HideAllCodeChangedStatusUI();
+				TextCompletionEngine.SetText(code);
 			}
 			finally
 			{
@@ -5497,22 +5489,22 @@ namespace DHDM
 
 		EventGroup activeEventGroup;
 
-		private void LstAssignedFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-		{
-			if (lstAssignedFeatures.SelectedItem is EventGroup eventGroup)
-			{
-				activeEventGroup = eventGroup;
-				lstEvents.ItemsSource = eventGroup.Events;
-			}
-		}
+		//private void LstAssignedFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		//{
+		//	if (lstAssignedFeatures.SelectedItem is EventGroup eventGroup)
+		//	{
+		//		activeEventGroup = eventGroup;
+		//		lstEvents.ItemsSource = eventGroup.Events;
+		//	}
+		//}
 
-		private void LstKnownSpells_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		private void LstKnownSpellsAndFeatures_PreviewMouseUp(object sender, MouseButtonEventArgs e)
 		{
-			if (lstKnownSpells.SelectedItem is EventGroup eventGroup)
+			if (lstKnownSpellsAndFeatures.SelectedItem is EventGroup eventGroup)
 			{
 				activeEventGroup = eventGroup;
 				lstEvents.ItemsSource = eventGroup.Events;
-				btnRepeatLastCast.Content = $"Cast {eventGroup.Name}";
+				//btnRepeatLastCast.Content = $"Cast {eventGroup.Name}";
 			}
 		}
 
@@ -5868,7 +5860,7 @@ namespace DHDM
 			ChangeFrameRate(overlayName, frameRate);
 		}
 
-		bool dynamicThrottling = true;
+		bool dynamicThrottling = false;
 
 		private void CkDynamicThrottling_CheckedChanged(object sender, RoutedEventArgs e)
 		{
@@ -6001,22 +5993,7 @@ namespace DHDM
 
 		private void BtnUpdateEventHandler_Click(object sender, RoutedEventArgs e)
 		{
-			if (activeEventData == null)
-				return;
-			// Spells only...
-			string spellOrFeatureName = activeEventData.ParentGroup.Name;
-			List<Spell> allSpells = AllSpells.GetAll(spellOrFeatureName);
-			if (allSpells.Count == 1)
-			{
-				Spell spell = allSpells[0];
-				GoogleSheets.SaveChanges(spell);
-			}
-			else
-			{
-				Feature feature = AllFeatures.Get(spellOrFeatureName);
-				if (feature != null)
-					GoogleSheets.SaveChanges(feature);
-			}
+			SaveCodeChanges(sender, e);
 		}
 
 		private void BtnTestPlayerSave_Click(object sender, RoutedEventArgs e)
@@ -6301,9 +6278,25 @@ namespace DHDM
 
 		DispatcherTimer tooltipTimer;
 
+		void FocusSelectedItem(ListBox listBox)
+		{
+			if (listBox.SelectedItem != null)
+			{
+				ListBoxItem listBoxItem = (ListBoxItem)listBox.ItemContainerGenerator.ContainerFromItem(listBox.SelectedItem);
+				listBoxItem?.Focus();
+			}
+			else
+				lstEvents.Focus();
+		}
 		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Space && Modifiers.NoModifiersDown)
+			if (e.Key == Key.Escape && Modifiers.NoModifiersDown)
+			{
+				// TODO: Change this if/when we add support for markers.
+				FocusSelectedItem(lstEvents);
+				e.Handled = true;
+			}
+			else if (e.Key == Key.Space && Modifiers.NoModifiersDown)
 			{
 				e.Handled = TemplateEngine.ExpandTemplate(tbxCode);
 			}
@@ -6368,8 +6361,31 @@ namespace DHDM
 				HideParameterTooltip();
 		}
 
+		void ShowStatusSavingCode()
+		{
+			tbStatus.Visibility = Visibility.Visible;
+			iconSaving.Visibility = Visibility.Visible;
+			iconSaved.Visibility = Visibility.Hidden;
+		}
+
+		void ShowStatusCodeIsSaved()
+		{
+			tbStatus.Visibility = Visibility.Hidden;
+			iconSaving.Visibility = Visibility.Hidden;
+			iconSaved.Visibility = Visibility.Visible;
+		}
+
+		void HideAllCodeChangedStatusUI()
+		{
+			tbStatus.Visibility = Visibility.Hidden;
+			iconSaving.Visibility = Visibility.Hidden;
+			iconSaved.Visibility = Visibility.Hidden;
+		}
+
 		private void TbxCode_AvalonTextChanged(object sender, EventArgs e)
 		{
+			if (!changingInternally)
+				ShowStatusSavingCode();
 			CodeChanged();
 		}
 		void LoadAvalonSyntaxHighlighter()
@@ -6385,9 +6401,7 @@ namespace DHDM
 		}
 		void HookAvalonEvents()
 		{
-			tbxCode.TextArea.TextEntered += TextCompletionEngine.TextArea_TextEntered;
-			tbxCode.TextArea.TextEntering += TextCompletionEngine.TextArea_TextEntering;
-			tbxCode.TextArea.KeyDown += TextCompletionEngine.TextArea_KeyDown;
+			
 		}
 		public void InvokeCodeCompletion()
 		{
@@ -6402,6 +6416,49 @@ namespace DHDM
 		private void TbxCode_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			StartTooltipTimer();
+		}
+		void SaveCodeChanges(object sender, EventArgs e)
+		{
+			if (activeEventData == null)
+				return;
+			// Spells only...
+			string spellOrFeatureName = activeEventData.ParentGroup.Name;
+			List<Spell> allSpells = AllSpells.GetAll(spellOrFeatureName);
+			if (allSpells.Count == 1)
+			{
+				Spell spell = allSpells[0];
+				GoogleSheets.SaveChanges(spell);
+			}
+			else
+			{
+				Feature feature = AllFeatures.Get(spellOrFeatureName);
+				if (feature != null)
+					GoogleSheets.SaveChanges(feature);
+			}
+			ShowStatusCodeIsSaved();
+		}
+
+		private void lstKnownSpellsAndFeatures_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter && Modifiers.NoModifiersDown)
+			{
+				FocusSelectedItem(lstEvents);
+				e.Handled = true;
+			}
+		}
+
+		private void lstEvents_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter && Modifiers.NoModifiersDown)
+			{
+				tbxCode.Focus();
+				e.Handled = true;
+			}
+			else if (e.Key == Key.Escape && Modifiers.NoModifiersDown)
+			{
+				FocusSelectedItem(lstKnownSpellsAndFeatures);
+				e.Handled = true;
+			}
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

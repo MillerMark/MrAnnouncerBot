@@ -2778,6 +2778,17 @@ namespace DndCore
 			}
 			return null;
 		}
+
+		public IEnumerable GetAllEventGroups()
+		{
+			List<EventGroup> allGroups = new List<EventGroup>();
+			foreach (EventCategory eventCategory in eventCategories)
+			{
+				allGroups.AddRange(eventCategory.Groups);
+			}
+			return allGroups;
+		}
+
 		public KnownSpell GetMatchingSpell(string spellName)
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);

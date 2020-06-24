@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Collections.Generic;
 using DndCore;
@@ -12,11 +13,21 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Reflection;
+using System.Windows.Threading;
 
 namespace DHDM
 {
 	public class TextCompletionEngine
 	{
+		bool textHasChanged;
+		public event EventHandler RequestTextSave;
+		
+		protected virtual void OnRequestTextSave(object sender, EventArgs e)
+		{
+			RequestTextSave?.Invoke(sender, e);
+			textHasChanged = false;
+		}
+
 		ToolTip parameterToolTip;
 		public ToolTip ParameterToolTip
 		{
@@ -31,10 +42,25 @@ namespace DHDM
 				return parameterToolTip;
 			}
 		}
+
+		private const int IntervalBeforeSavingCodeChangesMs = 1200;
 		public TextCompletionEngine(TextEditor tbxCode)
 		{
+			needToSaveCodeTimer = new DispatcherTimer(DispatcherPriority.Send);
+			needToSaveCodeTimer.Tick += new EventHandler(SaveCodeChangesFromTimer);
+			needToSaveCodeTimer.Interval = TimeSpan.FromMilliseconds(IntervalBeforeSavingCodeChangesMs);
 			TbxCode = tbxCode;
+			HookEvents();
 			CreateCompletionProviders();
+		}
+
+		void HookEvents()
+		{
+			TbxCode.TextArea.TextEntered += TextArea_TextEntered;
+			TbxCode.TextArea.TextEntering += TextArea_TextEntering;
+			TbxCode.TextArea.KeyDown += TextArea_KeyDown;
+			TbxCode.TextChanged += TextChanged;
+			TbxCode.LostFocus += TextArea_LostFocus;
 		}
 
 		CompletionWindow completionWindow;
@@ -44,7 +70,7 @@ namespace DHDM
 		{
 			if (string.IsNullOrWhiteSpace(text))
 				return false;
-			return CodeUtils.IsIdentifierCharacter(text[0]); ;
+			return CodeUtils.IsIdentifierCharacter(text[0]);
 		}
 
 		public void TextArea_TextEntered(object sender, TextCompositionEventArgs e)
@@ -54,13 +80,38 @@ namespace DHDM
 				return;
 
 			InvokeCodeCompletionIfNecessary(e.Text);
+			//TextJustChanged();
+		}
+
+		void TextChanged(object sender, EventArgs e)
+		{
+			TextJustChanged();
+		}
+
+		void TextJustChanged()
+		{
+			if (settingCodeInternally)
+				return;
+			textHasChanged = true;
+			needToSaveCodeTimer.Stop();
+			needToSaveCodeTimer.Start();
 		}
 
 		List<CompletionProvider> completionProviders = new List<CompletionProvider>();
 
-		string GetExpectedProviderName()
+		public class EditorProviderDetails
 		{
-			string expectedProviderName = null;
+			public string Name { get; set; }
+			public Type Type { get; set; }
+			public EditorProviderDetails()
+			{
+			}
+		}
+
+		EditorProviderDetails GetCompletionProviderDetails()
+		{
+			EditorProviderDetails result = new EditorProviderDetails();
+			
 			DndFunction dndFunction = GetActiveDndFunction(TbxCode.TextArea);
 			if (dndFunction != null)
 			{
@@ -70,10 +121,13 @@ namespace DHDM
 					int parameterNumber = TbxCode.Document.GetParameterNumberAtPosition(TbxCode.CaretOffset);
 					ParamAttribute paramAttribute = customAttributes.FirstOrDefault(x => x.Index == parameterNumber);
 					if (paramAttribute != null)
-						expectedProviderName = paramAttribute.Editor;
+					{
+						result.Name = paramAttribute.Editor;
+						result.Type = paramAttribute.Type;
+					}
 				}
 			}
-			return expectedProviderName;
+			return result;
 		}
 
 		void InvokeCodeCompletionIfNecessary(string lastKeyPressed)
@@ -84,11 +138,11 @@ namespace DHDM
 				CompleteIdentifier();
 			else if (lastKeyPressed.Length > 0)
 			{
-				string expectedProviderName = GetExpectedProviderName();
+				EditorProviderDetails expectedProviderDetails = GetCompletionProviderDetails();
 
 				foreach (CompletionProvider completionProvider in completionProviders)
 				{
-					if (string.IsNullOrEmpty(expectedProviderName) || completionProvider.ProviderName == expectedProviderName)
+					if (string.IsNullOrEmpty(expectedProviderDetails.Name) || completionProvider.ProviderName == expectedProviderDetails.Name)
 						if (completionProvider.ShouldComplete(TbxCode.TextArea, lastKeyPressed[0]))
 						{
 							completionWindow = completionProvider.Complete(TbxCode.TextArea);
@@ -149,8 +203,15 @@ namespace DHDM
 			if (string.IsNullOrWhiteSpace(tokenLeftOfCaret))
 				return;
 
+
+			List<string> enumEntries = new List<string>();
+			EditorProviderDetails expectedProviderDetails = GetCompletionProviderDetails();
+			if (expectedProviderDetails.Type != null && expectedProviderDetails.Type.IsEnum)
+				foreach (object enumElement in expectedProviderDetails.Type.GetEnumValues())
+					enumEntries.Add(enumElement.ToString());
+
 			List<DndFunction> dndFunctions = Expressions.GetFunctionsStartingWith(tokenLeftOfCaret);
-			if (dndFunctions == null || dndFunctions.Count == 0)
+			if ((dndFunctions == null || dndFunctions.Count == 0) && enumEntries.Count == 0)
 				return;
 
 			completionWindow = new CompletionWindow(TbxCode.TextArea);
@@ -160,10 +221,16 @@ namespace DHDM
 				if (!string.IsNullOrWhiteSpace(dndFunction.Name))
 					data.Add(new FunctionCompletionData(dndFunction));
 			}
+			foreach (string enumEntry in enumEntries)
+			{
+				if (!string.IsNullOrWhiteSpace(enumEntry))
+					data.Add(new IdentifierCompletionData(enumEntry));
+			}
 			ShowCompletionWindow();
 		}
 
 		List<ShortcutBinding> shortcutBindings = new List<ShortcutBinding>();
+		DispatcherTimer needToSaveCodeTimer;
 
 		public void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
 		{
@@ -198,6 +265,7 @@ namespace DHDM
 
 		public TextEditor TbxCode { get; set; }
 		public CompletionWindow CompletionWindow { get => completionWindow; set => completionWindow = value; }
+		public bool SettingCodeInternally { get => settingCodeInternally; set => settingCodeInternally = value; }
 
 		public DndFunction GetActiveDndFunction(TextArea textArea)
 		{
@@ -231,5 +299,36 @@ namespace DHDM
 		{
 			BaseContext.LoadAll();
 		}
+
+		void SaveCodeChangesFromTimer(object sender, EventArgs e)
+		{
+			SaveTextNow();
+			needToSaveCodeTimer.Stop();
+		}
+		void SaveTextNow()
+		{
+			if (textHasChanged)
+				OnRequestTextSave(this, EventArgs.Empty);
+		}
+		public void TextArea_LostFocus(object sender, RoutedEventArgs e)
+		{
+			SaveTextNow();
+		}
+
+		bool settingCodeInternally;
+		public void SetText(string code)
+		{
+			settingCodeInternally = true;
+			try
+			{
+				TbxCode.Text = code;
+				TbxCode.Document.UndoStack.ClearAll();
+			}
+			finally
+			{
+				settingCodeInternally = false;
+			}
+		}
+
 	}
 }

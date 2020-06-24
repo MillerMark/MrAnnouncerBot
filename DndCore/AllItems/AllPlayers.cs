@@ -54,7 +54,7 @@ namespace DndCore
 
 			foreach (Character character in players)
 			{
-				if (character.name.ToLower().StartsWith(lowerName))
+				if (character.name != null && character.name.ToLower().StartsWith(lowerName))
 				{
 					return character.playerID;
 				}

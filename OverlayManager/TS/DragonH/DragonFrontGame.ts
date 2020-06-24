@@ -885,10 +885,10 @@ class DragonFrontGame extends DragonGame {
 		return false;
 	}
 
-
-
-	protected triggerSoundEffect(dto: any): void {
+	protected triggerSoundEffect(dto): void {
 		let soundFileName: string = dto.soundFileName;
+		if (!soundFileName)
+			return;
 		if (soundFileName.indexOf('.') < 0)
 			soundFileName += '.mp3';
 		console.log("Playing " + Folders.assets + 'SoundEffects/' + soundFileName);
@@ -1335,7 +1335,7 @@ class DragonFrontGame extends DragonGame {
 		let playerName: string = player.name;
 		let time: Date = new Date();
 		let likelyMorningCodeRushedShow: boolean = time.getHours() < 16;
-		if (this.inCombat || likelyMorningCodeRushedShow) {
+		if ((this.inCombat || likelyMorningCodeRushedShow) && playerName) {
 			let spaceIndex: number = playerName.indexOf(' ');
 			if (spaceIndex > 0)
 				playerName = playerName.substr(0, spaceIndex).trim();

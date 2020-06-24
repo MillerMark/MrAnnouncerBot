@@ -514,7 +514,7 @@ namespace DndCore
 		public static List<DndFunction> GetFunctionsStartingWith(string tokenLeftOfCaret)
 		{
 			string lower = tokenLeftOfCaret.ToLower();
-			return functions.Where(x => x.Name != null && x.Name.ToLower().StartsWith(lower)).ToList(); ;
+			return functions.Where(x => x.Name != null && x.Name.ToLower().StartsWith(lower)).ToList();
 		}
 
 		public static string HistoryLog
