@@ -137,7 +137,7 @@ namespace DHDM
 			LoadAvalonSyntaxHighlighter();
 			TextCompletionEngine = new TextCompletionEngine(tbxCode);
 			TextCompletionEngine.RequestTextSave += SaveCodeChanges;
-			TextCompletionEngine.LoadShortcuts();
+			TextCompletionEngine.ReloadShortcuts();
 		}
 
 		public TextCompletionEngine TextCompletionEngine { get; set; }
@@ -2216,8 +2216,8 @@ namespace DHDM
 			lastDieRollTime = DateTime.Now;
 			if (dynamicThrottling)
 			{
-				ChangeFrameRateAndUI(Overlays.Back, 6);
-				ChangeFrameRateAndUI(Overlays.Front, 8);
+				ChangeFrameRateAndUI(Overlays.Back, 30);
+				ChangeFrameRateAndUI(Overlays.Front, 30);
 				ChangeFrameRateAndUI(Overlays.Dice, 30);
 			}
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
@@ -3100,8 +3100,8 @@ namespace DHDM
 		{
 			if (dynamicThrottling)
 			{
-				ChangeFrameRateAndUI(Overlays.Back, 15);
-				ChangeFrameRateAndUI(Overlays.Front, 15);
+				ChangeFrameRateAndUI(Overlays.Back, 30);
+				ChangeFrameRateAndUI(Overlays.Front, 30);
 			}
 
 			waitingToClearDice = true;
@@ -6220,6 +6220,8 @@ namespace DHDM
 		int lastLineShownTooltip;
 		void ShowParameterTooltip(object content, int parameterStartOffset)
 		{
+			if (content == null)
+				return;
 			int thisLine = tbxCode.TextArea.Caret.Line;
 			if (content is string && (string)lastParameterTooltip == (string)content)
 				if (lastLineShownTooltip == thisLine)
@@ -6288,9 +6290,17 @@ namespace DHDM
 			else
 				lstEvents.Focus();
 		}
+		bool CodeCompletionWindowIsUp()
+		{
+			if (TextCompletionEngine.CompletionWindow == null)
+				return false;
+
+			return TextCompletionEngine.CompletionWindow.Visibility == Visibility.Visible;
+		}
+
 		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.Escape && Modifiers.NoModifiersDown)
+			if (e.Key == Key.Escape && Modifiers.NoModifiersDown && !CodeCompletionWindowIsUp())
 			{
 				// TODO: Change this if/when we add support for markers.
 				FocusSelectedItem(lstEvents);
@@ -6298,7 +6308,13 @@ namespace DHDM
 			}
 			else if (e.Key == Key.Space && Modifiers.NoModifiersDown)
 			{
-				e.Handled = TemplateEngine.ExpandTemplate(tbxCode);
+				CodeTemplate templateToExpand = TemplateEngine.GetTemplateToExpand(tbxCode);
+				if (templateToExpand != null)
+				{
+					e.Handled = true;
+					TextCompletionEngine.HideCodeCompletionWindow();
+					TemplateEngine.ExpandTemplate(tbxCode, templateToExpand);
+				}
 			}
 			else if (IsNavKey(e.Key) || e.Key == Key.OemComma && Modifiers.NoModifiersDown)
 			{
@@ -6399,10 +6415,6 @@ namespace DHDM
 				tbxCode.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
 			}
 		}
-		void HookAvalonEvents()
-		{
-			
-		}
 		public void InvokeCodeCompletion()
 		{
 			TextCompletionEngine.InvokeCodeCompletion();
@@ -6411,6 +6423,7 @@ namespace DHDM
 		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e)
 		{
 			TemplateEngine.ReloadTemplates();
+			TextCompletionEngine.ReloadShortcuts();
 		}
 
 		private void TbxCode_MouseDown(object sender, MouseButtonEventArgs e)
@@ -6427,13 +6440,13 @@ namespace DHDM
 			if (allSpells.Count == 1)
 			{
 				Spell spell = allSpells[0];
-				GoogleSheets.SaveChanges(spell);
+				GoogleSheets.SaveChanges(spell, activeEventData.Name);
 			}
 			else
 			{
 				Feature feature = AllFeatures.Get(spellOrFeatureName);
 				if (feature != null)
-					GoogleSheets.SaveChanges(feature);
+					GoogleSheets.SaveChanges(feature, activeEventData.Name);
 			}
 			ShowStatusCodeIsSaved();
 		}

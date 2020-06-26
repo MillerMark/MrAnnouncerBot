@@ -2,6 +2,7 @@
 
 namespace DndCore
 {
+
 	public class TooltipAttribute : Attribute
 	{
 		public TooltipAttribute(string displayText)

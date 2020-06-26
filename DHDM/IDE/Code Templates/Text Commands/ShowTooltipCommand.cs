@@ -15,6 +15,10 @@ namespace DHDM
 
 		}
 
+		public void AllExpansionsComplete(TextArea textArea)
+		{
+		}
+
 		public void Execute(TextArea textArea, TextDocument document)
 		{
 			if (Application.Current.MainWindow is MainWindow mainWindow)

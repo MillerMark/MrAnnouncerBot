@@ -41,5 +41,10 @@ namespace DHDM
 		{
 
 		}
+
+		public virtual void AllExpansionsComplete(TextArea textArea)
+		{
+
+		}
 	}
 }

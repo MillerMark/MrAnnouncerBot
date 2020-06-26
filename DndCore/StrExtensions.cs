@@ -93,6 +93,16 @@ namespace DndCore
 			}
 			return string.Empty;
 		}
+
+		public static string EverythingAfterLast(this string str, string matchStr)
+		{
+			int pos = str.LastIndexOf(matchStr);
+			if (pos >= 0)
+			{
+				return str.Substring(pos + matchStr.Length);
+			}
+			return string.Empty;
+		}
 		
 		public static string InitialCap(this string str)
 		{

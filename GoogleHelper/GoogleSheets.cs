@@ -64,13 +64,54 @@ namespace GoogleHelper
 			return response.Values;
 		}
 
+		static void SetEnumValue(PropertyInfo enumProperty, object instance, string valueStr)
+		{
+			int value = 0;
+			if (!string.IsNullOrWhiteSpace(valueStr))
+				try
+				{
+					string[] parts = valueStr.Split('|');
+					foreach (string part in parts)
+					{
+						value += (int)Enum.Parse(enumProperty.PropertyType, part.Trim());
+					}
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debugger.Break();
+					return;
+				}
+			enumProperty.SetValue(instance, value);
+		}
+
+		static void SetValue(PropertyInfo property, object instance, string value)
+		{
+			if (property.PropertyType.IsEnum)
+				SetEnumValue(property, instance, value);
+			else
+				System.Diagnostics.Debugger.Break();
+		}
+
+		static PropertyInfo GetCorrespondingPropertyInfo(Type type, string header)
+		{
+			PropertyInfo[] properties = type.GetProperties();
+			foreach (PropertyInfo propertyInfo in properties)
+			{
+				ColumnAttribute columnAttribute = propertyInfo.GetCustomAttribute<ColumnAttribute>();
+				if (columnAttribute != null && columnAttribute.ColumnName == header)
+					return propertyInfo;
+
+			}
+			return type.GetProperty(header);
+		}
 		static void TransferValues<T>(T instance, Dictionary<int, string> headers, IList<object> row) where T : new()
 		{
 			Type type = instance.GetType();
 
 			for (int i = 0; i < row.Count; i++)  // There may be fewer rows than headers.
 			{
-				PropertyInfo property = type.GetProperty(headers[i]);
+				//! Not using ColumName here!!!
+				PropertyInfo property = GetCorrespondingPropertyInfo(type, headers[i]);
 				if (property == null)
 					continue;
 
@@ -102,7 +143,7 @@ namespace GoogleHelper
 						property.SetValue(instance, newValue);
 						break;
 					default:
-						System.Diagnostics.Debugger.Break();
+						SetValue(property, instance, value);
 						break;
 				}
 			}
@@ -228,6 +269,7 @@ namespace GoogleHelper
 		{
 			spreadsheetIDs.Add("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
 			spreadsheetIDs.Add("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
+			spreadsheetIDs.Add("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
 		}
 
 		static MemberInfo[] GetFields<TAttribute>(Type instanceType) where TAttribute : Attribute
@@ -316,7 +358,7 @@ namespace GoogleHelper
 			return allRows[rowIndex][columnIndex].ToString();
 		}
 
-		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType)
+		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType, string filterMember = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
@@ -341,7 +383,14 @@ namespace GoogleHelper
 				int rowIndex = GetInstanceRowIndex(instances[i], indexFields, allRows, headerRow);
 				for (int j = 0; j < serializableFields.Length; j++)
 				{
+					// TODO: Filtering on the serializableFields would go here.
 					MemberInfo memberInfo = serializableFields[j];
+
+					if (filterMember != null && memberInfo.Name != filterMember)
+					{
+						continue;
+					}
+
 					int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
 					if (columnIndex >= allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
 						continue;
@@ -378,7 +427,7 @@ namespace GoogleHelper
 			headerRow = headerRowObjects.Select(x => x.ToString()).ToList();
 		}
 
-		public static void SaveChanges(object[] instances)
+		public static void SaveChanges(object[] instances, string filterMember = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
@@ -390,13 +439,13 @@ namespace GoogleHelper
 			if (tabNameAttribute == null)
 				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
 
-			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType);
+			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType, filterMember);
 		}
 
-		public static void SaveChanges(object instance)
+		public static void SaveChanges(object instance, string filterMember = null)
 		{
 			object[] array = { instance };
-			SaveChanges(array);
+			SaveChanges(array, filterMember);
 		}
 	}
 }

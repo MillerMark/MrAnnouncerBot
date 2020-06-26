@@ -11,5 +11,6 @@ namespace DHDM
 	{
 		void Execute(TextArea textArea, TextDocument document);
 		void ExpansionComplete(TextArea textArea);
+		void AllExpansionsComplete(TextArea textArea);
 	}
 }

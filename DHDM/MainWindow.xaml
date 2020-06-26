@@ -720,7 +720,7 @@
 													<ColumnDefinition Width="Auto" />
 												</Grid.ColumnDefinitions>
 												<CheckBox Style="{StaticResource MismatchedBreakpoint}" IsChecked="{Binding HasBreakpoints}" />
-												<Image Grid.Column="1" Width="22" Source="{Binding ImageUrl}"></Image>
+												<Image Grid.Column="1" Width="26" Source="{Binding ImageUrl}"></Image>
 												<TextBlock Grid.Column="2" Text="{Binding Name}" 
 													FontWeight="{Binding Path=HasCode, Converter={StaticResource BoolToFontWeightConverter}}"/>
 											</Grid>
@@ -831,7 +831,7 @@
 								</Button>
 
 								<Button x:Name="btnReloadTemplates" Click="btnReloadTemplates_Click"  Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
-									Reload Templates
+									Reload Templates and Shortcuts
 								</Button>
 							</StackPanel>
 						</StackPanel>
@@ -863,7 +863,7 @@
 								<RadioButton x:Name="rbnFront25" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
 									25
 								</RadioButton>
-								<RadioButton x:Name="rbnFront30" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
+								<RadioButton x:Name="rbnFront30" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click" IsChecked="True">
 									30
 								</RadioButton>
 								<RadioButton x:Name="rbnFront35" Margin="0, 2, 14, 0" Click="RbnFrontFpsChange_Click">
@@ -908,7 +908,7 @@
 								<RadioButton x:Name="rbnDice25" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
 									25
 								</RadioButton>
-								<RadioButton x:Name="rbnDice30" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
+								<RadioButton x:Name="rbnDice30" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click" IsChecked="True">
 									30
 								</RadioButton>
 								<RadioButton x:Name="rbnDice35" Margin="0, 2, 14, 0" Click="RbnDiceFpsChange_Click">
@@ -953,7 +953,7 @@
 								<RadioButton x:Name="rbnBack25" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
 									25
 								</RadioButton>
-								<RadioButton x:Name="rbnBack30" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">
+								<RadioButton x:Name="rbnBack30" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click" IsChecked="True">
 									30
 								</RadioButton>
 								<RadioButton x:Name="rbnBack35" Margin="0, 2, 14, 0" Click="RbnBackFpsChange_Click">

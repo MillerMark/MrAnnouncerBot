@@ -56,18 +56,12 @@ namespace DHDM
 			return result;
 		}
 
-		string GetTemplateExpansion(string wordToLeftOfCaret)
+		CodeTemplate GetCodeTemplate(string wordToLeftOfCaret, TextArea textArea)
 		{
 			// TODO: Add support for context and multiple templates.
-			CodeTemplate firstMatch = templates.FirstOrDefault(x => x.Template == wordToLeftOfCaret);
-			if (firstMatch == null)
-				return null;
-			return firstMatch.Expansion;
-			//if (wordToLeftOfCaret == "if")
-			//	return $"if ({Caret})";
-			//if (wordToLeftOfCaret == "/m")
-			//	return "// Mark was here!!!";
-			//return null;
+			return templates.FirstOrDefault(x => x.Template == wordToLeftOfCaret &&
+			(string.IsNullOrWhiteSpace(x.Context) || 
+			Expressions.GetBool(x.Context, null, null, null, null, textArea)));
 		}
 
 		List<ExpansionSegment> expansionSegments = new List<ExpansionSegment>();
@@ -98,7 +92,13 @@ namespace DHDM
 			{
 				textCommand.ExpansionComplete(textArea);
 			}
-			commandsExpanded.Clear();
+		}
+		void AllExpansionsComplete(TextArea textArea)
+		{
+			foreach (ITextCommand textCommand in commandsExpanded)
+			{
+				textCommand.AllExpansionsComplete(textArea);
+			}
 		}
 
 		void ExpandTemplate(TextArea textArea, string expansion)
@@ -106,34 +106,43 @@ namespace DHDM
 			AddSegments(textArea, expansion.Split(TextCommandDelimiterBegin));
 			ExpandSegments();
 			ExpansionComplete(textArea);
+			AllExpansionsComplete(textArea);
+			commandsExpanded.Clear();
+
 		}
 
 		/// <summary>
-		/// Expands the template to the left of the caret
+		/// Gets the template, if it exists, that is to the left of the caret.
 		/// </summary>
-		/// <param name="textBox"></param>
-		/// <returns>Returns true if the template was found and expanded.</returns>
-		public bool ExpandTemplate(TextEditor textBox)
+		public CodeTemplate GetTemplateToExpand(TextEditor textBox)
 		{
 			int caretIndex = textBox.TextArea.Caret.Offset;
 			int selectionLength = textBox.SelectionLength;
 			if (selectionLength != 0)
-				return false;
+				return null;
 
 			DocumentLine line = textBox.Document.GetLineByOffset(caretIndex);
 			string lineText = textBox.Document.GetText(line.Offset, line.Length);
 			int lineStartIndex = line.Offset;
 			int lineOffset = caretIndex - lineStartIndex;
 			string template = GetWordLeft(lineText, lineOffset);
-			if (string.IsNullOrWhiteSpace(template))
-				return false;
-			string expansion = GetTemplateExpansion(template);
-			if (string.IsNullOrWhiteSpace(expansion))
-				return false;
+			int templateStartIndex = lineText.LastIndexOf(template);
 
-			DeleteTemplate(textBox.TextArea, template);
-			ExpandTemplate(textBox.TextArea, expansion);
-			return true;
+			BaseContext.TextLeftOfTemplate = lineText.Remove(lineText.Length - template.Length, template.Length);
+			BaseContext.TextRightOfTemplate = lineText.Remove(0, templateStartIndex + template.Length);
+
+			if (string.IsNullOrWhiteSpace(template))
+				return null;
+			return GetCodeTemplate(template, textBox.TextArea);
+		}
+
+		/// <summary>
+		/// Expands the specified template at the caret position.
+		/// </summary>
+		public void ExpandTemplate(TextEditor textBox, CodeTemplate templateToExpand)
+		{
+			DeleteTemplate(textBox.TextArea, templateToExpand.Template);
+			ExpandTemplate(textBox.TextArea, templateToExpand.Expansion);
 		}
 
 		void DeleteTemplate(TextArea textArea, string template)
@@ -190,6 +199,7 @@ namespace DHDM
 		public void ReloadTemplates()
 		{
 			templates = LoadTemplates();
+
 		}
 	}
 }

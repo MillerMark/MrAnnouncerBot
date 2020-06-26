@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Reflection;
 using System.Windows.Threading;
+using GoogleHelper;
 
 namespace DHDM
 {
@@ -194,6 +195,23 @@ namespace DHDM
 			};
 		}
 
+		List<DndFunction> GetDndFunctionsStartingWith(string tokenLeftOfCaret, Type enumType)
+		{
+			List<DndFunction> dndFunctions = Expressions.GetFunctionsStartingWith(tokenLeftOfCaret);
+
+			if (enumType == null)
+				return dndFunctions;
+
+			List<DndFunction> filteredFunctions = new List<DndFunction>();
+			foreach (DndFunction dndFunction in dndFunctions)
+			{
+				ReturnTypeAttribute returnType = dndFunction.GetType().GetCustomAttribute<ReturnTypeAttribute>();
+				if (returnType != null && returnType.ReturnType == enumType)
+					filteredFunctions.Add(dndFunction);
+			}
+			return filteredFunctions;
+		}
+
 		private void CompleteIdentifier()
 		{
 			int offset = TbxCode.TextArea.Caret.Offset;
@@ -206,11 +224,15 @@ namespace DHDM
 
 			List<string> enumEntries = new List<string>();
 			EditorProviderDetails expectedProviderDetails = GetCompletionProviderDetails();
+			Type expectedEnumType = null;
 			if (expectedProviderDetails.Type != null && expectedProviderDetails.Type.IsEnum)
+			{
+				expectedEnumType = expectedProviderDetails.Type;
 				foreach (object enumElement in expectedProviderDetails.Type.GetEnumValues())
 					enumEntries.Add(enumElement.ToString());
+			}
 
-			List<DndFunction> dndFunctions = Expressions.GetFunctionsStartingWith(tokenLeftOfCaret);
+			List<DndFunction> dndFunctions = GetDndFunctionsStartingWith(tokenLeftOfCaret, expectedEnumType);
 			if ((dndFunctions == null || dndFunctions.Count == 0) && enumEntries.Count == 0)
 				return;
 
@@ -289,10 +311,12 @@ namespace DHDM
 			}
 		}
 		
-		public void LoadShortcuts()
+		public void ReloadShortcuts()
 		{
-			shortcutBindings.Add(new ShortcutBinding(KeyboardModifiers.None, Key.Divide, "MultilineSelection == true && !SelectionIsCommented", new SelectionEmbedding("//")));
-			shortcutBindings.Add(new ShortcutBinding(KeyboardModifiers.None, Key.Divide, "MultilineSelection == true && SelectionIsCommented", new SelectionTrim("//")));
+			shortcutBindings.Clear();
+			shortcutBindings = GoogleSheets.Get<ShortcutBinding>();
+			//shortcutBindings.Add(new ShortcutBinding(KeyboardModifiers.None, Key.Divide, "MultilineSelection == true && !SelectionIsCommented", new SelectionEmbedding("//")));
+			//shortcutBindings.Add(new ShortcutBinding(KeyboardModifiers.None, Key.Divide, "MultilineSelection == true && SelectionIsCommented", new SelectionTrim("//")));
 		}
 
 		static TextCompletionEngine()
@@ -328,6 +352,11 @@ namespace DHDM
 			{
 				settingCodeInternally = false;
 			}
+		}
+		public void HideCodeCompletionWindow()
+		{
+			if (completionWindow != null)
+				completionWindow.Close();
 		}
 
 	}

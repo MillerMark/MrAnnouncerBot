@@ -5,7 +5,7 @@ using GoogleHelper;
 
 namespace DHDM
 {
-	[SheetName("DnD")]
+	[SheetName("IDE")]
 	[TabName("Templates")]
 	public class CodeTemplate
 	{

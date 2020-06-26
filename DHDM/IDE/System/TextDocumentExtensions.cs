@@ -1,8 +1,10 @@
 ﻿//#define profiling
 using System;
 using DndCore;
+using ICSharpCode.AvalonEdit.Editing;
 using System.Linq;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Highlighting;
 
 namespace DHDM
 {
@@ -13,8 +15,11 @@ namespace DHDM
 			string lineLeft = document.GetLineLeftOf(caretOffset);
 			if (lineLeft.Contains("//") || lineLeft.Contains(")") || !lineLeft.Contains("("))
 				return null;
+			string callLeft = lineLeft.EverythingBeforeLast("(").Trim();
+			if (callLeft.Contains("("))
+				callLeft = callLeft.EverythingAfterLast("(").Trim();
 			// HACK: It's a hack, kids. But solves large number of use cases with very little code.
-			return lineLeft.EverythingBefore("(").Trim();
+			return callLeft;
 		}
 
 		public static string GetIdentifierLeftOf(this TextDocument document, int caretOffset)
@@ -50,7 +55,7 @@ namespace DHDM
 			// HACK: This solves 98% of use cases, but it's very hacky.
 			if (!lineLeft.Contains("(") || lineLeft.Contains("//") || lineLeft.Contains(")"))
 				return 0;
-			string parameters = lineLeft.EverythingAfter("(");
+			string parameters = lineLeft.EverythingAfterLast("(");
 			string[] allParamsLeft = parameters.Split(',');
 			return allParamsLeft.Length;
 		}
@@ -72,7 +77,7 @@ namespace DHDM
 			return document.GetText(line.Offset, caretOffset - line.Offset);
 		}
 
-		public static void GetSelectionBounds(this ICSharpCode.AvalonEdit.Editing.TextArea textArea, out int startLine, out int endLine)
+		public static void GetSelectionBounds(this TextArea textArea, out int startLine, out int endLine)
 		{
 			startLine = textArea.Selection.StartPosition.Line;
 			ICSharpCode.AvalonEdit.TextViewPosition endPosition = textArea.Selection.EndPosition;
@@ -94,5 +99,30 @@ namespace DHDM
 			if (string.IsNullOrWhiteSpace(lineLeft))
 				endLine--;
 		}
+
+		public static bool IsInHighlightSection(this TextArea textArea, string highlightName, int caretOffset = -1)
+		{
+			IHighlighter highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
+			if (highlighter == null)
+				return false;
+			if (caretOffset == -1)
+				caretOffset = textArea.Caret.Offset;
+
+			HighlightedLine result = highlighter.HighlightLine(textArea.Document.GetLineByOffset(caretOffset).LineNumber);
+			return result.Sections.Any(s => s.Offset <= caretOffset && 
+																 s.Offset + s.Length >= caretOffset && 
+																 s.Color.Name == highlightName);
+		}
+
+		public static bool IsInComment(this TextArea textArea, int caretOffset = -1)
+		{
+			return IsInHighlightSection(textArea, "Comment", caretOffset);
+		}
+
+		public static bool IsInString(this TextArea textArea, int caretOffset = -1)
+		{
+			return IsInHighlightSection(textArea, "String", caretOffset);
+		}
+
 	}
 }
