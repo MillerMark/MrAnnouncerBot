@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.ComponentModel;
 using System.Collections.Generic;
 using CodingSeb.ExpressionEvaluator;
 
@@ -103,6 +104,40 @@ namespace DndCore
 			}
 
 			return player.GetState(variableName);
+		}
+
+		public override List<PropertyCompletionInfo> GetCompletionInfo()
+		{
+			List<PropertyCompletionInfo> result = new List<PropertyCompletionInfo>();
+			GetPropertyNames();
+			foreach (string property in propertyNames)
+			{
+				string propertyDescription = $"Active Character Property: {property}";
+				PropertyInfo propertyInfo = typeof(Character).GetProperty(property);
+				if (propertyInfo != null)
+				{
+					DescriptionAttribute descriptionAttribute = propertyInfo.GetCustomAttribute<DescriptionAttribute>();
+					if (descriptionAttribute != null)
+						propertyDescription = descriptionAttribute.Description;
+				}
+				TypeHelper.GetTypeDetails(propertyInfo.PropertyType, out string enumTypeName, out ExpressionType expressionType);
+				result.Add(new PropertyCompletionInfo() { Name = property, Description = propertyDescription, EnumTypeName = enumTypeName, Type = expressionType });
+			}
+			foreach (string fieldName in fieldNames)
+			{
+				string fieldDescription = $"Active Character Field: {fieldName}";
+				FieldInfo fieldInfo = typeof(Character).GetField(fieldName);
+				if (fieldInfo != null)
+				{
+					DescriptionAttribute descriptionAttribute = fieldInfo.GetCustomAttribute<DescriptionAttribute>();
+					if (descriptionAttribute != null)
+						fieldDescription = descriptionAttribute.Description;
+				}
+				TypeHelper.GetTypeDetails(fieldInfo.FieldType, out string enumTypeName, out ExpressionType expressionType);
+				result.Add(new PropertyCompletionInfo() { Name = fieldName, Description = fieldDescription, EnumTypeName = enumTypeName, Type = expressionType });
+			}
+			return result;
+			
 		}
 	}
 }

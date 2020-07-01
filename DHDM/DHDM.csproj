@@ -310,7 +310,10 @@
     <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="CharacterTriggerProvider.cs" />
     <Compile Include="CompletionProvider.cs" />
+    <Compile Include="IDE\Code Completion\ICompletionData Implementors\FunctionCompletionData.cs" />
+    <Compile Include="IDE\Code Completion\Providers\TableColumnCompletionProvider.cs" />
     <Compile Include="IDE\Code Templates\Text Commands\AnchorCommand.cs" />
+    <Compile Include="IDE\Commands\ShowCodeCompletion.cs" />
     <Compile Include="IDE\Context\CaretIsInComment.cs" />
     <Compile Include="IDE\Context\InCodeBlock.cs" />
     <Compile Include="IDE\Context\InComment.cs" />
@@ -334,7 +337,7 @@
     <Compile Include="IDE\Code Templates\Text Commands\ShowTooltipCommand.cs" />
     <Compile Include="IDE\Code Templates\Text Commands\CaretCommand.cs" />
     <Compile Include="IDE\Code Templates\Text Commands\CodeCompletionCommand.cs" />
-    <Compile Include="IDE\Code Completion\ICompletionData Implementors\CodeCompletionData.cs" />
+    <Compile Include="IDE\Code Completion\ICompletionData Implementors\IdentifierCompletionData.cs" />
     <Compile Include="FrameRateChangeData.cs" />
     <Compile Include="FrmMonsterPicker.xaml.cs">
       <DependentUpon>FrmMonsterPicker.xaml</DependentUpon>

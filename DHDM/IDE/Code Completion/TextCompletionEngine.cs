@@ -44,7 +44,7 @@ namespace DHDM
 			}
 		}
 
-		private const int IntervalBeforeSavingCodeChangesMs = 1200;
+		private const int IntervalBeforeSavingCodeChangesMs = 1800;
 		public TextCompletionEngine(TextEditor tbxCode)
 		{
 			needToSaveCodeTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -76,12 +76,10 @@ namespace DHDM
 
 		public void TextArea_TextEntered(object sender, TextCompositionEventArgs e)
 		{
-			//Expressions.functions
 			if (completionWindow != null)
 				return;
 
 			InvokeCodeCompletionIfNecessary(e.Text);
-			//TextJustChanged();
 		}
 
 		void TextChanged(object sender, EventArgs e)
@@ -104,6 +102,7 @@ namespace DHDM
 		{
 			public string Name { get; set; }
 			public Type Type { get; set; }
+			public string ActiveMethodCall { get; set; }
 			public EditorProviderDetails()
 			{
 			}
@@ -116,6 +115,7 @@ namespace DHDM
 			DndFunction dndFunction = GetActiveDndFunction(TbxCode.TextArea);
 			if (dndFunction != null)
 			{
+				result.ActiveMethodCall = dndFunction.Name;
 				IEnumerable<ParamAttribute> customAttributes = dndFunction.GetType().GetCustomAttributes(typeof(ParamAttribute)).Cast<ParamAttribute>().ToList();
 				if (customAttributes != null)
 				{
@@ -136,7 +136,7 @@ namespace DHDM
 			if (lastKeyPressed == null)
 				return;
 			if (IsIdentifierKey(lastKeyPressed))
-				CompleteIdentifier();
+				CompleteCode();
 			else if (lastKeyPressed.Length > 0)
 			{
 				EditorProviderDetails expectedProviderDetails = GetCompletionProviderDetails();
@@ -144,7 +144,7 @@ namespace DHDM
 				foreach (CompletionProvider completionProvider in completionProviders)
 				{
 					if (string.IsNullOrEmpty(expectedProviderDetails.Name) || completionProvider.ProviderName == expectedProviderDetails.Name)
-						if (completionProvider.ShouldComplete(TbxCode.TextArea, lastKeyPressed[0]))
+						if (completionProvider.ShouldComplete(TbxCode.TextArea, lastKeyPressed[0], expectedProviderDetails.Name))
 						{
 							completionWindow = completionProvider.Complete(TbxCode.TextArea);
 							break;
@@ -176,6 +176,13 @@ namespace DHDM
 				List = "DenseSmoke; Poof; SmokeBlast; SmokeWave; SparkBurst; Water; SparkShower; EmbersLarge; EmbersMedium; Fumes; FireBall; BloodGush",
 				TriggerKey = '"'
 			});
+			AddCompletionProvider(new TextListCompletionProvider()
+			{
+				ProviderName = CompletionProviderNames.DndTableName,
+				List = "Barbarian; Ranger; Bard; Paladin; ArcaneTrickster; Rogue; Wizard; Druid; Sorcerer; Sorcerer.SpellSlotsFromSorceryPoints",
+				TriggerKey = '"'
+			});
+			AddCompletionProvider(new TableColumnCompletionProvider());
 		}
 
 		private void ShowCompletionWindow()
@@ -195,58 +202,105 @@ namespace DHDM
 			};
 		}
 
-		List<DndFunction> GetDndFunctionsStartingWith(string tokenLeftOfCaret, Type enumType)
+		List<DndFunction> GetDndFunctionsStartingWith(EditorProviderDetails expectedProviderDetails, string tokenLeftOfCaret)
 		{
 			List<DndFunction> dndFunctions = Expressions.GetFunctionsStartingWith(tokenLeftOfCaret);
 
-			if (enumType == null)
+			if (expectedProviderDetails.Type == null)
 				return dndFunctions;
 
 			List<DndFunction> filteredFunctions = new List<DndFunction>();
 			foreach (DndFunction dndFunction in dndFunctions)
 			{
 				ReturnTypeAttribute returnType = dndFunction.GetType().GetCustomAttribute<ReturnTypeAttribute>();
-				if (returnType != null && returnType.ReturnType == enumType)
+				if (returnType != null && returnType.Matches(expectedProviderDetails.Type))
 					filteredFunctions.Add(dndFunction);
 			}
 			return filteredFunctions;
 		}
 
-		private void CompleteIdentifier()
+		List<string> GetEnumEntries(EditorProviderDetails expectedProviderDetails)
+		{
+			List<string> enumEntries = new List<string>();
+			if (expectedProviderDetails.Type != null && expectedProviderDetails.Type.IsEnum)
+				foreach (object enumElement in expectedProviderDetails.Type.GetEnumValues())
+					enumEntries.Add(enumElement.ToString());
+			return enumEntries;
+		}
+
+		void AddEnumEntries(EditorProviderDetails expectedProviderDetails, List<ICompletionData> completionData, string tokenLeftOfCaret)
+		{
+			List<string> enumEntries = GetEnumEntries(expectedProviderDetails);
+			if (enumEntries != null)
+				foreach (string enumEntry in enumEntries)
+				{
+					if (!string.IsNullOrWhiteSpace(enumEntry))
+						if (string.IsNullOrWhiteSpace(tokenLeftOfCaret) || enumEntry.ToLower().StartsWith(tokenLeftOfCaret))
+							completionData.Add(new IdentifierCompletionData(enumEntry, $"{expectedProviderDetails.Type.Name}.{enumEntry}"));
+				}
+		}
+
+		void AddDndFunctionsStartingWith(EditorProviderDetails expectedProviderDetails, List<ICompletionData> completionData, string tokenLeftOfCaret)
+		{
+			List<DndFunction> dndFunctions = GetDndFunctionsStartingWith(expectedProviderDetails, tokenLeftOfCaret);
+			if (dndFunctions == null)
+				return;
+			foreach (DndFunction dndFunction in dndFunctions)
+				if (!string.IsNullOrWhiteSpace(dndFunction.Name))
+					completionData.Add(new FunctionCompletionData(dndFunction));
+		}
+
+
+		void GetAllKnownTokens()
+		{
+			allKnownTokens = new List<PropertyCompletionInfo>();
+			foreach (DndVariable dndVariable in Expressions.variables)
+			{
+				List<PropertyCompletionInfo> completionInfo = dndVariable.GetCompletionInfo();
+				if (completionInfo != null)
+					allKnownTokens.AddRange(completionInfo);
+			}
+			allKnownTokens = allKnownTokens.OrderBy(x => x.Name).ToList();
+		}
+
+		List<PropertyCompletionInfo> allKnownTokens;
+		void AddDndPropertiesStartingWith(EditorProviderDetails expectedProviderDetails, List<ICompletionData> completionData, string tokenLeftOfCaret)
+		{
+			if (allKnownTokens == null)
+				GetAllKnownTokens();
+			foreach (PropertyCompletionInfo propertyCompletionInfo in allKnownTokens)
+			{
+				if (expectedProviderDetails.Type != null)
+				{
+					if (propertyCompletionInfo.Type.HasFlag(ExpressionType.@enum) && propertyCompletionInfo.EnumTypeName != expectedProviderDetails.Type.Name)
+						continue;
+					if (!TypeHelper.Matches(propertyCompletionInfo.Type, expectedProviderDetails.Type))
+						continue;
+				}
+				if (string.IsNullOrWhiteSpace(tokenLeftOfCaret) || propertyCompletionInfo.Name.ToLower().StartsWith(tokenLeftOfCaret))
+					completionData.Add(new IdentifierCompletionData(propertyCompletionInfo.Name, propertyCompletionInfo.Description));
+			}
+		}
+
+		public void CompleteCode()
 		{
 			int offset = TbxCode.TextArea.Caret.Offset;
 
 			string tokenLeftOfCaret = TbxCode.Document.GetIdentifierLeftOf(offset);
 
-			if (string.IsNullOrWhiteSpace(tokenLeftOfCaret))
-				return;
-
-
-			List<string> enumEntries = new List<string>();
+			List<ICompletionData> completionData = new List<ICompletionData>();
 			EditorProviderDetails expectedProviderDetails = GetCompletionProviderDetails();
-			Type expectedEnumType = null;
-			if (expectedProviderDetails.Type != null && expectedProviderDetails.Type.IsEnum)
-			{
-				expectedEnumType = expectedProviderDetails.Type;
-				foreach (object enumElement in expectedProviderDetails.Type.GetEnumValues())
-					enumEntries.Add(enumElement.ToString());
-			}
+			AddEnumEntries(expectedProviderDetails, completionData, tokenLeftOfCaret);
+			AddDndFunctionsStartingWith(expectedProviderDetails, completionData, tokenLeftOfCaret);
+			AddDndPropertiesStartingWith(expectedProviderDetails, completionData, tokenLeftOfCaret);
 
-			List<DndFunction> dndFunctions = GetDndFunctionsStartingWith(tokenLeftOfCaret, expectedEnumType);
-			if ((dndFunctions == null || dndFunctions.Count == 0) && enumEntries.Count == 0)
+			if (completionData.Count == 0)
 				return;
-
 			completionWindow = new CompletionWindow(TbxCode.TextArea);
 			IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-			foreach (DndFunction dndFunction in dndFunctions)
+			foreach (ICompletionData item in completionData)
 			{
-				if (!string.IsNullOrWhiteSpace(dndFunction.Name))
-					data.Add(new FunctionCompletionData(dndFunction));
-			}
-			foreach (string enumEntry in enumEntries)
-			{
-				if (!string.IsNullOrWhiteSpace(enumEntry))
-					data.Add(new IdentifierCompletionData(enumEntry));
+				data.Add(item);
 			}
 			ShowCompletionWindow();
 		}
@@ -289,9 +343,14 @@ namespace DHDM
 		public CompletionWindow CompletionWindow { get => completionWindow; set => completionWindow = value; }
 		public bool SettingCodeInternally { get => settingCodeInternally; set => settingCodeInternally = value; }
 
+		string GetActiveMethodCall(TextArea textArea)
+		{
+			return textArea.Document.GetActiveMethodCall(textArea.Caret.Offset);
+		}
+
 		public DndFunction GetActiveDndFunction(TextArea textArea)
 		{
-			string activeMethodCall = textArea.Document.GetActiveMethodCall(textArea.Caret.Offset);
+			string activeMethodCall = GetActiveMethodCall(textArea);
 			return Expressions.functions.FirstOrDefault(x => x.Name == activeMethodCall);
 		}
 
@@ -301,7 +360,7 @@ namespace DHDM
 			{
 				if (shortcutBinding.Matches(e.Key, Modifiers.Active) && shortcutBinding.IsAvailable(TbxCode.TextArea))
 				{
-					shortcutBinding.InvokeCommand(TbxCode.TextArea);
+					shortcutBinding.ExecuteCommand(TbxCode.TextArea, this);
 					if (!shortcutBinding.SendKeyToEditorAfter)
 					{
 						e.Handled = true;

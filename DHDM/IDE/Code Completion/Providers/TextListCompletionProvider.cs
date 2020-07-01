@@ -23,10 +23,6 @@ namespace DHDM
 
 			return completionWindow;
 		}
-		public override bool ShouldComplete(TextArea textArea, char lastKeyPressed)
-		{
-			return base.ShouldComplete(textArea, lastKeyPressed);
-		}
 
 		string list;
 		List<string> entries;

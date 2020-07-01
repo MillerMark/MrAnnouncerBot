@@ -18,19 +18,9 @@ namespace DHDM
 
 		}
 
-		public override bool ShouldComplete(TextArea textArea, char lastKeyPressed)
+		public override bool ShouldComplete(TextArea textArea, char lastKeyPressed, string requestedProviderName)
 		{
-			return lastKeyPressed == '"' || lastKeyPressed == '/';
-
-			//if (!base.ShouldComplete(textArea, lastKeyPressed))  // Match the trigger key
-			//	return false;
-
-			//int offset = textArea.Caret.Offset;
-			//string lineLeftOfCaret = textArea.Document.GetLineLeftOf(offset);
-			//if (lineLeftOfCaret.Contains("AddSound"))
-			//	return true;
-
-			//return false;
+			return (lastKeyPressed == '"' || lastKeyPressed == '/') && ProviderName == requestedProviderName;
 		}
 
 		public override CompletionWindow Complete(TextArea textArea)

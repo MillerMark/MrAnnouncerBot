@@ -4,6 +4,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[ReturnType(typeof(double))]
 	[Tooltip("Gets the specified ability modifier for the active player.")]
 	[Param(1, typeof(Ability), "ability", "The ability to get the modifier for.", ParameterIs.Required)]
 	public class ModAbilityFunction : DndFunction

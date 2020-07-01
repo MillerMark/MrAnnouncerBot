@@ -118,6 +118,33 @@ namespace DndCore
 
 			return foundTable;
 		}
+		public static List<string> GetColumns(string tableName)
+		{
+			List<string> columns = new List<string>();
+			foreach (object table in tables)
+			{
+				PropertyInfo nameProp = table.GetType().GetProperty("Name");
+				if (nameProp != null && (string)nameProp.GetValue(table) == tableName)
+				{
+					Type tableType = table.GetType();
+					if (tableType.IsGenericType)
+					{
+						Type[] typeParameters = tableType.GetGenericArguments();
+						if (typeParameters.Length == 1)
+						{
+							Type tableEntryType = typeParameters[0];
+							PropertyInfo[] properties = tableEntryType.GetProperties();
+							foreach (PropertyInfo propertyInfo in properties)
+							{
+								columns.Add(propertyInfo.Name);
+							}
+						}
+					}
+					break;
+				}
+			}
+			return columns;
+		}
 	}
 }
 

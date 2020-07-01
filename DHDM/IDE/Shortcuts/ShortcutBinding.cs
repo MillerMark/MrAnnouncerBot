@@ -100,14 +100,9 @@ namespace DHDM
 
 		}
 
-		void ExecuteCommand(TextArea textArea)
+		public void ExecuteCommand(TextArea textArea, TextCompletionEngine textCompletionEngine)
 		{
-			Command.Execute(textArea);
-		}
-
-		public void InvokeCommand(TextArea textArea)
-		{
-			Command.Execute(textArea);
+			Command.Execute(textCompletionEngine, textArea);
 		}
 
 		public bool Matches(Key key, KeyboardModifiers activeModifiers)

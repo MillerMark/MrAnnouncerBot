@@ -7,6 +7,8 @@ namespace DndCore
 	{
 		public const string SoundFile = "SoundFile";
 		public const string AnimationEffectName = "AnimationEffectName";
+		public const string DndTableName = "DndTableName";
+		public const string DndTableColumn = "DndTableColumn";
 		public const string Enum = "Enum";
 	}
 }

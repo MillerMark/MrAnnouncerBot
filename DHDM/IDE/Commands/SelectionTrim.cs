@@ -9,7 +9,7 @@ namespace DHDM
 			Prefix = prefix;
 		}
 
-		public override void Execute(TextArea textArea)
+		public override void Execute(TextCompletionEngine textCompletionEngine, TextArea textArea)
 		{
 			textArea.GetSelectionBounds(out int startLine, out int endLine);
 			int startOffset = textArea.Document.GetOffset(startLine, 0);

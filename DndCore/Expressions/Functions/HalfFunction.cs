@@ -5,6 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
+	[ReturnType(typeof(int))]
 	[Tooltip("Cuts a specified value in half, *rounding down*.")]
 	[Param(1, typeof(string), "value", "The value to halve.", ParameterIs.Required)]
 	public class HalfFunction : DndFunction

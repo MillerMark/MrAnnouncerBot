@@ -7,7 +7,7 @@ namespace DHDM
 {
 	public class CodeEditorCommand
 	{
-		public virtual void Execute(TextArea textArea)
+		public virtual void Execute(TextCompletionEngine textCompletionEngine, TextArea textArea)
 		{
 
 		}

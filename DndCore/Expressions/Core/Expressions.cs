@@ -77,6 +77,9 @@ namespace DndCore
 		}
 		public static object Get(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return null;
+
 			StartEvaluation(player, $"Get({expression})", target, spell, dice, customData);
 			try
 			{
@@ -100,6 +103,8 @@ namespace DndCore
 
 		public static object Get<T>(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return default(T);
 			StartEvaluation(player, $"Get<{typeof(T).ToString()}>({expression})", target, spell, dice, customData);
 			try
 			{
@@ -162,6 +167,8 @@ namespace DndCore
 
 		public static int GetInt(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return 0;
 			StartEvaluation(player, $"GetInt({expression})", target, spell, dice, customData);
 			try
 			{
@@ -196,6 +203,8 @@ namespace DndCore
 
 		public static double GetDouble(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return 0;
 			StartEvaluation(player, $"GetDouble({expression})", target, spell, dice, customData);
 			try
 			{
@@ -248,6 +257,8 @@ namespace DndCore
 
 		public static bool GetBool(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return false;
 			StartEvaluation(player, $"GetBool({expression})", target, spell, dice, customData);
 			try
 			{
@@ -288,6 +299,9 @@ namespace DndCore
 
 		public static string GetStr(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
+			if (string.IsNullOrWhiteSpace(expression))
+				return string.Empty;
+
 			StartEvaluation(player, $"GetStr({expression})", target, spell, dice, customData);
 			try
 			{
@@ -457,6 +471,32 @@ namespace DndCore
 			}
 		}
 
+		static void AddEnumVariables()
+		{
+			AddVariable(new DndEnumValue<Ability>());
+			AddVariable(new DndEnumValue<AttackKind>());
+			AddVariable(new DndEnumValue<AttackType>());
+			AddVariable(new DndEnumValue<Conditions>());
+			AddVariable(new DndEnumValue<CreatureKinds>());
+			AddVariable(new DndEnumValue<CreatureSize>());
+			AddVariable(new DndEnumValue<DamageType>());
+			AddVariable(new DndEnumValue<ExhaustionLevels>());
+			AddVariable(new DndEnumValue<Languages>());
+			AddVariable(new DndEnumValue<ModType>());
+			AddVariable(new DndEnumValue<PlayerProperty>());
+			AddVariable(new DndEnumValue<RecalcOptions>());
+			AddVariable(new DndEnumValue<RechargeOdds>());
+			AddVariable(new DndEnumValue<Senses>());
+			AddVariable(new DndEnumValue<Skills>());
+			AddVariable(new DndEnumValue<SpellRangeType>());
+			AddVariable(new DndEnumValue<SpellType>());
+			AddVariable(new DndEnumValue<TimeMeasure>());
+			AddVariable(new DndEnumValue<TimePoint>());
+			AddVariable(new DndEnumValue<TurnPart>());
+			AddVariable(new DndEnumValue<VantageKind>());
+			AddVariable(new DndEnumValue<WeaponProperties>());
+			AddVariable(new DndEnumValue<Weapons>());
+		}
 		static void LoadEvaluatorExtensions()
 		{
 			Assembly dndCore = typeof(Expressions).Assembly;
@@ -467,9 +507,10 @@ namespace DndCore
 					continue;
 				if (type.BaseType == typeof(DndFunction))
 					AddFunction((DndFunction)Activator.CreateInstance(type));
-				if (type.BaseType == typeof(DndVariable))
+				if (typeof(DndVariable).IsAssignableFrom(type.BaseType) && !type.Name.StartsWith("DndEnumValue"))
 					AddVariable((DndVariable)Activator.CreateInstance(type));
 			}
+			AddEnumVariables();
 		}
 		public static bool LogHistory { get; set; }
 
@@ -513,8 +554,17 @@ namespace DndCore
 		}
 		public static List<DndFunction> GetFunctionsStartingWith(string tokenLeftOfCaret)
 		{
+			if (string.IsNullOrWhiteSpace(tokenLeftOfCaret))
+				return functions.ToList();
 			string lower = tokenLeftOfCaret.ToLower();
 			return functions.Where(x => x.Name != null && x.Name.ToLower().StartsWith(lower)).ToList();
+		}
+		public static List<DndVariable> GetVariablesStartingWith(string tokenLeftOfCaret)
+		{
+			if (string.IsNullOrWhiteSpace(tokenLeftOfCaret))
+				return variables.ToList();
+			string lower = tokenLeftOfCaret.ToLower();
+			return variables.Where(x => x.Name != null && x.Name.ToLower().StartsWith(lower)).ToList();
 		}
 
 		public static string HistoryLog

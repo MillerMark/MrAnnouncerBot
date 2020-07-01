@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using CodingSeb.ExpressionEvaluator;
+using System.ComponentModel;
 
 namespace DndCore
 {
@@ -65,6 +66,32 @@ namespace DndCore
 			}
 
 			return null;
+		}
+
+		public override List<PropertyCompletionInfo> GetCompletionInfo()
+		{
+			List<PropertyCompletionInfo> result = new List<PropertyCompletionInfo>();
+			PropertyInfo[] properties = typeof(Spell).GetProperties();
+			foreach (PropertyInfo propertyInfo in properties)
+			{
+				string description = $"Spell Property: {propertyInfo.Name}";
+				DescriptionAttribute descriptionAttribute = propertyInfo.GetCustomAttribute<DescriptionAttribute>();
+				if (descriptionAttribute != null)
+					description = descriptionAttribute.Description;
+				TypeHelper.GetTypeDetails(propertyInfo.PropertyType, out string enumTypeName, out ExpressionType expressionType);
+				result.Add(new PropertyCompletionInfo() { Name = $"spell_{propertyInfo.Name}", Description = description, EnumTypeName = enumTypeName, Type = expressionType });
+			}
+			FieldInfo[] fields = typeof(Spell).GetFields();
+			foreach (FieldInfo fieldInfo in fields)
+			{
+				string description = $"Spell Field: {fieldInfo.Name}";
+				DescriptionAttribute descriptionAttribute = fieldInfo.GetCustomAttribute<DescriptionAttribute>();
+				if (descriptionAttribute != null)
+					description = descriptionAttribute.Description;
+				TypeHelper.GetTypeDetails(fieldInfo.FieldType, out string enumTypeName, out ExpressionType expressionType);
+				result.Add(new PropertyCompletionInfo() { Name = $"spell_{fieldInfo.Name}", Description = description, EnumTypeName = enumTypeName, Type = expressionType });
+			}
+			return result;
 		}
 	}
 }

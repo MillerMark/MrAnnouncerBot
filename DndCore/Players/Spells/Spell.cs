@@ -564,13 +564,13 @@ namespace DndCore
 
 		public void TriggerSpellReceived(Character recipient, Spell givenSpell, object data1 = null, object data2 = null, object data3 = null, object data4 = null, object data5 = null, object data6 = null, object data7 = null)
 		{
-			DndProperty.Set("data1", data1);
-			DndProperty.Set("data2", data2);
-			DndProperty.Set("data3", data3);
-			DndProperty.Set("data4", data4);
-			DndProperty.Set("data5", data5);
-			DndProperty.Set("data6", data6);
-			DndProperty.Set("data7", data7);
+			DndProperty.GlobalSet("data1", data1);
+			DndProperty.GlobalSet("data2", data2);
+			DndProperty.GlobalSet("data3", data3);
+			DndProperty.GlobalSet("data4", data4);
+			DndProperty.GlobalSet("data5", data5);
+			DndProperty.GlobalSet("data6", data6);
+			DndProperty.GlobalSet("data7", data7);
 			TriggerReceived(recipient, null, new CastedSpell(givenSpell, recipient));
 		}
 

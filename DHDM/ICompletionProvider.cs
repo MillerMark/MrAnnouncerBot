@@ -10,6 +10,6 @@ namespace DHDM
 	{
 		string ProviderName { get; set; }
 		CompletionWindow Complete(TextArea textArea);
-		bool ShouldComplete(TextArea textArea, char lastKeyPressed);
+		bool ShouldComplete(TextArea textArea, char lastKeyPressed, string expectedProviderName);
 	}
 }

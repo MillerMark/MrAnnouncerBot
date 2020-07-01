@@ -103,7 +103,7 @@ namespace DndCore
 			}
 			return string.Empty;
 		}
-		
+
 		public static string InitialCap(this string str)
 		{
 			if (string.IsNullOrEmpty(str))
@@ -141,6 +141,13 @@ namespace DndCore
 		{
 			return str.EverythingAfter(beginMatchStr).EverythingBeforeLast(endMatchStr);
 		}
+
+
+		public static string EverythingBetweenNarrow(this string str, string beginMatchStr, string endMatchStr)
+		{
+			return str.EverythingAfterLast(beginMatchStr).EverythingBefore(endMatchStr);
+		}
+
 
 		public static bool Has(this string str, string matchStr)
 		{

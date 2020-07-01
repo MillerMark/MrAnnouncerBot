@@ -15,9 +15,9 @@ namespace DHDM
 
 		}
 
-		public override bool ShouldComplete(TextArea textArea, char lastKeyPressed)
+		public override bool ShouldComplete(TextArea textArea, char lastKeyPressed, string expectedProviderName)
 		{
-			return lastKeyPressed == TriggerKey;
+			return lastKeyPressed == TriggerKey && ProviderName == expectedProviderName;
 		}
 	}
 }
