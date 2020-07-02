@@ -5,6 +5,19 @@ namespace DndCore
 {
 	public static class TypeHelper
 	{
+		public static bool IsGenericDescendant(Type baseClass, Type typeToCheck)
+		{
+			while (typeToCheck != null && typeToCheck != typeof(object))
+			{
+				var cur = typeToCheck.IsGenericType ? typeToCheck.GetGenericTypeDefinition() : typeToCheck;
+				if (baseClass == cur)
+				{
+					return true;
+				}
+				typeToCheck = typeToCheck.BaseType;
+			}
+			return false;
+		}
 		public static void GetTypeDetails(Type type, out string enumTypeName, out ExpressionType expressionType)
 		{
 			enumTypeName = null;

@@ -470,5 +470,82 @@ namespace DndCore
 		{
 			return skillCheckOverrides[skill];
 		}
+		public static Monster Clone(Monster source)
+		{
+			Monster monster = new Monster();
+			monster.ActiveConditions = source.ActiveConditions;
+			monster.advantages = source.advantages;
+			monster.Alignment = source.Alignment;
+			monster.alignmentStr = source.alignmentStr;
+			monster.attacks = source.attacks;
+			monster.baseArmorClass = source.baseArmorClass;
+			monster.baseCharisma = source.baseCharisma;
+			monster.baseConstitution = source.baseConstitution;
+			monster.baseDexterity = source.baseDexterity;
+			monster.baseIntelligence = source.baseIntelligence;
+			monster.baseStrength = source.baseStrength;
+			monster.baseWalkingSpeed = source.baseWalkingSpeed;
+			monster.baseWisdom = source.baseWisdom;
+			monster.blindsightRadius = source.blindsightRadius;
+			monster.burrowingSpeed = source.burrowingSpeed;
+			monster.CalculatedMods = source.CalculatedMods;
+			monster.challengeRating = source.challengeRating;
+			monster.charismaMod = source.charismaMod;
+			monster.climbingSpeed = source.climbingSpeed;
+			monster.conditionImmunities = source.conditionImmunities;
+			monster.constitutionMod = source.constitutionMod;
+			monster.creatureSize = source.creatureSize;
+			//monster.cursesAndBlessings = source.cursesAndBlessings;
+			monster.damageImmunities = source.damageImmunities;
+			monster.damageResistance = source.damageResistance;
+			monster.damageVulnerability = source.damageVulnerability;
+			monster.darkvisionRadius = source.darkvisionRadius;
+			monster.dexterityMod = source.dexterityMod;
+			monster.disadvantages = source.disadvantages;
+			//monster.equipment = source.equipment;
+			monster.experiencePoints = source.experiencePoints;
+			monster.flyingSpeed = source.flyingSpeed;
+			//monster.Game = source.Game;
+			monster.GoldPieces = source.GoldPieces;
+			monster.HitPoints = source.HitPoints;
+			monster.ImageUrl = source.ImageUrl;
+			monster.initiative = source.initiative;
+			monster.intelligenceMod = source.intelligenceMod;
+			monster.kind = source.kind;
+			monster.languagesSpoken = source.languagesSpoken;
+			monster.languagesUnderstood = source.languagesUnderstood;
+			monster.LastDamagePointsTaken = source.LastDamagePointsTaken;
+			monster.LastDamageTaken = source.LastDamageTaken;
+			monster.Location = source.Location;
+			monster.maxHitPoints = source.maxHitPoints;
+			monster.multiAttack = source.multiAttack;  // shared
+			monster.multiAttackCount = source.multiAttackCount;  // shared
+			monster.name = source.name;
+			monster.naturalArmor = source.naturalArmor;
+			monster.offTurnActions = source.offTurnActions;
+			monster.onTurnActions = source.onTurnActions;
+			monster.passivePerception = source.passivePerception;
+			monster.PassivePerceptionOverride = source.PassivePerceptionOverride;
+			monster.race = source.race;
+			monster.savingCharismaMod = source.savingCharismaMod;
+			monster.savingConstitutionMod = source.savingConstitutionMod;
+			monster.savingDexterityMod = source.savingDexterityMod;
+			monster.savingIntelligenceMod = source.savingIntelligenceMod;
+			monster.savingStrengthMod = source.savingStrengthMod;
+			monster.savingWisdomMod = source.savingWisdomMod;
+			monster.senses = source.senses;
+			monster.skillCheckOverrides = source.skillCheckOverrides;
+			monster.skillsModStealth = source.skillsModStealth;
+			monster.strengthMod = source.strengthMod;
+			monster.swimmingSpeed = source.swimmingSpeed;
+			monster.telepathyRadius = source.telepathyRadius;
+			monster.tempArmorClassMod = source.tempArmorClassMod;
+			monster.tempHitPoints = source.tempHitPoints;
+			monster.traits = source.traits;  // shared
+			monster.tremorSenseRadius = source.tremorSenseRadius;
+			monster.truesightRadius = source.truesightRadius;
+			monster.wisdomMod = source.wisdomMod;
+			return monster;
+		}
 	}
 }

@@ -256,6 +256,8 @@ namespace DHDM
 			allKnownTokens = new List<PropertyCompletionInfo>();
 			foreach (DndVariable dndVariable in Expressions.variables)
 			{
+				if (TypeHelper.IsGenericDescendant(typeof(DndEnumValue<>), dndVariable.GetType()))
+					continue;
 				List<PropertyCompletionInfo> completionInfo = dndVariable.GetCompletionInfo();
 				if (completionInfo != null)
 					allKnownTokens.AddRange(completionInfo);
@@ -290,7 +292,7 @@ namespace DHDM
 
 			List<ICompletionData> completionData = new List<ICompletionData>();
 			EditorProviderDetails expectedProviderDetails = GetCompletionProviderDetails();
-			AddEnumEntries(expectedProviderDetails, completionData, tokenLeftOfCaret);
+			 AddEnumEntries(expectedProviderDetails, completionData, tokenLeftOfCaret);
 			AddDndFunctionsStartingWith(expectedProviderDetails, completionData, tokenLeftOfCaret);
 			AddDndPropertiesStartingWith(expectedProviderDetails, completionData, tokenLeftOfCaret);
 

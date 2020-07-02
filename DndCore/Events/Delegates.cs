@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
+	public delegate void MagicEventHandler(object sender, MagicEventArgs ea);
 	public delegate void FeatureEventHandler(object sender, FeatureEventArgs ea);
 	public delegate void GetRollEventHandler(object sender, GetRollEventArgs ea);
 	public delegate void AddReminderEventHandler(object sender, AddReminderEventArgs ea);

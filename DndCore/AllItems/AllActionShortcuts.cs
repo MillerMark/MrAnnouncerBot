@@ -150,7 +150,7 @@ namespace DndCore
 				AddShortcutsFor(player);
 			}
 		}
-		
+
 		public static List<PlayerActionShortcutDto> LoadData(string dataFile)
 		{
 			return GoogleSheets.Get<PlayerActionShortcutDto>(dataFile);
@@ -172,14 +172,16 @@ namespace DndCore
 			return AllShortcuts.Where(x => x.PlayerId == playerId).Where(x => x.DisplayText.ToLower().StartsWith(lowerName)).ToList();
 		}
 
-		public static List<PlayerActionShortcut> AllShortcuts {
+		public static List<PlayerActionShortcut> AllShortcuts
+		{
 			get
 			{
 				if (shortcuts == null)
 					LoadData();
 				return shortcuts;
 			}
-			private set => shortcuts = value; }
+			private set => shortcuts = value;
+		}
 	}
 }
 

@@ -15,7 +15,7 @@ namespace DndCore
 	[TabName("Players")]
 	public class Character : Creature
 	{
-		string wildShapeCreatureName;
+		//string wildShapeCreatureName;
 		Creature wildShape;
 		public Creature WildShape
 		{

@@ -668,5 +668,65 @@ namespace DndCore
 		public virtual void EndTurnResetState()
 		{
 		}
+
+		void AddCastedMagic(Magic magic)
+		{
+			castedMagic.Add(magic);
+			magic.OnDispel += CastedMagic_Dispelled;
+		}
+
+		List<Magic> receivedMagic = new List<Magic>();
+		List<Magic> castedMagic = new List<Magic>();
+
+		void ReceiveMagic(Magic magic)
+		{
+			magic.AddTarget(this);
+			receivedMagic.Add(magic);
+			magic.OnDispel += ReceivedMagic_Dispelled;
+		}
+
+		public void GiveMagic(string magicItemName, Target target, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
+		{
+			Magic magic = new Magic(this, magicItemName, data1, data2, data3, data4, data5, data6, data7, data8);
+			if (target != null)
+			{
+				if (target.PlayerIds != null)
+					foreach (int playerId in target.PlayerIds)
+					{
+						Character player = Game.GetPlayerFromId(playerId);
+						if (player != null)
+							player.ReceiveMagic(magic);
+					}
+				if (target.Creatures != null)
+					foreach (Creature creature in target.Creatures)
+					{
+						creature.ReceiveMagic(magic);
+					}
+			}
+
+			AddCastedMagic(magic);
+		}
+
+		void RemoveReceivedMagic(Magic magic)
+		{
+			magic.OnDispel -= ReceivedMagic_Dispelled;
+			receivedMagic.Remove(magic);
+		}
+
+		void RemoveCastedMagic(Magic magic)
+		{
+			magic.OnDispel -= CastedMagic_Dispelled;
+			castedMagic.Remove(magic);
+		}
+
+		void ReceivedMagic_Dispelled(object sender, MagicEventArgs ea)
+		{
+			RemoveReceivedMagic(ea.Magic);
+		}
+
+		void CastedMagic_Dispelled(object sender, MagicEventArgs ea)
+		{
+			RemoveCastedMagic(ea.Magic);
+		}
 	}
 }

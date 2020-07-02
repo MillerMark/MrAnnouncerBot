@@ -276,7 +276,13 @@ namespace DHDM
 
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
-
+			// TODO: Add UI later!!!
+			InGameCreature inGameCreature = AllInGameCreatures.Get("TehPudding");
+			if (inGameCreature != null)
+			{
+				ea.Target = new Target();
+				ea.Target.AddCreature(inGameCreature.Creature);
+			}
 		}
 
 		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
@@ -4309,6 +4315,7 @@ namespace DHDM
 
 		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
 		{
+			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
 
 			AllWeaponEffects.Invalidate();
