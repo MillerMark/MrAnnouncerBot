@@ -9,6 +9,8 @@ namespace DndCore
 		{
 			Opacity = 1;
 			Scale = 1;
+			MaxScale = double.MaxValue;
+			ScaleVariance = 0;
 			Brightness = 100;
 			Saturation = 100;
 		}
@@ -33,6 +35,7 @@ namespace DndCore
 		public int FadeOut { get; set; }
 		public double Opacity { get; set; }
 		public double Scale { get; set; }
+		public double ScaleVariance { get; set; }
 		public string HueShift { get; set; }
 		public int HueShiftRandom { get; set; }
 		public int Saturation { get; set; }
@@ -40,6 +43,9 @@ namespace DndCore
 		public int RotationOffset { get; set; }
 		public int RotationOffsetRandom { get; set; }
 		public bool FlipHalfTime { get; set; }
+		public bool ScaleWithVelocity { get; set; }
+		public double MinScale { get; set; }
+		public double MaxScale { get; set; }
 
 		public static TrailingEffect From(TrailingEffectsDto dto)
 		{
@@ -64,6 +70,10 @@ namespace DndCore
 			trailingEffect.RotationOffsetRandom = MathUtils.GetInt(dto.RotationOffsetRandom);
 			trailingEffect.StartIndex = MathUtils.GetInt(dto.StartIndex);
 			trailingEffect.Scale = MathUtils.GetDouble(dto.Scale, 1);
+			trailingEffect.ScaleWithVelocity = MathUtils.IsChecked(dto.ScaleWithVelocity);
+			trailingEffect.MinScale = MathUtils.GetDouble(dto.MinScale, 0);
+			trailingEffect.MaxScale = MathUtils.GetDouble(dto.MaxScale, double.MaxValue);
+			trailingEffect.ScaleVariance = MathUtils.GetDouble(dto.ScaleVariance, 0);
 
 			return trailingEffect;
 		}

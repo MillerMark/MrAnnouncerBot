@@ -132,12 +132,17 @@ namespace DHDM
 			LoadAvalonEditor();
 		}
 
-		private void LoadAvalonEditor()
+		void LoadTextCompletionEngine()
 		{
-			LoadAvalonSyntaxHighlighter();
 			TextCompletionEngine = new TextCompletionEngine(tbxCode);
 			TextCompletionEngine.RequestTextSave += SaveCodeChanges;
 			TextCompletionEngine.ReloadShortcuts();
+		}
+
+		private void LoadAvalonEditor()
+		{
+			LoadAvalonSyntaxHighlighter();
+			LoadTextCompletionEngine();
 		}
 
 		public TextCompletionEngine TextCompletionEngine { get; set; }
@@ -277,11 +282,18 @@ namespace DHDM
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
 			// TODO: Add UI later!!!
-			InGameCreature inGameCreature = AllInGameCreatures.Get("TehPudding");
-			if (inGameCreature != null)
+			InGameCreature pudding = AllInGameCreatures.Get("TehPudding");
+			InGameCreature rory = AllInGameCreatures.Get("Rory");
+			if (pudding != null)
 			{
 				ea.Target = new Target();
-				ea.Target.AddCreature(inGameCreature.Creature);
+				ea.Target.AddCreature(pudding.Creature);
+			}
+			if (rory != null)
+			{
+				if (ea.Target == null)
+					ea.Target = new Target();
+				ea.Target.AddCreature(rory.Creature);
 			}
 		}
 
@@ -466,7 +478,7 @@ namespace DHDM
 			}
 			else if (ea.NowDuration == "end of turn")
 			{
-				game.TellDmInRounds(0, ea.Reminder, RoundPoint.End);
+				game.TellDmInRounds(0, ea.Reminder, TurnPoint.End);
 			}
 		}
 
@@ -1833,9 +1845,8 @@ namespace DHDM
 			}
 		}
 
-		void CastingSpell(DndTimeSpan castingTime, PlayerActionShortcut actionShortcut)
+		void CastingSpellSoon(DndTimeSpan castingTime, PlayerActionShortcut actionShortcut)
 		{
-
 			string playerName = game.GetPlayerFromId(actionShortcut.PlayerId).firstName;
 			string spellName = actionShortcut.Spell.Name;
 			string timeSpanStr = actionShortcut.Spell.CastingTimeStr;
@@ -1859,7 +1870,7 @@ namespace DHDM
 		{
 			if (actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
 			{
-				CastingSpell(actionShortcut.Spell.CastingTime, actionShortcut);
+				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
 				return;
 			}
 			Spell spell = CastSpellNow(actionShortcut);
@@ -1943,10 +1954,11 @@ namespace DHDM
 			}
 			else
 			{
-				ShowSpellHitInGame(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
+				ShowSpellHitOrMissInGame(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
 				player.JustCastSpell(spell.Name);
 			}
 			ShowSpellEffects(actionShortcut, spell, "Spell");
+			ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
 		}
 
 		private static void ShowSpellPreparingWindups(PlayerActionShortcut actionShortcut, Spell spell)
@@ -2149,7 +2161,7 @@ namespace DHDM
 				{
 					DiceRollType diceRollType = PlayerActionShortcut.GetDiceRollType(PlayerActionShortcut.GetDiceRollTypeStr(spell));
 					if (!DndUtils.IsAttack(diceRollType) && diceRoll.PlayerRollOptions.Count == 1)
-						ShowSpellHitInGame(diceRoll.PlayerRollOptions[0].PlayerID, SpellHitType.Hit, spell.Name);
+						ShowSpellHitOrMissInGame(diceRoll.PlayerRollOptions[0].PlayerID, SpellHitType.Hit, spell.Name);
 				}
 			}
 
@@ -2926,18 +2938,14 @@ namespace DHDM
 			Hit
 		}
 
-		void ShowSpellHitInGame(int playerId, SpellHitType spellHitType, string spellName)
+		void ShowSpellEffectsInGame(string spellName, Queue<SpellEffect> additionalSpellEffects, Queue<SoundEffect> additionalSoundEffects, SpellHitType spellHitType = SpellHitType.Hit)
 		{
-			Spell spell = AllSpells.Get(spellName);
-			if (spell == null)
-				return;
-			int hueShift = DndUtils.GetHueShift(spell.SchoolOfMagic);
 			EffectGroup effectGroup = new EffectGroup();
 
 			VisualEffectTarget chestTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
 			VisualEffectTarget bottomTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
 
-			if (spellHitType == SpellHitType.Miss)
+			if (spellHitType != SpellHitType.Hit)
 			{
 				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, 0, 100, 0));
 			}
@@ -2953,53 +2961,70 @@ namespace DHDM
 				scale *= scaleIncrement;
 
 				int timeOffset = 200;
-				if (!string.IsNullOrWhiteSpace(spell.Hue1))
-				{
-					AnimationEffect effectBonus1 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue1, spell.Bright1);
-					effectBonus1.timeOffsetMs = timeOffset;
-					effectBonus1.scale = scale;
-					effectBonus1.autoRotation = autoRotation;
-					autoRotation *= -1;
-					scale *= scaleIncrement;
-					effectGroup.Add(effectBonus1);
-				}
-				timeOffset += 200;
-				if (!string.IsNullOrWhiteSpace(spell.Hue2))
-				{
-					AnimationEffect effectBonus2 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue2, spell.Bright2);
-					effectBonus2.timeOffsetMs = timeOffset;
-					effectBonus2.scale = scale;
-					effectBonus2.autoRotation = autoRotation;
-					autoRotation *= -1;
-					scale *= scaleIncrement;
-					effectGroup.Add(effectBonus2);
-				}
-				Character player = game.GetPlayerFromId(playerId);
 
-				if (player != null)
+				Spell spell = AllSpells.Get(spellName);
+				if (spell != null)
 				{
-					DequeueAnimationEffects(effectGroup, chestTarget, bottomTarget, ref scale, scaleIncrement, ref autoRotation, ref timeOffset, player);
-					DequeueSoundEffects(player, effectGroup);
+					if (!string.IsNullOrWhiteSpace(spell.Hue1))
+					{
+						AnimationEffect effectBonus1 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue1, spell.Bright1);
+						effectBonus1.timeOffsetMs = timeOffset;
+						effectBonus1.scale = scale;
+						effectBonus1.autoRotation = autoRotation;
+						autoRotation *= -1;
+						scale *= scaleIncrement;
+						effectGroup.Add(effectBonus1);
+					}
+					timeOffset += 200;
+					if (!string.IsNullOrWhiteSpace(spell.Hue2))
+					{
+						AnimationEffect effectBonus2 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue2, spell.Bright2);
+						effectBonus2.timeOffsetMs = timeOffset;
+						effectBonus2.scale = scale;
+						effectBonus2.autoRotation = autoRotation;
+						autoRotation *= -1;
+						scale *= scaleIncrement;
+						effectGroup.Add(effectBonus2);
+					}
 				}
+
+				DequeueSpellEffects(effectGroup, additionalSpellEffects, chestTarget, bottomTarget, ref scale, scaleIncrement, ref autoRotation, ref timeOffset);
+				DequeueSoundEffects(additionalSoundEffects, effectGroup);
 			}
+
 			// TODO: Add success or fail sound effects.
 			string serializedObject = JsonConvert.SerializeObject(effectGroup);
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
-
-		void DequeueSoundEffects(Character player, EffectGroup effectGroup)
+		void ShowSpellHitOrMissInGame(int playerId, SpellHitType spellHitType, string spellName)
 		{
-			while (player.additionalSoundEffects.Count > 0)
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			ShowSpellEffectsInGame(spellName, player.additionalSpellHitEffects, player.additionalSpellHitSoundEffects, spellHitType);
+		}
+
+		void ShowSpellCastEffectsInGame(int playerId, string spellName)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			ShowSpellEffectsInGame(spellName, player.additionalSpellCastEffects, player.additionalSpellCastSoundEffects);
+		}
+
+		void DequeueSoundEffects(Queue<SoundEffect> additionalSoundEffects, EffectGroup effectGroup)
+		{
+			while (additionalSoundEffects.Count > 0)
 			{
-				effectGroup.Add(player.additionalSoundEffects.Dequeue());
+				effectGroup.Add(additionalSoundEffects.Dequeue());
 			}
 		}
 
-		private void DequeueAnimationEffects(EffectGroup effectGroup, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset, Character player)
+		private void DequeueSpellEffects(EffectGroup effectGroup, Queue<SpellEffect> additionalSpellEffects, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset)
 		{
-			while (player.additionalSpellEffects.Count > 0)
+			while (additionalSpellEffects.Count > 0)
 			{
-				SpellHit spellHit = player.additionalSpellEffects.Dequeue();
+				SpellEffect spellHit = additionalSpellEffects.Dequeue();
 				string effectName;
 				bool usingSpellHits = true;
 				VisualEffectTarget target;
@@ -3042,7 +3067,6 @@ namespace DHDM
 					effectBonus.rotation = spellHit.Rotation;
 				}
 				effectGroup.Add(effectBonus);
-
 			}
 		}
 
@@ -3091,14 +3115,10 @@ namespace DHDM
 
 			if (string.IsNullOrWhiteSpace(stopRollingData.spellName))
 				return;
-			if (stopRollingData.success)
-			{
-				ShowSpellHitInGame(stopRollingData.playerID, SpellHitType.Hit, stopRollingData.spellName);
-			}
-			else
-			{
-				ShowSpellHitInGame(stopRollingData.playerID, SpellHitType.Miss, stopRollingData.spellName);
-			}
+
+			SpellHitType spellHitType = stopRollingData.success ? SpellHitType.Hit : SpellHitType.Miss;
+
+			ShowSpellHitOrMissInGame(stopRollingData.playerID, spellHitType, stopRollingData.spellName);
 		}
 		int lastDamage;
 		int lastHealth;
@@ -5079,7 +5099,6 @@ namespace DHDM
 			}
 		}
 
-
 		/* Potentially problematic, or was this my attempt to fix a disconnect issue that existed before this change?
 		 
 		private void SendMessage(string message, string channel)
@@ -5276,6 +5295,8 @@ namespace DHDM
 		List<DebugLine> GetDebugLines(string code)
 		{
 			List<DebugLine> debugLines = new List<DebugLine>();
+			if (code == null)
+				return debugLines;
 			string[] splitLines = code.Split('\n');
 			foreach (string line in splitLines)
 			{
@@ -5309,7 +5330,7 @@ namespace DHDM
 		{
 			btnUpdateEventHandler.Content = $"Update \"{eventData.ParentGroup.Name}\" {eventData.Name} handler";
 		}
-		
+
 		private void LstFeatureEvents_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (e.AddedItems != null && e.AddedItems.Count > 0)
@@ -5319,7 +5340,7 @@ namespace DHDM
 					UpdateTheUpdateButton(activeEventData);
 					string code = GetPlayerEventCode(eventData.ParentGroup, eventData.Name);
 					SetEventCode(code);
-					
+
 					// TODO: Remove lstCode and related if no longer used:
 					List<DebugLine> debugLines = GetDebugLines(code);
 					lstCode.ItemsSource = debugLines;
@@ -6479,6 +6500,12 @@ namespace DHDM
 				FocusSelectedItem(lstKnownSpellsAndFeatures);
 				e.Handled = true;
 			}
+		}
+
+		private void btnReloadTrailingEffects_Click(object sender, RoutedEventArgs e)
+		{
+			AllTrailingEffects.Invalidate();
+			TextCompletionEngine.RefreshCompletionProviders();
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

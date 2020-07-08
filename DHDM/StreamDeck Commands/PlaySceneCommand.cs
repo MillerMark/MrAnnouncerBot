@@ -27,13 +27,20 @@ namespace DHDM
 			int bracketStart = sceneName.IndexOf("[");
 			if (sceneName.EndsWith("]") && bracketStart > 0)
 			{
-				string numSceneStr = sceneName.Substring(bracketStart + 1);
-				sceneName = sceneName.Substring(0, bracketStart);
-				numSceneStr = numSceneStr.Substring(0, numSceneStr.Length - 1);
-				if (int.TryParse(numSceneStr, out int numScenes))
+				if (sceneName.Contains("\\["))
 				{
-					int sceneNumber = new Random().Next(numScenes) + 1;
-					sceneName += sceneNumber;
+					sceneName = sceneName.Replace("\\[", "[").Replace("\\]", "]");
+				}
+				else
+				{
+					string numSceneStr = sceneName.Substring(bracketStart + 1);
+					sceneName = sceneName.Substring(0, bracketStart);
+					numSceneStr = numSceneStr.Substring(0, numSceneStr.Length - 1);
+					if (int.TryParse(numSceneStr, out int numScenes))
+					{
+						int sceneNumber = new Random().Next(numScenes) + 1;
+						sceneName += sceneNumber;
+					}
 				}
 			}
 

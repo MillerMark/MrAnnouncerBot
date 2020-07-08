@@ -5,6 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 namespace DndCore
 {
 	[Tooltip("Selects a target for a spell (currently not implemented in DHDM).")]
+	// TODO: Add parameters to support filtering/setting the Target (like SpellTargetShape).
 	public class SelectTargetFunction : DndFunction
 	{
 		public static event TargetEventHandler RequestSelectTarget;
@@ -22,9 +23,9 @@ namespace DndCore
 			ea.Player = player;
 			ea.Target = target;
 			OnRequestSelectTarget(ea);
-			player.ActiveTarget = ea.Target;
+			//player.ActiveTarget = ea.Target;
 
-			return null;
+			return ea.Target;
 		}
 	}
 }

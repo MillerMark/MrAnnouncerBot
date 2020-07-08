@@ -488,11 +488,61 @@ function dieFirstHitsFloor(die: any) {
 	}
 }
 
+//var maxDieSpeed: number = 0;
+//var minDieSpeed: number = 9999999;
+var highestDieSpeedWeHaveSeen: number = 128;
+
+//function trackDieVelocities(dieSpeed: number) {
+//	if (dieSpeed > maxDieSpeed) {
+//		maxDieSpeed = dieSpeed;
+//		console.log(`maxDieSpeed = ${maxDieSpeed}`);
+//	}
+
+//	if (dieSpeed < minDieSpeed) {
+//		minDieSpeed = dieSpeed;
+//		//console.log(`minDieSpeed = ${minDieSpeed}`);
+//	}
+//}
+
+function getDieSpeed(die: any): number {
+	let dieObject = die.getObject();
+	let velocity: any = dieObject.body.velocity;
+	return Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+}
+
+// Returns a number between 0 and 1, where 1 is max speed and 0 is no movement.
+function getNormalizedDieSpeed(die: any): number {
+	let dieSpeed: number = getDieSpeed(die);
+	//trackDieVelocities(dieSpeed);
+	return MathEx.clamp(dieSpeed, 0, highestDieSpeedWeHaveSeen) / highestDieSpeedWeHaveSeen;
+}
+
 function positionTrailingSprite(die: any, trailingEffect: TrailingEffect, index: number = 0): SpriteProxy {
 	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration || die.rollType == DieCountsAs.bentLuck) {
 		let pos: Vector = getScreenCoordinates(die.getObject());
 		if (!pos)
 			return null;
+
+		let dieNormalizedSpeed: number = getNormalizedDieSpeed(die);
+
+
+		let scaleFactor: number = 1;
+
+		let spriteScale: number = 1;
+
+		if (trailingEffect.ScaleVariance !== 0)
+			spriteScale = Math.max(0.01, trailingEffect.Scale * (1 + Random.plusMinus(trailingEffect.ScaleVariance)));
+		else
+			spriteScale = trailingEffect.Scale;
+
+		if (trailingEffect.ScaleWithVelocity) {
+			spriteScale = spriteScale * dieNormalizedSpeed;
+		}
+
+		spriteScale = MathEx.clamp(spriteScale, trailingEffect.MinScale, trailingEffect.MaxScale);
+
+		scaleFactor = spriteScale / trailingEffect.Scale;
+
 		if (die.lastPos.length <= index)
 			die.lastPos.push(new Vector(-100, -100));
 		let deltaX: number = pos.x - die.lastPos[index].x;
@@ -503,7 +553,7 @@ function positionTrailingSprite(die: any, trailingEffect: TrailingEffect, index:
 
 
 		// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
-		if (distanceSinceLastPoint > trailingEffect.MinForwardDistanceBetweenPrints) {
+		if (distanceSinceLastPoint > trailingEffect.MinForwardDistanceBetweenPrints * scaleFactor) {
 
 			//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
 			let angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
@@ -511,8 +561,9 @@ function positionTrailingSprite(die: any, trailingEffect: TrailingEffect, index:
 			if (die.lastPrintOnLeft)
 				angleToMovePawPrint = -90;
 			die.lastPrintOnLeft = !die.lastPrintOnLeft;
-			let printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints);
-			let spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle);
+			let printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints * scaleFactor);
+
+			let spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle, spriteScale);
 			die.lastPos[index] = pos;
 			return spriteProxy;
 		}

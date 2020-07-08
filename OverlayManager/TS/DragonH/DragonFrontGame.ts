@@ -152,7 +152,13 @@ class DragonFrontGame extends DragonGame {
 	clockPanel: Sprites;
 	charmed: Sprites;
 	restrained: Sprites;
+	fireWorks: Sprites;
 	sparkShower: Sprites;
+	magicSparksA: Sprites;
+	magicSparksB: Sprites;
+	magicSparksC: Sprites;
+	magicSparksD: Sprites;
+	magicSparksE: Sprites;
 	smokeWaveA: Sprites;
 	smokeWaveB: Sprites;
 	waterA: Sprites;
@@ -430,6 +436,20 @@ class DragonFrontGame extends DragonGame {
 		this.denseSmoke.originX = 309;
 		this.denseSmoke.originY = 723;
 
+		this.smokeColumnBack = new Sprites('SmokeColumn/SmokeColumnBack', 77, fps30, AnimationStyle.Sequential, true);
+		this.smokeColumnBack.name = 'SmokeColumnBack';
+		this.smokeColumnBack.originX = 361;
+		this.smokeColumnBack.originY = 1044;
+
+		this.smokeColumnFront = new Sprites('SmokeColumn/SmokeColumnFront', 77, fps30, AnimationStyle.Sequential, true);
+		this.smokeColumnFront.name = 'SmokeColumnFront';
+		this.smokeColumnFront.originX = 361;
+		this.smokeColumnFront.originY = 1044;
+
+		// TODO: Consider adding fireballs to another SpriteCollection. Not really windups.
+		this.backLayerEffects.add(this.smokeColumnBack);
+		this.backLayerEffects.add(this.smokeColumnFront);
+
 		this.shield = new Sprites('Weapons/Shield/Shield', 88, fps30, AnimationStyle.Sequential, true);
 		this.shield.name = 'Shield';
 		this.shield.originX = 125;
@@ -440,10 +460,21 @@ class DragonFrontGame extends DragonGame {
 		this.poof.originX = 229;
 		this.poof.originY = 698;
 
-		this.sparkShower = new Sprites('Sparks/Big/BigSparks', 63, fps30, AnimationStyle.Sequential, true);
+		this.fireWorks = new Sprites('Sparks/Big/BigSparks', 63, fps30, AnimationStyle.Sequential, true);
+		this.fireWorks.name = 'Fireworks';
+		this.fireWorks.originX = 443;
+		this.fireWorks.originY = 595;
+
+		this.sparkShower = new Sprites('Sparks/SparkShower/SparkShower', 75, fps30, AnimationStyle.Sequential, true);
 		this.sparkShower.name = 'SparkShower';
-		this.sparkShower.originX = 443;
-		this.sparkShower.originY = 595;
+		this.sparkShower.originX = 500;
+		this.sparkShower.originY = 325;
+
+		this.magicSparksA = this.loadMagicSparks('A');
+		this.magicSparksB = this.loadMagicSparks('B');
+		this.magicSparksC = this.loadMagicSparks('C');
+		this.magicSparksD = this.loadMagicSparks('D');
+		this.magicSparksE = this.loadMagicSparks('E');
 
 		this.smokeWaveA = new Sprites('Smoke/Waves/SmokeWaveA/SmokeWaveA', 157, fps30, AnimationStyle.Sequential, true);
 		this.smokeWaveA.name = 'SmokeWaveA';
@@ -628,7 +659,13 @@ class DragonFrontGame extends DragonGame {
 		this.allBackEffects.add(this.poof);
 		this.allBackEffects.add(this.stars);
 		this.allBackEffects.add(this.fumes);
+		this.allFrontEffects.add(this.fireWorks);
 		this.allFrontEffects.add(this.sparkShower);
+		this.allFrontEffects.add(this.magicSparksA);
+		this.allFrontEffects.add(this.magicSparksB);
+		this.allFrontEffects.add(this.magicSparksC);
+		this.allFrontEffects.add(this.magicSparksD);
+		this.allFrontEffects.add(this.magicSparksE);
 		this.allFrontEffects.add(this.smokeWaveA);
 		this.allFrontEffects.add(this.smokeWaveB);
 		this.allFrontEffects.add(this.smokeBlastA);
@@ -665,6 +702,14 @@ class DragonFrontGame extends DragonGame {
 
 		this.clockLayerEffects.add(this.fireWall);
 		//this.clockLayerEffects.add(this.clockPanel);
+	}
+
+	loadMagicSparks(path: string): Sprites {
+		let magicSparks: Sprites = new Sprites(`Sparks/Magic/${path}/SparkMagic${path}`, 35, fps30, AnimationStyle.Sequential, true);
+		magicSparks.name = `SparkMagic${path}`;
+		magicSparks.originX = 364;
+		magicSparks.originY = 484;
+		return magicSparks;
 	}
 
 	private createFireBallBehindClock(hue: number): any {
@@ -1036,8 +1081,20 @@ class DragonFrontGame extends DragonGame {
 			sprites = this.charmed;
 		else if (dto.spriteName === 'Restrained')
 			sprites = this.restrained;
+		else if (dto.spriteName === 'Fireworks')
+			sprites = this.fireWorks;
 		else if (dto.spriteName === 'SparkShower')
 			sprites = this.sparkShower;
+		else if (dto.spriteName === 'SparkMagicA')
+			sprites = this.magicSparksA;
+		else if (dto.spriteName === 'SparkMagicB')
+			sprites = this.magicSparksB;
+		else if (dto.spriteName === 'SparkMagicC')
+			sprites = this.magicSparksC;
+		else if (dto.spriteName === 'SparkMagicD')
+			sprites = this.magicSparksD;
+		else if (dto.spriteName === 'SparkMagicE')
+			sprites = this.magicSparksE;
 		else if (dto.spriteName === 'EmbersLarge')
 			sprites = this.embersLarge;
 		else if (dto.spriteName === 'EmbersMedium')
@@ -1048,6 +1105,8 @@ class DragonFrontGame extends DragonGame {
 			sprites = this.fumes;
 		else if (dto.spriteName === 'FireBall')
 			sprites = this.fireBallBack;
+		else if (dto.spriteName === 'SmokeColumn')
+			sprites = this.smokeColumnBack;
 		else {
 			for (let i = 0; i < this.allBackEffects.allSprites.length; i++) {
 				if (dto.spriteName === this.allBackEffects.allSprites[i].name) {
@@ -1078,9 +1137,18 @@ class DragonFrontGame extends DragonGame {
 
 		spritesEffect.start();
 
+		sprites = null;
+
 		if (dto.spriteName === 'FireBall') {
 			sprites = this.fireBallFront;
-			let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.secondaryHueShift, dto.secondarySaturation, dto.secondaryBrightness);
+		}
+		else if (dto.spriteName === 'SmokeColumn') {
+			sprites = this.smokeColumnFront;
+		}
+
+		if (sprites) {
+			let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.secondaryHueShift, dto.secondarySaturation, dto.secondaryBrightness,
+				flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
 			spritesEffect.start();
 		}
 	}

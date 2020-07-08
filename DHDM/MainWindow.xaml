@@ -833,6 +833,9 @@
 								<Button x:Name="btnReloadTemplates" Click="btnReloadTemplates_Click"  Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
 									Reload Templates and Shortcuts
 								</Button>
+								<Button x:Name="btnReloadTrailingEffects" Click="btnReloadTrailingEffects_Click"  Padding="10,0,10,0" MinWidth="66" MinHeight="24" Margin="8" VerticalAlignment="Center">
+									Reload Trailing Effects
+								</Button>
 							</StackPanel>
 						</StackPanel>
 					</StackPanel>

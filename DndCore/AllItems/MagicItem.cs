@@ -55,6 +55,12 @@ namespace DndCore
 			else
 				name = signature;
 		}
+		public void TriggerDispel(Magic magic)
+		{
+			if (string.IsNullOrWhiteSpace(onDispel))
+				return;
+			Expressions.Do(onDispel, magic.Caster as Character, Target.FromMagic(magic), null, null, magic);
+		}
 
 
 		[Column("name")]

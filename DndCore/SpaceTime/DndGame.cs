@@ -318,7 +318,7 @@ namespace DndCore
 		{
 			if (activeCreature == creature)
 				activeCreature = null;
-			SendReminders(creature, RoundPoint.End);
+			SendReminders(creature, TurnPoint.End);
 		}
 
 		public void StartingTurnFor(Creature creature)
@@ -326,7 +326,7 @@ namespace DndCore
 			if (activeCreature != creature && activeCreature is Character player)
 				player.EndTurn();
 			activeCreature = creature;
-			SendReminders(creature, RoundPoint.Start);
+			SendReminders(creature, TurnPoint.Start);
 		}
 
 		public void SetHiddenThreshold(Creature creature, int value, DiceRollType rollType)
@@ -358,7 +358,7 @@ namespace DndCore
 
 			if (InCombat)
 			{
-				timeClock.Advance(6000);  // 6 seconds per round
+				timeClock.Advance(6000);  // 6 seconds per round. Will trigger alarms.
 				TellDungeonMasterWhichRound();
 			}
 
@@ -386,6 +386,8 @@ namespace DndCore
 			if (lastPlayer != null && lastPlayer != player)
 			{
 				lastPlayer.EndTurnResetState();
+				if (lastPlayer is Character character)
+					character.PlayerEndsTurn();
 				EndingTurnFor(player);
 			}
 
@@ -596,6 +598,16 @@ namespace DndCore
 				dndAlarm.AlarmFired += alarmHandler;
 			return dndAlarm;
 		}
+
+		public DndAlarm CreateAlarm(string name, DndTimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Character player = null)
+		{
+			DndAlarm dndAlarm = timeClock.CreateAlarm(fromNow.GetTimeSpan(), name, player, data);
+			if (fromNow.RoundSpecifier != RoundSpecifier.None)
+				dndAlarm.RoundSpecifier = fromNow.RoundSpecifier;
+			if (alarmHandler != null)
+				dndAlarm.AlarmFired += alarmHandler;
+			return dndAlarm;
+		}
 		public int SecondsSince(DateTime startTime)
 		{
 			TimeSpan timeSpan = Time - startTime;
@@ -726,12 +738,12 @@ namespace DndCore
 			}
 		}
 
-		private void SendReminders(Creature creature, RoundPoint point)
+		private void SendReminders(Creature creature, TurnPoint point)
 		{
 			for (int i = roundReminders.Count - 1; i >= 0; i--)
 			{
 				RoundReminder roundReminder = roundReminders[i];
-				if (roundReminder.Creature == creature && roundReminder.RoundPoint == point && roundReminder.RoundNumber == roundIndex)
+				if (roundReminder.Creature == creature && roundReminder.TurnPoint == point && roundReminder.RoundNumber == roundIndex)
 				{
 					TellDungeonMaster(roundReminder.ReminderMessage);
 					roundReminders.RemoveAt(i);
@@ -740,7 +752,7 @@ namespace DndCore
 		}
 
 		List<RoundReminder> roundReminders = new List<RoundReminder>();
-		public void TellDmInRounds(int roundOffset, string reminder, RoundPoint roundPoint = RoundPoint.Start)
+		public void TellDmInRounds(int roundOffset, string reminder, TurnPoint roundPoint = TurnPoint.Start)
 		{
 			if (roundReminders == null)
 				roundReminders = new List<RoundReminder>();
@@ -748,7 +760,7 @@ namespace DndCore
 			item.Creature = activeCreature;
 			item.RoundNumber = roundIndex + roundOffset;
 			// TODO: Make this work for RoundPoint.End as well.
-			item.RoundPoint = roundPoint;
+			item.TurnPoint = roundPoint;
 			item.ReminderMessage = reminder;
 			roundReminders.Add(item);
 		}
@@ -789,6 +801,14 @@ namespace DndCore
 		public bool ClockHasStopped()
 		{
 			return Clock.InCombat || Clock.InTimeFreeze;
+		}
+		public void CheckAlarmsPlayerStartsTurn(Character character)
+		{
+			Clock.CheckAlarmsPlayerStartsTurn(character);
+		}
+		public void CheckAlarmsPlayerEndsTurn(Character character)
+		{
+			Clock.CheckAlarmsPlayerEndsTurn(character);
 		}
 
 	}

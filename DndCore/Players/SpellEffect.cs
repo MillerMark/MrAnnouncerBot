@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
-	public class SpellHit
+	public class SpellEffect
 	{
 		public int TimeOffset { get; set; } = int.MinValue;
 		public string EffectName { get; set; }
@@ -16,7 +16,7 @@ namespace DndCore
 		public double Scale { get; set; } = 1;
 		public double Rotation { get; set; } = 0;
 		public double AutoRotation { get; set; } = 0;
-		public SpellHit(string effectName, int hue, int saturation = 100, int brightness = 100, 
+		public SpellEffect(string effectName, int hue, int saturation = 100, int brightness = 100, 
 			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = int.MinValue,
 			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
@@ -32,7 +32,7 @@ namespace DndCore
 			AutoRotation = autoRotation;
 			TimeOffset = timeOffset;
 		}
-		public SpellHit()
+		public SpellEffect()
 		{
 
 		}

@@ -62,6 +62,10 @@ class TrailingEffect {
 		this.FadeOut = dto.FadeOut;
 		this.Opacity = dto.Opacity;
 		this.Scale = dto.Scale;
+		this.ScaleWithVelocity = dto.ScaleWithVelocity;
+		this.MinScale = dto.MinScale;
+		this.MaxScale = dto.MaxScale;
+		this.ScaleVariance = dto.ScaleVariance;
 		this.HueShift = dto.HueShift;
 		this.HueShiftRandom = dto.HueShiftRandom;
 		this.Saturation = dto.Saturation;
@@ -92,6 +96,10 @@ class TrailingEffect {
 	FadeOut: number;
 	Opacity: number;
 	Scale: number;
+	ScaleWithVelocity: boolean;
+	MinScale: number;
+	MaxScale = 999999;
+	ScaleVariance: number;
 	HueShift: string;
 	HueShiftRandom: number;
 	Saturation: number;
@@ -252,6 +260,8 @@ class DiceLayer {
 	//halos: Sprites;
 	ravens: Sprites[];
 	fireTrails: Sprites[];
+	groundBurstTrails: Sprites[];
+	frostTrails: Sprites[];
 	diceBlowColoredSmoke: Sprites;
 	diceBombBase: Sprites;
 	diceBombTop: Sprites;
@@ -628,7 +638,22 @@ class DiceLayer {
 		this.loadRavens(3);
 
 		this.fireTrails = [];
+		this.groundBurstTrails = [];
+		this.frostTrails = [];
 		this.loadFireTrails();
+		this.loadFrostTrails();
+
+		let groundBurstTrail = new Sprites(`/Dice/GroundBurstTrail/GroundBurstTrail`, 128, fps30, AnimationStyle.SequentialStop, true);
+		groundBurstTrail.originX = 129;
+		groundBurstTrail.originY = 125;
+		groundBurstTrail.name = "GroundBurstTrail";
+		this.allBackLayerEffects.add(groundBurstTrail);
+
+		let waterTrail = new Sprites(`/Dice/WaterTrail/WaterTrail`, 276, fps30, AnimationStyle.Sequential, true);
+		waterTrail.originX = 174;
+		waterTrail.originY = 182;
+		waterTrail.name = "WaterTrail";
+		this.allBackLayerEffects.add(waterTrail);
 
 		this.spirals = new Sprites("/Dice/Spiral/Spiral", 64, fps40, AnimationStyle.Sequential, true);
 		this.spirals.name = 'Spiral';
@@ -1132,6 +1157,46 @@ class DiceLayer {
 		fireTrailD.originY = 325;
 		this.allBackLayerEffects.add(fireTrailD);
 		this.fireTrails.push(fireTrailD);
+
+		let fireTrailE = new Sprites(`/Dice/FireTrail/E/FireTrailE`, 58, fps30, AnimationStyle.Sequential, true);
+		fireTrailE.originX = 152;
+		fireTrailE.originY = 120;
+		this.allBackLayerEffects.add(fireTrailE);
+		this.fireTrails.push(fireTrailE);
+	}
+
+	loadFrostTrails(): void {
+		const originX: number = 153;
+		const originY: number = 400;
+		let frostTrailA = new Sprites(`/Dice/FrostTrail/A/FrostTrailA`, 56, fps30, AnimationStyle.SequentialStop, true);
+		frostTrailA.originX = originX;
+		frostTrailA.originY = originY;
+		this.allBackLayerEffects.add(frostTrailA);
+		this.frostTrails.push(frostTrailA);
+
+		let frostTrailB = new Sprites(`/Dice/FrostTrail/B/FrostTrailB`, 56, fps30, AnimationStyle.SequentialStop, true);
+		frostTrailB.originX = originX;
+		frostTrailB.originY = originY;
+		this.allBackLayerEffects.add(frostTrailB);
+		this.frostTrails.push(frostTrailB);
+
+		let frostTrailC = new Sprites(`/Dice/FrostTrail/C/FrostTrailC`, 56, fps30, AnimationStyle.SequentialStop, true);
+		frostTrailC.originX = originX;
+		frostTrailC.originY = originY;
+		this.allBackLayerEffects.add(frostTrailC);
+		this.frostTrails.push(frostTrailC);
+
+		let frostTrailD = new Sprites(`/Dice/FrostTrail/D/FrostTrailD`, 56, fps30, AnimationStyle.SequentialStop, true);
+		frostTrailD.originX = originX;
+		frostTrailD.originY = originY;
+		this.allBackLayerEffects.add(frostTrailD);
+		this.frostTrails.push(frostTrailD);
+
+		let frostTrailE = new Sprites(`/Dice/FrostTrail/E/FrostTrailE`, 56, fps30, AnimationStyle.SequentialStop, true);
+		frostTrailE.originX = originX;
+		frostTrailE.originY = originY;
+		this.allBackLayerEffects.add(frostTrailE);
+		this.frostTrails.push(frostTrailE);
 	}
 
 	addBackgroundRect(x: number, y: number, width: number, height: number, lifespan: number): AnimatedRectangle {
@@ -1532,7 +1597,7 @@ class DiceLayer {
 			smokeTop = this.diceSmokePurple.add(x, y, 0);
 		else if (hueShift < 320)
 			smokeTop = this.diceSmokeMaroon.add(x, y, 0);
-		else 
+		else
 			smokeTop = this.diceSmokeRed.add(x, y, 0);
 
 		smokeTop.rotation = Math.random() * 360;
@@ -1562,7 +1627,7 @@ class DiceLayer {
 			shockwave = this.diceShockwavePurple.add(x, y, 0);
 		else if (hueShift < 330)
 			shockwave = this.diceShockwaveMaroon.add(x, y, 0);
-		else 
+		else
 			shockwave = this.diceShockwaveRed.add(x, y, 0);
 		shockwave.rotation = Math.random() * 360;
 		return shockwave;
@@ -2081,6 +2146,11 @@ class DiceLayer {
 		return this.fireTrails[index];
 	}
 
+	getFrostTrails() {
+		let index: number = Math.floor(Math.random() * this.frostTrails.length);
+		return this.frostTrails[index];
+	}
+
 	blowColoredSmoke(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
 		this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
 	}
@@ -2178,7 +2248,7 @@ class DiceLayer {
 
 	addSteampunkTunnel(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
 		// no rotation on SteampunkTunnel - shadows expect light source from above.
-		
+
 		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
 			DiceLayer.numFiltersOnDieCleanup++;
 			this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
@@ -2202,8 +2272,7 @@ class DiceLayer {
 	}
 
 	addPortal(x: number, y: number, hueShift: number = 0, saturationPercent: number = -1, brightness: number = -1) {
-		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup)
-		{
+		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
 			DiceLayer.numFiltersOnDieCleanup += 2;
 			this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
 			this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
@@ -2313,7 +2382,7 @@ class DiceLayer {
 		return pawPrint;
 	}
 
-	AddTrailingEffectFrom(sprites: Sprites, trailingEffect: TrailingEffect, x: number, y: number, angle: number): SpriteProxy {
+	AddTrailingEffectFrom(sprites: Sprites, trailingEffect: TrailingEffect, x: number, y: number, angle: number, spriteScale: number): SpriteProxy {
 		if (sprites.name === 'Spark')
 			return this.smallSpark(x, y, angle);
 
@@ -2345,29 +2414,42 @@ class DiceLayer {
 		effect.opacity = trailingEffect.Opacity;
 		effect.brightness = Math.round(trailingEffect.Brightness);
 		effect.saturationPercent = Math.round(trailingEffect.Saturation);
-		effect.scale = trailingEffect.Scale;
+		effect.scale = spriteScale;
 		return effect;
 	}
 
-	AddTrailingEffect(trailingEffect: TrailingEffect, x: number, y: number, angle: number): SpriteProxy {
+	AddTrailingEffect(trailingEffect: TrailingEffect, x: number, y: number, angle: number, spriteScale: number): SpriteProxy {
 		let result: SpriteProxy;
 		let sprites: Sprites = this.allBackLayerEffects.getSpritesByName(trailingEffect.EffectType);
+
 		if (sprites)
-			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle, spriteScale);
+
+		if (trailingEffect.EffectType === "GroundBurstTrail") {
+			result.fadeOutTime = 500;
+			result.expirationDate = performance.now() + 5000;
+		}
 
 		if (trailingEffect.EffectType === 'Raven') {
 			sprites = this.getRavens();
-			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle, spriteScale);
 		}
 		else if (trailingEffect.EffectType === 'FireTrails') {
 			sprites = this.getFireTrails();
-			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle, spriteScale);
+		}
+		else if (trailingEffect.EffectType === 'FrostTrails') {
+			sprites = this.getFrostTrails();
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle, spriteScale);
+			result.fadeInTime = 500;
+			result.fadeOutTime = 500;
+			result.expirationDate = performance.now() + 5000;
 		}
 
 		sprites = this.allFrontLayerEffects.getSpritesByName(trailingEffect.EffectType);
 
 		if (sprites)
-			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle);
+			result = this.AddTrailingEffectFrom(sprites, trailingEffect, x, y, angle, spriteScale);
 
 		return result;
 	}

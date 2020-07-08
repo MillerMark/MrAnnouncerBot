@@ -25,6 +25,15 @@ namespace DndCore
 		{
 			Creatures.Add(creature);
 		}
+		public static Target FromMagic(Magic magic)
+		{
+			Target target = new Target();
+			target.Type = AttackTargetType.Spell;
+			target.SpellType = SpellTargetType.Creatures;
+			foreach (Creature creature in magic.Targets)
+				target.Creatures.Add(creature);
+			return target;
+		}
 
 		public Vector Location { get; set; }
 		public CarriedWeapon Weapon { get; set; }

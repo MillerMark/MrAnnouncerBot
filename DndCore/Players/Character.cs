@@ -15,6 +15,20 @@ namespace DndCore
 	[TabName("Players")]
 	public class Character : Creature
 	{
+		public int Index
+		{
+			get
+			{
+				List<Character> activePlayers = AllPlayers.GetActive();
+				for (int i = 0; i < activePlayers.Count; i++)
+				{
+					if (activePlayers[i] == this)
+						return i;
+				}
+				return -1;
+			}
+		}
+		
 		//string wildShapeCreatureName;
 		Creature wildShape;
 		public Creature WildShape
@@ -146,10 +160,15 @@ namespace DndCore
 		List<KnownSpell> temporarySpells = new List<KnownSpell>();
 
 		[JsonIgnore]
-		public Queue<SpellHit> additionalSpellEffects = new Queue<SpellHit>();
+		public Queue<SpellEffect> additionalSpellHitEffects = new Queue<SpellEffect>();
+		[JsonIgnore]
+		public Queue<SpellEffect> additionalSpellCastEffects = new Queue<SpellEffect>();
 
 		[JsonIgnore]
-		public Queue<SoundEffect> additionalSoundEffects = new Queue<SoundEffect>();
+		public Queue<SoundEffect> additionalSpellHitSoundEffects = new Queue<SoundEffect>();
+
+		[JsonIgnore]
+		public Queue<SoundEffect> additionalSpellCastSoundEffects = new Queue<SoundEffect>();
 
 		const string STR_RechargeableMaxSuffix = "_max";
 		double _passivePerception = int.MinValue;
@@ -1861,15 +1880,34 @@ namespace DndCore
 			}
 		}
 
+
+
 		public void PlayerStartsTurn()
 		{
 			Expressions.BeginUpdate();
 			try
 			{
+				Game.CheckAlarmsPlayerStartsTurn(this);
 				foreach (AssignedFeature assignedFeature in features)
 				{
 					assignedFeature.PlayerStartsTurn(this);
 				}
+			}
+			finally
+			{
+				Expressions.EndUpdate(this);
+			}
+		}
+		public void PlayerEndsTurn()
+		{
+			Expressions.BeginUpdate();
+			try
+			{
+				Game.CheckAlarmsPlayerEndsTurn(this);
+				//foreach (AssignedFeature assignedFeature in features)
+				//{
+				//	assignedFeature.PlayerEndsTurn(this);
+				//}
 			}
 			finally
 			{
@@ -2793,24 +2831,41 @@ namespace DndCore
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
 		}
-		public void AddSpellEffect(string effectName = "",
+		public void AddSpellHitEffect(string effectName = "",
 			int hue = 0, int saturation = 100, int brightness = 100,
 			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
 			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
-			additionalSpellEffects.Enqueue(new SpellHit(effectName, hue, saturation, brightness,
+			additionalSpellHitEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
 				scale, rotation, autoRotation, timeOffset,
 				secondaryHue, secondarySaturation, secondaryBrightness));
 		}
-		public void AddSoundEffect(string fileName, int timeOffset = 0)
+
+		public void AddSpellCastEffect(string effectName = "",
+			int hue = 0, int saturation = 100, int brightness = 100,
+			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
+			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
 		{
-			additionalSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
+			additionalSpellCastEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
+				scale, rotation, autoRotation, timeOffset,
+				secondaryHue, secondarySaturation, secondaryBrightness));
+		}
+
+		public void AddSpellHitSoundEffect(string fileName, int timeOffset = 0)
+		{
+			additionalSpellHitSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
+		}
+		public void AddSpellCastSoundEffect(string fileName, int timeOffset = 0)
+		{
+			additionalSpellCastSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
 		}
 
 		public void ClearAdditionalSpellEffects()
 		{
-			additionalSpellEffects.Clear();
-			additionalSoundEffects.Clear();
+			additionalSpellHitEffects.Clear();
+			additionalSpellHitSoundEffects.Clear();
+			additionalSpellCastEffects.Clear();
+			additionalSpellCastSoundEffects.Clear();
 		}
 		EventData FindEvent(EventType eventType, string parentName, string eventName)
 		{

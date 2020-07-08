@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
-	public enum RoundPoint
+	public enum TurnPoint
 	{
 		Start,
 		End

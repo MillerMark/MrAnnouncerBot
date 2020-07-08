@@ -170,6 +170,9 @@ namespace GoogleHelper
 					case "System.Boolean":
 						property.SetValue(instance, default(bool));
 						break;
+					case "System.Decimal":
+						property.SetValue(instance, default(decimal));
+						break;
 					default:
 						System.Diagnostics.Debugger.Break();
 						break;

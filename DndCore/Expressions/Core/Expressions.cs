@@ -101,7 +101,7 @@ namespace DndCore
 			}
 		}
 
-		public static object Get<T>(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static T Get<T>(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return default(T);
@@ -117,7 +117,7 @@ namespace DndCore
 				catch (Exception ex)
 				{
 					OnExceptionThrown(null, new DndCoreExceptionEventArgs(ex));
-					return null;
+					return default(T);
 				}
 			}
 			finally

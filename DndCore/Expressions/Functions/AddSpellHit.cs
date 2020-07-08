@@ -28,7 +28,7 @@ namespace DndCore
 				if (args.Count == 3)
 					brightness = Expressions.GetInt(args[2], player, target, spell);
 
-				player.AddSpellEffect(hue: hue, saturation: saturation, brightness: brightness);
+				player.AddSpellHitEffect(hue: hue, saturation: saturation, brightness: brightness);
 			}
 
 			return null;

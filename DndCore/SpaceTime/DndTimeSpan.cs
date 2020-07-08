@@ -4,6 +4,12 @@ using System.Threading;
 
 namespace DndCore
 {
+	public enum RoundSpecifier
+	{
+		None,
+		StartOfTurn,
+		EndOfTurn
+	}
 	public struct DndTimeSpan
 	{
 		public static readonly DndTimeSpan ShortRest = DndTimeSpan.FromHours(2);
@@ -45,11 +51,13 @@ namespace DndCore
 		{
 			Count = count;
 			TimeMeasure = timeMeasure;
+			RoundSpecifier = RoundSpecifier.None;
 		}
 
 		public int Count { get; set; }
 
 		public TimeMeasure TimeMeasure { get; set; }
+		public RoundSpecifier RoundSpecifier { get; set; }
 
 		public static DndTimeSpan FromActions(int actionCount)
 		{
@@ -112,15 +120,15 @@ namespace DndCore
 			}
 		}
 
-		/// <summary>
-		/// Implicitly converts an instance of type DndTimeSpan to a new instance of type TimeSpan.
-		/// </summary>
-		/// <param name="obj">An instance of type DndTimeSpan to convert.</param>
-		/// <returns>Returns a new instance of type TimeSpan, derived from the specified DndTimeSpan instance.</returns>
-		public static implicit operator TimeSpan(DndTimeSpan obj)
-		{
-			return obj.GetTimeSpan();
-		}
+		///// <summary>
+		///// Implicitly converts an instance of type DndTimeSpan to a new instance of type TimeSpan.
+		///// </summary>
+		///// <param name="obj">An instance of type DndTimeSpan to convert.</param>
+		///// <returns>Returns a new instance of type TimeSpan, derived from the specified DndTimeSpan instance.</returns>
+		//public static implicit operator TimeSpan(DndTimeSpan obj)
+		//{
+		//	return obj.GetTimeSpan();
+		//}
 
 		public TimeSpan GetTimeSpan()
 		{
@@ -203,7 +211,11 @@ namespace DndCore
 				return FromDays(duration.GetFirstInt(1));
 
 			if (duration.IndexOf("round") > 0)
-				return FromRounds(duration.GetFirstInt(1));
+			{
+				DndTimeSpan dndTimeSpan = FromRounds(duration.GetFirstInt(1));
+				dndTimeSpan.RoundSpecifier = DndUtils.GetRoundSpecifier(duration);
+				return dndTimeSpan;
+			}
 
 			if (duration == "day" || duration == "dawn")
 				return FromDays(1);

@@ -52,7 +52,7 @@ namespace DHDM
 			needToSaveCodeTimer.Interval = TimeSpan.FromMilliseconds(IntervalBeforeSavingCodeChangesMs);
 			TbxCode = tbxCode;
 			HookEvents();
-			CreateCompletionProviders();
+			RefreshCompletionProviders();
 		}
 
 		void HookEvents()
@@ -159,8 +159,11 @@ namespace DHDM
 			completionProviders.Add(completionProvider);
 		}
 
-		void CreateCompletionProviders()
+
+
+		public void RefreshCompletionProviders()
 		{
+			completionProviders = new List<CompletionProvider>();
 			const string soundFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\SoundEffects\";
 			AddCompletionProvider(new FileCompletionProvider()
 			{
@@ -173,7 +176,13 @@ namespace DHDM
 			AddCompletionProvider(new TextListCompletionProvider()
 			{
 				ProviderName = CompletionProviderNames.AnimationEffectName,
-				List = "DenseSmoke; Poof; SmokeBlast; SmokeWave; SparkBurst; Water; SparkShower; EmbersLarge; EmbersMedium; Fumes; FireBall; BloodGush",
+				List = "DenseSmoke; Poof; SmokeBlast; SmokeWave; SmokeColumn; SparkBurst; Water; Fireworks; EmbersLarge; EmbersMedium; Fumes; FireBall; BloodGush; SparkMagicA; SparkMagicB; SparkMagicC; SparkMagicD; SparkMagicE; SparkShower",
+				TriggerKey = '"'
+			});
+			AddCompletionProvider(new TextListCompletionProvider()
+			{
+				ProviderName = CompletionProviderNames.TrailingEffectName,
+				List = AllTrailingEffects.GetList("; "),
 				TriggerKey = '"'
 			});
 			AddCompletionProvider(new TextListCompletionProvider()

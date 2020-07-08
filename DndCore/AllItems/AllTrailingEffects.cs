@@ -14,11 +14,11 @@ namespace DndCore
 
 		static void LoadData()
 		{
-			trailingEffects = new List<TrailingEffect>();
 			List<TrailingEffectsDto> trailingEffectsDtos = GoogleSheets.Get<TrailingEffectsDto>(Folders.InCoreData("DnD - TrailingEffects.csv"), false);
+			trailingEffects = new List<TrailingEffect>();
 			foreach (TrailingEffectsDto trailingEffect in trailingEffectsDtos)
 			{
-				TrailingEffects.Add(TrailingEffect.From(trailingEffect));
+				trailingEffects.Add(TrailingEffect.From(trailingEffect));
 			}
 		}
 
@@ -36,9 +36,15 @@ namespace DndCore
 				trailingEffects = value;
 			}
 		}
+		
 		public static TrailingEffect Get(string effectName)
 		{
 			return TrailingEffects.FirstOrDefault(x => x.Name == effectName);
+		}
+		
+		public static string GetList(string separator)
+		{
+			return string.Join(separator, TrailingEffects.Select(x => x.Name).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray());
 		}
 	}
 }

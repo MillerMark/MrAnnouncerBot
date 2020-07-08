@@ -21,6 +21,7 @@ namespace DndCore
 		public string Name { get; set; }
 		public object Data { get; set; }
 		public Character Player { get; set; }
+		public RoundSpecifier RoundSpecifier { get; set; } = RoundSpecifier.None;
 
 		public void FireAlarm(DndTimeClock dndTimeClock)
 		{

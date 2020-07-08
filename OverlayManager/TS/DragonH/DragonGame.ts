@@ -160,6 +160,8 @@ abstract class DragonGame extends GamePlusQuiz {
 
 	fireBallBack: Sprites;
 	fireBallFront: Sprites;
+	smokeColumnBack: Sprites;
+	smokeColumnFront: Sprites;
 
 	allWindupEffects: SpriteCollection;
 	backLayerEffects: SpriteCollection;

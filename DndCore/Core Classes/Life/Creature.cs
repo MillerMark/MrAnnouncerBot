@@ -672,7 +672,7 @@ namespace DndCore
 		void AddCastedMagic(Magic magic)
 		{
 			castedMagic.Add(magic);
-			magic.OnDispel += CastedMagic_Dispelled;
+			magic.Dispel += CastedMagic_Dispelled;
 		}
 
 		List<Magic> receivedMagic = new List<Magic>();
@@ -682,12 +682,12 @@ namespace DndCore
 		{
 			magic.AddTarget(this);
 			receivedMagic.Add(magic);
-			magic.OnDispel += ReceivedMagic_Dispelled;
+			magic.Dispel += ReceivedMagic_Dispelled;
 		}
 
 		public void GiveMagic(string magicItemName, Target target, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
-			Magic magic = new Magic(this, magicItemName, data1, data2, data3, data4, data5, data6, data7, data8);
+			Magic magic = new Magic(this, Game, magicItemName, data1, data2, data3, data4, data5, data6, data7, data8);
 			if (target != null)
 			{
 				if (target.PlayerIds != null)
@@ -709,13 +709,13 @@ namespace DndCore
 
 		void RemoveReceivedMagic(Magic magic)
 		{
-			magic.OnDispel -= ReceivedMagic_Dispelled;
+			magic.Dispel -= ReceivedMagic_Dispelled;
 			receivedMagic.Remove(magic);
 		}
 
 		void RemoveCastedMagic(Magic magic)
 		{
-			magic.OnDispel -= CastedMagic_Dispelled;
+			magic.Dispel -= CastedMagic_Dispelled;
 			castedMagic.Remove(magic);
 		}
 

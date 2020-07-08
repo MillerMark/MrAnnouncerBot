@@ -566,5 +566,14 @@ namespace DndCore
 			}
 			return CreatureKinds.None;
 		}
+
+		public static RoundSpecifier GetRoundSpecifier(string duration)
+		{
+			if (duration.Contains("start of turn"))
+				return RoundSpecifier.StartOfTurn;
+			if (duration.Contains("end of turn"))
+				return RoundSpecifier.EndOfTurn;
+			return RoundSpecifier.None;
+		}
 	}
 }

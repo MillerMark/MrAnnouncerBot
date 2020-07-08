@@ -17,6 +17,10 @@ namespace DndCore
 		public string FadeOut { get; set; }
 		public string Opacity { get; set; }
 		public string Scale { get; set; }
+		public string ScaleWithVelocity { get; set; }
+		public string MinScale { get; set; }
+		public string MaxScale { get; set; }
+		public string ScaleVariance { get; set; }
 		public string HueShift { get; set; }
 		public string HueShiftRandom { get; set; }
 		public string Saturation { get; set; }
