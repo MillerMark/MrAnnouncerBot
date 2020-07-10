@@ -52,6 +52,8 @@ namespace DndCore
 
 		public double baseStrength;
 		public double baseWisdom;
+		
+		// TODO: May want to make this private after removing dependencies to this variable name due to JSON serialization in TS files.
 		public double baseWalkingSpeed = 0;
 		public double burrowingSpeed { get; set; } = 0;
 
@@ -157,6 +159,10 @@ namespace DndCore
 			}
 			set => calculatedMods = value;
 		}
+		
+		[JsonIgnore]
+		public Dictionary<string, Dictionary<string, PropertyMod>> PropertyMods { get; set; } = new Dictionary<string, Dictionary<string, PropertyMod>>();
+
 		public virtual double Strength
 		{
 			get
@@ -217,9 +223,21 @@ namespace DndCore
 		{
 			get
 			{
-				return baseWalkingSpeed + GetMods();
+				return CalculateProperty(baseWalkingSpeed);
+			}	
+			set
+			{
+				baseWalkingSpeed = GetBasePropertyValue(value);
 			}
 		}
+
+		//    [ ] Tooltip to return an explanation of mods (one per line)
+		//        "-10 due to Ray of Frost (expires at end of Merkin's next turn)."
+		string GetModExplanation(string propertyName)
+		{
+			return string.Empty;
+		}
+
 		public Conditions ActiveConditions
 		{
 			get => activeConditions;
@@ -251,7 +269,7 @@ namespace DndCore
 			damageVulnerability.Add(new DamageFilter(damageType, attackKind));
 		}
 
-		void AddMod(string key, double value)
+		void AddCalculatedMod(string key, double value)
 		{
 			if (calculatedMods.ContainsKey(key))
 				CalculatedMods[key] += value;
@@ -276,31 +294,31 @@ namespace DndCore
 			{
 				if (mod.Offset > 0)
 				{
-					AddMod(mod.TargetName, mod.Offset);
+					AddCalculatedMod(mod.TargetName, mod.Offset);
 				}
 				else if (mod.Multiplier != 1)
 				{
-					AddMod(mod.TargetName + STR_Multiplier, mod.Multiplier);
+					AddCalculatedMod(mod.TargetName + STR_Multiplier, mod.Multiplier);
 				}
 				else if (mod.Absolute != 0)
 				{
-					AddMod(mod.TargetName + STR_Absolute, mod.Absolute);
+					AddCalculatedMod(mod.TargetName + STR_Absolute, mod.Absolute);
 				}
 
 				if (mod.AddAbilityModifier != Ability.none)
 				{
-					AddMod(mod.TargetName + STR_AddAbilityModifier, (int)mod.AddAbilityModifier);
-					AddMod(mod.TargetName + STR_LimitAbilityModifier, mod.ModifierLimit);
+					AddCalculatedMod(mod.TargetName + STR_AddAbilityModifier, (int)mod.AddAbilityModifier);
+					AddCalculatedMod(mod.TargetName + STR_LimitAbilityModifier, mod.ModifierLimit);
 				}
 			}
 
 			if (mod.AddsAdvantage)
 			{
-				AddMod(mod.VantageSkillFilter.ToString() + STR_Advantage, 1);
+				AddCalculatedMod(mod.VantageSkillFilter.ToString() + STR_Advantage, 1);
 			}
 			else if (mod.AddsDisadvantage)
 			{
-				AddMod(mod.VantageSkillFilter.ToString() + STR_Disadvantage, 1);
+				AddCalculatedMod(mod.VantageSkillFilter.ToString() + STR_Disadvantage, 1);
 			}
 		}
 		void CalculateModsForItem(ItemViewModel itemViewModel)
@@ -429,6 +447,40 @@ namespace DndCore
 			RecalculateModsIfNecessary();
 			return GetCalculatedMod(ability);
 		}
+		double GetPropertyModMultiplier(string key)
+		{
+			if (!PropertyMods.ContainsKey(key))
+				return 1;
+
+			double result = 1;
+			foreach (string id in PropertyMods[key].Keys)
+				result *= PropertyMods[key][id].Multiplier;
+
+			return result;
+		}
+
+		double GetPropertyModOffset(string key)
+		{
+			if (!PropertyMods.ContainsKey(key))
+				return 0;
+
+			double result = 0;
+			foreach (string id in PropertyMods[key].Keys)
+				result += PropertyMods[key][id].Offset;
+
+			return result;
+		}
+
+		double CalculateProperty(double baseValue, double min = 0, double max = double.MaxValue, [CallerMemberName] string key = null)
+		{
+			return MathUtils.Clamp(GetPropertyModMultiplier(key) * (baseValue + GetPropertyModOffset(key) + GetMods(key)), min, max);
+		}
+
+		double GetBasePropertyValue(double setToValue, [CallerMemberName] string key = null)
+		{
+			return setToValue / GetPropertyModMultiplier(key) - (GetPropertyModOffset(key) + GetMods(key));
+		}
+
 		double GetMods([CallerMemberName] string key = null)
 		{
 			if (key == null)
@@ -683,11 +735,12 @@ namespace DndCore
 			magic.AddTarget(this);
 			receivedMagic.Add(magic);
 			magic.Dispel += ReceivedMagic_Dispelled;
+			magic.TriggerOnReceived(this);
 		}
 
-		public void GiveMagic(string magicItemName, Target target, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
+		public void GiveMagic(string magicItemName, string spellName, Target target, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
-			Magic magic = new Magic(this, Game, magicItemName, data1, data2, data3, data4, data5, data6, data7, data8);
+			Magic magic = new Magic(this, Game, magicItemName, spellName, data1, data2, data3, data4, data5, data6, data7, data8);
 			if (target != null)
 			{
 				if (target.PlayerIds != null)
@@ -727,6 +780,27 @@ namespace DndCore
 		void CastedMagic_Dispelled(object sender, MagicEventArgs ea)
 		{
 			RemoveCastedMagic(ea.Magic);
+		}
+
+		public void AddPropertyMod(string propertyName, string id, double offset, double multiplier)
+		{
+			if (!PropertyMods.ContainsKey(propertyName))
+				PropertyMods.Add(propertyName, new Dictionary<string, PropertyMod>());
+			Dictionary<string, PropertyMod> propMods = PropertyMods[propertyName];
+			if (!propMods.ContainsKey(id))
+				propMods.Add(id, new PropertyMod(offset, multiplier));
+			else
+				propMods[id].Set(offset, multiplier);
+		}
+		
+		public void RemovePropertyMod(string propertyName, string id)
+		{
+			if (!PropertyMods.ContainsKey(propertyName))
+				return;
+			Dictionary<string, PropertyMod> propMods = PropertyMods[propertyName];
+			if (!propMods.ContainsKey(id))
+				return;
+			propMods.Remove(id);
 		}
 	}
 }

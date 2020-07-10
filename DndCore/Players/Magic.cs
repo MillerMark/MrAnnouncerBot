@@ -11,8 +11,10 @@ namespace DndCore
 		{
 			Dispel?.Invoke(sender, ea);
 		}
-		public Magic(Creature caster, DndGame game, string magicItemName, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
+		// TODO: Leaning toward changing spellName from a string to a Spell or a CastedSpell, so we can hook the Spell's OnDispel event, so we can remove this Magic when the spell is dispelled!
+		public Magic(Creature caster, DndGame game, string magicItemName, string spellName, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
+			SpellName = string.IsNullOrEmpty(spellName) ? string.Empty : spellName;
 			Data1 = data1;
 			Data2 = data2;
 			Data3 = data3;
@@ -64,6 +66,44 @@ namespace DndCore
 			DispelMagic();
 		}
 
+		public static string ActiveModId;
+		string GetModId()
+		{
+			return $"{Caster.name}.{SpellName}.{MagicItemName}";
+		}
+
+
+		void AddArgument(List<string> args, object data)
+		{
+			args.Add(data == null ? null : data.ToString());
+		}
+
+		List<string> GetArgumentList()
+		{
+			List<string> args = new List<string>();
+			AddArgument(args, Data1);
+			AddArgument(args, Data2);
+			AddArgument(args, Data3);
+			AddArgument(args, Data4);
+			AddArgument(args, Data5);
+			AddArgument(args, Data6);
+			AddArgument(args, Data7);
+			AddArgument(args, Data8);
+			return args;
+		}
+		public void TriggerOnReceived(Creature magicOwner)
+		{
+			if (string.IsNullOrWhiteSpace(MagicItem.onReceived))
+				return;
+
+			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner);
+			List<string> args = GetArgumentList();
+			string expressionToEvaluate = DndUtils.InjectParameters(MagicItem.onReceived, MagicItem.Parameters, args);
+
+			Expressions.Do(expressionToEvaluate, null, null, null, null, creaturePlusModId);
+		}
+
+		// TODO: Consider changing the data types to Strings!
 		public object Data1 { get; set; }
 		public object Data2 { get; set; }
 		public object Data3 { get; set; }
@@ -73,5 +113,6 @@ namespace DndCore
 		public object Data7 { get; set; }
 		public object Data8 { get; set; }
 		public List<Creature> Targets { get => targets; set => targets = value; }
+		public string SpellName { get; set; }
 	}
 }

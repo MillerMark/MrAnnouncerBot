@@ -16,8 +16,6 @@ namespace DndCore
 	[Param(8, typeof(object), "data6", "Data parameter 6 for the magic item.", ParameterIs.Optional)]
 	[Param(9, typeof(object), "data7", "Data parameter 7 for the magic item.", ParameterIs.Optional)]
 	[Param(10, typeof(object), "data8", "Data parameter 8 for the magic item.", ParameterIs.Optional)]
-
-
 	public class GiveMagic : DndFunction
 	{
 		public override string Name { get; set; } = "GiveMagic";
@@ -61,7 +59,8 @@ namespace DndCore
 
 				//if (target == null)
 				//	target = player.ActiveTarget;
-				player.GiveMagic(magicItemName, target, data1, data2, data3, data4, data5, data6, data7, data8);
+				// TODO: consider passing in the spell name as well for unique id (if castedSpell is valid).
+				player.GiveMagic(magicItemName, spell?.Spell?.Name, target, data1, data2, data3, data4, data5, data6, data7, data8);
 			}
 
 			return null;

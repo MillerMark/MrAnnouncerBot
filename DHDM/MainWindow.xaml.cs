@@ -282,8 +282,10 @@ namespace DHDM
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
 			// TODO: Add UI later!!!
+			AllInGameCreatures.Invalidate();
 			InGameCreature pudding = AllInGameCreatures.Get("TehPudding");
 			InGameCreature rory = AllInGameCreatures.Get("Rory");
+			InGameCreature mark = AllInGameCreatures.Get("Mark");
 			if (pudding != null)
 			{
 				ea.Target = new Target();
@@ -294,6 +296,12 @@ namespace DHDM
 				if (ea.Target == null)
 					ea.Target = new Target();
 				ea.Target.AddCreature(rory.Creature);
+			}
+			if (mark != null)
+			{
+				if (ea.Target == null)
+					ea.Target = new Target();
+				ea.Target.AddCreature(mark.Creature);
 			}
 		}
 

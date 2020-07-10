@@ -607,7 +607,7 @@ namespace DndUI
 				SetSavingThrowProficiency(character.savingThrowProficiency);
 				SetSpellCastingAbility(character.spellCastingAbility);
 				//character.senses = 
-				statSpeed.Text = character.baseWalkingSpeed.ToString();
+				statSpeed.Text = character.WalkingSpeed.ToString();
 				statStrength.Text = character.Strength.ToString();
 				statStrength2.Text = statStrength.Text;
 				//character.swimmingSpeed = 
@@ -710,7 +710,7 @@ namespace DndUI
 			character.savingThrowProficiency = GetSavingThrowProficiency();
 			character.spellCastingAbility = GetSpellCastingAbility();
 			//character.senses = 
-			character.baseWalkingSpeed = statSpeed.ToDouble();
+			character.WalkingSpeed = statSpeed.ToDouble();
 			character.baseStrength = statStrength.ToInt();
 			//character.swimmingSpeed = 
 			//character.telepathyRadius = 

@@ -38,5 +38,10 @@ namespace DndCore
 				return min;
 			return random.Next(delta) + min;
 		}
+
+		public static double Clamp(double value, double min, double max)
+		{
+			return Math.Min(Math.Max(value, min), max);
+		}
 	}
 }
