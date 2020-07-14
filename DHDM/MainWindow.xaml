@@ -670,6 +670,97 @@
 						</ListBox>
 					</StackPanel>
 				</TabItem>
+				<TabItem Header="Monster" x:Name="tbsMonsters" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
+					<StackPanel Orientation="Vertical">
+						<StackPanel Orientation="Horizontal">
+							<StackPanel x:Name="spMonsterFilters" Orientation="Horizontal">
+								<StackPanel Orientation="Vertical">
+									<CheckBox x:Name="btnAberration" Margin="0, 0, 8, 0" IsChecked="True" Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Aberration</CheckBox>
+									<CheckBox x:Name="btnBeast" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Beast</CheckBox>
+									<CheckBox x:Name="btnCelestial" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Celestial</CheckBox>
+									<CheckBox x:Name="btnConstruct" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Construct</CheckBox>
+									<CheckBox x:Name="btnDragon" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Dragon</CheckBox>
+									<CheckBox x:Name="btnElemental" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Elemental</CheckBox>
+									<CheckBox x:Name="btnFey" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Fey</CheckBox>
+								</StackPanel>
+								<StackPanel Orientation="Vertical">
+									<CheckBox x:Name="btnFiend" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Fiend</CheckBox>
+									<CheckBox x:Name="btnGiant" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Giant</CheckBox>
+									<CheckBox x:Name="btnHumanoid" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Humanoid</CheckBox>
+									<CheckBox x:Name="btnMonstrosity" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Monstrosity</CheckBox>
+									<CheckBox x:Name="btnOoze" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Ooze</CheckBox>
+									<CheckBox x:Name="btnPlant" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Plant</CheckBox>
+									<CheckBox x:Name="btnUndead" Margin="0, 0, 8, 0" IsChecked="True"  Checked="btnMonsterFilter_CheckedChanged" Unchecked="btnMonsterFilter_CheckedChanged">Undead</CheckBox>
+								</StackPanel>
+							</StackPanel>
+							<Button x:Name="btnReloadMonsters" Height="25" Width="100" Margin="10,4,4,4"  Click="btnReloadMonsters_Click">
+								Reload Monsters
+							</Button>
+						</StackPanel>
+						<StackPanel x:Name="spAllMonsters" Orientation="Horizontal">
+							<ListBox x:Name="lstAllMonsters" AllowDrop="True" SelectionChanged="lstAllMonsters_SelectionChanged" Drop="lstAllMonsters_Drop" Height="800" 
+									 ItemsSource="{Binding}" DisplayMemberPath="Name" IsSynchronizedWithCurrentItem="true">
+							</ListBox>
+							<Grid x:Name="grdDetail" Height="Auto" Width="Auto" Margin="6" VerticalAlignment="Top">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+								</Grid.RowDefinitions>
+								<TextBlock Text="Name: " Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Text="{Binding Path=Name}" FontWeight="Bold"/>
+								<Image x:Name="imgMonster" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Source="{Binding Path=ImageUrl}" MaxWidth="300" 
+									   Loaded="imgMonster_Loaded"></Image>
+								<Canvas x:Name="cvsImageOverlay" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
+									<Rectangle x:Name="rectCrop" Canvas.Left="0" Canvas.Top="0" Fill="#01F0F8FF" Stroke="Red" Width="220" Height="60" 
+											   Cursor="SizeAll"
+											   PreviewMouseDown="rectCrop_PreviewMouseDown" PreviewMouseMove="rectCrop_PreviewMouseMove" PreviewMouseUp="rectCrop_PreviewMouseUp"
+											   />
+									<Rectangle x:Name="rectDragHandle" Fill="Red" Width="10" Height="10" Canvas.Left="100" Canvas.Top="100" 
+											   Cursor="SizeNWSE"
+											   
+											   PreviewMouseDown="rectDragHandle_PreviewMouseDown" PreviewMouseMove="rectDragHandle_PreviewMouseMove" PreviewMouseUp="rectDragHandle_PreviewMouseUp"></Rectangle>
+								</Canvas>
+								<TextBlock Text="Challenge Rating: " Grid.Row="2"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Path=ChallengeRatingStr}" FontWeight="Bold"/>
+								<TextBlock Text="Hit Points: " Grid.Row="3"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Path=HitPoints}" FontWeight="Bold"/>
+								<TextBlock Text="Gold: " Grid.Row="4"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Path=GoldPieces}" FontWeight="Bold"/>
+								<TextBlock Text="Strength: " Grid.Row="5"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding Path=Strength}" FontWeight="Bold"/>
+								<TextBlock Text="Dexterity: " Grid.Row="6"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding Path=Dexterity}" FontWeight="Bold"/>
+								<TextBlock Text="Constitution: " Grid.Row="7"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="7" Text="{Binding Path=Constitution}" FontWeight="Bold"/>
+								<TextBlock Text="Intelligence: " Grid.Row="8"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="8" Text="{Binding Path=Intelligence}" FontWeight="Bold"/>
+								<TextBlock Text="Wisdom: " Grid.Row="9"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="9" Text="{Binding Path=Wisdom}" FontWeight="Bold"/>
+								<TextBlock Text="Charisma: " Grid.Row="10"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="10" Text="{Binding Path=Charisma}" FontWeight="Bold"/>
+								<TextBlock Text="Flying Speed: " Grid.Row="11"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="11" Text="{Binding Path=flyingSpeed}" FontWeight="Bold"/>
+								<TextBlock Text="Swimming Speed: " Grid.Row="12"  Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Grid.Row="12" Text="{Binding Path=swimmingSpeed}" FontWeight="Bold"/>
+							</Grid>
+						</StackPanel>
+					</StackPanel>
+				</TabItem>
 				<TabItem Header="Mods" x:Name="tbMods" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<uc:ModsList/>
 				</TabItem>
@@ -748,13 +839,13 @@
 								<StackPanel x:Name="spCodeEditor" Orientation="Vertical">
 									<StackPanel Orientation="Horizontal">
 										<Viewbox x:Name="iconSaved" Width="24" Margin="3, 1, 0, 0" Visibility="Hidden">
-										  <Canvas Width="2445" Height="1603">
-											<Path Fill="#FFA6A6A6">
-											  <Path.Data>
-												<PathGeometry Figures="M1556.375,544.25C1544.75,544.25,1533.25,548.625,1524.375,557.5L987.625,1094.125 771.375,877.875C753.75,860.25,725.125,860.25,707.5,877.875L579.625,1005.75C562,1023.375,562,1052,579.625,1069.625L945,1434.875 945,1434.875 955.75,1445.625C973.375,1463.25,1002,1463.25,1019.625,1445.625L1716.125,749.25C1733.75,731.5,1733.75,702.875,1716.125,685.25L1588.25,557.5C1579.5,548.625,1567.875,544.25,1556.375,544.25z M958.25,-0.5C1187.875,-0.5,1384.875,139.125,1469,338L1469.5,339.875 1493.625,326.875C1547.125,304.125,1606,291.625,1667.75,291.625C1914.875,291.625,2115.125,491.875,2115.125,739C2115.125,769.875,2112,800,2106,829.125L2085.625,894.75 2165.75,915.125 2187.375,924.625C2343.625,956.625,2445.625,1148.625,2442.5,1260.625C2439.375,1372.625,2324.875,1564.625,2168.625,1596.625L2099.5,1603.5C2099.5,1603.5,2099.5,1603.5,2099.5,1603.5C2099.5,1603.5,2099.5,1603.5,2099.5,1603.5L403.875,1603.5 367.125,1592.875C157.375,1550,-0.5,1364.375,-0.5,1141.875C-0.5,919.5,157.375,733.875,367.125,690.875L421.125,685.5 410.25,638.25C406.125,610.625,403.875,582.5,403.875,553.75C403.875,247.75,652.125,-0.5,958.25,-0.5z" />
-											  </Path.Data>
-											</Path>
-										  </Canvas>
+											<Canvas Width="2445" Height="1603">
+												<Path Fill="#FFA6A6A6">
+													<Path.Data>
+														<PathGeometry Figures="M1556.375,544.25C1544.75,544.25,1533.25,548.625,1524.375,557.5L987.625,1094.125 771.375,877.875C753.75,860.25,725.125,860.25,707.5,877.875L579.625,1005.75C562,1023.375,562,1052,579.625,1069.625L945,1434.875 945,1434.875 955.75,1445.625C973.375,1463.25,1002,1463.25,1019.625,1445.625L1716.125,749.25C1733.75,731.5,1733.75,702.875,1716.125,685.25L1588.25,557.5C1579.5,548.625,1567.875,544.25,1556.375,544.25z M958.25,-0.5C1187.875,-0.5,1384.875,139.125,1469,338L1469.5,339.875 1493.625,326.875C1547.125,304.125,1606,291.625,1667.75,291.625C1914.875,291.625,2115.125,491.875,2115.125,739C2115.125,769.875,2112,800,2106,829.125L2085.625,894.75 2165.75,915.125 2187.375,924.625C2343.625,956.625,2445.625,1148.625,2442.5,1260.625C2439.375,1372.625,2324.875,1564.625,2168.625,1596.625L2099.5,1603.5C2099.5,1603.5,2099.5,1603.5,2099.5,1603.5C2099.5,1603.5,2099.5,1603.5,2099.5,1603.5L403.875,1603.5 367.125,1592.875C157.375,1550,-0.5,1364.375,-0.5,1141.875C-0.5,919.5,157.375,733.875,367.125,690.875L421.125,685.5 410.25,638.25C406.125,610.625,403.875,582.5,403.875,553.75C403.875,247.75,652.125,-0.5,958.25,-0.5z" />
+													</Path.Data>
+												</Path>
+											</Canvas>
 										</Viewbox>
 
 										<Viewbox x:Name="iconSaving" Width="24" Margin="3, 1, 0, 0" Visibility="Hidden">

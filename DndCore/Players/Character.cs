@@ -1864,8 +1864,82 @@ namespace DndCore
 			}
 		}
 
-		public void BeforePlayerRollsDice()
+		public void BeforePlayerRollsDice(DiceRoll diceRoll, ref VantageKind vantageKind)
 		{
+			int advantageCount = 0;
+			int disadvantageCount = 0;
+			switch (vantageKind)
+			{
+				case VantageKind.Advantage:
+					advantageCount = 1;
+					break;
+				case VantageKind.Disadvantage:
+					disadvantageCount = 1;
+					break;
+			}
+			foreach (string key in VantageMods.Keys)
+			{
+				if (VantageMods[key].RollType == diceRoll.Type)
+				{
+					switch (diceRoll.Type)
+					{
+						case DiceRollType.SkillCheck:
+							Skills matchSkill = VantageMods[key].Detail;
+							if ((DndUtils.IsSkillAGenericAbility(matchSkill) && matchSkill == DndUtils.FromSkillToAbility(diceRoll.SkillCheck)) ||
+								matchSkill == diceRoll.SkillCheck)
+							{
+								if (VantageMods[key].Offset < 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has disadvantage on {matchSkill} skill checks due to {VantageMods[key].DieLabel}.");
+									disadvantageCount++;
+								}
+								else if (VantageMods[key].Offset > 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has advantage on {matchSkill} skill checks due to {VantageMods[key].DieLabel}.");
+									advantageCount++;
+								}
+							}
+							break;
+						// TODO: Implement vantage mods for attacks, initiative, etc.
+						case DiceRollType.Attack:
+						case DiceRollType.ChaosBolt:
+
+							break;
+						case DiceRollType.SavingThrow:
+							if ((int)VantageMods[key].Detail == (int)diceRoll.SavingThrow)
+							{
+								if (VantageMods[key].Offset < 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has disadvantage on {diceRoll.SavingThrow} saving throws due to {VantageMods[key].DieLabel}.");
+									disadvantageCount++;
+								}
+								else if (VantageMods[key].Offset > 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has advantage on {diceRoll.SavingThrow} saving throws due to {VantageMods[key].DieLabel}.");
+									advantageCount++;
+								}
+							}
+							break;
+						case DiceRollType.DeathSavingThrow:
+
+							break;
+						case DiceRollType.Initiative:
+
+							break;
+						case DiceRollType.NonCombatInitiative:
+
+							break;
+					}
+				}
+				advantageCount = Math.Min(advantageCount, 1);
+				disadvantageCount = Math.Min(disadvantageCount, 1);
+				if (advantageCount == disadvantageCount)
+					vantageKind = VantageKind.Normal;
+				else if (advantageCount > 0)
+					vantageKind = VantageKind.Advantage;
+				else if (advantageCount < 0)
+					vantageKind = VantageKind.Disadvantage;
+			}
 			Expressions.BeginUpdate();
 			try
 			{

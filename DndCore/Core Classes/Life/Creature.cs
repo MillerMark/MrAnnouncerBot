@@ -52,7 +52,7 @@ namespace DndCore
 
 		public double baseStrength;
 		public double baseWisdom;
-		
+
 		// TODO: May want to make this private after removing dependencies to this variable name due to JSON serialization in TS files.
 		public double baseWalkingSpeed = 0;
 		public double burrowingSpeed { get; set; } = 0;
@@ -84,7 +84,7 @@ namespace DndCore
 
 		[Column]
 		public decimal goldPieces = 0;
-		
+
 		public decimal GoldPieces
 		{
 			get { return goldPieces; }
@@ -98,7 +98,7 @@ namespace DndCore
 		[Column]
 		public double hitPoints = 0;
 
-		
+
 		public double HitPoints
 		{
 			get { return hitPoints; }
@@ -107,7 +107,7 @@ namespace DndCore
 				hitPoints = value;
 			}
 		}
-		
+
 
 		public double initiative = 0;
 		public CreatureKinds kind = CreatureKinds.None;
@@ -119,6 +119,13 @@ namespace DndCore
 
 		[Indexer]
 		public string name = string.Empty;
+
+		[JsonIgnore]
+		public string Name { get => name; set => name = value; }
+
+
+		[JsonIgnore]
+		public bool IsSelected { get; set; }
 
 		protected bool needToRecalculateMods;
 		public int offTurnActions = 0;
@@ -162,6 +169,7 @@ namespace DndCore
 		
 		[JsonIgnore]
 		public Dictionary<string, Dictionary<string, PropertyMod>> PropertyMods { get; set; } = new Dictionary<string, Dictionary<string, PropertyMod>>();
+		public Dictionary<string, VantageMod> VantageMods { get; set; } = new Dictionary<string, VantageMod>();
 
 		public virtual double Strength
 		{
@@ -738,9 +746,9 @@ namespace DndCore
 			magic.TriggerOnReceived(this);
 		}
 
-		public void GiveMagic(string magicItemName, string spellName, Target target, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
+		public void GiveMagic(string magicItemName, CastedSpell castedSpell, Target target, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
-			Magic magic = new Magic(this, Game, magicItemName, spellName, data1, data2, data3, data4, data5, data6, data7, data8);
+			Magic magic = new Magic(this, Game, magicItemName, castedSpell, data1, data2, data3, data4, data5, data6, data7, data8);
 			if (target != null)
 			{
 				if (target.PlayerIds != null)
@@ -801,6 +809,21 @@ namespace DndCore
 			if (!propMods.ContainsKey(id))
 				return;
 			propMods.Remove(id);
+		}
+
+		public void AddVantageMod(string id, DiceRollType rollType, Skills skills, string dieLabel, int offset)
+		{
+			if (!VantageMods.ContainsKey(id))
+				VantageMods.Add(id, new VantageMod(rollType, skills, dieLabel, offset));
+			else
+				VantageMods[id].Set(rollType, skills, dieLabel, offset);
+		}
+
+		public void RemoveVantageMod(string id)
+		{
+			if (!VantageMods.ContainsKey(id))
+				return;
+			VantageMods.Remove(id);
 		}
 	}
 }

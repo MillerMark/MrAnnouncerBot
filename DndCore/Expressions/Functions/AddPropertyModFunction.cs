@@ -5,7 +5,7 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	[Tooltip("Adds a specified property mod to the active magic owner (a Creature set in the Expression Evaluator's custom data).")]
+	[Tooltip("Adds a specified property mod to the active magic owner (a CreaturePlusModId from Magic set in the Expression Evaluator's custom data).")]
 	[Param(1, typeof(string), "propertyName", "The name of the property to mod.", ParameterIs.Required)]
 	[Param(2, typeof(double), "offset", "The offset to add to the property.", ParameterIs.Required)]
 	[Param(3, typeof(double), "multiplier", "The multiplier to multiply the property by. Defaults to one if not specified.", ParameterIs.Optional)]
@@ -20,7 +20,9 @@ namespace DndCore
 				throw new Exception($"CreaturePlusModId recipient must be specified before evaluating expressions containing AddPropertyMod.");
 			
 			ExpectingArguments(args, 2, 3);
-			string propertyName = Expressions.GetStr(args[0], player, target, spell);
+			string propertyName = string.Empty;
+			if (args[0] is string)
+				propertyName = args[0];
 			double offset = Expressions.GetDouble(args[1], player, target, spell);
 			double multiplier = 1;
 			if (args.Count == 3)

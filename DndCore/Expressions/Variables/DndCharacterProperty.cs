@@ -37,14 +37,14 @@ namespace DndCore
 
 		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
 		{
+			if (player == null)
+				return false;
+
 			GetPropertyNames();
 			if (propertyNames.IndexOf(tokenName) >= 0 | fieldNames.IndexOf(tokenName) >= 0)
 				return true;
 
 			if (KnownQualifiers.StartsWithKnownQualifier(tokenName))
-				return false;
-
-			if (player == null)
 				return false;
 
 			return player.HoldsState(tokenName) || tokenName.StartsWith("_"); // ;

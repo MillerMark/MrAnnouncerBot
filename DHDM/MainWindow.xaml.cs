@@ -71,6 +71,19 @@ namespace DHDM
 
 		public MainWindow()
 		{
+			changingInternally = true;
+			try
+			{
+				InitializeGame();
+			}
+			finally
+			{
+				changingInternally = false;
+			}
+		}
+
+		private void InitializeGame()
+		{
 			game = new DndGame();
 			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -281,27 +294,20 @@ namespace DHDM
 
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
-			// TODO: Add UI later!!!
-			AllInGameCreatures.Invalidate();
-			InGameCreature pudding = AllInGameCreatures.Get("TehPudding");
-			InGameCreature rory = AllInGameCreatures.Get("Rory");
-			InGameCreature mark = AllInGameCreatures.Get("Mark");
-			if (pudding != null)
+			// TODO: Add support for auto-select based on next answer.
+			FrmSelectInGameCreature frmSelectInGameCreature = new FrmSelectInGameCreature();
+
+			frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, game.Players);
+
+			if (frmSelectInGameCreature.ShowDialog() == true)
 			{
 				ea.Target = new Target();
-				ea.Target.AddCreature(pudding.Creature);
-			}
-			if (rory != null)
-			{
-				if (ea.Target == null)
-					ea.Target = new Target();
-				ea.Target.AddCreature(rory.Creature);
-			}
-			if (mark != null)
-			{
-				if (ea.Target == null)
-					ea.Target = new Target();
-				ea.Target.AddCreature(mark.Creature);
+				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					if (inGameCreature.IsSelected)
+						ea.Target.AddCreature(inGameCreature.Creature);
+				foreach (Character player in game.Players)
+					if (player.IsSelected)
+						ea.Target.AddCreature(player);
 			}
 		}
 
@@ -2304,12 +2310,12 @@ namespace DHDM
 			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.SkillCheck);
 		}
 
-		void BeforePlayerRolls(int playerId)
+		void BeforePlayerRolls(int playerId, DiceRoll diceRoll, ref VantageKind vantageKind)
 		{
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
 				return;
-			player.BeforePlayerRollsDice();
+			player.BeforePlayerRollsDice(diceRoll, ref vantageKind);
 		}
 
 		private DiceRoll PrepareRoll(DiceRollType type)
@@ -2402,14 +2408,17 @@ namespace DHDM
 					checkbox.RbNormal.IsChecked = true;
 
 					string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
+					BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
 					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
-					BeforePlayerRolls(checkbox.PlayerId);
 					foundPlayer = true;
 				}
 			}
 
 			if (!foundPlayer)
-				BeforePlayerRolls(ActivePlayerId);
+			{
+				BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
+				diceRoll.VantageKind = diceRollKind;
+			}
 
 			diceRoll.AddCritFailMessages(type);
 
@@ -4058,6 +4067,7 @@ namespace DHDM
 				SelectSkill(skill);
 				SetRollScopeForPlayers(playerIds);
 				ckbUseMagic.IsChecked = false;
+				ResetActiveFields();
 				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
 			});
 		}
@@ -4346,6 +4356,7 @@ namespace DHDM
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
 
+			AllInGameCreatures.Invalidate();
 			AllWeaponEffects.Invalidate();
 			AllPlayers.Invalidate();
 			AllSpells.Invalidate();
@@ -5283,8 +5294,15 @@ namespace DHDM
 		{
 			if (activeEventData == null)
 				return;
-			TestCastSpell(activeEventData.ParentGroup.Name);
-			UnleashTheNextRoll();
+			try
+			{
+				TestCastSpell(activeEventData.ParentGroup.Name);
+				UnleashTheNextRoll();
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debugger.Break();
+			}
 		}
 
 		private void LstKnownSpellsAndFeatures_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -6514,6 +6532,193 @@ namespace DHDM
 		{
 			AllTrailingEffects.Invalidate();
 			TextCompletionEngine.RefreshCompletionProviders();
+		}
+
+		private void btnReloadMonsters_Click(object sender, RoutedEventArgs e)
+		{
+			AllMonsters.Invalidate();
+			FilterMonsters();
+		}
+
+		CreatureKinds GetMonsterTabCreatureKindFilter()
+		{
+			CreatureKinds result = CreatureKinds.None;
+
+			Array values = Enum.GetValues(typeof(CreatureKinds));
+			Array names = Enum.GetNames(typeof(CreatureKinds));
+			Dictionary<string, CreatureKinds> nameValueMap = new Dictionary<string, CreatureKinds>();
+			for (int i = 0; i < names.Length; i++)
+			{
+				nameValueMap.Add(((string[])names)[i], ((CreatureKinds[])values)[i]);
+			}
+
+			// TODO: CodingGorilla says try this: var r = names.ToDictionary(n => n, v => Enum.Parse<CreatureKinds>(v));
+
+			foreach (StackPanel sp in spMonsterFilters.Children.OfType<StackPanel>())
+				foreach (CheckBox checkbox in sp.Children.OfType<CheckBox>())
+					if (checkbox.IsChecked == true)
+						if (checkbox.Content is string label)
+							result |= nameValueMap[label];
+
+			return result;
+		}
+		private void FilterMonsters()
+		{
+			double maxChallengeRating = double.MaxValue;
+			CreatureKinds creatureKindFilter = GetMonsterTabCreatureKindFilter();
+			spAllMonsters.DataContext = AllMonsters.Monsters.Where(x => x.challengeRating <= maxChallengeRating &&
+			(x.kind & creatureKindFilter) == x.kind).ToList();
+		}
+
+		private void btnMonsterFilter_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			if (!changingInternally)
+				FilterMonsters();
+		}
+
+		bool isResizingCropRect;
+		bool isDraggingCropRect;
+		double imageCropMouseDeltaX;
+		double imageCropMouseDeltaY;
+		private void rectDragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			GetMouseDragDeltas(e, rectDragHandle);
+			isResizingCropRect = true;
+		}
+
+		private void rectCrop_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			GetMouseDragDeltas(e, rectCrop);
+			isDraggingCropRect = true;
+		}
+
+		private void rectDragHandle_PreviewMouseMove(object sender, MouseEventArgs e)
+		{
+			if (!isResizingCropRect)
+				return;
+
+			MoveRectWithMouse(e, rectDragHandle);
+			SetCropSizeFromHandle();
+		}
+
+		private void rectCrop_PreviewMouseMove(object sender, MouseEventArgs e)
+		{
+			if (!isDraggingCropRect)
+				return;
+			MoveRectWithMouse(e, rectCrop);
+			MoveDragHandle();
+		}
+
+		/// <summary>
+		/// Moves the drag handle to the bottom-right of the crop box.
+		/// </summary>
+		void MoveDragHandle()
+		{
+			Canvas.SetLeft(rectDragHandle, Canvas.GetLeft(rectCrop) + rectCrop.Width - rectDragHandle.Width / 2);
+			Canvas.SetTop(rectDragHandle, Canvas.GetTop(rectCrop) + rectCrop.Height - rectDragHandle.Height / 2);
+		}
+
+
+		private void MoveRectWithMouse(MouseEventArgs e, Rectangle rect)
+		{
+			Point mousePosition = e.GetPosition(cvsImageOverlay);
+
+			Canvas.SetLeft(rect, mousePosition.X - imageCropMouseDeltaX);
+			Canvas.SetTop(rect, mousePosition.Y - imageCropMouseDeltaY);
+		}
+
+		void SetCropSizeFromHandle()
+		{
+			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
+			double centerHandleX = Canvas.GetLeft(rectDragHandle) + rectDragHandle.Width / 2;
+			double centerHandleY = Canvas.GetTop(rectDragHandle) + rectDragHandle.Height / 2;
+			double newWidth = centerHandleX - Canvas.GetLeft(rectCrop);
+			double newHeight = centerHandleY - Canvas.GetTop(rectCrop);
+			if (newWidth < PictureCropInfo.MinWidth * scale)
+				newWidth = PictureCropInfo.MinWidth * scale;
+
+			rectCrop.Width = newWidth;
+			rectCrop.Height = PictureCropInfo.GetHeightFromWidth(newWidth);
+
+			MoveDragHandle();
+		}
+
+		private void rectDragHandle_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		{
+			if (isResizingCropRect)
+			{
+				rectDragHandle.ReleaseMouseCapture();
+				SetCropSizeFromHandle();
+				UpdateSelectedMonsterImageCropData();
+			}
+			isResizingCropRect = false;
+		}
+
+		private void GetMouseDragDeltas(MouseButtonEventArgs e, Rectangle rectCrop)
+		{
+			Point mousePosition = e.GetPosition(cvsImageOverlay);
+			imageCropMouseDeltaX = mousePosition.X - Canvas.GetLeft(rectCrop);
+			imageCropMouseDeltaY = mousePosition.Y - Canvas.GetTop(rectCrop);
+			rectCrop.CaptureMouse();
+		}
+
+		private void rectCrop_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+		{
+			if (isDraggingCropRect)
+			{
+				rectCrop.ReleaseMouseCapture();
+				UpdateSelectedMonsterImageCropData();
+			}
+			isDraggingCropRect = false;
+		}
+
+		void UpdateSelectedMonsterImageCropData()
+		{
+			//System.Diagnostics.Debugger.Break();
+			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
+			double width = rectCrop.Width / scale;
+			double x = Canvas.GetLeft(rectCrop) / scale;
+			double y = Canvas.GetTop(rectCrop) / scale;
+			if (lstAllMonsters.SelectedItem is Monster monster)
+				monster.PictureCropInfo = new PictureCropInfo() { X = x, Y = y, Width = width };
+		}
+
+		void MoveMonsterCroppedTo(PictureCropInfo pictureCropInfo)
+		{
+			if (imgMonster.Source.Width == 1)
+				return;
+			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
+			if (pictureCropInfo == null)
+			{
+				Canvas.SetLeft(rectCrop, 0);
+				Canvas.SetTop(rectCrop, 0);
+
+				rectCrop.Width = PictureCropInfo.MinWidth / scale;
+				rectCrop.Height = PictureCropInfo.GetHeightFromWidth(rectCrop.Width);
+			}
+			else
+			{
+				Canvas.SetLeft(rectCrop, pictureCropInfo.X * scale);
+				Canvas.SetTop(rectCrop, pictureCropInfo.Y * scale);
+				rectCrop.Width = pictureCropInfo.Width * scale;
+				rectCrop.Height = PictureCropInfo.GetHeightFromWidth(rectCrop.Width);
+				MoveDragHandle();
+			}
+		}
+		private void lstAllMonsters_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (lstAllMonsters.SelectedItem is Monster monster)
+				MoveMonsterCroppedTo(monster.PictureCropInfo);
+		}
+
+		private void lstAllMonsters_Drop(object sender, DragEventArgs e)
+		{
+			// TODO: base this code on LstAllSpells_Drop
+		}
+
+		private void imgMonster_Loaded(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

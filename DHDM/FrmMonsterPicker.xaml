@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Select a Creature" Height="Auto" Width="800" SizeToContent="WidthAndHeight">
 	<Window.Resources>
-		<DataTemplate x:Key="DetailTemplate">
+		<!--<DataTemplate x:Key="DetailTemplate">
 			<Border Width="300" Height="100" Margin="20"
           BorderBrush="Gray" BorderThickness="1" Padding="8">
 				<Grid>
@@ -28,7 +28,7 @@
 					<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=HomeTown}"/>
 				</Grid>
 			</Border>
-		</DataTemplate>
+		</DataTemplate>-->
 	</Window.Resources>
     <StackPanel x:Name="spMain" Orientation="Vertical" Margin="8" >
 		<StackPanel Orientation="Horizontal">
@@ -85,8 +85,6 @@
 				<TextBlock Grid.Column="1" Grid.Row="11" Text="{Binding Path=flyingSpeed}" FontWeight="Bold"/>
 				<TextBlock Text="Swimming Speed: " Grid.Row="12"  Width="Auto" Height="Auto"/>
 				<TextBlock Grid.Column="1" Grid.Row="12" Text="{Binding Path=swimmingSpeed}" FontWeight="Bold"/>
-				
-
 			</Grid>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

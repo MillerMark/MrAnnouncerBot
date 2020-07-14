@@ -21,8 +21,8 @@ namespace DndCore
 				return challengeRating.ToString();
 			}
 		}
-		
 
+		public PictureCropInfo PictureCropInfo { get; set; }
 		public double charismaMod;
 		public double constitutionMod;
 		public double dexterityMod;

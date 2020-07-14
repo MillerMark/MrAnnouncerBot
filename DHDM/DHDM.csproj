@@ -311,6 +311,9 @@
     <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="CharacterTriggerProvider.cs" />
     <Compile Include="CompletionProvider.cs" />
+    <Compile Include="FrmSelectInGameCreature.xaml.cs">
+      <DependentUpon>FrmSelectInGameCreature.xaml</DependentUpon>
+    </Compile>
     <Compile Include="IDE\Code Completion\ICompletionData Implementors\FunctionCompletionData.cs" />
     <Compile Include="IDE\Code Completion\Providers\TableColumnCompletionProvider.cs" />
     <Compile Include="IDE\Code Templates\Text Commands\AnchorCommand.cs" />
@@ -427,6 +430,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FrmMonsterPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FrmSelectInGameCreature.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

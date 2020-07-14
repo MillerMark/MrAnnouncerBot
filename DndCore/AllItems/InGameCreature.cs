@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Newtonsoft.Json;
 using GoogleHelper;
 
 namespace DndCore
@@ -10,10 +11,19 @@ namespace DndCore
 	{
 		[Column]
 		public string Name { get; set; }
+		
 		[Column]
 		public string Kind { get; set; }
+		
 		[Column]
 		public int HitPoints { get; set; }
+		
+		[Column]
+		public int Index { get; set; }
+
+		[JsonIgnore]
+		public bool IsSelected { get; set; }
+
 
 		Creature creature;
 		public Creature Creature

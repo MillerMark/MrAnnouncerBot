@@ -5,6 +5,7 @@ namespace DndCore
 {
 	public class Magic
 	{
+		private const int NumArgs = 8;
 		public event MagicEventHandler Dispel;
 		
 		protected virtual void OnDispel(object sender, MagicEventArgs ea)
@@ -12,24 +13,52 @@ namespace DndCore
 			Dispel?.Invoke(sender, ea);
 		}
 		// TODO: Leaning toward changing spellName from a string to a Spell or a CastedSpell, so we can hook the Spell's OnDispel event, so we can remove this Magic when the spell is dispelled!
-		public Magic(Creature caster, DndGame game, string magicItemName, string spellName, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
+		public Magic(Creature caster, DndGame game, string magicItemName, CastedSpell castedSpell, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
-			SpellName = string.IsNullOrEmpty(spellName) ? string.Empty : spellName;
-			Data1 = data1;
-			Data2 = data2;
-			Data3 = data3;
-			Data4 = data4;
-			Data5 = data5;
-			Data6 = data6;
-			Data7 = data7;
-			Data8 = data8;
+			SpellName = castedSpell?.Spell?.Name;
+			if (string.IsNullOrWhiteSpace(SpellName))
+				SpellName = "{No Spell Name}";
+			Args[0] = data1;
+			Args[1] = data2;
+			Args[2] = data3;
+			Args[3] = data4;
+			Args[4] = data5;
+			Args[5] = data6;
+			Args[6] = data7;
+			Args[7] = data8;
 			MagicItemName = magicItemName.Trim();
 			Caster = caster;
+
+			// TODO: Should we ever set the Magic's duration to the spell's duration?
+			if (string.IsNullOrWhiteSpace(MagicItem.duration))
+			{
+				for (int i = 0; i < MagicItem.Parameters.Count; i++)
+				{
+					if (MagicItem.Parameters[i] == "$Duration")
+					{
+						MagicItem.duration = (string)Args[i];
+						break;
+					}
+				}
+			}
+
 			DndTimeSpan dndTimeSpan = DndTimeSpan.FromDurationStr(MagicItem.duration);
-			game.CreateAlarm($"{caster.name}.{MagicItem.Name}", dndTimeSpan, MagicExpiresHandler, this, caster as Character);
+			if (dndTimeSpan.HasValue())
+				game.CreateAlarm($"{caster.name}.{MagicItem.Name}", dndTimeSpan, MagicExpiresHandler, this, caster as Character);
+
+			Spell spell = castedSpell?.Spell;
+			if (spell != null && spell.RequiresConcentration)
+			{
+				castedSpell.OnDispel += CastedSpell_OnDispel;
+			}
 		}
 
-		
+		private void CastedSpell_OnDispel(object sender, EventArgs e)
+		{
+			foreach (Creature creature in Targets)
+				TriggerEvent(creature, MagicItem.onExpire);
+		}
+
 		public Creature Caster { get; set; }
 		
 		List<Creature> targets = new List<Creature>();
@@ -81,37 +110,33 @@ namespace DndCore
 		List<string> GetArgumentList()
 		{
 			List<string> args = new List<string>();
-			AddArgument(args, Data1);
-			AddArgument(args, Data2);
-			AddArgument(args, Data3);
-			AddArgument(args, Data4);
-			AddArgument(args, Data5);
-			AddArgument(args, Data6);
-			AddArgument(args, Data7);
-			AddArgument(args, Data8);
+			for (int i = 0; i < NumArgs; i++)
+				AddArgument(args, Args[i]);
 			return args;
 		}
-		public void TriggerOnReceived(Creature magicOwner)
+
+		/// <summary>
+		/// Triggers the specified event, ensuring a CreaturePlusModId is passed in as custom data to the expressions engine.
+		/// </summary>
+		void TriggerEvent(Creature magicOwner, string eventCode)
 		{
-			if (string.IsNullOrWhiteSpace(MagicItem.onReceived))
+			if (string.IsNullOrWhiteSpace(eventCode))
 				return;
 
 			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner);
 			List<string> args = GetArgumentList();
-			string expressionToEvaluate = DndUtils.InjectParameters(MagicItem.onReceived, MagicItem.Parameters, args);
+			string expressionToEvaluate = DndUtils.InjectParameters(eventCode, MagicItem.Parameters, args);
 
 			Expressions.Do(expressionToEvaluate, null, null, null, null, creaturePlusModId);
 		}
 
+		public void TriggerOnReceived(Creature magicOwner)
+		{
+			TriggerEvent(magicOwner, MagicItem.onReceived);
+		}
+
 		// TODO: Consider changing the data types to Strings!
-		public object Data1 { get; set; }
-		public object Data2 { get; set; }
-		public object Data3 { get; set; }
-		public object Data4 { get; set; }
-		public object Data5 { get; set; }
-		public object Data6 { get; set; }
-		public object Data7 { get; set; }
-		public object Data8 { get; set; }
+		public object[] Args { get; set; } = new object[NumArgs];
 		public List<Creature> Targets { get => targets; set => targets = value; }
 		public string SpellName { get; set; }
 	}

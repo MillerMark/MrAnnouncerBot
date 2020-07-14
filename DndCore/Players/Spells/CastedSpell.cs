@@ -4,6 +4,7 @@ namespace DndCore
 {
 	public class CastedSpell
 	{
+		public event EventHandler OnDispel;
 		public CastedSpell(Spell spell, Character spellCaster)
 		{
 			TimeSpellWasCast = DndTimeClock.Instance.Time;
@@ -54,11 +55,17 @@ namespace DndCore
 			Spell.TriggerCast(SpellCaster, Target, this);
 		}
 
+		protected virtual void OnOnDispel(object sender, EventArgs e)
+		{
+			OnDispel?.Invoke(sender, e);
+		}
+
 		public void Dispel()
 		{
 			if (!Active)
 				return;
 			Active = false;
+			OnOnDispel(this, EventArgs.Empty);
 			Spell.TriggerDispel(SpellCaster, Target, this);
 		}
 

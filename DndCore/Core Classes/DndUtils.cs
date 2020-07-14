@@ -575,5 +575,63 @@ namespace DndCore
 				return RoundSpecifier.EndOfTurn;
 			return RoundSpecifier.None;
 		}
+
+		public static bool IsSkillAGenericAbility(Skills matchSkill)
+		{
+			switch (matchSkill)
+			{
+				case Skills.strength:
+				case Skills.dexterity:
+				case Skills.constitution:
+				case Skills.intelligence:
+				case Skills.wisdom:
+				case Skills.charisma:
+					return true;
+			}
+			return false;
+		}
+		public static Skills FromSkillToAbility(Skills skill)
+		{
+			switch (skill)
+			{
+				case Skills.none:
+				case Skills.strength:
+				case Skills.dexterity:
+				case Skills.constitution:
+				case Skills.intelligence:
+				case Skills.wisdom:
+				case Skills.charisma:
+					return skill;
+
+				case Skills.acrobatics:
+				case Skills.sleightOfHand:
+				case Skills.stealth:
+					return Skills.dexterity;
+
+				case Skills.animalHandling:
+				case Skills.insight:
+				case Skills.medicine:
+				case Skills.perception:
+				case Skills.survival:
+					return Skills.wisdom;
+
+				case Skills.arcana:
+				case Skills.history:
+				case Skills.investigation:
+				case Skills.nature:
+				case Skills.religion:
+					return Skills.intelligence;
+
+				case Skills.athletics:
+					return Skills.strength;
+
+				case Skills.deception:
+				case Skills.intimidation:
+				case Skills.performance:
+				case Skills.persuasion:
+					return Skills.charisma;
+			}
+			return Skills.none;
+		}
 	}
 }
