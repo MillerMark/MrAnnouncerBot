@@ -15,6 +15,10 @@ namespace DndCore
 	[TabName("Players")]
 	public class Character : Creature
 	{
+		// HACK: Don't be mad - we are doing this wrapper for serialization.
+		[Indexer]
+		public new string name { get => base.name; set => base.name = value; }
+
 		public int Index
 		{
 			get
@@ -50,12 +54,12 @@ namespace DndCore
 		}
 
 
-		public string WildShapeCreatureName
+		public string WildShapeCreatureKind
 		{
 			get
 			{
 				if (WildShape is Monster monster)
-					return monster.name;
+					return monster.Kind;
 				return "";
 			}
 		}
@@ -2799,7 +2803,7 @@ namespace DndCore
 			SetField("initiative", ref initiative, character.initiative);
 			SetField("inspiration", ref inspiration, character.inspiration);
 			SetField("load", ref load, character.load);
-			SetField("name", ref name, character.name);
+			SetField("name", ref base.name, character.name);
 			SetField("proficiencyBonus", ref proficiencyBonus, character.proficiencyBonus);
 			SetField("baseWalkingSpeed", ref baseWalkingSpeed, character.baseWalkingSpeed);
 			SetField("tempHitPoints", ref tempHitPoints, character.tempHitPoints);

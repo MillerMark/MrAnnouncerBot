@@ -21,5 +21,30 @@ namespace DndCore
 		{
 			return newWidth / AspectRatio;
 		}
+
+		public static PictureCropInfo FromStr(string imageCrop)
+		{
+			PictureCropInfo result = new PictureCropInfo();
+			result.Width = MinWidth;
+			if (string.IsNullOrWhiteSpace(imageCrop))
+				return result;
+			string[] arguments = imageCrop.Split(',');
+			if (arguments.Length > 0)
+			{
+				result.X = MathUtils.GetDouble(arguments[0].Trim());
+				if (arguments.Length > 1)
+				{
+					result.Y = MathUtils.GetDouble(arguments[1].Trim());
+					if (arguments.Length > 2)
+						result.Width = MathUtils.GetDouble(arguments[2].Trim());
+				}
+			}
+			return result;
+		}
+
+		public string ToCSV()
+		{
+			return $"{X}, {Y}, {Width}";
+		}
 	}
 }

@@ -88,6 +88,11 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.AnimateSprinkles(commandData);
 		}
+
+		public void UpdateInGameCreatures(string commandData)
+		{
+			coderushedHub.Clients.All.UpdateInGameCreatures(commandData);
+		}
 		
 		public void UpdateClock(string clockData)
 		{

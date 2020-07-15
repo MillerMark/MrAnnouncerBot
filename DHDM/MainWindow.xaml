@@ -699,7 +699,7 @@
 						</StackPanel>
 						<StackPanel x:Name="spAllMonsters" Orientation="Horizontal">
 							<ListBox x:Name="lstAllMonsters" AllowDrop="True" SelectionChanged="lstAllMonsters_SelectionChanged" Drop="lstAllMonsters_Drop" Height="800" 
-									 ItemsSource="{Binding}" DisplayMemberPath="Name" IsSynchronizedWithCurrentItem="true">
+									 ItemsSource="{Binding}" DisplayMemberPath="Kind" IsSynchronizedWithCurrentItem="true">
 							</ListBox>
 							<Grid x:Name="grdDetail" Height="Auto" Width="Auto" Margin="6" VerticalAlignment="Top">
 								<Grid.ColumnDefinitions>
@@ -723,14 +723,16 @@
 								</Grid.RowDefinitions>
 								<TextBlock Text="Name: " Width="Auto" Height="Auto"/>
 								<TextBlock Grid.Column="1" Text="{Binding Path=Name}" FontWeight="Bold"/>
-								<Image x:Name="imgMonster" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Source="{Binding Path=ImageUrl}" MaxWidth="300" 
-									   Loaded="imgMonster_Loaded"></Image>
+								<Image x:Name="imgMonster" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Source="{Binding Path=ImageUrl}" MaxWidth="300"></Image>
 								<Canvas x:Name="cvsImageOverlay" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
+									<Rectangle x:Name="rectOutline" Canvas.Left="0" Canvas.Top="0" Stroke="#80FFFFFF" Width="220" Height="60"/>
 									<Rectangle x:Name="rectCrop" Canvas.Left="0" Canvas.Top="0" Fill="#01F0F8FF" Stroke="Red" Width="220" Height="60" 
 											   Cursor="SizeAll"
+											   MouseEnter="rectCrop_MouseEnter"
+											   MouseLeave="rectCrop_MouseLeave"
 											   PreviewMouseDown="rectCrop_PreviewMouseDown" PreviewMouseMove="rectCrop_PreviewMouseMove" PreviewMouseUp="rectCrop_PreviewMouseUp"
 											   />
-									<Rectangle x:Name="rectDragHandle" Fill="Red" Width="10" Height="10" Canvas.Left="100" Canvas.Top="100" 
+									<Rectangle x:Name="rectDragHandle" Fill="Red" Stroke="#80FFFFFF" Width="10" Height="10" Canvas.Left="100" Canvas.Top="100" 
 											   Cursor="SizeNWSE"
 											   
 											   PreviewMouseDown="rectDragHandle_PreviewMouseDown" PreviewMouseMove="rectDragHandle_PreviewMouseMove" PreviewMouseUp="rectDragHandle_PreviewMouseUp"></Rectangle>

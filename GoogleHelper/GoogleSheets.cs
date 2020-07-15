@@ -120,12 +120,9 @@ namespace GoogleHelper
 				switch (fullName)
 				{
 					case "System.Int32":
-						if (int.TryParse(value, out int intValue))
-							property.SetValue(instance, intValue);
-						else
-						{
-							System.Diagnostics.Debugger.Break();
-						}
+						if (!int.TryParse(value, out int intValue))
+							intValue = 0;
+						property.SetValue(instance, intValue);
 						break;
 					case "System.Decimal":
 						if (decimal.TryParse(value, out decimal decimalValue))
@@ -347,7 +344,7 @@ namespace GoogleHelper
 			int firstDigit = column % 26;
 			string secondDigitStr = "";
 			if (secondDigit > 0)
-				secondDigitStr = GetColumnId(secondDigit);
+				secondDigitStr = GetColumnId(secondDigit - 1);
 			return secondDigitStr + ((char)((byte)firstDigit + 65)).ToString();
 		}
 
@@ -395,19 +392,21 @@ namespace GoogleHelper
 					}
 
 					int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
-					if (columnIndex >= allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
-						continue;
+
+					string existingValue = null;
+					if (columnIndex < allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
+						existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
 
 					string range = GetRange(columnIndex, rowIndex);
+					
 					ValueRange body = new ValueRange();
 					body.MajorDimension = "ROWS";
 					body.Range = $"{tabName}!{range}";
 					body.Values = new List<IList<object>>();
 					body.Values.Add(new List<object>());
 					string value = GetValue(instances[i], memberInfo);
-
-					string existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
-					if (existingValue != null && value != existingValue)
+					
+					if (existingValue == null /* New */ || value != existingValue /* Mod */)
 					{
 						body.Values[0].Add(value);
 						SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);

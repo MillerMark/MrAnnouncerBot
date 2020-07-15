@@ -117,7 +117,6 @@ namespace DndCore
 		public List<Attack> multiAttack = new List<Attack>();
 		public MultiAttackCount multiAttackCount = MultiAttackCount.oneEach;
 
-		[Indexer]
 		public string name = string.Empty;
 
 		[JsonIgnore]

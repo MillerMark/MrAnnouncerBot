@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using GoogleHelper;
 
 namespace DndCore
 {
+	[SheetName("DnD")]
+	[TabName("Monsters")]
 	public class Monster : Creature
 	{
+		[Column]
+		[Indexer]
+		public string Kind { get; set; }
+
 		public double challengeRating;
 
 		public string ChallengeRatingStr
@@ -22,7 +29,17 @@ namespace DndCore
 			}
 		}
 
-		public PictureCropInfo PictureCropInfo { get; set; }
+		[Column("imageCrop")]
+		public string imageCropStr
+		{
+			get
+			{
+				return ImageCropInfo.ToCSV();
+			}
+		}
+		
+
+		public PictureCropInfo ImageCropInfo { get; set; }
 		public double charismaMod;
 		public double constitutionMod;
 		public double dexterityMod;
@@ -449,7 +466,7 @@ namespace DndCore
 		{
 			Monster monster = new Monster();
 			monster.SetFromMeta(monsterDto.Meta);
-			monster.name = monsterDto.Name;
+			monster.Kind = monsterDto.Kind;
 			monster.SetArmorClassFromStr(monsterDto.ArmorClass);
 			monster.SetHitPointsFromStr(monsterDto.HitPoints);
 			monster.SetAbilitiesFrom(monsterDto);
@@ -458,6 +475,7 @@ namespace DndCore
 			monster.SetSensesFromStr(monsterDto.Senses);
 			monster.SetChallengeRatingXpFromStr(monsterDto.Challenge);
 			monster.ImageUrl = monsterDto.img_url;
+			monster.ImageCropInfo = PictureCropInfo.FromStr(monsterDto.imageCrop);
 			return monster;
 		}
 
@@ -521,6 +539,7 @@ namespace DndCore
 			monster.multiAttack = source.multiAttack;  // shared
 			monster.multiAttackCount = source.multiAttackCount;  // shared
 			monster.name = source.name;
+			monster.Kind = source.Kind;
 			monster.naturalArmor = source.naturalArmor;
 			monster.offTurnActions = source.offTurnActions;
 			monster.onTurnActions = source.onTurnActions;

@@ -35,6 +35,7 @@ namespace OverlayManager.Hubs
 		Task TriggerEffect(string effectData);
 		Task PlaySound(string soundFileName);
 		Task AnimateSprinkles(string commandData);
+		Task UpdateInGameCreatures(string commandData);
 		Task UpdateClock(string clockData);
 		Task FloatPlayerText(int playerID, string message, string fillColor, string outlineColor);
 		Task RollDice(string diceRollData);

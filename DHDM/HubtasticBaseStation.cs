@@ -160,6 +160,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("AnimateSprinkles", commandData);
 		}
 
+		public static void UpdateInGameCreatures(string commandData)
+		{
+			HubConnection.InvokeAsync("UpdateInGameCreatures", commandData);
+		}
+
 		public static void UpdateClock(string clockData)
 		{
 			HubConnection.InvokeAsync("UpdateClock", clockData);

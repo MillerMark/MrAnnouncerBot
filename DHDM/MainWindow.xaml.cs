@@ -59,6 +59,7 @@ namespace DHDM
 		DispatcherTimer realTimeAdvanceTimer;
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer stateUpdateTimer;
+		DispatcherTimer cropRectUpdateTimer;
 		DispatcherTimer reloadSpellsTimer;
 		DispatcherTimer pendingShortcutsTimer;
 		DispatcherTimer wildMagicRollTimer;
@@ -98,6 +99,10 @@ namespace DHDM
 			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
 			stateUpdateTimer.Interval = TimeSpan.FromSeconds(1);
 			stateUpdateTimer.Start();
+			
+			cropRectUpdateTimer = new DispatcherTimer();
+			cropRectUpdateTimer.Tick += new EventHandler(UpdateCropRectFromTimer);
+			cropRectUpdateTimer.Interval = TimeSpan.FromSeconds(0.1);
 
 			reloadSpellsTimer = new DispatcherTimer();
 			reloadSpellsTimer.Tick += new EventHandler(CheckForNewSpells);
@@ -3782,6 +3787,8 @@ namespace DHDM
 
 		private void Window_Unloaded(object sender, RoutedEventArgs e)
 		{
+			if (frmCropPreview != null)
+				frmCropPreview.Close();
 			HubtasticBaseStation.DiceStoppedRolling -= HubtasticBaseStation_DiceStoppedRolling;
 			HubtasticBaseStation.AllDiceDestroyed -= HubtasticBaseStation_AllDiceDestroyed;
 		}
@@ -4389,6 +4396,7 @@ namespace DHDM
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
 			lstAllSpells.ItemsSource = AllSpells.Spells;
+			spAllMonsters.DataContext = AllMonsters.Monsters;
 		}
 
 		private void SendPlayerData()
@@ -6583,13 +6591,17 @@ namespace DHDM
 		private void rectDragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			GetMouseDragDeltas(e, rectDragHandle);
+			ShowCropPreviewWindow();
 			isResizingCropRect = true;
+			UpdateMonsterCropPreview();
 		}
 
 		private void rectCrop_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			GetMouseDragDeltas(e, rectCrop);
+			ShowCropPreviewWindow();
 			isDraggingCropRect = true;
+			UpdateMonsterCropPreview();
 		}
 
 		private void rectDragHandle_PreviewMouseMove(object sender, MouseEventArgs e)
@@ -6598,15 +6610,24 @@ namespace DHDM
 				return;
 
 			MoveRectWithMouse(e, rectDragHandle);
+			PositionCropPreviewNearCropRect();
 			SetCropSizeFromHandle();
 		}
 
+		void FixCropRectOutline()
+		{
+			Canvas.SetLeft(rectOutline, Canvas.GetLeft(rectCrop) - 1);
+			Canvas.SetTop(rectOutline, Canvas.GetTop(rectCrop) - 1);
+			rectOutline.Width = rectCrop.Width + 2;
+			rectOutline.Height = rectCrop.Height + 2;
+		}
 		private void rectCrop_PreviewMouseMove(object sender, MouseEventArgs e)
 		{
 			if (!isDraggingCropRect)
 				return;
 			MoveRectWithMouse(e, rectCrop);
-			MoveDragHandle();
+			MonsterImageCropRectChanged();
+			
 		}
 
 		/// <summary>
@@ -6623,8 +6644,8 @@ namespace DHDM
 		{
 			Point mousePosition = e.GetPosition(cvsImageOverlay);
 
-			Canvas.SetLeft(rect, mousePosition.X - imageCropMouseDeltaX);
-			Canvas.SetTop(rect, mousePosition.Y - imageCropMouseDeltaY);
+			Canvas.SetLeft(rect, Math.Min(imgMonster.ActualWidth - rect.Width, Math.Max(0, mousePosition.X - imageCropMouseDeltaX)));
+			Canvas.SetTop(rect, Math.Min(imgMonster.ActualHeight - rect.Height, Math.Max(0, mousePosition.Y - imageCropMouseDeltaY)));
 		}
 
 		void SetCropSizeFromHandle()
@@ -6639,8 +6660,7 @@ namespace DHDM
 
 			rectCrop.Width = newWidth;
 			rectCrop.Height = PictureCropInfo.GetHeightFromWidth(newWidth);
-
-			MoveDragHandle();
+			MonsterImageCropRectChanged();
 		}
 
 		private void rectDragHandle_PreviewMouseUp(object sender, MouseButtonEventArgs e)
@@ -6650,6 +6670,7 @@ namespace DHDM
 				rectDragHandle.ReleaseMouseCapture();
 				SetCropSizeFromHandle();
 				UpdateSelectedMonsterImageCropData();
+				HideCropPreviewWindow();
 			}
 			isResizingCropRect = false;
 		}
@@ -6668,32 +6689,71 @@ namespace DHDM
 			{
 				rectCrop.ReleaseMouseCapture();
 				UpdateSelectedMonsterImageCropData();
+				HideCropPreviewWindow();
 			}
 			isDraggingCropRect = false;
+		}
+		void HideCropPreviewWindow()
+		{
+			if (frmCropPreview == null)
+				return;
+			frmCropPreview.Hide();
+		}
+
+		FrmCropPreview frmCropPreview;
+		void ShowCropPreviewWindow()
+		{
+			if (frmCropPreview == null)
+				frmCropPreview = new FrmCropPreview();
+			UpdateCropRectangleForSelectedMonster();
+			PositionCropPreviewNearCropRect();
+			frmCropPreview.Show();
+		}
+
+		void PositionCropPreviewNearCropRect()
+		{
+			if (frmCropPreview == null)
+				return;
+			Point upperLeftCropRect = this.rectCrop.PointToScreen(new Point(0, 0));
+			double right = upperLeftCropRect.X + rectCrop.Width;
+			double bottom = upperLeftCropRect.Y + rectCrop.Height;
+			const int spaceBetweenWindows = 10;
+			frmCropPreview.Left = right + spaceBetweenWindows;
+			frmCropPreview.Top = bottom - frmCropPreview.Height;
 		}
 
 		void UpdateSelectedMonsterImageCropData()
 		{
-			//System.Diagnostics.Debugger.Break();
+			if (!(lstAllMonsters.SelectedItem is Monster monster))
+				return;
+			UpdateCropInfoFromUI(monster);
+			GoogleSheets.SaveChanges(monster, nameof(monster.imageCropStr));
+		}
+
+		private void UpdateCropInfoFromUI(Monster monster)
+		{
 			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
 			double width = rectCrop.Width / scale;
 			double x = Canvas.GetLeft(rectCrop) / scale;
 			double y = Canvas.GetTop(rectCrop) / scale;
-			if (lstAllMonsters.SelectedItem is Monster monster)
-				monster.PictureCropInfo = new PictureCropInfo() { X = x, Y = y, Width = width };
+
+			monster.ImageCropInfo = new PictureCropInfo() { X = x, Y = y, Width = width };
 		}
 
 		void MoveMonsterCroppedTo(PictureCropInfo pictureCropInfo)
 		{
-			if (imgMonster.Source.Width == 1)
+			if (imgMonster.Source == null || imgMonster.Source.Width == 1)
+			{
+				cropRectUpdateTimer.Start();
 				return;
+			}
 			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
 			if (pictureCropInfo == null)
 			{
 				Canvas.SetLeft(rectCrop, 0);
 				Canvas.SetTop(rectCrop, 0);
 
-				rectCrop.Width = PictureCropInfo.MinWidth / scale;
+				rectCrop.Width = PictureCropInfo.MinWidth * scale;
 				rectCrop.Height = PictureCropInfo.GetHeightFromWidth(rectCrop.Width);
 			}
 			else
@@ -6702,13 +6762,69 @@ namespace DHDM
 				Canvas.SetTop(rectCrop, pictureCropInfo.Y * scale);
 				rectCrop.Width = pictureCropInfo.Width * scale;
 				rectCrop.Height = PictureCropInfo.GetHeightFromWidth(rectCrop.Width);
-				MoveDragHandle();
 			}
+
+			MonsterImageCropRectChanged();
 		}
+
+		BitmapImage monsterCropPreviewBitmap;
+
+		private void MonsterImageCropRectChanged()
+		{
+			FixCropRectOutline();
+			PositionCropPreviewNearCropRect();
+			MoveDragHandle();
+			UpdateMonsterCropPreview();
+		}
+
+		private void UpdateMonsterCropPreview()
+		{
+			if (frmCropPreview != null && monsterCropPreviewBitmap != null)
+				if (lstAllMonsters.SelectedItem is Monster monster)
+				{
+					UpdateCropInfoFromUI(monster);
+					PictureCropInfo cropInfo = monster.ImageCropInfo;
+					double x = cropInfo.X;
+					double y = cropInfo.Y;
+					double width = cropInfo.Width;
+					double height = PictureCropInfo.GetHeightFromWidth(cropInfo.Width);
+					if (x + width > monsterCropPreviewBitmap.PixelWidth || y + height > monsterCropPreviewBitmap.PixelHeight)
+					{
+						//double newScale = monsterCropPreviewBitmap.PixelWidth / monsterCropPreviewBitmap.Width;
+						double scaleWidth = monsterCropPreviewBitmap.PixelWidth / (x + width);
+						double scaleHeight = monsterCropPreviewBitmap.PixelHeight / (y + height);
+						double newScale = Math.Min(scaleWidth, scaleHeight);
+						ScaleEverything(newScale, ref x, ref y, ref width, ref height);
+					}
+					// BUG: Still getting issues on some bitmaps where this data is out of bounds.
+					Int32Rect int32Rect = new Int32Rect((int)Math.Round(x), (int)Math.Round(y), (int)Math.Round(width), (int)Math.Round(height));
+					frmCropPreview.imgCropPreview.Source = new CroppedBitmap(monsterCropPreviewBitmap, int32Rect);
+					frmCropPreview.UpdateLayout();
+				}
+		}
+
+		void ScaleEverything(double newScale, ref double x, ref double y, ref double width, ref double height)
+		{
+			x *= newScale;
+			y *= newScale;
+			width *= newScale;
+			height *= newScale;
+		}
+			
+
 		private void lstAllMonsters_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			UpdateCropRectangleForSelectedMonster();
 			if (lstAllMonsters.SelectedItem is Monster monster)
-				MoveMonsterCroppedTo(monster.PictureCropInfo);
+				monsterCropPreviewBitmap = new BitmapImage(new Uri(monster.ImageUrl));
+			else
+				monsterCropPreviewBitmap = null;
+		}
+
+		private void UpdateCropRectangleForSelectedMonster()
+		{
+			if (lstAllMonsters.SelectedItem is Monster monster)
+				MoveMonsterCroppedTo(monster.ImageCropInfo);
 		}
 
 		private void lstAllMonsters_Drop(object sender, DragEventArgs e)
@@ -6716,9 +6832,20 @@ namespace DHDM
 			// TODO: base this code on LstAllSpells_Drop
 		}
 
-		private void imgMonster_Loaded(object sender, RoutedEventArgs e)
+		void UpdateCropRectFromTimer(object sender, EventArgs e)
 		{
+			cropRectUpdateTimer.Stop();
+			UpdateCropRectangleForSelectedMonster();
+		}
 
+		private void rectCrop_MouseEnter(object sender, MouseEventArgs e)
+		{
+			ShowCropPreviewWindow();
+		}
+
+		private void rectCrop_MouseLeave(object sender, MouseEventArgs e)
+		{
+			HideCropPreviewWindow();
 		}
 	}
 	// TODO: Reintegrate wand/staff animations....

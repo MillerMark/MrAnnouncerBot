@@ -1,0 +1,13 @@
+﻿<Window x:Class="DHDM.FrmCropPreview"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DHDM"
+        mc:Ignorable="d"
+        Title="FrmCropPreview" Height="90" Width="104" WindowStyle="None" Topmost="True" Background="#00FFFFFF">
+	<WindowChrome.WindowChrome>
+		<WindowChrome CaptionHeight="0"/>
+	</WindowChrome.WindowChrome>
+	<Image x:Name="imgCropPreview" ></Image>
+</Window>

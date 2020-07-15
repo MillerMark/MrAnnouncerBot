@@ -5,7 +5,7 @@ namespace DndCore
 {
 	public class MonsterDto
 	{
-		public string Name { get; set; }
+		public string Kind { get; set; }
 		public string Meta { get; set; }
 		public string ArmorClass { get; set; }
 		public string HitPoints { get; set; }
@@ -31,6 +31,7 @@ namespace DndCore
 		public string Actions { get; set; }
 		public string LegendaryActions { get; set; }
 		public string img_url { get; set; }
+		public string imageCrop { get; set; }
 		public string DamageImmunities { get; set; }
 		public string ConditionImmunities { get; set; }
 		public string DamageResistances { get; set; }

@@ -22,6 +22,7 @@ function connectToSignalR(signalR) {
 		connection.on("TriggerEffect", triggerEffect);
 		connection.on("PlaySound", playSound);
 		connection.on("AnimateSprinkles", animateSprinkles);
+		connection.on("UpdateInGameCreatures", updateInGameCreatures);
 		connection.on("UpdateClock", updateClock);
 		connection.on("FloatPlayerText", floatPlayerText);
 		connection.on("RollDice", rollDice);
@@ -72,6 +73,12 @@ function moveFred(movement: string): void {
 function animateSprinkles(commandData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.animateSprinkles(commandData);
+	}
+}
+
+function updateInGameCreatures(commandData: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.updateInGameCreatures(commandData);
 	}
 }
 

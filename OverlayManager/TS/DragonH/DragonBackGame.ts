@@ -778,4 +778,8 @@ class DragonBackGame extends DragonGame {
 			CrossfadePlayer.stopPlayer(soundCommand.mainFolder);
 	}
 
+	updateInGameCreatures(commandData: string) {
+		console.log('commandData: ' + commandData);
+	}
+
 } 

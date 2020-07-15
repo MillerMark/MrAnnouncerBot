@@ -311,6 +311,9 @@
     <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="CharacterTriggerProvider.cs" />
     <Compile Include="CompletionProvider.cs" />
+    <Compile Include="FrmCropPreview.xaml.cs">
+      <DependentUpon>FrmCropPreview.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FrmSelectInGameCreature.xaml.cs">
       <DependentUpon>FrmSelectInGameCreature.xaml</DependentUpon>
     </Compile>
@@ -426,6 +429,10 @@
     </Compile>
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Page Include="FrmAsk.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FrmCropPreview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
