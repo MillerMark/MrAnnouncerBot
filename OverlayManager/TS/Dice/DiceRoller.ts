@@ -2223,7 +2223,7 @@ function updateDieRollSpecialEffects() {
 }
 
 function addTrailingEffects(die: any, trailingEffects: Array<TrailingEffect>) {
-	for (var j = 0; j < trailingEffects.length; j++) {
+	for (let j = 0; j < trailingEffects.length; j++) {
 		let trailingEffect: TrailingEffect = trailingEffects[j];
 
 		if (positionTrailingSprite(die, trailingEffect, j)) {

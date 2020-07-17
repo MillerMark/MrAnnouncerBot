@@ -358,7 +358,27 @@ namespace GoogleHelper
 			return allRows[rowIndex][columnIndex].ToString();
 		}
 
-		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType, string filterMember = null)
+		static bool HasMember(string[] filterMembers, string memberName)
+		{
+			if (filterMembers == null)
+				return true;
+
+			foreach (string filterMember in filterMembers)
+				if (filterMember == memberName)
+					return true;
+
+			return false;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="docName"></param>
+		/// <param name="tabName"></param>
+		/// <param name="instances"></param>
+		/// <param name="instanceType"></param>
+		/// <param name="filterMembersStr">Comma-separated list of names of member properties to save.</param>
+		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType, string filterMembersStr = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
@@ -368,6 +388,12 @@ namespace GoogleHelper
 
 			if (sheetTabMap[docName].IndexOf(tabName) < 0)
 				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
+
+			string[] filterMembers = null;
+			if (filterMembersStr != null)
+			{
+				filterMembers = filterMembersStr.Split(',');
+			}
 
 			string spreadsheetId = spreadsheetIDs[docName];
 			List<string> headerRow;
@@ -386,10 +412,8 @@ namespace GoogleHelper
 					// TODO: Filtering on the serializableFields would go here.
 					MemberInfo memberInfo = serializableFields[j];
 
-					if (filterMember != null && memberInfo.Name != filterMember)
-					{
+					if (!HasMember(filterMembers, memberInfo.Name))
 						continue;
-					}
 
 					int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
 
@@ -411,10 +435,18 @@ namespace GoogleHelper
 						body.Values[0].Add(value);
 						SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
 						request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
-						UpdateValuesResponse response = request.Execute();
-						if (response != null)
+						try
 						{
+							UpdateValuesResponse response = request.Execute();
+							if (response != null)
+							{
 
+							}
+						}
+						catch (Exception ex)
+						{
+							string msg = ex.Message;
+							System.Diagnostics.Debugger.Break();
 						}
 					}
 				}
@@ -429,7 +461,7 @@ namespace GoogleHelper
 			headerRow = headerRowObjects.Select(x => x.ToString()).ToList();
 		}
 
-		public static void SaveChanges(object[] instances, string filterMember = null)
+		public static void SaveChanges(object[] instances, string filterMembers = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
@@ -441,7 +473,7 @@ namespace GoogleHelper
 			if (tabNameAttribute == null)
 				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
 
-			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType, filterMember);
+			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType, filterMembers);
 		}
 
 		public static void SaveChanges(object instance, string filterMember = null)

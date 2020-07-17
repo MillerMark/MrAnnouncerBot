@@ -9,5 +9,5 @@
 	<WindowChrome.WindowChrome>
 		<WindowChrome CaptionHeight="0"/>
 	</WindowChrome.WindowChrome>
-	<Image x:Name="imgCropPreview" ></Image>
+	<Image x:Name="imgCropPreview" RenderOptions.BitmapScalingMode="Fant"></Image>
 </Window>

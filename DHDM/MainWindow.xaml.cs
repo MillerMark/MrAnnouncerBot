@@ -6642,10 +6642,13 @@ namespace DHDM
 
 		private void MoveRectWithMouse(MouseEventArgs e, Rectangle rect)
 		{
+			double offset = 0;
+			if (rect == rectDragHandle)
+				offset = rectDragHandle.Width / 2;
 			Point mousePosition = e.GetPosition(cvsImageOverlay);
 
-			Canvas.SetLeft(rect, Math.Min(imgMonster.ActualWidth - rect.Width, Math.Max(0, mousePosition.X - imageCropMouseDeltaX)));
-			Canvas.SetTop(rect, Math.Min(imgMonster.ActualHeight - rect.Height, Math.Max(0, mousePosition.Y - imageCropMouseDeltaY)));
+			Canvas.SetLeft(rect, Math.Min(imgMonster.ActualWidth - rect.Width + offset, Math.Max(0, mousePosition.X - imageCropMouseDeltaX)));
+			Canvas.SetTop(rect, Math.Min(imgMonster.ActualHeight - rect.Height + offset, Math.Max(0, mousePosition.Y - imageCropMouseDeltaY)));
 		}
 
 		void SetCropSizeFromHandle()
@@ -6678,8 +6681,22 @@ namespace DHDM
 		private void GetMouseDragDeltas(MouseButtonEventArgs e, Rectangle rectCrop)
 		{
 			Point mousePosition = e.GetPosition(cvsImageOverlay);
-			imageCropMouseDeltaX = mousePosition.X - Canvas.GetLeft(rectCrop);
-			imageCropMouseDeltaY = mousePosition.Y - Canvas.GetTop(rectCrop);
+			double leftCropRect = Canvas.GetLeft(rectCrop);
+			if (double.IsNaN(leftCropRect))
+			{
+				Canvas.SetLeft(rectCrop, 0);
+				leftCropRect = 0;
+			}
+
+			double topCropRect = Canvas.GetTop(rectCrop);
+			if (double.IsNaN(topCropRect))
+			{
+				Canvas.SetTop(rectCrop, 0);
+				topCropRect = 0;
+			}
+
+			imageCropMouseDeltaX = mousePosition.X - leftCropRect;
+			imageCropMouseDeltaY = mousePosition.Y - topCropRect;
 			rectCrop.CaptureMouse();
 		}
 
@@ -6714,6 +6731,8 @@ namespace DHDM
 		{
 			if (frmCropPreview == null)
 				return;
+			if (!frmCropPreview.IsVisible)
+				return;
 			Point upperLeftCropRect = this.rectCrop.PointToScreen(new Point(0, 0));
 			double right = upperLeftCropRect.X + rectCrop.Width;
 			double bottom = upperLeftCropRect.Y + rectCrop.Height;
@@ -6727,7 +6746,7 @@ namespace DHDM
 			if (!(lstAllMonsters.SelectedItem is Monster monster))
 				return;
 			UpdateCropInfoFromUI(monster);
-			GoogleSheets.SaveChanges(monster, nameof(monster.imageCropStr));
+			GoogleSheets.SaveChanges(monster, string.Join(",", nameof(monster.imageCropStr), nameof(monster.ImageUrl)));
 		}
 
 		private void UpdateCropInfoFromUI(Monster monster)
@@ -6779,25 +6798,39 @@ namespace DHDM
 
 		private void UpdateMonsterCropPreview()
 		{
+			
 			if (frmCropPreview != null && monsterCropPreviewBitmap != null)
 				if (lstAllMonsters.SelectedItem is Monster monster)
 				{
+					if (monsterCropPreviewBitmap.PixelWidth == 1)
+						return;
+					double dpiFactorX = monsterCropPreviewBitmap.DpiX / 96;
+					double dpiFactorY = monsterCropPreviewBitmap.DpiY / 96;
 					UpdateCropInfoFromUI(monster);
 					PictureCropInfo cropInfo = monster.ImageCropInfo;
-					double x = cropInfo.X;
-					double y = cropInfo.Y;
-					double width = cropInfo.Width;
-					double height = PictureCropInfo.GetHeightFromWidth(cropInfo.Width);
+					if (double.IsNaN(cropInfo.X))
+					{
+						cropInfo = new PictureCropInfo() { Width = 104 };
+					}
+					double x = cropInfo.X * dpiFactorX;
+					double y = cropInfo.Y * dpiFactorY;
+
+					if (x < 0)
+						x = 0;
+
+					if (y < 0)
+						y = 0;
+
+					double width = cropInfo.Width * dpiFactorX;
+					double height = PictureCropInfo.GetHeightFromWidth(cropInfo.Width) * dpiFactorY;
 					if (x + width > monsterCropPreviewBitmap.PixelWidth || y + height > monsterCropPreviewBitmap.PixelHeight)
 					{
-						//double newScale = monsterCropPreviewBitmap.PixelWidth / monsterCropPreviewBitmap.Width;
 						double scaleWidth = monsterCropPreviewBitmap.PixelWidth / (x + width);
 						double scaleHeight = monsterCropPreviewBitmap.PixelHeight / (y + height);
 						double newScale = Math.Min(scaleWidth, scaleHeight);
 						ScaleEverything(newScale, ref x, ref y, ref width, ref height);
 					}
-					// BUG: Still getting issues on some bitmaps where this data is out of bounds.
-					Int32Rect int32Rect = new Int32Rect((int)Math.Round(x), (int)Math.Round(y), (int)Math.Round(width), (int)Math.Round(height));
+					Int32Rect int32Rect = new Int32Rect((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(width), (int)Math.Floor(height));
 					frmCropPreview.imgCropPreview.Source = new CroppedBitmap(monsterCropPreviewBitmap, int32Rect);
 					frmCropPreview.UpdateLayout();
 				}
@@ -6816,7 +6849,10 @@ namespace DHDM
 		{
 			UpdateCropRectangleForSelectedMonster();
 			if (lstAllMonsters.SelectedItem is Monster monster)
+			{
 				monsterCropPreviewBitmap = new BitmapImage(new Uri(monster.ImageUrl));
+				Title = $"{monsterCropPreviewBitmap.DpiX}, {monsterCropPreviewBitmap.DpiY}";
+			}
 			else
 				monsterCropPreviewBitmap = null;
 		}
@@ -6829,7 +6865,29 @@ namespace DHDM
 
 		private void lstAllMonsters_Drop(object sender, DragEventArgs e)
 		{
+			
 			// TODO: base this code on LstAllSpells_Drop
+			if (!e.Data.GetDataPresent(DataFormats.Html))
+				return;
+
+			// HACK: we are looking for the text "src=", instead of properly parsing the HTML.
+			string data = (string)e.Data.GetData(DataFormats.Html);
+			const string srcTag = "src=\"";
+			if (!data.Contains(srcTag))
+				return;
+
+			string imgSrc = data.EverythingAfter(srcTag).EverythingBefore("\"");
+			if (imgSrc.StartsWith("data:"))
+			{
+				System.Diagnostics.Debugger.Break();
+				return;
+			}
+			if (lstAllMonsters.SelectedItem is Monster monster)
+			{
+				monster.ImageUrl = imgSrc;
+				lstAllMonsters.SelectedItem = null;
+				lstAllMonsters.SelectedItem = monster;
+			}
 		}
 
 		void UpdateCropRectFromTimer(object sender, EventArgs e)
@@ -6841,6 +6899,7 @@ namespace DHDM
 		private void rectCrop_MouseEnter(object sender, MouseEventArgs e)
 		{
 			ShowCropPreviewWindow();
+			PositionCropPreviewNearCropRect();
 		}
 
 		private void rectCrop_MouseLeave(object sender, MouseEventArgs e)

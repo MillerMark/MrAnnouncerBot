@@ -88,6 +88,8 @@ namespace DndCore
 		public double savingWisdomMod { get; set; }
 
 		public int skillsModStealth { get; set; }
+		
+		[Column("img_url")]
 		public string ImageUrl { get; set; }
 
 		public List<string> traits = new List<string>();
@@ -491,6 +493,8 @@ namespace DndCore
 		public static Monster Clone(Monster source)
 		{
 			Monster monster = new Monster();
+			if (source == null)
+				return null;
 			monster.ActiveConditions = source.ActiveConditions;
 			monster.advantages = source.advantages;
 			monster.Alignment = source.Alignment;

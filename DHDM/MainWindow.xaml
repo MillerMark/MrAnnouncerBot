@@ -670,7 +670,7 @@
 						</ListBox>
 					</StackPanel>
 				</TabItem>
-				<TabItem Header="Monster" x:Name="tbsMonsters" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
+				<TabItem Header="Monsters" x:Name="tbsMonsters" AllowDrop="True" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<StackPanel Orientation="Vertical">
 						<StackPanel Orientation="Horizontal">
 							<StackPanel x:Name="spMonsterFilters" Orientation="Horizontal">
@@ -697,8 +697,8 @@
 								Reload Monsters
 							</Button>
 						</StackPanel>
-						<StackPanel x:Name="spAllMonsters" Orientation="Horizontal">
-							<ListBox x:Name="lstAllMonsters" AllowDrop="True" SelectionChanged="lstAllMonsters_SelectionChanged" Drop="lstAllMonsters_Drop" Height="800" 
+						<StackPanel x:Name="spAllMonsters" Orientation="Horizontal" Drop="lstAllMonsters_Drop" >
+							<ListBox x:Name="lstAllMonsters" AllowDrop="True" SelectionChanged="lstAllMonsters_SelectionChanged" Height="800" 
 									 ItemsSource="{Binding}" DisplayMemberPath="Kind" IsSynchronizedWithCurrentItem="true">
 							</ListBox>
 							<Grid x:Name="grdDetail" Height="Auto" Width="Auto" Margin="6" VerticalAlignment="Top">
@@ -721,9 +721,9 @@
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
 								</Grid.RowDefinitions>
-								<TextBlock Text="Name: " Width="Auto" Height="Auto"/>
-								<TextBlock Grid.Column="1" Text="{Binding Path=Name}" FontWeight="Bold"/>
-								<Image x:Name="imgMonster" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Source="{Binding Path=ImageUrl}" MaxWidth="300"></Image>
+								<TextBlock Text="Kind: " Width="Auto" Height="Auto"/>
+								<TextBlock Grid.Column="1" Text="{Binding Path=Kind}" FontWeight="Bold"/>
+								<Image x:Name="imgMonster" AllowDrop="True" Drop="lstAllMonsters_Drop" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Source="{Binding Path=ImageUrl}" MaxWidth="300"></Image>
 								<Canvas x:Name="cvsImageOverlay" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
 									<Rectangle x:Name="rectOutline" Canvas.Left="0" Canvas.Top="0" Stroke="#80FFFFFF" Width="220" Height="60"/>
 									<Rectangle x:Name="rectCrop" Canvas.Left="0" Canvas.Top="0" Fill="#01F0F8FF" Stroke="Red" Width="220" Height="60" 

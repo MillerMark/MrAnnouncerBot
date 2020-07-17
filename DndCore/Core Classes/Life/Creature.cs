@@ -760,6 +760,7 @@ namespace DndCore
 				if (target.Creatures != null)
 					foreach (Creature creature in target.Creatures)
 					{
+						if (creature != null)
 						creature.ReceiveMagic(magic);
 					}
 			}
