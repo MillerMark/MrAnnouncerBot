@@ -1,43 +1,5 @@
 ﻿var connection;
 
-function connectToSignalR(signalR) {
-	console.log('connecting to signalR...');
-	connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
-	connection.serverTimeoutInMilliseconds = 1000000; // 1000 second
-	window.onload = function () {
-		console.log('signalR loaded...');
-		connection.start().catch(err => console.error(err.toString()));
-		connection.on("ExecuteCommand", executeCommand);
-		connection.on("ChangePlayerHealth", changePlayerHealth);
-		connection.on("changePlayerWealth", changePlayerWealth);
-		connection.on("ChangeFrameRate", changeFrameRate);
-		connection.on("UserHasCoins", userHasCoins);
-		connection.on("SuppressVolume", suppressVolume);
-		connection.on("FocusItem", focusItem);
-		connection.on("UnfocusItem", unfocusItem);
-		connection.on("AddWindup", addWindup);
-		connection.on("CastSpell", castSpell);
-		connection.on("ClearWindup", clearWindup);
-		connection.on("MoveFred", moveFred);
-		connection.on("TriggerEffect", triggerEffect);
-		connection.on("PlaySound", playSound);
-		connection.on("AnimateSprinkles", animateSprinkles);
-		connection.on("UpdateInGameCreatures", updateInGameCreatures);
-		connection.on("UpdateClock", updateClock);
-		connection.on("FloatPlayerText", floatPlayerText);
-		connection.on("RollDice", rollDice);
-		connection.on("ClearDice", clearDice);
-		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
-		connection.on("ExecuteSoundCommand", executeSoundCommand);
-		connection.on("PlayerDataChanged", playerDataChanged);
-		connection.on("MapDataChanged", mapDataChanged);
-		connection.on("SetPlayerData", initializePlayerData);
-		console.log('PartBackgroundLoader.initialize();');
-		PartBackgroundLoader.okayToStartLoading = true;
-		PartBackgroundLoader.initialize();
-	};
-}
-
 function addWindup(windupData: string): void {
 	if (activeFrontGame instanceof DragonGame) {
 		activeFrontGame.addWindupFromStr(windupData);
@@ -299,4 +261,42 @@ function fire(userId: string) {
 
 function tellDM(message: string) {
 	connection.invoke("TellDM", message);
+}
+
+function connectToSignalR(signalR) {
+	console.log('connecting to signalR...');
+	connection = new signalR.HubConnectionBuilder().withUrl("/CodeRushedHub").configureLogging(signalR.LogLevel.Information).build();
+	connection.serverTimeoutInMilliseconds = 1000000; // 1000 second
+	window.onload = function () {
+		console.log('signalR loaded...');
+		connection.start().catch(err => console.error(err.toString()));
+		connection.on("ExecuteCommand", executeCommand);
+		connection.on("ChangePlayerHealth", changePlayerHealth);
+		connection.on("changePlayerWealth", changePlayerWealth);
+		connection.on("ChangeFrameRate", changeFrameRate);
+		connection.on("UserHasCoins", userHasCoins);
+		connection.on("SuppressVolume", suppressVolume);
+		connection.on("FocusItem", focusItem);
+		connection.on("UnfocusItem", unfocusItem);
+		connection.on("AddWindup", addWindup);
+		connection.on("CastSpell", castSpell);
+		connection.on("ClearWindup", clearWindup);
+		connection.on("MoveFred", moveFred);
+		connection.on("TriggerEffect", triggerEffect);
+		connection.on("PlaySound", playSound);
+		connection.on("AnimateSprinkles", animateSprinkles);
+		connection.on("UpdateInGameCreatures", updateInGameCreatures);
+		connection.on("UpdateClock", updateClock);
+		connection.on("FloatPlayerText", floatPlayerText);
+		connection.on("RollDice", rollDice);
+		connection.on("ClearDice", clearDice);
+		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
+		connection.on("ExecuteSoundCommand", executeSoundCommand);
+		connection.on("PlayerDataChanged", playerDataChanged);
+		connection.on("MapDataChanged", mapDataChanged);
+		connection.on("SetPlayerData", initializePlayerData);
+		console.log('PartBackgroundLoader.initialize();');
+		PartBackgroundLoader.okayToStartLoading = true;
+		PartBackgroundLoader.initialize();
+	};
 }

@@ -51,7 +51,7 @@ namespace DndTests
 			Assert.AreEqual(9, druid.Constitution);
 			Assert.AreEqual(-1, druid.constitutionMod);
 			Assert.AreEqual(2, druid.intelligenceMod);
-			druid.WildShape = AllMonsters.Get("Giant Badger");
+			druid.WildShape = AllMonsters.GetByKind("Giant Badger");
 			Assert.AreEqual(13, druid.Strength);
 			Assert.AreEqual(10, druid.Dexterity);
 			Assert.AreEqual(15, druid.Constitution);
@@ -68,7 +68,7 @@ namespace DndTests
 
 			Assert.AreEqual(1, druid.strengthMod);
 			Assert.AreEqual(3, druid.skillModAthletics);
-			druid.WildShape = AllMonsters.Get("Giant Ape");
+			druid.WildShape = AllMonsters.GetByKind("Giant Ape");
 			Assert.AreEqual(6, druid.strengthMod);
 			Assert.AreEqual(9, druid.skillModAthletics);
 		}
@@ -80,7 +80,7 @@ namespace DndTests
 			druid.proficientSkills = Skills.athletics;
 
 			Assert.AreEqual(0, druid.blindsightRadius);
-			druid.WildShape = AllMonsters.Get("Giant Bat");
+			druid.WildShape = AllMonsters.GetByKind("Giant Bat");
 			Assert.AreEqual(60, druid.blindsightRadius);
 			Assert.AreEqual(11, druid.PassivePerception);
 		}

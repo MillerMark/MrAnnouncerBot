@@ -1155,6 +1155,7 @@ namespace DndCore
 						var chargeDetails = parameter.Split('/');
 						if (chargeDetails.Length == 2)
 						{
+							// TODO: Add support for both max charges and a variable recharge (e.g., "1d6 + 4") rolled at dawn.
 							int.TryParse(chargeDetails[0], out totalCharges);
 							durationStr = chargeDetails[1];
 							chargeResetSpan = DndTimeSpan.FromDurationStr(durationStr);
@@ -1367,14 +1368,6 @@ namespace DndCore
 			spellActivelyCasting = null;
 			spellPrepared = null;
 			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
-		}
-
-		public void ChangeHealth(double damageHealthAmount)
-		{
-			if (damageHealthAmount < 0)
-				InflictDamage(-damageHealthAmount);
-			else
-				Heal(damageHealthAmount);
 		}
 
 		void CharacterClass_LevelChanged(object sender, LevelChangedEventArgs ea)
@@ -1763,59 +1756,17 @@ namespace DndCore
 			return (savingThrowProficiency & ability) == ability;
 		}
 
-		public void Heal(double deltaHealth)
-		{
-			if (deltaHealth <= 0)
-				return;
-
-			if (hitPoints >= maxHitPoints)
-				return;
-
-			double maxToHeal = maxHitPoints - hitPoints;
-			if (deltaHealth > maxToHeal)
-				hitPoints = maxHitPoints;
-			else
-				hitPoints += deltaHealth;
-		}
-
 		public bool HoldsState(string key)
 		{
 			return states.ContainsKey(key);
 		}
 
-		public void ChangeTempHP(double deltaTempHp)
+		public override void ChangeTempHP(double deltaTempHp)
 		{
 			double saveTempHitPoints = tempHitPoints;
-			tempHitPoints += deltaTempHp;
-			if (tempHitPoints < 0)
-			{
-				tempHitPoints = 0;
-			}
-
+			base.ChangeTempHP(deltaTempHp);
 			if (tempHitPoints != saveTempHitPoints)
-			{
 				OnStateChanged(this, new StateChangedEventArgs("tempHitPoints", saveTempHitPoints, tempHitPoints));
-			}
-		}
-
-		public void InflictDamage(double deltaDamage)
-		{
-			double damageToSubtract = deltaDamage;
-			if (tempHitPoints > 0)
-				if (damageToSubtract > tempHitPoints)
-				{
-					damageToSubtract -= tempHitPoints;
-					tempHitPoints = 0;
-				}
-				else
-				{
-					tempHitPoints -= damageToSubtract;
-					damageToSubtract = 0;
-				}
-			if (damageToSubtract > hitPoints)
-				hitPoints = 0;
-			else
-				hitPoints -= damageToSubtract;
 		}
 
 		public bool IsProficientWith(Weapons weapon)

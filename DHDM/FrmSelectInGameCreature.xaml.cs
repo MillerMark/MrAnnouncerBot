@@ -30,8 +30,9 @@ namespace DHDM
 			foreach (InGameCreature inGameCreature in creatures)
 				inGameCreature.IsSelected = false;
 
-			foreach (Character character in players)
-				character.IsSelected = false;
+			if (players != null)
+				foreach (Character character in players)
+					character.IsSelected = false;
 
 			lbInGameCreatures.ItemsSource = creatures;
 			lbPlayers.ItemsSource = players;

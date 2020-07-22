@@ -2577,7 +2577,7 @@ class PlayerRollOptions {
 }
 
 class IndividualRoll {
-	constructor(public value: number, public numSides: number, public type: string) {
+	constructor(public value: number, public numSides: number, public type: string, public damageType: DamageType) {
 
 	}
 }

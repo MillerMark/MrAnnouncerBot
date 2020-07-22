@@ -1,4 +1,46 @@
-﻿class DragonBackSounds extends SoundManager {
+﻿class InGameCreature {
+	static readonly ImageWidth = 104;
+	static readonly ImageHeight = 90;
+	Name: string;
+	Alignment: string;
+	ImageURL: string;
+	Kind: string;
+	Index: number;
+	CropX: number;
+	CropY: number;
+	CropWidth: number;
+	Health: number;
+	IsTargeted: boolean;
+	IsEnemy: boolean;
+	imageLoaded: boolean;
+	image: HTMLImageElement;
+
+	constructor(inGameCreature: InGameCreature) {
+		this.Name = inGameCreature.Name;
+		this.Alignment = inGameCreature.Alignment;
+		this.ImageURL = inGameCreature.ImageURL;
+		this.Kind = inGameCreature.Kind;
+		this.Index = inGameCreature.Index;
+		this.CropX = inGameCreature.CropX;
+		this.CropY = inGameCreature.CropY;
+		this.CropWidth = inGameCreature.CropWidth;
+		this.Health = inGameCreature.Health;
+		this.IsTargeted = inGameCreature.IsTargeted;
+		this.IsEnemy = inGameCreature.IsEnemy;
+		this.image = new Image();
+		this.image.src = this.ImageURL;
+		this.image.onload = function () {
+			this.imageLoaded = true;
+		}.bind(this);
+	}
+}
+
+class InGameCommand {
+	Command: string;
+	Creatures: Array<InGameCreature> = [];
+}
+
+class DragonBackSounds extends SoundManager {
 	constructor(soundPath: string) {
 		super(soundPath);
 	}
@@ -11,6 +53,9 @@ class DragonBackGame extends DragonGame {
 	scrollSlamlastUpdateTime: number;
 	shouldDrawCenterCrossHairs: boolean = false;
 	sunMoonDials: Sprites;
+	inGameCreaturesParchmentBackground: Sprites;
+	inGameCreaturesParchmentShadow: Sprites;
+	inGameCreaturesParchmentTarget: Sprites;
 	lightning: Sprites;
 	sunMoonDial: SpriteProxy;
 	characterStatsScroll: CharacterStatsScroll;
@@ -90,17 +135,12 @@ class DragonBackGame extends DragonGame {
 	}
 
 	changePlayerHealth(playerHealthDto: string): void {
-		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
+		const playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
 
-		for (var i = 0; i < playerHealth.PlayerIds.length; i++)
+		for (let i = 0; i < playerHealth.PlayerIds.length; i++)
 			if (playerHealth.DamageHealth > 0)
 				this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
 	}
-
-	//changePlayerWealth(playerWealthDto: string): void {
-	//}
-
-
 
 	exitingCombat() {
 		this.sunMoonDial.frameIndex = 0;
@@ -176,6 +216,10 @@ class DragonBackGame extends DragonGame {
 		this.updateGravity();
 		super.update(timestamp);
 		CrossfadePlayer.updateMusicPlayers(timestamp);
+	}
+
+	updateScreenBeforeWorldRender(context: CanvasRenderingContext2D, nowMs: number) {
+		this.drawInGameCreatures(context, nowMs);
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
@@ -301,6 +345,10 @@ class DragonBackGame extends DragonGame {
 
 		this.sunMoonDial = this.sunMoonDials.add(this.getClockX(), this.getClockY()).setScale(this.clockScale);
 
+		this.inGameCreaturesParchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 2, fps30, AnimationStyle.Static);
+		this.inGameCreaturesParchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
+		this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
+		
 
 		this.clockLayerEffects.add(this.sunMoonDials);
 	}
@@ -769,7 +817,7 @@ class DragonBackGame extends DragonGame {
 	}
 
 	executeSoundCommand(commandData: string): void {
-		let soundCommand: SoundCommand = JSON.parse(commandData);
+		const soundCommand: SoundCommand = JSON.parse(commandData);
 		if (soundCommand.type === SoundCommandType.ChangeFolder)
 			CrossfadePlayer.changePlayerFolder(soundCommand.mainFolder, soundCommand.strData);
 		else if (soundCommand.type === SoundCommandType.SetVolume)
@@ -779,7 +827,172 @@ class DragonBackGame extends DragonGame {
 	}
 
 	updateInGameCreatures(commandData: string) {
-		console.log('commandData: ' + commandData);
+		const inGameCommand: InGameCommand = JSON.parse(commandData);
+		this.processInGameCreatureCommand(inGameCommand.Command, inGameCommand.Creatures);
+	}
+
+	inGameCreatures: Array<InGameCreature> = [];
+
+	static readonly inGameScrollStatWidth = 135;
+	static readonly minInGameStatFontSize = 14;
+	static readonly inGameNameStatFontSize = 28;
+	static readonly inGameIndexStatFontSize = 48;
+	static readonly inGameNumberCenterX = 142;
+	static readonly inGameNumberCenterY = 76;
+	static readonly inGameNumberMaxWidth = 40;
+	static readonly inGameAllOtherStatFontSize = 20;
+	static readonly inGameCreatueStatFontName = 'Calibri';
+	static readonly inGameStatOffsetX = 18;
+	static readonly inGameStatTopMargin = -12;  // Put top of scroll slightly offscreen
+	static readonly spaceBetweenInGameStatLines = 1;
+
+	drawInGameCreature(context: CanvasRenderingContext2D, inGameCreature: InGameCreature, x: number, y: number) {
+		context.fillStyle = '#ffffff';
+		const nameOffsetY = 135;
+
+		this.drawInGameIndex(context, inGameCreature.Index, x);
+		this.drawInGameCreatureHeadshot(context, inGameCreature, x);
+
+		context.textAlign = 'left';
+		context.textBaseline = 'top';
+		x += DragonBackGame.inGameStatOffsetX;
+		y += DragonBackGame.inGameStatTopMargin + nameOffsetY;
+		let fontHeight = DragonBackGame.inGameNameStatFontSize;
+		let yTop: number = this.drawInGameStat(context, inGameCreature.Name, fontHeight, x, y);
+		fontHeight = DragonBackGame.inGameAllOtherStatFontSize;
+		yTop = this.drawInGameStat(context, inGameCreature.Kind, fontHeight, x, yTop);
+		if (inGameCreature.Alignment !== 'any' && inGameCreature.IsEnemy)
+			yTop = this.drawInGameStat(context, inGameCreature.Alignment, fontHeight, x, yTop);
+		const healthDescription: string = this.getHealthDescription(inGameCreature.Health);
+		this.drawInGameStat(context, healthDescription, fontHeight, x, yTop);
+		if (inGameCreature.Health === 0) {
+			// TODO: draw red "X" across creature's headshot.
+			// context.moveTo(x, 0);
+		}
+	}
+
+	drawInGameCreatureHeadshot(context: CanvasRenderingContext2D, inGameCreature: InGameCreature, x: number) {
+		if (!inGameCreature.imageLoaded)
+			return;
+		const cropHeight: number = InGameCreature.ImageHeight * inGameCreature.CropWidth / InGameCreature.ImageWidth;
+		const dx = 12;
+		const dy = 34;
+		const dw: number = InGameCreature.ImageWidth;
+		const dh: number = InGameCreature.ImageHeight;
+		const sx: number = inGameCreature.CropX;
+		const sy: number = inGameCreature.CropY;
+		const sw: number = inGameCreature.CropWidth;
+		const sh: number = cropHeight;
+		const border = 1;
+
+		context.drawImage(inGameCreature.image, sx, sy, sw, sh, x + dx + border, dy + border + DragonBackGame.inGameStatTopMargin, dw - 2 * border, dh - 2 * border);
+
+							// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+
+	}
+
+	drawInGameIndex(context: CanvasRenderingContext2D, index: number, x: number) {
+		const text: string = index.toString();
+		let fontHeight: number = DragonBackGame.inGameIndexStatFontSize;
+		context.font = `${fontHeight}px ${DragonBackGame.inGameCreatueStatFontName}`;
+		while (context.measureText(text).width > DragonBackGame.inGameNumberMaxWidth && fontHeight > DragonBackGame.minInGameStatFontSize) {
+			fontHeight--;
+			context.font = `${fontHeight}px ${DragonBackGame.inGameCreatueStatFontName}`;
+		}
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+		context.globalAlpha = 0.5;
+		context.fillText(text, x + DragonBackGame.inGameNumberCenterX, DragonBackGame.inGameNumberCenterY + DragonBackGame.inGameStatTopMargin);
+		context.globalAlpha = 1;
+	}
+
+	getHealthDescription(health: number): string {
+		if (health === 0)
+			return 'Dead';
+		if (health < 0.1)
+			return 'Near Death';
+		if (health < 0.2)
+			return 'Badly Bloodied';
+		if (health < 0.3)
+			return 'Bloodied';
+		if (health < 0.4)
+			return 'Beaten';
+		if (health < 0.5)
+			return 'Roughed Up';
+		if (health < 0.7)
+			return 'Bruised';
+		return 'Healthy';
+	}
+
+	drawInGameStat(context: CanvasRenderingContext2D, name: string, fontHeight: number, x: number, y: number): number {
+		context.font = `${fontHeight}px ${DragonBackGame.inGameCreatueStatFontName}`;
+		while (context.measureText(name).width > DragonBackGame.inGameScrollStatWidth && fontHeight > DragonBackGame.minInGameStatFontSize) {
+			fontHeight--;
+			context.font = `${fontHeight}px ${DragonBackGame.inGameCreatueStatFontName}`;
+		}
+		if (context.measureText(name).width > DragonBackGame.inGameScrollStatWidth) // Wait - still can't fit the name at 8px???!!
+		{
+			const ellipsis = '…';
+			let rootName = name;
+			while (context.measureText(rootName + ellipsis).width > DragonBackGame.inGameScrollStatWidth) {
+				rootName = rootName.substr(0, rootName.length - 1);
+			}
+			name = rootName + ellipsis;
+		}
+		context.fillText(name, x, y);
+
+		return y + fontHeight + DragonBackGame.spaceBetweenInGameStatLines;
+	}
+
+	drawInGameCreatures(context: CanvasRenderingContext2D, nowMs: number) {
+		this.inGameCreaturesParchmentBackground.draw(context, nowMs);
+
+		let x: number = this.miniScrollLeftMargin;
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			this.drawInGameCreature(context, this.inGameCreatures[i], x, 0);
+			x += this.miniScrollWidth;
+		}
+
+		this.inGameCreaturesParchmentShadow.draw(context, nowMs);
+
+		this.inGameCreaturesParchmentTarget.draw(context, nowMs);
+	}
+
+	public readonly miniScrollLeftMargin = 375;
+	public readonly miniScrollWidth = 180;
+
+	// In-game Creature commands...
+	//! ------------------------------------------
+	setInGameCreatures(inGameCreatures: Array<InGameCreature>) {
+
+		this.inGameCreatures = [];
+		for (let i = 0; i < inGameCreatures.length; i++) {
+			this.inGameCreatures.push(new InGameCreature(inGameCreatures[i]));
+		}
+
+		let x: number = this.miniScrollLeftMargin;
+		this.inGameCreaturesParchmentBackground.sprites = [];
+		this.inGameCreaturesParchmentShadow.sprites = [];
+		this.inGameCreaturesParchmentTarget.sprites = [];
+
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			let frameIndex = 0;
+			if (this.inGameCreatures[i].IsEnemy)
+				frameIndex = 1;
+			const saturation: number = MathEx.clamp(this.inGameCreatures[i].Health * 100, 0, 100);
+
+			this.inGameCreaturesParchmentBackground.addShifted(x, DragonBackGame.inGameStatTopMargin, frameIndex, 0, saturation);
+			this.inGameCreaturesParchmentShadow.addShifted(x, DragonBackGame.inGameStatTopMargin, frameIndex, 0, saturation);
+			if (this.inGameCreatures[i].IsTargeted) {
+				this.inGameCreaturesParchmentTarget.add(x, DragonBackGame.inGameStatTopMargin);
+			}
+			x += this.miniScrollWidth;
+		}
+	}
+
+	processInGameCreatureCommand(command: string, inGameCreatures: Array<InGameCreature>) {
+		if (command === "Set")
+			this.setInGameCreatures(inGameCreatures);
 	}
 
 } 

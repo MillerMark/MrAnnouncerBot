@@ -116,12 +116,16 @@ class Game {
 		this.now = now;
 
 		this.world.ctx.clearRect(0, 0, screenWidth, screenHeight);
+		this.updateScreenBeforeWorldRender(this.world.ctx, this.nowMs);
 		this.world.render(this.now, this.secondsPerFrame);
 		let startUpdate: number = performance.now();
 		this.updateScreen(this.world.ctx, this.nowMs);
 		let endUpdate: number = performance.now();
 		this.calculateFramerate(startUpdate, endUpdate);
 	}
+
+  updateScreenBeforeWorldRender(ctx: CanvasRenderingContext2D, nowMs: number) {
+  }
 
 	static readonly fpsHistoryCount: number = 150;
 	timeBetweenFramesQueue = [];

@@ -29,9 +29,9 @@ namespace DndCore
 			return GoogleSheets.Get<MonsterDto>(dataFile);
 		}
 
-		public static Monster Get(string monsterName)
+		public static Monster GetByKind(string monsterKind)
 		{
-			return Monsters.FirstOrDefault(x => x.name.StartsWith(monsterName));
+			return Monsters.FirstOrDefault(x => x.Kind.StartsWith(monsterKind));
 		}
 
 		public static List<Monster> Monsters

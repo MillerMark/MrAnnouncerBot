@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DHDM
 {
@@ -160,8 +162,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("AnimateSprinkles", commandData);
 		}
 
-		public static void UpdateInGameCreatures(string commandData)
+		// TODO: Call this to send in game creatures over SignalR to the TS overlay.
+		public static void UpdateInGameCreatures(string command, List<InGameCreature> creatures)
 		{
+			InGameCommand inGameCommand = new InGameCommand(command, creatures);
+			string commandData = JsonConvert.SerializeObject(inGameCommand);
 			HubConnection.InvokeAsync("UpdateInGameCreatures", commandData);
 		}
 

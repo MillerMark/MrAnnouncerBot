@@ -136,7 +136,8 @@ namespace GoogleHelper
 						property.SetValue(instance, row[i]);
 						break;
 					case "System.Boolean":
-						bool newValue = value.ToLower().Trim() == "true";
+						string compareValue = value.ToLower().Trim();
+						bool newValue = compareValue == "true" || compareValue == "x";
 						property.SetValue(instance, newValue);
 						break;
 					default:
@@ -269,6 +270,7 @@ namespace GoogleHelper
 		{
 			spreadsheetIDs.Add("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
 			spreadsheetIDs.Add("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
+			spreadsheetIDs.Add("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
 			spreadsheetIDs.Add("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
 		}
 

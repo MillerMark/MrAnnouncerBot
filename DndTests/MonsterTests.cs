@@ -41,7 +41,7 @@ namespace DndTests
 			[TestMethod]
 		public void TestSkeleton()
 		{
-			Monster skeleton = AllMonsters.Get("Skeleton");
+			Monster skeleton = AllMonsters.GetByKind("Skeleton");
 			Assert.AreEqual(13, skeleton.ArmorClass);
 			Assert.AreEqual(13, skeleton.maxHitPoints);
 			Assert.AreEqual(CreatureSize.Medium, skeleton.creatureSize);
@@ -71,7 +71,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestGiantBat()
 		{
-			Monster giantBat = AllMonsters.Get("Giant Bat");
+			Monster giantBat = AllMonsters.GetByKind("Giant Bat");
 			Assert.AreEqual(13, giantBat.ArmorClass);
 			Assert.AreEqual(22, giantBat.maxHitPoints);
 			Assert.AreEqual(CreatureSize.Large, giantBat.creatureSize);
@@ -103,7 +103,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestGiantApe()
 		{
-			Monster giantApe = AllMonsters.Get("Giant Ape");
+			Monster giantApe = AllMonsters.GetByKind("Giant Ape");
 			Assert.AreEqual(12, giantApe.ArmorClass);
 			Assert.AreEqual(157, giantApe.maxHitPoints);
 			Assert.AreEqual(CreatureSize.Huge, giantApe.creatureSize);

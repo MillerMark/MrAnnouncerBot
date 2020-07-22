@@ -10,6 +10,7 @@ namespace DndCore
 		public const double AspectRatio = MinWidth / MinHeight;  // Width/Height
 		public double X { get; set; }
 		public double Y { get; set; }
+		public double DpiFactor { get; set; } = 1;
 		public double Width { get; set; }
 		// Aspect ratio is always 104:90, so no need for height as it can always be calculated from Width.
 		public PictureCropInfo()
@@ -36,7 +37,11 @@ namespace DndCore
 				{
 					result.Y = MathUtils.GetDouble(arguments[1].Trim());
 					if (arguments.Length > 2)
+					{
 						result.Width = MathUtils.GetDouble(arguments[2].Trim());
+						if (arguments.Length > 3)
+							result.DpiFactor = MathUtils.GetDouble(arguments[3].Trim());
+					}
 				}
 			}
 			return result;
@@ -44,7 +49,7 @@ namespace DndCore
 
 		public string ToCSV()
 		{
-			return $"{X}, {Y}, {Width}";
+			return $"{X}, {Y}, {Width}, {DpiFactor}";
 		}
 	}
 }

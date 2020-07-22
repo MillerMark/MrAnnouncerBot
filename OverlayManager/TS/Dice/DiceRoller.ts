@@ -24,6 +24,16 @@ var healthModifierThisRoll: number = 0;
 var extraModifierThisRoll: number = 0;
 var additionalDieRollMessage: string = '';
 
+enum DieCountsAs {
+	totalScore,
+	inspiration,
+	damage,
+	health,
+	extra,
+	bonus,
+	bentLuck
+}
+
 enum DieEffect {
 	Ring,
 	Lucky,
@@ -1921,7 +1931,8 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		attachLabel(die, textColor, backgroundColor);
 
 		if (die) {
-			if (rollType == DieCountsAs.damage || rollType == DieCountsAs.bonus) {
+			die.damageType = damageType;
+			if (rollType === DieCountsAs.damage || rollType === DieCountsAs.bonus) {
 				switch (damageType) {
 					case DamageType.Fire:
 						diceLayer.attachDamageFire(die);
@@ -1981,10 +1992,10 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 						break;
 				}
 			}
-			else if ((rollType == DieCountsAs.health || rollType == DieCountsAs.totalScore || rollType == DieCountsAs.extra) && damageType == DamageType.Superiority) {
+			else if ((rollType === DieCountsAs.health || rollType === DieCountsAs.totalScore || rollType === DieCountsAs.extra) && damageType == DamageType.Superiority) {
 				diceLayer.attachSuperiority(die);
 			}
-			if (rollType == DieCountsAs.health) {
+			if (rollType === DieCountsAs.health) {
 				diceLayer.attachHealth(die);
 			}
 		}
@@ -2018,91 +2029,6 @@ function attachLabel(die: any, textColor: string, backgroundColor: string) {
 function addInspirationParticles(die: any, playerID: number, hueShiftOffset: number, rotationDegeesPerSecond: number) {
 	die.attachedSprites.push(diceLayer.addInspirationParticles(960, 540, rotationDegeesPerSecond, diceLayer.getHueShift(playerID) + hueShiftOffset));
 	die.origins.push(diceLayer.inspirationParticles.getOrigin());
-}
-
-enum DieCountsAs {
-	totalScore,
-	inspiration,
-	damage,
-	health,
-	extra,
-	bonus,
-	bentLuck
-}
-
-function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
-	if (!diceStr)
-		return;
-	let allDice: string[] = diceStr.split(',');
-	if (backgroundColor === undefined)
-		backgroundColor = DiceLayer.damageDieBackgroundColor;
-	if (fontColor === undefined)
-		fontColor = DiceLayer.damageDieFontColor;
-	let modifier: number = 0;
-	let damageType: DamageType = diceRollData.damageType;
-	allDice.forEach(function (dieSpec: string) {
-		let dieType: string = '';
-		let thisBackgroundColor: string = backgroundColor;
-		let thisFontColor: string = fontColor;
-		let thisDieCountsAs: DieCountsAs = dieCountsAs;
-
-		let parenIndex: number = dieSpec.indexOf('(');
-		if (parenIndex >= 0) {
-			var damageStr: string = dieSpec.substring(parenIndex + 1);
-			let closeParenIndex: number = damageStr.indexOf(')');
-			if (closeParenIndex >= 0) {
-				damageStr = damageStr.substr(0, closeParenIndex);
-				let colonIndex: number = damageStr.indexOf(':');
-				if (colonIndex >= 0) {
-					let rollTypeOverride: string = damageStr.substr(colonIndex + 1);
-					let rollTypeOverrideLowerCase: string = rollTypeOverride.toLowerCase();
-					//console.log('rollTypeOverride: ' + rollTypeOverride);
-					if (rollTypeOverrideLowerCase == 'health') {
-						thisDieCountsAs = DieCountsAs.health;
-						thisBackgroundColor = DiceLayer.healthDieBackgroundColor;
-						thisFontColor = DiceLayer.healthDieFontColor;
-						isMagic = false;
-					}
-					else if (rollTypeOverrideLowerCase == 'damage') {
-						thisDieCountsAs = DieCountsAs.damage;
-						thisBackgroundColor = DiceLayer.damageDieBackgroundColor;
-						thisFontColor = DiceLayer.damageDieFontColor;
-						isMagic = false;
-					}
-					else if (rollTypeOverrideLowerCase == 'roll') {
-						thisDieCountsAs = DieCountsAs.totalScore;
-						thisBackgroundColor = diceLayer.activePlayerDieColor;
-						thisFontColor = diceLayer.activePlayerDieFontColor;
-					}
-					damageStr = damageStr.substr(0, colonIndex);
-					dieType = rollTypeOverride;
-					console.log('damageStr: ' + damageStr);
-					damageType = damageTypeFromStr(damageStr);
-				}
-				else {
-					damageType = damageTypeFromStr(damageStr);
-					if (damageType === DamageType.None)
-						dieType = damageStr;
-				}
-			}
-			dieSpec = dieSpec.substr(0, parenIndex);
-		}
-
-		if (damageType !== DamageType.None)
-			isMagic = false;  // No magic rings around damage die.
-
-		let dieAndModifier = dieSpec.split('+');
-
-		if (dieAndModifier.length == 2)
-			modifier += +dieAndModifier[1];
-		let dieStr: string = dieAndModifier[0];
-		addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
-	});
-
-	damageModifierThisRoll += modifier;
-	//console.log(`damageModifierThisRoll += modifier; (${damageModifierThisRoll})`);
-	healthModifierThisRoll += modifier;
-	extraModifierThisRoll += modifier;
 }
 
 function damageTypeFromStr(str: string): DamageType {
@@ -2150,6 +2076,81 @@ function damageTypeFromStr(str: string): DamageType {
 		return DamageType.Thunder;
 
 	return DamageType.None;
+}
+
+function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
+	if (!diceStr)
+		return;
+	const allDice: string[] = diceStr.split(',');
+	if (backgroundColor === undefined)
+		backgroundColor = DiceLayer.damageDieBackgroundColor;
+	if (fontColor === undefined)
+		fontColor = DiceLayer.damageDieFontColor;
+	let modifier = 0;
+	let damageType: DamageType = diceRollData.damageType;
+	allDice.forEach(function (dieSpec: string) {
+		let dieType = '';
+		let thisBackgroundColor: string = backgroundColor;
+		let thisFontColor: string = fontColor;
+		let thisDieCountsAs: DieCountsAs = dieCountsAs;
+
+		const parenIndex: number = dieSpec.indexOf('(');
+		if (parenIndex >= 0) {
+			let damageStr: string = dieSpec.substring(parenIndex + 1);
+			const closeParenIndex: number = damageStr.indexOf(')');
+			if (closeParenIndex >= 0) {
+				damageStr = damageStr.substr(0, closeParenIndex);
+				const colonIndex: number = damageStr.indexOf(':');
+				if (colonIndex >= 0) {
+					const rollTypeOverride: string = damageStr.substr(colonIndex + 1);
+					const rollTypeOverrideLowerCase: string = rollTypeOverride.toLowerCase();
+					//console.log('rollTypeOverride: ' + rollTypeOverride);
+					if (rollTypeOverrideLowerCase === 'health') {
+						thisDieCountsAs = DieCountsAs.health;
+						thisBackgroundColor = DiceLayer.healthDieBackgroundColor;
+						thisFontColor = DiceLayer.healthDieFontColor;
+						isMagic = false;
+					}
+					else if (rollTypeOverrideLowerCase === 'damage') {
+						thisDieCountsAs = DieCountsAs.damage;
+						thisBackgroundColor = DiceLayer.damageDieBackgroundColor;
+						thisFontColor = DiceLayer.damageDieFontColor;
+						isMagic = false;
+					}
+					else if (rollTypeOverrideLowerCase === 'roll') {
+						thisDieCountsAs = DieCountsAs.totalScore;
+						thisBackgroundColor = diceLayer.activePlayerDieColor;
+						thisFontColor = diceLayer.activePlayerDieFontColor;
+					}
+					damageStr = damageStr.substr(0, colonIndex);
+					dieType = rollTypeOverride;
+					console.log('damageStr: ' + damageStr);
+					damageType = damageTypeFromStr(damageStr);
+				}
+				else {
+					damageType = damageTypeFromStr(damageStr);
+					if (damageType === DamageType.None)
+						dieType = damageStr;
+				}
+			}
+			dieSpec = dieSpec.substr(0, parenIndex);
+		}
+
+		if (damageType !== DamageType.None)
+			isMagic = false;  // No magic rings around damage die.
+
+		const dieAndModifier = dieSpec.split('+');
+
+		if (dieAndModifier.length == 2)
+			modifier += +dieAndModifier[1];
+		const dieStr: string = dieAndModifier[0];
+		addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
+	});
+
+	damageModifierThisRoll += modifier;
+	//console.log(`damageModifierThisRoll += modifier; (${damageModifierThisRoll})`);
+	healthModifierThisRoll += modifier;
+	extraModifierThisRoll += modifier;
 }
 
 function update() {
@@ -3078,7 +3079,7 @@ function getRollResults(): RollResults {
 			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
 		}
 
-		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType));
+		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
 
 		let playerID: number;
 		if (die.playerID === undefined || die.playerID < 0)

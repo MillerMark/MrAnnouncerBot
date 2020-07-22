@@ -7,6 +7,9 @@ namespace DHDM
 {
 	public interface IDungeonMasterApp
 	{
+		void ToggleTarget(int targetNum);
+		void ToggleInGameCreature(int targetNum);
+		void TargetCommand(string command);
 		void Apply(string command, decimal value, List<int> playerIds);
 		string GetPlayFirstNameFromId(int playerId);
 		void SetBoolProperty(int playerId, string propertyName, bool value);

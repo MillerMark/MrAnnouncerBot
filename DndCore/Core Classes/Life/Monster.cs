@@ -224,6 +224,7 @@ namespace DndCore
 			if (parts.Length != 2)
 			{
 				System.Diagnostics.Debugger.Break();
+				return;
 			}
 			alignmentStr = parts[1].Trim();
 			string[] sizeCreatureKind = parts[0].Split(' ');
@@ -531,6 +532,7 @@ namespace DndCore
 			monster.GoldPieces = source.GoldPieces;
 			monster.HitPoints = source.HitPoints;
 			monster.ImageUrl = source.ImageUrl;
+			monster.ImageCropInfo = source.ImageCropInfo;
 			monster.initiative = source.initiative;
 			monster.intelligenceMod = source.intelligenceMod;
 			monster.kind = source.kind;

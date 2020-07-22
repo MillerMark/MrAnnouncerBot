@@ -44,6 +44,7 @@ namespace DndCore
 
 		public static List<Spell> GetAll(string spellName, int spellSlotLevel = -1, int spellCasterLevel = 0, int spellcastingAbilityModifier = int.MinValue)
 		{
+			spellName = spellName.Trim();
 			List<Spell> result = new List<Spell>();
 
 			List<SpellDto> spells = Spells.Where(x => string.Compare(x.name, spellName, true) == 0).ToList();

@@ -60,12 +60,13 @@ namespace DHDM
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer stateUpdateTimer;
 		DispatcherTimer cropRectUpdateTimer;
+		DispatcherTimer monsterPreviewImageLoadUpdateTimer;
 		DispatcherTimer reloadSpellsTimer;
 		DispatcherTimer pendingShortcutsTimer;
 		DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
 		DispatcherTimer updateClearButtonTimer;
-		DispatcherTimer needToSaveCodeTimer;
+
 		DateTime lastUpdateTime;
 		int keepExistingModifier = int.MaxValue;
 		DndGame game = null;
@@ -99,10 +100,14 @@ namespace DHDM
 			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
 			stateUpdateTimer.Interval = TimeSpan.FromSeconds(1);
 			stateUpdateTimer.Start();
-			
+
 			cropRectUpdateTimer = new DispatcherTimer();
 			cropRectUpdateTimer.Tick += new EventHandler(UpdateCropRectFromTimer);
 			cropRectUpdateTimer.Interval = TimeSpan.FromSeconds(0.1);
+
+			monsterPreviewImageLoadUpdateTimer = new DispatcherTimer();
+			monsterPreviewImageLoadUpdateTimer.Tick += new EventHandler(CheckMonsterPreviewImageLoadFromTimer);
+			monsterPreviewImageLoadUpdateTimer.Interval = TimeSpan.FromSeconds(0.1);
 
 			reloadSpellsTimer = new DispatcherTimer();
 			reloadSpellsTimer.Tick += new EventHandler(CheckForNewSpells);
@@ -283,7 +288,7 @@ namespace DHDM
 		{
 			if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
 			{
-				ea.Monster = AllMonsters.Get(ActivePlayer.NextAnswer);
+				ea.Monster = AllMonsters.GetByKind(ActivePlayer.NextAnswer);
 				ActivePlayer.NextAnswer = null;
 				if (ea.Monster != null)
 					return;
@@ -300,6 +305,11 @@ namespace DHDM
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
 			// TODO: Add support for auto-select based on next answer.
+			SelectInGameTargets(ea);
+		}
+
+		private void SelectInGameTargets(TargetEventArgs ea)
+		{
 			FrmSelectInGameCreature frmSelectInGameCreature = new FrmSelectInGameCreature();
 
 			frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, game.Players);
@@ -3142,10 +3152,31 @@ namespace DHDM
 
 			ShowSpellHitOrMissInGame(stopRollingData.playerID, spellHitType, stopRollingData.spellName);
 		}
+		// TODO: Delete lastDamage
 		int lastDamage;
 		int lastHealth;
+		Dictionary<DamageType, int> latestDamage = new Dictionary<DamageType, int>();
+		void CalculateLatestDamage(DiceEventArgs ea)
+		{
+			switch (ea.StopRollingData.type)
+			{
+				case DiceRollType.Attack:
+				case DiceRollType.ChaosBolt:
+				case DiceRollType.DamageOnly:
+					latestDamage.Clear();
+					foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+					{
+						if (!latestDamage.ContainsKey(individualRoll.damageType))
+							latestDamage.Add(individualRoll.damageType, individualRoll.value);
+						else
+							latestDamage[individualRoll.damageType] += individualRoll.value;
+					}
+					break;
+			}
+		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
+			CalculateLatestDamage(ea);
 			if (dynamicThrottling)
 			{
 				ChangeFrameRateAndUI(Overlays.Back, 30);
@@ -3161,7 +3192,7 @@ namespace DHDM
 			else if (ea.StopRollingData.type == DiceRollType.HealthOnly)
 			{
 				lastHealth = ea.StopRollingData.health;
-			}
+			}	
 
 
 			if (ea.StopRollingData.individualRolls?.Count > 0)
@@ -3180,6 +3211,11 @@ namespace DHDM
 
 			EnableDiceRollButtons(true);
 			ShowClearButton(null, EventArgs.Empty);
+
+			if (ea.StopRollingData.type == DiceRollType.Attack && ea.StopRollingData.success)
+			{
+				ApplyDamageToTargets(ea.StopRollingData.damage);
+			}
 		}
 
 		string GetPlayerEmoticon(int playerId)
@@ -3899,7 +3935,7 @@ namespace DHDM
 				foreach (Character player in game.Players)
 				{
 					PlayerTabItem tabItem = new PlayerTabItem();
-					tabItem.Header = player.name;
+					tabItem.Header = player.firstName;
 					tabPlayers.Items.Add(tabItem);
 					tabItem.PlayerId = player.playerID;
 
@@ -5404,6 +5440,12 @@ namespace DHDM
 		{
 			if (spellToCastOnRoll != null)
 			{
+				if (spellToCastOnRoll.Spell?.SpellType == SpellType.SavingThrowSpell)
+				{
+					nextSavingThrowAbility = spellToCastOnRoll.Spell.SavingThrowAbility;
+					if (ActivePlayer != null)
+						SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
+				}
 				ActivateSpellShortcut(spellToCastOnRoll);
 				bool isSimpleSpell = spellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
@@ -6106,6 +6148,7 @@ namespace DHDM
 			});
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{value} {twitchIndent} <-- hidden SKILL CHECK threshold");
 		}
+
 		public void Apply(string command, decimal value, List<int> playerIds)
 		{
 			int intValue = (int)Math.Round(value);
@@ -6113,6 +6156,24 @@ namespace DHDM
 			{
 				case "Health":
 					IncreasePlayerHealth(playerIds, intValue);
+					break;
+				case "HealthToTargetedCreatures":
+					ChangeTargetedCreatureHealth(intValue, InGameCreatureFilter.TargetedOnly);
+					break;
+				case "DamageToTargetedCreatures":
+					ChangeTargetedCreatureHealth(-intValue, InGameCreatureFilter.TargetedOnly);
+					break;
+				case "TempHpToTargetedCreatures":
+					ChangeInGameCreatureTempHp(intValue, InGameCreatureFilter.TargetedOnly);
+					break;
+				case "HealthToAllCreatures":
+					ChangeTargetedCreatureHealth(intValue, InGameCreatureFilter.All);
+					break;
+				case "DamageToAllCreatures":
+					ChangeTargetedCreatureHealth(-intValue, InGameCreatureFilter.All);
+					break;
+				case "TempHpToAllCreatures":
+					ChangeInGameCreatureTempHp(intValue, InGameCreatureFilter.All);
 					break;
 				case "Damage":
 					ApplyPlayerDamage(playerIds, intValue);
@@ -6133,6 +6194,7 @@ namespace DHDM
 					SetAttackThreshold(intValue);
 					break;
 				case "LastDamage":
+					// TODO: Change lastDamage to use the newer, richer latestDamage.
 					ApplyPlayerDamage(playerIds, lastDamage);
 					break;
 				case "LastHealth":
@@ -6627,7 +6689,7 @@ namespace DHDM
 				return;
 			MoveRectWithMouse(e, rectCrop);
 			MonsterImageCropRectChanged();
-			
+
 		}
 
 		/// <summary>
@@ -6746,6 +6808,7 @@ namespace DHDM
 			if (!(lstAllMonsters.SelectedItem is Monster monster))
 				return;
 			UpdateCropInfoFromUI(monster);
+			ShowSampleMonster(monster);
 			GoogleSheets.SaveChanges(monster, string.Join(",", nameof(monster.imageCropStr), nameof(monster.ImageUrl)));
 		}
 
@@ -6756,16 +6819,19 @@ namespace DHDM
 			double x = Canvas.GetLeft(rectCrop) / scale;
 			double y = Canvas.GetTop(rectCrop) / scale;
 
-			monster.ImageCropInfo = new PictureCropInfo() { X = x, Y = y, Width = width };
+			monster.ImageCropInfo = new PictureCropInfo() { X = x, Y = y, Width = width, DpiFactor = monster.ImageCropInfo.DpiFactor };
 		}
 
-		void MoveMonsterCroppedTo(PictureCropInfo pictureCropInfo)
+		void MoveMonsterCroppedTo(Monster monster)
 		{
 			if (imgMonster.Source == null || imgMonster.Source.Width == 1)
 			{
 				cropRectUpdateTimer.Start();
 				return;
 			}
+
+			PictureCropInfo pictureCropInfo = monster.ImageCropInfo;
+
 			var scale = imgMonster.ActualWidth / imgMonster.Source.Width;
 			if (pictureCropInfo == null)
 			{
@@ -6787,6 +6853,8 @@ namespace DHDM
 		}
 
 		BitmapImage monsterCropPreviewBitmap;
+		double lastMonsterPreviewImageDpiX;
+		Ability nextSavingThrowAbility;
 
 		private void MonsterImageCropRectChanged()
 		{
@@ -6798,7 +6866,6 @@ namespace DHDM
 
 		private void UpdateMonsterCropPreview()
 		{
-			
 			if (frmCropPreview != null && monsterCropPreviewBitmap != null)
 				if (lstAllMonsters.SelectedItem is Monster monster)
 				{
@@ -6820,6 +6887,9 @@ namespace DHDM
 
 					if (y < 0)
 						y = 0;
+
+					if (cropInfo.Width < PictureCropInfo.MinWidth)
+						cropInfo.Width = PictureCropInfo.MinWidth;
 
 					double width = cropInfo.Width * dpiFactorX;
 					double height = PictureCropInfo.GetHeightFromWidth(cropInfo.Width) * dpiFactorY;
@@ -6843,7 +6913,7 @@ namespace DHDM
 			width *= newScale;
 			height *= newScale;
 		}
-			
+
 
 		private void lstAllMonsters_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -6851,21 +6921,67 @@ namespace DHDM
 			if (lstAllMonsters.SelectedItem is Monster monster)
 			{
 				monsterCropPreviewBitmap = new BitmapImage(new Uri(monster.ImageUrl));
-				Title = $"{monsterCropPreviewBitmap.DpiX}, {monsterCropPreviewBitmap.DpiY}";
+				monsterCropPreviewBitmap.DownloadCompleted += MonsterCropPreviewBitmap_DownloadCompleted;
+				monsterPreviewImageLoadUpdateTimer.Start();
+				lastMonsterPreviewImageDpiX = monsterCropPreviewBitmap.DpiX;
 			}
 			else
 				monsterCropPreviewBitmap = null;
 		}
 
+		void CheckMonsterPreviewImageLoadFromTimer(object sender, EventArgs e)
+		{
+			monsterPreviewImageLoadUpdateTimer.Stop();
+			CheckMonsterImageLoaded();
+		}
+
+		private void MonsterCropPreviewBitmap_DownloadCompleted(object sender, EventArgs e)
+		{
+			CheckMonsterImageLoaded();
+		}
+
+		private void CheckMonsterImageLoaded()
+		{
+			if (lstAllMonsters.SelectedItem is Monster monster)
+			{
+				if (monsterCropPreviewBitmap != null)
+				{
+					Title = $"{monsterCropPreviewBitmap.DpiX}, {monsterCropPreviewBitmap.DpiY}";
+
+					double dpiFactorX = monsterCropPreviewBitmap.DpiX / 96;
+					double dpiFactorY = monsterCropPreviewBitmap.DpiY / 96;
+					if (dpiFactorX == dpiFactorY)
+						if (monster.ImageCropInfo.DpiFactor != dpiFactorX)
+						{
+							monster.ImageCropInfo.DpiFactor = dpiFactorX;
+							GoogleSheets.SaveChanges(monster, "imageCropStr");
+						}
+				}
+				ShowSampleMonster(monster);
+			}
+		}
+
+		private void ShowSampleMonster(Monster monster)
+		{
+			if (ckShowSampleMonster.IsChecked != true)
+				return;
+
+			List<InGameCreature> creatures = new List<InGameCreature>();
+			InGameCreature inGameCreature = InGameCreature.FromMonster(monster);
+			inGameCreature.Name = "Joe";
+			creatures.Add(inGameCreature);
+			HubtasticBaseStation.UpdateInGameCreatures("Set", creatures);
+		}
+
 		private void UpdateCropRectangleForSelectedMonster()
 		{
 			if (lstAllMonsters.SelectedItem is Monster monster)
-				MoveMonsterCroppedTo(monster.ImageCropInfo);
+				MoveMonsterCroppedTo(monster);
 		}
 
 		private void lstAllMonsters_Drop(object sender, DragEventArgs e)
 		{
-			
+
 			// TODO: base this code on LstAllSpells_Drop
 			if (!e.Data.GetDataPresent(DataFormats.Html))
 				return;
@@ -6906,11 +7022,163 @@ namespace DHDM
 		{
 			HideCropPreviewWindow();
 		}
+
+		private void btnTestInGameCreatures_Click(object sender, RoutedEventArgs e)
+		{
+			AllInGameCreatures.Invalidate();
+			FrmSelectInGameCreature frmSelectInGameCreature = new FrmSelectInGameCreature();
+			frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, null);
+			if (frmSelectInGameCreature.ShowDialog() != true)
+				return;
+			UpdateInGameCreatures();
+		}
+
+		private static void UpdateInGameCreatures()
+		{
+			//if (!AllInGameCreatures.Creatures.Any(x => x.IsSelected))
+			//	return;
+
+			HubtasticBaseStation.UpdateInGameCreatures("Set", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
+		}
+
+		public void ToggleTarget(int targetNum)
+		{
+			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
+			if (inGameCreature == null)
+				return;
+			inGameCreature.IsTargeted = !inGameCreature.IsTargeted;
+			if (inGameCreature.IsTargeted)
+				inGameCreature.IsSelected = true;
+			UpdateInGameCreatures();
+		}
+
+		public void ToggleInGameCreature(int targetNum)
+		{
+			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
+			if (inGameCreature == null)
+				return;
+			inGameCreature.IsSelected = !inGameCreature.IsSelected;
+			UpdateInGameCreatures();
+		}
+
+		public void TargetCommand(string command)
+		{
+			switch (command)
+			{
+				case "ShowNone":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsSelected = false;
+					break;
+				case "ShowAll":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsSelected = true;
+					break;
+				case "TargetNone":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsTargeted = false;
+					break;
+				case "TargetAll":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					{
+						inGameCreature.IsTargeted = true;
+						inGameCreature.IsSelected = true;
+					}
+					break;
+				case "TargetFriends":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					{
+						inGameCreature.IsTargeted = !inGameCreature.IsEnemy;
+						if (inGameCreature.IsTargeted)
+							inGameCreature.IsSelected = true;
+					}
+					break;
+				case "TargetEnemies":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					{
+						inGameCreature.IsTargeted = inGameCreature.IsEnemy;
+						if (inGameCreature.IsTargeted)
+							inGameCreature.IsSelected = true;
+					}
+					break;
+				case "ShowFriends":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsSelected = !inGameCreature.IsEnemy;
+					break;
+				case "ShowEnemies":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsSelected = inGameCreature.IsEnemy;
+					break;
+
+				case "ReloadAllCreatures":
+					AllInGameCreatures.Invalidate();
+					break;
+				case "SavingThrow":
+					// TODO: Roll saving throws for target monsters against last damage and last damage type.
+					TellDungeonMaster("This Save button is not functional yet.");
+					break;
+				default:
+					return;
+			}
+			UpdateInGameCreatures();
+		}
+
+		void ApplyDamageToTargets(int damage)
+		{
+			bool changed = false;
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (inGameCreature.IsTargeted)
+				{
+					// TODO: Get damage type and attack kind parameters right from the last roll!
+					inGameCreature.Creature.TakeDamage(DamageType.None, AttackKind.Any, damage);
+					TellDmCreatureHp(inGameCreature);
+					changed = true;
+				}
+			}
+			if (changed)
+				UpdateInGameCreatures();
+		}
+
+		void ChangeTargetedCreatureHealth(int amount, InGameCreatureFilter inGameCreatureFilter)
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreatureFilter == InGameCreatureFilter.All || inGameCreature.IsTargeted)
+				{
+					inGameCreature.Creature.ChangeHealth(amount);
+					TellDmCreatureHp(inGameCreature);
+				}
+			UpdateInGameCreatures();
+		}
+
+		private void TellDmCreatureHp(InGameCreature inGameCreature)
+		{
+			string tempHpDetails = string.Empty;
+			if (inGameCreature.Creature.tempHitPoints > 0)
+				tempHpDetails = $" (tempHp: {inGameCreature.Creature.tempHitPoints})";
+			TellDungeonMaster($"{inGameCreature.Name}'s HP: {inGameCreature.Creature.HitPoints}/{inGameCreature.Creature.maxHitPoints}{tempHpDetails}");
+		}
+
+		void ChangeInGameCreatureTempHp(int amount, InGameCreatureFilter inGameCreatureFilter)
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreatureFilter == InGameCreatureFilter.All || inGameCreature.IsTargeted)
+				{
+					inGameCreature.Creature.ChangeTempHP(amount);
+					TellDmCreatureHp(inGameCreature);
+				}
+			UpdateInGameCreatures();
+		}
+
+		public enum InGameCreatureFilter
+		{
+			All,
+			TargetedOnly
+		}
+		// TODO: Reintegrate wand/staff animations....
+		/* 
+			Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown
+			Melf's Minute Meteors.6				Staff.Weapon	Casting								x										30	150				
+			Melf's Minute Meteors.7				Staff.Magic		Casting								x									 350	150				
+		 */
 	}
-	// TODO: Reintegrate wand/staff animations....
-	/* 
-	  Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown
-		Melf's Minute Meteors.6				Staff.Weapon	Casting								x										30	150				
-		Melf's Minute Meteors.7				Staff.Magic		Casting								x									 350	150				
-	 */
 }

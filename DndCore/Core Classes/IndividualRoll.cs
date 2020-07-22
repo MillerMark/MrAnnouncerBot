@@ -8,6 +8,7 @@ namespace DndCore
 		public int value { get; set; }
 		public int numSides { get; set; }
 		public string type { get; set; }
+		public DamageType damageType { get; set; }
 		public IndividualRoll()
 		{
 

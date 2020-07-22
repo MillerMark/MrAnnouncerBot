@@ -19,6 +19,11 @@ namespace DndCore
 			return Creatures.FirstOrDefault(x => x.Name == name);
 		}
 
+		public static InGameCreature GetByIndex(int index)
+		{
+			return Creatures.FirstOrDefault(x => x.Index == index);
+		}
+
 		static List<InGameCreature> inGameCreatures;
 		public static List<InGameCreature> Creatures
 		{

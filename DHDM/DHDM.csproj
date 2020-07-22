@@ -328,6 +328,7 @@
     <Compile Include="IDE\Context\OnEmptyLine.cs" />
     <Compile Include="IDE\Context\RightOfElse.cs" />
     <Compile Include="IDE\Context\SelectionIsCommented.cs" />
+    <Compile Include="InGameCommand.cs" />
     <Compile Include="MyKeyboard.cs" />
     <Compile Include="IDE\Context\Core\BaseContext.cs" />
     <Compile Include="IDE\Commands\Core\CodeEditorCommand.cs" />
@@ -414,6 +415,9 @@
     <Compile Include="IDE\Code Templates\Text Commands\Core\TextCommandEngine.cs" />
     <Compile Include="IDE\Code Templates\Text Commands\Core\TextCommandNameAttribute.cs" />
     <Compile Include="IDE\Code Completion\TextCompletionEngine.cs" />
+    <Compile Include="StreamDeck Commands\TargetCommand.cs" />
+    <Compile Include="StreamDeck Commands\ToggleNpcCommand.cs" />
+    <Compile Include="StreamDeck Commands\ToggleTargetCommand.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>
