@@ -1821,80 +1821,7 @@ namespace DndCore
 
 		public void BeforePlayerRollsDice(DiceRoll diceRoll, ref VantageKind vantageKind)
 		{
-			int advantageCount = 0;
-			int disadvantageCount = 0;
-			switch (vantageKind)
-			{
-				case VantageKind.Advantage:
-					advantageCount = 1;
-					break;
-				case VantageKind.Disadvantage:
-					disadvantageCount = 1;
-					break;
-			}
-			foreach (string key in VantageMods.Keys)
-			{
-				if (VantageMods[key].RollType == diceRoll.Type)
-				{
-					switch (diceRoll.Type)
-					{
-						case DiceRollType.SkillCheck:
-							Skills matchSkill = VantageMods[key].Detail;
-							if ((DndUtils.IsSkillAGenericAbility(matchSkill) && matchSkill == DndUtils.FromSkillToAbility(diceRoll.SkillCheck)) ||
-								matchSkill == diceRoll.SkillCheck)
-							{
-								if (VantageMods[key].Offset < 0)
-								{
-									OnRequestMessageToDungeonMaster($"{Name} has disadvantage on {matchSkill} skill checks due to {VantageMods[key].DieLabel}.");
-									disadvantageCount++;
-								}
-								else if (VantageMods[key].Offset > 0)
-								{
-									OnRequestMessageToDungeonMaster($"{Name} has advantage on {matchSkill} skill checks due to {VantageMods[key].DieLabel}.");
-									advantageCount++;
-								}
-							}
-							break;
-						// TODO: Implement vantage mods for attacks, initiative, etc.
-						case DiceRollType.Attack:
-						case DiceRollType.ChaosBolt:
-
-							break;
-						case DiceRollType.SavingThrow:
-							if ((int)VantageMods[key].Detail == (int)diceRoll.SavingThrow)
-							{
-								if (VantageMods[key].Offset < 0)
-								{
-									OnRequestMessageToDungeonMaster($"{Name} has disadvantage on {diceRoll.SavingThrow} saving throws due to {VantageMods[key].DieLabel}.");
-									disadvantageCount++;
-								}
-								else if (VantageMods[key].Offset > 0)
-								{
-									OnRequestMessageToDungeonMaster($"{Name} has advantage on {diceRoll.SavingThrow} saving throws due to {VantageMods[key].DieLabel}.");
-									advantageCount++;
-								}
-							}
-							break;
-						case DiceRollType.DeathSavingThrow:
-
-							break;
-						case DiceRollType.Initiative:
-
-							break;
-						case DiceRollType.NonCombatInitiative:
-
-							break;
-					}
-				}
-				advantageCount = Math.Min(advantageCount, 1);
-				disadvantageCount = Math.Min(disadvantageCount, 1);
-				if (advantageCount == disadvantageCount)
-					vantageKind = VantageKind.Normal;
-				else if (advantageCount > 0)
-					vantageKind = VantageKind.Advantage;
-				else if (advantageCount < 0)
-					vantageKind = VantageKind.Disadvantage;
-			}
+			vantageKind = GetVantage(diceRoll.Type, diceRoll.SavingThrow, diceRoll.SkillCheck, vantageKind);
 			Expressions.BeginUpdate();
 			try
 			{
@@ -1908,8 +1835,6 @@ namespace DndCore
 				Expressions.EndUpdate(this);
 			}
 		}
-
-
 
 		public void PlayerStartsTurn()
 		{
@@ -2465,10 +2390,6 @@ namespace DndCore
 			return 0;
 		}
 
-		protected virtual void OnRequestMessageToDungeonMaster(string message)
-		{
-			RequestMessageToDungeonMaster?.Invoke(this, new MessageEventArgs(message));
-		}
 		protected virtual void OnRequestMessageToAll(string message)
 		{
 			RequestMessageToAll?.Invoke(this, new MessageEventArgs(message));
@@ -2930,7 +2851,6 @@ namespace DndCore
 		public event CastedSpellEventHandler SpellDispelled;
 		public event RollDiceEventHandler RollDiceRequest;
 		public event StateChangedEventHandler StateChanged;
-		public event MessageEventHandler RequestMessageToDungeonMaster;
 		public event MessageEventHandler RequestMessageToAll;
 
 		public static void SetBoolProperty(Character player, string memberName, bool value)
@@ -3202,6 +3122,10 @@ namespace DndCore
 		public CanCastResult CanCast(Spell spell)
 		{
 			return new CanCastResult(Location, spell.Range);
+		}
+		public void AddShortcutToQueue(string shortcutName, bool rollImmediately)
+		{
+			Game.AddShortcutToQueue(this, shortcutName, rollImmediately);
 		}
 	}
 }

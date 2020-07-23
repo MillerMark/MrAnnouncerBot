@@ -11,6 +11,8 @@ namespace DndCore
 {
 	public class Creature
 	{
+		public event MessageEventHandler RequestMessageToDungeonMaster;
+
 		public event ConditionsChangedEventHandler ConditionsChanged;
 		protected virtual void OnConditionsChanged(object sender, ConditionsChangedEventArgs ea)
 		{
@@ -817,6 +819,92 @@ namespace DndCore
 				VantageMods.Add(id, new VantageMod(rollType, skills, dieLabel, offset));
 			else
 				VantageMods[id].Set(rollType, skills, dieLabel, offset);
+		}
+
+		protected virtual void OnRequestMessageToDungeonMaster(string message)
+		{
+			RequestMessageToDungeonMaster?.Invoke(this, new MessageEventArgs(message));
+		}
+
+		public VantageKind GetVantage(DiceRollType type, Ability savingThrow, Skills skillCheck = Skills.none, VantageKind initialVantage = VantageKind.Normal)
+		{
+			int advantageCount = 0;
+			int disadvantageCount = 0;
+			switch (initialVantage)
+			{
+				case VantageKind.Advantage:
+					advantageCount = 1;
+					break;
+				case VantageKind.Disadvantage:
+					disadvantageCount = 1;
+					break;
+			}
+
+			foreach (string key in VantageMods.Keys)
+			{
+				if (VantageMods[key].RollType == type)
+				{
+					switch (type)
+					{
+						case DiceRollType.SkillCheck:
+							Skills matchSkill = VantageMods[key].Detail;
+							if ((DndUtils.IsSkillAGenericAbility(matchSkill) && matchSkill == DndUtils.FromSkillToAbility(skillCheck)) ||
+								matchSkill == skillCheck)
+							{
+								if (VantageMods[key].Offset < 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has disadvantage on {matchSkill} skill checks due to {VantageMods[key].DieLabel}.");
+									disadvantageCount++;
+								}
+								else if (VantageMods[key].Offset > 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has advantage on {matchSkill} skill checks due to {VantageMods[key].DieLabel}.");
+									advantageCount++;
+								}
+							}
+							break;
+						// TODO: Implement vantage mods for attacks, initiative, etc.
+						case DiceRollType.Attack:
+						case DiceRollType.ChaosBolt:
+
+							break;
+						case DiceRollType.SavingThrow:
+							if ((int)VantageMods[key].Detail == (int)savingThrow)
+							{
+								if (VantageMods[key].Offset < 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has disadvantage on {savingThrow} saving throws due to {VantageMods[key].DieLabel}.");
+									disadvantageCount++;
+								}
+								else if (VantageMods[key].Offset > 0)
+								{
+									OnRequestMessageToDungeonMaster($"{Name} has advantage on {savingThrow} saving throws due to {VantageMods[key].DieLabel}.");
+									advantageCount++;
+								}
+							}
+							break;
+						case DiceRollType.DeathSavingThrow:
+
+							break;
+						case DiceRollType.Initiative:
+
+							break;
+						case DiceRollType.NonCombatInitiative:
+
+							break;
+					}
+				}
+			}
+			advantageCount = Math.Min(advantageCount, 1);
+			disadvantageCount = Math.Min(disadvantageCount, 1);
+			if (advantageCount == disadvantageCount)
+				return VantageKind.Normal;
+			else if (advantageCount > 0)
+				return VantageKind.Advantage;
+			else if (advantageCount < 0)
+				return VantageKind.Disadvantage;
+
+			return VantageKind.Normal;
 		}
 
 		public void RemoveVantageMod(string id)

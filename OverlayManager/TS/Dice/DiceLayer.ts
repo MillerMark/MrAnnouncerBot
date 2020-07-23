@@ -1501,7 +1501,7 @@ class DiceLayer {
 	}
 
 	addDisadvantageText(die: any, timeout: number = 0, isLuckyFeat: boolean = false): any {
-		var message: string;
+		let message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
 		else
@@ -1510,7 +1510,7 @@ class DiceLayer {
 	}
 
 	addAdvantageText(die: any, timeout: number = 0, isLuckyFeat: boolean = false): any {
-		var message: string;
+		let message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
 		else
@@ -2296,6 +2296,7 @@ class DiceLayer {
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
+		diceRoll.mainDieStr = dto.MainDieStr;
 		diceRoll.modifier = dto.Modifier;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
@@ -2505,7 +2506,7 @@ class DiceLayer {
 	}
 
 	rollDice(diceRollDto: string): void {
-		let diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
+		const diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
 		console.log(diceRollData);
 		pleaseRollDice(diceRollData);
 	}
@@ -2586,6 +2587,7 @@ class DiceRollData {
 	type: DiceRollType;
 	vantageKind: VantageKind;
 	damageHealthExtraDice: string;
+	mainDieStr: string;
 	modifier: number;
 	minCrit: number;
 	hiddenThreshold: number;
@@ -2620,20 +2622,20 @@ class DiceRollData {
 	startedBonusDiceRoll: boolean;
 	showedVantageMessage: boolean;
 	timeLastRolledMs: number;
-	appliedVantage: boolean = false;
-	maxInspirationDiceAllowed: number = 1;
-	numInspirationDiceCreated: number = 0;
-	hasMultiPlayerDice: boolean = false;
+	appliedVantage = false;
+	maxInspirationDiceAllowed = 1;
+	numInspirationDiceCreated = 0;
+	hasMultiPlayerDice = false;
 	multiplayerSummary: Array<PlayerRoll> = null;
-	hasSingleIndividual: boolean = false;
+	hasSingleIndividual = false;
 	secondRollTitle: string;
-	minDamage: number = 0;
+	minDamage = 0;
 	onFirstContactEffect: string;
 	effectHueShift: string;
-	effectBrightness: number = 100;
-	effectScale: number = 1;
-	effectRotation: number = 0;
-	effectSaturation: number = 100;
+	effectBrightness = 100;
+	effectScale = 1;
+	effectRotation = 0;
+	effectSaturation = 100;
 	onStopRollingSound: string;
 
 	constructor() {

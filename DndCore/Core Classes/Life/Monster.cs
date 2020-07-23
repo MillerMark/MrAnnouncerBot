@@ -465,6 +465,47 @@ namespace DndCore
 			SetChallengeRatingFromStr(parts[0]);
 			SetExperiencePointsFromStr(parts[1]);
 		}
+		void SetSavingThrowModsFrom(string savingThrows)
+		{
+			if (string.IsNullOrWhiteSpace(savingThrows))
+				return;
+			string[] splitSaveMods = savingThrows.Split(',');
+			foreach (string saveMod in splitSaveMods)
+			{
+				string[] parts = saveMod.Trim().Split(' ');
+				if (parts.Length != 2)
+				{
+					System.Diagnostics.Debugger.Break();
+					continue;
+				}
+				if (!double.TryParse(parts[1], out double value))
+				{
+					System.Diagnostics.Debugger.Break();
+					continue;
+				}
+				switch (parts[0])
+				{
+					case "CON":
+						savingConstitutionMod = value;
+						break;
+					case "INT":
+						savingIntelligenceMod = value;
+						break;
+					case "WIS":
+						savingWisdomMod = value;
+						break;
+					case "DEX":
+						savingDexterityMod = value;
+						break;
+					case "CHA":
+						savingCharismaMod = value;
+						break;
+					case "STR":
+						savingStrengthMod = value;
+						break;
+				}
+			}
+		}
 		public static Monster From(MonsterDto monsterDto)
 		{
 			Monster monster = new Monster();
@@ -473,6 +514,7 @@ namespace DndCore
 			monster.SetArmorClassFromStr(monsterDto.ArmorClass);
 			monster.SetHitPointsFromStr(monsterDto.HitPoints);
 			monster.SetAbilitiesFrom(monsterDto);
+			monster.SetSavingThrowModsFrom(monsterDto.SavingThrows);
 			monster.SetSpeedFromStr(monsterDto.Speed);
 			monster.SetSkillCheckBonuses(monsterDto.Skills);
 			monster.SetSensesFromStr(monsterDto.Senses);
@@ -571,6 +613,26 @@ namespace DndCore
 			monster.truesightRadius = source.truesightRadius;
 			monster.wisdomMod = source.wisdomMod;
 			return monster;
+		}
+
+		public double GetSavingThrowModifier(Ability savingThrowAbility)
+		{
+			switch (savingThrowAbility)
+			{
+				case Ability.strength:
+					return savingStrengthMod;
+				case Ability.dexterity:
+					return savingDexterityMod;
+				case Ability.constitution:
+					return savingConstitutionMod;
+				case Ability.intelligence:
+					return savingIntelligenceMod;
+				case Ability.wisdom:
+					return savingWisdomMod;
+				case Ability.charisma:
+					return savingCharismaMod;
+			}
+			return 0;
 		}
 	}
 }

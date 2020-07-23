@@ -11,6 +11,7 @@ namespace DndCore
 		public List<TrailingEffect> TrailingEffects = new List<TrailingEffect>();
 
 		public string OnFirstContactEffect { get; set; }
+		public string MainDieStr { get; set; }
 
 		public string SpellName { get; set; }
 		public int NumHalos { get; set; }

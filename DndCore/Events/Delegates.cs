@@ -29,4 +29,5 @@ namespace DndCore
 	public delegate void PlayerShowStateEventHandler(object sender, PlayerShowStateEventArgs ea);
 	public delegate void TargetEventHandler(TargetEventArgs ea);
 	public delegate void SelectMonsterEventHandler(object sender, SelectMonsterEventArgs ea);
+	public delegate void QueueShortcutEventHandler(object sender, QueueShortcutEventArgs ea);
 }

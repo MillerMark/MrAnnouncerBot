@@ -2141,7 +2141,7 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 
 		const dieAndModifier = dieSpec.split('+');
 
-		if (dieAndModifier.length == 2)
+		if (dieAndModifier.length === 2)
 			modifier += +dieAndModifier[1];
 		const dieStr: string = dieAndModifier[0];
 		addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
@@ -2289,38 +2289,6 @@ function needToRollAddOnDice(diceRollDto: DiceRollData, bentLuckMultiplier: numb
 
 var secondRollTryCount: number = 0;
 
-function throwAdditionalDice() {
-	secondRollTryCount++;
-
-	// @ts-ignore - DiceManager
-	if (!rollingOnlyAddOnDice && !allDiceHaveStoppedRolling && secondRollTryCount < 30) {
-		setTimeout(throwAdditionalDice, 300);
-		return;
-	}
-
-	freezeExistingDice();
-	diceLayer.clearTextEffects();
-
-	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
-
-	if (isLuckBent(localDiceRollData))
-		diceLayer.reportAddOnRoll(diceRollData.secondRollTitle, diceRollData.bentLuckMultiplier);
-	else {
-		if (!diceRollData.damageHealthExtraDice)
-			localDiceRollData.itsAD20Roll = true;
-		else if (localDiceRollData.type == DiceRollType.LuckRollHigh || localDiceRollData.type == DiceRollType.LuckRollLow)
-			localDiceRollData.itsAD20Roll = true;
-
-		diceLayer.reportAddOnRoll(diceRollData.secondRollTitle, diceRollData.bentLuckMultiplier);
-	}
-
-	diceSounds.safePlayMp3('PaladinThunder');
-	if (rollingOnlyAddOnDice)
-		rollAddOnDice();
-	else
-		setTimeout(rollAddOnDice, 2500);
-}
-
 function rollAddOnDice() {
 	if (!diceRollData)
 		return;
@@ -2381,6 +2349,39 @@ function rollAddOnDice() {
 		addBadLuckEffects(die);
 	}
 }
+
+function throwAdditionalDice() {
+	secondRollTryCount++;
+
+	// @ts-ignore - DiceManager
+	if (!rollingOnlyAddOnDice && !allDiceHaveStoppedRolling && secondRollTryCount < 30) {
+		setTimeout(throwAdditionalDice, 300);
+		return;
+	}
+
+	freezeExistingDice();
+	diceLayer.clearTextEffects();
+
+	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
+
+	if (isLuckBent(localDiceRollData))
+		diceLayer.reportAddOnRoll(diceRollData.secondRollTitle, diceRollData.bentLuckMultiplier);
+	else {
+		if (!diceRollData.damageHealthExtraDice)
+			localDiceRollData.itsAD20Roll = true;
+		else if (localDiceRollData.type === DiceRollType.LuckRollHigh || localDiceRollData.type === DiceRollType.LuckRollLow)
+			localDiceRollData.itsAD20Roll = true;
+
+		diceLayer.reportAddOnRoll(diceRollData.secondRollTitle, diceRollData.bentLuckMultiplier);
+	}
+
+	diceSounds.safePlayMp3('PaladinThunder');
+	if (rollingOnlyAddOnDice)
+		rollAddOnDice();
+	else
+		setTimeout(rollAddOnDice, 2500);
+}
+
 
 function getMostRecentDiceRollData(localDiceRollData: DiceRollData) {
 	if (diceRollData.secondRollData)
@@ -3346,184 +3347,6 @@ function showSuccessFailMessages(title: string, rawD20RollValue: number) {
 	}
 }
 
-function pleaseRollDice(diceRollDto: DiceRollData) {
-	DiceLayer.numFiltersOnDieCleanup = 0;
-	DiceLayer.numFiltersOnRoll = 0;
-	//testing = true;
-	//diceRollData = diceRollDto;
-
-	//if (testD20Removal(3, 2, 1, DiceRollKind.Disadvantage, DiceRollType.LuckRollHigh).name != 'A') debugger;
-	//if (testD20Removal(4, 5, 7, DiceRollKind.Disadvantage, DiceRollType.LuckRollLow).name != 'B') debugger;
-	//return;
-
-	animationsShouldBeDone = false;
-	rollingOnlyAddOnDice = false;
-
-
-	if (diceRollDto.type == DiceRollType.BendLuckAdd || diceRollDto.type == DiceRollType.LuckRollHigh) {
-		needToRollAddOnDice(diceRollDto, +1);
-		return;
-	}
-	else if (diceRollDto.type == DiceRollType.BendLuckSubtract || diceRollDto.type == DiceRollType.LuckRollLow) {
-		needToRollAddOnDice(diceRollDto, -1);
-		return;
-	}
-	else if (diceRollDto.type == DiceRollType.AddOnDice) {
-		needToRollAddOnDice(diceRollDto, 0);
-		return;
-	}
-
-	diceRollData = diceRollDto;
-	diceRollData.timeLastRolledMs = performance.now();
-	attemptedRollWasSuccessful = false;
-	wasCriticalHit = false;
-	attemptedRollWasNarrowlySuccessful = false;
-
-	if (randomDiceThrowIntervalId != 0) {
-		clearInterval(randomDiceThrowIntervalId);
-		randomDiceThrowIntervalId = 0;
-	}
-
-	// @ts-ignore - DiceManager
-	if (DiceManager.throwRunning) {
-		queueRoll(diceRollData);
-		return;
-	}
-
-	let xPositionModifier: number = 0;
-
-	if (Math.random() * 100 < 50)
-		xPositionModifier = 26;  // Throw from the right to the left.
-
-	clearBeforeRoll();
-
-	let playerID: number = -1;
-	if (diceRollData.playerRollOptions.length == 1)
-		playerID = diceRollData.playerRollOptions[0].PlayerID;
-
-	if (diceRollData.type == DiceRollType.WildMagic) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
-	}
-	else if (diceRollData.type == DiceRollType.PercentageRoll) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-
-		if (diceRollData.rollScope == RollScope.ActivePlayer) {
-			addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
-			diceRollData.hasSingleIndividual = true;
-		}
-		else if (diceRollData.rollScope == RollScope.Individuals) {
-			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
-				addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, diceRollData.throwPower, xPositionModifier);
-			});
-			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
-			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length == 1;
-		}
-
-	}
-	else if (diceRollData.type == DiceRollType.Initiative || diceRollData.type == DiceRollType.NonCombatInitiative) {
-		diceRollData.modifier = 0;
-		diceRollData.maxInspirationDiceAllowed = 4;
-
-		diceRollData.itsAD20Roll = true;
-		for (var i = 0; i < diceLayer.players.length; i++) {
-			let player: Character = diceLayer.players[i];
-			let initiativeBonus: number;
-			if (diceRollData.type == DiceRollType.NonCombatInitiative)
-				initiativeBonus = 0;
-			else
-				initiativeBonus = player.rollInitiative;
-
-			addD20sForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
-		}
-
-		diceRollData.hasMultiPlayerDice = true;
-	}
-	else if (diceRollData.type == DiceRollType.DamageOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier, undefined, undefined, diceRollData.isMagic);
-	}
-	else if (diceRollData.type == DiceRollType.HealthOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, diceRollData.isMagic);
-	}
-	else if (diceRollData.type == DiceRollType.ExtraOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, diceRollData.isMagic);
-	}
-	else if (diceRollData.type == DiceRollType.InspirationOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		for (var i = 0; i < diceRollData.playerRollOptions.length; i++) {
-			let playerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[i];
-			addD20sForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
-		}
-	}
-	else if (diceRollData.damageHealthExtraDice.indexOf('d20') >= 0) {
-		let dieStr: string = diceRollData.damageHealthExtraDice;
-		if (dieStr === '1d20("Wild Magic Check")') {
-			let numD20s: number = diceRollData.modifier;
-			diceRollData.modifier = 0;
-			dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
-		}
-		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier,
-			diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
-	}
-	else {
-		diceRollData.itsAD20Roll = true;
-
-		if (diceRollData.rollScope == RollScope.ActivePlayer) {
-			let activePlayerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[0];
-			// TODO: I think there's a bug here active player's inspiration needs to be used.
-			let vantageKind: VantageKind = diceRollData.vantageKind;
-			if (diceRollData.playerRollOptions.length == 1) {
-				vantageKind = activePlayerRollOptions.VantageKind;
-			}
-			let numD20s: number = 1;
-			let dieLabel: string = '';
-			if (diceRollData.type === DiceRollType.WildMagicD20Check) {
-				numD20s = diceRollData.modifier;
-				diceRollData.modifier = 0;
-				dieLabel = '"Wild Magic Check"';
-			}
-			let playerId: number = diceLayer.playerID;
-			if (activePlayerRollOptions)
-				playerId = activePlayerRollOptions.PlayerID;
-			addD20sForPlayer(playerId, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
-			diceRollData.hasSingleIndividual = true;
-		}
-		else if (diceRollData.rollScope == RollScope.Individuals) {
-			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
-				addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
-			});
-			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
-			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length == 1;
-		}
-
-		if (isAttack(diceRollData)) {
-			addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier);
-		}
-	}
-
-	try {
-		// @ts-ignore - DiceManager
-		DiceManager.prepareValues(diceValues);
-	}
-	catch (ex) {
-		console.log('exception on call to DiceManager.prepareValues: ' + ex);
-	}
-
-	if (diceRollData.onThrowSound) {
-		diceSounds.safePlayMp3(diceRollData.onThrowSound);
-	}
-	//startedRoll = true;
-}
-
 function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '', numD20s: number = 1, dieLabelOverride: string = null) {
 	let d20BackColor: string = diceLayer.getDieColor(playerID);
 	let d20FontColor: string = diceLayer.getDieFontColor(playerID);
@@ -3560,6 +3383,184 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 	if (inspiration) {
 		addDieFromStr(playerID, inspiration, DieCountsAs.inspiration, diceRollData.throwPower, xPositionModifier, d20BackColor, d20FontColor, diceRollData.isMagic);
 	}
+}
+
+function pleaseRollDice(diceRollDto: DiceRollData) {
+	DiceLayer.numFiltersOnDieCleanup = 0;
+	DiceLayer.numFiltersOnRoll = 0;
+	//testing = true;
+	//diceRollData = diceRollDto;
+
+	//if (testD20Removal(3, 2, 1, DiceRollKind.Disadvantage, DiceRollType.LuckRollHigh).name != 'A') debugger;
+	//if (testD20Removal(4, 5, 7, DiceRollKind.Disadvantage, DiceRollType.LuckRollLow).name != 'B') debugger;
+	//return;
+
+	animationsShouldBeDone = false;
+	rollingOnlyAddOnDice = false;
+
+
+	if (diceRollDto.type === DiceRollType.BendLuckAdd || diceRollDto.type === DiceRollType.LuckRollHigh) {
+		needToRollAddOnDice(diceRollDto, +1);
+		return;
+	}
+	else if (diceRollDto.type === DiceRollType.BendLuckSubtract || diceRollDto.type === DiceRollType.LuckRollLow) {
+		needToRollAddOnDice(diceRollDto, -1);
+		return;
+	}
+	else if (diceRollDto.type === DiceRollType.AddOnDice) {
+		needToRollAddOnDice(diceRollDto, 0);
+		return;
+	}
+
+	diceRollData = diceRollDto;
+	diceRollData.timeLastRolledMs = performance.now();
+	attemptedRollWasSuccessful = false;
+	wasCriticalHit = false;
+	attemptedRollWasNarrowlySuccessful = false;
+
+	if (randomDiceThrowIntervalId != 0) {
+		clearInterval(randomDiceThrowIntervalId);
+		randomDiceThrowIntervalId = 0;
+	}
+
+	// @ts-ignore - DiceManager
+	if (DiceManager.throwRunning) {
+		queueRoll(diceRollData);
+		return;
+	}
+
+	let xPositionModifier = 0;
+
+	if (Math.random() * 100 < 50)
+		xPositionModifier = 26;  // Throw from the right to the left.
+
+	clearBeforeRoll();
+
+	let playerID = -1;
+	if (diceRollData.playerRollOptions.length === 1)
+		playerID = diceRollData.playerRollOptions[0].PlayerID;
+
+	if (diceRollData.type === DiceRollType.WildMagic) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
+	}
+	else if (diceRollData.type === DiceRollType.PercentageRoll) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+
+		if (diceRollData.rollScope === RollScope.ActivePlayer) {
+			addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
+			diceRollData.hasSingleIndividual = true;
+		}
+		else if (diceRollData.rollScope === RollScope.Individuals) {
+			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
+				addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, diceRollData.throwPower, xPositionModifier);
+			});
+			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
+			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
+		}
+
+	}
+	else if (diceRollData.type === DiceRollType.Initiative || diceRollData.type === DiceRollType.NonCombatInitiative) {
+		diceRollData.modifier = 0;
+		diceRollData.maxInspirationDiceAllowed = 4;
+
+		diceRollData.itsAD20Roll = true;
+		for (let i = 0; i < diceLayer.players.length; i++) {
+			const player: Character = diceLayer.players[i];
+			let initiativeBonus: number;
+			if (diceRollData.type === DiceRollType.NonCombatInitiative)
+				initiativeBonus = 0;
+			else
+				initiativeBonus = player.rollInitiative;
+
+			addD20sForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
+		}
+
+		diceRollData.hasMultiPlayerDice = true;
+	}
+	else if (diceRollData.type === DiceRollType.DamageOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier, undefined, undefined, diceRollData.isMagic);
+	}
+	else if (diceRollData.type === DiceRollType.HealthOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, diceRollData.isMagic);
+	}
+	else if (diceRollData.type === DiceRollType.ExtraOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, diceRollData.isMagic);
+	}
+	else if (diceRollData.type === DiceRollType.InspirationOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		for (let i = 0; i < diceRollData.playerRollOptions.length; i++) {
+			const playerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[i];
+			addD20sForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
+		}
+	}
+	else if (diceRollData.damageHealthExtraDice.indexOf('d20') >= 0) {
+		let dieStr: string = diceRollData.damageHealthExtraDice;
+		if (dieStr === '1d20("Wild Magic Check")') {
+			const numD20s: number = diceRollData.modifier;
+			diceRollData.modifier = 0;
+			dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
+		}
+		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier,
+			diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
+	}
+	else {
+		diceRollData.itsAD20Roll = true;
+
+		if (diceRollData.rollScope === RollScope.ActivePlayer) {
+			const activePlayerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[0];
+			// TODO: I think there's a bug here active player's inspiration needs to be used.
+			let vantageKind: VantageKind = diceRollData.vantageKind;
+			if (diceRollData.playerRollOptions.length == 1) {
+				vantageKind = activePlayerRollOptions.VantageKind;
+			}
+			let numD20s = 1;
+			let dieLabel = '';
+			if (diceRollData.type === DiceRollType.WildMagicD20Check) {
+				numD20s = diceRollData.modifier;
+				diceRollData.modifier = 0;
+				dieLabel = '"Wild Magic Check"';
+			}
+			let playerId: number = diceLayer.playerID;
+			if (activePlayerRollOptions)
+				playerId = activePlayerRollOptions.PlayerID;
+			addD20sForPlayer(playerId, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
+			diceRollData.hasSingleIndividual = true;
+		}
+		else if (diceRollData.rollScope === RollScope.Individuals) {
+			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
+				addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
+			});
+			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
+			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
+		}
+
+		if (isAttack(diceRollData)) {
+			addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier);
+		}
+	}
+
+	try {
+		// @ts-ignore - DiceManager
+		DiceManager.prepareValues(diceValues);
+	}
+	catch (ex) {
+		console.log('exception on call to DiceManager.prepareValues: ' + ex);
+	}
+
+	if (diceRollData.onThrowSound) {
+		diceSounds.safePlayMp3(diceRollData.onThrowSound);
+	}
+	//startedRoll = true;
 }
 
 class PlayerRoll {

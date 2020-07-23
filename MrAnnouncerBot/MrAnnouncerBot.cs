@@ -144,6 +144,18 @@ namespace MrAnnouncerBot
 			try
 			{
 				allViewers.Load();
+				if (allViewers.Viewers.Count < 270)  // We have had at least 270 viewers tracked as of the writing of this bug check code.
+				{
+					Console.WriteLine("");
+					Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					Console.WriteLine("!!                                                             !!");
+					Console.WriteLine("!!  Possible corruption detected in the AllViewers.json file!  !!");
+					Console.WriteLine("!!                                                             !!");
+					Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					Console.WriteLine("");
+					Console.WriteLine($"allViewers.Viewers.Count = {allViewers.Viewers.Count}");
+					Console.WriteLine("");
+				}
 			}
 			catch (Exception ex)
 			{

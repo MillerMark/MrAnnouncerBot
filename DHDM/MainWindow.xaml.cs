@@ -66,6 +66,7 @@ namespace DHDM
 		DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
 		DispatcherTimer updateClearButtonTimer;
+		DispatcherTimer actionQueueTimer;
 
 		DateTime lastUpdateTime;
 		int keepExistingModifier = int.MaxValue;
@@ -82,6 +83,11 @@ namespace DHDM
 			{
 				changingInternally = false;
 			}
+		}
+
+		void CheckActionQueue(object sender, EventArgs e)
+		{
+			DeueueNextAction();
 		}
 
 		private void InitializeGame()
@@ -128,6 +134,10 @@ namespace DHDM
 			updateClearButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
 			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
 			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
+
+			actionQueueTimer = new DispatcherTimer(DispatcherPriority.Send);
+			actionQueueTimer.Tick += new EventHandler(CheckActionQueue);
+			actionQueueTimer.Interval = TimeSpan.FromSeconds(2);
 
 			History.TimeClock = game.Clock;
 			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
@@ -177,10 +187,20 @@ namespace DHDM
 			game.PickAmmunition += Game_PickAmmunition;
 			game.PlayerShowState += Game_PlayerShowState;
 			game.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
+			game.RequestQueueShortcut += Game_RequestQueueShortcut;
 			game.RequestMessageToAll += Game_RequestMessageToAll;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
 			game.RoundStarting += Game_RoundStarting;
+		}
+
+		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
+		{
+			ShortcutQueueEntry shortcutQueueEntry = new ShortcutQueueEntry();
+			shortcutQueueEntry.PlayerId = ea.Player.playerID;
+			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
+			shortcutQueueEntry.ShortcutName = ea.ShortcutName;
+			actionQueue.Enqueue(shortcutQueueEntry);
 		}
 
 		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
@@ -2654,6 +2674,41 @@ namespace DHDM
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 				ChangeFrameRateAndUI(Overlays.Dice, 1);
 			}
+			DeueueNextAction();
+		}
+		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
+
+		void ExecuteQueuedShortcut(ShortcutQueueEntry shortcutQueueEntry)
+		{
+			if (ActivePlayerId != shortcutQueueEntry.PlayerId)
+				ActivePlayerId = shortcutQueueEntry.PlayerId;
+			ActivateShortcut(shortcutQueueEntry.ShortcutName);
+			if (shortcutQueueEntry.RollImmediately)
+				UnleashTheNextRoll();
+		}
+
+		void ExecuteAction(ActionQueueEntry action)
+		{
+			if (action is DieRollQueueEntry dieRollQueueEntry)
+				ExecuteQueuedDieRoll(dieRollQueueEntry);
+			else if (action is ShortcutQueueEntry shortcutQueueEntry)
+				ExecuteQueuedShortcut(shortcutQueueEntry);
+		}
+		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
+		{
+			// TODO: roll the dice.
+			// TODO: apply the damage after the dice have rolled.
+		}
+
+		void DeueueNextAction()
+		{
+			if (!actionQueue.Any())
+				return;
+
+			Dispatcher.Invoke(() =>
+			{
+				ExecuteAction(actionQueue.Dequeue());
+			});
 		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
@@ -3174,6 +3229,30 @@ namespace DHDM
 					break;
 			}
 		}
+
+		void EnqueueSpellSavingThrow(string name, Ability savingThrowAbility, int playerID)
+		{
+			SpellSavingThrowQueueEntry dieRoll = new SpellSavingThrowQueueEntry(name);
+			bool foundAny = false;
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (inGameCreature.IsTargeted)
+				{
+					dieRoll.AddSavingThrowFor(savingThrowAbility, inGameCreature);
+					foundAny = true;
+				}
+			}
+			if (foundAny)
+			{
+				Character spellCaster = AllPlayers.GetFromId(playerID);
+				if (spellCaster != null)
+				{
+					dieRoll.SavingThrowThreshold = spellCaster.SpellSaveDC;
+					dieRoll.PlayerId = playerID;
+					actionQueue.Enqueue(dieRoll);
+				}
+			}
+		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			CalculateLatestDamage(ea);
@@ -3192,7 +3271,7 @@ namespace DHDM
 			else if (ea.StopRollingData.type == DiceRollType.HealthOnly)
 			{
 				lastHealth = ea.StopRollingData.health;
-			}	
+			}
 
 
 			if (ea.StopRollingData.individualRolls?.Count > 0)
@@ -3215,6 +3294,20 @@ namespace DHDM
 			if (ea.StopRollingData.type == DiceRollType.Attack && ea.StopRollingData.success)
 			{
 				ApplyDamageToTargets(ea.StopRollingData.damage);
+			}
+
+			if (ea.StopRollingData.type == DiceRollType.DamageOnly)
+			{
+				if (!string.IsNullOrWhiteSpace(ea.StopRollingData.spellName))
+				{
+					Spell spell = AllSpells.Get(ea.StopRollingData.spellName);
+					if (spell != null && spell.SpellType == SpellType.SavingThrowSpell)
+					{
+						EnqueueSpellSavingThrow(spell.Name, spell.SavingThrowAbility, ea.StopRollingData.playerID);
+					}
+				}
+				// latestDamage
+				//
 			}
 		}
 

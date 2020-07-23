@@ -26,6 +26,7 @@ namespace DndCore
 		}
 
 		public event MessageEventHandler RequestMessageToDungeonMaster;
+		public event QueueShortcutEventHandler RequestQueueShortcut;
 		public event MessageEventHandler RequestMessageToAll;
 		public event CastedSpellEventHandler SpellDispelled;
 		public event PickWeaponEventHandler PickWeapon;
@@ -56,6 +57,10 @@ namespace DndCore
 		protected virtual void OnPickAmmunition(object sender, PickAmmunitionEventArgs ea)
 		{
 			PickAmmunition?.Invoke(sender, ea);
+		}
+		protected virtual void OnRequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
+		{
+			RequestQueueShortcut?.Invoke(sender, ea);
 		}
 		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
@@ -809,6 +814,11 @@ namespace DndCore
 		public void CheckAlarmsPlayerEndsTurn(Character character)
 		{
 			Clock.CheckAlarmsPlayerEndsTurn(character);
+		}
+		public void AddShortcutToQueue(Character player, string shortcutName, bool rollImmediately)
+		{
+			QueueShortcutEventArgs ea = new QueueShortcutEventArgs(player, shortcutName, rollImmediately);
+			OnRequestQueueShortcut(this, ea);
 		}
 
 	}
