@@ -613,27 +613,42 @@
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="History" x:Name="tbHistory">
-					<ListBox x:Name="logListBox" MaxHeight="500" >
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="130" />
-										<ColumnDefinition Width="20" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
+					<StackPanel Orientation="Vertical">
+						<StackPanel Orientation="Vertical">
+							<CheckBox x:Name="ckLogTwitchLogMessagesToHistory" Content="Log Twitch Log Messages" Checked="LogOptionsChanged" Unchecked="LogOptionsChanged"/>
+							<CheckBox x:Name="ckLogTwitchSendMessagesToHistory" Content="Log Twitch Send Messages" Checked="LogOptionsChanged" Unchecked="LogOptionsChanged"/>
+							<CheckBox x:Name="ckSendChannelMessagesToHistory" Content="Log Twitch Channel Messages" Checked="LogOptionsChanged" Unchecked="LogOptionsChanged"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<ListBox x:Name="logListBox" MaxHeight="500" >
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="130" />
+												<ColumnDefinition Width="20" />
+												<ColumnDefinition Width="*" />
+											</Grid.ColumnDefinitions>
 
-									<TextBlock Grid.Column="0" MinWidth="80" Text="{Binding Path=DndTime}" />
-									<TextBlock Grid.Column="2" Text="{Binding Path=Message}"/>
-								</Grid>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-						<ListBox.ContextMenu>
-							<ContextMenu>
-								<MenuItem Header="Clear" Click="ClearHistoryLog_Click"/>
-							</ContextMenu>
-						</ListBox.ContextMenu>
-					</ListBox>
+											<TextBlock Grid.Column="0" MinWidth="80" Text="{Binding Path=DndTime}" />
+											<TextBlock Grid.Column="2" Text="{Binding Path=Message}"/>
+										</Grid>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+								<ListBox.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="Clear" Click="ClearHistoryLog_Click"/>
+									</ContextMenu>
+								</ListBox.ContextMenu>
+							</ListBox>
+							<StackPanel Orientation="Vertical">
+								<TextBlock Text="Action Queue" Width="Auto" Height="Auto"/>
+								<ListBox x:Name="lbActionStack" >
+
+								</ListBox>
+							</StackPanel>
+						</StackPanel>
+					</StackPanel>
 				</TabItem>
 				<TabItem Header="Effects" x:Name="tbEffects" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" >
 					<local:EffectsList x:Name="effectsList" Height="Auto" VerticalAlignment="Stretch"/>

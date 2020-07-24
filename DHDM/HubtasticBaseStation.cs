@@ -27,9 +27,11 @@ namespace DHDM
 		{
 			TellDungeonMaster?.Invoke(sender, ea);
 		}
-
+		public static bool DiceOnScreen { get; set; }
 		public static void OnAllDiceDestroyed(object sender, DiceEventArgs ea)
 		{
+			DiceOnScreen = false;
+			History.Log("DiceOnScreen = false;");
 			AllDiceDestroyed?.Invoke(sender, ea);
 		}
 
@@ -175,8 +177,22 @@ namespace DHDM
 			HubConnection.InvokeAsync("UpdateClock", clockData);
 		}
 
+		public static DateTime LastRollTime { get; set; }
+
+		public static double SecondsSinceLastRoll
+		{
+			get
+			{
+				return (DateTime.Now - LastRollTime).TotalSeconds;
+			}
+		}
+		
 		public static void RollDice(string diceData)
 		{
+			LastRollTime = DateTime.Now;
+			DiceOnScreen = true;
+			History.Log("DiceOnScreen = true;");
+			
 			HubConnection.InvokeAsync("RollDice", diceData);
 		}
 

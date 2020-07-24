@@ -28,16 +28,16 @@ enum DiceRollType {
 	HPCapacity
 }
 
-enum SpriteType {
-	PawPrint,
-	Raven,
-	Spiral,
-	Smoke,
-	SmokeExplosion,
-	SparkTrail,
-	SmallSparks,
-	Fangs
-}
+//enum SpriteType {
+//	PawPrint,
+//	Raven,
+//	Spiral,
+//	Smoke,
+//	SmokeExplosion,
+//	SparkTrail,
+//	SmallSparks,
+//	Fangs
+//}
 
 class TrailingEffect {
 	constructor(dto: any) {
@@ -109,20 +109,20 @@ class TrailingEffect {
 	FlipHalfTime: boolean;
 }
 
-const matchNormalDieColorsToSpecial: boolean = true;
+//const matchNormalDieColorsToSpecial = true;
 //const damageDieBackgroundColor: string = '#e49836';
 //const damageDieFontColor: string = '#000000';
 
-const successFontColor: string = '#ffffff';
-const successOutlineColor: string = '#000000';
-const failFontColor: string = '#000000';
-const failOutlineColor: string = '#ffffff';
+const successFontColor = '#ffffff';
+const successOutlineColor = '#000000';
+const failFontColor = '#000000';
+const failOutlineColor = '#ffffff';
 
 class DiceLayer {
 	static numFiltersOnDieCleanup: number;
 	static numFiltersOnRoll: number;
-	static maxFiltersOnRoll: number = 6;
-	static maxFiltersOnDieCleanup: number = 6;
+	static maxFiltersOnRoll = 22;
+	static maxFiltersOnDieCleanup = 22;
 	players: Array<Character> = [];
 	private readonly totalDamageTime: number = 7000;
 	private readonly totalRollScoreTime: number = 7000;
@@ -148,7 +148,7 @@ class DiceLayer {
 	static readonly extraDieBackgroundColor: string = '#404040';
 	static readonly extraDieFontColor: string = '#ffffff';
 
-	static matchOozeToDieColor: boolean = true;
+	static matchOozeToDieColor = true;
 	animations: Animations = new Animations();
 	diceFrontCanvas: HTMLCanvasElement;
 	diceBackCanvas: HTMLCanvasElement;
@@ -268,11 +268,11 @@ class DiceLayer {
 	dieSteampunkTunnel: Sprites;
 	allFrontLayerEffects: SpriteCollection;
 	allBackLayerEffects: SpriteCollection;
-	activePlayerDieColor: string = '#fcd5a6';
-	activePlayerDieFontColor: string = '#ffffff';
-	activePlayerHueShift: number = 0;
+	activePlayerDieColor = '#fcd5a6';
+	activePlayerDieFontColor = '#ffffff';
+	activePlayerHueShift = 0;
 	playerID: number;
-	playerDataSet: boolean = false;
+	playerDataSet = false;
 
 	constructor() {
 		this.loadSprites();
@@ -1725,25 +1725,33 @@ class DiceLayer {
 
 	addHaloSpin(x: number, y: number, hueShift: number = 0, angle: number): SpriteProxy {
 		let haloSpin: SpriteProxy;
-		hueShift = hueShift % 360;
-		if (hueShift < 30 || hueShift >= 352)
-			haloSpin = this.haloSpinRed.add(x, y, 0);
-		else if (hueShift < 58)
-			haloSpin = this.haloSpinYellow.add(x, y, 0);
-		else if (hueShift < 131)
-			haloSpin = this.haloSpinGreen.add(x, y, 0);
-		else if (hueShift < 175)
-			haloSpin = this.haloSpinTeal.add(x, y, 0);
-		else if (hueShift < 213)
-			haloSpin = this.haloSpinBlue.add(x, y, 0);
-		else if (hueShift < 265)
-			haloSpin = this.haloSpinPurple.add(x, y, 0);
-		else if (hueShift < 281)
-			haloSpin = this.haloSpinLavender.add(x, y, 0);
-		else if (hueShift < 311)
-			haloSpin = this.haloSpinMaroon.add(x, y, 0);
-		else if (hueShift < 352)
-			haloSpin = this.haloSpinFuschia.add(x, y, 0);
+
+		if (DiceLayer.numFiltersOnRoll < DiceLayer.maxFiltersOnRoll) {
+			DiceLayer.numFiltersOnRoll++;
+			haloSpin = this.haloSpinRed.addShifted(x, y, 0, hueShift);
+		}
+		else {
+			hueShift = hueShift % 360;
+			if (hueShift < 30 || hueShift >= 352)
+				haloSpin = this.haloSpinRed.add(x, y, 0);
+			else if (hueShift < 58)
+				haloSpin = this.haloSpinYellow.add(x, y, 0);
+			else if (hueShift < 131)
+				haloSpin = this.haloSpinGreen.add(x, y, 0);
+			else if (hueShift < 175)
+				haloSpin = this.haloSpinTeal.add(x, y, 0);
+			else if (hueShift < 213)
+				haloSpin = this.haloSpinBlue.add(x, y, 0);
+			else if (hueShift < 265)
+				haloSpin = this.haloSpinPurple.add(x, y, 0);
+			else if (hueShift < 281)
+				haloSpin = this.haloSpinLavender.add(x, y, 0);
+			else if (hueShift < 311)
+				haloSpin = this.haloSpinMaroon.add(x, y, 0);
+			else if (hueShift < 352)
+				haloSpin = this.haloSpinFuschia.add(x, y, 0);
+		}
+
 		haloSpin.rotation = angle;
 		haloSpin.fadeInTime = 500;
 		haloSpin.fadeOutTime = 500;
@@ -2296,7 +2304,7 @@ class DiceLayer {
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
-		diceRoll.mainDieStr = dto.MainDieStr;
+		diceRoll.diceDtos = dto.DiceDtos;
 		diceRoll.modifier = dto.Modifier;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
@@ -2387,21 +2395,21 @@ class DiceLayer {
 		if (sprites.name === 'Spark')
 			return this.smallSpark(x, y, angle);
 
-		let hue: number = 0;
-		if (trailingEffect.HueShift == "player")
+		let hue = 0;
+		if (trailingEffect.HueShift === "player")
 			hue = diceLayer.activePlayerHueShift;
 		else if (trailingEffect.HueShift)
 			hue = +trailingEffect.HueShift;
 
-		if (trailingEffect.HueShiftRandom != 0)
+		if (trailingEffect.HueShiftRandom !== 0)
 			hue += Random.plusMinus(trailingEffect.HueShiftRandom);
 		hue = Math.round(hue);
 
 		if (sprites.name === 'HaloSpin')
 			return this.addHaloSpin(x, y, hue, angle);
 
-		let index: number = 0;
-		if (trailingEffect.StartIndex == -1)
+		let index = 0;
+		if (trailingEffect.StartIndex === -1)
 			index = Math.round(Math.random() * sprites.sprites.length);
 		else
 			index = trailingEffect.StartIndex;
@@ -2583,11 +2591,21 @@ class IndividualRoll {
 	}
 }
 
+class DiceDto {
+	DamageType: DamageType;
+	Quantity: number;
+	Sides: number;
+	Label: string;
+	BackColor: string;
+	FontColor: string;
+	Vantage: VantageKind;
+}
+
 class DiceRollData {
 	type: DiceRollType;
 	vantageKind: VantageKind;
 	damageHealthExtraDice: string;
-	mainDieStr: string;
+	diceDtos: Array<DiceDto> = [];
 	modifier: number;
 	minCrit: number;
 	hiddenThreshold: number;
@@ -2637,10 +2655,6 @@ class DiceRollData {
 	effectRotation = 0;
 	effectSaturation = 100;
 	onStopRollingSound: string;
-
-	constructor() {
-
-	}
 
 	getFirstBonusRollDescription(): string {
 		if (!this.bonusRolls || this.bonusRolls.length == 0)

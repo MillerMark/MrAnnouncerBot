@@ -51,6 +51,7 @@ namespace Imaging
 			{
 				ActiveFile = file;
 				GetCroppingMargins(file, out int left, out int top, out int right, out int bottom);
+
 				ProgressScanPercent = counter * 100 / filesToProcess;
 				OnProgressChanged();
 
@@ -89,41 +90,52 @@ namespace Imaging
 			using (DirectBitmap bitmap = DirectBitmap.FromFile(file))
 			{
 				int line = 0;
-				while (line < bitmap.Width && VerticalLineEmpty(bitmap, line))
+				int bitmapWidth = bitmap.Width;
+				while (line < bitmapWidth && VerticalLineEmpty(bitmap, line))
 				{
 					line++;
 				}
 				left = line;
-				if (line < bitmap.Width)
+				if (line < bitmapWidth)
 				{
 					line = 0;
-					int lineToCheck = bitmap.Width - line - 1;
+					int lineToCheck = bitmapWidth - line - 1;
 					while (lineToCheck >= 0 && VerticalLineEmpty(bitmap, lineToCheck))
 					{
 						line++;
-						lineToCheck = bitmap.Width - line - 1;
+						lineToCheck = bitmapWidth - line - 1;
 					}
 					right = line;
 				}
 
 				line = 0;
-				while (line < bitmap.Height && HorizontalLineEmpty(bitmap, line))
+				int bitmapHeight = bitmap.Height;
+				while (line < bitmapHeight && HorizontalLineEmpty(bitmap, line))
 				{
 					line++;
 				}
 				top = line;
-				if (line < bitmap.Height)
+				if (line < bitmapHeight)
 				{
 					line = 0;
-					int lineToCheck = bitmap.Height - line - 1;
+					int lineToCheck = bitmapHeight - line - 1;
 					while (lineToCheck >= 0 && HorizontalLineEmpty(bitmap, lineToCheck))
 					{
 						line++;
-						lineToCheck = bitmap.Height - line - 1;
+						lineToCheck = bitmapHeight - line - 1;
 					}
 					bottom = line;
 				}
+				if (top == bitmapHeight && left == bitmapWidth)
+				{
+					// This image is entirely transparent - set margins to a point in the center of the image.
+					top = bitmapHeight / 2;
+					bottom = top;
+					left = bitmapWidth / 2;
+					right = left;
+				}
 			}
+			
 		}
 		void CropFile(string file, int leftMargin, int topMargin, int rightMargin, int bottomMargin, string targetFileName = null)
 		{

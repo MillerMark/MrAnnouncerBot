@@ -57,6 +57,7 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
+		DispatcherTimer reconnectToTwitchTimer;
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer stateUpdateTimer;
 		DispatcherTimer cropRectUpdateTimer;
@@ -97,6 +98,10 @@ namespace DHDM
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
+
+			reconnectToTwitchTimer = new DispatcherTimer(DispatcherPriority.Send);
+			reconnectToTwitchTimer.Tick += new EventHandler(ReconnectToTwitchHandler);
+			reconnectToTwitchTimer.Interval = TimeSpan.FromMilliseconds(2000);
 
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
@@ -163,8 +168,15 @@ namespace DHDM
 
 			SetupSpellsChangedFileWatcher();
 			LoadAvalonEditor();
+
+			actionQueueTimer.Start();
+			lbActionStack.ItemsSource = actionQueue;
 		}
 
+		void ReconnectToTwitchHandler(object sender, EventArgs e)
+		{
+			CreateDungeonMasterClient();
+		}
 		void LoadTextCompletionEngine()
 		{
 			TextCompletionEngine = new TextCompletionEngine(tbxCode);
@@ -774,6 +786,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
+				reconnectToTwitchTimer.Stop();
 				Background = Brushes.White;
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
 			});
@@ -816,7 +829,8 @@ namespace DHDM
 
 		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e)
 		{
-			History.Log($"Channel ({e.Channel}) state changed ({e.ChannelState.Channel})");
+			if (sendTwitchChannelMessagesToHistory)
+				History.Log($"Channel ({e.Channel}) state changed ({e.ChannelState.Channel})");
 		}
 
 		private void DungeonMasterClient_OnNoPermissionError(object sender, EventArgs e)
@@ -829,24 +843,31 @@ namespace DHDM
 			History.Log($"Message (\"{e.Message}\") throttled ({e.SentMessageCount} messages sent in {e.Period.TotalSeconds} seconds - only {e.AllowedInPeriod} allowed)");
 		}
 
+		bool sendTwitchLogMessagesToHistory;
+		bool sendMessageSendsToHistory;
+		bool sendTwitchChannelMessagesToHistory;
 		private void DungeonMasterClient_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
 		{
-			History.Log($"BotUsername (\"{e.BotUsername}\") logged ({e.Data})");
+			if (sendTwitchLogMessagesToHistory)
+				History.Log($"BotUsername (\"{e.BotUsername}\") logged ({e.Data})");
 		}
 
 		private void DungeonMasterClient_OnLeftChannel(object sender, TwitchLib.Client.Events.OnLeftChannelArgs e)
 		{
-			History.Log($"User (\"{e.BotUsername}\") left channel ({e.Channel})");
+			if (sendTwitchChannelMessagesToHistory)
+				History.Log($"User (\"{e.BotUsername}\") left channel ({e.Channel})");
 		}
 
 		private void DungeonMasterClient_OnJoinedChannel(object sender, TwitchLib.Client.Events.OnJoinedChannelArgs e)
 		{
-			History.Log($"User (\"{e.BotUsername}\") joined channel ({e.Channel})");
+			if (sendTwitchChannelMessagesToHistory)
+				History.Log($"User (\"{e.BotUsername}\") joined channel ({e.Channel})");
 		}
 
 		private void DungeonMasterClient_OnFailureToReceiveJoinConfirmation(object sender, TwitchLib.Client.Events.OnFailureToReceiveJoinConfirmationArgs e)
 		{
-			History.Log($"Channel (\"{e.Exception.Channel}\") FailureToReceiveJoinConfirmation ({e.Exception.Details})");
+			if (sendTwitchChannelMessagesToHistory)
+				History.Log($"Channel (\"{e.Exception.Channel}\") FailureToReceiveJoinConfirmation ({e.Exception.Details})");
 		}
 
 		private void DungeonMasterClient_OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)
@@ -859,9 +880,11 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				Background = Brushes.Red;
+				Background = new SolidColorBrush(Color.FromRgb(148, 81, 81));
 				btnReconnectTwitchClient.Visibility = Visibility.Visible;
+				reconnectToTwitchTimer.Start();
 			});
+
 			UnhookTwitchClientEvents();
 			dungeonMasterClient = null;
 			History.Log($"DungeonMasterClient_OnDisconnected");
@@ -1104,6 +1127,8 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				History.UpdateQueuedEntries();
+				logListBox.SelectedIndex = logListBox.Items.Count - 1;
+				logListBox.ScrollIntoView(logListBox.SelectedItem);
 			});
 		}
 
@@ -2667,6 +2692,11 @@ namespace DHDM
 
 		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
 		{
+			Dispatcher.Invoke(() =>
+			{
+				Title = "All Dice Destroyed.";
+			});
+			History.Log("All Dice Destroyed.");
 			CheckForFollowUpRolls(ea.StopRollingData);
 			if (dynamicThrottling && DateTime.Now - lastDieRollTime > TimeSpan.FromSeconds(3))
 			{
@@ -2696,6 +2726,14 @@ namespace DHDM
 		}
 		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
 		{
+			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow)
+			{
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
+				//diceRoll.SavingThrow = 
+				diceRoll.DiceDtos = dieRollQueueEntry.DiceDtos;
+				diceRoll.HiddenThreshold = dieRollQueueEntry.HiddenThreshold;
+				RollTheDice(diceRoll);
+			}
 			// TODO: roll the dice.
 			// TODO: apply the damage after the dice have rolled.
 		}
@@ -2707,7 +2745,8 @@ namespace DHDM
 
 			Dispatcher.Invoke(() =>
 			{
-				ExecuteAction(actionQueue.Dequeue());
+				if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
+					ExecuteAction(actionQueue.Dequeue());
 			});
 		}
 
@@ -3247,7 +3286,7 @@ namespace DHDM
 				Character spellCaster = AllPlayers.GetFromId(playerID);
 				if (spellCaster != null)
 				{
-					dieRoll.SavingThrowThreshold = spellCaster.SpellSaveDC;
+					dieRoll.HiddenThreshold = spellCaster.SpellSaveDC;
 					dieRoll.PlayerId = playerID;
 					actionQueue.Enqueue(dieRoll);
 				}
@@ -3255,6 +3294,11 @@ namespace DHDM
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
+			Dispatcher.Invoke(() =>
+			{
+				Title = "Dice Stopped Rolling (waiting for destruction)...";
+			});
+			History.Log("Dice stopped rolling.");
 			CalculateLatestDamage(ea);
 			if (dynamicThrottling)
 			{
@@ -4526,6 +4570,7 @@ namespace DHDM
 			InitializeAttackShortcuts();
 			lstAllSpells.ItemsSource = AllSpells.Spells;
 			spAllMonsters.DataContext = AllMonsters.Monsters;
+			UpdateInGameCreatures();
 		}
 
 		private void SendPlayerData()
@@ -5189,7 +5234,8 @@ namespace DHDM
 
 			try
 			{
-				obsWebsocket.SetCurrentScene(sceneName);
+				if (obsWebsocket.IsConnected)
+					obsWebsocket.SetCurrentScene(sceneName);
 			}
 			catch (Exception ex)
 			{
@@ -5223,7 +5269,8 @@ namespace DHDM
 
 		private void SendMessage(string message, string channel)
 		{
-			History.Log($"Sending \"{message}\" to {channel} at {DateTime.Now.ToLongTimeString()}");
+			if (sendMessageSendsToHistory)
+				History.Log($"Sending \"{message}\" to {channel} at {DateTime.Now.ToLongTimeString()}");
 			if (JoinedChannel(channel))
 				dungeonMasterClient.SendMessage(channel, message);
 			else
@@ -5531,6 +5578,7 @@ namespace DHDM
 
 		private void UnleashTheNextRoll()
 		{
+			Title = "Rolling Dice...";
 			if (spellToCastOnRoll != null)
 			{
 				if (spellToCastOnRoll.Spell?.SpellType == SpellType.SavingThrowSpell)
@@ -7266,6 +7314,13 @@ namespace DHDM
 		{
 			All,
 			TargetedOnly
+		}
+
+		private void LogOptionsChanged(object sender, RoutedEventArgs e)
+		{
+			sendTwitchLogMessagesToHistory = ckLogTwitchLogMessagesToHistory.IsChecked == true;
+			sendMessageSendsToHistory = ckLogTwitchSendMessagesToHistory.IsChecked == true;
+			sendTwitchChannelMessagesToHistory = ckSendChannelMessagesToHistory.IsChecked == true;
 		}
 		// TODO: Reintegrate wand/staff animations....
 		/* 

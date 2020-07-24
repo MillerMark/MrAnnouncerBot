@@ -146,6 +146,8 @@ namespace MrAnnouncerBot
 				allViewers.Load();
 				if (allViewers.Viewers.Count < 270)  // We have had at least 270 viewers tracked as of the writing of this bug check code.
 				{
+					Console.Beep();
+					Console.BackgroundColor = ConsoleColor.DarkRed;
 					Console.WriteLine("");
 					Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 					Console.WriteLine("!!                                                             !!");

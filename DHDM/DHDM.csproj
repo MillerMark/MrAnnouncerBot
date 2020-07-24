@@ -305,14 +305,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ActionQueueEntry.cs" />
+    <Compile Include="ActionQueue\ActionQueueEntry.cs" />
+    <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="CharacterTriggerProvider.cs" />
     <Compile Include="CompletionProvider.cs" />
-    <Compile Include="DieRollQueueEntry.cs" />
+    <Compile Include="ActionQueue\DieRollQueueEntry.cs" />
     <Compile Include="FrmCropPreview.xaml.cs">
       <DependentUpon>FrmCropPreview.xaml</DependentUpon>
     </Compile>
@@ -359,7 +360,7 @@
     <Compile Include="IDE\Code Completion\ICompletionData Implementors\FolderCompletionData.cs" />
     <Compile Include="IDE\Code Templates\Text Commands\Core\ITextCommand.cs" />
     <Compile Include="Overlays.cs" />
-    <Compile Include="ShortcutQueueEntry.cs" />
+    <Compile Include="ActionQueue\ShortcutQueueEntry.cs" />
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
     <Compile Include="SoundPlayerFolders.cs" />

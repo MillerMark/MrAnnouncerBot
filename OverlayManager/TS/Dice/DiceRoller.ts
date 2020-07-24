@@ -1,28 +1,28 @@
-var diceRollData: DiceRollData;
-var showDieValues: boolean = false;
-var totalDamagePlusModifier: number = 0;
-var totalHealthPlusModifier: number = 0;
-var totalExtraPlusModifier: number = 0;
-var totalRoll: number = 0;
-var totalBonus: number = 0;
-var d20RollValue: number = -1;
-var attemptedRollWasSuccessful: boolean = false;
-var wasCriticalHit: boolean = false;
-var attemptedRollWasNarrowlySuccessful: boolean = false;
-var diceToRoll = 10;
-var secondsBetweenRolls: number = 12;
-var removeDiceImmediately: boolean = false;
-const dieScale: number = 1.5;
-var repeatRandomThrow: boolean = false;
-var onBonusThrow: boolean = false;
-var setupBonusRoll: boolean = false;
-var waitingForBonusRollToComplete: boolean = false;
-var bonusRollStartTime: number = 0;
-var randomDiceThrowIntervalId: number = 0;
-var damageModifierThisRoll: number = 0;
-var healthModifierThisRoll: number = 0;
-var extraModifierThisRoll: number = 0;
-var additionalDieRollMessage: string = '';
+let diceRollData: DiceRollData;
+//const showDieValues = false;
+let totalDamagePlusModifier = 0;
+let totalHealthPlusModifier = 0;
+let totalExtraPlusModifier = 0;
+let totalRoll = 0;
+let totalBonus = 0;
+let d20RollValue = -1;
+let attemptedRollWasSuccessful = false;
+let wasCriticalHit = false;
+let attemptedRollWasNarrowlySuccessful = false;
+const diceToRoll = 10;
+const secondsBetweenRolls = 12;
+const removeDiceImmediately = false;
+const dieScale = 1.5;
+const repeatRandomThrow = false;
+let onBonusThrow = false;
+let setupBonusRoll = false;
+let waitingForBonusRollToComplete = false;
+let bonusRollStartTime = 0;
+let randomDiceThrowIntervalId = 0;
+let damageModifierThisRoll = 0;
+let healthModifierThisRoll = 0;
+let extraModifierThisRoll = 0;
+let additionalDieRollMessage = '';
 
 enum DieCountsAs {
 	totalScore,
@@ -50,17 +50,17 @@ enum DieEffect {
 
 //`!-------------------------------------------------------
 
-var container, scene, camera, renderer, controls, stats, world, dice = [];
-var scalingDice = [];
-var specialDice = [];
+let container, scene, camera, renderer, controls, stats, world, dice = [];
+let scalingDice = [];
+let specialDice = [];
 //var bodiesToremove = [];
-var bodiesToFree = [];
-var diceSounds = new DiceSounds('GameDev/Assets/DragonH/SoundEffects');
+//let bodiesToFree = [];
+const diceSounds = new DiceSounds('GameDev/Assets/DragonH/SoundEffects');
 
-var waitingForSettle = false;
-var allDiceHaveStoppedRolling = false;
-var firstStopTime: number;
-var diceValues = [];
+let waitingForSettle = false;
+let allDiceHaveStoppedRolling = false;
+let firstStopTime: number;
+let diceValues = [];
 
 function setNormalGravity() {
 	world.gravity.set(0, -9.82 * 20, 0);
@@ -820,6 +820,159 @@ function needToRollBonusDice() {
 	return diceRollData.bonusRolls && diceRollData.bonusRolls.length > 0;
 }
 
+class PlayerRoll {
+	constructor(public roll: number, public name: string, public id: number, public modifier: number = 0, public success: boolean = false) {
+	}
+}
+
+class RollResults {
+	constructor(public d20RollValue: number[], public singlePlayerId: number, public luckValue: number[],
+		public playerIdForTextMessages: number, public skillSavingModifier: number, public totalDamage: number,
+		public totalHealth: number, public totalExtra: number, public maxDamage: number) {
+	}
+}
+
+function getModifier(diceRollData: DiceRollData, player: Character): number {
+	if (player)
+		if (diceRollData.type === DiceRollType.Initiative)
+			return player.initiative;
+		else if (diceRollData.type === DiceRollType.SkillCheck) {
+			return player.getSkillMod(diceRollData.skillCheck);
+		}
+		else if (diceRollData.type === DiceRollType.SavingThrow) {
+			return player.getSavingThrowMod(diceRollData.savingThrow);
+		}
+	return 0;
+}
+
+function getRollResults(): RollResults {
+	let totalScores: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	let inspirationValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	let luckValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	let totalDamage = 0;
+	let maxDamage = 0;
+	let totalHealth = 0;
+	let totalExtra = 0;
+
+	let singlePlayerId = 0;
+	let playerIdForTextMessages = -1;
+
+	//console.log(`getRollResults - dice.length = ${dice.length}`);
+	for (let i = 0; i < dice.length; i++) {
+		const die = dice[i];
+		if (!die.inPlay)
+			continue;
+
+		const topNumber: number = die.getTopNumber();
+
+		if (diceRollData.hasMultiPlayerDice) {
+			if (diceRollData.multiplayerSummary === null)
+				diceRollData.multiplayerSummary = [];
+			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
+			if (playerRoll) {
+				playerRoll.roll += topNumber;
+				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
+			}
+			else {
+				let modifier = 0;
+				if (diceLayer.players && diceLayer.players.length > 0) {
+					const player: Character = diceLayer.getPlayer(die.playerID);
+					modifier = getModifier(diceRollData, player);
+				}
+
+				const success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
+				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, modifier, success));
+			}
+			let scaleAdjust = 1;
+			if (die.rollType === DieCountsAs.inspiration) {
+				scaleAdjust = 0.7;
+			}
+
+			if (!die.playerName) {
+				die.playerName = diceLayer.getPlayerName(die.playerID);
+			}
+
+			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
+		}
+
+		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
+
+		const playerID: number = die.playerID;
+		if (playerID === undefined || playerID < 0)
+			continue;
+
+		if (diceRollData.hasSingleIndividual) {
+			singlePlayerId = playerID;
+			playerIdForTextMessages = playerID;
+		}
+
+		if (!totalScores[playerID])
+			totalScores[playerID] = 0;
+
+		if (!inspirationValue[playerID])
+			inspirationValue[playerID] = 0;
+
+		if (!luckValue[playerID])
+			luckValue[playerID] = 0;
+
+		switch (die.rollType) {
+			case DieCountsAs.totalScore:
+				//console.log(`DieCountsAs.totalScore (${topNumber})`);
+				totalScores[playerID] += topNumber;
+				break;
+			case DieCountsAs.inspiration:
+				//console.log(`DieCountsAs.inspiration (${topNumber})`);
+				inspirationValue[playerID] += topNumber;
+				break;
+			case DieCountsAs.bentLuck:
+				//console.log(`DieCountsAs.bentLuck (${topNumber * diceRollData.bentLuckMultiplier})`);
+				luckValue[playerID] += topNumber * diceRollData.bentLuckMultiplier;
+				break;
+			case DieCountsAs.bonus:
+				//console.log(`DieCountsAs.bonus (${topNumber})`);
+				totalBonus += topNumber;
+				break;
+			case DieCountsAs.damage:
+				//console.log(`DieCountsAs.damage (${topNumber})`);
+				totalDamage += topNumber;
+				maxDamage += die.values;
+				break;
+			case DieCountsAs.health:
+				//console.log(`DieCountsAs.health (${topNumber})`);
+				totalHealth += topNumber;
+				break;
+			case DieCountsAs.extra:
+				//console.log(`DieCountsAs.extra (${topNumber})`);
+				totalExtra += topNumber;
+				break;
+		}
+	} // for
+
+	let skillSavingModifier = 0;
+	if (diceRollData.type === DiceRollType.SkillCheck || diceRollData.type === DiceRollType.SavingThrow) {
+		const player: Character = diceLayer.getPlayer(singlePlayerId);
+		skillSavingModifier = getModifier(diceRollData, player);
+	}
+
+	totalRoll = totalScores[singlePlayerId] + inspirationValue[singlePlayerId] + luckValue[singlePlayerId] + diceRollData.modifier + skillSavingModifier;
+
+	if (!diceRollData.hasMultiPlayerDice && totalScores[singlePlayerId] > 0) {
+		if (diceRollData.type === DiceRollType.SkillCheck)
+			totalRoll += totalBonus;
+	}
+
+	modifyTotalRollForTestingPurposes();
+
+	attemptedRollWasSuccessful = totalRoll >= diceRollData.hiddenThreshold;
+	attemptedRollWasNarrowlySuccessful = attemptedRollWasSuccessful && (totalRoll - diceRollData.hiddenThreshold < 2);
+	//console.log('damageModifierThisRoll: ' + damageModifierThisRoll);
+	totalDamagePlusModifier = totalDamage + damageModifierThisRoll;
+	totalHealthPlusModifier = totalHealth + healthModifierThisRoll;
+	totalExtraPlusModifier = totalExtra + extraModifierThisRoll;
+
+	return new RollResults(totalScores, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage);
+}
+
 function checkAttackBonusRolls() {
 	if (isAttack(diceRollData)) {
 		wasCriticalHit = d20RollValue >= diceRollData.minCrit;
@@ -1237,21 +1390,6 @@ function removeSingleDieWithEffect(die: any, dieEffect: DieEffect, effectInterva
 	}
 }
 
-function removeRemainingDice(): boolean {
-	// TODO: Make sure we can call this robustly at any time.
-	let dieEffectInterval: number = 0;
-	removeDieEffects();
-	let diceInPlayWereRemoved: boolean = false;
-	var effectOverride = getRandomEffect();
-	for (var i = 0; i < dice.length; i++) {
-		if (dice[i].inPlay) {
-			diceInPlayWereRemoved = true;
-			dieEffectInterval = removeDie(dice[i], dieEffectInterval, effectOverride);
-		}
-	}
-	return diceInPlayWereRemoved;
-}
-
 function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffect = undefined) {
 	if (!die.inPlay)
 		return;
@@ -1312,7 +1450,7 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 }
 
 function getRandomEffect() {
-	let random: number = Math.random() * 100;
+	const random: number = Math.random() * 100;
 	if (random < 18)
 		return DieEffect.Bomb;
 	else if (random < 25)
@@ -1327,25 +1465,81 @@ function getRandomEffect() {
 		return DieEffect.Random;
 }
 
+function removeDieEffectsForSingleDie(die: any) {
+	const now: number = performance.now();
+	if (die.attachedSprites)
+		for (let i = 0; i < die.attachedSprites.length; i++) {
+			const sprite: SpriteProxy = die.attachedSprites[i];
+			const fadeOutTime = 1200;
+			sprite.expirationDate = now + fadeOutTime;
+			sprite.fadeOutTime = fadeOutTime;
+		}
+	die.attachedSprites = [];
+
+	if (die.attachedLabels)
+		for (let i = 0; i < die.attachedLabels.length; i++) {
+			const textEffect: TextEffect = die.attachedLabels[i];
+			const fadeOutTime = 1200;
+			textEffect.expirationDate = now + fadeOutTime;
+			textEffect.fadeOutTime = fadeOutTime;
+		}
+	die.attachedLabels = [];
+
+	die.origins = [];
+}
+
+function removeDieEffects() {
+	for (let i = 0; i < dice.length; i++) {
+		const die: any = dice[i];
+		removeDieEffectsForSingleDie(die);
+	}
+}
+
+function removeRemainingDice(): boolean {
+	// TODO: Make sure we can call this robustly at any time.
+	let dieEffectInterval = 0;
+	removeDieEffects();
+	let diceInPlayWereRemoved = false;
+	const effectOverride = getRandomEffect();
+	for (let i = 0; i < dice.length; i++) {
+		if (dice[i].inPlay) {
+			diceInPlayWereRemoved = true;
+			dieEffectInterval = removeDie(dice[i], dieEffectInterval, effectOverride);
+		}
+	}
+	return diceInPlayWereRemoved;
+}
+
+function getRandomRedBlueHueShift() {
+	let hueShift = Math.floor(Math.random() * 360);
+	let tryCount = 0;
+	while (hueShift > 30 && hueShift < 160 && tryCount++ < 20) {
+		hueShift = Math.floor(Math.random() * 360);
+	}
+	return hueShift;
+}
+
 function scaleFallingDice() {
-	if (!scalingDice || scalingDice.length == 0)
+	if (!scalingDice || scalingDice.length === 0)
 		return;
 
-	var hiddenDie = [];
+	const hiddenDie = [];
+	//let numDiceScaling = 0;
 	if (scalingDice && scalingDice.length > 0) {
-		for (var i = 0; i < scalingDice.length; i++) {
+		for (let i = 0; i < scalingDice.length; i++) {
 
-			let dieObject = scalingDice[i].getObject();
-			if (dieObject == null)
+			const dieObject = scalingDice[i].getObject();
+			if (dieObject === null)
 				continue;
-			let portalOpenTime: number = dieObject.removeTime + dieObject.effectStartOffset;
 
-			let now: number = performance.now();
+			const portalOpenTime: number = dieObject.removeTime + dieObject.effectStartOffset;
+
+			const now: number = performance.now();
 			let waitToFallTime: number;
-			if (dieObject.effectKind == DieEffect.SteamPunkTunnel) {
+			if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
 				waitToFallTime = 35 * 30;
 			}
-			else if (dieObject.effectKind == DieEffect.HandGrab) {
+			else if (dieObject.effectKind === DieEffect.HandGrab) {
 				waitToFallTime = 34 * 30;
 			}
 			else { // DieEffect.Portal
@@ -1354,23 +1548,23 @@ function scaleFallingDice() {
 
 			if (now > portalOpenTime && dieObject.needToStartEffect) {
 				dieObject.needToStartEffect = false;
-				let screenPos: Vector = getScreenCoordinates(dieObject);
+				const screenPos: Vector = getScreenCoordinates(dieObject);
 
-				if (dieObject.effectKind == DieEffect.SteamPunkTunnel) {
+				if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
 					if (screenPos)
 						diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
 					diceSounds.playSteampunkTunnel();
 				}
-				else if (dieObject.effectKind == DieEffect.HandGrab) {
-					let saturation: number = 100;
+				else if (dieObject.effectKind === DieEffect.HandGrab) {
+					let saturation = 100;
 					let hueShift: number;
 					if (DiceLayer.matchOozeToDieColor)
-						if (scalingDice[i].rollType != DieCountsAs.totalScore && scalingDice[i].rollType != DieCountsAs.inspiration)
+						if (scalingDice[i].rollType !== DieCountsAs.totalScore && scalingDice[i].rollType != DieCountsAs.inspiration)
 							hueShift = 0;
 						else
 							hueShift = diceLayer.activePlayerHueShift;
 					else {
-						hueShift = getNonGreenHueShift();
+						hueShift = getRandomRedBlueHueShift();
 						if (Math.random() < 0.1)
 							saturation = 0;
 					}
@@ -1381,28 +1575,28 @@ function scaleFallingDice() {
 				}
 				else {  // DieEffect.Portal
 					if (screenPos)
-						diceLayer.addPortal(screenPos.x, screenPos.y, getNonGreenHueShift(), 100, 100);
+						diceLayer.addPortal(screenPos.x, screenPos.y, getRandomRedBlueHueShift(), 100, 100);
 					diceSounds.playOpenDiePortal();
 				}
 			}
 
-			let startFallTime: number = dieObject.removeTime + waitToFallTime + dieObject.effectStartOffset;
+			const startFallTime: number = dieObject.removeTime + waitToFallTime + dieObject.effectStartOffset;
 
 			if (now < startFallTime)
 				continue;
 
 			let totalFrames: number;
-			let fps30: number = 33; // ms
+			const fps30 = 33; // ms
 
 			let totalScaleDistance: number;
 
-			let elapsedTime: number = now - startFallTime;
+			const elapsedTime: number = now - startFallTime;
 
-			if (dieObject.effectKind == DieEffect.SteamPunkTunnel) {
+			if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
 				totalFrames = 45;
 				totalScaleDistance = 0.9;
 			}
-			else if (dieObject.effectKind == DieEffect.HandGrab) {
+			else if (dieObject.effectKind === DieEffect.HandGrab) {
 				totalFrames = 30;
 				totalScaleDistance = 0.99;
 			}
@@ -1411,7 +1605,7 @@ function scaleFallingDice() {
 				totalScaleDistance = 0.99;
 			}
 
-			let totalTimeToScale: number = fps30 * totalFrames;  // ms
+			const totalTimeToScale: number = fps30 * totalFrames;  // ms
 
 			if (elapsedTime > totalTimeToScale) {
 				if (dieObject.hideOnScaleStop) {
@@ -1427,16 +1621,18 @@ function scaleFallingDice() {
 				dieObject.needToDrop = false;
 			}
 
-			let percentTraveled: number = elapsedTime / totalTimeToScale;
+			const percentTraveled: number = elapsedTime / totalTimeToScale;
 
-			let distanceTraveled: number = percentTraveled * totalScaleDistance;
+			const distanceTraveled: number = percentTraveled * totalScaleDistance;
 
-			let newScale: number = 1 - distanceTraveled;
+			const newScale: number = 1 - distanceTraveled;
 
 			if (newScale <= hiddenDieScale) {
 				hideDie(dieObject);
+				hiddenDie.push(scalingDice[i]);
 			}
 			else {
+				//numDiceScaling++;
 				dieObject.scale.set(newScale, newScale, newScale);
 			}
 			//if (newScale < 0.35) {
@@ -1451,15 +1647,6 @@ function scaleFallingDice() {
 	removeDiceFromArray(hiddenDie, scalingDice);
 	removeDiceFromArray(hiddenDie, dice);
 	clearTheseDice(hiddenDie);
-}
-
-function getNonGreenHueShift() {
-	let hueShift = Math.floor(Math.random() * 360);
-	var tryCount: number = 0;
-	while (hueShift > 30 && hueShift < 160 && tryCount++ < 20) {
-		hueShift = Math.floor(Math.random() * 360);
-	}
-	return hueShift;
 }
 
 function hideDieIn(dieObject: any, ms: number) {
@@ -1485,36 +1672,6 @@ function clearAllDiceIfHidden() {
 			return;
 	}
 	clearAllDice();
-}
-
-function removeDieEffects() {
-	for (var i = 0; i < dice.length; i++) {
-		let die: any = dice[i];
-		removeDieEffectsForSingleDie(die);
-	}
-}
-
-function removeDieEffectsForSingleDie(die: any) {
-	var now: number = performance.now();
-	if (die.attachedSprites)
-		for (var i = 0; i < die.attachedSprites.length; i++) {
-			let sprite: SpriteProxy = die.attachedSprites[i];
-			const fadeOutTime = 1200;
-			sprite.expirationDate = now + fadeOutTime;
-			sprite.fadeOutTime = fadeOutTime;
-		}
-	die.attachedSprites = [];
-
-	if (die.attachedLabels)
-		for (var i = 0; i < die.attachedLabels.length; i++) {
-			let textEffect: TextEffect = die.attachedLabels[i];
-			const fadeOutTime = 1200;
-			textEffect.expirationDate = now + fadeOutTime;
-			textEffect.fadeOutTime = fadeOutTime;
-		}
-	die.attachedLabels = [];
-
-	die.origins = [];
 }
 
 function rgbToHSL(rgb) {
@@ -1594,7 +1751,7 @@ function highlightSpecialDice() {
 
 				dieObject.needToStartEffect = false;
 
-				dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
+				//dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
 
 				// die.dieValue is also available.
 				let screenPos: Vector = getScreenCoordinates(dieObject);
@@ -1707,9 +1864,508 @@ function removeSingleDieFromArray(dieToRemove: any, listToChange: any) {
 }
 
 function removeDiceFromArray(dieToRemove: any, listToChange: any) {
-	for (var i = 0; i < dieToRemove; i++) {
+	for (let i = 0; i < dieToRemove; i++) {
 		removeSingleDieFromArray(dieToRemove[i], listToChange);
 	}
+}
+
+function showSpecialLabels(onlyBonusDice: boolean = false) {
+	/*
+			1 / Acid
+			2 / Cold
+			3 / Fire
+			4 / Force
+			5 / Lightning
+			6 / Poison
+			7 / Psychic
+			8 / Thunder 
+	*/
+
+	let changedMessage: boolean = false;
+
+	if (diceRollData.type == DiceRollType.ChaosBolt) {
+		for (var i = 0; i < dice.length; i++) {
+			let die = dice[i];
+			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true && die.values == 8) {
+				let topNumber = die.getTopNumber();
+				var message: string = '';
+				switch (topNumber) {
+					case 1:
+						message = 'Acid';
+						diceLayer.attachDamageAcid(die);
+						break;
+					case 2:
+						message = 'Cold';
+						diceLayer.attachDamageCold(die);
+						break;
+					case 3:
+						message = 'Fire';
+						diceLayer.attachDamageFire(die);
+						break;
+					case 4:
+						message = 'Force';
+						diceLayer.attachDamageForce(die);
+						break;
+					case 5:
+						message = 'Lightning';
+						diceLayer.attachDamageLightning(die);
+						break;
+					case 6:
+						message = 'Poison';
+						diceLayer.attachDamagePoison(die);
+						break;
+					case 7:
+						message = 'Psychic';
+						diceLayer.attachDamagePsychic(die);
+						break;
+					case 8:
+						message = 'Thunder';
+						diceLayer.attachDamageThunder(die);
+						break;
+				}
+				if (message) {
+					if (additionalDieRollMessage)
+						additionalDieRollMessage += ', ';
+					else
+						additionalDieRollMessage = '(';
+					changedMessage = true;
+					additionalDieRollMessage += message;
+					diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
+				}
+			}
+		}
+		if (additionalDieRollMessage && changedMessage)
+			additionalDieRollMessage += ')';
+	}
+}
+
+function isAttack(diceRollData: DiceRollData): boolean {
+	return diceRollData.type === DiceRollType.Attack || diceRollData.type === DiceRollType.ChaosBolt;
+}
+
+let needToClearD20s = true;
+
+function getMostRecentDiceRollData() {
+	if (diceRollData.secondRollData)
+		return diceRollData.secondRollData;
+	else
+		return diceRollData;
+}
+
+function removeMultiplayerD20s(): any {
+	//console.log('removeMultiplayerD20s...');
+	needToClearD20s = false;
+	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
+	const isWildMagic: boolean = localDiceRollData.type === DiceRollType.WildMagic;
+	if (isWildMagic || !localDiceRollData.itsAD20Roll)
+		return;
+	const vantageTextDelay = 900;
+	//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
+
+	const playerEdgeRolls: Array<number> = [];
+	const otherPlayersDie: Array<any> = [];
+	for (let j = 0; j < 20; j++) {
+		playerEdgeRolls.push(-1);
+		otherPlayersDie.push(null);
+	}
+
+	for (let i = 0; i < dice.length; i++) {
+		const die = dice[i];
+		const playerId: number = die.playerID;
+		const topNumber = die.getTopNumber();
+
+		if (die.isD20) {
+			if (playerEdgeRolls[playerId] === -1)
+				playerEdgeRolls[playerId] = topNumber;
+			else if (die.kind === VantageKind.Advantage) {
+				if (playerEdgeRolls[playerId] <= topNumber) {
+					removeNonVantageDieNow(otherPlayersDie[playerId]);
+					diceLayer.addAdvantageText(otherPlayersDie[playerId], vantageTextDelay);
+					playerEdgeRolls[playerId] = topNumber;
+				}
+				else {  // Disadvantage
+					removeNonVantageDieNow(die);
+					diceLayer.addAdvantageText(die, vantageTextDelay);
+				}
+			}
+			else if (die.kind === VantageKind.Disadvantage) {
+				if (playerEdgeRolls[playerId] >= topNumber) {
+					removeNonVantageDieNow(otherPlayersDie[playerId]);
+					diceLayer.addDisadvantageText(otherPlayersDie[playerId], vantageTextDelay);
+					playerEdgeRolls[playerId] = topNumber;
+				}
+				else {
+					removeNonVantageDieNow(die);
+					diceLayer.addDisadvantageText(die, vantageTextDelay);
+				}
+			}
+			otherPlayersDie[playerId] = die;
+		}
+	}
+}
+
+function showSuccessFailMessages(title: string, rawD20RollValue: number) {
+	if (title)
+		title += ' ';
+	if (!diceRollData.hasMultiPlayerDice && diceRollData.type !== DiceRollType.WildMagic &&
+		diceRollData.type !== DiceRollType.PercentageRoll &&
+		diceRollData.type !== DiceRollType.DamageOnly &&
+		diceRollData.type !== DiceRollType.HealthOnly &&
+		diceRollData.type !== DiceRollType.ExtraOnly) {
+		if (attemptedRollWasSuccessful)
+			if (rawD20RollValue >= diceRollData.minCrit) {
+				diceLayer.showResult(title + diceRollData.critSuccessMessage, attemptedRollWasSuccessful);
+			}
+			else {
+				diceLayer.showResult(title + diceRollData.successMessage, attemptedRollWasSuccessful);
+			}
+		else if (rawD20RollValue === 1)
+			diceLayer.showResult(title + diceRollData.critFailMessage, attemptedRollWasSuccessful);
+		else
+			diceLayer.showResult(title + diceRollData.failMessage, attemptedRollWasSuccessful);
+	}
+}
+
+function reportRollResults(rollResults: RollResults) {
+	const d20RollValue: number[] = rollResults.d20RollValue;
+	const singlePlayerId: number = rollResults.singlePlayerId;
+	const luckValue: number[] = rollResults.luckValue;
+	const playerIdForTextMessages: number = rollResults.playerIdForTextMessages;
+	const skillSavingModifier: number = rollResults.skillSavingModifier;
+	const totalDamage: number = rollResults.totalDamage;
+	const totalHealth: number = rollResults.totalHealth;
+	const totalExtra: number = rollResults.totalExtra;
+	let maxDamage: number = rollResults.maxDamage;
+
+	let title = '';
+	if (diceRollData.type === DiceRollType.Initiative)
+		title = 'Initiative:';
+	else if (diceRollData.type === DiceRollType.NonCombatInitiative)
+		title = 'Non-combat Initiative:';
+	else if (diceRollData.type === DiceRollType.SkillCheck)
+		title = `${getSkillCheckName()} Check:`;
+	else if (diceRollData.type === DiceRollType.SavingThrow)
+		title = `${getSavingThrowName()} Saving Throw:`;
+
+	if (diceRollData.multiplayerSummary) {
+		diceRollData.multiplayerSummary.sort((a, b) => (b.roll + b.modifier) - (a.roll + a.modifier));
+		diceLayer.showMultiplayerResults(title, diceRollData.multiplayerSummary, diceRollData.hiddenThreshold);
+	}
+
+	if (!diceRollData.hasMultiPlayerDice && d20RollValue[singlePlayerId] > 0) {
+		if (diceRollData.modifier != 0)
+			diceLayer.showRollModifier(diceRollData.modifier, luckValue[singlePlayerId], playerIdForTextMessages);
+		if (skillSavingModifier != 0)
+			diceLayer.showRollModifier(skillSavingModifier, luckValue[singlePlayerId], playerIdForTextMessages);
+		diceLayer.showDieTotal(`${totalRoll}`, playerIdForTextMessages);
+	}
+
+	if (totalBonus > 0 && !diceRollData.hasMultiPlayerDice && diceRollData.type != DiceRollType.SkillCheck) {
+		let bonusRollStr = 'Bonus Roll: ';
+		const bonusRollOverrideStr: string = diceRollData.getFirstBonusRollDescription();
+		if (bonusRollOverrideStr)
+			bonusRollStr = bonusRollOverrideStr;
+		switch (diceRollData.wildMagic) {
+			case WildMagic.heightChange:
+			case WildMagic.ageChange:
+				if (isOdd(totalBonus))
+					totalBonus = -totalBonus;
+				break;
+		}
+		diceLayer.showBonusRoll(`${bonusRollStr}${totalBonus}`, DiceLayer.bonusRollFontColor, DiceLayer.bonusRollDieColor);
+	}
+
+	if (totalDamage > 0) {
+		diceLayer.showTotalHealthDamage(totalDamagePlusModifier.toString(), attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+		diceLayer.showDamageHealthModifier(damageModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+	}
+	if (totalHealth > 0) {
+		diceLayer.showTotalHealthDamage('+' + totalHealthPlusModifier.toString(), attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+		diceLayer.showDamageHealthModifier(healthModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+	}
+	if (totalExtra > 0) {
+		diceLayer.showTotalHealthDamage(totalExtraPlusModifier.toString(), attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
+		diceLayer.showDamageHealthModifier(extraModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
+	}
+	showSuccessFailMessages(title, d20RollValue[singlePlayerId]);
+	maxDamage += damageModifierThisRoll;
+	if (diceRollData.secondRollData)
+		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
+	else
+		playAnnouncerCommentary(diceRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
+	return maxDamage;
+}
+
+function onDiceRollStopped() {
+	calculateFinalMessage();
+	onBonusThrow = false;
+	setupBonusRoll = false;
+	needToClearD20s = true;
+	allDiceHaveStoppedRolling = true;
+	//console.log('Dice have stopped rolling!');
+	//diceHaveStoppedRolling(null);
+
+	if (diceRollData.onStopRollingSound)
+		diceSounds.safePlayMp3(diceRollData.onStopRollingSound);
+
+	if (attemptedRollWasSuccessful) {
+		onSuccess();
+	}
+	else {
+		onFailure();
+	}
+
+	let playerId: number = diceLayer.playerID;
+	if (diceRollData.playerRollOptions.length == 1)
+		playerId = diceRollData.playerRollOptions[0].PlayerID;
+
+	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
+	lastRollDiceData = {
+		'wasCriticalHit': wasCriticalHit,
+		'playerID': playerId,
+		'success': attemptedRollWasSuccessful,
+		'roll': totalRoll,
+		'hiddenThreshold': diceRollData.hiddenThreshold,
+		'spellName': diceRollData.spellName,
+		'damage': totalDamagePlusModifier,
+		'health': totalHealthPlusModifier,
+		'extra': totalExtraPlusModifier,
+		'multiplayerSummary': diceRollData.multiplayerSummary,
+		'individualRolls': diceRollData.individualRolls,
+		'type': diceRollData.type,
+		'skillCheck': diceRollData.skillCheck,
+		'savingThrow': diceRollData.savingThrow,
+		'bonus': totalBonus,
+		'additionalDieRollMessage': additionalDieRollMessage,
+	};
+
+	diceHaveStoppedRolling(JSON.stringify(lastRollDiceData));
+
+	if (removeDiceImmediately)
+		removeRemainingDice();
+}
+
+function removeD20s(): number {
+	//console.log('removeD20s...');
+	needToClearD20s = false;
+	let edgeRollValue = -1;
+	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
+	const isLuckRollHigh: boolean = localDiceRollData.type == DiceRollType.LuckRollHigh;
+	const isLuckRollLow: boolean = localDiceRollData.type == DiceRollType.LuckRollLow;
+	const isLuckRoll: boolean = isLuckRollHigh || isLuckRollLow;
+	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
+
+	if (localDiceRollData.type === DiceRollType.WildMagicD20Check) {
+		removeWildMagicRollsGreaterThanOne();
+		return;
+	}
+
+	if (isWildMagic || !localDiceRollData.itsAD20Roll)
+		return edgeRollValue;
+	let otherDie: any = null;
+	const vantageTextDelay = 900;
+	//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
+
+	if (!diceRollData.appliedVantage) {
+		for (let i = 0; i < dice.length; i++) {
+			const die = dice[i];
+			if (die.isLucky)
+				continue;
+
+			// TODO: Check behavior of Sorcerer's luck and bent luck rolls and see if we need to change those.
+			//const isNormal: boolean = die.kind == DiceRollKind.Normal;
+			//if (isNormal && !isLuckRoll)
+			//	continue;
+
+			const topNumber = die.getTopNumber();
+
+			if (die.isD20) {
+				if (edgeRollValue == -1)
+					edgeRollValue = topNumber;
+				else if (die.kind == VantageKind.Advantage) {
+					if (edgeRollValue <= topNumber) {
+						removeNonVantageDieNow(otherDie);
+						diceLayer.addAdvantageText(otherDie, vantageTextDelay);
+						edgeRollValue = topNumber;
+					}
+					else {  // Disadvantage
+						removeNonVantageDieNow(die);
+						diceLayer.addAdvantageText(die, vantageTextDelay);
+					}
+				}
+				else if (die.kind == VantageKind.Disadvantage) {
+					if (edgeRollValue >= topNumber) {
+						removeNonVantageDieNow(otherDie);
+						//if (!localDiceRollData.showedVantageMessage) {
+						//	localDiceRollData.showedVantageMessage = true;
+						diceLayer.addDisadvantageText(otherDie, vantageTextDelay);
+						//}
+						edgeRollValue = topNumber;
+					}
+					else {
+						removeNonVantageDieNow(die);
+						//if (!localDiceRollData.showedVantageMessage) {
+						//	localDiceRollData.showedVantageMessage = true;
+						diceLayer.addDisadvantageText(die, vantageTextDelay);
+						//}
+					}
+				}
+				otherDie = die;
+			}
+		}
+	}
+
+	if (isLuckRoll) {
+		edgeRollValue = -1;
+		otherDie = null;
+		for (let i = 0; i < dice.length; i++) {
+			const die = dice[i];
+			if (!die.inPlay)
+				continue;
+			const topNumber = die.getTopNumber();
+
+			if (die.isD20) {
+				if (edgeRollValue == -1)
+					edgeRollValue = topNumber;
+				else if (isLuckRollHigh) {
+					if (edgeRollValue <= topNumber) {
+						removeNonVantageDieNow(otherDie);
+						//if (!localDiceRollData.showedVantageMessage) {
+						//	localDiceRollData.showedVantageMessage = true;
+						if (!otherDie.isLucky)
+							diceLayer.addAdvantageText(otherDie, vantageTextDelay, true);
+						//}
+						edgeRollValue = topNumber;
+					}
+					else {
+						removeNonVantageDieNow(die);
+						//if (!localDiceRollData.showedVantageMessage) {
+						//	localDiceRollData.showedVantageMessage = true;
+						if (!die.isLucky)
+							diceLayer.addAdvantageText(die, vantageTextDelay, true);
+						//}
+					}
+				}
+				else if (isLuckRollLow) {
+					if (edgeRollValue >= topNumber) {
+						removeNonVantageDieNow(otherDie);
+						//if (!localDiceRollData.showedVantageMessage) {
+						//	localDiceRollData.showedVantageMessage = true;
+						if (!otherDie.isLucky)
+							diceLayer.addDisadvantageText(otherDie, vantageTextDelay, true);
+						//}
+						edgeRollValue = topNumber;
+					}
+					else {
+						removeNonVantageDieNow(die);
+						//if (!localDiceRollData.showedVantageMessage) {
+						//	localDiceRollData.showedVantageMessage = true;
+						if (!die.isLucky)
+							diceLayer.addDisadvantageText(die, vantageTextDelay, true);
+						//}
+					}
+				}
+				otherDie = die;
+			}
+		}
+	}
+	return edgeRollValue;
+}
+
+function diceDefinitelyStoppedRolling() {
+	if (needToClearD20s) {
+		if (diceRollData.hasMultiPlayerDice) {
+			removeMultiplayerD20s();
+		}
+		else {
+			d20RollValue = removeD20s();
+		}
+		showSpecialLabels();
+	}
+	if (needToRollBonusDice()) {
+		if (!setupBonusRoll) {
+			setupBonusRoll = true;
+			//if (diceRollData.type == DiceRollType.WildMagic)
+			//	showRollTotal();
+			if (!diceRollData.startedBonusDiceRoll) {
+				freezeExistingDice();
+				diceRollData.startedBonusDiceRoll = true;
+				if (isAttack(diceRollData) && d20RollValue >= diceRollData.minCrit) {
+					diceLayer.indicateBonusRoll('Damage Bonus!');
+					wasCriticalHit = true;
+				}
+				else
+					diceLayer.indicateBonusRoll('Bonus Roll!');
+				setTimeout(rollBonusDice, 2500);
+			}
+		}
+	}
+	else {
+		showSpecialLabels(true);
+		popFrozenDice();
+		reportRollResults(getRollResults());
+		if (diceRollData.playBonusSoundAfter)
+			setTimeout(playFinalRollSoundEffects, diceRollData.playBonusSoundAfter);
+		onDiceRollStopped();
+	}
+}
+
+function diceJustStoppedRolling(now: number) {
+	const thisTime: number = now;
+	if ((thisTime - firstStopTime) / 1000 > 1.5) {
+		diceDefinitelyStoppedRolling();
+	}
+}
+
+function checkStillRolling() {
+	if (allDiceHaveStoppedRolling)
+		return;
+
+	if (anyDiceStillRolling()) {
+		waitingForSettle = true;
+		return;
+	}
+
+	if (setupBonusRoll && !waitingForBonusRollToComplete) {
+		waitingForSettle = true;
+		return;
+	}
+
+	const now: number = performance.now();
+
+	if (waitingForBonusRollToComplete && bonusRollStartTime != 0) {
+		if (now - bonusRollStartTime < 1000) {
+			return;
+		}
+		waitingForBonusRollToComplete = false;
+		setupBonusRoll = false;
+	}
+
+	if (waitingForSettle) {
+		waitingForSettle = false;
+		firstStopTime = now;
+	}
+	else {
+		diceJustStoppedRolling(now);
+	}
+}
+
+let animationsShouldBeDone: boolean;
+
+function diceRemainingInPlay(): number {
+	let count = 0;
+	for (let i in dice) {
+		if (dice[i].inPlay) {
+			count++;
+		}
+	}
+	return count;
+}
+
+let lastRollDiceData: any;
+
+function allDiceShouldBeDestroyedByNow() {
+	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
 }
 
 function updatePhysics() {
@@ -1726,16 +2382,20 @@ function updatePhysics() {
 
 	world.step(1.0 / 60.0);
 
-	for (var i in dice) {
+	for (let i in dice) {
 		dice[i].updateMeshFromBody();
 	}
 	checkStillRolling();
 	scaleFallingDice();
 	highlightSpecialDice();
 
-	if (!animationsShouldBeDone && diceRemainingInPlay() == 0 && allDiceHaveStoppedRolling &&
-		(scalingDice == null || scalingDice.length == 0) &&
-		(specialDice == null || specialDice.length == 0)) {
+	const numDiceStillInPlay: number = diceRemainingInPlay();
+	const stillScaling: boolean = scalingDice !== null && scalingDice.length > 0;
+	const stillHaveSpecialDice: boolean = specialDice !== null && specialDice.length > 0;
+	//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
+	
+	if (!animationsShouldBeDone && numDiceStillInPlay === 0 && allDiceHaveStoppedRolling &&
+		!stillScaling && !stillHaveSpecialDice) {
 		animationsShouldBeDone = true;
 		//console.log('animationsShouldBeDone = true;');
 		diceRollData = null;
@@ -1744,33 +2404,8 @@ function updatePhysics() {
 	}
 }
 
-function allDiceShouldBeDestroyedByNow() {
-	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
-}
-
-function diceRemainingInPlay(): number {
-	var count: number = 0;
-	for (var i in dice) {
-		if (dice[i].inPlay) {
-			count++;
-		}
-	}
-	return count;
-}
-
-
-
-var animationsShouldBeDone: boolean;
-
-function prepareDie(die: any, throwPower: number, xPositionModifier: number = 0) {
-	prepareBaseDie(die, throwPower, xPositionModifier);
-
-	var newValue: number = Math.floor(Math.random() * die.values + 1);
-	diceValues.push({ dice: die, value: newValue });
-}
-
-function prepareBaseDie(die: any, throwPower: number, xPositionModifier: number = 0) {
-	let dieObject = die.getObject();
+function prepareBaseDie(die: any, throwPower: number, xPositionModifier = 0) {
+	const dieObject = die.getObject();
 	scene.add(dieObject);
 	die.inPlay = true;
 	die.attachedSprites = [];
@@ -1780,31 +2415,38 @@ function prepareBaseDie(die: any, throwPower: number, xPositionModifier: number 
 
 	die.hasNotHitFloorYet = true;
 
-	let index: number = dice.length;
-	let yVelocityModifier: number = Math.random() * 10 * throwPower;
+	const index: number = dice.length;
+	const yVelocityModifier: number = Math.random() * 10 * throwPower;
 	dieObject.position.x = xPositionModifier + -15 - (index % 3) * dieScale;
 	dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
 	dieObject.position.z = -13 + (index % 3) * dieScale;
 	dieObject.quaternion.x = (Math.random() * 90 - 45) * Math.PI / 180;
 	dieObject.quaternion.z = (Math.random() * 90 - 45) * Math.PI / 180;
-	let xVelocityMultiplier: number = 1;
-	if (xPositionModifier != 0)
+	let xVelocityMultiplier = 1;
+	if (xPositionModifier !== 0)
 		xVelocityMultiplier = -1;
 	die.updateBodyFromMesh();
-	let xVelocityModifier: number = Math.random() * 20 * throwPower;
-	let zVelocityModifier: number = Math.random() * 20 * throwPower;
+	const xVelocityModifier: number = Math.random() * 20 * throwPower;
+	const zVelocityModifier: number = Math.random() * 20 * throwPower;
 	dieObject.body.velocity.set(xVelocityMultiplier * (35 + xVelocityModifier), 10 + yVelocityModifier, 25 + zVelocityModifier);
-	let angularModifierLimit: number = 20 * throwPower;
-	let angularModifierHalfLimit: number = angularModifierLimit / 2;
-	let xAngularRotationModifier: number = Math.random() * angularModifierLimit;
-	let yAngularRotationModifier: number = Math.random() * angularModifierLimit;
-	let zAngularRotationModifier: number = Math.random() * angularModifierLimit;
+	const angularModifierLimit: number = 20 * throwPower;
+	const angularModifierHalfLimit: number = angularModifierLimit / 2;
+	const xAngularRotationModifier: number = Math.random() * angularModifierLimit;
+	const yAngularRotationModifier: number = Math.random() * angularModifierLimit;
+	const zAngularRotationModifier: number = Math.random() * angularModifierLimit;
 	dieObject.body.angularVelocity.set(xAngularRotationModifier - angularModifierHalfLimit, yAngularRotationModifier - angularModifierHalfLimit, zAngularRotationModifier - angularModifierHalfLimit);
 	dieObject.body.name = 'die';
 	dieObject.body.addEventListener("collide", handleDieCollision);
 	die.lastPos = [];
 	die.lastPos.push(new Vector(-100, -100));
 	die.lastPrintOnLeft = false;
+}
+
+function prepareDie(die: any, throwPower: number, xPositionModifier = 0) {
+	prepareBaseDie(die, throwPower, xPositionModifier);
+
+	var newValue: number = Math.floor(Math.random() * die.values + 1);
+	diceValues.push({ dice: die, value: newValue });
 }
 
 function prepareD10x10Die(die: any, throwPower: number, xPositionModifier: number = 0) {
@@ -1877,59 +2519,62 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 	let countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length != 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
-	let count: number = 1;
+	let quantity: number = 1;
 	if (countPlusDie[0])
-		count = +countPlusDie[0];
-	let dieKind: string = countPlusDie[1];
+		quantity = +countPlusDie[0];
+	let numSides: number = +countPlusDie[1];
+	return createDie(quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
+}
+
+function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1, dieType: string = ''): any {
 	let lastDieAdded: any = null;
 	let magicRingHueShift: number = Math.floor(Math.random() * 360);
-	for (var i = 0; i < count; i++) {
+	for (var i = 0; i < quantity; i++) {
 		// @ts-ignore - DiceD4
 		let die: DiceObject = null;
-		switch (dieKind) {
-			case '4':
+		switch (numSides) {
+			case 4:
 				// @ts-ignore - DiceD4
 				die = new DiceD4({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '6':
+			case 6:
 				// @ts-ignore - DiceD6
 				die = new DiceD6({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '8':
+			case 8:
 				// @ts-ignore - DiceD8
 				die = new DiceD8({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '10':
+			case 10:
 				// @ts-ignore - DiceD10
 				die = new DiceD10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '1001':
+			case 1001:
 				// @ts-ignore - DiceD10x01
 				die = new DiceD10x01({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '1010':
+			case 1010:
 				// @ts-ignore - DiceD10x01
 				die = new DiceD10x10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '12':
+			case 12:
 				// @ts-ignore - DiceD12
 				die = new DiceD12({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
 				break;
-			case '20':
+			case 20:
 				// @ts-ignore - DiceD20
 				die = new DiceD20({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+				die.isD20 = true;
 				break;
 		}
 		lastDieAdded = die;
 		if (die === null) {
-			throw new Error(`Die not found: "${dieStr}". Unable to throw dice.`);
+			throw new Error(`Die with ${numSides} sides was not found. Unable to throw dice.`);
 		}
 		die.dieType = dieType;
 		die.playerID = playerID;
 		prepareDie(die, throwPower, xPositionModifier);
-
 		attachLabel(die, textColor, backgroundColor);
-
 		if (die) {
 			die.damageType = damageType;
 			if (rollType === DieCountsAs.damage || rollType === DieCountsAs.bonus) {
@@ -1999,19 +2644,15 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 				diceLayer.attachHealth(die);
 			}
 		}
-
 		die.rollType = rollType;
-
 		if (die.rollType === DieCountsAs.inspiration) {
 			let rotation: number = Random.between(4, 8);
 			let hueShift: number = Random.between(20, 30);
 			addInspirationParticles(die, playerID, hueShift, rotation);
 			addInspirationParticles(die, playerID, -hueShift, -rotation);
-
 			die.attachedSprites.push(diceLayer.addInspirationSmoke(960, 540, Math.floor(Math.random() * 360)));
 			die.origins.push(diceLayer.inspirationSmoke.getOrigin());
 		}
-
 		if (isMagic) {
 			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 			die.origins.push(diceLayer.magicRingRed.getOrigin());
@@ -2268,26 +2909,22 @@ function addTrailingEffects(die: any, trailingEffects: Array<TrailingEffect>) {
 	}
 }
 
-var rollingOnlyAddOnDice: boolean;
+let rollingOnlyAddOnDice: boolean;
+let secondRollTryCount = 0;
 
-function needToRollAddOnDice(diceRollDto: DiceRollData, bentLuckMultiplier: number = 0) {
-	if (diceRollData && diceRollData.secondRollData)
-		return;
-
-	if (diceRollData == null) {
-		diceRollData = diceRollDto;
-		rollingOnlyAddOnDice = true;
-	}
-
-	diceRollData.bentLuckMultiplier = bentLuckMultiplier;
-	diceRollData.secondRollData = diceRollDto;
-	diceRollData.secondRollData.vantageKind == diceRollData.vantageKind;
-
-	secondRollTryCount = 0;
-	throwAdditionalDice();
+function isLuckBent(localDiceRollData: DiceRollData) {
+	return localDiceRollData.type === DiceRollType.BendLuckAdd || localDiceRollData.type === DiceRollType.BendLuckSubtract;
 }
 
-var secondRollTryCount: number = 0;
+function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID: number = -1) {
+	// @ts-ignore - DiceD20
+	const die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
+	die.isD20 = true;
+	prepareDie(die, diceRollData.throwPower, xPositionModifier);
+	die.rollType = DieCountsAs.totalScore;
+	die.playerID = playerID;
+	return die;
+}
 
 function rollAddOnDice() {
 	if (!diceRollData)
@@ -2295,20 +2932,18 @@ function rollAddOnDice() {
 
 	allDiceHaveStoppedRolling = false;
 
-	let xPositionModifier: number = 0;
+	let xPositionModifier = 0;
 
 	if (Math.random() * 100 < 50)
 		xPositionModifier = 26;  // Throw from the right to the left.
 
-	let localDiceRollData: DiceRollData;
-
-	localDiceRollData = getMostRecentDiceRollData(localDiceRollData);
+	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
 
 	let die: any;
-	let throwPower: number = diceRollData.throwPower * 1.2;
+	const throwPower: number = diceRollData.throwPower * 1.2;
 
-	var dieBack: string;
-	var dieFont: string;
+	let dieBack: string;
+	let dieFont: string;
 
 	if (diceRollData.bentLuckMultiplier < 0) {
 		// Bad luck
@@ -2362,7 +2997,7 @@ function throwAdditionalDice() {
 	freezeExistingDice();
 	diceLayer.clearTextEffects();
 
-	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
+	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
 
 	if (isLuckBent(localDiceRollData))
 		diceLayer.reportAddOnRoll(diceRollData.secondRollTitle, diceRollData.bentLuckMultiplier);
@@ -2382,17 +3017,21 @@ function throwAdditionalDice() {
 		setTimeout(rollAddOnDice, 2500);
 }
 
+function needToRollAddOnDice(diceRollDto: DiceRollData, bentLuckMultiplier: number = 0) {
+	if (diceRollData && diceRollData.secondRollData)
+		return;
 
-function getMostRecentDiceRollData(localDiceRollData: DiceRollData) {
-	if (diceRollData.secondRollData)
-		localDiceRollData = diceRollData.secondRollData;
-	else
-		localDiceRollData = diceRollData;
-	return localDiceRollData;
-}
+	if (diceRollData === null) {
+		diceRollData = diceRollDto;
+		rollingOnlyAddOnDice = true;
+	}
 
-function isLuckBent(localDiceRollData: DiceRollData) {
-	return localDiceRollData.type == DiceRollType.BendLuckAdd || localDiceRollData.type == DiceRollType.BendLuckSubtract;
+	diceRollData.bentLuckMultiplier = bentLuckMultiplier;
+	diceRollData.secondRollData = diceRollDto;
+	diceRollData.secondRollData.vantageKind = diceRollData.vantageKind;
+
+	secondRollTryCount = 0;
+	throwAdditionalDice();
 }
 
 class MockDie {
@@ -2457,16 +3096,6 @@ function testD20Removal(roll1: number, roll2: number, roll3: number, vantage: Va
 	return returnDie;
 }
 
-function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID: number = -1) {
-	// @ts-ignore - DiceD20
-	var die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
-	die.isD20 = true;
-	prepareDie(die, diceRollData.throwPower, xPositionModifier);
-	die.rollType = DieCountsAs.totalScore;
-	die.playerID = playerID;
-	return die;
-}
-
 function addBadLuckEffects(die: any) {
 	die.attachedSprites.push(diceLayer.addBadLuckRing(960, 540));
 	die.origins.push(new Vector(diceLayer.badLuckRing.originX, diceLayer.badLuckRing.originY));
@@ -2477,72 +3106,20 @@ function addGoodLuckEffects(die: any) {
 	die.origins.push(new Vector(diceLayer.cloverRing.originX, diceLayer.cloverRing.originY));
 }
 
-function removeMultiplayerD20s(): any {
-	//console.log('removeMultiplayerD20s...');
-	needToClearD20s = false;
-	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
-	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
-	if (isWildMagic || !localDiceRollData.itsAD20Roll)
-		return;
-	const vantageTextDelay = 900;
-	//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
-
-	let playerEdgeRolls: Array<number> = [];
-	let otherPlayersDie: Array<any> = [];
-	for (var j = 0; j < 20; j++) {
-		playerEdgeRolls.push(-1);
-		otherPlayersDie.push(null);
-	}
-
-	for (var i = 0; i < dice.length; i++) {
-		let die = dice[i];
-		let playerId: number = die.playerID;
-		let topNumber = die.getTopNumber();
-
-		if (die.isD20) {
-			if (playerEdgeRolls[playerId] == -1)
-				playerEdgeRolls[playerId] = topNumber;
-			else if (die.kind == VantageKind.Advantage) {
-				if (playerEdgeRolls[playerId] <= topNumber) {
-					removeNonVantageDieNow(otherPlayersDie[playerId]);
-					diceLayer.addAdvantageText(otherPlayersDie[playerId], vantageTextDelay);
-					playerEdgeRolls[playerId] = topNumber;
-				}
-				else {  // Disadvantage
-					removeNonVantageDieNow(die);
-					diceLayer.addAdvantageText(die, vantageTextDelay);
-				}
-			}
-			else if (die.kind == VantageKind.Disadvantage) {
-				if (playerEdgeRolls[playerId] >= topNumber) {
-					removeNonVantageDieNow(otherPlayersDie[playerId]);
-					diceLayer.addDisadvantageText(otherPlayersDie[playerId], vantageTextDelay);
-					playerEdgeRolls[playerId] = topNumber;
-				}
-				else {
-					removeNonVantageDieNow(die);
-					diceLayer.addDisadvantageText(die, vantageTextDelay);
-				}
-			}
-			otherPlayersDie[playerId] = die;
-		}
-	}
-}
-
 function d20RollIncludes(topNumber: number): boolean {
-	for (var i = 0; i < dice.length; i++) {
-		let die = dice[i];
+	for (let i = 0; i < dice.length; i++) {
+		const die = dice[i];
 
-		if (die.isD20 && topNumber == die.getTopNumber())
+		if (die.isD20 && topNumber === die.getTopNumber())
 			return true;
 	}
 	return false;
 }
 
 function flameOn(die: any) {
-	let dieObject = die.getObject();
+	const dieObject = die.getObject();
 
-	let screenPos: Vector = getScreenCoordinates(dieObject);
+	const screenPos: Vector = getScreenCoordinates(dieObject);
 	if (!screenPos)
 		return;
 
@@ -2553,15 +3130,15 @@ function flameOn(die: any) {
 
 function removeWildMagicRollsGreaterThanOne(): void {
 	//let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
-	let interval: number = 200;
-	const timeBetweenDieRemoval: number = 300;
-	const intervalVariance: number = 100;
-	for (var i = 0; i < dice.length; i++) {
-		let die = dice[i];
+	let interval = 200;
+	const timeBetweenDieRemoval = 300;
+	const intervalVariance = 100;
+	for (let i = 0; i < dice.length; i++) {
+		const die = dice[i];
 
-		let topNumber = die.getTopNumber();
+		const topNumber = die.getTopNumber();
 
-		if (topNumber == 1) {
+		if (topNumber === 1) {
 			flameOn(die);
 		}
 		else {
@@ -2571,135 +3148,6 @@ function removeWildMagicRollsGreaterThanOne(): void {
 		}
 	}
 }
-
-function removeD20s(): number {
-	//console.log('removeD20s...');
-	needToClearD20s = false;
-	let edgeRollValue: number = -1;
-	let localDiceRollData: DiceRollData = getMostRecentDiceRollData(diceRollData);
-	const isLuckRollHigh: boolean = localDiceRollData.type == DiceRollType.LuckRollHigh;
-	const isLuckRollLow: boolean = localDiceRollData.type == DiceRollType.LuckRollLow;
-	const isLuckRoll: boolean = isLuckRollHigh || isLuckRollLow;
-	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
-
-	if (localDiceRollData.type == DiceRollType.WildMagicD20Check) {
-		removeWildMagicRollsGreaterThanOne();
-		return;
-	}
-
-	if (isWildMagic || !localDiceRollData.itsAD20Roll)
-		return edgeRollValue;
-	let otherDie: any = null;
-	const vantageTextDelay = 900;
-	//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
-
-	if (!diceRollData.appliedVantage) {
-		for (var i = 0; i < dice.length; i++) {
-			let die = dice[i];
-			if (die.isLucky)
-				continue;
-
-			// TODO: Check behavior of Sorcerer's luck and bent luck rolls and see if we need to change those.
-			//const isNormal: boolean = die.kind == DiceRollKind.Normal;
-			//if (isNormal && !isLuckRoll)
-			//	continue;
-
-			let topNumber = die.getTopNumber();
-
-			if (die.isD20) {
-				if (edgeRollValue == -1)
-					edgeRollValue = topNumber;
-				else if (die.kind == VantageKind.Advantage) {
-					if (edgeRollValue <= topNumber) {
-						removeNonVantageDieNow(otherDie);
-						diceLayer.addAdvantageText(otherDie, vantageTextDelay);
-						edgeRollValue = topNumber;
-					}
-					else {  // Disadvantage
-						removeNonVantageDieNow(die);
-						diceLayer.addAdvantageText(die, vantageTextDelay);
-					}
-				}
-				else if (die.kind == VantageKind.Disadvantage) {
-					if (edgeRollValue >= topNumber) {
-						removeNonVantageDieNow(otherDie);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
-						diceLayer.addDisadvantageText(otherDie, vantageTextDelay);
-						//}
-						edgeRollValue = topNumber;
-					}
-					else {
-						removeNonVantageDieNow(die);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
-						diceLayer.addDisadvantageText(die, vantageTextDelay);
-						//}
-					}
-				}
-				otherDie = die;
-			}
-		}
-	}
-
-	if (isLuckRoll) {
-		edgeRollValue = -1;
-		otherDie = null;
-		for (var i = 0; i < dice.length; i++) {
-			let die = dice[i];
-			if (!die.inPlay)
-				continue;
-			let topNumber = die.getTopNumber();
-
-			if (die.isD20) {
-				if (edgeRollValue == -1)
-					edgeRollValue = topNumber;
-				else if (isLuckRollHigh) {
-					if (edgeRollValue <= topNumber) {
-						removeNonVantageDieNow(otherDie);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
-						if (!otherDie.isLucky)
-							diceLayer.addAdvantageText(otherDie, vantageTextDelay, true);
-						//}
-						edgeRollValue = topNumber;
-					}
-					else {
-						removeNonVantageDieNow(die);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
-						if (!die.isLucky)
-							diceLayer.addAdvantageText(die, vantageTextDelay, true);
-						//}
-					}
-				}
-				else if (isLuckRollLow) {
-					if (edgeRollValue >= topNumber) {
-						removeNonVantageDieNow(otherDie);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
-						if (!otherDie.isLucky)
-							diceLayer.addDisadvantageText(otherDie, vantageTextDelay, true);
-						//}
-						edgeRollValue = topNumber;
-					}
-					else {
-						removeNonVantageDieNow(die);
-						//if (!localDiceRollData.showedVantageMessage) {
-						//	localDiceRollData.showedVantageMessage = true;
-						if (!die.isLucky)
-							diceLayer.addDisadvantageText(die, vantageTextDelay, true);
-						//}
-					}
-				}
-				otherDie = die;
-			}
-		}
-	}
-	return edgeRollValue;
-}
-
-var needToClearD20s: boolean = true;
 
 function calculateFinalMessage(): void {
 	switch (diceRollData.wildMagic) {
@@ -2806,434 +3254,12 @@ function calculateFinalMessage(): void {
 	// 
 }
 
-let lastRollDiceData: any;
-
-function onDiceRollStopped() {
-	calculateFinalMessage();
-	onBonusThrow = false;
-	setupBonusRoll = false;
-	needToClearD20s = true;
-	allDiceHaveStoppedRolling = true;
-	//console.log('Dice have stopped rolling!');
-	//diceHaveStoppedRolling(null);
-
-	if (diceRollData.onStopRollingSound)
-		diceSounds.safePlayMp3(diceRollData.onStopRollingSound);
-
-	if (attemptedRollWasSuccessful) {
-		onSuccess();
-	}
-	else {
-		onFailure();
-	}
-
-	let playerId: number = diceLayer.playerID;
-	if (diceRollData.playerRollOptions.length == 1)
-		playerId = diceRollData.playerRollOptions[0].PlayerID;
-
-	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
-	lastRollDiceData = {
-		'wasCriticalHit': wasCriticalHit,
-		'playerID': playerId,
-		'success': attemptedRollWasSuccessful,
-		'roll': totalRoll,
-		'hiddenThreshold': diceRollData.hiddenThreshold,
-		'spellName': diceRollData.spellName,
-		'damage': totalDamagePlusModifier,
-		'health': totalHealthPlusModifier,
-		'extra': totalExtraPlusModifier,
-		'multiplayerSummary': diceRollData.multiplayerSummary,
-		'individualRolls': diceRollData.individualRolls,
-		'type': diceRollData.type,
-		'skillCheck': diceRollData.skillCheck,
-		'savingThrow': diceRollData.savingThrow,
-		'bonus': totalBonus,
-		'additionalDieRollMessage': additionalDieRollMessage,
-	};
-
-	diceHaveStoppedRolling(JSON.stringify(lastRollDiceData));
-
-	if (removeDiceImmediately)
-		removeRemainingDice();
-}
-
 function onSuccess() {
 
 }
 
 function onFailure() {
 
-}
-
-function isAttack(diceRollData: DiceRollData): boolean {
-	return diceRollData.type == DiceRollType.Attack || diceRollData.type == DiceRollType.ChaosBolt;
-}
-
-function checkStillRolling() {
-	if (allDiceHaveStoppedRolling)
-		return;
-
-	if (anyDiceStillRolling()) {
-		waitingForSettle = true;
-		return;
-	}
-
-	if (setupBonusRoll && !waitingForBonusRollToComplete) {
-		waitingForSettle = true;
-		return;
-	}
-
-	let now: number = performance.now();
-
-	if (waitingForBonusRollToComplete && bonusRollStartTime != 0) {
-		if (now - bonusRollStartTime < 1000) {
-			return;
-		}
-		waitingForBonusRollToComplete = false;
-		setupBonusRoll = false;
-	}
-
-	if (waitingForSettle) {
-		waitingForSettle = false;
-		firstStopTime = now;
-	}
-	else {
-		diceJustStoppedRolling(now);
-	}
-}
-
-function diceJustStoppedRolling(now: number) {
-	let thisTime: number = now;
-	if ((thisTime - firstStopTime) / 1000 > 1.5) {
-		diceDefinitelyStoppedRolling();
-	}
-}
-
-function diceDefinitelyStoppedRolling() {
-	if (needToClearD20s) {
-		if (diceRollData.hasMultiPlayerDice) {
-			removeMultiplayerD20s();
-		}
-		else {
-			d20RollValue = removeD20s();
-		}
-		showSpecialLabels();
-	}
-	if (needToRollBonusDice()) {
-		if (!setupBonusRoll) {
-			setupBonusRoll = true;
-			//if (diceRollData.type == DiceRollType.WildMagic)
-			//	showRollTotal();
-			if (!diceRollData.startedBonusDiceRoll) {
-				freezeExistingDice();
-				diceRollData.startedBonusDiceRoll = true;
-				if (isAttack(diceRollData) && d20RollValue >= diceRollData.minCrit) {
-					diceLayer.indicateBonusRoll('Damage Bonus!');
-					wasCriticalHit = true;
-				}
-				else
-					diceLayer.indicateBonusRoll('Bonus Roll!');
-				setTimeout(rollBonusDice, 2500);
-			}
-		}
-	}
-	else {
-		showSpecialLabels(true);
-		popFrozenDice();
-		reportRollResults(getRollResults());
-		if (diceRollData.playBonusSoundAfter)
-			setTimeout(playFinalRollSoundEffects, diceRollData.playBonusSoundAfter);
-		onDiceRollStopped();
-	}
-}
-
-function showSpecialLabels(onlyBonusDice: boolean = false) {
-	/*
-			1 / Acid
-			2 / Cold
-			3 / Fire
-			4 / Force
-			5 / Lightning
-			6 / Poison
-			7 / Psychic
-			8 / Thunder 
-	*/
-
-	let changedMessage: boolean = false;
-
-	if (diceRollData.type == DiceRollType.ChaosBolt) {
-		for (var i = 0; i < dice.length; i++) {
-			let die = dice[i];
-			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true && die.values == 8) {
-				let topNumber = die.getTopNumber();
-				var message: string = '';
-				switch (topNumber) {
-					case 1:
-						message = 'Acid';
-						diceLayer.attachDamageAcid(die);
-						break;
-					case 2:
-						message = 'Cold';
-						diceLayer.attachDamageCold(die);
-						break;
-					case 3:
-						message = 'Fire';
-						diceLayer.attachDamageFire(die);
-						break;
-					case 4:
-						message = 'Force';
-						diceLayer.attachDamageForce(die);
-						break;
-					case 5:
-						message = 'Lightning';
-						diceLayer.attachDamageLightning(die);
-						break;
-					case 6:
-						message = 'Poison';
-						diceLayer.attachDamagePoison(die);
-						break;
-					case 7:
-						message = 'Psychic';
-						diceLayer.attachDamagePsychic(die);
-						break;
-					case 8:
-						message = 'Thunder';
-						diceLayer.attachDamageThunder(die);
-						break;
-				}
-				if (message) {
-					if (additionalDieRollMessage)
-						additionalDieRollMessage += ', ';
-					else
-						additionalDieRollMessage = '(';
-					changedMessage = true;
-					additionalDieRollMessage += message;
-					diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
-				}
-			}
-		}
-		if (additionalDieRollMessage && changedMessage)
-			additionalDieRollMessage += ')';
-	}
-}
-
-function getModifier(diceRollData: DiceRollData, player: Character): number {
-	if (player)
-		if (diceRollData.type === DiceRollType.Initiative)
-			return player.initiative;
-		else if (diceRollData.type === DiceRollType.SkillCheck) {
-			return player.getSkillMod(diceRollData.skillCheck);
-		}
-		else if (diceRollData.type === DiceRollType.SavingThrow) {
-			return player.getSavingThrowMod(diceRollData.savingThrow);
-		}
-	return 0;
-}
-
-function getRollResults(): RollResults {
-	let totalScores: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	let inspirationValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	let luckValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	let totalDamage: number = 0;
-	let maxDamage: number = 0;
-	let totalHealth: number = 0;
-	let totalExtra: number = 0;
-
-	let singlePlayerId: number = 0;
-	let playerIdForTextMessages: number = -1;
-
-	//console.log(`getRollResults - dice.length = ${dice.length}`);
-	for (var i = 0; i < dice.length; i++) {
-		let die = dice[i];
-		if (!die.inPlay)
-			continue;
-
-		let topNumber = die.getTopNumber();
-
-		if (diceRollData.hasMultiPlayerDice) {
-			if (diceRollData.multiplayerSummary == null)
-				diceRollData.multiplayerSummary = [];
-			let playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.id == die.playerID);
-			if (playerRoll) {
-				playerRoll.roll += topNumber;
-				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
-			}
-			else {
-				let modifier: number = 0;
-				if (diceLayer.players && diceLayer.players.length > 0) {
-					let player: Character = diceLayer.getPlayer(die.playerID);
-					modifier = getModifier(diceRollData, player);
-				}
-
-				let success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
-				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, modifier, success));
-			}
-			let scaleAdjust: number = 1;
-			if (die.rollType === DieCountsAs.inspiration) {
-				scaleAdjust = 0.7;
-			}
-
-			if (!die.playerName) {
-				die.playerName = diceLayer.getPlayerName(die.playerID);
-			}
-
-			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
-		}
-
-		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
-
-		let playerID: number;
-		if (die.playerID === undefined || die.playerID < 0)
-			continue;
-
-		playerID = die.playerID;
-		if (diceRollData.hasSingleIndividual) {
-			singlePlayerId = playerID;
-			playerIdForTextMessages = playerID;
-		}
-
-		if (!totalScores[playerID])
-			totalScores[playerID] = 0;
-
-		if (!inspirationValue[playerID])
-			inspirationValue[playerID] = 0;
-
-		if (!luckValue[playerID])
-			luckValue[playerID] = 0;
-
-		switch (die.rollType) {
-			case DieCountsAs.totalScore:
-				//console.log(`DieCountsAs.totalScore (${topNumber})`);
-				totalScores[playerID] += topNumber;
-				break;
-			case DieCountsAs.inspiration:
-				//console.log(`DieCountsAs.inspiration (${topNumber})`);
-				inspirationValue[playerID] += topNumber;
-				break;
-			case DieCountsAs.bentLuck:
-				//console.log(`DieCountsAs.bentLuck (${topNumber * diceRollData.bentLuckMultiplier})`);
-				luckValue[playerID] += topNumber * diceRollData.bentLuckMultiplier;
-				break;
-			case DieCountsAs.bonus:
-				//console.log(`DieCountsAs.bonus (${topNumber})`);
-				totalBonus += topNumber;
-				break;
-			case DieCountsAs.damage:
-				//console.log(`DieCountsAs.damage (${topNumber})`);
-				totalDamage += topNumber;
-				maxDamage += die.values;
-				break;
-			case DieCountsAs.health:
-				//console.log(`DieCountsAs.health (${topNumber})`);
-				totalHealth += topNumber;
-				break;
-			case DieCountsAs.extra:
-				//console.log(`DieCountsAs.extra (${topNumber})`);
-				totalExtra += topNumber;
-				break;
-		}
-	} // for
-
-	let skillSavingModifier: number = 0;
-	if (diceRollData.type == DiceRollType.SkillCheck || diceRollData.type == DiceRollType.SavingThrow) {
-		let player: Character = diceLayer.getPlayer(singlePlayerId);
-		skillSavingModifier = getModifier(diceRollData, player);
-	}
-
-	totalRoll = totalScores[singlePlayerId] + inspirationValue[singlePlayerId] + luckValue[singlePlayerId] + diceRollData.modifier + skillSavingModifier;
-
-	if (!diceRollData.hasMultiPlayerDice && totalScores[singlePlayerId] > 0) {
-		if (diceRollData.type == DiceRollType.SkillCheck)
-			totalRoll += totalBonus;
-	}
-
-	modifyTotalRollForTestingPurposes();
-
-	attemptedRollWasSuccessful = totalRoll >= diceRollData.hiddenThreshold;
-	attemptedRollWasNarrowlySuccessful = attemptedRollWasSuccessful && (totalRoll - diceRollData.hiddenThreshold < 2);
-	//console.log('damageModifierThisRoll: ' + damageModifierThisRoll);
-	totalDamagePlusModifier = totalDamage + damageModifierThisRoll;
-	totalHealthPlusModifier = totalHealth + healthModifierThisRoll;
-	totalExtraPlusModifier = totalExtra + extraModifierThisRoll;
-
-	return new RollResults(totalScores, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage);
-}
-
-class RollResults {
-	constructor(public d20RollValue: number[], public singlePlayerId: number, public luckValue: number[],
-		public playerIdForTextMessages: number, public skillSavingModifier: number, public totalDamage: number,
-		public totalHealth: number, public totalExtra: number, public maxDamage: number) {
-	}
-}
-
-function reportRollResults(rollResults: RollResults) {
-	let d20RollValue: number[] = rollResults.d20RollValue;
-	let singlePlayerId: number = rollResults.singlePlayerId;
-	let luckValue: number[] = rollResults.luckValue;
-	let playerIdForTextMessages: number = rollResults.playerIdForTextMessages;
-	let skillSavingModifier: number = rollResults.skillSavingModifier;
-	let totalDamage: number = rollResults.totalDamage;
-	let totalHealth: number = rollResults.totalHealth;
-	let totalExtra: number = rollResults.totalExtra;
-	let maxDamage: number = rollResults.maxDamage;
-
-	let title: string = '';
-	if (diceRollData.type == DiceRollType.Initiative)
-		title = 'Initiative:';
-	else if (diceRollData.type == DiceRollType.NonCombatInitiative)
-		title = 'Non-combat Initiative:';
-	else if (diceRollData.type == DiceRollType.SkillCheck)
-		title = `${getSkillCheckName()} Check:`;
-	else if (diceRollData.type == DiceRollType.SavingThrow)
-		title = `${getSavingThrowName()} Saving Throw:`;
-
-	if (diceRollData.multiplayerSummary) {
-		diceRollData.multiplayerSummary.sort((a, b) => (b.roll + b.modifier) - (a.roll + a.modifier));
-		diceLayer.showMultiplayerResults(title, diceRollData.multiplayerSummary, diceRollData.hiddenThreshold);
-	}
-
-	if (!diceRollData.hasMultiPlayerDice && d20RollValue[singlePlayerId] > 0) {
-		if (diceRollData.modifier != 0)
-			diceLayer.showRollModifier(diceRollData.modifier, luckValue[singlePlayerId], playerIdForTextMessages);
-		if (skillSavingModifier != 0)
-			diceLayer.showRollModifier(skillSavingModifier, luckValue[singlePlayerId], playerIdForTextMessages);
-		diceLayer.showDieTotal(`${totalRoll}`, playerIdForTextMessages);
-	}
-
-	if (totalBonus > 0 && !diceRollData.hasMultiPlayerDice && diceRollData.type != DiceRollType.SkillCheck) {
-		let bonusRollStr: string = 'Bonus Roll: ';
-		let bonusRollOverrideStr: string = diceRollData.getFirstBonusRollDescription();
-		if (bonusRollOverrideStr)
-			bonusRollStr = bonusRollOverrideStr;
-		switch (diceRollData.wildMagic) {
-			case WildMagic.heightChange:
-			case WildMagic.ageChange:
-				if (isOdd(totalBonus))
-					totalBonus = -totalBonus;
-				break;
-		}
-		diceLayer.showBonusRoll(`${bonusRollStr}${totalBonus}`, DiceLayer.bonusRollFontColor, DiceLayer.bonusRollDieColor);
-	}
-
-	if (totalDamage > 0) {
-		diceLayer.showTotalHealthDamage(totalDamagePlusModifier.toString(), attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
-		diceLayer.showDamageHealthModifier(damageModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
-	}
-	if (totalHealth > 0) {
-		diceLayer.showTotalHealthDamage('+' + totalHealthPlusModifier.toString(), attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
-		diceLayer.showDamageHealthModifier(healthModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
-	}
-	if (totalExtra > 0) {
-		diceLayer.showTotalHealthDamage(totalExtraPlusModifier.toString(), attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
-		diceLayer.showDamageHealthModifier(extraModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
-	}
-	showSuccessFailMessages(title, d20RollValue[singlePlayerId]);
-	maxDamage += damageModifierThisRoll;
-	if (diceRollData.secondRollData)
-		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
-	else
-		playAnnouncerCommentary(diceRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
-	return maxDamage;
 }
 
 function playSecondaryAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage: number = 0, maxDamage: number = 0): void {
@@ -3316,8 +3342,8 @@ function getSkillCheckName() {
 }
 
 function getSavingThrowName() {
-	let enumAsStr: string = Object.keys(Ability).find(key => Ability[key] === diceRollData.savingThrow);
-	let initialCapEnum: string = '';
+	const enumAsStr: string = Object.keys(Ability).find(key => Ability[key] === diceRollData.savingThrow);
+	let initialCapEnum = '';
 	if (enumAsStr)
 		initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
 	else
@@ -3325,38 +3351,16 @@ function getSavingThrowName() {
 	return initialCapEnum;
 }
 
-function showSuccessFailMessages(title: string, rawD20RollValue: number) {
-	if (title)
-		title += ' ';
-	if (!diceRollData.hasMultiPlayerDice && diceRollData.type != DiceRollType.WildMagic &&
-		diceRollData.type != DiceRollType.PercentageRoll &&
-		diceRollData.type != DiceRollType.DamageOnly &&
-		diceRollData.type != DiceRollType.HealthOnly &&
-		diceRollData.type != DiceRollType.ExtraOnly) {
-		if (attemptedRollWasSuccessful)
-			if (rawD20RollValue >= diceRollData.minCrit) {
-				diceLayer.showResult(title + diceRollData.critSuccessMessage, attemptedRollWasSuccessful);
-			}
-			else {
-				diceLayer.showResult(title + diceRollData.successMessage, attemptedRollWasSuccessful);
-			}
-		else if (rawD20RollValue == 1)
-			diceLayer.showResult(title + diceRollData.critFailMessage, attemptedRollWasSuccessful);
-		else
-			diceLayer.showResult(title + diceRollData.failMessage, attemptedRollWasSuccessful);
-	}
-}
-
 function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '', numD20s: number = 1, dieLabelOverride: string = null) {
-	let d20BackColor: string = diceLayer.getDieColor(playerID);
-	let d20FontColor: string = diceLayer.getDieFontColor(playerID);
+	const d20BackColor: string = diceLayer.getDieColor(playerID);
+	const d20FontColor: string = diceLayer.getDieFontColor(playerID);
 	if (kind !== VantageKind.Normal)
 		numD20s = 2;
 
-	let magicRingHueShift: number = Math.floor(Math.random() * 360);
+	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 
-	for (var i = 0; i < numD20s; i++) {
-		var die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
+	for (let i = 0; i < numD20s; i++) {
+		const die = addD20(diceRollData, d20BackColor, d20FontColor, xPositionModifier);
 		if (dieLabelOverride)
 			die.dieType = dieLabelOverride;
 		else
@@ -3370,9 +3374,9 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 			die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 		if (diceRollData.numHalos > 0) {
-			let angleDelta: number = 360 / diceRollData.numHalos;
+			const angleDelta: number = 360 / diceRollData.numHalos;
 			let angle: number = Math.random() * 360;
-			for (var j = 0; j < diceRollData.numHalos; j++) {
+			for (let j = 0; j < diceRollData.numHalos; j++) {
 				die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
 				die.origins.push(diceLayer.haloSpinRed.getOrigin());
 				angle += angleDelta;
@@ -3385,7 +3389,145 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 	}
 }
 
+function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
+	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
+	const die = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier);
+	prepareDie(die, diceRollData.throwPower, 0);
+	die.playerName = diceDto.Label;
+	die.dieType = DiceRollType.None;
+	if (diceDto.Label)
+		diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
+	die.kind = diceDto.Vantage;
+	//if (diceRollData.isMagic) {
+	//	die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+	//	die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
+	//}
+	//if (diceRollData.numHalos > 0) {
+	//	let angleDelta: number = 360 / diceRollData.numHalos;
+	//	let angle: number = Math.random() * 360;
+	//	for (var j = 0; j < diceRollData.numHalos; j++) {
+	//		die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
+	//		die.origins.push(diceLayer.haloSpinRed.getOrigin());
+	//		angle += angleDelta;
+	//	}
+	//}
+}
+
+function prepareDiceDtoRoll(diceRollDto: DiceRollData, xPositionModifier: number) {
+	for (let i = 0; i < diceRollDto.diceDtos.length; i++) {
+		const diceDto: DiceDto = diceRollDto.diceDtos[i];
+		addDiceFromDto(diceDto, xPositionModifier);
+	}
+}
+
+function prepareLegacyRoll(playerID: number, xPositionModifier: number) {
+	if (diceRollData.playerRollOptions.length === 1)
+		playerID = diceRollData.playerRollOptions[0].PlayerID;
+	if (diceRollData.type === DiceRollType.WildMagic) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
+	}
+	else if (diceRollData.type === DiceRollType.PercentageRoll) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		if (diceRollData.rollScope === RollScope.ActivePlayer) {
+			addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
+			diceRollData.hasSingleIndividual = true;
+		}
+		else if (diceRollData.rollScope === RollScope.Individuals) {
+			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
+				addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, diceRollData.throwPower, xPositionModifier);
+			});
+			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
+			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
+		}
+	}
+	else if (diceRollData.type === DiceRollType.Initiative || diceRollData.type === DiceRollType.NonCombatInitiative) {
+		diceRollData.modifier = 0;
+		diceRollData.maxInspirationDiceAllowed = 4;
+		diceRollData.itsAD20Roll = true;
+		for (let i = 0; i < diceLayer.players.length; i++) {
+			const player: Character = diceLayer.players[i];
+			let initiativeBonus: number;
+			if (diceRollData.type === DiceRollType.NonCombatInitiative)
+				initiativeBonus = 0;
+			else
+				initiativeBonus = player.rollInitiative;
+			addD20sForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
+		}
+		diceRollData.hasMultiPlayerDice = true;
+	}
+	else if (diceRollData.type === DiceRollType.DamageOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier, undefined, undefined, diceRollData.isMagic);
+	}
+	else if (diceRollData.type === DiceRollType.HealthOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, diceRollData.isMagic);
+	}
+	else if (diceRollData.type === DiceRollType.ExtraOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, diceRollData.isMagic);
+	}
+	else if (diceRollData.type === DiceRollType.InspirationOnly) {
+		diceRollData.modifier = 0;
+		diceRollData.itsAD20Roll = false;
+		for (let i = 0; i < diceRollData.playerRollOptions.length; i++) {
+			const playerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[i];
+			addD20sForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
+		}
+	}
+	else if (diceRollData.damageHealthExtraDice.indexOf('d20') >= 0) {
+		let dieStr: string = diceRollData.damageHealthExtraDice;
+		if (dieStr === '1d20("Wild Magic Check")') {
+			const numD20s: number = diceRollData.modifier;
+			diceRollData.modifier = 0;
+			dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
+		}
+		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
+	}
+	else {
+		diceRollData.itsAD20Roll = true;
+		if (diceRollData.rollScope === RollScope.ActivePlayer) {
+			const activePlayerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[0];
+			// TODO: I think there's a bug here active player's inspiration needs to be used.
+			let vantageKind: VantageKind = diceRollData.vantageKind;
+			if (diceRollData.playerRollOptions.length == 1) {
+				vantageKind = activePlayerRollOptions.VantageKind;
+			}
+			let numD20s = 1;
+			let dieLabel = '';
+			if (diceRollData.type === DiceRollType.WildMagicD20Check) {
+				numD20s = diceRollData.modifier;
+				diceRollData.modifier = 0;
+				dieLabel = '"Wild Magic Check"';
+			}
+			let playerId: number = diceLayer.playerID;
+			if (activePlayerRollOptions)
+				playerId = activePlayerRollOptions.PlayerID;
+			addD20sForPlayer(playerId, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
+			diceRollData.hasSingleIndividual = true;
+		}
+		else if (diceRollData.rollScope === RollScope.Individuals) {
+			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
+				addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
+			});
+			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
+			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
+		}
+		if (isAttack(diceRollData)) {
+			addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier);
+		}
+	}
+	return playerID;
+}
+
 function pleaseRollDice(diceRollDto: DiceRollData) {
+
 	DiceLayer.numFiltersOnDieCleanup = 0;
 	DiceLayer.numFiltersOnRoll = 0;
 	//testing = true;
@@ -3429,125 +3571,21 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		return;
 	}
 
+	clearBeforeRoll();
+	let playerID = -1;
+
 	let xPositionModifier = 0;
 
 	if (Math.random() * 100 < 50)
 		xPositionModifier = 26;  // Throw from the right to the left.
 
-	clearBeforeRoll();
-
-	let playerID = -1;
-	if (diceRollData.playerRollOptions.length === 1)
-		playerID = diceRollData.playerRollOptions[0].PlayerID;
-
-	if (diceRollData.type === DiceRollType.WildMagic) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
-	}
-	else if (diceRollData.type === DiceRollType.PercentageRoll) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-
-		if (diceRollData.rollScope === RollScope.ActivePlayer) {
-			addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, diceRollData.throwPower, xPositionModifier);
-			diceRollData.hasSingleIndividual = true;
-		}
-		else if (diceRollData.rollScope === RollScope.Individuals) {
-			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
-				addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, diceRollData.throwPower, xPositionModifier);
-			});
-			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
-			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
-		}
-
-	}
-	else if (diceRollData.type === DiceRollType.Initiative || diceRollData.type === DiceRollType.NonCombatInitiative) {
-		diceRollData.modifier = 0;
-		diceRollData.maxInspirationDiceAllowed = 4;
-
-		diceRollData.itsAD20Roll = true;
-		for (let i = 0; i < diceLayer.players.length; i++) {
-			const player: Character = diceLayer.players[i];
-			let initiativeBonus: number;
-			if (diceRollData.type === DiceRollType.NonCombatInitiative)
-				initiativeBonus = 0;
-			else
-				initiativeBonus = player.rollInitiative;
-
-			addD20sForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
-		}
-
-		diceRollData.hasMultiPlayerDice = true;
-	}
-	else if (diceRollData.type === DiceRollType.DamageOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier, undefined, undefined, diceRollData.isMagic);
-	}
-	else if (diceRollData.type === DiceRollType.HealthOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.health, diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, diceRollData.isMagic);
-	}
-	else if (diceRollData.type === DiceRollType.ExtraOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.extra, diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, diceRollData.isMagic);
-	}
-	else if (diceRollData.type === DiceRollType.InspirationOnly) {
-		diceRollData.modifier = 0;
-		diceRollData.itsAD20Roll = false;
-		for (let i = 0; i < diceRollData.playerRollOptions.length; i++) {
-			const playerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[i];
-			addD20sForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
-		}
-	}
-	else if (diceRollData.damageHealthExtraDice.indexOf('d20') >= 0) {
-		let dieStr: string = diceRollData.damageHealthExtraDice;
-		if (dieStr === '1d20("Wild Magic Check")') {
-			const numD20s: number = diceRollData.modifier;
-			diceRollData.modifier = 0;
-			dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
-		}
-		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier,
-			diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
+	if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0) {
+		prepareDiceDtoRoll(diceRollDto, xPositionModifier);
 	}
 	else {
-		diceRollData.itsAD20Roll = true;
-
-		if (diceRollData.rollScope === RollScope.ActivePlayer) {
-			const activePlayerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[0];
-			// TODO: I think there's a bug here active player's inspiration needs to be used.
-			let vantageKind: VantageKind = diceRollData.vantageKind;
-			if (diceRollData.playerRollOptions.length == 1) {
-				vantageKind = activePlayerRollOptions.VantageKind;
-			}
-			let numD20s = 1;
-			let dieLabel = '';
-			if (diceRollData.type === DiceRollType.WildMagicD20Check) {
-				numD20s = diceRollData.modifier;
-				diceRollData.modifier = 0;
-				dieLabel = '"Wild Magic Check"';
-			}
-			let playerId: number = diceLayer.playerID;
-			if (activePlayerRollOptions)
-				playerId = activePlayerRollOptions.PlayerID;
-			addD20sForPlayer(playerId, xPositionModifier, vantageKind, diceRollData.groupInspiration, numD20s, dieLabel);
-			diceRollData.hasSingleIndividual = true;
-		}
-		else if (diceRollData.rollScope === RollScope.Individuals) {
-			diceRollData.playerRollOptions.forEach(function (playerRollOption: PlayerRollOptions) {
-				addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
-			});
-			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
-			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
-		}
-
-		if (isAttack(diceRollData)) {
-			addDieFromStr(playerID, diceRollData.damageHealthExtraDice, DieCountsAs.damage, diceRollData.throwPower, xPositionModifier);
-		}
+		playerID = prepareLegacyRoll(playerID, xPositionModifier);
 	}
+
 
 	try {
 		// @ts-ignore - DiceManager
@@ -3563,8 +3601,4 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	//startedRoll = true;
 }
 
-class PlayerRoll {
-	constructor(public roll: number, public name: string, public id: number, public modifier: number = 0, public success: boolean = false) {
 
-	}
-}

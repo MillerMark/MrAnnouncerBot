@@ -7,10 +7,30 @@ namespace DHDM
 {
 	public class ToggleTargetCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
+		System.Collections.Generic.Dictionary<int, DateTime> secondsSinceLastToggle;
+		bool CanToggle(int targetNum)
+		{
+			if (secondsSinceLastToggle == null)
+				secondsSinceLastToggle = new System.Collections.Generic.Dictionary<int, DateTime>();
+			if (!secondsSinceLastToggle.ContainsKey(targetNum))
+			{
+				secondsSinceLastToggle.Add(targetNum, DateTime.Now);
+				return true;
+			}
+			if (DateTime.Now - secondsSinceLastToggle[targetNum] < TimeSpan.FromMilliseconds(200))
+			{
+				return false;
+				// De-bounce it. Could be a bug in the stream deck sending two commands at once.
+			}
+			secondsSinceLastToggle[targetNum] = DateTime.Now;
+			return true;
+		}
+
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			if (int.TryParse(targetNumStr, out int targetNum))
-				dungeonMasterApp.ToggleTarget(targetNum);
+				if (CanToggle(targetNum))
+					dungeonMasterApp.ToggleTarget(targetNum);
 		}
 
 		string targetNumStr;
