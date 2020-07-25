@@ -7176,9 +7176,6 @@ namespace DHDM
 
 		private static void UpdateInGameCreatures()
 		{
-			//if (!AllInGameCreatures.Creatures.Any(x => x.IsSelected))
-			//	return;
-
 			HubtasticBaseStation.UpdateInGameCreatures("Set", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
 		}
 
@@ -7193,13 +7190,29 @@ namespace DHDM
 			UpdateInGameCreatures();
 		}
 
+		void AddInGameCreature(InGameCreature inGameCreature)
+		{
+			HubtasticBaseStation.UpdateInGameCreatures("Add", new List<InGameCreature>() { inGameCreature });
+		}
+		void RemoveInGameCreature(InGameCreature inGameCreature)
+		{
+			HubtasticBaseStation.UpdateInGameCreatures("Remove", new List<InGameCreature>() { inGameCreature });
+		}
 		public void ToggleInGameCreature(int targetNum)
 		{
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
 				return;
-			inGameCreature.IsSelected = !inGameCreature.IsSelected;
-			UpdateInGameCreatures();
+			if (inGameCreature.IsSelected)
+			{
+				inGameCreature.IsSelected = false;
+				RemoveInGameCreature(inGameCreature);
+			}
+			else
+			{
+				inGameCreature.IsSelected = true;
+				AddInGameCreature(inGameCreature);
+			}
 		}
 
 		public void TargetCommand(string command)

@@ -79,44 +79,65 @@
 		return null;
 	}
 
-	checkFrameIndex(frameIndex: number = 0): number {
-		if (frameIndex == -1)  // Select a random frame
+	checkFrameIndex(frameIndex = 0): number {
+		if (frameIndex === -1)  // Select a random frame
 			return Math.floor(Math.random() * this.baseAnimation.frameCount);
 		return frameIndex;
 	}
 
-	addShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
-		let sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
+	verticalThrustOverride: number = undefined;
+	horizontalThrustOverride: number = undefined;
+
+	disableGravity() {
+		this.verticalThrustOverride = 0;
+		this.horizontalThrustOverride = 0;
+	}
+
+	addShifted(x: number, y: number, startingFrameIndex = 0, hueShift = 0, saturationPercent = -1, brightness = -1): ColorShiftingSpriteProxy {
+		const sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
+		this.applyOverrides(sprite);
 		this.sprites.push(sprite);
 		return sprite;
 	}
 
+	applyOverrides(sprite: SpriteProxy) {
+		sprite.horizontalThrustOverride = this.horizontalThrustOverride;
+		sprite.verticalThrustOverride = this.verticalThrustOverride;
+	}
+
 	private createColorShiftingSprite(startingFrameIndex: number, x: number, y: number, hueShift: number, saturationPercent: number, brightness: number): ColorShiftingSpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
-		return new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
+		const sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);
+		this.applyOverrides(sprite);
+		return sprite;
 	}
 
 	private createSprite(startingFrameIndex: number, x: number, y: number): SpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
-		return new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
-	}
-
-	insertShifted(x: number, y: number, startingFrameIndex: number = 0, hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
-		let sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
-		this.sprites.unshift(sprite);
+		const sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
+		this.applyOverrides(sprite);
 		return sprite;
 	}
 
-	insert(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
-		let sprite: SpriteProxy = this.createSprite(startingFrameIndex, x, y);
+	insertShifted(x: number, y: number, startingFrameIndex = 0, hueShift = 0, saturationPercent = -1, brightness = -1): ColorShiftingSpriteProxy {
+		const sprite: ColorShiftingSpriteProxy = this.createColorShiftingSprite(startingFrameIndex, x, y, hueShift, saturationPercent, brightness);
 		this.sprites.unshift(sprite);
+		this.applyOverrides(sprite);
+		return sprite;
+	}
+
+	insert(x: number, y: number, startingFrameIndex = 0): SpriteProxy {
+		const sprite: SpriteProxy = this.createSprite(startingFrameIndex, x, y);
+		this.sprites.unshift(sprite);
+		this.applyOverrides(sprite);
 		return sprite;
 	}
 
 	add(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
-		let sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
+		const sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
 		this.sprites.push(sprite);
+		this.applyOverrides(sprite);
 		return sprite;
 	}
 
@@ -340,11 +361,11 @@
 				returnFrameIndex = this.getReturnIndex(frameCount, reverse);
 			}
 
-			let originalFrameIndex: number = sprite.frameIndex;
+			const originalFrameIndex: number = sprite.frameIndex;
 
 			if (this.segmentSize > 0 && sprite.frameIndex >= startOffset) {
-				let startIndex: number = sprite.frameIndex - (sprite.frameIndex - startOffset) % this.segmentSize;
-				let endBounds: number = startIndex + this.segmentSize;
+				const startIndex: number = sprite.frameIndex - (sprite.frameIndex - startOffset) % this.segmentSize;
+				const endBounds: number = startIndex + this.segmentSize;
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, reverse, frameInterval, this.baseAnimation.fileName);
 			}
 			else

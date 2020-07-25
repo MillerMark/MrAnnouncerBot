@@ -3,7 +3,7 @@
 const pollTime: number = 40;
 const panicTime: number = 10;
 const reviewTime: number = 16;
-const fadeOutTime: number = 1;
+const quizFadeOutTime: number = 1;
 
 const quizTop: number = 88;
 const quizRight: number = 1915;
@@ -91,9 +91,9 @@ class Quiz {
       chat(`Polls are closing in ${panicTime} seconds!`);
     }
 
-    if (secondsPassed > totalUpTime - fadeOutTime) {
+    if (secondsPassed > totalUpTime - quizFadeOutTime) {
       var secondsFromEnd: number = totalUpTime - secondsPassed;
-      context.globalAlpha = secondsFromEnd / fadeOutTime;
+      context.globalAlpha = secondsFromEnd / quizFadeOutTime;
     }
 
     if (this.votesChanged)

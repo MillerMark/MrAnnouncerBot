@@ -16,13 +16,8 @@ class ScalableAnimation extends AnimatedElement {
 		return start + (end - start) * percentComplete;
 	}
 
-	lerpc(start: number, change: number, percentComplete: number) {
+	static lerpc(start: number, change: number, percentComplete: number) {
 		return start + change * percentComplete;
-	}
-
-	static inElastic(t: number) {
-		const inverseSpeed: number = 0.02;  // Smaller == faster.
-		return t === 0 ? 0 : t === 1 ? 1 : (inverseSpeed - inverseSpeed / t) * Math.sin(25 * t) + 1;
 	}
 
 	resizeToContent(left: number, top: number, width: number, height: number) {
@@ -32,25 +27,32 @@ class ScalableAnimation extends AnimatedElement {
 	getScale(now: number) {
 		let thisScale: number = this.scale;
 		if (this.targetScale >= 0) {
+
 			if (this.originalScale < 0)
 				this.originalScale = this.scale;
+
 			if (this.deltaScale === undefined)
 				this.deltaScale = this.targetScale - this.originalScale;
-			let scaleStartTime: number = this.timeStart + this.waitToScale;
-			let timePassed: number = now - scaleStartTime;
+
+			const scaleStartTime: number = this.timeStart + this.waitToScale;
+			const timePassed: number = now - scaleStartTime;
+
 			if (timePassed > 0) {
-				let lifespan: number = this.expirationDate - scaleStartTime;
+				const lifespan: number = this.expirationDate - scaleStartTime;
+
 				let percentComplete: number;
-				if (lifespan == 0)
+				if (lifespan === 0)
 					percentComplete = 1;
 				else
 					percentComplete = Math.max(Math.min(1, timePassed / lifespan), 0);
+
 				let easedPercent: number;
 				if (this.elasticIn)
-					easedPercent = ScalableAnimation.inElastic(percentComplete);
+					easedPercent = EasePoint.inElastic(percentComplete);
 				else
 					easedPercent = percentComplete;
-				thisScale = this.lerpc(this.originalScale, this.deltaScale, easedPercent);
+
+				thisScale = ScalableAnimation.lerpc(this.originalScale, this.deltaScale, easedPercent);
 			}
 		}
 		return thisScale;
