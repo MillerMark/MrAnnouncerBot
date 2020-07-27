@@ -2784,21 +2784,21 @@ namespace DndCore
 		public void AddSpellHitEffect(string effectName = "",
 			int hue = 0, int saturation = 100, int brightness = 100,
 			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
-			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
+			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100, int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
 		{
 			additionalSpellHitEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
 				scale, rotation, autoRotation, timeOffset,
-				secondaryHue, secondarySaturation, secondaryBrightness));
+				secondaryHue, secondarySaturation, secondaryBrightness, xOffset, yOffset, velocityX, velocityY));
 		}
 
 		public void AddSpellCastEffect(string effectName = "",
 			int hue = 0, int saturation = 100, int brightness = 100,
 			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
-			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
+			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100, int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
 		{
 			additionalSpellCastEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
 				scale, rotation, autoRotation, timeOffset,
-				secondaryHue, secondarySaturation, secondaryBrightness));
+				secondaryHue, secondarySaturation, secondaryBrightness, xOffset, yOffset, velocityX, velocityY));
 		}
 
 		public void AddSpellHitSoundEffect(string fileName, int timeOffset = 0)

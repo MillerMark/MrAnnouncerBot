@@ -18,6 +18,10 @@ namespace DndCore
 		public bool horizontalFlip = false;
 		public bool verticalFlip = false;
 		public double secondaryBrightness = 100;
+		public double xOffset = 0;
+		public double yOffset = 0;
+		public double velocityX = 0;
+		public double velocityY = 0;
 		public double secondaryHueShift = 0;
 		public double secondarySaturation = 100;
 		public string spriteName;

@@ -303,7 +303,13 @@ namespace GoogleHelper
 		static string GetValue(object obj, MemberInfo memberInfo)
 		{
 			if (memberInfo is PropertyInfo propInfo)
-				return propInfo.GetValue(obj).ToString();
+			{
+				object value = propInfo.GetValue(obj);
+				if (value == null)
+					return null;
+				return value.ToString();
+			}
+
 			if (memberInfo is FieldInfo fieldInfo)
 				return fieldInfo.GetValue(obj).ToString();
 			return null;

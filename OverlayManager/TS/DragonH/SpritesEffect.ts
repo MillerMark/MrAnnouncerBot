@@ -14,12 +14,13 @@ class SpritesEffect extends VisualEffect {
   }
 
 	start(): SpriteProxy {
-		let center: Vector = this.visualEffectTarget.getCenter();
+		const center: Vector = this.visualEffectTarget.getCenter();
 		let sprite: SpriteProxy;
 		if (this.hueShift !== 0 || this.saturation >= 0 || this.brightness >= 0) {
 			sprite = new ColorShiftingSpriteProxy(this.startFrameIndex, this.visualEffectTarget.getCenter().add(
 				new Vector(-this.spritesRef.originX, -this.spritesRef.originY)), this.lifeSpanMs)
 				.setHueSatBrightness(this.hueShift, this.saturation, this.brightness);
+			this.spritesRef.applyOverrides(sprite);
 			this.spritesRef.sprites.push(sprite);
     }
     else {

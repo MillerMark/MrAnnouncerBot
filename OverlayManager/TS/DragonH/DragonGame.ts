@@ -280,7 +280,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		return 0;
 	}
 
-	protected triggerAnimation(spriteName: string, center: Vector, startFrameIndex: number, hueShift: number, saturation: number, brightness: number, horizontalFlip: boolean, verticalFlip: boolean, scale: number, rotation: number, autoRotation: number, velocityX: number = 0, velocityY: number = 0, lifespan: number = 0): SpriteProxy {
+	protected triggerAnimation(spriteName: string, center: Vector, startFrameIndex: number, hueShift: number, saturation: number, brightness: number, horizontalFlip: boolean, verticalFlip: boolean, scale: number, rotation: number, autoRotation: number, velocityX = 0, velocityY = 0, lifespan = 0): SpriteProxy {
 		let sprites: Sprites;
 		for (let i = 0; i < this.allWindupEffects.allSprites.length; i++) {
 			if (spriteName === this.allWindupEffects.allSprites[i].name) {
@@ -321,18 +321,18 @@ abstract class DragonGame extends GamePlusQuiz {
 
 		let center: Vector = this.getCenter(dto.target);
 
-		if (dto.effectKind === EffectKind.Animation)
+		if (dto.effectKind === EffectKind.Animation) {
 			this.triggerAnimationDto(dto, center);
+		}
 		else if (dto.effectKind === EffectKind.Emitter)
 			this.triggerEmitter(dto, center);
 	}
 
 	triggerEffect(effectData: string): void {
 		let dto: any = JSON.parse(effectData);
-		console.log(dto);
 
 		if (dto.effectKind === EffectKind.GroupEffect) {
-			for (var i = 0; i < dto.effectsCount; i++) {
+			for (let i = 0; i < dto.effectsCount; i++) {
 				this.triggerSingleEffect(dto.effects[i]);
 			}
 		}

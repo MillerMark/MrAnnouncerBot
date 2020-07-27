@@ -1,26 +1,33 @@
 ﻿class InGameCreatureManager {
 	inGameCreaturesParchmentBackground: Sprites;
+	inGameCreaturesDeathX: Sprites;
 	inGameScrollAppearAnimation: Sprites;
 	inGameScrollDisappearAnimation: Sprites;
 	inGameCreaturesParchmentShadow: Sprites;
-	inGameCreaturesParchmentTarget: Sprites;
-	
+	inGameCreaturesTarget: Sprites;
+
 	constructor() {
 
 	}
 
 	update(timestamp: number) {
 		this.inGameCreaturesParchmentBackground.updatePositionsForFreeElements(timestamp);
+		this.inGameCreaturesDeathX.updatePositionsForFreeElements(timestamp);
 		this.inGameCreaturesParchmentShadow.updatePositionsForFreeElements(timestamp);
-		this.inGameCreaturesParchmentTarget.updatePositionsForFreeElements(timestamp);
+		this.inGameCreaturesTarget.updatePositionsForFreeElements(timestamp);
 		this.inGameScrollAppearAnimation.updatePositionsForFreeElements(timestamp);
 		this.inGameScrollDisappearAnimation.updatePositionsForFreeElements(timestamp);
 	}
 
 	loadResources() {
 		this.inGameCreaturesParchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 2, fps30, AnimationStyle.Static);
+		this.inGameCreaturesDeathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
 		this.inGameCreaturesParchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
-		this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
+		//this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
+		this.inGameCreaturesTarget = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
+		this.inGameCreaturesTarget.originX = 41 - InGameCreatureManager.targetLeft;
+		this.inGameCreaturesTarget.originY = 45;
+
 		this.inGameScrollAppearAnimation = new Sprites('Scroll/InGameCreatures/ScrollAppear/ScrollAppear', 115, fps30, AnimationStyle.Sequential, true);
 		this.inGameScrollAppearAnimation.originX = 105;
 		this.inGameScrollAppearAnimation.originY = 3;
@@ -29,8 +36,9 @@
 		this.inGameScrollDisappearAnimation.originY = 2;
 
 		this.inGameCreaturesParchmentBackground.disableGravity();
+		this.inGameCreaturesDeathX.disableGravity();
 		this.inGameCreaturesParchmentShadow.disableGravity();
-		this.inGameCreaturesParchmentTarget.disableGravity();
+		this.inGameCreaturesTarget.disableGravity();
 		this.inGameScrollAppearAnimation.disableGravity();
 		this.inGameScrollDisappearAnimation.disableGravity();
 	}
@@ -48,6 +56,8 @@
 	static readonly inGameCreatueStatFontName = 'Calibri';
 	static readonly inGameStatOffsetX = 18;
 	static readonly inGameStatTopMargin = -12;  // Put top of scroll slightly offscreen
+	static readonly targetLeft = 64;
+	static readonly targetTop = 114;
 	static readonly spaceBetweenInGameStatLines = 1;
 
 	drawInGameCreature(context: CanvasRenderingContext2D, inGameCreature: InGameCreature, x: number, y: number, alpha: number) {
@@ -170,7 +180,8 @@
 		}
 
 		this.inGameCreaturesParchmentShadow.draw(context, nowMs);
-		this.inGameCreaturesParchmentTarget.draw(context, nowMs);
+		this.inGameCreaturesDeathX.draw(context, nowMs);
+		this.inGameCreaturesTarget.draw(context, nowMs);
 
 		this.inGameScrollAppearAnimation.draw(context, nowMs);
 		this.inGameScrollDisappearAnimation.draw(context, nowMs);
@@ -178,6 +189,10 @@
 
 	getParchmentSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
 		return this.getSpriteForCreature(this.inGameCreaturesParchmentBackground.sprites, inGameCreature);
+	}
+
+	getParchmentDeathXForCreature(inGameCreature: InGameCreature): SpriteProxy {
+		return this.getSpriteForCreature(this.inGameCreaturesDeathX.sprites, inGameCreature);
 	}
 
 	getParchmentShadowForCreature(inGameCreature: InGameCreature): SpriteProxy {
@@ -193,7 +208,7 @@
 	}
 
 	getTargetSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameCreaturesParchmentTarget.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.inGameCreaturesTarget.sprites, inGameCreature);
 	}
 
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
@@ -216,7 +231,7 @@
 
 	// In-game Creature commands...
 	//! ------------------------------------------
-	setInGameCreatures(inGameCreatures: Array<InGameCreature>) {
+	setInGameCreatures(inGameCreatures: Array<InGameCreature>, soundManager: SoundManager) {
 		this.inGameCreatures = [];
 		for (let i = 0; i < inGameCreatures.length; i++) {
 			this.inGameCreatures.push(new InGameCreature(inGameCreatures[i]));
@@ -225,12 +240,22 @@
 		let x: number = this.miniScrollLeftMargin;
 		this.inGameCreaturesParchmentBackground.sprites = [];
 		this.inGameCreaturesParchmentShadow.sprites = [];
-		this.inGameCreaturesParchmentTarget.sprites = [];
+		this.inGameCreaturesDeathX.sprites = [];
+		this.inGameCreaturesTarget.sprites = [];
 
-		let delayMs: number = 0;
-		let timeBetweenArrivals: number = 300;
+		let delayMs = 0;
+		let timeBetweenArrivals = 300;
+		let first = true;
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
 			this.addInGameCreature(this.inGameCreatures[i], x, delayMs);
+
+			if (first)
+				soundManager.playMp3In(delayMs, 'InGameScrolls/InGameScrollAppearFirst');
+			else
+				soundManager.playMp3In(delayMs, 'InGameScrolls/InGameScrollAppear');
+
+			first = false;
+
 			x += this.miniScrollWidth;
 			delayMs += timeBetweenArrivals;
 			timeBetweenArrivals -= 40;
@@ -238,32 +263,163 @@
 				timeBetweenArrivals = 50;
 		}
 	}
+	updateInGameCreature(updatedGameCreature: InGameCreature, soundManager: SoundManager) {
+		const existingCreature: InGameCreature = this.getInGameCreatureByIndex(updatedGameCreature.Index);
+		if (!existingCreature) {
+			this.insertInGameCreature(updatedGameCreature);
+			return;
+		}
+
+		existingCreature.Alignment = updatedGameCreature.Alignment;
+		existingCreature.CropWidth = updatedGameCreature.CropWidth;
+		existingCreature.CropX = updatedGameCreature.CropX;
+		existingCreature.CropY = updatedGameCreature.CropY;
+		if (existingCreature.Health !== updatedGameCreature.Health) {
+			if (existingCreature.Health === 0) { // Was previously dead - now alive. 
+				const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(existingCreature);
+				if (deathXSprite)
+					deathXSprite.fadeOutNow(500);
+			}
+			existingCreature.Health = updatedGameCreature.Health;
+			const parchmentSprite: ColorShiftingSpriteProxy = this.getParchmentSpriteForCreature(existingCreature) as ColorShiftingSpriteProxy;
+			if (parchmentSprite) {
+				parchmentSprite.saturationPercent = updatedGameCreature.Health * 100;
+			}
+
+			if (existingCreature.Health === 0) { // Was previously alive - now dead. 
+				const x: number = this.getX(existingCreature);
+				this.addDeathSprite(x, existingCreature);
+			}
+		}
+
+		existingCreature.Kind = updatedGameCreature.Kind;
+		existingCreature.Name = updatedGameCreature.Name;
+
+		if (existingCreature.ImageURL !== updatedGameCreature.ImageURL)
+			existingCreature.setImageUrl(updatedGameCreature.ImageURL);
+		if (existingCreature.IsEnemy !== updatedGameCreature.IsEnemy) {
+			existingCreature.IsEnemy = updatedGameCreature.IsEnemy;
+
+			const parchmentShadow: SpriteProxy = this.getParchmentShadowForCreature(existingCreature);
+			if (parchmentShadow)
+				parchmentShadow.fadeOutNow(1000);
+			const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(existingCreature);
+			if (parchmentSprite)
+				parchmentSprite.fadeOutNow(1000);
+
+			const x: number = this.getX(existingCreature);
+			const frameIndex = this.getFriendEnemyFrameIndex(existingCreature);
+			this.addParchment(existingCreature, x, frameIndex, 0);
+		}
+		if (existingCreature.IsTargeted !== updatedGameCreature.IsTargeted) {
+			existingCreature.IsTargeted = updatedGameCreature.IsTargeted;
+
+			if (existingCreature.IsTargeted) {
+				const x: number = this.getX(existingCreature);
+				this.addTarget(existingCreature, x);
+			}
+			else {
+				const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
+				if (target)
+					target.fadeOutNow(1000);
+			}
+		}
+		if (updatedGameCreature.PercentDamageJustInflicted > 0) {
+			// TODO: Show damage...
+		}
+		if (updatedGameCreature.PercentHealthJustGiven > 0) {
+			// TODO: Show health...
+		}
+	}
+	getX(creature: InGameCreature): number {
+		const sprite: SpriteProxy = this.getParchmentSpriteForCreature(creature);
+		if (sprite)
+			return sprite.x;
+		return 0;
+	}
+
+	updateInGameCreatures(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
+		const numCreaturesBeforeUpdate: number = this.inGameCreatures.length;
+		for (let i = 0; i < inGameCreatureDtos.length; i++) {
+			this.updateInGameCreature(inGameCreatureDtos[i], soundManager);
+		}
+		if (this.inGameCreatures.length > numCreaturesBeforeUpdate) { // Creatures added!
+			this.repositionInGameScrolls();
+			this.createAnimationsForRecentlyAddedCreatures(soundManager);
+		}
+
+		// Now look for creatures that we should no longer be showing...
+		let delayMs = 0;
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			const existingCreature: InGameCreature = this.inGameCreatures[i];
+			if (existingCreature.removing)
+				continue;
+
+			let stillShowCreature = false;
+			for (let i = 0; i < inGameCreatureDtos.length; i++) {
+				if (inGameCreatureDtos[i].Index === existingCreature.Index) {  // Found creature. We are good.
+					stillShowCreature = true;
+					break;
+				}
+			}
+
+			if (!stillShowCreature) { // Did not find the creature. Animate their removal.
+				this.removeCreatureWithAnimation(this.inGameCreatures[i], soundManager, delayMs);
+				delayMs += InGameCreatureManager.timeSpanBetweenMoves;
+			}
+		}
+	}
 
 	private addInGameCreature(inGameCreature: InGameCreature, x: number, delayMs = 0) {
-		let frameIndex = 0;
-		if (inGameCreature.IsEnemy)
-			frameIndex = 1;
-
-		const saturation: number = MathEx.clamp(inGameCreature.Health * 100, 0, 100);
-		const parchmentSprite: SpriteProxy = this.inGameCreaturesParchmentBackground.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
-		parchmentSprite.data = inGameCreature;
-		parchmentSprite.delayStart = 700;
-		parchmentSprite.fadeInTime = 1000;
-		parchmentSprite.delayStart = delayMs;
-		const parchmentShadowSprite: SpriteProxy = this.inGameCreaturesParchmentShadow.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
-		parchmentShadowSprite.data = inGameCreature;
-		parchmentShadowSprite.delayStart = 700;
-		parchmentShadowSprite.fadeInTime = 1000;
-		parchmentShadowSprite.delayStart = delayMs;
+		const frameIndex = this.getFriendEnemyFrameIndex(inGameCreature);
+		const saturation: number = this.addParchment(inGameCreature, x, frameIndex, delayMs);
 		const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
 		const appearSprite: SpriteProxy = this.inGameScrollAppearAnimation.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0, scrollSmokeHueShift, saturation);
 		appearSprite.data = inGameCreature;
 		appearSprite.delayStart = delayMs;
 		if (inGameCreature.IsTargeted) {
-			const targetSprite: SpriteProxy = this.inGameCreaturesParchmentTarget.add(x, InGameCreatureManager.inGameStatTopMargin);
-			targetSprite.data = inGameCreature;
-			targetSprite.delayStart = delayMs;
+			this.addTarget(inGameCreature, x, delayMs);
 		}
+	}
+
+	private getFriendEnemyFrameIndex(inGameCreature: InGameCreature) {
+		let frameIndex = 0;
+		if (inGameCreature.IsEnemy)
+			frameIndex = 1;
+		return frameIndex;
+	}
+
+	private addParchment(inGameCreature: InGameCreature, x: number, frameIndex: number, delayMs: number) {
+		const saturation: number = MathEx.clamp(inGameCreature.Health * 100, 0, 100);
+		const parchmentSprite: SpriteProxy = this.inGameCreaturesParchmentBackground.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
+		parchmentSprite.data = inGameCreature;
+		parchmentSprite.fadeInTime = 1000;
+		parchmentSprite.delayStart = delayMs;
+		const parchmentShadowSprite: SpriteProxy = this.inGameCreaturesParchmentShadow.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
+		parchmentShadowSprite.data = inGameCreature;
+		parchmentShadowSprite.fadeInTime = 1000;
+		parchmentShadowSprite.delayStart = delayMs;
+		if (inGameCreature.Health === 0)
+			this.addDeathSprite(x, inGameCreature, delayMs);
+		return saturation;
+	}
+
+	private addDeathSprite(x: number, inGameCreature: InGameCreature, delayMs = 0) {
+		// TODO: add support for color-changing the X to match the creature's blood color.
+		const deathXSprite: SpriteProxy = this.inGameCreaturesDeathX.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0);
+		deathXSprite.data = inGameCreature;
+		deathXSprite.fadeInTime = 1000;
+		deathXSprite.delayStart = delayMs;
+	}
+
+	private addTarget(inGameCreature: InGameCreature, x: number, delayMs = 0) {
+		let hueShift = 0;
+		if (!inGameCreature.IsEnemy)
+			hueShift = 220;
+		const targetSprite: SpriteProxy = this.inGameCreaturesTarget.addShifted(x, InGameCreatureManager.inGameStatTopMargin + InGameCreatureManager.targetTop, -1, hueShift);
+		targetSprite.data = inGameCreature;
+		targetSprite.delayStart = delayMs;
+		targetSprite.fadeInTime = 500;
 	}
 
 	private getCreatureSmokeHueShift(inGameCreature: InGameCreature) {
@@ -273,21 +429,46 @@
 		return scrollSmokeHueShift;
 	}
 
-	processInGameCreatureCommand(command: string, inGameCreatures: Array<InGameCreature>) {
+	processInGameCreatureCommand(command: string, inGameCreatures: Array<InGameCreature>, soundManager: SoundManager) {
 		if (command === 'Set')
-			this.setInGameCreatures(inGameCreatures);
+			this.setInGameCreatures(inGameCreatures, soundManager);
+		else if (command === 'Update')
+			this.updateInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Remove')
-			this.removeInGameCreatures(inGameCreatures);
+			this.removeInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Add')
-			this.addInGameCreatures(inGameCreatures);
+			this.addInGameCreatures(inGameCreatures, soundManager);
 	}
 
-	removeInGameCreatures(inGameCreatures: InGameCreature[]) {
+	sameCreaturesInGame(inGameCreatures: InGameCreature[]) {
 		for (let i = 0; i < inGameCreatures.length; i++) {
-			const inGameCreature: InGameCreature = this.getInGameCreatureByIndex(inGameCreatures[i].Index);
-			const creatureSprite: SpriteProxy = this.getParchmentSpriteForCreature(inGameCreature);
+			if (!this.getInGameCreatureByIndex(inGameCreatures[i].Index))
+				return false;
+		}
+		return true;
+	}
+
+	removeInGameCreatures(inGameCreatures: InGameCreature[], soundManager: SoundManager) {
+		for (let i = 0; i < inGameCreatures.length; i++) {
+			const thisCreatureIndex: number = inGameCreatures[i].Index;
+			let inGameCreature: InGameCreature = this.getInGameCreatureByIndex(thisCreatureIndex);
+			const maxTries = 100;  // infinite loop protection.
+			let numTries = 0;
+			while (inGameCreature && numTries < maxTries) {  // To delete extra of the same index which can happen if the StreamDeck keys are rapidly hit repeatedly.
+				numTries++;
+				this.removeCreatureWithAnimation(inGameCreature, soundManager);
+
+				inGameCreature = this.getInGameCreatureByIndex(thisCreatureIndex);
+			}
+		}
+	}
+
+	private removeCreatureWithAnimation(inGameCreature: InGameCreature, soundManager: SoundManager, delayMs = 0) {
+		const creatureSprite: SpriteProxy = this.getParchmentSpriteForCreature(inGameCreature);
+		if (creatureSprite !== null) {
 			const shadowSprite: SpriteProxy = this.getParchmentShadowForCreature(inGameCreature);
 			const targetSprite: SpriteProxy = this.getTargetSpriteForCreature(inGameCreature);
+			const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(inGameCreature);
 			creatureSprite.logData = true;
 			const fadeOutTimeMs = 800;
 			const delayBeforeFadeOutMs = 800;
@@ -295,29 +476,35 @@
 			shadowSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
 			if (targetSprite)
 				targetSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
+			if (deathXSprite)
+				deathXSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
 			const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
 			const disappearAnimation: SpriteProxy = this.inGameScrollDisappearAnimation.addShifted(creatureSprite.x, creatureSprite.y, 0, scrollSmokeHueShift);
 			disappearAnimation.data = inGameCreature;
 			inGameCreature.removing = true;
-			this.removeInGameCreature(inGameCreature, delayBeforeFadeOutMs + fadeOutTimeMs / 2);
-
+			this.removeInGameCreature(inGameCreature, delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2);
 			disappearAnimation.addOnCycleCallback(this.creatureDisappearAnimationComplete.bind(this));
+			soundManager.safePlayMp3('InGameScrolls/InGameScrollDisappear');
 		}
 	}
 
-	moveSpriteTo(sprite: SpriteProxy, targetX: number, delayMs: number) {
+	moveSpriteTo(sprites: Sprites, creature: InGameCreature, targetX: number, delayMs: number) {
+		const sprite: SpriteProxy = this.getSpriteForCreature(sprites.sprites, creature);
 		if (!sprite)
 			return;
 		const moveTime = 750;
-		sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, targetX, sprite.y, moveTime);
+		// Since we are moving X we must account for the originX
+		const adjustedX: number = targetX - sprites.originX;
+		sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, moveTime);
 	}
 
 	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number) {
-		this.moveSpriteTo(this.getParchmentSpriteForCreature(creature), targetX, delayMs);
-		this.moveSpriteTo(this.getParchmentShadowForCreature(creature), targetX, delayMs);
-		this.moveSpriteTo(this.getTargetSpriteForCreature(creature), targetX, delayMs);
-		this.moveSpriteTo(this.getScrollAppearForCreature(creature), targetX, delayMs);
-		this.moveSpriteTo(this.getScrollDisappearForCreature(creature), targetX, delayMs);
+		this.moveSpriteTo(this.inGameCreaturesParchmentBackground, creature, targetX, delayMs);
+		this.moveSpriteTo(this.inGameCreaturesParchmentShadow, creature, targetX, delayMs);
+		this.moveSpriteTo(this.inGameCreaturesDeathX, creature, targetX, delayMs);
+		this.moveSpriteTo(this.inGameCreaturesTarget, creature, targetX, delayMs);
+		this.moveSpriteTo(this.inGameScrollAppearAnimation, creature, targetX, delayMs);
+		this.moveSpriteTo(this.inGameScrollDisappearAnimation, creature, targetX, delayMs);
 	}
 
 	removeInGameCreature(creature: InGameCreature, delayMs: number): void {
@@ -325,7 +512,6 @@
 		if (creatureIndexInArray < 0) {
 			return;
 		}
-
 		let isRightOfRemovedCreature = false;
 		let targetX: number = this.miniScrollLeftMargin;
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
@@ -336,7 +522,7 @@
 			}
 			else if (isRightOfRemovedCreature && !thisCreature.removing) {
 				this.moveCreatureTo(thisCreature, targetX, delayMs);
-				delayMs += 200; // ms between each move.
+				delayMs += InGameCreatureManager.timeSpanBetweenMoves;; // ms between each move.
 			}
 
 			if (!thisCreature.removing) {
@@ -355,32 +541,96 @@
 
 	getInGameCreatureByIndex(index: number): InGameCreature {
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
-			if (this.inGameCreatures[i].Index === index)
+			if (this.inGameCreatures[i].Index === index && !this.inGameCreatures[i].removing)
 				return this.inGameCreatures[i];
 		}
 		return null;
 	}
 
-	addInGameCreatures(inGameCreatures: InGameCreature[]) {
-		for (let i = 0; i < inGameCreatures.length; i++) {
-			//const inGameCreature: InGameCreature = this.getInGameCreatureByIndex(inGameCreatures[i].Index);
-			//const creatureSprite: SpriteProxy = this.getParchmentSpriteForCreature(inGameCreature);
-			//const shadowSprite: SpriteProxy = this.getParchmentShadowForCreature(inGameCreature);
-			//const targetSprite: SpriteProxy = this.getTargetSpriteForCreature(inGameCreature);
-			//creatureSprite.logData = true;
-			//const fadeOutTimeMs = 800;
-			//const delayBeforeFadeOutMs = 800;
-			//creatureSprite.fadeOutIn(delayBeforeFadeOutMs, fadeOutTimeMs);
-			//shadowSprite.fadeOutIn(delayBeforeFadeOutMs, fadeOutTimeMs);
-			//if (targetSprite)
-			//	targetSprite.fadeOutIn(delayBeforeFadeOutMs, fadeOutTimeMs);
-			//const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
-			//const disappearAnimation: SpriteProxy = this.inGameScrollDisappearAnimation.addShifted(creatureSprite.x, creatureSprite.y, 0, scrollSmokeHueShift);
-			//disappearAnimation.data = inGameCreature;
-			//inGameCreature.removing = true;
-			//this.removeInGameCreature(inGameCreature, delayBeforeFadeOutMs + fadeOutTimeMs / 2);
+	getInsertionIndex(inGameCreature: InGameCreature): number {
+		let numSkippable = 0;
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			const thisCreature: InGameCreature = this.inGameCreatures[i];
+			if (thisCreature.removing || thisCreature.justAdded)
+				numSkippable++;
 
-			//disappearAnimation.addOnCycleCallback(this.creatureDisappearAnimationComplete.bind(this));
+			if (inGameCreature.Index < thisCreature.Index)
+				return i - numSkippable;
 		}
+		return this.inGameCreatures.length;
+	}
+
+	addInGameCreatures(inGameCreatures: InGameCreature[], soundManager: SoundManager) {
+		console.log(`Add ${inGameCreatures.length} creature(s).`);
+		for (let i = 0; i < inGameCreatures.length; i++) {
+			const creatureDtoToAdd: InGameCreature = inGameCreatures[i];
+			this.insertInGameCreature(creatureDtoToAdd);
+		}
+
+		this.repositionInGameScrolls();
+		this.createAnimationsForRecentlyAddedCreatures(soundManager);
+	}
+
+	private insertInGameCreature(creatureDtoToAdd: InGameCreature) {
+		const insertionIndex: number = this.getInsertionIndex(creatureDtoToAdd);
+		console.log('insertionIndex: ' + insertionIndex);
+		const newCreature: InGameCreature = new InGameCreature(creatureDtoToAdd);
+		newCreature.justAdded = true;
+		if (insertionIndex < this.inGameCreatures.length) { // Insert the new creature at the right spot.
+			this.inGameCreatures.splice(insertionIndex, 0, newCreature);
+		}
+		else { // Add the new creature to the end of the list.
+			this.inGameCreatures.push(newCreature);
+		}
+	}
+
+	createAnimationsForRecentlyAddedCreatures(soundManager: SoundManager) {
+		let delayMs = 0;
+		let first = true;
+		for (let i = this.inGameCreatures.length - 1; i >= 0; i--) { // Reverse order
+			const inGameCreature: InGameCreature = this.inGameCreatures[i];
+
+			const indexToCreatureStillInGame: number = this.getIndexToCreatureStillInGame(inGameCreature);
+			const targetX: number = this.miniScrollLeftMargin + indexToCreatureStillInGame * this.miniScrollWidth;
+
+			if (inGameCreature.justAdded) {
+				inGameCreature.justAdded = false;
+				this.addInGameCreature(inGameCreature, targetX, delayMs);
+			}
+			delayMs += InGameCreatureManager.timeSpanBetweenMoves;
+
+			if (first)
+				soundManager.playMp3In(delayMs, 'InGameScrolls/InGameScrollAppearFirst');
+			else
+				soundManager.playMp3In(delayMs, 'InGameScrolls/InGameScrollAppear');
+
+			first = false;
+		}
+	}
+
+	static readonly timeSpanBetweenMoves = 200;
+
+	private repositionInGameScrolls() {
+		let delayMs = 0;
+		for (let i = this.inGameCreatures.length - 1; i >= 0; i--) { // Reverse order
+			const inGameCreature: InGameCreature = this.inGameCreatures[i];
+			const indexToCreatureStillInGame: number = this.getIndexToCreatureStillInGame(inGameCreature);
+			const targetX: number = this.miniScrollLeftMargin + indexToCreatureStillInGame * this.miniScrollWidth;
+			if (!inGameCreature.justAdded) {
+				this.moveCreatureTo(inGameCreature, targetX, delayMs);
+				delayMs += InGameCreatureManager.timeSpanBetweenMoves;
+			}
+		}
+	}
+
+	getIndexToCreatureStillInGame(inGameCreature: InGameCreature): number {
+		let index = 0;
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			if (this.inGameCreatures[i] === inGameCreature)
+				return index;
+			if (!this.inGameCreatures[i].removing)
+				index++;
+		}
+		return index;
 	}
 }

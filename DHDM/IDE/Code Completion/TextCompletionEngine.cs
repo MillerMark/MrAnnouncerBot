@@ -44,7 +44,7 @@ namespace DHDM
 			}
 		}
 
-		private const int IntervalBeforeSavingCodeChangesMs = 1800;
+		private const int IntervalBeforeSavingCodeChangesMs = 2700;
 		public TextCompletionEngine(TextEditor tbxCode)
 		{
 			needToSaveCodeTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -60,8 +60,15 @@ namespace DHDM
 			TbxCode.TextArea.TextEntered += TextArea_TextEntered;
 			TbxCode.TextArea.TextEntering += TextArea_TextEntering;
 			TbxCode.TextArea.KeyDown += TextArea_KeyDown;
+			TbxCode.TextArea.Caret.PositionChanged += Caret_PositionChanged;
 			TbxCode.TextChanged += TextChanged;
 			TbxCode.LostFocus += TextArea_LostFocus;
+		}
+
+		private void Caret_PositionChanged(object sender, EventArgs e)
+		{
+			needToSaveCodeTimer.Stop();
+			needToSaveCodeTimer.Start();
 		}
 
 		CompletionWindow completionWindow;

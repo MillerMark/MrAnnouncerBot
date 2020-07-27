@@ -12,16 +12,16 @@ class DragonBackSounds extends SoundManager {
 class DragonBackGame extends DragonGame {
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	sprinkles: Sprinkles;
-	layerSuffix: string = 'Back';
+	layerSuffix = 'Back';
 	emitter: Emitter;
 	scrollSlamlastUpdateTime: number;
-	shouldDrawCenterCrossHairs: boolean = false;
+	shouldDrawCenterCrossHairs = false;
 	sunMoonDials: Sprites;
 	lightning: Sprites;
 	sunMoonDial: SpriteProxy;
 	characterStatsScroll: CharacterStatsScroll;
 	dragonBackSounds: DragonBackSounds;
-	playerDataSet: boolean = false;
+	playerDataSet = false;
 
 
 	constructor(context: CanvasRenderingContext2D) {
@@ -82,17 +82,23 @@ class DragonBackGame extends DragonGame {
 	}
 
 	protected triggerAnimationDto(dto: any, center: Vector) {
-		let spriteName: string = dto.spriteName;
-		let startFrameIndex: number = dto.startFrameIndex;
-		let hueShift: number = dto.hueShift;
-		let saturation: number = dto.saturation;
-		let brightness: number = dto.brightness;
-		let horizontalFlip: boolean = dto.horizontalFlip;
-		let verticalFlip: boolean = dto.verticalFlip;
-		let scale: number = dto.scale;
-		let rotation: number = dto.rotation;
-		let autoRotation: number = dto.autoRotation;
-		this.triggerAnimation(spriteName, center, startFrameIndex, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation);
+		const spriteName: string = dto.spriteName;
+		const startFrameIndex: number = dto.startFrameIndex;
+		const hueShift: number = dto.hueShift;
+		const saturation: number = dto.saturation;
+		const brightness: number = dto.brightness;
+		const horizontalFlip: boolean = dto.horizontalFlip;
+		const verticalFlip: boolean = dto.verticalFlip;
+		const scale: number = dto.scale;
+		const rotation: number = dto.rotation;
+		const autoRotation: number = dto.autoRotation;
+		let adjustCenter: Vector;
+		if (dto.xOffset !== 0 || dto.yOffset !== 0) {
+			adjustCenter = new Vector(center.x + dto.xOffset, center.y + dto.yOffset);
+		}
+		else
+			adjustCenter = center;
+		this.triggerAnimation(spriteName, adjustCenter, startFrameIndex, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation, dto.velocityX, dto.velocityY);
 	}
 
 	changePlayerHealth(playerHealthDto: string): void {
@@ -787,7 +793,7 @@ class DragonBackGame extends DragonGame {
 
 	updateInGameCreatures(commandData: string) {
 		const inGameCommand: InGameCommand = JSON.parse(commandData);
-		this.inGameCreatureManager.processInGameCreatureCommand(inGameCommand.Command, inGameCommand.Creatures);
+		this.inGameCreatureManager.processInGameCreatureCommand(inGameCommand.Command, inGameCommand.Creatures, this.dragonBackSounds);
 	}
 
 } 

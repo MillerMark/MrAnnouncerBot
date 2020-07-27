@@ -235,6 +235,7 @@ class DragonFrontGame extends DragonGame {
 		this.bloodEffects.draw(context, nowMs);
 
 		this.coinManager.draw(context, nowMs);
+		this.allFrontEffects.updatePositions(nowMs);
 		this.allFrontEffects.draw(context, nowMs);
 		this.textAnimations.removeExpiredAnimations(nowMs);
 		this.textAnimations.updatePositions(nowMs);
@@ -684,6 +685,12 @@ class DragonFrontGame extends DragonGame {
 		this.allFrontEffects.add(this.spellHits4);
 		this.allFrontEffects.add(this.spellHits5);
 		this.allFrontEffects.add(this.spellMisses);
+
+		for (let i = 0; i < this.allFrontEffects.allSprites.length; i++) {
+			this.allFrontEffects.allSprites[i].moves = true;
+			this.allFrontEffects.allSprites[i].disableGravity();
+		}
+
 		this.bloodEffects.add(this.bloodGushA);
 		this.bloodEffects.add(this.bloodGushB);
 		this.bloodEffects.add(this.bloodGushC);
@@ -871,7 +878,7 @@ class DragonFrontGame extends DragonGame {
 		}
 
 		if (testCommand === 'blood') {
-			console.log('Blood');
+			//console.log('Blood');
 			this.world.removeCharacter(this.emitter);
 			this.testBloodEmitter();
 			this.world.addCharacter(this.emitter);
@@ -936,14 +943,14 @@ class DragonFrontGame extends DragonGame {
 			return;
 		if (soundFileName.indexOf('.') < 0)
 			soundFileName += '.mp3';
-		console.log("Playing " + Folders.assets + 'SoundEffects/' + soundFileName);
+		//console.log("Playing " + Folders.assets + 'SoundEffects/' + soundFileName);
 		new Audio(Folders.assets + 'SoundEffects/' + soundFileName).play();
 	}
 
 	protected triggerEmitter(dto: any, center: Vector): void {
 		this.world.removeCharacter(this.emitter);
 
-		console.log('emitter: ' + dto);
+		//console.log('emitter: ' + dto);
 
 		this.emitter = new Emitter(new Vector(center.x, center.y), new Vector(dto.emitterInitialVelocity.x, dto.emitterInitialVelocity.y));
 		if (dto.emitterShape === EmitterShape.Circular) {
@@ -995,7 +1002,7 @@ class DragonFrontGame extends DragonGame {
 		this.emitter.renderOldestParticlesLast = dto.renderOldestParticlesLast;
 
 		this.world.addCharacter(this.emitter);
-		console.log(this.emitter);
+		//console.log(this.emitter);
 	}
 
 
@@ -1132,8 +1139,15 @@ class DragonFrontGame extends DragonGame {
 			return;
 		}
 
-		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
-			flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
+		let adjustCenter: Vector;
+		if (dto.xOffset !== 0 || dto.yOffset !== 0) {
+			adjustCenter = new Vector(center.x + dto.xOffset, center.y + dto.yOffset);
+		}
+		else
+			adjustCenter = center;
+
+		const spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(adjustCenter), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
+			flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation, dto.velocityX, dto.velocityY);
 
 		spritesEffect.start();
 
@@ -1147,8 +1161,8 @@ class DragonFrontGame extends DragonGame {
 		}
 
 		if (sprites) {
-			let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.secondaryHueShift, dto.secondarySaturation, dto.secondaryBrightness,
-				flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
+			const spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(adjustCenter), dto.startFrameIndex, dto.secondaryHueShift, dto.secondarySaturation, dto.secondaryBrightness,
+				flipHorizontally, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation, dto.velocityX, dto.velocityY);
 			spritesEffect.start();
 		}
 	}
@@ -1359,13 +1373,13 @@ class DragonFrontGame extends DragonGame {
 			scale = 1080 / damageHealthSprites.height;
 		}
 
-		let playerIndex: number = this.getPlayerIndex(playerId);
+		const playerIndex: number = this.getPlayerIndex(playerId);
 
-		let x: number = this.getPlayerX(playerIndex);
-		let center: Vector = new Vector(x, 1080);
+		const x: number = this.getPlayerX(playerIndex);
+		const center: Vector = new Vector(x, 1080);
 		if (x < 300 && flipHorizontally && Random.chancePercent(70))
 			flipHorizontally = false;
-		let spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
+		const spritesEffect: SpritesEffect = new SpritesEffect(damageHealthSprites, new ScreenPosTarget(center), 0, 0, 100, 100, flipHorizontally);
 		spritesEffect.scale = scale;
 		spritesEffect.start();
 		if (flipHorizontally)

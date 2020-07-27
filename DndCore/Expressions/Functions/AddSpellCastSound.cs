@@ -21,7 +21,7 @@ namespace DndCore
 				if (args.Count > 1)
 					timeOffsetMs = Expressions.GetInt(args[1], player, target, spell);
 
-				player.AddSpellHitSoundEffect(fileName, timeOffsetMs);
+				player.AddSpellCastSoundEffect(fileName, timeOffsetMs);
 			}
 
 			return null;

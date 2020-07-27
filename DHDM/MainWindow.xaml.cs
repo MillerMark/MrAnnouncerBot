@@ -57,6 +57,7 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
+		DispatcherTimer playSceneTimer;
 		DispatcherTimer reconnectToTwitchTimer;
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer stateUpdateTimer;
@@ -91,6 +92,15 @@ namespace DHDM
 			DeueueNextAction();
 		}
 
+		void PlaySceneHandler(object sender, EventArgs e)
+		{
+			playSceneTimer.Stop();
+			if (nextSceneToPlay == null)
+				return;
+			PlayScene(nextSceneToPlay);
+			nextSceneToPlay = null;
+		}
+
 		private void InitializeGame()
 		{
 			game = new DndGame();
@@ -99,9 +109,12 @@ namespace DHDM
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
 
+			playSceneTimer = new DispatcherTimer(DispatcherPriority.Send);
+			playSceneTimer.Tick += new EventHandler(PlaySceneHandler);
+
 			reconnectToTwitchTimer = new DispatcherTimer(DispatcherPriority.Send);
 			reconnectToTwitchTimer.Tick += new EventHandler(ReconnectToTwitchHandler);
-			reconnectToTwitchTimer.Interval = TimeSpan.FromMilliseconds(2000);
+			reconnectToTwitchTimer.Interval = TimeSpan.FromMilliseconds(1000);
 
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
@@ -358,9 +371,21 @@ namespace DHDM
 			}
 		}
 
+		string nextSceneToPlay;
+
+		void PlaySceneAfter(string sceneName, int delayMs)
+		{
+			nextSceneToPlay = sceneName;
+			playSceneTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
+			playSceneTimer.Start();
+		}
+
 		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
 		{
-			PlayScene(ea.SceneName);
+			if (ea.DelayMs > 0)
+				PlaySceneAfter(ea.SceneName, ea.DelayMs);
+			else
+				PlayScene(ea.SceneName);
 		}
 
 		void AddBooleanAsk(AskUI askUI)
@@ -1967,6 +1992,7 @@ namespace DHDM
 				if (spellCaster == null)
 					spellCaster = player;
 				game.CompleteCast(spellCaster, castedSpell);
+				ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
 			}
 			else
 			{
@@ -3168,7 +3194,7 @@ namespace DHDM
 				}
 				AnimationEffect effectBonus = CreateEffect(effectName, target,
 					spellHit.Hue, spellHit.Saturation, spellHit.Brightness,
-					spellHit.SecondaryHue, spellHit.SecondarySaturation, spellHit.SecondaryBrightness);
+					spellHit.SecondaryHue, spellHit.SecondarySaturation, spellHit.SecondaryBrightness, spellHit.XOffset, spellHit.YOffset, spellHit.VelocityX, spellHit.VelocityY);
 				if (usingSpellHits)
 				{
 					effectBonus.timeOffsetMs = timeOffset;
@@ -3220,7 +3246,8 @@ namespace DHDM
 
 		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target,
 			int hueShift = 0, int saturation = 100, int brightness = 100,
-			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100)
+			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100, 
+			int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
 		{
 			AnimationEffect spellEffect = new AnimationEffect();
 			spellEffect.spriteName = spriteName;
@@ -3230,6 +3257,10 @@ namespace DHDM
 			spellEffect.secondaryHueShift = secondaryHueShift;
 			spellEffect.secondarySaturation = secondarySaturation;
 			spellEffect.secondaryBrightness = secondaryBrightness;
+			spellEffect.xOffset = xOffset;
+			spellEffect.yOffset = yOffset;
+			spellEffect.velocityX = velocityX;
+			spellEffect.velocityY = velocityY;
 			spellEffect.target = target;
 			return spellEffect;
 		}
@@ -4570,7 +4601,7 @@ namespace DHDM
 			InitializeAttackShortcuts();
 			lstAllSpells.ItemsSource = AllSpells.Spells;
 			spAllMonsters.DataContext = AllMonsters.Monsters;
-			UpdateInGameCreatures();
+			SetInGameCreatures();
 		}
 
 		private void SendPlayerData()
@@ -7171,10 +7202,15 @@ namespace DHDM
 			frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, null);
 			if (frmSelectInGameCreature.ShowDialog() != true)
 				return;
-			UpdateInGameCreatures();
+			SetInGameCreatures();
 		}
 
 		private static void UpdateInGameCreatures()
+		{
+			HubtasticBaseStation.UpdateInGameCreatures("Update", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
+		}
+
+		private static void SetInGameCreatures()
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Set", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
 		}
@@ -7215,13 +7251,33 @@ namespace DHDM
 			}
 		}
 
+		public class TargetSaveData
+		{
+			public bool IsTargeted { get; set; }
+			public bool IsSelected { get; set; }
+			public TargetSaveData()
+			{
+				
+			}
+		}
+
 		public void TargetCommand(string command)
 		{
 			switch (command)
 			{
+				case "TargetShown":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsTargeted= inGameCreature.IsSelected;
+					UpdateInGameCreatures();
+					return;
 				case "ShowNone":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.IsSelected = false;
+					UpdateInGameCreatures();
+					return;
+				case "ShowAllTargets":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						inGameCreature.IsSelected = inGameCreature.IsTargeted;
 					break;
 				case "ShowAll":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -7230,14 +7286,16 @@ namespace DHDM
 				case "TargetNone":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.IsTargeted = false;
-					break;
+					UpdateInGameCreatures();
+					return;
 				case "TargetAll":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 					{
 						inGameCreature.IsTargeted = true;
 						inGameCreature.IsSelected = true;
 					}
-					break;
+					UpdateInGameCreatures();
+					return;
 				case "TargetFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 					{
@@ -7266,16 +7324,51 @@ namespace DHDM
 				case "ReloadAllCreatures":
 					AllInGameCreatures.Invalidate();
 					break;
-				case "SavingThrow":
-					// TODO: Roll saving throws for target monsters against last damage and last damage type.
-					TellDungeonMaster("This Save button is not functional yet.");
-					break;
+				case "SaveCreatureHP":
+					AllInGameCreatures.SaveHp();
+					TellDungeonMaster("All in-game NPC/Monster hit points and temp hit points have been saved.");
+					return;
+
+				case "UpdateOnScreenCreatures":
+
+					// Save current selection/targeting  state...
+					Dictionary<int, TargetSaveData> targetSaveData = new Dictionary<int, TargetSaveData>();
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					{
+						TargetSaveData targetData = new TargetSaveData() { IsSelected = inGameCreature.IsSelected, IsTargeted = inGameCreature.IsTargeted };
+						int index = inGameCreature.Index;
+						if (targetSaveData.ContainsKey(index))
+							targetSaveData[index] = targetData;
+						else
+							targetSaveData.Add(index, targetData);
+					}
+					
+					AllInGameCreatures.Invalidate();
+
+					// Restore selection/targeting state
+					foreach (int key in targetSaveData.Keys)
+					{
+						InGameCreature creature = AllInGameCreatures.GetByIndex(key);
+						if (creature != null)
+						{
+							creature.IsSelected = targetSaveData[key].IsSelected;
+							creature.IsTargeted = targetSaveData[key].IsTargeted;
+						}
+					}
+
+					UpdateInGameCreatures();
+					return;
+				//case "SavingThrow":
+				//	// TODO: Roll saving throws for target monsters against last damage and last damage type.
+				//	TellDungeonMaster("This Save button is not functional yet.");
+				//	break;
 				default:
 					return;
 			}
-			UpdateInGameCreatures();
+			SetInGameCreatures();
 		}
 
+		// TODO: send in a dictionary of damage types and amounts.
 		void ApplyDamageToTargets(int damage)
 		{
 			bool changed = false;
@@ -7284,9 +7377,13 @@ namespace DHDM
 				if (inGameCreature.IsTargeted)
 				{
 					// TODO: Get damage type and attack kind parameters right from the last roll!
-					inGameCreature.Creature.TakeDamage(DamageType.None, AttackKind.Any, damage);
+					inGameCreature.TakeDamage(DamageType.None, AttackKind.Any, damage);
+
+					if (inGameCreature.PercentDamageJustInflicted != 0)
+						changed = true;
+
 					TellDmCreatureHp(inGameCreature);
-					changed = true;
+					
 				}
 			}
 			if (changed)
@@ -7298,7 +7395,7 @@ namespace DHDM
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 				if (inGameCreatureFilter == InGameCreatureFilter.All || inGameCreature.IsTargeted)
 				{
-					inGameCreature.Creature.ChangeHealth(amount);
+					inGameCreature.ChangeHealth(amount);
 					TellDmCreatureHp(inGameCreature);
 				}
 			UpdateInGameCreatures();
