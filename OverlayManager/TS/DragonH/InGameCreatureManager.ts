@@ -1,46 +1,46 @@
 ﻿class InGameCreatureManager {
-	inGameCreaturesParchmentBackground: Sprites;
-	inGameCreaturesDeathX: Sprites;
-	inGameScrollAppearAnimation: Sprites;
-	inGameScrollDisappearAnimation: Sprites;
-	inGameCreaturesParchmentShadow: Sprites;
-	inGameCreaturesTarget: Sprites;
+	parchmentBackground: Sprites;
+	deathX: Sprites;
+	scrollAppear: Sprites;
+	scrollDisappear: Sprites;
+	parchmentShadow: Sprites;
+	target: Sprites;
 
 	constructor() {
 
 	}
 
 	update(timestamp: number) {
-		this.inGameCreaturesParchmentBackground.updatePositionsForFreeElements(timestamp);
-		this.inGameCreaturesDeathX.updatePositionsForFreeElements(timestamp);
-		this.inGameCreaturesParchmentShadow.updatePositionsForFreeElements(timestamp);
-		this.inGameCreaturesTarget.updatePositionsForFreeElements(timestamp);
-		this.inGameScrollAppearAnimation.updatePositionsForFreeElements(timestamp);
-		this.inGameScrollDisappearAnimation.updatePositionsForFreeElements(timestamp);
+		this.parchmentBackground.updatePositionsForFreeElements(timestamp);
+		this.deathX.updatePositionsForFreeElements(timestamp);
+		this.parchmentShadow.updatePositionsForFreeElements(timestamp);
+		this.target.updatePositionsForFreeElements(timestamp);
+		this.scrollAppear.updatePositionsForFreeElements(timestamp);
+		this.scrollDisappear.updatePositionsForFreeElements(timestamp);
 	}
 
 	loadResources() {
-		this.inGameCreaturesParchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 2, fps30, AnimationStyle.Static);
-		this.inGameCreaturesDeathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
-		this.inGameCreaturesParchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
+		this.parchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 2, fps30, AnimationStyle.Static);
+		this.deathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
+		this.parchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
 		//this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
-		this.inGameCreaturesTarget = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
-		this.inGameCreaturesTarget.originX = 41 - InGameCreatureManager.targetLeft;
-		this.inGameCreaturesTarget.originY = 45;
+		this.target = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
+		this.target.originX = 41 - InGameCreatureManager.targetLeft;
+		this.target.originY = 45;
 
-		this.inGameScrollAppearAnimation = new Sprites('Scroll/InGameCreatures/ScrollAppear/ScrollAppear', 115, fps30, AnimationStyle.Sequential, true);
-		this.inGameScrollAppearAnimation.originX = 105;
-		this.inGameScrollAppearAnimation.originY = 3;
-		this.inGameScrollDisappearAnimation = new Sprites('Scroll/InGameCreatures/ScrollDisappear/ScrollDisappear', 217, fps30, AnimationStyle.Sequential, true);
-		this.inGameScrollDisappearAnimation.originX = 49;
-		this.inGameScrollDisappearAnimation.originY = 2;
+		this.scrollAppear = new Sprites('Scroll/InGameCreatures/ScrollAppear/ScrollAppear', 115, fps30, AnimationStyle.Sequential, true);
+		this.scrollAppear.originX = 105;
+		this.scrollAppear.originY = 3;
+		this.scrollDisappear = new Sprites('Scroll/InGameCreatures/ScrollDisappear/ScrollDisappear', 217, fps30, AnimationStyle.Sequential, true);
+		this.scrollDisappear.originX = 49;
+		this.scrollDisappear.originY = 2;
 
-		this.inGameCreaturesParchmentBackground.disableGravity();
-		this.inGameCreaturesDeathX.disableGravity();
-		this.inGameCreaturesParchmentShadow.disableGravity();
-		this.inGameCreaturesTarget.disableGravity();
-		this.inGameScrollAppearAnimation.disableGravity();
-		this.inGameScrollDisappearAnimation.disableGravity();
+		this.parchmentBackground.disableGravity();
+		this.deathX.disableGravity();
+		this.parchmentShadow.disableGravity();
+		this.target.disableGravity();
+		this.scrollAppear.disableGravity();
+		this.scrollDisappear.disableGravity();
 	}
 
 	inGameCreatures: Array<InGameCreature> = [];
@@ -169,7 +169,7 @@
 	}
 
 	drawInGameCreatures(context: CanvasRenderingContext2D, nowMs: number) {
-		this.inGameCreaturesParchmentBackground.draw(context, nowMs);
+		this.parchmentBackground.draw(context, nowMs);
 
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
 			const inGameCreature: InGameCreature = this.inGameCreatures[i]
@@ -179,36 +179,36 @@
 				this.drawInGameCreature(context, this.inGameCreatures[i], sprite.x, 0, alpha);
 		}
 
-		this.inGameCreaturesParchmentShadow.draw(context, nowMs);
-		this.inGameCreaturesDeathX.draw(context, nowMs);
-		this.inGameCreaturesTarget.draw(context, nowMs);
+		this.parchmentShadow.draw(context, nowMs);
+		this.deathX.draw(context, nowMs);
+		this.target.draw(context, nowMs);
 
-		this.inGameScrollAppearAnimation.draw(context, nowMs);
-		this.inGameScrollDisappearAnimation.draw(context, nowMs);
+		this.scrollAppear.draw(context, nowMs);
+		this.scrollDisappear.draw(context, nowMs);
 	}
 
 	getParchmentSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameCreaturesParchmentBackground.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.parchmentBackground.sprites, inGameCreature);
 	}
 
 	getParchmentDeathXForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameCreaturesDeathX.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.deathX.sprites, inGameCreature);
 	}
 
 	getParchmentShadowForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameCreaturesParchmentShadow.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.parchmentShadow.sprites, inGameCreature);
 	}
 
 	getScrollAppearForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameScrollAppearAnimation.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.scrollAppear.sprites, inGameCreature);
 	}
 
 	getScrollDisappearForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameScrollDisappearAnimation.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.scrollDisappear.sprites, inGameCreature);
 	}
 
 	getTargetSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.inGameCreaturesTarget.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.target.sprites, inGameCreature);
 	}
 
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
@@ -238,10 +238,10 @@
 		}
 
 		let x: number = this.miniScrollLeftMargin;
-		this.inGameCreaturesParchmentBackground.sprites = [];
-		this.inGameCreaturesParchmentShadow.sprites = [];
-		this.inGameCreaturesDeathX.sprites = [];
-		this.inGameCreaturesTarget.sprites = [];
+		this.parchmentBackground.sprites = [];
+		this.parchmentShadow.sprites = [];
+		this.deathX.sprites = [];
+		this.target.sprites = [];
 
 		let delayMs = 0;
 		let timeBetweenArrivals = 300;
@@ -374,7 +374,7 @@
 		const frameIndex = this.getFriendEnemyFrameIndex(inGameCreature);
 		const saturation: number = this.addParchment(inGameCreature, x, frameIndex, delayMs);
 		const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
-		const appearSprite: SpriteProxy = this.inGameScrollAppearAnimation.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0, scrollSmokeHueShift, saturation);
+		const appearSprite: SpriteProxy = this.scrollAppear.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0, scrollSmokeHueShift, saturation);
 		appearSprite.data = inGameCreature;
 		appearSprite.delayStart = delayMs;
 		if (inGameCreature.IsTargeted) {
@@ -391,11 +391,11 @@
 
 	private addParchment(inGameCreature: InGameCreature, x: number, frameIndex: number, delayMs: number) {
 		const saturation: number = MathEx.clamp(inGameCreature.Health * 100, 0, 100);
-		const parchmentSprite: SpriteProxy = this.inGameCreaturesParchmentBackground.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
+		const parchmentSprite: SpriteProxy = this.parchmentBackground.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
 		parchmentSprite.data = inGameCreature;
 		parchmentSprite.fadeInTime = 1000;
 		parchmentSprite.delayStart = delayMs;
-		const parchmentShadowSprite: SpriteProxy = this.inGameCreaturesParchmentShadow.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
+		const parchmentShadowSprite: SpriteProxy = this.parchmentShadow.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
 		parchmentShadowSprite.data = inGameCreature;
 		parchmentShadowSprite.fadeInTime = 1000;
 		parchmentShadowSprite.delayStart = delayMs;
@@ -406,7 +406,7 @@
 
 	private addDeathSprite(x: number, inGameCreature: InGameCreature, delayMs = 0) {
 		// TODO: add support for color-changing the X to match the creature's blood color.
-		const deathXSprite: SpriteProxy = this.inGameCreaturesDeathX.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0);
+		const deathXSprite: SpriteProxy = this.deathX.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0);
 		deathXSprite.data = inGameCreature;
 		deathXSprite.fadeInTime = 1000;
 		deathXSprite.delayStart = delayMs;
@@ -416,7 +416,7 @@
 		let hueShift = 0;
 		if (!inGameCreature.IsEnemy)
 			hueShift = 220;
-		const targetSprite: SpriteProxy = this.inGameCreaturesTarget.addShifted(x, InGameCreatureManager.inGameStatTopMargin + InGameCreatureManager.targetTop, -1, hueShift);
+		const targetSprite: SpriteProxy = this.target.addShifted(x, InGameCreatureManager.inGameStatTopMargin + InGameCreatureManager.targetTop, -1, hueShift);
 		targetSprite.data = inGameCreature;
 		targetSprite.delayStart = delayMs;
 		targetSprite.fadeInTime = 500;
@@ -472,14 +472,15 @@
 			creatureSprite.logData = true;
 			const fadeOutTimeMs = 800;
 			const delayBeforeFadeOutMs = 800;
-			creatureSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
-			shadowSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
+			creatureSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
+			shadowSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			if (targetSprite)
-				targetSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
+				targetSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			if (deathXSprite)
-				deathXSprite.fadeOutAfter(delayBeforeFadeOutMs, fadeOutTimeMs);
+				deathXSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
-			const disappearAnimation: SpriteProxy = this.inGameScrollDisappearAnimation.addShifted(creatureSprite.x, creatureSprite.y, 0, scrollSmokeHueShift);
+			const disappearAnimation: SpriteProxy = this.scrollDisappear.addShifted(creatureSprite.x, creatureSprite.y, 0, scrollSmokeHueShift);
+			disappearAnimation.delayStart = delayMs;
 			disappearAnimation.data = inGameCreature;
 			inGameCreature.removing = true;
 			this.removeInGameCreature(inGameCreature, delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2);
@@ -499,12 +500,12 @@
 	}
 
 	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number) {
-		this.moveSpriteTo(this.inGameCreaturesParchmentBackground, creature, targetX, delayMs);
-		this.moveSpriteTo(this.inGameCreaturesParchmentShadow, creature, targetX, delayMs);
-		this.moveSpriteTo(this.inGameCreaturesDeathX, creature, targetX, delayMs);
-		this.moveSpriteTo(this.inGameCreaturesTarget, creature, targetX, delayMs);
-		this.moveSpriteTo(this.inGameScrollAppearAnimation, creature, targetX, delayMs);
-		this.moveSpriteTo(this.inGameScrollDisappearAnimation, creature, targetX, delayMs);
+		this.moveSpriteTo(this.parchmentBackground, creature, targetX, delayMs);
+		this.moveSpriteTo(this.parchmentShadow, creature, targetX, delayMs);
+		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
+		this.moveSpriteTo(this.target, creature, targetX, delayMs);
+		this.moveSpriteTo(this.scrollAppear, creature, targetX, delayMs);
+		this.moveSpriteTo(this.scrollDisappear, creature, targetX, delayMs);
 	}
 
 	removeInGameCreature(creature: InGameCreature, delayMs: number): void {
