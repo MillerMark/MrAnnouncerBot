@@ -115,7 +115,6 @@ class UserInfo {
 }
 
 function executeCommand(command: string, params: string, userInfo: UserInfo) {
-	console.log('executeCommand from Connection.ts');
 	if (activeBackGame) {
 		activeBackGame.executeCommand(command, params, userInfo, activeBackGame.nowMs);
 	}
@@ -127,13 +126,18 @@ function executeCommand(command: string, params: string, userInfo: UserInfo) {
 	}
 }
 function changePlayerHealth(playerHealth: string) {
-	console.log('changePlayerHealth from Connection.ts');
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.changePlayerHealth(playerHealth);
 	}
 
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.changePlayerHealth(playerHealth);
+	}
+}
+function changePlayerStats(playerStats: string) {
+	console.log('changePlayerStats from Connection.ts');
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.changePlayerStats(playerStats);
 	}
 }
 
@@ -149,8 +153,6 @@ function changePlayerWealth(playerWealth: string) {
 }
 
 function changeFrameRate(frameRateData: string) {
-	console.log('changeFrameRate from Connection.ts');
-
 	let frameRateChangeData: FrameRateChangeData = JSON.parse(frameRateData);
 	//frameRateData
 
@@ -272,6 +274,7 @@ function connectToSignalR(signalR) {
 		connection.start().catch(err => console.error(err.toString()));
 		connection.on("ExecuteCommand", executeCommand);
 		connection.on("ChangePlayerHealth", changePlayerHealth);
+		connection.on("ChangePlayerStats", changePlayerStats);
 		connection.on("changePlayerWealth", changePlayerWealth);
 		connection.on("ChangeFrameRate", changeFrameRate);
 		connection.on("UserHasCoins", userHasCoins);

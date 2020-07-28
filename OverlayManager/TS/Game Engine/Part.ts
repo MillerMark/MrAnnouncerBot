@@ -1,15 +1,16 @@
 ﻿const globalFramesToLoad: number = 1;
 const globalFramesToCount: number = 2;
 
-const fps100: number = 10;
-const fps60: number = 16.66666667;
-const fps50: number = 20;
-const fps40: number = 25;
-const fps30: number = 33.33333333;
-const fps20: number = 50;
-const fps25: number = 40;
-const fps15: number = 66.66666667;
-const fps4: number = 250;
+const fps100 = 10;
+const fps60= 16.66666667;
+const fps50= 20;
+const fps40= 25;
+const fps30= 33.33333333;
+const fps20= 50;
+const fps25= 40;
+const fps15= 66.66666667;
+const fps4 = 250;
+const fps2 = 500;
 
 var globalBypassFrameSkip: boolean = false;
 
@@ -342,10 +343,12 @@ class Part {
 
 		this.framesToLoad = 1;
 		this.framesToCount = 1;
-		if (this.frameCount > 60 && !globalBypassFrameSkip) {
-			this.framesToLoad = globalFramesToLoad;
-			this.framesToCount = globalFramesToCount;
-		}
+
+		// Commenting this optimization out because this code is running on a much faster machine.
+		//if (this.frameCount > 60 && !globalBypassFrameSkip) {
+		//	this.framesToLoad = globalFramesToLoad;
+		//	this.framesToCount = globalFramesToCount;
+		//}
 
 		this.loadImages(true);
 	}
@@ -354,7 +357,7 @@ class Part {
 		var http = new XMLHttpRequest();
 		http.open('HEAD', url, false);
 		http.send();
-		return http.status != 404;
+		return http.status !== 404;
 	}
 
 	isOnLastFrame() {
@@ -407,30 +410,30 @@ class Part {
 		return Random.intBetween(-amount, amount);
 	}
 
-	draw(context: CanvasRenderingContext2D, x: number, y: number, horizontalScale: number = 1, verticalScale: number = -1) {
+	draw(context: CanvasRenderingContext2D, x: number, y: number, horizontalScale = 1, verticalScale = -1) {
 		this.advanceFrameIfNecessary();
 		// TODO: Update all the calls so vertical scale is specified and change verticalScale's default value to 1?
-		if (verticalScale == -1)
+		if (verticalScale === -1)
 			verticalScale = horizontalScale;
 		this.drawByIndex(context, x, y, this.frameIndex, horizontalScale, verticalScale);
 	}
 
-	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale: number = 1, verticalScale: number = -1, rotation: number = 0, centerX: number = 0, centerY: number = 0, flipHorizontally: boolean = false, flipVertically: boolean = false /* , filterCache: CachedImages = null */): void {
+	drawByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number, horizontalScale = 1, verticalScale = -1, rotation = 0, centerX = 0, centerY = 0, flipHorizontally = false, flipVertically = false /* , filterCache: CachedImages = null */): void {
 		if (frameIndex < 0)
 			return;
 
 		//if (!filterCache)
 			if (!this.images[frameIndex]) {
-				console.error('frameIndex: ' + frameIndex + ', fileName: ' + this.fileName);
+				console.error(`Image not found for ${this.fileName}*.png at frameIndex: ${frameIndex}`);
 				return;
 			}
 
-		if (verticalScale == -1)
+		if (verticalScale === -1)
 			verticalScale = horizontalScale;
 
-		let scaling: boolean = flipHorizontally || flipVertically || horizontalScale != 1 || verticalScale != 1;
-		let rotating: boolean = rotation != 0;
-		let transforming: boolean = rotating || scaling;
+		const scaling: boolean = flipHorizontally || flipVertically || horizontalScale !== 1 || verticalScale !== 1;
+		const rotating: boolean = rotation !== 0;
+		const transforming: boolean = rotating || scaling;
 
 		if (transforming) {
 			context.save();
@@ -442,8 +445,8 @@ class Part {
 		}
 
 		if (scaling) {
-			let horizontalFlipScale: number = 1;
-			let verticalFlipScale: number = 1;
+			let horizontalFlipScale = 1;
+			let verticalFlipScale = 1;
 			if (flipHorizontally)
 				horizontalFlipScale = -1;
 			if (flipVertically)
@@ -456,11 +459,10 @@ class Part {
 			context.translate(-centerX, -centerY);
 		}
 
-		let wiggleX: number = this.getWiggle(this.jiggleX);
-		let wiggleY: number = this.getWiggle(this.jiggleY);
-
-		let dx: number = Math.round(x + this.offsetX + wiggleX);
-		let dy: number = Math.round(y + this.offsetY + wiggleY);
+		const wiggleX: number = this.getWiggle(this.jiggleX);
+		const wiggleY: number = this.getWiggle(this.jiggleY);
+		const dx: number = Math.round(x + this.offsetX + wiggleX);
+		const dy: number = Math.round(y + this.offsetY + wiggleY);
 
 		//let canvasImageSource: CanvasImageSource;
 		//if (filterCache) {
@@ -486,6 +488,7 @@ class Part {
 			context.restore();
 		}
 	}
+
 
 	drawCroppedByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number,
 		sx: number, sy: number, sw: number, sh: number, dw: number, dh: number): void {

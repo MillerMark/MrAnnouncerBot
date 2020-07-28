@@ -1240,7 +1240,7 @@ class SpellBook {
 		this.bookGlow = new Sprites("Scroll/Spells/BookMagic/BookMagic", 119, fps30, AnimationStyle.Loop, true);
 		this.bookBurn = new Sprites("Scroll/Spells/Appear/BookBurn/BookBurn", 28, fps40, AnimationStyle.Sequential, true);
 
-		let saveBypassFrameSkip: boolean = globalBypassFrameSkip;
+		const saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = false;
 		this.spellBookAppearBig = new Sprites("Scroll/Spells/Appear/Big/Big", 129, fps100, AnimationStyle.Sequential, true);
 		this.spellBookAppearMedium = new Sprites("Scroll/Spells/Appear/Medium/Medium", 116, fps100, AnimationStyle.Sequential, true);

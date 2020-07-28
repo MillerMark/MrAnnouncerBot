@@ -5,6 +5,13 @@
 	scrollDisappear: Sprites;
 	parchmentShadow: Sprites;
 	target: Sprites;
+	allBloodSprites: SpriteCollection = new SpriteCollection();
+	bloodA: Sprites;
+	bloodB: Sprites;
+	bloodC: Sprites;
+	bloodD: Sprites;
+	bloodE: Sprites;
+	bloodGushing: Sprites;
 
 	constructor() {
 
@@ -20,6 +27,8 @@
 	}
 
 	loadResources() {
+		const saveBypassFrameSkip: boolean = globalBypassFrameSkip;
+		globalBypassFrameSkip = true;
 		this.parchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 2, fps30, AnimationStyle.Static);
 		this.deathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
 		this.parchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
@@ -27,6 +36,16 @@
 		this.target = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
 		this.target.originX = 41 - InGameCreatureManager.targetLeft;
 		this.target.originY = 45;
+
+		this.bloodA = this.loadBloodSprites('A', 'NpcBloodBurstA', 257, 133, 21);
+		this.bloodB = this.loadBloodSprites('B', 'NpcBloodBurstB', 263, 122, 21);
+		this.bloodC = this.loadBloodSprites('C', 'NpcBloodBurstC', 263, 139, 15);
+		this.bloodD = this.loadBloodSprites('D', 'NpcBloodBurstD', 264, 133, 31);
+		this.bloodE = this.loadBloodSprites('E', 'NpcBloodBurstE', 261, 195, 31);
+		this.bloodGushing = this.loadBloodSprites('Severed', 'Severed', 473, 142, 226);
+		this.bloodGushing.segmentSize = 88;
+		this.bloodGushing.returnFrameIndex = 53;
+		this.bloodGushing.animationStyle = AnimationStyle.Loop;
 
 		this.scrollAppear = new Sprites('Scroll/InGameCreatures/ScrollAppear/ScrollAppear', 115, fps30, AnimationStyle.Sequential, true);
 		this.scrollAppear.originX = 105;
@@ -41,6 +60,17 @@
 		this.target.disableGravity();
 		this.scrollAppear.disableGravity();
 		this.scrollDisappear.disableGravity();
+
+		globalBypassFrameSkip = saveBypassFrameSkip;
+	}
+
+
+	loadBloodSprites(folderName: string, fileName: string, originX: number, originY: number, frameCount: number): Sprites {
+		const sprites: Sprites = new Sprites(`Scroll/InGameCreatures/Blood/${folderName}/${fileName}`, frameCount, fps30, AnimationStyle.Sequential, true);
+		sprites.originX = originX;
+		sprites.originY = originY;
+		this.allBloodSprites.add(sprites);
+		return sprites;
 	}
 
 	inGameCreatures: Array<InGameCreature> = [];
@@ -56,6 +86,8 @@
 	static readonly inGameCreatueStatFontName = 'Calibri';
 	static readonly inGameStatOffsetX = 18;
 	static readonly inGameStatTopMargin = -12;  // Put top of scroll slightly offscreen
+	static readonly headShotCenterX = 62;
+	static readonly headShotCenterY = 70;
 	static readonly targetLeft = 64;
 	static readonly targetTop = 114;
 	static readonly spaceBetweenInGameStatLines = 1;
@@ -180,11 +212,15 @@
 		}
 
 		this.parchmentShadow.draw(context, nowMs);
+
+		this.allBloodSprites.draw(context, nowMs);
+
 		this.deathX.draw(context, nowMs);
 		this.target.draw(context, nowMs);
 
 		this.scrollAppear.draw(context, nowMs);
 		this.scrollDisappear.draw(context, nowMs);
+
 	}
 
 	getParchmentSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
@@ -263,11 +299,11 @@
 				timeBetweenArrivals = 50;
 		}
 	}
-	updateInGameCreature(updatedGameCreature: InGameCreature, soundManager: SoundManager) {
+	updateInGameCreature(updatedGameCreature: InGameCreature, soundManager: SoundManager, healthChangeAnimationDelayMs: number) {
 		const existingCreature: InGameCreature = this.getInGameCreatureByIndex(updatedGameCreature.Index);
 		if (!existingCreature) {
 			this.insertInGameCreature(updatedGameCreature);
-			return;
+			return healthChangeAnimationDelayMs;
 		}
 
 		existingCreature.Alignment = updatedGameCreature.Alignment;
@@ -288,7 +324,8 @@
 
 			if (existingCreature.Health === 0) { // Was previously alive - now dead. 
 				const x: number = this.getX(existingCreature);
-				this.addDeathSprite(x, existingCreature);
+				this.addDeathSprite(x, existingCreature, healthChangeAnimationDelayMs);
+				healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
 			}
 		}
 
@@ -311,6 +348,7 @@
 			const frameIndex = this.getFriendEnemyFrameIndex(existingCreature);
 			this.addParchment(existingCreature, x, frameIndex, 0);
 		}
+
 		if (existingCreature.IsTargeted !== updatedGameCreature.IsTargeted) {
 			existingCreature.IsTargeted = updatedGameCreature.IsTargeted;
 
@@ -324,13 +362,68 @@
 					target.fadeOutNow(1000);
 			}
 		}
+
 		if (updatedGameCreature.PercentDamageJustInflicted > 0) {
-			// TODO: Show damage...
+			// Show damage...
+			this.showDamage(existingCreature, updatedGameCreature.PercentDamageJustInflicted, healthChangeAnimationDelayMs, soundManager);
+			healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
 		}
 		if (updatedGameCreature.PercentHealthJustGiven > 0) {
 			// TODO: Show health...
+			//healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
 		}
+		return healthChangeAnimationDelayMs;
 	}
+
+	showDamage(existingCreature: InGameCreature, percentDamageJustInflicted: number, delayMs: number, soundManager: SoundManager) {
+		const x: number = this.getX(existingCreature);
+		// TODO: hue/sat/bright shift from existing creature's blood color modifiers
+		const hueShift = 0;
+		let sprites: Sprites;
+		const gushingThreshold = 0.3;  // 
+		let expirationDate = 0;
+		let scale = 1;
+		let overTheTopImpact = 1 + percentDamageJustInflicted;
+
+		if (existingCreature.Health === 0)   // Just killed the creature.
+			overTheTopImpact *= 1.2;
+
+		if (percentDamageJustInflicted > gushingThreshold || percentDamageJustInflicted > gushingThreshold / 2 && existingCreature.Health === 0) {
+			sprites = this.bloodGushing;
+			scale = MathEx.clamp(2 * percentDamageJustInflicted / gushingThreshold, 0.5, 2);
+			expirationDate = performance.now() + 6000 + 2000 * percentDamageJustInflicted / gushingThreshold;
+		}
+		else {
+			if (Random.chancePercent(20))
+				sprites = this.bloodA;
+			else if (Random.chancePercent(25))
+				sprites = this.bloodB;
+			else if (Random.chancePercent(33))
+				sprites = this.bloodC;
+			else if (Random.chancePercent(50))
+				sprites = this.bloodD;
+			else
+				sprites = this.bloodE;
+			scale = MathEx.clamp(2 * percentDamageJustInflicted / gushingThreshold, 0.3, 2);
+		}
+
+		if (overTheTopImpact >= 1.5)
+			soundManager.playMp3In(delayMs, 'Damage/Heavy/GushHeavy[13]');
+		else if (overTheTopImpact >= 0.75)
+			soundManager.playMp3In(delayMs, 'Damage/Medium/GushMedium[29]');
+		else
+			soundManager.playMp3In(delayMs, 'Damage/Light/GushLight[15]');
+
+		const sprite: SpriteProxy = sprites.addShifted(x + InGameCreatureManager.headShotCenterX, InGameCreatureManager.headShotCenterY, 0, hueShift);
+		sprite.delayStart = delayMs;
+		sprite.scale = scale;
+		if (Random.chancePercent(50))
+			sprite.flipHorizontally = true;
+		if (expirationDate > 0)
+			sprite.expirationDate = expirationDate;
+		// TODO: Consider changing frame rate (via sprite.frameIntervalOverride) to be proportional to scale, so smaller scales render faster and larger scales render more slowly (to keep gravity feeling consistent)..
+	}
+
 	getX(creature: InGameCreature): number {
 		const sprite: SpriteProxy = this.getParchmentSpriteForCreature(creature);
 		if (sprite)
@@ -340,8 +433,9 @@
 
 	updateInGameCreatures(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
 		const numCreaturesBeforeUpdate: number = this.inGameCreatures.length;
+		let healthChangeAnimationDelayMs = 0;
 		for (let i = 0; i < inGameCreatureDtos.length; i++) {
-			this.updateInGameCreature(inGameCreatureDtos[i], soundManager);
+			healthChangeAnimationDelayMs = this.updateInGameCreature(inGameCreatureDtos[i], soundManager, healthChangeAnimationDelayMs);
 		}
 		if (this.inGameCreatures.length > numCreaturesBeforeUpdate) { // Creatures added!
 			this.repositionInGameScrolls();
@@ -365,7 +459,7 @@
 
 			if (!stillShowCreature) { // Did not find the creature. Animate their removal.
 				this.removeCreatureWithAnimation(this.inGameCreatures[i], soundManager, delayMs);
-				delayMs += InGameCreatureManager.timeSpanBetweenMoves;
+				delayMs += InGameCreatureManager.timeBetweenMoves;
 			}
 		}
 	}
@@ -523,7 +617,7 @@
 			}
 			else if (isRightOfRemovedCreature && !thisCreature.removing) {
 				this.moveCreatureTo(thisCreature, targetX, delayMs);
-				delayMs += InGameCreatureManager.timeSpanBetweenMoves;; // ms between each move.
+				delayMs += InGameCreatureManager.timeBetweenMoves;; // ms between each move.
 			}
 
 			if (!thisCreature.removing) {
@@ -598,7 +692,7 @@
 				inGameCreature.justAdded = false;
 				this.addInGameCreature(inGameCreature, targetX, delayMs);
 			}
-			delayMs += InGameCreatureManager.timeSpanBetweenMoves;
+			delayMs += InGameCreatureManager.timeBetweenMoves;
 
 			if (first)
 				soundManager.playMp3In(delayMs, 'InGameScrolls/InGameScrollAppearFirst');
@@ -609,7 +703,7 @@
 		}
 	}
 
-	static readonly timeSpanBetweenMoves = 200;
+	static readonly timeBetweenMoves = 200;
 
 	private repositionInGameScrolls() {
 		let delayMs = 0;
@@ -619,7 +713,7 @@
 			const targetX: number = this.miniScrollLeftMargin + indexToCreatureStillInGame * this.miniScrollWidth;
 			if (!inGameCreature.justAdded) {
 				this.moveCreatureTo(inGameCreature, targetX, delayMs);
-				delayMs += InGameCreatureManager.timeSpanBetweenMoves;
+				delayMs += InGameCreatureManager.timeBetweenMoves;
 			}
 		}
 	}

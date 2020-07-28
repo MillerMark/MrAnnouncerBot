@@ -7208,6 +7208,11 @@ namespace DHDM
 		private static void UpdateInGameCreatures()
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Update", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				inGameCreature.PercentDamageJustInflicted = 0;
+				inGameCreature.PercentHealthJustGiven = 0;
+			}
 		}
 
 		private static void SetInGameCreatures()
@@ -7270,12 +7275,41 @@ namespace DHDM
 						inGameCreature.IsTargeted= inGameCreature.IsSelected;
 					UpdateInGameCreatures();
 					return;
+				case "ClearDead":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						if (inGameCreature.Health == 0)
+							inGameCreature.IsSelected = false;
+					UpdateInGameCreatures();
+					return;
+				case "UntargetDead":
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						if (inGameCreature.Health == 0)
+							inGameCreature.IsTargeted = false;
+					UpdateInGameCreatures();
+					return;
 				case "ShowNone":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.IsSelected = false;
 					UpdateInGameCreatures();
 					return;
 				case "ShowAllTargets":
+					bool allTargetsAreShown = true;
+					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+						if (inGameCreature.IsTargeted && !inGameCreature.IsSelected)
+						{
+							allTargetsAreShown = false;
+							break;
+						}
+					if (allTargetsAreShown)
+					{
+						// We only need to hide those that are not targeted.
+						foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+							if (!inGameCreature.IsTargeted)
+								inGameCreature.IsSelected = false;
+
+						UpdateInGameCreatures();
+						return;
+					}
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.IsSelected = inGameCreature.IsTargeted;
 					break;
@@ -7440,3 +7474,5 @@ namespace DHDM
 		 */
 	}
 }
+
+// HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));

@@ -1,0 +1,5 @@
+﻿class PlayerStatManager {
+	constructor() {
+		
+	}
+}

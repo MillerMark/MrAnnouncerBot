@@ -76,7 +76,7 @@
 
 		let numFramesToAdvance: number;
 
-		if (this.numFramesDrawn == 0) {
+		if (this.numFramesDrawn === 0) {
 			numFramesToAdvance = 1;
 			this.lastTimeWeAdvancedTheFrame = nowMs;
 		}
@@ -146,9 +146,7 @@
 	}
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
-		originX: number = 0, originY: number = 0): void {
-		// I think this next line might be more correct (scale offset x and y before calling?) - Mark
-		//baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX * this.horizontalScale, this.y + originY * this.verticalScale, this.flipHorizontally, this.flipVertically);
+		originX = 0, originY = 0): void {
 		baseAnimation.drawByIndex(context, this.x, this.y, this.frameIndex, this.horizontalScale, this.verticalScale, this.rotation, this.x + originX, this.y + originY, this.flipHorizontally, this.flipVertically);
 	}
 

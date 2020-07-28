@@ -642,8 +642,13 @@ namespace DndCore
 				points /= 2;
 
 			LastDamageTaken = damageType;
+
+			if (points > hitPoints)  // Can only drop to zero HP
+				points = hitPoints;
+
 			LastDamagePointsTaken = points;
 			hitPoints -= points;
+
 		}
 
 		public void Unequip(ItemViewModel item)

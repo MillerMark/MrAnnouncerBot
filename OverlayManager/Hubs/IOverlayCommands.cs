@@ -20,6 +20,7 @@ namespace OverlayManager.Hubs
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
 		Task MapDataChanged(string mapData);
 		Task ChangePlayerHealth(string playerData);
+		Task ChangePlayerStats(string playerStatsData);
 		Task ChangePlayerWealth(string playerData);
 		Task ChangeFrameRate(string frameRateData);
 		Task AddWindup(string windupData);

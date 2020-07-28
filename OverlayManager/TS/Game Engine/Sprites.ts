@@ -5,7 +5,7 @@
 	spriteHeight: number;
 	loaded: boolean;
 	moves: boolean;
-	removeOnHitFloor: boolean = true;
+	removeOnHitFloor = true;
 	lastTimeWeAdvancedTheFrame: number;
 	returnFrameIndex: number;
 	segmentSize: number;
@@ -331,8 +331,8 @@
 	}
 
 	animateFrames(nowMs: number): void {
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			var sprite: SpriteProxy = this.sprites[i];
+		for (let i = this.sprites.length - 1; i >= 0; i--) {
+			let sprite: SpriteProxy = this.sprites[i];
 			sprite.animate(nowMs);
 		}
 	}
@@ -343,12 +343,12 @@
 		if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
 			return;
 
-		let startOffset: number = this.returnFrameIndex;
-		let frameCount = this.baseAnimation.frameCount;
+		const startOffset: number = this.returnFrameIndex;
+		const frameCount = this.baseAnimation.frameCount;
 		let returnFrameIndex = this.getReturnIndex(frameCount, this.baseAnimation.reverse);
 
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			let sprite: SpriteProxy = this.sprites[i];
+		for (let i = this.sprites.length - 1; i >= 0; i--) {
+			const sprite: SpriteProxy = this.sprites[i];
 
 			let frameInterval: number = this.frameInterval;
 			if (sprite.frameIntervalOverride) {
@@ -361,18 +361,27 @@
 				returnFrameIndex = this.getReturnIndex(frameCount, reverse);
 			}
 
-			const originalFrameIndex: number = sprite.frameIndex;
+			const frameIndex: number = sprite.frameIndex;
+			const segmentSize: number = this.segmentSize;  // To simplify code below.
+			const saveFrameIndex: number = frameIndex;
 
-			if (this.segmentSize > 0 && sprite.frameIndex >= startOffset) {
-				const startIndex: number = sprite.frameIndex - (sprite.frameIndex - startOffset) % this.segmentSize;
-				const endBounds: number = startIndex + this.segmentSize;
-				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, startIndex, endBounds, reverse, frameInterval, this.baseAnimation.fileName);
+			if (segmentSize > 0 && frameIndex >= startOffset) {
+				//const segmentStartIndex: number = frameIndex - (frameIndex - startOffset) % this.segmentSize;  << Bug was here.
+				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;  // << Fix.
+				console.log('segmentStartIndex: ' + segmentStartIndex);
+				const segmentEndIndex: number = segmentStartIndex + segmentSize;
+
+				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;;0.03114,0.03214)
+
+
+
+				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, segmentStartIndex, segmentEndIndex, reverse, frameInterval, this.baseAnimation.fileName);
 			}
 			else
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, undefined, undefined, reverse, frameInterval, this.baseAnimation.fileName);
 
 
-			if (originalFrameIndex !== sprite.frameIndex)
+			if (saveFrameIndex !== sprite.frameIndex)
 				sprite.frameAdvanced(returnFrameIndex, reverse, nowMs);
 
 			this.cleanupFinishedAnimations(i, sprite);
@@ -388,7 +397,7 @@
 
 	private getReturnIndex(frameCount: number, reverse: boolean) {
 		let returnFrameIndex = this.returnFrameIndex;
-		if (this.animationStyle == AnimationStyle.SequentialStop) {
+		if (this.animationStyle === AnimationStyle.SequentialStop) {
 			if (reverse) {
 				returnFrameIndex = 0;
 			}
@@ -430,7 +439,7 @@
 	}
 
 	draw(context: CanvasRenderingContext2D, now: number): number {
-		if (this.sprites.length == 0) {
+		if (this.sprites.length === 0) {
 			return 0;
 		}
 
@@ -441,7 +450,7 @@
 		this.advanceFrames(now);
 		let self: Sprites = this;
 
-		let numSpritesDrawn: number = 0;
+		let numSpritesDrawn = 0;
 
 		this.sprites.forEach(function (sprite: SpriteProxy) {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;

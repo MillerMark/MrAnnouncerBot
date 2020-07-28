@@ -168,11 +168,9 @@ namespace DndCore
 			PercentDamageJustInflicted = 0;
 			double beforeTotalHp = TotalHp;
 			Creature.TakeDamage(damageType, attackKind, damage);
-			double totalDamageTaken = TotalHp - beforeTotalHp;
+			double totalDamageTaken = beforeTotalHp - TotalHp;
 			if (totalDamageTaken != 0)
-			{
 				PercentDamageJustInflicted = MathUtils.Clamp(totalDamageTaken / Creature.maxHitPoints, 0, 1);
-			}
 			UpdateHitPointsStr();
 		}
 
@@ -198,13 +196,17 @@ namespace DndCore
 
 		public void ChangeHealth(int amount)
 		{
-			PercentHealthJustGiven = 0;
-			PercentDamageJustInflicted = 0;
-			Creature.ChangeHealth(amount);
 			if (amount > 0)
-				PercentHealthJustGiven = MathUtils.Clamp(amount / Creature.maxHitPoints, 0, 1);
+				AddHealth(amount);
 			else
-				PercentDamageJustInflicted = MathUtils.Clamp(-amount / Creature.maxHitPoints, 0, 1);
+				TakeDamage(DamageType.None, AttackKind.Any, -amount);
+		}
+
+		private void AddHealth(int amount)
+		{
+			PercentHealthJustGiven = 0;
+			Creature.ChangeHealth(amount);
+			PercentHealthJustGiven = MathUtils.Clamp(amount / Creature.maxHitPoints, 0, 1);
 			UpdateHitPointsStr();
 		}
 	}
