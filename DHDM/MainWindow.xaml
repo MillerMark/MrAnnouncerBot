@@ -107,9 +107,14 @@
 					</Grid>
 				</TabItem>
 			</TabControl>
-			<Button x:Name="btnInitializePlayerData" Click="BtnInitializePlayerData_Click" Height="44" Width="222" FontSize="22" Margin="22" >
-				Initialize Player Data
-			</Button>
+			<StackPanel Orientation="Horizontal">
+				<Button x:Name="btnReloadEverything" Click="BtnReloadEverything_Click" Height="44" Width="222" FontSize="22" Margin="22" >
+					Reload Everything
+				</Button>
+				<Button x:Name="btnInitializeOnly" Click="btnInitializeOnly_Click" Height="44" Width="222" FontSize="22" Margin="22" >
+					Initialize Only
+				</Button>
+			</StackPanel>
 			<Button x:Name="btnReconnectTwitchClient" Click="BtnReconnectTwitchClient_Click" Height="44" Width="262" FontSize="22" Margin="22" >
 				Reconnect Twitch Client
 			</Button>

@@ -2719,7 +2719,7 @@ function damageTypeFromStr(str: string): DamageType {
 	return DamageType.None;
 }
 
-function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier: number = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
+function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
 	if (!diceStr)
 		return;
 	const allDice: string[] = diceStr.split(',');
@@ -2812,7 +2812,7 @@ function update() {
 init();
 
 function updateDieRollSpecialEffects() {
-	for (var i = 0; i < dice.length; i++) {
+	for (let i = 0; i < dice.length; i++) {
 		let die = dice[i];
 
 		if (die.rollType == DieCountsAs.bentLuck)
@@ -3488,7 +3488,10 @@ function prepareLegacyRoll(playerID: number, xPositionModifier: number) {
 			diceRollData.modifier = 0;
 			dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
 		}
-		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
+		const d20BackColor: string = diceLayer.getDieColor(playerID);
+		const d20FontColor: string = diceLayer.getDieFontColor(playerID);
+		//addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
+		addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier, d20BackColor, d20FontColor);
 	}
 	else {
 		diceRollData.itsAD20Roll = true;
@@ -3496,7 +3499,7 @@ function prepareLegacyRoll(playerID: number, xPositionModifier: number) {
 			const activePlayerRollOptions: PlayerRollOptions = diceRollData.playerRollOptions[0];
 			// TODO: I think there's a bug here active player's inspiration needs to be used.
 			let vantageKind: VantageKind = diceRollData.vantageKind;
-			if (diceRollData.playerRollOptions.length == 1) {
+			if (diceRollData.playerRollOptions.length === 1) {
 				vantageKind = activePlayerRollOptions.VantageKind;
 			}
 			let numD20s = 1;

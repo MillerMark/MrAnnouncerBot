@@ -308,6 +308,7 @@
     <Compile Include="ActionQueue\ActionQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="AdvanceClockCommand.cs" />
+    <Compile Include="AllPlayerStates.cs" />
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <EmbeddedResource Include="CSharp.xml" />
@@ -361,12 +362,14 @@
     <Compile Include="IDE\Code Templates\Text Commands\Core\ITextCommand.cs" />
     <Compile Include="Overlays.cs" />
     <Compile Include="ActionQueue\ShortcutQueueEntry.cs" />
+    <Compile Include="PlayerState.cs" />
     <Compile Include="SoundCommand.cs" />
     <Compile Include="SoundCommandType.cs" />
     <Compile Include="SoundPlayerFolders.cs" />
     <Compile Include="StreamDeck Commands\ApplyCommand.cs" />
     <Compile Include="StreamDeck Commands\ApplyLastDamageCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeCommand.cs" />
+    <Compile Include="StreamDeck Commands\ChangePlayerStateCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeVolumeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeWealthCommand.cs" />
     <Compile Include="StreamDeck Commands\ClearNumbersCommand.cs" />

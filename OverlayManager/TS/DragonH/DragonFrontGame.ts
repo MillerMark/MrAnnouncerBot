@@ -97,6 +97,7 @@
 
 	update(timestamp: number) {
 		this.updateGravity();
+		this.playerStats.update(timestamp);
 		super.update(timestamp);
 	}
 
@@ -116,6 +117,8 @@
 		this.fred.draw(context, nowMs);
 
 		this.bloodEffects.draw(context, nowMs);
+
+		this.playerStats.draw(context, nowMs);
 
 		this.coinManager.draw(context, nowMs);
 		this.allFrontEffects.updatePositions(nowMs);
@@ -591,6 +594,8 @@
 		this.dndTimeDatePanel = this.clockPanel.add(this.getClockX(), this.panelShiftY + this.getClockY()).setScale(this.panelScale);
 
 		this.clockLayerEffects.add(this.fireWall);
+
+		this.playerStats.loadResources();
 		//this.clockLayerEffects.add(this.clockPanel);
 	}
 
@@ -1083,17 +1088,17 @@
 	changePlayerWealth(playerWealthDto: string): void {
 		let wealthChange: WealthChange = JSON.parse(playerWealthDto);
 
-		let timeoutMs: number = 2000;
+		let timeoutMs = 2000;
 		let airTimeSec: number = CoinManager.getAirTimeFullDropSec();
 		if (wealthChange.Coins.TotalGold < 0) {
 			timeoutMs = 500;
 			airTimeSec = CoinManager.getAirTimeToDmBoxSec();
 		}
 		for (let i = 0; i < wealthChange.PlayerIds.length; i++) {
-			let playerId = wealthChange.PlayerIds[i];
-			let playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
+			const playerId = wealthChange.PlayerIds[i];
+			const playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
 			this.coinManager.addCoins(wealthChange.Coins, playerX);
-			let prefix: string = '';
+			let prefix = '';
 			this.dragonFrontSounds.safePlayMp3('Coins/Coins[3]');
 			if (wealthChange.Coins.TotalGold > 0)
 				prefix = '+';
@@ -1108,9 +1113,9 @@
 	}
 
 	changePlayerHealth(playerHealthDto: string): void {
-		let playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
+		const playerHealth: PlayerHealth = JSON.parse(playerHealthDto);
 
-		for (var i = 0; i < playerHealth.PlayerIds.length; i++) {
+		for (let i = 0; i < playerHealth.PlayerIds.length; i++) {
 			if (playerHealth.DamageHealth < 0) {
 				this.showDamage(playerHealth, i);
 			}
@@ -1120,16 +1125,21 @@
 		}
 	}
 
+	playerStats: AllPlayerStats = new AllPlayerStats();
+
 	changePlayerStats(playerStatsDtoStr: string): void {
-		//let playerStats: PlayerStats = JSON.parse(playerStatsDtoStr);
+		console.log(playerStatsDtoStr);
+		const newPlayerStats: AllPlayerStats = new AllPlayerStats().deserialize(JSON.parse(playerStatsDtoStr));
+		this.playerStats.handleCommand(this, newPlayerStats);
+		// TODO: transfer stats across.
 	}
 
 	private showHealth(playerHealth: PlayerHealth, i: number) {
 		setTimeout(() => {
-			let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+			const playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
 			let fontColor: string = DragonFrontGame.FontColorHealth;
 			let outlineColor: string = DragonFrontGame.FontOutlineHealth;
-			let suffix: string = 'hp';
+			let suffix = 'hp';
 			if (playerHealth.IsTempHitPoints) {
 				fontColor = DragonFrontGame.FontColorTempHp;
 				outlineColor = DragonFrontGame.FontOutlineTempHp;
@@ -1143,7 +1153,7 @@
 	}
 
 	addUpperRightStatusMessage(text: string, outlineColor: string, fontColor: string): any {
-		let textEffect: TextEffect = this.textAnimations.addText(new Vector(1920, 0), text, 3500);
+		const textEffect: TextEffect = this.textAnimations.addText(new Vector(1920, 0), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.scale = 1;
@@ -1154,7 +1164,7 @@
 	}
 
 	addFloatingPlayerText(xPos: number, text: string, fontColor: string, outlineColor: string) {
-		let textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, 1080), text, 3500);
+		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, 1080), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.scale = 1;

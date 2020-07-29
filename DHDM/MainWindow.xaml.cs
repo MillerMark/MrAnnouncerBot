@@ -42,6 +42,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		AllPlayerStats allPlayerStates;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
@@ -52,6 +53,16 @@ namespace DHDM
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
+
+		public AllPlayerStats AllPlayerStats
+		{
+			get
+			{
+				if (allPlayerStates == null)
+					allPlayerStates = new AllPlayerStats();
+				return allPlayerStates;
+			}
+		}
 
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		ScrollPage activePage = ScrollPage.main;
@@ -4562,7 +4573,7 @@ namespace DHDM
 			HubtasticBaseStation.SendScrollLayerCommand("Close");
 		}
 
-		private void BtnInitializePlayerData_Click(object sender, RoutedEventArgs e)
+		private void BtnReloadEverything_Click(object sender, RoutedEventArgs e)
 		{
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
@@ -7231,6 +7242,31 @@ namespace DHDM
 			UpdateInGameCreatures();
 		}
 
+		void ToggleReadyRollDice(string data)
+		{
+			int playerId = AllPlayers.GetPlayerIdFromName(data);
+			if (playerId < 0)
+				return;
+			AllPlayerStats.ToggleReadyRollDice(playerId);
+		}
+
+		public void ChangePlayerStateCommand(string command, string data)
+		{
+			switch (command)
+			{
+				case "ToggleReadyRollDice":
+					ToggleReadyRollDice(data);
+					UpdatePlayerState();
+					break;
+			}
+		}
+
+		void UpdatePlayerState()
+		{
+			AllPlayerStats.LatestCommand = "Update";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+		}
+
 		void AddInGameCreature(InGameCreature inGameCreature)
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Add", new List<InGameCreature>() { inGameCreature });
@@ -7466,6 +7502,13 @@ namespace DHDM
 			sendMessageSendsToHistory = ckLogTwitchSendMessagesToHistory.IsChecked == true;
 			sendTwitchChannelMessagesToHistory = ckSendChannelMessagesToHistory.IsChecked == true;
 		}
+
+		private void btnInitializeOnly_Click(object sender, RoutedEventArgs e)
+		{
+			SendPlayerData();
+			SetInGameCreatures();
+		}
+
 		// TODO: Reintegrate wand/staff animations....
 		/* 
 			Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown
@@ -7474,5 +7517,3 @@ namespace DHDM
 		 */
 	}
 }
-
-// HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));

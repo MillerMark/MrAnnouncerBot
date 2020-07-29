@@ -1,4 +1,10 @@
-﻿class WealthChange {
+﻿interface IGetPlayerX {
+	getPlayerX(playerIndex: number): number;
+	getPlayerIndex(playerId: number): number;
+	getPlayerFirstName(playerId: number): string;
+}
+
+class WealthChange {
 	PlayerIds: Array<number>;
 	Coins: Coins;
 	constructor() {
@@ -152,7 +158,7 @@ class KnownSpellsEffects {
 }
 
 
-abstract class DragonGame extends GamePlusQuiz {
+abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	static maxFiltersPerWindup: number = 6;
 	abstract layerSuffix: string;
 	dndTimeStr: string;
@@ -362,7 +368,7 @@ abstract class DragonGame extends GamePlusQuiz {
 		}
 	}
 
-	
+
 	private _inTimeFreeze: boolean;
 
 	get inTimeFreeze(): boolean {
@@ -409,7 +415,7 @@ abstract class DragonGame extends GamePlusQuiz {
 	enteringCombat() {
 	}
 
-	
+
 	exitingTimeFreeze() {
 	}
 
@@ -593,27 +599,37 @@ abstract class DragonGame extends GamePlusQuiz {
 	playerVideoLeftMargin = 10;
 	playerVideoRightMargin = 1384;
 
-	numberOfPlayers: number = 4;
-	activePlayerX: number = -1;
+	numberOfPlayers = 4;
+	activePlayerX = -1;
 
 	getPlayerX(playerIndex: number): number {
-		let distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;
-		let distanceBetweenPlayers: number = distanceForPlayerVideos / this.numberOfPlayers;
-		let halfDistanceBetweenPlayers: number = distanceBetweenPlayers / 2;
-		let horizontalNudge: number = 0;
-		if (playerIndex == 0)  // Fred.
+		const distanceForPlayerVideos: number = this.playerVideoRightMargin - this.playerVideoLeftMargin;
+		const distanceBetweenPlayers: number = distanceForPlayerVideos / this.numberOfPlayers;
+		const halfDistanceBetweenPlayers: number = distanceBetweenPlayers / 2;
+		let horizontalNudge = 0;
+		if (playerIndex === 0)  // Fred.
 			horizontalNudge = 25;
 		return playerIndex * distanceBetweenPlayers + halfDistanceBetweenPlayers + horizontalNudge;
 	}
 
 	getPlayerIndex(playerId: number): number {
-		for (var i = 0; i < this.players.length; i++) {
-			let player: Character = this.players[i];
-			if (player.playerID == playerId) {
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.playerID === playerId) {
 				return i;
 			}
 		}
 		return -1;
+	}
+
+	getPlayerFirstName(playerId: number): string {
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.playerID === playerId) {
+				return player.firstName;
+			}
+		}
+		return null;
 	}
 
 	playerChanged(playerId: number, pageID: number, playerData: string): void {
