@@ -12,10 +12,14 @@ namespace DHDM
 	{
 		Ability abilityToTest;
 		bool testAllPlayers;
+		bool testSelectedPlayers;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			List<int> playerIds = GetPlayerIds(dungeonMasterApp, testAllPlayers);
+			if (testSelectedPlayers)
+				playerIds = null;
+
 			dungeonMasterApp.RollSavingThrow(abilityToTest, playerIds);
 		}
 
@@ -26,6 +30,13 @@ namespace DHDM
 			if (match.Success)
 			{
 				SetTargetPlayer(match.Groups);
+				abilityToTest = DndUtils.ToAbility(match.Groups[1].Value);
+				return abilityToTest != Ability.none;
+			}
+			match = Regex.Match(message, @"^svs\s+(\w+)$");
+			if (match.Success)
+			{
+				testSelectedPlayers = true;
 				abilityToTest = DndUtils.ToAbility(match.Groups[1].Value);
 				return abilityToTest != Ability.none;
 			}

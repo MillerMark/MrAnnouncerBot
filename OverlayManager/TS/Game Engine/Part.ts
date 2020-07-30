@@ -2,6 +2,7 @@
 const globalFramesToCount: number = 2;
 
 const fps100 = 10;
+const fps70 = 1000 / 70;
 const fps60= 16.66666667;
 const fps50= 20;
 const fps40= 25;

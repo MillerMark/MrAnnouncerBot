@@ -26,17 +26,20 @@
 		return this.getEasedValue(now, this.fromY, this.toY);
 	}
 
+	getRemainingTime(now: number) {
+		return Math.max(0, this.getLifeSpan() - this.getTimePassed(now));
+	}
 
 	getEasedValue(now: number, originalValue: number, targetValue: number) {
 		const deltaScale: number = targetValue - originalValue;
 
-		const timePassed: number = now - this.easeStartTime;
+		const timePassed: number = this.getTimePassed(now);
 
 		if (timePassed <= 0) {
 			return originalValue;
 		}
 
-		const lifespan: number = this.easeEndTime - this.easeStartTime;
+		const lifespan: number = this.getLifeSpan();
 
 		let percentComplete: number;
 		if (lifespan === 0)
@@ -51,6 +54,14 @@
 			easedPercent = percentComplete;
 
 		return originalValue + deltaScale * easedPercent;
+	}
+
+	getLifeSpan(): number {
+		return this.easeEndTime - this.easeStartTime;
+	}
+
+	getTimePassed(now: number): number {
+		return now - this.easeStartTime;
 	}
 
 	static inElastic(t: number) {

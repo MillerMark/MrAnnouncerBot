@@ -12,9 +12,13 @@ namespace DHDM
 	{
 		Skills skillToTest;
 		bool testAllPlayers;
+		bool testSelectedPlayers;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
 			List<int> playerIds = GetPlayerIds(dungeonMasterApp, testAllPlayers);
+			if (testSelectedPlayers)
+				playerIds = null;
+
 			dungeonMasterApp.RollSkillCheck(skillToTest, playerIds);
 		}
 
@@ -33,6 +37,14 @@ namespace DHDM
 			if (match.Success)
 			{
 				testAllPlayers = true;
+				skillToTest = DndUtils.ToSkill(match.Groups[1].Value);
+				return skillToTest != Skills.none;
+			}
+
+			match = Regex.Match(message, @"^sks\s+(\w+)$");
+			if (match.Success)
+			{
+				testSelectedPlayers = true;
 				skillToTest = DndUtils.ToSkill(match.Groups[1].Value);
 				return skillToTest != Skills.none;
 			}

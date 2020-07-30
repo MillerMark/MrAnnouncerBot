@@ -68,6 +68,7 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
+		DispatcherTimer delayRollTimer;
 		DispatcherTimer playSceneTimer;
 		DispatcherTimer reconnectToTwitchTimer;
 		DispatcherTimer showClearButtonTimer;
@@ -119,6 +120,9 @@ namespace DHDM
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
+			
+			delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
+			delayRollTimer.Tick += new EventHandler(RollDiceNowHandler);
 
 			playSceneTimer = new DispatcherTimer(DispatcherPriority.Send);
 			playSceneTimer.Tick += new EventHandler(PlaySceneHandler);
@@ -196,6 +200,9 @@ namespace DHDM
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
 		}
+
+
+		// ResendExistingData
 
 		void ReconnectToTwitchHandler(object sender, EventArgs e)
 		{
@@ -1297,10 +1304,10 @@ namespace DHDM
 
 		void SetActivePlayerVantageUI(VantageKind vantageMod)
 		{
-			SetPlayerVantageUI(vantageMod, ActivePlayerId);
+			SetPlayerVantageUI(ActivePlayerId, vantageMod);
 		}
 
-		public void SetPlayerVantageUI(VantageKind vantageMod, int playerId)
+		public void SetPlayerVantageUI(int playerId, VantageKind vantageMod)
 		{
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 			{
@@ -4282,7 +4289,15 @@ namespace DHDM
 			InvokeSkillCheck(e.Skill, playerIds);
 		}
 
-		public void InvokeSkillCheck(Skills skill, List<int> playerIds)
+		void RollDiceNowHandler(object sender, EventArgs e)
+		{
+			delayRollTimer.Stop();
+			RollTheDice(delayedDiceRoll);
+		}
+
+		DiceRoll delayedDiceRoll;
+
+		public void InvokeSkillCheck(Skills skill, List<int> playerIds, int delayMs = 0)
 		{
 			Dispatcher.Invoke(() =>
 			{
@@ -4290,7 +4305,15 @@ namespace DHDM
 				SetRollScopeForPlayers(playerIds);
 				ckbUseMagic.IsChecked = false;
 				ResetActiveFields();
-				RollTheDice(PrepareRoll(DiceRollType.SkillCheck));
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.SkillCheck);
+				if (delayMs > 0)
+				{
+					delayedDiceRoll = diceRoll;
+					delayRollTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
+					delayRollTimer.Start();
+				}
+				else
+					RollTheDice(diceRoll);
 			});
 		}
 
@@ -4315,13 +4338,21 @@ namespace DHDM
 			return playerIds == null || playerIds.Count == 0 || playerIds.First() == int.MaxValue;
 		}
 
-		public void InvokeSavingThrow(Ability ability, List<int> playerIds)
+		public void InvokeSavingThrow(Ability ability, List<int> playerIds, int delayRollMs = 0)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				SelectSavingThrowAbility(ability);
 				SetRollScopeForPlayers(playerIds);
-				RollTheDice(PrepareRoll(DiceRollType.SavingThrow));
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
+				if (delayRollMs > 0)
+				{
+					delayedDiceRoll = diceRoll;
+					delayRollTimer.Interval = TimeSpan.FromMilliseconds(delayRollMs);
+					delayRollTimer.Start();
+				}
+				else
+					RollTheDice(diceRoll);
 			});
 		}
 
@@ -4464,7 +4495,15 @@ namespace DHDM
 
 		public void RollSkillCheck(Skills skill, List<int> playerIds)
 		{
-			InvokeSkillCheck(skill, playerIds);
+			int delayRollMs = 0;
+			if (playerIds == null)
+			{
+				playerIds = AllPlayerStats.GetReadyToRollPlayerIds();
+				SelectedPlayersAboutToRoll();
+				delayRollMs = 1800;
+			}
+
+			InvokeSkillCheck(skill, playerIds, delayRollMs);
 
 			if (activePage != ScrollPage.skills)
 			{
@@ -4510,7 +4549,15 @@ namespace DHDM
 
 		public void RollSavingThrow(Ability ability, List<int> playerIds)
 		{
-			InvokeSavingThrow(ability, playerIds);
+			int delayRollMs = 0;
+			if (playerIds == null)
+			{
+				playerIds = AllPlayerStats.GetReadyToRollPlayerIds();
+				SelectedPlayersAboutToRoll();
+				delayRollMs = 1800;
+			}
+
+			InvokeSavingThrow(ability, playerIds, delayRollMs);
 
 			if (activePage != ScrollPage.main)
 			{
@@ -4535,6 +4582,14 @@ namespace DHDM
 			string firstPart = $"Rolling {abilityStr} saving throw for {who}";
 			TellDungeonMaster($"{Icons.SavingThrow} {firstPart}{PlusHiddenThresholdDisplayStr(tbxSaveThreshold)}...");
 			TellViewers($"{firstPart}...");
+		}
+
+		private void SelectedPlayersAboutToRoll()
+		{
+			AllPlayerStats.RollingTheDiceNow = true;
+			UpdatePlayerStateInGame();
+			AllPlayerStats.RollingTheDiceNow = false;
+			AllPlayerStats.ClearReadyToRollState();
 		}
 
 		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds)
@@ -4613,6 +4668,7 @@ namespace DHDM
 			lstAllSpells.ItemsSource = AllSpells.Spells;
 			spAllMonsters.DataContext = AllMonsters.Monsters;
 			SetInGameCreatures();
+			InitializePlayerStats();
 		}
 
 		private void SendPlayerData()
@@ -4763,7 +4819,7 @@ namespace DHDM
 			PlayerButton playerButton = sender as PlayerButton;
 			if (playerButton != null)
 			{
-				CheckPlayer(playerButton.PlayerId);
+				CheckPlayerUI(playerButton.PlayerId);
 				RollTheDice(PrepareRoll(DiceRollType.InspirationOnly));
 			}
 
@@ -4839,10 +4895,10 @@ namespace DHDM
 		}
 		void CheckActivePlayer()
 		{
-			CheckPlayer(ActivePlayerId);
+			CheckPlayerUI(ActivePlayerId);
 		}
 
-		private void CheckPlayer(int playerID)
+		private void CheckPlayerUI(int playerID)
 		{
 			if (lastPlayerIdUnchecked == playerID)
 				return;
@@ -4851,6 +4907,20 @@ namespace DHDM
 			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
 				if (uIElement is PlayerRollCheckBox checkbox)
 					checkbox.IsChecked = checkbox.PlayerId == playerID;
+		}
+
+		private void ChangePlayerUIRollingDice(int playerID, bool newState)
+		{
+			if (lastPlayerIdUnchecked == playerID)
+				return;
+			if (grdPlayerRollOptions == null)
+				return;
+			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			{
+				if (uIElement is PlayerRollCheckBox checkbox)
+					if (checkbox.PlayerId == playerID)
+						checkbox.IsChecked = newState;
+			}
 		}
 
 		bool buildingTabs;
@@ -5140,7 +5210,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				SetPlayerVantageUI(vantageKind, playerId);
+				SetPlayerVantageUI(playerId, vantageKind);
 			});
 		}
 
@@ -7249,6 +7319,13 @@ namespace DHDM
 				return;
 			AllPlayerStats.ToggleReadyRollDice(playerId);
 		}
+		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal)
+		{
+			int playerId = AllPlayers.GetPlayerIdFromName(data);
+			if (playerId < 0)
+				return;
+			AllPlayerStats.ReadyRollVantage(playerId, vantage);
+		}
 
 		public void ChangePlayerStateCommand(string command, string data)
 		{
@@ -7256,12 +7333,41 @@ namespace DHDM
 			{
 				case "ToggleReadyRollDice":
 					ToggleReadyRollDice(data);
-					UpdatePlayerState();
 					break;
+				case "ReadyRollDice":
+					AllPlayerStats.ReadyRollDice(data);
+					break;
+				case "ToggleReadyRollDiceAdvantage":
+					ReadyRollVantage(data, VantageKind.Advantage);
+					break;
+				case "ToggleReadyRollDiceDisadvantage":
+					ReadyRollVantage(data, VantageKind.Disadvantage);
+					break;
+				default:
+					return;
 			}
+			UpdateUIForAllPlayerStats();
+			UpdatePlayerStateInGame();
+		}
+		void UpdateUIForPlayerStats(PlayerStats playerStats)
+		{
+			ChangePlayerUIRollingDice(playerStats.PlayerId, playerStats.ReadyToRollDice);
+			SetPlayerVantageUI(playerStats.PlayerId, playerStats.Vantage);
 		}
 
-		void UpdatePlayerState()
+		void UpdateUIForAllPlayerStats()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				foreach (PlayerStats playerStats in AllPlayerStats.Players)
+				{
+					UpdateUIForPlayerStats(playerStats);
+				}
+			});
+		}
+
+		// TODO: rename.
+		void UpdatePlayerStateInGame()
 		{
 			AllPlayerStats.LatestCommand = "Update";
 			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
@@ -7436,6 +7542,7 @@ namespace DHDM
 					return;
 			}
 			SetInGameCreatures();
+			InitializePlayerStats();
 		}
 
 		// TODO: send in a dictionary of damage types and amounts.
@@ -7507,6 +7614,20 @@ namespace DHDM
 		{
 			SendPlayerData();
 			SetInGameCreatures();
+		}
+
+		private void InitializePlayerStats()
+		{
+			foreach (Character character in game.Players)
+			{
+				allPlayerStates.GetPlayerStats(character.playerID);  // Will ensure player is known.
+			}
+		}
+
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.F5 && Modifiers.NoModifiersDown)
+				btnInitializeOnly_Click(null, null);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

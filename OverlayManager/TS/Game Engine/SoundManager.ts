@@ -8,7 +8,13 @@
 	}
 }
 
-class SoundManager {
+interface ISoundManager {
+	playMp3In(milliseconds: number, mp3Name: string): any;
+	safePlayMp3(fileName: string, compareThreshold?: number): boolean;
+}
+
+
+class SoundManager implements ISoundManager {
 	lastPlayTimes: Array<KeyTime> = new Array<KeyTime>();
 
 	constructor(public soundPath: string) {
@@ -62,8 +68,8 @@ class SoundManager {
 		return media;
 	}
 
-	safePlayMp3(fileName: string, compareThreshold: number = -1): boolean {
-		let audio: HTMLAudioElement = this.safePlayMp3ReturnAudio(fileName, compareThreshold);
+	safePlayMp3(fileName: string, compareThreshold = -1): boolean {
+		const audio: HTMLAudioElement = this.safePlayMp3ReturnAudio(fileName, compareThreshold);
 		if (audio)
 			return true;
 		else

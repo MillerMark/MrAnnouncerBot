@@ -256,9 +256,9 @@
 	}
 
 	changingDirection(now: number): void {
-		var secondsPassed = (now - this.timeStart) / 1000;
-		var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-		var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+		const secondsPassed = (now - this.timeStart) / 1000;
+		const velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+		const velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 		this.changeVelocity(velocityX, velocityY, now);
 	}
 
@@ -287,6 +287,12 @@
 		this.easePoint.to(toX, toY);
 	}
 
+	clearEasePoint() {
+		this.startX = this.x;
+		this.startY = this.y;
+		this.easePoint = null;
+	}
+
 	protected updateEasePosition(nowMs: number) {
 		this.x = this.easePoint.getX(nowMs);
 		this.y = this.easePoint.getY(nowMs);
@@ -297,6 +303,8 @@
 
 		if (this.easePoint) {
 			this.updateEasePosition(nowMs);
+			if (this.easePoint.getRemainingTime(nowMs) === 0)
+				this.clearEasePoint();
 			return;
 		}
 

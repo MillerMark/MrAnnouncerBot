@@ -308,7 +308,7 @@
     <Compile Include="ActionQueue\ActionQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="AdvanceClockCommand.cs" />
-    <Compile Include="AllPlayerStates.cs" />
+    <Compile Include="AllPlayerStats.cs" />
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <EmbeddedResource Include="CSharp.xml" />

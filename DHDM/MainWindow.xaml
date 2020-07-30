@@ -9,7 +9,8 @@
 		xmlns:dh="clr-namespace:DndUI"
 		xmlns:dndCore="clr-namespace:DndCore;assembly=DndCore"
 		Title="MainWindow" Height="1080" Width="1920" Loaded="Window_Loaded" Unloaded="Window_Unloaded"
-		WindowStartupLocation="CenterOwner">
+		WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown">
+	
 	<Window.Resources>
 		<Style TargetType="{x:Type CheckBox}" x:Key="Breakpoint">
 			<Setter Property="Template">

@@ -900,13 +900,13 @@ namespace DndCore
 					}
 				}
 			}
-			advantageCount = Math.Min(advantageCount, 1);
-			disadvantageCount = Math.Min(disadvantageCount, 1);
+			advantageCount = (int)MathUtils.Clamp(advantageCount, 0, 1);
+			disadvantageCount = (int)MathUtils.Clamp(disadvantageCount, 0, 1);
 			if (advantageCount == disadvantageCount)
 				return VantageKind.Normal;
 			else if (advantageCount > 0)
 				return VantageKind.Advantage;
-			else if (advantageCount < 0)
+			else if (disadvantageCount > 0)
 				return VantageKind.Disadvantage;
 
 			return VantageKind.Normal;

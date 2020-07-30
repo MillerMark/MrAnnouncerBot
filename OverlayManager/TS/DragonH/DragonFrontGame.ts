@@ -1130,7 +1130,7 @@
 	changePlayerStats(playerStatsDtoStr: string): void {
 		console.log(playerStatsDtoStr);
 		const newPlayerStats: AllPlayerStats = new AllPlayerStats().deserialize(JSON.parse(playerStatsDtoStr));
-		this.playerStats.handleCommand(this, newPlayerStats);
+		this.playerStats.handleCommand(this, this.dragonFrontSounds, newPlayerStats);
 		// TODO: transfer stats across.
 	}
 
