@@ -97,6 +97,12 @@
 		this.degreesPerMs = degreesToMove / timeToRotate;
 	}
 
+	easePointStillActive(now: number) {
+		if (!this.easePoint)
+			return false;
+		return this.easePoint.getRemainingTime(now) > 0;
+	}
+
 	animate(nowMs: number) {
 		if (nowMs < this.timeStart)
 			return;
@@ -181,7 +187,7 @@
 	}
 
 	fadingOut(now: number): boolean {
-		let lifeRemaining: number = this.getLifeRemaining(now);
+		const lifeRemaining: number = this.getLifeRemaining(now);
 		return this.isFadingOut(lifeRemaining);
 	}
 

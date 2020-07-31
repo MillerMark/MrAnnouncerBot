@@ -39,6 +39,8 @@ class AllPlayerStats implements IAllPlayerStats {
 	RollingTheDiceNow: boolean;
 	Players: Array<PlayerStats> = [];
 	readyToRollFullDragon: Sprites;
+	readyToRollDieSmoke: Sprites;
+	readyToRollDragonBreath: Sprites;
 	readyToRollLightDie: Sprites;
 	readyToRollDarkDie: Sprites;
 	readyToRollDragonHands: Sprites;
@@ -74,6 +76,17 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.airExplosionCollection = new SpriteCollection();
 
 		this.readyToRollFullDragon = this.createReadyToRollSprites('FullDragon', 281, 265);
+		
+		this.readyToRollDieSmoke = new Sprites(`PlayerReadyToRollDice/DieSmoke`, 87, fps30, AnimationStyle.Sequential, true);
+		this.readyToRollDieSmoke.originX = 48;
+		this.readyToRollDieSmoke.originY = -18;
+
+		this.readyToRollDragonBreath = new Sprites(`PlayerReadyToRollDice/DragonBreath`, 250, fps30, AnimationStyle.Sequential, true);
+		this.readyToRollDragonBreath.originX = 184;
+		this.readyToRollDragonBreath.originY = 387;
+
+		this.createReadyToRollVantageDieSprites('Disadvantage');
+		this.createReadyToRollVantageDieSprites('Advantage');
 
 		this.createReadyToRollDieSprites('DarkDie');
 		this.createReadyToRollDieSprites('LightDie');
@@ -83,8 +96,6 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.createReadyToRollDieSprites('Lady');
 		this.createReadyToRollDieSprites('Merkin');
 		this.createReadyToRollDieSprites('Cutie');
-		this.createReadyToRollDieSprites('Disadvantage');
-		this.createReadyToRollDieSprites('Advantage');
 
 		this.readyToRollDragonHands = this.createReadyToRollSprites('DragonHands', 41, 22);
 
@@ -127,6 +138,13 @@ class AllPlayerStats implements IAllPlayerStats {
 		return dieSprites;
 	}
 
+	private createReadyToRollVantageDieSprites(fileName: string): Sprites {
+		const dieSprites: Sprites = this.createReadyToRollSprites(fileName, 48, 92);
+		dieSprites.name = fileName.substr(fileName.indexOf('/') + 1);
+		this.readyToRollDieCollection.add(dieSprites);
+		return dieSprites;
+	}
+
 	private createReadyToRollSprites(fileName: string, originX: number, originY: number): Sprites {
 		const sprites: Sprites = new Sprites(`PlayerReadyToRollDice/${fileName}`, 29, fps30, AnimationStyle.Loop, true);
 		sprites.originX = originX;
@@ -141,13 +159,46 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.readyToRollDieCollection.draw(context, nowMs);
 		this.readyToRollDragonHands.draw(context, nowMs);
 		this.airExplosionCollection.draw(context, nowMs);
+		this.readyToRollDieSmoke.draw(context, nowMs);
+		this.readyToRollDragonBreath.draw(context, nowMs);
 	}
 
-	update(timestamp: number) {
-		this.readyToRollFullDragon.updatePositions(timestamp);
-		this.readyToRollDieCollection.updatePositions(timestamp);
-		this.readyToRollDragonHands.updatePositions(timestamp);
-		this.airExplosionCollection.updatePositions(timestamp);
+	timeOfLastDragonBreath = 0;
+	timeOfNextDragonBreath = -1;
+
+	update(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, nowMs: number) {
+		this.readyToRollFullDragon.updatePositions(nowMs);
+		this.readyToRollDieCollection.updatePositions(nowMs);
+		this.readyToRollDragonHands.updatePositions(nowMs);
+		this.airExplosionCollection.updatePositions(nowMs);
+		if (this.timeOfNextDragonBreath < nowMs) {
+			this.timeOfNextDragonBreath = nowMs + Random.between(4000, 7000);
+			this.breathFire(iGetPlayerX, soundManager, nowMs);
+		}
+	}
+
+	breathFire(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, nowMs: number) {
+		if (this.readyToRollFullDragon.sprites.length === 0)
+			return;
+		const dragonIndex: number = Math.floor(Random.max(this.readyToRollFullDragon.sprites.length));
+		const sprite: SpriteProxy = this.readyToRollFullDragon.sprites[dragonIndex];
+		if (sprite.easePointStillActive(nowMs) || sprite.velocityY !== 0 || sprite.verticalThrustOverride !== 0)
+			return;
+
+		const deltaX = 140;
+		const deltaY = 260 - 46 * sprite.scale;
+		const playerId: number = sprite.data as number;
+		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(playerId));
+		const dragonBreath: SpriteProxy = this.readyToRollDragonBreath.addShifted(x + deltaX, sprite.y + deltaY, 0, Random.max(360));
+		dragonBreath.scale = sprite.scale;
+		dragonBreath.data = sprite.data;
+
+		if (dragonBreath.scale < 0.65)
+			soundManager.safePlayMp3('DiceDragons/FireBreathSmall[3]');
+		else if (dragonBreath.scale < 0.85)
+			soundManager.safePlayMp3('DiceDragons/FireBreathMedium[3]');
+		else 
+			soundManager.safePlayMp3('DiceDragons/FireBreathLarge[5]');
 	}
 
 	private cleanUpNonExistantPlayers(mostRecentPlayerStats: AllPlayerStats) {
@@ -182,35 +233,31 @@ class AllPlayerStats implements IAllPlayerStats {
 		const playerX: number = iGetPlayerX.getPlayerX(playerIndex) + shoulderOffset;
 		const minScale = 0.4;
 		const maxScale = 1.2;
-		const minGoodScale = 0.8;
 		const scale: number = Random.between(minScale, maxScale);
-
+		//const scale = 1.2;
 		let frameInterval: number = fps30;
-		//const scale = 0.8;
+		
 		const hueShift: number = Random.max(360);
 		let dieShift: number = Random.max(360);
 		const startFrameIndex: number = Random.max(this.readyToRollFullDragon.baseAnimation.frameCount);
 		const dragonStartY = 1180;
 
 		let dieSprites: Sprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
-		let dieOffset = 0;
-		if (scale <= minGoodScale) {
-			if (scale >= 0.7) {
-				dieOffset = 16;
-				frameInterval = fps40;
-			}
-			else if (scale >= 0.6) {
-				dieOffset = 16;
-				frameInterval = fps50;
-			}
-			else if (scale >= 0.5) {
-				dieOffset = 16;
-				frameInterval = fps60;
-			}
-			else {
-				dieOffset = 16;
-				frameInterval = fps70;
-			}
+		const dieOffset = 16;
+		if (scale >= 0.8) {
+			frameInterval = fps30;
+		}
+		else if (scale >= 0.7) {
+			frameInterval = fps40;
+		}
+		else if (scale >= 0.6) {
+			frameInterval = fps50;
+		}
+		else if (scale >= 0.5) {
+			frameInterval = fps60;
+		}
+		else {
+			frameInterval = fps70;
 		}
 
 		if (dieSprites)
@@ -270,7 +317,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		return this.readyToRollDieCollection.getSpritesByName(playerFirstName);
 	}
 
-	dropDieAndHideTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number) {
+	dropDieAndBlowUpTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number) {
 		const dieSprites: Sprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
 		if (dieSprites)
 			this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
@@ -291,6 +338,7 @@ class AllPlayerStats implements IAllPlayerStats {
 
 		const dragonSprite: SpriteProxy = this.getDragonSpriteByPlayerId(this.readyToRollFullDragon.sprites, playerId);
 		this.showAirExplosionLater(dragonSprite, soundManager);
+		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.sprites, playerId);
 	}
 
 	ascendDragons(dragonSprites: Sprites, playerId: number, horizontalThrust: number, verticalThrust: number) {
@@ -342,6 +390,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.dropSpriteByPlayerId(advantageDieSprites.sprites, playerId);
 
 		this.dropSpriteByPlayerId(this.readyToRollDragonHands.sprites, playerId);
+		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.sprites, playerId);
 	}
 
 	dieThrowVelocity = 3;
@@ -378,6 +427,14 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
+	fadeOutSpriteByPlayerId(sprites: SpriteProxy[], playerId: number) {
+		for (let i = 0; i < sprites.length; i++) {
+			if (sprites[i].data === playerId) {
+				sprites[i].fadeOutNow(500);
+			}
+		}
+	}
+
 	updatePlayer(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats) {
 		if (playerStats.ReadyToRollDice !== latestPlayerStats.ReadyToRollDice) {
 			playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
@@ -391,35 +448,72 @@ class AllPlayerStats implements IAllPlayerStats {
 		else if (playerStats.Vantage !== latestPlayerStats.Vantage) {
 			playerStats.Vantage = latestPlayerStats.Vantage;
 			// TODO: Show the vantage dice.
-			this.showOrHideVantageDie(playerStats.PlayerId, playerStats.Vantage);
+			this.showOrHideVantageDie(soundManager, playerStats.PlayerId, playerStats.Vantage);
 		}
 		else {
 			if (this.RollingTheDiceNow)
-				this.dropDieAndHideTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId);
+				this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId);
 		}
 	}
 
-  showOrHideVantageDie(playerId: number, vantage: VantageKind) {
+	showOrHideVantageDie(soundManager: ISoundManager, playerId: number, vantage: VantageKind) {
+		soundManager.safePlayMp3('DiceDragons/DieSmoke');
+
 		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
 		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
+
+		let hueShift = 0;
+		let saturation = 100;
+
+		switch (vantage) {
+			case VantageKind.Normal:
+				saturation = 0;
+				break;
+			case VantageKind.Advantage:
+				hueShift = 210;
+				break;
+		}
+
+		const sprite: SpriteProxy = this.getSpriteForPlayer(advantageDieSprites, playerId);
+		if (sprite)
+			this.readyToRollDieSmoke.addShifted(sprite.x, sprite.y, 0, hueShift, saturation);
+
+
+		let newOpacity: number;
 		if (vantage === VantageKind.Advantage)
-			this.setOpaciteForDie(advantageDieSprites, playerId, 1);
-		else 
-			this.setOpaciteForDie(advantageDieSprites, playerId, 0);
+			newOpacity = 1;
+		else
+			newOpacity = 0;
+
+		setTimeout(this.changeDieOpacity.bind(this), 6 * fps30, advantageDieSprites, playerId, newOpacity);
 
 		if (vantage === VantageKind.Disadvantage)
-			this.setOpaciteForDie(disadvantageDieSprites, playerId, 1);
+			newOpacity = 1;
 		else
-			this.setOpaciteForDie(disadvantageDieSprites, playerId, 0);
+			newOpacity = 0;
+
+		setTimeout(this.changeDieOpacity.bind(this), 6 * fps30, disadvantageDieSprites, playerId, newOpacity);
 	}
 
-	setOpaciteForDie(sprites: Sprites, playerId: number, opacity: number) {
+	changeDieOpacity(sprites: Sprites, playerId: number, newOpacity: number) {
+		this.setOpaciteForDie(sprites, playerId, newOpacity);
+	}
+
+	getSpriteForPlayer(sprites: Sprites, playerId: number): SpriteProxy {
 		for (let i = 0; i < sprites.sprites.length; i++) {
 			const sprite: SpriteProxy = sprites.sprites[i];
 			if (sprite.data === playerId)
-				sprite.opacity = opacity;
+				return sprite;
 		}
-  }
+		return null;
+	}
+
+	setOpaciteForDie(sprites: Sprites, playerId: number, opacity: number) {
+		const sprite: SpriteProxy = this.getSpriteForPlayer(sprites, playerId);
+		if (sprite) {
+			sprite.opacity = opacity;
+		}
+	}
 
 	private addMissingPlayers(mostRecentPlayerStats: AllPlayerStats) {
 		for (let i = 0; i < mostRecentPlayerStats.Players.length; i++) {

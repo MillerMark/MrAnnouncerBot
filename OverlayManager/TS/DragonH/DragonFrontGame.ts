@@ -97,7 +97,7 @@
 
 	update(timestamp: number) {
 		this.updateGravity();
-		this.playerStats.update(timestamp);
+		this.playerStats.update(this, this.dragonFrontSounds, timestamp);
 		super.update(timestamp);
 	}
 

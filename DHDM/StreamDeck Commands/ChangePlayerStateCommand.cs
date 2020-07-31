@@ -24,6 +24,15 @@ namespace DHDM
 				return true;
 			}
 
+			match = Regex.Match(message, @"^ChangePlayerState\s+(\w+)");
+			if (match.Success)
+			{
+				command = match.Groups[1].Value;
+				data = "";
+				return true;
+			}
+
+
 			return false;
 		}
 	}

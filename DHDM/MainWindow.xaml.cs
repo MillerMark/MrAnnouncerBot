@@ -7334,6 +7334,9 @@ namespace DHDM
 				case "ToggleReadyRollDice":
 					ToggleReadyRollDice(data);
 					break;
+				case "QuickRefresh":
+					QuickRefresh();
+					break;
 				case "ReadyRollDice":
 					AllPlayerStats.ReadyRollDice(data);
 					break;
@@ -7611,6 +7614,11 @@ namespace DHDM
 		}
 
 		private void btnInitializeOnly_Click(object sender, RoutedEventArgs e)
+		{
+			QuickRefresh();
+		}
+
+		private void QuickRefresh()
 		{
 			SendPlayerData();
 			SetInGameCreatures();
