@@ -151,8 +151,8 @@
 	}
 
 	getDistanceToXY(x: number, y: number): number {
-		let deltaX: number = this.x - x;
-		let deltaY: number = this.y - y;
+		const deltaX: number = this.x - x;
+		const deltaY: number = this.y - y;
 		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 	}
 
@@ -160,18 +160,22 @@
 		this.timeStart = performance.now() + delayMs;
 	}
 
-	destroyBy(lifeTimeMs: number): any {
+	destroyBy(lifeTimeMs: number) {
 		if (!this.expirationDate)
 			this.expirationDate = performance.now() + Math.round(Math.random() * lifeTimeMs);
 	}
 
-	destroyAllInExactly(lifeTimeMs: number): any {
+	destroyAllInExactly(lifeTimeMs: number) {
 		if (!this.expirationDate)
 			this.expirationDate = performance.now() + lifeTimeMs;
 	}
 
-	stillAlive(now: number, frameCount: number = 0): boolean {
+	stillAlive(now: number, frameCount = 0): boolean {
 		return this.getLifeRemaining(now) >= 0 || !this.okayToDie(frameCount);
+	}
+
+	hasLifeRemaining(now: number) {
+		return this.expirationDate === undefined || this.getLifeRemaining(now) > 0;
 	}
 
 	getLifeRemaining(now: number) {
@@ -183,6 +187,8 @@
 	}
 
 	okayToDie(frameCount: number): boolean {
+		// Allow descendants to change behavior
+		console.log('okayToDie - return true;');
 		return true;
 	}
 
@@ -211,7 +217,8 @@
 			return this.opacity;
 
 		const lifeRemaining: number = this.getLifeRemaining(now);
-		if (lifeRemaining <= 0)
+
+		if (!this.hasLifeRemaining(now))
 			return 0;
 
 		if (this.isFadingOut(lifeRemaining)) {

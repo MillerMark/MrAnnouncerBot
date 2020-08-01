@@ -8,7 +8,7 @@
 	systemDrawn: boolean = true;
 	owned: boolean;
 	cropped: boolean;
-	playToEndOnExpire: boolean = false;
+	playToEndOnExpire = false;
 	frameIndex: number;
 	cropTop: number;
 	cropLeft: number;
@@ -54,19 +54,17 @@
 	cycled(now: number) {
 		this.haveCycledOnce = true;
 		if (this.onCycleCallbacks) {
-			let thisInstance = this;
 			this.onCycleCallbacks.forEach(function (oncycleCallback) {
-				oncycleCallback(thisInstance, now);
-			});
+				oncycleCallback(this, now);
+			}, this);
 		}
 	}
 
 	frameAdvanced(returnFrameIndex: number, reverse: boolean, nowMs: number) {
 		if (this.onFrameAdvanceCallbacks) {
-			let thisInstance = this;
 			this.onFrameAdvanceCallbacks.forEach(function (onFrameAdvanceCallback) {
-				onFrameAdvanceCallback(thisInstance, returnFrameIndex, reverse, nowMs);
-			});
+				onFrameAdvanceCallback(this, returnFrameIndex, reverse, nowMs);
+			}, this);
 		}
 	}
 
@@ -130,7 +128,7 @@
 	}
 
 	isHitBy(thisSprite: SpriteProxy): boolean {
-		const minDistanceForHit: number = 70;
+		const minDistanceForHit = 70;
 		return this.getDistanceTo(thisSprite) < minDistanceForHit;
 	}
 
@@ -139,8 +137,8 @@
 	}
 
 	pathVector(spriteWidth: number, spriteHeight: number): Line {
-		let halfWidth: number = spriteWidth / 2;
-		let halfHeight: number = spriteHeight / 2;
+		const halfWidth: number = spriteWidth / 2;
+		const halfHeight: number = spriteHeight / 2;
 		return Line.fromCoordinates(this.lastX + halfWidth, this.lastY + halfHeight,
 			this.x + halfWidth, this.y + halfHeight);
 	}
@@ -249,6 +247,10 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 			return oldFilter;
 		}
 		return null;
+	}
+
+	hasLifeRemaining(now: number) {
+		return super.hasLifeRemaining(now) || this.playToEndOnExpire;
 	}
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,

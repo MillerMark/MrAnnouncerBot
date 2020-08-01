@@ -359,6 +359,8 @@ class AllPlayerStats implements IAllPlayerStats {
 	}
 
 	showAirExplosion(dragonSprite: SpriteProxy, soundManager: ISoundManager) {
+		if (!dragonSprite)
+			return;
 		const playerId: number = dragonSprite.data as number;
 		this.hideDragonByPlayerId(this.readyToRollFullDragon.sprites, playerId);
 		this.hideDragonByPlayerId(this.readyToRollDragonHands.sprites, playerId);

@@ -126,8 +126,7 @@ namespace MrAnnouncerBot
 			int thirtySeconds = (int)TimeSpan.FromMinutes(0.5).TotalMilliseconds;
 
 			checkChatRoomTimer = new Timer(CheckViewers, null, oneMinute, oneMinute);
-			//autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
-			autoSaveTimer = new Timer(AutoSaveViewers, null, thirtySeconds, thirtySeconds);
+			autoSaveTimer = new Timer(AutoSaveViewers, null, fiveMinutes, fiveMinutes);
 		}
 
 		private void InitZork()
@@ -227,7 +226,7 @@ namespace MrAnnouncerBot
 
 		void AutoSaveViewers(object obj)
 		{
-			Console.WriteLine($"Saving viewer data... {DateTime.Now:T}");
+			Console.WriteLine($"Saving allViewers data for {allViewers.Viewers.Count} viewers... {DateTime.Now:T}");
 			allViewers.Save();
 		}
 

@@ -42,13 +42,16 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
-		AllPlayerStats allPlayerStates;
+		AllPlayerStats allPlayerStats;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
 		const string DragonHumpersChannel = "DragonHumpers";
 		const string CodeRushedChannel = "CodeRushed";
 		const string twitchIndent = "͏͏͏͏͏͏͏͏͏͏͏͏̣　　͏͏͏̣ 　　͏͏͏̣ ";  // This sequence allows indentation in Twitch chats!
+
+
+		const int INT_TimeToDropDragonDice = 1800;
 
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
@@ -58,9 +61,9 @@ namespace DHDM
 		{
 			get
 			{
-				if (allPlayerStates == null)
-					allPlayerStates = new AllPlayerStats();
-				return allPlayerStates;
+				if (allPlayerStats == null)
+					allPlayerStats = new AllPlayerStats();
+				return allPlayerStats;
 			}
 		}
 
@@ -199,6 +202,7 @@ namespace DHDM
 
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
+			LoadEverything();
 		}
 
 
@@ -1661,6 +1665,15 @@ namespace DHDM
 			}
 		}
 
+		void SetInGameDiceForShortcut(PlayerActionShortcut actionShortcut)
+		{
+			if (actionShortcut.Type == DiceRollType.Attack || actionShortcut.Type == DiceRollType.ChaosBolt)
+			{
+				AllPlayerStats.ClearReadyToRollState();
+				AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true);
+				UpdatePlayerStateInGame();
+			}
+		}
 		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
 		{
 			settingInternally = true;
@@ -1673,6 +1686,7 @@ namespace DHDM
 			finally
 			{
 				settingInternally = false;
+				SetInGameDiceForShortcut(actionShortcut);
 				HighlightPlayerShortcutUI(actionShortcut.Index);
 				SetControlUIFromRoll(currentRoll);
 				UpdateStateUIForPlayer(player);
@@ -2268,8 +2282,16 @@ namespace DHDM
 
 		bool rollInspirationAfterwards;
 
-		public void RollTheDice(DiceRoll diceRoll)
+		public void RollTheDice(DiceRoll diceRoll, int delayMs = 0)
 		{
+			if (delayMs > 0)
+			{
+				delayedDiceRoll = diceRoll;
+				delayRollTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
+				delayRollTimer.Start();
+				return;
+			}
+
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
@@ -4306,14 +4328,7 @@ namespace DHDM
 				ckbUseMagic.IsChecked = false;
 				ResetActiveFields();
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.SkillCheck);
-				if (delayMs > 0)
-				{
-					delayedDiceRoll = diceRoll;
-					delayRollTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
-					delayRollTimer.Start();
-				}
-				else
-					RollTheDice(diceRoll);
+				RollTheDice(diceRoll, delayMs);
 			});
 		}
 
@@ -4345,14 +4360,7 @@ namespace DHDM
 				SelectSavingThrowAbility(ability);
 				SetRollScopeForPlayers(playerIds);
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
-				if (delayRollMs > 0)
-				{
-					delayedDiceRoll = diceRoll;
-					delayRollTimer.Interval = TimeSpan.FromMilliseconds(delayRollMs);
-					delayRollTimer.Start();
-				}
-				else
-					RollTheDice(diceRoll);
+				RollTheDice(diceRoll, delayRollMs);
 			});
 		}
 
@@ -4500,7 +4508,7 @@ namespace DHDM
 			{
 				playerIds = AllPlayerStats.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
-				delayRollMs = 1800;
+				delayRollMs = INT_TimeToDropDragonDice;
 			}
 
 			InvokeSkillCheck(skill, playerIds, delayRollMs);
@@ -4554,7 +4562,7 @@ namespace DHDM
 			{
 				playerIds = AllPlayerStats.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
-				delayRollMs = 1800;
+				delayRollMs = INT_TimeToDropDragonDice;
 			}
 
 			InvokeSavingThrow(ability, playerIds, delayRollMs);
@@ -4629,6 +4637,11 @@ namespace DHDM
 		}
 
 		private void BtnReloadEverything_Click(object sender, RoutedEventArgs e)
+		{
+			LoadEverything();
+		}
+
+		private void LoadEverything()
 		{
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
@@ -5711,7 +5724,14 @@ namespace DHDM
 
 			if (NextDieRollType != DiceRollType.None)
 			{
-				RollTheDice(PrepareRoll(NextDieRollType));
+				int delayMs = 0;
+				if (AllPlayerStats.AnyoneIsReadyToRoll)
+				{
+					delayMs = INT_TimeToDropDragonDice;
+					SelectedPlayersAboutToRoll();
+				}
+
+				RollTheDice(PrepareRoll(NextDieRollType), delayMs);
 				NextDieRollType = DiceRollType.None;
 			}
 		}
@@ -7628,7 +7648,7 @@ namespace DHDM
 		{
 			foreach (Character character in game.Players)
 			{
-				allPlayerStates.GetPlayerStats(character.playerID);  // Will ensure player is known.
+				AllPlayerStats.GetPlayerStats(character.playerID);  // Will ensure player is known.
 			}
 		}
 

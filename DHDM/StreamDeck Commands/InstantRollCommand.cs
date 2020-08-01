@@ -18,13 +18,14 @@ namespace DHDM
 			List<int> playerIds = GetPlayerIds(dungeonMasterApp, testAllPlayers);
 			if (dieStr.Contains("{count}"))
 			{
+				const int MaxDiceAllowed = 50;
 				decimal value = ApplyCommand.GetValue();
 				if (value == decimal.MinValue)
 					value = 1;
-				if (value > 20)
+				if (value > MaxDiceAllowed)
 				{
-					value = 20;
-					dungeonMasterApp.TellDungeonMaster($"Unable to roll {value} dice at once. Maximum on-screen dice is limited to 20.");
+					value = MaxDiceAllowed;
+					dungeonMasterApp.TellDungeonMaster($"Unable to roll {value} dice at once. Maximum on-screen dice is limited to {MaxDiceAllowed}.");
 				}
 				dieStr = dieStr.Replace("{count}", value.ToString());
 				ApplyCommand.ResetValue();

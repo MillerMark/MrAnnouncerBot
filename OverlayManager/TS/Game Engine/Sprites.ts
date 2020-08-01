@@ -296,7 +296,7 @@
 	}
 
 	cleanupFinishedAnimations(i: number, sprite: SpriteProxy): any {
-		if (this.animationStyle == AnimationStyle.Sequential && sprite.haveCycledOnce) {
+		if (this.animationStyle === AnimationStyle.Sequential && sprite.haveCycledOnce) {
 			//if (this.baseAnimation.fileName.endsWith('Slam'))
 			//	debugger;
 			this.sprites.splice(i, 1);
@@ -366,15 +366,14 @@
 			const saveFrameIndex: number = frameIndex;
 
 			if (segmentSize > 0 && frameIndex >= startOffset) {
-				//const segmentStartIndex: number = frameIndex - (frameIndex - startOffset) % this.segmentSize;  << Bug was here.
+				//const segmentStartIndex: number = frameIndex - (frameIndex - startOffset) % this.segmentSize; // << Bug was here.
 				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;  // << Fix.
-				console.log('segmentStartIndex: ' + segmentStartIndex);
-				const segmentEndIndex: number = segmentStartIndex + segmentSize;
+				let segmentEndIndex: number = segmentStartIndex + segmentSize;
 
 				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;;0.03114,0.03214)
 
-
-
+				if (sprite.playToEndOnExpire && sprite.expirationDate && sprite.fadeOutTime !== undefined && sprite.expirationDate <= nowMs + sprite.fadeOutTime)
+					segmentEndIndex = frameCount;
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, segmentStartIndex, segmentEndIndex, reverse, frameInterval, this.baseAnimation.fileName);
 			}
 			else
@@ -463,7 +462,6 @@
 					sprite.drawAdornments(context, now);
 				}
 			}
-
 		}, this);
 
 		context.globalAlpha = 1.0;
@@ -472,8 +470,8 @@
 	}
 
 	removeExpiredSprites(now: number): void {
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			let sprite: SpriteProxy = this.sprites[i];
+		for (let i = this.sprites.length - 1; i >= 0; i--) {
+			const sprite: SpriteProxy = this.sprites[i];
 			if (sprite.expirationDate) {
 				if (!sprite.stillAlive(now, this.baseAnimation.frameCount)) {
 					sprite.destroying();
@@ -487,8 +485,8 @@
 	}
 
 	removeAllSprites(): void {
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			let sprite: SpriteProxy = this.sprites[i];
+		for (let i = this.sprites.length - 1; i >= 0; i--) {
+			const sprite: SpriteProxy = this.sprites[i];
 			sprite.destroying();
 			sprite.removing();
 			if (!sprite.isRemoving) {
@@ -518,9 +516,9 @@
 		}
 	}
 
-	removeByFrameIndex(frameIndex: number): any {
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			var sprite: SpriteProxy = this.sprites[i];
+	removeByFrameIndex(frameIndex: number): void {
+		for (let i = this.sprites.length - 1; i >= 0; i--) {
+			const sprite: SpriteProxy = this.sprites[i];
 			if (sprite.frameIndex === frameIndex) {
 				this.sprites.splice(i, 1);
 			}

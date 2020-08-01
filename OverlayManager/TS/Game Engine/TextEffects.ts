@@ -106,8 +106,9 @@ class Animations {
 				if (!animatedElement.stillAlive(now)) {
 					animatedElement.destroying();
 					animatedElement.removing();
-					if (!animatedElement.isRemoving)
+					if (!animatedElement.isRemoving) {
 						this.animations.splice(i, 1);
+					}
 				}
 			}
 		}

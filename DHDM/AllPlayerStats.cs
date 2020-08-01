@@ -33,6 +33,8 @@ namespace DHDM
 
 		}
 
+		public bool AnyoneIsReadyToRoll => Players.FirstOrDefault(x => x.ReadyToRollDice) != null;
+
 		public PlayerStats GetPlayerStats(int playerId)
 		{
 			PlayerStats foundPlayer = Players.FirstOrDefault(x => x.PlayerId == playerId);
@@ -52,6 +54,12 @@ namespace DHDM
 				playerState.ReadyToRollDice = !playerState.ReadyToRollDice;
 			else
 				playerState.Vantage = VantageKind.Normal;
+		}
+
+		public void SetReadyRollDice(int playerId, bool newValue)
+		{
+			PlayerStats playerState = GetPlayerStats(playerId);
+			playerState.ReadyToRollDice = newValue;
 		}
 
 		public void ReadyRollVantage(int playerId, VantageKind vantage)

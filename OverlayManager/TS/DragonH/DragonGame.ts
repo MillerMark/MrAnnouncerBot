@@ -481,7 +481,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	initializePlayerData(playerData: string): any {
-		let characters: Array<Character> = JSON.parse(playerData);
+		const characters: Array<Character> = JSON.parse(playerData);
 		this.players = [];
 		characters.forEach(character => { this.players.push(new Character(character)) }, this);
 	}
@@ -489,19 +489,23 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	clearWindup(windupName: string): void {
 		console.log(`clearWindup(${windupName})`);
 		// TODO: Use windupName to find specific sprites to clear.
-		let now: number = performance.now();
+		const now: number = performance.now();
 		this.allWindupEffects.allSprites.forEach(function (sprites: Sprites) {
 			sprites.sprites.forEach(function (sprite: SpriteProxy) {
-				let noNameSpecified: boolean = !windupName;
-				let destroyAllSprites: boolean = windupName === '*';
-				let asteriskIndex: number = windupName.indexOf('*');
+				const noNameSpecified = !windupName;
+				const destroyAllSprites: boolean = windupName === '*';
+				const asteriskIndex: number = windupName.indexOf('*');
 
-				let spriteHasNoName: boolean = sprite.name === null || sprite.name === '';
+				const spriteHasNoName: boolean = sprite.name === null || sprite.name === '';
+
+				//if (!spriteHasNoName)
+				//	console.log('sprite.name: ' + sprite.name);
+
 				let nameMatches: boolean = sprite.name === windupName;
 
 				if (!destroyAllSprites && asteriskIndex >= 0) {
-					let firstPart: string = windupName.substr(0, asteriskIndex);
-					let lastPart: string = windupName.substr(asteriskIndex + 1);
+					const firstPart: string = windupName.substr(0, asteriskIndex);
+					const lastPart: string = windupName.substr(asteriskIndex + 1);
 					let firstPartMatches: boolean;
 					let lastPartMatches: boolean;
 					if (firstPart)
@@ -515,16 +519,17 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 					nameMatches = firstPartMatches && lastPartMatches;
 				}
 
-				if (destroyAllSprites || noNameSpecified && spriteHasNoName || nameMatches)
+				if (destroyAllSprites || noNameSpecified && spriteHasNoName || nameMatches) {
 					sprite.expirationDate = now + sprite.fadeOutTime;
+				}
 			});
 		});
 	}
 
 	castSpell(spellData: string): void {
-		let spell: CastedSpellDataDto = JSON.parse(spellData);
+		const spell: CastedSpellDataDto = JSON.parse(spellData);
 
-		let playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.CasterId));
+		const playerX: number = this.getPlayerX(this.getPlayerIndex(spell.Target.CasterId));
 		//this.addWindups(spell.Windups, playerX, `${spell.Spell.Name}(${spell.Spell.OwnerId})`);
 		this.addWindups(spell.Windups, playerX, `(${spell.Spell.OwnerId})`);
 	}
@@ -532,21 +537,21 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
 		console.log('Adding Windups:');
 		for (let i = 0; i < windups.length; i++) {
-			let windup: WindupData = windups[i];
+			const windup: WindupData = windups[i];
 			if (windup === null) {
 				console.error('windup == null');
 				continue;
 			}
-			let sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
+			const sprites: Sprites = this.allWindupEffects.getSpritesByName(windup.Effect);
 			if (!sprites)
 				continue;
-			let startingAngle: number = windup.DegreesOffset;
-			let startingFrameIndex: number = startingAngle / 6 % 360;
+			const startingAngle: number = windup.DegreesOffset;
+			const startingFrameIndex: number = startingAngle / 6 % 360;
 			if (sprites) {
 				let hue: number = windup.Hue;
-				if (hue == -1)
+				if (hue === -1)
 					hue = Random.max(360);
-				let sprite: SpriteProxy = sprites.addShifted(playerX + windup.Offset.x, 934 + windup.Offset.y, startingFrameIndex, hue, windup.Saturation, windup.Brightness);
+				const sprite: SpriteProxy = sprites.addShifted(playerX + windup.Offset.x, 934 + windup.Offset.y, startingFrameIndex, hue, windup.Saturation, windup.Brightness);
 				if (name)
 					sprite.name = windup.Name + name;
 				else
@@ -562,7 +567,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 				sprite.fadeOutTime = windup.FadeOut;
 				sprite.playToEndOnExpire = windup.PlayToEndOnExpire;
 				sprite.rotation = windup.Rotation;
-				let gravityVector: Vector = new Vector(windup.Force.x, windup.Force.y).normalize(windup.ForceAmount);
+				const gravityVector: Vector = new Vector(windup.Force.x, windup.Force.y).normalize(windup.ForceAmount);
 				sprite.horizontalThrustOverride = gravityVector.x;
 				sprite.verticalThrustOverride = gravityVector.y;
 				sprite.scale = windup.Scale;
@@ -581,7 +586,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	addWindupFromStr(windupData: string, playerX: number = this.activePlayerX): void {
-		let windups: Array<WindupData> = JSON.parse(windupData);
+		const windups: Array<WindupData> = JSON.parse(windupData);
 		this.addWindups(windups, playerX);
 	}
 
