@@ -1,35 +1,35 @@
 ﻿class AnimatedElement {
 	name: string;
 	isRemoving: boolean;
-	autoRotationDegeesPerSecond: number = 0;
-	autoScaleFactorPerSecond: number = 1;
+	autoRotationDegeesPerSecond = 0;
+	autoScaleFactorPerSecond = 1;
 	rotation: number;
 	initialRotation: number;
 	rotationStartTime: number;
 	scaleStartTime: number;
-	timeToRotate: number = 0;
-	targetRotation: number = 0;
+	timeToRotate  = 0;
+	targetRotation = 0;
 	degreesPerMs: number;
 	lastRotationUpdate: number;
 	opacity: number;
 	expirationDate: number;
 	timeStart: number;
-	fadeInTime: number = 0;
-	fadeOutTime: number = 4000;
-	fadeOnDestroy: boolean = true;
+	fadeInTime = 0;
+	fadeOutTime = 4000;
+	fadeOnDestroy = true;
 	velocityX: number;
 	velocityY: number;
 	startX: number;
 	startY: number;
 	lastX: number;
 	lastY: number;
-	initialHorizontalScale: number = 1;
-	initialVerticalScale: number = 1;
+	initialHorizontalScale = 1;
+	initialVerticalScale = 1;
 	verticalThrustOverride: number = undefined;
 	horizontalThrustOverride: number = undefined;
 	onExpire: () => void;
 
-	constructor(public x: number, public y: number, lifeSpanMs: number = -1) {
+	constructor(public x: number, public y: number, lifeSpanMs = -1) {
 		this.velocityX = 0;
 		this.velocityY = 0;
 		this.startX = x;
@@ -49,8 +49,8 @@
 			this.expirationDate = null;
 	}
 
-	private _verticalScale: number = 1;
-	private _horizontalScale: number = 1;
+	private _verticalScale = 1;
+	private _horizontalScale = 1;
 
 	get scale(): number {
 		return this._horizontalScale;
@@ -82,7 +82,7 @@
 	}
 
 	rotateTo(targetRotation: number, degreesToMove: number, timeToRotate: number): void {
-		if (timeToRotate == 0)
+		if (timeToRotate === 0)
 			return;
 
 		//if (this.timeToRotate > 0) {  // Already rotating...
@@ -114,8 +114,8 @@
 				this.rotation = this.targetRotation;
 			}
 			else {
-				let timeSinceLastFrameAdvance: number = nowMs - this.lastRotationUpdate;
-				let degreesToMove: number = this.degreesPerMs * timeSinceLastFrameAdvance;
+				const timeSinceLastFrameAdvance: number = nowMs - this.lastRotationUpdate;
+				const degreesToMove: number = this.degreesPerMs * timeSinceLastFrameAdvance;
 				this.rotation += degreesToMove;
 				if (this.rotation > 360) {
 					this.rotation -= 360;
@@ -126,24 +126,24 @@
 				this.lastRotationUpdate = nowMs;
 			}
 		}
-		else if (this.autoRotationDegeesPerSecond != 0) {
-			if (!this.rotationStartTime || this.rotationStartTime == 0)
+		else if (this.autoRotationDegeesPerSecond !== 0) {
+			if (!this.rotationStartTime || this.rotationStartTime === 0)
 				this.rotationStartTime = nowMs;
 			else {
-				let timeSpentRotatingSeconds: number = (nowMs - this.rotationStartTime) / 1000;
+				const timeSpentRotatingSeconds: number = (nowMs - this.rotationStartTime) / 1000;
 				this.rotation = this.initialRotation + timeSpentRotatingSeconds * this.autoRotationDegeesPerSecond;
 			}
 		}
 
-		if (this.autoScaleFactorPerSecond != 1) {
-			if (!this.scaleStartTime || this.scaleStartTime == 0) {
+		if (this.autoScaleFactorPerSecond !== 1) {
+			if (!this.scaleStartTime || this.scaleStartTime === 0) {
 				this.scaleStartTime = nowMs;
 				this._horizontalScale = this.initialHorizontalScale;
 				this._verticalScale = this.initialVerticalScale;
 			}
 			else {
-				let timeSpentScalingSeconds: number = (nowMs - this.scaleStartTime) / 1000;
-				let scaleFactor: number = Math.pow(this.autoScaleFactorPerSecond, timeSpentScalingSeconds);
+				const timeSpentScalingSeconds: number = (nowMs - this.scaleStartTime) / 1000;
+				const scaleFactor: number = Math.pow(this.autoScaleFactorPerSecond, timeSpentScalingSeconds);
 				this._horizontalScale = this.initialHorizontalScale * scaleFactor;
 				this._verticalScale = this.initialVerticalScale * scaleFactor;
 			}
@@ -283,7 +283,7 @@
 		this.startY = this.y;
 	}
 
-	matches(matchData: any): boolean {
+	matches(matchData): boolean {
 		return matchData === null;   // Descendants can override if they want to implement a custom search/find functionality...
 	}
 

@@ -29,6 +29,24 @@ namespace DndCore
 			// TODO: Optimize this code to be more efficient (takes about 6 seconds).
 			GoogleSheets.SaveChanges(Creatures.ToArray(), "TempHitPointsStr,HitPointsStr");
 		}
+		public static void AddD20sForSelected(List<DiceDto> diceDtos, DiceRollType rollType)
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (inGameCreature.IsSelected)
+				{
+					DiceDto npcMonsterDice = new DiceDto();
+					npcMonsterDice.Sides = 20;
+					npcMonsterDice.Quantity = 1;
+					npcMonsterDice.Label = inGameCreature.Name;
+					if (rollType == DiceRollType.Initiative)
+					{
+						// TODO: Get initiative vantage for NPC/Monster
+					}
+					diceDtos.Add(npcMonsterDice);
+				}
+			}
+		}
 
 		static List<InGameCreature> inGameCreatures;
 		public static List<InGameCreature> Creatures

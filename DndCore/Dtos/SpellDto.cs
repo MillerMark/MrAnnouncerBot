@@ -48,7 +48,8 @@ namespace DndCore
 		public string bright2 { get; set; }
 		public string onReceived { get; set; }
 		public string onCast { get; set; }
-		public string onCasting { get; set; }
+		public string onPreparationComplete { get; set; }
+		public string onPreparing { get; set; }
 		public string onGetAttackAbility { get; set; }
 		public string onPlayerPreparesAttack { get; set; }
 		public string onDieRollStopped { get; set; }

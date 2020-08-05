@@ -1158,9 +1158,9 @@ function getModifier(diceRollData: DiceRollData, player: Character): number {
 }
 
 function getRollResults(): RollResults {
-	let totalScores: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	let inspirationValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	let luckValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	const totalScores: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	const inspirationValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	const luckValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 	let totalDamage = 0;
 	let maxDamage = 0;
 	let totalHealth = 0;
@@ -1170,6 +1170,7 @@ function getRollResults(): RollResults {
 	let playerIdForTextMessages = -1;
 
 	//console.log(`getRollResults - dice.length = ${dice.length}`);
+	
 	for (let i = 0; i < dice.length; i++) {
 		const die = dice[i];
 		if (!die.inPlay)
@@ -1180,12 +1181,15 @@ function getRollResults(): RollResults {
 		if (diceRollData.hasMultiPlayerDice) {
 			if (diceRollData.multiplayerSummary === null)
 				diceRollData.multiplayerSummary = [];
-			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
+			// diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
+			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.name === die.playerName);
+
 			if (playerRoll) {
 				playerRoll.roll += topNumber;
 				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
 			}
 			else {
+				// TODO: If coming from DiceDtos, get the correct modifier (don't just use the player's modifier).
 				let modifier = 0;
 				if (diceLayer.players && diceLayer.players.length > 0) {
 					const player: Character = diceLayer.getPlayer(die.playerID);
@@ -1194,7 +1198,12 @@ function getRollResults(): RollResults {
 
 				const success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
 				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, modifier, success));
+				console.log(diceRollData.multiplayerSummary[0].roll);
 			}
+
+			console.log(diceRollData.multiplayerSummary);
+			console.log('');
+
 			let scaleAdjust = 1;
 			if (die.rollType === DieCountsAs.inspiration) {
 				scaleAdjust = 0.7;
@@ -2159,6 +2168,29 @@ function showSuccessFailMessages(title: string, rawD20RollValue: number) {
 	}
 }
 
+function getSkillCheckName() {
+	const enumAsStr: string = Object.keys(Skills).find(key => Skills[key] === diceRollData.skillCheck);
+	let initialCapEnum = '';
+	if (enumAsStr)
+		initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
+	else
+		initialCapEnum = 'Skill';
+	if (diceRollData.skillCheck === Skills.animalHandling)
+		initialCapEnum = 'Animal Handling';
+	else if (diceRollData.skillCheck === Skills.sleightOfHand)
+		initialCapEnum = 'Sleight of Hand';
+	return initialCapEnum;
+}
+
+function getSavingThrowName() {
+	const enumAsStr: string = Object.keys(Ability).find(key => Ability[key] === diceRollData.savingThrow);
+	let initialCapEnum = '';
+	if (enumAsStr)
+		initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
+	else
+		initialCapEnum = 'Ability';
+	return initialCapEnum;
+}
 function reportRollResults(rollResults: RollResults) {
 	const d20RollValue: number[] = rollResults.d20RollValue;
 	const singlePlayerId: number = rollResults.singlePlayerId;
@@ -2186,14 +2218,14 @@ function reportRollResults(rollResults: RollResults) {
 	}
 
 	if (!diceRollData.hasMultiPlayerDice && d20RollValue[singlePlayerId] > 0) {
-		if (diceRollData.modifier != 0)
+		if (diceRollData.modifier !== 0)
 			diceLayer.showRollModifier(diceRollData.modifier, luckValue[singlePlayerId], playerIdForTextMessages);
-		if (skillSavingModifier != 0)
+		if (skillSavingModifier !== 0)
 			diceLayer.showRollModifier(skillSavingModifier, luckValue[singlePlayerId], playerIdForTextMessages);
 		diceLayer.showDieTotal(`${totalRoll}`, playerIdForTextMessages);
 	}
 
-	if (totalBonus > 0 && !diceRollData.hasMultiPlayerDice && diceRollData.type != DiceRollType.SkillCheck) {
+	if (totalBonus > 0 && !diceRollData.hasMultiPlayerDice && diceRollData.type !== DiceRollType.SkillCheck) {
 		let bonusRollStr = 'Bonus Roll: ';
 		const bonusRollOverrideStr: string = diceRollData.getFirstBonusRollDescription();
 		if (bonusRollOverrideStr)
@@ -3318,30 +3350,6 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 	}
 }
 
-function getSkillCheckName() {
-	let enumAsStr: string = Object.keys(Skills).find(key => Skills[key] === diceRollData.skillCheck);
-	let initialCapEnum: string = '';
-	if (enumAsStr)
-		initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
-	else
-		initialCapEnum = 'Skill';
-	if (diceRollData.skillCheck === Skills.animalHandling)
-		initialCapEnum = 'Animal Handling';
-	else if (diceRollData.skillCheck === Skills.sleightOfHand)
-		initialCapEnum = 'Sleight of Hand';
-	return initialCapEnum;
-}
-
-function getSavingThrowName() {
-	const enumAsStr: string = Object.keys(Ability).find(key => Ability[key] === diceRollData.savingThrow);
-	let initialCapEnum = '';
-	if (enumAsStr)
-		initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
-	else
-		initialCapEnum = 'Ability';
-	return initialCapEnum;
-}
-
 function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: VantageKind, inspiration: string = '', numD20s: number = 1, dieLabelOverride: string = null) {
 	const d20BackColor: string = diceLayer.getDieColor(playerID);
 	const d20FontColor: string = diceLayer.getDieFontColor(playerID);
@@ -3383,7 +3391,6 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
 	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
 	const die = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier);
-	prepareDie(die, diceRollData.throwPower, 0);
 	die.playerName = diceDto.Label;
 	die.dieType = DiceRollType.None;
 	if (diceDto.Label)
@@ -3411,7 +3418,8 @@ function prepareDiceDtoRoll(diceRollDto: DiceRollData, xPositionModifier: number
 	}
 }
 
-function prepareLegacyRoll(playerID: number, xPositionModifier: number) {
+function prepareLegacyRoll(xPositionModifier: number) {
+	let playerID = -1;
 	if (diceRollData.playerRollOptions.length === 1)
 		playerID = diceRollData.playerRollOptions[0].PlayerID;
 	if (diceRollData.type === DiceRollType.WildMagic) {
@@ -3554,7 +3562,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	wasCriticalHit = false;
 	attemptedRollWasNarrowlySuccessful = false;
 
-	if (randomDiceThrowIntervalId != 0) {
+	if (randomDiceThrowIntervalId !== 0) {
 		clearInterval(randomDiceThrowIntervalId);
 		randomDiceThrowIntervalId = 0;
 	}
@@ -3566,7 +3574,6 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	}
 
 	clearBeforeRoll();
-	let playerID = -1;
 
 	let xPositionModifier = 0;
 
@@ -3574,12 +3581,15 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		xPositionModifier = 26;  // Throw from the right to the left.
 
 	if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0) {
+		console.log('prepareDiceDtoRoll...');
 		prepareDiceDtoRoll(diceRollDto, xPositionModifier);
-	}
-	else {
-		playerID = prepareLegacyRoll(playerID, xPositionModifier);
+		console.log(dice);
 	}
 
+
+	console.log('prepareLegacyRoll...');
+	prepareLegacyRoll(xPositionModifier);
+	console.log(dice);
 
 	try {
 		// @ts-ignore - DiceManager

@@ -349,6 +349,13 @@ namespace DHDM
 			PlaySceneFunction.RequestPlayScene += PlaySceneFunction_RequestPlayScene;
 			SelectTargetFunction.RequestSelectTarget += SelectTargetFunction_RequestSelectTarget;
 			SelectMonsterFunction.RequestSelectMonster += SelectMonsterFunction_RequestSelectMonster;
+			AddWindupFunction.RequestAddWindup += SendWindupFunction_SendWindup;
+			ClearWindupFunction.RequestClearWindup += ClearWindup_RequestClearWindup; ;
+		}
+
+		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea)
+		{
+			HubtasticBaseStation.ClearWindup(ea.Name);
 		}
 
 		private void SelectMonsterFunction_RequestSelectMonster(object sender, SelectMonsterEventArgs ea)
@@ -1012,7 +1019,7 @@ namespace DHDM
 						selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
 					ActivePlayer.NextAnswer = null;
 					if (selectedAnswer != null)
-						return selectedAnswer.Index;
+						return selectedAnswer.Value;
 				}
 
 
@@ -1673,6 +1680,27 @@ namespace DHDM
 				AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true);
 				UpdatePlayerStateInGame();
 			}
+			else if (actionShortcut.Type == DiceRollType.DamageOnly)
+			{
+				if (actionShortcut.Spell != null)
+				{
+					string dieStrRaw = actionShortcut.Spell.DieStrRaw;
+					if (!string.IsNullOrWhiteSpace(dieStrRaw))
+					{
+						int indexOfD = dieStrRaw.IndexOf('d');
+						if (indexOfD > 0)
+						{
+							if (int.TryParse(dieStrRaw.Substring(indexOfD + 1), out int numberOfSides))
+							{
+								AllPlayerStats.ClearReadyToRollState();
+								AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true, numberOfSides);
+								UpdatePlayerStateInGame();
+							}
+
+						}
+					}
+				}
+			}
 		}
 		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
 		{
@@ -1950,6 +1978,14 @@ namespace DHDM
 			ckbUseMagic.IsChecked = actionShortcut.UsesMagic;
 		}
 
+		private void SendWindupFunction_SendWindup(object sender, WindupEventArgs ea)
+		{
+			List<WindupDto> windups = new List<WindupDto>();
+			windups.Add(ea.WindupDto);
+			string serializedObject = JsonConvert.SerializeObject(windups);
+			HubtasticBaseStation.AddWindup(serializedObject);
+		}
+
 		private static void SendShortcutWindups(PlayerActionShortcut actionShortcut, Character player)
 		{
 			if (actionShortcut.Windups.Count > 0)
@@ -1999,6 +2035,15 @@ namespace DHDM
 
 		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
 		{
+			if (!IsOkayToCastSpell(ActivePlayer, actionShortcut.Spell))
+				return;
+
+			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
+			if (castedSpell.Target == null && ActivePlayer != null)
+				castedSpell.Target = ActivePlayer.ActiveTarget;
+
+			castedSpell.PreparationStarted();  // Triggers onPreparing event here.
+
 			if (actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
 			{
 				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
@@ -2044,35 +2089,6 @@ namespace DHDM
 
 		private void CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell)
 		{
-			if (spell.RequiresConcentration && player.concentratedSpell != null)
-			{
-				Spell concentratedSpell = player.concentratedSpell.Spell;
-
-				try
-				{
-					if (game.ClockIsRunning())
-						realTimeAdvanceTimer.Stop();
-					if (concentratedSpell.Name == spell.Name)
-					{
-						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
-						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, concentratedSpell);
-						if (remainingSpellTime.TotalSeconds > 0)
-						{
-							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining)");
-							return;
-						}
-						else  // No time remaining. No longer concentrating on this spell.
-							concentratedSpell = null;
-					}
-					if (concentratedSpell != null && AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
-						return;
-				}
-				finally
-				{
-					if (game.ClockIsRunning())
-						StartRealTimeTimer();
-				}
-			}
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 			CastedSpell castedSpell = game.Cast(player, spell);
@@ -2091,6 +2107,45 @@ namespace DHDM
 			}
 			ShowSpellEffects(actionShortcut, spell, "Spell");
 			ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
+		}
+
+		private bool IsOkayToCastSpell(Character player, Spell spell)
+		{
+			bool okayToCastSpell = true;
+			if (spell.RequiresConcentration && player.concentratedSpell != null)
+			{
+				Spell concentratedSpell = player.concentratedSpell.Spell;
+
+				try
+				{
+					if (game.ClockIsRunning())
+						realTimeAdvanceTimer.Stop();
+					if (concentratedSpell.Name == spell.Name)
+					{
+						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
+						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, concentratedSpell);
+						if (remainingSpellTime.TotalSeconds > 0)
+						{
+							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining)");
+							okayToCastSpell = false;
+						}
+						else  // No time remaining. No longer concentrating on this spell.
+						{
+							concentratedSpell = null;
+							okayToCastSpell = true;
+						}
+					}
+					if (concentratedSpell != null && AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
+						okayToCastSpell = false;
+				}
+				finally
+				{
+					if (game.ClockIsRunning())
+						StartRealTimeTimer();
+				}
+			}
+
+			return okayToCastSpell;
 		}
 
 		private static void ShowSpellPreparingWindups(PlayerActionShortcut actionShortcut, Spell spell)
@@ -2471,6 +2526,11 @@ namespace DHDM
 				diceRoll.MinDamage = result;
 			else
 				diceRoll.MinDamage = 0;
+
+			if (type == DiceRollType.Initiative)
+			{
+				AllInGameCreatures.AddD20sForSelected(diceRoll.DiceDtos, DiceRollType.Initiative);
+			}
 
 			if (type == DiceRollType.SkillCheck)
 			{
@@ -5224,6 +5284,8 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				SetPlayerVantageUI(playerId, vantageKind);
+				AllPlayerStats.ReadyRollVantage(playerId, vantageKind);
+				UpdatePlayerStateInGame();
 			});
 		}
 
@@ -5954,7 +6016,8 @@ namespace DHDM
 				return;
 			spell.OnCast = latestSpell.OnCast;
 			spell.OnReceived = latestSpell.OnReceived;
-			spell.OnCasting = latestSpell.OnCasting;
+			spell.OnPreparing = latestSpell.OnPreparing;
+			spell.OnPreparationComplete = latestSpell.OnPreparationComplete;
 			spell.OnGetAttackAbility = latestSpell.OnGetAttackAbility;
 			spell.OnDispel = latestSpell.OnDispel;
 			spell.OnPlayerPreparesAttack = latestSpell.OnPlayerPreparesAttack;

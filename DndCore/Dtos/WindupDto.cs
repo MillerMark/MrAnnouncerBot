@@ -23,7 +23,7 @@ namespace DndCore
 		public string Description { get; set; }
 		public double Rotation { get; set; }
 		public double AutoRotation { get; set; }
-		public int DegreesOffset { get; set; }
+		public double DegreesOffset { get; set; }
 		public Vector Velocity { get; set; }
 		public Vector Offset { get; set; }
 		public Vector Force { get; set; }
@@ -32,6 +32,8 @@ namespace DndCore
 		public bool FlipHorizontal { get; set; }
 		public bool FlipVertical { get; set; }
 		public string EffectAvailableWhen { get; set; }
+		public double TargetScale { get; set; }
+
 
 		public WindupDto Clone()
 		{
@@ -74,6 +76,26 @@ namespace DndCore
 			Scale = 1;
 			PlayToEndOnExpire = false;
 		}
+
+		public WindupDto(string effectName, int hue, int saturation, int brightness, double scale, double rotation, double autoRotation, double degreesOffset, bool flipHorizontal, int xOffset, int yOffset, double velocityX, double velocityY, double forceX, double forceY, int fadeIn, int lifespan, int fadeOut): this()
+		{
+			Effect = effectName;
+			Hue = hue;
+			Saturation = saturation;
+			Brightness = brightness;
+			Scale = scale;
+			Rotation = rotation;
+			AutoRotation = autoRotation;
+			DegreesOffset = degreesOffset;
+			FlipHorizontal = flipHorizontal;
+			Offset = new Vector(xOffset, yOffset);
+			Velocity = new Vector(velocityX, velocityY);
+			Force = new Vector(forceX, forceY);
+			FadeIn = fadeIn;
+			Lifespan = lifespan;
+			FadeOut = fadeOut;
+		}
+
 		public WindupDto Float()
 		{
 			Offset = new Vector(0, 100);

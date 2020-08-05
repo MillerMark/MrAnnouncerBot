@@ -7,7 +7,7 @@ namespace DndCore
 {
 	[Tooltip("Adds the specified visual effect for the active player's next spell cast.")]
 	[Param(1, typeof(string), "effectName", "The name of the effect.", ParameterIs.Required, CompletionProviderNames.AnimationEffectName)]
-	[Param(2, typeof(int), "hue", "The hue of the effect. Can also be the word \"player\" to use the player's hue shift value.", ParameterIs.Optional)]
+	[Param(2, typeof(string), "hue", "The hue of the effect. Can also be the word \"player\" to use the player's hue shift value.", ParameterIs.Optional)]
 	[Param(3, typeof(int), "saturation", "The saturation of the effect (0 is gray; 100 is full color). Defaults to 100 if not specified.", ParameterIs.Optional)]
 	[Param(4, typeof(int), "brightness", "The brightness of the effect (0 is black; 100 is normal; 200 is white). Defaults to 100 if not specified.", ParameterIs.Optional)]
 	[Param(5, typeof(double), "scale", "The scale of the effect (1 is 100%).", ParameterIs.Optional)]
@@ -19,8 +19,8 @@ namespace DndCore
 	[Param(11, typeof(int), "secondaryBrightness", "The secondary brightness for effects that have two animated components (like fireball).", ParameterIs.Optional)]
 	[Param(12, typeof(int), "xOffset", "The amount to move this effect on the x-axis.", ParameterIs.Optional)]
 	[Param(13, typeof(int), "yOffset", "The amount to move this effect on the y-axis.", ParameterIs.Optional)]
-	[Param(14, typeof(int), "velocityX", "The velocity in the x direction.", ParameterIs.Optional)]
-	[Param(15, typeof(int), "velocityY", "The velocity in the y direction.", ParameterIs.Optional)]
+	[Param(14, typeof(double), "velocityX", "The velocity in the x direction.", ParameterIs.Optional)]
+	[Param(15, typeof(double), "velocityY", "The velocity in the y direction.", ParameterIs.Optional)]
 	public class AddSpellCastEffect : DndFunction
 	{
 		public override string Name { get; set; } = "AddSpellCastEffect";

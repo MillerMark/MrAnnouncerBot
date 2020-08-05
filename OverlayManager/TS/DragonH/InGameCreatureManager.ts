@@ -12,6 +12,7 @@
 	bloodD: Sprites;
 	bloodE: Sprites;
 	bloodGushing: Sprites;
+	activeTurn: Sprites;
 
 	constructor() {
 
@@ -54,7 +55,12 @@
 		this.scrollDisappear.originX = 49;
 		this.scrollDisappear.originY = 2;
 
+		this.activeTurn = new Sprites('Scroll/InGameCreatures/NpcMonsterTurn/NpcMonsterTurn', 141, fps30, AnimationStyle.Loop, true);
+		this.activeTurn.originX = 113;
+		this.activeTurn.originY = 107;
+
 		this.parchmentBackground.disableGravity();
+		this.activeTurn.disableGravity();
 		this.deathX.disableGravity();
 		this.parchmentShadow.disableGravity();
 		this.target.disableGravity();
@@ -201,6 +207,7 @@
 	}
 
 	drawInGameCreatures(context: CanvasRenderingContext2D, nowMs: number) {
+		this.activeTurn.draw(context, nowMs);
 		this.parchmentBackground.draw(context, nowMs);
 
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
@@ -222,6 +229,8 @@
 		this.scrollDisappear.draw(context, nowMs);
 
 	}
+
+	// TODO: this.activeTurn integrate
 
 	getParchmentSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
 		return this.getSpriteForCreature(this.parchmentBackground.sprites, inGameCreature);

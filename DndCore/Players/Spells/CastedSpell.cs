@@ -30,11 +30,16 @@ namespace DndCore
 		public int Level { get => Spell.Level; set => Spell.Level = value; }
 		public bool Active { get; set; }
 
-		public void Casting()
+		public void PreparationComplete()
+		{
+			SpellCaster.ShowPlayerCasting(this);
+			Spell.TriggerPreparationComplete(SpellCaster, Target, this);
+		}
+
+		public void PreparationStarted()
 		{
 			SpellCaster.CheckConcentration(this);
-			SpellCaster.ShowPlayerCasting(this);
-			Spell.TriggerCasting(SpellCaster, Target, this);
+			Spell.TriggerPreparing(SpellCaster, Target, this);
 		}
 
 		public void Prepare()
@@ -46,7 +51,7 @@ namespace DndCore
 		public void CastingWithItem()
 		{
 			SpellCaster.ShowPlayerCasting(this);
-			Spell.TriggerCasting(SpellCaster, Target, this);
+			Spell.TriggerPreparationComplete(SpellCaster, Target, this);
 		}
 
 		public void Cast()

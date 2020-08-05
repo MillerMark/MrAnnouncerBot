@@ -30,4 +30,6 @@ namespace DndCore
 	public delegate void TargetEventHandler(TargetEventArgs ea);
 	public delegate void SelectMonsterEventHandler(object sender, SelectMonsterEventArgs ea);
 	public delegate void QueueShortcutEventHandler(object sender, QueueShortcutEventArgs ea);
+	public delegate void WindupEventHandler(object sender, WindupEventArgs ea);
+	public delegate void NameEventHandler(object sender, NameEventArgs ea);
 }

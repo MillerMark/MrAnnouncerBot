@@ -188,6 +188,12 @@ namespace DHDM
 			});
 			AddCompletionProvider(new TextListCompletionProvider()
 			{
+				ProviderName = CompletionProviderNames.WindupEffectName,
+				List = "Fire; Smoke; Fairy; Wide; Ghost; Trails; Plasma; Lightning",
+				TriggerKey = '"'
+			});
+			AddCompletionProvider(new TextListCompletionProvider()
+			{
 				ProviderName = CompletionProviderNames.TrailingEffectName,
 				List = AllTrailingEffects.GetList("; "),
 				TriggerKey = '"'

@@ -420,7 +420,7 @@ namespace DndCore
 			}
 
 			CastedSpell castedSpell = new CastedSpell(spell, player);
-			castedSpell.Casting();
+			castedSpell.PreparationComplete();
 
 			nextTarget = player.ActiveTarget;
 

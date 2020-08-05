@@ -2,6 +2,8 @@
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
+	MainDieSides: number;
+	DiceStack: Array<DiceStackDto>;
 }
 
 
@@ -12,11 +14,26 @@ interface IAllPlayerStats {
 	Players: Array<PlayerStats>;
 }
 
+class DiceStackDto {
+	NumSides: number;
+	HueShift: number;
+	Multiplier: number;
+	DamageType: DamageType;
+
+	matches(compareDiceStack: DiceStackDto) {
+		return this.DamageType === compareDiceStack.DamageType &&
+			this.HueShift === compareDiceStack.HueShift &&
+			this.Multiplier === compareDiceStack.Multiplier &&
+			this.NumSides === compareDiceStack.NumSides;
+	}
+}
 
 class PlayerStats implements IPlayerStats {
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
+	MainDieSides = 20;
+	DiceStack: Array<DiceStackDto> = [];
 
 	deserialize(playerStatsDto: IPlayerStats): PlayerStats {
 		if (!playerStatsDto)
@@ -25,7 +42,31 @@ class PlayerStats implements IPlayerStats {
 		this.PlayerId = playerStatsDto.PlayerId;
 		this.Vantage = playerStatsDto.Vantage;
 		this.ReadyToRollDice = playerStatsDto.ReadyToRollDice;
+		this.MainDieSides = playerStatsDto.MainDieSides;
+		this.DiceStack = playerStatsDto.DiceStack;
 		return this;
+	}
+
+	onlyVantageHasChanged(latestPlayerStats: PlayerStats) {
+		return this.PlayerId === latestPlayerStats.PlayerId &&
+			this.Vantage !== latestPlayerStats.Vantage &&
+			this.ReadyToRollDice === latestPlayerStats.ReadyToRollDice &&
+			this.diceMatch(latestPlayerStats);
+	}
+
+	diceMatch(latestPlayerStats: PlayerStats) {
+		return this.MainDieSides === latestPlayerStats.MainDieSides &&
+			this.dieStacksMatch(latestPlayerStats.DiceStack);
+	}
+
+	dieStacksMatch(compareDiceStack: DiceStackDto[]) {
+		if (compareDiceStack.length !== this.DiceStack.length)
+			return false;
+		for (let i = 0; i < compareDiceStack.length; i++) {
+			if (!this.DiceStack[i].matches(compareDiceStack[i]))
+				return false;
+		}
+		return true;
 	}
 
 	constructor() {
@@ -76,7 +117,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.airExplosionCollection = new SpriteCollection();
 
 		this.readyToRollFullDragon = this.createReadyToRollSprites('FullDragon', 281, 265);
-		
+
 		this.readyToRollDieSmoke = new Sprites(`PlayerReadyToRollDice/DieSmoke`, 87, fps30, AnimationStyle.Sequential, true);
 		this.readyToRollDieSmoke.originX = 48;
 		this.readyToRollDieSmoke.originY = -18;
@@ -87,9 +128,14 @@ class AllPlayerStats implements IAllPlayerStats {
 
 		this.createReadyToRollVantageDieSprites('Disadvantage');
 		this.createReadyToRollVantageDieSprites('Advantage');
+		this.createReadyToRollDieSprites('d4Damage', -18, 0);
+		this.createReadyToRollDieSprites('d6Damage', -18, -4);
+		this.createReadyToRollDieSprites('d8Damage', -12, 0);
+		this.createReadyToRollDieSprites('d10Damage', -8, 0);
+		this.createReadyToRollDieSprites('d12Damage', -7, 0);
 
-		this.createReadyToRollDieSprites('DarkDie');
-		this.createReadyToRollDieSprites('LightDie');
+		this.readyToRollDarkDie = this.createReadyToRollDieSprites('DarkDie');
+		this.readyToRollLightDie = this.createReadyToRollDieSprites('LightDie');
 		this.createReadyToRollDieSprites('Willy');
 		this.createReadyToRollDieSprites('Fred');
 		this.createReadyToRollDieSprites('Miles');
@@ -131,8 +177,8 @@ class AllPlayerStats implements IAllPlayerStats {
 		return sprites;
 	}
 
-	private createReadyToRollDieSprites(fileName: string): Sprites {
-		const dieSprites: Sprites = this.createReadyToRollSprites(fileName, 48, 29);
+	private createReadyToRollDieSprites(fileName: string, xOffset = 0, yOffset = 0): Sprites {
+		const dieSprites: Sprites = this.createReadyToRollSprites(fileName, 48 + xOffset, 29 + yOffset);
 		dieSprites.name = fileName;
 		this.readyToRollDieCollection.add(dieSprites);
 		return dieSprites;
@@ -197,7 +243,7 @@ class AllPlayerStats implements IAllPlayerStats {
 			soundManager.safePlayMp3('DiceDragons/FireBreathSmall[3]');
 		else if (dragonBreath.scale < 0.85)
 			soundManager.safePlayMp3('DiceDragons/FireBreathMedium[3]');
-		else 
+		else
 			soundManager.safePlayMp3('DiceDragons/FireBreathLarge[5]');
 	}
 
@@ -226,8 +272,8 @@ class AllPlayerStats implements IAllPlayerStats {
 				break;
 		}
 	}
-
-	launchTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, vantage: VantageKind) {
+	
+	launchTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, vantage: VantageKind, mainDieSides: number, diceStack: Array<DiceStackDto>) {
 		const shoulderOffset = 140;
 		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
 		const playerX: number = iGetPlayerX.getPlayerX(playerIndex) + shoulderOffset;
@@ -236,13 +282,12 @@ class AllPlayerStats implements IAllPlayerStats {
 		const scale: number = Random.between(minScale, maxScale);
 		//const scale = 1.2;
 		let frameInterval: number = fps30;
-		
-		const hueShift: number = Random.max(360);
-		let dieShift: number = Random.max(360);
+
+		const hueShift = 0; // Random.max(360);
+		const dieShift = 0; // Random.max(360);
 		const startFrameIndex: number = Random.max(this.readyToRollFullDragon.baseAnimation.frameCount);
 		const dragonStartY = 1180;
 
-		let dieSprites: Sprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
 		const dieOffset = 16;
 		if (scale >= 0.8) {
 			frameInterval = fps30;
@@ -260,19 +305,12 @@ class AllPlayerStats implements IAllPlayerStats {
 			frameInterval = fps70;
 		}
 
-		if (dieSprites)
-			dieShift = 0;
-		else
-			if (Random.chancePercent(50))
-				dieSprites = this.readyToRollLightDie;
-			else
-				dieSprites = this.readyToRollDarkDie;
+		const dieSprites: Sprites = this.getMainDieForPlayer(iGetPlayerX, playerId, mainDieSides);
 
 		const yStopVariance: number = Random.between(-25, 25);
 
 		const fullDragon: SpriteProxy = this.readyToRollFullDragon.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, hueShift);
 		const die: SpriteProxy = dieSprites.addShifted(playerX, dragonStartY + dieOffset + yStopVariance, startFrameIndex, dieShift);
-
 		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
 		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
 		const dieDistanceDown = 103;
@@ -301,6 +339,30 @@ class AllPlayerStats implements IAllPlayerStats {
 		soundManager.safePlayMp3('DiceDragons/DragonScreech[23]');
 	}
 
+	getMainDieForPlayer(iGetPlayerX: IGetPlayerX, playerId: number, mainDieSides: number): Sprites {
+		console.log('mainDieSides: ' + mainDieSides);
+		let dieSprites: Sprites;
+		if (mainDieSides === 20)
+			dieSprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
+		else if (mainDieSides === 12)
+			dieSprites = this.readyToRollDieCollection.getSpritesByName('d12Damage');
+		else if (mainDieSides === 10)
+			dieSprites = this.readyToRollDieCollection.getSpritesByName('d10Damage');
+		else if (mainDieSides === 8)
+			dieSprites = this.readyToRollDieCollection.getSpritesByName('d8Damage');
+		else if (mainDieSides === 6)
+			dieSprites = this.readyToRollDieCollection.getSpritesByName('d6Damage');
+		else if (mainDieSides === 4)
+			dieSprites = this.readyToRollDieCollection.getSpritesByName('d4Damage');
+		if (!dieSprites)
+			if (Random.chancePercent(50))
+				dieSprites = this.readyToRollLightDie;
+			else
+				dieSprites = this.readyToRollDarkDie;
+
+		return dieSprites;
+	}
+
 	prepareForEntrance(sprite: SpriteProxy, playerId: number, scale = 1, frameInterval = fps30) {
 		const dragonRestingHeight = 420;
 		sprite.data = playerId;
@@ -317,8 +379,8 @@ class AllPlayerStats implements IAllPlayerStats {
 		return this.readyToRollDieCollection.getSpritesByName(playerFirstName);
 	}
 
-	dropDieAndBlowUpTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number) {
-		const dieSprites: Sprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
+	dropDieAndBlowUpTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, mainDieSides: number, diceStack: Array<DiceStackDto>) {
+		const dieSprites: Sprites = this.getMainDieForPlayer(iGetPlayerX, playerId, mainDieSides);
 		if (dieSprites)
 			this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
 		else {
@@ -377,22 +439,26 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	descendTheDragons(iGetPlayerX: IGetPlayerX, playerId: number) {
+	descendTheDragons(iGetPlayerX: IGetPlayerX, playerId: number, mainDieSides: number, diceStack: Array<DiceStackDto>) {
 		this.dropSpriteByPlayerId(this.readyToRollFullDragon.sprites, playerId);
-		const dieSprites: Sprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
+		const dieSprites: Sprites = this.getMainDieForPlayer(iGetPlayerX, playerId, mainDieSides);
 		if (dieSprites)
 			this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
 		else {
 			this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
 			this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
 		}
-		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
-		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
-		this.dropSpriteByPlayerId(disadvantageDieSprites.sprites, playerId);
-		this.dropSpriteByPlayerId(advantageDieSprites.sprites, playerId);
 
+		this.dropSpriteFromCollectionByPlayerId(this.readyToRollDieCollection, playerId);
 		this.dropSpriteByPlayerId(this.readyToRollDragonHands.sprites, playerId);
 		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.sprites, playerId);
+	}
+
+	dropSpriteFromCollectionByPlayerId(dieCollection: SpriteCollection, playerId: number) {
+		for (let i = 0; i < dieCollection.allSprites.length; i++) {
+			const sprites: Sprites = dieCollection.allSprites[i];
+			this.dropSpriteByPlayerId(sprites.sprites, playerId);
+		}
 	}
 
 	dieThrowVelocity = 3;
@@ -439,23 +505,33 @@ class AllPlayerStats implements IAllPlayerStats {
 
 	updatePlayer(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats) {
 		if (playerStats.ReadyToRollDice !== latestPlayerStats.ReadyToRollDice) {
-			playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
-			playerStats.Vantage = latestPlayerStats.Vantage;
 			if (playerStats.ReadyToRollDice) {
-				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage);
+				playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
+				playerStats.Vantage = latestPlayerStats.Vantage;
+				playerStats.MainDieSides = latestPlayerStats.MainDieSides;
+				playerStats.DiceStack = latestPlayerStats.DiceStack;
+				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, latestPlayerStats.MainDieSides, playerStats.DiceStack);
 			}
 			else
-				this.descendTheDragons(iGetPlayerX, playerStats.PlayerId);
+				this.descendTheDragons(iGetPlayerX, latestPlayerStats.PlayerId, latestPlayerStats.MainDieSides, latestPlayerStats.DiceStack);
 		}
-		else if (playerStats.Vantage !== latestPlayerStats.Vantage) {
+		else if (playerStats.onlyVantageHasChanged(latestPlayerStats)) {
 			playerStats.Vantage = latestPlayerStats.Vantage;
-			// TODO: Show the vantage dice.
 			this.showOrHideVantageDie(soundManager, playerStats.PlayerId, playerStats.Vantage);
 		}
-		else {
-			if (this.RollingTheDiceNow)
-				this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId);
+		else if (!playerStats.diceMatch(latestPlayerStats)) {
+			this.descendTheDragons(iGetPlayerX, playerStats.PlayerId, playerStats.MainDieSides, playerStats.DiceStack);
+
+			playerStats.MainDieSides = latestPlayerStats.MainDieSides;
+			playerStats.DiceStack = latestPlayerStats.DiceStack;
+
+			if (playerStats.ReadyToRollDice) {
+				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, playerStats.MainDieSides, playerStats.DiceStack);
+			}
 		}
+
+		if (this.RollingTheDiceNow)
+			this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, latestPlayerStats.MainDieSides, playerStats.DiceStack);
 	}
 
 	showOrHideVantageDie(soundManager: ISoundManager, playerId: number, vantage: VantageKind) {

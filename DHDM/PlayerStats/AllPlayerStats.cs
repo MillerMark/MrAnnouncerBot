@@ -56,10 +56,11 @@ namespace DHDM
 				playerState.Vantage = VantageKind.Normal;
 		}
 
-		public void SetReadyRollDice(int playerId, bool newValue)
+		public void SetReadyRollDice(int playerId, bool newValue, int mainDieNumSides = 20)
 		{
 			PlayerStats playerState = GetPlayerStats(playerId);
 			playerState.ReadyToRollDice = newValue;
+			playerState.MainDieSides = mainDieNumSides;
 		}
 
 		public void ReadyRollVantage(int playerId, VantageKind vantage)

@@ -66,7 +66,11 @@ namespace DndCore
 
 		[DndEvent]
 		[Column]
-		public string OnCasting { get; set; }
+		public string OnPreparing { get; set; }
+
+		[DndEvent]
+		[Column]
+		public string OnPreparationComplete { get; set; }
 
 		[DndEvent]
 		[Column]
@@ -362,7 +366,8 @@ namespace DndCore
 				SpellSlotLevel = spellSlotLevel >= 0 ? spellSlotLevel : spellLevel,
 				OnCast = spellDto.onCast,
 				OnReceived = spellDto.onReceived,
-				OnCasting = spellDto.onCasting,
+				OnPreparing = spellDto.onPreparing,
+				OnPreparationComplete = spellDto.onPreparationComplete,
 				OnGetAttackAbility = spellDto.onGetAttackAbility,
 				OnPlayerPreparesAttack = spellDto.onPlayerPreparesAttack,
 				OnDieRollStopped = spellDto.onDieRollStopped,
@@ -454,10 +459,16 @@ namespace DndCore
 			//	(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
-		public void TriggerCasting(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerPreparing(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
-			Expressions.Do(OnCasting, player, target, castedSpell);
+			Expressions.Do(OnPreparing, player, target, castedSpell);
+		}
+
+		public void TriggerPreparationComplete(Character player, Target target, CastedSpell castedSpell)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnPreparationComplete, player, target, castedSpell);
 		}
 
 		public void TriggerGetAttackAbility(Character player, Target target, CastedSpell castedSpell)
@@ -525,7 +536,8 @@ namespace DndCore
 			result.Index = Index;
 			result.OnCast = OnCast;
 			result.OnReceived = OnReceived;
-			result.OnCasting = OnCasting;
+			result.OnPreparing = OnPreparing;
+			result.OnPreparationComplete = OnPreparationComplete;
 			result.OnGetAttackAbility = OnGetAttackAbility;
 			result.OnDispel = OnDispel;
 			result.OnPlayerPreparesAttack = OnPlayerPreparesAttack;

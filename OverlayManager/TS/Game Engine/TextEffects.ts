@@ -1,12 +1,12 @@
 class ScalableAnimation extends AnimatedElement {
 	elasticIn: boolean;
 	scale: number;
-	targetScale: number = -1;
+	targetScale = -1;
 	originalScale: number;
 	deltaScale: number = undefined;
-	waitToScale: number = 0;
+	waitToScale = 0;
 
-	constructor(x: number, y: number, lifeSpanMs: number = -1) {
+	constructor(x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);
 		this.scale = 1;
 		this.originalScale = -1;

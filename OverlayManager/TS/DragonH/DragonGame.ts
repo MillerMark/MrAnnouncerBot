@@ -103,7 +103,7 @@ class KnownSpellsEffects {
 
 	static getSpell(name: string): SpellEffect {
 		for (let i = 0; i < this.spellEffects.length; i++) {
-			let spellEffect: SpellEffect = this.spellEffects[i];
+			const spellEffect: SpellEffect = this.spellEffects[i];
 			if (spellEffect.name === name)
 				return spellEffect;
 		}
@@ -115,15 +115,14 @@ class KnownSpellsEffects {
 	}
 
 	static getEffect(effectName: string, hue: number): WindupData {
-		let effect: WindupData = new WindupData(effectName, hue);
-		return effect;
+		return new WindupData(effectName, hue);
 	}
 
 	static shieldOfFaith(): SpellEffect {
-		let spell: SpellEffect = new SpellEffect('Shield of Faith');
-		let part1: WindupData = KnownSpellsEffects.getEffect('Wide', -15);
-		let part2: WindupData = KnownSpellsEffects.getEffect('Wide', 15);
-		let part3: WindupData = KnownSpellsEffects.getEffect('Wide', 45);
+		const spell: SpellEffect = new SpellEffect('Shield of Faith');
+		const part1: WindupData = KnownSpellsEffects.getEffect('Wide', -15);
+		const part2: WindupData = KnownSpellsEffects.getEffect('Wide', 15);
+		const part3: WindupData = KnownSpellsEffects.getEffect('Wide', 45);
 
 		part2.Rotation = 45;
 		part2.DegreesOffset = -60;
@@ -138,10 +137,10 @@ class KnownSpellsEffects {
 	}
 
 	static sanctuary(): SpellEffect {
-		let spell: SpellEffect = new SpellEffect('Sanctuary');
-		let part1: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 170);
-		let part2: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 200);
-		let part3: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 230);
+		const spell: SpellEffect = new SpellEffect('Sanctuary');
+		const part1: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 170);
+		const part2: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 200);
+		const part3: WindupData = KnownSpellsEffects.getEffect('LiquidSparks', 230);
 
 		part2.Rotation = 45;
 		part2.DegreesOffset = -60;
@@ -159,7 +158,7 @@ class KnownSpellsEffects {
 
 
 abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
-	static maxFiltersPerWindup: number = 6;
+	static maxFiltersPerWindup = 6;
 	abstract layerSuffix: string;
 	dndTimeStr: string;
 	dndDateStr: string;
@@ -190,50 +189,50 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		let dto: any = JSON.parse(clockData);
 		this.inCombat = dto.InCombat;
 		this.inTimeFreeze = dto.InTimeFreeze;
-		let timeStrs: string[] = dto.Time.split(',');
+		const timeStrs: string[] = dto.Time.split(',');
 		this.dndTimeStr = timeStrs[0];
 		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
 		this.updateClockFromDto(dto);
 	}
 
-	protected updateClockFromDto(dto: any) {
+	protected updateClockFromDto(dto) {
 	}
 
-	protected triggerSoundEffect(dto: any): void {
+	protected triggerSoundEffect(dto): void {
 	}
 
-	protected triggerEmitter(dto: any, center: Vector): void {
+	protected triggerEmitter(dto, center: Vector): void {
 	}
 
-	protected triggerAnimationDto(dto: any, center: Vector) {
+	protected triggerAnimationDto(dto, center: Vector) {
 	}
 
-	protected triggerPlaceholder(dto: any): any {
+	protected triggerPlaceholder(dto): void {
 		console.log('triggerPlaceholder - dto: ' + dto);
 	}
 
 	protected showHealthGain(playerId: number, healthGain: number, isTempHitPoints: boolean) {
 		if (healthGain < 0)
 			return;
-		let playerIndex: number = this.getPlayerIndex(playerId);
+		const playerIndex: number = this.getPlayerIndex(playerId);
 
-		let timeOffset: number = 0;
+		let timeOffset = 0;
 		let numPlusses: number = Math.round((healthGain + 4) / 5); // More health == more plusses!
-		const maxPlusses: number = 10;
+		const maxPlusses = 10;
 		if (numPlusses > maxPlusses)
 			numPlusses = maxPlusses;
 		for (let i = 0; i < numPlusses; i++) {
 			this.launchPlus(playerId, playerIndex, isTempHitPoints, timeOffset);
-			const fullSpinTime: number = 4000;
+			const fullSpinTime = 4000;
 			timeOffset += fullSpinTime / 6 + fullSpinTime / 30;  // Each plus is *about* 1/6 of a full spin (plus a little more) behind the other.
 		}
 	}
 
 	private launchPlus(playerId: number, playerIndex: number, isTempHitPoints: boolean, timeOffset: number) {
-		let humanoidSizeScaleFactor: number = 1;
-		let humanoidThrustScaleFactor: number = 1;
-		let humanoidScaleOffset: number = 0;
-		if (playerIndex == 0) {
+		let humanoidSizeScaleFactor = 1;
+		let humanoidThrustScaleFactor = 1;
+		let humanoidScaleOffset = 0;
+		if (playerIndex === 0) {
 			// It's Fred. Make it bigger and taller.
 			humanoidSizeScaleFactor = 2.4;
 			humanoidThrustScaleFactor = 2.6;
