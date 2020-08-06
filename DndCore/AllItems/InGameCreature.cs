@@ -19,6 +19,8 @@ namespace DndCore
 		[JsonIgnore]
 		public string ImageUrlOverride { get; set; }
 
+		public bool TurnIsActive { get; set; }
+
 		public string ImageURL
 		{
 			get
@@ -109,7 +111,7 @@ namespace DndCore
 		public bool IsTargeted { get; set; }
 
 		[JsonIgnore]
-		public bool IsSelected { get; set; }
+		public bool OnScreen { get; set; }
 
 
 		Creature creature;
@@ -208,6 +210,21 @@ namespace DndCore
 			Creature.ChangeHealth(amount);
 			PercentHealthJustGiven = MathUtils.Clamp(amount / Creature.maxHitPoints, 0, 1);
 			UpdateHitPointsStr();
+		}
+
+		public static int GetUniversalIndex(int index)
+		{
+			return -index;  // In-game creature indices will be negative.
+		}
+
+		public static int GetNormalIndexFromUniversal(int index)
+		{
+			return -index;  // In-game creature indices will be negative.
+		}
+
+		public static bool IsIndexToInGameCreature(int index)
+		{
+			return index < 0;  // In-game creature indices will be negative.
 		}
 	}
 }

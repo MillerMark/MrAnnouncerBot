@@ -53,6 +53,7 @@ namespace DndCore
 			}
 		}
 
+		public bool Hidden { get; set; }
 
 		public string WildShapeCreatureKind
 		{
@@ -973,6 +974,7 @@ namespace DndCore
 			character.name = characterDto.name;
 			character.playerShortcut = characterDto.playerShortcut;
 			character.playingNow = !string.IsNullOrWhiteSpace(characterDto.playingNow);
+			character.Hidden = !string.IsNullOrWhiteSpace(characterDto.hidden);
 			character.race = characterDto.race;
 			character.heShe = characterDto.heShe;
 			character.hisHer = characterDto.hisHer;

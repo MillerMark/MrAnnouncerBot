@@ -11,6 +11,7 @@
 	CropWidth: number;
 	Health: number;
 	IsTargeted: boolean;
+	TurnIsActive: boolean;
 	PercentDamageJustInflicted: number;
 	PercentHealthJustGiven: number;
 	IsEnemy: boolean;
@@ -39,6 +40,7 @@
 		this.CropWidth = inGameCreature.CropWidth;
 		this.Health = inGameCreature.Health;
 		this.IsTargeted = inGameCreature.IsTargeted;
+		this.TurnIsActive = inGameCreature.TurnIsActive;
 		this.IsEnemy = inGameCreature.IsEnemy;
 		this.PercentDamageJustInflicted = inGameCreature.PercentDamageJustInflicted;
 		this.PercentHealthJustGiven = inGameCreature.PercentHealthJustGiven;

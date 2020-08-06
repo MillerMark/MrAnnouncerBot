@@ -5,6 +5,7 @@
 	scrollDisappear: Sprites;
 	parchmentShadow: Sprites;
 	target: Sprites;
+	activeTurnIndicator: Sprites;
 	allBloodSprites: SpriteCollection = new SpriteCollection();
 	bloodA: Sprites;
 	bloodB: Sprites;
@@ -12,7 +13,6 @@
 	bloodD: Sprites;
 	bloodE: Sprites;
 	bloodGushing: Sprites;
-	activeTurn: Sprites;
 
 	constructor() {
 
@@ -23,6 +23,7 @@
 		this.deathX.updatePositionsForFreeElements(timestamp);
 		this.parchmentShadow.updatePositionsForFreeElements(timestamp);
 		this.target.updatePositionsForFreeElements(timestamp);
+		this.activeTurnIndicator.updatePositionsForFreeElements(timestamp);
 		this.scrollAppear.updatePositionsForFreeElements(timestamp);
 		this.scrollDisappear.updatePositionsForFreeElements(timestamp);
 	}
@@ -34,9 +35,14 @@
 		this.deathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
 		this.parchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
 		//this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
+
 		this.target = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
 		this.target.originX = 41 - InGameCreatureManager.targetLeft;
 		this.target.originY = 45;
+
+		this.activeTurnIndicator = new Sprites('Scroll/InGameCreatures/NpcMonsterTurn/NpcMonsterTurn', 141, fps30, AnimationStyle.Loop, true);
+		this.activeTurnIndicator.originX = 137;
+		this.activeTurnIndicator.originY = 141;
 
 		this.bloodA = this.loadBloodSprites('A', 'NpcBloodBurstA', 257, 133, 21);
 		this.bloodB = this.loadBloodSprites('B', 'NpcBloodBurstB', 263, 122, 21);
@@ -55,15 +61,13 @@
 		this.scrollDisappear.originX = 49;
 		this.scrollDisappear.originY = 2;
 
-		this.activeTurn = new Sprites('Scroll/InGameCreatures/NpcMonsterTurn/NpcMonsterTurn', 141, fps30, AnimationStyle.Loop, true);
-		this.activeTurn.originX = 113;
-		this.activeTurn.originY = 107;
+
 
 		this.parchmentBackground.disableGravity();
-		this.activeTurn.disableGravity();
 		this.deathX.disableGravity();
 		this.parchmentShadow.disableGravity();
 		this.target.disableGravity();
+		this.activeTurnIndicator.disableGravity();
 		this.scrollAppear.disableGravity();
 		this.scrollDisappear.disableGravity();
 
@@ -207,7 +211,7 @@
 	}
 
 	drawInGameCreatures(context: CanvasRenderingContext2D, nowMs: number) {
-		this.activeTurn.draw(context, nowMs);
+		this.activeTurnIndicator.draw(context, nowMs);
 		this.parchmentBackground.draw(context, nowMs);
 
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
@@ -256,6 +260,10 @@
 		return this.getSpriteForCreature(this.target.sprites, inGameCreature);
 	}
 
+	getActiveTurnIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
+		return this.getSpriteForCreature(this.activeTurnIndicator.sprites, inGameCreature);
+	}
+
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
 		for (let i = 0; i < sprites.length; i++) {
 			if (sprites[i].data === inGameCreature)
@@ -287,12 +295,13 @@
 		this.parchmentShadow.sprites = [];
 		this.deathX.sprites = [];
 		this.target.sprites = [];
+		this.activeTurnIndicator.sprites = [];
 
 		let delayMs = 0;
 		let timeBetweenArrivals = 300;
 		let first = true;
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
-			this.addInGameCreature(this.inGameCreatures[i], x, delayMs);
+			this.addInGameCreature(soundManager, this.inGameCreatures[i], x, delayMs);
 
 			if (first)
 				soundManager.playMp3In(delayMs, 'InGameScrolls/InGameScrollAppearFirst');
@@ -369,6 +378,19 @@
 				const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
 				if (target)
 					target.fadeOutNow(1000);
+			}
+		}
+		if (existingCreature.TurnIsActive !== updatedGameCreature.TurnIsActive) {
+			existingCreature.TurnIsActive = updatedGameCreature.TurnIsActive;
+
+			if (existingCreature.TurnIsActive) {
+				const x: number = this.getX(existingCreature);
+				this.addActiveTurnIndicator(soundManager, existingCreature, x);
+			}
+			else {
+				const activeTurnIndicator: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(existingCreature);
+				if (activeTurnIndicator)
+					activeTurnIndicator.fadeOutNow(500);
 			}
 		}
 
@@ -473,15 +495,20 @@
 		}
 	}
 
-	private addInGameCreature(inGameCreature: InGameCreature, x: number, delayMs = 0) {
+	private addInGameCreature(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
 		const frameIndex = this.getFriendEnemyFrameIndex(inGameCreature);
 		const saturation: number = this.addParchment(inGameCreature, x, frameIndex, delayMs);
 		const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
 		const appearSprite: SpriteProxy = this.scrollAppear.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0, scrollSmokeHueShift, saturation);
 		appearSprite.data = inGameCreature;
 		appearSprite.delayStart = delayMs;
+
 		if (inGameCreature.IsTargeted) {
 			this.addTarget(inGameCreature, x, delayMs);
+		}
+
+		if (inGameCreature.TurnIsActive) {
+			this.addActiveTurnIndicator(soundManager, inGameCreature, x, delayMs);
 		}
 	}
 
@@ -523,6 +550,17 @@
 		targetSprite.data = inGameCreature;
 		targetSprite.delayStart = delayMs;
 		targetSprite.fadeInTime = 500;
+	}
+
+	private addActiveTurnIndicator(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
+		let hueShift = 0;
+		if (!inGameCreature.IsEnemy)
+			hueShift = 220;
+		const activeTurnIndicatorSprite: SpriteProxy = this.activeTurnIndicator.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
+		activeTurnIndicatorSprite.data = inGameCreature;
+		activeTurnIndicatorSprite.delayStart = delayMs;
+		activeTurnIndicatorSprite.fadeInTime = 500;
+		soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${inGameCreature.Name}`);
 	}
 
 	private getCreatureSmokeHueShift(inGameCreature: InGameCreature) {
@@ -571,6 +609,7 @@
 		if (creatureSprite !== null) {
 			const shadowSprite: SpriteProxy = this.getParchmentShadowForCreature(inGameCreature);
 			const targetSprite: SpriteProxy = this.getTargetSpriteForCreature(inGameCreature);
+			const activeTurnIndicatorSprite: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(inGameCreature);
 			const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(inGameCreature);
 			creatureSprite.logData = true;
 			const fadeOutTimeMs = 800;
@@ -579,6 +618,8 @@
 			shadowSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			if (targetSprite)
 				targetSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
+			if (activeTurnIndicatorSprite)
+				activeTurnIndicatorSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			if (deathXSprite)
 				deathXSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
@@ -607,6 +648,7 @@
 		this.moveSpriteTo(this.parchmentShadow, creature, targetX, delayMs);
 		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
 		this.moveSpriteTo(this.target, creature, targetX, delayMs);
+		this.moveSpriteTo(this.activeTurnIndicator, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollAppear, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollDisappear, creature, targetX, delayMs);
 	}
@@ -699,7 +741,7 @@
 
 			if (inGameCreature.justAdded) {
 				inGameCreature.justAdded = false;
-				this.addInGameCreature(inGameCreature, targetX, delayMs);
+				this.addInGameCreature(soundManager, inGameCreature, targetX, delayMs);
 			}
 			delayMs += InGameCreatureManager.timeBetweenMoves;
 

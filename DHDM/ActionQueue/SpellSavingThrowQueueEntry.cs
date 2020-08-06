@@ -26,7 +26,7 @@ namespace DHDM
 				DieStr += "; " + dieStr;
 		}
 
-		void AddDice(int quantity, int sides, string label, double modifier, VantageKind vantage, string backColor = null, string fontColor = null)
+		void AddDice(int quantity, int sides, string label, double modifier, VantageKind vantage, int creatureId, string backColor = null, string fontColor = null)
 		{
 			if (vantage != VantageKind.Normal && quantity == 1)
 				quantity = 2;
@@ -37,6 +37,7 @@ namespace DHDM
 			if (fontColor != null)
 				diceDto.FontColor = fontColor;
 			diceDto.Label = label;
+			diceDto.CreatureId = creatureId;
 			diceDto.Quantity = quantity;
 			diceDto.Sides = sides;
 			diceDto.Modifier = modifier;
@@ -51,7 +52,7 @@ namespace DHDM
 			{
 				VantageKind vantage = creature.GetVantage(DiceRollType.SavingThrow, savingThrowAbility);
 				double modifier = creature.GetSavingThrowModifier(savingThrowAbility);
-				AddDice(1, 20, inGameCreature.Name, modifier, vantage);
+				AddDice(1, 20, inGameCreature.Name, modifier, vantage, InGameCreature.GetUniversalIndex(inGameCreature.Index));
 			}
 		}
 	}

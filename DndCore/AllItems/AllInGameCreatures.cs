@@ -33,10 +33,11 @@ namespace DndCore
 		{
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 			{
-				if (inGameCreature.IsSelected)
+				if (inGameCreature.OnScreen)
 				{
 					DiceDto npcMonsterDice = new DiceDto();
 					npcMonsterDice.Sides = 20;
+					npcMonsterDice.CreatureId = InGameCreature.GetUniversalIndex(inGameCreature.Index);
 					npcMonsterDice.Quantity = 1;
 					npcMonsterDice.Label = inGameCreature.Name;
 					if (rollType == DiceRollType.Initiative)
@@ -46,6 +47,17 @@ namespace DndCore
 					diceDtos.Add(npcMonsterDice);
 				}
 			}
+		}
+
+		public static void SetActiveTurn(InGameCreature inGameCreature)
+		{
+			foreach (InGameCreature creature in Creatures)
+				creature.TurnIsActive = creature == inGameCreature;
+		}
+		public static void ClearAllActiveTurns()
+		{
+			foreach (InGameCreature creature in Creatures)
+				creature.TurnIsActive = false;
 		}
 
 		static List<InGameCreature> inGameCreatures;

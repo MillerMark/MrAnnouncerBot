@@ -43,6 +43,7 @@ class Character {
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
 	name: string;
 	forceShowSpell: boolean;
+	Hidden: boolean;
 	spellPrepared: ActiveSpellData;
 	spellActivelyCasting: ActiveSpellData;
 	spellPreviouslyCasting: ActiveSpellData;
@@ -53,8 +54,8 @@ class Character {
 	dieFontColor: string;
 	conditions: Conditions = Conditions.none;
 	weaponProficiency: Weapons = Weapons.None;
-	onTurnActions: number = 1;
-	offTurnActions: number = 0;
+	onTurnActions = 1;
+	offTurnActions = 0;
 	inspiration: string;
 	experiencePoints: number;
 	raceClass: string;
@@ -62,7 +63,7 @@ class Character {
 	ShowingNameplate: boolean;
 	alignmentStr: string;
 	SpellCastingAbilityStr: string;
-	SpellSaveDC: number = 0;
+	SpellSaveDC = 0;
 	SpellAttackBonusStr: string;
 	baseArmorClass: number;
 	initiative: number;
@@ -181,6 +182,7 @@ class Character {
 		this.maxHitPoints = sourceCharacter.maxHitPoints;
 		this.name = sourceCharacter.name;
 		this.forceShowSpell = sourceCharacter.forceShowSpell;
+		this.Hidden = sourceCharacter.Hidden;
 
 		if (sourceCharacter.spellActivelyCasting)
 			this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);

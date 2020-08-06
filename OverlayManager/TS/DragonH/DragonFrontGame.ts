@@ -1,4 +1,9 @@
-﻿class DragonFrontGame extends DragonGame {
+﻿interface INameplateRenderer
+{
+	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
+}
+
+class DragonFrontGame extends DragonGame implements INameplateRenderer {
 	coinManager: CoinManager = new CoinManager();
 	textAnimations: Animations = new Animations();
 
@@ -62,6 +67,11 @@
 	spellMisses: Sprites;
 	nameplateParts: Sprites;
 	nameplateMain: Sprites;
+	nameplateHighlight: Sprites;
+	nameplateHighlightTopMedium: Sprites;
+	nameplateHighlightTopShort: Sprites;
+	nameplateHighlightLeft: Sprites;
+	nameplateHighlightRight: Sprites;
 	fireWall: Sprites;
 	stars: Sprites;
 	fumes: Sprites;
@@ -70,18 +80,18 @@
 	bloodEffects: SpriteCollection;
 	dragonFrontSounds: DragonFrontSounds;
 	activePlayerId: number;
-	playerDataSet: boolean = false;
+	playerDataSet = false;
 
-	nameplatesCanvas: HTMLCanvasElement;
-	nameplatesContext: CanvasRenderingContext2D;
+	//nameplatesCanvas: HTMLCanvasElement;
+	//nameplatesContext: CanvasRenderingContext2D;
 	clockCanvas: HTMLCanvasElement;
 	clockContext: CanvasRenderingContext2D;
 
 	initializeOffscreenCanvases() {
-		this.nameplatesCanvas = document.createElement('canvas');
-		this.nameplatesCanvas.width = myCanvas.width;
-		this.nameplatesCanvas.height = myCanvas.height;
-		this.nameplatesContext = this.nameplatesCanvas.getContext('2d');
+		//this.nameplatesCanvas = document.createElement('canvas');
+		//this.nameplatesCanvas.width = myCanvas.width;
+		//this.nameplatesCanvas.height = myCanvas.height;
+		//this.nameplatesContext = this.nameplatesCanvas.getContext('2d');
 
 		this.clockCanvas = document.createElement('canvas');
 		this.clockCanvas.width = myCanvas.width;
@@ -135,7 +145,8 @@
 		}
 
 		context.drawImage(this.clockCanvas, 0, 0);
-		context.drawImage(this.nameplatesCanvas, 0, 0);
+		//context.drawImage(this.nameplatesCanvas, 0, 0);
+		this.drawNameplates(context, nowMs);
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -600,7 +611,7 @@
 	}
 
 	loadMagicSparks(path: string): Sprites {
-		let magicSparks: Sprites = new Sprites(`Sparks/Magic/${path}/SparkMagic${path}`, 35, fps30, AnimationStyle.Sequential, true);
+		const magicSparks: Sprites = new Sprites(`Sparks/Magic/${path}/SparkMagic${path}`, 35, fps30, AnimationStyle.Sequential, true);
 		magicSparks.name = `SparkMagic${path}`;
 		magicSparks.originX = 364;
 		magicSparks.originY = 484;
@@ -611,17 +622,17 @@
 		let x: number;
 		let y: number;
 		x = this.getClockX() - 90 * this.clockScale;
-		const fireBallAdjust: number = 11;
+		const fireBallAdjust = 11;
 		y = this.clockBottomY - this.clockPanel.originY + fireBallAdjust;
-		let pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
+		const pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
 		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
 		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
 		this.dragonFrontSounds.safePlayMp3('HeavyPoof');
 	}
 
 	private createFireWallBehindClock() {
-		const displayMargin: number = -10;
-		let fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.panelScale * this.clockPanel.originY + displayMargin);
+		const displayMargin = -10;
+		const fireWall: SpriteProxy = this.fireWall.add(this.getClockX(), this.clockBottomY - this.panelScale * this.clockPanel.originY + displayMargin);
 		fireWall.scale = 0.6 * this.clockScale;
 		fireWall.opacity = 0.8;
 		fireWall.fadeOutTime = 400;
@@ -637,8 +648,9 @@
 	}
 
 	refreshNameplates() {
-		this.nameplatesContext.clearRect(0, 0, 1920, 1080);
-		this.drawNameplates(this.nameplatesContext);
+		const activeCreatureId: number = this.playerStats.ActiveTurnCreatureID;
+		this.playerStats.ActiveTurnCreatureID = -1;  // Forces a rebuild of highlighting.
+		this.playerStats.setActiveTurnCreatureID(this, this, this.context, activeCreatureId, this.players);
 	}
 
 	refreshClock() {
@@ -1058,13 +1070,13 @@
 	static readonly nameCenterY: number = 1052;
 	static readonly nameplateHalfHeight: number = 24;
 
-	initializePlayerData(playerData: string): any {
+	initializePlayerData(playerData: string) {
 		super.initializePlayerData(playerData);
 
 		this.playerDataSet = true;
 
-		for (var i = 0; i < this.players.length; i++) {
-			let centerX: number = this.getPlayerX(i);
+		for (let i = 0; i < this.players.length; i++) {
+			const centerX: number = this.getPlayerX(i);
 			this.nameplateMain.addShifted(centerX, DragonFrontGame.nameCenterY - DragonFrontGame.nameplateHalfHeight, 0, 0);
 		}
 
@@ -1130,7 +1142,7 @@
 	changePlayerStats(playerStatsDtoStr: string): void {
 		console.log(playerStatsDtoStr);
 		const newPlayerStats: AllPlayerStats = new AllPlayerStats().deserialize(JSON.parse(playerStatsDtoStr));
-		this.playerStats.handleCommand(this, this.dragonFrontSounds, newPlayerStats);
+		this.playerStats.handleCommand(this, this, this.context, this.dragonFrontSounds, newPlayerStats, this.players);
 		// TODO: transfer stats across.
 	}
 
@@ -1300,62 +1312,19 @@
 		this.update(nowMs);
 	}
 
+	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number {
+		const { horizontalMargin }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
+		return this.nameplateMain.spriteWidth - 2 * horizontalMargin;
+	}
+
 	drawNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number): void {
 		if (!player || !player.ShowingNameplate)
 			return;
 
-		context.textAlign = 'center';
-		context.textBaseline = 'middle';
-		context.font = '40px Enchanted Land';
+		const { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
 
-		if (!player)
-			return;
+		const plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
 
-		let playerName: string = player.name;
-		let time: Date = new Date();
-		let likelyMorningCodeRushedShow: boolean = time.getHours() < 16;
-		if ((this.inCombat || likelyMorningCodeRushedShow) && playerName) {
-			let spaceIndex: number = playerName.indexOf(' ');
-			if (spaceIndex > 0)
-				playerName = playerName.substr(0, spaceIndex).trim();
-		}
-
-		let sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
-
-		const nameplateMaxWidth: number = 358;
-
-		var hpStr: string;
-		if (player.tempHitPoints > 0)
-			hpStr = '+' + player.tempHitPoints;
-		else
-			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
-
-		let centerX: number = this.getPlayerX(playerIndex);
-
-		let hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
-		let hpWidth: number = context.measureText(hpStr).width;
-		let nameWidth: number = context.measureText(playerName).width;
-		let nameHpMargin: number = 25;
-		let additionalWidth: number = hpWidth + nameHpMargin;
-		if (hidingHitPoints) {
-			hpWidth = 0;
-			additionalWidth = 0;
-			nameHpMargin = 0;
-		}
-		let additionalHalfWidth: number = additionalWidth / 2;
-		let nameCenter: number = centerX - additionalHalfWidth;
-		let hpCenter: number = nameCenter + nameWidth / 2 + nameHpMargin + hpWidth / 2;
-		let totalNameplateTextWidth: number = nameWidth + nameHpMargin + hpWidth;
-
-		const innerNameplateMargin: number = 8;
-		let horizontalMargin: number = (nameplateMaxWidth - totalNameplateTextWidth) / 2 - innerNameplateMargin * 2;
-		if (horizontalMargin < 0) {
-			horizontalMargin = 0;
-		}
-
-		let plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
-
-		//! Today I learned that color-shifting (context switching) a context 15 times in a draw frame SUCKS UP GPU.
 		const height: number = this.nameplateMain.spriteHeight;
 		this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
 
@@ -1365,6 +1334,11 @@
 		this.nameplateParts.baseAnimation.drawByIndex(context, leftX - originX, yPos, 0);
 		const rightX: number = centerX + plateWidth / 2;
 		this.nameplateParts.baseAnimation.drawByIndex(context, rightX - originX, yPos, 1);
+
+		const additionalHalfWidth: number = additionalWidth / 2;
+		const nameCenter: number = centerX - additionalHalfWidth;
+		const hpCenter: number = nameCenter + nameWidth / 2 + nameHpMargin + hpWidth / 2;
+
 		if (!hidingHitPoints) {
 			const separatorX: number = nameCenter + nameWidth / 2 + nameHpMargin / 2;
 			this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - originX, yPos, 2);
@@ -1373,9 +1347,48 @@
 		this.drawNameText(context, playerName, nameCenter, hidingHitPoints, hpStr, hpCenter);
 	}
 
+	private prepareToDrawName(context: CanvasRenderingContext2D, player: Character, playerIndex: number) {
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+		context.font = '40px Enchanted Land';
+		let playerName: string = player.name;
+		const time: Date = new Date();
+		const likelyMorningCodeRushedShow: boolean = time.getHours() < 16;
+		if ((this.inCombat || likelyMorningCodeRushedShow) && playerName) {
+			const spaceIndex: number = playerName.indexOf(' ');
+			if (spaceIndex > 0)
+				playerName = playerName.substr(0, spaceIndex).trim();
+		}
+		const sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
+		const nameplateMaxWidth = 358;
+		let hpStr: string;
+		if (player.tempHitPoints > 0)
+			hpStr = '+' + player.tempHitPoints;
+		else
+			hpStr = player.hitPoints.toString() + '/' + player.maxHitPoints;
+		const centerX: number = this.getPlayerX(playerIndex);
+		const hidingHitPoints: boolean = !this.inCombat && player.hitPoints === player.maxHitPoints;
+		let hpWidth: number = context.measureText(hpStr).width;
+		const nameWidth: number = context.measureText(playerName).width;
+		let nameHpMargin = 25;
+		let additionalWidth: number = hpWidth + nameHpMargin;
+		if (hidingHitPoints) {
+			hpWidth = 0;
+			additionalWidth = 0;
+			nameHpMargin = 0;
+		}
+		const totalNameplateTextWidth: number = nameWidth + nameHpMargin + hpWidth;
+		const innerNameplateMargin = 8;
+		let horizontalMargin: number = (nameplateMaxWidth - totalNameplateTextWidth) / 2 - innerNameplateMargin * 2;
+		if (horizontalMargin < 0) {
+			horizontalMargin = 0;
+		}
+		return { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr };
+	}
+
 	private drawNameText(context: CanvasRenderingContext2D, playerName: string, nameCenter: number, hidingHitPoints: boolean, hpStr: string, hpCenter: number) {
 		context.fillStyle = '#000000';
-		let shadowOffset: number = -2;
+		let shadowOffset = -2;
 		this.drawNameAndHitPoints(context, playerName, nameCenter, shadowOffset, hidingHitPoints, hpStr, hpCenter);
 		shadowOffset = 2;
 		context.globalAlpha = 0.5;
@@ -1389,13 +1402,13 @@
 		context.fillText(playerName, nameCenter + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
 		if (!hidingHitPoints) {
 
-			let slashIndex: number = hpStr.indexOf('/');
+			const slashIndex: number = hpStr.indexOf('/');
 			if (slashIndex > 0 && context.fillStyle === '#ffffff') {
-				let firstHp: string = hpStr.substr(0, slashIndex);
-				let secondHp: string = hpStr.substr(slashIndex);
-				let firstWidth: number = context.measureText(firstHp).width;
-				let secondWidth: number = context.measureText(secondHp).width;
-				let left: number = hpCenter - (firstWidth + secondWidth) / 2.0;
+				const firstHp: string = hpStr.substr(0, slashIndex);
+				const secondHp: string = hpStr.substr(slashIndex);
+				const firstWidth: number = context.measureText(firstHp).width;
+				const secondWidth: number = context.measureText(secondHp).width;
+				const left: number = hpCenter - (firstWidth + secondWidth) / 2.0;
 				context.textAlign = 'left';
 				context.fillText(firstHp, left + shadowOffset, DragonFrontGame.nameCenterY + shadowOffset);
 				context.fillStyle = '#b6a89a';
@@ -1411,12 +1424,12 @@
 		}
 	}
 
-	drawNameplates(context: CanvasRenderingContext2D) {
+	drawNameplates(context: CanvasRenderingContext2D, nowMs: number) {
 		let activePlayer: Character = null;
-		let playerIndex: number = 0;
-		for (var i = 0; i < this.players.length; i++) {
-			let player: Character = this.players[i];
-			if (player.playerID == this.activePlayerId) {
+		let playerIndex = 0;
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.playerID === this.activePlayerId) {
 				activePlayer = player;
 				playerIndex = i;
 				continue;

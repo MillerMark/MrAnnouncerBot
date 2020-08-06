@@ -637,13 +637,13 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	playerChanged(playerId: number, pageID: number, playerData: string): void {
-		let playerIndex: number = this.getPlayerIndex(playerId);
+		const playerIndex: number = this.getPlayerIndex(playerId);
 		if (playerIndex === -1)
 			return;
 		this.activePlayerX = this.getPlayerX(playerIndex);
 
 		if (playerData) {
-			let playerDto: any = JSON.parse(playerData);
+			const playerDto = JSON.parse(playerData);
 			this.players[playerIndex].copyAttributesFrom(playerDto);
 		}
 	}

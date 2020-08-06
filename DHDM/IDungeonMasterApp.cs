@@ -51,5 +51,6 @@ namespace DHDM
 		void ExecuteCommand(DungeonMasterCommand dungeonMasterCommand);
 		void TellDungeonMaster(string message, bool isDetail = false);
 		void TellViewers(string message);
+		void NextTurn();
 	}
 }

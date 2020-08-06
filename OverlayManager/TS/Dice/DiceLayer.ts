@@ -2591,6 +2591,8 @@ class DiceDto {
 	DamageType: DamageType;
 	Quantity: number;
 	Sides: number;
+	CreatureId: number;
+	IsMagic: boolean;
 	Label: string;
 	BackColor: string;
 	FontColor: string;

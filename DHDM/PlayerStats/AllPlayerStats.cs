@@ -11,6 +11,7 @@ namespace DHDM
 		public string LatestCommand { get; set; }
 		public string LatestData { get; set; }
 		public bool RollingTheDiceNow { get; set; }
+		public int ActiveTurnCreatureID { get; set; }  // Negative numbers are for in-game creatures (not players)
 
 		List<PlayerStats> players;
 		public List<PlayerStats> Players
@@ -94,6 +95,17 @@ namespace DHDM
 			{
 				playerStats.ReadyToRollDice = newReadyState;
 			}
+		}
+
+		public void ClearAllActiveTurns()
+		{
+			ActiveTurnCreatureID = -1;
+		}
+
+		public void ClearAll()
+		{
+			ClearAllActiveTurns();
+			Players = null;
 		}
 	}
 }

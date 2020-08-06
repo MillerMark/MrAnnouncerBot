@@ -9,6 +9,7 @@ namespace DndCore
 		public string name { get; set; }
 		public string features { get; set; }
 		public string playingNow { get; set; }
+		public string hidden { get; set; }
 		public string playerShortcut { get; set; }
 		public string race { get; set; }
 		public string heShe { get; set; }

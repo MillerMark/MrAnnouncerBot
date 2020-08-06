@@ -401,6 +401,7 @@
     <Compile Include="PlayerFactory.cs" />
     <Compile Include="PlayerRollCheckBox.cs" />
     <Compile Include="StreamDeck Commands\DigitCommand.cs" />
+    <Compile Include="StreamDeck Commands\NextTurnCommand.cs" />
     <Compile Include="StreamDeck Commands\PlayerSelectorCommand.cs" />
     <Compile Include="PlayerTabItem.cs" />
     <Compile Include="RegexConstants.cs" />

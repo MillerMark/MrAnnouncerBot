@@ -239,6 +239,7 @@ namespace DHDM
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
 			game.RoundStarting += Game_RoundStarting;
+			game.ActivePlayerChanged += Game_ActivePlayerChanged;
 		}
 
 		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
@@ -392,7 +393,7 @@ namespace DHDM
 			{
 				ea.Target = new Target();
 				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					if (inGameCreature.IsSelected)
+					if (inGameCreature.OnScreen)
 						ea.Target.AddCreature(inGameCreature.Creature);
 				foreach (Character player in game.Players)
 					if (player.IsSelected)
@@ -2501,7 +2502,6 @@ namespace DHDM
 
 		private DiceRoll PrepareRoll(DiceRollType type)
 		{
-
 			VantageKind diceRollKind = VantageKind.Normal;
 
 			if (CanIncludeVantageDice(type))
@@ -3512,8 +3512,10 @@ namespace DHDM
 				TellAll(title);
 				lastInitiativeResults.Clear();
 				int count = 1;
+				game.ClearInitiativeOrder();
 				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 				{
+					game.AddCreatureToInitiativeOrder(playerRoll.id);
 					string playerName = DndUtils.GetFirstName(playerRoll.name);
 					string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
 					if (emoticon == "Player ")
@@ -3730,6 +3732,8 @@ namespace DHDM
 
 		private void BtnEnterExitCombat_Click(object sender, RoutedEventArgs e)
 		{
+			ClearAllInGameActiveTurnIndicators();
+
 			game.Clock.InCombat = !game.Clock.InCombat;
 			if (game.Clock.InCombat)
 			{
@@ -3749,6 +3753,15 @@ namespace DHDM
 			}
 
 			OnCombatChanged();
+		}
+
+		private void ClearAllInGameActiveTurnIndicators()
+		{
+			game.ClearInitiativeOrder();
+			AllInGameCreatures.ClearAllActiveTurns();
+			AllPlayerStats.ClearAllActiveTurns();
+			UpdateInGameCreatures();
+			UpdatePlayerStateInGame();
 		}
 
 		private void BtnEnterExitTimeFreeze_Click(object sender, RoutedEventArgs e)
@@ -7371,7 +7384,7 @@ namespace DHDM
 
 		private static void UpdateInGameCreatures()
 		{
-			HubtasticBaseStation.UpdateInGameCreatures("Update", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
+			HubtasticBaseStation.UpdateInGameCreatures("Update", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 			{
 				inGameCreature.PercentDamageJustInflicted = 0;
@@ -7381,7 +7394,7 @@ namespace DHDM
 
 		private static void SetInGameCreatures()
 		{
-			HubtasticBaseStation.UpdateInGameCreatures("Set", AllInGameCreatures.Creatures.Where(x => x.IsSelected).ToList());
+			HubtasticBaseStation.UpdateInGameCreatures("Set", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
 		}
 
 		public void ToggleTarget(int targetNum)
@@ -7391,7 +7404,7 @@ namespace DHDM
 				return;
 			inGameCreature.IsTargeted = !inGameCreature.IsTargeted;
 			if (inGameCreature.IsTargeted)
-				inGameCreature.IsSelected = true;
+				inGameCreature.OnScreen = true;
 			UpdateInGameCreatures();
 		}
 
@@ -7472,14 +7485,14 @@ namespace DHDM
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature == null)
 				return;
-			if (inGameCreature.IsSelected)
+			if (inGameCreature.OnScreen)
 			{
-				inGameCreature.IsSelected = false;
+				inGameCreature.OnScreen = false;
 				RemoveInGameCreature(inGameCreature);
 			}
 			else
 			{
-				inGameCreature.IsSelected = true;
+				inGameCreature.OnScreen = true;
 				AddInGameCreature(inGameCreature);
 			}
 		}
@@ -7500,13 +7513,13 @@ namespace DHDM
 			{
 				case "TargetShown":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted= inGameCreature.IsSelected;
+						inGameCreature.IsTargeted= inGameCreature.OnScreen;
 					UpdateInGameCreatures();
 					return;
 				case "ClearDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						if (inGameCreature.Health == 0)
-							inGameCreature.IsSelected = false;
+							inGameCreature.OnScreen = false;
 					UpdateInGameCreatures();
 					return;
 				case "UntargetDead":
@@ -7517,13 +7530,13 @@ namespace DHDM
 					return;
 				case "ShowNone":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsSelected = false;
+						inGameCreature.OnScreen = false;
 					UpdateInGameCreatures();
 					return;
 				case "ShowAllTargets":
 					bool allTargetsAreShown = true;
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						if (inGameCreature.IsTargeted && !inGameCreature.IsSelected)
+						if (inGameCreature.IsTargeted && !inGameCreature.OnScreen)
 						{
 							allTargetsAreShown = false;
 							break;
@@ -7533,17 +7546,17 @@ namespace DHDM
 						// We only need to hide those that are not targeted.
 						foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 							if (!inGameCreature.IsTargeted)
-								inGameCreature.IsSelected = false;
+								inGameCreature.OnScreen = false;
 
 						UpdateInGameCreatures();
 						return;
 					}
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsSelected = inGameCreature.IsTargeted;
+						inGameCreature.OnScreen = inGameCreature.IsTargeted;
 					break;
 				case "ShowAll":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsSelected = true;
+						inGameCreature.OnScreen = true;
 					break;
 				case "TargetNone":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -7554,7 +7567,7 @@ namespace DHDM
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 					{
 						inGameCreature.IsTargeted = true;
-						inGameCreature.IsSelected = true;
+						inGameCreature.OnScreen = true;
 					}
 					UpdateInGameCreatures();
 					return;
@@ -7563,7 +7576,7 @@ namespace DHDM
 					{
 						inGameCreature.IsTargeted = !inGameCreature.IsEnemy;
 						if (inGameCreature.IsTargeted)
-							inGameCreature.IsSelected = true;
+							inGameCreature.OnScreen = true;
 					}
 					break;
 				case "TargetEnemies":
@@ -7571,16 +7584,16 @@ namespace DHDM
 					{
 						inGameCreature.IsTargeted = inGameCreature.IsEnemy;
 						if (inGameCreature.IsTargeted)
-							inGameCreature.IsSelected = true;
+							inGameCreature.OnScreen = true;
 					}
 					break;
 				case "ShowFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsSelected = !inGameCreature.IsEnemy;
+						inGameCreature.OnScreen = !inGameCreature.IsEnemy;
 					break;
 				case "ShowEnemies":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsSelected = inGameCreature.IsEnemy;
+						inGameCreature.OnScreen = inGameCreature.IsEnemy;
 					break;
 
 				case "ReloadAllCreatures":
@@ -7597,7 +7610,7 @@ namespace DHDM
 					Dictionary<int, TargetSaveData> targetSaveData = new Dictionary<int, TargetSaveData>();
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 					{
-						TargetSaveData targetData = new TargetSaveData() { IsSelected = inGameCreature.IsSelected, IsTargeted = inGameCreature.IsTargeted };
+						TargetSaveData targetData = new TargetSaveData() { IsSelected = inGameCreature.OnScreen, IsTargeted = inGameCreature.IsTargeted };
 						int index = inGameCreature.Index;
 						if (targetSaveData.ContainsKey(index))
 							targetSaveData[index] = targetData;
@@ -7613,7 +7626,7 @@ namespace DHDM
 						InGameCreature creature = AllInGameCreatures.GetByIndex(key);
 						if (creature != null)
 						{
-							creature.IsSelected = targetSaveData[key].IsSelected;
+							creature.OnScreen = targetSaveData[key].IsSelected;
 							creature.IsTargeted = targetSaveData[key].IsTargeted;
 						}
 					}
@@ -7709,9 +7722,11 @@ namespace DHDM
 
 		private void InitializePlayerStats()
 		{
+			AllPlayerStats.ClearAll();
 			foreach (Character character in game.Players)
 			{
-				AllPlayerStats.GetPlayerStats(character.playerID);  // Will ensure player is known.
+				if (!character.Hidden)
+					AllPlayerStats.GetPlayerStats(character.playerID);  // Will ensure player is known.
 			}
 		}
 
@@ -7719,6 +7734,33 @@ namespace DHDM
 		{
 			if (e.Key == Key.F5 && Modifiers.NoModifiersDown)
 				btnInitializeOnly_Click(null, null);
+		}
+
+		public void NextTurn()
+		{
+			game.NextTurn();
+		}
+
+		private void Game_ActivePlayerChanged(object sender, EventArgs e)
+		{
+			AllInGameCreatures.ClearAllActiveTurns();
+			AllPlayerStats.ClearAllActiveTurns();
+
+			object activeTurnCreature = game.GetActiveTurnCreature();
+			if (activeTurnCreature is InGameCreature inGameCreature)
+			{
+				AllInGameCreatures.SetActiveTurn(inGameCreature);
+				AllPlayerStats.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
+			}
+
+			if (activeTurnCreature is Character character)
+			{
+				AllPlayerStats.ActiveTurnCreatureID = character.playerID;
+				ActivePlayerId = character.playerID;
+			}
+
+			UpdateInGameCreatures();
+			UpdatePlayerStateInGame();
 		}
 
 		// TODO: Reintegrate wand/staff animations....

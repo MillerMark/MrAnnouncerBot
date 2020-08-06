@@ -28,7 +28,7 @@ namespace DHDM
 		public void SetDataSources(List<InGameCreature> creatures, List<Character> players)
 		{
 			foreach (InGameCreature inGameCreature in creatures)
-				inGameCreature.IsSelected = false;
+				inGameCreature.OnScreen = false;
 
 			if (players != null)
 				foreach (Character character in players)

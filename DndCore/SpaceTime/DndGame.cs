@@ -7,6 +7,13 @@ namespace DndCore
 {
 	public class DndGame
 	{
+		public event EventHandler ActivePlayerChanged;
+		
+		protected virtual void OnActivePlayerChanged()
+		{
+			ActivePlayerChanged?.Invoke(this, EventArgs.Empty);
+		}
+
 		List<Creature> allCreatures;
 		public const string STR_EndSpell = "EndSpell:";
 
@@ -377,6 +384,7 @@ namespace DndCore
 
 		public void CreatureTakingAction(Creature player)
 		{
+			SetInitiativeIndexFromPlayer(player as Character);
 			// TODO: Fix bug where first player dies - we need to reassign firstPlayer to the next player in the initiative line up.
 			if (firstPlayer == null)
 			{
@@ -507,7 +515,7 @@ namespace DndCore
 			player.targetThisRollIsCreature = target != null;
 			player.usesMagicThisRoll = usesMagic;
 			List<CastedSpell> playersActiveSpells = GetActiveSpells(player);
-			
+
 			// Triggering in reverse order in case any of these spells are dispelled.
 			for (int i = playersActiveSpells.Count - 1; i >= 0; i--)
 			{
@@ -626,7 +634,7 @@ namespace DndCore
 				return timeClock;
 			}
 		}
-		
+
 
 		public void TellDungeonMaster(string message)
 		{
@@ -821,5 +829,57 @@ namespace DndCore
 			OnRequestQueueShortcut(this, ea);
 		}
 
+
+		List<int> initiativeIds = new List<int>();  // negative ids are for InGameCreatures. Non-negative are for players.
+		int initiativeIndex = -1;
+		public int InitiativeIndex
+		{
+			get => initiativeIndex;
+			set
+			{
+				if (value >= initiativeIds.Count)
+					value = 0;
+				if (initiativeIndex == value)
+					return;
+				initiativeIndex = value;
+				OnActivePlayerChanged();
+			}
+		}
+
+		public void ClearInitiativeOrder()
+		{
+			initiativeIndex = -1;
+			initiativeIds.Clear();
+		}
+
+		public void SetInitiativeIndexFromPlayer(Character player)
+		{
+			InitiativeIndex = initiativeIds.IndexOf(player.playerID);
+		}
+
+		public void SetInitiativeIndexFromInGameCreature(InGameCreature creature)
+		{
+			InitiativeIndex = initiativeIds.IndexOf(InGameCreature.GetUniversalIndex(creature.Index));
+		}
+
+		public object GetActiveTurnCreature()
+		{
+			if (InitiativeIndex < 0 || InitiativeIndex >= initiativeIds.Count)
+				return null;
+			int index = initiativeIds[InitiativeIndex];
+			if (InGameCreature.IsIndexToInGameCreature(index))
+				return AllInGameCreatures.GetByIndex(InGameCreature.GetNormalIndexFromUniversal(index));
+			return GetPlayerFromId(index);
+		}
+
+		public void NextTurn()
+		{
+			InitiativeIndex++;
+		}
+
+		public void AddCreatureToInitiativeOrder(int id)
+		{
+			initiativeIds.Add(id);
+		}
 	}
 }

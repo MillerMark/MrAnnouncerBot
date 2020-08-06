@@ -11,6 +11,7 @@ interface IAllPlayerStats {
 	LatestCommand: string;
 	LatestData: string;
 	RollingTheDiceNow: boolean;
+	ActiveTurnCreatureID: number;
 	Players: Array<PlayerStats>;
 }
 
@@ -79,6 +80,7 @@ class AllPlayerStats implements IAllPlayerStats {
 	LatestData: string;
 	RollingTheDiceNow: boolean;
 	Players: Array<PlayerStats> = [];
+	ActiveTurnCreatureID: number;
 	readyToRollFullDragon: Sprites;
 	readyToRollDieSmoke: Sprites;
 	readyToRollDragonBreath: Sprites;
@@ -88,10 +90,17 @@ class AllPlayerStats implements IAllPlayerStats {
 	readyToRollDieCollection: SpriteCollection;
 	airExplosionCollection: SpriteCollection;
 
+	nameplateTopLong: Sprites;
+	nameplateTopMedium: Sprites;
+	nameplateTopShort: Sprites;
+	nameplateRight: Sprites;
+	nameplateLeft: Sprites;
+
 	deserialize(allPlayerStatsDto: IAllPlayerStats): AllPlayerStats {
 		this.LatestCommand = allPlayerStatsDto.LatestCommand;
 		this.LatestData = allPlayerStatsDto.LatestData;
 		this.RollingTheDiceNow = allPlayerStatsDto.RollingTheDiceNow;
+		this.ActiveTurnCreatureID = allPlayerStatsDto.ActiveTurnCreatureID;
 		this.Players = [];
 		for (let i = 0; i < allPlayerStatsDto.Players.length; i++) {
 			//console.log(allPlayerStatsDto.Players[i]);
@@ -102,17 +111,93 @@ class AllPlayerStats implements IAllPlayerStats {
 		return this;
 	}
 
-	handleCommand(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, mostRecentPlayerStats: AllPlayerStats) {
+	handleCommand(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, soundManager: ISoundManager, mostRecentPlayerStats: AllPlayerStats, players: Array<Character>) {
 		this.LatestData = mostRecentPlayerStats.LatestData;
 		this.LatestCommand = mostRecentPlayerStats.LatestCommand;
 		this.RollingTheDiceNow = mostRecentPlayerStats.RollingTheDiceNow;
-
+		this.setActiveTurnCreatureID(iGetPlayerX, iNameplateRenderer, context, mostRecentPlayerStats.ActiveTurnCreatureID, players);
 		this.addMissingPlayers(mostRecentPlayerStats);
 		this.handleCommandForExistingPlayers(iGetPlayerX, soundManager, mostRecentPlayerStats);
 		this.cleanUpNonExistantPlayers(mostRecentPlayerStats);
 	}
 
+	static readonly nameplateHighlightTop: number = 1080 - 48;
+
+	private static readonly longPlateArcWidth: number = 374;
+	private static readonly longPlateTotalWidth: number = 576;
+	private static readonly mediumPlateArcWidth: number = 292;
+	private static readonly mediumPlateTotalWidth: number = 480;
+	private static readonly shortPlateArcWidth: number = 153;
+	private static readonly shortPlateTotalWidth: number = 355;
+
+	setActiveTurnCreatureID(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, activeTurnCreatureID: number, players: Array<Character>) {
+		if (this.ActiveTurnCreatureID === activeTurnCreatureID)
+			return;
+
+		this.ActiveTurnCreatureID = activeTurnCreatureID;
+		this.cleanUpAllActiveTurnHighlighting();
+
+		if (this.ActiveTurnCreatureID < 0) {  // No players have an active turn right now.
+			return;
+		}
+
+		const playerIndex: number = iGetPlayerX.getPlayerIndex(this.ActiveTurnCreatureID);
+		const x: number = iGetPlayerX.getPlayerX(playerIndex);
+		const player: Character = players[playerIndex];
+		const plateWidth: number = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
+
+		let sprites: Sprites;
+		let horizontalScale = 1;
+		if (plateWidth <= AllPlayerStats.shortPlateArcWidth * 1.2) {
+			sprites = this.nameplateTopShort;
+			horizontalScale = plateWidth / AllPlayerStats.shortPlateArcWidth;
+		}
+		else if (plateWidth >= AllPlayerStats.longPlateArcWidth * 0.8) {
+			sprites = this.nameplateTopLong;
+			horizontalScale = plateWidth / AllPlayerStats.longPlateArcWidth;
+		}
+		else {
+			sprites = this.nameplateTopMedium;
+			horizontalScale = plateWidth / AllPlayerStats.mediumPlateArcWidth;
+		}
+
+		const nameplateSprites: Sprites = sprites;
+		const nameplateHighlightSprite: SpriteProxy = nameplateSprites.addShifted(x, AllPlayerStats.nameplateHighlightTop, -1, player.hueShift);
+		nameplateHighlightSprite.horizontalScale = horizontalScale;
+
+		const nameplateRightAdjust = -4;
+		const nameplateLeftAdjust = 3;
+		this.nameplateLeft.addShifted(x - plateWidth / 2 + nameplateLeftAdjust, AllPlayerStats.nameplateHighlightTop, -1, player.hueShift);
+		this.nameplateRight.addShifted(x + plateWidth / 2 + nameplateRightAdjust, AllPlayerStats.nameplateHighlightTop, -1, player.hueShift);
+	}
+
+	cleanUpAllActiveTurnHighlighting() {
+		console.log('cleanUpAllActiveTurnHighlighting');
+		for (let i = 0; i < this.nameplateHighlightCollection.allSprites.length; i++) {
+			const sprites: SpriteProxy[] = this.nameplateHighlightCollection.allSprites[i].sprites;
+			for (let j = 0; j < sprites.length; j++) {
+				sprites[j].fadeOutNow(500);
+			}
+		}
+	}
+
+	nameplateHighlightCollection: SpriteCollection = new SpriteCollection();
+
+	private loadNameplateHighlight(fileName: string, originX = 0, originY = 0): Sprites {
+		const nameplateHighlight: Sprites = new Sprites(`Nameplates/ActiveTurn/${fileName}`, 94, fps30, AnimationStyle.Loop, true);
+		nameplateHighlight.originX = originX;
+		nameplateHighlight.originY = originY;
+		this.nameplateHighlightCollection.add(nameplateHighlight);
+		return nameplateHighlight;
+	}
+
 	loadResources() {
+		this.nameplateTopLong = this.loadNameplateHighlight('NameplateTopLong', 306, 147);
+		this.nameplateTopMedium = this.loadNameplateHighlight('NameplateTopMedium', 254, 145);
+		this.nameplateTopShort = this.loadNameplateHighlight('NameplateTopShort', 195, 144);
+		this.nameplateLeft = this.loadNameplateHighlight('NameplateLeft', 152, 123);
+		this.nameplateRight = this.loadNameplateHighlight('NameplateRight', 119, 123);
+
 		this.readyToRollDieCollection = new SpriteCollection();
 		this.airExplosionCollection = new SpriteCollection();
 
@@ -201,6 +286,7 @@ class AllPlayerStats implements IAllPlayerStats {
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
+		this.nameplateHighlightCollection.draw(context, nowMs);
 		this.readyToRollFullDragon.draw(context, nowMs);
 		this.readyToRollDieCollection.draw(context, nowMs);
 		this.readyToRollDragonHands.draw(context, nowMs);
@@ -272,7 +358,7 @@ class AllPlayerStats implements IAllPlayerStats {
 				break;
 		}
 	}
-	
+
 	launchTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, vantage: VantageKind, mainDieSides: number, diceStack: Array<DiceStackDto>) {
 		const shoulderOffset = 140;
 		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
@@ -283,7 +369,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		//const scale = 1.2;
 		let frameInterval: number = fps30;
 
-		const hueShift = 0; // Random.max(360);
+		const dragonHueShift = Random.max(360);
 		const dieShift = 0; // Random.max(360);
 		const startFrameIndex: number = Random.max(this.readyToRollFullDragon.baseAnimation.frameCount);
 		const dragonStartY = 1180;
@@ -309,7 +395,7 @@ class AllPlayerStats implements IAllPlayerStats {
 
 		const yStopVariance: number = Random.between(-25, 25);
 
-		const fullDragon: SpriteProxy = this.readyToRollFullDragon.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, hueShift);
+		const fullDragon: SpriteProxy = this.readyToRollFullDragon.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, dragonHueShift);
 		const die: SpriteProxy = dieSprites.addShifted(playerX, dragonStartY + dieOffset + yStopVariance, startFrameIndex, dieShift);
 		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
 		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
@@ -329,7 +415,7 @@ class AllPlayerStats implements IAllPlayerStats {
 				break;
 		}
 
-		const dragonHands: SpriteProxy = this.readyToRollDragonHands.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, hueShift);
+		const dragonHands: SpriteProxy = this.readyToRollDragonHands.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, dragonHueShift);
 
 		this.prepareForEntrance(fullDragon, playerId, scale, frameInterval);
 		this.prepareForEntrance(die, playerId, 1, frameInterval);
@@ -505,15 +591,17 @@ class AllPlayerStats implements IAllPlayerStats {
 
 	updatePlayer(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats) {
 		if (playerStats.ReadyToRollDice !== latestPlayerStats.ReadyToRollDice) {
+			playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
+
 			if (playerStats.ReadyToRollDice) {
-				playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
 				playerStats.Vantage = latestPlayerStats.Vantage;
 				playerStats.MainDieSides = latestPlayerStats.MainDieSides;
 				playerStats.DiceStack = latestPlayerStats.DiceStack;
 				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, latestPlayerStats.MainDieSides, playerStats.DiceStack);
 			}
-			else
+			else {
 				this.descendTheDragons(iGetPlayerX, latestPlayerStats.PlayerId, latestPlayerStats.MainDieSides, latestPlayerStats.DiceStack);
+			}
 		}
 		else if (playerStats.onlyVantageHasChanged(latestPlayerStats)) {
 			playerStats.Vantage = latestPlayerStats.Vantage;
@@ -524,14 +612,19 @@ class AllPlayerStats implements IAllPlayerStats {
 
 			playerStats.MainDieSides = latestPlayerStats.MainDieSides;
 			playerStats.DiceStack = latestPlayerStats.DiceStack;
+			playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
 
 			if (playerStats.ReadyToRollDice) {
 				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, playerStats.MainDieSides, playerStats.DiceStack);
 			}
 		}
+		else {
+			// console.log('Die already match!');
+		}
 
-		if (this.RollingTheDiceNow)
+		if (this.RollingTheDiceNow) {
 			this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, latestPlayerStats.MainDieSides, playerStats.DiceStack);
+		}
 	}
 
 	showOrHideVantageDie(soundManager: ISoundManager, playerId: number, vantage: VantageKind) {

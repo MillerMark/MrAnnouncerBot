@@ -3390,7 +3390,7 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 
 function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
 	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
-	const die = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier);
+	const die = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
 	die.playerName = diceDto.Label;
 	die.dieType = DiceRollType.None;
 	if (diceDto.Label)
@@ -3448,6 +3448,8 @@ function prepareLegacyRoll(xPositionModifier: number) {
 		diceRollData.itsAD20Roll = true;
 		for (let i = 0; i < diceLayer.players.length; i++) {
 			const player: Character = diceLayer.players[i];
+			if (player.Hidden)
+				continue;
 			let initiativeBonus: number;
 			if (diceRollData.type === DiceRollType.NonCombatInitiative)
 				initiativeBonus = 0;
