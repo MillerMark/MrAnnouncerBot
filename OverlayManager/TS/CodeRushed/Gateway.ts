@@ -19,7 +19,7 @@ class WarpInSprite extends SpriteProxy {
 	public color: string;
 	createdDrone: boolean = false;
 
-	constructor(startingFrameNumber: number, public x: number, public y: number) {
+	constructor(startingFrameNumber: number, x: number, y: number) {
 		super(startingFrameNumber, x, y);
 	}
 
@@ -53,7 +53,7 @@ class Gateway extends SpriteProxy {
 	static readonly size: number = 195;
 	ID: number;
 
-	constructor(startingFrameNumber: number, public x: number, public y: number) {
+	constructor(startingFrameNumber: number, x: number, y: number) {
 		super(startingFrameNumber, x, y);
 	}
 

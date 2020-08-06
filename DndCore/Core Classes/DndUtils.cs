@@ -167,6 +167,8 @@ namespace DndCore
 
 		public static DamageType ToDamage(string damageStr)
 		{
+			if (damageStr.StartsWith("(") && damageStr.EndsWith(")"))
+				damageStr = damageStr.Substring(1, damageStr.Length - 2);
 			return GetElement<DamageType>(damageStr);
 		}
 

@@ -1312,41 +1312,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 		this.update(nowMs);
 	}
 
-	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number {
-		const { horizontalMargin }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
-		return this.nameplateMain.spriteWidth - 2 * horizontalMargin;
-	}
-
-	drawNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number): void {
-		if (!player || !player.ShowingNameplate)
-			return;
-
-		const { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
-
-		const plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
-
-		const height: number = this.nameplateMain.spriteHeight;
-		this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
-
-		const leftX: number = centerX - plateWidth / 2;
-		const yPos: number = sprite.y - this.nameplateParts.originY;
-		const originX: number = this.nameplateParts.originX;
-		this.nameplateParts.baseAnimation.drawByIndex(context, leftX - originX, yPos, 0);
-		const rightX: number = centerX + plateWidth / 2;
-		this.nameplateParts.baseAnimation.drawByIndex(context, rightX - originX, yPos, 1);
-
-		const additionalHalfWidth: number = additionalWidth / 2;
-		const nameCenter: number = centerX - additionalHalfWidth;
-		const hpCenter: number = nameCenter + nameWidth / 2 + nameHpMargin + hpWidth / 2;
-
-		if (!hidingHitPoints) {
-			const separatorX: number = nameCenter + nameWidth / 2 + nameHpMargin / 2;
-			this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - originX, yPos, 2);
-		}
-
-		this.drawNameText(context, playerName, nameCenter, hidingHitPoints, hpStr, hpCenter);
-	}
-
 	private prepareToDrawName(context: CanvasRenderingContext2D, player: Character, playerIndex: number) {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
@@ -1384,6 +1349,43 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 			horizontalMargin = 0;
 		}
 		return { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr };
+	}
+
+	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number {
+		if (!player)
+			return;
+		const { horizontalMargin }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
+		return this.nameplateMain.spriteWidth - 2 * horizontalMargin;
+	}
+
+	drawNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number): void {
+		if (!player || !player.ShowingNameplate)
+			return;
+
+		const { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
+
+		const plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
+
+		const height: number = this.nameplateMain.spriteHeight;
+		this.nameplateMain.baseAnimation.drawCroppedByIndex(context, sprite.x + horizontalMargin, sprite.y, 0, horizontalMargin, 0, plateWidth, height, plateWidth, height);
+
+		const leftX: number = centerX - plateWidth / 2;
+		const yPos: number = sprite.y - this.nameplateParts.originY;
+		const originX: number = this.nameplateParts.originX;
+		this.nameplateParts.baseAnimation.drawByIndex(context, leftX - originX, yPos, 0);
+		const rightX: number = centerX + plateWidth / 2;
+		this.nameplateParts.baseAnimation.drawByIndex(context, rightX - originX, yPos, 1);
+
+		const additionalHalfWidth: number = additionalWidth / 2;
+		const nameCenter: number = centerX - additionalHalfWidth;
+		const hpCenter: number = nameCenter + nameWidth / 2 + nameHpMargin + hpWidth / 2;
+
+		if (!hidingHitPoints) {
+			const separatorX: number = nameCenter + nameWidth / 2 + nameHpMargin / 2;
+			this.nameplateParts.baseAnimation.drawByIndex(context, separatorX - originX, yPos, 2);
+		}
+
+		this.drawNameText(context, playerName, nameCenter, hidingHitPoints, hpStr, hpCenter);
 	}
 
 	private drawNameText(context: CanvasRenderingContext2D, playerName: string, nameCenter: number, hidingHitPoints: boolean, hpStr: string, hpCenter: number) {

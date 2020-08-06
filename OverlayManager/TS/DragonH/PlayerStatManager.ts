@@ -2,7 +2,6 @@
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
-	MainDieSides: number;
 	DiceStack: Array<DiceStackDto>;
 }
 
@@ -21,6 +20,13 @@ class DiceStackDto {
 	Multiplier: number;
 	DamageType: DamageType;
 
+	constructor(diceStack: DiceStackDto) {
+		this.NumSides = diceStack.NumSides;
+		this.HueShift = diceStack.HueShift;
+		this.Multiplier = diceStack.Multiplier;
+		this.DamageType = diceStack.DamageType;
+	}
+
 	matches(compareDiceStack: DiceStackDto) {
 		return this.DamageType === compareDiceStack.DamageType &&
 			this.HueShift === compareDiceStack.HueShift &&
@@ -33,7 +39,6 @@ class PlayerStats implements IPlayerStats {
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
-	MainDieSides = 20;
 	DiceStack: Array<DiceStackDto> = [];
 
 	deserialize(playerStatsDto: IPlayerStats): PlayerStats {
@@ -43,8 +48,11 @@ class PlayerStats implements IPlayerStats {
 		this.PlayerId = playerStatsDto.PlayerId;
 		this.Vantage = playerStatsDto.Vantage;
 		this.ReadyToRollDice = playerStatsDto.ReadyToRollDice;
-		this.MainDieSides = playerStatsDto.MainDieSides;
-		this.DiceStack = playerStatsDto.DiceStack;
+		this.DiceStack = [];
+
+		for (let i = 0; i < playerStatsDto.DiceStack.length; i++) {
+			this.DiceStack.push(new DiceStackDto(playerStatsDto.DiceStack[i]));
+		}
 		return this;
 	}
 
@@ -56,8 +64,7 @@ class PlayerStats implements IPlayerStats {
 	}
 
 	diceMatch(latestPlayerStats: PlayerStats) {
-		return this.MainDieSides === latestPlayerStats.MainDieSides &&
-			this.dieStacksMatch(latestPlayerStats.DiceStack);
+		return this.dieStacksMatch(latestPlayerStats.DiceStack);
 	}
 
 	dieStacksMatch(compareDiceStack: DiceStackDto[]) {
@@ -82,6 +89,7 @@ class AllPlayerStats implements IAllPlayerStats {
 	Players: Array<PlayerStats> = [];
 	ActiveTurnCreatureID: number;
 	readyToRollFullDragon: Sprites;
+	readyToRollLightningCord: Sprites;
 	readyToRollDieSmoke: Sprites;
 	readyToRollDragonBreath: Sprites;
 	readyToRollLightDie: Sprites;
@@ -144,6 +152,10 @@ class AllPlayerStats implements IAllPlayerStats {
 		const playerIndex: number = iGetPlayerX.getPlayerIndex(this.ActiveTurnCreatureID);
 		const x: number = iGetPlayerX.getPlayerX(playerIndex);
 		const player: Character = players[playerIndex];
+
+		if (!player)
+			return;
+
 		const plateWidth: number = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
 
 		let sprites: Sprites;
@@ -202,6 +214,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.airExplosionCollection = new SpriteCollection();
 
 		this.readyToRollFullDragon = this.createReadyToRollSprites('FullDragon', 281, 265);
+		this.readyToRollLightningCord = this.createReadyToRollSprites('LightningCord', 28, -35);
 
 		this.readyToRollDieSmoke = new Sprites(`PlayerReadyToRollDice/DieSmoke`, 87, fps30, AnimationStyle.Sequential, true);
 		this.readyToRollDieSmoke.originX = 48;
@@ -288,8 +301,10 @@ class AllPlayerStats implements IAllPlayerStats {
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
 		this.nameplateHighlightCollection.draw(context, nowMs);
 		this.readyToRollFullDragon.draw(context, nowMs);
+		this.readyToRollLightningCord.draw(context, nowMs);
 		this.readyToRollDieCollection.draw(context, nowMs);
 		this.readyToRollDragonHands.draw(context, nowMs);
+		this.allTextEffects.render(context, nowMs);
 		this.airExplosionCollection.draw(context, nowMs);
 		this.readyToRollDieSmoke.draw(context, nowMs);
 		this.readyToRollDragonBreath.draw(context, nowMs);
@@ -299,7 +314,11 @@ class AllPlayerStats implements IAllPlayerStats {
 	timeOfNextDragonBreath = -1;
 
 	update(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, nowMs: number) {
+		console.log('this.allTextEffects.length: ' + this.allTextEffects.animations.length);
+		this.allTextEffects.removeExpiredAnimations(nowMs);
+		//this.allTextEffects.updatePositions(nowMs);
 		this.readyToRollFullDragon.updatePositions(nowMs);
+		this.readyToRollLightningCord.updatePositions(nowMs);
 		this.readyToRollDieCollection.updatePositions(nowMs);
 		this.readyToRollDragonHands.updatePositions(nowMs);
 		this.airExplosionCollection.updatePositions(nowMs);
@@ -359,7 +378,9 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	launchTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, vantage: VantageKind, mainDieSides: number, diceStack: Array<DiceStackDto>) {
+	allTextEffects: Animations = new Animations();
+
+	launchTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, vantage: VantageKind, diceStack: Array<DiceStackDto>) {
 		const shoulderOffset = 140;
 		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
 		const playerX: number = iGetPlayerX.getPlayerX(playerIndex) + shoulderOffset;
@@ -372,9 +393,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		const dragonHueShift = Random.max(360);
 		const dieShift = 0; // Random.max(360);
 		const startFrameIndex: number = Random.max(this.readyToRollFullDragon.baseAnimation.frameCount);
-		const dragonStartY = 1180;
 
-		const dieOffset = 16;
 		if (scale >= 0.8) {
 			frameInterval = fps30;
 		}
@@ -391,17 +410,53 @@ class AllPlayerStats implements IAllPlayerStats {
 			frameInterval = fps70;
 		}
 
-		const dieSprites: Sprites = this.getMainDieForPlayer(iGetPlayerX, playerId, mainDieSides);
-
 		const yStopVariance: number = Random.between(-25, 25);
+		const dieDistanceDown = 103;
 
-		const fullDragon: SpriteProxy = this.readyToRollFullDragon.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, dragonHueShift);
-		const die: SpriteProxy = dieSprites.addShifted(playerX, dragonStartY + dieOffset + yStopVariance, startFrameIndex, dieShift);
+		let multiDiceAdjustment = 0;
+		if (diceStack.length > 1) {
+			multiDiceAdjustment = (diceStack.length - 1) * dieDistanceDown;
+		}
+		const dragonTopY = 1180 + yStopVariance - multiDiceAdjustment;
+		const dieOffsetY = 20;
+		let dieTop: number = dragonTopY + dieOffsetY;
+		let dieStartFrameIndex = startFrameIndex;
+		const numFramesBehindEachDie = 8;
+		const lightningCordHueShift: number = Random.max(360);
+
+		for (let i = 0; i < diceStack.length; i++) {
+			const dieStackEntry: DiceStackDto = diceStack[i];
+			const dieSprites: Sprites = this.getDieForPlayerWithSides(iGetPlayerX, playerId, dieStackEntry);
+			let dieOffsetX = 0;
+			if (dieStackEntry.NumSides === 4)
+				dieOffsetX = -16;
+			else if (dieStackEntry.NumSides === 6)
+				dieOffsetX = 3;
+			const die: SpriteProxy = dieSprites.addShifted(playerX + dieOffsetX, dieTop, dieStartFrameIndex, dieShift);
+			this.prepareForEntrance(die, playerId, 1, frameInterval);
+			if (dieStackEntry.Multiplier !== 1 || dieStackEntry.DamageType !== DamageType.None || dieStackEntry.NumSides !== 20) {
+				this.addDieDescriptor(dieStackEntry, playerX, dieTop, die);
+			}
+
+			if (i < diceStack.length - 1) {
+				// At least one more die in the stack, so we need a lightning cord....
+				const lightningCord: SpriteProxy = this.readyToRollLightningCord.addShifted(playerX, dieTop, dieStartFrameIndex, lightningCordHueShift);
+				this.prepareForEntrance(lightningCord, playerId, 1, frameInterval);
+			}
+
+			dieStartFrameIndex -= numFramesBehindEachDie;
+			while (dieStartFrameIndex < 0)
+				dieStartFrameIndex += dieSprites.baseAnimation.frameCount;
+
+			dieTop += dieDistanceDown;
+		}
+
+		const fullDragon: SpriteProxy = this.readyToRollFullDragon.addShifted(playerX, dragonTopY, startFrameIndex, dragonHueShift);
+
 		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
 		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
-		const dieDistanceDown = 103;
-		const disadvantageDie: SpriteProxy = disadvantageDieSprites.addShifted(playerX, dragonStartY + dieOffset + yStopVariance + dieDistanceDown, startFrameIndex, dieShift);
-		const advantageDie: SpriteProxy = advantageDieSprites.addShifted(playerX, dragonStartY + dieOffset + yStopVariance + dieDistanceDown, startFrameIndex, dieShift);
+		const disadvantageDie: SpriteProxy = disadvantageDieSprites.addShifted(playerX, dieTop, startFrameIndex, dieShift);
+		const advantageDie: SpriteProxy = advantageDieSprites.addShifted(playerX, dieTop, startFrameIndex, dieShift);
 
 		advantageDie.opacity = 0;
 		disadvantageDie.opacity = 0;
@@ -415,19 +470,54 @@ class AllPlayerStats implements IAllPlayerStats {
 				break;
 		}
 
-		const dragonHands: SpriteProxy = this.readyToRollDragonHands.addShifted(playerX, dragonStartY + yStopVariance, startFrameIndex, dragonHueShift);
+		const dragonHands: SpriteProxy = this.readyToRollDragonHands.addShifted(playerX, dragonTopY, startFrameIndex, dragonHueShift);
 
 		this.prepareForEntrance(fullDragon, playerId, scale, frameInterval);
-		this.prepareForEntrance(die, playerId, 1, frameInterval);
+
 		this.prepareForEntrance(advantageDie, playerId, 1, frameInterval);
 		this.prepareForEntrance(disadvantageDie, playerId, 1, frameInterval);
 		this.prepareForEntrance(dragonHands, playerId, scale, frameInterval);
 		soundManager.safePlayMp3('DiceDragons/DragonScreech[23]');
 	}
 
-	getMainDieForPlayer(iGetPlayerX: IGetPlayerX, playerId: number, mainDieSides: number): Sprites {
-		console.log('mainDieSides: ' + mainDieSides);
+	static readonly rightEdgeCutOff: number = 900;  // Die descriptors appearing after this point will be right-aligned.
+
+	private addDieDescriptor(dieStackEntry: DiceStackDto, playerX: number, dieTop: number, die: SpriteProxy) {
+		let textOffsetX: number;
+		const textOffsetY = 11;
+		let alignment: CanvasTextAlign;
+		if (playerX < AllPlayerStats.rightEdgeCutOff) {
+			textOffsetX = 50;
+			alignment = 'left';
+			if (dieStackEntry.NumSides > 6)
+				textOffsetX += 15;
+		}
+		else {
+			alignment = 'right';
+			textOffsetX = -50;
+			if (dieStackEntry.NumSides > 6)
+				textOffsetX -= 15;
+		}
+
+		const textEffect: TextEffect = new TextEffect(playerX + textOffsetX, dieTop + textOffsetY);
+		textEffect.textAlign = alignment;
+
+		let damageTypeStr = '';
+		if (dieStackEntry.DamageType !== DamageType.None)
+			damageTypeStr = ` (${DamageType[dieStackEntry.DamageType]})`;
+
+		textEffect.text = `${dieStackEntry.Multiplier}d${dieStackEntry.NumSides} ${damageTypeStr}`;
+		
+		textEffect.fontSize = 30;
+		textEffect.outlineThickness = 2;
+		this.allTextEffects.animations.push(textEffect);
+		die.attach(textEffect);
+	}
+
+	getDieForPlayerWithSides(iGetPlayerX: IGetPlayerX, playerId: number, diceStackEntry: DiceStackDto): Sprites {
+		//console.log('diceStackEntry: ' + diceStackEntry);
 		let dieSprites: Sprites;
+		const mainDieSides: number = diceStackEntry.NumSides;
 		if (mainDieSides === 20)
 			dieSprites = this.getDieSpritesForPlayer(iGetPlayerX, playerId);
 		else if (mainDieSides === 12)
@@ -465,14 +555,18 @@ class AllPlayerStats implements IAllPlayerStats {
 		return this.readyToRollDieCollection.getSpritesByName(playerFirstName);
 	}
 
-	dropDieAndBlowUpTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, mainDieSides: number, diceStack: Array<DiceStackDto>) {
-		const dieSprites: Sprites = this.getMainDieForPlayer(iGetPlayerX, playerId, mainDieSides);
-		if (dieSprites)
-			this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
-		else {
-			this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
-			this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
+	dropDieAndBlowUpTheDragons(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerId: number, diceStack: Array<DiceStackDto>) {
+		for (let i = 0; i < diceStack.length; i++) {
+			const dieSprites: Sprites = this.getDieForPlayerWithSides(iGetPlayerX, playerId, diceStack[i]);
+			if (dieSprites) {
+				this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
+			}
 		}
+
+		this.dropSpriteByPlayerId(this.readyToRollLightningCord.sprites, playerId);
+
+		this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
 
 		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
 		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
@@ -525,15 +619,19 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	descendTheDragons(iGetPlayerX: IGetPlayerX, playerId: number, mainDieSides: number, diceStack: Array<DiceStackDto>) {
+	descendTheDragons(iGetPlayerX: IGetPlayerX, playerId: number, diceStack: Array<DiceStackDto>) {
 		this.dropSpriteByPlayerId(this.readyToRollFullDragon.sprites, playerId);
-		const dieSprites: Sprites = this.getMainDieForPlayer(iGetPlayerX, playerId, mainDieSides);
-		if (dieSprites)
-			this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
-		else {
-			this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
-			this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
+		for (let i = 0; i < diceStack.length; i++) {
+			const dieSprites: Sprites = this.getDieForPlayerWithSides(iGetPlayerX, playerId, diceStack[i]);
+			if (dieSprites) {
+				dieSprites.sprites.forEach(function (spriteProxy) { spriteProxy.fadeOutNow(500); });
+				this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
+			}
 		}
+
+		this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightningCord.sprites, playerId);
 
 		this.dropSpriteFromCollectionByPlayerId(this.readyToRollDieCollection, playerId);
 		this.dropSpriteByPlayerId(this.readyToRollDragonHands.sprites, playerId);
@@ -577,6 +675,7 @@ class AllPlayerStats implements IAllPlayerStats {
 				sprites[i].fadeOutTime = 0;
 				sprites[i].autoRotationDegeesPerSecond = 2;
 				sprites[i].changeVelocity(0, -this.dieThrowVelocity, performance.now());
+				sprites[i].fadeOutAttachedElements(500);
 			}
 		}
 	}
@@ -592,15 +691,15 @@ class AllPlayerStats implements IAllPlayerStats {
 	updatePlayer(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, playerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats) {
 		if (playerStats.ReadyToRollDice !== latestPlayerStats.ReadyToRollDice) {
 			playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
+			playerStats.DiceStack = latestPlayerStats.DiceStack;
 
 			if (playerStats.ReadyToRollDice) {
 				playerStats.Vantage = latestPlayerStats.Vantage;
-				playerStats.MainDieSides = latestPlayerStats.MainDieSides;
 				playerStats.DiceStack = latestPlayerStats.DiceStack;
-				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, latestPlayerStats.MainDieSides, playerStats.DiceStack);
+				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, playerStats.DiceStack);
 			}
 			else {
-				this.descendTheDragons(iGetPlayerX, latestPlayerStats.PlayerId, latestPlayerStats.MainDieSides, latestPlayerStats.DiceStack);
+				this.descendTheDragons(iGetPlayerX, latestPlayerStats.PlayerId, latestPlayerStats.DiceStack);
 			}
 		}
 		else if (playerStats.onlyVantageHasChanged(latestPlayerStats)) {
@@ -608,14 +707,13 @@ class AllPlayerStats implements IAllPlayerStats {
 			this.showOrHideVantageDie(soundManager, playerStats.PlayerId, playerStats.Vantage);
 		}
 		else if (!playerStats.diceMatch(latestPlayerStats)) {
-			this.descendTheDragons(iGetPlayerX, playerStats.PlayerId, playerStats.MainDieSides, playerStats.DiceStack);
+			this.descendTheDragons(iGetPlayerX, playerStats.PlayerId, playerStats.DiceStack);
 
-			playerStats.MainDieSides = latestPlayerStats.MainDieSides;
 			playerStats.DiceStack = latestPlayerStats.DiceStack;
 			playerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
 
 			if (playerStats.ReadyToRollDice) {
-				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, playerStats.MainDieSides, playerStats.DiceStack);
+				this.launchTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.Vantage, playerStats.DiceStack);
 			}
 		}
 		else {
@@ -623,7 +721,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 
 		if (this.RollingTheDiceNow) {
-			this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, latestPlayerStats.MainDieSides, playerStats.DiceStack);
+			this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, playerStats.PlayerId, playerStats.DiceStack);
 		}
 	}
 

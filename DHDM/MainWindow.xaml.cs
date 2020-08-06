@@ -1675,33 +1675,40 @@ namespace DHDM
 
 		void SetInGameDiceForShortcut(PlayerActionShortcut actionShortcut)
 		{
+			AllPlayerStats.ClearReadyToRollState();
+
 			if (actionShortcut.Type == DiceRollType.Attack || actionShortcut.Type == DiceRollType.ChaosBolt)
 			{
-				AllPlayerStats.ClearReadyToRollState();
-				AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true);
-				UpdatePlayerStateInGame();
+				DieRollDetails dieRollDetails = new DieRollDetails();
+				dieRollDetails.AddRoll("1d20");
+				if (actionShortcut.Spell != null)
+					dieRollDetails.AddRoll(actionShortcut.Spell.DieStr);
+				else
+				{
+					dieRollDetails.AddRoll(actionShortcut.Dice);
+				}
+				AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 			}
 			else if (actionShortcut.Type == DiceRollType.DamageOnly)
 			{
 				if (actionShortcut.Spell != null)
 				{
-					string dieStrRaw = actionShortcut.Spell.DieStrRaw;
-					if (!string.IsNullOrWhiteSpace(dieStrRaw))
+					string dieStr = actionShortcut.Spell.DieStr;
+					if (!string.IsNullOrWhiteSpace(dieStr))
 					{
-						int indexOfD = dieStrRaw.IndexOf('d');
-						if (indexOfD > 0)
+						DieRollDetails dieRollDetails = null;
+						if (actionShortcut.Spell != null)
+							dieRollDetails = DieRollDetails.From(actionShortcut.Spell.DieStr);
+						else
 						{
-							if (int.TryParse(dieStrRaw.Substring(indexOfD + 1), out int numberOfSides))
-							{
-								AllPlayerStats.ClearReadyToRollState();
-								AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true, numberOfSides);
-								UpdatePlayerStateInGame();
-							}
-
+							System.Diagnostics.Debugger.Break();
 						}
+						AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 					}
 				}
 			}
+
+			UpdatePlayerStateInGame();
 		}
 		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
 		{
@@ -7408,12 +7415,12 @@ namespace DHDM
 			UpdateInGameCreatures();
 		}
 
-		void ToggleReadyRollDice(string data)
+		void ToggleReadyRollD20(string data)
 		{
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			AllPlayerStats.ToggleReadyRollDice(playerId);
+			AllPlayerStats.ToggleReadyRollD20(playerId);
 		}
 		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal)
 		{
@@ -7428,7 +7435,7 @@ namespace DHDM
 			switch (command)
 			{
 				case "ToggleReadyRollDice":
-					ToggleReadyRollDice(data);
+					ToggleReadyRollD20(data);
 					break;
 				case "QuickRefresh":
 					QuickRefresh();

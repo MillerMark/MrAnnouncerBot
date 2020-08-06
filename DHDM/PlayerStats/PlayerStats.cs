@@ -12,7 +12,6 @@ namespace DHDM
 		public bool ReadyToRollDice { get; set; }
 		public VantageKind Vantage { get; set; }
 		public int PlayerId { get; set; }
-		public int MainDieSides { get; set; } = 20;
 		public PlayerStats()
 		{
 
@@ -21,6 +20,20 @@ namespace DHDM
 		public PlayerStats(int playerId)
 		{
 			PlayerId = playerId;
+		}
+
+		public void AddRoll(Roll roll)
+		{
+			DiceStack.Add(new DiceStackDto(roll));
+		}
+
+		public void AddD20()
+		{
+			DiceStack.Add(new DiceStackDto() { NumSides = 20 });
+		}
+		public void ClearDiceStack()
+		{
+			DiceStack.Clear();
 		}
 	}
 }

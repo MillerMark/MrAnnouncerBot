@@ -138,7 +138,7 @@ namespace DndCore
 					if (!string.IsNullOrEmpty(player.ReadiedAmmunition.DamageBonusStr))
 						bonusDie.AddRoll(player.ReadiedAmmunition.DamageBonusStr);
 			}
-
+			
 			DiceRoll diceRoll = new DiceRoll(actionShortcut.Type);
 			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
 			diceRoll.AdditionalDiceOnHitMessage = actionShortcut.AddDiceOnHitMessage;

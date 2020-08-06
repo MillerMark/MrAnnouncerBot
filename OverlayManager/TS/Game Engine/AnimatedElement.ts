@@ -29,7 +29,71 @@
 	horizontalThrustOverride: number = undefined;
 	onExpire: () => void;
 
-	constructor(public x: number, public y: number, lifeSpanMs = -1) {
+	fadeOutNow(fadeOutTime: number) {
+		this.fadeOutAfter(0, fadeOutTime);
+	}
+
+	fadeOutAfter(delayMs: number, fadeOutTimeMs = -1) {
+		if (fadeOutTimeMs >= 0)
+			this.fadeOutTime = fadeOutTimeMs;
+		this.expirationDate = performance.now() + delayMs + fadeOutTimeMs;
+	}
+
+	private _x: number;
+	
+	get x(): number {
+		return this._x;
+	}
+	
+	set x(newValue: number) {
+		const deltaX: number = newValue - this._x;
+		if (deltaX === 0)
+			return;
+		this._x = newValue;
+		this.justMoved(deltaX, 0);
+	}
+
+	private _y: number;
+	
+	get y(): number {
+		return this._y;
+	}
+	
+	set y(newValue: number) {
+		const deltaY: number = newValue - this._y;
+		if (deltaY === 0)
+			return;
+		this._y = newValue;
+		this.justMoved(0, deltaY);
+	}
+
+	justMoved(deltaX: number, deltaY: number): void {
+		if (this.attachedElements)
+			this.attachedElements.forEach(function (element) { element.move(deltaX, deltaY); });
+	}
+
+  move(deltaX: number, deltaY: number) {
+		this.x += deltaX;
+		this.y += deltaY;
+  }
+
+	attachedElements: Array<AnimatedElement>;
+	
+	attach(animatedElement: AnimatedElement) {
+		if (!this.attachedElements)
+			this.attachedElements = [];
+		this.attachedElements.push(animatedElement);
+	}
+
+	fadeOutAttachedElements(delayMs: number) {
+		if (!this.attachedElements)
+			return;
+		this.attachedElements.forEach(function (element) { element.fadeOutNow(delayMs); });
+	}
+
+	constructor(x: number, y: number, lifeSpanMs = -1) {
+		this.x = x;
+		this.y = y;
 		this.velocityX = 0;
 		this.velocityY = 0;
 		this.startX = x;

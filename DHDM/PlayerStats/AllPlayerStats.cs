@@ -47,21 +47,25 @@ namespace DHDM
 			return playerState;
 		}
 
-		public void ToggleReadyRollDice(int playerId)
+		public void ToggleReadyRollD20(int playerId)
 		{
-			PlayerStats playerState = GetPlayerStats(playerId);
+			PlayerStats playerStats = GetPlayerStats(playerId);
+			playerStats.DiceStack.Clear();
+			playerStats.AddD20();
 
-			if (playerState.Vantage == VantageKind.Normal || !playerState.ReadyToRollDice)
-				playerState.ReadyToRollDice = !playerState.ReadyToRollDice;
+			if (playerStats.Vantage == VantageKind.Normal || !playerStats.ReadyToRollDice)
+				playerStats.ReadyToRollDice = !playerStats.ReadyToRollDice;
 			else
-				playerState.Vantage = VantageKind.Normal;
+				playerStats.Vantage = VantageKind.Normal;
 		}
 
-		public void SetReadyRollDice(int playerId, bool newValue, int mainDieNumSides = 20)
+		public void SetReadyRollDice(int playerId, bool newValue, DieRollDetails dieRollDetails)
 		{
 			PlayerStats playerState = GetPlayerStats(playerId);
 			playerState.ReadyToRollDice = newValue;
-			playerState.MainDieSides = mainDieNumSides;
+			playerState.ClearDiceStack();
+			foreach (Roll roll in dieRollDetails.Rolls)
+				playerState.AddRoll(roll);
 		}
 
 		public void ReadyRollVantage(int playerId, VantageKind vantage)

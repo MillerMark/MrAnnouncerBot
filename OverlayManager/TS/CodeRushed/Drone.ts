@@ -95,7 +95,7 @@ class Drone extends ColorShiftingSpriteProxy {
   sparkY: number;
   sparkCreationTime: number;
 
-	constructor(startingFrameNumber: number, public x: number, public y: number) {
+	constructor(startingFrameNumber: number, x: number, y: number) {
 		super(startingFrameNumber, new Vector(x, y));
     this.fadeOnDestroy = false;
     let now: number = performance.now();

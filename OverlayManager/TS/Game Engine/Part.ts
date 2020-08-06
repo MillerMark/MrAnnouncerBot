@@ -248,7 +248,7 @@ class Part {
 				this.loadImages(false);
 			}
 			else {
-				var image = new Image();
+				const image = new Image();
 				this._images.push(image);
 			}
 			this.loadedAllImages = true;
@@ -256,9 +256,14 @@ class Part {
 		return this._images;
 	}
 
+	set images(newValue: HTMLImageElement[]) {
+		this._images = newValue;
+	}
+
+
 	private loadImages(onlyLoadOne: boolean) {
-		var actualFrameCount = 0;
-		var numDigits: number;
+		let actualFrameCount = 0;
+		let numDigits: number;
 		if (this.frameCount > 999)
 			numDigits = 4;
 		else if (this.frameCount > 99)
@@ -278,17 +283,17 @@ class Part {
 		this.frameRate = this.framesToCount / this.framesToLoad;
 
 		let totalFramesToLoad = this.frameCount * this.framesToLoad / this.framesToCount;
-		let frameIncrementor = (this.frameCount) / totalFramesToLoad;
+		const frameIncrementor = (this.frameCount) / totalFramesToLoad;
 		let absoluteStartIndex = 0;
 
 		if (onlyLoadOne) {
 			totalFramesToLoad = 1;
 		}
 
-		for (var i = 0; i < totalFramesToLoad; i++) {
+		for (let i = 0; i < totalFramesToLoad; i++) {
 			if (onlyLoadOne || i > 0) {
-				var image = new Image();
-				var indexStr: string = Math.round(absoluteStartIndex).toString();
+				const image = new Image();
+				let indexStr: string = Math.round(absoluteStartIndex).toString();
 				while (this.padFileIndex && indexStr.length < numDigits)
 					indexStr = '0' + indexStr;
 				image.src = this.assetFolder + this.fileName + indexStr + '.png';
@@ -300,18 +305,18 @@ class Part {
 		}
 
 		if (onlyLoadOne) {
-			var self: Part = this;
+			//const self: Part = this;
 			this._images[0].onload = function () {
 				try {
-					if (self.onImageLoaded) {
-						self.onImageLoaded(self._images[0]);
+					if (this.onImageLoaded) {
+						this.onImageLoaded(this._images[0]);
 					}
 				}
 				catch (ex) {
-					console.log('self: ' + self);
+					console.log('Part/this: ' + this);
 					console.error('ex: ' + ex);
 				}
-			};
+			}.bind(this);
 
 			if (this.frameCount > 1) {
 				PartBackgroundLoader.add(this);
@@ -321,10 +326,6 @@ class Part {
 			PartBackgroundLoader.remove(this);
 			this.frameCount = actualFrameCount;
 		}
-	}
-
-	set images(newValue: HTMLImageElement[]) {
-		this._images = newValue;
 	}
 
 	constructor(public fileName: string, public frameCount: number,

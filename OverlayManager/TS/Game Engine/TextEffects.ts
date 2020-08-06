@@ -69,15 +69,15 @@ class Animations {
 		this.animations = new Array<AnimatedElement>();
 	}
 
-	addText(centerPos: Vector, text: string, lifeSpanMs: number = -1): TextEffect {
-		let textEffect: TextEffect = new TextEffect(centerPos.x, centerPos.y, lifeSpanMs);
+	addText(centerPos: Vector, text: string, lifeSpanMs = -1): TextEffect {
+		const textEffect: TextEffect = new TextEffect(centerPos.x, centerPos.y, lifeSpanMs);
 		textEffect.text = text;
 		this.animations.push(textEffect);
 		return textEffect;
 	}
 
 	addLine(x: number, y: number, width: number, color: string, lifespan: number, lineThickness: number): AnimatedLine {
-		let line: AnimatedLine = new AnimatedLine(x, y, width, color, lifespan, lineThickness);
+		const line: AnimatedLine = new AnimatedLine(x, y, width, color, lifespan, lineThickness);
 		line.scale = 1;
 		line.targetScale = 1;
 		this.animations.push(line);
@@ -85,7 +85,7 @@ class Animations {
 	}
 
 	addRectangle(x: number, y: number, width: number, height: number, fillColor: string, outlineColor: string, lifespanMs: number, lineThickness: number = 1, opacity: number = 1): AnimatedRectangle {
-		let rectangle: AnimatedRectangle = new AnimatedRectangle(x, y, width, height, fillColor, outlineColor, lifespanMs, lineThickness);
+		const rectangle: AnimatedRectangle = new AnimatedRectangle(x, y, width, height, fillColor, outlineColor, lifespanMs, lineThickness);
 		rectangle.opacity = opacity;
 		rectangle.scale = 1;
 		rectangle.targetScale = 1;
@@ -100,8 +100,8 @@ class Animations {
 	}
 
 	removeExpiredAnimations(now: number): void {
-		for (var i = this.animations.length - 1; i >= 0; i--) {
-			let animatedElement: AnimatedElement = this.animations[i];
+		for (let i = this.animations.length - 1; i >= 0; i--) {
+			const animatedElement: AnimatedElement = this.animations[i];
 			if (animatedElement.expirationDate) {
 				if (!animatedElement.stillAlive(now)) {
 					animatedElement.destroying();
@@ -127,17 +127,17 @@ class TextEffect extends ScalableAnimation {
 	fontColor: string;
 	fontName: string;
 	outlineColor: string;
-	verticalThrust: number = 0;
-	horizontalThrust: number = 0;
+	verticalThrust = 0;
+	horizontalThrust = 0;
 	textAlign: CanvasTextAlign = 'center';
 	textBaseline: CanvasTextBaseline = 'middle';
 	outlineThickness: number;
 	fontSize: number;
-	offsetX: number = 0;
-	offsetY: number = 0;
+	offsetX = 0;
+	offsetY = 0;
 	connectedShapes: Array<ScalableAnimation> = [];
 
-	constructor(x: number, y: number, lifeSpanMs: number = -1) {
+	constructor(x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);
 		this.text = 'test';
 		this.fontColor = '#ffffff';
@@ -156,8 +156,8 @@ class TextEffect extends ScalableAnimation {
 	}
 
 	render(context: CanvasRenderingContext2D, now: number) {
-		let thisScale: number = this.getScale(now);
-		let scaledFontSize: number = this.fontSize * thisScale;
+		const thisScale: number = this.getScale(now);
+		const scaledFontSize: number = this.fontSize * thisScale;
 		context.font = `${scaledFontSize}px ${this.fontName}`; //`-- <- Fixes memory leak
 		context.textAlign = this.textAlign;
 		context.textBaseline = this.textBaseline;
@@ -170,25 +170,25 @@ class TextEffect extends ScalableAnimation {
 		context.fillText(this.text, this.x + this.offsetX, this.y + this.offsetY);
 
 		if (this.connectedShapes.length > 0) {
-			let width: number = context.measureText(this.text).width;
-			let height: number = scaledFontSize;
+			const width: number = context.measureText(this.text).width;
+			const height: number = scaledFontSize;
 			let top: number;
 			let left: number;
-			if (this.textAlign == 'left')
+			if (this.textAlign === 'left')
 				left = this.x;
-			else if (this.textAlign == 'center')  //  || this.textAlign === 'justify'
+			else if (this.textAlign === 'center')  //  || this.textAlign === 'justify'
 				left = this.x - width / 2;
-			else if (this.textAlign == 'right')
+			else if (this.textAlign === 'right')
 				left = this.x - width;
 
-			if (this.textBaseline == 'top')
+			if (this.textBaseline === 'top')
 				top = this.y;
-			else if (this.textBaseline == 'middle')
+			else if (this.textBaseline === 'middle')
 				top = this.y - height / 2;
-			else if (this.textBaseline == 'bottom')
+			else if (this.textBaseline === 'bottom')
 				top = this.y - height;
 
-			for (var i = 0; i < this.connectedShapes.length; i++) {
+			for (let i = 0; i < this.connectedShapes.length; i++) {
 				this.connectedShapes[i].resizeToContent(left, top, width, height);
 			}
 		}

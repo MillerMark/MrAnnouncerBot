@@ -1333,7 +1333,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 			boombox.changeActiveGenre(newGenre);
 
 			if (activeDroneGame instanceof DroneGame) {
-				let textEffect: TextEffect = activeDroneGame.animations.addText(new Vector(100, 1000), newGenre, 4000);
+				const textEffect: TextEffect = activeDroneGame.animations.addText(new Vector(100, 1000), newGenre, 4000);
 				textEffect.scale = 3;
 				textEffect.targetScale = 5;
 				textEffect.fadeOutTime = 800;

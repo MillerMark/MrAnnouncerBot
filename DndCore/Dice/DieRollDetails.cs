@@ -104,6 +104,13 @@ namespace DndCore
 		{
 			if (string.IsNullOrEmpty(dieStr))
 				return;
+			string[] parts = dieStr.Split(',');
+			if (parts.Length > 1)
+			{
+				for (int i = 0; i < parts.Length; i++)
+					AddRoll(parts[i].Trim(), spellcastingAbilityModifier);
+				return;
+			}
 			Roll roll = Roll.From(dieStr, spellcastingAbilityModifier);
 			AddRoll(roll);
 		}

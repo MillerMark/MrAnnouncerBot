@@ -3,7 +3,7 @@
   meteorsToDrop: Array<MeteorDrop> = new Array<MeteorDrop>();
   background: SpriteProxy;
 
-  constructor(startingFrameNumber: number, public x: number, public y: number) {
+  constructor(startingFrameNumber: number, x: number, y: number) {
     super(startingFrameNumber, x, y);
     if (!(activeDroneGame instanceof DroneGame))
       return;

@@ -2718,7 +2718,7 @@ class AnimatedLine extends ScalableAnimation {
 
 class AnimatedRectangle extends ScalableAnimation {
 	margin = 5;
-	constructor(public x: number, public y: number, public width: number, public height: number, public fillColor: string, public outlineColor: string, public lifeSpanMs: number, public lineThickness: number = 1) {
+	constructor(x: number, y: number, public width: number, public height: number, public fillColor: string, public outlineColor: string, public lifeSpanMs: number, public lineThickness: number = 1) {
 		super(x, y, lifeSpanMs);
 	}
 

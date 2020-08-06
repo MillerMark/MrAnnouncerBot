@@ -5,7 +5,7 @@
 	haveCycledOnce: boolean;
 	flipHorizontally: boolean;
 	flipVertically: boolean;
-	systemDrawn: boolean = true;
+	systemDrawn = true;
 	owned: boolean;
 	cropped: boolean;
 	playToEndOnExpire = false;
@@ -14,7 +14,7 @@
 	cropLeft: number;
 	cropRight: number;
 	cropBottom: number;
-	numFramesDrawn: number = 0;
+	numFramesDrawn = 0;
 	onCycleCallbacks: Array<(sprite: SpriteProxy, now: number) => void>;
 	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>;
 
@@ -160,16 +160,6 @@
 		this.scale = scale;
 		return this;
 	}
-
-	fadeOutNow(fadeOutTime: number) {
-		this.fadeOutAfter(0, fadeOutTime);
-	}
-
-	fadeOutAfter(delayMs: number, fadeOutTimeMs = -1) {
-		if (fadeOutTimeMs >= 0)
-			this.fadeOutTime = fadeOutTimeMs;
-		this.expirationDate = performance.now() + delayMs + fadeOutTimeMs;
-	}
 }
 
 
@@ -254,9 +244,9 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
-		originX: number = 0, originY: number = 0): void {
+		originX = 0, originY = 0): void {
 		let saveFilter: string;
-		let allowColorShifting: boolean = ColorShiftingSpriteProxy.globalAllowColorShifting;
+		const allowColorShifting: boolean = ColorShiftingSpriteProxy.globalAllowColorShifting;
 		if (allowColorShifting)
 			saveFilter = this.shiftColor(baseAnimation, context, now);
 		try {
@@ -280,7 +270,7 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	getCurrentHueShiftDelta(now: number): number {
-		if (this.hueShiftPerSecond != 0) {
+		if (this.hueShiftPerSecond !== 0) {
 			let secondsPassed: number = (now - this.timeStart) / 1000;
 			return secondsPassed * this.hueShiftPerSecond % 360;
 		}
