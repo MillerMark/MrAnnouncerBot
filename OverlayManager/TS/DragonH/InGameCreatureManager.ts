@@ -31,9 +31,9 @@
 	loadResources() {
 		const saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = true;
-		this.parchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 2, fps30, AnimationStyle.Static);
+		this.parchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 3, fps30, AnimationStyle.Static);
+		this.parchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 3, fps30, AnimationStyle.Static);
 		this.deathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
-		this.parchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 2, fps30, AnimationStyle.Static);
 		//this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
 
 		this.target = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
@@ -352,7 +352,9 @@
 
 		if (existingCreature.ImageURL !== updatedGameCreature.ImageURL)
 			existingCreature.setImageUrl(updatedGameCreature.ImageURL);
-		if (existingCreature.IsEnemy !== updatedGameCreature.IsEnemy) {
+		if (existingCreature.IsEnemy !== updatedGameCreature.IsEnemy || existingCreature.IsAlly !== updatedGameCreature.IsAlly || existingCreature.FriendFoeStatusUnknown !== updatedGameCreature.FriendFoeStatusUnknown) {
+			existingCreature.IsAlly = updatedGameCreature.IsAlly;
+			existingCreature.FriendFoeStatusUnknown = updatedGameCreature.FriendFoeStatusUnknown;
 			existingCreature.IsEnemy = updatedGameCreature.IsEnemy;
 
 			const parchmentShadow: SpriteProxy = this.getParchmentShadowForCreature(existingCreature);
@@ -513,9 +515,14 @@
 	}
 
 	private getFriendEnemyFrameIndex(inGameCreature: InGameCreature) {
-		let frameIndex = 0;
-		if (inGameCreature.IsEnemy)
+		let frameIndex;
+		if (inGameCreature.IsAlly)
+			frameIndex = 0;
+		else if (inGameCreature.IsEnemy)
 			frameIndex = 1;
+		else 
+			frameIndex = 2;
+		
 		return frameIndex;
 	}
 

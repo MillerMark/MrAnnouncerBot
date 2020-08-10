@@ -51,8 +51,49 @@ namespace DndCore
 		[Indexer]
 		public int Index { get; set; }
 
-		[Column]
-		public bool IsEnemy { get; set; }
+		[Column("IsEnemy")]
+		[JsonIgnore]
+		public string IsEnemyStr { get; set; }
+
+		public bool IsEnemy
+		{
+			get
+			{
+				return IsEnemyStr == "x";
+			}
+			set
+			{
+				if (value)
+					IsEnemyStr = "x";
+			}
+		}
+
+		public bool FriendFoeStatusUnknown
+		{
+			get
+			{
+				return IsEnemyStr == "?";
+			}
+			set
+			{
+				if (value)
+					IsEnemyStr = "?";
+			}
+		}
+
+		public bool IsAlly
+		{
+			get
+			{
+				return string.IsNullOrWhiteSpace(IsEnemyStr) || IsEnemyStr == "-";
+			}
+			set
+			{
+				if (value)
+					IsEnemyStr = "-";
+			}
+		}
+
 
 		// TODO: Handle this in TS and show damage effects.
 		public double PercentDamageJustInflicted { get; set; }
@@ -165,6 +206,32 @@ namespace DndCore
 			return inGameCreature;
 		}
 
+		double beforeTotalHp;
+
+		public void StartTakingDamage()
+		{
+			PercentDamageJustInflicted = 0;
+			beforeTotalHp = TotalHp;
+		}
+
+		public void TakeSomeDamage(DamageType damageType, AttackKind attackKind, int damage)
+		{
+			Creature.TakeDamage(damageType, attackKind, damage);
+		}
+
+		public void FinishTakingDamage()
+		{
+			double totalDamageTaken = GetTotalDamageTaken();
+			if (totalDamageTaken != 0)
+				PercentDamageJustInflicted = MathUtils.Clamp(totalDamageTaken / Creature.maxHitPoints, 0, 1);
+			UpdateHitPointsStr();
+		}
+
+		public double GetTotalDamageTaken()
+		{
+			return beforeTotalHp - TotalHp;
+		}
+
 		public void TakeDamage(DamageType damageType, AttackKind attackKind, int damage)
 		{
 			PercentDamageJustInflicted = 0;
@@ -225,6 +292,16 @@ namespace DndCore
 		public static bool IsIndexToInGameCreature(int index)
 		{
 			return index < 0;  // In-game creature indices will be negative.
+		}
+
+		public bool IsTotallyImmuneToDamage(System.Collections.Generic.Dictionary<DamageType, int> latestDamage, AttackKind attackKind)
+		{
+			foreach (DamageType damageType in latestDamage.Keys)
+			{
+				if (!Creature.IsImmuneTo(damageType, attackKind))
+					return false;
+			}
+			return true;
 		}
 	}
 }

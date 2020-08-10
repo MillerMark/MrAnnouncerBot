@@ -1,6 +1,7 @@
 enum RollScope {
 	ActivePlayer,
-	Individuals
+	Individuals,
+	InGameCreatures
 }
 
 enum DiceRollType {
@@ -2588,15 +2589,16 @@ class IndividualRoll {
 }
 
 class DiceDto {
-	DamageType: DamageType;
 	Quantity: number;
 	Sides: number;
 	CreatureId: number;
 	IsMagic: boolean;
+	Modifier: number;
 	Label: string;
+	Vantage: VantageKind;
+	DamageType: DamageType;
 	BackColor: string;
 	FontColor: string;
-	Vantage: VantageKind;
 }
 
 class BonusRoll {

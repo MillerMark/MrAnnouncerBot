@@ -15,6 +15,8 @@
 	PercentDamageJustInflicted: number;
 	PercentHealthJustGiven: number;
 	IsEnemy: boolean;
+	IsAlly: boolean;
+	FriendFoeStatusUnknown: boolean;
 	imageLoaded: boolean;
 	image: HTMLImageElement;
 	removing = false;
@@ -42,6 +44,8 @@
 		this.IsTargeted = inGameCreature.IsTargeted;
 		this.TurnIsActive = inGameCreature.TurnIsActive;
 		this.IsEnemy = inGameCreature.IsEnemy;
+		this.IsAlly = inGameCreature.IsAlly;
+		this.FriendFoeStatusUnknown = inGameCreature.FriendFoeStatusUnknown;
 		this.PercentDamageJustInflicted = inGameCreature.PercentDamageJustInflicted;
 		this.PercentHealthJustGiven = inGameCreature.PercentHealthJustGiven;
 		this.setImageUrl(inGameCreature.ImageURL);

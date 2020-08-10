@@ -242,15 +242,6 @@ namespace DHDM
 			game.ActivePlayerChanged += Game_ActivePlayerChanged;
 		}
 
-		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
-		{
-			ShortcutQueueEntry shortcutQueueEntry = new ShortcutQueueEntry();
-			shortcutQueueEntry.PlayerId = ea.Player.playerID;
-			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
-			shortcutQueueEntry.ShortcutName = ea.ShortcutName;
-			actionQueue.Enqueue(shortcutQueueEntry);
-		}
-
 		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
 		{
 			string outlineColor = ea.OutlineColor;
@@ -2839,49 +2830,6 @@ namespace DHDM
 			}
 			DeueueNextAction();
 		}
-		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
-
-		void ExecuteQueuedShortcut(ShortcutQueueEntry shortcutQueueEntry)
-		{
-			if (ActivePlayerId != shortcutQueueEntry.PlayerId)
-				ActivePlayerId = shortcutQueueEntry.PlayerId;
-			ActivateShortcut(shortcutQueueEntry.ShortcutName);
-			if (shortcutQueueEntry.RollImmediately)
-				UnleashTheNextRoll();
-		}
-
-		void ExecuteAction(ActionQueueEntry action)
-		{
-			if (action is DieRollQueueEntry dieRollQueueEntry)
-				ExecuteQueuedDieRoll(dieRollQueueEntry);
-			else if (action is ShortcutQueueEntry shortcutQueueEntry)
-				ExecuteQueuedShortcut(shortcutQueueEntry);
-		}
-		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
-		{
-			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow)
-			{
-				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
-				//diceRoll.SavingThrow = 
-				diceRoll.DiceDtos = dieRollQueueEntry.DiceDtos;
-				diceRoll.HiddenThreshold = dieRollQueueEntry.HiddenThreshold;
-				RollTheDice(diceRoll);
-			}
-			// TODO: roll the dice.
-			// TODO: apply the damage after the dice have rolled.
-		}
-
-		void DeueueNextAction()
-		{
-			if (!actionQueue.Any())
-				return;
-
-			Dispatcher.Invoke(() =>
-			{
-				if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
-					ExecuteAction(actionQueue.Dequeue());
-			});
-		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
 		{
@@ -3407,27 +3355,62 @@ namespace DHDM
 			}
 		}
 
-		void EnqueueSpellSavingThrow(string name, Ability savingThrowAbility, int playerID)
+		// TODO: Delete this method.
+		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoSaved, SavingThrowResult savingThrowResult)
 		{
-			SpellSavingThrowQueueEntry dieRoll = new SpellSavingThrowQueueEntry(name);
-			bool foundAny = false;
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			if (savingThrowResult == SavingThrowResult.Success)
 			{
-				if (inGameCreature.IsTargeted)
+				
+			}
+		}
+
+		void ApplyHalfDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoSaved, string spellName)
+		{
+			if (thoseWhoSaved.Count == 0)
+				return;
+			Spell spell = AllSpells.Get(spellName);
+			if (spell != null)
+			{
+				Target target = new Target(thoseWhoSaved);
+
+				if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
 				{
-					dieRoll.AddSavingThrowFor(savingThrowAbility, inGameCreature);
-					foundAny = true;
+					Expressions.Do("GiveTargetHalfDamage();", ActivePlayer, target, null, null, latestDamage);
+				}
+				else
+				{
+					// TODO: See if I need to save and pass in the CastedSpell that got us here.
+					spell.TriggerTargetSaves(ActivePlayer, target, null, latestDamage);
 				}
 			}
-			if (foundAny)
+			else
 			{
-				Character spellCaster = AllPlayers.GetFromId(playerID);
-				if (spellCaster != null)
+				System.Diagnostics.Debugger.Break();
+			}
+		}
+
+		void ApplyFullDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoFailed, string spellName)
+		{
+			if (thoseWhoFailed.Count == 0)
+				return;
+			Spell spell = AllSpells.Get(spellName);
+			if (spell != null)
+			{
+				Target target = new Target(thoseWhoFailed);
+
+				if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
 				{
-					dieRoll.HiddenThreshold = spellCaster.SpellSaveDC;
-					dieRoll.PlayerId = playerID;
-					actionQueue.Enqueue(dieRoll);
+					Expressions.Do("GiveTargetFullDamage();", ActivePlayer, target, null, null, latestDamage);
 				}
+				else
+				{
+					// TODO: See if I need to save and pass in the CastedSpell that got us here.
+					spell.TriggerTargetFailsSave(ActivePlayer, target, null, latestDamage);
+				}
+			}
+			else
+			{
+				System.Diagnostics.Debugger.Break();
 			}
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
@@ -3491,6 +3474,32 @@ namespace DHDM
 				// latestDamage
 				//
 			}
+
+			if (ea.StopRollingData.type == DiceRollType.SavingThrow)
+			{
+				if (ea.StopRollingData.multiplayerSummary != null)
+				{
+					List<PlayerRoll> thoseWhoSaved = new List<PlayerRoll>();
+					List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
+					foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+					{
+						if (playerRoll.success)
+							thoseWhoSaved.Add(playerRoll);
+						else
+							thoseWhoFailed.Add(playerRoll);
+					}
+					ApplyHalfDamageFromLastSavingThrow(thoseWhoSaved, ea.StopRollingData.spellName);
+					ApplyFullDamageFromLastSavingThrow(thoseWhoFailed, ea.StopRollingData.spellName);
+					UpdateInGameCreatures();
+				}
+			}
+		}
+
+		// TODO: Delete this...
+		public enum SavingThrowResult
+		{
+			Success,
+			Fail
 		}
 
 		string GetPlayerEmoticon(int playerId)
@@ -6038,6 +6047,7 @@ namespace DHDM
 			spell.OnReceived = latestSpell.OnReceived;
 			spell.OnPreparing = latestSpell.OnPreparing;
 			spell.OnPreparationComplete = latestSpell.OnPreparationComplete;
+			spell.OnTargetFailsSave = latestSpell.OnTargetFailsSave;
 			spell.OnGetAttackAbility = latestSpell.OnGetAttackAbility;
 			spell.OnDispel = latestSpell.OnDispel;
 			spell.OnPlayerPreparesAttack = latestSpell.OnPlayerPreparesAttack;
@@ -7581,7 +7591,7 @@ namespace DHDM
 				case "TargetFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 					{
-						inGameCreature.IsTargeted = !inGameCreature.IsEnemy;
+						inGameCreature.IsTargeted = inGameCreature.IsAlly;
 						if (inGameCreature.IsTargeted)
 							inGameCreature.OnScreen = true;
 					}
@@ -7596,7 +7606,7 @@ namespace DHDM
 					break;
 				case "ShowFriends":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.OnScreen = !inGameCreature.IsEnemy;
+						inGameCreature.OnScreen = !inGameCreature.IsAlly;
 					break;
 				case "ShowEnemies":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -7769,6 +7779,119 @@ namespace DHDM
 			UpdateInGameCreatures();
 			UpdatePlayerStateInGame();
 		}
+
+		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
+
+		void ExecuteQueuedShortcut(ShortcutQueueEntry shortcutQueueEntry)
+		{
+			if (ActivePlayerId != shortcutQueueEntry.PlayerId)
+				ActivePlayerId = shortcutQueueEntry.PlayerId;
+			ActivateShortcut(shortcutQueueEntry.ShortcutName);
+			if (shortcutQueueEntry.RollImmediately)
+				UnleashTheNextRoll();
+		}
+
+		void ExecuteAction(ActionQueueEntry action)
+		{
+			if (action is DieRollQueueEntry dieRollQueueEntry)
+				ExecuteQueuedDieRoll(dieRollQueueEntry);
+			else if (action is ShortcutQueueEntry shortcutQueueEntry)
+				ExecuteQueuedShortcut(shortcutQueueEntry);
+		}
+		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
+		{
+			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow)
+			{
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
+				diceRoll.RollScope = dieRollQueueEntry.RollScope;
+				diceRoll.DiceDtos = dieRollQueueEntry.DiceDtos;
+				if (dieRollQueueEntry is SpellSavingThrowQueueEntry spellSavingThrowQueueEntry)
+					diceRoll.SavingThrow = spellSavingThrowQueueEntry.SavingThrowAbility;
+				diceRoll.HiddenThreshold = dieRollQueueEntry.HiddenThreshold;
+				RollTheDice(diceRoll);
+			}
+			// TODO: roll the dice.
+			// TODO: apply the damage after the dice have rolled.
+		}
+
+		void DeueueNextAction()
+		{
+			if (!actionQueue.Any())
+				return;
+
+			Dispatcher.Invoke(() =>
+			{
+				if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
+					ExecuteAction(actionQueue.Dequeue());
+			});
+		}
+
+		string GetTargetedCreatureList(List<DiceDto> diceDtos)
+		{
+			if (diceDtos == null || diceDtos.Count == 0)
+				return "(no creature)";
+			if (diceDtos.Count == 1)
+				return diceDtos[0].Label;
+			string result = "";
+			for (int i = 0; i < diceDtos.Count - 1; i++)
+			{
+				result += diceDtos[i].Label + ", ";
+			}
+			if (result.EndsWith(", "))
+				result = result.EverythingBeforeLast(", ");
+			result += " and " + diceDtos[diceDtos.Count - 1].Label;
+			return result;
+		}
+
+		void EnqueueSpellSavingThrow(string name, Ability savingThrowAbility, int playerID)
+		{
+			SpellSavingThrowQueueEntry dieRoll = new SpellSavingThrowQueueEntry(name, savingThrowAbility);
+			bool foundAny = false;
+			bool atLeastOneImmune = false;
+
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (inGameCreature.IsTargeted)
+				{
+					if (inGameCreature.IsTotallyImmuneToDamage(latestDamage, AttackKind.Magical))
+					{
+						TellDungeonMaster($"{inGameCreature.Name} is totally immune to all {name} damage.");
+						atLeastOneImmune = true;
+						continue;
+					}
+					dieRoll.AddSavingThrowFor(savingThrowAbility, inGameCreature);
+					foundAny = true;
+				}
+			}
+			if (foundAny)
+			{
+				Character spellCaster = AllPlayers.GetFromId(playerID);
+				if (spellCaster != null)
+				{
+					dieRoll.HiddenThreshold = spellCaster.SpellSaveDC;
+					dieRoll.PlayerId = playerID;
+					actionQueue.Enqueue(dieRoll);
+					string targetedCreatureList = GetTargetedCreatureList(dieRoll.DiceDtos);
+					TellDungeonMaster($"Coming up: {savingThrowAbility} saving throw for {targetedCreatureList} (as soon as the dice are cleared).");
+				}
+				else
+				{
+
+				}
+			}
+			else if (atLeastOneImmune)
+				TellDungeonMaster($"No need to roll saving throw - all targeted creatures are totally immune to all {name} damage.");
+		}
+
+		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
+		{
+			ShortcutQueueEntry shortcutQueueEntry = new ShortcutQueueEntry();
+			shortcutQueueEntry.PlayerId = ea.Player.playerID;
+			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
+			shortcutQueueEntry.ShortcutName = ea.ShortcutName;
+			actionQueue.Enqueue(shortcutQueueEntry);
+		}
+
 
 		// TODO: Reintegrate wand/staff animations....
 		/* 

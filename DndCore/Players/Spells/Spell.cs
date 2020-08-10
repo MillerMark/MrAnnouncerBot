@@ -74,6 +74,14 @@ namespace DndCore
 
 		[DndEvent]
 		[Column]
+		public string OnTargetFailsSave { get; set; }
+
+		[DndEvent]
+		[Column]
+		public string OnTargetSaves { get; set; }
+
+		[DndEvent]
+		[Column]
 		public string OnGetAttackAbility { get; set; }
 
 		[DndEvent]
@@ -368,6 +376,8 @@ namespace DndCore
 				OnReceived = spellDto.onReceived,
 				OnPreparing = spellDto.onPreparing,
 				OnPreparationComplete = spellDto.onPreparationComplete,
+				OnTargetFailsSave = spellDto.onTargetFailsSave,
+				OnTargetSaves = spellDto.onTargetSaves,
 				OnGetAttackAbility = spellDto.onGetAttackAbility,
 				OnPlayerPreparesAttack = spellDto.onPlayerPreparesAttack,
 				OnDieRollStopped = spellDto.onDieRollStopped,
@@ -471,6 +481,18 @@ namespace DndCore
 			Expressions.Do(OnPreparationComplete, player, target, castedSpell);
 		}
 
+		public void TriggerTargetFailsSave(Character player, Target target, CastedSpell castedSpell, object customData = null)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnTargetFailsSave, player, target, castedSpell, null, customData);
+		}
+
+		public void TriggerTargetSaves(Character player, Target target, CastedSpell castedSpell, object customData = null)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnTargetSaves, player, target, castedSpell, null, customData);
+		}
+
 		public void TriggerGetAttackAbility(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
@@ -538,6 +560,7 @@ namespace DndCore
 			result.OnReceived = OnReceived;
 			result.OnPreparing = OnPreparing;
 			result.OnPreparationComplete = OnPreparationComplete;
+			result.OnTargetFailsSave = OnTargetFailsSave;
 			result.OnGetAttackAbility = OnGetAttackAbility;
 			result.OnDispel = OnDispel;
 			result.OnPlayerPreparesAttack = OnPlayerPreparesAttack;

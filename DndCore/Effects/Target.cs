@@ -15,6 +15,7 @@ namespace DndCore
 		public List<int> PlayerIds { get; set; }
 
 		List<Creature> creatures;
+
 		[JsonIgnore]
 		public List<Creature> Creatures
 		{
@@ -57,6 +58,15 @@ namespace DndCore
 			Type = AttackTargetType.Weapon;
 			SpellType = SpellTargetType.None;
 			Weapon = weapon;
+		}
+
+		public Target(List<PlayerRoll> playerRolls)
+		{
+			foreach (PlayerRoll playerRoll in playerRolls)
+			{
+				InGameCreature creature = AllInGameCreatures.GetByIndex(InGameCreature.GetNormalIndexFromUniversal(playerRoll.id));
+				Creatures.Add(creature.Creature);
+			}
 		}
 	}
 }

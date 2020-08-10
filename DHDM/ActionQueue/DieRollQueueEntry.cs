@@ -12,6 +12,7 @@ namespace DHDM
 		public List<DiceDto> DiceDtos { get; set; } = new List<DiceDto>();
 		public int HiddenThreshold { get; set; } = int.MinValue;
 		public DiceRollType RollType { get; set; } = DiceRollType.None;
+		public RollScope RollScope { get; set; } = RollScope.ActivePlayer;
 
 		public DieRollQueueEntry()
 		{

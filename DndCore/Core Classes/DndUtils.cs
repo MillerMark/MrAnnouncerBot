@@ -635,5 +635,15 @@ namespace DndCore
 			}
 			return Skills.none;
 		}
+
+		public static int HalveValue(int value)
+		{
+			return (int)Math.Floor(value / 2.0);
+		}
+
+		public static int HalveValue(double value)
+		{
+			return (int)Math.Floor(value / 2.0);
+		}
 	}
 }

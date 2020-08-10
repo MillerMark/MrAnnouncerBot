@@ -73,6 +73,8 @@ namespace DHDM
 			PlayerStats playerState = GetPlayerStats(playerId);
 
 			playerState.ReadyToRollDice = true;
+			if (playerState.DiceStack.Count == 0)
+				playerState.AddD20();
 			playerState.Vantage = vantage;
 		}
 

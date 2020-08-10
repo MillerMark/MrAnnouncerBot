@@ -242,8 +242,10 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 		specialDice.push(die);  // DieEffect.Portal too???
 
 		if (effectOverride === DieEffect.Portal) {
+			dieObject.hideOnScaleStop = true;
 			dieObject.needToDrop = true;
 			scalingDice.push(die);
+
 			//console.log('die.body.collisionResponse: ' + die.body.collisionResponse);
 			//die.body.collisionResponse = 0;
 			//die.body.mass = 0;
@@ -460,6 +462,235 @@ function checkStillRolling() {
 	else {
 		diceJustStoppedRolling(now);
 	}
+}
+
+let animationsShouldBeDone: boolean;
+const hiddenDieScale = 0.01;
+
+function clearAllDiceIfHidden() {
+	for (let i = 0; i < dice.length; i++) {
+		const die = dice[i];
+		const dieObject = die.getObject();
+		if (dieObject === null)
+			continue;
+		if (!dieObject.isHidden)
+			return;
+	}
+	clearAllDice();
+}
+
+function hideDie(dieObject) {
+	dieObject.scale.set(hiddenDieScale, hiddenDieScale, hiddenDieScale);
+	dieObject.isHidden = true;
+	clearAllDiceIfHidden();
+}
+
+function hideDieIn(dieObject, ms: number) {
+	dieObject.hideTime = performance.now() + ms;
+	dieObject.needToHideDie = true;
+}
+
+function rgbToHSL(rgb) {
+	// strip the leading # if it's there
+	rgb = rgb.replace(/^\s*#|\s*$/g, '');
+
+	// convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
+	if (rgb.length == 3) {
+		rgb = rgb.replace(/(.)/g, '$1$1');
+	}
+
+	const r = parseInt(rgb.substr(0, 2), 16) / 255,
+		g = parseInt(rgb.substr(2, 2), 16) / 255,
+		b = parseInt(rgb.substr(4, 2), 16) / 255,
+		cMax = Math.max(r, g, b),
+		cMin = Math.min(r, g, b),
+		delta = cMax - cMin,
+		l = (cMax + cMin) / 2;
+
+	let h = 0, s = 0;
+
+	if (delta === 0) {
+		h = 0;
+	}
+	else if (cMax === r) {
+		h = 60 * (((g - b) / delta) % 6);
+	}
+	else if (cMax === g) {
+		h = 60 * (((b - r) / delta) + 2);
+	}
+	else {
+		h = 60 * (((r - g) / delta) + 4);
+	}
+
+	if (delta === 0) {
+		s = 0;
+	}
+	else {
+		s = (delta / (1 - Math.abs(2 * l - 1)))
+	}
+
+	return {
+		h: h,
+		s: s,
+		l: l
+	}
+}
+
+function removeSingleDieFromArray(dieToRemove, listToChange) {
+	for (let i = 0; i < listToChange.length; i++) {
+		if (dieToRemove === listToChange[i]) {
+			listToChange.splice(i, 1);
+			return;
+		}
+	}
+}
+
+function removeDiceFromArray(dieToRemove, listToChange) {
+	for (let i = 0; i < dieToRemove; i++) {
+		removeSingleDieFromArray(dieToRemove[i], listToChange);
+	}
+}
+
+function clearTheseDice(diceList) {
+	if (!diceList || diceList.length === 0)
+		return;
+	for (let i = 0; i < diceList.length; i++) {
+		const die = diceList[i];
+		if (!die)
+			continue;
+		const dieObject = die.getObject();
+		if (!dieObject)
+			continue;
+		scene.remove(dieObject);
+		die.clear();
+	}
+}
+
+function highlightSpecialDice() {
+	if (!specialDice || specialDice.length === 0)
+		return;
+
+	const now: number = performance.now();
+
+	const hiddenDie = [];
+
+	const magicRingHueShift: number = Math.floor(Math.random() * 360);
+
+	for (let i = 0; i < specialDice.length; i++) {
+		const dieObject = specialDice[i].getObject();
+		if (dieObject === null)
+			continue;
+
+		if (dieObject.needToHideDie) {
+			if (dieObject.hideTime < now) {
+				dieObject.needToHideDie = false;
+				hideDie(dieObject);
+				hiddenDie.push(specialDice[i]);
+			}
+		}
+
+		if (dieObject.needToStartEffect) {
+			const effectStartTime: number = dieObject.removeTime + dieObject.effectStartOffset;
+			if (now > effectStartTime && dieObject.needToStartEffect) {
+
+				dieObject.needToStartEffect = false;
+
+				//dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
+
+				// die.dieValue is also available.
+				const screenPos: Vector = getScreenCoordinates(dieObject);
+				if (!screenPos)
+					continue;
+
+				if (dieObject.effectKind === DieEffect.Lucky) {
+					diceLayer.addLuckyRing(screenPos.x, screenPos.y);
+				}
+				if (dieObject.effectKind === DieEffect.Ring) {
+					diceLayer.addMagicRing(screenPos.x, screenPos.y, magicRingHueShift + Random.plusMinusBetween(10, 25));
+				}
+				else if (dieObject.effectKind === DieEffect.Fireball) {
+					//diceLayer.addD20Fire(screenPos.x, screenPos.y);
+					diceLayer.addFireball(screenPos.x, screenPos.y);
+					diceSounds.playFireball();
+				}
+				else if (dieObject.effectKind === DieEffect.Bomb) {
+					const hueShift: number = Math.floor(Math.random() * 360);
+					let saturation = 75;  // Reduce saturation for significant hue shifts 
+					if (hueShift < 15 || hueShift > 345)
+						saturation = 100;
+					diceLayer.addDiceBomb(screenPos.x, screenPos.y, hueShift, saturation, 100);
+					diceSounds.playDieBomb();
+					hideDieIn(dieObject, 700);
+				}
+				else if (dieObject.effectKind === DieEffect.Burst) {
+					let hueShift = 0;
+					const die = specialDice[i];
+					const hsl = rgbToHSL(die.diceColor);
+					let saturation = 100;
+					let brightness = 100;
+					if (hsl) {
+						hueShift = hsl.h;
+						saturation = hsl.s * 100;
+						brightness = (hsl.l - 0.5) * 100 + 100;
+					}
+					else if (die.playerID >= 0)
+						hueShift = diceLayer.getHueShift(die.playerID);
+					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, brightness);
+					diceSounds.playDieBurst();
+					hideDieIn(dieObject, 100);
+				}
+				else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
+					diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+					//diceLayer.playSteampunkTunnel();
+					//hideDieIn(die, 700);
+				}
+				else if (dieObject.effectKind === DieEffect.HandGrab) {
+					diceLayer.testDiceGrab(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+					//diceSounds.playHandGrab();
+					//hideDieIn(die, 41 * 30);
+				}
+				else if (dieObject.effectKind === DieEffect.ColoredSmoke) {
+					let saturation = 100;
+					let brightnessBase = 50;
+					const rand: number = Math.random() * 100;
+					if (rand < 5) {
+						saturation = 0;
+						brightnessBase = 110;
+					}
+					else if (rand < 10) {
+						saturation = 25;
+						brightnessBase = 100;
+					}
+					else if (rand < 25) {
+						saturation = 50;
+						brightnessBase = 90;
+					}
+					else if (rand < 75) {
+						saturation = 75;
+						brightnessBase = 70;
+					}
+
+					diceLayer.blowColoredSmoke(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
+					hideDie(dieObject);
+					hiddenDie.push(specialDice[i]);
+					diceSounds.playDiceBlow();
+				}
+			}
+		}
+	}
+	removeDiceFromArray(hiddenDie, specialDice);
+	removeDiceFromArray(hiddenDie, dice);
+	clearTheseDice(hiddenDie);
+}
+
+function diceRemainingInPlay(): number {
+	let count = 0;
+	for (let i in dice) {
+		if (dice[i].inPlay) {
+			count++;
+		}
+	}
+	return count;
 }
 
 function init() { // From Rolling.html example.
@@ -744,6 +975,142 @@ function init() { // From Rolling.html example.
 
 	const testingDiceRoller = false;
 
+	let lastRollDiceData;
+
+	function allDiceShouldBeDestroyedByNow() {
+		allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
+	}
+
+	function scaleFallingDice() {
+		if (!scalingDice || scalingDice.length === 0)
+			return;
+
+		const hiddenDie = [];
+		//let numDiceScaling = 0;
+		if (scalingDice && scalingDice.length > 0) {
+			for (let i = 0; i < scalingDice.length; i++) {
+
+				const dieObject = scalingDice[i].getObject();
+				if (dieObject === null)
+					continue;
+
+				const portalOpenTime: number = dieObject.removeTime + dieObject.effectStartOffset;
+
+				const now: number = performance.now();
+				let waitToFallTime: number;
+				if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
+					waitToFallTime = 35 * 30;
+				}
+				else if (dieObject.effectKind === DieEffect.HandGrab) {
+					waitToFallTime = 34 * 30;
+				}
+				else { // DieEffect.Portal
+					waitToFallTime = 700;
+				}
+
+				if (now > portalOpenTime && dieObject.needToStartEffect) {
+					dieObject.needToStartEffect = false;
+					const screenPos: Vector = getScreenCoordinates(dieObject);
+
+					if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
+						if (screenPos)
+							diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+						diceSounds.playSteampunkTunnel();
+					}
+					else if (dieObject.effectKind === DieEffect.HandGrab) {
+						let saturation = 100;
+						let hueShift: number;
+						if (DiceLayer.matchOozeToDieColor)
+							if (scalingDice[i].rollType !== DieCountsAs.totalScore && scalingDice[i].rollType != DieCountsAs.inspiration)
+								hueShift = 0;
+							else
+								hueShift = diceLayer.activePlayerHueShift;
+						else {
+							hueShift = getRandomRedBlueHueShift();
+							if (Math.random() < 0.1)
+								saturation = 0;
+						}
+
+						if (screenPos)
+							diceLayer.testDiceGrab(screenPos.x, screenPos.y, hueShift, saturation, 100);
+						diceSounds.playHandGrab();
+					}
+					else {  // DieEffect.Portal
+						if (screenPos)
+							diceLayer.addPortal(screenPos.x, screenPos.y, getRandomRedBlueHueShift(), 100, 100);
+						diceSounds.playOpenDiePortal();
+					}
+				}
+
+				const startFallTime: number = dieObject.removeTime + waitToFallTime + dieObject.effectStartOffset;
+
+				if (now < startFallTime)
+					continue;
+
+				let totalFrames: number;
+				const fps30 = 33; // ms
+
+				let totalScaleDistance: number;
+
+				const elapsedTime: number = now - startFallTime;
+
+				if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
+					totalFrames = 45;
+					totalScaleDistance = 0.9;
+				}
+				else if (dieObject.effectKind === DieEffect.HandGrab) {
+					totalFrames = 30;
+					totalScaleDistance = 0.99;
+				}
+				else {
+					totalFrames = 40;
+					totalScaleDistance = 0.99;
+				}
+
+				const totalTimeToScale: number = fps30 * totalFrames;  // ms
+
+				if (elapsedTime > totalTimeToScale) {
+					if (dieObject.hideOnScaleStop) {
+						dieObject.hideOnScaleStop = false;
+						hideDie(dieObject);
+						hiddenDie.push(scalingDice[i]);
+					}
+					continue;
+				}
+
+				if (dieObject.needToDrop === true) {
+
+					dieObject.needToDrop = false;
+				}
+
+				const percentTraveled: number = elapsedTime / totalTimeToScale;
+
+				const distanceTraveled: number = percentTraveled * totalScaleDistance;
+
+				const newScale: number = 1 - distanceTraveled;
+
+				if (newScale <= hiddenDieScale) {
+					hideDie(dieObject);
+					hiddenDie.push(scalingDice[i]);
+				}
+				else {
+					//numDiceScaling++;
+					dieObject.scale.set(newScale, newScale, newScale);
+				}
+				//if (newScale < 0.35) {
+				//  bodiesToRemove.push(die);
+				//  // @ts-ignore - DiceManager
+				//  //die.body.collisionResponse = 1;
+				//  //die.body.mass = 1;
+				//  //DiceManager.world.remove(die.body);
+				//}
+			}
+		}
+		removeDiceFromArray(hiddenDie, scalingDice);
+		removeDiceFromArray(hiddenDie, dice);
+		clearTheseDice(hiddenDie);
+	}
+
 	function updatePhysics() {
 		//  if (bodiesToRemove && bodiesToRemove.length > 0) {
 		//    console.log('removing bodies...');
@@ -768,12 +1135,12 @@ function init() { // From Rolling.html example.
 		const numDiceStillInPlay: number = diceRemainingInPlay();
 		const stillScaling: boolean = scalingDice !== null && scalingDice.length > 0;
 		const stillHaveSpecialDice: boolean = specialDice !== null && specialDice.length > 0;
-		//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
+		console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
 
 		if (!animationsShouldBeDone && numDiceStillInPlay === 0 && allDiceHaveStoppedRolling &&
 			!stillScaling && !stillHaveSpecialDice) {
 			animationsShouldBeDone = true;
-			//console.log('animationsShouldBeDone = true;');
+			console.log('animationsShouldBeDone = true;');
 			diceRollData = null;
 			dice = [];
 			setTimeout(allDiceShouldBeDestroyedByNow, 3000);
@@ -1169,6 +1536,7 @@ function getRollResults(): RollResults {
 	let singlePlayerId = 0;
 	let playerIdForTextMessages = -1;
 
+	console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
 	//console.log(`getRollResults - dice.length = ${dice.length}`);
 	
 	for (let i = 0; i < dice.length; i++) {
@@ -1185,13 +1553,24 @@ function getRollResults(): RollResults {
 			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.name === die.playerName);
 
 			if (playerRoll) {
+				console.log('Found playerRoll!');
 				playerRoll.roll += topNumber;
 				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
 			}
 			else {
 				// TODO: If coming from DiceDtos, get the correct modifier (don't just use the player's modifier).
+				console.log(`playerRoll not found for ${die.playerName}.`);
+
 				let modifier = 0;
-				if (diceLayer.players && diceLayer.players.length > 0) {
+				if (die.playerID < 0) {  // It's an in-game creature.
+					for (let i = 0; i < diceRollData.diceDtos.length; i++) {
+						if (diceRollData.diceDtos[i].CreatureId === die.playerID){
+							modifier = diceRollData.diceDtos[i].Modifier;
+							break;
+						}
+					}
+				}
+				else if (diceLayer.players && diceLayer.players.length > 0) {
 					const player: Character = diceLayer.getPlayer(die.playerID);
 					modifier = getModifier(diceRollData, player);
 				}
@@ -1491,10 +1870,10 @@ function checkWildMagicBonusRolls() {
 }
 
 function announceWildMagicResult(totalRoll: number) {
-	var mp3BaseName: string = '99-00';
+	let mp3BaseName = '99-00';
 	if (totalRoll > 0 && totalRoll < 99) {
-		let secondNumber: number = Math.floor((totalRoll + 1) / 2) * 2;
-		let firstNumber: number = secondNumber - 1;
+		const secondNumber: number = Math.floor((totalRoll + 1) / 2) * 2;
+		const firstNumber: number = secondNumber - 1;
 		let firstStr: string = firstNumber.toString();
 		if (firstNumber < 10)
 			firstStr = '0' + firstStr;
@@ -1507,7 +1886,7 @@ function announceWildMagicResult(totalRoll: number) {
 	diceSounds.safePlayMp3('WildMagic/' + mp3BaseName);
 }
 
-const bubbleId: string = 'bubble';
+const bubbleId = 'bubble';
 
 function freezeDie(die: any) {
 	let dieObject: any = die.getObject();
@@ -1694,6 +2073,7 @@ function removeDieEffects() {
 function removeRemainingDice(): boolean {
 	// TODO: Make sure we can call this robustly at any time.
 	let dieEffectInterval = 0;
+	animationsShouldBeDone = false;
 	removeDieEffects();
 	let diceInPlayWereRemoved = false;
 	const effectOverride = getRandomEffect();
@@ -1713,356 +2093,6 @@ function getRandomRedBlueHueShift() {
 		hueShift = Math.floor(Math.random() * 360);
 	}
 	return hueShift;
-}
-
-function scaleFallingDice() {
-	if (!scalingDice || scalingDice.length === 0)
-		return;
-
-	const hiddenDie = [];
-	//let numDiceScaling = 0;
-	if (scalingDice && scalingDice.length > 0) {
-		for (let i = 0; i < scalingDice.length; i++) {
-
-			const dieObject = scalingDice[i].getObject();
-			if (dieObject === null)
-				continue;
-
-			const portalOpenTime: number = dieObject.removeTime + dieObject.effectStartOffset;
-
-			const now: number = performance.now();
-			let waitToFallTime: number;
-			if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-				waitToFallTime = 35 * 30;
-			}
-			else if (dieObject.effectKind === DieEffect.HandGrab) {
-				waitToFallTime = 34 * 30;
-			}
-			else { // DieEffect.Portal
-				waitToFallTime = 700;
-			}
-
-			if (now > portalOpenTime && dieObject.needToStartEffect) {
-				dieObject.needToStartEffect = false;
-				const screenPos: Vector = getScreenCoordinates(dieObject);
-
-				if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-					if (screenPos)
-						diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
-					diceSounds.playSteampunkTunnel();
-				}
-				else if (dieObject.effectKind === DieEffect.HandGrab) {
-					let saturation = 100;
-					let hueShift: number;
-					if (DiceLayer.matchOozeToDieColor)
-						if (scalingDice[i].rollType !== DieCountsAs.totalScore && scalingDice[i].rollType != DieCountsAs.inspiration)
-							hueShift = 0;
-						else
-							hueShift = diceLayer.activePlayerHueShift;
-					else {
-						hueShift = getRandomRedBlueHueShift();
-						if (Math.random() < 0.1)
-							saturation = 0;
-					}
-
-					if (screenPos)
-						diceLayer.testDiceGrab(screenPos.x, screenPos.y, hueShift, saturation, 100);
-					diceSounds.playHandGrab();
-				}
-				else {  // DieEffect.Portal
-					if (screenPos)
-						diceLayer.addPortal(screenPos.x, screenPos.y, getRandomRedBlueHueShift(), 100, 100);
-					diceSounds.playOpenDiePortal();
-				}
-			}
-
-			const startFallTime: number = dieObject.removeTime + waitToFallTime + dieObject.effectStartOffset;
-
-			if (now < startFallTime)
-				continue;
-
-			let totalFrames: number;
-			const fps30 = 33; // ms
-
-			let totalScaleDistance: number;
-
-			const elapsedTime: number = now - startFallTime;
-
-			if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-				totalFrames = 45;
-				totalScaleDistance = 0.9;
-			}
-			else if (dieObject.effectKind === DieEffect.HandGrab) {
-				totalFrames = 30;
-				totalScaleDistance = 0.99;
-			}
-			else {
-				totalFrames = 40;
-				totalScaleDistance = 0.99;
-			}
-
-			const totalTimeToScale: number = fps30 * totalFrames;  // ms
-
-			if (elapsedTime > totalTimeToScale) {
-				if (dieObject.hideOnScaleStop) {
-					dieObject.hideOnScaleStop = false;
-					hideDie(dieObject);
-					hiddenDie.push(scalingDice[i]);
-				}
-				continue;
-			}
-
-			if (dieObject.needToDrop === true) {
-
-				dieObject.needToDrop = false;
-			}
-
-			const percentTraveled: number = elapsedTime / totalTimeToScale;
-
-			const distanceTraveled: number = percentTraveled * totalScaleDistance;
-
-			const newScale: number = 1 - distanceTraveled;
-
-			if (newScale <= hiddenDieScale) {
-				hideDie(dieObject);
-				hiddenDie.push(scalingDice[i]);
-			}
-			else {
-				//numDiceScaling++;
-				dieObject.scale.set(newScale, newScale, newScale);
-			}
-			//if (newScale < 0.35) {
-			//  bodiesToRemove.push(die);
-			//  // @ts-ignore - DiceManager
-			//  //die.body.collisionResponse = 1;
-			//  //die.body.mass = 1;
-			//  //DiceManager.world.remove(die.body);
-			//}
-		}
-	}
-	removeDiceFromArray(hiddenDie, scalingDice);
-	removeDiceFromArray(hiddenDie, dice);
-	clearTheseDice(hiddenDie);
-}
-
-function hideDieIn(dieObject: any, ms: number) {
-	dieObject.hideTime = performance.now() + ms;
-	dieObject.needToHideDie = true;
-}
-
-const hiddenDieScale: number = 0.01;
-
-function hideDie(dieObject: any) {
-	dieObject.scale.set(hiddenDieScale, hiddenDieScale, hiddenDieScale);
-	dieObject.isHidden = true;
-	clearAllDiceIfHidden();
-}
-
-function clearAllDiceIfHidden() {
-	for (let i = 0; i < dice.length; i++) {
-		let die: any = dice[i];
-		let dieObject = die.getObject();
-		if (dieObject === null)
-			continue;
-		if (!dieObject.isHidden)
-			return;
-	}
-	clearAllDice();
-}
-
-function rgbToHSL(rgb) {
-	// strip the leading # if it's there
-	rgb = rgb.replace(/^\s*#|\s*$/g, '');
-
-	// convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
-	if (rgb.length == 3) {
-		rgb = rgb.replace(/(.)/g, '$1$1');
-	}
-
-	var r = parseInt(rgb.substr(0, 2), 16) / 255,
-		g = parseInt(rgb.substr(2, 2), 16) / 255,
-		b = parseInt(rgb.substr(4, 2), 16) / 255,
-		cMax = Math.max(r, g, b),
-		cMin = Math.min(r, g, b),
-		delta = cMax - cMin,
-		l = (cMax + cMin) / 2,
-		h = 0,
-		s = 0;
-
-	if (delta == 0) {
-		h = 0;
-	}
-	else if (cMax == r) {
-		h = 60 * (((g - b) / delta) % 6);
-	}
-	else if (cMax == g) {
-		h = 60 * (((b - r) / delta) + 2);
-	}
-	else {
-		h = 60 * (((r - g) / delta) + 4);
-	}
-
-	if (delta == 0) {
-		s = 0;
-	}
-	else {
-		s = (delta / (1 - Math.abs(2 * l - 1)))
-	}
-
-	return {
-		h: h,
-		s: s,
-		l: l
-	}
-}
-
-
-function highlightSpecialDice() {
-	if (!specialDice || specialDice.length == 0)
-		return;
-
-
-	let now: number = performance.now();
-
-	var hiddenDie = [];
-
-	let magicRingHueShift: number = Math.floor(Math.random() * 360);
-
-	for (let i = 0; i < specialDice.length; i++) {
-		let dieObject = specialDice[i].getObject();
-		if (dieObject === null)
-			continue;
-
-		if (dieObject.needToHideDie) {
-			if (dieObject.hideTime < now) {
-				dieObject.needToHideDie = false;
-				hideDie(dieObject);
-				hiddenDie.push(specialDice[i]);
-			}
-		}
-
-		if (dieObject.needToStartEffect) {
-			let effectStartTime: number = dieObject.removeTime + dieObject.effectStartOffset;
-			if (now > effectStartTime && dieObject.needToStartEffect) {
-
-				dieObject.needToStartEffect = false;
-
-				//dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
-
-				// die.dieValue is also available.
-				let screenPos: Vector = getScreenCoordinates(dieObject);
-				if (!screenPos)
-					continue;
-
-				if (dieObject.effectKind === DieEffect.Lucky) {
-					diceLayer.addLuckyRing(screenPos.x, screenPos.y);
-				}
-				if (dieObject.effectKind === DieEffect.Ring) {
-					diceLayer.addMagicRing(screenPos.x, screenPos.y, magicRingHueShift + Random.plusMinusBetween(10, 25));
-				}
-				else if (dieObject.effectKind === DieEffect.Fireball) {
-					//diceLayer.addD20Fire(screenPos.x, screenPos.y);
-					diceLayer.addFireball(screenPos.x, screenPos.y);
-					diceSounds.playFireball();
-				}
-				else if (dieObject.effectKind === DieEffect.Bomb) {
-					const hueShift: number = Math.floor(Math.random() * 360);
-					let saturation = 75;  // Reduce saturation for significant hue shifts 
-					if (hueShift < 15 || hueShift > 345)
-						saturation = 100;
-					diceLayer.addDiceBomb(screenPos.x, screenPos.y, hueShift, saturation, 100);
-					diceSounds.playDieBomb();
-					hideDieIn(dieObject, 700);
-				}
-				else if (dieObject.effectKind === DieEffect.Burst) {
-					let hueShift: number = 0;
-					let die: any = specialDice[i];
-					let hsl = rgbToHSL(die.diceColor);
-					let saturation: number = 100;
-					let brightness: number = 100;
-					if (hsl) {
-						hueShift = hsl.h;
-						saturation = hsl.s * 100;
-						brightness = (hsl.l - 0.5) * 100 + 100;
-					}
-					else if (die.playerID >= 0)
-						hueShift = diceLayer.getHueShift(die.playerID);
-					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, brightness);
-					diceSounds.playDieBurst();
-					hideDieIn(dieObject, 100);
-				}
-				else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-					diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
-					//diceLayer.playSteampunkTunnel();
-					//hideDieIn(die, 700);
-				}
-				else if (dieObject.effectKind === DieEffect.HandGrab) {
-					diceLayer.testDiceGrab(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
-					//diceSounds.playHandGrab();
-					//hideDieIn(die, 41 * 30);
-				}
-				else if (dieObject.effectKind === DieEffect.ColoredSmoke) {
-					let saturation: number = 100;
-					let brightnessBase: number = 50;
-					let rand: number = Math.random() * 100;
-					if (rand < 5) {
-						saturation = 0;
-						brightnessBase = 110;
-					}
-					else if (rand < 10) {
-						saturation = 25;
-						brightnessBase = 100;
-					}
-					else if (rand < 25) {
-						saturation = 50;
-						brightnessBase = 90;
-					}
-					else if (rand < 75) {
-						saturation = 75;
-						brightnessBase = 70;
-					}
-
-					diceLayer.blowColoredSmoke(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
-					hideDie(dieObject);
-					hiddenDie.push(specialDice[i]);
-					diceSounds.playDiceBlow();
-				}
-			}
-		}
-	}
-	removeDiceFromArray(hiddenDie, specialDice);
-	removeDiceFromArray(hiddenDie, dice);
-	clearTheseDice(hiddenDie);
-}
-
-function clearTheseDice(diceList: any) {
-	if (!diceList || diceList.length === 0)
-		return;
-	for (let i = 0; i < diceList.length; i++) {
-		let die = diceList[i];
-		if (!die)
-			continue;
-		let dieObject = die.getObject();
-		if (!dieObject)
-			continue;
-		scene.remove(dieObject);
-		die.clear();
-	}
-}
-
-function removeSingleDieFromArray(dieToRemove: any, listToChange: any) {
-	for (let i = 0; i < listToChange.length; i++) {
-		if (dieToRemove === listToChange[i]) {
-			listToChange.splice(i, 1);
-			return;
-		}
-	}
-}
-
-function removeDiceFromArray(dieToRemove: any, listToChange: any) {
-	for (let i = 0; i < dieToRemove; i++) {
-		removeSingleDieFromArray(dieToRemove[i], listToChange);
-	}
 }
 
 function showSpecialLabels(onlyBonusDice: boolean = false) {
@@ -2435,24 +2465,6 @@ function removeD20s(): number {
 		}
 	}
 	return edgeRollValue;
-}
-
-let animationsShouldBeDone: boolean;
-
-function diceRemainingInPlay(): number {
-	let count = 0;
-	for (let i in dice) {
-		if (dice[i].inPlay) {
-			count++;
-		}
-	}
-	return count;
-}
-
-let lastRollDiceData: any;
-
-function allDiceShouldBeDestroyedByNow() {
-	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
 }
 
 function prepareBaseDie(die: any, throwPower: number, xPositionModifier = 0) {
@@ -3416,6 +3428,8 @@ function prepareDiceDtoRoll(diceRollDto: DiceRollData, xPositionModifier: number
 		const diceDto: DiceDto = diceRollDto.diceDtos[i];
 		addDiceFromDto(diceDto, xPositionModifier);
 	}
+
+	diceRollData.hasMultiPlayerDice = diceRollDto.diceDtos.length > 0;  // Any DiceDtos (even one) will go in a multiplayerSummary!
 }
 
 function prepareLegacyRoll(xPositionModifier: number) {

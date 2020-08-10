@@ -7,16 +7,19 @@ namespace DHDM
 {
 	public class SpellSavingThrowQueueEntry : DieRollQueueEntry
 	{
+		public Ability SavingThrowAbility { get; set; }
 		public string SpellName { get; set; }
 
 		public SpellSavingThrowQueueEntry()
 		{
 			RollType = DiceRollType.SavingThrow;
+			RollScope = RollScope.InGameCreatures;
 		}
 
-		public SpellSavingThrowQueueEntry(string spellName): this()
+		public SpellSavingThrowQueueEntry(string spellName, Ability savingThrowAbility) : this()
 		{
 			SpellName = spellName;
+			SavingThrowAbility = savingThrowAbility;
 		}
 		void AddDieStr(string dieStr)
 		{

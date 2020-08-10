@@ -240,12 +240,12 @@ function needToGetCoins(userId: string) {
 }
 
 function diceHaveStoppedRolling(diceData: string) {
-	if (connection.connectionState == 1)
+	if (connection.connectionState === 1)
 		connection.invoke("DiceHaveStoppedRolling", diceData);
 }
 
 function allDiceHaveBeenDestroyed(diceData: string) {
-	if (connection.connectionState == 1)
+	if (connection.connectionState === 1)
 		connection.invoke("AllDiceHaveBeenDestroyed", diceData);
 }
 

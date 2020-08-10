@@ -506,6 +506,7 @@ namespace DndCore
 				}
 			}
 		}
+
 		public static Monster From(MonsterDto monsterDto)
 		{
 			Monster monster = new Monster();
@@ -517,6 +518,10 @@ namespace DndCore
 			monster.SetSavingThrowModsFrom(monsterDto.SavingThrows);
 			monster.SetSpeedFromStr(monsterDto.Speed);
 			monster.SetSkillCheckBonuses(monsterDto.Skills);
+			monster.SetDamageImmunities(monsterDto.DamageImmunities);
+			monster.SetConditionImmunities(monsterDto.ConditionImmunities);
+			monster.SetDamageVulnerabilities(monsterDto.DamageVulnerabilities);
+			monster.SetDamageResistances(monsterDto.DamageResistances);
 			monster.SetSensesFromStr(monsterDto.Senses);
 			monster.SetChallengeRatingXpFromStr(monsterDto.Challenge);
 			monster.ImageUrl = monsterDto.img_url;

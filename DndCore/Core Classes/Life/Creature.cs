@@ -639,7 +639,9 @@ namespace DndCore
 			}
 
 			if (IsResistantTo(damageType, attackKind))
-				points /= 2;
+				points = DndUtils.HalveValue(points);
+			else if (IsVulnerableTo(damageType, attackKind))
+				points *= 2;
 
 			LastDamageTaken = damageType;
 
@@ -967,6 +969,74 @@ namespace DndCore
 				hitPoints = maxHitPoints;
 			else
 				hitPoints += deltaHealth;
+		}
+
+		void GetDamageAndAttackType(string damageStr, out DamageType damageType, out AttackKind attackKind)
+		{
+			attackKind = AttackKind.Any;
+			if (damageStr.ToLower().StartsWith("and "))
+				damageStr = damageStr.Substring(4);
+			int spaceIndex = damageStr.IndexOf(' ');
+			if (spaceIndex > 0)
+			{
+				string remainingStr = damageStr.Substring(spaceIndex).Trim();
+				if (remainingStr.ToLower().Contains("nonmagical") || remainingStr.ToLower().Contains("non-magical"))
+					attackKind = AttackKind.NonMagical;
+				else if (remainingStr.ToLower().Contains("magical"))
+					attackKind = AttackKind.Magical;
+				damageStr = damageStr.Substring(0, spaceIndex);
+			}
+			damageType = DndUtils.ToDamage(damageStr);
+		}
+		public void SetDamageImmunities(string damageImmunities)
+		{
+			if (string.IsNullOrWhiteSpace(damageImmunities))
+				return;
+
+			damageImmunities = damageImmunities.Replace(';', ',');
+			string[] parts = damageImmunities.Split(',');
+			foreach (string part in parts)
+			{
+				GetDamageAndAttackType(part.Trim(), out DamageType damage, out AttackKind attackKind);
+				if (damage != DamageType.None)
+					AddDamageImmunity(damage, attackKind);
+			}
+		}
+		public void SetDamageResistances(string damageResistances)
+		{
+			if (string.IsNullOrWhiteSpace(damageResistances))
+				return;
+
+			damageResistances = damageResistances.Replace(';', ',');
+			string[] parts = damageResistances.Split(',');
+			foreach (string part in parts)
+			{
+				GetDamageAndAttackType(part.Trim(), out DamageType damage, out AttackKind attackKind);
+				if (damage != DamageType.None)
+					AddDamageResistance(damage, attackKind);
+			}
+		}
+
+		public void SetConditionImmunities(string conditionImmunities)
+		{
+			//if (!string.IsNullOrWhiteSpace(conditionImmunities))
+			//{
+			//	System.Diagnostics.Debugger.Break();
+			//}
+		}
+		public void SetDamageVulnerabilities(string damageVulnerabilities)
+		{
+			if (string.IsNullOrWhiteSpace(damageVulnerabilities))
+				return;
+
+			damageVulnerabilities = damageVulnerabilities.Replace(';', ',');
+			string[] parts = damageVulnerabilities.Split(',');
+			foreach (string part in parts)
+			{
+				GetDamageAndAttackType(part.Trim(), out DamageType damage, out AttackKind attackKind);
+				if (damage != DamageType.None)
+					AddDamageVulnerability(damage, attackKind);
+			}
 		}
 	}
 }

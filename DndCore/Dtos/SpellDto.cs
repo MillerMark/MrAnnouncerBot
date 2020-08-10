@@ -49,6 +49,8 @@ namespace DndCore
 		public string onReceived { get; set; }
 		public string onCast { get; set; }
 		public string onPreparationComplete { get; set; }
+		public string onTargetFailsSave { get; set; }
+		public string onTargetSaves { get; set; }
 		public string onPreparing { get; set; }
 		public string onGetAttackAbility { get; set; }
 		public string onPlayerPreparesAttack { get; set; }

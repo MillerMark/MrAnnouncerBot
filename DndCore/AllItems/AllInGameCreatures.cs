@@ -24,6 +24,11 @@ namespace DndCore
 			return Creatures.FirstOrDefault(x => x.Index == index);
 		}
 
+		public static InGameCreature GetByCreature(Creature creature)
+		{
+			return Creatures.FirstOrDefault(x => x.Creature == creature);
+		}
+
 		public static void SaveHp()
 		{
 			// TODO: Optimize this code to be more efficient (takes about 6 seconds).
