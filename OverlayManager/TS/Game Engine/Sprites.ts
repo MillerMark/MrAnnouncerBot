@@ -332,15 +332,14 @@
 
 	animateFrames(nowMs: number): void {
 		for (let i = this.sprites.length - 1; i >= 0; i--) {
-			let sprite: SpriteProxy = this.sprites[i];
-			sprite.animate(nowMs);
+			this.sprites[i].animate(nowMs);
 		}
 	}
 
 	advanceFrames(nowMs: number) {
 		this.animateFrames(nowMs);
 
-		if (this.sprites.length == 0 || this.animationStyle == AnimationStyle.Static)
+		if (this.sprites.length === 0 || this.animationStyle === AnimationStyle.Static)
 			return;
 
 		const startOffset: number = this.returnFrameIndex;
@@ -366,11 +365,11 @@
 			const saveFrameIndex: number = frameIndex;
 
 			if (segmentSize > 0 && frameIndex >= startOffset) {
-				//const segmentStartIndex: number = frameIndex - (frameIndex - startOffset) % this.segmentSize; // << Bug was here.
-				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;  // << Fix.
-				let segmentEndIndex: number = segmentStartIndex + segmentSize;
+				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;
 
 				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;;0.03114,0.03214)
+
+				let segmentEndIndex: number = segmentStartIndex + segmentSize;
 
 				if (sprite.playToEndOnExpire && sprite.expirationDate && sprite.fadeOutTime !== undefined && sprite.expirationDate <= nowMs + sprite.fadeOutTime)
 					segmentEndIndex = frameCount;

@@ -38,8 +38,8 @@
 	}
 
 	private addDroppingCoin(sprites: Sprites, x: number, now: number) {
-		let y: number = 0;
-		let sprite: SpriteProxy = sprites.add(x, y, -1);
+		const y = 0;
+		const sprite: SpriteProxy = sprites.add(x, y, -1);
 		sprite.verticalThrustOverride = 9.8;
 		if (Random.chancePercent(50))
 			sprite.animationReverseOverride = true;
@@ -60,16 +60,16 @@
 	static readonly gravity: number = 9.8;
 
 	private addFlyingCoin(sprites: Sprites, x: number, now: number) {
-		let y: number = screenHeight;
+		const y: number = screenHeight;
 		x += Random.between(-100, 100);
-		let sprite: SpriteProxy = sprites.add(x, y, -1);
+		const sprite: SpriteProxy = sprites.add(x, y, -1);
 		sprite.verticalThrustOverride = CoinManager.gravity;
 		if (Random.chancePercent(50))
 			sprite.animationReverseOverride = true;
 		sprite.frameIntervalOverride = fps30 * Random.between(0.5, 2);
 		sprite.timeStart = now + Random.between(0, 800);
 
-		let airTime: number = CoinManager.getAirTimeToDmBoxSec();
+		const airTime: number = CoinManager.getAirTimeToDmBoxSec();
 
 		sprite.rotation = Random.max(360);
 		sprite.autoRotationDegeesPerSecond = Random.between(-10, 10);

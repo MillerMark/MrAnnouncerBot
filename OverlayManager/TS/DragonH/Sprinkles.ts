@@ -648,10 +648,10 @@ class Sprinkles {
 
 	getActiveAnimationPair(now: number): AnimationPair {
 		for (let i = 0; i < this.parts.length; i++) {
-			let hornBodyPair: HornBodyPair = this.parts[i];
+			const hornBodyPair: HornBodyPair = this.parts[i];
 			if (hornBodyPair.body.sprites.length > 0) {
-				let body: SpriteProxy = hornBodyPair.body.sprites[0];
-				let notYetGone: boolean = body.expirationDate && body.stillAlive(now) && !body.fadingOut(now);
+				const body: SpriteProxy = hornBodyPair.body.sprites[0];
+				const notYetGone: boolean = body.expirationDate && body.stillAlive(now) && !body.fadingOut(now);
 				let stillHasFramesBeforeCycleComplete: boolean;
 				if (body.animationReverseOverride)
 					stillHasFramesBeforeCycleComplete = body.frameIndex > 0;
@@ -659,7 +659,7 @@ class Sprinkles {
 					stillHasFramesBeforeCycleComplete = body.frameIndex < hornBodyPair.body.baseAnimation.frameCount - 1;
 
 				if (notYetGone || stillHasFramesBeforeCycleComplete) {
-					let horn: SpriteProxy = hornBodyPair.horn.sprites[0];
+					const horn: SpriteProxy = hornBodyPair.horn.sprites[0];
 					return new AnimationPair(body, horn, hornBodyPair.horn.baseAnimation.frameCount);
 				}
 			}
@@ -668,12 +668,12 @@ class Sprinkles {
 	}
 
 	finishActiveAnimation(now: number): void {
-		let animationPair: AnimationPair = this.getActiveAnimationPair(now);
+		const animationPair: AnimationPair = this.getActiveAnimationPair(now);
 		if (!animationPair)
 			return;
 
-		let movingForward: boolean = !animationPair.body.animationReverseOverride;
-		let movingBackwards: boolean = !movingForward;
+		const movingForward = !animationPair.body.animationReverseOverride;
+		const movingBackwards = !movingForward;
 		if (animationPair.body.frameIndex < animationPair.frameCount / 2) {
 			if (movingForward) {
 				animationPair.body.animationReverseOverride = true;
@@ -856,7 +856,7 @@ class Sprinkles {
 		body.addOnFrameAdvanceCallback(this.onFrameAdvanced.bind(this))
 		body.addOnCycleCallback(this.animationCycled.bind(this));
 
-		let horn = hornBodyPair.horn.addShifted(this.x, this.y, startingFrameIndex, this.hornHue); // 30 degrees of hue shift every second.
+		const horn = hornBodyPair.horn.addShifted(this.x, this.y, startingFrameIndex, this.hornHue); // 30 degrees of hue shift every second.
 		horn.horizontalScale = this.horizontalScale;
 		horn.name = hornBodyPair.name + Sprinkles.HornModifier;
 		horn.addOnCycleCallback(this.animationCycled.bind(this));
@@ -872,18 +872,18 @@ class Sprinkles {
 	onFrameAdvanced(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number): void {
 		if (sprite.name.endsWith(Sprinkles.BodyModifier)) {
 			if (sprite instanceof ColorShiftingSpriteProxy) {
-				let bodySprite: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>sprite;
-				if (bodySprite.hueShiftPerSecond == 0)
+				const bodySprite: ColorShiftingSpriteProxy = sprite as ColorShiftingSpriteProxy;
+				if (bodySprite.hueShiftPerSecond === 0)
 					return;
 
-				let currentHueShift: number = bodySprite.getCurrentHueShift(now);
-				let exceededForwardLimit: boolean = bodySprite.hueShiftPerSecond > 0 && currentHueShift > Sprinkles.forwardsBodyHueShiftMaxValue;
+				const currentHueShift: number = bodySprite.getCurrentHueShift(now);
+				const exceededForwardLimit: boolean = bodySprite.hueShiftPerSecond > 0 && currentHueShift > Sprinkles.forwardsBodyHueShiftMaxValue;
 				if (exceededForwardLimit) {
 					bodySprite.setColorShiftMilestone(now);
 					bodySprite.hueShiftPerSecond = -Math.abs(bodySprite.hueShiftPerSecond);
 				}
 				else {
-					let exceededBackwardLimit: boolean = bodySprite.hueShiftPerSecond < 0 && currentHueShift < Sprinkles.backwardsBodyHueShiftMinValue;
+					const exceededBackwardLimit: boolean = bodySprite.hueShiftPerSecond < 0 && currentHueShift < Sprinkles.backwardsBodyHueShiftMinValue;
 					if (exceededBackwardLimit) {
 						bodySprite.setColorShiftMilestone(now);
 						bodySprite.hueShiftPerSecond = Math.abs(bodySprite.hueShiftPerSecond);
