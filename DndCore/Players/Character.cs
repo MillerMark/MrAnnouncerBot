@@ -15,7 +15,9 @@ namespace DndCore
 	[TabName("Players")]
 	public class Character : Creature
 	{
-		// HACK: Don't be mad - we are doing this wrapper for serialization.
+		public event SpellChangedEventHandler ConcentratedSpellChanged;
+
+		// HACK: Don't be mad at this name property storing to the ancestor's field of the exact same name - we are doing this wrapper to support both serialization to Google Sheets as well as JSON to SignalR serialization to legacy TypeScript code.
 		[Indexer]
 		public new string name { get => base.name; set => base.name = value; }
 
@@ -32,9 +34,10 @@ namespace DndCore
 				return -1;
 			}
 		}
-		
+
 		//string wildShapeCreatureName;
 		Creature wildShape;
+		[JsonIgnore]
 		public Creature WildShape
 		{
 			get
@@ -55,6 +58,7 @@ namespace DndCore
 
 		public bool Hidden { get; set; }
 
+		[JsonIgnore]
 		public string WildShapeCreatureKind
 		{
 			get
@@ -166,6 +170,7 @@ namespace DndCore
 
 		[JsonIgnore]
 		public Queue<SpellEffect> additionalSpellHitEffects = new Queue<SpellEffect>();
+
 		[JsonIgnore]
 		public Queue<SpellEffect> additionalSpellCastEffects = new Queue<SpellEffect>();
 
@@ -232,10 +237,10 @@ namespace DndCore
 
 		[JsonIgnore]
 		public int attackOffsetThisRoll = 0;
-		[JsonIgnore]
-		bool casting; // TODO: Delete this.
+
 		[JsonIgnore]
 		public Ability checkingAbilities = Ability.none;
+
 		[JsonIgnore]
 		public Skills checkingSkills = Skills.none;
 
@@ -248,12 +253,33 @@ namespace DndCore
 		[JsonIgnore]
 		public int damageOffsetThisRoll = 0;
 
+		[JsonIgnore]
 		public ActiveSpellData spellPrepared;
+
+		[JsonIgnore]
 		public ActiveSpellData spellActivelyCasting;
+
+		[JsonIgnore]
 		public ActiveSpellData spellPreviouslyCasting;
 
-		public bool forceShowSpell = false;
+		[JsonIgnore]
+		public bool IsActive { get; set; }
 
+		public ActiveSpellData ActiveSpell
+		{
+			get
+			{
+				if (!IsActive)
+					return null;
+				if (spellPrepared != null)
+					return spellPrepared;
+				if (spellActivelyCasting != null)
+					return spellActivelyCasting;
+				return spellPreviouslyCasting;
+			}
+		}
+
+		public bool forceShowSpell = false;
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
 		public bool deathSaveDeath3 = false;
@@ -361,10 +387,9 @@ namespace DndCore
 		[JsonIgnore]
 		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
 
-
-
 		public List<CharacterClass> Classes { get; set; } = new List<CharacterClass>();
 
+		[JsonIgnore]
 		public string ClassLevelStr
 		{
 			get
@@ -656,10 +681,13 @@ namespace DndCore
 				return hasProficiencyBonusForSkill(Skills.survival);
 			}
 		}
+
 		[JsonIgnore]
 		public List<KnownSpell> KnownSpells { get; private set; } = new List<KnownSpell>();
 
+		[JsonIgnore]
 		public int leftMostPriority { get; set; }
+
 		public int level
 		{
 			get
@@ -950,6 +978,7 @@ namespace DndCore
 				return GetSpellSaveDC();
 			}
 		}
+
 		[Ask("Weapon is Two-handed")]
 		public bool TwoHanded { get; set; }  // TODO: Implement this + test cases.
 
@@ -1084,6 +1113,7 @@ namespace DndCore
 			carriedAmmunition.Count = count;
 			CarriedAmmunition.Add(carriedAmmunition);
 		}
+
 		void AddAmmunitionFrom(string ammunitionStr)
 		{
 			if (string.IsNullOrWhiteSpace(ammunitionStr))
@@ -1108,6 +1138,7 @@ namespace DndCore
 			additionalDice.Add(diceStr);
 			additionalDiceThisRoll = string.Join(",", additionalDice);
 		}
+
 		public void ReplaceDamageDice(string diceStr)
 		{
 			overrideReplaceDamageDice = diceStr;
@@ -1309,6 +1340,11 @@ namespace DndCore
 			// TODO: Implement this!
 		}
 
+		protected virtual void OnConcentratedSpellChanged(object sender, SpellChangedEventArgs e)
+		{
+			ConcentratedSpellChanged?.Invoke(sender, e);
+		}
+
 		public void BreakConcentration()
 		{
 			if (concentratedSpell == null)
@@ -1319,6 +1355,7 @@ namespace DndCore
 				OnSpellDispelled(this, new CastedSpellEventArgs(Game, concentratedSpell));
 				concentratedSpell.Dispel();
 			}
+			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.BrokeConcentration));
 			concentratedSpell = null;
 		}
 
@@ -1336,6 +1373,7 @@ namespace DndCore
 		{
 			BreakConcentration();
 			concentratedSpell = spell;
+			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustCast));
 		}
 
 		public void CheckConcentration(CastedSpell castedSpell)
@@ -1404,7 +1442,10 @@ namespace DndCore
 			if (Game != null)
 				Game.Dispel(castedSpell);
 			if (concentratedSpell?.Spell?.Name == castedSpell?.Spell?.Name)
+			{
+				OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustDispelled));
 				concentratedSpell = null;
+			}
 		}
 
 		public void EndAction()
@@ -1542,6 +1583,7 @@ namespace DndCore
 				return 0.5;
 			return 1;
 		}
+
 		public Vector GetRoomCoordinates()
 		{
 			return Vector.zero;
@@ -1734,6 +1776,7 @@ namespace DndCore
 		{
 			return (doubleProficiency & skill) == skill;
 		}
+
 		bool hasHalfProficiencyBonusForSkill(Skills skill)
 		{
 			return (halfProficiency & skill) == skill;
@@ -1783,6 +1826,7 @@ namespace DndCore
 			Weapons weapon = DndUtils.ToWeapon(DndUtils.GetCleanItemName(name));
 			return IsProficientWith(weapon);
 		}
+
 		public void JustCastSpell(string spellName)
 		{
 			Spell spellJustCast = AllSpells.Get(spellName);
@@ -1854,6 +1898,7 @@ namespace DndCore
 				Expressions.EndUpdate(this);
 			}
 		}
+
 		public void PlayerEndsTurn()
 		{
 			Expressions.BeginUpdate();
@@ -1954,6 +1999,7 @@ namespace DndCore
 				}
 			}
 		}
+
 		public void Recalculate(RecalcOptions recalcOptions)
 		{
 			//if (recalcOptions == RecalcOptions.None)
@@ -2111,6 +2157,7 @@ namespace DndCore
 				OnStateChanged(key, null, newValue);
 			}
 		}
+
 		public bool SpellIsActive(string spellName)
 		{
 			List<CastedSpell> spells = GetActiveSpells();
@@ -2345,10 +2392,20 @@ namespace DndCore
 				return DndUtils.GetFirstName(name);
 			}
 		}
+
+		[JsonIgnore]
 		public string heShe { get; set; }
+
+		[JsonIgnore]
 		public string hisHer { get; set; }
+
+		[JsonIgnore]
 		public string himHer { get; set; }
+
+		[JsonIgnore]
 		public string HisHer { get; set; }
+
+		[JsonIgnore]
 		public string HeShe { get; set; }
 
 		[JsonIgnore]
@@ -2991,6 +3048,8 @@ namespace DndCore
 		{
 			return GetAmmunitionCount(kind) > 0;
 		}
+
+		[JsonIgnore]
 		public List<string> Languages { get; set; }
 
 		public void AddLanguage(string language)
@@ -3125,6 +3184,7 @@ namespace DndCore
 		{
 			return new CanCastResult(Location, spell.Range);
 		}
+
 		public void AddShortcutToQueue(string shortcutName, bool rollImmediately)
 		{
 			Game.AddShortcutToQueue(this, shortcutName, rollImmediately);

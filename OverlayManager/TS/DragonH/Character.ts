@@ -44,9 +44,7 @@ class Character {
 	name: string;
 	forceShowSpell: boolean;
 	Hidden: boolean;
-	spellPrepared: ActiveSpellData;
-	spellActivelyCasting: ActiveSpellData;
-	spellPreviouslyCasting: ActiveSpellData;
+	ActiveSpell: ActiveSpellData;
 	level: number;
 	headshotIndex: number;
 	hueShift: number;
@@ -183,22 +181,7 @@ class Character {
 		this.name = sourceCharacter.name;
 		this.forceShowSpell = sourceCharacter.forceShowSpell;
 		this.Hidden = sourceCharacter.Hidden;
-
-		if (sourceCharacter.spellActivelyCasting)
-			this.spellActivelyCasting = new ActiveSpellData(sourceCharacter.spellActivelyCasting);
-		else
-			this.spellActivelyCasting = null;
-
-		if (sourceCharacter.spellPrepared)
-			this.spellPrepared = new ActiveSpellData(sourceCharacter.spellPrepared);
-		else
-			this.spellPrepared = null;
-
-		if (sourceCharacter.spellPreviouslyCasting)
-			this.spellPreviouslyCasting = new ActiveSpellData(sourceCharacter.spellPreviouslyCasting);
-		else
-			this.spellPreviouslyCasting = null;
-
+		this.ActiveSpell = sourceCharacter.ActiveSpell;
 		this.offTurnActions = sourceCharacter.offTurnActions;
 		this.onTurnActions = sourceCharacter.onTurnActions;
 		this.proficiencyBonus = sourceCharacter.proficiencyBonus;
@@ -729,7 +712,7 @@ class Character {
 	}
 
 	static newTestElf(): Character {
-		let elf: Character = new Character();
+		const elf: Character = new Character();
 		elf.name = 'Taragon';
 		elf.raceClass = 'Wood Elf Barbarian';
 		elf.alignmentStr = 'Chaotic Good';
@@ -771,7 +754,7 @@ class Character {
 	}
 
 	static newTestBarbarian(): Character {
-		let barbarian: Character = new Character();
+		const barbarian: Character = new Character();
 		barbarian.name = 'Ava';
 		barbarian.raceClass = 'Dragonborn Barbarian';
 		barbarian.alignmentStr = 'Chaotic Evil';
@@ -800,7 +783,7 @@ class Character {
 	}
 
 	static newTestDruid(): Character {
-		let druid: Character = new Character();
+		const druid: Character = new Character();
 		druid.name = 'Kylee';
 		druid.raceClass = 'Wood Elf Druid';
 		druid.alignmentStr = 'Lawful Good';
@@ -829,7 +812,7 @@ class Character {
 	}
 
 	static newTestWizard(): Character {
-		let wizard: Character = new Character();
+		const wizard: Character = new Character();
 		wizard.name = 'Morkin';
 		wizard.raceClass = 'Human Wizard';
 		wizard.alignmentStr = 'Chaotic Neutral';
@@ -858,10 +841,10 @@ class Character {
 		this.equipment.push(item);
 	}
 
-	unpack(item: Item, count: number = 1): void {
-		let index: number = this.equipment.indexOf(item);
+	unpack(item: Item, count = 1): void {
+		const index: number = this.equipment.indexOf(item);
 		if (index >= 0) {
-			let thisItem: Item = this.equipment[index];
+			const thisItem: Item = this.equipment[index];
 			if (thisItem.count > 0)
 				if (count === Infinity) {
 					thisItem.count = 0;
@@ -879,19 +862,5 @@ class Character {
 	equip(item: Item): void {
 		this.equipment.push(item);
 		item.equipped = true;
-	}
-
-	getActiveSpell(): ActiveSpellData {
-		let activeSpellData: ActiveSpellData; 
-
-		activeSpellData = this.spellPrepared;
-		if (activeSpellData != null)
-			return activeSpellData;
-
-		activeSpellData = this.spellActivelyCasting;
-		if (activeSpellData)
-			return activeSpellData;
-
-		return this.spellPreviouslyCasting;
 	}
 }

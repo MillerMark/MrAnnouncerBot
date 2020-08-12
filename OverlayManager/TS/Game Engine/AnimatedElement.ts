@@ -1,4 +1,5 @@
 ﻿class AnimatedElement {
+	data: any;
 	name: string;
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond = 0;

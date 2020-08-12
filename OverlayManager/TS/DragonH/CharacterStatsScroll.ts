@@ -685,6 +685,8 @@
 		return emitter;
 	}
 
+	static readonly spinningConcentrationIconDegreesPerSecond: number = 40;
+
 	loadResources(): void {
 		this.spellBook.loadResources();
 		var assetFolderName: string = Folders.assets;
@@ -701,7 +703,7 @@
 		this.spinningConcentrationIcons = new Sprites("Scroll/Spells/Concentration/MiniConcentration", 1, 0, AnimationStyle.Static);
 
 		this.spinningConcentrationIcon = this.spinningConcentrationIcons.add(0, 0, 0);
-		this.spinningConcentrationIcon.autoRotationDegeesPerSecond = 40;
+		this.spinningConcentrationIcon.autoRotationDegeesPerSecond = CharacterStatsScroll.spinningConcentrationIconDegreesPerSecond;
 		this.spinningConcentrationIcons.originX = 8;
 		this.spinningConcentrationIcons.originY = 8;
 		this.spinningConcentrationIcon.initialRotation = 0;
@@ -854,18 +856,18 @@
 	rightMostTextX: number;
 	calloutPointX: number;
 	calloutPointY: number;
-	drawActiveSpellData: boolean = false;
+	drawActiveSpellData = false;
 	activeSpellData: ActiveSpellData;
 
 	private drawSpellData(nowSec: number, activeCharacter: Character, context: CanvasRenderingContext2D, topData: number, bottomData: number) {
-		let x: number = CharacterStatsScroll.spellDataLeft;
+		const x: number = CharacterStatsScroll.spellDataLeft;
 		let y: number = CharacterStatsScroll.spellDataTop;
 
 
 		this.drawActiveSpellData = false;
 		this.rightMostTextX = x;
 
-		this.activeSpellData = activeCharacter.getActiveSpell();
+		this.activeSpellData = activeCharacter.ActiveSpell;
 
 		activeCharacter.SpellData.forEach(function (item: SpellGroup) {
 			y = this.drawSpellGroup(nowSec, context, item, x, y, topData, bottomData);
@@ -890,16 +892,16 @@
 	}
 
 	drawActiveSpellIndicator(context: CanvasRenderingContext2D, x: number, y: number, spell: ActiveSpellData): number {
-		let width: number = 0;
+		let width = 0;
 		context.fillStyle = '#aa0000';
 		context.beginPath();
-		let centerY: number = y + this.spellNameFontHeight / 2 + this.getBrowserGraphicsYOffset() / 2;
-		const indicatorRadius: number = 4;
+		const centerY: number = y + this.spellNameFontHeight / 2 + this.getBrowserGraphicsYOffset() / 2;
+		const indicatorRadius = 4;
 		context.arc(x, centerY, indicatorRadius, 0, 2 * Math.PI);
 		width = 2 * indicatorRadius;
 		context.fill();
 		if (spell && spell.spellLevel < spell.spellSlotLevel) {
-			let slotLevelStr = `[${spell.spellSlotLevel}]`;
+			const slotLevelStr = `[${spell.spellSlotLevel}]`;
 			context.fillText(slotLevelStr, x + width, y);
 			width += context.measureText(slotLevelStr).width;
 		}
@@ -913,11 +915,11 @@
 	}
 
 	drawSpellBackground(context: CanvasRenderingContext2D, x: number, y: number, numSpells: number, topData: number, bottomData: number): void {
-		let width: number = 305 - x;
+		const width: number = 305 - x;
 
 		context.fillStyle = '#dfd1b7';
 
-		let browserAdjustY: number = 0;
+		let browserAdjustY = 0;
 
 		if (this.browserIsOBS())
 			browserAdjustY = this.obsRectTextYOffset;
@@ -943,25 +945,25 @@
 	drawSpellGroupItem(context: CanvasRenderingContext2D, x: number, y: number, spellName: string): void {
 		context.font = this.spellNameFontHeight + 'px Calibri';
 		context.fillStyle = '#3a1f0c';
-		let maxWidth: number = 305 - x;
+		const maxWidth: number = 305 - x;
 		context.fillText(spellName, x, y, maxWidth);
 	}
 
 	drawSpellGroupTitle(context: CanvasRenderingContext2D, x: number, y: number, spellGroup: SpellGroup, topData: number, bottomData: number): number {
-		const groupTitleHeight: number = 22;
+		const groupTitleHeight = 22;
 
-		let middleY: number = y + groupTitleHeight / 2;
-		let textIsOnScreen = middleY > topData && middleY < bottomData;
+		const middleY: number = y + groupTitleHeight / 2;
+		const textIsOnScreen = middleY > topData && middleY < bottomData;
 
 		if (textIsOnScreen) {
 			context.textAlign = 'left';
 			context.textBaseline = 'top';
 			context.font = groupTitleHeight + 'px Calibri';
 			context.fillStyle = '#3a1f0c';
-			let titleWidth: number = context.measureText(spellGroup.Name).width;
-			let maxWidth: number = 305 - x;
+			const titleWidth: number = context.measureText(spellGroup.Name).width;
+			const maxWidth: number = 305 - x;
 			context.fillText(spellGroup.Name, x, y, maxWidth);
-			const chargeBoxTopMargin: number = 1;
+			const chargeBoxTopMargin = 1;
 			this.drawChargeBoxes(context, x + titleWidth, y + chargeBoxTopMargin, spellGroup.TotalCharges, spellGroup.ChargesUsed);
 		}
 
@@ -969,21 +971,21 @@
 	}
 
 	drawChargeBoxes(context: CanvasRenderingContext2D, x: number, y: number, totalCharges: number, chargesUsed: number): void {
-		const side: number = 18;
-		const minLeft: number = 72;
-		const marginRight: number = 3;
-		const indent: number = 4;
-		let innerSide: number = side - indent * 2;
+		const side = 18;
+		const minLeft = 72;
+		const marginRight = 3;
+		const indent = 4;
+		const innerSide: number = side - indent * 2;
 		let left: number = x;
 		if (left < minLeft)
 			left = minLeft;
 
-		let browserAdjustY: number = 0;
+		let browserAdjustY = 0;
 
 		if (this.browserIsOBS())
 			browserAdjustY = this.obsRectTextYOffset;
 
-		let top: number = y + browserAdjustY;
+		const top: number = y + browserAdjustY;
 
 		for (let i = 0; i < totalCharges; i++) {
 			context.fillStyle = '#dfd1b7';
@@ -1054,9 +1056,9 @@
 	}
 
 	getCharacter(playerID: number): Character {
-		for (var i = 0; i < this.characters.length; i++) {
-			let thisCharacter: Character = this.characters[i];
-			if (thisCharacter.playerID == playerID) {
+		for (let i = 0; i < this.characters.length; i++) {
+			const thisCharacter: Character = this.characters[i];
+			if (thisCharacter.playerID === playerID) {
 				return thisCharacter;
 			}
 		}
@@ -1065,11 +1067,11 @@
 
 
 	updatePlayerData(playerData: string): Character {
-		let sentChar: any = JSON.parse(playerData);
-		let character: Character = this.getCharacter(sentChar.playerID);
-		if (character != null) {
+		const sentChar = JSON.parse(playerData);
+		const character: Character = this.getCharacter(sentChar.playerID);
+		if (character !== null) {
 			character.copyAttributesFrom(sentChar);
-			if (!character.spellActivelyCasting && !character.spellPreviouslyCasting && !character.spellPrepared)
+			if (!character.ActiveSpell)
 				this.spellBook.lastSpellName = '';
 		}
 

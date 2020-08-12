@@ -12,6 +12,9 @@ namespace DHDM
 		public bool ReadyToRollDice { get; set; }
 		public VantageKind Vantage { get; set; }
 		public int PlayerId { get; set; }
+		public string ConcentratedSpell { get; set; }
+		public int PercentConcentrationComplete { get; set; }
+		public bool JustBrokeConcentration { get; set; }
 		public PlayerStats()
 		{
 

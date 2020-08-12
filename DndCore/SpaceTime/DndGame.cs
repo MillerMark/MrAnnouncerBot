@@ -8,7 +8,8 @@ namespace DndCore
 	public class DndGame
 	{
 		public event EventHandler ActivePlayerChanged;
-		
+		public event SpellChangedEventHandler ConcentratedSpellChanged;
+
 		protected virtual void OnActivePlayerChanged()
 		{
 			ActivePlayerChanged?.Invoke(this, EventArgs.Empty);
@@ -235,6 +236,7 @@ namespace DndCore
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
 			player.RequestMessageToAll += Player_RequestMessageToAll;
+			player.ConcentratedSpellChanged += Player_ConcentratedSpellChanged; ;
 		}
 
 		private void Player_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
@@ -276,14 +278,13 @@ namespace DndCore
 			OnPlayerStateChanged(this, new PlayerStateEventArgs(sender as Character, ea));
 		}
 
-		Creature firstPlayer = null;
 		Creature lastPlayer = null;
 
 		public void EnteringCombat()
 		{
-			firstPlayer = null;
 			lastPlayer = null;
 			InCombat = true;
+			InitiativeIndex = -1;
 			OnEnterCombat(this, dndGameEventArgs);
 			TellDungeonMaster("---");
 			TellDungeonMaster("Entering combat...");
@@ -291,7 +292,6 @@ namespace DndCore
 
 		public void EnteringTimeFreeze()
 		{
-			firstPlayer = null;
 			lastPlayer = null;
 			InTimeFreeze = true;
 			OnEnterTimeFreeze(this, dndGameEventArgs);
@@ -351,13 +351,12 @@ namespace DndCore
 
 		List<CastedSpell> activeSpells = new List<CastedSpell>();
 		List<CastedSpell> castingSpells = new List<CastedSpell>();
-		public int roundIndex;
+		private int roundIndex;
 		public string lastMessageSentToDungeonMaster;
 
-		private void StartRound(Creature player)
+		private void StartFirstRoundOfCombat()
 		{
 			roundIndex = 0;
-			firstPlayer = player;
 			OnRoundStarting(this, dndGameEventArgs);
 			if (InCombat)
 				TellDungeonMasterWhichRound();
@@ -365,7 +364,8 @@ namespace DndCore
 
 		public void AdvanceRound()
 		{
-			OnRoundEnded(this, dndGameEventArgs);
+			if (roundIndex > 0)
+				OnRoundEnded(this, dndGameEventArgs);
 			roundIndex++;
 
 			if (InCombat)
@@ -382,37 +382,27 @@ namespace DndCore
 			TellDungeonMaster($"Starting round {roundIndex + 1}...");
 		}
 
-		public void CreatureTakingAction(Creature player)
+		public void CreatureTakingAction(Creature creature)
 		{
-			SetInitiativeIndexFromPlayer(player as Character);
+			SetInitiativeIndexFromPlayer(creature as Character);
 			// TODO: Fix bug where first player dies - we need to reassign firstPlayer to the next player in the initiative line up.
-			if (firstPlayer == null)
-			{
-				StartRound(player);
-			}
-			else if (lastPlayer != firstPlayer && player == firstPlayer)
-			{
-				// Cycled all around. We need to advance the round and the clock.
-				AdvanceRound();
-			}
-
-			if (lastPlayer != null && lastPlayer != player)
+			if (lastPlayer != null && lastPlayer != creature)
 			{
 				lastPlayer.EndTurnResetState();
 				if (lastPlayer is Character character)
 					character.PlayerEndsTurn();
-				EndingTurnFor(player);
+				EndingTurnFor(creature);
 			}
 
-			if (lastPlayer != player)
+			if (lastPlayer != creature)
 			{
-				if (player is Character character)
+				if (creature is Character character)
 					character.PlayerStartsTurn();
-				player.StartTurnResetState();
-				StartingTurnFor(player);
+				creature.StartTurnResetState();
+				StartingTurnFor(creature);
 			}
 
-			lastPlayer = player;
+			lastPlayer = creature;
 		}
 		public CastedSpell Cast(Character player, Spell spell, Creature targetCreature)
 		{
@@ -592,7 +582,6 @@ namespace DndCore
 			WaitingForRollHiddenThreshold = int.MinValue;
 			timeClock = new DndTimeClock();
 			ClearWaitingForRollStateVars();
-			firstPlayer = null;
 			lastPlayer = null;
 			activeSpells = new List<CastedSpell>();
 			castingSpells = new List<CastedSpell>();
@@ -846,6 +835,9 @@ namespace DndCore
 			}
 		}
 
+		public int RoundIndex { get => roundIndex; set => roundIndex = value; }
+
+
 		public void ClearInitiativeOrder()
 		{
 			initiativeIndex = -1;
@@ -874,12 +866,34 @@ namespace DndCore
 
 		public void NextTurn()
 		{
+			if (InitiativeIndex == -1)
+			{
+				StartFirstRoundOfCombat();
+			}
 			InitiativeIndex++;
+			if (InitiativeIndex == 0)
+				AdvanceRound();
 		}
 
 		public void AddCreatureToInitiativeOrder(int id)
 		{
 			initiativeIds.Add(id);
+		}
+
+		private void Player_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)
+		{
+			OnConcentratedSpellChanged(this, ea);
+		}
+		protected virtual void OnConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)
+		{
+			ConcentratedSpellChanged?.Invoke(sender, ea);
+		}
+		public void TellPlayerTheyAreActive(int activePlayerId)
+		{
+			foreach (Character player in Players)
+			{
+				player.IsActive = player.playerID == activePlayerId;
+			}
 		}
 	}
 }

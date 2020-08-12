@@ -156,6 +156,7 @@ namespace DndCore
 
 
 		Creature creature;
+
 		[JsonIgnore]
 		public Creature Creature
 		{

@@ -1,7 +1,6 @@
 ﻿class SpriteProxy extends AnimatedElement {
 	frameIntervalOverride: number;
 	animationReverseOverride: boolean;
-	data: any;
 	haveCycledOnce: boolean;
 	flipHorizontally: boolean;
 	flipVertically: boolean;
@@ -20,6 +19,7 @@
 
 
 	lastTimeWeAdvancedTheFrame: number;
+	returnFrameIndexOverride: number = undefined; 
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);

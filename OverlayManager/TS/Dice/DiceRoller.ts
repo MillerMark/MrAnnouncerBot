@@ -693,6 +693,8 @@ function diceRemainingInPlay(): number {
 	return count;
 }
 
+let lastRollDiceData;
+
 function init() { // From Rolling.html example.
 	diceLayer = new DiceLayer();
 	// SCENE
@@ -974,8 +976,6 @@ function init() { // From Rolling.html example.
 	let needToHookEvents = true;
 
 	const testingDiceRoller = false;
-
-	let lastRollDiceData;
 
 	function allDiceShouldBeDestroyedByNow() {
 		allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
@@ -2311,7 +2311,7 @@ function onDiceRollStopped() {
 	}
 
 	let playerId: number = diceLayer.playerID;
-	if (diceRollData.playerRollOptions.length == 1)
+	if (diceRollData.playerRollOptions.length === 1)
 		playerId = diceRollData.playerRollOptions[0].PlayerID;
 
 	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:

@@ -39,9 +39,12 @@ namespace DndCore
 		{
 			try
 			{
-				foreach (LogEntry logEntry in queuedEntries)
+				lock (queuedEntries)
 				{
-					Entries.Add(logEntry);
+					foreach (LogEntry logEntry in queuedEntries.ToList())
+					{
+						Entries.Add(logEntry);
+					}
 				}
 			}
 			catch (Exception ex)

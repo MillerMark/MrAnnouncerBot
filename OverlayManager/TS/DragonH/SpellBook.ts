@@ -595,10 +595,10 @@ class SpellBook {
 	}
 
 	private getLevelStr(spell: ActiveSpellData) {
-		if (spell.spellLevel == -1)
+		if (spell.spellLevel === -1)
 			return 'Special';
 
-		if (spell.spellLevel == 0)
+		if (spell.spellLevel === 0)
 			return 'Cantrip';
 
 		return `Level ${spell.spellLevel}`;
@@ -1054,18 +1054,18 @@ class SpellBook {
 		y: number,
 		player: Character): void {
 
-		let spell: ActiveSpellData = player.getActiveSpell();
+		const spell: ActiveSpellData = player.ActiveSpell;
 
 		if (!spell)
 			return;
 
-		let nowMs: number = nowSec * 1000;
+		const nowMs: number = nowSec * 1000;
 		if (this.lastSpellName != spell.name || this.lastSpellSlotLevel != spell.spellSlotLevel) {
 			this.createSpellBook(spell, player, context, x, y, nowMs);
 		}
-		let timeIn: number = nowMs - this.spellbookAppearTime;
+		const timeIn: number = nowMs - this.spellbookAppearTime;
 		if (timeIn < SpellBook.fadeInTime) {
-			let percentThroughFadeIn: number = timeIn / SpellBook.fadeInTime;
+			const percentThroughFadeIn: number = timeIn / SpellBook.fadeInTime;
 			this.bookAlpha = percentThroughFadeIn;
 		}
 		else
@@ -1076,8 +1076,8 @@ class SpellBook {
 		if (this.spellBookBack.sprites.length > 0) {
 			let firstBackSprite = this.spellBookBack.sprites[0];
 			// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
-			let w: number = this.spellBookBack.spriteWidth;
-			let h: number = this.spellBookBack.spriteHeight;
+			const w: number = this.spellBookBack.spriteWidth;
+			const h: number = this.spellBookBack.spriteHeight;
 			firstBackSprite.opacity = this.bookAlpha;
 			this.spellBookBack.drawCropped(context, nowMs, firstBackSprite.x, firstBackSprite.y + h - this.spellBookBackHeight, 0, h - this.spellBookBackHeight, w, this.spellBookBackHeight, w * this.horizontalScale, this.spellBookBackHeight);
 		}
@@ -1188,7 +1188,7 @@ class SpellBook {
 	}
 
 	drawSpellBookAppear(nowMs: number, context: CanvasRenderingContext2D, spell: ActiveSpellData): void {
-		let timeSec: number = nowMs * 1000;
+		const timeSec: number = nowMs * 1000;
 		this.spellBookAppearBig.draw(context, timeSec);
 		this.spellBookAppearMedium.draw(context, timeSec);
 		this.spellBookAppearSmall.draw(context, timeSec);

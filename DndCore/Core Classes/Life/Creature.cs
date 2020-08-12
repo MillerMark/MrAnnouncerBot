@@ -116,7 +116,11 @@ namespace DndCore
 		public Languages languagesSpoken = Languages.None;
 		public Languages languagesUnderstood = Languages.None;
 		public double maxHitPoints { get; set; } = 0;
+
+		[JsonIgnore]
 		public List<Attack> multiAttack = new List<Attack>();
+
+		[JsonIgnore]
 		public MultiAttackCount multiAttackCount = MultiAttackCount.oneEach;
 
 		public string name = string.Empty;
@@ -170,6 +174,8 @@ namespace DndCore
 		
 		[JsonIgnore]
 		public Dictionary<string, Dictionary<string, PropertyMod>> PropertyMods { get; set; } = new Dictionary<string, Dictionary<string, PropertyMod>>();
+
+		[JsonIgnore]
 		public Dictionary<string, VantageMod> VantageMods { get; set; } = new Dictionary<string, VantageMod>();
 
 		public virtual double Strength
@@ -330,6 +336,7 @@ namespace DndCore
 				AddCalculatedMod(mod.VantageSkillFilter.ToString() + STR_Disadvantage, 1);
 			}
 		}
+
 		void CalculateModsForItem(ItemViewModel itemViewModel)
 		{
 			foreach (ModViewModel modViewModel in itemViewModel.mods)
@@ -456,6 +463,7 @@ namespace DndCore
 			RecalculateModsIfNecessary();
 			return GetCalculatedMod(ability);
 		}
+
 		double GetPropertyModMultiplier(string key)
 		{
 			if (!PropertyMods.ContainsKey(key))
@@ -743,7 +751,10 @@ namespace DndCore
 			magic.Dispel += CastedMagic_Dispelled;
 		}
 
+		[JsonIgnore]
 		List<Magic> receivedMagic = new List<Magic>();
+
+		[JsonIgnore]
 		List<Magic> castedMagic = new List<Magic>();
 
 		void ReceiveMagic(Magic magic)
@@ -988,6 +999,7 @@ namespace DndCore
 			}
 			damageType = DndUtils.ToDamage(damageStr);
 		}
+
 		public void SetDamageImmunities(string damageImmunities)
 		{
 			if (string.IsNullOrWhiteSpace(damageImmunities))
@@ -1002,6 +1014,7 @@ namespace DndCore
 					AddDamageImmunity(damage, attackKind);
 			}
 		}
+
 		public void SetDamageResistances(string damageResistances)
 		{
 			if (string.IsNullOrWhiteSpace(damageResistances))
@@ -1024,6 +1037,7 @@ namespace DndCore
 			//	System.Diagnostics.Debugger.Break();
 			//}
 		}
+
 		public void SetDamageVulnerabilities(string damageVulnerabilities)
 		{
 			if (string.IsNullOrWhiteSpace(damageVulnerabilities))

@@ -240,6 +240,7 @@ namespace DHDM
 			game.PlayerStateChanged += Game_PlayerStateChanged;
 			game.RoundStarting += Game_RoundStarting;
 			game.ActivePlayerChanged += Game_ActivePlayerChanged;
+			game.ConcentratedSpellChanged += Game_ConcentratedSpellChanged;
 		}
 
 		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
@@ -256,7 +257,7 @@ namespace DHDM
 		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
 		{
 			if (game.InCombat)
-				clockMessage = $"Round {ea.Game.roundIndex + 1}";
+				clockMessage = $"Round {ea.Game.RoundIndex + 1}";
 		}
 
 		private void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
@@ -1341,10 +1342,23 @@ namespace DHDM
 			if (!ea.CastedSpell.Active)
 				return;
 
+			// TODO: Rename this Dispel to DispelInGame
 			Dispel(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 
 			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 			EndSpellEffects(spellToEnd);
+
+			if (ea.CastedSpell.Spell.RequiresConcentration)
+			{
+				ea.CastedSpell.SpellCaster.concentratedSpell = null;
+				PlayerStats playerStats = AllPlayerStats.GetPlayerStats(ea.CastedSpell.SpellCaster.playerID);
+				playerStats.PercentConcentrationComplete = 100;
+				playerStats.ConcentratedSpell = "";
+				playerStats.JustBrokeConcentration = false;
+				UpdatePlayerStateInGame();
+			}
+
+			UpdateStateUIForPlayer(ActivePlayer, true);
 		}
 
 		private void EndSpellEffects(string spellToEnd)
@@ -2217,6 +2231,7 @@ namespace DHDM
 			{
 				CheckOnlyOnePlayer(ActivePlayerId);
 			}
+			game.TellPlayerTheyAreActive(ActivePlayerId);
 			CharacterSheets sheetForCharacter = GetSheetForCharacter(ActivePlayerId);
 			if (sheetForCharacter != null)
 				sheetForCharacter.Page = ScrollPage.main;
@@ -2731,67 +2746,70 @@ namespace DHDM
 
 		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
 		{
-			if (txtTime == null)
-				return;
-			string timeStr = game.Clock.AsFullDndDateTimeString();
-
-			if (game.ClockHasStopped())
-				timeStr = " " + timeStr + " ";
-
-			if (txtTime.Text == timeStr)
-				return;
-
-			txtTime.Text = timeStr;
-
-			TimeSpan timeIntoToday = game.Clock.Time - new DateTime(game.Clock.Time.Year, game.Clock.Time.Month, game.Clock.Time.Day);
-			double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
-
-			string afterSpinMp3 = null;
-
-			if (daysSinceLastUpdate > 0.08)  // Short rest or greater
+			Dispatcher.Invoke(() =>
 			{
-				if (timeIntoToday.TotalHours < 2 || timeIntoToday.TotalHours > 22)
-				{
-					afterSpinMp3 = "midnightWolf";
-				}
-				else if (timeIntoToday.TotalHours > 4 && timeIntoToday.TotalHours < 8)
-				{
-					afterSpinMp3 = "morningRooster";
+				if (txtTime == null)
+					return;
+				string timeStr = game.Clock.AsFullDndDateTimeString();
 
-				}
-				else if (timeIntoToday.TotalHours > 10 && timeIntoToday.TotalHours < 14)
+				if (game.ClockHasStopped())
+					timeStr = " " + timeStr + " ";
+
+				if (txtTime.Text == timeStr)
+					return;
+
+				txtTime.Text = timeStr;
+
+				TimeSpan timeIntoToday = game.Clock.Time - new DateTime(game.Clock.Time.Year, game.Clock.Time.Month, game.Clock.Time.Day);
+				double percentageRotation = 360 * timeIntoToday.TotalMinutes / TimeSpan.FromDays(1).TotalMinutes;
+
+				string afterSpinMp3 = null;
+
+				if (daysSinceLastUpdate > 0.08)  // Short rest or greater
 				{
-					afterSpinMp3 = "birdsNoon";
-				}
-				else if (timeIntoToday.TotalHours > 16 && timeIntoToday.TotalHours < 20)
-				{
-					if (new Random().Next(100) > 50)
-						afterSpinMp3 = "eveningCrickets";
+					if (timeIntoToday.TotalHours < 2 || timeIntoToday.TotalHours > 22)
+					{
+						afterSpinMp3 = "midnightWolf";
+					}
+					else if (timeIntoToday.TotalHours > 4 && timeIntoToday.TotalHours < 8)
+					{
+						afterSpinMp3 = "morningRooster";
+
+					}
+					else if (timeIntoToday.TotalHours > 10 && timeIntoToday.TotalHours < 14)
+					{
+						afterSpinMp3 = "birdsNoon";
+					}
+					else if (timeIntoToday.TotalHours > 16 && timeIntoToday.TotalHours < 20)
+					{
+						if (new Random().Next(100) > 50)
+							afterSpinMp3 = "eveningCrickets";
+						else
+							afterSpinMp3 = "lateEveningFrogs";
+					}
+					if (lastAmbientSoundPlayed == afterSpinMp3)  // prevent the same sound from being played twice in a row.
+						afterSpinMp3 = null;
 					else
-						afterSpinMp3 = "lateEveningFrogs";
+						lastAmbientSoundPlayed = afterSpinMp3;
 				}
-				if (lastAmbientSoundPlayed == afterSpinMp3)  // prevent the same sound from being played twice in a row.
-					afterSpinMp3 = null;
-				else
-					lastAmbientSoundPlayed = afterSpinMp3;
-			}
 
-			ClockDto clockDto = new ClockDto()
-			{
-				Message = clockMessage,
-				Time = timeStr,
-				BigUpdate = bigUpdate,
-				Rotation = percentageRotation,
-				InCombat = game.Clock.InCombat,
-				InTimeFreeze = game.Clock.InTimeFreeze,
-				FullSpins = daysSinceLastUpdate,
-				AfterSpinMp3 = afterSpinMp3
-			};
+				ClockDto clockDto = new ClockDto()
+				{
+					Message = clockMessage,
+					Time = timeStr,
+					BigUpdate = bigUpdate,
+					Rotation = percentageRotation,
+					InCombat = game.Clock.InCombat,
+					InTimeFreeze = game.Clock.InTimeFreeze,
+					FullSpins = daysSinceLastUpdate,
+					AfterSpinMp3 = afterSpinMp3
+				};
 
-			clockMessage = null;
+				clockMessage = null;
 
-			string serializedObject = JsonConvert.SerializeObject(clockDto);
-			HubtasticBaseStation.UpdateClock(serializedObject);
+				string serializedObject = JsonConvert.SerializeObject(clockDto);
+				HubtasticBaseStation.UpdateClock(serializedObject);
+			});
 		}
 
 		private void BtnAdvanceTurn_Click(object sender, RoutedEventArgs e)
@@ -4010,6 +4028,8 @@ namespace DHDM
 
 			if (ActivePlayer.concentratedSpell == null)
 				return;
+
+			// TODO: need to update the in-game concentrated spell casting ui.
 
 			UpdateStateUIForPlayer(ActivePlayer, true);
 		}
@@ -7892,6 +7912,34 @@ namespace DHDM
 			actionQueue.Enqueue(shortcutQueueEntry);
 		}
 
+		private void Game_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)
+		{
+			if (ea.Player == null)
+				return;
+			PlayerStats playerStats = AllPlayerStats.GetPlayerStats(ea.Player.playerID);
+			if (playerStats == null)
+				return;
+
+			switch (ea.SpellState)
+			{
+				case SpellState.JustCast:
+					playerStats.ConcentratedSpell = ea.SpellName;
+					playerStats.PercentConcentrationComplete = 0;
+					playerStats.JustBrokeConcentration = false;
+					break;
+				case SpellState.JustDispelled:
+					playerStats.ConcentratedSpell = ea.SpellName;
+					playerStats.PercentConcentrationComplete = 100;
+					playerStats.JustBrokeConcentration = false;
+					break;
+				case SpellState.BrokeConcentration:
+					playerStats.ConcentratedSpell = "";
+					playerStats.JustBrokeConcentration = true;
+					break;
+			}
+
+			UpdatePlayerStateInGame();
+		}
 
 		// TODO: Reintegrate wand/staff animations....
 		/* 

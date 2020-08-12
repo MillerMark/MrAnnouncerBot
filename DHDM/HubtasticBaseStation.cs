@@ -60,6 +60,8 @@ namespace DHDM
 		{
 			get
 			{
+				if (hubConnection != null && hubConnection.State == HubConnectionState.Disconnected)
+					hubConnection = null;
 				if (hubConnection == null)
 				{
 					lock(hubConnectionLock)
@@ -96,6 +98,7 @@ namespace DHDM
 
 		public static void PlayerDataChanged(int playerID, string playerData)
 		{
+			lastStringSent = playerData;
 			HubConnection.InvokeAsync("PlayerDataChanged", playerID, -1, playerData);
 		}
 
@@ -111,6 +114,7 @@ namespace DHDM
 
 		public static void ChangePlayerStats(string playerStatsData)
 		{
+			lastStringSent = playerStatsData;
 			HubConnection.InvokeAsync("ChangePlayerStats", playerStatsData);
 		}
 
@@ -206,8 +210,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("ClearDice");
 		}
 
+		static string lastStringSent;
+
 		public static void SetPlayerData(string playerData)
 		{
+			lastStringSent = playerData;
 			HubConnection.InvokeAsync("SetPlayerData", playerData);
 		}
 		public static void SendScrollLayerCommand(string commandData)

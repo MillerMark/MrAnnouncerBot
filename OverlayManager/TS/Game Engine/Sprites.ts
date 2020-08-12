@@ -248,12 +248,12 @@
 			y = bottom - (this.spriteHeight + margin);
 		}
 
-		var numSegmentsDrawn = 0;
+		let numSegmentsDrawn = 0;
 
 		while (spriteCount < 10000) {
 			spriteCount++;
 			this.sprites.push(new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y));
-			if (segment == rectangleDrawingSegment.top) {
+			if (segment === rectangleDrawingSegment.top) {
 				x += this.spriteWidth + margin;
 				if (x > right - this.spriteWidth) {
 					x -= this.spriteWidth + margin;
@@ -262,7 +262,7 @@
 					numSegmentsDrawn++;
 				}
 			}
-			else if (segment == rectangleDrawingSegment.right) {
+			else if (segment === rectangleDrawingSegment.right) {
 				y += this.spriteHeight + margin;
 				if (y > bottom - this.spriteHeight) {
 					y -= this.spriteHeight + margin;
@@ -271,7 +271,7 @@
 					numSegmentsDrawn++;
 				}
 			}
-			else if (segment == rectangleDrawingSegment.bottom) {
+			else if (segment === rectangleDrawingSegment.bottom) {
 				x -= this.spriteWidth + margin;
 				if (x < left) {
 					x += this.spriteWidth + margin;
@@ -280,7 +280,7 @@
 					numSegmentsDrawn++;
 				}
 			}
-			else if (segment == rectangleDrawingSegment.left) {
+			else if (segment === rectangleDrawingSegment.left) {
 				y -= this.spriteHeight + margin;
 				if (y < top) {
 					y += this.spriteHeight + margin;
@@ -308,13 +308,13 @@
 		const margin = 10;
 		left -= margin;
 		top -= margin;
-		var right = left + width + margin;
-		var bottom = top + height + margin;
-		var numCollected = 0;
-		for (var i = this.sprites.length - 1; i >= 0; i--) {
-			var sprite = this.sprites[i];
-			var centerX = sprite.x + this.spriteWidth * sprite.scale / 2;
-			var centerY = sprite.y + this.spriteHeight * sprite.scale / 2;
+		const right = left + width + margin;
+		const bottom = top + height + margin;
+		let numCollected = 0;
+		for (let i = this.sprites.length - 1; i >= 0; i--) {
+			const sprite = this.sprites[i];
+			const centerX = sprite.x + this.spriteWidth * sprite.scale / 2;
+			const centerY = sprite.y + this.spriteHeight * sprite.scale / 2;
 			if (centerX > left && centerX < right && centerY > top && centerY < bottom) {
 				this.sprites.splice(i, 1);
 				numCollected++;
@@ -367,7 +367,7 @@
 			if (segmentSize > 0 && frameIndex >= startOffset) {
 				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;
 
-				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;;0.03114,0.03214)
+				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;0,0,1349,519;0.03114,0.03214)
 
 				let segmentEndIndex: number = segmentStartIndex + segmentSize;
 
