@@ -595,25 +595,30 @@ namespace DHDM
 		{
 			if (savedRolls == null)
 				return;
-			if (savedRolls.ContainsKey(ea.RollName))
-				ea.Result = savedRolls[ea.RollName];
+			lock (savedRolls)
+				if (savedRolls.ContainsKey(ea.RollName))
+					ea.Result = savedRolls[ea.RollName];
 		}
 
 		void SaveNamedResults(DiceEventArgs ea)
 		{
 			if (savedRolls == null)
 				savedRolls = new Dictionary<string, int>();
-			savedRolls.Clear();
-			if (ea.StopRollingData.individualRolls == null)
-				return;
-			foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+			lock (savedRolls)
 			{
-				if (!string.IsNullOrWhiteSpace(individualRoll.type))
+				savedRolls.Clear();
+				if (ea.StopRollingData.individualRolls == null)
+					return;
+
+				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
 				{
-					if (savedRolls.ContainsKey(individualRoll.type))
-						savedRolls[individualRoll.type] += individualRoll.value;
-					else
-						savedRolls.Add(individualRoll.type, individualRoll.value);
+					if (!string.IsNullOrWhiteSpace(individualRoll.type))
+					{
+						if (savedRolls.ContainsKey(individualRoll.type))
+							savedRolls[individualRoll.type] += individualRoll.value;
+						else
+							savedRolls.Add(individualRoll.type, individualRoll.value);
+					}
 				}
 			}
 		}
@@ -2055,7 +2060,7 @@ namespace DHDM
 			if (castedSpell.Target == null && ActivePlayer != null)
 				castedSpell.Target = ActivePlayer.ActiveTarget;
 
-			castedSpell.PreparationStarted();  // Triggers onPreparing event here.
+			castedSpell.PreparationStarted(game);  // Triggers onPreparing event here.
 
 			if (actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
 			{
@@ -2730,6 +2735,33 @@ namespace DHDM
 			}
 		}
 
+		void UpdateConcentratedSpells()
+		{
+			List<Character> players = AllPlayers.GetActive();
+
+			bool changeOccurred = false;
+			foreach (Character player in players)
+			{
+				if (player.concentratedSpell != null)
+				{
+					PlayerStats playerStats = AllPlayerStats.GetPlayerStats(player.playerID);
+					if (playerStats != null)
+					{
+						// TODO: Consider adding side-effect to PercentConcentrationComplete property setter to trigger event.
+						int newPercent = DndUtils.GetSpellPercentComplete(player.concentratedSpell, game);
+						if (newPercent != playerStats.PercentConcentrationComplete)
+						{
+							playerStats.PercentConcentrationComplete = newPercent;
+							changeOccurred = true;
+						}
+					}
+				}
+			}
+
+			if (changeOccurred)
+				UpdateConcentratedSpellHourglassesInGame();
+		}
+
 		private void DndTimeClock_TimeChanged(object sender, TimeClockEventArgs e)
 		{
 			bool bigUpdate = e.SpanSinceLastUpdate.TotalSeconds > 60;
@@ -2740,6 +2772,7 @@ namespace DHDM
 			{
 				// TODO: Update character stats.
 			}
+			UpdateConcentratedSpells();
 		}
 
 		string clockMessage;
@@ -2852,19 +2885,19 @@ namespace DHDM
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Day";
-			game.Clock.Advance(DndTimeSpan.FromDays(1), Modifiers.ShiftDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(1), -1, Modifiers.ShiftDown);
 		}
 
 		private void BtnAddTenDay_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+10 Days";
-			game.Clock.Advance(DndTimeSpan.FromDays(10), Modifiers.ShiftDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(10), -1, Modifiers.ShiftDown);
 		}
 
 		private void BtnAddMonth_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Month";
-			game.Clock.Advance(DndTimeSpan.FromDays(30), Modifiers.ShiftDown);
+			game.Clock.Advance(DndTimeSpan.FromDays(30), -1, Modifiers.ShiftDown);
 		}
 
 		public DiceRollType NextDieRollType
@@ -2892,19 +2925,19 @@ namespace DHDM
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Hour";
-			game.Clock.Advance(DndTimeSpan.FromHours(1), Modifiers.ShiftDown);
+			game.Clock.Advance(DndTimeSpan.FromHours(1), -1, Modifiers.ShiftDown);
 		}
 
 		private void BtnAdd10Minutes_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+10 Minutes";
-			game.Clock.Advance(DndTimeSpan.FromMinutes(10), Modifiers.ShiftDown);
+			game.Clock.Advance(DndTimeSpan.FromMinutes(10), -1, Modifiers.ShiftDown);
 		}
 
 		private void BtnAdd1Minute_Click(object sender, RoutedEventArgs e)
 		{
 			clockMessage = "+1 Minute";
-			game.Clock.Advance(DndTimeSpan.FromMinutes(1), Modifiers.ShiftDown);
+			game.Clock.Advance(DndTimeSpan.FromMinutes(1), -1, Modifiers.ShiftDown);
 		}
 
 
@@ -3362,12 +3395,15 @@ namespace DHDM
 				case DiceRollType.ChaosBolt:
 				case DiceRollType.DamageOnly:
 					latestDamage.Clear();
-					foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+					lock (latestDamage)
 					{
-						if (!latestDamage.ContainsKey(individualRoll.damageType))
-							latestDamage.Add(individualRoll.damageType, individualRoll.value);
-						else
-							latestDamage[individualRoll.damageType] += individualRoll.value;
+						foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+						{
+							if (!latestDamage.ContainsKey(individualRoll.damageType))
+								latestDamage.Add(individualRoll.damageType, individualRoll.value);
+							else
+								latestDamage[individualRoll.damageType] += individualRoll.value;
+						}
 					}
 					break;
 			}
@@ -5423,7 +5459,7 @@ namespace DHDM
 			// TODO: Calculate clockMessage based on the delta here.
 			Dispatcher.Invoke(() =>
 			{
-				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), Modifiers.ShiftDown);
+				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), -1, Modifiers.ShiftDown);
 			});
 		}
 
@@ -5433,7 +5469,7 @@ namespace DHDM
 				return;
 			Dispatcher.Invoke(() =>
 			{
-				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), Modifiers.ShiftDown);
+				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), -1, Modifiers.ShiftDown);
 			});
 		}
 
@@ -7509,6 +7545,12 @@ namespace DHDM
 			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
 		}
 
+		void UpdateConcentratedSpellHourglassesInGame()
+		{
+			AllPlayerStats.LatestCommand = "HourglassUpdate";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+		}
+
 		void AddInGameCreature(InGameCreature inGameCreature)
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Add", new List<InGameCreature>() { inGameCreature });
@@ -7798,6 +7840,7 @@ namespace DHDM
 
 			UpdateInGameCreatures();
 			UpdatePlayerStateInGame();
+			UpdateConcentratedSpells();
 		}
 
 		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();

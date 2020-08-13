@@ -370,7 +370,7 @@ namespace DndCore
 
 			if (InCombat)
 			{
-				timeClock.Advance(6000);  // 6 seconds per round. Will trigger alarms.
+				timeClock.Advance(6000, InitiativeIndex);  // 6 seconds per round. Will trigger alarms.
 				TellDungeonMasterWhichRound();
 			}
 
@@ -444,7 +444,12 @@ namespace DndCore
 			Spell spell = castedSpell.Spell;
 			if (spell.Duration.HasValue())
 			{
-				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, player.playerID), player, castedSpell);
+				int turnIndex = -1;
+				if (spell.Duration.TimeMeasure == TimeMeasure.round)
+				{
+					turnIndex = InitiativeIndex;
+				}
+				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, player.playerID), player, castedSpell, turnIndex);
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
 
@@ -806,11 +811,11 @@ namespace DndCore
 		}
 		public void CheckAlarmsPlayerStartsTurn(Character character)
 		{
-			Clock.CheckAlarmsPlayerStartsTurn(character);
+			Clock.CheckAlarmsPlayerStartsTurn(character, this);
 		}
 		public void CheckAlarmsPlayerEndsTurn(Character character)
 		{
-			Clock.CheckAlarmsPlayerEndsTurn(character);
+			Clock.CheckAlarmsPlayerEndsTurn(character, this);
 		}
 		public void AddShortcutToQueue(Character player, string shortcutName, bool rollImmediately)
 		{
@@ -821,6 +826,15 @@ namespace DndCore
 
 		List<int> initiativeIds = new List<int>();  // negative ids are for InGameCreatures. Non-negative are for players.
 		int initiativeIndex = -1;
+
+		public int PlayerCount
+		{
+			get
+			{
+				return initiativeIds.Count;
+			}
+		}
+		
 		public int InitiativeIndex
 		{
 			get => initiativeIndex;
@@ -831,11 +845,13 @@ namespace DndCore
 				if (initiativeIndex == value)
 					return;
 				initiativeIndex = value;
+				timeClock.Advance(0, InitiativeIndex);  // May trigger turn-based alarms.
 				OnActivePlayerChanged();
 			}
 		}
 
 		public int RoundIndex { get => roundIndex; set => roundIndex = value; }
+		public int RoundNumber => roundIndex + 1;
 
 
 		public void ClearInitiativeOrder()
@@ -877,7 +893,8 @@ namespace DndCore
 
 		public void AddCreatureToInitiativeOrder(int id)
 		{
-			initiativeIds.Add(id);
+			if (initiativeIds.IndexOf(id) < 0)
+				initiativeIds.Add(id);
 		}
 
 		private void Player_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)

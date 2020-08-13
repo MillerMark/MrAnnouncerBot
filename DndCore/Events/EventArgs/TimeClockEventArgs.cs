@@ -12,6 +12,7 @@ namespace DndCore
 		}
 
 		public TimeSpan SpanSinceLastUpdate { get; set; }
+		public int PreviousTurnIndex { get; set; }
 	}
 }
 

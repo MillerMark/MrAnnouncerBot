@@ -645,5 +645,59 @@ namespace DndCore
 		{
 			return (int)Math.Floor(value / 2.0);
 		}
+		public static int GetSpellPercentComplete(CastedSpell castedSpell, DndGame dndGame)
+		{
+			DndTimeSpan duration = castedSpell.Spell.Duration;
+			TimeSpan spellDuration;
+			switch (duration.TimeMeasure)
+			{
+				case TimeMeasure.seconds:
+				case TimeMeasure.minutes:
+				case TimeMeasure.hours:
+				case TimeMeasure.days:
+					spellDuration = duration.GetTimeSpan();
+					return GetPercentCompleteBasedOnSpellDuration(castedSpell, dndGame, spellDuration);
+				case TimeMeasure.forever:
+					return 50;
+				case TimeMeasure.never:
+					return 0;
+				case TimeMeasure.round:
+					// Special case.
+					if (castedSpell.CastingRound < 0)
+					{
+						spellDuration = TimeSpan.FromSeconds(6 * duration.Count);
+						return GetPercentCompleteBasedOnSpellDuration(castedSpell, dndGame, spellDuration);
+					}
+					else
+					{
+						int roundsSinceCast = dndGame.RoundNumber - castedSpell.CastingRound;
+						int turnsSinceCast = dndGame.InitiativeIndex - castedSpell.CastingTurnIndex;
+						if (turnsSinceCast < 0)
+						{
+							turnsSinceCast += dndGame.PlayerCount;
+							roundsSinceCast--;
+						}
+
+						turnsSinceCast += roundsSinceCast * dndGame.PlayerCount;
+						int durationTurns = duration.Count * dndGame.PlayerCount;
+						return Math.Max(0, Math.Min(100, 100 * turnsSinceCast / durationTurns));
+					}
+					
+					break;
+				case TimeMeasure.actions:
+				case TimeMeasure.bonusActions:
+				case TimeMeasure.reaction:
+					
+					break;
+			}
+
+			throw new NotImplementedException();
+		}
+
+		private static int GetPercentCompleteBasedOnSpellDuration(CastedSpell castedSpell, DndGame dndGame, TimeSpan spellDuration)
+		{
+			TimeSpan timeActive = dndGame.Clock.Time - castedSpell.CastingTime;
+			return (int)Math.Round(100 * timeActive.TotalSeconds / spellDuration.TotalSeconds);
+		}
 	}
 }

@@ -21,7 +21,8 @@ namespace DndCore
 		public static void Log(string message)
 		{
 			logText += message + "\n";
-			queuedEntries.Add(new LogEntry(message, DateTime.Now, TimeClock.Time));
+			lock (queuedEntries)
+				queuedEntries.Add(new LogEntry(message, DateTime.Now, TimeClock.Time));
 			OnLogUpdated(null, EventArgs.Empty);
 		}
 
@@ -51,13 +52,15 @@ namespace DndCore
 			{
 				
 			}
-			queuedEntries.Clear();
+			lock (queuedEntries)
+				queuedEntries.Clear();
 		}
 		public static void Clear()
 		{
 			logText = "";
 			Entries.Clear();
-			queuedEntries.Clear();
+			lock (queuedEntries)
+				queuedEntries.Clear();
 		}
 
 		public static event EventHandler LogUpdated;

@@ -2,8 +2,12 @@
 {
 	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
 }
+interface ITextFloater
+{
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string);
+}
 
-class DragonFrontGame extends DragonGame implements INameplateRenderer {
+class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
 	textAnimations: Animations = new Animations();
 
@@ -174,7 +178,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 			outlineColor = '#2d4c75';
 		}
 
-		this.addFloatingPlayerText(1760, message, fillColor, outlineColor);
+		this.addFloatingText(1760, message, fillColor, outlineColor);
 	}
 
 	private drawGameTime(context: CanvasRenderingContext2D) {
@@ -1115,7 +1119,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 			if (wealthChange.Coins.TotalGold > 0)
 				prefix = '+';
 			setTimeout(() => {
-				this.addFloatingPlayerText(playerX, `${prefix}${wealthChange.Coins.TotalGold} gp`, DragonFrontGame.FontColorGold, DragonFrontGame.FontOutlineGold);
+				this.addFloatingText(playerX, `${prefix}${wealthChange.Coins.TotalGold} gp`, DragonFrontGame.FontColorGold, DragonFrontGame.FontOutlineGold);
 			}, timeoutMs);
 
 			setTimeout(() => {
@@ -1158,7 +1162,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 				suffix = 'temp hp';
 			}
 
-			this.addFloatingPlayerText(playerX, `+${playerHealth.DamageHealth} ${suffix}`, fontColor, outlineColor);
+			this.addFloatingText(playerX, `+${playerHealth.DamageHealth} ${suffix}`, fontColor, outlineColor);
 		}, 2000);
 		this.showHealthGain(playerHealth.PlayerIds[i], playerHealth.DamageHealth, playerHealth.IsTempHitPoints);
 		this.dragonFrontSounds.playRandom('Healing/Healing', 5);
@@ -1175,7 +1179,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 		textEffect.textBaseline = 'top';
 	}
 
-	addFloatingPlayerText(xPos: number, text: string, fontColor: string, outlineColor: string) {
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string) {
 		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, 1080), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
@@ -1200,12 +1204,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 
 
 	private showDamage(playerHealth: PlayerHealth, i: number) {
-		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
-		this.addFloatingPlayerText(playerX, `${playerHealth.DamageHealth} hp`, DragonFrontGame.FontColorDamage, DragonFrontGame.FontOutlineDamage);
-		let fredIsTakingDamage: boolean = false;
-		let fredIsGettingHitByBlood: boolean = false;
-		let splatterDirection: SplatterDirection;
-		splatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
+		const playerX: number = this.getPlayerX(this.getPlayerIndex(playerHealth.PlayerIds[i]));
+		this.addFloatingText(playerX, `${playerHealth.DamageHealth} hp`, DragonFrontGame.FontColorDamage, DragonFrontGame.FontOutlineDamage);
+		let fredIsTakingDamage = false;
+		let fredIsGettingHitByBlood = false;
+		const splatterDirection: SplatterDirection = this.showDamageForPlayer(playerHealth.DamageHealth, playerHealth.PlayerIds[i]);
 		if (playerHealth.PlayerIds[i] === this.Player_Fred) {
 			fredIsTakingDamage = true;
 		}
@@ -1217,8 +1220,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 	}
 
 	private fredIsGettingHitByBlood(playerHealth: PlayerHealth, splatterDirection: SplatterDirection, fredIsGettingHitByBlood: boolean, playerX: number) {
-		if (playerHealth.DamageHealth < 0 && splatterDirection == SplatterDirection.Left) {
-			let absDamage: number = -playerHealth.DamageHealth;
+		if (playerHealth.DamageHealth < 0 && splatterDirection === SplatterDirection.Left) {
+			const absDamage: number = -playerHealth.DamageHealth;
 			if (absDamage >= this.heavyDamageThreshold)
 				fredIsGettingHitByBlood = true;
 			else if (absDamage >= this.mediumDamageThreshold) {
@@ -1242,15 +1245,15 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 
 
 	private showDamageForPlayer(damageHealth: number, playerId: number): SplatterDirection {
-		let flipHorizontally: boolean = false;
+		let flipHorizontally = false;
 		if (Random.chancePercent(50))
 			flipHorizontally = true;
 		let damageHealthSprites: BloodSprites;
-		let scale: number = 1;
+		let scale = 1;
 		if (damageHealth > 0)
 			return SplatterDirection.None;
 
-		let absDamage: number = -damageHealth;
+		const absDamage: number = -damageHealth;
 
 		if (absDamage >= this.heavyDamageThreshold)
 			this.dragonFrontSounds.playRandom('Damage/Heavy/GushHeavy', 13);
@@ -1263,7 +1266,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 		if (absDamage < this.fullScreenDamageThreshold) {
 			damageHealthSprites = this.getScalableBlood();
 
-			let desiredBloodHeight: number = 1080 * absDamage / this.fullScreenDamageThreshold;
+			const desiredBloodHeight: number = 1080 * absDamage / this.fullScreenDamageThreshold;
 			scale = desiredBloodHeight / damageHealthSprites.height;
 		}
 		else {
@@ -1450,7 +1453,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer {
 
 	floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string): void {
 		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
-		this.addFloatingPlayerText(playerX, message, fillColor, outlineColor);
+		this.addFloatingText(playerX, message, fillColor, outlineColor);
 	}
 
 	showFpsWindow: boolean;

@@ -60,24 +60,24 @@ namespace DndCore
 
 		public DateTime Time { get; private set; }
 
-		public void Advance(DndTimeSpan dndTimeSpan, bool reverseDirection = false)
+		public void Advance(DndTimeSpan dndTimeSpan, int turnIndex = -1, bool reverseDirection = false)
 		{
-			Advance(dndTimeSpan.GetTimeSpan(), reverseDirection);
+			Advance(dndTimeSpan.GetTimeSpan(), turnIndex, reverseDirection);
 		}
 
-		void Advance(TimeSpan timeSpan, bool reverseDirection = false)
+		void Advance(TimeSpan timeSpan, int turnIndex = -1, bool reverseDirection = false)
 		{
 			if (timeSpan == Timeout.InfiniteTimeSpan)
 				throw new Exception("Cannot add infinity. COME ON!!!");
 			if (reverseDirection)  // Not fully supported.
-				SetTime(Time - timeSpan);
+				SetTime(Time - timeSpan, turnIndex);
 			else
-				SetTime(Time + timeSpan);
+				SetTime(Time + timeSpan, turnIndex);
 		}
 
-		public void Advance(double milliseconds, bool reverseDirection = false)
+		public void Advance(double milliseconds, int turnIndex = -1, bool reverseDirection = false)
 		{
-			Advance(TimeSpan.FromMilliseconds(milliseconds), reverseDirection);
+			Advance(TimeSpan.FromMilliseconds(milliseconds), turnIndex, reverseDirection);
 		}
 
 		public string AsDndDateString()
@@ -246,15 +246,16 @@ namespace DndCore
 			return false;
 		}
 
-		protected virtual void OnTimeChanged(object sender, DateTime previousTime)
+		protected virtual void OnTimeChanged(object sender, DateTime previousTime, int previousTurnIndex)
 		{
 			timeClockEventArgs.SpanSinceLastUpdate = Time - previousTime;
+			timeClockEventArgs.PreviousTurnIndex = previousTurnIndex;
 			TimeChanged?.Invoke(sender, timeClockEventArgs);
 		}
 
 		List<DndAlarm> alarmsToRemove = new List<DndAlarm>();
 		bool triggeringAlarms;
-		void TriggerAlarms(DateTime futureTime, Character player = null, RoundSpecifier roundSpecifier = RoundSpecifier.None)
+		void TriggerAlarms(DateTime futureTime, int currentTurnIndex, Character player = null, RoundSpecifier roundSpecifier = RoundSpecifier.None)
 		{
 			triggeringAlarms = true;
 			try
@@ -264,6 +265,10 @@ namespace DndCore
 					DndAlarm alarm = alarms[i];
 					if (alarm.TriggerTime > futureTime)
 						break;
+
+					if (futureTime - alarm.TriggerTime < TimeSpan.FromSeconds(6))
+						if (alarm.TurnIndex >= 0 && alarm.TurnIndex > currentTurnIndex)
+							break;
 
 					TriggerAlarm(alarm, player, roundSpecifier);
 				}
@@ -300,7 +305,7 @@ namespace DndCore
 			}
 
 			if (alarm.TriggerTime > Time)
-				Time = alarm.TriggerTime;
+				Time = alarm.TriggerTime;  // Update clock time to match alarm's time.
 			try
 			{
 				alarm.FireAlarm(this);
@@ -324,18 +329,23 @@ namespace DndCore
 		{
 			
 		}
-		public void SetTime(DateTime time)
+
+		public int TurnIndex { get; set; } = -1;
+		public void SetTime(DateTime time, int turnIndex = -1)
 		{
-			if (Time == time)
+			if (Time == time && TurnIndex == turnIndex)
 				return;
 			DateTime previousTime = Time;
+			int previousTurnIndex = TurnIndex;
 
-			if (time > Time)  // Moving forward
-				TriggerAlarms(time);
+			if (time > Time || (time == Time && turnIndex > TurnIndex && TurnIndex >= 0))  // Moving forward
+				TriggerAlarms(time, turnIndex);
 			else
 				ReengagePreviouslyTriggeredAlarms();
+
 			Time = time;
-			OnTimeChanged(this, previousTime);
+			TurnIndex = turnIndex;
+			OnTimeChanged(this, previousTime, previousTurnIndex);
 		}
 
 		public void SetTime(int year, int dayOfYear, int hour = 0, int minutes = 0, int seconds = 0)
@@ -348,14 +358,15 @@ namespace DndCore
 		List<DndAlarm> alarms = new List<DndAlarm>();
 		List<DndDailyAlarm> dailyAlarms = new List<DndDailyAlarm>();
 
-		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Character player = null, object data = null)
+		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Character player = null, object data = null, int turnIndex = -1)
 		{
 			if (fromNow.TotalSeconds <= 0)
 				return null;
 
-			DndAlarm dndAlarm = new DndAlarm(this, Time + fromNow, name, player, data);
+			DndAlarm dndAlarm = new DndAlarm(this, Time + fromNow, name, turnIndex, player, data);
 			alarms.Add(dndAlarm);
-			alarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
+			alarms = alarms.OrderBy(x => x.TriggerTime).ThenBy(x => x.TurnIndex).ToList();
+			//alarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
 			return dndAlarm;
 		}
 
@@ -399,14 +410,14 @@ namespace DndCore
 			}
 		}
 
-		public void CheckAlarmsPlayerStartsTurn(Character character)
+		public void CheckAlarmsPlayerStartsTurn(Character character, DndGame game)
 		{
-			TriggerAlarms(Time, character, RoundSpecifier.StartOfTurn);
+			TriggerAlarms(Time, game.InitiativeIndex, character, RoundSpecifier.StartOfTurn);
 		}
 
-		public void CheckAlarmsPlayerEndsTurn(Character character)
+		public void CheckAlarmsPlayerEndsTurn(Character character, DndGame game)
 		{
-			TriggerAlarms(Time, character, RoundSpecifier.EndOfTurn);
+			TriggerAlarms(Time, game.InitiativeIndex, character, RoundSpecifier.EndOfTurn);
 		}
 	}
 }

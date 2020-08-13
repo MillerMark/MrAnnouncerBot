@@ -36,18 +36,18 @@ namespace DndTests
 			game.AddMonster(joeTheVineBlight);
 			game.EnteringCombat();
 			DateTime enterCombatTime = game.Time;
-			Assert.AreEqual(0, game.roundIndex);
+			Assert.AreEqual(1, game.RoundNumber);
 			Spell zzzSaveSpell = AllSpells.Get("ZZZ Test Save Spell", merkin, 3);
 			merkin.CastTest(zzzSaveSpell, joeTheVineBlight);
 			joeTheVineBlight.PrepareAttack(merkin, joeTheVineBlight.GetAttack(AttackNames.Constrict));
 			merkin.CastTest(zzzSaveSpell, joeTheVineBlight);
-			Assert.AreEqual(1, game.roundIndex);
+			Assert.AreEqual(2, game.RoundNumber);
 
 			DateTime exitCombatTime = game.Time;
 			TimeSpan totalCombatTime = exitCombatTime - enterCombatTime;
-			Assert.AreEqual(game.roundIndex * 6 /*seconds*/, totalCombatTime.TotalSeconds);
+			Assert.AreEqual((game.RoundNumber - 1) * 6 /*seconds*/, totalCombatTime.TotalSeconds);
 			game.ExitingCombat();
-			Assert.AreEqual(0, game.roundIndex);
+			Assert.AreEqual(1, game.RoundNumber);
 		}
 	}
 }

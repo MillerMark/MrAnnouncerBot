@@ -377,6 +377,7 @@ function removeMultiplayerD20s(): any {
 }
 
 function diceDefinitelyStoppedRolling() {
+	console.log('diceDefinitelyStoppedRolling');
 	if (needToClearD20s) {
 		if (diceRollData.hasMultiPlayerDice) {
 			removeMultiplayerD20s();
@@ -415,6 +416,7 @@ function diceDefinitelyStoppedRolling() {
 }
 
 function diceJustStoppedRolling(now: number) {
+	console.log('diceJustStoppedRolling');
 	const thisTime: number = now;
 	if ((thisTime - firstStopTime) / 1000 > 1.5) {
 		diceDefinitelyStoppedRolling();
@@ -447,7 +449,7 @@ function checkStillRolling() {
 
 	const now: number = performance.now();
 
-	if (waitingForBonusRollToComplete && bonusRollStartTime != 0) {
+	if (waitingForBonusRollToComplete && bonusRollStartTime !== 0) {
 		if (now - bonusRollStartTime < 1000) {
 			return;
 		}
@@ -685,7 +687,7 @@ function highlightSpecialDice() {
 
 function diceRemainingInPlay(): number {
 	let count = 0;
-	for (let i in dice) {
+	for (const i in dice) {
 		if (dice[i].inPlay) {
 			count++;
 		}
@@ -2291,7 +2293,113 @@ function reportRollResults(rollResults: RollResults) {
 	return maxDamage;
 }
 
+function calculateFinalMessage(): void {
+	switch (diceRollData.wildMagic) {
+		case WildMagic.wildMagicMinute:
+			additionalDieRollMessage = 'Perform a wild magic roll at the start of each of your turns for the next minute, ignoring this result on subsequent rolls.'; break;
+		case WildMagic.seeInvisibleCreatures:
+			additionalDieRollMessage = 'For the next minute, you can see any invisible creature if you have line of sight to it.'; break;
+		case WildMagic.modronAppearsOneMinute:
+			additionalDieRollMessage = 'A modron chosen and controlled by the DM appears in an unoccupied space within 5 feet of you, then disappears 1 minute later.'; break;
+		case WildMagic.castFireball: additionalDieRollMessage = 'You cast Fireball as a 3rd-level spell centered on yourself.'; break;
+		case WildMagic.castMagicMissile: additionalDieRollMessage = 'You cast Magic Missile as a 5th-level spell.'; break;
+		case WildMagic.heightChange:
+			additionalDieRollMessage = 'Your height changes by a number of inches equal to the d10 roll. If the roll is odd, you shrink. If the roll is even, you grow.'; break;
+		case WildMagic.castConfusionOnSelf:
+			additionalDieRollMessage = 'You cast Confusion centered on yourself.'; break;
+		case WildMagic.regain5hpPerTurnForOneMinute:
+			additionalDieRollMessage = 'For the next minute, you regain 5 hit points at the start of each of your turns.'; break;
+		case WildMagic.beardOfFeathers:
+			additionalDieRollMessage = 'You grow a long beard made of feathers that remains until you sneeze, at which point the feathers explode out from your face.'; break;
+		case WildMagic.castGreaseCenteredOnSelf:
+			additionalDieRollMessage = 'You cast Grease centered on yourself.'; break;
+		case WildMagic.spellTargetsDisadvantagedSavingThrowForOneMinute:
+			additionalDieRollMessage = 'Creatures have disadvantage on saving throws against the next spell you cast in the next minute that involves a saving throw.'; break;
+		case WildMagic.skinTurnsBlue:
+			additionalDieRollMessage = 'Your skin turns a vibrant shade of blue. A Remove Curse spell can end this effect.'; break;
+		case WildMagic.thirdEyeAdvantageWisdomChecks:
+			additionalDieRollMessage = 'An eye appears on your forehead for the next minute. During that time, you have advantage on Wisdom (Perception) checks that rely on sight.'; break;
+		case WildMagic.castTimeBonusActionOneMinute:
+			additionalDieRollMessage = 'For the next minute, all your spells with a casting time of 1 action have a casting time of 1 bonus action.'; break;
+		case WildMagic.teleportUpTo60Feet:
+			additionalDieRollMessage = 'You teleport up to 60 feet to an unoccupied space of your choice that you can see.'; break;
+		case WildMagic.astralPlaneUntilEndOfNextTurn:
+			additionalDieRollMessage = 'You are transported to the Astral Plane until the end of your next turn, after which time you return to the space you previously occupied or the nearest unoccupied space if that space is occupied.'; break;
+		case WildMagic.maximizeDamageOnSpellCastInNextMinute:
+			additionalDieRollMessage = 'Maximize the damage of the next damaging spell you cast within the next minute.'; break;
+		case WildMagic.ageChange:
+			additionalDieRollMessage = 'Your age changes by a number of years equal to the d10 roll. If the roll is odd, you get younger (minimum 1 year old). If the roll is even, you get older.'; break;
+		case WildMagic.flumphs:
+			additionalDieRollMessage = '1d6 flumphs controlled by the DM appear in unoccupied spaces within 60 feet of you and are frightened of you. They vanish after 1 minute.'; break;
+		case WildMagic.regainHitPoints:
+			additionalDieRollMessage = 'You regain 2d10 hit points.'; break;
+		case WildMagic.pottedPlant:
+			additionalDieRollMessage = 'You turn into a potted plant until the start of your next turn. While a plant, you are incapacitated and have vulnerability to all damage. If you drop to 0 hit points, your pot breaks, and your form reverts.'; break;
+		case WildMagic.teleportUpTo20FeetBonusActionOneMinute:
+			additionalDieRollMessage = 'For the next minute, you can teleport up to 20 feet as a bonus action on each of your turns.'; break;
+		case WildMagic.castLevitateOnSelf:
+			additionalDieRollMessage = 'You cast Levitate on yourself.'; break;
+		case WildMagic.unicorn:
+			additionalDieRollMessage = 'A unicorn controlled by the DM appears in a space within 5 feet of you, then disappears 1 minute later.'; break;
+		case WildMagic.cannotSpeakPinkBubbles:
+			additionalDieRollMessage = "You can't speak for the next minute.Whenever you try, pink bubbles float out of your mouth."; break;
+		case WildMagic.spectralShieldPlus2ArmorClassNextMinute:
+			additionalDieRollMessage = 'A spectral shield hovers near you for the next minute, granting you a +2 bonus to AC and immunity to Magic Missile.'; break;
+		case WildMagic.alcoholImmunity:
+			additionalDieRollMessage = 'You are immune to being intoxicated by alcohol for the next 5d6 days.'; break;
+		case WildMagic.hairFallsOutGrowsBack24Hours:
+			additionalDieRollMessage = 'Your hair falls out but grows back within 24 hours.'; break;
+		case WildMagic.fireTouchOneMinute:
+			additionalDieRollMessage = "For the next minute, any flammable object you touch that isn't being worn or carried by another creature bursts into flame."; break;
+		case WildMagic.regainLowestLevelExpendedSpellSlot:
+			additionalDieRollMessage = 'You regain your lowest-level expended spell slot.'; break;
+		case WildMagic.shoutWhenSpeakingOneMinute:
+			additionalDieRollMessage = 'For the next minute, you must shout when you speak.'; break;
+		case WildMagic.castFogCloudCenteredOnSelf:
+			additionalDieRollMessage = 'You cast Fog Cloud centered on yourself.'; break;
+		case WildMagic.lightningDamageUpToThreeCreatures:
+			additionalDieRollMessage = 'Up to three creatures you choose within 30 feet of you take 4d10 lightning damage.'; break;
+		case WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn:
+			additionalDieRollMessage = 'You are frightened by the nearest creature until the end of your next turn.'; break;
+		case WildMagic.allCreatures30FeetInvisibleOneMinute:
+			additionalDieRollMessage = 'Each creature within 30 feet of you becomes invisible for the next minute. The invisibility ends on a creature when it attacks or casts a spell.'; break;
+		case WildMagic.resistanceToAllDamageNextMinute:
+			additionalDieRollMessage = 'You gain resistance to all damage for the next minute.'; break;
+		case WildMagic.randomCreaturePoisoned1d4Hours:
+			additionalDieRollMessage = 'A random creature within 60 feet of you becomes poisoned for 1d4 hours.'; break;
+		case WildMagic.glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded:
+			additionalDieRollMessage = 'You glow with bright light in a 30-foot radius for the next minute. Any creature that ends its turn within 5 feet of you is blinded until the end of its next turn.'; break;
+		case WildMagic.castPolymorphToSheepOnSelf:
+			additionalDieRollMessage = "You cast Polymorph on yourself. If you fail the saving throw, you turn into a sheep for the spell's duration."; break;
+		case WildMagic.butterfliesAndPetals10FeetOneMinute:
+			additionalDieRollMessage = 'Illusory butterflies and flower petals flutter in the air within 10 feet of you for the next minute.'; break;
+		case WildMagic.takeOneAdditionalActionImmediately:
+			additionalDieRollMessage = 'You can take one additional action immediately.'; break;
+		case WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage:
+			additionalDieRollMessage = 'Each creature within 30 feet of you takes 1d10 necrotic damage. You regain hit points equal to the sum of the necrotic damage dealt.'; break;
+		case WildMagic.castMirrorImage:
+			additionalDieRollMessage = 'You cast Mirror Image.'; break;
+		case WildMagic.castFlyOnRandomCreatureWithin60Feet:
+			additionalDieRollMessage = 'You cast Fly on a random creature within 60 feet of you.'; break;
+		case WildMagic.invisibleSilentNextMinute:
+			additionalDieRollMessage = "You become invisible for the next minute. During that time, other creatures can't hear you. The invisibility ends if you attack or cast a spell."; break;
+		case WildMagic.immortalOneMinute:
+			additionalDieRollMessage = 'If you die within the next minute, you immediately come back to life as if by the Reincarnate spell.'; break;
+		case WildMagic.increaseSizeOneMinute:
+			additionalDieRollMessage = 'Your size increases by one size category for the next minute.'; break;
+		case WildMagic.allCreatures30FeetVulnerableToPiercingDamageOneMinute:
+			additionalDieRollMessage = 'You and all creatures within 30 feet of you gain vulnerability to piercing damage for the next minute.'; break;
+		case WildMagic.faintEtheralMusicOneMinute:
+			additionalDieRollMessage = 'You are surrounded by faint, ethereal music for the next minute.'; break;
+		case WildMagic.regainSorceryPoints:
+			additionalDieRollMessage = 'You regain all expended sorcery points.'; break;
+	}
+	//diceRollData
+	// 
+}
+
 function onDiceRollStopped() {
+	console.log('onDiceRollStopped...');
 	calculateFinalMessage();
 	onBonusThrow = false;
 	setupBonusRoll = false;
@@ -2345,7 +2453,7 @@ function removeD20s(): number {
 	needToClearD20s = false;
 	let edgeRollValue = -1;
 	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
-	const isLuckRollHigh: boolean = localDiceRollData.type == DiceRollType.LuckRollHigh;
+	const isLuckRollHigh: boolean = localDiceRollData.type === DiceRollType.LuckRollHigh;
 	const isLuckRollLow: boolean = localDiceRollData.type == DiceRollType.LuckRollLow;
 	const isLuckRoll: boolean = isLuckRollHigh || isLuckRollLow;
 	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
@@ -3182,111 +3290,6 @@ function removeWildMagicRollsGreaterThanOne(): void {
 			interval += timeBetweenDieRemoval + Random.plusMinus(intervalVariance);
 		}
 	}
-}
-
-function calculateFinalMessage(): void {
-	switch (diceRollData.wildMagic) {
-		case WildMagic.wildMagicMinute:
-			additionalDieRollMessage = 'Perform a wild magic roll at the start of each of your turns for the next minute, ignoring this result on subsequent rolls.'; break;
-		case WildMagic.seeInvisibleCreatures:
-			additionalDieRollMessage = 'For the next minute, you can see any invisible creature if you have line of sight to it.'; break;
-		case WildMagic.modronAppearsOneMinute:
-			additionalDieRollMessage = 'A modron chosen and controlled by the DM appears in an unoccupied space within 5 feet of you, then disappears 1 minute later.'; break;
-		case WildMagic.castFireball: additionalDieRollMessage = 'You cast Fireball as a 3rd-level spell centered on yourself.'; break;
-		case WildMagic.castMagicMissile: additionalDieRollMessage = 'You cast Magic Missile as a 5th-level spell.'; break;
-		case WildMagic.heightChange:
-			additionalDieRollMessage = 'Your height changes by a number of inches equal to the d10 roll. If the roll is odd, you shrink. If the roll is even, you grow.'; break;
-		case WildMagic.castConfusionOnSelf:
-			additionalDieRollMessage = 'You cast Confusion centered on yourself.'; break;
-		case WildMagic.regain5hpPerTurnForOneMinute:
-			additionalDieRollMessage = 'For the next minute, you regain 5 hit points at the start of each of your turns.'; break;
-		case WildMagic.beardOfFeathers:
-			additionalDieRollMessage = 'You grow a long beard made of feathers that remains until you sneeze, at which point the feathers explode out from your face.'; break;
-		case WildMagic.castGreaseCenteredOnSelf:
-			additionalDieRollMessage = 'You cast Grease centered on yourself.'; break;
-		case WildMagic.spellTargetsDisadvantagedSavingThrowForOneMinute:
-			additionalDieRollMessage = 'Creatures have disadvantage on saving throws against the next spell you cast in the next minute that involves a saving throw.'; break;
-		case WildMagic.skinTurnsBlue:
-			additionalDieRollMessage = 'Your skin turns a vibrant shade of blue. A Remove Curse spell can end this effect.'; break;
-		case WildMagic.thirdEyeAdvantageWisdomChecks:
-			additionalDieRollMessage = 'An eye appears on your forehead for the next minute. During that time, you have advantage on Wisdom (Perception) checks that rely on sight.'; break;
-		case WildMagic.castTimeBonusActionOneMinute:
-			additionalDieRollMessage = 'For the next minute, all your spells with a casting time of 1 action have a casting time of 1 bonus action.'; break;
-		case WildMagic.teleportUpTo60Feet:
-			additionalDieRollMessage = 'You teleport up to 60 feet to an unoccupied space of your choice that you can see.'; break;
-		case WildMagic.astralPlaneUntilEndOfNextTurn:
-			additionalDieRollMessage = 'You are transported to the Astral Plane until the end of your next turn, after which time you return to the space you previously occupied or the nearest unoccupied space if that space is occupied.'; break;
-		case WildMagic.maximizeDamageOnSpellCastInNextMinute:
-			additionalDieRollMessage = 'Maximize the damage of the next damaging spell you cast within the next minute.'; break;
-		case WildMagic.ageChange:
-			additionalDieRollMessage = 'Your age changes by a number of years equal to the d10 roll. If the roll is odd, you get younger (minimum 1 year old). If the roll is even, you get older.'; break;
-		case WildMagic.flumphs:
-			additionalDieRollMessage = '1d6 flumphs controlled by the DM appear in unoccupied spaces within 60 feet of you and are frightened of you. They vanish after 1 minute.'; break;
-		case WildMagic.regainHitPoints:
-			additionalDieRollMessage = 'You regain 2d10 hit points.'; break;
-		case WildMagic.pottedPlant:
-			additionalDieRollMessage = 'You turn into a potted plant until the start of your next turn. While a plant, you are incapacitated and have vulnerability to all damage. If you drop to 0 hit points, your pot breaks, and your form reverts.'; break;
-		case WildMagic.teleportUpTo20FeetBonusActionOneMinute:
-			additionalDieRollMessage = 'For the next minute, you can teleport up to 20 feet as a bonus action on each of your turns.'; break;
-		case WildMagic.castLevitateOnSelf:
-			additionalDieRollMessage = 'You cast Levitate on yourself.'; break;
-		case WildMagic.unicorn:
-			additionalDieRollMessage = 'A unicorn controlled by the DM appears in a space within 5 feet of you, then disappears 1 minute later.'; break;
-		case WildMagic.cannotSpeakPinkBubbles:
-			additionalDieRollMessage = "You can't speak for the next minute.Whenever you try, pink bubbles float out of your mouth."; break;
-		case WildMagic.spectralShieldPlus2ArmorClassNextMinute:
-			additionalDieRollMessage = 'A spectral shield hovers near you for the next minute, granting you a +2 bonus to AC and immunity to Magic Missile.'; break;
-		case WildMagic.alcoholImmunity:
-			additionalDieRollMessage = 'You are immune to being intoxicated by alcohol for the next 5d6 days.'; break;
-		case WildMagic.hairFallsOutGrowsBack24Hours:
-			additionalDieRollMessage = 'Your hair falls out but grows back within 24 hours.'; break;
-		case WildMagic.fireTouchOneMinute:
-			additionalDieRollMessage = "For the next minute, any flammable object you touch that isn't being worn or carried by another creature bursts into flame."; break;
-		case WildMagic.regainLowestLevelExpendedSpellSlot:
-			additionalDieRollMessage = 'You regain your lowest-level expended spell slot.'; break;
-		case WildMagic.shoutWhenSpeakingOneMinute:
-			additionalDieRollMessage = 'For the next minute, you must shout when you speak.'; break;
-		case WildMagic.castFogCloudCenteredOnSelf:
-			additionalDieRollMessage = 'You cast Fog Cloud centered on yourself.'; break;
-		case WildMagic.lightningDamageUpToThreeCreatures:
-			additionalDieRollMessage = 'Up to three creatures you choose within 30 feet of you take 4d10 lightning damage.'; break;
-		case WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn:
-			additionalDieRollMessage = 'You are frightened by the nearest creature until the end of your next turn.'; break;
-		case WildMagic.allCreatures30FeetInvisibleOneMinute:
-			additionalDieRollMessage = 'Each creature within 30 feet of you becomes invisible for the next minute. The invisibility ends on a creature when it attacks or casts a spell.'; break;
-		case WildMagic.resistanceToAllDamageNextMinute:
-			additionalDieRollMessage = 'You gain resistance to all damage for the next minute.'; break;
-		case WildMagic.randomCreaturePoisoned1d4Hours:
-			additionalDieRollMessage = 'A random creature within 60 feet of you becomes poisoned for 1d4 hours.'; break;
-		case WildMagic.glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded:
-			additionalDieRollMessage = 'You glow with bright light in a 30-foot radius for the next minute. Any creature that ends its turn within 5 feet of you is blinded until the end of its next turn.'; break;
-		case WildMagic.castPolymorphToSheepOnSelf:
-			additionalDieRollMessage = "You cast Polymorph on yourself. If you fail the saving throw, you turn into a sheep for the spell's duration."; break;
-		case WildMagic.butterfliesAndPetals10FeetOneMinute:
-			additionalDieRollMessage = 'Illusory butterflies and flower petals flutter in the air within 10 feet of you for the next minute.'; break;
-		case WildMagic.takeOneAdditionalActionImmediately:
-			additionalDieRollMessage = 'You can take one additional action immediately.'; break;
-		case WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage:
-			additionalDieRollMessage = 'Each creature within 30 feet of you takes 1d10 necrotic damage. You regain hit points equal to the sum of the necrotic damage dealt.'; break;
-		case WildMagic.castMirrorImage:
-			additionalDieRollMessage = 'You cast Mirror Image.'; break;
-		case WildMagic.castFlyOnRandomCreatureWithin60Feet:
-			additionalDieRollMessage = 'You cast Fly on a random creature within 60 feet of you.'; break;
-		case WildMagic.invisibleSilentNextMinute:
-			additionalDieRollMessage = "You become invisible for the next minute. During that time, other creatures can't hear you. The invisibility ends if you attack or cast a spell."; break;
-		case WildMagic.immortalOneMinute:
-			additionalDieRollMessage = 'If you die within the next minute, you immediately come back to life as if by the Reincarnate spell.'; break;
-		case WildMagic.increaseSizeOneMinute:
-			additionalDieRollMessage = 'Your size increases by one size category for the next minute.'; break;
-		case WildMagic.allCreatures30FeetVulnerableToPiercingDamageOneMinute:
-			additionalDieRollMessage = 'You and all creatures within 30 feet of you gain vulnerability to piercing damage for the next minute.'; break;
-		case WildMagic.faintEtheralMusicOneMinute:
-			additionalDieRollMessage = 'You are surrounded by faint, ethereal music for the next minute.'; break;
-		case WildMagic.regainSorceryPoints:
-			additionalDieRollMessage = 'You regain all expended sorcery points.'; break;
-	}
-	//diceRollData
-	// 
 }
 
 function onSuccess() {

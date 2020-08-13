@@ -16,10 +16,7 @@
 	numFramesDrawn = 0;
 	onCycleCallbacks: Array<(sprite: SpriteProxy, now: number) => void>;
 	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>;
-
-
 	lastTimeWeAdvancedTheFrame: number;
-	returnFrameIndexOverride: number = undefined; 
 
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);

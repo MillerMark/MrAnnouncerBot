@@ -26,6 +26,8 @@ namespace DndCore
 
 		bool MatchesDamage(DamageType damageType)
 		{
+			if (damageType == DamageType.None)  // No filter can match no damage type.
+				return false;
 			return (damageType & DamageType) == damageType;
 		}
 	}

@@ -7,7 +7,6 @@ namespace DndCore
 		public event EventHandler OnDispel;
 		public CastedSpell(Spell spell, Character spellCaster)
 		{
-			TimeSpellWasCast = DndTimeClock.Instance.Time;
 			Target = spellCaster.ActiveTarget;
 			SpellCaster = spellCaster;
 			Spell = spell;
@@ -23,12 +22,14 @@ namespace DndCore
 			}
 		}
 
-		public DateTime TimeSpellWasCast { get; set; }
 		public string DieStr { get => Spell.DieStr; set => Spell.DieStr = value; }
 		public string DieStrRaw { get => Spell.DieStrRaw; set { } }
 		public int SpellSlotLevel { get => Spell.SpellSlotLevel; set => Spell.SpellSlotLevel = value; }
 		public int Level { get => Spell.Level; set => Spell.Level = value; }
 		public bool Active { get; set; }
+		public DateTime CastingTime { get; set; }
+		public int CastingRound { get; set; }
+		public int CastingTurnIndex { get; set; }
 
 		public void PreparationComplete()
 		{
@@ -36,8 +37,19 @@ namespace DndCore
 			Spell.TriggerPreparationComplete(SpellCaster, Target, this);
 		}
 
-		public void PreparationStarted()
+		public void PreparationStarted(DndGame game)
 		{
+			CastingTime = game.Clock.Time;
+			if (game.InCombat)
+			{
+				CastingRound = game.RoundNumber;
+				CastingTurnIndex = game.InitiativeIndex;
+			}
+			else
+			{
+				CastingRound = -1;
+				CastingTurnIndex = -1;
+			}
 			SpellCaster.CheckConcentration(this);
 			Spell.TriggerPreparing(SpellCaster, Target, this);
 		}
