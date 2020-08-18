@@ -7,6 +7,7 @@ namespace DndCore
 	{
 		public int roll;
 		public string name;
+		public string data;
 		public int id;
 		public int modifier;
 		public bool success;

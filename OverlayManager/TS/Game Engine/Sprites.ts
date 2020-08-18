@@ -364,14 +364,21 @@
 			const segmentSize: number = this.segmentSize;  // To simplify code below.
 			const saveFrameIndex: number = frameIndex;
 
-			if (segmentSize > 0 && frameIndex >= startOffset) {
+			const insideSegments: boolean = segmentSize > 0 && frameIndex >= startOffset;
+
+			//if (this.name === 'hourglass') {
+			//	console.log(`frameIndex: ${frameIndex}, insideSegments: ${insideSegments}`);
+			//}
+
+			if (insideSegments) {
 				const segmentStartIndex: number = Math.floor((frameIndex - startOffset) / segmentSize) * segmentSize + startOffset;
 
 				//` ![](E42F091CD4DEEB9318E396A2658AE1E8.png;;0,0,1349,519;0.03114,0.03214)
 
 				let segmentEndIndex: number = segmentStartIndex + segmentSize;
 
-				if (sprite.playToEndOnExpire && sprite.expirationDate && sprite.fadeOutTime !== undefined && sprite.expirationDate <= nowMs + sprite.fadeOutTime)
+				const fadingOutNow: boolean = sprite.fadeOutTime !== undefined && sprite.expirationDate <= nowMs + sprite.fadeOutTime;
+				if (sprite.playToEndOnExpire && sprite.expirationDate && (fadingOutNow || sprite.playToEndNow))
 					segmentEndIndex = frameCount;
 				sprite.advanceFrame(frameCount, nowMs, returnFrameIndex, segmentStartIndex, segmentEndIndex, reverse, frameInterval, this.baseAnimation.fileName);
 			}

@@ -2317,6 +2317,7 @@ class DiceLayer {
 		diceRoll.modifier = dto.Modifier;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
+		diceRoll.suppressLegacyRoll = dto.SuppressLegacyRoll;
 		diceRoll.spellName = dto.SpellName;
 		diceRoll.onThrowSound = dto.OnThrowSound;
 		diceRoll.throwPower = dto.ThrowPower;
@@ -2595,6 +2596,8 @@ class DiceDto {
 	IsMagic: boolean;
 	Modifier: number;
 	Label: string;
+	PlayerName: string;
+	Data: string;
 	Vantage: VantageKind;
 	DamageType: DamageType;
 	BackColor: string;
@@ -2618,6 +2621,7 @@ class DiceRollData {
 	minCrit: number;
 	hiddenThreshold: number;
 	isMagic: boolean;
+	suppressLegacyRoll: boolean;
 	spellName: string;
 	onThrowSound: string;
 	throwPower: number;

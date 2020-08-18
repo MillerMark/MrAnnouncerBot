@@ -16,19 +16,18 @@ namespace DHDM
 			RollScope = RollScope.InGameCreatures;
 		}
 
+		public override void PrepareRoll(DiceRoll diceRoll)
+		{
+			base.PrepareRoll(diceRoll);
+			diceRoll.SavingThrow = SavingThrowAbility;
+		}
+
 		public SpellSavingThrowQueueEntry(string spellName, Ability savingThrowAbility) : this()
 		{
 			SpellName = spellName;
 			SavingThrowAbility = savingThrowAbility;
 		}
-		void AddDieStr(string dieStr)
-		{
-			if (string.IsNullOrWhiteSpace(DieStr))
-				DieStr = dieStr;
-			else
-				DieStr += "; " + dieStr;
-		}
-
+		
 		void AddDice(int quantity, int sides, string label, double modifier, VantageKind vantage, int creatureId, string backColor = null, string fontColor = null)
 		{
 			if (vantage != VantageKind.Normal && quantity == 1)

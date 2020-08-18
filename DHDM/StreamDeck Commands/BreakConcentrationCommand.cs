@@ -7,20 +7,20 @@ namespace DHDM
 {
 	public class BreakConcentrationCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		int playerId;
+		string playerInitial;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.BreakConcentration(playerId);
+			dungeonMasterApp.BreakConcentration(dungeonMasterApp.GetPlayerIdFromName(playerInitial));
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, $"^bc {RegexConstants.PlayerFirstInitials}$");
+			Match match = Regex.Match(message, $"^bc ({RegexConstants.PlayerFirstInitials})$");
 			if (match.Success)
 			{
-				if (int.TryParse(match.Groups[1].Value, out playerId))
-					return true;
+				playerInitial = match.Groups[1].Value;
+				return true;
 			}
 			return false;
 		}

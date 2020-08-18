@@ -306,6 +306,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ActionQueue\ActionQueueEntry.cs" />
+    <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="AdvanceClockCommand.cs" />
     <Compile Include="PlayerStats\AllPlayerStats.cs" />

@@ -253,7 +253,6 @@
 
 	okayToDie(frameCount: number): boolean {
 		// Allow descendants to change behavior
-		console.log('okayToDie - return true;');
 		return true;
 	}
 

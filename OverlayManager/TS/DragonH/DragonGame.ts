@@ -462,7 +462,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number): Sprites {
-		let weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, 91, fps30, AnimationStyle.Loop, true);
+		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, 91, fps30, AnimationStyle.Loop, true);
 		weapon.name = weaponName + '.' + animationName;
 		weapon.originX = originX;
 		weapon.originY = originY;

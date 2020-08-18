@@ -18,6 +18,18 @@
 	onFrameAdvanceCallbacks: Array<(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number) => void>;
 	lastTimeWeAdvancedTheFrame: number;
 
+	private _playToEndNow = false;
+	
+	get playToEndNow(): boolean {
+		return this._playToEndNow;
+	}
+	
+	set playToEndNow(newValue: boolean) {
+		this._playToEndNow = newValue;
+		if (this._playToEndNow)
+			this.playToEndOnExpire = true;
+	}
+
 	constructor(startingFrameNumber: number, x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);
 		this.frameIndex = Math.floor(startingFrameNumber);
@@ -102,14 +114,14 @@
 				this.cycled(nowMs);
 			}
 		}
-		else if (!reverse) {
-			if (this.frameIndex >= frameCount) {
+		else if (reverse) {
+			if (this.frameIndex <= 0) {
 				this.frameIndex = returnFrameIndex;
 				this.cycled(nowMs);
 			}
 		}
 		else {
-			if (this.frameIndex <= 0) {
+			if (this.frameIndex >= frameCount) {
 				this.frameIndex = returnFrameIndex;
 				this.cycled(nowMs);
 			}

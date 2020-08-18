@@ -1,6 +1,8 @@
 ﻿const globalFramesToLoad: number = 1;
 const globalFramesToCount: number = 2;
 
+
+// Each of these fps constants is the number of ms for that frame rate.
 const fps100 = 10;
 const fps90 = 1000 / 90;
 const fps80 = 1000 / 80;
@@ -87,6 +89,8 @@ class PartBackgroundLoader {
 		PartBackgroundLoader.initialize();
 	}
 
+	static readonly logBackgroundImageLoadingMessages: boolean = false;
+
 	static loadImages() {
 		if (PartBackgroundLoader.partsToLoad.length == 0) {
 			if (PartBackgroundLoader.intervalHandle !== undefined) {
@@ -95,12 +99,13 @@ class PartBackgroundLoader {
 			}
 			return;
 		}
-		var startTime: number = performance.now();
+		const startTime: number = performance.now();
 		PartBackgroundLoader.partsToLoad.sort((a, b) => (a.frameCount - b.frameCount));
-		let partToLoad: Part = PartBackgroundLoader.partsToLoad.pop();
-		console.log(`Background Loading ${partToLoad.fileName} with ${partToLoad.frameCount} images.`);
+		const partToLoad: Part = PartBackgroundLoader.partsToLoad.pop();
+		if (PartBackgroundLoader.logBackgroundImageLoadingMessages)
+			console.log(`Background Loading ${partToLoad.fileName} with ${partToLoad.frameCount} images.`);
 		partToLoad.images;  // Triggering the load on demand.
-		var loadTime: number = performance.now() - startTime;
+		const loadTime: number = performance.now() - startTime;
 		PartBackgroundLoader.nextInterval = Math.min(2000, loadTime * 2);
 	}
 

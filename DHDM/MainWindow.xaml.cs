@@ -123,7 +123,7 @@ namespace DHDM
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
-			
+
 			delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
 			delayRollTimer.Tick += new EventHandler(RollDiceNowHandler);
 
@@ -238,9 +238,20 @@ namespace DHDM
 			game.RequestMessageToAll += Game_RequestMessageToAll;
 			game.PlayerRequestsRoll += Game_PlayerRequestsRoll;
 			game.PlayerStateChanged += Game_PlayerStateChanged;
+			game.PlayerDamaged += Game_PlayerDamaged;
 			game.RoundStarting += Game_RoundStarting;
 			game.ActivePlayerChanged += Game_ActivePlayerChanged;
 			game.ConcentratedSpellChanged += Game_ConcentratedSpellChanged;
+		}
+
+		private void Game_PlayerDamaged(object sender, CreatureDamagedEventArgs ea)
+		{
+			if (ea.Creature is Character player)
+				if (player.concentratedSpell != null)
+				{
+					EnqueueBreakSpellConcentrationSavingThrow(player.playerID, ea.DamageAmount);
+					// TODO: Trigger the saving throw roll to see if they break concentration with the spell.
+				}
 		}
 
 		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
@@ -719,8 +730,7 @@ namespace DHDM
 			{
 				UpdateStateUIForPlayer(ea.Player);
 			}
-			else
-			if (ea.IsRechargeable)
+			else if (ea.IsRechargeable)
 			{
 				updatingRechargeables = true;
 				try
@@ -1353,7 +1363,7 @@ namespace DHDM
 			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 			EndSpellEffects(spellToEnd);
 
-			if (ea.CastedSpell.Spell.RequiresConcentration)
+			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
 			{
 				ea.CastedSpell.SpellCaster.concentratedSpell = null;
 				PlayerStats playerStats = AllPlayerStats.GetPlayerStats(ea.CastedSpell.SpellCaster.playerID);
@@ -3352,7 +3362,7 @@ namespace DHDM
 
 		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target,
 			int hueShift = 0, int saturation = 100, int brightness = 100,
-			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100, 
+			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100,
 			int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
 		{
 			AnimationEffect spellEffect = new AnimationEffect();
@@ -3414,7 +3424,7 @@ namespace DHDM
 		{
 			if (savingThrowResult == SavingThrowResult.Success)
 			{
-				
+
 			}
 		}
 
@@ -3439,7 +3449,7 @@ namespace DHDM
 			}
 			else
 			{
-				System.Diagnostics.Debugger.Break();
+				//System.Diagnostics.Debugger.Break();
 			}
 		}
 
@@ -3464,7 +3474,21 @@ namespace DHDM
 			}
 			else
 			{
-				System.Diagnostics.Debugger.Break();
+				// Saving throw but not for a spell.
+				foreach (PlayerRoll playerRoll in thoseWhoFailed)
+				{
+					if (playerRoll.data == BreakSpellConcentrationSavingThrowQueueEntry.STR_ConcentrationSave)
+					{
+						Character player = game.GetPlayerFromId(playerRoll.id);
+						if (player != null)
+						{
+							string focusedSpellName = player.concentratedSpell.Spell.Name;
+							TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
+							game.RemoveActiveSpell(player, focusedSpellName);
+							player.BreakConcentration();
+						}
+					}
+				}
 			}
 		}
 		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
@@ -5549,6 +5573,8 @@ namespace DHDM
 			{
 				try
 				{
+					if (dungeonMasterClient == null)
+						CreateDungeonMasterClient();
 					dungeonMasterClient.JoinChannel(channel);
 					dungeonMasterClient.SendMessage(channel, message);
 				}
@@ -7368,7 +7394,7 @@ namespace DHDM
 			{
 				if (monsterCropPreviewBitmap != null)
 				{
-					Title = $"{monsterCropPreviewBitmap.DpiX}, {monsterCropPreviewBitmap.DpiY}";
+					//Title = $"{monsterCropPreviewBitmap.DpiX}, {monsterCropPreviewBitmap.DpiY}";
 
 					double dpiFactorX = monsterCropPreviewBitmap.DpiX / 96;
 					double dpiFactorY = monsterCropPreviewBitmap.DpiY / 96;
@@ -7582,7 +7608,7 @@ namespace DHDM
 			public bool IsSelected { get; set; }
 			public TargetSaveData()
 			{
-				
+
 			}
 		}
 
@@ -7592,7 +7618,7 @@ namespace DHDM
 			{
 				case "TargetShown":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted= inGameCreature.OnScreen;
+						inGameCreature.IsTargeted = inGameCreature.OnScreen;
 					UpdateInGameCreatures();
 					return;
 				case "ClearDead":
@@ -7696,7 +7722,7 @@ namespace DHDM
 						else
 							targetSaveData.Add(index, targetData);
 					}
-					
+
 					AllInGameCreatures.Invalidate();
 
 					// Restore selection/targeting state
@@ -7738,7 +7764,7 @@ namespace DHDM
 						changed = true;
 
 					TellDmCreatureHp(inGameCreature);
-					
+
 				}
 			}
 			if (changed)
@@ -7866,11 +7892,7 @@ namespace DHDM
 			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow)
 			{
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
-				diceRoll.RollScope = dieRollQueueEntry.RollScope;
-				diceRoll.DiceDtos = dieRollQueueEntry.DiceDtos;
-				if (dieRollQueueEntry is SpellSavingThrowQueueEntry spellSavingThrowQueueEntry)
-					diceRoll.SavingThrow = spellSavingThrowQueueEntry.SavingThrowAbility;
-				diceRoll.HiddenThreshold = dieRollQueueEntry.HiddenThreshold;
+				dieRollQueueEntry.PrepareRoll(diceRoll);
 				RollTheDice(diceRoll);
 			}
 			// TODO: roll the dice.
@@ -7879,14 +7901,17 @@ namespace DHDM
 
 		void DeueueNextAction()
 		{
-			if (!actionQueue.Any())
-				return;
-
-			Dispatcher.Invoke(() =>
+			lock (actionQueue)
 			{
-				if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
-					ExecuteAction(actionQueue.Dequeue());
-			});
+				if (!actionQueue.Any())
+					return;
+
+				Dispatcher.Invoke(() =>
+				{
+					if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
+						ExecuteAction(actionQueue.Dequeue());
+				});
+			}
 		}
 
 		string GetTargetedCreatureList(List<DiceDto> diceDtos)
@@ -7933,7 +7958,8 @@ namespace DHDM
 				{
 					dieRoll.HiddenThreshold = spellCaster.SpellSaveDC;
 					dieRoll.PlayerId = playerID;
-					actionQueue.Enqueue(dieRoll);
+					lock (actionQueue)
+						actionQueue.Enqueue(dieRoll);
 					string targetedCreatureList = GetTargetedCreatureList(dieRoll.DiceDtos);
 					TellDungeonMaster($"Coming up: {savingThrowAbility} saving throw for {targetedCreatureList} (as soon as the dice are cleared).");
 				}
@@ -7946,13 +7972,26 @@ namespace DHDM
 				TellDungeonMaster($"No need to roll saving throw - all targeted creatures are totally immune to all {name} damage.");
 		}
 
+		void EnqueueBreakSpellConcentrationSavingThrow(int playerID, double damageTaken)
+		{
+			BreakSpellConcentrationSavingThrowQueueEntry futureDieRoll = new BreakSpellConcentrationSavingThrowQueueEntry();
+			futureDieRoll.PlayerId = playerID;
+			futureDieRoll.HiddenThreshold = Math.Max(10, DndUtils.HalveValue(damageTaken));
+			lock (actionQueue)
+				actionQueue.Enqueue(futureDieRoll);
+			Character player = GetPlayer(playerID);
+			if (player != null)
+				TellDungeonMaster($"{player.firstName} took {damageTaken} pts of damage while concentrating on a spell ({player.concentratedSpell.Spell.Name})! Constitution saving throw (against a {futureDieRoll.HiddenThreshold}) coming up...");
+		}
+
 		private void Game_RequestQueueShortcut(object sender, QueueShortcutEventArgs ea)
 		{
 			ShortcutQueueEntry shortcutQueueEntry = new ShortcutQueueEntry();
 			shortcutQueueEntry.PlayerId = ea.Player.playerID;
 			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
 			shortcutQueueEntry.ShortcutName = ea.ShortcutName;
-			actionQueue.Enqueue(shortcutQueueEntry);
+			lock (actionQueue)
+				actionQueue.Enqueue(shortcutQueueEntry);
 		}
 
 		private void Game_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)

@@ -15,6 +15,7 @@ namespace DndCore
 	public delegate void SpellEventHandler(object sender, SpellEventArgs ea);
 	public delegate void CharacterSpellEventHandler(object sender, CharacterSpellEventArgs ea);
 	public delegate void StateChangedEventHandler(object sender, StateChangedEventArgs ea);
+	public delegate void CreatureDamagedEventHandler(object sender, CreatureDamagedEventArgs ea);
 	public delegate void TimeClockEventHandler(object sender, TimeClockEventArgs ea);
 	public delegate void DndGameEventHandler(object sender, DndGameEventArgs ea);
 	public delegate void DndCharacterEventHandler(object sender, DndCharacterEventArgs ea);

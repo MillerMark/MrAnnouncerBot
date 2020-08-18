@@ -1144,7 +1144,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	playerStats: AllPlayerStats = new AllPlayerStats();
 
 	changePlayerStats(playerStatsDtoStr: string): void {
-		console.log(playerStatsDtoStr);
+		//console.log(playerStatsDtoStr);
 		const newPlayerStats: AllPlayerStats = new AllPlayerStats().deserialize(JSON.parse(playerStatsDtoStr));
 		this.playerStats.handleCommand(this, this, this.context, this.dragonFrontSounds, newPlayerStats, this.players);
 		// TODO: transfer stats across.

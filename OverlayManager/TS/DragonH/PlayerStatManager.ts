@@ -204,7 +204,6 @@ class AllPlayerStats implements IAllPlayerStats {
 	}
 
 	cleanUpAllActiveTurnHighlighting() {
-		console.log('cleanUpAllActiveTurnHighlighting');
 		for (let i = 0; i < this.nameplateHighlightCollection.allSprites.length; i++) {
 			const sprites: SpriteProxy[] = this.nameplateHighlightCollection.allSprites[i].sprites;
 			for (let j = 0; j < sprites.length; j++) {
@@ -223,8 +222,9 @@ class AllPlayerStats implements IAllPlayerStats {
 		return nameplateHighlight;
 	}
 
-	static readonly minSandFrame: number = 35;
-
+	static readonly minSandSegmentFrame: number = 35;
+	static readonly maxSandSegmentFrame: number = 320;
+	static readonly totalSandFrames: number = 347;
 
 	loadResources() {
 		this.nameplateTopLong = this.loadNameplateHighlight('NameplateTopLong', 306, 147);
@@ -245,8 +245,10 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.concentrationIcon = this.loadConcentrationSprites('Concentration', 1, 14, 16, AnimationStyle.Static);
 		this.concentrationExplosion = this.loadConcentrationSprites('FireHideScroll', 99, 191, 280, AnimationStyle.Sequential);
 		this.concentrationHourglassSand = this.loadConcentrationSprites('HourglassSand', 348, 44, 46, AnimationStyle.Loop);
-		this.concentrationHourglassSand.returnFrameIndex = AllPlayerStats.minSandFrame;
+		this.concentrationHourglassSand.returnFrameIndex = AllPlayerStats.minSandSegmentFrame;
 		this.concentrationHourglassSand.segmentSize = 3;
+		this.concentrationHourglassSand.name = 'hourglass';
+
 
 		this.readyToRollFullDragon = this.createReadyToRollSprites('FullDragon', 281, 265);
 		this.readyToRollLightningCord = this.createReadyToRollSprites('LightningCord', 28, -35);
@@ -371,7 +373,6 @@ class AllPlayerStats implements IAllPlayerStats {
 	timeOfNextDragonBreath = -1;
 
 	update(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, nowMs: number) {
-		console.log('this.allTextEffects.length: ' + this.allTextEffects.animations.length);
 		this.allTextEffects.removeExpiredAnimations(nowMs);
 		//this.allTextEffects.updatePositions(nowMs);
 		this.readyToRollFullDragon.updatePositions(nowMs);
@@ -445,20 +446,17 @@ class AllPlayerStats implements IAllPlayerStats {
 		existingPlayerStats.PercentConcentrationComplete = latestPlayerStats.PercentConcentrationComplete;
 		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, existingPlayerStats.PlayerId);
 
-		const maxSandFrame = 320;
-
 		if (hourglass) {
 			if (existingPlayerStats.PercentConcentrationComplete === 100) {
-				hourglass.frameIndex = maxSandFrame + this.concentrationHourglassSand.segmentSize;
-				hourglass.playToEndOnExpire = true;
-				// TODO: figure out how to get the final grains of sand to drop and then destroy. Challenging because we will reach 100% before the spell expires by a fraction of the total spell duration. So a longer spell we will get here much longer before it actually expires.
-				//hourglass.destroyAllInExactly(0);
-				//setTimeout(this.destroyActiveSpell.bind(this), 13 * fps30, soundManager, existingPlayerStats.PlayerId);
+				// only setting the frameIndex to the last segment.
+				hourglass.frameIndex = AllPlayerStats.maxSandSegmentFrame - this.concentrationHourglassSand.segmentSize - 1;
 				return;
 			}
-			const framesBetween: number = maxSandFrame - AllPlayerStats.minSandFrame;
+			if (hourglass.frameIndex < AllPlayerStats.minSandSegmentFrame)
+				return;
+			const framesBetween: number = AllPlayerStats.maxSandSegmentFrame - AllPlayerStats.minSandSegmentFrame;
 			const frameOffset: number = Math.round(existingPlayerStats.PercentConcentrationComplete * framesBetween / 100);
-			hourglass.frameIndex = AllPlayerStats.minSandFrame + frameOffset;
+			hourglass.frameIndex = AllPlayerStats.minSandSegmentFrame + frameOffset;
 		}
 	}
 
@@ -904,30 +902,45 @@ class AllPlayerStats implements IAllPlayerStats {
 		return null;
 	}
 
-	fadeOutNow(sprites: SpriteProxy[], playerId: number, delayMs: number) {
+	fadeOutNow(sprites: SpriteProxy[], playerId: number, fadeOutTimeMs: number) {
 		for (let i = 0; i < sprites.length; i++) {
 			if (sprites[i].data === playerId) {
-				sprites[i].fadeOutNow(delayMs);
+				sprites[i].fadeOutNow(fadeOutTimeMs);
 			}
 		}
 	}
 
-	destroyActiveSpell(soundManager: ISoundManager, playerId: number) {
+	fadeOutAfter(delayMs: number, sprites: SpriteProxy[], playerId: number, fadeOutTimeMs: number) {
+		for (let i = 0; i < sprites.length; i++) {
+			if (sprites[i].data === playerId) {
+				sprites[i].fadeOutAfter(delayMs, fadeOutTimeMs);
+			}
+		}
+	}
+
+	startSpellDestructionAnimation(soundManager: ISoundManager, playerId: number) {
 		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, playerId);
+		const fadeOutTime = 500;
+		const framesToEnd: number = AllPlayerStats.totalSandFrames - AllPlayerStats.maxSandSegmentFrame;
+		const timeToEndMS: number = framesToEnd * this.concentrationHourglassSand.frameInterval;
+
 		if (hourglass) {
-			this.concentrationExplosion.add(hourglass.x + this.concentrationHourglassSand.originX, hourglass.y + this.concentrationHourglassSand.originY, 0);
-			soundManager.safePlayMp3('Spells/GunpowderFlare');
+			const explosion: SpriteProxy = this.concentrationExplosion.add(hourglass.x + this.concentrationHourglassSand.originX, hourglass.y + this.concentrationHourglassSand.originY, 0);
+			explosion.delayStart = timeToEndMS;
+			hourglass.frameIndex = AllPlayerStats.maxSandSegmentFrame;
+			hourglass.playToEndNow = true;
+			hourglass.fadeOutAfter(timeToEndMS, fadeOutTime);
+			soundManager.playMp3In(timeToEndMS, 'Spells/GunpowderFlare');
 		}
 
-		const fadeOutTime = 500;
-		this.fadeOutNow(this.concentrationWhiteSmoke.sprites, playerId, fadeOutTime);
-		this.fadeOutNow(this.concentrationSpellNameScroll.sprites, playerId, fadeOutTime);
-		this.fadeOutNow(this.concentrationHourglassEnds.sprites, playerId, fadeOutTime);
-		this.fadeOutNow(this.concentrationIcon.sprites, playerId, fadeOutTime);
-		this.fadeOutNow(this.concentrationHourglassSand.sprites, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationWhiteSmoke.sprites, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationSpellNameScroll.sprites, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassEnds.sprites, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationIcon.sprites, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassSand.sprites, playerId, fadeOutTime);
 		for (let i = 0; i < this.concentratedSpellNames.animations.length; i++) {
 			if (this.concentratedSpellNames.animations[i].data === playerId) {
-				this.concentratedSpellNames.animations[i].fadeOutNow(fadeOutTime);
+				this.concentratedSpellNames.animations[i].fadeOutAfter(timeToEndMS, fadeOutTime);
 			}
 		}
 	}
@@ -994,85 +1007,96 @@ class AllPlayerStats implements IAllPlayerStats {
 	}
 
 	updateConcentratedSpell(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, players: Array<Character>) {
-		if (existingPlayerStats.ConcentratedSpell !== latestPlayerStats.ConcentratedSpell) {
-			const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId));
-			const spellName: string = latestPlayerStats.ConcentratedSpell;
-			if (latestPlayerStats.ConcentratedSpell) {
-				const spellScrollY = 990;
-				const spellNameFontSize = 36;
-				myContext.font = `${spellNameFontSize}px Enchanted Land`;
-				const textWidth: number = myContext.measureText(spellName).width;
+		if (existingPlayerStats.ConcentratedSpell === latestPlayerStats.ConcentratedSpell)
+			return;
 
-				const concentrationIconWidth = 32;
-				const concentrationIconHalfWidth: number = concentrationIconWidth / 2;
-				const spellNameConcentrationIconMargin = 6;
-				const fullScrollWidth: number = textWidth + concentrationIconWidth + spellNameConcentrationIconMargin;
-				const scrollStopFrame: number = this.getScrollFrameIndexFrom(fullScrollWidth);
-				const hourglassMargin = 28;
-				const hourglassOffset = -this.getScrollWidthFrom(scrollStopFrame) / 2 - hourglassMargin;
+		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId));
 
-				const spellNameOffsetX: number = -concentrationIconHalfWidth - spellNameConcentrationIconMargin / 2;
-				const concentrationIconOffsetX: number = fullScrollWidth / 2 - concentrationIconHalfWidth;
-
-				const smoke: SpriteProxy = this.concentrationWhiteSmoke.add(x + hourglassOffset, spellScrollY, -1);
-				smoke.data = existingPlayerStats.PlayerId;
-
-				this.concentrationScrollOpenFire.add(x, spellScrollY, -1);
-
-				const spellNameText: TextEffect = new TextEffect(x + spellNameOffsetX, spellScrollY);
-				spellNameText.text = spellName;
-				spellNameText.data = existingPlayerStats.PlayerId;
-				spellNameText.fontName = 'Enchanted Land';
-				spellNameText.fontSize = spellNameFontSize;
-				spellNameText.fontColor = '#410300';
-				spellNameText.fadeInTime = 500;
-				this.concentratedSpellNames.animations.push(spellNameText);
-
-				const hourglassEnds: SpriteProxy = this.concentrationHourglassEnds.add(x + hourglassOffset, spellScrollY, 0);
-				hourglassEnds.data = existingPlayerStats.PlayerId;
-
-				const concentrationIcon: SpriteProxy = this.concentrationIcon.add(x + concentrationIconOffsetX, spellScrollY, 0);
-				concentrationIcon.autoRotationDegeesPerSecond = CharacterStatsScroll.spinningConcentrationIconDegreesPerSecond;
-				concentrationIcon.data = existingPlayerStats.PlayerId;
-				concentrationIcon.opacity = 0.5;
-
-				const hourglassSand: ColorShiftingSpriteProxy = this.concentrationHourglassSand.addShifted(x + hourglassOffset, spellScrollY, 0);
-				hourglassSand.data = existingPlayerStats.PlayerId;
-
-				if (players) {
-					const player: Character = players[iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId)];
-					if (player) {
-						hourglassSand.hueShift = player.hueShift;
-					}
-				}
-
-				const spellNameScroll: SpriteProxy = this.concentrationSpellNameScroll.add(x, spellScrollY, 0);
-				spellNameScroll.data = existingPlayerStats.PlayerId;
-				spellNameScroll.addOnFrameAdvanceCallback((sprite: SpriteProxy) => {
-					if (sprite.frameIndex > scrollStopFrame)
-						sprite.frameIndex = scrollStopFrame;
-				});
-
-				//
-			}
-
-			if (existingPlayerStats.ConcentratedSpell) {
-				const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
-				const player: Character = players[playerIndex];
-				let outlineColor = '#000000';
-				let fillColor = '#ffffff';
-				if (player) {
-					outlineColor = player.dieFontColor;
-					fillColor = player.dieBackColor;
-				}
-
-				iGetPlayerX.addFloatingText(x, `${existingPlayerStats.ConcentratedSpell} dispelled.`, fillColor, outlineColor);
-
-				this.destroyActiveSpell(soundManager, existingPlayerStats.PlayerId);
-			}
-
-			existingPlayerStats.ConcentratedSpell = latestPlayerStats.ConcentratedSpell;
+		if (existingPlayerStats.ConcentratedSpell) {
+			this.destroyConcentratedSpell(iGetPlayerX, existingPlayerStats, players, x, soundManager);
 		}
+
+		if (latestPlayerStats.ConcentratedSpell) {
+			this.showSpellConcentrationAnimation(latestPlayerStats, x, existingPlayerStats, players, iGetPlayerX);
+		}
+
+		existingPlayerStats.ConcentratedSpell = latestPlayerStats.ConcentratedSpell;
+	}
+
+	private showSpellConcentrationAnimation(latestPlayerStats: PlayerStats, x: number, existingPlayerStats: PlayerStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {
+		const spellName: string = latestPlayerStats.ConcentratedSpell;
+		const spellScrollY = 990;
+		const spellNameFontSize = 36;
+		myContext.font = `${spellNameFontSize}px Enchanted Land`;
+		const textWidth: number = myContext.measureText(spellName).width;
+
+		const concentrationIconWidth = 32;
+		const concentrationIconHalfWidth: number = concentrationIconWidth / 2;
+		const spellNameConcentrationIconMargin = 6;
+		const fullScrollWidth: number = textWidth + concentrationIconWidth + spellNameConcentrationIconMargin;
+		const scrollStopFrame: number = this.getScrollFrameIndexFrom(fullScrollWidth);
+		const hourglassMargin = 28;
+		const hourglassOffset = -this.getScrollWidthFrom(scrollStopFrame) / 2 - hourglassMargin;
+
+		const spellNameOffsetX: number = -concentrationIconHalfWidth - spellNameConcentrationIconMargin / 2;
+		const concentrationIconOffsetX: number = fullScrollWidth / 2 - concentrationIconHalfWidth;
+
+		const smoke: SpriteProxy = this.concentrationWhiteSmoke.add(x + hourglassOffset, spellScrollY, -1);
+		smoke.data = existingPlayerStats.PlayerId;
+
+		this.concentrationScrollOpenFire.add(x, spellScrollY, -1);
+
+		const spellNameText: TextEffect = new TextEffect(x + spellNameOffsetX, spellScrollY);
+		spellNameText.text = spellName;
+		spellNameText.data = existingPlayerStats.PlayerId;
+		spellNameText.fontName = 'Enchanted Land';
+		spellNameText.fontSize = spellNameFontSize;
+		spellNameText.fontColor = '#410300';
+		spellNameText.fadeInTime = 500;
+		this.concentratedSpellNames.animations.push(spellNameText);
+
+		const hourglassEnds: SpriteProxy = this.concentrationHourglassEnds.add(x + hourglassOffset, spellScrollY, 0);
+		hourglassEnds.data = existingPlayerStats.PlayerId;
+
+		const concentrationIcon: SpriteProxy = this.concentrationIcon.add(x + concentrationIconOffsetX, spellScrollY, 0);
+		concentrationIcon.autoRotationDegeesPerSecond = CharacterStatsScroll.spinningConcentrationIconDegreesPerSecond;
+		concentrationIcon.data = existingPlayerStats.PlayerId;
+		concentrationIcon.opacity = 0.5;
+
+		const hourglassSand: ColorShiftingSpriteProxy = this.concentrationHourglassSand.addShifted(x + hourglassOffset, spellScrollY, 0);
+		hourglassSand.data = existingPlayerStats.PlayerId;
+
+		if (players) {
+			const player: Character = players[iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId)];
+			if (player) {
+				hourglassSand.hueShift = player.hueShift;
+			}
+		}
+
+		const spellNameScroll: SpriteProxy = this.concentrationSpellNameScroll.add(x, spellScrollY, 0);
+		spellNameScroll.data = existingPlayerStats.PlayerId;
+		spellNameScroll.addOnFrameAdvanceCallback((sprite: SpriteProxy) => {
+			if (sprite.frameIndex > scrollStopFrame)
+				sprite.frameIndex = scrollStopFrame;
+		});
+	}
+
+	private destroyConcentratedSpell(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, players: Character[], x: number, soundManager: ISoundManager) {
+		this.showSpellDispelled(iGetPlayerX, existingPlayerStats, players, x);
+		this.startSpellDestructionAnimation(soundManager, existingPlayerStats.PlayerId);
+	}
+
+	private showSpellDispelled(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, players: Character[], x: number) {
+		const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
+		const player: Character = players[playerIndex];
+		let outlineColor = '#000000';
+		let fillColor = '#ffffff';
+		if (player) {
+			outlineColor = player.dieFontColor;
+			fillColor = player.dieBackColor;
+		}
+
+		iGetPlayerX.addFloatingText(x, `${existingPlayerStats.ConcentratedSpell} dispelled.`, fillColor, outlineColor);
 	}
 }
 

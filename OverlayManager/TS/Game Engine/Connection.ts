@@ -135,14 +135,14 @@ function changePlayerHealth(playerHealth: string) {
 	}
 }
 function changePlayerStats(playerStats: string) {
-	console.log('changePlayerStats from Connection.ts');
+	//console.log('changePlayerStats from Connection.ts');
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.changePlayerStats(playerStats);
 	}
 }
 
 function changePlayerWealth(playerWealth: string) {
-	console.log('changePlayerWealth from Connection.ts');
+	//console.log('changePlayerWealth from Connection.ts');
 	//if (activeBackGame instanceof DragonBackGame) {
 	//	activeBackGame.changePlayerWealth(playerWealth);
 	// }
@@ -240,8 +240,10 @@ function needToGetCoins(userId: string) {
 }
 
 function diceHaveStoppedRolling(diceData: string) {
-	if (connection.connectionState === 1)
+	if (connection.connectionState === 1) {
+		console.error('connection.invoke("DiceHaveStoppedRolling"...');
 		connection.invoke("DiceHaveStoppedRolling", diceData);
+	}
 }
 
 function allDiceHaveBeenDestroyed(diceData: string) {

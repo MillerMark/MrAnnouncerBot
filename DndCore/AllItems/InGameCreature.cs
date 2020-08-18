@@ -240,7 +240,9 @@ namespace DndCore
 			Creature.TakeDamage(damageType, attackKind, damage);
 			double totalDamageTaken = beforeTotalHp - TotalHp;
 			if (totalDamageTaken != 0)
+			{
 				PercentDamageJustInflicted = MathUtils.Clamp(totalDamageTaken / Creature.maxHitPoints, 0, 1);
+			}
 			UpdateHitPointsStr();
 		}
 

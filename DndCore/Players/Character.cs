@@ -1926,16 +1926,6 @@ namespace DndCore
 			SpellDispelled?.Invoke(sender, ea);
 		}
 
-		protected virtual void OnStateChanged(object sender, StateChangedEventArgs ea)
-		{
-			StateChanged?.Invoke(sender, ea);
-		}
-
-		void OnStateChanged(string key, object oldValue, object newValue, bool isRechargeable = false)
-		{
-			OnStateChanged(this, new StateChangedEventArgs(key, oldValue, newValue, isRechargeable));
-		}
-
 		public void AboutToCompleteCast()
 		{
 
@@ -2909,7 +2899,6 @@ namespace DndCore
 
 		public event CastedSpellEventHandler SpellDispelled;
 		public event RollDiceEventHandler RollDiceRequest;
-		public event StateChangedEventHandler StateChanged;
 		public event MessageEventHandler RequestMessageToAll;
 
 		public static void SetBoolProperty(Character player, string memberName, bool value)

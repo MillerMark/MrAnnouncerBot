@@ -645,20 +645,59 @@ namespace DndCore
 				LastDamagePointsTaken = 0;
 				return;
 			}
+			double totalDamageTaken = points;
 
 			if (IsResistantTo(damageType, attackKind))
-				points = DndUtils.HalveValue(points);
+				totalDamageTaken = DndUtils.HalveValue(totalDamageTaken);
 			else if (IsVulnerableTo(damageType, attackKind))
-				points *= 2;
+				totalDamageTaken *= 2;
 
 			LastDamageTaken = damageType;
 
-			if (points > hitPoints)  // Can only drop to zero HP
-				points = hitPoints;
+			if (totalDamageTaken > hitPoints + tempHitPoints)  // Can only drop to zero HP
+				totalDamageTaken = hitPoints + tempHitPoints;
 
-			LastDamagePointsTaken = points;
-			hitPoints -= points;
+			LastDamagePointsTaken = totalDamageTaken;
 
+			if (totalDamageTaken == 0)
+				return;
+
+			double damageToInflict = totalDamageTaken;
+			if (tempHitPoints > 0)
+			{
+				if (damageToInflict > tempHitPoints)
+				{
+					damageToInflict -= tempHitPoints;
+					tempHitPoints = 0;
+				}
+				else
+				{
+					tempHitPoints -= damageToInflict;
+					damageToInflict = 0;
+				}
+			}
+
+			hitPoints -= damageToInflict;
+			OnDamaged(totalDamageTaken);
+		}
+
+		public event StateChangedEventHandler StateChanged;
+		public event CreatureDamagedEventHandler Damaged;
+
+		protected virtual void OnDamaged(double damageAmount)
+		{
+			CreatureDamagedEventArgs ea = new CreatureDamagedEventArgs(this, damageAmount);
+			Damaged?.Invoke(this, ea);
+		}
+
+		protected virtual void OnStateChanged(object sender, StateChangedEventArgs ea)
+		{
+			StateChanged?.Invoke(sender, ea);
+		}
+
+		protected void OnStateChanged(string key, object oldValue, object newValue, bool isRechargeable = false)
+		{
+			OnStateChanged(this, new StateChangedEventArgs(key, oldValue, newValue, isRechargeable));
 		}
 
 		public void Unequip(ItemViewModel item)
@@ -939,30 +978,10 @@ namespace DndCore
 				tempHitPoints = 0;
 		}
 
-		public void InflictDamage(double deltaDamage)
-		{
-			double damageToSubtract = deltaDamage;
-			if (tempHitPoints > 0)
-				if (damageToSubtract > tempHitPoints)
-				{
-					damageToSubtract -= tempHitPoints;
-					tempHitPoints = 0;
-				}
-				else
-				{
-					tempHitPoints -= damageToSubtract;
-					damageToSubtract = 0;
-				}
-			if (damageToSubtract > hitPoints)
-				hitPoints = 0;
-			else
-				hitPoints -= damageToSubtract;
-		}
-		
 		public void ChangeHealth(double damageHealthAmount)
 		{
 			if (damageHealthAmount < 0)
-				InflictDamage(-damageHealthAmount);
+				TakeDamage(DamageType.None, AttackKind.Any, -damageHealthAmount);
 			else
 				Heal(damageHealthAmount);
 		}

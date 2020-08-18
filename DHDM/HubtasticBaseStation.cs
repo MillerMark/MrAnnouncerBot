@@ -61,7 +61,9 @@ namespace DHDM
 			get
 			{
 				if (hubConnection != null && hubConnection.State == HubConnectionState.Disconnected)
-					hubConnection = null;
+				{
+					//System.Diagnostics.Debugger.Break();
+				}
 				if (hubConnection == null)
 				{
 					lock(hubConnectionLock)

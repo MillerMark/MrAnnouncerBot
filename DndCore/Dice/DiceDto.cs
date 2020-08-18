@@ -11,6 +11,8 @@ namespace DndCore
 		public bool IsMagic { get; set; }
 		public double Modifier { get; set; }
 		public string Label { get; set; }
+		public string Data { get; set; }  // Any string sent down through this property will return when the roll is complete in PlayerRoll.data property.
+		public string PlayerName { get; set; }
 
 		public VantageKind Vantage { get; set; } = VantageKind.Normal;
 		public DamageType DamageType { get; set; } = DamageType.None;
@@ -20,7 +22,7 @@ namespace DndCore
 		// Trailing effects
 		public DiceDto()
 		{
-
+			Quantity = 1;
 		}
 	}
 }

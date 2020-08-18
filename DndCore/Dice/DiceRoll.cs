@@ -49,7 +49,8 @@ namespace DndCore
 		public string OnThrowSound { get; set; }
 		public double HiddenThreshold { get; set; }
 		public bool IsMagic { get; set; }
-		
+		public bool SuppressLegacyRoll { get; set; }
+
 		// TODO: Remove Kind...
 		public VantageKind VantageKind { get; set; }
 		

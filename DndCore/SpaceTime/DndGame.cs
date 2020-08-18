@@ -232,11 +232,22 @@ namespace DndCore
 			player.PickAmmunition += Player_PickAmmunition;
 			player.PlayerShowState += Player_PlayerShowState;
 			player.StateChanged += Player_StateChanged;
+			player.Damaged += Player_Damaged; ;
 			player.RollDiceRequest += Player_RollDiceRequest;
 			player.SpellDispelled += Player_SpellDispelled;
 			player.RequestMessageToDungeonMaster += Player_RequestMessageToDungeonMaster;
 			player.RequestMessageToAll += Player_RequestMessageToAll;
 			player.ConcentratedSpellChanged += Player_ConcentratedSpellChanged; ;
+		}
+
+		public event CreatureDamagedEventHandler PlayerDamaged;
+		protected virtual void OnDamaged(object sender, CreatureDamagedEventArgs ea)
+		{
+			PlayerDamaged?.Invoke(sender, ea);
+		}
+		private void Player_Damaged(object sender, CreatureDamagedEventArgs ea)
+		{
+			OnDamaged(this, ea);
 		}
 
 		private void Player_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
@@ -439,7 +450,8 @@ namespace DndCore
 			player.AboutToCompleteCast();
 			player.UseSpellSlot(castedSpell.SpellSlotLevel);
 			RemoveSpellFromCasting(castedSpell);
-			RemoveActiveSpell(castedSpell);
+			if (!castedSpell.Spell.Duration.HasValue())
+				RemoveActiveSpell(castedSpell);
 
 			Spell spell = castedSpell.Spell;
 			if (spell.Duration.HasValue())
@@ -500,6 +512,16 @@ namespace DndCore
 		public List<CastedSpell> GetActiveSpells(Character character)
 		{
 			return activeSpells.FindAll(x => x.SpellCaster == character);
+		}
+
+		public CastedSpell GetActiveSpell(Character character, string spellName)
+		{
+			return activeSpells.Find(x => x.SpellCaster == character && x.Spell.Name == spellName);
+		}
+
+		public void RemoveActiveSpell(Character character, string spellName)
+		{
+			activeSpells.RemoveAll(x => x.SpellCaster == character && x.Spell.Name == spellName);
 		}
 
 		public void CreaturePreparesAttack(Creature creature, Creature target, Attack attack, bool usesMagic)

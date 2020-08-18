@@ -416,7 +416,6 @@ function diceDefinitelyStoppedRolling() {
 }
 
 function diceJustStoppedRolling(now: number) {
-	console.log('diceJustStoppedRolling');
 	const thisTime: number = now;
 	if ((thisTime - firstStopTime) / 1000 > 1.5) {
 		diceDefinitelyStoppedRolling();
@@ -1137,12 +1136,12 @@ function init() { // From Rolling.html example.
 		const numDiceStillInPlay: number = diceRemainingInPlay();
 		const stillScaling: boolean = scalingDice !== null && scalingDice.length > 0;
 		const stillHaveSpecialDice: boolean = specialDice !== null && specialDice.length > 0;
-		console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
+		//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
 
 		if (!animationsShouldBeDone && numDiceStillInPlay === 0 && allDiceHaveStoppedRolling &&
 			!stillScaling && !stillHaveSpecialDice) {
 			animationsShouldBeDone = true;
-			console.log('animationsShouldBeDone = true;');
+			//console.log('animationsShouldBeDone = true;');
 			diceRollData = null;
 			dice = [];
 			setTimeout(allDiceShouldBeDestroyedByNow, 3000);
@@ -1502,7 +1501,7 @@ function needToRollBonusDice() {
 }
 
 class PlayerRoll {
-	constructor(public roll: number, public name: string, public id: number, public modifier: number = 0, public success: boolean = false) {
+	constructor(public roll: number, public name: string, public id: number, public data: string, public modifier: number = 0, public success: boolean = false) {
 	}
 }
 
@@ -1538,7 +1537,7 @@ function getRollResults(): RollResults {
 	let singlePlayerId = 0;
 	let playerIdForTextMessages = -1;
 
-	console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
+	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
 	//console.log(`getRollResults - dice.length = ${dice.length}`);
 	
 	for (let i = 0; i < dice.length; i++) {
@@ -1555,13 +1554,13 @@ function getRollResults(): RollResults {
 			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.name === die.playerName);
 
 			if (playerRoll) {
-				console.log('Found playerRoll!');
+				//console.log('Found playerRoll!');
 				playerRoll.roll += topNumber;
 				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
 			}
 			else {
 				// TODO: If coming from DiceDtos, get the correct modifier (don't just use the player's modifier).
-				console.log(`playerRoll not found for ${die.playerName}.`);
+				//console.log(`playerRoll not found for ${die.playerName}.`);
 
 				let modifier = 0;
 				if (die.playerID < 0) {  // It's an in-game creature.
@@ -1578,12 +1577,12 @@ function getRollResults(): RollResults {
 				}
 
 				const success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
-				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, modifier, success));
-				console.log(diceRollData.multiplayerSummary[0].roll);
+				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success));
+				//console.log(diceRollData.multiplayerSummary[0].roll);
 			}
 
-			console.log(diceRollData.multiplayerSummary);
-			console.log('');
+			//console.log(diceRollData.multiplayerSummary);
+			//console.log('');
 
 			let scaleAdjust = 1;
 			if (die.rollType === DieCountsAs.inspiration) {
@@ -2672,8 +2671,8 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 }
 
 function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1, dieType: string = ''): any {
-	let lastDieAdded: any = null;
-	let magicRingHueShift: number = Math.floor(Math.random() * 360);
+	let lastDieAdded = null;
+	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 	for (let i = 0; i < quantity; i++) {
 		// @ts-ignore - DiceD4
 		let die: DiceObject = null;
@@ -2910,7 +2909,7 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 					}
 					damageStr = damageStr.substr(0, colonIndex);
 					dieType = rollTypeOverride;
-					console.log('damageStr: ' + damageStr);
+					//console.log('damageStr: ' + damageStr);
 					damageType = damageTypeFromStr(damageStr);
 				}
 				else {
@@ -2960,12 +2959,12 @@ function updateDieRollSpecialEffects() {
 	for (let i = 0; i < dice.length; i++) {
 		let die = dice[i];
 
-		if (die.rollType == DieCountsAs.bentLuck)
+		if (die.rollType === DieCountsAs.bentLuck)
 			addTrailingEffects(die, diceRollData.secondRollData.trailingEffects);
 		else
 			addTrailingEffects(die, diceRollData.trailingEffects);
 
-		if (die.rollType == DieCountsAs.inspiration) {
+		if (die.rollType === DieCountsAs.inspiration) {
 			const distanceBetweenRipples: number = 80;
 			let ripple: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length);
 
@@ -3406,7 +3405,8 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
 	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
 	const die = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
-	die.playerName = diceDto.Label;
+	die.playerName = diceDto.PlayerName;
+	die.dataStr = diceDto.Data;
 	die.dieType = DiceRollType.None;
 	if (diceDto.Label)
 		diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
@@ -3600,15 +3600,17 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 		xPositionModifier = 26;  // Throw from the right to the left.
 
 	if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0) {
-		console.log('prepareDiceDtoRoll...');
+		//console.log('prepareDiceDtoRoll...');
 		prepareDiceDtoRoll(diceRollDto, xPositionModifier);
 		console.log(dice);
 	}
 
 
-	console.log('prepareLegacyRoll...');
-	prepareLegacyRoll(xPositionModifier);
-	console.log(dice);
+	if (!diceRollDto.suppressLegacyRoll) {
+		//console.log('prepareLegacyRoll...');
+		prepareLegacyRoll(xPositionModifier);
+	}
+	//console.log(dice);
 
 	try {
 		// @ts-ignore - DiceManager
