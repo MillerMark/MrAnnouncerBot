@@ -8,6 +8,7 @@ namespace DHDM
 	public interface IDungeonMasterApp
 	{
 		void ToggleTarget(int targetNum);
+		void TogglePlayerTarget(string playerName);
 		void ChangePlayerStateCommand(string command, string data);
 		void ToggleInGameCreature(int targetNum);
 		void TargetCommand(string command);

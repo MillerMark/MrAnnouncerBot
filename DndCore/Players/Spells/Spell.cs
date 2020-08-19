@@ -62,6 +62,10 @@ namespace DndCore
 
 		[DndEvent]
 		[Column]
+		public string OnValidate { get; set; }
+
+		[DndEvent]
+		[Column]
 		public string OnReceived { get; set; }
 
 		[DndEvent]
@@ -373,6 +377,7 @@ namespace DndCore
 				SpellCasterLevel = spellCasterLevel,
 				SpellSlotLevel = spellSlotLevel >= 0 ? spellSlotLevel : spellLevel,
 				OnCast = spellDto.onCast,
+				OnValidate = spellDto.onValidate,
 				OnReceived = spellDto.onReceived,
 				OnPreparing = spellDto.onPreparing,
 				OnPreparationComplete = spellDto.onPreparationComplete,
@@ -505,6 +510,12 @@ namespace DndCore
 			Expressions.Do(OnCast, player, target, castedSpell);
 		}
 
+		public void TriggerValidate(Character player, Target target, CastedSpell castedSpell)
+		{
+			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
+			Expressions.Do(OnValidate, player, target, castedSpell);
+		}
+
 		public void TriggerReceived(Character player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
@@ -557,6 +568,7 @@ namespace DndCore
 			result.Name = Name;
 			result.Index = Index;
 			result.OnCast = OnCast;
+			result.OnValidate = OnValidate;
 			result.OnReceived = OnReceived;
 			result.OnPreparing = OnPreparing;
 			result.OnPreparationComplete = OnPreparationComplete;

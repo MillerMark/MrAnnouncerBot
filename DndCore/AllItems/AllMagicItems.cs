@@ -28,5 +28,9 @@ namespace DndCore
 		{
 			return MagicItems.FirstOrDefault(x => x.Name == magicItemName);
 		}
+		public static void Invalidate()
+		{
+			magicItems = null;
+		}
 	}
 }

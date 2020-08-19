@@ -427,6 +427,7 @@
     <Compile Include="IDE\Code Completion\TextCompletionEngine.cs" />
     <Compile Include="StreamDeck Commands\TargetCommand.cs" />
     <Compile Include="StreamDeck Commands\ToggleNpcCommand.cs" />
+    <Compile Include="StreamDeck Commands\TogglePlayerTargetCommand.cs" />
     <Compile Include="StreamDeck Commands\ToggleTargetCommand.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>

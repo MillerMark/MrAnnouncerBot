@@ -421,6 +421,7 @@ namespace DndCore
 				player.ActiveTarget = new Target(AttackTargetType.Spell, targetCreature);
 			return Cast(player, spell);
 		}
+
 		public CastedSpell Cast(Character player, Spell spell)
 		{
 			if (spell.CastingTime == DndTimeSpan.OneAction || spell.CastingTime == DndTimeSpan.OneBonusAction)
@@ -443,12 +444,13 @@ namespace DndCore
 			return castedSpell;
 		}
 
-		public void CompleteCast(Character player, CastedSpell castedSpell)
+		public void CompleteCast(Character spellCaster, CastedSpell castedSpell)
 		{
-			if (castedSpell.Target == null && player != null)
-				castedSpell.Target = player.ActiveTarget;
-			player.AboutToCompleteCast();
-			player.UseSpellSlot(castedSpell.SpellSlotLevel);
+			if (castedSpell.Target == null && spellCaster != null)
+				castedSpell.Target = spellCaster.ActiveTarget;
+
+			spellCaster.AboutToCompleteCast();
+			spellCaster.UseSpellSlot(castedSpell.SpellSlotLevel);
 			RemoveSpellFromCasting(castedSpell);
 			if (!castedSpell.Spell.Duration.HasValue())
 				RemoveActiveSpell(castedSpell);
@@ -461,7 +463,7 @@ namespace DndCore
 				{
 					turnIndex = InitiativeIndex;
 				}
-				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, player.playerID), player, castedSpell, turnIndex);
+				DndAlarm dndAlarm = timeClock.CreateAlarm(spell.Duration.GetTimeSpan(), GetSpellAlarmName(spell, spellCaster.playerID), spellCaster, castedSpell, turnIndex);
 				dndAlarm.AlarmFired += DndAlarm_SpellDurationExpired;
 			}
 

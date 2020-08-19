@@ -36,9 +36,10 @@
 		this.deathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
 		//this.inGameCreaturesParchmentTarget = new Sprites('Scroll/InGameCreatures/Target', 1, fps30, AnimationStyle.Static);
 
+		// TODO: Just be aware this.target is a duplicate load of sprites that are also loaded in the PlayerStatManager which is used by the DragonFrontGame.
 		this.target = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
-		this.target.originX = 41 - InGameCreatureManager.targetLeft;
-		this.target.originY = 45;
+		this.target.originX = InGameCreatureManager.targetOriginX;
+		this.target.originY = InGameCreatureManager.targetOriginY;
 
 		this.activeTurnIndicator = new Sprites('Scroll/InGameCreatures/NpcMonsterTurn/NpcMonsterTurn', 141, fps30, AnimationStyle.Loop, true);
 		this.activeTurnIndicator.originX = 137;
@@ -99,6 +100,8 @@
 	static readonly headShotCenterX = 62;
 	static readonly headShotCenterY = 70;
 	static readonly targetLeft = 64;
+	static readonly targetOriginX = 41 - InGameCreatureManager.targetLeft;
+	static readonly targetOriginY = 45;
 	static readonly targetTop = 114;
 	static readonly spaceBetweenInGameStatLines = 1;
 

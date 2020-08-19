@@ -119,6 +119,7 @@ namespace DHDM
 		private void InitializeGame()
 		{
 			game = new DndGame();
+			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
@@ -205,7 +206,6 @@ namespace DHDM
 			LoadEverything();
 		}
 
-
 		// ResendExistingData
 
 		void ReconnectToTwitchHandler(object sender, EventArgs e)
@@ -256,6 +256,17 @@ namespace DHDM
 
 		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
 		{
+			if (ea.DelayMs > 0)
+			{
+				DispatcherTimer delayFloatTextTimer = new DispatcherTimer(DispatcherPriority.Send);
+				delayFloatTextTimer.Interval = TimeSpan.FromMilliseconds(ea.DelayMs);
+				ea.DelayMs = 0;
+				delayFloatTextTimer.Tick += new EventHandler(DelayFloatTextNow);
+				delayFloatTextTimer.Tag = ea;
+				delayFloatTextTimer.Start();
+				return;
+			}
+
 			string outlineColor = ea.OutlineColor;
 			string fillColor = ea.FillColor;
 			if (outlineColor == "player")
@@ -263,6 +274,21 @@ namespace DHDM
 			if (fillColor == "player")
 				fillColor = ea.Player.dieBackColor;
 			HubtasticBaseStation.FloatPlayerText(ea.Player.playerID, ea.Message, fillColor, outlineColor);
+		}
+
+		void DelayFloatTextNow(object sender, EventArgs e)
+		{
+			if (!(sender is DispatcherTimer dispatcherTimer))
+				return;
+
+			dispatcherTimer.Stop();
+
+			if (!(dispatcherTimer.Tag is PlayerShowStateEventArgs ea))
+				return;
+			Dispatcher.Invoke(() =>
+			{
+				Game_PlayerShowState(this, ea);
+			});
 		}
 
 		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
@@ -382,7 +408,29 @@ namespace DHDM
 
 		private void SelectTargetFunction_RequestSelectTarget(TargetEventArgs ea)
 		{
+			bool foundAny = false;
+			ea.Target = new Target();
+			ea.Target.PlayerIds = new List<int>();
+			foreach (PlayerStats playerStats in AllPlayerStats.Players)
+			{
+				if (playerStats.IsTargeted)
+				{
+					ea.Target.PlayerIds.Add(playerStats.PlayerId);
+					foundAny = true;
+				}
+			}
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (inGameCreature.IsTargeted)
+				{
+					ea.Target.AddCreature(inGameCreature.Creature);
+					foundAny = true;
+				}
+			}
+			if (foundAny)
+				return;
 			// TODO: Add support for auto-select based on next answer.
+
 			SelectInGameTargets(ea);
 		}
 
@@ -1363,7 +1411,7 @@ namespace DHDM
 			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 			EndSpellEffects(spellToEnd);
 
-			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
+			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
 			{
 				ea.CastedSpell.SpellCaster.concentratedSpell = null;
 				PlayerStats playerStats = AllPlayerStats.GetPlayerStats(ea.CastedSpell.SpellCaster.playerID);
@@ -2063,10 +2111,11 @@ namespace DHDM
 
 		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
 		{
-			if (!IsOkayToCastSpell(ActivePlayer, actionShortcut.Spell))
-				return;
-
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
+
+			if (!IsOkayToCastSpell(ActivePlayer, castedSpell))
+				return;
+			
 			if (castedSpell.Target == null && ActivePlayer != null)
 				castedSpell.Target = ActivePlayer.ActiveTarget;
 
@@ -2078,8 +2127,8 @@ namespace DHDM
 				return;
 			}
 			Spell spell = CastSpellNow(actionShortcut);
-
-			tbxDamageDice.Text = spell.DieStr;
+			if (spell != null)
+				tbxDamageDice.Text = spell.DieStr;
 		}
 
 		private Spell CastSpellNow(PlayerActionShortcut actionShortcut)
@@ -2120,6 +2169,9 @@ namespace DHDM
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
 			CastedSpell castedSpell = game.Cast(player, spell);
+			if (castedSpell == null)
+				return;
+
 			SetClearSpellVisibility(player);
 
 			if (spell.MustRollDiceToCast())
@@ -2137,10 +2189,18 @@ namespace DHDM
 			ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
 		}
 
-		private bool IsOkayToCastSpell(Character player, Spell spell)
+		private bool IsOkayToCastSpell(Character player, CastedSpell castedSpell)
+		{
+			if (castedSpell.ValidationHasFailed(player, castedSpell.Target))
+				return false;
+
+			return PlayerFreeToCastSpell(player, castedSpell);
+		}
+
+		private bool PlayerFreeToCastSpell(Character player, CastedSpell castedSpell)
 		{
 			bool okayToCastSpell = true;
-			if (spell.RequiresConcentration && player.concentratedSpell != null)
+			if (castedSpell.Spell.RequiresConcentration && player.concentratedSpell != null)
 			{
 				Spell concentratedSpell = player.concentratedSpell.Spell;
 
@@ -2148,7 +2208,7 @@ namespace DHDM
 				{
 					if (game.ClockIsRunning())
 						realTimeAdvanceTimer.Stop();
-					if (concentratedSpell.Name == spell.Name)
+					if (concentratedSpell.Name == castedSpell.Spell.Name)
 					{
 						// TODO: Provide feedback that we are already casting this spell and it has game.GetSpellTimeLeft(player.playerID, concentratedSpell).
 						TimeSpan remainingSpellTime = game.GetRemainingSpellTime(player.playerID, concentratedSpell);
@@ -2163,7 +2223,7 @@ namespace DHDM
 							okayToCastSpell = true;
 						}
 					}
-					if (concentratedSpell != null && AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
+					if (concentratedSpell != null && AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
 						okayToCastSpell = false;
 				}
 				finally
@@ -2375,7 +2435,7 @@ namespace DHDM
 				delayRollTimer.Start();
 				return;
 			}
-
+			CompleteCast(diceRoll);
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
@@ -2392,7 +2452,6 @@ namespace DHDM
 			secondToLastRoll = lastRoll;
 			lastRoll = diceRoll;
 			Character player = null;
-			CompleteCast(diceRoll);
 
 			if (diceRoll.PlayerRollOptions.Count == 1)
 			{
@@ -4817,6 +4876,7 @@ namespace DHDM
 
 			AllInGameCreatures.Invalidate();
 			AllWeaponEffects.Invalidate();
+			AllMagicItems.Invalidate();
 			AllPlayers.Invalidate();
 			AllSpells.Invalidate();
 			AllSpellEffects.Invalidate();
@@ -6126,6 +6186,7 @@ namespace DHDM
 			if (latestSpell == null)
 				return;
 			spell.OnCast = latestSpell.OnCast;
+			spell.OnValidate = latestSpell.OnValidate;
 			spell.OnReceived = latestSpell.OnReceived;
 			spell.OnPreparing = latestSpell.OnPreparing;
 			spell.OnPreparationComplete = latestSpell.OnPreparationComplete;
@@ -7507,6 +7568,17 @@ namespace DHDM
 			UpdateInGameCreatures();
 		}
 
+		public void TogglePlayerTarget(string playerName)
+		{
+			// 
+			int playerId = AllPlayers.GetPlayerIdFromName(playerName);
+			if (playerId < 0)
+				return;
+
+			AllPlayerStats.ToggleTarget(playerId);
+			UpdatePlayerStateInGame();
+		}
+
 		void ToggleReadyRollD20(string data)
 		{
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
@@ -8022,6 +8094,14 @@ namespace DHDM
 
 			UpdatePlayerStateInGame();
 		}
+
+		private void Validation_ValidationFailed(object sender, ValidationEventArgs ea)
+		{
+			HubtasticBaseStation.ShowValidationIssue(ActivePlayerId, ea.ValidationLevel, ea.DisplayText, ea.FloatText);
+			TellDungeonMaster(ea.DisplayText);
+		}
+
+
 
 		// TODO: Reintegrate wand/staff animations....
 		/* 

@@ -52,6 +52,9 @@ namespace DndCore
 			if (lowerName == "ava")
 				lowerName = "l'il cutie";
 
+			if (lowerName == "cutie")
+				lowerName = "l'il cutie";
+
 			foreach (Character character in players)
 			{
 				if (character.name != null && character.name.ToLower().StartsWith(lowerName))

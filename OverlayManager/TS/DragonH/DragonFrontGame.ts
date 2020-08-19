@@ -1,9 +1,20 @@
-﻿interface INameplateRenderer
-{
-	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
+﻿enum ValidationLevel {
+	Warning,
+	Error
 }
-interface ITextFloater
-{
+
+class ValidationIssueDto {
+	constructor(public ValidationLevel: ValidationLevel, public Text: string, public FloatText: string, public PlayerId: number) {
+
+	}
+}
+
+interface INameplateRenderer {
+	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
+	getPlateWidthFromCache(playerId: number): number;
+}
+
+interface ITextFloater {
 	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string);
 }
 
@@ -43,6 +54,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	dndTimeDatePanel: SpriteProxy;
 	clockPanel: Sprites;
 	charmed: Sprites;
+	bigX: Sprites;
 	restrained: Sprites;
 	fireWorks: Sprites;
 	sparkShower: Sprites;
@@ -139,7 +151,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.allFrontEffects.draw(context, nowMs);
 		this.textAnimations.removeExpiredAnimations(nowMs);
 		this.textAnimations.updatePositions(nowMs);
-		this.textAnimations.render(context, nowMs);
 
 		if (this.showFpsWindow) {
 			if (!this.fpsWindow) {
@@ -151,6 +162,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		context.drawImage(this.clockCanvas, 0, 0);
 		//context.drawImage(this.nameplatesCanvas, 0, 0);
 		this.drawNameplates(context, nowMs);
+		this.playerStats.drawPlayerTargets(context, nowMs);
+
+		this.bigX.draw(context, nowMs);
+
+		this.textAnimations.render(context, nowMs);
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -542,6 +558,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.charmed.name = 'Heart';
 		this.charmed.originX = 155;
 		this.charmed.originY = 269;
+
+		this.bigX = new Sprites('BigX/BigX', 125, fps30, AnimationStyle.Loop, true);
+		this.bigX.originX = 452;
+		this.bigX.originY = 499;
+		this.bigX.returnFrameIndex = 16;
 
 		this.restrained = new Sprites('Restrained/Chains', 20, fps30, AnimationStyle.Loop, true);
 		this.restrained.name = 'Restrained';
@@ -1033,7 +1054,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			}
 		}
 
-		let flipHorizontally: boolean = false;
+		let flipHorizontally = false;
 
 		if (dto.horizontalFlip || horizontallyFlippable && Random.chancePercent(50))
 			flipHorizontally = true;
@@ -1071,6 +1092,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 	}
 
+
 	static readonly nameCenterY: number = 1052;
 	static readonly nameplateHalfHeight: number = 24;
 
@@ -1101,8 +1123,35 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	readonly Player_Fred: number = 4;
 	readonly Player_Willy: number = 5;
 
+	showValidationIssue(validationIssueDtoStr: string) {
+		const validationIssue: ValidationIssueDto = JSON.parse(validationIssueDtoStr);
+		let x = 960;
+		let y = 540;
+		let hueShift = 261;
+		if (validationIssue.PlayerId >= 0) {
+			const player: Character = this.getPlayer(validationIssue.PlayerId);
+			hueShift = player.hueShift;
+			x = this.getPlayerX(this.getPlayerIndex(validationIssue.PlayerId));
+			y = 1080 - 300;
+		}
+
+		this.dragonFrontSounds.safePlayMp3('WrongAnswer/WrongAnswer[6]');
+		this.dragonFrontSounds.safePlayMp3('WrongAnswer/BigXFire');
+		const bigXSprite: SpriteProxy = this.bigX.addShifted(x, y, 0, hueShift);
+		bigXSprite.expirationDate = performance.now() + 6000;
+		bigXSprite.fadeOutTime = 500;
+		if (validationIssue.FloatText)
+			if (validationIssue.PlayerId >= 0) {
+				const player: Character = this.getPlayer(validationIssue.PlayerId);
+				this.floatPlayerText(validationIssue.PlayerId, validationIssue.FloatText, player.dieBackColor, player.dieFontColor);
+			}
+			else {
+				this.addFloatingText(960, validationIssue.FloatText, '#ffffff', '#000000');
+				}
+	}
+
 	changePlayerWealth(playerWealthDto: string): void {
-		let wealthChange: WealthChange = JSON.parse(playerWealthDto);
+		const wealthChange: WealthChange = JSON.parse(playerWealthDto);
 
 		let timeoutMs = 2000;
 		let airTimeSec: number = CoinManager.getAirTimeFullDropSec();
@@ -1354,11 +1403,21 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		return { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr };
 	}
 
+	plateWidthCache = [];
+
+	getPlateWidthFromCache(playerId: number): number {
+		return this.plateWidthCache[playerId];
+	}
+
 	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number {
 		if (!player)
 			return;
 		const { horizontalMargin }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
-		return this.nameplateMain.spriteWidth - 2 * horizontalMargin;
+		const plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
+		console.log(`this.plateWidthCache[player.playerID] = ${plateWidth};`);
+		this.plateWidthCache[player.playerID] = plateWidth;
+		console.log('this.plateWidthCache[player.playerID]: ' + this.plateWidthCache[player.playerID]);
+		return plateWidth;
 	}
 
 	drawNameplate(context: CanvasRenderingContext2D, player: Character, playerIndex: number): void {
@@ -1452,7 +1511,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string): void {
-		let playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
+		const playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
 		this.addFloatingText(playerX, message, fillColor, outlineColor);
 	}
 

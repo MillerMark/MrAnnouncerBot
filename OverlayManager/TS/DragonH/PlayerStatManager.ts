@@ -6,6 +6,7 @@
 	ConcentratedSpell: string;
 	PercentConcentrationComplete: number;
 	JustBrokeConcentration: boolean;
+	IsTargeted: boolean;
 }
 
 
@@ -45,6 +46,7 @@ class PlayerStats implements IPlayerStats {
 	ConcentratedSpell: string;
 	PercentConcentrationComplete: number;
 	JustBrokeConcentration: boolean;
+	IsTargeted: boolean;
 	DiceStack: Array<DiceStackDto> = [];
 
 	deserialize(playerStatsDto: IPlayerStats): PlayerStats {
@@ -56,6 +58,7 @@ class PlayerStats implements IPlayerStats {
 		this.ConcentratedSpell = playerStatsDto.ConcentratedSpell;
 		this.PercentConcentrationComplete = playerStatsDto.PercentConcentrationComplete;
 		this.JustBrokeConcentration = playerStatsDto.JustBrokeConcentration;
+		this.IsTargeted = playerStatsDto.IsTargeted;
 		this.ReadyToRollDice = playerStatsDto.ReadyToRollDice;
 		this.DiceStack = [];
 
@@ -106,6 +109,7 @@ class AllPlayerStats implements IAllPlayerStats {
 	readyToRollDragonHands: Sprites;
 	readyToRollDieCollection: SpriteCollection;
 	airExplosionCollection: SpriteCollection;
+	playerTargetSprites: Sprites;
 
 	concentratedSpellSprites: SpriteCollection;
 
@@ -145,7 +149,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.RollingTheDiceNow = mostRecentPlayerStats.RollingTheDiceNow;
 		this.setActiveTurnCreatureID(iGetPlayerX, iNameplateRenderer, context, mostRecentPlayerStats.ActiveTurnCreatureID, players);
 		this.addMissingPlayers(mostRecentPlayerStats);
-		this.handleCommandForExistingPlayers(iGetPlayerX, soundManager, mostRecentPlayerStats, players);
+		this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players);
 		this.cleanUpNonExistantPlayers(mostRecentPlayerStats);
 	}
 
@@ -280,6 +284,11 @@ class AllPlayerStats implements IAllPlayerStats {
 
 		this.readyToRollDragonHands = this.createReadyToRollSprites('DragonHands', 41, 22);
 
+		// TODO: Just be aware this.playerTargetSprites is a duplicate load of sprites that are also loaded in the InGameCreatureManager which is used by the DragonBackGame.
+		this.playerTargetSprites = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
+		this.playerTargetSprites.originX = 41;
+		this.playerTargetSprites.originY = 45;
+
 		this.createAirExplosion('A', 261, 274, 78);
 		this.createAirExplosion('B', 375, 360, 65);
 		this.createAirExplosion('C', 372, 372, 68);
@@ -358,6 +367,18 @@ class AllPlayerStats implements IAllPlayerStats {
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
 		this.drawConcentratedSpellSprites(context, nowMs);
 		this.nameplateHighlightCollection.draw(context, nowMs);
+		this.drawReadyToRollDice(context, nowMs);
+	}
+
+	drawPlayerTargets(context: CanvasRenderingContext2D, nowMs: number) {
+		this.playerTargetSprites.draw(context, nowMs);
+	}
+
+
+	timeOfLastDragonBreath = 0;
+	timeOfNextDragonBreath = -1;
+
+	private drawReadyToRollDice(context: CanvasRenderingContext2D, nowMs: number) {
 		this.readyToRollFullDragon.draw(context, nowMs);
 		this.readyToRollLightningCord.draw(context, nowMs);
 		this.readyToRollDieCollection.draw(context, nowMs);
@@ -367,10 +388,6 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.readyToRollDieSmoke.draw(context, nowMs);
 		this.readyToRollDragonBreath.draw(context, nowMs);
 	}
-
-
-	timeOfLastDragonBreath = 0;
-	timeOfNextDragonBreath = -1;
 
 	update(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, nowMs: number) {
 		this.allTextEffects.removeExpiredAnimations(nowMs);
@@ -422,19 +439,19 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, latestPlayerStats: AllPlayerStats, players: Array<Character>) {
+	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: AllPlayerStats, players: Array<Character>) {
 		for (let i = 0; i < this.Players.length; i++) {
 			const latestPlayerStat: PlayerStats = latestPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
 			if (latestPlayerStat)
-				this.handleCommandForPlayer(iGetPlayerX, soundManager, this.Players[i], this.LatestCommand, this.LatestData, latestPlayerStat, players);
+				this.handleCommandForPlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, this.Players[i], this.LatestCommand, this.LatestData, latestPlayerStat, players);
 		}
 	}
 
-	handleCommandForPlayer(iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, existingPlayerStats: PlayerStats, command: string, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
+	handleCommandForPlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, command: string, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
 		//console.log('command: ' + command);
 		switch (command) {
 			case 'Update':
-				this.updatePlayer(iGetPlayerX, soundManager, existingPlayerStats, data, latestPlayerStats, players);
+				this.updatePlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, existingPlayerStats, data, latestPlayerStats, players);
 				break;
 			case 'HourglassUpdate':
 				this.updateHourglass(iGetPlayerX, soundManager, existingPlayerStats, data, latestPlayerStats, players);
@@ -770,8 +787,9 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	updatePlayer(iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
+	updatePlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
 		this.updatePlayerDice(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager);
+		this.updatePlayerTargeting(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
 		this.updateConcentratedSpell(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager, players);
 	}
 
@@ -1021,6 +1039,42 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 
 		existingPlayerStats.ConcentratedSpell = latestPlayerStats.ConcentratedSpell;
+	}
+
+	updatePlayerTargeting(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
+		if (existingPlayerStats.IsTargeted === latestPlayerStats.IsTargeted)
+			return;
+
+		const playerId: number = latestPlayerStats.PlayerId;
+		let plateWidth: number = iNameplateRenderer.getPlateWidthFromCache(playerId);
+		if (!plateWidth) {
+			const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
+			const player: Character = players[playerIndex];
+
+			if (player)
+				plateWidth = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
+
+			if (!plateWidth)
+				plateWidth = 0;
+		}
+		let plateAdjust = -7;
+		if (plateWidth) {
+			plateAdjust -= plateWidth / 2;
+		}
+		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(playerId)) + plateAdjust;
+
+		if (latestPlayerStats.IsTargeted) {
+			const target: SpriteProxy = this.playerTargetSprites.addShifted(x, 1052, -1, 220);
+			target.fadeInTime = 500;
+			target.data = playerId;
+			soundManager.safePlayMp3('Windups/ArrowDrawQuick');
+		}
+		else {
+			const target: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, playerId);
+			if (target)
+				target.fadeOutNow(500);
+		}
+		existingPlayerStats.IsTargeted = latestPlayerStats.IsTargeted;
 	}
 
 	private showSpellConcentrationAnimation(latestPlayerStats: PlayerStats, x: number, existingPlayerStats: PlayerStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {

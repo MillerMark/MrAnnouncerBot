@@ -15,6 +15,7 @@ namespace DHDM
 		public string ConcentratedSpell { get; set; }
 		public int PercentConcentrationComplete { get; set; }
 		public bool JustBrokeConcentration { get; set; }
+		public bool IsTargeted { get; set; }
 		public PlayerStats()
 		{
 

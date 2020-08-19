@@ -3063,9 +3063,9 @@ namespace DndCore
 			PlayerShowState?.Invoke(sender, ea);
 		}
 
-		public void ShowState(string message, string fillColor, string outlineColor)
+		public void ShowState(string message, string fillColor, string outlineColor, int delayMs = 0)
 		{
-			OnPlayerShowState(this, new PlayerShowStateEventArgs(this, message, fillColor, outlineColor));
+			OnPlayerShowState(this, new PlayerShowStateEventArgs(this, message, fillColor, outlineColor, delayMs));
 		}
 		public void SetNextAnswer(string answer)
 		{

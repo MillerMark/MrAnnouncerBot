@@ -96,6 +96,12 @@ function executeSoundCommand(commandData: string) {
 	}
 }
 
+function showValidationIssue(commandData: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.showValidationIssue(commandData);
+	}
+}
+
 function clearDice() {
 	if (diceLayer) {
 		diceLayer.clearDice();
@@ -297,6 +303,7 @@ function connectToSignalR(signalR) {
 		connection.on("ClearDice", clearDice);
 		connection.on("SendScrollLayerCommand", sendScrollLayerCommand);
 		connection.on("ExecuteSoundCommand", executeSoundCommand);
+		connection.on("ShowValidationIssue", showValidationIssue);
 		connection.on("PlayerDataChanged", playerDataChanged);
 		connection.on("MapDataChanged", mapDataChanged);
 		connection.on("SetPlayerData", initializePlayerData);

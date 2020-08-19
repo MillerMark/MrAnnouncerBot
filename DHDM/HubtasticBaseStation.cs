@@ -231,5 +231,15 @@ namespace DHDM
 		{
 			HubConnection.InvokeAsync("FloatPlayerText", playerID, message, fillColor, outlineColor);
 		}
+
+		public static void ShowValidationIssue(int activePlayerId, ValidationLevel validationLevel, string displayText, string floatText)
+		{
+			ValidationIssueDto validationIssueDto = new ValidationIssueDto();
+			validationIssueDto.PlayerId = activePlayerId;
+			validationIssueDto.ValidationLevel = validationLevel;
+			validationIssueDto.Text = displayText;
+			validationIssueDto.FloatText = floatText;
+			HubConnection.InvokeAsync("ShowValidationIssue", JsonConvert.SerializeObject(validationIssueDto));
+		}
 	}
 }

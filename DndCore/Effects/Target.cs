@@ -38,6 +38,19 @@ namespace DndCore
 
 		public Vector Location { get; set; }
 		public CarriedWeapon Weapon { get; set; }
+
+		public int Count
+		{
+			get
+			{
+				int count = 0;
+				if (PlayerIds != null)
+					count += PlayerIds.Count;
+				if (Creatures != null)
+					count += Creatures.Count;
+				return count;
+			}
+		}
 		public Target()
 		{
 

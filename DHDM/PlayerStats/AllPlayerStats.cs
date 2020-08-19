@@ -113,6 +113,14 @@ namespace DHDM
 			ClearAllActiveTurns();
 			Players = null;
 		}
+
+		public void ToggleTarget(int playerId)
+		{
+			PlayerStats playerStats = GetPlayerStats(playerId);
+			if (playerStats == null)
+				return;
+			playerStats.IsTargeted = !playerStats.IsTargeted;
+		}
 	}
 }
 

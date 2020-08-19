@@ -129,6 +129,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.ExecuteSoundCommand(commandData);
 		}
+		public void ShowValidationIssue(string commandData)
+		{
+			coderushedHub.Clients.All.ShowValidationIssue(commandData);
+		}
 
 		readonly IHubContext<CodeRushedHub, IOverlayCommands> coderushedHub;
 		public MrAnnouncerBotHub(IHubContext<CodeRushedHub, IOverlayCommands> hub)

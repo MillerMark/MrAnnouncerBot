@@ -5,6 +5,11 @@ namespace DndCore
 	public class CastedSpell
 	{
 		public event EventHandler OnDispel;
+		static CastedSpell()
+		{
+			Validation.ValidationFailed += Validation_ValidationFailed;
+		}
+
 		public CastedSpell(Spell spell, Character spellCaster)
 		{
 			Target = spellCaster.ActiveTarget;
@@ -94,6 +99,19 @@ namespace DndCore
 		public string GetSpellRawDieStr(string filter = null)
 		{
 			return Spell.GetSpellRawDieStr(filter);
+		}
+
+		static bool validationFailed;
+		private static void Validation_ValidationFailed(object sender, ValidationEventArgs ea)
+		{
+			validationFailed = true;
+		}
+
+		public bool ValidationHasFailed(Character spellCaster, Target target)
+		{
+			validationFailed = false;
+			Spell.TriggerValidate(spellCaster, target, this);
+			return validationFailed;
 		}
 	}
 }

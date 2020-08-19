@@ -48,6 +48,7 @@ namespace DndCore
 		public string bright2 { get; set; }
 		public string onReceived { get; set; }
 		public string onCast { get; set; }
+		public string onValidate { get; set; }
 		public string onPreparationComplete { get; set; }
 		public string onTargetFailsSave { get; set; }
 		public string onTargetSaves { get; set; }

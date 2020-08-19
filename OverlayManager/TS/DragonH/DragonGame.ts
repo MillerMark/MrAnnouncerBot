@@ -238,24 +238,24 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			humanoidThrustScaleFactor = 2.6;
 			humanoidScaleOffset = 0.06;
 		}
-		let x: number = this.getPlayerX(playerIndex);
-		let center: Vector = new Vector(x, 1000);
-		let hueShift: number = 220;
+		const x: number = this.getPlayerX(playerIndex);
+		const center: Vector = new Vector(x, 1000);
+		let hueShift = 220;
 		if (isTempHitPoints)
 			hueShift = 330;
 
 		hueShift += Random.plusMinus(30);  // this.getHueShift(playerId)
 
-		let saturation: number = 100;
-		let brightness: number = 100;
-		let horizontalFlip: boolean = false;
-		let verticalFlip: boolean = false;
-		let scale: number = 1.8 * humanoidSizeScaleFactor;
-		let rotation: number = 0;
-		let autoRotation: number = 0;
-		let velocityX: number = 0;
-		let velocityY: number = -0.14;
-		let sprite: SpriteProxy = this.triggerAnimation('Health', center, 0, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation, velocityX, velocityY, 7500);
+		const saturation = 100;
+		const brightness = 100;
+		const horizontalFlip = false;
+		const verticalFlip = false;
+		const scale: number = 1.8 * humanoidSizeScaleFactor;
+		const rotation = 0;
+		const autoRotation = 0;
+		const velocityX = 0;
+		const velocityY = -0.14;
+		const sprite: SpriteProxy = this.triggerAnimation('Health', center, 0, hueShift, saturation, brightness, horizontalFlip, verticalFlip, scale, rotation, autoRotation, velocityX, velocityY, 7500);
 		sprite.fadeInTime = 400;
 		sprite.fadeOutTime = 800;
 		sprite.verticalThrustOverride = -0.09 * humanoidThrustScaleFactor;
@@ -268,9 +268,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (playerID < 0)
 			return null;
 
-		for (var i = 0; i < this.players.length; i++) {
-			let player: Character = this.players[i];
-			if (player.playerID == playerID)
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.playerID === playerID)
 				return player;
 		}
 
@@ -278,7 +278,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	getHueShift(playerID: number): number {
-		let player: Character = this.getPlayer(playerID);
+		const player: Character = this.getPlayer(playerID);
 		if (player)
 			return player.hueShift;
 
@@ -308,7 +308,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	protected triggerSingleEffect(dto: any) {
 		if (dto.timeOffsetMs > 0) {
-			let offset: number = dto.timeOffsetMs;
+			const offset: number = dto.timeOffsetMs;
 			dto.timeOffsetMs = -1;
 			setTimeout(this.triggerSingleEffect.bind(this), offset, dto);
 			return;
@@ -324,7 +324,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return;
 		}
 
-		let center: Vector = this.getCenter(dto.target);
+		const center: Vector = this.getCenter(dto.target);
 
 		if (dto.effectKind === EffectKind.Animation) {
 			this.triggerAnimationDto(dto, center);

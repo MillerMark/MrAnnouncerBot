@@ -40,5 +40,6 @@ namespace OverlayManager.Hubs
 		Task SetPlayerData(string playerData);
 		Task SendScrollLayerCommand(string commandData);
 		Task ExecuteSoundCommand(string commandData);
+		Task ShowValidationIssue(string commandData);
 	}
 }

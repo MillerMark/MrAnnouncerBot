@@ -34,4 +34,5 @@ namespace DndCore
 	public delegate void WindupEventHandler(object sender, WindupEventArgs ea);
 	public delegate void NameEventHandler(object sender, NameEventArgs ea);
 	public delegate void SpellChangedEventHandler(object sender, SpellChangedEventArgs ea);
+	public delegate void ValidationEventHandler(object sender, ValidationEventArgs ea);
 }
