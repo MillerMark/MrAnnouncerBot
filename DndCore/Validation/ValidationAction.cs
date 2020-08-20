@@ -3,9 +3,10 @@ using System.Linq;
 
 namespace DndCore
 {
-	public enum ValidationLevel
+	public enum ValidationAction
 	{
-		Warning,
-		Error
+		None = 0,
+		Warn = 1,
+		Stop = 2
 	}
 }

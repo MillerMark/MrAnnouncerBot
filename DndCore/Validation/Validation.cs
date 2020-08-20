@@ -5,16 +5,15 @@ namespace DndCore
 {
 	public static class Validation
 	{
+		public static event ValidationEventHandler ValidationFailing;
 		public static event ValidationEventHandler ValidationFailed;
-		public static void AssertTrue(bool value, string displayText, string floatText, ValidationLevel validationLevel = ValidationLevel.Error)
+		public static void OnValidationFailed(string dungeonMasterMessage, string floatText, ValidationAction validationAction)
 		{
-			if (value)
+			ValidationEventArgs ea = new ValidationEventArgs(dungeonMasterMessage, floatText, validationAction);
+			ValidationFailing?.Invoke(null, ea);
+			if (ea.OverrideWarning)
 				return;
-			OnValidationFailed(displayText, validationLevel, floatText);
-		}
-		public static void OnValidationFailed(string displayText, ValidationLevel validationLevel, string floatText)
-		{
-			ValidationEventArgs ea = new ValidationEventArgs(displayText, validationLevel, floatText);
+
 			ValidationFailed?.Invoke(null, ea);
 		}
 	}

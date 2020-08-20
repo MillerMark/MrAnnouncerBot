@@ -94,7 +94,7 @@ class PlayerStats implements IPlayerStats {
 	}
 }
 
-class AllPlayerStats implements IAllPlayerStats {
+class PlayerStatManager implements IAllPlayerStats {
 	LatestCommand: string;
 	LatestData: string;
 	RollingTheDiceNow: boolean;
@@ -128,7 +128,7 @@ class AllPlayerStats implements IAllPlayerStats {
 	concentrationHourglassSand: Sprites;
 
 
-	deserialize(allPlayerStatsDto: IAllPlayerStats): AllPlayerStats {
+	deserialize(allPlayerStatsDto: IAllPlayerStats): PlayerStatManager {
 		this.LatestCommand = allPlayerStatsDto.LatestCommand;
 		this.LatestData = allPlayerStatsDto.LatestData;
 		this.RollingTheDiceNow = allPlayerStatsDto.RollingTheDiceNow;
@@ -143,7 +143,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		return this;
 	}
 
-	handleCommand(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, soundManager: ISoundManager, mostRecentPlayerStats: AllPlayerStats, players: Array<Character>) {
+	handleCommand(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, soundManager: ISoundManager, mostRecentPlayerStats: PlayerStatManager, players: Array<Character>) {
 		this.LatestData = mostRecentPlayerStats.LatestData;
 		this.LatestCommand = mostRecentPlayerStats.LatestCommand;
 		this.RollingTheDiceNow = mostRecentPlayerStats.RollingTheDiceNow;
@@ -161,6 +161,22 @@ class AllPlayerStats implements IAllPlayerStats {
 	private static readonly mediumPlateTotalWidth: number = 480;
 	private static readonly shortPlateArcWidth: number = 153;
 	private static readonly shortPlateTotalWidth: number = 355;
+
+	moveAllTargets(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, players: Array<Character>) {
+		
+		players.forEach((player) => {
+			const targetSprite: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, player.playerID);
+			if (targetSprite) {
+
+				const x: number = this.getPlayerTargetX(player, iNameplateRenderer, context, iGetPlayerX.getPlayerIndex(player.playerID), iGetPlayerX, player.playerID)
+					- this.playerTargetSprites.originX;
+
+				if (targetSprite.x !== x) {
+					targetSprite.ease(performance.now(), targetSprite.x, targetSprite.y, x, targetSprite.y, 360);
+				}
+			}
+		});
+	}
 
 	setActiveTurnCreatureID(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, activeTurnCreatureID: number, players: Array<Character>) {
 		if (this.ActiveTurnCreatureID === activeTurnCreatureID)
@@ -184,27 +200,27 @@ class AllPlayerStats implements IAllPlayerStats {
 
 		let sprites: Sprites;
 		let horizontalScale = 1;
-		if (plateWidth <= AllPlayerStats.shortPlateArcWidth * 1.2) {
+		if (plateWidth <= PlayerStatManager.shortPlateArcWidth * 1.2) {
 			sprites = this.nameplateTopShort;
-			horizontalScale = plateWidth / AllPlayerStats.shortPlateArcWidth;
+			horizontalScale = plateWidth / PlayerStatManager.shortPlateArcWidth;
 		}
-		else if (plateWidth >= AllPlayerStats.longPlateArcWidth * 0.8) {
+		else if (plateWidth >= PlayerStatManager.longPlateArcWidth * 0.8) {
 			sprites = this.nameplateTopLong;
-			horizontalScale = plateWidth / AllPlayerStats.longPlateArcWidth;
+			horizontalScale = plateWidth / PlayerStatManager.longPlateArcWidth;
 		}
 		else {
 			sprites = this.nameplateTopMedium;
-			horizontalScale = plateWidth / AllPlayerStats.mediumPlateArcWidth;
+			horizontalScale = plateWidth / PlayerStatManager.mediumPlateArcWidth;
 		}
 
 		const nameplateSprites: Sprites = sprites;
-		const nameplateHighlightSprite: SpriteProxy = nameplateSprites.addShifted(x, AllPlayerStats.nameplateHighlightTop, -1, player.hueShift);
+		const nameplateHighlightSprite: SpriteProxy = nameplateSprites.addShifted(x, PlayerStatManager.nameplateHighlightTop, -1, player.hueShift);
 		nameplateHighlightSprite.horizontalScale = horizontalScale;
 
 		const nameplateRightAdjust = -4;
 		const nameplateLeftAdjust = 3;
-		this.nameplateLeft.addShifted(x - plateWidth / 2 + nameplateLeftAdjust, AllPlayerStats.nameplateHighlightTop, -1, player.hueShift);
-		this.nameplateRight.addShifted(x + plateWidth / 2 + nameplateRightAdjust, AllPlayerStats.nameplateHighlightTop, -1, player.hueShift);
+		this.nameplateLeft.addShifted(x - plateWidth / 2 + nameplateLeftAdjust, PlayerStatManager.nameplateHighlightTop, -1, player.hueShift);
+		this.nameplateRight.addShifted(x + plateWidth / 2 + nameplateRightAdjust, PlayerStatManager.nameplateHighlightTop, -1, player.hueShift);
 	}
 
 	cleanUpAllActiveTurnHighlighting() {
@@ -248,8 +264,8 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.concentrationHourglassEnds = this.loadConcentrationSprites('HourglassEnds', 31, 57, 56, AnimationStyle.SequentialStop);
 		this.concentrationIcon = this.loadConcentrationSprites('Concentration', 1, 14, 16, AnimationStyle.Static);
 		this.concentrationExplosion = this.loadConcentrationSprites('FireHideScroll', 99, 191, 280, AnimationStyle.Sequential);
-		this.concentrationHourglassSand = this.loadConcentrationSprites('HourglassSand', 348, 44, 46, AnimationStyle.Loop);
-		this.concentrationHourglassSand.returnFrameIndex = AllPlayerStats.minSandSegmentFrame;
+		this.concentrationHourglassSand = this.loadConcentrationSprites('HourglassSand', 348, 47, 41, AnimationStyle.Loop);
+		this.concentrationHourglassSand.returnFrameIndex = PlayerStatManager.minSandSegmentFrame;
 		this.concentrationHourglassSand.segmentSize = 3;
 		this.concentrationHourglassSand.name = 'hourglass';
 
@@ -288,6 +304,8 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.playerTargetSprites = new Sprites('Scroll/InGameCreatures/EnemyTarget/EnemyTarget', 102, fps30, AnimationStyle.Loop, true);
 		this.playerTargetSprites.originX = 41;
 		this.playerTargetSprites.originY = 45;
+		this.playerTargetSprites.moves = true;
+		this.playerTargetSprites.disableGravity();
 
 		this.createAirExplosion('A', 261, 274, 78);
 		this.createAirExplosion('B', 375, 360, 65);
@@ -400,6 +418,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		this.concentratedSpellSprites.updatePositions(nowMs);
 		this.concentratedSpellNames.updatePositions(nowMs);
 		this.concentratedSpellNames.removeExpiredAnimations(nowMs);
+		this.playerTargetSprites.updatePositions(nowMs);
 		if (this.timeOfNextDragonBreath < nowMs) {
 			this.timeOfNextDragonBreath = nowMs + Random.between(4000, 7000);
 			this.breathFire(iGetPlayerX, soundManager, nowMs);
@@ -430,7 +449,7 @@ class AllPlayerStats implements IAllPlayerStats {
 			soundManager.safePlayMp3('DiceDragons/FireBreathLarge[5]');
 	}
 
-	private cleanUpNonExistantPlayers(mostRecentPlayerStats: AllPlayerStats) {
+	private cleanUpNonExistantPlayers(mostRecentPlayerStats: PlayerStatManager) {
 		for (let i = 0; i < this.Players.length; i++) {
 			const mostRecentPlayerStat: PlayerStats = mostRecentPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
 			if (!mostRecentPlayerStat) {
@@ -439,7 +458,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: AllPlayerStats, players: Array<Character>) {
+	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: PlayerStatManager, players: Array<Character>) {
 		for (let i = 0; i < this.Players.length; i++) {
 			const latestPlayerStat: PlayerStats = latestPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
 			if (latestPlayerStat)
@@ -466,14 +485,14 @@ class AllPlayerStats implements IAllPlayerStats {
 		if (hourglass) {
 			if (existingPlayerStats.PercentConcentrationComplete === 100) {
 				// only setting the frameIndex to the last segment.
-				hourglass.frameIndex = AllPlayerStats.maxSandSegmentFrame - this.concentrationHourglassSand.segmentSize - 1;
+				hourglass.frameIndex = PlayerStatManager.maxSandSegmentFrame - this.concentrationHourglassSand.segmentSize - 1;
 				return;
 			}
-			if (hourglass.frameIndex < AllPlayerStats.minSandSegmentFrame)
+			if (hourglass.frameIndex < PlayerStatManager.minSandSegmentFrame)
 				return;
-			const framesBetween: number = AllPlayerStats.maxSandSegmentFrame - AllPlayerStats.minSandSegmentFrame;
+			const framesBetween: number = PlayerStatManager.maxSandSegmentFrame - PlayerStatManager.minSandSegmentFrame;
 			const frameOffset: number = Math.round(existingPlayerStats.PercentConcentrationComplete * framesBetween / 100);
-			hourglass.frameIndex = AllPlayerStats.minSandSegmentFrame + frameOffset;
+			hourglass.frameIndex = PlayerStatManager.minSandSegmentFrame + frameOffset;
 		}
 	}
 
@@ -585,7 +604,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		let textOffsetX: number;
 		const textOffsetY = 11;
 		let alignment: CanvasTextAlign;
-		if (playerX < AllPlayerStats.rightEdgeCutOff) {
+		if (playerX < PlayerStatManager.rightEdgeCutOff) {
 			textOffsetX = 50;
 			alignment = 'left';
 			if (dieStackEntry.NumSides > 6)
@@ -897,7 +916,7 @@ class AllPlayerStats implements IAllPlayerStats {
 		}
 	}
 
-	private addMissingPlayers(mostRecentPlayerStats: AllPlayerStats) {
+	private addMissingPlayers(mostRecentPlayerStats: PlayerStatManager) {
 		for (let i = 0; i < mostRecentPlayerStats.Players.length; i++) {
 			const existingPlayerStats: PlayerStats = this.getPlayerStatsById(mostRecentPlayerStats.Players[i].PlayerId);
 			if (!existingPlayerStats) {
@@ -939,13 +958,13 @@ class AllPlayerStats implements IAllPlayerStats {
 	startSpellDestructionAnimation(soundManager: ISoundManager, playerId: number) {
 		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, playerId);
 		const fadeOutTime = 500;
-		const framesToEnd: number = AllPlayerStats.totalSandFrames - AllPlayerStats.maxSandSegmentFrame;
+		const framesToEnd: number = PlayerStatManager.totalSandFrames - PlayerStatManager.maxSandSegmentFrame;
 		const timeToEndMS: number = framesToEnd * this.concentrationHourglassSand.frameInterval;
 
 		if (hourglass) {
 			const explosion: SpriteProxy = this.concentrationExplosion.add(hourglass.x + this.concentrationHourglassSand.originX, hourglass.y + this.concentrationHourglassSand.originY, 0);
 			explosion.delayStart = timeToEndMS;
-			hourglass.frameIndex = AllPlayerStats.maxSandSegmentFrame;
+			hourglass.frameIndex = PlayerStatManager.maxSandSegmentFrame;
 			hourglass.playToEndNow = true;
 			hourglass.fadeOutAfter(timeToEndMS, fadeOutTime);
 			soundManager.playMp3In(timeToEndMS, 'Spells/GunpowderFlare');
@@ -1005,23 +1024,23 @@ class AllPlayerStats implements IAllPlayerStats {
 	private static readonly spellNameScrollStartIndex = 17;
 	private static readonly spellNameScrollMaxIndex = 52;
 	getScrollFrameIndexFrom(neededWidth: number): number {
-		for (let i = 0; i < AllPlayerStats.scrollNameTextWidths.length; i++) {
-			if (neededWidth < AllPlayerStats.scrollNameTextWidths[i])
-				return AllPlayerStats.spellNameScrollStartIndex + i;
+		for (let i = 0; i < PlayerStatManager.scrollNameTextWidths.length; i++) {
+			if (neededWidth < PlayerStatManager.scrollNameTextWidths[i])
+				return PlayerStatManager.spellNameScrollStartIndex + i;
 		}
-		return AllPlayerStats.spellNameScrollMaxIndex;
+		return PlayerStatManager.spellNameScrollMaxIndex;
 	}
 
 	getScrollWidthFrom(frameIndex: number): number {
 		const scrollRollerWidth = 26;
 
-		if (frameIndex < AllPlayerStats.spellNameScrollStartIndex)
-			frameIndex = AllPlayerStats.spellNameScrollStartIndex
+		if (frameIndex < PlayerStatManager.spellNameScrollStartIndex)
+			frameIndex = PlayerStatManager.spellNameScrollStartIndex
 
-		if (frameIndex > AllPlayerStats.spellNameScrollMaxIndex)
-			frameIndex = AllPlayerStats.spellNameScrollMaxIndex;
+		if (frameIndex > PlayerStatManager.spellNameScrollMaxIndex)
+			frameIndex = PlayerStatManager.spellNameScrollMaxIndex;
 
-		return AllPlayerStats.scrollNameTextWidths[frameIndex - AllPlayerStats.spellNameScrollStartIndex] + scrollRollerWidth;
+		return PlayerStatManager.scrollNameTextWidths[frameIndex - PlayerStatManager.spellNameScrollStartIndex] + scrollRollerWidth;
 	}
 
 	updateConcentratedSpell(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, players: Array<Character>) {
@@ -1046,25 +1065,15 @@ class AllPlayerStats implements IAllPlayerStats {
 			return;
 
 		const playerId: number = latestPlayerStats.PlayerId;
-		let plateWidth: number = iNameplateRenderer.getPlateWidthFromCache(playerId);
-		if (!plateWidth) {
-			const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
-			const player: Character = players[playerIndex];
+		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
+		const player: Character = players[playerIndex];
 
-			if (player)
-				plateWidth = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
-
-			if (!plateWidth)
-				plateWidth = 0;
-		}
-		let plateAdjust = -7;
-		if (plateWidth) {
-			plateAdjust -= plateWidth / 2;
-		}
-		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(playerId)) + plateAdjust;
+		const x: number = this.getPlayerTargetX(player, iNameplateRenderer, context, playerIndex, iGetPlayerX, playerId);
 
 		if (latestPlayerStats.IsTargeted) {
-			const target: SpriteProxy = this.playerTargetSprites.addShifted(x, 1052, -1, 220);
+			//const centerNameplateY = 1052;
+			const bottomAlignedNameplateY = 1060;
+			const target: SpriteProxy = this.playerTargetSprites.addShifted(x, bottomAlignedNameplateY, -1, 220);
 			target.fadeInTime = 500;
 			target.data = playerId;
 			soundManager.safePlayMp3('Windups/ArrowDrawQuick');
@@ -1075,6 +1084,20 @@ class AllPlayerStats implements IAllPlayerStats {
 				target.fadeOutNow(500);
 		}
 		existingPlayerStats.IsTargeted = latestPlayerStats.IsTargeted;
+	}
+
+	private getPlayerTargetX(player: Character, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, playerIndex: number, iGetPlayerX: IGetPlayerX & ITextFloater, playerId: number) {
+		let plateWidth = 0;
+		if (player)
+			plateWidth = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
+
+		let plateAdjust = -7;
+		if (plateWidth) {
+			plateAdjust -= plateWidth / 2;
+		}
+
+		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(playerId)) + plateAdjust;
+		return x;
 	}
 
 	private showSpellConcentrationAnimation(latestPlayerStats: PlayerStats, x: number, existingPlayerStats: PlayerStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {
@@ -1153,7 +1176,3 @@ class AllPlayerStats implements IAllPlayerStats {
 		iGetPlayerX.addFloatingText(x, `${existingPlayerStats.ConcentratedSpell} dispelled.`, fillColor, outlineColor);
 	}
 }
-
-class PlayerStatManager {
-}
-

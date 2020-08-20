@@ -9,6 +9,7 @@ namespace DndCore
 	[HasDndEvents]
 	[SheetName("DnD")]
 	[TabName("Spells")]
+	[DebuggerDisplay("{Name,nq}")]
 	public class Spell
 	{
 		public int Range { get; set; }

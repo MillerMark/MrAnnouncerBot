@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace DndCore
 {
 	public class ValidationIssueDto
 	{
-		public ValidationLevel ValidationLevel { get; set; }
-		public string Text { get; set; }
+		public ValidationAction ValidationAction { get; set; }
 		public string FloatText { get; set; }
 		public int PlayerId { get; set; }
 		public ValidationIssueDto()

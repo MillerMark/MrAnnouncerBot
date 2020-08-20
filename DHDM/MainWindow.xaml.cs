@@ -427,7 +427,7 @@ namespace DHDM
 					foundAny = true;
 				}
 			}
-			if (foundAny)
+			if (foundAny || !ea.ShowXamlUI)
 				return;
 			// TODO: Add support for auto-select based on next answer.
 
@@ -1405,8 +1405,7 @@ namespace DHDM
 			if (!ea.CastedSpell.Active)
 				return;
 
-			// TODO: Rename this Dispel to DispelInGame
-			Dispel(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
+			ClearSpellWindupsInGame(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 
 			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
 			EndSpellEffects(spellToEnd);
@@ -1455,7 +1454,7 @@ namespace DHDM
 
 		Dictionary<int, Spell> concentratedSpells = new Dictionary<int, Spell>();
 
-		void Dispel(Spell spell, int playerId)
+		void ClearSpellWindupsInGame(Spell spell, int playerId)
 		{
 			HubtasticBaseStation.ClearWindup(PlayerActionShortcut.SpellWindupPrefix + DndGame.GetSpellPlayerName(spell, playerId));
 		}
@@ -2109,12 +2108,12 @@ namespace DHDM
 			}
 		}
 
-		private void ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
+		private bool ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
 		{
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
 
 			if (!IsOkayToCastSpell(ActivePlayer, castedSpell))
-				return;
+				return false;
 			
 			if (castedSpell.Target == null && ActivePlayer != null)
 				castedSpell.Target = ActivePlayer.ActiveTarget;
@@ -2124,11 +2123,13 @@ namespace DHDM
 			if (actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
 			{
 				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
-				return;
+				return true;
 			}
 			Spell spell = CastSpellNow(actionShortcut);
 			if (spell != null)
 				tbxDamageDice.Text = spell.DieStr;
+
+			return true;
 		}
 
 		private Spell CastSpellNow(PlayerActionShortcut actionShortcut)
@@ -5945,7 +5946,9 @@ namespace DHDM
 					if (ActivePlayer != null)
 						SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
 				}
-				ActivateSpellShortcut(spellToCastOnRoll);
+				if (!ActivateSpellShortcut(spellToCastOnRoll))
+					return;
+
 				bool isSimpleSpell = spellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
 				if (isSimpleSpell)
@@ -8097,8 +8100,8 @@ namespace DHDM
 
 		private void Validation_ValidationFailed(object sender, ValidationEventArgs ea)
 		{
-			HubtasticBaseStation.ShowValidationIssue(ActivePlayerId, ea.ValidationLevel, ea.DisplayText, ea.FloatText);
-			TellDungeonMaster(ea.DisplayText);
+			HubtasticBaseStation.ShowValidationIssue(ActivePlayerId, ea.ValidationAction, ea.FloatText);
+			TellDungeonMaster(ea.DungeonMasterMessage);
 		}
 
 

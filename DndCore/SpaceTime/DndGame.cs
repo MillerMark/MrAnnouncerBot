@@ -504,7 +504,7 @@ namespace DndCore
 		{
 			if (ea.Alarm.Data is CastedSpell castedSpell)
 			{
-				if (castedSpell.SpellCaster?.concentratedSpell == castedSpell)
+				if (castedSpell.HasSpellCasterConcentration())
 					castedSpell.SpellCaster.BreakConcentration();
 
 				Dispel(castedSpell);

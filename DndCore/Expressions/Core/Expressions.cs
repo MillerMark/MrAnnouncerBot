@@ -494,6 +494,7 @@ namespace DndCore
 			AddVariable(new DndEnumValue<TimeMeasure>());
 			AddVariable(new DndEnumValue<TimePoint>());
 			AddVariable(new DndEnumValue<TurnPart>());
+			AddVariable(new DndEnumValue<ValidationAction>());
 			AddVariable(new DndEnumValue<VantageKind>());
 			AddVariable(new DndEnumValue<WeaponProperties>());
 			AddVariable(new DndEnumValue<Weapons>());

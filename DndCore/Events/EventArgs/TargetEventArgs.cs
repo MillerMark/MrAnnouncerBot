@@ -7,6 +7,7 @@ namespace DndCore
 		public Target Target { get; set; }
 		public Character Player { get; set; }
 		public bool AllowSelf { get; set; }
+		public bool ShowXamlUI { get; set; }
 		public TargetEventArgs()
 		{
 

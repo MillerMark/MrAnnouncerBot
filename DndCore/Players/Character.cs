@@ -1352,7 +1352,7 @@ namespace DndCore
 
 			if (concentratedSpell.Active)
 			{
-				OnSpellDispelled(this, new CastedSpellEventArgs(Game, concentratedSpell));
+				Game.Dispel(concentratedSpell);
 				concentratedSpell.Dispel();
 			}
 			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.BrokeConcentration));
@@ -1372,6 +1372,7 @@ namespace DndCore
 		public void CastingSpellRequiringConcentration(CastedSpell spell)
 		{
 			BreakConcentration();
+			spell.Active = true;
 			concentratedSpell = spell;
 			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustCast));
 		}

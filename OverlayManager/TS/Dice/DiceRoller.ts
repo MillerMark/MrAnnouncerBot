@@ -1,3 +1,33 @@
+interface IDie {
+	name: string;
+	topNumber: number;
+	sparks: Array<SpriteProxy>;
+  attachedDamage: boolean;
+  damageStr: string;
+  damageType: DamageType;
+  values: number;  // The number of faces on the die
+  rollType: DieCountsAs;
+	playerName: string;
+	dataStr: string;
+	dieType: string;
+	kind: VantageKind;
+	attachedSprites: Array<SpriteProxy>;
+	attachedLabels: Array<TextEffect>;
+	origins: Array<Vector>;
+	lastPos: Array<Vector>;
+	isLucky: boolean;
+	lastPrintOnLeft: boolean;
+	inPlay: boolean;
+	isD20: boolean;
+	playerID: number;
+	diceColor: string;
+	hasNotHitFloorYet: boolean;
+	getObject();
+	updateBodyFromMesh();
+	clear();
+	getTopNumber(): number;
+}
+
 let diceRollData: DiceRollData;
 //const showDieValues = false;
 let totalDamagePlusModifier = 0;
@@ -51,8 +81,8 @@ enum DieEffect {
 //`!-------------------------------------------------------
 
 let container, scene, camera, renderer, controls, stats, world, dice = [];
-let scalingDice = [];
-let specialDice = [];
+let scalingDice: IDie[] = [];
+let specialDice: IDie[] = [];
 //var bodiesToremove = [];
 //let bodiesToFree = [];
 const diceSounds = new DiceSounds('GameDev/Assets/DragonH/SoundEffects');
@@ -78,7 +108,7 @@ function clearAllDice() {
 	if (!dice || dice.length === 0)
 		return;
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 		const dieObject = die.getObject();
 		if (dieObject) {
 			scene.remove(dieObject);
@@ -180,7 +210,7 @@ function trailsSparks(diceRollData: DiceRollData): boolean {
 
 function handleDieCollision(e) {
 	// @ts-ignore - DiceManager
-	if (DiceManager.throwRunning || dice.length == 0)
+	if (DiceManager.throwRunning || dice.length === 0)
 		return;
 
 	const relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
@@ -217,12 +247,12 @@ function handleDieCollision(e) {
 
 let needToClearD20s = true;
 
-function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffect = undefined) {
+function removeDie(die: IDie, dieEffectInterval: number, effectOverride: DieEffect = undefined) {
 	if (!die.inPlay)
 		return;
 
 	if (effectOverride === undefined || effectOverride === DieEffect.Random) {
-		var numTries: number = 0;
+		let numTries = 0;
 		effectOverride = getRandomEffect();
 		while (effectOverride === DieEffect.Random && numTries < 10) {
 			effectOverride = getRandomEffect();
@@ -232,7 +262,7 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 			effectOverride = DieEffect.Bomb;
 	}
 
-	let dieObject: any = die.getObject();
+	let dieObject = die.getObject();
 	if (dieObject) {
 		dieObject.removeTime = performance.now();
 		dieObject.effectKind = effectOverride;
@@ -278,7 +308,7 @@ function removeDie(die: any, dieEffectInterval: number, effectOverride: DieEffec
 	return dieEffectInterval;
 }
 
-function removeDieEffectsForSingleDie(die) {
+function removeDieEffectsForSingleDie(die: IDie) {
 	const now: number = performance.now();
 	if (die.attachedSprites)
 		for (let i = 0; i < die.attachedSprites.length; i++) {
@@ -301,7 +331,7 @@ function removeDieEffectsForSingleDie(die) {
 	die.origins = [];
 }
 
-function removeSingleDieWithEffect(die, dieEffect: DieEffect, effectInterval: number) {
+function removeSingleDieWithEffect(die: IDie, dieEffect: DieEffect, effectInterval: number) {
 	removeDie(die, effectInterval, dieEffect);
 	for (let i = 0; i < dice.length; i++) {
 		if (dice[i] === die) {
@@ -311,13 +341,13 @@ function removeSingleDieWithEffect(die, dieEffect: DieEffect, effectInterval: nu
 	}
 }
 
-function handRemoveDie(die, effectInterval = 0) {
+function handRemoveDie(die: IDie, effectInterval = 0) {
 	if (!die)
 		return;
 	removeSingleDieWithEffect(die, DieEffect.HandGrab, effectInterval);
 }
 
-function removeNonVantageDieNow(die: any) {
+function removeNonVantageDieNow(die: IDie) {
 	if (!die)
 		return;
 	diceRollData.appliedVantage = true;
@@ -335,14 +365,14 @@ function removeMultiplayerD20s(): any {
 	//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
 
 	const playerEdgeRolls: Array<number> = [];
-	const otherPlayersDie: Array<any> = [];
+	const otherPlayersDie: Array<IDie> = [];
 	for (let j = 0; j < 20; j++) {
 		playerEdgeRolls.push(-1);
 		otherPlayersDie.push(null);
 	}
 
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 		const playerId: number = die.playerID;
 		const topNumber = die.getTopNumber();
 
@@ -470,7 +500,7 @@ const hiddenDieScale = 0.01;
 
 function clearAllDiceIfHidden() {
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 		const dieObject = die.getObject();
 		if (dieObject === null)
 			continue;
@@ -537,7 +567,7 @@ function rgbToHSL(rgb) {
 	}
 }
 
-function removeSingleDieFromArray(dieToRemove, listToChange) {
+function removeSingleDieFromArray(dieToRemove: IDie, listToChange: IDie[]) {
 	for (let i = 0; i < listToChange.length; i++) {
 		if (dieToRemove === listToChange[i]) {
 			listToChange.splice(i, 1);
@@ -546,17 +576,17 @@ function removeSingleDieFromArray(dieToRemove, listToChange) {
 	}
 }
 
-function removeDiceFromArray(dieToRemove, listToChange) {
-	for (let i = 0; i < dieToRemove; i++) {
+function removeDiceFromArray(dieToRemove: IDie[], listToChange: IDie[]) {
+	for (let i = 0; i < dieToRemove.length; i++) {
 		removeSingleDieFromArray(dieToRemove[i], listToChange);
 	}
 }
 
-function clearTheseDice(diceList) {
+function clearTheseDice(diceList: IDie[]) {
 	if (!diceList || diceList.length === 0)
 		return;
 	for (let i = 0; i < diceList.length; i++) {
-		const die = diceList[i];
+		const die: IDie = diceList[i];
 		if (!die)
 			continue;
 		const dieObject = die.getObject();
@@ -573,7 +603,7 @@ function highlightSpecialDice() {
 
 	const now: number = performance.now();
 
-	const hiddenDie = [];
+	const hiddenDie: IDie[] = [];
 
 	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 
@@ -625,7 +655,7 @@ function highlightSpecialDice() {
 				}
 				else if (dieObject.effectKind === DieEffect.Burst) {
 					let hueShift = 0;
-					const die = specialDice[i];
+					const die: IDie = specialDice[i];
 					const hsl = rgbToHSL(die.diceColor);
 					let saturation = 100;
 					let brightness = 100;
@@ -986,7 +1016,7 @@ function init() { // From Rolling.html example.
 		if (!scalingDice || scalingDice.length === 0)
 			return;
 
-		const hiddenDie = [];
+		const hiddenDie: IDie[] = [];
 		//let numDiceScaling = 0;
 		if (scalingDice && scalingDice.length > 0) {
 			for (let i = 0; i < scalingDice.length; i++) {
@@ -1022,7 +1052,7 @@ function init() { // From Rolling.html example.
 						let saturation = 100;
 						let hueShift: number;
 						if (DiceLayer.matchOozeToDieColor)
-							if (scalingDice[i].rollType !== DieCountsAs.totalScore && scalingDice[i].rollType != DieCountsAs.inspiration)
+							if (scalingDice[i].rollType !== DieCountsAs.totalScore && scalingDice[i].rollType !== DieCountsAs.inspiration)
 								hueShift = 0;
 							else
 								hueShift = diceLayer.activePlayerHueShift;
@@ -1126,7 +1156,7 @@ function init() { // From Rolling.html example.
 
 		world.step(1.0 / 60.0);
 
-		for (let i in dice) {
+		for (const i in dice) {
 			dice[i].updateMeshFromBody();
 		}
 		checkStillRolling();
@@ -1539,9 +1569,9 @@ function getRollResults(): RollResults {
 
 	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
 	//console.log(`getRollResults - dice.length = ${dice.length}`);
-	
+
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 		if (!die.inPlay)
 			continue;
 
@@ -1554,18 +1584,17 @@ function getRollResults(): RollResults {
 			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.name === die.playerName);
 
 			if (playerRoll) {
-				//console.log('Found playerRoll!');
+				console.log(`Found playerRoll for ${die.playerName}.`);
 				playerRoll.roll += topNumber;
 				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
 			}
 			else {
-				// TODO: If coming from DiceDtos, get the correct modifier (don't just use the player's modifier).
-				//console.log(`playerRoll not found for ${die.playerName}.`);
+				console.log(`playerRoll not found for ${die.playerName}.`);
 
 				let modifier = 0;
 				if (die.playerID < 0) {  // It's an in-game creature.
 					for (let i = 0; i < diceRollData.diceDtos.length; i++) {
-						if (diceRollData.diceDtos[i].CreatureId === die.playerID){
+						if (diceRollData.diceDtos[i].CreatureId === die.playerID) {
 							modifier = diceRollData.diceDtos[i].Modifier;
 							break;
 						}
@@ -1685,11 +1714,11 @@ function checkAttackBonusRolls() {
 		}
 		getRollResults();
 		if (attemptedRollWasSuccessful && diceRollData.minDamage > 0 && !diceRollData.secondRollData) {
-			let extraRollStr: string = "";
+			let extraRollStr = "";
 			for (let i = 0; i < dice.length; i++) {
-				let die = dice[i];
-				if (die.rollType == DieCountsAs.damage && die.getTopNumber() < diceRollData.minDamage) {
-					let damageStr: string = "";
+				const die: IDie = dice[i];
+				if (die.rollType === DieCountsAs.damage && die.getTopNumber() < diceRollData.minDamage) {
+					let damageStr = "";
 					if (die.damageStr) {
 						damageStr = `(${die.damageStr}:damage)`;
 					}
@@ -1721,9 +1750,9 @@ function getFirstPlayerId() {
 }
 
 function checkSkillCheckBonusRolls() {
-	if (diceRollData.type == DiceRollType.SkillCheck) {
+	if (diceRollData.type === DiceRollType.SkillCheck) {
 		for (let i = 0; i < dice.length; i++) {
-			let die = dice[i];
+			const die: IDie = dice[i];
 			if (die.inPlay && die.rollType == DieCountsAs.totalScore && die.isD20 && die.getTopNumber() == 20) {
 				let dieColor: string = diceLayer.activePlayerDieColor;
 				let dieTextColor: string = diceLayer.activePlayerDieFontColor;
@@ -1738,10 +1767,10 @@ function checkSkillCheckBonusRolls() {
 }
 
 function checkWildMagicBonusRolls() {
-	if (diceRollData.type == DiceRollType.WildMagic) {
-		let rollValue: number = 0;
+	if (diceRollData.type === DiceRollType.WildMagic) {
+		let rollValue = 0;
 		for (let i = 0; i < dice.length; i++) {
-			let die = dice[i];
+			const die: IDie = dice[i];
 			if (die.inPlay && (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration))
 				rollValue += die.getTopNumber();
 		}
@@ -1902,16 +1931,16 @@ function freezeDie(die: any) {
 
 function freezeExistingDice() {
 	for (let i = 0; i < dice.length; i++) {
-		let die = dice[i];
+		const die: IDie = dice[i];
 		freezeDie(die);
 		if (die.attachedSprites && die.inPlay) {
-			let hueShift: number = 0;
+			let hueShift = 0;
 			if (die.playerID >= 0)
 				hueShift = diceLayer.getHueShift(die.playerID);
 			else
 				hueShift = diceLayer.activePlayerHueShift;
 
-			let bubble: SpriteProxy = diceLayer.addFreezeBubble(960, 540, hueShift, 100, 100);
+			const bubble: SpriteProxy = diceLayer.addFreezeBubble(960, 540, hueShift, 100, 100);
 
 			bubble.data = bubbleId;
 			die.attachedSprites.push(bubble);
@@ -1923,15 +1952,15 @@ function freezeExistingDice() {
 
 function popFrozenDice() {
 	for (let i = 0; i < dice.length; i++) {
-		let die = dice[i];
+		const die: IDie = dice[i];
 		if (!die.inPlay)
 			continue;
-		for (var j = 0; j < die.attachedSprites.length; j++) {
-			let sprite: SpriteProxy = die.attachedSprites[j];
+		for (let j = 0; j < die.attachedSprites.length; j++) {
+			const sprite: SpriteProxy = die.attachedSprites[j];
 			if (sprite.data === bubbleId) {
 				sprite.expirationDate = performance.now();
 
-				let hueShift: number = 0;
+				let hueShift = 0;
 				if (die.playerID >= 0)
 					hueShift = diceLayer.getHueShift(die.playerID);
 
@@ -2066,7 +2095,7 @@ function getRandomEffect() {
 
 function removeDieEffects() {
 	for (let i = 0; i < dice.length; i++) {
-		const die: any = dice[i];
+		const die: IDie = dice[i];
 		removeDieEffectsForSingleDie(die);
 	}
 }
@@ -2108,14 +2137,14 @@ function showSpecialLabels(onlyBonusDice: boolean = false) {
 			8 / Thunder 
 	*/
 
-	let changedMessage: boolean = false;
+	let changedMessage = false;
 
-	if (diceRollData.type == DiceRollType.ChaosBolt) {
+	if (diceRollData.type === DiceRollType.ChaosBolt) {
 		for (let i = 0; i < dice.length; i++) {
-			let die = dice[i];
-			if (die.rollType == DieCountsAs.damage && die.attachedDamage !== true && die.values == 8) {
-				let topNumber = die.getTopNumber();
-				var message: string = '';
+			const die: IDie = dice[i];
+			if (die.rollType === DieCountsAs.damage && die.attachedDamage !== true && die.values === 8) {
+				const topNumber = die.getTopNumber();
+				let message = '';
 				switch (topNumber) {
 					case 1:
 						message = 'Acid';
@@ -2470,7 +2499,7 @@ function removeD20s(): number {
 
 	if (!diceRollData.appliedVantage) {
 		for (let i = 0; i < dice.length; i++) {
-			const die = dice[i];
+			const die: IDie = dice[i];
 			if (die.isLucky)
 				continue;
 
@@ -2482,9 +2511,9 @@ function removeD20s(): number {
 			const topNumber = die.getTopNumber();
 
 			if (die.isD20) {
-				if (edgeRollValue == -1)
+				if (edgeRollValue === -1)
 					edgeRollValue = topNumber;
-				else if (die.kind == VantageKind.Advantage) {
+				else if (die.kind === VantageKind.Advantage) {
 					if (edgeRollValue <= topNumber) {
 						removeNonVantageDieNow(otherDie);
 						diceLayer.addAdvantageText(otherDie, vantageTextDelay);
@@ -2495,7 +2524,7 @@ function removeD20s(): number {
 						diceLayer.addAdvantageText(die, vantageTextDelay);
 					}
 				}
-				else if (die.kind == VantageKind.Disadvantage) {
+				else if (die.kind === VantageKind.Disadvantage) {
 					if (edgeRollValue >= topNumber) {
 						removeNonVantageDieNow(otherDie);
 						//if (!localDiceRollData.showedVantageMessage) {
@@ -2521,13 +2550,13 @@ function removeD20s(): number {
 		edgeRollValue = -1;
 		otherDie = null;
 		for (let i = 0; i < dice.length; i++) {
-			const die = dice[i];
+			const die: IDie = dice[i];
 			if (!die.inPlay)
 				continue;
-			const topNumber = die.getTopNumber();
+			const topNumber: number = die.getTopNumber();
 
 			if (die.isD20) {
-				if (edgeRollValue == -1)
+				if (edgeRollValue === -1)
 					edgeRollValue = topNumber;
 				else if (isLuckRollHigh) {
 					if (edgeRollValue <= topNumber) {
@@ -2574,7 +2603,7 @@ function removeD20s(): number {
 	return edgeRollValue;
 }
 
-function prepareBaseDie(die: any, throwPower: number, xPositionModifier = 0) {
+function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	const dieObject = die.getObject();
 	scene.add(dieObject);
 	die.inPlay = true;
@@ -2659,23 +2688,12 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
-function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1, dieType: string = ''): any {
-	let countPlusDie: string[] = dieStr.split('d');
-	if (countPlusDie.length != 2)
-		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
-	let quantity: number = 1;
-	if (countPlusDie[0])
-		quantity = +countPlusDie[0];
-	let numSides: number = +countPlusDie[1];
-	return createDie(quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
-}
-
-function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower: number = 1, xPositionModifier: number = 0, isMagic: boolean = false, playerID: number = -1, dieType: string = ''): any {
+function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie {
 	let lastDieAdded = null;
 	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 	for (let i = 0; i < quantity; i++) {
 		// @ts-ignore - DiceD4
-		let die: DiceObject = null;
+		let die: IDie = null;
 		switch (numSides) {
 			case 4:
 				// @ts-ignore - DiceD4
@@ -2781,7 +2799,7 @@ function createDie(quantity: number, numSides: number, damageType: DamageType, r
 						break;
 				}
 			}
-			else if ((rollType === DieCountsAs.health || rollType === DieCountsAs.totalScore || rollType === DieCountsAs.extra) && damageType == DamageType.Superiority) {
+			else if ((rollType === DieCountsAs.health || rollType === DieCountsAs.totalScore || rollType === DieCountsAs.extra) && damageType === DamageType.Superiority) {
 				diceLayer.attachSuperiority(die);
 			}
 			if (rollType === DieCountsAs.health) {
@@ -2790,8 +2808,8 @@ function createDie(quantity: number, numSides: number, damageType: DamageType, r
 		}
 		die.rollType = rollType;
 		if (die.rollType === DieCountsAs.inspiration) {
-			let rotation: number = Random.between(4, 8);
-			let hueShift: number = Random.between(20, 30);
+			const rotation: number = Random.between(4, 8);
+			const hueShift: number = Random.between(20, 30);
 			addInspirationParticles(die, playerID, hueShift, rotation);
 			addInspirationParticles(die, playerID, -hueShift, -rotation);
 			die.attachedSprites.push(diceLayer.addInspirationSmoke(960, 540, Math.floor(Math.random() * 360)));
@@ -2805,13 +2823,24 @@ function createDie(quantity: number, numSides: number, damageType: DamageType, r
 	return lastDieAdded;
 }
 
-function attachLabel(die: any, textColor: string, backgroundColor: string) {
+function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie {
+	const countPlusDie: string[] = dieStr.split('d');
+	if (countPlusDie.length !== 2)
+		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
+	let quantity = 1;
+	if (countPlusDie[0])
+		quantity = +countPlusDie[0];
+	const numSides: number = +countPlusDie[1];
+	return createDie(quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
+}
+
+function attachLabel(die: IDie, textColor: string, backgroundColor: string) {
 	if (die.dieType && die.dieType.startsWith('"')) {
 		diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor);
 	}
 }
 
-function addInspirationParticles(die: any, playerID: number, hueShiftOffset: number, rotationDegeesPerSecond: number) {
+function addInspirationParticles(die: IDie, playerID: number, hueShiftOffset: number, rotationDegeesPerSecond: number) {
 	die.attachedSprites.push(diceLayer.addInspirationParticles(960, 540, rotationDegeesPerSecond, diceLayer.getHueShift(playerID) + hueShiftOffset));
 	die.origins.push(diceLayer.inspirationParticles.getOrigin());
 }
@@ -2957,7 +2986,7 @@ init();
 
 function updateDieRollSpecialEffects() {
 	for (let i = 0; i < dice.length; i++) {
-		let die = dice[i];
+		const die: IDie = dice[i];
 
 		if (die.rollType === DieCountsAs.bentLuck)
 			addTrailingEffects(die, diceRollData.secondRollData.trailingEffects);
@@ -2965,8 +2994,8 @@ function updateDieRollSpecialEffects() {
 			addTrailingEffects(die, diceRollData.trailingEffects);
 
 		if (die.rollType === DieCountsAs.inspiration) {
-			const distanceBetweenRipples: number = 80;
-			let ripple: ColorShiftingSpriteProxy = <ColorShiftingSpriteProxy>old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length);
+			const distanceBetweenRipples = 80;
+			const ripple: ColorShiftingSpriteProxy = old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, diceRollData.trailingEffects.length) as ColorShiftingSpriteProxy;
 
 			if (ripple) {
 				ripple.opacity = 0.5;
@@ -2974,13 +3003,13 @@ function updateDieRollSpecialEffects() {
 			}
 		}
 
-		let screenPos: Vector = getScreenCoordinates(die.getObject());
+		const screenPos: Vector = getScreenCoordinates(die.getObject());
 
 		if (die.attachedSprites && die.attachedSprites.length > 0 && screenPos) {
 			for (let j = 0; j < die.attachedSprites.length; j++) {
-				let centerX: number = screenPos.x - die.origins[j].x;
-				let centerY: number = screenPos.y - die.origins[j].y;
-				let sprite: SpriteProxy = die.attachedSprites[j];
+				const centerX: number = screenPos.x - die.origins[j].x;
+				const centerY: number = screenPos.y - die.origins[j].y;
+				const sprite: SpriteProxy = die.attachedSprites[j];
 				sprite.x = centerX;
 				sprite.y = centerY;
 			}
@@ -2988,7 +3017,7 @@ function updateDieRollSpecialEffects() {
 
 		if (die.attachedLabels && die.attachedLabels.length > 0 && screenPos) {
 			for (let k = 0; k < die.attachedLabels.length; k++) {
-				let textEffect: TextEffect = die.attachedLabels[k];
+				const textEffect: TextEffect = die.attachedLabels[k];
 				textEffect.x = screenPos.x;
 				textEffect.y = screenPos.y;
 				textEffect.startX = screenPos.x;
@@ -2997,8 +3026,8 @@ function updateDieRollSpecialEffects() {
 		}
 
 		if (die.sparks && screenPos) {
-			let newX: number = screenPos.x - diceLayer.diceSparks.originX;
-			let newY: number = screenPos.y - diceLayer.diceSparks.originY;
+			const newX: number = screenPos.x - diceLayer.diceSparks.originX;
+			const newY: number = screenPos.y - diceLayer.diceSparks.originY;
 			die.sparks.forEach(function (spark: SpriteProxy) {
 				const newLocationWeight = 0.1;
 				spark.x = spark.x * (1 - newLocationWeight) + newX * newLocationWeight;
@@ -3060,9 +3089,9 @@ function isLuckBent(localDiceRollData: DiceRollData) {
 	return localDiceRollData.type === DiceRollType.BendLuckAdd || localDiceRollData.type === DiceRollType.BendLuckSubtract;
 }
 
-function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID: number = -1) {
+function addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID = -1): IDie {
 	// @ts-ignore - DiceD20
-	const die = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
+	const die: IDie = new DiceD20({ size: dieScale, backColor: d20BackColor, fontColor: d20FontColor });
 	die.isD20 = true;
 	prepareDie(die, diceRollData.throwPower, xPositionModifier);
 	die.rollType = DieCountsAs.totalScore;
@@ -3083,7 +3112,7 @@ function rollAddOnDice() {
 
 	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
 
-	let die: any;
+	let die: IDie;
 	const throwPower: number = diceRollData.throwPower * 1.2;
 
 	let dieBack: string;
@@ -3115,9 +3144,8 @@ function rollAddOnDice() {
 		}
 	}
 
-
-	const isGoodLuck: boolean = isLuckBent(localDiceRollData) && diceRollData.bentLuckMultiplier > 0 || localDiceRollData.type == DiceRollType.LuckRollHigh;
-	const isBadLuck: boolean = isLuckBent(localDiceRollData) && diceRollData.bentLuckMultiplier < 0 || localDiceRollData.type == DiceRollType.LuckRollLow;
+	const isGoodLuck: boolean = isLuckBent(localDiceRollData) && diceRollData.bentLuckMultiplier > 0 || localDiceRollData.type === DiceRollType.LuckRollHigh;
+	const isBadLuck: boolean = isLuckBent(localDiceRollData) && diceRollData.bentLuckMultiplier < 0 || localDiceRollData.type === DiceRollType.LuckRollLow;
 
 	if (isGoodLuck) {
 		//console.log('addGoodLuckEffects...');
@@ -3194,9 +3222,9 @@ class MockDie {
 }
 
 function getDiceInPlay(): number {
-	let diceInPlay: number = 0;
+	let diceInPlay = 0;
 	for (let i = 0; i < dice.length; i++) {
-		let die = dice[i];
+		const die: IDie = dice[i];
 		if (die.inPlay) {
 			diceInPlay++;
 		}
@@ -3227,7 +3255,7 @@ function testD20Removal(roll1: number, roll2: number, roll3: number, vantage: Va
 	diceInPlay = 0;
 	let returnDie: MockDie;
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 		if (die.inPlay) {
 			diceInPlay++;
 			returnDie = die;
@@ -3250,7 +3278,7 @@ function addGoodLuckEffects(die: any) {
 
 function d20RollIncludes(topNumber: number): boolean {
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 
 		if (die.isD20 && topNumber === die.getTopNumber())
 			return true;
@@ -3276,7 +3304,7 @@ function removeWildMagicRollsGreaterThanOne(): void {
 	const timeBetweenDieRemoval = 300;
 	const intervalVariance = 100;
 	for (let i = 0; i < dice.length; i++) {
-		const die = dice[i];
+		const die: IDie = dice[i];
 
 		const topNumber = die.getTopNumber();
 
@@ -3358,7 +3386,7 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.WildMagicD20Check) {
+	if (diceRollData.type === DiceRollType.WildMagicD20Check) {
 		diceSounds.playWildMagicD20CheckCommentary(d20RollValue);
 		return;
 	}
@@ -3404,17 +3432,17 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 
 function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
 	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
-	const die = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
+	const die: IDie = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
 	die.playerName = diceDto.PlayerName;
 	die.dataStr = diceDto.Data;
-	die.dieType = DiceRollType.None;
+	die.dieType = DiceRollType[DiceRollType.None];
 	if (diceDto.Label)
 		diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
 	die.kind = diceDto.Vantage;
-	//if (diceRollData.isMagic) {
-	//	die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
-	//	die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
-	//}
+	if (diceDto.IsMagic) {
+		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Random.max(360)));
+		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
+	}
 	//if (diceRollData.numHalos > 0) {
 	//	let angleDelta: number = 360 / diceRollData.numHalos;
 	//	let angle: number = Math.random() * 360;

@@ -5,16 +5,16 @@ namespace DndCore
 {
 	public class ValidationEventArgs : EventArgs
 	{
-		public ValidationEventArgs(string displayText, ValidationLevel validationLevel, string floatText)
+		public ValidationEventArgs(string dungeonMasterMessage, string floatText, ValidationAction validationAction)
 		{
 			FloatText = floatText;
-			ValidationLevel = validationLevel;
-			DisplayText = displayText;
-			// TODO: consider using Environment.StackTrace.
+			ValidationAction = validationAction;
+			DungeonMasterMessage = dungeonMasterMessage;
 		}
 
-		public string DisplayText { get; set; }
-		public ValidationLevel ValidationLevel { get; set; }
+		public string DungeonMasterMessage { get; set; }
+		public ValidationAction ValidationAction { get; set; }
 		public string FloatText { get; set; }
+		public bool OverrideWarning { get; set; }
 	}
 }

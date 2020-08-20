@@ -1,17 +1,17 @@
-﻿enum ValidationLevel {
-	Warning,
-	Error
+﻿enum ValidationAction {
+	None,
+	Warn,
+	Stop
 }
 
 class ValidationIssueDto {
-	constructor(public ValidationLevel: ValidationLevel, public Text: string, public FloatText: string, public PlayerId: number) {
+	constructor(public ValidationAction: ValidationAction, public FloatText: string, public PlayerId: number) {
 
 	}
 }
 
 interface INameplateRenderer {
 	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
-	getPlateWidthFromCache(playerId: number): number;
 }
 
 interface ITextFloater {
@@ -55,6 +55,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	clockPanel: Sprites;
 	charmed: Sprites;
 	bigX: Sprites;
+	bigWarning: Sprites;
 	restrained: Sprites;
 	fireWorks: Sprites;
 	sparkShower: Sprites;
@@ -165,6 +166,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.playerStats.drawPlayerTargets(context, nowMs);
 
 		this.bigX.draw(context, nowMs);
+		this.bigWarning.draw(context, nowMs);
 
 		this.textAnimations.render(context, nowMs);
 	}
@@ -564,6 +566,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bigX.originY = 499;
 		this.bigX.returnFrameIndex = 16;
 
+		this.bigWarning = new Sprites('BigX/Warning', 125, fps30, AnimationStyle.Loop, true);
+		this.bigWarning.originX = 435;
+		this.bigWarning.originY = 450;
+		this.bigWarning.returnFrameIndex = 16;
+
 		this.restrained = new Sprites('Restrained/Chains', 20, fps30, AnimationStyle.Loop, true);
 		this.restrained.name = 'Restrained';
 		this.restrained.originX = 213;
@@ -676,6 +683,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		const activeCreatureId: number = this.playerStats.ActiveTurnCreatureID;
 		this.playerStats.ActiveTurnCreatureID = -1;  // Forces a rebuild of highlighting.
 		this.playerStats.setActiveTurnCreatureID(this, this, this.context, activeCreatureId, this.players);
+		this.playerStats.moveAllTargets(this, this, this.context, this.players);
 	}
 
 	refreshClock() {
@@ -1125,6 +1133,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	showValidationIssue(validationIssueDtoStr: string) {
 		const validationIssue: ValidationIssueDto = JSON.parse(validationIssueDtoStr);
+		console.log(validationIssue);
 		let x = 960;
 		let y = 540;
 		let hueShift = 261;
@@ -1135,11 +1144,22 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			y = 1080 - 300;
 		}
 
+		let sprite: SpriteProxy;
+		if (validationIssue.ValidationAction === ValidationAction.Stop) {
+			sprite = this.bigX.addShifted(x, y, 0, hueShift);
+			sprite.expirationDate = performance.now() + 6000;
+		}
+		else 
+		{
+			sprite = this.bigWarning.add(x, y);
+			sprite.expirationDate = performance.now() + 3000;
+			sprite.data = validationIssue.FloatText;
+		}
+
 		this.dragonFrontSounds.safePlayMp3('WrongAnswer/WrongAnswer[6]');
 		this.dragonFrontSounds.safePlayMp3('WrongAnswer/BigXFire');
-		const bigXSprite: SpriteProxy = this.bigX.addShifted(x, y, 0, hueShift);
-		bigXSprite.expirationDate = performance.now() + 6000;
-		bigXSprite.fadeOutTime = 500;
+		
+		sprite.fadeOutTime = 500;
 		if (validationIssue.FloatText)
 			if (validationIssue.PlayerId >= 0) {
 				const player: Character = this.getPlayer(validationIssue.PlayerId);
@@ -1190,11 +1210,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 	}
 
-	playerStats: AllPlayerStats = new AllPlayerStats();
+	playerStats: PlayerStatManager = new PlayerStatManager();
 
 	changePlayerStats(playerStatsDtoStr: string): void {
 		//console.log(playerStatsDtoStr);
-		const newPlayerStats: AllPlayerStats = new AllPlayerStats().deserialize(JSON.parse(playerStatsDtoStr));
+		const newPlayerStats: PlayerStatManager = new PlayerStatManager().deserialize(JSON.parse(playerStatsDtoStr));
 		this.playerStats.handleCommand(this, this, this.context, this.dragonFrontSounds, newPlayerStats, this.players);
 		// TODO: transfer stats across.
 	}
@@ -1403,20 +1423,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		return { horizontalMargin, sprite, centerX, additionalWidth, nameWidth, nameHpMargin, hpWidth, hidingHitPoints, playerName, hpStr };
 	}
 
-	plateWidthCache = [];
-
-	getPlateWidthFromCache(playerId: number): number {
-		return this.plateWidthCache[playerId];
-	}
-
 	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number {
 		if (!player)
 			return;
 		const { horizontalMargin }: { horizontalMargin: number; sprite: SpriteProxy; centerX: number; additionalWidth: number; nameWidth: number; nameHpMargin: number; hpWidth: number; hidingHitPoints: boolean; playerName: string; hpStr: string } = this.prepareToDrawName(context, player, playerIndex);
 		const plateWidth: number = this.nameplateMain.spriteWidth - 2 * horizontalMargin;
-		console.log(`this.plateWidthCache[player.playerID] = ${plateWidth};`);
-		this.plateWidthCache[player.playerID] = plateWidth;
-		console.log('this.plateWidthCache[player.playerID]: ' + this.plateWidthCache[player.playerID]);
+		//console.log(`this.plateWidthCache[player.playerID] = ${plateWidth};`);
 		return plateWidth;
 	}
 

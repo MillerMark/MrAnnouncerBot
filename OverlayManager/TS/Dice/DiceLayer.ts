@@ -814,7 +814,7 @@ class DiceLayer {
 		return rings;
 	}
 
-	attachDamageFire(die, hueShift = 0): void {
+	attachDamageFire(die: IDie, hueShift = 0): void {
 		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageFire(960, 540, Random.max(360), hueShift));
 		die.origins.push(this.damageFire.getOrigin());
@@ -824,7 +824,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
 
-	attachLabel(die, label: string, backgroundColor: string, textColor: string): void {
+	attachLabel(die: IDie, label: string, backgroundColor: string, textColor: string): void {
 		label = label.trim();
 		if (label.startsWith('"') && label.endsWith('"'))  // Remove quotes.
 			label = label.substr(1, label.length - 2);
@@ -836,7 +836,7 @@ class DiceLayer {
 		die.attachedLabels.push(textEffect);
 	}
 
-	attachDamageCold(die): void {
+	attachDamageCold(die: IDie): void {
 		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageCold(960, 540, 0));
 		die.origins.push(this.damageCold.getOrigin());
@@ -844,7 +844,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Cold');
 	}
 
-	attachDamageNecrotic(die): void {
+	attachDamageNecrotic(die: IDie): void {
 		die.attachedDamage = true;
 
 		const numHeads = 3;
@@ -869,7 +869,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Necrotic');
 	}
 
-	addTopDieCloud(die, count: number, autoRotationDegeesPerSecond: number, opacity: number, hueShift: number, saturation = -1, brightness = -1): void {
+	addTopDieCloud(die: IDie, count: number, autoRotationDegeesPerSecond: number, opacity: number, hueShift: number, saturation = -1, brightness = -1): void {
 		const angleBetweenClouds = 360 / count;
 		let rotationOffset: number = Random.between(0, angleBetweenClouds);
 		for (let i = 0; i < count; i++) {
@@ -904,7 +904,7 @@ class DiceLayer {
 	}
 
 
-	attachDamageAcid(die): void {
+	attachDamageAcid(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.plusMinus(24);
 		die.attachedSprites.push(this.addDamageAcid(960, 540, rotationOffset));
@@ -914,7 +914,7 @@ class DiceLayer {
 	}
 
 
-	attachDamageRadiant(die): void {
+	attachDamageRadiant(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageRadiant(960, 540, rotationOffset));
@@ -924,7 +924,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Radiant');
 	}
 
-	attachDamagePoison(die): void {
+	attachDamagePoison(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.between(0, 360);
 		const hueShift: number = Random.plusMinus(30);
@@ -934,7 +934,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Poison');
 	}
 
-	attachDamagePiercing(die): void {
+	attachDamagePiercing(die: IDie): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		const autoRotation: number = Random.plusMinusBetween(5, 10);
@@ -949,27 +949,27 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Piercing');
 	}
 
-	private addSword(die, rotationOffset: number, autoRotation: number) {
+	private addSword(die: IDie, rotationOffset: number, autoRotation: number) {
 		die.attachedSprites.push(this.addDamagePiercingThickSword(960, 540, rotationOffset, autoRotation));
 		die.origins.push(this.damagePiercingThickSword.getOrigin());
 	}
 
-	private addTooth(die, rotationOffset: number, autoRotation: number) {
+	private addTooth(die: IDie, rotationOffset: number, autoRotation: number) {
 		die.attachedSprites.push(this.addDamagePiercingTooth(960, 540, rotationOffset, autoRotation));
 		die.origins.push(this.damagePiercingTooth.getOrigin());
 	}
 
-	private addTrident(die, rotationOffset: number, autoRotation: number) {
+	private addTrident(die: IDie, rotationOffset: number, autoRotation: number) {
 		die.attachedSprites.push(this.addDamagePiercingTrident(960, 540, rotationOffset, autoRotation));
 		die.origins.push(this.damagePiercingTrident.getOrigin());
 	}
 
-	private addDagger(die, rotationOffset: number, autoRotation: number) {
+	private addDagger(die: IDie, rotationOffset: number, autoRotation: number) {
 		die.attachedSprites.push(this.addDamagePiercingDagger(960, 540, rotationOffset, autoRotation));
 		die.origins.push(this.damagePiercingDagger.getOrigin());
 	}
 
-	attachDamageSlashing(die): void {
+	attachDamageSlashing(die: IDie): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.between(0, 360);
 		const autoRotation: number = Random.plusMinusBetween(60, 120);
@@ -996,13 +996,13 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Slashing');
 	}
 
-	attachHealth(die): void {
+	attachHealth(die: IDie): void {
 		die.attachedSprites.push(this.addHealth(960, 540));
 		die.origins.push(this.health.getOrigin());
 		diceSounds.safePlayMp3('Dice/health');
 	}
 
-	attachDamageThunder(die): void {
+	attachDamageThunder(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.between(0, 360);
 		die.attachedSprites.push(this.addDamageThunder(960, 540, rotationOffset));
@@ -1011,7 +1011,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Thunder');
 	}
 
-	attachSuperiority(die): void {
+	attachSuperiority(die: IDie): void {
 		const numHeads = 3;
 
 		let rotationOffset: number = Random.between(0, 360 / numHeads);
@@ -1032,7 +1032,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/DragonRoar');
 	}
 
-	attachDamageForce(die): void {
+	attachDamageForce(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.plusMinus(60);
 		die.attachedSprites.push(this.addDamageForce(960, 540, rotationOffset));
@@ -1049,7 +1049,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Force');
 	}
 
-	attachDamageBludgeoning(die): void {
+	attachDamageBludgeoning(die: IDie): void {
 		die.attachedDamage = true;
 		let rotationOffset: number = Random.plusMinus(60);
 		const autoRotationDegeesPerSecond: number = -Random.between(60, 100);
@@ -1067,7 +1067,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Bludgeoning');
 	}
 
-	addRandomBludgeoningWeapon(die, rotationOffset: number, autoRotationDegeesPerSecond: number): void {
+	addRandomBludgeoningWeapon(die: IDie, rotationOffset: number, autoRotationDegeesPerSecond: number): void {
 		if (Random.chancePercent(25)) {
 			die.attachedSprites.push(this.addDamageBludgeoningMace(960, 540, rotationOffset, autoRotationDegeesPerSecond));
 			die.origins.push(this.damageBludgeoningMace.getOrigin());
@@ -1087,12 +1087,12 @@ class DiceLayer {
 		}
 	}
 
-	addBludgeoningCloud(die, rotationOffset: number, autoRotationDegeesPerSecond: number): void {
+	addBludgeoningCloud(die: IDie, rotationOffset: number, autoRotationDegeesPerSecond: number): void {
 		die.attachedSprites.push(this.addDamageSpinningCloudTrail(960, 540, rotationOffset + 240, autoRotationDegeesPerSecond, -1));
 		die.origins.push(this.damageSpinningCloudTrail.getOrigin());
 	}
 
-	attachDamagePsychic(die): void {
+	attachDamagePsychic(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.max(360);
 		die.attachedSprites.push(this.addDamagePsychic(960, 540, rotationOffset));
@@ -1102,7 +1102,7 @@ class DiceLayer {
 	}
 
 
-	attachDamageLightning(die): void {
+	attachDamageLightning(die: IDie): void {
 		die.attachedDamage = true;
 		const rotationOffset: number = Random.max(120);
 
@@ -1489,7 +1489,7 @@ class DiceLayer {
 	}
 
 
-	addDieText(die, message: string, fontColor: string, outlineColor: string, lifeSpan = 1500, scaleAdjust = 1): void {
+	addDieText(die: IDie, message: string, fontColor: string, outlineColor: string, lifeSpan = 1500, scaleAdjust = 1): void {
 		const centerPos: Vector = getScreenCoordinates(die.getObject());
 		if (centerPos === null)
 			return;
@@ -1503,7 +1503,7 @@ class DiceLayer {
 		textEffect.targetScale = 1 * scaleAdjust;
 	}
 
-	addDieTextAfter(die, message: string, fontColor: string, outlineColor: string, timeout = 0, lifeSpan = 1500, scaleAdjust = 1) {
+	addDieTextAfter(die: IDie, message: string, fontColor: string, outlineColor: string, timeout = 0, lifeSpan = 1500, scaleAdjust = 1) {
 		if (timeout > 0)
 			setTimeout(function () {
 				this.addDieText(die, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
@@ -2362,10 +2362,10 @@ class DiceLayer {
 	}
 
 	smallSpark(x: number, y: number, angle = -1): SpriteProxy {
-		if (angle == -1)
+		if (angle === -1)
 			angle = Math.random() * 360;
 		//let spark = this.diceSparks.addShifted(x, y, Math.round(Math.random() * this.diceSparks.sprites.length), Math.random() * 360);
-		let spark = this.diceSparks.add(x, y, -1);
+		const spark = this.diceSparks.add(x, y, -1);
 		spark.expirationDate = performance.now() + 500;
 		spark.fadeOutTime = 0;
 		spark.scale = 0.8;
