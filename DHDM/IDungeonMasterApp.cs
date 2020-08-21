@@ -11,6 +11,7 @@ namespace DHDM
 		void TogglePlayerTarget(string playerName);
 		void ChangePlayerStateCommand(string command, string data);
 		void ToggleInGameCreature(int targetNum);
+		void TalkInGameCreature(int targetNum);
 		void TargetCommand(string command);
 		void Apply(string command, decimal value, List<int> playerIds);
 		string GetPlayFirstNameFromId(int playerId);

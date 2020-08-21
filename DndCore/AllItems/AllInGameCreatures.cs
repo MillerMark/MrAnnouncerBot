@@ -66,6 +66,25 @@ namespace DndCore
 				creature.TurnIsActive = false;
 		}
 
+		public static List<InGameCreature> ToggleTalking(InGameCreature inGameCreature)
+		{
+			List<InGameCreature> changedCreatures = new List<InGameCreature>();
+			
+			foreach (InGameCreature creature in Creatures)
+				if (creature == inGameCreature)
+				{
+					creature.IsTalking = !creature.IsTalking;
+					changedCreatures.Add(creature);
+				}
+				else if (creature.IsTalking)
+				{
+					changedCreatures.Add(creature);
+					creature.IsTalking = false;
+				}
+
+			return changedCreatures;
+		}
+
 		static List<InGameCreature> inGameCreatures;
 		public static List<InGameCreature> Creatures
 		{

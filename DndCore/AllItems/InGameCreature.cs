@@ -19,6 +19,8 @@ namespace DndCore
 		[JsonIgnore]
 		public string ImageUrlOverride { get; set; }
 
+		public bool IsTalking { get; set; }
+
 		public bool TurnIsActive { get; set; }
 
 		public string ImageURL

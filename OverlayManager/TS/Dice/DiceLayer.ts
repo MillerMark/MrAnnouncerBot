@@ -169,28 +169,10 @@ class DiceLayer {
 	diceBackContext: CanvasRenderingContext2D;
 	diceFireball: Sprites;
 	diceShockwaveRed: Sprites;
-	diceShockwaveYellow: Sprites;
-	diceShockwaveGreen: Sprites;
-	diceShockwaveTeal: Sprites;
-	diceShockwaveBlue: Sprites;
-	diceShockwavePurple: Sprites;
-	diceShockwaveMaroon: Sprites;
-	diceShockwaveBlack: Sprites;
 	diceBurstRed: Sprites;
-	diceBurstYellow: Sprites;
-	diceBurstGreen: Sprites;
-	diceBurstTeal: Sprites;
-	diceBurstBlue: Sprites;
-	diceBurstPurple: Sprites;
-	diceBurstMaroon: Sprites;
-	diceBurstBlack: Sprites;
 	diceSmokeRed: Sprites;
-	diceSmokeYellow: Sprites;
-	diceSmokeGreen: Sprites;
-	diceSmokeTeal: Sprites;
-	diceSmokeBlue: Sprites;
-	diceSmokePurple: Sprites;
-	diceSmokeMaroon: Sprites;
+	diceSmokeyPortalBack: Sprites;
+	diceSmokeyPortalTop: Sprites;
 	cloverRing: Sprites;
 	badLuckRing: Sprites;
 	sparkTrail: Sprites;
@@ -317,6 +299,12 @@ class DiceLayer {
 		this.loadDieBurstShockwaves();
 		this.loadDieBursts();
 		this.loadDieBurstSmokes();
+
+		this.diceSmokeyPortalBack = this.loadSmokeyPortal('Back', 317, 288);
+		this.allBackLayerEffects.add(this.diceSmokeyPortalBack);
+
+		this.diceSmokeyPortalTop = this.loadSmokeyPortal('Front', 183, 173);
+		this.allFrontLayerEffects.add(this.diceSmokeyPortalTop);
 
 		this.sparkTrail = new Sprites("/Dice/SparkTrail/SparkTrail", 46, fps40, AnimationStyle.Sequential, true);
 		this.sparkTrail.name = 'SparkTrail';
@@ -743,12 +731,6 @@ class DiceLayer {
 
 	private loadDieBurstSmokes() {
 		this.diceSmokeRed = this.loadDieBurstSmoke('Red');
-		this.diceSmokeYellow = this.loadDieBurstSmoke('Yellow');
-		this.diceSmokeGreen = this.loadDieBurstSmoke('Green');
-		this.diceSmokeTeal = this.loadDieBurstSmoke('Teal');
-		this.diceSmokeBlue = this.loadDieBurstSmoke('Blue');
-		this.diceSmokePurple = this.loadDieBurstSmoke('Purple');
-		this.diceSmokeMaroon = this.loadDieBurstSmoke('Maroon');
 	}
 
 	private loadDieBurstSmoke(color: string): Sprites {
@@ -761,24 +743,10 @@ class DiceLayer {
 
 	private loadDieBursts() {
 		this.diceBurstRed = this.loadDieBurst('Red');
-		this.diceBurstYellow = this.loadDieBurst('Yellow');
-		this.diceBurstGreen = this.loadDieBurst('Green');
-		this.diceBurstTeal = this.loadDieBurst('Teal');
-		this.diceBurstBlue = this.loadDieBurst('Blue');
-		this.diceBurstPurple = this.loadDieBurst('Purple');
-		this.diceBurstMaroon = this.loadDieBurst('Maroon');
-		this.diceBurstBlack = this.loadDieBurst('Black');
 	}
 
 	private loadDieBurstShockwaves() {
 		this.diceShockwaveRed = this.loadDieBurstShockwave('Red');
-		this.diceShockwaveYellow = this.loadDieBurstShockwave('Yellow');
-		this.diceShockwaveGreen = this.loadDieBurstShockwave('Green');
-		this.diceShockwaveTeal = this.loadDieBurstShockwave('Teal');
-		this.diceShockwaveBlue = this.loadDieBurstShockwave('Blue');
-		this.diceShockwavePurple = this.loadDieBurstShockwave('Purple');
-		this.diceShockwaveMaroon = this.loadDieBurstShockwave('Maroon');
-		this.diceShockwaveBlack = this.loadDieBurstShockwave('Black');
 	}
 
 	private loadDieBurstShockwave(color: string): Sprites {
@@ -794,6 +762,13 @@ class DiceLayer {
 		sprites.originX = 145;
 		sprites.originY = 145;
 		this.allFrontLayerEffects.add(sprites);
+		return sprites;
+	}
+
+	private loadSmokeyPortal(layer: string, originX: number, originY: number): Sprites {
+		const sprites: Sprites = new Sprites(`/Dice/SmokeyPortal/ElectricPortal${layer}`, 102, fps30, AnimationStyle.Sequential, true);
+		sprites.originX = originX;
+		sprites.originY = originY;
 		return sprites;
 	}
 
@@ -1580,8 +1555,11 @@ class DiceLayer {
 		this.diceFireball.add(x, y, 0).rotation = 90;
 	}
 
-	addDiceBurst(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
-		this.addDieBurst(x, y, hueShift + Random.plusMinus(30), saturation, brightness);
+	addGroundBurstAnimation(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
+		DiceLayer.numFiltersOnDieCleanup++;
+		const dieBurst: SpriteProxy = this.diceBurstRed.addShifted(x, y, 0, hueShift, saturation, brightness);
+		dieBurst.rotation = Math.random() * 360;
+		dieBurst.fadeOutTime = 800;
 		const shockwave: SpriteProxy = this.addShockwave(x, y, hueShift + Random.plusMinus(30), saturation, brightness);
 		const smokeTop: SpriteProxy = this.addDieSmoke(x, y, hueShift + Random.plusMinus(50), saturation, brightness);
 
@@ -1589,28 +1567,17 @@ class DiceLayer {
 		shockwave.delayStart = 6 * fps30;
 	}
 
+	addSmokeyPortalAnimation(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
+		const smokeyPortalBack: SpriteProxy = this.diceSmokeyPortalBack.addShifted(x, y, 0, hueShift, saturation, brightness);
+		smokeyPortalBack.rotation = Random.max(360);
+
+		const smokeyPortalTop: SpriteProxy = this.diceSmokeyPortalTop.addShifted(x, y, 0, hueShift, saturation, brightness);
+		smokeyPortalTop.rotation = smokeyPortalBack.rotation;
+	}
+
 	private addDieSmoke(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
-		let smokeTop: SpriteProxy;
-		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
-			DiceLayer.numFiltersOnDieCleanup++;
-			smokeTop = this.diceSmokeRed.addShifted(x, y, 0, hueShift, saturation, brightness);
-		}
-		else if (hueShift < 30)
-			smokeTop = this.diceSmokeRed.add(x, y, 0);
-		else if (hueShift < 55)
-			smokeTop = this.diceSmokeYellow.add(x, y, 0);
-		else if (hueShift < 165)
-			smokeTop = this.diceSmokeGreen.add(x, y, 0);
-		else if (hueShift < 185)
-			smokeTop = this.diceSmokeTeal.add(x, y, 0);
-		else if (hueShift < 220)
-			smokeTop = this.diceSmokeBlue.add(x, y, 0);
-		else if (hueShift < 295)
-			smokeTop = this.diceSmokePurple.add(x, y, 0);
-		else if (hueShift < 320)
-			smokeTop = this.diceSmokeMaroon.add(x, y, 0);
-		else
-			smokeTop = this.diceSmokeRed.add(x, y, 0);
+		DiceLayer.numFiltersOnDieCleanup++;
+		const smokeTop: SpriteProxy = this.diceSmokeRed.addShifted(x, y, 0, hueShift, saturation, brightness);
 
 		smokeTop.rotation = Math.random() * 360;
 		return smokeTop;
@@ -1618,62 +1585,10 @@ class DiceLayer {
 
 	private addShockwave(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
 		hueShift = hueShift % 360;
-		let shockwave: SpriteProxy;
-		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
-			DiceLayer.numFiltersOnDieCleanup++;
-			shockwave = this.diceShockwaveRed.addShifted(x, y, 0, hueShift, saturation, brightness);
-		}
-		else if (saturation < 50)
-			shockwave = this.diceShockwaveBlack.add(x, y, 0);
-		else if (hueShift < 30)
-			shockwave = this.diceShockwaveRed.add(x, y, 0);
-		else if (hueShift < 55)
-			shockwave = this.diceShockwaveYellow.add(x, y, 0);
-		else if (hueShift < 135)
-			shockwave = this.diceShockwaveGreen.add(x, y, 0);
-		else if (hueShift < 210)
-			shockwave = this.diceShockwaveTeal.add(x, y, 0);
-		else if (hueShift < 255)
-			shockwave = this.diceShockwaveBlue.add(x, y, 0);
-		else if (hueShift < 285)
-			shockwave = this.diceShockwavePurple.add(x, y, 0);
-		else if (hueShift < 330)
-			shockwave = this.diceShockwaveMaroon.add(x, y, 0);
-		else
-			shockwave = this.diceShockwaveRed.add(x, y, 0);
+		DiceLayer.numFiltersOnDieCleanup++;
+		const shockwave: SpriteProxy = this.diceShockwaveRed.addShifted(x, y, 0, hueShift, saturation, brightness);
 		shockwave.rotation = Math.random() * 360;
 		return shockwave;
-	}
-
-	private addDieBurst(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
-		hueShift = hueShift % 360;
-		let dieBurst: SpriteProxy;
-
-		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
-			DiceLayer.numFiltersOnDieCleanup++;
-			dieBurst = this.diceBurstRed.addShifted(x, y, 0, hueShift, saturation, brightness);
-		}
-		else if (saturation < 50)
-			dieBurst = this.diceBurstBlack.add(x, y, 0);
-		else if (hueShift < 30)
-			dieBurst = this.diceBurstRed.add(x, y, 0);
-		else if (hueShift < 60)
-			dieBurst = this.diceBurstYellow.add(x, y, 0);
-		else if (hueShift < 150)
-			dieBurst = this.diceBurstGreen.add(x, y, 0);
-		else if (hueShift < 195)
-			dieBurst = this.diceBurstTeal.add(x, y, 0);
-		else if (hueShift < 240)
-			dieBurst = this.diceBurstBlue.add(x, y, 0);
-		else if (hueShift < 285)
-			dieBurst = this.diceBurstPurple.add(x, y, 0);
-		else
-			dieBurst = this.diceBurstMaroon.add(x, y, 0);
-
-		dieBurst.rotation = Math.random() * 360;
-		dieBurst.fadeOutTime = 800;
-		dieBurst.expirationDate = performance.now() + 2400;
-		return dieBurst;
 	}
 
 	addMagicRing(x: number, y: number, hueShift = 0): SpriteProxy {
@@ -1878,7 +1793,7 @@ class DiceLayer {
 		else if (Random.chancePercent(50))
 			hueShift = -132 + Random.plusMinus(30);
 		const damageBludgeoningFist: SpriteProxy = this.damageBludgeoningFist.addShifted(x, y, -1, hueShift);
-		
+
 		angle += 90;
 		damageBludgeoningFist.scale = 0.8;
 		damageBludgeoningFist.rotation = angle;
@@ -2260,6 +2175,40 @@ class DiceLayer {
 
 	clearTextEffects() {
 		this.animations.clear();
+	}
+
+	addGroundBurst(die: IDie, screenPos: Vector, dieObject: IDieObject) {
+		let hueShift = 0;
+		const hsl = rgbToHSL(die.diceColor);
+		let saturation = 100;
+		let brightness = 100;
+		if (hsl) {
+			hueShift = hsl.h;
+			saturation = hsl.s * 100;
+			brightness = (hsl.l - 0.5) * 100 + 100;
+		}
+		else if (die.playerID >= 0)
+			hueShift = this.getHueShift(die.playerID);
+		this.addGroundBurstAnimation(screenPos.x, screenPos.y, hueShift, saturation, brightness);
+		diceSounds.playDieBurst();
+		hideDieIn(dieObject, 100);
+	}
+
+	addSmokeyPortal(die: IDie, screenPos: Vector, dieObject: IDieObject) {
+		let hueShift = 0;
+		const hsl = rgbToHSL(die.diceColor);
+		let saturation = 100;
+		const brightness = 100;
+		if (hsl) {
+			hueShift = hsl.h;
+			saturation = hsl.s * 100;
+			//brightness = (hsl.l - 0.5) * 100 + 100;
+		}
+		else if (die.playerID >= 0)
+			hueShift = this.getHueShift(die.playerID);
+		this.addSmokeyPortalAnimation(screenPos.x, screenPos.y, hueShift, saturation, brightness);
+		diceSounds.playSmokyPortal();
+		hideDieIn(dieObject, 80 * fps30);
 	}
 
 

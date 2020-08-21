@@ -7660,6 +7660,12 @@ namespace DHDM
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Remove", new List<InGameCreature>() { inGameCreature });
 		}
+
+		void InGameCreatureTalks(InGameCreature inGameCreature, List<InGameCreature> creaturesChanged)
+		{
+			HubtasticBaseStation.UpdateInGameCreatures("Talks", creaturesChanged);
+		}
+
 		public void ToggleInGameCreature(int targetNum)
 		{
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
@@ -7667,14 +7673,35 @@ namespace DHDM
 				return;
 			if (inGameCreature.OnScreen)
 			{
-				inGameCreature.OnScreen = false;
-				RemoveInGameCreature(inGameCreature);
+				HideInGameCreature(inGameCreature);
 			}
 			else
 			{
 				inGameCreature.OnScreen = true;
 				AddInGameCreature(inGameCreature);
 			}
+		}
+
+		public void TalkInGameCreature(int targetNum)
+		{
+			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
+			if (inGameCreature != null && !inGameCreature.IsTalking && !inGameCreature.OnScreen)
+			{
+				inGameCreature.OnScreen = true;
+				AddInGameCreature(inGameCreature);
+			}
+
+			List<InGameCreature> creaturesChanged = AllInGameCreatures.ToggleTalking(inGameCreature);
+			InGameCreatureTalks(inGameCreature, creaturesChanged);
+		}
+
+		private void HideInGameCreature(InGameCreature inGameCreature)
+		{
+			if (inGameCreature == null)
+				return;
+			inGameCreature.OnScreen = false;
+			inGameCreature.IsTalking = false;
+			RemoveInGameCreature(inGameCreature);
 		}
 
 		public class TargetSaveData

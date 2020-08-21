@@ -2,6 +2,7 @@
 	parchmentBackground: Sprites;
 	deathX: Sprites;
 	scrollAppear: Sprites;
+	creatureTalking: Sprites;
 	scrollDisappear: Sprites;
 	parchmentShadow: Sprites;
 	target: Sprites;
@@ -25,6 +26,7 @@
 		this.target.updatePositionsForFreeElements(timestamp);
 		this.activeTurnIndicator.updatePositionsForFreeElements(timestamp);
 		this.scrollAppear.updatePositionsForFreeElements(timestamp);
+		this.creatureTalking.updatePositionsForFreeElements(timestamp);
 		this.scrollDisappear.updatePositionsForFreeElements(timestamp);
 	}
 
@@ -62,6 +64,9 @@
 		this.scrollDisappear.originX = 49;
 		this.scrollDisappear.originY = 2;
 
+		this.creatureTalking = new Sprites('Scroll/InGameCreatures/CreatureTalks/PlayerTalks', 88, fps30, AnimationStyle.Loop, true);
+		this.creatureTalking.originX = 102;
+		this.creatureTalking.originY = 93;
 
 
 		this.parchmentBackground.disableGravity();
@@ -70,6 +75,7 @@
 		this.target.disableGravity();
 		this.activeTurnIndicator.disableGravity();
 		this.scrollAppear.disableGravity();
+		this.creatureTalking.disableGravity();
 		this.scrollDisappear.disableGravity();
 
 		globalBypassFrameSkip = saveBypassFrameSkip;
@@ -215,6 +221,7 @@
 
 	drawInGameCreatures(context: CanvasRenderingContext2D, nowMs: number) {
 		this.activeTurnIndicator.draw(context, nowMs);
+		this.creatureTalking.draw(context, nowMs);
 		this.parchmentBackground.draw(context, nowMs);
 
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
@@ -234,7 +241,6 @@
 
 		this.scrollAppear.draw(context, nowMs);
 		this.scrollDisappear.draw(context, nowMs);
-
 	}
 
 	// TODO: this.activeTurn integrate
@@ -265,6 +271,10 @@
 
 	getActiveTurnIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
 		return this.getSpriteForCreature(this.activeTurnIndicator.sprites, inGameCreature);
+	}
+
+	getTalkingIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
+		return this.getSpriteForCreature(this.creatureTalking.sprites, inGameCreature);
 	}
 
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
@@ -299,6 +309,7 @@
 		this.deathX.sprites = [];
 		this.target.sprites = [];
 		this.activeTurnIndicator.sprites = [];
+		this.creatureTalking.sprites = [];
 
 		let delayMs = 0;
 		let timeBetweenArrivals = 300;
@@ -499,11 +510,51 @@
 			}
 		}
 	}
+	updateInGameCreatureTalkIndicator(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
+		for (let i = 0; i < inGameCreatureDtos.length; i++) {
+			const updatedGameCreature: InGameCreature = inGameCreatureDtos[i];
+			const existingCreature: InGameCreature = this.getInGameCreatureByIndex(updatedGameCreature.Index);
+			if (!existingCreature)
+				continue;
+
+			existingCreature.IsTalking = updatedGameCreature.IsTalking;
+
+			if (existingCreature.IsTalking) {
+				console.log('someone is talking!');
+				this.showCreatureTalkingIndicator(existingCreature, soundManager);
+			}
+			else
+				this.clearCreatureTalkingIndicator(existingCreature, soundManager);
+		}
+	}
+
+	showCreatureTalkingIndicator(creature: InGameCreature, soundManager: SoundManager) {
+		const existingSprite: SpriteProxy = this.getTalkingIndicatorSpriteForCreature(creature);
+		if (existingSprite)
+			return;
+		console.log('creating sprite to indicate talking...');
+		const hueShift = this.getHueShift(creature);
+		const x: number = this.getX(creature);
+		const activeTurnIndicatorSprite: SpriteProxy = this.creatureTalking.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
+		activeTurnIndicatorSprite.data = creature;
+		activeTurnIndicatorSprite.fadeInTime = 500;
+		soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}`);
+	}
+
+	clearCreatureTalkingIndicator(creature: InGameCreature, soundManager: SoundManager) {
+		console.log('clearCreatureTalkingIndicator');
+		const existingSprite: SpriteProxy = this.getTalkingIndicatorSpriteForCreature(creature);
+		if (!existingSprite)
+			return;
+
+		console.log('clearing sprite to indicate talking in NOT happening here...');
+		existingSprite.fadeOutNow(500);
+	}
 
 	private addInGameCreature(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
 		const frameIndex = this.getFriendEnemyFrameIndex(inGameCreature);
 		const saturation: number = this.addParchment(inGameCreature, x, frameIndex, delayMs);
-		const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
+		const scrollSmokeHueShift = this.getHueShift(inGameCreature);
 		const appearSprite: SpriteProxy = this.scrollAppear.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0, scrollSmokeHueShift, saturation);
 		appearSprite.data = inGameCreature;
 		appearSprite.delayStart = delayMs;
@@ -523,9 +574,9 @@
 			frameIndex = 0;
 		else if (inGameCreature.IsEnemy)
 			frameIndex = 1;
-		else 
+		else
 			frameIndex = 2;
-		
+
 		return frameIndex;
 	}
 
@@ -553,9 +604,7 @@
 	}
 
 	private addTarget(inGameCreature: InGameCreature, x: number, delayMs = 0) {
-		let hueShift = 0;
-		if (!inGameCreature.IsEnemy)
-			hueShift = 220;
+		const hueShift = this.getHueShift(inGameCreature);
 		const targetSprite: SpriteProxy = this.target.addShifted(x, InGameCreatureManager.inGameStatTopMargin + InGameCreatureManager.targetTop, -1, hueShift);
 		targetSprite.data = inGameCreature;
 		targetSprite.delayStart = delayMs;
@@ -563,9 +612,7 @@
 	}
 
 	private addActiveTurnIndicator(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
-		let hueShift = 0;
-		if (!inGameCreature.IsEnemy)
-			hueShift = 220;
+		const hueShift = this.getHueShift(inGameCreature);
 		const activeTurnIndicatorSprite: SpriteProxy = this.activeTurnIndicator.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = inGameCreature;
 		activeTurnIndicatorSprite.delayStart = delayMs;
@@ -573,14 +620,16 @@
 		soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${inGameCreature.Name}`);
 	}
 
-	private getCreatureSmokeHueShift(inGameCreature: InGameCreature) {
-		let scrollSmokeHueShift = 0;
-		if (!inGameCreature.IsEnemy)
-			scrollSmokeHueShift = 250;
-		return scrollSmokeHueShift;
+	private getHueShift(inGameCreature: InGameCreature) {
+		if (inGameCreature.IsEnemy)
+			return 0;
+		if (inGameCreature.IsAlly)
+			return 240;
+		return 160;
 	}
 
 	processInGameCreatureCommand(command: string, inGameCreatures: Array<InGameCreature>, soundManager: SoundManager) {
+		console.log('command: ' + command);
 		if (command === 'Set')
 			this.setInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Update')
@@ -589,6 +638,8 @@
 			this.removeInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Add')
 			this.addInGameCreatures(inGameCreatures, soundManager);
+		else if (command === 'Talks')
+			this.updateInGameCreatureTalkIndicator(inGameCreatures, soundManager);
 	}
 
 	sameCreaturesInGame(inGameCreatures: InGameCreature[]) {
@@ -620,6 +671,7 @@
 			const shadowSprite: SpriteProxy = this.getParchmentShadowForCreature(inGameCreature);
 			const targetSprite: SpriteProxy = this.getTargetSpriteForCreature(inGameCreature);
 			const activeTurnIndicatorSprite: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(inGameCreature);
+			const creatureTalkingIndicatorSprite: SpriteProxy = this.getTalkingIndicatorSpriteForCreature(inGameCreature);
 			const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(inGameCreature);
 			creatureSprite.logData = true;
 			const fadeOutTimeMs = 800;
@@ -628,11 +680,16 @@
 			shadowSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
 			if (targetSprite)
 				targetSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
+
 			if (activeTurnIndicatorSprite)
 				activeTurnIndicatorSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
+
+			if (creatureTalkingIndicatorSprite)
+				creatureTalkingIndicatorSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
+
 			if (deathXSprite)
 				deathXSprite.fadeOutAfter(delayMs + delayBeforeFadeOutMs, fadeOutTimeMs);
-			const scrollSmokeHueShift = this.getCreatureSmokeHueShift(inGameCreature);
+			const scrollSmokeHueShift = this.getHueShift(inGameCreature);
 			const disappearAnimation: SpriteProxy = this.scrollDisappear.addShifted(creatureSprite.x, creatureSprite.y, 0, scrollSmokeHueShift);
 			disappearAnimation.delayStart = delayMs;
 			disappearAnimation.data = inGameCreature;
@@ -659,6 +716,7 @@
 		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
 		this.moveSpriteTo(this.target, creature, targetX, delayMs);
 		this.moveSpriteTo(this.activeTurnIndicator, creature, targetX, delayMs);
+		this.moveSpriteTo(this.creatureTalking, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollAppear, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollDisappear, creature, targetX, delayMs);
 	}
@@ -717,7 +775,7 @@
 	}
 
 	addInGameCreatures(inGameCreatures: InGameCreature[], soundManager: SoundManager) {
-		console.log(`Add ${inGameCreatures.length} creature(s).`);
+		//console.log(`Add ${inGameCreatures.length} creature(s).`);
 		for (let i = 0; i < inGameCreatures.length; i++) {
 			const creatureDtoToAdd: InGameCreature = inGameCreatures[i];
 			this.insertInGameCreature(creatureDtoToAdd);
@@ -729,7 +787,7 @@
 
 	private insertInGameCreature(creatureDtoToAdd: InGameCreature) {
 		const insertionIndex: number = this.getInsertionIndex(creatureDtoToAdd);
-		console.log('insertionIndex: ' + insertionIndex);
+		//console.log('insertionIndex: ' + insertionIndex);
 		const newCreature: InGameCreature = new InGameCreature(creatureDtoToAdd);
 		newCreature.justAdded = true;
 		if (insertionIndex < this.inGameCreatures.length) { // Insert the new creature at the right spot.

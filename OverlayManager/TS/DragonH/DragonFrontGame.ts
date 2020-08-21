@@ -764,7 +764,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			return true;
 
 		if (testCommand === "Cross2") {
-			console.log('draw Cross Hairs');
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
 		}
 

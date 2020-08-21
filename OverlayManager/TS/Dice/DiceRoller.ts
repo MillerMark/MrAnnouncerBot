@@ -1,3 +1,20 @@
+interface IDieObject {
+    body: any;
+  position: any;
+  quaternion: any;
+	scale: any;
+	hideTime: number;
+	needToHideDie: any;
+	isHidden: any;
+	localToWorld(screenVector);
+	needToDrop: boolean;
+	hideOnScaleStop: boolean;
+	needToStartEffect: boolean;
+	effectStartOffset: number;
+	effectKind: DieEffect;
+	removeTime: number;
+}
+
 interface IDie {
 	name: string;
 	topNumber: number;
@@ -68,11 +85,12 @@ enum DieEffect {
 	Ring,
 	Lucky,
 	Fireball,
-	Portal,
+	FuturisticGroundPortal,
+	ElectricSmokePortal,
 	Shockwave,
 	ColoredSmoke,
 	Bomb,
-	Burst,
+	GroundBurst,
 	SteamPunkTunnel,
 	HandGrab,
 	Random
@@ -109,7 +127,7 @@ function clearAllDice() {
 		return;
 	for (let i = 0; i < dice.length; i++) {
 		const die: IDie = dice[i];
-		const dieObject = die.getObject();
+		const dieObject: IDieObject = die.getObject();
 		if (dieObject) {
 			scene.remove(dieObject);
 			die.clear();
@@ -158,12 +176,12 @@ function changeFramerateDiceRoller(fps: number): any {
 	//startTimeDiceRoller = lastDrawTimeDiceRoller;
 }
 
-function getScreenCoordinates(element): Vector {
-	if (element == null)
+function getScreenCoordinates(dieObject: IDieObject): Vector {
+	if (dieObject === null)
 		return null;
 	// @ts-ignore - THREE
 	const screenVector = new THREE.Vector3();
-	element.localToWorld(screenVector);
+	dieObject.localToWorld(screenVector);
 
 	screenVector.project(camera);
 
@@ -262,7 +280,7 @@ function removeDie(die: IDie, dieEffectInterval: number, effectOverride: DieEffe
 			effectOverride = DieEffect.Bomb;
 	}
 
-	let dieObject = die.getObject();
+	const dieObject: IDieObject = die.getObject();
 	if (dieObject) {
 		dieObject.removeTime = performance.now();
 		dieObject.effectKind = effectOverride;
@@ -271,7 +289,7 @@ function removeDie(die: IDie, dieEffectInterval: number, effectOverride: DieEffe
 		dieObject.needToStartEffect = true;
 		specialDice.push(die);  // DieEffect.Portal too???
 
-		if (effectOverride === DieEffect.Portal) {
+		if (effectOverride === DieEffect.FuturisticGroundPortal) {
 			dieObject.hideOnScaleStop = true;
 			dieObject.needToDrop = true;
 			scalingDice.push(die);
@@ -501,7 +519,7 @@ const hiddenDieScale = 0.01;
 function clearAllDiceIfHidden() {
 	for (let i = 0; i < dice.length; i++) {
 		const die: IDie = dice[i];
-		const dieObject = die.getObject();
+		const dieObject: IDieObject = die.getObject();
 		if (dieObject === null)
 			continue;
 		if (!dieObject.isHidden)
@@ -589,7 +607,7 @@ function clearTheseDice(diceList: IDie[]) {
 		const die: IDie = diceList[i];
 		if (!die)
 			continue;
-		const dieObject = die.getObject();
+		const dieObject: IDieObject = die.getObject();
 		if (!dieObject)
 			continue;
 		scene.remove(dieObject);
@@ -608,7 +626,7 @@ function highlightSpecialDice() {
 	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 
 	for (let i = 0; i < specialDice.length; i++) {
-		const dieObject = specialDice[i].getObject();
+		const dieObject: IDieObject = specialDice[i].getObject();
 		if (dieObject === null)
 			continue;
 
@@ -653,22 +671,11 @@ function highlightSpecialDice() {
 					diceSounds.playDieBomb();
 					hideDieIn(dieObject, 700);
 				}
-				else if (dieObject.effectKind === DieEffect.Burst) {
-					let hueShift = 0;
-					const die: IDie = specialDice[i];
-					const hsl = rgbToHSL(die.diceColor);
-					let saturation = 100;
-					let brightness = 100;
-					if (hsl) {
-						hueShift = hsl.h;
-						saturation = hsl.s * 100;
-						brightness = (hsl.l - 0.5) * 100 + 100;
-					}
-					else if (die.playerID >= 0)
-						hueShift = diceLayer.getHueShift(die.playerID);
-					diceLayer.addDiceBurst(screenPos.x, screenPos.y, hueShift, saturation, brightness);
-					diceSounds.playDieBurst();
-					hideDieIn(dieObject, 100);
+				else if (dieObject.effectKind === DieEffect.GroundBurst) {
+					diceLayer.addGroundBurst(specialDice[i], screenPos, dieObject);
+				}
+				else if (dieObject.effectKind === DieEffect.ElectricSmokePortal) {
+					diceLayer.addSmokeyPortal(specialDice[i], screenPos, dieObject);
 				}
 				else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
 					diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
@@ -1021,7 +1028,7 @@ function init() { // From Rolling.html example.
 		if (scalingDice && scalingDice.length > 0) {
 			for (let i = 0; i < scalingDice.length; i++) {
 
-				const dieObject = scalingDice[i].getObject();
+				const dieObject: IDieObject = scalingDice[i].getObject();
 				if (dieObject === null)
 					continue;
 
@@ -2071,24 +2078,25 @@ function getDieEffectDistance(): number {
 }
 
 
-function burstDie(die: any, effectInterval: number = 0) {
+function groundBurstDie(die: IDie, effectInterval = 0) {
 	if (!die)
 		return;
-	removeSingleDieWithEffect(die, DieEffect.Burst, effectInterval);
+	removeSingleDieWithEffect(die, DieEffect.GroundBurst, effectInterval);
 }
 
 function getRandomEffect() {
+	return DieEffect.ElectricSmokePortal;
 	const random: number = Math.random() * 100;
 	if (random < 18)
 		return DieEffect.Bomb;
 	else if (random < 25)
 		return DieEffect.ColoredSmoke;
 	else if (random < 45)
-		return DieEffect.Burst;
+		return DieEffect.GroundBurst;
 	else if (random < 60)
 		return DieEffect.SteamPunkTunnel;
 	else if (random < 75)
-		return DieEffect.Portal;
+		return DieEffect.FuturisticGroundPortal;
 	else
 		return DieEffect.Random;
 }
@@ -2604,7 +2612,7 @@ function removeD20s(): number {
 }
 
 function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
-	const dieObject = die.getObject();
+	const dieObject: IDieObject = die.getObject();
 	scene.add(dieObject);
 	die.inPlay = true;
 	die.attachedSprites = [];
@@ -3313,7 +3321,7 @@ function removeWildMagicRollsGreaterThanOne(): void {
 		}
 		else {
 			//handRemoveDie(die, interval);
-			burstDie(die, interval);
+			groundBurstDie(die, interval);
 			interval += timeBetweenDieRemoval + Random.plusMinus(intervalVariance);
 		}
 	}

@@ -78,13 +78,13 @@ class SoundManager implements ISoundManager {
 
 	static readonly threshold: number = 50; // ms
 
-	playedRecently(key: string, compareThreshold: number = -1) {
-		if (compareThreshold == -1)
+	playedRecently(key: string, compareThreshold = -1) {
+		if (compareThreshold === -1)
 			compareThreshold = SoundManager.threshold;
-		for (var i = 0; i < this.lastPlayTimes.length; i++) {
-			let keyTime: KeyTime = <KeyTime>this.lastPlayTimes[i];
+		for (let i = 0; i < this.lastPlayTimes.length; i++) {
+			const keyTime: KeyTime = this.lastPlayTimes[i] as KeyTime;
 			if (keyTime.key === key) {
-				var now: number = performance.now();
+				const now: number = performance.now();
 				return now - keyTime.time < compareThreshold;
 			}
 		}

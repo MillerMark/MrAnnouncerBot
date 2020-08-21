@@ -115,6 +115,12 @@ class DiceSounds extends SoundManager {
 		this.safePlayMp3(`DieBurst${index}`);
 	}
 
+	playSmokyPortal() {
+		this.safePlayMp3('Dice/SmokeyPortal/ElectricPortal[10]', 200);
+		this.safePlayMp3('Dice/SmokeyPortal/Intro[3]', 200);
+		this.safePlayMp3('Dice/SmokeyPortal/Outro[3]', 200);
+	}
+
 	playWallHit(percentage: number): void {
 		this.play(this.getPercentageAudio(this.hitWall, percentage));
 	}
