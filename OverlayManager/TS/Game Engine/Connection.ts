@@ -247,7 +247,7 @@ function needToGetCoins(userId: string) {
 
 function diceHaveStoppedRolling(diceData: string) {
 	if (connection.connectionState === 1) {
-		console.error('connection.invoke("DiceHaveStoppedRolling"...');
+		//console.error('connection.invoke("DiceHaveStoppedRolling"...');
 		connection.invoke("DiceHaveStoppedRolling", diceData);
 	}
 }

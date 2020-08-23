@@ -60,6 +60,7 @@ namespace DHDM
 			Commands.Add(new ToggleTargetCommand());
 			Commands.Add(new TogglePlayerTargetCommand());
 			Commands.Add(new ToggleNpcCommand());
+			Commands.Add(new ToggleConditionCommand());
 			Commands.Add(new TalkNpcCommand());
 			Commands.Add(new TargetCommand());
 			Commands.Add(new ChangePlayerStateCommand());

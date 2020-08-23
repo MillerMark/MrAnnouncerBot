@@ -169,7 +169,7 @@ class DiceLayer {
 	diceBackContext: CanvasRenderingContext2D;
 	diceFireball: Sprites;
 	diceShockwaveRed: Sprites;
-	diceBurstRed: Sprites;
+	diceBurst: Sprites;
 	diceSmokeRed: Sprites;
 	diceSmokeyPortalBack: Sprites;
 	diceSmokeyPortalTop: Sprites;
@@ -742,7 +742,7 @@ class DiceLayer {
 	}
 
 	private loadDieBursts() {
-		this.diceBurstRed = this.loadDieBurst('Red');
+		this.diceBurst = this.loadDieBurst('Red');
 	}
 
 	private loadDieBurstShockwaves() {
@@ -1557,9 +1557,10 @@ class DiceLayer {
 
 	addGroundBurstAnimation(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
 		DiceLayer.numFiltersOnDieCleanup++;
-		const dieBurst: SpriteProxy = this.diceBurstRed.addShifted(x, y, 0, hueShift, saturation, brightness);
+		const dieBurst: SpriteProxy = this.diceBurst.addShifted(x, y, 0, hueShift, saturation, brightness);
 		dieBurst.rotation = Math.random() * 360;
 		dieBurst.fadeOutTime = 800;
+		dieBurst.expirationDate = performance.now() + 4000;
 		const shockwave: SpriteProxy = this.addShockwave(x, y, hueShift + Random.plusMinus(30), saturation, brightness);
 		const smokeTop: SpriteProxy = this.addDieSmoke(x, y, hueShift + Random.plusMinus(50), saturation, brightness);
 
@@ -2259,6 +2260,7 @@ class DiceLayer {
 		const dto = JSON.parse(diceRollData);
 		const diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
+		console.log('getDiceRollData: diceRoll.type = ' + diceRoll.type);
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;

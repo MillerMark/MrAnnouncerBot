@@ -11,6 +11,7 @@ namespace DHDM
 		public List<DiceStackDto> DiceStack { get; set; } = new List<DiceStackDto>();
 		public bool ReadyToRollDice { get; set; }
 		public VantageKind Vantage { get; set; }
+		public Conditions Conditions { get; set; }
 		public int PlayerId { get; set; }
 		public string ConcentratedSpell { get; set; }
 		public int PercentConcentrationComplete { get; set; }

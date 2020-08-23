@@ -172,6 +172,12 @@ namespace DndCore
 			return GetElement<DamageType>(damageStr);
 		}
 
+		public static Conditions ToCondition(string condition)
+		{
+			return GetElement<Conditions>(condition);
+		}
+
+
 		public static string ToSkillDisplayString(Skills skill)
 		{
 			switch (skill)
@@ -698,6 +704,30 @@ namespace DndCore
 		{
 			TimeSpan timeActive = dndGame.Clock.Time - castedSpell.CastingTime;
 			return (int)Math.Round(100 * timeActive.TotalSeconds / spellDuration.TotalSeconds);
+		}
+
+		public static DamageType GetChaosBoltDamage(int value)
+		{
+			switch (value)
+			{
+				case 1:
+					return DamageType.Acid;
+				case 2:
+					return DamageType.Cold;
+				case 3:
+					return DamageType.Fire;
+				case 4:
+					return DamageType.Force;
+				case 5:
+					return DamageType.Lightning;
+				case 6:
+					return DamageType.Poison;
+				case 7:
+					return DamageType.Psychic;
+				case 8:
+					return DamageType.Thunder;
+			}
+			return DamageType.None;
 		}
 	}
 }

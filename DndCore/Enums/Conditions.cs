@@ -23,6 +23,7 @@ namespace DndCore
 		Restrained = 4096,
 		Stunned = 8192,
 		Unconscious = 16384,
-		Sleep = 32768  // Added this to support monster condition immunities as some monsters are immune to mods that cause sleep.
+		Sleep = 32768,  // Added this to support monster condition immunities as some monsters are immune to mods that cause sleep.
+		Dead = 65536
 	}
 }

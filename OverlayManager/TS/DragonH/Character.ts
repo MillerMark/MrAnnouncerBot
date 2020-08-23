@@ -50,7 +50,7 @@ class Character {
 	hueShift: number;
 	dieBackColor: string;
 	dieFontColor: string;
-	conditions: Conditions = Conditions.none;
+	conditions: Conditions = Conditions.None;
 	weaponProficiency: Weapons = Weapons.None;
 	onTurnActions = 1;
 	offTurnActions = 0;

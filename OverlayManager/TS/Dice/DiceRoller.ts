@@ -1,5 +1,5 @@
 interface IDieObject {
-    body: any;
+  body: any;
   position: any;
   quaternion: any;
 	scale: any;
@@ -16,6 +16,7 @@ interface IDieObject {
 }
 
 interface IDie {
+  getUpsideValue();
 	name: string;
 	topNumber: number;
 	sparks: Array<SpriteProxy>;
@@ -35,6 +36,7 @@ interface IDie {
 	isLucky: boolean;
 	lastPrintOnLeft: boolean;
 	inPlay: boolean;
+	scoreHasBeenTallied: boolean;
 	isD20: boolean;
 	playerID: number;
 	diceColor: string;
@@ -86,7 +88,7 @@ enum DieEffect {
 	Lucky,
 	Fireball,
 	FuturisticGroundPortal,
-	ElectricSmokePortal,
+	SmokeyPortal,
 	Shockwave,
 	ColoredSmoke,
 	Bomb,
@@ -197,11 +199,11 @@ function dieFirstHitsFloor(die) {
 		diceRollData.onFirstContactSound = null;
 	}
 
-	if (die.rollType == DieCountsAs.inspiration) {
+	if (die.rollType === DieCountsAs.inspiration) {
 		diceSounds.safePlayMp3('inspiration');
 	}
 
-	if (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration) {
+	if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration) {
 		// Move the effect closer to the center of the screen...
 		const percentageOnDie = 0.7;
 		const percentageOffDie: number = 1 - percentageOnDie;
@@ -674,7 +676,7 @@ function highlightSpecialDice() {
 				else if (dieObject.effectKind === DieEffect.GroundBurst) {
 					diceLayer.addGroundBurst(specialDice[i], screenPos, dieObject);
 				}
-				else if (dieObject.effectKind === DieEffect.ElectricSmokePortal) {
+				else if (dieObject.effectKind === DieEffect.SmokeyPortal) {
 					diceLayer.addSmokeyPortal(specialDice[i], screenPos, dieObject);
 				}
 				else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
@@ -1575,12 +1577,17 @@ function getRollResults(): RollResults {
 	let playerIdForTextMessages = -1;
 
 	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
-	//console.log(`getRollResults - dice.length = ${dice.length}`);
+	console.log(`getRollResults: dice.length = ${dice.length}`);
 
 	for (let i = 0; i < dice.length; i++) {
 		const die: IDie = dice[i];
 		if (!die.inPlay)
 			continue;
+
+		if (die.scoreHasBeenTallied)
+			continue;
+
+		die.scoreHasBeenTallied = true;
 
 		const topNumber: number = die.getTopNumber();
 
@@ -1588,7 +1595,7 @@ function getRollResults(): RollResults {
 			if (diceRollData.multiplayerSummary === null)
 				diceRollData.multiplayerSummary = [];
 			// diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
-			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value, index, obj) => value.name === die.playerName);
+			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
 
 			if (playerRoll) {
 				console.log(`Found playerRoll for ${die.playerName}.`);
@@ -1750,7 +1757,7 @@ function checkAttackBonusRolls() {
 }
 
 function getFirstPlayerId() {
-	let playerID: number = -1;
+	let playerID = -1;
 	if (diceRollData.playerRollOptions.length > 0)
 		playerID = diceRollData.playerRollOptions[0].PlayerID;
 	return playerID;
@@ -1760,7 +1767,7 @@ function checkSkillCheckBonusRolls() {
 	if (diceRollData.type === DiceRollType.SkillCheck) {
 		for (let i = 0; i < dice.length; i++) {
 			const die: IDie = dice[i];
-			if (die.inPlay && die.rollType == DieCountsAs.totalScore && die.isD20 && die.getTopNumber() == 20) {
+			if (die.inPlay && die.rollType === DieCountsAs.totalScore && die.isD20 && die.getTopNumber() === 20) {
 				let dieColor: string = diceLayer.activePlayerDieColor;
 				let dieTextColor: string = diceLayer.activePlayerDieFontColor;
 				if (die.playerID >= 0) {
@@ -1773,12 +1780,29 @@ function checkSkillCheckBonusRolls() {
 	}
 }
 
+function announceWildMagicResult(totalRoll: number) {
+	let mp3BaseName = '99-00';
+	if (totalRoll > 0 && totalRoll < 99) {
+		const secondNumber: number = Math.floor((totalRoll + 1) / 2) * 2;
+		const firstNumber: number = secondNumber - 1;
+		let firstStr: string = firstNumber.toString();
+		if (firstNumber < 10)
+			firstStr = '0' + firstStr;
+		let secondStr: string = secondNumber.toString();
+		if (secondNumber < 10)
+			secondStr = '0' + secondStr;
+		mp3BaseName = firstStr + '-' + secondStr;
+	}
+	diceSounds.playMp3In(1800, 'Announcer/Wild Magic/' + mp3BaseName);
+	diceSounds.safePlayMp3('WildMagic/' + mp3BaseName);
+}
+
 function checkWildMagicBonusRolls() {
 	if (diceRollData.type === DiceRollType.WildMagic) {
 		let rollValue = 0;
 		for (let i = 0; i < dice.length; i++) {
 			const die: IDie = dice[i];
-			if (die.inPlay && (die.rollType == DieCountsAs.totalScore || die.rollType == DieCountsAs.inspiration))
+			if (die.inPlay && (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration))
 				rollValue += die.getTopNumber();
 		}
 		totalRoll = rollValue + diceRollData.modifier;
@@ -1904,23 +1928,6 @@ function checkWildMagicBonusRolls() {
 		else if (totalRoll < 99)
 			diceRollData.wildMagic = WildMagic.faintEtheralMusicOneMinute;
 	}
-}
-
-function announceWildMagicResult(totalRoll: number) {
-	let mp3BaseName = '99-00';
-	if (totalRoll > 0 && totalRoll < 99) {
-		const secondNumber: number = Math.floor((totalRoll + 1) / 2) * 2;
-		const firstNumber: number = secondNumber - 1;
-		let firstStr: string = firstNumber.toString();
-		if (firstNumber < 10)
-			firstStr = '0' + firstStr;
-		let secondStr: string = secondNumber.toString();
-		if (secondNumber < 10)
-			secondStr = '0' + secondStr;
-		mp3BaseName = firstStr + '-' + secondStr;
-	}
-	diceSounds.playMp3In(1800, 'Announcer/Wild Magic/' + mp3BaseName);
-	diceSounds.safePlayMp3('WildMagic/' + mp3BaseName);
 }
 
 const bubbleId = 'bubble';
@@ -2061,11 +2068,11 @@ function playFinalRollSoundEffects() {
 	}
 }
 
-function getDiceValue(die: any) {
+function getDiceValue(die: IDie) {
 	for (let i = 0; i < diceValues.length; i++) {
-		let thisDiceValueEntry: any = diceValues[i];
-		if (thisDiceValueEntry.dice == die) {
-			if (thisDiceValueEntry.value != die.getUpsideValue())
+		const thisDiceValueEntry = diceValues[i];
+		if (thisDiceValueEntry.dice === die) {
+			if (thisDiceValueEntry.value !== die.getUpsideValue())
 				console.error(`thisDiceValueEntry.value (${thisDiceValueEntry.value}) != dice.getUpsideValue() (${die.getUpsideValue()})`);
 			return thisDiceValueEntry.value;
 		}
@@ -2085,17 +2092,18 @@ function groundBurstDie(die: IDie, effectInterval = 0) {
 }
 
 function getRandomEffect() {
-	return DieEffect.ElectricSmokePortal;
 	const random: number = Math.random() * 100;
-	if (random < 18)
+	if (random < 13)
 		return DieEffect.Bomb;
-	else if (random < 25)
+	else if (random < 22)
 		return DieEffect.ColoredSmoke;
-	else if (random < 45)
+	else if (random < 35)
+		return DieEffect.SmokeyPortal;
+	else if (random < 50)
 		return DieEffect.GroundBurst;
-	else if (random < 60)
+	else if (random < 65)
 		return DieEffect.SteamPunkTunnel;
-	else if (random < 75)
+	else if (random < 80)
 		return DieEffect.FuturisticGroundPortal;
 	else
 		return DieEffect.Random;
@@ -2459,6 +2467,9 @@ function onDiceRollStopped() {
 		playerId = diceRollData.playerRollOptions[0].PlayerID;
 
 	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
+	console.log('diceRollData.type: ' + diceRollData.type);
+	console.log(diceRollData.multiplayerSummary);
+	console.log(diceRollData.individualRolls);
 	lastRollDiceData = {
 		'wasCriticalHit': wasCriticalHit,
 		'playerID': playerId,
@@ -2490,9 +2501,9 @@ function removeD20s(): number {
 	let edgeRollValue = -1;
 	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
 	const isLuckRollHigh: boolean = localDiceRollData.type === DiceRollType.LuckRollHigh;
-	const isLuckRollLow: boolean = localDiceRollData.type == DiceRollType.LuckRollLow;
+	const isLuckRollLow: boolean = localDiceRollData.type === DiceRollType.LuckRollLow;
 	const isLuckRoll: boolean = isLuckRollHigh || isLuckRollLow;
-	const isWildMagic: boolean = localDiceRollData.type == DiceRollType.WildMagic;
+	const isWildMagic: boolean = localDiceRollData.type === DiceRollType.WildMagic;
 
 	if (localDiceRollData.type === DiceRollType.WildMagicD20Check) {
 		removeWildMagicRollsGreaterThanOne();
@@ -2501,7 +2512,7 @@ function removeD20s(): number {
 
 	if (isWildMagic || !localDiceRollData.itsAD20Roll)
 		return edgeRollValue;
-	let otherDie: any = null;
+	let otherDie = null;
 	const vantageTextDelay = 900;
 	//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
 
@@ -2649,22 +2660,22 @@ function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	die.lastPrintOnLeft = false;
 }
 
-function prepareDie(die: any, throwPower: number, xPositionModifier = 0) {
+function prepareDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	prepareBaseDie(die, throwPower, xPositionModifier);
 
-	var newValue: number = Math.floor(Math.random() * die.values + 1);
+	const newValue: number = Math.floor(Math.random() * die.values + 1);
 	diceValues.push({ dice: die, value: newValue });
 }
 
 function prepareD10x10Die(die: any, throwPower: number, xPositionModifier: number = 0) {
 	prepareBaseDie(die, throwPower, xPositionModifier);
-	var newValue: number = Math.floor(Math.random() * die.values) + 1;
+	const newValue: number = Math.floor(Math.random() * die.values) + 1;
 	diceValues.push({ dice: die, value: newValue });
 }
 
 function prepareD10x01Die(die: any, throwPower: number, xPositionModifier: number = 0) {
 	prepareBaseDie(die, throwPower, xPositionModifier);
-	var newValue: number = Math.floor(Math.random() * die.values) + 1;
+	const newValue: number = Math.floor(Math.random() * die.values) + 1;
 	diceValues.push({ dice: die, value: newValue });
 }
 
@@ -2696,11 +2707,16 @@ function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor:
 	}
 }
 
+function attachLabel(die: IDie, textColor: string, backgroundColor: string) {
+	if (die.dieType && die.dieType.startsWith('"')) {
+		diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor);
+	}
+}
+
 function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie {
 	let lastDieAdded = null;
 	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 	for (let i = 0; i < quantity; i++) {
-		// @ts-ignore - DiceD4
 		let die: IDie = null;
 		switch (numSides) {
 			case 4:
@@ -2840,12 +2856,6 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 		quantity = +countPlusDie[0];
 	const numSides: number = +countPlusDie[1];
 	return createDie(quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
-}
-
-function attachLabel(die: IDie, textColor: string, backgroundColor: string) {
-	if (die.dieType && die.dieType.startsWith('"')) {
-		diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor);
-	}
 }
 
 function addInspirationParticles(die: IDie, playerID: number, hueShiftOffset: number, rotationDegeesPerSecond: number) {
@@ -3344,52 +3354,52 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 		diceSounds.playMultiplayerCommentary(type, d20RollValue);
 		return;
 	}
-	if (diceRollData.type == DiceRollType.WildMagic) {
+	if (diceRollData.type === DiceRollType.WildMagic) {
 		diceSounds.playWildMagicCommentary(type, d20RollValue);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.PercentageRoll) {
+	if (diceRollData.type === DiceRollType.PercentageRoll) {
 		diceSounds.playPercentageRollCommentary(type, d20RollValue);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.DamageOnly) {
+	if (diceRollData.type === DiceRollType.DamageOnly) {
 		diceSounds.playDamageCommentary(type, d20RollValue, totalDamage, maxDamage);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.HealthOnly) {
+	if (diceRollData.type === DiceRollType.HealthOnly) {
 		diceSounds.playHealthCommentary(type, d20RollValue);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.ExtraOnly) {
+	if (diceRollData.type === DiceRollType.ExtraOnly) {
 		diceSounds.playExtraCommentary(type, d20RollValue);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.Attack) {
+	if (diceRollData.type === DiceRollType.Attack) {
 		diceSounds.playAttackCommentary(d20RollValue, totalDamage, maxDamage);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.SkillCheck) {
+	if (diceRollData.type === DiceRollType.SkillCheck) {
 		diceSounds.playSkillCheckCommentary(d20RollValue, diceRollData.skillCheck);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.SavingThrow) {
+	if (diceRollData.type === DiceRollType.SavingThrow) {
 		diceSounds.playSavingThrowCommentary(d20RollValue, diceRollData.savingThrow);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.ChaosBolt) {
+	if (diceRollData.type === DiceRollType.ChaosBolt) {
 		diceSounds.playChaosBoltCommentary(d20RollValue, diceRollData.savingThrow);
 		return;
 	}
 
-	if (diceRollData.type == DiceRollType.FlatD20) {
+	if (diceRollData.type === DiceRollType.FlatD20) {
 		diceSounds.playFlatD20Commentary(d20RollValue);
 		return;
 	}
@@ -3417,6 +3427,7 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 		attachLabel(die, d20FontColor, d20BackColor);
 		die.playerID = playerID;
 		die.playerName = diceLayer.getPlayerName(playerID);
+		console.log('die.playerName: ' + die.playerName);
 		die.kind = kind;
 		if (diceRollData.isMagic) {
 			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));

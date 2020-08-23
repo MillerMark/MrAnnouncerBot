@@ -145,6 +145,8 @@ namespace DndCore
 		{
 			get
 			{
+				if (Creature == null)
+					return 0;
 				return (Creature.HitPoints + Creature.tempHitPoints) / Creature.maxHitPoints;
 			}
 		}

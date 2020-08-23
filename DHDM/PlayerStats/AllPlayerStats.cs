@@ -1,6 +1,7 @@
 ﻿//#define profiling
 using System;
 using System.Linq;
+using System.Windows;
 using System.Collections.Generic;
 using DndCore;
 
@@ -12,6 +13,7 @@ namespace DHDM
 		public string LatestData { get; set; }
 		public bool RollingTheDiceNow { get; set; }
 		public int ActiveTurnCreatureID { get; set; }  // Negative numbers are for in-game creatures (not players)
+		
 
 		List<PlayerStats> players;
 		public List<PlayerStats> Players
@@ -57,6 +59,15 @@ namespace DHDM
 				playerStats.ReadyToRollDice = !playerStats.ReadyToRollDice;
 			else
 				playerStats.Vantage = VantageKind.Normal;
+		}
+
+		public void ToggleCondition(int playerId, Conditions conditions)
+		{
+			PlayerStats playerStats = GetPlayerStats(playerId);
+			if (playerStats.Conditions.HasFlag(conditions))  // Bit is set.
+				playerStats.Conditions &= ~conditions;  // clear the bit
+			else
+				playerStats.Conditions |= conditions;
 		}
 
 		public void SetReadyRollDice(int playerId, bool newValue, DieRollDetails dieRollDetails)

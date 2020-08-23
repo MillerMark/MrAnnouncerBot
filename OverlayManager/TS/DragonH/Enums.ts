@@ -92,22 +92,24 @@ enum ExhaustionLevels {
 }
 
 enum Conditions {
-	none = 0,
-	blinded = 1,
-	charmed = 2,
-	deafened = 4,
-	fatigued = 8,
-	frightened = 16,
-	grappled = 32,
-	incapacitated = 64,
-	invisible = 128,
-	paralyzed = 256,
-	petrified = 512,
-	poisoned = 1024,
-	prone = 2048,
-	restrained = 4096,
-	stunned = 8192,
-	unconscious = 16384
+	None = 0,
+	Blinded = 1,
+	Charmed = 2,
+	Deafened = 4,
+	Fatigued = 8,
+	Frightened = 16,
+	Grappled = 32,
+	Incapacitated = 64,
+	Invisible = 128,
+	Paralyzed = 256,
+	Petrified = 512,
+	Poisoned = 1024,
+	Prone = 2048,
+	Restrained = 4096,
+	Stunned = 8192,
+  Unconscious = 16384,
+  Sleep = 32768,
+  Dead = 65536
 }
 
 /* Blinded

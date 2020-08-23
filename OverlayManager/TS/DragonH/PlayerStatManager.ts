@@ -2,6 +2,7 @@
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
+	Conditions: Conditions;
 	DiceStack: Array<DiceStackDto>;
 	ConcentratedSpell: string;
 	PercentConcentrationComplete: number;
@@ -43,6 +44,7 @@ class PlayerStats implements IPlayerStats {
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
+	Conditions: Conditions;
 	ConcentratedSpell: string;
 	PercentConcentrationComplete: number;
 	JustBrokeConcentration: boolean;
@@ -55,6 +57,7 @@ class PlayerStats implements IPlayerStats {
 
 		this.PlayerId = playerStatsDto.PlayerId;
 		this.Vantage = playerStatsDto.Vantage;
+		this.Conditions = playerStatsDto.Conditions;
 		this.ConcentratedSpell = playerStatsDto.ConcentratedSpell;
 		this.PercentConcentrationComplete = playerStatsDto.PercentConcentrationComplete;
 		this.JustBrokeConcentration = playerStatsDto.JustBrokeConcentration;
@@ -118,6 +121,8 @@ class PlayerStatManager implements IAllPlayerStats {
 	nameplateTopShort: Sprites;
 	nameplateRight: Sprites;
 	nameplateLeft: Sprites;
+	conditions: Sprites;
+	conditionGlow: Sprites;
 
 	concentrationWhiteSmoke: Sprites;
 	concentrationSpellNameScroll: Sprites;
@@ -163,13 +168,11 @@ class PlayerStatManager implements IAllPlayerStats {
 	private static readonly shortPlateTotalWidth: number = 355;
 
 	moveAllTargets(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, players: Array<Character>) {
-		
+
 		players.forEach((player) => {
 			const targetSprite: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, player.playerID);
 			if (targetSprite) {
-
-				const x: number = this.getPlayerTargetX(player, iNameplateRenderer, context, iGetPlayerX.getPlayerIndex(player.playerID), iGetPlayerX, player.playerID)
-					- this.playerTargetSprites.originX;
+				const x: number = this.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, player.playerID, players) - this.playerTargetSprites.originX;
 
 				if (targetSprite.x !== x) {
 					targetSprite.ease(performance.now(), targetSprite.x, targetSprite.y, x, targetSprite.y, 360);
@@ -233,6 +236,7 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	nameplateHighlightCollection: SpriteCollection = new SpriteCollection();
+	conditionCollection: SpriteCollection = new SpriteCollection();
 
 	private loadNameplateHighlight(fileName: string, originX = 0, originY = 0): Sprites {
 		const nameplateHighlight: Sprites = new Sprites(`Nameplates/ActiveTurn/${fileName}`, 94, fps30, AnimationStyle.Loop, true);
@@ -252,6 +256,23 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.nameplateTopShort = this.loadNameplateHighlight('NameplateTopShort', 195, 144);
 		this.nameplateLeft = this.loadNameplateHighlight('NameplateLeft', 152, 123);
 		this.nameplateRight = this.loadNameplateHighlight('NameplateRight', 119, 123);
+
+		this.conditionCollection = new SpriteCollection();
+
+		this.conditions = new Sprites('Conditions/Conditions', 17, fps30, AnimationStyle.Static);
+		this.conditions.originX = 102;
+		this.conditions.originY = 102;
+		this.conditions.disableGravity();
+		this.conditions.moves = true;
+
+		this.conditionGlow = new Sprites('Conditions/Glow/ConditionGlow', 90, fps30, AnimationStyle.Loop, true);
+		this.conditionGlow.originX = 254;
+		this.conditionGlow.originY = 252;
+		this.conditionGlow.disableGravity();
+		this.conditionGlow.moves = true;
+
+		this.conditionCollection.add(this.conditionGlow);
+		this.conditionCollection.add(this.conditions);
 
 		this.readyToRollDieCollection = new SpriteCollection();
 		this.airExplosionCollection = new SpriteCollection();
@@ -383,12 +404,13 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
+		this.conditionCollection.draw(context, nowMs);
 		this.drawConcentratedSpellSprites(context, nowMs);
 		this.nameplateHighlightCollection.draw(context, nowMs);
 		this.drawReadyToRollDice(context, nowMs);
 	}
 
-	drawPlayerTargets(context: CanvasRenderingContext2D, nowMs: number) {
+	drawTopLevelStatus(context: CanvasRenderingContext2D, nowMs: number) {
 		this.playerTargetSprites.draw(context, nowMs);
 	}
 
@@ -418,6 +440,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.concentratedSpellSprites.updatePositions(nowMs);
 		this.concentratedSpellNames.updatePositions(nowMs);
 		this.concentratedSpellNames.removeExpiredAnimations(nowMs);
+		this.conditionCollection.updatePositions(nowMs);
 		this.playerTargetSprites.updatePositions(nowMs);
 		if (this.timeOfNextDragonBreath < nowMs) {
 			this.timeOfNextDragonBreath = nowMs + Random.between(4000, 7000);
@@ -809,6 +832,7 @@ class PlayerStatManager implements IAllPlayerStats {
 	updatePlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
 		this.updatePlayerDice(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager);
 		this.updatePlayerTargeting(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
+		this.updatePlayerConditions(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
 		this.updateConcentratedSpell(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager, players);
 	}
 
@@ -1065,10 +1089,7 @@ class PlayerStatManager implements IAllPlayerStats {
 			return;
 
 		const playerId: number = latestPlayerStats.PlayerId;
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
-		const player: Character = players[playerIndex];
-
-		const x: number = this.getPlayerTargetX(player, iNameplateRenderer, context, playerIndex, iGetPlayerX, playerId);
+		const x: number = this.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, playerId, players);
 
 		if (latestPlayerStats.IsTargeted) {
 			//const centerNameplateY = 1052;
@@ -1086,14 +1107,103 @@ class PlayerStatManager implements IAllPlayerStats {
 		existingPlayerStats.IsTargeted = latestPlayerStats.IsTargeted;
 	}
 
-	private getPlayerTargetX(player: Character, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, playerIndex: number, iGetPlayerX: IGetPlayerX & ITextFloater, playerId: number) {
+	updatePlayerConditions(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
+		if (existingPlayerStats.Conditions === latestPlayerStats.Conditions)
+			return;
+
+		const playerId: number = latestPlayerStats.PlayerId;
+		const nameplateLeftEdge: number = this.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, playerId, players) - PlayerStatManager.plateMargin;
+
+		let frameIndex = 0;
+		for (const item in Conditions) {
+			if (isNaN(Number(item))) {
+				const condition: Conditions = Conditions[item as keyof typeof Conditions];
+				if (condition !== Conditions.None) {
+					if ((existingPlayerStats.Conditions & condition) !== (latestPlayerStats.Conditions & condition)) {
+						if ((existingPlayerStats.Conditions & condition) === condition) {  // Bit is set.
+							this.removeCondition(playerId, frameIndex);
+						}
+						else {
+							let scale = 0.8;
+							if (iNameplateRenderer.inCombat)
+								scale = 0.65;
+							this.addCondition(players, iGetPlayerX, existingPlayerStats, nameplateLeftEdge, frameIndex, playerId, scale);
+						}
+					}
+					frameIndex++;
+				}
+			}
+		}
+
+
+		//if (latestPlayerStats.IsTargeted) {
+		//	//const centerNameplateY = 1052;
+		//	
+		//	const target: SpriteProxy = this.playerTargetSprites.addShifted(nameplateLeftEdge, bottomAlignedNameplateY, -1, 220);
+		//	target.fadeInTime = 500;
+		//	target.data = playerId;
+		//	soundManager.safePlayMp3('Windups/ArrowDrawQuick');
+		//}
+		//else {
+		//	const target: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, playerId);
+		//	if (target)
+		//		target.fadeOutNow(500);
+		//}
+		existingPlayerStats.Conditions = latestPlayerStats.Conditions;
+	}
+
+	private addCondition(players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, nameplateLeftEdge: number, frameIndex: number, playerId: number, scale = 1) {
+		const bottomEdgeY = 1080;
+
+		let hueShift = 0;
+
+		if (players) {
+			const player: Character = players[iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId)];
+			if (player) {
+				hueShift = player.hueShift;
+			}
+		}
+
+		const sprite: SpriteProxy = this.conditions.addShifted(nameplateLeftEdge, bottomEdgeY, frameIndex, hueShift);
+		sprite.fadeInTime = 500;
+		sprite.data = playerId;
+		sprite.tag = frameIndex;
+		sprite.scale = scale;
+		const glow: SpriteProxy = this.conditionGlow.addShifted(nameplateLeftEdge, bottomEdgeY, frameIndex, hueShift);
+		glow.data = playerId;
+		glow.tag = frameIndex;
+		glow.fadeInTime = 500;
+		glow.scale = scale;
+	}
+
+	private removeCondition(playerId: number, frameIndex: number) {
+		this.removeByDataPlusTag(this.conditionGlow, playerId, frameIndex);
+		this.removeByDataPlusTag(this.conditions, playerId, frameIndex);
+	}
+
+	removeByDataPlusTag(sprites: Sprites, data: number, tag: number) {
+		for (let i = 0; i < sprites.sprites.length; i++) {
+			const sprite: SpriteProxy = sprites.sprites[i];
+			if (sprite.data === data && sprite.tag === tag)
+				sprite.fadeOutNow(500);
+		}
+	}
+
+
+
+	static readonly plateMargin = 7;
+
+	private getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerId: number, players: Array<Character>) {
+		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
+		const player: Character = players[playerIndex];
+
 		let plateWidth = 0;
 		if (player)
 			plateWidth = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
 
-		let plateAdjust = -7;
+		let plateAdjust = 0;
 		if (plateWidth) {
-			plateAdjust -= plateWidth / 2;
+			plateAdjust -= plateWidth / 2 + PlayerStatManager.plateMargin;
 		}
 
 		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(playerId)) + plateAdjust;

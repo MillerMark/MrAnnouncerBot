@@ -12,6 +12,7 @@ class ValidationIssueDto {
 
 interface INameplateRenderer {
 	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
+	inCombat: boolean;
 }
 
 interface ITextFloater {
@@ -163,7 +164,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		context.drawImage(this.clockCanvas, 0, 0);
 		//context.drawImage(this.nameplatesCanvas, 0, 0);
 		this.drawNameplates(context, nowMs);
-		this.playerStats.drawPlayerTargets(context, nowMs);
+		this.playerStats.drawTopLevelStatus(context, nowMs);
 
 		this.bigX.draw(context, nowMs);
 		this.bigWarning.draw(context, nowMs);

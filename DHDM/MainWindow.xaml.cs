@@ -1613,6 +1613,8 @@ namespace DHDM
 
 		}
 
+		bool settingAttackRadioButtonInternally;
+
 		private void SetRollTypeUI(DiceRollType type)
 		{
 			switch (type)
@@ -1660,7 +1662,15 @@ namespace DHDM
 					rbExtra.IsChecked = true;
 					break;
 				case DiceRollType.ChaosBolt:
-					rbAttack.IsChecked = true;
+					settingAttackRadioButtonInternally = true;
+					try
+					{
+						rbAttack.IsChecked = true;
+					}
+					finally
+					{
+						settingAttackRadioButtonInternally = false;
+					}
 					break;
 				case DiceRollType.Initiative:
 					rbInitiative.IsChecked = true;
@@ -2114,7 +2124,7 @@ namespace DHDM
 
 			if (!IsOkayToCastSpell(ActivePlayer, castedSpell))
 				return false;
-			
+
 			if (castedSpell.Target == null && ActivePlayer != null)
 				castedSpell.Target = ActivePlayer.ActiveTarget;
 
@@ -3461,8 +3471,12 @@ namespace DHDM
 		{
 			switch (ea.StopRollingData.type)
 			{
-				case DiceRollType.Attack:
 				case DiceRollType.ChaosBolt:
+					{
+						ProcessChaosBoltDamage(ea);
+						break;
+					}
+				case DiceRollType.Attack:
 				case DiceRollType.DamageOnly:
 					latestDamage.Clear();
 					lock (latestDamage)
@@ -3476,6 +3490,59 @@ namespace DHDM
 						}
 					}
 					break;
+			}
+		}
+
+		private void ProcessChaosBoltDamage(DiceEventArgs ea)
+		{
+			if (!ea.StopRollingData.success)
+				return;
+			List<DamageType> damageChoices = new List<DamageType>();
+			foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+			{
+				if (individualRoll.numSides == 8)
+				{
+					DamageType damageType = DndUtils.GetChaosBoltDamage(individualRoll.value);
+					if (!damageChoices.Contains(damageType))
+						damageChoices.Add(damageType);
+				}
+			}
+
+			DamageType chaosBoltDamageType = DamageType.None;
+
+			if (damageChoices.Count > 1)
+			{
+				List<string> answers = new List<string>();
+				for (int i = 0; i < damageChoices.Count; i++)
+				{
+					answers.Add($"{i}:{damageChoices[i]}");
+				}
+
+				Dispatcher.Invoke(() =>
+				{
+					int answer = AskQuestion("Select Chaos Bolt Damage:", answers);
+					if (answer >= 0 && answer < damageChoices.Count)
+						chaosBoltDamageType = damageChoices[answer];
+				});
+
+			}
+			else if (damageChoices.Count > 0)
+				chaosBoltDamageType = damageChoices[0];
+
+			if (chaosBoltDamageType == DamageType.None)
+				System.Diagnostics.Debugger.Break();
+
+			ea.StopRollingData.additionalDieRollMessage = $"({chaosBoltDamageType})";
+			latestDamage.Clear();
+			lock (latestDamage)
+			{
+				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+				{
+					if (!latestDamage.ContainsKey(chaosBoltDamageType))
+						latestDamage.Add(chaosBoltDamageType, individualRoll.value);
+					else
+						latestDamage[chaosBoltDamageType] += individualRoll.value;
+				}
 			}
 		}
 
@@ -5998,7 +6065,8 @@ namespace DHDM
 
 		private void RbAttack_Checked(object sender, RoutedEventArgs e)
 		{
-			NextDieRollType = DiceRollType.Attack;
+			if (!settingAttackRadioButtonInternally)
+				NextDieRollType = DiceRollType.Attack;
 			btnRollDice.Content = "Roll Attack";
 		}
 
@@ -7432,10 +7500,13 @@ namespace DHDM
 			UpdateCropRectangleForSelectedMonster();
 			if (lstAllMonsters.SelectedItem is Monster monster)
 			{
-				monsterCropPreviewBitmap = new BitmapImage(new Uri(monster.ImageUrl));
-				monsterCropPreviewBitmap.DownloadCompleted += MonsterCropPreviewBitmap_DownloadCompleted;
-				monsterPreviewImageLoadUpdateTimer.Start();
-				lastMonsterPreviewImageDpiX = monsterCropPreviewBitmap.DpiX;
+				if (!string.IsNullOrWhiteSpace(monster.ImageUrl))
+				{
+					monsterCropPreviewBitmap = new BitmapImage(new Uri(monster.ImageUrl));
+					monsterCropPreviewBitmap.DownloadCompleted += MonsterCropPreviewBitmap_DownloadCompleted;
+					monsterPreviewImageLoadUpdateTimer.Start();
+					lastMonsterPreviewImageDpiX = monsterCropPreviewBitmap.DpiX;
+				}
 			}
 			else
 				monsterCropPreviewBitmap = null;
@@ -7588,6 +7659,16 @@ namespace DHDM
 			if (playerId < 0)
 				return;
 			AllPlayerStats.ToggleReadyRollD20(playerId);
+		}
+
+		public void ToggleCondition(string data, string condition)
+		{
+			int playerId = AllPlayers.GetPlayerIdFromName(data);
+			if (playerId < 0)
+				return;
+			AllPlayerStats.ToggleCondition(playerId, DndUtils.ToCondition(condition));
+			UpdateUIForAllPlayerStats();
+			UpdatePlayerStateInGame();
 		}
 		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal)
 		{
