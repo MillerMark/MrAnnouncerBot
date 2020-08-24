@@ -1557,7 +1557,7 @@ class DiceLayer {
 
 	addGroundBurstAnimation(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
 		DiceLayer.numFiltersOnDieCleanup++;
-		const dieBurst: SpriteProxy = this.diceBurst.addShifted(x, y, 0, hueShift, saturation, brightness);
+		const dieBurst: SpriteProxy = this.diceBurst.addShifted(x, y, 0, hueShift + Random.plusMinus(25), saturation, brightness);
 		dieBurst.rotation = Math.random() * 360;
 		dieBurst.fadeOutTime = 800;
 		dieBurst.expirationDate = performance.now() + 4000;
@@ -2178,9 +2178,55 @@ class DiceLayer {
 		this.animations.clear();
 	}
 
+	rgbToHSL(rgb) {
+		// strip the leading # if it's there
+		rgb = rgb.replace(/^\s*#|\s*$/g, '');
+
+		// convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
+		if (rgb.length === 3) {
+			rgb = rgb.replace(/(.)/g, '$1$1');
+		}
+
+		const r = parseInt(rgb.substr(0, 2), 16) / 255,
+			g = parseInt(rgb.substr(2, 2), 16) / 255,
+			b = parseInt(rgb.substr(4, 2), 16) / 255,
+			cMax = Math.max(r, g, b),
+			cMin = Math.min(r, g, b),
+			delta = cMax - cMin,
+			l = (cMax + cMin) / 2;
+
+		let h = 0, s = 0;
+
+		if (delta === 0) {
+			h = 0;
+		}
+		else if (cMax === r) {
+			h = 60 * (((g - b) / delta) % 6);
+		}
+		else if (cMax === g) {
+			h = 60 * (((b - r) / delta) + 2);
+		}
+		else {
+			h = 60 * (((r - g) / delta) + 4);
+		}
+
+		if (delta === 0) {
+			s = 0;
+		}
+		else {
+			s = (delta / (1 - Math.abs(2 * l - 1)))
+		}
+
+		return {
+			h: h,
+			s: s,
+			l: l
+		}
+	}
+
 	addGroundBurst(die: IDie, screenPos: Vector, dieObject: IDieObject) {
 		let hueShift = 0;
-		const hsl = rgbToHSL(die.diceColor);
+		const hsl = this.rgbToHSL(die.diceColor);
 		let saturation = 100;
 		let brightness = 100;
 		if (hsl) {
@@ -2197,7 +2243,7 @@ class DiceLayer {
 
 	addSmokeyPortal(die: IDie, screenPos: Vector, dieObject: IDieObject) {
 		let hueShift = 0;
-		const hsl = rgbToHSL(die.diceColor);
+		const hsl = this.rgbToHSL(die.diceColor);
 		let saturation = 100;
 		const brightness = 100;
 		if (hsl) {
@@ -2570,6 +2616,7 @@ class DiceRollData {
 	diceDtos: Array<DiceDto> = [];
 	modifier: number;
 	minCrit: number;
+	totalRoll: number;
 	hiddenThreshold: number;
 	isMagic: boolean;
 	suppressLegacyRoll: boolean;

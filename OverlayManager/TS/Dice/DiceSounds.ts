@@ -14,14 +14,14 @@ class DiceSounds extends SoundManager {
 		this.loadPercentageSoundEffects(this.settles, "Dice/Settles", 7);
 	}
 
-	playAttackCommentary(d20RollValue: number, totalDamage: number, maxDamage: number): any {
+	playAttackCommentary(d20RollValue: number, totalDamage: number, maxDamage: number): void {
 		if (attemptedRollWasSuccessful) {
 			if (d20RollValue >= diceRollData.minCrit) {
 				diceSounds.playRandom('Announcer/CriticalHit', 21);
 			}
 			else {
 				if (maxDamage > 0)
-					if (totalDamage == maxDamage)
+					if (totalDamage === maxDamage)
 						diceSounds.playRandom('Announcer/MaxDamage', 12);
 					else if (totalDamage / maxDamage > 0.7 && totalDamage > 7)
 						diceSounds.playRandom('Announcer/LotsOfDamage', 24);
@@ -35,12 +35,12 @@ class DiceSounds extends SoundManager {
 				}
 			}
 		}
-		else if (d20RollValue == 1) {
+		else if (d20RollValue === 1) {
 			diceSounds.playRandom('Announcer/SpectacularMiss', 9);
 		}
 		else {
 			if (maxDamage > 0)
-				if (totalDamage == maxDamage)
+				if (totalDamage === maxDamage)
 					diceSounds.playRandom('Announcer/MaxDamageMiss', 0);
 				else if (totalDamage / maxDamage > 0.7)
 					diceSounds.playRandom('Announcer/LotsOfDamageMiss', 0);

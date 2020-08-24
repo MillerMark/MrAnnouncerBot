@@ -342,6 +342,8 @@
 		existingCreature.CropWidth = updatedGameCreature.CropWidth;
 		existingCreature.CropX = updatedGameCreature.CropX;
 		existingCreature.CropY = updatedGameCreature.CropY;
+		existingCreature.NumAhems = updatedGameCreature.NumAhems;
+		existingCreature.NumNames = updatedGameCreature.NumNames;
 		if (existingCreature.Health !== updatedGameCreature.Health) {
 			if (existingCreature.Health === 0) { // Was previously dead - now alive. 
 				const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(existingCreature);
@@ -538,7 +540,8 @@
 		const activeTurnIndicatorSprite: SpriteProxy = this.creatureTalking.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = creature;
 		activeTurnIndicatorSprite.fadeInTime = 500;
-		soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}`);
+		if (creature.NumAhems > 0)
+			soundManager.safePlayMp3(`Announcer/Ahems/${creature.Name}[${creature.NumAhems}]`);
 	}
 
 	clearCreatureTalkingIndicator(creature: InGameCreature, soundManager: SoundManager) {
@@ -611,13 +614,16 @@
 		targetSprite.fadeInTime = 500;
 	}
 
-	private addActiveTurnIndicator(soundManager: SoundManager, inGameCreature: InGameCreature, x: number, delayMs = 0) {
-		const hueShift = this.getHueShift(inGameCreature);
+	private addActiveTurnIndicator(soundManager: SoundManager, creature: InGameCreature, x: number, delayMs = 0) {
+		const hueShift = this.getHueShift(creature);
 		const activeTurnIndicatorSprite: SpriteProxy = this.activeTurnIndicator.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
-		activeTurnIndicatorSprite.data = inGameCreature;
+		activeTurnIndicatorSprite.data = creature;
 		activeTurnIndicatorSprite.delayStart = delayMs;
 		activeTurnIndicatorSprite.fadeInTime = 500;
-		soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${inGameCreature.Name}`);
+		if (creature.NumNames > 0)
+			soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}[${creature.NumNames}]`);
+		else 
+			soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}`);
 	}
 
 	private getHueShift(inGameCreature: InGameCreature) {

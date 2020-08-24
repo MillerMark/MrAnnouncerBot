@@ -8,6 +8,8 @@
 	Index: number;
 	CropX: number;
 	CropY: number;
+	NumNames: number;
+	NumAhems: number;
 	CropWidth: number;
 	Health: number;
 	IsTargeted: boolean;
@@ -40,6 +42,8 @@
 		this.Index = inGameCreature.Index;
 		this.CropX = inGameCreature.CropX;
 		this.CropY = inGameCreature.CropY;
+		this.NumAhems = inGameCreature.NumAhems;
+		this.NumNames = inGameCreature.NumNames;
 		this.CropWidth = inGameCreature.CropWidth;
 		this.Health = inGameCreature.Health;
 		this.IsTargeted = inGameCreature.IsTargeted;

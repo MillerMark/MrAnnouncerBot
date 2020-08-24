@@ -52,6 +52,12 @@ namespace DndCore
 		[Column]
 		[Indexer]
 		public int Index { get; set; }
+		
+		[Column]
+		public int NumAhems { get; set; }
+
+		[Column]
+		public int NumNames { get; set; }
 
 		[Column("IsEnemy")]
 		[JsonIgnore]
