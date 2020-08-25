@@ -3140,23 +3140,23 @@ function queueRoll(diceRollData: DiceRollData) {
 function addD100(diceRollData: DiceRollData, backgroundColor: string, textColor: string, playerID: number, throwPower = 1, xPositionModifier = 0) {
 	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 	// @ts-ignore - DiceD10x10
-	const die = new DiceD10x10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
-	die.playerID = playerID;
-	prepareD10x10Die(die, throwPower, xPositionModifier);
-	die.rollType = DieCountsAs.totalScore;
+	const die10 = new DiceD10x10({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+	die10.playerID = playerID;
+	prepareD10x10Die(die10, throwPower, xPositionModifier);
+	die10.rollType = DieCountsAs.totalScore;
 	if (diceRollData.isMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift));
-		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
+		die10.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift));
+		die10.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 	}
 
 	// @ts-ignore - DiceD10x01
-	die = new DiceD10x01({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
-	die.playerID = playerID;
-	prepareD10x01Die(die, throwPower, xPositionModifier);
-	die.rollType = DieCountsAs.totalScore;
+	const die01 = new DiceD10x01({ size: dieScale, backColor: backgroundColor, fontColor: textColor });
+	die01.playerID = playerID;
+	prepareD10x01Die(die01, throwPower, xPositionModifier);
+	die01.rollType = DieCountsAs.totalScore;
 	if (diceRollData.isMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
-		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
+		die01.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+		die01.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 	}
 }
 
@@ -3391,7 +3391,7 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 		attachLabel(die, d20FontColor, d20BackColor);
 		die.playerID = playerID;
 		die.playerName = diceLayer.getPlayerName(playerID);
-		console.log('die.playerName: ' + die.playerName);
+		//console.log('die.playerName: ' + die.playerName);
 		die.kind = kind;
 		if (diceRollData.isMagic) {
 			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
@@ -3416,6 +3416,7 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
 	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
 	const die: IDie = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
+	console.log('addDiceFromDto - diceDto.PlayerName: ' + diceDto.PlayerName);
 	die.playerName = diceDto.PlayerName;
 	die.dataStr = diceDto.Data;
 	die.dieType = DiceRollType[DiceRollType.None];
@@ -3614,7 +3615,7 @@ function pleaseRollDice(diceRollDto: DiceRollData) {
 	if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0) {
 		//console.log('prepareDiceDtoRoll...');
 		prepareDiceDtoRoll(diceRollDto, xPositionModifier);
-		console.log(dice);
+		//console.log(dice);
 	}
 
 

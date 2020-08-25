@@ -3179,5 +3179,9 @@ namespace DndCore
 		{
 			Game.AddShortcutToQueue(this, shortcutName, rollImmediately);
 		}
+		public CharacterClass FirstSpellCastingClass()
+		{
+			return Classes.FirstOrDefault(x => DndUtils.CanCastSpells(x.Name));
+		}
 	}
 }

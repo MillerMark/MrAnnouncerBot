@@ -278,7 +278,7 @@ class SpellBook {
 	static readonly schoolOfMagicAbjurationHeight: number = 117;
 
 	// ![](BCA0565D701D0D116C5132DE9B222FD6.png)
-	static readonly spellHeaderHeight: number = 79;
+	public static readonly spellHeaderHeight: number = 79;
 	static readonly textColor: string = '#2d1611';
 	static readonly bulletColor: string = '#5b3c35';
 	static readonly emphasisColor: string = '#a01a00';
@@ -295,7 +295,7 @@ class SpellBook {
 	spellBookAppearMedium: Sprites;
 	spellBookAppearSmall: Sprites;
 	lastPlayerId: number;
-	calculatedFontYOffset: number = 0;
+	calculatedFontYOffset = 0;
 	lastSpellName: string;
 	titleTopLeft: Vector;
 	levelSchoolTopLeft: Vector;
@@ -304,8 +304,8 @@ class SpellBook {
 	titleFontSize: number = SpellBook.titleFontIdealSize;
 	spellDetailsTopLeft: Vector;
 	spellDescriptionTopLeft: Vector;
-	spellBookBackHeight: number = 0;
-	horizontalScale: number = 1;
+	spellBookBackHeight = 0;
+	horizontalScale = 1;
 	activeStyle: LayoutStyle;
 	descriptionParagraphs: ParagraphWrapData;
 	titleWidth: number;
@@ -1060,7 +1060,7 @@ class SpellBook {
 			return;
 
 		const nowMs: number = nowSec * 1000;
-		if (this.lastSpellName != spell.name || this.lastSpellSlotLevel != spell.spellSlotLevel) {
+		if (this.lastSpellName !== spell.name || this.lastSpellSlotLevel !== spell.spellSlotLevel) {
 			this.createSpellBook(spell, player, context, x, y, nowMs);
 		}
 		const timeIn: number = nowMs - this.spellbookAppearTime;
@@ -1074,7 +1074,7 @@ class SpellBook {
 		this.bookGlow.draw(context, nowMs);
 
 		if (this.spellBookBack.sprites.length > 0) {
-			let firstBackSprite = this.spellBookBack.sprites[0];
+			const firstBackSprite = this.spellBookBack.sprites[0];
 			// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 			const w: number = this.spellBookBack.spriteWidth;
 			const h: number = this.spellBookBack.spriteHeight;
@@ -1113,7 +1113,7 @@ class SpellBook {
 		this.lastSpellName = spell.name;
 		this.lastSpellSlotLevel = spell.spellSlotLevel;
 		this.lastPlayerId = player.playerID;
-		let scale: number = 1;
+		let scale = 1;
 		while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
 			scale += 0.01;
 		}
@@ -1262,7 +1262,7 @@ class SpellBook {
 		this.horizontalScale = horizontalScale;
 
 		this.setDetailFontNormal(context);
-		let maxSpellDescriptionWidth: number = SpellBook.spellDescriptionWidth * this.horizontalScale;
+		const maxSpellDescriptionWidth: number = SpellBook.spellDescriptionWidth * this.horizontalScale;
 		this.descriptionParagraphs = this.getWordWrappedLinesForParagraphs(context, spell.description, maxSpellDescriptionWidth);
 
 		if (this.descriptionParagraphs.maxTableWidth > maxSpellDescriptionWidth)
@@ -1289,8 +1289,8 @@ class SpellBook {
 
 		this.titleFontSize = this.getTitleFontSize(context, spell.name, spell.requiresConcentration, spell.morePowerfulAtHigherLevels);
 
-		let descriptionLinesWeNeedToAdd: number = this.descriptionParagraphs.lineData.length;
-		let descriptionHeightWeNeedToAdd: number = descriptionLinesWeNeedToAdd * (SpellBook.detailFontSize);
+		const descriptionLinesWeNeedToAdd: number = this.descriptionParagraphs.lineData.length;
+		const descriptionHeightWeNeedToAdd: number = descriptionLinesWeNeedToAdd * (SpellBook.detailFontSize);
 
 
 		this.schoolOfMagicAdjust = 0;
@@ -1313,8 +1313,8 @@ class SpellBook {
 		}
 
 
-		let detailSize: Vector = this.getDetailSize(context, spell);
-		let detailsHeight: number = Math.max(detailSize.y + SpellBook.detailFontSize, this.getSchoolOfMagicHeight(spell.schoolOfMagic));
+		const detailSize: Vector = this.getDetailSize(context, spell);
+		const detailsHeight: number = Math.max(detailSize.y + SpellBook.detailFontSize, this.getSchoolOfMagicHeight(spell.schoolOfMagic));
 
 		let totalSpellPageHeight: number = SpellBook.spellHeaderHeight + detailsHeight + descriptionHeightWeNeedToAdd;
 
@@ -1352,32 +1352,32 @@ class SpellBook {
 		if (detailSize.x > this.availableSpellDetailsWidth * horizontalScale)
 			return false;
 
-		let lowerSpellBookTop: number = top + totalSpellPageHeight;
+		const lowerSpellBookTop: number = top + totalSpellPageHeight;
 
 		this.spellBookBackHeight = totalSpellPageHeight;
-		let spellBookBack: SpriteProxy = this.spellBookBack.add(left, lowerSpellBookTop, 0);
+		const spellBookBack: SpriteProxy = this.spellBookBack.add(left, lowerSpellBookTop, 0);
 		spellBookBack.fadeInTime = SpellBook.fadeInTime;
 		spellBookBack.horizontalScale = this.horizontalScale;
 		spellBookBack.timeStart = 0;
-		let spellBookFront: SpriteProxy = this.spellBookTop.add(left, top, 0);
+		const spellBookFront: SpriteProxy = this.spellBookTop.add(left, top, 0);
 		spellBookFront.fadeInTime = SpellBook.fadeInTime;
 		spellBookFront.timeStart = 0;
 		spellBookFront.horizontalScale = this.horizontalScale;
 
-		let schoolOfMagicIndex = spell.schoolOfMagic - 1;
+		const schoolOfMagicIndex = spell.schoolOfMagic - 1;
 		if (spell.schoolOfMagic > SchoolOfMagic.None) {
-			let schoolOfMagicIcon: SpriteProxy = this.schoolOfMagic.add(this.schoolOfMagicTopLeft.x, this.schoolOfMagicTopLeft.y, schoolOfMagicIndex);
+			const schoolOfMagicIcon: SpriteProxy = this.schoolOfMagic.add(this.schoolOfMagicTopLeft.x, this.schoolOfMagicTopLeft.y, schoolOfMagicIndex);
 			schoolOfMagicIcon.timeStart = 0;
 			schoolOfMagicIcon.fadeInTime = SpellBook.fadeInTime;
 		}
 
-		let iconScale: number = this.getIconScale(this.titleFontSize);
+		const iconScale: number = this.getIconScale(this.titleFontSize);
 		let iconX = left + SpellBook.titleLeftMargin + this.titleWidth + SpellBook.titleFirstIconSpacing * this.horizontalScale;
-		let iconY = this.titleTopLeft.y + this.titleFontSize;
+		const iconY = this.titleTopLeft.y + this.titleFontSize;
 
 		if (spell.requiresConcentration) {
 			//let concentratingIcon: SpriteProxy = this.concentrationIcon.add(iconX, iconY, schoolOfMagicIndex);
-			let concentratingIcon: SpriteProxy = this.concentrationIcon.add(iconX, iconY, SchoolOfMagic.Necromancy - 1);
+			const concentratingIcon: SpriteProxy = this.concentrationIcon.add(iconX, iconY, SchoolOfMagic.Necromancy - 1);
 			concentratingIcon.scale = iconScale;
 			concentratingIcon.fadeInTime = SpellBook.fadeInTime;
 			iconX += SpellBook.iconSize * iconScale + SpellBook.iconSpacing * this.horizontalScale;
@@ -1385,7 +1385,7 @@ class SpellBook {
 
 		if (spell.morePowerfulAtHigherLevels) {
 			//let morePowerful: SpriteProxy = this.morePowerIcon.add(iconX, iconY, schoolOfMagicIndex);
-			let morePowerful: SpriteProxy = this.morePowerIcon.add(iconX, iconY, SchoolOfMagic.Necromancy - 1);
+			const morePowerful: SpriteProxy = this.morePowerIcon.add(iconX, iconY, SchoolOfMagic.Necromancy - 1);
 			morePowerful.scale = iconScale;
 			morePowerful.fadeInTime = SpellBook.fadeInTime;
 		}
@@ -1395,38 +1395,38 @@ class SpellBook {
 
 		//` <formula 2.5; verticalScaleGlow = \frac{totalSpellPageHeight}{bookGlowHeight}>
 
-		let verticalScaleGlow: number = totalSpellPageHeight / SpellBook.bookGlowHeight;
-		let topScaledMargin: number = SpellBook.bookGlowTopMargin * verticalScaleGlow;
+		const verticalScaleGlow: number = totalSpellPageHeight / SpellBook.bookGlowHeight;
+		const topScaledMargin: number = SpellBook.bookGlowTopMargin * verticalScaleGlow;
 
-		let hueShift: number = this.hueShifts[spell.schoolOfMagic];
-		let bookGlow: ColorShiftingSpriteProxy = this.bookGlow.addShifted(left - SpellBook.bookGlowLeftMargin * this.horizontalScale, top - topScaledMargin, 0, hueShift);
+		const hueShift: number = this.hueShifts[spell.schoolOfMagic];
+		const bookGlow: ColorShiftingSpriteProxy = this.bookGlow.addShifted(left - SpellBook.bookGlowLeftMargin * this.horizontalScale, top - topScaledMargin, 0, hueShift);
 		bookGlow.fadeInTime = SpellBook.fadeInTime;
 		bookGlow.horizontalScale = this.horizontalScale;
 		bookGlow.verticalScale = verticalScaleGlow;
 
-		let bookBurn: ColorShiftingSpriteProxy = this.bookBurn.addShifted(left - SpellBook.bookGlowLeftMargin * this.horizontalScale, top - topScaledMargin, 0, hueShift);
+		const bookBurn: ColorShiftingSpriteProxy = this.bookBurn.addShifted(left - SpellBook.bookGlowLeftMargin * this.horizontalScale, top - topScaledMargin, 0, hueShift);
 		bookBurn.horizontalScale = this.horizontalScale;
 		bookBurn.verticalScale = verticalScaleGlow;
 
-		let bookGlowWidth: number = horizontalScale * (this.bookGlow.spriteWidth - SpellBook.bookGlowLeftMargin * 2);
+		const bookGlowWidth: number = horizontalScale * (this.bookGlow.spriteWidth - SpellBook.bookGlowLeftMargin * 2);
 
-		let centerX: number = left + bookGlowWidth / 2.0;
-		let centerY: number = top + totalSpellPageHeight / 2.0;
+		const centerX: number = left + bookGlowWidth / 2.0;
+		const centerY: number = top + totalSpellPageHeight / 2.0;
 
-		let verticalScaleBig: number = 1.2 * totalSpellPageHeight / this.spellBookAppearBig.spriteHeight;
-		let horizontalScaleBig: number = 1.2 * bookGlowWidth / this.spellBookAppearBig.spriteWidth;
+		const verticalScaleBig: number = 1.2 * totalSpellPageHeight / this.spellBookAppearBig.spriteHeight;
+		const horizontalScaleBig: number = 1.2 * bookGlowWidth / this.spellBookAppearBig.spriteWidth;
 
-		let big: SpriteProxy = this.spellBookAppearBig.addShifted(centerX, centerY, 0, 21);
+		const big: SpriteProxy = this.spellBookAppearBig.addShifted(centerX, centerY, 0, 21);
 		big.horizontalScale = horizontalScaleBig;
 		big.verticalScale = verticalScaleBig;
-		let hueShiftDelta: number = Random.plusMinusBetween(20, 40);
-		let mediumHueShift: number = hueShift - hueShiftDelta;
-		let medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, mediumHueShift, this.getSaturation(mediumHueShift));
+		const hueShiftDelta: number = Random.plusMinusBetween(20, 40);
+		const mediumHueShift: number = hueShift - hueShiftDelta;
+		const medium: SpriteProxy = this.spellBookAppearMedium.addShifted(centerX, centerY, 0, mediumHueShift, this.getSaturation(mediumHueShift));
 		medium.timeStart = performance.now() + 9 * fps30;  // medium starts 9 frames in.
 		medium.horizontalScale = horizontalScaleBig;
 		medium.verticalScale = verticalScaleBig;
-		let smallHueShift: number = hueShift + hueShiftDelta;
-		let small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, smallHueShift, this.getSaturation(smallHueShift));
+		const smallHueShift: number = hueShift + hueShiftDelta;
+		const small: SpriteProxy = this.spellBookAppearSmall.addShifted(centerX, centerY, 0, smallHueShift, this.getSaturation(smallHueShift));
 		small.timeStart = performance.now() + 16 * fps30;  // small starts 16 frames in.
 		small.horizontalScale = horizontalScaleBig;
 		small.verticalScale = verticalScaleBig;

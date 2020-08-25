@@ -1700,7 +1700,20 @@ namespace DHDM
 		{
 			if (actionShortcut.Spell != null)
 				if (actionShortcut.Spell.MorePowerfulWhenCastAtHigherLevels)
-					TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} in spell slot {actionShortcut.Spell.SpellSlotLevel}...");
+					if (actionShortcut.Spell.BonusThreshold != null && actionShortcut.Spell.BonusThreshold.StartsWith("c"))
+					{
+						string className = "character";
+						DndCore.CharacterClass firstMatchingClass = player.FirstSpellCastingClass();
+						if (firstMatchingClass != null)
+						{
+							className = firstMatchingClass.Name;
+							TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} as a level-{firstMatchingClass.Level} {className}...");
+						}
+						else
+							TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name}...");
+					}
+					else
+						TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name} in spell slot {actionShortcut.Spell.SpellSlotLevel}...");
 				else
 					TellAll($"{player.firstName} is ready to cast {actionShortcut.Spell.Name}...");
 			else if (actionShortcut.CarriedWeapon != null)
@@ -5550,7 +5563,12 @@ namespace DHDM
 					{
 						if (playerTabItem.PlayerId == playerId)
 						{
-							tabPlayers.SelectedItem = playerTabItem;
+							if (tabPlayers.SelectedItem != playerTabItem)
+								tabPlayers.SelectedItem = playerTabItem;
+							else
+							{
+								HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, "");
+							}
 							//TellDmActivePlayer(playerId);
 							break;
 						}

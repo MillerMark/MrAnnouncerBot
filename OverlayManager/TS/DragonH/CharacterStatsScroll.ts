@@ -13,7 +13,7 @@
 	pages: Array<StatPage> = new Array<StatPage>();
 	highlightEmitterPages: Array<HighlightEmitterPages> = new Array<HighlightEmitterPages>();
 
-	selectedStatPageIndex: number = -1;
+	selectedStatPageIndex = -1;
 
 	deEmphasisSprite: SpriteProxy;
 	currentScrollRoll: SpriteProxy;
@@ -95,7 +95,7 @@
 	initializePlayerData(players: Array<Character>): void {
 
 		this.characters = [];
-		for (var i = 0; i < players.length; i++) {
+		for (let i = 0; i < players.length; i++) {
 			try {
 				this.characters.push(new Character(players[i]));
 			}
@@ -107,9 +107,9 @@
 
 
 	sendScrollLayerCommand(commandData: string): void {
-		if (commandData == "Close")
+		if (commandData === "Close")
 			this.close();
-		if (commandData == "ClearHighlighting")
+		if (commandData === "ClearHighlighting")
 			this.clearEmphasis();
 	}
 
@@ -312,7 +312,7 @@
 		}
 	}
 
-	close(): any {
+	close() {
 		this.state = ScrollState.closing;
 		this.scrollRolls.baseAnimation.reverse = true;
 		this.play(this.scrollCloseSfx);
@@ -324,7 +324,7 @@
 		return 0;
 	}
 
-	showingGoldDustEmitters: boolean = true;
+	showingGoldDustEmitters = true;
 
 	private unroll(): void {
 		this.state = ScrollState.unrolling;
@@ -583,7 +583,7 @@
 	private startQueuedEmitters(): void {
 		if (this.showingGoldDustEmitters) {
 			while (this.emitterIndices.length > 0) {
-				let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(this.emitterIndices.pop());
+				const emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(this.emitterIndices.pop());
 				if (emitter) {
 					emitter.start();
 				}
@@ -642,7 +642,7 @@
 	}
 
 	buildGoldDust(): void {
-		let windSpeed: number = 0.8;
+		const windSpeed = 0.8;
 
 		this.topEmitter = this.getMagicDustScrollOpenEmitter(windSpeed);
 		this.bottomEmitter = this.getMagicDustScrollOpenEmitter(-windSpeed);
@@ -652,8 +652,8 @@
 	}
 
 	private getMagicDustScrollOpenEmitter(windSpeed: number): Emitter {
-		const scrollLength: number = 348;
-		let emitter: Emitter = this.getMagicDustEmitter(scrollLength / 2, 460);
+		const scrollLength = 348;
+		const emitter: Emitter = this.getMagicDustEmitter(scrollLength / 2, 460);
 
 		emitter.particleWind = new Vector(0, windSpeed);
 		emitter.initialParticleDirection = new Vector(0, Math.sign(windSpeed));
@@ -689,7 +689,7 @@
 
 	loadResources(): void {
 		this.spellBook.loadResources();
-		var assetFolderName: string = Folders.assets;
+		const assetFolderName: string = Folders.assets;
 		Folders.assets = 'GameDev/Assets/DragonH/';
 
 		this.concentrationIcons = new Sprites("Scroll/Spells/Concentration/MiniConcentration", 1, 0, AnimationStyle.Static);
@@ -742,16 +742,20 @@
 		if (!this.activeCharacter)
 			return;
 
-		if (this.selectedStatPageIndex < 0)
-			return;
-		let activeCharacter: Character = this.activeCharacter;
-		let activePage: StatPage = this.pages[this.selectedStatPageIndex];
+		//console.log('this.selectedStatPageIndex: ' + this.selectedStatPageIndex);
 
+		if (this.selectedStatPageIndex < 0) {
+			return;
+		}
+
+		const activeCharacter: Character = this.activeCharacter;
+		const activePage: StatPage = this.pages[this.selectedStatPageIndex];
+		//console.log(activePage);
 		activePage.render(context, activeCharacter, topData, bottomData);
 	}
 
 	isOnPage(page: ScrollPage): boolean {
-		return this.selectedStatPageIndex + 1 == page;
+		return this.selectedStatPageIndex + 1 === page;
 	}
 
 	drawAdditionalData(nowSec: number, context: CanvasRenderingContext2D, activeCharacter: Character, topData: number, bottomData: number): any {
@@ -838,14 +842,14 @@
 
 		this.drawSpellBackground(context, x, y, item.SpellDataItems.length, topData, bottomData);
 
-		const belowTitleSpacing: number = 5;
+		const belowTitleSpacing = 5;
 		y += belowTitleSpacing;
 
 		item.SpellDataItems.forEach(function (spellDataItem: SpellDataItem) {
 			y = this.drawSpellItem(now, context, spellDataItem, x, y, topData, bottomData)
 		}, this);
 
-		const interGroupSpacing: number = 12;
+		const interGroupSpacing = 12;
 		y += interGroupSpacing;
 		return y;
 	}
@@ -873,14 +877,16 @@
 			y = this.drawSpellGroup(nowSec, context, item, x, y, topData, bottomData);
 		}, this);
 
+		const minTop: number = Math.max(InGameCreatureManager.NpcScrollHeight, this.calloutPointY) + SpellBook.spellHeaderHeight;
+
 		if (this.drawActiveSpellData) {
 			if (this.calloutPointY >= topData && this.calloutPointY <= bottomData) {
 				this.calloutPointX += this.drawActiveSpellIndicator(context, this.calloutPointX, this.calloutPointY, this.activeSpellData);
-				this.spellBook.draw(nowSec, context, Math.max(this.rightMostTextX, this.calloutPointX), this.calloutPointY, activeCharacter);
+				this.spellBook.draw(nowSec, context, Math.max(this.rightMostTextX, this.calloutPointX), minTop, activeCharacter);
 			}
 		}
 		else if (activeCharacter.forceShowSpell)
-			this.spellBook.draw(nowSec, context, 600, 200, activeCharacter);
+			this.spellBook.draw(nowSec, context, 600, minTop, activeCharacter);
 	}
 
 	readonly spellNameFontHeight: number = 18;
@@ -888,7 +894,7 @@
 
 	browserIsOBS(): boolean {
 		// @ts-ignore - obsstudio
-		return window != undefined && window.obsstudio != undefined && window.obsstudio.pluginVersion != undefined;
+		return window !== undefined && window.obsstudio !== undefined && window.obsstudio.pluginVersion !== undefined;
 	}
 
 	drawActiveSpellIndicator(context: CanvasRenderingContext2D, x: number, y: number, spell: ActiveSpellData): number {
@@ -1008,13 +1014,12 @@
 
 	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
 		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
-
-		let okayToChangePage: boolean = pageID !== -1;
+		const okayToChangePage: boolean = pageID !== -1;
 		let newPageId: number = pageID;
 		if (newPageId === -1)
 			newPageId = this._page;
 
-		let changedActiveCharacter: boolean = false;
+		let changedActiveCharacter = false;
 		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
 			this.clearEmphasis();
 			if (okayToChangePage) {
@@ -1025,11 +1030,11 @@
 				this.open(performance.now());
 			}
 		}
-		else if (this.page != newPageId) {
+		else if (this.page !== newPageId || this.state === ScrollState.closed || this.state === ScrollState.disappearing) {
 			this.clearEmphasis();
 
 			if (okayToChangePage) {
-				let needToImmediatelyOpen: boolean = this.state === ScrollState.disappearing;
+				const needToImmediatelyOpen: boolean = this.state === ScrollState.disappearing;
 				this.page = newPageId;
 				if (needToImmediatelyOpen) {
 					this.state = ScrollState.none;
@@ -1038,17 +1043,20 @@
 				this.open(performance.now());
 			}
 		}
+		else {
+			console.log('this.state: ' + this.state);
+		}
 
-		if (playerData != '') {
+		if (playerData !== '') {
 			this.updatePlayerData(playerData);
 		}
 		return changedActiveCharacter;
 	}
 
 	setActiveCharacter(playerID: number): void {
-		for (var i = 0; i < this.characters.length; i++) {
-			let thisCharacter: Character = this.characters[i];
-			if (thisCharacter.playerID == playerID) {
+		for (let i = 0; i < this.characters.length; i++) {
+			const thisCharacter: Character = this.characters[i];
+			if (thisCharacter.playerID === playerID) {
 				this.activeCharacter = thisCharacter;
 				return;
 			}
@@ -1101,8 +1109,8 @@
 
 	addParticleEmphasis(itemID: string): void {
 		if (this.showingGoldDustEmitters) {
-			let activeHighlightPage: HighlightEmitterPages = this.highlightEmitterPages[this.page];
-			let emitter: HighlightEmitter = activeHighlightPage.find(itemID);
+			const activeHighlightPage: HighlightEmitterPages = this.highlightEmitterPages[this.page];
+			const emitter: HighlightEmitter = activeHighlightPage.find(itemID);
 			if (emitter) {
 				emitter.start();
 			}
@@ -1123,7 +1131,7 @@
 
 
 	removeParticleEmphasis(itemID: string): void {
-		let emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
+		const emitter: HighlightEmitter = this.highlightEmitterPages[this.page].find(itemID);
 		if (emitter) {
 			emitter.stop();
 		}

@@ -15,6 +15,8 @@
 	bloodE: Sprites;
 	bloodGushing: Sprites;
 
+	public static readonly NpcScrollHeight: number = 253;
+
 	constructor() {
 
 	}

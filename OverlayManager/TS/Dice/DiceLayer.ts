@@ -2253,7 +2253,7 @@ class DiceLayer {
 		}
 		else if (die.playerID >= 0)
 			hueShift = this.getHueShift(die.playerID);
-		this.addSmokeyPortalAnimation(screenPos.x, screenPos.y, hueShift, saturation, brightness);
+		this.addSmokeyPortalAnimation(screenPos.x, screenPos.y, hueShift + Random.plusMinus(40), saturation, brightness);
 		diceSounds.playSmokyPortal();
 		hideDieIn(dieObject, 80 * fps30);
 	}

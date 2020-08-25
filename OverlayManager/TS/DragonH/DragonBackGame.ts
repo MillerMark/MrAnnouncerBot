@@ -75,7 +75,7 @@ class DragonBackGame extends DragonGame {
 			return;
 		}
 
-		let spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
+		const spritesEffect: SpritesEffect = new SpritesEffect(sprites, new ScreenPosTarget(center), dto.startFrameIndex, dto.hueShift, dto.saturation, dto.brightness,
 			dto.horizontalFlip, dto.verticalFlip, dto.scale, dto.rotation, dto.autoRotation);
 
 		spritesEffect.start();
