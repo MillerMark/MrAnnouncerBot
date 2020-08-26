@@ -147,6 +147,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bloodEffects.draw(context, nowMs);
 
 		this.playerStats.draw(context, nowMs);
+		//this.playerStats.drawDiagnostics(context, this, this, this.players);
 
 		this.coinManager.draw(context, nowMs);
 		this.allFrontEffects.updatePositions(nowMs);
@@ -685,6 +686,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.playerStats.ActiveTurnCreatureID = -1;  // Forces a rebuild of highlighting.
 		this.playerStats.setActiveTurnCreatureID(this, this, this.context, activeCreatureId, this.players);
 		this.playerStats.moveAllTargets(this, this, this.context, this.players);
+		this.playerStats.moveAllConditions(this, this, this.dragonFrontSounds, this.context, this.players);
 	}
 
 	refreshClock() {
