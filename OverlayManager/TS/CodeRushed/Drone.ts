@@ -242,16 +242,16 @@ class Drone extends ColorShiftingSpriteProxy {
 
   updatePosition(now: number) {
     this.storeLastPosition();
-    var secondsPassed = (now - this.timeStart) / 1000;
+    const secondsPassed = (now - this.timeStart) / 1000;
 
-    var hAccel = this.getHorizontalThrust(now);
-    var vAccel = this.getVerticalThrust(now);
+    const hAccel = this.getHorizontalThrust(now);
+    const vAccel = this.getVerticalThrust(now);
 
     this.updateFrameIndex(now, hAccel, vAccel);
-    var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, hAccel);
+    const xDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityX, hAccel);
 
-    var justTurnedOffLeftTruster: boolean = this.wasThrustingLeft && this.leftThrustOffTime <= now;
-    var justTurnedOffRightTruster: boolean = this.wasThrustingRight && this.rightThrustOffTime <= now;
+    const justTurnedOffLeftTruster: boolean = this.wasThrustingLeft && this.leftThrustOffTime <= now;
+    const justTurnedOffRightTruster: boolean = this.wasThrustingRight && this.rightThrustOffTime <= now;
 
     if (justTurnedOffLeftTruster)
       this.wasThrustingLeft = false;
@@ -259,10 +259,10 @@ class Drone extends ColorShiftingSpriteProxy {
     if (justTurnedOffRightTruster)
       this.wasThrustingRight = false;
 
-    var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, vAccel);
+    const yDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityY, vAccel);
 
-    var justTurnedOffUpTruster: boolean = this.wasThrustingUp && this.upThrustOffTime <= now;
-    var justTurnedOffDownTruster: boolean = this.wasThrustingDown && this.downThrustOffTime <= now;
+    const justTurnedOffUpTruster: boolean = this.wasThrustingUp && this.upThrustOffTime <= now;
+    const justTurnedOffDownTruster: boolean = this.wasThrustingDown && this.downThrustOffTime <= now;
 
     if (justTurnedOffUpTruster)
       this.wasThrustingUp = false;
@@ -270,8 +270,8 @@ class Drone extends ColorShiftingSpriteProxy {
     if (justTurnedOffDownTruster)
       this.wasThrustingDown = false;
 
-    let finalVelocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, hAccel);
-    let finalVelocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, vAccel);
+    const finalVelocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, hAccel);
+    const finalVelocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, vAccel);
 
     if (justTurnedOffUpTruster || justTurnedOffDownTruster || justTurnedOffLeftTruster || justTurnedOffRightTruster) {
       this.changeVelocity(this.lastVelocityX, this.lastVelocityY, this.lastNow);
@@ -282,10 +282,10 @@ class Drone extends ColorShiftingSpriteProxy {
     }
 
     if (!this.wasThrustingUp && !this.wasThrustingDown && !this.wasThrustingLeft && !this.wasThrustingRight) {
-      let timeSinceLastUpdateMs: number = performance.now() - this.lastUpdateTime;
+      const timeSinceLastUpdateMs: number = performance.now() - this.lastUpdateTime;
       if (timeSinceLastUpdateMs > 10) {
         //const decay: number = 1;
-        const decay: number = 0.99;
+        const decay = 0.99;
         this.changeVelocityBy(decay, decay, now);
         this.lastUpdateTime = now;
       }
@@ -296,19 +296,19 @@ class Drone extends ColorShiftingSpriteProxy {
     this.lastNow = now;
     if (this.meteor) {
       // TODO: Adjust height based on pitch.
-      let pitch: number = Math.floor(this.frameIndex / 10);
-      let meteorAdjustY: number = 0;
-      if (pitch == 0)
+      const pitch: number = Math.floor(this.frameIndex / 10);
+      let meteorAdjustY = 0;
+      if (pitch === 0)
         meteorAdjustY = -6;
-      else if (pitch == 2)
+      else if (pitch === 2)
         meteorAdjustY = 8;
       this.meteor.storeLastPosition();
       this.meteor.x = this.x + Drone.width * this.scale / 2 - meteorWidth / 2;
 			this.meteor.y = this.y + Drone.height * this.scale / 2 - meteorHeight + meteorAdjustY;
     }
 
-    if (this.parentSparkSprites != undefined) {
-      let sparkAge: number = now - this.sparkCreationTime;
+    if (this.parentSparkSprites !== undefined) {
+      const sparkAge: number = now - this.sparkCreationTime;
       if (sparkAge > 1000) {
         console.log('spark out.');
         this.parentSparkSprites = null;
@@ -330,10 +330,10 @@ class Drone extends ColorShiftingSpriteProxy {
 
 
   updateFrameIndex(now: number, hAccel: number, vAccel: number): any {
-    var pitchIndex: number = 0;
-    var rollIndex: number = 0;
+    let pitchIndex = 0;
+    let rollIndex = 0;
     pitchIndex = Math.sign(vAccel) + 1;
-    const highRollSwitchMs: number = 300;
+    const highRollSwitchMs = 300;
     if (hAccel < 0)
       if (now - this.leftThrustOnTime > highRollSwitchMs && this.leftThrustOffTime - now > highRollSwitchMs)
         rollIndex = 9;
@@ -349,11 +349,11 @@ class Drone extends ColorShiftingSpriteProxy {
     this.frameIndex = pitchIndex * 10 + rollIndex;
   }
 
-  HorizontalThrust: number = 2;
-  VerticalThrust: number = 2;
+  HorizontalThrust = 2;
+  VerticalThrust = 2;
 
   getHorizontalThrust(now: number): number {
-    let thrust: number = 0;
+    let thrust = 0;
     if (this.rightThrustOffTime > now)
       thrust += this.HorizontalThrust;
     if (this.leftThrustOffTime > now)
@@ -362,7 +362,7 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   getVerticalThrust(now: number): number {
-    let thrust: number = 0;
+    let thrust = 0;
     if (this.upThrustOffTime > now)
       thrust -= this.VerticalThrust;
     if (this.downThrustOffTime > now)
@@ -381,9 +381,9 @@ class Drone extends ColorShiftingSpriteProxy {
     else { // Down 
       pitch = 2;
     }
-    let roll: number = Math.floor((this.frameIndex % 10) / 2);
+    const roll: number = Math.floor((this.frameIndex % 10) / 2);
 
-    let healthIndex: number = pitch * 20 + roll * 4 + 4 - this.health;
+    const healthIndex: number = pitch * 20 + roll * 4 + 4 - this.health;
 
     if (!(activeDroneGame instanceof DroneGame))
       return;
@@ -393,7 +393,7 @@ class Drone extends ColorShiftingSpriteProxy {
     this.drawCoinsCollected(context, now);
 
     if (this.parentSparkSprites) {
-      var msPassed = now - this.lastTimeWeAdvancedTheSparksFrame;
+      const msPassed = now - this.lastTimeWeAdvancedTheSparksFrame;
       if (msPassed > this.sparkFrameInterval) {
         this.lastTimeWeAdvancedTheSparksFrame = now;
         this.sparkFrameIndex++;
@@ -494,8 +494,8 @@ class Drone extends ColorShiftingSpriteProxy {
 
   changeVelocityBy(deltaVelocityX: number, deltaVelocityY: number, now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+    var velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+    var velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
     var newVelocityX = velocityX * deltaVelocityX;
     var newVelocityY = velocityY * deltaVelocityY;
@@ -684,48 +684,46 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   getFuturePoint(x: number, now: number): FuturePoint {
-    //`<formula white;transparent;4;\int_0^{\infty}{x^{2n}}/>
-
-    let secondsPassed = (now - this.timeStart) / 1000;
+    const secondsPassed = (now - this.timeStart) / 1000;
 
     /* 
      * 
      * this.rightThrustOffTime, this.leftThrustOffTime
      * if thrusters are on, figure out if we cross the given x before thrusters go off. 
      * 
-     * If so, then we can incorporate accelleration into the equation.
+     * If so, then we can incorporate acceleration into the equation.
      * */
 
 
-    let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-    let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+    const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+    const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
-		let centerX: number = this.x + Drone.width * this.scale / 2;
-		let centerY: number = this.y + Drone.height * this.scale / 2;
-    let deltaXPixels = x - centerX;
+		const centerX: number = this.x + Drone.width * this.scale / 2;
+		const centerY: number = this.y + Drone.height * this.scale / 2;
+    const deltaXPixels = x - centerX;
     if (deltaXPixels === 0) {
       return new FuturePoint(x, centerY, now);
     }
-    if (Math.sign(deltaXPixels) != Math.sign(velocityX))
+    if (Math.sign(deltaXPixels) !== Math.sign(velocityX))
       return null;
 
-    let metersToCrossover: number = Physics.pixelsToMeters(deltaXPixels);
+    const metersToCrossover: number = Physics.pixelsToMeters(deltaXPixels);
 
     let secondsToCrossover: number;
 
     secondsToCrossover = metersToCrossover / velocityX;
 
     if (this.rightThrustOffTime > now || this.leftThrustOffTime > now) {
-      let secondsOfRightThrustRemaining: number = Infinity;
-      let secondsOfLeftThrustRemaining: number = Infinity;
+      let secondsOfRightThrustRemaining = Infinity;
+      let secondsOfLeftThrustRemaining = Infinity;
       if (this.rightThrustOffTime > now)
         secondsOfRightThrustRemaining = (this.rightThrustOffTime - now) / 1000;
       if (this.leftThrustOffTime > now)
         secondsOfLeftThrustRemaining = (this.leftThrustOffTime - now) / 1000;
 
-      let fewestSecondsOfThrust: number = Math.min(secondsOfRightThrustRemaining, secondsOfLeftThrustRemaining);
+      const fewestSecondsOfThrust: number = Math.min(secondsOfRightThrustRemaining, secondsOfLeftThrustRemaining);
 
-      let secondsToAcceleratedCrossover: number = Physics.getDropTimeWithVelocity(metersToCrossover, velocityX, this.getHorizontalThrust(now));
+      const secondsToAcceleratedCrossover: number = Physics.getDropTimeSeconds(metersToCrossover, this.getHorizontalThrust(now), velocityX);
 
       if (fewestSecondsOfThrust >= secondsToAcceleratedCrossover)
         secondsToCrossover = secondsToAcceleratedCrossover;
@@ -736,15 +734,15 @@ class Drone extends ColorShiftingSpriteProxy {
 
     //console.log('metersToCrossover: ' + metersToCrossover.toFixed(2) + ', velocityX: ' + velocityX.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
 
-    let yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
+    const yAtCrossover: number = centerY + Physics.metersToPixels(velocityY * secondsToCrossover);
     if (yAtCrossover < 0 || yAtCrossover > screenHeight)
       return null;
 
     return new FuturePoint(x, yAtCrossover, now + secondsToCrossover * 1000);
   }
 
-  justCollectedCoins(now: number): any {
-    var secondsSinceFirstCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
+  justCollectedCoins(now: number): void {
+    const secondsSinceFirstCollection: number = (now - this.mostRecentCoinCollection || 0) / 1000;
 
     if (secondsSinceFirstCollection > Drone.coinFadeTime * 2 + Drone.coinDuration) {
       this.firstCoinCollection = now;
@@ -756,12 +754,12 @@ class Drone extends ColorShiftingSpriteProxy {
 }
 
 function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight: number): void {
-	let x: number = drone.x + spriteWidth / 2;
-	let y: number = drone.y + spriteHeight / 2;
+	const x: number = drone.x + spriteWidth / 2;
+  const y: number = drone.y + spriteHeight / 2;
   if (!(activeDroneGame instanceof DroneGame))
     return;
-	let thisDroneExplosion: Sprites = activeDroneGame.droneExplosions.allSprites[Math.floor(Math.random() * activeDroneGame.droneExplosions.allSprites.length)];
-	let explosion: SpriteProxy = new SpriteProxy(0, x - drone.scale * thisDroneExplosion.spriteWidth / 2, y - drone.scale * thisDroneExplosion.spriteHeight / 2);
+	const thisDroneExplosion: Sprites = activeDroneGame.droneExplosions.allSprites[Math.floor(Math.random() * activeDroneGame.droneExplosions.allSprites.length)];
+  const explosion: SpriteProxy = new SpriteProxy(0, x - drone.scale * thisDroneExplosion.spriteWidth / 2, y - drone.scale * thisDroneExplosion.spriteHeight / 2);
 	explosion.scale = drone.scale;
 	thisDroneExplosion.sprites.push(explosion);
   new Audio(Folders.assets + 'Sound Effects/DroneGoBoom.wav').play();

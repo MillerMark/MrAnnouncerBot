@@ -85,8 +85,8 @@
 		this.deEmphasisSprite.fadeOutTime = 700;
 		this.deEmphasisSprite.expirationDate = activeBackGame.nowMs;
 
-		const numPagesPlusShadow: number = 5;
-		for (var i = 0; i < numPagesPlusShadow; i++) {
+		const numPagesPlusShadow = 5;
+		for (let i = 0; i < numPagesPlusShadow; i++) {
 			this.highlightEmitterPages.push(new HighlightEmitterPages());
 		}
 		this.addHighlightEmitters();

@@ -309,8 +309,8 @@
 		const horizontalBounceDecay = 0.9;
 		const verticalBounceDecay = 0.9;
 
-		const velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-		const velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+		const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+		const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
 		const hitLeftWall = velocityX < 0 && this.x < left;
 		const hitRightWall = velocityX > 0 && this.x + width > right;
@@ -326,8 +326,8 @@
 			newVelocityY = -velocityY * verticalBounceDecay;
 
 		if (hitLeftWall || hitRightWall || hitTopWall || hitBottomWall) {
-			this.x = this.startX + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityX, this.getHorizontalThrust(now)));
-			this.y = this.startY + Physics.metersToPixels(Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust(now)));
+			this.x = this.startX + Physics.metersToPixels(Physics.getDisplacementMeters(secondsPassed, this.velocityX, this.getHorizontalThrust(now)));
+			this.y = this.startY + Physics.metersToPixels(Physics.getDisplacementMeters(secondsPassed, this.velocityY, this.getVerticalThrust(now)));
 			this.changeVelocity(newVelocityX, newVelocityY, now);
 		}
 		return hitBottomWall;
@@ -335,8 +335,8 @@
 
 	changingDirection(now: number): void {
 		const secondsPassed = (now - this.timeStart) / 1000;
-		const velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-		const velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+		const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+		const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 		this.changeVelocity(velocityX, velocityY, now);
 	}
 
@@ -388,10 +388,10 @@
 
 		const secondsPassed = (nowMs - this.timeStart) / 1000;
 
-		const xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, this.getHorizontalThrust(nowMs));
+		const xDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityX, this.getHorizontalThrust(nowMs));
 		this.x = this.startX + Physics.metersToPixels(xDisplacement);
 
-		const yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, this.getVerticalThrust(nowMs));
+		const yDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityY, this.getVerticalThrust(nowMs));
 		this.y = this.startY + Physics.metersToPixels(yDisplacement);
 	}
 

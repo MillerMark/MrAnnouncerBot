@@ -8230,7 +8230,11 @@ namespace DHDM
 			TellDungeonMaster(ea.DungeonMasterMessage);
 		}
 
-
+		public void ReStackConditions()
+		{
+			AllPlayerStats.LatestCommand = "ReStackConditions";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+		}
 
 		// TODO: Reintegrate wand/staff animations....
 		/* 

@@ -408,6 +408,7 @@
     <Compile Include="RegexConstants.cs" />
     <Compile Include="StreamDeck Commands\PlaySceneCommand.cs" />
     <Compile Include="StreamDeck Commands\PlaySoundCommand.cs" />
+    <Compile Include="StreamDeck Commands\ReStackConditionsCommand.cs" />
     <Compile Include="StreamDeck Commands\RollDiceCommand.cs" />
     <Compile Include="StreamDeck Commands\RollSaveCommand.cs" />
     <Compile Include="StreamDeck Commands\SavingThrowCommand.cs" />

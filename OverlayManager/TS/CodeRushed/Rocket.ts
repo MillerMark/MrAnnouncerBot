@@ -154,7 +154,7 @@
 
   onChutesFullyOpen(now) {
     var secondsPassed = (now - this.timeStart) / 1000;
-    var newVelocity = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    var newVelocity = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
 
     if (newVelocity > ChuteMaxVelocity)
       newVelocity > ChuteMaxVelocity;
@@ -227,8 +227,8 @@
       verticalBounceDecay /= 4;
     }
 
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    var velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    var velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
 
     var hitLeftWall = velocityX < 0 && this.x < left;
     var hitRightWall = velocityX > 0 && this.x + this.width > right;
@@ -285,8 +285,8 @@
 
   changingDirection(now) {
     var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    var velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    var velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
     this.changeVelocity(velocityX, velocityY, now);
   }
 
@@ -444,8 +444,8 @@
 
   changeVelocityBy(deltaVelocityX: number, deltaVelocityY: number, now: number) {
     var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    var velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    var velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    var velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
 
     var newVelocityX = velocityX * deltaVelocityX;
     var newVelocityY = velocityY * deltaVelocityY;
@@ -471,7 +471,7 @@
     var hAccel = this.getHorizontalAcceleration(now);
     var vAccel = this.getVerticalAcceleration(now);
 
-    var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, hAccel);
+    var xDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityX, hAccel);
 
     if ((this.wasFiringLeftThruster && this.leftThrusterOfftime <= now) || (this.wasFiringRightThruster && this.rightThrusterOfftime <= now)) {
       this.startX = this.x;
@@ -484,7 +484,7 @@
     //}
 
 
-    var yDisplacement = Physics.getDisplacement(secondsPassed, this.velocityY, vAccel);
+    var yDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityY, vAccel);
     if (this.chuteSailsAreFull && yDisplacement > ChuteMaxVelocity * secondsPassed)
       yDisplacement = ChuteMaxVelocity * secondsPassed;
 
@@ -578,8 +578,8 @@
         if (percentageOut > 1) {
           if (this.isUndocking) {
             this.isUndocking = false;
-            this.velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-            this.velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+            this.velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+            this.velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
           }
 
           this.hoverThrustersAudio.play();
@@ -678,8 +678,8 @@
       }
     }
 
-    this.lastVelocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    this.lastVelocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    this.lastVelocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    this.lastVelocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
     this.lastX = this.x;
     this.lastY = this.y;
 
@@ -770,8 +770,8 @@
     let y = this.y;
 
     let secondsPassed = (now - this.timeStart) / 1000;
-    let velocityX = Physics.getFinalVelocity(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
-    let velocityY = Physics.getFinalVelocity(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
+    let velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalAcceleration(now));
+    let velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalAcceleration(now));
 
     let newSprite: SpriteProxy;
     if (createSpriteFunc)

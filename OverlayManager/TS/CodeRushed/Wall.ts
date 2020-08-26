@@ -19,7 +19,7 @@ class EndCap extends SpriteProxy{
   static readonly gravity: number = 20;
   static readonly initialExpansionVelocity: number = 6; // m/s
   static readonly expansionTime: number = 1.25;  // sec
-  static readonly totalCapDisplacement: number = Physics.getDisplacement(EndCap.expansionTime,
+  static readonly totalCapDisplacement: number = Physics.getDisplacementMeters(EndCap.expansionTime,
                                                                          EndCap.initialExpansionVelocity,
                                                                          EndCap.suction);
 
@@ -62,10 +62,10 @@ class Wall extends SpriteProxy {
 
     let ySafetyDrop: number = activeDroneGame.endCaps.spriteHeight;
     let heightMeters: number = Physics.pixelsToMeters(screenHeight - this.finalCapTop + ySafetyDrop);
-    this.airTime = Physics.getDropTime(heightMeters, EndCap.gravity);
-    let initialVelocityY: number = Physics.getFinalVelocity(this.airTime, 0, EndCap.gravity);
+    this.airTime = Physics.getDropTimeSeconds(heightMeters, EndCap.gravity);
+    let initialVelocityY: number = Physics.getFinalVelocityMetersPerSecond(this.airTime, 0, EndCap.gravity);
     let initialVelocityX: number = 3;
-    this.capX = this.finalCapLeft - Physics.metersToPixels(Physics.getDisplacement(this.airTime, initialVelocityX, 0));
+    this.capX = this.finalCapLeft - Physics.metersToPixels(Physics.getDisplacementMeters(this.airTime, initialVelocityX, 0));
     this.capY = screenHeight + ySafetyDrop;
 
     // TODO: Figure out starting point for cap...
@@ -111,7 +111,7 @@ class Wall extends SpriteProxy {
     this.halfActualLength = this.length / 2;
     if (secondsPassed < EndCap.expansionTime) {
       //this.halfActualLength = this.length * (secondsPassed / extendTime) / 2;                                    	
-      var currentCapDisplacement: number = Physics.getDisplacement(EndCap.expansionTime - secondsPassed, EndCap.initialExpansionVelocity, EndCap.suction);
+      var currentCapDisplacement: number = Physics.getDisplacementMeters(EndCap.expansionTime - secondsPassed, EndCap.initialExpansionVelocity, EndCap.suction);
       this.halfActualLength *= (EndCap.totalCapDisplacement - currentCapDisplacement) / EndCap.totalCapDisplacement;
     }
 

@@ -57,6 +57,7 @@ namespace DHDM
 			Commands.Add(new SetVantageCommand());
 			Commands.Add(new RollDiceCommand());
 			Commands.Add(new BreakConcentrationCommand());
+			Commands.Add(new ReStackConditionsCommand());
 			Commands.Add(new ToggleTargetCommand());
 			Commands.Add(new TogglePlayerTargetCommand());
 			Commands.Add(new ToggleNpcCommand());

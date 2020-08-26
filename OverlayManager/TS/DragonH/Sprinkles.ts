@@ -223,7 +223,7 @@ class Sprinkles {
 	updatePosition(now: number) {
 		if (this.velocityX != 0) {
 			var secondsPassed = (now - this.timeStart) / 1000;
-			var xDisplacement = Physics.getDisplacement(secondsPassed, this.velocityX, 0);
+			var xDisplacement = Physics.getDisplacementMeters(secondsPassed, this.velocityX, 0);
 			this.x = this.startX + Physics.metersToPixels(xDisplacement);
 		}
 	}

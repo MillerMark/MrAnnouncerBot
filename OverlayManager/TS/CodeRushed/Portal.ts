@@ -27,18 +27,18 @@
   }
 
   drawDiagnostics(context: CanvasRenderingContext2D, now: number): void {
-    for (var i = 0; i < this.meteorsToDrop.length; i++) {
-      let futurePoint: FuturePoint = this.meteorsToDrop[i].futurePoint;
+    for (let i = 0; i < this.meteorsToDrop.length; i++) {
+      const futurePoint: FuturePoint = this.meteorsToDrop[i].futurePoint;
 
       drawCrossHairs(context, futurePoint.x, futurePoint.y);
 
       context.font = '20px Arial';
 
-      let secondsToIntersect: number = (futurePoint.absoluteTimeMs - now) / 1000;
+      const secondsToIntersect: number = (futurePoint.absoluteTimeMs - now) / 1000;
 
       if (secondsToIntersect < 0) {
         context.fillStyle = '#F60';
-        const rectSize: number = 100;
+        const rectSize = 100;
         context.fillRect(futurePoint.x - rectSize / 2, futurePoint.y - rectSize / 2, rectSize, rectSize);
       }
       else {
@@ -49,7 +49,7 @@
   }
 
   removeMeteor(userId: string) {
-    for (var i = 0; i < this.meteorsToDrop.length; i++) {
+    for (let i = 0; i < this.meteorsToDrop.length; i++) {
       if (this.meteorsToDrop[i].owner === userId) {
         this.meteorsToDrop.splice(i, 1);
       }
@@ -61,18 +61,18 @@
     this.meteorsToDrop.push(meteorDrop);
   }
 
-  checkApproaching(allDrones: SpriteCollection, now: number): any {
-    let centerX: number = this.x + Portal.size / 2;
+  checkApproaching(allDrones: SpriteCollection, now: number): void {
+    const centerX: number = this.x + Portal.size / 2;
 
-    let checkDrone = (drone: SpriteProxy) => {
+    const checkDrone = (drone: SpriteProxy) => {
       if (drone instanceof Drone) {
-        let futurePoint: FuturePoint = drone.getFuturePoint(centerX, now);
-        if (futurePoint != null) {
-          let distanceToDrop: number = futurePoint.y - (this.y + Portal.size / 2);
+        const futurePoint: FuturePoint = drone.getFuturePoint(centerX, now);
+        if (futurePoint !== null) {
+          const distanceToDrop: number = futurePoint.y - (this.y + Portal.size / 2);
           if (distanceToDrop > 0) {
-            let secondsToCrossover = (futurePoint.absoluteTimeMs - now) / 1000;
-            let dropTimeMs: number = Physics.getDropTime(Physics.pixelsToMeters(distanceToDrop), gravityGames.activePlanet.gravity) * 1000;
-            let dropTimeSeconds: number = dropTimeMs / 1000;
+            const secondsToCrossover = (futurePoint.absoluteTimeMs - now) / 1000;
+            const dropTimeMs: number = Physics.getDropTimeSeconds(Physics.pixelsToMeters(distanceToDrop), gravityGames.activePlanet.gravity) * 1000;
+            const dropTimeSeconds: number = dropTimeMs / 1000;
 
             //console.log('dropTimeSeconds: ' + dropTimeSeconds.toFixed(2) + ', secondsToCrossover: ' + secondsToCrossover.toFixed(2));
             if (dropTimeSeconds > secondsToCrossover) {
@@ -81,7 +81,7 @@
               return;
             }
 
-            let absoluteDropTime: number = futurePoint.absoluteTimeMs - dropTimeMs;
+            const absoluteDropTime: number = futurePoint.absoluteTimeMs - dropTimeMs;
             if (absoluteDropTime > now)
               if (absoluteDropTime - now < 10000)
                 this.queueMeteor(new MeteorDrop(absoluteDropTime, drone.userId, futurePoint));
@@ -106,8 +106,8 @@
   }
 
   dropReadyMeteors(now: number): any {
-    for (var i = this.meteorsToDrop.length - 1; i >= 0; i--) {
-      let meteorDrop: MeteorDrop = this.meteorsToDrop[i];
+    for (let i = this.meteorsToDrop.length - 1; i >= 0; i--) {
+      const meteorDrop: MeteorDrop = this.meteorsToDrop[i];
       if (meteorDrop.futureDropTime - now < 0) {
         if (!meteorDrop.dropped) {
           this.drop();

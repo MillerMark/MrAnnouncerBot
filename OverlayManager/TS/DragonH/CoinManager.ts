@@ -76,7 +76,7 @@
 		sprite.initialRotation = sprite.rotation;
 
 		sprite.velocityX = Physics.pixelsToMeters(screenWidth - CoinManager.halfWidthDmFrame - x) / airTime;
-		sprite.velocityY = -Physics.getFinalVelocity(airTime, 0, CoinManager.gravity);
+		sprite.velocityY = -Physics.getFinalVelocityMetersPerSecond(airTime, 0, CoinManager.gravity);
 		sprite.expirationDate = sprite.timeStart + airTime * 1000;
 		sprite.fadeOutTime = 300;
 		sprite.fadeInTime = 0;
@@ -92,7 +92,7 @@
 
 	static getAirTimeSec(totalHeightPx: number) {
 		let heightMeters: number = Physics.pixelsToMeters(totalHeightPx);
-		return Physics.getDropTime(heightMeters, CoinManager.gravity);
+		return Physics.getDropTimeSeconds(heightMeters, CoinManager.gravity);
 	}
 
 	addCoins(coins: Coins, x: number) {

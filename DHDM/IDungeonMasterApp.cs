@@ -55,5 +55,6 @@ namespace DHDM
 		void TellDungeonMaster(string message, bool isDetail = false);
 		void TellViewers(string message);
 		void NextTurn();
+		void ReStackConditions();
 	}
 }
