@@ -22,6 +22,7 @@
     <None Remove="TS\DragonH\CharacterStat.ts" />
     <None Remove="TS\DragonH\CharacterStatsScroll.ts" />
     <None Remove="TS\DragonH\CoinManager.ts" />
+    <None Remove="TS\DragonH\ConditionManager.ts" />
     <None Remove="TS\DragonH\CurseBlessingDisease.ts" />
     <None Remove="TS\DragonH\Damage.ts" />
     <None Remove="TS\DragonH\DragonFrontGame.ts" />
@@ -131,6 +132,7 @@
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
     <TypeScriptCompile Include="TS\DragonH\CoinManager.ts" />
+    <TypeScriptCompile Include="TS\DragonH\ConditionManager.ts" />
     <TypeScriptCompile Include="TS\DragonH\PlayerStatManager.ts" />
     <TypeScriptCompile Include="TS\DragonH\WorkerFront.ts">
       <SubType>Code</SubType>
