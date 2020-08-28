@@ -14,6 +14,7 @@
 	bloodD: Sprites;
 	bloodE: Sprites;
 	bloodGushing: Sprites;
+	conditionManager: ConditionManager = new ConditionManager();
 
 	public static readonly NpcScrollHeight: number = 253;
 
@@ -21,20 +22,10 @@
 
 	}
 
-	update(timestamp: number) {
-		this.parchmentBackground.updatePositionsForFreeElements(timestamp);
-		this.deathX.updatePositionsForFreeElements(timestamp);
-		this.parchmentShadow.updatePositionsForFreeElements(timestamp);
-		this.target.updatePositionsForFreeElements(timestamp);
-		this.activeTurnIndicator.updatePositionsForFreeElements(timestamp);
-		this.scrollAppear.updatePositionsForFreeElements(timestamp);
-		this.creatureTalking.updatePositionsForFreeElements(timestamp);
-		this.scrollDisappear.updatePositionsForFreeElements(timestamp);
-	}
-
 	loadResources() {
 		const saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = true;
+		this.conditionManager.loadResources();
 		this.parchmentBackground = new Sprites('Scroll/InGameCreatures/ParchmentBackground', 3, fps30, AnimationStyle.Static);
 		this.parchmentShadow = new Sprites('Scroll/InGameCreatures/ParchmentPicShadow', 3, fps30, AnimationStyle.Static);
 		this.deathX = new Sprites('Scroll/InGameCreatures/ParchmentDeathX', 1, fps30, AnimationStyle.Static);
@@ -83,6 +74,17 @@
 		globalBypassFrameSkip = saveBypassFrameSkip;
 	}
 
+	update(timestamp: number) {
+		this.parchmentBackground.updatePositionsForFreeElements(timestamp);
+		this.deathX.updatePositionsForFreeElements(timestamp);
+		this.parchmentShadow.updatePositionsForFreeElements(timestamp);
+		this.target.updatePositionsForFreeElements(timestamp);
+		this.activeTurnIndicator.updatePositionsForFreeElements(timestamp);
+		this.scrollAppear.updatePositionsForFreeElements(timestamp);
+		this.creatureTalking.updatePositionsForFreeElements(timestamp);
+		this.scrollDisappear.updatePositionsForFreeElements(timestamp);
+		this.conditionManager.update(timestamp);
+	}
 
 	loadBloodSprites(folderName: string, fileName: string, originX: number, originY: number, frameCount: number): Sprites {
 		const sprites: Sprites = new Sprites(`Scroll/InGameCreatures/Blood/${folderName}/${fileName}`, frameCount, fps30, AnimationStyle.Sequential, true);
@@ -241,8 +243,11 @@
 		this.deathX.draw(context, nowMs);
 		this.target.draw(context, nowMs);
 
+		this.conditionManager.draw(context, nowMs);
+
 		this.scrollAppear.draw(context, nowMs);
 		this.scrollDisappear.draw(context, nowMs);
+
 	}
 
 	// TODO: this.activeTurn integrate
@@ -333,6 +338,9 @@
 				timeBetweenArrivals = 50;
 		}
 	}
+
+	static readonly conditionMargin: number = 6;
+
 	updateInGameCreature(updatedGameCreature: InGameCreature, soundManager: SoundManager, healthChangeAnimationDelayMs: number) {
 		const existingCreature: InGameCreature = this.getInGameCreatureByIndex(updatedGameCreature.Index);
 		if (!existingCreature) {
@@ -340,29 +348,17 @@
 			return healthChangeAnimationDelayMs;
 		}
 
+		// TODO: Conditions
+
 		existingCreature.Alignment = updatedGameCreature.Alignment;
 		existingCreature.CropWidth = updatedGameCreature.CropWidth;
 		existingCreature.CropX = updatedGameCreature.CropX;
 		existingCreature.CropY = updatedGameCreature.CropY;
 		existingCreature.NumAhems = updatedGameCreature.NumAhems;
 		existingCreature.NumNames = updatedGameCreature.NumNames;
-		if (existingCreature.Health !== updatedGameCreature.Health) {
-			if (existingCreature.Health === 0) { // Was previously dead - now alive. 
-				const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(existingCreature);
-				if (deathXSprite)
-					deathXSprite.fadeOutNow(500);
-			}
-			existingCreature.Health = updatedGameCreature.Health;
-			const parchmentSprite: ColorShiftingSpriteProxy = this.getParchmentSpriteForCreature(existingCreature) as ColorShiftingSpriteProxy;
-			if (parchmentSprite) {
-				parchmentSprite.saturationPercent = updatedGameCreature.Health * 100;
-			}
 
-			if (existingCreature.Health === 0) { // Was previously alive - now dead. 
-				const x: number = this.getX(existingCreature);
-				this.addDeathSprite(x, existingCreature, healthChangeAnimationDelayMs);
-				healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
-			}
+		if (existingCreature.Health !== updatedGameCreature.Health) {
+			healthChangeAnimationDelayMs = this.updateCreatureHealth(existingCreature, updatedGameCreature, healthChangeAnimationDelayMs);
 		}
 
 		existingCreature.Kind = updatedGameCreature.Kind;
@@ -370,48 +366,33 @@
 
 		if (existingCreature.ImageURL !== updatedGameCreature.ImageURL)
 			existingCreature.setImageUrl(updatedGameCreature.ImageURL);
+
 		if (existingCreature.IsEnemy !== updatedGameCreature.IsEnemy || existingCreature.IsAlly !== updatedGameCreature.IsAlly || existingCreature.FriendFoeStatusUnknown !== updatedGameCreature.FriendFoeStatusUnknown) {
 			existingCreature.IsAlly = updatedGameCreature.IsAlly;
 			existingCreature.FriendFoeStatusUnknown = updatedGameCreature.FriendFoeStatusUnknown;
 			existingCreature.IsEnemy = updatedGameCreature.IsEnemy;
 
-			const parchmentShadow: SpriteProxy = this.getParchmentShadowForCreature(existingCreature);
-			if (parchmentShadow)
-				parchmentShadow.fadeOutNow(1000);
-			const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(existingCreature);
-			if (parchmentSprite)
-				parchmentSprite.fadeOutNow(1000);
-
-			const x: number = this.getX(existingCreature);
-			const frameIndex = this.getFriendEnemyFrameIndex(existingCreature);
-			this.addParchment(existingCreature, x, frameIndex, 0);
+			this.updateCreatureParchment(existingCreature);
 		}
 
 		if (existingCreature.IsTargeted !== updatedGameCreature.IsTargeted) {
 			existingCreature.IsTargeted = updatedGameCreature.IsTargeted;
 
-			if (existingCreature.IsTargeted) {
-				const x: number = this.getX(existingCreature);
-				this.addTarget(existingCreature, x);
-			}
-			else {
-				const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
-				if (target)
-					target.fadeOutNow(1000);
-			}
+			this.updateCreatureTarget(existingCreature);
 		}
+
+		if (existingCreature.Conditions !== updatedGameCreature.Conditions) {
+			const scale = 0.75;
+			const rightEdge: number = this.getX(existingCreature) + ConditionManager.conditionIconLength * scale + InGameCreatureManager.conditionMargin;
+			const hueShift: number = this.getHueShift(existingCreature);;
+			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightEdge, scale, soundManager, hueShift, WorldView.Flipped);
+			existingCreature.Conditions = updatedGameCreature.Conditions;
+		}
+
 		if (existingCreature.TurnIsActive !== updatedGameCreature.TurnIsActive) {
 			existingCreature.TurnIsActive = updatedGameCreature.TurnIsActive;
 
-			if (existingCreature.TurnIsActive) {
-				const x: number = this.getX(existingCreature);
-				this.addActiveTurnIndicator(soundManager, existingCreature, x);
-			}
-			else {
-				const activeTurnIndicator: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(existingCreature);
-				if (activeTurnIndicator)
-					activeTurnIndicator.fadeOutNow(500);
-			}
+			this.updateCreatureIsActive(existingCreature, soundManager);
 		}
 
 		if (updatedGameCreature.PercentDamageJustInflicted > 0) {
@@ -419,12 +400,70 @@
 			this.showDamage(existingCreature, updatedGameCreature.PercentDamageJustInflicted, healthChangeAnimationDelayMs, soundManager);
 			healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
 		}
+
 		if (updatedGameCreature.PercentHealthJustGiven > 0) {
 			// TODO: Show health...
 			//healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
 		}
 		return healthChangeAnimationDelayMs;
 	}
+
+    private updateCreatureHealth(existingCreature: InGameCreature, updatedGameCreature: InGameCreature, healthChangeAnimationDelayMs: number) {
+        if (existingCreature.Health === 0) { // Was previously dead - now alive. 
+            const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(existingCreature);
+            if (deathXSprite)
+                deathXSprite.fadeOutNow(500);
+        }
+        existingCreature.Health = updatedGameCreature.Health;
+        const parchmentSprite: ColorShiftingSpriteProxy = this.getParchmentSpriteForCreature(existingCreature) as ColorShiftingSpriteProxy;
+        if (parchmentSprite) {
+            parchmentSprite.saturationPercent = updatedGameCreature.Health * 100;
+        }
+
+        if (existingCreature.Health === 0) { // Was previously alive - now dead. 
+            const x: number = this.getX(existingCreature);
+            this.addDeathSprite(x, existingCreature, healthChangeAnimationDelayMs);
+            healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
+        }
+        return healthChangeAnimationDelayMs;
+    }
+
+    private updateCreatureIsActive(existingCreature: InGameCreature, soundManager: SoundManager) {
+        if (existingCreature.TurnIsActive) {
+            const x: number = this.getX(existingCreature);
+            this.addActiveTurnIndicator(soundManager, existingCreature, x);
+        }
+        else {
+            const activeTurnIndicator: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(existingCreature);
+            if (activeTurnIndicator)
+                activeTurnIndicator.fadeOutNow(500);
+        }
+    }
+
+    private updateCreatureTarget(existingCreature: InGameCreature) {
+        if (existingCreature.IsTargeted) {
+            const x: number = this.getX(existingCreature);
+            this.addTarget(existingCreature, x);
+        }
+        else {
+            const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
+            if (target)
+                target.fadeOutNow(1000);
+        }
+    }
+
+    private updateCreatureParchment(existingCreature: InGameCreature) {
+        const parchmentShadow: SpriteProxy = this.getParchmentShadowForCreature(existingCreature);
+        if (parchmentShadow)
+            parchmentShadow.fadeOutNow(1000);
+        const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(existingCreature);
+        if (parchmentSprite)
+            parchmentSprite.fadeOutNow(1000);
+
+        const x: number = this.getX(existingCreature);
+        const frameIndex = this.getFriendEnemyFrameIndex(existingCreature);
+        this.addParchment(existingCreature, x, frameIndex, 0);
+    }
 
 	showDamage(existingCreature: InGameCreature, percentDamageJustInflicted: number, delayMs: number, soundManager: SoundManager) {
 		const x: number = this.getX(existingCreature);

@@ -12,6 +12,7 @@
 	NumAhems: number;
 	CropWidth: number;
 	Health: number;
+	Conditions: Conditions;
 	IsTargeted: boolean;
 	TurnIsActive: boolean;
 	PercentDamageJustInflicted: number;
@@ -46,6 +47,7 @@
 		this.NumNames = inGameCreature.NumNames;
 		this.CropWidth = inGameCreature.CropWidth;
 		this.Health = inGameCreature.Health;
+		this.Conditions = inGameCreature.Conditions;
 		this.IsTargeted = inGameCreature.IsTargeted;
 		this.TurnIsActive = inGameCreature.TurnIsActive;
 		this.IsEnemy = inGameCreature.IsEnemy;

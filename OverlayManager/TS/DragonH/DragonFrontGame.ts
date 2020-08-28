@@ -126,8 +126,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	update(timestamp: number) {
 		this.updateGravity();
 		this.playerStats.update(this, this.dragonFrontSounds, timestamp);
+		this.conditionManager.update(timestamp);
 		super.update(timestamp);
-	}
+	}	
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
 		this.drawTimePlusEffects(context, nowMs);
@@ -147,6 +148,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bloodEffects.draw(context, nowMs);
 
 		this.playerStats.draw(context, nowMs);
+		this.conditionManager.draw(context, nowMs);
 		//this.playerStats.drawDiagnostics(context, this, this, this.players);
 
 		this.coinManager.draw(context, nowMs);
@@ -331,8 +333,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	private loadGreatSword() {
-		const greatSwordOriginX: number = 306;
-		const greatSwordOriginY: number = 837;
+		const greatSwordOriginX = 306;
+		const greatSwordOriginY = 837;
 		this.loadWeapon('GreatSword', 'Magic', greatSwordOriginX, greatSwordOriginY);
 		this.loadWeapon('GreatSword', 'Weapon', greatSwordOriginX, greatSwordOriginY);
 	}
@@ -641,7 +643,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.clockLayerEffects.add(this.fireWall);
 
 		this.playerStats.loadResources();
-		//this.clockLayerEffects.add(this.clockPanel);
+		this.conditionManager.loadResources();
 	}
 
 	loadMagicSparks(path: string): Sprites {
@@ -686,7 +688,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.playerStats.ActiveTurnCreatureID = -1;  // Forces a rebuild of highlighting.
 		this.playerStats.setActiveTurnCreatureID(this, this, this.context, activeCreatureId, this.players);
 		this.playerStats.moveAllTargets(this, this, this.context, this.players);
-		this.playerStats.moveAllConditions(this, this, this.dragonFrontSounds, this.context, this.players);
+		this.conditionManager.movePlayerConditions(this, this, this.dragonFrontSounds, this.context, this.players);
 	}
 
 	refreshClock() {
@@ -1213,11 +1215,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	playerStats: PlayerStatManager = new PlayerStatManager();
+	conditionManager: ConditionManager = new ConditionManager();
 
 	changePlayerStats(playerStatsDtoStr: string): void {
 		//console.log(playerStatsDtoStr);
 		const newPlayerStats: PlayerStatManager = new PlayerStatManager().deserialize(JSON.parse(playerStatsDtoStr));
-		this.playerStats.handleCommand(this, this, this.context, this.dragonFrontSounds, newPlayerStats, this.players);
+		this.playerStats.handleCommand(this, this, this.context, this.dragonFrontSounds, newPlayerStats, this.players, this.conditionManager);
 		// TODO: transfer stats across.
 	}
 

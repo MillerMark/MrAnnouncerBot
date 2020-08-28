@@ -2,6 +2,7 @@
 	getPlayerX(playerIndex: number): number;
 	getPlayerIndex(playerId: number): number;
 	getPlayerFirstName(playerId: number): string;
+	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>);
 }
 
 class WealthChange {
@@ -174,6 +175,23 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	players: Array<Character> = [];
 
 	dragonSharedSounds: SoundManager;
+
+	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>) {
+		const player: Character = players[playerIndex];
+
+		let plateWidth = 0;
+		if (player)
+			plateWidth = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
+
+		let plateAdjust = 0;
+		if (plateWidth) {
+			plateAdjust -= plateWidth / 2 + ConditionManager.plateMargin;
+		}
+
+		return iGetPlayerX.getPlayerX(playerIndex) + plateAdjust;
+	}
+
+
 
 	protected ShowWaitingForInitializationMessage(context: CanvasRenderingContext2D, fontColor: string, message: string, yTop: number) {
 		context.font = '38px Arial';

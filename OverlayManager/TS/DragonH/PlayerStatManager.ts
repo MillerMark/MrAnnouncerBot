@@ -1,12 +1,4 @@
-﻿class ConditionState {
-	stacked: boolean;
-	thrown: boolean;
-	constructor(public playerId: number, public frameIndex: number, public finalX: number, public finalY: number) {
-		this.thrown = true;
-	}
-}
-
-interface IPlayerStats {
+﻿interface IPlayerStats {
 	ReadyToRollDice: boolean;
 	PlayerId: number;
 	Vantage: VantageKind;
@@ -129,9 +121,6 @@ class PlayerStatManager implements IAllPlayerStats {
 	nameplateTopShort: Sprites;
 	nameplateRight: Sprites;
 	nameplateLeft: Sprites;
-	conditions: Sprites;
-	conditionGlow: Sprites;
-	conditionBlast: Sprites;
 
 	concentrationWhiteSmoke: Sprites;
 	concentrationSpellNameScroll: Sprites;
@@ -157,13 +146,13 @@ class PlayerStatManager implements IAllPlayerStats {
 		return this;
 	}
 
-	handleCommand(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, soundManager: ISoundManager, mostRecentPlayerStats: PlayerStatManager, players: Array<Character>) {
+	handleCommand(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, soundManager: ISoundManager, mostRecentPlayerStats: PlayerStatManager, players: Array<Character>, conditionManager: ConditionManager) {
 		this.LatestData = mostRecentPlayerStats.LatestData;
 		this.LatestCommand = mostRecentPlayerStats.LatestCommand;
 		this.RollingTheDiceNow = mostRecentPlayerStats.RollingTheDiceNow;
 		this.setActiveTurnCreatureID(iGetPlayerX, iNameplateRenderer, context, mostRecentPlayerStats.ActiveTurnCreatureID, players);
 		this.addMissingPlayers(mostRecentPlayerStats);
-		this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players);
+		this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players, conditionManager);
 		this.cleanUpNonExistantPlayers(mostRecentPlayerStats);
 	}
 
@@ -175,49 +164,20 @@ class PlayerStatManager implements IAllPlayerStats {
 	private static readonly mediumPlateTotalWidth: number = 480;
 	private static readonly shortPlateArcWidth: number = 153;
 	private static readonly shortPlateTotalWidth: number = 355;
-	private static readonly creatureScrollHeight: number = 253;
+	public static readonly creatureScrollHeight: number = 253;
 
 	moveAllTargets(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, players: Array<Character>) {
 
 		players.forEach((player, index) => {
 			const targetSprite: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, player.playerID);
 			if (targetSprite) {
-				const x: number = this.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, index /* iGetPlayerX.getPlayerIndex(player.playerID) */, players) - this.playerTargetSprites.originX;
+				const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, index /* iGetPlayerX.getPlayerIndex(player.playerID) */, players) - this.playerTargetSprites.originX;
 
 				if (targetSprite.x !== x) {
 					targetSprite.ease(performance.now(), targetSprite.x, targetSprite.y, x, targetSprite.y, 360);
 				}
 			}
 		});
-	}
-
-	moveAllConditions(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
-		players.forEach((player, index) => {
-			const conditionSprites: Array<SpriteProxy> = this.getSpritesForPlayer(this.conditions, player.playerID);
-			const x: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, index, players);
-			const scale: number = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, index, players);
-
-			for (let i = 0; i < conditionSprites.length; i++) {
-
-				const conditionSprite: SpriteProxy = conditionSprites[i];
-				if (conditionSprite) {
-					this.moveAndScaleConditionSprite(conditionSprite, x - this.conditions.originX, scale);
-					const glowSprite: SpriteProxy = this.getConditionSpriteForPlayer(this.conditionGlow, conditionSprite.data as ConditionState);
-					this.moveAndScaleConditionSprite(glowSprite, x - this.conditionGlow.originX, scale);
-				}
-			}
-
-			this.stackConditionSprites(player.playerID, x, scale, soundManager);
-		});
-	}
-
-	private moveAndScaleConditionSprite(conditionSprite: SpriteProxy, x: number, scale: number) {
-		if (conditionSprite.x !== x) {
-			conditionSprite.ease(performance.now(), conditionSprite.x, conditionSprite.y, x, conditionSprite.y, 360);
-		}
-		if (conditionSprite.scale !== scale) {
-			conditionSprite.scale = scale;
-		}
 	}
 
 	setActiveTurnCreatureID(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, activeTurnCreatureID: number, players: Array<Character>) {
@@ -275,7 +235,6 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	nameplateHighlightCollection: SpriteCollection = new SpriteCollection();
-	conditionCollection: SpriteCollection = new SpriteCollection();
 
 	private loadNameplateHighlight(fileName: string, originX = 0, originY = 0): Sprites {
 		const nameplateHighlight: Sprites = new Sprites(`Nameplates/ActiveTurn/${fileName}`, 94, fps30, AnimationStyle.Loop, true);
@@ -295,28 +254,6 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.nameplateTopShort = this.loadNameplateHighlight('NameplateTopShort', 195, 144);
 		this.nameplateLeft = this.loadNameplateHighlight('NameplateLeft', 152, 123);
 		this.nameplateRight = this.loadNameplateHighlight('NameplateRight', 119, 123);
-
-		this.conditionCollection = new SpriteCollection();
-
-		this.conditions = new Sprites('Conditions/Conditions', 17, fps30, AnimationStyle.Static);
-		this.conditions.originX = 102;
-		this.conditions.originY = 102;
-		this.conditions.disableGravity();
-		this.conditions.moves = true;
-
-		this.conditionGlow = new Sprites('Conditions/Glow/ConditionGlow', 90, fps30, AnimationStyle.Loop, true);
-		this.conditionGlow.originX = 254;
-		this.conditionGlow.originY = 252;
-		this.conditionGlow.disableGravity();
-		this.conditionGlow.moves = true;
-
-		this.conditionBlast = new Sprites('Conditions/Blast/ConditionConfettiBlast', 83, fps30, AnimationStyle.Sequential, true);
-		this.conditionBlast.originX = 241;
-		this.conditionBlast.originY = 322;
-
-		this.conditionCollection.add(this.conditionGlow);
-		this.conditionCollection.add(this.conditions);
-		this.conditionCollection.add(this.conditionBlast);
 
 		this.readyToRollDieCollection = new SpriteCollection();
 		this.airExplosionCollection = new SpriteCollection();
@@ -448,33 +385,9 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
-		this.conditionCollection.draw(context, nowMs);
 		this.drawConcentratedSpellSprites(context, nowMs);
 		this.nameplateHighlightCollection.draw(context, nowMs);
 		this.drawReadyToRollDice(context, nowMs);
-	}
-
-	drawDiagnostics(context: CanvasRenderingContext2D, iNameplateRenderer: INameplateRenderer, iGetPlayerX: IGetPlayerX & ITextFloater, players: Character[]) {
-		context.lineWidth = 4;
-		for (let i = 0; i < players.length; i++) {
-			const widthToTheLeft: number = this.getAvailableSpaceLeftOfPlate(iNameplateRenderer, context, iGetPlayerX, i, players);
-			const x: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, i, players);
-			const y = 1000;
-
-			context.beginPath();
-			context.strokeStyle = players[i].dieBackColor;
-			context.moveTo(x - widthToTheLeft, y - 9);
-			context.lineTo(x - widthToTheLeft, y + 9);
-
-			context.moveTo(x - widthToTheLeft, y);
-			context.lineTo(x, y);
-			context.stroke();
-
-			context.textAlign = 'right';
-			context.textBaseline = 'bottom';
-			context.fillStyle = players[i].dieBackColor;
-			context.fillText(Math.round(widthToTheLeft).toString(), x, y);
-		}
 	}
 
 	drawTopLevelStatus(context: CanvasRenderingContext2D, nowMs: number) {
@@ -507,7 +420,6 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.concentratedSpellSprites.updatePositions(nowMs);
 		this.concentratedSpellNames.updatePositions(nowMs);
 		this.concentratedSpellNames.removeExpiredAnimations(nowMs);
-		this.conditionCollection.updatePositions(nowMs);
 		this.playerTargetSprites.updatePositions(nowMs);
 		if (this.timeOfNextDragonBreath < nowMs) {
 			this.timeOfNextDragonBreath = nowMs + Random.between(4000, 7000);
@@ -548,48 +460,31 @@ class PlayerStatManager implements IAllPlayerStats {
 		}
 	}
 
-	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: PlayerStatManager, players: Array<Character>) {
+	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: PlayerStatManager, players: Array<Character>, conditionManager: ConditionManager) {
 		for (let i = 0; i < this.Players.length; i++) {
 			const latestPlayerStat: PlayerStats = latestPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
 			if (latestPlayerStat)
-				this.handleCommandForPlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, this.Players[i], this.LatestCommand, this.LatestData, latestPlayerStat, players);
+				this.handleCommandForPlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, this.Players[i], this.LatestCommand, this.LatestData, latestPlayerStat, players, conditionManager);
 		}
 	}
 
-	handleCommandForPlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, command: string, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
+	handleCommandForPlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, command: string, data: string, latestPlayerStats: PlayerStats, players: Array<Character>, conditionManager: ConditionManager) {
 		//console.log('command: ' + command);
 		switch (command) {
 			case 'Update':
 				this.updatePlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, existingPlayerStats, data, latestPlayerStats, players);
+				conditionManager.updatePlayerConditions(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
 				break;
+
 			case 'HourglassUpdate':
 				this.updateHourglass(iGetPlayerX, soundManager, existingPlayerStats, data, latestPlayerStats, players);
 				break;
+
 			case 'ReStackConditions':
-				this.restackConditions(iGetPlayerX, iNameplateRenderer, soundManager, context, existingPlayerStats, players);
+				if (conditionManager)
+					conditionManager.restackPlayerConditions(iGetPlayerX, iNameplateRenderer, soundManager, context, existingPlayerStats, players);
 				break;
 		}
-	}
-
-	restackConditions(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, players: Character[]) {
-		if (!existingPlayerStats.Conditions)
-			return;
-
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
-		const targetX: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
-
-		const scale = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
-		this.stackConditionSprites(existingPlayerStats.PlayerId, targetX, scale, soundManager);
-	}
-
-	private stackConditionSprites(playerId: number, targetX: number, scale: number, soundManager: ISoundManager) {
-		const targetY = 1080;
-
-		const conditionSprites: Array<SpriteProxy> = this.getSpritesForPlayer(this.conditions, playerId);
-		this.animateSpritesDown(conditionSprites, targetX, targetY, PlayerStatManager.conditionIconLength * scale, this.conditions.originX, this.conditions.originY, soundManager);
-
-		const glowSprites: Array<SpriteProxy> = this.getSpritesForPlayer(this.conditionGlow, playerId);
-		this.animateSpritesDown(glowSprites, targetX, targetY, PlayerStatManager.conditionIconLength * scale, this.conditionGlow.originX, this.conditionGlow.originY);
 	}
 
 	updateHourglass(iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Character[]) {
@@ -923,7 +818,6 @@ class PlayerStatManager implements IAllPlayerStats {
 	updatePlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
 		this.updatePlayerDice(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager);
 		this.updatePlayerTargeting(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
-		this.updatePlayerConditions(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
 		this.updateConcentratedSpell(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager, players);
 	}
 
@@ -1180,7 +1074,7 @@ class PlayerStatManager implements IAllPlayerStats {
 			return;
 
 		const playerId: number = latestPlayerStats.PlayerId;
-		const x: number = this.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, iGetPlayerX.getPlayerIndex(playerId), players);
+		const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, iGetPlayerX.getPlayerIndex(playerId), players);
 
 		if (latestPlayerStats.IsTargeted) {
 			//const centerNameplateY = 1052;
@@ -1196,295 +1090,6 @@ class PlayerStatManager implements IAllPlayerStats {
 				target.fadeOutNow(500);
 		}
 		existingPlayerStats.IsTargeted = latestPlayerStats.IsTargeted;
-	}
-
-	updatePlayerConditions(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
-		if (existingPlayerStats.Conditions === latestPlayerStats.Conditions)
-			return;
-
-		const playerId: number = latestPlayerStats.PlayerId;
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
-
-		const scale = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
-
-		const nameplateLeftEdge: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, iGetPlayerX.getPlayerIndex(playerId), players);
-
-		let frameIndex = 0;
-		for (const item in Conditions) {
-			if (isNaN(Number(item))) {
-				const condition: Conditions = Conditions[item as keyof typeof Conditions];
-				if (condition !== Conditions.None) {
-					if ((existingPlayerStats.Conditions & condition) !== (latestPlayerStats.Conditions & condition)) {
-						if ((existingPlayerStats.Conditions & condition) === condition) {  // Bit is set.
-							this.removeCondition(playerId, frameIndex, nameplateLeftEdge, scale, soundManager);
-						}
-						else {
-							this.addCondition(players, iGetPlayerX, iNameplateRenderer, context, existingPlayerStats, nameplateLeftEdge, frameIndex, playerId, soundManager, scale);
-						}
-					}
-					frameIndex++;
-				}
-			}
-		}
-
-
-		//if (latestPlayerStats.IsTargeted) {
-		//	//const centerNameplateY = 1052;
-		//	
-		//	const target: SpriteProxy = this.playerTargetSprites.addShifted(nameplateLeftEdge, bottomAlignedNameplateY, -1, 220);
-		//	target.fadeInTime = 500;
-		//	target.data = playerId;
-		//	soundManager.safePlayMp3('Windups/ArrowDrawQuick');
-		//}
-		//else {
-		//	const target: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, playerId);
-		//	if (target)
-		//		target.fadeOutNow(500);
-		//}
-		existingPlayerStats.Conditions = latestPlayerStats.Conditions;
-	}
-
-	// TODO: Consider consolidating parameters to a single parameter.
-	private getNameplateLeftEdge(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Character[]): number {
-		return this.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, playerIndex, players) - PlayerStatManager.plateMargin;
-	}
-
-	private getConditionScale(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Character[], offsetCount = 0) {
-		const widthToTheLeft: number = this.getAvailableSpaceLeftOfPlate(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
-		return Math.min(1, (widthToTheLeft * 2.0 / 3.0) / PlayerStatManager.conditionIconLength);
-	}
-
-	private addCondition(players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, nameplateLeftEdge: number, frameIndex: number, playerId: number, soundManager: ISoundManager, scale = 1) {
-		let hueShift = 0;
-
-
-		if (!players) {
-			return;
-		}
-
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
-		const player: Character = players[playerIndex];
-		if (player) {
-			hueShift = player.hueShift;
-		}
-
-		const existingStackHeight: number = this.getStackHeight(playerId, scale);
-
-		const bottomEdgeY = 1080 - existingStackHeight;
-		const sprite: SpriteProxy = this.conditions.addShifted(nameplateLeftEdge, bottomEdgeY, frameIndex, hueShift);
-		this.prepareConditionForEntrance(this.conditions, sprite, playerId, frameIndex, scale, soundManager);
-		const glow: SpriteProxy = this.conditionGlow.addShifted(nameplateLeftEdge, bottomEdgeY, -1, hueShift);
-		this.prepareConditionForEntrance(this.conditionGlow, glow, playerId, frameIndex, scale);
-	}
-
-	getStackHeight(playerId: number, scale: number): number {
-		let numStacked = 0;
-		for (let i = 0; i < this.conditions.sprites.length; i++) {
-			const conditionState: ConditionState = this.conditions.sprites[i].data as ConditionState
-			if (conditionState && conditionState.playerId === playerId && (conditionState.thrown || conditionState.stacked)) {
-				numStacked++;
-			}
-		}
-		return numStacked * PlayerStatManager.conditionIconLength * scale;
-	}
-
-	static readonly conditionIconLength = 102;
-
-	private prepareConditionForEntrance(sprites: Sprites, sprite: SpriteProxy, playerId: number, frameIndex: number, scale: number, soundManager: ISoundManager = null) {
-
-		// ![](9F4E5CB34A6758CAABB6E07E33992C43.png)
-
-		const fallDistanceFactor = 0.5; // As a percentage of the tile height.
-		const fallDistancePx = PlayerStatManager.conditionIconLength * fallDistanceFactor * scale;  // Check
-		sprite.data = new ConditionState(playerId, frameIndex, sprite.x, sprite.y);
-		sprite.scale = scale;
-		const accelerationFactor = 1.8;
-		const earthGravity = 9.8;  // m/s
-		sprite.verticalThrustOverride = earthGravity * accelerationFactor;
-		sprite.velocityY = -6;
-		const apexY: number = sprites.originY + sprite.y - fallDistancePx;
-		const screenHeightPx = 1080;
-		const belowGroundY: number = screenHeightPx + PlayerStatManager.conditionIconLength * scale;
-		const distanceFromBelowGroundToApexPx: number = belowGroundY - apexY;
-		const timeToApexSeconds = Physics.getDropTimeSeconds(Physics.pixelsToMeters(distanceFromBelowGroundToApexPx), sprite.verticalThrustOverride);
-		const dropTimeToLandSeconds: number = Physics.getDropTimeSeconds(Physics.pixelsToMeters(fallDistancePx), sprite.verticalThrustOverride);
-		const throwVelocityY: number = -Physics.getFinalVelocityMetersPerSecond(timeToApexSeconds, 0, sprite.verticalThrustOverride);
-		const totalTravelTimeMs: number = (timeToApexSeconds + dropTimeToLandSeconds) * 1000;
-		const horizontalTravelFactor = 1.2;
-		const horizontalTravelDistancePx: number = horizontalTravelFactor * PlayerStatManager.conditionIconLength * scale;
-		sprite.x -= horizontalTravelDistancePx;
-		const throwVelocityX: number = Physics.pixelsToMeters(horizontalTravelDistancePx) / (totalTravelTimeMs / 1000);
-		sprite.y = belowGroundY - sprites.originY;
-		sprite.changeVelocity(throwVelocityX, throwVelocityY, performance.now());
-		if (soundManager)
-			soundManager.safePlayMp3('Conditions/Whoosh[5]');
-		setTimeout(this.conditionLanded.bind(this), totalTravelTimeMs, sprite, soundManager);
-	}
-
-	conditionLanded(sprite: SpriteProxy, soundManager: ISoundManager) {
-		sprite.verticalThrustOverride = 0;
-		const conditionState: ConditionState = sprite.data as ConditionState;
-		if (conditionState) {
-			sprite.x = conditionState.finalX;
-			sprite.y = conditionState.finalY;
-			conditionState.stacked = true;
-			conditionState.thrown = false;
-		}
-		sprite.changeVelocity(0, 0, performance.now());
-		if (soundManager)
-			soundManager.safePlayMp3('Conditions/Clack[5]');
-	}
-
-	private removeCondition(playerId: number, frameIndex: number, nameplateLeftEdge: number, scale: number, soundManager: ISoundManager) {
-		this.removeConditionByPlayerIdAndFrameIndex(this.conditionGlow, playerId, frameIndex, nameplateLeftEdge, scale);
-		this.removeConditionByPlayerIdAndFrameIndex(this.conditions, playerId, frameIndex, nameplateLeftEdge, scale, soundManager);
-	}
-
-	removeConditionByPlayerIdAndFrameIndex(sprites: Sprites, playerId: number, frameIndex: number, nameplateLeftEdge: number, scale: number, soundManager: ISoundManager = null) {
-		for (let i = 0; i < sprites.sprites.length; i++) {
-			const sprite: SpriteProxy = sprites.sprites[i];
-			const conditionState = sprite.data as ConditionState;
-			if (conditionState && conditionState.playerId === playerId && conditionState.frameIndex === frameIndex)
-				this.removeConditionWithAnimation(sprites, sprite, nameplateLeftEdge, conditionState, scale, soundManager);
-		}
-	}
-
-	removeConditionWithAnimation(sprites: Sprites, sprite: SpriteProxy, nameplateLeftEdge: number, conditionState: ConditionState, scale: number, soundManager: ISoundManager = null) {
-		const spritesAbove: Array<SpriteProxy> = this.getSpritesAbove(sprites, sprite);
-		const startY: number = 1080 - this.getStackHeightBelow(sprites, sprite, PlayerStatManager.conditionIconLength * scale);
-		this.animateSpritesDown(spritesAbove, nameplateLeftEdge, startY, PlayerStatManager.conditionIconLength * scale, sprites.originX, sprites.originY, soundManager);
-		if (soundManager) { // Only true when removing main condition sprite (false when removing glow).
-			const blast: SpriteProxy = this.conditionBlast.addShifted(sprite.x + sprites.originX, sprite.y + sprites.originY, 0, (sprite as ColorShiftingSpriteProxy).hueShift);
-			blast.scale = scale;
-			soundManager.safePlayMp3('Conditions/Blast');
-			soundManager.playMp3In(100, 'Conditions/BubblePop[5]');
-		}
-		sprite.fadeOutNow(200);
-	}
-
-	animateSpritesDown(spritesAbove: SpriteProxy[], newX: number, newY: number, scaledSpriteHeight: number, originX: number, originY: number, soundManager: ISoundManager = null) {
-		let startTime: number = performance.now();
-		let indexToMove = 0;
-		for (let i = 0; i < spritesAbove.length; i++) {
-			const sprite: SpriteProxy = spritesAbove[i];
-			const moveTime = 500;
-			const delayBetweenMoves = 100;
-			const targetX: number = newX - originX;
-			const targetY: number = newY - originY;
-			newY -= scaledSpriteHeight;
-
-			if (sprite.x === targetX && sprite.y === targetY)
-				continue;
-
-			sprite.ease(startTime, sprite.x, sprite.y, targetX, targetY, moveTime);
-			startTime += delayBetweenMoves;
-			if (soundManager)
-				soundManager.playMp3In(delayBetweenMoves * indexToMove + moveTime, 'Conditions/Clack[6]');
-			indexToMove++;
-		}
-	}
-
-	static readonly plateMargin = 7;
-
-	// HACK: plateWidthAdjust is magic number to solve width calculation issues. Some day, fix. #NoComeuppance
-	static readonly plateWidthAdjust = 31;
-
-	private getSpritesAbove(sprites: Sprites, sprite: SpriteProxy) {
-		const compareConditionState: ConditionState = sprite.data as ConditionState;
-		if (!compareConditionState)
-			return;
-		const spritesAbove: Array<SpriteProxy> = [];
-		for (let i = 0; i < sprites.sprites.length; i++) {
-			const testSprite: SpriteProxy = sprites.sprites[i];
-			const conditionState: ConditionState = testSprite.data as ConditionState;
-			if (conditionState)
-				if (compareConditionState.playerId === conditionState.playerId)
-					if (conditionState.stacked || conditionState.thrown) {
-						if (testSprite.y < sprite.y) {
-							// This sprite is above.
-							spritesAbove.push(testSprite);
-						}
-					}
-		}
-		return spritesAbove.sort((s1, s2) => s2.y - s1.y);
-	}
-
-	private getSpritesForPlayer(sprites: Sprites, playerId: number) {
-		const spritesInStack: Array<SpriteProxy> = [];
-		for (let i = 0; i < sprites.sprites.length; i++) {
-			const testSprite: SpriteProxy = sprites.sprites[i];
-			const conditionState: ConditionState = testSprite.data as ConditionState;
-			if (conditionState)
-				if (conditionState.playerId === playerId)
-					if (conditionState.stacked || conditionState.thrown) {
-						spritesInStack.push(testSprite);
-					}
-		}
-		return spritesInStack; // .sort((s1, s2) => (s2.data as ConditionState).frameIndex - (s1.data as ConditionState).frameIndex);
-	}
-
-	private getConditionSpriteForPlayer(sprites: Sprites, matchConditionState: ConditionState): SpriteProxy {
-		for (let i = 0; i < sprites.sprites.length; i++) {
-			const testSprite: SpriteProxy = sprites.sprites[i];
-			const conditionState: ConditionState = testSprite.data as ConditionState;
-			if (conditionState)
-				if (conditionState.playerId === matchConditionState.playerId && conditionState.frameIndex === matchConditionState.frameIndex)
-					return testSprite;
-
-		}
-		return null;
-	}
-
-	private getStackHeightBelow(sprites: Sprites, sprite: SpriteProxy, scaledConditionHeight: number) {
-		const compareConditionState: ConditionState = sprite.data as ConditionState;
-		if (!compareConditionState)
-			return;
-		const spritesBelow: Array<SpriteProxy> = [];
-		for (let i = 0; i < sprites.sprites.length; i++) {
-			const testSprite: SpriteProxy = sprites.sprites[i];
-			const conditionState: ConditionState = testSprite.data as ConditionState;
-			if (conditionState)
-				if (compareConditionState.playerId === conditionState.playerId)
-					if (conditionState.stacked || conditionState.thrown) {
-						if (testSprite.y > sprite.y) {
-							// This sprite is below.
-							spritesBelow.push(testSprite);
-						}
-					}
-		}
-		return spritesBelow.length * scaledConditionHeight;
-	}
-
-	private getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>) {
-		const player: Character = players[playerIndex];
-
-		let plateWidth = 0;
-		if (player)
-			plateWidth = iNameplateRenderer.getPlateWidth(context, player, playerIndex);
-
-		let plateAdjust = 0;
-		if (plateWidth) {
-			plateAdjust -= plateWidth / 2 + PlayerStatManager.plateMargin;
-		}
-
-		const x: number = iGetPlayerX.getPlayerX(playerIndex) + plateAdjust;
-		return x;
-	}
-
-	private getAvailableSpaceLeftOfPlate(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>) {
-		const leftEdgeThisNameplate: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
-
-		if (playerIndex <= 0) {
-			return leftEdgeThisNameplate;
-		}
-
-		const playerLeftIndex: number = playerIndex - 1;
-
-		const previousPlateWidth: number = iNameplateRenderer.getPlateWidth(context, players[playerLeftIndex], playerLeftIndex);
-		const previousPlateLeft: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, playerLeftIndex, players);
-		const previousPlateRight: number = previousPlateLeft + previousPlateWidth;
-
-		return leftEdgeThisNameplate - previousPlateRight - PlayerStatManager.plateWidthAdjust;
 	}
 
 	private showSpellConcentrationAnimation(latestPlayerStats: PlayerStats, x: number, existingPlayerStats: PlayerStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {

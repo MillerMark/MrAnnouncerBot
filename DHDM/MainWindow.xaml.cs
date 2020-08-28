@@ -1417,7 +1417,7 @@ namespace DHDM
 				playerStats.PercentConcentrationComplete = 100;
 				playerStats.ConcentratedSpell = "";
 				playerStats.JustBrokeConcentration = false;
-				UpdatePlayerStateInGame();
+				UpdatePlayerStatsInGame();
 			}
 
 			UpdateStateUIForPlayer(ActivePlayer, true);
@@ -1798,7 +1798,7 @@ namespace DHDM
 				}
 			}
 
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 		}
 		private void NewShortcutActivated(PlayerActionShortcut actionShortcut, Character player)
 		{
@@ -3995,7 +3995,7 @@ namespace DHDM
 			AllInGameCreatures.ClearAllActiveTurns();
 			AllPlayerStats.ClearAllActiveTurns();
 			UpdateInGameCreatures();
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 		}
 
 		private void BtnEnterExitTimeFreeze_Click(object sender, RoutedEventArgs e)
@@ -4904,7 +4904,7 @@ namespace DHDM
 		private void SelectedPlayersAboutToRoll()
 		{
 			AllPlayerStats.RollingTheDiceNow = true;
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 			AllPlayerStats.RollingTheDiceNow = false;
 			AllPlayerStats.ClearReadyToRollState();
 		}
@@ -5535,7 +5535,7 @@ namespace DHDM
 			{
 				SetPlayerVantageUI(playerId, vantageKind);
 				AllPlayerStats.ReadyRollVantage(playerId, vantageKind);
-				UpdatePlayerStateInGame();
+				UpdatePlayerStatsInGame();
 			});
 		}
 
@@ -7668,7 +7668,7 @@ namespace DHDM
 				return;
 
 			AllPlayerStats.ToggleTarget(playerId);
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 		}
 
 		void ToggleReadyRollD20(string data)
@@ -7681,13 +7681,32 @@ namespace DHDM
 
 		public void ToggleCondition(string data, string condition)
 		{
+			Conditions conditions = DndUtils.ToCondition(condition);
+
+			if (data == "targets")	
+				ToggleTargetedCreatureConditions(conditions);
+			else
+				TogglePlayerCondition(data, conditions);
+		}
+
+		private void TogglePlayerCondition(string data, Conditions conditions)
+		{
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			AllPlayerStats.ToggleCondition(playerId, DndUtils.ToCondition(condition));
+			AllPlayerStats.ToggleCondition(playerId, conditions);
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 		}
+
+		private void ToggleTargetedCreatureConditions(Conditions conditions)
+		{
+			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
+			foreach (InGameCreature creature in targetedCreatures)
+				creature.ToggleCondition(conditions);
+			UpdateInGameCreatures();
+		}
+
 		void ReadyRollVantage(string data, VantageKind vantage = VantageKind.Normal)
 		{
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
@@ -7719,7 +7738,7 @@ namespace DHDM
 					return;
 			}
 			UpdateUIForAllPlayerStats();
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 		}
 		void UpdateUIForPlayerStats(PlayerStats playerStats)
 		{
@@ -7738,8 +7757,7 @@ namespace DHDM
 			});
 		}
 
-		// TODO: rename.
-		void UpdatePlayerStateInGame()
+		void UpdatePlayerStatsInGame()
 		{
 			AllPlayerStats.LatestCommand = "Update";
 			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
@@ -8066,7 +8084,7 @@ namespace DHDM
 			}
 
 			UpdateInGameCreatures();
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 			UpdateConcentratedSpells();
 		}
 
@@ -8221,7 +8239,7 @@ namespace DHDM
 					break;
 			}
 
-			UpdatePlayerStateInGame();
+			UpdatePlayerStatsInGame();
 		}
 
 		private void Validation_ValidationFailed(object sender, ValidationEventArgs ea)

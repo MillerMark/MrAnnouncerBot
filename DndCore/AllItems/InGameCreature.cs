@@ -21,6 +21,8 @@ namespace DndCore
 
 		public bool IsTalking { get; set; }
 
+		public Conditions Conditions { get; set; }
+
 		public bool TurnIsActive { get; set; }
 
 		public string ImageURL
@@ -315,6 +317,14 @@ namespace DndCore
 					return false;
 			}
 			return true;
+		}
+
+		public void ToggleCondition(Conditions conditions)
+		{
+			if (Conditions.HasFlag(conditions))  // Bit is set.
+				Conditions &= ~conditions;  // clear the bit
+			else
+				Conditions |= conditions;
 		}
 	}
 }
