@@ -2604,7 +2604,7 @@ class DiceDto {
 class BonusRoll {
 	isMagic = false;
 	dieCountsAs: DieCountsAs = DieCountsAs.bonus;
-	constructor(public diceStr: string, public description: string, public playerID: number, public dieBackColor: string = DiceLayer.bonusRollDieColor, public dieTextColor: string = DiceLayer.bonusRollFontColor) {
+	constructor(public diceStr: string, public description: string, public playerID: number, public dieBackColor: string = DiceLayer.bonusRollDieColor, public dieTextColor: string = DiceLayer.bonusRollFontColor, public playerName = '') {
 
 	}
 }
@@ -2672,10 +2672,10 @@ class DiceRollData {
 		return this.bonusRolls[0].description;
 	}
 
-	addBonusRoll(diceStr: string, description: string, playerID = -1, dieBackColor: string = DiceLayer.bonusRollDieColor, dieTextColor: string = DiceLayer.bonusRollFontColor): BonusRoll {
+	addBonusRoll(diceStr: string, description: string, playerID = -1, dieBackColor: string = DiceLayer.bonusRollDieColor, dieTextColor: string = DiceLayer.bonusRollFontColor, playerName = ''): BonusRoll {
 		if (!this.bonusRolls)
 			this.bonusRolls = [];
-		const bonusRoll: BonusRoll = new BonusRoll(diceStr, description, playerID, dieBackColor, dieTextColor);
+		const bonusRoll: BonusRoll = new BonusRoll(diceStr, description, playerID, dieBackColor, dieTextColor, playerName);
 		this.bonusRolls.push(bonusRoll);
 
 		return bonusRoll;

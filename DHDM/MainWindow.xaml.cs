@@ -456,6 +456,7 @@ namespace DHDM
 
 		void PlaySceneAfter(string sceneName, int delayMs)
 		{
+			playSceneTimer.Stop();
 			nextSceneToPlay = sceneName;
 			playSceneTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
 			playSceneTimer.Start();
@@ -5238,11 +5239,19 @@ namespace DHDM
 				return;
 			if (grdPlayerRollOptions == null)
 				return;
-			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			checkingInternally = true;
+			try
 			{
-				if (uIElement is PlayerRollCheckBox checkbox)
-					if (checkbox.PlayerId == playerID)
-						checkbox.IsChecked = newState;
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+				{
+					if (uIElement is PlayerRollCheckBox checkbox)
+						if (checkbox.PlayerId == playerID)
+							checkbox.IsChecked = newState;
+				}
+			}
+			finally
+			{
+				checkingInternally = false;
 			}
 		}
 
@@ -6065,7 +6074,7 @@ namespace DHDM
 
 		private void RbSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
-			NextDieRollType = DiceRollType.SkillCheck;
+			NextDieRollType = DiceRollType.SavingThrow;
 			btnRollDice.Content = "Roll Saving Throw";
 		}
 
@@ -7643,6 +7652,10 @@ namespace DHDM
 				inGameCreature.PercentHealthJustGiven = 0;
 			}
 		}
+		private static void RestackInGameCreatureConditions()
+		{
+			HubtasticBaseStation.UpdateInGameCreatures("RestackNpcConditions", AllInGameCreatures.Creatures.Where(x => x.OnScreen).ToList());
+		}
 
 		private static void SetInGameCreatures()
 		{
@@ -7676,6 +7689,7 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
+			lastPlayerIdUnchecked = -1;
 			AllPlayerStats.ToggleReadyRollD20(playerId);
 		}
 
@@ -7685,6 +7699,8 @@ namespace DHDM
 
 			if (data == "targets")	
 				ToggleTargetedCreatureConditions(conditions);
+			else if (data == "players")
+				ToggleTargetedPlayerConditions(conditions);
 			else
 				TogglePlayerCondition(data, conditions);
 		}
@@ -7699,11 +7715,76 @@ namespace DHDM
 			UpdatePlayerStatsInGame();
 		}
 
+		private void ClearPlayerCondition(string data)
+		{
+			int playerId = AllPlayers.GetPlayerIdFromName(data);
+			if (playerId < 0)
+				return;
+			AllPlayerStats.ClearConditions(playerId);
+			UpdateUIForAllPlayerStats();
+			UpdatePlayerStatsInGame();
+		}
+
+		void ToggleTargetedPlayerConditions(Conditions conditions)
+		{
+			bool toggledAtLeastOne = false;
+			foreach (PlayerStats playerStats in AllPlayerStats.Players)
+			{
+				if (playerStats.IsTargeted)
+				{
+					toggledAtLeastOne = true;
+					AllPlayerStats.ToggleCondition(playerStats.PlayerId, conditions);
+				}
+			}
+			if (!toggledAtLeastOne)
+			{
+				// Toggle all players...
+				foreach (PlayerStats playerStats in AllPlayerStats.Players)
+				{
+					AllPlayerStats.ToggleCondition(playerStats.PlayerId, conditions);
+				}
+			}
+			UpdateUIForAllPlayerStats();
+			UpdatePlayerStatsInGame();
+		}
+
+		void ClearTargetedPlayerConditions()
+		{
+			bool clearedAtLeastOne = false;
+			foreach (PlayerStats playerStats in AllPlayerStats.Players)
+			{
+				if (playerStats.IsTargeted)
+				{
+					clearedAtLeastOne = true;
+					AllPlayerStats.ClearConditions(playerStats.PlayerId);
+				}
+			}
+
+			if (!clearedAtLeastOne)
+			{
+				// Clear for all players...
+				foreach (PlayerStats playerStats in AllPlayerStats.Players)
+				{
+					AllPlayerStats.ClearConditions(playerStats.PlayerId);
+				}
+			}
+			UpdateUIForAllPlayerStats();
+			UpdatePlayerStatsInGame();
+		}
+
 		private void ToggleTargetedCreatureConditions(Conditions conditions)
 		{
 			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
 			foreach (InGameCreature creature in targetedCreatures)
 				creature.ToggleCondition(conditions);
+			UpdateInGameCreatures();
+		}
+
+		private void ClearTargetedCreatureConditions()
+		{
+			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
+			foreach (InGameCreature creature in targetedCreatures)
+				creature.ClearAllConditions();
 			UpdateInGameCreatures();
 		}
 
@@ -7773,6 +7854,7 @@ namespace DHDM
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Add", new List<InGameCreature>() { inGameCreature });
 		}
+
 		void RemoveInGameCreature(InGameCreature inGameCreature)
 		{
 			HubtasticBaseStation.UpdateInGameCreatures("Remove", new List<InGameCreature>() { inGameCreature });
@@ -7800,6 +7882,19 @@ namespace DHDM
 		}
 
 		public void TalkInGameCreature(int targetNum)
+		{
+			if (targetNum == 0)
+				NoCreaturesTalk();
+			else
+				OneCreatureTalks(targetNum);
+		}
+
+		private void NoCreaturesTalk()
+		{
+			InGameCreatureTalks(null, AllInGameCreatures.ClearTalking());
+		}
+
+		private void OneCreatureTalks(int targetNum)
 		{
 			InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(targetNum);
 			if (inGameCreature != null && !inGameCreature.IsTalking && !inGameCreature.OnScreen)
@@ -7831,6 +7926,12 @@ namespace DHDM
 			}
 		}
 
+		void TargetNoPlayers()
+		{
+			AllPlayerStats.ClearAllTargets();
+			UpdatePlayerStatsInGame();
+		}
+
 		public void TargetCommand(string command)
 		{
 			switch (command)
@@ -7839,6 +7940,9 @@ namespace DHDM
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 						inGameCreature.IsTargeted = inGameCreature.OnScreen;
 					UpdateInGameCreatures();
+					return;
+				case "TargetNoPlayers":
+					TargetNoPlayers();
 					return;
 				case "ClearDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -8252,8 +8356,74 @@ namespace DHDM
 		{
 			AllPlayerStats.LatestCommand = "ReStackConditions";
 			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+			RestackInGameCreatureConditions();
 		}
 
+		public void PrepareSkillCheck(string skillCheck)
+		{
+			PlayScene($"DH.Skill.{skillCheck}");
+			PlaySceneAfter("Players", 14000);
+			Dispatcher.Invoke(() =>
+			{
+				SelectSkill(DndUtils.ToSkill(skillCheck));
+				NextDieRollType = DiceRollType.SkillCheck;
+			});
+		}
+
+		public void PrepareSavingThrow(string savingThrow)
+		{
+			PlayScene($"DH.Save.{savingThrow}");
+			PlaySceneAfter("Players", 12000);
+			Dispatcher.Invoke(() =>
+			{
+				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
+				NextDieRollType = DiceRollType.SavingThrow;
+			});
+		}
+
+		public void ClearAllConditions(string targetName)
+		{
+			if (targetName == "targets")
+				ClearTargetedCreatureConditions();
+			else if (targetName == "players")
+				ClearTargetedPlayerConditions();
+			else
+				ClearPlayerCondition(targetName);
+		}
+
+		public void ApplyToTargetedCreatures(string applyCommand)
+		{
+			List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
+			if (targetedCreatures.Count == 0)
+			{
+				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unable to apply latest damage. No creatures targeted.");
+				return;
+			}
+			switch (applyCommand)
+			{
+				case "LastDamage":
+					foreach (InGameCreature inGameCreature in targetedCreatures)
+					{
+						inGameCreature.TakeDamage(ActivePlayer, latestDamage, AttackKind.Any);
+					}
+					break;
+				case "LastHealth":
+					foreach (InGameCreature inGameCreature in targetedCreatures)
+					{
+						inGameCreature.ChangeHealth(lastHealth);
+					}
+					break;
+			}
+			UpdateInGameCreatures();
+		}
+
+		public void ClearDice()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				ClearTheDice();
+			});
+		}
 		// TODO: Reintegrate wand/staff animations....
 		/* 
 			Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown

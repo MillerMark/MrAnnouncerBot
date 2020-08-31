@@ -85,6 +85,20 @@ namespace DndCore
 			return changedCreatures;
 		}
 
+		public static List<InGameCreature> ClearTalking()
+		{
+			List<InGameCreature> changedCreatures = new List<InGameCreature>();
+
+			foreach (InGameCreature creature in Creatures)
+				if (creature.IsTalking)
+				{
+					creature.IsTalking = false;
+					changedCreatures.Add(creature);
+				}
+
+			return changedCreatures;
+		}
+
 		static List<InGameCreature> inGameCreatures;
 		public static List<InGameCreature> Creatures
 		{

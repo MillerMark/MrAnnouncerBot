@@ -374,6 +374,8 @@
     <Compile Include="StreamDeck Commands\ChangePlayerStateCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeVolumeCommand.cs" />
     <Compile Include="StreamDeck Commands\ChangeWealthCommand.cs" />
+    <Compile Include="StreamDeck Commands\ClearAllConditionsCommand.cs" />
+    <Compile Include="StreamDeck Commands\ClearDiceCommand.cs" />
     <Compile Include="StreamDeck Commands\ClearNumbersCommand.cs" />
     <Compile Include="StreamDeck Commands\Core\BaseStreamDeckCommand.cs" />
     <Compile Include="BoolToFontWeightConverter.cs" />
@@ -412,12 +414,14 @@
     <Compile Include="StreamDeck Commands\RollDiceCommand.cs" />
     <Compile Include="StreamDeck Commands\RollSaveCommand.cs" />
     <Compile Include="StreamDeck Commands\SavingThrowCommand.cs" />
+    <Compile Include="StreamDeck Commands\SavingThrowNowCommand.cs" />
     <Compile Include="StreamDeck Commands\ScrollCloseCommand.cs" />
     <Compile Include="StreamDeck Commands\SelectShortcutCommand.cs" />
     <Compile Include="StreamDeck Commands\SetModifierCommand.cs" />
     <Compile Include="StreamDeck Commands\SetPropertyCommand.cs" />
     <Compile Include="StreamDeck Commands\SetVantageCommand.cs" />
     <Compile Include="ShortcutButton.cs" />
+    <Compile Include="StreamDeck Commands\SkillCheckNowCommand.cs" />
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="StreamDeck Commands\StopPlaying.cs" />

@@ -57,6 +57,11 @@ namespace DHDM
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
+			if (applyToTargetedCreatures)
+			{
+				dungeonMasterApp.ApplyToTargetedCreatures(applyCommand);
+				return;
+			}
 			decimal value = GetValue();
 			if (value == decimal.MinValue)
 			{
@@ -69,10 +74,24 @@ namespace DHDM
 
 		string applyCommand;
 		bool applyToAllPlayers;
+		bool applyToTargetedCreatures;
 		static decimal decimalMultiplier = 1m;
 		public bool Matches(string message)
 		{
+			applyToTargetedCreatures = false;
 			applyToAllPlayers = false;
+			if (message == "Apply LastHealth [TargetedCreatures]")
+			{
+				applyToTargetedCreatures = true;
+				applyCommand = "LastHealth";
+				return true;
+			}
+			if (message == "Apply LastDamage [TargetedCreatures]")
+			{
+				applyToTargetedCreatures = true;
+				applyCommand = "LastDamage";
+				return true;
+			}
 			Match match = Regex.Match(message, @"^Apply\s+(\w+)" + PlayerSpecifier);
 
 			if (!match.Success)

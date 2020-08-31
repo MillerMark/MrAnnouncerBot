@@ -38,13 +38,18 @@ namespace DHDM
 			Commands.Add(new PlaySoundCommand());
 			Commands.Add(new HealthDamageCommand());
 			Commands.Add(new ScrollCloseCommand());
+			Commands.Add(new SkillCheckNowCommand());
 			Commands.Add(new SkillCheckCommand());
+			Commands.Add(new RollSaveCommand());
 			Commands.Add(new SavingThrowCommand());
+			Commands.Add(new ClearAllConditionsCommand());
+			Commands.Add(new SavingThrowNowCommand());
 			Commands.Add(new ChangeVolumeCommand());
 			Commands.Add(new ChangeWealthCommand());
 			Commands.Add(new InstantRollCommand());
 			Commands.Add(new DigitCommand());
 			Commands.Add(new ApplyCommand());
+			Commands.Add(new ClearDiceCommand());
 			Commands.Add(new ApplyLastDamageCommand());
 			Commands.Add(new ClearNumbersCommand());
 			Commands.Add(new ChangeCommand());

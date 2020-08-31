@@ -107,6 +107,7 @@
 	static readonly inGameCreatueStatFontName = 'Calibri';
 	static readonly inGameStatOffsetX = 18;
 	static readonly inGameStatTopMargin = -12;  // Put top of scroll slightly offscreen
+	static readonly creatureScrollHeight = 253;
 	static readonly headShotCenterX = 62;
 	static readonly headShotCenterY = 70;
 	static readonly targetLeft = 64;
@@ -286,7 +287,7 @@
 
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
 		for (let i = 0; i < sprites.length; i++) {
-			if (sprites[i].data === inGameCreature)
+			if (sprites[i].data === inGameCreature)  // here the data is an InGameCreature.
 				return sprites[i];
 		}
 		return null;
@@ -339,8 +340,6 @@
 		}
 	}
 
-	static readonly conditionMargin: number = 6;
-
 	updateInGameCreature(updatedGameCreature: InGameCreature, soundManager: SoundManager, healthChangeAnimationDelayMs: number) {
 		const existingCreature: InGameCreature = this.getInGameCreatureByIndex(updatedGameCreature.Index);
 		if (!existingCreature) {
@@ -382,10 +381,9 @@
 		}
 
 		if (existingCreature.Conditions !== updatedGameCreature.Conditions) {
-			const scale = 0.75;
-			const rightEdge: number = this.getX(existingCreature) + ConditionManager.conditionIconLength * scale + InGameCreatureManager.conditionMargin;
+			const rightEdge: number = this.getConditionRightEdge(existingCreature);
 			const hueShift: number = this.getHueShift(existingCreature);;
-			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightEdge, scale, soundManager, hueShift, WorldView.Flipped);
+			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightEdge, ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped);
 			existingCreature.Conditions = updatedGameCreature.Conditions;
 		}
 
@@ -408,62 +406,66 @@
 		return healthChangeAnimationDelayMs;
 	}
 
-    private updateCreatureHealth(existingCreature: InGameCreature, updatedGameCreature: InGameCreature, healthChangeAnimationDelayMs: number) {
-        if (existingCreature.Health === 0) { // Was previously dead - now alive. 
-            const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(existingCreature);
-            if (deathXSprite)
-                deathXSprite.fadeOutNow(500);
-        }
-        existingCreature.Health = updatedGameCreature.Health;
-        const parchmentSprite: ColorShiftingSpriteProxy = this.getParchmentSpriteForCreature(existingCreature) as ColorShiftingSpriteProxy;
-        if (parchmentSprite) {
-            parchmentSprite.saturationPercent = updatedGameCreature.Health * 100;
-        }
+	private getConditionRightEdge(existingCreature: InGameCreature): number {
+		return this.getX(existingCreature) + ConditionManager.conditionLengthIncludingMargin;
+	}
 
-        if (existingCreature.Health === 0) { // Was previously alive - now dead. 
-            const x: number = this.getX(existingCreature);
-            this.addDeathSprite(x, existingCreature, healthChangeAnimationDelayMs);
-            healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
-        }
-        return healthChangeAnimationDelayMs;
-    }
+	private updateCreatureHealth(existingCreature: InGameCreature, updatedGameCreature: InGameCreature, healthChangeAnimationDelayMs: number) {
+		if (existingCreature.Health === 0) { // Was previously dead - now alive. 
+			const deathXSprite: SpriteProxy = this.getParchmentDeathXForCreature(existingCreature);
+			if (deathXSprite)
+				deathXSprite.fadeOutNow(500);
+		}
+		existingCreature.Health = updatedGameCreature.Health;
+		const parchmentSprite: ColorShiftingSpriteProxy = this.getParchmentSpriteForCreature(existingCreature) as ColorShiftingSpriteProxy;
+		if (parchmentSprite) {
+			parchmentSprite.saturationPercent = updatedGameCreature.Health * 100;
+		}
 
-    private updateCreatureIsActive(existingCreature: InGameCreature, soundManager: SoundManager) {
-        if (existingCreature.TurnIsActive) {
-            const x: number = this.getX(existingCreature);
-            this.addActiveTurnIndicator(soundManager, existingCreature, x);
-        }
-        else {
-            const activeTurnIndicator: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(existingCreature);
-            if (activeTurnIndicator)
-                activeTurnIndicator.fadeOutNow(500);
-        }
-    }
+		if (existingCreature.Health === 0) { // Was previously alive - now dead. 
+			const x: number = this.getX(existingCreature);
+			this.addDeathSprite(x, existingCreature, healthChangeAnimationDelayMs);
+			healthChangeAnimationDelayMs += InGameCreatureManager.timeBetweenMoves;
+		}
+		return healthChangeAnimationDelayMs;
+	}
 
-    private updateCreatureTarget(existingCreature: InGameCreature) {
-        if (existingCreature.IsTargeted) {
-            const x: number = this.getX(existingCreature);
-            this.addTarget(existingCreature, x);
-        }
-        else {
-            const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
-            if (target)
-                target.fadeOutNow(1000);
-        }
-    }
+	private updateCreatureIsActive(existingCreature: InGameCreature, soundManager: SoundManager) {
+		if (existingCreature.TurnIsActive) {
+			const x: number = this.getX(existingCreature);
+			this.addActiveTurnIndicator(soundManager, existingCreature, x);
+		}
+		else {
+			const activeTurnIndicator: SpriteProxy = this.getActiveTurnIndicatorSpriteForCreature(existingCreature);
+			if (activeTurnIndicator)
+				activeTurnIndicator.fadeOutNow(500);
+		}
+	}
 
-    private updateCreatureParchment(existingCreature: InGameCreature) {
-        const parchmentShadow: SpriteProxy = this.getParchmentShadowForCreature(existingCreature);
-        if (parchmentShadow)
-            parchmentShadow.fadeOutNow(1000);
-        const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(existingCreature);
-        if (parchmentSprite)
-            parchmentSprite.fadeOutNow(1000);
+	private updateCreatureTarget(existingCreature: InGameCreature) {
+		if (existingCreature.IsTargeted) {
+			const x: number = this.getX(existingCreature);
+			this.addTarget(existingCreature, x);
+		}
+		else {
+			const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
+			if (target)
+				target.fadeOutNow(1000);
+		}
+	}
 
-        const x: number = this.getX(existingCreature);
-        const frameIndex = this.getFriendEnemyFrameIndex(existingCreature);
-        this.addParchment(existingCreature, x, frameIndex, 0);
-    }
+	private updateCreatureParchment(existingCreature: InGameCreature) {
+		const parchmentShadow: SpriteProxy = this.getParchmentShadowForCreature(existingCreature);
+		if (parchmentShadow)
+			parchmentShadow.fadeOutNow(1000);
+		const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(existingCreature);
+		if (parchmentSprite)
+			parchmentSprite.fadeOutNow(1000);
+
+		const x: number = this.getX(existingCreature);
+		const frameIndex = this.getFriendEnemyFrameIndex(existingCreature);
+		this.addParchment(existingCreature, x, frameIndex, 0);
+	}
 
 	showDamage(existingCreature: InGameCreature, percentDamageJustInflicted: number, delayMs: number, soundManager: SoundManager) {
 		const x: number = this.getX(existingCreature);
@@ -519,6 +521,14 @@
 		if (sprite)
 			return sprite.x;
 		return 0;
+	}
+
+	restackNpcConditions(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
+		inGameCreatureDtos.forEach((creature) => {
+			const inGameCreature: InGameCreature = this.getInGameCreatureByIndex(creature.Index);
+			const x: number = this.getConditionRightEdge(inGameCreature);
+			this.conditionManager.restackNpcConditions(inGameCreature, x, soundManager);
+		});
 	}
 
 	updateInGameCreatures(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
@@ -610,6 +620,11 @@
 		if (inGameCreature.TurnIsActive) {
 			this.addActiveTurnIndicator(soundManager, inGameCreature, x, delayMs);
 		}
+
+		const hueShift: number = this.getHueShift(inGameCreature);
+		const rightEdge: number = this.getConditionRightEdge(inGameCreature);
+		this.conditionManager.updateConditions(Conditions.None, inGameCreature.Conditions, inGameCreature.Index, rightEdge,
+			ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped);
 	}
 
 	private getFriendEnemyFrameIndex(inGameCreature: InGameCreature) {
@@ -663,7 +678,7 @@
 		activeTurnIndicatorSprite.fadeInTime = 500;
 		if (creature.NumNames > 0)
 			soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}[${creature.NumNames}]`);
-		else 
+		else
 			soundManager.safePlayMp3(`Announcer/MonsterNpcNames/${creature.Name}`);
 	}
 
@@ -681,6 +696,8 @@
 			this.setInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Update')
 			this.updateInGameCreatures(inGameCreatures, soundManager);
+		else if (command === 'RestackNpcConditions')
+			this.restackNpcConditions(inGameCreatures, soundManager);
 		else if (command === 'Remove')
 			this.removeInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Add')
@@ -741,23 +758,26 @@
 			disappearAnimation.delayStart = delayMs;
 			disappearAnimation.data = inGameCreature;
 			inGameCreature.removing = true;
-			this.removeInGameCreature(inGameCreature, delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2);
+      const delayToRemove: number = delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2;
+			this.removeInGameCreature(inGameCreature, delayToRemove, soundManager);
+			this.conditionManager.fadeOutConditions(inGameCreature.Index, delayMs + delayBeforeFadeOutMs, InGameCreatureManager.leftRightMoveTime);
 			disappearAnimation.addOnCycleCallback(this.creatureDisappearAnimationComplete.bind(this));
 			soundManager.safePlayMp3('InGameScrolls/InGameScrollDisappear');
 		}
 	}
 
+	static readonly leftRightMoveTime: number = 750;
+
 	moveSpriteTo(sprites: Sprites, creature: InGameCreature, targetX: number, delayMs: number) {
 		const sprite: SpriteProxy = this.getSpriteForCreature(sprites.sprites, creature);
 		if (!sprite)
 			return;
-		const moveTime = 750;
 		// Since we are moving X we must account for the originX
 		const adjustedX: number = targetX - sprites.originX;
-		sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, moveTime);
+		sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, InGameCreatureManager.leftRightMoveTime);
 	}
 
-	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number) {
+	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number, soundManager: SoundManager = null) {
 		this.moveSpriteTo(this.parchmentBackground, creature, targetX, delayMs);
 		this.moveSpriteTo(this.parchmentShadow, creature, targetX, delayMs);
 		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
@@ -766,9 +786,10 @@
 		this.moveSpriteTo(this.creatureTalking, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollAppear, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollDisappear, creature, targetX, delayMs);
+		this.conditionManager.moveNpcConditionsTo(creature.Index, targetX, InGameCreatureManager.leftRightMoveTime, delayMs, soundManager);
 	}
 
-	removeInGameCreature(creature: InGameCreature, delayMs: number): void {
+	removeInGameCreature(creature: InGameCreature, delayMs: number, soundManager: SoundManager = null): void {
 		const creatureIndexInArray: number = this.inGameCreatures.indexOf(creature);
 		if (creatureIndexInArray < 0) {
 			return;
@@ -782,8 +803,8 @@
 				isRightOfRemovedCreature = true;
 			}
 			else if (isRightOfRemovedCreature && !thisCreature.removing) {
-				this.moveCreatureTo(thisCreature, targetX, delayMs);
-				delayMs += InGameCreatureManager.timeBetweenMoves;; // ms between each move.
+				this.moveCreatureTo(thisCreature, targetX, delayMs, soundManager);
+				delayMs += InGameCreatureManager.timeBetweenMoves; // ms between each move.
 			}
 
 			if (!thisCreature.removing) {

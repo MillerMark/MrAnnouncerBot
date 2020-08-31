@@ -972,7 +972,7 @@ function checkSkillCheckBonusRolls() {
 					dieColor = diceLayer.getDieColor(die.playerID);
 					dieTextColor = diceLayer.getDieFontColor(die.playerID);
 				}
-				diceRollData.addBonusRoll('1d20', '', die.playerID, dieColor, dieTextColor);
+				diceRollData.addBonusRoll('1d20', '', die.playerID, dieColor, dieTextColor, die.playerName);
 			}
 		}
 	}
@@ -1486,9 +1486,10 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 	return createDie(quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
 }
 
-function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic: boolean = false): any {
+function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic = false): IDie {
+	let lastDieAdded: IDie = null;
 	if (!diceStr)
-		return;
+		return lastDieAdded;
 	const allDice: string[] = diceStr.split(',');
 	if (backgroundColor === undefined)
 		backgroundColor = DiceLayer.damageDieBackgroundColor;
@@ -1552,13 +1553,14 @@ function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCounts
 		if (dieAndModifier.length === 2)
 			modifier += +dieAndModifier[1];
 		const dieStr: string = dieAndModifier[0];
-		addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
+		lastDieAdded = addDie(dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
 	});
 
 	damageModifierThisRoll += modifier;
 	//console.log(`damageModifierThisRoll += modifier; (${damageModifierThisRoll})`);
 	healthModifierThisRoll += modifier;
 	extraModifierThisRoll += modifier;
+	return lastDieAdded;
 }
 
 function rollBonusDice() {
@@ -1570,7 +1572,8 @@ function rollBonusDice() {
 	for (let i = 0; i < diceRollData.bonusRolls.length; i++) {
 		const bonusRoll: BonusRoll = diceRollData.bonusRolls[i];
 		//console.log('bonusRoll.dieCountsAs: ' + bonusRoll.dieCountsAs);
-		addDieFromStr(bonusRoll.playerID, bonusRoll.diceStr, bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
+		const die: IDie = addDieFromStr(bonusRoll.playerID, bonusRoll.diceStr, bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
+		die.playerName = bonusRoll.playerName;
 	}
 	bonusRollStartTime = performance.now();
 	waitingForBonusRollToComplete = true;

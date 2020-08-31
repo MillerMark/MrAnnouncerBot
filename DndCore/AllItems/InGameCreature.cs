@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using GoogleHelper;
 
@@ -227,11 +228,6 @@ namespace DndCore
 			beforeTotalHp = TotalHp;
 		}
 
-		public void TakeSomeDamage(DamageType damageType, AttackKind attackKind, int damage)
-		{
-			Creature.TakeDamage(damageType, attackKind, damage);
-		}
-
 		public void FinishTakingDamage()
 		{
 			double totalDamageTaken = GetTotalDamageTaken();
@@ -325,6 +321,57 @@ namespace DndCore
 				Conditions &= ~conditions;  // clear the bit
 			else
 				Conditions |= conditions;
+		}
+
+		public void ClearAllConditions()
+		{
+			Conditions = Conditions.None;
+		}
+
+		public void TakeDamage(Character player, Dictionary<DamageType, int> latestDamage, AttackKind attackKind)
+		{
+			StartTakingDamage();
+			foreach (DamageType damageType in latestDamage.Keys)
+			{
+				TakeSomeDamage(player, damageType, attackKind, latestDamage[damageType]);
+			}
+			FinishTakingDamage();
+		}
+
+		public void TakeHalfDamage(Character player, Dictionary<DamageType, int> latestDamage, AttackKind attackKind)
+		{
+			StartTakingDamage();
+			foreach (DamageType damageType in latestDamage.Keys)
+			{
+				int damageTaken = DndUtils.HalveValue(latestDamage[damageType]);
+				TakeSomeDamage(player, damageType, attackKind, damageTaken);
+			}
+			FinishTakingDamage();
+		}
+
+		public void TakeSomeDamage(Character player, DamageType damageType, AttackKind attackKind, int amount)
+		{
+			double previousHP = TotalHp;
+			Creature.TakeDamage(damageType, attackKind, amount);
+
+			double hpLost = previousHP - TotalHp;
+			if (hpLost == 0)
+				return;
+
+			if (player == null)
+				return;
+
+			string tempHpDetails = string.Empty;
+			if (Creature.tempHitPoints > 0)
+				tempHpDetails = $" (tempHp: {Creature.tempHitPoints})";
+
+			string message;
+			if (hpLost == 1)
+				message = $"{Name} just took 1 point of {damageType} damage. HP is now: {Creature.HitPoints}/{Creature.maxHitPoints}{tempHpDetails}";
+			else
+				message = $"{Name} just took {hpLost} points of {damageType} damage. HP is now: {Creature.HitPoints}/{Creature.maxHitPoints}{tempHpDetails}";
+
+			player.Game.TellDungeonMaster(message);
 		}
 	}
 }

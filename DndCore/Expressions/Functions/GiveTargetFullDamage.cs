@@ -30,7 +30,7 @@ namespace DndCore
 							player.Game.TellDungeonMaster($"{inGameCreature.Name} is vulnerable to {damageType} damage.");
 						else if (creature.IsResistantTo(damageType, AttackKind.Magical))
 							player.Game.TellDungeonMaster($"{inGameCreature.Name} is resistant to {damageType} damage.");
-						GiveTargetHalfDamage.TakeSomeDamage(player, inGameCreature, damageType, AttackKind.Magical, latestDamage[damageType]);
+						inGameCreature.TakeSomeDamage(player, damageType, AttackKind.Magical, latestDamage[damageType]);
 					}
 				}
 				inGameCreature.FinishTakingDamage();

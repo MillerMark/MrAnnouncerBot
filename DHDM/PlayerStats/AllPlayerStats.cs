@@ -70,6 +70,12 @@ namespace DHDM
 				playerStats.Conditions |= conditions;
 		}
 
+		public void ClearConditions(int playerId)
+		{
+			PlayerStats playerStats = GetPlayerStats(playerId);
+			playerStats.Conditions = Conditions.None;
+		}
+
 		public void SetReadyRollDice(int playerId, bool newValue, DieRollDetails dieRollDetails)
 		{
 			PlayerStats playerState = GetPlayerStats(playerId);
@@ -131,6 +137,13 @@ namespace DHDM
 			if (playerStats == null)
 				return;
 			playerStats.IsTargeted = !playerStats.IsTargeted;
+		}
+		public void ClearAllTargets()
+		{
+			foreach (PlayerStats playerStats in Players)
+			{
+				playerStats.IsTargeted = false;
+			}
 		}
 	}
 }

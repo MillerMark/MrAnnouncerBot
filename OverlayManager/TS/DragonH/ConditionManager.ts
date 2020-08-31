@@ -12,6 +12,11 @@ class ConditionState {
 }
 
 class ConditionManager {
+	static readonly conditionIconLength = 102;
+	static readonly npcConditionScale: number = 0.75;
+	static readonly conditionMargin: number = 6;
+	static readonly conditionLengthIncludingMargin: number = ConditionManager.conditionIconLength * ConditionManager.npcConditionScale + ConditionManager.conditionMargin;
+
 	conditionCollection: SpriteCollection = new SpriteCollection();
 	conditions: Sprites;
 	conditionGlow: Sprites;
@@ -63,24 +68,31 @@ class ConditionManager {
 		return iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, playerIndex, players) - ConditionManager.plateMargin;
 	}
 
-	private getSpritesAbove(sprites: Sprites, sprite: SpriteProxy, worldView: WorldView) {
+	getSpritesAbove(sprites: Sprites, sprite: SpriteProxy, worldView: WorldView): Array<SpriteProxy> {
 		const compareConditionState: ConditionState = sprite.data as ConditionState;
 		if (!compareConditionState)
-			return;
+			return null;
+
+		return this.getSpritesFromStack(compareConditionState.creatureId, sprites, worldView, sprite.y);
+	}
+
+	getSpritesFromStack(creatureId: number, sprites: Sprites, worldView: WorldView = WorldView.Normal, yThreshold: number = undefined): Array<SpriteProxy> {
 		const spritesAbove: Array<SpriteProxy> = [];
 		for (let i = 0; i < sprites.sprites.length; i++) {
 			const testSprite: SpriteProxy = sprites.sprites[i];
 			const conditionState: ConditionState = testSprite.data as ConditionState;
 			if (conditionState)
-				if (compareConditionState.creatureId === conditionState.creatureId)
+				if (creatureId === conditionState.creatureId)
 					if (conditionState.stacked || conditionState.thrown) {
-						if (worldView === WorldView.Normal) {
-							if (testSprite.y < sprite.y) {
+						if (yThreshold === undefined)
+							spritesAbove.push(testSprite);
+						else if (worldView === WorldView.Normal) {
+							if (testSprite.y < yThreshold) {
 								// This sprite is above.
 								spritesAbove.push(testSprite);
 							}
 						}
-						else if (testSprite.y > sprite.y) {
+						else if (testSprite.y > yThreshold) {
 							// This sprite is below (but really above in a flipped world view).
 							spritesAbove.push(testSprite);
 						}
@@ -92,16 +104,15 @@ class ConditionManager {
 		else {
 			return spritesAbove.sort((s1, s2) => s1.y - s2.y);
 		}
-
 	}
 
-	private getSpritesForPlayer(sprites: Sprites, playerId: number) {
+	private getSpritesForCreature(sprites: Sprites, creatureId: number) {
 		const spritesInStack: Array<SpriteProxy> = [];
 		for (let i = 0; i < sprites.sprites.length; i++) {
 			const testSprite: SpriteProxy = sprites.sprites[i];
 			const conditionState: ConditionState = testSprite.data as ConditionState;
 			if (conditionState)
-				if (conditionState.creatureId === playerId)
+				if (conditionState.creatureId === creatureId)
 					if (conditionState.stacked || conditionState.thrown) {
 						spritesInStack.push(testSprite);
 					}
@@ -190,7 +201,7 @@ class ConditionManager {
 		return Math.min(1, (widthToTheLeft * 2.0 / 3.0) / ConditionManager.conditionIconLength);
 	}
 
-	static readonly inGameCreatureScrollBottom: number = PlayerStatManager.creatureScrollHeight + InGameCreatureManager.inGameStatTopMargin;
+	static readonly inGameCreatureScrollBottom: number = InGameCreatureManager.creatureScrollHeight + InGameCreatureManager.inGameStatTopMargin;
 
 	private addCondition(rightEdge: number, conditionIndex: number, creatureId: number,
 		soundManager: ISoundManager, scale = 1, hueShift = 0, worldView: WorldView = WorldView.Normal) {
@@ -219,8 +230,6 @@ class ConditionManager {
 		}
 		return numStacked * ConditionManager.conditionIconLength * scale;
 	}
-
-	static readonly conditionIconLength = 102;
 
 	private prepareConditionForEntrance(sprites: Sprites, sprite: SpriteProxy, creatureId: number, conditionIndex: number, scale: number, worldView: WorldView, soundManager: ISoundManager = null) {
 
@@ -331,11 +340,7 @@ class ConditionManager {
 		const conditionIconLength: number = ConditionManager.conditionIconLength * scale;
 		const stackHeightBelow: number = this.getStackHeightBelow(sprites, sprite, conditionIconLength, worldView);
 
-		let startY: number;
-		if (worldView === WorldView.Normal)
-			startY = 1080 - stackHeightBelow;
-		else
-			startY = ConditionManager.inGameCreatureScrollBottom + stackHeightBelow + conditionIconLength;
+		const startY: number = this.getStackingStartY(worldView, conditionIconLength, stackHeightBelow);
 
 		this.animateSpritesVertically(spritesAbove, nameplateLeftEdge, startY, conditionIconLength, sprites.originX, sprites.originY, worldView, soundManager);
 		if (soundManager) { // Only true when removing main condition sprite (false when removing glow).
@@ -345,6 +350,13 @@ class ConditionManager {
 			soundManager.playMp3In(100, 'Conditions/BubblePop[5]');
 		}
 		sprite.fadeOutNow(200);
+	}
+
+	getStackingStartY(worldView: WorldView, conditionIconLength: number, stackHeightBelow = 0) {
+		if (worldView === WorldView.Normal)
+			return 1080 - stackHeightBelow;
+		else
+			return ConditionManager.inGameCreatureScrollBottom + stackHeightBelow + conditionIconLength;
 	}
 
 	updatePlayerConditions(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>): void {
@@ -403,21 +415,22 @@ class ConditionManager {
 
 		const scale = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
 		this.stackConditionSprites(existingPlayerStats.PlayerId, targetX, scale, worldView, soundManager);
+
 	}
 
-	private stackConditionSprites(playerId: number, targetX: number, scale: number, worldView: WorldView, soundManager: ISoundManager) {
+	stackConditionSprites(playerId: number, targetX: number, scale: number, worldView: WorldView, soundManager: ISoundManager) {
 		const targetY = 1080;
 
-		const conditionSprites: Array<SpriteProxy> = this.getSpritesForPlayer(this.conditions, playerId);
+		const conditionSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditions, playerId);
 		this.animateSpritesVertically(conditionSprites, targetX, targetY, ConditionManager.conditionIconLength * scale, this.conditions.originX, this.conditions.originY, worldView, soundManager);
 
-		const glowSprites: Array<SpriteProxy> = this.getSpritesForPlayer(this.conditionGlow, playerId);
+		const glowSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditionGlow, playerId);
 		this.animateSpritesVertically(glowSprites, targetX, targetY, ConditionManager.conditionIconLength * scale, this.conditionGlow.originX, this.conditionGlow.originY, worldView);
 	}
 
 	movePlayerConditions(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>, worldView: WorldView = WorldView.Normal) {
 		players.forEach((player, index) => {
-			const conditionSprites: Array<SpriteProxy> = this.getSpritesForPlayer(this.conditions, player.playerID);
+			const conditionSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditions, player.playerID);
 			const x: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, index, players);
 			const scale: number = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, index, players);
 
@@ -442,6 +455,48 @@ class ConditionManager {
 		if (conditionSprite.scale !== scale) {
 			conditionSprite.scale = scale;
 		}
+	}
+
+	restackNpcConditions(creature: InGameCreature, x: number, soundManager: SoundManager) {
+		const conditionIconLength: number = ConditionManager.conditionIconLength * ConditionManager.npcConditionScale;
+		const startY: number = this.getStackingStartY(WorldView.Flipped, conditionIconLength);
+		this.restackNpcConditionsFor(this.conditions, creature, x, startY, conditionIconLength, soundManager);
+		this.restackNpcConditionsFor(this.conditionGlow, creature, x, startY, conditionIconLength, soundManager);
+	}
+
+	private restackNpcConditionsFor(sprites: Sprites, creature: InGameCreature, x: number, startY: number, conditionIconLength: number, soundManager: SoundManager) {
+		const conditionSpritesToMove: Array<SpriteProxy> = this.getSpritesFromStack(creature.Index, sprites, WorldView.Flipped, undefined);
+		this.animateSpritesVertically(conditionSpritesToMove, x, startY, conditionIconLength, sprites.originX, sprites.originY, WorldView.Flipped, soundManager);
+	}
+
+	moveNpcConditionsTo(creatureIndex: number, targetX: number, moveTime: number, delayMs: number, soundManager: SoundManager) {
+		this.moveNpcConditionSpritesTo(this.conditions, creatureIndex, targetX, moveTime, delayMs);
+		this.moveNpcConditionSpritesTo(this.conditionGlow, creatureIndex, targetX, moveTime, delayMs);
+	}
+
+	moveNpcConditionSpritesTo(sprites: Sprites, creatureId: number, targetX: number, moveTime: number, delayMs: number) {
+		// Since we are moving X we must account for the originX. Also NpcCondition sprites are anchored at the bottom right of the tile.
+		const adjustedX: number = targetX - sprites.originX + ConditionManager.conditionLengthIncludingMargin;
+		sprites.sprites.forEach((sprite) => {
+			const conditionState: ConditionState = sprite.data as ConditionState;
+			if (conditionState && conditionState.creatureId === creatureId) {
+				sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, moveTime);
+			}
+		});
+	}
+
+	fadeOutConditions(creatureIndex: number, delayMs: number, fadeTimeMs: number) {
+		this.fadeOutNpcConditionSprites(this.conditions, creatureIndex, delayMs, fadeTimeMs);
+		this.fadeOutNpcConditionSprites(this.conditionGlow, creatureIndex, delayMs, fadeTimeMs);
+	}
+
+	fadeOutNpcConditionSprites(sprites: Sprites, creatureId: number, delayMs: number, fadeTimeMs: number) {
+		sprites.sprites.forEach((sprite) => {
+			const conditionState: ConditionState = sprite.data as ConditionState;
+			if (conditionState && conditionState.creatureId === creatureId) {
+				sprite.fadeOutAfter(delayMs, fadeTimeMs);
+			}
+		});
 	}
 
 }

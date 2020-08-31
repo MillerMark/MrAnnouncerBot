@@ -56,5 +56,10 @@ namespace DHDM
 		void TellViewers(string message);
 		void NextTurn();
 		void ReStackConditions();
+		void PrepareSkillCheck(string skillCheck);
+		void PrepareSavingThrow(string savingThrow);
+		void ClearAllConditions(string targetName);
+		void ApplyToTargetedCreatures(string applyCommand);
+		void ClearDice();
 	}
 }

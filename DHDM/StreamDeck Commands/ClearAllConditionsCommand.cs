@@ -5,20 +5,20 @@ using TwitchLib.Client.Models;
 
 namespace DHDM
 {
-	public class SavingThrowCommand : BaseStreamDeckCommand, IDungeonMasterCommand
+	public class ClearAllConditionsCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
-		string savingThrow;
+		string targetName;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.PrepareSavingThrow(savingThrow);
+			dungeonMasterApp.ClearAllConditions(targetName);
 		}
 
 		public bool Matches(string message)
 		{
-			Match match = Regex.Match(message, $"^Save\\s+(\\w+)");
+			Match match = Regex.Match(message, $"^ClearAllConditions\\s+(\\w+)");
 			if (match.Success)
 			{
-				savingThrow = match.Groups[1].Value;
+				targetName = match.Groups[1].Value;
 				return true;
 			}
 			return false;

@@ -164,7 +164,6 @@ class PlayerStatManager implements IAllPlayerStats {
 	private static readonly mediumPlateTotalWidth: number = 480;
 	private static readonly shortPlateArcWidth: number = 153;
 	private static readonly shortPlateTotalWidth: number = 355;
-	public static readonly creatureScrollHeight: number = 253;
 
 	moveAllTargets(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, players: Array<Character>) {
 
