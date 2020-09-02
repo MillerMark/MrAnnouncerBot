@@ -661,8 +661,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		const fireBallAdjust = 11;
 		y = this.clockBottomY - this.clockPanel.originY + fireBallAdjust;
 		const pos: Vector = new Vector(x - this.fireBallBack.originX, y - this.fireBallBack.originY);
-		this.fireBallBack.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
-		this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.fireBallBack.spriteProxies.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
+		this.fireBallFront.spriteProxies.push(new ColorShiftingSpriteProxy(0, pos).setHueSatBrightness(hue).setScale(this.clockScale));
 		this.dragonFrontSounds.safePlayMp3('HeavyPoof');
 	}
 
@@ -678,7 +678,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	exitingCombat() {
 		super.exitingCombat();
 		this.dndTimeDatePanel.frameIndex = 0;
-		this.fireWall.sprites = [];
+		this.fireWall.spriteProxies = [];
 		this.createFireBallBehindClock(200);
 		this.refreshNameplates();
 	}
@@ -708,7 +708,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	exitingTimeFreeze() {
 		super.exitingTimeFreeze();
 		this.dndTimeDatePanel.frameIndex = 0;
-		this.fireWall.sprites = [];
+		this.fireWall.spriteProxies = [];
 		this.createFireBallBehindClock(200);
 	}
 
@@ -843,7 +843,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 				brightness = +split[3];
 			}
 
-			this.denseSmoke.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY)).setHueSatBrightness(hue, saturation, brightness));
+			this.denseSmoke.spriteProxies.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.denseSmoke.originX, 1080 - this.denseSmoke.originY)).setHueSatBrightness(hue, saturation, brightness));
 		}
 
 
@@ -867,8 +867,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 				brightness = +split[3];
 			}
 
-			this.fireBallBack.sprites.push(new SpriteProxy(0, 450 - this.fireBallBack.originX, 1080 - this.fireBallBack.originY));
-			this.fireBallFront.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.fireBallFront.originX, 1080 - this.fireBallFront.originY)).setHueSatBrightness(hue, saturation, brightness));
+			this.fireBallBack.spriteProxies.push(new SpriteProxy(0, 450 - this.fireBallBack.originX, 1080 - this.fireBallBack.originY));
+			this.fireBallFront.spriteProxies.push(new ColorShiftingSpriteProxy(0, new Vector(450 - this.fireBallFront.originX, 1080 - this.fireBallFront.originY)).setHueSatBrightness(hue, saturation, brightness));
 		}
 
 		return false;
@@ -1311,7 +1311,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	raiseShield() {
-		if (this.shield.sprites.length === 0) {
+		if (this.shield.spriteProxies.length === 0) {
 			this.shield.add(this.getPlayerX(0), 1080);
 			this.dragonFrontSounds.playMp3In(100, 'Windups/ShieldUp');
 		}
@@ -1401,7 +1401,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			if (spaceIndex > 0)
 				playerName = playerName.substr(0, spaceIndex).trim();
 		}
-		const sprite: SpriteProxy = this.nameplateMain.sprites[playerIndex];
+		const sprite: SpriteProxy = this.nameplateMain.spriteProxies[playerIndex];
 		const nameplateMaxWidth = 358;
 		let hpStr: string;
 		if (player.tempHitPoints > 0)

@@ -26,8 +26,8 @@ class Digits {
       this.digits = new Sprites("Numbers/Small/Blue", 12, 0, AnimationStyle.Static, false, null, this.digitsLoaded.bind(this));
     else
       this.digits = new Sprites("Numbers/Tiny/Blue", 12, 0, AnimationStyle.Static, false, null, this.digitsLoaded.bind(this));
-    this.digits.sprites = [];
-    this.digits.sprites.push(new SpriteProxy(0, right, 0));
+    this.digits.spriteProxies = [];
+    this.digits.spriteProxies.push(new SpriteProxy(0, right, 0));
 
     if (this.size === DigitSize.large)
       this.margin = -20;
@@ -50,7 +50,7 @@ class Digits {
   positionDigits() {
     const GroupingSeparatorIndex: number = 11;
 
-    this.digits.sprites = [];
+    this.digits.spriteProxies = [];
 
     if (this.digits.spriteWidth < 0)
       return;
@@ -64,9 +64,9 @@ class Digits {
     var digitPlace: number = 1;
     for (var i = digitStr.length - 1; i >= 0; i--) {
       var thisDigit: number = +digitStr.charAt(i);
-      this.digits.sprites.push(new SpriteProxy(thisDigit, x, this.top));
+      this.digits.spriteProxies.push(new SpriteProxy(thisDigit, x, this.top));
       if (digitPlace % 4 == 0)
-        this.digits.sprites.push(new SpriteProxy(GroupingSeparatorIndex, x, this.top));
+        this.digits.spriteProxies.push(new SpriteProxy(GroupingSeparatorIndex, x, this.top));
       x -= digitWidth;
       digitPlace++;
     }
@@ -79,7 +79,7 @@ class Digits {
   }
 
   draw(context: CanvasRenderingContext2D) {
-    let numDigits: number = this.digits.sprites.length;
+    let numDigits: number = this.digits.spriteProxies.length;
     let digitWidth: number = this.digits.spriteWidth;
     let width: number = numDigits * (digitWidth + this.margin) - this.margin;
     let left: number = this.right - width;

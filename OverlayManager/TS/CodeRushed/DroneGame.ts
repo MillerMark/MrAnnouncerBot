@@ -29,7 +29,7 @@ class DroneGame extends GamePlusQuiz {
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
 		super.updateScreen(context, nowMs);
-		this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
+		this.purplePortals.spriteProxies.forEach((portal: SpriteProxy) => {
 			if (portal instanceof Portal) {
 				portal.checkApproaching(this.allDrones, nowMs);
 			}
@@ -113,8 +113,8 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	getBoomboxInstance(): Boombox {
-		if (this.boomboxes && this.boomboxes.sprites && this.boomboxes.sprites.length > 0)
-			return <Boombox>this.boomboxes.sprites[0];
+		if (this.boomboxes && this.boomboxes.spriteProxies && this.boomboxes.spriteProxies.length > 0)
+			return <Boombox>this.boomboxes.spriteProxies[0];
 		return null;
 	}
 
@@ -364,7 +364,7 @@ class DroneGame extends GamePlusQuiz {
 
 	destroyAllDronesOverMark(): void {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
-			drones.sprites.forEach(function (drone: Drone) {
+			drones.spriteProxies.forEach(function (drone: Drone) {
 				if (drone.x > 885 && drone.x < 1236 && drone.y > 737)
 					drone.selfDestruct();
 			}, this);
@@ -487,7 +487,7 @@ class DroneGame extends GamePlusQuiz {
 		}
 
 		if (testCommand === 'portal drop') {
-			this.purplePortals.sprites.forEach((portal: SpriteProxy) => {
+			this.purplePortals.spriteProxies.forEach((portal: SpriteProxy) => {
 				if (portal instanceof Portal) {
 					portal.drop();
 				}
@@ -500,22 +500,22 @@ class DroneGame extends GamePlusQuiz {
 		}
 
 		if (testCommand === 'drop') {
-			this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
-			this.horizontalSolidWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));
+			this.horizontalDashedWall.spriteProxies.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
+			this.horizontalSolidWall.spriteProxies.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 600, Orientation.Horizontal, WallStyle.Solid, 400));
 			return true;
 		}
 
 		if (testCommand === 'bounce') {
-			this.horizontalDashedWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
-			this.horizontalDoubleWall.sprites.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 800, Orientation.Horizontal, WallStyle.Double, 400));
+			this.horizontalDashedWall.spriteProxies.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 300, Orientation.Horizontal, WallStyle.Dashed, 400));
+			this.horizontalDoubleWall.spriteProxies.push(new Wall(0, 200 + this.endCaps.spriteWidth / 2, 800, Orientation.Horizontal, WallStyle.Double, 400));
 			return true;
 		}
 
 		if (testCommand === 'rect') {
-			this.horizontalSolidWall.sprites.push(new Wall(0, screenCenterX - 300, screenCenterY - 300, Orientation.Horizontal, WallStyle.Solid, 500));
-			this.verticalSolidWall.sprites.push(new Wall(0, screenCenterX + 200, screenCenterY, Orientation.Vertical, WallStyle.Solid, 400));
-			this.verticalDashedWall.sprites.push(new Wall(0, screenCenterX - 780, screenCenterY, Orientation.Vertical, WallStyle.Dashed, 400));
-			this.horizontalDashedWall.sprites.push(new Wall(0, screenCenterX - 300, screenCenterY + 300, Orientation.Horizontal, WallStyle.Dashed, 500));
+			this.horizontalSolidWall.spriteProxies.push(new Wall(0, screenCenterX - 300, screenCenterY - 300, Orientation.Horizontal, WallStyle.Solid, 500));
+			this.verticalSolidWall.spriteProxies.push(new Wall(0, screenCenterX + 200, screenCenterY, Orientation.Vertical, WallStyle.Solid, 400));
+			this.verticalDashedWall.spriteProxies.push(new Wall(0, screenCenterX - 780, screenCenterY, Orientation.Vertical, WallStyle.Dashed, 400));
+			this.horizontalDashedWall.spriteProxies.push(new Wall(0, screenCenterX - 300, screenCenterY + 300, Orientation.Horizontal, WallStyle.Dashed, 500));
 			return true;
 		}
 
@@ -579,7 +579,7 @@ class DroneGame extends GamePlusQuiz {
 		this.musicPlaying = true;
 
 		let boomboxSprite: Boombox = new Boombox(0, new Vector(10, 1000));
-		this.boomboxes.sprites.push(boomboxSprite);
+		this.boomboxes.spriteProxies.push(boomboxSprite);
 
 		boomboxSprite.fadeInTime = 3000;
 		boomboxSprite.playRandomSong();
@@ -696,7 +696,7 @@ class DroneGame extends GamePlusQuiz {
 
 	wallBounce(now: number): void {
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
-			drones.sprites.forEach(function (drone: Drone) {
+			drones.spriteProxies.forEach(function (drone: Drone) {
 				this.horizontalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
 				this.verticalSolidWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
 				this.horizontalDashedWall.wallBounce(drone, drones.spriteWidth, drones.spriteHeight, now);
@@ -707,7 +707,7 @@ class DroneGame extends GamePlusQuiz {
 		}, this);
 
 		this.allMeteors.allSprites.forEach(function (meteors: Sprites) {
-			meteors.sprites.forEach(function (meteor: Meteor) {
+			meteors.spriteProxies.forEach(function (meteor: Meteor) {
 				this.horizontalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
 				this.verticalSolidWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
 				this.horizontalDashedWall.wallBounce(meteor, meteors.spriteWidth, meteors.spriteHeight, now);
@@ -1255,7 +1255,7 @@ class DroneGame extends GamePlusQuiz {
 		this.collectCoinsInRect(myRocket.x, myRocket.y, 310, 70);
 
 		this.allDrones.allSprites.forEach(function (drones: Sprites) {
-			drones.sprites.forEach(function (drone: Drone) {
+			drones.spriteProxies.forEach(function (drone: Drone) {
 				const margin: number = 8;
 				let coinsFound = this.collectCoinsInRect(drone.x + margin, drone.y + margin, Drone.width * drone.scale - margin / 2, Drone.height * drone.scale - margin / 2);
 				if (coinsFound > 0) {
@@ -1497,7 +1497,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		let boomboxSprite: Boombox = new Boombox(0, new Vector(10, 1000));
 
 		if (activeDroneGame instanceof DroneGame)
-			activeDroneGame.boomboxes.sprites.unshift(boomboxSprite);
+			activeDroneGame.boomboxes.spriteProxies.unshift(boomboxSprite);
 
 		boomboxSprite.fadeInTime = Boombox.crossFadeTime;
 		boomboxSprite.playRandomSong();

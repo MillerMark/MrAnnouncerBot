@@ -780,7 +780,7 @@
       newSprite = new SpriteProxy(Random.intMax(spriteArray.baseAnimation.frameCount), x, y);
 
     newSprite.changeVelocity(velocityX, velocityY, now);
-    spriteArray.sprites.push(newSprite);
+    spriteArray.spriteProxies.push(newSprite);
     return newSprite;
   }
 

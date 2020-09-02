@@ -44,7 +44,7 @@ class WarpInSprite extends SpriteProxy {
 		else
 			newSprite = new SpriteProxy(Random.intMax(spriteArray.baseAnimation.frameCount), x, y);
 
-		spriteArray.sprites.push(newSprite);
+		spriteArray.spriteProxies.push(newSprite);
 		return newSprite;
 	}
 }
@@ -71,7 +71,7 @@ class Gateway extends SpriteProxy {
 		warpInSprite.color = color;
 		if (!(activeDroneGame instanceof DroneGame))
 			return;
-		activeDroneGame.warpIns.sprites.push(warpInSprite);
+		activeDroneGame.warpIns.spriteProxies.push(warpInSprite);
 	}
 
 	drawBackground(context: CanvasRenderingContext2D, now: number): void {

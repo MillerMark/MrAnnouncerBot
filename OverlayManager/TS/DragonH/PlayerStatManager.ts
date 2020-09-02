@@ -226,7 +226,7 @@ class PlayerStatManager implements IAllPlayerStats {
 
 	cleanUpAllActiveTurnHighlighting() {
 		for (let i = 0; i < this.nameplateHighlightCollection.allSprites.length; i++) {
-			const sprites: SpriteProxy[] = this.nameplateHighlightCollection.allSprites[i].sprites;
+			const sprites: SpriteProxy[] = this.nameplateHighlightCollection.allSprites[i].spriteProxies;
 			for (let j = 0; j < sprites.length; j++) {
 				sprites[j].fadeOutNow(500);
 			}
@@ -427,10 +427,10 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	breathFire(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager, nowMs: number) {
-		if (this.readyToRollFullDragon.sprites.length === 0)
+		if (this.readyToRollFullDragon.spriteProxies.length === 0)
 			return;
-		const dragonIndex: number = Math.floor(Random.max(this.readyToRollFullDragon.sprites.length));
-		const sprite: SpriteProxy = this.readyToRollFullDragon.sprites[dragonIndex];
+		const dragonIndex: number = Math.floor(Random.max(this.readyToRollFullDragon.spriteProxies.length));
+		const sprite: SpriteProxy = this.readyToRollFullDragon.spriteProxies[dragonIndex];
 		if (sprite.easePointStillActive(nowMs) || sprite.velocityY !== 0 || sprite.verticalThrustOverride !== 0)
 			return;
 
@@ -685,33 +685,33 @@ class PlayerStatManager implements IAllPlayerStats {
 		for (let i = 0; i < diceStack.length; i++) {
 			const dieSprites: Sprites = this.getDieForPlayerWithSides(iGetPlayerX, playerId, diceStack[i]);
 			if (dieSprites) {
-				this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
+				this.dropSpriteByPlayerId(dieSprites.spriteProxies, playerId);
 			}
 		}
 
-		this.dropSpriteByPlayerId(this.readyToRollLightningCord.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightningCord.spriteProxies, playerId);
 
-		this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
-		this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollDarkDie.spriteProxies, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightDie.spriteProxies, playerId);
 
 		const disadvantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Disadvantage");
 		const advantageDieSprites: Sprites = this.readyToRollDieCollection.getSpritesByName("Advantage");
-		this.dropSpriteByPlayerId(disadvantageDieSprites.sprites, playerId);
-		this.dropSpriteByPlayerId(advantageDieSprites.sprites, playerId);
+		this.dropSpriteByPlayerId(disadvantageDieSprites.spriteProxies, playerId);
+		this.dropSpriteByPlayerId(advantageDieSprites.spriteProxies, playerId);
 
 		const verticalThrust = -3.3;
 		const horizontalThrust: number = Random.between(-1.7, 1.7);
 		this.ascendDragons(this.readyToRollFullDragon, playerId, horizontalThrust, verticalThrust);
 		this.ascendDragons(this.readyToRollDragonHands, playerId, horizontalThrust, verticalThrust);
 
-		const dragonSprite: SpriteProxy = this.getDragonSpriteByPlayerId(this.readyToRollFullDragon.sprites, playerId);
+		const dragonSprite: SpriteProxy = this.getDragonSpriteByPlayerId(this.readyToRollFullDragon.spriteProxies, playerId);
 		this.showAirExplosionLater(dragonSprite, soundManager);
-		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.sprites, playerId);
+		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.spriteProxies, playerId);
 	}
 
 	ascendDragons(dragonSprites: Sprites, playerId: number, horizontalThrust: number, verticalThrust: number) {
-		for (let i = 0; i < dragonSprites.sprites.length; i++) {
-			const sprite: SpriteProxy = dragonSprites.sprites[i];
+		for (let i = 0; i < dragonSprites.spriteProxies.length; i++) {
+			const sprite: SpriteProxy = dragonSprites.spriteProxies[i];
 			if (sprite.data === playerId) {
 				sprite.verticalThrustOverride = verticalThrust;
 				sprite.horizontalThrustOverride = horizontalThrust;
@@ -730,8 +730,8 @@ class PlayerStatManager implements IAllPlayerStats {
 		if (!dragonSprite)
 			return;
 		const playerId: number = dragonSprite.data as number;
-		this.hideDragonByPlayerId(this.readyToRollFullDragon.sprites, playerId);
-		this.hideDragonByPlayerId(this.readyToRollDragonHands.sprites, playerId);
+		this.hideDragonByPlayerId(this.readyToRollFullDragon.spriteProxies, playerId);
+		this.hideDragonByPlayerId(this.readyToRollDragonHands.spriteProxies, playerId);
 
 		const airExplosionIndex: number = Math.floor(Random.max(this.airExplosionCollection.allSprites.length));
 		this.airExplosionCollection.allSprites[airExplosionIndex].add(dragonSprite.x + this.readyToRollFullDragon.originX, dragonSprite.y + this.readyToRollFullDragon.originY);
@@ -746,28 +746,28 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	descendTheDragons(iGetPlayerX: IGetPlayerX, playerId: number, diceStack: Array<DiceStackDto>) {
-		this.dropSpriteByPlayerId(this.readyToRollFullDragon.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollFullDragon.spriteProxies, playerId);
 		for (let i = 0; i < diceStack.length; i++) {
 			const dieSprites: Sprites = this.getDieForPlayerWithSides(iGetPlayerX, playerId, diceStack[i]);
 			if (dieSprites) {
-				dieSprites.sprites.forEach(function (spriteProxy) { spriteProxy.fadeOutNow(500); });
-				this.dropSpriteByPlayerId(dieSprites.sprites, playerId);
+				dieSprites.spriteProxies.forEach(function (spriteProxy) { spriteProxy.fadeOutNow(500); });
+				this.dropSpriteByPlayerId(dieSprites.spriteProxies, playerId);
 			}
 		}
 
-		this.dropSpriteByPlayerId(this.readyToRollDarkDie.sprites, playerId);
-		this.dropSpriteByPlayerId(this.readyToRollLightDie.sprites, playerId);
-		this.dropSpriteByPlayerId(this.readyToRollLightningCord.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollDarkDie.spriteProxies, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightDie.spriteProxies, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollLightningCord.spriteProxies, playerId);
 
 		this.dropSpriteFromCollectionByPlayerId(this.readyToRollDieCollection, playerId);
-		this.dropSpriteByPlayerId(this.readyToRollDragonHands.sprites, playerId);
-		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.sprites, playerId);
+		this.dropSpriteByPlayerId(this.readyToRollDragonHands.spriteProxies, playerId);
+		this.fadeOutSpriteByPlayerId(this.readyToRollDragonBreath.spriteProxies, playerId);
 	}
 
 	dropSpriteFromCollectionByPlayerId(dieCollection: SpriteCollection, playerId: number) {
 		for (let i = 0; i < dieCollection.allSprites.length; i++) {
 			const sprites: Sprites = dieCollection.allSprites[i];
-			this.dropSpriteByPlayerId(sprites.sprites, playerId);
+			this.dropSpriteByPlayerId(sprites.spriteProxies, playerId);
 		}
 	}
 
@@ -909,8 +909,8 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	getSpriteForPlayer(sprites: Sprites, playerId: number): SpriteProxy {
-		for (let i = 0; i < sprites.sprites.length; i++) {
-			const sprite: SpriteProxy = sprites.sprites[i];
+		for (let i = 0; i < sprites.spriteProxies.length; i++) {
+			const sprite: SpriteProxy = sprites.spriteProxies[i];
 			if (sprite.data === playerId)
 				return sprite;
 		}
@@ -978,11 +978,11 @@ class PlayerStatManager implements IAllPlayerStats {
 			soundManager.playMp3In(timeToEndMS, 'Spells/GunpowderFlare');
 		}
 
-		this.fadeOutAfter(timeToEndMS, this.concentrationWhiteSmoke.sprites, playerId, fadeOutTime);
-		this.fadeOutAfter(timeToEndMS, this.concentrationSpellNameScroll.sprites, playerId, fadeOutTime);
-		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassEnds.sprites, playerId, fadeOutTime);
-		this.fadeOutAfter(timeToEndMS, this.concentrationIcon.sprites, playerId, fadeOutTime);
-		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassSand.sprites, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationWhiteSmoke.spriteProxies, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationSpellNameScroll.spriteProxies, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassEnds.spriteProxies, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationIcon.spriteProxies, playerId, fadeOutTime);
+		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassSand.spriteProxies, playerId, fadeOutTime);
 		for (let i = 0; i < this.concentratedSpellNames.animations.length; i++) {
 			if (this.concentratedSpellNames.animations[i].data === playerId) {
 				this.concentratedSpellNames.animations[i].fadeOutAfter(timeToEndMS, fadeOutTime);

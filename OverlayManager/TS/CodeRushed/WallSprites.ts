@@ -7,7 +7,7 @@
 
 
   wallBounce(testSprite: Drone | Meteor, spriteWidth: number, spriteHeight: number, now: number) {
-    this.sprites.forEach(function (wallSprite: Wall) {
+    this.spriteProxies.forEach(function (wallSprite: Wall) {
       if (testSprite.pathVector(spriteWidth, spriteHeight).intersectsWith(wallSprite.getLine())) {
         var needToBounce: boolean = testSprite instanceof Drone || wallSprite.wallStyle === WallStyle.Double;
 

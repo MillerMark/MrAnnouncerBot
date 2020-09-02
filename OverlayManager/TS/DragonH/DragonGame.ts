@@ -508,7 +508,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		// TODO: Use windupName to find specific sprites to clear.
 		const now: number = performance.now();
 		this.allWindupEffects.allSprites.forEach(function (sprites: Sprites) {
-			sprites.sprites.forEach(function (sprite: SpriteProxy) {
+			sprites.spriteProxies.forEach(function (sprite: SpriteProxy) {
 				const noNameSpecified = !windupName;
 				const destroyAllSprites: boolean = windupName === '*';
 				const asteriskIndex: number = windupName.indexOf('*');

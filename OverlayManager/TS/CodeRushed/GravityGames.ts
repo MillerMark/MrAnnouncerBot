@@ -84,7 +84,7 @@ class GravityGames {
 			return;
 		let coin: SpriteProxy = new SpriteProxy(Random.intMax(activeDroneGame.coins.baseAnimation.frameCount), x, y);
 		//coin.scale = 2;
-		activeDroneGame.coins.sprites.push(coin);
+		activeDroneGame.coins.spriteProxies.push(coin);
 
 		let spinFramerate: number = activeDroneGame.coins.frameInterval;
 		coin.frameIntervalOverride = Random.between(spinFramerate * 0.8, spinFramerate * 1.2);
@@ -100,10 +100,10 @@ class GravityGames {
       return;
 
     let gateway: Gateway = new Gateway(Random.intMax(activeDroneGame.droneGateways.baseAnimation.frameCount), x - gatewaySize / 2, y - gatewaySize / 2);
-    gateway.ID = activeDroneGame.droneGateways.sprites.length + 1;
+    gateway.ID = activeDroneGame.droneGateways.spriteProxies.length + 1;
 
     gateway.delayStart = Math.random() * 900;
-    activeDroneGame.droneGateways.sprites.push(gateway);
+    activeDroneGame.droneGateways.spriteProxies.push(gateway);
   }
 
   addPortal(column: number, row: number): void {
@@ -113,7 +113,7 @@ class GravityGames {
     portal.delayStart = Math.random() * 900;
     if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeDroneGame.purplePortals.sprites.push(portal);
+    activeDroneGame.purplePortals.spriteProxies.push(portal);
   }
 
   addHorizontalWall(wallStyle: WallStyle, startColumn: number, endColumn: number, row: number) {
@@ -128,15 +128,15 @@ class GravityGames {
     let wallSprites: SpriteProxy[] = null;
     switch (wallStyle) {
       case WallStyle.Dashed: {
-        wallSprites = activeDroneGame.horizontalDashedWall.sprites;
+        wallSprites = activeDroneGame.horizontalDashedWall.spriteProxies;
         break;
       }
       case WallStyle.Solid: {
-        wallSprites = activeDroneGame.horizontalSolidWall.sprites;
+        wallSprites = activeDroneGame.horizontalSolidWall.spriteProxies;
         break;
       }
       case WallStyle.Double: {
-        wallSprites = activeDroneGame.horizontalDoubleWall.sprites;
+        wallSprites = activeDroneGame.horizontalDoubleWall.spriteProxies;
         break;
       }
       default:
@@ -163,15 +163,15 @@ class GravityGames {
     let wallSprites: SpriteProxy[] = null;
     switch (wallStyle) {
       case WallStyle.Dashed: {
-        wallSprites = activeDroneGame.verticalDashedWall.sprites;
+        wallSprites = activeDroneGame.verticalDashedWall.spriteProxies;
         break;
       }
       case WallStyle.Solid: {
-        wallSprites = activeDroneGame.verticalSolidWall.sprites;
+        wallSprites = activeDroneGame.verticalSolidWall.spriteProxies;
         break;
       }
       case WallStyle.Double: {
-        wallSprites = activeDroneGame.verticalDoubleWall.sprites;
+        wallSprites = activeDroneGame.verticalDoubleWall.spriteProxies;
         break;
       }
       default:

@@ -21,7 +21,7 @@ class SpritesEffect extends VisualEffect {
 				new Vector(-this.spritesRef.originX, -this.spritesRef.originY)), this.lifeSpanMs)
 				.setHueSatBrightness(this.hueShift, this.saturation, this.brightness);
 			this.spritesRef.applyOverrides(sprite);
-			this.spritesRef.sprites.push(sprite);
+			this.spritesRef.spriteProxies.push(sprite);
     }
     else {
 			sprite = this.spritesRef.add(center.x, center.y, this.startFrameIndex);

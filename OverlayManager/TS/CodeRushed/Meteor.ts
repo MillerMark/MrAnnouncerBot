@@ -39,12 +39,12 @@ function addMeteorExplosion(meteors: Sprites, x: number) {
   const left: number = 830;
   const width: number = 340;
   if (x > left && x < left + width) {
-    activeDroneGame.redExplosions.sprites.push(new ColorShiftingSpriteProxy(0, new Vector(x - activeDroneGame.redExplosions.spriteWidth / 2 + 50, 0)).setHueSatBrightness(0, 0, 300));
+    activeDroneGame.redExplosions.spriteProxies.push(new ColorShiftingSpriteProxy(0, new Vector(x - activeDroneGame.redExplosions.spriteWidth / 2 + 50, 0)).setHueSatBrightness(0, 0, 300));
     // TODO: Get the userID who tossed this meteor.
     fire("");
   }
   else 
-    activeDroneGame.redExplosions.sprites.push(new SpriteProxy(0, x - activeDroneGame.redExplosions.spriteWidth / 2 + 50, 0));
+    activeDroneGame.redExplosions.spriteProxies.push(new SpriteProxy(0, x - activeDroneGame.redExplosions.spriteWidth / 2 + 50, 0));
   //if (meteors === activeDroneGame.blueMeteors)
   //  activeDroneGame.blueExplosions.sprites.push(new SpriteProxy(0, x - activeDroneGame.blueExplosions.spriteWidth / 2 + 50, 0));
   //if (meteors === activeDroneGame.purpleMeteors)

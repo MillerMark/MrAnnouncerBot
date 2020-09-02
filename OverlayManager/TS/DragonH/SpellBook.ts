@@ -1073,8 +1073,8 @@ class SpellBook {
 
 		this.bookGlow.draw(context, nowMs);
 
-		if (this.spellBookBack.sprites.length > 0) {
-			const firstBackSprite = this.spellBookBack.sprites[0];
+		if (this.spellBookBack.spriteProxies.length > 0) {
+			const firstBackSprite = this.spellBookBack.spriteProxies[0];
 			// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 			const w: number = this.spellBookBack.spriteWidth;
 			const h: number = this.spellBookBack.spriteHeight;
@@ -1271,17 +1271,17 @@ class SpellBook {
 		if (this.getSpellLevelSchoolWidth(context, spell) > maxSpellDescriptionWidth)
 			return false;
 
-		this.spellBookBack.sprites = [];
-		this.spellBookTop.sprites = [];
-		this.schoolOfMagic.sprites = [];
-		this.concentrationIcon.sprites = [];
-		this.morePowerIcon.sprites = [];
-		this.bookGlow.sprites = [];
-		this.bookBurn.sprites = [];
+		this.spellBookBack.spriteProxies = [];
+		this.spellBookTop.spriteProxies = [];
+		this.schoolOfMagic.spriteProxies = [];
+		this.concentrationIcon.spriteProxies = [];
+		this.morePowerIcon.spriteProxies = [];
+		this.bookGlow.spriteProxies = [];
+		this.bookBurn.spriteProxies = [];
 
-		this.spellBookAppearBig.sprites = [];
-		this.spellBookAppearMedium.sprites = [];
-		this.spellBookAppearSmall.sprites = [];
+		this.spellBookAppearBig.spriteProxies = [];
+		this.spellBookAppearMedium.spriteProxies = [];
+		this.spellBookAppearSmall.spriteProxies = [];
 
 		let left: number = x + 12;
 		let top: number = y - 33;

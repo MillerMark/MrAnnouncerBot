@@ -17,6 +17,7 @@
 	conditionManager: ConditionManager = new ConditionManager();
 
 	public static readonly NpcScrollHeight: number = 253;
+	static readonly numNpcConditionColumns: number = 3;
 
 	constructor() {
 
@@ -108,6 +109,8 @@
 	static readonly inGameStatOffsetX = 18;
 	static readonly inGameStatTopMargin = -12;  // Put top of scroll slightly offscreen
 	static readonly creatureScrollHeight = 253;
+	static readonly creatureScrollWidth = 175;
+	static readonly creatureHorizontalWhiteSpace = 12;
 	static readonly headShotCenterX = 62;
 	static readonly headShotCenterY = 70;
 	static readonly targetLeft = 64;
@@ -254,35 +257,35 @@
 	// TODO: this.activeTurn integrate
 
 	getParchmentSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.parchmentBackground.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.parchmentBackground.spriteProxies, inGameCreature);
 	}
 
 	getParchmentDeathXForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.deathX.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.deathX.spriteProxies, inGameCreature);
 	}
 
 	getParchmentShadowForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.parchmentShadow.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.parchmentShadow.spriteProxies, inGameCreature);
 	}
 
 	getScrollAppearForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.scrollAppear.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.scrollAppear.spriteProxies, inGameCreature);
 	}
 
 	getScrollDisappearForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.scrollDisappear.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.scrollDisappear.spriteProxies, inGameCreature);
 	}
 
 	getTargetSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.target.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.target.spriteProxies, inGameCreature);
 	}
 
 	getActiveTurnIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.activeTurnIndicator.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.activeTurnIndicator.spriteProxies, inGameCreature);
 	}
 
 	getTalkingIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
-		return this.getSpriteForCreature(this.creatureTalking.sprites, inGameCreature);
+		return this.getSpriteForCreature(this.creatureTalking.spriteProxies, inGameCreature);
 	}
 
 	getSpriteForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy {
@@ -312,12 +315,12 @@
 		}
 
 		let x: number = this.miniScrollLeftMargin;
-		this.parchmentBackground.sprites = [];
-		this.parchmentShadow.sprites = [];
-		this.deathX.sprites = [];
-		this.target.sprites = [];
-		this.activeTurnIndicator.sprites = [];
-		this.creatureTalking.sprites = [];
+		this.parchmentBackground.spriteProxies = [];
+		this.parchmentShadow.spriteProxies = [];
+		this.deathX.spriteProxies = [];
+		this.target.spriteProxies = [];
+		this.activeTurnIndicator.spriteProxies = [];
+		this.creatureTalking.spriteProxies = [];
 
 		let delayMs = 0;
 		let timeBetweenArrivals = 300;
@@ -383,7 +386,7 @@
 		if (existingCreature.Conditions !== updatedGameCreature.Conditions) {
 			const rightEdge: number = this.getConditionRightEdge(existingCreature);
 			const hueShift: number = this.getHueShift(existingCreature);;
-			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightEdge, ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped);
+			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightEdge, ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
 			existingCreature.Conditions = updatedGameCreature.Conditions;
 		}
 
@@ -624,7 +627,7 @@
 		const hueShift: number = this.getHueShift(inGameCreature);
 		const rightEdge: number = this.getConditionRightEdge(inGameCreature);
 		this.conditionManager.updateConditions(Conditions.None, inGameCreature.Conditions, inGameCreature.Index, rightEdge,
-			ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped);
+			ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
 	}
 
 	private getFriendEnemyFrameIndex(inGameCreature: InGameCreature) {
@@ -769,7 +772,7 @@
 	static readonly leftRightMoveTime: number = 750;
 
 	moveSpriteTo(sprites: Sprites, creature: InGameCreature, targetX: number, delayMs: number) {
-		const sprite: SpriteProxy = this.getSpriteForCreature(sprites.sprites, creature);
+		const sprite: SpriteProxy = this.getSpriteForCreature(sprites.spriteProxies, creature);
 		if (!sprite)
 			return;
 		// Since we are moving X we must account for the originX

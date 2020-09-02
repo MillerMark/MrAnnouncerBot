@@ -520,23 +520,23 @@ class Drone extends ColorShiftingSpriteProxy {
     var yAdjust: number = Math.random() * upDownAdjust + 15;
     var xAdjust: number = Math.random() * leftRightAdjust - leftRightAdjust / 2;
     const paintLifeSpan: number = 15 * 1000;
-    splats.sprites.push(new SpriteProxy(0, droneCenterX - splats.spriteWidth / 2, droneCenterY - splats.spriteHeight / 2, paintLifeSpan));
+    splats.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.spriteWidth / 2, droneCenterY - splats.spriteHeight / 2, paintLifeSpan));
     let yPos: number = droneCenterY - yAdjust;
     let random: number = Math.random() * 100;
     if (random < 15) {
-      splats.longDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
+      splats.longDrips.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
     else if (random < 30) {
-      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
+      splats.shortDrips.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
       yAdjust = Math.random() * upDownAdjust;
       xAdjust = Math.random() * leftRightAdjust - leftRightAdjust / 2;
-      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.mediumDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
+      splats.mediumDrips.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.mediumDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
     else if (random < 65) { // 35%
-      splats.mediumDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.mediumDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
+      splats.mediumDrips.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.mediumDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
     else if (random < 85) { // 20%
-      splats.shortDrips.sprites.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
+      splats.shortDrips.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.shortDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }
 
     if (loadCopyrightedContent) {
@@ -761,6 +761,6 @@ function addDroneExplosion(drone: SpriteProxy, spriteWidth: number, spriteHeight
 	const thisDroneExplosion: Sprites = activeDroneGame.droneExplosions.allSprites[Math.floor(Math.random() * activeDroneGame.droneExplosions.allSprites.length)];
   const explosion: SpriteProxy = new SpriteProxy(0, x - drone.scale * thisDroneExplosion.spriteWidth / 2, y - drone.scale * thisDroneExplosion.spriteHeight / 2);
 	explosion.scale = drone.scale;
-	thisDroneExplosion.sprites.push(explosion);
+	thisDroneExplosion.spriteProxies.push(explosion);
   new Audio(Folders.assets + 'Sound Effects/DroneGoBoom.wav').play();
 }

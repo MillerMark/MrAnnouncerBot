@@ -418,8 +418,9 @@ class DragonBackGame extends DragonGame {
 		this.emitter.brightness.target = 0.8;
 		this.emitter.brightness.relativeVariance = 0.1;
 		this.emitter.particleRadius.target = 11;
-		this.emitter.particleRadius.relativeVariance = 0.7;
-		this.emitter.particlesPerSecond = 20;
+		this.emitter.particleRadius.relativeVariance = 1.2;
+		this.emitter.particleMaxOpacity = 0.5;
+		this.emitter.particlesPerSecond = 100;
 		this.emitter.particleLifeSpanSeconds = 5;
 		this.emitter.particleInitialVelocity.target = 0.15;
 		this.emitter.particleGravity = -0.3;

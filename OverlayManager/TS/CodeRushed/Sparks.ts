@@ -26,6 +26,6 @@
   setParent(parent: Sprites): any {
     this.parent = parent;
     if (this.parent != null)
-      this.parent.sprites.push(this);
+      this.parent.spriteProxies.push(this);
   }
 }

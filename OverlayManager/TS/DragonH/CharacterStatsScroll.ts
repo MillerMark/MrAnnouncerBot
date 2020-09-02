@@ -329,11 +329,11 @@
 	private unroll(): void {
 		this.state = ScrollState.unrolling;
 		this.scrollRolls.baseAnimation.reverse = false;
-		this.scrollRolls.sprites = [];
-		this.scrollBacks.sprites = [];
+		this.scrollRolls.spriteProxies = [];
+		this.scrollBacks.spriteProxies = [];
 		this.currentScrollRoll = this.scrollRolls.add(0, 0, 0);
 		this.currentScrollBack = this.scrollBacks.add(0, 0, this._page);
-		this.playerHeadshots.sprites = [];
+		this.playerHeadshots.spriteProxies = [];
 		this.playerHeadshots.add(0, 0, this.headshotIndex);
 		this.pageIndex = this._page;
 		this.selectedStatPageIndex = this._page - 1;
@@ -402,9 +402,9 @@
 		const picY: number = 24;
 		const picHeight: number = 90;
 
-		if (this.scrollIsVisible() && this.scrollRolls.sprites.length != 0) {
+		if (this.scrollIsVisible() && this.scrollRolls.spriteProxies.length != 0) {
 			let elapsedTime: number = nowSec - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
-			let scrollRollsFrameIndex: number = this.scrollRolls.sprites[0].frameIndex;
+			let scrollRollsFrameIndex: number = this.scrollRolls.spriteProxies[0].frameIndex;
 
 			if (this.state === ScrollState.paused) {
 				scrollRollsFrameIndex = this.lastFrameIndex;
@@ -523,8 +523,8 @@
 			this.scrollRolls.draw(world.ctx, nowSec * 1000);
 			this.scrollPoofBack.draw(world.ctx, nowSec * 1000);
 			this.scrollPoofFront.draw(world.ctx, nowSec * 1000);
-			if (this.scrollPoofFront.sprites.length > 0) {
-				let poofFrameIndex: number = this.scrollPoofFront.sprites[0].frameIndex;
+			if (this.scrollPoofFront.spriteProxies.length > 0) {
+				let poofFrameIndex: number = this.scrollPoofFront.spriteProxies[0].frameIndex;
 				if (poofFrameIndex === 0) {
 					this.state = ScrollState.none;
 				}
@@ -536,7 +536,7 @@
 
 		if (this.state === ScrollState.slamming) {
 			this.scrollSlam.draw(world.ctx, nowSec * 1000);
-			if (this.scrollSlam.sprites.length === 0 || this.scrollSlam.sprites[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
+			if (this.scrollSlam.spriteProxies.length === 0 || this.scrollSlam.spriteProxies[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
 				this.state = ScrollState.slammed;
 				this.play(this.scrollSlamSfx);
 			}
@@ -1089,10 +1089,10 @@
 	readonly fadeTime: number = 300;
 
 	private clearEmphasis() {
-		this.scrollEmphasisMain.sprites = [];
-		this.scrollEmphasisSkills.sprites = [];
-		this.scrollEmphasisEquipment.sprites = [];
-		this.scrollEmphasisSpells.sprites = [];
+		this.scrollEmphasisMain.spriteProxies = [];
+		this.scrollEmphasisSkills.spriteProxies = [];
+		this.scrollEmphasisEquipment.spriteProxies = [];
+		this.scrollEmphasisSpells.spriteProxies = [];
 	}
 
 	addEmphasis(emphasisIndex: number): void {
@@ -1201,30 +1201,30 @@
 		if (pageID === ScrollPage.main) {
 			let emphasisIndex: number = emphasisMain[itemID];
 			this.scrollEmphasisMain.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
-			this.scrollEmphasisSkills.sprites = [];
-			this.scrollEmphasisEquipment.sprites = [];
-			this.scrollEmphasisSpells.sprites = [];
+			this.scrollEmphasisSkills.spriteProxies = [];
+			this.scrollEmphasisEquipment.spriteProxies = [];
+			this.scrollEmphasisSpells.spriteProxies = [];
 		}
 		else if (pageID === ScrollPage.skills) {
 			let emphasisIndex: number = emphasisSkills[itemID];
 			this.scrollEmphasisSkills.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
-			this.scrollEmphasisMain.sprites = [];
-			this.scrollEmphasisEquipment.sprites = [];
-			this.scrollEmphasisSpells.sprites = [];
+			this.scrollEmphasisMain.spriteProxies = [];
+			this.scrollEmphasisEquipment.spriteProxies = [];
+			this.scrollEmphasisSpells.spriteProxies = [];
 		}
 		else if (pageID === ScrollPage.equipment) {
 			let emphasisIndex: number = emphasisEquipment[itemID];
 			this.scrollEmphasisEquipment.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
-			this.scrollEmphasisMain.sprites = [];
-			this.scrollEmphasisSkills.sprites = [];
-			this.scrollEmphasisSpells.sprites = [];
+			this.scrollEmphasisMain.spriteProxies = [];
+			this.scrollEmphasisSkills.spriteProxies = [];
+			this.scrollEmphasisSpells.spriteProxies = [];
 		}
 		else if (pageID === ScrollPage.spells) {
 			let emphasisIndex: number = emphasisSpells[itemID];
 			this.scrollEmphasisSpells.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
-			this.scrollEmphasisMain.sprites = [];
-			this.scrollEmphasisSkills.sprites = [];
-			this.scrollEmphasisEquipment.sprites = [];
+			this.scrollEmphasisMain.spriteProxies = [];
+			this.scrollEmphasisSkills.spriteProxies = [];
+			this.scrollEmphasisEquipment.spriteProxies = [];
 		}
 
 		let currentlyEmphasizing: boolean = this.currentlyEmphasizing();

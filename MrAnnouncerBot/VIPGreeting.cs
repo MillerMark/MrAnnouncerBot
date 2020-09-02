@@ -318,7 +318,7 @@ namespace MrAnnouncerBot
 			switch (new Random().Next(7))
 			{
 				case 0:
-					Greeting = $"Kids, you should checkout @{DisplayName}, he has a stream too. It's not bad. But then again, it's not mind-blowingly amazing either. I just want to set expectations accordingly. But definitely check it out. Just not right now. Maybe later, when he's actually streaming.";
+					Greeting = $"Kids, you should checkout @{DisplayName}, he has an awesome stream!. Definitely check it out. Just not right now. Maybe later, when he's actually streaming.";
 					break;
 				case 1:
 					Greeting = $"Hey, @{DisplayName}, is here. I hope his CodeRushed sunflower is still growing.";

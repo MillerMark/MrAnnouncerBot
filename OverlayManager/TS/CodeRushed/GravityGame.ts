@@ -9,8 +9,8 @@
       let saveFolder: string = Folders.assets;
       Folders.assets = 'GameDev/Assets/DroneGame/';
       this.digits = new Sprites("Numbers/Blue", 12, 0, AnimationStyle.Static);
-      this.digits.sprites = [];
-      this.digits.sprites.push(new SpriteProxy(0, 1000, 0));
+      this.digits.spriteProxies = [];
+      this.digits.spriteProxies.push(new SpriteProxy(0, 1000, 0));
       this.score = new Digits(DigitSize.small, 1000, 0);
       this.score.value = 0;
       Folders.assets = saveFolder;

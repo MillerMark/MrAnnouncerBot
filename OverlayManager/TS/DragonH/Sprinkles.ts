@@ -279,7 +279,7 @@ class Sprinkles {
 	hasAnimationsRunning(): boolean {
 		for (let i = 0; i < this.parts.length; i++) {
 			let hornBodyPair: HornBodyPair = this.parts[i];
-			if (hornBodyPair.body.sprites.length > 0)
+			if (hornBodyPair.body.spriteProxies.length > 0)
 				return true;
 		}
 		return false;
@@ -319,12 +319,12 @@ class Sprinkles {
 
 		for (let i = 0; i < this.parts.length; i++) {
 			let hornBodyPair: HornBodyPair = this.parts[i];
-			for (let j = 0; j < hornBodyPair.body.sprites.length; j++) {
-				let sprite: SpriteProxy = hornBodyPair.body.sprites[j];
+			for (let j = 0; j < hornBodyPair.body.spriteProxies.length; j++) {
+				let sprite: SpriteProxy = hornBodyPair.body.spriteProxies[j];
 				sprite.horizontalScale = this.horizontalScale;
 			}
-			for (let j = 0; j < hornBodyPair.horn.sprites.length; j++) {
-				let sprite: SpriteProxy = hornBodyPair.horn.sprites[j];
+			for (let j = 0; j < hornBodyPair.horn.spriteProxies.length; j++) {
+				let sprite: SpriteProxy = hornBodyPair.horn.spriteProxies[j];
 				sprite.horizontalScale = this.horizontalScale;
 			}
 		}
@@ -437,7 +437,7 @@ class Sprinkles {
 	}
 
 	moveAllSpritesToY(sprites: Sprites, y: number): void {
-		for (let j = 0; j < sprites.sprites.length; j++) {
+		for (let j = 0; j < sprites.spriteProxies.length; j++) {
 			sprites[j].y = y - sprites.originY;
 		}
 	}
@@ -455,8 +455,8 @@ class Sprinkles {
 	}
 
 	moveAllSpritesToX(sprites: Sprites, x: number): void {
-		for (let j = 0; j < sprites.sprites.length; j++) {
-			sprites.sprites[j].x = x - sprites.originX;
+		for (let j = 0; j < sprites.spriteProxies.length; j++) {
+			sprites.spriteProxies[j].x = x - sprites.originX;
 		}
 	}
 
@@ -649,8 +649,8 @@ class Sprinkles {
 	getActiveAnimationPair(now: number): AnimationPair {
 		for (let i = 0; i < this.parts.length; i++) {
 			const hornBodyPair: HornBodyPair = this.parts[i];
-			if (hornBodyPair.body.sprites.length > 0) {
-				const body: SpriteProxy = hornBodyPair.body.sprites[0];
+			if (hornBodyPair.body.spriteProxies.length > 0) {
+				const body: SpriteProxy = hornBodyPair.body.spriteProxies[0];
 				const notYetGone: boolean = body.expirationDate && body.stillAlive(now) && !body.fadingOut(now);
 				let stillHasFramesBeforeCycleComplete: boolean;
 				if (body.animationReverseOverride)
@@ -659,7 +659,7 @@ class Sprinkles {
 					stillHasFramesBeforeCycleComplete = body.frameIndex < hornBodyPair.body.baseAnimation.frameCount - 1;
 
 				if (notYetGone || stillHasFramesBeforeCycleComplete) {
-					const horn: SpriteProxy = hornBodyPair.horn.sprites[0];
+					const horn: SpriteProxy = hornBodyPair.horn.spriteProxies[0];
 					return new AnimationPair(body, horn, hornBodyPair.horn.baseAnimation.frameCount);
 				}
 			}
@@ -935,12 +935,12 @@ class Sprinkles {
 	sayGoodbye(): any {
 		const fadeOutTime: number = 2000;
 		let deathSequence = this.getHornBodyPair(Sprinkles_Dies);
-		for (let i = 0; i < deathSequence.body.sprites.length; i++) {
-			let bodySprite: SpriteProxy = deathSequence.body.sprites[i];
+		for (let i = 0; i < deathSequence.body.spriteProxies.length; i++) {
+			let bodySprite: SpriteProxy = deathSequence.body.spriteProxies[i];
 			this.fadeOut(bodySprite, fadeOutTime);
 		}
-		for (let i = 0; i < deathSequence.horn.sprites.length; i++) {
-			let hornSprite: SpriteProxy = deathSequence.horn.sprites[i];
+		for (let i = 0; i < deathSequence.horn.spriteProxies.length; i++) {
+			let hornSprite: SpriteProxy = deathSequence.horn.spriteProxies[i];
 			this.fadeOut(hornSprite, fadeOutTime);
 		}
 	}

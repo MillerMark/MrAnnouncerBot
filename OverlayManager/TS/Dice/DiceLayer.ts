@@ -2105,70 +2105,70 @@ class DiceLayer {
 	}
 
 	clearResidualEffects(): void {
-		this.cloverRing.sprites = [];
-		this.magicRingRed.sprites = [];
-		this.magicRingGold.sprites = [];
-		this.magicRingGreen.sprites = [];
-		this.magicRingBlue.sprites = [];
-		this.magicRingPurple.sprites = [];
-		this.magicRingMaroon.sprites = [];
-		this.badLuckRing.sprites = [];
-		this.freeze.sprites = [];
+		this.cloverRing.spriteProxies = [];
+		this.magicRingRed.spriteProxies = [];
+		this.magicRingGold.spriteProxies = [];
+		this.magicRingGreen.spriteProxies = [];
+		this.magicRingBlue.spriteProxies = [];
+		this.magicRingPurple.spriteProxies = [];
+		this.magicRingMaroon.spriteProxies = [];
+		this.badLuckRing.spriteProxies = [];
+		this.freeze.spriteProxies = [];
 		//this.halos.sprites = [];
-		this.haloSpinRed.sprites = [];
-		this.haloSpinBlue.sprites = [];
-		this.haloSpinFuschia.sprites = [];
-		this.haloSpinGreen.sprites = [];
-		this.haloSpinLavender.sprites = [];
-		this.haloSpinMaroon.sprites = [];
-		this.haloSpinPurple.sprites = [];
-		this.haloSpinTeal.sprites = [];
-		this.haloSpinYellow.sprites = [];
-		this.damageFire.sprites = [];
-		this.damageFireB.sprites = [];
-		this.damageCold.sprites = [];
-		this.damageNecroticHead.sprites = [];
-		this.damageNecroticHeadB.sprites = [];
-		this.damageNecroticFog.sprites = [];
-		this.damageAcid.sprites = [];
-		this.damageAcidB.sprites = [];
-		this.topDieCloudRed.sprites = [];
-		this.topDieCloudWhite.sprites = [];
-		this.topDieCloudBlack.sprites = [];
-		this.topDieCloudBlue.sprites = [];
-		this.topDieCloudPurple.sprites = [];
-		this.topDieCloudGreen.sprites = [];
-		this.damageRadiant.sprites = [];
-		this.damageForce.sprites = [];
-		this.damageForceB.sprites = [];
-		this.damageBludgeoningMace.sprites = [];
-		this.damageBludgeoningFist.sprites = [];
-		this.damageBludgeoningWeapon.sprites = [];
-		this.damageSpinningCloudTrail.sprites = [];
-		this.damagePoison.sprites = [];
-		this.damagePiercingDagger.sprites = [];
-		this.damagePiercingThickSword.sprites = [];
-		this.damagePiercingTooth.sprites = [];
-		this.damagePiercingTrident.sprites = [];
-		this.damageSlashingSword.sprites = [];
-		this.damageSlashingAx.sprites = [];
-		this.damageSlashingLance.sprites = [];
-		this.damageThunder.sprites = [];
-		this.superiorityFire.sprites = [];
-		this.superiorityDragonHead.sprites = [];
-		this.superiorityDragonHeadB.sprites = [];
-		this.superiorityDragonHeadC.sprites = [];
-		this.superiorityDragonHeadD.sprites = [];
-		this.health.sprites = [];
-		this.healthB.sprites = [];
-		this.damagePsychic.sprites = [];
-		this.damagePsychicB.sprites = [];
-		this.damageLightningA.sprites = [];
-		this.damageLightningB.sprites = [];
-		this.damageLightningC.sprites = [];
-		this.damageLightningCloud.sprites = [];
-		this.freezePop.sprites = [];
-		this.inspirationParticles.sprites = [];
+		this.haloSpinRed.spriteProxies = [];
+		this.haloSpinBlue.spriteProxies = [];
+		this.haloSpinFuschia.spriteProxies = [];
+		this.haloSpinGreen.spriteProxies = [];
+		this.haloSpinLavender.spriteProxies = [];
+		this.haloSpinMaroon.spriteProxies = [];
+		this.haloSpinPurple.spriteProxies = [];
+		this.haloSpinTeal.spriteProxies = [];
+		this.haloSpinYellow.spriteProxies = [];
+		this.damageFire.spriteProxies = [];
+		this.damageFireB.spriteProxies = [];
+		this.damageCold.spriteProxies = [];
+		this.damageNecroticHead.spriteProxies = [];
+		this.damageNecroticHeadB.spriteProxies = [];
+		this.damageNecroticFog.spriteProxies = [];
+		this.damageAcid.spriteProxies = [];
+		this.damageAcidB.spriteProxies = [];
+		this.topDieCloudRed.spriteProxies = [];
+		this.topDieCloudWhite.spriteProxies = [];
+		this.topDieCloudBlack.spriteProxies = [];
+		this.topDieCloudBlue.spriteProxies = [];
+		this.topDieCloudPurple.spriteProxies = [];
+		this.topDieCloudGreen.spriteProxies = [];
+		this.damageRadiant.spriteProxies = [];
+		this.damageForce.spriteProxies = [];
+		this.damageForceB.spriteProxies = [];
+		this.damageBludgeoningMace.spriteProxies = [];
+		this.damageBludgeoningFist.spriteProxies = [];
+		this.damageBludgeoningWeapon.spriteProxies = [];
+		this.damageSpinningCloudTrail.spriteProxies = [];
+		this.damagePoison.spriteProxies = [];
+		this.damagePiercingDagger.spriteProxies = [];
+		this.damagePiercingThickSword.spriteProxies = [];
+		this.damagePiercingTooth.spriteProxies = [];
+		this.damagePiercingTrident.spriteProxies = [];
+		this.damageSlashingSword.spriteProxies = [];
+		this.damageSlashingAx.spriteProxies = [];
+		this.damageSlashingLance.spriteProxies = [];
+		this.damageThunder.spriteProxies = [];
+		this.superiorityFire.spriteProxies = [];
+		this.superiorityDragonHead.spriteProxies = [];
+		this.superiorityDragonHeadB.spriteProxies = [];
+		this.superiorityDragonHeadC.spriteProxies = [];
+		this.superiorityDragonHeadD.spriteProxies = [];
+		this.health.spriteProxies = [];
+		this.healthB.spriteProxies = [];
+		this.damagePsychic.spriteProxies = [];
+		this.damagePsychicB.spriteProxies = [];
+		this.damageLightningA.spriteProxies = [];
+		this.damageLightningB.spriteProxies = [];
+		this.damageLightningC.spriteProxies = [];
+		this.damageLightningCloud.spriteProxies = [];
+		this.freezePop.spriteProxies = [];
+		this.inspirationParticles.spriteProxies = [];
 		//this.stars.sprites = [];
 		//this.d20Fire.sprites = [];
 		this.clearTextEffects();
@@ -2379,7 +2379,7 @@ class DiceLayer {
 	}
 
 	addFangs(x: number, y: number, angle: number): SpriteProxy {
-		const fangs = this.fangs.addShifted(x, y, Math.round(Math.random() * this.fangs.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
+		const fangs = this.fangs.addShifted(x, y, Math.round(Math.random() * this.fangs.spriteProxies.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		fangs.rotation = angle;
 		fangs.expirationDate = performance.now() + 4000;
 		fangs.fadeOutTime = 2000;
@@ -2389,7 +2389,7 @@ class DiceLayer {
 	}
 
 	addPawPrint(x: number, y: number, angle: number): SpriteProxy {
-		const pawPrint = this.pawPrints.addShifted(x, y, Math.round(Math.random() * this.pawPrints.sprites.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
+		const pawPrint = this.pawPrints.addShifted(x, y, Math.round(Math.random() * this.pawPrints.spriteProxies.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		pawPrint.rotation = angle;
 		pawPrint.expirationDate = performance.now() + 4000;
 		pawPrint.fadeOutTime = 2000;
@@ -2417,7 +2417,7 @@ class DiceLayer {
 
 		let index = 0;
 		if (trailingEffect.StartIndex === -1)
-			index = Math.round(Math.random() * sprites.sprites.length);
+			index = Math.round(Math.random() * sprites.spriteProxies.length);
 		else
 			index = trailingEffect.StartIndex;
 

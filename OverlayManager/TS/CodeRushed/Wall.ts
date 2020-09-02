@@ -76,8 +76,8 @@ class Wall extends SpriteProxy {
     this.endCap2.changeVelocity(initialVelocityX, -initialVelocityY, now);
     this.stillFlying = true;
 
-    activeDroneGame.endCaps.sprites.push(this.endCap1);
-    activeDroneGame.endCaps.sprites.push(this.endCap2);
+    activeDroneGame.endCaps.spriteProxies.push(this.endCap1);
+    activeDroneGame.endCaps.spriteProxies.push(this.endCap2);
     super.cropped = true;
   }
 

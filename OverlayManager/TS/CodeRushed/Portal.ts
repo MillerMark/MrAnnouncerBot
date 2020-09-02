@@ -14,7 +14,7 @@
   drop(): void {
     if (!(activeDroneGame instanceof DroneGame))
       return;
-    activeDroneGame.purpleMeteors.sprites.push(new Meteor(Random.intMax(activeDroneGame.purpleMeteors.baseAnimation.frameCount), this.x + (Portal.size - meteorWidth) / 2, this.y + (Portal.size - meteorHeight) / 2));
+    activeDroneGame.purpleMeteors.spriteProxies.push(new Meteor(Random.intMax(activeDroneGame.purpleMeteors.baseAnimation.frameCount), this.x + (Portal.size - meteorWidth) / 2, this.y + (Portal.size - meteorHeight) / 2));
   }
 
   set delayStart(delayMs: number) {
@@ -93,12 +93,12 @@
     }
 
     allDrones.allSprites.forEach((spriteLists: Sprites) => {
-      spriteLists.sprites.forEach(checkDrone);
+      spriteLists.spriteProxies.forEach(checkDrone);
     });
 
     allDrones.childCollections.forEach((spriteCollection: SpriteCollection) => {
       spriteCollection.allSprites.forEach((spriteLists: Sprites) => {
-        spriteLists.sprites.forEach(checkDrone);
+        spriteLists.spriteProxies.forEach(checkDrone);
       });
     });
 
