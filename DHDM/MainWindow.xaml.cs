@@ -3079,6 +3079,7 @@ namespace DHDM
 				case Skills.intelligence: return "Intelligence";
 				case Skills.wisdom: return "Wisdom";
 				case Skills.charisma: return "Charisma";
+				case Skills.randomShit: return "Random Shit";
 			}
 			return "None";
 		}
@@ -4595,6 +4596,8 @@ namespace DHDM
 				lowerCaseSkillName = "animal handling";
 			else if (skill == Skills.sleightOfHand)
 				lowerCaseSkillName = "sleight of hand";
+			else if (skill == Skills.randomShit)
+				lowerCaseSkillName = "random shit";
 			for (int i = 0; i < cbSkillFilter.Items.Count; i++)
 			{
 				if (cbSkillFilter.Items[i] is ComboBoxItem item)
@@ -8361,10 +8364,12 @@ namespace DHDM
 
 		public void PrepareSkillCheck(string skillCheck)
 		{
+			spellToCastOnRoll = null;
 			PlayScene($"DH.Skill.{skillCheck}");
 			PlaySceneAfter("Players", 14000);
 			Dispatcher.Invoke(() =>
 			{
+				ckbUseMagic.IsChecked = false;
 				SelectSkill(DndUtils.ToSkill(skillCheck));
 				NextDieRollType = DiceRollType.SkillCheck;
 			});
@@ -8372,10 +8377,12 @@ namespace DHDM
 
 		public void PrepareSavingThrow(string savingThrow)
 		{
+			spellToCastOnRoll = null;
 			PlayScene($"DH.Save.{savingThrow}");
 			PlaySceneAfter("Players", 12000);
 			Dispatcher.Invoke(() =>
 			{
+				ckbUseMagic.IsChecked = false;
 				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
 				NextDieRollType = DiceRollType.SavingThrow;
 			});

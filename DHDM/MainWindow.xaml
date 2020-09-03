@@ -432,6 +432,8 @@
 												<ComboBoxItem>Intelligence</ComboBoxItem>
 												<ComboBoxItem>Wisdom</ComboBoxItem>
 												<ComboBoxItem>Charisma</ComboBoxItem>
+												<ComboBoxItem>-</ComboBoxItem>
+												<ComboBoxItem>Random Shit</ComboBoxItem>
 											</ComboBox>
 										</StackPanel>
 										<RadioButton x:Name="rbFlatD20" MinHeight="22" Checked="RbFlatD20_Checked" GroupName="DieRollTypes" Margin="0, 4, 0, 0" >

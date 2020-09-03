@@ -25,8 +25,18 @@ class ConditionManager {
 	conditionGlow: Sprites;
 	conditionBlast: Sprites;
 
+	iGetPlayerX: IGetPlayerX; //  & ITextFloater
+	iNameplateRenderer: INameplateRenderer;
+	soundManager: ISoundManager;
+
 	constructor() {
 
+	}
+
+	initialize(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager) {
+		this.iGetPlayerX = iGetPlayerX;
+		this.iNameplateRenderer = iNameplateRenderer;
+		this.soundManager = soundManager;
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
@@ -35,6 +45,10 @@ class ConditionManager {
 		if (this.conditions.spriteProxies.length === 0)
 			return;
 
+		//this.drawConditionIndices(context);
+	}
+
+	private drawConditionIndices(context: CanvasRenderingContext2D) {
 		context.fillStyle = '#000000';
 		context.font = '14px Arial';
 		context.textAlign = 'left';
@@ -89,18 +103,20 @@ class ConditionManager {
 	static readonly plateWidthAdjust = 31;
 
 	// TODO: Consider consolidating parameters to a single parameter.
-	private getNameplateLeftEdge(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Character[]): number {
-		return iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, playerIndex, players) - ConditionManager.plateMargin;
+	private getNameplateLeftEdge(context: CanvasRenderingContext2D, playerIndex: number, players: Character[]): number {
+		return this.iGetPlayerX.getPlayerTargetX(this.iNameplateRenderer, context, playerIndex, players) - ConditionManager.plateMargin;
 	}
 
-	getSpritesAbove(sprites: Sprites, sprite: SpriteProxy, worldView: WorldView): Array<SpriteProxy> {
+	getLaterSprites(sprites: Sprites, sprite: SpriteProxy, worldView: WorldView): Array<SpriteProxy> {
 		const compareConditionState: ConditionState = sprite.data as ConditionState;
 		if (!compareConditionState)
 			return null;
 
 		const flippedWorldView: WorldView = this.getFlippedWorldView(worldView);
 
-		return this.getEarlierSprites(sprites, compareConditionState.finalX, compareConditionState.finalY, compareConditionState.creatureId, flippedWorldView);
+		const earlierSprites: Array<SpriteProxy> = this.getEarlierSprites(sprites, compareConditionState.finalX, compareConditionState.finalY, compareConditionState.creatureId, flippedWorldView);
+
+		return this.sortSprites(earlierSprites, worldView);
 	}
 
 	getLaterSpritesFromStack(creatureId: number, sprites: Sprites, compareX: number, compareY: number, worldView: WorldView = WorldView.Normal): Array<SpriteProxy> {
@@ -109,14 +125,14 @@ class ConditionManager {
 		return this.getEarlierSprites(sprites, compareX, compareY, creatureId, flippedWorldView);
 	}
 
-    private getFlippedWorldView(worldView: WorldView) {
-        let flippedWorldView: WorldView;
-        if (worldView === WorldView.Normal)
-            flippedWorldView = WorldView.Flipped;
-        else
-            flippedWorldView = WorldView.Normal;
-        return flippedWorldView;
-    }
+	private getFlippedWorldView(worldView: WorldView) {
+		let flippedWorldView: WorldView;
+		if (worldView === WorldView.Normal)
+			flippedWorldView = WorldView.Flipped;
+		else
+			flippedWorldView = WorldView.Normal;
+		return flippedWorldView;
+	}
 
 	getAllSpritesFromStack(sprites: Sprites, creatureId: number): Array<SpriteProxy> {
 		const returnSprites: Array<SpriteProxy> = [];
@@ -187,12 +203,12 @@ class ConditionManager {
 		return null;
 	}
 
-	private getNumConditionsBefore(sprites: Sprites, sprite: SpriteProxy, scaledConditionHeight: number, worldView: WorldView, numColumns = 1) {
+	private getStackHeightBefore(sprites: Sprites, sprite: SpriteProxy, scaledConditionHeight: number, worldView: WorldView, numColumns = 1) {
 		const compareConditionState: ConditionState = sprite.data as ConditionState;
 		if (!compareConditionState)
 			return;
 		const spritesBelow: Array<SpriteProxy> = this.getEarlierSprites(sprites, compareConditionState.finalX, compareConditionState.finalY, compareConditionState.creatureId, worldView);
-		return spritesBelow.length * scaledConditionHeight;
+		return Math.floor(spritesBelow.length / numColumns) * scaledConditionHeight;
 	}
 
 	private getEarlierSprites(sprites: Sprites, compareX: number, compareY: number, creatureId: number, worldView: WorldView) {
@@ -228,8 +244,12 @@ class ConditionManager {
 						}
 					}
 		}
+		return this.sortSprites(spritesBelow, worldView);
+	}
+
+	sortSprites(sprites: Array<SpriteProxy>, worldView: WorldView) {
 		if (worldView === WorldView.Normal) {
-			return spritesBelow.sort((s1, s2) => {
+			return sprites.sort((s1, s2) => {
 				const state2: ConditionState = s2.data as ConditionState;
 				const state1: ConditionState = s1.data as ConditionState;
 				if (state1.finalY !== state2.finalY)
@@ -239,7 +259,7 @@ class ConditionManager {
 			});
 		}
 		else {
-			return spritesBelow.sort((s1, s2) => {
+			return sprites.sort((s1, s2) => {
 				const state2: ConditionState = s2.data as ConditionState;
 				const state1: ConditionState = s1.data as ConditionState;
 				if (state1.finalY !== state2.finalY)
@@ -250,11 +270,11 @@ class ConditionManager {
 		}
 	}
 
-	drawDiagnostics(context: CanvasRenderingContext2D, iNameplateRenderer: INameplateRenderer, iGetPlayerX: IGetPlayerX & ITextFloater, players: Character[]) {
+	drawDiagnostics(context: CanvasRenderingContext2D, players: Character[]) {
 		context.lineWidth = 4;
 		for (let i = 0; i < players.length; i++) {
-			const widthToTheLeft: number = this.getAvailableSpaceLeftOfPlate(iNameplateRenderer, context, iGetPlayerX, i, players);
-			const x: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, i, players);
+			const widthToTheLeft: number = this.getAvailableSpaceLeftOfPlate(context, i, players);
+			const x: number = this.getNameplateLeftEdge(context, i, players);
 			const y = 1000;
 
 			context.beginPath();
@@ -273,8 +293,8 @@ class ConditionManager {
 		}
 	}
 
-	private getAvailableSpaceLeftOfPlate(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>) {
-		const leftEdgeThisNameplate: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
+	private getAvailableSpaceLeftOfPlate(context: CanvasRenderingContext2D, playerIndex: number, players: Array<Character>) {
+		const leftEdgeThisNameplate: number = this.getNameplateLeftEdge(context, playerIndex, players);
 
 		if (playerIndex <= 0) {
 			return leftEdgeThisNameplate;
@@ -282,23 +302,21 @@ class ConditionManager {
 
 		const playerLeftIndex: number = playerIndex - 1;
 
-		const previousPlateWidth: number = iNameplateRenderer.getPlateWidth(context, players[playerLeftIndex], playerLeftIndex);
-		const previousPlateLeft: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, playerLeftIndex, players);
+		const previousPlateWidth: number = this.iNameplateRenderer.getPlateWidth(context, players[playerLeftIndex], playerLeftIndex);
+		const previousPlateLeft: number = this.getNameplateLeftEdge(context, playerLeftIndex, players);
 		const previousPlateRight: number = previousPlateLeft + previousPlateWidth;
 
 		return leftEdgeThisNameplate - previousPlateRight - ConditionManager.plateWidthAdjust;
 	}
 
-	private getConditionScale(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Character[], offsetCount = 0) {
-		const widthToTheLeft: number = this.getAvailableSpaceLeftOfPlate(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
+	private getConditionScale(context: CanvasRenderingContext2D, playerIndex: number, players: Character[], offsetCount = 0) {
+		const widthToTheLeft: number = this.getAvailableSpaceLeftOfPlate(context, playerIndex, players);
 		return Math.min(1, (widthToTheLeft * 2.0 / 3.0) / ConditionManager.conditionIconLength);
 	}
 
 	static readonly inGameCreatureScrollBottom: number = InGameCreatureManager.creatureScrollHeight + InGameCreatureManager.inGameStatTopMargin;
 
-	private addCondition(rightEdge: number, conditionFrameIndex: number, creatureId: number,
-		soundManager: ISoundManager, scale = 1, hueShift = 0, worldView: WorldView = WorldView.Normal, numColumns = 1) {
-
+	private addCondition(rightEdge: number, conditionFrameIndex: number, creatureId: number, scale = 1, hueShift = 0, worldView: WorldView = WorldView.Normal, numColumns = 1) {
 		const iconActualWidth: number = ConditionManager.conditionIconLength * scale;
 		const numConditionsStacked: number = this.getNumConditionsFor(creatureId);
 		const rowsComplete: number = Math.floor(numConditionsStacked / numColumns);
@@ -313,7 +331,7 @@ class ConditionManager {
 			bottomEdgeY = existingStackHeight + ConditionManager.conditionIconLength * scale + ConditionManager.inGameCreatureScrollBottom;
 
 		const sprite: SpriteProxy = this.conditions.addShifted(rightEdge + indent, bottomEdgeY, conditionFrameIndex, hueShift);
-		this.prepareConditionForEntrance(this.conditions, sprite, creatureId, conditionFrameIndex, scale, worldView, soundManager);
+		this.prepareConditionForEntrance(this.conditions, sprite, creatureId, conditionFrameIndex, scale, worldView, this.soundManager);
 		const glow: SpriteProxy = this.conditionGlow.addShifted(rightEdge + indent, bottomEdgeY, -1, hueShift);
 		this.prepareConditionForEntrance(this.conditionGlow, glow, creatureId, conditionFrameIndex, scale, worldView);
 	}
@@ -394,17 +412,17 @@ class ConditionManager {
 			soundManager.safePlayMp3('Conditions/Clack[5]');
 	}
 
-	private removeCondition(id: number, conditionFrameIndex: number, nameplateLeftEdge: number, scale: number, worldView: WorldView, numColumns: number, soundManager: ISoundManager) {
-		this.removeConditionByIdAndFrameIndex(this.conditionGlow, id, conditionFrameIndex, nameplateLeftEdge, scale, worldView, numColumns);
-		this.removeConditionByIdAndFrameIndex(this.conditions, id, conditionFrameIndex, nameplateLeftEdge, scale, worldView, numColumns, soundManager);
+	private removeCondition(id: number, conditionFrameIndex: number, rightAnchor: number, scale: number, worldView: WorldView, numColumns: number) {
+		this.removeConditionByIdAndFrameIndex(this.conditionGlow, id, conditionFrameIndex, rightAnchor, scale, worldView, numColumns);
+		this.removeConditionByIdAndFrameIndex(this.conditions, id, conditionFrameIndex, rightAnchor, scale, worldView, numColumns, this.soundManager);
 	}
 
-	removeConditionByIdAndFrameIndex(sprites: Sprites, creatureId: number, conditionFrameIndex: number, nameplateLeftEdge: number, scale: number, worldView: WorldView, numColumns: number, soundManager: ISoundManager = null) {
+	removeConditionByIdAndFrameIndex(sprites: Sprites, creatureId: number, conditionFrameIndex: number, rightAnchor: number, scale: number, worldView: WorldView, numColumns: number, soundManager: ISoundManager = null) {
 		for (let i = 0; i < sprites.spriteProxies.length; i++) {
 			const sprite: SpriteProxy = sprites.spriteProxies[i];
 			const conditionState = sprite.data as ConditionState;
 			if (conditionState && conditionState.creatureId === creatureId && conditionState.conditionFrameIndex === conditionFrameIndex)
-				this.removeConditionWithAnimation(sprites, sprite, nameplateLeftEdge, scale, worldView, numColumns, soundManager);
+				this.removeConditionWithAnimation(sprites, sprite, rightAnchor, scale, worldView, numColumns, soundManager);
 		}
 	}
 
@@ -432,7 +450,11 @@ class ConditionManager {
 				row++;
 			}
 
-			//newY -= scaledSpriteEdgeLength * yFactor;
+			const conditionState: ConditionState = sprite.data as ConditionState;
+			if (conditionState) {
+				conditionState.finalX = targetX;
+				conditionState.finalY = targetY;
+			}
 
 			if (sprite.x === targetX && sprite.y === targetY)
 				continue;
@@ -445,9 +467,9 @@ class ConditionManager {
 		}
 	}
 
-	removeConditionWithAnimation(sprites: Sprites, spriteToRemove: SpriteProxy, nameplateLeftEdge: number, scale: number, worldView: WorldView, numColumns: number, soundManager: ISoundManager = null) {
+	removeConditionWithAnimation(sprites: Sprites, spriteToRemove: SpriteProxy, rightAnchor: number, scale: number, worldView: WorldView, numColumns: number, soundManager: ISoundManager = null) {
 		const compareState: ConditionState = spriteToRemove.data as ConditionState;
-		const spritesToAnimate: Array<SpriteProxy> = this.getSpritesAbove(sprites, spriteToRemove, worldView);
+		const spritesToAnimate: Array<SpriteProxy> = this.getLaterSprites(sprites, spriteToRemove, worldView);
 		console.log(spritesToAnimate);
 
 		const conditionIconLength: number = ConditionManager.conditionIconLength * scale;
@@ -459,9 +481,9 @@ class ConditionManager {
 		//const existingStackHeight: number = rowsComplete * iconActualWidth;
 
 
-		const stackHeightBelow: number = this.getNumConditionsBefore(sprites, spriteToRemove, conditionIconLength, worldView);
+		const stackHeightBelow: number = this.getStackHeightBefore(sprites, spriteToRemove, conditionIconLength, worldView);
 		const startY: number = this.getStackingStartY(worldView, conditionIconLength, stackHeightBelow);
-		this.animateSpritesIntoPosition(spritesToAnimate, numEarlierConditions, numColumns, nameplateLeftEdge, startY, conditionIconLength, sprites.originX, sprites.originY, worldView, soundManager);
+		this.animateSpritesIntoPosition(spritesToAnimate, numEarlierConditions, numColumns, rightAnchor, startY, conditionIconLength, sprites.originX, sprites.originY, worldView, soundManager);
 
 		if (soundManager) { // Only true when removing main condition sprite (false when removing glow).
 			const blast: SpriteProxy = this.conditionBlast.addShifted(spriteToRemove.x + sprites.originX, spriteToRemove.y + sprites.originY, 0, (spriteToRemove as ColorShiftingSpriteProxy).hueShift);
@@ -472,42 +494,43 @@ class ConditionManager {
 		spriteToRemove.fadeOutNow(200);
 	}
 
-	getStackingStartY(worldView: WorldView, numConditionIcons: number, stackHeightBelow = 0) {
+	getStackingStartY(worldView: WorldView, conditionIconLength: number, stackHeightBelow = 0) {
 		if (worldView === WorldView.Normal)
 			return 1080 - stackHeightBelow;
 		else
-			return ConditionManager.inGameCreatureScrollBottom + stackHeightBelow + numConditionIcons;
+			return ConditionManager.inGameCreatureScrollBottom + stackHeightBelow + conditionIconLength;
 	}
 
 	static readonly numPlayerConditionColumns: number = 1;
 
-	updatePlayerConditions(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>): void {
+	updatePlayerConditions(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, context: CanvasRenderingContext2D, players: Array<Character>): void {
 		if (existingPlayerStats.Conditions === latestPlayerStats.Conditions)
 			return;
 
 		const playerId: number = latestPlayerStats.PlayerId;
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
+		const playerIndex: number = this.iGetPlayerX.getPlayerIndex(playerId);
 
-		const scale = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
+		const scale = this.getConditionScale(context, playerIndex, players);
 
-		const nameplateLeftEdge: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, iGetPlayerX.getPlayerIndex(playerId), players);
+		const nameplateLeftEdge: number = this.getNameplateLeftEdge(context, this.iGetPlayerX.getPlayerIndex(playerId), players);
 
 		let hueShift = 0;
 
-		if (playerId >= 0 && players && iGetPlayerX) {
-			const playerIndex: number = iGetPlayerX.getPlayerIndex(playerId);
+		if (playerId >= 0 && players && this.iGetPlayerX) {
+			const playerIndex: number = this.iGetPlayerX.getPlayerIndex(playerId);
 			const player: Character = players[playerIndex];
 			if (player) {
 				hueShift = player.hueShift;
 			}
 		}
-		this.updateConditions(existingPlayerStats.Conditions, latestPlayerStats.Conditions, playerId, nameplateLeftEdge, scale, soundManager, hueShift, WorldView.Normal, ConditionManager.numPlayerConditionColumns);
+		this.updateConditions(existingPlayerStats.Conditions, latestPlayerStats.Conditions, playerId, nameplateLeftEdge, scale, hueShift, WorldView.Normal, ConditionManager.numPlayerConditionColumns);
 
 		existingPlayerStats.Conditions = latestPlayerStats.Conditions;
 	}
 
-	updateConditions(existingConditions: Conditions, compareConditions: Conditions, creatureId: number, rightEdge: number, scale: number, soundManager: ISoundManager, hueShift = 0, worldView: WorldView = WorldView.Normal, numColumns = 1) {
+	updateConditions(existingConditions: Conditions, compareConditions: Conditions, creatureId: number, rightAnchor: number, scale: number, hueShift = 0, worldView: WorldView = WorldView.Normal, numColumns = 1) {
 		let conditionFrameIndex = 0;
+		let removedCondition = false;
 		for (const item in Conditions) {
 			if (!isNaN(Number(item))) {
 				continue;
@@ -517,34 +540,49 @@ class ConditionManager {
 			if (condition !== Conditions.None) {
 				if ((existingConditions & condition) !== (compareConditions & condition)) {
 					if ((existingConditions & condition) === condition) { // Bit is set.
-						this.removeCondition(creatureId, conditionFrameIndex, rightEdge, scale, worldView, numColumns, soundManager);
+						this.removeCondition(creatureId, conditionFrameIndex, rightAnchor, scale, worldView, numColumns);
+						removedCondition = true;
 					}
 					else {
-						this.addCondition(rightEdge, conditionFrameIndex, creatureId, soundManager, scale, hueShift, worldView, numColumns);
+						this.addCondition(rightAnchor, conditionFrameIndex, creatureId, scale, hueShift, worldView, numColumns);
 					}
+					//if (this.stackHasErrors()) {
+					//	debugger;  // <--- if we wanted to hunt the bug
+					//	hasErrors = true;
+					//}
 				}
 				conditionFrameIndex++;
 			}
 		}
+		//if (removedCondition) {
+		//	// TODO: Get this working.
+		//	//if (this.stackHasErrors()) {
+		//	if (worldView === WorldView.Normal)
+		//		{
+		//		//this.restackPlayerConditions(context, exist);
+		//		}
+		//	else
+		//		this.restackNpcConditions(creatureId, rightAnchor, this.soundManager);
+		//}
 	}
 
-	restackPlayerConditions(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, players: Character[], worldView: WorldView = WorldView.Normal) {
+	restackPlayerConditions(context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, players: Character[], worldView: WorldView = WorldView.Normal) {
 		if (!existingPlayerStats.Conditions)
 			return;
 
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
-		const targetX: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
+		const playerIndex: number = this.iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
+		const targetX: number = this.getNameplateLeftEdge(context, playerIndex, players);
 
-		const scale = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, playerIndex, players);
-		this.stackConditionSprites(existingPlayerStats.PlayerId, targetX, scale, worldView, soundManager, ConditionManager.numPlayerConditionColumns);
+		const scale = this.getConditionScale(context, playerIndex, players);
+		this.stackConditionSprites(existingPlayerStats.PlayerId, targetX, scale, worldView, ConditionManager.numPlayerConditionColumns);
 
 	}
 
-	stackConditionSprites(playerId: number, targetX: number, scale: number, worldView: WorldView, soundManager: ISoundManager, numColumns: number) {
+	stackConditionSprites(playerId: number, targetX: number, scale: number, worldView: WorldView, numColumns: number) {
 		const targetY = 1080;
 
 		const conditionSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditions, playerId);
-		this.animateSpritesIntoPosition(conditionSprites, 0, numColumns, targetX, targetY, ConditionManager.conditionIconLength * scale, this.conditions.originX, this.conditions.originY, worldView, soundManager);
+		this.animateSpritesIntoPosition(conditionSprites, 0, numColumns, targetX, targetY, ConditionManager.conditionIconLength * scale, this.conditions.originX, this.conditions.originY, worldView, this.soundManager);
 
 		const glowSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditionGlow, playerId);
 		this.animateSpritesIntoPosition(glowSprites, 0, numColumns, targetX, targetY, ConditionManager.conditionIconLength * scale, this.conditionGlow.originX, this.conditionGlow.originY, worldView);
@@ -553,8 +591,8 @@ class ConditionManager {
 	movePlayerConditions(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>, worldView: WorldView = WorldView.Normal) {
 		players.forEach((player, index) => {
 			const conditionSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditions, player.playerID);
-			const x: number = this.getNameplateLeftEdge(iNameplateRenderer, context, iGetPlayerX, index, players);
-			const scale: number = this.getConditionScale(iNameplateRenderer, context, iGetPlayerX, index, players);
+			const x: number = this.getNameplateLeftEdge(context, index, players);
+			const scale: number = this.getConditionScale(context, index, players);
 
 			for (let i = 0; i < conditionSprites.length; i++) {
 
@@ -566,7 +604,7 @@ class ConditionManager {
 				}
 			}
 
-			this.stackConditionSprites(player.playerID, x, scale, worldView, soundManager, ConditionManager.numPlayerConditionColumns);
+			this.stackConditionSprites(player.playerID, x, scale, worldView, ConditionManager.numPlayerConditionColumns);
 		});
 	}
 
@@ -579,30 +617,32 @@ class ConditionManager {
 		}
 	}
 
-	restackNpcConditions(creature: InGameCreature, x: number, soundManager: SoundManager) {
+	restackNpcConditions(creatureId: number, x: number, soundManager: ISoundManager) {
 		const conditionIconLength: number = ConditionManager.conditionIconLength * ConditionManager.npcConditionScale;
 		const startY: number = this.getStackingStartY(WorldView.Flipped, conditionIconLength);
-		this.restackNpcConditionsFor(this.conditions, creature, x, startY, conditionIconLength, soundManager);
-		this.restackNpcConditionsFor(this.conditionGlow, creature, x, startY, conditionIconLength, soundManager);
+		this.restackNpcConditionsFor(this.conditions, creatureId, x, startY, conditionIconLength, soundManager);
+		this.restackNpcConditionsFor(this.conditionGlow, creatureId, x, startY, conditionIconLength, soundManager);
 	}
 
-	private restackNpcConditionsFor(sprites: Sprites, creature: InGameCreature, x: number, startY: number, conditionIconLength: number, soundManager: SoundManager) {
-		const conditionSpritesToMove: Array<SpriteProxy> = this.getAllSpritesFromStack(sprites, creature.Index);
+	private restackNpcConditionsFor(sprites: Sprites, creatureId: number, x: number, startY: number, conditionIconLength: number, soundManager: ISoundManager) {
+		const conditionSpritesToMove: Array<SpriteProxy> = this.getAllSpritesFromStack(sprites, creatureId);
 		this.animateSpritesIntoPosition(conditionSpritesToMove, 0, ConditionManager.numNpcConditionsPerRow, x, startY, conditionIconLength, sprites.originX, sprites.originY, WorldView.Flipped, soundManager);
 	}
 
-	moveNpcConditionsTo(creatureIndex: number, targetX: number, moveTime: number, delayMs: number, soundManager: SoundManager) {
-		this.moveNpcConditionSpritesTo(this.conditions, creatureIndex, targetX, moveTime, delayMs);
-		this.moveNpcConditionSpritesTo(this.conditionGlow, creatureIndex, targetX, moveTime, delayMs);
+	moveNpcConditionsTo(creatureIndex: number, deltaX: number, moveTime: number, delayMs: number, soundManager: SoundManager) {
+		this.moveNpcConditionSpritesTo(this.conditions, creatureIndex, deltaX, moveTime, delayMs);
+		this.moveNpcConditionSpritesTo(this.conditionGlow, creatureIndex, deltaX, moveTime, delayMs);
 	}
 
-	moveNpcConditionSpritesTo(sprites: Sprites, creatureId: number, targetX: number, moveTime: number, delayMs: number) {
+	moveNpcConditionSpritesTo(sprites: Sprites, creatureId: number, deltaX: number, moveTime: number, delayMs: number) {
 		// Since we are moving X we must account for the originX. Also NpcCondition sprites are anchored at the bottom right of the tile.
-		const adjustedX: number = targetX - sprites.originX + ConditionManager.conditionLengthIncludingMargin;
+
+		//const adjustedX: number = deltaX - sprites.originX + ConditionManager.conditionLengthIncludingMargin;
 		sprites.spriteProxies.forEach((sprite) => {
 			const conditionState: ConditionState = sprite.data as ConditionState;
 			if (conditionState && conditionState.creatureId === creatureId) {
-				sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, moveTime);
+				//sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, moveTime);
+				sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, sprite.x + deltaX, sprite.y, moveTime);
 			}
 		});
 	}

@@ -116,7 +116,11 @@ namespace DHDM
 				newReadyState = true;
 			foreach (PlayerStats playerStats in Players)
 			{
+				playerStats.ClearDiceStack();
+				playerStats.Vantage = VantageKind.Normal;
 				playerStats.ReadyToRollDice = newReadyState;
+				if (playerStats.ReadyToRollDice)
+					playerStats.AddD20();
 			}
 		}
 

@@ -170,7 +170,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		players.forEach((player, index) => {
 			const targetSprite: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, player.playerID);
 			if (targetSprite) {
-				const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, index /* iGetPlayerX.getPlayerIndex(player.playerID) */, players) - this.playerTargetSprites.originX;
+				const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, index, players) - this.playerTargetSprites.originX;
 
 				if (targetSprite.x !== x) {
 					targetSprite.ease(performance.now(), targetSprite.x, targetSprite.y, x, targetSprite.y, 360);
@@ -472,7 +472,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		switch (command) {
 			case 'Update':
 				this.updatePlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, existingPlayerStats, data, latestPlayerStats, players);
-				conditionManager.updatePlayerConditions(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
+				conditionManager.updatePlayerConditions(existingPlayerStats, latestPlayerStats, context, players);
 				break;
 
 			case 'HourglassUpdate':
@@ -481,7 +481,7 @@ class PlayerStatManager implements IAllPlayerStats {
 
 			case 'ReStackConditions':
 				if (conditionManager)
-					conditionManager.restackPlayerConditions(iGetPlayerX, iNameplateRenderer, soundManager, context, existingPlayerStats, players);
+					conditionManager.restackPlayerConditions(context, existingPlayerStats, players);
 				break;
 		}
 	}
@@ -1073,7 +1073,7 @@ class PlayerStatManager implements IAllPlayerStats {
 			return;
 
 		const playerId: number = latestPlayerStats.PlayerId;
-		const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX, iGetPlayerX.getPlayerIndex(playerId), players);
+		const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX.getPlayerIndex(playerId), players);
 
 		if (latestPlayerStats.IsTargeted) {
 			//const centerNameplateY = 1052;

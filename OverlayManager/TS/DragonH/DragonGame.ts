@@ -2,7 +2,7 @@
 	getPlayerX(playerIndex: number): number;
 	getPlayerIndex(playerId: number): number;
 	getPlayerFirstName(playerId: number): string;
-	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>);
+	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, playerIndex: number, players: Array<Character>);
 }
 
 class WealthChange {
@@ -176,7 +176,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	dragonSharedSounds: SoundManager;
 
-	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, iGetPlayerX: IGetPlayerX & ITextFloater, playerIndex: number, players: Array<Character>) {
+	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, playerIndex: number, players: Array<Character>) {
 		const player: Character = players[playerIndex];
 
 		let plateWidth = 0;
@@ -188,7 +188,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			plateAdjust -= plateWidth / 2 + ConditionManager.plateMargin;
 		}
 
-		return iGetPlayerX.getPlayerX(playerIndex) + plateAdjust;
+		return this.getPlayerX(playerIndex) + plateAdjust;
 	}
 
 

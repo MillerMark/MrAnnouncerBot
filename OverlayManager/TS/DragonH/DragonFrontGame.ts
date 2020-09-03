@@ -120,6 +120,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
+		this.conditionManager.initialize(this, this, this.dragonFrontSounds);
 		this.initializeOffscreenCanvases();
 	}
 

@@ -224,6 +224,8 @@ class DragonBackGame extends DragonGame {
 	initialize() {
 		super.initialize();
 
+		this.inGameCreatureManager.initialize(this, null, this.dragonBackSounds);
+
 		Folders.assets = 'GameDev/Assets/DragonH/';
 
 		this.lightning = new Sprites('PlayerEffects/Lightning/Lightning', 19, fps30, AnimationStyle.Sequential, true);
@@ -312,7 +314,6 @@ class DragonBackGame extends DragonGame {
 		this.sunMoonDials.originY = 251;
 
 		this.sunMoonDial = this.sunMoonDials.add(this.getClockX(), this.getClockY()).setScale(this.clockScale);
-
 		this.inGameCreatureManager.loadResources();
 
 		this.clockLayerEffects.add(this.sunMoonDials);
@@ -320,8 +321,8 @@ class DragonBackGame extends DragonGame {
 
 	buildTestGoldParticle(): any {
 		//this.emitter = new Emitter(new Vector(1920, 1080), new Vector(-11, -14));
-		let width: number = 37;
-		let height: number = 69;
+		const width = 37;
+		const height = 69;
 		this.emitter = new Emitter(new Vector(800, 460));
 		this.emitter.setRectShape(width, height);
 		this.emitter.saturation.target = 0.9;

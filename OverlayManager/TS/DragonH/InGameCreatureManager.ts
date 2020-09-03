@@ -23,6 +23,10 @@
 
 	}
 
+	initialize(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager) {
+		this.conditionManager.initialize(iGetPlayerX, iNameplateRenderer, soundManager);
+	}
+
 	loadResources() {
 		const saveBypassFrameSkip: boolean = globalBypassFrameSkip;
 		globalBypassFrameSkip = true;
@@ -384,9 +388,9 @@
 		}
 
 		if (existingCreature.Conditions !== updatedGameCreature.Conditions) {
-			const rightEdge: number = this.getConditionRightEdge(existingCreature);
+			const rightAnchor: number = this.getConditionRightAnchor(existingCreature);
 			const hueShift: number = this.getHueShift(existingCreature);;
-			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightEdge, ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
+			this.conditionManager.updateConditions(existingCreature.Conditions, updatedGameCreature.Conditions, existingCreature.Index, rightAnchor, ConditionManager.npcConditionScale, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
 			existingCreature.Conditions = updatedGameCreature.Conditions;
 		}
 
@@ -409,7 +413,7 @@
 		return healthChangeAnimationDelayMs;
 	}
 
-	private getConditionRightEdge(existingCreature: InGameCreature): number {
+	private getConditionRightAnchor(existingCreature: InGameCreature): number {
 		return this.getX(existingCreature) + ConditionManager.conditionLengthIncludingMargin;
 	}
 
@@ -529,8 +533,8 @@
 	restackNpcConditions(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
 		inGameCreatureDtos.forEach((creature) => {
 			const inGameCreature: InGameCreature = this.getInGameCreatureByIndex(creature.Index);
-			const x: number = this.getConditionRightEdge(inGameCreature);
-			this.conditionManager.restackNpcConditions(inGameCreature, x, soundManager);
+			const x: number = this.getConditionRightAnchor(inGameCreature);
+			this.conditionManager.restackNpcConditions(inGameCreature.Index, x, soundManager);
 		});
 	}
 
@@ -625,9 +629,9 @@
 		}
 
 		const hueShift: number = this.getHueShift(inGameCreature);
-		const rightEdge: number = this.getConditionRightEdge(inGameCreature);
+		const rightEdge: number = this.getConditionRightAnchor(inGameCreature);
 		this.conditionManager.updateConditions(Conditions.None, inGameCreature.Conditions, inGameCreature.Index, rightEdge,
-			ConditionManager.npcConditionScale, soundManager, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
+			ConditionManager.npcConditionScale, hueShift, WorldView.Flipped, InGameCreatureManager.numNpcConditionColumns);
 	}
 
 	private getFriendEnemyFrameIndex(inGameCreature: InGameCreature) {
@@ -761,7 +765,7 @@
 			disappearAnimation.delayStart = delayMs;
 			disappearAnimation.data = inGameCreature;
 			inGameCreature.removing = true;
-      const delayToRemove: number = delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2;
+			const delayToRemove: number = delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2;
 			this.removeInGameCreature(inGameCreature, delayToRemove, soundManager);
 			this.conditionManager.fadeOutConditions(inGameCreature.Index, delayMs + delayBeforeFadeOutMs, InGameCreatureManager.leftRightMoveTime);
 			disappearAnimation.addOnCycleCallback(this.creatureDisappearAnimationComplete.bind(this));
@@ -781,6 +785,7 @@
 	}
 
 	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number, soundManager: SoundManager = null) {
+		const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(creature);
 		this.moveSpriteTo(this.parchmentBackground, creature, targetX, delayMs);
 		this.moveSpriteTo(this.parchmentShadow, creature, targetX, delayMs);
 		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
@@ -789,7 +794,11 @@
 		this.moveSpriteTo(this.creatureTalking, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollAppear, creature, targetX, delayMs);
 		this.moveSpriteTo(this.scrollDisappear, creature, targetX, delayMs);
-		this.conditionManager.moveNpcConditionsTo(creature.Index, targetX, InGameCreatureManager.leftRightMoveTime, delayMs, soundManager);
+		if (parchmentSprite) {
+			const adjustedX: number = targetX - this.parchmentBackground.originX;
+			const deltaX: number = adjustedX - parchmentSprite.x;
+			this.conditionManager.moveNpcConditionsTo(creature.Index, deltaX, InGameCreatureManager.leftRightMoveTime, delayMs, soundManager);
+		}
 	}
 
 	removeInGameCreature(creature: InGameCreature, delayMs: number, soundManager: SoundManager = null): void {

@@ -701,6 +701,8 @@ class Character {
 				return this.skillModStealth;
 			case Skills.survival:
 				return this.skillModSurvival;
+			case Skills.randomShit:
+				return 0;
 			case Skills.strength: return this.strengthMod;
 			case Skills.dexterity: return this.dexterityMod;
 			case Skills.intelligence: return this.intelligenceMod;

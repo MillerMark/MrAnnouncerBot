@@ -29,6 +29,7 @@ namespace DndCore
 		religion = 1048576,
 		sleightOfHand = 2097152,
 		stealth = 4194304,
-		survival = 8388608
+		survival = 8388608,
+		randomShit = 16777216
 	}
 }

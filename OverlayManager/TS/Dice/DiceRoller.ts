@@ -1651,6 +1651,8 @@ function getSkillCheckName() {
 		initialCapEnum = 'Animal Handling';
 	else if (diceRollData.skillCheck === Skills.sleightOfHand)
 		initialCapEnum = 'Sleight of Hand';
+	else if (diceRollData.skillCheck === Skills.randomShit)
+		initialCapEnum = 'Random Shit';
 	return initialCapEnum;
 }
 
