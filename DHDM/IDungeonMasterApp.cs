@@ -38,8 +38,8 @@ namespace DHDM
 		void ChangeWealth(List<int> playerIds, decimal deltaAmount);
 		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
-		void AdvanceClock(int hours, int minutes, int seconds);
-		void AdvanceDate(int days, int months, int years);
+		void AdvanceClock(int hours, int minutes, int seconds, bool resting);
+		void AdvanceDate(int days, int months, int years, bool resting);
 		void RollDice();
 		void HideScroll();
 		void DropWindup();

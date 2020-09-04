@@ -766,7 +766,7 @@
 			disappearAnimation.data = inGameCreature;
 			inGameCreature.removing = true;
 			const delayToRemove: number = delayMs + delayBeforeFadeOutMs + fadeOutTimeMs / 2;
-			this.removeInGameCreature(inGameCreature, delayToRemove, soundManager);
+			this.removeInGameCreature(inGameCreature, delayToRemove);
 			this.conditionManager.fadeOutConditions(inGameCreature.Index, delayMs + delayBeforeFadeOutMs, InGameCreatureManager.leftRightMoveTime);
 			disappearAnimation.addOnCycleCallback(this.creatureDisappearAnimationComplete.bind(this));
 			soundManager.safePlayMp3('InGameScrolls/InGameScrollDisappear');
@@ -784,7 +784,7 @@
 		sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, InGameCreatureManager.leftRightMoveTime);
 	}
 
-	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number, soundManager: SoundManager = null) {
+	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number) {
 		const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(creature);
 		this.moveSpriteTo(this.parchmentBackground, creature, targetX, delayMs);
 		this.moveSpriteTo(this.parchmentShadow, creature, targetX, delayMs);
@@ -797,11 +797,11 @@
 		if (parchmentSprite) {
 			const adjustedX: number = targetX - this.parchmentBackground.originX;
 			const deltaX: number = adjustedX - parchmentSprite.x;
-			this.conditionManager.moveNpcConditionsTo(creature.Index, deltaX, InGameCreatureManager.leftRightMoveTime, delayMs, soundManager);
+			this.conditionManager.moveNpcConditionsTo(creature.Index, deltaX, InGameCreatureManager.leftRightMoveTime, delayMs);
 		}
 	}
 
-	removeInGameCreature(creature: InGameCreature, delayMs: number, soundManager: SoundManager = null): void {
+	removeInGameCreature(creature: InGameCreature, delayMs: number): void {
 		const creatureIndexInArray: number = this.inGameCreatures.indexOf(creature);
 		if (creatureIndexInArray < 0) {
 			return;
@@ -815,7 +815,7 @@
 				isRightOfRemovedCreature = true;
 			}
 			else if (isRightOfRemovedCreature && !thisCreature.removing) {
-				this.moveCreatureTo(thisCreature, targetX, delayMs, soundManager);
+				this.moveCreatureTo(thisCreature, targetX, delayMs);
 				delayMs += InGameCreatureManager.timeBetweenMoves; // ms between each move.
 			}
 

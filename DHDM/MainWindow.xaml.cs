@@ -2809,7 +2809,7 @@ namespace DHDM
 				TellDungeonMasterTheTime();
 			}
 		}
-
+		
 		void TellDungeonMasterTheTime()
 		{
 			TellDungeonMaster($"The time is now {game.Clock.AsFullDndDateTimeString()}.");
@@ -5634,24 +5634,69 @@ namespace DHDM
 			// TODO: Tell DM
 		}
 
-		public void AdvanceClock(int hours, int minutes, int seconds)
+		string GetPlural(string name, int seconds)
+		{
+			if (seconds == 1)
+				return name;
+			return name + "s";
+		}
+
+		public void AdvanceClock(int hours, int minutes, int seconds, bool resting)
 		{
 			if (hours == 0 && minutes == 0 && seconds == 0)
 				return;
 			// TODO: Calculate clockMessage based on the delta here.
 			Dispatcher.Invoke(() =>
 			{
+				if (resting)
+				{
+					if (hours >= 8)
+					{
+						TellAll("All players have recharged after a long rest.");
+						game?.RechargePlayersAfterLongRest();
+					}
+					else if (hours >= 2)
+					{
+						TellAll("All players have had a short rest.");
+						game?.RechargePlayersAfterShortRest();
+					}
+				}
+
 				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), -1, Modifiers.ShiftDown);
+
+				if (seconds != 0)
+					clockMessage = $"+{seconds} {GetPlural("second", seconds)}";
+				else if (minutes != 0)
+					clockMessage = $"+{minutes} {GetPlural("minute", minutes)}";
+				else if (hours != 0)
+					clockMessage = $"+{hours} {GetPlural("hour", hours)}";
+
+				TellDungeonMasterTheTime();
 			});
+
+
 		}
 
-		public void AdvanceDate(int days, int months, int years)
+		public void AdvanceDate(int days, int months, int years, bool resting)
 		{
 			if (days == 0 && months == 0 && years == 0)
 				return;
 			Dispatcher.Invoke(() =>
 			{
+				if (resting)
+				{
+					TellAll("All players have recharged after a long rest.");
+					game?.RechargePlayersAfterLongRest();
+				}
+
 				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), -1, Modifiers.ShiftDown);
+
+				if (days != 0)
+					clockMessage = $"+{days} {GetPlural("day", days)}";
+				else if (months != 0)
+					clockMessage = $"+{months} {GetPlural("month", months)}";
+				else if (years != 0)
+					clockMessage = $"+{years} {GetPlural("year", years)}";
 			});
 		}
 

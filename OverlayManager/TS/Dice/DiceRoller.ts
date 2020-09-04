@@ -768,6 +768,8 @@ function getRollResults(): RollResults {
 	for (let i = 0; i < dice.length; i++) {
 		const die: IDie = dice[i];
 		die.scoreHasBeenTallied = false;  // Workaround for state bug where multiple instances of the same dia can apparently get inside the dice array.
+		if (die.rollType === DieCountsAs.damage)
+			maxDamage += die.values;
 	}
 
 	for (let i = 0; i < dice.length; i++) {
@@ -870,7 +872,6 @@ function getRollResults(): RollResults {
 			case DieCountsAs.damage:
 				//console.log(`DieCountsAs.damage (${topNumber})`);
 				totalDamage += topNumber;
-				maxDamage += die.values;
 				break;
 			case DieCountsAs.health:
 				//console.log(`DieCountsAs.health (${topNumber})`);
