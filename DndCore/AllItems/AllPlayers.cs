@@ -98,5 +98,10 @@ namespace DndCore
 		{
 			GoogleSheets.SaveChanges(Players.ToArray());
 		}
+
+		public static List<Character> GetOnScreen()
+		{
+			return Players.Where(x => x.IsSelected).ToList();
+		}
 	}
 }

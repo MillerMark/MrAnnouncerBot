@@ -109,6 +109,17 @@ namespace DndCore
 				return inGameCreatures;
 			}
 		}
+
+		public static List<InGameCreature> GetOnScreen()
+		{
+			return Creatures.Where(x => x.OnScreen).ToList();
+		}
+
+		public static void ClearAllTargets()
+		{
+			foreach (InGameCreature inGameCreature in Creatures)
+				inGameCreature.IsTargeted = false;
+		}
 	}
 }
 

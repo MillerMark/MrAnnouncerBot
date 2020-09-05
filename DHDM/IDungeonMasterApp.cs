@@ -61,5 +61,6 @@ namespace DHDM
 		void ClearAllConditions(string targetName);
 		void ApplyToTargetedCreatures(string applyCommand);
 		void ClearDice();
+		void MoveTarget(string targetingCommand);
 	}
 }

@@ -49,6 +49,7 @@ namespace DHDM
 			Commands.Add(new InstantRollCommand());
 			Commands.Add(new DigitCommand());
 			Commands.Add(new ApplyCommand());
+			Commands.Add(new TargetMoveCommands());
 			Commands.Add(new ClearDiceCommand());
 			Commands.Add(new ApplyLastDamageCommand());
 			Commands.Add(new ClearNumbersCommand());

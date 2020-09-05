@@ -142,12 +142,22 @@ namespace DHDM
 				return;
 			playerStats.IsTargeted = !playerStats.IsTargeted;
 		}
+
 		public void ClearAllTargets()
 		{
 			foreach (PlayerStats playerStats in Players)
-			{
 				playerStats.IsTargeted = false;
-			}
+		}
+
+		public void TargetAll()
+		{
+			foreach (PlayerStats playerStats in Players)
+				playerStats.IsTargeted = true;
+		}
+
+		public List<PlayerStats> GetTargeted()
+		{
+			return Players.Where(x => x.IsTargeted).ToList();
 		}
 	}
 }

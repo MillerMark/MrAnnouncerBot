@@ -813,7 +813,7 @@ namespace DHDM
 			try
 			{
 				if (!fromTimer)
-					UpdatePlayerScrollOnStream(player);
+					UpdatePlayerScrollInGame(player);
 				Dispatcher.Invoke(() =>
 				{
 					ListBox stateList = GetStateListForCharacter(player.playerID);
@@ -5311,7 +5311,7 @@ namespace DHDM
 			}
 		}
 
-		void UpdatePlayerScrollOnStream(Character player)
+		void UpdatePlayerScrollInGame(Character player)
 		{
 			if (player == null)
 				return;
@@ -5329,6 +5329,20 @@ namespace DHDM
 			return results;
 		}
 
+		List<int> GetTargetedPlayerIds()
+		{
+			List<int> results = new List<int>();
+			foreach (Character player in game.Players)
+			{
+				PlayerStats playerStats = AllPlayerStats.GetPlayerStats(player.playerID);
+				if (playerStats != null && playerStats.IsTargeted)
+					results.Add(player.playerID);
+			}
+			if (results.Count == 0)
+				return GetAllPlayerIds();
+			return results;
+		}
+
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
 			if (damageHealthChange == null)
@@ -5336,7 +5350,7 @@ namespace DHDM
 			string playerNames = string.Empty;
 
 			if (damageHealthChange.PlayerIds.Count == 1 && damageHealthChange.PlayerIds[0] == int.MaxValue)
-				damageHealthChange.PlayerIds = GetAllPlayerIds();
+				damageHealthChange.PlayerIds = GetTargetedPlayerIds();
 
 			int numPlayers = damageHealthChange.PlayerIds.Count;
 			for (int i = 0; i < numPlayers; i++)
@@ -5357,7 +5371,7 @@ namespace DHDM
 					player.ChangeTempHP(damageHealthChange.DamageHealth);
 				else
 					player.ChangeHealth(damageHealthChange.DamageHealth);
-				UpdatePlayerScrollOnStream(player);
+				UpdatePlayerScrollInGame(player);
 			}
 
 			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
@@ -6737,11 +6751,12 @@ namespace DHDM
 			wealthChange.Coins.SetFromGold(deltaAmount);
 			if (playerIds.First() == int.MaxValue)
 			{
-				wealthChange.PlayerIds = new List<int>();
-				foreach (Character player in game.Players)
-				{
-					wealthChange.PlayerIds.Add(player.playerID);
-				}
+				wealthChange.PlayerIds = GetTargetedPlayerIds();
+				//wealthChange.PlayerIds = new List<int>();
+				//foreach (Character player in game.Players)
+				//{
+				//	wealthChange.PlayerIds.Add(player.playerID);
+				//}
 			}
 			else
 				wealthChange.PlayerIds = playerIds;
@@ -7979,6 +7994,11 @@ namespace DHDM
 			AllPlayerStats.ClearAllTargets();
 			UpdatePlayerStatsInGame();
 		}
+		void TargetAllPlayers()
+		{
+			AllPlayerStats.TargetAll();
+			UpdatePlayerStatsInGame();
+		}
 
 		public void TargetCommand(string command)
 		{
@@ -7991,6 +8011,9 @@ namespace DHDM
 					return;
 				case "TargetNoPlayers":
 					TargetNoPlayers();
+					return;
+				case "TargetAllPlayers":
+					TargetAllPlayers();
 					return;
 				case "ClearDead":
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -8035,8 +8058,7 @@ namespace DHDM
 						inGameCreature.OnScreen = true;
 					break;
 				case "TargetNone":
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-						inGameCreature.IsTargeted = false;
+					AllInGameCreatures.ClearAllTargets();
 					UpdateInGameCreatures();
 					return;
 				case "TargetAll":
@@ -8081,7 +8103,6 @@ namespace DHDM
 					return;
 
 				case "UpdateOnScreenCreatures":
-
 					// Save current selection/targeting  state...
 					Dictionary<int, TargetSaveData> targetSaveData = new Dictionary<int, TargetSaveData>();
 					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
@@ -8475,6 +8496,57 @@ namespace DHDM
 			{
 				ClearTheDice();
 			});
+		}
+
+		public void MoveTarget(string targetingCommand)
+		{
+			if (targetingCommand == null)
+				return;
+			if (targetingCommand.Contains("Creature"))
+				MoveCreatureTarget(targetingCommand);
+			else if (targetingCommand.Contains("Player"))
+				MovePlayerTarget(targetingCommand);
+		}
+
+		public void MovePlayerTarget(string targetingCommand)
+		{
+			List<PlayerStats> targetedPlayers = AllPlayerStats.GetTargeted();
+			PlayerStats firstTargeted = targetedPlayers.FirstOrDefault();
+			PlayerStats creatureToTarget;
+
+			if (targetingCommand.Contains("Next"))
+				creatureToTarget = AllPlayerStats.Players.Next(firstTargeted);
+			else
+				creatureToTarget = AllPlayerStats.Players.Previous(firstTargeted);
+
+			if (creatureToTarget == null)
+				return;
+
+			AllPlayerStats.ClearAllTargets();
+			creatureToTarget.IsTargeted = true;
+			UpdatePlayerStatsInGame();
+		}
+
+		public void MoveCreatureTarget(string targetingCommand)
+		{
+			List<InGameCreature> onScreenCreatures = AllInGameCreatures.GetOnScreen();
+			if (!onScreenCreatures.Any())
+				return;
+			InGameCreature firstTargeted = onScreenCreatures.FirstOrDefault(x => x.IsTargeted);
+
+			InGameCreature creatureToTarget;
+
+			if (targetingCommand.Contains("Next"))
+				creatureToTarget = onScreenCreatures.Next(firstTargeted);
+			else
+				creatureToTarget = onScreenCreatures.Previous(firstTargeted);
+
+			if (creatureToTarget == null)
+				return;
+
+			AllInGameCreatures.ClearAllTargets();
+			creatureToTarget.IsTargeted = true;
+			UpdateInGameCreatures();
 		}
 		// TODO: Reintegrate wand/staff animations....
 		/* 

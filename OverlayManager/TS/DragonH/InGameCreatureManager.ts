@@ -284,6 +284,10 @@
 		return this.getSpriteForCreature(this.target.spriteProxies, inGameCreature);
 	}
 
+	getTargetSpritesForCreature(inGameCreature: InGameCreature): SpriteProxy[] {
+		return this.getSpritesForCreature(this.target.spriteProxies, inGameCreature);
+	}
+
 	getActiveTurnIndicatorSpriteForCreature(inGameCreature: InGameCreature): SpriteProxy {
 		return this.getSpriteForCreature(this.activeTurnIndicator.spriteProxies, inGameCreature);
 	}
@@ -298,6 +302,15 @@
 				return sprites[i];
 		}
 		return null;
+	}
+
+	getSpritesForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy[] {
+		let results: SpriteProxy[] = [];
+		for (let i = 0; i < sprites.length; i++) {
+			if (sprites[i].data === inGameCreature)  // here the data is an InGameCreature.
+				results.push(sprites[i]);
+		}
+		return results;
 	}
 
 	getAlphaForCreature(inGameCreature: InGameCreature): number {
@@ -455,9 +468,10 @@
 			this.addTarget(existingCreature, x);
 		}
 		else {
-			const target: SpriteProxy = this.getTargetSpriteForCreature(existingCreature);
-			if (target)
-				target.fadeOutNow(1000);
+			// This is in response to an edge-case bug where a creature appeared to have two targets.
+			const targets: SpriteProxy[] = this.getTargetSpritesForCreature(existingCreature);
+			if (targets)
+				targets.forEach((sprite) => { sprite.fadeOutNow(300); });
 		}
 	}
 
@@ -674,7 +688,7 @@
 		const targetSprite: SpriteProxy = this.target.addShifted(x, InGameCreatureManager.inGameStatTopMargin + InGameCreatureManager.targetTop, -1, hueShift);
 		targetSprite.data = inGameCreature;
 		targetSprite.delayStart = delayMs;
-		targetSprite.fadeInTime = 500;
+		targetSprite.fadeInTime = 300;
 	}
 
 	private addActiveTurnIndicator(soundManager: SoundManager, creature: InGameCreature, x: number, delayMs = 0) {

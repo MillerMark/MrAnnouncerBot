@@ -308,6 +308,7 @@
     <Compile Include="ActionQueue\ActionQueueEntry.cs" />
     <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
+    <Compile Include="GenericExtensions.cs" />
     <Compile Include="StreamDeck Commands\AdvanceClockCommand.cs" />
     <Compile Include="PlayerStats\AllPlayerStats.cs" />
     <Compile Include="AnswerButton.cs" />
@@ -432,6 +433,7 @@
     <Compile Include="IDE\Code Completion\TextCompletionEngine.cs" />
     <Compile Include="StreamDeck Commands\TalkNpcCommand.cs" />
     <Compile Include="StreamDeck Commands\TargetCommand.cs" />
+    <Compile Include="StreamDeck Commands\TargetMoveCommands.cs" />
     <Compile Include="StreamDeck Commands\ToggleConditionCommand.cs" />
     <Compile Include="StreamDeck Commands\ToggleNpcCommand.cs" />
     <Compile Include="StreamDeck Commands\TogglePlayerTargetCommand.cs" />
