@@ -5,6 +5,7 @@
 	Conditions: Conditions;
 	DiceStack: Array<DiceStackDto>;
 	ConcentratedSpell: string;
+	ConcentratedSpellDurationSeconds: number;
 	PercentConcentrationComplete: number;
 	JustBrokeConcentration: boolean;
 	IsTargeted: boolean;
@@ -15,6 +16,7 @@ interface IAllPlayerStats {
 	LatestCommand: string;
 	LatestData: string;
 	RollingTheDiceNow: boolean;
+	HideSpellScrolls: boolean;
 	ActiveTurnCreatureID: number;
 	Players: Array<PlayerStats>;
 }
@@ -46,6 +48,7 @@ class PlayerStats implements IPlayerStats {
 	Vantage: VantageKind;
 	Conditions: Conditions;
 	ConcentratedSpell: string;
+	ConcentratedSpellDurationSeconds: number;
 	PercentConcentrationComplete: number;
 	JustBrokeConcentration: boolean;
 	IsTargeted: boolean;
@@ -60,6 +63,7 @@ class PlayerStats implements IPlayerStats {
 		this.Conditions = playerStatsDto.Conditions;
 		this.ConcentratedSpell = playerStatsDto.ConcentratedSpell;
 		this.PercentConcentrationComplete = playerStatsDto.PercentConcentrationComplete;
+		this.ConcentratedSpellDurationSeconds = playerStatsDto.ConcentratedSpellDurationSeconds;
 		this.JustBrokeConcentration = playerStatsDto.JustBrokeConcentration;
 		this.IsTargeted = playerStatsDto.IsTargeted;
 		this.ReadyToRollDice = playerStatsDto.ReadyToRollDice;
@@ -101,6 +105,7 @@ class PlayerStatManager implements IAllPlayerStats {
 	LatestCommand: string;
 	LatestData: string;
 	RollingTheDiceNow: boolean;
+	HideSpellScrolls: boolean;
 	Players: Array<PlayerStats> = [];
 	ActiveTurnCreatureID: number;
 	readyToRollFullDragon: Sprites;
@@ -135,6 +140,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.LatestCommand = allPlayerStatsDto.LatestCommand;
 		this.LatestData = allPlayerStatsDto.LatestData;
 		this.RollingTheDiceNow = allPlayerStatsDto.RollingTheDiceNow;
+		this.HideSpellScrolls = allPlayerStatsDto.HideSpellScrolls;
 		this.ActiveTurnCreatureID = allPlayerStatsDto.ActiveTurnCreatureID;
 		this.Players = [];
 		for (let i = 0; i < allPlayerStatsDto.Players.length; i++) {
@@ -150,6 +156,11 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.LatestData = mostRecentPlayerStats.LatestData;
 		this.LatestCommand = mostRecentPlayerStats.LatestCommand;
 		this.RollingTheDiceNow = mostRecentPlayerStats.RollingTheDiceNow;
+		if (this.HideSpellScrolls !== mostRecentPlayerStats.HideSpellScrolls) {
+			this.HideSpellScrolls = mostRecentPlayerStats.HideSpellScrolls;
+			this.hideOrShowSpellScrolls(iGetPlayerX, players);
+		}
+
 		this.setActiveTurnCreatureID(iGetPlayerX, iNameplateRenderer, context, mostRecentPlayerStats.ActiveTurnCreatureID, players);
 		this.addMissingPlayers(mostRecentPlayerStats);
 		this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players, conditionManager);
@@ -336,6 +347,8 @@ class PlayerStatManager implements IAllPlayerStats {
 		const sprites: Sprites = new Sprites(`Spell Name Scroll/${fileName}`, frameCount, fps30, animationStyle, true);
 		sprites.originX = originX;
 		sprites.originY = originY;
+		sprites.moves = true;
+		sprites.disableGravity();
 		this.concentratedSpellSprites.add(sprites);
 		return sprites;
 	}
@@ -459,7 +472,19 @@ class PlayerStatManager implements IAllPlayerStats {
 		}
 	}
 
+	delayBetweenDeletes = 0;
+	lastTimeCommandHandled: number;
+
+	aboutToHandleCommand() {
+		const timeCommandHandled: number = performance.now();
+		if (!this.lastTimeCommandHandled || timeCommandHandled - this.lastTimeCommandHandled > 300) {
+			this.delayBetweenDeletes = 0;
+		}
+		this.lastTimeCommandHandled = timeCommandHandled;
+	}
+
 	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: PlayerStatManager, players: Array<Character>, conditionManager: ConditionManager) {
+		this.aboutToHandleCommand();
 		for (let i = 0; i < this.Players.length; i++) {
 			const latestPlayerStat: PlayerStats = latestPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
 			if (latestPlayerStat)
@@ -491,16 +516,20 @@ class PlayerStatManager implements IAllPlayerStats {
 		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, existingPlayerStats.PlayerId);
 
 		if (hourglass) {
+			//console.log('existingPlayerStats.PercentConcentrationComplete: ' + existingPlayerStats.PercentConcentrationComplete);
 			if (existingPlayerStats.PercentConcentrationComplete === 100) {
 				// only setting the frameIndex to the last segment.
+				//console.log('setting the frameIndex to the last segment....');
 				hourglass.frameIndex = PlayerStatManager.maxSandSegmentFrame - this.concentrationHourglassSand.segmentSize - 1;
+				//console.log('hourglass.frameIndex: ' + hourglass.frameIndex);
 				return;
 			}
 			if (hourglass.frameIndex < PlayerStatManager.minSandSegmentFrame)
 				return;
 			const framesBetween: number = PlayerStatManager.maxSandSegmentFrame - PlayerStatManager.minSandSegmentFrame;
 			const frameOffset: number = Math.round(existingPlayerStats.PercentConcentrationComplete * framesBetween / 100);
-			hourglass.frameIndex = PlayerStatManager.minSandSegmentFrame + frameOffset;
+			hourglass.frameIndex = PlayerStatManager.minSandSegmentFrame + frameOffset + 1;
+			//console.log('hourglass.frameIndex: ' + hourglass.frameIndex);
 		}
 	}
 
@@ -967,13 +996,17 @@ class PlayerStatManager implements IAllPlayerStats {
 		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, playerId);
 		const fadeOutTime = 500;
 		const framesToEnd: number = PlayerStatManager.totalSandFrames - PlayerStatManager.maxSandSegmentFrame;
-		const timeToEndMS: number = framesToEnd * this.concentrationHourglassSand.frameInterval;
+		const timeToEndMS: number = this.delayBetweenDeletes + framesToEnd * this.concentrationHourglassSand.frameInterval;
 
 		if (hourglass) {
 			const explosion: SpriteProxy = this.concentrationExplosion.add(hourglass.x + this.concentrationHourglassSand.originX, hourglass.y + this.concentrationHourglassSand.originY, 0);
 			explosion.delayStart = timeToEndMS;
 			hourglass.frameIndex = PlayerStatManager.maxSandSegmentFrame;
 			hourglass.playToEndNow = true;
+			//console.log('------------');
+			//console.log('this.concentrationHourglassSand.spriteProxies.length: ' + this.concentrationHourglassSand.spriteProxies.length);
+			//console.log('timeToEndMS: ' + timeToEndMS);
+			hourglass.data = undefined; // To disassociate this sprite from the player.
 			hourglass.fadeOutAfter(timeToEndMS, fadeOutTime);
 			soundManager.playMp3In(timeToEndMS, 'Spells/GunpowderFlare');
 		}
@@ -1066,6 +1099,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		}
 
 		existingPlayerStats.ConcentratedSpell = latestPlayerStats.ConcentratedSpell;
+		existingPlayerStats.ConcentratedSpellDurationSeconds = latestPlayerStats.ConcentratedSpellDurationSeconds;
 	}
 
 	updatePlayerTargeting(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
@@ -1093,7 +1127,7 @@ class PlayerStatManager implements IAllPlayerStats {
 
 	private showSpellConcentrationAnimation(latestPlayerStats: PlayerStats, x: number, existingPlayerStats: PlayerStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {
 		const spellName: string = latestPlayerStats.ConcentratedSpell;
-		const spellScrollY = 990;
+		const spellScrollY: number = this.getSpellScrollY();
 		const spellNameFontSize = 36;
 		myContext.font = `${spellNameFontSize}px Enchanted Land`;
 		const textWidth: number = myContext.measureText(spellName).width;
@@ -1152,6 +1186,8 @@ class PlayerStatManager implements IAllPlayerStats {
 	private destroyConcentratedSpell(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, players: Character[], x: number, soundManager: ISoundManager) {
 		this.showSpellDispelled(iGetPlayerX, existingPlayerStats, players, x);
 		this.startSpellDestructionAnimation(soundManager, existingPlayerStats.PlayerId);
+		this.delayBetweenDeletes += 200;
+		//console.log('this.delayBetweenDeletes: ' + this.delayBetweenDeletes);
 	}
 
 	private showSpellDispelled(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, players: Character[], x: number) {
@@ -1164,6 +1200,108 @@ class PlayerStatManager implements IAllPlayerStats {
 			fillColor = player.dieBackColor;
 		}
 
-		iGetPlayerX.addFloatingText(x, `${existingPlayerStats.ConcentratedSpell} dispelled.`, fillColor, outlineColor);
+		const floatingText: TextEffect = iGetPlayerX.addFloatingText(x, `${existingPlayerStats.ConcentratedSpell} dispelled.`, fillColor, outlineColor);
+		floatingText.delayStart = this.delayBetweenDeletes;
+	}
+
+	getSpellScrollY(): number {
+		const spellScrollY = 1000;
+		const hideOffset = 50;
+		if (this.HideSpellScrolls)
+			return spellScrollY + hideOffset;
+		return spellScrollY;
+	}
+
+	hideOrShowSpellScrolls(iGetPlayerX: IGetPlayerX & ITextFloater, players: Array<Character>) {
+		const spellScrollY: number = this.getSpellScrollY();
+		this.moveSpritesVertically(this.concentrationWhiteSmoke, spellScrollY);
+		this.moveSpritesVertically(this.concentrationScrollOpenFire, spellScrollY);
+		this.moveAnimationsVertically(this.concentratedSpellNames.animations, spellScrollY);
+		this.moveSpritesVertically(this.concentrationHourglassEnds, spellScrollY);
+		this.moveSpritesVertically(this.concentrationIcon, spellScrollY);
+		this.moveSpritesVertically(this.concentrationHourglassSand, spellScrollY);
+		this.moveSpritesVertically(this.concentrationSpellNameScroll, spellScrollY);
+		if (!this.HideSpellScrolls)
+			this.showRemainingTime(iGetPlayerX, players);
+	}
+
+	showRemainingTime(iGetPlayerX: IGetPlayerX & ITextFloater, players: Array<Character>) {
+		let delayMs = 0;
+		const timeBetweenMessages = 250;
+		this.Players.forEach((player) => {
+			//if (player.ConcentratedSpell)
+			//	console.log('player.ConcentratedSpellDurationSeconds: ' + player.ConcentratedSpellDurationSeconds);
+			if (player.ConcentratedSpell && player.ConcentratedSpellDurationSeconds > 0) {
+				const playerIndex: number = iGetPlayerX.getPlayerIndex(player.PlayerId);
+				const character: Character = players[playerIndex];
+				let outlineColor = '#000000';
+				let fillColor = '#ffffff';
+				if (character) {
+					outlineColor = character.dieFontColor;
+					fillColor = character.dieBackColor;
+				}
+
+				const x: number = iGetPlayerX.getPlayerX(playerIndex);
+				const timeRemainingStr: string = this.getRemainingTimeStr(player.ConcentratedSpellDurationSeconds * (1 - player.PercentConcentrationComplete / 100));
+				const floatingText: TextEffect = iGetPlayerX.addFloatingText(x, `${timeRemainingStr} remaining`, fillColor, outlineColor);
+				floatingText.delayStart = delayMs;
+				delayMs += timeBetweenMessages;
+			}
+		});
+	}
+
+	getRemainingTimeStr(seconds: number): string {
+		const numDecimalPlaces = 1;
+
+		if (seconds < 60) {
+			const secondsStr: string = Math.round(seconds).toString();
+			if (secondsStr === '1')
+				return '1 second';
+			else
+				return `${secondsStr} seconds`;
+		}
+
+		const minutes: number = seconds / 60;
+		if (minutes < 60) {
+			const minutesStr: string = MathEx.toFixed(minutes, numDecimalPlaces).toString();
+			if (minutesStr === '1')
+				return '1 minute';
+			else
+				return `${minutesStr} minutes`;
+		}
+
+		const hours: number = minutes / 60;
+		if (hours < 24) {
+			const hourStr: string = MathEx.toFixed(hours, numDecimalPlaces).toString();
+			if (hourStr === '1')
+				return `1 hour`;
+			else
+				return `${hourStr} hours`;
+		}
+
+		const days: number = hours / 24;
+		const dayStr: string = MathEx.toFixed(days, numDecimalPlaces).toString();
+		if (dayStr === '1')
+			return '1 day';
+		else
+			return `${dayStr} days`;
+	}
+
+	static readonly timeToMoveScroll: number = 400;
+
+	moveSpritesVertically(sprites: Sprites, targetY: number) {
+		sprites.spriteProxies.forEach((sprite) => {
+			if (sprite.y !== targetY) {
+				sprite.ease(performance.now(), sprite.x, sprite.y, sprite.x, targetY - sprites.originY, PlayerStatManager.timeToMoveScroll);
+			}
+		});
+	}
+
+	moveAnimationsVertically(animations: AnimatedElement[], targetY: number) {
+		animations.forEach((animation) => {
+			if (animation.y !== targetY) {
+				animation.ease(performance.now(), animation.x, animation.y, animation.x, targetY, PlayerStatManager.timeToMoveScroll);
+			}
+		});
 	}
 }

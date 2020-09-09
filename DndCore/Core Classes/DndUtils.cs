@@ -651,7 +651,7 @@ namespace DndCore
 		{
 			return (int)Math.Floor(value / 2.0);
 		}
-		public static int GetSpellPercentComplete(CastedSpell castedSpell, DndGame dndGame)
+		public static double GetSpellPercentComplete(CastedSpell castedSpell, DndGame dndGame)
 		{
 			DndTimeSpan duration = castedSpell.Spell.Duration;
 			TimeSpan spellDuration;
@@ -676,8 +676,8 @@ namespace DndCore
 					}
 					else
 					{
-						int roundsSinceCast = dndGame.RoundNumber - castedSpell.CastingRound;
-						int turnsSinceCast = dndGame.InitiativeIndex - castedSpell.CastingTurnIndex;
+						double roundsSinceCast = dndGame.RoundNumber - castedSpell.CastingRound;
+						double turnsSinceCast = dndGame.InitiativeIndex - castedSpell.CastingTurnIndex;
 						if (turnsSinceCast < 0)
 						{
 							turnsSinceCast += dndGame.PlayerCount;
@@ -685,11 +685,9 @@ namespace DndCore
 						}
 
 						turnsSinceCast += roundsSinceCast * dndGame.PlayerCount;
-						int durationTurns = duration.Count * dndGame.PlayerCount;
-						return Math.Max(0, Math.Min(100, 100 * turnsSinceCast / durationTurns));
+						double durationTurns = duration.Count * dndGame.PlayerCount;
+						return Math.Max(0.0, Math.Min(100.0, 100.0 * turnsSinceCast / durationTurns));
 					}
-					
-					break;
 				case TimeMeasure.actions:
 				case TimeMeasure.bonusActions:
 				case TimeMeasure.reaction:
@@ -700,10 +698,10 @@ namespace DndCore
 			throw new NotImplementedException();
 		}
 
-		private static int GetPercentCompleteBasedOnSpellDuration(CastedSpell castedSpell, DndGame dndGame, TimeSpan spellDuration)
+		private static double GetPercentCompleteBasedOnSpellDuration(CastedSpell castedSpell, DndGame dndGame, TimeSpan spellDuration)
 		{
 			TimeSpan timeActive = dndGame.Clock.Time - castedSpell.CastingTime;
-			return (int)Math.Round(100 * timeActive.TotalSeconds / spellDuration.TotalSeconds);
+			return 100.0 * timeActive.TotalSeconds / spellDuration.TotalSeconds;
 		}
 
 		public static DamageType GetChaosBoltDamage(int value)

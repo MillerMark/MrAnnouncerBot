@@ -16,7 +16,7 @@ interface INameplateRenderer {
 }
 
 interface ITextFloater {
-	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string);
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string): TextEffect;
 }
 
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
@@ -39,9 +39,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	readonly panelMargin: number = 34;
 	readonly maxPanelWidth: number = (this.panelWidth - this.panelMargin * 2) * this.panelScale;
 
-	layerSuffix: string = 'Front';
+	layerSuffix = 'Front';
 	emitter: Emitter;
-	shouldDrawCenterCrossHairs: boolean = false;
+	shouldDrawCenterCrossHairs = false;
 	denseSmoke: Sprites;
 	shield: Sprites;
 	poof: Sprites;
@@ -51,6 +51,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	bloodGushC: BloodSprites;	// Full screen, not contained at all - blood escapes top and right edges.
 	bloodGushD: BloodSprites;  // Totally contained, 575 pixels high.
 	bloodGushE: BloodSprites;  // Totally contained, 700 pixels high.
+
+
+	sparkTrailBurst: Sprites;
+	swirlSmokeA: Sprites;
+	swirlSmokeB: Sprites;
+	swirlSmokeC: Sprites;
 
 	dndTimeDatePanel: SpriteProxy;
 	clockPanel: Sprites;
@@ -401,6 +407,15 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.magicSparksD = this.loadMagicSparks('D');
 		this.magicSparksE = this.loadMagicSparks('E');
 
+		this.swirlSmokeA = this.loadSwirlSmoke('A', 136, 395, 397);
+		this.swirlSmokeB = this.loadSwirlSmoke('B', 131, 415, 363);
+		this.swirlSmokeC = this.loadSwirlSmoke('C', 129, 410, 476);
+
+		this.sparkTrailBurst = new Sprites('SpellEffects/SparkTrailBurst/SparkTrailBurst', 54, fps30, AnimationStyle.Sequential, true);
+		this.sparkTrailBurst.name = 'SparkTrailBurst';
+		this.sparkTrailBurst.originX = 508;
+		this.sparkTrailBurst.originY = 408;
+
 		this.smokeWaveA = new Sprites('Smoke/Waves/SmokeWaveA/SmokeWaveA', 157, fps30, AnimationStyle.Sequential, true);
 		this.smokeWaveA.name = 'SmokeWaveA';
 		this.smokeWaveA.originX = 466;
@@ -599,6 +614,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.allFrontEffects.add(this.magicSparksA);
 		this.allFrontEffects.add(this.magicSparksB);
 		this.allFrontEffects.add(this.magicSparksC);
+		this.allFrontEffects.add(this.swirlSmokeA);
+		this.allFrontEffects.add(this.swirlSmokeB);
+		this.allFrontEffects.add(this.swirlSmokeC);
+		this.allFrontEffects.add(this.sparkTrailBurst);
 		this.allFrontEffects.add(this.magicSparksD);
 		this.allFrontEffects.add(this.magicSparksE);
 		this.allFrontEffects.add(this.smokeWaveA);
@@ -653,6 +672,15 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		magicSparks.originX = 364;
 		magicSparks.originY = 484;
 		return magicSparks;
+	}
+
+	
+	loadSwirlSmoke(path: string, frameCount: number, originX: number, originY: number): Sprites {
+		const swirlSmoke: Sprites = new Sprites(`SpellEffects/SwirlSmoke/${path}/SwirlSmoke${path}`, frameCount, fps30, AnimationStyle.Sequential, true);
+		swirlSmoke.name = `SwirlSmoke${path}`;
+		swirlSmoke.originX = originX;
+		swirlSmoke.originY = originY;
+		return swirlSmoke;
 	}
 
 	private createFireBallBehindClock(hue: number): any {
@@ -825,11 +853,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		// poof 40 50
 		if (testCommand.startsWith("poof")) {
-			let split: string[] = testCommand.split(' ');
+			const split: string[] = testCommand.split(' ');
 
-			let hue: number = 0;
-			let saturation: number = 100;
-			let brightness: number = 100;
+			let hue = 0;
+			let saturation = 100;
+			let brightness = 100;
 
 			if (split.length === 2) {
 				hue = +split[1];
@@ -849,11 +877,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 
 		if (testCommand.startsWith("fb")) {
-			let split: string[] = testCommand.split(' ');
+			const split: string[] = testCommand.split(' ');
 
-			let hue: number = 0;
-			let saturation: number = 100;
-			let brightness: number = 100;
+			let hue = 0;
+			let saturation = 100;
+			let brightness = 100;
 
 			if (split.length === 2) {
 				hue = +split[1];
@@ -1254,7 +1282,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		textEffect.textBaseline = 'top';
 	}
 
-	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string) {
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string): TextEffect {
 		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, 1080), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
@@ -1265,6 +1293,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		textEffect.velocityX = 0;
 		textEffect.velocityY = -6;
 		textEffect.verticalThrust = 1.3;
+		return textEffect;
 	}
 
 	static readonly FontColorDamage: string = '#ca0000';

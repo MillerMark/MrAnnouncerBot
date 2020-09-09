@@ -38,6 +38,7 @@ namespace DHDM
 			Commands.Add(new PlaySoundCommand());
 			Commands.Add(new HealthDamageCommand());
 			Commands.Add(new ScrollCloseCommand());
+			Commands.Add(new SpellScrollsToggleCommand());
 			Commands.Add(new SkillCheckNowCommand());
 			Commands.Add(new SkillCheckCommand());
 			Commands.Add(new RollSaveCommand());

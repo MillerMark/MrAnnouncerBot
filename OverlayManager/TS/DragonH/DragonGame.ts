@@ -504,7 +504,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	clearWindup(windupName: string): void {
-		console.log(`clearWindup(${windupName})`);
+		//console.log(`clearWindup(${windupName})`);
 		// TODO: Use windupName to find specific sprites to clear.
 		const now: number = performance.now();
 		this.allWindupEffects.allSprites.forEach(function (sprites: Sprites) {
@@ -552,7 +552,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	addWindups(windups: Array<WindupData>, playerX: number = this.activePlayerX, name: string = null): void {
-		console.log('Adding Windups:');
+		//console.log('Adding Windups:');
 		for (let i = 0; i < windups.length; i++) {
 			const windup: WindupData = windups[i];
 			if (windup === null) {
@@ -573,7 +573,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 					sprite.name = windup.Name + name;
 				else
 					sprite.name = windup.Name;
-				console.log('  Windup: "' + sprite.name + '"');
+				//console.log('  Windup: "' + sprite.name + '"');
 				sprite.opacity = windup.Opacity;
 
 				if (windup.Lifespan)

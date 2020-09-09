@@ -115,8 +115,8 @@ class Animations {
 	}
 
 	updatePositions(now: number): void {
-		for (var i = this.animations.length - 1; i >= 0; i--) {
-			let animatedElement: AnimatedElement = this.animations[i];
+		for (let i = this.animations.length - 1; i >= 0; i--) {
+			const animatedElement: AnimatedElement = this.animations[i];
 			animatedElement.updatePosition(now);
 		}
 	}

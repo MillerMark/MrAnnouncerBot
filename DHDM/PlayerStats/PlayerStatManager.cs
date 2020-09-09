@@ -7,11 +7,12 @@ using DndCore;
 
 namespace DHDM
 {
-	public class AllPlayerStats
+	public class PlayerStatManager
 	{
 		public string LatestCommand { get; set; }
 		public string LatestData { get; set; }
 		public bool RollingTheDiceNow { get; set; }
+		public bool HideSpellScrolls { get; set; }
 		public int ActiveTurnCreatureID { get; set; }  // Negative numbers are for in-game creatures (not players)
 		
 
@@ -31,12 +32,13 @@ namespace DHDM
 			}
 		}
 
-		public AllPlayerStats()
+		public PlayerStatManager()
 		{
 
 		}
 
 		public bool AnyoneIsReadyToRoll => Players.FirstOrDefault(x => x.ReadyToRollDice) != null;
+		
 
 		public PlayerStats GetPlayerStats(int playerId)
 		{

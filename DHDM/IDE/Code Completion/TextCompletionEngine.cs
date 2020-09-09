@@ -183,7 +183,7 @@ namespace DHDM
 			AddCompletionProvider(new TextListCompletionProvider()
 			{
 				ProviderName = CompletionProviderNames.AnimationEffectName,
-				List = "DenseSmoke; Poof; SmokeBlast; SmokeWave; SmokeColumn; SparkBurst; Water; Fireworks; EmbersLarge; EmbersMedium; Fumes; FireBall; BloodGush; SparkMagicA; SparkMagicB; SparkMagicC; SparkMagicD; SparkMagicE; SparkShower",
+				List = "DenseSmoke; Poof; SmokeBlast; SmokeWave; SmokeColumn; SparkBurst; Water; Fireworks; EmbersLarge; EmbersMedium; Fumes; FireBall; BloodGush; SparkMagicA; SparkMagicB; SparkMagicC; SparkMagicD; SparkMagicE; SparkShower; SparkTrailBurst; SwirlSmokeA; SwirlSmokeB; SwirlSmokeC",
 				TriggerKey = '"'
 			});
 			AddCompletionProvider(new TextListCompletionProvider()

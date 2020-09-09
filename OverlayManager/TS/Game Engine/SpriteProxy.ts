@@ -294,7 +294,7 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	static readonly defaultBrightness: number = 100;
 	static readonly defaultHueShift: number = 0;
 
-	setHueSatBrightness(hueShift: number, saturationPercent: number = -1, brightness: number = -1): ColorShiftingSpriteProxy {
+	setHueSatBrightness(hueShift: number, saturationPercent = -1, brightness = -1): ColorShiftingSpriteProxy {
 		this.hueShift = Math.round(hueShift);
 		if (saturationPercent >= 0)
 			this.saturationPercent = Math.round(saturationPercent);
@@ -309,10 +309,10 @@ class ColorShiftingSpriteProxy extends SpriteProxy {
 	}
 
 	static getFilter(hueShift: number, saturationPercent: number, brightness: number): string {
-		let filter: string = '';
+		let filter = '';
 		if (hueShift !== ColorShiftingSpriteProxy.defaultHueShift)
 			filter += `hue-rotate(${hueShift}deg) `;
-		let grayScale: number = 100 - saturationPercent;
+		const grayScale: number = 100 - saturationPercent;
 		if (grayScale !== ColorShiftingSpriteProxy.defaultGrayscale)
 			filter += `grayscale(${(grayScale).toString()}%) `;
 		if (brightness !== ColorShiftingSpriteProxy.defaultBrightness)

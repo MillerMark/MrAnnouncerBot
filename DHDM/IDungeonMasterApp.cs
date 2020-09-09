@@ -62,5 +62,6 @@ namespace DHDM
 		void ApplyToTargetedCreatures(string applyCommand);
 		void ClearDice();
 		void MoveTarget(string targetingCommand);
+		void SpellScrollsToggle();
 	}
 }

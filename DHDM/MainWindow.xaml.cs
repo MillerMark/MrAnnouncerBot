@@ -42,7 +42,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
-		AllPlayerStats allPlayerStats;
+		PlayerStatManager allPlayerStats;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
@@ -57,12 +57,12 @@ namespace DHDM
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
 
-		public AllPlayerStats AllPlayerStats
+		public PlayerStatManager PlayerStatsManager
 		{
 			get
 			{
 				if (allPlayerStats == null)
-					allPlayerStats = new AllPlayerStats();
+					allPlayerStats = new PlayerStatManager();
 				return allPlayerStats;
 			}
 		}
@@ -411,7 +411,7 @@ namespace DHDM
 			bool foundAny = false;
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
-			foreach (PlayerStats playerStats in AllPlayerStats.Players)
+			foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
@@ -1414,9 +1414,10 @@ namespace DHDM
 			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
 			{
 				ea.CastedSpell.SpellCaster.concentratedSpell = null;
-				PlayerStats playerStats = AllPlayerStats.GetPlayerStats(ea.CastedSpell.SpellCaster.playerID);
+				PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(ea.CastedSpell.SpellCaster.playerID);
 				playerStats.PercentConcentrationComplete = 100;
 				playerStats.ConcentratedSpell = "";
+				playerStats.ConcentratedSpellDurationSeconds = 0;
 				playerStats.JustBrokeConcentration = false;
 				UpdatePlayerStatsInGame();
 			}
@@ -1766,7 +1767,7 @@ namespace DHDM
 
 		void SetInGameDiceForShortcut(PlayerActionShortcut actionShortcut)
 		{
-			AllPlayerStats.ClearReadyToRollState();
+			PlayerStatsManager.ClearReadyToRollState();
 
 			if (actionShortcut.Type == DiceRollType.Attack || actionShortcut.Type == DiceRollType.ChaosBolt)
 			{
@@ -1778,7 +1779,7 @@ namespace DHDM
 				{
 					dieRollDetails.AddRoll(actionShortcut.Dice);
 				}
-				AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
+				PlayerStatsManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 			}
 			else if (actionShortcut.Type == DiceRollType.DamageOnly)
 			{
@@ -1794,7 +1795,7 @@ namespace DHDM
 						{
 							System.Diagnostics.Debugger.Break();
 						}
-						AllPlayerStats.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
+						PlayerStatsManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 					}
 				}
 			}
@@ -2809,7 +2810,7 @@ namespace DHDM
 				TellDungeonMasterTheTime();
 			}
 		}
-		
+
 		void TellDungeonMasterTheTime()
 		{
 			TellDungeonMaster($"The time is now {game.Clock.AsFullDndDateTimeString()}.");
@@ -2838,12 +2839,12 @@ namespace DHDM
 			{
 				if (player.concentratedSpell != null)
 				{
-					PlayerStats playerStats = AllPlayerStats.GetPlayerStats(player.playerID);
+					PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
 					if (playerStats != null)
 					{
 						// TODO: Consider adding side-effect to PercentConcentrationComplete property setter to trigger event.
-						int newPercent = DndUtils.GetSpellPercentComplete(player.concentratedSpell, game);
-						if (newPercent != playerStats.PercentConcentrationComplete)
+						double newPercent = DndUtils.GetSpellPercentComplete(player.concentratedSpell, game);
+						if (Math.Round(newPercent, 2) != Math.Round(playerStats.PercentConcentrationComplete, 2))
 						{
 							playerStats.PercentConcentrationComplete = newPercent;
 							changeOccurred = true;
@@ -3995,7 +3996,7 @@ namespace DHDM
 		{
 			game.ClearInitiativeOrder();
 			AllInGameCreatures.ClearAllActiveTurns();
-			AllPlayerStats.ClearAllActiveTurns();
+			PlayerStatsManager.ClearAllActiveTurns();
 			UpdateInGameCreatures();
 			UpdatePlayerStatsInGame();
 		}
@@ -4819,7 +4820,7 @@ namespace DHDM
 			int delayRollMs = 0;
 			if (playerIds == null)
 			{
-				playerIds = AllPlayerStats.GetReadyToRollPlayerIds();
+				playerIds = PlayerStatsManager.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
 				delayRollMs = INT_TimeToDropDragonDice;
 			}
@@ -4873,7 +4874,7 @@ namespace DHDM
 			int delayRollMs = 0;
 			if (playerIds == null)
 			{
-				playerIds = AllPlayerStats.GetReadyToRollPlayerIds();
+				playerIds = PlayerStatsManager.GetReadyToRollPlayerIds();
 				SelectedPlayersAboutToRoll();
 				delayRollMs = INT_TimeToDropDragonDice;
 			}
@@ -4907,10 +4908,10 @@ namespace DHDM
 
 		private void SelectedPlayersAboutToRoll()
 		{
-			AllPlayerStats.RollingTheDiceNow = true;
+			PlayerStatsManager.RollingTheDiceNow = true;
 			UpdatePlayerStatsInGame();
-			AllPlayerStats.RollingTheDiceNow = false;
-			AllPlayerStats.ClearReadyToRollState();
+			PlayerStatsManager.RollingTheDiceNow = false;
+			PlayerStatsManager.ClearReadyToRollState();
 		}
 
 		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds)
@@ -5334,7 +5335,7 @@ namespace DHDM
 			List<int> results = new List<int>();
 			foreach (Character player in game.Players)
 			{
-				PlayerStats playerStats = AllPlayerStats.GetPlayerStats(player.playerID);
+				PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
 				if (playerStats != null && playerStats.IsTargeted)
 					results.Add(player.playerID);
 			}
@@ -5560,7 +5561,7 @@ namespace DHDM
 			Dispatcher.Invoke(() =>
 			{
 				SetPlayerVantageUI(playerId, vantageKind);
-				AllPlayerStats.ReadyRollVantage(playerId, vantageKind);
+				PlayerStatsManager.ReadyRollVantage(playerId, vantageKind);
 				UpdatePlayerStatsInGame();
 			});
 		}
@@ -5679,11 +5680,20 @@ namespace DHDM
 				game.Clock.Advance(DndTimeSpan.FromSeconds(seconds + minutes * 60 + hours * 3600), -1, Modifiers.ShiftDown);
 
 				if (seconds != 0)
-					clockMessage = $"+{seconds} {GetPlural("second", seconds)}";
+					if (seconds < 0)
+						clockMessage = $"{seconds} {GetPlural("second", seconds)}";
+					else
+						clockMessage = $"+{seconds} {GetPlural("second", seconds)}";
 				else if (minutes != 0)
-					clockMessage = $"+{minutes} {GetPlural("minute", minutes)}";
+					if (minutes < 0)
+						clockMessage = $"{minutes} {GetPlural("minute", minutes)}";
+					else
+						clockMessage = $"+{minutes} {GetPlural("minute", minutes)}";
 				else if (hours != 0)
-					clockMessage = $"+{hours} {GetPlural("hour", hours)}";
+					if (hours < 0)
+						clockMessage = $"{hours} {GetPlural("hour", hours)}";
+					else
+						clockMessage = $"+{hours} {GetPlural("hour", hours)}";
 
 				TellDungeonMasterTheTime();
 			});
@@ -5706,11 +5716,20 @@ namespace DHDM
 				game.Clock.Advance(DndTimeSpan.FromDays(days + months * 30 + years * 365), -1, Modifiers.ShiftDown);
 
 				if (days != 0)
-					clockMessage = $"+{days} {GetPlural("day", days)}";
+					if (days < 0)
+						clockMessage = $"{days} {GetPlural("day", days)}";
+					else
+						clockMessage = $"+{days} {GetPlural("day", days)}";
 				else if (months != 0)
-					clockMessage = $"+{months} {GetPlural("month", months)}";
+					if (months < 0)
+						clockMessage = $"{months} {GetPlural("month", months)}";
+					else
+						clockMessage = $"+{months} {GetPlural("month", months)}";
 				else if (years != 0)
-					clockMessage = $"+{years} {GetPlural("year", years)}";
+					if (years < 0)
+						clockMessage = $"{years} {GetPlural("year", years)}";
+					else
+						clockMessage = $"+{years} {GetPlural("year", years)}";
 			});
 		}
 
@@ -6117,7 +6136,7 @@ namespace DHDM
 			if (NextDieRollType != DiceRollType.None)
 			{
 				int delayMs = 0;
-				if (AllPlayerStats.AnyoneIsReadyToRoll)
+				if (PlayerStatsManager.AnyoneIsReadyToRoll)
 				{
 					delayMs = INT_TimeToDropDragonDice;
 					SelectedPlayersAboutToRoll();
@@ -7743,7 +7762,7 @@ namespace DHDM
 			if (playerId < 0)
 				return;
 
-			AllPlayerStats.ToggleTarget(playerId);
+			PlayerStatsManager.ToggleTarget(playerId);
 			UpdatePlayerStatsInGame();
 		}
 
@@ -7753,14 +7772,14 @@ namespace DHDM
 			if (playerId < 0)
 				return;
 			lastPlayerIdUnchecked = -1;
-			AllPlayerStats.ToggleReadyRollD20(playerId);
+			PlayerStatsManager.ToggleReadyRollD20(playerId);
 		}
 
 		public void ToggleCondition(string data, string condition)
 		{
 			Conditions conditions = DndUtils.ToCondition(condition);
 
-			if (data == "targets")	
+			if (data == "targets")
 				ToggleTargetedCreatureConditions(conditions);
 			else if (data == "players")
 				ToggleTargetedPlayerConditions(conditions);
@@ -7773,7 +7792,7 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			AllPlayerStats.ToggleCondition(playerId, conditions);
+			PlayerStatsManager.ToggleCondition(playerId, conditions);
 			UpdateUIForAllPlayerStats();
 			UpdatePlayerStatsInGame();
 		}
@@ -7783,7 +7802,7 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			AllPlayerStats.ClearConditions(playerId);
+			PlayerStatsManager.ClearConditions(playerId);
 			UpdateUIForAllPlayerStats();
 			UpdatePlayerStatsInGame();
 		}
@@ -7791,20 +7810,20 @@ namespace DHDM
 		void ToggleTargetedPlayerConditions(Conditions conditions)
 		{
 			bool toggledAtLeastOne = false;
-			foreach (PlayerStats playerStats in AllPlayerStats.Players)
+			foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
 					toggledAtLeastOne = true;
-					AllPlayerStats.ToggleCondition(playerStats.PlayerId, conditions);
+					PlayerStatsManager.ToggleCondition(playerStats.PlayerId, conditions);
 				}
 			}
 			if (!toggledAtLeastOne)
 			{
 				// Toggle all players...
-				foreach (PlayerStats playerStats in AllPlayerStats.Players)
+				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 				{
-					AllPlayerStats.ToggleCondition(playerStats.PlayerId, conditions);
+					PlayerStatsManager.ToggleCondition(playerStats.PlayerId, conditions);
 				}
 			}
 			UpdateUIForAllPlayerStats();
@@ -7814,21 +7833,21 @@ namespace DHDM
 		void ClearTargetedPlayerConditions()
 		{
 			bool clearedAtLeastOne = false;
-			foreach (PlayerStats playerStats in AllPlayerStats.Players)
+			foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
 					clearedAtLeastOne = true;
-					AllPlayerStats.ClearConditions(playerStats.PlayerId);
+					PlayerStatsManager.ClearConditions(playerStats.PlayerId);
 				}
 			}
 
 			if (!clearedAtLeastOne)
 			{
 				// Clear for all players...
-				foreach (PlayerStats playerStats in AllPlayerStats.Players)
+				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 				{
-					AllPlayerStats.ClearConditions(playerStats.PlayerId);
+					PlayerStatsManager.ClearConditions(playerStats.PlayerId);
 				}
 			}
 			UpdateUIForAllPlayerStats();
@@ -7856,7 +7875,7 @@ namespace DHDM
 			int playerId = AllPlayers.GetPlayerIdFromName(data);
 			if (playerId < 0)
 				return;
-			AllPlayerStats.ReadyRollVantage(playerId, vantage);
+			PlayerStatsManager.ReadyRollVantage(playerId, vantage);
 		}
 
 		public void ChangePlayerStateCommand(string command, string data)
@@ -7870,7 +7889,7 @@ namespace DHDM
 					QuickRefresh();
 					break;
 				case "ReadyRollDice":
-					AllPlayerStats.ReadyRollDice(data);
+					PlayerStatsManager.ReadyRollDice(data);
 					break;
 				case "ToggleReadyRollDiceAdvantage":
 					ReadyRollVantage(data, VantageKind.Advantage);
@@ -7894,7 +7913,7 @@ namespace DHDM
 		{
 			Dispatcher.Invoke(() =>
 			{
-				foreach (PlayerStats playerStats in AllPlayerStats.Players)
+				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 				{
 					UpdateUIForPlayerStats(playerStats);
 				}
@@ -7903,14 +7922,14 @@ namespace DHDM
 
 		void UpdatePlayerStatsInGame()
 		{
-			AllPlayerStats.LatestCommand = "Update";
-			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+			PlayerStatsManager.LatestCommand = "Update";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatsManager));
 		}
 
 		void UpdateConcentratedSpellHourglassesInGame()
 		{
-			AllPlayerStats.LatestCommand = "HourglassUpdate";
-			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+			PlayerStatsManager.LatestCommand = "HourglassUpdate";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatsManager));
 		}
 
 		void AddInGameCreature(InGameCreature inGameCreature)
@@ -7991,12 +8010,12 @@ namespace DHDM
 
 		void TargetNoPlayers()
 		{
-			AllPlayerStats.ClearAllTargets();
+			PlayerStatsManager.ClearAllTargets();
 			UpdatePlayerStatsInGame();
 		}
 		void TargetAllPlayers()
 		{
-			AllPlayerStats.TargetAll();
+			PlayerStatsManager.TargetAll();
 			UpdatePlayerStatsInGame();
 		}
 
@@ -8219,11 +8238,11 @@ namespace DHDM
 
 		private void InitializePlayerStats()
 		{
-			AllPlayerStats.ClearAll();
+			PlayerStatsManager.ClearAll();
 			foreach (Character character in game.Players)
 			{
 				if (!character.Hidden)
-					AllPlayerStats.GetPlayerStats(character.playerID);  // Will ensure player is known.
+					PlayerStatsManager.GetPlayerStats(character.playerID);  // Will ensure player is known.
 			}
 		}
 
@@ -8241,18 +8260,18 @@ namespace DHDM
 		private void Game_ActivePlayerChanged(object sender, EventArgs e)
 		{
 			AllInGameCreatures.ClearAllActiveTurns();
-			AllPlayerStats.ClearAllActiveTurns();
+			PlayerStatsManager.ClearAllActiveTurns();
 
 			object activeTurnCreature = game.GetActiveTurnCreature();
 			if (activeTurnCreature is InGameCreature inGameCreature)
 			{
 				AllInGameCreatures.SetActiveTurn(inGameCreature);
-				AllPlayerStats.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
+				PlayerStatsManager.ActiveTurnCreatureID = InGameCreature.GetUniversalIndex(inGameCreature.Index);
 			}
 
 			if (activeTurnCreature is Character character)
 			{
-				AllPlayerStats.ActiveTurnCreatureID = character.playerID;
+				PlayerStatsManager.ActiveTurnCreatureID = character.playerID;
 				ActivePlayerId = character.playerID;
 			}
 
@@ -8390,7 +8409,7 @@ namespace DHDM
 		{
 			if (ea.Player == null)
 				return;
-			PlayerStats playerStats = AllPlayerStats.GetPlayerStats(ea.Player.playerID);
+			PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(ea.Player.playerID);
 			if (playerStats == null)
 				return;
 
@@ -8398,16 +8417,20 @@ namespace DHDM
 			{
 				case SpellState.JustCast:
 					playerStats.ConcentratedSpell = ea.SpellName;
+					playerStats.ConcentratedSpellDurationSeconds = (int)Math.Round(AllSpells.GetDuration(ea.SpellName).TotalSeconds);
 					playerStats.PercentConcentrationComplete = 0;
 					playerStats.JustBrokeConcentration = false;
 					break;
 				case SpellState.JustDispelled:
 					playerStats.ConcentratedSpell = ea.SpellName;
+					playerStats.ConcentratedSpellDurationSeconds = 0;
 					playerStats.PercentConcentrationComplete = 100;
 					playerStats.JustBrokeConcentration = false;
 					break;
 				case SpellState.BrokeConcentration:
 					playerStats.ConcentratedSpell = "";
+					playerStats.ConcentratedSpellDurationSeconds = 0;
+					playerStats.PercentConcentrationComplete = 100;
 					playerStats.JustBrokeConcentration = true;
 					break;
 			}
@@ -8423,8 +8446,8 @@ namespace DHDM
 
 		public void ReStackConditions()
 		{
-			AllPlayerStats.LatestCommand = "ReStackConditions";
-			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(AllPlayerStats));
+			PlayerStatsManager.LatestCommand = "ReStackConditions";
+			HubtasticBaseStation.ChangePlayerStats(JsonConvert.SerializeObject(PlayerStatsManager));
 			RestackInGameCreatureConditions();
 		}
 
@@ -8510,19 +8533,19 @@ namespace DHDM
 
 		public void MovePlayerTarget(string targetingCommand)
 		{
-			List<PlayerStats> targetedPlayers = AllPlayerStats.GetTargeted();
+			List<PlayerStats> targetedPlayers = PlayerStatsManager.GetTargeted();
 			PlayerStats firstTargeted = targetedPlayers.FirstOrDefault();
 			PlayerStats creatureToTarget;
 
 			if (targetingCommand.Contains("Next"))
-				creatureToTarget = AllPlayerStats.Players.Next(firstTargeted);
+				creatureToTarget = PlayerStatsManager.Players.Next(firstTargeted);
 			else
-				creatureToTarget = AllPlayerStats.Players.Previous(firstTargeted);
+				creatureToTarget = PlayerStatsManager.Players.Previous(firstTargeted);
 
 			if (creatureToTarget == null)
 				return;
 
-			AllPlayerStats.ClearAllTargets();
+			PlayerStatsManager.ClearAllTargets();
 			creatureToTarget.IsTargeted = true;
 			UpdatePlayerStatsInGame();
 		}
@@ -8547,6 +8570,12 @@ namespace DHDM
 			AllInGameCreatures.ClearAllTargets();
 			creatureToTarget.IsTargeted = true;
 			UpdateInGameCreatures();
+		}
+
+		public void SpellScrollsToggle()
+		{
+			PlayerStatsManager.HideSpellScrolls = !PlayerStatsManager.HideSpellScrolls;
+			UpdatePlayerStatsInGame();
 		}
 		// TODO: Reintegrate wand/staff animations....
 		/* 

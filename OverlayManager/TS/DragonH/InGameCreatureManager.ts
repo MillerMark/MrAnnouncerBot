@@ -712,7 +712,7 @@
 	}
 
 	processInGameCreatureCommand(command: string, inGameCreatures: Array<InGameCreature>, soundManager: SoundManager) {
-		console.log('command: ' + command);
+		//console.log('command: ' + command);
 		if (command === 'Set')
 			this.setInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Update')

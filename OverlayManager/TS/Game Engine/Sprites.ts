@@ -509,11 +509,11 @@
 	}
 
 	bounce(left: number, top: number, right: number, bottom: number, now: number) {
-		for (var i = this.spriteProxies.length - 1; i >= 0; i--) {
-			var sprite: SpriteProxy = this.spriteProxies[i];
+		for (let i = this.spriteProxies.length - 1; i >= 0; i--) {
+			const sprite: SpriteProxy = this.spriteProxies[i];
 			if (sprite.owned)
 				continue;
-			var hitFloor = sprite.bounce(left, top, right, bottom, this.spriteWidth, this.spriteHeight, now);
+			const hitFloor = sprite.bounce(left, top, right, bottom, this.spriteWidth, this.spriteHeight, now);
 			if (hitFloor && this.removeOnHitFloor) {
 				this.spriteProxies.splice(i, 1);
 				if (this.hitFloorFunc)

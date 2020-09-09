@@ -71,5 +71,13 @@ namespace DndCore
 			}
 			return GetAll(spellName, spellSlotLevel, spellLevel, spellcastingAbilityModifier);
 		}
+
+		public static TimeSpan GetDuration(string spellName)
+		{
+			Spell spell = Get(spellName);
+			if (spell == null)
+				return TimeSpan.Zero;
+			return spell.Duration.GetTimeSpan();
+		}
 	}
 }

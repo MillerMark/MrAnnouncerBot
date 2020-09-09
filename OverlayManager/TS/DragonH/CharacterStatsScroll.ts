@@ -65,11 +65,11 @@
 	concentrationIcon: SpriteProxy;
 	spinningConcentrationIcon: SpriteProxy;
 	spellItemIcon: SpriteProxy;
-	spellIconYOffset: number = 0;
+	spellIconYOffset = 0;
 
 	constructor() {
 		super();
-		let browserIsObs: boolean = this.browserIsOBS();
+		const browserIsObs: boolean = this.browserIsOBS();
 
 		this.spellBook = new SpellBook(browserIsObs);
 
@@ -107,17 +107,19 @@
 
 
 	sendScrollLayerCommand(commandData: string): void {
-		if (commandData === "Close")
+		if (commandData === "Close") {
+			this.needImmediateReopen = false;
 			this.close();
+		}
 		if (commandData === "ClearHighlighting")
 			this.clearEmphasis();
 	}
 
 	private addHighlightEmitters() {
-		const nameCenterX: number = 68;
-		const nameCenterY: number = 127;
-		const nameWidth: number = 104;
-		const nameHeight: number = 28;
+		const nameCenterX = 68;
+		const nameCenterY = 127;
+		const nameWidth = 104;
+		const nameHeight = 28;
 
 		// main page...
 		this.highlightEmitterPages[ScrollPage.main].emitters.push(
@@ -255,7 +257,7 @@
 	}
 
 	addRectangularHighlight(scrollPage: ScrollPage, enumIndex: number, centerX: number, centerY: number, width: number, height: number): any {
-		let name: string = this.getNameFromIndex(scrollPage, enumIndex);
+		const name: string = this.getNameFromIndex(scrollPage, enumIndex);
 		if (name === null)
 			return;
 		this.highlightEmitterPages[scrollPage].emitters.push(new HighlightEmitter(name, new Vector(centerX, centerY)).setRectangular(width, height));
@@ -273,7 +275,7 @@
 		if (this._page !== newValue) {
 			this.needImmediateReopen = true;
 
-			if (this.state !== ScrollState.disappearing)
+			if (this.state !== ScrollState.disappearing && this.state !== ScrollState.slamming)
 				this.close();
 
 			this._page = newValue;
@@ -392,169 +394,8 @@
 			this.state === ScrollState.paused;
 	}
 
-	render(nowSec: number, timeScale: number, world: World): void {
-		super.render(nowSec, timeScale, world);
-
-		let justClosed: boolean = false;
-
-		const picX: number = 17;
-		const picWidth: number = 104;
-		const picY: number = 24;
-		const picHeight: number = 90;
-
-		if (this.scrollIsVisible() && this.scrollRolls.spriteProxies.length != 0) {
-			let elapsedTime: number = nowSec - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
-			let scrollRollsFrameIndex: number = this.scrollRolls.spriteProxies[0].frameIndex;
-
-			if (this.state === ScrollState.paused) {
-				scrollRollsFrameIndex = this.lastFrameIndex;
-				elapsedTime = this.lastElapsedTime;
-			}
-
-			let nextFrameIndex: number;
-
-			let stillAnimating: boolean;
-
-			if (this.state === ScrollState.closing || this.state === ScrollState.closed) {
-				stillAnimating = scrollRollsFrameIndex > 0;
-				nextFrameIndex = scrollRollsFrameIndex - 1;
-			}
-			else { // opening...
-				stillAnimating = scrollRollsFrameIndex < 22;
-				nextFrameIndex = scrollRollsFrameIndex + 1;
-			}
-
-			let frameFraction: number = elapsedTime / (this.framerateMs / 1000);
-			const maxFrameFraction: number = 0.99999999;
-			if (frameFraction > maxFrameFraction) {
-				frameFraction = maxFrameFraction;
-			}
-
-			if (this.state === ScrollState.closing)
-				frameFraction = 1 - frameFraction;
-
-			let topData: number = 0;
-			let bottomData: number = Infinity;
-
-			let frameIndexPrecise: number = scrollRollsFrameIndex + frameFraction;
-
-			if (stillAnimating || this.state === ScrollState.closing || this.state === ScrollState.closed) {
-				let offset: number = CharacterStatsScroll.scrollOpenOffsets[scrollRollsFrameIndex + 1];
-
-				let decimalOffset: number = frameIndexPrecise - scrollRollsFrameIndex;
-				let distanceBetweenOffsets: number = CharacterStatsScroll.scrollOpenOffsets[nextFrameIndex + 1] - offset;
-
-				let superPreciseOffset: number = offset + distanceBetweenOffsets * decimalOffset;
-
-				let baseAnim: Part = this.scrollBacks.baseAnimation;
-				let sw = this.scrollBacks.spriteWidth;
-				let dx: number = 0;
-				let dh: number = offset * 2;
-				let dy = CharacterStatsScroll.centerY - offset;
-				topData = dy;
-				bottomData = dy + dh;
-				let sh: number = dh;
-				let dw: number = sw;
-				let sx: number = dx;
-				let sy: number = dy;
-
-				baseAnim.drawCroppedByIndex(world.ctx, sx, sy, this.pageIndex, dx, dy, sw, sh, sw, dh);
-
-				let picOffsetY: number = topData - picY;
-				let picCroppedHeight: number = picY + picHeight - topData;
-
-				if (picCroppedHeight > 0) {
-					// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
-
-					this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.headshotIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
-				}
-				this.drawHighlighting(nowSec, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
-
-				//if (this.state === ScrollState.closing && frameIndex <= 7) {
-				//  this.state = ScrollState.paused;
-				//  this.scrollRolls.animationStyle = AnimationStyle.Static;
-				//  this.lastFrameIndex = frameIndex;
-				//  this.lastElapsedTime = elapsedTime;
-				//}
-
-				if (this.showingGoldDustEmitters && scrollRollsFrameIndex === 0 && this.state === ScrollState.unrolling) {
-					this.topEmitter.start();
-					this.bottomEmitter.start();
-				}
-
-				if (scrollRollsFrameIndex === 0 && this.state === ScrollState.closing) {
-					justClosed = true;
-				}
-
-				if (this.showingGoldDustEmitters) {
-					this.topEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY - superPreciseOffset);
-					this.bottomEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY + superPreciseOffset);
-				}
-			}
-			else {
-				this.scrollBacks.draw(world.ctx, nowSec * 1000);
-				this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.headshotIndex);
-				this.drawHighlighting(nowSec, timeScale, world);
-				this.state = ScrollState.unrolled;
-
-				if (this.showingGoldDustEmitters) {
-					this.topEmitter.stop();
-					this.bottomEmitter.stop();
-					this.startQueuedEmitters();
-				}
-			}
-
-			if (this.showingGoldDustEmitters) {
-				this.topEmitter.render(nowSec, timeScale, world);
-				this.bottomEmitter.render(nowSec, timeScale, world);
-			}
-
-			this.drawCharacterStats(nowSec, world.ctx, topData, bottomData);
-
-			this.scrollRolls.draw(world.ctx, nowSec * 1000);
-
-			if (this.activeCharacter) {
-				let activeCharacter: Character = this.activeCharacter;
-				this.drawAdditionalData(nowSec, world.ctx, activeCharacter, topData, bottomData);
-			}
-
-		}
-		else if (this.state === ScrollState.disappearing) {
-			this.scrollRolls.draw(world.ctx, nowSec * 1000);
-			this.scrollPoofBack.draw(world.ctx, nowSec * 1000);
-			this.scrollPoofFront.draw(world.ctx, nowSec * 1000);
-			if (this.scrollPoofFront.spriteProxies.length > 0) {
-				let poofFrameIndex: number = this.scrollPoofFront.spriteProxies[0].frameIndex;
-				if (poofFrameIndex === 0) {
-					this.state = ScrollState.none;
-				}
-			}
-		}
-		else {
-			//console.log('Scroll is not visible!');
-		}
-
-		if (this.state === ScrollState.slamming) {
-			this.scrollSlam.draw(world.ctx, nowSec * 1000);
-			if (this.scrollSlam.spriteProxies.length === 0 || this.scrollSlam.spriteProxies[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
-				this.state = ScrollState.slammed;
-				this.play(this.scrollSlamSfx);
-			}
-		}
-
-		if (justClosed) {
-			if (this.needImmediateReopen) {
-				this.state = ScrollState.closed;
-				this.open(nowSec);
-				this.needImmediateReopen = false;
-			}
-			else
-				this.makeScrollDisappear(nowSec * 1000);
-		}
-	}
-
 	makeScrollDisappear(nowMs: number): void {
-		const fadeOutTime: number = 450;
+		const fadeOutTime = 450;
 		if (this.currentScrollRoll) {
 			this.currentScrollRoll.expirationDate = nowMs + fadeOutTime;
 			this.currentScrollRoll.fadeOutTime = fadeOutTime;
@@ -567,10 +408,10 @@
 		this.currentScrollRoll = null;
 		this.currentScrollBack = null;
 
-		const scrollCenterX: number = 170;
-		const scrollCenterY: number = 440;
+		const scrollCenterX = 170;
+		const scrollCenterY = 440;
 
-		let hueShift: number = 0;
+		let hueShift = 0;
 		if (this.activeCharacter) {
 			hueShift = this.activeCharacter.hueShift;
 		}
@@ -625,8 +466,8 @@
 		}
 	}
 
-	drawDeEmphasisLayer(world: World, now: number, sx: number = 0, sy: number = 0, dx: number = 0, dy: number = 0, sw: number = 0, sh: number = 0, dw: number = 0, dh: number = 0): void {
-		let newAlpha: number = this.deEmphasisSprite.getAlpha(now * 1000);
+	drawDeEmphasisLayer(world: World, now: number, sx = 0, sy = 0, dx = 0, dy = 0, sw = 0, sh = 0, dw = 0, dh = 0): void {
+		const newAlpha: number = this.deEmphasisSprite.getAlpha(now * 1000);
 		world.ctx.globalAlpha = newAlpha;
 		if (dh > 0) {
 			this.scrollBacks.baseAnimation.drawCroppedByIndex(world.ctx, dx, dy, 0, sx, sy, sw, sh, dw, dh);
@@ -663,7 +504,7 @@
 	}
 
 	private getMagicDustEmitter(x: number, y: number) {
-		let emitter: Emitter = new Emitter(new Vector(x, y));
+		const emitter: Emitter = new Emitter(new Vector(x, y));
 		emitter.stop();
 		emitter.saturation.target = 0.9;
 		emitter.saturation.relativeVariance = 0.2;
@@ -769,20 +610,20 @@
 	static readonly iconIndent: number = 4;
 
 	drawSpellItem(now: number, context: CanvasRenderingContext2D, spellDataItem: SpellDataItem, x: number, y: number, topData: number, bottomData: number): number {
-		let indent: number = 6;
+		const indent = 6;
 
-		let spellName: string = spellDataItem.Name;
-		let saveTop: number = y;
+		const spellName: string = spellDataItem.Name;
+		const saveTop: number = y;
 
-		let middleY: number = y + this.spellNameFontHeight / 2;
-		let itemIsOnScreen = middleY > topData && middleY < bottomData;
+		const middleY: number = y + this.spellNameFontHeight / 2;
+		const itemIsOnScreen = middleY > topData && middleY < bottomData;
 
 		if (itemIsOnScreen)
 			this.drawSpellGroupItem(context, x + indent, y, spellName);
 
 		y += this.spellNameFontHeight
 
-		let spellNameWidth: number = context.measureText(spellName).width;
+		const spellNameWidth: number = context.measureText(spellName).width;
 		let spellNameRight: number = x + indent + spellNameWidth;
 		if (spellNameRight > this.rightMostTextX) {
 			this.rightMostTextX = spellNameRight;
@@ -825,7 +666,7 @@
 
 
 		if (this.activeSpellData && this.activeSpellData.name == spellName) {
-			const calloutMarginX: number = 8;
+			const calloutMarginX = 8;
 			this.calloutPointX = spellNameRight + calloutMarginX;
 			if (this.calloutPointX > this.rightMostTextX) {
 				this.rightMostTextX = this.calloutPointX;
@@ -1004,7 +845,7 @@
 		}
 	}
 
-	clear(): any {
+	clear(): void {
 		this.characters = [];
 		this.pages = [];
 		this.activeCharacter = null;
@@ -1013,16 +854,22 @@
 	}
 
 	playerDataChanged(playerID: number, pageID: number, playerData: string): boolean {
-		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
-		const okayToChangePage: boolean = pageID !== -1;
 		let newPageId: number = pageID;
 		if (newPageId === -1)
 			newPageId = this._page;
 
+		const newPageIsValid: boolean = newPageId !== -1;
+
+		//console.log(`playerDataChanged(${playerID}, ${pageID}, ${playerData})`);
+		//console.log('newPageId: ' + newPageId);
+		//console.log('this.page: ' + ScrollPage[this.page]);
+		//console.log('this.state: ' + ScrollState[this.state]);
+
 		let changedActiveCharacter = false;
 		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
+			//console.log('changing player!!!');
 			this.clearEmphasis();
-			if (okayToChangePage) {
+			if (newPageIsValid) {
 				this.setActiveCharacter(playerID);
 				changedActiveCharacter = true;
 				this._page = newPageId;
@@ -1030,21 +877,24 @@
 				this.open(performance.now());
 			}
 		}
-		else if (this.page !== newPageId || this.state === ScrollState.closed || this.state === ScrollState.disappearing) {
+		else if (this.page !== newPageId || this.state === ScrollState.closed || this.state === ScrollState.closing || this.state === ScrollState.disappearing) {
+			//console.log('changing page!!!');
 			this.clearEmphasis();
 
-			if (okayToChangePage) {
-				const needToImmediatelyOpen: boolean = this.state === ScrollState.disappearing;
+			if (newPageIsValid) {
 				this.page = newPageId;
-				if (needToImmediatelyOpen) {
+				if (this.state === ScrollState.disappearing) {
 					this.state = ScrollState.none;
 					this.needImmediateReopen = false;
 				}
 				this.open(performance.now());
 			}
+			else {
+				// console.log('new page is not valid!');
+			}
 		}
 		else {
-			console.log('this.state: ' + this.state);
+			// console.log('Data changed, but no update!');
 		}
 
 		if (playerData !== '') {
@@ -1115,7 +965,7 @@
 				emitter.start();
 			}
 			for (let i = 0; i < activeHighlightPage.emitters.length; i++) {
-				let highlightEmitter: HighlightEmitter = activeHighlightPage.emitters[i];
+				const highlightEmitter: HighlightEmitter = activeHighlightPage.emitters[i];
 				if (highlightEmitter !== emitter)
 					highlightEmitter.stop();
 			}
@@ -1140,7 +990,7 @@
 
 
 	currentlyEmphasizing(): boolean {
-		let now: number = activeBackGame.nowMs;
+		const now: number = activeBackGame.nowMs;
 		return this.scrollEmphasisMain.hasAnyAlive(now) ||
 			this.scrollEmphasisSkills.hasAnyAlive(now) ||
 			this.scrollEmphasisEquipment.hasAnyAlive(now) ||
@@ -1148,7 +998,7 @@
 	}
 
 	focusItem(playerID: number, pageID: number, itemID: string): void {
-		let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
+		const previouslyEmphasizing: boolean = this.currentlyEmphasizing();
 
 		if (pageID === this.pageIndex)
 			this.addParticleEmphasis(itemID);
@@ -1178,7 +1028,7 @@
 			if (pageID === this.pageIndex)
 				this.emphasisSprites.add(0, 0, this.emphasisIndices.pop()).setFadeTimes(this.fadeTime, this.fadeTime);
 
-		let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
+		const currentlyEmphasizing: boolean = this.currentlyEmphasizing();
 
 		if (currentlyEmphasizing && !previouslyEmphasizing && activeBackGame) {
 			if (this.deEmphasisSprite.expirationDate > activeBackGame.nowMs) {
@@ -1194,44 +1044,251 @@
 
 	unfocusItem(playerID: number, pageID: number, itemID: string): void {
 		//console.log(`unfocusItem(${playerID}, ${pageID}, ${itemID})`);
-		let previouslyEmphasizing: boolean = this.currentlyEmphasizing();
+		const previouslyEmphasizing: boolean = this.currentlyEmphasizing();
 
 		this.removeParticleEmphasis(itemID);
 
 		if (pageID === ScrollPage.main) {
-			let emphasisIndex: number = emphasisMain[itemID];
+			const emphasisIndex: number = emphasisMain[itemID];
 			this.scrollEmphasisMain.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisSkills.spriteProxies = [];
 			this.scrollEmphasisEquipment.spriteProxies = [];
 			this.scrollEmphasisSpells.spriteProxies = [];
 		}
 		else if (pageID === ScrollPage.skills) {
-			let emphasisIndex: number = emphasisSkills[itemID];
+			const emphasisIndex: number = emphasisSkills[itemID];
 			this.scrollEmphasisSkills.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisMain.spriteProxies = [];
 			this.scrollEmphasisEquipment.spriteProxies = [];
 			this.scrollEmphasisSpells.spriteProxies = [];
 		}
 		else if (pageID === ScrollPage.equipment) {
-			let emphasisIndex: number = emphasisEquipment[itemID];
+			const emphasisIndex: number = emphasisEquipment[itemID];
 			this.scrollEmphasisEquipment.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisMain.spriteProxies = [];
 			this.scrollEmphasisSkills.spriteProxies = [];
 			this.scrollEmphasisSpells.spriteProxies = [];
 		}
 		else if (pageID === ScrollPage.spells) {
-			let emphasisIndex: number = emphasisSpells[itemID];
+			const emphasisIndex: number = emphasisSpells[itemID];
 			this.scrollEmphasisSpells.killByFrameIndex(emphasisIndex, activeBackGame.nowMs);
 			this.scrollEmphasisMain.spriteProxies = [];
 			this.scrollEmphasisSkills.spriteProxies = [];
 			this.scrollEmphasisEquipment.spriteProxies = [];
 		}
 
-		let currentlyEmphasizing: boolean = this.currentlyEmphasizing();
+		const currentlyEmphasizing: boolean = this.currentlyEmphasizing();
 
 		if (!currentlyEmphasizing && previouslyEmphasizing && activeBackGame) {
 			this.deEmphasisSprite.expirationDate = activeBackGame.nowMs + this.deEmphasisSprite.fadeOutTime;
 		}
 
+	}
+
+	drawStateDiagnostics(ctx: CanvasRenderingContext2D) {
+		ctx.fillStyle = '#ff8080';
+		ctx.font = '32px Arial';
+		ctx.fillText('State: ' + ScrollState[this.state], 1200, 680);
+		if (this.activeCharacter) {
+			ctx.fillStyle = '#8080ff';
+			ctx.font = '32px Arial';
+			ctx.fillText('Active Player: ' + this.activeCharacter.firstName, 1200, 620);
+		}
+	}
+
+	render(nowSec: number, timeScale: number, world: World): void {
+		super.render(nowSec, timeScale, world);
+
+		//this.drawStateDiagnostics(world.ctx);
+
+		let justClosed = false;
+
+		const picX = 17;
+		const picWidth = 104;
+		const picY = 24;
+		const picHeight = 90;
+
+		if (this.scrollIsVisible() && this.scrollRolls.spriteProxies.length !== 0) {
+			justClosed = this.renderScroll(nowSec, justClosed, world, picY, picHeight, picX, picWidth, timeScale);
+		}
+		else if (this.state === ScrollState.disappearing) {
+			this.renderDisappearAnimation(world, nowSec);
+		}
+		else {
+			//console.log('Scroll is not visible!');
+		}
+
+		if (this.state === ScrollState.slamming) {
+			this.renderSlam(world, nowSec);
+		}
+
+		if (justClosed) {
+			this.closeScrollNow(nowSec);
+		}
+	}
+
+	private renderScroll(nowSec: number, justClosed: boolean, world: World, picY: number, picHeight: number, picX: number, picWidth: number, timeScale: number): boolean {
+		let elapsedTime: number = nowSec - this.scrollRolls.lastTimeWeAdvancedTheFrame / 1000;
+		let scrollRollsFrameIndex: number = this.scrollRolls.spriteProxies[0].frameIndex;
+
+		if (this.state === ScrollState.paused) {
+			scrollRollsFrameIndex = this.lastFrameIndex;
+			elapsedTime = this.lastElapsedTime;
+		}
+
+		let nextFrameIndex: number;
+
+		let stillAnimating: boolean;
+
+		if (this.state === ScrollState.closing || this.state === ScrollState.closed) {
+			stillAnimating = scrollRollsFrameIndex > 0;
+			nextFrameIndex = scrollRollsFrameIndex - 1;
+		}
+		else { // opening...
+			stillAnimating = scrollRollsFrameIndex < 22;
+			nextFrameIndex = scrollRollsFrameIndex + 1;
+		}
+
+		let frameFraction: number = elapsedTime / (this.framerateMs / 1000);
+		const maxFrameFraction = 0.99999999;
+		if (frameFraction > maxFrameFraction) {
+			frameFraction = maxFrameFraction;
+		}
+
+		if (this.state === ScrollState.closing)
+			frameFraction = 1 - frameFraction;
+
+		let topData = 0;
+		let bottomData = Infinity;
+
+		const frameIndexPrecise: number = scrollRollsFrameIndex + frameFraction;
+
+		if (stillAnimating || this.state === ScrollState.closing) {
+			({ topData, bottomData, justClosed } = this.drawCroppedScroll(scrollRollsFrameIndex, frameIndexPrecise, nextFrameIndex, topData, bottomData, world, picY, picHeight, picX, picWidth, nowSec, timeScale, justClosed));
+		}
+		else {
+			this.drawFullScroll(world, nowSec, picX, picY, timeScale);
+		}
+
+		this.drawGoldDustEmitters(nowSec, timeScale, world);
+
+		this.drawCharacterStats(nowSec, world.ctx, topData, bottomData);
+
+		this.scrollRolls.draw(world.ctx, nowSec * 1000);
+		this.drawCharacterData(nowSec, world, topData, bottomData);
+		return justClosed;
+	}
+
+	private closeScrollNow(nowSec: number) {
+		if (this.needImmediateReopen) {
+			this.open(nowSec);
+			this.needImmediateReopen = false;
+		}
+		else
+			this.makeScrollDisappear(nowSec * 1000);
+	}
+
+	private renderSlam(world: World, nowSec: number) {
+		this.scrollSlam.draw(world.ctx, nowSec * 1000);
+		if (this.scrollSlam.spriteProxies.length === 0 || this.scrollSlam.spriteProxies[0].frameIndex === this.scrollSlam.baseAnimation.frameCount - 1) {
+			this.state = ScrollState.slammed;
+			this.play(this.scrollSlamSfx);
+		}
+	}
+
+	private renderDisappearAnimation(world: World, nowSec: number) {
+		this.scrollRolls.draw(world.ctx, nowSec * 1000);
+		this.scrollPoofBack.draw(world.ctx, nowSec * 1000);
+		this.scrollPoofFront.draw(world.ctx, nowSec * 1000);
+		if (this.scrollPoofFront.spriteProxies.length > 0) {
+			const poofFrameIndex: number = this.scrollPoofFront.spriteProxies[0].frameIndex;
+			if (poofFrameIndex === 0) {
+				this.state = ScrollState.none;
+			}
+		}
+		else {
+			this.state = ScrollState.none;
+		}
+	}
+
+	private drawCharacterData(nowSec: number, world: World, topData: number, bottomData: number) {
+		if (this.activeCharacter) {
+			const activeCharacter: Character = this.activeCharacter;
+			this.drawAdditionalData(nowSec, world.ctx, activeCharacter, topData, bottomData);
+		}
+	}
+
+	private drawGoldDustEmitters(nowSec: number, timeScale: number, world: World) {
+		if (this.showingGoldDustEmitters) {
+			this.topEmitter.render(nowSec, timeScale, world);
+			this.bottomEmitter.render(nowSec, timeScale, world);
+		}
+	}
+
+	private drawFullScroll(world: World, nowSec: number, picX: number, picY: number, timeScale: number) {
+		this.scrollBacks.draw(world.ctx, nowSec * 1000);
+		this.playerHeadshots.baseAnimation.drawByIndex(world.ctx, picX, picY, this.headshotIndex);
+		this.drawHighlighting(nowSec, timeScale, world);
+		this.state = ScrollState.unrolled;
+
+		if (this.showingGoldDustEmitters) {
+			this.topEmitter.stop();
+			this.bottomEmitter.stop();
+			this.startQueuedEmitters();
+		}
+	}
+
+	private drawCroppedScroll(scrollRollsFrameIndex: number, frameIndexPrecise: number, nextFrameIndex: number, topData: number, bottomData: number, world: World, picY: number, picHeight: number, picX: number, picWidth: number, nowSec: number, timeScale: number, justClosed: boolean) {
+		const offset: number = CharacterStatsScroll.scrollOpenOffsets[scrollRollsFrameIndex + 1];
+
+		const decimalOffset: number = frameIndexPrecise - scrollRollsFrameIndex;
+		const distanceBetweenOffsets: number = CharacterStatsScroll.scrollOpenOffsets[nextFrameIndex + 1] - offset;
+
+		const superPreciseOffset: number = offset + distanceBetweenOffsets * decimalOffset;
+
+		const baseAnim: Part = this.scrollBacks.baseAnimation;
+		const sw = this.scrollBacks.spriteWidth;
+		const dx = 0;
+		const dh: number = offset * 2;
+		const dy = CharacterStatsScroll.centerY - offset;
+		topData = dy;
+		bottomData = dy + dh;
+		const sh: number = dh;
+		const dw: number = sw;
+		const sx: number = dx;
+		const sy: number = dy;
+
+		baseAnim.drawCroppedByIndex(world.ctx, sx, sy, this.pageIndex, dx, dy, sw, sh, sw, dh);
+
+		const picOffsetY: number = topData - picY;
+		const picCroppedHeight: number = picY + picHeight - topData;
+
+		if (picCroppedHeight > 0) {
+			// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
+			this.playerHeadshots.baseAnimation.drawCroppedByIndex(world.ctx, picX, picY + picOffsetY, this.headshotIndex, 0, picOffsetY, picWidth, picCroppedHeight, picWidth, picCroppedHeight);
+		}
+		this.drawHighlighting(nowSec, timeScale, world, sx, sy, dx, dy, sw, sh, dw, dh);
+
+		//if (this.state === ScrollState.closing && frameIndex <= 7) {
+		//  this.state = ScrollState.paused;
+		//  this.scrollRolls.animationStyle = AnimationStyle.Static;
+		//  this.lastFrameIndex = frameIndex;
+		//  this.lastElapsedTime = elapsedTime;
+		//}
+		if (this.showingGoldDustEmitters && scrollRollsFrameIndex === 0 && this.state === ScrollState.unrolling) {
+			this.topEmitter.start();
+			this.bottomEmitter.start();
+		}
+
+		if (scrollRollsFrameIndex === 0 && this.state === ScrollState.closing) {
+			justClosed = true;
+			this.state = ScrollState.closed;
+		}
+
+		if (this.showingGoldDustEmitters) {
+			this.topEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY - superPreciseOffset);
+			this.bottomEmitter.position = new Vector(CharacterStatsScroll.centerX, CharacterStatsScroll.centerY + superPreciseOffset);
+		}
+		return { topData, bottomData, justClosed };
 	}
 } 

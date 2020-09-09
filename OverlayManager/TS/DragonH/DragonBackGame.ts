@@ -270,7 +270,7 @@ class DragonBackGame extends DragonGame {
 
 	start() {
 		super.start();
-		let saveLoadCopyrightedContent: boolean = loadCopyrightedContent;
+		const saveLoadCopyrightedContent: boolean = loadCopyrightedContent;
 		loadCopyrightedContent = false;
 		try {
 			gravityGames.selectPlanet('Earth');
