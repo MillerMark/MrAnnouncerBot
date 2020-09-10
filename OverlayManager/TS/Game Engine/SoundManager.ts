@@ -40,18 +40,18 @@ class SoundManager implements ISoundManager {
 
 	safePlayMp3ReturnAudio(fileName: string, compareThreshold: number = -1): HTMLAudioElement {
 		let baseFileName: string = fileName;
-		let bracketIndex: number = fileName.indexOf('[');
+		const bracketIndex: number = fileName.indexOf('[');
 		if (bracketIndex >= 0) {
 			let countStr: string = fileName.substr(bracketIndex + 1);
-			let closingBracketIndex: number = countStr.indexOf(']');
+			const closingBracketIndex: number = countStr.indexOf(']');
 			if (closingBracketIndex > 0) {
 				countStr = countStr.substr(0, closingBracketIndex);
 			}
 			baseFileName = fileName.substr(0, bracketIndex);
 
-			let count: number = +countStr;
+			const count: number = +countStr;
 			if (count > 0) {
-				let index: number = Math.floor(Math.random() * count + 1);
+				const index: number = Math.floor(Math.random() * count + 1);
 				fileName = baseFileName + index.toString();
 			}
 		}
@@ -59,7 +59,7 @@ class SoundManager implements ISoundManager {
 		if (this.playedRecently(baseFileName, compareThreshold))
 			return null;
 
-		let media: HTMLAudioElement = new Audio(`${this.soundPath}/${fileName}.mp3`);
+		const media: HTMLAudioElement = new Audio(`${this.soundPath}/${fileName}.mp3`);
 		const playPromise = media.play();
 		if (playPromise !== null) {
 			playPromise.catch(() => { })

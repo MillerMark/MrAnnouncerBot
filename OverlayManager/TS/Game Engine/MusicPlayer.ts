@@ -75,8 +75,8 @@ class SimpleMusicPlayer {
 		const oneMinuteMs: number = 60 * 1000;
 		const tenMinutesMS: number = 10 * oneMinuteMs;
 		let index: number = Random.intBetween(1, activeFileCount);
-		let tries: number = 0;
-		const maxTries: number = 30;
+		let tries = 0;
+		const maxTries = 30;
 		let fileName: string = this.getFileName(mainFolder, activeFolder, index);
 		while (tries < maxTries && this.soundManager.playedRecently(fileName, tenMinutesMS)) {
 			index = Random.intBetween(1, activeFileCount);
@@ -88,7 +88,7 @@ class SimpleMusicPlayer {
 			this.activeSong.pause();
 		}
 
-		console.log(`Playing "${fileName}.mp3"...`);
+		//console.log(`Playing "${fileName}.mp3"...`);
 		this.activeSong = this.soundManager.safePlayMp3ReturnAudio(fileName, tenMinutesMS);
 		if (!this.activeSong)
 			this.activeSong = this.soundManager.safePlayMp3ReturnAudio(fileName, 0);
@@ -96,8 +96,8 @@ class SimpleMusicPlayer {
 		this.setVolumeForActiveSong(volume);
 
 		this.activeSong.addEventListener('loadedmetadata', function () {
-			console.log(`${fileName} duration: ` + this.activeSong.duration);
-			let durationSec: number = this.activeSong.duration * 1000;
+			//console.log(`${fileName} duration: ` + this.activeSong.duration);
+			const durationSec: number = this.activeSong.duration * 1000;
 			this.expirationDate = this.timeStart + durationSec;
 		}.bind(this), false);
 	}
@@ -108,7 +108,7 @@ class SimpleMusicPlayer {
 
 	// TODO: consolidate duplication with similar function in AnimatedElement.
 	getLifeRemaining(now: number) {
-		let lifeRemaining: number = 0;
+		let lifeRemaining = 0;
 		if (this.expirationDate) {
 			lifeRemaining = this.expirationDate - now;
 		}
@@ -116,7 +116,7 @@ class SimpleMusicPlayer {
 	}
 
 	getVolumeMultiplier(now: number): number {
-		let msAlive: number = now - this.timeStart;
+		const msAlive: number = now - this.timeStart;
 
 		if (msAlive < CrossfadePlayer.crossFadeTime) {
 			this.state = SongState.fadingIn;
@@ -124,7 +124,7 @@ class SimpleMusicPlayer {
 		}
 
 		if (this.expirationDate) {
-			let lifeRemaining: number = this.getLifeRemaining(now);
+			const lifeRemaining: number = this.getLifeRemaining(now);
 			if (lifeRemaining < 0) {
 				this.state = SongState.finishedPlaying;
 				return 0;
@@ -267,7 +267,7 @@ class CrossfadePlayer {
 	}
 
 	private restorePlayerVolume(musicPlayer: SimpleMusicPlayer) {
-		if (musicPlayer != null) {
+		if (musicPlayer !== null) {
 			this.volume = this.saveVolume;
 			musicPlayer.setVolumeForActiveSong(this.volume);
 		}
@@ -278,7 +278,7 @@ class CrossfadePlayer {
 			this.restoreVolume();
 		}
 
-		let thisPlayer: SimpleMusicPlayer = this.thisMusicPlayer;
+		const thisPlayer: SimpleMusicPlayer = this.thisMusicPlayer;
 		if (thisPlayer) {
 			thisPlayer.update(now, this.volume);
 
@@ -292,7 +292,7 @@ class CrossfadePlayer {
 			}
 			if (thisPlayer.state === SongState.finishedPlaying) {
 				this.thisMusicPlayer = this.nextMusicPlayer;
-				if ((!this.thisMusicPlayer || this.thisMusicPlayer.state == SongState.finishedPlaying) && !this.stopping)
+				if ((!this.thisMusicPlayer || this.thisMusicPlayer.state === SongState.finishedPlaying) && !this.stopping)
 					this.thisMusicPlayer = new SimpleMusicPlayer();
 				this.nextMusicPlayer = null;
 			}
@@ -310,7 +310,7 @@ class CrossfadePlayer {
 
 	private changeSubfolder(newFolder: string): void {
 		this.soundFolders.forEach(function (folder: SoundFolder) {
-			if (folder.folderName.toLowerCase() == newFolder.toLowerCase()) {
+			if (folder.folderName.toLowerCase() === newFolder.toLowerCase()) {
 				this.activeFolder = folder.folderName;
 				this.activeFileCount = folder.count;
 				tellDM(`Switching ${this.mainFolder} to ${this.activeFolder}...`);

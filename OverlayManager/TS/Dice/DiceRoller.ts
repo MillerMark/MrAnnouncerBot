@@ -1580,7 +1580,7 @@ function rollBonusDice() {
 	waitingForBonusRollToComplete = true;
 }
 
-function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage = 0, maxDamage = 0): void {
+function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage = 0, maxDamage = 0, damageType = DamageType.None): void {
 	if (diceRollData.hasMultiPlayerDice) {
 		diceSounds.playMultiplayerCommentary(type, d20RollValue);
 		return;
@@ -1596,12 +1596,12 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 	}
 
 	if (diceRollData.type === DiceRollType.DamageOnly) {
-		diceSounds.playDamageCommentary(type, d20RollValue, totalDamage, maxDamage);
+		diceSounds.playDamageCommentary(type, d20RollValue, totalDamage, maxDamage, damageType);
 		return;
 	}
 
 	if (diceRollData.type === DiceRollType.HealthOnly) {
-		diceSounds.playHealthCommentary(type, d20RollValue);
+		diceSounds.playHealthCommentary(type, totalHealthPlusModifier);
 		return;
 	}
 
@@ -1763,7 +1763,7 @@ function reportRollResults(rollResults: RollResults) {
 	if (diceRollData.secondRollData)
 		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
 	else
-		playAnnouncerCommentary(diceRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
+		playAnnouncerCommentary(diceRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, diceRollData.damageType);
 	return maxDamage;
 }
 
@@ -1996,9 +1996,9 @@ function onDiceRollStopped() {
 		playerId = diceRollData.playerRollOptions[0].PlayerID;
 
 	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
-	console.log('diceRollData.type: ' + diceRollData.type);
-	console.log(diceRollData.multiplayerSummary);
-	console.log(diceRollData.individualRolls);
+	//console.log('diceRollData.type: ' + diceRollData.type);
+	//console.log(diceRollData.multiplayerSummary);
+	//console.log(diceRollData.individualRolls);
 	lastRollDiceData = {
 		'wasCriticalHit': wasCriticalHit,
 		'playerID': playerId,
