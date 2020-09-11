@@ -26,19 +26,19 @@ class SoundManager implements ISoundManager {
 	// file that approximates the percentage passed in. So 0% will match index 0, and
 	// 100% will match the last item in the array.
 	getPercentageAudio(elements: HTMLAudioElement[], percentage: number): HTMLAudioElement {
-		let index: number = Math.floor(Math.max(Math.min(percentage, 1) * (elements.length - 1), 0));
+		const index: number = Math.floor(Math.max(Math.min(percentage, 1) * (elements.length - 1), 0));
 		return elements[index];
 	}
 
 	// Loads an array of sounds numbered 1..n, 
 	loadPercentageSoundEffects(sounds: Array<HTMLAudioElement>, baseFileName: string, numSounds: number): void {
-		for (var i = 0; i < numSounds; i++) {
-			let fileIndex: number = i + 1;
+		for (let i = 0; i < numSounds; i++) {
+			const fileIndex: number = i + 1;
 			sounds.push(new Audio(`${this.soundPath}/${baseFileName}${fileIndex}.wav`))
 		}
 	}
 
-	safePlayMp3ReturnAudio(fileName: string, compareThreshold: number = -1): HTMLAudioElement {
+	safePlayMp3ReturnAudio(fileName: string, compareThreshold = -1): HTMLAudioElement {
 		let baseFileName: string = fileName;
 		const bracketIndex: number = fileName.indexOf('[');
 		if (bracketIndex >= 0) {
@@ -56,13 +56,17 @@ class SoundManager implements ISoundManager {
 			}
 		}
 
-		if (this.playedRecently(baseFileName, compareThreshold))
+		if (this.playedRecently(baseFileName, compareThreshold)) {
+			//console.error(`Already played ${baseFileName} recently!`);
 			return null;
+		}
 
 		const media: HTMLAudioElement = new Audio(`${this.soundPath}/${fileName}.mp3`);
 		const playPromise = media.play();
 		if (playPromise !== null) {
-			playPromise.catch(() => { })
+			playPromise.catch(error => {
+				console.error(error);
+			})
 		}
 		this.playingNow(baseFileName);
 		return media;

@@ -1,3 +1,21 @@
+class AsyncAudioPlayer {
+	constructor() {
+
+	}
+	play(soundManager: SoundManager, fileName: string, delayMs = 0): Promise<void> {
+		//console.log(`!!! - Playing ${fileName}...`);
+		const promise: Promise<void> = new Promise<void>((resolve) => {
+			const audio: HTMLAudioElement = soundManager.safePlayMp3ReturnAudio(fileName);
+			audio.addEventListener('loadedmetadata', () => {
+				const delayToSuccessMs: number = audio.duration * 1000 + delayMs;
+				setTimeout(resolve, delayToSuccessMs);
+			}, false);
+		}
+		);
+		return promise;
+	}
+}
+
 class DiceSounds extends SoundManager {
 	hitDice: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
 	hitFloor: Array<HTMLAudioElement> = new Array<HTMLAudioElement>();
@@ -84,6 +102,12 @@ class DiceSounds extends SoundManager {
 	}
 
 	playNumber(value: number): HTMLAudioElement {
+		const fileToPlay = this.getNumberFile(value);
+		console.log(`fileToPlay: ${fileToPlay}`);
+		return this.safePlayMp3ReturnAudio(fileToPlay);
+	}
+
+	private getNumberFile(value: number) {
 		let numMp3Files = 3;
 		if (value > 30)
 			numMp3Files = 1;
@@ -97,7 +121,7 @@ class DiceSounds extends SoundManager {
 			suffix = suffixMap[Random.intMax(numMp3Files)];
 
 		const fileToPlay = `Announcer/Numbers/${value}${suffix}`;
-		return this.safePlayMp3ReturnAudio(fileToPlay);
+		return fileToPlay;
 	}
 
 	playFlatD20Commentary(d20RollValue: number): void {
@@ -115,17 +139,36 @@ class DiceSounds extends SoundManager {
 		//}, false);
 	}
 
-	playDamageCommentary(type: DiceRollType, d20RollValue: number, totalDamage: number, maxDamage: number, damageType: DamageType): void {
-		const audio: HTMLAudioElement = diceSounds.playNumber(totalDamage);
-		audio.addEventListener('loadedmetadata', () => {
-			diceSounds.playDamage(damageType, audio.duration * 1000);
-		}, false);
+	playDamageCommentary(totalDamage: number, damageType: DamageType): void {
+		this.playNumberThen(totalDamage, this.getDamageSoundFileName(damageType));
+	}
+
+	private playNumberThen(value: number, suffixSoundFile: string) {
+		const soundFileTailTrimMs = -600;
+		const asyncAudioPlayer: AsyncAudioPlayer = new AsyncAudioPlayer();
+
+		if (value > 100) {
+			const numHundreds: number = Math.floor(value / 100);
+			asyncAudioPlayer.play(this, this.getNumberFile(numHundreds * 100), soundFileTailTrimMs)
+				.then(() => asyncAudioPlayer.play(this, this.getNumberFile(value - numHundreds * 100), soundFileTailTrimMs)
+					.then(() => asyncAudioPlayer.play(this, suffixSoundFile, soundFileTailTrimMs))
+				);
+		}
+		else {
+			asyncAudioPlayer.play(this, this.getNumberFile(value), soundFileTailTrimMs)
+				.then(() => asyncAudioPlayer.play(this, suffixSoundFile, soundFileTailTrimMs));
+		}
 	}
 
 	playDamage(damageType: DamageType, delayMs: number) {
-		return;
-		// TODO: Fix this so we hear the damage.
-		this.playMp3In(delayMs, `Announcer/Damage/${DamageType[damageType]}[3]`);
+		//console.log('delayMs: ' + delayMs);
+		const fileName = this.getDamageSoundFileName(damageType);
+		//console.log('fileName: ' + fileName);
+		this.playMp3In(delayMs, fileName);
+	}
+
+	private getDamageSoundFileName(damageType: DamageType) {
+		return `Announcer/Damage/${DamageType[damageType]}[3]`;
 	}
 
 	playPercentageRollCommentary(type: DiceRollType, d20RollValue: number): void {

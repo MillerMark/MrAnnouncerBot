@@ -738,9 +738,10 @@ function getModifier(diceRollData: DiceRollData, player: Character): number {
 }
 
 class RollResults {
-	constructor(public d20RollValue: number[], public singlePlayerId: number, public luckValue: number[],
+	constructor(public d20RollValue: Map<number, number>, public singlePlayerId: number, public luckValue: Map<number, number>,
 		public playerIdForTextMessages: number, public skillSavingModifier: number, public totalDamage: number,
-		public totalHealth: number, public totalExtra: number, public maxDamage: number) {
+		public totalHealth: number, public totalExtra: number, public maxDamage: number,
+		public damageSummary: Map<DamageType, number>) {
 	}
 }
 
@@ -749,12 +750,77 @@ class PlayerRoll {
 	}
 }
 
+function getMaxDamage() {
+	let maxDamage: number;
+	for (let i = 0; i < dice.length; i++) {
+		const die: IDie = dice[i];
+		if (die.rollType === DieCountsAs.damage)
+			maxDamage += die.values;
+	}
+	return maxDamage;
+}
+
+function initializeForScoring() {
+	for (let i = 0; i < dice.length; i++) {
+		const die: IDie = dice[i];
+		die.scoreHasBeenTallied = false; // Workaround for state bug where multiple instances of the same dia can apparently get inside the dice array.
+	}
+}
+
+function addDieToMultiPlayerSummary(die: IDie, topNumber: number) {
+	if (diceRollData.multiplayerSummary === null)
+		diceRollData.multiplayerSummary = [];
+	// diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
+	const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
+
+	if (playerRoll) {
+		console.log(`Found playerRoll for ${die.playerName}.`);
+		playerRoll.roll += topNumber;
+		playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
+	}
+	else {
+		console.log(`playerRoll not found for ${die.playerName}.`);
+
+		let modifier = 0;
+		if (die.playerID < 0) { // It's an in-game creature.
+			for (let i = 0; i < diceRollData.diceDtos.length; i++) {
+				if (diceRollData.diceDtos[i].CreatureId === die.playerID) {
+					modifier = diceRollData.diceDtos[i].Modifier;
+					//break;
+				}
+			}
+		}
+		else if (diceLayer.players && diceLayer.players.length > 0) {
+			const player: Character = diceLayer.getPlayer(die.playerID);
+			modifier = getModifier(diceRollData, player);
+		}
+
+		const success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
+		diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success));
+		//console.log(diceRollData.multiplayerSummary[0].roll);
+	}
+	//console.log(diceRollData.multiplayerSummary);
+}
+
+function attachDieLabel(die: IDie) {
+	let scaleAdjust = 1;
+	if (die.rollType === DieCountsAs.inspiration) {
+		scaleAdjust = 0.7;
+	}
+
+	if (!die.playerName) {
+		die.playerName = diceLayer.getPlayerName(die.playerID);
+	}
+
+	diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
+}
+
 function getRollResults(): RollResults {
-	const totalScores: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	const inspirationValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-	const luckValue: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	const totalScores: Map<number, number> = new Map<number, number>();
+	const inspirationValue: Map<number, number> = new Map<number, number>();
+	const luckValue: Map<number, number> = new Map<number, number>();
+	const damageMap: Map<DamageType, number> = new Map<DamageType, number>();
 	let totalDamage = 0;
-	let maxDamage = 0;
 	let totalHealth = 0;
 	let totalExtra = 0;
 	diceRollData.totalRoll = 0;
@@ -762,108 +828,33 @@ function getRollResults(): RollResults {
 	let singlePlayerId = 0;
 	let playerIdForTextMessages = -1;
 
-	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
-	console.log(`getRollResults: dice.length = ${dice.length}`);
+	function initializeLocalArrays(playerID: number) {
+		if (!totalScores.get(playerID))
+			totalScores.set(playerID, 0);
 
-	for (let i = 0; i < dice.length; i++) {
-		const die: IDie = dice[i];
-		die.scoreHasBeenTallied = false;  // Workaround for state bug where multiple instances of the same dia can apparently get inside the dice array.
-		if (die.rollType === DieCountsAs.damage)
-			maxDamage += die.values;
+		if (!inspirationValue.get(playerID))
+			inspirationValue.set(playerID, 0);
+
+		if (!luckValue.get(playerID))
+			luckValue.set(playerID, 0);
 	}
 
-	for (let i = 0; i < dice.length; i++) {
-		const die: IDie = dice[i];
-		if (!die.inPlay)
-			continue;
-
-		if (die.scoreHasBeenTallied)
-			continue;
-
-		die.scoreHasBeenTallied = true;
-
-		const topNumber: number = die.getTopNumber();
-
-		if (diceRollData.hasMultiPlayerDice) {
-			if (diceRollData.multiplayerSummary === null)
-				diceRollData.multiplayerSummary = [];
-			// diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
-			const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
-
-			if (playerRoll) {
-				console.log(`Found playerRoll for ${die.playerName}.`);
-				playerRoll.roll += topNumber;
-				playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
-			}
-			else {
-				console.log(`playerRoll not found for ${die.playerName}.`);
-
-				let modifier = 0;
-				if (die.playerID < 0) {  // It's an in-game creature.
-					for (let i = 0; i < diceRollData.diceDtos.length; i++) {
-						if (diceRollData.diceDtos[i].CreatureId === die.playerID) {
-							modifier = diceRollData.diceDtos[i].Modifier;
-							break;
-						}
-					}
-				}
-				else if (diceLayer.players && diceLayer.players.length > 0) {
-					const player: Character = diceLayer.getPlayer(die.playerID);
-					modifier = getModifier(diceRollData, player);
-				}
-
-				const success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
-				diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success));
-				//console.log(diceRollData.multiplayerSummary[0].roll);
-			}
-
-			//console.log(diceRollData.multiplayerSummary);
-			//console.log('');
-
-			let scaleAdjust = 1;
-			if (die.rollType === DieCountsAs.inspiration) {
-				scaleAdjust = 0.7;
-			}
-
-			if (!die.playerName) {
-				die.playerName = diceLayer.getPlayerName(die.playerID);
-			}
-
-			diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
-		}
-
-		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
-
-		const playerID: number = die.playerID;
-		if (playerID === undefined || playerID < 0)
-			continue;
-
-		if (diceRollData.hasSingleIndividual) {
-			singlePlayerId = playerID;
-			playerIdForTextMessages = playerID;
-		}
-
-		if (!totalScores[playerID])
-			totalScores[playerID] = 0;
-
-		if (!inspirationValue[playerID])
-			inspirationValue[playerID] = 0;
-
-		if (!luckValue[playerID])
-			luckValue[playerID] = 0;
-
+	function tallyTotals(playerID: number, die: IDie, topNumber: number) {
+		console.log(`tallyTotals...`);
+		initializeLocalArrays(playerID);
+		console.log('die.rollType: ' + DieCountsAs[die.rollType]);
 		switch (die.rollType) {
 			case DieCountsAs.totalScore:
 				//console.log(`DieCountsAs.totalScore (${topNumber})`);
-				totalScores[playerID] += topNumber;
+				totalScores.set(playerID, totalScores.get(playerID) + topNumber);
 				break;
 			case DieCountsAs.inspiration:
 				//console.log(`DieCountsAs.inspiration (${topNumber})`);
-				inspirationValue[playerID] += topNumber;
+				inspirationValue.set(playerID, inspirationValue.get(playerID) + topNumber);
 				break;
 			case DieCountsAs.bentLuck:
 				//console.log(`DieCountsAs.bentLuck (${topNumber * diceRollData.bentLuckMultiplier})`);
-				luckValue[playerID] += topNumber * diceRollData.bentLuckMultiplier;
+				luckValue.set(playerID, luckValue.get(playerID) + topNumber * diceRollData.bentLuckMultiplier);
 				break;
 			case DieCountsAs.bonus:
 				//console.log(`DieCountsAs.bonus (${topNumber})`);
@@ -871,8 +862,22 @@ function getRollResults(): RollResults {
 				break;
 			case DieCountsAs.damage:
 				//console.log(`DieCountsAs.damage (${topNumber})`);
-				totalDamage += topNumber;
-				break;
+				{
+					const damageType: DamageType = die.damageType || DamageType.None;
+
+					const currentDamage: number = damageMap.get(damageType);
+					if (currentDamage) {
+						console.log(`New damage for ${DamageType[damageType]}: ${currentDamage + topNumber}`);
+						damageMap.set(damageType, currentDamage + topNumber);
+					}
+					else {
+						console.log(`New damage for ${DamageType[damageType]}: ${topNumber}`);
+						damageMap.set(damageType, topNumber);
+					}
+
+					totalDamage += topNumber;
+					break;
+				}
 			case DieCountsAs.health:
 				//console.log(`DieCountsAs.health (${topNumber})`);
 				totalHealth += topNumber;
@@ -882,6 +887,48 @@ function getRollResults(): RollResults {
 				totalExtra += topNumber;
 				break;
 		}
+	}
+
+	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
+	console.log(`getRollResults: dice.length = ${dice.length}`);
+
+	initializeForScoring();
+	const maxDamage: number = getMaxDamage();
+
+	for (let i = 0; i < dice.length; i++) {
+		const die: IDie = dice[i];
+		if (!die.inPlay) {
+			console.log(`die is not in play.`);
+			continue;
+		}
+
+		if (die.scoreHasBeenTallied) {
+			console.log(`scoreHasBeenTallied`);
+			continue;
+		}
+
+		die.scoreHasBeenTallied = true;
+
+		const topNumber: number = die.getTopNumber();
+
+		if (diceRollData.hasMultiPlayerDice) {
+			addDieToMultiPlayerSummary(die, topNumber);
+			attachDieLabel(die);
+		}
+
+		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
+
+		const playerID: number = die.playerID;
+		console.log('playerID: ' + playerID);
+		if (playerID === undefined)
+			continue;
+
+		if (diceRollData.hasSingleIndividual) {
+			singlePlayerId = playerID;
+			playerIdForTextMessages = playerID;
+		}
+
+		tallyTotals(playerID, die, topNumber);
 	} // for
 
 	let skillSavingModifier = 0;
@@ -890,9 +937,9 @@ function getRollResults(): RollResults {
 		skillSavingModifier = getModifier(diceRollData, player);
 	}
 
-	diceRollData.totalRoll += totalScores[singlePlayerId] + inspirationValue[singlePlayerId] + luckValue[singlePlayerId] + diceRollData.modifier + skillSavingModifier;
+	diceRollData.totalRoll += totalScores.get(singlePlayerId) + inspirationValue.get(singlePlayerId) + luckValue.get(singlePlayerId)+ diceRollData.modifier + skillSavingModifier;
 
-	if (!diceRollData.hasMultiPlayerDice && totalScores[singlePlayerId] > 0) {
+	if (!diceRollData.hasMultiPlayerDice && totalScores.get(singlePlayerId) > 0) {
 		if (diceRollData.type === DiceRollType.SkillCheck)
 			diceRollData.totalRoll += totalBonus;
 	}
@@ -907,7 +954,7 @@ function getRollResults(): RollResults {
 	totalHealthPlusModifier = totalHealth + healthModifierThisRoll;
 	totalExtraPlusModifier = totalExtra + extraModifierThisRoll;
 
-	return new RollResults(totalScores, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage);
+	return new RollResults(totalScores, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
 }
 
 function bonusRollDealsDamage(damageStr: string, description = '', playerID = -1): void {
@@ -932,7 +979,7 @@ function checkAttackBonusRolls() {
 			//console.log('checkAttackBonusRolls(1) - Roll Bonus Dice: ' + diceRollData.bonusRolls.length);
 		}
 		console.log('Calling getRollResults() from checkAttackBonusRolls...');
-		getRollResults();
+		getRollResults();  // Needed to set globals for code below. I know. It's not great.
 		if (attemptedRollWasSuccessful && diceRollData.minDamage > 0 && !diceRollData.secondRollData) {
 			let extraRollStr = "";
 			for (let i = 0; i < dice.length; i++) {
@@ -1580,7 +1627,8 @@ function rollBonusDice() {
 	waitingForBonusRollToComplete = true;
 }
 
-function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage = 0, maxDamage = 0, damageType = DamageType.None): void {
+function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage = 0, maxDamage = 0, damageType = DamageType.None, damageSummary: Map<DamageType, number> = null): void {
+	console.log(`playAnnouncerCommentary`);
 	if (diceRollData.hasMultiPlayerDice) {
 		diceSounds.playMultiplayerCommentary(type, d20RollValue);
 		return;
@@ -1596,7 +1644,14 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 	}
 
 	if (diceRollData.type === DiceRollType.DamageOnly) {
-		diceSounds.playDamageCommentary(type, d20RollValue, totalDamage, maxDamage, damageType);
+		if (damageSummary) {
+			damageSummary.forEach((damageAmount, damageType) => {
+				diceSounds.playDamageCommentary(damageAmount, damageType);
+			});
+		}
+		else {
+			diceSounds.playDamageCommentary(totalDamage, damageType);
+		}
 		return;
 	}
 
@@ -1698,9 +1753,10 @@ function playSecondaryAnnouncerCommentary(type: DiceRollType, d20RollValue: numb
 }
 
 function reportRollResults(rollResults: RollResults) {
-	const d20RollValue: number[] = rollResults.d20RollValue;
+	console.log(`reportRollResults`);
+	const d20RollValue: Map<number, number> = rollResults.d20RollValue;
 	const singlePlayerId: number = rollResults.singlePlayerId;
-	const luckValue: number[] = rollResults.luckValue;
+	const luckValue: Map<number, number> = rollResults.luckValue;
 	const playerIdForTextMessages: number = rollResults.playerIdForTextMessages;
 	const skillSavingModifier: number = rollResults.skillSavingModifier;
 	const totalDamage: number = rollResults.totalDamage;
@@ -1723,11 +1779,11 @@ function reportRollResults(rollResults: RollResults) {
 		diceLayer.showMultiplayerResults(title, diceRollData.multiplayerSummary, diceRollData.hiddenThreshold);
 	}
 
-	if (!diceRollData.hasMultiPlayerDice && d20RollValue[singlePlayerId] > 0) {
+	if (!diceRollData.hasMultiPlayerDice && d20RollValue.get(singlePlayerId) > 0) {
 		if (diceRollData.modifier !== 0)
-			diceLayer.showRollModifier(diceRollData.modifier, luckValue[singlePlayerId], playerIdForTextMessages);
+			diceLayer.showRollModifier(diceRollData.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
 		if (skillSavingModifier !== 0)
-			diceLayer.showRollModifier(skillSavingModifier, luckValue[singlePlayerId], playerIdForTextMessages);
+			diceLayer.showRollModifier(skillSavingModifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
 		diceLayer.showDieTotal(`${diceRollData.totalRoll}`, playerIdForTextMessages);
 	}
 
@@ -1758,13 +1814,12 @@ function reportRollResults(rollResults: RollResults) {
 		diceLayer.showTotalHealthDamage(totalExtraPlusModifier.toString(), attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
 		diceLayer.showDamageHealthModifier(extraModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
 	}
-	showSuccessFailMessages(title, d20RollValue[singlePlayerId]);
+	showSuccessFailMessages(title, d20RollValue.get(singlePlayerId));
 	maxDamage += damageModifierThisRoll;
 	if (diceRollData.secondRollData)
-		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, maxDamage);
+		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue.get(singlePlayerId), totalDamagePlusModifier, maxDamage);
 	else
-		playAnnouncerCommentary(diceRollData.type, d20RollValue[singlePlayerId], totalDamagePlusModifier, diceRollData.damageType);
-	return maxDamage;
+		playAnnouncerCommentary(diceRollData.type, d20RollValue.get(singlePlayerId), totalDamagePlusModifier, maxDamage, diceRollData.damageType, rollResults.damageSummary); return maxDamage;
 }
 
 function playFinalRollSoundEffects() {
