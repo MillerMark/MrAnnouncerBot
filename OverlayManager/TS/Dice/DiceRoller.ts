@@ -373,6 +373,7 @@ function removeDieEffectsForSingleDie(die: IDie) {
 }
 
 function removeSingleDieWithEffect(die: IDie, dieEffect: DieEffect, effectInterval: number) {
+	console.log(`removeSingleDieWithEffect `);
 	removeDie(die, effectInterval, dieEffect);
 	for (let i = 0; i < dice.length; i++) {
 		if (dice[i] === die) {
@@ -840,13 +841,20 @@ function getRollResults(): RollResults {
 	}
 
 	function tallyTotals(playerID: number, die: IDie, topNumber: number) {
-		console.log(`tallyTotals...`);
 		initializeLocalArrays(playerID);
-		console.log('die.rollType: ' + DieCountsAs[die.rollType]);
+		console.log(`totalScores.get(${playerID}): ` + totalScores.get(playerID));
+		//console.log('die.rollType: ' + DieCountsAs[die.rollType]);
 		switch (die.rollType) {
 			case DieCountsAs.totalScore:
 				//console.log(`DieCountsAs.totalScore (${topNumber})`);
-				totalScores.set(playerID, totalScores.get(playerID) + topNumber);
+				if (diceRollData.type === DiceRollType.WildMagicD20Check) {
+					if (topNumber === 1)
+						totalScores.set(playerID, 1);
+					else if (!totalScores.get(playerID))
+						totalScores.set(playerID, 0);
+				}
+				else 
+					totalScores.set(playerID, totalScores.get(playerID) + topNumber);
 				break;
 			case DieCountsAs.inspiration:
 				//console.log(`DieCountsAs.inspiration (${topNumber})`);
@@ -946,6 +954,7 @@ function getRollResults(): RollResults {
 
 	modifyTotalRollForTestingPurposes();
 
+	console.log('diceRollData.totalRoll: ' + diceRollData.totalRoll);
 	attemptedRollWasSuccessful = diceRollData.totalRoll >= diceRollData.hiddenThreshold;
 	console.log(`attemptedRollWasSuccessful: ${attemptedRollWasSuccessful} (totalRoll = ${diceRollData.totalRoll}, diceRollData.hiddenThreshold = ${diceRollData.hiddenThreshold})`);
 	attemptedRollWasNarrowlySuccessful = attemptedRollWasSuccessful && (diceRollData.totalRoll - diceRollData.hiddenThreshold < 2);
@@ -1644,14 +1653,7 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 	}
 
 	if (diceRollData.type === DiceRollType.DamageOnly) {
-		if (damageSummary) {
-			damageSummary.forEach((damageAmount, damageType) => {
-				diceSounds.playDamageCommentary(damageAmount, damageType);
-			});
-		}
-		else {
-			diceSounds.playDamageCommentary(totalDamage, damageType);
-		}
+		diceSounds.playDamageCommentaryAsync(totalDamage, damageType, damageSummary);
 		return;
 	}
 
@@ -1666,7 +1668,8 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 	}
 
 	if (diceRollData.type === DiceRollType.Attack) {
-		diceSounds.playAttackCommentary(d20RollValue, totalDamage, maxDamage);
+		diceSounds.playAttackPlusDamageCommentaryAsync(d20RollValue, totalDamage, maxDamage, damageType, damageSummary);
+		// TODO: Follow with Damage announcer sound files.
 		return;
 	}
 
@@ -1753,7 +1756,6 @@ function playSecondaryAnnouncerCommentary(type: DiceRollType, d20RollValue: numb
 }
 
 function reportRollResults(rollResults: RollResults) {
-	console.log(`reportRollResults`);
 	const d20RollValue: Map<number, number> = rollResults.d20RollValue;
 	const singlePlayerId: number = rollResults.singlePlayerId;
 	const luckValue: Map<number, number> = rollResults.luckValue;

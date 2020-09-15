@@ -3485,6 +3485,9 @@ namespace DHDM
 		Dictionary<DamageType, int> latestDamage = new Dictionary<DamageType, int>();
 		void CalculateLatestDamage(DiceEventArgs ea)
 		{
+			if (ea.StopRollingData == null)
+				return;
+
 			switch (ea.StopRollingData.type)
 			{
 				case DiceRollType.ChaosBolt:
@@ -3649,6 +3652,9 @@ namespace DHDM
 			}
 
 			waitingToClearDice = true;
+			if (ea.StopRollingData == null)
+				return;
+
 			if (ea.StopRollingData.type == DiceRollType.DamageOnly)
 			{
 				// TODO: Store last damage type...
