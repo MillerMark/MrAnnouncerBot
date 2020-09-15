@@ -36,13 +36,28 @@ class DiceSounds extends SoundManager {
 		this.loadPercentageSoundEffects(this.settles, "Dice/Settles", 7);
 	}
 
-	async playAttackCommentaryAsync(d20RollValue: number, totalDamage: number, maxDamage: number): Promise<void> {
-		await this.playNumberAsync(d20RollValue);
+	async playAttackCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number): Promise<void> {
+		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
+
 		if (attemptedRollWasSuccessful) {
 			await this.playSuccessfulAttackCommentaryAsync(d20RollValue, maxDamage, totalDamage);
 		}
 		else {
 			await this.playFailedAttackCommentaryAsync(d20RollValue, maxDamage, totalDamage);
+		}
+	}
+
+	private async playD20PlusModifierAsync(d20RollValue: number, d20Modifier: number) {
+		await this.playNumberAsync(d20RollValue);
+
+		if (d20Modifier !== 0) {
+			if (d20Modifier > 0)
+				await this.playSoundFileAsync('Announcer/Numbers/Plus[3]');
+			else
+				await this.playSoundFileAsync('Announcer/Numbers/Minus[3]');
+
+			await this.playNumberAsync(Math.abs(d20Modifier));
+			// TODO: Delay???
 		}
 	}
 
@@ -133,8 +148,9 @@ class DiceSounds extends SoundManager {
 		await this.playSoundFileAsync('Announcer/Damage/Health[3]');
 	}
 
-	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>): Promise<void> {
-		await this.playAttackCommentaryAsync(d20RollValue, totalDamage, maxDamage);
+	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>): Promise<void> {
+		await this.playAttackCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage);
+		await this.playSoundFileAsync('Announcer/Numbers/With[4]');
 		await this.playDamageCommentaryAsync(totalDamage, damageType, damageSummary);
 	}
 
@@ -173,6 +189,10 @@ class DiceSounds extends SoundManager {
 	}
 
 	private async playNumberAsync(value: number) {
+		if (isNaN(value) || value === undefined) {
+			console.error(`value is NaN.`);
+			return;
+		}
 		const asyncAudioPlayer: AsyncAudioPlayer = new AsyncAudioPlayer();
 
 		if (value > 100) {
@@ -199,9 +219,22 @@ class DiceSounds extends SoundManager {
 	}
 	playChaosBoltCommentary(d20RollValue: number, savingThrow: Ability): void {
 	}
-	playSavingThrowCommentary(d20RollValue: number, savingThrow: Ability): void {
+
+	async playSavingThrowCommentary(d20RollValue: number, d20Modifier: number, savingThrow: Ability): Promise<void> {
+
+		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
+		if (attemptedRollWasSuccessful)
+			await this.playSoundFileAsync('Announcer/Reactions/Success[4]');
+		else
+			await this.playSoundFileAsync('Announcer/Reactions/Failure[3]');
 	}
-	playSkillCheckCommentary(d20RollValue: number, skillCheck: Skills): void {
+
+	async playSkillCheckCommentary(d20RollValue: number, d20Modifier: number, skillCheck: Skills): Promise<void> {
+		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
+		if (attemptedRollWasSuccessful)
+			await this.playSoundFileAsync('Announcer/Reactions/Success[4]');
+		else 
+			await this.playSoundFileAsync('Announcer/Reactions/Failure[3]');
 	}
 
 	playOpenDiePortal() {

@@ -15,7 +15,13 @@ namespace DndCore
 		
 		[Column]
 		public string Kind { get; set; }
-		
+
+		[Column("BgHex")]
+		public string BackgroundHex { get; set; }
+
+		[Column("FgHex")]
+		public string ForegroundHex { get; set; }
+
 		[Column]
 		[JsonIgnore]
 		public string ImageUrlOverride { get; set; }

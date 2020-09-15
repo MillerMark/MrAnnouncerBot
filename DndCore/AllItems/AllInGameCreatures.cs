@@ -44,8 +44,10 @@ namespace DndCore
 					npcMonsterDice.Sides = 20;
 					npcMonsterDice.CreatureId = InGameCreature.GetUniversalIndex(inGameCreature.Index);
 					npcMonsterDice.Quantity = 1;
-					npcMonsterDice.Label = inGameCreature.Name;
+					//npcMonsterDice.Label = inGameCreature.Name;
 					npcMonsterDice.PlayerName = inGameCreature.Name;
+					npcMonsterDice.BackColor = inGameCreature.BackgroundHex;
+					npcMonsterDice.FontColor = inGameCreature.ForegroundHex;
 					if (rollType == DiceRollType.Initiative)
 					{
 						// TODO: Get initiative vantage for NPC/Monster

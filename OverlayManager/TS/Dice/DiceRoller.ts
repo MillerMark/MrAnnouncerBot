@@ -739,7 +739,7 @@ function getModifier(diceRollData: DiceRollData, player: Character): number {
 }
 
 class RollResults {
-	constructor(public d20RollValue: Map<number, number>, public singlePlayerId: number, public luckValue: Map<number, number>,
+	constructor(public d20RollValue: Map<number, number>, public toHitModifier: number, public singlePlayerId: number, public luckValue: Map<number, number>,
 		public playerIdForTextMessages: number, public skillSavingModifier: number, public totalDamage: number,
 		public totalHealth: number, public totalExtra: number, public maxDamage: number,
 		public damageSummary: Map<DamageType, number>) {
@@ -843,6 +843,7 @@ function getRollResults(): RollResults {
 	function tallyTotals(playerID: number, die: IDie, topNumber: number) {
 		initializeLocalArrays(playerID);
 		console.log(`totalScores.get(${playerID}): ` + totalScores.get(playerID));
+		let extraDamage: number = damageModifierThisRoll;
 		//console.log('die.rollType: ' + DieCountsAs[die.rollType]);
 		switch (die.rollType) {
 			case DieCountsAs.totalScore:
@@ -875,12 +876,13 @@ function getRollResults(): RollResults {
 
 					const currentDamage: number = damageMap.get(damageType);
 					if (currentDamage) {
-						console.log(`New damage for ${DamageType[damageType]}: ${currentDamage + topNumber}`);
+						//console.log(`New damage for ${DamageType[damageType]}: ${currentDamage + topNumber}`);
 						damageMap.set(damageType, currentDamage + topNumber);
 					}
 					else {
-						console.log(`New damage for ${DamageType[damageType]}: ${topNumber}`);
-						damageMap.set(damageType, topNumber);
+						//console.log(`New damage for ${DamageType[damageType]}: ${topNumber}`);
+						damageMap.set(damageType, topNumber + extraDamage);
+						extraDamage = 0;
 					}
 
 					totalDamage += topNumber;
@@ -928,8 +930,11 @@ function getRollResults(): RollResults {
 
 		const playerID: number = die.playerID;
 		console.log('playerID: ' + playerID);
-		if (playerID === undefined)
+		if (playerID === undefined) {
+			//playerID = Number.MIN_VALUE;
+			diceRollData.totalRoll += topNumber;
 			continue;
+		}
 
 		if (diceRollData.hasSingleIndividual) {
 			singlePlayerId = playerID;
@@ -945,10 +950,24 @@ function getRollResults(): RollResults {
 		skillSavingModifier = getModifier(diceRollData, player);
 	}
 
-	diceRollData.totalRoll += totalScores.get(singlePlayerId) + inspirationValue.get(singlePlayerId) + luckValue.get(singlePlayerId)+ diceRollData.modifier + skillSavingModifier;
+	let toHitModifier = 0;
+	if (inspirationValue.has(singlePlayerId))
+		toHitModifier += inspirationValue.get(singlePlayerId);
+	if (luckValue.has(singlePlayerId))
+		toHitModifier += luckValue.get(singlePlayerId);
+	if (diceRollData.modifier)
+		toHitModifier += diceRollData.modifier;
+	if (skillSavingModifier)
+		toHitModifier += skillSavingModifier;
+	console.log('toHitModifier: ' + toHitModifier);
+
+	if (totalScores.get(singlePlayerId))
+		diceRollData.totalRoll += totalScores.get(singlePlayerId) + toHitModifier;
+	else 
+		diceRollData.totalRoll += toHitModifier;
 
 	if (!diceRollData.hasMultiPlayerDice && totalScores.get(singlePlayerId) > 0) {
-		if (diceRollData.type === DiceRollType.SkillCheck)
+		if (diceRollData.type === DiceRollType.SkillCheck && totalBonus)
 			diceRollData.totalRoll += totalBonus;
 	}
 
@@ -963,7 +982,7 @@ function getRollResults(): RollResults {
 	totalHealthPlusModifier = totalHealth + healthModifierThisRoll;
 	totalExtraPlusModifier = totalExtra + extraModifierThisRoll;
 
-	return new RollResults(totalScores, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
+	return new RollResults(totalScores, toHitModifier, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
 }
 
 function bonusRollDealsDamage(damageStr: string, description = '', playerID = -1): void {
@@ -1636,7 +1655,7 @@ function rollBonusDice() {
 	waitingForBonusRollToComplete = true;
 }
 
-function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage = 0, maxDamage = 0, damageType = DamageType.None, damageSummary: Map<DamageType, number> = null): void {
+function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, d20Modifier: number, totalDamage = 0, maxDamage = 0, damageType = DamageType.None, damageSummary: Map<DamageType, number> = null): void {
 	console.log(`playAnnouncerCommentary`);
 	if (diceRollData.hasMultiPlayerDice) {
 		diceSounds.playMultiplayerCommentary(type, d20RollValue);
@@ -1668,18 +1687,18 @@ function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, total
 	}
 
 	if (diceRollData.type === DiceRollType.Attack) {
-		diceSounds.playAttackPlusDamageCommentaryAsync(d20RollValue, totalDamage, maxDamage, damageType, damageSummary);
+		diceSounds.playAttackPlusDamageCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage, damageType, damageSummary);
 		// TODO: Follow with Damage announcer sound files.
 		return;
 	}
 
 	if (diceRollData.type === DiceRollType.SkillCheck) {
-		diceSounds.playSkillCheckCommentary(d20RollValue, diceRollData.skillCheck);
+		diceSounds.playSkillCheckCommentary(d20RollValue, d20Modifier, diceRollData.skillCheck);
 		return;
 	}
 
 	if (diceRollData.type === DiceRollType.SavingThrow) {
-		diceSounds.playSavingThrowCommentary(d20RollValue, diceRollData.savingThrow);
+		diceSounds.playSavingThrowCommentary(d20RollValue, d20Modifier, diceRollData.savingThrow);
 		return;
 	}
 
@@ -1821,7 +1840,7 @@ function reportRollResults(rollResults: RollResults) {
 	if (diceRollData.secondRollData)
 		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue.get(singlePlayerId), totalDamagePlusModifier, maxDamage);
 	else
-		playAnnouncerCommentary(diceRollData.type, d20RollValue.get(singlePlayerId), totalDamagePlusModifier, maxDamage, diceRollData.damageType, rollResults.damageSummary); return maxDamage;
+		playAnnouncerCommentary(diceRollData.type, d20RollValue.get(singlePlayerId), rollResults.toHitModifier, totalDamagePlusModifier, maxDamage, diceRollData.damageType, rollResults.damageSummary); return maxDamage;
 }
 
 function playFinalRollSoundEffects() {
@@ -2030,6 +2049,7 @@ let lastRollDiceData;
 
 function onDiceRollStopped() {
 	console.log('onDiceRollStopped...');
+	console.log(`diceRollData.totalRoll = ${diceRollData.totalRoll}`);
 	calculateFinalMessage();
 	onBonusThrow = false;
 	setupBonusRoll = false;
