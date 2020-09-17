@@ -52,6 +52,7 @@ namespace DHDM
 
 
 		const int INT_TimeToDropDragonDice = 1800;
+		const string STR_PlayerScene = "Players";
 
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
@@ -71,6 +72,7 @@ namespace DHDM
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
+		DispatcherTimer sceneReturnTimer;
 		DispatcherTimer delayRollTimer;
 		DispatcherTimer playSceneTimer;
 		DispatcherTimer reconnectToTwitchTimer;
@@ -112,7 +114,7 @@ namespace DHDM
 			playSceneTimer.Stop();
 			if (nextSceneToPlay == null)
 				return;
-			PlayScene(nextSceneToPlay);
+			PlayScene(nextSceneToPlay, nextReturnMs);
 			nextSceneToPlay = null;
 		}
 
@@ -124,6 +126,9 @@ namespace DHDM
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
 			realTimeAdvanceTimer.Interval = TimeSpan.FromMilliseconds(200);
+
+			sceneReturnTimer = new DispatcherTimer(DispatcherPriority.Send);
+			sceneReturnTimer.Tick += new EventHandler(ReturnToSceneHandler);
 
 			delayRollTimer = new DispatcherTimer(DispatcherPriority.Send);
 			delayRollTimer.Tick += new EventHandler(RollDiceNowHandler);
@@ -452,12 +457,15 @@ namespace DHDM
 			}
 		}
 
+		// TODO: Consider stacking scene play requests.
 		string nextSceneToPlay;
+		int nextReturnMs;
 
-		void PlaySceneAfter(string sceneName, int delayMs)
+		void PlaySceneAfter(string sceneName, int delayMs, int returnMs = -1)
 		{
 			playSceneTimer.Stop();
 			nextSceneToPlay = sceneName;
+			nextReturnMs = returnMs;
 			playSceneTimer.Interval = TimeSpan.FromMilliseconds(delayMs);
 			playSceneTimer.Start();
 		}
@@ -465,9 +473,9 @@ namespace DHDM
 		private void PlaySceneFunction_RequestPlayScene(object sender, PlaySceneEventArgs ea)
 		{
 			if (ea.DelayMs > 0)
-				PlaySceneAfter(ea.SceneName, ea.DelayMs);
+				PlaySceneAfter(ea.SceneName, ea.DelayMs, ea.ReturnMs);
 			else
-				PlayScene(ea.SceneName);
+				PlayScene(ea.SceneName, ea.ReturnMs);
 		}
 
 		void AddBooleanAsk(AskUI askUI)
@@ -1016,7 +1024,7 @@ namespace DHDM
 					BackToPlayersIn(10);
 				}
 				else
-					PlayScene("Players");
+					PlayScene(STR_PlayerScene);
 			}
 		}
 
@@ -4253,6 +4261,7 @@ namespace DHDM
 				BackToPlayersIn(18);
 			});
 		}
+
 		void BackToPlayersIn(double seconds)
 		{
 			switchBackToPlayersTimer.Interval = TimeSpan.FromSeconds(seconds);
@@ -4263,7 +4272,7 @@ namespace DHDM
 			switchBackToPlayersTimer.Stop();
 			Dispatcher.Invoke(() =>
 			{
-				PlayScene("Players");
+				PlayScene(STR_PlayerScene);
 			});
 		}
 
@@ -5765,7 +5774,38 @@ namespace DHDM
 			HubtasticBaseStation.MoveFred(movement);
 		}
 
-		public void PlayScene(string sceneName)
+		bool IsFoundationScene(string name)
+		{
+			return name.SameLetters(STR_PlayerScene) || name.SameLetters("DH.Tunnels");
+		}
+
+		string GetFoundationalScene()
+		{
+			try
+			{
+				OBSScene currentScene = obsWebsocket.GetCurrentScene();
+				if (IsFoundationScene(currentScene.Name))
+					return currentScene.Name;
+				return STR_PlayerScene;
+			}
+			catch (Exception ex)
+			{
+				return STR_PlayerScene;
+			}
+		}
+
+		string foundationalScene;
+
+		void ReturnToSceneHandler(object sender, EventArgs e)
+		{
+			sceneReturnTimer.Stop();
+			if (foundationalScene == null)
+				return;
+			PlayScene(foundationalScene);
+			foundationalScene = null;
+		}
+
+		public void PlayScene(string sceneName, int returnMs = -1)
 		{
 			lastScenePlayed = sceneName;
 			string dmMessage = $"Playing scene: {sceneName}";
@@ -5773,7 +5813,18 @@ namespace DHDM
 			try
 			{
 				if (obsWebsocket.IsConnected)
+				{
+					if (returnMs > 0)
+						foundationalScene = GetFoundationalScene();
+
 					obsWebsocket.SetCurrentScene(sceneName);
+
+					if (returnMs > 0)
+					{
+						sceneReturnTimer.Interval = TimeSpan.FromMilliseconds(returnMs);
+						sceneReturnTimer.Start();
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -8461,7 +8512,7 @@ namespace DHDM
 		{
 			spellToCastOnRoll = null;
 			PlayScene($"DH.Skill.{skillCheck}");
-			PlaySceneAfter("Players", 14000);
+			PlaySceneAfter(STR_PlayerScene, 14000);
 			Dispatcher.Invoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
@@ -8474,7 +8525,7 @@ namespace DHDM
 		{
 			spellToCastOnRoll = null;
 			PlayScene($"DH.Save.{savingThrow}");
-			PlaySceneAfter("Players", 12000);
+			PlaySceneAfter(STR_PlayerScene, 12000);
 			Dispatcher.Invoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;

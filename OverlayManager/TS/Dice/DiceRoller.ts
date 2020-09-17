@@ -842,7 +842,7 @@ function getRollResults(): RollResults {
 
 	function tallyTotals(playerID: number, die: IDie, topNumber: number) {
 		initializeLocalArrays(playerID);
-		console.log(`totalScores.get(${playerID}): ` + totalScores.get(playerID));
+		//console.log(`totalScores.get(${playerID}): ` + totalScores.get(playerID));
 		let extraDamage: number = damageModifierThisRoll;
 		//console.log('die.rollType: ' + DieCountsAs[die.rollType]);
 		switch (die.rollType) {
@@ -854,7 +854,7 @@ function getRollResults(): RollResults {
 					else if (!totalScores.get(playerID))
 						totalScores.set(playerID, 0);
 				}
-				else 
+				else
 					totalScores.set(playerID, totalScores.get(playerID) + topNumber);
 				break;
 			case DieCountsAs.inspiration:
@@ -900,7 +900,7 @@ function getRollResults(): RollResults {
 	}
 
 	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
-	console.log(`getRollResults: dice.length = ${dice.length}`);
+	//console.log(`getRollResults: dice.length = ${dice.length}`);
 
 	initializeForScoring();
 	const maxDamage: number = getMaxDamage();
@@ -908,12 +908,12 @@ function getRollResults(): RollResults {
 	for (let i = 0; i < dice.length; i++) {
 		const die: IDie = dice[i];
 		if (!die.inPlay) {
-			console.log(`die is not in play.`);
+			//console.log(`die is not in play.`);
 			continue;
 		}
 
 		if (die.scoreHasBeenTallied) {
-			console.log(`scoreHasBeenTallied`);
+			//console.log(`scoreHasBeenTallied`);
 			continue;
 		}
 
@@ -929,7 +929,7 @@ function getRollResults(): RollResults {
 		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
 
 		const playerID: number = die.playerID;
-		console.log('playerID: ' + playerID);
+		//console.log('playerID: ' + playerID);
 		if (playerID === undefined) {
 			//playerID = Number.MIN_VALUE;
 			diceRollData.totalRoll += topNumber;
@@ -959,11 +959,11 @@ function getRollResults(): RollResults {
 		toHitModifier += diceRollData.modifier;
 	if (skillSavingModifier)
 		toHitModifier += skillSavingModifier;
-	console.log('toHitModifier: ' + toHitModifier);
+	//console.log('toHitModifier: ' + toHitModifier);
 
 	if (totalScores.get(singlePlayerId))
 		diceRollData.totalRoll += totalScores.get(singlePlayerId) + toHitModifier;
-	else 
+	else
 		diceRollData.totalRoll += toHitModifier;
 
 	if (!diceRollData.hasMultiPlayerDice && totalScores.get(singlePlayerId) > 0) {
@@ -973,9 +973,9 @@ function getRollResults(): RollResults {
 
 	modifyTotalRollForTestingPurposes();
 
-	console.log('diceRollData.totalRoll: ' + diceRollData.totalRoll);
+	//console.log('diceRollData.totalRoll: ' + diceRollData.totalRoll);
 	attemptedRollWasSuccessful = diceRollData.totalRoll >= diceRollData.hiddenThreshold;
-	console.log(`attemptedRollWasSuccessful: ${attemptedRollWasSuccessful} (totalRoll = ${diceRollData.totalRoll}, diceRollData.hiddenThreshold = ${diceRollData.hiddenThreshold})`);
+	//console.log(`attemptedRollWasSuccessful: ${attemptedRollWasSuccessful} (totalRoll = ${diceRollData.totalRoll}, diceRollData.hiddenThreshold = ${diceRollData.hiddenThreshold})`);
 	attemptedRollWasNarrowlySuccessful = attemptedRollWasSuccessful && (diceRollData.totalRoll - diceRollData.hiddenThreshold < 2);
 	//console.log('damageModifierThisRoll: ' + damageModifierThisRoll);
 	totalDamagePlusModifier = totalDamage + damageModifierThisRoll;
@@ -1037,11 +1037,15 @@ function checkAttackBonusRolls() {
 	}
 }
 
-function checkSkillCheckBonusRolls() {
+let nat20SkillCheckBonusRoll: boolean;
+
+function checkSkillCheckBonusRolls(): void {
+	nat20SkillCheckBonusRoll = false;
 	if (diceRollData.type === DiceRollType.SkillCheck) {
 		for (let i = 0; i < dice.length; i++) {
 			const die: IDie = dice[i];
 			if (die.inPlay && die.rollType === DieCountsAs.totalScore && die.isD20 && die.getTopNumber() === 20) {
+				nat20SkillCheckBonusRoll = true;
 				let dieColor: string = diceLayer.activePlayerDieColor;
 				let dieTextColor: string = diceLayer.activePlayerDieFontColor;
 				if (die.playerID >= 0) {
@@ -1656,7 +1660,9 @@ function rollBonusDice() {
 }
 
 function playAnnouncerCommentary(type: DiceRollType, d20RollValue: number, d20Modifier: number, totalDamage = 0, maxDamage = 0, damageType = DamageType.None, damageSummary: Map<DamageType, number> = null): void {
-	console.log(`playAnnouncerCommentary`);
+	//console.log(`playAnnouncerCommentary`);
+	//console.log('d20RollValue: ' + d20RollValue);
+	//console.log('d20Modifier: ' + d20Modifier);
 	if (diceRollData.hasMultiPlayerDice) {
 		diceSounds.playMultiplayerCommentary(type, d20RollValue);
 		return;
@@ -1771,6 +1777,7 @@ function showSuccessFailMessages(title: string, rawD20RollValue: number) {
 }
 
 function playSecondaryAnnouncerCommentary(type: DiceRollType, d20RollValue: number, totalDamage: number = 0, maxDamage: number = 0): void {
+	//console.log(`playSecondaryAnnouncerCommentary...`);
 	// TODO: Implement this.
 }
 
@@ -1836,11 +1843,17 @@ function reportRollResults(rollResults: RollResults) {
 		diceLayer.showDamageHealthModifier(extraModifierThisRoll, attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
 	}
 	showSuccessFailMessages(title, d20RollValue.get(singlePlayerId));
+	//console.log('d20RollValue.get(singlePlayerId): ' + d20RollValue.get(singlePlayerId));
 	maxDamage += damageModifierThisRoll;
 	if (diceRollData.secondRollData)
 		playSecondaryAnnouncerCommentary(diceRollData.secondRollData.type, d20RollValue.get(singlePlayerId), totalDamagePlusModifier, maxDamage);
-	else
-		playAnnouncerCommentary(diceRollData.type, d20RollValue.get(singlePlayerId), rollResults.toHitModifier, totalDamagePlusModifier, maxDamage, diceRollData.damageType, rollResults.damageSummary); return maxDamage;
+	else {
+		let d20RollTotal: number = d20RollValue.get(singlePlayerId);
+		if (diceRollData.type === DiceRollType.SkillCheck)
+			d20RollTotal = diceRollData.totalRoll - rollResults.toHitModifier;
+
+		playAnnouncerCommentary(diceRollData.type, d20RollTotal, rollResults.toHitModifier, totalDamagePlusModifier, maxDamage, diceRollData.damageType, rollResults.damageSummary); return maxDamage;
+	}
 }
 
 function playFinalRollSoundEffects() {
@@ -2101,6 +2114,11 @@ function onDiceRollStopped() {
 		removeRemainingDice();
 }
 
+async function sayNat20BonusRoll() {
+	await diceSounds.playSoundFileAsync('Announcer/Reactions/NaturalTwenty[4]');
+	await diceSounds.playSoundFileAsync('Announcer/Reactions/BonusRoll[5]');
+}
+
 function diceDefinitelyStoppedRolling() {
 	console.log('diceDefinitelyStoppedRolling');
 	if (needToClearD20s) {
@@ -2127,6 +2145,10 @@ function diceDefinitelyStoppedRolling() {
 				else
 					diceLayer.indicateBonusRoll('Bonus Roll!');
 				setTimeout(rollBonusDice, 2500);
+				if (nat20SkillCheckBonusRoll) {
+					nat20SkillCheckBonusRoll = false;
+					sayNat20BonusRoll();
+				}
 			}
 		}
 	}

@@ -395,10 +395,11 @@ namespace DndCore
 			return null;
 		}
 
-		public static T GetCustomData<T>(IDictionary<string, object> variables)
+		public static T GetCustomData<T>(IDictionary<string, object> variables) where T: class
 		{
 			if (variables.ContainsKey(STR_CustomData))
-				return (T)variables[STR_CustomData];
+				if (variables[STR_CustomData] is T)
+					return (T)variables[STR_CustomData];
 			return default(T);
 		}
 

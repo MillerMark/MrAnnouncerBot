@@ -47,7 +47,7 @@ namespace DHDM
 		void BreakConcentration(int playerId);
 		void SetModifier(int modifier);
 		void RollSave(int diceId);
-		void PlayScene(string sceneName);
+		void PlayScene(string sceneName, int returnMs = -1);
 		void PlaySound(string soundFileName);
 		void MoveFred(string movement);
 		void Speak(int playerId, string message);

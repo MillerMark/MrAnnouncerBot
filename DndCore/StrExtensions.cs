@@ -72,6 +72,14 @@ namespace DndCore
 			return defaultValue;
 		}
 
+		/// <summary>
+		/// Returns true if the specified string is a case-insensitive match.
+		/// </summary>
+		public static bool SameLetters(this string str, string compareStr)
+		{
+			return string.Compare(str, compareStr, true) == 0;
+		}
+
 		public static int GetFirstInt(this string str, int defaultValue = 0)
 		{
 			return (int)Math.Floor(GetFirstDouble(str, false, defaultValue));
