@@ -35,8 +35,15 @@ namespace DHDM
 			AllDiceDestroyed?.Invoke(sender, ea);
 		}
 
+		static void InGameUIResponse(string response)
+		{
+			
+		}
+
+
 		static DiceEventArgs diceEventArgs;
 		static void DiceHaveStoppedRolling(string diceData)
+		
 		{
 			if (diceEventArgs == null)
 				diceEventArgs = new DiceEventArgs();
@@ -77,6 +84,7 @@ namespace DHDM
 								// TODO: Check out benefits of stopping gracefully with a cancellation token.
 								hubConnection.On<string>("DiceHaveStoppedRolling", DiceHaveStoppedRolling);
 								hubConnection.On<string>("AllDiceHaveBeenDestroyed", AllDiceHaveBeenDestroyed);
+								hubConnection.On<string>("InGameUIResponse", InGameUIResponse);
 								hubConnection.On<string>("TellDM", TellTheDungeonMaster);
 								hubConnection.StartAsync();
 							}
@@ -128,6 +136,17 @@ namespace DHDM
 		public static void ChangeFrameRate(string frameRateData)
 		{
 			HubConnection.InvokeAsync("ChangeFrameRate", frameRateData);
+		}
+
+		public static void InGameUICommand(AnswerMap answerMap)
+		{
+			string commandData = JsonConvert.SerializeObject(answerMap);
+			InGameUICommand(commandData);
+		}
+
+		public static void InGameUICommand(string commandData)
+		{
+			HubConnection.InvokeAsync("InGameUICommand", commandData);
 		}
 
 		public static void AddWindup(string windupData)

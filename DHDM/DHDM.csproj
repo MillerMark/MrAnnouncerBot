@@ -308,6 +308,8 @@
     <Compile Include="ActionQueue\ActionQueueEntry.cs" />
     <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
+    <Compile Include="AnswerEntry.cs" />
+    <Compile Include="AnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
     <Compile Include="StreamDeck Commands\AdvanceClockCommand.cs" />
     <Compile Include="PlayerStats\PlayerStatManager.cs" />
@@ -399,6 +401,7 @@
     <Compile Include="StreamDeck Commands\Core\IDungeonMasterCommand.cs" />
     <Compile Include="IDungeonMasterApp.cs" />
     <Compile Include="InspirationTextBox.cs" />
+    <Compile Include="StreamDeck Commands\InGameUICommand.cs" />
     <Compile Include="StreamDeck Commands\InstantRollCommand.cs" />
     <Compile Include="StreamDeck Commands\MoveFredCommand.cs" />
     <Compile Include="PlayerButton.cs" />

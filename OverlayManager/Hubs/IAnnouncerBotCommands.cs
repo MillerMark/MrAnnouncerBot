@@ -11,6 +11,7 @@ namespace OverlayManager.Hubs
 		Task DiceHaveStoppedRolling(string diceData);
 		Task TellDM(string message);
 		Task AllDiceHaveBeenDestroyed(string diceData);
+		Task InGameUIResponse(string response);
 
 		Task Arm(string userID);
 		Task Disarm(string userID);
@@ -27,6 +28,7 @@ namespace OverlayManager.Hubs
 		Task ChangePlayerStats(string playerStatsData);
 		Task ChangePlayerWealth(string playerData);
 		Task ChangeFrameRate(string frameRateData);
+		Task InGameUICommand(string commandData);
 		Task ClearWindup(string windupName);
 		Task MoveFred(string movement);
 		Task AddWindup(string windupData);

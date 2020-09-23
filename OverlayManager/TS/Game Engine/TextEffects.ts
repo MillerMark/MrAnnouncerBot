@@ -60,19 +60,19 @@ class ScalableAnimation extends AnimatedElement {
 }
 
 class Animations {
-	animations: Array<AnimatedElement> = new Array<AnimatedElement>();
+	animationProxies: Array<AnimatedElement> = new Array<AnimatedElement>();
 	constructor() {
 
 	}
 
 	clear() {
-		this.animations = new Array<AnimatedElement>();
+		this.animationProxies = new Array<AnimatedElement>();
 	}
 
 	addText(centerPos: Vector, text: string, lifeSpanMs = -1): TextEffect {
 		const textEffect: TextEffect = new TextEffect(centerPos.x, centerPos.y, lifeSpanMs);
 		textEffect.text = text;
-		this.animations.push(textEffect);
+		this.animationProxies.push(textEffect);
 		return textEffect;
 	}
 
@@ -80,7 +80,7 @@ class Animations {
 		const line: AnimatedLine = new AnimatedLine(x, y, width, color, lifespan, lineThickness);
 		line.scale = 1;
 		line.targetScale = 1;
-		this.animations.push(line);
+		this.animationProxies.push(line);
 		return line;
 	}
 
@@ -89,25 +89,25 @@ class Animations {
 		rectangle.opacity = opacity;
 		rectangle.scale = 1;
 		rectangle.targetScale = 1;
-		this.animations.push(rectangle);
+		this.animationProxies.push(rectangle);
 		return rectangle;
 	}
 
 	render(context: CanvasRenderingContext2D, now: number) {
-		this.animations.forEach(function (animatedElement: AnimatedElement) {
+		this.animationProxies.forEach(function (animatedElement: AnimatedElement) {
 			animatedElement.render(context, now);
 		});
 	}
 
 	removeExpiredAnimations(now: number): void {
-		for (let i = this.animations.length - 1; i >= 0; i--) {
-			const animatedElement: AnimatedElement = this.animations[i];
+		for (let i = this.animationProxies.length - 1; i >= 0; i--) {
+			const animatedElement: AnimatedElement = this.animationProxies[i];
 			if (animatedElement.expirationDate) {
 				if (!animatedElement.stillAlive(now)) {
 					animatedElement.destroying();
 					animatedElement.removing();
 					if (!animatedElement.isRemoving) {
-						this.animations.splice(i, 1);
+						this.animationProxies.splice(i, 1);
 					}
 				}
 			}
@@ -115,8 +115,8 @@ class Animations {
 	}
 
 	updatePositions(now: number): void {
-		for (let i = this.animations.length - 1; i >= 0; i--) {
-			const animatedElement: AnimatedElement = this.animations[i];
+		for (let i = this.animationProxies.length - 1; i >= 0; i--) {
+			const animatedElement: AnimatedElement = this.animationProxies[i];
 			animatedElement.updatePosition(now);
 		}
 	}
@@ -166,8 +166,11 @@ class TextEffect extends ScalableAnimation {
 		context.strokeStyle = this.outlineColor;
 		context.lineWidth = this.outlineThickness * thisScale;
 		context.lineJoin = "round";
-		context.strokeText(this.text, this.x + this.offsetX, this.y + this.offsetY);
-		context.fillText(this.text, this.x + this.offsetX, this.y + this.offsetY);
+		const x: number = this.x + this.offsetX;
+		const y: number = this.y + this.offsetY;
+		context.strokeText(this.text, x, y);
+		//console.log(`drawing "${this.text}" at (${x}, ${y})`);
+		context.fillText(this.text, x, y);
 
 		if (this.connectedShapes.length > 0) {
 			const width: number = context.measureText(this.text).width;

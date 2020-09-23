@@ -50,6 +50,11 @@ namespace OverlayManager.Hubs
 			coderushedHub.Clients.All.ChangeFrameRate(frameRateData);
 		}
 
+		public void InGameUICommand(string commandData)
+		{
+			coderushedHub.Clients.All.InGameUICommand(commandData);
+		}
+
 		public void AddWindup(string windupData)
 		{
 			coderushedHub.Clients.All.AddWindup(windupData);

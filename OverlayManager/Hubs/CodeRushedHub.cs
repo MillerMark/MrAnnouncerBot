@@ -45,6 +45,11 @@ namespace OverlayManager.Hubs
 			mrAnnouncerBotHub.Clients.All.AllDiceHaveBeenDestroyed(diceData);
 		}
 
+		public void InGameUIResponse(string response)
+		{
+			mrAnnouncerBotHub.Clients.All.InGameUIResponse(response);
+		}
+
 		public void Arm(string userId)
 		{
 			mrAnnouncerBotHub.Clients.All.Arm(userId);

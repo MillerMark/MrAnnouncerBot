@@ -63,5 +63,6 @@ namespace DHDM
 		void ClearDice();
 		void MoveTarget(string targetingCommand);
 		void SpellScrollsToggle();
+		void InGameUICommand(string command);
 	}
 }

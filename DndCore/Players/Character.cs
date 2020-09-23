@@ -1371,6 +1371,8 @@ namespace DndCore
 
 		public void CastingSpellRequiringConcentration(CastedSpell spell)
 		{
+			if (concentratedSpell?.Spell.Name == spell?.Spell.Name)
+				return;
 			BreakConcentration();
 			spell.Active = true;
 			concentratedSpell = spell;

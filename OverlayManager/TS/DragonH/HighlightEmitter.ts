@@ -60,8 +60,8 @@ class HighlightEmitter {
 			this.emitter.setRectShape(this.width, this.height);
 		}
 
-		const standardLength: number = 290;
-		const idealParticlesPerSecond: number = 200;
+		const standardLength = 290;
+		const idealParticlesPerSecond = 200;
 		this.emitter.particlesPerSecond = idealParticlesPerSecond * this.getPerimeter() / standardLength;
 
 		this.emitter.start();
@@ -83,8 +83,7 @@ class HighlightEmitter {
 	}
 
 	static createBaseEmitter(center: Vector): Emitter {
-		var emitter: Emitter;
-		emitter = new Emitter(center);
+		const emitter: Emitter = new Emitter(center);
 		emitter.saturation.target = 0.9;
 		emitter.saturation.relativeVariance = 0.2;
 		emitter.hue = new TargetValue(40, 0, 0, 60);

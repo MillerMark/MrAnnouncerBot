@@ -665,7 +665,7 @@ class PlayerStatManager implements IAllPlayerStats {
 
 		textEffect.fontSize = 30;
 		textEffect.outlineThickness = 2;
-		this.allTextEffects.animations.push(textEffect);
+		this.allTextEffects.animationProxies.push(textEffect);
 		die.attach(textEffect);
 	}
 
@@ -1016,9 +1016,9 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassEnds.spriteProxies, playerId, fadeOutTime);
 		this.fadeOutAfter(timeToEndMS, this.concentrationIcon.spriteProxies, playerId, fadeOutTime);
 		this.fadeOutAfter(timeToEndMS, this.concentrationHourglassSand.spriteProxies, playerId, fadeOutTime);
-		for (let i = 0; i < this.concentratedSpellNames.animations.length; i++) {
-			if (this.concentratedSpellNames.animations[i].data === playerId) {
-				this.concentratedSpellNames.animations[i].fadeOutAfter(timeToEndMS, fadeOutTime);
+		for (let i = 0; i < this.concentratedSpellNames.animationProxies.length; i++) {
+			if (this.concentratedSpellNames.animationProxies[i].data === playerId) {
+				this.concentratedSpellNames.animationProxies[i].fadeOutAfter(timeToEndMS, fadeOutTime);
 			}
 		}
 	}
@@ -1155,7 +1155,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		spellNameText.fontSize = spellNameFontSize;
 		spellNameText.fontColor = '#410300';
 		spellNameText.fadeInTime = 500;
-		this.concentratedSpellNames.animations.push(spellNameText);
+		this.concentratedSpellNames.animationProxies.push(spellNameText);
 
 		const hourglassEnds: SpriteProxy = this.concentrationHourglassEnds.add(x + hourglassOffset, spellScrollY, 0);
 		hourglassEnds.data = existingPlayerStats.PlayerId;
@@ -1216,7 +1216,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		const spellScrollY: number = this.getSpellScrollY();
 		this.moveSpritesVertically(this.concentrationWhiteSmoke, spellScrollY);
 		this.moveSpritesVertically(this.concentrationScrollOpenFire, spellScrollY);
-		this.moveAnimationsVertically(this.concentratedSpellNames.animations, spellScrollY);
+		this.moveAnimationsVertically(this.concentratedSpellNames.animationProxies, spellScrollY);
 		this.moveSpritesVertically(this.concentrationHourglassEnds, spellScrollY);
 		this.moveSpritesVertically(this.concentrationIcon, spellScrollY);
 		this.moveSpritesVertically(this.concentrationHourglassSand, spellScrollY);

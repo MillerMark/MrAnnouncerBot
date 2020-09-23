@@ -32,6 +32,7 @@
     <None Remove="TS\DragonH\HighlightEmitter.ts" />
     <None Remove="TS\DragonH\Item.ts" />
     <None Remove="TS\DragonH\MapGame.ts" />
+    <None Remove="TS\DragonH\MessageBox.ts" />
     <None Remove="TS\DragonH\Mod.ts" />
     <None Remove="TS\DragonH\PlayerStatManager.ts" />
     <None Remove="TS\DragonH\ReleaseTrigger.ts" />
@@ -133,6 +134,7 @@
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
     <TypeScriptCompile Include="TS\DragonH\CoinManager.ts" />
     <TypeScriptCompile Include="TS\DragonH\ConditionManager.ts" />
+    <TypeScriptCompile Include="TS\DragonH\MessageBox.ts" />
     <TypeScriptCompile Include="TS\DragonH\PlayerStatManager.ts" />
     <TypeScriptCompile Include="TS\DragonH\WorkerFront.ts">
       <SubType>Code</SubType>

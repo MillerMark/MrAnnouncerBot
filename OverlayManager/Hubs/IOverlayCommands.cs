@@ -23,6 +23,7 @@ namespace OverlayManager.Hubs
 		Task ChangePlayerStats(string playerStatsData);
 		Task ChangePlayerWealth(string playerData);
 		Task ChangeFrameRate(string frameRateData);
+		Task InGameUICommand(string commandData);
 		Task AddWindup(string windupData);
 		Task CastSpell(string spellData);
 		Task ClearWindup(string windupName);

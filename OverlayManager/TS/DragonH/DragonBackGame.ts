@@ -10,6 +10,7 @@ class DragonBackSounds extends SoundManager {
 }
 
 class DragonBackGame extends DragonGame {
+	messageBox: MessageBox;
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	sprinkles: Sprinkles;
 	layerSuffix = 'Back';
@@ -29,6 +30,7 @@ class DragonBackGame extends DragonGame {
 		this.dragonBackSounds = new DragonBackSounds('GameDev/Assets/DragonH/SoundEffects');
 		this.sprinkles = new Sprinkles();
 		this.sprinkles.dragonSharedSounds = this.dragonBackSounds;
+		this.messageBox = new MessageBox(this.dragonBackSounds);
 	}
 
 
@@ -182,6 +184,7 @@ class DragonBackGame extends DragonGame {
 	update(timestamp: number) {
 		this.updateGravity();
 		super.update(timestamp);
+		this.messageBox.update(timestamp);
 		CrossfadePlayer.updateMusicPlayers(timestamp);
 		this.inGameCreatureManager.update(timestamp);
 	}
@@ -202,6 +205,8 @@ class DragonBackGame extends DragonGame {
 
 		if (this.shouldDrawCenterCrossHairs)
 			drawCrossHairs(myContext, screenCenterX, screenCenterY);
+
+		this.messageBox.draw(context, nowMs);
 
 		if (this.showFpsWindow) {
 			if (!this.fpsWindow) {
@@ -301,6 +306,7 @@ class DragonBackGame extends DragonGame {
 		super.loadResources();
 
 		this.characterStatsScroll.loadResources();
+		this.messageBox.loadResources();
 
 		//Folders.assets = 'GameDev/Assets/DroneGame/';
 		this.loadDragonAssets();
@@ -798,4 +804,7 @@ class DragonBackGame extends DragonGame {
 		this.inGameCreatureManager.processInGameCreatureCommand(inGameCommand.Command, inGameCommand.Creatures, this.dragonBackSounds);
 	}
 
+	inGameUICommand(commandData: string) {
+		this.messageBox.executeCommand(commandData);
+	}
 } 

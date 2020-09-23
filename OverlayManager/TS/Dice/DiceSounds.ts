@@ -150,8 +150,11 @@ class DiceSounds extends SoundManager {
 
 	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>): Promise<void> {
 		await this.playAttackCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage);
-		await this.playSoundFileAsync('Announcer/Numbers/With[4]');
-		await this.playDamageCommentaryAsync(totalDamage, damageType, damageSummary);
+		if (attemptedRollWasSuccessful)
+		{
+			await this.playSoundFileAsync('Announcer/Numbers/With[4]');
+			await this.playDamageCommentaryAsync(totalDamage, damageType, damageSummary);
+		}
 	}
 
 	async playDamageCommentaryAsync(totalDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number> = null): Promise<void> {

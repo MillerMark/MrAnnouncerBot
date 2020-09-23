@@ -158,6 +158,12 @@ function changePlayerWealth(playerWealth: string) {
 	}
 }
 
+function inGameUICommand(commandData: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.inGameUICommand(commandData);
+	}
+}
+
 function changeFrameRate(frameRateData: string) {
 	let frameRateChangeData: FrameRateChangeData = JSON.parse(frameRateData);
 	//frameRateData
@@ -257,6 +263,11 @@ function allDiceHaveBeenDestroyed(diceData: string) {
 		connection.invoke("AllDiceHaveBeenDestroyed", diceData);
 }
 
+function inGameUIResponse(response: string) {
+	if (connection.connectionState === 1)
+		connection.invoke("InGameUIResponse", response);
+}
+
 function arm(userId: string) {
 	connection.invoke("Arm", userId);
 }
@@ -285,6 +296,7 @@ function connectToSignalR(signalR) {
 		connection.on("ChangePlayerStats", changePlayerStats);
 		connection.on("changePlayerWealth", changePlayerWealth);
 		connection.on("ChangeFrameRate", changeFrameRate);
+		connection.on("InGameUICommand", inGameUICommand);
 		connection.on("UserHasCoins", userHasCoins);
 		connection.on("SuppressVolume", suppressVolume);
 		connection.on("FocusItem", focusItem);

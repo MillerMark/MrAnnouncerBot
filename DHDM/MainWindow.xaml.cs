@@ -53,6 +53,7 @@ namespace DHDM
 
 		const int INT_TimeToDropDragonDice = 1800;
 		const string STR_PlayerScene = "Players";
+		const string STR_RepeatSpell = "[Again]";
 
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
@@ -1028,39 +1029,7 @@ namespace DHDM
 			}
 		}
 
-		public class AnswerMap
-		{
-			public int Index { get; set; }
-			public int Value { get; set; }
-			public string AnswerText { get; set; }
-			public AnswerMap(int index, int value, string answerText)
-			{
-				Index = index;
-				Value = value;
-				AnswerText = answerText;
-			}
-			public static AnswerMap FromAnswer(string answerStr, int index)
-			{
-				AnswerMap result = new AnswerMap();
-				result.Index = index;
-				string workStr = answerStr.Trim(new char[] { '"', ' ' });
-				int colonPos = workStr.IndexOf(':');
-				if (colonPos > 0)
-				{
-					string valueStr = workStr.EverythingBefore(":");
-					result.AnswerText = workStr.EverythingAfter(":").Trim();
-					if (int.TryParse(valueStr, out int value))
-						result.Value = value;
-				}
-
-				return result;
-			}
-			public AnswerMap()
-			{
-
-			}
-		}
-		List<AnswerMap> answerMap;
+		List<AnswerEntry> answerEntries;
 
 		int AskQuestion(string question, List<string> answers)
 		{
@@ -1074,40 +1043,67 @@ namespace DHDM
 
 				if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
 				{
-					AnswerMap selectedAnswer;
+					AnswerEntry selectedAnswer;
 					if (ActivePlayer.NextAnswer.EndsWith("*"))
 					{
 						string searchPattern = ActivePlayer.NextAnswer.EverythingBefore("*");
-						selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
+						selectedAnswer = answerEntries.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
 					}
 					else
-						selectedAnswer = answerMap.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
+						selectedAnswer = answerEntries.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
 					ActivePlayer.NextAnswer = null;
 					if (selectedAnswer != null)
 						return selectedAnswer.Value;
 				}
+				// TODO: Totally disabled questions.
+				return 0;
+				//return OldAskQuestion(question, answers);
 
-
-				TellDungeonMaster($"{Icons.QuestionBlock} {twitchIndent}" + question);
-				foreach (AnswerMap answer in answerMap)
-				{
-					TellDungeonMaster($"{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent} {answer.Index}. {answer.AnswerText}");
-				}
-
-				return FrmAsk.Ask(question, answers, this);
+				// TODO: Figure out how to get the result
+				//return NewAskQuestion(question, answerEntries).Result;
 			}
 			finally
 			{
 				waitingForAnswerToQuestion = false;
-				answerMap = null;
+				answerEntries = null;
 				if (timerWasRunning)
 					StartRealTimeTimer();
 			}
 		}
 
+		bool askingQuestion;
+		// TODO: Set this to false when we get InGameUIResponse so NewAskQuestion exits.
+		
+		int answerResponse;
+		// async Task<int> NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
+
+		int NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
+		{
+			askingQuestion = true;
+			// TODO: Send command to populate in game UI with answers.
+			HubtasticBaseStation.InGameUICommand(new AnswerMap(question, answers, minAnswers, maxAnswers));
+			return 0;
+			//while (askingQuestion)
+			//{
+			//	await Task.Delay(300);
+			//}
+			//return answerResponse;
+		}
+
+		private int OldAskQuestion(string question, List<string> answers)
+		{
+			TellDungeonMaster($"{Icons.QuestionBlock} {twitchIndent}" + question);
+			foreach (AnswerEntry answer in answerEntries)
+			{
+				TellDungeonMaster($"{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent} {answer.Index}. {answer.AnswerText}");
+			}
+
+			return FrmAsk.Ask(question, answers, this);
+		}
+
 		private void BuildAnswerMap(List<string> answers)
 		{
-			answerMap = new List<AnswerMap>();
+			answerEntries = new List<AnswerEntry>();
 			List<string> textAnswers = new List<string>();
 			int index = 1;
 			bool firstTimeIn = true;
@@ -1117,8 +1113,8 @@ namespace DHDM
 					index = 0;
 				firstTimeIn = false;
 
-				AnswerMap thisAnswer = AnswerMap.FromAnswer(answer, index);
-				answerMap.Add(thisAnswer);
+				AnswerEntry thisAnswer = AnswerEntry.FromAnswer(answer, index);
+				answerEntries.Add(thisAnswer);
 				textAnswers.Add($"{index}. " + thisAnswer.AnswerText);
 				index++;
 			}
@@ -1221,7 +1217,7 @@ namespace DHDM
 		{
 			if (waitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result))
 			{
-				AnswerMap answer = answerMap.FirstOrDefault(x => x.Index == result);
+				AnswerEntry answer = answerEntries.FirstOrDefault(x => x.Index == result);
 				if (answer != null)
 				{
 					FrmAsk.TryAnswer(answer.Value);
@@ -1494,7 +1490,7 @@ namespace DHDM
 
 		string activeTrailingEffects;
 		string activeDieRollEffects;
-		Spell activeIsSpell;
+		string activeSpellName;
 		CastedSpell castedSpellNeedingCompletion = null;
 		Character spellCaster = null;
 
@@ -1522,6 +1518,8 @@ namespace DHDM
 
 		void HideShortcutUI(PlayerActionShortcut actionShortcut)
 		{
+			if (actionShortcut == null)
+				return;
 			HideShortcutUI(wpActionsActivePlayer, actionShortcut);
 			HideShortcutUI(spBonusActionsActivePlayer, actionShortcut);
 			HideShortcutUI(spReactionsActivePlayer, actionShortcut);
@@ -2067,7 +2065,7 @@ namespace DHDM
 		{
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
-			activeIsSpell = null;
+			activeSpellName = null;
 		}
 
 		private void SetControlUiFromShortcut(PlayerActionShortcut actionShortcut)
@@ -2141,19 +2139,32 @@ namespace DHDM
 			}
 		}
 
-		private bool ActivateSpellShortcut(PlayerActionShortcut actionShortcut)
+		private bool ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false)
 		{
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
 
-			if (!IsOkayToCastSpell(ActivePlayer, castedSpell))
+			PlayerSpellCastState playerSpellCastState = GetPlayerSpellCastState(ActivePlayer, castedSpell);
+
+			if (playerSpellCastState == PlayerSpellCastState.ValidationFailed)
 				return false;
+
+			if (playerSpellCastState == PlayerSpellCastState.AlreadyCasting && !forceRepeat)
+				return false;
+
+			if (playerSpellCastState == PlayerSpellCastState.Concentrating)
+				return false;
+
+
 
 			if (castedSpell.Target == null && ActivePlayer != null)
 				castedSpell.Target = ActivePlayer.ActiveTarget;
 
-			castedSpell.PreparationStarted(game);  // Triggers onPreparing event here.
+			bool castingForFirstTimeNow = playerSpellCastState != PlayerSpellCastState.AlreadyCasting || !forceRepeat;
 
-			if (actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
+			if (castingForFirstTimeNow)
+				castedSpell.PreparationStarted(game);  // Triggers onPreparing event here.
+
+			if (castingForFirstTimeNow && actionShortcut.Spell.CastingTime > DndTimeSpan.OneAction)
 			{
 				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
 				return true;
@@ -2169,7 +2180,7 @@ namespace DHDM
 		{
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			Spell spell = actionShortcut.Spell;
-			activeIsSpell = spell;
+			activeSpellName = spell.Name;
 			KnownSpell matchingSpell = player.GetMatchingSpell(spell.Name);
 			if (matchingSpell != null && matchingSpell.CanBeRecharged())
 			{
@@ -2192,7 +2203,8 @@ namespace DHDM
 
 		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell)
 		{
-			matchingSpell.ChargesRemaining--;
+			if (matchingSpell.ChargesRemaining > 0)
+				matchingSpell.ChargesRemaining--;
 			if (matchingSpell.ChargesRemaining == 0)
 				HideShortcutUI(actionShortcut);
 
@@ -2223,17 +2235,12 @@ namespace DHDM
 			ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
 		}
 
-		private bool IsOkayToCastSpell(Character player, CastedSpell castedSpell)
+		private PlayerSpellCastState GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
 		{
 			if (castedSpell.ValidationHasFailed(player, castedSpell.Target))
-				return false;
+				return PlayerSpellCastState.ValidationFailed;
 
-			return PlayerFreeToCastSpell(player, castedSpell);
-		}
-
-		private bool PlayerFreeToCastSpell(Character player, CastedSpell castedSpell)
-		{
-			bool okayToCastSpell = true;
+			PlayerSpellCastState playerSpellState = PlayerSpellCastState.FreeToCast;
 			if (castedSpell.Spell.RequiresConcentration && player.concentratedSpell != null)
 			{
 				Spell concentratedSpell = player.concentratedSpell.Spell;
@@ -2249,16 +2256,19 @@ namespace DHDM
 						if (remainingSpellTime.TotalSeconds > 0)
 						{
 							TellDungeonMaster($"{player.firstName} is already casting {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining)");
-							okayToCastSpell = false;
+							return PlayerSpellCastState.AlreadyCasting;
 						}
 						else  // No time remaining. No longer concentrating on this spell.
 						{
-							concentratedSpell = null;
-							okayToCastSpell = true;
+							return PlayerSpellCastState.FreeToCast;
 						}
 					}
-					if (concentratedSpell != null && AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
-						okayToCastSpell = false;
+
+					// At this point, we know the player is concentrating on a spell and the player wants to cast a different spell that also requires concentration
+					if (AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
+						playerSpellState = PlayerSpellCastState.FreeToCast;
+					else
+						playerSpellState = PlayerSpellCastState.Concentrating;
 				}
 				finally
 				{
@@ -2267,7 +2277,15 @@ namespace DHDM
 				}
 			}
 
-			return okayToCastSpell;
+			return playerSpellState;
+		}
+
+		public enum PlayerSpellCastState
+		{
+			ValidationFailed,
+			FreeToCast,
+			Concentrating,
+			AlreadyCasting
 		}
 
 		private static void ShowSpellPreparingWindups(PlayerActionShortcut actionShortcut, Spell spell)
@@ -2640,8 +2658,8 @@ namespace DHDM
 			DiceRoll diceRoll = new DiceRoll(type, diceRollKind, damageDice);
 			diceRoll.AdditionalDiceOnHit = tbxAddDiceOnHit.Text;
 			diceRoll.AdditionalDiceOnHitMessage = tbxMessageAddDiceOnHit.Text;
-			if (activeIsSpell != null)
-				diceRoll.SpellName = activeIsSpell.Name;
+			if (activeSpellName != null)
+				diceRoll.SpellName = activeSpellName;
 
 			if (int.TryParse(tbxMinDamage.Text, out int result))
 				diceRoll.MinDamage = result;
@@ -5581,19 +5599,45 @@ namespace DHDM
 			});
 		}
 
+
+		// TODO: Rename substring.
+		void RepeatSpell(int playerId, string substring)
+		{
+			Character player = game.GetPlayerFromId(playerId);
+			if (player == null)
+				return;
+			if (player.concentratedSpell != null && player.concentratedSpell.Spell.Name == substring.Trim())
+			{
+				PlayerActionShortcut playerActionShortcut = PlayerActionShortcut.FromSpell(substring, player, player.concentratedSpell.SpellSlotLevel);
+				ActivateSpellShortcut(playerActionShortcut, true);
+				NextDieRollType = DiceRollType.DamageOnly;
+			}
+		}
+
 		public void SelectPlayerShortcut(string shortcutName, int playerId)
 		{
+			shortcutName = shortcutName.Trim();
 			Dispatcher.Invoke(() =>
 			{
 				ActivePlayerId = playerId;
-				PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId && x.Available);
-				if (shortcut != null)
+				if (shortcutName.EndsWith(STR_RepeatSpell))
 				{
-					ActivateShortcut(shortcut);
-					TellDungeonMaster($"Activated {GetPlayerName(playerId)}'s {shortcutName}.");
+					RepeatSpell(playerId, shortcutName.Substring(0, shortcutName.Length - STR_RepeatSpell.Length));
 				}
+				else
+					ActivatePlayerShortcut(shortcutName, playerId);
 			});
 
+		}
+
+		private void ActivatePlayerShortcut(string shortcutName, int playerId)
+		{
+			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId && x.Available);
+			if (shortcut != null)
+			{
+				ActivateShortcut(shortcut);
+				TellDungeonMaster($"Activated {GetPlayerName(playerId)}'s {shortcutName}.");
+			}
 		}
 
 		public void SelectCharacter(int playerId)
@@ -8634,6 +8678,23 @@ namespace DHDM
 			PlayerStatsManager.HideSpellScrolls = !PlayerStatsManager.HideSpellScrolls;
 			UpdatePlayerStatsInGame();
 		}
+
+		public void InGameUICommand(string command)
+		{
+			if (command == "Ask")
+			{
+				HubtasticBaseStation.InGameUICommand(new AnswerMap("Which one?", new List<String> { "Yes", "No" }, 1, 1));
+			}
+			else if (command == "OK")
+			{
+				//answerResponse = 0;
+				//askingQuestion = false;
+				HubtasticBaseStation.InGameUICommand("OK");
+			}
+
+			HubtasticBaseStation.InGameUICommand(command);
+		}
+
 		// TODO: Reintegrate wand/staff animations....
 		/* 
 			Name									Index		Effect				effectAvailableWhen		playToEndOnExpire	 hue	moveUpDown
