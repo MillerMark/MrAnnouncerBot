@@ -107,6 +107,8 @@ namespace DHDM
 
 		void CheckActionQueue(object sender, EventArgs e)
 		{
+			if (askingQuestion)
+				return;
 			DeueueNextAction();
 		}
 
@@ -303,7 +305,7 @@ namespace DHDM
 				clockMessage = $"Round {ea.Game.RoundIndex + 1}";
 		}
 
-		private void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
+		private async void Game_PickWeapon(object sender, PickWeaponEventArgs ea)
 		{
 			List<string> weapons = new List<string>();
 			List<CarriedWeapon> filteredWeapons = new List<CarriedWeapon>();
@@ -331,12 +333,12 @@ namespace DHDM
 
 			if (weapons.Count <= 0)
 				return;
-			int result = AskQuestion("Target which weapon: ", weapons);
+			int result = await AskQuestion("Target which weapon: ", weapons);
 			if (result > 0)
 				ea.Weapon = filteredWeapons[result - 1];
 		}
 
-		private void Game_PickAmmunition(object sender, PickAmmunitionEventArgs ea)
+		private async void Game_PickAmmunition(object sender, PickAmmunitionEventArgs ea)
 		{
 			List<string> ammunitionList = new List<string>();
 
@@ -366,7 +368,7 @@ namespace DHDM
 
 			if (ammunitionList.Count <= 0)
 				return;
-			int result = AskQuestion("Choose ammunition: ", ammunitionList);
+			int result = await AskQuestion("Choose ammunition: ", ammunitionList);
 			if (result > 0)
 				ea.Ammunition = filteredAmmunition[result - 1];
 		}
@@ -1031,7 +1033,7 @@ namespace DHDM
 
 		List<AnswerEntry> answerEntries;
 
-		int AskQuestion(string question, List<string> answers)
+		async Task<int> AskQuestion(string question, List<string> answers)
 		{
 			bool timerWasRunning = realTimeAdvanceTimer.IsEnabled;
 			if (timerWasRunning)
@@ -1055,12 +1057,8 @@ namespace DHDM
 					if (selectedAnswer != null)
 						return selectedAnswer.Value;
 				}
-				// TODO: Totally disabled questions.
-				return 0;
-				//return OldAskQuestion(question, answers);
 
-				// TODO: Figure out how to get the result
-				//return NewAskQuestion(question, answerEntries).Result;
+				return await NewAskQuestion(question, answerEntries);
 			}
 			finally
 			{
@@ -1075,19 +1073,17 @@ namespace DHDM
 		// TODO: Set this to false when we get InGameUIResponse so NewAskQuestion exits.
 		
 		int answerResponse;
-		// async Task<int> NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
-
-		int NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
+		async Task<int> NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
+		//int NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
 		{
 			askingQuestion = true;
 			// TODO: Send command to populate in game UI with answers.
-			HubtasticBaseStation.InGameUICommand(new AnswerMap(question, answers, minAnswers, maxAnswers));
-			return 0;
-			//while (askingQuestion)
-			//{
-			//	await Task.Delay(300);
-			//}
-			//return answerResponse;
+			HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap(question, answers, minAnswers, maxAnswers));
+			while (askingQuestion)
+			{
+				await Task.Delay(300);
+			}
+			return answerResponse;
 		}
 
 		private int OldAskQuestion(string question, List<string> answers)
@@ -1120,9 +1116,9 @@ namespace DHDM
 			}
 		}
 
-		private void AskFunction_AskQuestion(object sender, AskEventArgs ea)
+		private async void AskFunction_AskQuestion(object sender, AskEventArgs ea)
 		{
-			ea.Result = AskQuestion(ea.Question, ea.Answers);
+			ea.Result = await AskQuestion(ea.Question, ea.Answers);
 		}
 
 		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
@@ -2139,11 +2135,11 @@ namespace DHDM
 			}
 		}
 
-		private bool ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false)
+		private async Task<bool> ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false)
 		{
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
 
-			PlayerSpellCastState playerSpellCastState = GetPlayerSpellCastState(ActivePlayer, castedSpell);
+			PlayerSpellCastState playerSpellCastState = await GetPlayerSpellCastState(ActivePlayer, castedSpell);
 
 			if (playerSpellCastState == PlayerSpellCastState.ValidationFailed)
 				return false;
@@ -2235,7 +2231,7 @@ namespace DHDM
 			ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
 		}
 
-		private PlayerSpellCastState GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
+		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
 		{
 			if (castedSpell.ValidationHasFailed(player, castedSpell.Target))
 				return PlayerSpellCastState.ValidationFailed;
@@ -2265,7 +2261,8 @@ namespace DHDM
 					}
 
 					// At this point, we know the player is concentrating on a spell and the player wants to cast a different spell that also requires concentration
-					if (AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" }) == 0)
+					int result = await AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" });
+					if (result == 0)
 						playerSpellState = PlayerSpellCastState.FreeToCast;
 					else
 						playerSpellState = PlayerSpellCastState.Concentrating;
@@ -2975,6 +2972,7 @@ namespace DHDM
 		{
 			HubtasticBaseStation.DiceStoppedRolling += HubtasticBaseStation_DiceStoppedRolling;
 			HubtasticBaseStation.AllDiceDestroyed += HubtasticBaseStation_AllDiceDestroyed;
+			HubtasticBaseStation.ReceivedInGameResponse += HubtasticBaseStation_ReceivedInGameResponse;
 			HubtasticBaseStation.TellDungeonMaster += HubtasticBaseStation_TellDM;
 			OnCombatChanged();
 			UpdateClock();
@@ -3263,9 +3261,9 @@ namespace DHDM
 				{
 					return;
 				}
-				Dispatcher.Invoke(() =>
+				Dispatcher.Invoke(async () =>
 				{
-					if (AnswersYes("Doubles! Fire Chaos Bolt again?"))
+					if (await AnswersYes("Doubles! Fire Chaos Bolt again?"))
 					{
 						RollTheDice(chaosBoltRoll);
 					}
@@ -3509,7 +3507,8 @@ namespace DHDM
 		int lastDamage;
 		int lastHealth;
 		Dictionary<DamageType, int> latestDamage = new Dictionary<DamageType, int>();
-		void CalculateLatestDamage(DiceEventArgs ea)
+
+		async Task CalculateLatestDamage(DiceEventArgs ea)
 		{
 			if (ea.StopRollingData == null)
 				return;
@@ -3518,7 +3517,7 @@ namespace DHDM
 			{
 				case DiceRollType.ChaosBolt:
 					{
-						ProcessChaosBoltDamage(ea);
+						await ProcessChaosBoltDamage(ea);
 						break;
 					}
 				case DiceRollType.Attack:
@@ -3538,7 +3537,7 @@ namespace DHDM
 			}
 		}
 
-		private void ProcessChaosBoltDamage(DiceEventArgs ea)
+		private async Task ProcessChaosBoltDamage(DiceEventArgs ea)
 		{
 			if (!ea.StopRollingData.success)
 				return;
@@ -3563,13 +3562,9 @@ namespace DHDM
 					answers.Add($"{i}:{damageChoices[i]}");
 				}
 
-				Dispatcher.Invoke(() =>
-				{
-					int answer = AskQuestion("Select Chaos Bolt Damage:", answers);
-					if (answer >= 0 && answer < damageChoices.Count)
-						chaosBoltDamageType = damageChoices[answer];
-				});
-
+				int answer = await AskQuestion("Select Chaos Bolt Damage:", answers);
+				if (answer >= 0 && answer < damageChoices.Count)
+					chaosBoltDamageType = damageChoices[answer];
 			}
 			else if (damageChoices.Count > 0)
 				chaosBoltDamageType = damageChoices[0];
@@ -3663,14 +3658,14 @@ namespace DHDM
 				}
 			}
 		}
-		private void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
+		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			Dispatcher.Invoke(() =>
 			{
 				Title = "Dice Stopped Rolling (waiting for destruction)...";
 			});
 			History.Log("Dice stopped rolling.");
-			CalculateLatestDamage(ea);
+			await CalculateLatestDamage(ea);
 			if (dynamicThrottling)
 			{
 				ChangeFrameRateAndUI(Overlays.Back, 30);
@@ -3953,12 +3948,12 @@ namespace DHDM
 			}
 		}
 
-		private bool AnswersYes(string question)
+		private async Task<bool> AnswersYes(string question)
 		{
 			List<string> answers = new List<string>();
 			answers.Add("1:Yes");
 			answers.Add("2:No");
-			bool yes = AskQuestion(question, answers) == 1;
+			bool yes = await AskQuestion(question, answers) == 1;
 			return yes;
 		}
 
@@ -4380,6 +4375,8 @@ namespace DHDM
 				frmCropPreview.Close();
 			HubtasticBaseStation.DiceStoppedRolling -= HubtasticBaseStation_DiceStoppedRolling;
 			HubtasticBaseStation.AllDiceDestroyed -= HubtasticBaseStation_AllDiceDestroyed;
+			HubtasticBaseStation.ReceivedInGameResponse -= HubtasticBaseStation_ReceivedInGameResponse;
+			HubtasticBaseStation.TellDungeonMaster -= HubtasticBaseStation_TellDM;
 		}
 
 		private void BtnBendLuckAdd_Click(object sender, RoutedEventArgs e)
@@ -5601,7 +5598,7 @@ namespace DHDM
 
 
 		// TODO: Rename substring.
-		void RepeatSpell(int playerId, string substring)
+		async Task RepeatSpell(int playerId, string substring)
 		{
 			Character player = game.GetPlayerFromId(playerId);
 			if (player == null)
@@ -5609,7 +5606,7 @@ namespace DHDM
 			if (player.concentratedSpell != null && player.concentratedSpell.Spell.Name == substring.Trim())
 			{
 				PlayerActionShortcut playerActionShortcut = PlayerActionShortcut.FromSpell(substring, player, player.concentratedSpell.SpellSlotLevel);
-				ActivateSpellShortcut(playerActionShortcut, true);
+				await ActivateSpellShortcut(playerActionShortcut, true);
 				NextDieRollType = DiceRollType.DamageOnly;
 			}
 		}
@@ -5617,12 +5614,12 @@ namespace DHDM
 		public void SelectPlayerShortcut(string shortcutName, int playerId)
 		{
 			shortcutName = shortcutName.Trim();
-			Dispatcher.Invoke(() =>
+			Dispatcher.Invoke(async () =>
 			{
 				ActivePlayerId = playerId;
 				if (shortcutName.EndsWith(STR_RepeatSpell))
 				{
-					RepeatSpell(playerId, shortcutName.Substring(0, shortcutName.Length - STR_RepeatSpell.Length));
+					await RepeatSpell(playerId, shortcutName.Substring(0, shortcutName.Length - STR_RepeatSpell.Length));
 				}
 				else
 					ActivatePlayerShortcut(shortcutName, playerId);
@@ -6211,21 +6208,22 @@ namespace DHDM
 			UnleashTheNextRoll();
 		}
 
-		private void UnleashTheNextRoll()
+		private async void UnleashTheNextRoll()
 		{
+			PlayerActionShortcut localSpellToCastOnRoll = spellToCastOnRoll;
 			Title = "Rolling Dice...";
-			if (spellToCastOnRoll != null)
+			if (localSpellToCastOnRoll != null)
 			{
-				if (spellToCastOnRoll.Spell?.SpellType == SpellType.SavingThrowSpell)
+				if (localSpellToCastOnRoll.Spell?.SpellType == SpellType.SavingThrowSpell)
 				{
-					nextSavingThrowAbility = spellToCastOnRoll.Spell.SavingThrowAbility;
+					nextSavingThrowAbility = localSpellToCastOnRoll.Spell.SavingThrowAbility;
 					if (ActivePlayer != null)
 						SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
 				}
-				if (!ActivateSpellShortcut(spellToCastOnRoll))
+				if (!await ActivateSpellShortcut(localSpellToCastOnRoll))
 					return;
 
-				bool isSimpleSpell = spellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
+				bool isSimpleSpell = localSpellToCastOnRoll?.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
 				if (isSimpleSpell)
 				{
@@ -8355,7 +8353,8 @@ namespace DHDM
 
 		public void NextTurn()
 		{
-			game.NextTurn();
+			lock (game)
+				game.NextTurn();
 		}
 
 		private void Game_ActivePlayerChanged(object sender, EventArgs e)
@@ -8417,7 +8416,7 @@ namespace DHDM
 			{
 				if (!actionQueue.Any())
 					return;
-
+				// TODO: why are you doing all that work on the UI thread?
 				Dispatcher.Invoke(() =>
 				{
 					if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
@@ -8679,14 +8678,22 @@ namespace DHDM
 			UpdatePlayerStatsInGame();
 		}
 
+		private void HubtasticBaseStation_ReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
+		{
+			answerResponse = ea.QuestionAnswerMap.GetFirstSelectedIndex();
+			askingQuestion = false;
+		}
+
 		public void InGameUICommand(string command)
 		{
 			if (command == "Ask")
 			{
-				HubtasticBaseStation.InGameUICommand(new AnswerMap("Which one?", new List<String> { "Yes", "No" }, 1, 1));
+				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("XSelect chaos bolt damage:X", new List<String> { "Acid", "Force" }, 1, 1));
 			}
 			else if (command == "OK")
 			{
+				askingQuestion = false;
+				answerResponse = 1;
 				//answerResponse = 0;
 				//askingQuestion = false;
 				HubtasticBaseStation.InGameUICommand("OK");

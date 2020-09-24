@@ -78,7 +78,8 @@ namespace DndCore
 			foreach (PlayerRoll playerRoll in playerRolls)
 			{
 				InGameCreature creature = AllInGameCreatures.GetByIndex(InGameCreature.GetNormalIndexFromUniversal(playerRoll.id));
-				Creatures.Add(creature.Creature);
+				if (creature != null)
+					Creatures.Add(creature.Creature);
 			}
 		}
 	}

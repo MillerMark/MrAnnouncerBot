@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace DHDM
 {
-	public class AnswerMap
+	public class QuestionAnswerMap
 	{
 		public List<AnswerEntry> Answers = new List<AnswerEntry>();
 		public string Question { get; set; }
 		public int MinAnswers { get; set; }
 		public int MaxAnswers { get; set; }
 		
-		public AnswerMap(string question, List<AnswerEntry> answers, int minAnswers, int maxAnswers)
+		public QuestionAnswerMap(string question, List<AnswerEntry> answers, int minAnswers, int maxAnswers)
 		{
 			Question = question;
 			Answers = answers;
@@ -20,7 +20,7 @@ namespace DHDM
 			MaxAnswers = maxAnswers;
 		}
 
-		public AnswerMap(string question, List<string> answers, int minAnswers, int maxAnswers)
+		public QuestionAnswerMap(string question, List<string> answers, int minAnswers, int maxAnswers)
 		{
 			Question = question;
 
@@ -31,9 +31,16 @@ namespace DHDM
 			MaxAnswers = maxAnswers;
 		}
 
-		public AnswerMap()
+		public QuestionAnswerMap()
 		{
 
+		}
+		public int GetFirstSelectedIndex()
+		{
+			for (int i = 0; i < Answers.Count; i++)
+				if (Answers[i].IsSelected)
+					return i;
+			return 0;
 		}
 	}
 }

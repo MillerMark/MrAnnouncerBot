@@ -309,8 +309,9 @@
     <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="AnswerEntry.cs" />
-    <Compile Include="AnswerMap.cs" />
+    <Compile Include="QuestionAnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
+    <Compile Include="Events\QuestionAnswerMapEventArgs.cs" />
     <Compile Include="StreamDeck Commands\AdvanceClockCommand.cs" />
     <Compile Include="PlayerStats\PlayerStatManager.cs" />
     <Compile Include="AnswerButton.cs" />
@@ -386,7 +387,7 @@
     <Compile Include="ClockDto.cs" />
     <Compile Include="BaseChatBot.cs" />
     <Compile Include="DebugLine.cs" />
-    <Compile Include="DiceEventArgs.cs" />
+    <Compile Include="Events\DiceEventArgs.cs" />
     <Compile Include="DungeonMasterChatBot.cs" />
     <Compile Include="StreamDeck Commands\DungeonMasterCommand.cs" />
     <Compile Include="EventManager.cs" />
@@ -442,6 +443,7 @@
     <Compile Include="StreamDeck Commands\ToggleNpcCommand.cs" />
     <Compile Include="StreamDeck Commands\TogglePlayerTargetCommand.cs" />
     <Compile Include="StreamDeck Commands\ToggleTargetCommand.cs" />
+    <Compile Include="ExtensionClasses\TaskExtensions.cs" />
     <Compile Include="User Controls\AttackList.xaml.cs">
       <DependentUpon>AttackList.xaml</DependentUpon>
     </Compile>

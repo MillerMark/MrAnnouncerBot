@@ -101,6 +101,7 @@ namespace DHDM
 				}
 			}
 		}
+
 		public void Initialize(IDungeonMasterApp dungeonMasterApp)
 		{
 			const string MarkMillerUserId = "237584851";

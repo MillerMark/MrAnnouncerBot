@@ -12,6 +12,7 @@ namespace DHDM
 	public static class HubtasticBaseStation
 	{
 		public delegate void DiceEventHandler(object sender, DiceEventArgs ea);
+		public delegate void QuestionAnswerMapEventHandler(object sender, QuestionAnswerMapEventArgs ea);
 		public delegate void MessageEventHandler(object sender, MessageEventArgs ea);
 
 		static readonly object hubConnectionLock = new object();
@@ -19,6 +20,12 @@ namespace DHDM
 		public static event DiceEventHandler DiceStoppedRolling;
 		public static event MessageEventHandler TellDungeonMaster;
 		public static event DiceEventHandler AllDiceDestroyed;
+		public static event QuestionAnswerMapEventHandler ReceivedInGameResponse;
+
+		public static void OnReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
+		{
+			ReceivedInGameResponse?.Invoke(sender, ea);
+		}
 		public static void OnDiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			DiceStoppedRolling?.Invoke(sender, ea);
@@ -37,7 +44,15 @@ namespace DHDM
 
 		static void InGameUIResponse(string response)
 		{
-			
+			try
+			{
+				QuestionAnswerMap answerMap = JsonConvert.DeserializeObject<QuestionAnswerMap>(response);
+				OnReceivedInGameResponse(null, new QuestionAnswerMapEventArgs(answerMap));
+			}
+			catch (Exception ex)
+			{
+				
+			}
 		}
 
 
@@ -138,7 +153,7 @@ namespace DHDM
 			HubConnection.InvokeAsync("ChangeFrameRate", frameRateData);
 		}
 
-		public static void InGameUICommand(AnswerMap answerMap)
+		public static void InGameUICommand(QuestionAnswerMap answerMap)
 		{
 			string commandData = JsonConvert.SerializeObject(answerMap);
 			InGameUICommand(commandData);
