@@ -48,6 +48,7 @@
     <None Remove="TS\DragonH\WeaponProperties.ts" />
     <None Remove="TS\DragonH\Windups - Copy.ts" />
     <None Remove="TS\DragonH\Windups.ts" />
+    <None Remove="TS\DragonH\WordWrap.ts" />
     <None Remove="TS\DragonH\WorkerBack.ts" />
     <None Remove="TS\DragonH\WorkerDice.ts" />
     <None Remove="TS\DragonH\WorkerFront.ts" />
@@ -136,6 +137,7 @@
     <TypeScriptCompile Include="TS\DragonH\ConditionManager.ts" />
     <TypeScriptCompile Include="TS\DragonH\MessageBox.ts" />
     <TypeScriptCompile Include="TS\DragonH\PlayerStatManager.ts" />
+    <TypeScriptCompile Include="TS\DragonH\WordWrap.ts" />
     <TypeScriptCompile Include="TS\DragonH\WorkerFront.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

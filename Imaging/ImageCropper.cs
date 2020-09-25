@@ -35,7 +35,7 @@ namespace Imaging
 			files.Add(fileName);
 			FindCropEdges(files);
 		}
-
+		
 		public void FindCropEdges(List<string> files)
 		{
 			leftMargin = int.MaxValue;
