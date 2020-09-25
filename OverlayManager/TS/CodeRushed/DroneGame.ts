@@ -1292,7 +1292,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		super(startingFrameNumber, center, lifeSpanMs);
 		//this.addSongs('Adventure', 4);
 		this.addSongs('Techno', 80);
-		this.addSongs('Action', 108);
+		this.addSongs('Action', 109);
 		this.addSongs('Rock', 177);
 		this.addSongs('Funk', 103);
 		this.addSongs('EDM', 108);
