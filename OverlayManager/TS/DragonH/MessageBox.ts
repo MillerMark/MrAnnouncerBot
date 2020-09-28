@@ -12,16 +12,41 @@ class QuestionAnswerMap {
 }
 
 class MessageBox {
+	wordRenderer: WordRenderer;
+	wordWrapper: WordWrapper;
 	soundManager: SoundManager;
 	scrollBack: Sprites;
 	scrollFront: Sprites;
-	selectionIndicator: Sprites;
+	selectionIndicatorSprites: Sprites;
 	focusIndicatorSprites: Sprites;
 	animations: Animations;
 	focusIndex = 0;
+	static styleDelimiters: LayoutDelimiters[];
+	titleParagraph: ParagraphWrapData;
+	lastAnswer: TextEffect;
 
 	constructor(soundManager: SoundManager) {
 		this.soundManager = soundManager;
+		this.initializeWordWrapper();
+	}
+
+	initializeWordWrapper() {
+		MessageBox.styleDelimiters = [
+			new LayoutDelimiters(LayoutStyle.bold, '**', '**')
+		];
+
+		this.wordWrapper = new WordWrapper();
+
+		this.wordRenderer = new WordRenderer();
+		this.wordRenderer.fontName = SpellBook.detailFontName;
+		this.wordRenderer.fontSize = SpellBook.detailFontSize;
+		this.wordRenderer.emphasisColor = SpellBook.emphasisColor;
+		this.wordRenderer.emphasisFontHeightIncrease = SpellBook.emphasisFontHeightIncrease;
+		this.wordRenderer.emphasisFontStyleAscender = SpellBook.emphasisFontStyleAscender;
+		this.wordRenderer.bulletIndent = SpellBook.bulletIndent;
+		this.wordRenderer.bulletColor = SpellBook.bulletColor;
+		this.wordRenderer.textColor = SpellBook.textColor;
+		this.wordRenderer.tableLineColor = SpellBook.tableLineColor;
 	}
 
 	loadResources() {
@@ -32,14 +57,14 @@ class MessageBox {
 		this.focusIndicatorSprites.originX = 107;
 		this.focusIndicatorSprites.originY = 107;
 
-		this.selectionIndicator = new Sprites(`InGameUI/SelectionIndicator/SelectionIndicator`, 105, fps30, AnimationStyle.Loop, true);
-		this.selectionIndicator.originX = 162;
-		this.selectionIndicator.originY = 162;
+		this.selectionIndicatorSprites = new Sprites(`InGameUI/SelectionIndicator/SelectionIndicator`, 105, fps30, AnimationStyle.Loop, true);
+		this.selectionIndicatorSprites.originX = 162;
+		this.selectionIndicatorSprites.originY = 162;
 
 		this.setForMove(this.scrollBack);
 		this.setForMove(this.scrollFront);
 		this.setForMove(this.focusIndicatorSprites);
-		this.setForMove(this.selectionIndicator);
+		this.setForMove(this.selectionIndicatorSprites);
 	}
 
 	private setForMove(sprites: Sprites) {
@@ -61,15 +86,16 @@ class MessageBox {
 		this.animations.removeExpiredAnimations(nowMs);
 		this.scrollBack.updatePositions(nowMs);
 		this.scrollFront.updatePositions(nowMs);
-		this.selectionIndicator.updatePositions(nowMs);
+		this.selectionIndicatorSprites.updatePositions(nowMs);
 		this.focusIndicatorSprites.updatePositions(nowMs);
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
 		this.scrollBack.draw(context, nowMs);
 		this.animations.render(context, nowMs);
-		this.selectionIndicator.draw(context, nowMs);
+		this.selectionIndicatorSprites.draw(context, nowMs);
 		this.focusIndicatorSprites.draw(context, nowMs);
+		this.renderTitle(context, nowMs);
 		this.scrollFront.draw(context, nowMs);
 	}
 
@@ -112,7 +138,7 @@ class MessageBox {
 		for (let i = 0; i < this.animations.animationProxies.length; i++) {
 			this.animations.animationProxies[i].expirationDate = now + MessageBox.textFadeOutTime;
 		}
-		this.fadeOutNow(this.selectionIndicator);
+		this.fadeOutNow(this.selectionIndicatorSprites);
 		this.fadeOutNow(this.focusIndicatorSprites);
 		if (this.getSelectedAnswerCount() === 0)
 			this.selectFocusedAnswer();
@@ -124,6 +150,16 @@ class MessageBox {
 		this.questionAnswerMap.Answers[this.focusIndex].IsSelected = true;
 	}
 
+	focusedAnswerIsSelected(): boolean {
+		if (this.focusIndexIsInvalid())
+			return false;
+		return this.questionAnswerMap.Answers[this.focusIndex].IsSelected;
+	}
+
+	private focusIndexIsInvalid() {
+		return this.focusIndex < 0 || this.focusIndex >= this.questionAnswerMap.Answers.length;
+	}
+
 	getSelectedAnswerCount(): number {
 		let count = 0;
 		this.questionAnswerMap.Answers.forEach((answer: Answer) => {
@@ -133,15 +169,39 @@ class MessageBox {
 		return count;
 	}
 
-	private toggleAnswer() {
-		if (this.focusIndicatorSprites.spriteProxies.length === 0) {
-			this.focusIndicatorSprites.add(960, 540);
-			this.selectionIndicator.add(960, 540);
+	private toggleAnswer(): void {
+		if (!this.focusIndicator || this.focusIndexIsInvalid()) {
+			return;
 		}
 		else {
-			const sprite: SpriteProxy = this.focusIndicatorSprites.spriteProxies[0];
-			this.selectionIndicator.add(sprite.x + this.focusIndicatorSprites.originX, sprite.y + this.focusIndicatorSprites.originY);
+			if (this.focusedAnswerIsSelected()) {
+				this.removeSelectionIndicatorSprite();
+				this.questionAnswerMap.Answers[this.focusIndex].IsSelected = false;
+			}
+			else {
+				this.addSelectionIndicatorSprite();
+				this.questionAnswerMap.Answers[this.focusIndex].IsSelected = true;
+			}
 		}
+	}
+
+	removeSelectionIndicatorSprite(): void {
+		if (this.focusIndexIsInvalid())
+			return;
+		for (let i = 0; i < this.selectionIndicatorSprites.spriteProxies.length; i++) {
+			if (this.selectionIndicatorSprites.spriteProxies[i].data === this.focusIndex) {
+				console.log(`removing sprite at index [${i}]`);
+				this.selectionIndicatorSprites.spriteProxies[i].fadeOutNow(300);
+			}
+		}
+	}
+
+	private addSelectionIndicatorSprite() {
+		//const hueShift = 180;  // Blue
+		const hueShift = 330;  // Red
+		const selectionIndicator: SpriteProxy = this.selectionIndicatorSprites.addShifted(this.focusIndicator.x + this.focusIndicatorSprites.originX, this.focusIndicator.y + this.focusIndicatorSprites.originY, -1, hueShift);
+		selectionIndicator.scale = this.focusIndicator.scale * 1.1;
+		selectionIndicator.data = this.focusIndex;
 	}
 
 	private moveDown() {
@@ -190,8 +250,8 @@ class MessageBox {
 		this.distanceToMoveScroll = 0;
 		this.showingTextYet = false;
 		this.hidingTextYet = false;
+		this.titleTop = undefined;
 		this.calculateSize(context);
-
 
 		// adding the sprites...
 		const scrollFront: SpriteProxy = this.scrollFront.add(960, 1080);
@@ -294,6 +354,7 @@ class MessageBox {
 		this.verticalScale = 1;
 		this.calculateTitleFont(context);
 		this.calculateHorizontalScaleBasedOnTitle();
+		this.titleLeft = MessageBox.screenWidth / 2 - this.titleWidth / 2;
 
 		let maxCalculatedAnswerFontSize = MessageBox.maxAnswerFontSize;
 		this.questionAnswerMap.Answers.forEach((answer) => {
@@ -308,9 +369,9 @@ class MessageBox {
 
 		// TODO: shrink the answer font if we can't fit them all on screen.
 		const bottomMargin = 20;
-		const totalHeight: number = this.getTitleBottom() + this.answerFontSize * this.questionAnswerMap.Answers.length + bottomMargin;
+		const totalHeight: number = this.getTitleBottomFromTopOfScroll() + this.answerFontSize * this.questionAnswerMap.Answers.length + bottomMargin;
 		this.verticalScale = totalHeight / MessageBox.scrollHeight;
-		console.log('this.verticalScale: ' + this.verticalScale);
+		//console.log('this.verticalScale: ' + this.verticalScale);
 
 		this.actualScrollHeight = MessageBox.scrollHeight * this.verticalScale;
 		this.scrollTop = MessageBox.screenHeight / 3 - this.actualScrollHeight / 2;
@@ -318,13 +379,14 @@ class MessageBox {
 			this.scrollTop = 0;
 
 		const scrollBottom: number = this.scrollTop + MessageBox.scrollAnimationHeight * this.verticalScale;
-
+		this.titleTop = this.getTitleTop(MessageBox.titleTopMargin);
+		console.log('this.titleTop from calculateSize: ' + this.titleTop);
 		this.distanceToMoveScroll = MessageBox.screenHeight - scrollBottom;
-		console.log('this.distanceToMoveScroll: ' + this.distanceToMoveScroll);
+		//console.log('this.distanceToMoveScroll: ' + this.distanceToMoveScroll);
 	}
 
-	private getTitleBottom() {
-		return MessageBox.titleTopMargin + this.titleFontSize;
+	private getTitleBottomFromTopOfScroll() {
+		return MessageBox.titleTopMargin + this.titleFontSize * this.titleParagraph.lineData.length;
 	}
 
 	private calculateHorizontalScaleBasedOnTitle() {
@@ -333,6 +395,10 @@ class MessageBox {
 			if (this.horizontalScale > MessageBox.maxWidthScale)
 				this.horizontalScale = MessageBox.maxWidthScale;
 			this.titleFontSize *= this.horizontalScale;
+		}
+		this.titleWidth = this.titleParagraph.getLongestLineWidth();
+		if (this.titleWidth > MessageBox.availableTitleWidth) {
+			this.horizontalScale = this.titleWidth / MessageBox.availableTitleWidth;
 		}
 	}
 
@@ -350,42 +416,22 @@ class MessageBox {
 		return `${fontSize}px ${MessageBox.fontName}`;
 	}
 
-	private calculateTitleFont(context: CanvasRenderingContext2D) {
-		this.titleFontSize = this.getFontSizeToFit(context, this.questionAnswerMap.Question, MessageBox.maxTitleFontSize, MessageBox.availableTitleWidth);
-		context.font = this.getFont(this.titleFontSize);
-		this.titleWidth = context.measureText(this.questionAnswerMap.Question).width;
-	}
+	//private addTitle(title: string, top: number) {
+	//	const textEffect: TextEffect = this.animations.addText(new Vector(960, top), title);
+	//	textEffect.textBaseline = 'top';
+	//	textEffect.fontSize = this.titleFontSize;
+	//	this.prepareTextEffect(textEffect);
+	//	textEffect.opacity = MessageBox.titleOpacity;
+	//}
 
-	addText() {
-		const left: number = 960 - this.titleWidth / 2 + this.answerFontSize;
-		const topMargin = MessageBox.titleTopMargin;
-		const top = this.scrollTop + topMargin;
-		this.addTitle(this.questionAnswerMap.Question, top);
-		const focusIndicatorRadius: number = this.answerFontSize / 2;
-		let centerY: number = top + this.titleFontSize + focusIndicatorRadius;
-		this.addFocusIndicator(left - focusIndicatorRadius, centerY);
-		this.questionAnswerMap.Answers.forEach((answer: Answer) => {
-			answer.centerY = centerY;
-			this.addAnswer(answer.AnswerText, left, centerY);
-			centerY += this.answerFontSize;
-		});
-	}
-
-	private addTitle(title: string, top: number) {
-		const textEffect: TextEffect = this.animations.addText(new Vector(960, top), title);
-		textEffect.textBaseline = 'top';
-		textEffect.fontSize = this.titleFontSize;
-		this.prepareTextEffect(textEffect);
-		textEffect.opacity = MessageBox.titleOpacity;
-	}
-
-	private addAnswer(answerText: string, left: number, top: number) {
+	private addAnswer(answerText: string, left: number, top: number): TextEffect {
 		const textEffect: TextEffect = this.animations.addText(new Vector(left, top), answerText);
 		textEffect.fontSize = this.answerFontSize;
 		textEffect.textBaseline = 'middle';
 		textEffect.textAlign = 'left';
 		this.prepareTextEffect(textEffect);
 		textEffect.opacity = 1;
+		return textEffect;
 	}
 
 	private prepareTextEffect(textEffect: TextEffect) {
@@ -394,5 +440,73 @@ class MessageBox {
 		textEffect.fadeInTime = MessageBox.textFadeInTime;
 		textEffect.fontName = MessageBox.fontName;
 		textEffect.fontColor = MessageBox.fontColor;
+	}
+
+	titleTop: number = undefined;
+
+	addText() {
+		const left: number = 960 - this.titleWidth / 2 + this.answerFontSize;
+
+		// TODO: Stop calling addTitle if we're going to draw the titles ourselves.
+		//this.addTitle(this.questionAnswerMap.Question, this.titleTop);
+
+		const focusIndicatorRadius: number = this.answerFontSize / 2;
+		console.log(`this.titleFontSize == ${this.titleFontSize}, this.titleParagraph.lineData.length = ${this.titleParagraph.lineData.length}`);
+		let centerY: number = this.scrollTop + this.getTitleBottomFromTopOfScroll() + focusIndicatorRadius;
+		this.addFocusIndicator(left - focusIndicatorRadius, centerY);
+		this.questionAnswerMap.Answers.forEach((answer: Answer) => {
+			answer.centerY = centerY;
+			this.lastAnswer = this.addAnswer(answer.AnswerText, left, centerY);
+			centerY += this.answerFontSize;
+		});
+	}
+
+	private getTitleTop(topMargin: number) {
+		return this.scrollTop + topMargin;
+	}
+
+	titleLeft: number;
+
+	private calculateTitleFont(context: CanvasRenderingContext2D) {
+		this.titleFontSize = this.getFontSizeToFit(context, this.questionAnswerMap.Question, MessageBox.maxTitleFontSize, MessageBox.availableTitleWidth);
+
+		if (this.titleFontSize < MessageBox.minTitleFontSize)
+			this.titleFontSize = MessageBox.minTitleFontSize;
+
+		context.font = this.getFont(this.titleFontSize);
+		this.wordRenderer.fontName = MessageBox.fontName;
+		this.wordRenderer.fontSize = this.titleFontSize;
+		this.titleParagraph = this.wordWrapper.getWordWrappedLinesForParagraphs(context, this.questionAnswerMap.Question, MessageBox.maxTitleWidth, MessageBox.styleDelimiters, this.wordRenderer);
+		console.log(this.titleParagraph);
+		//this.titleWidth = context.measureText(this.questionAnswerMap.Question).width;
+	}
+
+	// TODO: Must fade-in the title text if we are not using TextEffects to render it.
+	renderTitle(context: CanvasRenderingContext2D, nowMs: number) {
+		if (this.titleTop === undefined) {
+			return;
+		}
+		if (!this.lastAnswer)
+			return;
+		if (this.lastAnswer.expirationDate && this.lastAnswer.getLifeRemaining(nowMs) <= 0) {
+			this.lastAnswer = null;
+			return;
+		}
+		this.wordRenderer.fontName = MessageBox.fontName;
+		this.wordRenderer.fontSize = this.titleFontSize;
+		this.wordRenderer.setDetailFontNormal(context);
+		context.fillStyle = MessageBox.fontColor;
+		context.textBaseline = 'top';
+		context.globalAlpha = this.lastAnswer.getAlpha(nowMs);
+		try {
+			this.wordRenderer.activeStyle = LayoutStyle.normal;
+			if (this.titleParagraph) {
+				//console.log(`drawing title at (${this.titleLeft}, ${this.titleTop})`);
+				this.wordRenderer.renderParagraphs(context, this.titleParagraph.lineData, this.titleLeft, this.titleTop, MessageBox.styleDelimiters);
+			}
+		}
+		finally {
+			context.globalAlpha = 1;
+		}
 	}
 }

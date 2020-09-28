@@ -1,4 +1,10 @@
-﻿class FrameRateChangeData {
+﻿function browserIsOBS(): boolean {
+	// @ts-ignore - obsstudio
+	return window !== undefined && window.obsstudio !== undefined && window.obsstudio.pluginVersion !== undefined;
+}
+
+
+class FrameRateChangeData {
 	OverlayName: string;
 	FrameRate: number;
 	ShowFpsWindow: boolean;
@@ -14,10 +20,10 @@
 }
 
 
-﻿let loadCopyrightedContent: boolean = true;
+let loadCopyrightedContent = true;  //! This is definitely NOT a constant.
 
-const screenWidth: number = 1920;
-const screenHeight: number = 1080;
+const screenWidth = 1920;
+const screenHeight = 1080;
 
 class Game {
   lastFrameUpdate: number;

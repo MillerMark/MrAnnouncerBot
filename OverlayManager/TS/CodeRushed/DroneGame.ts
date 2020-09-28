@@ -1280,15 +1280,15 @@ class Boombox extends ColorShiftingSpriteProxy {
 	genres: Array<Genre> = [];
 	activeGenre: string;
 	activeSongCount: number;
-	static volume: number = 2;
-	static saveVolume: number = 0;
+	static volume = 2;
+	static saveVolume = 0;
 	static readonly suppressVolumeLevel: number = 0.5;
 	soundManager: SoundManager = new SoundManager('GameDev/Assets/DroneGame/Music');
 	activeSong: HTMLAudioElement;
-	static suppressingVolume: boolean = false;
+	static suppressingVolume = false;
 	static suppressingVolumeEnds: number;
 
-	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs: number = -1) {
+	constructor(startingFrameNumber: number, public center: Vector, lifeSpanMs = -1) {
 		super(startingFrameNumber, center, lifeSpanMs);
 		//this.addSongs('Adventure', 4);
 		this.addSongs('Techno', 80);
@@ -1300,7 +1300,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	selectRandomGenre(): void {
-		let index: number = Math.floor(Math.random() * this.genres.length);
+		const index: number = Math.floor(Math.random() * this.genres.length);
 		this.activeSongCount = this.genres[index].count;
 		this.activeGenre = this.genres[index].name;
 	}
@@ -1308,8 +1308,8 @@ class Boombox extends ColorShiftingSpriteProxy {
 	static suppressVolume(seconds: number, now: number): void {
 		Boombox.suppressingVolume = true;
 		let boombox: Boombox = Boombox.getInstance();
-		if (boombox != null) {
-			if (Boombox.volume != Boombox.suppressVolumeLevel) {
+		if (boombox !== null) {
+			if (Boombox.volume !== Boombox.suppressVolumeLevel) {
 				Boombox.saveVolume = Boombox.volume;
 				Boombox.volume = Boombox.suppressVolumeLevel
 				boombox.setVolumeForActiveSong();

@@ -139,6 +139,16 @@ class ParagraphWrapData {
 		this._maxTableWidth = newValue;
 	}
 
+	getLongestLineWidth(): number {
+		let maxWidth = 0;
+		for (let i = 0; i < this.lineData.length; i++) {
+			if (this.lineData[i].width > maxWidth)
+				//this.lineData[i].allSpans[0]
+				maxWidth = this.lineData[i].width;
+		}
+		return maxWidth;
+	}
+
 	calculateMaxTableWidth() {
 		let tableWidth = 0;
 		for (let i = 0; i < this.tables.length; i++) {
@@ -200,15 +210,16 @@ class LineWrapData {
 
 class WordRenderer {
 	activeStyle: LayoutStyle;
+	calculatedFontYOffset = 0;
 
-	constructor(browserIsObs: boolean) {
+	constructor() {
 		const emphasisFontYOffsetForChrome = -2;
 		const emphasisFontYOffsetForObs = -3;
 		const emphasisLineYOffsetForChrome = 0;
 		const emphasisLineYOffsetForObs = 2;
 
 
-		if (browserIsObs) {
+		if (browserIsOBS()) {
 			this.calculatedFontYOffset = emphasisFontYOffsetForObs;
 			this.underlineOffset = emphasisLineYOffsetForObs;
 		}
@@ -218,7 +229,6 @@ class WordRenderer {
 		}
 	}
 
-	// TODO: rename "detail" to "body"
 	fontSize = 18;
 	fontName = 'Arial';
 	textColor = '#000000';
@@ -226,9 +236,12 @@ class WordRenderer {
 	emphasisColor = '#800000';
 	bulletColor = '#5b3c35';
 	emphasisFontHeightIncrease = 3;
-	emphasisFontStyleAscender = 19;
-	underlineOffset = 0;
-	calculatedFontYOffset = 0;
+
+	//![](31D33771D101AC43215689BD6498E18E.png)
+
+	emphasisFontStyleAscender = 13;  // This is the height from the baseline to the top of the tallest character.
+
+	underlineOffset = 2;
 	bulletIndent = 8;
 
 	public setDetailFontNormal(context: CanvasRenderingContext2D) {
@@ -373,6 +386,7 @@ class WordRenderer {
 						const lineY: number = wordTop + this.emphasisFontStyleAscender + this.underlineOffset;
 						context.lineWidth = 2;
 						context.strokeStyle = '#3e6bb8';
+						//console.log(`underlining from (${wordStartX}, ${lineY}) to (${wordEndX}, ${lineY})...`);
 						context.moveTo(wordStartX, lineY);
 						context.lineTo(wordEndX, lineY);
 						context.stroke();

@@ -66,14 +66,15 @@
 	spinningConcentrationIcon: SpriteProxy;
 	spellItemIcon: SpriteProxy;
 	spellIconYOffset = 0;
+	browserIsOBS = true;
 
 	constructor() {
 		super();
-		const browserIsObs: boolean = this.browserIsOBS();
+		this.spellBook = new SpellBook();
 
-		this.spellBook = new SpellBook(browserIsObs);
+		this.browserIsOBS = browserIsOBS();
 
-		if (browserIsObs)
+		if (this.browserIsOBS)
 			this.spellIconYOffset = 4;
 
 		this._page = ScrollPage.main;
@@ -733,11 +734,6 @@
 	readonly spellNameFontHeight: number = 18;
 	readonly obsRectTextYOffset: number = 4;  // OBS rectangles seem to draw 4px closer to the top of the screen relative to text than in Chrome.
 
-	browserIsOBS(): boolean {
-		// @ts-ignore - obsstudio
-		return window !== undefined && window.obsstudio !== undefined && window.obsstudio.pluginVersion !== undefined;
-	}
-
 	drawActiveSpellIndicator(context: CanvasRenderingContext2D, x: number, y: number, spell: ActiveSpellData): number {
 		let width = 0;
 		context.fillStyle = '#aa0000';
@@ -756,7 +752,7 @@
 	}
 
 	getBrowserGraphicsYOffset(): number {
-		if (this.browserIsOBS())
+		if (this.browserIsOBS)
 			return this.obsRectTextYOffset;
 		return 0;
 	}
@@ -768,7 +764,7 @@
 
 		let browserAdjustY = 0;
 
-		if (this.browserIsOBS())
+		if (this.browserIsOBS)
 			browserAdjustY = this.obsRectTextYOffset;
 
 		let top: number = y + browserAdjustY;
@@ -829,7 +825,7 @@
 
 		let browserAdjustY = 0;
 
-		if (this.browserIsOBS())
+		if (this.browserIsOBS)
 			browserAdjustY = this.obsRectTextYOffset;
 
 		const top: number = y + browserAdjustY;

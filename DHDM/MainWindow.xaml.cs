@@ -299,6 +299,19 @@ namespace DHDM
 			});
 		}
 
+
+		void SetObsSourceVisibiltyNow(object sender, EventArgs e)
+		{
+			if (!(sender is DispatcherTimer dispatcherTimer))
+				return;
+
+			dispatcherTimer.Stop();
+
+			if (!(dispatcherTimer.Tag is SetObsSourceVisibilityEventArgs ea))
+				return;
+			SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(this, ea);
+		}
+
 		private void Game_RoundStarting(object sender, DndGameEventArgs ea)
 		{
 			if (game.InCombat)
@@ -385,10 +398,26 @@ namespace DHDM
 			ActivateShortcutFunction.ActivateShortcutRequest += ActivateShortcutFunction_ActivateShortcutRequest;
 			DndCharacterProperty.AskingValue += DndCharacterProperty_AskingValue;
 			PlaySceneFunction.RequestPlayScene += PlaySceneFunction_RequestPlayScene;
+			SetObsSourceVisibilityFunction.RequestSetObsSourceVisibility += SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility;
 			SelectTargetFunction.RequestSelectTarget += SelectTargetFunction_RequestSelectTarget;
 			SelectMonsterFunction.RequestSelectMonster += SelectMonsterFunction_RequestSelectMonster;
 			AddWindupFunction.RequestAddWindup += SendWindupFunction_SendWindup;
 			ClearWindupFunction.RequestClearWindup += ClearWindup_RequestClearWindup; ;
+		}
+
+		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea)
+		{
+			if (ea.DelaySeconds > 0)
+			{
+				DispatcherTimer delayFloatTextTimer = new DispatcherTimer(DispatcherPriority.Send);
+				delayFloatTextTimer.Interval = TimeSpan.FromSeconds(ea.DelaySeconds);
+				ea.DelaySeconds = 0;
+				delayFloatTextTimer.Tick += new EventHandler(SetObsSourceVisibiltyNow);
+				delayFloatTextTimer.Tag = ea;
+				delayFloatTextTimer.Start();
+				return;
+			}
+			obsWebsocket.SetSourceRender(ea.SourceName, ea.Visible, ea.SceneName);
 		}
 
 		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea)
@@ -1128,7 +1157,8 @@ namespace DHDM
 
 		private void ConnectToObs()
 		{
-			if (obsWebsocket.IsConnected) return;
+			if (obsWebsocket.IsConnected) 
+				return;
 			try
 			{
 				obsWebsocket.Connect(ObsHelper.WebSocketPort, Twitch.Configuration["Secrets:ObsPassword"]);  // Settings.Default.ObsPassword);
@@ -5012,6 +5042,7 @@ namespace DHDM
 
 			foreach (Character player in players)
 			{
+				player.NumWildMagicChecks = 0;
 				player.RebuildAllEvents();
 				game.AddPlayer(player);
 			}
@@ -6220,8 +6251,16 @@ namespace DHDM
 					if (ActivePlayer != null)
 						SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
 				}
-				if (!await ActivateSpellShortcut(localSpellToCastOnRoll))
-					return;
+				try
+				{
+					if (!await ActivateSpellShortcut(localSpellToCastOnRoll))
+						return;
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debugger.Break();
+					Console.WriteLine(ex.Message);
+				}
 
 				bool isSimpleSpell = localSpellToCastOnRoll?.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;

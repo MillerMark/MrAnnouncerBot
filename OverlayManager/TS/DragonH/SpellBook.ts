@@ -77,7 +77,7 @@
 
 	// ![](BCA0565D701D0D116C5132DE9B222FD6.png)
 	public static readonly spellHeaderHeight: number = 79;
-	static readonly textColor: string = '#2d1611';
+	static readonly textColor: string = '#1a0c0a';
 	static readonly bulletColor: string = '#5b3c35';
 	static readonly emphasisColor: string = '#a01a00';
 	static readonly tableLineColor: string = '#5b3c35';
@@ -117,12 +117,11 @@
 	rangeSummary: string;
 	availableSpellDetailsWidth: number;
 	schoolOfMagicAdjust: number;
-	underlineOffset: number;
 	spellIcon: HTMLImageElement;
 	spellIconFrame: HTMLImageElement;
 
-	constructor(browserIsObs: boolean) {
-		this.initializeWordWrapHelpers(browserIsObs);
+	constructor() {
+		this.initializeWordWrapHelpers();
 
 		this.loadFonts();
 		this.loadColors();
@@ -158,7 +157,7 @@
 		this.hueShifts.push(352); // Satanic
 	}
 
-	initializeWordWrapHelpers(browserIsObs: boolean) {
+	initializeWordWrapHelpers() {
 		SpellBook.styleDelimiters = [
 			new LayoutDelimiters(LayoutStyle.calculated, '«', '»', this.calculatedFontYOffset),
 			new LayoutDelimiters(LayoutStyle.bold, '**', '**'),
@@ -167,15 +166,16 @@
 
 		this.wordWrapper = new WordWrapper();
 
-		this.wordRenderer = new WordRenderer(browserIsObs);
+		this.wordRenderer = new WordRenderer();
 		this.wordRenderer.fontName = SpellBook.detailFontName;
 		this.wordRenderer.fontSize = SpellBook.detailFontSize;
 		this.wordRenderer.emphasisColor = SpellBook.emphasisColor;
 		this.wordRenderer.emphasisFontHeightIncrease = SpellBook.emphasisFontHeightIncrease;
 		this.wordRenderer.emphasisFontStyleAscender = SpellBook.emphasisFontStyleAscender;
-		this.wordRenderer.underlineOffset = this.underlineOffset;
 		this.wordRenderer.bulletIndent = SpellBook.bulletIndent;
 		this.wordRenderer.bulletColor = SpellBook.bulletColor;
+		this.wordRenderer.textColor = SpellBook.textColor;
+		this.wordRenderer.tableLineColor = SpellBook.tableLineColor;
 	}
 
 	private loadFonts() {
