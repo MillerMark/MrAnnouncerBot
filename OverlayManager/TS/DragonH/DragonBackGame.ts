@@ -805,6 +805,6 @@ class DragonBackGame extends DragonGame {
 	}
 
 	inGameUICommand(commandData: string) {
-		this.messageBox.executeCommand(commandData, this.world.ctx);
+		this.messageBox.executeCommand(commandData, this.world.ctx, this.dragonBackSounds);
 	}
 } 

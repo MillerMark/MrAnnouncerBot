@@ -8719,15 +8719,33 @@ namespace DHDM
 
 		private void HubtasticBaseStation_ReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
 		{
+			// TODO: Be able to handle multi-selected answers. answerResponse is just an int.
 			answerResponse = ea.QuestionAnswerMap.GetFirstSelectedIndex();
 			askingQuestion = false;
 		}
 
 		public void InGameUICommand(string command)
 		{
-			if (command == "Ask")
+			if (command == "Ask1")
 			{
-				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("XSelect chaos bolt damage:X", new List<String> { "Acid", "Force" }, 1, 1));
+				// Simple yes/no.
+				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select chaos bolt damage:", new List<String> { "Acid", "Force" }, 1, 1));
+			}
+			else if (command == "Ask2")
+			{
+				// Simple yes/no with word-wrap.
+				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Break concentration with **Enlarge/Reduce** (9.2 minutes remaining) to cast **Spider Climb**:", new List<String> { "Yes", "No" }, 1, 1));
+			}
+			else if (command == "Ask3")
+			{
+				// Simple multiple choice with word-wrap.
+				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select Ability to Enhance:", new List<String> { "Bear's Endurance", "Bull's Strength", "Cat's Grace", "Eagle's Splendor", "Fox's Cunning", "Owl's Wisdom" }, 1, 1));
+			}
+			else if (command == "Ask4")
+			{
+				// Simple multiple choice.
+				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select target for Shield spell:", new List<String> { "Fred", "Miles", "Lady", "Merkin", "L'il Cutie" }, 1, 3));
+				
 			}
 			else if (command == "OK")
 			{

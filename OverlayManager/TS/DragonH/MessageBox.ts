@@ -24,6 +24,7 @@ class MessageBox {
 	static styleDelimiters: LayoutDelimiters[];
 	titleParagraph: ParagraphWrapData;
 	lastAnswer: TextEffect;
+  discoverabilityTop = 0; 
 
 	constructor(soundManager: SoundManager) {
 		this.soundManager = soundManager;
@@ -57,9 +58,9 @@ class MessageBox {
 		this.focusIndicatorSprites.originX = 107;
 		this.focusIndicatorSprites.originY = 107;
 
-		this.selectionIndicatorSprites = new Sprites(`InGameUI/SelectionIndicator/SelectionIndicator`, 105, fps30, AnimationStyle.Loop, true);
-		this.selectionIndicatorSprites.originX = 162;
-		this.selectionIndicatorSprites.originY = 162;
+		this.selectionIndicatorSprites = new Sprites(`InGameUI/SelectionIndicator2/SelectionIndicator`, 105, fps30, AnimationStyle.Loop, true);
+		this.selectionIndicatorSprites.originX = 118;
+		this.selectionIndicatorSprites.originY = 118;
 
 		this.setForMove(this.scrollBack);
 		this.setForMove(this.scrollFront);
@@ -96,10 +97,11 @@ class MessageBox {
 		this.selectionIndicatorSprites.draw(context, nowMs);
 		this.focusIndicatorSprites.draw(context, nowMs);
 		this.renderTitle(context, nowMs);
+		this.renderMultiSelectDiscoverability(context, nowMs);
 		this.scrollFront.draw(context, nowMs);
 	}
 
-	selectorEaseTime = 300;
+	selectorEaseTime = 180;
 	questionAnswerMap: QuestionAnswerMap;
 	static readonly textBeginFrameIndex: number = 28;
 	static readonly textEndFrameIndex: number = 299;
@@ -107,43 +109,34 @@ class MessageBox {
 	static readonly textFadeOutTime: number = 6 * fps30;
 	static readonly frameScrollIsCompletelyOnScreen: number = 19;
 
-	executeCommand(commandData: string, context: CanvasRenderingContext2D) {
+
+	playSlidingSound(soundManager: SoundManager) {
+		soundManager.safePlayMp3('InGameUI/Slidey[5]');
+		soundManager.safePlayMp3('InGameUI/Stamp[7]');
+	}
+
+	executeCommand(commandData: string, context: CanvasRenderingContext2D, soundManager: SoundManager) {
 		console.log('commandData: ' + commandData);
 		// TODO: Prevent multiple scroll UIs from appearing.
 		if (commandData === 'Up') {
-			this.moveUp();
+			this.moveUp(soundManager);
 		}
 		else if (commandData === 'Down') {
-			this.moveDown();
+			this.moveDown(soundManager);
 		}
 		else if (commandData === 'Ask') {
 			// test.
 		}
 		else if (commandData === 'Toggle') {
-			this.toggleAnswer();
+			this.toggleAnswer(soundManager);
 		}
 		else if (commandData === 'OK') {
 			this.acceptAnswer();
 		}
 		else {
 			this.questionAnswerMap = JSON.parse(commandData);
-			this.show(context);
+			this.show(context, soundManager);
 		}
-	}
-
-	private acceptAnswer() {
-		this.playToEndNow(this.scrollBack);
-		this.playToEndNow(this.scrollFront);
-		const now: number = performance.now();
-		for (let i = 0; i < this.animations.animationProxies.length; i++) {
-			this.animations.animationProxies[i].expirationDate = now + MessageBox.textFadeOutTime;
-		}
-		this.fadeOutNow(this.selectionIndicatorSprites);
-		this.fadeOutNow(this.focusIndicatorSprites);
-		if (this.getSelectedAnswerCount() === 0)
-			this.selectFocusedAnswer();
-		// Send answer back to C# app.
-		inGameUIResponse(JSON.stringify(this.questionAnswerMap));
 	}
 
 	selectFocusedAnswer() {
@@ -169,52 +162,75 @@ class MessageBox {
 		return count;
 	}
 
-	private toggleAnswer(): void {
-		if (!this.focusIndicator || this.focusIndexIsInvalid()) {
+	private toggleAnswer(soundManager: SoundManager): void {
+		if (!this.focusIndicator || this.focusIndexIsInvalid() || this.questionAnswerMap.MaxAnswers === 1) {
 			return;
 		}
 		else {
 			if (this.focusedAnswerIsSelected()) {
-				this.removeSelectionIndicatorSprite();
-				this.questionAnswerMap.Answers[this.focusIndex].IsSelected = false;
+				this.deselectAnswer(soundManager, this.focusIndex);
 			}
 			else {
-				this.addSelectionIndicatorSprite();
+				this.addSelectionIndicatorSprite(this.focusIndex);
 				this.questionAnswerMap.Answers[this.focusIndex].IsSelected = true;
+				const selectedAnswerCount: number = this.getSelectedAnswerCount();
+				if (selectedAnswerCount > this.questionAnswerMap.MaxAnswers)
+					this.deselect(soundManager, selectedAnswerCount - this.questionAnswerMap.MaxAnswers);
+				soundManager.safePlayMp3('InGameUI/ToggleSelected');
 			}
 		}
 	}
+	private deselectAnswer(soundManager: SoundManager, focusIndex: number) {
+		this.questionAnswerMap.Answers[focusIndex].IsSelected = false;
+		this.removeSelectionIndicatorSprite(focusIndex);
+		soundManager.safePlayMp3('InGameUI/ToggleUnselected');
+	}
 
-	removeSelectionIndicatorSprite(): void {
+	deselect(soundManager: SoundManager, numToDeselect: number) {
+		let numCleared = 0;
+		for (let i = 0; i < this.questionAnswerMap.Answers.length; i++) { 
+			if (i !== this.focusIndex && this.questionAnswerMap.Answers[i].IsSelected) {
+				this.deselectAnswer(soundManager, i);
+				numCleared++;
+				if (numCleared >= numToDeselect)
+					return;
+			} 
+		}
+	}
+
+	removeSelectionIndicatorSprite(focusIndex: number): void {
 		if (this.focusIndexIsInvalid())
 			return;
 		for (let i = 0; i < this.selectionIndicatorSprites.spriteProxies.length; i++) {
-			if (this.selectionIndicatorSprites.spriteProxies[i].data === this.focusIndex) {
+			if (this.selectionIndicatorSprites.spriteProxies[i].data === focusIndex) {
 				console.log(`removing sprite at index [${i}]`);
 				this.selectionIndicatorSprites.spriteProxies[i].fadeOutNow(300);
 			}
 		}
 	}
 
-	private addSelectionIndicatorSprite() {
+	private addSelectionIndicatorSprite(focusIndex: number) {
 		//const hueShift = 180;  // Blue
 		const hueShift = 330;  // Red
-		const selectionIndicator: SpriteProxy = this.selectionIndicatorSprites.addShifted(this.focusIndicator.x + this.focusIndicatorSprites.originX, this.focusIndicator.y + this.focusIndicatorSprites.originY, -1, hueShift);
-		selectionIndicator.scale = this.focusIndicator.scale * 1.1;
+		const yPos: number = this.questionAnswerMap.Answers[focusIndex].centerY;  // this.focusIndicator.y + this.focusIndicatorSprites.originY
+		const selectionIndicator: SpriteProxy = this.selectionIndicatorSprites.addShifted(this.focusIndicator.x + this.focusIndicatorSprites.originX, yPos, -1, hueShift);
+		selectionIndicator.scale = this.answerIndicatorScale * 1.1;
 		selectionIndicator.data = this.focusIndex;
 	}
 
-	private moveDown() {
+	private moveDown(soundManager: SoundManager) {
 		if (this.focusIndex < this.questionAnswerMap.Answers.length - 1) {
 			this.focusIndex++;
 			this.updateFocusIndicator();
+			this.playSlidingSound(soundManager);
 		}
 	}
 
-	private moveUp() {
+	private moveUp(soundManager: SoundManager) {
 		if (this.focusIndex > 0) {
 			this.focusIndex--;
 			this.updateFocusIndicator();
+			this.playSlidingSound(soundManager);
 		}
 	}
 
@@ -225,7 +241,6 @@ class MessageBox {
 		const sprite: SpriteProxy = this.focusIndicator;
 
 		// TODO: Fix this math error. Close but not perfect...
-		//const newY: number = this.getTitleBottom() + this.answerFontSize / 2 + this.answerFontSize * this.selectionIndex;  << Bug
 		const newY: number = this.questionAnswerMap.Answers[this.focusIndex].centerY;  // << Fix
 
 		sprite.ease(performance.now(), sprite.x, sprite.y, sprite.x, newY - this.focusIndicatorSprites.originY, this.selectorEaseTime);
@@ -245,13 +260,17 @@ class MessageBox {
 		}
 	}
 
-	show(context: CanvasRenderingContext2D) {
+	show(context: CanvasRenderingContext2D, soundManager: SoundManager) {
 		this.focusIndex = 0;
 		this.distanceToMoveScroll = 0;
 		this.showingTextYet = false;
 		this.hidingTextYet = false;
 		this.titleTop = undefined;
 		this.calculateSize(context);
+
+		// clear any existing scroll sprites.
+		this.scrollBack.spriteProxies = [];
+		this.scrollFront.spriteProxies = [];
 
 		// adding the sprites...
 		const scrollFront: SpriteProxy = this.scrollFront.add(960, 1080);
@@ -261,6 +280,10 @@ class MessageBox {
 		scrollBack.data = this.invocationIndex;
 		scrollFront.data = this.invocationIndex;
 		this.invocationIndex++;
+
+		soundManager.playMp3In(0, 'InGameUI/ScrollUnfurl');
+		soundManager.playMp3In(0, 'InGameUI/ScrollAppearAlert');
+		soundManager.playMp3In(0, 'InGameUI/AiryWhoosh[2]');
 
 		scrollBack.addOnFrameAdvanceCallback((sprite: SpriteProxy) => {
 			if (!this.showingTextYet && sprite.frameIndex > MessageBox.textBeginFrameIndex && sprite.getAlpha(performance.now()) === 1) {
@@ -303,9 +326,21 @@ class MessageBox {
 		scrollFront.verticalScale = this.verticalScale;
 	}
 
+	answerIndicatorScale = 1;
+
 	private addFocusIndicator(x: number, y: number) {
-		this.focusIndicator = this.focusIndicatorSprites.add(x, y);
-		this.focusIndicator.scale = 0.7 * this.answerFontSize / MessageBox.focusDiameter;
+		let hueShift = 0;
+		if (this.questionAnswerMap.MaxAnswers > 1) {
+			hueShift = -220;
+		}
+		this.focusIndicator = this.focusIndicatorSprites.addShifted(x, y, -1, hueShift);
+		this.answerIndicatorScale = 0.6 * this.answerFontSize / MessageBox.focusDiameter;
+		if (this.questionAnswerMap.MaxAnswers > 1) {
+			this.focusIndicator.scale = 0.45 * this.answerIndicatorScale;
+			//this.focusIndicator.opacity = 0.65;
+		}
+		else
+			this.focusIndicator.scale = this.answerIndicatorScale;
 		this.focusIndicator.fadeInTime = MessageBox.textFadeInTime;
 	}
 
@@ -315,7 +350,10 @@ class MessageBox {
 
 	static readonly minTitleFontSize: number = 72;
 	static readonly maxTitleFontSize: number = 210;
-	static readonly titleTopMargin: number = 15;
+	static readonly titleTopMargin: number = 25;
+	static readonly bottomMargin: number = 30;
+	static readonly discoverabilityHintHeight: number = 30;
+
 	static readonly minAnswerFontSize: number = 36;
 	static readonly maxAnswerFontSize: number = 100;
 
@@ -327,6 +365,8 @@ class MessageBox {
 
 	static readonly fontName: string = 'Enchanted Land';
 	static readonly fontColor: string = '#281002';
+	static readonly hintColorWarning: string = '#8f0707';
+	static readonly hintColorGood: string = '#612705';
 	static readonly titleOpacity: number = 0.88;
 
 	static readonly scrollWidth: number = 994;
@@ -368,8 +408,11 @@ class MessageBox {
 
 
 		// TODO: shrink the answer font if we can't fit them all on screen.
-		const bottomMargin = 20;
-		const totalHeight: number = this.getTitleBottomFromTopOfScroll() + this.answerFontSize * this.questionAnswerMap.Answers.length + bottomMargin;
+		let discoverabilityHeight = 0;
+		if (this.questionAnswerMap.MaxAnswers > 1)
+			discoverabilityHeight = MessageBox.discoverabilityHintHeight;
+		this.discoverabilityTop = this.getTitleBottomFromTopOfScroll() + this.answerFontSize * this.questionAnswerMap.Answers.length;
+		const totalHeight: number = this.discoverabilityTop + MessageBox.bottomMargin + discoverabilityHeight;
 		this.verticalScale = totalHeight / MessageBox.scrollHeight;
 		//console.log('this.verticalScale: ' + this.verticalScale);
 
@@ -477,11 +520,45 @@ class MessageBox {
 		this.wordRenderer.fontName = MessageBox.fontName;
 		this.wordRenderer.fontSize = this.titleFontSize;
 		this.titleParagraph = this.wordWrapper.getWordWrappedLinesForParagraphs(context, this.questionAnswerMap.Question, MessageBox.maxTitleWidth, MessageBox.styleDelimiters, this.wordRenderer);
-		console.log(this.titleParagraph);
-		//this.titleWidth = context.measureText(this.questionAnswerMap.Question).width;
+		if (this.titleParagraph.lineData.length === 2) {
+			const percentageWidthSecondLine: number = this.titleParagraph.lineData[1].width / this.titleParagraph.lineData[0].width;
+			if (percentageWidthSecondLine < 0.50) {
+				this.titleParagraph = this.wordWrapper.getWordWrappedLinesForParagraphs(context, this.questionAnswerMap.Question, 0.75 * MessageBox.maxTitleWidth, MessageBox.styleDelimiters, this.wordRenderer);
+			}
+		}
 	}
 
-	// TODO: Must fade-in the title text if we are not using TextEffects to render it.
+	renderMultiSelectDiscoverability(context: CanvasRenderingContext2D, nowMs: number) {
+		if (this.questionAnswerMap.MaxAnswers <= 1)
+			return;
+		context.textBaseline = 'top';
+		context.font = `${44}px ${MessageBox.fontName}`;
+		const topMargin = 20;
+		if (!this.lastAnswer) {
+			context.globalAlpha = 0;
+		}
+		else {
+			context.globalAlpha = this.lastAnswer.getAlpha(nowMs);
+		}
+		try {
+			const numAnswers: number = this.getSelectedAnswerCount();
+
+			let emphasisPunctuation: string;
+			if (numAnswers === this.questionAnswerMap.MaxAnswers) {
+				emphasisPunctuation = '.';
+				context.fillStyle = MessageBox.hintColorGood;
+			}
+			else {
+				emphasisPunctuation = '!';
+				context.fillStyle = MessageBox.hintColorWarning;
+			}
+			context.fillText(`${numAnswers} of ${this.questionAnswerMap.MaxAnswers} selected${emphasisPunctuation}`, this.titleLeft, this.discoverabilityTop + topMargin);
+		}
+		finally {
+			context.globalAlpha = 1;
+		}
+	}
+
 	renderTitle(context: CanvasRenderingContext2D, nowMs: number) {
 		if (this.titleTop === undefined) {
 			return;
@@ -508,5 +585,20 @@ class MessageBox {
 		finally {
 			context.globalAlpha = 1;
 		}
+	}
+
+	private acceptAnswer() {
+		this.playToEndNow(this.scrollBack);
+		this.playToEndNow(this.scrollFront);
+		const now: number = performance.now();
+		for (let i = 0; i < this.animations.animationProxies.length; i++) {
+			this.animations.animationProxies[i].expirationDate = now + MessageBox.textFadeOutTime;
+		}
+		this.fadeOutNow(this.selectionIndicatorSprites);
+		this.fadeOutNow(this.focusIndicatorSprites);
+		if (this.getSelectedAnswerCount() === 0)
+			this.selectFocusedAnswer();
+		// Send answer back to C# app.
+		inGameUIResponse(JSON.stringify(this.questionAnswerMap));
 	}
 }
