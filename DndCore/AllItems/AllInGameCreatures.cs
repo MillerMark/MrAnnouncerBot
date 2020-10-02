@@ -122,6 +122,20 @@ namespace DndCore
 			foreach (InGameCreature inGameCreature in Creatures)
 				inGameCreature.IsTargeted = false;
 		}
+
+		public static int GetTargetCount(TargetStatus targetStatus)
+		{
+			int count = 0;
+			foreach (InGameCreature inGameCreature in Creatures)
+				if (inGameCreature.IsTargeted)
+					if (targetStatus.HasFlag(TargetStatus.Friendly) && inGameCreature.IsAlly)
+						count++;
+					else if (targetStatus.HasFlag(TargetStatus.Adversarial) && inGameCreature.IsEnemy)
+						count++;
+					else if (targetStatus.HasFlag(TargetStatus.AllTargets))
+						count++;
+			return count;
+		}
 	}
 }
 

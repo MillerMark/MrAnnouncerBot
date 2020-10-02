@@ -492,6 +492,7 @@ namespace DndCore
 			AddVariable(new DndEnumValue<Skills>());
 			AddVariable(new DndEnumValue<SpellRangeType>());
 			AddVariable(new DndEnumValue<SpellType>());
+			AddVariable(new DndEnumValue<TargetStatus>());
 			AddVariable(new DndEnumValue<TimeMeasure>());
 			AddVariable(new DndEnumValue<TimePoint>());
 			AddVariable(new DndEnumValue<TurnPart>());
@@ -500,6 +501,7 @@ namespace DndCore
 			AddVariable(new DndEnumValue<WeaponProperties>());
 			AddVariable(new DndEnumValue<Weapons>());
 		}
+
 		static void LoadEvaluatorExtensions()
 		{
 			Assembly dndCore = typeof(Expressions).Assembly;

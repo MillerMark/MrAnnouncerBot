@@ -8,6 +8,8 @@ namespace DndCore
 		public int Result { get; set; }
 		public string Question { get; set; }
 		public List<string> Answers { get; set; }
+		public List<AnswerEntry> Responses { get; set; }
+
 		public AskEventArgs(string question, List<string> answers)
 		{
 			Result = 0;

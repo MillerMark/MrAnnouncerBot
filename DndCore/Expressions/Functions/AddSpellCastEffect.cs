@@ -48,7 +48,7 @@ namespace DndCore
 			effectName = Expressions.GetStr(args[0], player, target, spell);
 			hue = 0;
 			if (args.Count > 1)
-				if (args[1].Trim() == "player")
+				if (args[1].Trim() == "player" && player != null)
 					hue = player.hueShift;
 				else
 					hue = Expressions.GetInt(args[1], player, target, spell);
@@ -80,7 +80,7 @@ namespace DndCore
 
 			secondaryHue = 0;
 			if (args.Count > 8)
-				if (args[8].Trim() == "player")
+				if (args[8].Trim() == "player" && player != null)
 					secondaryHue = player.hueShift;
 				else
 					secondaryHue = Expressions.GetInt(args[8], player, target, spell);

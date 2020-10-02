@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
@@ -23,6 +24,25 @@ namespace DndCore
 		{
 			AskQuestion?.Invoke(sender, ea);
 		}
+		//public async Task OnAskQuestion(object sender, AskEventArgs ea)
+		//{
+		//	AskEventHandler handler = AskQuestion;
+
+		//	if (handler == null)
+		//		return;
+
+		//	Delegate[] invocationList = handler.GetInvocationList();
+		//	Task[] handlerTasks = new Task[invocationList.Length];
+
+		//	for (int i = 0; i < invocationList.Length; i++)
+		//	{
+		//		handlerTasks[i] = ((AskEventHandler)invocationList[i])(sender, ea);
+		//	}
+
+		//	await Task.WhenAll(handlerTasks);
+		//}
+
+
 		public override string Name { get; set; } = "Ask";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
@@ -30,6 +50,7 @@ namespace DndCore
 			string question = Expressions.GetStr(args[0], player, target, spell);
 			List<string> answers = args.Skip(1).ToList();
 			AskEventArgs ea = new AskEventArgs(question, answers);
+
 			OnAskQuestion(player, ea);
 			return ea.Result;
 		}

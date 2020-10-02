@@ -564,6 +564,7 @@ namespace DndCore
 
 		public static CreatureKinds ToCreatureKind(string kindStr)
 		{
+			kindStr = kindStr.Trim('"');
 			string matchingName = kindStr.ToLower();
 			Array values = Enum.GetValues(typeof(CreatureKinds));
 			foreach (CreatureKinds value in values)
@@ -726,6 +727,11 @@ namespace DndCore
 					return DamageType.Thunder;
 			}
 			return DamageType.None;
+		}
+
+		public static TargetStatus GetTargetStatus(string value)
+		{
+			return GetElement<TargetStatus>(value);
 		}
 	}
 }

@@ -90,18 +90,30 @@
 	}
 
 	playAnimation(animationName: string, playerX: number): void {
-		let underscorePos: number = animationName.indexOf('_');
-		let flipped: boolean = false;
+		const colonPos: number = animationName.indexOf(':');
+		let hueShift = 0;
+		if (colonPos >= 0) {
+			hueShift = +animationName.substring(colonPos + 1);
+			animationName = animationName.substr(0, colonPos);
+		}
+
+
+		const underscorePos: number = animationName.indexOf('_');
+		let flipped = false;
 		if (underscorePos >= 0) {
 			flipped = animationName.substring(underscorePos + 1) === 'flipped';
 			animationName = animationName.substr(0, underscorePos);
 			playerX -= 40;
 		}
 
-		let sprites: Sprites = this.allAnimations.getSpritesByName(animationName);
+		const sprites: Sprites = this.allAnimations.getSpritesByName(animationName);
 		if (!sprites)
 			return;
-		let sprite: SpriteProxy = sprites.add(playerX, 1080);
+		let sprite: SpriteProxy;
+		if (hueShift === 0)
+			sprite = sprites.add(playerX, 1080);
+		else 
+			sprite = sprites.addShifted(playerX, 1080, 0, hueShift, 100, 75);
 		if (flipped)
 			sprite.horizontalScale = -1;
 	}

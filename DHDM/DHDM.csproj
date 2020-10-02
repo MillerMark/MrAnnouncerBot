@@ -308,7 +308,6 @@
     <Compile Include="ActionQueue\ActionQueueEntry.cs" />
     <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
-    <Compile Include="AnswerEntry.cs" />
     <Compile Include="QuestionAnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
     <Compile Include="Events\QuestionAnswerMapEventArgs.cs" />

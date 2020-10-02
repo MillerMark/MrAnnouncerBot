@@ -40,7 +40,7 @@ namespace DndCore
 			target = new VisualEffectTarget();
 		}
 
-		public AnimationEffect(string spriteName, VisualEffectTarget target, int startFrameIndex, 
+		public AnimationEffect(string spriteName, VisualEffectTarget target, int startFrameIndex,
 			double hueShift = 0, double saturation = 100, double brightness = 100,
 			double secondaryHueShift = 0, double secondarySaturation = 100, double secondaryBrightness = 100)
 		{
@@ -54,6 +54,27 @@ namespace DndCore
 			this.secondarySaturation = secondarySaturation;
 			this.secondaryBrightness = secondaryBrightness;
 			effectKind = EffectKind.Animation;
+		}
+
+		public static AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target,
+																							 int hueShift = 0, int saturation = 100, int brightness = 100,
+																							 int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100,
+																							 int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
+		{
+			AnimationEffect spellEffect = new AnimationEffect();
+			spellEffect.spriteName = spriteName;
+			spellEffect.hueShift = hueShift;
+			spellEffect.saturation = saturation;
+			spellEffect.brightness = brightness;
+			spellEffect.secondaryHueShift = secondaryHueShift;
+			spellEffect.secondarySaturation = secondarySaturation;
+			spellEffect.secondaryBrightness = secondaryBrightness;
+			spellEffect.xOffset = xOffset;
+			spellEffect.yOffset = yOffset;
+			spellEffect.velocityX = velocityX;
+			spellEffect.velocityY = velocityY;
+			spellEffect.target = target;
+			return spellEffect;
 		}
 	}
 }

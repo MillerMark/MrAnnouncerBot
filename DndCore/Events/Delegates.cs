@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DndCore
 {
@@ -35,4 +36,7 @@ namespace DndCore
 	public delegate void NameEventHandler(object sender, NameEventArgs ea);
 	public delegate void SpellChangedEventHandler(object sender, SpellChangedEventArgs ea);
 	public delegate void ValidationEventHandler(object sender, ValidationEventArgs ea);
+	public delegate void TargetCountEventHandler(object sender, TargetCountEventArgs ea);
+	public delegate void EffectEventHandler(object sender, EffectEventArgs ea);
+
 }

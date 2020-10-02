@@ -1,5 +1,6 @@
 ﻿//#define profiling
 using System;
+using DndCore;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -40,7 +41,7 @@ namespace DHDM
 			for (int i = 0; i < Answers.Count; i++)
 				if (Answers[i].IsSelected)
 					return i;
-			return 0;
+			return -1;
 		}
 	}
 }

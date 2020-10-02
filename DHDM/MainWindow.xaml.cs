@@ -34,6 +34,7 @@ using ICSharpCode.AvalonEdit.Document;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
 using ICSharpCode.AvalonEdit.Editing;
+using System.Text.RegularExpressions;
 
 namespace DHDM
 {
@@ -293,7 +294,8 @@ namespace DHDM
 
 			if (!(dispatcherTimer.Tag is PlayerShowStateEventArgs ea))
 				return;
-			Dispatcher.Invoke(() =>
+
+			SafeInvoke(() =>
 			{
 				Game_PlayerShowState(this, ea);
 			});
@@ -391,6 +393,7 @@ namespace DHDM
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
 			Expressions.ExecutionChanged += Expressions_ExecutionChanged;
 			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
+			TriggerEffect.RequestEffectTrigger += TriggerEffect_RequestEffectTrigger;
 			GetRoll.GetRollRequest += GetRoll_GetRollRequest;
 			Feature.FeatureDeactivated += Feature_FeatureDeactivated;
 			Feature.RequestMessageToDungeonMaster += Game_RequestMessageToDungeonMaster;
@@ -401,8 +404,39 @@ namespace DHDM
 			SetObsSourceVisibilityFunction.RequestSetObsSourceVisibility += SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility;
 			SelectTargetFunction.RequestSelectTarget += SelectTargetFunction_RequestSelectTarget;
 			SelectMonsterFunction.RequestSelectMonster += SelectMonsterFunction_RequestSelectMonster;
+			GetNumTargets.RequestTargetCount += GetNumTargets_RequestTargetCount;
 			AddWindupFunction.RequestAddWindup += SendWindupFunction_SendWindup;
 			ClearWindupFunction.RequestClearWindup += ClearWindup_RequestClearWindup; ;
+		}
+
+		private void TriggerEffect_RequestEffectTrigger(object sender, EffectEventArgs ea)
+		{
+			EffectGroup effectGroup = new EffectGroup();
+
+			VisualEffectTarget chestTarget, bottomTarget;
+			GetTargets(out chestTarget, out bottomTarget);
+			AnimationEffect animationEffect = AnimationEffect.CreateEffect(ea.EffectName, bottomTarget, ea.Hue, ea.Saturation, ea.Brightness, ea.SecondaryHue, ea.SecondarySaturation, ea.SecondaryBrightness, ea.OffsetX, ea.OffsetY, ea.VelocityX, ea.VelocityY);
+			animationEffect.autoRotation = ea.AutoRotation;
+			animationEffect.rotation = ea.Rotation;
+			animationEffect.scale = ea.Scale;
+			animationEffect.timeOffsetMs = ea.TimeOffset;
+			effectGroup.Add(animationEffect);
+
+			string serializedObject = JsonConvert.SerializeObject(effectGroup);
+			HubtasticBaseStation.TriggerEffect(serializedObject);
+		}
+
+		private void GetNumTargets_RequestTargetCount(object sender, TargetCountEventArgs ea)
+		{
+			int playerCount = 0;
+			if (ea.TargetStatus.HasFlag(TargetStatus.Friendly))
+				playerCount = GetNumPlayersTargeted();
+			ea.Count = playerCount + AllInGameCreatures.GetTargetCount(ea.TargetStatus);
+		}
+
+		int GetNumPlayersTargeted()
+		{
+			return allPlayerStats.Players.Count(p => p.IsTargeted);
 		}
 
 		private void SetObsSourceVisibilityFunction_RequestSetObsSourceVisibility(object sender, SetObsSourceVisibilityEventArgs ea)
@@ -464,30 +498,83 @@ namespace DHDM
 					foundAny = true;
 				}
 			}
-			if (foundAny || !ea.ShowXamlUI)
+			if (foundAny || !ea.ShowUI)
 				return;
-			// TODO: Add support for auto-select based on next answer.
 
-			SelectInGameTargets(ea);
-		}
-
-		private void SelectInGameTargets(TargetEventArgs ea)
-		{
-			FrmSelectInGameCreature frmSelectInGameCreature = new FrmSelectInGameCreature();
-
-			frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, game.Players);
-
-			if (frmSelectInGameCreature.ShowDialog() == true)
+			//Old_SelectInGameTargets(ea);
+			AskQuestionBlockUI("Select Target:", GetTargetAnswers(ea.TargetStatus, ea.MaxTargets), 1, ea.MaxTargets);
+			foreach (AnswerEntry answerEntry in lastRemoteAnswers)
 			{
-				ea.Target = new Target();
-				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					if (inGameCreature.OnScreen)
-						ea.Target.AddCreature(inGameCreature.Creature);
-				foreach (Character player in game.Players)
-					if (player.IsSelected)
-						ea.Target.AddCreature(player);
+				if (answerEntry.IsSelected)
+				{
+					if (answerEntry.Value >= 0)
+					{
+						ea.Target.PlayerIds.Add(answerEntry.Value);
+					}
+					else
+					{ // It's a in-game creature
+						ea.Target.Creatures.Add(AllInGameCreatures.GetByIndex(-answerEntry.Value)?.Creature);
+
+					}
+				}
 			}
+
 		}
+
+		List<AnswerEntry> GetTargetAnswers(TargetStatus targetStatus, int maxSelected)
+		{
+			int numSelected = 0;
+			List<AnswerEntry> result = new List<AnswerEntry>();
+			if (targetStatus.HasFlag(TargetStatus.Friendly))
+				foreach (PlayerStats playerStats in allPlayerStats.Players)
+				{
+					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.PlayerId, AllPlayers.GetFromId(playerStats.PlayerId).Name);
+					result.Add(answer);
+					if (result.Count < maxSelected && playerStats.IsTargeted)
+					{
+						numSelected++;
+						answer.IsSelected = true;
+					}
+				}
+
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (!inGameCreature.OnScreen)
+					continue;
+
+				if (targetStatus.HasFlag(TargetStatus.Friendly) && inGameCreature.IsAlly ||
+					targetStatus.HasFlag(TargetStatus.Adversarial) && inGameCreature.IsEnemy ||
+					targetStatus.HasFlag(TargetStatus.AllTargets))
+				{
+					AnswerEntry answer = new AnswerEntry(result.Count, InGameCreature.GetUniversalIndex(inGameCreature.Index), inGameCreature.Name);
+					result.Add(answer);
+					if (numSelected < maxSelected && inGameCreature.IsTargeted)
+					{
+						numSelected++;
+						answer.IsSelected = true;
+					}
+				}
+			}
+			return result;
+		}
+
+		//private void Old_SelectInGameTargets(TargetEventArgs ea)
+		//{
+		//	FrmSelectInGameCreature frmSelectInGameCreature = new FrmSelectInGameCreature();
+
+		//	frmSelectInGameCreature.SetDataSources(AllInGameCreatures.Creatures, game.Players);
+
+		//	if (frmSelectInGameCreature.ShowDialog() == true)
+		//	{
+		//		ea.Target = new Target();
+		//		foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+		//			if (inGameCreature.OnScreen)
+		//				ea.Target.AddCreature(inGameCreature.Creature);
+		//		foreach (Character player in game.Players)
+		//			if (player.IsSelected)
+		//				ea.Target.AddCreature(player);
+		//	}
+		//}
 
 		// TODO: Consider stacking scene play requests.
 		string nextSceneToPlay;
@@ -651,7 +738,7 @@ namespace DHDM
 			}
 			finally
 			{
-				Dispatcher.Invoke(() =>
+				SafeInvoke(() =>
 				{
 					SpellDto selectedItem = (SpellDto)lstAllSpells.SelectedItem;
 					string spellName = selectedItem?.name;
@@ -791,7 +878,7 @@ namespace DHDM
 
 		void SetShortcutVisibility()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				SetShortcutVisibility(wpActionsActivePlayer);
 				SetShortcutVisibility(spBonusActionsActivePlayer);
@@ -854,7 +941,8 @@ namespace DHDM
 			{
 				if (!fromTimer)
 					UpdatePlayerScrollInGame(player);
-				Dispatcher.Invoke(() =>
+
+				SafeInvoke(() =>
 				{
 					ListBox stateList = GetStateListForCharacter(player.playerID);
 					if (stateList != null)
@@ -885,7 +973,7 @@ namespace DHDM
 		Dictionary<DispatcherTimer, PlayerActionShortcut> shortcutTimers = new Dictionary<DispatcherTimer, PlayerActionShortcut>();
 		private void ActivateShortcutFunction_ActivateShortcutRequest(object sender, ShortcutEventArgs ea)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (ea.DelayMs == 0)
 				{
@@ -935,7 +1023,7 @@ namespace DHDM
 
 		private void CreateDungeonMasterClient()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				reconnectToTwitchTimer.Stop();
 				Background = Brushes.White;
@@ -1027,9 +1115,20 @@ namespace DHDM
 				System.Diagnostics.Debugger.Break();
 		}
 
+		void SafeInvoke(Action action)
+		{
+			if (uiThreadSleepingWhileWaitingForAnswerToQuestion)
+				return;  // Sorry kids, but we have to get out of here. Otherwise we will lock!
+
+			Dispatcher.Invoke(() =>
+			{
+				action();
+			});
+		}
+
 		private void DungeonMasterClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				Background = new SolidColorBrush(Color.FromRgb(148, 81, 81));
 				btnReconnectTwitchClient.Visibility = Visibility.Visible;
@@ -1060,14 +1159,14 @@ namespace DHDM
 			}
 		}
 
-		List<AnswerEntry> answerEntries;
+		List<AnswerEntry> prebuiltAnswers;
 
 		async Task<int> AskQuestion(string question, List<string> answers)
 		{
 			bool timerWasRunning = realTimeAdvanceTimer.IsEnabled;
 			if (timerWasRunning)
 				realTimeAdvanceTimer.Stop();
-			waitingForAnswerToQuestion = true;
+			uiThreadSleepingWhileWaitingForAnswerToQuestion = true;
 			try
 			{
 				BuildAnswerMap(answers);
@@ -1078,21 +1177,21 @@ namespace DHDM
 					if (ActivePlayer.NextAnswer.EndsWith("*"))
 					{
 						string searchPattern = ActivePlayer.NextAnswer.EverythingBefore("*");
-						selectedAnswer = answerEntries.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
+						selectedAnswer = prebuiltAnswers.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
 					}
 					else
-						selectedAnswer = answerEntries.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
+						selectedAnswer = prebuiltAnswers.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
 					ActivePlayer.NextAnswer = null;
 					if (selectedAnswer != null)
 						return selectedAnswer.Value;
 				}
 
-				return await NewAskQuestion(question, answerEntries);
+				return await AskQuestionAsync(question, prebuiltAnswers);
 			}
 			finally
 			{
-				waitingForAnswerToQuestion = false;
-				answerEntries = null;
+				uiThreadSleepingWhileWaitingForAnswerToQuestion = false;
+				prebuiltAnswers = null;
 				if (timerWasRunning)
 					StartRealTimeTimer();
 			}
@@ -1100,35 +1199,39 @@ namespace DHDM
 
 		bool askingQuestion;
 		// TODO: Set this to false when we get InGameUIResponse so NewAskQuestion exits.
-		
+
 		int answerResponse;
-		async Task<int> NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
+		async Task<int> AskQuestionAsync(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
 		//int NewAskQuestion(string question, List<AnswerEntry> answers, int minAnswers = 1, int maxAnswers = 1)
 		{
 			askingQuestion = true;
-			// TODO: Send command to populate in game UI with answers.
 			HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap(question, answers, minAnswers, maxAnswers));
 			while (askingQuestion)
 			{
+				// TODO: Check to see if we lose SignalR so we don't infinite loop here. This can happen when debugging at a breakpoint for a long time it seems.
 				await Task.Delay(300);
 			}
 			return answerResponse;
 		}
 
-		private int OldAskQuestion(string question, List<string> answers)
+		//! It seems like we need to call AskQuestionBlockUI any time we are answering a question from a Script.
+		private int AskQuestionBlockUI(string question, List<AnswerEntry> answerEntries, int minTargets = 1, int maxTargets = 1)
 		{
-			TellDungeonMaster($"{Icons.QuestionBlock} {twitchIndent}" + question);
-			foreach (AnswerEntry answer in answerEntries)
+			askingQuestion = true;
+			uiThreadSleepingWhileWaitingForAnswerToQuestion = true;
+			HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap(question, answerEntries, minTargets, maxTargets));
+			while (askingQuestion)
 			{
-				TellDungeonMaster($"{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent}{twitchIndent} {answer.Index}. {answer.AnswerText}");
+				// TODO: Check to see if we lose SignalR so we don't infinite loop here. This can happen when debugging at a breakpoint for a long time it seems.
+				Thread.Sleep(300);
 			}
-
-			return FrmAsk.Ask(question, answers, this);
+			uiThreadSleepingWhileWaitingForAnswerToQuestion = false;
+			return answerResponse;
 		}
 
 		private void BuildAnswerMap(List<string> answers)
 		{
-			answerEntries = new List<AnswerEntry>();
+			prebuiltAnswers = new List<AnswerEntry>();
 			List<string> textAnswers = new List<string>();
 			int index = 1;
 			bool firstTimeIn = true;
@@ -1139,15 +1242,38 @@ namespace DHDM
 				firstTimeIn = false;
 
 				AnswerEntry thisAnswer = AnswerEntry.FromAnswer(answer, index);
-				answerEntries.Add(thisAnswer);
+				prebuiltAnswers.Add(thisAnswer);
 				textAnswers.Add($"{index}. " + thisAnswer.AnswerText);
 				index++;
 			}
 		}
 
-		private async void AskFunction_AskQuestion(object sender, AskEventArgs ea)
+		private void AskFunction_AskQuestion(object sender, AskEventArgs ea)
 		{
-			ea.Result = await AskQuestion(ea.Question, ea.Answers);
+			ea.Result = AskQuestionBlockUI(ea.Question, GetAnswerEntries(ea.Answers));
+		}
+
+		List<AnswerEntry> GetAnswerEntries(List<string> answers)
+		{
+			int index = 0;
+			List<AnswerEntry> result = new List<AnswerEntry>();
+
+			foreach (string answer in answers)
+			{
+				Match match = Regex.Match(answer, "\"(\\d+):(.+)\"");
+				if (match.Success)
+				{
+					string trimmedAnswer = match.Groups[2].Value;
+					int value = int.Parse(match.Groups[1].Value);
+					result.Add(new AnswerEntry(index, value, trimmedAnswer));
+				}
+				else
+					result.Add(new AnswerEntry(index, index, answer));
+				index++;
+			}
+
+			return result;
+
 		}
 
 		private void Expressions_ExceptionThrown(object sender, DndCoreExceptionEventArgs ea)
@@ -1157,7 +1283,7 @@ namespace DHDM
 
 		private void ConnectToObs()
 		{
-			if (obsWebsocket.IsConnected) 
+			if (obsWebsocket.IsConnected)
 				return;
 			try
 			{
@@ -1210,7 +1336,7 @@ namespace DHDM
 
 		public void SetBoolProperty(int playerId, string propertyName, bool value)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				Character player = game.GetPlayerFromId(playerId);
 				if (player == null)
@@ -1231,7 +1357,7 @@ namespace DHDM
 
 		public void SetSaveHiddenThreshold(int hiddenThreshold)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				tbxSaveThreshold.Text = hiddenThreshold.ToString();
 			});
@@ -1239,11 +1365,22 @@ namespace DHDM
 			TellDungeonMaster($"{Icons.SetHiddenThreshold} {twitchIndent}{hiddenThreshold} {twitchIndent} <-- hidden SAVE threshold");
 		}
 
+		object lockObj;
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
-			if (waitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result))
+			//Thread thread = Thread.CurrentThread;
+			//string msg;
+			//lock (lockObj)
+			//{
+			//	msg = String.Format("Thread ID: {0}\n", thread.ManagedThreadId) +
+			//				String.Format("   Background: {0}\n", thread.IsBackground) +
+			//				String.Format("   Thread Pool: {0}\n", thread.IsThreadPoolThread) +
+			//				String.Format("   Thread ID: {0}\n", thread.ManagedThreadId);
+			//}
+
+			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result))
 			{
-				AnswerEntry answer = answerEntries.FirstOrDefault(x => x.Index == result);
+				AnswerEntry answer = prebuiltAnswers.FirstOrDefault(x => x.Index == result);
 				if (answer != null)
 				{
 					FrmAsk.TryAnswer(answer.Value);
@@ -1265,7 +1402,7 @@ namespace DHDM
 
 		private void History_LogUpdated(object sender, EventArgs e)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				History.UpdateQueuedEntries();
 				logListBox.SelectedIndex = logListBox.Items.Count - 1;
@@ -1273,47 +1410,47 @@ namespace DHDM
 			});
 		}
 
+		int activePlayerId;
 		public int ActivePlayerId
 		{
 			get
 			{
-				return Dispatcher.Invoke(() =>
-				{
-					if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
-						return playerTabItem.PlayerId;
-					return tabPlayers.SelectedIndex;
-				});
+				return activePlayerId;
 			}
 			set
 			{
-				Dispatcher.Invoke(() =>
-				{
-					if (tabPlayers.SelectedItem is PlayerTabItem selectedPlayerTab)
-					{
-						if (selectedPlayerTab.PlayerId == value)
-							return;
-					}
+				if (activePlayerId == value)
+					return;
 
-					foreach (object item in tabPlayers.Items)
-						if (item is PlayerTabItem playerTabItem && playerTabItem.PlayerId == value)
-						{
-							tabPlayers.SelectedItem = playerTabItem;
-							return;
-						}
-				});
+				activePlayerId = value;
+				ShowTabForPlayer(activePlayerId);
 			}
+		}
+
+		private void ShowTabForPlayer(int playerId)
+		{
+			SafeInvoke(() =>
+			{
+				if (tabPlayers.SelectedItem is PlayerTabItem selectedPlayerTab)
+				{
+					if (selectedPlayerTab.PlayerId == playerId)
+						return;
+				}
+
+				foreach (object item in tabPlayers.Items)
+					if (item is PlayerTabItem playerTabItem && playerTabItem.PlayerId == playerId)
+					{
+						tabPlayers.SelectedItem = playerTabItem;
+						return;
+					}
+			});
 		}
 
 		public Character ActivePlayer
 		{
 			get
 			{
-				return Dispatcher.Invoke(() =>
-				{
-					if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
-						return game.GetPlayerFromId(playerTabItem.PlayerId);
-					return null;
-				});
+				return activePlayer;
 			}
 		}
 
@@ -1526,7 +1663,7 @@ namespace DHDM
 			if (shortcut == null && tbTabs.SelectedItem == tbDebug)
 				shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText.StartsWith(shortcutName) && x.PlayerId == ActivePlayerId);
 			if (shortcut != null)
-				Dispatcher.Invoke(() =>
+				SafeInvoke(() =>
 				{
 					ActivateShortcut(shortcut);
 				});
@@ -2292,7 +2429,7 @@ namespace DHDM
 
 					// At this point, we know the player is concentrating on a spell and the player wants to cast a different spell that also requires concentration
 					int result = await AskQuestion($"Break concentration with {concentratedSpell.Name} ({game.GetRemainingSpellTimeStr(player.playerID, concentratedSpell)} remaining) to cast {castedSpell.Spell.Name}?", new List<string>() { "1:Yes", "0:No" });
-					if (result == 0)
+					if (result == 1)
 						playerSpellState = PlayerSpellCastState.FreeToCast;
 					else
 						playerSpellState = PlayerSpellCastState.Concentrating;
@@ -2375,8 +2512,16 @@ namespace DHDM
 			}
 		}
 
+		Character activePlayer;
+
 		private void TabControl_PlayerChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
+			{
+				activePlayerId = playerTabItem.PlayerId;
+				activePlayer = game.GetPlayerFromId(playerTabItem.PlayerId);
+			}
+
 			btnRollDice.IsEnabled = true;
 			ActivatePendingShortcuts();
 			if (buildingTabs)
@@ -2566,7 +2711,7 @@ namespace DHDM
 			}
 
 
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				showClearButtonTimer.Start();
 				//rbTestNormalDieRoll.IsChecked = true;
@@ -2927,7 +3072,7 @@ namespace DHDM
 
 		private void UpdateClock(bool bigUpdate = false, double daysSinceLastUpdate = 0)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (txtTime == null)
 					return;
@@ -3016,7 +3161,7 @@ namespace DHDM
 
 		private void HubtasticBaseStation_AllDiceDestroyed(object sender, DiceEventArgs ea)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				Title = "All Dice Destroyed.";
 			});
@@ -3099,7 +3244,7 @@ namespace DHDM
 
 		void EnableDiceRollButtons(bool enable)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				btnRollDice.IsEnabled = enable;
 				spSpecialThrows.IsEnabled = enable;
@@ -3176,45 +3321,11 @@ namespace DHDM
 		{
 			switch (individualRoll.type)
 			{
-				case "BarbarianWildSurge":
-					HandleBarbarianWildSurge(individualRoll);
-					break;
 				case "WildMagicD20Check":
 				case "Wild Magic Check":
 				case "\"Wild Magic Check\"":
 					History.Log("IndividualDiceStoppedRolling: " + individualRoll.type);
 					HandleWildMagicD20Check(individualRoll);
-					break;
-			}
-		}
-
-		private void HandleBarbarianWildSurge(IndividualRoll individualRoll)
-		{
-			switch (individualRoll.value)
-			{
-				case 1:
-					PlayScene("DH.WildSurge.Necrotic");
-					break;
-				case 2:
-					PlayScene("DH.WildSurge.Teleport");
-					break;
-				case 3:
-					PlayScene("DH.WildSurge.Flumphs");
-					break;
-				case 4:
-					PlayScene("DH.WildSurge.ArcanaShroud");
-					break;
-				case 5:
-					PlayScene("DH.WildSurge.PlantGrowth.Arrive");
-					break;
-				case 6:
-					PlayScene("DH.WildSurge.Thoughts");
-					break;
-				case 7:
-					//PlayScene("DH.WildSurge.Shadows");
-					break;
-				case 8:
-					PlayScene("DH.WildSurge.Radiant");
 					break;
 			}
 		}
@@ -3262,25 +3373,8 @@ namespace DHDM
 		{
 			if (diceStoppedRollingData == null)
 				return;
-			// Noticed doubling up of individual rolls.
-			Character singlePlayer = diceStoppedRollingData.GetSingleRollingPlayer();
-			if (singlePlayer != null)
-			{
-				TriggerAfterRollEffects(diceStoppedRollingData, singlePlayer);
-			}
-			else if (diceStoppedRollingData.multiplayerSummary != null)
-				foreach (PlayerRoll playerRoll in diceStoppedRollingData.multiplayerSummary)
-				{
-					Character player = game.GetPlayerFromId(playerRoll.id);
-					TriggerAfterRollEffects(diceStoppedRollingData, player);
-				}
-
 
 			// TODO: Trigger After Roll Effects for all players if multiple players rolled at the same time.
-
-
-			//diceRollData.playerID
-			//if (diceRollData.isSpell)
 
 			if (ChaosBoltRolledDoubles(diceStoppedRollingData))
 			{
@@ -3291,9 +3385,9 @@ namespace DHDM
 				{
 					return;
 				}
-				Dispatcher.Invoke(async () =>
+				SafeInvoke(async () =>
 				{
-					if (await AnswersYes("Doubles! Fire Chaos Bolt again?"))
+					if (await AnswersYes("Doubles! Fire **Chaos Bolt** again?"))
 					{
 						RollTheDice(chaosBoltRoll);
 					}
@@ -3350,12 +3444,12 @@ namespace DHDM
 		{
 			EffectGroup effectGroup = new EffectGroup();
 
-			VisualEffectTarget chestTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
-			VisualEffectTarget bottomTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
+			VisualEffectTarget chestTarget, bottomTarget;
+			GetTargets(out chestTarget, out bottomTarget);
 
 			if (spellHitType != SpellHitType.Hit)
 			{
-				effectGroup.Add(CreateEffect("SpellMiss", chestTarget, 0, 100, 0));
+				effectGroup.Add(AnimationEffect.CreateEffect("SpellMiss", chestTarget, 0, 100, 0));
 			}
 			else
 			{
@@ -3375,7 +3469,7 @@ namespace DHDM
 				{
 					if (!string.IsNullOrWhiteSpace(spell.Hue1))
 					{
-						AnimationEffect effectBonus1 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue1, spell.Bright1);
+						AnimationEffect effectBonus1 = CreateSpellEffect(EffectGroup.GetRandomHitSpellName(), chestTarget, spell.Hue1, spell.Bright1);
 						effectBonus1.timeOffsetMs = timeOffset;
 						effectBonus1.scale = scale;
 						effectBonus1.autoRotation = autoRotation;
@@ -3386,7 +3480,7 @@ namespace DHDM
 					timeOffset += 200;
 					if (!string.IsNullOrWhiteSpace(spell.Hue2))
 					{
-						AnimationEffect effectBonus2 = CreateSpellEffect(GetRandomHitSpellName(), chestTarget, spell.Hue2, spell.Bright2);
+						AnimationEffect effectBonus2 = CreateSpellEffect(EffectGroup.GetRandomHitSpellName(), chestTarget, spell.Hue2, spell.Bright2);
 						effectBonus2.timeOffsetMs = timeOffset;
 						effectBonus2.scale = scale;
 						effectBonus2.autoRotation = autoRotation;
@@ -3404,6 +3498,13 @@ namespace DHDM
 			string serializedObject = JsonConvert.SerializeObject(effectGroup);
 			HubtasticBaseStation.TriggerEffect(serializedObject);
 		}
+
+		private static void GetTargets(out VisualEffectTarget chestTarget, out VisualEffectTarget bottomTarget)
+		{
+			chestTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
+			bottomTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
+		}
+
 		void ShowSpellHitOrMissInGame(int playerId, SpellHitType spellHitType, string spellName)
 		{
 			Character player = game.GetPlayerFromId(playerId);
@@ -3428,59 +3529,13 @@ namespace DHDM
 			}
 		}
 
-		private void DequeueSpellEffects(EffectGroup effectGroup, Queue<SpellEffect> additionalSpellEffects, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset)
+		private static void DequeueSpellEffects(EffectGroup effectGroup, Queue<SpellEffect> additionalSpellEffects, VisualEffectTarget chestTarget, VisualEffectTarget bottomTarget, ref double scale, double scaleIncrement, ref double autoRotation, ref int timeOffset)
 		{
 			while (additionalSpellEffects.Count > 0)
 			{
-				SpellEffect spellHit = additionalSpellEffects.Dequeue();
-				string effectName;
-				bool usingSpellHits = true;
-				VisualEffectTarget target;
-
-				if (!string.IsNullOrWhiteSpace(spellHit.EffectName))
-				{
-					effectName = spellHit.EffectName;
-					usingSpellHits = false;
-					target = bottomTarget;
-				}
-				else
-				{
-					effectName = GetRandomHitSpellName();
-					target = chestTarget;
-				}
-				AnimationEffect effectBonus = CreateEffect(effectName, target,
-					spellHit.Hue, spellHit.Saturation, spellHit.Brightness,
-					spellHit.SecondaryHue, spellHit.SecondarySaturation, spellHit.SecondaryBrightness, spellHit.XOffset, spellHit.YOffset, spellHit.VelocityX, spellHit.VelocityY);
-				if (usingSpellHits)
-				{
-					effectBonus.timeOffsetMs = timeOffset;
-					effectBonus.scale = scale;
-					effectBonus.autoRotation = autoRotation;
-					autoRotation *= -1;
-					scale *= scaleIncrement;
-					timeOffset += 200;
-				}
-				else
-				{
-					if (spellHit.TimeOffset > int.MinValue)
-						effectBonus.timeOffsetMs = spellHit.TimeOffset;
-					else
-					{
-						effectBonus.timeOffsetMs = timeOffset;
-						timeOffset += 200;
-					}
-
-					effectBonus.scale = spellHit.Scale;
-					effectBonus.autoRotation = spellHit.AutoRotation;
-					effectBonus.rotation = spellHit.Rotation;
-				}
-				effectGroup.Add(effectBonus);
+				SpellEffect spellEffect = additionalSpellEffects.Dequeue();
+				effectGroup.AddSpellEffect(chestTarget, bottomTarget, ref scale, scaleIncrement, ref autoRotation, ref timeOffset, spellEffect);
 			}
-		}
-
-		private static string GetRandomHitSpellName()
-		{
-			return "SpellHit" + MathUtils.RandomBetween(1, 5).ToString();
 		}
 
 		AnimationEffect CreateSpellEffect(string spriteName, VisualEffectTarget target, string hueShiftStr, string brightnessStr = null)
@@ -3497,28 +3552,7 @@ namespace DHDM
 			}
 			if (!int.TryParse(brightnessStr, out int brightness))
 				brightness = 100;
-			return CreateEffect(spriteName, target, hueShift, 100, brightness);
-		}
-
-		AnimationEffect CreateEffect(string spriteName, VisualEffectTarget target,
-			int hueShift = 0, int saturation = 100, int brightness = 100,
-			int secondaryHueShift = 0, int secondarySaturation = 100, int secondaryBrightness = 100,
-			int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
-		{
-			AnimationEffect spellEffect = new AnimationEffect();
-			spellEffect.spriteName = spriteName;
-			spellEffect.hueShift = hueShift;
-			spellEffect.saturation = saturation;
-			spellEffect.brightness = brightness;
-			spellEffect.secondaryHueShift = secondaryHueShift;
-			spellEffect.secondarySaturation = secondarySaturation;
-			spellEffect.secondaryBrightness = secondaryBrightness;
-			spellEffect.xOffset = xOffset;
-			spellEffect.yOffset = yOffset;
-			spellEffect.velocityX = velocityX;
-			spellEffect.velocityY = velocityY;
-			spellEffect.target = target;
-			return spellEffect;
+			return AnimationEffect.CreateEffect(spriteName, target, hueShift, 100, brightness);
 		}
 
 		void CheckSpellHitResults(DiceStoppedRollingData stopRollingData)
@@ -3690,10 +3724,25 @@ namespace DHDM
 		}
 		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
-			Dispatcher.Invoke(() =>
+			SaveNamedResults(ea);
+
+			SafeInvoke(() =>
 			{
 				Title = "Dice Stopped Rolling (waiting for destruction)...";
 			});
+
+			Character singlePlayer = ea.StopRollingData.GetSingleRollingPlayer();
+			if (singlePlayer != null)
+			{
+				TriggerAfterRollEffects(ea.StopRollingData, singlePlayer);
+			}
+			else if (ea.StopRollingData.multiplayerSummary != null)
+				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+				{
+					Character player = game.GetPlayerFromId(playerRoll.id);
+					TriggerAfterRollEffects(ea.StopRollingData, player);
+				}
+
 			History.Log("Dice stopped rolling.");
 			await CalculateLatestDamage(ea);
 			if (dynamicThrottling)
@@ -3724,7 +3773,6 @@ namespace DHDM
 
 			NotifyPlayersRollHasStopped(ea.StopRollingData);
 
-			SaveNamedResults(ea);
 			activeTrailingEffects = string.Empty;
 			activeDieRollEffects = string.Empty;
 			ClearExistingWindupsInGame();
@@ -4264,7 +4312,7 @@ namespace DHDM
 
 		void PrepareUiForClearButton()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				rectProgressToClear.Width = 0;
 				btnClearDice.Visibility = Visibility.Visible;
@@ -4297,7 +4345,7 @@ namespace DHDM
 		void RollWildMagicHandler(object sender, EventArgs e)
 		{
 			wildMagicRollTimer.Stop();
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				ActivateShortcut("Wild Magic");
 				btnRollDice.Content = "Roll Wild Magic";
@@ -4313,7 +4361,7 @@ namespace DHDM
 		void SwitchBackToPlayersHandler(object sender, EventArgs e)
 		{
 			switchBackToPlayersTimer.Stop();
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				PlayScene(STR_PlayerScene);
 			});
@@ -4695,7 +4743,7 @@ namespace DHDM
 
 		public void InvokeSkillCheck(Skills skill, List<int> playerIds, int delayMs = 0)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				SelectSkill(skill);
 				SetRollScopeForPlayers(playerIds);
@@ -4729,7 +4777,7 @@ namespace DHDM
 
 		public void InvokeSavingThrow(Ability ability, List<int> playerIds, int delayRollMs = 0)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				SelectSavingThrowAbility(ability);
 				SetRollScopeForPlayers(playerIds);
@@ -4748,7 +4796,7 @@ namespace DHDM
 
 		void EnterCombat()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (game.Clock.InCombat)
 				{
@@ -4767,7 +4815,7 @@ namespace DHDM
 
 		void EnterTimeFreeze()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (game.Clock.InTimeFreeze)
 				{
@@ -4783,7 +4831,7 @@ namespace DHDM
 		}
 		void ExitCombat()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (!game.Clock.InCombat)
 					TellDungeonMaster($"{Icons.WarningSign} Already NOT in combat!");
@@ -4797,7 +4845,7 @@ namespace DHDM
 
 		void ExitTimeFreeze()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (!game.Clock.InTimeFreeze)
 					TellDungeonMaster($"{Icons.WarningSign} Already NOT in a time freeze.");
@@ -4811,7 +4859,7 @@ namespace DHDM
 
 		void RollNonCombatInitiative()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				DiceRoll diceRoll = PrepareRoll(DiceRollType.NonCombatInitiative);
 				RollTheDice(diceRoll);
@@ -4847,7 +4895,7 @@ namespace DHDM
 		string PlusHiddenThresholdDisplayStr(TextBox textBox)
 		{
 			string returnMessage = string.Empty;
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				returnMessage = $" (against a hidden threshold of {textBox.Text})";
 			});
@@ -4893,7 +4941,7 @@ namespace DHDM
 				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			}
 
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
 					playerTabItem.CharacterSheets.FocusSkill(skill);
@@ -4919,7 +4967,7 @@ namespace DHDM
 
 		public void RollAttack()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (NextDieRollType == DiceRollType.None)
 					NextDieRollType = DiceRollType.Attack;
@@ -4947,7 +4995,7 @@ namespace DHDM
 				HubtasticBaseStation.PlayerDataChanged(ActivePlayerId, activePage, string.Empty);
 			}
 
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (tabPlayers.SelectedItem is PlayerTabItem playerTabItem)
 					playerTabItem.CharacterSheets.FocusSavingAbility(ability);
@@ -4984,7 +5032,7 @@ namespace DHDM
 
 			TellAll($"Rolling {dieStr} for {who}...");
 
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				SetRollTypeUI(diceRollType);
 				SetRollScopeForPlayers(playerIds);
@@ -5505,7 +5553,8 @@ namespace DHDM
 		DiceRoll lastRoll;
 		DiceRoll secondToLastRoll;
 		DateTime lastChatMessageSent;
-		bool waitingForAnswerToQuestion;
+		bool uiThreadSleepingWhileWaitingForAnswerToQuestion;
+
 		void CheckAllPlayers()
 		{
 			checkingInternally = true;
@@ -5610,7 +5659,7 @@ namespace DHDM
 
 		public void GetData(string dataId)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (dataId == "Concentration")
 					ReportOnConcentration();
@@ -5619,7 +5668,7 @@ namespace DHDM
 
 		public void SetVantage(VantageKind vantageKind, int playerId)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				SetPlayerVantageUI(playerId, vantageKind);
 				PlayerStatsManager.ReadyRollVantage(playerId, vantageKind);
@@ -5645,7 +5694,7 @@ namespace DHDM
 		public void SelectPlayerShortcut(string shortcutName, int playerId)
 		{
 			shortcutName = shortcutName.Trim();
-			Dispatcher.Invoke(async () =>
+			SafeInvoke(async () =>
 			{
 				ActivePlayerId = playerId;
 				if (shortcutName.EndsWith(STR_RepeatSpell))
@@ -5670,7 +5719,7 @@ namespace DHDM
 
 		public void SelectCharacter(int playerId)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (tabPlayers.Items.Count > 0 && tabPlayers.Items[0] is PlayerTabItem)
 					foreach (PlayerTabItem playerTabItem in tabPlayers.Items)
@@ -5729,7 +5778,7 @@ namespace DHDM
 
 		public void SetClock(int hours, int minutes, int seconds)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 
 			});
@@ -5748,7 +5797,7 @@ namespace DHDM
 			if (hours == 0 && minutes == 0 && seconds == 0)
 				return;
 			// TODO: Calculate clockMessage based on the delta here.
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (resting)
 				{
@@ -5792,7 +5841,7 @@ namespace DHDM
 		{
 			if (days == 0 && months == 0 && years == 0)
 				return;
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				if (resting)
 				{
@@ -5823,7 +5872,7 @@ namespace DHDM
 
 		public void RollDice()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				UnleashTheNextRoll();
 			});
@@ -5843,6 +5892,20 @@ namespace DHDM
 
 		public void MoveFred(string movement)
 		{
+			Character fred = AllPlayers.GetFromName("Fred");
+			int hueShift = 0;
+			if (fred != null)
+			{
+				object rageState = fred.GetState("_rage");
+				if (rageState is Boolean inRage)
+				{
+					if (inRage)
+					{
+						hueShift = -220;
+						movement += $":{hueShift}";
+					}
+				}
+			}
 			HubtasticBaseStation.MoveFred(movement);
 		}
 
@@ -5912,7 +5975,7 @@ namespace DHDM
 
 		public void Speak(int playerId, string message)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				// TODO: Implement this.
 			});
@@ -6777,7 +6840,7 @@ namespace DHDM
 				try
 				{
 					changingFrameRateInternally = true;
-					Dispatcher.Invoke(() =>
+					SafeInvoke(() =>
 					{
 						radioButton.IsChecked = true;
 					});
@@ -6952,7 +7015,7 @@ namespace DHDM
 
 		void SetAttackThreshold(int value)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				tbxAttackThreshold.Text = value.ToString();
 			});
@@ -6960,7 +7023,7 @@ namespace DHDM
 		}
 		void SetSavingThrowThreshold(int value)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				tbxSaveThreshold.Text = value.ToString();
 			});
@@ -6969,7 +7032,7 @@ namespace DHDM
 
 		void SetSkillCheckThreshold(int value)
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				tbxSkillCheckThreshold.Text = value.ToString();
 			});
@@ -7309,7 +7372,7 @@ namespace DHDM
 		private void TooltipTimer_Tick(object sender, EventArgs e)
 		{
 			tooltipTimer.Stop();
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				ShowParameterTooltipIfNecessary();
 			});
@@ -8049,7 +8112,7 @@ namespace DHDM
 
 		void UpdateUIForAllPlayerStats()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
 				{
@@ -8420,6 +8483,7 @@ namespace DHDM
 		}
 
 		Queue<ActionQueueEntry> actionQueue = new Queue<ActionQueueEntry>();
+		List<AnswerEntry> lastRemoteAnswers;
 
 		void ExecuteQueuedShortcut(ShortcutQueueEntry shortcutQueueEntry)
 		{
@@ -8456,7 +8520,7 @@ namespace DHDM
 				if (!actionQueue.Any())
 					return;
 				// TODO: why are you doing all that work on the UI thread?
-				Dispatcher.Invoke(() =>
+				SafeInvoke(() =>
 				{
 					if (actionQueue.Count > 0 && !HubtasticBaseStation.DiceOnScreen || HubtasticBaseStation.SecondsSinceLastRoll > 30)
 						ExecuteAction(actionQueue.Dequeue());
@@ -8595,7 +8659,7 @@ namespace DHDM
 			spellToCastOnRoll = null;
 			PlayScene($"DH.Skill.{skillCheck}");
 			PlaySceneAfter(STR_PlayerScene, 14000);
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
 				SelectSkill(DndUtils.ToSkill(skillCheck));
@@ -8608,7 +8672,7 @@ namespace DHDM
 			spellToCastOnRoll = null;
 			PlayScene($"DH.Save.{savingThrow}");
 			PlaySceneAfter(STR_PlayerScene, 12000);
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				ckbUseMagic.IsChecked = false;
 				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
@@ -8654,7 +8718,7 @@ namespace DHDM
 
 		public void ClearDice()
 		{
-			Dispatcher.Invoke(() =>
+			SafeInvoke(() =>
 			{
 				ClearTheDice();
 			});
@@ -8697,7 +8761,6 @@ namespace DHDM
 			InGameCreature firstTargeted = onScreenCreatures.FirstOrDefault(x => x.IsTargeted);
 
 			InGameCreature creatureToTarget;
-
 			if (targetingCommand.Contains("Next"))
 				creatureToTarget = onScreenCreatures.Next(firstTargeted);
 			else
@@ -8719,8 +8782,11 @@ namespace DHDM
 
 		private void HubtasticBaseStation_ReceivedInGameResponse(object sender, QuestionAnswerMapEventArgs ea)
 		{
-			// TODO: Be able to handle multi-selected answers. answerResponse is just an int.
-			answerResponse = ea.QuestionAnswerMap.GetFirstSelectedIndex();
+			// TODO: Handle multi-selected answers. answerResponse is just an int.
+			int firstIndex = ea.QuestionAnswerMap.GetFirstSelectedIndex();
+			if (firstIndex >= 0)
+				answerResponse = ea.QuestionAnswerMap.Answers[firstIndex].Value;
+			lastRemoteAnswers = ea.QuestionAnswerMap.Answers;
 			askingQuestion = false;
 		}
 
@@ -8745,18 +8811,10 @@ namespace DHDM
 			{
 				// Simple multiple choice.
 				HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap("Select target for Shield spell:", new List<String> { "Fred", "Miles", "Lady", "Merkin", "L'il Cutie" }, 1, 3));
-				
-			}
-			else if (command == "OK")
-			{
-				askingQuestion = false;
-				answerResponse = 1;
-				//answerResponse = 0;
-				//askingQuestion = false;
-				HubtasticBaseStation.InGameUICommand("OK");
-			}
 
-			HubtasticBaseStation.InGameUICommand(command);
+			}
+			else
+				HubtasticBaseStation.InGameUICommand(command);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

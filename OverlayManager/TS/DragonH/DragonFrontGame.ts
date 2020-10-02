@@ -1553,7 +1553,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	moveFred(movement: string): void {
-		// TODO: Implement this!
 		this.fred.playAnimation(movement, this.getPlayerX(this.getPlayerIndex(this.Player_Fred)));
 	}
 

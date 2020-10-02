@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using DndCore;
 
-namespace DHDM
+namespace DndCore
 {
 	public class AnswerEntry
 	{

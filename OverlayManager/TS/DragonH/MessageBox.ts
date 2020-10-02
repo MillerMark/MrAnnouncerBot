@@ -24,7 +24,7 @@ class MessageBox {
 	static styleDelimiters: LayoutDelimiters[];
 	titleParagraph: ParagraphWrapData;
 	lastAnswer: TextEffect;
-  discoverabilityTop = 0; 
+	discoverabilityTop = 0;
 
 	constructor(soundManager: SoundManager) {
 		this.soundManager = soundManager;
@@ -188,13 +188,13 @@ class MessageBox {
 
 	deselect(soundManager: SoundManager, numToDeselect: number) {
 		let numCleared = 0;
-		for (let i = 0; i < this.questionAnswerMap.Answers.length; i++) { 
+		for (let i = 0; i < this.questionAnswerMap.Answers.length; i++) {
 			if (i !== this.focusIndex && this.questionAnswerMap.Answers[i].IsSelected) {
 				this.deselectAnswer(soundManager, i);
 				numCleared++;
 				if (numCleared >= numToDeselect)
 					return;
-			} 
+			}
 		}
 	}
 
@@ -266,6 +266,7 @@ class MessageBox {
 		this.showingTextYet = false;
 		this.hidingTextYet = false;
 		this.titleTop = undefined;
+		this.answerLeft = undefined;
 		this.calculateSize(context);
 
 		// clear any existing scroll sprites.
@@ -356,6 +357,7 @@ class MessageBox {
 
 	static readonly minAnswerFontSize: number = 36;
 	static readonly maxAnswerFontSize: number = 100;
+	static readonly maxDialogHeight: number = 980;
 
 	titleFontSize = MessageBox.maxTitleFontSize;
 	titleWidth: number;
@@ -411,12 +413,10 @@ class MessageBox {
 		let discoverabilityHeight = 0;
 		if (this.questionAnswerMap.MaxAnswers > 1)
 			discoverabilityHeight = MessageBox.discoverabilityHintHeight;
-		this.discoverabilityTop = this.getTitleBottomFromTopOfScroll() + this.answerFontSize * this.questionAnswerMap.Answers.length;
-		const totalHeight: number = this.discoverabilityTop + MessageBox.bottomMargin + discoverabilityHeight;
-		this.verticalScale = totalHeight / MessageBox.scrollHeight;
-		//console.log('this.verticalScale: ' + this.verticalScale);
-
-		this.actualScrollHeight = MessageBox.scrollHeight * this.verticalScale;
+		let testAnswerFontSize: number = maxCalculatedAnswerFontSize;
+		while (this.calculateVerticalValues(discoverabilityHeight, testAnswerFontSize) > MessageBox.maxDialogHeight) {
+			testAnswerFontSize--;
+		}
 		this.scrollTop = MessageBox.screenHeight / 3 - this.actualScrollHeight / 2;
 		if (this.scrollTop < 0)
 			this.scrollTop = 0;
@@ -426,6 +426,16 @@ class MessageBox {
 		console.log('this.titleTop from calculateSize: ' + this.titleTop);
 		this.distanceToMoveScroll = MessageBox.screenHeight - scrollBottom;
 		//console.log('this.distanceToMoveScroll: ' + this.distanceToMoveScroll);
+	}
+
+	private calculateVerticalValues(discoverabilityHeight: number, testAnswerFontSize: number): number {
+		this.answerFontSize = testAnswerFontSize;
+		this.discoverabilityTop = this.getTitleBottomFromTopOfScroll() + this.answerFontSize * this.questionAnswerMap.Answers.length;
+		const totalHeight: number = this.discoverabilityTop + MessageBox.bottomMargin + discoverabilityHeight;
+		this.verticalScale = totalHeight / MessageBox.scrollHeight;
+		//console.log('this.verticalScale: ' + this.verticalScale);
+		this.actualScrollHeight = MessageBox.scrollHeight * this.verticalScale;
+		return this.actualScrollHeight;
 	}
 
 	private getTitleBottomFromTopOfScroll() {
@@ -486,20 +496,21 @@ class MessageBox {
 	}
 
 	titleTop: number = undefined;
+	answerLeft: number = undefined;
 
 	addText() {
-		const left: number = 960 - this.titleWidth / 2 + this.answerFontSize;
+		this.answerLeft = 960 - this.titleWidth / 2 + this.answerFontSize;
 
 		// TODO: Stop calling addTitle if we're going to draw the titles ourselves.
 		//this.addTitle(this.questionAnswerMap.Question, this.titleTop);
 
 		const focusIndicatorRadius: number = this.answerFontSize / 2;
-		console.log(`this.titleFontSize == ${this.titleFontSize}, this.titleParagraph.lineData.length = ${this.titleParagraph.lineData.length}`);
+		//console.log(`this.titleFontSize == ${this.titleFontSize}, this.titleParagraph.lineData.length = ${this.titleParagraph.lineData.length}`);
 		let centerY: number = this.scrollTop + this.getTitleBottomFromTopOfScroll() + focusIndicatorRadius;
-		this.addFocusIndicator(left - focusIndicatorRadius, centerY);
+		this.addFocusIndicator(this.answerLeft - focusIndicatorRadius, centerY);
 		this.questionAnswerMap.Answers.forEach((answer: Answer) => {
 			answer.centerY = centerY;
-			this.lastAnswer = this.addAnswer(answer.AnswerText, left, centerY);
+			this.lastAnswer = this.addAnswer(answer.AnswerText, this.answerLeft, centerY);
 			centerY += this.answerFontSize;
 		});
 	}
@@ -531,6 +542,8 @@ class MessageBox {
 	renderMultiSelectDiscoverability(context: CanvasRenderingContext2D, nowMs: number) {
 		if (this.questionAnswerMap.MaxAnswers <= 1)
 			return;
+		if (this.answerLeft === undefined)
+			return;
 		context.textBaseline = 'top';
 		context.font = `${44}px ${MessageBox.fontName}`;
 		const topMargin = 20;
@@ -552,7 +565,7 @@ class MessageBox {
 				emphasisPunctuation = '!';
 				context.fillStyle = MessageBox.hintColorWarning;
 			}
-			context.fillText(`${numAnswers} of ${this.questionAnswerMap.MaxAnswers} selected${emphasisPunctuation}`, this.titleLeft, this.discoverabilityTop + topMargin);
+			context.fillText(`${numAnswers} of ${this.questionAnswerMap.MaxAnswers} selected${emphasisPunctuation}`, this.answerLeft, this.discoverabilityTop + topMargin);
 		}
 		finally {
 			context.globalAlpha = 1;
@@ -560,11 +573,11 @@ class MessageBox {
 	}
 
 	renderTitle(context: CanvasRenderingContext2D, nowMs: number) {
-		if (this.titleTop === undefined) {
+		if (this.titleTop === undefined)
 			return;
-		}
 		if (!this.lastAnswer)
 			return;
+
 		if (this.lastAnswer.expirationDate && this.lastAnswer.getLifeRemaining(nowMs) <= 0) {
 			this.lastAnswer = null;
 			return;
@@ -574,7 +587,7 @@ class MessageBox {
 		this.wordRenderer.setDetailFontNormal(context);
 		context.fillStyle = MessageBox.fontColor;
 		context.textBaseline = 'top';
-		context.globalAlpha = this.lastAnswer.getAlpha(nowMs);
+		context.globalAlpha = this.lastAnswer.getAlpha(nowMs) * 0.8;
 		try {
 			this.wordRenderer.activeStyle = LayoutStyle.normal;
 			if (this.titleParagraph) {
