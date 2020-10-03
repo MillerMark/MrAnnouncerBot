@@ -33,6 +33,4 @@ class Physics {
 
     return (-initialVelocity + Math.sqrt(initialVelocity * initialVelocity + 2 * heightMeters * acceleration)) / acceleration;
   }
-
-  
 }

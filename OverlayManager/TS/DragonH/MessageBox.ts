@@ -540,6 +540,8 @@ class MessageBox {
 	}
 
 	renderMultiSelectDiscoverability(context: CanvasRenderingContext2D, nowMs: number) {
+		if (!this.questionAnswerMap)
+			return;
 		if (this.questionAnswerMap.MaxAnswers <= 1)
 			return;
 		if (this.answerLeft === undefined)

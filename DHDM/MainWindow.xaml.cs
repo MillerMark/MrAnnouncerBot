@@ -2904,6 +2904,9 @@ namespace DHDM
 
 					checkbox.RbNormal.IsChecked = true;
 
+					if ((type == DiceRollType.Attack || type == DiceRollType.ChaosBolt) && checkbox.PlayerId != ActivePlayerId)
+						continue;
+
 					string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
 					BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
 					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
@@ -5697,6 +5700,7 @@ namespace DHDM
 			SafeInvoke(async () =>
 			{
 				ActivePlayerId = playerId;
+				CheckOnlyOnePlayer(playerId);
 				if (shortcutName.EndsWith(STR_RepeatSpell))
 				{
 					await RepeatSpell(playerId, shortcutName.Substring(0, shortcutName.Length - STR_RepeatSpell.Length));
@@ -5911,7 +5915,7 @@ namespace DHDM
 
 		bool IsFoundationScene(string name)
 		{
-			return name.SameLetters(STR_PlayerScene) || name.SameLetters("DH.Tunnels");
+			return name.SameLetters(STR_PlayerScene) || name.SameLetters("DH.Tunnels") || name.SameLetters("DH.Nebula");
 		}
 
 		string GetFoundationalScene()
