@@ -42,7 +42,7 @@ namespace DndCore
 		public static int GetPlayerIdFromName(List<Character> players, string characterName)
 		{
 			foreach (Character character in players)
-				if (character.playerShortcut == characterName)
+				if (character.playerShortcut == characterName && character.playingNow)
 					return character.playerID;
 
 			if (characterName == "c")

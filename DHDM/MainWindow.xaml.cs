@@ -59,7 +59,7 @@ namespace DHDM
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
-
+			
 		public PlayerStatManager PlayerStatsManager
 		{
 			get

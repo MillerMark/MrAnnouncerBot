@@ -17,11 +17,13 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using MrAnnouncerBot.Games.Zork;
 using OBSWebsocketDotNet;
+using TwitchLib.Client;
 
 namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
+		TwitchClient kidzCodeClient;
 		List<Entry> log = new List<Entry>();
 		public static readonly HttpClient httpClient = new HttpClient();
 
@@ -73,6 +75,8 @@ namespace MrAnnouncerBot
 				hubConnection.StartAsync();
 			}
 			lastFanfareDuration = 15;
+
+			InitializeKidzCodeBot();
 		}
 
 		void ChangeScene(string sceneName)
@@ -917,7 +921,7 @@ namespace MrAnnouncerBot
 
 		private void ActivateSceneIfPermitted(SceneDto scene, string displayName, int userLevel)
 		{
-			if (RestrictedSceneIsActive())
+			if (RestrictedSceneIsActive() && userLevel < AllViewers.ModeratorLevel)
 				Chat(GetBreakMessage());
 			else
 				ActivateScene(scene, displayName, userLevel);
@@ -1167,6 +1171,39 @@ namespace MrAnnouncerBot
 		{
 			suppressingFanfare = true;
 			Chat("Fanfare is suppressed.");
+		}
+
+		void InitializeKidzCodeBot()
+		{
+			kidzCodeClient = Twitch.CreateNewClient("cheese_minor", "cheese_minor", "DragonHumpersDmOAuthToken");
+			HookTwitchClientEvents();
+		}
+
+		private void HookTwitchClientEvents()
+		{
+			if (kidzCodeClient == null)
+				return;
+			kidzCodeClient.OnDisconnected += KidzCodeClient_OnDisconnected;
+			kidzCodeClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+		}
+
+		private void KidzCodeClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
+		{
+			throw new NotImplementedException();
+		}
+
+		private void KidzCodeClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
+		{
+			UnhookTwitchClientEvents();
+			kidzCodeClient = null;
+		}
+
+		private void UnhookTwitchClientEvents()
+		{
+			if (kidzCodeClient == null)
+				return;
+			kidzCodeClient.OnDisconnected -= KidzCodeClient_OnDisconnected;
+			kidzCodeClient.OnChatCommandReceived -= TwitchClient_OnChatCommandReceived;
 		}
 	}
 }
