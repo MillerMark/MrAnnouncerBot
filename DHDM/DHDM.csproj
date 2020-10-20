@@ -534,6 +534,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\LeapMotion\LeapTools\LeapTools.csproj">
+      <Project>{22520ef1-8cb9-45b0-b541-1893a16114da}</Project>
+      <Name>LeapTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\TimeLine\TimeLineControl\TimeLineControl\TimeLineControl.csproj">
       <Project>{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}</Project>
       <Name>TimeLineControl</Name>

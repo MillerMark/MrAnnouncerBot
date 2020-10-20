@@ -1598,6 +1598,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			//console.log(`(${dto.X - this.calibrationCursor.originX}, ${dto.Y - this.calibrationCursor.originY})`);
 			this.calibrationCursorSprite.x = dto.X - this.calibrationCursor.originX;
 			this.calibrationCursorSprite.y = dto.Y - this.calibrationCursor.originY;
+			this.calibrationCursorSprite.scale = dto.Scale;
 			this.calibrationDiscoverabilitySprite.frameIndex = dto.DiscoverabilityIndex;
 		}
 		// X, Y, DiscoverabilityIndex

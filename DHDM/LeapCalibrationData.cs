@@ -8,6 +8,7 @@ namespace DHDM
 	{
 		public int X { get; set; }
 		public int Y { get; set; }
+		public double Scale { get; set; } = 1;
 		public int DiscoverabilityIndex { get; set; }
 		public LeapCalibrationData()
 		{
@@ -21,6 +22,10 @@ namespace DHDM
 		{
 			X = (int)position.X;
 			Y = (int)position.Y;
+		}
+		public void ChangeScale(int delta)
+		{
+			Scale += delta / 1200.0;
 		}
 	}
 }

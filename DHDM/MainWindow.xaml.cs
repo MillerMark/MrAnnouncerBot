@@ -35,6 +35,7 @@ using System.Windows.Controls.Primitives;
 using System.Globalization;
 using ICSharpCode.AvalonEdit.Editing;
 using System.Text.RegularExpressions;
+using LeapTools;
 
 namespace DHDM
 {
@@ -43,6 +44,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		LeapInterpreter leapInterpreter;
 		PlayerStatManager allPlayerStats;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
@@ -95,6 +97,7 @@ namespace DHDM
 
 		public MainWindow()
 		{
+			leapInterpreter = new LeapInterpreter();
 			changingInternally = true;
 			try
 			{
@@ -8850,16 +8853,14 @@ namespace DHDM
 				HubtasticBaseStation.InGameUICommand(command);
 		}
 
-		LeapMotionCalibrationStep leapMotionCalibrationStep;
-		LeapCalibrationData leapCalibrationData = new LeapCalibrationData();
 		private void btnCalibrate_Click(object sender, RoutedEventArgs e)
 		{
-			leapMotionCalibrationStep = LeapMotionCalibrationStep.BackUpperLeft;
-			leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
+			leapInterpreter.StartCalibration();
 			SetLeapCalibrationUiVisibility(Visibility.Visible);
 			lbCalibrationStatus.Items.Clear();
 			lbCalibrationStatus.Items.Add("Started Leap calibration...");
 			ShowCalibrationInstructions();
+
 			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
 			CaptureMouse();
 		}
@@ -8873,37 +8874,17 @@ namespace DHDM
 
 		private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
 		{
-			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
-				return;
-			leapCalibrationData.SetXY(e.GetPosition(this));
-			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
+			leapInterpreter.MouseMoved(e, this);
 		}
 
 		private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
-			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
-				return;
-			Point position = e.GetPosition(this);
-			ShowCalibrationStepComplete(position);
-			// TODO: Record the 2D and 3D points somewhere
-			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
-			{
-				ReleaseMouseCapture();
-				leapMotionCalibrationStep = LeapMotionCalibrationStep.NotCalibrating;
-				leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
-				HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
-				SetLeapCalibrationUiVisibility(Visibility.Hidden);
-				return;
-			}
-			leapMotionCalibrationStep++;
-			ShowCalibrationInstructions();
-			leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
-			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
+			leapInterpreter.MouseDown(e, this);
 		}
 
 		private void ShowCalibrationStepComplete(Point position)
 		{
-			switch (leapMotionCalibrationStep)
+			switch (leapInterpreter.leapMotionCalibrationStep)
 			{
 				case LeapMotionCalibrationStep.BackUpperLeft:
 					lbCalibrationStatus.Items.Add($"Back upper left position set to ({position.X}, {position.Y}).");
@@ -8921,7 +8902,7 @@ namespace DHDM
 		}
 		private void ShowCalibrationInstructions()
 		{
-			switch (leapMotionCalibrationStep)
+			switch (leapInterpreter.leapMotionCalibrationStep)
 			{
 				case LeapMotionCalibrationStep.BackUpperLeft:
 					tbInstructions.Text = "Move the mouse over the back upper left point and click it!";
@@ -8936,6 +8917,11 @@ namespace DHDM
 					tbInstructions.Text = "Move the mouse over the front lower right point and click it!";
 					break;
 			}
+		}
+
+		private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			leapInterpreter.CalibrationScaleChanged(e.Delta);
 		}
 
 		// TODO: Reintegrate wand/staff animations....
