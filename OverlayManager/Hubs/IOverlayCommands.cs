@@ -19,6 +19,7 @@ namespace OverlayManager.Hubs
 		Task SuppressVolume(int seconds);
 		Task PlayerDataChanged(int playerID, int pageID, string playerData);
 		Task MapDataChanged(string mapData);
+		Task CalibrateLeapMotion(string calibrationData);
 		Task ChangePlayerHealth(string playerData);
 		Task ChangePlayerStats(string playerStatsData);
 		Task ChangePlayerWealth(string playerData);

@@ -84,7 +84,7 @@ namespace DHDM
 		DispatcherTimer monsterPreviewImageLoadUpdateTimer;
 		DispatcherTimer reloadSpellsTimer;
 		DispatcherTimer pendingShortcutsTimer;
-		DispatcherTimer wildMagicRollTimer;
+		//DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
 		DispatcherTimer updateClearButtonTimer;
 		DispatcherTimer actionQueueTimer;
@@ -169,9 +169,9 @@ namespace DHDM
 			pendingShortcutsTimer.Tick += new EventHandler(ActivatePendingShortcuts);
 			pendingShortcutsTimer.Interval = TimeSpan.FromSeconds(1);
 
-			wildMagicRollTimer = new DispatcherTimer();
-			wildMagicRollTimer.Tick += new EventHandler(RollWildMagicHandler);
-			wildMagicRollTimer.Interval = TimeSpan.FromSeconds(9);
+			//wildMagicRollTimer = new DispatcherTimer();
+			//wildMagicRollTimer.Tick += new EventHandler(RollWildMagicHandler);
+			//wildMagicRollTimer.Interval = TimeSpan.FromSeconds(9);
 
 			switchBackToPlayersTimer = new DispatcherTimer();
 			switchBackToPlayersTimer.Tick += new EventHandler(SwitchBackToPlayersHandler);
@@ -3168,15 +3168,20 @@ namespace DHDM
 			{
 				Title = "All Dice Destroyed.";
 			});
-			History.Log("All Dice Destroyed.");
+			//History.Log("All Dice Destroyed.");
 			CheckForFollowUpRolls(ea.StopRollingData);
+			DynamicallyThrottleFrameRate();
+			DeueueNextAction();
+		}
+
+		private void DynamicallyThrottleFrameRate()
+		{
 			if (dynamicThrottling && DateTime.Now - lastDieRollTime > TimeSpan.FromSeconds(3))
 			{
 				ChangeFrameRateAndUI(Overlays.Back, 30);
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 				ChangeFrameRateAndUI(Overlays.Dice, 1);
 			}
-			DeueueNextAction();
 		}
 
 		private void BtnAddDay_Click(object sender, RoutedEventArgs e)
@@ -3303,24 +3308,37 @@ namespace DHDM
 
 		bool forcedWildMagicThisRoll;
 
-		void HandleWildMagicD20Check(IndividualRoll individualRoll)
+		void HandleWildMagicD20Check(int playerId, IndividualRoll individualRoll)
 		{
 			if (forcedWildMagicThisRoll)
 				return;
 			if (individualRoll.value == 1)
 			{
 				forcedWildMagicThisRoll = true;
-				PlayScene("DH.WildMagicRoll");
-				wildMagicRollTimer.Start();
+				PlayScene("DH.WildMagicRoll", 2700);
+				EnqueueWildMagicRoll(playerId);
+				Character player = game.GetPlayerFromId(playerId);
+				if (player != null)
+					player.NumWildMagicChecks = 0;
+				//wildMagicRollTimer.Start();
 				TellAll("It's a one! Need to roll wild magic!");
 			}
 			else
 			{
-				TellAll($"Wild Magic roll: {individualRoll.value}.");
+				// TellAll($"Wild Magic roll: {individualRoll.value}.");
+			}
+		}
+		void EnqueueWildMagicRoll(int playerId)
+		{
+			lock (actionQueue)
+			{
+				WildMagicQueueEntry wildMagicQueueEntry = new WildMagicQueueEntry();
+				wildMagicQueueEntry.PlayerId = playerId;
+				actionQueue.Enqueue(wildMagicQueueEntry);
 			}
 		}
 
-		void IndividualDiceStoppedRolling(IndividualRoll individualRoll)
+		void IndividualDiceStoppedRolling(int playerId, IndividualRoll individualRoll)
 		{
 			switch (individualRoll.type)
 			{
@@ -3328,16 +3346,16 @@ namespace DHDM
 				case "Wild Magic Check":
 				case "\"Wild Magic Check\"":
 					History.Log("IndividualDiceStoppedRolling: " + individualRoll.type);
-					HandleWildMagicD20Check(individualRoll);
+					HandleWildMagicD20Check(playerId, individualRoll);
 					break;
 			}
 		}
 
-		void IndividualDiceStoppedRolling(List<IndividualRoll> individualRolls)
+		void IndividualDiceStoppedRolling(int playerId, List<IndividualRoll> individualRolls)
 		{
 			foreach (IndividualRoll individualRoll in individualRolls)
 			{
-				IndividualDiceStoppedRolling(individualRoll);
+				IndividualDiceStoppedRolling(playerId, individualRoll);
 			}
 		}
 
@@ -3771,7 +3789,7 @@ namespace DHDM
 
 			if (ea.StopRollingData.individualRolls?.Count > 0)
 			{
-				IndividualDiceStoppedRolling(ea.StopRollingData.individualRolls);
+				IndividualDiceStoppedRolling(ea.StopRollingData.playerID, ea.StopRollingData.individualRolls);
 			}
 
 			NotifyPlayersRollHasStopped(ea.StopRollingData);
@@ -4025,6 +4043,8 @@ namespace DHDM
 			message += additionalMessage;
 			if (!string.IsNullOrWhiteSpace(message))
 			{
+				if (ea.StopRollingData.type == DiceRollType.WildMagicD20Check && rollValue == 0)
+					message = message.Replace(": 0", ": no ones rolled (safe).");
 				TellAll(message);
 			}
 		}
@@ -4345,16 +4365,16 @@ namespace DHDM
 			UpdateStateUIForPlayer(ActivePlayer, true);
 		}
 
-		void RollWildMagicHandler(object sender, EventArgs e)
-		{
-			wildMagicRollTimer.Stop();
-			SafeInvoke(() =>
-			{
-				ActivateShortcut("Wild Magic");
-				btnRollDice.Content = "Roll Wild Magic";
-				BackToPlayersIn(18);
-			});
-		}
+		//void RollWildMagicHandler(object sender, EventArgs e)
+		//{
+		//	wildMagicRollTimer.Stop();
+		//	SafeInvoke(() =>
+		//	{
+		//		ActivateShortcut("Wild Magic");
+		//		btnRollDice.Content = "Roll Wild Magic";
+		//		BackToPlayersIn(18);
+		//	});
+		//}
 
 		void BackToPlayersIn(double seconds)
 		{
@@ -5915,7 +5935,8 @@ namespace DHDM
 
 		bool IsFoundationScene(string name)
 		{
-			return name.SameLetters(STR_PlayerScene) || name.SameLetters("DH.Tunnels") || name.SameLetters("DH.Nebula");
+			return name.SameLetters(STR_PlayerScene) || name.SameLetters("DH.Tunnels") || name.SameLetters("DH.Nebula") ||
+				name.ToLower().StartsWith("DH.TheVoid.".ToLower());
 		}
 
 		string GetFoundationalScene()
@@ -8513,6 +8534,12 @@ namespace DHDM
 				dieRollQueueEntry.PrepareRoll(diceRoll);
 				RollTheDice(diceRoll);
 			}
+			else if (dieRollQueueEntry.RollType == DiceRollType.WildMagic)
+			{
+				DiceRoll diceRoll = PrepareRoll(DiceRollType.WildMagic);
+				dieRollQueueEntry.PrepareRoll(diceRoll);
+				RollTheDice(diceRoll);
+			}
 			// TODO: roll the dice.
 			// TODO: apply the damage after the dice have rolled.
 		}
@@ -8595,6 +8622,7 @@ namespace DHDM
 			BreakSpellConcentrationSavingThrowQueueEntry futureDieRoll = new BreakSpellConcentrationSavingThrowQueueEntry();
 			futureDieRoll.PlayerId = playerID;
 			futureDieRoll.HiddenThreshold = Math.Max(10, DndUtils.HalveValue(damageTaken));
+			History.Log($"Enqueuing future die roll ({futureDieRoll.RollType})");
 			lock (actionQueue)
 				actionQueue.Enqueue(futureDieRoll);
 			Character player = GetPlayer(playerID);
@@ -8608,6 +8636,7 @@ namespace DHDM
 			shortcutQueueEntry.PlayerId = ea.Player.playerID;
 			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
 			shortcutQueueEntry.ShortcutName = ea.ShortcutName;
+			History.Log($"Enqueuing future shortcut ({ea.ShortcutName})");
 			lock (actionQueue)
 				actionQueue.Enqueue(shortcutQueueEntry);
 		}
@@ -8819,6 +8848,94 @@ namespace DHDM
 			}
 			else
 				HubtasticBaseStation.InGameUICommand(command);
+		}
+
+		LeapMotionCalibrationStep leapMotionCalibrationStep;
+		LeapCalibrationData leapCalibrationData = new LeapCalibrationData();
+		private void btnCalibrate_Click(object sender, RoutedEventArgs e)
+		{
+			leapMotionCalibrationStep = LeapMotionCalibrationStep.BackUpperLeft;
+			leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
+			SetLeapCalibrationUiVisibility(Visibility.Visible);
+			lbCalibrationStatus.Items.Clear();
+			lbCalibrationStatus.Items.Add("Started Leap calibration...");
+			ShowCalibrationInstructions();
+			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
+			CaptureMouse();
+		}
+
+		private void SetLeapCalibrationUiVisibility(Visibility visibility)
+		{
+			tbInstructions.Visibility = visibility;
+			tbCalibrationStatus.Visibility = visibility;
+			lbCalibrationStatus.Visibility = visibility;
+		}
+
+		private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
+		{
+			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
+				return;
+			leapCalibrationData.SetXY(e.GetPosition(this));
+			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
+		}
+
+		private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
+				return;
+			Point position = e.GetPosition(this);
+			ShowCalibrationStepComplete(position);
+			// TODO: Record the 2D and 3D points somewhere
+			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
+			{
+				ReleaseMouseCapture();
+				leapMotionCalibrationStep = LeapMotionCalibrationStep.NotCalibrating;
+				leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
+				HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
+				SetLeapCalibrationUiVisibility(Visibility.Hidden);
+				return;
+			}
+			leapMotionCalibrationStep++;
+			ShowCalibrationInstructions();
+			leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
+			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
+		}
+
+		private void ShowCalibrationStepComplete(Point position)
+		{
+			switch (leapMotionCalibrationStep)
+			{
+				case LeapMotionCalibrationStep.BackUpperLeft:
+					lbCalibrationStatus.Items.Add($"Back upper left position set to ({position.X}, {position.Y}).");
+					break;
+				case LeapMotionCalibrationStep.BackLowerRight:
+					lbCalibrationStatus.Items.Add($"Back lower right position set to ({position.X}, {position.Y}).");
+					break;
+				case LeapMotionCalibrationStep.FrontUpperLeft:
+					lbCalibrationStatus.Items.Add($"Front upper left position set to ({position.X}, {position.Y}).");
+					break;
+				case LeapMotionCalibrationStep.FrontLowerRight:
+					lbCalibrationStatus.Items.Add($"Front lower right position set to ({position.X}, {position.Y}).");
+					break;
+			}
+		}
+		private void ShowCalibrationInstructions()
+		{
+			switch (leapMotionCalibrationStep)
+			{
+				case LeapMotionCalibrationStep.BackUpperLeft:
+					tbInstructions.Text = "Move the mouse over the back upper left point and click it!";
+					break;
+				case LeapMotionCalibrationStep.BackLowerRight:
+					tbInstructions.Text = "Move the mouse over the back lower right point and click it!";
+					break;
+				case LeapMotionCalibrationStep.FrontUpperLeft:
+					tbInstructions.Text = "Move the mouse over the front upper left point and click it!";
+					break;
+				case LeapMotionCalibrationStep.FrontLowerRight:
+					tbInstructions.Text = "Move the mouse over the front lower right point and click it!";
+					break;
+			}
 		}
 
 		// TODO: Reintegrate wand/staff animations....

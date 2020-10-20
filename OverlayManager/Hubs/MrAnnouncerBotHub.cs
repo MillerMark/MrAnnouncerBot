@@ -29,6 +29,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.MapDataChanged(mapData);
 		}
+		public void CalibrateLeapMotion(string calibrationData)
+		{
+			coderushedHub.Clients.All.CalibrateLeapMotion(calibrationData);
+		}
 
 		public void ChangePlayerHealth(string playerData)
 		{

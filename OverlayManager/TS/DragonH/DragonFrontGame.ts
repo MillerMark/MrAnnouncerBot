@@ -65,6 +65,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	bigWarning: Sprites;
 	restrained: Sprites;
 	fireWorks: Sprites;
+	calibrationCursor: Sprites;
+	calibrationDiscoverability: Sprites;
 	sparkShower: Sprites;
 	magicSparksA: Sprites;
 	magicSparksB: Sprites;
@@ -135,7 +137,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.playerStats.update(this, this.dragonFrontSounds, timestamp);
 		this.conditionManager.update(timestamp);
 		super.update(timestamp);
-	}	
+	}
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
 		this.drawTimePlusEffects(context, nowMs);
@@ -161,6 +163,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.coinManager.draw(context, nowMs);
 		this.allFrontEffects.updatePositions(nowMs);
 		this.allFrontEffects.draw(context, nowMs);
+		this.calibrationCursor.updatePositions(nowMs);
+		this.calibrationCursor.draw(context, nowMs);
 		this.textAnimations.removeExpiredAnimations(nowMs);
 		this.textAnimations.updatePositions(nowMs);
 
@@ -396,6 +400,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.fireWorks.originX = 443;
 		this.fireWorks.originY = 595;
 
+		this.calibrationCursor = new Sprites('LeapMotion/CalibrationUI/Cursor', 1, fps30, AnimationStyle.Static);
+		this.calibrationCursor.originX = 21;
+		this.calibrationCursor.originY = 22;
+
+		this.calibrationDiscoverability = new Sprites('LeapMotion/CalibrationUI/CalibrationUI', 4, fps30, AnimationStyle.Static);
+
 		this.sparkShower = new Sprites('Sparks/SparkShower/SparkShower', 75, fps30, AnimationStyle.Sequential, true);
 		this.sparkShower.name = 'SparkShower';
 		this.sparkShower.originX = 500;
@@ -610,6 +620,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.allBackEffects.add(this.stars);
 		this.allBackEffects.add(this.fumes);
 		this.allFrontEffects.add(this.fireWorks);
+		//this.allFrontEffects.add(this.calibrationCursor);
+		this.allFrontEffects.add(this.calibrationDiscoverability);
 		this.allFrontEffects.add(this.sparkShower);
 		this.allFrontEffects.add(this.magicSparksA);
 		this.allFrontEffects.add(this.magicSparksB);
@@ -674,7 +686,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		return magicSparks;
 	}
 
-	
+
 	loadSwirlSmoke(path: string, frameCount: number, originX: number, originY: number): Sprites {
 		const swirlSmoke: Sprites = new Sprites(`SpellEffects/SwirlSmoke/${path}/SwirlSmoke${path}`, frameCount, fps30, AnimationStyle.Sequential, true);
 		swirlSmoke.name = `SwirlSmoke${path}`;
@@ -1182,8 +1194,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			sprite = this.bigX.addShifted(x, y, 0, hueShift);
 			sprite.expirationDate = performance.now() + 6000;
 		}
-		else 
-		{
+		else {
 			sprite = this.bigWarning.add(x, y);
 			sprite.expirationDate = performance.now() + 3000;
 			sprite.data = validationIssue.FloatText;
@@ -1191,7 +1202,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		this.dragonFrontSounds.safePlayMp3('WrongAnswer/WrongAnswer[6]');
 		this.dragonFrontSounds.safePlayMp3('WrongAnswer/BigXFire');
-		
+
 		sprite.fadeOutTime = 500;
 		if (validationIssue.FloatText)
 			if (validationIssue.PlayerId >= 0) {
@@ -1200,7 +1211,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			}
 			else {
 				this.addFloatingText(960, validationIssue.FloatText, '#ffffff', '#000000');
-				}
+			}
 	}
 
 	changePlayerWealth(playerWealthDto: string): void {
@@ -1565,6 +1576,34 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	handleFpsChange(frameRateChangeData: FrameRateChangeData): void {
 		this.changeFramerate(frameRateChangeData.FrameRate);
 	}
+
+	calibrationCursorSprite: SpriteProxy;
+	calibrationDiscoverabilitySprite: SpriteProxy;
+
+	calibrateLeapMotion(calibrationData: string) {
+		//console.log(`calibrateLeapMotion...`);
+		const dto = JSON.parse(calibrationData);
+		if (dto.DiscoverabilityIndex === -1) {
+			this.calibrationCursor.spriteProxies = [];
+			this.calibrationDiscoverability.spriteProxies = [];
+			this.calibrationCursorSprite = null;
+			this.calibrationDiscoverabilitySprite = null;
+			return;
+		}
+		if (!this.calibrationCursorSprite) {
+			this.calibrationCursorSprite = this.calibrationCursor.add(dto.X, dto.Y);
+			this.calibrationDiscoverabilitySprite = this.calibrationDiscoverability.add(500, 350);
+		}
+		else {
+			//console.log(`(${dto.X - this.calibrationCursor.originX}, ${dto.Y - this.calibrationCursor.originY})`);
+			this.calibrationCursorSprite.x = dto.X - this.calibrationCursor.originX;
+			this.calibrationCursorSprite.y = dto.Y - this.calibrationCursor.originY;
+			this.calibrationDiscoverabilitySprite.frameIndex = dto.DiscoverabilityIndex;
+		}
+		// X, Y, DiscoverabilityIndex
+		// If  we are done and need to hide everything.
+	}
+
 }
 
 class PlayerHealth {

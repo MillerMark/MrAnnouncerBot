@@ -214,6 +214,12 @@ function mapDataChanged(mapData: string) {
 
 }
 
+function calibrateLeapMotion(calibrationData: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.calibrateLeapMotion(calibrationData);
+	}
+}
+
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
 	if (activeBackGame instanceof DragonGame) {
 		activeBackGame.playerChanged(playerID, pageID, playerData);
@@ -318,6 +324,7 @@ function connectToSignalR(signalR) {
 		connection.on("ShowValidationIssue", showValidationIssue);
 		connection.on("PlayerDataChanged", playerDataChanged);
 		connection.on("MapDataChanged", mapDataChanged);
+		connection.on("CalibrateLeapMotion", calibrateLeapMotion);
 		connection.on("SetPlayerData", initializePlayerData);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;
