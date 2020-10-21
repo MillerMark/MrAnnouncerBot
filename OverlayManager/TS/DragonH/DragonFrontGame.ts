@@ -10,6 +10,15 @@ class ValidationIssueDto {
 	}
 }
 
+class ScaledPoint {
+	X: number;
+	Y: number;
+	Scale: number;
+	constructor() {
+
+	}
+}
+
 interface INameplateRenderer {
 	getPlateWidth(context: CanvasRenderingContext2D, player: Character, playerIndex: number): number;
 	inCombat: boolean;
@@ -189,6 +198,13 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			context.fillStyle = '#ff0000';
 			context.font = '32px Arial';
 			context.fillText(this.calibrationPosition, 700, 760);
+		}
+
+		if (this.palmPosition) {
+			const edgeLength = this.palmPosition.Scale * this.palmPosition.Scale * 10;
+			const edgeHalfLength: number = edgeLength / 2;
+			context.fillStyle = '#0000ff';
+			context.fillRect(this.palmPosition.X - edgeHalfLength, this.palmPosition.Y - edgeHalfLength, edgeLength, edgeLength);
 		}
 	}
 
@@ -1583,8 +1599,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.changeFramerate(frameRateChangeData.FrameRate);
 	}
 
+	palmPosition: ScaledPoint;
+
 	updateSkeletalData(skeletalData: string): void {
-		
+		this.palmPosition = JSON.parse(skeletalData) as ScaledPoint;
 	}
 
 	calibrationCursorSprite: SpriteProxy;

@@ -314,11 +314,13 @@
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
     <Compile Include="LeapCalibrationData.cs" />
-    <Compile Include="LeapInterpreter.cs" />
+    <Compile Include="LeapCalibrator.cs" />
+    <Compile Include="LeapDevice.cs" />
     <Compile Include="LeapMotionCalibrationStep.cs" />
     <Compile Include="QuestionAnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
     <Compile Include="Events\QuestionAnswerMapEventArgs.cs" />
+    <Compile Include="ScaledPoint.cs" />
     <Compile Include="StreamDeck Commands\AdvanceClockCommand.cs" />
     <Compile Include="PlayerStats\PlayerStatManager.cs" />
     <Compile Include="AnswerButton.cs" />

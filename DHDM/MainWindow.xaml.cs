@@ -44,7 +44,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
-		LeapInterpreter leapInterpreter;
+		LeapCalibrator leapCalibrator;
 		PlayerStatManager allPlayerStats;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
@@ -97,7 +97,6 @@ namespace DHDM
 
 		public MainWindow()
 		{
-			leapInterpreter = new LeapInterpreter();
 			changingInternally = true;
 			try
 			{
@@ -8855,7 +8854,8 @@ namespace DHDM
 
 		private void btnCalibrate_Click(object sender, RoutedEventArgs e)
 		{
-			leapInterpreter.StartCalibration();
+			leapCalibrator = new LeapCalibrator();
+			leapCalibrator.StartCalibration();
 			SetLeapCalibrationUiVisibility(Visibility.Visible);
 			lbCalibrationStatus.Items.Clear();
 			lbCalibrationStatus.Items.Add("Started Leap calibration...");
@@ -8872,16 +8872,18 @@ namespace DHDM
 
 		private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
 		{
-			leapInterpreter.MouseMoved(e, this);
+			leapCalibrator?.MouseMoved(e, this);
 		}
 
 		private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
-			if (leapInterpreter.leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
+			if (leapCalibrator == null)
 				return;
-			Point position = leapInterpreter.MouseDown(e, this);
+			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
+				return;
+			Point position = leapCalibrator.MouseDown(e, this);
 			ShowCalibrationStepComplete(position);
-			if (leapInterpreter.leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
+			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
 			{
 				ReleaseMouseCapture();
 				SetLeapCalibrationUiVisibility(Visibility.Hidden);
@@ -8892,7 +8894,7 @@ namespace DHDM
 
 		private void ShowCalibrationStepComplete(Point position)
 		{
-			switch (leapInterpreter.leapMotionCalibrationStep)
+			switch (leapCalibrator?.leapMotionCalibrationStep)
 			{
 				case LeapMotionCalibrationStep.BackUpperLeft:
 					lbCalibrationStatus.Items.Add($"Back upper left position set to ({position.X}, {position.Y}).");
@@ -8910,7 +8912,7 @@ namespace DHDM
 		}
 		private void ShowCalibrationInstructions()
 		{
-			switch (leapInterpreter.leapMotionCalibrationStep)
+			switch (leapCalibrator?.leapMotionCalibrationStep)
 			{
 				case LeapMotionCalibrationStep.BackUpperLeft:
 					tbInstructions.Text = "Move the mouse over the back upper left point and click it!";
@@ -8929,13 +8931,14 @@ namespace DHDM
 
 		private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
 		{
-			leapInterpreter.CalibrationScaleChanged(e.Delta);
+			leapCalibrator?.CalibrationScaleChanged(e.Delta);
 		}
 
+		LeapDevice leapDevice = new LeapDevice();
 		private void btnTestCalibration_Click(object sender, RoutedEventArgs e)
 		{
-			leapInterpreter.ToggleTesting();
-			if (leapInterpreter.Testing)
+			leapDevice.ToggleTesting();
+			if (leapDevice.Testing)
 				btnTestCalibration.Content = "Stop Testing";
 			else
 				btnTestCalibration.Content = "Test...";

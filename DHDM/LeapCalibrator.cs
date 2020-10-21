@@ -3,39 +3,94 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using DndCore;
 using LeapTools;
 using Newtonsoft.Json;
+using CoreVector = DndCore.Vector;
 
 namespace DHDM
 {
-	public class LeapInterpreter
+	public class LeapCalibrator
 	{
-		double backScale;
-		double frontScale;
-		double backPlaneZ;
-		double frontPlaneZ;
-		
-		DndCore.Vector backUpperLeft3d;
-		DndCore.Vector backLowerRight3d;
-		DndCore.Vector frontUpperLeft3d;
-		DndCore.Vector frontLowerRight3d;
+		public static bool Calibrated { get; set; }
+		public static double backScale;
+		public static double frontScale;
+		public static double backPlaneZ;
+		public static double frontPlaneZ;
 
-		Point backUpperLeft2d;
-		Point backLowerRight2d;
-		Point frontUpperLeft2d;
-		Point frontLowerRight2d;
+		public static CoreVector backUpperLeft3d;
+		public static CoreVector backLowerRight3d;
+		public static CoreVector frontUpperLeft3d;
+		public static CoreVector frontLowerRight3d;
+
+		public static Point backUpperLeft2d;
+		public static Point backLowerRight2d;
+		public static Point frontUpperLeft2d;
+		public static Point frontLowerRight2d;
 
 		internal LeapMotionCalibrationStep leapMotionCalibrationStep;
 		LeapCalibrationData leapCalibrationData = new LeapCalibrationData();
-		LeapMotion leapCalibrator;
+		LeapMotion leapMotion;
 
-		public LeapInterpreter()
+		public LeapCalibrator()
 		{
 
 		}
 
-		DndCore.Vector fingertipPosition;
-		public bool Testing { get; set; }
+		static CoreVector GetCoreVector(CoreVector backPt, CoreVector frontPt, float zPlane)
+		{
+			//` <formula 1.4; x = x_1 + t * \Delta x>
+			//` <formula 1.4; y = y_1 + t * \Delta y>
+			//` <formula 1.4; z = z_1 + t * \Delta z>
+
+			//` <formula 2.6; t = \frac{z - z_1}{\Delta z}>
+
+			double deltaX = frontPt.x - backPt.x;
+			double deltaY = frontPt.y - backPt.y;
+			double deltaZ = frontPt.z - backPt.z;
+
+			double t = (zPlane - backPt.z) / deltaZ;
+			double newX = backPt.x + t * deltaX;
+			double newY = backPt.y + t * deltaY;
+			double newZ = backPt.z + t * deltaZ;
+
+			return new CoreVector(newX, newY, newZ);
+		}
+
+		public static ScaledPoint ToScaledPoint(Leap.Vector vector)
+		{
+			CoreVector upperLeft3D = GetCoreVector(backUpperLeft3d, frontUpperLeft3d, vector.z);
+			CoreVector lowerRight3D = GetCoreVector(backLowerRight3d, frontLowerRight3d, vector.z);
+
+			double percentageX = (vector.x - upperLeft3D.x) / (lowerRight3D.x - upperLeft3D.x);
+			double percentageY = (vector.y - upperLeft3D.y) / (lowerRight3D.y - upperLeft3D.y);
+
+			double backDeltaX = backLowerRight2d.X - backUpperLeft2d.X;
+			double frontDeltaX = frontLowerRight2d.X - frontUpperLeft2d.X;
+			double backDeltaY = backLowerRight2d.Y - backUpperLeft2d.Y;
+			double frontDeltaY = frontLowerRight2d.Y - frontUpperLeft2d.Y;
+
+			double backX2d = backUpperLeft2d.X + percentageX * backDeltaX;
+			double backY2d = backUpperLeft2d.Y + percentageY * backDeltaY;
+
+			double frontX2d = frontUpperLeft2d.X + percentageX * frontDeltaX;
+			double frontY2d = frontUpperLeft2d.Y + percentageY * frontDeltaY;
+
+			double percentageZ = (vector.z - backPlaneZ) / (frontPlaneZ - backPlaneZ);
+
+			double deltaX2d = frontX2d - backX2d;
+			double deltaY2d = frontY2d - backY2d;
+
+			double x = backX2d + percentageZ * deltaX2d;
+			double y = backY2d + percentageZ * deltaY2d;
+
+			double deltaScale = frontScale - backScale;
+			double scale = backScale + percentageZ * deltaScale;
+
+			return new ScaledPoint() { X = (int)Math.Round(x), Y = (int)Math.Round(y), Scale = scale };
+		}
+
+		CoreVector fingertipPosition;
 		private void LeapMotion_HandsMoved(object sender, LeapFrameEventArgs ea)
 		{
 			if (ea.Frame.Hands.Count == 0)
@@ -54,8 +109,8 @@ namespace DHDM
 
 		public void StartCalibration()
 		{
-			leapCalibrator = new LeapMotion();
-			leapCalibrator.HandsMoved += LeapMotion_HandsMoved;
+			leapMotion = new LeapMotion();
+			leapMotion.HandsMoved += LeapMotion_HandsMoved;
 			leapMotionCalibrationStep = LeapMotionCalibrationStep.BackUpperLeft;
 			leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
 			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
@@ -68,6 +123,7 @@ namespace DHDM
 			leapCalibrationData.ChangeScale(delta);
 			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
 		}
+
 		public void MouseMoved(MouseEventArgs e, MainWindow window)
 		{
 			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
@@ -124,9 +180,10 @@ namespace DHDM
 			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
 			{
 				leapMotionCalibrationStep = LeapMotionCalibrationStep.NotCalibrating;
-				leapCalibrator.HandsMoved -= LeapMotion_HandsMoved;
-				leapCalibrator.DisposeController();
-				leapCalibrator = null;
+				leapMotion.HandsMoved -= LeapMotion_HandsMoved;
+				leapMotion.DisposeController();
+				Calibrated = true;
+				leapMotion = null;
 			}
 			else
 			{
@@ -136,11 +193,6 @@ namespace DHDM
 			leapCalibrationData.SetDiscoverabilityIndex(leapMotionCalibrationStep);
 			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
 			return position;
-		}
-
-		public void ToggleTesting()
-		{
-			Testing = !Testing;
 		}
 	}
 }
