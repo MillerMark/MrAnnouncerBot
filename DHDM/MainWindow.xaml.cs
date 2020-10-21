@@ -8860,8 +8860,6 @@ namespace DHDM
 			lbCalibrationStatus.Items.Clear();
 			lbCalibrationStatus.Items.Add("Started Leap calibration...");
 			ShowCalibrationInstructions();
-
-			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
 			CaptureMouse();
 		}
 
@@ -8879,7 +8877,17 @@ namespace DHDM
 
 		private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
-			leapInterpreter.MouseDown(e, this);
+			if (leapInterpreter.leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
+				return;
+			Point position = leapInterpreter.MouseDown(e, this);
+			ShowCalibrationStepComplete(position);
+			if (leapInterpreter.leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
+			{
+				ReleaseMouseCapture();
+				SetLeapCalibrationUiVisibility(Visibility.Hidden);
+				return;
+			}
+			ShowCalibrationInstructions();
 		}
 
 		private void ShowCalibrationStepComplete(Point position)
@@ -8922,6 +8930,15 @@ namespace DHDM
 		private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
 		{
 			leapInterpreter.CalibrationScaleChanged(e.Delta);
+		}
+
+		private void btnTestCalibration_Click(object sender, RoutedEventArgs e)
+		{
+			leapInterpreter.ToggleTesting();
+			if (leapInterpreter.Testing)
+				btnTestCalibration.Content = "Stop Testing";
+			else
+				btnTestCalibration.Content = "Test...";
 		}
 
 		// TODO: Reintegrate wand/staff animations....

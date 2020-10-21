@@ -220,6 +220,12 @@ function calibrateLeapMotion(calibrationData: string) {
 	}
 }
 
+function updateSkeletalData(skeletalData: string) {
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.updateSkeletalData(skeletalData);
+	}
+}
+
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {
 	if (activeBackGame instanceof DragonGame) {
 		activeBackGame.playerChanged(playerID, pageID, playerData);
@@ -325,6 +331,7 @@ function connectToSignalR(signalR) {
 		connection.on("PlayerDataChanged", playerDataChanged);
 		connection.on("MapDataChanged", mapDataChanged);
 		connection.on("CalibrateLeapMotion", calibrateLeapMotion);
+		connection.on("UpdateSkeletalData", updateSkeletalData);
 		connection.on("SetPlayerData", initializePlayerData);
 		console.log('PartBackgroundLoader.initialize();');
 		PartBackgroundLoader.okayToStartLoading = true;

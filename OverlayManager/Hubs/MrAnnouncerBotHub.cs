@@ -33,6 +33,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.CalibrateLeapMotion(calibrationData);
 		}
+		public void UpdateSkeletalData(string skeletalData)
+		{
+			coderushedHub.Clients.All.UpdateSkeletalData(skeletalData);
+		}
 
 		public void ChangePlayerHealth(string playerData)
 		{

@@ -1205,9 +1205,14 @@
 				</TabItem>
 				<TabItem x:Name="tbLeapMotionCalibration" Header="Leap">
 					<StackPanel Orientation="Vertical">
-						<Button x:Name="btnCalibrate" Padding="8, 3, 8, 3" Click="btnCalibrate_Click" MaxWidth="80" HorizontalAlignment="Left">
-							Calibrate...
-						</Button>
+						<StackPanel Orientation="Horizontal">
+							<Button x:Name="btnCalibrate" Padding="8, 3, 8, 3" Click="btnCalibrate_Click" MaxWidth="80" HorizontalAlignment="Left">
+								Calibrate...
+							</Button>
+							<Button x:Name="btnTestCalibration" Padding="8, 3, 8, 3" Click="btnTestCalibration_Click" MaxWidth="120" HorizontalAlignment="Left" Margin="20, 0, 0, 0">
+								Test...
+							</Button>
+						</StackPanel>
 						<TextBlock x:Name="tbInstructions" Text="Do this next!" Width="Auto" Height="Auto" FontSize="30" Visibility="Hidden"/>
 						<TextBlock x:Name="tbCalibrationStatus" Text="Status:" Width="Auto" Height="Auto" Margin="0, 20, 0, 0" Visibility="Hidden"/>
 						<ListBox x:Name="lbCalibrationStatus" Visibility="Hidden">

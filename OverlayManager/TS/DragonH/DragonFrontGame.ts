@@ -184,6 +184,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bigWarning.draw(context, nowMs);
 
 		this.textAnimations.render(context, nowMs);
+
+		if (this.calibrationPosition) {
+			context.fillStyle = '#ff0000';
+			context.font = '32px Arial';
+			context.fillText(this.calibrationPosition, 700, 760);
+		}
 	}
 
 	protected drawTimePlusEffects(context: CanvasRenderingContext2D, now: number) {
@@ -1577,8 +1583,13 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.changeFramerate(frameRateChangeData.FrameRate);
 	}
 
+	updateSkeletalData(skeletalData: string): void {
+		
+	}
+
 	calibrationCursorSprite: SpriteProxy;
 	calibrationDiscoverabilitySprite: SpriteProxy;
+	calibrationPosition: string;
 
 	calibrateLeapMotion(calibrationData: string) {
 		//console.log(`calibrateLeapMotion...`);
@@ -1588,6 +1599,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			this.calibrationDiscoverability.spriteProxies = [];
 			this.calibrationCursorSprite = null;
 			this.calibrationDiscoverabilitySprite = null;
+			this.calibrationPosition = null;
 			return;
 		}
 		if (!this.calibrationCursorSprite) {
@@ -1603,8 +1615,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 		// X, Y, DiscoverabilityIndex
 		// If  we are done and need to hide everything.
+		this.calibrationPosition = `Fingertip: (${Math.round(dto.FingertipPosition.x)}, ${Math.round(dto.FingertipPosition.y)}, ${Math.round(dto.FingertipPosition.z)})`;
 	}
-
 }
 
 class PlayerHealth {

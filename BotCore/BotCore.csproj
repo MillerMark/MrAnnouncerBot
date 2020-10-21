@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\BotCoreNet\AllViewers.cs" Link="AllViewers.cs" />
     <Compile Include="..\BotCoreNet\AppData.cs" Link="AppData.cs" />

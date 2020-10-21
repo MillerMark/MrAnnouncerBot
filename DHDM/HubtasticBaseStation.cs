@@ -137,6 +137,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("CalibrateLeapMotion", calibrationData);
 		}
 
+		public static void UpdateSkeletalData(string skeletalData)
+		{
+			HubConnection.InvokeAsync("UpdateSkeletalData", skeletalData);
+		}
+
 		public static void ChangePlayerHealth(string playerData)
 		{
 			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);

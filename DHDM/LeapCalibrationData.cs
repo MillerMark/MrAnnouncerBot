@@ -10,6 +10,7 @@ namespace DHDM
 		public int Y { get; set; }
 		public double Scale { get; set; } = 1;
 		public int DiscoverabilityIndex { get; set; }
+		public DndCore.Vector FingertipPosition { get; set; }
 		public LeapCalibrationData()
 		{
 
@@ -26,6 +27,10 @@ namespace DHDM
 		public void ChangeScale(int delta)
 		{
 			Scale += delta / 1200.0;
+		}
+		public void SetFingertipPosition(DndCore.Vector vector)
+		{
+			FingertipPosition = vector;
 		}
 	}
 }
