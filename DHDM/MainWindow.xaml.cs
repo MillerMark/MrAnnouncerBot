@@ -384,7 +384,10 @@ namespace DHDM
 			}
 
 			if (ammunitionList.Count <= 0)
+			{
+				// TODO: Show player is out of ammunition.
 				return;
+			}
 			int result = await AskQuestion("Choose ammunition: ", ammunitionList);
 			if (result > 0)
 				ea.Ammunition = filteredAmmunition[result - 1];
@@ -1757,6 +1760,10 @@ namespace DHDM
 			// ![](9920C0D4E763C7314FD8A6EAF74D5FB3.png)
 			if (diceRoll.RollScope == RollScope.ActivePlayer)
 				rbActivePlayer.IsChecked = true;
+			else if (diceRoll.RollScope == RollScope.ActiveInGameCreature)  // CodeBaseAlpha was right. I added this line of code.
+				rbActiveNpc.IsChecked = true;  // <---- And this line of code.
+			else if (diceRoll.RollScope == RollScope.TargetedInGameCreatures)  // CodeBaseAlpha was right. I added this line of code.
+				rbTargetedNpcs.IsChecked = true;  // <---- And this line of code.
 			else
 				rbIndividuals.IsChecked = true;
 		}
@@ -2893,33 +2900,48 @@ namespace DHDM
 				}
 			}
 
-			bool foundPlayer = false;
-			foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+			if (NextRollScope == RollScope.ActiveInGameCreature)
 			{
-				if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
-				{
-					VantageKind vantageKind = VantageKind.Normal;
-					if (checkbox.RbAdvantage.IsChecked == true)
-						vantageKind = VantageKind.Advantage;
-					else if (checkbox.RbDisadvantage.IsChecked == true)
-						vantageKind = VantageKind.Disadvantage;
-
-					checkbox.RbNormal.IsChecked = true;
-
-					if ((type == DiceRollType.Attack || type == DiceRollType.ChaosBolt) && checkbox.PlayerId != ActivePlayerId)
-						continue;
-
-					string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
-					BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
-					diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
-					foundPlayer = true;
-				}
+				diceRoll.RollScope = RollScope.ActiveInGameCreature;
+				InGameCreature activeTurnCreature = game.GetActiveTurnCreature() as InGameCreature;
+				if (activeTurnCreature != null)
+					AllInGameCreatures.AddDiceForCreature(diceRoll.DiceDtos, NextDieStr, activeTurnCreature.Index);
 			}
-
-			if (!foundPlayer)
+			else if (NextRollScope == RollScope.TargetedInGameCreatures)
 			{
-				BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
-				diceRoll.VantageKind = diceRollKind;
+				diceRoll.RollScope = RollScope.TargetedInGameCreatures;
+				AllInGameCreatures.AddDiceForTargeted(diceRoll.DiceDtos, NextDieStr);
+			}
+			else
+			{
+				bool foundPlayer = false;
+				foreach (UIElement uIElement in grdPlayerRollOptions.Children)
+				{
+					if (uIElement is PlayerRollCheckBox checkbox && checkbox.IsChecked == true)
+					{
+						VantageKind vantageKind = VantageKind.Normal;
+						if (checkbox.RbAdvantage.IsChecked == true)
+							vantageKind = VantageKind.Advantage;
+						else if (checkbox.RbDisadvantage.IsChecked == true)
+							vantageKind = VantageKind.Disadvantage;
+
+						checkbox.RbNormal.IsChecked = true;
+
+						if ((type == DiceRollType.Attack || type == DiceRollType.ChaosBolt) && checkbox.PlayerId != ActivePlayerId)
+							continue;
+
+						string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
+						BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
+						diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
+						foundPlayer = true;
+					}
+				}
+
+				if (!foundPlayer)
+				{
+					BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
+					diceRoll.VantageKind = diceRollKind;
+				}
 			}
 
 			diceRoll.AddCritFailMessages(type);
@@ -3217,12 +3239,42 @@ namespace DHDM
 			}
 		}
 
+		RollScope nextRollScope;
+
+		string NextDieStr;
+		public RollScope NextRollScope
+		{
+			get => nextRollScope;
+			set
+			{
+				if (nextRollScope == value)
+					return;
+
+				nextRollScope = value;
+				SetNextRollScopeUI();
+			}
+		}
+
 		private void SetNextRollTypeUI()
 		{
 			if (nextDieRollType != DiceRollType.None)
 				tbNextDieRoll.Text = $"({nextDieRollType})";
 			else
 				tbNextDieRoll.Text = "";
+			btnRollDice.IsEnabled = true;
+		}
+
+		private void SetNextRollScopeUI()
+		{
+			if (nextRollScope == RollScope.ActiveInGameCreature)
+				rbActiveNpc.IsChecked = true;
+			else if (nextRollScope == RollScope.ActivePlayer)
+				rbActivePlayer.IsChecked = true;
+			else if (nextRollScope == RollScope.TargetedInGameCreatures)
+				rbTargetedNpcs.IsChecked = true;
+			else if (nextRollScope == RollScope.Individuals)
+				rbIndividuals.IsChecked = true;
+
 			btnRollDice.IsEnabled = true;
 		}
 
@@ -3673,41 +3725,32 @@ namespace DHDM
 			}
 		}
 
-		// TODO: Delete this method.
-		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoSaved, SavingThrowResult savingThrowResult)
-		{
-			if (savingThrowResult == SavingThrowResult.Success)
-			{
+		//void ApplyHalfDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoSaved, string spellName)
+		//{
+		//	if (thoseWhoSaved.Count == 0)
+		//		return;
+		//	Spell spell = AllSpells.Get(spellName);
+		//	if (spell != null)
+		//	{
+		//		Target target = new Target(thoseWhoSaved);
 
-			}
-		}
+		//		if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
+		//		{
+		//			Expressions.Do("GiveTargetHalfDamage();", ActivePlayer, target, null, null, latestDamage);
+		//		}
+		//		else
+		//		{
+		//			// TODO: See if I need to save and pass in the CastedSpell that got us here.
+		//			spell.TriggerTargetSaves(ActivePlayer, target, null, latestDamage);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		//System.Diagnostics.Debugger.Break();
+		//	}
+		//}
 
-		void ApplyHalfDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoSaved, string spellName)
-		{
-			if (thoseWhoSaved.Count == 0)
-				return;
-			Spell spell = AllSpells.Get(spellName);
-			if (spell != null)
-			{
-				Target target = new Target(thoseWhoSaved);
-
-				if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
-				{
-					Expressions.Do("GiveTargetHalfDamage();", ActivePlayer, target, null, null, latestDamage);
-				}
-				else
-				{
-					// TODO: See if I need to save and pass in the CastedSpell that got us here.
-					spell.TriggerTargetSaves(ActivePlayer, target, null, latestDamage);
-				}
-			}
-			else
-			{
-				//System.Diagnostics.Debugger.Break();
-			}
-		}
-
-		void ApplyFullDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoFailed, string spellName)
+		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoFailed, string damageExpression, string spellName)
 		{
 			if (thoseWhoFailed.Count == 0)
 				return;
@@ -3718,7 +3761,7 @@ namespace DHDM
 
 				if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
 				{
-					Expressions.Do("GiveTargetFullDamage();", ActivePlayer, target, null, null, latestDamage);
+					Expressions.Do(damageExpression, ActivePlayer, target, null, null, latestDamage);
 				}
 				else
 				{
@@ -3745,6 +3788,25 @@ namespace DHDM
 				}
 			}
 		}
+
+		string ToDisplayList(List<PlayerRoll> playerRolls)
+		{
+			if (playerRolls == null || playerRolls.Count == 0)
+				return string.Empty;
+
+			string result = "";
+			foreach (PlayerRoll playerRoll in playerRolls)
+			{
+				if (playerRoll.id > 0)
+					result += GetPlayerName(playerRoll.id);
+				else
+					result += GetCreatureName(-playerRoll.id);
+
+				result += ", ";
+			}
+			return result.TrimEnd(',', ' ');
+		}
+
 		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			SaveNamedResults(ea);
@@ -3829,16 +3891,27 @@ namespace DHDM
 				if (ea.StopRollingData.multiplayerSummary != null)
 				{
 					List<PlayerRoll> thoseWhoSaved = new List<PlayerRoll>();
+					List<PlayerRoll> thoseWhoCritSaved = new List<PlayerRoll>();
+					List<PlayerRoll> thoseWhoCritFailed = new List<PlayerRoll>();
 					List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
 					foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
 					{
-						if (playerRoll.success)
+						if (playerRoll.isCompleteFail)
+							thoseWhoCritFailed.Add(playerRoll);
+						else if (playerRoll.isCrit)
+							thoseWhoCritSaved.Add(playerRoll);
+						else if (playerRoll.success)
 							thoseWhoSaved.Add(playerRoll);
 						else
 							thoseWhoFailed.Add(playerRoll);
 					}
-					ApplyHalfDamageFromLastSavingThrow(thoseWhoSaved, ea.StopRollingData.spellName);
-					ApplyFullDamageFromLastSavingThrow(thoseWhoFailed, ea.StopRollingData.spellName);
+					ApplyDamageFromLastSavingThrow(thoseWhoSaved, "GiveTargetHalfDamage();", ea.StopRollingData.spellName);
+					ApplyDamageFromLastSavingThrow(thoseWhoFailed, "GiveTargetFullDamage();", ea.StopRollingData.spellName);
+					ApplyDamageFromLastSavingThrow(thoseWhoCritFailed, "GiveTargetDoubleDamage();", ea.StopRollingData.spellName);
+					if (thoseWhoCritSaved.Count > 1)
+						TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and take no damage!");
+					else if (thoseWhoCritSaved.Count == 1)
+						TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and takes no damage!");
 					UpdateInGameCreatures();
 				}
 			}
@@ -4092,6 +4165,17 @@ namespace DHDM
 			{
 				if (player.playerID == playerID)
 					return DndUtils.GetFirstName(player.name);
+			}
+
+			return "";
+		}
+
+		string GetCreatureName(int creatureID)
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				if (inGameCreature.Index == creatureID)
+					return inGameCreature.Name;
 			}
 
 			return "";
@@ -4664,6 +4748,7 @@ namespace DHDM
 				foreach (Character player in game.Players)
 				{
 					player.ShowingNameplate = player.playerID == playerID;
+					// TODO: Update checkboxes to match player.ShowingNameplate setting.
 				}
 			}
 			else
@@ -4779,18 +4864,18 @@ namespace DHDM
 			});
 		}
 
-		private void SetRollScopeForPlayers(List<int> playerIds)
+		private void SetRollScopeForPlayers(List<int> creatureIds)
 		{
-			if (IncludesAllPlayers(playerIds))
+			if (IncludesAllPlayers(creatureIds))
 				rbEveryone.IsChecked = true;
-			else if (playerIds.Count > 1)
+			else if (creatureIds.Count > 1)
 			{
 				rbIndividuals.IsChecked = true;
 				// TODO: Check each individual identified by the player id's.
 			}
 			else
 			{
-				ActivePlayerId = playerIds[0];
+				ActivePlayerId = creatureIds[0];
 				rbActivePlayer.IsChecked = true;
 			}
 		}
@@ -5047,10 +5132,38 @@ namespace DHDM
 			PlayerStatsManager.ClearReadyToRollState();
 		}
 
+		public void InstantDiceRolledByTargets(DiceRollType diceRollType, string dieStr)
+		{
+			string creatures = AllInGameCreatures.GetTargetedCreatureDisplayList();
+			TellAll($"Rolling {dieStr} for {creatures}...");
+
+			SafeInvoke(() =>
+			{
+				SetRollTypeUI(diceRollType);
+				DiceRoll diceRoll = PrepareRoll(diceRollType);
+				if (diceRoll.PlayerRollOptions != null)
+					diceRoll.PlayerRollOptions.Clear();
+				diceRoll.RollScope = RollScope.TargetedInGameCreatures;
+				AllInGameCreatures.AddDiceForTargeted(diceRoll.DiceDtos, dieStr);
+				diceRoll.DamageHealthExtraDice = dieStr;
+				RollTheDice(diceRoll);
+			});
+		}
+
 		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds)
 		{
+			NextDieStr = dieStr;
 			string who;
-			if (IncludesAllPlayers(playerIds))
+			if (playerIds?.Count == 1 && playerIds[0] < 0)
+			{
+				InGameCreature creature = AllInGameCreatures.GetByIndex(-playerIds[0]);
+				who = creature.Name;
+				Dispatcher.Invoke(() =>
+				{
+					NextRollScope = RollScope.ActiveInGameCreature;
+				});
+			}
+			else if (IncludesAllPlayers(playerIds))
 				who = "all players";
 			else
 				who = GetPlayerName(ActivePlayerId);
@@ -5431,6 +5544,9 @@ namespace DHDM
 
 		public int GetActivePlayerId()
 		{
+			InGameCreature activeTurnCreature = game.GetActiveTurnCreature() as InGameCreature;
+			if (activeTurnCreature != null)
+				return -activeTurnCreature.Index;
 			return ActivePlayerId;
 		}
 
@@ -6372,6 +6488,8 @@ namespace DHDM
 
 				RollTheDice(PrepareRoll(NextDieRollType), delayMs);
 				NextDieRollType = DiceRollType.None;
+				NextRollScope = RollScope.ActivePlayer;
+				NextDieStr = "";
 			}
 		}
 
@@ -8701,6 +8819,18 @@ namespace DHDM
 				NextDieRollType = DiceRollType.SkillCheck;
 			});
 		}
+		public void PrepareTargetSkillCheck(string skillCheck)
+		{
+			spellToCastOnRoll = null;
+			SafeInvoke(() =>
+			{
+				ckbUseMagic.IsChecked = false;
+				SelectSkill(DndUtils.ToSkill(skillCheck));
+				NextDieRollType = DiceRollType.SkillCheck;
+				NextRollScope = RollScope.TargetedInGameCreatures;
+				NextDieStr = "1d20";
+			});
+		}
 
 		public void PrepareSavingThrow(string savingThrow)
 		{
@@ -8712,6 +8842,18 @@ namespace DHDM
 				ckbUseMagic.IsChecked = false;
 				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
 				NextDieRollType = DiceRollType.SavingThrow;
+			});
+		}
+		public void PrepareTargetSavingThrow(string savingThrow)
+		{
+			spellToCastOnRoll = null;
+			SafeInvoke(() =>
+			{
+				ckbUseMagic.IsChecked = false;
+				SelectSavingThrowAbility(DndUtils.ToAbility(savingThrow));
+				NextDieRollType = DiceRollType.SavingThrow;
+				NextRollScope = RollScope.TargetedInGameCreatures;
+				NextDieStr = "1d20";
 			});
 		}
 
@@ -8881,8 +9023,10 @@ namespace DHDM
 				return;
 			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.NotCalibrating)
 				return;
+			LeapMotionCalibrationStep calibrationStep = leapCalibrator.leapMotionCalibrationStep;
 			Point position = leapCalibrator.MouseDown(e, this);
 			ShowCalibrationStepComplete(position);
+			leapDevice.CalibrationPointUpdated(calibrationStep, position, leapCalibrator.FingertipPosition, leapCalibrator.ActiveScale);
 			if (leapCalibrator.leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
 			{
 				ReleaseMouseCapture();
@@ -8942,6 +9086,12 @@ namespace DHDM
 				btnTestCalibration.Content = "Stop Testing";
 			else
 				btnTestCalibration.Content = "Test...";
+		}
+
+		private void LeapDiagnosticsOptionsChanged(object sender, RoutedEventArgs e)
+		
+		{
+			leapDevice.SetDiagnosticsOptions(chkShowBackPlane.IsChecked == true, chkShowFrontPlane.IsChecked == true, chkShowActivePlane.IsChecked == true);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

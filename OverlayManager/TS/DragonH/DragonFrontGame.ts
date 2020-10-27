@@ -4,10 +4,10 @@
 	Stop
 }
 
-class ValidationIssueDto {
-	constructor(public ValidationAction: ValidationAction, public FloatText: string, public PlayerId: number) {
-
-	}
+enum HandDetails {
+	FacingUp = 1,
+	FingersClosed = 2,
+	FingersOpened = 4
 }
 
 class ScaledPoint {
@@ -15,6 +15,58 @@ class ScaledPoint {
 	Y: number;
 	Scale: number;
 	constructor() {
+
+	}
+}
+
+class Finger2d {
+	TipPosition: ScaledPoint;
+	constructor() {
+
+	}
+}
+
+class Point2D {
+	constructor(public X: number, public Y: number) {
+
+	}
+}
+
+class ScaledPlane {
+	UpperLeft: ScaledPoint;
+	LowerRight: ScaledPoint;
+	UpperLeft2D: Point2D;
+	LowerRight2D: Point2D;
+	constructor() {
+
+	}
+}
+
+class Hand2d {
+	Details: HandDetails;
+	PalmPosition: ScaledPoint;
+	Fingers: Array<Finger2d>;
+
+	constructor() {
+
+	}
+}
+
+class SkeletalData2d {
+	Hands: Array<Hand2d>;
+	BackPlane: ScaledPlane;
+	FrontPlane: ScaledPlane;
+	ActivePlane: ScaledPlane;
+	ShowBackPlane: boolean;
+	ShowFrontPlane: boolean;
+	ShowActivePlane: boolean;
+	constructor() {
+
+	}
+}
+
+class ValidationIssueDto {
+	constructor(public ValidationAction: ValidationAction, public FloatText: string, public PlayerId: number) {
 
 	}
 }
@@ -200,11 +252,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			context.fillText(this.calibrationPosition, 700, 760);
 		}
 
-		if (this.palmPosition) {
-			const edgeLength = this.palmPosition.Scale * this.palmPosition.Scale * 10;
-			const edgeHalfLength: number = edgeLength / 2;
-			context.fillStyle = '#0000ff';
-			context.fillRect(this.palmPosition.X - edgeHalfLength, this.palmPosition.Y - edgeHalfLength, edgeLength, edgeLength);
+		if (this.skeletalData2d) {
+			this.showLiveHandEffects(context, nowMs);
 		}
 	}
 
@@ -1599,10 +1648,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.changeFramerate(frameRateChangeData.FrameRate);
 	}
 
-	palmPosition: ScaledPoint;
+	skeletalData2d: SkeletalData2d;
 
 	updateSkeletalData(skeletalData: string): void {
-		this.palmPosition = JSON.parse(skeletalData) as ScaledPoint;
+		this.skeletalData2d = JSON.parse(skeletalData) as SkeletalData2d;
 	}
 
 	calibrationCursorSprite: SpriteProxy;
@@ -1634,6 +1683,82 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		// X, Y, DiscoverabilityIndex
 		// If  we are done and need to hide everything.
 		this.calibrationPosition = `Fingertip: (${Math.round(dto.FingertipPosition.x)}, ${Math.round(dto.FingertipPosition.y)}, ${Math.round(dto.FingertipPosition.z)})`;
+	}
+
+	static readonly fingerWidth: number = 44;
+
+
+	showLiveHandEffects(context: CanvasRenderingContext2D, nowMs: number) {
+		const handFillColors = ['#ff0000', '#0000ff'];
+		const fingerFillColors = ['#ff8080', '#8080ff'];
+		let colorIndex = 0;
+		context.globalAlpha = 0.5;
+
+		this.skeletalData2d.Hands.forEach((hand: Hand2d) => {
+
+			context.fillStyle = handFillColors[colorIndex];
+			context.beginPath();
+			// TODO: Move DragonFrontGame.fingerWidth and related code to a separate class.
+			context.arc(hand.PalmPosition.X, hand.PalmPosition.Y, Math.max(2 * DragonFrontGame.fingerWidth * hand.PalmPosition.Scale / 2.0, 20), 0, 2 * Math.PI);
+			context.fill();
+
+			hand.Fingers.forEach((finger: Finger2d) => {
+				context.fillStyle = fingerFillColors[colorIndex];
+				context.beginPath();
+				// TODO: Move DragonFrontGame.fingerWidth and related code to a separate class.
+				context.arc(finger.TipPosition.X, finger.TipPosition.Y, Math.max(DragonFrontGame.fingerWidth * finger.TipPosition.Scale / 2.0, 10), 0, 2 * Math.PI);
+				context.fill();
+			});
+
+			colorIndex++;
+			if (colorIndex >= handFillColors.length)
+				colorIndex = 0;
+		});
+
+		if (this.skeletalData2d.ShowBackPlane) {
+			this.drawPlane(context, this.skeletalData2d.BackPlane, '#800000');
+		}
+
+		if (this.skeletalData2d.ShowFrontPlane) {
+			this.drawPlane(context, this.skeletalData2d.FrontPlane, '#000080');
+		}
+
+		context.globalAlpha = 1;
+	}
+
+	atOrigin(point: Point2D): boolean {
+		if (!point)
+			return true;
+		return point.X === 0 && point.Y === 0;
+	}
+
+	drawPlane(context: CanvasRenderingContext2D, plane: ScaledPlane, fillStyle: string) {
+		if (!this.atOrigin(plane.UpperLeft2D) && !this.atOrigin(plane.LowerRight2D)) {
+			context.globalAlpha = 0.3;
+			context.fillStyle = fillStyle;
+			const width: number = plane.LowerRight2D.X - plane.UpperLeft2D.X;
+			const height: number = plane.LowerRight2D.Y - plane.UpperLeft2D.Y;
+			context.fillRect(plane.UpperLeft2D.X, plane.UpperLeft2D.Y, width, height);
+		}
+
+		if (!this.atOrigin(plane.UpperLeft2D)) {
+			//console.log(`Upper left: (${plane.UpperLeft2D.X}, ${plane.UpperLeft2D.Y})`);
+			this.drawPoint(context, plane.UpperLeft2D, plane.UpperLeft.Scale);
+		}
+
+		if (!this.atOrigin(plane.LowerRight2D)) {
+			this.drawPoint(context, plane.LowerRight2D, plane.LowerRight.Scale);
+		}
+
+		context.globalAlpha = 1;
+	}
+
+	drawPoint(context: CanvasRenderingContext2D, point: Point2D, scale: number) {
+		context.globalAlpha = 0.8;
+		context.beginPath();
+		context.arc(point.X, point.Y, DragonFrontGame.fingerWidth * scale / 2, 0, 2 * Math.PI);
+		context.fill();
+		context.globalAlpha = 1;
 	}
 }
 

@@ -254,6 +254,10 @@ namespace DndCore
 
 		private void TriggerPlayerCastsSpell(string arguments, Character player, CastedSpell spell)
 		{
+			if (Name == "WildMagicSurge")
+			{
+				System.Diagnostics.Debugger.Break();
+			}
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerCastsSpell))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerCastsSpell, Parameters, arguments), player, null, spell);

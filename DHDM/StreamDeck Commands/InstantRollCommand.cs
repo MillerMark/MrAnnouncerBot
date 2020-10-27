@@ -11,6 +11,7 @@ namespace DHDM
 	{
 		string dieStr;
 		bool testAllPlayers;
+		bool rollForTargets;
 		DiceRollType diceRollType;
 
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)

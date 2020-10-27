@@ -510,6 +510,12 @@
 											<RadioButton x:Name="rbIndividuals" Checked="RbIndividuals_Checked" Margin="20, 0, 0, 0">
 												Individuals
 											</RadioButton>
+											<RadioButton x:Name="rbActiveNpc" Checked="RbIndividuals_Checked" Margin="20, 0, 0, 0">
+												Active NPC
+											</RadioButton>
+											<RadioButton x:Name="rbTargetedNpcs" Checked="RbIndividuals_Checked" Margin="20, 0, 0, 0">
+												Targeted NPCs
+											</RadioButton>
 										</StackPanel>
 										<Grid x:Name="grdPlayerRollOptions" Height="Auto" Width="Auto" Margin="14, 10, 0, 0">
 											<Grid.ColumnDefinitions>
@@ -1213,11 +1219,24 @@
 								Test...
 							</Button>
 						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
+							<TextBlock Text="Diagnostics: " Width="Auto" Height="Auto"/>
+							<CheckBox x:Name="chkShowBackPlane" Margin="14, 0, 0, 0" Checked="LeapDiagnosticsOptionsChanged" Unchecked="LeapDiagnosticsOptionsChanged">
+								Show Back Plane
+							</CheckBox>
+							<CheckBox x:Name="chkShowFrontPlane" Margin="14, 0, 0, 0" Checked="LeapDiagnosticsOptionsChanged" Unchecked="LeapDiagnosticsOptionsChanged">
+								Show Front Plane
+							</CheckBox>
+							<CheckBox x:Name="chkShowActivePlane" Margin="14, 0, 0, 0" Checked="LeapDiagnosticsOptionsChanged" Unchecked="LeapDiagnosticsOptionsChanged">
+								Show Active Plane
+							</CheckBox>
+						</StackPanel>
 						<TextBlock x:Name="tbInstructions" Text="Do this next!" Width="Auto" Height="Auto" FontSize="30" Visibility="Hidden"/>
 						<TextBlock x:Name="tbCalibrationStatus" Text="Status:" Width="Auto" Height="Auto" Margin="0, 20, 0, 0" Visibility="Hidden"/>
 						<ListBox x:Name="lbCalibrationStatus" Visibility="Hidden">
 							
 						</ListBox>
+						
 					</StackPanel>
 				</TabItem>
 			</TabControl>

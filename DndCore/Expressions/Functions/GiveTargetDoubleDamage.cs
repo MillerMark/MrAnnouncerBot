@@ -5,16 +5,16 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	[Tooltip("Gives the target full damage from the last spell/magic attack.")]
-	public class GiveTargetHalfDamage : DndFunction
+	[Tooltip("Gives the target double damage from the last spell/magic attack.")]
+	public class GiveTargetDoubleDamage : DndFunction
 	{
-		public override string Name { get; set; } = "GiveTargetHalfDamage";
+		public override string Name { get; set; } = "GiveDoubleFullDamage";
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 0);
-			return GiveTargetFullDamage.ApplyDamage(args, evaluator, player, target, 0.5);
+			return GiveTargetFullDamage.ApplyDamage(args, evaluator, player, target, 0);
 		}
-		
 	}
 }
+

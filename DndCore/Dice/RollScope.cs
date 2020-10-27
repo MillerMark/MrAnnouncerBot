@@ -7,6 +7,7 @@ namespace DndCore
 	{
 		ActivePlayer,
 		Individuals,  // Everyone is included in this scope.
-		InGameCreatures
+		ActiveInGameCreature,
+		TargetedInGameCreatures
 	}
 }

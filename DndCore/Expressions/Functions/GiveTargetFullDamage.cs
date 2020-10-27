@@ -13,6 +13,11 @@ namespace DndCore
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 0);
+			return ApplyDamage(args, evaluator, player, target, 1);
+		}
+
+		public static object ApplyDamage(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, double multiplier = 1)
+		{
 			Dictionary<DamageType, int> latestDamage = Expressions.GetCustomData<Dictionary<DamageType, int>>(evaluator.Variables);
 			if (latestDamage == null)
 				return null;
@@ -30,7 +35,7 @@ namespace DndCore
 							player.Game.TellDungeonMaster($"{inGameCreature.Name} is vulnerable to {damageType} damage.");
 						else if (creature.IsResistantTo(damageType, AttackKind.Magical))
 							player.Game.TellDungeonMaster($"{inGameCreature.Name} is resistant to {damageType} damage.");
-						inGameCreature.TakeSomeDamage(player, damageType, AttackKind.Magical, latestDamage[damageType]);
+						inGameCreature.TakeSomeDamage(player, damageType, AttackKind.Magical, (int)Math.Floor(latestDamage[damageType] * multiplier));
 					}
 				}
 				inGameCreature.FinishTakingDamage();
@@ -40,3 +45,4 @@ namespace DndCore
 		}
 	}
 }
+

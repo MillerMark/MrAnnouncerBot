@@ -12,21 +12,23 @@ namespace DHDM
 {
 	public class LeapCalibrator
 	{
-		public static bool Calibrated { get; set; }
-		public static double backScale;
-		public static double frontScale;
-		public static double backPlaneZ;
-		public static double frontPlaneZ;
+		public static bool Calibrated { get; set; } = true;
+		public CoreVector FingertipPosition { get => fingertipPosition; set => fingertipPosition = value; }
 
-		public static CoreVector backUpperLeft3d;
-		public static CoreVector backLowerRight3d;
-		public static CoreVector frontUpperLeft3d;
-		public static CoreVector frontLowerRight3d;
+		public static double backScale = 0.5;
+		public static double frontScale = 1.6;
+		public static double backPlaneZ = 248.5;
+		public static double frontPlaneZ = -9.842;
 
-		public static Point backUpperLeft2d;
-		public static Point backLowerRight2d;
-		public static Point frontUpperLeft2d;
-		public static Point frontLowerRight2d;
+		public static CoreVector backUpperLeft3d = new CoreVector(-323.4, 527.5, 248.5);
+		public static CoreVector backLowerRight3d = new CoreVector(221.7, 422.6, 240.1);
+		public static CoreVector frontUpperLeft3d = new CoreVector(-179.389, 413.59, -9.842);
+		public static CoreVector frontLowerRight3d = new CoreVector(29.67, 382.88, 68.613);  // 36.86, 373.5, -3.678
+
+		public static Point backUpperLeft2d = new Point(887, 711);
+		public static Point backLowerRight2d = new Point(1578, 976);
+		public static Point frontUpperLeft2d = new Point(891, 748);
+		public static Point frontLowerRight2d = new Point(1457, 982);  // 1579, 1000
 
 		internal LeapMotionCalibrationStep leapMotionCalibrationStep;
 		LeapCalibrationData leapCalibrationData = new LeapCalibrationData();
@@ -101,7 +103,7 @@ namespace DHDM
 			if (leapMotionCalibrationStep != LeapMotionCalibrationStep.NotCalibrating)
 			{
 				Leap.Vector tipPosition = ea.Frame.Hands[0].Fingers[1].TipPosition;
-				fingertipPosition = new DndCore.Vector(tipPosition.x, tipPosition.y, tipPosition.z);
+				fingertipPosition = new CoreVector(tipPosition.x, tipPosition.y, tipPosition.z);
 				leapCalibrationData.SetFingertipPosition(fingertipPosition);
 				HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
 			}
@@ -131,6 +133,15 @@ namespace DHDM
 			leapCalibrationData.SetXY(e.GetPosition(window));
 			HubtasticBaseStation.CalibrateLeapMotion(JsonConvert.SerializeObject(leapCalibrationData));
 		}
+
+		public double ActiveScale
+		{
+			get
+			{
+				return leapCalibrationData.Scale;
+			}
+		}
+		
 
 		void StorePoints()
 		{
@@ -176,7 +187,8 @@ namespace DHDM
 				return default;
 			Point position = e.GetPosition(mainWindow);
 			// TODO: Record the 2D and 3D points somewhere
-			StorePoints();
+			if (e.LeftButton == MouseButtonState.Pressed)
+				StorePoints();
 			if (leapMotionCalibrationStep == LeapMotionCalibrationStep.FrontLowerRight)
 			{
 				leapMotionCalibrationStep = LeapMotionCalibrationStep.NotCalibrating;

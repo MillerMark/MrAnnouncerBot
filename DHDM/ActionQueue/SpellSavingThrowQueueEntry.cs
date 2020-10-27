@@ -13,7 +13,7 @@ namespace DHDM
 		public SpellSavingThrowQueueEntry()
 		{
 			RollType = DiceRollType.SavingThrow;
-			RollScope = RollScope.InGameCreatures;
+			RollScope = RollScope.TargetedInGameCreatures;
 		}
 
 		public override void PrepareRoll(DiceRoll diceRoll)

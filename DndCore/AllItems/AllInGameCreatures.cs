@@ -34,28 +34,6 @@ namespace DndCore
 			// TODO: Optimize this code to be more efficient (takes about 6 seconds).
 			GoogleSheets.SaveChanges(Creatures.ToArray(), "TempHitPointsStr,HitPointsStr");
 		}
-		public static void AddD20sForSelected(List<DiceDto> diceDtos, DiceRollType rollType)
-		{
-			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-			{
-				if (inGameCreature.OnScreen)
-				{
-					DiceDto npcMonsterDice = new DiceDto();
-					npcMonsterDice.Sides = 20;
-					npcMonsterDice.CreatureId = InGameCreature.GetUniversalIndex(inGameCreature.Index);
-					npcMonsterDice.Quantity = 1;
-					//npcMonsterDice.Label = inGameCreature.Name;
-					npcMonsterDice.PlayerName = inGameCreature.Name;
-					npcMonsterDice.BackColor = inGameCreature.BackgroundHex;
-					npcMonsterDice.FontColor = inGameCreature.ForegroundHex;
-					if (rollType == DiceRollType.Initiative)
-					{
-						// TODO: Get initiative vantage for NPC/Monster
-					}
-					diceDtos.Add(npcMonsterDice);
-				}
-			}
-		}
 
 		public static void SetActiveTurn(InGameCreature inGameCreature)
 		{
@@ -135,6 +113,87 @@ namespace DndCore
 					else if (targetStatus.HasFlag(TargetStatus.AllTargets))
 						count++;
 			return count;
+		}
+
+		public static string GetTargetedCreatureDisplayList()
+		{
+			string result = string.Empty;
+			foreach (InGameCreature inGameCreature in Creatures)
+				if (inGameCreature.IsTargeted)
+					result += inGameCreature.Name + ", ";
+			return result.TrimEnd(',', ' ');
+		}
+
+		public static void AddD20sForSelected(List<DiceDto> diceDtos, DiceRollType rollType)
+		{
+			foreach (InGameCreature inGameCreature in Creatures)
+			{
+				if (inGameCreature.OnScreen)
+				{
+					DiceDto npcMonsterDice = new DiceDto();
+					npcMonsterDice.Sides = 20;
+					npcMonsterDice.CreatureId = InGameCreature.GetUniversalIndex(inGameCreature.Index);
+					npcMonsterDice.Quantity = 1;
+					SetDiceFromCreature(inGameCreature, npcMonsterDice);
+					npcMonsterDice.Label = null;  // Backwards compatibility. May be able to change after reworking code in DieRoller.ts
+					if (rollType == DiceRollType.Initiative)
+					{
+						// TODO: Get initiative vantage for NPC/Monster
+					}
+					diceDtos.Add(npcMonsterDice);
+				}
+			}
+		}
+
+		public static void AddDiceForTargeted(List<DiceDto> diceDtos, string dieStr)
+		{
+			DieRollDetails dieRollDetails = DieRollDetails.From(dieStr);
+			foreach (InGameCreature inGameCreature in Creatures)
+			{
+				if (inGameCreature.IsTargeted)
+				{
+					foreach (Roll roll in dieRollDetails.Rolls)
+					{
+						DiceDto npcMonsterDice = new DiceDto
+						{
+							Sides = roll.Sides,
+							Quantity = (int)Math.Round(roll.Count),
+							DamageType = DndUtils.ToDamage(roll.Descriptor)
+						};
+						SetDiceFromCreature(inGameCreature, npcMonsterDice);
+						diceDtos.Add(npcMonsterDice);
+					}
+				}
+			}
+		}
+
+		public static void AddDiceForCreature(List<DiceDto> diceDtos, string dieStr, int creatureIndex)
+		{
+			DieRollDetails dieRollDetails = DieRollDetails.From(dieStr);
+			foreach (InGameCreature inGameCreature in Creatures)
+			{
+				if (inGameCreature.Index == creatureIndex)
+				{
+					foreach (Roll roll in dieRollDetails.Rolls)
+					{
+						DiceDto npcMonsterDice = new DiceDto();
+						npcMonsterDice.Sides = roll.Sides;
+						npcMonsterDice.Quantity = (int)Math.Round(roll.Count);
+						npcMonsterDice.DamageType = DndUtils.ToDamage(roll.Descriptor);
+						SetDiceFromCreature(inGameCreature, npcMonsterDice);
+						diceDtos.Add(npcMonsterDice);
+					}
+				}
+			}
+		}
+
+		private static void SetDiceFromCreature(InGameCreature inGameCreature, DiceDto npcMonsterDice)
+		{
+			npcMonsterDice.CreatureId = InGameCreature.GetUniversalIndex(inGameCreature.Index);
+			npcMonsterDice.Label = inGameCreature.Name;
+			npcMonsterDice.PlayerName = inGameCreature.Name;
+			npcMonsterDice.BackColor = inGameCreature.BackgroundHex;
+			npcMonsterDice.FontColor = inGameCreature.ForegroundHex;
 		}
 	}
 }

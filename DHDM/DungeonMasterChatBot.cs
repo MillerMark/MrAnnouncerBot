@@ -41,8 +41,10 @@ namespace DHDM
 			Commands.Add(new SpellScrollsToggleCommand());
 			Commands.Add(new SkillCheckNowCommand());
 			Commands.Add(new SkillCheckCommand());
+			Commands.Add(new TargetSkillCheckCommand());
 			Commands.Add(new RollSaveCommand());
 			Commands.Add(new SavingThrowCommand());
+			Commands.Add(new TargetSavingThrowCommand());
 			Commands.Add(new ClearAllConditionsCommand());
 			Commands.Add(new SavingThrowNowCommand());
 			Commands.Add(new ChangeVolumeCommand());

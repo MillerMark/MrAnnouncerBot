@@ -1,7 +1,8 @@
 enum RollScope {
 	ActivePlayer,
 	Individuals,
-	InGameCreatures
+	ActiveInGameCreature,
+	TargetedInGameCreatures
 }
 
 enum DiceRollType {

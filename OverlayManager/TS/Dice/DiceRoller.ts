@@ -747,7 +747,7 @@ class RollResults {
 }
 
 class PlayerRoll {
-	constructor(public roll: number, public name: string, public id: number, public data: string, public modifier: number = 0, public success: boolean = false) {
+	constructor(public roll: number, public name: string, public id: number, public data: string, public modifier: number = 0, public success: boolean = false, public isCrit: boolean = false, public isCompleteFail: boolean = false) {
 	}
 }
 
@@ -797,7 +797,13 @@ function addDieToMultiPlayerSummary(die: IDie, topNumber: number) {
 		}
 
 		const success: boolean = topNumber + modifier >= diceRollData.hiddenThreshold;
-		diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success));
+		let critHit: boolean;
+		if (diceRollData && diceRollData.minCrit)
+			critHit = topNumber >= diceRollData.minCrit;
+		else
+			critHit = topNumber >= 20;
+		const critFail: boolean = topNumber === 1;
+		diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success, critHit, critFail));
 		//console.log(diceRollData.multiplayerSummary[0].roll);
 	}
 	//console.log(diceRollData.multiplayerSummary);

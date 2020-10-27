@@ -11,5 +11,7 @@ namespace DndCore
 		public int id;
 		public int modifier;
 		public bool success;
+		public bool isCrit;
+		public bool isCompleteFail;
 	}
 }

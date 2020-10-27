@@ -35,6 +35,7 @@ namespace DHDM
 		void RollSkillCheck(Skills skill, List<int> playerIds);
 		void RollSavingThrow(Ability ability, List<int> playerIds);
 		void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds);
+		void InstantDiceRolledByTargets(DiceRollType diceRollType, string dieStr);
 		void ChangeWealth(List<int> playerIds, decimal deltaAmount);
 		void RollAttack();
 		void SetClock(int hours, int minutes, int seconds);
@@ -57,7 +58,9 @@ namespace DHDM
 		void NextTurn();
 		void ReStackConditions();
 		void PrepareSkillCheck(string skillCheck);
+		void PrepareTargetSkillCheck(string skillCheck);
 		void PrepareSavingThrow(string savingThrow);
+		void PrepareTargetSavingThrow(string savingThrow);
 		void ClearAllConditions(string targetName);
 		void ApplyToTargetedCreatures(string applyCommand);
 		void ClearDice();
