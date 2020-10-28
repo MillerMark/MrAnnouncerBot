@@ -43,6 +43,14 @@ namespace DHDM
 			return skeletalData2d.ShowingDiagnostics();
 		}
 
+		public PalmDirection GetPalmDirection()
+		{
+			if (skeletalData2d.Hands.Count > 0)
+				return skeletalData2d.Hands[0].PalmDirection;
+
+			return PalmDirection.None;
+		}
+
 		void ClearImpulseData()
 		{
 			skeletalData2d.HandEffect = null;

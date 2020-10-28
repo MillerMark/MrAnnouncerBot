@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="C5, Version=2.5.0.0, Culture=neutral, PublicKeyToken=282361b99ded7e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\C5.2.5.3\lib\net45\C5.dll</HintPath>
+    </Reference>
     <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvHelper.12.1.1\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
@@ -315,7 +318,9 @@
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
     <Compile Include="Finger2d.cs" />
     <Compile Include="Hand2d.cs" />
-    <Compile Include="HandDetails.cs" />
+    <Compile Include="HandSide.cs" />
+    <Compile Include="HandVelocityHistory.cs" />
+    <Compile Include="PalmDirection.cs" />
     <Compile Include="LeapCalibrationData.cs" />
     <Compile Include="LeapCalibrator.cs" />
     <Compile Include="LeapDevice.cs" />
@@ -476,6 +481,7 @@
     <Compile Include="User Controls\WeaponsList.xaml.cs">
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VelocityTime.cs" />
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Page Include="FrmAsk.xaml">
       <SubType>Designer</SubType>

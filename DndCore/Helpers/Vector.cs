@@ -38,5 +38,10 @@ namespace DndCore
 
 			return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 		}
+
+		public bool AtOrigin()
+		{
+			return x == 0 && y == 0 && z == 0;
+		}
 	}
 }
