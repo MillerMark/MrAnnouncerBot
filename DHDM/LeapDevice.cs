@@ -11,19 +11,19 @@ namespace DHDM
 	public class LeapDevice
 	{
 		LeapMotion leapMotion;
-		bool testing;
-		public bool Testing
+		bool active;
+		public bool Active
 		{
 			get
 			{
-				return testing;
+				return active;
 			}
 			set
 			{
-				if (testing == value)
+				if (active == value)
 					return;
-				testing = value;
-				if (testing)
+				active = value;
+				if (active)
 				{
 					leapMotion = new LeapMotion();
 					leapMotion.HandsMoved += LeapMotion_HandsMoved;
@@ -42,6 +42,12 @@ namespace DHDM
 		{
 			return skeletalData2d.ShowingDiagnostics();
 		}
+
+		void ClearImpulseData()
+		{
+			skeletalData2d.HandEffect = null;
+		}
+
 		private void LeapMotion_HandsMoved(object sender, LeapFrameEventArgs ea)
 		{
 			if (!LeapCalibrator.Calibrated && !ShowingDiagnostics())
@@ -52,6 +58,7 @@ namespace DHDM
 			else
 				skeletalData2d.SetFromFrame(null);
 			HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
+			ClearImpulseData();
 		}
 
 		public LeapDevice()
@@ -59,10 +66,18 @@ namespace DHDM
 
 		}
 
-		public void ToggleTesting()
+		public bool ShowingLiveHandPosition
 		{
-			Testing = !Testing;
+			get
+			{
+				return skeletalData2d.ShowLiveHandPosition;
+			}
+			set
+			{
+				skeletalData2d.ShowLiveHandPosition = value;
+			}
 		}
+		
 
 		public void SetDiagnosticsOptions(bool showBackPlane, bool showFrontPlane, bool showActivePlane)
 		{
@@ -92,6 +107,10 @@ namespace DHDM
 					skeletalData2d.FrontPlane.LowerRight = ScaledPoint.From(point3D, scale);
 					break;
 			}
+		}
+		public void TriggerHandFx(HandFxDto handFxDto)
+		{
+			skeletalData2d.HandEffect = handFxDto;
 		}
 	}
 }

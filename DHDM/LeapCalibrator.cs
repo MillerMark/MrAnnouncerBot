@@ -15,8 +15,8 @@ namespace DHDM
 		public static bool Calibrated { get; set; } = true;
 		public CoreVector FingertipPosition { get => fingertipPosition; set => fingertipPosition = value; }
 
-		public static double backScale = 0.5;
-		public static double frontScale = 1.6;
+		public static double backScale = 0.6;
+		public static double frontScale = 1.5;
 		public static double backPlaneZ = 248.5;
 		public static double frontPlaneZ = -9.842;
 

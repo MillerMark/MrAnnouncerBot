@@ -57,6 +57,7 @@ namespace DHDM
 			Commands.Add(new ApplyLastDamageCommand());
 			Commands.Add(new ClearNumbersCommand());
 			Commands.Add(new ChangeCommand());
+			Commands.Add(new HandFxCommand());
 			Commands.Add(new InGameUICommand());
 			Commands.Add(new NextTurnCommand());
 			Commands.Add(new SetPropertyCommand());

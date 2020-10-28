@@ -411,6 +411,8 @@
     </Compile>
     <Compile Include="StreamDeck Commands\GetDataCommand.cs" />
     <Compile Include="StreamDeck Commands\GetSavingThrowStatsCommand.cs" />
+    <Compile Include="StreamDeck Commands\HandFxCommand.cs" />
+    <Compile Include="StreamDeck Commands\HandFxDto.cs" />
     <Compile Include="StreamDeck Commands\HealthDamageCommand.cs" />
     <Compile Include="StreamDeck Commands\HiddenThresholdCommand.cs" />
     <Compile Include="Icons.cs" />

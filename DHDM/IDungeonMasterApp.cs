@@ -67,5 +67,6 @@ namespace DHDM
 		void MoveTarget(string targetingCommand);
 		void SpellScrollsToggle();
 		void InGameUICommand(string command);
+		void TriggerHandFx(HandFxDto handFxDto);
 	}
 }

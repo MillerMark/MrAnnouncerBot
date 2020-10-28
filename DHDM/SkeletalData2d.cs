@@ -2,6 +2,7 @@
 using Leap;
 using System;
 using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 
 namespace DHDM
@@ -15,11 +16,14 @@ namespace DHDM
 		public bool ShowBackPlane { get; set; }
 		public bool ShowFrontPlane { get; set; }
 		public bool ShowActivePlane { get; set; }
+		public bool ShowLiveHandPosition { get; set; }
+		public HandFxDto HandEffect { get; set; }
 
 		public SkeletalData2d()
 		{
-
+			
 		}
+
 		public void SetFromFrame(Frame frame)
 		{
 			Hands.Clear();

@@ -1211,14 +1211,18 @@
 				</TabItem>
 				<TabItem x:Name="tbLeapMotionCalibration" Header="Leap">
 					<StackPanel Orientation="Vertical">
-						<StackPanel Orientation="Horizontal">
-							<Button x:Name="btnCalibrate" Padding="8, 3, 8, 3" Click="btnCalibrate_Click" MaxWidth="80" HorizontalAlignment="Left">
+						<DockPanel >
+							<CheckBox x:Name="ckActive" Margin="5, 5, 0, 0" Click="ckActive_Click">
+								Active
+							</CheckBox>
+							<CheckBox x:Name="ckShowLiveHandPosition" Click="ckShowLiveHandPosition_Click" HorizontalAlignment="Left" Margin="20, 5, 0, 0" IsEnabled="False">
+								Show Live Hand Position
+							</CheckBox>
+							<Button x:Name="btnCalibrate" Padding="8, 3, 8, 3" Click="btnCalibrate_Click" MaxWidth="80" HorizontalAlignment="Right" IsEnabled="False">
 								Calibrate...
 							</Button>
-							<Button x:Name="btnTestCalibration" Padding="8, 3, 8, 3" Click="btnTestCalibration_Click" MaxWidth="120" HorizontalAlignment="Left" Margin="20, 0, 0, 0">
-								Test...
-							</Button>
-						</StackPanel>
+
+						</DockPanel>
 						<StackPanel Orientation="Horizontal" Margin="0, 8, 0, 0">
 							<TextBlock Text="Diagnostics: " Width="Auto" Height="Auto"/>
 							<CheckBox x:Name="chkShowBackPlane" Margin="14, 0, 0, 0" Checked="LeapDiagnosticsOptionsChanged" Unchecked="LeapDiagnosticsOptionsChanged">

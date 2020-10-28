@@ -52,7 +52,30 @@ class Hand2d {
 	}
 }
 
-class SkeletalData2d {
+enum TargetHand {
+	None,
+	Any,
+	Left,
+	Right,
+	Both
+}
+
+interface HandEffectDto {
+	EffectName: string;
+	Scale: number;
+	HueShift: number;
+	FollowHand: boolean;
+	OffsetX: number;
+	OffsetY: number;
+	TargetHand: TargetHand;
+}
+
+interface HandFxDto {
+	HandEffects: Array<HandEffectDto>;
+	KillFollowEffects: TargetHand;
+}
+
+interface SkeletalData2d {
 	Hands: Array<Hand2d>;
 	BackPlane: ScaledPlane;
 	FrontPlane: ScaledPlane;
@@ -60,9 +83,8 @@ class SkeletalData2d {
 	ShowBackPlane: boolean;
 	ShowFrontPlane: boolean;
 	ShowActivePlane: boolean;
-	constructor() {
-
-	}
+	ShowLiveHandPosition: boolean;
+	HandEffect: HandFxDto;
 }
 
 class ValidationIssueDto {
@@ -78,6 +100,10 @@ interface INameplateRenderer {
 
 interface ITextFloater {
 	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string): TextEffect;
+}
+
+interface ScaleFactor {
+	scaleFactor: number;
 }
 
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
@@ -113,6 +139,16 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	bloodGushD: BloodSprites;  // Totally contained, 575 pixels high.
 	bloodGushE: BloodSprites;  // Totally contained, 700 pixels high.
 
+	handEffectsCollection: SpriteCollection = new SpriteCollection();
+	handHeldFireball: Sprites;
+	handHeldFireRiseA: Sprites;
+	handHeldFireRiseB: Sprites;
+	handHeldFireRiseC: Sprites;
+	smokePoofA: Sprites;
+	smokePoofB: Sprites;
+	smokePoofC: Sprites;
+	smokePoofD: Sprites;
+	smokePoofE: Sprites;
 
 	sparkTrailBurst: Sprites;
 	swirlSmokeA: Sprites;
@@ -191,6 +227,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
 		this.conditionManager.initialize(this, this, this.dragonFrontSounds);
 		this.initializeOffscreenCanvases();
+		this.initializeHandEffects();
 	}
 
 	update(timestamp: number) {
@@ -229,6 +266,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.textAnimations.removeExpiredAnimations(nowMs);
 		this.textAnimations.updatePositions(nowMs);
 
+		if (this.skeletalData2d) {
+			this.updateTrackingEffects(this.skeletalData2d, nowMs);
+			this.handEffectsCollection.draw(context, nowMs);
+		}
+
 		if (this.showFpsWindow) {
 			if (!this.fpsWindow) {
 				this.fpsWindow = new FpsWindow('Front', 2);
@@ -253,7 +295,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 
 		if (this.skeletalData2d) {
-			this.showLiveHandEffects(context, nowMs);
+			if (this.skeletalData2d.ShowLiveHandPosition) {
+				this.showLiveHandPosition(context, nowMs);
+			}
 		}
 	}
 
@@ -1652,6 +1696,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	updateSkeletalData(skeletalData: string): void {
 		this.skeletalData2d = JSON.parse(skeletalData) as SkeletalData2d;
+		if (this.skeletalData2d && this.skeletalData2d.HandEffect) {
+			this.changeHandEffects(this.skeletalData2d);
+		}
 	}
 
 	calibrationCursorSprite: SpriteProxy;
@@ -1688,7 +1735,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	static readonly fingerWidth: number = 44;
 
 
-	showLiveHandEffects(context: CanvasRenderingContext2D, nowMs: number) {
+	showLiveHandPosition(context: CanvasRenderingContext2D, nowMs: number) {
 		const handFillColors = ['#ff0000', '#0000ff'];
 		const fingerFillColors = ['#ff8080', '#8080ff'];
 		let colorIndex = 0;
@@ -1759,6 +1806,168 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		context.arc(point.X, point.Y, DragonFrontGame.fingerWidth * scale / 2, 0, 2 * Math.PI);
 		context.fill();
 		context.globalAlpha = 1;
+	}
+
+	initializeHandEffects() {
+		this.smokePoofA = new Sprites('DragonH/LeapMotion/Effects/SmokePoof/SmokePoofA', 119, 30, AnimationStyle.Sequential, true);
+		this.smokePoofA.originX = 305;
+		this.smokePoofA.originY = 841;
+		this.handEffectsCollection.add(this.smokePoofA);
+
+		this.smokePoofB = new Sprites('DragonH/LeapMotion/Effects/SmokePoof/SmokePoofB', 115, 30, AnimationStyle.Sequential, true);
+		this.smokePoofB.originX = 332;
+		this.smokePoofB.originY = 716;
+		this.handEffectsCollection.add(this.smokePoofB);
+
+		this.smokePoofC = new Sprites('DragonH/LeapMotion/Effects/SmokePoof/SmokePoofC', 120, 30, AnimationStyle.Sequential, true);
+		this.smokePoofC.originX = 333;
+		this.smokePoofC.originY = 715;
+		this.handEffectsCollection.add(this.smokePoofC);
+
+		this.smokePoofD = new Sprites('DragonH/LeapMotion/Effects/SmokePoof/SmokePoofD', 121, 30, AnimationStyle.Sequential, true);
+		this.smokePoofD.originX = 321;
+		this.smokePoofD.originY = 871;
+		this.handEffectsCollection.add(this.smokePoofD);
+
+		this.smokePoofE = new Sprites('DragonH/LeapMotion/Effects/SmokePoof/SmokePoofE', 101, 30, AnimationStyle.Sequential, true);
+		this.smokePoofE.originX = 311;
+		this.smokePoofE.originY = 851;
+		this.handEffectsCollection.add(this.smokePoofE);
+
+		this.handHeldFireball = new Sprites('DragonH/LeapMotion/Effects/FireBall/FireBall', 59, 30, AnimationStyle.Loop, true);
+		this.handHeldFireball.originX = 317;
+		this.handHeldFireball.originY = 647;
+		this.handEffectsCollection.add(this.handHeldFireball);
+
+		this.handHeldFireRiseA = new Sprites('DragonH/LeapMotion/Effects/FireBall/FireRiseA', 23, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireRiseA.originX = 192;
+		this.handHeldFireRiseA.originY = 251;
+		this.handEffectsCollection.add(this.handHeldFireRiseA);
+
+		this.handHeldFireRiseB = new Sprites('DragonH/LeapMotion/Effects/FireBall/FireRiseB', 37, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireRiseB.originX = 116;
+		this.handHeldFireRiseB.originY = 454;
+		this.handEffectsCollection.add(this.handHeldFireRiseB);
+
+		this.handHeldFireRiseC = new Sprites('DragonH/LeapMotion/Effects/FireBall/FireRiseC', 24, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireRiseC.originX = 238;
+		this.handHeldFireRiseC.originY = 517;
+		this.handEffectsCollection.add(this.handHeldFireRiseC);
+	}
+
+	changeHandEffects(skeletalData2d: SkeletalData2d) {
+		if (skeletalData2d.HandEffect.HandEffects)
+			this.addHandEffects(skeletalData2d);
+		if (skeletalData2d.HandEffect.KillFollowEffects !== TargetHand.None)
+			this.killHandEffects(skeletalData2d.HandEffect.KillFollowEffects);
+	}
+
+	killHandEffects(KillFollowEffects: TargetHand) {
+		// TODO: Implement this properly.	
+		// HACK: 
+		this.handHeldFireball.spriteProxies = [];
+	}
+
+	addHandEffects(skeletalData2d: SkeletalData2d) {
+		skeletalData2d.HandEffect.HandEffects.forEach((handEffect: HandEffectDto) => {
+			const { x, y, scale } = this.getHandPosition(skeletalData2d);
+			switch (handEffect.EffectName) {
+				case 'SmokeA':
+					this.addScaledSprite(this.smokePoofA, handEffect, x, y, scale);
+					break;
+				case 'SmokeB':
+					this.addScaledSprite(this.smokePoofB, handEffect, x, y, scale);
+					break;
+				case 'SmokeC':
+					this.addScaledSprite(this.smokePoofC, handEffect, x, y, scale);
+					break;
+				case 'SmokeD':
+					this.addScaledSprite(this.smokePoofD, handEffect, x, y, scale);
+					break;
+				case 'SmokeE':
+					this.addScaledSprite(this.smokePoofE, handEffect, x, y, scale);
+					break;
+				case 'FireBall': {
+					this.addScaledSprite(this.handHeldFireball, handEffect, x, y, scale);
+					break;
+				}
+			}
+		});
+	}
+
+
+
+	addScaledSprite(smokePoof: Sprites, handEffect: HandEffectDto, x: number, y: number, scale: number) {
+		const sprite: SpriteProxy = smokePoof.addShifted(x, y, 0, handEffect.HueShift);
+		this.setHandEffectScale(sprite, handEffect, scale);
+	}
+
+	private setHandEffectScale(sprite: SpriteProxy, handEffect: HandEffectDto, scale: number) {
+		(sprite as unknown as ScaleFactor).scaleFactor = handEffect.Scale;
+		sprite.scale = handEffect.Scale * scale;
+	}
+
+
+	private getHandPosition(skeletalData2d: SkeletalData2d) {
+		let x = -1000;
+		let y = -1000;
+		let scale = 1;
+		if (skeletalData2d.Hands.length > 0) {
+			x = skeletalData2d.Hands[0].PalmPosition.X;
+			y = skeletalData2d.Hands[0].PalmPosition.Y - 6 * DragonFrontGame.fingerWidth;
+			scale = Math.max(0.2, skeletalData2d.Hands[0].PalmPosition.Scale);
+		}
+		return { x, y, scale };
+	}
+
+	nextFireRiseCreationTime = 0;
+
+	updateTrackingEffects(skeletalData2d: SkeletalData2d, nowMs: number): void {
+		if (!this.hasTrackingEffects())
+			return;
+		const { x, y, scale } = this.getHandPosition(skeletalData2d);
+		if (x === -1000) {
+			this.handHeldFireball.spriteProxies = [];
+			return;
+		}
+
+		this.handHeldFireball.spriteProxies.forEach((fireballSprite: ColorShiftingSpriteProxy) => {
+			fireballSprite.x = x - this.handHeldFireball.originX;
+			fireballSprite.y = y - this.handHeldFireball.originY;
+			fireballSprite.scale = scale * (fireballSprite as unknown as ScaleFactor).scaleFactor;
+
+			if (nowMs < this.nextFireRiseCreationTime) {
+				// Create a new fire particle.
+				let sprites: Sprites;
+				if (Random.chancePercent(33))
+					sprites = this.handHeldFireRiseA;
+				if (Random.chancePercent(50))
+					sprites = this.handHeldFireRiseB;
+				else
+					sprites = this.handHeldFireRiseC;
+
+				const fireBallDiameter = 150;
+				const fireBallRadius: number = fireBallDiameter / 2;
+				const fireBallScaledRadius: number = fireBallRadius * fireballSprite.scale;
+				const fireRiseX: number = fireballSprite.x + this.handHeldFireball.originX + Random.between(-fireBallScaledRadius, fireBallScaledRadius);
+
+				const fireBallRiseHeight = 92;
+				const fireballEmitterRectHeight = 82;
+				const fireballEmitterRectHalfHeight = fireballEmitterRectHeight / 2;
+				const fireballEmitterRectHalfHeightScaled = fireballEmitterRectHalfHeight * fireballSprite.scale;
+				const fireRiseY: number = fireballSprite.y + this.handHeldFireball.originY - fireBallRiseHeight * fireballSprite.scale + Random.between(-fireballEmitterRectHalfHeightScaled, fireballEmitterRectHalfHeightScaled);
+
+				const fireRise: SpriteProxy = sprites.addShifted(fireRiseX, fireRiseY, 0, fireballSprite.hueShift);
+				fireRise.scale = fireballSprite.scale * Random.between(0.8, 1.2);
+			}
+		});
+
+		console.log('nowMs: ' + nowMs);
+		this.nextFireRiseCreationTime = nowMs + Random.between(150, 400);
+	}
+
+	private hasTrackingEffects() {
+		return this.handHeldFireball.spriteProxies.length !== 0;
 	}
 }
 

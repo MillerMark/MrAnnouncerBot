@@ -9079,19 +9079,26 @@ namespace DHDM
 		}
 
 		LeapDevice leapDevice = new LeapDevice();
-		private void btnTestCalibration_Click(object sender, RoutedEventArgs e)
+		private void ckShowLiveHandPosition_Click(object sender, RoutedEventArgs e)
 		{
-			leapDevice.ToggleTesting();
-			if (leapDevice.Testing)
-				btnTestCalibration.Content = "Stop Testing";
-			else
-				btnTestCalibration.Content = "Test...";
+			leapDevice.ShowingLiveHandPosition = ckShowLiveHandPosition.IsChecked == true;
 		}
 
 		private void LeapDiagnosticsOptionsChanged(object sender, RoutedEventArgs e)
 		
 		{
 			leapDevice.SetDiagnosticsOptions(chkShowBackPlane.IsChecked == true, chkShowFrontPlane.IsChecked == true, chkShowActivePlane.IsChecked == true);
+		}
+		public void TriggerHandFx(HandFxDto handFxDto)
+		{
+			leapDevice.TriggerHandFx(handFxDto);
+		}
+
+		private void ckActive_Click(object sender, RoutedEventArgs e)
+		{
+			leapDevice.Active = ckActive.IsChecked == true;
+			ckShowLiveHandPosition.IsEnabled = leapDevice.Active;
+			btnCalibrate.IsEnabled = leapDevice.Active;
 		}
 
 		// TODO: Reintegrate wand/staff animations....
