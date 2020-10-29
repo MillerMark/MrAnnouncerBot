@@ -72,15 +72,26 @@ function playSound(soundFileName: string) {
 	}
 }
 
+let bigPlayerData = "";
+
+const bigDataPortionToken = "portion: ";
+
 function initializePlayerData(playerData: string) {
+	if (playerData.startsWith(bigDataPortionToken))
+	{
+		bigPlayerData += playerData.substr(bigDataPortionToken.length);
+		return;
+	}
+	const rebuiltPlayerData: string = bigPlayerData + playerData;
+	bigPlayerData = "";
 	if (activeFrontGame instanceof DragonFrontGame) {
-		activeFrontGame.initializePlayerData(playerData);
+		activeFrontGame.initializePlayerData(rebuiltPlayerData);
 	}
 	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.initializePlayerData(playerData);
+		activeBackGame.initializePlayerData(rebuiltPlayerData);
 	}
 	if (diceLayer) {
-		diceLayer.initializePlayerData(playerData);
+		diceLayer.initializePlayerData(rebuiltPlayerData);
 	}
 }
 

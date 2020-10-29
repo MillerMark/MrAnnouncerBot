@@ -256,7 +256,7 @@ namespace DndCore
 		{
 			if (Name == "WildMagicSurge")
 			{
-				System.Diagnostics.Debugger.Break();
+				//System.Diagnostics.Debugger.Break();
 			}
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerCastsSpell))

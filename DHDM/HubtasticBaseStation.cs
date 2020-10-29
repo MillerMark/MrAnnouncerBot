@@ -260,8 +260,19 @@ namespace DHDM
 
 		public static void SetPlayerData(string playerData)
 		{
+			if (playerData == null)
+				return;
 			lastStringSent = playerData;
-			HubConnection.InvokeAsync("SetPlayerData", playerData);
+			string dataToSend = playerData;
+			const int maxLength = 27000;
+			while (dataToSend.Length > maxLength)
+			{
+				string portion = dataToSend.Substring(0, maxLength);
+				HubConnection.InvokeAsync("SetPlayerData", "portion: " + portion);
+				dataToSend = dataToSend.Substring(maxLength);
+			}
+			if (dataToSend.Length > 0)
+				HubConnection.InvokeAsync("SetPlayerData", dataToSend);
 		}
 		public static void SendScrollLayerCommand(string commandData)
 		{

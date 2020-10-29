@@ -1174,22 +1174,10 @@ namespace DHDM
 			uiThreadSleepingWhileWaitingForAnswerToQuestion = true;
 			try
 			{
-				BuildAnswerMap(answers);
+				AnswerEntry selectedAnswer = GetNextAnswer(answers);
 
-				if (ActivePlayer != null && !string.IsNullOrEmpty(ActivePlayer.NextAnswer))
-				{
-					AnswerEntry selectedAnswer;
-					if (ActivePlayer.NextAnswer.EndsWith("*"))
-					{
-						string searchPattern = ActivePlayer.NextAnswer.EverythingBefore("*");
-						selectedAnswer = prebuiltAnswers.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
-					}
-					else
-						selectedAnswer = prebuiltAnswers.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
-					ActivePlayer.NextAnswer = null;
-					if (selectedAnswer != null)
-						return selectedAnswer.Value;
-				}
+				if (selectedAnswer != null)
+					return selectedAnswer.Value;
 
 				return await AskQuestionAsync(question, prebuiltAnswers);
 			}
@@ -1200,6 +1188,32 @@ namespace DHDM
 				if (timerWasRunning)
 					StartRealTimeTimer();
 			}
+		}
+
+		private AnswerEntry GetNextAnswer(List<string> answers)
+		{
+			BuildAnswerMap(answers);
+
+			if (ActivePlayer == null || string.IsNullOrEmpty(ActivePlayer.NextAnswer))
+				return null;
+			AnswerEntry selectedAnswer = GetNextAnswer(prebuiltAnswers);
+			return selectedAnswer;
+		}
+
+		private AnswerEntry GetNextAnswer(List<AnswerEntry> answers)
+		{
+			AnswerEntry selectedAnswer;
+			if (ActivePlayer.NextAnswer == null)
+				return null;
+			if (ActivePlayer.NextAnswer.EndsWith("*"))
+			{
+				string searchPattern = ActivePlayer.NextAnswer.EverythingBefore("*");
+				selectedAnswer = answers.FirstOrDefault(x => x.AnswerText.StartsWith(searchPattern));
+			}
+			else
+				selectedAnswer = answers.FirstOrDefault(x => x.AnswerText == ActivePlayer.NextAnswer);
+			ActivePlayer.NextAnswer = null;
+			return selectedAnswer;
 		}
 
 		bool askingQuestion;
@@ -1222,15 +1236,30 @@ namespace DHDM
 		//! It seems like we need to call AskQuestionBlockUI any time we are answering a question from a Script.
 		private int AskQuestionBlockUI(string question, List<AnswerEntry> answerEntries, int minTargets = 1, int maxTargets = 1)
 		{
+			AnswerEntry selectedAnswer = GetNextAnswer(answerEntries);
+
+			if (selectedAnswer != null)
+				return selectedAnswer.Value;
+
 			askingQuestion = true;
 			uiThreadSleepingWhileWaitingForAnswerToQuestion = true;
 			HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap(question, answerEntries, minTargets, maxTargets));
-			while (askingQuestion)
+			int count = 0;
+			const int SleepMs = 300;
+			const int TimeoutSec = 30;
+			const int maxSleeps = 1000 * TimeoutSec / SleepMs;
+			while (askingQuestion && count < maxSleeps)
 			{
 				// TODO: Check to see if we lose SignalR so we don't infinite loop here. This can happen when debugging at a breakpoint for a long time it seems.
-				Thread.Sleep(300);
+				Thread.Sleep(SleepMs);
+				count++;
 			}
 			uiThreadSleepingWhileWaitingForAnswerToQuestion = false;
+			if (count == maxSleeps)
+			{
+				// We timed out.
+				HubtasticBaseStation.InGameUICommand("OK");
+			}
 			return answerResponse;
 		}
 
@@ -1383,7 +1412,7 @@ namespace DHDM
 			//				String.Format("   Thread ID: {0}\n", thread.ManagedThreadId);
 			//}
 
-			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result))
+			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result) && prebuiltAnswers != null)
 			{
 				AnswerEntry answer = prebuiltAnswers.FirstOrDefault(x => x.Index == result);
 				if (answer != null)
@@ -3777,7 +3806,7 @@ namespace DHDM
 					if (playerRoll.data == BreakSpellConcentrationSavingThrowQueueEntry.STR_ConcentrationSave)
 					{
 						Character player = game.GetPlayerFromId(playerRoll.id);
-						if (player != null)
+						if (player != null && player.concentratedSpell != null)
 						{
 							string focusedSpellName = player.concentratedSpell.Spell.Name;
 							TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
@@ -5852,6 +5881,7 @@ namespace DHDM
 		private void ActivatePlayerShortcut(string shortcutName, int playerId)
 		{
 			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId && x.Available);
+			
 			if (shortcut != null)
 			{
 				ActivateShortcut(shortcut);

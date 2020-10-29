@@ -196,7 +196,8 @@
 		context.textAlign = 'left';
 		//context.fillStyle = this.titleColors[spell.schoolOfMagic];
 		context.fillStyle = this.titleColors[SchoolOfMagic.Necromancy];
-		context.fillText(spell.name, this.titleTopLeft.x, this.titleTopLeft.y);
+		const title: string = this.getSpellTitle(spell.name);
+		context.fillText(title, this.titleTopLeft.x, this.titleTopLeft.y);
 	}
 
 	getSpellLevelSchoolWidth(context: CanvasRenderingContext2D, spell: ActiveSpellData): number {
@@ -565,6 +566,7 @@
 	soundManager: DragonBackSounds;
 	private createSpellBook(spell: ActiveSpellData, player: Character, context: CanvasRenderingContext2D, x: number, y: number, nowMs: number) {
 		this.lastSpellName = spell.name;
+
 		this.lastSpellSlotLevel = spell.spellSlotLevel;
 		this.lastPlayerId = player.playerID;
 		let scale = 1;
@@ -648,11 +650,19 @@
 		this.spellBookAppearSmall.draw(context, timeSec);
 	}
 
+	getSpellTitle(spellName: string): string {
+		const bonusAttackSuffix = ' BonusAttack';
+		if (spellName.endsWith(bonusAttackSuffix))
+			return spellName.substr(0, spellName.length - bonusAttackSuffix.length);
+
+		return spellName;
+	}
 
 	getTitleFontSize(context: CanvasRenderingContext2D, name: string, requiresConcentration: boolean, morePowerfulAtHigherLevels: boolean): number {
+		const title: string = this.getSpellTitle(name);
 		let fontSize: number = SpellBook.titleFontIdealSize;
 		this.setTitleFont(context, fontSize);
-		this.titleWidth = context.measureText(name).width;
+		this.titleWidth = context.measureText(title).width;
 
 		function getIconSpace(iconScale: number, horizontalScale: number): number {
 			let iconSpace = 0;
@@ -672,7 +682,7 @@
 				return fontSize;
 			}
 			this.setTitleFont(context, fontSize);
-			this.titleWidth = context.measureText(name).width;
+			this.titleWidth = context.measureText(title).width;
 		}
 		return fontSize;
 	}
