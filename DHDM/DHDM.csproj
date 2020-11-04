@@ -321,7 +321,7 @@
     <Compile Include="LeapMotion\HandSide.cs" />
     <Compile Include="LeapMotion\HandVelocityHistory.cs" />
     <Compile Include="LeapMotion\World3d.cs" />
-    <Compile Include="VectorCompassDirection.cs" />
+    <Compile Include="LeapMotion\VectorCompassDirection.cs" />
     <Compile Include="LeapMotion\LeapCalibrationData.cs" />
     <Compile Include="LeapMotion\LeapCalibrator.cs" />
     <Compile Include="LeapMotion\LeapDevice.cs" />
@@ -483,7 +483,7 @@
     <Compile Include="User Controls\WeaponsList.xaml.cs">
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PositionVelocityTime.cs" />
+    <Compile Include="LeapMotion\PositionVelocityTime.cs" />
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Page Include="FrmAsk.xaml">
       <SubType>Designer</SubType>
