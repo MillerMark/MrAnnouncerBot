@@ -14,12 +14,22 @@ namespace DHDM
 
 		}
 
+		public void Update(DateTime time)
+		{
+			if (Instances == null)
+				return;
+			foreach (Virtual3dObject virtual3DObject in Instances)
+			{
+				virtual3DObject.Update(time);
+			}
+		}
+
 		/// <summary>
 		/// Creates a new virtual 3D instance in the world and returns its index.
 		/// </summary>
 		public int AddInstance(PositionVelocityTime throwVector)
 		{
-			Virtual3dObject virtual3DObject = new Virtual3dObject() { Position = throwVector.Position, Velocity = throwVector.Velocity, Index = numInstancesCreated };
+			Virtual3dObject virtual3DObject = new Virtual3dObject() { StartPosition = throwVector.Position, InitialVelocity = throwVector.LeapVelocity.ToMetersPerSecond(), Index = numInstancesCreated };
 			if (Instances == null)
 				Instances = new List<Virtual3dObject>();
 			Instances.Add(virtual3DObject);

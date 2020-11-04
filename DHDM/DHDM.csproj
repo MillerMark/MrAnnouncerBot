@@ -320,6 +320,9 @@
     <Compile Include="LeapMotion\Hand2d.cs" />
     <Compile Include="LeapMotion\HandSide.cs" />
     <Compile Include="LeapMotion\HandVelocityHistory.cs" />
+    <Compile Include="LeapMotion\Physics.cs" />
+    <Compile Include="LeapMotion\ThrownObject.cs" />
+    <Compile Include="LeapMotion\VectorExtensions.cs" />
     <Compile Include="LeapMotion\World3d.cs" />
     <Compile Include="LeapMotion\VectorCompassDirection.cs" />
     <Compile Include="LeapMotion\LeapCalibrationData.cs" />

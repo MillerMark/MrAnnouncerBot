@@ -11,6 +11,7 @@ namespace DHDM
 		//` ![](D0721EC9212F4FB8CFAB94D72FC8257E.png;;;0.02560,0.02560)
 
 		public float Speed { get; set; }
+		public float PositionZ { get; set; }
 		public HandSide Side { get; set; }
 		public VectorCompassDirection PalmDirection { get; set; }
 		public VectorCompassDirection FacingForwardOrBack { get; set; }
@@ -40,7 +41,7 @@ namespace DHDM
 			else
 				Side = HandSide.Right;
 
-			HandVelocityHistory.AddVelocity(hand.PalmVelocity, hand.PalmPosition, Side);
+			HandVelocityHistory.AddVelocity(hand.PalmVelocity, GetAttachPoint(hand), Side);
 
 			PalmPosition = LeapCalibrator.ToScaledPoint(hand.PalmPosition);
 			// TODO: Calculate Details!!!
@@ -52,9 +53,15 @@ namespace DHDM
 
 		void SetPalmProperties(Hand hand)
 		{
-			PalmAttachPoint = LeapCalibrator.ToScaledPoint(hand.PalmPosition + hand.PalmNormal * hand.PalmWidth);
+			PalmAttachPoint = LeapCalibrator.ToScaledPoint(GetAttachPoint(hand));
 			PalmDirection = GetVectorDirection(hand.PalmNormal);
 			FacingForwardOrBack = GetForwardOrBack(hand.PalmNormal);
+			PositionZ = hand.PalmNormal.z;
+		}
+
+		private static Vector GetAttachPoint(Hand hand)
+		{
+			return hand.PalmPosition + hand.PalmNormal * hand.PalmWidth;
 		}
 
 		public static VectorCompassDirection GetVectorDirection(Vector PalmNormal)

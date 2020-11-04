@@ -25,7 +25,6 @@ interface ScaleFactor {
 
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
-	textAnimations: Animations = new Animations();
 
 	showFpsMessage(message: string): any {
 		this.addUpperRightStatusMessage(message, '#000000', '#ffffff');
@@ -166,8 +165,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.allFrontEffects.draw(context, nowMs);
 		this.calibrationCursor.updatePositions(nowMs);
 		this.calibrationCursor.draw(context, nowMs);
-		this.textAnimations.removeExpiredAnimations(nowMs);
-		this.textAnimations.updatePositions(nowMs);
 
 		this.updateSkeletalTrackingEffects(context, nowMs);
 
@@ -186,7 +183,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bigX.draw(context, nowMs);
 		this.bigWarning.draw(context, nowMs);
 
-		this.textAnimations.render(context, nowMs);
+		this.renderTextAnimations(context, nowMs);
 
 		if (this.calibrationPosition) {
 			context.fillStyle = '#ff0000';
@@ -1308,20 +1305,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		textEffect.textBaseline = 'top';
 	}
 
-	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string, yPos = 1080): TextEffect {
-		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, yPos), text, 3500);
-		textEffect.fontColor = fontColor;
-		textEffect.outlineColor = outlineColor;
-		textEffect.scale = 1;
-		textEffect.targetScale = 6;
-		textEffect.fadeOutTime = 2500;
-		textEffect.fadeInTime = 600;
-		textEffect.velocityX = 0;
-		textEffect.velocityY = -6;
-		textEffect.verticalThrust = 1.3;
-		return textEffect;
-	}
-
 	static readonly FontColorDamage: string = '#ca0000';
 	static readonly FontOutlineDamage: string = '#000000';
 	static readonly FontColorHealth: string = '#5681d4';
@@ -1454,7 +1437,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		// TODO: likelyMorningCodeRushedShow - also - not on a Sunday.
 		const likelyMorningCodeRushedShow: boolean = time.getHours() < 16;
 
-		let hasConditions = false;
+		const hasConditions = false;
 		// TODO: Get nameplates to be shorter when the player has conditions. Next three lines are part of that, but conditions don't seem to resize or position themselves correctly when conditions toggle from None to any condition.
 		//const playerStats: PlayerStats = this.playerStats.getPlayerStatsById(player.playerID);
 		//if (playerStats) {

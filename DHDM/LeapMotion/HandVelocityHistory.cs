@@ -18,7 +18,7 @@ namespace DHDM
 			CircularQueue<PositionVelocityTime> queue = GetQueue(handSide);
 			lock (queue)
 			{
-				queue.Enqueue(new PositionVelocityTime() { Velocity = velocity, Time = DateTime.Now, Position = position });
+				queue.Enqueue(new PositionVelocityTime() { LeapVelocity = velocity, Time = DateTime.Now, Position = position });
 				if (queue.Count > MaxHistoryCount)
 					queue.Dequeue();
 			}
@@ -66,14 +66,14 @@ namespace DHDM
 					if (checkPt.Time < earliestValidTime)  // Data is too stale
 						continue;
 
-					float speed = checkPt.Velocity.Magnitude;
-					if (speed > minVelocityForThrow && IsValidThrowDirection(checkPt.Velocity))
+					float speed = checkPt.LeapVelocity.Magnitude;
+					if (speed > minVelocityForThrow && IsValidThrowDirection(checkPt.LeapVelocity))
 					{
 						escapeVelocityReached = true;
 						if (speed > fastestThrowingSpeed)
 						{
 							fastestThrowingSpeed = speed;
-							fastestVelocity = checkPt.Velocity;
+							fastestVelocity = checkPt.LeapVelocity;
 							throwingPoint = checkPt.Position;
 							throwingTime = checkPt.Time;
 							continue;
@@ -84,7 +84,7 @@ namespace DHDM
 						continue;
 
 					// HACK: We're not really calculating this correctly.
-					if (speed < fastestThrowingSpeed - minDeltaSpeedForRelease || checkPt.Velocity.Dot(fastestVelocity) < 0)
+					if (speed < fastestThrowingSpeed - minDeltaSpeedForRelease || checkPt.LeapVelocity.Dot(fastestVelocity) < 0)
 					{
 						weAreThrowing = true;
 					}
@@ -93,7 +93,7 @@ namespace DHDM
 			if (!weAreThrowing)
 				return new PositionVelocityTime();
 
-			return new PositionVelocityTime() { Position = throwingPoint, Velocity = fastestVelocity, Time = throwingTime };
+			return new PositionVelocityTime() { Position = throwingPoint, LeapVelocity = fastestVelocity, Time = throwingTime };
 		}
 
 		public static PositionVelocityTime GetThrowVector(Hand2d hand)

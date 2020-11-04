@@ -69,6 +69,7 @@ namespace DHDM
 			{
 				System.Media.SystemSounds.Beep.Play();
 			}
+			skeletalData2d.UpdateVirtualObjects();
 			HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
 			ClearImpulseData();
 		}

@@ -13,6 +13,12 @@ enum HandSide {
 	Right
 }
 
+interface ThrownObject {
+	Position: ScaledPoint;
+	Index: number;
+	PositionZ: number;
+}
+
 class HandFollowingData {
 	HandSide: HandSide;
 	TrackingObjectIndex = -1;
@@ -72,6 +78,7 @@ class Hand2d {
 	IsFlat: boolean;
 	ThrownObjectIndex: number;
 	PalmAttachPoint: ScaledPoint;
+	PositionZ: number;
 	constructor() {
 
 	}
@@ -102,6 +109,7 @@ interface HandFxDto {
 
 interface SkeletalData2d {
 	Hands: Array<Hand2d>;
+	ThrownObjects: Array<ThrownObject>;
 	BackPlane: ScaledPlane;
 	FrontPlane: ScaledPlane;
 	ActivePlane: ScaledPlane;
@@ -273,6 +281,7 @@ class KnownSpellsEffects {
 
 
 abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
+	textAnimations: Animations = new Animations();
 	skeletalData2d: SkeletalData2d;
 	static maxFiltersPerWindup = 6;
 	abstract layerSuffix: string;
@@ -338,6 +347,26 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.dndTimeStr = timeStrs[0];
 		this.dndDateStr = dto.Time.substr(timeStrs[0].length + 2).trim();
 		this.updateClockFromDto(dto);
+	}
+
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string, yPos = 1080): TextEffect {
+		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, yPos), text, 3500);
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = outlineColor;
+		textEffect.scale = 1;
+		textEffect.targetScale = 6;
+		textEffect.fadeOutTime = 2500;
+		textEffect.fadeInTime = 600;
+		textEffect.velocityX = 0;
+		textEffect.velocityY = -6;
+		textEffect.verticalThrust = 1.3;
+		return textEffect;
+	}
+
+	protected renderTextAnimations(context: CanvasRenderingContext2D, nowMs: number) {
+		this.textAnimations.removeExpiredAnimations(nowMs);
+		this.textAnimations.updatePositions(nowMs);
+		this.textAnimations.render(context, nowMs);
 	}
 
 	protected updateClockFromDto(dto) {
@@ -1122,8 +1151,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return;
 
 		if (hand.Throwing) {
+			handFollowingData.TrackingObjectIndex = hand.ThrownObjectIndex;
 			console.log(`THROWING!!!`);
-			//this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+			this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
 		}
 	}
 
@@ -1131,6 +1161,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (!this.hasTrackingEffects())
 			return;
 
+		// TODO: This code (spriteProxies[0]) assumes only one fireball - add support for more:
 		const sprite: ColorShiftingSpriteProxy = this.handHeldFireball.spriteProxies[0] as ColorShiftingSpriteProxy;
 
 		const handFollowingData: HandFollowingData = sprite.data as HandFollowingData;
@@ -1144,23 +1175,17 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		//console.log(`hand.Speed: ${hand.Speed} ${VectorCompassDirection[hand.SpeedDirection].toString()}`);
 
 		if (this.showingHandSpeed) {
-			const barThickness = 5;
-			let xPos: number;
-			const screenHeight = 1080;
-			const screenWidth = 1920;
-			const barHeight: number = screenHeight * MathEx.clamp(hand.Speed / 2000, 0, 1);
-			const yPos: number = 1080 - barHeight;
-			this.context.fillStyle = '#ff0000';
-			if (hand.Side === HandSide.Left)
-				xPos = 0;
-			else
-				xPos = screenWidth - barThickness;
-			this.context.fillRect(xPos, yPos, barThickness, barHeight);
+			this.showHandSpeed(hand);
 		}
 
 		let pos: ScaledPoint;
-		if (handFollowingData.TrackingObjectIndex >= 0)
-			pos = this.getVirtualPositionFromIndex(skeletalData2d, handFollowingData.TrackingObjectIndex);
+		const isThrown: boolean = handFollowingData.TrackingObjectIndex >= 0;
+		let thrownObject: ThrownObject = null;
+		
+		if (isThrown) {
+			thrownObject = this.getThrownObjectFromIndex(skeletalData2d, handFollowingData.TrackingObjectIndex);
+			pos = thrownObject.Position;
+		}
 		else
 			pos = this.getHandPositionFromSide(skeletalData2d, handFollowingData.HandSide);
 
@@ -1170,7 +1195,14 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		}
 
 		let opacity: number;
-		if (hand.FacingForwardOrBack === VectorCompassDirection.Forward) {
+		let onFrontCanvas: boolean;
+
+		if (isThrown)
+			onFrontCanvas = hand.PositionZ < thrownObject.PositionZ;
+		else
+			onFrontCanvas = hand.FacingForwardOrBack === VectorCompassDirection.Forward;
+
+		if (onFrontCanvas) {
 			// We want to draw on the front plane.
 			//sprite.hueShift = 0;
 			if (this instanceof DragonBackGame)
@@ -1227,8 +1259,30 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.nextFireRiseCreationTime = nowMs + Random.between(150, 400);
 	}
 
-	getVirtualPositionFromIndex(skeletalData2d: SkeletalData2d, TrackingObjectIndex: number): ScaledPoint {
-		return DragonGame.outOfBoundsPt;
+    private showHandSpeed(hand: Hand2d) {
+        const barThickness = 5;
+        let xPos: number;
+        const screenHeight = 1080;
+        const screenWidth = 1920;
+        const barHeight: number = screenHeight * MathEx.clamp(hand.Speed / 2000, 0, 1);
+        const yPos: number = 1080 - barHeight;
+        this.context.fillStyle = '#ff0000';
+        if (hand.Side === HandSide.Left)
+            xPos = 0;
+        else
+            xPos = screenWidth - barThickness;
+        this.context.fillRect(xPos, yPos, barThickness, barHeight);
+    }
+
+	getThrownObjectFromIndex(skeletalData2d: SkeletalData2d, TrackingObjectIndex: number): ThrownObject {
+		if (!skeletalData2d.ThrownObjects || skeletalData2d.ThrownObjects.length === 0)
+			return null;
+
+		for (let i = 0; i < skeletalData2d.ThrownObjects.length; i++) {
+			if (skeletalData2d.ThrownObjects[i].Index == TrackingObjectIndex)
+				return skeletalData2d.ThrownObjects[i];
+		}
+		return null;
 	}
 
 	private hasTrackingEffects() {

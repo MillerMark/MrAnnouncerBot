@@ -3,13 +3,16 @@ using Leap;
 using System;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using System.Collections.Generic;
 
 namespace DHDM
 {
 	public class SkeletalData2d
 	{
+		private const double fps30 = 1000 / 30;
 		World3d world = new World3d();
+		public List<ThrownObject> ThrownObjects { get; set; } = new List<ThrownObject>();
 		public List<Hand2d> Hands { get; set; } = new List<Hand2d>();
 		public ScaledPlane BackPlane { get; set; } = new ScaledPlane();
 		public ScaledPlane FrontPlane { get; set; } = new ScaledPlane();
@@ -18,6 +21,7 @@ namespace DHDM
 		public bool ShowFrontPlane { get; set; }
 		public bool ShowActivePlane { get; set; }
 		public bool ShowLiveHandPosition { get; set; }
+		Timer timer = new Timer(fps30) { Enabled = true };
 		bool hasTrackableEffect;
 		bool trackingObjectInLeftHand;
 		bool trackingObjectInRightHand;
@@ -36,6 +40,7 @@ namespace DHDM
 
 		bool IsTrackableEffect(string effectName)
 		{
+			
 			// TODO: If we add more trackable effects, include them here.
 			// TODO: If we do this a lot, make it data-driven.
 			return effectName == "FireBall";
@@ -57,7 +62,12 @@ namespace DHDM
 
 		public SkeletalData2d()
 		{
+			timer.Elapsed += Timer_Elapsed;
+		}
 
+		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			// TODO: Deal with this later.
 		}
 
 		public void SetFromFrame(Frame frame)
@@ -108,26 +118,41 @@ namespace DHDM
 			return world.AddInstance(throwVector);
 		}
 
-		void CheckForThrow(Hand2d hand)
+		bool CheckForThrow(Hand2d hand)
 		{
 			if (!trackingObjectInLeftHand && !trackingObjectInRightHand)
-				return;
+				return false;
 			PositionVelocityTime throwVector = HandVelocityHistory.GetThrowVector(hand);
-			bool validThrow = throwVector.Velocity != null;
+			bool validThrow = throwVector.LeapVelocity != null;
 			if (!validThrow)
-				return;
+				return false;
 			HandVelocityHistory.ClearHistory(hand);
 			int instanceIndex = Throw(hand, throwVector);
 			if (instanceIndex < 0)
-				return;
+				return false;
 			hand.Throwing = true;
 			hand.ThrownObjectIndex = instanceIndex;
-			hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.Velocity);
+			hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.LeapVelocity);
+			return true;
 		}
 
 		public bool ShowingDiagnostics()
 		{
 			return ShowBackPlane || ShowFrontPlane || ShowActivePlane;
+		}
+
+		public void UpdateVirtualObjects()
+		{
+			ThrownObjects.Clear();
+			world.Update(DateTime.Now);
+
+			if (world.Instances == null || world.Instances.Count == 0)
+				return;
+
+			foreach (Virtual3dObject virtual3DObject in world.Instances)
+			{
+				ThrownObjects.Add(virtual3DObject.ThrownObject);
+			}
 		}
 	}
 }
