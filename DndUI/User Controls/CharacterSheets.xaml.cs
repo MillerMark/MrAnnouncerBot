@@ -567,7 +567,7 @@ namespace DndUI
 				statExperiencePoints.Text = character.experiencePoints.ToString();
 				//character.flyingSpeed = 
 				statGoldPieces.Text = character.goldPieces.ToString();
-				statHitPoints.Text = character.hitPoints.ToString();
+				statHitPoints.Text = character.HitPoints.ToString();
 				statInitiative.Text = PlusModifier(character.initiative) + character.initiative.ToString();
 				statInspiration.Text = character.inspiration.ToString();
 				statIntelligence.Text = character.Intelligence.ToString();
@@ -687,7 +687,7 @@ namespace DndUI
 			character.experiencePoints = statExperiencePoints.ToInt();
 			//character.flyingSpeed = 
 			character.goldPieces = statGoldPieces.ToDecimal();
-			character.hitPoints = statHitPoints.ToInt();
+			character.HitPoints = statHitPoints.ToInt();
 			character.initiative = statInitiative.ToInt();
 			character.inspiration = statInspiration.Text;
 			character.baseIntelligence = statIntelligence.ToInt();

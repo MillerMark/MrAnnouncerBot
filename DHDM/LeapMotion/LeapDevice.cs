@@ -43,12 +43,12 @@ namespace DHDM
 			return skeletalData2d.ShowingDiagnostics();
 		}
 
-		public PalmDirection GetPalmDirection()
+		public VectorCompassDirection GetPalmDirection()
 		{
 			if (skeletalData2d.Hands.Count > 0)
 				return skeletalData2d.Hands[0].PalmDirection;
 
-			return PalmDirection.None;
+			return VectorCompassDirection.None;
 		}
 
 		void ClearImpulseData()
@@ -65,6 +65,10 @@ namespace DHDM
 				skeletalData2d.SetFromFrame(ea.Frame);
 			else
 				skeletalData2d.SetFromFrame(null);
+			if (skeletalData2d.Hands.Any(x => x.Throwing))
+			{
+				System.Media.SystemSounds.Beep.Play();
+			}
 			HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
 			ClearImpulseData();
 		}
@@ -118,6 +122,8 @@ namespace DHDM
 		}
 		public void TriggerHandFx(HandFxDto handFxDto)
 		{
+			// TODO: Add support for hand-specific (left or right) placement.
+			// TODO: Add support for tossable objects in the stream deck commands.
 			skeletalData2d.HandEffect = handFxDto;
 		}
 	}

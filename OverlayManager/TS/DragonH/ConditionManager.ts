@@ -55,7 +55,7 @@ class ConditionManager {
 	loadResources() {
 		this.conditionCollection = new SpriteCollection();
 
-		this.conditions = new Sprites('Conditions/Conditions', 22, fps30, AnimationStyle.Static);
+		this.conditions = new Sprites('Conditions/Conditions', 23, fps30, AnimationStyle.Static);
 		this.conditions.originX = 102;
 		this.conditions.originY = 102;
 		this.conditions.disableGravity();

@@ -1022,7 +1022,7 @@ namespace DndCore
 			if (!string.IsNullOrEmpty(class2) && level2 > 0)  // Multi-class
 				character.AddClass(class2, level2).SubClass = subClass2;
 
-			character.hitPoints = characterDto.hitPoints;
+			character.HitPoints = characterDto.hitPoints;
 			character.playerID = characterDto.playerId;
 			character.maxHitPoints = characterDto.maxHitPoints;
 			character.baseArmorClass = characterDto.baseArmorClass;
@@ -2079,9 +2079,9 @@ namespace DndCore
 				foreach (var creature in targetedCreatures)
 				{
 					if (targetedCreatureHitPoints == -1)
-						targetedCreatureHitPoints = (int)Math.Round(creature.hitPoints);
+						targetedCreatureHitPoints = (int)Math.Round(creature.HitPoints);
 
-					if (creature.hitPoints <= 0)
+					if (creature.HitPoints <= 0)
 						targetedCreatureHitPoints = 0;
 				}
 			}
@@ -2331,9 +2331,9 @@ namespace DndCore
 				stateChanged = true;
 			}
 
-			if (hitPoints != maxHitPoints)
+			if (HitPoints != maxHitPoints)
 			{
-				hitPoints = maxHitPoints;
+				HitPoints = maxHitPoints;
 				stateChanged = true;
 			}
 
@@ -2723,7 +2723,7 @@ namespace DndCore
 			SetField("deathSaveLife3", ref deathSaveLife3, character.deathSaveLife3);
 			SetField("experiencePoints", ref experiencePoints, character.experiencePoints);
 			SetField("goldPieces", ref goldPieces, character.goldPieces);
-			SetField("hitPoints", ref hitPoints, character.hitPoints);
+			SetField("hitPoints", ref hitPoints, character.HitPoints);
 			SetField("initiative", ref initiative, character.initiative);
 			SetField("inspiration", ref inspiration, character.inspiration);
 			SetField("load", ref load, character.load);

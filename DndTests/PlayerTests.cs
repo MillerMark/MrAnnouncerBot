@@ -35,7 +35,7 @@ namespace DndTests
 		{
 			Character willy = AllPlayers.Get("Willy");
 			Assert.AreEqual(6, willy.level);
-			Assert.AreEqual(45, willy.hitPoints);
+			Assert.AreEqual(45, willy.HitPoints);
 			Assert.AreEqual(204, willy.goldPieces);
 			Assert.AreEqual(Skills.insight | Skills.perception | Skills.performance | Skills.sleightOfHand | Skills.stealth, willy.proficientSkills);
 			Assert.AreEqual(Skills.deception | Skills.persuasion | Skills.sleightOfHand | Skills.perception, willy.doubleProficiency);
@@ -94,7 +94,7 @@ namespace DndTests
 		{
 			Character lady = AllPlayers.Get("Lady");
 			Assert.AreEqual(6, lady.level);
-			Assert.AreEqual(46, lady.hitPoints);
+			Assert.AreEqual(46, lady.HitPoints);
 			Assert.AreEqual(0, lady.goldPieces);
 			Assert.AreEqual(Skills.animalHandling | Skills.arcana| Skills.intimidation| Skills.investigation| Skills.perception | Skills.survival, lady.proficientSkills);
 			Assert.AreEqual(Skills.none, lady.doubleProficiency);

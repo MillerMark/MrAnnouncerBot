@@ -50,7 +50,7 @@ class Character {
 	hueShift: number;
 	dieBackColor: string;
 	dieFontColor: string;
-	conditions: Conditions = Conditions.None;
+	ActiveConditions: Conditions = Conditions.None;
 	weaponProficiency: Weapons = Weapons.None;
 	onTurnActions = 1;
 	offTurnActions = 0;
@@ -153,7 +153,8 @@ class Character {
 		this.baseIntelligence = sourceCharacter.baseIntelligence;
 		this.baseStrength = sourceCharacter.baseStrength;
 		this.baseWisdom = sourceCharacter.baseWisdom;
-		this.conditions = sourceCharacter.conditions;
+		this.ActiveConditions = sourceCharacter.ActiveConditions;
+		console.log('sourceCharacter.ActiveConditions: ' + sourceCharacter.ActiveConditions);
 		this.weaponProficiency = sourceCharacter.weaponProficiency;
 		this.cursesAndBlessings = sourceCharacter.cursesAndBlessings;
 		this.deathSaveDeath1 = sourceCharacter.deathSaveDeath1;

@@ -85,7 +85,7 @@ namespace DndTests
 			Assert.AreEqual(originalTestWizard.Intelligence, loadedCharacter.Intelligence);
 			Assert.AreEqual(originalTestWizard.inspiration, loadedCharacter.inspiration);
 			Assert.AreEqual(originalTestWizard.initiative, loadedCharacter.initiative);
-			Assert.AreEqual(originalTestWizard.hitPoints, loadedCharacter.hitPoints);
+			Assert.AreEqual(originalTestWizard.HitPoints, loadedCharacter.HitPoints);
 			Assert.AreEqual(originalTestWizard.goldPieces, loadedCharacter.goldPieces);
 			Assert.AreEqual(originalTestWizard.flyingSpeed, loadedCharacter.flyingSpeed);
 			Assert.AreEqual(originalTestWizard.experiencePoints, loadedCharacter.experiencePoints);

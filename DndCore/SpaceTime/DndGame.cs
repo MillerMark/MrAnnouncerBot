@@ -395,7 +395,10 @@ namespace DndCore
 
 		public void CreatureTakingAction(Creature creature)
 		{
-			SetInitiativeIndexFromPlayer(creature as Character);
+			// Commented out SetInitiativeIndexFromPlayer(creature as Character) to prevent player actions from skipping other players turns (setting the initiative index).
+			// SetInitiativeIndexFromPlayer(creature as Character);
+			// TODO: When opportunity attacks are added back in, this "//SetInitiativeIndexFromPlayer(creature as Character);" can probably be uncommented out.
+
 			// TODO: Fix bug where first player dies - we need to reassign firstPlayer to the next player in the initiative line up.
 			if (lastPlayer != null && lastPlayer != creature)
 			{

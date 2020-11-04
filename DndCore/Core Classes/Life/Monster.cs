@@ -255,7 +255,7 @@ namespace DndCore
 			if (int.TryParse(hpDetails[0], out int result))
 			{
 				maxHitPoints = result;
-				hitPoints = result;
+				HitPoints = result;
 			}
 			if (hpDetails.Length > 1)
 				hitPointsDice = hpDetails[1].Trim('(', ')');

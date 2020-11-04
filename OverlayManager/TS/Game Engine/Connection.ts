@@ -235,6 +235,9 @@ function updateSkeletalData(skeletalData: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.updateSkeletalData(skeletalData);
 	}
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.updateSkeletalData(skeletalData);
+	}
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {

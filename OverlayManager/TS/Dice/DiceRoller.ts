@@ -815,6 +815,18 @@ function attachDieLabel(die: IDie) {
 		scaleAdjust = 0.7;
 	}
 
+	let labelAlreadyExists = false;
+	if (die.attachedLabels)
+		die.attachedLabels.forEach((label: TextEffect) => {
+			if (label.text === die.playerName) {
+				labelAlreadyExists = true;
+				return;
+			}
+		});
+
+	if (labelAlreadyExists)
+		return;
+
 	if (!die.playerName) {
 		die.playerName = diceLayer.getPlayerName(die.playerID);
 	}
@@ -1427,8 +1439,8 @@ function addInspirationParticles(die: IDie, playerID: number, hueShiftOffset: nu
 	die.origins.push(diceLayer.inspirationParticles.getOrigin());
 }
 
-function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie {
-	let lastDieAdded = null;
+function createDie(quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie[] {
+	const allDice: IDie[] = [];
 	const magicRingHueShift: number = Math.floor(Math.random() * 360);
 	for (let i = 0; i < quantity; i++) {
 		let die: IDie = null;
@@ -1467,7 +1479,7 @@ function createDie(quantity: number, numSides: number, damageType: DamageType, r
 				die.isD20 = true;
 				break;
 		}
-		lastDieAdded = die;
+		allDice.push(die);
 		if (die === null) {
 			throw new Error(`Die with ${numSides} sides was not found. Unable to throw dice.`);
 		}
@@ -1558,10 +1570,10 @@ function createDie(quantity: number, numSides: number, damageType: DamageType, r
 			die.origins.push(diceLayer.magicRingRed.getOrigin());
 		}
 	}
-	return lastDieAdded;
+	return allDice;
 }
 
-function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie {
+function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie[] {
 	const countPlusDie: string[] = dieStr.split('d');
 	if (countPlusDie.length !== 2)
 		throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
@@ -1572,8 +1584,8 @@ function addDie(dieStr: string, damageType: DamageType, rollType: DieCountsAs, b
 	return createDie(quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
 }
 
-function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic = false): IDie {
-	let lastDieAdded: IDie = null;
+function addDieFromStr(playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic = false): IDie[] {
+	let lastDieAdded: IDie[] = null;
 	if (!diceStr)
 		return lastDieAdded;
 	const allDice: string[] = diceStr.split(',');
@@ -1658,8 +1670,10 @@ function rollBonusDice() {
 	for (let i = 0; i < diceRollData.bonusRolls.length; i++) {
 		const bonusRoll: BonusRoll = diceRollData.bonusRolls[i];
 		//console.log('bonusRoll.dieCountsAs: ' + bonusRoll.dieCountsAs);
-		const die: IDie = addDieFromStr(bonusRoll.playerID, bonusRoll.diceStr, bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
-		die.playerName = bonusRoll.playerName;
+		const allDice: IDie[] = addDieFromStr(bonusRoll.playerID, bonusRoll.diceStr, bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
+		allDice.forEach((die: IDie) => {
+			die.playerName = bonusRoll.playerName;
+		});
 	}
 	bonusRollStartTime = performance.now();
 	waitingForBonusRollToComplete = true;
@@ -3321,7 +3335,7 @@ function rollAddOnDice() {
 
 	const localDiceRollData: DiceRollData = getMostRecentDiceRollData();
 
-	let die: IDie;
+	let allDiceAdded: IDie[] = [];
 	const throwPower: number = diceRollData.throwPower * 1.2;
 
 	let dieBack: string;
@@ -3338,13 +3352,15 @@ function rollAddOnDice() {
 	}
 
 	if (isLuckBent(localDiceRollData)) {
-		die = addDie('d4', DamageType.None, DieCountsAs.bentLuck, dieBack, dieFont, throwPower, xPositionModifier, false);
-		die.isLucky = true;
+		allDiceAdded = addDie('d4', DamageType.None, DieCountsAs.bentLuck, dieBack, dieFont, throwPower, xPositionModifier, false);
+		allDiceAdded.forEach((die: IDie) => {
+			die.isLucky = true;
+		});
 	}
 	else {
 		if (localDiceRollData.itsAD20Roll) {   // TODO: Send itsAD20Roll from DM app.
-			die = addD20(localDiceRollData, dieBack, dieFont, xPositionModifier);
-			die.isLucky = true;  // TODO: Send IsLucky from DM app.
+			allDiceAdded.push(addD20(localDiceRollData, dieBack, dieFont, xPositionModifier));
+			allDiceAdded[0].isLucky = true;  // TODO: Send IsLucky from DM app.
 		}
 		else {
 			//let saveDamageModifier: number = damageModifierThisRoll;
@@ -3358,11 +3374,16 @@ function rollAddOnDice() {
 
 	if (isGoodLuck) {
 		//console.log('addGoodLuckEffects...');
-		addGoodLuckEffects(die);
+		allDiceAdded.forEach((die: IDie) => {
+			addGoodLuckEffects(die);
+		});
+
 	}
 	else if (isBadLuck) {
 		//console.log('addBadLuckEffects...');
-		addBadLuckEffects(die);
+		allDiceAdded.forEach((die: IDie) => {
+			addBadLuckEffects(die);
+		});
 	}
 }
 
@@ -3526,18 +3547,22 @@ function addD20sForPlayer(playerID: number, xPositionModifier: number, kind: Van
 
 function addDiceFromDto(diceDto: DiceDto, xPositionModifier: number) {
 	// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
-	const die: IDie = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, DieCountsAs.totalScore, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
-	console.log('addDiceFromDto - diceDto.PlayerName: ' + diceDto.PlayerName);
-	die.playerName = diceDto.PlayerName;
-	die.dataStr = diceDto.Data;
-	die.dieType = DiceRollType[DiceRollType.None];
-	if (diceDto.Label)
-		diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
-	die.kind = diceDto.Vantage;
-	if (diceDto.IsMagic) {
-		die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Random.max(360)));
-		die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
-	}
+	const allDice: IDie[] = createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, diceDto.DieCountsAs, diceDto.BackColor, diceDto.FontColor, diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
+	//console.log('addDiceFromDto - diceDto.PlayerName: ' + diceDto.PlayerName);
+	//console.log('diceDto.DamageType: ' + DamageType[diceDto.DamageType].toString());
+
+	allDice.forEach((die: IDie) => {
+		die.playerName = diceDto.PlayerName;
+		die.dataStr = diceDto.Data;
+		die.dieType = DiceRollType[DiceRollType.None];
+		if (diceDto.Label)
+			diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
+		die.kind = diceDto.Vantage;
+		if (diceDto.IsMagic) {
+			die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Random.max(360)));
+			die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
+		}
+	});
 	//if (diceRollData.numHalos > 0) {
 	//	let angleDelta: number = 360 / diceRollData.numHalos;
 	//	let angle: number = Math.random() * 360;

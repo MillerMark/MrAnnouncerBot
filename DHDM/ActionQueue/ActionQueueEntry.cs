@@ -11,5 +11,9 @@ namespace DHDM
 		{
 
 		}
+		public virtual bool CombineWith(ActionQueueEntry dieRoll)
+		{
+			return false;
+		}
 	}
 }

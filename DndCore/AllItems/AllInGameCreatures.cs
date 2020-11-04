@@ -158,8 +158,8 @@ namespace DndCore
 						{
 							Sides = roll.Sides,
 							Quantity = (int)Math.Round(roll.Count),
-							DamageType = DndUtils.ToDamage(roll.Descriptor)
 						};
+						npcMonsterDice.SetRollDetails(DiceRollType.None, roll.Descriptor);
 						SetDiceFromCreature(inGameCreature, npcMonsterDice);
 						diceDtos.Add(npcMonsterDice);
 					}
@@ -167,7 +167,7 @@ namespace DndCore
 			}
 		}
 
-		public static void AddDiceForCreature(List<DiceDto> diceDtos, string dieStr, int creatureIndex)
+		public static void AddDiceForCreature(List<DiceDto> diceDtos, string dieStr, int creatureIndex, DiceRollType type)
 		{
 			DieRollDetails dieRollDetails = DieRollDetails.From(dieStr);
 			foreach (InGameCreature inGameCreature in Creatures)
@@ -179,7 +179,7 @@ namespace DndCore
 						DiceDto npcMonsterDice = new DiceDto();
 						npcMonsterDice.Sides = roll.Sides;
 						npcMonsterDice.Quantity = (int)Math.Round(roll.Count);
-						npcMonsterDice.DamageType = DndUtils.ToDamage(roll.Descriptor);
+						npcMonsterDice.SetRollDetails(type, roll.Descriptor);
 						SetDiceFromCreature(inGameCreature, npcMonsterDice);
 						diceDtos.Add(npcMonsterDice);
 					}

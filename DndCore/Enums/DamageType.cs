@@ -20,6 +20,7 @@ namespace DndCore
 		Radiant = 1024,
 		Slashing = 2048,
 		Thunder = 4096,
-		Condition = 8192
+		Superiority = 8192,
+		Condition = 16384
 	}
 }

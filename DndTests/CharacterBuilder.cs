@@ -25,7 +25,7 @@ namespace DndTests
 
 			elf.initiative = 2;
 			elf.baseWalkingSpeed = 30;
-			elf.hitPoints = 47;
+			elf.HitPoints = 47;
 			elf.tempHitPoints = 0;
 			elf.maxHitPoints = 55;
 			elf.proficiencyBonus = 2;
@@ -73,7 +73,7 @@ namespace DndTests
 
 			barbarian.initiative = 2;
 			barbarian.baseWalkingSpeed = 30;
-			barbarian.hitPoints = 127;
+			barbarian.HitPoints = 127;
 			barbarian.tempHitPoints = 3;
 			barbarian.maxHitPoints = 127;
 			barbarian.proficiencyBonus = 2;
@@ -108,7 +108,7 @@ namespace DndTests
 
 			wizard.initiative = 2;
 			wizard.baseWalkingSpeed = 30;
-			wizard.hitPoints = 33;
+			wizard.HitPoints = 33;
 			wizard.tempHitPoints = 0;
 			wizard.maxHitPoints = 127;
 			wizard.proficiencyBonus = 2;
@@ -139,7 +139,7 @@ namespace DndTests
 
 			druid.initiative = 2;
 			druid.baseWalkingSpeed = 30;
-			druid.hitPoints = 27;
+			druid.HitPoints = 27;
 			druid.tempHitPoints = 0;
 			druid.maxHitPoints = 44;
 			druid.proficiencyBonus = 2;

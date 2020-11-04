@@ -316,26 +316,28 @@
     <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
-    <Compile Include="Finger2d.cs" />
-    <Compile Include="Hand2d.cs" />
-    <Compile Include="HandSide.cs" />
-    <Compile Include="HandVelocityHistory.cs" />
-    <Compile Include="PalmDirection.cs" />
-    <Compile Include="LeapCalibrationData.cs" />
-    <Compile Include="LeapCalibrator.cs" />
-    <Compile Include="LeapDevice.cs" />
-    <Compile Include="LeapMotionCalibrationStep.cs" />
-    <Compile Include="Point2D.cs" />
+    <Compile Include="LeapMotion\Finger2d.cs" />
+    <Compile Include="LeapMotion\Hand2d.cs" />
+    <Compile Include="LeapMotion\HandSide.cs" />
+    <Compile Include="LeapMotion\HandVelocityHistory.cs" />
+    <Compile Include="LeapMotion\World3d.cs" />
+    <Compile Include="VectorCompassDirection.cs" />
+    <Compile Include="LeapMotion\LeapCalibrationData.cs" />
+    <Compile Include="LeapMotion\LeapCalibrator.cs" />
+    <Compile Include="LeapMotion\LeapDevice.cs" />
+    <Compile Include="LeapMotion\LeapMotionCalibrationStep.cs" />
+    <Compile Include="LeapMotion\Point2D.cs" />
     <Compile Include="QuestionAnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
     <Compile Include="Events\QuestionAnswerMapEventArgs.cs" />
-    <Compile Include="ScaledPlane.cs" />
-    <Compile Include="ScaledPoint.cs" />
-    <Compile Include="SkeletalData2d.cs" />
+    <Compile Include="LeapMotion\ScaledPlane.cs" />
+    <Compile Include="LeapMotion\ScaledPoint.cs" />
+    <Compile Include="LeapMotion\SkeletalData2d.cs" />
     <Compile Include="StreamDeck Commands\AdvanceClockCommand.cs" />
     <Compile Include="PlayerStats\PlayerStatManager.cs" />
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
+    <Compile Include="LeapMotion\Virtual3dObject.cs" />
     <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="CharacterTriggerProvider.cs" />
     <Compile Include="CompletionProvider.cs" />
@@ -481,7 +483,7 @@
     <Compile Include="User Controls\WeaponsList.xaml.cs">
       <DependentUpon>WeaponsList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VelocityTime.cs" />
+    <Compile Include="PositionVelocityTime.cs" />
     <Compile Include="ViewModels\Support\RelayCommand.cs" />
     <Page Include="FrmAsk.xaml">
       <SubType>Designer</SubType>

@@ -2598,6 +2598,7 @@ class DiceDto {
 	Data: string;
 	Vantage: VantageKind;
 	DamageType: DamageType;
+	DieCountsAs: DieCountsAs;
 	BackColor: string;
 	FontColor: string;
 }

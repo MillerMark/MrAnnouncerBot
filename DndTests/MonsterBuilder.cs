@@ -18,7 +18,7 @@ namespace DndTests
 			violetFungus.alignmentStr = AlignmentNames.unaligned;
 			violetFungus.kind = CreatureKinds.Plant;
 			violetFungus.baseArmorClass = 5;
-			violetFungus.hitPoints = 18;
+			violetFungus.HitPoints = 18;
 			violetFungus.hitPointsDice = Dice.d8x4;
 			violetFungus.baseWalkingSpeed = 5;
 
@@ -49,7 +49,7 @@ namespace DndTests
 			vineBlight.kind = CreatureKinds.Plant;
 			vineBlight.baseArmorClass = 12;
 			vineBlight.naturalArmor = true;
-			vineBlight.hitPoints = 26;
+			vineBlight.HitPoints = 26;
 			vineBlight.hitPointsDice = Dice.d8x4.Plus(8);
 			vineBlight.baseWalkingSpeed = 10;
 
@@ -102,7 +102,7 @@ namespace DndTests
 			vrock.kind = CreatureKinds.Fiend;
 			vrock.baseArmorClass = 15;
 			vrock.naturalArmor = true;
-			vrock.hitPoints = 104;
+			vrock.HitPoints = 104;
 			vrock.hitPointsDice = Dice.d10x11.Plus(44);;
 			vrock.baseWalkingSpeed = 40;
 			vrock.flyingSpeed = 60;

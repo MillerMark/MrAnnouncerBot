@@ -61,7 +61,7 @@ namespace DHDM
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
-			
+
 		public PlayerStatManager PlayerStatsManager
 		{
 			get
@@ -508,21 +508,22 @@ namespace DHDM
 
 			//Old_SelectInGameTargets(ea);
 			AskQuestionBlockUI("Select Target:", GetTargetAnswers(ea.TargetStatus, ea.MaxTargets), 1, ea.MaxTargets);
-			foreach (AnswerEntry answerEntry in lastRemoteAnswers)
-			{
-				if (answerEntry.IsSelected)
+			if (lastRemoteAnswers != null)
+				foreach (AnswerEntry answerEntry in lastRemoteAnswers)
 				{
-					if (answerEntry.Value >= 0)
+					if (answerEntry.IsSelected)
 					{
-						ea.Target.PlayerIds.Add(answerEntry.Value);
-					}
-					else
-					{ // It's a in-game creature
-						ea.Target.Creatures.Add(AllInGameCreatures.GetByIndex(-answerEntry.Value)?.Creature);
+						if (answerEntry.Value >= 0)
+						{
+							ea.Target.PlayerIds.Add(answerEntry.Value);
+						}
+						else
+						{ // It's a in-game creature
+							ea.Target.Creatures.Add(AllInGameCreatures.GetByIndex(-answerEntry.Value)?.Creature);
 
+						}
 					}
 				}
-			}
 
 		}
 
@@ -1246,7 +1247,7 @@ namespace DHDM
 			HubtasticBaseStation.InGameUICommand(new QuestionAnswerMap(question, answerEntries, minTargets, maxTargets));
 			int count = 0;
 			const int SleepMs = 300;
-			const int TimeoutSec = 30;
+			const int TimeoutSec = 15;
 			const int maxSleeps = 1000 * TimeoutSec / SleepMs;
 			while (askingQuestion && count < maxSleeps)
 			{
@@ -2934,7 +2935,7 @@ namespace DHDM
 				diceRoll.RollScope = RollScope.ActiveInGameCreature;
 				InGameCreature activeTurnCreature = game.GetActiveTurnCreature() as InGameCreature;
 				if (activeTurnCreature != null)
-					AllInGameCreatures.AddDiceForCreature(diceRoll.DiceDtos, NextDieStr, activeTurnCreature.Index);
+					AllInGameCreatures.AddDiceForCreature(diceRoll.DiceDtos, NextDieStr, activeTurnCreature.Index, type);
 			}
 			else if (NextRollScope == RollScope.TargetedInGameCreatures)
 			{
@@ -3413,12 +3414,9 @@ namespace DHDM
 		}
 		void EnqueueWildMagicRoll(int playerId)
 		{
-			lock (actionQueue)
-			{
-				WildMagicQueueEntry wildMagicQueueEntry = new WildMagicQueueEntry();
-				wildMagicQueueEntry.PlayerId = playerId;
-				actionQueue.Enqueue(wildMagicQueueEntry);
-			}
+			WildMagicQueueEntry wildMagicQueueEntry = new WildMagicQueueEntry();
+			wildMagicQueueEntry.PlayerId = playerId;
+			EnqueueAction(wildMagicQueueEntry);
 		}
 
 		void IndividualDiceStoppedRolling(int playerId, IndividualRoll individualRoll)
@@ -3779,40 +3777,63 @@ namespace DHDM
 		//	}
 		//}
 
-		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoFailed, string damageExpression, string spellName)
+		void ApplyDamageFromLastSavingThrow(List<PlayerRoll> playerRolls, string damageExpression, string spellName)
 		{
-			if (thoseWhoFailed.Count == 0)
+			if (playerRolls.Count == 0)
 				return;
 			Spell spell = AllSpells.Get(spellName);
-			if (spell != null)
-			{
-				Target target = new Target(thoseWhoFailed);
+			if (spell == null)
+				return;
 
-				if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
-				{
-					Expressions.Do(damageExpression, ActivePlayer, target, null, null, latestDamage);
-				}
-				else
-				{
-					// TODO: See if I need to save and pass in the CastedSpell that got us here.
-					spell.TriggerTargetFailsSave(ActivePlayer, target, null, latestDamage);
-				}
-			}
-			else
+			Target target = new Target(playerRolls);
+
+			if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
+				Expressions.Do(damageExpression, ActivePlayer, target, null, null, latestDamage);
+			else // TODO: See if I need to save and pass in the CastedSpell that got us here.
+				spell.TriggerTargetFailsSave(ActivePlayer, target, null, latestDamage);
+		}
+
+		//void ApplyHalfDamageFromLastSavingThrow(List<PlayerRoll> thoseWhoSaved, string spellName)
+		//{
+		//	if (thoseWhoSaved.Count == 0)
+		//		return;
+		//	Spell spell = AllSpells.Get(spellName);
+		//	if (spell != null)
+		//	{
+		//		Target target = new Target(thoseWhoSaved);
+
+		//		if (string.IsNullOrWhiteSpace(spell.OnTargetFailsSave))
+		//		{
+		//			Expressions.Do("GiveTargetHalfDamage();", ActivePlayer, target, null, null, latestDamage);
+		//		}
+		//		else
+		//		{
+		//			// TODO: See if I need to save and pass in the CastedSpell that got us here.
+		//			spell.TriggerTargetSaves(ActivePlayer, target, null, latestDamage);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		//System.Diagnostics.Debugger.Break();
+		//	}
+		//}
+
+		void BreakSpellConcentrationFromLastSavingThrow(List<PlayerRoll> playerRolls)
+		{
+			if (playerRolls.Count == 0)
+				return;
+
+			foreach (PlayerRoll playerRoll in playerRolls)
 			{
-				// Saving throw but not for a spell.
-				foreach (PlayerRoll playerRoll in thoseWhoFailed)
+				if (playerRoll.data == BreakSpellConcentrationSavingThrowQueueEntry.STR_ConcentrationSave)
 				{
-					if (playerRoll.data == BreakSpellConcentrationSavingThrowQueueEntry.STR_ConcentrationSave)
+					Character player = game.GetPlayerFromId(playerRoll.id);
+					if (player != null && player.concentratedSpell != null)
 					{
-						Character player = game.GetPlayerFromId(playerRoll.id);
-						if (player != null && player.concentratedSpell != null)
-						{
-							string focusedSpellName = player.concentratedSpell.Spell.Name;
-							TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
-							game.RemoveActiveSpell(player, focusedSpellName);
-							player.BreakConcentration();
-						}
+						string focusedSpellName = player.concentratedSpell.Spell.Name;
+						TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
+						game.RemoveActiveSpell(player, focusedSpellName);
+						player.BreakConcentration();
 					}
 				}
 			}
@@ -3937,6 +3958,8 @@ namespace DHDM
 					ApplyDamageFromLastSavingThrow(thoseWhoSaved, "GiveTargetHalfDamage();", ea.StopRollingData.spellName);
 					ApplyDamageFromLastSavingThrow(thoseWhoFailed, "GiveTargetFullDamage();", ea.StopRollingData.spellName);
 					ApplyDamageFromLastSavingThrow(thoseWhoCritFailed, "GiveTargetDoubleDamage();", ea.StopRollingData.spellName);
+					BreakSpellConcentrationFromLastSavingThrow(thoseWhoFailed);
+					BreakSpellConcentrationFromLastSavingThrow(thoseWhoCritFailed);
 					if (thoseWhoCritSaved.Count > 1)
 						TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and take no damage!");
 					else if (thoseWhoCritSaved.Count == 1)
@@ -5204,6 +5227,7 @@ namespace DHDM
 				SetRollTypeUI(diceRollType);
 				SetRollScopeForPlayers(playerIds);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
+				diceRoll.SuppressLegacyRoll = true;
 				if (diceRollType == DiceRollType.InspirationOnly)
 					foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
 					{
@@ -5623,6 +5647,14 @@ namespace DHDM
 			return results;
 		}
 
+		void UpdatePlayerScrollUI(Character player)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				CharacterSheets sheet = GetSheetForCharacter(player.playerID);
+				sheet.SetFromCharacter(player);
+			});
+		}
 		public void ApplyDamageHealthChange(DamageHealthChange damageHealthChange)
 		{
 			if (damageHealthChange == null)
@@ -5652,6 +5684,7 @@ namespace DHDM
 				else
 					player.ChangeHealth(damageHealthChange.DamageHealth);
 				UpdatePlayerScrollInGame(player);
+				UpdatePlayerScrollUI(player);
 			}
 
 			HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
@@ -5881,7 +5914,7 @@ namespace DHDM
 		private void ActivatePlayerShortcut(string shortcutName, int playerId)
 		{
 			PlayerActionShortcut shortcut = actionShortcuts.FirstOrDefault(x => x.DisplayText == shortcutName && x.PlayerId == playerId && x.Available);
-			
+
 			if (shortcut != null)
 			{
 				ActivateShortcut(shortcut);
@@ -8753,8 +8786,7 @@ namespace DHDM
 				{
 					dieRoll.HiddenThreshold = spellCaster.SpellSaveDC;
 					dieRoll.PlayerId = playerID;
-					lock (actionQueue)
-						actionQueue.Enqueue(dieRoll);
+					EnqueueAction(dieRoll);
 					string targetedCreatureList = GetTargetedCreatureList(dieRoll.DiceDtos);
 					TellDungeonMaster($"Coming up: {savingThrowAbility} saving throw for {targetedCreatureList} (as soon as the dice are cleared).");
 				}
@@ -8767,14 +8799,27 @@ namespace DHDM
 				TellDungeonMaster($"No need to roll saving throw - all targeted creatures are totally immune to all {name} damage.");
 		}
 
+		private void EnqueueAction(ActionQueueEntry dieRoll)
+		{
+			lock (actionQueue)
+			{
+				if (actionQueue.Count > 0)
+				{
+					ActionQueueEntry lastEntry = actionQueue.Last();
+					if (lastEntry.CombineWith(dieRoll))
+						return;
+				}
+				actionQueue.Enqueue(dieRoll);
+			}
+		}
+
 		void EnqueueBreakSpellConcentrationSavingThrow(int playerID, double damageTaken)
 		{
 			BreakSpellConcentrationSavingThrowQueueEntry futureDieRoll = new BreakSpellConcentrationSavingThrowQueueEntry();
 			futureDieRoll.PlayerId = playerID;
 			futureDieRoll.HiddenThreshold = Math.Max(10, DndUtils.HalveValue(damageTaken));
 			History.Log($"Enqueuing future die roll ({futureDieRoll.RollType})");
-			lock (actionQueue)
-				actionQueue.Enqueue(futureDieRoll);
+			EnqueueAction(futureDieRoll);
 			Character player = GetPlayer(playerID);
 			if (player != null)
 				TellDungeonMaster($"{player.firstName} took {damageTaken} pts of damage while concentrating on a spell ({player.concentratedSpell.Spell.Name})! Constitution saving throw (against a {futureDieRoll.HiddenThreshold}) coming up...");
@@ -8787,8 +8832,7 @@ namespace DHDM
 			shortcutQueueEntry.RollImmediately = ea.RollImmediately;
 			shortcutQueueEntry.ShortcutName = ea.ShortcutName;
 			History.Log($"Enqueuing future shortcut ({ea.ShortcutName})");
-			lock (actionQueue)
-				actionQueue.Enqueue(shortcutQueueEntry);
+			EnqueueAction(shortcutQueueEntry);
 		}
 
 		private void Game_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)
@@ -9115,7 +9159,7 @@ namespace DHDM
 		}
 
 		private void LeapDiagnosticsOptionsChanged(object sender, RoutedEventArgs e)
-		
+
 		{
 			leapDevice.SetDiagnosticsOptions(chkShowBackPlane.IsChecked == true, chkShowFrontPlane.IsChecked == true, chkShowActivePlane.IsChecked == true);
 		}

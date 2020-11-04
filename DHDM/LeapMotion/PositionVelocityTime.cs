@@ -5,11 +5,12 @@ using System.Linq;
 
 namespace DHDM
 {
-	public class VelocityTime
+	public class PositionVelocityTime
 	{
 		public Vector Velocity { get; set; }
+		public Vector Position { get; set; }
 		public DateTime Time { get; set; }
-		public VelocityTime()
+		public PositionVelocityTime()
 		{
 
 		}

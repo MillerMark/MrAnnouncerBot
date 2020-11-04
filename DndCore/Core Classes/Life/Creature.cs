@@ -654,8 +654,8 @@ namespace DndCore
 
 			LastDamageTaken = damageType;
 
-			if (totalDamageTaken > hitPoints + tempHitPoints)  // Can only drop to zero HP
-				totalDamageTaken = hitPoints + tempHitPoints;
+			if (totalDamageTaken > HitPoints + tempHitPoints)  // Can only drop to zero HP
+				totalDamageTaken = HitPoints + tempHitPoints;
 
 			LastDamagePointsTaken = totalDamageTaken;
 
@@ -677,7 +677,7 @@ namespace DndCore
 				}
 			}
 
-			hitPoints -= damageToInflict;
+			HitPoints -= damageToInflict;
 			OnDamaged(totalDamageTaken);
 		}
 
@@ -991,14 +991,14 @@ namespace DndCore
 			if (deltaHealth <= 0)
 				return;
 
-			if (hitPoints >= maxHitPoints)
+			if (HitPoints >= maxHitPoints)
 				return;
 
-			double maxToHeal = maxHitPoints - hitPoints;
+			double maxToHeal = maxHitPoints - HitPoints;
 			if (deltaHealth > maxToHeal)
-				hitPoints = maxHitPoints;
+				HitPoints = maxHitPoints;
 			else
-				hitPoints += deltaHealth;
+				HitPoints += deltaHealth;
 		}
 
 		void GetDamageAndAttackType(string damageStr, out DamageType damageType, out AttackKind attackKind)

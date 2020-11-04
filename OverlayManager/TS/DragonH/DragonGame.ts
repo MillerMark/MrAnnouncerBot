@@ -1,4 +1,118 @@
-﻿interface IGetPlayerX {
+﻿enum VectorCompassDirection {
+	None,
+	Up,
+	Down,
+	Left,
+	Right,
+	Forward,
+	Backward
+}
+
+enum HandSide {
+	Left,
+	Right
+}
+
+class HandFollowingData {
+	HandSide: HandSide;
+	TrackingObjectIndex = -1;
+
+	constructor(handSide: HandSide, trackingObjectIndex = -1) {
+		this.HandSide = handSide;
+		this.TrackingObjectIndex = trackingObjectIndex;
+	}
+}
+
+class ScaledPoint {
+	X: number;
+	Y: number;
+	Scale: number;
+
+	constructor(x: number, y: number, scale: number) {
+		this.X = x;
+		this.Y = y;
+		this.Scale = scale;
+	}
+}
+
+class Finger2d {
+	TipPosition: ScaledPoint;
+	constructor() {
+
+	}
+}
+
+class Point2D {
+	constructor(public X: number, public Y: number) {
+
+	}
+}
+
+class ScaledPlane {
+	UpperLeft: ScaledPoint;
+	LowerRight: ScaledPoint;
+	UpperLeft2D: Point2D;
+	LowerRight2D: Point2D;
+	constructor() {
+
+	}
+}
+
+class Hand2d {
+	Speed: number;
+	PalmDirection: VectorCompassDirection;
+	SpeedDirection: VectorCompassDirection;
+	ThrowDirection: VectorCompassDirection;
+	FacingForwardOrBack: VectorCompassDirection;
+	PalmPosition: ScaledPoint;
+	Fingers: Array<Finger2d>;
+	Side: HandSide;
+	Throwing: boolean;
+	IsFist: boolean;
+	IsFlat: boolean;
+	ThrownObjectIndex: number;
+	PalmAttachPoint: ScaledPoint;
+	constructor() {
+
+	}
+}
+
+enum TargetHand {
+	None,
+	Any,
+	Left,
+	Right,
+	Both
+}
+
+interface HandEffectDto {
+	EffectName: string;
+	Scale: number;
+	HueShift: number;
+	FollowHand: boolean;
+	OffsetX: number;
+	OffsetY: number;
+	TargetHand: TargetHand;
+}
+
+interface HandFxDto {
+	HandEffects: Array<HandEffectDto>;
+	KillFollowEffects: TargetHand;
+}
+
+interface SkeletalData2d {
+	Hands: Array<Hand2d>;
+	BackPlane: ScaledPlane;
+	FrontPlane: ScaledPlane;
+	ActivePlane: ScaledPlane;
+	ShowBackPlane: boolean;
+	ShowFrontPlane: boolean;
+	ShowActivePlane: boolean;
+	ShowLiveHandPosition: boolean;
+	HandEffect: HandFxDto;
+}
+
+interface IGetPlayerX {
 	getPlayerX(playerIndex: number): number;
 	getPlayerIndex(playerId: number): number;
 	getPlayerFirstName(playerId: number): string;
@@ -159,6 +273,7 @@ class KnownSpellsEffects {
 
 
 abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
+	skeletalData2d: SkeletalData2d;
 	static maxFiltersPerWindup = 6;
 	abstract layerSuffix: string;
 	dndTimeStr: string;
@@ -168,6 +283,18 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	fireBallFront: Sprites;
 	smokeColumnBack: Sprites;
 	smokeColumnFront: Sprites;
+
+	handEffectsCollection: SpriteCollection = new SpriteCollection();
+	handHeldFireball: Sprites;
+	handHeldFireRiseA: Sprites;
+	handHeldFireRiseB: Sprites;
+	handHeldFireRiseC: Sprites;
+	smokePoofA: Sprites;
+	smokePoofB: Sprites;
+	smokePoofC: Sprites;
+	smokePoofD: Sprites;
+	smokePoofE: Sprites;
+
 
 	allWindupEffects: SpriteCollection;
 	backLayerEffects: SpriteCollection;
@@ -457,6 +584,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.backLayerEffects.add(this.fireBallFront);
 		KnownSpellsEffects.initializeSpells();
 		this.clockLayerEffects = new SpriteCollection();
+		this.loadHandEffectResources();
 	}
 
 	loadSpell(spellName: string): Sprites {
@@ -701,5 +829,417 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.loadHealthSpinUp();
 		globalBypassFrameSkip = saveBypassFrameSkip;
 		Folders.assets = saveAssets;
+	}
+
+	updateSkeletalData(skeletalData: string): void {
+		this.skeletalData2d = JSON.parse(skeletalData) as SkeletalData2d;
+		if (this.skeletalData2d) {
+			if (this.skeletalData2d.HandEffect)
+				this.changeHandEffects(this.skeletalData2d);
+			this.checkForThrows(this.skeletalData2d);
+		}
+	}
+
+	calibrationCursorSprite: SpriteProxy;
+	calibrationDiscoverabilitySprite: SpriteProxy;
+	calibrationPosition: string;
+	calibrationCursor: Sprites;
+	calibrationDiscoverability: Sprites;
+
+	calibrateLeapMotion(calibrationData: string) {
+		//console.log(`calibrateLeapMotion...`);
+		const dto = JSON.parse(calibrationData);
+		if (dto.DiscoverabilityIndex === -1) {
+			this.calibrationCursor.spriteProxies = [];
+			this.calibrationDiscoverability.spriteProxies = [];
+			this.calibrationCursorSprite = null;
+			this.calibrationDiscoverabilitySprite = null;
+			this.calibrationPosition = null;
+			return;
+		}
+		if (!this.calibrationCursorSprite) {
+			this.calibrationCursorSprite = this.calibrationCursor.add(dto.X, dto.Y);
+			this.calibrationDiscoverabilitySprite = this.calibrationDiscoverability.add(500, 350);
+		}
+		else {
+			//console.log(`(${dto.X - this.calibrationCursor.originX}, ${dto.Y - this.calibrationCursor.originY})`);
+			this.calibrationCursorSprite.x = dto.X - this.calibrationCursor.originX;
+			this.calibrationCursorSprite.y = dto.Y - this.calibrationCursor.originY;
+			this.calibrationCursorSprite.scale = dto.Scale;
+			this.calibrationDiscoverabilitySprite.frameIndex = dto.DiscoverabilityIndex;
+		}
+		// X, Y, DiscoverabilityIndex
+		// If  we are done and need to hide everything.
+		this.calibrationPosition = `Fingertip: (${Math.round(dto.FingertipPosition.x)}, ${Math.round(dto.FingertipPosition.y)}, ${Math.round(dto.FingertipPosition.z)})`;
+	}
+
+	static readonly fingerWidth: number = 44;
+
+
+	showLiveHandPosition(context: CanvasRenderingContext2D, nowMs: number) {
+		const handFillColors = ['#ff0000', '#0000ff'];
+		const fingerFillColors = ['#ff8080', '#8080ff'];
+		let colorIndex = 0;
+		context.globalAlpha = 0.5;
+
+		this.skeletalData2d.Hands.forEach((hand: Hand2d) => {
+
+			context.fillStyle = handFillColors[colorIndex];
+			context.beginPath();
+			// TODO: Move DragonGame.fingerWidth and related code to a separate class.
+			context.arc(hand.PalmPosition.X, hand.PalmPosition.Y, Math.max(2 * DragonGame.fingerWidth * hand.PalmPosition.Scale / 2.0, 20), 0, 2 * Math.PI);
+			context.fill();
+
+			context.fillStyle = '#ffffff';
+			context.font = `${32 * hand.PalmPosition.Scale}px Arial`;
+			context.fillText(VectorCompassDirection[hand.PalmDirection].toString(), hand.PalmPosition.X, hand.PalmPosition.Y);
+
+			hand.Fingers.forEach((finger: Finger2d) => {
+				context.fillStyle = fingerFillColors[colorIndex];
+				context.beginPath();
+				// TODO: Move DragonGame.fingerWidth and related code to a separate class.
+				context.arc(finger.TipPosition.X, finger.TipPosition.Y, Math.max(DragonGame.fingerWidth * finger.TipPosition.Scale / 2.0, 10), 0, 2 * Math.PI);
+				context.fill();
+			});
+
+			colorIndex++;
+			if (colorIndex >= handFillColors.length)
+				colorIndex = 0;
+		});
+
+		if (this.skeletalData2d.ShowBackPlane) {
+			this.drawPlane(context, this.skeletalData2d.BackPlane, '#800000');
+		}
+
+		if (this.skeletalData2d.ShowFrontPlane) {
+			this.drawPlane(context, this.skeletalData2d.FrontPlane, '#000080');
+		}
+
+		context.globalAlpha = 1;
+	}
+
+	atOrigin(point: Point2D): boolean {
+		if (!point)
+			return true;
+		return point.X === 0 && point.Y === 0;
+	}
+
+	drawPlane(context: CanvasRenderingContext2D, plane: ScaledPlane, fillStyle: string) {
+		if (!this.atOrigin(plane.UpperLeft2D) && !this.atOrigin(plane.LowerRight2D)) {
+			context.globalAlpha = 0.3;
+			context.fillStyle = fillStyle;
+			const width: number = plane.LowerRight2D.X - plane.UpperLeft2D.X;
+			const height: number = plane.LowerRight2D.Y - plane.UpperLeft2D.Y;
+			context.fillRect(plane.UpperLeft2D.X, plane.UpperLeft2D.Y, width, height);
+		}
+
+		if (!this.atOrigin(plane.UpperLeft2D)) {
+			//console.log(`Upper left: (${plane.UpperLeft2D.X}, ${plane.UpperLeft2D.Y})`);
+			this.drawPoint(context, plane.UpperLeft2D, plane.UpperLeft.Scale);
+		}
+
+		if (!this.atOrigin(plane.LowerRight2D)) {
+			this.drawPoint(context, plane.LowerRight2D, plane.LowerRight.Scale);
+		}
+
+		context.globalAlpha = 1;
+	}
+
+	drawPoint(context: CanvasRenderingContext2D, point: Point2D, scale: number) {
+		context.globalAlpha = 0.8;
+		context.beginPath();
+		context.arc(point.X, point.Y, DragonGame.fingerWidth * scale / 2, 0, 2 * Math.PI);
+		context.fill();
+		context.globalAlpha = 1;
+	}
+
+	loadHandEffectResources() {
+		this.smokePoofA = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofA', 119, 30, AnimationStyle.Sequential, true);
+		this.smokePoofA.originX = 305;
+		this.smokePoofA.originY = 841;
+		this.handEffectsCollection.add(this.smokePoofA);
+
+		this.smokePoofB = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofB', 115, 30, AnimationStyle.Sequential, true);
+		this.smokePoofB.originX = 332;
+		this.smokePoofB.originY = 716;
+		this.handEffectsCollection.add(this.smokePoofB);
+
+		this.smokePoofC = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofC', 120, 30, AnimationStyle.Sequential, true);
+		this.smokePoofC.originX = 333;
+		this.smokePoofC.originY = 715;
+		this.handEffectsCollection.add(this.smokePoofC);
+
+		this.smokePoofD = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofD', 121, 30, AnimationStyle.Sequential, true);
+		this.smokePoofD.originX = 321;
+		this.smokePoofD.originY = 871;
+		this.handEffectsCollection.add(this.smokePoofD);
+
+		this.smokePoofE = new Sprites('LeapMotion/Effects/SmokePoof/SmokePoofE', 101, 30, AnimationStyle.Sequential, true);
+		this.smokePoofE.originX = 311;
+		this.smokePoofE.originY = 851;
+		this.handEffectsCollection.add(this.smokePoofE);
+
+		this.handHeldFireball = new Sprites('LeapMotion/Effects/FireBall/FireBall', 59, 30, AnimationStyle.Loop, true);
+		this.handHeldFireball.originX = 317;
+		this.handHeldFireball.originY = 647;
+		this.handEffectsCollection.add(this.handHeldFireball);
+
+		this.handHeldFireRiseA = new Sprites('LeapMotion/Effects/FireBall/FireRiseA', 23, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireRiseA.originX = 192;
+		this.handHeldFireRiseA.originY = 251;
+		this.handHeldFireRiseA.moves = true;
+		this.handHeldFireRiseA.disableGravity();
+		this.handEffectsCollection.add(this.handHeldFireRiseA);
+
+		this.handHeldFireRiseB = new Sprites('LeapMotion/Effects/FireBall/FireRiseB', 37, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireRiseB.originX = 116;
+		this.handHeldFireRiseB.originY = 454;
+		this.handHeldFireRiseB.moves = true;
+		this.handHeldFireRiseB.disableGravity();
+		this.handEffectsCollection.add(this.handHeldFireRiseB);
+
+		this.handHeldFireRiseC = new Sprites('LeapMotion/Effects/FireBall/FireRiseC', 24, 30, AnimationStyle.Sequential, true);
+		this.handHeldFireRiseC.originX = 238;
+		this.handHeldFireRiseC.originY = 517;
+		this.handHeldFireRiseC.moves = true;
+		this.handHeldFireRiseC.disableGravity();
+		this.handEffectsCollection.add(this.handHeldFireRiseC);
+	}
+
+	changeHandEffects(skeletalData2d: SkeletalData2d) {
+		if (skeletalData2d.HandEffect.HandEffects)
+			this.addHandEffects(skeletalData2d);
+		if (skeletalData2d.HandEffect.KillFollowEffects !== TargetHand.None)
+			this.killHandEffects(skeletalData2d.HandEffect.KillFollowEffects);
+	}
+
+	killHandEffects(KillFollowEffects: TargetHand) {
+		// TODO: Implement this properly.	
+		// HACK: 
+		this.handHeldFireball.spriteProxies = [];
+	}
+
+	addHandEffects(skeletalData2d: SkeletalData2d) {
+		if (skeletalData2d.Hands.length === 0)
+			return;
+
+		skeletalData2d.HandEffect.HandEffects.forEach((handEffect: HandEffectDto) => {
+			const scaledPoint: ScaledPoint = this.getFirstHandAttachPoint(skeletalData2d);
+			switch (handEffect.EffectName) {
+				case 'SmokeA':
+					this.addScaledSprite(this.smokePoofA, handEffect, scaledPoint);
+					break;
+				case 'SmokeB':
+					this.addScaledSprite(this.smokePoofB, handEffect, scaledPoint);
+					break;
+				case 'SmokeC':
+					this.addScaledSprite(this.smokePoofC, handEffect, scaledPoint);
+					break;
+				case 'SmokeD':
+					this.addScaledSprite(this.smokePoofD, handEffect, scaledPoint);
+					break;
+				case 'SmokeE':
+					this.addScaledSprite(this.smokePoofE, handEffect, scaledPoint);
+					break;
+				case 'FireBall': {
+					const fireBall: SpriteProxy = this.addScaledSprite(this.handHeldFireball, handEffect, scaledPoint);
+					fireBall.data = new HandFollowingData(skeletalData2d.Hands[0].Side);
+					break;
+				}
+			}
+		});
+	}
+
+	addScaledSprite(smokePoof: Sprites, handEffect: HandEffectDto, scaledPoint: ScaledPoint): SpriteProxy {
+		const sprite: SpriteProxy = smokePoof.addShifted(scaledPoint.X, scaledPoint.Y, 0, handEffect.HueShift);
+		this.setHandEffectScale(sprite, handEffect, scaledPoint.Scale);
+		return sprite;
+	}
+
+	private setHandEffectScale(sprite: SpriteProxy, handEffect: HandEffectDto, scale: number) {
+		(sprite as unknown as ScaleFactor).scaleFactor = handEffect.Scale;
+		sprite.scale = handEffect.Scale * scale;
+	}
+
+	static readonly outOfBounds: number = -1000;
+
+	static readonly outOfBoundsPt: ScaledPoint = new ScaledPoint(DragonGame.outOfBounds, DragonGame.outOfBounds, 1);
+
+	private getFirstHandAttachPoint(skeletalData2d: SkeletalData2d): ScaledPoint {
+		if (skeletalData2d.Hands.length > 0) {
+			return this.getHandAttachPoint(skeletalData2d.Hands[0]);
+		}
+		return DragonGame.outOfBoundsPt;
+	}
+
+	getHand(skeletalData2d: SkeletalData2d, handSide: HandSide): Hand2d {
+		for (let i = 0; i < skeletalData2d.Hands.length; i++) {
+			if (skeletalData2d.Hands[i].Side === handSide) {
+				return skeletalData2d.Hands[i];
+			}
+		}
+		return null;
+	}
+
+
+	getHandPositionFromSide(skeletalData2d: SkeletalData2d, handSide: HandSide): ScaledPoint {
+		const hand: Hand2d = this.getHand(skeletalData2d, handSide);
+
+		if (hand !== null)
+			return this.getHandAttachPoint(hand);
+
+		return DragonGame.outOfBoundsPt;
+	}
+
+
+	nextFireRiseCreationTime = 0;
+
+	private getHandAttachPoint(hand: Hand2d): ScaledPoint {
+		const x = hand.PalmAttachPoint.X;
+		let y = hand.PalmAttachPoint.Y;
+		const scale = Math.max(0.2, hand.PalmAttachPoint.Scale);
+
+		//if (hand.PalmDirection === VectorCompassDirection.Up)
+		//	y -= 6 * DragonGame.fingerWidth * scale;
+		//else
+		//	y -= 3 * DragonGame.fingerWidth * scale;
+
+		return new ScaledPoint(x, y, scale);
+	}
+
+	showingHandSpeed = true;
+
+	checkForThrows(skeletalData2d: SkeletalData2d) {
+		// TODO: Support multiple FireBalls.
+		if (this.handHeldFireball.spriteProxies.length === 0)
+			return;
+		const handFollowingData: HandFollowingData = this.handHeldFireball.spriteProxies[0].data as HandFollowingData;
+		if (!handFollowingData)
+			return;
+
+		const hand: Hand2d = this.getHand(skeletalData2d, handFollowingData.HandSide);
+		if (!hand)
+			return;
+
+		if (hand.Throwing) {
+			console.log(`THROWING!!!`);
+			//this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+		}
+	}
+
+	updateTrackingEffects(skeletalData2d: SkeletalData2d, nowMs: number): void {
+		if (!this.hasTrackingEffects())
+			return;
+
+		const sprite: ColorShiftingSpriteProxy = this.handHeldFireball.spriteProxies[0] as ColorShiftingSpriteProxy;
+
+		const handFollowingData: HandFollowingData = sprite.data as HandFollowingData;
+		if (!handFollowingData)
+			return;
+
+		const hand: Hand2d = this.getHand(skeletalData2d, handFollowingData.HandSide);
+		if (!hand)
+			return;
+
+		//console.log(`hand.Speed: ${hand.Speed} ${VectorCompassDirection[hand.SpeedDirection].toString()}`);
+
+		if (this.showingHandSpeed) {
+			const barThickness = 5;
+			let xPos: number;
+			const screenHeight = 1080;
+			const screenWidth = 1920;
+			const barHeight: number = screenHeight * MathEx.clamp(hand.Speed / 2000, 0, 1);
+			const yPos: number = 1080 - barHeight;
+			this.context.fillStyle = '#ff0000';
+			if (hand.Side === HandSide.Left)
+				xPos = 0;
+			else
+				xPos = screenWidth - barThickness;
+			this.context.fillRect(xPos, yPos, barThickness, barHeight);
+		}
+
+		let pos: ScaledPoint;
+		if (handFollowingData.TrackingObjectIndex >= 0)
+			pos = this.getVirtualPositionFromIndex(skeletalData2d, handFollowingData.TrackingObjectIndex);
+		else
+			pos = this.getHandPositionFromSide(skeletalData2d, handFollowingData.HandSide);
+
+		if (pos === DragonGame.outOfBoundsPt || pos.Y > 1480 || hand.IsFist) {
+			this.handHeldFireball.spriteProxies = [];
+			return;
+		}
+
+		let opacity: number;
+		if (hand.FacingForwardOrBack === VectorCompassDirection.Forward) {
+			// We want to draw on the front plane.
+			//sprite.hueShift = 0;
+			if (this instanceof DragonBackGame)
+				opacity = 0;
+			else
+				opacity = 1;
+		}
+		else {
+			// We want to draw on the back plane.
+			//sprite.hueShift = 220;
+			if (this instanceof DragonFrontGame)
+				opacity = 0;
+			else
+				opacity = 1;
+		}
+
+		sprite.opacity = opacity;
+
+		if (opacity === 0)
+			return;
+
+		this.handHeldFireball.spriteProxies.forEach((fireballSprite: ColorShiftingSpriteProxy) => {
+			fireballSprite.x = pos.X - this.handHeldFireball.originX;
+			fireballSprite.y = pos.Y - this.handHeldFireball.originY;
+			fireballSprite.scale = pos.Scale * (fireballSprite as unknown as ScaleFactor).scaleFactor;
+
+			if (nowMs < this.nextFireRiseCreationTime) {
+				// Create a new fire particle.
+				let sprites: Sprites;
+				if (Random.chancePercent(33))
+					sprites = this.handHeldFireRiseA;
+				if (Random.chancePercent(50))
+					sprites = this.handHeldFireRiseB;
+				else
+					sprites = this.handHeldFireRiseC;
+
+				const fireBallDiameter = 150;
+				const fireBallRadius: number = fireBallDiameter / 2;
+				const fireBallScaledRadius: number = fireBallRadius * fireballSprite.scale;
+				const fireRiseX: number = fireballSprite.x + this.handHeldFireball.originX + Random.between(-fireBallScaledRadius, fireBallScaledRadius);
+
+				const fireBallRiseHeight = 92;
+				const fireballEmitterRectHeight = 82;
+				const fireballEmitterRectHalfHeight = fireballEmitterRectHeight / 2;
+				const fireballEmitterRectHalfHeightScaled = fireballEmitterRectHalfHeight * fireballSprite.scale;
+				const fireRiseY: number = fireballSprite.y + this.handHeldFireball.originY - fireBallRiseHeight * fireballSprite.scale + Random.between(-fireballEmitterRectHalfHeightScaled, fireballEmitterRectHalfHeightScaled);
+
+				const fireRise: SpriteProxy = sprites.addShifted(fireRiseX, fireRiseY, 0, fireballSprite.hueShift);
+				fireRise.scale = fireballSprite.scale * Random.between(0.8, 1.2);
+				fireRise.velocityY = -3.7 * fireballSprite.scale;
+			}
+		});
+
+		this.nextFireRiseCreationTime = nowMs + Random.between(150, 400);
+	}
+
+	getVirtualPositionFromIndex(skeletalData2d: SkeletalData2d, TrackingObjectIndex: number): ScaledPoint {
+		return DragonGame.outOfBoundsPt;
+	}
+
+	private hasTrackingEffects() {
+		return this.handHeldFireball.spriteProxies.length > 0;
+	}
+
+	updateSkeletalTrackingEffects(context: CanvasRenderingContext2D, nowMs: number) {
+		if (this.skeletalData2d) {
+			this.updateTrackingEffects(this.skeletalData2d, nowMs);
+			this.handEffectsCollection.updatePositions(nowMs);
+			this.handEffectsCollection.draw(context, nowMs);
+		}
 	}
 }

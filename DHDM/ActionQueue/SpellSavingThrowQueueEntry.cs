@@ -20,6 +20,7 @@ namespace DHDM
 		{
 			base.PrepareRoll(diceRoll);
 			diceRoll.SavingThrow = SavingThrowAbility;
+			diceRoll.SpellName = SpellName;
 		}
 
 		public SpellSavingThrowQueueEntry(string spellName, Ability savingThrowAbility) : this()

@@ -15,7 +15,9 @@ namespace DndCore
 		{
 			ExpectingArguments(args, 1);
 			Target targetInstance = evaluator.Evaluate<Target>(args[0]);  // evaluator.Evaluate call needed to get local variables.
-			return targetInstance.Count;
+			if (targetInstance != null)
+				return targetInstance.Count;
+			return 0;
 		}
 	}
 }

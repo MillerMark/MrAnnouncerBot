@@ -114,7 +114,8 @@ enum Conditions {
   Climbing = 262144,  // Home-brew condition added.
   Flying = 524288,		// Home-brew condition added.
   Raging = 1048576,		// Home-brew condition added.
-  Swimming = 2097152  // Home-brew condition added.
+  Swimming = 2097152,  // Home-brew condition added.
+  Marked = 4194304  // Home-brew condition added.
 }
 
 /* Blinded

@@ -40,9 +40,9 @@ namespace DndTests
 		{
 			Character player = CharacterBuilder.BuildTestDruid();
 			Weapon shortSword = Weapon.buildShortSword();
-			player.hitPoints = 100;
+			player.HitPoints = 100;
 			shortSword.Attack(AttackNames.Stab, player);
-			Assert.AreEqual(96.5, player.hitPoints);
+			Assert.AreEqual(96.5, player.HitPoints);
 			Assert.AreEqual(3.5, player.LastDamagePointsTaken);
 			Assert.AreEqual(DamageType.Piercing, player.LastDamageTaken);
 		}
@@ -53,11 +53,11 @@ namespace DndTests
 			Character player = CharacterBuilder.BuildTestDruid();
 			Weapon shortSword = Weapon.buildShortSword();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageResistance(DamageType.Piercing, AttackKind.Magical | AttackKind.NonMagical);
 			shortSword.Attack("Stab", player);
 			const double expectedDamage = 1.75;
-			Assert.AreEqual(startingHitPoints - expectedDamage, player.hitPoints);
+			Assert.AreEqual(startingHitPoints - expectedDamage, player.HitPoints);
 			Assert.AreEqual(expectedDamage, player.LastDamagePointsTaken);
 		}
 
@@ -67,13 +67,13 @@ namespace DndTests
 			Character player = CharacterBuilder.BuildTestDruid();
 			Weapon shortSword = Weapon.buildShortSword();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageImmunity(DamageType.Piercing, AttackKind.Any);
 			shortSword.Attack(AttackNames.Stab, player);
 			shortSword.Attack(AttackNames.Stab, player);
 			shortSword.Attack(AttackNames.Stab, player);
 			shortSword.Attack(AttackNames.Stab, player);
-			Assert.AreEqual(startingHitPoints, player.hitPoints);
+			Assert.AreEqual(startingHitPoints, player.HitPoints);
 			Assert.AreEqual(0, player.LastDamagePointsTaken);
 			Assert.AreEqual(DamageType.None, player.LastDamageTaken);
 		}
@@ -84,11 +84,11 @@ namespace DndTests
 			Character player = CharacterBuilder.BuildTestDruid();
 			Weapon shortSword = Weapon.buildShortSword();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageResistance(DamageType.Lightning, AttackKind.Magical | AttackKind.NonMagical);
 			shortSword.Attack(AttackNames.Stab, player);
 			const double expectedDamage = 3.5;
-			Assert.AreEqual(startingHitPoints - expectedDamage, player.hitPoints);
+			Assert.AreEqual(startingHitPoints - expectedDamage, player.HitPoints);
 			Assert.AreEqual(expectedDamage, player.LastDamagePointsTaken);
 		}
 
@@ -99,11 +99,11 @@ namespace DndTests
 			// vs.
 			Character player = CharacterBuilder.BuildTestDruid();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageImmunity(DamageType.Piercing, AttackKind.Magical);
 			magicalShortsword.Attack(AttackNames.Stab, player);
 			const double expectedDamage = 0;
-			Assert.AreEqual(startingHitPoints - expectedDamage, player.hitPoints);
+			Assert.AreEqual(startingHitPoints - expectedDamage, player.HitPoints);
 			Assert.AreEqual(expectedDamage, player.LastDamagePointsTaken);
 			Assert.AreEqual(DamageType.None, player.LastDamageTaken);
 		}
@@ -115,11 +115,11 @@ namespace DndTests
 			// vs.
 			Character player = CharacterBuilder.BuildTestDruid();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageImmunity(DamageType.Piercing, AttackKind.Magical);
 			shortsword.Attack(AttackNames.Stab, player);
 			const double expectedDamage = 3.5;
-			Assert.AreEqual(startingHitPoints - expectedDamage, player.hitPoints);
+			Assert.AreEqual(startingHitPoints - expectedDamage, player.HitPoints);
 			Assert.AreEqual(expectedDamage, player.LastDamagePointsTaken);
 			Assert.AreEqual(DamageType.Piercing, player.LastDamageTaken);
 		}
@@ -131,11 +131,11 @@ namespace DndTests
 			// vs.
 			Character player = CharacterBuilder.BuildTestDruid();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageImmunity(DamageType.Piercing, AttackKind.NonMagical);
 			shortsword.Attack(AttackNames.Stab, player);
 			const double expectedDamage = 0;
-			Assert.AreEqual(startingHitPoints - expectedDamage, player.hitPoints);
+			Assert.AreEqual(startingHitPoints - expectedDamage, player.HitPoints);
 			Assert.AreEqual(expectedDamage, player.LastDamagePointsTaken);
 			Assert.AreEqual(DamageType.None, player.LastDamageTaken);
 		}
@@ -149,7 +149,7 @@ namespace DndTests
 			// vs.
 			Character player = CharacterBuilder.BuildTestDruid();
 			const double startingHitPoints = 100;
-			player.hitPoints = startingHitPoints;
+			player.HitPoints = startingHitPoints;
 			player.AddDamageImmunity(DamageType.Piercing, AttackKind.Any);
 			Assert.IsTrue(player.IsImmuneTo(DamageType.Piercing, AttackKind.Magical));
 			Assert.IsTrue(player.IsImmuneTo(DamageType.Piercing, AttackKind.NonMagical));
@@ -160,7 +160,7 @@ namespace DndTests
 			shortsword.Attack(AttackNames.Stab, player);
 			magicalShortsword.Attack(AttackNames.Stab, player);
 			const double expectedDamage = 0;
-			Assert.AreEqual(startingHitPoints - expectedDamage, player.hitPoints);
+			Assert.AreEqual(startingHitPoints - expectedDamage, player.HitPoints);
 			Assert.AreEqual(expectedDamage, player.LastDamagePointsTaken);
 			Assert.AreEqual(DamageType.None, player.LastDamageTaken);
 		}

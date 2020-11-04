@@ -214,6 +214,7 @@ class DragonBackGame extends DragonGame {
 			}
 			this.fpsWindow.showAllFramerates(this.timeBetweenFramesQueue, this.drawTimeForEachFrameQueue, context, nowMs);
 		}
+		this.updateSkeletalTrackingEffects(context, nowMs);
 	}
 
 	fpsWindow: FpsWindow;

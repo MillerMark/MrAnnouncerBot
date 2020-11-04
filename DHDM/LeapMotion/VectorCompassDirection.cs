@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DHDM
 {
-	public enum PalmDirection
+	public enum VectorCompassDirection
 	{
 		None,
 		Up,
