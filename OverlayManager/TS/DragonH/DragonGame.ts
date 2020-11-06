@@ -74,6 +74,7 @@ class Hand2d {
 	Fingers: Array<Finger2d>;
 	Side: HandSide;
 	Throwing: boolean;
+	JustCaught: boolean;
 	IsFist: boolean;
 	IsFlat: boolean;
 	ThrownObjectIndex: number;
@@ -282,6 +283,7 @@ class KnownSpellsEffects {
 
 abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	textAnimations: Animations = new Animations();
+	leapEffectSoundManager: SoundManager;
 	skeletalData2d: SkeletalData2d;
 	static maxFiltersPerWindup = 6;
 	abstract layerSuffix: string;
@@ -652,6 +654,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.allWindupEffects = new SpriteCollection();
 		this.backLayerEffects = new SpriteCollection();
 		this.dragonSharedSounds = new SoundManager('GameDev/Assets/DragonH/SoundEffects');
+		this.leapEffectSoundManager = new SoundManager('GameDev/Assets/DragonH/SoundEffects/Leap Effects');
 	}
 
 	initializePlayerData(playerData: string): any {
@@ -865,7 +868,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (this.skeletalData2d) {
 			if (this.skeletalData2d.HandEffect)
 				this.changeHandEffects(this.skeletalData2d);
-			this.checkForThrows(this.skeletalData2d);
+			this.checkForThrowsAndCatches(this.skeletalData2d);
 		}
 	}
 
@@ -905,7 +908,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	static readonly fingerWidth: number = 44;
 
 
-	showLiveHandPosition(context: CanvasRenderingContext2D, nowMs: number) {
+	showDiagnosticsLiveHandPosition(context: CanvasRenderingContext2D, nowMs: number) {
 		const handFillColors = ['#ff0000', '#0000ff'];
 		const fingerFillColors = ['#ff8080', '#8080ff'];
 		let colorIndex = 0;
@@ -920,8 +923,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			context.fill();
 
 			context.fillStyle = '#ffffff';
-			context.font = `${32 * hand.PalmPosition.Scale}px Arial`;
+			const fontSize: number = 32 * hand.PalmPosition.Scale;
+			context.font = `${fontSize}px Arial`;
 			context.fillText(VectorCompassDirection[hand.PalmDirection].toString(), hand.PalmPosition.X, hand.PalmPosition.Y);
+			context.fillText((Math.round(hand.PositionZ * 100) / 100).toString(), hand.PalmPosition.X, hand.PalmPosition.Y + fontSize);
 
 			hand.Fingers.forEach((finger: Finger2d) => {
 				context.fillStyle = fingerFillColors[colorIndex];
@@ -1045,7 +1050,24 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	killHandEffects(KillFollowEffects: TargetHand) {
 		// TODO: Implement this properly.	
 		// HACK: 
+		//this.destroyAllFireBalls();
+	}
+
+	destroyAllFireBalls() {
+		if (this.handHeldFireball.spriteProxies.length > 0 && this instanceof DragonFrontGame)
+			this.leapEffectSoundManager.safePlayMp3('FireBallExtinguish');
 		this.handHeldFireball.spriteProxies = [];
+		this.activeLeapFireballSound.pause();
+		this.activeLeapFireballSound = null;
+	}
+
+	fireBallSound: string;
+	activeLeapFireballSound: HTMLAudioElement;
+
+	addFireballSound() {
+		if (this instanceof DragonFrontGame)
+			this.leapEffectSoundManager.safePlayMp3('FireBallIgnite');
+		this.activeLeapFireballSound = this.leapEffectSoundManager.safePlayMp3ReturnAudio(this.fireBallSound);
 	}
 
 	addHandEffects(skeletalData2d: SkeletalData2d) {
@@ -1072,7 +1094,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 					break;
 				case 'FireBall': {
 					const fireBall: SpriteProxy = this.addScaledSprite(this.handHeldFireball, handEffect, scaledPoint);
+					fireBall.fadeInTime = 650;
 					fireBall.data = new HandFollowingData(skeletalData2d.Hands[0].Side);
+					this.addFireballSound();
 					break;
 				}
 			}
@@ -1136,9 +1160,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return new ScaledPoint(x, y, scale);
 	}
 
-	showingHandSpeed = true;
+	showingHandSpeed = false;
 
-	checkForThrows(skeletalData2d: SkeletalData2d) {
+	checkForThrowsAndCatches(skeletalData2d: SkeletalData2d) {
 		// TODO: Support multiple FireBalls.
 		if (this.handHeldFireball.spriteProxies.length === 0)
 			return;
@@ -1155,6 +1179,33 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			console.log(`THROWING!!!`);
 			this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
 		}
+
+		if (hand.JustCaught) {
+			handFollowingData.TrackingObjectIndex = -1;
+			handFollowingData.HandSide = hand.Side;
+			this.addFloatingText(hand.PalmAttachPoint.X, 'Caught!', '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+		}
+	}
+
+	activeFireballVolumeFactor = 1;
+
+	adjustFireballSound(positionZ: number) {
+		if (!this.activeLeapFireballSound)
+			return ;
+		const backPlane = 380;
+		const frontPlane = 40;
+		const percentVolumeBackPlane: number = (MathEx.clamp(positionZ, frontPlane, backPlane) - frontPlane) / (backPlane - frontPlane);
+		const percentVolumeFrontPlane: number = 1 - percentVolumeBackPlane;
+		let percentVolume: number;
+		if (this instanceof DragonFrontGame) {
+			percentVolume = percentVolumeFrontPlane;
+		}
+		else {
+			percentVolume = percentVolumeBackPlane;
+		}
+		percentVolume = MathEx.toFixed(percentVolume, 1);
+		if (this.activeLeapFireballSound.volume !== percentVolume)
+			this.activeLeapFireballSound.volume = this.activeFireballVolumeFactor * percentVolume;
 	}
 
 	updateTrackingEffects(skeletalData2d: SkeletalData2d, nowMs: number): void {
@@ -1169,42 +1220,51 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return;
 
 		const hand: Hand2d = this.getHand(skeletalData2d, handFollowingData.HandSide);
-		if (!hand)
-			return;
 
 		//console.log(`hand.Speed: ${hand.Speed} ${VectorCompassDirection[hand.SpeedDirection].toString()}`);
 
-		if (this.showingHandSpeed) {
+		if (this.showingHandSpeed && hand) {
 			this.showHandSpeed(hand);
 		}
 
 		let pos: ScaledPoint;
 		const isThrown: boolean = handFollowingData.TrackingObjectIndex >= 0;
 		let thrownObject: ThrownObject = null;
-		
-		if (isThrown) {
+
+		if (isThrown) 
 			thrownObject = this.getThrownObjectFromIndex(skeletalData2d, handFollowingData.TrackingObjectIndex);
+
+		if (thrownObject) {
 			pos = thrownObject.Position;
 		}
 		else
 			pos = this.getHandPositionFromSide(skeletalData2d, handFollowingData.HandSide);
 
-		if (pos === DragonGame.outOfBoundsPt || pos.Y > 1480 || hand.IsFist) {
-			this.handHeldFireball.spriteProxies = [];
+		if (pos === DragonGame.outOfBoundsPt || pos.Y > 1480 || (hand && hand.IsFist)) {
+			this.destroyAllFireBalls();
 			return;
 		}
+
+		if (thrownObject)
+			this.adjustFireballSound(thrownObject.PositionZ);
+		else if (hand)
+			this.adjustFireballSound(hand.PositionZ);
 
 		let opacity: number;
 		let onFrontCanvas: boolean;
 
+		const midPlaneZ = 330;
+
 		if (isThrown)
-			onFrontCanvas = hand.PositionZ < thrownObject.PositionZ;
+			if (hand)
+				onFrontCanvas = hand.PositionZ > thrownObject.PositionZ;
+			else
+				onFrontCanvas = thrownObject.PositionZ < midPlaneZ;
 		else
 			onFrontCanvas = hand.FacingForwardOrBack === VectorCompassDirection.Forward;
 
 		if (onFrontCanvas) {
 			// We want to draw on the front plane.
-			//sprite.hueShift = 0;
 			if (this instanceof DragonBackGame)
 				opacity = 0;
 			else
@@ -1212,7 +1272,6 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		}
 		else {
 			// We want to draw on the back plane.
-			//sprite.hueShift = 220;
 			if (this instanceof DragonFrontGame)
 				opacity = 0;
 			else
@@ -1259,20 +1318,20 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.nextFireRiseCreationTime = nowMs + Random.between(150, 400);
 	}
 
-    private showHandSpeed(hand: Hand2d) {
-        const barThickness = 5;
-        let xPos: number;
-        const screenHeight = 1080;
-        const screenWidth = 1920;
-        const barHeight: number = screenHeight * MathEx.clamp(hand.Speed / 2000, 0, 1);
-        const yPos: number = 1080 - barHeight;
-        this.context.fillStyle = '#ff0000';
-        if (hand.Side === HandSide.Left)
-            xPos = 0;
-        else
-            xPos = screenWidth - barThickness;
-        this.context.fillRect(xPos, yPos, barThickness, barHeight);
-    }
+	private showHandSpeed(hand: Hand2d) {
+		const barThickness = 5;
+		let xPos: number;
+		const screenHeight = 1080;
+		const screenWidth = 1920;
+		const barHeight: number = screenHeight * MathEx.clamp(hand.Speed / 2000, 0, 1);
+		const yPos: number = 1080 - barHeight;
+		this.context.fillStyle = '#ff0000';
+		if (hand.Side === HandSide.Left)
+			xPos = 0;
+		else
+			xPos = screenWidth - barThickness;
+		this.context.fillRect(xPos, yPos, barThickness, barHeight);
+	}
 
 	getThrownObjectFromIndex(skeletalData2d: SkeletalData2d, TrackingObjectIndex: number): ThrownObject {
 		if (!skeletalData2d.ThrownObjects || skeletalData2d.ThrownObjects.length === 0)

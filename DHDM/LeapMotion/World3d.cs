@@ -18,10 +18,11 @@ namespace DHDM
 		{
 			if (Instances == null)
 				return;
-			foreach (Virtual3dObject virtual3DObject in Instances)
-			{
-				virtual3DObject.Update(time);
-			}
+			lock (Instances)
+				foreach (Virtual3dObject virtual3DObject in Instances)
+				{
+					virtual3DObject.Update(time);
+				}
 		}
 
 		/// <summary>
@@ -32,9 +33,21 @@ namespace DHDM
 			Virtual3dObject virtual3DObject = new Virtual3dObject() { StartPosition = throwVector.Position, InitialVelocity = throwVector.LeapVelocity.ToMetersPerSecond(), Index = numInstancesCreated };
 			if (Instances == null)
 				Instances = new List<Virtual3dObject>();
-			Instances.Add(virtual3DObject);
+			lock (Instances)
+				Instances.Add(virtual3DObject);
 			numInstancesCreated++;
 			return virtual3DObject.Index;
+		}
+
+		public void RemoveInstances(List<Virtual3dObject> instancesToRemove)
+		{
+			if (Instances == null)
+				return;
+			lock (Instances)
+				foreach (Virtual3dObject virtual3DObject in instancesToRemove)
+				{
+					Instances.Remove(virtual3DObject);
+				}
 		}
 	}
 }

@@ -49,9 +49,9 @@ namespace DHDM
 		}
 		static PositionVelocityTime GetThrowVector(CircularQueue<PositionVelocityTime> queue)
 		{
-			DateTime earliestValidTime = DateTime.Now - TimeSpan.FromSeconds(1);
-			const double minVelocityForThrow = 425;
-			const double minDeltaSpeedForRelease = 100;
+			DateTime earliestValidTime = DateTime.Now - TimeSpan.FromSeconds(0.4);
+			const double minVelocityForThrow = 725;
+			const double maxPercentThrowingSpeedForRelease = 0.6;
 			bool escapeVelocityReached = false;
 			double fastestThrowingSpeed = 0;
 			bool weAreThrowing = false;
@@ -84,7 +84,7 @@ namespace DHDM
 						continue;
 
 					// HACK: We're not really calculating this correctly.
-					if (speed < fastestThrowingSpeed - minDeltaSpeedForRelease || checkPt.LeapVelocity.Dot(fastestVelocity) < 0)
+					if (speed < fastestThrowingSpeed * maxPercentThrowingSpeedForRelease || checkPt.LeapVelocity.Dot(fastestVelocity) < 0)
 					{
 						weAreThrowing = true;
 					}

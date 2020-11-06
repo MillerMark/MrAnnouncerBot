@@ -1307,7 +1307,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 	static suppressVolume(seconds: number, now: number): void {
 		Boombox.suppressingVolume = true;
-		let boombox: Boombox = Boombox.getInstance();
+		const boombox: Boombox = Boombox.getInstance();
 		if (boombox !== null) {
 			if (Boombox.volume !== Boombox.suppressVolumeLevel) {
 				Boombox.saveVolume = Boombox.volume;
@@ -1328,7 +1328,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	static changeGenre(newGenre: string): void {
-		let boombox: Boombox = Boombox.getInstance();
+		const boombox: Boombox = Boombox.getInstance();
 		if (boombox) {
 			boombox.changeActiveGenre(newGenre);
 
@@ -1408,7 +1408,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 	static actOnNewVolume(): void {
 		Boombox.trimVolume();
-		let boombox: Boombox = Boombox.getInstance();
+		const boombox: Boombox = Boombox.getInstance();
 		if (boombox)
 			boombox.setVolumeForActiveSong();
 
@@ -1421,7 +1421,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 	setVolumeForActiveSong() {
 		let actualVolume: number;
-		let thisVolume: number = Math.round(Boombox.volume);
+		const thisVolume: number = Math.round(Boombox.volume);
 		if (thisVolume >= 4)
 			actualVolume = thisVolume - 3;
 		else
@@ -1447,8 +1447,8 @@ class Boombox extends ColorShiftingSpriteProxy {
 	playRandomSong() {
 		const fiveMinutes: number = 5 * 60 * 1000;
 		let index: number = Random.intBetween(1, this.activeSongCount);
-		let tries: number = 0;
-		const maxTries: number = 30;
+		let tries = 0;
+		const maxTries = 30;
 		let fileName: string = this.getFileName(index);
 		while (tries < maxTries && this.soundManager.playedRecently(fileName, fiveMinutes)) {
 			index = Random.intBetween(1, this.activeSongCount);
@@ -1468,7 +1468,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		this.clearActiveTimeout();
 
 		this.activeSong.addEventListener('loadedmetadata', function () {
-			let duration: number = this.activeSong.duration;
+			const duration: number = this.activeSong.duration;
 
 			//const testingCrossFade: boolean = true;
 			//if (testingCrossFade) {
@@ -1494,7 +1494,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 	static readonly crossFadeTime: number = 5000;
 
 	playNextSong() {
-		let boomboxSprite: Boombox = new Boombox(0, new Vector(10, 1000));
+		const boomboxSprite: Boombox = new Boombox(0, new Vector(10, 1000));
 
 		if (activeDroneGame instanceof DroneGame)
 			activeDroneGame.boomboxes.spriteProxies.unshift(boomboxSprite);
@@ -1507,9 +1507,9 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	draw(baseAnimation: Part, context: CanvasRenderingContext2D, now: number, spriteWidth: number, spriteHeight: number,
-		originX: number = 0, originY: number = 0): void {
-		let newFadeVolumeMultiplier: number = Math.round(this.getAlpha(now) * 10) / 10;
-		if (newFadeVolumeMultiplier != this.fadeVolumeMultiplier) {
+		originX = 0, originY = 0): void {
+		const newFadeVolumeMultiplier: number = Math.round(this.getAlpha(now) * 10) / 10;
+		if (newFadeVolumeMultiplier !== this.fadeVolumeMultiplier) {
 			this.fadeVolumeMultiplier = newFadeVolumeMultiplier;
 			this.setVolumeForActiveSong();
 		}
@@ -1517,8 +1517,8 @@ class Boombox extends ColorShiftingSpriteProxy {
 
 		if (Boombox.suppressingVolume && now > Boombox.suppressingVolumeEnds) {
 			Boombox.suppressingVolume = false;
-			let boombox: Boombox = Boombox.getInstance();
-			if (boombox != null) {
+			const boombox: Boombox = Boombox.getInstance();
+			if (boombox !== null) {
 				Boombox.volume = Boombox.saveVolume;
 				boombox.setVolumeForActiveSong();
 			}
@@ -1531,7 +1531,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 		this.activeSong = null;
 	}
 
-	fadeVolumeMultiplier: number = 1;
+	fadeVolumeMultiplier = 1;
 
 	getFileName(index: number): string {
 		return `${this.activeGenre}/song (${index.toString()})`;
@@ -1542,7 +1542,7 @@ class Boombox extends ColorShiftingSpriteProxy {
 	}
 
 	isHitBy(thisSprite: SpriteProxy): boolean {
-		const minDistanceForHit: number = 110;
+		const minDistanceForHit = 110;
 		if (thisSprite instanceof Meteor && thisSprite.owned)
 			return false;
 

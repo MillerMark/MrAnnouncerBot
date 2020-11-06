@@ -5227,7 +5227,7 @@ namespace DHDM
 				SetRollTypeUI(diceRollType);
 				SetRollScopeForPlayers(playerIds);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
-				diceRoll.SuppressLegacyRoll = true;
+				diceRoll.SuppressLegacyRoll = game.InCombat;
 				if (diceRollType == DiceRollType.InspirationOnly)
 					foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
 					{

@@ -31,6 +31,7 @@ class DragonBackGame extends DragonGame {
 		this.sprinkles = new Sprinkles();
 		this.sprinkles.dragonSharedSounds = this.dragonBackSounds;
 		this.messageBox = new MessageBox(this.dragonBackSounds);
+		this.fireBallSound = 'FireBallFarDelayed';
 	}
 
 

@@ -5,11 +5,15 @@ using System.Windows;
 using System.Collections.Generic;
 using LeapTools;
 using Newtonsoft.Json;
+using System.Timers;
 
 namespace DHDM
 {
 	public class LeapDevice
 	{
+		private const double fps30 = 1000 / 30;
+		Timer timer = new Timer(fps30) { Enabled = true };
+
 		LeapMotion leapMotion;
 		bool active;
 		public bool Active
@@ -38,6 +42,7 @@ namespace DHDM
 		}
 
 		SkeletalData2d skeletalData2d = new SkeletalData2d();
+		DateTime LastUpdateTime;
 		bool ShowingDiagnostics()
 		{
 			return skeletalData2d.ShowingDiagnostics();
@@ -65,18 +70,33 @@ namespace DHDM
 				skeletalData2d.SetFromFrame(ea.Frame);
 			else
 				skeletalData2d.SetFromFrame(null);
-			if (skeletalData2d.Hands.Any(x => x.Throwing))
-			{
-				System.Media.SystemSounds.Beep.Play();
-			}
+
+			UpdataData();
+		}
+
+		private void UpdataData()
+		{
 			skeletalData2d.UpdateVirtualObjects();
 			HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
+			LastUpdateTime = DateTime.Now;
 			ClearImpulseData();
 		}
 
 		public LeapDevice()
 		{
+			timer.Elapsed += Timer_Elapsed;
+		}
 
+		private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			// TODO: Turn timer on when we have any virtual objects and off when there are none.
+			if (!skeletalData2d.HasVirtualObjects())
+				return;
+
+			if ((DateTime.Now - LastUpdateTime).TotalMilliseconds > fps30)
+			{
+				UpdataData();
+			}
 		}
 
 		public bool ShowingLiveHandPosition

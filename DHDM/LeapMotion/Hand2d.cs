@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Leap;
 
 namespace DHDM
@@ -16,9 +17,12 @@ namespace DHDM
 		public VectorCompassDirection PalmDirection { get; set; }
 		public VectorCompassDirection FacingForwardOrBack { get; set; }
 		public ScaledPoint PalmPosition { get; set; }
+		[JsonIgnore]
+		public Vector PalmPosition3d { get; set; }
 		public List<Finger2d> Fingers { get; set; } = new List<Finger2d>();
 		public bool Throwing { get; set; }
-		public int ThrownObjectIndex { get; set; }
+		public bool JustCaught { get; set; }
+		public int ThrownObjectIndex { get; set; } = -1;
 		public VectorCompassDirection ThrowDirection { get; set; }
 		public VectorCompassDirection SpeedDirection { get; set; }
 		public ScaledPoint PalmAttachPoint { get; set; }
@@ -44,6 +48,7 @@ namespace DHDM
 			HandVelocityHistory.AddVelocity(hand.PalmVelocity, GetAttachPoint(hand), Side);
 
 			PalmPosition = LeapCalibrator.ToScaledPoint(hand.PalmPosition);
+			PalmPosition3d = hand.PalmPosition;
 			// TODO: Calculate Details!!!
 			foreach (Finger finger in hand.Fingers)
 			{
@@ -56,7 +61,7 @@ namespace DHDM
 			PalmAttachPoint = LeapCalibrator.ToScaledPoint(GetAttachPoint(hand));
 			PalmDirection = GetVectorDirection(hand.PalmNormal);
 			FacingForwardOrBack = GetForwardOrBack(hand.PalmNormal);
-			PositionZ = hand.PalmNormal.z;
+			PositionZ = hand.PalmPosition.z;
 		}
 
 		private static Vector GetAttachPoint(Hand hand)

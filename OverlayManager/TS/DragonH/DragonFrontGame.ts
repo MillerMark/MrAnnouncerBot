@@ -127,6 +127,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	constructor(context: CanvasRenderingContext2D) {
 		super(context);
+		this.fireBallSound = 'FireBallCloseDelayed';
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
 		this.conditionManager.initialize(this, this, this.dragonFrontSounds);
 		this.initializeOffscreenCanvases();
@@ -193,7 +194,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		if (this.skeletalData2d) {
 			if (this.skeletalData2d.ShowLiveHandPosition) {
-				this.showLiveHandPosition(context, nowMs);
+				this.showDiagnosticsLiveHandPosition(context, nowMs);
 			}
 		}
 	}
@@ -229,34 +230,34 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	private drawGameTime(context: CanvasRenderingContext2D) {
 		if (!this.dndTimeStr)
 			return;
-		const timeFont: string = 'px Baskerville Old Face';
-		const verticalMargin: number = 10;
-		const timeHeight: number = 32;
-		const dateHeight: number = 24;
+		const timeFont = 'px Baskerville Old Face';
+		const verticalMargin = 10;
+		const timeHeight = 32;
+		const dateHeight = 24;
 		context.font = timeHeight + timeFont;
-		let timeWidth: number = context.measureText(this.dndTimeStr.trim()).width;
-		let timeHalfWidth: number = timeWidth / 2;
-		let centerX: number = this.getClockX();
+		const timeWidth: number = context.measureText(this.dndTimeStr.trim()).width;
+		const timeHalfWidth: number = timeWidth / 2;
+		const centerX: number = this.getClockX();
 		let centerY: number = this.clockBottomY - timeHeight / 2 - verticalMargin;
 		if (this.inCombat)
 			context.fillStyle = '#500506';
 		else
 			context.fillStyle = '#0b0650';
-		let lastColonPos: number = this.dndTimeStr.lastIndexOf(':');
-		let firstTimePart: string = this.dndTimeStr.substr(0, lastColonPos).trim();
-		let lastTimePart: string = this.dndTimeStr.substr(lastColonPos).trim();
-		let leftX: number = centerX - timeHalfWidth;
+		const lastColonPos: number = this.dndTimeStr.lastIndexOf(':');
+		const firstTimePart: string = this.dndTimeStr.substr(0, lastColonPos).trim();
+		const lastTimePart: string = this.dndTimeStr.substr(lastColonPos).trim();
+		const leftX: number = centerX - timeHalfWidth;
 		context.textAlign = 'left';
 		context.textBaseline = 'middle';
 		context.fillText(firstTimePart, leftX, centerY);
-		let firstTimePartWidth: number = context.measureText(firstTimePart).width;
+		const firstTimePartWidth: number = context.measureText(firstTimePart).width;
 		context.globalAlpha = 0.75;
 		context.fillText(lastTimePart, leftX + firstTimePartWidth, centerY);
 		context.globalAlpha = 1;
 		context.textAlign = 'center';
 		centerY += timeHeight;
 		context.font = dateHeight + timeFont;
-		let dateFontScale: number = 1;
+		let dateFontScale = 1;
 		let tryFontSize: number = dateHeight * dateFontScale;
 		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6) {
 			dateFontScale *= 0.95;
