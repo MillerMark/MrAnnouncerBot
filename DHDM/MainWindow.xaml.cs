@@ -44,6 +44,8 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp
 	{
+		PlateManager plateManager;
+		WeatherManager weatherManager;
 		LeapCalibrator leapCalibrator;
 		PlayerStatManager allPlayerStats;
 		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
@@ -126,7 +128,9 @@ namespace DHDM
 
 		private void InitializeGame()
 		{
+			plateManager = new PlateManager(obsWebsocket);
 			game = new DndGame();
+			weatherManager = new WeatherManager(obsWebsocket, game);
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -456,7 +460,15 @@ namespace DHDM
 				delayFloatTextTimer.Start();
 				return;
 			}
-			obsWebsocket.SetSourceRender(ea.SourceName, ea.Visible, ea.SceneName);
+
+			try
+			{
+				obsWebsocket.SetSourceRender(ea.SourceName, ea.Visible, ea.SceneName);
+			}
+			catch (Exception ex)
+			{
+				
+			}
 		}
 
 		private void ClearWindup_RequestClearWindup(object sender, NameEventArgs ea)
@@ -5289,7 +5301,7 @@ namespace DHDM
 			game.Clock.SetTime(saveTime);
 			game.Start();
 			SendPlayerData();
-
+			weatherManager.Load();
 			BuildPlayerTabs();
 			BuildPlayerUI();
 			InitializeAttackShortcuts();
@@ -9173,6 +9185,18 @@ namespace DHDM
 			leapDevice.Active = ckActive.IsChecked == true;
 			ckShowLiveHandPosition.IsEnabled = leapDevice.Active;
 			btnCalibrate.IsEnabled = leapDevice.Active;
+		}
+		public void ShowBackground(string sourceName)
+		{
+			plateManager.ShowBackground(sourceName);
+		}
+		public void ShowForeground(string sourceName)
+		{
+			plateManager.ShowForeground(sourceName);
+		}
+		public void ShowWeather(string weatherKeyword)
+		{
+			weatherManager.ShowWeather(weatherKeyword);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

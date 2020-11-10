@@ -10,7 +10,7 @@ namespace DHDM
 {
 	public class SkeletalData2d
 	{
-		World3d world = new World3d();
+		internal World3d world = new World3d();
 		public List<ThrownObject> ThrownObjects { get; set; } = new List<ThrownObject>();
 		public List<Hand2d> Hands { get; set; } = new List<Hand2d>();
 		public ScaledPlane BackPlane { get; set; } = new ScaledPlane();
@@ -105,9 +105,11 @@ namespace DHDM
 			const float minDistanceForCatch = 240;
 			ScaledPoint palmPosition2d = hand.PalmPosition3d.ToScaledPoint();
 			List<Virtual3dObject> caughtInstances = new List<Virtual3dObject>();
-			if (world.Instances == null)
-				return;
 			lock (world.Instances)
+			{
+				if (world.Instances.Count == 0)
+					return;
+
 				foreach (Virtual3dObject virtual3DObject in world.Instances)
 				{
 					if (DateTime.Now - virtual3DObject.CreationTimeMs < TimeSpan.FromSeconds(0.25))
@@ -134,6 +136,7 @@ namespace DHDM
 						hand.JustCaught = true;
 					}
 				}
+			}
 			world.RemoveInstances(caughtInstances);
 		}
 
@@ -145,9 +148,11 @@ namespace DHDM
 			const float maxZ = 3000;
 			const float minZ = -3000;
 			List<Virtual3dObject> instancesToRemove = new List<Virtual3dObject>();
-			if (world.Instances == null)
-				return;
 			lock (world.Instances)
+			{
+				if (world.Instances.Count == 0)
+					return;
+
 				foreach (Virtual3dObject virtual3DObject in world.Instances)
 				{
 					if (virtual3DObject.CurrentPosition == null)
@@ -157,6 +162,8 @@ namespace DHDM
 						instancesToRemove.Add(virtual3DObject);
 					}
 				}
+			}
+
 			if (instancesToRemove.Count > 0)
 				world.RemoveInstances(instancesToRemove);
 		}
@@ -222,8 +229,6 @@ namespace DHDM
 
 		public bool HasVirtualObjects()
 		{
-			if (world.Instances == null)
-				return false;
 			lock (world.Instances)
 				return world.Instances.Count > 0;
 		}

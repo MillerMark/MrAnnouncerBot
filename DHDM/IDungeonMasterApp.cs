@@ -68,5 +68,8 @@ namespace DHDM
 		void SpellScrollsToggle();
 		void InGameUICommand(string command);
 		void TriggerHandFx(HandFxDto handFxDto);
+		void ShowBackground(string sourceName);
+		void ShowForeground(string sourceName);
+		void ShowWeather(string weatherKeyword);
 	}
 }

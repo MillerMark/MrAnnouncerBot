@@ -330,6 +330,7 @@
     <Compile Include="LeapMotion\LeapDevice.cs" />
     <Compile Include="LeapMotion\LeapMotionCalibrationStep.cs" />
     <Compile Include="LeapMotion\Point2D.cs" />
+    <Compile Include="PlateManager.cs" />
     <Compile Include="QuestionAnswerMap.cs" />
     <Compile Include="GenericExtensions.cs" />
     <Compile Include="Events\QuestionAnswerMapEventArgs.cs" />
@@ -341,6 +342,9 @@
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <Compile Include="LeapMotion\Virtual3dObject.cs" />
+    <Compile Include="StreamDeck Commands\ShowWeatherCommand.cs" />
+    <Compile Include="WeatherManager.cs" />
+    <Compile Include="WeatherSceneSettingsDto.cs" />
     <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="CharacterTriggerProvider.cs" />
     <Compile Include="CompletionProvider.cs" />
@@ -453,6 +457,8 @@
     <Compile Include="StreamDeck Commands\SetPropertyCommand.cs" />
     <Compile Include="StreamDeck Commands\SetVantageCommand.cs" />
     <Compile Include="ShortcutButton.cs" />
+    <Compile Include="StreamDeck Commands\ShowBackgroundCommand.cs" />
+    <Compile Include="StreamDeck Commands\ShowForegroundCommand.cs" />
     <Compile Include="StreamDeck Commands\SkillCheckNowCommand.cs" />
     <Compile Include="StreamDeck Commands\SkillCheckCommand.cs" />
     <Compile Include="StreamDeck Commands\SpellScrollsToggleCommand.cs" />

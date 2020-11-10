@@ -1338,7 +1338,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return null;
 
 		for (let i = 0; i < skeletalData2d.ThrownObjects.length; i++) {
-			if (skeletalData2d.ThrownObjects[i].Index == TrackingObjectIndex)
+			if (skeletalData2d.ThrownObjects[i].Index === TrackingObjectIndex)
 				return skeletalData2d.ThrownObjects[i];
 		}
 		return null;

@@ -8,7 +8,7 @@ namespace DHDM
 	public class World3d
 	{
 		int numInstancesCreated;
-		public List<Virtual3dObject> Instances { get; set; }
+		public List<Virtual3dObject> Instances { get; set; } = new List<Virtual3dObject>();
 		public World3d()
 		{
 
@@ -16,13 +16,16 @@ namespace DHDM
 
 		public void Update(DateTime time)
 		{
-			if (Instances == null)
-				return;
 			lock (Instances)
+			{
+				if (Instances.Count == 0)
+					return;
+
 				foreach (Virtual3dObject virtual3DObject in Instances)
 				{
 					virtual3DObject.Update(time);
 				}
+			}
 		}
 
 		/// <summary>
@@ -31,8 +34,6 @@ namespace DHDM
 		public int AddInstance(PositionVelocityTime throwVector)
 		{
 			Virtual3dObject virtual3DObject = new Virtual3dObject() { StartPosition = throwVector.Position, InitialVelocity = throwVector.LeapVelocity.ToMetersPerSecond(), Index = numInstancesCreated };
-			if (Instances == null)
-				Instances = new List<Virtual3dObject>();
 			lock (Instances)
 				Instances.Add(virtual3DObject);
 			numInstancesCreated++;
@@ -41,13 +42,14 @@ namespace DHDM
 
 		public void RemoveInstances(List<Virtual3dObject> instancesToRemove)
 		{
-			if (Instances == null)
-				return;
 			lock (Instances)
+			{
+				if (Instances.Count == 0)
+					return;
+
 				foreach (Virtual3dObject virtual3DObject in instancesToRemove)
-				{
 					Instances.Remove(virtual3DObject);
-				}
+			}
 		}
 	}
 }

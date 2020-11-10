@@ -1,5 +1,8 @@
-﻿const globalFramesToLoad: number = 1;
-const globalFramesToCount: number = 2;
+﻿
+ //` ![](63471E649C008AAD6A3CD8DE26B410CB.png;devexpress.com )
+
+const globalFramesToLoad = 1;
+const globalFramesToCount = 2;
 
 
 // Each of these fps constants is the number of ms for that frame rate.
@@ -17,7 +20,7 @@ const fps15= 66.66666667;
 const fps4 = 250;
 const fps2 = 500;
 
-var globalBypassFrameSkip: boolean = false;
+var globalBypassFrameSkip = false;
 
 class ImageManager {
 	private static _images = new Map<string, HTMLImageElement[]>();
@@ -79,7 +82,7 @@ class PartBackgroundLoader {
 	static partsToLoad: Array<Part> = [];
 
 	static remove(part: Part): void {
-		for (var i = length - 1; i >= 0; i--) {
+		for (let i = length - 1; i >= 0; i--) {
 			if (PartBackgroundLoader.partsToLoad[i] == part)
 				PartBackgroundLoader.partsToLoad.splice(i, 1);
 		}
@@ -92,7 +95,7 @@ class PartBackgroundLoader {
 	static readonly logBackgroundImageLoadingMessages: boolean = false;
 
 	static loadImages() {
-		if (PartBackgroundLoader.partsToLoad.length == 0) {
+		if (PartBackgroundLoader.partsToLoad.length === 0) {
 			if (PartBackgroundLoader.intervalHandle !== undefined) {
 				clearInterval(PartBackgroundLoader.intervalHandle);
 				PartBackgroundLoader.intervalHandle = undefined;

@@ -43,6 +43,9 @@ namespace DHDM
 			Commands.Add(new SkillCheckCommand());
 			Commands.Add(new TargetSkillCheckCommand());
 			Commands.Add(new RollSaveCommand());
+			Commands.Add(new ShowBackgroundCommand());
+			Commands.Add(new ShowForegroundCommand());
+			Commands.Add(new ShowWeatherCommand());
 			Commands.Add(new SavingThrowCommand());
 			Commands.Add(new TargetSavingThrowCommand());
 			Commands.Add(new ClearAllConditionsCommand());

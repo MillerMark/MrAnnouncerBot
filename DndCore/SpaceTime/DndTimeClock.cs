@@ -419,6 +419,11 @@ namespace DndCore
 		{
 			TriggerAlarms(Time, game.InitiativeIndex, character, RoundSpecifier.EndOfTurn);
 		}
+		
+		public bool IsDaytime()
+		{
+			return Time.Hour >= 6 && Time.Hour < 18;
+		}
 	}
 }
 

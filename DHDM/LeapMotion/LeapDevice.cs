@@ -77,7 +77,8 @@ namespace DHDM
 		private void UpdataData()
 		{
 			skeletalData2d.UpdateVirtualObjects();
-			HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
+			lock(skeletalData2d.world.Instances)
+				HubtasticBaseStation.UpdateSkeletalData(JsonConvert.SerializeObject(skeletalData2d));
 			LastUpdateTime = DateTime.Now;
 			ClearImpulseData();
 		}
