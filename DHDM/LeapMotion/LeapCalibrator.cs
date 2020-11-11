@@ -15,10 +15,11 @@ namespace DHDM
 		public static bool Calibrated { get; set; } = true;
 		public CoreVector FingertipPosition { get => fingertipPosition; set => fingertipPosition = value; }
 
+		public static double minScale = 0.2;
 		public static double backScale = 0.6;
-		public static double frontScale = 1.5;
-		public static double backPlaneZ = 248.5;
-		public static double frontPlaneZ = -9.842;
+		public static double frontScale = 1.8;
+		public static double backPlaneZ = 300;
+		public static double frontPlaneZ = -50;
 
 		public static CoreVector backUpperLeft3d = new CoreVector(-323.4, 527.5, 248.5);
 		public static CoreVector backLowerRight3d = new CoreVector(221.7, 422.6, 240.1);
@@ -80,13 +81,16 @@ namespace DHDM
 
 			double percentageZ = (vector.z - backPlaneZ) / (frontPlaneZ - backPlaneZ);
 
+			double deltaScale = frontScale - backScale;
+			if (backScale + percentageZ * deltaScale < minScale)
+				percentageZ = (minScale - backScale) / deltaScale;
+
 			double deltaX2d = frontX2d - backX2d;
 			double deltaY2d = frontY2d - backY2d;
 
 			double x = backX2d + percentageZ * deltaX2d;
 			double y = backY2d + percentageZ * deltaY2d;
 
-			double deltaScale = frontScale - backScale;
 			double scale = backScale + percentageZ * deltaScale;
 
 			return new ScaledPoint() { X = (int)Math.Round(x), Y = (int)Math.Round(y), Scale = scale };

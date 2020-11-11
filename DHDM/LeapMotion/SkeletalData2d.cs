@@ -67,6 +67,24 @@ namespace DHDM
 			// TODO: Deal with this later.
 		}
 
+		bool HasRightHand(Frame frame)
+		{
+			foreach (Hand hand in frame.Hands)
+				if (hand.IsRight)
+					return true;
+
+			return false;
+		}
+
+		bool HasLeftHand(Frame frame)
+		{
+			foreach (Hand hand in frame.Hands)
+				if (hand.IsLeft)
+					return true;
+
+			return false;
+		}
+		
 		public void SetFromFrame(Frame frame)
 		{
 			Hands.Clear();
@@ -75,6 +93,12 @@ namespace DHDM
 
 			foreach (Hand hand in frame.Hands)
 				Hands.Add(new Hand2d(hand));
+
+			if (!HasRightHand(frame))
+				Hand2d.RightHandFloatPoint = null;
+			if (!HasLeftHand(frame))
+				Hand2d.LeftHandFloatPoint = null;
+			
 
 			if (hasTrackableEffect && Hands.Count > 0)
 			{
@@ -102,17 +126,21 @@ namespace DHDM
 		}
 		void CheckForCatch(Hand2d hand)
 		{
-			const float minDistanceForCatch = 240;
-			ScaledPoint palmPosition2d = hand.PalmPosition3d.ToScaledPoint();
-			List<Virtual3dObject> caughtInstances = new List<Virtual3dObject>();
 			lock (world.Instances)
 			{
 				if (world.Instances.Count == 0)
 					return;
-
+			} 
+			
+			const float minXyDistanceForCatch = 200;
+			const float minZDistanceForCatch = 280;
+			ScaledPoint palmPosition2d = hand.PalmPosition3d.ToScaledPoint();
+			List<Virtual3dObject> caughtInstances = new List<Virtual3dObject>();
+			lock (world.Instances)
+			{
 				foreach (Virtual3dObject virtual3DObject in world.Instances)
 				{
-					if (DateTime.Now - virtual3DObject.CreationTimeMs < TimeSpan.FromSeconds(0.25))
+					if (DateTime.Now - virtual3DObject.CreationTimeMs < TimeSpan.FromSeconds(0.6))
 					{
 						continue;
 					}
@@ -124,7 +152,8 @@ namespace DHDM
 					float deltaX = palmPosition2d.X - currentPos2d.X;
 					float deltaY = palmPosition2d.Y - currentPos2d.Y;
 					float magnitudeXy = (float)Math.Sqrt((deltaX * deltaX + deltaY * deltaY));
-					if (magnitudeXy < minDistanceForCatch)
+					float deltaZ = Math.Abs(virtual3DObject.CurrentPosition.z - hand.PalmPosition3d.z);
+					if (magnitudeXy < minXyDistanceForCatch && deltaZ < minZDistanceForCatch)
 					{
 						caughtInstances.Add(virtual3DObject);
 						if (hand.Side == HandSide.Left)
@@ -191,7 +220,7 @@ namespace DHDM
 
 		bool CheckForThrow(Hand2d hand)
 		{
-			if (!trackingObjectInLeftHand && !trackingObjectInRightHand)
+			if (!trackingObjectInLeftHand && !trackingObjectInRightHand || hand.IsFist)
 				return false;
 			PositionVelocityTime throwVector = HandVelocityHistory.GetThrowVector(hand);
 			bool validThrow = throwVector.LeapVelocity != null;

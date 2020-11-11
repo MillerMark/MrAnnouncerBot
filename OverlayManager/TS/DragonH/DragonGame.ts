@@ -70,6 +70,7 @@ class Hand2d {
 	SpeedDirection: VectorCompassDirection;
 	ThrowDirection: VectorCompassDirection;
 	FacingForwardOrBack: VectorCompassDirection;
+	FloatingAttachPoint: ScaledPoint;
 	PalmPosition: ScaledPoint;
 	Fingers: Array<Finger2d>;
 	Side: HandSide;
@@ -1075,32 +1076,47 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return;
 
 		skeletalData2d.HandEffect.HandEffects.forEach((handEffect: HandEffectDto) => {
-			const scaledPoint: ScaledPoint = this.getFirstHandAttachPoint(skeletalData2d);
-			switch (handEffect.EffectName) {
-				case 'SmokeA':
-					this.addScaledSprite(this.smokePoofA, handEffect, scaledPoint);
-					break;
-				case 'SmokeB':
-					this.addScaledSprite(this.smokePoofB, handEffect, scaledPoint);
-					break;
-				case 'SmokeC':
-					this.addScaledSprite(this.smokePoofC, handEffect, scaledPoint);
-					break;
-				case 'SmokeD':
-					this.addScaledSprite(this.smokePoofD, handEffect, scaledPoint);
-					break;
-				case 'SmokeE':
-					this.addScaledSprite(this.smokePoofE, handEffect, scaledPoint);
-					break;
-				case 'FireBall': {
-					const fireBall: SpriteProxy = this.addScaledSprite(this.handHeldFireball, handEffect, scaledPoint);
-					fireBall.fadeInTime = 650;
-					fireBall.data = new HandFollowingData(skeletalData2d.Hands[0].Side);
-					this.addFireballSound();
-					break;
+			const firstHand: Hand2d = skeletalData2d.Hands[0];
+			const scaledPoint: ScaledPoint = this.getHandAttachPoint(firstHand);
+			const onFrontCanvas: boolean = this.getOnFrontCanvasFromHandPosition(firstHand, scaledPoint);
+			let addEffectToThisCanvas = false;
+			if (onFrontCanvas && this instanceof DragonFrontGame)
+				addEffectToThisCanvas = true;
+			else if (!onFrontCanvas && this instanceof DragonBackGame)
+				addEffectToThisCanvas = true;
+				
+				switch (handEffect.EffectName) {
+					case 'SmokeA':
+						if (addEffectToThisCanvas)
+							this.addScaledSprite(this.smokePoofA, handEffect, scaledPoint);
+						break;
+					case 'SmokeB':
+						if (addEffectToThisCanvas)
+							this.addScaledSprite(this.smokePoofB, handEffect, scaledPoint);
+						break;
+					case 'SmokeC':
+						if (addEffectToThisCanvas)
+							this.addScaledSprite(this.smokePoofC, handEffect, scaledPoint);
+						break;
+					case 'SmokeD':
+						if (addEffectToThisCanvas)
+							this.addScaledSprite(this.smokePoofD, handEffect, scaledPoint);
+						break;
+					case 'SmokeE':
+						if (addEffectToThisCanvas)
+							this.addScaledSprite(this.smokePoofE, handEffect, scaledPoint);
+						break;
+					case 'FireBall': {
+
+						// Add fireballs to both canvases.
+						const fireBall: SpriteProxy = this.addScaledSprite(this.handHeldFireball, handEffect, scaledPoint);
+						fireBall.fadeInTime = 650;
+						fireBall.data = new HandFollowingData(skeletalData2d.Hands[0].Side);
+						this.addFireballSound();
+						break;
+					}
 				}
-			}
-		});
+			});
 	}
 
 	addScaledSprite(smokePoof: Sprites, handEffect: HandEffectDto, scaledPoint: ScaledPoint): SpriteProxy {
@@ -1144,23 +1160,31 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return DragonGame.outOfBoundsPt;
 	}
 
+	getFloatingPositionFromSide(skeletalData2d: SkeletalData2d, handSide: HandSide): ScaledPoint {
+		const hand: Hand2d = this.getHand(skeletalData2d, handSide);
+
+		if (hand !== null)
+			return this.getFloatingAttachPoint(hand);
+
+		return DragonGame.outOfBoundsPt;
+	}
+
 
 	nextFireRiseCreationTime = 0;
 
 	private getHandAttachPoint(hand: Hand2d): ScaledPoint {
-		const x = hand.PalmAttachPoint.X;
-		let y = hand.PalmAttachPoint.Y;
-		const scale = Math.max(0.2, hand.PalmAttachPoint.Scale);
+		return this.inBoundsScaledPoint(hand.PalmAttachPoint);
+	}
 
-		//if (hand.PalmDirection === VectorCompassDirection.Up)
-		//	y -= 6 * DragonGame.fingerWidth * scale;
-		//else
-		//	y -= 3 * DragonGame.fingerWidth * scale;
-
-		return new ScaledPoint(x, y, scale);
+	private getFloatingAttachPoint(hand: Hand2d): ScaledPoint {
+		return this.inBoundsScaledPoint(hand.FloatingAttachPoint);
 	}
 
 	showingHandSpeed = false;
+
+	private inBoundsScaledPoint(scaledPoint: ScaledPoint): ScaledPoint {
+		return new ScaledPoint(scaledPoint.X, scaledPoint.Y, Math.max(0.2, scaledPoint.Scale));
+	}
 
 	checkForThrowsAndCatches(skeletalData2d: SkeletalData2d) {
 		// TODO: Support multiple FireBalls.
@@ -1171,15 +1195,30 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			return;
 
 		const hand: Hand2d = this.getHand(skeletalData2d, handFollowingData.HandSide);
-		if (!hand)
-			return;
-
-		if (hand.Throwing) {
-			handFollowingData.TrackingObjectIndex = hand.ThrownObjectIndex;
-			console.log(`THROWING!!!`);
-			this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+		if (hand) {
+			if (hand.Throwing) {
+				handFollowingData.TrackingObjectIndex = hand.ThrownObjectIndex;
+				console.log(`THROWING!!!`);
+				this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+			}
+			this.checkForCatch(hand, handFollowingData);
+			if (hand.JustCaught)
+				return;
 		}
 
+		const otherHand: Hand2d = this.getHand(skeletalData2d, this.getOtherSide(handFollowingData.HandSide));
+		if (otherHand)
+			this.checkForCatch(otherHand, handFollowingData);
+	}
+
+	getOtherSide(handSide: HandSide): HandSide {
+		if (handSide === HandSide.Left)
+			return HandSide.Right;
+		else
+			return HandSide.Left;
+	}
+
+	checkForCatch(hand: Hand2d, handFollowingData: HandFollowingData): void {
 		if (hand.JustCaught) {
 			handFollowingData.TrackingObjectIndex = -1;
 			handFollowingData.HandSide = hand.Side;
@@ -1191,7 +1230,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	adjustFireballSound(positionZ: number) {
 		if (!this.activeLeapFireballSound)
-			return ;
+			return;
 		const backPlane = 380;
 		const frontPlane = 40;
 		const percentVolumeBackPlane: number = (MathEx.clamp(positionZ, frontPlane, backPlane) - frontPlane) / (backPlane - frontPlane);
@@ -1231,19 +1270,31 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		const isThrown: boolean = handFollowingData.TrackingObjectIndex >= 0;
 		let thrownObject: ThrownObject = null;
 
-		if (isThrown) 
+		if (isThrown)
 			thrownObject = this.getThrownObjectFromIndex(skeletalData2d, handFollowingData.TrackingObjectIndex);
 
 		if (thrownObject) {
 			pos = thrownObject.Position;
+			if (Math.abs(sprite.x - pos.X) > 5000) {
+				this.destroyAllFireBalls();
+				return;
+			}
 		}
-		else
+		else {
 			pos = this.getHandPositionFromSide(skeletalData2d, handFollowingData.HandSide);
+			//pos = this.getFloatingPositionFromSide(skeletalData2d, handFollowingData.HandSide);
 
-		if (pos === DragonGame.outOfBoundsPt || pos.Y > 1480 || (hand && hand.IsFist)) {
+			if (hand && hand.IsFist) {
+				this.destroyAllFireBalls();
+				return;
+			}
+		}
+
+		if (pos === DragonGame.outOfBoundsPt || pos.Y > 1480) {
 			this.destroyAllFireBalls();
 			return;
 		}
+
 
 		if (thrownObject)
 			this.adjustFireballSound(thrownObject.PositionZ);
@@ -1251,17 +1302,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			this.adjustFireballSound(hand.PositionZ);
 
 		let opacity: number;
-		let onFrontCanvas: boolean;
-
-		const midPlaneZ = 330;
-
-		if (isThrown)
-			if (hand)
-				onFrontCanvas = hand.PositionZ > thrownObject.PositionZ;
-			else
-				onFrontCanvas = thrownObject.PositionZ < midPlaneZ;
-		else
-			onFrontCanvas = hand.FacingForwardOrBack === VectorCompassDirection.Forward;
+		const onFrontCanvas: boolean = this.getOnFrontCanvas(isThrown, hand, thrownObject, pos);
 
 		if (onFrontCanvas) {
 			// We want to draw on the front plane.
@@ -1316,6 +1357,25 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		});
 
 		this.nextFireRiseCreationTime = nowMs + Random.between(150, 400);
+	}
+
+	private getOnFrontCanvas(isThrown: boolean, hand: Hand2d, thrownObject: ThrownObject, pos: ScaledPoint) {
+		if (isThrown)
+			return this.getOnFrontCanvasFromThrownObject(hand, thrownObject);
+		else
+			return this.getOnFrontCanvasFromHandPosition(hand, pos);
+	}
+
+	private getOnFrontCanvasFromHandPosition(hand: Hand2d, pos: ScaledPoint): boolean {
+		return hand.FacingForwardOrBack === VectorCompassDirection.Forward || (pos.X > 1135 && pos.X < 1329);
+	}
+
+	private getOnFrontCanvasFromThrownObject(hand: Hand2d, thrownObject: ThrownObject) {
+		const midPlaneZ = 330;
+		if (hand)
+			return hand.PositionZ > thrownObject.PositionZ;
+		else
+			return thrownObject.PositionZ < midPlaneZ;
 	}
 
 	private showHandSpeed(hand: Hand2d) {

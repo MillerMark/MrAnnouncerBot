@@ -27,18 +27,18 @@ namespace DHDM
 		}
 
 
-		public static double GetFinalVelocityMetersPerSecond(double timeSeconds, double initialVelocity, double acceleration)
+		public static float GetFinalVelocityMetersPerSecond(float timeSeconds, float initialVelocity, float acceleration)
 		{
 			//` <formula #ffffe0;1.5; v_f = v_i + at>
 
 			return initialVelocity + acceleration * timeSeconds;
 		}
 
-		public static double GetDropTimeSeconds(double distanceMeters, double acceleration, double initialVelocity)
+		public static float GetDropTimeSeconds(float distanceMeters, float acceleration, float initialVelocity)
 		{
 			//` <formula #ffffe0;3; t = \frac{-v_i + \sqrt{v_i^2 + 2ha}}{a}>
 
-			return (-initialVelocity + Math.Sqrt(initialVelocity * initialVelocity + 2 * distanceMeters * acceleration)) / acceleration;
+			return (-initialVelocity + (float)Math.Sqrt(initialVelocity * initialVelocity + 2 * distanceMeters * acceleration)) / acceleration;
 		}
 	}
 }

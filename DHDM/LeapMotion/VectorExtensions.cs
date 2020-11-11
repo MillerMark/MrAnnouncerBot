@@ -12,12 +12,22 @@ namespace DHDM
 			return new Vector(leapVectorMmPerSecond.x / mmPerMeter, leapVectorMmPerSecond.y / mmPerMeter, leapVectorMmPerSecond.z / mmPerMeter);
 		}
 
-		public static Vector GetCurrentPosition(this Vector vector, Vector gravity, Vector initialVelocity, TimeSpan deltaTime)
+		public static Vector GetCurrentPosition(this Vector vector, Vector force, Vector initialVelocity, TimeSpan deltaTime)
 		{
 			float deltaSeconds = (float)deltaTime.TotalSeconds;
-			float displacementX = Physics.MetersToPixels(Physics.GetDisplacementMeters(deltaSeconds, initialVelocity.x, gravity.x));
-			float displacementY = Physics.MetersToPixels(Physics.GetDisplacementMeters(deltaSeconds, initialVelocity.y, gravity.y));
-			float displacementZ = Physics.MetersToPixels(Physics.GetDisplacementMeters(deltaSeconds, initialVelocity.z, gravity.z));
+			float displacementX = Physics.MetersToPixels(Physics.GetDisplacementMeters(deltaSeconds, initialVelocity.x, force.x));
+			float displacementY = Physics.MetersToPixels(Physics.GetDisplacementMeters(deltaSeconds, initialVelocity.y, force.y));
+			float displacementZ = Physics.MetersToPixels(Physics.GetDisplacementMeters(deltaSeconds, initialVelocity.z, force.z));
+			return new Vector(vector.x + displacementX, vector.y + displacementY, vector.z + displacementZ);
+		}
+
+
+		public static Vector GetFinalVelocity(this Vector vector, Vector force, Vector initialVelocity, TimeSpan deltaTime)
+		{
+			float deltaSeconds = (float)deltaTime.TotalSeconds;
+			float displacementX = Physics.MetersToPixels(Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.x, force.x));
+			float displacementY = Physics.MetersToPixels(Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.y, force.y));
+			float displacementZ = Physics.MetersToPixels(Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.z, force.z));
 			return new Vector(vector.x + displacementX, vector.y + displacementY, vector.z + displacementZ);
 		}
 

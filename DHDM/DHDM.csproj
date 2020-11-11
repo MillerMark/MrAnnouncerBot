@@ -317,6 +317,7 @@
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
     <Compile Include="LeapMotion\Finger2d.cs" />
+    <Compile Include="LeapMotion\FloatingAttachPoint.cs" />
     <Compile Include="LeapMotion\Hand2d.cs" />
     <Compile Include="LeapMotion\HandSide.cs" />
     <Compile Include="LeapMotion\HandVelocityHistory.cs" />

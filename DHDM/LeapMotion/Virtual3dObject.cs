@@ -26,7 +26,8 @@ namespace DHDM
 		{
 			Vector gravity = new Vector(0, -9.8f, 0); // Meters per second
 			CurrentPosition = StartPosition.GetCurrentPosition(gravity, InitialVelocity, time - CreationTimeMs);
-			ThrownObject.Position = CurrentPosition.ToScaledPoint();
+			ScaledPoint newPosition = CurrentPosition.ToScaledPoint();
+			ThrownObject.Position = newPosition;
 			ThrownObject.PositionZ = CurrentPosition.z;
 		}
 
