@@ -105,6 +105,13 @@
 		sprite.verticalThrustOverride = this.verticalThrustOverride;
 	}
 
+	setXY(sprite: SpriteProxy, x: number, y: number) {
+		sprite.x = x - this.originX;
+		sprite.y = y - this.originY;
+		sprite.startX = sprite.x;
+		sprite.startY = sprite.y;
+	}
+
 	private createColorShiftingSprite(startingFrameIndex: number, x: number, y: number, hueShift: number, saturationPercent: number, brightness: number): ColorShiftingSpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
 		const sprite: ColorShiftingSpriteProxy = new ColorShiftingSpriteProxy(startingFrameIndex, new Vector(x - this.originX, y - this.originY)).setHueSatBrightness(hueShift, saturationPercent, brightness);

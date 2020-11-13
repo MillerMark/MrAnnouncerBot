@@ -71,5 +71,6 @@ namespace DHDM
 		void ShowBackground(string sourceName);
 		void ShowForeground(string sourceName);
 		void ShowWeather(string weatherKeyword);
+		void LaunchHandTrackingEffect(string launchCommand, string dataValue);
 	}
 }

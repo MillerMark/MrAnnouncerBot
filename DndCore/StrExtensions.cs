@@ -19,11 +19,11 @@ namespace DndCore
 			return 0;
 		}
 
-		public static int ToInt(this string str)
+		public static int ToInt(this string str, int defaultValue = 0)
 		{
 			if (int.TryParse(str.Trim(), out int result))
 				return result;
-			return 0;
+			return defaultValue;
 		}
 
 		public static double GetFirstDouble(this string str, bool allowDecimals = true, double defaultValue = 0)

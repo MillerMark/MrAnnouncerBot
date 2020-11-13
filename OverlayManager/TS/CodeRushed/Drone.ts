@@ -493,36 +493,36 @@ class Drone extends ColorShiftingSpriteProxy {
   }
 
   changeVelocityBy(deltaVelocityX: number, deltaVelocityY: number, now: number) {
-    var secondsPassed = (now - this.timeStart) / 1000;
-    var velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
-    var velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
+    const secondsPassed = (now - this.timeStart) / 1000;
+    const velocityX = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityX, this.getHorizontalThrust(now));
+    const velocityY = Physics.getFinalVelocityMetersPerSecond(secondsPassed, this.velocityY, this.getVerticalThrust(now));
 
-    var newVelocityX = velocityX * deltaVelocityX;
-    var newVelocityY = velocityY * deltaVelocityY;
+    let newVelocityX = velocityX * deltaVelocityX;
+    let newVelocityY = velocityY * deltaVelocityY;
 
     if (Math.abs(newVelocityX) < 0.0008)
       newVelocityX = 0;
     if (Math.abs(newVelocityY) < 0.0008)
       newVelocityY = 0;
 
-    if (newVelocityX == 0 && newVelocityY == 0 && newVelocityX == this.velocityX && newVelocityY == this.velocityY)
+    if (newVelocityX === 0 && newVelocityY === 0 && newVelocityX === this.velocityX && newVelocityY === this.velocityY)
       return;
 
     this.changeVelocity(newVelocityX, newVelocityY, now);
   }
 
   dropPaint(command: string, params: string): any {
-    let splats: SplatSprites = this.getSplats(command);
-    var droneCenterX: number = this.x + this.width / 2;
-    var droneCenterY: number = this.y + this.height / 2;
-    const leftRightAdjust: number = 40;
-    const upDownAdjust: number = 20;
-    var yAdjust: number = Math.random() * upDownAdjust + 15;
-    var xAdjust: number = Math.random() * leftRightAdjust - leftRightAdjust / 2;
+    const splats: SplatSprites = this.getSplats(command);
+    const droneCenterX: number = this.x + this.width / 2;
+    const droneCenterY: number = this.y + this.height / 2;
+    const leftRightAdjust = 40;
+    const upDownAdjust = 20;
+    let yAdjust: number = Math.random() * upDownAdjust + 15;
+    let xAdjust: number = Math.random() * leftRightAdjust - leftRightAdjust / 2;
     const paintLifeSpan: number = 15 * 1000;
     splats.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.spriteWidth / 2, droneCenterY - splats.spriteHeight / 2, paintLifeSpan));
-    let yPos: number = droneCenterY - yAdjust;
-    let random: number = Math.random() * 100;
+    const yPos: number = droneCenterY - yAdjust;
+    const random: number = Math.random() * 100;
     if (random < 15) {
       splats.longDrips.spriteProxies.push(new SpriteProxy(0, droneCenterX - splats.longDrips.spriteWidth / 2 + xAdjust, yPos, paintLifeSpan));
     }

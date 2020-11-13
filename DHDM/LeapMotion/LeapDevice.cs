@@ -1,5 +1,6 @@
 ﻿//#define profiling
 using System;
+using DndCore;
 using System.Linq;
 using System.Windows;
 using System.Collections.Generic;
@@ -147,6 +148,23 @@ namespace DHDM
 			// TODO: Add support for hand-specific (left or right) placement.
 			// TODO: Add support for tossable objects in the stream deck commands.
 			skeletalData2d.HandEffect = handFxDto;
+		}
+
+		public void LaunchHandTrackingEffect(string launchCommand, string dataValue)
+		{
+			switch (launchCommand)
+			{
+				case "TowardFingers":
+					skeletalData2d.LaunchTowardFingers(dataValue.ToInt(1));
+					break;
+				case "ToCamera":
+					skeletalData2d.LaunchToCamera(dataValue.ToInt(1));
+					break;
+
+				default:
+					return;
+			}
+			UpdataData();
 		}
 	}
 }

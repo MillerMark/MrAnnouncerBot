@@ -18,7 +18,7 @@ namespace DHDM
 			CircularQueue<PositionVelocityTime> queue = GetQueue(handSide);
 			lock (queue)
 			{
-				queue.Enqueue(new PositionVelocityTime() { LeapVelocity = velocity, Time = DateTime.Now, Position = position });
+				queue.Enqueue(new PositionVelocityTime() { Velocity = velocity, Time = DateTime.Now, Position = position });
 				if (queue.Count > MaxHistoryCount)
 					queue.Dequeue();
 			}
@@ -69,19 +69,34 @@ namespace DHDM
 					if (checkPt.Time < earliestValidTime)  // Data is too stale
 						continue;
 
-					float speed = checkPt.LeapVelocity.Magnitude;
-					if (speed > minVelocityForThrow && IsValidThrowDirection(checkPt.LeapVelocity))
+					float speed = checkPt.Velocity.Magnitude;
+					if (speed > minVelocityForThrow)
 					{
-						if (escapeVelocityReachTime == DateTime.MinValue)
-							escapeVelocityReachTime = checkPt.Time;
-						escapeVelocityReached = true;
-						if (speed > fastestThrowingSpeed)
+						if (IsValidThrowDirection(checkPt.Velocity))
+						{	
+							if (escapeVelocityReachTime == DateTime.MinValue)
+								escapeVelocityReachTime = checkPt.Time;
+							escapeVelocityReached = true;
+							if (speed > fastestThrowingSpeed)
+							{
+								fastestThrowingSpeed = speed;
+								fastestVelocity = checkPt.Velocity;
+								throwingPoint = checkPt.Position;
+								throwingTime = checkPt.Time;
+								continue;
+							}
+						}
+					}
+					else if (escapeVelocityReachTime != DateTime.MinValue)
+					{
+						// velocity is slower than minVelocityForThrow and we've set fastestThrowingSpeed
+						if (checkPt.Time - escapeVelocityReachTime < TimeSpan.FromSeconds(0.08))
 						{
-							fastestThrowingSpeed = speed;
-							fastestVelocity = checkPt.LeapVelocity;
-							throwingPoint = checkPt.Position;
-							throwingTime = checkPt.Time;
-							continue;
+							fastestVelocity = new Vector(0, 0, 0);
+							throwingPoint = new Vector(0, 0, 0);
+							throwingTime = DateTime.MinValue;
+							escapeVelocityReachTime = DateTime.MinValue;
+							escapeVelocityReached = false;
 						}
 					}
 
@@ -89,7 +104,7 @@ namespace DHDM
 						continue;
 
 					// HACK: We're not really calculating this correctly.
-					if (speed < fastestThrowingSpeed * maxPercentThrowingSpeedForRelease || checkPt.LeapVelocity.Dot(fastestVelocity) < 0)
+					if (speed < fastestThrowingSpeed * maxPercentThrowingSpeedForRelease || checkPt.Velocity.Dot(fastestVelocity) < 0)
 					{
 						if (checkPt.Time - escapeVelocityReachTime > TimeSpan.FromMilliseconds(240))
 							weAreThrowing = true;
@@ -99,7 +114,7 @@ namespace DHDM
 			if (!weAreThrowing)
 				return new PositionVelocityTime();
 
-			return new PositionVelocityTime() { Position = throwingPoint, LeapVelocity = fastestVelocity, Time = throwingTime };
+			return new PositionVelocityTime() { Position = throwingPoint, Velocity = fastestVelocity, Time = throwingTime };
 		}
 
 		public static PositionVelocityTime GetThrowVector(Hand2d hand)

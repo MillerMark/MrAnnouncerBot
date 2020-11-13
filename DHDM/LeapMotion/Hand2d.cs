@@ -9,6 +9,8 @@ namespace DHDM
 {
 	public class Hand2d
 	{
+		internal Vector palmAttachPoint3d;
+		internal Vector fingerTipsAttachPoint3d;
 		public static FloatingAttachPoint RightHandFloatPoint { get; set; }
 		public static FloatingAttachPoint LeftHandFloatPoint { get; set; }
 		
@@ -48,26 +50,35 @@ namespace DHDM
 			else
 				Side = HandSide.Right;
 
-			HandVelocityHistory.AddVelocity(hand.PalmVelocity, GetAttachPoint3d(hand), Side);
+			 HandVelocityHistory.AddVelocity(hand.PalmVelocity, palmAttachPoint3d, Side);
 
 			PalmPosition = LeapCalibrator.ToScaledPoint(hand.PalmPosition);
 			PalmPosition3d = hand.PalmPosition;
 			// TODO: Calculate Details!!!
 			foreach (Finger finger in hand.Fingers)
-			{
 				Fingers.Add(new Finger2d(finger));
-			}
+		}
+
+		static Vector GetFingerTipsAttachPoint3d(Hand hand)
+		{
+			Vector averageFingerTipPoint = new Vector();
+			if (hand.Fingers.Count > 4)
+				for (int i = 1; i < 4; i++)
+					averageFingerTipPoint += hand.Fingers[i].TipPosition;
+			return averageFingerTipPoint / 3;
 		}
 
 		void SetPalmProperties(Hand hand)
 		{
-			PalmAttachPoint = LeapCalibrator.ToScaledPoint(GetAttachPoint3d(hand));
+			palmAttachPoint3d = GetAttachPoint3d(hand);
+			fingerTipsAttachPoint3d = GetFingerTipsAttachPoint3d(hand);
+			PalmAttachPoint = LeapCalibrator.ToScaledPoint(palmAttachPoint3d);
 			PalmDirection = GetVectorDirection(hand.PalmNormal);
 			FacingForwardOrBack = GetForwardOrBack(hand.PalmNormal);
 			PositionZ = hand.PalmPosition.z;
 		}
 
-		private static Vector GetAttachPoint3d(Hand hand)
+		public static Vector GetAttachPoint3d(Hand hand)
 		{
 			return hand.PalmPosition + hand.PalmNormal * hand.PalmWidth / 2;
 		}
@@ -131,7 +142,7 @@ namespace DHDM
 		bool GetIsFist(Hand hand)
 		{
 			double totalLength = GetPalmFingerTravelDistance(hand);
-			const double MaxLengthForFist = 170d;
+			const double MaxLengthForFist = 190d;
 			if (totalLength < MaxLengthForFist)
 				return true;
 			else
@@ -167,7 +178,7 @@ namespace DHDM
 		Vector GetSpringForceVector(Vector attachPoint3D, Vector position)
 		{
 			Vector forceVector = attachPoint3D - position;
-			const float k = 3;
+			const float k = 1.03f;
 			return forceVector * k;
 
 			// Spring force equation (Hook's Law):
@@ -181,8 +192,9 @@ namespace DHDM
 
 			DateTime now = DateTime.Now;
 			TimeSpan deltaTime = now - floatingAttachPoint.SnapshotTime;
-			Vector finalVelocity = forceVector.GetFinalVelocity(floatingAttachPoint.LastForce, floatingAttachPoint.Velocity, deltaTime);
-			Vector currentPosition = forceVector.GetCurrentPosition(forceVector, finalVelocity, deltaTime);
+
+			Vector currentPosition = floatingAttachPoint.Position.GetCurrentPosition(forceVector, floatingAttachPoint.Velocity, deltaTime);
+			Vector finalVelocity = floatingAttachPoint.Velocity.GetFinalVelocity(forceVector, deltaTime) * 0.965f;
 
 			floatingAttachPoint.Velocity = finalVelocity;
 			floatingAttachPoint.Position = currentPosition;

@@ -298,6 +298,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	handEffectsCollection: SpriteCollection = new SpriteCollection();
 	handHeldFireball: Sprites;
+	handHeldSmoke: Sprites;
+	handHeldFloatingSmoke: Sprites;
+	smokeExtinguish: Sprites;
 	handHeldFireRiseA: Sprites;
 	handHeldFireRiseB: Sprites;
 	handHeldFireRiseC: Sprites;
@@ -869,7 +872,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (this.skeletalData2d) {
 			if (this.skeletalData2d.HandEffect)
 				this.changeHandEffects(this.skeletalData2d);
-			this.checkForThrowsAndCatches(this.skeletalData2d);
+			this.checkForThrowsAndCatches(this.skeletalData2d, this.handHeldFireball);
+			this.checkForThrowsAndCatches(this.skeletalData2d, this.handHeldSmoke);
 		}
 	}
 
@@ -1019,6 +1023,24 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.handHeldFireball.originY = 647;
 		this.handEffectsCollection.add(this.handHeldFireball);
 
+		this.handHeldSmoke = new Sprites('LeapMotion/Effects/MagicSmokeLoop/MagicSmokeLoop', 326, 30, AnimationStyle.Loop, true);
+		this.handHeldSmoke.originX = 225;
+		this.handHeldSmoke.originY = 270;
+		this.handEffectsCollection.add(this.handHeldSmoke);
+
+		// TODO: Consider changing the floating smoke
+		this.handHeldFloatingSmoke = new Sprites('LeapMotion/Effects/MagicSmokeLoop/MagicSmokeLoop', 326, 30, AnimationStyle.Loop, true);
+		this.handHeldFloatingSmoke.originX = 225;
+		this.handHeldFloatingSmoke.originY = 270;
+		this.handHeldFloatingSmoke.moves = true;
+		this.handHeldFloatingSmoke.disableGravity();
+		this.handEffectsCollection.add(this.handHeldFloatingSmoke);
+
+		this.smokeExtinguish = new Sprites('LeapMotion/Effects/FireBall/SmokeExtinguish', 76, 30, AnimationStyle.Sequential, true);
+		this.smokeExtinguish.originX = 214;
+		this.smokeExtinguish.originY = 662;
+		this.handEffectsCollection.add(this.smokeExtinguish);
+
 		this.handHeldFireRiseA = new Sprites('LeapMotion/Effects/FireBall/FireRiseA', 23, 30, AnimationStyle.Sequential, true);
 		this.handHeldFireRiseA.originX = 192;
 		this.handHeldFireRiseA.originY = 251;
@@ -1054,20 +1076,51 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		//this.destroyAllFireBalls();
 	}
 
-	destroyAllFireBalls() {
-		if (this.handHeldFireball.spriteProxies.length > 0 && this instanceof DragonFrontGame)
-			this.leapEffectSoundManager.safePlayMp3('FireBallExtinguish');
-		this.handHeldFireball.spriteProxies = [];
-		this.activeLeapFireballSound.pause();
-		this.activeLeapFireballSound = null;
+	destroyAllTrackingEffects() {
+		if (this.handHeldFireball.spriteProxies.length > 0) {
+			this.destroyAllFireballs();
+		}
+
+		if (this.handHeldSmoke.spriteProxies.length > 0) {
+			// TODO: Play a sound effect in the Front overlay when the smoke extinguishes.
+			this.handHeldSmoke.spriteProxies = [];
+		}
 	}
 
 	fireBallSound: string;
 	activeLeapFireballSound: HTMLAudioElement;
 
+	private destroyAllFireballs() {
+		if (this instanceof DragonFrontGame)
+			this.leapEffectSoundManager.safePlayMp3('FireBallExtinguish');
+
+		if (this.skeletalData2d.Hands.length > 0) {
+			const firstHand: Hand2d = this.skeletalData2d.Hands[0];
+			const attachPoint: ScaledPoint = this.getHandAttachPoint(firstHand);
+			const addEffectToThisCanvas = this.shouldAddEffectToThisCanvas(firstHand, attachPoint);
+			if (addEffectToThisCanvas) {
+				const fireBall: ColorShiftingSpriteProxy = this.handHeldFireball.spriteProxies[0] as ColorShiftingSpriteProxy;
+
+				if (fireBall) {
+					const scale: number = fireBall.scale;
+					const smokeExtinguish: SpriteProxy = this.smokeExtinguish.addShifted(fireBall.x + this.handHeldFireball.originX, fireBall.y + this.handHeldFireball.originY, 0, fireBall.hueShift);
+					smokeExtinguish.scale = scale;
+				}
+			}
+		}
+
+		this.handHeldFireball.spriteProxies = [];
+		this.activeLeapFireballSound.pause();
+		this.activeLeapFireballSound = null;
+	}
+
 	addFireballSound() {
 		if (this instanceof DragonFrontGame)
 			this.leapEffectSoundManager.safePlayMp3('FireBallIgnite');
+
+		if (this.activeLeapFireballSound)
+			this.activeLeapFireballSound.pause();
+
 		this.activeLeapFireballSound = this.leapEffectSoundManager.safePlayMp3ReturnAudio(this.fireBallSound);
 	}
 
@@ -1077,46 +1130,58 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 		skeletalData2d.HandEffect.HandEffects.forEach((handEffect: HandEffectDto) => {
 			const firstHand: Hand2d = skeletalData2d.Hands[0];
-			const scaledPoint: ScaledPoint = this.getHandAttachPoint(firstHand);
-			const onFrontCanvas: boolean = this.getOnFrontCanvasFromHandPosition(firstHand, scaledPoint);
-			let addEffectToThisCanvas = false;
-			if (onFrontCanvas && this instanceof DragonFrontGame)
-				addEffectToThisCanvas = true;
-			else if (!onFrontCanvas && this instanceof DragonBackGame)
-				addEffectToThisCanvas = true;
-				
-				switch (handEffect.EffectName) {
-					case 'SmokeA':
-						if (addEffectToThisCanvas)
-							this.addScaledSprite(this.smokePoofA, handEffect, scaledPoint);
-						break;
-					case 'SmokeB':
-						if (addEffectToThisCanvas)
-							this.addScaledSprite(this.smokePoofB, handEffect, scaledPoint);
-						break;
-					case 'SmokeC':
-						if (addEffectToThisCanvas)
-							this.addScaledSprite(this.smokePoofC, handEffect, scaledPoint);
-						break;
-					case 'SmokeD':
-						if (addEffectToThisCanvas)
-							this.addScaledSprite(this.smokePoofD, handEffect, scaledPoint);
-						break;
-					case 'SmokeE':
-						if (addEffectToThisCanvas)
-							this.addScaledSprite(this.smokePoofE, handEffect, scaledPoint);
-						break;
-					case 'FireBall': {
+			const attachPoint: ScaledPoint = this.getHandAttachPoint(firstHand);
+			let addEffectToThisCanvas = this.shouldAddEffectToThisCanvas(firstHand, attachPoint);
 
-						// Add fireballs to both canvases.
-						const fireBall: SpriteProxy = this.addScaledSprite(this.handHeldFireball, handEffect, scaledPoint);
-						fireBall.fadeInTime = 650;
-						fireBall.data = new HandFollowingData(skeletalData2d.Hands[0].Side);
-						this.addFireballSound();
-						break;
-					}
+			switch (handEffect.EffectName) {
+				case 'SmokeA':
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.smokePoofA, handEffect, attachPoint);
+					break;
+				case 'SmokeB':
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.smokePoofB, handEffect, attachPoint);
+					break;
+				case 'SmokeC':
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.smokePoofC, handEffect, attachPoint);
+					break;
+				case 'SmokeD':
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.smokePoofD, handEffect, attachPoint);
+					break;
+				case 'SmokeE':
+					if (addEffectToThisCanvas)
+						this.addScaledSprite(this.smokePoofE, handEffect, attachPoint);
+					break;
+				case 'FireBall': {
+					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldFireball, handEffect, attachPoint);
+					this.addFireballSound();
+					break;
 				}
-			});
+				case 'MagicSmokeLoop': {
+					this.addTrackedSpritesToBothCanvases(skeletalData2d, this.handHeldSmoke, handEffect, attachPoint);
+					break;
+				}
+			}
+		});
+	}
+
+	private shouldAddEffectToThisCanvas(firstHand: Hand2d, attachPoint: ScaledPoint) {
+		const onFrontCanvas: boolean = this.getOnFrontCanvasFromHandPosition(firstHand, attachPoint);
+		let addEffectToThisCanvas = false;
+		if (onFrontCanvas && this instanceof DragonFrontGame)
+			addEffectToThisCanvas = true;
+		else if (!onFrontCanvas && this instanceof DragonBackGame)
+			addEffectToThisCanvas = true;
+		return addEffectToThisCanvas;
+	}
+
+	addTrackedSpritesToBothCanvases(skeletalData2d: SkeletalData2d, handHeldFireball: Sprites, handEffect: HandEffectDto, scaledPoint: ScaledPoint): SpriteProxy {
+		const trackedSprite: SpriteProxy = this.addScaledSprite(handHeldFireball, handEffect, scaledPoint);
+		trackedSprite.fadeInTime = 650;
+		trackedSprite.data = new HandFollowingData(skeletalData2d.Hands[0].Side);
+		return trackedSprite;
 	}
 
 	addScaledSprite(smokePoof: Sprites, handEffect: HandEffectDto, scaledPoint: ScaledPoint): SpriteProxy {
@@ -1170,7 +1235,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 
-	nextFireRiseCreationTime = 0;
+	nextChildSpriteRiseCreationTime = 0;
 
 	private getHandAttachPoint(hand: Hand2d): ScaledPoint {
 		return this.inBoundsScaledPoint(hand.PalmAttachPoint);
@@ -1186,11 +1251,11 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return new ScaledPoint(scaledPoint.X, scaledPoint.Y, Math.max(0.2, scaledPoint.Scale));
 	}
 
-	checkForThrowsAndCatches(skeletalData2d: SkeletalData2d) {
-		// TODO: Support multiple FireBalls.
-		if (this.handHeldFireball.spriteProxies.length === 0)
+	checkForThrowsAndCatches(skeletalData2d: SkeletalData2d, sprites: Sprites) {
+		// TODO: Support multiple FireBalls/effects.
+		if (sprites.spriteProxies.length === 0)
 			return;
-		const handFollowingData: HandFollowingData = this.handHeldFireball.spriteProxies[0].data as HandFollowingData;
+		const handFollowingData: HandFollowingData = sprites.spriteProxies[0].data as HandFollowingData;
 		if (!handFollowingData)
 			return;
 
@@ -1198,8 +1263,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (hand) {
 			if (hand.Throwing) {
 				handFollowingData.TrackingObjectIndex = hand.ThrownObjectIndex;
-				console.log(`THROWING!!!`);
-				this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+				//console.log(`THROWING!!!`);
+				//this.addFloatingText(hand.PalmAttachPoint.X, 'Throwing ' + VectorCompassDirection[hand.ThrowDirection].toString(), '#800040', '#ffffff', hand.PalmAttachPoint.Y);
 			}
 			this.checkForCatch(hand, handFollowingData);
 			if (hand.JustCaught)
@@ -1222,7 +1287,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (hand.JustCaught) {
 			handFollowingData.TrackingObjectIndex = -1;
 			handFollowingData.HandSide = hand.Side;
-			this.addFloatingText(hand.PalmAttachPoint.X, 'Caught!', '#800040', '#ffffff', hand.PalmAttachPoint.Y);
+			//this.addFloatingText(hand.PalmAttachPoint.X, 'Caught!', '#800040', '#ffffff', hand.PalmAttachPoint.Y);
 		}
 	}
 
@@ -1247,16 +1312,19 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 			this.activeLeapFireballSound.volume = this.activeFireballVolumeFactor * percentVolume;
 	}
 
-	updateTrackingEffects(skeletalData2d: SkeletalData2d, nowMs: number): void {
-		if (!this.hasTrackingEffects())
+	updateTrackingEffects(skeletalData2d: SkeletalData2d, sprites: Sprites, nowMs: number, getChildFloaterSprite: (x: number, y: number) => ColorShiftingSpriteProxy): void {
+		const spriteProxies: SpriteProxy[] = sprites.spriteProxies;
+		if (!this.hasTrackingEffects(spriteProxies))
 			return;
 
 		// TODO: This code (spriteProxies[0]) assumes only one fireball - add support for more:
-		const sprite: ColorShiftingSpriteProxy = this.handHeldFireball.spriteProxies[0] as ColorShiftingSpriteProxy;
+		const sprite: ColorShiftingSpriteProxy = spriteProxies[0] as ColorShiftingSpriteProxy;
 
 		const handFollowingData: HandFollowingData = sprite.data as HandFollowingData;
-		if (!handFollowingData)
+		if (!handFollowingData) {
+			console.log(`No hand following data`);
 			return;
+		}
 
 		const hand: Hand2d = this.getHand(skeletalData2d, handFollowingData.HandSide);
 
@@ -1276,22 +1344,22 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (thrownObject) {
 			pos = thrownObject.Position;
 			if (Math.abs(sprite.x - pos.X) > 5000) {
-				this.destroyAllFireBalls();
+				this.destroyAllTrackingEffects();
 				return;
 			}
 		}
 		else {
-			pos = this.getHandPositionFromSide(skeletalData2d, handFollowingData.HandSide);
-			//pos = this.getFloatingPositionFromSide(skeletalData2d, handFollowingData.HandSide);
+			//pos = this.getHandPositionFromSide(skeletalData2d, handFollowingData.HandSide);
+			pos = this.getFloatingPositionFromSide(skeletalData2d, handFollowingData.HandSide);
 
 			if (hand && hand.IsFist) {
-				this.destroyAllFireBalls();
+				this.destroyAllTrackingEffects();
 				return;
 			}
 		}
 
 		if (pos === DragonGame.outOfBoundsPt || pos.Y > 1480) {
-			this.destroyAllFireBalls();
+			this.destroyAllTrackingEffects();
 			return;
 		}
 
@@ -1324,39 +1392,37 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		if (opacity === 0)
 			return;
 
-		this.handHeldFireball.spriteProxies.forEach((fireballSprite: ColorShiftingSpriteProxy) => {
-			fireballSprite.x = pos.X - this.handHeldFireball.originX;
-			fireballSprite.y = pos.Y - this.handHeldFireball.originY;
-			fireballSprite.scale = pos.Scale * (fireballSprite as unknown as ScaleFactor).scaleFactor;
+		spriteProxies.forEach((trackedSprite: ColorShiftingSpriteProxy) => {
+			trackedSprite.x = pos.X - sprites.originX;
+			trackedSprite.y = pos.Y - sprites.originY;
+			trackedSprite.scale = pos.Scale * (trackedSprite as unknown as ScaleFactor).scaleFactor;
 
-			if (nowMs < this.nextFireRiseCreationTime) {
-				// Create a new fire particle.
-				let sprites: Sprites;
-				if (Random.chancePercent(33))
-					sprites = this.handHeldFireRiseA;
-				if (Random.chancePercent(50))
-					sprites = this.handHeldFireRiseB;
-				else
-					sprites = this.handHeldFireRiseC;
-
-				const fireBallDiameter = 150;
-				const fireBallRadius: number = fireBallDiameter / 2;
-				const fireBallScaledRadius: number = fireBallRadius * fireballSprite.scale;
-				const fireRiseX: number = fireballSprite.x + this.handHeldFireball.originX + Random.between(-fireBallScaledRadius, fireBallScaledRadius);
-
-				const fireBallRiseHeight = 92;
-				const fireballEmitterRectHeight = 82;
-				const fireballEmitterRectHalfHeight = fireballEmitterRectHeight / 2;
-				const fireballEmitterRectHalfHeightScaled = fireballEmitterRectHalfHeight * fireballSprite.scale;
-				const fireRiseY: number = fireballSprite.y + this.handHeldFireball.originY - fireBallRiseHeight * fireballSprite.scale + Random.between(-fireballEmitterRectHalfHeightScaled, fireballEmitterRectHalfHeightScaled);
-
-				const fireRise: SpriteProxy = sprites.addShifted(fireRiseX, fireRiseY, 0, fireballSprite.hueShift);
-				fireRise.scale = fireballSprite.scale * Random.between(0.8, 1.2);
-				fireRise.velocityY = -3.7 * fireballSprite.scale;
+			if (getChildFloaterSprite && nowMs > this.nextChildSpriteRiseCreationTime) {
+				this.floatChild(sprites, trackedSprite, getChildFloaterSprite);
 			}
 		});
 
-		this.nextFireRiseCreationTime = nowMs + Random.between(150, 400);
+		if (getChildFloaterSprite)
+			this.nextChildSpriteRiseCreationTime = nowMs + Random.between(5, 50);
+	}
+
+	private floatChild(parentSprites: Sprites, parentSprite: ColorShiftingSpriteProxy, getChildFlameSprite: (x: number, y: number) => ColorShiftingSpriteProxy) {
+		const fireBallDiameter = 150;
+		const fireBallRadius: number = fireBallDiameter / 2;
+		const fireBallScaledRadius: number = fireBallRadius * parentSprite.scale;
+		const fireRiseX: number = parentSprite.x + parentSprites.originX + Random.between(-fireBallScaledRadius, fireBallScaledRadius);
+
+		const fireBallRiseHeight = 92;
+		const fireballEmitterRectHeight = 82;
+		const fireballEmitterRectHalfHeight = fireballEmitterRectHeight / 2;
+		const fireballEmitterRectHalfHeightScaled = fireballEmitterRectHalfHeight * parentSprite.scale;
+		const fireRiseY: number = parentSprite.y + parentSprites.originY - fireBallRiseHeight * parentSprite.scale + Random.between(-fireballEmitterRectHalfHeightScaled, fireballEmitterRectHalfHeightScaled);
+
+		const childSprite: ColorShiftingSpriteProxy = getChildFlameSprite(fireRiseX, fireRiseY);
+		//parentSprites.setXY(childSprite, fireRiseX, fireRiseY);
+		childSprite.hueShift = parentSprite.hueShift + Random.plusMinus(30)
+		childSprite.scale *= parentSprite.scale * Random.between(0.8, 1.2);
+		childSprite.velocityY = -3.7 * parentSprite.scale * Random.between(0.9, 1.1);
 	}
 
 	private getOnFrontCanvas(isThrown: boolean, hand: Hand2d, thrownObject: ThrownObject, pos: ScaledPoint) {
@@ -1404,15 +1470,41 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return null;
 	}
 
-	private hasTrackingEffects() {
-		return this.handHeldFireball.spriteProxies.length > 0;
+	private hasTrackingEffects(spriteProxies: SpriteProxy[]) {
+		return spriteProxies.length > 0;
 	}
 
 	updateSkeletalTrackingEffects(context: CanvasRenderingContext2D, nowMs: number) {
 		if (this.skeletalData2d) {
-			this.updateTrackingEffects(this.skeletalData2d, nowMs);
+			this.updateTrackingEffects(this.skeletalData2d, this.handHeldFireball, nowMs, this.getChildFlameSprite.bind(this));
+			this.updateTrackingEffects(this.skeletalData2d, this.handHeldSmoke, nowMs, this.getChildSmokeSprite.bind(this));
 			this.handEffectsCollection.updatePositions(nowMs);
 			this.handEffectsCollection.draw(context, nowMs);
 		}
 	}
+
+	private getChildFlameSprite(x: number, y: number): ColorShiftingSpriteProxy {
+		let childSprites: Sprites;
+		if (Random.chancePercent(33))
+			childSprites = this.handHeldFireRiseA;
+		if (Random.chancePercent(50))
+			childSprites = this.handHeldFireRiseB;
+		else
+			childSprites = this.handHeldFireRiseC;
+
+		return childSprites.addShifted(x, y, 0);
+	}
+
+	private getChildSmokeSprite(x: number, y: number): ColorShiftingSpriteProxy {
+		const childSprite: ColorShiftingSpriteProxy = this.handHeldFloatingSmoke.addShifted(x, y, -1);
+		childSprite.expirationDate = performance.now() + 900;
+		childSprite.fadeOutTime = 400;
+		childSprite.scale = Random.between(0.2, 0.45);
+		childSprite.opacity = 0.7;
+		childSprite.initialRotation = Random.max(360);
+		childSprite.autoRotationDegeesPerSecond = Random.between(-10, 10);
+		childSprite.fadeInTime = 300;
+		return childSprite;
+	}
+
 }

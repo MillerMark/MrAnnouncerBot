@@ -5216,6 +5216,17 @@ namespace DHDM
 
 		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds)
 		{
+			VantageKind vantageKind = VantageKind.Normal;
+			if (dieStr.EndsWith("[adv]"))
+			{
+				dieStr = dieStr.EverythingBeforeLast("[");
+				vantageKind = VantageKind.Advantage;
+			}
+			else if (dieStr.EndsWith("[disadv]"))
+			{
+				dieStr = dieStr.EverythingBeforeLast("[");
+				vantageKind = VantageKind.Disadvantage;
+			}
 			NextDieStr = dieStr;
 			string who;
 			if (playerIds?.Count == 1 && playerIds[0] < 0)
@@ -5239,12 +5250,25 @@ namespace DHDM
 				SetRollTypeUI(diceRollType);
 				SetRollScopeForPlayers(playerIds);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
+				diceRoll.VantageKind = vantageKind;
+
+				if (vantageKind != VantageKind.Normal)
+				{
+					if (diceRoll.DiceDtos != null)
+						foreach (DiceDto diceDto in diceRoll.DiceDtos)
+						{
+							diceDto.Vantage = vantageKind;
+							diceDto.DieCountsAs = DieCountsAs.totalScore;
+						}
+
+					foreach (PlayerRollOptions playerRollOptions in diceRoll.PlayerRollOptions)
+						playerRollOptions.VantageKind = vantageKind;
+				}
+
 				diceRoll.SuppressLegacyRoll = game.InCombat;
 				if (diceRollType == DiceRollType.InspirationOnly)
 					foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
-					{
 						playerRollOption.Inspiration = dieStr;
-					}
 				else
 					diceRoll.DamageHealthExtraDice = dieStr;
 				RollTheDice(diceRoll);
@@ -9197,6 +9221,10 @@ namespace DHDM
 		public void ShowWeather(string weatherKeyword)
 		{
 			weatherManager.ShowWeather(weatherKeyword);
+		}
+		public void LaunchHandTrackingEffect(string launchCommand, string dataValue)
+		{
+			leapDevice.LaunchHandTrackingEffect(launchCommand, dataValue);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

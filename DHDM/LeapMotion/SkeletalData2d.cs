@@ -41,7 +41,7 @@ namespace DHDM
 
 			// TODO: If we add more trackable effects, include them here.
 			// TODO: If we do this a lot, make it data-driven.
-			return effectName == "FireBall";
+			return effectName == "FireBall" || effectName == "MagicSmokeLoop";
 		}
 
 		void AnalyzeNewHandEffects()
@@ -103,6 +103,8 @@ namespace DHDM
 			if (hasTrackableEffect && Hands.Count > 0)
 			{
 				hasTrackableEffect = false;
+				trackingObjectInLeftHand = false;
+				trackingObjectInRightHand = false;
 				if (Hands[0].Side == HandSide.Left)
 					trackingObjectInLeftHand = true;
 				else
@@ -223,16 +225,21 @@ namespace DHDM
 			if (!trackingObjectInLeftHand && !trackingObjectInRightHand || hand.IsFist)
 				return false;
 			PositionVelocityTime throwVector = HandVelocityHistory.GetThrowVector(hand);
-			bool validThrow = throwVector.LeapVelocity != null;
+			bool validThrow = throwVector.Velocity != null;
 			if (!validThrow)
 				return false;
+			return ThrowObject(hand, throwVector);
+		}
+
+		private bool ThrowObject(Hand2d hand, PositionVelocityTime throwVector)
+		{
 			HandVelocityHistory.ClearHistory(hand);
 			int instanceIndex = Throw(hand, throwVector);
 			if (instanceIndex < 0)
 				return false;
 			hand.Throwing = true;
 			hand.ThrownObjectIndex = instanceIndex;
-			hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.LeapVelocity);
+			hand.ThrowDirection = Hand2d.GetVectorDirection(throwVector.Velocity);
 			return true;
 		}
 
@@ -260,6 +267,52 @@ namespace DHDM
 		{
 			lock (world.Instances)
 				return world.Instances.Count > 0;
+		}
+
+		Hand2d GetTrackingHand()
+		{
+			HandSide handSide;
+			if (trackingObjectInLeftHand)
+				handSide = HandSide.Left;
+			else if (trackingObjectInRightHand)
+				handSide = HandSide.Right;
+			else
+				return null;
+
+			foreach (Hand2d hand2D in Hands)
+				if (hand2D.Side == handSide)
+					return hand2D;
+
+			return null;
+		}
+
+		public void LaunchTowardFingers(int speed)
+		{
+			Hand2d hand = GetTrackingHand();
+			if (hand == null)
+				return;
+
+			PositionVelocityTime launchInfo = new PositionVelocityTime();
+			launchInfo.Position = hand.palmAttachPoint3d;
+			launchInfo.Velocity = (hand.fingerTipsAttachPoint3d - hand.palmAttachPoint3d).Normalized * speed;
+			launchInfo.Time = DateTime.Now;
+			ThrowObject(hand, launchInfo);
+		}
+
+		public void LaunchToCamera(int speed)
+		{
+			Hand2d hand = GetTrackingHand();
+			if (hand == null)
+				return;
+
+			float cameraX = -125;
+			float cameraY = 415;
+			Vector cameraCenter = new Vector(cameraX, cameraY, (float)LeapCalibrator.frontPlaneZ);
+			PositionVelocityTime launchInfo = new PositionVelocityTime();
+			launchInfo.Position = hand.palmAttachPoint3d;
+			launchInfo.Velocity = (cameraCenter - hand.palmAttachPoint3d).Normalized * speed;
+			launchInfo.Time = DateTime.Now;
+			ThrowObject(hand, launchInfo);
 		}
 	}
 }

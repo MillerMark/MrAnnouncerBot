@@ -22,13 +22,13 @@ namespace DHDM
 		}
 
 
-		public static Vector GetFinalVelocity(this Vector vector, Vector force, Vector initialVelocity, TimeSpan deltaTime)
+		public static Vector GetFinalVelocity(this Vector initialVelocity, Vector force, TimeSpan deltaTime)
 		{
 			float deltaSeconds = (float)deltaTime.TotalSeconds;
-			float displacementX = Physics.MetersToPixels(Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.x, force.x));
-			float displacementY = Physics.MetersToPixels(Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.y, force.y));
-			float displacementZ = Physics.MetersToPixels(Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.z, force.z));
-			return new Vector(vector.x + displacementX, vector.y + displacementY, vector.z + displacementZ);
+			float velocityX = Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.x, force.x);
+			float velocityY = Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.y, force.y);
+			float velocityZ = Physics.GetFinalVelocityMetersPerSecond(deltaSeconds, initialVelocity.z, force.z);
+			return new Vector(velocityX, velocityY, velocityZ);
 		}
 
 		public static ScaledPoint ToScaledPoint(this Vector vector)

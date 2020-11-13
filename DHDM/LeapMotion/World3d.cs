@@ -33,7 +33,7 @@ namespace DHDM
 		/// </summary>
 		public int AddInstance(PositionVelocityTime throwVector)
 		{
-			Virtual3dObject virtual3DObject = new Virtual3dObject() { StartPosition = throwVector.Position, InitialVelocity = throwVector.LeapVelocity.ToMetersPerSecond(), Index = numInstancesCreated };
+			Virtual3dObject virtual3DObject = new Virtual3dObject() { StartPosition = throwVector.Position, InitialVelocity = throwVector.Velocity.ToMetersPerSecond(), Index = numInstancesCreated };
 			lock (Instances)
 				Instances.Add(virtual3DObject);
 			numInstancesCreated++;

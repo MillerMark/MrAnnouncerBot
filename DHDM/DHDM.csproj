@@ -343,6 +343,7 @@
     <Compile Include="AnswerButton.cs" />
     <Compile Include="AskUI.cs" />
     <Compile Include="LeapMotion\Virtual3dObject.cs" />
+    <Compile Include="StreamDeck Commands\LaunchCommand.cs" />
     <Compile Include="StreamDeck Commands\ShowWeatherCommand.cs" />
     <Compile Include="WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />
