@@ -24,6 +24,7 @@ using DndUI;
 using BotCore;
 using System.Threading;
 using OBSWebsocketDotNet;
+using OBSWebsocketDotNet.Types;
 using Newtonsoft.Json;
 using ICSharpCode.AvalonEdit;
 using System.IO;

@@ -23,8 +23,266 @@ interface ScaleFactor {
 	scaleFactor: number;
 }
 
+
+enum SpeechType {
+	Thinks,
+	Says
+}
+
+class SpeechData {
+	okayToDraw = false;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	fontSize: number;
+	static readonly maxTextWidth: number = 124;
+
+	paragraph: ParagraphWrapData;
+	static styleDelimiters: LayoutDelimiters[] = [
+		new LayoutDelimiters(LayoutStyle.bold, '*', '*')
+		//,
+		//new LayoutDelimiters(LayoutStyle.italic, '[', ']')
+	];
+
+	constructor(wordWrapper: WordWrapper, wordRenderer: WordRenderer, context: CanvasRenderingContext2D, text: string, idealWidth: number, idealAspectRatio: number, fontSize: number, fontName: string) {
+		// TODO: consider reshaping the wrapping to make the text more beautiful...
+		context.font = `${fontSize}px ${fontName}`;
+		wordWrapper.fontSize = fontSize;
+		wordRenderer.fontSize = fontSize;
+
+		const maxAttempts = 8;
+		let attemptCount = 0;
+		let lastWidthAdjustPercent = 0.5;
+		let width: number = idealWidth;
+		let lastWidth: number = idealWidth;
+		let lastDeltaPercentageAwayFromIdeal: number = Number.MAX_VALUE;
+		do {
+			attemptCount++;
+			this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, width, SpeechData.styleDelimiters, wordRenderer);
+			const currentAspectRatio: number = this.paragraph.getAspectRatio();
+
+			const thisDeltaPercentageAwayFromIdeal: number = Math.abs(currentAspectRatio / idealAspectRatio - 1);
+			if (lastDeltaPercentageAwayFromIdeal === Number.MAX_VALUE || thisDeltaPercentageAwayFromIdeal < lastDeltaPercentageAwayFromIdeal) {
+				lastWidth = width;
+				lastDeltaPercentageAwayFromIdeal = thisDeltaPercentageAwayFromIdeal;
+			}
+			else if (thisDeltaPercentageAwayFromIdeal > lastDeltaPercentageAwayFromIdeal) {
+				width = lastWidth;
+				lastWidthAdjustPercent /= 2;
+				continue;
+			}
+
+			if (currentAspectRatio > idealAspectRatio) {
+				width -= width * lastWidthAdjustPercent;
+			}
+			else if (currentAspectRatio < idealAspectRatio) {
+				width += width * lastWidthAdjustPercent;
+			}
+			else
+				break;
+
+			lastWidthAdjustPercent /= 2;
+		} while (attemptCount < maxAttempts);
+
+		const fontScale: number = idealWidth / this.paragraph.getLongestLineWidth();
+		this.fontSize = fontSize * fontScale;
+		context.font = `${fontSize}px ${fontName}`;
+	}
+}
+
+class SpeechBubbleManager {
+	wordRenderer: WordRenderer;
+	wordWrapper: WordWrapper;
+	speechBubbles: Sprites;
+	thoughtBubbles: Sprites;
+
+	static readonly textColor: string = '#1a0c0a';
+	static readonly bulletColor: string = '#5b3c35';
+	static readonly emphasisColor: string = '#a01a00';
+	static readonly tableLineColor: string = '#5b3c35';
+	static readonly fontName: string = 'ccbiffbamboom';
+	static readonly fontSize: number = 20;
+	static readonly bulletIndent = 8;
+	static readonly emphasisFontHeightIncrease = 0;
+
+	//`![](31D33771D101AC43215689BD6498E18E.png)
+	static readonly emphasisFontStyleAscender = 13;  // This is the height from the baseline to the top of the tallest character.
+
+	textAspectRatio = 1;
+
+	constructor(private iGetPlayerX: IGetPlayerX) {
+		this.wordWrapper = new WordWrapper();
+
+		this.wordRenderer = new WordRenderer();
+		this.wordRenderer.fontName = SpeechBubbleManager.fontName;
+		this.wordRenderer.fontSize = SpeechBubbleManager.fontSize;
+		this.wordRenderer.emphasisColor = SpeechBubbleManager.emphasisColor;
+		this.wordRenderer.emphasisFontHeightIncrease = SpeechBubbleManager.emphasisFontHeightIncrease;
+		this.wordRenderer.emphasisFontStyleAscender = SpeechBubbleManager.emphasisFontStyleAscender;
+		this.wordRenderer.bulletIndent = SpeechBubbleManager.bulletIndent;
+		this.wordRenderer.bulletColor = SpeechBubbleManager.bulletColor;
+		this.wordRenderer.textColor = SpeechBubbleManager.textColor;
+		this.wordRenderer.tableLineColor = SpeechBubbleManager.tableLineColor;
+	}
+
+	loadResources() {
+		this.speechBubbles = new Sprites('SpeechBubbles/SpeechBubble', 38, fps30, AnimationStyle.Loop, true);
+		this.speechBubbles.returnFrameIndex = 8;
+		this.speechBubbles.segmentSize = 15;
+		this.speechBubbles.originX = 14;
+		this.speechBubbles.originY = 242;
+
+		this.thoughtBubbles = new Sprites('SpeechBubbles/ThoughtBubble', 38, fps30, AnimationStyle.Loop, true);
+		this.thoughtBubbles.returnFrameIndex = 8;
+		this.thoughtBubbles.segmentSize = 15;
+		this.thoughtBubbles.originX = 54;
+		this.thoughtBubbles.originY = 242;
+	}
+
+	// Expected syntax: {playerId} {says|thinks}: {message to say or think}
+	sayOrThinkSomething(context: CanvasRenderingContext2D, speechStr: string) {
+		const firstColonPos: number = speechStr.indexOf(':');
+		if (firstColonPos < 0)
+			return;
+		const firstPart: string = speechStr.substr(0, firstColonPos);
+		const textToShow: string = speechStr.substr(firstColonPos + 1).trim();
+
+		const speechType: SpeechType = this.getSpeechType(firstPart);
+		const spaceIndex: number = firstPart.indexOf(' ');
+		if (spaceIndex < 0)
+			return;
+
+		const playerId: number = +firstPart.substr(0, spaceIndex).trim();
+		const playerX: number = this.iGetPlayerX.getPlayerX(this.iGetPlayerX.getPlayerIndex(playerId));
+		let sprites: Sprites;
+
+		const speechBubbleOffsetX = 87;
+		const speechBubbleOffsetY = 192;
+		const speechBubbleTextOffsetX = 18;
+		const speechBubbleTextOffsetY = 195;
+
+		const thoughtBubbleOffsetX = 98;
+		const thoughtBubbleOffsetY = 286;
+		const thoughtBubbleTextOffsetX = -18;
+		const thoughtBubbleTextOffsetY = 222;
+
+		const thoughtBubbleTextWidth = 220;
+		const thoughtBubbleTextHeight = 144;
+		const thoughtBubbleAspectRatio = thoughtBubbleTextWidth / thoughtBubbleTextHeight;
+
+		const speechBubbleTextWidth = 209;
+		const speechBubbleTextHeight = 115;
+		const speechBubbleAspectRatio = speechBubbleTextWidth / speechBubbleTextHeight;
+
+		let offsetX: number;
+		let offsetY: number;
+		let textStartX: number;
+		let textStartY: number;
+
+		let width: number;
+		let height: number;
+
+		const horizontalScale = 1;
+		const verticalScale = 1;
+
+		if (speechType === SpeechType.Thinks) {
+			sprites = this.thoughtBubbles;
+			offsetX = thoughtBubbleOffsetX;
+			offsetY = thoughtBubbleOffsetY;
+			textStartX = thoughtBubbleTextOffsetX;
+			textStartY = thoughtBubbleTextOffsetY;
+			width = thoughtBubbleTextWidth;
+			height = thoughtBubbleTextHeight;
+			this.textAspectRatio = thoughtBubbleAspectRatio;
+		}
+		else {
+			sprites = this.speechBubbles;
+			offsetX = speechBubbleOffsetX;
+			offsetY = speechBubbleOffsetY;
+
+			textStartX = speechBubbleTextOffsetX;
+			textStartY = speechBubbleTextOffsetY;
+			width = speechBubbleTextWidth;
+			height = speechBubbleTextHeight;
+			this.textAspectRatio = speechBubbleAspectRatio;
+		}
+
+		const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, width, this.textAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName);
+
+		const scaledOffsetX: number = sprites.originX + offsetX * horizontalScale;
+		//const scaledOffsetY: number = sprites.originY + offsetY * verticalScale;
+
+		const screenBottom = 1080;
+
+		let xPos = playerX + scaledOffsetX;
+		const maxRightPos = 1400;
+		let flipped = false;
+		if (xPos > maxRightPos) {
+			xPos = playerX - scaledOffsetX;
+			flipped = true;
+		}
+
+		const yPos: number = screenBottom - offsetY * verticalScale;
+
+		speechData.x = xPos + textStartX * horizontalScale;
+		speechData.y = yPos - textStartY * verticalScale - speechData.paragraph.lineData.length * speechData.fontSize / 2 + speechData.fontSize / 2;
+		speechData.width = width * horizontalScale;
+		speechData.height = height * verticalScale;
+
+		const sprite: SpriteProxy = sprites.add(xPos, yPos);
+		sprite.playToEndOnExpire = true;
+		sprite.expirationDate = performance.now() + 5000;
+		sprite.fadeInTime = 400;
+		sprite.fadeOutTime = 467;
+		sprite.flipHorizontally = flipped;
+		sprite.addOnFrameAdvanceCallback(this.spriteAdvanceFrame);
+		sprite.data = speechData;
+		sprite.horizontalScale = horizontalScale;
+		sprite.verticalScale = verticalScale;
+	}
+
+	spriteAdvanceFrame(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number): void {
+		const endLoopAnimationFrameIndex = 24;
+		const speechData: SpeechData = sprite.data as SpeechData;
+		if (speechData) {
+			speechData.okayToDraw = sprite.frameIndex >= returnFrameIndex && sprite.frameIndex < endLoopAnimationFrameIndex;
+		}
+	}
+
+	getSpeechType(firstPart: string): SpeechType {
+		if (firstPart.toLowerCase().indexOf('says') >= 0)
+			return SpeechType.Says;
+		else
+			return SpeechType.Thinks;
+	}
+
+	draw(context: CanvasRenderingContext2D, nowMs: number) {
+		this.thoughtBubbles.draw(context, nowMs);
+		this.speechBubbles.draw(context, nowMs);
+		this.drawText(context, this.thoughtBubbles);
+		this.drawText(context, this.speechBubbles);
+	}
+
+	drawSpriteText(context: CanvasRenderingContext2D, sprite: SpriteProxy) {
+		const speechData: SpeechData = sprite.data as SpeechData;
+		if (speechData && speechData.okayToDraw) {
+			this.wordRenderer.fontSize = speechData.fontSize;
+			this.wordRenderer.setActiveStyle(context, LayoutStyle.normal);
+			this.wordRenderer.renderParagraphs(context, speechData.paragraph.lineData, speechData.x + speechData.width / 2, speechData.y + speechData.height / 2, SpeechData.styleDelimiters);
+		}
+	}
+
+	drawText(context: CanvasRenderingContext2D, sprites: Sprites) {
+		sprites.spriteProxies.forEach((sprite: SpriteProxy) => {
+			this.drawSpriteText(context, sprite);
+		});
+	}
+}
+
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
+	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this);
 
 	showFpsMessage(message: string): any {
 		this.addUpperRightStatusMessage(message, '#000000', '#ffffff');
@@ -185,6 +443,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bigWarning.draw(context, nowMs);
 
 		this.renderTextAnimations(context, nowMs);
+		this.speechBubbleManager.draw(context, nowMs);
 
 		if (this.calibrationPosition) {
 			context.fillStyle = '#ff0000';
@@ -378,6 +637,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		Folders.assets = 'GameDev/Assets/DragonH/';
 		this.fred.loadResources();
 		this.coinManager.loadResources();
+		this.speechBubbleManager.loadResources();
 
 		this.denseSmoke = new Sprites('Smoke/Dense/DenseSmoke', 116, fps30, AnimationStyle.Sequential, true);
 		this.denseSmoke.name = 'DenseSmoke';
@@ -775,6 +1035,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	executeCommand(command: string, params: string, userInfo: UserInfo, now: number): boolean {
 		if (super.executeCommand(command, params, userInfo, now))
 			return true;
+
 		if (command === "Cross2") {
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
 		}
@@ -803,10 +1064,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.emitter.airDensity = 0; // 0 == vaccuum.
 		this.emitter.particleAirDensity = 0.1;  // 0 == vaccuum.
 
-		let sprayAngle: number = Random.intBetween(270 - 45, 270 + 45);
-		let minVelocity: number = 9;
-		let maxVelocity: number = 16;
-		let angleAwayFromUp: number = Math.abs(sprayAngle - 270);
+		const sprayAngle: number = Random.intBetween(270 - 45, 270 + 45);
+		let minVelocity = 9;
+		let maxVelocity = 16;
+		const angleAwayFromUp: number = Math.abs(sprayAngle - 270);
 		if (angleAwayFromUp < 15)
 			maxVelocity = 10;
 		else if (angleAwayFromUp > 35)
@@ -825,6 +1086,19 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		if (testCommand === "Cross2") {
 			this.shouldDrawCenterCrossHairs = !this.shouldDrawCenterCrossHairs;
 		}
+
+		if (testCommand === "SayIt1") {
+			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 says: It worked!');
+		}
+
+		if (testCommand === "SayIt2") {
+			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 says: It seems to be really working just a bit better!');
+		}
+
+		if (testCommand === "SayIt3") {
+			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 thinks: Now I\'m thinking something really smarty!');
+		}
+
 
 		if (testCommand.toLowerCase() === 'wave') {
 			this.moveFred('Wave');
@@ -1587,6 +1861,11 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	showFpsWindow: boolean;
 	handleFpsChange(frameRateChangeData: FrameRateChangeData): void {
 		this.changeFramerate(frameRateChangeData.FrameRate);
+	}
+
+	speechBubble(speechStr: string) {
+		console.log('sayOrThinkSomething: ' + speechStr);
+		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr);
 	}
 }
 

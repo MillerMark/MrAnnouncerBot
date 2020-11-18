@@ -125,6 +125,7 @@ class Table {
 }
 
 class ParagraphWrapData {
+	lineHeight: number;
 	lineData: Array<LineWrapData>;
 	tables: Array<Table>;
 	private _maxTableWidth = 0;
@@ -147,6 +148,17 @@ class ParagraphWrapData {
 				maxWidth = this.lineData[i].width;
 		}
 		return maxWidth;
+	}
+
+	getParagraphHeight(): number {
+		return this.lineHeight * this.lineData.length;
+	}
+
+	getAspectRatio(): number {
+		const height: number = this.getParagraphHeight();
+		if (height === 0)
+			return 0;
+		return this.getLongestLineWidth() / height;
 	}
 
 	calculateMaxTableWidth() {
@@ -237,8 +249,7 @@ class WordRenderer {
 	bulletColor = '#5b3c35';
 	emphasisFontHeightIncrease = 3;
 
-	//![](31D33771D101AC43215689BD6498E18E.png)
-
+	//`![](31D33771D101AC43215689BD6498E18E.png)
 	emphasisFontStyleAscender = 13;  // This is the height from the baseline to the top of the tallest character.
 
 	underlineOffset = 2;
@@ -420,7 +431,7 @@ class WordRenderer {
 
 
 class WordWrapper {
-
+	fontSize: number;
 	constructor() {
 
 	}
@@ -596,8 +607,19 @@ class WordWrapper {
 		const lines: Array<LineWrapData> = text.split("\n").map(para => this.getWordWrappedLines(context, para, maxScaledWidth,
 			styleDelimiters, wordRenderer)).reduce((a, b) => a.concat(b), []);
 		const paragraphWrapData: ParagraphWrapData = new ParagraphWrapData();
+		this.setFont(context, wordRenderer);
+		paragraphWrapData.lineHeight = this.fontSize;
 		paragraphWrapData.lineData = lines;
 		paragraphWrapData.createTables(context);
 		return paragraphWrapData;
+	}
+
+	private setFont(context: CanvasRenderingContext2D, wordRenderer: WordRenderer): void {
+		const pxPos: number = context.font.indexOf('px');
+		if (pxPos > 0) {
+			const fontSizeStr: string = context.font.substr(0, pxPos);
+			this.fontSize = +fontSizeStr;
+			wordRenderer.fontSize = this.fontSize;
+		}
 	}
 }

@@ -142,6 +142,11 @@ namespace DHDM
 			HubConnection.InvokeAsync("UpdateSkeletalData", skeletalData);
 		}
 
+		public static void SpeechBubble(string speechStr)
+		{
+			HubConnection.InvokeAsync("SpeechBubble", speechStr);
+		}
+
 		public static void ChangePlayerHealth(string playerData)
 		{
 			HubConnection.InvokeAsync("ChangePlayerHealth", playerData);

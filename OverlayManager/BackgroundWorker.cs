@@ -140,7 +140,7 @@ namespace OverlayManager
 		{
 			hub.Clients.All.ExecuteCommand("SilentAnswerQuiz", args, UserInfo.FromChatMessage(chatMessage, 0));
 		}
-		
+
 		private void TwitchClient_OnChatCommandReceived(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
 		{
 			string cmdText = e.Command.CommandText.ToLower();

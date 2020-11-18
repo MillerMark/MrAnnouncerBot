@@ -940,9 +940,42 @@ namespace MrAnnouncerBot
 			return restrictedScenes.Any(x => x.SceneName == activeSceneName);
 		}
 
+		void SayIt(string words, ChatMessage chatMessage)
+		{
+			if (allViewers.GetUserLevel(chatMessage) < 3)
+			{
+				Chat($"{chatMessage.Username}, this command is only available for level 3 users and up.");
+				return;
+			}
+			//Clients.All.ExecuteCommand("", "", UserInfo.FromChatMessage(chatMessage, 0));
+			string quotedPhrase = chatMessage.Message.TrimStart('!').Trim('"');
+			hubConnection.InvokeAsync("SpeechBubble", $"2 says: {quotedPhrase}"); // 2 is Mark's player ID
+		}
+		void ThinkIt(string thought, ChatMessage chatMessage)
+		{
+			if (allViewers.GetUserLevel(chatMessage) < 3)
+			{
+				Chat($"{chatMessage.Username}, this command is only available for level 3 users and up.");
+				return;
+			}
+			string quotedPhrase = chatMessage.Message.TrimStart('!').TrimStart('(').TrimEnd(')');
+			hubConnection.InvokeAsync("SpeechBubble", $"2 thinks: {quotedPhrase}"); // 2 is Mark's player ID
+		}
+		
 		private void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
 		{
 			var command = e.Command.CommandText;
+
+			if (command.StartsWith("\""))
+			{
+				SayIt(command, e.Command.ChatMessage);
+				return;
+			}
+			else if (command.StartsWith("("))
+			{
+				ThinkIt(command, e.Command.ChatMessage);
+				return;
+			}
 
 			if (BotCommands.Execute(e.Command.CommandText, e) > 0)
 				return;

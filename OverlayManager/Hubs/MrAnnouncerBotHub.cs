@@ -37,6 +37,10 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.UpdateSkeletalData(skeletalData);
 		}
+		public void SpeechBubble(string speechStr)
+		{
+			coderushedHub.Clients.All.SpeechBubble(speechStr);
+		}
 
 		public void ChangePlayerHealth(string playerData)
 		{
