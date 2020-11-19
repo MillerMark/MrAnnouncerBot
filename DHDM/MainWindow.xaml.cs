@@ -1170,6 +1170,7 @@ namespace DHDM
 			});
 
 			UnhookTwitchClientEvents();
+			dragonHumpersClient = null;
 			dungeonMasterClient = null;
 			History.Log($"DungeonMasterClient_OnDisconnected");
 		}
@@ -1430,9 +1431,20 @@ namespace DHDM
 
 		object lockObj;
 
+		bool IsPlayer(string userId)
+		{
+			const string karen = "240735151";
+			const string mark = "270998178";
+			const string lara = "496519211";
+			const string zephyr = "238257153";
+			const string brendan = "491566796";
+			const string dm = "455518839";
+			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm;
+		}
 		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
-			CharacterSaysSomething(e.ChatMessage.Message);
+			if (IsPlayer(e.ChatMessage.UserId))
+				CharacterSaysSomething(e.ChatMessage.Message);
 		}
 
 		private static bool CharacterSaysSomething(string message)
@@ -1473,7 +1485,8 @@ namespace DHDM
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
 			string message = e.ChatMessage.Message;
-			if (CharacterSaysSomething(message))
+			if (IsPlayer(e.ChatMessage.UserId))
+				if (CharacterSaysSomething(message))
 				return;
 
 			//Thread thread = Thread.CurrentThread;
