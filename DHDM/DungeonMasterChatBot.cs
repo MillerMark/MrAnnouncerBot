@@ -27,8 +27,6 @@ namespace DHDM
 
 		}
 
-
-
 		void CreateCommandHandlers()
 		{
 			Commands.Clear();

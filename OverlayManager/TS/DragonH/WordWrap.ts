@@ -353,77 +353,123 @@ class WordRenderer {
 		for (let i = 0; i < lines.length; i++) {
 			const lineData: LineWrapData = lines[i];
 
-			if (lineData.isBullet) {
-				this.drawBullet(context, x, y);
+			y = this.renderLine(lineData, context, x, y, styleDelimiters);
+		}
+		return y;
+	}
+
+	private renderLine(lineData: LineWrapData, context: CanvasRenderingContext2D, x: number, y: number, styleDelimiters: LayoutDelimiters[]) {
+		if (lineData.isBullet) {
+			this.drawBullet(context, x, y);
+		}
+
+		if (lineData.inTableRow) {
+			y = this.renderTableRow(context, x, y, lineData);
+		}
+		else if (lineData.allSpans.length > 0) {
+			this.renderStyledText(x, y, context, lineData, styleDelimiters);
+		}
+		else {
+			this.renderNormalText(context, lineData, x, y);
+		}
+		return y + this.fontSize;
+	}
+
+	private renderStyledText(x: number, y: number, context: CanvasRenderingContext2D, lineData: LineWrapData, styleDelimiters: LayoutDelimiters[]) {
+		const saveAlign: string = context.textAlign;
+
+		let newX: number = x;
+		if (saveAlign === 'center') {
+			newX -= this.getEntireLineLength(context, lineData, styleDelimiters) / 2;
+			context.textAlign = 'left';
+		}
+
+		let offsetX: number = lineData.indent;
+		let lastDrawnStyledOffset = 0;
+		for (let spanIndex = 0; spanIndex < lineData.allSpans.length; spanIndex++) {
+			({ lastDrawnStyledOffset, offsetX } = this.renderSpan(lineData, spanIndex, lastDrawnStyledOffset, context, newX, offsetX, y, styleDelimiters));
+		}
+
+		if (saveAlign === 'center')
+			context.textAlign = 'center';
+	}
+
+	private renderNormalText(context: CanvasRenderingContext2D, lineData: LineWrapData, x: number, y: number) {
+		this.setActiveStyle(context, LayoutStyle.normal);
+		context.fillText(lineData.line, x + lineData.indent, y);
+	}
+
+	getEntireLineLength(context: CanvasRenderingContext2D, lineData: LineWrapData, styleDelimiters: LayoutDelimiters[]): number {
+		let offsetX = 0;
+		let lastDrawnStyledOffset = 0;
+		for (let spanIndex = 0; spanIndex < lineData.allSpans.length; spanIndex++) {
+			({ lastDrawnStyledOffset, offsetX } = this.renderSpan(lineData, spanIndex, lastDrawnStyledOffset, context, 0, offsetX, 0, styleDelimiters, true));
+		}
+		return offsetX;
+	}
+
+	private renderSpan(lineData: LineWrapData, spanIndex: number, lastDrawnStyledOffset: number, context: CanvasRenderingContext2D, x: number, offsetX: number, y: number, styleDelimiters: LayoutDelimiters[], suppressRender = false) {
+		const span: Span = lineData.allSpans[spanIndex];
+
+		const onTheVeryLastSpan: boolean = spanIndex === lineData.allSpans.length - 1;
+
+		// Special case (first span):
+		if (span.startOffset > lastDrawnStyledOffset) {
+			// We have a normal part first
+			this.setActiveStyle(context, LayoutStyle.normal);
+			const normalPart: string = lineData.line.substr(lastDrawnStyledOffset, span.startOffset - lastDrawnStyledOffset);
+			//console.log(`context.fillText(${normalPart}, ${x} + ${offsetX}, ${y});`);
+			if (!suppressRender)
+				context.fillText(normalPart, x + offsetX, y);
+			offsetX += context.measureText(normalPart).width;
+		}
+		// Draw the styled part...
+		const styledPart: string = lineData.line.substr(span.startOffset, span.stopOffset - span.startOffset);
+		this.setActiveStyle(context, span.style);
+
+		const wordTop: number = y + WordWrapper.getStyleDelimeters(span.style, styleDelimiters).fontYOffset;
+		const styledPartWidth: number = context.measureText(styledPart).width;
+
+		if (span.style === LayoutStyle.calculated) { // Underline this.
+			let wordStartX: number = x + offsetX;
+			const wordEndX: number = wordStartX + styledPartWidth;
+			if (styledPart.startsWith(' ')) {
+				wordStartX += context.measureText(' ').width;
 			}
+			context.beginPath();
+			const lineY: number = wordTop + this.emphasisFontStyleAscender + this.underlineOffset;
+			context.lineWidth = 2;
+			context.strokeStyle = '#3e6bb8';
+			//console.log(`underlining from (${wordStartX}, ${lineY}) to (${wordEndX}, ${lineY})...`);
+			context.moveTo(wordStartX, lineY);
+			context.lineTo(wordEndX, lineY);
+			context.stroke();
+		}
 
-			if (lineData.inTableRow) {
-				this.setActiveStyle(context, LayoutStyle.normal);
-				this.drawTableRow(context, x, y, lineData);
-				if (lineData.line.indexOf('---') >= 0) {
-					y -= this.fontSize / 2;
-				}
-			}
-			else if (lineData.allSpans.length > 0) {
-				let offsetX: number = lineData.indent;
-				let lastDrawnStyledOffset = 0;
-				for (let spanIndex = 0; spanIndex < lineData.allSpans.length; spanIndex++) {
-					const span: Span = lineData.allSpans[spanIndex];
+		if (!suppressRender)
+			context.fillText(styledPart, x + offsetX, wordTop);
+		offsetX += styledPartWidth;
 
-					const onTheVeryLastSpan: boolean = spanIndex === lineData.allSpans.length - 1;
+		lastDrawnStyledOffset = span.stopOffset;
 
-					// Special case (first span):
-					if (span.startOffset > lastDrawnStyledOffset) {
-						// We have a normal part first
-						this.setActiveStyle(context, LayoutStyle.normal);
-						const normalPart: string = lineData.line.substr(lastDrawnStyledOffset, span.startOffset - lastDrawnStyledOffset);
-						context.fillText(normalPart, x + offsetX, y);
-						offsetX += context.measureText(normalPart).width;
-					}
-					// Draw the styled part...
-					const styledPart: string = lineData.line.substr(span.startOffset, span.stopOffset - span.startOffset);
-					this.setActiveStyle(context, span.style);
+		// Special case (last span):
+		if (onTheVeryLastSpan && span.stopOffset < lineData.line.length) {
+			// We have a normal ending part
+			const endStart: number = span.stopOffset;
+			const normalPart: string = lineData.line.substr(endStart, lineData.line.length - endStart);
+			this.setActiveStyle(context, LayoutStyle.normal);
+			if (!suppressRender)
+				context.fillText(normalPart, x + offsetX, y);
+			offsetX += context.measureText(normalPart).width;
+		}
+		return { lastDrawnStyledOffset, offsetX };
+	}
 
-					const wordTop: number = y + WordWrapper.getStyleDelimeters(span.style, styleDelimiters).fontYOffset;
-					const styledPartWidth: number = context.measureText(styledPart).width;
-
-					if (span.style === LayoutStyle.calculated) { // Underline this.
-						let wordStartX: number = x + offsetX;
-						const wordEndX: number = wordStartX + styledPartWidth;
-						if (styledPart.startsWith(' ')) {
-							wordStartX += context.measureText(' ').width;
-						}
-						context.beginPath();
-						const lineY: number = wordTop + this.emphasisFontStyleAscender + this.underlineOffset;
-						context.lineWidth = 2;
-						context.strokeStyle = '#3e6bb8';
-						//console.log(`underlining from (${wordStartX}, ${lineY}) to (${wordEndX}, ${lineY})...`);
-						context.moveTo(wordStartX, lineY);
-						context.lineTo(wordEndX, lineY);
-						context.stroke();
-					}
-
-					context.fillText(styledPart, x + offsetX, wordTop);
-					offsetX += styledPartWidth;
-
-					lastDrawnStyledOffset = span.stopOffset;
-
-					// Special case (last span):
-					if (onTheVeryLastSpan && span.stopOffset < lineData.line.length) {
-						// We have a normal ending part
-						const endStart: number = span.stopOffset;
-						const normalPart: string = lineData.line.substr(endStart, lineData.line.length - endStart);
-						this.setActiveStyle(context, LayoutStyle.normal);
-						context.fillText(normalPart, x + offsetX, y);
-						offsetX += context.measureText(normalPart).width;
-					}
-				}
-			}
-			else {
-				this.setActiveStyle(context, LayoutStyle.normal);
-				context.fillText(lineData.line, x + lineData.indent, y);
-			}
-			y += this.fontSize;
+	private renderTableRow(context: CanvasRenderingContext2D, x: number, y: number, lineData: LineWrapData) {
+		this.setActiveStyle(context, LayoutStyle.normal);
+		this.drawTableRow(context, x, y, lineData);
+		if (lineData.line.indexOf('---') >= 0) {
+			y -= this.fontSize / 2;
 		}
 		return y;
 	}
@@ -436,7 +482,7 @@ class WordWrapper {
 
 	}
 
-	public getWordWrappedLines(context: CanvasRenderingContext2D, text: string, maxScaledWidth: number, styleDelimiters: Array<LayoutDelimiters>, wordRenderer: WordRenderer): Array<LineWrapData> {
+	public getWordWrappedLines(context: CanvasRenderingContext2D, text: string, maxScaledWidth: number, styleDelimiters: Array<LayoutDelimiters>, wordRenderer: WordRenderer, topBottomReducePercent = 0): Array<LineWrapData> {
 		const words = text.split(' ');
 		const lines: Array<LineWrapData> = [];
 
@@ -445,6 +491,9 @@ class WordWrapper {
 		let allSpans: Array<Span> = [];
 		let isBullet = false;
 		let indent = 0;
+		let maxWidthThisLine: number = maxScaledWidth;
+		if (topBottomReducePercent > 0)
+			maxWidthThisLine = maxWidthThisLine * (100 - topBottomReducePercent) / 100
 		let inTableRow: boolean;
 		let lineWidth = 0;
 		let activeStyle: LayoutStyle = LayoutStyle.normal;
@@ -500,6 +549,7 @@ class WordWrapper {
 				if (endDelimeterIndex > 0) {
 					lastPart = word.substr(endDelimeterIndex + styleDelimeters.endDelimiter.length, word.length - endDelimeterIndex);
 					word = word.substr(0, endDelimeterIndex);
+					console.log(`word = "${word}"`);
 					styleDelimeters.needToClose = true;
 				}
 			}, this);
@@ -521,7 +571,7 @@ class WordWrapper {
 			wordRenderer.setActiveStyle(context, activeStyle);
 			const thisWordWidth = context.measureText(thisWord).width;
 
-			if (lineWidth + thisWordWidth + firstPartWidth < maxScaledWidth - indent) {  // Words still fit on this line.
+			if (lineWidth + thisWordWidth + firstPartWidth < maxWidthThisLine - indent) {  // Words still fit on this line.
 				if (currentLine) {
 					currentLine += ' ' + firstPart + word + lastPart;
 					lineWidth += firstPartWidth + thisWordWidth;
@@ -540,7 +590,9 @@ class WordWrapper {
 					}
 				}, this);
 
-				lines.push(new LineWrapData(currentLine, allSpans, lineWidth, indent, isBullet));
+				if (currentLine && currentLine.length > 0 || lines.length > 0)  // don't add empty lines at the start.
+					lines.push(new LineWrapData(currentLine, allSpans, lineWidth, indent, isBullet));
+				maxWidthThisLine = maxScaledWidth;
 				isBullet = false;
 				currentLine = firstPart + word + lastPart;
 				lineWidth = thisWordWidth;
@@ -549,11 +601,8 @@ class WordWrapper {
 				if (lastPart) {
 					styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
 						if (styleDelimeters.inPair) {
-							allSpans.push(new Span(styleDelimeters.lastStart, word.length, styleDelimeters.style));
-							styleDelimeters.lastStart = -1;
-							styleDelimeters.inPair = false;
-							activeStyle = LayoutStyle.normal;
-							styleDelimeters.needToClose = false;
+							const stopOffset = word.length;
+							activeStyle = this.pushSpan(allSpans, styleDelimeters, stopOffset, activeStyle);
 						}
 					}, this);
 				}
@@ -562,11 +611,8 @@ class WordWrapper {
 
 			styleDelimiters.forEach(function (styleDelimeters: LayoutDelimiters) {
 				if (styleDelimeters.needToClose) {
-					allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length - lastPart.length, styleDelimeters.style));
-					styleDelimeters.lastStart = -1;
-					styleDelimeters.inPair = false;
-					activeStyle = LayoutStyle.normal;
-					styleDelimeters.needToClose = false;
+					const stopOffset = currentLine.length - lastPart.length;
+					activeStyle = this.pushSpan(allSpans, styleDelimeters, stopOffset, activeStyle);
 				}
 			}, this);
 		}
@@ -577,12 +623,27 @@ class WordWrapper {
 				if (currentLine.length > 0) {
 					allSpans.push(new Span(styleDelimeters.lastStart, currentLine.length - lastPart.length, styleDelimeters.style));
 					styleDelimeters.lastStart = -1;
+					//currentLine = "";
+				}
+				else if (styleDelimeters.needToClose) {
+					//const stopOffset = currentLine.length - lastPart.length;
+					//activeStyle = this.pushSpan(allSpans, styleDelimeters, stopOffset, activeStyle);
 				}
 			}
 		}, this);
 
 		lines.push(new LineWrapData(currentLine, allSpans, lineWidth, indent, isBullet, inTableRow));
 		return lines;
+	}
+
+	private pushSpan(allSpans: Span[], styleDelimeters: LayoutDelimiters, stopOffset: number, activeStyle: LayoutStyle) {
+		allSpans.push(new Span(styleDelimeters.lastStart, stopOffset, styleDelimeters.style));
+		console.log(allSpans);
+		styleDelimeters.lastStart = -1;
+		styleDelimeters.inPair = false;
+		activeStyle = LayoutStyle.normal;
+		styleDelimeters.needToClose = false;
+		return activeStyle;
 	}
 
 	public static getStyleDelimeters(style: LayoutStyle, styleDelimiters: Array<LayoutDelimiters>): LayoutDelimiters {
@@ -601,13 +662,14 @@ class WordWrapper {
 		});
 	}
 
-	public getWordWrappedLinesForParagraphs(context: CanvasRenderingContext2D, text: string, maxScaledWidth: number, styleDelimiters: Array<LayoutDelimiters>, wordRenderer: WordRenderer): ParagraphWrapData {
+	public getWordWrappedLinesForParagraphs(context: CanvasRenderingContext2D, text: string, maxScaledWidth: number, styleDelimiters: Array<LayoutDelimiters>, wordRenderer: WordRenderer, topBottomReducePercent = 0): ParagraphWrapData {
 		WordWrapper.initializeStyleDelimiters(styleDelimiters);
 
 		const lines: Array<LineWrapData> = text.split("\n").map(para => this.getWordWrappedLines(context, para, maxScaledWidth,
-			styleDelimiters, wordRenderer)).reduce((a, b) => a.concat(b), []);
+			styleDelimiters, wordRenderer, topBottomReducePercent)).reduce((a, b) => a.concat(b), []);
 		const paragraphWrapData: ParagraphWrapData = new ParagraphWrapData();
 		this.setFont(context, wordRenderer);
+		console.log('context.font: ' + context.font);
 		paragraphWrapData.lineHeight = this.fontSize;
 		paragraphWrapData.lineData = lines;
 		paragraphWrapData.createTables(context);
@@ -617,9 +679,13 @@ class WordWrapper {
 	private setFont(context: CanvasRenderingContext2D, wordRenderer: WordRenderer): void {
 		const pxPos: number = context.font.indexOf('px');
 		if (pxPos > 0) {
-			const fontSizeStr: string = context.font.substr(0, pxPos);
+			let fontSizeStr: string = context.font.substr(0, pxPos);
+			const spacePos: number = fontSizeStr.indexOf(' ');
+			if (spacePos >= 0)
+				fontSizeStr = fontSizeStr.substr(spacePos + 1);
 			this.fontSize = +fontSizeStr;
-			wordRenderer.fontSize = this.fontSize;
 		}
+		//else
+		//	this.fontSize = 20;
 	}
 }

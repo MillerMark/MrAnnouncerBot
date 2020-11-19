@@ -41,6 +41,9 @@ namespace DndCore
 
 		public static int GetPlayerIdFromName(List<Character> players, string characterName)
 		{
+			if (characterName.ToLower() == "zephyr")
+				return 100;
+
 			foreach (Character character in players)
 				if (character.playerShortcut == characterName && character.playingNow)
 					return character.playerID;
@@ -57,7 +60,7 @@ namespace DndCore
 
 			foreach (Character character in players)
 			{
-				if (character.name != null && character.name.ToLower().StartsWith(lowerName))
+				if (character.name != null && character.name.ToLower().StartsWith(lowerName) && character.playingNow)
 				{
 					return character.playerID;
 				}

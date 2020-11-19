@@ -64,6 +64,7 @@ namespace DHDM
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
+		TwitchClient dragonHumpersClient;
 
 		public PlayerStatManager PlayerStatsManager
 		{
@@ -1049,40 +1050,54 @@ namespace DHDM
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
 			});
 			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+			dragonHumpersClient = Twitch.CreateNewClient("DragonHumpers", "DragonHumpers", "DragonHumpersOAuthToken");
 			HookTwitchClientEvents();
 		}
 
 		private void HookTwitchClientEvents()
 		{
-			if (dungeonMasterClient == null)
-				return;
-			dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
-			dungeonMasterClient.OnConnectionError += DungeonMasterClient_OnConnectionError;
-			dungeonMasterClient.OnDisconnected += DungeonMasterClient_OnDisconnected;
-			dungeonMasterClient.OnError += DungeonMasterClient_OnError;
-			dungeonMasterClient.OnFailureToReceiveJoinConfirmation += DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
-			dungeonMasterClient.OnJoinedChannel += DungeonMasterClient_OnJoinedChannel;
-			dungeonMasterClient.OnLeftChannel += DungeonMasterClient_OnLeftChannel;
-			dungeonMasterClient.OnLog += DungeonMasterClient_OnLog;
-			dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
-			dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
-			dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
+			if (dragonHumpersClient != null)
+			{
+				dragonHumpersClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
+			}
+
+			if (dungeonMasterClient != null)
+			{
+				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+				dungeonMasterClient.OnConnectionError += DungeonMasterClient_OnConnectionError;
+				dungeonMasterClient.OnDisconnected += DungeonMasterClient_OnDisconnected;
+				dungeonMasterClient.OnError += DungeonMasterClient_OnError;
+				dungeonMasterClient.OnFailureToReceiveJoinConfirmation += DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
+				dungeonMasterClient.OnJoinedChannel += DungeonMasterClient_OnJoinedChannel;
+				dungeonMasterClient.OnLeftChannel += DungeonMasterClient_OnLeftChannel;
+				dungeonMasterClient.OnLog += DungeonMasterClient_OnLog;
+				dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
+				dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
+				dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
+			}
 		}
+
 		private void UnhookTwitchClientEvents()
 		{
-			if (dungeonMasterClient == null)
-				return;
-			dungeonMasterClient.OnMessageReceived -= HumperBotClient_OnMessageReceived;
-			dungeonMasterClient.OnConnectionError -= DungeonMasterClient_OnConnectionError;
-			dungeonMasterClient.OnDisconnected -= DungeonMasterClient_OnDisconnected;
-			dungeonMasterClient.OnError -= DungeonMasterClient_OnError;
-			dungeonMasterClient.OnFailureToReceiveJoinConfirmation -= DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
-			dungeonMasterClient.OnJoinedChannel -= DungeonMasterClient_OnJoinedChannel;
-			dungeonMasterClient.OnLeftChannel -= DungeonMasterClient_OnLeftChannel;
-			dungeonMasterClient.OnLog -= DungeonMasterClient_OnLog;
-			dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
-			dungeonMasterClient.OnNoPermissionError -= DungeonMasterClient_OnNoPermissionError;
-			dungeonMasterClient.OnChannelStateChanged -= DungeonMasterClient_OnChannelStateChanged;
+			if (dragonHumpersClient != null)
+			{
+				dragonHumpersClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
+			}
+
+			if (dungeonMasterClient != null)
+			{
+				dungeonMasterClient.OnMessageReceived -= HumperBotClient_OnMessageReceived;
+				dungeonMasterClient.OnConnectionError -= DungeonMasterClient_OnConnectionError;
+				dungeonMasterClient.OnDisconnected -= DungeonMasterClient_OnDisconnected;
+				dungeonMasterClient.OnError -= DungeonMasterClient_OnError;
+				dungeonMasterClient.OnFailureToReceiveJoinConfirmation -= DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
+				dungeonMasterClient.OnJoinedChannel -= DungeonMasterClient_OnJoinedChannel;
+				dungeonMasterClient.OnLeftChannel -= DungeonMasterClient_OnLeftChannel;
+				dungeonMasterClient.OnLog -= DungeonMasterClient_OnLog;
+				dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
+				dungeonMasterClient.OnNoPermissionError -= DungeonMasterClient_OnNoPermissionError;
+				dungeonMasterClient.OnChannelStateChanged -= DungeonMasterClient_OnChannelStateChanged;
+			}
 		}
 
 		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e)
@@ -1414,8 +1429,53 @@ namespace DHDM
 		}
 
 		object lockObj;
+
+		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
+		{
+			CharacterSaysSomething(e.ChatMessage.Message);
+		}
+
+		private static bool CharacterSaysSomething(string message)
+		{
+			if (message.StartsWith("!") && message.Contains(":"))
+			{
+				message = message.Substring(1, message.Length - 1);
+				int colonPos = message.IndexOf(":");
+				if (colonPos > 0)
+				{
+					string playerName = message.Substring(0, colonPos);
+					int playerId = AllPlayers.GetPlayerIdFromName(playerName);
+					if (playerId >= 0)
+					{
+						message = message.Substring(colonPos + 1).Trim();
+						string speechCommand = null;
+						if (message.StartsWith("\""))
+						{
+							speechCommand = "says";
+							message = message.Trim('"');
+						}
+						else if (message.StartsWith("("))
+						{
+							speechCommand = "thinks";
+							message = message.TrimStart('(').TrimEnd(')');
+						}
+						if (speechCommand != null)
+						{
+							HubtasticBaseStation.SpeechBubble($"{playerId} {speechCommand}: {message}");
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
+			string message = e.ChatMessage.Message;
+			if (CharacterSaysSomething(message))
+				return;
+
 			//Thread thread = Thread.CurrentThread;
 			//string msg;
 			//lock (lockObj)
@@ -1426,7 +1486,7 @@ namespace DHDM
 			//				String.Format("   Thread ID: {0}\n", thread.ManagedThreadId);
 			//}
 
-			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(e.ChatMessage.Message.Trim(), out int result) && prebuiltAnswers != null)
+			if (uiThreadSleepingWhileWaitingForAnswerToQuestion && int.TryParse(message.Trim(), out int result) && prebuiltAnswers != null)
 			{
 				AnswerEntry answer = prebuiltAnswers.FirstOrDefault(x => x.Index == result);
 				if (answer != null)

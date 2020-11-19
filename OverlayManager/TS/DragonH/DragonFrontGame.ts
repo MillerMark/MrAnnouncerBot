@@ -35,8 +35,10 @@ class SpeechData {
 	y: number;
 	width: number;
 	height: number;
+	playerId: number;
 	fontSize: number;
 	static readonly maxTextWidth: number = 124;
+	static readonly maxTextFontSize: number = 90;
 
 	paragraph: ParagraphWrapData;
 	static styleDelimiters: LayoutDelimiters[] = [
@@ -45,8 +47,7 @@ class SpeechData {
 		//new LayoutDelimiters(LayoutStyle.italic, '[', ']')
 	];
 
-	constructor(wordWrapper: WordWrapper, wordRenderer: WordRenderer, context: CanvasRenderingContext2D, text: string, idealWidth: number, idealAspectRatio: number, fontSize: number, fontName: string) {
-		// TODO: consider reshaping the wrapping to make the text more beautiful...
+	constructor(wordWrapper: WordWrapper, wordRenderer: WordRenderer, context: CanvasRenderingContext2D, text: string, idealWidth: number, idealAspectRatio: number, fontSize: number, fontName: string, topBottomReducePercent: number) {
 		context.font = `${fontSize}px ${fontName}`;
 		wordWrapper.fontSize = fontSize;
 		wordRenderer.fontSize = fontSize;
@@ -59,7 +60,8 @@ class SpeechData {
 		let lastDeltaPercentageAwayFromIdeal: number = Number.MAX_VALUE;
 		do {
 			attemptCount++;
-			this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, width, SpeechData.styleDelimiters, wordRenderer);
+			wordRenderer.fontSize = this.fontSize;
+			this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, width, SpeechData.styleDelimiters, wordRenderer, topBottomReducePercent);
 			const currentAspectRatio: number = this.paragraph.getAspectRatio();
 
 			const thisDeltaPercentageAwayFromIdeal: number = Math.abs(currentAspectRatio / idealAspectRatio - 1);
@@ -86,12 +88,16 @@ class SpeechData {
 		} while (attemptCount < maxAttempts);
 
 		const fontScale: number = idealWidth / this.paragraph.getLongestLineWidth();
-		this.fontSize = fontSize * fontScale;
-		context.font = `${fontSize}px ${fontName}`;
+		this.fontSize = Math.min(fontSize * fontScale, SpeechData.maxTextFontSize);
+		context.font = `${this.fontSize}px ${fontName}`;
+		wordWrapper.fontSize = this.fontSize;
+		wordRenderer.fontSize = this.fontSize;
+		this.paragraph = wordWrapper.getWordWrappedLinesForParagraphs(context, text, width * fontScale, SpeechData.styleDelimiters, wordRenderer, topBottomReducePercent);
 	}
 }
 
 class SpeechBubbleManager {
+	soundManager: SoundManager;
 	wordRenderer: WordRenderer;
 	wordWrapper: WordWrapper;
 	speechBubbles: Sprites;
@@ -109,9 +115,10 @@ class SpeechBubbleManager {
 	//`![](31D33771D101AC43215689BD6498E18E.png)
 	static readonly emphasisFontStyleAscender = 13;  // This is the height from the baseline to the top of the tallest character.
 
-	textAspectRatio = 1;
+	idealTextAspectRatio = 1;
 
 	constructor(private iGetPlayerX: IGetPlayerX) {
+		this.soundManager = new SoundManager('GameDev/Assets/DragonH/SoundEffects/SpeechBubbles');
 		this.wordWrapper = new WordWrapper();
 
 		this.wordRenderer = new WordRenderer();
@@ -154,26 +161,41 @@ class SpeechBubbleManager {
 			return;
 
 		const playerId: number = +firstPart.substr(0, spaceIndex).trim();
-		const playerX: number = this.iGetPlayerX.getPlayerX(this.iGetPlayerX.getPlayerIndex(playerId));
+		this.hideAnyBubblesBelongingToPlayer(playerId);
+		let playerX: number;
+		const screenBottom = 1080;
+		const dungeonMasterX = 1800;
+		const dungeonMasterY = 500;
+
+		let playerY: number = screenBottom;
+		if (playerId === 100) // Dungeon Master
+		{
+			playerX = dungeonMasterX;
+			playerY = dungeonMasterY;
+		}
+		else
+			playerX = this.iGetPlayerX.getPlayerX(this.iGetPlayerX.getPlayerIndex(playerId));
 		let sprites: Sprites;
 
-		const speechBubbleOffsetX = 87;
+		const speechBubbleOffsetX = 90;
 		const speechBubbleOffsetY = 192;
 		const speechBubbleTextOffsetX = 18;
 		const speechBubbleTextOffsetY = 195;
 
-		const thoughtBubbleOffsetX = 98;
-		const thoughtBubbleOffsetY = 286;
+		const speechBubbleTextWidth = 199;
+		const speechBubbleTextHeight = 115;
+		const speechBubbleAspectRatio = speechBubbleTextWidth / speechBubbleTextHeight;
+
+
+		const thoughtBubbleOffsetX = 114;
+		const thoughtBubbleOffsetY = 296;
 		const thoughtBubbleTextOffsetX = -18;
 		const thoughtBubbleTextOffsetY = 222;
 
 		const thoughtBubbleTextWidth = 220;
-		const thoughtBubbleTextHeight = 144;
+		const thoughtBubbleTextHeight = 134;
 		const thoughtBubbleAspectRatio = thoughtBubbleTextWidth / thoughtBubbleTextHeight;
 
-		const speechBubbleTextWidth = 209;
-		const speechBubbleTextHeight = 115;
-		const speechBubbleAspectRatio = speechBubbleTextWidth / speechBubbleTextHeight;
 
 		let offsetX: number;
 		let offsetY: number;
@@ -183,8 +205,10 @@ class SpeechBubbleManager {
 		let width: number;
 		let height: number;
 
-		const horizontalScale = 1;
-		const verticalScale = 1;
+		let horizontalScale = 1;
+		let verticalScale = 1;
+
+		let topBottomReducePercent: number;
 
 		if (speechType === SpeechType.Thinks) {
 			sprites = this.thoughtBubbles;
@@ -194,7 +218,9 @@ class SpeechBubbleManager {
 			textStartY = thoughtBubbleTextOffsetY;
 			width = thoughtBubbleTextWidth;
 			height = thoughtBubbleTextHeight;
-			this.textAspectRatio = thoughtBubbleAspectRatio;
+			topBottomReducePercent = 20;
+			this.idealTextAspectRatio = thoughtBubbleAspectRatio;
+			this.soundManager.safePlayMp3('ThoughtBubbleAppear');
 		}
 		else {
 			sprites = this.speechBubbles;
@@ -205,41 +231,106 @@ class SpeechBubbleManager {
 			textStartY = speechBubbleTextOffsetY;
 			width = speechBubbleTextWidth;
 			height = speechBubbleTextHeight;
-			this.textAspectRatio = speechBubbleAspectRatio;
+			topBottomReducePercent = 0;
+			this.idealTextAspectRatio = speechBubbleAspectRatio;
+			this.soundManager.safePlayMp3('SpeechBubbleAppear');
 		}
 
-		const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, width, this.textAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName);
+		const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, width, this.idealTextAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName, topBottomReducePercent);
 
-		const scaledOffsetX: number = sprites.originX + offsetX * horizontalScale;
+		const horizontalMarginBuffer = 1.15;  // 115%
+		const verticalMarginBuffer = 1.25;  // 125%
+		const paragraphWidth: number = speechData.paragraph.getLongestLineWidth() * horizontalMarginBuffer;
+		const paragraphHeight: number = speechData.paragraph.getParagraphHeight() * verticalMarginBuffer;
+
+		let flippedHorizontalTextOffset = 0;
+
+		horizontalScale = paragraphWidth / width;
+		verticalScale = paragraphHeight / height;
+
+		const thisAspectRatio: number = horizontalScale / verticalScale;
+		const maxAspectRatioFactor = 2;
+		const maxAspectRatio: number = maxAspectRatioFactor / 1;
+		const minAspectRatio: number = 1 / maxAspectRatioFactor;
+
+		if (thisAspectRatio < minAspectRatio) {
+			horizontalScale = verticalScale / minAspectRatio;
+		}
+		else if (thisAspectRatio > maxAspectRatio) {
+			verticalScale = horizontalScale / maxAspectRatio;
+		}
+
+		let scaledOffsetX: number = sprites.originX + offsetX * horizontalScale;
 		//const scaledOffsetY: number = sprites.originY + offsetY * verticalScale;
 
-		const screenBottom = 1080;
-
-		let xPos = playerX + scaledOffsetX;
 		const maxRightPos = 1400;
 		let flipped = false;
-		if (xPos > maxRightPos) {
-			xPos = playerX - scaledOffsetX;
+		if (playerX + scaledOffsetX > maxRightPos) {
+			scaledOffsetX = -scaledOffsetX;
+			textStartX = -textStartX - width;
+			flippedHorizontalTextOffset = -this.wordRenderer.fontSize / 4;
 			flipped = true;
 		}
 
-		const yPos: number = screenBottom - offsetY * verticalScale;
+		const xPos = playerX + scaledOffsetX;
 
-		speechData.x = xPos + textStartX * horizontalScale;
-		speechData.y = yPos - textStartY * verticalScale - speechData.paragraph.lineData.length * speechData.fontSize / 2 + speechData.fontSize / 2;
+		const verticalTextOffset: number = this.wordRenderer.fontSize * 0.12;   // Shift down a bit since there are no descenders in the Comic font.
+		let yPos: number = playerY - offsetY * verticalScale;
+
+		let scaledPosOffsetX = 0;
+		let scaledPosOffsetY = 0;
+
+		if (horizontalScale !== 1) {
+			scaledPosOffsetX = sprites.originX * (1 - horizontalScale);
+		}
+
+		if (verticalScale !== 1) {
+			scaledPosOffsetY = sprites.originY * (1 - verticalScale);
+		}
+
+		speechData.x = xPos + flippedHorizontalTextOffset - scaledPosOffsetX + textStartX * horizontalScale;
+		speechData.y = yPos + verticalTextOffset - scaledPosOffsetY - textStartY * verticalScale - speechData.paragraph.lineData.length * speechData.fontSize / 2 + speechData.fontSize / 2;
+
+		if (speechData.y < 0)  // Make sure top of text is on screen.
+		{
+			const delta: number = 0 - speechData.y;
+			speechData.y = 0;
+			yPos += delta;
+		}
+
 		speechData.width = width * horizontalScale;
 		speechData.height = height * verticalScale;
+		speechData.playerId = playerId;
 
-		const sprite: SpriteProxy = sprites.add(xPos, yPos);
+		const sprite: SpriteProxy = sprites.add(xPos - scaledPosOffsetX, yPos - scaledPosOffsetY);
 		sprite.playToEndOnExpire = true;
-		sprite.expirationDate = performance.now() + 5000;
 		sprite.fadeInTime = 400;
 		sprite.fadeOutTime = 467;
+
+		const numWords: number = (speechStr.match(/\s/g) || []).length + 1;
+		const averageReadingTimePerWordMs = 300;
+		const safetyFactor = 2;
+		const totalReadingTime: number = Math.max(1500, numWords * averageReadingTimePerWordMs * safetyFactor);
+
+		sprite.expirationDate = performance.now() + sprite.fadeInTime + totalReadingTime + sprite.fadeOutTime;
 		sprite.flipHorizontally = flipped;
-		sprite.addOnFrameAdvanceCallback(this.spriteAdvanceFrame);
+		sprite.addOnFrameAdvanceCallback(this.spriteAdvanceFrame.bind(this));
 		sprite.data = speechData;
 		sprite.horizontalScale = horizontalScale;
 		sprite.verticalScale = verticalScale;
+	}
+
+	hideAnyBubblesBelongingToPlayer(playerId: number) {
+		this.hideAnyBubbleSpritesBelongingToPlayer(this.speechBubbles, playerId);
+		this.hideAnyBubbleSpritesBelongingToPlayer(this.thoughtBubbles, playerId);
+	}
+
+	hideAnyBubbleSpritesBelongingToPlayer(bubbleSprites: Sprites, playerId: number) {
+		bubbleSprites.spriteProxies.forEach((sprite: SpriteProxy) => {
+			const speechData: SpeechData = sprite.data as SpeechData;
+			if (speechData && speechData.playerId === playerId)
+				sprite.fadeOutNow(400);
+		});
 	}
 
 	spriteAdvanceFrame(sprite: SpriteProxy, returnFrameIndex: number, reverse: boolean, now: number): void {
@@ -248,6 +339,8 @@ class SpeechBubbleManager {
 		if (speechData) {
 			speechData.okayToDraw = sprite.frameIndex >= returnFrameIndex && sprite.frameIndex < endLoopAnimationFrameIndex;
 		}
+		if (sprite.frameIndex === endLoopAnimationFrameIndex + 1)
+			this.soundManager.safePlayMp3('Pop[4]');
 	}
 
 	getSpeechType(firstPart: string): SpeechType {
@@ -265,6 +358,7 @@ class SpeechBubbleManager {
 	}
 
 	drawSpriteText(context: CanvasRenderingContext2D, sprite: SpriteProxy) {
+		context.textAlign = 'center';
 		const speechData: SpeechData = sprite.data as SpeechData;
 		if (speechData && speechData.okayToDraw) {
 			this.wordRenderer.fontSize = speechData.fontSize;
@@ -1864,7 +1958,6 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	speechBubble(speechStr: string) {
-		console.log('sayOrThinkSomething: ' + speechStr);
 		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr);
 	}
 }
