@@ -84,15 +84,15 @@ namespace DHDM
 			weatherSettings = GoogleSheets.Get<WeatherSceneSettingsDto>();
 			LoadAllKnownItems();
 		}
-		void HideAll(string sceneName, IEnumerable<string> items)
-		{
-			throw new NotImplementedException();
-		}
-		void HideAll()
-		{
-			HideAll(DH_WeatherScenesBack, weatherSettings.Select(x => x.BackItem).Where(x => !string.IsNullOrWhiteSpace(x)));
-			HideAll(DH_WeatherScenesFront, weatherSettings.Select(x => x.FrontItem).Where(x => !string.IsNullOrWhiteSpace(x)));
-		}
+		//void HideAll(string sceneName, IEnumerable<string> items)
+		//{
+		//	throw new NotImplementedException();
+		//}
+		//void HideAll()
+		//{
+		//	HideAll(DH_WeatherScenesBack, weatherSettings.Select(x => x.BackItem).Where(x => !string.IsNullOrWhiteSpace(x)));
+		//	HideAll(DH_WeatherScenesFront, weatherSettings.Select(x => x.FrontItem).Where(x => !string.IsNullOrWhiteSpace(x)));
+		//}
 
 		WeatherSceneSettingsDto GetWeather(string weatherKeyword)
 		{

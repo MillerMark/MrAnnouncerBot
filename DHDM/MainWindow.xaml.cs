@@ -37,6 +37,7 @@ using System.Globalization;
 using ICSharpCode.AvalonEdit.Editing;
 using System.Text.RegularExpressions;
 using LeapTools;
+using TwitchLib.PubSub;
 
 namespace DHDM
 {
@@ -64,7 +65,8 @@ namespace DHDM
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
 		TwitchClient dungeonMasterClient;
-		TwitchClient dragonHumpersClient;
+		TwitchClient dhClient;
+		TwitchPubSub dhPubSub;
 
 		public PlayerStatManager PlayerStatsManager
 		{
@@ -207,6 +209,7 @@ namespace DHDM
 			//InitializeAttackShortcuts();
 			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
 			CreateDungeonMasterClient();
+			CreateDhPubSub();
 
 			dmChatBot.Initialize(this);
 
@@ -221,6 +224,19 @@ namespace DHDM
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
 			LoadEverything();
+		}
+
+		private void CreateDhPubSub()
+		{
+			dhPubSub = new TwitchPubSub();
+			dhPubSub.OnRewardRedeemed += DhPubSub_OnRewardRedeemed;
+			dhPubSub.ListenToRewards("CodeRushed");
+			dhPubSub.Connect();
+		}
+
+		private void DhPubSub_OnRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnRewardRedeemedArgs e)
+		{
+			
 		}
 
 		// ResendExistingData
@@ -1050,15 +1066,15 @@ namespace DHDM
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
 			});
 			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
-			dragonHumpersClient = Twitch.CreateNewClient("DragonHumpers", "DragonHumpers", "DragonHumpersOAuthToken");
+			dhClient = Twitch.CreateNewClient("DragonHumpers", "DragonHumpers", "DragonHumpersOAuthToken");
 			HookTwitchClientEvents();
 		}
 
 		private void HookTwitchClientEvents()
 		{
-			if (dragonHumpersClient != null)
+			if (dhClient != null)
 			{
-				dragonHumpersClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
+				dhClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
 			}
 
 			if (dungeonMasterClient != null)
@@ -1079,9 +1095,9 @@ namespace DHDM
 
 		private void UnhookTwitchClientEvents()
 		{
-			if (dragonHumpersClient != null)
+			if (dhClient != null)
 			{
-				dragonHumpersClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
+				dhClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
 			}
 
 			if (dungeonMasterClient != null)
@@ -1170,7 +1186,7 @@ namespace DHDM
 			});
 
 			UnhookTwitchClientEvents();
-			dragonHumpersClient = null;
+			dhClient = null;
 			dungeonMasterClient = null;
 			History.Log($"DungeonMasterClient_OnDisconnected");
 		}
@@ -1470,6 +1486,11 @@ namespace DHDM
 						{
 							speechCommand = "thinks";
 							message = message.TrimStart('(').TrimEnd(')');
+						}
+						if (DateTime.Now.Hour < 16)
+						{
+							ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
+							message = profanityFilter.CensorString(message);
 						}
 						if (speechCommand != null)
 						{

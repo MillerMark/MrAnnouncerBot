@@ -25,6 +25,7 @@ interface ScaleFactor {
 
 
 enum SpeechType {
+	None,
 	Thinks,
 	Says
 }
@@ -148,33 +149,128 @@ class SpeechBubbleManager {
 	}
 
 	// Expected syntax: {playerId} {says|thinks}: {message to say or think}
+	// 
 	sayOrThinkSomething(context: CanvasRenderingContext2D, speechStr: string) {
-		const firstColonPos: number = speechStr.indexOf(':');
-		if (firstColonPos < 0)
-			return;
-		const firstPart: string = speechStr.substr(0, firstColonPos);
-		const textToShow: string = speechStr.substr(firstColonPos + 1).trim();
+		const { playerId, speechType, textToShow }: { playerId: number; speechType: SpeechType; textToShow: string } = this.getSpeechCommandParts(speechStr);
 
-		const speechType: SpeechType = this.getSpeechType(firstPart);
-		const spaceIndex: number = firstPart.indexOf(' ');
-		if (spaceIndex < 0)
+		if (playerId === Number.MIN_VALUE || speechType === SpeechType.None)
 			return;
 
-		const playerId: number = +firstPart.substr(0, spaceIndex).trim();
+		this.playBubbleEntranceSound(speechType);
+
 		this.hideAnyBubblesBelongingToPlayer(playerId);
-		let playerX: number;
-		const screenBottom = 1080;
-		const dungeonMasterX = 1800;
-		const dungeonMasterY = 500;
 
-		let playerY: number = screenBottom;
-		if (playerId === 100) // Dungeon Master
+		const playerIsDungeonMaster: boolean = playerId === 100;
+
+		const { playerX, playerY }: { playerX: number; playerY: number } = this.getPlayerXY(playerIsDungeonMaster, playerId);
+
+		let { width, topBottomReducePercent, height, sprites, offsetX, textStartX, offsetY, textStartY }: { width: number; topBottomReducePercent: number; height: number; sprites: Sprites; offsetX: number; textStartX: number; offsetY: number; textStartY: number } = this.initializeBasedOnBubbleType(speechType);
+
+		const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, width, this.idealTextAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName, topBottomReducePercent);
+
+		const { paragraphWidth, paragraphHeight }: { paragraphWidth: number; paragraphHeight: number } = this.getParagraphSize(speechData);
+
+
+		const { horizontalScale, verticalScale } = this.getScale(paragraphWidth, width, paragraphHeight, height);
+
+		//const scaledOffsetY: number = sprites.originY + offsetY * verticalScale;
+
+
+		let scaledOffsetX: number | undefined;
+		let flippedOffsetX;
+		let flippedHorizontalTextOffset;
+		let flippedHorizontally;
+		({ scaledOffsetX, flippedOffsetX, flippedHorizontalTextOffset, flippedHorizontally, textStartX } = this.checkForHorizontalFlip(sprites, offsetX, horizontalScale, playerX, textStartX, width));
+
+		let xPos = playerX + scaledOffsetX + flippedOffsetX;
+
+		const verticalTextOffsetBecauseNoDescenders: number = this.wordRenderer.fontSize * 0.12;   // Shift down a bit since there are no descenders in the Comic font.
+		let yPos: number = playerY - offsetY * verticalScale;
+
+		const { scaledPosOffsetX, scaledPosOffsetY } = this.getScaledPosOffset(horizontalScale, sprites, verticalScale);
+
+		speechData.x = xPos + flippedHorizontalTextOffset - scaledPosOffsetX + textStartX * horizontalScale;
+		speechData.y = this.getSpeechDataY(yPos, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY, textStartY, verticalScale, speechData);
+
+		let flipVertically;
+		({ flipVertically, xPos, yPos, textStartY } = this.checkForVerticalFlip(speechData, playerIsDungeonMaster, speechType, verticalScale, xPos, yPos, textStartY, height, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY));
+
+		speechData.width = width * horizontalScale;
+		speechData.height = height * verticalScale;
+		speechData.playerId = playerId;
+
+		this.createNewSprite(sprites, xPos, scaledPosOffsetX, yPos, scaledPosOffsetY, speechStr, flippedHorizontally, flipVertically, speechData, horizontalScale, verticalScale);
+	}
+
+	private createNewSprite(sprites: Sprites, xPos: any, scaledPosOffsetX: number, yPos: number, scaledPosOffsetY: number, speechStr: string, flippedHorizontally: any, flipVertically: any, speechData: SpeechData, horizontalScale: number, verticalScale: number) {
+		const sprite: SpriteProxy = sprites.add(xPos - scaledPosOffsetX, yPos - scaledPosOffsetY);
+		sprite.playToEndOnExpire = true;
+		sprite.fadeInTime = 400;
+		sprite.fadeOutTime = 467;
+
+		const totalReadingTime: number = this.getTotalReadingTime(speechStr);
+
+		sprite.expirationDate = performance.now() + sprite.fadeInTime + totalReadingTime + sprite.fadeOutTime;
+		sprite.flipHorizontally = flippedHorizontally;
+		sprite.flipVertically = flipVertically;
+		sprite.addOnFrameAdvanceCallback(this.spriteAdvanceFrame.bind(this));
+		sprite.data = speechData;
+		sprite.horizontalScale = horizontalScale;
+		sprite.verticalScale = verticalScale;
+	}
+
+	private getTotalReadingTime(speechStr: string) {
+		const numWords: number = (speechStr.match(/\s/g) || []).length + 1;
+		const averageReadingTimePerWordMs = 300;
+		const safetyFactor = 2;
+		const totalReadingTime: number = Math.max(1500, numWords * averageReadingTimePerWordMs * safetyFactor);
+		return totalReadingTime;
+	}
+
+	private checkForVerticalFlip(speechData: SpeechData, playerIsDungeonMaster: boolean, speechType: SpeechType, verticalScale: number, xPos: any, yPos: number, textStartY: number, height: number, verticalTextOffsetBecauseNoDescenders: number, scaledPosOffsetY: number) {
+		let flipVertically = false;
+
+		if (speechData.y < 0) // Make sure top of text is on screen.
 		{
-			playerX = dungeonMasterX;
-			playerY = dungeonMasterY;
+			if (playerIsDungeonMaster) {
+				flipVertically = true;
+				if (speechType === SpeechType.Thinks) {
+					const invertedSpeechBubbleOffsetX = 70;
+					const invertedSpeechBubbleOffsetY = 125;
+					speechData.x += invertedSpeechBubbleOffsetX;
+					speechData.y += invertedSpeechBubbleOffsetY * verticalScale;
+					xPos += invertedSpeechBubbleOffsetX;
+					yPos += invertedSpeechBubbleOffsetY;
+				}
+				textStartY = -textStartY + height;
+				speechData.y = this.getSpeechDataY(yPos, verticalTextOffsetBecauseNoDescenders, scaledPosOffsetY, textStartY, verticalScale, speechData);
+			}
+			else {
+				const delta: number = 0 - speechData.y;
+				speechData.y = 0;
+				yPos += delta;
+			}
 		}
-		else
-			playerX = this.iGetPlayerX.getPlayerX(this.iGetPlayerX.getPlayerIndex(playerId));
+		return { flipVertically, xPos, yPos, textStartY };
+	}
+
+	private checkForHorizontalFlip(sprites: Sprites, offsetX: number, horizontalScale: number, playerX: number, textStartX: number, width: number) {
+		let scaledOffsetX: number = sprites.originX + offsetX * horizontalScale;
+		let flippedHorizontalTextOffset = 0;
+		let flippedOffsetX = 0;
+		const maxRightPos = 1400;
+		let flippedHorizontally = false;
+		if (playerX + scaledOffsetX > maxRightPos) {
+			scaledOffsetX = -scaledOffsetX;
+			textStartX = -textStartX - width;
+			flippedHorizontalTextOffset = -this.wordRenderer.fontSize / 6;
+			flippedOffsetX = 60;
+			flippedHorizontally = true;
+		}
+		return { scaledOffsetX, flippedOffsetX, flippedHorizontalTextOffset, flippedHorizontally, textStartX };
+	}
+
+	private initializeBasedOnBubbleType(speechType: SpeechType) {
 		let sprites: Sprites;
 
 		const speechBubbleOffsetX = 90;
@@ -205,9 +301,6 @@ class SpeechBubbleManager {
 		let width: number;
 		let height: number;
 
-		let horizontalScale = 1;
-		let verticalScale = 1;
-
 		let topBottomReducePercent: number;
 
 		if (speechType === SpeechType.Thinks) {
@@ -220,63 +313,22 @@ class SpeechBubbleManager {
 			height = thoughtBubbleTextHeight;
 			topBottomReducePercent = 20;
 			this.idealTextAspectRatio = thoughtBubbleAspectRatio;
-			this.soundManager.safePlayMp3('ThoughtBubbleAppear');
 		}
 		else {
 			sprites = this.speechBubbles;
 			offsetX = speechBubbleOffsetX;
 			offsetY = speechBubbleOffsetY;
-
 			textStartX = speechBubbleTextOffsetX;
 			textStartY = speechBubbleTextOffsetY;
 			width = speechBubbleTextWidth;
 			height = speechBubbleTextHeight;
 			topBottomReducePercent = 0;
 			this.idealTextAspectRatio = speechBubbleAspectRatio;
-			this.soundManager.safePlayMp3('SpeechBubbleAppear');
 		}
+		return { width, topBottomReducePercent, height, sprites, offsetX, textStartX, offsetY, textStartY };
+	}
 
-		const speechData: SpeechData = new SpeechData(this.wordWrapper, this.wordRenderer, context, textToShow, width, this.idealTextAspectRatio, SpeechBubbleManager.fontSize, SpeechBubbleManager.fontName, topBottomReducePercent);
-
-		const horizontalMarginBuffer = 1.15;  // 115%
-		const verticalMarginBuffer = 1.25;  // 125%
-		const paragraphWidth: number = speechData.paragraph.getLongestLineWidth() * horizontalMarginBuffer;
-		const paragraphHeight: number = speechData.paragraph.getParagraphHeight() * verticalMarginBuffer;
-
-		let flippedHorizontalTextOffset = 0;
-
-		horizontalScale = paragraphWidth / width;
-		verticalScale = paragraphHeight / height;
-
-		const thisAspectRatio: number = horizontalScale / verticalScale;
-		const maxAspectRatioFactor = 2;
-		const maxAspectRatio: number = maxAspectRatioFactor / 1;
-		const minAspectRatio: number = 1 / maxAspectRatioFactor;
-
-		if (thisAspectRatio < minAspectRatio) {
-			horizontalScale = verticalScale / minAspectRatio;
-		}
-		else if (thisAspectRatio > maxAspectRatio) {
-			verticalScale = horizontalScale / maxAspectRatio;
-		}
-
-		let scaledOffsetX: number = sprites.originX + offsetX * horizontalScale;
-		//const scaledOffsetY: number = sprites.originY + offsetY * verticalScale;
-
-		const maxRightPos = 1400;
-		let flipped = false;
-		if (playerX + scaledOffsetX > maxRightPos) {
-			scaledOffsetX = -scaledOffsetX;
-			textStartX = -textStartX - width;
-			flippedHorizontalTextOffset = -this.wordRenderer.fontSize / 4;
-			flipped = true;
-		}
-
-		const xPos = playerX + scaledOffsetX;
-
-		const verticalTextOffset: number = this.wordRenderer.fontSize * 0.12;   // Shift down a bit since there are no descenders in the Comic font.
-		let yPos: number = playerY - offsetY * verticalScale;
-
+	private getScaledPosOffset(horizontalScale: number, sprites: Sprites, verticalScale: number) {
 		let scaledPosOffsetX = 0;
 		let scaledPosOffsetY = 0;
 
@@ -287,37 +339,84 @@ class SpeechBubbleManager {
 		if (verticalScale !== 1) {
 			scaledPosOffsetY = sprites.originY * (1 - verticalScale);
 		}
+		return { scaledPosOffsetX, scaledPosOffsetY };
+	}
 
-		speechData.x = xPos + flippedHorizontalTextOffset - scaledPosOffsetX + textStartX * horizontalScale;
-		speechData.y = yPos + verticalTextOffset - scaledPosOffsetY - textStartY * verticalScale - speechData.paragraph.lineData.length * speechData.fontSize / 2 + speechData.fontSize / 2;
+	private getParagraphSize(speechData: SpeechData) {
+		const horizontalMarginBuffer = 1.15; // 115%
+		const verticalMarginBuffer = 1.20; // 120%
 
-		if (speechData.y < 0)  // Make sure top of text is on screen.
-		{
-			const delta: number = 0 - speechData.y;
-			speechData.y = 0;
-			yPos += delta;
+		const paragraphWidth: number = speechData.paragraph.getLongestLineWidth() * horizontalMarginBuffer;
+		const paragraphHeight: number = speechData.paragraph.getParagraphHeight() * verticalMarginBuffer;
+		return { paragraphWidth, paragraphHeight };
+	}
+
+	private getScale(paragraphWidth: number, width: number, paragraphHeight: number, height: number) {
+		let horizontalScale = 1;
+		let verticalScale = 1;
+
+		horizontalScale = paragraphWidth / width;
+		verticalScale = paragraphHeight / height;
+
+		const thisAspectRatio: number = horizontalScale / verticalScale;
+		const maxAspectRatioFactor = 2;
+		const maxAspectRatio: number = maxAspectRatioFactor / 1;
+		const minAspectRatio: number = 1 / maxAspectRatioFactor;
+
+		if (thisAspectRatio < minAspectRatio) {
+			const horizontalScaleFactor = 1.2;
+			horizontalScale = verticalScale * minAspectRatio * horizontalScaleFactor;
 		}
+		else if (thisAspectRatio > maxAspectRatio) {
+			verticalScale = horizontalScale / maxAspectRatio;
+		}
+		return { horizontalScale, verticalScale };
+	}
 
-		speechData.width = width * horizontalScale;
-		speechData.height = height * verticalScale;
-		speechData.playerId = playerId;
+	private playBubbleEntranceSound(speechType: SpeechType) {
+		if (speechType === SpeechType.Thinks) {
+			this.soundManager.safePlayMp3('ThoughtBubbleAppear');
+		}
+		else {
+			this.soundManager.safePlayMp3('SpeechBubbleAppear');
+		}
+	}
 
-		const sprite: SpriteProxy = sprites.add(xPos - scaledPosOffsetX, yPos - scaledPosOffsetY);
-		sprite.playToEndOnExpire = true;
-		sprite.fadeInTime = 400;
-		sprite.fadeOutTime = 467;
+	private getPlayerXY(playerIsDungeonMaster: boolean, playerId: number) {
+		let playerX: number;
+		const screenBottom = 1080;
+		const dungeonMasterX = 1700;
+		const dungeonMasterY = 350;
 
-		const numWords: number = (speechStr.match(/\s/g) || []).length + 1;
-		const averageReadingTimePerWordMs = 300;
-		const safetyFactor = 2;
-		const totalReadingTime: number = Math.max(1500, numWords * averageReadingTimePerWordMs * safetyFactor);
+		let playerY: number = screenBottom;
+		if (playerIsDungeonMaster) {
+			playerX = dungeonMasterX;
+			playerY = dungeonMasterY;
+		}
+		else
+			playerX = this.iGetPlayerX.getPlayerX(this.iGetPlayerX.getPlayerIndex(playerId));
+		return { playerX, playerY };
+	}
 
-		sprite.expirationDate = performance.now() + sprite.fadeInTime + totalReadingTime + sprite.fadeOutTime;
-		sprite.flipHorizontally = flipped;
-		sprite.addOnFrameAdvanceCallback(this.spriteAdvanceFrame.bind(this));
-		sprite.data = speechData;
-		sprite.horizontalScale = horizontalScale;
-		sprite.verticalScale = verticalScale;
+	private getSpeechCommandParts(speechStr: string) {
+		let spaceIndex = 0;
+		let textToShow = null;
+		let playerId: number = Number.MIN_VALUE;
+		let speechType: SpeechType = SpeechType.None;
+		const firstColonPos: number = speechStr.indexOf(':');
+		if (firstColonPos > 0) {
+			const firstPart: string = speechStr.substr(0, firstColonPos);
+			textToShow = speechStr.substr(firstColonPos + 1).trim();
+			speechType = this.getSpeechType(firstPart);
+			spaceIndex = firstPart.indexOf(' ');
+			if (spaceIndex >= 0)
+				playerId = +firstPart.substr(0, spaceIndex).trim();
+		}
+		return { playerId, speechType, textToShow };
+	}
+
+	private getSpeechDataY(yPos: number, verticalTextOffsetBecauseNoDescenders: number, scaledPosOffsetY: number, textStartY: number, verticalScale: number, speechData: SpeechData): number {
+		return yPos + verticalTextOffsetBecauseNoDescenders - scaledPosOffsetY - textStartY * verticalScale - speechData.paragraph.lineData.length * speechData.fontSize / 2 + speechData.fontSize / 2;
 	}
 
 	hideAnyBubblesBelongingToPlayer(playerId: number) {

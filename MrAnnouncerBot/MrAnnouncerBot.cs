@@ -308,7 +308,8 @@ namespace MrAnnouncerBot
 		}
 
 		private const string emptyString = "";
-
+		const string STR_MarkSaysOrThinks = "!mark:";
+		const string STR_FredSaysOrThinks = "!fred:";
 
 		private bool PlayFanfare(string displayName, string message = emptyString)
 		{
@@ -940,40 +941,63 @@ namespace MrAnnouncerBot
 			return restrictedScenes.Any(x => x.SceneName == activeSceneName);
 		}
 
-		void SayIt(string words, ChatMessage chatMessage)
+		private const int minUserLevelForSpeechBubbles = 4;
+		// TODO: remove ChatMessage param
+		void SayIt(ChatMessage chatMessage, int playerId, string phrase)
 		{
-			if (allViewers.GetUserLevel(chatMessage) < 3)
+			string quotedPhrase = phrase.Trim('"').Trim();
+			hubConnection.InvokeAsync("SpeechBubble", $"{playerId} says: {quotedPhrase}");
+		}
+
+		void ThinkIt(ChatMessage chatMessage, int playerId, string phrase)
+		{
+			string quotedPhrase = phrase.TrimStart('(').TrimEnd(')');
+			hubConnection.InvokeAsync("SpeechBubble", $"{playerId} thinks: {quotedPhrase}");
+		}
+
+		void SayOrThinkIt(ChatMessage chatMessage)
+		{
+			if (DateTime.Now.Hour > 16)
+				return;
+
+			if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
 			{
-				Chat($"{chatMessage.Username}, this command is only available for level 3 users and up.");
+				Chat($"{chatMessage.Username}, this command is only available for level {minUserLevelForSpeechBubbles} users and up.");
 				return;
 			}
-			//Clients.All.ExecuteCommand("", "", UserInfo.FromChatMessage(chatMessage, 0));
-			string quotedPhrase = chatMessage.Message.TrimStart('!').Trim('"');
-			hubConnection.InvokeAsync("SpeechBubble", $"2 says: {quotedPhrase}"); // 2 is Mark's player ID
-		}
-		void ThinkIt(string thought, ChatMessage chatMessage)
-		{
-			if (allViewers.GetUserLevel(chatMessage) < 3)
-			{
-				Chat($"{chatMessage.Username}, this command is only available for level 3 users and up.");
+
+			string msg = chatMessage.Message.Trim();
+			int colonPos = msg.IndexOf(":");
+			if (colonPos < 0 || colonPos >= msg.Length - 1)
 				return;
-			}
-			string quotedPhrase = chatMessage.Message.TrimStart('!').TrimStart('(').TrimEnd(')');
-			hubConnection.InvokeAsync("SpeechBubble", $"2 thinks: {quotedPhrase}"); // 2 is Mark's player ID
+			string name = msg.Substring(1, colonPos - 1).Trim().ToLower();
+			int playerId;
+			if (name == "mark")
+				playerId = 2;
+			else if (name == "fred")
+				playerId = 4;
+			else
+				return;
+			string phrase = msg.Substring(colonPos + 1).Trim();
+
+			var filter = new ProfanityFilter.ProfanityFilter();
+
+			var censoredPhrase = filter.CensorString(phrase);
+
+			if (phrase.StartsWith("("))
+				ThinkIt(chatMessage, playerId, censoredPhrase);
+			else
+				SayIt(chatMessage, playerId, censoredPhrase);
 		}
-		
+
 		private void TwitchClient_OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
 		{
 			var command = e.Command.CommandText;
+			var lowerMessage = e.Command.ChatMessage.Message.ToLower();
 
-			if (command.StartsWith("\""))
+			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks))
 			{
-				SayIt(command, e.Command.ChatMessage);
-				return;
-			}
-			else if (command.StartsWith("("))
-			{
-				ThinkIt(command, e.Command.ChatMessage);
+				SayOrThinkIt(e.Command.ChatMessage);
 				return;
 			}
 
