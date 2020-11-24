@@ -958,7 +958,10 @@ namespace MrAnnouncerBot
 		void SayOrThinkIt(ChatMessage chatMessage)
 		{
 			if (DateTime.Now.Hour > 16)
+			{
+				Chat($"{chatMessage.Username}, this command is only available in the CodeRush chat room before 16:00 Central time.");
 				return;
+			}
 
 			if (allViewers.GetUserLevel(chatMessage) < minUserLevelForSpeechBubbles)
 			{

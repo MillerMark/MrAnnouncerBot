@@ -1,0 +1,36 @@
+﻿<Window x:Class="CardMaker.CardMakerMain"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CardMaker"
+        mc:Ignorable="d"
+        Title="Card Maker" Height="450" Width="800">
+    <StackPanel Orientation="Vertical">
+		<Menu>
+			<MenuItem Header="_File">
+				<MenuItem Header="_Test Status" Click="MenuItem_Click" Visibility="Collapsed"></MenuItem>
+				<MenuItem Header="_Save" Click="SaveMenuItem_Click" ></MenuItem>
+			</MenuItem>
+		</Menu>
+		<StatusBar x:Name="statusBar" Background="#FFFFFFD4" Visibility="Hidden" BorderBrush="#FFF59595" BorderThickness="2">
+			<StatusBarItem x:Name="sbMessage">This is my status</StatusBarItem>
+			<StatusBarItem HorizontalAlignment="Right">
+				<Button x:Name="btnCloseStatusMessage" Background="#FFFFFFD4" BorderThickness="0" Click="btnCloseStatusMessage_Click">
+				  X
+				</Button> 
+			</StatusBarItem>
+		</StatusBar>
+		<StackPanel x:Name="spMain" Orientation="Horizontal">
+			<StackPanel x:Name="spDecks" Orientation="Vertical">
+				<TextBlock Text="Decks" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbDecks" >
+					
+				</ListBox>
+				<Button x:Name="btnAddDeck" Click="btnAddDeck_Click">
+					Add Deck...
+				</Button>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</Window>

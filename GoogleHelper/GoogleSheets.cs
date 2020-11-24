@@ -266,15 +266,21 @@ namespace GoogleHelper
 
 			return credential;
 		}
-		static void RegisterSpreadsheetIDs()
+
+		public static void RegisterSpreadsheetID(string sheetName, string sheetID)
 		{
-			spreadsheetIDs.Add("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
-			spreadsheetIDs.Add("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
-			spreadsheetIDs.Add("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
-			spreadsheetIDs.Add("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
+			spreadsheetIDs.Add(sheetName, sheetID);
 		}
 
-		static MemberInfo[] GetFields<TAttribute>(Type instanceType) where TAttribute : Attribute
+		static void RegisterSpreadsheetIDs()
+		{
+			RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
+			RegisterSpreadsheetID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
+			RegisterSpreadsheetID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
+			RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
+		}
+
+		static MemberInfo[] GetSerializableFields<TAttribute>(Type instanceType) where TAttribute : Attribute
 		{
 			List<MemberInfo> memberInfo = new List<MemberInfo>();
 			IEnumerable<PropertyInfo> properties = instanceType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(x => x.GetCustomAttribute<TAttribute>() != null);
@@ -378,6 +384,36 @@ namespace GoogleHelper
 			return false;
 		}
 
+		static void AddInstance(IList<IList<object>> allRows, List<string> headerRow, MemberInfo[] serializableFields, object instance)
+		{
+			object[] row = new object[serializableFields.Length];
+			foreach (MemberInfo memberInfo in serializableFields)
+			{
+				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
+				row[columnIndex] = GetValue(instance, memberInfo);
+			}
+			allRows.Add(row);
+		}
+
+		static int AddRow(string spreadsheetId, string tabName, MemberInfo[] indexFields, List<string> headerRow, MemberInfo[] serializableFields, IList<IList<object>> allRows, object instance)
+		{
+			foreach (MemberInfo memberInfo in indexFields)
+			{
+				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
+				string range = GetRange(columnIndex, allRows.Count);
+				ValueRange body = new ValueRange();
+				body.MajorDimension = "ROWS";
+				body.Range = $"{tabName}!{range}";
+				body.Values = new List<IList<object>>();
+				body.Values.Add(new List<object>());
+				string value = GetValue(instance, memberInfo);
+				body.Values[0].Add(value);
+				SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
+				Execute(request);
+				AddInstance(allRows, headerRow, serializableFields, instance);
+			}
+			return allRows.Count - 1;
+		}
 		/// <summary>
 		/// 
 		/// </summary>
@@ -408,56 +444,69 @@ namespace GoogleHelper
 			IList<IList<object>> allRows;
 			GetHeaderRow(docName, tabName, out headerRow, out allRows);
 
-			MemberInfo[] indexFields = GetFields<IndexerAttribute>(instanceType);
+			MemberInfo[] indexFields = GetSerializableFields<IndexerAttribute>(instanceType);
 
-			MemberInfo[] serializableFields = GetFields<ColumnAttribute>(instanceType);
+			MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(instanceType);
 
 			for (int i = 0; i < instances.Length; i++)
 			{
 				int rowIndex = GetInstanceRowIndex(instances[i], indexFields, allRows, headerRow);
-				for (int j = 0; j < serializableFields.Length; j++)
+				if (rowIndex < 0)
+					rowIndex = AddRow(spreadsheetId, tabName, indexFields, headerRow, serializableFields, allRows, instances[i]);
+
+				UpdateRow(tabName, instances, filterMembers, spreadsheetId, headerRow, allRows, serializableFields, i, rowIndex);
+			}
+		}
+
+		private static void UpdateRow(string tabName, object[] instances, string[] filterMembers, string spreadsheetId, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex)
+		{
+			for (int j = 0; j < serializableFields.Length; j++)
+			{
+				// TODO: Filtering on the serializableFields would go here.
+				MemberInfo memberInfo = serializableFields[j];
+
+				if (!HasMember(filterMembers, memberInfo.Name))
+					continue;
+
+				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
+
+				string existingValue = null;
+				if (columnIndex < allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
+					existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
+
+				string range = GetRange(columnIndex, rowIndex);
+
+				ValueRange body = new ValueRange();
+				body.MajorDimension = "ROWS";
+				body.Range = $"{tabName}!{range}";
+				body.Values = new List<IList<object>>();
+				body.Values.Add(new List<object>());
+				string value = GetValue(instances[i], memberInfo);
+
+				if (existingValue == null /* New */ || value != existingValue /* Mod */)
 				{
-					// TODO: Filtering on the serializableFields would go here.
-					MemberInfo memberInfo = serializableFields[j];
-
-					if (!HasMember(filterMembers, memberInfo.Name))
-						continue;
-
-					int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
-
-					string existingValue = null;
-					if (columnIndex < allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
-						existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
-
-					string range = GetRange(columnIndex, rowIndex);
-					
-					ValueRange body = new ValueRange();
-					body.MajorDimension = "ROWS";
-					body.Range = $"{tabName}!{range}";
-					body.Values = new List<IList<object>>();
-					body.Values.Add(new List<object>());
-					string value = GetValue(instances[i], memberInfo);
-					
-					if (existingValue == null /* New */ || value != existingValue /* Mod */)
-					{
-						body.Values[0].Add(value);
-						SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
-						request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
-						try
-						{
-							UpdateValuesResponse response = request.Execute();
-							if (response != null)
-							{
-
-							}
-						}
-						catch (Exception ex)
-						{
-							string msg = ex.Message;
-							System.Diagnostics.Debugger.Break();
-						}
-					}
+					body.Values[0].Add(value);
+					SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
+					Execute(request);
 				}
+			}
+		}
+
+		private static void Execute(SpreadsheetsResource.ValuesResource.UpdateRequest request)
+		{
+			request.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+			try
+			{
+				UpdateValuesResponse response = request.Execute();
+				if (response != null)
+				{
+
+				}
+			}
+			catch (Exception ex)
+			{
+				string msg = ex.Message;
+				System.Diagnostics.Debugger.Break();
 			}
 		}
 
