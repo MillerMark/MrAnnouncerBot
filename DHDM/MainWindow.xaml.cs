@@ -3023,8 +3023,9 @@ namespace DHDM
 			diceRoll.Modifier = 0;
 			if (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt)
 			{
-				if (double.TryParse(tbxModifier.Text, out double modifierResult))
-					diceRoll.Modifier = modifierResult;
+				if (NextRollScope != RollScope.ActiveInGameCreature)
+					if (double.TryParse(tbxModifier.Text, out double modifierResult))
+						diceRoll.Modifier = modifierResult;
 			}
 
 			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly)
@@ -3327,7 +3328,7 @@ namespace DHDM
 		{
 			SafeInvoke(() =>
 			{
-				Title = "All Dice Destroyed.";
+				//Title = "All Dice Destroyed.";
 			});
 			//History.Log("All Dice Destroyed.");
 			CheckForFollowUpRolls(ea.StopRollingData);
@@ -3968,10 +3969,10 @@ namespace DHDM
 		{
 			SaveNamedResults(ea);
 
-			SafeInvoke(() =>
-			{
-				Title = "Dice Stopped Rolling (waiting for destruction)...";
-			});
+			//SafeInvoke(() =>
+			//{
+			//	Title = "Dice Stopped Rolling (waiting for destruction)...";
+			//});
 
 			Character singlePlayer = ea.StopRollingData.GetSingleRollingPlayer();
 			if (singlePlayer != null)
@@ -4175,7 +4176,8 @@ namespace DHDM
 					break;
 				case DiceRollType.Attack:
 					rollTitle = "Attack: ";
-					damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
+					if (ea.StopRollingData.damage > 0)
+						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
 					break;
 				case DiceRollType.SavingThrow:
 					rollTitle = GetAbilityStr(ea.StopRollingData.savingThrow) + " Saving Throw: ";
@@ -4218,7 +4220,8 @@ namespace DHDM
 					break;
 				case DiceRollType.ChaosBolt:
 					rollTitle = "Chaos Bolt: ";
-					damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
+					if (ea.StopRollingData.damage > 0)
+						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
 					break;
 				case DiceRollType.Initiative:
 					rollTitle = "Initiative: ";
@@ -4259,10 +4262,29 @@ namespace DHDM
 			}
 			else
 			{
+				SafeInvoke(() =>
+				{
+					Title = $"ea.StopRollingData.playerID = {ea.StopRollingData.playerID}";
+				});
+
 				singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.playerID);
 				string playerName = GetPlayerName(ea.StopRollingData.playerID);
+				if (singlePlayer == null)
+				{
+					if (ea.StopRollingData.playerID < 0)
+					{
+						InGameCreature creature = AllInGameCreatures.GetByIndex(-ea.StopRollingData.playerID);
+						if (creature != null)
+							playerName = creature.Name;
+					}
+				}
+				
 				if (playerName != "")
 					playerName = playerName + "'s ";
+				else
+				{
+					
+				}
 				if (!ea.StopRollingData.success)
 					damageStr = "";
 
@@ -5338,13 +5360,20 @@ namespace DHDM
 			else
 				who = GetPlayerName(ActivePlayerId);
 
-			TellAll($"Rolling {dieStr} for {who}...");
+			string vantageStr = "";
+			if (vantageKind == VantageKind.Advantage)
+				vantageStr = " (with advantage)";
+			else if (vantageKind == VantageKind.Disadvantage)
+				vantageStr = " (with disadvantage)";
+
+			TellAll($"Rolling {dieStr}{vantageStr} for {who}...");
 
 			SafeInvoke(() =>
 			{
 				SetRollTypeUI(diceRollType);
 				SetRollScopeForPlayers(playerIds);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
+				// TODO: Set Modifier for this roll if it's a d20 for a creature (NextRollScope = RollScope.ActiveInGameCreature;).
 				diceRoll.VantageKind = vantageKind;
 
 				if (vantageKind != VantageKind.Normal)
@@ -6205,11 +6234,12 @@ namespace DHDM
 			});
 		}
 
-
 		public void RollDice()
 		{
 			SafeInvoke(() =>
 			{
+				if (NextRollScope == RollScope.ActiveInGameCreature)
+					NextRollScope = RollScope.Individuals;
 				UnleashTheNextRoll();
 			});
 		}
@@ -6642,7 +6672,7 @@ namespace DHDM
 		private async void UnleashTheNextRoll()
 		{
 			PlayerActionShortcut localSpellToCastOnRoll = spellToCastOnRoll;
-			Title = "Rolling Dice...";
+			//Title = "Rolling Dice...";
 			if (localSpellToCastOnRoll != null)
 			{
 				if (localSpellToCastOnRoll.Spell?.SpellType == SpellType.SavingThrowSpell)

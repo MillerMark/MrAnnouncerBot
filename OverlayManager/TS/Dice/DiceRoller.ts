@@ -345,6 +345,7 @@ function removeDie(die: IDie, dieEffectInterval: number, effectOverride: DieEffe
 		}
 	}
 
+	console.log(`removeDie - die.inPlay = false;`);
 	die.inPlay = false;
 	return dieEffectInterval;
 }
@@ -761,31 +762,43 @@ function getMaxDamage() {
 	return maxDamage;
 }
 
-function initializeForScoring() {
-	for (let i = 0; i < dice.length; i++) {
-		const die: IDie = dice[i];
-		die.scoreHasBeenTallied = false; // Workaround for state bug where multiple instances of the same dia can apparently get inside the dice array.
-	}
-}
+//function initializeForScoring() {
+//	for (let i = 0; i < dice.length; i++) {
+//		const die: IDie = dice[i];
+//		die.scoreHasBeenTallied = false;
+//		// Workaround for state bug where multiple instances of the same die can apparently get inside the dice array.
+//	}
+//}
 
 function addDieToMultiPlayerSummary(die: IDie, topNumber: number) {
+	const logProgress = true;
 	if (diceRollData.multiplayerSummary === null)
 		diceRollData.multiplayerSummary = [];
 	// diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
 	const playerRoll: PlayerRoll = diceRollData.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
 
 	if (playerRoll) {
-		console.log(`Found playerRoll for ${die.playerName}.`);
 		playerRoll.roll += topNumber;
 		playerRoll.success = playerRoll.roll + playerRoll.modifier >= diceRollData.hiddenThreshold;
+		if (logProgress) {
+			console.log(`Found playerRoll for ${die.playerName}. Roll: ${playerRoll.roll}`);
+		}
 	}
 	else {
-		console.log(`playerRoll not found for ${die.playerName}.`);
+		if (logProgress) {
+			console.log(`playerRoll not found for ${die.playerName}.`);
+		}
 
 		let modifier = 0;
-		if (die.playerID < 0) { // It's an in-game creature.
+		if (die.playerID < 0) {
+			if (logProgress) {
+				console.log(`It's an in-game creature.`);
+			}
 			for (let i = 0; i < diceRollData.diceDtos.length; i++) {
 				if (diceRollData.diceDtos[i].CreatureId === die.playerID) {
+					if (logProgress) {
+						console.log(`Found modifier.`);
+					}
 					modifier = diceRollData.diceDtos[i].Modifier;
 					//break;
 				}
@@ -804,9 +817,14 @@ function addDieToMultiPlayerSummary(die: IDie, topNumber: number) {
 			critHit = topNumber >= 20;
 		const critFail: boolean = topNumber === 1;
 		diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success, critHit, critFail));
-		//console.log(diceRollData.multiplayerSummary[0].roll);
+		if (logProgress) {
+			console.log(diceRollData.multiplayerSummary[0].roll);
+		}
 	}
-	//console.log(diceRollData.multiplayerSummary);
+
+	if (logProgress) {
+		console.log(diceRollData.multiplayerSummary);
+	}
 }
 
 function attachDieLabel(die: IDie) {
@@ -834,7 +852,8 @@ function attachDieLabel(die: IDie) {
 	diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
 }
 
-function getRollResults(): RollResults {
+function getRollResults(tallyResults: boolean): RollResults {
+	const logProgress = false;
 	const totalScores: Map<number, number> = new Map<number, number>();
 	const inspirationValue: Map<number, number> = new Map<number, number>();
 	const luckValue: Map<number, number> = new Map<number, number>();
@@ -860,12 +879,19 @@ function getRollResults(): RollResults {
 
 	function tallyTotals(playerID: number, die: IDie, topNumber: number) {
 		initializeLocalArrays(playerID);
-		//console.log(`totalScores.get(${playerID}): ` + totalScores.get(playerID));
+		if (logProgress) {
+			console.log(`tallyTotals, Before - totalScores.get(${playerID}): ` + totalScores.get(playerID));
+		}
+
 		let extraDamage: number = damageModifierThisRoll;
-		//console.log('die.rollType: ' + DieCountsAs[die.rollType]);
+		if (logProgress) {
+			console.log('die.rollType: ' + DieCountsAs[die.rollType]);
+		}
 		switch (die.rollType) {
 			case DieCountsAs.totalScore:
-				//console.log(`DieCountsAs.totalScore (${topNumber})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.totalScore (${topNumber})`);
+				}
 				if (diceRollData.type === DiceRollType.WildMagicD20Check) {
 					if (topNumber === 1)
 						totalScores.set(playerID, 1);
@@ -876,19 +902,27 @@ function getRollResults(): RollResults {
 					totalScores.set(playerID, totalScores.get(playerID) + topNumber);
 				break;
 			case DieCountsAs.inspiration:
-				//console.log(`DieCountsAs.inspiration (${topNumber})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.inspiration (${topNumber})`);
+				}
 				inspirationValue.set(playerID, inspirationValue.get(playerID) + topNumber);
 				break;
 			case DieCountsAs.bentLuck:
-				//console.log(`DieCountsAs.bentLuck (${topNumber * diceRollData.bentLuckMultiplier})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.bentLuck (${topNumber * diceRollData.bentLuckMultiplier})`);
+				}
 				luckValue.set(playerID, luckValue.get(playerID) + topNumber * diceRollData.bentLuckMultiplier);
 				break;
 			case DieCountsAs.bonus:
-				//console.log(`DieCountsAs.bonus (${topNumber})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.bonus (${topNumber})`);
+				}
 				totalBonus += topNumber;
 				break;
 			case DieCountsAs.damage:
-				//console.log(`DieCountsAs.damage (${topNumber})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.damage (${topNumber})`);
+				}
 				{
 					const damageType: DamageType = die.damageType || DamageType.None;
 
@@ -907,35 +941,55 @@ function getRollResults(): RollResults {
 					break;
 				}
 			case DieCountsAs.health:
-				//console.log(`DieCountsAs.health (${topNumber})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.health (${topNumber})`);
+				}
 				totalHealth += topNumber;
 				break;
 			case DieCountsAs.extra:
-				//console.log(`DieCountsAs.extra (${topNumber})`);
+				if (logProgress) {
+					console.log(`DieCountsAs.extra (${topNumber})`);
+				}
 				totalExtra += topNumber;
 				break;
+			default:
+				if (logProgress) {
+					console.log(`DieCountsAs.extra (${topNumber})`);
+				}
+		}
+
+		if (logProgress) {
+			console.log(`tallyTotals, After - totalScores.get(${playerID}): ` + totalScores.get(playerID));
 		}
 	}
 
-	//console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
-	//console.log(`getRollResults: dice.length = ${dice.length}`);
+	if (logProgress) {
+		console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
+		console.log(`getRollResults: dice.length = ${dice.length}`);
+	}
 
-	initializeForScoring();
 	const maxDamage: number = getMaxDamage();
 
 	for (let i = 0; i < dice.length; i++) {
 		const die: IDie = dice[i];
 		if (!die.inPlay) {
-			//console.log(`die is not in play.`);
+			if (logProgress) {
+				console.log(`die is not in play.`);
+			}
 			continue;
 		}
 
 		if (die.scoreHasBeenTallied) {
-			//console.log(`scoreHasBeenTallied`);
+			if (logProgress) {
+				console.log(`scoreHasBeenTallied`);
+			}
 			continue;
 		}
 
-		die.scoreHasBeenTallied = true;
+		if (tallyResults) {
+			die.scoreHasBeenTallied = true;
+			console.log(`dice[${i}].scoreHasBeenTallied = true`);
+		}
 
 		const topNumber: number = die.getTopNumber();
 
@@ -947,9 +1001,10 @@ function getRollResults(): RollResults {
 		diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
 
 		const playerID: number = die.playerID;
-		//console.log('playerID: ' + playerID);
+		if (logProgress) {
+			console.log('playerID: ' + playerID);
+		}
 		if (playerID === undefined) {
-			//playerID = Number.MIN_VALUE;
 			diceRollData.totalRoll += topNumber;
 			continue;
 		}
@@ -977,12 +1032,20 @@ function getRollResults(): RollResults {
 		toHitModifier += diceRollData.modifier;
 	if (skillSavingModifier)
 		toHitModifier += skillSavingModifier;
-	//console.log('toHitModifier: ' + toHitModifier);
+
+	if (logProgress) {
+		console.log('toHitModifier: ' + toHitModifier);
+		console.log('diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
+	}
 
 	if (totalScores.get(singlePlayerId))
 		diceRollData.totalRoll += totalScores.get(singlePlayerId) + toHitModifier;
-	else
+	else {
 		diceRollData.totalRoll += toHitModifier;
+		if (logProgress) {
+			console.log(`totalScores does not contain singlePlayerId (${singlePlayerId})`);
+		}
+	}
 
 	if (!diceRollData.hasMultiPlayerDice && totalScores.get(singlePlayerId) > 0) {
 		if (diceRollData.type === DiceRollType.SkillCheck && totalBonus)
@@ -991,11 +1054,17 @@ function getRollResults(): RollResults {
 
 	modifyTotalRollForTestingPurposes();
 
-	//console.log('diceRollData.totalRoll: ' + diceRollData.totalRoll);
+	if (logProgress) {
+		console.log('diceRollData.totalRoll: ' + diceRollData.totalRoll);
+	}
 	attemptedRollWasSuccessful = diceRollData.totalRoll >= diceRollData.hiddenThreshold;
-	//console.log(`attemptedRollWasSuccessful: ${attemptedRollWasSuccessful} (totalRoll = ${diceRollData.totalRoll}, diceRollData.hiddenThreshold = ${diceRollData.hiddenThreshold})`);
+	if (logProgress) {
+		console.log(`attemptedRollWasSuccessful: ${attemptedRollWasSuccessful} (totalRoll = ${diceRollData.totalRoll}, diceRollData.hiddenThreshold = ${diceRollData.hiddenThreshold})`);
+	}
 	attemptedRollWasNarrowlySuccessful = attemptedRollWasSuccessful && (diceRollData.totalRoll - diceRollData.hiddenThreshold < 2);
-	//console.log('damageModifierThisRoll: ' + damageModifierThisRoll);
+	if (logProgress) {
+		console.log('damageModifierThisRoll: ' + damageModifierThisRoll);
+	}
 	totalDamagePlusModifier = totalDamage + damageModifierThisRoll;
 	totalHealthPlusModifier = totalHealth + healthModifierThisRoll;
 	totalExtraPlusModifier = totalExtra + extraModifierThisRoll;
@@ -1015,17 +1084,26 @@ function getFirstPlayerId() {
 	return playerID;
 }
 
+function anyDamageDiceThisRoll(): boolean {
+	for (let i = 0; i < dice.length; i++) {
+		const die: IDie = dice[i];
+		if (die.rollType === DieCountsAs.damage)
+			return true;
+	}
+	return false;
+}
+
 function checkAttackBonusRolls() {
 	if (isAttack(diceRollData)) {
 		wasCriticalHit = d20RollValue >= diceRollData.minCrit;
 		//console.log('isCriticalHit: ' + isCriticalHit);
-		if (wasCriticalHit && !diceRollData.secondRollData) {
+		if (wasCriticalHit && !diceRollData.secondRollData && anyDamageDiceThisRoll()) {
 			//console.log('diceRollData.damageHealthExtraDice: ' + diceRollData.damageHealthExtraDice);
 			bonusRollDealsDamage(diceRollData.damageHealthExtraDice, '', getFirstPlayerId());
 			//console.log('checkAttackBonusRolls(1) - Roll Bonus Dice: ' + diceRollData.bonusRolls.length);
 		}
 		console.log('Calling getRollResults() from checkAttackBonusRolls...');
-		getRollResults();  // Needed to set globals for code below. I know. It's not great.
+		getRollResults(false);  // Needed to set globals for code below. I know. It's not great.
 		if (attemptedRollWasSuccessful && diceRollData.minDamage > 0 && !diceRollData.secondRollData) {
 			let extraRollStr = "";
 			for (let i = 0; i < dice.length; i++) {
@@ -1374,6 +1452,7 @@ function damageTypeFromStr(str: string): DamageType {
 function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	const dieObject: IDieObject = die.getObject();
 	scene.add(dieObject);
+	console.log(`prepareBaseDie - die.inPlay = true;`);
 	die.inPlay = true;
 	die.attachedSprites = [];
 	die.attachedLabels = [];
@@ -2084,6 +2163,54 @@ function removeRemainingDice(): boolean {
 
 let lastRollDiceData;
 
+function reportDieRollBackToMainApp(playerId: number) {
+	lastRollDiceData = {
+		'wasCriticalHit': wasCriticalHit,
+		'playerID': playerId,
+		'success': attemptedRollWasSuccessful,
+		'roll': diceRollData.totalRoll,
+		'hiddenThreshold': diceRollData.hiddenThreshold,
+		'spellName': diceRollData.spellName,
+		'damage': totalDamagePlusModifier,
+		'health': totalHealthPlusModifier,
+		'extra': totalExtraPlusModifier,
+		'multiplayerSummary': diceRollData.multiplayerSummary,
+		'individualRolls': diceRollData.individualRolls,
+		'type': diceRollData.type,
+		'skillCheck': diceRollData.skillCheck,
+		'savingThrow': diceRollData.savingThrow,
+		'bonus': totalBonus,
+		'additionalDieRollMessage': additionalDieRollMessage,
+	};
+
+	diceHaveStoppedRolling(JSON.stringify(lastRollDiceData));
+}
+
+function getFirstCreatureId(diceRollDto: DiceRollData): number {
+	if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0)
+		return diceRollDto.diceDtos[0].CreatureId;
+	return Number.MIN_VALUE;
+}
+
+function hasMultiPlayerDice(diceRollDto: DiceRollData): boolean {
+	let lastCreatureId: number = Number.MAX_VALUE;
+	let lastPlayerName: string = null;
+	diceRollDto.diceDtos.forEach((item: DiceDto) => {
+		if (lastCreatureId === Number.MAX_VALUE)
+			lastCreatureId = item.CreatureId;
+		if (lastPlayerName === null)
+			lastPlayerName = item.PlayerName;
+
+		if (lastPlayerName !== item.PlayerName)
+			return true;
+
+		if (lastCreatureId !== item.CreatureId)
+			return true;
+
+	});
+	return false;
+}
+
 function onDiceRollStopped() {
 	console.log('onDiceRollStopped...');
 	console.log(`diceRollData.totalRoll = ${diceRollData.totalRoll}`);
@@ -2109,30 +2236,17 @@ function onDiceRollStopped() {
 	if (diceRollData.playerRollOptions.length === 1)
 		playerId = diceRollData.playerRollOptions[0].PlayerID;
 
+	if (!hasMultiPlayerDice(diceRollData)) {
+		const creatureId: number = getFirstCreatureId(diceRollData);
+		if (creatureId !== Number.MIN_VALUE)
+			playerId = creatureId;
+	}
+
 	// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
 	//console.log('diceRollData.type: ' + diceRollData.type);
 	//console.log(diceRollData.multiplayerSummary);
 	//console.log(diceRollData.individualRolls);
-	lastRollDiceData = {
-		'wasCriticalHit': wasCriticalHit,
-		'playerID': playerId,
-		'success': attemptedRollWasSuccessful,
-		'roll': diceRollData.totalRoll,
-		'hiddenThreshold': diceRollData.hiddenThreshold,
-		'spellName': diceRollData.spellName,
-		'damage': totalDamagePlusModifier,
-		'health': totalHealthPlusModifier,
-		'extra': totalExtraPlusModifier,
-		'multiplayerSummary': diceRollData.multiplayerSummary,
-		'individualRolls': diceRollData.individualRolls,
-		'type': diceRollData.type,
-		'skillCheck': diceRollData.skillCheck,
-		'savingThrow': diceRollData.savingThrow,
-		'bonus': totalBonus,
-		'additionalDieRollMessage': additionalDieRollMessage,
-	};
-
-	diceHaveStoppedRolling(JSON.stringify(lastRollDiceData));
+	reportDieRollBackToMainApp(playerId);
 
 	if (removeDiceImmediately)
 		removeRemainingDice();
@@ -2179,7 +2293,7 @@ function diceDefinitelyStoppedRolling() {
 		showSpecialLabels();
 		popFrozenDice();
 		console.log('Calling getRollResults() from diceDefinitelyStoppedRolling...');
-		reportRollResults(getRollResults());
+		reportRollResults(getRollResults(true));
 		if (diceRollData.playBonusSoundAfter)
 			setTimeout(playFinalRollSoundEffects, diceRollData.playBonusSoundAfter);
 		onDiceRollStopped();
@@ -2769,7 +2883,7 @@ function init() { // From Rolling.html example.
 								const hsl: HueSatLight = HueSatLight.fromHex(scalingDice[i].diceColor);
 								if (hsl)
 									hueShift = hsl.hue * 360;
-								else 
+								else
 									hueShift = diceLayer.activePlayerHueShift;
 							}
 						else {
@@ -3599,13 +3713,16 @@ function addDiceFromDto(diceRollDto: DiceRollData, diceDto: DiceDto, xPositionMo
 
 function prepareDiceDtoRoll(diceRollDto: DiceRollData, xPositionModifier: number) {
 	console.log(diceRollDto.diceDtos);
-	
+
 	for (let i = 0; i < diceRollDto.diceDtos.length; i++) {
 		const diceDto: DiceDto = diceRollDto.diceDtos[i];
 		addDiceFromDto(diceRollDto, diceDto, xPositionModifier);
 	}
 
-	diceRollData.hasMultiPlayerDice = diceRollDto.diceDtos.length > 0;  // Any DiceDtos (even one) will go in a multiplayerSummary!
+	diceRollData.hasMultiPlayerDice = hasMultiPlayerDice(diceRollDto);  // Any DiceDtos (even one) will go in a multiplayerSummary!
+	diceRollData.hasSingleIndividual = !diceRollData.hasMultiPlayerDice;
+
+	console.log('prepareDiceDtoRoll - diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
 }
 
 function prepareLegacyRoll(xPositionModifier: number) {
@@ -3629,6 +3746,8 @@ function prepareLegacyRoll(xPositionModifier: number) {
 				addD100(diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, diceRollData.throwPower, xPositionModifier);
 			});
 			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
+			console.log('prepareLegacyRoll, RollScope.Individuals - diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
+
 			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
 		}
 	}
@@ -3712,6 +3831,7 @@ function prepareLegacyRoll(xPositionModifier: number) {
 				addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
 			});
 			diceRollData.hasMultiPlayerDice = diceRollData.playerRollOptions.length > 1;
+			console.log('prepareLegacyRoll, RollScope.Individuals (2) - diceRollData.hasMultiPlayerDice: ' + diceRollData.hasMultiPlayerDice);
 			diceRollData.hasSingleIndividual = diceRollData.playerRollOptions.length === 1;
 		}
 		if (isAttack(diceRollData)) {
