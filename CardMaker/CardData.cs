@@ -14,6 +14,7 @@ namespace CardMaker
 
 		}
 		static int numDecksCreated = 0;
+		static int numCardsCreated = 0;
 		static CardData()
 		{
 			GoogleSheets.RegisterSpreadsheetID(Constants.SheetName_DeckData, Constants.SheetId_DeckData);
@@ -24,17 +25,35 @@ namespace CardMaker
 			AllKnownDecks = new ObservableCollection<Deck>(GoogleSheets.Get<Deck>());
 		}
 
+		public void Save(Deck deck = null)
+		{
+			GoogleSheets.SaveChanges(AllKnownDecks.ToArray());
+			if (deck != null)
+				GoogleSheets.SaveChanges(deck.Cards.ToArray());
+		}
+
+		public void Delete(Deck deck)
+		{
+			GoogleSheets.DeleteRow(deck);
+			AllKnownDecks.Remove(deck);
+		}
+
 		public Deck AddDeck()
 		{
 			Deck deck = new Deck();
-			deck.Name = $"Unnamed{numDecksCreated++}";
+			deck.Name = $"Deck {numDecksCreated++}";
 			AllKnownDecks.Add(deck);
 			return deck;
 		}
 
-		public void Save()
+		public Card AddCard(Deck deck)
 		{
-			GoogleSheets.SaveChanges(AllKnownDecks.ToArray());
+			if (deck == null)
+				throw new ArgumentNullException("deck");
+
+			Card card = new Card(deck);
+			card.Name = $"Card {numCardsCreated++}";
+			return card;
 		}
 	}
 }

@@ -3,33 +3,237 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CardMaker"
+		xmlns:local="clr-namespace:CardMaker"
+		xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="Card Maker" Height="450" Width="800">
-    <StackPanel Orientation="Vertical">
+        Title="Card Maker" Height="515" Width="1800">
+	<Window.Resources>
+		<BooleanToVisibilityConverter x:Key="BoolToVis"/>
+		<local:EnumBooleanConverter x:Key="EnumToBool" />
+		<ObjectDataProvider x:Key="CooldownUnitsEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+			<ObjectDataProvider.MethodParameters>
+				<x:Type TypeName="local:CooldownUnits"/>
+			</ObjectDataProvider.MethodParameters>
+		</ObjectDataProvider>
+	</Window.Resources>
+	<StackPanel Orientation="Vertical">
 		<Menu>
 			<MenuItem Header="_File">
-				<MenuItem Header="_Test Status" Click="MenuItem_Click" Visibility="Collapsed"></MenuItem>
+				<MenuItem Header="_Test Status" Click="TestStatusBarMenuItem_Click" Visibility="Collapsed"></MenuItem>
 				<MenuItem Header="_Save" Click="SaveMenuItem_Click" ></MenuItem>
 			</MenuItem>
 		</Menu>
-		<StatusBar x:Name="statusBar" Background="#FFFFFFD4" Visibility="Hidden" BorderBrush="#FFF59595" BorderThickness="2">
+		<StatusBar x:Name="statusBar" Background="#FFFFFFD4" Visibility="Collapsed" BorderBrush="#FFF59595" BorderThickness="2">
 			<StatusBarItem x:Name="sbMessage">This is my status</StatusBarItem>
 			<StatusBarItem HorizontalAlignment="Right">
 				<Button x:Name="btnCloseStatusMessage" Background="#FFFFFFD4" BorderThickness="0" Click="btnCloseStatusMessage_Click">
-				  X
-				</Button> 
+					X
+				</Button>
 			</StatusBarItem>
 		</StatusBar>
 		<StackPanel x:Name="spMain" Orientation="Horizontal">
 			<StackPanel x:Name="spDecks" Orientation="Vertical">
-				<TextBlock Text="Decks" Width="Auto" Height="Auto"/>
-				<ListBox x:Name="lbDecks" >
-					
+				<TextBlock Text="Decks:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbDecks" SelectionChanged="lbDecks_SelectionChanged" Width="140" >
+
 				</ListBox>
-				<Button x:Name="btnAddDeck" Click="btnAddDeck_Click">
-					Add Deck...
+				<Button x:Name="btnAddDeck" Click="btnAddDeck_Click" Margin="3, 2, 3, 0" Width="95" HorizontalAlignment="Left">
+					Add Deck
 				</Button>
+				<Button x:Name="btnDeleteDeck" Click="btnDeleteDeck_Click" Margin="3" Width="95" HorizontalAlignment="Left">
+					Delete Deck...
+				</Button>
+			</StackPanel>
+			<StackPanel x:Name="spCards" Orientation="Vertical" Margin="20, 0, 0, 0">
+				<TextBlock x:Name="tbCards" Text="Cards:" Width="Auto" Height="Auto"/>
+				<ListBox x:Name="lbCards" SelectionChanged="lbCards_SelectionChanged" Width="200" >
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="{Binding Path=Name}" />
+								<TextBlock Text="*" Width="Auto" Height="Auto" Visibility="{Binding Path=IsDirty, Converter={StaticResource BoolToVis}}"/>
+							</StackPanel>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+				<Button x:Name="btnAddCard" Click="btnAddCard_Click" Margin="3, 2, 3, 0" Width="95" HorizontalAlignment="Left">
+					Add Card
+				</Button>
+				<Button x:Name="btnDeleteCard" Click="btnDeleteCard_Click" Margin="3" Width="95" HorizontalAlignment="Left">
+					Delete Card...
+				</Button>
+			</StackPanel>
+
+			<StackPanel x:Name="spSelectedCard" Orientation="Horizontal" Visibility="Visible">
+				<StackPanel x:Name="spCardDetails" Orientation="Vertical" Margin="20, 0, 0, 0">
+					<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 8">
+						<TextBlock Text="Card Name: " Width="Auto" Height="Auto" Margin="0, 0, 5, 0"/>
+						<TextBox x:Name="tbxCardName" Text="{Binding Name}"  TextChanged="tbxCardName_TextChanged" MinWidth="100"/>
+						<CheckBox x:Name="ckbAvailable" IsChecked="{Binding Path=Available}" Margin="20, 0, 0, 0">
+							Available
+						</CheckBox>
+						<CheckBox x:Name="ckbUploaded" Margin="20, 0, 0, 0" IsChecked="{Binding Path=Uploaded}">
+							Uploaded
+						</CheckBox>
+					</StackPanel>
+
+					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
+						<TextBlock Text="Description: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0"/>
+						<TextBox x:Name="tbxDescription" Text="{Binding Description}" AcceptsReturn="False" TextChanged="tbxDescription_TextChanged" MinWidth="100" MaxWidth="360" HorizontalAlignment="Left" Height="Auto" TextWrapping="Wrap"/>
+					</StackPanel>
+
+					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
+						<TextBlock Text="Additional Instructions: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0"/>
+						<TextBox x:Name="tbxAdditionalInstructions" AcceptsReturn="False" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" MinWidth="100"/>
+					</StackPanel>
+
+					<StackPanel Orientation="Horizontal" Margin="0, 14, 0, 0">
+						<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
+							<TextBlock Text="Rarity: " Width="Auto" Height="Auto" Margin="0, 0, 10, 3"/>
+							<RadioButton x:Name="rbCommon" IsChecked="{Binding Path=Rarity, Converter={StaticResource EnumToBool}, ConverterParameter=Common}" Margin="20, 2, 9, 0">
+								Common
+							</RadioButton>
+							<RadioButton x:Name="rbRare" IsChecked="{Binding Path=Rarity, Converter={StaticResource EnumToBool}, ConverterParameter=Rare}" Margin="20, 2, 9, 0">
+								Rare
+							</RadioButton>
+							<RadioButton x:Name="rbEpic" IsChecked="{Binding Path=Rarity, Converter={StaticResource EnumToBool}, ConverterParameter=Epic}" Margin="20, 2, 9, 0">
+								Epic
+							</RadioButton>
+							<RadioButton x:Name="rbLegendary" IsChecked="{Binding Path=Rarity, Converter={StaticResource EnumToBool}, ConverterParameter=Legendary}" Margin="20, 2, 9, 0">
+								Legendary
+							</RadioButton>
+						</StackPanel>
+						<StackPanel Orientation="Vertical" Margin="20, 0, 0, 8">
+							<TextBlock Text="Probability Within Rarity: " Width="Auto" Height="Auto" Margin="0, 0, 10, 3"/>
+							<RadioButton x:Name="rbNormal" IsChecked="{Binding Path=ProbabilityWithinRarity, Converter={StaticResource EnumToBool}, ConverterParameter=Normal}" Margin="20, 2, 9, 0">
+								Normal
+							</RadioButton>
+							<RadioButton x:Name="rbLittleLessFrequent" IsChecked="{Binding Path=ProbabilityWithinRarity, Converter={StaticResource EnumToBool}, ConverterParameter=LittleLessFrequent}" Margin="20, 2, 9, 0">
+								Little Less Frequent
+							</RadioButton>
+							<RadioButton x:Name="rbLessFrequent" IsChecked="{Binding Path=ProbabilityWithinRarity, Converter={StaticResource EnumToBool}, ConverterParameter=LessFrequent}" Margin="20, 2, 9, 0">
+								Less Frequent
+							</RadioButton>
+							<RadioButton x:Name="rbMuchLessFrequent" IsChecked="{Binding Path=ProbabilityWithinRarity, Converter={StaticResource EnumToBool}, ConverterParameter=MuchLessFrequent}" Margin="20, 2, 9, 0">
+								Much Less Frequent
+							</RadioButton>
+						</StackPanel>
+					</StackPanel>
+
+					<StackPanel Orientation="Horizontal" Margin="0, 20, 0, 0">
+						<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
+							<TextBlock Text="Card Expires: " Width="Auto" Height="Auto" Margin="0, 0, 10, 3"/>
+							<RadioButton x:Name="rbImmediately" IsChecked="{Binding Path=Expires, Converter={StaticResource EnumToBool}, ConverterParameter=Immediately}" Margin="20, 2, 9, 0">
+								Immediately
+							</RadioButton>
+							<RadioButton x:Name="rbEndOfTurn" IsChecked="{Binding Path=Expires, Converter={StaticResource EnumToBool}, ConverterParameter=EndOfTurn}" Margin="20, 2, 9, 0">
+								End of Turn
+							</RadioButton>
+							<RadioButton x:Name="rbEndOfNextTurn" IsChecked="{Binding Path=Expires, Converter={StaticResource EnumToBool}, ConverterParameter=EndOfNextTurn}" Margin="20, 2, 9, 0">
+								End of Next Turn
+							</RadioButton>
+							<RadioButton x:Name="rbEndOfGame" IsChecked="{Binding Path=Expires, Converter={StaticResource EnumToBool}, ConverterParameter=EndOfGame}" Margin="20, 2, 9, 0">
+								End of Game
+							</RadioButton>
+							<RadioButton x:Name="rbNever" IsChecked="{Binding Path=Expires, Converter={StaticResource EnumToBool}, ConverterParameter=Never}" Margin="20, 2, 9, 0">
+								Never
+							</RadioButton>
+						</StackPanel>
+						<StackPanel Orientation="Vertical" Margin="30, 0, 0, 0">
+							<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 8">
+								<TextBlock Text="Fragments Required: " Width="Auto" Height="Auto" Margin="0, 0, 5, 0"/>
+								<TextBox x:Name="tbxFragmentsRequired" Text="{Binding Path=FragmentsRequired}" TextChanged="tbxFragmentsRequired_TextChanged" MinWidth="30"/>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Margin="0, 10, 0, 8">
+								<TextBlock Text="Cooldown: " Width="Auto" Height="Auto" Margin="0, 1, 5, 0"/>
+								<TextBox x:Name="tbxCooldown" Text="{Binding Path=Cooldown}" TextChanged="tbxCooldown_TextChanged" MinWidth="30"/>
+
+								<TextBlock Text="Units:" Width="Auto" Height="Auto" Margin="10, 1, 4, 0"/>
+								<ComboBox x:Name="cmbCooldownUnits" ItemsSource="{Binding Source={StaticResource CooldownUnitsEnum}}" SelectedItem="{Binding Path=CooldownUnits}" Margin="0, -2, 0, 0" />
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0">
+								<CheckBox x:Name="ckbFinalizeLater" IsChecked="{Binding Path=FinalizeLater}">
+									Finalize Later
+								</CheckBox>
+							</StackPanel>
+						</StackPanel>
+					</StackPanel>
+					
+
+					<Button x:Name="btnCardStyle" Width="80" HorizontalAlignment="Left" Margin="0, 8, 0, 8">
+						<TextBlock Text="Card Style" Width="Auto" Height="Auto"/>
+					</Button>
+					<TextBlock Text="Layers:" Width="Auto" Height="Auto"/>
+					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="140" >
+					</ListBox>
+				</StackPanel>
+
+
+
+				<Grid x:Name="Grid1" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+
+					<TextBlock x:Name="txblSelectedLayer" Grid.ColumnSpan="2" Text="Selected Layer:" Width="Auto" Height="Auto"/>
+
+					<Canvas Grid.Column="1" Grid.Row="1" Width="280" Height="424">
+						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[0] Background.png" Width="280" Height="424"></Image>
+						<!--<Image Canvas.Left="65" Canvas.Top="88" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons\Protection from Evil and Good.png" Height="174" Width="174"/>-->
+						<Image Canvas.Left="65" Canvas.Top="88" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons\Alarm.png" Height="174" Width="174"/>
+						<Image Canvas.Left="39" Canvas.Top="62" Source="C:\Users\Mark Miller\Downloads\6570512_preview.png" Height="200" Width="200" Opacity="0.5"/>
+						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[1] Cover.png" Width="280" Height="424"></Image>
+						<!--<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Corner - Worm.png" Width="280" Height="424"></Image>-->
+						<Image Canvas.Top="52" Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Left Side - Skeleton Hand.png" Width="280" Height="424"></Image>
+						<Grid Canvas.Left="60" Canvas.Top="258" Width="185" Height="83">
+							<Grid.LayoutTransform>
+								<RotateTransform Angle="-9"></RotateTransform>
+							</Grid.LayoutTransform>
+							<Viewbox>
+								<!-- WrapPoint can map to tbItemName.Width, and we might be able to calculate it as well? 
+							
+							Also, a slider to tbItemName.LineHeight and tbItemName.FontSize may be useful.
+							
+							Or maybe just use these settings...
+							-->
+								<TextBlock x:Name="tbItemName" Text="Protection from Evil and Good" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" LineStackingStrategy="BlockLineHeight" 
+									LineHeight="50" TextWrapping="Wrap" FontFamily="Enchanted Land" FontSize="58" Margin="4" >
+								</TextBlock>
+							</Viewbox>
+						</Grid>
+					</Canvas>
+
+					<TextBlock Grid.Row="3" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 0, 0, 3"/>
+					<Slider Grid.Row="3" Grid.Column="1" x:Name="sliderOffsetX" Value="0" Minimum="-200" Maximum="200" Width="280" Margin="0, 0, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
+					<StackPanel Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
+						<TextBlock Text="Y offset:" Width="Auto" Height="Auto"/>
+						<Slider x:Name="sliderOffsetY" Value="0" Minimum="-200" Maximum="200" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
+					</StackPanel>
+				</Grid>
+
+				<Grid x:Name="grdLayerDetail" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					<TextBlock Text="Hue:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0"/>
+					<Slider Grid.Column="1" x:Name="sliderHue" Width="120" Margin="0, 0, 0, 0" ValueChanged="sliderHue_ValueChanged"></Slider>
+					<TextBlock Grid.Row="1" Text="Saturation:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0"/>
+					<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderSaturation" Width="120" Margin="0, 10, 0, 0" ValueChanged="sliderSaturation_ValueChanged"></Slider>
+				</Grid>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

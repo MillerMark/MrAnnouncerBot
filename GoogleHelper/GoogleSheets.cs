@@ -427,11 +427,7 @@ namespace GoogleHelper
 			if (instances == null || instances.Length == 0)
 				return;
 
-			if (!spreadsheetIDs.ContainsKey(docName))
-				throw new InvalidDataException($"docName (\"{docName}\") not found!");
-
-			if (sheetTabMap[docName].IndexOf(tabName) < 0)
-				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
+			ValidateDocAndTabNames(docName, tabName);
 
 			string[] filterMembers = null;
 			if (filterMembersStr != null)
@@ -456,6 +452,15 @@ namespace GoogleHelper
 
 				UpdateRow(tabName, instances, filterMembers, spreadsheetId, headerRow, allRows, serializableFields, i, rowIndex);
 			}
+		}
+
+		private static void ValidateDocAndTabNames(string docName, string tabName)
+		{
+			if (!spreadsheetIDs.ContainsKey(docName))
+				throw new InvalidDataException($"docName (\"{docName}\") not found!");
+
+			if (sheetTabMap[docName].IndexOf(tabName) < 0)
+				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
 		}
 
 		private static void UpdateRow(string tabName, object[] instances, string[] filterMembers, string spreadsheetId, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex)
@@ -523,20 +528,88 @@ namespace GoogleHelper
 			if (instances == null || instances.Length == 0)
 				return;
 			Type instanceType = instances[0].GetType();
-			SheetNameAttribute sheetNameAttribute = instanceType.GetCustomAttribute<SheetNameAttribute>();
-			if (sheetNameAttribute == null)
-				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"SheetName\" attribute.");
-			TabNameAttribute tabNameAttribute = instanceType.GetCustomAttribute<TabNameAttribute>();
-			if (tabNameAttribute == null)
-				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
+
+			GetSheetTabAttributes(instanceType, out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
 
 			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType, filterMembers);
+		}
+
+		private static void GetSheetTabAttributes(Type instanceType, out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute)
+		{
+			sheetNameAttribute = instanceType.GetCustomAttribute<SheetNameAttribute>();
+			if (sheetNameAttribute == null)
+				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"SheetName\" attribute.");
+
+			tabNameAttribute = instanceType.GetCustomAttribute<TabNameAttribute>();
+			if (tabNameAttribute == null)
+				throw new InvalidDataException($"{instanceType.Name} needs to specify the \"TabName\" attribute.");
 		}
 
 		public static void SaveChanges(object instance, string filterMember = null)
 		{
 			object[] array = { instance };
 			SaveChanges(array, filterMember);
+		}
+
+		static int? GetTabId(string spreadsheetId, string tabName)
+		{
+			Spreadsheet spreadsheet = service.Spreadsheets.Get(spreadsheetId).Execute();
+
+			foreach (Sheet sheet in spreadsheet.Sheets)
+				if (sheet.Properties.Title == tabName)
+					return sheet.Properties.SheetId;
+			return null;
+		}
+
+		static void DeleteRowByIndexInSheet(string spreadsheetId, string tabName, int rowIndex)
+		{
+			if (rowIndex < 0)
+				return;
+
+			int? sheetId = GetTabId(spreadsheetId, tabName);
+			Request RequestBody = new Request()
+			{
+				DeleteDimension = new DeleteDimensionRequest()
+				{
+					Range = new DimensionRange()
+					{
+						SheetId = sheetId,
+						Dimension = "ROWS",
+						StartIndex = Convert.ToInt32(rowIndex),
+						EndIndex = Convert.ToInt32(rowIndex + 1)
+					}
+				}
+			};
+
+			List<Request> RequestContainer = new List<Request>();
+			RequestContainer.Add(RequestBody);
+
+			BatchUpdateSpreadsheetRequest deleteRequest = new BatchUpdateSpreadsheetRequest();
+			deleteRequest.Requests = RequestContainer;
+
+			SpreadsheetsResource.BatchUpdateRequest batchUpdate = service.Spreadsheets.BatchUpdate(deleteRequest, spreadsheetId);
+			batchUpdate.Execute();
+		}
+
+		static void DeleteRowInSheet(object instance, string docName, string tabName)
+		{
+			Type instanceType = instance.GetType();
+			ValidateDocAndTabNames(docName, tabName);
+			string spreadsheetId = spreadsheetIDs[docName];
+			List<string> headerRow;
+			IList<IList<object>> allRows;
+			GetHeaderRow(docName, tabName, out headerRow, out allRows);
+
+			MemberInfo[] indexFields = GetSerializableFields<IndexerAttribute>(instanceType);
+
+			int rowIndex = GetInstanceRowIndex(instance, indexFields, allRows, headerRow);
+			DeleteRowByIndexInSheet(spreadsheetId, tabName, rowIndex);
+		}
+
+		public static void DeleteRow(object instance)
+		{
+			GetSheetTabAttributes(instance.GetType(), out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
+			DeleteRowInSheet(instance, sheetNameAttribute.SheetName, tabNameAttribute.TabName);
 		}
 	}
 }

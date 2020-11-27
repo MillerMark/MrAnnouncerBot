@@ -36,10 +36,29 @@ namespace CardMaker
 				SelectDeck(activeDeck);
 			}
 		}
+		Card activeCard;
+		public Card ActiveCard
+		{
+			get => activeCard;
+			set
+			{
+				if (activeCard == value)
+					return;
+				activeCard = value;
+				SelectCard(activeCard);
+			}
+		}
 
 		void SelectDeck(Deck deck)
 		{
 			lbDecks.SelectedItem = deck;
+			lbCards.ItemsSource = deck.Cards;
+			tbCards.Text = $"Cards in {deck.Name}:";
+		}
+
+		void SelectCard(Card card)
+		{
+			lbCards.SelectedItem = card;
 		}
 
 		public CardMakerMain()
@@ -63,19 +82,138 @@ namespace CardMaker
 			statusBar.Visibility = Visibility.Hidden;
 		}
 
-		private void MenuItem_Click(object sender, RoutedEventArgs e)
+		private void TestStatusBarMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			ShowStatus("Menu item clicked!");
+		}
+
+		private void SaveMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			CardData.Save(ActiveDeck);
+		}
+
+		void SelectDeckByIndex(int index)
+		{
+			ActiveDeck = null;
+			if (index >= lbDecks.Items.Count)
+				index = lbDecks.Items.Count - 1;
+
+			if (index < 0)
+				return;
+			lbDecks.SelectedItem = lbDecks.Items[index];
+		}
+
+		private void HandleDeckSelectionChange()
+		{
+			ActiveDeck = lbDecks.SelectedItem as Deck;
+		}
+
+		private void btnDeleteDeck_Click(object sender, RoutedEventArgs e)
+		{
+			if (ActiveDeck == null)
+				return;
+			
+			if (MessageBox.Show($"Delete deck \"{ActiveDeck.Name}\"?", "Confirm", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+				return;
+
+			int lastSelectedIndex = lbDecks.Items.IndexOf(ActiveDeck);
+			CardData.Delete(ActiveDeck);
+			int newIndexToSelect = lastSelectedIndex;
+			SelectDeckByIndex(newIndexToSelect);
+		}
+
+		private void lbDecks_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			HandleDeckSelectionChange();
 		}
 
 		private void btnAddDeck_Click(object sender, RoutedEventArgs e)
 		{
 			ActiveDeck = CardData.AddDeck();
 		}
-
-		private void SaveMenuItem_Click(object sender, RoutedEventArgs e)
+		
+		private void btnAddCard_Click(object sender, RoutedEventArgs e)
 		{
-			CardData.Save();
+			try
+			{
+				ActiveCard = CardData.AddCard(ActiveDeck);
+				tbxCardName.SelectAll();
+				tbxCardName.Focus();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Exception");
+			}
+		}
+
+		private void btnDeleteCard_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void lbCards_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (lbCards.SelectedItem != null)
+			{
+				ActiveCard = lbCards.SelectedItem as Card;
+				spSelectedCard.DataContext = ActiveCard;
+				spSelectedCard.Visibility = Visibility.Visible;
+			}
+			else
+			{
+				ActiveCard = null;
+				spSelectedCard.Visibility = Visibility.Collapsed;
+			}
+		}
+
+		private void lbCardLayers_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
+
+		private void sliderSaturation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+
+		}
+
+		private void sliderHue_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+
+		}
+
+		private void sliderOffsetY_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+
+		}
+
+		private void sliderOffsetX_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+
+		}
+
+		private void tbxCardName_TextChanged(object sender, TextChangedEventArgs e)
+		{
+
+		}
+
+		private void tbxAdditionalInstructions_TextChanged(object sender, TextChangedEventArgs e)
+		{
+
+		}
+
+		private void tbxDescription_TextChanged(object sender, TextChangedEventArgs e)
+		{
+
+		}
+
+		private void tbxFragmentsRequired_TextChanged(object sender, TextChangedEventArgs e)
+		{
+
+		}
+
+		private void tbxCooldown_TextChanged(object sender, TextChangedEventArgs e)
+		{
+
 		}
 	}
 }
