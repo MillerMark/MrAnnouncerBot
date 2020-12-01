@@ -13,7 +13,10 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
-		TextFontSize fontSize;
+		string stylePath;
+		double textLineHeight;
+		double textFontSize;
+		TextFontScale fontScale;
 		string text;
 		Deck parentDeck;
 		public Deck ParentDeck
@@ -27,20 +30,61 @@ namespace CardMaker
 			}
 		}
 
+		private const double lineHeightFactor = 50d / 58d;
+
 
 		[Column]
-		public TextFontSize FontSize
+		public TextFontScale FontScale
 		{
-			get => fontSize;
+			get => fontScale;
 			set
 			{
-				if (fontSize == value)
+				if (fontScale == value)
 					return;
-				fontSize = value;
+				fontScale = value;
+				OnPropertyChanged();
+				switch (fontScale)
+				{
+					case TextFontScale.Small:
+						TextFontSize = 42;
+						break;
+					case TextFontScale.Normal:
+						TextFontSize = 58;
+						break;
+					case TextFontScale.Large:
+						TextFontSize = 96;
+						break;
+				}
+				TextLineHeight = TextFontSize * lineHeightFactor;
+			}
+		}
+
+
+		public double TextFontSize
+		{
+			get => textFontSize;
+			set
+			{
+				if (textFontSize == value)
+					return;
+				textFontSize = value;
 				OnPropertyChanged();
 			}
 		}
-		
+
+
+		public double TextLineHeight
+		{
+			get => textLineHeight;
+			set
+			{
+				if (textLineHeight == value)
+					return;
+				textLineHeight = value;
+				OnPropertyChanged();
+			}
+		}
+
 
 		string parentDeckId = string.Empty;
 
@@ -60,7 +104,7 @@ namespace CardMaker
 			}
 		}
 
-		
+
 		[Column]
 		public string Text
 		{
@@ -73,7 +117,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
 
 
 		string description;
@@ -246,6 +290,21 @@ namespace CardMaker
 		}
 
 		public ObservableCollection<Field> Fields { get; set; } = new ObservableCollection<Field>();
+
+		[Column]
+		
+		public string StylePath
+		{
+			get => stylePath;
+			set
+			{
+				if (stylePath == value)
+					return;
+				stylePath = value;
+				OnPropertyChanged();
+			}
+		}
+		
 
 		public override string ToString()
 		{

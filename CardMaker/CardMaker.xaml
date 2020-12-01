@@ -228,9 +228,29 @@
 				</StackPanel>
 
 				<StackPanel x:Name="spLayersList" Orientation="Vertical" Margin="20, 0, 0, 0">
-					<Button x:Name="btnCardStyle" Width="80" HorizontalAlignment="Left" Margin="0, 0, 0, 8">
-						<TextBlock Text="Card Style" Width="Auto" Height="Auto"/>
+					<Button x:Name="btnCardStylePicker" Content="Card Style" Width="80" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnCardStylePicker_MouseDown">
+						<Button.ContextMenu>
+							<ContextMenu x:Name="mnuCardStyle" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
+							</ContextMenu>
+						</Button.ContextMenu>
+
+						<Button.Triggers>
+							<EventTrigger SourceName="btnCardStylePicker" RoutedEvent="Button.Click">
+								<BeginStoryboard>
+									<Storyboard>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuCardStyle" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
+											<DiscreteObjectKeyFrame KeyTime="0:0:0">
+												<DiscreteObjectKeyFrame.Value>
+													<System:Boolean>True</System:Boolean>
+												</DiscreteObjectKeyFrame.Value>
+											</DiscreteObjectKeyFrame>
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</BeginStoryboard>
+							</EventTrigger>
+						</Button.Triggers>
 					</Button>
+
 					<TextBlock Text="Layers:" Width="Auto" Height="Auto"/>
 					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="140" >
 					</ListBox>
@@ -257,20 +277,20 @@
 					
 					<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" Width="300" HorizontalAlignment="Left">
 						<TextBlock Text="Font Size: " Width="Auto" Height="Auto" Margin="0, 0, 0, 3" Foreground="#FF3C5EE5"/>
-						<RadioButton x:Name="rbSmall" IsChecked="{Binding Path=FontSize, Converter={StaticResource EnumToBool}, ConverterParameter=Small}" Margin="20, 2, 9, 0">
+						<RadioButton x:Name="rbSmall" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Small}" Margin="20, 2, 9, 0">
 							Small
 						</RadioButton>
-						<RadioButton x:Name="rbNormalSize" IsChecked="{Binding Path=FontSize, Converter={StaticResource EnumToBool}, ConverterParameter=Normal}" Margin="20, 2, 9, 0">
+						<RadioButton x:Name="rbNormalSize" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Normal}" Margin="20, 2, 9, 0">
 							Normal
 						</RadioButton>
-						<RadioButton x:Name="rbLarge" IsChecked="{Binding Path=FontSize, Converter={StaticResource EnumToBool}, ConverterParameter=Large}" Margin="20, 2, 9, 0">
+						<RadioButton x:Name="rbLarge" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Large}" Margin="20, 2, 9, 0">
 							Large
 						</RadioButton>
 					</StackPanel>
 					
 					<TextBlock x:Name="txblSelectedLayer" Grid.Row="2" Grid.ColumnSpan="2" Text="Selected Layer:" Width="Auto" Height="Auto"/>
 
-					<Canvas Grid.Column="1" Grid.Row="3" Width="280" Height="424">
+					<Canvas x:Name="cvsLayers" Grid.Column="1" Grid.Row="3" Width="280" Height="424">
 						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[0] Background.png" Width="280" Height="424"></Image>
 						<!--<Image Canvas.Left="65" Canvas.Top="88" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons\Protection from Evil and Good.png" Height="174" Width="174"/>-->
 						<Image Canvas.Left="65" Canvas.Top="88" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons\Alarm.png" Height="174" Width="174"/>
@@ -278,7 +298,7 @@
 						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[1] Cover.png" Width="280" Height="424"></Image>
 						<!--<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Corner - Worm.png" Width="280" Height="424"></Image>-->
 						<Image Canvas.Top="52" Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Left Side - Skeleton Hand.png" Width="280" Height="424"></Image>
-						<Grid Canvas.Left="60" Canvas.Top="258" Width="185" Height="83">
+						<Grid x:Name="grdCardText" Canvas.Left="60" Canvas.Top="258" Width="185" Height="83">
 							<Grid.LayoutTransform>
 								<RotateTransform Angle="-9"></RotateTransform>
 							</Grid.LayoutTransform>
@@ -290,7 +310,7 @@
 							Or maybe just use these settings...
 							-->
 								<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" LineStackingStrategy="BlockLineHeight" 
-									LineHeight="50" TextWrapping="Wrap" FontFamily="Enchanted Land" FontSize="58" Margin="4" FontWeight="Bold" >
+									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" >
 								</TextBlock>
 							</Viewbox>
 						</Grid>

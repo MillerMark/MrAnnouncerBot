@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CardMaker
 {
-	public enum TextFontSize
+	public enum TextFontScale
 	{
 		Small,
 		Normal,

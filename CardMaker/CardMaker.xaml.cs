@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Collections.ObjectModel;
 using CardMaker;
+using Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
@@ -23,6 +24,8 @@ namespace CardMaker
 	/// </summary>
 	public partial class CardMakerMain : Window
 	{
+		const string assetsFolder = @"D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets";
+
 		bool changingDataInternally;
 		public CardData CardData { get; set; }
 		Deck activeDeck;
@@ -430,6 +433,76 @@ namespace CardMaker
 					ActiveField.ParentCard.ParentDeck.IsDirty = true;
 			}
 			lbFields.Items.Refresh();
+		}
+
+		void AddCardStyleMenuItems(ItemCollection items, string[] directories)
+		{
+			foreach (string directory in directories)
+			{
+				string folderName = System.IO.Path.GetFileName(directory);
+				if (folderName.StartsWith("Shared"))
+					continue;
+				CardStyleMenuItem newMenuItem = new CardStyleMenuItem() { Header = folderName };
+				newMenuItem.StylePath = directory.Substring(assetsFolder.Length + 1);
+				items.Add(newMenuItem);
+				string[] subDirectories = Directory.GetDirectories(directory);
+				if (subDirectories.Length > 0)
+					AddCardStyleMenuItems(newMenuItem.Items, subDirectories);
+				else
+					newMenuItem.Click += ChangeCardStyleItem_Click;
+			}
+		}
+
+		private void ChangeCardStyleItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is CardStyleMenuItem cardStyleMenuItem))
+				return;
+
+			LoadNewStyle(cardStyleMenuItem.StylePath);
+		}
+
+		private void btnCardStylePicker_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			string[] directories = Directory.GetDirectories(assetsFolder);
+			mnuCardStyle.Items.Clear();
+			AddCardStyleMenuItems(mnuCardStyle.Items, directories);
+		}
+
+		List<CardImageLayer> cardLayers;
+
+		void DeleteAllImages()
+		{
+			for (int i = cvsLayers.Children.Count - 1; i >= 0; i--)
+			{
+				if (cvsLayers.Children[i] is Image)
+					cvsLayers.Children.RemoveAt(i);
+			}
+		}
+
+		void AddImage(CardImageLayer cardImageLayer)
+		{
+			cvsLayers.Children.Add(cardImageLayer.CreateImage());
+		}
+
+		void LoadNewStyle(string stylePath)
+		{
+			if (cardLayers == null)
+				cardLayers = new List<CardImageLayer>();
+			cardLayers.Clear();
+
+			if (ActiveCard != null)
+				ActiveCard.StylePath = stylePath;
+			DeleteAllImages();
+			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
+			foreach (string pngFile in pngFiles)
+			{
+				CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
+				cardLayers.Add(cardImageLayer);
+				AddImage(cardImageLayer);
+			}
+			Canvas.SetZIndex(grdCardText, 20);
+			cardLayers = cardLayers.OrderBy(x => x.Index).Reverse().ToList();
+			lbCardLayers.ItemsSource = cardLayers;
 		}
 	}
 }
