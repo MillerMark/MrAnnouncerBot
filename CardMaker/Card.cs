@@ -1,73 +1,80 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using GoogleHelper;
 
 namespace CardMaker
 {
+	
 	[SheetName(Constants.SheetName_DeckData)]
 	[TabName("Cards")]
-	public class Card : INotifyPropertyChanged
+	public class Card : BaseNameId
 	{
-		public Deck ParentDeck { get; set; }
-
-		string parentDeckName = string.Empty;
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		bool isDirty;
-		public bool IsDirty
+		TextFontSize fontSize;
+		string text;
+		Deck parentDeck;
+		public Deck ParentDeck
 		{
-			get => isDirty; 
-			set
+			get => parentDeck; set
 			{
-				if (isDirty == value)
+				if (parentDeck == value)
 					return;
-				isDirty = value;
-				OnPropertyChanged();
+				parentDeck = value;
+				OwningTracker = parentDeck;
 			}
 		}
 
-		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
-		{
-			if (propertyName != "IsDirty")
-				IsDirty = true;
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
 
-		[Indexer]
 		[Column]
-		public string Deck
+		public TextFontSize FontSize
+		{
+			get => fontSize;
+			set
+			{
+				if (fontSize == value)
+					return;
+				fontSize = value;
+				OnPropertyChanged();
+			}
+		}
+		
+
+		string parentDeckId = string.Empty;
+
+		[Column]
+		public string DeckId
 		{
 			get
 			{
-				return ParentDeck != null ? ParentDeck.Name : parentDeckName;
+				return ParentDeck != null ? ParentDeck.ID : parentDeckId;
 			}
 			set
 			{
-				if (parentDeckName == value)
+				if (parentDeckId == value)
 					return;
-				parentDeckName = value;
+				parentDeckId = value;
 				OnPropertyChanged();
 			}
 		}
 
-
-		string name;
-		[Indexer]
+		
 		[Column]
-		public string Name
+		public string Text
 		{
-			get => name;
+			get => text;
 			set
 			{
-				if (name == value)
+				if (text == value)
 					return;
-				name = value;
+				text = value;
 				OnPropertyChanged();
 			}
 		}
+		
+
 
 		string description;
 		[Column]
@@ -238,9 +245,25 @@ namespace CardMaker
 			}
 		}
 
+		public ObservableCollection<Field> Fields { get; set; } = new ObservableCollection<Field>();
+
 		public override string ToString()
 		{
 			return Name;
+		}
+
+		public void AddField(Field field)
+		{
+			Fields.Add(field);
+			IsDirty = true;
+		}
+
+		public void RemoveField(Field field)
+		{
+			Fields?.Remove(field);
+			field.ParentCard = null;
+			field.CardId = string.Empty;
+			IsDirty = true;
 		}
 
 		public Card()
@@ -248,6 +271,12 @@ namespace CardMaker
 		}
 
 		public Card(Deck deck)
+		{
+			CreateNewId();
+			AddToDeck(deck);
+		}
+
+		public void AddToDeck(Deck deck)
 		{
 			ParentDeck = deck;
 			if (ParentDeck != null)

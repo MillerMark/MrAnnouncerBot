@@ -11,6 +11,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Collections.ObjectModel;
 using CardMaker;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -22,7 +23,7 @@ namespace CardMaker
 	/// </summary>
 	public partial class CardMakerMain : Window
 	{
-
+		bool changingDataInternally;
 		public CardData CardData { get; set; }
 		Deck activeDeck;
 		public Deck ActiveDeck
@@ -48,12 +49,29 @@ namespace CardMaker
 				SelectCard(activeCard);
 			}
 		}
+		Field activeField;
+		public Field ActiveField
+		{
+			get => activeField;
+			set
+			{
+				if (activeField == value)
+					return;
+				activeField = value;
+				SelectField(activeField);
+			}
+		}
 
 		void SelectDeck(Deck deck)
 		{
 			lbDecks.SelectedItem = deck;
-			lbCards.ItemsSource = deck.Cards;
-			tbCards.Text = $"Cards in {deck.Name}:";
+			lbCards.ItemsSource = deck?.Cards;
+			UpdateCardsLabel(deck);
+		}
+		
+		void UpdateCardsLabel(Deck deck)
+		{
+			tbCards.Text = deck == null ? "" : $"Cards in {deck.Name}:";
 		}
 
 		void SelectCard(Card card)
@@ -61,11 +79,22 @@ namespace CardMaker
 			lbCards.SelectedItem = card;
 		}
 
+		void SelectField(Field field)
+		{
+			lbFields.SelectedItem = field;
+		}
+
 		public CardMakerMain()
 		{
 			InitializeComponent();
 			CardData = new CardData();
 			CardData.LoadData();
+
+			if (CardData.AllKnownDecks != null && CardData.AllKnownDecks.Count > 0)
+				SetActiveDeck(CardData.AllKnownDecks[0]);
+			else
+				SetActiveDeck(null);
+
 			lbDecks.ItemsSource = CardData.AllKnownDecks;
 		}
 
@@ -89,30 +118,91 @@ namespace CardMaker
 
 		private void SaveMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			CardData.Save(ActiveDeck);
+			ShowStatus("Saving...");
+			statusBar.Refresh();
+			CardData.Save();
+			statusBar.Visibility = Visibility.Collapsed;
 		}
 
 		void SelectDeckByIndex(int index)
 		{
 			ActiveDeck = null;
-			if (index >= lbDecks.Items.Count)
-				index = lbDecks.Items.Count - 1;
+			SelectByIndex(lbDecks, index);
+		}
+
+		private void SelectByIndex(ListBox listBox, int index)
+		{
+			if (index >= listBox.Items.Count)
+				index = listBox.Items.Count - 1;
 
 			if (index < 0)
 				return;
-			lbDecks.SelectedItem = lbDecks.Items[index];
+			listBox.SelectedItem = listBox.Items[index];
 		}
 
-		private void HandleDeckSelectionChange()
+		void SelectCardByIndex(int index)
 		{
-			ActiveDeck = lbDecks.SelectedItem as Deck;
+			ActiveCard = null;
+			SelectByIndex(lbCards, index);
+		}
+
+		void SelectFieldByIndex(int index)
+		{
+			ActiveField = null;
+			SelectByIndex(lbFields, index);
+		}
+
+		void SetActiveCard(Card card)
+		{
+			changingDataInternally = true;
+			try
+			{
+				ActiveCard = card;
+				lbCards.SelectedItem = card;
+				spSelectedCard.DataContext = card;
+				SetActiveFields(card?.Fields);
+				bool isValidCard = card != null;
+				btnDeleteCard.IsEnabled = isValidCard;
+				spSelectedCard.Visibility = isValidCard ? Visibility.Visible : Visibility.Collapsed;
+			}
+			finally
+			{
+				changingDataInternally = false;
+			}
+		}
+
+		void SetActiveDeck(Deck deck)
+		{
+			ActiveDeck = deck;
+			if (deck == null)
+				return;
+
+			changingDataInternally = true;
+			try
+			{
+				spActiveDeck.DataContext = deck;
+				if (deck.Cards.Count == 0)
+					SetActiveCard(null);
+				else
+					SetActiveCard(deck.Cards[0]);
+			}
+			finally
+			{
+				changingDataInternally = false;
+			}
 		}
 
 		private void btnDeleteDeck_Click(object sender, RoutedEventArgs e)
 		{
 			if (ActiveDeck == null)
 				return;
-			
+
+			if (ActiveDeck.Cards == null || ActiveDeck.Cards.Count > 0)
+			{
+				ShowStatus("You can only delete empty decks! Delete all cards first!");
+				return;
+			}
+
 			if (MessageBox.Show($"Delete deck \"{ActiveDeck.Name}\"?", "Confirm", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
 				return;
 
@@ -124,7 +214,7 @@ namespace CardMaker
 
 		private void lbDecks_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			HandleDeckSelectionChange();
+			SetActiveDeck(lbDecks.SelectedItem as Deck);
 		}
 
 		private void btnAddDeck_Click(object sender, RoutedEventArgs e)
@@ -148,21 +238,43 @@ namespace CardMaker
 
 		private void btnDeleteCard_Click(object sender, RoutedEventArgs e)
 		{
+			if (ActiveCard == null)
+				return;
 
+			if (ActiveCard.Fields == null || ActiveCard.Fields.Count > 0)
+			{
+				ShowStatus("You can only delete cards with no fields! Delete all fields first!");
+				return;
+			}
+
+			if (MessageBox.Show($"Delete card \"{ActiveCard.Name}\"?", "Confirm", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+				return;
+
+			int lastSelectedIndex = lbCards.Items.IndexOf(ActiveCard);
+			CardData.Delete(ActiveCard);
+			int newIndexToSelect = lastSelectedIndex;
+			SelectCardByIndex(newIndexToSelect);
+		}
+
+		void SetActiveFields(ObservableCollection<Field> fields)
+		{
+			lbFields.ItemsSource = fields;
+			if (fields == null || fields.Count == 0)
+				SetActiveField(null);
+			else
+				SetActiveField(fields[0]);
 		}
 
 		private void lbCards_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (lbCards.SelectedItem != null)
+			changingDataInternally = true;
+			try
 			{
-				ActiveCard = lbCards.SelectedItem as Card;
-				spSelectedCard.DataContext = ActiveCard;
-				spSelectedCard.Visibility = Visibility.Visible;
+				SetActiveCard(lbCards.SelectedItem as Card);
 			}
-			else
+			finally
 			{
-				ActiveCard = null;
-				spSelectedCard.Visibility = Visibility.Collapsed;
+				changingDataInternally = false;
 			}
 		}
 
@@ -191,11 +303,6 @@ namespace CardMaker
 
 		}
 
-		private void tbxCardName_TextChanged(object sender, TextChangedEventArgs e)
-		{
-
-		}
-
 		private void tbxAdditionalInstructions_TextChanged(object sender, TextChangedEventArgs e)
 		{
 
@@ -214,6 +321,115 @@ namespace CardMaker
 		private void tbxCooldown_TextChanged(object sender, TextChangedEventArgs e)
 		{
 
+		}
+
+		void SetActiveField(Field field)
+		{
+			changingDataInternally = true;
+			try
+			{
+				ActiveField = field;
+				lbFields.SelectedItem = field;
+				spActiveField.DataContext = field;
+				bool isValidField = field != null;
+				btnDeleteField.IsEnabled = isValidField;
+				spActiveField.Visibility = isValidField ? Visibility.Visible : Visibility.Collapsed;
+			}
+			finally
+			{
+				changingDataInternally = false;
+			}
+		}
+
+		private void lbFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			SetActiveField(lbFields.SelectedItem as Field);
+		}
+
+		private void btnAddField_Click(object sender, RoutedEventArgs e)
+		{
+			SetActiveField(CardData.AddField(ActiveCard));
+			tbxFieldName.Focus();
+			tbxFieldName.SelectAll();
+		}
+
+		private void btnDeleteField_Click(object sender, RoutedEventArgs e)
+		{
+			if (ActiveField == null)
+				return;
+
+			if (MessageBox.Show($"Delete field \"{ActiveField.Name}\"?", "Confirm", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+				return;
+
+			int lastSelectedIndex = lbFields.Items.IndexOf(ActiveField);
+			CardData.Delete(ActiveField);
+			int newIndexToSelect = lastSelectedIndex;
+			SelectFieldByIndex(newIndexToSelect);
+		}
+
+		private void cmMoveCardTo_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+		{
+			// Delete this.
+		}
+
+		private void cmMoveCardTo_SubmenuOpened(object sender, RoutedEventArgs e)
+		{
+			cmMoveCardTo.Items.Clear();
+			foreach (Deck deck in CardData.AllKnownDecks)
+				if (deck != ActiveDeck)
+				{
+					MenuItem menuItem = new MenuItem() { Header = deck.Name, Tag = deck };
+					cmMoveCardTo.Items.Add(menuItem);
+					menuItem.Click += MoveCardToMenuItem_Click;
+				}
+
+		}
+
+		private void MoveCardToMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+			if (!(menuItem.Tag is Deck deck))
+				return;
+
+			CardData.MoveCardToDeck(ActiveCard, deck);
+		}
+
+		private void tbxDeckName_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (changingDataInternally)
+				return;
+			ActiveDeck.IsDirty = true;
+			lbDecks.Items.Refresh();
+			UpdateCardsLabel(ActiveDeck);
+		}
+
+		private void tbxCardName_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (changingDataInternally)
+				return;
+			if (ActiveCard == null)
+				return;
+			ActiveCard.IsDirty = true;
+			if (ActiveCard.ParentDeck != null)
+				ActiveCard.ParentDeck.IsDirty = true;
+			lbCards.Items.Refresh();
+		}
+
+		private void tbxFieldName_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (changingDataInternally)
+				return;
+			if (ActiveField == null)
+				return;
+			ActiveField.IsDirty = true;
+			if (ActiveField.ParentCard != null)
+			{
+				ActiveField.ParentCard.IsDirty = true;
+				if (ActiveField.ParentCard.ParentDeck != null)
+					ActiveField.ParentCard.ParentDeck.IsDirty = true;
+			}
+			lbFields.Items.Refresh();
 		}
 	}
 }

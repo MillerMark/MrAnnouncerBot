@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeapTools", "..\LeapMotion\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardMaker", "CardMaker\CardMaker.csproj", "{2078406F-0887-4DB6-8584-7C773D1C9199}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imaging", "Imaging\Imaging.csproj", "{A514DE46-AA88-471B-81A8-2C387DC629F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{2078406F-0887-4DB6-8584-7C773D1C9199}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2078406F-0887-4DB6-8584-7C773D1C9199}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2078406F-0887-4DB6-8584-7C773D1C9199}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

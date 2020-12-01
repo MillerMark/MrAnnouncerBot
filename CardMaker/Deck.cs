@@ -2,17 +2,15 @@
 using System.Linq;
 using System.Collections.ObjectModel;
 using GoogleHelper;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace CardMaker
 {
 	[SheetName(Constants.SheetName_DeckData)]
 	[TabName("Decks")]
-	public class Deck
+	public class Deck : BaseNameId
 	{
-		[Indexer]
-		[Column]
-		public string Name { get; set; }
-		
 		public ObservableCollection<Card> Cards { get; set; } = new ObservableCollection<Card>();
 
 		public override string ToString()
@@ -22,7 +20,16 @@ namespace CardMaker
 
 		public void AddCard(Card card)
 		{
+			IsDirty = true;
 			Cards.Add(card);
+		}
+
+		public void RemoveCard(Card card)
+		{
+			Cards.Remove(card);
+			card.ParentDeck = null;
+			card.DeckId = string.Empty;
+			IsDirty = true;
 		}
 
 		public Deck()

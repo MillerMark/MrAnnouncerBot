@@ -159,6 +159,18 @@ namespace Imaging
 			return pixelColor.A > 128;
 		}
 
+		/// <summary>
+		/// Creates an Image with specified adjustments based on an image file on disk.
+		/// </summary>
+		/// <param name="angle">The angle to rotate the image. One of 0, 90, 180, or 270.</param>
+		/// <param name="hueShift">The degrees to rotate the hue.</param>
+		/// <param name="saturationAdjust">A value between -100 and 100. Negative values reduce saturation; positive values increase saturation.</param>
+		/// <param name="lightnessAdjust">A value between -100 and 100. Negative values darken the color; positive values lighten the color.</param>
+		/// <param name="contrast">A value between -100 and 100. Negative values reduce contrast (move more toward the threshold value); positive values increase the contrast (move away from the threshold value).</param>
+		/// <param name="scaleX">The horizontal scale of the image.</param>
+		/// <param name="scaleY">The vertical scale of the image.</param>
+		/// <param name="fileName">The image file to load.</param>
+		/// <returns></returns>
 		public static Image CreateImage(int angle, double hueShift, double saturationAdjust, double lightnessAdjust, double contrast, double scaleX, double scaleY, string fileName)
 		{
 			TransformedBitmap transformBmp = new TransformedBitmap();

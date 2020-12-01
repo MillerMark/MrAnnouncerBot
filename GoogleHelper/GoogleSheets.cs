@@ -172,7 +172,10 @@ namespace GoogleHelper
 						property.SetValue(instance, default(decimal));
 						break;
 					default:
-						System.Diagnostics.Debugger.Break();
+						if (property.PropertyType.BaseType.FullName == "System.Enum")
+							property.SetValue(instance, 0);
+						else
+							System.Diagnostics.Debugger.Break();
 						break;
 				}
 			}
@@ -185,17 +188,6 @@ namespace GoogleHelper
 			List<string> tabs = sheetTabMap[docName];
 			if (!tabs.Contains(tabName))
 				tabs.Add(tabName);
-		}
-
-		static string GetDocumentName(string tabName)
-		{
-			foreach (string docName in sheetTabMap.Keys)
-			{
-				List<string> tabs = sheetTabMap[docName];
-				if (tabs.Contains(tabName))
-					return docName;
-			}
-			return null;
 		}
 
 		static T newItem<T>(Dictionary<int, string> headers, IList<object> row) where T : new()
@@ -337,6 +329,11 @@ namespace GoogleHelper
 					if (column == -1)
 						throw new Exception($"Header not found in sheet: {indexColumnName}!");
 					IList<object> thisRow = allRows[rowIndex];
+					if (column >= thisRow.Count)
+					{
+						found = false;
+						break;
+					}
 					if (thisRow[column].ToString() == GetValue(obj, indexFields[i]))
 						found = true;
 					else
@@ -369,15 +366,18 @@ namespace GoogleHelper
 
 		static string GetExistingValue(IList<IList<object>> allRows, int columnIndex, int rowIndex)
 		{
-			return allRows[rowIndex][columnIndex].ToString();
+			object obj = allRows[rowIndex][columnIndex];
+			if (obj == null)
+				return string.Empty;
+			return obj.ToString();
 		}
 
-		static bool HasMember(string[] filterMembers, string memberName)
+		static bool HasMember(string[] memberList, string memberName)
 		{
-			if (filterMembers == null)
+			if (memberList == null)
 				return true;
 
-			foreach (string filterMember in filterMembers)
+			foreach (string filterMember in memberList)
 				if (filterMember == memberName)
 					return true;
 
@@ -392,7 +392,7 @@ namespace GoogleHelper
 				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
 				row[columnIndex] = GetValue(instance, memberInfo);
 			}
-			allRows.Add(row);
+			allRows.Add(row.ToList());
 		}
 
 		static int AddRow(string spreadsheetId, string tabName, MemberInfo[] indexFields, List<string> headerRow, MemberInfo[] serializableFields, IList<IList<object>> allRows, object instance)
@@ -410,8 +410,8 @@ namespace GoogleHelper
 				body.Values[0].Add(value);
 				SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
 				Execute(request);
-				AddInstance(allRows, headerRow, serializableFields, instance);
 			}
+			AddInstance(allRows, headerRow, serializableFields, instance);
 			return allRows.Count - 1;
 		}
 		/// <summary>
@@ -421,18 +421,18 @@ namespace GoogleHelper
 		/// <param name="tabName"></param>
 		/// <param name="instances"></param>
 		/// <param name="instanceType"></param>
-		/// <param name="filterMembersStr">Comma-separated list of names of member properties to save.</param>
-		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType, string filterMembersStr = null)
+		/// <param name="saveOnlyTheseMembersStr">Comma-separated list of names of member properties to save.</param>
+		public static void SaveChanges(string docName, string tabName, object[] instances, Type instanceType, string saveOnlyTheseMembersStr = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
 
-			ValidateDocAndTabNames(docName, tabName);
+			ValidateDocAndTabNames(docName, tabName, true);
 
-			string[] filterMembers = null;
-			if (filterMembersStr != null)
+			string[] saveOnlyTheseMembers = null;
+			if (saveOnlyTheseMembersStr != null)
 			{
-				filterMembers = filterMembersStr.Split(',');
+				saveOnlyTheseMembers = saveOnlyTheseMembersStr.Split(',');
 			}
 
 			string spreadsheetId = spreadsheetIDs[docName];
@@ -448,30 +448,38 @@ namespace GoogleHelper
 			{
 				int rowIndex = GetInstanceRowIndex(instances[i], indexFields, allRows, headerRow);
 				if (rowIndex < 0)
-					rowIndex = AddRow(spreadsheetId, tabName, indexFields, headerRow, serializableFields, allRows, instances[i]);
-
-				UpdateRow(tabName, instances, filterMembers, spreadsheetId, headerRow, allRows, serializableFields, i, rowIndex);
+					rowIndex = AddRow(spreadsheetId, tabName, serializableFields, headerRow, serializableFields, allRows, instances[i]);
+				else
+					UpdateRow(tabName, instances, saveOnlyTheseMembers, spreadsheetId, headerRow, allRows, serializableFields, i, rowIndex);
 			}
 		}
 
-		private static void ValidateDocAndTabNames(string docName, string tabName)
+		private static void ValidateDocAndTabNames(string docName, string tabName, bool trackTabIfMissing = false)
 		{
 			if (!spreadsheetIDs.ContainsKey(docName))
 				throw new InvalidDataException($"docName (\"{docName}\") not found!");
 
-			if (sheetTabMap[docName].IndexOf(tabName) < 0)
+			if (trackTabIfMissing)
+				Track(docName, tabName);
+			else if (sheetTabMap[docName].IndexOf(tabName) < 0)
 				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
 		}
 
-		private static void UpdateRow(string tabName, object[] instances, string[] filterMembers, string spreadsheetId, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex)
+		private static void UpdateRow(string tabName, object[] instances, string[] saveOnlyTheseMembers, string spreadsheetId, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex)
 		{
 			for (int j = 0; j < serializableFields.Length; j++)
 			{
 				// TODO: Filtering on the serializableFields would go here.
 				MemberInfo memberInfo = serializableFields[j];
 
-				if (!HasMember(filterMembers, memberInfo.Name))
+				if (!HasMember(saveOnlyTheseMembers, memberInfo.Name))
 					continue;
+
+				if (instances[i] is ITrackPropertyChanges trackPropertyChanges && trackPropertyChanges.ChangedProperties != null)
+				{
+					if (trackPropertyChanges.ChangedProperties.IndexOf(memberInfo.Name) < 0)
+						continue;
+				}
 
 				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
 
@@ -523,7 +531,7 @@ namespace GoogleHelper
 			headerRow = headerRowObjects.Select(x => x.ToString()).ToList();
 		}
 
-		public static void SaveChanges(object[] instances, string filterMembers = null)
+		public static void SaveChanges(object[] instances, string saveOnlyTheseMembersStr = null)
 		{
 			if (instances == null || instances.Length == 0)
 				return;
@@ -531,7 +539,7 @@ namespace GoogleHelper
 
 			GetSheetTabAttributes(instanceType, out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute);
 
-			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType, filterMembers);
+			SaveChanges(sheetNameAttribute.SheetName, tabNameAttribute.TabName, instances, instanceType, saveOnlyTheseMembersStr);
 		}
 
 		private static void GetSheetTabAttributes(Type instanceType, out SheetNameAttribute sheetNameAttribute, out TabNameAttribute tabNameAttribute)
