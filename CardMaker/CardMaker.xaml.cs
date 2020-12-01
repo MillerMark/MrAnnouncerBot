@@ -40,6 +40,7 @@ namespace CardMaker
 				SelectDeck(activeDeck);
 			}
 		}
+		LayerTextOptions activeLayerTextOptions;
 		Card activeCard;
 		public Card ActiveCard
 		{
@@ -80,6 +81,9 @@ namespace CardMaker
 		void SelectCard(Card card)
 		{
 			lbCards.SelectedItem = card;
+			if (card == null)
+				return;
+			LoadNewStyle(card.StylePath);
 		}
 
 		void SelectField(Field field)
@@ -155,6 +159,12 @@ namespace CardMaker
 			SelectByIndex(lbFields, index);
 		}
 
+		void SetActiveLayerTextOptions(LayerTextOptions layerTextOptions)
+		{
+			activeLayerTextOptions = layerTextOptions;
+			grdCardText.DataContext = layerTextOptions;
+		}
+
 		void SetActiveCard(Card card)
 		{
 			changingDataInternally = true;
@@ -164,6 +174,16 @@ namespace CardMaker
 				lbCards.SelectedItem = card;
 				spSelectedCard.DataContext = card;
 				SetActiveFields(card?.Fields);
+				if (card == null)
+					SetActiveLayerTextOptions(null);
+				else
+				{
+					SetActiveLayerTextOptions(CardData.GetLayerTextOptions(card.StylePath));
+					if (activeLayerTextOptions != null)
+						ActiveCard.FontBrush = activeLayerTextOptions.FontBrush;
+				}
+
+				tbItemName.DataContext = card;
 				bool isValidCard = card != null;
 				btnDeleteCard.IsEnabled = isValidCard;
 				spSelectedCard.Visibility = isValidCard ? Visibility.Visible : Visibility.Collapsed;
@@ -468,7 +488,7 @@ namespace CardMaker
 			AddCardStyleMenuItems(mnuCardStyle.Items, directories);
 		}
 
-		List<CardImageLayer> cardLayers;
+		CardLayerManager cardLayerManager = new CardLayerManager();
 
 		void DeleteAllImages()
 		{
@@ -479,16 +499,17 @@ namespace CardMaker
 			}
 		}
 
-		void AddImage(CardImageLayer cardImageLayer)
-		{
-			cvsLayers.Children.Add(cardImageLayer.CreateImage());
-		}
-
 		void LoadNewStyle(string stylePath)
 		{
-			if (cardLayers == null)
-				cardLayers = new List<CardImageLayer>();
-			cardLayers.Clear();
+			if (string.IsNullOrWhiteSpace(stylePath))
+			{
+				btnCardStylePicker.Content = "Card Style";
+				return;
+			}
+
+			btnCardStylePicker.Content = $"Card Style: {stylePath}";
+
+			cardLayerManager.Clear();
 
 			if (ActiveCard != null)
 				ActiveCard.StylePath = stylePath;
@@ -497,12 +518,17 @@ namespace CardMaker
 			foreach (string pngFile in pngFiles)
 			{
 				CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
-				cardLayers.Add(cardImageLayer);
-				AddImage(cardImageLayer);
+				cardLayerManager.Add(cardImageLayer);
 			}
-			Canvas.SetZIndex(grdCardText, 20);
-			cardLayers = cardLayers.OrderBy(x => x.Index).Reverse().ToList();
-			lbCardLayers.ItemsSource = cardLayers;
+			cardLayerManager.AddLayersToCanvas(cvsLayers);
+			cardLayerManager.SortByLayerIndex();
+			MoveTextLayerToTop();
+			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
+		}
+
+		private void MoveTextLayerToTop()
+		{
+			Panel.SetZIndex(grdCardText, 200);
 		}
 	}
 }

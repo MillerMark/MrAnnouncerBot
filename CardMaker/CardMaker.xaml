@@ -228,7 +228,7 @@
 				</StackPanel>
 
 				<StackPanel x:Name="spLayersList" Orientation="Vertical" Margin="20, 0, 0, 0">
-					<Button x:Name="btnCardStylePicker" Content="Card Style" Width="80" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnCardStylePicker_MouseDown">
+					<Button x:Name="btnCardStylePicker" Content="Card Style" Width="Auto" Padding="8,0,8,0" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnCardStylePicker_MouseDown">
 						<Button.ContextMenu>
 							<ContextMenu x:Name="mnuCardStyle" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
 							</ContextMenu>
@@ -252,7 +252,7 @@
 					</Button>
 
 					<TextBlock Text="Layers:" Width="Auto" Height="Auto"/>
-					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="140" >
+					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="140" HorizontalAlignment="Left">
 					</ListBox>
 				</StackPanel>
 
@@ -261,8 +261,11 @@
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
 					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
@@ -275,20 +278,23 @@
 						<TextBox x:Name="tbxCardText" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="tbxCardName_TextChanged" MinWidth="250" Margin="0, 0, 20, 0"/>
 					</StackPanel>
 					
-					<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" Width="300" HorizontalAlignment="Left">
+					<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" Width="300" HorizontalAlignment="Left" Margin="0, -3, 0, 0">
 						<TextBlock Text="Font Size: " Width="Auto" Height="Auto" Margin="0, 0, 0, 3" Foreground="#FF3C5EE5"/>
-						<RadioButton x:Name="rbSmall" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Small}" Margin="20, 2, 9, 0">
+						<RadioButton x:Name="rbSmall" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Small}" Margin="4, 2, 9, 0">
 							Small
 						</RadioButton>
-						<RadioButton x:Name="rbNormalSize" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Normal}" Margin="20, 2, 9, 0">
+						<RadioButton x:Name="rbNormalSize" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Normal}" Margin="4, 2, 9, 0">
 							Normal
 						</RadioButton>
-						<RadioButton x:Name="rbLarge" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Large}" Margin="20, 2, 9, 0">
+						<RadioButton x:Name="rbLarge" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Large}" Margin="4, 2, 9, 0">
 							Large
 						</RadioButton>
 					</StackPanel>
-					
-					<TextBlock x:Name="txblSelectedLayer" Grid.Row="2" Grid.ColumnSpan="2" Text="Selected Layer:" Width="Auto" Height="Auto"/>
+
+					<StackPanel x:Name="spSelectedLayerIndicator" Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="2" Margin="0, 6, 0, 6">
+						<TextBlock x:Name="txblSelectedLayer" Text="Selected Layer: " Width="Auto" Height="Auto" Foreground="#FF4C4C4C"/>
+						<TextBlock x:Name="tbLayerName" Text="Layer Name" Width="Auto" Height="Auto"/>
+					</StackPanel>
 
 					<Canvas x:Name="cvsLayers" Grid.Column="1" Grid.Row="3" Width="280" Height="424">
 						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[0] Background.png" Width="280" Height="424"></Image>
@@ -298,9 +304,9 @@
 						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[1] Cover.png" Width="280" Height="424"></Image>
 						<!--<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Corner - Worm.png" Width="280" Height="424"></Image>-->
 						<Image Canvas.Top="52" Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Left Side - Skeleton Hand.png" Width="280" Height="424"></Image>
-						<Grid x:Name="grdCardText" Canvas.Left="60" Canvas.Top="258" Width="185" Height="83">
+						<Grid x:Name="grdCardText" Canvas.Left="{Binding GridLeft}" Canvas.Top="{Binding GridTop}" Width="{Binding GridWidth}" Height="{Binding GridHeight}">
 							<Grid.LayoutTransform>
-								<RotateTransform Angle="-9"></RotateTransform>
+								<RotateTransform x:Name="rotTx4CardText" Angle="{Binding TextAngle}"></RotateTransform>
 							</Grid.LayoutTransform>
 							<Viewbox>
 								<!-- WrapPoint can map to tbItemName.Width, and we might be able to calculate it as well? 
@@ -310,21 +316,37 @@
 							Or maybe just use these settings...
 							-->
 								<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" LineStackingStrategy="BlockLineHeight" 
-									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" >
+									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" Foreground="{Binding FontBrush}">
 								</TextBlock>
 							</Viewbox>
 						</Grid>
 					</Canvas>
 
-					<TextBlock Grid.Row="5" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 0, 0, 3"/>
-					<Slider Grid.Row="5" Grid.Column="1" x:Name="sliderOffsetX" Value="0" Minimum="-200" Maximum="200" Width="280" Margin="0, 0, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
-					<StackPanel Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
-						<TextBlock Text="Y offset:" Width="Auto" Height="Auto"/>
-						<Slider x:Name="sliderOffsetY" Value="0" Minimum="-200" Maximum="200" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
+					<TextBlock Grid.Row="4" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 0, 0, 3" Foreground="#FF3C5EE5"/>
+					<Slider Grid.Row="4" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Value="0" Minimum="-200" Maximum="200" Width="300" Margin="0, 0, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
+					<StackPanel Grid.Row="3" Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
+						<StackPanel Orientation="Vertical">
+							<TextBlock Text="Y" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+							<TextBlock Text="offset:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+						</StackPanel>
+						<Slider x:Name="sliderOffsetY" Value="0" Minimum="-200" Maximum="200" Orientation="Vertical" Height="384" Margin="7, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
+					</StackPanel>
+
+					<StackPanel Grid.Row="6" Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10, 0, 3">
+						<TextBlock Text="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+						<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+					</StackPanel>
+					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="0" Minimum="-200" Maximum="200" Width="350" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+					<StackPanel Grid.Row="3" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
+						<StackPanel Orientation="Vertical">
+							<TextBlock Text="Vertical" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+							<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+						</StackPanel>
+						<Slider x:Name="sliderVerticalStretch" Value="0" Minimum="-200" Maximum="200" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ></Slider>
 					</StackPanel>
 				</Grid>
 
-				<Grid x:Name="grdLayerDetail" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">
+				<Grid x:Name="grdLayerDetail" Height="Auto" Width="Auto" Margin="30, 69, 0, 0">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
@@ -332,11 +354,20 @@
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
-					<TextBlock Text="Hue:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0"/>
+					<TextBlock Text="Hue:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0" Foreground="#FF3C5EE5"/>
 					<Slider Grid.Column="1" x:Name="sliderHue" Width="120" Margin="0, 0, 0, 0" ValueChanged="sliderHue_ValueChanged"></Slider>
-					<TextBlock Grid.Row="1" Text="Saturation:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0"/>
+
+					<TextBlock Grid.Row="1" Text="Saturation:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
 					<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderSaturation" Width="120" Margin="0, 10, 0, 0" ValueChanged="sliderSaturation_ValueChanged"></Slider>
+
+					<TextBlock Grid.Row="2" Text="Lightness:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
+					<Slider Grid.Column="1" Grid.Row="2" x:Name="sliderLightness" Width="120" Margin="0, 10, 0, 0"></Slider>
+
+					<TextBlock Grid.Row="3" Text="Contrast:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
+					<Slider Grid.Column="1" Grid.Row="3" x:Name="sliderContrast" Width="120" Margin="0, 10, 0, 0"></Slider>
 				</Grid>
 			</StackPanel>
 		</StackPanel>

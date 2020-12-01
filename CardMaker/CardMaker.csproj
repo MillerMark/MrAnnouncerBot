@@ -80,11 +80,13 @@
     <Compile Include="Card.cs" />
     <Compile Include="CardExpires.cs" />
     <Compile Include="CardImageLayer.cs" />
+    <Compile Include="CardLayerManager.cs" />
     <Compile Include="CardStyleMenuItem.cs" />
     <Compile Include="CooldownUnits.cs" />
     <Compile Include="EnumBooleanConverter.cs" />
     <Compile Include="Field.cs" />
     <Compile Include="FieldType.cs" />
+    <Compile Include="LayerTextOptions.cs" />
     <Compile Include="Rarity.cs" />
     <Compile Include="TextFontScale.cs" />
     <Compile Include="WpfExtensionMethods.cs" />

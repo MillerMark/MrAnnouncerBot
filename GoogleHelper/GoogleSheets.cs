@@ -132,6 +132,14 @@ namespace GoogleHelper
 							System.Diagnostics.Debugger.Break();
 						}
 						break;
+					case "System.Double":
+						if (double.TryParse(value, out double doubleValue))
+							property.SetValue(instance, doubleValue);
+						else
+						{
+							System.Diagnostics.Debugger.Break();
+						}
+						break;
 					case "System.String":
 						property.SetValue(instance, row[i]);
 						break;

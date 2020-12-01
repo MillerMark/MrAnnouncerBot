@@ -5,14 +5,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using GoogleHelper;
+using System.Windows.Media;
 
 namespace CardMaker
 {
-	
 	[SheetName(Constants.SheetName_DeckData)]
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		Brush fontBrush;
 		string stylePath;
 		double textLineHeight;
 		double textFontSize;
@@ -58,7 +59,18 @@ namespace CardMaker
 				TextLineHeight = TextFontSize * lineHeightFactor;
 			}
 		}
-
+		
+		public Brush FontBrush
+		{
+			get => fontBrush;
+			set
+			{
+				if (fontBrush == value)
+					return;
+				fontBrush = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public double TextFontSize
 		{
@@ -292,7 +304,6 @@ namespace CardMaker
 		public ObservableCollection<Field> Fields { get; set; } = new ObservableCollection<Field>();
 
 		[Column]
-		
 		public string StylePath
 		{
 			get => stylePath;

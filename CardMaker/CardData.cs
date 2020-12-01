@@ -12,6 +12,7 @@ namespace CardMaker
 		public BindingList<Deck> AllKnownDecks { get; set; }
 		public BindingList<Field> AllKnownFields { get; set; }
 		public BindingList<Card> AllKnownCards { get; set; }
+		public BindingList<LayerTextOptions> AllKnownLayerTextOptions { get; set; }
 		public CardData()
 		{
 
@@ -47,14 +48,27 @@ namespace CardMaker
 		void AddCardsToDecks()
 		{
 			foreach (Card card in AllKnownCards)
-			{
 				AddCardToDeck(card);
-			}
 		}
 
 		Card GetCard(string iD)
 		{
 			return AllKnownCards.FirstOrDefault(x => x.ID == iD);
+		
+		}
+		public LayerTextOptions GetLayerTextOptions(string name)
+		{
+			LayerTextOptions firstMatch = AllKnownLayerTextOptions.FirstOrDefault(x => x.Name == name);
+			if (firstMatch == null)
+			{
+				foreach (LayerTextOptions layerTextOptions in AllKnownLayerTextOptions)
+				{
+					string layerName = layerTextOptions.Name;
+					if (layerName.EndsWith("*") && name.StartsWith(layerName.Substring(0, layerName.Length - 1)))
+						return layerTextOptions;
+				}
+			}
+			return firstMatch;
 		}
 
 		void AddFieldToCard(Field field)
@@ -75,6 +89,7 @@ namespace CardMaker
 			AllKnownDecks = LoadData<Deck>();
 			AllKnownCards = LoadData<Card>();
 			AllKnownFields = LoadData<Field>();
+			AllKnownLayerTextOptions = LoadData<LayerTextOptions>();
 
 			numDecksCreated = AllKnownDecks.Count;
 			numCardsCreated = AllKnownCards.Count;
@@ -95,6 +110,7 @@ namespace CardMaker
 			GoogleSheets.SaveChanges(AllKnownDecks.Where(x => x.IsDirty).ToArray());
 			GoogleSheets.SaveChanges(AllKnownCards.Where(x => x.IsDirty).ToArray());
 			GoogleSheets.SaveChanges(AllKnownFields.Where(x => x.IsDirty).ToArray());
+			GoogleSheets.SaveChanges(AllKnownLayerTextOptions.Where(x => x.IsDirty).ToArray());
 			ClearIsDirty();
 		}
 
@@ -108,6 +124,9 @@ namespace CardMaker
 
 			foreach (Field field in AllKnownFields)
 				field.IsDirty = false;
+
+			foreach (LayerTextOptions layerTextOptions in AllKnownLayerTextOptions)
+				layerTextOptions.IsDirty = false;
 		}
 
 		public void Delete(Deck deck)
