@@ -303,7 +303,23 @@ namespace CardMaker
 
 		private void lbCardLayers_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			sliderOffsetX.DataContext = cardImageLayer.Details;
+			sliderOffsetY.DataContext = cardImageLayer.Details;
+			sliderHorizontalStretch.DataContext = cardImageLayer.Details;
+			sliderVerticalStretch.DataContext = cardImageLayer.Details;
+			btnResetOffsets.DataContext = cardImageLayer;
+			btnResetScale.DataContext = cardImageLayer;
+			btnResetHue.DataContext = cardImageLayer;
+			btnResetLightness.DataContext = cardImageLayer;
+			btnResetSaturation.DataContext = cardImageLayer;
+			btnResetContrast.DataContext = cardImageLayer;
+			sliderHue.DataContext = cardImageLayer.Details;
+			sliderLightness.DataContext = cardImageLayer.Details;
+			sliderSaturation.DataContext = cardImageLayer.Details;
+			sliderContrast.DataContext = cardImageLayer.Details;
+			tbLayerName.DataContext = cardImageLayer.Details;
 		}
 
 		private void sliderSaturation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -490,12 +506,12 @@ namespace CardMaker
 
 		CardLayerManager cardLayerManager = new CardLayerManager();
 
-		void DeleteAllImages()
+		void DeleteAllImages(Canvas canvas)
 		{
-			for (int i = cvsLayers.Children.Count - 1; i >= 0; i--)
+			for (int i = canvas.Children.Count - 1; i >= 0; i--)
 			{
-				if (cvsLayers.Children[i] is Image)
-					cvsLayers.Children.RemoveAt(i);
+				if (canvas.Children[i] is Image)
+					canvas.Children.RemoveAt(i);
 			}
 		}
 
@@ -513,22 +529,69 @@ namespace CardMaker
 
 			if (ActiveCard != null)
 				ActiveCard.StylePath = stylePath;
-			DeleteAllImages();
+			DeleteAllImages(cvsLayers);
 			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
 			foreach (string pngFile in pngFiles)
 			{
 				CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
+				cardImageLayer.Details = ActiveCard.GetLayerDetails(cardImageLayer.LayerName);
 				cardLayerManager.Add(cardImageLayer);
 			}
 			cardLayerManager.AddLayersToCanvas(cvsLayers);
 			cardLayerManager.SortByLayerIndex();
 			MoveTextLayerToTop();
 			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
+			if (cardLayerManager.CardLayers.Count > 0)
+				lbCardLayers.SelectedItem = cardLayerManager.CardLayers[0];
 		}
 
 		private void MoveTextLayerToTop()
 		{
 			Panel.SetZIndex(grdCardText, 200);
+		}
+
+		private void btnResetOffsets_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			cardImageLayer.Details.OffsetX = 0;
+			cardImageLayer.Details.OffsetY = 0;
+		}
+
+		private void btnResetScale_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			cardImageLayer.Details.ScaleX = 1;
+			cardImageLayer.Details.ScaleY = 1;
+		}
+
+		private void btnResetHue_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			cardImageLayer.Details.Hue = 0;
+		}
+
+		private void btnResetSaturation_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			cardImageLayer.Details.Sat = 0;
+		}
+
+		private void btnResetLightness_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			cardImageLayer.Details.Light = 0;
+		}
+
+		private void btnResetContrast_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+			cardImageLayer.Details.Contrast = 0;
 		}
 	}
 }

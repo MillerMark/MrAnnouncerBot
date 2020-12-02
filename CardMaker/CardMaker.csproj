@@ -16,7 +16,7 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -76,6 +76,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AllLayers.cs" />
     <Compile Include="BaseNameId.cs" />
     <Compile Include="Card.cs" />
     <Compile Include="CardExpires.cs" />
@@ -86,8 +87,10 @@
     <Compile Include="EnumBooleanConverter.cs" />
     <Compile Include="Field.cs" />
     <Compile Include="FieldType.cs" />
+    <Compile Include="LayerDetails.cs" />
     <Compile Include="LayerTextOptions.cs" />
     <Compile Include="Rarity.cs" />
+    <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="TextFontScale.cs" />
     <Compile Include="WpfExtensionMethods.cs" />
     <Page Include="CardMaker.xaml">
@@ -136,6 +139,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DndCore\DndCore.csproj">
+      <Project>{a953618e-82d1-4837-a568-5bb75cc6bcc0}</Project>
+      <Name>DndCore</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj">
       <Project>{25115c30-e684-4018-a8c5-f8a39697e080}</Project>
       <Name>GoogleHelper</Name>

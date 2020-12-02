@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Runtime.CompilerServices;
 using GoogleHelper;
 using System.Windows.Media;
@@ -13,6 +14,7 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		string layerModStr;
 		Brush fontBrush;
 		string stylePath;
 		double textLineHeight;
@@ -59,7 +61,83 @@ namespace CardMaker
 				TextLineHeight = TextFontSize * lineHeightFactor;
 			}
 		}
-		
+
+		AllLayers allLayers = new AllLayers();
+		bool layersAreDirty;
+
+		[Column]
+		public string LayerMods
+		{
+			get
+			{
+				if (layerModStr == null || layersAreDirty)
+				{
+					layerModStr = CreateLayerMods();
+					layersAreDirty = false;
+				}
+				return layerModStr;
+			}
+			set
+			{
+				if (layerModStr == value)
+					return;
+				layerModStr = value;
+				CreateLayerDetails();
+				OnPropertyChanged();
+			}
+		}
+
+		void AddLayerDetail(string layerDetail)
+		{
+			int openParenPos = layerDetail.IndexOf('(');
+			if (openParenPos < 1)
+			{
+				System.Diagnostics.Debugger.Break();
+				return;
+			}
+
+			string layerName = layerDetail.Substring(0, openParenPos).Trim();
+			LayerDetails layer = allLayers.Get(layerName);
+
+			string layerParameters = layerDetail.Substring(openParenPos + 1).Trim().TrimEnd(')');
+
+			string[] assignments = layerParameters.Split(',');
+			foreach (string assignment in assignments)
+				layer.AddAssignment(assignment);
+		}
+
+		void CreateLayerDetails()
+		{
+			allLayers.Clear();
+			if (string.IsNullOrWhiteSpace(layerModStr))
+				return;
+			string[] parts = layerModStr.Split(';');
+			foreach (string part in parts)
+				AddLayerDetail(part);
+		}
+
+		string CreateLayerMods()
+		{
+			StringBuilder result = new StringBuilder();
+			foreach (LayerDetails layerDetails in allLayers.Details)
+			{
+				string layerDetailsStr = layerDetails.GetStr();
+				if (layerDetailsStr.Length > 0)
+				{
+					if (result.Length > 0)
+						result.Append("; ");
+					result.Append(layerDetailsStr);
+				}
+			}
+			return result.ToString();
+		}
+
+		public void InvalidateLayerMods()
+		{
+			layerModStr = null;
+		}
+
+
 		public Brush FontBrush
 		{
 			get => fontBrush;
@@ -315,7 +393,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
 
 		public override string ToString()
 		{
@@ -338,9 +416,19 @@ namespace CardMaker
 
 		public Card()
 		{
+			allLayers.PropertyChanged += AllLayers_PropertyChanged;
 		}
 
-		public Card(Deck deck)
+		private void AllLayers_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (allLayers.IsDirty)
+			{
+				layersAreDirty = true;
+				OnPropertyChanged(nameof(LayerMods));
+			}
+		}
+
+		public Card(Deck deck) : base()
 		{
 			CreateNewId();
 			AddToDeck(deck);
@@ -351,6 +439,11 @@ namespace CardMaker
 			ParentDeck = deck;
 			if (ParentDeck != null)
 				ParentDeck.AddCard(this);
+		}
+
+		public LayerDetails GetLayerDetails(string layerName)
+		{
+			return allLayers.Get(layerName);
 		}
 	}
 }

@@ -293,7 +293,7 @@
 
 					<StackPanel x:Name="spSelectedLayerIndicator" Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="2" Margin="0, 6, 0, 6">
 						<TextBlock x:Name="txblSelectedLayer" Text="Selected Layer: " Width="Auto" Height="Auto" Foreground="#FF4C4C4C"/>
-						<TextBlock x:Name="tbLayerName" Text="Layer Name" Width="Auto" Height="Auto"/>
+						<TextBlock x:Name="tbLayerName" Text="{Binding Name}" Width="Auto" Height="Auto"/>
 					</StackPanel>
 
 					<Canvas x:Name="cvsLayers" Grid.Column="1" Grid.Row="3" Width="280" Height="424">
@@ -322,32 +322,39 @@
 						</Grid>
 					</Canvas>
 
-					<TextBlock Grid.Row="4" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 0, 0, 3" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Row="4" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Value="0" Minimum="-200" Maximum="200" Width="300" Margin="0, 0, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
+					<TextBlock Grid.Row="4" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 8, 0, 3" Foreground="#FF3C5EE5"/>
+					<Slider Grid.Row="4" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Value="{Binding OffsetX}" Minimum="-200" Maximum="200" Width="305" Margin="0, 8, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
 					<StackPanel Grid.Row="3" Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
-							<TextBlock Text="Y" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
-							<TextBlock Text="offset:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
+							<TextBlock Text="Y" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
+							<TextBlock Text="offset:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
 						</StackPanel>
-						<Slider x:Name="sliderOffsetY" Value="0" Minimum="-200" Maximum="200" Orientation="Vertical" Height="384" Margin="7, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
+						<Slider x:Name="sliderOffsetY" Value="{Binding OffsetY}" Minimum="-200" Maximum="200" IsDirectionReversed="True" Orientation="Vertical" Height="388" Margin="14, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
 					</StackPanel>
 
 					<StackPanel Grid.Row="6" Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10, 0, 3">
 						<TextBlock Text="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 					</StackPanel>
-					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="0" Minimum="-200" Maximum="200" Width="350" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="-200" Maximum="200" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 					<StackPanel Grid.Row="3" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Vertical" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 							<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						</StackPanel>
-						<Slider x:Name="sliderVerticalStretch" Value="0" Minimum="-200" Maximum="200" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ></Slider>
+						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="-200" Maximum="200" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ></Slider>
 					</StackPanel>
+					<Button x:Name="btnResetOffsets" ToolTip="Reset offsets to 0" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" Width="30" Height="30" Margin="-8, -4, 0, 0" Click="btnResetOffsets_Click" Visibility="{Binding Path=OffsetChanged, Converter={StaticResource BoolToVis}}">
+						X
+					</Button>
+					<Button x:Name="btnResetScale" ToolTip="Reset scale to 1" Grid.Column="3" Grid.Row="6" VerticalAlignment="Center" Width="30" Height="30" Margin="0, 0, 0, 0" Click="btnResetScale_Click" Visibility="{Binding Path=ScaleChanged, Converter={StaticResource BoolToVis}}">
+						X
+					</Button>
 				</Grid>
 
 				<Grid x:Name="grdLayerDetail" Height="Auto" Width="Auto" Margin="30, 69, 0, 0">
 					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
@@ -357,17 +364,30 @@
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
-					<TextBlock Text="Hue:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" x:Name="sliderHue" Width="120" Margin="0, 0, 0, 0" ValueChanged="sliderHue_ValueChanged"></Slider>
+					<TextBlock Text="Hue shift:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0" Foreground="#FF3C5EE5"/>
+					<Slider Grid.Column="1" x:Name="sliderHue" Minimum="-180" Maximum="180" Value="{Binding Hue}" Width="120" Margin="0, 0, 0, 0" ValueChanged="sliderHue_ValueChanged"></Slider>
+					<Button Grid.Column="2" x:Name="btnResetHue" ToolTip="Reset hue to 0" Width="20" Height="20" Margin="4, -1, 0, 0" Click="btnResetHue_Click" Visibility="{Binding Path=HueChanged, Converter={StaticResource BoolToVis}}">
+						X
+					</Button>
 
 					<TextBlock Grid.Row="1" Text="Saturation:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderSaturation" Width="120" Margin="0, 10, 0, 0" ValueChanged="sliderSaturation_ValueChanged"></Slider>
+					<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderSaturation" Value="{Binding Sat}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0" ValueChanged="sliderSaturation_ValueChanged"></Slider>
+					<Button Grid.Row="1" Grid.Column="2" x:Name="btnResetSaturation" ToolTip="Reset saturation to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetSaturation_Click" Visibility="{Binding Path=SatChanged, Converter={StaticResource BoolToVis}}">
+						X
+					</Button>
+
 
 					<TextBlock Grid.Row="2" Text="Lightness:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" Grid.Row="2" x:Name="sliderLightness" Width="120" Margin="0, 10, 0, 0"></Slider>
+					<Slider Grid.Column="1" Grid.Row="2" x:Name="sliderLightness" Value="{Binding Light}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0"></Slider>
+					<Button Grid.Row="2" Grid.Column="2" x:Name="btnResetLightness" ToolTip="Reset lightness to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetLightness_Click" Visibility="{Binding Path=LightChanged, Converter={StaticResource BoolToVis}}">
+						X
+					</Button>
 
 					<TextBlock Grid.Row="3" Text="Contrast:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" Grid.Row="3" x:Name="sliderContrast" Width="120" Margin="0, 10, 0, 0"></Slider>
+					<Slider Grid.Column="1" Grid.Row="3" x:Name="sliderContrast" Value="{Binding Contrast}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0"></Slider>
+					<Button Grid.Row="3" Grid.Column="2" x:Name="btnResetContrast" ToolTip="Reset contrast to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetContrast_Click" Visibility="{Binding Path=ContrastChanged, Converter={StaticResource BoolToVis}}">
+						X
+					</Button>
 				</Grid>
 			</StackPanel>
 		</StackPanel>
