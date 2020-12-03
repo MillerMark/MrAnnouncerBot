@@ -34,7 +34,7 @@ namespace CardMaker
 		void Add(LayerDetails layerDetails)
 		{
 			Details.Add(layerDetails);
-			OnPropertyChanged(new PropertyChangedEventArgs("Details"));
+			//OnPropertyChanged(new PropertyChangedEventArgs("Details"));
 		}
 
 		public LayerDetails Get(string layerName)

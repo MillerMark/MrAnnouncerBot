@@ -59,7 +59,7 @@ namespace CardMaker
 		public LayerTextOptions GetLayerTextOptions(string name)
 		{
 			LayerTextOptions firstMatch = AllKnownLayerTextOptions.FirstOrDefault(x => x.Name == name);
-			if (firstMatch == null)
+			if (firstMatch == null && name != null)
 			{
 				foreach (LayerTextOptions layerTextOptions in AllKnownLayerTextOptions)
 				{

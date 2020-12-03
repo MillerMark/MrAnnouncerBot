@@ -154,6 +154,8 @@ namespace Imaging
 		#endregion
 		public void HueShiftDegrees(double degrees)
 		{
+			if (alpha == 0)
+				return;
 			hue += degrees / 360.0;
 			while (hue < 0)
 			{
@@ -171,6 +173,8 @@ namespace Imaging
 		/// <param name="saturationAdjust">A value between -100 and 100. Negative values reduce saturation; positive values increase saturation.</param>
 		public void AdjustSaturation(double saturationAdjust)
 		{
+			if (alpha == 0)
+				return;
 			if (saturationAdjust > 0)
 				Saturation += (1 - Saturation) * saturationAdjust / 100;
 			else
@@ -183,6 +187,8 @@ namespace Imaging
 		/// <param name="lightnessAdjust">A value between -100 and 100. Negative values darken the color; positive values lighten the color.</param>
 		public void AdjustLightness(double lightnessAdjust)
 		{
+			if (alpha == 0)
+				return;
 			if (lightnessAdjust > 0)
 				Lightness += (1 - Lightness) * lightnessAdjust / 100;
 			else
@@ -197,6 +203,8 @@ namespace Imaging
 		/// <param name="threshold">A value between 0 and 1, around which contrast is adjusted.</param>
 		public void AdjustContrast(double contrast, double threshold)
 		{
+			if (alpha == 0)
+				return;
 			double testBright = GetRelativeLuminance();
 			double divisor = 50d;
 			if (contrast > 0)  // Increase contrast.

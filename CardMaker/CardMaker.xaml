@@ -7,12 +7,19 @@
 		xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Card Maker" Height="569" Width="1800" MinHeight="695">
+	<Window.CommandBindings>
+		<CommandBinding Command="Save" Executed="SaveCommandBinding_Executed"/>
+	</Window.CommandBindings>
+	<Window.InputBindings>
+		<KeyBinding Key="S" Modifiers="Control" Command="Save"/>
+	</Window.InputBindings>
 	<Window.Resources>
 		<Style TargetType="ListViewItem">
 			<Style.Resources>
 				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Red"/>
 			</Style.Resources>
 		</Style>
+		
 		<BooleanToVisibilityConverter x:Key="BoolToVis"/>
 		<local:EnumBooleanConverter x:Key="EnumToBool" />
 		<ObjectDataProvider x:Key="CooldownUnitsEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
@@ -30,7 +37,7 @@
 		<Menu>
 			<MenuItem Header="_File">
 				<MenuItem Header="_Test Status" Click="TestStatusBarMenuItem_Click" Visibility="Collapsed"></MenuItem>
-				<MenuItem Header="_Save" Click="SaveMenuItem_Click" ></MenuItem>
+				<MenuItem Header="_Save" Command="Save" InputGestureText="Ctrl+S"></MenuItem>
 			</MenuItem>
 		</Menu>
 		<StatusBar x:Name="statusBar" Background="#FFFFFFD4" Visibility="Collapsed" BorderBrush="#FFF59595" BorderThickness="2">
@@ -256,7 +263,7 @@
 					</ListBox>
 				</StackPanel>
 
-				<Grid x:Name="Grid1" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">
+				<Grid x:Name="grdLayerDetails" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
@@ -297,24 +304,11 @@
 					</StackPanel>
 
 					<Canvas x:Name="cvsLayers" Grid.Column="1" Grid.Row="3" Width="280" Height="424">
-						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[0] Background.png" Width="280" Height="424"></Image>
-						<!--<Image Canvas.Left="65" Canvas.Top="88" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons\Protection from Evil and Good.png" Height="174" Width="174"/>-->
-						<Image Canvas.Left="65" Canvas.Top="88" Source="D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons\Alarm.png" Height="174" Width="174"/>
-						<Image Canvas.Left="39" Canvas.Top="62" Source="C:\Users\Mark Miller\Downloads\6570512_preview.png" Height="200" Width="200" Opacity="0.5"/>
-						<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\Rare\[1] Cover.png" Width="280" Height="424"></Image>
-						<!--<Image Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Corner - Worm.png" Width="280" Height="424"></Image>-->
-						<Image Canvas.Top="52" Source="D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets\Witchcraft\\Shared Top Layer Adornments\Left Side - Skeleton Hand.png" Width="280" Height="424"></Image>
 						<Grid x:Name="grdCardText" Canvas.Left="{Binding GridLeft}" Canvas.Top="{Binding GridTop}" Width="{Binding GridWidth}" Height="{Binding GridHeight}">
 							<Grid.LayoutTransform>
 								<RotateTransform x:Name="rotTx4CardText" Angle="{Binding TextAngle}"></RotateTransform>
 							</Grid.LayoutTransform>
 							<Viewbox>
-								<!-- WrapPoint can map to tbItemName.Width, and we might be able to calculate it as well? 
-							
-							Also, a slider to tbItemName.LineHeight and tbItemName.FontSize may be useful.
-							
-							Or maybe just use these settings...
-							-->
 								<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" LineStackingStrategy="BlockLineHeight" 
 									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" Foreground="{Binding FontBrush}">
 								</TextBlock>
@@ -329,20 +323,20 @@
 							<TextBlock Text="Y" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
 							<TextBlock Text="offset:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
 						</StackPanel>
-						<Slider x:Name="sliderOffsetY" Value="{Binding OffsetY}" Minimum="-200" Maximum="200" IsDirectionReversed="True" Orientation="Vertical" Height="388" Margin="14, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
+						<Slider x:Name="sliderOffsetY" Value="{Binding OffsetY}" Minimum="-400" Maximum="400" IsDirectionReversed="True" Orientation="Vertical" Height="388" Margin="14, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
 					</StackPanel>
 
 					<StackPanel Grid.Row="6" Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10, 0, 3">
 						<TextBlock Text="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 					</StackPanel>
-					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="-200" Maximum="200" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 					<StackPanel Grid.Row="3" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Vertical" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 							<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						</StackPanel>
-						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="-200" Maximum="200" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ></Slider>
+						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="0.1" Maximum="3" IsDirectionReversed="True" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ></Slider>
 					</StackPanel>
 					<Button x:Name="btnResetOffsets" ToolTip="Reset offsets to 0" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" Width="30" Height="30" Margin="-8, -4, 0, 0" Click="btnResetOffsets_Click" Visibility="{Binding Path=OffsetChanged, Converter={StaticResource BoolToVis}}">
 						X

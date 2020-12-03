@@ -78,6 +78,7 @@
     </ApplicationDefinition>
     <Compile Include="AllLayers.cs" />
     <Compile Include="BaseNameId.cs" />
+    <Compile Include="BindingHelper.cs" />
     <Compile Include="Card.cs" />
     <Compile Include="CardExpires.cs" />
     <Compile Include="CardImageLayer.cs" />

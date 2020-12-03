@@ -11,6 +11,41 @@ namespace CardMaker
 {
 	public class CardImageLayer : DependencyObject, INotifyPropertyChanged
 	{
+		public event EventHandler NeedToReloadImage;
+		public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
+		public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
+		public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
+		public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
+		
+		protected void OnNeedToReloadImage(object sender, EventArgs e)
+		{
+			NeedToReloadImage?.Invoke(sender, e);
+		}
+
+		public double Height
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (double)GetValue(HeightProperty);
+			}
+			set
+			{
+				SetValue(HeightProperty, value);
+			}
+		}
+		public double Width
+		{
+			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
+			get
+			{
+				return (double)GetValue(WidthProperty);
+			}
+			set
+			{
+				SetValue(WidthProperty, value);
+			}
+		}
 		public double X
 		{
 			// IMPORTANT: To maintain parity between setting a property in XAML and procedural code, do not touch the getter and setter inside this dependency property!
@@ -37,6 +72,7 @@ namespace CardMaker
 			}
 		}
 
+		double width;
 		LayerDetails details;
 		public LayerDetails Details
 		{
@@ -58,6 +94,7 @@ namespace CardMaker
 		public bool ContrastChanged => Details.Contrast != 0;
 		public bool ScaleChanged => Details.ScaleX != 1 || Details.ScaleY != 1;
 
+
 		private void Details_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Details.OffsetX))
@@ -70,16 +107,40 @@ namespace CardMaker
 				Y = StartY + Details.OffsetY;
 				OnPropertyChanged(nameof(OffsetChanged));
 			}
-			else if (e.PropertyName == nameof(Details.Hue))
-				OnPropertyChanged(nameof(HueChanged));
-			else if (e.PropertyName == nameof(Details.Light))
-				OnPropertyChanged(nameof(LightChanged));
-			else if (e.PropertyName == nameof(Details.Sat))
-				OnPropertyChanged(nameof(SatChanged));
-			else if (e.PropertyName == nameof(Details.Contrast))
-				OnPropertyChanged(nameof(ContrastChanged));
-			else if (e.PropertyName == nameof(Details.ScaleX) || e.PropertyName == nameof(Details.ScaleY))
+			else if (e.PropertyName == nameof(Details.ScaleX))
+			{
+				Width = Details.ScaleX * OriginalWidth;
+				OnPropertyChanged(nameof(Width));
 				OnPropertyChanged(nameof(ScaleChanged));
+			}
+			else if (e.PropertyName == nameof(Details.ScaleY))
+			{
+				Height = Details.ScaleY * OriginalHeight;
+				OnPropertyChanged(nameof(Height));
+				OnPropertyChanged(nameof(ScaleChanged));
+			}
+			else if (e.PropertyName == nameof(Details.Hue))
+			{
+				OnPropertyChanged(nameof(HueChanged));
+				ReloadImage();
+			}
+			else if (e.PropertyName == nameof(Details.Light))
+			{
+				OnPropertyChanged(nameof(LightChanged));
+				ReloadImage();
+			}
+			else if (e.PropertyName == nameof(Details.Sat))
+			{
+				OnPropertyChanged(nameof(SatChanged));
+				ReloadImage();
+			}
+			else if (e.PropertyName == nameof(Details.Contrast))
+			{
+				OnPropertyChanged(nameof(ContrastChanged));
+				ReloadImage();
+			}
+			else
+				ReloadImage();
 		}
 
 		void OnPropertyChanged([CallerMemberName] string name = "")
@@ -93,11 +154,10 @@ namespace CardMaker
 		public double StartY { get; set; }
 
 
-		public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(null));
-		public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(null));
-
 		public event PropertyChangedEventHandler PropertyChanged;
 
+		public double OriginalWidth { get; set; }
+		public double OriginalHeight { get; set; }
 
 
 		public string LayerName { get; private set; }
@@ -113,22 +173,40 @@ namespace CardMaker
 
 		public Image CreateImage()
 		{
-			Image image = ImageUtils.CreateImage(0, 0, 0, 0, 0, 1, 1, PngFile);
+			Image image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, PngFile);
 			if (image.Source is System.Windows.Media.Imaging.BitmapSource bitmapSource)
 			{
-				image.Width = bitmapSource.PixelWidth;
-				image.Height = bitmapSource.PixelHeight;
+				OriginalWidth = bitmapSource.PixelWidth;
+				OriginalHeight = bitmapSource.PixelHeight;
 			}
 			else
 			{
-				image.Width = 280;
-				image.Height = 424;
+				OriginalWidth = 280;
+				OriginalHeight = 424;
 			}
+
+			image.Width = OriginalWidth * Details.ScaleX;
+			image.Height = OriginalHeight * Details.ScaleY;
+			
 			X = StartX + Details.OffsetX;
 			Y = StartY + Details.OffsetY;
+			Width = image.Width;
+			Height = image.Height;
+
+			image.DataContext = this;
+			image.Stretch = System.Windows.Media.Stretch.Fill;
+			BindingHelper.BindProperties(this, CardImageLayer.WidthProperty, image, Image.WidthProperty);
+			BindingHelper.BindProperties(this, CardImageLayer.HeightProperty, image, Image.HeightProperty);
+			BindingHelper.BindToCanvasPosition(this, image);
+			image.Tag = this;
 			return image;
 		}
 
+		void ReloadImage()
+		{
+			OnNeedToReloadImage(this, EventArgs.Empty);
+		}
+		
 		public CardImageLayer(string pngFile)
 		{
 			PngFile = pngFile;

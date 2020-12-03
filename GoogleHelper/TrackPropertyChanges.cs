@@ -12,6 +12,17 @@ namespace GoogleHelper
 		public event PropertyChangedEventHandler PropertyChanged;
 		public List<string> ChangedProperties { get; set; }
 		bool isDirty;
+		int updateCounter;
+		public void BeginUpdate()
+		{
+			updateCounter++;
+		}
+
+		public void EndUpdate()
+		{
+			updateCounter--;
+		}
+
 		public bool IsDirty
 		{
 			get => isDirty;
@@ -19,6 +30,10 @@ namespace GoogleHelper
 			{
 				if (isDirty == value)
 					return;
+
+				if (value && updateCounter > 0)  // updating - calls to set IsDirty to true should be ignored.
+					return;
+
 				isDirty = value;
 				if (!isDirty)
 					ChangedProperties = null;

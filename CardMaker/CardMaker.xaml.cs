@@ -125,10 +125,6 @@ namespace CardMaker
 
 		private void SaveMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			ShowStatus("Saving...");
-			statusBar.Refresh();
-			CardData.Save();
-			statusBar.Visibility = Visibility.Collapsed;
 		}
 
 		void SelectDeckByIndex(int index)
@@ -165,12 +161,18 @@ namespace CardMaker
 			grdCardText.DataContext = layerTextOptions;
 		}
 
+		void SetActiveLayerTextOptionsForCard(Card card)
+		{
+			SetActiveLayerTextOptions(CardData.GetLayerTextOptions(card?.StylePath));
+		}
+
 		void SetActiveCard(Card card)
 		{
 			changingDataInternally = true;
 			try
 			{
 				ActiveCard = card;
+				
 				lbCards.SelectedItem = card;
 				spSelectedCard.DataContext = card;
 				SetActiveFields(card?.Fields);
@@ -178,9 +180,19 @@ namespace CardMaker
 					SetActiveLayerTextOptions(null);
 				else
 				{
-					SetActiveLayerTextOptions(CardData.GetLayerTextOptions(card.StylePath));
 					if (activeLayerTextOptions != null)
-						ActiveCard.FontBrush = activeLayerTextOptions.FontBrush;
+					{
+						ActiveCard.BeginUpdate();
+						try
+						{
+							ActiveCard.FontBrush = activeLayerTextOptions.FontBrush;
+						}
+						finally
+						{
+							ActiveCard.EndUpdate();
+						}
+					}
+					SetActiveLayerTextOptionsForCard(card);
 				}
 
 				tbItemName.DataContext = card;
@@ -309,17 +321,18 @@ namespace CardMaker
 			sliderOffsetY.DataContext = cardImageLayer.Details;
 			sliderHorizontalStretch.DataContext = cardImageLayer.Details;
 			sliderVerticalStretch.DataContext = cardImageLayer.Details;
+			sliderHue.DataContext = cardImageLayer.Details;
+			sliderLightness.DataContext = cardImageLayer.Details;
+			sliderSaturation.DataContext = cardImageLayer.Details;
+			sliderContrast.DataContext = cardImageLayer.Details;
+			tbLayerName.DataContext = cardImageLayer.Details;
+
 			btnResetOffsets.DataContext = cardImageLayer;
 			btnResetScale.DataContext = cardImageLayer;
 			btnResetHue.DataContext = cardImageLayer;
 			btnResetLightness.DataContext = cardImageLayer;
 			btnResetSaturation.DataContext = cardImageLayer;
 			btnResetContrast.DataContext = cardImageLayer;
-			sliderHue.DataContext = cardImageLayer.Details;
-			sliderLightness.DataContext = cardImageLayer.Details;
-			sliderSaturation.DataContext = cardImageLayer.Details;
-			sliderContrast.DataContext = cardImageLayer.Details;
-			tbLayerName.DataContext = cardImageLayer.Details;
 		}
 
 		private void sliderSaturation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -434,10 +447,16 @@ namespace CardMaker
 			CardData.MoveCardToDeck(ActiveCard, deck);
 		}
 
+		bool ignoreFirstDeckNameChange = true;
 		private void tbxDeckName_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			if (changingDataInternally)
 				return;
+			if (ignoreFirstDeckNameChange)
+			{
+				ignoreFirstDeckNameChange = false;
+				return;
+			}
 			ActiveDeck.IsDirty = true;
 			lbDecks.Items.Refresh();
 			UpdateCardsLabel(ActiveDeck);
@@ -534,6 +553,7 @@ namespace CardMaker
 			foreach (string pngFile in pngFiles)
 			{
 				CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
+				cardImageLayer.NeedToReloadImage += CardImageLayer_NeedToReloadImage;
 				cardImageLayer.Details = ActiveCard.GetLayerDetails(cardImageLayer.LayerName);
 				cardLayerManager.Add(cardImageLayer);
 			}
@@ -543,6 +563,52 @@ namespace CardMaker
 			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
 			if (cardLayerManager.CardLayers.Count > 0)
 				lbCardLayers.SelectedItem = cardLayerManager.CardLayers[0];
+			SetActiveLayerTextOptionsForCard(ActiveCard);
+			LayerTextOptions layerTextOptions = CardData.GetLayerTextOptions(stylePath);
+			if (ActiveCard != null && layerTextOptions != null)
+			{
+				ActiveCard.BeginUpdate();
+				try
+				{
+					ActiveCard.FontBrush = layerTextOptions.FontBrush;
+				}
+				finally
+				{
+					ActiveCard.EndUpdate();
+				}
+				activeLayerTextOptions = layerTextOptions;
+			}
+		}
+
+		private void CardImageLayer_NeedToReloadImage(object sender, EventArgs e)
+		{
+			if (!(sender is CardImageLayer cardImageLayer))
+				return;
+			int index = GetIndexOfChild(cardImageLayer);
+			if (index == -1)
+				return;
+
+			cvsLayers.Children.RemoveAt(index);
+			Image image = cardImageLayer.CreateImage();
+			cvsLayers.Children.Insert(index, image);
+		}
+
+		private int GetIndexOfChild(object sender)
+		{
+			int index = -1;
+			foreach (UIElement uIElement in cvsLayers.Children)
+			{
+				if (uIElement is FrameworkElement frameworkElement)
+				{
+					if (frameworkElement.Tag == sender)
+					{
+						index = cvsLayers.Children.IndexOf(frameworkElement);
+						break;
+					}
+				}
+			}
+
+			return index;
 		}
 
 		private void MoveTextLayerToTop()
@@ -592,6 +658,19 @@ namespace CardMaker
 			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
 				return;
 			cardImageLayer.Details.Contrast = 0;
+		}
+
+		private void Save()
+		{
+			ShowStatus("Saving...");
+			statusBar.Refresh();
+			CardData.Save();
+			statusBar.Visibility = Visibility.Collapsed;
+		}
+
+		private void SaveCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			Save();
 		}
 	}
 }
