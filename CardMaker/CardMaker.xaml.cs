@@ -83,7 +83,15 @@ namespace CardMaker
 			lbCards.SelectedItem = card;
 			if (card == null)
 				return;
-			LoadNewStyle(card.StylePath);
+			card.BeginUpdate();
+			try
+			{
+				LoadNewStyle(card.StylePath);
+			}
+			finally
+			{
+				card.EndUpdate();
+			}
 		}
 
 		void SelectField(Field field)
@@ -333,6 +341,15 @@ namespace CardMaker
 			btnResetLightness.DataContext = cardImageLayer;
 			btnResetSaturation.DataContext = cardImageLayer;
 			btnResetContrast.DataContext = cardImageLayer;
+
+			if (cardImageLayer.Alternates != null && cardImageLayer.Alternates.CardLayers.Count > 0)
+			{
+				lbAlternates.Visibility = Visibility.Visible;
+				lbAlternates.ItemsSource = cardImageLayer.Alternates.CardLayers;
+			}
+			else
+				lbAlternates.Visibility = Visibility.Collapsed;
+
 		}
 
 		private void sliderSaturation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -549,14 +566,9 @@ namespace CardMaker
 			if (ActiveCard != null)
 				ActiveCard.StylePath = stylePath;
 			DeleteAllImages(cvsLayers);
-			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
-			foreach (string pngFile in pngFiles)
-			{
-				CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
-				cardImageLayer.NeedToReloadImage += CardImageLayer_NeedToReloadImage;
-				cardImageLayer.Details = ActiveCard.GetLayerDetails(cardImageLayer.LayerName);
-				cardLayerManager.Add(cardImageLayer);
-			}
+			AddBackgroundLayers(stylePath);
+			AddCoreLayers(stylePath);
+			AddForegroundLayers(stylePath);
 			cardLayerManager.AddLayersToCanvas(cvsLayers);
 			cardLayerManager.SortByLayerIndex();
 			MoveTextLayerToTop();
@@ -578,6 +590,50 @@ namespace CardMaker
 				}
 				activeLayerTextOptions = layerTextOptions;
 			}
+		}
+
+		private CardImageLayer AddLayer(string pngFile)
+		{
+			CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
+			if (cardImageLayer.LayerName == "Placeholder" && !string.IsNullOrWhiteSpace(ActiveCard.Placeholder))
+			{
+				cardImageLayer.PngFile = ActiveCard.Placeholder;
+			}
+			cardImageLayer.NeedToReloadImage += CardImageLayer_NeedToReloadImage;
+			cardImageLayer.Details = ActiveCard.GetLayerDetails(cardImageLayer.LayerName);
+			cardLayerManager.Add(cardImageLayer);
+			return cardImageLayer;
+		}
+
+		private void AddCoreLayers(string stylePath)
+		{
+			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
+			foreach (string pngFile in pngFiles)
+				AddLayer(pngFile);
+		}
+
+		private void AddBackgroundLayers(string stylePath)
+		{
+			const string backgroundFolderName = "Shared Back Layer Adornments";
+			string basePath = System.IO.Path.GetDirectoryName(stylePath);
+			string backFolder = System.IO.Path.Combine(assetsFolder, basePath, backgroundFolderName);
+			if (!Directory.Exists(backFolder))
+				return;
+			string[] pngFiles = Directory.GetFiles(backFolder, "*.png");
+			foreach (string pngFile in pngFiles)
+				AddLayer(pngFile).Index -= 100;
+		}
+
+		private void AddForegroundLayers(string stylePath)
+		{
+			const string foregroundFolderName = "Shared Top Layer Adornments";
+			string basePath = System.IO.Path.GetDirectoryName(stylePath);
+			string foregroundFolder = System.IO.Path.Combine(assetsFolder, basePath, foregroundFolderName);
+			if (!Directory.Exists(foregroundFolder))
+				return;
+			string[] pngFiles = Directory.GetFiles(foregroundFolder, "*.png");
+			foreach (string pngFile in pngFiles)
+				AddLayer(pngFile).Index += 100;
 		}
 
 		private void CardImageLayer_NeedToReloadImage(object sender, EventArgs e)
@@ -671,6 +727,72 @@ namespace CardMaker
 		private void SaveCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
 			Save();
+		}
+
+		private void ToggleVisibility_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			if (!(sender is Viewbox viewbox))
+				return;
+
+			if (!(viewbox.DataContext is CardImageLayer cardImageLayer))
+				return;
+
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+				if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+					cardLayerManager.ShowAllLayers();
+				else
+					cardLayerManager.HideAllLayersExcept(cardImageLayer);
+			else
+				cardImageLayer.ToggleVisibility();
+		}
+
+		private void lbAlternates_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (lbAlternates.SelectedItem is CardImageLayer newImageLayer)
+			{
+				if (lbCardLayers.SelectedItem is CardImageLayer selectedLayer)
+				{
+					cardLayerManager.Replace(selectedLayer, newImageLayer, cvsLayers);
+					// TODO: **Replace** the selectedLayer in cardLayerManager.CardLayers
+					// TODO: **Replace** the image on the canvas with the new image.
+					lbCardLayers.SelectedItem = newImageLayer;
+				}
+			}
+		}
+
+		void AddSpellMenuItems(ItemCollection items, string[] files)
+		{
+			foreach (string file in files)
+			{
+				MenuItem menuItem = new MenuItem() { Header = System.IO.Path.GetFileNameWithoutExtension(file), Tag = file };
+				menuItem.Click += AddSpellImageItem_Click;
+				items.Add(menuItem);
+			}
+		}
+
+		private void AddSpellImageItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+
+			if (!(menuItem.Tag is string fileName && fileName != null))
+				return;
+
+			string spellName = System.IO.Path.GetFileNameWithoutExtension(fileName);
+			if (ActiveCard != null)
+			{
+				ActiveCard.Text = spellName;
+				ActiveCard.Placeholder = fileName;
+				cardLayerManager.ReplaceImageInPlaceHolder(fileName, cvsLayers);
+			}
+		}
+
+		private void btnLoadSpellImage_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			const string spellFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons";
+			string[] files = Directory.GetFiles(spellFolder, "*.png");
+			mnuPickSpell.Items.Clear();
+			AddSpellMenuItems(mnuPickSpell.Items, files);
 		}
 	}
 }

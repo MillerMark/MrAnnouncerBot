@@ -14,6 +14,7 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		string placeholder;
 		string layerModStr;
 		Brush fontBrush;
 		string stylePath;
@@ -393,6 +394,20 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
+		
+		[Column]
+		public string Placeholder
+		{
+			get => placeholder;
+			set
+			{
+				if (placeholder == value)
+					return;
+				placeholder = value;
+				OnPropertyChanged();
+			}
+		}
+		
 
 
 		public override string ToString()

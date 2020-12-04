@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -11,16 +12,31 @@ namespace CardMaker
 {
 	public class CardImageLayer : DependencyObject, INotifyPropertyChanged
 	{
+		public string Category { get; set; }
 		public event EventHandler NeedToReloadImage;
+		string alternateName;
+		
 		public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 		public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 		public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 		public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
-		
+
 		protected void OnNeedToReloadImage(object sender, EventArgs e)
 		{
 			NeedToReloadImage?.Invoke(sender, e);
 		}
+
+
+		public string DisplayName
+		{
+			get => Details.DisplayName;
+			set
+			{
+				Details.DisplayName = value;
+				OnPropertyChanged();
+			}
+		}
+
 
 		public double Height
 		{
@@ -72,7 +88,6 @@ namespace CardMaker
 			}
 		}
 
-		double width;
 		LayerDetails details;
 		public LayerDetails Details
 		{
@@ -161,9 +176,70 @@ namespace CardMaker
 
 
 		public string LayerName { get; private set; }
+		public bool IsVisible
+		{
+			get => Details.IsVisible;
+			set
+			{
+				if (Details.IsVisible == value)
+					return;
+				Details.IsVisible = value;
+				PropagateVisibility();
+				SetImageVisibility();
+				OnPropertyChanged();
+				OnPropertyChanged("IsHidden");
+			}
+		}
+
+		public bool IsHidden
+		{
+			get => Details.IsHidden;
+			set
+			{
+				if (Details.IsHidden == value)
+					return;
+				Details.IsHidden = value;
+				PropagateVisibility();
+				SetImageVisibility();
+				OnPropertyChanged();
+				OnPropertyChanged("IsVisible");
+			}
+		}
+
+		private void SetImageVisibility()
+		{
+			if (image != null)
+				if (IsVisible)
+					image.Visibility = Visibility.Visible;
+				else
+					image.Visibility = Visibility.Collapsed;
+		}
+
+		void PropagateVisibility()
+		{
+			if (Alternates == null)
+				return;
+			foreach (CardImageLayer cardImageLayer in Alternates.CardLayers)
+				cardImageLayer.IsVisible = IsVisible;
+		}
+		public AlternateCardImageLayers Alternates { get; set; }
+		
+		public string AlternateName
+		{
+			get => alternateName;
+			set
+			{
+				if (alternateName == value)
+					return;
+				alternateName = value;
+				OnPropertyChanged();
+			}
+		}
+		
+
 		public CardImageLayer()
 		{
-
+			
 		}
 
 		public override string ToString()
@@ -171,10 +247,16 @@ namespace CardMaker
 			return LayerName;
 		}
 
-		public Image CreateImage()
+		Image image;
+		public Image CreateImage(double overrideWidth = 0, double overrideHeight = 0)
 		{
-			Image image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, PngFile);
-			if (image.Source is System.Windows.Media.Imaging.BitmapSource bitmapSource)
+			image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, PngFile);
+			if (overrideWidth > 0 && overrideHeight > 0)
+			{
+				OriginalWidth = overrideWidth;
+				OriginalHeight = overrideHeight;
+			}
+			else if (image.Source is System.Windows.Media.Imaging.BitmapSource bitmapSource)
 			{
 				OriginalWidth = bitmapSource.PixelWidth;
 				OriginalHeight = bitmapSource.PixelHeight;
@@ -187,11 +269,16 @@ namespace CardMaker
 
 			image.Width = OriginalWidth * Details.ScaleX;
 			image.Height = OriginalHeight * Details.ScaleY;
-			
+
 			X = StartX + Details.OffsetX;
 			Y = StartY + Details.OffsetY;
 			Width = image.Width;
 			Height = image.Height;
+
+			if (IsVisible)
+				image.Visibility = Visibility.Visible;
+			else
+				image.Visibility = Visibility.Hidden;
 
 			image.DataContext = this;
 			image.Stretch = System.Windows.Media.Stretch.Fill;
@@ -199,6 +286,7 @@ namespace CardMaker
 			BindingHelper.BindProperties(this, CardImageLayer.HeightProperty, image, Image.HeightProperty);
 			BindingHelper.BindToCanvasPosition(this, image);
 			image.Tag = this;
+
 			return image;
 		}
 
@@ -206,7 +294,16 @@ namespace CardMaker
 		{
 			OnNeedToReloadImage(this, EventArgs.Empty);
 		}
-		
+
+		public void ToggleVisibility()
+		{
+			IsVisible = !IsVisible;
+		}
+		public bool ImageMatches(UIElement uIElement)
+		{
+			return uIElement == image;
+		}
+
 		public CardImageLayer(string pngFile)
 		{
 			PngFile = pngFile;
@@ -229,6 +326,22 @@ namespace CardMaker
 					StartX = x;
 				if (double.TryParse(parts[1], out double y))
 					StartY = y;
+			}
+		}
+
+		public void ReplaceImage(string fileName, Canvas canvas)
+		{
+			PngFile = fileName;
+			
+			for (int i = 0; i < canvas.Children.Count; i++)
+			{
+				if (canvas.Children[i] == image)
+				{
+					canvas.Children.RemoveAt(i);
+					image = CreateImage();
+					canvas.Children.Insert(i, image);
+					break;
+				}
 			}
 		}
 	}

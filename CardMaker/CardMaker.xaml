@@ -6,7 +6,7 @@
 		xmlns:local="clr-namespace:CardMaker"
 		xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="Card Maker" Height="569" Width="1800" MinHeight="695">
+        Title="Card Maker" Height="569" Width="1800" MinHeight="695" >
 	<Window.CommandBindings>
 		<CommandBinding Command="Save" Executed="SaveCommandBinding_Executed"/>
 	</Window.CommandBindings>
@@ -259,8 +259,99 @@
 					</Button>
 
 					<TextBlock Text="Layers:" Width="Auto" Height="Auto"/>
-					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="140" HorizontalAlignment="Left">
+					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="150" HorizontalAlignment="Left">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid Height="Auto" Width="130">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+									<TextBlock Text="{Binding Path=DisplayName}"/>
+									<Viewbox Grid.Column="1" Width="20" Height="20" MouseDown="ToggleVisibility_MouseDown" Visibility="{Binding Path=IsVisible, Converter={StaticResource BoolToVis}}">
+										<Canvas Width="165" Height="97">
+											<Path Fill="#FF7F7F7F">
+												<Path.Data>
+													<PathGeometry Figures="M82.5,-0.5C115.9375,-0.5,145.4375,17.125,162.8125,43.875L165.5,48.5 162.8125,53.1875C145.4375,79.9375,115.9375,97.5,82.5,97.5C49.125,97.5,19.625,79.9375,2.25,53.1875L-0.5,48.5 2.25,43.875C19.625,17.125,49.125,-0.5,82.5,-0.5z" />
+												</Path.Data>
+											</Path>
+											<Path Fill="#FFF2F2F2">
+												<Path.Data>
+													<PathGeometry Figures="M83,6.5C113.4375,6.5,140.25,21.9375,156.0625,45.4375L158.5,49.5 156.0625,53.625C140.25,77.0625,113.4375,92.5,83,92.5C52.625,92.5,25.8125,77.0625,10,53.625L7.5,49.5 10,45.4375C25.8125,21.9375,52.625,6.5,83,6.5z" />
+												</Path.Data>
+											</Path>
+											<Path Fill="#FF404040">
+												<Path.Data>
+													<PathGeometry Figures="M49.5,49C49.5,30.5,64.5,15.5,83,15.5C101.5,15.5,116.5,30.5,116.5,49C116.5,67.5,101.5,82.5,83,82.5C64.5,82.5,49.5,67.5,49.5,49" />
+												</Path.Data>
+											</Path>
+										</Canvas>
+									</Viewbox>
+									<Viewbox Grid.Column="1" Width="20" Height="20" MouseDown="ToggleVisibility_MouseDown" Visibility="{Binding Path=IsHidden, Converter={StaticResource BoolToVis}}">
+									  <Canvas Width="165" Height="97">
+										<Canvas>
+										  <Canvas.Clip>
+											<RectangleGeometry Rect="1,0,165,98" />
+										  </Canvas.Clip>
+										  <Path Fill="#FF7F7F7F">
+											<Path.Data>
+											  <PathGeometry Figures="M83,-0.5C116.25,-0.5,145.5625,17.125,162.8125,43.875L165.5,48.5 162.8125,53.1875C145.5625,79.9375,116.25,97.5,83,97.5C49.8125,97.5,20.5,79.9375,3.25,53.1875L0.5,48.5 3.25,43.875C20.5,17.125,49.8125,-0.5,83,-0.5z" />
+											</Path.Data>
+										  </Path>
+										</Canvas>
+										<Path Fill="#FFF2F2F2">
+										  <Path.Data>
+											<PathGeometry Figures="M82,6.5C112.4375,6.5,139.25,21.8125,155.0625,45L157.5,49 155.0625,53.0625C139.25,76.25,112.4375,91.5,82,91.5C51.625,91.5,24.8125,76.25,9,53.0625L6.5,49 9,45C24.8125,21.8125,51.625,6.5,82,6.5z" />
+										  </Path.Data>
+										</Path>
+										<Path Fill="#FF7F7F7F">
+										  <Path.Data>
+											<PathGeometry Figures="M82.5,18.5C115.5625,18.5,144.625,28.75,161.8125,44.3125L164.5,47 161.8125,49.75C144.625,65.3125,115.5625,75.5,82.5,75.5C49.5,75.5,20.375,65.3125,3.1875,49.75L0.5,47 3.1875,44.3125C20.375,28.75,49.5,18.5,82.5,18.5z" />
+										  </Path.Data>
+										</Path>
+										<Path Fill="#FFF2F2F2">
+										  <Path.Data>
+											<PathGeometry Figures="M83,5.5C110.6875,5.5,135.5,18.125,152.25,38L158.5,46.375 157.6875,47.125C141.25,60.625,113.3125,69.5,81.6875,69.5C54,69.5,29.1875,62.75,12.375,51.9375L6.5,47.6875 7,46.9375C23.4375,21.9375,51.375,5.5,83,5.5z" />
+										  </Path.Data>
+										</Path>
+									  </Canvas>
+									</Viewbox>
+
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
 					</ListBox>
+					
+					<ListBox x:Name="lbAlternates" SelectionChanged="lbAlternates_SelectionChanged">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Path=AlternateName}"/>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+
+					<Button x:Name="btnLoadSpellImage" Content="Spell Image" Width="Auto" Padding="8,0,8,0" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnLoadSpellImage_PreviewMouseDown">
+						<Button.ContextMenu>
+							<ContextMenu x:Name="mnuPickSpell" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
+							</ContextMenu>
+						</Button.ContextMenu>
+
+						<Button.Triggers>
+							<EventTrigger SourceName="btnLoadSpellImage" RoutedEvent="Button.Click">
+								<BeginStoryboard>
+									<Storyboard>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickSpell" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
+											<DiscreteObjectKeyFrame KeyTime="0:0:0">
+												<DiscreteObjectKeyFrame.Value>
+													<System:Boolean>True</System:Boolean>
+												</DiscreteObjectKeyFrame.Value>
+											</DiscreteObjectKeyFrame>
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</BeginStoryboard>
+							</EventTrigger>
+						</Button.Triggers>
+					</Button>
 				</StackPanel>
 
 				<Grid x:Name="grdLayerDetails" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">

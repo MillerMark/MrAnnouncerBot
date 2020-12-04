@@ -205,6 +205,10 @@ namespace Imaging
 					byte g = pixels[index + greenOffset];
 					byte r = pixels[index + redOffset];
 					byte a = pixels[index + alphaOffset];
+
+					if (a == 0)
+						continue;
+
 					HueSatLight hueSatLight = new HueSatLight(Color.FromArgb(a, r, g, b));
 					if (hueShift != 0)
 						hueSatLight.HueShiftDegrees(hueShift);

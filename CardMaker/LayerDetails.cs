@@ -18,11 +18,42 @@ namespace CardMaker
 				if (name == value)
 					return;
 				name = value;
+				if (string.IsNullOrWhiteSpace(DisplayName))
+					DisplayName = Name;
 				OnPropertyChanged();
 			}
 		}
 
-		
+		bool isVisible = true;
+		public bool IsVisible
+		{
+			get => isVisible;
+			set
+			{
+				if (isVisible == value)
+					return;
+				isVisible = value;
+				isHidden = !isVisible;
+				OnPropertyChanged();
+				OnPropertyChanged("IsHidden");
+			}
+		}
+
+		bool isHidden;
+		public bool IsHidden
+		{
+			get => isHidden;
+			set
+			{
+				if (isHidden == value)
+					return;
+				isHidden = value;
+				isVisible = !isHidden;
+				OnPropertyChanged();
+				OnPropertyChanged("IsVisible");
+			}
+		}
+
 		public int Angle
 		{
 			get => angle;
@@ -150,11 +181,24 @@ namespace CardMaker
 			}
 		}
 		
+		public string DisplayName
+		{
+			get => displayName;
+			set
+			{
+				if (displayName == value)
+					return;
+				displayName = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public LayerDetails()
 		{
 
 		}
 
+		string displayName;
 		string fileName;
 		double scaleX = 1;
 		double scaleY = 1;
@@ -177,7 +221,7 @@ namespace CardMaker
 		void AssignValue(string propertyName, string value)
 		{
 			if (properties == null)
-			properties = typeof(LayerDetails).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+				properties = typeof(LayerDetails).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
 			PropertyInfo propInfo = properties.FirstOrDefault(x => string.Compare(x.Name, propertyName, true) == 0);
 			if (propInfo == null)
@@ -227,6 +271,7 @@ namespace CardMaker
 			GetPropertyAssignmentIfDifferent(propertyChangeList, "Light", Light);
 			GetPropertyAssignmentIfDifferent(propertyChangeList, "Sat", Sat);
 			GetPropertyAssignmentIfDifferent(propertyChangeList, "Contrast", Contrast);
+			GetPropertyAssignmentIfDifferent(propertyChangeList, "IsHidden", IsHidden, false);
 			if (propertyChangeList.Length == 0)
 				return string.Empty;
 			return $"{Name}({propertyChangeList})";
