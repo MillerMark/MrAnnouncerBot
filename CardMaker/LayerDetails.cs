@@ -54,6 +54,19 @@ namespace CardMaker
 			}
 		}
 
+		bool isSelected;
+		public bool IsSelected
+		{
+			get => isSelected;
+			set
+			{
+				if (isSelected == value)
+					return;
+				isSelected = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public int Angle
 		{
 			get => angle;
@@ -213,6 +226,7 @@ namespace CardMaker
 		public static PropertyInfo[] properties = null;
 
 		public event PropertyChangedEventHandler PropertyChanged;
+
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -272,6 +286,7 @@ namespace CardMaker
 			GetPropertyAssignmentIfDifferent(propertyChangeList, "Sat", Sat);
 			GetPropertyAssignmentIfDifferent(propertyChangeList, "Contrast", Contrast);
 			GetPropertyAssignmentIfDifferent(propertyChangeList, "IsHidden", IsHidden, false);
+			GetPropertyAssignmentIfDifferent(propertyChangeList, "IsSelected", IsSelected, false);
 			if (propertyChangeList.Length == 0)
 				return string.Empty;
 			return $"{Name}({propertyChangeList})";

@@ -139,6 +139,7 @@ class DragonBackGame extends DragonGame {
 
 	protected updateClockFromDto(dto: any) {
 		super.updateClockFromDto(dto);
+
 		let fullSpins: number = dto.FullSpins;
 		let afterSpinMp3: string = dto.AfterSpinMp3;
 		let degreesToMove: number = this.getDegreesToRotate(dto.Rotation, this.sunMoonDial);

@@ -297,7 +297,7 @@ namespace Imaging
 				if (value < 0)
 					alpha = 0;
 				else if (value > 1.0)
-					value = 1.0;
+					alpha = 1.0;
 				else
 					alpha = value;
 

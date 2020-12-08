@@ -305,7 +305,9 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.readyToRollLightDie = this.createReadyToRollDieSprites('LightDie');
 		this.createReadyToRollDieSprites('Willy');
 		this.createReadyToRollDieSprites('Fred');
-		this.createReadyToRollDieSprites('Miles');
+		this.createReadyToRollDieSprites('Rojniss');
+		this.createReadyToRollDieSprites('Duh');
+		//this.createReadyToRollDieSprites('Miles');
 		this.createReadyToRollDieSprites('Lady');
 		this.createReadyToRollDieSprites('Merkin');
 		this.createReadyToRollDieSprites('Cutie');

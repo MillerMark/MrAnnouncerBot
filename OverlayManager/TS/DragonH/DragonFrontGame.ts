@@ -743,57 +743,64 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.loadWarHammer();
 		this.loadLongSword();
 		this.loadJavelin();
+		this.loadBoomerang();
 	}
 
 	private loadWarHammer() {
-		const warHammerOriginX: number = 516;
-		const warHammerOriginY: number = 685;
+		const warHammerOriginX = 516;
+		const warHammerOriginY = 685;
 		this.loadWeapon('WarHammer', 'MagicBackHead', warHammerOriginX, warHammerOriginY);
 		this.loadWeapon('WarHammer', 'Weapon', warHammerOriginX, warHammerOriginY);
 		this.loadWeapon('WarHammer', 'MagicFrontHead', warHammerOriginX, warHammerOriginY);
 		this.loadWeapon('WarHammer', 'MagicHandle', warHammerOriginX, warHammerOriginY);
 	}
 
+	private loadBoomerang() {
+		const boomerangOriginX = 229;
+		const boomerangOriginY = 304;
+		this.loadWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 101);
+	}
+
 	private loadLongSword() {
-		const longSwordOriginX: number = 410;
-		const longSwordOriginY: number = 717;
+		const longSwordOriginX = 410;
+		const longSwordOriginY = 717;
 		this.loadWeapon('LongSword', 'MagicB', longSwordOriginX, longSwordOriginY);  // Big fire effect in back.
 		this.loadWeapon('LongSword', 'Weapon', longSwordOriginX, longSwordOriginY);
 		this.loadWeapon('LongSword', 'MagicA', longSwordOriginX, longSwordOriginY);
 	}
 
 	private loadJavelin() {
-		const javelinOriginX: number = 426;
-		const javelinOriginY: number = 999;
+		const javelinOriginX = 426;
+		const javelinOriginY = 999;
 		this.loadWeapon('Javelin', 'Weapon', javelinOriginX, javelinOriginY);
 		this.loadWeapon('Javelin', 'Magic', javelinOriginX, javelinOriginY);
 	}
 
 	private loadStaff() {
-		const staffOriginX: number = 352;
-		const staffOriginY: number = 744;
+		const staffOriginX = 352;
+		const staffOriginY = 744;
 		this.loadWeapon('Staff', 'Magic', staffOriginX, staffOriginY);
 		this.loadWeapon('Staff', 'Weapon', staffOriginX, staffOriginY);
 	}
 
 	private loadBattleAxe() {
-		const battleAxeOriginX: number = 341;
-		const battleAxeOriginY: number = 542;
+		const battleAxeOriginX = 341;
+		const battleAxeOriginY = 542;
 		this.loadWeapon('BattleAxe', 'MagicA', battleAxeOriginX, battleAxeOriginY);
 		this.loadWeapon('BattleAxe', 'MagicB', battleAxeOriginX, battleAxeOriginY);
 		this.loadWeapon('BattleAxe', 'Weapon', battleAxeOriginX, battleAxeOriginY);
 	}
 
 	private loadClub() {
-		const clubOriginX: number = 440;
-		const clubOriginY: number = 745;
+		const clubOriginX = 440;
+		const clubOriginY = 745;
 		this.loadWeapon('Club', 'Weapon', clubOriginX, clubOriginY);
 		this.loadWeapon('Club', 'Magic', clubOriginX, clubOriginY);
 	}
 
 	private loadBow() {
-		const bowOriginX: number = 380;
-		const bowOriginY: number = 570;
+		const bowOriginX = 380;
+		const bowOriginY = 570;
 		this.loadWeapon('Bow', 'BowMagic', bowOriginX, bowOriginY);
 		this.loadWeapon('Bow', 'Bow', bowOriginX, bowOriginY);
 		this.loadWeapon('Bow', 'MagicArrow', bowOriginX, bowOriginY);
@@ -801,8 +808,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	private loadRapier() {
-		const rapierOriginX: number = 423;
-		const rapierOriginY: number = 600;
+		const rapierOriginX = 423;
+		const rapierOriginY = 600;
 		this.loadWeapon('Rapier', 'MagicBack', rapierOriginX, rapierOriginY);
 		this.loadWeapon('Rapier', 'Weapon', rapierOriginX, rapierOriginY);
 		this.loadWeapon('Rapier', 'MagicFront', rapierOriginX, rapierOriginY);
@@ -1199,6 +1206,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	refreshClock() {
+		if (this.hideClock)
+			return;
 		this.clockContext.clearRect(0, 0, 1920, 1080);
 		this.clockPanel.draw(this.clockContext, performance.now());
 		this.drawGameTime(this.clockContext);

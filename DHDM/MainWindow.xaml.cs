@@ -3286,6 +3286,7 @@ namespace DHDM
 
 				ClockDto clockDto = new ClockDto()
 				{
+					HideClock = ckShowClock.IsChecked != true,
 					Message = clockMessage,
 					Time = timeStr,
 					BigUpdate = bigUpdate,
@@ -9350,6 +9351,11 @@ namespace DHDM
 		public void LaunchHandTrackingEffect(string launchCommand, string dataValue)
 		{
 			leapDevice.LaunchHandTrackingEffect(launchCommand, dataValue);
+		}
+
+		private void ckShowClock_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			UpdateClock(true);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

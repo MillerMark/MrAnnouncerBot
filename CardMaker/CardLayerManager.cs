@@ -72,8 +72,9 @@ namespace CardMaker
 
 		public void AddLayersToCanvas(Canvas canvas)
 		{
-			foreach (CardImageLayer cardImageLayer in CardLayers)
-				AddLayerToCanvas(cardImageLayer, canvas);
+			//! For-loop needed because as layers are added, we may need to replace a layer with its alternate (which would break a foreach).
+			for (int i = CardLayers.Count - 1; i >= 0; i--)
+				AddLayerToCanvas(CardLayers[i], canvas);
 		}
 		public void SortByLayerIndex()
 		{

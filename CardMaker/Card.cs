@@ -324,7 +324,7 @@ namespace CardMaker
 		}
 
 
-		bool available;
+		bool available = true;
 		[Column]
 		public bool Available
 		{
@@ -438,12 +438,17 @@ namespace CardMaker
 		{
 			if (allLayers.IsDirty)
 			{
-				layersAreDirty = true;
-				OnPropertyChanged(nameof(LayerMods));
+				LayerPropertiesHaveChanged();
 			}
 		}
 
-		public Card(Deck deck) : base()
+		public void LayerPropertiesHaveChanged()
+		{
+			layersAreDirty = true;
+			OnPropertyChanged(nameof(LayerMods));
+		}
+
+		public Card(Deck deck) : this()
 		{
 			CreateNewId();
 			AddToDeck(deck);

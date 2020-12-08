@@ -127,6 +127,9 @@
 		<StackPanel x:Name="spTimeManagement" Grid.Column="2" Orientation="Vertical" >
 			<StackPanel x:Name="spTime" Orientation="Vertical">
 				<StackPanel x:Name="spTimeSegments" Orientation="Horizontal" Margin="3" >
+					<CheckBox x:Name="ckShowClock" IsChecked="True" Margin="0, 5, 20, 0" Checked="ckShowClock_CheckedChanged" Unchecked="ckShowClock_CheckedChanged">
+						Show Clock
+					</CheckBox>
 					<TextBlock Text="Game Time:" Width="Auto" Height="Auto" Margin="4"/>
 					<TextBlock x:Name="txtTime" Text="-" Margin="0, 4, 4, 4" FontWeight="Bold"/>
 				</StackPanel>

@@ -14,8 +14,9 @@ namespace CardMaker
 	{
 		public string Category { get; set; }
 		public event EventHandler NeedToReloadImage;
+		bool isSelected;
 		string alternateName;
-		
+
 		public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 		public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 		public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
@@ -160,6 +161,7 @@ namespace CardMaker
 
 		void OnPropertyChanged([CallerMemberName] string name = "")
 		{
+			// This CardImageLayer PropertyChanged event is not subscribed to by the code, but used by WPF for updating data-bound controls.
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 		}
 
@@ -223,7 +225,7 @@ namespace CardMaker
 				cardImageLayer.IsVisible = IsVisible;
 		}
 		public AlternateCardImageLayers Alternates { get; set; }
-		
+
 		public string AlternateName
 		{
 			get => alternateName;
@@ -236,7 +238,6 @@ namespace CardMaker
 			}
 		}
 		
-
 		public CardImageLayer()
 		{
 			
@@ -338,7 +339,14 @@ namespace CardMaker
 				if (canvas.Children[i] == image)
 				{
 					canvas.Children.RemoveAt(i);
+					double saveWidth = image.ActualWidth;
+					double saveHeight = image.ActualHeight;
 					image = CreateImage();
+					Details.ScaleX = saveWidth / Width;
+					Details.ScaleY = saveHeight / Height;
+					Width = saveWidth;
+					Height = saveHeight;
+
 					canvas.Children.Insert(i, image);
 					break;
 				}

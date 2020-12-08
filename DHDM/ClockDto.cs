@@ -13,6 +13,7 @@ namespace DHDM
 		public bool InTimeFreeze { get; set; }
 		public double FullSpins { get; set; }
 		public string AfterSpinMp3 { get; set; }
+		public bool HideClock { get; set; }
 		public ClockDto()
 		{
 

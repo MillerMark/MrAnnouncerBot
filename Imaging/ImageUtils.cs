@@ -190,8 +190,9 @@ namespace Imaging
 				BitmapDecoder dec = BitmapDecoder.Create(new Uri(fileName), BitmapCreateOptions.None, BitmapCacheOption.Default);
 				BitmapFrame firstFrame = dec.Frames[0];
 				const int bytesPerPixel = 4;
-				byte[] pixels = new byte[firstFrame.PixelWidth * firstFrame.PixelHeight * bytesPerPixel];
-				firstFrame.CopyPixels(pixels, firstFrame.PixelWidth * bytesPerPixel, 0);
+				int stride = firstFrame.PixelWidth * bytesPerPixel;
+				byte[] pixels = new byte[stride * firstFrame.PixelHeight];
+				firstFrame.CopyPixels(pixels, stride, 0);
 
 				for (int i = 0; i < pixels.Length / 4; ++i)
 				{
@@ -200,7 +201,14 @@ namespace Imaging
 					const int greenOffset = 1;
 					const int redOffset = 2;
 					const int alphaOffset = 3;
-					
+
+					// Diagnostic pixel testing:
+					//int y = i / firstFrame.PixelWidth;
+					//int x = i - y * firstFrame.PixelWidth;
+					//if (x == 229 && y == 254)
+					//{
+					//	System.Diagnostics.Debugger.Break();
+					//}
 					byte b = pixels[index + blueOffset];
 					byte g = pixels[index + greenOffset];
 					byte r = pixels[index + redOffset];
@@ -226,21 +234,31 @@ namespace Imaging
 					pixels[index + alphaOffset] = shifted.A;
 				}
 
-				// Write the modified pixels into a new bitmap and set that to the source
-				var writeableBitmap = new WriteableBitmap(firstFrame.PixelWidth, firstFrame.PixelHeight, firstFrame.DpiX, firstFrame.DpiY, PixelFormats.Pbgra32, null);
-				writeableBitmap.WritePixels(new Int32Rect(0, 0, firstFrame.PixelWidth, firstFrame.PixelHeight), pixels, firstFrame.PixelWidth * bytesPerPixel, 0);
-				bitmapSource = writeableBitmap;
+				bitmapSource = CreateBitmap(firstFrame, stride, pixels);
 			}
 
 			transformBmp.BeginInit();
 			transformBmp.Source = bitmapSource;
-			RotateTransform rotation = new RotateTransform(angle);
+			RotateTransform rotation = null;
+			if (angle != 0)
+				rotation = new RotateTransform(angle);
 
-			ScaleTransform scaling = new ScaleTransform(scaleX, scaleY);
-			TransformGroup group = new TransformGroup();
-			group.Children.Add(scaling);
-			group.Children.Add(rotation);
-			transformBmp.Transform = group;
+			ScaleTransform scaling = null;
+			
+			if (scaleX != 1 || scaleY != 1)
+				scaling = new ScaleTransform(scaleX, scaleY);
+
+			if (scaling != null || rotation != null)
+			{
+				TransformGroup group = new TransformGroup();
+				if (scaling != null)
+					group.Children.Add(scaling);
+				
+				if (rotation != null)
+					group.Children.Add(rotation);
+
+				transformBmp.Transform = group;
+			}
 			transformBmp.EndInit();
 
 			Image result = new Image();
@@ -248,6 +266,14 @@ namespace Imaging
 			result.Source = transformBmp;
 
 			return result;
+		}
+
+		private static BitmapSource CreateBitmap(BitmapFrame firstFrame, int stride, byte[] pixels)
+		{
+			//! Important - PixelFormats.Bgra32 format preserves the alpha and rgb values. PixelFormats.Pbgra32 turns rgb values to white when alpha values are low.
+			WriteableBitmap writeableBitmap = new WriteableBitmap(firstFrame.PixelWidth, firstFrame.PixelHeight, firstFrame.DpiX, firstFrame.DpiY, PixelFormats.Bgra32, null);
+			writeableBitmap.WritePixels(new Int32Rect(0, 0, firstFrame.PixelWidth, firstFrame.PixelHeight), pixels, stride, 0);
+			return writeableBitmap;
 		}
 	}
 }

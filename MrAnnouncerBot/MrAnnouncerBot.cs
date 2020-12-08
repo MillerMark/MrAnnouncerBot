@@ -310,6 +310,7 @@ namespace MrAnnouncerBot
 		private const string emptyString = "";
 		const string STR_MarkSaysOrThinks = "!mark:";
 		const string STR_FredSaysOrThinks = "!fred:";
+		const string STR_CampbellSaysOrThinks = "!campbell:";
 
 		private bool PlayFanfare(string displayName, string message = emptyString)
 		{
@@ -979,6 +980,9 @@ namespace MrAnnouncerBot
 				playerId = 2;
 			else if (name == "fred")
 				playerId = 4;
+			else if (name == "campbell")
+				// TODO: Add support for X positioning.
+				playerId = 5;
 			else
 				return;
 			string phrase = msg.Substring(colonPos + 1).Trim();
@@ -998,7 +1002,7 @@ namespace MrAnnouncerBot
 			var command = e.Command.CommandText;
 			var lowerMessage = e.Command.ChatMessage.Message.ToLower();
 
-			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks))
+			if (lowerMessage.StartsWith(STR_MarkSaysOrThinks) || lowerMessage.StartsWith(STR_FredSaysOrThinks) || lowerMessage.StartsWith(STR_CampbellSaysOrThinks))
 			{
 				SayOrThinkIt(e.Command.ChatMessage);
 				return;

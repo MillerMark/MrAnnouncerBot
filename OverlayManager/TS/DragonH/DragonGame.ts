@@ -375,7 +375,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.textAnimations.render(context, nowMs);
 	}
 
+	hideClock = false;
 	protected updateClockFromDto(dto) {
+		this.hideClock = dto.HideClock;
 	}
 
 	protected triggerSoundEffect(dto): void {
@@ -584,6 +586,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	protected drawClockLayerEffects(context: CanvasRenderingContext2D, now: number) {
+		if (this.hideClock)
+			return;
 		this.clockLayerEffects.updatePositions(now);
 		this.clockLayerEffects.draw(context, now);
 	}
@@ -623,7 +627,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	loadSpell(spellName: string): Sprites {
-		let spell: Sprites = new Sprites(`PlayerEffects/Spells/${spellName}/${spellName}${this.layerSuffix}`, 60, fps30, AnimationStyle.Loop, true);
+		const spell: Sprites = new Sprites(`PlayerEffects/Spells/${spellName}/${spellName}${this.layerSuffix}`, 60, fps30, AnimationStyle.Loop, true);
 		spell.name = spellName;
 		spell.originX = 390;
 		spell.originY = 232;
@@ -633,7 +637,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	loadHealthSpinUp(): Sprites {
-		let health: Sprites = new Sprites(`PlayerEffects/Health/PlusSpin${this.layerSuffix}`, 120, fps30, AnimationStyle.Loop, true);
+		const health: Sprites = new Sprites(`PlayerEffects/Health/PlusSpin${this.layerSuffix}`, 120, fps30, AnimationStyle.Loop, true);
 		health.name = 'Health';
 		health.originX = 315;
 		health.originY = 67;
@@ -642,8 +646,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		return health;
 	}
 
-	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number): Sprites {
-		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, 91, fps30, AnimationStyle.Loop, true);
+	loadWeapon(weaponName: string, animationName: string, originX: number, originY: number, frameCount = 91): Sprites {
+		const weapon: Sprites = new Sprites(`Weapons/${weaponName}/${animationName}`, frameCount, fps30, AnimationStyle.Loop, true);
 		weapon.name = weaponName + '.' + animationName;
 		weapon.originX = originX;
 		weapon.originY = originY;

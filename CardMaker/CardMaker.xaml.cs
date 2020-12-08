@@ -26,7 +26,7 @@ namespace CardMaker
 	{
 		const string assetsFolder = @"D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets";
 
-		bool changingDataInternally;
+		int internalChangeCount;
 		public CardData CardData { get; set; }
 		Deck activeDeck;
 		public Deck ActiveDeck
@@ -83,6 +83,9 @@ namespace CardMaker
 			lbCards.SelectedItem = card;
 			if (card == null)
 				return;
+			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
+			lbAlternates.Visibility = Visibility.Collapsed;
+			lbAlternates.ItemsSource = null;
 			card.BeginUpdate();
 			try
 			{
@@ -167,6 +170,16 @@ namespace CardMaker
 		{
 			activeLayerTextOptions = layerTextOptions;
 			grdCardText.DataContext = layerTextOptions;
+			if (layerTextOptions == null)
+			{
+				grdLayerDetails.Visibility = Visibility.Collapsed;
+				grdLayerDetail.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				grdLayerDetails.Visibility = Visibility.Visible;
+				grdLayerDetail.Visibility = Visibility.Visible;
+			}
 		}
 
 		void SetActiveLayerTextOptionsForCard(Card card)
@@ -176,11 +189,11 @@ namespace CardMaker
 
 		void SetActiveCard(Card card)
 		{
-			changingDataInternally = true;
+			BeginUpdate();
 			try
 			{
 				ActiveCard = card;
-				
+
 				lbCards.SelectedItem = card;
 				spSelectedCard.DataContext = card;
 				SetActiveFields(card?.Fields);
@@ -210,8 +223,18 @@ namespace CardMaker
 			}
 			finally
 			{
-				changingDataInternally = false;
+				EndUpdate();
 			}
+		}
+
+		private void BeginUpdate()
+		{
+			internalChangeCount++;
+		}
+
+		void EndUpdate()
+		{
+			internalChangeCount--;
 		}
 
 		void SetActiveDeck(Deck deck)
@@ -220,7 +243,7 @@ namespace CardMaker
 			if (deck == null)
 				return;
 
-			changingDataInternally = true;
+			BeginUpdate();
 			try
 			{
 				spActiveDeck.DataContext = deck;
@@ -231,7 +254,7 @@ namespace CardMaker
 			}
 			finally
 			{
-				changingDataInternally = false;
+				EndUpdate();
 			}
 		}
 
@@ -269,6 +292,7 @@ namespace CardMaker
 		{
 			try
 			{
+				cardLayerManager.Clear();
 				ActiveCard = CardData.AddCard(ActiveDeck);
 				tbxCardName.SelectAll();
 				tbxCardName.Focus();
@@ -310,14 +334,14 @@ namespace CardMaker
 
 		private void lbCards_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			changingDataInternally = true;
+			BeginUpdate();
 			try
 			{
 				SetActiveCard(lbCards.SelectedItem as Card);
 			}
 			finally
 			{
-				changingDataInternally = false;
+				EndUpdate();
 			}
 		}
 
@@ -346,10 +370,34 @@ namespace CardMaker
 			{
 				lbAlternates.Visibility = Visibility.Visible;
 				lbAlternates.ItemsSource = cardImageLayer.Alternates.CardLayers;
+				BeginUpdate();
+				try
+				{
+					SelectCorrectAlternateImageLayer(cardImageLayer);
+				}
+				finally
+				{
+					EndUpdate();
+				}
 			}
 			else
 				lbAlternates.Visibility = Visibility.Collapsed;
 
+		}
+
+		private void SelectCorrectAlternateImageLayer(CardImageLayer cardImageLayer)
+		{
+			if (cardImageLayer.Alternates == null || cardImageLayer.Alternates.CardLayers.Count == 0)
+				return;
+
+			foreach (CardImageLayer alternateCardImageLayer in cardImageLayer.Alternates.CardLayers)
+				if (alternateCardImageLayer.Details.IsSelected)
+				{
+					lbAlternates.SelectedItem = alternateCardImageLayer;
+					if (alternateCardImageLayer != cardImageLayer)
+						cardLayerManager.Replace(cardImageLayer, alternateCardImageLayer, cvsLayers);
+					break;
+				}
 		}
 
 		private void sliderSaturation_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -394,7 +442,7 @@ namespace CardMaker
 
 		void SetActiveField(Field field)
 		{
-			changingDataInternally = true;
+			BeginUpdate();
 			try
 			{
 				ActiveField = field;
@@ -406,7 +454,7 @@ namespace CardMaker
 			}
 			finally
 			{
-				changingDataInternally = false;
+				EndUpdate();
 			}
 		}
 
@@ -467,7 +515,7 @@ namespace CardMaker
 		bool ignoreFirstDeckNameChange = true;
 		private void tbxDeckName_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			if (changingDataInternally)
+			if (ChangingDataInternally)
 				return;
 			if (ignoreFirstDeckNameChange)
 			{
@@ -479,9 +527,17 @@ namespace CardMaker
 			UpdateCardsLabel(ActiveDeck);
 		}
 
+		private bool ChangingDataInternally
+		{
+			get
+			{
+				return internalChangeCount > 0;
+			}
+		}
+
 		private void tbxCardName_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			if (changingDataInternally)
+			if (ChangingDataInternally)
 				return;
 			if (ActiveCard == null)
 				return;
@@ -493,7 +549,7 @@ namespace CardMaker
 
 		private void tbxFieldName_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			if (changingDataInternally)
+			if (ChangingDataInternally)
 				return;
 			if (ActiveField == null)
 				return;
@@ -512,17 +568,27 @@ namespace CardMaker
 			foreach (string directory in directories)
 			{
 				string folderName = System.IO.Path.GetFileName(directory);
-				if (folderName.StartsWith("Shared"))
+				if (folderName.StartsWith("Shared") || folderName.StartsWith("["))
 					continue;
 				CardStyleMenuItem newMenuItem = new CardStyleMenuItem() { Header = folderName };
 				newMenuItem.StylePath = directory.Substring(assetsFolder.Length + 1);
 				items.Add(newMenuItem);
 				string[] subDirectories = Directory.GetDirectories(directory);
-				if (subDirectories.Length > 0)
+				if (HasMoreStyles(subDirectories))
 					AddCardStyleMenuItems(newMenuItem.Items, subDirectories);
 				else
 					newMenuItem.Click += ChangeCardStyleItem_Click;
 			}
+		}
+
+		private static bool HasMoreStyles(string[] subDirectories)
+		{
+			if (subDirectories.Length == 0)
+				return false;
+			foreach (string subDirectory in subDirectories)
+				if (!System.IO.Path.GetFileName(subDirectory).StartsWith("["))
+					return true;
+			return false;
 		}
 
 		private void ChangeCardStyleItem_Click(object sender, RoutedEventArgs e)
@@ -569,10 +635,14 @@ namespace CardMaker
 			AddBackgroundLayers(stylePath);
 			AddCoreLayers(stylePath);
 			AddForegroundLayers(stylePath);
-			cardLayerManager.AddLayersToCanvas(cvsLayers);
 			cardLayerManager.SortByLayerIndex();
+			cardLayerManager.AddLayersToCanvas(cvsLayers);
 			MoveTextLayerToTop();
 			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
+
+			for (int i = cardLayerManager.CardLayers.Count - 1; i >= 0; i--)
+				SelectCorrectAlternateImageLayer(cardLayerManager.CardLayers[i]);
+
 			if (cardLayerManager.CardLayers.Count > 0)
 				lbCardLayers.SelectedItem = cardLayerManager.CardLayers[0];
 			SetActiveLayerTextOptionsForCard(ActiveCard);
@@ -748,16 +818,37 @@ namespace CardMaker
 
 		private void lbAlternates_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (ChangingDataInternally)
+				return;
+
 			if (lbAlternates.SelectedItem is CardImageLayer newImageLayer)
 			{
-				if (lbCardLayers.SelectedItem is CardImageLayer selectedLayer)
-				{
-					cardLayerManager.Replace(selectedLayer, newImageLayer, cvsLayers);
-					// TODO: **Replace** the selectedLayer in cardLayerManager.CardLayers
-					// TODO: **Replace** the image on the canvas with the new image.
-					lbCardLayers.SelectedItem = newImageLayer;
-				}
+				SelectAlternate(newImageLayer);
 			}
+		}
+
+		private void SelectAlternate(CardImageLayer newAlternateImageLayer)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer selectedLayer))
+				return;
+			SelectAlternate(selectedLayer, newAlternateImageLayer);
+		}
+
+		private void SelectAlternate(CardImageLayer selectedLayer, CardImageLayer newAlternateImageLayer)
+		{
+			SetDetailsIsSelected(newAlternateImageLayer);
+
+			cardLayerManager.Replace(selectedLayer, newAlternateImageLayer, cvsLayers);
+			lbCardLayers.SelectedItem = newAlternateImageLayer;
+			ActiveCard.InvalidateLayerMods();
+			ActiveCard.LayerPropertiesHaveChanged();
+		}
+
+		private void SetDetailsIsSelected(CardImageLayer newAlternateImageLayer)
+		{
+			foreach (object item in lbAlternates.Items)
+				if (item is CardImageLayer cardImageLayer)
+					cardImageLayer.Details.IsSelected = cardImageLayer == newAlternateImageLayer;
 		}
 
 		void AddSpellMenuItems(ItemCollection items, string[] files)
