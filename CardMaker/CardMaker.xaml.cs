@@ -1,4 +1,5 @@
 ﻿using System;
+using DndCore;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ using CardMaker;
 using Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using SysPath = System.IO.Path;
 
 namespace CardMaker
 {
@@ -638,7 +640,17 @@ namespace CardMaker
 			AddCoreLayers(ActiveCard, stylePath);
 			AddForegroundLayers(ActiveCard, stylePath);
 			cardLayerManager.SortByLayerIndex();
-			cardLayerManager.AddLayersToCanvas(cvsLayers);
+
+			LayerDetails.BeginUpdate();
+			try
+			{
+				cardLayerManager.AddImageLayersToCanvas(cvsLayers);
+			}
+			finally
+			{
+				LayerDetails.EndUpdate();
+			}
+
 			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
 
 			for (int i = cardLayerManager.CardLayers.Count - 1; i >= 0; i--)
@@ -669,6 +681,7 @@ namespace CardMaker
 			CardImageLayer cardImageLayer = new CardImageLayer(card, pngFile);
 			if (cardImageLayer.LayerName == "Placeholder" && !string.IsNullOrWhiteSpace(ActiveCard.Placeholder))
 			{
+				cardImageLayer.SetPlaceholderDetails();
 				cardImageLayer.PngFile = ActiveCard.Placeholder;
 			}
 			cardImageLayer.NeedToReloadImage += CardImageLayer_NeedToReloadImage;
@@ -901,7 +914,51 @@ namespace CardMaker
 			PropertyLink propertyLink = card.linkedProperties.FirstOrDefault(x => x.GroupNumber == groupNumber && x.Name == ea.Name);
 			if (propertyLink != null)
 				foreach (CardImageLayer imageLayer in propertyLink.Layers)
-					imageLayer.ChangeProperty(ea);
+					if (cardImageLayer != imageLayer)
+						imageLayer.ChangeProperty(ea);
+		}
+
+		private void LayerCompressMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
+				return;
+
+			ImageCropper imageCropper = new ImageCropper();
+			string file = cardImageLayer.PngFile;
+			imageCropper.FindCropEdges(file);
+			// TODO: Clean this up:
+			string directory = SysPath.GetDirectoryName(file);
+			string fileName = SysPath.GetFileNameWithoutExtension(file);
+			string extension = SysPath.GetExtension(file);
+			string layerLinks = string.Empty;
+			if (fileName.Contains("^"))
+			{
+				layerLinks = "^" + fileName.EverythingAfterLast("^");
+				fileName = fileName.EverythingBeforeLast("^");
+			}
+
+			if (fileName.Contains("("))
+				fileName = fileName.EverythingBefore("(");
+			
+			string positioning = $"({imageCropper.leftMargin}, {imageCropper.topMargin})";
+
+			string newFileName = $"{fileName}{positioning}{layerLinks}";
+			string destinationFile = SysPath.Combine(directory, newFileName + extension);
+
+			File.Copy(file, destinationFile);
+			imageCropper.ApplyCrop(destinationFile);
+		}
+
+		private void sliderVerticalStretch_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+				sliderHorizontalStretch.Value = sliderVerticalStretch.Value;
+		}
+
+		private void sliderHorizontalStretch_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+				sliderVerticalStretch.Value = sliderHorizontalStretch.Value;
 		}
 	}
 }

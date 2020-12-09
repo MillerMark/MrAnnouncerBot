@@ -7,11 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Runtime.CompilerServices;
+using System.Windows.Media.Imaging;
 
 namespace CardMaker
 {
 	public class CardImageLayer : DependencyObject, INotifyPropertyChanged
 	{
+		double scaledWidth;
 		Dictionary<string, int> groups = new Dictionary<string, int>();
 		static Dictionary<char, string> propertyMap = new Dictionary<char, string>();
 		static CardImageLayer()
@@ -125,25 +127,29 @@ namespace CardMaker
 
 		private void Details_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (ChangingInternally)
+				return;
 			if (e.PropertyName == nameof(Details.OffsetX))
 			{
-				X = StartX + Details.OffsetX;
+				CalculateX();
 				OnPropertyChanged(nameof(OffsetChanged));
 			}
 			else if (e.PropertyName == nameof(Details.OffsetY))
 			{
-				Y = StartY + Details.OffsetY;
+				CalculateY();
 				OnPropertyChanged(nameof(OffsetChanged));
 			}
 			else if (e.PropertyName == nameof(Details.ScaleX))
 			{
-				Width = Details.ScaleX * OriginalWidth;
+				Width = GetScaledWidth();
+				CalculateX();
 				OnPropertyChanged(nameof(Width));
 				OnPropertyChanged(nameof(ScaleChanged));
 			}
 			else if (e.PropertyName == nameof(Details.ScaleY))
 			{
-				Height = Details.ScaleY * OriginalHeight;
+				Height = GetScaledHeight();
+				CalculateY();
 				OnPropertyChanged(nameof(Height));
 				OnPropertyChanged(nameof(ScaleChanged));
 			}
@@ -171,6 +177,53 @@ namespace CardMaker
 				ReloadImage();
 		}
 
+
+		public double GetScaledWidth()
+		{
+			return OriginalWidth * Details.ScaleX;
+		}
+		public double GetScaledHeight()
+		{
+			return OriginalHeight * Details.ScaleY;
+		}
+
+		public double AnchorX { get; set; } = 0.5;
+		public double AnchorY { get; set; } = 0.5;
+
+		private double StartWithAnchorX => StartX + GetAnchorOffsetX();
+
+		private double GetAnchorOffsetX()
+		{
+			return (OriginalWidth - GetScaledWidth()) * AnchorX;
+		}
+
+		private double StartWithAnchorY => StartY + GetAnchorOffsetY();
+
+		private double GetAnchorOffsetY()
+		{
+			return (OriginalHeight - GetScaledHeight()) * AnchorY;
+		}
+
+		private void CalculateX()
+		{
+			X = StartWithAnchorX + Details.OffsetX;
+		}
+
+		private void CalculateY()
+		{
+			Y = StartWithAnchorY + Details.OffsetY;
+		}
+
+		private void CalculateOffsetX()
+		{
+			Details.OffsetX = X - StartWithAnchorX;
+		}
+
+		private void CalculateOffsetY()
+		{
+			Details.OffsetY = Y - StartWithAnchorY;
+		}
+
 		void OnPropertyChanged([CallerMemberName] string name = "")
 		{
 			// This CardImageLayer PropertyChanged event is not subscribed to by the code, but used by WPF for updating data-bound controls.
@@ -181,7 +234,7 @@ namespace CardMaker
 		int index;
 		public int Index
 		{
-			get => index; 
+			get => index;
 			set
 			{
 				if (index == value)
@@ -192,7 +245,15 @@ namespace CardMaker
 						cardImageLayer.Index = value;
 			}
 		}
+
+		/// <summary>
+		/// The left position of this layer when loaded from the file.
+		/// </summary>
 		public double StartX { get; set; }
+
+		/// <summary>
+		/// The top position of this layer when loaded from the file.
+		/// </summary>
 		public double StartY { get; set; }
 
 
@@ -264,6 +325,11 @@ namespace CardMaker
 		}
 
 		public Dictionary<string, int> Groups { get => groups; set => groups = value; }
+		public double PlaceholderX { get; set; }
+		public double PlaceholderY { get; set; }
+		public int PlaceholderWidth { get; set; }
+		public int PlaceholderHeight { get; set; }
+		public string PlaceholderFile { get; set; }
 
 		public CardImageLayer()
 		{
@@ -276,9 +342,34 @@ namespace CardMaker
 		}
 
 		Image image;
-		public Image CreateImage(double overrideWidth = 0, double overrideHeight = 0)
+		int changingInternally;
+		void BeginUpdate()
 		{
-			image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, PngFile);
+			changingInternally++;
+		}
+
+		public bool ChangingInternally
+		{
+			get
+			{
+				return changingInternally > 0;
+			}
+		}
+
+
+		void EndUpdate()
+		{
+			changingInternally--;
+		}
+		public Image CreateImage(double overrideWidth = 0, double overrideHeight = 0, string fileOverride = null)
+		{
+			string fileName;
+			if (fileOverride != null)
+				fileName = fileOverride;
+			else
+				fileName = PngFile;
+
+			image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, fileName);
 			if (overrideWidth > 0 && overrideHeight > 0)
 			{
 				OriginalWidth = overrideWidth;
@@ -298,10 +389,18 @@ namespace CardMaker
 			image.Width = OriginalWidth * Details.ScaleX;
 			image.Height = OriginalHeight * Details.ScaleY;
 
-			X = StartX + Details.OffsetX;
-			Y = StartY + Details.OffsetY;
-			Width = image.Width;
-			Height = image.Height;
+			BeginUpdate();
+			try
+			{
+				CalculateX();
+				CalculateY();
+				Width = image.Width;
+				Height = image.Height;
+			}
+			finally
+			{
+				EndUpdate();
+			}
 
 			if (IsVisible)
 				image.Visibility = Visibility.Visible;
@@ -401,7 +500,7 @@ namespace CardMaker
 			Details = card.GetLayerDetails(LayerName);
 		}
 
-		public void ReplaceImage(string fileName, Canvas canvas)
+		public Image ReplaceImage(string fileName, Canvas canvas, double overrideWidth = 0, double overrideHeight = 0)
 		{
 			PngFile = fileName;
 
@@ -412,16 +511,30 @@ namespace CardMaker
 					canvas.Children.RemoveAt(i);
 					double saveWidth = image.ActualWidth;
 					double saveHeight = image.ActualHeight;
+					if (overrideWidth != 0)
+						saveWidth = overrideWidth;
+					if (overrideHeight != 0)
+						saveHeight = overrideHeight;
+					double centerX = StartX + saveWidth / 2;
+					double centerY = StartY + saveHeight / 2;
 					image = CreateImage();
-					Details.ScaleX = saveWidth / Width;
-					Details.ScaleY = saveHeight / Height;
+					double newWidth = Width;
+					double newHeight = Height;
+					Details.ScaleX = saveWidth / newWidth;
+					Details.ScaleY = saveHeight / newHeight;
+
+					StartX = centerX - newWidth / 2;
+					StartY = centerY - newHeight / 2;
+
 					Width = saveWidth;
 					Height = saveHeight;
-
+					CalculateX();
+					CalculateY();
 					canvas.Children.Insert(i, image);
-					break;
+					return image;
 				}
 			}
+			return null;
 		}
 		public void ChangeProperty(LinkedPropertyEventArgs ea)
 		{
@@ -443,14 +556,14 @@ namespace CardMaker
 					if (X != ea.DoubleValue)
 					{
 						X = ea.DoubleValue;
-						StartX = X - Details.OffsetX;
+						CalculateOffsetX();
 					}
 					break;
 				case "Y":
 					if (Y != ea.DoubleValue)
 					{
 						Y = ea.DoubleValue;
-						StartY = Y - Details.OffsetY;
+						CalculateOffsetY();
 					}
 					break;
 				case "ScaleX":
@@ -480,10 +593,55 @@ namespace CardMaker
 			if (d is CardImageLayer cardImageLayer)
 				cardImageLayer.OnXChanged(e);
 		}
+
 		static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			if (d is CardImageLayer cardImageLayer)
 				cardImageLayer.OnYChanged(e);
+		}
+
+		public void SetPlaceholderDetails()
+		{
+			if (PlaceholderHeight != 0)
+				return;
+			PlaceholderX = StartX;
+			PlaceholderY = StartY;
+			PlaceholderFile = PngFile;
+			using (var imageStream = File.OpenRead(PlaceholderFile))
+			{
+				var decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.Default);
+				PlaceholderHeight = decoder.Frames[0].PixelHeight;
+				PlaceholderWidth = decoder.Frames[0].PixelWidth;
+			}
+		}
+
+		public Image PlaceImageIntoPlaceholder()
+		{
+			//image = CreateImage(0, 0, PlaceholderFile);
+			//StartX = PlaceholderX;
+			//StartY = PlaceholderY;
+			//canvas.Children.Add(image);
+			//return ReplaceImage(PngFile, canvas, PlaceholderWidth, PlaceholderHeight);
+
+
+			double centerX = StartX + PlaceholderWidth / 2.0;
+			double centerY = StartY + PlaceholderHeight / 2.0;
+
+			Image image = CreateImage();
+			double newWidth = Width;
+			double newHeight = Height;
+			if (Width != OriginalWidth)
+				Details.ScaleX = newWidth / OriginalWidth;
+
+			if (Height != OriginalHeight)
+				Details.ScaleY = newHeight / OriginalHeight;
+
+			StartX = centerX - newWidth / 2.0 - GetAnchorOffsetX();
+			StartY = centerY - newHeight / 2.0 - GetAnchorOffsetY();
+
+			CalculateX();
+			CalculateY();
+			return image;
 		}
 	}
 }

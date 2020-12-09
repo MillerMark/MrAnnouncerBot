@@ -178,6 +178,13 @@ namespace Imaging
 				File.Delete(workFile);
 		}
 
+		public void ApplyCrop(string fileName, string baseName = null, bool useIndices = false)
+		{
+			List<string> files = new List<string>();
+			files.Add(fileName);
+			ApplyCrop(files, baseName, useIndices);
+		}
+
 		public void ApplyCrop(List<string> files, string baseName = null, bool useIndices = false)
 		{
 			ProgressApplyPercent = 0;

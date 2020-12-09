@@ -132,6 +132,9 @@ namespace CardMaker
 		}
 
 		
+		/// <summary>
+		/// The offset, when added to StartX, to position this layer on the canvas.
+		/// </summary>
 		public double OffsetX
 		{
 			get => offsetX;
@@ -226,11 +229,30 @@ namespace CardMaker
 		string name;
 		public static PropertyInfo[] properties = null;
 
+		static int updatingCount;
+		public static void BeginUpdate()
+		{
+			updatingCount++;
+		}
+		public static void EndUpdate()
+		{
+			updatingCount--;
+		}
+		public static bool Updating
+		{
+			get
+			{
+				return updatingCount > 0;
+			}
+		}
+		
 		public event PropertyChangedEventHandler PropertyChanged;
 		public event LinkedPropertyChangedEventHandler PossibleLinkedPropertyChanged;
 
 		internal protected virtual void OnPossibleLinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
 		{
+			if (Updating)
+				return;
 			PossibleLinkedPropertyChanged?.Invoke(sender, ea);
 		}
 

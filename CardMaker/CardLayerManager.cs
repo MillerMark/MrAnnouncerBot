@@ -64,24 +64,34 @@ namespace CardMaker
 			return cardImageLayer.Details.Name.EverythingBefore("-").Trim();
 		}
 
-		void AddLayerToCanvas(CardImageLayer layer, Canvas canvas)
+		void AddImageLayerToCanvas(CardImageLayer layer, Canvas canvas)
 		{
-			Image image = layer.CreateImage();
+			Image image;
+			if (layer.LayerName == "Placeholder")
+			{
+				if (layer.PlaceholderWidth == 0)
+					layer.SetPlaceholderDetails();
+				image = layer.PlaceImageIntoPlaceholder();
+			}
+			else
+			{
+				image = layer.CreateImage();
+			}
+
 			canvas.Children.Add(image);
 			Panel.SetZIndex(image, layer.Index);
 		}
 
-		public void AddLayersToCanvas(Canvas canvas)
+		public void AddImageLayersToCanvas(Canvas canvas)
 		{
 			//! For-loop needed because as layers are added, we may need to replace a layer with its alternate (which would break a foreach).
 			for (int i = CardLayers.Count - 1; i >= 0; i--)
-				AddLayerToCanvas(CardLayers[i], canvas);
+				AddImageLayerToCanvas(CardLayers[i], canvas);
 		}
 		public void SortByLayerIndex()
 		{
 			CardLayers = new BindingList<CardImageLayer>(CardLayers.OrderBy(x => x.Index).Reverse().ToList());
 
-			int offset = 0;
 			for (int i = 0; i < CardLayers.Count; i++)
 				CardLayers[i].Index = CardLayers.Count - i;
 		}

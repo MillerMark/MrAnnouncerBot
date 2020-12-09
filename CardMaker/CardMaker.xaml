@@ -263,6 +263,11 @@
 						<ListBox.ItemTemplate>
 							<DataTemplate>
 								<Grid Height="Auto" Width="195">
+									<Grid.ContextMenu>
+										<ContextMenu>
+											<MenuItem Header="Compress..." Click="LayerCompressMenuItem_Click"></MenuItem>
+										</ContextMenu>
+									</Grid.ContextMenu>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="*"/>
 										<ColumnDefinition Width="Auto"/>
@@ -320,6 +325,7 @@
 								</Grid>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
+						
 					</ListBox>
 					
 					<ListBox x:Name="lbAlternates" SelectionChanged="lbAlternates_SelectionChanged">
@@ -421,13 +427,13 @@
 						<TextBlock Text="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 					</StackPanel>
-					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" ValueChanged="sliderHorizontalStretch_ValueChanged"/>
 					<StackPanel Grid.Row="3" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Vertical" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 							<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						</StackPanel>
-						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="0.1" Maximum="3" IsDirectionReversed="True" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ></Slider>
+						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="0.1" Maximum="3" IsDirectionReversed="True" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ValueChanged="sliderVerticalStretch_ValueChanged"></Slider>
 					</StackPanel>
 					<Button x:Name="btnResetOffsets" ToolTip="Reset offsets to 0" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" Width="30" Height="30" Margin="-8, -4, 0, 0" Click="btnResetOffsets_Click" Visibility="{Binding Path=OffsetChanged, Converter={StaticResource BoolToVis}}">
 						X
