@@ -102,6 +102,10 @@ namespace CardMaker
 		}
 
 		[Column]
+		public int TextLayerIndex { get; set; }
+
+
+		[Column]
 		public string TextColor
 		{
 			get => colorStr;

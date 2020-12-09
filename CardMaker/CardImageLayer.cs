@@ -12,13 +12,47 @@ namespace CardMaker
 {
 	public class CardImageLayer : DependencyObject, INotifyPropertyChanged
 	{
+		Dictionary<string, int> groups = new Dictionary<string, int>();
+		static Dictionary<char, string> propertyMap = new Dictionary<char, string>();
+		static CardImageLayer()
+		{
+			propertyMap.Add('h', "Hue");
+			propertyMap.Add('l', "Light");
+			propertyMap.Add('s', "Sat");
+			propertyMap.Add('c', "Contrast");
+			propertyMap.Add('x', "X");
+			propertyMap.Add('y', "Y");
+			propertyMap.Add('z', "ScaleX");  // Horizontal stretch.
+			propertyMap.Add('v', "ScaleY");  // Vertical stretch.
+			propertyMap.Add('i', "IsVisible");
+		}
+
+		LayerDetails details;
+		public LayerDetails Details
+		{
+			get => details;
+			set
+			{
+				if (details == value)
+					return;
+				details = value;
+				if (details != null)
+					details.PropertyChanged += Details_PropertyChanged;
+			}
+		}
+		public bool OffsetChanged => Details.OffsetX != 0 || Details.OffsetY != 0;
+		public bool HueChanged => Details.Hue != 0;
+		public bool SatChanged => Details.Sat != 0;
+		public bool LightChanged => Details.Light != 0;
+		public bool ContrastChanged => Details.Contrast != 0;
+		public bool ScaleChanged => Details.ScaleX != 1 || Details.ScaleY != 1;
+
 		public string Category { get; set; }
 		public event EventHandler NeedToReloadImage;
-		bool isSelected;
 		string alternateName;
 
-		public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
-		public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
+		public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d, new PropertyChangedCallback(OnXChanged)));
+		public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d, new PropertyChangedCallback(OnYChanged)));
 		public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 		public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(double), typeof(CardImageLayer), new FrameworkPropertyMetadata(0d));
 
@@ -89,28 +123,6 @@ namespace CardMaker
 			}
 		}
 
-		LayerDetails details;
-		public LayerDetails Details
-		{
-			get => details;
-			set
-			{
-				if (details == value)
-					return;
-				details = value;
-				if (details != null)
-					details.PropertyChanged += Details_PropertyChanged;
-			}
-		}
-
-		public bool OffsetChanged => Details.OffsetX != 0 || Details.OffsetY != 0;
-		public bool HueChanged => Details.Hue != 0;
-		public bool SatChanged => Details.Sat != 0;
-		public bool LightChanged => Details.Light != 0;
-		public bool ContrastChanged => Details.Contrast != 0;
-		public bool ScaleChanged => Details.ScaleX != 1 || Details.ScaleY != 1;
-
-
 		private void Details_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Details.OffsetX))
@@ -166,7 +178,20 @@ namespace CardMaker
 		}
 
 		public string PngFile { get; set; }
-		public int Index { get; set; }
+		int index;
+		public int Index
+		{
+			get => index; 
+			set
+			{
+				if (index == value)
+					return;
+				index = value;
+				if (Alternates != null && Alternates.CardLayers != null && Alternates.CardLayers.Count > 0)
+					foreach (CardImageLayer cardImageLayer in Alternates.CardLayers)
+						cardImageLayer.Index = value;
+			}
+		}
 		public double StartX { get; set; }
 		public double StartY { get; set; }
 
@@ -237,10 +262,12 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
+		public Dictionary<string, int> Groups { get => groups; set => groups = value; }
+
 		public CardImageLayer()
 		{
-			
+
 		}
 
 		public override string ToString()
@@ -287,7 +314,7 @@ namespace CardMaker
 			BindingHelper.BindProperties(this, CardImageLayer.HeightProperty, image, Image.HeightProperty);
 			BindingHelper.BindToCanvasPosition(this, image);
 			image.Tag = this;
-
+			Panel.SetZIndex(image, Index);
 			return image;
 		}
 
@@ -305,17 +332,59 @@ namespace CardMaker
 			return uIElement == image;
 		}
 
-		public CardImageLayer(string pngFile)
+
+		void AddPropertyLink(Card card, string propertyName, int groupNumber)
+		{
+			if (!groups.ContainsKey(propertyName))
+				groups.Add(propertyName, groupNumber);
+			card.AddPropertyLink(this, propertyName, groupNumber);
+		}
+
+		void AddPropertyLink(Card card, char propertyInitial, int groupNumber)
+		{
+			char propertyInitialLower = char.ToLower(propertyInitial);
+			if (!propertyMap.ContainsKey(propertyInitialLower))
+				return;
+
+
+			AddPropertyLink(card, propertyMap[propertyInitialLower], groupNumber);
+		}
+
+		void AddPropertyLink(Card card, string link)
+		{
+			if (link == null || link.Length <= 1)
+				return;
+
+			string trimmedLink = link.Trim();
+			char propertyInitial = trimmedLink[0];
+			string groupNumberStr = trimmedLink.Substring(1);
+			if (!int.TryParse(groupNumberStr, out int groupNumber))
+				return;
+
+			AddPropertyLink(card, propertyInitial, groupNumber);
+		}
+
+		public CardImageLayer(Card card, string pngFile, int indexOffset = 0)
 		{
 			PngFile = pngFile;
 			LayerName = Path.GetFileNameWithoutExtension(pngFile);
+
 			int closeBracketPos = LayerName.IndexOf("]");
 			if (closeBracketPos > 0)
 			{
 				string indexStr = LayerName.Substring(1, closeBracketPos - 1);
 				LayerName = LayerName.Substring(closeBracketPos + 1).Trim();
 				if (int.TryParse(indexStr, out int index))
-					Index = index;
+					Index = indexOffset + index;
+			}
+			int caretSymbolPos = LayerName.IndexOf("^");
+			if (caretSymbolPos > 0)
+			{
+				string linkStr = LayerName.Substring(caretSymbolPos + 1).Trim();
+				LayerName = LayerName.Substring(0, caretSymbolPos).Trim();
+				string[] links = linkStr.Split(',');
+				foreach (string link in links)
+					AddPropertyLink(card, link);
 			}
 			int openParenPos = LayerName.IndexOf("(");
 			if (openParenPos > 0)
@@ -328,12 +397,14 @@ namespace CardMaker
 				if (double.TryParse(parts[1], out double y))
 					StartY = y;
 			}
+
+			Details = card.GetLayerDetails(LayerName);
 		}
 
 		public void ReplaceImage(string fileName, Canvas canvas)
 		{
 			PngFile = fileName;
-			
+
 			for (int i = 0; i < canvas.Children.Count; i++)
 			{
 				if (canvas.Children[i] == image)
@@ -351,6 +422,68 @@ namespace CardMaker
 					break;
 				}
 			}
+		}
+		public void ChangeProperty(LinkedPropertyEventArgs ea)
+		{
+			switch (ea.Name)
+			{
+				case "Hue":
+					Details.Hue = ea.DoubleValue;
+					break;
+				case "Sat":
+					Details.Sat = ea.DoubleValue;
+					break;
+				case "Light":
+					Details.Light = ea.DoubleValue;
+					break;
+				case "Contrast":
+					Details.Contrast = ea.DoubleValue;
+					break;
+				case "X":
+					if (X != ea.DoubleValue)
+					{
+						X = ea.DoubleValue;
+						StartX = X - Details.OffsetX;
+					}
+					break;
+				case "Y":
+					if (Y != ea.DoubleValue)
+					{
+						Y = ea.DoubleValue;
+						StartY = Y - Details.OffsetY;
+					}
+					break;
+				case "ScaleX":
+					Details.ScaleX = ea.DoubleValue;
+					break;
+				case "ScaleY":
+					Details.ScaleY = ea.DoubleValue;
+					break;
+				case "IsVisible":
+					IsVisible = ea.BoolValue;
+					break;
+			}
+		}
+
+		void OnXChanged(DependencyPropertyChangedEventArgs e)
+		{
+			Details.OnPossibleLinkedPropertyChanged(this, new LinkedPropertyEventArgs(X, "X", Details));
+		}
+
+		void OnYChanged(DependencyPropertyChangedEventArgs e)
+		{
+			Details.OnPossibleLinkedPropertyChanged(this, new LinkedPropertyEventArgs(Y, "Y", Details));
+		}
+
+		static void OnXChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (d is CardImageLayer cardImageLayer)
+				cardImageLayer.OnXChanged(e);
+		}
+		static void OnYChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (d is CardImageLayer cardImageLayer)
+				cardImageLayer.OnYChanged(e);
 		}
 	}
 }

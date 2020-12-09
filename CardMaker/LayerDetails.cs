@@ -34,7 +34,7 @@ namespace CardMaker
 					return;
 				isVisible = value;
 				isHidden = !isVisible;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 				OnPropertyChanged("IsHidden");
 			}
 		}
@@ -88,7 +88,7 @@ namespace CardMaker
 				if (hue == value)
 					return;
 				hue = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -101,7 +101,7 @@ namespace CardMaker
 				if (sat == value)
 					return;
 				sat = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -114,7 +114,7 @@ namespace CardMaker
 				if (light == value)
 					return;
 				light = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -127,7 +127,7 @@ namespace CardMaker
 				if (contrast == value)
 					return;
 				contrast = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -140,9 +140,10 @@ namespace CardMaker
 				if (offsetX == value)
 					return;
 				offsetX = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
+
 		public double OffsetY
 		{
 			get => offsetY;
@@ -151,7 +152,7 @@ namespace CardMaker
 				if (offsetY == value)
 					return;
 				offsetY = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -164,7 +165,7 @@ namespace CardMaker
 				if (scaleX == value)
 					return;
 				scaleX = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -177,7 +178,7 @@ namespace CardMaker
 				if (scaleY == value)
 					return;
 				scaleY = value;
-				OnPropertyChanged();
+				LinkedPropertyChanged(value);
 			}
 		}
 
@@ -205,7 +206,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-
+		
 		public LayerDetails()
 		{
 
@@ -226,6 +227,26 @@ namespace CardMaker
 		public static PropertyInfo[] properties = null;
 
 		public event PropertyChangedEventHandler PropertyChanged;
+		public event LinkedPropertyChangedEventHandler PossibleLinkedPropertyChanged;
+
+		internal protected virtual void OnPossibleLinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
+		{
+			PossibleLinkedPropertyChanged?.Invoke(sender, ea);
+		}
+
+		void LinkedPropertyChanged(double value, [CallerMemberName] string propertyName = "")
+		{
+			OnPossibleLinkedPropertyChanged(this, new LinkedPropertyEventArgs(value, propertyName, this));
+
+			OnPropertyChanged(propertyName);
+		}
+
+		void LinkedPropertyChanged(bool value, [CallerMemberName] string propertyName = "")
+		{
+			OnPossibleLinkedPropertyChanged(this, new LinkedPropertyEventArgs(value, propertyName, this));
+
+			OnPropertyChanged(propertyName);
+		}
 
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{

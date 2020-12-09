@@ -90,6 +90,9 @@
     <Compile Include="FieldType.cs" />
     <Compile Include="LayerDetails.cs" />
     <Compile Include="LayerTextOptions.cs" />
+    <Compile Include="LinkedPropertyChangedEventHandler.cs" />
+    <Compile Include="LinkedPropertyEventArgs.cs" />
+    <Compile Include="PropertyLink.cs" />
     <Compile Include="Rarity.cs" />
     <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="TextFontScale.cs" />

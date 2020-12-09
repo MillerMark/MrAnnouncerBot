@@ -107,6 +107,8 @@ namespace CardMaker
 			InitializeComponent();
 			CardData = new CardData();
 			CardData.LoadData();
+			foreach (Card card in CardData.AllKnownCards)
+				card.LinkedPropertyChanged += Card_LinkedPropertyChanged;
 
 			if (CardData.AllKnownDecks != null && CardData.AllKnownDecks.Count > 0)
 				SetActiveDeck(CardData.AllKnownDecks[0]);
@@ -115,8 +117,6 @@ namespace CardMaker
 
 			lbDecks.ItemsSource = CardData.AllKnownDecks;
 		}
-
-
 
 		void ShowStatus(string message)
 		{
@@ -294,6 +294,7 @@ namespace CardMaker
 			{
 				cardLayerManager.Clear();
 				ActiveCard = CardData.AddCard(ActiveDeck);
+				ActiveCard.LinkedPropertyChanged += Card_LinkedPropertyChanged;
 				tbxCardName.SelectAll();
 				tbxCardName.Focus();
 			}
@@ -632,12 +633,12 @@ namespace CardMaker
 			if (ActiveCard != null)
 				ActiveCard.StylePath = stylePath;
 			DeleteAllImages(cvsLayers);
-			AddBackgroundLayers(stylePath);
-			AddCoreLayers(stylePath);
-			AddForegroundLayers(stylePath);
+			AddBackgroundLayers(ActiveCard, stylePath);
+			int numBackgroundLayers = cardLayerManager.CardLayers.Count;
+			AddCoreLayers(ActiveCard, stylePath);
+			AddForegroundLayers(ActiveCard, stylePath);
 			cardLayerManager.SortByLayerIndex();
 			cardLayerManager.AddLayersToCanvas(cvsLayers);
-			MoveTextLayerToTop();
 			lbCardLayers.ItemsSource = cardLayerManager.CardLayers;
 
 			for (int i = cardLayerManager.CardLayers.Count - 1; i >= 0; i--)
@@ -647,6 +648,7 @@ namespace CardMaker
 				lbCardLayers.SelectedItem = cardLayerManager.CardLayers[0];
 			SetActiveLayerTextOptionsForCard(ActiveCard);
 			LayerTextOptions layerTextOptions = CardData.GetLayerTextOptions(stylePath);
+			MoveTextLayerTo(numBackgroundLayers + layerTextOptions.TextLayerIndex + 1);
 			if (ActiveCard != null && layerTextOptions != null)
 			{
 				ActiveCard.BeginUpdate();
@@ -662,27 +664,26 @@ namespace CardMaker
 			}
 		}
 
-		private CardImageLayer AddLayer(string pngFile)
+		private CardImageLayer AddLayer(Card card, string pngFile)
 		{
-			CardImageLayer cardImageLayer = new CardImageLayer(pngFile);
+			CardImageLayer cardImageLayer = new CardImageLayer(card, pngFile);
 			if (cardImageLayer.LayerName == "Placeholder" && !string.IsNullOrWhiteSpace(ActiveCard.Placeholder))
 			{
 				cardImageLayer.PngFile = ActiveCard.Placeholder;
 			}
 			cardImageLayer.NeedToReloadImage += CardImageLayer_NeedToReloadImage;
-			cardImageLayer.Details = ActiveCard.GetLayerDetails(cardImageLayer.LayerName);
 			cardLayerManager.Add(cardImageLayer);
 			return cardImageLayer;
 		}
-
-		private void AddCoreLayers(string stylePath)
+		
+		private void AddCoreLayers(Card card, string stylePath)
 		{
 			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
 			foreach (string pngFile in pngFiles)
-				AddLayer(pngFile);
+				AddLayer(card, pngFile);
 		}
 
-		private void AddBackgroundLayers(string stylePath)
+		private void AddBackgroundLayers(Card card, string stylePath)
 		{
 			const string backgroundFolderName = "Shared Back Layer Adornments";
 			string basePath = System.IO.Path.GetDirectoryName(stylePath);
@@ -691,10 +692,10 @@ namespace CardMaker
 				return;
 			string[] pngFiles = Directory.GetFiles(backFolder, "*.png");
 			foreach (string pngFile in pngFiles)
-				AddLayer(pngFile).Index -= 100;
+				AddLayer(card, pngFile).Index -= 100;
 		}
 
-		private void AddForegroundLayers(string stylePath)
+		private void AddForegroundLayers(Card card, string stylePath)
 		{
 			const string foregroundFolderName = "Shared Top Layer Adornments";
 			string basePath = System.IO.Path.GetDirectoryName(stylePath);
@@ -703,7 +704,7 @@ namespace CardMaker
 				return;
 			string[] pngFiles = Directory.GetFiles(foregroundFolder, "*.png");
 			foreach (string pngFile in pngFiles)
-				AddLayer(pngFile).Index += 100;
+				AddLayer(card, pngFile).Index += 100;
 		}
 
 		private void CardImageLayer_NeedToReloadImage(object sender, EventArgs e)
@@ -737,9 +738,9 @@ namespace CardMaker
 			return index;
 		}
 
-		private void MoveTextLayerToTop()
+		private void MoveTextLayerTo(int textLayerIndex)
 		{
-			Panel.SetZIndex(grdCardText, 200);
+			Panel.SetZIndex(grdCardText, textLayerIndex);
 		}
 
 		private void btnResetOffsets_Click(object sender, RoutedEventArgs e)
@@ -884,6 +885,23 @@ namespace CardMaker
 			string[] files = Directory.GetFiles(spellFolder, "*.png");
 			mnuPickSpell.Items.Clear();
 			AddSpellMenuItems(mnuPickSpell.Items, files);
+		}
+
+		private void Card_LinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
+		{
+			if (!(sender is Card card))
+				return;
+
+			CardImageLayer cardImageLayer = cardLayerManager.CardLayers.FirstOrDefault(x => x.Details == ea.Details);
+			if (cardImageLayer == null)
+				return;
+			if (!cardImageLayer.Groups.ContainsKey(ea.Name))
+				return;
+			int groupNumber = cardImageLayer.Groups[ea.Name];
+			PropertyLink propertyLink = card.linkedProperties.FirstOrDefault(x => x.GroupNumber == groupNumber && x.Name == ea.Name);
+			if (propertyLink != null)
+				foreach (CardImageLayer imageLayer in propertyLink.Layers)
+					imageLayer.ChangeProperty(ea);
 		}
 	}
 }

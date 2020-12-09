@@ -259,10 +259,10 @@
 					</Button>
 
 					<TextBlock Text="Layers:" Width="Auto" Height="Auto"/>
-					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="150" HorizontalAlignment="Left">
+					<ListBox x:Name="lbCardLayers" SelectionChanged="lbCardLayers_SelectionChanged" Width="210" HorizontalAlignment="Left">
 						<ListBox.ItemTemplate>
 							<DataTemplate>
-								<Grid Height="Auto" Width="130">
+								<Grid Height="Auto" Width="195">
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="*"/>
 										<ColumnDefinition Width="Auto"/>

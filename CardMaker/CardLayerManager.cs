@@ -68,6 +68,7 @@ namespace CardMaker
 		{
 			Image image = layer.CreateImage();
 			canvas.Children.Add(image);
+			Panel.SetZIndex(image, layer.Index);
 		}
 
 		public void AddLayersToCanvas(Canvas canvas)
@@ -79,6 +80,10 @@ namespace CardMaker
 		public void SortByLayerIndex()
 		{
 			CardLayers = new BindingList<CardImageLayer>(CardLayers.OrderBy(x => x.Index).Reverse().ToList());
+
+			int offset = 0;
+			for (int i = 0; i < CardLayers.Count; i++)
+				CardLayers[i].Index = CardLayers.Count - i;
 		}
 
 		public void HideAllLayersExcept(CardImageLayer notThisCardImageLayer)

@@ -14,6 +14,7 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		internal List<PropertyLink> linkedProperties = new List<PropertyLink>();
 		string placeholder;
 		string layerModStr;
 		Brush fontBrush;
@@ -432,6 +433,18 @@ namespace CardMaker
 		public Card()
 		{
 			allLayers.PropertyChanged += AllLayers_PropertyChanged;
+			allLayers.LinkedPropertyChanged += AllLayers_LinkedPropertyChanged;
+		}
+
+		public event LinkedPropertyChangedEventHandler LinkedPropertyChanged;
+		protected virtual void OnLinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
+		{
+			LinkedPropertyChanged?.Invoke(sender, ea);
+		}
+
+		private void AllLayers_LinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
+		{
+			OnLinkedPropertyChanged(this, ea);
 		}
 
 		private void AllLayers_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -464,6 +477,24 @@ namespace CardMaker
 		public LayerDetails GetLayerDetails(string layerName)
 		{
 			return allLayers.Get(layerName);
+		}
+
+		public void AddPropertyLink(CardImageLayer layer, string propertyName, int groupNumber)
+		{
+			PropertyLink foundItem = linkedProperties.FirstOrDefault(x => x.Name == propertyName && x.GroupNumber == groupNumber);
+			if (foundItem == null)
+			{
+				foundItem = new PropertyLink() { Name = propertyName, GroupNumber = groupNumber };
+				foundItem.LinkedPropertyChanged += FoundItem_LinkedPropertyChanged;
+				linkedProperties.Add(foundItem);
+			}
+
+			foundItem.Layers.Add(layer);
+		}
+		//
+		private void FoundItem_LinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
+		{
+			
 		}
 	}
 }
