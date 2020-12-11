@@ -520,8 +520,8 @@ namespace CardMaker
 					image = CreateImage();
 					double newWidth = Width;
 					double newHeight = Height;
-					Details.ScaleX = saveWidth / newWidth;
-					Details.ScaleY = saveHeight / newHeight;
+					Details.ScaleX *= saveWidth / newWidth;
+					Details.ScaleY *= saveHeight / newHeight;
 
 					StartX = centerX - newWidth / 2;
 					StartY = centerY - newHeight / 2;
