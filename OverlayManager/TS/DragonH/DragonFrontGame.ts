@@ -744,6 +744,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.loadLongSword();
 		this.loadJavelin();
 		this.loadBoomerang();
+		this.loadMace();
 	}
 
 	private loadWarHammer() {
@@ -759,6 +760,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		const boomerangOriginX = 229;
 		const boomerangOriginY = 304;
 		this.loadWeapon('Boomerang', 'Boomerang', boomerangOriginX, boomerangOriginY, 101);
+	}
+
+	private loadMace() {
+		const maceOriginX = 251;
+		const maceOriginY = 447;
+		this.loadWeapon('Mace', 'Mace', maceOriginX, maceOriginY);
 	}
 
 	private loadLongSword() {

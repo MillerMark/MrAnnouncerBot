@@ -303,14 +303,7 @@ class PlayerStatManager implements IAllPlayerStats {
 
 		this.readyToRollDarkDie = this.createReadyToRollDieSprites('DarkDie');
 		this.readyToRollLightDie = this.createReadyToRollDieSprites('LightDie');
-		this.createReadyToRollDieSprites('Willy');
-		this.createReadyToRollDieSprites('Fred');
-		this.createReadyToRollDieSprites('Rojniss');
-		this.createReadyToRollDieSprites('Duh');
-		//this.createReadyToRollDieSprites('Miles');
-		this.createReadyToRollDieSprites('Lady');
-		this.createReadyToRollDieSprites('Merkin');
-		this.createReadyToRollDieSprites('Cutie');
+		this.createAllReadyToRollSprites();
 
 		this.readyToRollDragonHands = this.createReadyToRollSprites('DragonHands', 41, 22);
 
@@ -343,6 +336,19 @@ class PlayerStatManager implements IAllPlayerStats {
 					Top = 22
 
 		 * */
+	}
+
+	private createAllReadyToRollSprites() {
+		this.createReadyToRollDieSprites('Willy');
+		this.createReadyToRollDieSprites('Fred');
+		this.createReadyToRollDieSprites('Rojniss');
+		this.createReadyToRollDieSprites('Endell');
+		this.createReadyToRollDieSprites('Duh');
+		this.createReadyToRollDieSprites('Weewo');
+		//this.createReadyToRollDieSprites('Miles');
+		this.createReadyToRollDieSprites('Lady');
+		this.createReadyToRollDieSprites('Merkin');
+		this.createReadyToRollDieSprites('Cutie');
 	}
 
 	loadConcentrationSprites(fileName: string, frameCount: number, originX: number, originY: number, animationStyle: AnimationStyle): Sprites {

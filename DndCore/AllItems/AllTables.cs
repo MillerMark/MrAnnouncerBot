@@ -39,6 +39,7 @@ namespace DndCore
 			LoadTable<Paladin>();
 			LoadTable<Rogue>();
 			LoadTable<Bard>();
+			LoadTable<Cleric>();
 			LoadTable<Ranger>();
 			LoadTable<Druid>();
 		}
