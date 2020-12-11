@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using GoogleHelper;
 
@@ -7,7 +8,7 @@ namespace CardMaker
 {
 	[SheetName(Constants.SheetName_DeckData)]
 	[TabName("LayerTextOptions")]
-	public class LayerTextOptions: TrackPropertyChanges
+	public class LayerTextOptions : TrackPropertyChanges
 	{
 		string colorStr;
 		double gridHeight;
@@ -83,6 +84,23 @@ namespace CardMaker
 				if (gridWidth == value)
 					return;
 				gridWidth = value;
+				OnPropertyChanged();
+			}
+		}
+
+		VerticalAlignment verticalAlignment;
+		[Column]
+		public VerticalAlignment VerticalAlignment
+		{
+			get
+			{
+				return verticalAlignment;
+			}
+			set
+			{
+				if (verticalAlignment == value)
+					return;
+				verticalAlignment = value;
 				OnPropertyChanged();
 			}
 		}

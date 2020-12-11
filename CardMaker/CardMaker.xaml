@@ -405,8 +405,8 @@
 							<Grid.LayoutTransform>
 								<RotateTransform x:Name="rotTx4CardText" Angle="{Binding TextAngle}"></RotateTransform>
 							</Grid.LayoutTransform>
-							<Viewbox>
-								<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" LineStackingStrategy="BlockLineHeight" 
+							<Viewbox VerticalAlignment="{Binding VerticalAlignment}">
+								<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Top" LineStackingStrategy="BlockLineHeight" 
 									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" Foreground="{Binding FontBrush}">
 								</TextBlock>
 							</Viewbox>

@@ -544,6 +544,8 @@ namespace CardMaker
 				return;
 			if (ActiveCard == null)
 				return;
+			if (tbxCardName.Text == ActiveCard.Name)
+				return;
 			ActiveCard.IsDirty = true;
 			if (ActiveCard.ParentDeck != null)
 				ActiveCard.ParentDeck.IsDirty = true;
