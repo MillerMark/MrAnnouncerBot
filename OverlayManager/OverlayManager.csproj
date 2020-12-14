@@ -38,6 +38,7 @@
     <None Remove="TS\DragonH\ReleaseTrigger.ts" />
     <None Remove="TS\DragonH\SavingThrow.ts" />
     <None Remove="TS\DragonH\ScreenPosTarget.ts" />
+    <None Remove="TS\DragonH\SpeechBubbles.ts" />
     <None Remove="TS\DragonH\SpellBook.ts" />
     <None Remove="TS\DragonH\Sprinkles.ts" />
     <None Remove="TS\DragonH\SpritesEffect.ts" />
@@ -132,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />
+    <TypeScriptCompile Include="TS\DragonH\SpeechBubbles.ts" />
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
     <TypeScriptCompile Include="TS\DragonH\CoinManager.ts" />
     <TypeScriptCompile Include="TS\DragonH\ConditionManager.ts" />

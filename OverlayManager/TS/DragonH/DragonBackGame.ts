@@ -12,6 +12,7 @@ class DragonBackSounds extends SoundManager {
 class DragonBackGame extends DragonGame {
 	messageBox: MessageBox;
 	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
+	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this, this.inGameCreatureManager);
 	sprinkles: Sprinkles;
 	layerSuffix = 'Back';
 	emitter: Emitter;
@@ -218,6 +219,7 @@ class DragonBackGame extends DragonGame {
 		}
 		this.updateSkeletalTrackingEffects(context, nowMs);
 		this.renderTextAnimations(context, nowMs);
+		this.speechBubbleManager.draw(context, nowMs);
 	}
 
 	fpsWindow: FpsWindow;
@@ -309,6 +311,7 @@ class DragonBackGame extends DragonGame {
 
 		super.loadResources();
 
+		this.speechBubbleManager.loadResources();
 		this.characterStatsScroll.loadResources();
 		this.messageBox.loadResources();
 
@@ -810,5 +813,9 @@ class DragonBackGame extends DragonGame {
 
 	inGameUICommand(commandData: string) {
 		this.messageBox.executeCommand(commandData, this.world.ctx, this.dragonBackSounds);
+	}
+
+	speechBubble(speechStr: string) {
+		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr, LayerLevel.Back);
 	}
 } 

@@ -1510,5 +1510,4 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		childSprite.fadeInTime = 300;
 		return childSprite;
 	}
-
 }

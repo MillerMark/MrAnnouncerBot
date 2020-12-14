@@ -289,6 +289,10 @@ namespace DndCore
 		public string diceWeAreRolling = string.Empty;
 		public string dieBackColor = "#ffffff";
 		public string dieFontColor = "#000000";
+
+		[JsonIgnore]
+		public string bubbleTextColor = "#000000";
+
 		public string dieRollEffectsThisRoll = string.Empty;
 		public string dieRollMessageThisRoll = string.Empty;
 		public int disadvantageDiceThisRoll = 0;
@@ -1046,6 +1050,7 @@ namespace DndCore
 			character.hueShift = characterDto.hueShift;
 			character.dieBackColor = characterDto.dieBackColor;
 			character.dieFontColor = characterDto.dieFontColor;
+			character.bubbleTextColor = characterDto.bubbleTextColor;
 			character.headshotIndex = characterDto.headshotIndex;
 			character.alignmentStr = characterDto.alignment;
 			character.AddWeaponsFrom(characterDto.weapons);

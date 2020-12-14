@@ -3843,7 +3843,7 @@ function prepareLegacyRoll(xPositionModifier: number) {
 
 //! Called from Connection.ts
 function pleaseRollDice(diceRollDto: DiceRollData) {
-
+	console.log(`pleaseRollDice...`);
 	DiceLayer.numFiltersOnDieCleanup = 0;
 	DiceLayer.numFiltersOnRoll = 0;
 	//testing = true;

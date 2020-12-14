@@ -244,6 +244,9 @@ function speechBubble(speechStr: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.speechBubble(speechStr);
 	}
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.speechBubble(speechStr);
+	}
 }
 
 function playerDataChanged(playerID: number, pageID: number, playerData: string) {

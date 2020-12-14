@@ -1,4 +1,9 @@
-﻿class InGameCreatureManager {
+﻿interface IGetCreatureX {
+	getX(creature: InGameCreature): number;
+	getInGameCreatureByIndex(index: number): InGameCreature;
+}
+
+class InGameCreatureManager implements IGetCreatureX {
 	parchmentBackground: Sprites;
 	deathX: Sprites;
 	scrollAppear: Sprites;
@@ -584,6 +589,7 @@
 			}
 		}
 	}
+
 	updateInGameCreatureTalkIndicator(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
 		for (let i = 0; i < inGameCreatureDtos.length; i++) {
 			const updatedGameCreature: InGameCreature = inGameCreatureDtos[i];

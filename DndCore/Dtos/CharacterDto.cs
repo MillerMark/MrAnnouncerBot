@@ -45,6 +45,7 @@ namespace DndCore
 		public int hueShift { get; set; }
 		public string dieBackColor { get; set; }
 		public string dieFontColor { get; set; }
+		public string bubbleTextColor { get; set; }
 		public int headshotIndex { get; set; }
 		public string alignment { get; set; }
 		public int leftMostPriority { get; set; }

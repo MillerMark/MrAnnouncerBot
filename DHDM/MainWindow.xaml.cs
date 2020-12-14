@@ -236,7 +236,7 @@ namespace DHDM
 
 		private void DhPubSub_OnRewardRedeemed(object sender, TwitchLib.PubSub.Events.OnRewardRedeemedArgs e)
 		{
-			
+
 		}
 
 		// ResendExistingData
@@ -485,7 +485,7 @@ namespace DHDM
 			}
 			catch (Exception ex)
 			{
-				
+
 			}
 		}
 
@@ -1465,39 +1465,55 @@ namespace DHDM
 
 		private static bool CharacterSaysSomething(string message)
 		{
-			if (message.StartsWith("!") && message.Contains(":"))
+			if (!message.StartsWith("!") || !message.Contains(":"))
+				return false;
+			string textColor = string.Empty;
+			message = message.Substring(1, message.Length - 1);
+			int colonPos = message.IndexOf(":");
+			if (colonPos > 0)
 			{
-				message = message.Substring(1, message.Length - 1);
-				int colonPos = message.IndexOf(":");
-				if (colonPos > 0)
+				string playerName = message.Substring(0, colonPos);
+				int playerId = AllPlayers.GetPlayerIdFromName(playerName);
+				if (playerId == 100) // DM
 				{
-					string playerName = message.Substring(0, colonPos);
-					int playerId = AllPlayers.GetPlayerIdFromName(playerName);
-					if (playerId >= 0)
+					textColor = "(#4b107c)";
+				}
+				if (playerId < 0)
+				{
+					InGameCreature creature = AllInGameCreatures.GetActiveCreatureByFirstName(playerName);
+					if (creature == null)
+						return false;
+					playerId = -creature.Index;
+				}
+				else
+				{
+					Character player = AllPlayers.GetFromId(playerId);
+					if (player != null)
 					{
-						message = message.Substring(colonPos + 1).Trim();
-						string speechCommand = null;
-						if (message.StartsWith("\""))
-						{
-							speechCommand = "says";
-							message = message.Trim('"');
-						}
-						else if (message.StartsWith("("))
-						{
-							speechCommand = "thinks";
-							message = message.TrimStart('(').TrimEnd(')');
-						}
-						if (DateTime.Now.Hour < 16)
-						{
-							ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
-							message = profanityFilter.CensorString(message);
-						}
-						if (speechCommand != null)
-						{
-							HubtasticBaseStation.SpeechBubble($"{playerId} {speechCommand}: {message}");
-							return true;
-						}
+						textColor = $"({player.bubbleTextColor})";
 					}
+				}
+				message = message.Substring(colonPos + 1).Trim();
+				string speechCommand = null;
+				if (message.StartsWith("\""))
+				{
+					speechCommand = "says";
+					message = message.Trim('"');
+				}
+				else if (message.StartsWith("("))
+				{
+					speechCommand = "thinks";
+					message = message.TrimStart('(').TrimEnd(')');
+				}
+				if (DateTime.Now.Hour < 16)
+				{
+					ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
+					message = profanityFilter.CensorString(message);
+				}
+				if (speechCommand != null)
+				{
+					HubtasticBaseStation.SpeechBubble($"{playerId}{textColor} {speechCommand}: {message}");
+					return true;
 				}
 			}
 			return false;
@@ -1508,7 +1524,7 @@ namespace DHDM
 			string message = e.ChatMessage.Message;
 			if (IsPlayer(e.ChatMessage.UserId))
 				if (CharacterSaysSomething(message))
-				return;
+					return;
 
 			//Thread thread = Thread.CurrentThread;
 			//string msg;
@@ -4279,12 +4295,12 @@ namespace DHDM
 							playerName = creature.Name;
 					}
 				}
-				
+
 				if (playerName != "")
 					playerName = playerName + "'s ";
 				else
 				{
-					
+
 				}
 				if (!ea.StopRollingData.success)
 					damageStr = "";
@@ -5390,7 +5406,7 @@ namespace DHDM
 						playerRollOptions.VantageKind = vantageKind;
 				}
 
-				diceRoll.SuppressLegacyRoll = game.InCombat;
+				diceRoll.SuppressLegacyRoll = game.InCombat && (diceRoll.DiceDtos != null && diceRoll.DiceDtos.Count > 0);
 				if (diceRollType == DiceRollType.InspirationOnly)
 					foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
 						playerRollOption.Inspiration = dieStr;
