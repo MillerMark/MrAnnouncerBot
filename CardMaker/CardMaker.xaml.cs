@@ -203,18 +203,8 @@ namespace CardMaker
 					SetActiveLayerTextOptions(null);
 				else
 				{
-					if (activeLayerTextOptions != null)
-					{
-						ActiveCard.BeginUpdate();
-						try
-						{
-							ActiveCard.FontBrush = activeLayerTextOptions.FontBrush;
-						}
-						finally
-						{
-							ActiveCard.EndUpdate();
-						}
-					}
+					if (activeLayerTextOptions != null && ActiveCard.TextFontOpacity == 0)
+						ActiveCard.SetFontBrush(activeLayerTextOptions.FontBrush);
 					SetActiveLayerTextOptionsForCard(card);
 				}
 
@@ -663,17 +653,9 @@ namespace CardMaker
 			SetActiveLayerTextOptionsForCard(ActiveCard);
 			LayerTextOptions layerTextOptions = CardData.GetLayerTextOptions(stylePath);
 			MoveTextLayerTo(numBackgroundLayers + layerTextOptions.TextLayerIndex + 1);
-			if (ActiveCard != null && layerTextOptions != null)
+			if (ActiveCard != null && layerTextOptions != null && ActiveCard.TextFontOpacity == 0)
 			{
-				ActiveCard.BeginUpdate();
-				try
-				{
-					ActiveCard.FontBrush = layerTextOptions.FontBrush;
-				}
-				finally
-				{
-					ActiveCard.EndUpdate();
-				}
+				ActiveCard.SetFontBrush(layerTextOptions.FontBrush);
 				activeLayerTextOptions = layerTextOptions;
 			}
 		}
@@ -961,6 +943,93 @@ namespace CardMaker
 		{
 			if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
 				sliderVerticalStretch.Value = sliderHorizontalStretch.Value;
+		}
+
+		bool samplingColor;
+		BitmapImage sample;
+		string tempFileName;
+
+		private void btnEyeDropper_Click(object sender, RoutedEventArgs e)
+		{
+			samplingColor = true;
+			Panel.SetZIndex(csrEyeDropper, 1000);
+
+			tempFileName = SysPath.ChangeExtension(SysPath.GetTempFileName(), ".png");
+
+			ImageHelper.ExportToPng(new Uri(tempFileName), cvsLayers);
+			
+			sample = new BitmapImage();
+			sample.BeginInit();
+			sample.CacheOption = BitmapCacheOption.OnLoad;
+			sample.UriSource = new Uri(tempFileName, UriKind.Absolute);
+			sample.EndInit();
+		}
+
+		Color lastSampleColor;
+		private void cvsLayers_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (!samplingColor)
+				return;
+			Point position = e.GetPosition(cvsLayers);
+			Canvas.SetLeft(csrEyeDropper, position.X);
+			const double hotSpotOffsetY = 32;
+			Canvas.SetTop(csrEyeDropper, position.Y - hotSpotOffsetY);
+			if (sample == null)
+				return;
+
+			if (position.X >= sample.PixelWidth)
+				return;
+			if (position.Y >= sample.PixelHeight)
+				return;
+			if (position.X < 0)
+				return;
+			if (position.Y < 0)
+				return;
+			lastSampleColor = ImageUtils.GetPixelColor(sample, (int)position.X, (int)position.Y);
+			btnEyeDropper.Background = new SolidColorBrush(lastSampleColor);
+		}
+
+		private void cvsLayers_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			StopSampling();
+			ActiveCard.SetTextColor(lastSampleColor);
+		}
+
+		private void StopSampling()
+		{
+			if (samplingColor)
+			{
+				samplingColor = false;
+				btnEyeDropper.Background = Brushes.LightGray;
+				if (File.Exists(tempFileName))
+					File.Delete(tempFileName);
+			}
+		}
+
+		private void cvsLayers_MouseEnter(object sender, MouseEventArgs e)
+		{
+			if (!samplingColor)
+				return;
+
+			csrEyeDropper.Visibility = Visibility.Visible;
+			Cursor = Cursors.None;
+		}
+
+		private void cvsLayers_MouseLeave(object sender, MouseEventArgs e)
+		{
+			RestoreNormalCursor();
+		}
+
+		private void RestoreNormalCursor()
+		{
+			Cursor = Cursors.Arrow;
+			csrEyeDropper.Visibility = Visibility.Hidden;
+		}
+
+		private void btnEyeDropper_LostFocus(object sender, RoutedEventArgs e)
+		{
+			RestoreNormalCursor();
+			StopSampling();
 		}
 	}
 }

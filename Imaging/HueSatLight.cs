@@ -30,6 +30,12 @@ namespace Imaging
 			Alpha = color.A / 255.0;
 		}
 
+		/// <summary>
+		/// Creates a new HueSatLight instance.
+		/// </summary>
+		/// <param name="hue">The hue shift (e.g., 0-1).</param>
+		/// <param name="saturation">The percent saturation (e.g., 0-1).</param>
+		/// <param name="lightness">The percent lightness (e.g., 0-1).</param>
 		public HueSatLight(double hue, double saturation, double lightness)
 		{
 			this.hue = hue;

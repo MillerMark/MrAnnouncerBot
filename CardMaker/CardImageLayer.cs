@@ -356,6 +356,7 @@ namespace CardMaker
 			}
 		}
 
+		public Image Image { get => image; }
 
 		void EndUpdate()
 		{

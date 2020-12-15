@@ -6,7 +6,7 @@
 		xmlns:local="clr-namespace:CardMaker"
 		xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="Card Maker" Height="569" Width="1800" MinHeight="695" >
+        Title="Card Maker" Height="569" Width="1800" MinHeight="795" >
 	<Window.CommandBindings>
 		<CommandBinding Command="Save" Executed="SaveCommandBinding_Executed"/>
 	</Window.CommandBindings>
@@ -19,7 +19,7 @@
 				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Red"/>
 			</Style.Resources>
 		</Style>
-		
+
 		<BooleanToVisibilityConverter x:Key="BoolToVis"/>
 		<local:EnumBooleanConverter x:Key="EnumToBool" />
 		<ObjectDataProvider x:Key="CooldownUnitsEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
@@ -271,7 +271,7 @@
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="*"/>
 										<ColumnDefinition Width="Auto"/>
-										</Grid.ColumnDefinitions>
+									</Grid.ColumnDefinitions>
 									<TextBlock Text="{Binding Path=DisplayName}"/>
 									<Viewbox Grid.Column="1" Width="20" Height="20" MouseDown="ToggleVisibility_MouseDown" Visibility="{Binding Path=IsVisible, Converter={StaticResource BoolToVis}}">
 										<Canvas Width="165" Height="97">
@@ -293,41 +293,41 @@
 										</Canvas>
 									</Viewbox>
 									<Viewbox Grid.Column="1" Width="20" Height="20" MouseDown="ToggleVisibility_MouseDown" Visibility="{Binding Path=IsHidden, Converter={StaticResource BoolToVis}}">
-									  <Canvas Width="165" Height="97">
-										<Canvas>
-										  <Canvas.Clip>
-											<RectangleGeometry Rect="1,0,165,98" />
-										  </Canvas.Clip>
-										  <Path Fill="#FF7F7F7F">
-											<Path.Data>
-											  <PathGeometry Figures="M83,-0.5C116.25,-0.5,145.5625,17.125,162.8125,43.875L165.5,48.5 162.8125,53.1875C145.5625,79.9375,116.25,97.5,83,97.5C49.8125,97.5,20.5,79.9375,3.25,53.1875L0.5,48.5 3.25,43.875C20.5,17.125,49.8125,-0.5,83,-0.5z" />
-											</Path.Data>
-										  </Path>
+										<Canvas Width="165" Height="97">
+											<Canvas>
+												<Canvas.Clip>
+													<RectangleGeometry Rect="1,0,165,98" />
+												</Canvas.Clip>
+												<Path Fill="#FF7F7F7F">
+													<Path.Data>
+														<PathGeometry Figures="M83,-0.5C116.25,-0.5,145.5625,17.125,162.8125,43.875L165.5,48.5 162.8125,53.1875C145.5625,79.9375,116.25,97.5,83,97.5C49.8125,97.5,20.5,79.9375,3.25,53.1875L0.5,48.5 3.25,43.875C20.5,17.125,49.8125,-0.5,83,-0.5z" />
+													</Path.Data>
+												</Path>
+											</Canvas>
+											<Path Fill="#FFF2F2F2">
+												<Path.Data>
+													<PathGeometry Figures="M82,6.5C112.4375,6.5,139.25,21.8125,155.0625,45L157.5,49 155.0625,53.0625C139.25,76.25,112.4375,91.5,82,91.5C51.625,91.5,24.8125,76.25,9,53.0625L6.5,49 9,45C24.8125,21.8125,51.625,6.5,82,6.5z" />
+												</Path.Data>
+											</Path>
+											<Path Fill="#FF7F7F7F">
+												<Path.Data>
+													<PathGeometry Figures="M82.5,18.5C115.5625,18.5,144.625,28.75,161.8125,44.3125L164.5,47 161.8125,49.75C144.625,65.3125,115.5625,75.5,82.5,75.5C49.5,75.5,20.375,65.3125,3.1875,49.75L0.5,47 3.1875,44.3125C20.375,28.75,49.5,18.5,82.5,18.5z" />
+												</Path.Data>
+											</Path>
+											<Path Fill="#FFF2F2F2">
+												<Path.Data>
+													<PathGeometry Figures="M83,5.5C110.6875,5.5,135.5,18.125,152.25,38L158.5,46.375 157.6875,47.125C141.25,60.625,113.3125,69.5,81.6875,69.5C54,69.5,29.1875,62.75,12.375,51.9375L6.5,47.6875 7,46.9375C23.4375,21.9375,51.375,5.5,83,5.5z" />
+												</Path.Data>
+											</Path>
 										</Canvas>
-										<Path Fill="#FFF2F2F2">
-										  <Path.Data>
-											<PathGeometry Figures="M82,6.5C112.4375,6.5,139.25,21.8125,155.0625,45L157.5,49 155.0625,53.0625C139.25,76.25,112.4375,91.5,82,91.5C51.625,91.5,24.8125,76.25,9,53.0625L6.5,49 9,45C24.8125,21.8125,51.625,6.5,82,6.5z" />
-										  </Path.Data>
-										</Path>
-										<Path Fill="#FF7F7F7F">
-										  <Path.Data>
-											<PathGeometry Figures="M82.5,18.5C115.5625,18.5,144.625,28.75,161.8125,44.3125L164.5,47 161.8125,49.75C144.625,65.3125,115.5625,75.5,82.5,75.5C49.5,75.5,20.375,65.3125,3.1875,49.75L0.5,47 3.1875,44.3125C20.375,28.75,49.5,18.5,82.5,18.5z" />
-										  </Path.Data>
-										</Path>
-										<Path Fill="#FFF2F2F2">
-										  <Path.Data>
-											<PathGeometry Figures="M83,5.5C110.6875,5.5,135.5,18.125,152.25,38L158.5,46.375 157.6875,47.125C141.25,60.625,113.3125,69.5,81.6875,69.5C54,69.5,29.1875,62.75,12.375,51.9375L6.5,47.6875 7,46.9375C23.4375,21.9375,51.375,5.5,83,5.5z" />
-										  </Path.Data>
-										</Path>
-									  </Canvas>
 									</Viewbox>
 
 								</Grid>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
-						
+
 					</ListBox>
-					
+
 					<ListBox x:Name="lbAlternates" SelectionChanged="lbAlternates_SelectionChanged">
 						<ListBox.ItemTemplate>
 							<DataTemplate>
@@ -375,47 +375,117 @@
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
 
 					<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 8" Grid.ColumnSpan="2">
 						<TextBlock Text="Card Text: " Width="Auto" Height="Auto" Margin="0, 0, 5, 0" Foreground="#FF3C5EE5"/>
 						<TextBox x:Name="tbxCardText" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="tbxCardName_TextChanged" MinWidth="250" Margin="0, 0, 20, 0"/>
 					</StackPanel>
-					
-					<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" Width="300" HorizontalAlignment="Left" Margin="0, -3, 0, 0">
-						<TextBlock Text="Font Size: " Width="Auto" Height="Auto" Margin="0, 0, 0, 3" Foreground="#FF3C5EE5"/>
-						<RadioButton x:Name="rbSmall" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Small}" Margin="4, 2, 9, 0">
-							Small
-						</RadioButton>
-						<RadioButton x:Name="rbNormalSize" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Normal}" Margin="4, 2, 9, 0">
-							Normal
-						</RadioButton>
-						<RadioButton x:Name="rbLarge" IsChecked="{Binding Path=FontScale, Converter={StaticResource EnumToBool}, ConverterParameter=Large}" Margin="4, 2, 9, 0">
-							Large
-						</RadioButton>
+
+					<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" Width="310" HorizontalAlignment="Left" Margin="0, -3, 0, 0">
+						<TextBlock Text="Font Size: " Width="Auto" Height="Auto" Margin="0, 0, 5, 3" Foreground="#FF3C5EE5"/>
+						<Slider x:Name="sldTextFontSize" Value="{Binding Path=TextFontSize}" Minimum="32" Maximum="160" Width="250"></Slider>
 					</StackPanel>
 
-					<StackPanel x:Name="spSelectedLayerIndicator" Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="2" Margin="0, 6, 0, 6">
+					<Grid x:Name="grdFontColor" Height="Auto" Width="Auto" Grid.ColumnSpan="2" Grid.Row="2" Margin="33, 10, 0, 20">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+						<TextBlock Text="Font Hue:" Grid.Row="0" Width="Auto" Height="Auto" Margin="0, 1, 0, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="0" x:Name="sliderFontHue" Minimum="0" Maximum="360" Value="{Binding TextFontHue}" Width="120" Margin="0, 0, 0, 0"></Slider>
+
+						<TextBlock Grid.Row="1" Text="Font Sat:" Width="Auto" Height="Auto" Margin="0, 6, 7, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderFontSaturation" Value="{Binding TextFontSat}" Minimum="0" Maximum="1" Width="120" Margin="0, 5, 0, 0" ></Slider>
+
+						<TextBlock Grid.Row="2" Text="Font Light:" Width="Auto" Height="Auto" Margin="0, 6, 7, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="2" x:Name="sliderFontLightness" Value="{Binding TextFontLight}" Minimum="0" Maximum="1" Width="120" Margin="0, 5, 0, 0"></Slider>
+
+						<TextBlock Grid.Row="3" Text="Opacity:" Width="Auto" Height="Auto" Margin="0, 6, 7, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="3" x:Name="sliderFontOpacity" Value="{Binding TextFontOpacity}" Minimum="0" Maximum="1" Width="120" Margin="0, 5, 0, 0"></Slider>
+
+						<Button x:Name="btnEyeDropper" Grid.Column="2" Grid.RowSpan="4" Margin="20, 20, 0, 20" Click="btnEyeDropper_Click" LostFocus="btnEyeDropper_LostFocus">
+							<Viewbox Height="64" Width="64" >
+								<Canvas Width="1086" Height="1085">
+									<Polygon Points="481,448.25 636.9375,604.25 290.9375,950.1875 108.25,1038.25 47.875,977.875 134.75,794.5" FillRule="EvenOdd" Fill="#FF7F7F7F" Stroke="{x:Null}" />
+									<Path Fill="#FFF2F2F2">
+										<Path.Data>
+											<PathGeometry Figures="M489.75,463.6875L622.4375,596.375 324.625,894.25 288.3125,930.5625 111.8125,1017.5 68.625,974.3125 151.0625,802.0625C164.6875,788.5625,178.3125,775.0625,191.875,761.5z" />
+										</Path.Data>
+									</Path>
+									<Canvas>
+										<Canvas.Clip>
+											<RectangleGeometry Rect="48,139,900,900" />
+										</Canvas.Clip>
+										<Path Fill="#FF546E9E">
+											<Path.Data>
+												<PathGeometry Figures="M912.9375,173.1875C963.5625,223.8125,956.6875,312.75,897.5625,371.875L705.75,563.6875 696.25,571.6875 746,621.4375C764.3125,639.75,761.8125,671.9375,740.4375,693.3125C719,714.75,686.8125,717.25,668.5,698.875L387.25,417.625C368.9375,399.3125,371.375,367.125,392.8125,345.6875C414.1875,324.3125,446.375,321.8125,464.6875,340.1875L514.4375,389.875 522.4375,380.375 714.25,188.5625C773.375,129.4375,862.3125,122.625,912.9375,173.1875z" />
+											</Path.Data>
+										</Path>
+									</Canvas>
+									<Polygon Points="161,785.5625 304.8125,929.375 288.75,945.4375 144.9375,801.625" FillRule="EvenOdd" Fill="#FF7F7F7F" Stroke="{x:Null}" />
+								</Canvas>
+							</Viewbox>
+
+
+						</Button>
+					</Grid>
+
+					<StackPanel x:Name="spSelectedLayerIndicator" Orientation="Horizontal" Grid.Row="5" Grid.ColumnSpan="2" Margin="0, 6, 0, 6">
 						<TextBlock x:Name="txblSelectedLayer" Text="Selected Layer: " Width="Auto" Height="Auto" Foreground="#FF4C4C4C"/>
 						<TextBlock x:Name="tbLayerName" Text="{Binding Name}" Width="Auto" Height="Auto"/>
 					</StackPanel>
 
-					<Canvas x:Name="cvsLayers" Grid.Column="1" Grid.Row="3" Width="280" Height="424">
-						<Grid x:Name="grdCardText" Canvas.Left="{Binding GridLeft}" Canvas.Top="{Binding GridTop}" Width="{Binding GridWidth}" Height="{Binding GridHeight}">
-							<Grid.LayoutTransform>
-								<RotateTransform x:Name="rotTx4CardText" Angle="{Binding TextAngle}"></RotateTransform>
-							</Grid.LayoutTransform>
-							<Viewbox VerticalAlignment="{Binding VerticalAlignment}">
-								<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Top" LineStackingStrategy="BlockLineHeight" 
-									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" Foreground="{Binding FontBrush}">
-								</TextBlock>
+					<Canvas x:Name="cvsParent" Grid.Column="1" Grid.Row="8" Width="280" Height="424" >
+						<Canvas x:Name="cvsLayers" Width="280" Height="424" MouseMove="cvsLayers_MouseMove" MouseDown="cvsLayers_MouseDown" MouseEnter="cvsLayers_MouseEnter" MouseLeave="cvsLayers_MouseLeave">
+							<Viewbox x:Name="csrEyeDropper" Height="32" Width="32" Visibility="Hidden">
+								<Canvas Width="1086" Height="1085">
+									<Polygon Points="481,448.25 636.9375,604.25 290.9375,950.1875 108.25,1038.25 47.875,977.875 134.75,794.5" FillRule="EvenOdd" Fill="#FF7F7F7F" Stroke="{x:Null}" />
+									<Path Fill="#FFF2F2F2">
+										<Path.Data>
+											<PathGeometry Figures="M489.75,463.6875L622.4375,596.375 324.625,894.25 288.3125,930.5625 111.8125,1017.5 68.625,974.3125 151.0625,802.0625C164.6875,788.5625,178.3125,775.0625,191.875,761.5z" />
+										</Path.Data>
+									</Path>
+									<Canvas>
+										<Canvas.Clip>
+											<RectangleGeometry Rect="48,139,900,900" />
+										</Canvas.Clip>
+										<Path Fill="#FF546E9E">
+											<Path.Data>
+												<PathGeometry Figures="M912.9375,173.1875C963.5625,223.8125,956.6875,312.75,897.5625,371.875L705.75,563.6875 696.25,571.6875 746,621.4375C764.3125,639.75,761.8125,671.9375,740.4375,693.3125C719,714.75,686.8125,717.25,668.5,698.875L387.25,417.625C368.9375,399.3125,371.375,367.125,392.8125,345.6875C414.1875,324.3125,446.375,321.8125,464.6875,340.1875L514.4375,389.875 522.4375,380.375 714.25,188.5625C773.375,129.4375,862.3125,122.625,912.9375,173.1875z" />
+											</Path.Data>
+										</Path>
+									</Canvas>
+									<Polygon Points="161,785.5625 304.8125,929.375 288.75,945.4375 144.9375,801.625" FillRule="EvenOdd" Fill="#FF7F7F7F" Stroke="{x:Null}" />
+								</Canvas>
 							</Viewbox>
-						</Grid>
+							<Grid x:Name="grdCardText" Canvas.Left="{Binding GridLeft}" Canvas.Top="{Binding GridTop}" Width="{Binding GridWidth}" Height="{Binding GridHeight}">
+								<Grid.LayoutTransform>
+									<RotateTransform x:Name="rotTx4CardText" Angle="{Binding TextAngle}"></RotateTransform>
+								</Grid.LayoutTransform>
+								<Viewbox VerticalAlignment="{Binding VerticalAlignment}">
+									<TextBlock x:Name="tbItemName" Text="{Binding Text}" Width="250" TextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Top" LineStackingStrategy="BlockLineHeight" 
+									LineHeight="{Binding TextLineHeight}" FontSize="{Binding TextFontSize}" TextWrapping="Wrap" FontFamily="Enchanted Land" Margin="4" FontWeight="Bold" Foreground="{Binding FontBrush}">
+									</TextBlock>
+								</Viewbox>
+							</Grid>
+						</Canvas>
 					</Canvas>
 
-					<TextBlock Grid.Row="4" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 8, 0, 3" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Row="4" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Value="{Binding OffsetX}" Minimum="-200" Maximum="200" Width="305" Margin="0, 8, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
-					<StackPanel Grid.Row="3" Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
+					<TextBlock Grid.Row="9" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 8, 0, 3" Foreground="#FF3C5EE5"/>
+					<Slider Grid.Row="8" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Value="{Binding OffsetX}" Minimum="-200" Maximum="200" Width="305" Margin="0, 8, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
+					<StackPanel Grid.Row="7" Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Y" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
 							<TextBlock Text="offset:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
@@ -423,22 +493,22 @@
 						<Slider x:Name="sliderOffsetY" Value="{Binding OffsetY}" Minimum="-400" Maximum="400" IsDirectionReversed="True" Orientation="Vertical" Height="388" Margin="14, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
 					</StackPanel>
 
-					<StackPanel Grid.Row="6" Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10, 0, 3">
+					<StackPanel Grid.Row="10" Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10, 0, 3">
 						<TextBlock Text="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 					</StackPanel>
-					<Slider Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" ValueChanged="sliderHorizontalStretch_ValueChanged"/>
-					<StackPanel Grid.Row="3" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
+					<Slider Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" ValueChanged="sliderHorizontalStretch_ValueChanged"/>
+					<StackPanel Grid.Row="7" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Vertical" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 							<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						</StackPanel>
 						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="0.1" Maximum="3" IsDirectionReversed="True" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ValueChanged="sliderVerticalStretch_ValueChanged"></Slider>
 					</StackPanel>
-					<Button x:Name="btnResetOffsets" ToolTip="Reset offsets to 0" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" Width="30" Height="30" Margin="-8, -4, 0, 0" Click="btnResetOffsets_Click" Visibility="{Binding Path=OffsetChanged, Converter={StaticResource BoolToVis}}">
+					<Button x:Name="btnResetOffsets" ToolTip="Reset offsets to 0" Grid.Column="2" Grid.Row="9" VerticalAlignment="Center" Width="30" Height="30" Margin="-8, -4, 0, 0" Click="btnResetOffsets_Click" Visibility="{Binding Path=OffsetChanged, Converter={StaticResource BoolToVis}}">
 						X
 					</Button>
-					<Button x:Name="btnResetScale" ToolTip="Reset scale to 1" Grid.Column="3" Grid.Row="6" VerticalAlignment="Center" Width="30" Height="30" Margin="0, 0, 0, 0" Click="btnResetScale_Click" Visibility="{Binding Path=ScaleChanged, Converter={StaticResource BoolToVis}}">
+					<Button x:Name="btnResetScale" ToolTip="Reset scale to 1" Grid.Column="3" Grid.Row="10" VerticalAlignment="Center" Width="30" Height="30" Margin="0, 0, 0, 0" Click="btnResetScale_Click" Visibility="{Binding Path=ScaleChanged, Converter={StaticResource BoolToVis}}">
 						X
 					</Button>
 				</Grid>

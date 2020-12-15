@@ -7,6 +7,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using GoogleHelper;
 using System.Windows.Media;
+using Imaging;
 
 namespace CardMaker
 {
@@ -14,6 +15,10 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		double textFontOpacity;
+		double textFontLight;
+		double textFontSat;
+		double textFontHue;
 		internal List<PropertyLink> linkedProperties = new List<PropertyLink>();
 		string placeholder;
 		string layerModStr;
@@ -21,7 +26,6 @@ namespace CardMaker
 		string stylePath;
 		double textLineHeight;
 		double textFontSize;
-		TextFontScale fontScale;
 		string text;
 		Deck parentDeck;
 		public Deck ParentDeck
@@ -37,32 +41,6 @@ namespace CardMaker
 
 		private const double lineHeightFactor = 50d / 58d;
 
-
-		[Column]
-		public TextFontScale FontScale
-		{
-			get => fontScale;
-			set
-			{
-				if (fontScale == value)
-					return;
-				fontScale = value;
-				OnPropertyChanged();
-				switch (fontScale)
-				{
-					case TextFontScale.Small:
-						TextFontSize = 42;
-						break;
-					case TextFontScale.Normal:
-						TextFontSize = 58;
-						break;
-					case TextFontScale.Large:
-						TextFontSize = 96;
-						break;
-				}
-				TextLineHeight = TextFontSize * lineHeightFactor;
-			}
-		}
 
 		AllLayers allLayers = new AllLayers();
 		bool layersAreDirty;
@@ -139,6 +117,63 @@ namespace CardMaker
 			layerModStr = null;
 		}
 
+		[Column]
+		public double TextFontHue
+		{
+			get => textFontHue;
+			set
+			{
+				if (textFontHue == value)
+					return;
+				textFontHue = value;
+				UpdateFontBrush();
+				OnPropertyChanged();
+			}
+		}
+
+		[Column]
+		public double TextFontSat
+		{
+			get => textFontSat;
+			set
+			{
+				if (textFontSat == value)
+					return;
+				textFontSat = value;
+				UpdateFontBrush();
+				OnPropertyChanged();
+			}
+		}
+
+		[Column]
+		public double TextFontLight
+		{
+			get => textFontLight;
+			set
+			{
+				if (textFontLight == value)
+					return;
+				textFontLight = value;
+				UpdateFontBrush();
+				OnPropertyChanged();
+			}
+		}
+
+		[Column]
+		public double TextFontOpacity
+		{
+			get => textFontOpacity;
+			set
+			{
+				if (textFontOpacity == value)
+					return;
+				textFontOpacity = value;
+				UpdateFontBrush();
+				OnPropertyChanged();
+			}
+		}
+		
+
 
 		public Brush FontBrush
 		{
@@ -152,6 +187,15 @@ namespace CardMaker
 			}
 		}
 
+		private void UpdateFontBrush()
+		{
+			HueSatLight hueSatLight = new HueSatLight(TextFontHue / 360, TextFontSat, TextFontLight);
+			Color asRGB = hueSatLight.AsRGB;
+			FontBrush = new SolidColorBrush(Color.FromArgb((byte)Math.Floor(TextFontOpacity * 255), asRGB.R, asRGB.G, asRGB.B));
+		}
+
+
+		[Column]
 		public double TextFontSize
 		{
 			get => textFontSize;
@@ -160,6 +204,7 @@ namespace CardMaker
 				if (textFontSize == value)
 					return;
 				textFontSize = value;
+				TextLineHeight = textFontSize * lineHeightFactor;
 				OnPropertyChanged();
 			}
 		}
@@ -495,6 +540,36 @@ namespace CardMaker
 		private void FoundItem_LinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
 		{
 			
+		}
+		void SetTextFontProperties()
+		{
+			if (!(FontBrush is SolidColorBrush solidColorBrush))
+				return;
+			SetTextColor(solidColorBrush.Color);
+		}
+
+		public void SetTextColor(Color color)
+		{
+			TextFontHue = color.GetHue();
+			TextFontSat = color.GetSaturation();
+			TextFontLight = color.GetBrightness();
+			TextFontOpacity = color.A / 255;
+		}
+
+		public void SetFontBrush(Brush fontBrush)
+		{
+			if (FontBrush == fontBrush)
+				return;
+			BeginUpdate();
+			try
+			{
+				FontBrush = fontBrush;
+				SetTextFontProperties();
+			}
+			finally
+			{
+				EndUpdate();
+			}
 		}
 	}
 }

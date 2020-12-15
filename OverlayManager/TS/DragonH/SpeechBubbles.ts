@@ -421,7 +421,6 @@ class SpeechBubbleManager {
 			if (inGameCreature !== null)
 				playerX = this.iGetCreatureX.getX(inGameCreature);
 
-			//playerY = dungeonMasterY;
 			playerY = inGameY;
 		}
 		return { playerX, playerY };

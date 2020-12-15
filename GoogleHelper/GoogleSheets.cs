@@ -137,7 +137,8 @@ namespace GoogleHelper
 							property.SetValue(instance, doubleValue);
 						else
 						{
-							System.Diagnostics.Debugger.Break();
+							// TODO: Consider specifying default values through attributes for given properties.
+							property.SetValue(instance, 0);
 						}
 						break;
 					case "System.String":
@@ -394,7 +395,7 @@ namespace GoogleHelper
 
 		static void AddInstance(IList<IList<object>> allRows, List<string> headerRow, MemberInfo[] serializableFields, object instance)
 		{
-			object[] row = new object[serializableFields.Length];
+			object[] row = new object[headerRow.Count];
 			foreach (MemberInfo memberInfo in serializableFields)
 			{
 				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
@@ -477,7 +478,6 @@ namespace GoogleHelper
 		{
 			for (int j = 0; j < serializableFields.Length; j++)
 			{
-				// TODO: Filtering on the serializableFields would go here.
 				MemberInfo memberInfo = serializableFields[j];
 
 				if (!HasMember(saveOnlyTheseMembers, memberInfo.Name))

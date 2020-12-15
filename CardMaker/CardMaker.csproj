@@ -95,7 +95,6 @@
     <Compile Include="PropertyLink.cs" />
     <Compile Include="Rarity.cs" />
     <Compile Include="ReflectionExtensions.cs" />
-    <Compile Include="TextFontScale.cs" />
     <Compile Include="WpfExtensionMethods.cs" />
     <Page Include="CardMaker.xaml">
       <Generator>MSBuild:Compile</Generator>
