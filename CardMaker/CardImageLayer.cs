@@ -13,6 +13,7 @@ namespace CardMaker
 {
 	public class CardImageLayer : DependencyObject, INotifyPropertyChanged
 	{
+		public const string SubLayerNameStr = "SubLayerName";
 		double scaledWidth;
 		Dictionary<string, int> groups = new Dictionary<string, int>();
 		static Dictionary<char, string> propertyMap = new Dictionary<char, string>();
@@ -21,6 +22,7 @@ namespace CardMaker
 			propertyMap.Add('h', "Hue");
 			propertyMap.Add('l', "Light");
 			propertyMap.Add('s', "Sat");
+			propertyMap.Add('n', SubLayerNameStr);
 			propertyMap.Add('c', "Contrast");
 			propertyMap.Add('x', "X");
 			propertyMap.Add('y', "Y");
@@ -643,6 +645,32 @@ namespace CardMaker
 			CalculateX();
 			CalculateY();
 			return image;
+		}
+
+		Random random = new Random();
+		public void RandomlySetProperties(LayerGenerationOptions options)
+		{
+			LayerDetails.BeginUpdate();
+			try
+			{
+				Details.Hue = Between(options.MinHue, options.MaxHue);
+				Details.Sat = Between(options.MinSat, options.MaxSat);
+				Details.Light = Between(options.MinLight, options.MaxLight);
+				Details.Contrast = Between(options.MinContrast, options.MaxContrast);
+				Details.OffsetX = Between(options.MinX, options.MaxX);
+				Details.OffsetY = Between(options.MinY, options.MaxY);
+			}
+			finally
+			{
+				LayerDetails.EndUpdate();
+			}
+		}
+
+		private int Between(double min, double max)
+		{
+			if (max <= min)
+				return (int)Math.Round(min);
+			return random.Next((int)Math.Round(min), (int)Math.Round(max));
 		}
 	}
 }

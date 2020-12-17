@@ -434,13 +434,14 @@ class SpeechBubbleManager {
 		let colorStr = '#000000';
 
 		//console.log('speechStr: ' + speechStr);
-		const openParenPos: number = speechStr.indexOf('(');
-		if (openParenPos > 0) {
+		const hashPos: number = speechStr.indexOf('#');
+		const openParenPos: number = speechStr.lastIndexOf('(');
+		if (openParenPos > 0 && hashPos === openParenPos + 1) {
 			const closeParenPos: number = speechStr.indexOf(')');
 			if (closeParenPos > openParenPos) {
 				colorStr = speechStr.substring(openParenPos + 1, closeParenPos);
 				if (!colorStr)
-					colorStr = '#000000'
+					colorStr = '#000000';
 				//console.log('colorStr: ' + colorStr);
 			}
 			speechStr = speechStr.substring(0, openParenPos) + speechStr.substring(closeParenPos + 1);

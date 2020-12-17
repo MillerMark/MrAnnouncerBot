@@ -79,8 +79,10 @@
     <Compile Include="AllLayers.cs" />
     <Compile Include="BaseNameId.cs" />
     <Compile Include="BindingHelper.cs" />
+    <Compile Include="BoundaryKind.cs" />
     <Compile Include="Card.cs" />
     <Compile Include="CardExpires.cs" />
+    <Compile Include="CardGenerationOptions.cs" />
     <Compile Include="CardImageLayer.cs" />
     <Compile Include="CardLayerManager.cs" />
     <Compile Include="CardStyleMenuItem.cs" />
@@ -89,6 +91,7 @@
     <Compile Include="Field.cs" />
     <Compile Include="FieldType.cs" />
     <Compile Include="LayerDetails.cs" />
+    <Compile Include="LayerGenerationOptions.cs" />
     <Compile Include="LayerTextOptions.cs" />
     <Compile Include="LinkedPropertyChangedEventHandler.cs" />
     <Compile Include="LinkedPropertyEventArgs.cs" />

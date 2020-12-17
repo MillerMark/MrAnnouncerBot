@@ -952,7 +952,15 @@ namespace MrAnnouncerBot
 
 		void ThinkIt(ChatMessage chatMessage, int playerId, string phrase)
 		{
-			string quotedPhrase = phrase.TrimStart('(').TrimEnd(')');
+			string colorStr = string.Empty;
+			int colorStrStart = phrase.IndexOf("(#");
+			if (colorStrStart >= 0)
+			{
+				colorStr = phrase.Substring(colorStrStart);
+				phrase = phrase.Substring(0, colorStrStart - 1);
+			}
+
+			string quotedPhrase = phrase.TrimStart('(').TrimEnd(')') + colorStr;
 			hubConnection.InvokeAsync("SpeechBubble", $"{playerId} thinks: {quotedPhrase}");
 		}
 

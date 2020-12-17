@@ -32,6 +32,26 @@
 				<x:Type TypeName="local:FieldType"/>
 			</ObjectDataProvider.MethodParameters>
 		</ObjectDataProvider>
+
+		<ContextMenu x:Key="ctxRandomCardGen" >
+			<MenuItem Header="Set Min" Click="SetMinForCardGeneration_MenuItem_Click"></MenuItem>
+			<MenuItem Header="Set Max" Click="SetMaxForCardGeneration_MenuItem_Click"></MenuItem>
+		</ContextMenu>
+		
+		<Style TargetType="Slider" x:Key="ctxCardGenSlider" >
+			<Setter Property="ContextMenu" Value="{StaticResource ctxRandomCardGen}"/>
+		</Style>
+
+		<ContextMenu x:Key="ctxRandomCardGenStretch" Opened="SynchronizeHorizontalAndVertical_ContextMenu_Opened">
+			<MenuItem Header="Set Min" Click="SetMinForCardGeneration_MenuItem_Click"></MenuItem>
+			<MenuItem Header="Set Max" Click="SetMaxForCardGeneration_MenuItem_Click"></MenuItem>
+			<MenuItem x:Name="mnuSyncStretch" Header="Sync Stretch" Click="SynchronizeHorizontalAndVertical_MenuItem_Click"></MenuItem>
+		</ContextMenu>
+		
+		<Style TargetType="Slider" x:Key="ctxCardGenSliderStretch" >
+			<Setter Property="ContextMenu" Value="{StaticResource ctxRandomCardGenStretch}"/>
+		</Style>
+		
 	</Window.Resources>
 	<StackPanel Orientation="Vertical">
 		<Menu>
@@ -235,7 +255,7 @@
 				</StackPanel>
 
 				<StackPanel x:Name="spLayersList" Orientation="Vertical" Margin="20, 0, 0, 0">
-					<Button x:Name="btnCardStylePicker" Content="Card Style" Width="Auto" Padding="8,0,8,0" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnCardStylePicker_MouseDown">
+					<Button x:Name="btnCardStylePicker" Content="Card Style" Width="Auto" Padding="8,0,8,0" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnCardStylePicker_MouseDown" >
 						<Button.ContextMenu>
 							<ContextMenu x:Name="mnuCardStyle" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
 							</ContextMenu>
@@ -265,7 +285,14 @@
 								<Grid Height="Auto" Width="195">
 									<Grid.ContextMenu>
 										<ContextMenu>
-											<MenuItem Header="Compress..." Click="LayerCompressMenuItem_Click"></MenuItem>
+											<MenuItem Header="Compress..." Click="LayerCompressMenuItem_Click"/>
+											<MenuItem Header="Chances Visible" SubmenuOpened="ChancesVisibleMenuItem_SubmenuOpened">
+												<MenuItem Header="100%" Tag="100" Click="SetChancesVisibleMenuItem_Click"/>
+												<MenuItem Header="75%" Tag="75" Click="SetChancesVisibleMenuItem_Click" />
+												<MenuItem Header="50%" Tag="50" Click="SetChancesVisibleMenuItem_Click" />
+												<MenuItem Header="25%" Tag="25" Click="SetChancesVisibleMenuItem_Click" />
+												<MenuItem Header="0%" Tag="0" Click="SetChancesVisibleMenuItem_Click" />
+											</MenuItem>
 										</ContextMenu>
 									</Grid.ContextMenu>
 									<Grid.ColumnDefinitions>
@@ -347,6 +374,29 @@
 								<BeginStoryboard>
 									<Storyboard>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickSpell" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
+											<DiscreteObjectKeyFrame KeyTime="0:0:0">
+												<DiscreteObjectKeyFrame.Value>
+													<System:Boolean>True</System:Boolean>
+												</DiscreteObjectKeyFrame.Value>
+											</DiscreteObjectKeyFrame>
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</BeginStoryboard>
+							</EventTrigger>
+						</Button.Triggers>
+					</Button>
+					
+					<Button x:Name="btnLoadArmorImage" Content="Armor Image" Width="Auto" Padding="8,0,8,0" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnLoadArmorImage_PreviewMouseDown">
+						<Button.ContextMenu>
+							<ContextMenu x:Name="mnuPickArmor" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
+							</ContextMenu>
+						</Button.ContextMenu>
+
+						<Button.Triggers>
+							<EventTrigger SourceName="btnLoadArmorImage" RoutedEvent="Button.Click">
+								<BeginStoryboard>
+									<Storyboard>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickArmor" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
 											<DiscreteObjectKeyFrame KeyTime="0:0:0">
 												<DiscreteObjectKeyFrame.Value>
 													<System:Boolean>True</System:Boolean>
@@ -484,26 +534,26 @@
 					</Canvas>
 
 					<TextBlock Grid.Row="9" Text="X offset:" Width="Auto" Height="Auto" VerticalAlignment="Bottom" Margin="0, 8, 0, 3" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Row="8" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Value="{Binding OffsetX}" Minimum="-200" Maximum="200" Width="305" Margin="0, 8, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
+					<Slider Grid.Row="8" Grid.Column="1" Grid.RowSpan="2" x:Name="sliderOffsetX" Style="{StaticResource ctxCardGenSlider}" Value="{Binding OffsetX}" Minimum="-200" Maximum="200" Width="305" Margin="0, 8, 0, 0" VerticalAlignment="Bottom" ValueChanged="sliderOffsetX_ValueChanged"/>
 					<StackPanel Grid.Row="7" Grid.Column="2" Grid.RowSpan="4" Orientation="Vertical" Margin="0, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Y" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
 							<TextBlock Text="offset:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5" Margin="7, 0, 0, 0"/>
 						</StackPanel>
-						<Slider x:Name="sliderOffsetY" Value="{Binding OffsetY}" Minimum="-400" Maximum="400" IsDirectionReversed="True" Orientation="Vertical" Height="388" Margin="14, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
+						<Slider x:Name="sliderOffsetY" Style="{StaticResource ctxCardGenSlider}" Value="{Binding OffsetY}" Minimum="-400" Maximum="400" IsDirectionReversed="True" Orientation="Vertical" Height="388" Margin="14, 0, 0, 0" ValueChanged="sliderOffsetY_ValueChanged"></Slider>
 					</StackPanel>
 
 					<StackPanel Grid.Row="10" Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10, 0, 3">
 						<TextBlock Text="Horizontal" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 					</StackPanel>
-					<Slider Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" ValueChanged="sliderHorizontalStretch_ValueChanged"/>
+					<Slider Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="3" x:Name="sliderHorizontalStretch" Style="{StaticResource ctxCardGenSliderStretch}" Value="{Binding ScaleX}" Minimum="0.1" Maximum="3" Width="354" Margin="0, 14, 0, 0" VerticalAlignment="Center" HorizontalAlignment="Left" ValueChanged="sliderHorizontalStretch_ValueChanged"/>
 					<StackPanel Grid.Row="7" Grid.Column="3" Grid.RowSpan="4" Orientation="Vertical" Margin="10, 0, 0, 12">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="Vertical" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 							<TextBlock Text="stretch:" Width="Auto" Height="Auto" HorizontalAlignment="Center" Foreground="#FF3C5EE5"/>
 						</StackPanel>
-						<Slider x:Name="sliderVerticalStretch" Value="{Binding ScaleY}" Minimum="0.1" Maximum="3" IsDirectionReversed="True" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ValueChanged="sliderVerticalStretch_ValueChanged"></Slider>
+						<Slider x:Name="sliderVerticalStretch" Style="{StaticResource ctxCardGenSliderStretch}" Value="{Binding ScaleY}" Minimum="0.1" Maximum="3" IsDirectionReversed="True" Orientation="Vertical" Height="424" Margin="10, 0, 0, 0" ValueChanged="sliderVerticalStretch_ValueChanged"></Slider>
 					</StackPanel>
 					<Button x:Name="btnResetOffsets" ToolTip="Reset offsets to 0" Grid.Column="2" Grid.Row="9" VerticalAlignment="Center" Width="30" Height="30" Margin="-8, -4, 0, 0" Click="btnResetOffsets_Click" Visibility="{Binding Path=OffsetChanged, Converter={StaticResource BoolToVis}}">
 						X
@@ -513,43 +563,50 @@
 					</Button>
 				</Grid>
 
-				<Grid x:Name="grdLayerDetail" Height="Auto" Width="Auto" Margin="30, 69, 0, 0">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="Auto"/>
-					</Grid.RowDefinitions>
-					<TextBlock Text="Hue shift:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" x:Name="sliderHue" Minimum="-180" Maximum="180" Value="{Binding Hue}" Width="120" Margin="0, 0, 0, 0" ValueChanged="sliderHue_ValueChanged"></Slider>
-					<Button Grid.Column="2" x:Name="btnResetHue" ToolTip="Reset hue to 0" Width="20" Height="20" Margin="4, -1, 0, 0" Click="btnResetHue_Click" Visibility="{Binding Path=HueChanged, Converter={StaticResource BoolToVis}}">
-						X
+				<StackPanel Orientation="Vertical">
+					<Button x:Name="btnRandomize" Click="btnRandomize_Click" Width="90" Margin="0, 10, 0, 20" HorizontalAlignment="Left">
+						Randomize
 					</Button>
+					<Grid x:Name="grdLayerDetail" Height="Auto" Width="Auto" Margin="30, 0, 0, 0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+						<TextBlock Text="Hue shift:" Width="Auto" Height="Auto" Margin="0, 1, 0, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" x:Name="sliderHue" Style="{StaticResource ctxCardGenSlider}" Minimum="-180" Maximum="180" Value="{Binding Hue}" Width="120" Margin="0, 0, 0, 0" ValueChanged="sliderHue_ValueChanged">
 
-					<TextBlock Grid.Row="1" Text="Saturation:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderSaturation" Value="{Binding Sat}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0" ValueChanged="sliderSaturation_ValueChanged"></Slider>
-					<Button Grid.Row="1" Grid.Column="2" x:Name="btnResetSaturation" ToolTip="Reset saturation to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetSaturation_Click" Visibility="{Binding Path=SatChanged, Converter={StaticResource BoolToVis}}">
-						X
-					</Button>
+						</Slider>
+						<Button Grid.Column="2" x:Name="btnResetHue" ToolTip="Reset hue to 0" Width="20" Height="20" Margin="4, -1, 0, 0" Click="btnResetHue_Click" Visibility="{Binding Path=HueChanged, Converter={StaticResource BoolToVis}}">
+							X
+						</Button>
+
+						<TextBlock Grid.Row="1" Text="Saturation:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="1" x:Name="sliderSaturation" Style="{StaticResource ctxCardGenSlider}" Value="{Binding Sat}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0" ValueChanged="sliderSaturation_ValueChanged"></Slider>
+						<Button Grid.Row="1" Grid.Column="2" x:Name="btnResetSaturation" ToolTip="Reset saturation to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetSaturation_Click" Visibility="{Binding Path=SatChanged, Converter={StaticResource BoolToVis}}">
+							X
+						</Button>
 
 
-					<TextBlock Grid.Row="2" Text="Lightness:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" Grid.Row="2" x:Name="sliderLightness" Value="{Binding Light}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0"></Slider>
-					<Button Grid.Row="2" Grid.Column="2" x:Name="btnResetLightness" ToolTip="Reset lightness to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetLightness_Click" Visibility="{Binding Path=LightChanged, Converter={StaticResource BoolToVis}}">
-						X
-					</Button>
+						<TextBlock Grid.Row="2" Text="Lightness:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="2" x:Name="sliderLightness" Style="{StaticResource ctxCardGenSlider}" Value="{Binding Light}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0"></Slider>
+						<Button Grid.Row="2" Grid.Column="2" x:Name="btnResetLightness" ToolTip="Reset lightness to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetLightness_Click" Visibility="{Binding Path=LightChanged, Converter={StaticResource BoolToVis}}">
+							X
+						</Button>
 
-					<TextBlock Grid.Row="3" Text="Contrast:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
-					<Slider Grid.Column="1" Grid.Row="3" x:Name="sliderContrast" Value="{Binding Contrast}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0"></Slider>
-					<Button Grid.Row="3" Grid.Column="2" x:Name="btnResetContrast" ToolTip="Reset contrast to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetContrast_Click" Visibility="{Binding Path=ContrastChanged, Converter={StaticResource BoolToVis}}">
-						X
-					</Button>
-				</Grid>
+						<TextBlock Grid.Row="3" Text="Contrast:" Width="Auto" Height="Auto" Margin="0, 11, 7, 0" Foreground="#FF3C5EE5"/>
+						<Slider Grid.Column="1" Grid.Row="3" x:Name="sliderContrast" Style="{StaticResource ctxCardGenSlider}" Value="{Binding Contrast}" Minimum="-100" Maximum="100" Width="120" Margin="0, 10, 0, 0"></Slider>
+						<Button Grid.Row="3" Grid.Column="2" x:Name="btnResetContrast" ToolTip="Reset contrast to 0" Width="20" Height="20" Margin="4, 9, 0, 0" Click="btnResetContrast_Click" Visibility="{Binding Path=ContrastChanged, Converter={StaticResource BoolToVis}}">
+							X
+						</Button>
+					</Grid>
+				</StackPanel>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

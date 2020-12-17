@@ -26,6 +26,8 @@ namespace CardMaker
 	/// </summary>
 	public partial class CardMakerMain : Window
 	{
+		CardGenerationOptions cardGenerationOptions = new CardGenerationOptions();
+		
 		const string assetsFolder = @"D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets";
 
 		int internalChangeCount;
@@ -338,10 +340,15 @@ namespace CardMaker
 			}
 		}
 
+		CardImageLayer activeLayer;
+
 		private void lbCardLayers_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (!(lbCardLayers.SelectedItem is CardImageLayer cardImageLayer))
 				return;
+
+			activeLayer = cardImageLayer;
+
 			sliderOffsetX.DataContext = cardImageLayer.Details;
 			sliderOffsetY.DataContext = cardImageLayer.Details;
 			sliderHorizontalStretch.DataContext = cardImageLayer.Details;
@@ -612,8 +619,11 @@ namespace CardMaker
 			}
 		}
 
+		string activeStyle;
+
 		void LoadNewStyle(string stylePath)
 		{
+			activeStyle = stylePath;
 			if (string.IsNullOrWhiteSpace(stylePath))
 			{
 				btnCardStylePicker.Content = "Card Style";
@@ -832,14 +842,67 @@ namespace CardMaker
 			SelectAlternate(selectedLayer, newAlternateImageLayer);
 		}
 
+		bool selectingAlternate;
 		private void SelectAlternate(CardImageLayer selectedLayer, CardImageLayer newAlternateImageLayer)
 		{
-			SetDetailsIsSelected(newAlternateImageLayer);
+			if (selectedLayer == newAlternateImageLayer)
+				return;
 
 			cardLayerManager.Replace(selectedLayer, newAlternateImageLayer, cvsLayers);
-			lbCardLayers.SelectedItem = newAlternateImageLayer;
-			ActiveCard.InvalidateLayerMods();
-			ActiveCard.LayerPropertiesHaveChanged();
+
+			if (selectingAlternate)
+				return;
+
+			selectingAlternate = true;
+
+			try
+			{
+				SetDetailsIsSelected(newAlternateImageLayer);
+				lbCardLayers.SelectedItem = newAlternateImageLayer;
+				ActiveCard.InvalidateLayerMods();
+				ActiveCard.LayerPropertiesHaveChanged();
+				SelectLinkedAlternates(newAlternateImageLayer);
+			}
+			finally
+			{
+				selectingAlternate = false;
+			}
+		}
+
+		private void SelectLinkedAlternates(CardImageLayer newAlternateImageLayer)
+		{
+			BeginUpdate();
+			try
+			{
+				string displayName = newAlternateImageLayer.DisplayName;
+				string alternateName = newAlternateImageLayer.AlternateName;
+
+				PropertyLink propertyLink = GetPropertyLink(CardImageLayer.SubLayerNameStr, ActiveCard, newAlternateImageLayer);
+				if (propertyLink == null)
+					return;
+				foreach (CardImageLayer cardImageLayer in propertyLink.Layers)
+				{
+					string displayNameToMatch = cardImageLayer.DisplayName;
+					if (displayNameToMatch == displayName)  // Don't worry about alternates in this layer.
+						continue;
+
+					bool foundAlternateCousin = cardImageLayer.AlternateName == alternateName;
+
+					if (foundAlternateCousin)
+						foreach (CardImageLayer alternateImageLayer in cardImageLayer.Alternates.CardLayers)
+							if (alternateImageLayer.DisplayName == displayNameToMatch)
+							{
+								SelectAlternate(alternateImageLayer, cardImageLayer);
+								alternateImageLayer.Details.IsSelected = true;
+							}
+							else
+								alternateImageLayer.Details.IsSelected = false;
+				}
+			}
+			finally
+			{
+				EndUpdate();
+			}
 		}
 
 		private void SetDetailsIsSelected(CardImageLayer newAlternateImageLayer)
@@ -849,17 +912,17 @@ namespace CardMaker
 					cardImageLayer.Details.IsSelected = cardImageLayer == newAlternateImageLayer;
 		}
 
-		void AddSpellMenuItems(ItemCollection items, string[] files)
+		void AddImageMenuItems(ItemCollection items, string[] files)
 		{
 			foreach (string file in files)
 			{
 				MenuItem menuItem = new MenuItem() { Header = System.IO.Path.GetFileNameWithoutExtension(file), Tag = file };
-				menuItem.Click += AddSpellImageItem_Click;
+				menuItem.Click += AddImageItem_Click;
 				items.Add(menuItem);
 			}
 		}
 
-		private void AddSpellImageItem_Click(object sender, RoutedEventArgs e)
+		private void AddImageItem_Click(object sender, RoutedEventArgs e)
 		{
 			if (!(sender is MenuItem menuItem))
 				return;
@@ -879,27 +942,53 @@ namespace CardMaker
 		private void btnLoadSpellImage_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
 			const string spellFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons";
-			string[] files = Directory.GetFiles(spellFolder, "*.png");
-			mnuPickSpell.Items.Clear();
-			AddSpellMenuItems(mnuPickSpell.Items, files);
+			AddImageMenuItems(mnuPickSpell, spellFolder);
+		}
+
+		private void btnLoadArmorImage_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+		{
+			const string armorFolder = @"D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\AllArmor";
+			AddImageMenuItems(mnuPickArmor, armorFolder);
+		}
+
+		private void AddImageMenuItems(ContextMenu contextMenu, string imageFolder)
+		{
+			string[] files = Directory.GetFiles(imageFolder, "*.png");
+			contextMenu.Items.Clear();
+			AddImageMenuItems(contextMenu.Items, files);
 		}
 
 		private void Card_LinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
 		{
 			if (!(sender is Card card))
 				return;
-
-			CardImageLayer cardImageLayer = cardLayerManager.CardLayers.FirstOrDefault(x => x.Details == ea.Details);
-			if (cardImageLayer == null)
+			PropertyLink propertyLink;
+			CardImageLayer cardImageLayer;
+			GetPropertyLinkAndCardImageLayer(ea.Details, ea.Name, card, out propertyLink, out cardImageLayer);
+			if (propertyLink == null)
 				return;
-			if (!cardImageLayer.Groups.ContainsKey(ea.Name))
-				return;
-			int groupNumber = cardImageLayer.Groups[ea.Name];
-			PropertyLink propertyLink = card.linkedProperties.FirstOrDefault(x => x.GroupNumber == groupNumber && x.Name == ea.Name);
 			if (propertyLink != null)
 				foreach (CardImageLayer imageLayer in propertyLink.Layers)
 					if (cardImageLayer != imageLayer)
 						imageLayer.ChangeProperty(ea);
+		}
+
+		private void GetPropertyLinkAndCardImageLayer(LayerDetails details, string propertyName, Card card, out PropertyLink propertyLink, out CardImageLayer cardImageLayer)
+		{
+			cardImageLayer = cardLayerManager.CardLayers.FirstOrDefault(x => x.Details == details);
+			propertyLink = GetPropertyLink(propertyName, card, cardImageLayer);
+		}
+
+		private static PropertyLink GetPropertyLink(string propertyName, Card card, CardImageLayer cardImageLayer)
+		{
+			if (cardImageLayer == null)
+				return null;
+
+			if (!cardImageLayer.Groups.ContainsKey(propertyName))
+				return null;
+
+			int groupNumber = cardImageLayer.Groups[propertyName];
+			return card.linkedProperties.FirstOrDefault(x => x.GroupNumber == groupNumber && x.Name == propertyName);
 		}
 
 		private void LayerCompressMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1030,6 +1119,173 @@ namespace CardMaker
 		{
 			RestoreNormalCursor();
 			StopSampling();
+		}
+
+
+
+		Slider GetSliderFromSender(object sender)
+		{
+			if (!(sender is MenuItem menuItem))
+				return null;
+
+			if (!(menuItem.Parent is ContextMenu contextMenu))
+				return null;
+
+			return GetSliderFromContextMenu(contextMenu);
+		}
+
+		private static Slider GetSliderFromContextMenu(ContextMenu contextMenu)
+		{
+			if (!(contextMenu.Parent is System.Windows.Controls.Primitives.Popup popup))
+				return null;
+
+			if (!(popup.PlacementTarget is Slider slider))
+				return null;
+
+			return slider;
+		}
+
+		void SetCardGenOptions(BoundaryKind boundaryKind, string key, double value)
+		{
+			cardGenerationOptions.Set(activeStyle, activeLayer, boundaryKind, key, value);
+		}
+
+		private void SetMinForCardGeneration_MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			SetCardGenOptions(GetSliderFromSender(sender), BoundaryKind.Min);
+		}
+
+		private void SetCardGenOptions(Slider slider, BoundaryKind boundaryKind)
+		{
+			if (slider == null)
+				return;
+
+			SetCardGenOptions(boundaryKind, GetSliderNamePart(slider), slider.Value);
+		}
+
+		private string GetSliderNamePart(Slider slider)
+		{
+			string sliderNamePart = string.Empty;
+			if (slider == sliderHue)
+				sliderNamePart = CardGenerationOptions.Hue;
+			if (slider == sliderLightness)
+				sliderNamePart = CardGenerationOptions.Light;
+			if (slider == sliderSaturation)
+				sliderNamePart = CardGenerationOptions.Sat;
+			if (slider == sliderContrast)
+				sliderNamePart = CardGenerationOptions.Contrast;
+			if (slider == sliderOffsetX)
+				sliderNamePart = CardGenerationOptions.X;
+			if (slider == sliderOffsetY)
+				sliderNamePart = CardGenerationOptions.Y;
+			if (slider == sliderHorizontalStretch)
+				sliderNamePart = CardGenerationOptions.Horz;
+			if (slider == sliderVerticalStretch)
+				sliderNamePart = CardGenerationOptions.Vert;
+			return sliderNamePart;
+		}
+
+		private void SetMaxForCardGeneration_MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			SetCardGenOptions(GetSliderFromSender(sender), BoundaryKind.Max);
+		}
+
+		private void SynchronizeHorizontalAndVertical_MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+
+			menuItem.IsChecked = !menuItem.IsChecked;
+			cardGenerationOptions.SetSyncStretch(activeStyle, activeLayer, menuItem.IsChecked);
+		}
+
+		private void SynchronizeHorizontalAndVertical_ContextMenu_Opened(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is ContextMenu contextMenu))
+				return;
+
+			Slider slider = GetSliderFromContextMenu(contextMenu);
+			string sliderNamePart = GetSliderNamePart(slider);
+			if (sliderNamePart == CardGenerationOptions.Horz || sliderNamePart == CardGenerationOptions.Vert)
+				foreach (MenuItem menuItem in contextMenu.Items)
+					if (menuItem.Name == "mnuSyncStretch")
+						menuItem.IsChecked = cardGenerationOptions.GetSyncStretch(activeStyle, activeLayer);
+		}
+
+		private void btnRandomize_Click(object sender, RoutedEventArgs e)
+		{
+			if (ActiveCard == null)
+				return;
+
+			for (int i = cardLayerManager.CardLayers.Count - 1; i >= 0; i--)
+			{
+				CardImageLayer cardImageLayer = cardLayerManager.CardLayers[i];
+				if (cardImageLayer.Alternates != null)
+				{
+
+					int index = new Random().Next(0, cardImageLayer.Alternates.CardLayers.Count);
+
+					CardImageLayer newImageLayer = cardImageLayer.Alternates.CardLayers[index];
+
+					if (cardImageLayer != newImageLayer)
+					{
+						cardImageLayer.Details.IsSelected = false;
+						newImageLayer.Details.IsSelected = true;
+						cardLayerManager.Replace(cardImageLayer, newImageLayer, cvsLayers);
+						cardImageLayer = newImageLayer;
+					}
+				}
+
+				LayerGenerationOptions layerGenerationOptions = cardGenerationOptions.Find(activeStyle, cardImageLayer);
+				if (layerGenerationOptions == null)
+					continue;
+
+				cardImageLayer.IsVisible = new Random().Next(0, 100) <= layerGenerationOptions.ChancesVisible * 100;
+				
+				ActiveCard.BeginUpdate();
+				try
+				{
+					cardImageLayer.RandomlySetProperties(layerGenerationOptions);
+				}
+				finally
+				{
+					ActiveCard.EndUpdate();
+				}
+			}
+		}
+
+		private void ChancesVisibleMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+
+			LayerGenerationOptions options = cardGenerationOptions.Find(activeStyle, activeLayer);
+			if (options == null)
+				return;
+
+			string valueToSet = Math.Round(options.ChancesVisible * 100).ToString();
+
+			foreach (MenuItem menu in menuItem.Items.OfType<MenuItem>())
+			{
+				menu.IsChecked = menu.Tag.ToString() == valueToSet;
+			}
+		}
+
+		private void SetChancesVisibleMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+
+			if (!int.TryParse(menuItem.Tag.ToString(), out int percentVisible))
+				return;
+
+			LayerGenerationOptions options = cardGenerationOptions.Find(activeStyle, activeLayer);
+			if (options == null)
+				return;
+
+			options.ChancesVisible = percentVisible / 100.0;
+
+			GoogleHelper.GoogleSheets.SaveChanges(options);
 		}
 	}
 }

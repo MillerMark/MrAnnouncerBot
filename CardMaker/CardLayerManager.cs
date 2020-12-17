@@ -14,7 +14,7 @@ namespace CardMaker
 		public List<CardImageLayer> CardLayers { get; private set; } = new List<CardImageLayer>();
 		public AlternateCardImageLayers()
 		{
-			
+
 		}
 	}
 	public class CardLayerManager
@@ -115,22 +115,28 @@ namespace CardMaker
 		{
 			if (selectedLayer == newImageLayer)
 				return;
-			int indexOfExisting = CardLayers.IndexOf(selectedLayer);
+			int indexOfExisting = GetIndexOfExisting(selectedLayer);
 			if (indexOfExisting < 0)
 				return;
 
 			for (int i = canvas.Children.Count - 1; i >= 0; i--)
-			{
 				if (selectedLayer.ImageMatches(canvas.Children[i]))
 				{
 					canvas.Children.RemoveAt(i);
 					canvas.Children.Insert(i, newImageLayer.CreateImage());
 					break;
 				}
-			}
 
 			CardLayers.RemoveAt(indexOfExisting);
 			CardLayers.Insert(indexOfExisting, newImageLayer);
+		}
+
+		private int GetIndexOfExisting(CardImageLayer selectedLayer)
+		{
+			for (int i = 0; i < CardLayers.Count; i++)
+				if (CardLayers[i].LayerName == selectedLayer.LayerName)
+					return i;
+			return -1;
 		}
 
 		public void ReplaceImageInPlaceHolder(string fileName, Canvas canvas)

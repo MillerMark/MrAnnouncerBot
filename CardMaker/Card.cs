@@ -172,7 +172,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
 
 
 		public Brush FontBrush
@@ -440,7 +440,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
 		[Column]
 		public string Placeholder
 		{
@@ -453,7 +453,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
 
 
 		public override string ToString()
@@ -539,7 +539,7 @@ namespace CardMaker
 		//
 		private void FoundItem_LinkedPropertyChanged(object sender, LinkedPropertyEventArgs ea)
 		{
-			
+
 		}
 		void SetTextFontProperties()
 		{

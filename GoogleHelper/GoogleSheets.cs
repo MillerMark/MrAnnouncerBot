@@ -492,7 +492,7 @@ namespace GoogleHelper
 				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
 
 				string existingValue = null;
-				if (columnIndex < allRows[rowIndex].Count)  // Some rows may have fewer columns because efficiency of the Google Sheets engine.
+				if (columnIndex < allRows[rowIndex].Count)  // Some rows may have fewer columns because the Google Sheets engine will efficiently return only the columns holding data.
 					existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
 
 				string range = GetRange(columnIndex, rowIndex);
