@@ -36,6 +36,9 @@
 		<ContextMenu x:Key="ctxRandomCardGen" >
 			<MenuItem Header="Set Min" Click="SetMinForCardGeneration_MenuItem_Click"></MenuItem>
 			<MenuItem Header="Set Max" Click="SetMaxForCardGeneration_MenuItem_Click"></MenuItem>
+			<Separator></Separator>
+			<MenuItem Header="Set Full Range" Click="SetFullRangeForCardGeneration_MenuItem_Click"></MenuItem>
+			<MenuItem Header="Only This Value" Click="OnlyThisValueForCardGeneration_MenuItem_Click"></MenuItem>
 		</ContextMenu>
 		
 		<Style TargetType="Slider" x:Key="ctxCardGenSlider" >
@@ -46,6 +49,9 @@
 			<MenuItem Header="Set Min" Click="SetMinForCardGeneration_MenuItem_Click"></MenuItem>
 			<MenuItem Header="Set Max" Click="SetMaxForCardGeneration_MenuItem_Click"></MenuItem>
 			<MenuItem x:Name="mnuSyncStretch" Header="Sync Stretch" Click="SynchronizeHorizontalAndVertical_MenuItem_Click"></MenuItem>
+			<Separator></Separator>
+			<MenuItem Header="Set Full Range" Click="SetFullRangeForCardGeneration_MenuItem_Click"></MenuItem>
+			<MenuItem Header="Only This Value" Click="OnlyThisValueForCardGeneration_MenuItem_Click"></MenuItem>
 		</ContextMenu>
 		
 		<Style TargetType="Slider" x:Key="ctxCardGenSliderStretch" >
@@ -94,7 +100,7 @@
 					<TextBox x:Name="tbxDeckName" Text="{Binding Name,UpdateSourceTrigger=PropertyChanged}" TextChanged="tbxDeckName_TextChanged" MinWidth="100"/>
 				</StackPanel>
 				<TextBlock x:Name="tbCards" Text="Cards:" Width="Auto" Height="Auto" Foreground="#FF4C4C4C"/>
-				<ListBox x:Name="lbCards" SelectionChanged="lbCards_SelectionChanged" Width="200" >
+				<ListBox x:Name="lbCards" SelectionChanged="lbCards_SelectionChanged" Width="200" MaxHeight="800" >
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal">
@@ -116,6 +122,29 @@
 				</Button>
 				<Button x:Name="btnDeleteCard" Click="btnDeleteCard_Click" Margin="3" Width="95" HorizontalAlignment="Left">
 					Delete Card...
+				</Button>
+				<Button x:Name="btnAddSpells" Width="95" Margin="0, 20, 0, 0" HorizontalAlignment="Left" PreviewMouseDown="btnAddSpells_PreviewMouseDown">
+					Add Spells...
+					<Button.ContextMenu>
+						<ContextMenu x:Name="mnuPickSpellLevel" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
+						</ContextMenu>
+					</Button.ContextMenu>
+
+					<Button.Triggers>
+						<EventTrigger SourceName="btnAddSpells" RoutedEvent="Button.Click">
+							<BeginStoryboard>
+								<Storyboard>
+									<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickSpellLevel" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
+										<DiscreteObjectKeyFrame KeyTime="0:0:0">
+											<DiscreteObjectKeyFrame.Value>
+												<System:Boolean>True</System:Boolean>
+											</DiscreteObjectKeyFrame.Value>
+										</DiscreteObjectKeyFrame>
+									</ObjectAnimationUsingKeyFrames>
+								</Storyboard>
+							</BeginStoryboard>
+						</EventTrigger>
+					</Button.Triggers>
 				</Button>
 			</StackPanel>
 

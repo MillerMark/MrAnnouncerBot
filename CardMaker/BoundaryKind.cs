@@ -6,6 +6,7 @@ namespace CardMaker
 	public enum BoundaryKind
 	{
 		Min,
-		Max
+		Max,
+		FullRange
 	}
 }

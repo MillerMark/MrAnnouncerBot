@@ -373,6 +373,7 @@ namespace CardMaker
 				fileName = PngFile;
 
 			image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, fileName);
+			
 			if (overrideWidth > 0 && overrideHeight > 0)
 			{
 				OriginalWidth = overrideWidth;
@@ -431,7 +432,13 @@ namespace CardMaker
 		}
 		public bool ImageMatches(UIElement uIElement)
 		{
-			return uIElement == image;
+			if (!(uIElement is FrameworkElement frameworkElement))
+				return false;
+
+			if (!(frameworkElement.Tag is CardImageLayer cardImageLayer))
+				return false;
+
+			return cardImageLayer.LayerName == LayerName;
 		}
 
 
@@ -447,7 +454,6 @@ namespace CardMaker
 			char propertyInitialLower = char.ToLower(propertyInitial);
 			if (!propertyMap.ContainsKey(propertyInitialLower))
 				return;
-
 
 			AddPropertyLink(card, propertyMap[propertyInitialLower], groupNumber);
 		}
@@ -467,7 +473,7 @@ namespace CardMaker
 		}
 
 		public CardImageLayer(Card card, string pngFile, int indexOffset = 0)
-		{
+			{
 			PngFile = pngFile;
 			LayerName = Path.GetFileNameWithoutExtension(pngFile);
 
@@ -610,12 +616,9 @@ namespace CardMaker
 			PlaceholderX = StartX;
 			PlaceholderY = StartY;
 			PlaceholderFile = PngFile;
-			using (var imageStream = File.OpenRead(PlaceholderFile))
-			{
-				var decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.Default);
-				PlaceholderHeight = decoder.Frames[0].PixelHeight;
-				PlaceholderWidth = decoder.Frames[0].PixelWidth;
-			}
+			Size imageSize = ImageUtils.GetImageSize(PlaceholderFile);
+			PlaceholderHeight = (int)imageSize.Height;
+			PlaceholderWidth = (int)imageSize.Width;
 		}
 
 		public Image PlaceImageIntoPlaceholder()

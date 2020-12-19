@@ -404,25 +404,48 @@ namespace GoogleHelper
 			allRows.Add(row.ToList());
 		}
 
-		static int AddRow(string spreadsheetId, string tabName, MemberInfo[] indexFields, List<string> headerRow, MemberInfo[] serializableFields, IList<IList<object>> allRows, object instance)
+		static int AddRow(string tabName, MemberInfo[] indexFields, List<string> headerRow, MemberInfo[] serializableFields, IList<IList<object>> allRows, object instance, BatchUpdateValuesRequest requestBody)
 		{
 			foreach (MemberInfo memberInfo in indexFields)
 			{
 				int columnIndex = GetColumnIndex(headerRow, GetColumnName<ColumnAttribute>(memberInfo));
-				string range = GetRange(columnIndex, allRows.Count);
-				ValueRange body = new ValueRange();
-				body.MajorDimension = "ROWS";
-				body.Range = $"{tabName}!{range}";
-				body.Values = new List<IList<object>>();
-				body.Values.Add(new List<object>());
-				string value = GetValue(instance, memberInfo);
-				body.Values[0].Add(value);
-				SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
-				Execute(request);
+				int rowIndex = allRows.Count;
+				ValueRange body = GetValueRange(tabName, columnIndex, rowIndex, GetValue(instance, memberInfo));
+
+				requestBody.Data.Add(body);
 			}
+
 			AddInstance(allRows, headerRow, serializableFields, instance);
 			return allRows.Count - 1;
 		}
+
+		private static ValueRange GetValueRange(string tabName, int columnIndex, int rowIndex, string value)
+		{
+			string range = GetRange(columnIndex, rowIndex);
+
+			ValueRange body = new ValueRange();
+			body.MajorDimension = "ROWS";
+			body.Range = $"{tabName}!{range}";
+			body.Values = new List<IList<object>>();
+			body.Values.Add(new List<object>());
+			body.Values[0].Add(value);
+			return body;
+		}
+
+		private static void ExecuteRequest(string spreadsheetId, BatchUpdateValuesRequest requestBody)
+		{
+			SpreadsheetsResource.ValuesResource.BatchUpdateRequest request = service.Spreadsheets.Values.BatchUpdate(requestBody, spreadsheetId);
+			Execute(request);
+		}
+
+		private static BatchUpdateValuesRequest GetBatchUpdateRequest()
+		{
+			BatchUpdateValuesRequest requestBody = new BatchUpdateValuesRequest();
+			requestBody.Data = new List<ValueRange>();
+			requestBody.ValueInputOption = "USER_ENTERED";
+			return requestBody;
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -453,14 +476,17 @@ namespace GoogleHelper
 
 			MemberInfo[] serializableFields = GetSerializableFields<ColumnAttribute>(instanceType);
 
+			BatchUpdateValuesRequest requestBody = GetBatchUpdateRequest();
 			for (int i = 0; i < instances.Length; i++)
 			{
 				int rowIndex = GetInstanceRowIndex(instances[i], indexFields, allRows, headerRow);
 				if (rowIndex < 0)
-					rowIndex = AddRow(spreadsheetId, tabName, serializableFields, headerRow, serializableFields, allRows, instances[i]);
+					AddRow(tabName, serializableFields, headerRow, serializableFields, allRows, instances[i], requestBody);
 				else
-					UpdateRow(tabName, instances, saveOnlyTheseMembers, spreadsheetId, headerRow, allRows, serializableFields, i, rowIndex);
+					UpdateRow(tabName, instances, saveOnlyTheseMembers, headerRow, allRows, serializableFields, i, rowIndex, requestBody);
 			}
+
+			ExecuteRequest(spreadsheetId, requestBody);
 		}
 
 		private static void ValidateDocAndTabNames(string docName, string tabName, bool trackTabIfMissing = false)
@@ -474,7 +500,7 @@ namespace GoogleHelper
 				throw new InvalidDataException($"tabName (\"{tabName}\") not found!");
 		}
 
-		private static void UpdateRow(string tabName, object[] instances, string[] saveOnlyTheseMembers, string spreadsheetId, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex)
+		private static void UpdateRow(string tabName, object[] instances, string[] saveOnlyTheseMembers, List<string> headerRow, IList<IList<object>> allRows, MemberInfo[] serializableFields, int i, int rowIndex, BatchUpdateValuesRequest requestBody)
 		{
 			for (int j = 0; j < serializableFields.Length; j++)
 			{
@@ -495,20 +521,21 @@ namespace GoogleHelper
 				if (columnIndex < allRows[rowIndex].Count)  // Some rows may have fewer columns because the Google Sheets engine will efficiently return only the columns holding data.
 					existingValue = GetExistingValue(allRows, columnIndex, rowIndex);
 
-				string range = GetRange(columnIndex, rowIndex);
-
-				ValueRange body = new ValueRange();
-				body.MajorDimension = "ROWS";
-				body.Range = $"{tabName}!{range}";
-				body.Values = new List<IList<object>>();
-				body.Values.Add(new List<object>());
 				string value = GetValue(instances[i], memberInfo);
 
 				if (existingValue == null /* New */ || value != existingValue /* Mod */)
 				{
-					body.Values[0].Add(value);
-					SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
-					Execute(request);
+					//ValueRange body = new ValueRange();
+					//body.MajorDimension = "ROWS";
+					//body.Range = $"{tabName}!{range}";
+					//body.Values = new List<IList<object>>();
+					//body.Values.Add(new List<object>());
+					//body.Values[0].Add(value);
+					ValueRange body = GetValueRange(tabName, columnIndex, rowIndex, value);
+
+					requestBody.Data.Add(body);
+					//SpreadsheetsResource.ValuesResource.UpdateRequest request = service.Spreadsheets.Values.Update(body, spreadsheetId, body.Range);
+					//Execute(request);
 				}
 			}
 		}
@@ -519,6 +546,23 @@ namespace GoogleHelper
 			try
 			{
 				UpdateValuesResponse response = request.Execute();
+				if (response != null)
+				{
+
+				}
+			}
+			catch (Exception ex)
+			{
+				string msg = ex.Message;
+				System.Diagnostics.Debugger.Break();
+			}
+		}
+
+		private static void Execute(SpreadsheetsResource.ValuesResource.BatchUpdateRequest request)
+		{
+			try
+			{
+				BatchUpdateValuesResponse response = request.Execute();
 				if (response != null)
 				{
 

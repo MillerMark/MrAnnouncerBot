@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using GoogleHelper;
 using System.Windows.Media;
 using Imaging;
+using System.Windows;
 
 namespace CardMaker
 {
@@ -569,6 +570,19 @@ namespace CardMaker
 			finally
 			{
 				EndUpdate();
+			}
+		}
+
+		public void ScalePlaceholder(double placeholderWidth, double placeholderHeight = 0)
+		{
+			if (placeholderHeight == 0)
+				placeholderHeight = placeholderWidth;
+			LayerDetails placeholderDetails = GetLayerDetails("Placeholder");
+			if (placeholderDetails != null && Placeholder != null)
+			{
+				Size imageSize = ImageUtils.GetImageSize(Placeholder);
+				placeholderDetails.ScaleX = placeholderWidth / imageSize.Width;
+				placeholderDetails.ScaleY = placeholderHeight / imageSize.Height;
 			}
 		}
 	}

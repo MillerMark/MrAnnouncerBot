@@ -101,6 +101,7 @@ namespace CardMaker
 			foreach (CardImageLayer cardImageLayer in CardLayers)
 				cardImageLayer.IsVisible = cardImageLayer == notThisCardImageLayer;
 		}
+
 		public void ShowAllLayersExcept(CardImageLayer notThisCardImageLayer)
 		{
 			foreach (CardImageLayer cardImageLayer in CardLayers)
@@ -111,21 +112,31 @@ namespace CardMaker
 		{
 			ShowAllLayersExcept(null);
 		}
+
 		public void Replace(CardImageLayer selectedLayer, CardImageLayer newImageLayer, Canvas canvas)
 		{
 			if (selectedLayer == newImageLayer)
 				return;
+
+			selectedLayer.Details.IsSelected = false;
+			newImageLayer.Details.IsSelected = true;
+
 			int indexOfExisting = GetIndexOfExisting(selectedLayer);
 			if (indexOfExisting < 0)
 				return;
 
+			bool imageFound = false;
 			for (int i = canvas.Children.Count - 1; i >= 0; i--)
 				if (selectedLayer.ImageMatches(canvas.Children[i]))
 				{
 					canvas.Children.RemoveAt(i);
 					canvas.Children.Insert(i, newImageLayer.CreateImage());
+					imageFound = true;
 					break;
 				}
+
+			if (!imageFound)
+				System.Diagnostics.Debugger.Break();
 
 			CardLayers.RemoveAt(indexOfExisting);
 			CardLayers.Insert(indexOfExisting, newImageLayer);

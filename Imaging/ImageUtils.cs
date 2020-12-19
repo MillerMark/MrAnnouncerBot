@@ -275,6 +275,16 @@ namespace Imaging
 			writeableBitmap.WritePixels(new Int32Rect(0, 0, firstFrame.PixelWidth, firstFrame.PixelHeight), pixels, stride, 0);
 			return writeableBitmap;
 		}
+
+		public static Size GetImageSize(string file)
+		{
+			using (var imageStream = File.OpenRead(file))
+			{
+				var decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.Default);
+				BitmapFrame firstFrame = decoder.Frames[0];
+				return new Size(firstFrame.PixelWidth, firstFrame.PixelHeight);
+			}
+		}
 	}
 }
 
