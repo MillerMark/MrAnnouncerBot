@@ -85,7 +85,8 @@ namespace DHDM
 		DispatcherTimer sceneReturnTimer;
 		DispatcherTimer delayRollTimer;
 		DispatcherTimer playSceneTimer;
-		DispatcherTimer reconnectToTwitchTimer;
+		DispatcherTimer reconnectToTwitchDungeonMasterTimer;
+		DispatcherTimer reconnectToTwitchDragonHumpersTimer;
 		DispatcherTimer showClearButtonTimer;
 		DispatcherTimer stateUpdateTimer;
 		DispatcherTimer cropRectUpdateTimer;
@@ -150,9 +151,13 @@ namespace DHDM
 			playSceneTimer = new DispatcherTimer(DispatcherPriority.Send);
 			playSceneTimer.Tick += new EventHandler(PlaySceneHandler);
 
-			reconnectToTwitchTimer = new DispatcherTimer(DispatcherPriority.Send);
-			reconnectToTwitchTimer.Tick += new EventHandler(ReconnectToTwitchHandler);
-			reconnectToTwitchTimer.Interval = TimeSpan.FromMilliseconds(1000);
+			reconnectToTwitchDungeonMasterTimer = new DispatcherTimer(DispatcherPriority.Send);
+			reconnectToTwitchDungeonMasterTimer.Tick += new EventHandler(ReconnectToTwitchDungeonMasterHandler);
+			reconnectToTwitchDungeonMasterTimer.Interval = TimeSpan.FromMilliseconds(1000);
+
+			reconnectToTwitchDragonHumpersTimer = new DispatcherTimer(DispatcherPriority.Send);
+			reconnectToTwitchDragonHumpersTimer.Tick += new EventHandler(ReconnectToTwitchDragonHumpersHandler);
+			reconnectToTwitchDragonHumpersTimer.Interval = TimeSpan.FromMilliseconds(1000);
 
 			showClearButtonTimer = new DispatcherTimer();
 			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
@@ -209,6 +214,7 @@ namespace DHDM
 			//InitializeAttackShortcuts();
 			//humperBotClient = Twitch.CreateNewClient("HumperBot", "HumperBot", "HumperBotOAuthToken");
 			CreateDungeonMasterClient();
+			CreateDragonHumpersClient();
 			CreateDhPubSub();
 
 			dmChatBot.Initialize(this);
@@ -241,10 +247,16 @@ namespace DHDM
 
 		// ResendExistingData
 
-		void ReconnectToTwitchHandler(object sender, EventArgs e)
+		void ReconnectToTwitchDungeonMasterHandler(object sender, EventArgs e)
 		{
 			CreateDungeonMasterClient();
 		}
+
+		void ReconnectToTwitchDragonHumpersHandler(object sender, EventArgs e)
+		{
+			CreateDragonHumpersClient();
+		}
+
 		void LoadTextCompletionEngine()
 		{
 			TextCompletionEngine = new TextCompletionEngine(tbxCode);
@@ -1061,59 +1073,74 @@ namespace DHDM
 		{
 			SafeInvoke(() =>
 			{
-				reconnectToTwitchTimer.Stop();
+				reconnectToTwitchDungeonMasterTimer.Stop();
 				Background = Brushes.White;
 				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
 			});
 			dungeonMasterClient = Twitch.CreateNewClient("DragonHumpersDM", "DragonHumpersDM", "DragonHumpersDmOAuthToken");
+			HookTwitchClientDungeonMasterEvents();
+		}
+
+		private void CreateDragonHumpersClient()
+		{
+			SafeInvoke(() =>
+			{
+				reconnectToTwitchDungeonMasterTimer.Stop();
+				Background = Brushes.White;
+				btnReconnectTwitchClient.Visibility = Visibility.Hidden;
+			});
 			dhClient = Twitch.CreateNewClient("DragonHumpers", "DragonHumpers", "DragonHumpersOAuthToken");
-			HookTwitchClientEvents();
+			HookTwitchClientDragonHumpersEvents();
 		}
 
-		private void HookTwitchClientEvents()
+		private void HookTwitchClientDungeonMasterEvents()
 		{
-			if (dhClient != null)
-			{
-				dhClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
-			}
-
-			if (dungeonMasterClient != null)
-			{
-				dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
-				dungeonMasterClient.OnConnectionError += DungeonMasterClient_OnConnectionError;
-				dungeonMasterClient.OnDisconnected += DungeonMasterClient_OnDisconnected;
-				dungeonMasterClient.OnError += DungeonMasterClient_OnError;
-				dungeonMasterClient.OnFailureToReceiveJoinConfirmation += DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
-				dungeonMasterClient.OnJoinedChannel += DungeonMasterClient_OnJoinedChannel;
-				dungeonMasterClient.OnLeftChannel += DungeonMasterClient_OnLeftChannel;
-				dungeonMasterClient.OnLog += DungeonMasterClient_OnLog;
-				dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
-				dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
-				dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
-			}
+			if (dungeonMasterClient == null)
+				return;
+			dungeonMasterClient.OnMessageReceived += HumperBotClient_OnMessageReceived;
+			dungeonMasterClient.OnConnectionError += DungeonMasterClient_OnConnectionError;
+			dungeonMasterClient.OnDisconnected += DungeonMasterClient_OnDisconnected;
+			dungeonMasterClient.OnError += DungeonMasterClient_OnError;
+			dungeonMasterClient.OnFailureToReceiveJoinConfirmation += DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
+			dungeonMasterClient.OnJoinedChannel += DungeonMasterClient_OnJoinedChannel;
+			dungeonMasterClient.OnLeftChannel += DungeonMasterClient_OnLeftChannel;
+			dungeonMasterClient.OnLog += DungeonMasterClient_OnLog;
+			dungeonMasterClient.OnMessageThrottled += DungeonMasterClient_OnMessageThrottled;
+			dungeonMasterClient.OnNoPermissionError += DungeonMasterClient_OnNoPermissionError;
+			dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
 		}
 
-		private void UnhookTwitchClientEvents()
+		private void HookTwitchClientDragonHumpersEvents()
 		{
-			if (dhClient != null)
-			{
-				dhClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
-			}
+			if (dhClient == null)
+				return;
+			dhClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
+			dhClient.OnDisconnected += DragonHumpersClient_OnDisconnected;
+		}
 
-			if (dungeonMasterClient != null)
-			{
-				dungeonMasterClient.OnMessageReceived -= HumperBotClient_OnMessageReceived;
-				dungeonMasterClient.OnConnectionError -= DungeonMasterClient_OnConnectionError;
-				dungeonMasterClient.OnDisconnected -= DungeonMasterClient_OnDisconnected;
-				dungeonMasterClient.OnError -= DungeonMasterClient_OnError;
-				dungeonMasterClient.OnFailureToReceiveJoinConfirmation -= DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
-				dungeonMasterClient.OnJoinedChannel -= DungeonMasterClient_OnJoinedChannel;
-				dungeonMasterClient.OnLeftChannel -= DungeonMasterClient_OnLeftChannel;
-				dungeonMasterClient.OnLog -= DungeonMasterClient_OnLog;
-				dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
-				dungeonMasterClient.OnNoPermissionError -= DungeonMasterClient_OnNoPermissionError;
-				dungeonMasterClient.OnChannelStateChanged -= DungeonMasterClient_OnChannelStateChanged;
-			}
+		private void UnhookTwitchClientDragonHumpersEvents()
+		{
+			if (dhClient == null)
+				return;
+			dhClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
+			dhClient.OnDisconnected -= DragonHumpersClient_OnDisconnected;
+		}
+
+		private void UnhookTwitchClientDungeonMasterEvents()
+		{
+			if (dungeonMasterClient == null)
+				return;
+			dungeonMasterClient.OnMessageReceived -= HumperBotClient_OnMessageReceived;
+			dungeonMasterClient.OnConnectionError -= DungeonMasterClient_OnConnectionError;
+			dungeonMasterClient.OnDisconnected -= DungeonMasterClient_OnDisconnected;
+			dungeonMasterClient.OnError -= DungeonMasterClient_OnError;
+			dungeonMasterClient.OnFailureToReceiveJoinConfirmation -= DungeonMasterClient_OnFailureToReceiveJoinConfirmation;
+			dungeonMasterClient.OnJoinedChannel -= DungeonMasterClient_OnJoinedChannel;
+			dungeonMasterClient.OnLeftChannel -= DungeonMasterClient_OnLeftChannel;
+			dungeonMasterClient.OnLog -= DungeonMasterClient_OnLog;
+			dungeonMasterClient.OnMessageThrottled -= DungeonMasterClient_OnMessageThrottled;
+			dungeonMasterClient.OnNoPermissionError -= DungeonMasterClient_OnNoPermissionError;
+			dungeonMasterClient.OnChannelStateChanged -= DungeonMasterClient_OnChannelStateChanged;
 		}
 
 		private void DungeonMasterClient_OnChannelStateChanged(object sender, TwitchLib.Client.Events.OnChannelStateChangedArgs e)
@@ -1182,13 +1209,26 @@ namespace DHDM
 			{
 				Background = new SolidColorBrush(Color.FromRgb(148, 81, 81));
 				btnReconnectTwitchClient.Visibility = Visibility.Visible;
-				reconnectToTwitchTimer.Start();
+				reconnectToTwitchDungeonMasterTimer.Start();
 			});
 
-			UnhookTwitchClientEvents();
+			UnhookTwitchClientDungeonMasterEvents();
 			dhClient = null;
 			dungeonMasterClient = null;
 			History.Log($"DungeonMasterClient_OnDisconnected");
+		}
+
+		private void DragonHumpersClient_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
+		{
+			SafeInvoke(() =>
+			{
+				Background = new SolidColorBrush(Color.FromRgb(81, 88, 148));
+				reconnectToTwitchDragonHumpersTimer.Start();
+			});
+
+			UnhookTwitchClientDragonHumpersEvents();
+			dhClient = null;
+			History.Log($"DragonHumpersClient_OnDisconnected");
 		}
 
 		private void DungeonMasterClient_OnConnectionError(object sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)

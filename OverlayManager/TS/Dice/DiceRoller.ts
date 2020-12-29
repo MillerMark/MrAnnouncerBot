@@ -1452,7 +1452,7 @@ function damageTypeFromStr(str: string): DamageType {
 function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	const dieObject: IDieObject = die.getObject();
 	scene.add(dieObject);
-	console.log(`prepareBaseDie - die.inPlay = true;`);
+	//console.log(`prepareBaseDie - die.inPlay = true;`);
 	die.inPlay = true;
 	die.attachedSprites = [];
 	die.attachedLabels = [];
@@ -1466,8 +1466,8 @@ function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	dieObject.position.x = xPositionModifier + -15 - (index % 3) * dieScale;
 	dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
 	dieObject.position.z = -13 + (index % 3) * dieScale;
-	dieObject.quaternion.x = (Math.random() * 90 - 45) * Math.PI / 180;
-	dieObject.quaternion.z = (Math.random() * 90 - 45) * Math.PI / 180;
+	dieObject.quaternion.x = (Math.random() * 180 - 90) * Math.PI / 180;
+	dieObject.quaternion.z = (Math.random() * 180 - 90) * Math.PI / 180;
 	let xVelocityMultiplier = 1;
 	if (xPositionModifier !== 0)
 		xVelocityMultiplier = -1;
