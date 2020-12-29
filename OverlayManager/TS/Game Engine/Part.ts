@@ -83,7 +83,7 @@ class PartBackgroundLoader {
 
 	static remove(part: Part): void {
 		for (let i = length - 1; i >= 0; i--) {
-			if (PartBackgroundLoader.partsToLoad[i] == part)
+			if (PartBackgroundLoader.partsToLoad[i] === part)
 				PartBackgroundLoader.partsToLoad.splice(i, 1);
 		}
 	}
@@ -124,119 +124,7 @@ class PartBackgroundLoader {
 	}
 }
 
-// New idea: create offscreen canvases and contexts for EACH image frame!!!
-
-//class CanvasContextPair {
-//	originalImage: HTMLImageElement;
-//	index: number;
-//	sourceOffsetX: number;
-//	sourceOffsetY: number;
-//	row: number;
-//	column: number;
-//	static readonly maxCanvasWidth: number = 16000;
-//	static readonly maxCanvasHeight: number = 16000;
-//	numImagesPerRow: number;
-//	numImagesPerColumn: number;
-
-//	constructor(context: CanvasRenderingContext2D, images: HTMLImageElement[], index: number) {
-//		this.index = index;
-//		this.originalImage = images[index];
-//		this.numImagesPerRow = Math.floor(CanvasContextPair.maxCanvasWidth / this.originalImage.width)
-//		this.numImagesPerColumn = Math.floor(CanvasContextPair.maxCanvasHeight / this.originalImage.height)
-//		this.cacheImage(context);
-//	}
-
-//	cacheImage(context: CanvasRenderingContext2D) {
-//		if (!context)
-//			return;
-//		if (!this.originalImage)
-//			return;
-//		let imageWidth: number = this.originalImage.width;
-//		let imageHeight: number = this.originalImage.height;
-//		if (imageWidth == 0)
-//			return;
-//		this.row = Math.floor(this.index / this.numImagesPerRow);
-//		this.column = Math.round(this.index - this.row * this.numImagesPerRow);
-//		this.sourceOffsetX = this.column * imageWidth;
-//		this.sourceOffsetY = this.row * imageHeight;
-//		// Draw the image at the cached location....
-//		context.drawImage(this.originalImage, this.sourceOffsetX, this.sourceOffsetY);
-//		this.originalImage = null;
-//	}
-
-//	imageHasBeenCached(context: CanvasRenderingContext2D): boolean {
-//		if (!this.originalImage)
-//			return true;
-//		this.cacheImage(context);
-//		return this.originalImage == null;
-//	}
-//}
-
-//class CachedImages {
-//	cachedImages: CanvasContextPair[] = [];
-//	canvas: HTMLCanvasElement;
-//	context: CanvasRenderingContext2D;
-//	lastRead: Date;
-//	imageWidth: number;
-//	imageHeight: number;
-
-//	constructor(images: HTMLImageElement[], filter) {
-//		this.canvas = document.createElement('canvas');
-//		if (images[0].width === 0) {
-//			throw new DOMException('images[0].width is 0!!!!')
-//		}
-//		this.imageWidth = images[0].width;
-//		this.imageHeight = images[0].height;
-//		let canvasContextPair: CanvasContextPair = new CanvasContextPair(null, images, 0)
-//		this.cachedImages.push(canvasContextPair);
-
-//		this.canvas.width = this.imageWidth * canvasContextPair.numImagesPerRow;
-//		this.canvas.height = this.imageHeight * canvasContextPair.numImagesPerColumn;
-//		this.context = this.canvas.getContext('2d');
-//		this.context.filter = filter;
-
-//		canvasContextPair.cacheImage(this.context);
-
-//		for (let i = 1; i < images.length; i++) {
-//			this.cachedImages.push(new CanvasContextPair(this.context, images, i));
-//		}
-//	}
-
-//	getSourceOffsetX(frameIndex: number): number {
-//		return this.cachedImages[frameIndex].sourceOffsetX;
-//	}
-
-//	getSourceOffsetY(frameIndex: number): number {
-//		return this.cachedImages[frameIndex].sourceOffsetY;
-//	}
-
-
-//	getCanvas(frameIndex: number): CanvasImageSource {
-//		// TODO: garbage-collect this based on age of lastRead!!!!
-//		this.lastRead = new Date();
-//		if (this.cachedImages[frameIndex].imageHasBeenCached(this.context))
-//			return this.canvas;
-//		return null;
-//	}
-//}
-
 class Part {
-	// TODO: Move filteredImages to it's own static class.
-	//filteredImages: Map<string, CachedImages> = new Map<string, CachedImages>();
-
-	//filterImages(filter: string) {
-	//	if (this.filteredImages[filter])
-	//		return;
-	//	this.createFilteredImages(filter);
-	//}
-
-	//createFilteredImages(filter: string) {
-	//	console.log(`Filtering images for ${filter}...`);
-	//	this.filteredImages[filter] = new CachedImages(this.images, filter);
-	//	console.log(`Done filtering images for ${filter}...`);
-	//}
-
-
 	static loadSprites: boolean;
 	loadedAllImages: boolean;
 	frameIndex: number;
@@ -280,13 +168,6 @@ class Part {
 			numDigits = 2;
 		else
 			numDigits = 1;
-		//let framesToLoad: number = 1;
-		//let framesToCount: number = 1;
-		//if (this.frameCount > 60 && !globalBypassFrameSkip) {
-		//	framesToLoad = globalFramesToLoad;
-		//	framesToCount = globalFramesToCount;
-		//	this.frameRate = framesToCount / framesToLoad;
-		//}
 
 		this.frameRate = this.framesToCount / this.framesToLoad;
 
@@ -355,29 +236,22 @@ class Part {
 
 		this.framesToLoad = 1;
 		this.framesToCount = 1;
-
-		// Commenting this optimization out because this code is running on a much faster machine.
-		//if (this.frameCount > 60 && !globalBypassFrameSkip) {
-		//	this.framesToLoad = globalFramesToLoad;
-		//	this.framesToCount = globalFramesToCount;
-		//}
-
 		this.loadImages(true);
 	}
 
 	fileExists(url) {
-		var http = new XMLHttpRequest();
+		const http = new XMLHttpRequest();
 		http.open('HEAD', url, false);
 		http.send();
 		return http.status !== 404;
 	}
 
 	isOnLastFrame() {
-		return this.frameIndex == this.frameCount - 1;
+		return this.frameIndex === this.frameCount - 1;
 	}
 
 	isOnFirstFrame() {
-		return this.frameIndex == 0;
+		return this.frameIndex === 0;
 	}
 
 	advanceFrameIfNecessary() {
@@ -386,20 +260,21 @@ class Part {
 			return;
 		}
 
-		var now: number = performance.now();
-		var msPassed = now - this.lastUpdateTime;
+		const now: number = performance.now();
+		const msPassed = now - this.lastUpdateTime;
 		if (msPassed < this.frameRate)
 			return;
 
-		if (this.animationStyle == AnimationStyle.Static)
+		if (this.animationStyle === AnimationStyle.Static)
 			return;
-		if (this.animationStyle == AnimationStyle.Random)
+
+		if (this.animationStyle === AnimationStyle.Random)
 			this.frameIndex = Random.intMax(this.frameCount);
 
 		if (this.reverse) {
 			this.frameIndex--;
 			if (this.frameIndex < 0)
-				if (this.animationStyle == AnimationStyle.Sequential)
+				if (this.animationStyle === AnimationStyle.Sequential)
 					this.frameIndex = 0;
 				else // AnimationStyle.Loop
 					this.frameIndex = this.frameCount - 1;
@@ -407,7 +282,7 @@ class Part {
 		else {
 			this.frameIndex++;
 			if (this.frameIndex >= this.frameCount)
-				if (this.animationStyle == AnimationStyle.Sequential)
+				if (this.animationStyle === AnimationStyle.Sequential)
 					this.frameIndex = this.frameCount - 1;
 				else // AnimationStyle.Loop
 					this.frameIndex = 0;
@@ -417,7 +292,7 @@ class Part {
 	}
 
 	getWiggle(amount: number) {
-		if (amount == 0 || !amount)
+		if (amount === 0 || !amount)
 			return 0;
 		return Random.intBetween(-amount, amount);
 	}
@@ -505,8 +380,8 @@ class Part {
 	drawCroppedByIndex(context: CanvasRenderingContext2D, x: number, y: number, frameIndex: number,
 		sx: number, sy: number, sw: number, sh: number, dw: number, dh: number): void {
 		//` ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
-		let dx: number = x + this.offsetX + this.getWiggle(this.jiggleX);
-		let dy: number = y + this.offsetY + this.getWiggle(this.jiggleY);
+		const dx: number = x + this.offsetX + this.getWiggle(this.jiggleX);
+		const dy: number = y + this.offsetY + this.getWiggle(this.jiggleY);
 		context.drawImage(this.images[frameIndex], sx, sy, sw, sh, dx, dy, dw, dh);
 	}
 }

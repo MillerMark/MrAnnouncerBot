@@ -108,6 +108,12 @@ namespace DHDM
 			try
 			{
 				InitializeGame();
+				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				//`! !!!                                                                                      !!!
+				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+				//`! !!!                                                                                      !!!
+				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				Streamloots.Start(Twitch.Configuration["Secrets:StreamlootsId"]);
 			}
 			finally
 			{

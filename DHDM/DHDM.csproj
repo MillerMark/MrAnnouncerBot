@@ -348,6 +348,15 @@
     <Compile Include="LeapMotion\Virtual3dObject.cs" />
     <Compile Include="StreamDeck Commands\LaunchCommand.cs" />
     <Compile Include="StreamDeck Commands\ShowWeatherCommand.cs" />
+    <Compile Include="Streamloots\CardDto.cs" />
+    <Compile Include="Streamloots\IStreamlootsService.cs" />
+    <Compile Include="Streamloots\Streamloots.cs" />
+    <Compile Include="Streamloots\StreamlootsCardData.cs" />
+    <Compile Include="Streamloots\StreamlootsCard.cs" />
+    <Compile Include="Streamloots\StreamlootsDataField.cs" />
+    <Compile Include="Streamloots\StreamlootsPurchaseData.cs" />
+    <Compile Include="Streamloots\StreamlootsPurchase.cs" />
+    <Compile Include="Streamloots\StreamlootsService.cs" />
     <Compile Include="WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />
     <EmbeddedResource Include="CSharp.xml" />

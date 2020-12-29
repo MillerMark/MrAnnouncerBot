@@ -52,7 +52,7 @@
 			self.spriteWidth = image.width;
 			self.spriteHeight = image.height;
 			self.loaded = true;
-			if (onLoadedFunc != null)
+			if (onLoadedFunc !== null)
 				onLoadedFunc(self);
 		};
 
@@ -188,15 +188,15 @@
 	}
 
 	layout(lines: string, margin): void {
-		var allLines = lines.split('\n');
-		for (var lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
-			var line: string = allLines[lineIndex];
-			for (var charIndex = 0; charIndex < line.length; charIndex++) {
-				var char = line.charAt(charIndex);
+		const allLines = lines.split('\n');
+		for (let lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
+			const line: string = allLines[lineIndex];
+			for (let charIndex = 0; charIndex < line.length; charIndex++) {
+				const char = line.charAt(charIndex);
 				if (char === '*') {  // Adding a coin...
-					let x: number = margin + charIndex * (this.spriteWidth + margin);
-					let y: number = margin + lineIndex * (this.spriteHeight + margin);
-					let coin: SpriteProxy = new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y);
+					const x: number = margin + charIndex * (this.spriteWidth + margin);
+					const y: number = margin + lineIndex * (this.spriteHeight + margin);
+					const coin: SpriteProxy = new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y);
 					//coin.scale = 1.5;
 					coin.frameIntervalOverride = Random.between(this.frameInterval * 0.8, this.frameInterval * 1.2);
 
@@ -207,10 +207,10 @@
 	}
 
 	fillRect(left, top, right, bottom, margin) {
-		var x = left;
-		var y = top;
+		let x = left;
+		let y = top;
 		this.spriteProxies = [];
-		var spriteCount = 0;
+		let spriteCount = 0;
 		while (spriteCount < 10000) {
 			spriteCount++;
 			this.spriteProxies.push(new SpriteProxy(Random.intMax(this.baseAnimation.frameCount), x, y));
@@ -226,31 +226,31 @@
 	}
 
 	outlineRect(left, top, right, bottom, margin, startingSegment, numSegmentsToDraw) {
-		var x;
-		var y;
+		let x;
+		let y;
 		this.spriteProxies = [];
-		var spriteCount = 0;
+		let spriteCount = 0;
 		if (!startingSegment)
 			startingSegment = rectangleDrawingSegment.top;
 
 		if (!numSegmentsToDraw || numSegmentsToDraw > 4)
 			numSegmentsToDraw = 4;
 
-		var segment = startingSegment;
+		let segment = startingSegment;
 
-		if (startingSegment == rectangleDrawingSegment.top) {
+		if (startingSegment === rectangleDrawingSegment.top) {
 			x = left;
 			y = top;
 		}
-		else if (startingSegment == rectangleDrawingSegment.right) {
+		else if (startingSegment === rectangleDrawingSegment.right) {
 			x = right - (this.spriteWidth + margin);
 			y = top;
 		}
-		else if (startingSegment == rectangleDrawingSegment.bottom) {
+		else if (startingSegment === rectangleDrawingSegment.bottom) {
 			x = right - (this.spriteWidth + margin);
 			y = bottom - (this.spriteHeight + margin);
 		}
-		else if (startingSegment == rectangleDrawingSegment.left) {
+		else if (startingSegment === rectangleDrawingSegment.left) {
 			x = left;
 			y = bottom - (this.spriteHeight + margin);
 		}
@@ -431,7 +431,7 @@
 
 	drawCropped(context: CanvasRenderingContext2D, now: number, dx: number, dy: number, sx: number, sy: number, sw: number, sh: number, dw: number, dh: number) {
 		this.advanceFrames(now);
-		let self: Sprites = this;
+		const self: Sprites = this;
 		this.spriteProxies.forEach(function (sprite: SpriteProxy) {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
@@ -460,7 +460,7 @@
 		//}
 
 		this.advanceFrames(now);
-		let self: Sprites = this;
+		const self: Sprites = this;
 
 		let numSpritesDrawn = 0;
 
@@ -539,8 +539,8 @@
 	}
 
 	killByFrameIndex(frameIndex: number, nowMs: number): void {
-		for (var i = this.spriteProxies.length - 1; i >= 0; i--) {
-			var sprite: SpriteProxy = this.spriteProxies[i];
+		for (let i = this.spriteProxies.length - 1; i >= 0; i--) {
+			const sprite: SpriteProxy = this.spriteProxies[i];
 			if (sprite.frameIndex === frameIndex)
 				sprite.expirationDate = nowMs + sprite.fadeOutTime;
 		}
@@ -551,18 +551,23 @@
 	}
 
 	hasAnyAlive(nowMs: number): boolean {
-		if (this.spriteProxies.length == 0)
+		if (this.spriteProxies.length === 0)
 			return false;
 
 
 		//return this.sprites.some(s => s.expirationDate > nowMs);
-		for (var i = 0; i < this.spriteProxies.length; i++) {
-			var sprite: SpriteProxy = this.spriteProxies[i];
-			if (sprite.expirationDate == null || sprite.expirationDate > nowMs + sprite.fadeOutTime)
+		for (let i = 0; i < this.spriteProxies.length; i++) {
+			const sprite: SpriteProxy = this.spriteProxies[i];
+			if (sprite.expirationDate === null || sprite.expirationDate > nowMs + sprite.fadeOutTime)
 				return true;
 		}
 
 		return false;
+	}
+
+	addImage(imageName: string) {
+		console.log('this.baseAnimation.fileName: ' + this.baseAnimation.fileName);
+		console.log('addImage - imageName: ' + imageName);
 	}
 }
 
