@@ -18,6 +18,7 @@
     <None Remove="TS\DragonH\ActiveSpellData.ts" />
     <None Remove="TS\DragonH\Attack.ts" />
     <None Remove="TS\DragonH\BloodSprites.ts" />
+    <None Remove="TS\DragonH\Cards.ts" />
     <None Remove="TS\DragonH\Character.ts" />
     <None Remove="TS\DragonH\CharacterStat.ts" />
     <None Remove="TS\DragonH\CharacterStatsScroll.ts" />
@@ -133,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="TS\DragonH\ActiveSpellData.ts" />
+    <TypeScriptCompile Include="TS\DragonH\Cards.ts" />
     <TypeScriptCompile Include="TS\DragonH\SpeechBubbles.ts" />
     <TypeScriptCompile Include="TS\DragonH\Attack.ts" />
     <TypeScriptCompile Include="TS\DragonH\CoinManager.ts" />

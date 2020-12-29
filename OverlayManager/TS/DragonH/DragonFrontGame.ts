@@ -1625,6 +1625,10 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	speechBubble(speechStr: string) {
 		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr, LayerLevel.Front);
 	}
+
+	cardCommand(cardStr: string) {
+		console.log(cardStr);
+	}
 }
 
 class PlayerHealth {

@@ -25,21 +25,30 @@ namespace OverlayManager.Hubs
 			Clients.All.ChangeScene(sceneName);
 			coderushedHub.Clients.All.PlayerDataChanged(playerID, pageID, playerData);
 		}
+
 		public void MapDataChanged(string mapData)
 		{
 			coderushedHub.Clients.All.MapDataChanged(mapData);
 		}
+
 		public void CalibrateLeapMotion(string calibrationData)
 		{
 			coderushedHub.Clients.All.CalibrateLeapMotion(calibrationData);
 		}
+
 		public void UpdateSkeletalData(string skeletalData)
 		{
 			coderushedHub.Clients.All.UpdateSkeletalData(skeletalData);
 		}
+
 		public void SpeechBubble(string speechStr)
 		{
 			coderushedHub.Clients.All.SpeechBubble(speechStr);
+		}
+		
+		public void CardCommand(string cardStr)
+		{
+			coderushedHub.Clients.All.CardCommand(cardStr);
 		}
 
 		public void ChangePlayerHealth(string playerData)
@@ -71,6 +80,7 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.AddWindup(windupData);
 		}
+
 		public void CastSpell(string spellData)
 		{
 			coderushedHub.Clients.All.CastSpell(spellData);
