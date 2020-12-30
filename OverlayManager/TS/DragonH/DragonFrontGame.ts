@@ -25,7 +25,8 @@ interface ScaleFactor {
 
 class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFloater {
 	coinManager: CoinManager = new CoinManager();
-	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this);
+	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
+	speechBubbleManager: SpeechBubbleManager = new SpeechBubbleManager(this, this.inGameCreatureManager);
 
 	showFpsMessage(message: string): any {
 		this.addUpperRightStatusMessage(message, '#000000', '#ffffff');
@@ -141,6 +142,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.conditionManager.update(timestamp);
 		this.cardManager.update(timestamp);
 		super.update(timestamp);
+		this.inGameCreatureManager.update(timestamp);
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
@@ -279,6 +281,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	initialize() {
 		this.loadWeapons();
 		super.initialize();
+		this.inGameCreatureManager.initialize(this, null, this.dragonFrontSounds);
 		gravityGames = new GravityGames();
 		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
 	}
@@ -395,6 +398,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	loadResources(): void {
 		super.loadResources();
 		Folders.assets = 'GameDev/Assets/DragonH/';
+
+		this.inGameCreatureManager.loadResources();
+
 		this.fred.loadResources();
 		this.coinManager.loadResources();
 		this.speechBubbleManager.loadResources();
@@ -852,15 +858,15 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 
 		if (testCommand === "SayIt1") {
-			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 says: It worked!', LayerLevel.Front);
+			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 says: It worked!');
 		}
 
 		if (testCommand === "SayIt2") {
-			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 says: It seems to be really working just a bit better!', LayerLevel.Front);
+			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 says: It seems to be really working just a bit better!');
 		}
 
 		if (testCommand === "SayIt3") {
-			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 thinks: Now I\'m thinking something really smarty!', LayerLevel.Front);
+			this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, '2 thinks: Now I\'m thinking something really smarty!');
 		}
 
 
@@ -1629,7 +1635,16 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	speechBubble(speechStr: string) {
-		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr, LayerLevel.Front);
+		this.speechBubbleManager.sayOrThinkSomething(this.world.ctx, speechStr);
+	}
+
+	updateInGameCreatures(commandData: string) {
+		const inGameCommand: InGameCommand = JSON.parse(commandData);
+		this.inGameCreatureManager.processInGameCreatureCommand(inGameCommand.Command, inGameCommand.Creatures, this.dragonFrontSounds);
+	}
+
+	updateScreenBeforeWorldRender(context: CanvasRenderingContext2D, nowMs: number) {
+		this.inGameCreatureManager.drawInGameCreatures(context, nowMs);
 	}
 
 	cardCommand(cardStr: string) {

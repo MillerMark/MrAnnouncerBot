@@ -1,9 +1,4 @@
-﻿enum LayerLevel {
-	Back,
-	Front
-}
-
-enum SpeechType {
+﻿enum SpeechType {
 	None,
 	Thinks,
 	Says
@@ -132,7 +127,7 @@ class SpeechBubbleManager {
 
 	// Expected syntax: {playerId} {says|thinks}: {message to say or think}
 	// 
-	sayOrThinkSomething(context: CanvasRenderingContext2D, speechStr: string, layerLevel: LayerLevel) {
+	sayOrThinkSomething(context: CanvasRenderingContext2D, speechStr: string) {
 		const { playerId, speechType, textToShow, colorStr }: { playerId: number; speechType: SpeechType; textToShow: string; colorStr: string } = this.getSpeechCommandParts(speechStr);
 
 		console.log('sayOrThinkSomething - colorStr: ' + colorStr);
@@ -140,20 +135,13 @@ class SpeechBubbleManager {
 		if (playerId === Number.MIN_VALUE || speechType === SpeechType.None)
 			return;
 
-		//const isBackGame: boolean = this.iGetCreatureX !== null;
-		//if (isBackGame) {
-		//	if (layerLevel === LayerLevel.Front)
+		//if (layerLevel === LayerLevel.Back)
+		//	if (playerId >= 0)
 		//		return;
-		//}
-		//else if (layerLevel === LayerLevel.Back)
-		//	return;
-		if (layerLevel === LayerLevel.Back)
-			if (playerId >= 0)
-				return;
 
-		if (layerLevel === LayerLevel.Front)
-			if (playerId < 0)
-				return;
+		//if (layerLevel === LayerLevel.Front)
+		//	if (playerId < 0)
+		//		return;
 
 		if (!this.iGetCreatureX && playerId < 0) {
 			console.error(`!this.iGetCreatureX && playerId (${playerId}) < 0`);

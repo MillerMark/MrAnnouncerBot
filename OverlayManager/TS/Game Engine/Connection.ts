@@ -39,8 +39,8 @@ function animateSprinkles(commandData: string) {
 }
 
 function updateInGameCreatures(commandData: string) {
-	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.updateInGameCreatures(commandData);
+	if (activeFrontGame instanceof DragonFrontGame) {
+		activeFrontGame.updateInGameCreatures(commandData);
 	}
 }
 
@@ -243,9 +243,6 @@ function updateSkeletalData(skeletalData: string) {
 function speechBubble(speechStr: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.speechBubble(speechStr);
-	}
-	if (activeBackGame instanceof DragonBackGame) {
-		activeBackGame.speechBubble(speechStr);
 	}
 }
 
