@@ -5,6 +5,7 @@
 	isRemoving: boolean;
 	autoRotationDegeesPerSecond = 0;
 	autoScaleFactorPerSecond = 1;
+	autoScaleMaxScale = 100;
 	rotation: number;
 	initialRotation: number;
 	rotationStartTime: number;
@@ -30,6 +31,12 @@
 	verticalThrustOverride: number = undefined;
 	horizontalThrustOverride: number = undefined;
 	onExpire: () => void;
+
+	setInitialScale(scale: number) {
+		this.initialHorizontalScale = scale;
+		this.initialVerticalScale = scale;
+	}
+
 
 	fadeOutNow(fadeOutTime: number) {
 		this.fadeOutAfter(0, fadeOutTime);
@@ -169,6 +176,12 @@
 		return this.easePoint.getRemainingTime(now) > 0;
 	}
 
+	easeRotationStillActive(now: number) {
+		if (!this.easeRotation)
+			return false;
+		return this.easeRotation.getRemainingTime(now) > 0;
+	}
+
 	animate(nowMs: number) {
 		if (nowMs < this.timeStart)
 			return;
@@ -210,8 +223,10 @@
 			else {
 				const timeSpentScalingSeconds: number = (nowMs - this.scaleStartTime) / 1000;
 				const scaleFactor: number = Math.pow(this.autoScaleFactorPerSecond, timeSpentScalingSeconds);
-				this._horizontalScale = this.initialHorizontalScale * scaleFactor;
-				this._verticalScale = this.initialVerticalScale * scaleFactor;
+				this._horizontalScale = Math.min(this.autoScaleMaxScale, this.initialHorizontalScale * scaleFactor);
+				this._verticalScale = Math.min(this.autoScaleMaxScale, this.initialVerticalScale * scaleFactor);
+				//this._horizontalScale = this.initialHorizontalScale * scaleFactor;
+				//this._verticalScale = this.initialVerticalScale * scaleFactor;
 			}
 		}
 	}
@@ -358,11 +373,18 @@
 	}
 
 	protected easePoint: EasePoint;
+	protected easeRotation: EaseValue;
 
 	ease(startTime: number, fromX: number, fromY: number, toX: number, toY: number, timeSpanMs: number) {
 		this.easePoint = new EasePoint(startTime, startTime + timeSpanMs);
 		this.easePoint.from(fromX, fromY);
 		this.easePoint.to(toX, toY);
+	}
+
+	easeSpin(startTime: number, fromValue: number, toValue: number, timeSpanMs: number) {
+		this.easeRotation = new EaseValue(startTime, startTime + timeSpanMs);
+		this.easeRotation.from(fromValue);
+		this.easeRotation.to(toValue);
 	}
 
 	clearEasePoint() {
@@ -371,13 +393,27 @@
 		this.easePoint = null;
 	}
 
+	clearEaseRotation() {
+		this.easeRotation = null;
+	}
+
 	protected updateEasePosition(nowMs: number) {
 		this.x = this.easePoint.getX(nowMs);
 		this.y = this.easePoint.getY(nowMs);
 	}
 
+	protected updateEaseRotation(nowMs: number) {
+		this.rotation = this.easeRotation.getValue(nowMs);
+	}
+
 	updatePosition(nowMs: number) {
 		this.storeLastPosition();
+
+		if (this.easeRotation) {
+			this.updateEaseRotation(nowMs);
+			if (this.easeRotation.getRemainingTime(nowMs) === 0)
+				this.clearEaseRotation();
+		}
 
 		if (this.easePoint) {
 			this.updateEasePosition(nowMs);

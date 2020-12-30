@@ -19,11 +19,11 @@
 	lastTimeWeAdvancedTheFrame: number;
 
 	private _playToEndNow = false;
-	
+
 	get playToEndNow(): boolean {
 		return this._playToEndNow;
 	}
-	
+
 	set playToEndNow(newValue: boolean) {
 		this._playToEndNow = newValue;
 		if (this._playToEndNow)

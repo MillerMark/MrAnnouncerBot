@@ -1,33 +1,6 @@
-﻿class EasePoint {
+﻿class EaseBase {
 	constructor(public easeStartTime: number, public easeEndTime: number, public elasticIn: boolean = true) {
 
-	}
-
-	toX: number;
-	toY: number;
-	fromX: number;
-	fromY: number;
-
-	to(toX: number, toY: number) {
-		this.toX = toX;
-		this.toY = toY;
-	}
-
-	from(fromX: number, fromY: number) {
-		this.fromX = fromX;
-		this.fromY = fromY;
-	}
-
-	getX(now: number): number {
-		return this.getEasedValue(now, this.fromX, this.toX);
-	}
-
-	getY(now: number): number {
-		return this.getEasedValue(now, this.fromY, this.toY);
-	}
-
-	getRemainingTime(now: number) {
-		return Math.max(0, this.getLifeSpan() - this.getTimePassed(now));
 	}
 
 	getEasedValue(now: number, originalValue: number, targetValue: number) {
@@ -49,7 +22,7 @@
 
 		let easedPercent: number;
 		if (this.elasticIn)
-			easedPercent = EasePoint.inOutParametricBlend(percentComplete);
+			easedPercent = EaseBase.inOutParametricBlend(percentComplete);
 		else
 			easedPercent = percentComplete;
 
@@ -88,5 +61,55 @@
 				: t < 0.5
 					? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
 					: (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) / 2 + 1;
+	}
+
+	getRemainingTime(now: number) {
+		return Math.max(0, this.getLifeSpan() - this.getTimePassed(now));
+	}
+}
+
+class EaseValue extends EaseBase {
+	toValue: number;
+	fromValue: number;
+
+	to(toValue: number) {
+		this.toValue = toValue;
+	}
+
+	from(fromValue: number) {
+		this.fromValue = fromValue;
+	}
+
+	getValue(now: number): number {
+		return this.getEasedValue(now, this.fromValue, this.toValue);
+	}
+}
+
+class EasePoint extends EaseBase {
+	constructor(public easeStartTime: number, public easeEndTime: number, public elasticIn: boolean = true) {
+		super(easeStartTime, easeEndTime, elasticIn);
+	}
+
+	toX: number;
+	toY: number;
+	fromX: number;
+	fromY: number;
+
+	to(toX: number, toY: number) {
+		this.toX = toX;
+		this.toY = toY;
+	}
+
+	from(fromX: number, fromY: number) {
+		this.fromX = fromX;
+		this.fromY = fromY;
+	}
+
+	getX(now: number): number {
+		return this.getEasedValue(now, this.fromX, this.toX);
+	}
+
+	getY(now: number): number {
+		return this.getEasedValue(now, this.fromY, this.toY);
 	}
 }
