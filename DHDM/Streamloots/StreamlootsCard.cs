@@ -12,6 +12,7 @@ namespace DHDM
 
 		public string CardName => data.cardName;
 		public string UserName => data.Username;
+		public string Target => data.Target;
 
 		public string GetField(string fieldName)
 		{

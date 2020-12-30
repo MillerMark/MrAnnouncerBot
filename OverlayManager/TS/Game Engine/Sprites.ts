@@ -1,4 +1,13 @@
-﻿class Sprites {
+﻿// TODO: Convert to enum...
+var rectangleDrawingSegment = {
+	'top': 1,
+	'right': 2,
+	'bottom': 3,
+	'left': 4
+}
+Object.freeze(rectangleDrawingSegment);
+
+class Sprites {
 	name: string;
 	baseAnimation: Part;
 	spriteWidth: number;
@@ -32,7 +41,7 @@
 		this.spriteHeight = -1;
 		this.loaded = false;
 		this.moves = false;
-		var self = this;
+
 		this.originX = 0;
 		this.originY = 0;
 
@@ -48,12 +57,12 @@
     });
 		  */
 
-		this.baseAnimation.onImageLoaded = function (image: HTMLImageElement) {
-			self.spriteWidth = image.width;
-			self.spriteHeight = image.height;
-			self.loaded = true;
-			if (onLoadedFunc !== null)
-				onLoadedFunc(self);
+		this.baseAnimation.onImageLoaded = (image: HTMLImageElement) => {
+			this.spriteWidth = image.width;
+			this.spriteHeight = image.height;
+			this.loaded = true;
+			if (onLoadedFunc)
+				onLoadedFunc(this);
 		};
 
 		this.lastTimeWeAdvancedTheFrame = performance.now();
@@ -73,7 +82,7 @@
 	}
 
 	find(matchData: string): SpriteProxy {
-		let index: number = this.indexOf(matchData);
+		const index: number = this.indexOf(matchData);
 		if (index >= 0)
 			return this.spriteProxies[index];
 		return null;
@@ -140,7 +149,7 @@
 		return sprite;
 	}
 
-	add(x: number, y: number, startingFrameIndex: number = 0): SpriteProxy {
+	add(x: number, y: number, startingFrameIndex = 0): SpriteProxy {
 		startingFrameIndex = this.checkFrameIndex(startingFrameIndex);
 		const sprite: SpriteProxy = new SpriteProxy(startingFrameIndex, x - this.originX, y - this.originY);
 		this.spriteProxies.push(sprite);
@@ -165,9 +174,9 @@
 	}
 
 	destroy(matchData: any, destroyFunc?: (spriteProxy: SpriteProxy, spriteWidth: number, spriteHeight: number) => void): void {
-		let index: number = this.indexOf(matchData);
+		const index: number = this.indexOf(matchData);
 		if (index >= 0) {
-			var thisSprite: SpriteProxy = this.spriteProxies[index];
+			const thisSprite: SpriteProxy = this.spriteProxies[index];
 			thisSprite.destroying();
 			if (destroyFunc)
 				destroyFunc(thisSprite, this.spriteWidth * thisSprite.scale, this.spriteHeight * thisSprite.scale);
@@ -431,14 +440,14 @@
 
 	drawCropped(context: CanvasRenderingContext2D, now: number, dx: number, dy: number, sx: number, sy: number, sw: number, sh: number, dw: number, dh: number) {
 		this.advanceFrames(now);
-		const self: Sprites = this;
-		this.spriteProxies.forEach(function (sprite: SpriteProxy) {
+
+		this.spriteProxies.forEach((sprite: SpriteProxy) => {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
-			if (sprite.stillAlive(now, self.baseAnimation.frameCount) && sprite.systemDrawn) {
+			if (sprite.stillAlive(now, this.baseAnimation.frameCount) && sprite.systemDrawn) {
 				if (now >= sprite.timeStart) {
 					//sprite.drawBackground(context, now);
-					self.baseAnimation.drawCroppedByIndex(context, dx, dy, sprite.frameIndex, sx, sy, sw, sh, dw, dh);
+					this.baseAnimation.drawCroppedByIndex(context, dx, dy, sprite.frameIndex, sx, sy, sw, sh, dw, dh);
 					//sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight);
 					//sprite.drawAdornments(context, now);
 				}
@@ -455,23 +464,18 @@
 			return 0;
 		}
 
-		//if (this.name == 'Clock' && this.sprites[0].rotation != 0) {
-		//  debugger;
-		//}
-
 		this.advanceFrames(now);
-		const self: Sprites = this;
 
 		let numSpritesDrawn = 0;
 
-		this.spriteProxies.forEach(function (sprite: SpriteProxy) {
+		this.spriteProxies.forEach((sprite: SpriteProxy) => {
 			context.globalAlpha = sprite.getAlpha(now) * this.opacity;
 
-			if (sprite.stillAlive(now, self.baseAnimation.frameCount) && sprite.systemDrawn) {
+			if (sprite.stillAlive(now, this.baseAnimation.frameCount) && sprite.systemDrawn) {
 				if (now >= sprite.timeStart) {
 					numSpritesDrawn++;
 					sprite.drawBackground(context, now);
-					sprite.draw(self.baseAnimation, context, now, self.spriteWidth, self.spriteHeight, self.originX, self.originY);
+					sprite.draw(this.baseAnimation, context, now, this.spriteWidth, this.spriteHeight, this.originX, this.originY);
 					sprite.drawAdornments(context, now);
 				}
 			}
@@ -565,17 +569,7 @@
 		return false;
 	}
 
-	addImage(imageName: string) {
-		console.log('this.baseAnimation.fileName: ' + this.baseAnimation.fileName);
-		console.log('addImage - imageName: ' + imageName);
+	addImage(imageName: string): number {
+		return this.baseAnimation.addImage(imageName);
 	}
 }
-
-// TODO: Convert to enum...
-var rectangleDrawingSegment = {
-	'top': 1,
-	'right': 2,
-	'bottom': 3,
-	'left': 4
-}
-Object.freeze(rectangleDrawingSegment);

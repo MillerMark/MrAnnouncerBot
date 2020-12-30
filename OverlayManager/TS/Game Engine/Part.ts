@@ -114,9 +114,9 @@ class PartBackgroundLoader {
 
 	static intervalHandle?: number = undefined;
 
-	static nextInterval: number = 5000;
+	static nextInterval = 5000;
 
-	static okayToStartLoading: boolean = false;
+	static okayToStartLoading = false;
 
 	static initialize() {
 		if (PartBackgroundLoader.okayToStartLoading && PartBackgroundLoader.intervalHandle === undefined)
@@ -126,6 +126,7 @@ class PartBackgroundLoader {
 
 class Part {
 	static loadSprites: boolean;
+	imageMap: Map<string, number>;
 	loadedAllImages: boolean;
 	frameIndex: number;
 	reverse: boolean;
@@ -172,6 +173,9 @@ class Part {
 		this.frameRate = this.framesToCount / this.framesToLoad;
 
 		let totalFramesToLoad = this.frameCount * this.framesToLoad / this.framesToCount;
+		if (totalFramesToLoad <= 0)
+			return;
+
 		const frameIncrementor = (this.frameCount) / totalFramesToLoad;
 		let absoluteStartIndex = 0;
 
@@ -383,5 +387,26 @@ class Part {
 		const dx: number = x + this.offsetX + this.getWiggle(this.jiggleX);
 		const dy: number = y + this.offsetY + this.getWiggle(this.jiggleY);
 		context.drawImage(this.images[frameIndex], sx, sy, sw, sh, dx, dy, dw, dh);
+	}
+
+	addImage(imageName: string): number {
+		if (!this.imageMap)
+			this.imageMap = new Map<string, number>();
+		else if (this.imageMap.has(imageName))
+			return this.imageMap.get(imageName);
+
+		const image = new Image();
+		image.src = `${this.assetFolder}${this.fileName}/${imageName}.png`;
+		const imageIndex: number = this.images.length;
+		this.imageMap.set(imageName, imageIndex);
+		this.images.push(image);
+		return imageIndex;
+	}
+
+	getImageIndex(imageName: string): number {
+		if (!this.imageMap || !this.imageMap.has(imageName))
+			return -1;
+
+		return this.imageMap.get(imageName);
 	}
 }

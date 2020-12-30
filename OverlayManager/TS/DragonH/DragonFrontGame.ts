@@ -131,6 +131,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.fireBallSound = 'FireBallCloseDelayed';
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
 		this.conditionManager.initialize(this, this, this.dragonFrontSounds);
+		this.cardManager.initialize(this, this.dragonFrontSounds);
 		this.initializeOffscreenCanvases();
 	}
 
@@ -138,6 +139,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.updateGravity();
 		this.playerStats.update(this, this.dragonFrontSounds, timestamp);
 		this.conditionManager.update(timestamp);
+		this.cardManager.update(timestamp);
 		super.update(timestamp);
 	}
 
@@ -160,6 +162,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		this.playerStats.draw(context, nowMs);
 		this.conditionManager.draw(context, nowMs);
+		this.cardManager.draw(context, nowMs);
 		//this.playerStats.drawDiagnostics(context, this, this, this.players);
 
 		this.coinManager.draw(context, nowMs);
@@ -706,6 +709,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 		this.playerStats.loadResources();
 		this.conditionManager.loadResources();
+		this.cardManager.loadResources();
+		
 	}
 
 	loadMagicSparks(path: string): Sprites {
@@ -1302,6 +1307,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 
 	playerStats: PlayerStatManager = new PlayerStatManager();
 	conditionManager: ConditionManager = new ConditionManager();
+	cardManager: CardManager = new CardManager();
 
 	changePlayerStats(playerStatsDtoStr: string): void {
 		//console.log(playerStatsDtoStr);
@@ -1627,7 +1633,9 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	cardCommand(cardStr: string) {
-		console.log(cardStr);
+		const cardDto: CardDto = JSON.parse(cardStr);
+		if (cardDto.Command === 'ShowCard')
+			this.cardManager.showCard(cardDto.Card);
 	}
 }
 

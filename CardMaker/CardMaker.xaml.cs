@@ -122,8 +122,11 @@ namespace CardMaker
 			if (subDirectories.Length == 0)
 				return false;
 			foreach (string subDirectory in subDirectories)
-				if (!System.IO.Path.GetFileName(subDirectory).StartsWith("["))
+			{
+				string directoryName = System.IO.Path.GetFileName(subDirectory);
+				if (!directoryName.StartsWith("[") && !directoryName.StartsWith("Shared"))
 					return true;
+			}
 			return false;
 		}
 
@@ -775,7 +778,8 @@ namespace CardMaker
 				lbCardLayers.SelectedItem = cardLayerManager.CardLayers[0];
 			SetActiveLayerTextOptionsForCard(ActiveCard);
 			LayerTextOptions layerTextOptions = CardData.GetLayerTextOptions(stylePath);
-			MoveTextLayerTo(numBackgroundLayers + layerTextOptions.TextLayerIndex + 1);
+			if (layerTextOptions != null)
+				MoveTextLayerTo(numBackgroundLayers + layerTextOptions.TextLayerIndex + 1);
 			if (ActiveCard != null && layerTextOptions != null && ActiveCard.TextFontOpacity == 0)
 			{
 				ActiveCard.SetFontBrush(layerTextOptions.FontBrush);
