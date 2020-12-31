@@ -452,6 +452,8 @@ namespace DHDM
 			GetNumTargets.RequestTargetCount += GetNumTargets_RequestTargetCount;
 			AddWindupFunction.RequestAddWindup += SendWindupFunction_SendWindup;
 			ClearWindupFunction.RequestClearWindup += ClearWindup_RequestClearWindup; ;
+			StreamlootsService.CardRedeemed += StreamlootsService_CardRedeemed;
+			StreamlootsService.CardsPurchased += StreamlootsService_CardsPurchased;
 		}
 
 		private void TriggerEffect_RequestEffectTrigger(object sender, EffectEventArgs ea)
@@ -1549,7 +1551,9 @@ namespace DHDM
 				else if (message.StartsWith("("))
 				{
 					speechCommand = "thinks";
-					message = message.TrimStart('(').TrimEnd(')');
+					message = message.TrimStart('(');
+					if (!message.Contains("("))
+						message = message.TrimEnd(')');
 				}
 				if (DateTime.Now.Hour < 16)
 				{
@@ -9419,6 +9423,31 @@ namespace DHDM
 		{
 			UpdateClock(true);
 		}
+
+		private void StreamlootsService_CardsPurchased(object sender, CardEventArgs ea)
+		{
+			
+		}
+
+		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
+		{
+			string msg = ea.CardDto.Card.message;
+			if (msg.IndexOf("//") >= 0)
+			{
+				string onlyToViewers = msg.EverythingBefore("//").Trim();
+				string onlyToDm = msg.EverythingAfter("//").Trim();
+				TellDungeonMaster(onlyToDm);
+				TellViewers(onlyToViewers);
+			}
+			else
+			{
+				TellAll(msg);
+			}
+			
+			
+		}
+
+
 
 		// TODO: Reintegrate wand/staff animations....
 		/* 

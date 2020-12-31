@@ -132,7 +132,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.fireBallSound = 'FireBallCloseDelayed';
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
 		this.conditionManager.initialize(this, this, this.dragonFrontSounds);
-		this.cardManager.initialize(this, this.dragonFrontSounds);
+		this.cardManager.initialize(this, this.inGameCreatureManager, this.dragonFrontSounds);
 		this.initializeOffscreenCanvases();
 	}
 

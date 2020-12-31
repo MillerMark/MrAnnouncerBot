@@ -1,5 +1,6 @@
 ﻿interface IGetCreatureX {
 	getX(creature: InGameCreature): number;
+	getInGameCreatureByName(creatureName: string): InGameCreature;
 	getInGameCreatureByIndex(index: number): InGameCreature;
 }
 
@@ -325,8 +326,8 @@ class InGameCreatureManager implements IGetCreatureX {
 		return 0;
 	}
 
-	public readonly miniScrollLeftMargin = 375;
-	public readonly miniScrollWidth = 180;
+	public static readonly miniScrollLeftMargin = 375;
+	public static readonly miniScrollWidth = 180;
 
 	// In-game Creature commands...
 	//! ------------------------------------------
@@ -336,7 +337,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			this.inGameCreatures.push(new InGameCreature(inGameCreatures[i]));
 		}
 
-		let x: number = this.miniScrollLeftMargin;
+		let x: number = InGameCreatureManager.miniScrollLeftMargin;
 		this.parchmentBackground.spriteProxies = [];
 		this.parchmentShadow.spriteProxies = [];
 		this.deathX.spriteProxies = [];
@@ -357,7 +358,7 @@ class InGameCreatureManager implements IGetCreatureX {
 
 			first = false;
 
-			x += this.miniScrollWidth;
+			x += InGameCreatureManager.miniScrollWidth;
 			delayMs += timeBetweenArrivals;
 			timeBetweenArrivals -= 40;
 			if (timeBetweenArrivals < 50)
@@ -827,7 +828,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			return;
 		}
 		let isRightOfRemovedCreature = false;
-		let targetX: number = this.miniScrollLeftMargin;
+		let targetX: number = InGameCreatureManager.miniScrollLeftMargin;
 		for (let i = 0; i < this.inGameCreatures.length; i++) {
 			const thisCreature: InGameCreature = this.inGameCreatures[i];
 
@@ -840,7 +841,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			}
 
 			if (!thisCreature.removing) {
-				targetX += this.miniScrollWidth;
+				targetX += InGameCreatureManager.miniScrollWidth;
 			}
 		}
 	}
@@ -858,6 +859,26 @@ class InGameCreatureManager implements IGetCreatureX {
 			if (this.inGameCreatures[i].Index === index && !this.inGameCreatures[i].removing)
 				return this.inGameCreatures[i];
 		}
+		return null;
+	}
+
+	getInGameCreatureByName(creatureName: string): InGameCreature {
+		const lowerName: string = creatureName.toLowerCase().trim();
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			if (this.inGameCreatures[i].Name.toLowerCase() === lowerName && !this.inGameCreatures[i].removing)
+				return this.inGameCreatures[i];
+		}
+
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			if (this.inGameCreatures[i].Name.toLowerCase().startsWith(lowerName) && !this.inGameCreatures[i].removing)
+				return this.inGameCreatures[i];
+		}
+
+		for (let i = 0; i < this.inGameCreatures.length; i++) {
+			if (this.inGameCreatures[i].Name.toLowerCase().endsWith(lowerName) && !this.inGameCreatures[i].removing)
+				return this.inGameCreatures[i];
+		}
+
 		return null;
 	}
 
@@ -905,7 +926,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			const inGameCreature: InGameCreature = this.inGameCreatures[i];
 
 			const indexToCreatureStillInGame: number = this.getIndexToCreatureStillInGame(inGameCreature);
-			const targetX: number = this.miniScrollLeftMargin + indexToCreatureStillInGame * this.miniScrollWidth;
+			const targetX: number = InGameCreatureManager.miniScrollLeftMargin + indexToCreatureStillInGame * InGameCreatureManager.miniScrollWidth;
 
 			if (inGameCreature.justAdded) {
 				inGameCreature.justAdded = false;
@@ -929,7 +950,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		for (let i = this.inGameCreatures.length - 1; i >= 0; i--) { // Reverse order
 			const inGameCreature: InGameCreature = this.inGameCreatures[i];
 			const indexToCreatureStillInGame: number = this.getIndexToCreatureStillInGame(inGameCreature);
-			const targetX: number = this.miniScrollLeftMargin + indexToCreatureStillInGame * this.miniScrollWidth;
+			const targetX: number = InGameCreatureManager.miniScrollLeftMargin + indexToCreatureStillInGame * InGameCreatureManager.miniScrollWidth;
 			if (!inGameCreature.justAdded) {
 				this.moveCreatureTo(inGameCreature, targetX, delayMs);
 				delayMs += InGameCreatureManager.timeBetweenMoves;

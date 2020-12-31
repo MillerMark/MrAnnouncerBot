@@ -10,8 +10,21 @@ using System.Threading.Tasks;
 
 namespace DHDM
 {
+	public delegate void CardEventHandler(object sender, CardEventArgs ea);
 	public class StreamlootsService : IStreamlootsService, IDisposable
 	{
+		public static event CardEventHandler CardRedeemed;
+		public static event CardEventHandler CardsPurchased;
+
+		protected virtual void OnCardsPurchased(object sender, CardEventArgs ea)
+		{
+			CardsPurchased?.Invoke(sender, ea);
+		}
+		protected void OnCardRedeemed(object sender, CardEventArgs ea)
+		{
+			CardRedeemed?.Invoke(sender, ea);
+		}
+
 		private string streamlootsID;
 
 		private WebRequest webRequest;
@@ -131,13 +144,17 @@ namespace DHDM
 
 		void ShowPurchase(StreamlootsPurchase purchase)
 		{
-			ShowCardEvent(new CardDto(purchase));
+			CardDto cardDto = new CardDto(purchase);
+			ShowCardEvent(cardDto);
+			OnCardsPurchased(this, new CardEventArgs(cardDto));
 		}
 
-		void ShowCard(StreamlootsCard card)
+		void ShowCardRedeemed(StreamlootsCard card)
 		{
-			ShowCardEvent(new CardDto(card));
-		}
+			CardDto cardDto = new CardDto(card);
+			ShowCardEvent(cardDto);
+			OnCardRedeemed(this, new CardEventArgs(cardDto));
+	}
 
 		private void ProcessChestPurchase(JObject cardObject)
 		{
@@ -158,7 +175,7 @@ namespace DHDM
 		private void ProcessCardRedemption(JObject cardObject)
 		{
 			StreamlootsCard card = GetCard(cardObject);
-			ShowCard(card);
+			ShowCardRedeemed(card);
 
 			//if (card != null)
 			//{

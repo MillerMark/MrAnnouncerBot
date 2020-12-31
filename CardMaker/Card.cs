@@ -86,7 +86,7 @@ namespace CardMaker
 			foreach (string assignment in assignments)
 				layer.AddAssignment(assignment);
 		}
-
+		
 		void CreateLayerDetails()
 		{
 			allLayers.Clear();
@@ -584,6 +584,27 @@ namespace CardMaker
 				placeholderDetails.ScaleX = placeholderWidth / imageSize.Width;
 				placeholderDetails.ScaleY = placeholderHeight / imageSize.Height;
 			}
+		}
+
+		public void HideAllLayersStartingWith(string matchStr)
+		{
+			foreach (LayerDetails layerDetails in allLayers.Details)
+				if (layerDetails.Name.StartsWith(matchStr))
+					layerDetails.IsVisible = false;
+		}
+
+		public void SelectAlternateLayer(string layerName, string alternateName)
+		{
+			string visibleLayerName = $"{layerName} - {alternateName}";
+			LayerDetails layer = allLayers.Get(visibleLayerName);
+			layer.IsVisible = true;
+			layer.IsSelected = true;
+			foreach (LayerDetails layerDetails in allLayers.Details)
+				if (layerDetails.Name.StartsWith($"{layerName} - ") && layerDetails.Name != visibleLayerName)
+				{
+					layerDetails.IsVisible = false;
+					layerDetails.IsSelected = false;
+				}
 		}
 	}
 }

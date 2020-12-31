@@ -373,7 +373,7 @@ namespace CardMaker
 				fileName = PngFile;
 
 			image = ImageUtils.CreateImage(Details.Angle, Details.Hue, Details.Sat, Details.Light, Details.Contrast, 1, 1, fileName);
-			
+
 			if (overrideWidth > 0 && overrideHeight > 0)
 			{
 				OriginalWidth = overrideWidth;
@@ -473,7 +473,7 @@ namespace CardMaker
 		}
 
 		public CardImageLayer(Card card, string pngFile, int indexOffset = 0)
-			{
+		{
 			PngFile = pngFile;
 			LayerName = Path.GetFileNameWithoutExtension(pngFile);
 

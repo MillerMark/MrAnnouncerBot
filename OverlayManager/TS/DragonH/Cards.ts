@@ -7,7 +7,7 @@
 	Quantity: number;
 
 	constructor() {
-		
+
 	}
 }
 
@@ -20,7 +20,7 @@ class StreamlootsCard {
 	UserName: string;
 	Target: string;
 	constructor() {
-		
+
 	}
 }
 
@@ -31,17 +31,19 @@ class CardDto {
 }
 
 class CardManager {
-    
+
 	knownCards: Sprites;
 	iGetPlayerX: IGetPlayerX;
+	iGetCreatureX: IGetCreatureX;
 	soundManager: ISoundManager;
 
 	constructor() {
 	}
 
-	initialize(iGetPlayerX: IGetPlayerX, soundManager: ISoundManager) {
+	initialize(iGetPlayerX: IGetPlayerX, iGetCreatureX: IGetCreatureX, soundManager: ISoundManager) {
 		this.iGetPlayerX = iGetPlayerX;
 		this.soundManager = soundManager;
+		this.iGetCreatureX = iGetCreatureX;
 	}
 
 	loadResources() {
@@ -65,19 +67,36 @@ class CardManager {
 	}
 
 	showCard(card: StreamlootsCard) {
+		let xPos = 960;
+		let yPos = 540;
+		const playerIndex: number = this.iGetPlayerX.getPlayerIndexFromName(card.Target);
+		if (playerIndex < 0) {
+			const creature: InGameCreature = this.iGetCreatureX.getInGameCreatureByName(card.Target);
+			if (creature) {
+				xPos = this.iGetCreatureX.getX(creature) + InGameCreatureManager.miniScrollWidth / 2.0;
+				const cardHeight = 424;
+				yPos = InGameCreatureManager.NpcScrollHeight + cardHeight / 2;
+			}
+			// TODO: Get the creature position.
+		}
+		else {
+			yPos = 500;
+			xPos = this.iGetPlayerX.getPlayerX(playerIndex);
+		}
+
 		const imageIndex: number = this.knownCards.addImage(card.CardName);
 		const sprite: SpriteProxy = this.knownCards.add(960, 540, imageIndex);
 		//sprite.autoRotationDegeesPerSecond = 10;
 		const entryTime = 1500;
-		sprite.ease(performance.now(), Random.between(-500, 1920), 1080, 960 - this.knownCards.originX, 540 - this.knownCards.originY, entryTime);
+		sprite.ease(performance.now(), Random.between(-500, 1920), 1080, xPos - this.knownCards.originX, yPos - this.knownCards.originY, entryTime);
 		const degreesToSpin = 90;
 		const initialScale = 0.5;
 		sprite.setInitialScale(initialScale);
 		//sprite.autoScaleFactorPerSecond = (1 / initialScale) / (entryTime / 1000);
 		sprite.autoScaleFactorPerSecond = 1.8;
 		sprite.autoScaleMaxScale = 1;
-		sprite.easeSpin(performance.now(), -degreesToSpin, Random.between(-4, 4), entryTime);
-		sprite.expirationDate = performance.now() + 4000;
+		sprite.easeSpin(performance.now(), -degreesToSpin, Random.between(-3, 3), entryTime);
+		sprite.expirationDate = performance.now() + 8000;
 		sprite.fadeInTime = 600;
 		sprite.fadeOutTime = 1000;
 	}

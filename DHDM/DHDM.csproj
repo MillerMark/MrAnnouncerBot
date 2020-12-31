@@ -349,6 +349,7 @@
     <Compile Include="StreamDeck Commands\LaunchCommand.cs" />
     <Compile Include="StreamDeck Commands\ShowWeatherCommand.cs" />
     <Compile Include="Streamloots\CardDto.cs" />
+    <Compile Include="Streamloots\CardEventArgs.cs" />
     <Compile Include="Streamloots\IStreamlootsService.cs" />
     <Compile Include="Streamloots\Streamloots.cs" />
     <Compile Include="Streamloots\StreamlootsCardData.cs" />

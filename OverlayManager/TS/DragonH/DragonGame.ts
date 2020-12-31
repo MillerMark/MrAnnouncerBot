@@ -125,6 +125,7 @@ interface SkeletalData2d {
 interface IGetPlayerX {
 	getPlayerX(playerIndex: number): number;
 	getPlayerIndex(playerId: number): number;
+	getPlayerIndexFromName(playerName: string): number;
 	getPlayerFirstName(playerId: number): string;
 	getPlayerTargetX(iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, playerIndex: number, players: Array<Character>);
 }
@@ -809,6 +810,35 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 				return i;
 			}
 		}
+		return -1;
+	}
+
+	getPlayerIndexFromName(playerName: string): number {
+		const lowerName: string = playerName.toLowerCase().trim();
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.name.toLowerCase() === lowerName) {
+				return i;
+			}
+			if (player.firstName.toLowerCase() === lowerName) {
+				return i;
+			}
+		}
+
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.firstName.toLowerCase().startsWith(lowerName)) {
+				return i;
+			}
+		}
+
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Character = this.players[i];
+			if (player.name.toLowerCase().endsWith(lowerName)) {
+				return i;
+			}
+		}
+
 		return -1;
 	}
 
