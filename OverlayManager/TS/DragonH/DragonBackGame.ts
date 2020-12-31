@@ -11,6 +11,7 @@ class DragonBackSounds extends SoundManager {
 
 class DragonBackGame extends DragonGame {
 	messageBox: MessageBox;
+	inGameCreatureManager: InGameCreatureManager = new InGameCreatureManager();
 	sprinkles: Sprinkles;
 	layerSuffix = 'Back';
 	emitter: Emitter;
@@ -187,6 +188,11 @@ class DragonBackGame extends DragonGame {
 		super.update(timestamp);
 		this.messageBox.update(timestamp);
 		CrossfadePlayer.updateMusicPlayers(timestamp);
+		this.inGameCreatureManager.update(timestamp);
+	}
+
+	updateScreenBeforeWorldRender(context: CanvasRenderingContext2D, nowMs: number) {
+		this.inGameCreatureManager.drawInGameCreatures(context, nowMs);
 	}
 
 	updateScreen(context: CanvasRenderingContext2D, nowMs: number) {
@@ -226,6 +232,8 @@ class DragonBackGame extends DragonGame {
 
 	initialize() {
 		super.initialize();
+
+		this.inGameCreatureManager.initialize(this, null, this.dragonBackSounds);
 
 		Folders.assets = 'GameDev/Assets/DragonH/';
 
@@ -316,6 +324,8 @@ class DragonBackGame extends DragonGame {
 		this.sunMoonDials.originY = 251;
 
 		this.sunMoonDial = this.sunMoonDials.add(this.getClockX(), this.getClockY()).setScale(this.clockScale);
+		this.inGameCreatureManager.loadResources();
+
 		this.clockLayerEffects.add(this.sunMoonDials);
 	}
 
@@ -791,6 +801,11 @@ class DragonBackGame extends DragonGame {
 			CrossfadePlayer.setVolumeTo(soundCommand.mainFolder, soundCommand.numericData);
 		else if (soundCommand.type === SoundCommandType.StopPlaying)
 			CrossfadePlayer.stopPlayer(soundCommand.mainFolder);
+	}
+
+	updateInGameCreatures(commandData: string) {
+		const inGameCommand: InGameCommand = JSON.parse(commandData);
+		this.inGameCreatureManager.processInGameCreatureCommand(inGameCommand.Command, inGameCommand.Creatures, this.dragonBackSounds);
 	}
 
 	inGameUICommand(commandData: string) {

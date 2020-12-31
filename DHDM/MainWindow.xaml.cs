@@ -61,6 +61,7 @@ namespace DHDM
 		const int INT_TimeToDropDragonDice = 1800;
 		const string STR_PlayerScene = "Players";
 		const string STR_RepeatSpell = "[Again]";
+		
 
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
@@ -77,8 +78,9 @@ namespace DHDM
 				return allPlayerStats;
 			}
 		}
-
+		
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
+		CardHandManager cardHandManager = new CardHandManager();
 		ScrollPage activePage = ScrollPage.main;
 		bool resting = false;
 		DispatcherTimer realTimeAdvanceTimer;
@@ -9429,9 +9431,26 @@ namespace DHDM
 			
 		}
 
+		int GetCreatureId(string targetName)
+		{
+			int playerIdFromName = AllPlayers.GetPlayerIdFromName(targetName);
+			if (playerIdFromName >= 0)
+				return playerIdFromName;
+			InGameCreature creatureByName = AllInGameCreatures.GetCreatureByName(targetName);
+			if (creatureByName != null)
+				return -creatureByName.Index;
+			return int.MinValue;
+		}
+
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
 			string msg = ea.CardDto.Card.message;
+
+			int characterId = GetCreatureId(ea.CardDto.Card.Target);
+			if (characterId != int.MinValue)
+			{
+				cardHandManager.AddCard(characterId, ea.CardDto.Card);
+			}
 			if (msg.IndexOf("//") >= 0)
 			{
 				string onlyToViewers = msg.EverythingBefore("//").Trim();
@@ -9443,11 +9462,35 @@ namespace DHDM
 			{
 				TellAll(msg);
 			}
-			
-			
 		}
 
+		public void NpcScrollsToggle()
+		{
+			System.Diagnostics.Debugger.Break();
+		}
 
+		public void CardCommand(CardCommandType cardCommandType, int creatureId)
+		{
+			switch (cardCommandType)
+			{
+				case CardCommandType.ToggleHandVisibility:
+					cardHandManager.ToggleHandVisibility(creatureId);
+					break;
+				case CardCommandType.HideAllNpcCards:
+					cardHandManager.HideAllNpcCards();
+					break;
+				case CardCommandType.SelectNextCard:
+					cardHandManager.SelectNextCard(creatureId);
+					break;
+				case CardCommandType.SelectPreviousCard:
+					cardHandManager.SelectPreviousCard(creatureId);
+					break;
+				case CardCommandType.PlaySelectedCard:
+					cardHandManager.PlaySelectedCard(creatureId);
+					break;
+			}
+			System.Diagnostics.Debugger.Break();
+		}
 
 		// TODO: Reintegrate wand/staff animations....
 		/* 

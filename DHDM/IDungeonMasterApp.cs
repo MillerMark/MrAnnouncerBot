@@ -72,5 +72,7 @@ namespace DHDM
 		void ShowForeground(string sourceName);
 		void ShowWeather(string weatherKeyword);
 		void LaunchHandTrackingEffect(string launchCommand, string dataValue);
+		void NpcScrollsToggle();
+		void CardCommand(CardCommandType cardCommandType, int creatureId);
 	}
 }

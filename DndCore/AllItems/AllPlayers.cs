@@ -41,6 +41,8 @@ namespace DndCore
 
 		public static int GetPlayerIdFromName(List<Character> players, string characterName)
 		{
+			if (characterName == null)
+				return -1;
 			if (characterName.ToLower() == "zephyr")
 				return 100;
 

@@ -293,8 +293,6 @@ class ConditionManager {
 		return Math.min(1, (widthToTheLeft * 2.0 / 3.0) / ConditionManager.conditionIconLength);
 	}
 
-	static readonly inGameCreatureScrollBottom: number = InGameCreatureManager.creatureScrollHeight + InGameCreatureManager.inGameStatTopMargin;
-
 	private addCondition(rightEdge: number, conditionFrameIndex: number, creatureId: number, scale = 1, hueShift = 0, worldView: WorldView = WorldView.Normal, numColumns = 1) {
 		const iconActualWidth: number = this.getScaledIconLength(scale);
 		const numConditionsStacked: number = this.getNumConditionsFor(creatureId);
@@ -307,7 +305,7 @@ class ConditionManager {
 		if (worldView === WorldView.Normal)
 			bottomEdgeY = 1080 - existingStackHeight;
 		else
-			bottomEdgeY = existingStackHeight + iconActualWidth + ConditionManager.inGameCreatureScrollBottom;
+			bottomEdgeY = existingStackHeight + iconActualWidth + InGameCreatureManager.creatureScrollHeight;
 
 		const x: number = Math.round(rightEdge + indent);
 		const y: number = Math.round(bottomEdgeY);
@@ -481,7 +479,7 @@ class ConditionManager {
 		if (worldView === WorldView.Normal)
 			return 1080 - stackHeightBelow;
 		else
-			return ConditionManager.inGameCreatureScrollBottom + stackHeightBelow + conditionIconLength;
+			return InGameCreatureManager.creatureScrollHeight + this.getScrollTop() + stackHeightBelow + conditionIconLength;
 	}
 
 	static readonly numPlayerConditionColumns: number = 1;

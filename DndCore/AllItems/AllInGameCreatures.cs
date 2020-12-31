@@ -25,6 +25,21 @@ namespace DndCore
 			return Creatures.FirstOrDefault(x => x.Name.ToLower().StartsWith(lowerName) && x.OnScreen);
 		}
 
+		public static InGameCreature GetCreatureByName(string name)
+		{
+			if (name == null)
+				return null;
+			string lowerName = name.ToLower();
+			InGameCreature inGameCreature = Creatures.FirstOrDefault(x => x.Name.ToLower() == lowerName);
+			if (inGameCreature != null)
+				return inGameCreature;
+			inGameCreature = Creatures.FirstOrDefault(x => x.Name.ToLower().StartsWith(lowerName));
+			if (inGameCreature != null)
+				return inGameCreature;
+			inGameCreature = Creatures.FirstOrDefault(x => x.Name.ToLower().EndsWith(lowerName));
+			return inGameCreature;
+		}
+
 		public static InGameCreature GetByIndex(int index)
 		{
 			return Creatures.FirstOrDefault(x => x.Index == index);

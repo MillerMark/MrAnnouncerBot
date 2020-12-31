@@ -113,6 +113,8 @@ namespace DHDM
 
 		private static Task HubConnection_Closed(Exception arg)
 		{
+			if (arg is System.Net.Http.HttpRequestException && arg.Message.Contains("400 (Bad Request)"))
+				return hubConnection.StartAsync(System.Threading.CancellationToken.None);
 			return Task.CompletedTask;
 		}
 

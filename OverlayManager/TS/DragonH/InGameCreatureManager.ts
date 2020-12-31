@@ -29,8 +29,9 @@ class InGameCreatureManager implements IGetCreatureX {
 
 	}
 
-	initialize(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager) {
+	initialize(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, topMarginOffset = 0) {
 		this.conditionManager.initialize(iGetPlayerX, iNameplateRenderer, soundManager);
+		this.topMarginOffset = topMarginOffset;
 	}
 
 	loadResources() {
@@ -107,6 +108,8 @@ class InGameCreatureManager implements IGetCreatureX {
 
 	inGameCreatures: Array<InGameCreature> = [];
 
+	topMarginOffset = 0;
+
 	static readonly inGameScrollStatWidth = 135;
 	static readonly minInGameStatFontSize = 14;
 	static readonly inGameNameStatFontSize = 28;
@@ -141,7 +144,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			context.textAlign = 'left';
 			context.textBaseline = 'top';
 			x += InGameCreatureManager.inGameStatOffsetX;
-			y += InGameCreatureManager.inGameStatTopMargin + nameOffsetY;
+			y += this.getScrollTop() + nameOffsetY;
 			let fontHeight = InGameCreatureManager.inGameNameStatFontSize;
 			let yTop: number = this.drawInGameStat(context, inGameCreature.Name, fontHeight, x, y);
 			fontHeight = InGameCreatureManager.inGameAllOtherStatFontSize;
@@ -174,7 +177,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		const sh: number = cropHeight;
 		const border = 1;
 
-		context.drawImage(inGameCreature.image, sx, sy, sw, sh, x + dx + border, dy + border + InGameCreatureManager.inGameStatTopMargin, dw - 2 * border, dh - 2 * border);
+		context.drawImage(inGameCreature.image, sx, sy, sw, sh, x + dx + border, this.getScrollTop() + dy + border, dw - 2 * border, dh - 2 * border);
 
 		// ![](4E7BDCDC4E1A78AB2CC6D9EF427CBD98.png)
 
@@ -191,7 +194,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
 		context.globalAlpha = 0.5 * alpha;
-		context.fillText(text, x + InGameCreatureManager.inGameNumberCenterX, InGameCreatureManager.inGameNumberCenterY + InGameCreatureManager.inGameStatTopMargin);
+		context.fillText(text, x + InGameCreatureManager.inGameNumberCenterX, InGameCreatureManager.inGameNumberCenterY + this.getScrollTop());
 		context.globalAlpha = 1 * alpha;
 	}
 
@@ -257,11 +260,12 @@ class InGameCreatureManager implements IGetCreatureX {
 		this.deathX.draw(context, nowMs);
 		this.target.draw(context, nowMs);
 
-		this.conditionManager.draw(context, nowMs);
+		if (this.topMarginOffset === 0) {
+			this.conditionManager.draw(context, nowMs);
+		}
 
 		this.scrollAppear.draw(context, nowMs);
 		this.scrollDisappear.draw(context, nowMs);
-
 	}
 
 	// TODO: this.activeTurn integrate
@@ -311,7 +315,7 @@ class InGameCreatureManager implements IGetCreatureX {
 	}
 
 	getSpritesForCreature(sprites: SpriteProxy[], inGameCreature: InGameCreature): SpriteProxy[] {
-		let results: SpriteProxy[] = [];
+		const results: SpriteProxy[] = [];
 		for (let i = 0; i < sprites.length; i++) {
 			if (sprites[i].data === inGameCreature)  // here the data is an InGameCreature.
 				results.push(sprites[i]);
@@ -616,7 +620,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		console.log('creating sprite to indicate talking...');
 		const hueShift = this.getHueShift(creature);
 		const x: number = this.getX(creature);
-		const activeTurnIndicatorSprite: SpriteProxy = this.creatureTalking.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
+		const activeTurnIndicatorSprite: SpriteProxy = this.creatureTalking.addShifted(x, this.getScrollTop() /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = creature;
 		activeTurnIndicatorSprite.fadeInTime = 500;
 		if (creature.NumAhems > 0)
@@ -637,7 +641,7 @@ class InGameCreatureManager implements IGetCreatureX {
 		const frameIndex = this.getFriendEnemyFrameIndex(inGameCreature);
 		const saturation: number = this.addParchment(inGameCreature, x, frameIndex, delayMs);
 		const scrollSmokeHueShift = this.getHueShift(inGameCreature);
-		const appearSprite: SpriteProxy = this.scrollAppear.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0, scrollSmokeHueShift, saturation);
+		const appearSprite: SpriteProxy = this.scrollAppear.addShifted(x, this.getScrollTop(), 0, scrollSmokeHueShift, saturation);
 		appearSprite.data = inGameCreature;
 		appearSprite.delayStart = delayMs;
 
@@ -669,11 +673,11 @@ class InGameCreatureManager implements IGetCreatureX {
 
 	private addParchment(inGameCreature: InGameCreature, x: number, frameIndex: number, delayMs: number) {
 		const saturation: number = MathEx.clamp(inGameCreature.Health * 100, 0, 100);
-		const parchmentSprite: SpriteProxy = this.parchmentBackground.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
+		const parchmentSprite: SpriteProxy = this.parchmentBackground.addShifted(x, this.getScrollTop(), frameIndex, 0, saturation);
 		parchmentSprite.data = inGameCreature;
 		parchmentSprite.fadeInTime = 1000;
 		parchmentSprite.delayStart = delayMs;
-		const parchmentShadowSprite: SpriteProxy = this.parchmentShadow.addShifted(x, InGameCreatureManager.inGameStatTopMargin, frameIndex, 0, saturation);
+		const parchmentShadowSprite: SpriteProxy = this.parchmentShadow.addShifted(x, this.getScrollTop(), frameIndex, 0, saturation);
 		parchmentShadowSprite.data = inGameCreature;
 		parchmentShadowSprite.fadeInTime = 1000;
 		parchmentShadowSprite.delayStart = delayMs;
@@ -684,15 +688,19 @@ class InGameCreatureManager implements IGetCreatureX {
 
 	private addDeathSprite(x: number, inGameCreature: InGameCreature, delayMs = 0) {
 		// TODO: add support for color-changing the X to match the creature's blood color.
-		const deathXSprite: SpriteProxy = this.deathX.addShifted(x, InGameCreatureManager.inGameStatTopMargin, 0);
+		const deathXSprite: SpriteProxy = this.deathX.addShifted(x, this.getScrollTop(), 0);
 		deathXSprite.data = inGameCreature;
 		deathXSprite.fadeInTime = 1000;
 		deathXSprite.delayStart = delayMs;
 	}
 
+	private getScrollTop(): number {
+		return this.topMarginOffset + InGameCreatureManager.inGameStatTopMargin;
+	}
+
 	private addTarget(inGameCreature: InGameCreature, x: number, delayMs = 0) {
 		const hueShift = this.getHueShift(inGameCreature);
-		const targetSprite: SpriteProxy = this.target.addShifted(x, InGameCreatureManager.inGameStatTopMargin + InGameCreatureManager.targetTop, -1, hueShift);
+		const targetSprite: SpriteProxy = this.target.addShifted(x, this.getScrollTop() + InGameCreatureManager.targetTop, -1, hueShift);
 		targetSprite.data = inGameCreature;
 		targetSprite.delayStart = delayMs;
 		targetSprite.fadeInTime = 300;
@@ -700,7 +708,7 @@ class InGameCreatureManager implements IGetCreatureX {
 
 	private addActiveTurnIndicator(soundManager: SoundManager, creature: InGameCreature, x: number, delayMs = 0) {
 		const hueShift = this.getHueShift(creature);
-		const activeTurnIndicatorSprite: SpriteProxy = this.activeTurnIndicator.addShifted(x, InGameCreatureManager.inGameStatTopMargin /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
+		const activeTurnIndicatorSprite: SpriteProxy = this.activeTurnIndicator.addShifted(x, this.getScrollTop() /*  + InGameCreatureManager.activeTurnIndicatorTop */, -1, hueShift);
 		activeTurnIndicatorSprite.data = creature;
 		activeTurnIndicatorSprite.delayStart = delayMs;
 		activeTurnIndicatorSprite.fadeInTime = 500;
@@ -732,6 +740,18 @@ class InGameCreatureManager implements IGetCreatureX {
 			this.addInGameCreatures(inGameCreatures, soundManager);
 		else if (command === 'Talks')
 			this.updateInGameCreatureTalkIndicator(inGameCreatures, soundManager);
+		else if (command === 'Hide')
+			this.hideInGameCreatures(inGameCreatures, soundManager);
+		else if (command === 'Show')
+			this.showInGameCreatures(inGameCreatures, soundManager);
+	}
+
+	showInGameCreatures(inGameCreatures: InGameCreature[], soundManager: SoundManager) {
+
+	}
+
+	hideInGameCreatures(inGameCreatures: InGameCreature[], soundManager: SoundManager) {
+
 	}
 
 	sameCreaturesInGame(inGameCreatures: InGameCreature[]) {

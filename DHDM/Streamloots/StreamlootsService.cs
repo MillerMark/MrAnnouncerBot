@@ -201,7 +201,9 @@ namespace DHDM
 
 		private static StreamlootsCard GetCard(JObject cardObject)
 		{
-			return GetStreamlootsObject<StreamlootsCard>(cardObject);
+			StreamlootsCard streamlootsCard = GetStreamlootsObject<StreamlootsCard>(cardObject);
+			streamlootsCard.Initialize();
+			return streamlootsCard;
 		}
 
 		#region IDisposable Support

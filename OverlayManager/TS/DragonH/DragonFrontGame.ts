@@ -163,6 +163,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.bloodEffects.draw(context, nowMs);
 
 		this.playerStats.draw(context, nowMs);
+
 		this.conditionManager.draw(context, nowMs);
 		this.cardManager.draw(context, nowMs);
 		//this.playerStats.drawDiagnostics(context, this, this, this.players);
@@ -281,7 +282,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	initialize() {
 		this.loadWeapons();
 		super.initialize();
-		this.inGameCreatureManager.initialize(this, null, this.dragonFrontSounds);
+		// TODO: Optimize inGameCreatureManager so we are at least not actually spending any time drawing or pushing pixels on the top layer. Find out why drawing is needed to keep this in sync with the back layer.
+		this.inGameCreatureManager.initialize(this, null, this.dragonFrontSounds, -InGameCreatureManager.creatureScrollHeight - 100);
 		gravityGames = new GravityGames();
 		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
 	}
@@ -716,7 +718,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.playerStats.loadResources();
 		this.conditionManager.loadResources();
 		this.cardManager.loadResources();
-		
+
 	}
 
 	loadMagicSparks(path: string): Sprites {
@@ -1648,6 +1650,15 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	cardCommand(cardStr: string) {
+		const handsHeader = 'Hands: ';
+		if (cardStr.startsWith(handsHeader)) {
+			const handStr: string = cardStr.substr(handsHeader.length);
+			console.log('handStr: ' + handStr);
+			const hands: Array<StreamlootsHand> = JSON.parse(handStr);
+			this.cardManager.showHands(hands);
+			return;
+		}
+
 		const cardDto: CardDto = JSON.parse(cardStr);
 		if (cardDto.Command === 'ShowCard')
 			this.cardManager.showCard(cardDto.Card);

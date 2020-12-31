@@ -39,6 +39,9 @@ function animateSprinkles(commandData: string) {
 }
 
 function updateInGameCreatures(commandData: string) {
+	if (activeBackGame instanceof DragonBackGame) {
+		activeBackGame.updateInGameCreatures(commandData);
+	}
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.updateInGameCreatures(commandData);
 	}
