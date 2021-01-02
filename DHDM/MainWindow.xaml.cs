@@ -9475,19 +9475,19 @@ namespace DHDM
 			{
 				case CardCommandType.ToggleHandVisibility:
 					cardHandManager.ToggleHandVisibility(creatureId);
-					break;
+					return;
 				case CardCommandType.HideAllNpcCards:
 					cardHandManager.HideAllNpcCards();
-					break;
+					return;
 				case CardCommandType.SelectNextCard:
 					cardHandManager.SelectNextCard(creatureId);
-					break;
+					return;
 				case CardCommandType.SelectPreviousCard:
 					cardHandManager.SelectPreviousCard(creatureId);
-					break;
+					return;
 				case CardCommandType.PlaySelectedCard:
 					cardHandManager.PlaySelectedCard(creatureId);
-					break;
+					return;
 			}
 			System.Diagnostics.Debugger.Break();
 		}

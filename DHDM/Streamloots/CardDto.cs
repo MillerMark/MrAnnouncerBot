@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace DHDM
 {
@@ -8,6 +9,7 @@ namespace DHDM
 		public StreamlootsPurchase Purchase { get; set; }
 		public StreamlootsCard Card { get; set; }
 		public string Command { get; set; }
+		public List<StreamlootsHand> Hands { get; set; }
 		public CardDto(StreamlootsCard card)
 		{
 			Card = card;

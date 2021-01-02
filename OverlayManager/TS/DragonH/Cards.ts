@@ -48,6 +48,7 @@ class StreamlootsHand {
 class CardDto {
 	Purchase: StreamlootsPurchase;
 	Card: StreamlootsCard;
+	Hands: Array<StreamlootsHand>;
 	Command: string;
 }
 
@@ -181,13 +182,13 @@ class CardManager {
 		return { xPos, yPos };
 	}
 
-	showHands(hands: StreamlootsHand[]) {
+	updateHands(hands: StreamlootsHand[]) {
 		hands.forEach((hand: StreamlootsHand) => {
-			this.showHand(hand);
+			this.updateHand(hand);
 		});
 	}
 
-	showHand(hand: StreamlootsHand) {
+	updateHand(hand: StreamlootsHand) {
 		if (hand.IsShown) {
 			this.makeSureAllCardsAreInView(hand);
 		}
@@ -273,7 +274,13 @@ class CardManager {
 	}
 
 	hideHandUI(hand: StreamlootsHand) {
-
+		this.knownCards.spriteProxies.forEach((sprite: SpriteProxy) => {
+			if (sprite.data instanceof CardStateData) {
+				if (sprite.data.characterId === hand.CharacterId) {
+					sprite.fadeOutNow(500);
+				}
+			}
+		});
 	}
 
 	alreadyFoundCard(cardName: string, characterId: number): boolean {
