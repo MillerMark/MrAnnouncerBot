@@ -101,7 +101,7 @@ namespace DHDM
 				return true;
 			}
 
-			if (message.StartsWith(STR_SelectNextNpcCard) || message.StartsWith(STR_SelectNextPlayerCard))
+			if (message.StartsWith(STR_SelectPreviousNpcCard) || message.StartsWith(STR_SelectPreviousPlayerCard))
 			{
 				targetOverride = message.EverythingAfter(" ").Trim();
 				cardCommandType = CardCommandType.SelectPreviousCard;

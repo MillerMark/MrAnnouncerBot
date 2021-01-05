@@ -81,6 +81,8 @@ class CardManager {
 		this.knownCards.addImage('Secret Card');
 
 		this.selectedCardGlow = new Sprites('Cards/Selected Card/Selected Card', 89, fps30, AnimationStyle.Loop, true);
+		this.selectedCardGlow.moves = true;
+		this.selectedCardGlow.disableGravity();
 		this.selectedCardGlow.originX = 192;
 		this.selectedCardGlow.originY = 266;
 	}
@@ -262,20 +264,22 @@ class CardManager {
 			// Add big card...
 			this.addBigCard(hand, xPos, yPos);
 
-			// TODO: Add small glow will need an index to differentiate among duplicate cards with the same name.
-
 			// Add small glow:
-			const smallCardSprite: SpriteProxy = this.getCard(hand.SelectedCard.Guid, hand.CharacterId, CardManager.inHandScale);
-			if (smallCardSprite)
+			this.addSmallCardGlow(hand);
+		}
+	}
+
+	private addSmallCardGlow(hand: StreamlootsHand) {
+		const smallCardSprite: SpriteProxy = this.getCard(hand.SelectedCard.Guid, hand.CharacterId, CardManager.inHandScale);
+		if (smallCardSprite)
 			hand.Cards.forEach((card: StreamlootsCard) => {
 				if (card.Guid === hand.SelectedCard.Guid) {
-					const selectionSmallGlow: SpriteProxy = this.selectedCardGlow.add(smallCardSprite.x, smallCardSprite.y, -1);
+					const selectionSmallGlow: SpriteProxy = this.selectedCardGlow.add(smallCardSprite.x + this.knownCards.originX, smallCardSprite.y + this.knownCards.originY, -1);
 					selectionSmallGlow.scale = CardManager.inHandScale;
 					selectionSmallGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
 					selectionSmallGlow.fadeInTime = 500;
 				}
 			});
-		}
 	}
 
 	private addBigCard(hand: StreamlootsHand, xPos: number, yPos: number) {
@@ -305,12 +309,33 @@ class CardManager {
 		let offset: number = leftOffsetToStart;
 		allCardSprites.forEach((sprite: SpriteProxy) => {
 			sprite.ease(performance.now(), sprite.x, sprite.y, xPos + offset - this.knownCards.originX, yPos - this.knownCards.originY, 500);
+
 			if (sprite.data instanceof CardStateData) {
+				const glowSprite: SpriteProxy = this.getGlowSprite(sprite.data.guid, CardManager.inHandScale);
+				if (glowSprite) {
+					console.log(`Found glowSprite - easing it from (${glowSprite.x}, ${glowSprite.y}) to (${xPos + offset - this.selectedCardGlow.originX}, ${yPos - this.selectedCardGlow.originY}).`);
+					glowSprite.ease(performance.now(), glowSprite.x, glowSprite.y, xPos + offset - this.selectedCardGlow.originX, yPos - this.selectedCardGlow.originY, 500);
+				}
 				sprite.data.offset = offset;
 			}
 
 			offset += CardManager.inHandCardSpace;
 		});
+	}
+
+	getGlowSprite(guid: string, matchingScale: number): SpriteProxy {
+		console.log(this.selectedCardGlow.spriteProxies);
+		let result: SpriteProxy = null;
+		this.selectedCardGlow.spriteProxies.forEach((sprite: SpriteProxy) => {
+			if (sprite.data instanceof CardStateData) {
+				if (sprite.data.guid === guid)
+					if (sprite.scale === matchingScale) {
+						console.log(`found a match!`);
+						result = sprite;
+					}
+			}
+		});
+		return result;
 	}
 
 	removeAnyOrphanCards(characterId: number) {
@@ -323,20 +348,33 @@ class CardManager {
 		});
 	}
 
+	getAllGlowSprites(hand: StreamlootsHand, scaleFilter: number): SpriteProxy[] {
+		return this.getCharacterSpritesAtScale(this.selectedCardGlow, hand, scaleFilter);
+	}
+
 	getAllCardSprites(hand: StreamlootsHand, scaleFilter: number): SpriteProxy[] {
-		const allCardSprites: Array<SpriteProxy> = [];
-		this.knownCards.spriteProxies.forEach((sprite: SpriteProxy) => {
+		return this.getCharacterSpritesAtScale(this.knownCards, hand, scaleFilter);
+	}
+
+	private getCharacterSpritesAtScale(sprites: Sprites, hand: StreamlootsHand, scaleFilter: number) {
+		const resultSprites: Array<SpriteProxy> = [];
+		sprites.spriteProxies.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData) {
 				if (sprite.data.characterId === hand.CharacterId && sprite.scale === scaleFilter) {
-					allCardSprites.push(sprite);
+					resultSprites.push(sprite);
 				}
 			}
 		});
-		return allCardSprites;
+		return resultSprites;
 	}
 
 	hideHandUI(hand: StreamlootsHand) {
-		this.knownCards.spriteProxies.forEach((sprite: SpriteProxy) => {
+		this.hideSpritesForHand(this.knownCards, hand);
+		this.hideSpritesForHand(this.selectedCardGlow, hand);
+	}
+
+	private hideSpritesForHand(sprites: Sprites, hand: StreamlootsHand) {
+		sprites.spriteProxies.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData) {
 				if (sprite.data.characterId === hand.CharacterId) {
 					//sprite.fadeOutNow(500);
@@ -367,7 +405,7 @@ class CardManager {
 			const cardSprite: SpriteProxy = this.knownCards.spriteProxies[i];
 			if (cardSprite.data instanceof CardStateData) {
 				if (cardSprite.data.characterId === characterId &&
-					cardSprite.data.guid === cardGuid && 
+					cardSprite.data.guid === cardGuid &&
 					cardSprite.scale === matchingScale) {
 					return cardSprite;
 				}

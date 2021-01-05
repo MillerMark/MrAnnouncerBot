@@ -98,7 +98,26 @@ namespace DHDM
 
 		public void SelectPreviousCard(int creatureId)
 		{
-			
+			if (!Hands.ContainsKey(creatureId))
+				return;
+			StreamlootsHand hand = Hands[creatureId];
+			if (hand.Cards.Count == 0)
+				return;
+
+			int selectedCardIndex = hand.GetSelectedCardIndex();
+			if (selectedCardIndex == -1)
+			{
+				hand.SelectedCard = hand.Cards[0];
+			}
+			else
+			{
+				if (selectedCardIndex > 0)
+					selectedCardIndex--;
+				else
+					selectedCardIndex = hand.Count - 1;
+				hand.SelectedCard = hand.Cards[selectedCardIndex];
+			}
+			StateHasChanged();
 		}
 
 		public void PlaySelectedCard(int creatureId)
