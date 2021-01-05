@@ -564,7 +564,7 @@
 
 		this.scrollSlam = new Sprites("Scroll/Slam/Slam", 8, this.framerateMs, AnimationStyle.Sequential, true);
 		this.scrollBacks = new Sprites("Scroll/Backs/Back", 5, this.framerateMs, AnimationStyle.Static);
-		const totalKnownPlayers = 25;  //+++ Important - when adding new player headshots, increment totalKnownPlayers!
+		const totalKnownPlayers = 27;  //+++ Important - when adding new player headshots, increment totalKnownPlayers!
 		this.playerHeadshots = new Sprites("Scroll/Players/Player", totalKnownPlayers, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisMain = new Sprites("Scroll/Emphasis/Main/EmphasisMain", 27, this.framerateMs, AnimationStyle.Static);
 		this.scrollEmphasisSkills = new Sprites("Scroll/Emphasis/Skills/EmphasisSkills", 27, this.framerateMs, AnimationStyle.Static);

@@ -1,4 +1,5 @@
 ﻿using System;
+using DndCore;
 using System.Linq;
 using TwitchLib.Client.Models;
 
@@ -12,21 +13,50 @@ namespace DHDM
 		SelectPreviousCard,
 		PlaySelectedCard
 	}
-	
+
 	public class CardCommand : BaseStreamDeckCommand, IDungeonMasterCommand
 	{
 		const string STR_ToggleHandVisibility = "ToggleHandVisibility ";
 		const string STR_HideAllNpcCards = "HideAllNpcCards";
 		const string STR_SelectNextNpcCard = "SelectNextNpcCard";
+		const string STR_SelectNextPlayerCard = "SelectNextPlayerCard";
 		const string STR_SelectPreviousNpcCard = "SelectPreviousNpcCard";
+		const string STR_SelectPreviousPlayerCard = "SelectPreviousPlayerCard";
 		const string STR_PlaySelectedNpcCard = "PlaySelectedNpcCard";
 		CardCommandType cardCommandType;
 
 		int creatureId;
 		int lastNpcCreatureId;
+		string playerName;
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.CardCommand(cardCommandType, creatureId);
+			SetCreatureId(dungeonMasterApp);
+			if (creatureId == int.MinValue && playerName != null)
+			{
+				int playerId = dungeonMasterApp.GetPlayerIdFromName(playerName);
+				dungeonMasterApp.CardCommand(cardCommandType, playerId);
+			}
+			else
+				dungeonMasterApp.CardCommand(cardCommandType, creatureId);
+		}
+
+		private void SetCreatureId(IDungeonMasterApp dungeonMasterApp)
+		{
+			if (targetOverride != null)
+			{
+				if (targetOverride == "{lastNpcCreatureId}")
+					creatureId = lastNpcCreatureId;
+				else
+				{
+					int playerId = dungeonMasterApp.GetPlayerIdFromName(targetOverride);
+					if (playerId >= 0)
+						creatureId = playerId;
+					else
+					{
+						System.Diagnostics.Debugger.Break();
+					}
+				}
+			}
 		}
 
 		int GetCreatureId(string idStr)
@@ -36,8 +66,11 @@ namespace DHDM
 			return int.MinValue;
 		}
 
+		string targetOverride;
 		public bool Matches(string message)
 		{
+			targetOverride = null;
+			playerName = null;
 			if (message.StartsWith(STR_ToggleHandVisibility))
 			{
 				cardCommandType = CardCommandType.ToggleHandVisibility;
@@ -45,8 +78,8 @@ namespace DHDM
 				creatureId = GetCreatureId(creatureIdStr);
 				if (creatureId == int.MinValue)
 				{
-					System.Diagnostics.Debugger.Break();
-					return false;
+					playerName = creatureIdStr;
+					return true;
 				}
 				if (creatureId < 0)
 					lastNpcCreatureId = creatureId;
@@ -61,17 +94,17 @@ namespace DHDM
 				return true;
 			}
 
-			if (message == STR_SelectNextNpcCard)
+			if (message.StartsWith(STR_SelectNextNpcCard) || message.StartsWith(STR_SelectNextPlayerCard))
 			{
+				targetOverride = message.EverythingAfter(" ").Trim();
 				cardCommandType = CardCommandType.SelectNextCard;
-				creatureId = lastNpcCreatureId;
 				return true;
 			}
 
-			if (message == STR_SelectPreviousNpcCard)
+			if (message.StartsWith(STR_SelectNextNpcCard) || message.StartsWith(STR_SelectNextPlayerCard))
 			{
+				targetOverride = message.EverythingAfter(" ").Trim();
 				cardCommandType = CardCommandType.SelectPreviousCard;
-				creatureId = lastNpcCreatureId;
 				return true;
 			}
 			if (message == STR_PlaySelectedNpcCard)

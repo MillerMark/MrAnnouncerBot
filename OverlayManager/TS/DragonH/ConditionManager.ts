@@ -28,7 +28,7 @@ class ConditionManager {
 	iGetPlayerX: IGetPlayerX; //  & ITextFloater
 	iNameplateRenderer: INameplateRenderer;
 	soundManager: ISoundManager;
-
+	topMarginOffset = 0;
 	constructor() {
 
 	}
@@ -479,7 +479,7 @@ class ConditionManager {
 		if (worldView === WorldView.Normal)
 			return 1080 - stackHeightBelow;
 		else
-			return InGameCreatureManager.creatureScrollHeight + this.getScrollTop() + stackHeightBelow + conditionIconLength;
+			return InGameCreatureManager.creatureScrollHeight + this.topMarginOffset + stackHeightBelow + conditionIconLength;
 	}
 
 	static readonly numPlayerConditionColumns: number = 1;

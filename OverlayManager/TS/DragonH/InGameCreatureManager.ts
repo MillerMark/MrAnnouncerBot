@@ -32,6 +32,7 @@ class InGameCreatureManager implements IGetCreatureX {
 	initialize(iGetPlayerX: IGetPlayerX, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, topMarginOffset = 0) {
 		this.conditionManager.initialize(iGetPlayerX, iNameplateRenderer, soundManager);
 		this.topMarginOffset = topMarginOffset;
+		this.conditionManager.topMarginOffset = topMarginOffset;
 	}
 
 	loadResources() {
@@ -825,8 +826,26 @@ class InGameCreatureManager implements IGetCreatureX {
 		sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, InGameCreatureManager.leftRightMoveTime);
 	}
 
+	onMoveCreatureCallbacks: Array<(creature: InGameCreature, deltaX: number, delayMs: number) => void>;
+
+	addMoveCreatureCallback(onMoveCreature: (creature: InGameCreature, targetX: number, delayMs: number) => void): void {
+		if (!this.onMoveCreatureCallbacks)
+			this.onMoveCreatureCallbacks = new Array<(creature: InGameCreature, targetX: number, delayMs: number) => void>();
+		this.onMoveCreatureCallbacks.push(onMoveCreature);
+	}
+
+	onMoveCreature(creature: InGameCreature, targetX: number, delayMs: number) {
+		if (this.onMoveCreatureCallbacks) {
+			this.onMoveCreatureCallbacks.forEach(function (onMoveCreatureCallback) {
+				onMoveCreatureCallback(creature, targetX, delayMs);
+			}, this);
+		}
+	}
+
 	moveCreatureTo(creature: InGameCreature, targetX: number, delayMs: number) {
 		const parchmentSprite: SpriteProxy = this.getParchmentSpriteForCreature(creature);
+		this.onMoveCreature(creature, targetX, delayMs);
+
 		this.moveSpriteTo(this.parchmentBackground, creature, targetX, delayMs);
 		this.moveSpriteTo(this.parchmentShadow, creature, targetX, delayMs);
 		this.moveSpriteTo(this.deathX, creature, targetX, delayMs);
@@ -841,7 +860,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			this.conditionManager.moveNpcConditionsTo(creature.Index, deltaX, InGameCreatureManager.leftRightMoveTime, delayMs);
 		}
 	}
-
+    
 	removeInGameCreature(creature: InGameCreature, delayMs: number): void {
 		const creatureIndexInArray: number = this.inGameCreatures.indexOf(creature);
 		if (creatureIndexInArray < 0) {

@@ -284,8 +284,13 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		super.initialize();
 		// TODO: Optimize inGameCreatureManager so we are at least not actually spending any time drawing or pushing pixels on the top layer. Find out why drawing is needed to keep this in sync with the back layer.
 		this.inGameCreatureManager.initialize(this, null, this.dragonFrontSounds, -InGameCreatureManager.creatureScrollHeight - 100);
+		this.inGameCreatureManager.addMoveCreatureCallback(this.onMoveCreature.bind(this));
 		gravityGames = new GravityGames();
 		Folders.assets = 'GameDev/Assets/DroneGame/';  // So GravityGames can load planet Earth?
+	}
+
+	onMoveCreature(creature: InGameCreature, targetX: number, delayMs: number) {
+		this.cardManager.onMoveCreature(creature, targetX, delayMs);
 	}
 
 	private loadWeapons() {
@@ -303,6 +308,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.loadJavelin();
 		this.loadBoomerang();
 		this.loadMace();
+		this.loadSickle();
 	}
 
 	private loadWarHammer() {
@@ -324,6 +330,12 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		const maceOriginX = 251;
 		const maceOriginY = 447;
 		this.loadWeapon('Mace', 'Mace', maceOriginX, maceOriginY);
+	}
+
+	private loadSickle() {
+		const sickleOriginX = 376;
+		const sickleOriginY = 536;
+		this.loadWeapon('Sickle', 'Sickle', sickleOriginX, sickleOriginY);
 	}
 
 	private loadLongSword() {

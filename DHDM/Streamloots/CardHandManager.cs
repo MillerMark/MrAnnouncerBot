@@ -36,29 +36,71 @@ namespace DHDM
 				existingHand.CharacterId = creatureId;
 				Hands.Add(creatureId, existingHand);
 			}
-			existingHand.Cards.Add(card);
+			existingHand.AddCard(card);
 			existingHand.IsShown = true;
 			StateHasChanged();
 		}
 		public void ToggleHandVisibility(int creatureId)
 		{
 			if (!Hands.ContainsKey(creatureId))
-				return;
-			Hands[creatureId].IsShown = !Hands[creatureId].IsShown;
+			{
+				if (creatureId < 0)
+					foreach (StreamlootsHand streamlootsHand in Hands.Values)
+						if (streamlootsHand.CharacterId < 0)
+							streamlootsHand.IsShown = false;
+			}
+			else if (Hands[creatureId].IsShown)
+				Hands[creatureId].IsShown = false;
+			else if (creatureId < 0)
+			{
+				foreach (StreamlootsHand streamlootsHand in Hands.Values)
+					if (streamlootsHand.CharacterId < 0)
+						streamlootsHand.IsShown = streamlootsHand.CharacterId == creatureId;
+			}
+			else
+				Hands[creatureId].IsShown = !Hands[creatureId].IsShown;
+
 			StateHasChanged();
 		}
 		public void HideAllNpcCards()
 		{
-			
+			foreach (StreamlootsHand streamlootsHand in Hands.Values)
+			{
+				if (streamlootsHand.CharacterId < 0)
+					streamlootsHand.IsShown = false;
+			}
+			StateHasChanged();
 		}
+
 		public void SelectNextCard(int creatureId)
 		{
-			
+			if (!Hands.ContainsKey(creatureId))
+				return;
+			StreamlootsHand hand = Hands[creatureId];
+			if (hand.Cards.Count == 0)
+				return;
+
+			int selectedCardIndex = hand.GetSelectedCardIndex();
+			if (selectedCardIndex == -1)
+			{
+				hand.SelectedCard = hand.Cards[0];
+			}
+			else
+			{
+				if (selectedCardIndex < hand.Count - 1)
+					selectedCardIndex++;
+				else
+					selectedCardIndex = 0;
+				hand.SelectedCard = hand.Cards[selectedCardIndex];
+			}
+			StateHasChanged();
 		}
+
 		public void SelectPreviousCard(int creatureId)
 		{
 			
 		}
+
 		public void PlaySelectedCard(int creatureId)
 		{
 			

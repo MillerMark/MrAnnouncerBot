@@ -391,6 +391,7 @@
 		this.startX = this.x;
 		this.startY = this.y;
 		this.easePoint = null;
+		//console.log(`clearEasePoint();`);
 	}
 
 	clearEaseRotation() {
