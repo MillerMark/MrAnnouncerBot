@@ -7,10 +7,29 @@ namespace DHDM
 	public class StreamlootsHand
 	{
 		public int CharacterId { get; set; }
-		public bool IsShown { get; set; }
+
+		bool isShown;
+
+		public bool IsShown
+		{
+			get
+			{
+				return isShown;
+			}
+			set
+			{
+				if (isShown == value)
+					return;
+				isShown = value;
+				if (!isShown)
+					SelectedCard = null;
+			}
+		}
+		
 		public StreamlootsCard SelectedCard { get; set; }
 		public List<StreamlootsCard> Cards { get; set; } = new List<StreamlootsCard>();
 		public int Count => Cards.Count;
+		public int HueShift { get; set; }
 		public StreamlootsHand()
 		{
 

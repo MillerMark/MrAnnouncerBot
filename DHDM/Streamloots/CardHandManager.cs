@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using DndCore;
+using System.Windows.Media;
 
 namespace DHDM
 {
@@ -28,14 +30,36 @@ namespace DHDM
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(cardDto));
 		}
 
+		int GetHueShift(int creatureId)
+		{
+			if (creatureId < 0)
+			{
+				InGameCreature creature = AllInGameCreatures.GetByIndex(-creatureId);
+				if (creature == null)
+					return 0;
+
+
+				Color color = (Color)ColorConverter.ConvertFromString(creature.BackgroundHex);
+				return (int)color.GetHue();
+			}
+			else
+			{
+				Character player = AllPlayers.GetFromId(creatureId);
+				if (player == null)
+					return 0;
+				return player.hueShift;
+			}
+		}
 		public void AddCard(int creatureId, StreamlootsCard card)
 		{
 			if (!Hands.TryGetValue(creatureId, out StreamlootsHand existingHand))
 			{
 				existingHand = new StreamlootsHand();
 				existingHand.CharacterId = creatureId;
+				existingHand.HueShift = GetHueShift(creatureId);
 				Hands.Add(creatureId, existingHand);
 			}
+			existingHand.SelectedCard = null;
 			existingHand.AddCard(card);
 			existingHand.IsShown = true;
 			StateHasChanged();
@@ -122,7 +146,7 @@ namespace DHDM
 
 		public void PlaySelectedCard(int creatureId)
 		{
-			
+
 		}
 
 	}

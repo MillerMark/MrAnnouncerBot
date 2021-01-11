@@ -42,6 +42,7 @@ class StreamlootsCard {
 
 class StreamlootsHand {
 	CharacterId: number;
+	HueShift: number;
 	IsShown: boolean;
 	SelectedCard: StreamlootsCard;
 	Cards: StreamlootsCard[];
@@ -57,6 +58,9 @@ class CardDto {
 class CardManager {
 	knownCards: Sprites;
 	selectedCardGlow: Sprites;
+	playedCardBackGlow: Sprites;
+	playedCardFrontGlow: Sprites;
+	secretCardBurn: Sprites;
 	iGetPlayerX: IGetPlayerX;
 	iGetCreatureX: IGetCreatureX;
 	soundManager: ISoundManager;
@@ -85,16 +89,40 @@ class CardManager {
 		this.selectedCardGlow.disableGravity();
 		this.selectedCardGlow.originX = 192;
 		this.selectedCardGlow.originY = 266;
+
+		this.playedCardBackGlow = new Sprites('Cards/Play Card/PlayCardBack', 38, fps30, AnimationStyle.Sequential, true);
+		this.playedCardBackGlow.moves = true;
+		this.playedCardBackGlow.disableGravity();
+		this.playedCardBackGlow.originX = 301;
+		this.playedCardBackGlow.originY = 404;
+
+		this.playedCardFrontGlow = new Sprites('Cards/Play Card/PlayCardFront', 23, fps30, AnimationStyle.Sequential, true);
+		this.playedCardFrontGlow.moves = true;
+		this.playedCardFrontGlow.disableGravity();
+		this.playedCardFrontGlow.originX = 276;
+		this.playedCardFrontGlow.originY = 339;
+
+		this.secretCardBurn = new Sprites('Cards/Secret Card Burn/SecretCardBurn', 73, fps30, AnimationStyle.Sequential, true);
+		this.secretCardBurn.moves = true;
+		this.secretCardBurn.disableGravity();
+		this.secretCardBurn.originX = 205;
+		this.secretCardBurn.originY = 381;
 	}
 
 	update(nowMs: number) {
+		this.playedCardBackGlow.updatePositions(nowMs);
 		this.knownCards.updatePositions(nowMs);
 		this.selectedCardGlow.updatePositions(nowMs);
+		this.playedCardFrontGlow.updatePositions(nowMs);
+		this.secretCardBurn.updatePositions(nowMs);
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
+		this.playedCardBackGlow.draw(context, nowMs);
 		this.selectedCardGlow.draw(context, nowMs);
 		this.knownCards.draw(context, nowMs);
+		this.playedCardFrontGlow.draw(context, nowMs);
+		this.secretCardBurn.draw(context, nowMs);
 		//this.showCardDiagnostics(context, nowMs);
 	}
 
@@ -152,13 +180,14 @@ class CardManager {
 	static readonly inHandCardHeight: number = 88;
 	static readonly inHandCardSeparatorMargin: number = 3;
 	static readonly selectedCardScale: number = 1;
+	static readonly selectionTransitionTime: number = 220;  // ms
 	static readonly inHandScale: number = CardManager.inHandCardHeight / CardManager.cardHeight;
 	static readonly inHandCardWidth: number = CardManager.cardWidth * CardManager.inHandScale;
 	static readonly inHandCardSpace: number = CardManager.inHandCardWidth + CardManager.inHandCardSeparatorMargin;
 
 	static readonly playerCardCenterY: number = 500;
 	static readonly yAdjustOverlapScrollBottom: number = -30;
-	static readonly bigCardHandMargin: number = 4;
+	static readonly bigCardHandMarginBelowInGameCreatureScrolls: number = 8;
 
 	private getBigCardCenter(card: StreamlootsCard) {
 		let xPos = 960;
@@ -168,7 +197,7 @@ class CardManager {
 			const creature: InGameCreature = this.iGetCreatureX.getInGameCreatureByName(card.Target);
 			if (creature) {
 				xPos = this.iGetCreatureX.getX(creature) + InGameCreatureManager.miniScrollWidth / 2.0;
-				yPos = InGameCreatureManager.NpcScrollHeight + CardManager.yAdjustOverlapScrollBottom + CardManager.cardHeight / 2 + CardManager.bigCardHandMargin + CardManager.inHandCardHeight;
+				yPos = InGameCreatureManager.NpcScrollHeight + CardManager.yAdjustOverlapScrollBottom + CardManager.cardHeight / 2 + CardManager.bigCardHandMarginBelowInGameCreatureScrolls + CardManager.inHandCardHeight;
 			}
 		}
 		else {
@@ -224,10 +253,27 @@ class CardManager {
 		return HandOrientation.SelectedCardAbove;
 	}
 
+	getSelectionOffset(yPos: number, guid: string, selectedCard: StreamlootsCard): number {
+		let directionMultiplier: number;
+		if (yPos > 540)
+			directionMultiplier = 1;
+		else
+			directionMultiplier = -1;
+
+		const notSelectedOffset = 4;
+		const selectedOffset = 0;
+
+		if (!selectedCard || guid !== selectedCard.Guid) {
+			return notSelectedOffset * directionMultiplier;
+		}
+
+		return selectedOffset * directionMultiplier;
+	}
+
 	showHandUI(hand: StreamlootsHand, handOrientation: HandOrientation, xPos: number, yPos: number) {
 		const handWidth: number = hand.Cards.length * CardManager.inHandCardSpace;
 		const leftOffsetToStart: number = -handWidth / 2.0 + CardManager.inHandCardSpace / 2;
-		let needToReorderCards = false;
+		let foundExistingCards = false;
 		this.clearAllCardFoundFlags(hand.CharacterId);
 		let offset = leftOffsetToStart;
 		hand.Cards.forEach((card: StreamlootsCard) => {
@@ -235,7 +281,7 @@ class CardManager {
 			const imageIndex: number = this.knownCards.addImage(this.getCardName(card));
 
 			if (this.alreadyFoundCard(card.Guid, hand.CharacterId, CardManager.inHandScale)) {
-				needToReorderCards = true;
+				foundExistingCards = true;
 			}
 			else {
 				const offscreenY: number = this.getOffscreenY(hand);
@@ -244,15 +290,17 @@ class CardManager {
 				cardSprite.data = new CardStateData(card.Guid, hand.CharacterId, offset);
 				offset += CardManager.inHandCardSpace;
 				cardSprite.fadeInTime = 500;
-				cardSprite.ease(performance.now(), cardSprite.x, offscreenY - this.knownCards.originY, cardSprite.x, yPos - this.knownCards.originY, 500);
+				const selectionOffset: number = this.getSelectionOffset(yPos, card.Guid, hand.SelectedCard);
+				cardSprite.ease(performance.now(), cardSprite.x, offscreenY - this.knownCards.originY, cardSprite.x, yPos - this.knownCards.originY + selectionOffset, 500);
 			}
 		});
 
-		//this.removeAnyOrphanCards(hand.CharacterId);
-
-		if (needToReorderCards) {
+		if (foundExistingCards) {
 			this.reorderCards(hand, xPos, yPos, leftOffsetToStart);
 		}
+
+		if (!this.selectionChanged(hand))
+			return;
 
 		this.removeExistingSelectionGlow(hand.CharacterId);
 
@@ -269,15 +317,39 @@ class CardManager {
 		}
 	}
 
+	selectionChanged(hand: StreamlootsHand): boolean {
+		const existingGlow: Array<SpriteProxy> = this.getAllActiveGlowByCharacterId(hand.CharacterId);
+		if (existingGlow.length > 0) {
+			if (!hand.SelectedCard)
+				return true;
+			const activeGlowByGuid: Array<SpriteProxy> = this.getAllActiveGlowByGuid(hand.SelectedCard.Guid);
+			const foundExistingGlow: boolean = activeGlowByGuid.length > 0;
+			return !foundExistingGlow;
+		}
+
+		// There are no glowing selection-indicating sprites on screen for this character.
+		if (hand.SelectedCard)
+			return true;
+		else 
+			return false;
+	}
+
 	private addSmallCardGlow(hand: StreamlootsHand) {
 		const smallCardSprite: SpriteProxy = this.getCard(hand.SelectedCard.Guid, hand.CharacterId, CardManager.inHandScale);
 		if (smallCardSprite)
 			hand.Cards.forEach((card: StreamlootsCard) => {
 				if (card.Guid === hand.SelectedCard.Guid) {
-					const selectionSmallGlow: SpriteProxy = this.selectedCardGlow.add(smallCardSprite.x + this.knownCards.originX, smallCardSprite.y + this.knownCards.originY, -1);
+					let selectionOffset: number;
+					if (smallCardSprite.y < 540)
+						selectionOffset = 4;
+					else
+						selectionOffset = -4;
+
+					//console.log('addSmallCardGlow/selectionOffset: ' + selectionOffset);
+					const selectionSmallGlow: SpriteProxy = this.selectedCardGlow.addShifted(smallCardSprite.x + this.knownCards.originX, smallCardSprite.y + this.knownCards.originY + selectionOffset, -1, hand.HueShift);
 					selectionSmallGlow.scale = CardManager.inHandScale;
 					selectionSmallGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
-					selectionSmallGlow.fadeInTime = 500;
+					selectionSmallGlow.fadeInTime = CardManager.selectionTransitionTime;
 				}
 			});
 	}
@@ -287,20 +359,25 @@ class CardManager {
 		const cardSprite: SpriteProxy = this.knownCards.add(xPos, yPos, imageIndex);
 		cardSprite.scale = CardManager.selectedCardScale;
 		cardSprite.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
-		cardSprite.fadeInTime = 500;
+		cardSprite.fadeInTime = CardManager.selectionTransitionTime;
 	}
 
 	private addBigCardGlow(hand: StreamlootsHand, xPos: number, yPos: number) {
-		const selectionGlow: SpriteProxy = this.selectedCardGlow.add(xPos, yPos, -1);
+		const selectionGlow: SpriteProxy = this.selectedCardGlow.addShifted(xPos, yPos, -1, hand.HueShift);
 		selectionGlow.scale = CardManager.selectedCardScale;
 		selectionGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
-		selectionGlow.fadeInTime = 500;
+		selectionGlow.fadeInTime = CardManager.selectionTransitionTime;
 	}
 
 	removeExistingSelectionGlow(characterId: number) {
 		this.selectedCardGlow.spriteProxies.forEach((sprite: SpriteProxy) => {
-			if (sprite.data instanceof CardStateData && sprite.data.characterId === characterId)
-				sprite.fadeOutNow(500);
+			if (sprite.data instanceof CardStateData && sprite.data.characterId === characterId) {
+				sprite.fadeOutNow(CardManager.selectionTransitionTime);
+				const bigCard: SpriteProxy = this.getCard(sprite.data.guid, characterId, CardManager.selectedCardScale);
+				if (bigCard) {
+					bigCard.fadeOutNow(CardManager.selectionTransitionTime);
+				}
+			}
 		});
 	}
 
@@ -308,13 +385,14 @@ class CardManager {
 		const allCardSprites: Array<SpriteProxy> = this.getAllCardSprites(hand, CardManager.inHandScale);
 		let offset: number = leftOffsetToStart;
 		allCardSprites.forEach((sprite: SpriteProxy) => {
-			sprite.ease(performance.now(), sprite.x, sprite.y, xPos + offset - this.knownCards.originX, yPos - this.knownCards.originY, 500);
+			const selectionOffset: number = this.getSelectionOffset(yPos, sprite.data.guid, hand.SelectedCard);
+			sprite.ease(performance.now(), sprite.x, sprite.y, xPos + offset - this.knownCards.originX, yPos - this.knownCards.originY + selectionOffset, CardManager.selectionTransitionTime);
 
 			if (sprite.data instanceof CardStateData) {
 				const glowSprite: SpriteProxy = this.getGlowSprite(sprite.data.guid, CardManager.inHandScale);
 				if (glowSprite) {
-					console.log(`Found glowSprite - easing it from (${glowSprite.x}, ${glowSprite.y}) to (${xPos + offset - this.selectedCardGlow.originX}, ${yPos - this.selectedCardGlow.originY}).`);
-					glowSprite.ease(performance.now(), glowSprite.x, glowSprite.y, xPos + offset - this.selectedCardGlow.originX, yPos - this.selectedCardGlow.originY, 500);
+					//console.log(`Found glowSprite - easing it from (${glowSprite.x}, ${glowSprite.y}) to (${xPos + offset - this.selectedCardGlow.originX}, ${yPos - this.selectedCardGlow.originY}).`);
+					glowSprite.ease(performance.now(), glowSprite.x, glowSprite.y, xPos + offset - this.selectedCardGlow.originX, yPos - this.selectedCardGlow.originY + selectionOffset, CardManager.selectionTransitionTime);
 				}
 				sprite.data.offset = offset;
 			}
@@ -444,7 +522,7 @@ class CardManager {
 		for (let i = 0; i < this.knownCards.spriteProxies.length; i++) {
 			const cardSprite: SpriteProxy = this.knownCards.spriteProxies[i];
 			if (cardSprite.data instanceof CardStateData) {
-				if (cardSprite.data.characterId === characterId)
+				if (cardSprite.data.characterId === characterId && !cardSprite.data.fadingOut)
 					return true;
 			}
 		}
@@ -462,13 +540,56 @@ class CardManager {
 					heldCards.push(cardSprite);
 			}
 		}
+
 		return heldCards;
 	}
 
-	// Called when a creature's x-position is animated and it slides to the left or right.
+	getAllActiveGlowHeldBy(creature: InGameCreature): Array<SpriteProxy> {
+		const characterId: number = -creature.Index;
+		return this.getAllActiveGlowByCharacterId(characterId);
+	}
+
+	getAllActiveGlowByCharacterId(characterId: number): Array<SpriteProxy> {
+		const glowCards: Array<SpriteProxy> = new Array<SpriteProxy>();
+
+		for (let i = 0; i < this.selectedCardGlow.spriteProxies.length; i++) {
+			const glowSprite: SpriteProxy = this.selectedCardGlow.spriteProxies[i];
+			if (glowSprite.data instanceof CardStateData) {
+				if (glowSprite.data.characterId === characterId && !glowSprite.data.fadingOut)
+					glowCards.push(glowSprite);
+			}
+		}
+
+		return glowCards;
+	}
+
+	getAllActiveGlowByGuid(guid: string): Array<SpriteProxy> {
+		const glowCards: Array<SpriteProxy> = new Array<SpriteProxy>();
+
+		for (let i = 0; i < this.selectedCardGlow.spriteProxies.length; i++) {
+			const glowSprite: SpriteProxy = this.selectedCardGlow.spriteProxies[i];
+			if (glowSprite.data instanceof CardStateData) {
+				if (glowSprite.data.guid === guid && !glowSprite.data.fadingOut)
+					glowCards.push(glowSprite);
+			}
+		}
+
+		return glowCards;
+	}
+
+	// Called when an in-game creature's x-position is animated and it slides to the left or right.
 	onMoveCreature(creature: InGameCreature, targetX: number, delayMs: number) {
 		//console.log('targetX: ' + targetX);
 		targetX += InGameCreatureManager.creatureScrollWidth / 2;
+
+		const glowCards: Array<SpriteProxy> = this.getAllActiveGlowHeldBy(creature);
+		glowCards.forEach((sprite: SpriteProxy) => {
+			if (sprite.data instanceof CardStateData) {
+				const adjustedX: number = targetX + sprite.data.offset - this.selectedCardGlow.originX;
+				sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, InGameCreatureManager.leftRightMoveTime);
+			}
+		});
+
 		const heldCards: Array<SpriteProxy> = this.getAllCardsHeldBy(creature);
 		heldCards.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData) {
