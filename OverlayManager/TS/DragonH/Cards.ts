@@ -253,18 +253,19 @@ class CardManager {
 		return HandOrientation.SelectedCardAbove;
 	}
 
-	getSelectionOffset(yPos: number, guid: string, selectedCard: StreamlootsCard): number {
+	static readonly notSelectedOffset: number = 8;
+
+	getSelectionVerticalOffset(yPos: number, guid: string, selectedCard: StreamlootsCard): number {
 		let directionMultiplier: number;
 		if (yPos > 540)
 			directionMultiplier = 1;
 		else
 			directionMultiplier = -1;
 
-		const notSelectedOffset = 4;
 		const selectedOffset = 0;
 
 		if (!selectedCard || guid !== selectedCard.Guid) {
-			return notSelectedOffset * directionMultiplier;
+			return CardManager.notSelectedOffset * directionMultiplier;
 		}
 
 		return selectedOffset * directionMultiplier;
@@ -290,7 +291,7 @@ class CardManager {
 				cardSprite.data = new CardStateData(card.Guid, hand.CharacterId, offset);
 				offset += CardManager.inHandCardSpace;
 				cardSprite.fadeInTime = 500;
-				const selectionOffset: number = this.getSelectionOffset(yPos, card.Guid, hand.SelectedCard);
+				const selectionOffset: number = this.getSelectionVerticalOffset(yPos, card.Guid, hand.SelectedCard);
 				cardSprite.ease(performance.now(), cardSprite.x, offscreenY - this.knownCards.originY, cardSprite.x, yPos - this.knownCards.originY + selectionOffset, 500);
 			}
 		});
@@ -341,14 +342,17 @@ class CardManager {
 				if (card.Guid === hand.SelectedCard.Guid) {
 					let selectionOffset: number;
 					if (smallCardSprite.y < 540)
-						selectionOffset = 4;
+						selectionOffset = CardManager.notSelectedOffset;
 					else
-						selectionOffset = -4;
+						selectionOffset = -CardManager.notSelectedOffset;
 
 					//console.log('addSmallCardGlow/selectionOffset: ' + selectionOffset);
 					const selectionSmallGlow: SpriteProxy = this.selectedCardGlow.addShifted(smallCardSprite.x + this.knownCards.originX, smallCardSprite.y + this.knownCards.originY + selectionOffset, -1, hand.HueShift);
 					selectionSmallGlow.scale = CardManager.inHandScale;
-					selectionSmallGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
+					if (smallCardSprite.data instanceof CardStateData)
+						selectionSmallGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, smallCardSprite.data.offset);
+					else 
+						selectionSmallGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
 					selectionSmallGlow.fadeInTime = CardManager.selectionTransitionTime;
 				}
 			});
@@ -385,7 +389,7 @@ class CardManager {
 		const allCardSprites: Array<SpriteProxy> = this.getAllCardSprites(hand, CardManager.inHandScale);
 		let offset: number = leftOffsetToStart;
 		allCardSprites.forEach((sprite: SpriteProxy) => {
-			const selectionOffset: number = this.getSelectionOffset(yPos, sprite.data.guid, hand.SelectedCard);
+			const selectionOffset: number = this.getSelectionVerticalOffset(yPos, sprite.data.guid, hand.SelectedCard);
 			sprite.ease(performance.now(), sprite.x, sprite.y, xPos + offset - this.knownCards.originX, yPos - this.knownCards.originY + selectionOffset, CardManager.selectionTransitionTime);
 
 			if (sprite.data instanceof CardStateData) {
@@ -393,6 +397,10 @@ class CardManager {
 				if (glowSprite) {
 					//console.log(`Found glowSprite - easing it from (${glowSprite.x}, ${glowSprite.y}) to (${xPos + offset - this.selectedCardGlow.originX}, ${yPos - this.selectedCardGlow.originY}).`);
 					glowSprite.ease(performance.now(), glowSprite.x, glowSprite.y, xPos + offset - this.selectedCardGlow.originX, yPos - this.selectedCardGlow.originY + selectionOffset, CardManager.selectionTransitionTime);
+
+					if (glowSprite.data instanceof CardStateData) {
+						glowSprite.data.offset = offset;
+					}
 				}
 				sprite.data.offset = offset;
 			}
@@ -582,15 +590,17 @@ class CardManager {
 		//console.log('targetX: ' + targetX);
 		targetX += InGameCreatureManager.creatureScrollWidth / 2;
 
+		const heldCards: Array<SpriteProxy> = this.getAllCardsHeldBy(creature);
+
 		const glowCards: Array<SpriteProxy> = this.getAllActiveGlowHeldBy(creature);
 		glowCards.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData) {
+				//const selectionOffset: number = this.getSelectedGlowOffset(heldCards, sprite.data.guid);
 				const adjustedX: number = targetX + sprite.data.offset - this.selectedCardGlow.originX;
 				sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, InGameCreatureManager.leftRightMoveTime);
 			}
 		});
 
-		const heldCards: Array<SpriteProxy> = this.getAllCardsHeldBy(creature);
 		heldCards.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData) {
 				const adjustedX: number = targetX + sprite.data.offset - this.knownCards.originX;
