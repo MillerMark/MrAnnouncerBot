@@ -275,6 +275,18 @@ class InGameCreatureManager implements IGetCreatureX {
 		return this.getSpriteForCreature(this.parchmentBackground.spriteProxies, inGameCreature);
 	}
 
+
+	getParchmentSpriteByIndex(index: number): SpriteProxy {
+		for (let i = 0; i < this.parchmentBackground.spriteProxies.length; i++) {
+			const sprite: SpriteProxy = this.parchmentBackground.spriteProxies[i];
+			if (sprite.data instanceof InGameCreature) {
+				if (sprite.data.Index === index)
+					return sprite;
+			}
+		}
+		return null;
+	}
+
 	getParchmentDeathXForCreature(inGameCreature: InGameCreature): SpriteProxy {
 		return this.getSpriteForCreature(this.deathX.spriteProxies, inGameCreature);
 	}
@@ -312,6 +324,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			if (sprites[i].data === inGameCreature)  // here the data is an InGameCreature.
 				return sprites[i];
 		}
+
 		return null;
 	}
 
@@ -392,6 +405,8 @@ class InGameCreatureManager implements IGetCreatureX {
 		}
 
 		existingCreature.Kind = updatedGameCreature.Kind;
+		existingCreature.BackgroundHex = updatedGameCreature.BackgroundHex;
+		existingCreature.ForegroundHex = updatedGameCreature.ForegroundHex;
 		existingCreature.Name = updatedGameCreature.Name;
 
 		if (existingCreature.ImageURL !== updatedGameCreature.ImageURL)
@@ -553,6 +568,13 @@ class InGameCreatureManager implements IGetCreatureX {
 		if (sprite)
 			return sprite.x;
 		return 0;
+	}
+
+	getCenterXByIndex(index: number): number {
+		const sprite: SpriteProxy = this.getParchmentSpriteByIndex(index);
+		if (sprite)
+			return sprite.x + InGameCreatureManager.creatureScrollWidth / 2;
+		return 960;
 	}
 
 	restackNpcConditions(inGameCreatureDtos: Array<InGameCreature>, soundManager: SoundManager) {
@@ -860,7 +882,7 @@ class InGameCreatureManager implements IGetCreatureX {
 			this.conditionManager.moveNpcConditionsTo(creature.Index, deltaX, InGameCreatureManager.leftRightMoveTime, delayMs);
 		}
 	}
-    
+
 	removeInGameCreature(creature: InGameCreature, delayMs: number): void {
 		const creatureIndexInArray: number = this.inGameCreatures.indexOf(creature);
 		if (creatureIndexInArray < 0) {

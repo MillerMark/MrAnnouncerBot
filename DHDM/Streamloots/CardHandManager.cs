@@ -18,15 +18,14 @@ namespace DHDM
 
 		void StateHasChanged()
 		{
-			//Hands.Clear();
-			//foreach (StreamlootsHand streamlootsHand in Hands.Values)
-			//{
-			//	streamlootsHand.IsShown = true;
-			//}
-			//HubtasticBaseStation.CardCommand("Hands: " + Newtonsoft.Json.JsonConvert.SerializeObject(Hands.Values));
+			SendCardCommand("Update Hands");
+		}
+
+		void SendCardCommand(string command)
+		{
 			CardDto cardDto = new CardDto();
 			cardDto.Hands = Hands.Values.ToList();
-			cardDto.Command = "Update Hands";
+			cardDto.Command = command;
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(cardDto));
 		}
 
@@ -146,8 +145,15 @@ namespace DHDM
 
 		public void PlaySelectedCard(int creatureId)
 		{
+			if (!Hands.ContainsKey(creatureId))
+				return;
+			StreamlootsHand hand = Hands[creatureId];
+			if (hand.SelectedCard == null)
+				return;
 
+			hand.PlaySelectedCard();
+			SendCardCommand("Play Cards");
+			hand.SelectedCardsHaveBeenPlayed();
 		}
-
 	}
 }

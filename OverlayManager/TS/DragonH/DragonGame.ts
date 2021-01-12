@@ -365,7 +365,10 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		textEffect.fadeOutTime = 2500;
 		textEffect.fadeInTime = 600;
 		textEffect.velocityX = 0;
-		textEffect.velocityY = -6;
+		if (yPos > 540)
+			textEffect.velocityY = -6;
+		else 
+			textEffect.velocityY = 6;
 		textEffect.verticalThrust = 1.3;
 		return textEffect;
 	}

@@ -137,13 +137,15 @@ class TextEffect extends ScalableAnimation {
 	offsetY = 0;
 	connectedShapes: Array<ScalableAnimation> = [];
 
+	static readonly defaultFontSize: number = 18;
+
 	constructor(x: number, y: number, lifeSpanMs = -1) {
 		super(x, y, lifeSpanMs);
 		this.text = 'test';
 		this.fontColor = '#ffffff';
 		this.outlineColor = '#000000';
 		this.outlineThickness = 0.5;
-		this.fontSize = 18;
+		this.fontSize = TextEffect.defaultFontSize;
 		this.opacity = 1;
 	}
 

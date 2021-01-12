@@ -132,7 +132,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.fireBallSound = 'FireBallCloseDelayed';
 		this.dragonFrontSounds = new DragonFrontSounds('GameDev/Assets/DragonH/SoundEffects');
 		this.conditionManager.initialize(this, this, this.dragonFrontSounds);
-		this.cardManager.initialize(this, this.inGameCreatureManager, this.dragonFrontSounds);
+		this.cardManager.initialize(this, this.inGameCreatureManager, this.dragonFrontSounds, this.textAnimations);
 		this.initializeOffscreenCanvases();
 	}
 
@@ -1250,26 +1250,43 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	showValidationIssue(validationIssueDtoStr: string) {
 		const validationIssue: ValidationIssueDto = JSON.parse(validationIssueDtoStr);
 		console.log(validationIssue);
+		let scale = 1;
 		let x = 960;
 		let y = 540;
+		let floatingTextY = 1080;
 		let hueShift = 261;
+		console.log('validationIssue.PlayerId: ' + validationIssue.PlayerId);
+
 		if (validationIssue.PlayerId >= 0) {
 			const player: Character = this.getPlayer(validationIssue.PlayerId);
 			hueShift = player.hueShift;
 			x = this.getPlayerX(this.getPlayerIndex(validationIssue.PlayerId));
 			y = 1080 - 300;
 		}
+		else {
+			const creature: InGameCreature = this.inGameCreatureManager.getInGameCreatureByIndex(-validationIssue.PlayerId);
+			if (creature) {
+				const hsl: HueSatLight = HueSatLight.fromHex(creature.BackgroundHex);
+				hueShift = hsl.hue * 360;
+				x = this.inGameCreatureManager.getCenterXByIndex(creature.Index);
+				y = InGameCreatureManager.creatureScrollHeight / 2;
+				scale = 0.5;
+				floatingTextY = 0;
+			}
+		}
 
 		let sprite: SpriteProxy;
 		if (validationIssue.ValidationAction === ValidationAction.Stop) {
 			sprite = this.bigX.addShifted(x, y, 0, hueShift);
-			sprite.expirationDate = performance.now() + 6000;
+			sprite.expirationDate = performance.now() + 5000;
 		}
 		else {
 			sprite = this.bigWarning.add(x, y);
 			sprite.expirationDate = performance.now() + 3000;
 			sprite.data = validationIssue.FloatText;
 		}
+
+		sprite.scale = scale;
 
 		this.dragonFrontSounds.safePlayMp3('WrongAnswer/WrongAnswer[6]');
 		this.dragonFrontSounds.safePlayMp3('WrongAnswer/BigXFire');
@@ -1281,7 +1298,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 				this.floatPlayerText(validationIssue.PlayerId, validationIssue.FloatText, player.dieBackColor, player.dieFontColor);
 			}
 			else {
-				this.addFloatingText(960, validationIssue.FloatText, '#ffffff', '#000000');
+				this.addFloatingText(x, validationIssue.FloatText, '#ffffff', '#000000', floatingTextY);
 			}
 	}
 
@@ -1667,6 +1684,8 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 			this.cardManager.showCard(cardDto.Card);
 		else if (cardDto.Command === 'Update Hands')
 			this.cardManager.updateHands(cardDto.Hands);
+		else if (cardDto.Command === 'Play Cards')
+			this.cardManager.playCards(cardDto.Hands);
 	}
 }
 

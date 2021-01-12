@@ -4,6 +4,8 @@
 	Name: string;
 	Alignment: string;
 	ImageURL: string;
+	ForegroundHex: string;
+	BackgroundHex: string;
 	Kind: string;
 	Index: number;
 	CropX: number;
@@ -40,6 +42,8 @@
 		this.Name = inGameCreature.Name;
 		this.Alignment = inGameCreature.Alignment;
 		this.Kind = inGameCreature.Kind;
+		this.BackgroundHex = inGameCreature.BackgroundHex;
+		this.ForegroundHex = inGameCreature.ForegroundHex;
 		this.Index = inGameCreature.Index;
 		this.CropX = inGameCreature.CropX;
 		this.CropY = inGameCreature.CropY;

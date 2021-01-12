@@ -23,6 +23,8 @@ namespace DHDM
 		const string STR_SelectPreviousNpcCard = "SelectPreviousNpcCard";
 		const string STR_SelectPreviousPlayerCard = "SelectPreviousPlayerCard";
 		const string STR_PlaySelectedNpcCard = "PlaySelectedNpcCard";
+		const string STR_PlaySelectedPlayerCard = "PlaySelectedPlayerCard";
+		const string STR_LastNpcCreatureId = "{lastNpcCreatureId}";
 		CardCommandType cardCommandType;
 
 		int creatureId;
@@ -44,7 +46,7 @@ namespace DHDM
 		{
 			if (targetOverride != null)
 			{
-				if (targetOverride == "{lastNpcCreatureId}")
+				if (targetOverride == STR_LastNpcCreatureId)
 					creatureId = lastNpcCreatureId;
 				else
 				{
@@ -107,10 +109,12 @@ namespace DHDM
 				cardCommandType = CardCommandType.SelectPreviousCard;
 				return true;
 			}
-			if (message == STR_PlaySelectedNpcCard)
+			 if (message.StartsWith(STR_PlaySelectedNpcCard) || message.StartsWith(STR_PlaySelectedPlayerCard))
 			{
+				targetOverride = message.EverythingAfter(" ").Trim();
+				if (string.IsNullOrWhiteSpace(targetOverride))
+					targetOverride = STR_LastNpcCreatureId;
 				cardCommandType = CardCommandType.PlaySelectedCard;
-				creatureId = lastNpcCreatureId;
 				return true;
 			}
 
