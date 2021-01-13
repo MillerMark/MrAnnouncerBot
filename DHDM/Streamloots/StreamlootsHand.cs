@@ -29,6 +29,7 @@ namespace DHDM
 		public StreamlootsCard SelectedCard { get; set; }
 		public List<StreamlootsCard> Cards { get; set; } = new List<StreamlootsCard>();
 		public List<StreamlootsCard> CardsToPlay { get; set; } = new List<StreamlootsCard>();
+		public List<StreamlootsCard> CardsToReveal { get; set; } = new List<StreamlootsCard>();
 		public int Count => Cards.Count;
 		public int HueShift { get; set; }
 		public StreamlootsHand()
@@ -54,6 +55,35 @@ namespace DHDM
 			CardsToPlay.Add(cardToPlay);
 		}
 
+		public void RevealSecretCard(StreamlootsCard cardToReveal)
+		{
+			if (cardToReveal == null)
+				return;
+			
+			if (!cardToReveal.IsSecret)
+				return;
+
+			Cards.Remove(cardToReveal);
+			CardsToReveal.Add(cardToReveal);
+		}
+
+		List<StreamlootsCard> FindCardsByName(string cardName)
+		{
+			return Cards.Where(x => x.CardName.StartsWith(cardName)).ToList();
+		}
+
+		public bool RevealSecretCard(string cardId)
+		{
+			string cardName = cardId.Replace('_', ' ');
+			CardsToReveal = FindCardsByName(cardName);
+			if (CardsToReveal.Count == 0)
+				return false;
+			Cards.RemoveAll(x => x.CardName.StartsWith(cardName));
+			if (SelectedCard != null && CardsToReveal.Contains(SelectedCard))
+				SelectedCard = null;
+			return true;
+		}
+
 		public void PlaySelectedCard()
 		{
 			PlayCard(SelectedCard);
@@ -76,5 +106,6 @@ namespace DHDM
 		{
 			CardsToPlay.Clear();
 		}
+		
 	}
 }

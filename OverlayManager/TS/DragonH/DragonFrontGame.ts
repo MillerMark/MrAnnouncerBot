@@ -1681,11 +1681,13 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	cardCommand(cardStr: string) {
 		const cardDto: CardDto = JSON.parse(cardStr);
 		if (cardDto.Command === 'ShowCard')
-			this.cardManager.showCard(cardDto.Card);
+			this.cardManager.showCard(cardDto.Card, cardDto.CharacterId);
 		else if (cardDto.Command === 'Update Hands')
 			this.cardManager.updateHands(cardDto.Hands);
 		else if (cardDto.Command === 'Play Cards')
 			this.cardManager.playCards(cardDto.Hands);
+		else if (cardDto.Command === 'Reveal Secret Cards')
+			this.cardManager.revealCards(cardDto.Hands);
 	}
 }
 

@@ -1223,7 +1223,6 @@ namespace DHDM
 			});
 
 			UnhookTwitchClientDungeonMasterEvents();
-			dhClient = null;
 			dungeonMasterClient = null;
 			History.Log($"DungeonMasterClient_OnDisconnected");
 		}
@@ -1573,6 +1572,8 @@ namespace DHDM
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
+			//UnhookTwitchClientDungeonMasterEvents();
+			//HookTwitchClientDungeonMasterEvents();
 			string message = e.ChatMessage.Message;
 			if (IsPlayer(e.ChatMessage.UserId))
 				if (CharacterSaysSomething(message))
@@ -5821,6 +5822,8 @@ namespace DHDM
 
 		public int GetPlayerIdFromName(string characterName)
 		{
+			if (characterName == "*")
+				return CardHandManager.IntAllPlayersId;
 			return AllPlayers.GetPlayerIdFromName(game.Players, characterName);
 		}
 
@@ -9431,22 +9434,11 @@ namespace DHDM
 			
 		}
 
-		int GetCreatureId(string targetName)
-		{
-			int playerIdFromName = AllPlayers.GetPlayerIdFromName(targetName);
-			if (playerIdFromName >= 0)
-				return playerIdFromName;
-			InGameCreature creatureByName = AllInGameCreatures.GetCreatureByName(targetName);
-			if (creatureByName != null)
-				return -creatureByName.Index;
-			return int.MinValue;
-		}
-
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
 			string msg = ea.CardDto.Card.message;
 
-			int characterId = GetCreatureId(ea.CardDto.Card.Target);
+			int characterId = ea.CardDto.CharacterId;
 			if (characterId != int.MinValue)
 			{
 				cardHandManager.AddCard(characterId, ea.CardDto.Card);
@@ -9469,7 +9461,7 @@ namespace DHDM
 			System.Diagnostics.Debugger.Break();
 		}
 
-		public void CardCommand(CardCommandType cardCommandType, int creatureId)
+		public void CardCommand(CardCommandType cardCommandType, int creatureId, string cardId = "")
 		{
 			switch (cardCommandType)
 			{
@@ -9487,6 +9479,9 @@ namespace DHDM
 					return;
 				case CardCommandType.PlaySelectedCard:
 					cardHandManager.PlaySelectedCard(creatureId);
+					return;
+				case CardCommandType.RevealSecretCard:
+					cardHandManager.RevealSecretCard(creatureId, cardId);
 					return;
 			}
 			System.Diagnostics.Debugger.Break();

@@ -9,6 +9,7 @@ namespace DHDM
 {
 	public class CardHandManager
 	{
+		public const int IntAllPlayersId = 10000000;
 		// TODO: I need a way to save this state when it changes during the game.
 		public Dictionary<int, StreamlootsHand> Hands { get; private set; } = new Dictionary<int, StreamlootsHand>();
 		public CardHandManager()
@@ -106,7 +107,17 @@ namespace DHDM
 			int selectedCardIndex = hand.GetSelectedCardIndex();
 			if (selectedCardIndex == -1)
 			{
-				hand.SelectedCard = hand.Cards[0];
+				hand.SelectedCard = null;
+				foreach (StreamlootsCard card in hand.Cards)
+				{
+					if (!card.IsSecret)
+					{
+						hand.SelectedCard = card;
+						break;
+					}
+				}
+				if (hand.SelectedCard == null)
+					hand.SelectedCard = hand.Cards[0];
 			}
 			else
 			{
@@ -130,7 +141,18 @@ namespace DHDM
 			int selectedCardIndex = hand.GetSelectedCardIndex();
 			if (selectedCardIndex == -1)
 			{
-				hand.SelectedCard = hand.Cards[0];
+				hand.SelectedCard = null;
+				for (int i = hand.Cards.Count - 1; i >= 0; i--)
+				{
+					StreamlootsCard card = hand.Cards[i];
+					if (!card.IsSecret)
+					{
+						hand.SelectedCard = card;
+						break;
+					}
+				}
+				if (hand.SelectedCard == null)
+					hand.SelectedCard = hand.Cards[hand.Cards.Count - 1];
 			}
 			else
 			{
@@ -154,6 +176,29 @@ namespace DHDM
 			hand.PlaySelectedCard();
 			SendCardCommand("Play Cards");
 			hand.SelectedCardsHaveBeenPlayed();
+		}
+
+		public void RevealSecretCard(int creatureId, string cardId)
+		{
+			if (!Hands.ContainsKey(creatureId) && creatureId != IntAllPlayersId)
+				return;
+			if (creatureId == IntAllPlayersId)
+			{
+				bool haveRevealedAnything = false;
+				foreach (StreamlootsHand hand in Hands.Values)
+				{
+					if (hand.RevealSecretCard(cardId))
+						haveRevealedAnything = true;
+				}
+				if (haveRevealedAnything)
+					SendCardCommand("Reveal Secret Cards");
+			}
+			else
+			{
+				StreamlootsHand hand = Hands[creatureId];
+				if (hand.RevealSecretCard(cardId))
+					SendCardCommand("Reveal Secret Cards");
+			}
 		}
 	}
 }

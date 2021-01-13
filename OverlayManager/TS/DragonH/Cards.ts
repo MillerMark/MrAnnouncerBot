@@ -11,6 +11,12 @@ class CardStateData {
 	}
 }
 
+class RevealCardStateData {
+	constructor(public revealCardIndex: number, public xPos: number, public yPos: number, public offscreenY: number, public hueShift: number, public userName: string, public characterId: number) {
+
+	}
+}
+
 class StreamlootsPurchase {
 	type: string;
 	imageUrl: string;
@@ -47,11 +53,13 @@ class StreamlootsHand {
 	SelectedCard: StreamlootsCard;
 	Cards: StreamlootsCard[];
 	CardsToPlay: StreamlootsCard[];
+	CardsToReveal: StreamlootsCard[];
 }
 
 class CardDto {
 	Purchase: StreamlootsPurchase;
 	Card: StreamlootsCard;
+	CharacterId: number;
 	Hands: Array<StreamlootsHand>;
 	Command: string;
 }
@@ -155,7 +163,9 @@ class CardManager {
 		context.fillText(sprite.data.characterId.toString(), sprite.x + this.knownCards.originX, sprite.y + this.knownCards.originY - CardManager.inHandCardHeight / 2 - 5);
 	}
 
-	showCard(card: StreamlootsCard) {
+	static readonly creditLifespanMs: number = 3500;
+
+	showCard(card: StreamlootsCard, characterId: number) {
 		let { xPos, yPos } = this.getBigCardCenter(card);
 
 		// TODO: Consider making showCard show the new card as selected, like this:
@@ -170,9 +180,12 @@ class CardManager {
 		sprite.autoScaleFactorPerSecond = 1.8;
 		sprite.autoScaleMaxScale = 1;
 		sprite.easeSpin(performance.now(), -degreesToSpin, Random.between(-3, 3), entryTime);
-		sprite.expirationDate = performance.now() + 8000;
+		sprite.expirationDate = performance.now() + 4800;
 		sprite.fadeInTime = 600;
 		sprite.fadeOutTime = 1000;
+		const credit: TextEffect = this.addCardPlayedByCredit(xPos, yPos, card.UserName, characterId);
+		credit.expirationDate = performance.now() + entryTime + CardManager.creditLifespanMs;
+		credit.delayStart = 3 * entryTime / 4;
 	}
 
 	static readonly cardHeight: number = 424;
@@ -182,6 +195,7 @@ class CardManager {
 	static readonly inHandCardSeparatorMargin: number = 3;
 	static readonly selectedCardScale: number = 1;
 	static readonly selectionTransitionTime: number = 220;  // ms
+	static readonly selectionTransitionFadeOutTime: number = 130;  // ms
 	static readonly inHandScale: number = CardManager.inHandCardHeight / CardManager.cardHeight;
 	static readonly inHandCardWidth: number = CardManager.cardWidth * CardManager.inHandScale;
 	static readonly inHandCardSpace: number = CardManager.inHandCardWidth + CardManager.inHandCardSeparatorMargin;
@@ -234,6 +248,16 @@ class CardManager {
 	playCards(hands: StreamlootsHand[]) {
 		hands.forEach((hand: StreamlootsHand) => {
 			this.playCardsFromHand(hand);
+		});
+		this.updateHands(hands);
+	}
+
+	revealCards(hands: StreamlootsHand[]) {
+		const timeBetweenHands = 150;
+		let delayStart = 0;
+		hands.forEach((hand: StreamlootsHand) => {
+			if (this.revealCardsFromHand(hand, delayStart))
+				delayStart += timeBetweenHands;
 		});
 		this.updateHands(hands);
 	}
@@ -301,6 +325,7 @@ class CardManager {
 				cardSprite.fadeInTime = 500;
 				const selectionOffset: number = this.getSelectionVerticalOffset(yPos, card.Guid, hand.SelectedCard);
 				cardSprite.ease(performance.now(), cardSprite.x, offscreenY - this.knownCards.originY, cardSprite.x, yPos - this.knownCards.originY + selectionOffset, 500);
+				this.playCardDealtSound();
 			}
 		});
 
@@ -316,16 +341,22 @@ class CardManager {
 		this.removeExistingSelectionGlow(hand.CharacterId);
 
 		if (hand.SelectedCard !== null) {
+			this.playCardDealtSound();
+			const angleOffset: number = Random.between(-2, 2);
 			// Add big glow...
 			const { xPos, yPos } = this.getBigCardCenter(hand.SelectedCard);
-			this.addBigCardGlow(hand, xPos, yPos);
+			this.addBigCardGlow(hand, xPos, yPos, angleOffset);
 
 			// Add big card...
-			this.addBigCard(hand, xPos, yPos);
+			this.addBigCard(hand, xPos, yPos, angleOffset);
 
 			// Add small glow:
 			this.addSmallCardGlow(hand);
 		}
+	}
+
+	playCardDealtSound(delayMs = 0) {
+		this.soundManager.playMp3In(delayMs, 'Cards/Deal[10]');
 	}
 
 	selectionChanged(hand: StreamlootsHand): boolean {
@@ -368,28 +399,38 @@ class CardManager {
 			});
 	}
 
-	private addBigCard(hand: StreamlootsHand, xPos: number, yPos: number) {
+	private addBigCard(hand: StreamlootsHand, xPos: number, yPos: number, angleOffset = 0) {
 		const imageIndex: number = this.knownCards.addImage(this.getCardImageName(hand.SelectedCard));
-		const cardSprite: SpriteProxy = this.knownCards.add(xPos, yPos, imageIndex);
-		cardSprite.scale = CardManager.selectedCardScale;
-		cardSprite.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
-		cardSprite.fadeInTime = CardManager.selectionTransitionTime;
+		const bigCard: SpriteProxy = this.knownCards.add(xPos, yPos, imageIndex);
+		bigCard.scale = CardManager.selectedCardScale;
+		bigCard.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
+		bigCard.fadeInTime = CardManager.selectionTransitionTime;
+		bigCard.rotation = angleOffset;
 		this.addCardPlayedByCredit(xPos, yPos, hand.SelectedCard.UserName, hand.CharacterId);
 	}
 
-	private addCardPlayedByCredit(xPos: number, yPos: number, UserName: string, characterId: number) {
+	static readonly CardMidScreen: number = 515;
+
+	private addCardPlayedByCredit(xPos: number, yPos: number, UserName: string, characterId: number): TextEffect {
 		this.hideCreditsFor(characterId);
 
 		const fontSize = 48;
 		const textCardMargin = 8;
 		const halfCardPlusTextOffset: number = CardManager.cardHeight / 2 + fontSize / 2 + textCardMargin;
 
+		let verticalThrust: number;
 		let yOffset: number;
-		if (yPos < 515)
+		if (yPos < CardManager.CardMidScreen) {
 			yOffset = -halfCardPlusTextOffset;
-		else
+			verticalThrust = -0.06;
+		}
+		else {
 			yOffset = halfCardPlusTextOffset;
-		const credit: TextEffect = this.animations.addText(new Vector(xPos, yPos + yOffset), UserName, 3500);
+			verticalThrust = 0.06;
+		}
+
+		const credit: TextEffect = this.animations.addText(new Vector(xPos, yPos + yOffset), UserName, CardManager.creditLifespanMs);
+		credit.verticalThrust = verticalThrust;
 		credit.fontSize = fontSize;
 		credit.fontName = 'Enchanted Land';
 		credit.fontColor = '#ff4040';
@@ -401,9 +442,9 @@ class CardManager {
 		credit.textAlign = 'center';
 		credit.textBaseline = 'middle';
 		credit.data = characterId;
-		credit.verticalThrust = Math.sign(yOffset) * 0.06;
 		credit.targetScale = 0.7;
 		credit.autoScaleFactorPerSecond = 0.96;
+		return credit;
 	}
 
 	private hideCreditsFor(characterId: number) {
@@ -420,20 +461,22 @@ class CardManager {
 		});
 	}
 
-	private addBigCardGlow(hand: StreamlootsHand, xPos: number, yPos: number) {
-		const selectionGlow: SpriteProxy = this.selectedCardGlow.addShifted(xPos, yPos, -1, hand.HueShift);
+	private addBigCardGlow(hand: StreamlootsHand, xPos: number, yPos: number, angleOffset = 0) {
+		const selectionGlow: SpriteProxy = this.selectedCardGlow.addShifted(xPos, yPos, -1, hand.HueShift + Random.between(-10, 10));
 		selectionGlow.scale = CardManager.selectedCardScale;
 		selectionGlow.data = new CardStateData(hand.SelectedCard.Guid, hand.CharacterId, 0);
 		selectionGlow.fadeInTime = CardManager.selectionTransitionTime;
+		selectionGlow.rotation = angleOffset;
 	}
 
-	removeExistingSelectionGlow(characterId: number) {
+	private removeExistingSelectionGlow(characterId: number) {
+		const timeBeforeFadeout = 200;
 		this.selectedCardGlow.spriteProxies.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData && sprite.data.characterId === characterId) {
-				sprite.fadeOutNow(CardManager.selectionTransitionTime);
+				sprite.fadeOutAfter(timeBeforeFadeout, CardManager.selectionTransitionFadeOutTime);
 				const bigCard: SpriteProxy = this.getCard(sprite.data.guid, characterId, CardManager.selectedCardScale);
 				if (bigCard) {
-					bigCard.fadeOutNow(CardManager.selectionTransitionTime);
+					bigCard.fadeOutAfter(timeBeforeFadeout, CardManager.selectionTransitionFadeOutTime);
 				}
 			}
 		});
@@ -532,13 +575,18 @@ class CardManager {
 	}
 
 	private getOffscreenY(hand: StreamlootsHand) {
-		let newY: number;
-		const offscreenAmount = 50;
+		return this.getOffscreenYPlusAmount(hand, 50);
+	}
+
+	private getOffscreenRevealCardY(hand: StreamlootsHand) {
+		return this.getOffscreenYPlusAmount(hand, 250);
+	}
+
+	private getOffscreenYPlusAmount(hand: StreamlootsHand, offscreenAmount: number): number {
 		if (hand.CharacterId < 0)
-			newY = -offscreenAmount;
+			return -offscreenAmount;
 		else
-			newY = 1080 + offscreenAmount;
-		return newY;
+			return 1080 + offscreenAmount;
 	}
 
 	getCard(cardGuid: string, characterId: number, matchingScale: number): SpriteProxy {
@@ -639,7 +687,6 @@ class CardManager {
 
 	// Called when an in-game creature's x-position is animated and it slides to the left or right.
 	onMoveCreature(creature: InGameCreature, targetX: number, delayMs: number) {
-		//console.log('targetX: ' + targetX);
 		targetX += InGameCreatureManager.creatureScrollWidth / 2;
 
 		const heldCards: Array<SpriteProxy> = this.getAllCardsHeldBy(creature);
@@ -647,7 +694,6 @@ class CardManager {
 		const glowCards: Array<SpriteProxy> = this.getAllActiveGlowHeldBy(creature);
 		glowCards.forEach((sprite: SpriteProxy) => {
 			if (sprite.data instanceof CardStateData) {
-				//const selectionOffset: number = this.getSelectedGlowOffset(heldCards, sprite.data.guid);
 				const adjustedX: number = targetX + sprite.data.offset - this.selectedCardGlow.originX;
 				sprite.ease(performance.now() + delayMs, sprite.x, sprite.y, adjustedX, sprite.y, InGameCreatureManager.leftRightMoveTime);
 			}
@@ -661,28 +707,113 @@ class CardManager {
 		});
 	}
 
+	static readonly timeBetweenCards: number = 1000;
 	playCardsFromHand(hand: StreamlootsHand) {
 		const hueShift: number = hand.HueShift;
-		const timeBetweenCards = 1000;
+
 		let delayStart = 0;
 		if (hand.CardsToPlay.length > 0) {
 			hand.CardsToPlay.forEach((card: StreamlootsCard) => {
 				const { xPos, yPos } = this.getBigCardCenter(card);
-				const imageIndex: number = this.knownCards.addImage(this.getCardImageName(card));
-				const cardSprite: SpriteProxy = this.addBigCardSprite(this.knownCards, xPos, yPos, imageIndex, 0, delayStart);
-				cardSprite.fadeOutAfter(delayStart + timeBetweenCards, 1000);
-				this.addBigCardSprite(this.playedCardBackGlow, xPos, yPos, imageIndex, hueShift + Random.between(-20, 20), delayStart);
-				this.addBigCardSprite(this.playedCardFrontGlow, xPos, yPos, imageIndex, hueShift + Random.between(-20, 20), delayStart);
-				this.soundManager.playMp3In(delayStart, 'Cards/Play[9]');
-				delayStart += timeBetweenCards;
+				const cardName: string = this.getCardImageName(card);
+				this.playCard(cardName, xPos, yPos, delayStart, hueShift, card.UserName, hand.CharacterId);
+
+				delayStart += CardManager.timeBetweenCards;
 			});
 		}
 	}
 
+	private playCard(cardName: string, xPos: number, yPos: number, delayStart: number, hueShift: number, userName: string, characterId: number) {
+		const imageIndex: number = this.knownCards.addImage(cardName);
+		const cardSprite: SpriteProxy = this.addBigCardSprite(this.knownCards, xPos, yPos, imageIndex, 0, delayStart);
+		this.showCardPlayAnimation(cardSprite, delayStart, xPos, yPos, hueShift, userName, characterId);
+	}
+
+	private showCardPlayAnimation(cardSprite: SpriteProxy, delayStart: number, xPos: number, yPos: number, hueShift: number, userName: string, characterId: number) {
+		cardSprite.fadeOutAfter(delayStart + 1000, 1000);
+		const backGlow: SpriteProxy = this.addBigCardSprite(this.playedCardBackGlow, xPos, yPos, 0, hueShift + Random.between(-20, 20), delayStart);
+		const frontGlow: SpriteProxy = this.addBigCardSprite(this.playedCardFrontGlow, xPos, yPos, 0, hueShift + Random.between(-20, 20), delayStart);
+		this.soundManager.playMp3In(delayStart, 'Cards/Play[9]');
+		const credit: TextEffect = this.addCardPlayedByCredit(xPos, yPos, userName, characterId);
+		this.addPlayCardMotion(credit, delayStart);
+		this.correctMotionPaths(yPos, credit, cardSprite, backGlow, frontGlow);
+	}
+
+	private correctMotionPaths(yPos: number, credit: TextEffect, cardSprite: SpriteProxy, backGlow: SpriteProxy, frontGlow: SpriteProxy) {
+		if (yPos > CardManager.CardMidScreen) {
+			credit.verticalThrust = -credit.verticalThrust;
+			cardSprite.verticalThrustOverride = -cardSprite.verticalThrustOverride;
+			backGlow.verticalThrustOverride = -backGlow.verticalThrustOverride;
+			frontGlow.verticalThrustOverride = -frontGlow.verticalThrustOverride;
+			frontGlow.velocityY = -frontGlow.velocityY;
+			backGlow.velocityY = -backGlow.velocityY;
+			cardSprite.velocityY = -cardSprite.velocityY;
+			credit.velocityY = 5;
+		}
+		else {
+			credit.velocityY = -5;
+		}
+	}
+
+	revealStep3(revealCard: SpriteProxy) {
+		if (revealCard.data instanceof RevealCardStateData) {
+			this.addPlayCardMotion(revealCard, 0);
+			this.showCardPlayAnimation(revealCard, 0, revealCard.data.xPos, revealCard.data.yPos, revealCard.data.hueShift, revealCard.data.userName, revealCard.data.characterId);
+		}
+	}
+
+	revealStep2(secretCard: SpriteProxy) {
+		const timeToShowCard = 2500;
+		if (secretCard.data instanceof RevealCardStateData) {
+			secretCard.fadeOutNow(350);
+			const revealCard: SpriteProxy = this.knownCards.insert(secretCard.data.xPos, secretCard.data.yPos, secretCard.data.revealCardIndex);
+			revealCard.data = secretCard.data;
+			this.secretCardBurn.add(secretCard.data.xPos, secretCard.data.yPos, 0);
+			this.soundManager.safePlayMp3('Spells/GunpowderFlare');
+			setTimeout(this.revealStep3.bind(this), timeToShowCard, revealCard);
+		}
+	}
+
+	revealCardsFromHand(hand: StreamlootsHand, timeOffset: number): boolean {
+		if (hand.CardsToReveal.length === 0)
+			return false;
+
+		const hueShift: number = hand.HueShift;
+		const now: number = performance.now();
+		const timeToSpinIn = 700;
+		const timeBetweenCards = timeToSpinIn + 2500;
+		const offscreenY: number = this.getOffscreenRevealCardY(hand);
+		const originX: number = this.knownCards.originX;
+		const originY: number = this.knownCards.originY;
+		let delayStart = timeOffset;
+		hand.CardsToReveal.forEach((card: StreamlootsCard) => {
+			const { xPos, yPos } = this.getBigCardCenter(card);
+			const secretCardIndex: number = this.knownCards.addImage("Secret Card");
+			const revealCardIndex: number = this.knownCards.addImage(card.CardName);
+			const secretCard: SpriteProxy = this.knownCards.add(xPos, offscreenY, secretCardIndex);
+
+			secretCard.ease(now + delayStart, xPos - originX, offscreenY - originY, xPos - originX, yPos - originY, timeToSpinIn);
+			secretCard.easeSpin(now + delayStart, -70, 0, timeToSpinIn);
+			secretCard.data = new RevealCardStateData(revealCardIndex, xPos, yPos, offscreenY, hueShift, card.UserName, hand.CharacterId);
+			this.playCardDealtSound(delayStart + timeToSpinIn / 2);
+			setTimeout(this.revealStep2.bind(this), delayStart + timeToSpinIn, secretCard);
+
+			delayStart += timeBetweenCards;
+		});
+		return true;
+	}
+
 	private addBigCardSprite(sprites: Sprites, xPos: number, yPos: number, imageIndex: number, hueShift: number, delayStart: number): SpriteProxy {
 		const cardSprite: SpriteProxy = sprites.addShifted(xPos, yPos, imageIndex, hueShift);
-		cardSprite.delayStart = delayStart;
-		cardSprite.fadeInTime = 300;
+		this.addPlayCardMotion(cardSprite, delayStart);
 		return cardSprite;
+	}
+
+	private addPlayCardMotion(element: AnimatedElement, delayStart: number) {
+		element.delayStart = delayStart;
+		element.fadeInTime = 300;
+		element.verticalThrustOverride = 6;
+		element.velocityY = -7;
+		element.velocityX = 4;
 	}
 }
