@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using System.Collections.ObjectModel;
 using DndCore;
 using Imaging;
+using Microsoft.Extensions.Configuration;
 using SysPath = System.IO.Path;
 
 namespace CardMaker
@@ -42,9 +43,23 @@ namespace CardMaker
 		bool samplingColor;
 		bool selectingAlternate;
 		string tempFileName;
+		StreamlootsClient streamlootsClient;
+		static readonly IConfigurationRoot configuration;
+
+		static CardMakerMain()
+		{
+			var builder = new ConfigurationBuilder()
+			 .SetBasePath(Directory.GetCurrentDirectory())
+			 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+			configuration = builder.Build();
+		}
+
+		public static IConfigurationRoot Configuration { get => configuration; }
 
 		public CardMakerMain()
 		{
+			InitializeStreamlootsClient();
 			InitializeComponent();
 			CardData = new CardData();
 			CardData.LoadData();
@@ -275,7 +290,8 @@ namespace CardMaker
 				ActiveCard.LinkedPropertyChanged += Card_LinkedPropertyChanged;
 				tbxCardName.SelectAll();
 				tbxCardName.Focus();
-			} catch (Exception ex)
+			}
+			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, "Exception");
 			}
@@ -426,7 +442,8 @@ namespace CardMaker
 				try
 				{
 					cardImageLayer.RandomlySetProperties(layerGenerationOptions);
-				} finally
+				}
+				finally
 				{
 					ActiveCard.EndUpdate();
 				}
@@ -742,12 +759,14 @@ namespace CardMaker
 					try
 					{
 						SelectCorrectAlternateImageLayer(cardImageLayer);
-					} finally
+					}
+					finally
 					{
 						EndUpdate();
 					}
 				}
-			} else
+			}
+			else
 				lbAlternates.Visibility = Visibility.Collapsed;
 		}
 
@@ -757,7 +776,8 @@ namespace CardMaker
 			try
 			{
 				SetActiveCard(lbCards.SelectedItem as Card);
-			} finally
+			}
+			finally
 			{
 				EndUpdate();
 			}
@@ -799,7 +819,8 @@ namespace CardMaker
 			try
 			{
 				cardLayerManager.AddImageLayersToCanvas(cvsLayers);
-			} finally
+			}
+			finally
 			{
 				LayerDetails.EndUpdate();
 			}
@@ -893,7 +914,8 @@ namespace CardMaker
 				ActiveCard.InvalidateLayerMods();
 				ActiveCard.LayerPropertiesHaveChanged();
 				SelectLinkedAlternates(newAlternateImageLayer);
-			} finally
+			}
+			finally
 			{
 				selectingAlternate = false;
 			}
@@ -921,7 +943,8 @@ namespace CardMaker
 			try
 			{
 				LoadNewStyle(card.StylePath);
-			} finally
+			}
+			finally
 			{
 				card.EndUpdate();
 			}
@@ -1005,7 +1028,8 @@ namespace CardMaker
 						SetDetailsIsSelected(cardImageLayer);
 					}
 				}
-			} finally
+			}
+			finally
 			{
 				EndUpdate();
 			}
@@ -1034,7 +1058,8 @@ namespace CardMaker
 				bool isValidCard = card != null;
 				btnDeleteCard.IsEnabled = isValidCard;
 				spSelectedCard.Visibility = isValidCard ? Visibility.Visible : Visibility.Collapsed;
-			} finally
+			}
+			finally
 			{
 				EndUpdate();
 			}
@@ -1054,7 +1079,8 @@ namespace CardMaker
 					SetActiveCard(null);
 				else
 					SetActiveCard(deck.Cards[0]);
-			} finally
+			}
+			finally
 			{
 				EndUpdate();
 			}
@@ -1071,7 +1097,8 @@ namespace CardMaker
 				bool isValidField = field != null;
 				btnDeleteField.IsEnabled = isValidField;
 				spActiveField.Visibility = isValidField ? Visibility.Visible : Visibility.Collapsed;
-			} finally
+			}
+			finally
 			{
 				EndUpdate();
 			}
@@ -1094,7 +1121,8 @@ namespace CardMaker
 			{
 				grdLayerDetails.Visibility = Visibility.Collapsed;
 				grdLayerDetail.Visibility = Visibility.Collapsed;
-			} else
+			}
+			else
 			{
 				grdLayerDetails.Visibility = Visibility.Visible;
 				grdLayerDetail.Visibility = Visibility.Visible;
@@ -1120,7 +1148,8 @@ namespace CardMaker
 			{
 				SetCardGenOptions(BoundaryKind.Min, GetSliderNamePart(slider), slider.Minimum);
 				SetCardGenOptions(BoundaryKind.Max, GetSliderNamePart(slider), slider.Maximum);
-			} else
+			}
+			else
 				SetCardGenOptions(boundaryKind, GetSliderNamePart(slider), slider.Value);
 		}
 
@@ -1396,7 +1425,7 @@ namespace CardMaker
 			string fileName = $"{spellFolder}\\{spellDto.name}.png";
 			if (File.Exists(fileName))
 			{
-				
+
 				// Placeholder for spells is 187x187
 				// TODO: Stretch image to fit placeholder
 				card.Placeholder = fileName;
@@ -1473,7 +1502,7 @@ namespace CardMaker
 			}
 
 			string rollDescription = "roll";
-			
+
 			switch (rollKind)
 			{
 				case STR_Skill:
@@ -1555,7 +1584,7 @@ namespace CardMaker
 
 		void SetCardRarity(Card card, string rollKind, int modifier, int powerLevel, bool isSecret)
 		{
-			
+
 		}
 
 		void QuickAddAllLayerDetails(Card card)
@@ -1603,6 +1632,10 @@ namespace CardMaker
 			if (!int.TryParse(menuItem.Tag.ToString(), out int powerLevel))
 				return;
 			CreateCardsAtPowerLevel(powerLevel);
+		}
+		void InitializeStreamlootsClient()
+		{
+			streamlootsClient = new StreamlootsClient(new MySecureString(Configuration["Secrets:StreamlootsBearerToken"]));
 		}
 	}
 }

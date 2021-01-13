@@ -115,7 +115,7 @@ namespace DHDM
 				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
 				//`! !!!                                                                                      !!!
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				Streamloots.Start(Twitch.Configuration["Secrets:StreamlootsId"]);
+				Streamloots.Start(new MySecureString(Twitch.Configuration["Secrets:StreamlootsId"]));
 			}
 			finally
 			{

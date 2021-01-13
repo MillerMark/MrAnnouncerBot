@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DndCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -25,14 +26,14 @@ namespace DHDM
 			CardRedeemed?.Invoke(sender, ea);
 		}
 
-		private string streamlootsID;
+		private MySecureString streamlootsID;
 
 		private WebRequest webRequest;
 		private Stream responseStream;
 
 		private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-		public StreamlootsService(string streamlootsID)
+		public StreamlootsService(MySecureString streamlootsID)
 		{
 			this.streamlootsID = streamlootsID;
 		}
@@ -72,7 +73,13 @@ namespace DHDM
 
 		private void BackgroundCheck()
 		{
-			webRequest = WebRequest.Create(string.Format("https://widgets.streamloots.com/alerts/{0}/media-stream", streamlootsID));
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//`! !!!                                                                                      !!!
+			//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
+			//`! !!!                                                                                      !!!
+			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+			webRequest = WebRequest.Create(string.Format("https://widgets.streamloots.com/alerts/{0}/media-stream", streamlootsID.GetStr()));
 			((HttpWebRequest)webRequest).AllowReadStreamBuffering = false;
 			WebResponse response = webRequest.GetResponse();
 			responseStream = response.GetResponseStream();

@@ -13,5 +13,6 @@ namespace CardMaker
 	/// </summary>
 	public partial class App : Application
 	{
+
 	}
 }
