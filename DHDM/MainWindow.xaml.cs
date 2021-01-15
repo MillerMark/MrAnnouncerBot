@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using System;
+using Streamloots;
 using DndCore;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -115,7 +116,7 @@ namespace DHDM
 				//`! !!!  Turn off Debug Visualizer before stepping through this method live on the stream!!! !!!
 				//`! !!!                                                                                      !!!
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				Streamloots.Start(new MySecureString(Twitch.Configuration["Secrets:StreamlootsId"]));
+				StreamlootsBackgroundTask.Start(new MySecureString(Twitch.Configuration["Secrets:StreamlootsId"]));
 			}
 			finally
 			{
@@ -9431,11 +9432,12 @@ namespace DHDM
 
 		private void StreamlootsService_CardsPurchased(object sender, CardEventArgs ea)
 		{
-			
+			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 		}
 
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
+			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 			string msg = ea.CardDto.Card.message;
 
 			int characterId = ea.CardDto.CharacterId;

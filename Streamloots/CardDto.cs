@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using DndCore;
 
-namespace DHDM
+namespace Streamloots
 {
 	public class CardDto
 	{
@@ -11,7 +11,6 @@ namespace DHDM
 		public StreamlootsCard Card { get; set; }
 		public int CharacterId { get; set; }
 		public string Command { get; set; }
-		public List<StreamlootsHand> Hands { get; set; }
 
 		int GetCreatureId(string targetName)
 		{

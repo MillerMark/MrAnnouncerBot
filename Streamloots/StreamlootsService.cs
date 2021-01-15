@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DHDM
+namespace Streamloots
 {
 	public delegate void CardEventHandler(object sender, CardEventArgs ea);
 	public class StreamlootsService : IStreamlootsService, IDisposable
@@ -146,7 +146,7 @@ namespace DHDM
 
 		void ShowCardEvent(CardDto cardDto)
 		{
-			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(cardDto));
+			
 		}
 
 		void ShowPurchase(StreamlootsPurchase purchase)

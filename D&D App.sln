@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardMaker", "CardMaker\Card
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imaging", "Imaging\Imaging.csproj", "{A514DE46-AA88-471B-81A8-2C387DC629F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streamloots", "Streamloots\Streamloots.csproj", "{F7623E7A-2D21-420C-95FB-406D8D7F50CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A514DE46-AA88-471B-81A8-2C387DC629F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

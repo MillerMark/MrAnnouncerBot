@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace DHDM
+namespace Streamloots
 {
 	public class StreamlootsPurchase
 	{

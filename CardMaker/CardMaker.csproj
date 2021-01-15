@@ -217,7 +217,7 @@
     <Compile Include="PropertyLink.cs" />
     <Compile Include="Rarity.cs" />
     <Compile Include="ReflectionExtensions.cs" />
-    <Compile Include="StreamlootsClient.cs" />
+    <Compile Include="Streamloots\StreamlootsClient.cs" />
     <Compile Include="WpfExtensionMethods.cs" />
     <Page Include="CardMaker.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -276,6 +276,10 @@
     <ProjectReference Include="..\Imaging\Imaging.csproj">
       <Project>{a514de46-aa88-471b-81a8-2c387dc629f7}</Project>
       <Name>Imaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Streamloots\Streamloots.csproj">
+      <Project>{f7623e7a-2d21-420c-95fb-406d8d7f50cd}</Project>
+      <Name>Streamloots</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

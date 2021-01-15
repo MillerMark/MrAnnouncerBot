@@ -56,7 +56,7 @@ class StreamlootsHand {
 	CardsToReveal: StreamlootsCard[];
 }
 
-class CardDto {
+class CardHandDto {
 	Purchase: StreamlootsPurchase;
 	Card: StreamlootsCard;
 	CharacterId: number;

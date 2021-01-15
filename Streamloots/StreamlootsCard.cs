@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 
-namespace DHDM
+namespace Streamloots
 {
 	public class StreamlootsCard
 	{

@@ -3,10 +3,19 @@ using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using DndCore;
+using Streamloots;
 using System.Windows.Media;
 
 namespace DHDM
 {
+	public class CardHandDto: CardDto
+	{
+		public List<StreamlootsHand> Hands { get; set; }
+		public CardHandDto()
+		{
+			
+		}
+	}
 	public class CardHandManager
 	{
 		public const int IntAllPlayersId = 10000000;
@@ -24,7 +33,7 @@ namespace DHDM
 
 		void SendCardCommand(string command)
 		{
-			CardDto cardDto = new CardDto();
+			CardHandDto cardDto = new CardHandDto();
 			cardDto.Hands = Hands.Values.ToList();
 			cardDto.Command = command;
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(cardDto));

@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DHDM
+namespace Streamloots
 {
-	public static class Streamloots
+	public static class StreamlootsBackgroundTask
 	{
 		public static void Start(MySecureString streamlootsId)
 		{
