@@ -8,9 +8,9 @@ using System.Windows.Media.Imaging;
 
 namespace CardMaker
 {
-	public static class ImageHelper
+	public static class CanvasExtensions
 	{
-		public static void ExportToPng(Uri path, Canvas surface)
+		public static void SaveToPng(this Canvas surface, Uri path)
 		{
 			if (path == null) return;
 

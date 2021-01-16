@@ -188,7 +188,7 @@ namespace DndCore
 			throw new NotImplementedException();
 		}
 
-		static int GetLevel(string levelStr)
+		public static int GetLevel(string levelStr)
 		{
 			levelStr = levelStr.ToLower();
 			if (levelStr.IndexOf("cantrip") > 0)

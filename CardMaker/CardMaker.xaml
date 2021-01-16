@@ -200,7 +200,12 @@
 
 					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 						<TextBlock Text="Additional Instructions: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-						<TextBox x:Name="tbxAdditionalInstructions" Text="{Binding Path=AdditionalInstructions}" AcceptsReturn="False" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" Width="420"/>
+						<TextBox x:Name="tbxAdditionalInstructions" Text="{Binding Path=AdditionalInstructions}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
+					</StackPanel>
+
+					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
+						<TextBlock Text="Alert Message: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
+						<TextBox x:Name="tbxRedemptionMessage" Text="{Binding Path=AlertMessage}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
 					</StackPanel>
 
 					<StackPanel Orientation="Horizontal" Margin="0, 14, 0, 0">
@@ -667,6 +672,9 @@
 							X
 						</Button>
 					</Grid>
+					<Button x:Name="btnUploadImage" Click="btnUploadImage_Click" Margin="20, 14, 0, 0" Padding="10, 0" Width="135" Height="28" >
+						Save/Update Image
+					</Button>
 				</StackPanel>
 			</StackPanel>
 		</StackPanel>

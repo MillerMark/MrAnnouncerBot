@@ -23,7 +23,7 @@ namespace CardMaker
 		public StreamlootsClient(MySecureString bearerToken)
 		{
 			client.DefaultRequestHeaders.Add("authorization", $"Bearer {bearerToken.GetStr()}");
-			TestApi();
+			//TestApi();
 		}
 
 		List<SetCardViewModel> GetNewCards()

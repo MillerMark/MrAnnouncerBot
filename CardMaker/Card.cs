@@ -86,7 +86,7 @@ namespace CardMaker
 			foreach (string assignment in assignments)
 				layer.AddAssignment(assignment);
 		}
-		
+
 		void CreateLayerDetails()
 		{
 			allLayers.Clear();
@@ -286,6 +286,20 @@ namespace CardMaker
 			}
 		}
 
+		string alertMessage;
+		[Column]
+		public string AlertMessage
+		{
+			get => alertMessage;
+			set
+			{
+				if (alertMessage == value)
+					return;
+				alertMessage = value;
+				OnPropertyChanged();
+			}
+		}
+
 		Rarity rarity;
 		[Column]
 		public Rarity Rarity
@@ -451,6 +465,20 @@ namespace CardMaker
 				if (placeholder == value)
 					return;
 				placeholder = value;
+				OnPropertyChanged();
+			}
+		}
+
+		string imageUrl;
+		[Column]
+		public string ImageUrl
+		{
+			get => imageUrl; 
+			set
+			{
+				if (imageUrl == value)
+					return;
+				imageUrl = value;
 				OnPropertyChanged();
 			}
 		}

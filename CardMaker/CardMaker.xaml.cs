@@ -20,6 +20,7 @@ namespace CardMaker
 	/// </summary>
 	public partial class CardMakerMain : Window
 	{
+		const string imagePath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Cards";
 		const string assetsFolder = @"D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets";
 		const string spellFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons";
 		const string STR_Skill = "Skill";
@@ -45,6 +46,7 @@ namespace CardMaker
 		string tempFileName;
 		StreamlootsClient streamlootsClient;
 		static readonly IConfigurationRoot configuration;
+		CloudinaryClient cloudinaryClient;
 
 		static CardMakerMain()
 		{
@@ -60,6 +62,7 @@ namespace CardMaker
 		public CardMakerMain()
 		{
 			InitializeStreamlootsClient();
+			InitializeCloudinaryClient();
 			InitializeComponent();
 			CardData = new CardData();
 			CardData.LoadData();
@@ -87,7 +90,7 @@ namespace CardMaker
 		}
 
 		public Deck ActiveDeck
-		{
+		{	
 			get => activeDeck;
 			set
 			{
@@ -143,7 +146,7 @@ namespace CardMaker
 				return false;
 			foreach (string subDirectory in subDirectories)
 			{
-				string directoryName = System.IO.Path.GetFileName(subDirectory);
+				string directoryName = SysPath.GetFileName(subDirectory);
 				if (!directoryName.StartsWith("[") && !directoryName.StartsWith("Shared"))
 					return true;
 			}
@@ -153,8 +156,8 @@ namespace CardMaker
 		private void AddBackgroundLayers(Card card, string stylePath)
 		{
 			const string backgroundFolderName = STR_SharedBackAdornmentsFolder;
-			string basePath = System.IO.Path.GetDirectoryName(stylePath);
-			string backFolder = System.IO.Path.Combine(assetsFolder, basePath, backgroundFolderName);
+			string basePath = SysPath.GetDirectoryName(stylePath);
+			string backFolder = SysPath.Combine(assetsFolder, basePath, backgroundFolderName);
 			if (!Directory.Exists(backFolder))
 				return;
 			string[] pngFiles = Directory.GetFiles(backFolder, "*.png");
@@ -164,8 +167,8 @@ namespace CardMaker
 		private void QuickAddBackgroundLayers(Card card, string stylePath)
 		{
 			const string backgroundFolderName = STR_SharedBackAdornmentsFolder;
-			string basePath = System.IO.Path.GetDirectoryName(stylePath);
-			string backFolder = System.IO.Path.Combine(assetsFolder, basePath, backgroundFolderName);
+			string basePath = SysPath.GetDirectoryName(stylePath);
+			string backFolder = SysPath.Combine(assetsFolder, basePath, backgroundFolderName);
 			if (!Directory.Exists(backFolder))
 				return;
 			string[] pngFiles = Directory.GetFiles(backFolder, "*.png");
@@ -177,7 +180,7 @@ namespace CardMaker
 		{
 			foreach (string directory in directories)
 			{
-				string folderName = System.IO.Path.GetFileName(directory);
+				string folderName = SysPath.GetFileName(directory);
 				if (folderName.StartsWith("Shared") || folderName.StartsWith("["))
 					continue;
 				CardStyleMenuItem newMenuItem = new CardStyleMenuItem() { Header = folderName };
@@ -193,14 +196,14 @@ namespace CardMaker
 
 		private void AddCoreLayers(Card card, string stylePath)
 		{
-			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
+			string[] pngFiles = Directory.GetFiles(SysPath.Combine(assetsFolder, stylePath), "*.png");
 			foreach (string pngFile in pngFiles)
 				AddLayer(card, pngFile);
 		}
 
 		private void QuickAddCoreLayers(Card card, string stylePath)
 		{
-			string[] pngFiles = Directory.GetFiles(System.IO.Path.Combine(assetsFolder, stylePath), "*.png");
+			string[] pngFiles = Directory.GetFiles(SysPath.Combine(assetsFolder, stylePath), "*.png");
 			foreach (string pngFile in pngFiles)
 				QuickAddLayerDetails(card, pngFile);
 		}
@@ -208,8 +211,8 @@ namespace CardMaker
 		private void AddForegroundLayers(Card card, string stylePath)
 		{
 			const string foregroundFolderName = STR_TopBackAdornmentsFolder;
-			string basePath = System.IO.Path.GetDirectoryName(stylePath);
-			string foregroundFolder = System.IO.Path.Combine(assetsFolder, basePath, foregroundFolderName);
+			string basePath = SysPath.GetDirectoryName(stylePath);
+			string foregroundFolder = SysPath.Combine(assetsFolder, basePath, foregroundFolderName);
 			if (!Directory.Exists(foregroundFolder))
 				return;
 			string[] pngFiles = Directory.GetFiles(foregroundFolder, "*.png");
@@ -220,8 +223,8 @@ namespace CardMaker
 		private void QuickAddForegroundLayers(Card card, string stylePath)
 		{
 			const string foregroundFolderName = STR_TopBackAdornmentsFolder;
-			string basePath = System.IO.Path.GetDirectoryName(stylePath);
-			string foregroundFolder = System.IO.Path.Combine(assetsFolder, basePath, foregroundFolderName);
+			string basePath = SysPath.GetDirectoryName(stylePath);
+			string foregroundFolder = SysPath.Combine(assetsFolder, basePath, foregroundFolderName);
 			if (!Directory.Exists(foregroundFolder))
 				return;
 			string[] pngFiles = Directory.GetFiles(foregroundFolder, "*.png");
@@ -237,7 +240,7 @@ namespace CardMaker
 			if (!(menuItem.Tag is string fileName && fileName != null))
 				return;
 
-			string spellName = System.IO.Path.GetFileNameWithoutExtension(fileName);
+			string spellName = SysPath.GetFileNameWithoutExtension(fileName);
 			if (ActiveCard != null)
 			{
 				ActiveCard.Text = spellName;
@@ -250,7 +253,7 @@ namespace CardMaker
 		{
 			foreach (string file in files)
 			{
-				MenuItem menuItem = new MenuItem() { Header = System.IO.Path.GetFileNameWithoutExtension(file), Tag = file };
+				MenuItem menuItem = new MenuItem() { Header = SysPath.GetFileNameWithoutExtension(file), Tag = file };
 				menuItem.Click += AddImageItem_Click;
 				items.Add(menuItem);
 			}
@@ -385,7 +388,7 @@ namespace CardMaker
 
 			tempFileName = SysPath.ChangeExtension(SysPath.GetTempFileName(), ".png");
 
-			ImageHelper.ExportToPng(new Uri(tempFileName), cvsLayers);
+			cvsLayers.SaveToPng(new Uri(tempFileName));
 
 			sample = new BitmapImage();
 			sample.BeginInit();
@@ -1345,14 +1348,26 @@ namespace CardMaker
 			tbCards.Text = deck == null ? string.Empty : $"Cards in {deck.Name}:";
 		}
 
-		bool SpellLevelMatches(SpellDto x, int spellLevel, bool viewerCanCast)
+		bool SpellLevelMatches(SpellDto x, int spellLevel, bool checkCast)
 		{
 			if (spellLevel != 0 || x.level.ToLower() != "cantrip")
 				if (!int.TryParse(x.level, out int thisSpellLevel) || thisSpellLevel != spellLevel)
 					return false;
-			if (viewerCanCast)
+			if (checkCast)
 				return x.viewerCanCast != null && x.viewerCanCast.ToUpper() != "FALSE";
-			return true;
+			else
+				return x.viewerCanGift != null && x.viewerCanGift.ToUpper() != "FALSE";
+		}
+
+		public class AvailableSpells
+		{
+			public List<SpellDto> ViewerCanCast;
+			public List<SpellDto> ViewerCanGift;
+			public AvailableSpells(List<SpellDto> viewerCanCast, List<SpellDto> viewerCanGift)
+			{
+				ViewerCanCast = viewerCanCast;
+				ViewerCanGift = viewerCanGift;
+			}
 		}
 
 		void AddSpellLevelMenuItems(int spellLevel, ContextMenu contextMenu, List<SpellDto> spellsViewerCanCast, List<SpellDto> spellsViewerCanGift)
@@ -1361,14 +1376,56 @@ namespace CardMaker
 				return;
 			MenuItem menuItem = new MenuItem() { Header = $"Level {spellLevel} Spells ({spellsViewerCanCast.Count} castable, {spellsViewerCanGift.Count} giftable)" };
 			menuItem.Click += AddLevelSpellsMenuItem_Click;
-			menuItem.Tag = spellsViewerCanGift;
+			menuItem.Tag = new AvailableSpells(spellsViewerCanCast, spellsViewerCanGift);
 			contextMenu.Items.Add(menuItem);
 		}
 
 		Random random = new Random();
-		void AddSpellToDeck(SpellDto spellDto)
+		private const string userName = "{{username}}";
+		private const string target = "{{target}}";
+		private void AddGiftSpellCard(SpellDto spellDto)
+		{
+			double placeholderWidth;
+			double placeholderHeight;
+			Card scroll = CreateSpellCard("Gift", spellDto);
+			scroll.Description = GetSpellDescription(spellDto, true);
+			scroll.AdditionalInstructions = "Give this spell scroll to a player, NPC, or monster (enter their name below).";
+			scroll.AlertMessage = $"{userName} gave the {spellDto.name} spell scroll to {target}.";
+			scroll.Expires = CardExpires.Never;
+			AddPlayerNpcTargetField(scroll);
+			int randomValue = random.Next(0, 100);
+			if (randomValue < 40)
+			{
+				placeholderWidth = 155;
+				placeholderHeight = 152;
+				scroll.StylePath = "Scrolls\\Rods";
+			}
+			else if (randomValue < 60)
+			{
+				placeholderWidth = 131;
+				placeholderHeight = 130;
+				scroll.StylePath = "Scrolls\\Smooth Light";
+			}
+			else
+			{
+				placeholderWidth = 128;
+				placeholderHeight = 127;
+				scroll.StylePath = "Scrolls\\Tan";
+			}
+			scroll.ScalePlaceholder(placeholderWidth, placeholderHeight);
+		}
+
+		private static void AddPlayerNpcTargetField(Card card)
+		{
+			card.Fields.Add(new Field() { CardId = card.ID, Label = "Player/NPC to receive this scroll:", Name = "target", ParentCard = card, Required = true });
+		}
+
+		private void AddCastSpellCard(SpellDto spellDto)
 		{
 			Card card = CreateSpellCard("Cast", spellDto);
+			card.Description = GetSpellDescription(spellDto, false);
+			card.Expires = CardExpires.Immediately;
+			card.AlertMessage = $"{userName} casts the {spellDto.name} spell.";
 			const double witchcraftPlaceholderSize = 174;
 			switch (random.Next(0, 4))
 			{
@@ -1386,33 +1443,13 @@ namespace CardMaker
 					break;
 			}
 			card.ScalePlaceholder(witchcraftPlaceholderSize);
+		}
 
-			if (spellDto.viewerCanCast != "FALSE")
-			{
-				double placeholderWidth;
-				double placeholderHeight;
-				Card scroll = CreateSpellCard("Gift", spellDto);
-				int randomValue = random.Next(0, 100);
-				if (randomValue < 40)
-				{
-					placeholderWidth = 155;
-					placeholderHeight = 152;
-					scroll.StylePath = "Scrolls\\Rods";
-				}
-				else if (randomValue < 60)
-				{
-					placeholderWidth = 131;
-					placeholderHeight = 130;
-					scroll.StylePath = "Scrolls\\Smooth Light";
-				}
-				else
-				{
-					placeholderWidth = 128;
-					placeholderHeight = 127;
-					scroll.StylePath = "Scrolls\\Tan";
-				}
-				scroll.ScalePlaceholder(placeholderWidth, placeholderHeight);
-			}
+		static string RemoveConcentration(string duration, bool isScroll)
+		{
+			if (isScroll)
+				duration = duration.Replace("Concentration, ", "");
+			return duration;
 		}
 
 		private Card CreateSpellCard(string actionStr, SpellDto spellDto)
@@ -1421,7 +1458,6 @@ namespace CardMaker
 			card.Name = $"{actionStr} {spellDto.name}";
 			card.Text = spellDto.name;
 			card.TextFontSize = 60;
-			card.Description = spellDto.description;
 			string fileName = $"{spellFolder}\\{spellDto.name}.png";
 			if (File.Exists(fileName))
 			{
@@ -1441,11 +1477,14 @@ namespace CardMaker
 			if (!(sender is MenuItem menuItem))
 				return;
 
-			if (!(menuItem.Tag is List<SpellDto> spells))
+			if (!(menuItem.Tag is AvailableSpells availableSpells))
 				return;
 
-			foreach (SpellDto spellDto in spells)
-				AddSpellToDeck(spellDto);
+			foreach (SpellDto spellDto in availableSpells.ViewerCanCast)
+				AddCastSpellCard(spellDto);
+
+			foreach (SpellDto spellDto in availableSpells.ViewerCanGift)
+				AddGiftSpellCard(spellDto);
 		}
 
 		private void btnAddSpells_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -1633,9 +1672,51 @@ namespace CardMaker
 				return;
 			CreateCardsAtPowerLevel(powerLevel);
 		}
+
 		void InitializeStreamlootsClient()
 		{
 			streamlootsClient = new StreamlootsClient(new MySecureString(Configuration["Secrets:StreamlootsBearerToken"]));
 		}
+
+		void InitializeCloudinaryClient()
+		{
+			cloudinaryClient = new CloudinaryClient(imagePath, new MySecureString($"cloudinary://812749384489784:{Configuration["Secrets:cloudinaryApiSecret"]}@dragonhumpers"));
+		}
+
+		string GetFileName(Card activeCard)
+		{
+			string fileName = activeCard.Name;
+			foreach (char c in SysPath.GetInvalidFileNameChars())
+				fileName = fileName.Replace(c, '_');
+			return fileName + ".png";
+		}
+
+		private void btnUploadImage_Click(object sender, RoutedEventArgs e)
+		{
+			string fileName = GetFileName(ActiveCard);
+			cvsLayers.SaveToPng(new Uri(Path.Combine(imagePath, fileName)));
+			ActiveCard.ImageUrl = cloudinaryClient.UploadImage(fileName);
+		}
+
+		static string GetSpellDescription(SpellDto spellDto, bool isScroll)
+		{
+			string description = spellDto.description.Replace("**", "") + $" Duration: {RemoveConcentration(spellDto.duration, isScroll)}.";
+			if (description.IndexOf('{') < 0 && description.IndexOf('«') < 0 && description.IndexOf('»') < 0)
+				return description;
+
+			Spell spell = Spell.FromDto(spellDto, Spell.GetLevel(spellDto.level), 0, 3);
+
+			return description
+				.Replace("«", "")
+				.Replace("»", "")
+				.Replace("your spell save dc", "a spell save dc of 13")
+				.Replace("{spell_DieStrRaw}", spell.DieStrRaw)
+				.Replace("{spell_DieStr}", spell.DieStr)
+				.Replace("{SpellcastingAbilityModifierStr}", "+3")
+				.Replace("{spell_AmmoCount_word}", spell.AmmoCount_word)
+				.Replace("{spell_AmmoCount_Word}", spell.AmmoCount_Word)
+				.Replace("{spell_AmmoCount}", spell.AmmoCount.ToString());
+		}
 	}
 }
+
