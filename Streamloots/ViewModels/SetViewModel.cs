@@ -11,7 +11,7 @@ namespace Streamloots
 		public DateTime createdAt { get; set; }
 		public bool Default { get; set; }
 		public string imageUrl { get; set; }
-		public List<SetViewModel> loots { get; set; }
+		public List<SetLootViewModel> loots { get; set; }
 		public DateTime modifiedAt { get; set; }
 		public string name { get; set; }
 		public string ownerId { get; set; }

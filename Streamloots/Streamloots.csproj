@@ -46,9 +46,11 @@
   <ItemGroup>
     <Compile Include="CardDto.cs" />
     <Compile Include="CardEventArgs.cs" />
+    <Compile Include="ViewModels\AlertViewModel.cs" />
     <Compile Include="ViewModels\CardStatus.cs" />
     <Compile Include="ViewModels\CollectionPaginatedResult.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
+    <Compile Include="ViewModels\CreateSetLootViewModel.cs" />
     <Compile Include="ViewModels\CreateSetViewModel.cs" />
     <Compile Include="ViewModels\Currency.cs" />
     <Compile Include="ViewModels\CursorsViewModel.cs" />
@@ -75,6 +77,7 @@
     <Compile Include="StreamlootsPurchase.cs" />
     <Compile Include="StreamlootsPurchaseData.cs" />
     <Compile Include="StreamlootsService.cs" />
+    <Compile Include="ViewModels\SetCardWithImageViewModel.cs" />
     <Compile Include="ViewModels\SetCollectionResult.cs" />
     <Compile Include="ViewModels\SetLootViewModel.cs" />
     <Compile Include="ViewModels\SetViewModel.cs" />

@@ -6,15 +6,6 @@ using Newtonsoft.Json;
 
 namespace Streamloots
 {
-	public class SetCardWithImageViewModel : SetCardUpdateViewModel
-	{
-		public string imageUrl { get; set; }
-
-		public SetCardWithImageViewModel()
-		{
-			
-		}
-	}
 	public class SetCardViewModel: SetCardWithImageViewModel
 	{
 		public string _id { get; set; }

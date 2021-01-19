@@ -191,6 +191,10 @@
 						<CheckBox x:Name="ckbUploaded" Margin="20, 0, 0, 0" IsChecked="{Binding Path=Uploaded}" Foreground="#FF3C5EE5">
 							Uploaded
 						</CheckBox>
+
+						<Button x:Name="btnUploadCard" Click="btnUploadCard_Click" Margin="20, -5, 0, 0" Padding="8, 0" Height="24" >
+							Upload
+						</Button>
 					</StackPanel>
 
 					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
@@ -200,7 +204,7 @@
 
 					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 						<TextBlock Text="Additional Instructions: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-						<TextBox x:Name="tbxAdditionalInstructions" Text="{Binding Path=AdditionalInstructions}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
+						<TextBox x:Name="tbxAdditionalInstructions" Text="{Binding Path=AdditionalInstructions}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap" Margin="-6, 0, 0, 0"/>
 					</StackPanel>
 
 					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">

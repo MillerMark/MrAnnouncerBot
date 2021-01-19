@@ -12,7 +12,7 @@ namespace Streamloots
 		public string fileName { get; set; }
 		public string filePath { get; set; }
 		public string fileUri { get; set; }
-		public string metadata { get; set; }
+		public string metadata { get; set; }  // not seeing this in the card data coming back from Streamloots
 		public string mimeType { get; set; }
 		public string modifiedAt { get; set; }
 		public string name { get; set; }

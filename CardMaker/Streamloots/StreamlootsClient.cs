@@ -15,6 +15,7 @@ namespace CardMaker
 	{
 		static HttpClient client = new HttpClient();
 		const string STR_FirstDeckId = "5fb683dd69cff000391be2b2";
+		const string STR_DragonHumpersSlug = "dragonhumpers";
 
 		static StreamlootsClient()
 		{
@@ -44,7 +45,7 @@ namespace CardMaker
 			updatedTestCard.description = "This is my description.";
 			updatedTestCard.descriptionDetailed = "This is my descriptionDetailed.";
 			updatedTestCard.fragments = null;
-			updatedTestCard.redemptionLimit = null;
+			updatedTestCard.redemptionLimit = new RedemptionLimit();
 			result.Add(updatedTestCard);
 			return result;
 			//setCardViewModel.actionType = 
@@ -82,19 +83,22 @@ namespace CardMaker
 			}
 		}
 
-		public async Task<SetCardViewModel> GetSet(string setId)
+		public async Task<SetViewModel> GetSet(string setId)
 		{
+			if (string.IsNullOrWhiteSpace(setId))
+				return null;
 			string setAsStr = await client.GetStringAsync($"https://api.streamloots.com/sets/{setId}");
-			return JsonConvert.DeserializeObject<SetCardViewModel>(setAsStr);
+			return JsonConvert.DeserializeObject<SetViewModel>(setAsStr);
 		}
 
-		public async Task<SetCardViewModel> CreateSet(CreateSetViewModel setData)
+		public async Task<SetViewModel> CreateSet(CreateSetViewModel setData)
 		{
 			ByteArrayContent byteContent = ToSerializedBytes(setData);
 			//string serializedBytes = byteContent.ReadAsStringAsync().GetAwaiter().GetResult();
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/sets", byteContent);
+			
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<SetCardViewModel>(result);
+			return JsonConvert.DeserializeObject<SetViewModel>(result);
 		}
 
 		public async Task<List<SetCardViewModel>> GetCardsInDeck(string setId)
@@ -121,9 +125,12 @@ namespace CardMaker
 
 		public async Task<List<SetCardViewModel>> AddCards(string setId, List<SetCardUpdateViewModel> newCards)
 		{
-      ByteArrayContent byteContent = ToSerializedBytes(newCards);
+			foreach (SetCardUpdateViewModel setCardUpdateViewModel in newCards)
+			{
+				setCardUpdateViewModel.SelfValidate();
+			}
+			ByteArrayContent byteContent = ToSerializedBytes(newCards);
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/sets/{setId}/cards", byteContent);
-
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			List<SetCardViewModel> cardsAdded = JsonConvert.DeserializeObject<SetCardResult>(result).cards;
 			return cardsAdded;
@@ -144,6 +151,36 @@ namespace CardMaker
 			var byteContent = new ByteArrayContent(buffer);
 			byteContent.Headers.Add("content-type", "application/json");
 			return byteContent;
+		}
+
+		/// <summary>
+		/// Creates a new deck (a streamloots "set") with the specified name, and returns the setId for that deck.
+		/// </summary>
+		/// <param name="deckName">The name of the deck to create.</param>
+		/// <returns>The setId of the new deck (streamloots "set")</returns>
+		async Task<string> AddDeck(string deckName)
+		{
+			CreateSetViewModel setData = new CreateSetViewModel();
+			setData.name = deckName;
+			setData.slug = STR_DragonHumpersSlug;
+			setData.craftableCards = true;
+			setData.@default = false;
+			setData.imageUrl = "https://static.streamloots.com/b355d1ef-d931-4c16-a48f-8bed0076401b/collections/collection_icon_001.png";
+			SetViewModel setCardViewModel = await CreateSet(setData);
+			return setCardViewModel._id;
+		}
+
+		public async Task<SetCardViewModel> AddCard(Card card)
+		{
+			if (card.ParentDeck == null)
+			{
+				System.Diagnostics.Debugger.Break();
+				return null;
+			}
+			if (await GetSet(card.ParentDeck.SetId) == null)
+				card.ParentDeck.SetId = await AddDeck(card.ParentDeck.Name);
+			//return await AddCard(card.ParentDeck.SetId, card.ToSetCardUpdateViewModel());
+			return await AddCard(card.ParentDeck.SetId, card.ToSetCardWithImageViewModel());
 		}
 	}
 }

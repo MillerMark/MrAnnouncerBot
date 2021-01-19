@@ -1694,8 +1694,11 @@ namespace CardMaker
 		private void btnUploadImage_Click(object sender, RoutedEventArgs e)
 		{
 			string fileName = GetFileName(ActiveCard);
-			cvsLayers.SaveToPng(new Uri(Path.Combine(imagePath, fileName)));
+			string fullPath = Path.Combine(imagePath, fileName);
+			cvsLayers.SaveToPng(new Uri(fullPath));
 			ActiveCard.ImageUrl = cloudinaryClient.UploadImage(fileName);
+			Clipboard.SetText(fullPath);
+			ShowStatus("image path copied to clipboard.");
 		}
 
 		static string GetSpellDescription(SpellDto spellDto, bool isScroll)
@@ -1716,6 +1719,11 @@ namespace CardMaker
 				.Replace("{spell_AmmoCount_word}", spell.AmmoCount_word)
 				.Replace("{spell_AmmoCount_Word}", spell.AmmoCount_Word)
 				.Replace("{spell_AmmoCount}", spell.AmmoCount.ToString());
+		}
+
+		private void btnUploadCard_Click(object sender, RoutedEventArgs e)
+		{
+			streamlootsClient.AddCard(ActiveCard);
 		}
 	}
 }

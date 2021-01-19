@@ -42,7 +42,6 @@ class StreamlootsCard {
 	Target: string;
 	Guid: string;
 	constructor() {
-
 	}
 }
 

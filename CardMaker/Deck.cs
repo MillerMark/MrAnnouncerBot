@@ -13,6 +13,23 @@ namespace CardMaker
 	{
 		public ObservableCollection<Card> Cards { get; set; } = new ObservableCollection<Card>();
 
+
+		string setId;
+
+		[Column]
+		public string SetId
+		{
+			get => setId;
+			set
+			{
+				if (setId == value)
+					return;
+				setId = value;
+				OnPropertyChanged();
+			}
+		}
+		
+
 		public override string ToString()
 		{
 			return Name;

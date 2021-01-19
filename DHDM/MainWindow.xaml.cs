@@ -1504,8 +1504,9 @@ namespace DHDM
 			const string lara = "496519211";
 			const string zephyr = "238257153";
 			const string brendan = "491566796";
+			const string kent = "276243218";
 			const string dm = "455518839";
-			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm;
+			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm || userId == kent;
 		}
 		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{

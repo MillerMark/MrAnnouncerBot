@@ -6,11 +6,11 @@ namespace Streamloots
 	public class SetLootViewModel
 	{
 		public string _id { get; set; }
-		public string alert { get; set; }
+		public AlertViewModel alert { get; set; }
 		public DateTime createdAt { get; set; }
 		public Currency currency { get; set; }
 		public bool deactivated { get; set; }
-		public string giftAlert { get; set; }
+		public AlertViewModel giftAlert { get; set; }
 		public string imageUrl { get; set; }
 		public DateTime modifiedAt { get; set; }
 		public string ownerId { get; set; }

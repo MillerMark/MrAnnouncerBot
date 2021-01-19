@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using GoogleHelper;
 using System.Windows.Media;
 using Imaging;
+using Streamloots;
 using System.Windows;
 
 namespace CardMaker
@@ -633,6 +634,68 @@ namespace CardMaker
 					layerDetails.IsVisible = false;
 					layerDetails.IsSelected = false;
 				}
+		}
+		public SetCardWithImageViewModel ToSetCardWithImageViewModel()
+		{
+			SetCardWithImageViewModel setCardWithImageViewModel = new SetCardWithImageViewModel();
+			InitializeSetCardUpdateViewModel(setCardWithImageViewModel);
+			setCardWithImageViewModel.imageUrl = imageUrl;
+			return setCardWithImageViewModel;
+		}
+		public SetCardUpdateViewModel ToSetCardUpdateViewModel()
+		{
+			SetCardUpdateViewModel setCardUpdateViewModel = new SetCardUpdateViewModel();
+			InitializeSetCardUpdateViewModel(setCardUpdateViewModel);
+
+			return setCardUpdateViewModel;
+		}
+
+		private void InitializeSetCardUpdateViewModel(SetCardUpdateViewModel setCardUpdateViewModel)
+		{
+			setCardUpdateViewModel.actionType = "EVENT";
+			setCardUpdateViewModel.autocomplete = !FinalizeLater;
+			setCardUpdateViewModel.description = Description;
+			setCardUpdateViewModel.descriptionDetailed = AdditionalInstructions;
+			setCardUpdateViewModel.dropLimit = null;
+			setCardUpdateViewModel.dropLimited = false;
+			setCardUpdateViewModel.fragmented = false;
+			setCardUpdateViewModel.fragments = null;
+			setCardUpdateViewModel.name = Name;
+			setCardUpdateViewModel.obtainable = true;
+			setCardUpdateViewModel.order = 1;
+			setCardUpdateViewModel.rarity = Rarity.ToString();
+			setCardUpdateViewModel.rarityCardProbability = 1f;
+			setCardUpdateViewModel.redeemable = Available;
+			setCardUpdateViewModel.redeemFields = new List<RedeemFieldsViewModel>();
+			setCardUpdateViewModel.redemptionLimit = new RedemptionLimit();
+			setCardUpdateViewModel.redemptionSuccessMessage = AlertMessage;
+			setCardUpdateViewModel.rewardFields = new List<RewardFieldsViewModel>();
+
+			// TODO: Fill out redemptionLimit and rewardFields.
+			foreach (Field field in Fields)
+			{
+				setCardUpdateViewModel.redeemFields.Add(field.ToRedeemFieldsViewModel());
+			}
+			if (Cooldown > 0)
+			{
+				int coolDownSeconds;
+				switch (CooldownUnits)
+				{
+					case CooldownUnits.Minutes:
+						coolDownSeconds = Cooldown * 60;
+						break;
+					case CooldownUnits.Hours:
+						coolDownSeconds = Cooldown * 60 * 60;
+						break;
+					case CooldownUnits.Days:
+						coolDownSeconds = Cooldown * 60 * 60 * 24;
+						break;
+					default:
+						coolDownSeconds = Cooldown;
+						break;
+				}
+				// TODO: Set cooldown!!! Not seeing a corresponding property in the JSON returned.
+			}
 		}
 	}
 }

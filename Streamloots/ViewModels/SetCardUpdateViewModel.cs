@@ -22,7 +22,7 @@ namespace Streamloots
 		public bool redeemable { get; set; }
 		public List<RedeemFieldsViewModel> redeemFields { get; set; }
 
-		public RedemptionLimit redemptionLimit { get; set; }
+		public RedemptionLimit redemptionLimit { get; set; } = new RedemptionLimit();
 
 		public string redemptionSuccessMessage { get; set; }
 		public List<RewardFieldsViewModel> rewardFields { get; set; }
@@ -54,6 +54,13 @@ namespace Streamloots
 			redemptionLimit = prototype.redemptionLimit;
 			redemptionSuccessMessage = prototype.redemptionSuccessMessage;
 			rewardFields = prototype.rewardFields;
+		}
+		public void SelfValidate()
+		{
+			if (order <= 0)
+				order = 1;
+			if (rarityCardProbability <= 0)
+				rarityCardProbability = 1;
 		}
 	}
 }

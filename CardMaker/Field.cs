@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
+using Streamloots;
 using GoogleHelper;
 
 namespace CardMaker
@@ -86,6 +88,28 @@ namespace CardMaker
 		public override string ToString()
 		{
 			return Name;
+		}
+		public RedeemFieldsViewModel ToRedeemFieldsViewModel()
+		{
+			RedeemFieldsViewModel redeemFieldsViewModel = new RedeemFieldsViewModel();
+			redeemFieldsViewModel.label = Label;
+			redeemFieldsViewModel.name = Name;
+			redeemFieldsViewModel.required = Required;
+			// TODO: Make sure these text strings are correct for Streamloots.
+			switch (Type)
+			{
+				case FieldType.Text:
+					redeemFieldsViewModel.type = "Text";
+					break;
+				case FieldType.LongText:
+					redeemFieldsViewModel.type = "LongText";
+					break;
+				case FieldType.Phone:
+					redeemFieldsViewModel.type = "Phone";
+					break;
+			}
+			
+			return redeemFieldsViewModel;
 		}
 
 		public Field()
