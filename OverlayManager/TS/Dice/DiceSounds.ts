@@ -36,11 +36,11 @@ class DiceSounds extends SoundManager {
 		this.loadPercentageSoundEffects(this.settles, "Dice/Settles", 7);
 	}
 
-	async playAttackCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number): Promise<void> {
+	async playAttackCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, minCrit: number): Promise<void> {
 		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
 
 		if (attemptedRollWasSuccessful) {
-			await this.playSuccessfulAttackCommentaryAsync(d20RollValue, maxDamage, totalDamage);
+			await this.playSuccessfulAttackCommentaryAsync(d20RollValue, maxDamage, totalDamage, minCrit);
 		}
 		else {
 			await this.playFailedAttackCommentaryAsync(d20RollValue, maxDamage, totalDamage);
@@ -80,8 +80,8 @@ class DiceSounds extends SoundManager {
 		}
 	}
 
-	private async playSuccessfulAttackCommentaryAsync(d20RollValue: number, maxDamage: number, totalDamage: number): Promise<void> {
-		if (d20RollValue >= diceRollData.minCrit) {
+	private async playSuccessfulAttackCommentaryAsync(d20RollValue: number, maxDamage: number, totalDamage: number, minCrit: number): Promise<void> {
+		if (d20RollValue >= minCrit) {
 			await this.playSoundFileAsync('Announcer/CriticalHit[21]');
 		}
 		else {
@@ -148,8 +148,8 @@ class DiceSounds extends SoundManager {
 		await this.playSoundFileAsync('Announcer/Damage/Health[3]');
 	}
 
-	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>): Promise<void> {
-		await this.playAttackCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage);
+	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>, minCrit: number): Promise<void> {
+		await this.playAttackCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage, minCrit);
 		if (attemptedRollWasSuccessful && ((damageSummary && damageSummary.size > 0) || totalDamage > 0))
 		{
 			await this.playSoundFileAsync('Announcer/Numbers/With[4]');

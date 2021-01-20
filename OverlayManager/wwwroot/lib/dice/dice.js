@@ -66,7 +66,7 @@ class DiceManagerClass {
 
       if (allStable) {
         console.log("all stable");
-        DiceManager.world.removeEventListener('postStep', check);
+        this.world.removeEventListener('postStep', check);
 
         for (let i = 0; i < diceValues.length; i++) {
           //diceValues[i].dice.shiftUpperValue(diceValues[i].value);
@@ -76,7 +76,7 @@ class DiceManagerClass {
 
         this.throwRunning = false;
       } else {
-        DiceManager.world.step(DiceManager.world.dt);
+        this.world.step(this.world.dt);
       }
     };
 
