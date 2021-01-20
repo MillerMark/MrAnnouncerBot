@@ -1463,9 +1463,22 @@ function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 
 	const index: number = dice.length;
 	const yVelocityModifier: number = Math.random() * 10 * throwPower;
+	let zVelocityMultiplier = 1;
+
+	const testThrowOverPlayers = true;
+	if (testThrowOverPlayers) {
+		xPositionModifier = 40; // throw from the right.
+		dieObject.position.y = 10 + index * dieScale;
+		dieObject.position.z = 9;
+		zVelocityMultiplier = -0.1;
+	}
+	else {
+		dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
+		dieObject.position.z = -13 + (index % 3) * dieScale;
+	}
+
 	dieObject.position.x = xPositionModifier + -15 - (index % 3) * dieScale;
-	dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
-	dieObject.position.z = -13 + (index % 3) * dieScale;
+
 	dieObject.quaternion.x = (Math.random() * 180 - 90) * Math.PI / 180;
 	dieObject.quaternion.z = (Math.random() * 180 - 90) * Math.PI / 180;
 	let xVelocityMultiplier = 1;
@@ -1474,7 +1487,7 @@ function prepareBaseDie(die: IDie, throwPower: number, xPositionModifier = 0) {
 	die.updateBodyFromMesh();
 	const xVelocityModifier: number = Math.random() * 20 * throwPower;
 	const zVelocityModifier: number = Math.random() * 20 * throwPower;
-	dieObject.body.velocity.set(xVelocityMultiplier * (35 + xVelocityModifier), 10 + yVelocityModifier, 25 + zVelocityModifier);
+	dieObject.body.velocity.set(xVelocityMultiplier * (35 + xVelocityModifier), 10 + yVelocityModifier, zVelocityMultiplier * (25 + zVelocityModifier));
 	const angularModifierLimit: number = 20 * throwPower;
 	const angularModifierHalfLimit: number = angularModifierLimit / 2;
 	const xAngularRotationModifier: number = Math.random() * angularModifierLimit;
@@ -2584,29 +2597,7 @@ function init() { // From Rolling.html example.
 	//container.appendChild(stats.domElement);
 
 	// @ts-ignore - THREE
-	const ambient = new THREE.AmbientLight('#ffffff', 0.35);
-	scene.add(ambient);
-
-	// @ts-ignore - THREE
-	const directionalLight = new THREE.DirectionalLight('#ffffff', 0.25);
-	directionalLight.position.x = -1000;
-	directionalLight.position.y = 1000;
-	directionalLight.position.z = 1000;
-	scene.add(directionalLight);
-
-	// @ts-ignore - THREE
-	const light = new THREE.SpotLight(0xefdfd5, 0.7);
-	light.position.x = 10;
-	light.position.y = 100;
-	light.position.z = 10;
-	light.target.position.set(0, 0, 0);
-	light.castShadow = true;
-	light.shadow.camera.near = 50;
-	light.shadow.camera.far = 110;
-	light.shadow.mapSize.width = 1024;
-	light.shadow.mapSize.height = 1024;
-
-	scene.add(light);
+	addLights();
 
 
 	// @ts-ignore - THREE
@@ -2634,31 +2625,7 @@ function init() { // From Rolling.html example.
 	// @ts-ignore - DiceManager
 	DiceManager.setWorld(world);
 
-	// create the sphere's material
-	const redWallMaterial =
-		// @ts-ignore - THREE
-		new THREE.MeshLambertMaterial(
-			{
-				color: 0xA00050
-			});
-
-	const tealWallMaterial =
-		// @ts-ignore - THREE
-		new THREE.MeshLambertMaterial(
-			{
-				color: 0x00de7b
-			});
-
-	const blueWallMaterial =
-		// @ts-ignore - THREE
-		new THREE.MeshLambertMaterial(
-			{
-				color: 0x2000C0
-			});
-
 	const wallHeight = 68;
-	const leftWallHeight = 68;
-	const topWallHeight = 146;
 
 	const wallThickness = 1;
 	const leftWallWidth = 80;
@@ -2671,13 +2638,13 @@ function init() { // From Rolling.html example.
 	const topWallWidth = 80;
 	const topWallZ = -10.5;
 
-	const playerTopWallWidth = 38;
+	const playerTopWallWidth = 58;
 	const playerTopWallZ = 5;
 	const playerTopWallX = -2;
 
-	const playerRightWallWidth = 9;
-	const playerRightWallX = 17;
-	const playerRightWallZ = 9;
+	const viewerFloorX = 10;
+	const viewerFloorY = -4;
+	const viewerFloorZ = 10;
 
 	const dmBottomWallWidth = 9;
 	const dmBottomWallZ = -6;
@@ -2685,51 +2652,11 @@ function init() { // From Rolling.html example.
 
 	const showWalls = false;		// To drag the camera around and be able to see the walls, see the note in DieRoller.cshtml.
 	const addPlayerWall = true;
+	const addViewerRollFloor = true;
 	const addDungeonMasterWalls = true;
 	if (showWalls) {
-
-
-		// @ts-ignore - THREE
-		const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, leftWallHeight, leftWallWidth), redWallMaterial);
-		leftWall.position.x = leftWallX;
-		scene.add(leftWall);
-
-		// @ts-ignore - THREE
-		const topWall = new THREE.Mesh(new THREE.BoxGeometry(topWallWidth, topWallHeight, wallThickness), tealWallMaterial);
-		topWall.position.z = topWallZ;
-		// @ts-ignore - THREE
-		topWall.rotateOnAxis(new THREE.Vector3(1, 0, 0), -45)
-		scene.add(topWall);
-
-		if (addPlayerWall) {
-			// @ts-ignore - THREE
-			const playerTopWall = new THREE.Mesh(new THREE.BoxGeometry(playerTopWallWidth, wallHeight, wallThickness), redWallMaterial);
-			playerTopWall.position.x = playerTopWallX;
-			playerTopWall.position.z = playerTopWallZ;
-			scene.add(playerTopWall);
-
-			// @ts-ignore - THREE
-			const playerRightWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, playerRightWallWidth), blueWallMaterial);
-			playerRightWall.position.x = playerRightWallX;
-			playerRightWall.position.z = playerRightWallZ;
-			scene.add(playerRightWall);
-		}
-
-		if (addDungeonMasterWalls) {
-			// @ts-ignore - THREE
-			const dmBottomWall = new THREE.Mesh(new THREE.BoxGeometry(dmBottomWallWidth, wallHeight, wallThickness), redWallMaterial);
-			dmBottomWall.position.x = dmBottomWallX;
-			dmBottomWall.position.z = dmBottomWallZ;
-			scene.add(dmBottomWall);
-
-			// @ts-ignore - THREE
-			const dmLeftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, dmLeftWallWidth), redWallMaterial);
-			dmLeftWall.position.x = dmLeftWallX;
-			dmLeftWall.position.z = dmLeftWallZ;
-			scene.add(dmLeftWall);
-		}
+		addWallsToScene(wallThickness, leftWallWidth, leftWallX, topWallWidth, topWallZ, addPlayerWall, addViewerRollFloor, playerTopWallWidth, wallHeight, playerTopWallX, playerTopWallZ, viewerFloorX, viewerFloorY, viewerFloorZ, addDungeonMasterWalls, dmBottomWallWidth, dmBottomWallX, dmBottomWallZ, dmLeftWallWidth, dmLeftWallX, dmLeftWallZ);
 	}
-
 
 	// Floor
 	// @ts-ignore - CANNON
@@ -2748,13 +2675,13 @@ function init() { // From Rolling.html example.
 	rightWall.position.x = 20.5;
 	world.add(rightWall);
 
-	// @ts-ignore - CANNON
-	const bottomWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: DiceManager.barrierBodyMaterial });
-	bottomWall.name = 'wall';
-	// @ts-ignore - CANNON
-	bottomWall.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2 * 2);
-	bottomWall.position.z = 11.5;
-	world.add(bottomWall);
+	//// @ts-ignore - CANNON
+	//const bottomWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: DiceManager.barrierBodyMaterial });
+	//bottomWall.name = 'wall';
+	//// @ts-ignore - CANNON
+	//bottomWall.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2 * 2);
+	//bottomWall.position.z = 11.5;
+	//world.add(bottomWall);
 
 	// @ts-ignore - CANNON
 	const wallDiceContactMaterial = new CANNON.ContactMaterial(DiceManager.barrierBodyMaterial, DiceManager.diceBodyMaterial, { friction: 0.0, restitution: 0.9 });
@@ -2782,17 +2709,22 @@ function init() { // From Rolling.html example.
 
 	if (addPlayerWall) {
 		// @ts-ignore - CANNON & DiceManager
-		const playerTopCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(playerTopWallWidth * 0.5, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+		const playerTopCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(playerTopWallWidth, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
 		playerTopCannonWall.name = 'wall';
 		playerTopCannonWall.position.x = playerTopWallX;
 		playerTopCannonWall.position.z = playerTopWallZ;
 		world.add(playerTopCannonWall);
 
+	}
+
+	if (addViewerRollFloor) {
 		// @ts-ignore - CANNON & DiceManager
-		const playerRightCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, playerRightWallWidth * 0.5)), material: DiceManager.barrierBodyMaterial });
+		const playerRightCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallHeight, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+		playerRightCannonWall.quaternion.setFromEuler(Math.PI / 4, 0, 0);
 		playerRightCannonWall.name = 'wall';
-		playerRightCannonWall.position.x = playerRightWallX;
-		playerRightCannonWall.position.z = playerRightWallZ;
+		playerRightCannonWall.position.x = viewerFloorX;
+		playerRightCannonWall.position.y = viewerFloorY;
+		playerRightCannonWall.position.z = viewerFloorZ;
 		world.add(playerRightCannonWall);
 	}
 
@@ -2822,6 +2754,33 @@ function init() { // From Rolling.html example.
 	let needToHookEvents = true;
 
 	const testingDiceRoller = false;
+
+	function addLights() {
+		// @ts-ignore - THREE
+		const ambient = new THREE.AmbientLight('#ffffff', 0.35);
+		scene.add(ambient);
+
+		// @ts-ignore - THREE
+		const directionalLight = new THREE.DirectionalLight('#ffffff', 0.25);
+		directionalLight.position.x = -1000;
+		directionalLight.position.y = 1000;
+		directionalLight.position.z = 1000;
+		scene.add(directionalLight);
+
+		// @ts-ignore - THREE
+		const light = new THREE.SpotLight(0xefdfd5, 0.7);
+		light.position.x = 10;
+		light.position.y = 100;
+		light.position.z = 10;
+		light.target.position.set(0, 0, 0);
+		light.castShadow = true;
+		light.shadow.camera.near = 50;
+		light.shadow.camera.far = 110;
+		light.shadow.mapSize.width = 1024;
+		light.shadow.mapSize.height = 1024;
+
+		scene.add(light);
+	}
 
 	function allDiceShouldBeDestroyedByNow() {
 		allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
@@ -3314,6 +3273,78 @@ function init() { // From Rolling.html example.
 		randomDiceThrow();
 	}
 	startAnimatingDiceRoller(30);
+}
+
+function addWallsToScene(wallThickness: number, leftWallWidth: number, leftWallX: number, topWallWidth: number, topWallZ: number, addPlayerWall: boolean, addViewRollFloor: boolean, playerTopWallWidth: number, wallHeight: number, playerTopWallX: number, playerTopWallZ: number, viewerFloorX: number, viewerFloorY: number, viewerFloorZ: number, addDungeonMasterWalls: boolean, dmBottomWallWidth: number, dmBottomWallX: number, dmBottomWallZ: number, dmLeftWallWidth: number, dmLeftWallX: number, dmLeftWallZ: number) {
+	const leftWallHeight = 68;
+	const topWallHeight = 146;
+
+
+	const redWallMaterial =
+		// @ts-ignore - THREE
+		new THREE.MeshLambertMaterial(
+			{
+				color: 0xA00050
+			});
+
+	const tealWallMaterial =
+		// @ts-ignore - THREE
+		new THREE.MeshLambertMaterial(
+			{
+				color: 0x00de7b
+			});
+
+	const blueWallMaterial =
+		// @ts-ignore - THREE
+		new THREE.MeshLambertMaterial(
+			{
+				color: 0x2000C0
+			});
+
+	// @ts-ignore - THREE
+	const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, leftWallHeight, leftWallWidth), redWallMaterial);
+	leftWall.position.x = leftWallX;
+	scene.add(leftWall);
+
+	// @ts-ignore - THREE
+	const topWall = new THREE.Mesh(new THREE.BoxGeometry(topWallWidth, topWallHeight, wallThickness), tealWallMaterial);
+	topWall.position.z = topWallZ;
+	// @ts-ignore - THREE
+	topWall.rotateOnAxis(new THREE.Vector3(1, 0, 0), -45);
+	scene.add(topWall);
+
+	if (addPlayerWall) {
+		// @ts-ignore - THREE
+		const playerTopWall = new THREE.Mesh(new THREE.BoxGeometry(playerTopWallWidth, wallHeight, wallThickness), redWallMaterial);
+		playerTopWall.position.x = playerTopWallX;
+		playerTopWall.position.z = playerTopWallZ;
+		scene.add(playerTopWall);
+	}
+
+	if (addViewRollFloor) {
+		// @ts-ignore - THREE
+		const viewerRollFloor = new THREE.Mesh(new THREE.BoxGeometry(wallHeight * 2, wallHeight, 1), blueWallMaterial);
+		// @ts-ignore - THREE
+		viewerRollFloor.rotateOnAxis(new THREE.Vector3(1, 0, 0), 45);
+		viewerRollFloor.position.x = viewerFloorX;
+		viewerRollFloor.position.y = viewerFloorY;
+		viewerRollFloor.position.z = viewerFloorZ;
+		scene.add(viewerRollFloor);
+	}
+
+	if (addDungeonMasterWalls) {
+		// @ts-ignore - THREE
+		const dmBottomWall = new THREE.Mesh(new THREE.BoxGeometry(dmBottomWallWidth, wallHeight, wallThickness), redWallMaterial);
+		dmBottomWall.position.x = dmBottomWallX;
+		dmBottomWall.position.z = dmBottomWallZ;
+		scene.add(dmBottomWall);
+
+		// @ts-ignore - THREE
+		const dmLeftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, dmLeftWallWidth), redWallMaterial);
+		dmLeftWall.position.x = dmLeftWallX;
+		dmLeftWall.position.z = dmLeftWallZ;
+		scene.add(dmLeftWall);
+	}
 }
 
 //var maxDieSpeed: number = 0;

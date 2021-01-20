@@ -707,36 +707,36 @@ class DiceD20 extends DiceObject {
 
 const DiceManager = new DiceManagerClass();
 
-if (typeof define === 'function' && define.amd) {
-  define(function () {
-    return {
-      DiceManager: DiceManager,
-      DiceD4: DiceD4,
-      DiceD6: DiceD6,
-      DiceD8: DiceD8,
-      DiceD10: DiceD10,
-      DiceD12: DiceD12,
-      DiceD20: DiceD20,
-    };
-  });
-} else if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = {
-    DiceManager: DiceManager,
-    DiceD4: DiceD4,
-    DiceD6: DiceD6,
-    DiceD8: DiceD8,
-    DiceD10: DiceD10,
-    DiceD12: DiceD12,
-    DiceD20: DiceD20,
-  };
-} else {
-  window.Dice = {
-    DiceManager: DiceManager,
-    DiceD4: DiceD4,
-    DiceD6: DiceD6,
-    DiceD8: DiceD8,
-    DiceD10: DiceD10,
-    DiceD12: DiceD12,
-    DiceD20: DiceD20,
-  };
-}
+//if (typeof define === 'function' && define.amd) {
+//  define(function () {
+//    return {
+//      DiceManager: DiceManager,
+//      DiceD4: DiceD4,
+//      DiceD6: DiceD6,
+//      DiceD8: DiceD8,
+//      DiceD10: DiceD10,
+//      DiceD12: DiceD12,
+//      DiceD20: DiceD20,
+//    };
+//  });
+//} else if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+//  module.exports = {
+//    DiceManager: DiceManager,
+//    DiceD4: DiceD4,
+//    DiceD6: DiceD6,
+//    DiceD8: DiceD8,
+//    DiceD10: DiceD10,
+//    DiceD12: DiceD12,
+//    DiceD20: DiceD20,
+//  };
+//} else {
+//  window.Dice = {
+//    DiceManager: DiceManager,
+//    DiceD4: DiceD4,
+//    DiceD6: DiceD6,
+//    DiceD8: DiceD8,
+//    DiceD10: DiceD10,
+//    DiceD12: DiceD12,
+//    DiceD20: DiceD20,
+//  };
+//}
