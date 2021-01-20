@@ -11,6 +11,7 @@ namespace DndCore
 		public bool success { get; set; }
 		public bool wasCriticalHit { get; set; }
 		public string spellName { get; set; }
+		public DiceGroup diceGroup { get; set; }
 		public int roll { get; set; }
 		public int hiddenThreshold { get; set; }
 		public int damage { get; set; }

@@ -116,9 +116,9 @@ function showValidationIssue(commandData: string) {
 	}
 }
 
-function clearDice() {
+function clearDice(diceGroup: string) {
 	if (diceLayer) {
-		diceLayer.clearDice();
+		diceLayer.clearDice(diceGroup);
 	}
 }
 
@@ -202,6 +202,8 @@ function changeFrameRate(frameRateData: string) {
 		if (frameRateChangeData.OverlayName === 'Dice') {
 			if (diceRollerPlayers)
 				diceRollerPlayers.handleFpsChangeDiceRoller(frameRateChangeData);
+			if (diceRollerViewers)
+				diceRollerViewers.handleFpsChangeDiceRoller(frameRateChangeData);
 		}
 	}
 

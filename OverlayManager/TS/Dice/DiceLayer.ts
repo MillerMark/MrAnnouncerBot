@@ -1,3 +1,8 @@
+enum DiceGroup {
+	Players,
+	Viewers
+}
+
 enum RollScope {
 	ActivePlayer,
 	Individuals,
@@ -1465,8 +1470,7 @@ class DiceLayer {
 	}
 
 
-	addDieText(die: IDie, message: string, fontColor: string, outlineColor: string, lifeSpan = 1500, scaleAdjust = 1): void {
-		const centerPos: Vector = getScreenCoordinates(die.getObject());
+	addDieText(centerPos: Vector, message: string, fontColor: string, outlineColor: string, lifeSpan = 1500, scaleAdjust = 1): void {
 		if (centerPos === null)
 			return;
 		const textEffect: TextEffect = this.animations.addText(centerPos.add(new Vector(0, 80 * scaleAdjust)), message, lifeSpan);
@@ -1479,31 +1483,31 @@ class DiceLayer {
 		textEffect.targetScale = 1 * scaleAdjust;
 	}
 
-	addDieTextAfter(die: IDie, message: string, fontColor: string, outlineColor: string, timeout = 0, lifeSpan = 1500, scaleAdjust = 1) {
+	addDieTextAfter(centerPos: Vector, message: string, fontColor: string, outlineColor: string, timeout = 0, lifeSpan = 1500, scaleAdjust = 1) {
 		if (timeout > 0)
-			setTimeout(function () {
-				this.addDieText(die, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
-			}.bind(this), timeout);
+			setTimeout(() => {
+				this.addDieText(centerPos, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
+			}, timeout);
 		else
-			this.addDieText(die, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
+			this.addDieText(centerPos, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
 	}
 
-	addDisadvantageText(die, timeout = 0, isLuckyFeat = false): void {
+	addDisadvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false): void {
 		let message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
 		else
 			message = 'Disadvantage';
-		this.addDieTextAfter(die, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
+		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
 	}
 
-	addAdvantageText(die, timeout = 0, isLuckyFeat = false): void {
+	addAdvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false): void {
 		let message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
 		else
 			message = 'Advantage';
-		this.addDieTextAfter(die, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
+		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
 	}
 
 
@@ -2308,6 +2312,7 @@ class DiceLayer {
 		const diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
 		console.log('getDiceRollData: diceRoll.type = ' + diceRoll.type);
+		diceRoll.diceGroup = dto.DiceGroup;
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
@@ -2515,16 +2520,26 @@ class DiceLayer {
 	//  return star;
 	//}
 
-	clearDice(): void {
-		diceRollerPlayers.removeRemainingDice();
+	clearDice(diceGroup: string): void {
+		if (this.isPlayerGroup(diceGroup))
+			diceRollerPlayers.removeRemainingDice();
+		else
+			diceRollerViewers.removeRemainingDice();
 		//if (!removeRemainingDice())
 		//	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
+	}
+
+	private isPlayerGroup(diceGroup: string) {
+		return diceGroup === "Players";
 	}
 
 	rollDice(diceRollDto: string): void {
 		const diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
 		console.log(diceRollData);
-		diceRollerPlayers.pleaseRollDice(diceRollData);
+		if (diceRollData.diceGroup === DiceGroup.Players)
+			diceRollerPlayers.pleaseRollDice(diceRollData);
+		else 
+			diceRollerViewers.pleaseRollDice(diceRollData);
 	}
 
 	getDieColor(playerID: number): string {
@@ -2612,6 +2627,7 @@ class BonusRoll {
 }
 
 class DiceRollData {
+	diceGroup: DiceGroup;
 	type: DiceRollType;
 	vantageKind: VantageKind;
 	damageHealthExtraDice: string;

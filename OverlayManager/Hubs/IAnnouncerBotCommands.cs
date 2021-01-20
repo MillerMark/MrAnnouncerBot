@@ -46,7 +46,7 @@ namespace OverlayManager.Hubs
 		Task UpdateClock(string clockData);
 		Task FloatPlayerText(int playerID, string message, string fillColor, string outlineColor);
 		Task RollDice(string diceRollData);
-		Task ClearDice();
+		Task ClearDice(string diceGroup);
 		Task SetPlayerData(string playerData);
 		Task SendScrollLayerCommand(string commandData);
 		Task ExecuteSoundCommand(string commandData);

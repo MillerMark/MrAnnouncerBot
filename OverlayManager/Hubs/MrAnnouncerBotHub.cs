@@ -140,9 +140,9 @@ namespace OverlayManager.Hubs
 		{
 			coderushedHub.Clients.All.RollDice(diceRollData);
 		}
-		public void ClearDice()
+		public void ClearDice(string diceGroup)
 		{
-			coderushedHub.Clients.All.ClearDice();
+			coderushedHub.Clients.All.ClearDice(diceGroup);
 		}
 		public void SetPlayerData(string playerData)
 		{

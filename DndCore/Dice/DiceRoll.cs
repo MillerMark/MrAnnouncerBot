@@ -44,6 +44,7 @@ namespace DndCore
 		public string DamageHealthExtraDice { get; set; }
 		public string GroupInspiration { get; set; }
 		public string AdditionalDiceOnHit { get; set; }
+		public DiceGroup DiceGroup { get; set; } = DiceGroup.Players;
 		public string AdditionalDiceOnHitMessage { get; set; }
 		public string FailMessage { get; set; }
 		public string OnThrowSound { get; set; }

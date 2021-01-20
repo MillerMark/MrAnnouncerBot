@@ -265,7 +265,7 @@ namespace DHDM
 
 		public static void ClearDice()
 		{
-			HubConnection.InvokeAsync("ClearDice");
+			HubConnection.InvokeAsync("ClearDice", DiceGroup.Players.ToString());
 		}
 
 		static string lastStringSent;

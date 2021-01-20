@@ -5,21 +5,6 @@ function hideDieIn(dieObject, ms: number) {
 	dieObject.needToHideDie = true;
 }
 
-function getScreenCoordinates(dieObject: IDieObject): Vector {
-	if (dieObject === null)
-		return null;
-	// @ts-ignore - THREE
-	const screenVector = new THREE.Vector3();
-	dieObject.localToWorld(screenVector);
-
-	screenVector.project(DieRoller.camera);
-
-	const x = Math.round((screenVector.x + 1) * DieRoller.renderer.domElement.offsetWidth / 2);
-	const y = Math.round((1 - screenVector.y) * DieRoller.renderer.domElement.offsetHeight / 2);
-
-	return new Vector(x, y);
-}
-
 enum DieRollType {
 	Player,
 	Viewer
@@ -189,7 +174,7 @@ class DieRoller {
 
 	}
 	//const showDieValues = false;
-	diceRollDataPlayer: DiceRollData;
+	diceRollData: DiceRollData;
 	totalDamagePlusModifier = 0;
 	totalHealthPlusModifier = 0;
 	totalExtraPlusModifier = 0;
@@ -203,9 +188,8 @@ class DieRoller {
 	static readonly removeDiceImmediately: boolean = false;
 	static readonly dieScale: number = 1.5;
 	static readonly repeatRandomThrow: boolean = false;
-	static camera;
-	// TODO: May need to make renderer an instance property
-	static renderer;
+	camera;
+	renderer;
 	onBonusThrow = false;
 	setupBonusRoll = false;
 	waitingForBonusRollToComplete = false;
@@ -257,6 +241,24 @@ class DieRoller {
 		this.scalingDice = [];
 	}
 
+	getScreenCoordinates(die: IDie): Vector {
+		const dieObject: IDieObject = die.getObject();
+		if (dieObject === null)
+			return null;
+		// @ts-ignore - THREE
+		const screenVector = new THREE.Vector3();
+		dieObject.localToWorld(screenVector);
+
+		screenVector.project(this.camera);
+
+		const x = Math.round((screenVector.x + 1) * this.renderer.domElement.offsetWidth / 2);
+		const y = Math.round((1 - screenVector.y) * this.renderer.domElement.offsetHeight / 2);
+
+		return new Vector(x, y);
+	}
+
+
+
 	clearBeforeRoll() {
 		this.additionalDieRollMessage = '';
 		diceLayer.clearResidualEffects();
@@ -272,7 +274,7 @@ class DieRoller {
 		this.totalDamagePlusModifier = 0;
 		this.totalHealthPlusModifier = 0;
 		this.totalExtraPlusModifier = 0;
-		this.diceRollDataPlayer.totalRoll = 0;
+		this.diceRollData.totalRoll = 0;
 		this.d20RollValue = -1;
 		this.totalBonus = 0;
 		this.damageModifierThisRoll = 0;
@@ -295,9 +297,9 @@ class DieRoller {
 	}
 
 	dieFirstHitsFloor(die) {
-		if (this.diceRollDataPlayer.onFirstContactSound) {
-			diceSounds.safePlayMp3(this.diceRollDataPlayer.onFirstContactSound);
-			this.diceRollDataPlayer.onFirstContactSound = null;
+		if (this.diceRollData.onFirstContactSound) {
+			diceSounds.safePlayMp3(this.diceRollData.onFirstContactSound);
+			this.diceRollData.onFirstContactSound = null;
 		}
 
 		if (die.rollType === DieCountsAs.inspiration) {
@@ -310,15 +312,15 @@ class DieRoller {
 			const percentageOffDie: number = 1 - percentageOnDie;
 
 
-			if (this.diceRollDataPlayer.onFirstContactEffect) {
-				const pos: Vector = getScreenCoordinates(die.getObject());
+			if (this.diceRollData.onFirstContactEffect) {
+				const pos: Vector = this.getScreenCoordinates(die);
 				if (pos) {
 					const x: number = pos.x * percentageOnDie + percentageOffDie * 960;
 					const y: number = pos.y * percentageOnDie + percentageOffDie * 540;
 
-					diceLayer.AddEffect(this.diceRollDataPlayer.onFirstContactEffect, x, y, this.diceRollDataPlayer.effectScale,
-						this.diceRollDataPlayer.effectHueShift, this.diceRollDataPlayer.effectSaturation,
-						this.diceRollDataPlayer.effectBrightness, this.diceRollDataPlayer.effectRotation);
+					diceLayer.AddEffect(this.diceRollData.onFirstContactEffect, x, y, this.diceRollData.effectScale,
+						this.diceRollData.effectHueShift, this.diceRollData.effectSaturation,
+						this.diceRollData.effectBrightness, this.diceRollData.effectRotation);
 				}
 			}
 		}
@@ -350,11 +352,11 @@ class DieRoller {
 			else {
 				diceSounds.playFloorHit(relativeVelocity / 35);
 
-				if (this.trailsSparks(this.diceRollDataPlayer)) {
+				if (this.trailsSparks(this.diceRollData)) {
 					if (relativeVelocity > 12) {
 						if (!e.target.parentDie.sparks)
 							e.target.parentDie.sparks = [];
-						const pos: Vector = getScreenCoordinates(e.target.parentDie.getObject());
+						const pos: Vector = this.getScreenCoordinates(e.target.parentDie);
 						if (pos)
 							e.target.parentDie.sparks.push(diceLayer.smallSpark(pos.x, pos.y));
 						diceSounds.safePlayMp3('Dice/Zap[4]');
@@ -495,7 +497,7 @@ class DieRoller {
 	removeNonVantageDieNow(die: IDie) {
 		if (!die)
 			return;
-		this.diceRollDataPlayer.appliedVantage = true;
+		this.diceRollData.appliedVantage = true;
 		this.handRemoveDie(die, 0);
 	}
 
@@ -504,10 +506,10 @@ class DieRoller {
 	}
 
 	getMostRecentDiceRollData() {
-		if (this.diceRollDataPlayer.secondRollData)
-			return this.diceRollDataPlayer.secondRollData;
+		if (this.diceRollData.secondRollData)
+			return this.diceRollData.secondRollData;
 		else
-			return this.diceRollDataPlayer;
+			return this.diceRollData;
 	}
 
 	removeMultiplayerD20s(): void {
@@ -538,23 +540,27 @@ class DieRoller {
 				else if (die.kind === VantageKind.Advantage) {
 					if (playerEdgeRolls[playerId] <= topNumber) {
 						this.removeNonVantageDieNow(otherPlayersDie[playerId]);
-						diceLayer.addAdvantageText(otherPlayersDie[playerId], vantageTextDelay);
+						const centerPos: Vector = this.getScreenCoordinates(otherPlayersDie[playerId]);
+						diceLayer.addAdvantageText(centerPos, vantageTextDelay);
 						playerEdgeRolls[playerId] = topNumber;
 					}
 					else {
 						this.removeNonVantageDieNow(die);
-						diceLayer.addAdvantageText(die, vantageTextDelay);
+						const centerPos: Vector = this.getScreenCoordinates(die);
+						diceLayer.addAdvantageText(centerPos, vantageTextDelay);
 					}
 				}
 				else if (die.kind === VantageKind.Disadvantage) {
 					if (playerEdgeRolls[playerId] >= topNumber) {
 						this.removeNonVantageDieNow(otherPlayersDie[playerId]);
-						diceLayer.addDisadvantageText(otherPlayersDie[playerId], vantageTextDelay);
+						const centerPos: Vector = this.getScreenCoordinates(otherPlayersDie[playerId]);
+						diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
 						playerEdgeRolls[playerId] = topNumber;
 					}
 					else {
 						this.removeNonVantageDieNow(die);
-						diceLayer.addDisadvantageText(die, vantageTextDelay);
+						const centerPos: Vector = this.getScreenCoordinates(die);
+						diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
 					}
 				}
 				otherPlayersDie[playerId] = die;
@@ -565,7 +571,7 @@ class DieRoller {
 	flameOn(die: IDie) {
 		const dieObject = die.getObject();
 
-		const screenPos: Vector = getScreenCoordinates(dieObject);
+		const screenPos: Vector = this.getScreenCoordinates(dieObject);
 		if (!screenPos)
 			return;
 
@@ -622,7 +628,7 @@ class DieRoller {
 		const vantageTextDelay = 900;
 		//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
 
-		if (!this.diceRollDataPlayer.appliedVantage) {
+		if (!this.diceRollData.appliedVantage) {
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
 				if (die.isLucky)
@@ -641,12 +647,14 @@ class DieRoller {
 					else if (die.kind === VantageKind.Advantage) {
 						if (edgeRollValue <= topNumber) {
 							this.removeNonVantageDieNow(otherDie);
-							diceLayer.addAdvantageText(otherDie, vantageTextDelay);
+							const centerPos: Vector = this.getScreenCoordinates(otherDie);
+							diceLayer.addAdvantageText(centerPos, vantageTextDelay);
 							edgeRollValue = topNumber;
 						}
 						else {  // Disadvantage
 							this.removeNonVantageDieNow(die);
-							diceLayer.addAdvantageText(die, vantageTextDelay);
+							const centerPos: Vector = this.getScreenCoordinates(die);
+							diceLayer.addAdvantageText(centerPos, vantageTextDelay);
 						}
 					}
 					else if (die.kind === VantageKind.Disadvantage) {
@@ -654,7 +662,8 @@ class DieRoller {
 							this.removeNonVantageDieNow(otherDie);
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
-							diceLayer.addDisadvantageText(otherDie, vantageTextDelay);
+							const centerPos: Vector = this.getScreenCoordinates(otherDie);
+							diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
 							//}
 							edgeRollValue = topNumber;
 						}
@@ -662,7 +671,8 @@ class DieRoller {
 							this.removeNonVantageDieNow(die);
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
-							diceLayer.addDisadvantageText(die, vantageTextDelay);
+							const centerPos: Vector = this.getScreenCoordinates(die);
+							diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
 							//}
 						}
 					}
@@ -688,8 +698,10 @@ class DieRoller {
 							this.removeNonVantageDieNow(otherDie);
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
-							if (!otherDie.isLucky)
-								diceLayer.addAdvantageText(otherDie, vantageTextDelay, true);
+							if (!otherDie.isLucky) {
+								const centerPos: Vector = this.getScreenCoordinates(otherDie);
+								diceLayer.addAdvantageText(centerPos, vantageTextDelay, true);
+							}
 							//}
 							edgeRollValue = topNumber;
 						}
@@ -697,8 +709,10 @@ class DieRoller {
 							this.removeNonVantageDieNow(die);
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
-							if (!die.isLucky)
-								diceLayer.addAdvantageText(die, vantageTextDelay, true);
+							if (!die.isLucky) {
+								const centerPos: Vector = this.getScreenCoordinates(die);
+								diceLayer.addAdvantageText(centerPos, vantageTextDelay, true);
+							}
 							//}
 						}
 					}
@@ -707,8 +721,10 @@ class DieRoller {
 							this.removeNonVantageDieNow(otherDie);
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
-							if (!otherDie.isLucky)
-								diceLayer.addDisadvantageText(otherDie, vantageTextDelay, true);
+							if (!otherDie.isLucky) {
+								const centerPos: Vector = this.getScreenCoordinates(otherDie);
+								diceLayer.addDisadvantageText(centerPos, vantageTextDelay, true);
+							}
 							//}
 							edgeRollValue = topNumber;
 						}
@@ -716,8 +732,10 @@ class DieRoller {
 							this.removeNonVantageDieNow(die);
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
-							if (!die.isLucky)
-								diceLayer.addDisadvantageText(die, vantageTextDelay, true);
+							if (!die.isLucky) {
+								const centerPos: Vector = this.getScreenCoordinates(die);
+								diceLayer.addDisadvantageText(centerPos, vantageTextDelay, true);
+							}
 							//}
 						}
 					}
@@ -742,7 +760,7 @@ class DieRoller {
 
 		let changedMessage = false;
 
-		if (this.diceRollDataPlayer.type === DiceRollType.ChaosBolt) {
+		if (this.diceRollData.type === DiceRollType.ChaosBolt) {
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
 				if (die.rollType === DieCountsAs.damage && die.attachedDamage !== true && die.values === 8) {
@@ -789,7 +807,8 @@ class DieRoller {
 							this.additionalDieRollMessage = '(';
 						changedMessage = true;
 						this.additionalDieRollMessage += message;
-						diceLayer.addDieTextAfter(die, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
+						const centerPos: Vector = this.getScreenCoordinates(die);
+						diceLayer.addDieTextAfter(centerPos, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
 					}
 				}
 			}
@@ -861,14 +880,14 @@ class DieRoller {
 
 	addDieToMultiPlayerSummary(die: IDie, topNumber: number) {
 		const logProgress = true;
-		if (this.diceRollDataPlayer.multiplayerSummary === null)
-			this.diceRollDataPlayer.multiplayerSummary = [];
+		if (this.diceRollData.multiplayerSummary === null)
+			this.diceRollData.multiplayerSummary = [];
 		// diceRollData.multiplayerSummary.find((value, index, obj) => value.id === die.playerID);
-		const playerRoll: PlayerRoll = this.diceRollDataPlayer.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
+		const playerRoll: PlayerRoll = this.diceRollData.multiplayerSummary.find((value: PlayerRoll, index, obj) => value.name === die.playerName);
 
 		if (playerRoll) {
 			playerRoll.roll += topNumber;
-			playerRoll.success = playerRoll.roll + playerRoll.modifier >= this.diceRollDataPlayer.hiddenThreshold;
+			playerRoll.success = playerRoll.roll + playerRoll.modifier >= this.diceRollData.hiddenThreshold;
 			if (logProgress) {
 				console.log(`Found playerRoll for ${die.playerName}. Roll: ${playerRoll.roll}`);
 			}
@@ -883,36 +902,36 @@ class DieRoller {
 				if (logProgress) {
 					console.log(`It's an in-game creature.`);
 				}
-				for (let i = 0; i < this.diceRollDataPlayer.diceDtos.length; i++) {
-					if (this.diceRollDataPlayer.diceDtos[i].CreatureId === die.playerID) {
+				for (let i = 0; i < this.diceRollData.diceDtos.length; i++) {
+					if (this.diceRollData.diceDtos[i].CreatureId === die.playerID) {
 						if (logProgress) {
 							console.log(`Found modifier.`);
 						}
-						modifier = this.diceRollDataPlayer.diceDtos[i].Modifier;
+						modifier = this.diceRollData.diceDtos[i].Modifier;
 						//break;
 					}
 				}
 			}
 			else if (diceLayer.players && diceLayer.players.length > 0) {
 				const player: Character = diceLayer.getPlayer(die.playerID);
-				modifier = this.getModifier(this.diceRollDataPlayer, player);
+				modifier = this.getModifier(this.diceRollData, player);
 			}
 
-			const success: boolean = topNumber + modifier >= this.diceRollDataPlayer.hiddenThreshold;
+			const success: boolean = topNumber + modifier >= this.diceRollData.hiddenThreshold;
 			let critHit: boolean;
-			if (this.diceRollDataPlayer && this.diceRollDataPlayer.minCrit)
-				critHit = topNumber >= this.diceRollDataPlayer.minCrit;
+			if (this.diceRollData && this.diceRollData.minCrit)
+				critHit = topNumber >= this.diceRollData.minCrit;
 			else
 				critHit = topNumber >= 20;
 			const critFail: boolean = topNumber === 1;
-			this.diceRollDataPlayer.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success, critHit, critFail));
+			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success, critHit, critFail));
 			if (logProgress) {
-				console.log(this.diceRollDataPlayer.multiplayerSummary[0].roll);
+				console.log(this.diceRollData.multiplayerSummary[0].roll);
 			}
 		}
 
 		if (logProgress) {
-			console.log(this.diceRollDataPlayer.multiplayerSummary);
+			console.log(this.diceRollData.multiplayerSummary);
 		}
 	}
 
@@ -938,7 +957,8 @@ class DieRoller {
 			die.playerName = diceLayer.getPlayerName(die.playerID);
 		}
 
-		diceLayer.addDieTextAfter(die, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
+		const centerPos: Vector = this.getScreenCoordinates(die);
+		diceLayer.addDieTextAfter(centerPos, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
 	}
 
 	getRollResults(tallyResults: boolean): RollResults {
@@ -950,7 +970,7 @@ class DieRoller {
 		let totalDamage = 0;
 		let totalHealth = 0;
 		let totalExtra = 0;
-		this.diceRollDataPlayer.totalRoll = 0;
+		this.diceRollData.totalRoll = 0;
 
 		let singlePlayerId = 0;
 		let playerIdForTextMessages = -1;
@@ -981,7 +1001,7 @@ class DieRoller {
 					if (logProgress) {
 						console.log(`DieCountsAs.totalScore (${topNumber})`);
 					}
-					if (this.diceRollDataPlayer.type === DiceRollType.WildMagicD20Check) {
+					if (this.diceRollData.type === DiceRollType.WildMagicD20Check) {
 						if (topNumber === 1)
 							totalScores.set(playerID, 1);
 						else if (!totalScores.get(playerID))
@@ -998,9 +1018,9 @@ class DieRoller {
 					break;
 				case DieCountsAs.bentLuck:
 					if (logProgress) {
-						console.log(`DieCountsAs.bentLuck (${topNumber * this.diceRollDataPlayer.bentLuckMultiplier})`);
+						console.log(`DieCountsAs.bentLuck (${topNumber * this.diceRollData.bentLuckMultiplier})`);
 					}
-					luckValue.set(playerID, luckValue.get(playerID) + topNumber * this.diceRollDataPlayer.bentLuckMultiplier);
+					luckValue.set(playerID, luckValue.get(playerID) + topNumber * this.diceRollData.bentLuckMultiplier);
 					break;
 				case DieCountsAs.bonus:
 					if (logProgress) {
@@ -1053,7 +1073,7 @@ class DieRoller {
 		}
 
 		if (logProgress) {
-			console.log('diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
+			console.log('diceRollData.hasMultiPlayerDice: ' + this.diceRollData.hasMultiPlayerDice);
 			console.log(`getRollResults: dice.length = ${this.dice.length}`);
 		}
 
@@ -1082,23 +1102,23 @@ class DieRoller {
 
 			const topNumber: number = die.getTopNumber();
 
-			if (this.diceRollDataPlayer.hasMultiPlayerDice) {
+			if (this.diceRollData.hasMultiPlayerDice) {
 				this.addDieToMultiPlayerSummary(die, topNumber);
 				this.attachDieLabel(die);
 			}
 
-			this.diceRollDataPlayer.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
+			this.diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
 
 			const playerID: number = die.playerID;
 			if (logProgress) {
 				console.log('playerID: ' + playerID);
 			}
 			if (playerID === undefined) {
-				this.diceRollDataPlayer.totalRoll += topNumber;
+				this.diceRollData.totalRoll += topNumber;
 				continue;
 			}
 
-			if (this.diceRollDataPlayer.hasSingleIndividual) {
+			if (this.diceRollData.hasSingleIndividual) {
 				singlePlayerId = playerID;
 				playerIdForTextMessages = playerID;
 			}
@@ -1107,9 +1127,9 @@ class DieRoller {
 		} // for
 
 		let skillSavingModifier = 0;
-		if (this.diceRollDataPlayer.type === DiceRollType.SkillCheck || this.diceRollDataPlayer.type === DiceRollType.SavingThrow) {
+		if (this.diceRollData.type === DiceRollType.SkillCheck || this.diceRollData.type === DiceRollType.SavingThrow) {
 			const player: Character = diceLayer.getPlayer(singlePlayerId);
-			skillSavingModifier = this.getModifier(this.diceRollDataPlayer, player);
+			skillSavingModifier = this.getModifier(this.diceRollData, player);
 		}
 
 		let toHitModifier = 0;
@@ -1117,40 +1137,40 @@ class DieRoller {
 			toHitModifier += inspirationValue.get(singlePlayerId);
 		if (luckValue.has(singlePlayerId))
 			toHitModifier += luckValue.get(singlePlayerId);
-		if (this.diceRollDataPlayer.modifier)
-			toHitModifier += this.diceRollDataPlayer.modifier;
+		if (this.diceRollData.modifier)
+			toHitModifier += this.diceRollData.modifier;
 		if (skillSavingModifier)
 			toHitModifier += skillSavingModifier;
 
 		if (logProgress) {
 			console.log('toHitModifier: ' + toHitModifier);
-			console.log('diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
+			console.log('diceRollData.hasMultiPlayerDice: ' + this.diceRollData.hasMultiPlayerDice);
 		}
 
 		if (totalScores.get(singlePlayerId))
-			this.diceRollDataPlayer.totalRoll += totalScores.get(singlePlayerId) + toHitModifier;
+			this.diceRollData.totalRoll += totalScores.get(singlePlayerId) + toHitModifier;
 		else {
-			this.diceRollDataPlayer.totalRoll += toHitModifier;
+			this.diceRollData.totalRoll += toHitModifier;
 			if (logProgress) {
 				console.log(`totalScores does not contain singlePlayerId (${singlePlayerId})`);
 			}
 		}
 
-		if (!this.diceRollDataPlayer.hasMultiPlayerDice && totalScores.get(singlePlayerId) > 0) {
-			if (this.diceRollDataPlayer.type === DiceRollType.SkillCheck && this.totalBonus)
-				this.diceRollDataPlayer.totalRoll += this.totalBonus;
+		if (!this.diceRollData.hasMultiPlayerDice && totalScores.get(singlePlayerId) > 0) {
+			if (this.diceRollData.type === DiceRollType.SkillCheck && this.totalBonus)
+				this.diceRollData.totalRoll += this.totalBonus;
 		}
 
 		this.modifyTotalRollForTestingPurposes();
 
 		if (logProgress) {
-			console.log('diceRollData.totalRoll: ' + this.diceRollDataPlayer.totalRoll);
+			console.log('diceRollData.totalRoll: ' + this.diceRollData.totalRoll);
 		}
-		this.attemptedRollWasSuccessful = this.diceRollDataPlayer.totalRoll >= this.diceRollDataPlayer.hiddenThreshold;
+		this.attemptedRollWasSuccessful = this.diceRollData.totalRoll >= this.diceRollData.hiddenThreshold;
 		if (logProgress) {
-			console.log(`attemptedRollWasSuccessful: ${this.attemptedRollWasSuccessful} (totalRoll = ${this.diceRollDataPlayer.totalRoll}, diceRollData.hiddenThreshold = ${this.diceRollDataPlayer.hiddenThreshold})`);
+			console.log(`attemptedRollWasSuccessful: ${this.attemptedRollWasSuccessful} (totalRoll = ${this.diceRollData.totalRoll}, diceRollData.hiddenThreshold = ${this.diceRollData.hiddenThreshold})`);
 		}
-		this.attemptedRollWasNarrowlySuccessful = this.attemptedRollWasSuccessful && (this.diceRollDataPlayer.totalRoll - this.diceRollDataPlayer.hiddenThreshold < 2);
+		this.attemptedRollWasNarrowlySuccessful = this.attemptedRollWasSuccessful && (this.diceRollData.totalRoll - this.diceRollData.hiddenThreshold < 2);
 		if (logProgress) {
 			console.log('damageModifierThisRoll: ' + this.damageModifierThisRoll);
 		}
@@ -1162,14 +1182,14 @@ class DieRoller {
 	}
 
 	bonusRollDealsDamage(damageStr: string, description = '', playerID = -1): void {
-		const bonusRoll: BonusRoll = this.diceRollDataPlayer.addBonusRoll(damageStr, description, playerID, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+		const bonusRoll: BonusRoll = this.diceRollData.addBonusRoll(damageStr, description, playerID, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
 		bonusRoll.dieCountsAs = DieCountsAs.damage;
 	}
 
 	getFirstPlayerId() {
 		let playerID = -1;
-		if (this.diceRollDataPlayer.playerRollOptions.length > 0)
-			playerID = this.diceRollDataPlayer.playerRollOptions[0].PlayerID;
+		if (this.diceRollData.playerRollOptions.length > 0)
+			playerID = this.diceRollData.playerRollOptions[0].PlayerID;
 		return playerID;
 	}
 
@@ -1183,21 +1203,21 @@ class DieRoller {
 	}
 
 	checkAttackBonusRolls() {
-		if (this.isAttack(this.diceRollDataPlayer)) {
-			this.wasCriticalHit = this.d20RollValue >= this.diceRollDataPlayer.minCrit;
+		if (this.isAttack(this.diceRollData)) {
+			this.wasCriticalHit = this.d20RollValue >= this.diceRollData.minCrit;
 			//console.log('isCriticalHit: ' + isCriticalHit);
-			if (this.wasCriticalHit && !this.diceRollDataPlayer.secondRollData && this.anyDamageDiceThisRoll()) {
+			if (this.wasCriticalHit && !this.diceRollData.secondRollData && this.anyDamageDiceThisRoll()) {
 				//console.log('diceRollData.damageHealthExtraDice: ' + diceRollData.damageHealthExtraDice);
-				this.bonusRollDealsDamage(this.diceRollDataPlayer.damageHealthExtraDice, '', this.getFirstPlayerId());
+				this.bonusRollDealsDamage(this.diceRollData.damageHealthExtraDice, '', this.getFirstPlayerId());
 				//console.log('checkAttackBonusRolls(1) - Roll Bonus Dice: ' + diceRollData.bonusRolls.length);
 			}
 			//console.log('Calling getRollResults() from checkAttackBonusRolls...');
 			this.getRollResults(false);  // Needed to set globals for code below. I know. It's not great.
-			if (this.attemptedRollWasSuccessful && this.diceRollDataPlayer.minDamage > 0 && !this.diceRollDataPlayer.secondRollData) {
+			if (this.attemptedRollWasSuccessful && this.diceRollData.minDamage > 0 && !this.diceRollData.secondRollData) {
 				let extraRollStr = "";
 				for (let i = 0; i < this.dice.length; i++) {
 					const die: IDie = this.dice[i];
-					if (die.rollType === DieCountsAs.damage && die.getTopNumber() < this.diceRollDataPlayer.minDamage) {
+					if (die.rollType === DieCountsAs.damage && die.getTopNumber() < this.diceRollData.minDamage) {
 						let damageStr = "";
 						if (die.damageStr) {
 							damageStr = `(${die.damageStr}:damage)`;
@@ -1205,7 +1225,8 @@ class DieRoller {
 						extraRollStr += `1d${die.values}${damageStr},`;
 						this.removeDie(die, 0, DieEffect.HandGrab);
 						const greatWeaponFightingTextDelay = 900;
-						diceLayer.addDieTextAfter(die, 'Great Weapon Fighting', diceLayer.activePlayerDieColor, diceLayer.activePlayerDieColor, greatWeaponFightingTextDelay);
+						const centerPos: Vector = this.getScreenCoordinates(die);
+						diceLayer.addDieTextAfter(centerPos, 'Great Weapon Fighting', diceLayer.activePlayerDieColor, diceLayer.activePlayerDieColor, greatWeaponFightingTextDelay);
 						die.inPlay = false;
 						this.removeDieEffectsForSingleDie(die);
 					}
@@ -1226,7 +1247,7 @@ class DieRoller {
 
 	checkSkillCheckBonusRolls(): void {
 		this.nat20SkillCheckBonusRoll = false;
-		if (this.diceRollDataPlayer.type === DiceRollType.SkillCheck) {
+		if (this.diceRollData.type === DiceRollType.SkillCheck) {
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
 				if (die.inPlay && die.rollType === DieCountsAs.totalScore && die.isD20 && die.getTopNumber() === 20) {
@@ -1237,7 +1258,7 @@ class DieRoller {
 						dieColor = diceLayer.getDieColor(die.playerID);
 						dieTextColor = diceLayer.getDieFontColor(die.playerID);
 					}
-					this.diceRollDataPlayer.addBonusRoll('1d20', '', die.playerID, dieColor, dieTextColor, die.playerName);
+					this.diceRollData.addBonusRoll('1d20', '', die.playerID, dieColor, dieTextColor, die.playerName);
 				}
 			}
 		}
@@ -1261,135 +1282,135 @@ class DieRoller {
 	}
 
 	checkWildMagicBonusRolls() {
-		if (this.diceRollDataPlayer.type === DiceRollType.WildMagic) {
+		if (this.diceRollData.type === DiceRollType.WildMagic) {
 			let rollValue = 0;
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
 				if (die.inPlay && (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration))
 					rollValue += die.getTopNumber();
 			}
-			this.diceRollDataPlayer.totalRoll = rollValue + this.diceRollDataPlayer.modifier;
+			this.diceRollData.totalRoll = rollValue + this.diceRollData.modifier;
 			this.modifyTotalRollForTestingPurposes();
-			this.diceRollDataPlayer.playBonusSoundAfter = 2500;
-			this.announceWildMagicResult(this.diceRollDataPlayer.totalRoll);
-			if (this.diceRollDataPlayer.totalRoll === 0 || this.diceRollDataPlayer.totalRoll === 99)
-				this.diceRollDataPlayer.wildMagic = WildMagic.regainSorceryPoints;
-			else if (this.diceRollDataPlayer.totalRoll < 3)
-				this.diceRollDataPlayer.wildMagic = WildMagic.wildMagicMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 5)
-				this.diceRollDataPlayer.wildMagic = WildMagic.seeInvisibleCreatures;
-			else if (this.diceRollDataPlayer.totalRoll < 7)
-				this.diceRollDataPlayer.wildMagic = WildMagic.modronAppearsOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 9)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castFireball;
-			else if (this.diceRollDataPlayer.totalRoll < 11)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castMagicMissile;
-			else if (this.diceRollDataPlayer.totalRoll < 13) {
-				this.diceRollDataPlayer.addBonusRoll('1d10', 'Inches Changed: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.heightChange;
-				this.diceRollDataPlayer.playBonusSoundAfter = 700;
+			this.diceRollData.playBonusSoundAfter = 2500;
+			this.announceWildMagicResult(this.diceRollData.totalRoll);
+			if (this.diceRollData.totalRoll === 0 || this.diceRollData.totalRoll === 99)
+				this.diceRollData.wildMagic = WildMagic.regainSorceryPoints;
+			else if (this.diceRollData.totalRoll < 3)
+				this.diceRollData.wildMagic = WildMagic.wildMagicMinute;
+			else if (this.diceRollData.totalRoll < 5)
+				this.diceRollData.wildMagic = WildMagic.seeInvisibleCreatures;
+			else if (this.diceRollData.totalRoll < 7)
+				this.diceRollData.wildMagic = WildMagic.modronAppearsOneMinute;
+			else if (this.diceRollData.totalRoll < 9)
+				this.diceRollData.wildMagic = WildMagic.castFireball;
+			else if (this.diceRollData.totalRoll < 11)
+				this.diceRollData.wildMagic = WildMagic.castMagicMissile;
+			else if (this.diceRollData.totalRoll < 13) {
+				this.diceRollData.addBonusRoll('1d10', 'Inches Changed: ');
+				this.diceRollData.wildMagic = WildMagic.heightChange;
+				this.diceRollData.playBonusSoundAfter = 700;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 15)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castConfusionOnSelf;
-			else if (this.diceRollDataPlayer.totalRoll < 17)
-				this.diceRollDataPlayer.wildMagic = WildMagic.regain5hpPerTurnForOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 19)
-				this.diceRollDataPlayer.wildMagic = WildMagic.beardOfFeathers;
-			else if (this.diceRollDataPlayer.totalRoll < 21)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castGreaseCenteredOnSelf;
-			else if (this.diceRollDataPlayer.totalRoll < 23)
-				this.diceRollDataPlayer.wildMagic = WildMagic.spellTargetsDisadvantagedSavingThrowForOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 25)
-				this.diceRollDataPlayer.wildMagic = WildMagic.skinTurnsBlue;
-			else if (this.diceRollDataPlayer.totalRoll < 27)
-				this.diceRollDataPlayer.wildMagic = WildMagic.thirdEyeAdvantageWisdomChecks;
-			else if (this.diceRollDataPlayer.totalRoll < 29)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castTimeBonusActionOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 31)
-				this.diceRollDataPlayer.wildMagic = WildMagic.teleportUpTo60Feet;
-			else if (this.diceRollDataPlayer.totalRoll < 33)
-				this.diceRollDataPlayer.wildMagic = WildMagic.astralPlaneUntilEndOfNextTurn;
-			else if (this.diceRollDataPlayer.totalRoll < 35)
-				this.diceRollDataPlayer.wildMagic = WildMagic.maximizeDamageOnSpellCastInNextMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 37) {
-				this.diceRollDataPlayer.addBonusRoll('1d10', 'Years Changed: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.ageChange;
-				this.diceRollDataPlayer.playBonusSoundAfter = 700;
+			else if (this.diceRollData.totalRoll < 15)
+				this.diceRollData.wildMagic = WildMagic.castConfusionOnSelf;
+			else if (this.diceRollData.totalRoll < 17)
+				this.diceRollData.wildMagic = WildMagic.regain5hpPerTurnForOneMinute;
+			else if (this.diceRollData.totalRoll < 19)
+				this.diceRollData.wildMagic = WildMagic.beardOfFeathers;
+			else if (this.diceRollData.totalRoll < 21)
+				this.diceRollData.wildMagic = WildMagic.castGreaseCenteredOnSelf;
+			else if (this.diceRollData.totalRoll < 23)
+				this.diceRollData.wildMagic = WildMagic.spellTargetsDisadvantagedSavingThrowForOneMinute;
+			else if (this.diceRollData.totalRoll < 25)
+				this.diceRollData.wildMagic = WildMagic.skinTurnsBlue;
+			else if (this.diceRollData.totalRoll < 27)
+				this.diceRollData.wildMagic = WildMagic.thirdEyeAdvantageWisdomChecks;
+			else if (this.diceRollData.totalRoll < 29)
+				this.diceRollData.wildMagic = WildMagic.castTimeBonusActionOneMinute;
+			else if (this.diceRollData.totalRoll < 31)
+				this.diceRollData.wildMagic = WildMagic.teleportUpTo60Feet;
+			else if (this.diceRollData.totalRoll < 33)
+				this.diceRollData.wildMagic = WildMagic.astralPlaneUntilEndOfNextTurn;
+			else if (this.diceRollData.totalRoll < 35)
+				this.diceRollData.wildMagic = WildMagic.maximizeDamageOnSpellCastInNextMinute;
+			else if (this.diceRollData.totalRoll < 37) {
+				this.diceRollData.addBonusRoll('1d10', 'Years Changed: ');
+				this.diceRollData.wildMagic = WildMagic.ageChange;
+				this.diceRollData.playBonusSoundAfter = 700;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 39) {
-				this.diceRollDataPlayer.addBonusRoll('1d6', 'Flumphs: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.flumphs;
+			else if (this.diceRollData.totalRoll < 39) {
+				this.diceRollData.addBonusRoll('1d6', 'Flumphs: ');
+				this.diceRollData.wildMagic = WildMagic.flumphs;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 41) {
-				this.diceRollDataPlayer.addBonusRoll('2d10', 'HP Regained: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.regainHitPoints;
+			else if (this.diceRollData.totalRoll < 41) {
+				this.diceRollData.addBonusRoll('2d10', 'HP Regained: ');
+				this.diceRollData.wildMagic = WildMagic.regainHitPoints;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 43)
-				this.diceRollDataPlayer.wildMagic = WildMagic.pottedPlant;
-			else if (this.diceRollDataPlayer.totalRoll < 45)
-				this.diceRollDataPlayer.wildMagic = WildMagic.teleportUpTo20FeetBonusActionOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 47)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castLevitateOnSelf;
-			else if (this.diceRollDataPlayer.totalRoll < 49)
-				this.diceRollDataPlayer.wildMagic = WildMagic.unicorn;
-			else if (this.diceRollDataPlayer.totalRoll < 51)
-				this.diceRollDataPlayer.wildMagic = WildMagic.cannotSpeakPinkBubbles;
-			else if (this.diceRollDataPlayer.totalRoll < 53)
-				this.diceRollDataPlayer.wildMagic = WildMagic.spectralShieldPlus2ArmorClassNextMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 55) {
-				this.diceRollDataPlayer.addBonusRoll('5d6', 'Days Immune: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.alcoholImmunity;
+			else if (this.diceRollData.totalRoll < 43)
+				this.diceRollData.wildMagic = WildMagic.pottedPlant;
+			else if (this.diceRollData.totalRoll < 45)
+				this.diceRollData.wildMagic = WildMagic.teleportUpTo20FeetBonusActionOneMinute;
+			else if (this.diceRollData.totalRoll < 47)
+				this.diceRollData.wildMagic = WildMagic.castLevitateOnSelf;
+			else if (this.diceRollData.totalRoll < 49)
+				this.diceRollData.wildMagic = WildMagic.unicorn;
+			else if (this.diceRollData.totalRoll < 51)
+				this.diceRollData.wildMagic = WildMagic.cannotSpeakPinkBubbles;
+			else if (this.diceRollData.totalRoll < 53)
+				this.diceRollData.wildMagic = WildMagic.spectralShieldPlus2ArmorClassNextMinute;
+			else if (this.diceRollData.totalRoll < 55) {
+				this.diceRollData.addBonusRoll('5d6', 'Days Immune: ');
+				this.diceRollData.wildMagic = WildMagic.alcoholImmunity;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 57)
-				this.diceRollDataPlayer.wildMagic = WildMagic.hairFallsOutGrowsBack24Hours;
-			else if (this.diceRollDataPlayer.totalRoll < 59)
-				this.diceRollDataPlayer.wildMagic = WildMagic.fireTouchOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 61)
-				this.diceRollDataPlayer.wildMagic = WildMagic.regainLowestLevelExpendedSpellSlot;
-			else if (this.diceRollDataPlayer.totalRoll < 63)
-				this.diceRollDataPlayer.wildMagic = WildMagic.shoutWhenSpeakingOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 65)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castFogCloudCenteredOnSelf;
-			else if (this.diceRollDataPlayer.totalRoll < 67) {
-				this.diceRollDataPlayer.wildMagic = WildMagic.lightningDamageUpToThreeCreatures;
-				this.diceRollDataPlayer.addBonusDamageRoll('4d10(lightning)', 'Lightning Damage: ');
+			else if (this.diceRollData.totalRoll < 57)
+				this.diceRollData.wildMagic = WildMagic.hairFallsOutGrowsBack24Hours;
+			else if (this.diceRollData.totalRoll < 59)
+				this.diceRollData.wildMagic = WildMagic.fireTouchOneMinute;
+			else if (this.diceRollData.totalRoll < 61)
+				this.diceRollData.wildMagic = WildMagic.regainLowestLevelExpendedSpellSlot;
+			else if (this.diceRollData.totalRoll < 63)
+				this.diceRollData.wildMagic = WildMagic.shoutWhenSpeakingOneMinute;
+			else if (this.diceRollData.totalRoll < 65)
+				this.diceRollData.wildMagic = WildMagic.castFogCloudCenteredOnSelf;
+			else if (this.diceRollData.totalRoll < 67) {
+				this.diceRollData.wildMagic = WildMagic.lightningDamageUpToThreeCreatures;
+				this.diceRollData.addBonusDamageRoll('4d10(lightning)', 'Lightning Damage: ');
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 69)
-				this.diceRollDataPlayer.wildMagic = WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn;
-			else if (this.diceRollDataPlayer.totalRoll < 71)
-				this.diceRollDataPlayer.wildMagic = WildMagic.allCreatures30FeetInvisibleOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 73)
-				this.diceRollDataPlayer.wildMagic = WildMagic.resistanceToAllDamageNextMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 75) {
-				this.diceRollDataPlayer.addBonusRoll('1d4', 'Hours Poisoned: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.randomCreaturePoisoned1d4Hours;
+			else if (this.diceRollData.totalRoll < 69)
+				this.diceRollData.wildMagic = WildMagic.frightenedByNearestCreatureUntilEndOfNextTurn;
+			else if (this.diceRollData.totalRoll < 71)
+				this.diceRollData.wildMagic = WildMagic.allCreatures30FeetInvisibleOneMinute;
+			else if (this.diceRollData.totalRoll < 73)
+				this.diceRollData.wildMagic = WildMagic.resistanceToAllDamageNextMinute;
+			else if (this.diceRollData.totalRoll < 75) {
+				this.diceRollData.addBonusRoll('1d4', 'Hours Poisoned: ');
+				this.diceRollData.wildMagic = WildMagic.randomCreaturePoisoned1d4Hours;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 77)
-				this.diceRollDataPlayer.wildMagic = WildMagic.glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded;
-			else if (this.diceRollDataPlayer.totalRoll < 79)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castPolymorphToSheepOnSelf;
-			else if (this.diceRollDataPlayer.totalRoll < 81)
-				this.diceRollDataPlayer.wildMagic = WildMagic.butterfliesAndPetals10FeetOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 83)
-				this.diceRollDataPlayer.wildMagic = WildMagic.takeOneAdditionalActionImmediately;
-			else if (this.diceRollDataPlayer.totalRoll < 85) {
-				this.diceRollDataPlayer.addBonusDamageRoll('1d10(necrotic)', 'Necrotic Damage: ');
-				this.diceRollDataPlayer.wildMagic = WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage;
+			else if (this.diceRollData.totalRoll < 77)
+				this.diceRollData.wildMagic = WildMagic.glowBrightOneMinuteCreaturesEndingTurn5FeetBlinded;
+			else if (this.diceRollData.totalRoll < 79)
+				this.diceRollData.wildMagic = WildMagic.castPolymorphToSheepOnSelf;
+			else if (this.diceRollData.totalRoll < 81)
+				this.diceRollData.wildMagic = WildMagic.butterfliesAndPetals10FeetOneMinute;
+			else if (this.diceRollData.totalRoll < 83)
+				this.diceRollData.wildMagic = WildMagic.takeOneAdditionalActionImmediately;
+			else if (this.diceRollData.totalRoll < 85) {
+				this.diceRollData.addBonusDamageRoll('1d10(necrotic)', 'Necrotic Damage: ');
+				this.diceRollData.wildMagic = WildMagic.allCreaturesWithin30FeetTake1d10NecroticDamage;
 			}
-			else if (this.diceRollDataPlayer.totalRoll < 87)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castMirrorImage;
-			else if (this.diceRollDataPlayer.totalRoll < 89)
-				this.diceRollDataPlayer.wildMagic = WildMagic.castFlyOnRandomCreatureWithin60Feet;
-			else if (this.diceRollDataPlayer.totalRoll < 91)
-				this.diceRollDataPlayer.wildMagic = WildMagic.invisibleSilentNextMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 93)
-				this.diceRollDataPlayer.wildMagic = WildMagic.immortalOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 95)
-				this.diceRollDataPlayer.wildMagic = WildMagic.increaseSizeOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 97)
-				this.diceRollDataPlayer.wildMagic = WildMagic.allCreatures30FeetVulnerableToPiercingDamageOneMinute;
-			else if (this.diceRollDataPlayer.totalRoll < 99)
-				this.diceRollDataPlayer.wildMagic = WildMagic.faintEtheralMusicOneMinute;
+			else if (this.diceRollData.totalRoll < 87)
+				this.diceRollData.wildMagic = WildMagic.castMirrorImage;
+			else if (this.diceRollData.totalRoll < 89)
+				this.diceRollData.wildMagic = WildMagic.castFlyOnRandomCreatureWithin60Feet;
+			else if (this.diceRollData.totalRoll < 91)
+				this.diceRollData.wildMagic = WildMagic.invisibleSilentNextMinute;
+			else if (this.diceRollData.totalRoll < 93)
+				this.diceRollData.wildMagic = WildMagic.immortalOneMinute;
+			else if (this.diceRollData.totalRoll < 95)
+				this.diceRollData.wildMagic = WildMagic.increaseSizeOneMinute;
+			else if (this.diceRollData.totalRoll < 97)
+				this.diceRollData.wildMagic = WildMagic.allCreatures30FeetVulnerableToPiercingDamageOneMinute;
+			else if (this.diceRollData.totalRoll < 99)
+				this.diceRollData.wildMagic = WildMagic.faintEtheralMusicOneMinute;
 		}
 	}
 
@@ -1402,7 +1423,7 @@ class DieRoller {
 		this.checkSkillCheckBonusRolls();
 		this.checkWildMagicBonusRolls();
 
-		return this.diceRollDataPlayer.bonusRolls && this.diceRollDataPlayer.bonusRolls.length > 0;
+		return this.diceRollData.bonusRolls && this.diceRollData.bonusRolls.length > 0;
 	}
 
 	freezeDie(die: IDie) {
@@ -1721,7 +1742,7 @@ class DieRoller {
 		if (fontColor === undefined)
 			fontColor = DiceLayer.damageDieFontColor;
 		let modifier = 0;
-		let damageType: DamageType = this.diceRollDataPlayer.damageType;
+		let damageType: DamageType = this.diceRollData.damageType;
 
 		allDice.forEach((dieSpec: string) => {
 			let dieType = '';
@@ -1792,11 +1813,11 @@ class DieRoller {
 	rollBonusDice() {
 		this.onBonusThrow = true;
 
-		if (!this.diceRollDataPlayer.bonusRolls)
+		if (!this.diceRollData.bonusRolls)
 			return;
 		//console.log('rollBonusDice() - Roll Bonus Dice: ' + diceRollData.bonusRolls.length);
-		for (let i = 0; i < this.diceRollDataPlayer.bonusRolls.length; i++) {
-			const bonusRoll: BonusRoll = this.diceRollDataPlayer.bonusRolls[i];
+		for (let i = 0; i < this.diceRollData.bonusRolls.length; i++) {
+			const bonusRoll: BonusRoll = this.diceRollData.bonusRolls[i];
 			//console.log('bonusRoll.dieCountsAs: ' + bonusRoll.dieCountsAs);
 			const allDice: IDie[] = this.addDieFromStr(bonusRoll.playerID, bonusRoll.diceStr, bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
 			allDice.forEach((die: IDie) => {
@@ -1811,89 +1832,89 @@ class DieRoller {
 		//console.log(`playAnnouncerCommentary`);
 		//console.log('d20RollValue: ' + d20RollValue);
 		//console.log('d20Modifier: ' + d20Modifier);
-		if (this.diceRollDataPlayer.hasMultiPlayerDice) {
+		if (this.diceRollData.hasMultiPlayerDice) {
 			diceSounds.playMultiplayerCommentary(type, d20RollValue);
 			return;
 		}
-		if (this.diceRollDataPlayer.type === DiceRollType.WildMagic) {
+		if (this.diceRollData.type === DiceRollType.WildMagic) {
 			diceSounds.playWildMagicCommentary(type, d20RollValue);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.PercentageRoll) {
+		if (this.diceRollData.type === DiceRollType.PercentageRoll) {
 			diceSounds.playPercentageRollCommentary(type, d20RollValue);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.DamageOnly) {
+		if (this.diceRollData.type === DiceRollType.DamageOnly) {
 			diceSounds.playDamageCommentaryAsync(totalDamage, damageType, damageSummary);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.HealthOnly) {
+		if (this.diceRollData.type === DiceRollType.HealthOnly) {
 			diceSounds.playHealthCommentary(type, this.totalHealthPlusModifier);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.ExtraOnly) {
+		if (this.diceRollData.type === DiceRollType.ExtraOnly) {
 			diceSounds.playExtraCommentary(type, d20RollValue);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.Attack) {
-			diceSounds.playAttackPlusDamageCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage, damageType, damageSummary, this.diceRollDataPlayer.minCrit, this.attemptedRollWasSuccessful);
+		if (this.diceRollData.type === DiceRollType.Attack) {
+			diceSounds.playAttackPlusDamageCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage, damageType, damageSummary, this.diceRollData.minCrit, this.attemptedRollWasSuccessful);
 			// TODO: Follow with Damage announcer sound files.
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.SkillCheck) {
-			diceSounds.playSkillCheckCommentary(d20RollValue, d20Modifier, this.diceRollDataPlayer.skillCheck, this.attemptedRollWasSuccessful);
+		if (this.diceRollData.type === DiceRollType.SkillCheck) {
+			diceSounds.playSkillCheckCommentary(d20RollValue, d20Modifier, this.diceRollData.skillCheck, this.attemptedRollWasSuccessful);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.SavingThrow) {
-			diceSounds.playSavingThrowCommentary(d20RollValue, d20Modifier, this.diceRollDataPlayer.savingThrow, this.attemptedRollWasSuccessful);
+		if (this.diceRollData.type === DiceRollType.SavingThrow) {
+			diceSounds.playSavingThrowCommentary(d20RollValue, d20Modifier, this.diceRollData.savingThrow, this.attemptedRollWasSuccessful);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.ChaosBolt) {
-			diceSounds.playChaosBoltCommentary(d20RollValue, this.diceRollDataPlayer.savingThrow);
+		if (this.diceRollData.type === DiceRollType.ChaosBolt) {
+			diceSounds.playChaosBoltCommentary(d20RollValue, this.diceRollData.savingThrow);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.FlatD20) {
+		if (this.diceRollData.type === DiceRollType.FlatD20) {
 			diceSounds.playFlatD20Commentary(d20RollValue);
 			return;
 		}
 
-		if (this.diceRollDataPlayer.type === DiceRollType.WildMagicD20Check) {
+		if (this.diceRollData.type === DiceRollType.WildMagicD20Check) {
 			diceSounds.playWildMagicD20CheckCommentary(d20RollValue);
 			return;
 		}
 	}
 
 	getSkillCheckName() {
-		if (this.diceRollDataPlayer.skillCheck === Skills.none)
+		if (this.diceRollData.skillCheck === Skills.none)
 			return 'Skill';
-		const enumAsStr: string = Object.keys(Skills).find(key => Skills[key] === this.diceRollDataPlayer.skillCheck);
+		const enumAsStr: string = Object.keys(Skills).find(key => Skills[key] === this.diceRollData.skillCheck);
 		let initialCapEnum = '';
 		if (enumAsStr)
 			initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
 		else
 			initialCapEnum = 'Skill';
-		if (this.diceRollDataPlayer.skillCheck === Skills.animalHandling)
+		if (this.diceRollData.skillCheck === Skills.animalHandling)
 			initialCapEnum = 'Animal Handling';
-		else if (this.diceRollDataPlayer.skillCheck === Skills.sleightOfHand)
+		else if (this.diceRollData.skillCheck === Skills.sleightOfHand)
 			initialCapEnum = 'Sleight of Hand';
-		else if (this.diceRollDataPlayer.skillCheck === Skills.randomShit)
+		else if (this.diceRollData.skillCheck === Skills.randomShit)
 			initialCapEnum = 'Random Shit';
 		return initialCapEnum;
 	}
 
 	getSavingThrowName() {
-		if (this.diceRollDataPlayer.savingThrow === Ability.none)
+		if (this.diceRollData.savingThrow === Ability.none)
 			return "";
-		const enumAsStr: string = Object.keys(Ability).find(key => Ability[key] === this.diceRollDataPlayer.savingThrow);
+		const enumAsStr: string = Object.keys(Ability).find(key => Ability[key] === this.diceRollData.savingThrow);
 		let initialCapEnum = '';
 		if (enumAsStr)
 			initialCapEnum = enumAsStr.charAt(0).toUpperCase() + enumAsStr.slice(1);
@@ -1909,22 +1930,22 @@ class DieRoller {
 	showSuccessFailMessages(title: string, rawD20RollValue: number) {
 		if (title)
 			title += ' ';
-		if (!this.diceRollDataPlayer.hasMultiPlayerDice && this.diceRollDataPlayer.type !== DiceRollType.WildMagic &&
-			this.diceRollDataPlayer.type !== DiceRollType.PercentageRoll &&
-			this.diceRollDataPlayer.type !== DiceRollType.DamageOnly &&
-			this.diceRollDataPlayer.type !== DiceRollType.HealthOnly &&
-			this.diceRollDataPlayer.type !== DiceRollType.ExtraOnly) {
+		if (!this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.WildMagic &&
+			this.diceRollData.type !== DiceRollType.PercentageRoll &&
+			this.diceRollData.type !== DiceRollType.DamageOnly &&
+			this.diceRollData.type !== DiceRollType.HealthOnly &&
+			this.diceRollData.type !== DiceRollType.ExtraOnly) {
 			if (this.attemptedRollWasSuccessful)
-				if (rawD20RollValue >= this.diceRollDataPlayer.minCrit) {
-					diceLayer.showResult(title + this.diceRollDataPlayer.critSuccessMessage, this.attemptedRollWasSuccessful);
+				if (rawD20RollValue >= this.diceRollData.minCrit) {
+					diceLayer.showResult(title + this.diceRollData.critSuccessMessage, this.attemptedRollWasSuccessful);
 				}
 				else {
-					diceLayer.showResult(title + this.diceRollDataPlayer.successMessage, this.attemptedRollWasSuccessful);
+					diceLayer.showResult(title + this.diceRollData.successMessage, this.attemptedRollWasSuccessful);
 				}
 			else if (rawD20RollValue === 1)
-				diceLayer.showResult(title + this.diceRollDataPlayer.critFailMessage, this.attemptedRollWasSuccessful);
+				diceLayer.showResult(title + this.diceRollData.critFailMessage, this.attemptedRollWasSuccessful);
 			else
-				diceLayer.showResult(title + this.diceRollDataPlayer.failMessage, this.attemptedRollWasSuccessful);
+				diceLayer.showResult(title + this.diceRollData.failMessage, this.attemptedRollWasSuccessful);
 		}
 	}
 
@@ -1945,34 +1966,34 @@ class DieRoller {
 		let maxDamage: number = rollResults.maxDamage;
 
 		let title = '';
-		if (this.diceRollDataPlayer.type === DiceRollType.Initiative)
+		if (this.diceRollData.type === DiceRollType.Initiative)
 			title = 'Initiative:';
-		else if (this.diceRollDataPlayer.type === DiceRollType.NonCombatInitiative)
+		else if (this.diceRollData.type === DiceRollType.NonCombatInitiative)
 			title = 'Non-combat Initiative:';
-		else if (this.diceRollDataPlayer.type === DiceRollType.SkillCheck)
+		else if (this.diceRollData.type === DiceRollType.SkillCheck)
 			title = `${this.getSkillCheckName()} Check:`;
-		else if (this.diceRollDataPlayer.type === DiceRollType.SavingThrow)
+		else if (this.diceRollData.type === DiceRollType.SavingThrow)
 			title = `${this.getSavingThrowName()} Saving Throw:`;
 
-		if (this.diceRollDataPlayer.multiplayerSummary) {
-			this.diceRollDataPlayer.multiplayerSummary.sort((a, b) => (b.roll + b.modifier) - (a.roll + a.modifier));
-			diceLayer.showMultiplayerResults(title, this.diceRollDataPlayer.multiplayerSummary, this.diceRollDataPlayer.hiddenThreshold);
+		if (this.diceRollData.multiplayerSummary) {
+			this.diceRollData.multiplayerSummary.sort((a, b) => (b.roll + b.modifier) - (a.roll + a.modifier));
+			diceLayer.showMultiplayerResults(title, this.diceRollData.multiplayerSummary, this.diceRollData.hiddenThreshold);
 		}
 
-		if (!this.diceRollDataPlayer.hasMultiPlayerDice && d20RollValue.get(singlePlayerId) > 0) {
-			if (this.diceRollDataPlayer.modifier !== 0)
-				diceLayer.showRollModifier(this.diceRollDataPlayer.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
+		if (!this.diceRollData.hasMultiPlayerDice && d20RollValue.get(singlePlayerId) > 0) {
+			if (this.diceRollData.modifier !== 0)
+				diceLayer.showRollModifier(this.diceRollData.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
 			if (skillSavingModifier !== 0)
 				diceLayer.showRollModifier(skillSavingModifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
-			diceLayer.showDieTotal(`${this.diceRollDataPlayer.totalRoll}`, playerIdForTextMessages);
+			diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages);
 		}
 
-		if (this.totalBonus > 0 && !this.diceRollDataPlayer.hasMultiPlayerDice && this.diceRollDataPlayer.type !== DiceRollType.SkillCheck) {
+		if (this.totalBonus > 0 && !this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.SkillCheck) {
 			let bonusRollStr = 'Bonus Roll: ';
-			const bonusRollOverrideStr: string = this.diceRollDataPlayer.getFirstBonusRollDescription();
+			const bonusRollOverrideStr: string = this.diceRollData.getFirstBonusRollDescription();
 			if (bonusRollOverrideStr)
 				bonusRollStr = bonusRollOverrideStr;
-			switch (this.diceRollDataPlayer.wildMagic) {
+			switch (this.diceRollData.wildMagic) {
 				case WildMagic.heightChange:
 				case WildMagic.ageChange:
 					if (this.isOdd(this.totalBonus))
@@ -1997,21 +2018,21 @@ class DieRoller {
 		this.showSuccessFailMessages(title, d20RollValue.get(singlePlayerId));
 		//console.log('d20RollValue.get(singlePlayerId): ' + d20RollValue.get(singlePlayerId));
 		maxDamage += this.damageModifierThisRoll;
-		if (this.diceRollDataPlayer.secondRollData)
-			this.playSecondaryAnnouncerCommentary(this.diceRollDataPlayer.secondRollData.type, d20RollValue.get(singlePlayerId), this.totalDamagePlusModifier, maxDamage);
+		if (this.diceRollData.secondRollData)
+			this.playSecondaryAnnouncerCommentary(this.diceRollData.secondRollData.type, d20RollValue.get(singlePlayerId), this.totalDamagePlusModifier, maxDamage);
 		else {
 			let d20RollTotal: number = d20RollValue.get(singlePlayerId);
-			if (this.diceRollDataPlayer.type === DiceRollType.SkillCheck)
-				d20RollTotal = this.diceRollDataPlayer.totalRoll - rollResults.toHitModifier;
+			if (this.diceRollData.type === DiceRollType.SkillCheck)
+				d20RollTotal = this.diceRollData.totalRoll - rollResults.toHitModifier;
 
-			this.playAnnouncerCommentary(this.diceRollDataPlayer.type, d20RollTotal, rollResults.toHitModifier, this.totalDamagePlusModifier, maxDamage, this.diceRollDataPlayer.damageType, rollResults.damageSummary); return maxDamage;
+			this.playAnnouncerCommentary(this.diceRollData.type, d20RollTotal, rollResults.toHitModifier, this.totalDamagePlusModifier, maxDamage, this.diceRollData.damageType, rollResults.damageSummary); return maxDamage;
 		}
 	}
 
 	playFinalRollSoundEffects() {
-		if (!this.diceRollDataPlayer)
+		if (!this.diceRollData)
 			return;
-		switch (this.diceRollDataPlayer.wildMagic) {
+		switch (this.diceRollData.wildMagic) {
 			case WildMagic.wildMagicMinute: ; break;
 			case WildMagic.seeInvisibleCreatures: ; break;
 			case WildMagic.modronAppearsOneMinute: diceSounds.playWildMagic('modron'); break;
@@ -2071,7 +2092,7 @@ class DieRoller {
 	}
 
 	calculateFinalMessage(): void {
-		switch (this.diceRollDataPlayer.wildMagic) {
+		switch (this.diceRollData.wildMagic) {
 			case WildMagic.wildMagicMinute:
 				this.additionalDieRollMessage = 'Perform a wild magic roll at the start of each of your turns for the next minute, ignoring this result on subsequent rolls.'; break;
 			case WildMagic.seeInvisibleCreatures:
@@ -2217,19 +2238,20 @@ class DieRoller {
 			'wasCriticalHit': this.wasCriticalHit,
 			'playerID': playerId,
 			'success': this.attemptedRollWasSuccessful,
-			'roll': this.diceRollDataPlayer.totalRoll,
-			'hiddenThreshold': this.diceRollDataPlayer.hiddenThreshold,
-			'spellName': this.diceRollDataPlayer.spellName,
+			'roll': this.diceRollData.totalRoll,
+			'hiddenThreshold': this.diceRollData.hiddenThreshold,
+			'spellName': this.diceRollData.spellName,
 			'damage': this.totalDamagePlusModifier,
 			'health': this.totalHealthPlusModifier,
 			'extra': this.totalExtraPlusModifier,
-			'multiplayerSummary': this.diceRollDataPlayer.multiplayerSummary,
-			'individualRolls': this.diceRollDataPlayer.individualRolls,
-			'type': this.diceRollDataPlayer.type,
-			'skillCheck': this.diceRollDataPlayer.skillCheck,
-			'savingThrow': this.diceRollDataPlayer.savingThrow,
+			'multiplayerSummary': this.diceRollData.multiplayerSummary,
+			'individualRolls': this.diceRollData.individualRolls,
+			'type': this.diceRollData.type,
+			'skillCheck': this.diceRollData.skillCheck,
+			'savingThrow': this.diceRollData.savingThrow,
 			'bonus': this.totalBonus,
 			'additionalDieRollMessage': this.additionalDieRollMessage,
+			'diceGroup': this.diceRollData.diceGroup
 		};
 
 		diceHaveStoppedRolling(JSON.stringify(this.lastRollDiceData));
@@ -2271,8 +2293,8 @@ class DieRoller {
 		//console.log('Dice have stopped rolling!');
 		//diceHaveStoppedRolling(null);
 
-		if (this.diceRollDataPlayer.onStopRollingSound)
-			diceSounds.safePlayMp3(this.diceRollDataPlayer.onStopRollingSound);
+		if (this.diceRollData.onStopRollingSound)
+			diceSounds.safePlayMp3(this.diceRollData.onStopRollingSound);
 
 		if (this.attemptedRollWasSuccessful) {
 			this.onSuccess();
@@ -2282,11 +2304,11 @@ class DieRoller {
 		}
 
 		let playerId: number = diceLayer.playerID;
-		if (this.diceRollDataPlayer.playerRollOptions.length === 1)
-			playerId = this.diceRollDataPlayer.playerRollOptions[0].PlayerID;
+		if (this.diceRollData.playerRollOptions.length === 1)
+			playerId = this.diceRollData.playerRollOptions[0].PlayerID;
 
-		if (!this.hasMultiPlayerDice(this.diceRollDataPlayer)) {
-			const creatureId: number = this.getFirstCreatureId(this.diceRollDataPlayer);
+		if (!this.hasMultiPlayerDice(this.diceRollData)) {
+			const creatureId: number = this.getFirstCreatureId(this.diceRollData);
 			if (creatureId !== Number.MIN_VALUE)
 				playerId = creatureId;
 		}
@@ -2308,7 +2330,7 @@ class DieRoller {
 
 	diceDefinitelyStoppedRolling() {
 		if (this.needToClearD20s) {
-			if (this.diceRollDataPlayer.hasMultiPlayerDice) {
+			if (this.diceRollData.hasMultiPlayerDice) {
 				this.removeMultiplayerD20s();
 			}
 			else {
@@ -2321,10 +2343,10 @@ class DieRoller {
 				this.setupBonusRoll = true;
 				//if (diceRollData.type == DiceRollType.WildMagic)
 				//	showRollTotal();
-				if (!this.diceRollDataPlayer.startedBonusDiceRoll) {
+				if (!this.diceRollData.startedBonusDiceRoll) {
 					this.freezeExistingDice();
-					this.diceRollDataPlayer.startedBonusDiceRoll = true;
-					if (this.isAttack(this.diceRollDataPlayer) && this.d20RollValue >= this.diceRollDataPlayer.minCrit) {
+					this.diceRollData.startedBonusDiceRoll = true;
+					if (this.isAttack(this.diceRollData) && this.d20RollValue >= this.diceRollData.minCrit) {
 						diceLayer.indicateBonusRoll('Damage Bonus!');
 						this.wasCriticalHit = true;
 					}
@@ -2343,8 +2365,8 @@ class DieRoller {
 			this.popFrozenDice();
 			//console.log('Calling getRollResults() from diceDefinitelyStoppedRolling...');
 			this.reportRollResults(this.getRollResults(true));
-			if (this.diceRollDataPlayer.playBonusSoundAfter)
-				setTimeout(this.playFinalRollSoundEffects.bind(this), this.diceRollDataPlayer.playBonusSoundAfter);
+			if (this.diceRollData.playBonusSoundAfter)
+				setTimeout(this.playFinalRollSoundEffects.bind(this), this.diceRollData.playBonusSoundAfter);
 			this.onDiceRollStopped();
 		}
 	}
@@ -2458,7 +2480,8 @@ class DieRoller {
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 
 		for (let i = 0; i < this.specialDice.length; i++) {
-			const dieObject: IDieObject = this.specialDice[i].getObject();
+			const thisSpecialDie: IDie = this.specialDice[i];
+			const dieObject: IDieObject = thisSpecialDie.getObject();
 			if (dieObject === null)
 				continue;
 
@@ -2479,7 +2502,7 @@ class DieRoller {
 					//dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
 
 					// die.dieValue is also available.
-					const screenPos: Vector = getScreenCoordinates(dieObject);
+					const screenPos: Vector = this.getScreenCoordinates(thisSpecialDie);
 					if (!screenPos)
 						continue;
 
@@ -2630,27 +2653,27 @@ class DieRoller {
 		const VIEW_ANGLE = 45 / lensFactor, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.01, FAR = 20000;
 
 		// @ts-ignore - THREE
-		DieRoller.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-		this.scene.add(DieRoller.camera);
-		DieRoller.camera.position.set(0, 30 * lensFactor, 0);
+		this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+		this.scene.add(this.camera);
+		this.camera.position.set(0, 30 * lensFactor, 0);
 
 
 		// RENDERER
 		// @ts-ignore - THREE
-		DieRoller.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-		DieRoller.renderer.setClearColor(0x000000, 0);
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		this.renderer.setClearColor(0x000000, 0);
 
-		DieRoller.renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-		DieRoller.renderer.shadowMap.enabled = true;
+		this.renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+		this.renderer.shadowMap.enabled = true;
 		// @ts-ignore - THREE
-		DieRoller.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 		this.container = document.getElementById('ThreeJS');
-		this.container.appendChild(DieRoller.renderer.domElement);
+		this.container.appendChild(this.renderer.domElement);
 		// EVENTS
 		// CONTROLS
 		// @ts-ignore - THREE
-		this.controls = new THREE.OrbitControls(DieRoller.camera, DieRoller.renderer.domElement);
+		this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 
 		//// STATS
 		//stats = new Stats();
@@ -2836,8 +2859,8 @@ class DieRoller {
 			//let numDiceScaling = 0;
 			if (this.scalingDice && this.scalingDice.length > 0) {
 				for (let i = 0; i < this.scalingDice.length; i++) {
-
-					const dieObject: IDieObject = this.scalingDice[i].getObject();
+					const thisScalingDie: IDie = this.scalingDice[i];
+					const dieObject: IDieObject = thisScalingDie.getObject();
 					if (dieObject === null)
 						continue;
 
@@ -2857,7 +2880,7 @@ class DieRoller {
 
 					if (now > portalOpenTime && dieObject.needToStartEffect) {
 						dieObject.needToStartEffect = false;
-						const screenPos: Vector = getScreenCoordinates(dieObject);
+						const screenPos: Vector = this.getScreenCoordinates(thisScalingDie);
 
 						if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
 							if (screenPos)
@@ -2994,7 +3017,7 @@ class DieRoller {
 				!stillScaling && !stillHaveSpecialDice) {
 				this.animationsShouldBeDone = true;
 				//console.log('animationsShouldBeDone = true;');
-				this.diceRollDataPlayer = null;
+				this.diceRollData = null;
 				this.dice = [];
 				setTimeout(allDiceShouldBeDestroyedByNow.bind(this), 3000);
 			}
@@ -3029,7 +3052,7 @@ class DieRoller {
 
 		const positionTrailingSprite = (die: IDie, trailingEffect: TrailingEffect, index = 0): SpriteProxy => {
 			if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
-				const pos: Vector = getScreenCoordinates(die.getObject());
+				const pos: Vector = this.getScreenCoordinates(die);
 				if (!pos)
 					return null;
 
@@ -3129,7 +3152,7 @@ class DieRoller {
 		// TODO: For goodness sakes, Mark, do something with this.
 		const old_positionTrailingSprite = (die: IDie, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy => {
 			if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
-				const pos: Vector = getScreenCoordinates(die.getObject());
+				const pos: Vector = this.getScreenCoordinates(die);
 				if (!pos)
 					return null;
 				if (die.lastPos.length <= index)
@@ -3165,13 +3188,13 @@ class DieRoller {
 				const die: IDie = this.dice[i];
 
 				if (die.rollType === DieCountsAs.bentLuck)
-					addTrailingEffects(die, this.diceRollDataPlayer.secondRollData.trailingEffects);
+					addTrailingEffects(die, this.diceRollData.secondRollData.trailingEffects);
 				else
-					addTrailingEffects(die, this.diceRollDataPlayer.trailingEffects);
+					addTrailingEffects(die, this.diceRollData.trailingEffects);
 
 				if (die.rollType === DieCountsAs.inspiration) {
 					const distanceBetweenRipples = 80;
-					const ripple: ColorShiftingSpriteProxy = old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, this.diceRollDataPlayer.trailingEffects.length) as ColorShiftingSpriteProxy;
+					const ripple: ColorShiftingSpriteProxy = old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, this.diceRollData.trailingEffects.length) as ColorShiftingSpriteProxy;
 
 					if (ripple) {
 						ripple.opacity = 0.5;
@@ -3179,7 +3202,7 @@ class DieRoller {
 					}
 				}
 
-				const screenPos: Vector = getScreenCoordinates(die.getObject());
+				const screenPos: Vector = this.getScreenCoordinates(die);
 
 				if (die.attachedSprites && die.attachedSprites.length > 0 && screenPos) {
 					for (let j = 0; j < die.attachedSprites.length; j++) {
@@ -3225,7 +3248,7 @@ class DieRoller {
 				const startUpdate: number = performance.now();
 				if (!testingDiceRoller) {
 					updatePhysics();
-					DieRoller.renderer.render(this.scene, DieRoller.camera);
+					this.renderer.render(this.scene, this.camera);
 				}
 
 				this.lastDrawTimeDiceRoller = now - (elapsed % this.fpsIntervalDiceRoller);
@@ -3503,7 +3526,7 @@ class DieRoller {
 	}
 
 	rollAddOnDice() {
-		if (!this.diceRollDataPlayer)
+		if (!this.diceRollData)
 			return;
 
 		this.allDiceHaveStoppedRolling = false;
@@ -3516,12 +3539,12 @@ class DieRoller {
 		const localDiceRollData: DiceRollData = this.getMostRecentDiceRollData();
 
 		let allDiceAdded: IDie[] = [];
-		const throwPower: number = this.diceRollDataPlayer.throwPower * 1.2;
+		const throwPower: number = this.diceRollData.throwPower * 1.2;
 
 		let dieBack: string;
 		let dieFont: string;
 
-		if (this.diceRollDataPlayer.bentLuckMultiplier < 0) {
+		if (this.diceRollData.bentLuckMultiplier < 0) {
 			// Bad luck
 			dieBack = DiceLayer.badLuckDieColor;
 			dieFont = DiceLayer.badLuckFontColor;
@@ -3549,8 +3572,8 @@ class DieRoller {
 			}
 		}
 
-		const isGoodLuck: boolean = this.isLuckBent(localDiceRollData) && this.diceRollDataPlayer.bentLuckMultiplier > 0 || localDiceRollData.type === DiceRollType.LuckRollHigh;
-		const isBadLuck: boolean = this.isLuckBent(localDiceRollData) && this.diceRollDataPlayer.bentLuckMultiplier < 0 || localDiceRollData.type === DiceRollType.LuckRollLow;
+		const isGoodLuck: boolean = this.isLuckBent(localDiceRollData) && this.diceRollData.bentLuckMultiplier > 0 || localDiceRollData.type === DiceRollType.LuckRollHigh;
+		const isBadLuck: boolean = this.isLuckBent(localDiceRollData) && this.diceRollData.bentLuckMultiplier < 0 || localDiceRollData.type === DiceRollType.LuckRollLow;
 
 		if (isGoodLuck) {
 			//console.log('addGoodLuckEffects...');
@@ -3581,14 +3604,14 @@ class DieRoller {
 		const localDiceRollData: DiceRollData = this.getMostRecentDiceRollData();
 
 		if (this.isLuckBent(localDiceRollData))
-			diceLayer.reportAddOnRoll(this.diceRollDataPlayer.secondRollTitle, this.diceRollDataPlayer.bentLuckMultiplier);
+			diceLayer.reportAddOnRoll(this.diceRollData.secondRollTitle, this.diceRollData.bentLuckMultiplier);
 		else {
-			if (!this.diceRollDataPlayer.damageHealthExtraDice)
+			if (!this.diceRollData.damageHealthExtraDice)
 				localDiceRollData.itsAD20Roll = true;
 			else if (localDiceRollData.type === DiceRollType.LuckRollHigh || localDiceRollData.type === DiceRollType.LuckRollLow)
 				localDiceRollData.itsAD20Roll = true;
 
-			diceLayer.reportAddOnRoll(this.diceRollDataPlayer.secondRollTitle, this.diceRollDataPlayer.bentLuckMultiplier);
+			diceLayer.reportAddOnRoll(this.diceRollData.secondRollTitle, this.diceRollData.bentLuckMultiplier);
 		}
 
 		diceSounds.safePlayMp3('PaladinThunder');
@@ -3599,17 +3622,17 @@ class DieRoller {
 	}
 
 	needToRollAddOnDice(diceRollDto: DiceRollData, bentLuckMultiplier = 0) {
-		if (this.diceRollDataPlayer && this.diceRollDataPlayer.secondRollData)
+		if (this.diceRollData && this.diceRollData.secondRollData)
 			return;
 
-		if (this.diceRollDataPlayer === null) {
-			this.diceRollDataPlayer = diceRollDto;
+		if (this.diceRollData === null) {
+			this.diceRollData = diceRollDto;
 			this.rollingOnlyAddOnDice = true;
 		}
 
-		this.diceRollDataPlayer.bentLuckMultiplier = bentLuckMultiplier;
-		this.diceRollDataPlayer.secondRollData = diceRollDto;
-		this.diceRollDataPlayer.secondRollData.vantageKind = this.diceRollDataPlayer.vantageKind;
+		this.diceRollData.bentLuckMultiplier = bentLuckMultiplier;
+		this.diceRollData.secondRollData = diceRollDto;
+		this.diceRollData.secondRollData.vantageKind = this.diceRollData.vantageKind;
 
 		this.secondRollTryCount = 0;
 		this.throwAdditionalDice();
@@ -3629,9 +3652,9 @@ class DieRoller {
 
 	testD20Removal(roll1: number, roll2: number, roll3: number, vantage: VantageKind, type: DiceRollType): MockDie {
 		this.dice = [];
-		this.diceRollDataPlayer.vantageKind = vantage;
-		this.diceRollDataPlayer.type = type;
-		this.diceRollDataPlayer.itsAD20Roll = true;
+		this.diceRollData.vantageKind = vantage;
+		this.diceRollData.type = type;
+		this.diceRollData.itsAD20Roll = true;
 		this.dice.push(new MockDie('A', roll1));
 		this.dice.push(new MockDie('B', roll2));
 
@@ -3680,24 +3703,24 @@ class DieRoller {
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 
 		for (let i = 0; i < numD20s; i++) {
-			const die = this.addD20(this.diceRollDataPlayer, d20BackColor, d20FontColor, xPositionModifier);
+			const die = this.addD20(this.diceRollData, d20BackColor, d20FontColor, xPositionModifier);
 			if (dieLabelOverride)
 				die.dieType = dieLabelOverride;
 			else
-				die.dieType = DiceRollType[this.diceRollDataPlayer.type];
+				die.dieType = DiceRollType[this.diceRollData.type];
 			this.attachLabel(die, d20FontColor, d20BackColor);
 			die.playerID = playerID;
 			die.playerName = diceLayer.getPlayerName(playerID);
 			//console.log('die.playerName: ' + die.playerName);
 			die.kind = kind;
-			if (this.diceRollDataPlayer.isMagic) {
+			if (this.diceRollData.isMagic) {
 				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 				die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 			}
-			if (this.diceRollDataPlayer.numHalos > 0) {
-				const angleDelta: number = 360 / this.diceRollDataPlayer.numHalos;
+			if (this.diceRollData.numHalos > 0) {
+				const angleDelta: number = 360 / this.diceRollData.numHalos;
 				let angle: number = Math.random() * 360;
-				for (let j = 0; j < this.diceRollDataPlayer.numHalos; j++) {
+				for (let j = 0; j < this.diceRollData.numHalos; j++) {
 					die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
 					die.origins.push(diceLayer.haloSpinRed.getOrigin());
 					angle += angleDelta;
@@ -3706,7 +3729,7 @@ class DieRoller {
 		}
 
 		if (inspiration) {
-			this.addDieFromStr(playerID, inspiration, DieCountsAs.inspiration, this.diceRollDataPlayer.throwPower, xPositionModifier, d20BackColor, d20FontColor, this.diceRollDataPlayer.isMagic);
+			this.addDieFromStr(playerID, inspiration, DieCountsAs.inspiration, this.diceRollData.throwPower, xPositionModifier, d20BackColor, d20FontColor, this.diceRollData.isMagic);
 		}
 	}
 
@@ -3720,7 +3743,7 @@ class DieRoller {
 		if (diceDto.Vantage !== VantageKind.Normal && diceDto.Quantity === 1 && diceDto.Sides === 20) {
 			diceDto.Quantity = 2;
 		}
-		const allDice: IDie[] = this.createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, diceDto.DieCountsAs, diceDto.BackColor, diceDto.FontColor, this.diceRollDataPlayer.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
+		const allDice: IDie[] = this.createDie(diceDto.Quantity, diceDto.Sides, diceDto.DamageType, diceDto.DieCountsAs, diceDto.BackColor, diceDto.FontColor, this.diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId);
 
 		//console.log('addDiceFromDto - diceDto.PlayerName: ' + diceDto.PlayerName);
 		//console.log('diceDto.DamageType: ' + DamageType[diceDto.DamageType].toString());
@@ -3763,123 +3786,123 @@ class DieRoller {
 			this.addDiceFromDto(diceRollDto, diceDto, xPositionModifier);
 		}
 
-		this.diceRollDataPlayer.hasMultiPlayerDice = this.hasMultiPlayerDice(diceRollDto);  // Any DiceDtos (even one) will go in a multiplayerSummary!
-		this.diceRollDataPlayer.hasSingleIndividual = !this.diceRollDataPlayer.hasMultiPlayerDice;
+		this.diceRollData.hasMultiPlayerDice = this.hasMultiPlayerDice(diceRollDto);  // Any DiceDtos (even one) will go in a multiplayerSummary!
+		this.diceRollData.hasSingleIndividual = !this.diceRollData.hasMultiPlayerDice;
 
 		//console.log('prepareDiceDtoRoll - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
 	}
 
 	prepareLegacyRoll(xPositionModifier: number) {
 		let playerID = -1;
-		if (this.diceRollDataPlayer.playerRollOptions.length === 1)
-			playerID = this.diceRollDataPlayer.playerRollOptions[0].PlayerID;
-		if (this.diceRollDataPlayer.type === DiceRollType.WildMagic) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.itsAD20Roll = false;
-			this.addD100(this.diceRollDataPlayer, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, this.diceRollDataPlayer.throwPower, xPositionModifier);
+		if (this.diceRollData.playerRollOptions.length === 1)
+			playerID = this.diceRollData.playerRollOptions[0].PlayerID;
+		if (this.diceRollData.type === DiceRollType.WildMagic) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.itsAD20Roll = false;
+			this.addD100(this.diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, this.diceRollData.throwPower, xPositionModifier);
 		}
-		else if (this.diceRollDataPlayer.type === DiceRollType.PercentageRoll) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.itsAD20Roll = false;
-			if (this.diceRollDataPlayer.rollScope === RollScope.ActivePlayer) {
-				this.addD100(this.diceRollDataPlayer, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, this.diceRollDataPlayer.throwPower, xPositionModifier);
-				this.diceRollDataPlayer.hasSingleIndividual = true;
+		else if (this.diceRollData.type === DiceRollType.PercentageRoll) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.itsAD20Roll = false;
+			if (this.diceRollData.rollScope === RollScope.ActivePlayer) {
+				this.addD100(this.diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerID, this.diceRollData.throwPower, xPositionModifier);
+				this.diceRollData.hasSingleIndividual = true;
 			}
-			else if (this.diceRollDataPlayer.rollScope === RollScope.Individuals) {
-				this.diceRollDataPlayer.playerRollOptions.forEach((playerRollOption: PlayerRollOptions) => {
-					this.addD100(this.diceRollDataPlayer, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, this.diceRollDataPlayer.throwPower, xPositionModifier);
+			else if (this.diceRollData.rollScope === RollScope.Individuals) {
+				this.diceRollData.playerRollOptions.forEach((playerRollOption: PlayerRollOptions) => {
+					this.addD100(this.diceRollData, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, this.diceRollData.throwPower, xPositionModifier);
 				});
-				this.diceRollDataPlayer.hasMultiPlayerDice = this.diceRollDataPlayer.playerRollOptions.length > 1;
+				this.diceRollData.hasMultiPlayerDice = this.diceRollData.playerRollOptions.length > 1;
 				//console.log('prepareLegacyRoll, RollScope.Individuals - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
 
-				this.diceRollDataPlayer.hasSingleIndividual = this.diceRollDataPlayer.playerRollOptions.length === 1;
+				this.diceRollData.hasSingleIndividual = this.diceRollData.playerRollOptions.length === 1;
 			}
 		}
-		else if (this.diceRollDataPlayer.type === DiceRollType.Initiative || this.diceRollDataPlayer.type === DiceRollType.NonCombatInitiative) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.maxInspirationDiceAllowed = 4;
-			this.diceRollDataPlayer.itsAD20Roll = true;
+		else if (this.diceRollData.type === DiceRollType.Initiative || this.diceRollData.type === DiceRollType.NonCombatInitiative) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.maxInspirationDiceAllowed = 4;
+			this.diceRollData.itsAD20Roll = true;
 			for (let i = 0; i < diceLayer.players.length; i++) {
 				const player: Character = diceLayer.players[i];
 				if (player.Hidden)
 					continue;
 				let initiativeBonus: number;
-				if (this.diceRollDataPlayer.type === DiceRollType.NonCombatInitiative)
+				if (this.diceRollData.type === DiceRollType.NonCombatInitiative)
 					initiativeBonus = 0;
 				else
 					initiativeBonus = player.rollInitiative;
 				this.addD20sForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
 			}
-			this.diceRollDataPlayer.hasMultiPlayerDice = true;
+			this.diceRollData.hasMultiPlayerDice = true;
 		}
-		else if (this.diceRollDataPlayer.type === DiceRollType.DamageOnly) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.itsAD20Roll = false;
-			this.addDieFromStr(playerID, this.diceRollDataPlayer.damageHealthExtraDice, DieCountsAs.damage, this.diceRollDataPlayer.throwPower, xPositionModifier, undefined, undefined, this.diceRollDataPlayer.isMagic);
+		else if (this.diceRollData.type === DiceRollType.DamageOnly) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.itsAD20Roll = false;
+			this.addDieFromStr(playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier, undefined, undefined, this.diceRollData.isMagic);
 		}
-		else if (this.diceRollDataPlayer.type === DiceRollType.HealthOnly) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.itsAD20Roll = false;
-			this.addDieFromStr(playerID, this.diceRollDataPlayer.damageHealthExtraDice, DieCountsAs.health, this.diceRollDataPlayer.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollDataPlayer.isMagic);
+		else if (this.diceRollData.type === DiceRollType.HealthOnly) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.itsAD20Roll = false;
+			this.addDieFromStr(playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.health, this.diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.isMagic);
 		}
-		else if (this.diceRollDataPlayer.type === DiceRollType.ExtraOnly) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.itsAD20Roll = false;
-			this.addDieFromStr(playerID, this.diceRollDataPlayer.damageHealthExtraDice, DieCountsAs.extra, this.diceRollDataPlayer.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollDataPlayer.isMagic);
+		else if (this.diceRollData.type === DiceRollType.ExtraOnly) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.itsAD20Roll = false;
+			this.addDieFromStr(playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.extra, this.diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.isMagic);
 		}
-		else if (this.diceRollDataPlayer.type === DiceRollType.InspirationOnly) {
-			this.diceRollDataPlayer.modifier = 0;
-			this.diceRollDataPlayer.itsAD20Roll = false;
-			for (let i = 0; i < this.diceRollDataPlayer.playerRollOptions.length; i++) {
-				const playerRollOptions: PlayerRollOptions = this.diceRollDataPlayer.playerRollOptions[i];
+		else if (this.diceRollData.type === DiceRollType.InspirationOnly) {
+			this.diceRollData.modifier = 0;
+			this.diceRollData.itsAD20Roll = false;
+			for (let i = 0; i < this.diceRollData.playerRollOptions.length; i++) {
+				const playerRollOptions: PlayerRollOptions = this.diceRollData.playerRollOptions[i];
 				this.addD20sForPlayer(playerRollOptions.PlayerID, xPositionModifier, playerRollOptions.VantageKind, playerRollOptions.Inspiration, 0);
 			}
 		}
-		else if (this.diceRollDataPlayer.damageHealthExtraDice.indexOf('d20') >= 0 && this.diceRollDataPlayer.vantageKind === VantageKind.Normal) {
-			let dieStr: string = this.diceRollDataPlayer.damageHealthExtraDice;
+		else if (this.diceRollData.damageHealthExtraDice.indexOf('d20') >= 0 && this.diceRollData.vantageKind === VantageKind.Normal) {
+			let dieStr: string = this.diceRollData.damageHealthExtraDice;
 			if (dieStr === '1d20("Wild Magic Check")') {
-				const numD20s: number = this.diceRollDataPlayer.modifier;
-				this.diceRollDataPlayer.modifier = 0;
+				const numD20s: number = this.diceRollData.modifier;
+				this.diceRollData.modifier = 0;
 				dieStr = numD20s.toString() + 'd20("Wild Magic Check")';
 			}
 			const d20BackColor: string = diceLayer.getDieColor(playerID);
 			const d20FontColor: string = diceLayer.getDieFontColor(playerID);
 			//addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor);
-			this.addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, this.diceRollDataPlayer.throwPower, xPositionModifier, d20BackColor, d20FontColor);
+			this.addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, this.diceRollData.throwPower, xPositionModifier, d20BackColor, d20FontColor);
 		}
 		else {
 			//console.log(`diceRollData.itsAD20Roll = true;`);
-			this.diceRollDataPlayer.itsAD20Roll = true;
-			if (this.diceRollDataPlayer.rollScope === RollScope.ActivePlayer) {
-				const activePlayerRollOptions: PlayerRollOptions = this.diceRollDataPlayer.playerRollOptions[0];
+			this.diceRollData.itsAD20Roll = true;
+			if (this.diceRollData.rollScope === RollScope.ActivePlayer) {
+				const activePlayerRollOptions: PlayerRollOptions = this.diceRollData.playerRollOptions[0];
 				// TODO: I think there's a bug here active player's inspiration needs to be used.
-				let vantageKind: VantageKind = this.diceRollDataPlayer.vantageKind;
-				if (this.diceRollDataPlayer.playerRollOptions.length === 1) {
+				let vantageKind: VantageKind = this.diceRollData.vantageKind;
+				if (this.diceRollData.playerRollOptions.length === 1) {
 					vantageKind = activePlayerRollOptions.VantageKind;
 				}
 				let numD20s = 1;
 				let dieLabel = '';
-				if (this.diceRollDataPlayer.type === DiceRollType.WildMagicD20Check) {
-					numD20s = this.diceRollDataPlayer.modifier;
-					this.diceRollDataPlayer.modifier = 0;
+				if (this.diceRollData.type === DiceRollType.WildMagicD20Check) {
+					numD20s = this.diceRollData.modifier;
+					this.diceRollData.modifier = 0;
 					dieLabel = '"Wild Magic Check"';
 				}
 				let playerId: number = diceLayer.playerID;
 				if (activePlayerRollOptions)
 					playerId = activePlayerRollOptions.PlayerID;
-				this.addD20sForPlayer(playerId, xPositionModifier, vantageKind, this.diceRollDataPlayer.groupInspiration, numD20s, dieLabel);
-				this.diceRollDataPlayer.hasSingleIndividual = true;
+				this.addD20sForPlayer(playerId, xPositionModifier, vantageKind, this.diceRollData.groupInspiration, numD20s, dieLabel);
+				this.diceRollData.hasSingleIndividual = true;
 			}
-			else if (this.diceRollDataPlayer.rollScope === RollScope.Individuals) {
-				this.diceRollDataPlayer.playerRollOptions.forEach((playerRollOption: PlayerRollOptions) => {
+			else if (this.diceRollData.rollScope === RollScope.Individuals) {
+				this.diceRollData.playerRollOptions.forEach((playerRollOption: PlayerRollOptions) => {
 					this.addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
 				});
-				this.diceRollDataPlayer.hasMultiPlayerDice = this.diceRollDataPlayer.playerRollOptions.length > 1;
+				this.diceRollData.hasMultiPlayerDice = this.diceRollData.playerRollOptions.length > 1;
 				//console.log('prepareLegacyRoll, RollScope.Individuals (2) - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
-				this.diceRollDataPlayer.hasSingleIndividual = this.diceRollDataPlayer.playerRollOptions.length === 1;
+				this.diceRollData.hasSingleIndividual = this.diceRollData.playerRollOptions.length === 1;
 			}
-			if (this.isAttack(this.diceRollDataPlayer)) {
-				this.addDieFromStr(playerID, this.diceRollDataPlayer.damageHealthExtraDice, DieCountsAs.damage, this.diceRollDataPlayer.throwPower, xPositionModifier);
+			if (this.isAttack(this.diceRollData)) {
+				this.addDieFromStr(playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier);
 			}
 		}
 		return playerID;
@@ -3914,8 +3937,8 @@ class DieRoller {
 			return;
 		}
 
-		this.diceRollDataPlayer = diceRollDto;
-		this.diceRollDataPlayer.timeLastRolledMs = performance.now();
+		this.diceRollData = diceRollDto;
+		this.diceRollData.timeLastRolledMs = performance.now();
 		this.attemptedRollWasSuccessful = false;
 		this.wasCriticalHit = false;
 		this.attemptedRollWasNarrowlySuccessful = false;
@@ -3927,7 +3950,7 @@ class DieRoller {
 
 		// @ts-ignore - DiceManager
 		if (DiceManager.throwRunning) {
-			this.queueRoll(this.diceRollDataPlayer);
+			this.queueRoll(this.diceRollData);
 			return;
 		}
 
@@ -3959,12 +3982,15 @@ class DieRoller {
 			console.log('exception on call to DiceManager.prepareValues: ' + ex);
 		}
 
-		if (this.diceRollDataPlayer.onThrowSound) {
-			diceSounds.safePlayMp3(this.diceRollDataPlayer.onThrowSound);
+		if (this.diceRollData.onThrowSound) {
+			diceSounds.safePlayMp3(this.diceRollData.onThrowSound);
 		}
 		//startedRoll = true;
 	}
 }
+
+//diceRollerViewers = new DieRoller();
+//diceRollerViewers.init();
 
 diceRollerPlayers = new DieRoller();
 diceRollerPlayers.init();
