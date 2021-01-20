@@ -170,8 +170,8 @@ enum DieEffect {
 const diceSounds = new DiceSounds('GameDev/Assets/DragonH/SoundEffects');
 
 class DieRoller {
-	constructor() {
-
+	constructor(private groupName: string) {
+		
 	}
 	//const showDieValues = false;
 	diceRollData: DiceRollData;
@@ -187,7 +187,6 @@ class DieRoller {
 	static readonly secondsBetweenRolls: number = 12;
 	static readonly removeDiceImmediately: boolean = false;
 	static readonly dieScale: number = 1.5;
-	static readonly repeatRandomThrow: boolean = false;
 	camera;
 	renderer;
 	onBonusThrow = false;
@@ -333,7 +332,7 @@ class DieRoller {
 
 	handleDieCollision(e) {
 		// @ts-ignore - DiceManager
-		if (DiceManager.throwRunning || this.dice.length === 0)
+		if (this.diceManager.throwRunning || this.dice.length === 0)
 			return;
 
 		const relativeVelocity: number = Math.abs(Math.round(e.contact.getImpactVelocityAlongNormal()));
@@ -1595,35 +1594,35 @@ class DieRoller {
 			switch (numSides) {
 				case 4:
 					// @ts-ignore - DiceD4
-					die = new DiceD4({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD4({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 6:
 					// @ts-ignore - DiceD6
-					die = new DiceD6({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD6({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 8:
 					// @ts-ignore - DiceD8
-					die = new DiceD8({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD8({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 10:
 					// @ts-ignore - DiceD10
-					die = new DiceD10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 1001:
 					// @ts-ignore - DiceD10x01
-					die = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 1010:
-					// @ts-ignore - DiceD10x01
-					die = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					// @ts-ignore - DiceD10x10
+					die = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 12:
 					// @ts-ignore - DiceD12
-					die = new DiceD12({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD12({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					break;
 				case 20:
 					// @ts-ignore - DiceD20
-					die = new DiceD20({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+					die = new DiceD20({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 					die.isD20 = true;
 					break;
 			}
@@ -2640,14 +2639,17 @@ class DieRoller {
 		requestAnimationFrame(animateDiceRollerFps);
 	}
 
-	init() { // From Rolling.html example.
+	// @ts-ignore - DiceManagerClass
+	diceManager: DiceManagerClass;
+
+	init() {
+		// @ts-ignore - DiceManagerClass
+		this.diceManager = new DiceManagerClass();
 		diceLayer = new DiceLayer();
 		// SCENE
 		// @ts-ignore - THREE
 		this.scene = new THREE.Scene();
 
-		// CAMERA
-		//var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
 		const SCREEN_WIDTH = 1920, SCREEN_HEIGHT = 1080;
 		const lensFactor = 5;
 		const VIEW_ANGLE = 45 / lensFactor, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.01, FAR = 20000;
@@ -2656,7 +2658,6 @@ class DieRoller {
 		this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 		this.scene.add(this.camera);
 		this.camera.position.set(0, 30 * lensFactor, 0);
-
 
 		// RENDERER
 		// @ts-ignore - THREE
@@ -2668,8 +2669,9 @@ class DieRoller {
 		// @ts-ignore - THREE
 		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-		this.container = document.getElementById('ThreeJS');
+		this.container = document.getElementById(`ThreeJS.${this.groupName}`);
 		this.container.appendChild(this.renderer.domElement);
+
 		// EVENTS
 		// CONTROLS
 		// @ts-ignore - THREE
@@ -2695,6 +2697,7 @@ class DieRoller {
 		mesh.rotation.x = -Math.PI / 2;
 		this.scene.add(mesh);
 
+
 		////////////
 		// CUSTOM //
 		////////////
@@ -2707,7 +2710,7 @@ class DieRoller {
 		this.world.solver.iterations = 32;
 
 		// @ts-ignore - DiceManager
-		DiceManager.setWorld(this.world);
+		this.diceManager.setWorld(this.world);
 
 		const wallHeight = 68;
 
@@ -2744,7 +2747,7 @@ class DieRoller {
 
 		// Floor
 		// @ts-ignore - CANNON
-		const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: DiceManager.floorBodyMaterial });
+		const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: this.diceManager.floorBodyMaterial });
 		// @ts-ignore - CANNON
 		floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 		floorBody.name = 'floor';
@@ -2752,32 +2755,24 @@ class DieRoller {
 
 		//Walls
 		// @ts-ignore - CANNON
-		const rightWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: DiceManager.barrierBodyMaterial });
+		const rightWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: this.diceManager.barrierBodyMaterial });
 		rightWall.name = 'wall';
 		// @ts-ignore - CANNON
 		rightWall.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
 		rightWall.position.x = 20.5;
 		this.world.add(rightWall);
 
-		//// @ts-ignore - CANNON
-		//const bottomWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: DiceManager.barrierBodyMaterial });
-		//bottomWall.name = 'wall';
-		//// @ts-ignore - CANNON
-		//bottomWall.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2 * 2);
-		//bottomWall.position.z = 11.5;
-		//world.add(bottomWall);
-
 		// @ts-ignore - CANNON
-		const wallDiceContactMaterial = new CANNON.ContactMaterial(DiceManager.barrierBodyMaterial, DiceManager.diceBodyMaterial, { friction: 0.0, restitution: 0.9 });
+		const wallDiceContactMaterial = new CANNON.ContactMaterial(this.diceManager.barrierBodyMaterial, this.diceManager.diceBodyMaterial, { friction: 0.0, restitution: 0.9 });
 		this.world.addContactMaterial(wallDiceContactMaterial);
 
-		//let leftWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: DiceManager.floorBodyMaterial });
+		//let leftWall = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: this.diceManager.floorBodyMaterial });
 		//leftWall.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
 		//leftWall.position.x = -20;
 		//world.add(leftWall);
 
 		// @ts-ignore - CANNON & DiceManager
-		const topCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(topWallWidth, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+		const topCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(topWallWidth, wallHeight, wallThickness)), material: this.diceManager.barrierBodyMaterial });
 		topCannonWall.name = 'wall';
 		topCannonWall.position.z = topWallZ;
 		// @ts-ignore - CANNON 
@@ -2785,15 +2780,14 @@ class DieRoller {
 		this.world.add(topCannonWall);
 
 		// @ts-ignore - CANNON & DiceManager
-		const leftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, leftWallWidth)), material: DiceManager.barrierBodyMaterial });
+		const leftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, leftWallWidth)), material: this.diceManager.barrierBodyMaterial });
 		leftCannonWall.name = 'wall';
 		leftCannonWall.position.x = leftWallX;
 		this.world.add(leftCannonWall);
 
-
 		if (addPlayerWall) {
 			// @ts-ignore - CANNON & DiceManager
-			const playerTopCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(playerTopWallWidth, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+			const playerTopCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(playerTopWallWidth, wallHeight, wallThickness)), material: this.diceManager.barrierBodyMaterial });
 			playerTopCannonWall.name = 'wall';
 			playerTopCannonWall.position.x = playerTopWallX;
 			playerTopCannonWall.position.z = playerTopWallZ;
@@ -2802,7 +2796,7 @@ class DieRoller {
 
 		if (addViewerRollFloor) {
 			// @ts-ignore - CANNON & DiceManager
-			const playerRightCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallHeight, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+			const playerRightCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallHeight, wallHeight, wallThickness)), material: this.diceManager.barrierBodyMaterial });
 			playerRightCannonWall.quaternion.setFromEuler(Math.PI / 4, 0, 0);
 			playerRightCannonWall.name = 'wall';
 			playerRightCannonWall.position.x = viewerFloorX;
@@ -2813,517 +2807,427 @@ class DieRoller {
 
 		if (addDungeonMasterWalls) {
 			// @ts-ignore - CANNON & DiceManager
-			const dmBottomCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(dmBottomWallWidth * 0.5, wallHeight, wallThickness)), material: DiceManager.barrierBodyMaterial });
+			const dmBottomCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(dmBottomWallWidth * 0.5, wallHeight, wallThickness)), material: this.diceManager.barrierBodyMaterial });
 			dmBottomCannonWall.name = 'wall';
 			dmBottomCannonWall.position.x = dmBottomWallX;
 			dmBottomCannonWall.position.z = dmBottomWallZ;
 			this.world.add(dmBottomCannonWall);
 
 			// @ts-ignore - CANNON & DiceManager
-			const dmLeftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, dmLeftWallWidth * 0.5)), material: DiceManager.barrierBodyMaterial });
+			const dmLeftCannonWall = new CANNON.Body({ mass: 0, shape: new CANNON.Box(new CANNON.Vec3(wallThickness, wallHeight, dmLeftWallWidth * 0.5)), material: this.diceManager.barrierBodyMaterial });
 			dmLeftCannonWall.name = 'wall';
 			dmLeftCannonWall.position.x = dmLeftWallX;
 			dmLeftCannonWall.position.z = dmLeftWallZ;
 			this.world.add(dmLeftCannonWall);
 		}
+		this.startAnimatingDiceRoller(30, this.animateDiceRollerFps.bind(this));
+	}
 
-		//var groundShape = new CANNON.Plane();
-		//var groundBody = new CANNON.Body({ mass: 0 });
-		//groundBody.addShape(groundShape);
-		//groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
-		//world.add(groundBody);
+	allDiceShouldBeDestroyedByNow() {
+		allDiceHaveBeenDestroyed(JSON.stringify(this.lastRollDiceData));
+	}
 
+	scaleFallingDice() {
+		if (!this.scalingDice || this.scalingDice.length === 0)
+			return;
 
-		let needToHookEvents = true;
+		const hiddenDie: IDie[] = [];
+		//let numDiceScaling = 0;
+		if (this.scalingDice && this.scalingDice.length > 0) {
+			for (let i = 0; i < this.scalingDice.length; i++) {
+				const thisScalingDie: IDie = this.scalingDice[i];
+				const dieObject: IDieObject = thisScalingDie.getObject();
+				if (dieObject === null)
+					continue;
 
-		const testingDiceRoller = false;
+				const portalOpenTime: number = dieObject.removeTime + dieObject.effectStartOffset;
 
-		const allDiceShouldBeDestroyedByNow = () => {
-			allDiceHaveBeenDestroyed(JSON.stringify(this.lastRollDiceData));
-		}
+				const now: number = performance.now();
+				let waitToFallTime: number;
+				if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
+					waitToFallTime = 35 * 30;
+				}
+				else if (dieObject.effectKind === DieEffect.HandGrab) {
+					waitToFallTime = 34 * 30;
+				}
+				else { // DieEffect.Portal
+					waitToFallTime = 700;
+				}
 
-		const getRandomRedBlueHueShift = () => {
-			let hueShift = Math.floor(Math.random() * 360);
-			let tryCount = 0;
-			while (hueShift > 30 && hueShift < 160 && tryCount++ < 20) {
-				hueShift = Math.floor(Math.random() * 360);
-			}
-			return hueShift;
-		}
+				if (now > portalOpenTime && dieObject.needToStartEffect) {
+					dieObject.needToStartEffect = false;
+					const screenPos: Vector = this.getScreenCoordinates(thisScalingDie);
 
-		let scaleFallingDice = () => {
-			if (!this.scalingDice || this.scalingDice.length === 0)
-				return;
-
-			const hiddenDie: IDie[] = [];
-			//let numDiceScaling = 0;
-			if (this.scalingDice && this.scalingDice.length > 0) {
-				for (let i = 0; i < this.scalingDice.length; i++) {
-					const thisScalingDie: IDie = this.scalingDice[i];
-					const dieObject: IDieObject = thisScalingDie.getObject();
-					if (dieObject === null)
-						continue;
-
-					const portalOpenTime: number = dieObject.removeTime + dieObject.effectStartOffset;
-
-					const now: number = performance.now();
-					let waitToFallTime: number;
 					if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-						waitToFallTime = 35 * 30;
+						if (screenPos)
+							diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+						diceSounds.playSteampunkTunnel();
 					}
 					else if (dieObject.effectKind === DieEffect.HandGrab) {
-						waitToFallTime = 34 * 30;
-					}
-					else { // DieEffect.Portal
-						waitToFallTime = 700;
-					}
+						let saturation = 100;
+						let hueShift: number;
 
-					if (now > portalOpenTime && dieObject.needToStartEffect) {
-						dieObject.needToStartEffect = false;
-						const screenPos: Vector = this.getScreenCoordinates(thisScalingDie);
-
-						if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-							if (screenPos)
-								diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
-							diceSounds.playSteampunkTunnel();
-						}
-						else if (dieObject.effectKind === DieEffect.HandGrab) {
-							let saturation = 100;
-							let hueShift: number;
-
-							if (DiceLayer.matchOozeToDieColor)
-								if (this.scalingDice[i].rollType !== DieCountsAs.totalScore && this.scalingDice[i].rollType !== DieCountsAs.inspiration)
-									hueShift = 0;
-								else {
-									const hsl: HueSatLight = HueSatLight.fromHex(this.scalingDice[i].diceColor);
-									if (hsl)
-										hueShift = hsl.hue * 360;
-									else
-										hueShift = diceLayer.activePlayerHueShift;
-								}
+						if (DiceLayer.matchOozeToDieColor)
+							if (this.scalingDice[i].rollType !== DieCountsAs.totalScore && this.scalingDice[i].rollType !== DieCountsAs.inspiration)
+								hueShift = 0;
 							else {
-								hueShift = getRandomRedBlueHueShift();
-								if (Math.random() < 0.1)
-									saturation = 0;
+								const hsl: HueSatLight = HueSatLight.fromHex(this.scalingDice[i].diceColor);
+								if (hsl)
+									hueShift = hsl.hue * 360;
+								else
+									hueShift = diceLayer.activePlayerHueShift;
 							}
-
-							if (screenPos)
-								diceLayer.testDiceGrab(screenPos.x, screenPos.y, hueShift, saturation, 100);
-							diceSounds.playHandGrab();
+						else {
+							hueShift = this.getRandomRedBlueHueShift();
+							if (Math.random() < 0.1)
+								saturation = 0;
 						}
-						else {  // DieEffect.Portal
-							if (screenPos)
-								diceLayer.addPortal(screenPos.x, screenPos.y, getRandomRedBlueHueShift(), 100, 100);
-							diceSounds.playOpenDiePortal();
-						}
+
+						if (screenPos)
+							diceLayer.testDiceGrab(screenPos.x, screenPos.y, hueShift, saturation, 100);
+						diceSounds.playHandGrab();
 					}
-
-					const startFallTime: number = dieObject.removeTime + waitToFallTime + dieObject.effectStartOffset;
-
-					if (now < startFallTime)
-						continue;
-
-					let totalFrames: number;
-					const fps30 = 33; // ms
-
-					let totalScaleDistance: number;
-
-					const elapsedTime: number = now - startFallTime;
-
-					if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-						totalFrames = 45;
-						totalScaleDistance = 0.9;
+					else {  // DieEffect.Portal
+						if (screenPos)
+							diceLayer.addPortal(screenPos.x, screenPos.y, this.getRandomRedBlueHueShift(), 100, 100);
+						diceSounds.playOpenDiePortal();
 					}
-					else if (dieObject.effectKind === DieEffect.HandGrab) {
-						totalFrames = 30;
-						totalScaleDistance = 0.99;
-					}
-					else {
-						totalFrames = 40;
-						totalScaleDistance = 0.99;
-					}
+				}
 
-					const totalTimeToScale: number = fps30 * totalFrames;  // ms
+				const startFallTime: number = dieObject.removeTime + waitToFallTime + dieObject.effectStartOffset;
 
-					if (elapsedTime > totalTimeToScale) {
-						if (dieObject.hideOnScaleStop) {
-							dieObject.hideOnScaleStop = false;
-							this.hideDie(dieObject);
-							hiddenDie.push(this.scalingDice[i]);
-						}
-						continue;
-					}
+				if (now < startFallTime)
+					continue;
 
-					if (dieObject.needToDrop === true) {
+				let totalFrames: number;
+				const fps30 = 33; // ms
 
-						dieObject.needToDrop = false;
-					}
+				let totalScaleDistance: number;
 
-					const percentTraveled: number = elapsedTime / totalTimeToScale;
+				const elapsedTime: number = now - startFallTime;
 
-					const distanceTraveled: number = percentTraveled * totalScaleDistance;
+				if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
+					totalFrames = 45;
+					totalScaleDistance = 0.9;
+				}
+				else if (dieObject.effectKind === DieEffect.HandGrab) {
+					totalFrames = 30;
+					totalScaleDistance = 0.99;
+				}
+				else {
+					totalFrames = 40;
+					totalScaleDistance = 0.99;
+				}
 
-					const newScale: number = 1 - distanceTraveled;
+				const totalTimeToScale: number = fps30 * totalFrames;  // ms
 
-					if (newScale <= DieRoller.hiddenDieScale) {
+				if (elapsedTime > totalTimeToScale) {
+					if (dieObject.hideOnScaleStop) {
+						dieObject.hideOnScaleStop = false;
 						this.hideDie(dieObject);
 						hiddenDie.push(this.scalingDice[i]);
 					}
-					else {
-						//numDiceScaling++;
-						dieObject.scale.set(newScale, newScale, newScale);
-					}
-					//if (newScale < 0.35) {
-					//  bodiesToRemove.push(die);
-					//  // @ts-ignore - DiceManager
-					//  //die.body.collisionResponse = 1;
-					//  //die.body.mass = 1;
-					//  //DiceManager.world.remove(die.body);
-					//}
-				}
-			}
-			this.removeDiceFromArray(hiddenDie, this.scalingDice);
-			this.removeDiceFromArray(hiddenDie, this.dice);
-			this.clearTheseDice(hiddenDie);
-		}
-
-		const updatePhysics = () => {
-			//  if (bodiesToRemove && bodiesToRemove.length > 0) {
-			//    console.log('removing bodies...');
-
-			//    bodiesToRemove.forEach(function (body) {
-			//      body.collisionResponse = true;
-			//      body.mass = 1;
-			//      world.remove(body);
-			//    });
-			//    bodiesToRemove = [];
-			//  }
-
-			this.world.step(1.0 / 60.0);
-
-			for (const i in this.dice) {
-				this.dice[i].updateMeshFromBody();
-			}
-			this.checkStillRolling();
-			scaleFallingDice();
-			this.highlightSpecialDice();
-
-			const numDiceStillInPlay: number = this.diceRemainingInPlay();
-			const stillScaling: boolean = this.scalingDice !== null && this.scalingDice.length > 0;
-			const stillHaveSpecialDice: boolean = this.specialDice !== null && this.specialDice.length > 0;
-			//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
-
-			if (!this.animationsShouldBeDone && numDiceStillInPlay === 0 && this.allDiceHaveStoppedRolling &&
-				!stillScaling && !stillHaveSpecialDice) {
-				this.animationsShouldBeDone = true;
-				//console.log('animationsShouldBeDone = true;');
-				this.diceRollData = null;
-				this.dice = [];
-				setTimeout(allDiceShouldBeDestroyedByNow.bind(this), 3000);
-			}
-		}
-
-		const update = () => {
-			this.controls.update();
-			if (this.stats) {
-				this.stats.update();
-			}
-		}
-
-		const movePointAtAngle = (point: Vector, angleInDegrees: number, distance): Vector => {
-			const angleInRadians: number = angleInDegrees * Math.PI / 180;
-			return new Vector(point.x + (Math.sin(angleInRadians) * distance), point.y - (Math.cos(angleInRadians) * distance));
-		}
-
-		const getDieSpeed = (die: IDie): number => {
-			const dieObject = die.getObject();
-			const velocity = dieObject.body.velocity;
-			return Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-		}
-
-		const highestDieSpeedWeHaveSeen = 128;
-
-		// Returns a number between 0 and 1, where 1 is max speed and 0 is no movement.
-		const getNormalizedDieSpeed = (die: IDie): number => {
-			const dieSpeed: number = getDieSpeed(die);
-			//trackDieVelocities(dieSpeed);
-			return MathEx.clamp(dieSpeed, 0, highestDieSpeedWeHaveSeen) / highestDieSpeedWeHaveSeen;
-		}
-
-		const positionTrailingSprite = (die: IDie, trailingEffect: TrailingEffect, index = 0): SpriteProxy => {
-			if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
-				const pos: Vector = this.getScreenCoordinates(die);
-				if (!pos)
-					return null;
-
-				const dieNormalizedSpeed: number = getNormalizedDieSpeed(die);
-
-
-				let scaleFactor = 1;
-
-				let spriteScale = 1;
-
-				if (trailingEffect.ScaleVariance !== 0)
-					spriteScale = Math.max(0.01, trailingEffect.Scale * (1 + Random.plusMinus(trailingEffect.ScaleVariance)));
-				else
-					spriteScale = trailingEffect.Scale;
-
-				if (trailingEffect.ScaleWithVelocity) {
-					spriteScale = spriteScale * dieNormalizedSpeed;
+					continue;
 				}
 
-				spriteScale = MathEx.clamp(spriteScale, trailingEffect.MinScale, trailingEffect.MaxScale);
+				if (dieObject.needToDrop === true) {
 
-				scaleFactor = spriteScale / trailingEffect.Scale;
-
-				if (die.lastPos.length <= index)
-					die.lastPos.push(new Vector(-100, -100));
-				const deltaX: number = pos.x - die.lastPos[index].x;
-				const deltaY: number = pos.y - die.lastPos[index].y;
-
-				//` <formula 2; \sqrt{deltaX^2 + deltaY^2}>
-				let distanceSinceLastPoint: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-
-				// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
-				if (distanceSinceLastPoint > trailingEffect.MinForwardDistanceBetweenPrints * scaleFactor) {
-
-					//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
-					const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
-					let angleToMovePawPrint = 90;
-					if (die.lastPrintOnLeft)
-						angleToMovePawPrint = -90;
-					die.lastPrintOnLeft = !die.lastPrintOnLeft;
-					const printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints * scaleFactor);
-
-					const spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle, spriteScale);
-					die.lastPos[index] = pos;
-					return spriteProxy;
-				}
-			}
-			return null;
-		}
-
-		const addTrailingEffects = (die: IDie, trailingEffects: Array<TrailingEffect>) => {
-			for (let j = 0; j < trailingEffects.length; j++) {
-				const trailingEffect: TrailingEffect = trailingEffects[j];
-
-				if (positionTrailingSprite(die, trailingEffect, j)) {
-					if (trailingEffect.OnPrintPlaySound) {
-						if (trailingEffect.intervalBetweenSounds == 0)
-							trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-						if (diceSounds.safePlayMp3(trailingEffect.OnPrintPlaySound, trailingEffect.intervalBetweenSounds)) {
-							trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-						}
-					}
+					dieObject.needToDrop = false;
 				}
 
-				//let addSpriteFunc: any;
-				//if (trailingEffect.Type === SpriteType.PawPrint)
-				//	addSpriteFunc = diceLayer.addPawPrint.bind(diceLayer);
-				//else if (trailingEffect.Type === SpriteType.Raven)
-				//	addSpriteFunc = diceLayer.addRaven.bind(diceLayer);
-				//else if (trailingEffect.Type === SpriteType.Smoke)
-				//	addSpriteFunc = diceLayer.addSmoke.bind(diceLayer);
-				//else if (trailingEffect.Type === SpriteType.SparkTrail)
-				//	addSpriteFunc = diceLayer.addSparkTrail.bind(diceLayer);
-				//else if (trailingEffect.Type === SpriteType.SmallSparks)
-				//	addSpriteFunc = diceLayer.smallSpark.bind(diceLayer);
-				//else if (trailingEffect.Type === SpriteType.Fangs)
-				//	addSpriteFunc = diceLayer.addFangs.bind(diceLayer);
-				//else if (trailingEffect.Type === SpriteType.Spiral)
-				//	addSpriteFunc = diceLayer.addSpiral.bind(diceLayer);
-				//else
-				//	continue;
+				const percentTraveled: number = elapsedTime / totalTimeToScale;
 
-				//if (positionTrailingSprite(die, addSpriteFunc, trailingEffect.MinForwardDistanceBetweenPrints,
-				//	trailingEffect.LeftRightDistanceBetweenPrints, j)) {
-				//	if (trailingEffect.OnPrintPlaySound) {
-				//		if (trailingEffect.intervalBetweenSounds == 0)
-				//			trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-				//		if (diceSounds.playRandom(trailingEffect.OnPrintPlaySound, trailingEffect.NumRandomSounds, trailingEffect.intervalBetweenSounds)) {
-				//			trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-				//		}
-				//	}
+				const distanceTraveled: number = percentTraveled * totalScaleDistance;
+
+				const newScale: number = 1 - distanceTraveled;
+
+				if (newScale <= DieRoller.hiddenDieScale) {
+					this.hideDie(dieObject);
+					hiddenDie.push(this.scalingDice[i]);
+				}
+				else {
+					//numDiceScaling++;
+					dieObject.scale.set(newScale, newScale, newScale);
+				}
+				//if (newScale < 0.35) {
+				//  bodiesToRemove.push(die);
+				//  // @ts-ignore - this.diceManager
+				//  //die.body.collisionResponse = 1;
+				//  //die.body.mass = 1;
+				//  //this.diceManager.world.remove(die.body);
 				//}
 			}
 		}
+		this.removeDiceFromArray(hiddenDie, this.scalingDice);
+		this.removeDiceFromArray(hiddenDie, this.dice);
+		this.clearTheseDice(hiddenDie);
+	}
 
-		// TODO: For goodness sakes, Mark, do something with this.
-		const old_positionTrailingSprite = (die: IDie, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy => {
-			if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
-				const pos: Vector = this.getScreenCoordinates(die);
-				if (!pos)
-					return null;
-				if (die.lastPos.length <= index)
-					die.lastPos.push(new Vector(-100, -100));
-				const deltaX: number = pos.x - die.lastPos[index].x;
-				const deltaY: number = pos.y - die.lastPos[index].y;
-
-				//` <formula 2; \sqrt{deltaX^2 + deltaY^2}>
-				const distanceSinceLastPoint: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-
-				// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
-				if (distanceSinceLastPoint > minForwardDistanceBetweenPrints) {
-
-					//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
-					const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
-					let angleToMovePawPrint = 90;
-					if (die.lastPrintOnLeft)
-						angleToMovePawPrint = -90;
-					die.lastPrintOnLeft = !die.lastPrintOnLeft;
-					const printPos: Vector = movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
-					const spriteProxy: SpriteProxy = addPrintFunc(printPos.x, printPos.y, angle);
-					//diceLayer.addPawPrint(pawPrintPos.x, pawPrintPos.y, angle);
-					die.lastPos[index] = pos;
-					return spriteProxy;
-				}
-			}
-			return null;
+	getRandomRedBlueHueShift() {
+		let hueShift = Math.floor(Math.random() * 360);
+		let tryCount = 0;
+		while (hueShift > 30 && hueShift < 160 && tryCount++ < 20) {
+			hueShift = Math.floor(Math.random() * 360);
 		}
+		return hueShift;
+	}
 
-		const updateDieRollSpecialEffects = () => {
-			for (let i = 0; i < this.dice.length; i++) {
-				const die: IDie = this.dice[i];
+	updatePhysics() {
+		//  if (bodiesToRemove && bodiesToRemove.length > 0) {
+		//    console.log('removing bodies...');
 
-				if (die.rollType === DieCountsAs.bentLuck)
-					addTrailingEffects(die, this.diceRollData.secondRollData.trailingEffects);
-				else
-					addTrailingEffects(die, this.diceRollData.trailingEffects);
+		//    bodiesToRemove.forEach(function (body) {
+		//      body.collisionResponse = true;
+		//      body.mass = 1;
+		//      world.remove(body);
+		//    });
+		//    bodiesToRemove = [];
+		//  }
 
-				if (die.rollType === DieCountsAs.inspiration) {
-					const distanceBetweenRipples = 80;
-					const ripple: ColorShiftingSpriteProxy = old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, this.diceRollData.trailingEffects.length) as ColorShiftingSpriteProxy;
+		this.world.step(1.0 / 60.0);
 
-					if (ripple) {
-						ripple.opacity = 0.5;
-						ripple.hueShift = diceLayer.getHueShift(die.playerID) + Random.plusMinus(30);
+		for (const i in this.dice) {
+			this.dice[i].updateMeshFromBody();
+		}
+		this.checkStillRolling();
+		this.scaleFallingDice();
+		this.highlightSpecialDice();
+
+		const numDiceStillInPlay: number = this.diceRemainingInPlay();
+		const stillScaling: boolean = this.scalingDice !== null && this.scalingDice.length > 0;
+		const stillHaveSpecialDice: boolean = this.specialDice !== null && this.specialDice.length > 0;
+		//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
+
+		if (!this.animationsShouldBeDone && numDiceStillInPlay === 0 && this.allDiceHaveStoppedRolling &&
+			!stillScaling && !stillHaveSpecialDice) {
+			this.animationsShouldBeDone = true;
+			//console.log('animationsShouldBeDone = true;');
+			this.diceRollData = null;
+			this.dice = [];
+			setTimeout(this.allDiceShouldBeDestroyedByNow, 3000);
+		}
+	}
+
+	update() {
+		this.controls.update();
+		if (this.stats) {
+			this.stats.update();
+		}
+	}
+
+	movePointAtAngle(point: Vector, angleInDegrees: number, distance): Vector {
+		const angleInRadians: number = angleInDegrees * Math.PI / 180;
+		return new Vector(point.x + (Math.sin(angleInRadians) * distance), point.y - (Math.cos(angleInRadians) * distance));
+	}
+
+	getDieSpeed(die: IDie): number {
+		const dieObject = die.getObject();
+		const velocity = dieObject.body.velocity;
+		return Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+	}
+
+	static readonly highestDieSpeedWeHaveSeen: number = 128;
+
+	// Returns a number between 0 and 1, where 1 is max speed and 0 is no movement.
+	getNormalizedDieSpeed(die: IDie): number {
+		const dieSpeed: number = this.getDieSpeed(die);
+		//trackDieVelocities(dieSpeed);
+		return MathEx.clamp(dieSpeed, 0, DieRoller.highestDieSpeedWeHaveSeen) / DieRoller.highestDieSpeedWeHaveSeen;
+	}
+
+	positionTrailingSprite(die: IDie, trailingEffect: TrailingEffect, index = 0): SpriteProxy {
+		if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
+			const pos: Vector = this.getScreenCoordinates(die);
+			if (!pos)
+				return null;
+
+			const dieNormalizedSpeed: number = this.getNormalizedDieSpeed(die);
+
+			let scaleFactor = 1;
+
+			let spriteScale = 1;
+
+			if (trailingEffect.ScaleVariance !== 0)
+				spriteScale = Math.max(0.01, trailingEffect.Scale * (1 + Random.plusMinus(trailingEffect.ScaleVariance)));
+			else
+				spriteScale = trailingEffect.Scale;
+
+			if (trailingEffect.ScaleWithVelocity) {
+				spriteScale = spriteScale * dieNormalizedSpeed;
+			}
+
+			spriteScale = MathEx.clamp(spriteScale, trailingEffect.MinScale, trailingEffect.MaxScale);
+
+			scaleFactor = spriteScale / trailingEffect.Scale;
+
+			if (die.lastPos.length <= index)
+				die.lastPos.push(new Vector(-100, -100));
+			const deltaX: number = pos.x - die.lastPos[index].x;
+			const deltaY: number = pos.y - die.lastPos[index].y;
+
+			//` <formula 2; \sqrt{deltaX^2 + deltaY^2}>
+			let distanceSinceLastPoint: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+
+			// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
+			if (distanceSinceLastPoint > trailingEffect.MinForwardDistanceBetweenPrints * scaleFactor) {
+
+				//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
+				const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
+				let angleToMovePawPrint = 90;
+				if (die.lastPrintOnLeft)
+					angleToMovePawPrint = -90;
+				die.lastPrintOnLeft = !die.lastPrintOnLeft;
+				const printPos: Vector = this.movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints * scaleFactor);
+
+				const spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle, spriteScale);
+				die.lastPos[index] = pos;
+				return spriteProxy;
+			}
+		}
+		return null;
+	}
+
+	addTrailingEffects(die: IDie, trailingEffects: Array<TrailingEffect>) {
+		for (let j = 0; j < trailingEffects.length; j++) {
+			const trailingEffect: TrailingEffect = trailingEffects[j];
+
+			if (this.positionTrailingSprite(die, trailingEffect, j)) {
+				if (trailingEffect.OnPrintPlaySound) {
+					if (trailingEffect.intervalBetweenSounds === 0)
+						trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+					if (diceSounds.safePlayMp3(trailingEffect.OnPrintPlaySound, trailingEffect.intervalBetweenSounds)) {
+						trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
 					}
 				}
-
-				const screenPos: Vector = this.getScreenCoordinates(die);
-
-				if (die.attachedSprites && die.attachedSprites.length > 0 && screenPos) {
-					for (let j = 0; j < die.attachedSprites.length; j++) {
-						const centerX: number = screenPos.x - die.origins[j].x;
-						const centerY: number = screenPos.y - die.origins[j].y;
-						const sprite: SpriteProxy = die.attachedSprites[j];
-						sprite.x = centerX;
-						sprite.y = centerY;
-					}
-				}
-
-				if (die.attachedLabels && die.attachedLabels.length > 0 && screenPos) {
-					for (let k = 0; k < die.attachedLabels.length; k++) {
-						const textEffect: TextEffect = die.attachedLabels[k];
-						textEffect.x = screenPos.x;
-						textEffect.y = screenPos.y;
-						textEffect.startX = screenPos.x;
-						textEffect.startY = screenPos.y;
-					}
-				}
-
-				if (die.sparks && screenPos) {
-					const newX: number = screenPos.x - diceLayer.diceSparks.originX;
-					const newY: number = screenPos.y - diceLayer.diceSparks.originY;
-					die.sparks.forEach((spark: SpriteProxy) => {
-						const newLocationWeight = 0.1;
-						spark.x = spark.x * (1 - newLocationWeight) + newX * newLocationWeight;
-						spark.y = spark.y * (1 - newLocationWeight) + newY * newLocationWeight;
-					});
-				}
 			}
 		}
+	}
 
-		const animateDiceRollerFps = (nowMs: DOMHighResTimeStamp) => {
-			try {
-				const now: number = Date.now();
-				const elapsed: number = now - this.lastDrawTimeDiceRoller;
+	// TODO: For goodness sakes, Mark, do something with this.
+	old_positionTrailingSprite(die: IDie, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
+		if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
+			const pos: Vector = this.getScreenCoordinates(die);
+			if (!pos)
+				return null;
+			if (die.lastPos.length <= index)
+				die.lastPos.push(new Vector(-100, -100));
+			const deltaX: number = pos.x - die.lastPos[index].x;
+			const deltaY: number = pos.y - die.lastPos[index].y;
 
-				const okayToDrawImages: boolean = elapsed > this.fpsIntervalDiceRoller;
-				if (!okayToDrawImages)
-					return;
-
-				const startUpdate: number = performance.now();
-				if (!testingDiceRoller) {
-					updatePhysics();
-					this.renderer.render(this.scene, this.camera);
-				}
-
-				this.lastDrawTimeDiceRoller = now - (elapsed % this.fpsIntervalDiceRoller);
-				updateDieRollSpecialEffects();
-				diceLayer.renderCanvas();
-
-				update();
-
-				if (diceRollerShowFpsWindow) {
-					if (!this.diceRollerFpsWindow) {
-						this.diceRollerFpsWindow = new FpsWindow('Dice', 1);
-					}
-					this.diceRollerFpsWindow.showAllFramerates(this.diceRollerTimeBetweenFramesQueue, this.diceRollerDrawTimeForEachFrameQueue, diceLayer.diceFrontContext, now);
-				}
+			//` <formula 2; \sqrt{deltaX^2 + deltaY^2}>
+			const distanceSinceLastPoint: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
 
-				const endUpdate: number = performance.now();
-				this.calculateFramerate(startUpdate, endUpdate);
-			}
-			finally {
-				requestAnimationFrame(animateDiceRollerFps);
+			// ![](44408656431640F1B13DDCA10C7B507D.png;;;0.04947,0.04744)
+			if (distanceSinceLastPoint > minForwardDistanceBetweenPrints) {
+
+				//` <formula 3; \frac{atan2(deltaY,deltaX) * 180}{\pi} + 90^{\circ}>
+				const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
+				let angleToMovePawPrint = 90;
+				if (die.lastPrintOnLeft)
+					angleToMovePawPrint = -90;
+				die.lastPrintOnLeft = !die.lastPrintOnLeft;
+				const printPos: Vector = this.movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
+				const spriteProxy: SpriteProxy = addPrintFunc(printPos.x, printPos.y, angle);
+				//diceLayer.addPawPrint(pawPrintPos.x, pawPrintPos.y, angle);
+				die.lastPos[index] = pos;
+				return spriteProxy;
 			}
 		}
+		return null;
+	}
 
-		const randomDiceThrow = () => {
-			this.clearBeforeRoll();
+	updateDieRollSpecialEffects() {
+		for (let i = 0; i < this.dice.length; i++) {
+			const die: IDie = this.dice[i];
 
-			const dieValues = 10;
-			for (let i = 0; i < DieRoller.diceToRoll; i++) {
-				// @ts-ignore - DiceD20
-				const die = new DiceD10x01({ size: DieRoller.dieScale, backColor: '#D0D0ff' });
-				this.scene.add(die.getObject());
-				this.dice.push(die);
-			}
-			needToHookEvents = true;
+			if (die.rollType === DieCountsAs.bentLuck)
+				this.addTrailingEffects(die, this.diceRollData.secondRollData.trailingEffects);
+			else
+				this.addTrailingEffects(die, this.diceRollData.trailingEffects);
 
-			for (let i = 0; i < this.dice.length; i++) {
-				const yRand = Math.random() * 20
-				const dieObject = this.dice[i].getObject();
-				dieObject.position.x = -15 - (i % 3) * DieRoller.dieScale;
-				dieObject.position.y = 4 + Math.floor(i / 3) * DieRoller.dieScale;
-				dieObject.position.z = -13 + (i % 3) * DieRoller.dieScale;
-				dieObject.quaternion.x = (Math.random() * 90 - 45) * Math.PI / 180;
-				dieObject.quaternion.z = (Math.random() * 90 - 45) * Math.PI / 180;
-				this.dice[i].updateBodyFromMesh();
-				const rand = Math.random() * 5;
-				dieObject.body.velocity.set(35 + rand, 10 + yRand, 25 + rand);
-				dieObject.body.angularVelocity.set(20 * Math.random() - 10, 20 * Math.random() - 10, 20 * Math.random() - 10);
+			if (die.rollType === DieCountsAs.inspiration) {
+				const distanceBetweenRipples = 80;
+				const ripple: ColorShiftingSpriteProxy = this.old_positionTrailingSprite(die, diceLayer.addRipple.bind(diceLayer), distanceBetweenRipples, 0, this.diceRollData.trailingEffects.length) as ColorShiftingSpriteProxy;
 
-				this.diceValues.push({ dice: this.dice[i], value: Math.floor(Math.random() * dieValues + 1) });
-				dieObject.body.name = 'die';
-			}
-
-			this.allDiceHaveStoppedRolling = false;
-
-			// @ts-ignore - DiceManager
-			DiceManager.prepareValues(this.diceValues);
-
-			if (needToHookEvents) {
-				// Test to see if this is related to the memory leak:
-
-				needToHookEvents = false;
-				for (let i = 0; i < this.dice.length; i++) {
-					const die = this.dice[i].getObject();
-
-					die.body.addEventListener("collide", this.handleDieCollision.bind(this));
+				if (ripple) {
+					ripple.opacity = 0.5;
+					ripple.hueShift = diceLayer.getHueShift(die.playerID) + Random.plusMinus(30);
 				}
 			}
-		}
 
-		if (DieRoller.repeatRandomThrow) {
-			this.randomDiceThrowIntervalId = setInterval(randomDiceThrow, DieRoller.secondsBetweenRolls * 1000);
-			randomDiceThrow();
+			const screenPos: Vector = this.getScreenCoordinates(die);
+
+			if (die.attachedSprites && die.attachedSprites.length > 0 && screenPos) {
+				for (let j = 0; j < die.attachedSprites.length; j++) {
+					const centerX: number = screenPos.x - die.origins[j].x;
+					const centerY: number = screenPos.y - die.origins[j].y;
+					const sprite: SpriteProxy = die.attachedSprites[j];
+					sprite.x = centerX;
+					sprite.y = centerY;
+				}
+			}
+
+			if (die.attachedLabels && die.attachedLabels.length > 0 && screenPos) {
+				for (let k = 0; k < die.attachedLabels.length; k++) {
+					const textEffect: TextEffect = die.attachedLabels[k];
+					textEffect.x = screenPos.x;
+					textEffect.y = screenPos.y;
+					textEffect.startX = screenPos.x;
+					textEffect.startY = screenPos.y;
+				}
+			}
+
+			if (die.sparks && screenPos) {
+				const newX: number = screenPos.x - diceLayer.diceSparks.originX;
+				const newY: number = screenPos.y - diceLayer.diceSparks.originY;
+				die.sparks.forEach((spark: SpriteProxy) => {
+					const newLocationWeight = 0.1;
+					spark.x = spark.x * (1 - newLocationWeight) + newX * newLocationWeight;
+					spark.y = spark.y * (1 - newLocationWeight) + newY * newLocationWeight;
+				});
+			}
 		}
-		this.startAnimatingDiceRoller(30, animateDiceRollerFps);
+	}
+
+	animateDiceRollerFps(nowMs: DOMHighResTimeStamp) {
+		try {
+			const now: number = Date.now();
+			const elapsed: number = now - this.lastDrawTimeDiceRoller;
+
+			const okayToDrawImages: boolean = elapsed > this.fpsIntervalDiceRoller;
+			if (!okayToDrawImages)
+				return;
+
+			const startUpdate: number = performance.now();
+			const testingDiceRoller = false;
+
+			if (!testingDiceRoller) {
+				this.updatePhysics();
+				this.renderer.render(this.scene, this.camera);
+			}
+
+			this.lastDrawTimeDiceRoller = now - (elapsed % this.fpsIntervalDiceRoller);
+			this.updateDieRollSpecialEffects();
+			diceLayer.renderCanvas();
+
+			this.update();
+
+			if (diceRollerShowFpsWindow) {
+				if (!this.diceRollerFpsWindow) {
+					this.diceRollerFpsWindow = new FpsWindow('Dice', 1);
+				}
+				this.diceRollerFpsWindow.showAllFramerates(this.diceRollerTimeBetweenFramesQueue, this.diceRollerDrawTimeForEachFrameQueue, diceLayer.diceFrontContext, now);
+			}
+
+
+			const endUpdate: number = performance.now();
+			this.calculateFramerate(startUpdate, endUpdate);
+		}
+		finally {
+			requestAnimationFrame(this.animateDiceRollerFps.bind(this));
+		}
 	}
 
 	addWallsToScene(wallThickness: number, leftWallWidth: number, leftWallX: number, topWallWidth: number, topWallZ: number, addPlayerWall: boolean, addViewRollFloor: boolean, playerTopWallWidth: number, wallHeight: number, playerTopWallX: number, playerTopWallZ: number, viewerFloorX: number, viewerFloorY: number, viewerFloorZ: number, addDungeonMasterWalls: boolean, dmBottomWallWidth: number, dmBottomWallX: number, dmBottomWallZ: number, dmLeftWallWidth: number, dmLeftWallX: number, dmLeftWallZ: number) {
@@ -3470,7 +3374,7 @@ class DieRoller {
 	addD100(diceRollData: DiceRollData, backgroundColor: string, textColor: string, playerID: number, throwPower = 1, xPositionModifier = 0) {
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 		// @ts-ignore - DiceD10x10
-		const die10 = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+		const die10 = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 		die10.playerID = playerID;
 		this.prepareD10x10Die(die10, throwPower, xPositionModifier);
 		die10.rollType = DieCountsAs.totalScore;
@@ -3480,7 +3384,7 @@ class DieRoller {
 		}
 
 		// @ts-ignore - DiceD10x01
-		const die01 = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor });
+		const die01 = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 		die01.playerID = playerID;
 		this.prepareD10x01Die(die01, throwPower, xPositionModifier);
 		die01.rollType = DieCountsAs.totalScore;
@@ -3507,7 +3411,7 @@ class DieRoller {
 
 	addD20(diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID = -1): IDie {
 		// @ts-ignore - DiceD20
-		const die: IDie = new DiceD20({ size: DieRoller.dieScale, backColor: d20BackColor, fontColor: d20FontColor });
+		const die: IDie = new DiceD20({ size: DieRoller.dieScale, backColor: d20BackColor, fontColor: d20FontColor }, this.diceManager);
 		die.isD20 = true;
 		this.prepareDie(die, diceRollData.throwPower, xPositionModifier);
 		die.rollType = DieCountsAs.totalScore;
@@ -3949,7 +3853,7 @@ class DieRoller {
 		}
 
 		// @ts-ignore - DiceManager
-		if (DiceManager.throwRunning) {
+		if (this.diceManager.throwRunning) {
 			this.queueRoll(this.diceRollData);
 			return;
 		}
@@ -3976,10 +3880,10 @@ class DieRoller {
 
 		try {
 			// @ts-ignore - DiceManager
-			DiceManager.prepareValues(this.diceValues);
+			this.diceManager.prepareValues(this.diceValues);
 		}
 		catch (ex) {
-			console.log('exception on call to DiceManager.prepareValues: ' + ex);
+			console.log('exception on call to this.diceManager.prepareValues: ' + ex);
 		}
 
 		if (this.diceRollData.onThrowSound) {
@@ -3989,8 +3893,9 @@ class DieRoller {
 	}
 }
 
-//diceRollerViewers = new DieRoller();
-//diceRollerViewers.init();
-
-diceRollerPlayers = new DieRoller();
+diceRollerPlayers = new DieRoller('Players');
 diceRollerPlayers.init();
+
+diceRollerViewers = new DieRoller('Viewers');
+diceRollerViewers.init();
+

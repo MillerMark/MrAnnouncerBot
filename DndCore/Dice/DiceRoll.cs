@@ -37,6 +37,8 @@ namespace DndCore
 			SkillCheck = Skills.none;
 			SavingThrow = Ability.none;
 			SpellName = "";
+			// TODO: Set DiceGroup to the appropriate group.
+			//DiceGroup = DiceGroup.Viewers;
 		}
 
 		public string CritFailMessage { get; set; }

@@ -92,7 +92,8 @@ class DiceObject {
    * @param {Number} [options.fontColor = '#000000']
    * @param {Number} [options.backColor = '#ffffff']
    */
-  constructor(options) {
+  constructor(options, diceManager) {
+    this.diceManager = diceManager;
     options = this.setDefaults(options, {
       size: 100,
       fontColor: '#000000',
@@ -118,10 +119,12 @@ class DiceObject {
     this.diceColor = options.backColor;
   }
 
+  diceManager;
+
   clear(dieRoller) {
 		if (this.object) {
       this.object.body.removeEventListener("collide", dieRoller.handleDieCollision);
-			DiceManager.world.remove(this.object.body);
+			this.diceManager.world.remove(this.object.body);
 		}
     this.size = null;
     this.materialOptions = null;
@@ -164,17 +167,17 @@ class DiceObject {
         stableCount++;
 
         if (stableCount === 50) {
-          DiceManager.world.removeEventListener('postStep', check);
+          this.diceManager.world.removeEventListener('postStep', check);
           callback(this.getUpsideValue());
         }
       } else {
         stableCount = 0;
       }
 
-      DiceManager.world.step(DiceManager.world.dt);
+      this.diceManager.world.step(this.diceManager.world.dt);
     };
 
-    DiceManager.world.addEventListener('postStep', check);
+    this.diceManager.world.addEventListener('postStep', check);
   }
 
   isFinished() {
@@ -415,7 +418,7 @@ class DiceObject {
   }
 
   create() {
-    if (!DiceManager.world)
+    if (!this.diceManager.world)
       throw new Error('You must call DiceManager.setWorld(world) first.');
 
     this.object = new THREE.Mesh(this.getGeometry(), this.getMaterials());
@@ -426,12 +429,12 @@ class DiceObject {
     this.object.body = new CANNON.Body({
       mass: this.mass,
       shape: this.object.geometry.cannon_shape,
-      material: DiceManager.diceBodyMaterial
+      material: this.diceManager.diceBodyMaterial
     });
     this.object.body.linearDamping = 0.1;
     this.object.body.angularDamping = 0.1;
     this.object.body.parentDie = this;
-    DiceManager.world.add(this.object.body);
+    this.diceManager.world.add(this.object.body);
 
     return this.object;
   }
@@ -451,8 +454,8 @@ class DiceObject {
 }
 
 class DiceD4 extends DiceObject {
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     this.tab = -0.1;
     this.af = Math.PI * 7 / 6;
@@ -497,8 +500,8 @@ class DiceD4 extends DiceObject {
 }
 
 class DiceD6 extends DiceObject {
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     this.tab = 0.1;
     this.af = Math.PI / 4;
@@ -520,8 +523,8 @@ class DiceD6 extends DiceObject {
 }
 
 class DiceD8 extends DiceObject {
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     this.tab = 0;
     this.af = -Math.PI / 4 / 2;
@@ -542,9 +545,8 @@ class DiceD8 extends DiceObject {
 }
 
 class DiceD10 extends DiceObject {
-
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     this.tab = 0;
     this.af = Math.PI * 6 / 5;
@@ -577,9 +579,8 @@ class DiceD10 extends DiceObject {
 }
 
 class DiceD10x10 extends DiceObject {
-
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     this.tab = 0;
     this.af = Math.PI * 6 / 5;
@@ -612,9 +613,8 @@ class DiceD10x10 extends DiceObject {
 }
 
 class DiceD10x01 extends DiceObject {
-
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     this.tab = 0;
     this.af = Math.PI * 6 / 5;
@@ -646,9 +646,10 @@ class DiceD10x01 extends DiceObject {
     this.create();
   }
 }
+
 class DiceD12 extends DiceObject {
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     let p = (1 + Math.sqrt(5)) / 2;
     let q = 1 / p;
@@ -676,8 +677,8 @@ class DiceD12 extends DiceObject {
 }
 
 class DiceD20 extends DiceObject {
-  constructor(options) {
-    super(options);
+  constructor(options, diceManager) {
+    super(options, diceManager);
 
     let t = (1 + Math.sqrt(5)) / 2;
 
@@ -704,9 +705,6 @@ class DiceD20 extends DiceObject {
 }
 
 //---------------------------------------------//
-
-// TODO: I think we are going to need to encapsulate this. I think. Watch out for tsignore comments before references to DiceManager.
-const DiceManager = new DiceManagerClass();
 
 //if (typeof define === 'function' && define.amd) {
 //  define(function () {
