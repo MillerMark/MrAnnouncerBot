@@ -152,7 +152,7 @@ interface IDie {
 	hasNotHitFloorYet: boolean;
 	getObject();
 	updateBodyFromMesh();
-	clear();
+	clear(dieRoller: DieRoller);
 	getTopNumber(): number;
 }
 
@@ -249,7 +249,7 @@ class DieRoller {
 			const dieObject: IDieObject = die.getObject();
 			if (dieObject) {
 				this.scene.remove(dieObject);
-				die.clear();
+				die.clear(this);
 			}
 		}
 		this.dice = [];
@@ -447,7 +447,7 @@ class DieRoller {
 			}
 		}
 
-		console.log(`removeDie - die.inPlay = false;`);
+		//console.log(`removeDie - die.inPlay = false;`);
 		die.inPlay = false;
 		return dieEffectInterval;
 	}
@@ -602,7 +602,7 @@ class DieRoller {
 	}
 
 	removeD20s(): number {
-		console.log('removeD20s...');
+		//console.log('removeD20s...');
 		this.needToClearD20s = false;
 		let edgeRollValue = -1;
 		const localDiceRollData: DiceRollData = this.getMostRecentDiceRollData();
@@ -1077,7 +1077,7 @@ class DieRoller {
 
 			if (tallyResults) {
 				die.scoreHasBeenTallied = true;
-				console.log(`dice[${i}].scoreHasBeenTallied = true`);
+				//console.log(`dice[${i}].scoreHasBeenTallied = true`);
 			}
 
 			const topNumber: number = die.getTopNumber();
@@ -1191,7 +1191,7 @@ class DieRoller {
 				this.bonusRollDealsDamage(this.diceRollDataPlayer.damageHealthExtraDice, '', this.getFirstPlayerId());
 				//console.log('checkAttackBonusRolls(1) - Roll Bonus Dice: ' + diceRollData.bonusRolls.length);
 			}
-			console.log('Calling getRollResults() from checkAttackBonusRolls...');
+			//console.log('Calling getRollResults() from checkAttackBonusRolls...');
 			this.getRollResults(false);  // Needed to set globals for code below. I know. It's not great.
 			if (this.attemptedRollWasSuccessful && this.diceRollDataPlayer.minDamage > 0 && !this.diceRollDataPlayer.secondRollData) {
 				let extraRollStr = "";
@@ -2261,8 +2261,8 @@ class DieRoller {
 	}
 
 	onDiceRollStopped() {
-		console.log('onDiceRollStopped...');
-		console.log(`diceRollData.totalRoll = ${this.diceRollDataPlayer.totalRoll}`);
+		//console.log('onDiceRollStopped...');
+		//console.log(`diceRollData.totalRoll = ${this.diceRollDataPlayer.totalRoll}`);
 		this.calculateFinalMessage();
 		this.onBonusThrow = false;
 		this.setupBonusRoll = false;
@@ -2330,7 +2330,7 @@ class DieRoller {
 					}
 					else
 						diceLayer.indicateBonusRoll('Bonus Roll!');
-					setTimeout(this.rollBonusDice, 2500);
+					setTimeout(this.rollBonusDice.bind(this), 2500);
 					if (this.nat20SkillCheckBonusRoll) {
 						this.nat20SkillCheckBonusRoll = false;
 						this.sayNat20BonusRoll();
@@ -2341,10 +2341,10 @@ class DieRoller {
 		else {
 			this.showSpecialLabels();
 			this.popFrozenDice();
-			console.log('Calling getRollResults() from diceDefinitelyStoppedRolling...');
+			//console.log('Calling getRollResults() from diceDefinitelyStoppedRolling...');
 			this.reportRollResults(this.getRollResults(true));
 			if (this.diceRollDataPlayer.playBonusSoundAfter)
-				setTimeout(this.playFinalRollSoundEffects, this.diceRollDataPlayer.playBonusSoundAfter);
+				setTimeout(this.playFinalRollSoundEffects.bind(this), this.diceRollDataPlayer.playBonusSoundAfter);
 			this.onDiceRollStopped();
 		}
 	}
@@ -2443,7 +2443,7 @@ class DieRoller {
 			if (!dieObject)
 				continue;
 			this.scene.remove(dieObject);
-			die.clear();
+			die.clear(this);
 		}
 	}
 
@@ -2996,7 +2996,7 @@ class DieRoller {
 				//console.log('animationsShouldBeDone = true;');
 				this.diceRollDataPlayer = null;
 				this.dice = [];
-				setTimeout(allDiceShouldBeDestroyedByNow, 3000);
+				setTimeout(allDiceShouldBeDestroyedByNow.bind(this), 3000);
 			}
 		}
 
@@ -3571,7 +3571,7 @@ class DieRoller {
 		this.secondRollTryCount++;
 
 		if (!this.rollingOnlyAddOnDice && !this.allDiceHaveStoppedRolling && this.secondRollTryCount < 30) {
-			setTimeout(this.throwAdditionalDice, 300);
+			setTimeout(this.throwAdditionalDice.bind(this), 300);
 			return;
 		}
 
@@ -3595,7 +3595,7 @@ class DieRoller {
 		if (this.rollingOnlyAddOnDice)
 			this.rollAddOnDice();
 		else
-			setTimeout(this.rollAddOnDice, 2500);
+			setTimeout(this.rollAddOnDice.bind(this), 2500);
 	}
 
 	needToRollAddOnDice(diceRollDto: DiceRollData, bentLuckMultiplier = 0) {
@@ -3712,7 +3712,7 @@ class DieRoller {
 
 	addDiceFromDto(diceRollDto: DiceRollData, diceDto: DiceDto, xPositionModifier: number) {
 		// TODO: Check DieCountsAs.totalScore - do we want to set that from C# side of things?
-		console.log('addDiceFromDto - diceDto.DieCountsAs: ' + DieCountsAs[diceDto.DieCountsAs].toString());
+		//console.log('addDiceFromDto - diceDto.DieCountsAs: ' + DieCountsAs[diceDto.DieCountsAs].toString());
 		if (diceDto.Sides === 20) {
 			diceRollDto.itsAD20Roll = true;
 		}
@@ -3733,10 +3733,12 @@ class DieRoller {
 			if (diceDto.Label)
 				diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
 			die.kind = diceDto.Vantage;
-			if (die.kind === VantageKind.Advantage)
-				console.log(`die has advantage!`);
-			else if (die.kind === VantageKind.Disadvantage)
-				console.log(`die has disadvantage!`);
+			if (die.kind === VantageKind.Advantage) {
+				//console.log(`die has advantage!`);
+			}
+			else if (die.kind === VantageKind.Disadvantage) {
+				//console.log(`die has disadvantage!`);
+			}
 			if (diceDto.IsMagic) {
 				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Random.max(360)));
 				die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
@@ -3754,7 +3756,7 @@ class DieRoller {
 	}
 
 	prepareDiceDtoRoll(diceRollDto: DiceRollData, xPositionModifier: number) {
-		console.log(diceRollDto.diceDtos);
+		//console.log(diceRollDto.diceDtos);
 
 		for (let i = 0; i < diceRollDto.diceDtos.length; i++) {
 			const diceDto: DiceDto = diceRollDto.diceDtos[i];
@@ -3764,7 +3766,7 @@ class DieRoller {
 		this.diceRollDataPlayer.hasMultiPlayerDice = this.hasMultiPlayerDice(diceRollDto);  // Any DiceDtos (even one) will go in a multiplayerSummary!
 		this.diceRollDataPlayer.hasSingleIndividual = !this.diceRollDataPlayer.hasMultiPlayerDice;
 
-		console.log('prepareDiceDtoRoll - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
+		//console.log('prepareDiceDtoRoll - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
 	}
 
 	prepareLegacyRoll(xPositionModifier: number) {
@@ -3788,7 +3790,7 @@ class DieRoller {
 					this.addD100(this.diceRollDataPlayer, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, playerRollOption.PlayerID, this.diceRollDataPlayer.throwPower, xPositionModifier);
 				});
 				this.diceRollDataPlayer.hasMultiPlayerDice = this.diceRollDataPlayer.playerRollOptions.length > 1;
-				console.log('prepareLegacyRoll, RollScope.Individuals - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
+				//console.log('prepareLegacyRoll, RollScope.Individuals - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
 
 				this.diceRollDataPlayer.hasSingleIndividual = this.diceRollDataPlayer.playerRollOptions.length === 1;
 			}
@@ -3846,7 +3848,7 @@ class DieRoller {
 			this.addDieFromStr(playerID, dieStr, DieCountsAs.totalScore, this.diceRollDataPlayer.throwPower, xPositionModifier, d20BackColor, d20FontColor);
 		}
 		else {
-			console.log(`diceRollData.itsAD20Roll = true;`);
+			//console.log(`diceRollData.itsAD20Roll = true;`);
 			this.diceRollDataPlayer.itsAD20Roll = true;
 			if (this.diceRollDataPlayer.rollScope === RollScope.ActivePlayer) {
 				const activePlayerRollOptions: PlayerRollOptions = this.diceRollDataPlayer.playerRollOptions[0];
@@ -3873,7 +3875,7 @@ class DieRoller {
 					this.addD20sForPlayer(playerRollOption.PlayerID, xPositionModifier, playerRollOption.VantageKind, playerRollOption.Inspiration);
 				});
 				this.diceRollDataPlayer.hasMultiPlayerDice = this.diceRollDataPlayer.playerRollOptions.length > 1;
-				console.log('prepareLegacyRoll, RollScope.Individuals (2) - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
+				//console.log('prepareLegacyRoll, RollScope.Individuals (2) - diceRollData.hasMultiPlayerDice: ' + this.diceRollDataPlayer.hasMultiPlayerDice);
 				this.diceRollDataPlayer.hasSingleIndividual = this.diceRollDataPlayer.playerRollOptions.length === 1;
 			}
 			if (this.isAttack(this.diceRollDataPlayer)) {
@@ -3885,7 +3887,7 @@ class DieRoller {
 
 	//! Called from Connection.ts
 	pleaseRollDice(diceRollDto: DiceRollData) {
-		console.log(`pleaseRollDice...`);
+		//console.log(`pleaseRollDice...`);
 		DiceLayer.numFiltersOnDieCleanup = 0;
 		DiceLayer.numFiltersOnRoll = 0;
 		//testing = true;
@@ -3937,17 +3939,17 @@ class DieRoller {
 			xPositionModifier = 26;  // Throw from the right to the left.
 
 		if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0) {
-			console.log('prepareDiceDtoRoll...');
+			//console.log('prepareDiceDtoRoll...');
 			this.prepareDiceDtoRoll(diceRollDto, xPositionModifier);
-			console.log(this.dice);
+			//console.log(this.dice);
 		}
 
 
 		if (!diceRollDto.suppressLegacyRoll) {
-			console.log('prepareLegacyRoll...');
+			//console.log('prepareLegacyRoll...');
 			this.prepareLegacyRoll(xPositionModifier);
 		}
-		console.log(this.dice);
+		//console.log(this.dice);
 
 		try {
 			// @ts-ignore - DiceManager

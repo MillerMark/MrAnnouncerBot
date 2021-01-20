@@ -118,9 +118,9 @@ class DiceObject {
     this.diceColor = options.backColor;
   }
 
-	clear() {
+  clear(dieRoller) {
 		if (this.object) {
-			this.object.body.removeEventListener("collide", handleDieCollision);
+      this.object.body.removeEventListener("collide", dieRoller.handleDieCollision);
 			DiceManager.world.remove(this.object.body);
 		}
     this.size = null;
