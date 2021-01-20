@@ -36,7 +36,7 @@ class DiceSounds extends SoundManager {
 		this.loadPercentageSoundEffects(this.settles, "Dice/Settles", 7);
 	}
 
-	async playAttackCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, minCrit: number): Promise<void> {
+	async playAttackCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, minCrit: number, attemptedRollWasSuccessful: boolean): Promise<void> {
 		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
 
 		if (attemptedRollWasSuccessful) {
@@ -148,8 +148,8 @@ class DiceSounds extends SoundManager {
 		await this.playSoundFileAsync('Announcer/Damage/Health[3]');
 	}
 
-	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>, minCrit: number): Promise<void> {
-		await this.playAttackCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage, minCrit);
+	async playAttackPlusDamageCommentaryAsync(d20RollValue: number, d20Modifier: number, totalDamage: number, maxDamage: number, damageType: DamageType, damageSummary: Map<DamageType, number>, minCrit: number, attemptedRollWasSuccessful: boolean): Promise<void> {
+		await this.playAttackCommentaryAsync(d20RollValue, d20Modifier, totalDamage, maxDamage, minCrit, attemptedRollWasSuccessful);
 		if (attemptedRollWasSuccessful && ((damageSummary && damageSummary.size > 0) || totalDamage > 0))
 		{
 			await this.playSoundFileAsync('Announcer/Numbers/With[4]');
@@ -223,7 +223,7 @@ class DiceSounds extends SoundManager {
 	playChaosBoltCommentary(d20RollValue: number, savingThrow: Ability): void {
 	}
 
-	async playSavingThrowCommentary(d20RollValue: number, d20Modifier: number, savingThrow: Ability): Promise<void> {
+	async playSavingThrowCommentary(d20RollValue: number, d20Modifier: number, savingThrow: Ability, attemptedRollWasSuccessful: boolean): Promise<void> {
 
 		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
 		if (attemptedRollWasSuccessful)
@@ -232,7 +232,7 @@ class DiceSounds extends SoundManager {
 			await this.playSoundFileAsync('Announcer/Reactions/Failure[3]');
 	}
 
-	async playSkillCheckCommentary(d20RollValue: number, d20Modifier: number, skillCheck: Skills): Promise<void> {
+	async playSkillCheckCommentary(d20RollValue: number, d20Modifier: number, skillCheck: Skills, attemptedRollWasSuccessful: boolean): Promise<void> {
 		await this.playD20PlusModifierAsync(d20RollValue, d20Modifier);
 		if (attemptedRollWasSuccessful)
 			await this.playSoundFileAsync('Announcer/Reactions/Success[4]');

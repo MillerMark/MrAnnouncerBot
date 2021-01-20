@@ -705,6 +705,7 @@ class DiceD20 extends DiceObject {
 
 //---------------------------------------------//
 
+// TODO: I think we are going to need to encapsulate this. I think. Watch out for tsignore comments before references to DiceManager.
 const DiceManager = new DiceManagerClass();
 
 //if (typeof define === 'function' && define.amd) {

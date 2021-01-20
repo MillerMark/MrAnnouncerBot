@@ -123,6 +123,7 @@ function clearDice() {
 }
 
 function rollDice(diceRollData: string) {
+	console.log(`rollDice`);
 	if (diceLayer) {
 		diceLayer.rollDice(diceRollData);
 	}
@@ -199,7 +200,8 @@ function changeFrameRate(frameRateData: string) {
 	if (diceLayer) {
 		diceRollerShowFpsWindow = frameRateChangeData.ShowFpsWindow;
 		if (frameRateChangeData.OverlayName === 'Dice') {
-			handleFpsChangeDiceRoller(frameRateChangeData);
+			if (diceRollerPlayers)
+				diceRollerPlayers.handleFpsChangeDiceRoller(frameRateChangeData);
 		}
 	}
 

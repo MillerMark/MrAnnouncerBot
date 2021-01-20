@@ -2516,7 +2516,7 @@ class DiceLayer {
 	//}
 
 	clearDice(): void {
-		removeRemainingDice();
+		diceRollerPlayers.removeRemainingDice();
 		//if (!removeRemainingDice())
 		//	allDiceHaveBeenDestroyed(JSON.stringify(lastRollDiceData));
 	}
@@ -2524,7 +2524,7 @@ class DiceLayer {
 	rollDice(diceRollDto: string): void {
 		const diceRollData: DiceRollData = this.getDiceRollData(diceRollDto);
 		console.log(diceRollData);
-		pleaseRollDice(diceRollData);
+		diceRollerPlayers.pleaseRollDice(diceRollData);
 	}
 
 	getDieColor(playerID: number): string {
