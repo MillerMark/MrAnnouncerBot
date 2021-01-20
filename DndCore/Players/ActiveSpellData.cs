@@ -58,6 +58,7 @@ namespace DndCore
 				.Replace("{spell_DieStr}", "«{spell_DieStr}»")
 				.Replace("{spell_AmmoCount_word}", "«{spell_AmmoCount_word}»")
 				.Replace("{spell_AmmoCount_Word}", "«{spell_AmmoCount_Word}»")
+				.Replace("{spell_DoubleAmmoCount}", "«{spell_DoubleAmmoCount}»")
 				.Replace("{spell_AmmoCount}", "«{spell_AmmoCount}»")
 				;
 		}

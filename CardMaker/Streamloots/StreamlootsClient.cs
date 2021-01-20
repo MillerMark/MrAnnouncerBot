@@ -8,6 +8,8 @@ using System.Net.Http;
 using DndCore;
 using Streamloots;
 using System.Collections.Generic;
+using System.IO;
+using System.Drawing;
 
 namespace CardMaker
 {
@@ -27,29 +29,29 @@ namespace CardMaker
 			//TestApi();
 		}
 
-		List<SetCardViewModel> GetNewCards()
-		{
-			List<SetCardViewModel> result = new List<SetCardViewModel>();
-			SetCardViewModel setCardViewModel = new SetCardViewModel();
-			setCardViewModel.name = "My new cool card";
-			result.Add(setCardViewModel);
-			return result;
-			//setCardViewModel.actionType = 
-		}
-		List<SetCardUpdateViewModel> GetNewCards(SetCardViewModel prototype)
-		{
-			List<SetCardUpdateViewModel> result = new List<SetCardUpdateViewModel>();
-			SetCardUpdateViewModel updatedTestCard = new SetCardUpdateViewModel(prototype);
-			updatedTestCard.name = "My next SUPER COOL card";
-			updatedTestCard.dropLimit = null;
-			updatedTestCard.description = "This is my description.";
-			updatedTestCard.descriptionDetailed = "This is my descriptionDetailed.";
-			updatedTestCard.fragments = null;
-			updatedTestCard.redemptionLimit = new RedemptionLimit();
-			result.Add(updatedTestCard);
-			return result;
-			//setCardViewModel.actionType = 
-		}
+		//List<SetCardViewModel> GetNewCards()
+		//{
+		//	List<SetCardViewModel> result = new List<SetCardViewModel>();
+		//	SetCardViewModel setCardViewModel = new SetCardViewModel();
+		//	setCardViewModel.name = "My new cool card";
+		//	result.Add(setCardViewModel);
+		//	return result;
+		//	//setCardViewModel.actionType = 
+		//}
+		//List<SetCardUpdateViewModel> GetNewCards(SetCardViewModel prototype)
+		//{
+		//	List<SetCardUpdateViewModel> result = new List<SetCardUpdateViewModel>();
+		//	SetCardUpdateViewModel updatedTestCard = new SetCardUpdateViewModel(prototype);
+		//	updatedTestCard.name = "My next SUPER COOL card";
+		//	updatedTestCard.dropLimit = null;
+		//	updatedTestCard.description = "This is my description.";
+		//	updatedTestCard.descriptionDetailed = "This is my descriptionDetailed.";
+		//	updatedTestCard.fragments = null;
+		//	updatedTestCard.redemptionLimit = new RedemptionLimit();
+		//	result.Add(updatedTestCard);
+		//	return result;
+		//	//setCardViewModel.actionType = 
+		//}
 		async void TestApi()
 		{
 			await TestAddCard();
@@ -96,7 +98,7 @@ namespace CardMaker
 			ByteArrayContent byteContent = ToSerializedBytes(setData);
 			//string serializedBytes = byteContent.ReadAsStringAsync().GetAwaiter().GetResult();
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/sets", byteContent);
-			
+
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<SetViewModel>(result);
 		}
@@ -113,9 +115,9 @@ namespace CardMaker
 			return JsonConvert.DeserializeObject<SetCollectionResult>(content);
 		}
 
-		public async Task<SetCardViewModel> AddCard(string setId, SetCardUpdateViewModel newCard)
+		public async Task<SetCardViewModel> AddCard(string setId, SetCardWithImageViewModel newCard)
 		{
-			List<SetCardUpdateViewModel> newCards = new List<SetCardUpdateViewModel>();
+			List<SetCardWithImageViewModel> newCards = new List<SetCardWithImageViewModel>();
 			newCards.Add(newCard);
 			List<SetCardViewModel> cards = await AddCards(setId, newCards);
 			if (cards != null && cards.Count > 0)
@@ -123,12 +125,11 @@ namespace CardMaker
 			return null;
 		}
 
-		public async Task<List<SetCardViewModel>> AddCards(string setId, List<SetCardUpdateViewModel> newCards)
+		public async Task<List<SetCardViewModel>> AddCards(string setId, List<SetCardWithImageViewModel> newCards)
 		{
-			foreach (SetCardUpdateViewModel setCardUpdateViewModel in newCards)
-			{
-				setCardUpdateViewModel.SelfValidate();
-			}
+			foreach (SetCardWithImageViewModel setCardWithImageViewModel in newCards)
+				setCardWithImageViewModel.SelfValidate();
+			
 			ByteArrayContent byteContent = ToSerializedBytes(newCards);
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/sets/{setId}/cards", byteContent);
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
@@ -172,15 +173,43 @@ namespace CardMaker
 
 		public async Task<SetCardViewModel> AddCard(Card card)
 		{
-			if (card.ParentDeck == null)
+			Deck parentDeck = card.ParentDeck;
+			if (parentDeck == null)
 			{
 				System.Diagnostics.Debugger.Break();
 				return null;
 			}
-			if (await GetSet(card.ParentDeck.SetId) == null)
-				card.ParentDeck.SetId = await AddDeck(card.ParentDeck.Name);
+
+			await EnsureDeckExistsOnStreamloots(parentDeck);
 			//return await AddCard(card.ParentDeck.SetId, card.ToSetCardUpdateViewModel());
-			return await AddCard(card.ParentDeck.SetId, card.ToSetCardWithImageViewModel());
+			return await AddCard(parentDeck.SetId, card.ToSetCardWithImageViewModel());
+		}
+
+		private async Task EnsureDeckExistsOnStreamloots(Deck deck)
+		{
+			if (await GetSet(deck.SetId) == null)
+				deck.SetId = await AddDeck(deck.Name);
+		}
+
+		public async void UploadFile(Card card, string fullPath)
+		{
+			await EnsureDeckExistsOnStreamloots(card.ParentDeck);
+			//Image newImage = Image.FromFile(fullPath);
+			//ImageConverter _imageConverter = new ImageConverter();
+			//byte[] paramFileStream = (byte[])_imageConverter.ConvertTo(newImage, typeof(byte[]));
+			MultipartFormDataContent formContent = new MultipartFormDataContent
+			{
+				{ new StreamContent(File.OpenRead(fullPath)), "file", fullPath },  // + ";type=image/png" 
+				{ new StringContent("true"), "overwrite" },
+				//{ new StringContent("metadata"), "{\"type\": \"image/png}\"" },
+				{ new StringContent("dragonhumpers"), "slug" },
+			};
+
+			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/files", formContent);
+			string result = await httpResponseMessage.Content.ReadAsStringAsync();
+			FileViewModel fileData = JsonConvert.DeserializeObject<FileViewModel>(result);
+			card.UploadedImageFile = fileData.fileUri;
+			
 		}
 	}
 }

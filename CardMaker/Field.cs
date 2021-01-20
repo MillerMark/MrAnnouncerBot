@@ -99,13 +99,13 @@ namespace CardMaker
 			switch (Type)
 			{
 				case FieldType.Text:
-					redeemFieldsViewModel.type = "Text";
+					redeemFieldsViewModel.type = "INPUT#TEXT";
 					break;
 				case FieldType.LongText:
-					redeemFieldsViewModel.type = "LongText";
+					redeemFieldsViewModel.type = "TEXTAREA";
 					break;
 				case FieldType.Phone:
-					redeemFieldsViewModel.type = "Phone";
+					redeemFieldsViewModel.type = "INPUT#PHONE";
 					break;
 			}
 			

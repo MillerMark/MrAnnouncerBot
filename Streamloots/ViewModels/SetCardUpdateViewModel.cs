@@ -61,6 +61,10 @@ namespace Streamloots
 				order = 1;
 			if (rarityCardProbability <= 0)
 				rarityCardProbability = 1;
+			if (string.IsNullOrWhiteSpace(redemptionSuccessMessage))
+				redemptionSuccessMessage = null;
+			if (string.IsNullOrWhiteSpace(descriptionDetailed))
+				descriptionDetailed = null;
 		}
 	}
 }

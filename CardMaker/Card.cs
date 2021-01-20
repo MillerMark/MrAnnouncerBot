@@ -10,6 +10,7 @@ using System.Windows.Media;
 using Imaging;
 using Streamloots;
 using System.Windows;
+using Newtonsoft.Json;
 
 namespace CardMaker
 {
@@ -301,6 +302,20 @@ namespace CardMaker
 			}
 		}
 
+		string redemptionSuccessMessage;
+		[Column]
+		public string RedemptionSuccessMessage
+		{
+			get => redemptionSuccessMessage;
+			set
+			{
+				if (redemptionSuccessMessage == value)
+					return;
+				redemptionSuccessMessage = value;
+				OnPropertyChanged();
+			}
+		}
+
 		Rarity rarity;
 		[Column]
 		public Rarity Rarity
@@ -474,7 +489,7 @@ namespace CardMaker
 		[Column]
 		public string ImageUrl
 		{
-			get => imageUrl; 
+			get => imageUrl;
 			set
 			{
 				if (imageUrl == value)
@@ -484,6 +499,19 @@ namespace CardMaker
 			}
 		}
 
+		string uploadedImageFile;
+		[Column]
+		public string UploadedImageFile
+		{
+			get => uploadedImageFile;
+			set
+			{
+				if (uploadedImageFile == value)
+					return;
+				uploadedImageFile = value;
+				OnPropertyChanged();
+			}
+		}
 
 
 		public override string ToString()
@@ -639,9 +667,28 @@ namespace CardMaker
 		{
 			SetCardWithImageViewModel setCardWithImageViewModel = new SetCardWithImageViewModel();
 			InitializeSetCardUpdateViewModel(setCardWithImageViewModel);
-			setCardWithImageViewModel.imageUrl = imageUrl;
+			if (!string.IsNullOrWhiteSpace(UploadedImageFile))
+				setCardWithImageViewModel.imageUrl = UploadedImageFile;
+
 			return setCardWithImageViewModel;
 		}
+		public SetCardViewModel ToSetCardViewModel()
+		{
+			SetCardViewModel setCardViewModel = new SetCardViewModel();
+			if (!string.IsNullOrWhiteSpace(UploadedImageFile))
+			{
+				setCardViewModel.imageFile = JsonConvert.DeserializeObject<FileViewModel>(UploadedImageFile);
+			}
+			InitializeSetCardWithImageViewModel(setCardViewModel);
+			return setCardViewModel;
+		}
+
+		private void InitializeSetCardWithImageViewModel(SetCardViewModel setCardWithImageViewModel)
+		{
+			InitializeSetCardUpdateViewModel(setCardWithImageViewModel);
+			setCardWithImageViewModel.imageUrl = imageUrl;
+		}
+
 		public SetCardUpdateViewModel ToSetCardUpdateViewModel()
 		{
 			SetCardUpdateViewModel setCardUpdateViewModel = new SetCardUpdateViewModel();
@@ -650,6 +697,12 @@ namespace CardMaker
 			return setCardUpdateViewModel;
 		}
 
+		string GetRedemptionSuccessMessage()
+		{
+			if (string.IsNullOrWhiteSpace(RedemptionSuccessMessage))
+				return "Card played. Enjoy!";
+			return RedemptionSuccessMessage;
+		}
 		private void InitializeSetCardUpdateViewModel(SetCardUpdateViewModel setCardUpdateViewModel)
 		{
 			setCardUpdateViewModel.actionType = "EVENT";
@@ -663,13 +716,24 @@ namespace CardMaker
 			setCardUpdateViewModel.name = Name;
 			setCardUpdateViewModel.obtainable = true;
 			setCardUpdateViewModel.order = 1;
-			setCardUpdateViewModel.rarity = Rarity.ToString();
+			setCardUpdateViewModel.rarity = Rarity.ToString().ToUpper();
 			setCardUpdateViewModel.rarityCardProbability = 1f;
 			setCardUpdateViewModel.redeemable = Available;
 			setCardUpdateViewModel.redeemFields = new List<RedeemFieldsViewModel>();
-			setCardUpdateViewModel.redemptionLimit = new RedemptionLimit();
-			setCardUpdateViewModel.redemptionSuccessMessage = AlertMessage;
+
+			setCardUpdateViewModel.redemptionSuccessMessage = GetRedemptionSuccessMessage();
 			setCardUpdateViewModel.rewardFields = new List<RewardFieldsViewModel>();
+			setCardUpdateViewModel.rewardFields.Add(new RewardFieldsViewModel()
+			{
+				deactivated = false,
+				duration = null,
+				imageUrl = UploadedImageFile,
+				soundUrl = ID,  // encoding this card's ID in the soundUrl field.
+				muteSound = true,
+				ttsEnabled = false,
+				type = "ALERT",
+				message = AlertMessage
+			});
 
 			// TODO: Fill out redemptionLimit and rewardFields.
 			foreach (Field field in Fields)
@@ -694,8 +758,14 @@ namespace CardMaker
 						coolDownSeconds = Cooldown;
 						break;
 				}
-				// TODO: Set cooldown!!! Not seeing a corresponding property in the JSON returned.
+				if (coolDownSeconds > 0)
+				{
+					setCardUpdateViewModel.redemptionLimit = new RedemptionLimit();
+					setCardUpdateViewModel.redemptionLimit.configuration.timeFrameSeconds = coolDownSeconds;
+				}
 			}
+			else
+				setCardUpdateViewModel.redemptionLimit = null;
 		}
 	}
 }

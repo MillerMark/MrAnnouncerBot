@@ -3,6 +3,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 using GoogleHelper;
+using Newtonsoft.Json;
 
 namespace DndCore
 {
@@ -14,6 +15,15 @@ namespace DndCore
 	{
 		public int Range { get; set; }
 		public int AmmoCount { get; set; }
+
+		[JsonIgnore]
+		public int DoubleAmmoCount
+		{
+			get
+			{
+				return AmmoCount * 2;
+			}
+		}
 		public int OriginalAmmoCount { get; set; }
 		public string AmmoCount_word
 		{
@@ -341,7 +351,7 @@ namespace DndCore
 				return GetSpellRawDieStr();
 			}
 		}
-		
+
 
 		public static Spell FromDto(SpellDto spellDto, int spellSlotLevel, int spellCasterLevel, int spellcastingAbilityModifier)
 		{
@@ -428,7 +438,7 @@ namespace DndCore
 				if (!string.IsNullOrWhiteSpace(spellDto.components_materials_description))
 					result += $"({spellDto.components_materials_description})";
 			}
-			result = result.Trim(new char[] { ' ', ','});
+			result = result.Trim(new char[] { ' ', ',' });
 			return result;
 		}
 

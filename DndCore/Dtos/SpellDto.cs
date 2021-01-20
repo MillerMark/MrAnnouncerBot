@@ -10,6 +10,8 @@ namespace DndCore
 		public string level { get; set; }
 		public string viewerCanCast { get; set; }
 		public string viewerCanGift { get; set; }
+		public string target { get; set; }
+		public string targetingPrompt { get; set; }
 		public string school { get; set; }
 		public string ritual { get; set; }
 		public string casting_time { get; set; }

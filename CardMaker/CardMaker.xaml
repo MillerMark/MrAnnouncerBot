@@ -209,7 +209,12 @@
 
 					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 						<TextBlock Text="Alert Message: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-						<TextBox x:Name="tbxRedemptionMessage" Text="{Binding Path=AlertMessage}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
+						<TextBox x:Name="tbxRedemptionMessage" Text="{Binding Path=AlertMessage}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap" Margin="-6, 0, 0, 0"/>
+					</StackPanel>
+					
+					<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
+						<TextBlock Text="Redemption Success Message: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
+						<TextBox x:Name="tbxRedemptionSuccessMessage" Text="{Binding Path=RedemptionSuccessMessage}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap" Margin="-6, 0, 0, 0"/>
 					</StackPanel>
 
 					<StackPanel Orientation="Horizontal" Margin="0, 14, 0, 0">

@@ -1443,6 +1443,17 @@ namespace CardMaker
 					break;
 			}
 			card.ScalePlaceholder(witchcraftPlaceholderSize);
+			if (!string.IsNullOrWhiteSpace(spellDto.targetingPrompt))
+			{
+				// TODO: Adjust the alert message to include the target field. Shorten Description MaxHeight.
+				Field targetField = new Field(card) {
+					Name = "target", 
+					Label = spellDto.targetingPrompt, 
+					Required = spellDto.targetingPrompt.ToLower().IndexOf("optional") < 0,
+					Type = FieldType.LongText
+				};
+				CardData.AllKnownFields.Add(targetField);
+			}
 		}
 
 		static string RemoveConcentration(string duration, bool isScroll)
@@ -1697,8 +1708,9 @@ namespace CardMaker
 			string fullPath = Path.Combine(imagePath, fileName);
 			cvsLayers.SaveToPng(new Uri(fullPath));
 			ActiveCard.ImageUrl = cloudinaryClient.UploadImage(fileName);
-			Clipboard.SetText(fullPath);
-			ShowStatus("image path copied to clipboard.");
+			streamlootsClient.UploadFile(ActiveCard, fullPath);
+			//Clipboard.SetText(fullPath);
+			//ShowStatus("image path copied to clipboard.");
 		}
 
 		static string GetSpellDescription(SpellDto spellDto, bool isScroll)
@@ -1718,7 +1730,8 @@ namespace CardMaker
 				.Replace("{SpellcastingAbilityModifierStr}", "+3")
 				.Replace("{spell_AmmoCount_word}", spell.AmmoCount_word)
 				.Replace("{spell_AmmoCount_Word}", spell.AmmoCount_Word)
-				.Replace("{spell_AmmoCount}", spell.AmmoCount.ToString());
+				.Replace("{spell_AmmoCount}", spell.AmmoCount.ToString())
+				.Replace("{spell_DoubleAmmoCount}", spell.DoubleAmmoCount.ToString());
 		}
 
 		private void btnUploadCard_Click(object sender, RoutedEventArgs e)
