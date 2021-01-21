@@ -1546,10 +1546,12 @@ namespace DHDM
 				}
 				message = message.Substring(colonPos + 1).Trim();
 				string speechCommand = null;
-				if (message.StartsWith("\""))
+				if (message.StartsWith("\"") || message.StartsWith("“"))
 				{
 					speechCommand = "says";
 					message = message.Trim('"');
+					message = message.Trim('“');
+					message = message.Trim('”');
 				}
 				else if (message.StartsWith("("))
 				{
