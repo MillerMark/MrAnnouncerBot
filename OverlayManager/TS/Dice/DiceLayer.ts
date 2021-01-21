@@ -5,6 +5,7 @@ enum DiceGroup {
 
 enum RollScope {
 	ActivePlayer,
+	Viewer,
 	Individuals,
 	ActiveInGameCreature,
 	TargetedInGameCreatures

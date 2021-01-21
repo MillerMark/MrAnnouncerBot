@@ -520,6 +520,9 @@
 											<RadioButton x:Name="rbTargetedNpcs" Checked="RbIndividuals_Checked" Margin="20, 0, 0, 0">
 												Targeted NPCs
 											</RadioButton>
+											<RadioButton x:Name="rbViewer" Checked="rbViewer_Checked" Margin="20, 0, 0, 0">
+												Viewer
+											</RadioButton>
 										</StackPanel>
 										<Grid x:Name="grdPlayerRollOptions" Height="Auto" Width="Auto" Margin="14, 10, 0, 0">
 											<Grid.ColumnDefinitions>

@@ -62,7 +62,7 @@ namespace DHDM
 		const int INT_TimeToDropDragonDice = 1800;
 		const string STR_PlayerScene = "Players";
 		const string STR_RepeatSpell = "[Again]";
-		
+
 
 		private readonly OBSWebsocket obsWebsocket = new OBSWebsocket();
 		DungeonMasterChatBot dmChatBot = new DungeonMasterChatBot();
@@ -79,7 +79,7 @@ namespace DHDM
 				return allPlayerStats;
 			}
 		}
-		
+
 		List<PlayerActionShortcut> actionShortcuts = new List<PlayerActionShortcut>();
 		CardHandManager cardHandManager = new CardHandManager();
 		ScrollPage activePage = ScrollPage.main;
@@ -1970,10 +1970,12 @@ namespace DHDM
 			// ![](9920C0D4E763C7314FD8A6EAF74D5FB3.png)
 			if (diceRoll.RollScope == RollScope.ActivePlayer)
 				rbActivePlayer.IsChecked = true;
-			else if (diceRoll.RollScope == RollScope.ActiveInGameCreature)  // CodeBaseAlpha was right. I added this line of code.
-				rbActiveNpc.IsChecked = true;  // <---- And this line of code.
-			else if (diceRoll.RollScope == RollScope.TargetedInGameCreatures)  // CodeBaseAlpha was right. I added this line of code.
-				rbTargetedNpcs.IsChecked = true;  // <---- And this line of code.
+			else if (diceRoll.RollScope == RollScope.ActiveInGameCreature)
+				rbActiveNpc.IsChecked = true;
+			else if (diceRoll.RollScope == RollScope.Viewer)
+				rbViewer.IsChecked = true;
+			else if (diceRoll.RollScope == RollScope.TargetedInGameCreatures)
+				rbTargetedNpcs.IsChecked = true;
 			else
 				rbIndividuals.IsChecked = true;
 		}
@@ -2879,7 +2881,44 @@ namespace DHDM
 				return;
 			}
 			CompleteCast(diceRoll);
+			Character player = null;
+			if (diceRoll.DiceGroup == DiceGroup.Players)
+				player = InitializeForPlayerRoll(diceRoll);
+
+			SafeInvoke(() =>
+			{
+				showClearButtonTimer.Start();
+				//rbTestNormalDieRoll.IsChecked = true;
+				updateClearButtonTimer.Stop();
+				EnableDiceRollButtons(false);
+				btnClearDice.Visibility = Visibility.Hidden;
+				PrepareForClear();
+			});
+
+			SeriouslyRollTheDice(diceRoll);
+
+			if (diceRoll.DiceGroup == DiceGroup.Players)
+				ResetPlayerState(diceRoll, player);
+		}
+
+		private void ResetPlayerState(DiceRoll diceRoll, Character player)
+		{
+			if (diceRoll.IsOnePlayer)
+				player?.ResetPlayerRollBasedState();
+			else
+			{
+				foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
+				{
+					player = game.GetPlayerFromId(playerRollOption.PlayerID);
+					player?.ResetPlayerRollBasedState();
+				}
+			}
+		}
+
+		private Character InitializeForPlayerRoll(DiceRoll diceRoll)
+		{
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
+
 			forcedWildMagicThisRoll = false;
 			if (!string.IsNullOrWhiteSpace(diceRoll.SpellName))
 			{
@@ -2892,6 +2931,7 @@ namespace DHDM
 				}
 			}
 
+			// TODO: Solve secondToLastRoll and lastRoll for viewer dice.
 			secondToLastRoll = lastRoll;
 			lastRoll = diceRoll;
 			Character player = null;
@@ -2929,29 +2969,7 @@ namespace DHDM
 				player.ReadyRollDice(diceRoll.Type, diceRoll.DamageHealthExtraDice, (int)Math.Round(diceRoll.HiddenThreshold));
 			}
 
-
-			SafeInvoke(() =>
-			{
-				showClearButtonTimer.Start();
-				//rbTestNormalDieRoll.IsChecked = true;
-				updateClearButtonTimer.Stop();
-				EnableDiceRollButtons(false);
-				btnClearDice.Visibility = Visibility.Hidden;
-				PrepareForClear();
-			});
-
-			SeriouslyRollTheDice(diceRoll);
-
-			if (diceRoll.IsOnePlayer)
-				player?.ResetPlayerRollBasedState();
-			else
-			{
-				foreach (PlayerRollOptions playerRollOption in diceRoll.PlayerRollOptions)
-				{
-					player = game.GetPlayerFromId(playerRollOption.PlayerID);
-					player?.ResetPlayerRollBasedState();
-				}
-			}
+			return player;
 		}
 
 		DateTime lastDieRollTime;
@@ -2970,6 +2988,9 @@ namespace DHDM
 
 		private void CompleteCast(DiceRoll diceRoll)
 		{
+			if (diceRoll.DiceGroup == DiceGroup.Viewers)
+				return;
+
 			if (castedSpellNeedingCompletion != null)
 			{
 				game.CompleteCast(spellCaster, castedSpellNeedingCompletion);
@@ -3482,6 +3503,8 @@ namespace DHDM
 				rbActiveNpc.IsChecked = true;
 			else if (nextRollScope == RollScope.ActivePlayer)
 				rbActivePlayer.IsChecked = true;
+			else if (nextRollScope == RollScope.Viewer)
+				rbViewer.IsChecked = true;
 			else if (nextRollScope == RollScope.TargetedInGameCreatures)
 				rbTargetedNpcs.IsChecked = true;
 			else if (nextRollScope == RollScope.Individuals)
@@ -5968,9 +5991,6 @@ namespace DHDM
 		{
 			if (radioingInternally)
 				return;
-			//if (spRollButtons == null)
-			//	return;
-			//spRollButtons.Visibility = Visibility.Visible;
 			ShowHidePlayerUI(true);
 			CheckActivePlayer();
 		}
@@ -5979,9 +5999,6 @@ namespace DHDM
 		{
 			if (radioingInternally)
 				return;
-			//if (spRollButtons == null)
-			//	return;
-			//spRollButtons.Visibility = Visibility.Collapsed;
 			ShowHidePlayerUI(true);
 			CheckAllPlayers();
 		}
@@ -9438,6 +9455,18 @@ namespace DHDM
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 		}
 
+		// TODO: Delete ExecuteCardCommand
+		void ExecuteCardCommand(string command)
+		{
+
+		}
+		void ProcessCardCommand(string command, CardDto cardDto)
+		{
+			if (command.StartsWith("!RollDie"))
+			{
+				string parameters = command.EverythingAfter("(");  //mkm;
+			}
+		}
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
@@ -9451,8 +9480,13 @@ namespace DHDM
 			if (msg.IndexOf("//") >= 0)
 			{
 				string onlyToViewers = msg.EverythingBefore("//").Trim();
-				string onlyToDm = msg.EverythingAfter("//").Trim();
-				TellDungeonMaster(onlyToDm);
+				string comment = msg.EverythingAfter("//").Trim();
+				if (comment.StartsWith("!"))
+				{
+					ProcessCardCommand(comment, ea.CardDto);
+				}
+				else
+					TellDungeonMaster(comment);
 				TellViewers(onlyToViewers);
 			}
 			else
@@ -9490,6 +9524,13 @@ namespace DHDM
 					return;
 			}
 			System.Diagnostics.Debugger.Break();
+		}
+
+		private void rbViewer_Checked(object sender, RoutedEventArgs e)
+		{
+			if (radioingInternally)
+				return;
+			ShowHidePlayerUI(false);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

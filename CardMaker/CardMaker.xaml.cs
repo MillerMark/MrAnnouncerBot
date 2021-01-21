@@ -1589,7 +1589,7 @@ namespace CardMaker
 			card.GetLayerDetails(layerName);
 		}
 
-		void SetLayerVisibilities(Card card, string rollKind, int modifier, bool isSecret)
+		void SetDieModLayerVisibilities(Card card, string rollKind, int modifier, bool isSecret)
 		{
 			if (modifier < 0)
 			{
@@ -1632,11 +1632,6 @@ namespace CardMaker
 			return cardLayerManager.CardLayers.FirstOrDefault(x => x.Details == details);
 		}
 
-		void SetCardRarity(Card card, string rollKind, int modifier, int powerLevel, bool isSecret)
-		{
-
-		}
-
 		void QuickAddAllLayerDetails(Card card)
 		{
 			QuickAddBackgroundLayers(card, card.StylePath);
@@ -1647,18 +1642,112 @@ namespace CardMaker
 		private Card CreateBonusPenaltyCard(string rollKind, int modifier, int powerLevel, bool isSecret = true)
 		{
 			Card card = CardData.AddCard(ActiveDeck);
+			SetRarity(card, powerLevel, modifier);
 			card.Name = GetDieModTitle(isSecret, rollKind, modifier);
 			card.StylePath = "Die Mods";
 			card.Description = GetDieModDescription(rollKind, modifier, isSecret);
 			QuickAddAllLayerDetails(card);
-			SetLayerVisibilities(card, rollKind, modifier, isSecret);
-			SetCardRarity(card, rollKind, modifier, powerLevel, isSecret);
+			SetDieModLayerVisibilities(card, rollKind, modifier, isSecret);
 
 			// TODO: Linked properties are not working.
 			return card;
 		}
 
-		void CreateCardsAtPowerLevel(int powerLevel)
+		string GetSayAnythingDieName(int modifier)
+		{
+			if (modifier < 5)
+				return "d4";
+			return "d6";
+		}
+
+		void SetSayAnythingLayerVisibilities(Card card, string dieName, int multiplier)
+		{
+			card.SelectAlternateLayer("Die", dieName);
+			card.SelectAlternateLayer("Times", $"x{multiplier}");
+			int cardNum = random.Next(9);
+			card.SelectAlternateLayer("CardBack", $"Card {cardNum}");
+		}
+
+		void GetSayAnythingDieNameAndMultiplier(int powerLevel, out int multiplier, out string dieName)
+		{
+			const string d4 = "d4";
+			const string d6 = "d6";
+			multiplier = 1;
+			dieName = d4;
+			switch (powerLevel)
+			{
+				case 1: // 2.5
+					multiplier = 1;
+					dieName = d4;
+					break;
+				case 2: // 3.5
+					multiplier = 1;
+					dieName = d6;
+					break;
+				case 3: // 5
+					multiplier = 2;
+					dieName = d4;
+					break;
+				case 4: // 7
+					multiplier = 2;
+					dieName = d6;
+					break;
+				case 5: // 7.5
+					multiplier = 3;
+					dieName = d4;
+					break;
+				case 6: // 10
+					multiplier = 4;
+					dieName = d4;
+					break;
+				case 7: // 10.5
+					multiplier = 3;
+					dieName = d6;
+					break;
+				case 8: // 14
+					multiplier = 4;
+					dieName = d6;
+					break;
+			}
+		}
+		private Card CreateSayAnythingCard(int actualPowerLevel, int basePowerLevel)
+		{
+			Card card = CardData.AddCard(ActiveDeck);
+			SetRarity(card, basePowerLevel, actualPowerLevel);
+			string dieName;
+			int multiplier;
+			GetSayAnythingDieNameAndMultiplier(actualPowerLevel, out multiplier, out dieName);
+			card.Name = $"Say Anything - {multiplier}{dieName}";
+			card.StylePath = "Say Anything";
+			card.Description = $"Make any player, NPC, or monster think or say anything, up to {multiplier}{dieName} times (dice are rolled when you play this card).";
+			card.AdditionalInstructions = "No ads or hate speech - you could get banned!";
+			card.AlertMessage = $"{{{{username}}}} played Say Anything - {multiplier}{dieName}//!RollDie({multiplier}{dieName}, \"Say Anything\")";
+			QuickAddAllLayerDetails(card);
+			SetSayAnythingLayerVisibilities(card, dieName, multiplier);
+			return card;
+		}
+
+		private static void SetRarity(Card card, int basePowerLevel, int actualPowerLevel)
+		{
+			int delta = Math.Abs(actualPowerLevel) - basePowerLevel;
+			switch (delta)
+			{
+				case 1:
+					card.Rarity = Rarity.Rare;
+					break;
+				case 2:
+					card.Rarity = Rarity.Epic;
+					break;
+				case 3:
+					card.Rarity = Rarity.Legendary;
+					break;
+				default:
+					card.Rarity = Rarity.Common;
+					break;
+			}
+		}
+
+		void CreateRollModCardsAtPowerLevel(int powerLevel)
 		{
 			int topEnd = Math.Min(powerLevel + 3, 10);
 			for (int i = powerLevel; i <= topEnd; i++)
@@ -1674,14 +1763,31 @@ namespace CardMaker
 				CreateBonusPenaltyCard(STR_Attack, -i, powerLevel);
 			}
 		}
+		void CreateSayAnythingCardsAtPowerLevel(int powerLevel)
+		{
+			int topEnd = Math.Min(powerLevel + 3, 8);
+			for (int i = powerLevel; i <= topEnd; i++)
+			{
+				CreateSayAnythingCard(i, powerLevel);
+			}
+		}
 
-		private void PowerLevelMenuItem_Click(object sender, RoutedEventArgs e)
+		private void RollModPowerLevelMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			if (!(sender is MenuItem menuItem))
 				return;
 			if (!int.TryParse(menuItem.Tag.ToString(), out int powerLevel))
 				return;
-			CreateCardsAtPowerLevel(powerLevel);
+			CreateRollModCardsAtPowerLevel(powerLevel);
+		}
+
+		private void SayAnythingPowerLevelMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+			if (!int.TryParse(menuItem.Tag.ToString(), out int powerLevel))
+				return;
+			CreateSayAnythingCardsAtPowerLevel(powerLevel);
 		}
 
 		void InitializeStreamlootsClient()
@@ -1738,6 +1844,8 @@ namespace CardMaker
 		{
 			streamlootsClient.AddCard(ActiveCard);
 		}
+
+		// TODO: Prompt for save if dirty on close!!!
 	}
 }
 

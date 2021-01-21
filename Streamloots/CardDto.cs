@@ -14,6 +14,8 @@ namespace Streamloots
 
 		int GetCreatureId(string targetName)
 		{
+			if (string.IsNullOrWhiteSpace(targetName))
+				return int.MinValue;
 			int playerIdFromName = AllPlayers.GetPlayerIdFromName(targetName);
 			if (playerIdFromName >= 0)
 				return playerIdFromName;
