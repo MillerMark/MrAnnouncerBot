@@ -236,7 +236,6 @@ namespace GoogleHelper
 		static GoogleSheets()
 		{
 			InitialService(GetUserCredentials());
-			RegisterSpreadsheetIDs();
 		}
 
 		private static void InitialService(UserCredential credential)
@@ -271,14 +270,6 @@ namespace GoogleHelper
 		public static void RegisterSpreadsheetID(string sheetName, string sheetID)
 		{
 			spreadsheetIDs.Add(sheetName, sheetID);
-		}
-
-		static void RegisterSpreadsheetIDs()
-		{
-			RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
-			RegisterSpreadsheetID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
-			RegisterSpreadsheetID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
-			RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
 		}
 
 		static MemberInfo[] GetSerializableFields<TAttribute>(Type instanceType) where TAttribute : Attribute

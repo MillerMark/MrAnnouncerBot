@@ -90,7 +90,8 @@ namespace DHDM
 		DispatcherTimer playSceneTimer;
 		DispatcherTimer reconnectToTwitchDungeonMasterTimer;
 		DispatcherTimer reconnectToTwitchDragonHumpersTimer;
-		DispatcherTimer showClearButtonTimer;
+		DispatcherTimer showClearPlayerDiceButtonTimer;
+		DispatcherTimer showClearViewerDiceButtonTimer;
 		DispatcherTimer stateUpdateTimer;
 		DispatcherTimer cropRectUpdateTimer;
 		DispatcherTimer monsterPreviewImageLoadUpdateTimer;
@@ -98,7 +99,8 @@ namespace DHDM
 		DispatcherTimer pendingShortcutsTimer;
 		//DispatcherTimer wildMagicRollTimer;
 		DispatcherTimer switchBackToPlayersTimer;
-		DispatcherTimer updateClearButtonTimer;
+		DispatcherTimer updateClearPlayerDiceButtonTimer;
+		DispatcherTimer updateClearViewerDiceButtonTimer;
 		DispatcherTimer actionQueueTimer;
 
 		DateTime lastUpdateTime;
@@ -142,6 +144,7 @@ namespace DHDM
 
 		private void InitializeGame()
 		{
+			RegisterSpreadsheetIDs();
 			plateManager = new PlateManager(obsWebsocket);
 			game = new DndGame();
 			weatherManager = new WeatherManager(obsWebsocket, game);
@@ -168,9 +171,13 @@ namespace DHDM
 			reconnectToTwitchDragonHumpersTimer.Tick += new EventHandler(ReconnectToTwitchDragonHumpersHandler);
 			reconnectToTwitchDragonHumpersTimer.Interval = TimeSpan.FromMilliseconds(1000);
 
-			showClearButtonTimer = new DispatcherTimer();
-			showClearButtonTimer.Tick += new EventHandler(ShowClearButton);
-			showClearButtonTimer.Interval = TimeSpan.FromSeconds(8);
+			showClearPlayerDiceButtonTimer = new DispatcherTimer();
+			showClearPlayerDiceButtonTimer.Tick += new EventHandler(ShowClearPlayerDiceButton);
+			showClearPlayerDiceButtonTimer.Interval = TimeSpan.FromSeconds(8);
+
+			showClearViewerDiceButtonTimer = new DispatcherTimer();
+			showClearViewerDiceButtonTimer.Tick += new EventHandler(ShowClearViewerDiceButton);
+			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(8);
 
 			stateUpdateTimer = new DispatcherTimer();
 			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
@@ -201,9 +208,13 @@ namespace DHDM
 			switchBackToPlayersTimer.Tick += new EventHandler(SwitchBackToPlayersHandler);
 			switchBackToPlayersTimer.Interval = TimeSpan.FromSeconds(3);
 
-			updateClearButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
-			updateClearButtonTimer.Tick += new EventHandler(UpdateClearButton);
-			updateClearButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
+			updateClearPlayerDiceButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
+			updateClearPlayerDiceButtonTimer.Tick += new EventHandler(UpdateClearPlayerDiceButton);
+			updateClearPlayerDiceButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
+
+			updateClearViewerDiceButtonTimer = new DispatcherTimer(DispatcherPriority.Send);
+			updateClearViewerDiceButtonTimer.Tick += new EventHandler(UpdateClearViewerDiceButton);
+			updateClearViewerDiceButtonTimer.Interval = TimeSpan.FromMilliseconds(80);
 
 			actionQueueTimer = new DispatcherTimer(DispatcherPriority.Send);
 			actionQueueTimer.Tick += new EventHandler(CheckActionQueue);
@@ -239,6 +250,15 @@ namespace DHDM
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
 			LoadEverything();
+		}
+
+		void RegisterSpreadsheetIDs()
+		{
+			GoogleSheets.RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
+			GoogleSheets.RegisterSpreadsheetID("DnD Table", "1SktOjs8_E8lTuU1ao9M1H44UGR9fDOnWSvdbpVgMIuw");
+			GoogleSheets.RegisterSpreadsheetID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
+			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
+			GoogleSheets.RegisterSpreadsheetID("DndViewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
 		}
 
 		private void CreateDhPubSub()
@@ -1036,7 +1056,7 @@ namespace DHDM
 			{
 				if (ea.DelayMs == 0)
 				{
-					if (waitingToClearDice && !string.IsNullOrEmpty(ea.Shortcut.InstantDice))
+					if (waitingToClearPlayerDice && !string.IsNullOrEmpty(ea.Shortcut.InstantDice))
 						shortcutToActivateAfterClearingDice = ea.Shortcut;
 					else
 						ActivateShortcut(ea.Shortcut);
@@ -1560,7 +1580,7 @@ namespace DHDM
 					if (!message.Contains("("))
 						message = message.TrimEnd(')');
 				}
-				if (DateTime.Now.Hour < 16)
+				if (DateTime.Now.Hour < 15)
 				{
 					ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
 					message = profanityFilter.CensorString(message);
@@ -1934,7 +1954,7 @@ namespace DHDM
 
 		private void EnableRollDiceButton(DiceRollType type)
 		{
-			btnRollDice.IsEnabled = type != DiceRollType.None;
+			btnRollPlayerDice.IsEnabled = type != DiceRollType.None;
 		}
 
 
@@ -2743,8 +2763,8 @@ namespace DHDM
 				activePlayer = game.GetPlayerFromId(playerTabItem.PlayerId);
 			}
 
-			btnRollDice.IsEnabled = true;
-			ActivatePendingShortcuts();
+			btnRollPlayerDice.IsEnabled = true;
+			ActivatePendingPlayerShortcuts();
 			if (buildingTabs)
 				return;
 			if (rbActivePlayer.IsChecked == true)
@@ -2887,11 +2907,19 @@ namespace DHDM
 
 			SafeInvoke(() =>
 			{
-				showClearButtonTimer.Start();
-				//rbTestNormalDieRoll.IsChecked = true;
-				updateClearButtonTimer.Stop();
-				EnableDiceRollButtons(false);
-				btnClearDice.Visibility = Visibility.Hidden;
+				if (diceRoll.DiceGroup == DiceGroup.Players)
+				{
+					showClearPlayerDiceButtonTimer.Start();
+					updateClearPlayerDiceButtonTimer.Stop();
+					EnablePlayerDiceRollButtons(false);
+					btnClearPlayerDice.Visibility = Visibility.Hidden;
+				}
+				else
+				{
+					showClearViewerDiceButtonTimer.Start();
+					updateClearViewerDiceButtonTimer.Stop();
+					btnClearViewerDice.Visibility = Visibility.Hidden;
+				}
 				PrepareForClear();
 			});
 
@@ -3005,7 +3033,7 @@ namespace DHDM
 			//showClearButtonTimer.Start();
 		}
 
-		void ActivatePendingShortcuts()
+		void ActivatePendingPlayerShortcuts()
 		{
 			if (shortcutToActivateAfterClearingDice != null)
 			{
@@ -3015,22 +3043,34 @@ namespace DHDM
 			}
 		}
 
-		bool waitingToClearDice;
+		bool waitingToClearPlayerDice;
+		bool waitingToClearViewerDice;
 
-		void ActivatePendingShortcutsIn(int seconds)
+		void ActivatePendingPlayerShortcutsIn(int seconds)
 		{
 			pendingShortcutsTimer.Interval = TimeSpan.FromSeconds(seconds);
 			pendingShortcutsTimer.Start();
 		}
-		public void ClearTheDice()
+		public void ClearTheDice(DiceGroup diceGroup)
 		{
-			updateClearButtonTimer.Stop();
-			btnClearDice.Visibility = Visibility.Hidden;
-			btnRollDice.IsEnabled = true;
-			spSpecialThrows.IsEnabled = true;
-			HubtasticBaseStation.ClearDice();
-			waitingToClearDice = false;
-			ActivatePendingShortcutsIn(1);
+			if (diceGroup == DiceGroup.Players)
+			{
+				updateClearPlayerDiceButtonTimer.Stop();
+				btnClearPlayerDice.Visibility = Visibility.Hidden;
+				btnRollPlayerDice.IsEnabled = true;
+				spSpecialPlayerThrows.IsEnabled = true;
+				waitingToClearPlayerDice = false;
+				ActivatePendingPlayerShortcutsIn(1);
+			}
+			else
+			{
+				updateClearViewerDiceButtonTimer.Stop();
+				btnClearViewerDice.Visibility = Visibility.Hidden;
+				waitingToClearViewerDice = false;
+				ActivatePendingPlayerShortcutsIn(1);
+			}
+
+			HubtasticBaseStation.ClearDice(diceGroup);
 		}
 
 		private void BtnSavingThrow_Click(object sender, RoutedEventArgs e)
@@ -3494,7 +3534,7 @@ namespace DHDM
 				tbNextDieRoll.Text = $"({nextDieRollType})";
 			else
 				tbNextDieRoll.Text = "";
-			btnRollDice.IsEnabled = true;
+			btnRollPlayerDice.IsEnabled = true;
 		}
 
 		private void SetNextRollScopeUI()
@@ -3510,7 +3550,7 @@ namespace DHDM
 			else if (nextRollScope == RollScope.Individuals)
 				rbIndividuals.IsChecked = true;
 
-			btnRollDice.IsEnabled = true;
+			btnRollPlayerDice.IsEnabled = true;
 		}
 
 		private void BtnAddHour_Click(object sender, RoutedEventArgs e)
@@ -3535,16 +3575,16 @@ namespace DHDM
 
 		void enableDiceRollButtons()
 		{
-			btnRollDice.IsEnabled = true;
-			spSpecialThrows.IsEnabled = true;
+			btnRollPlayerDice.IsEnabled = true;
+			spSpecialPlayerThrows.IsEnabled = true;
 		}
 
-		void EnableDiceRollButtons(bool enable)
+		void EnablePlayerDiceRollButtons(bool enable)
 		{
 			SafeInvoke(() =>
 			{
-				btnRollDice.IsEnabled = enable;
-				spSpecialThrows.IsEnabled = enable;
+				btnRollPlayerDice.IsEnabled = enable;
+				spSpecialPlayerThrows.IsEnabled = enable;
 			});
 		}
 
@@ -4091,7 +4131,11 @@ namespace DHDM
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 			}
 
-			waitingToClearDice = true;
+			if (ea.StopRollingData.diceGroup == DiceGroup.Players)
+				waitingToClearPlayerDice = true;
+			else
+				waitingToClearViewerDice = true;
+
 			if (ea.StopRollingData == null)
 				return;
 
@@ -4119,8 +4163,12 @@ namespace DHDM
 			ReportOnDieRoll(ea);
 			CheckSpellHitResults(ea.StopRollingData);
 
-			EnableDiceRollButtons(true);
-			ShowClearButton(null, EventArgs.Empty);
+			EnablePlayerDiceRollButtons(true);
+
+			if (ea.StopRollingData.diceGroup == DiceGroup.Players)
+				ShowClearPlayerDiceButton(null, EventArgs.Empty);
+			else
+				ShowClearViewerDiceButton(null, EventArgs.Empty);
 
 			if (ea.StopRollingData.type == DiceRollType.Attack && ea.StopRollingData.success)
 			{
@@ -4688,7 +4736,8 @@ namespace DHDM
 		}
 
 		string lastAmbientSoundPlayed;
-		DateTime clearButtonShowTime;
+		DateTime clearPlayerDiceButtonShowTime;
+		DateTime clearViewerDiceButtonShowTime;
 		private static readonly TimeSpan timeToAutoClear = TimeSpan.FromSeconds(2); // Delete this.
 		void RealTimeClockHandler(object sender, EventArgs e)
 		{
@@ -4697,24 +4746,44 @@ namespace DHDM
 			game.Clock.Advance(timeSinceLastUpdate.TotalMilliseconds);
 		}
 
-		void PrepareUiForClearButton()
+		void PrepareUiForClearPlayerDiceButton()
 		{
 			SafeInvoke(() =>
 			{
-				rectProgressToClear.Width = 0;
-				btnClearDice.Visibility = Visibility.Visible;
+				rectPlayerProgressToClear.Width = 0;
+				btnClearPlayerDice.Visibility = Visibility.Visible;
 			});
 		}
 
-		void ShowClearButton(object sender, EventArgs e)
+		void PrepareUiForClearViewerDiceButton()
 		{
-			pauseTime = TimeSpan.Zero;
-			clearButtonShowTime = DateTime.Now;
-			showClearButtonTimer.Stop();
-			updateClearButtonTimer.Start();
-			justClickedTheClearDiceButton = false;
-			PrepareUiForClearButton();
+			SafeInvoke(() =>
+			{
+				rectViewerProgressToClear.Width = 0;
+				btnClearViewerDice.Visibility = Visibility.Visible;
+			});
 		}
+
+		void ShowClearPlayerDiceButton(object sender, EventArgs e)
+		{
+			clearPlayerDicePauseTime = TimeSpan.Zero;
+			clearPlayerDiceButtonShowTime = DateTime.Now;
+			showClearPlayerDiceButtonTimer.Stop();
+			updateClearPlayerDiceButtonTimer.Start();
+			justClickedTheClearPlayerDiceButton = false;
+			PrepareUiForClearPlayerDiceButton();
+		}
+
+		void ShowClearViewerDiceButton(object sender, EventArgs e)
+		{
+			clearViewerDicePauseTime = TimeSpan.Zero;
+			clearViewerDiceButtonShowTime = DateTime.Now;
+			showClearViewerDiceButtonTimer.Stop();
+			updateClearViewerDiceButtonTimer.Start();
+			justClickedTheClearViewerDiceButton = false;
+			PrepareUiForClearViewerDiceButton();
+		}
+
 
 		void UpdateStateFromTimer(object sender, EventArgs e)
 		{
@@ -4754,13 +4823,13 @@ namespace DHDM
 			});
 		}
 
-		void UpdateClearButton(object sender, EventArgs e)
+		private void UpdateClearDiceButton(DiceGroup diceGroup, Button btnClearDice, Rectangle rectProgressToClear, DateTime clearDiceButtonShowTime, TimeSpan clearDicePauseTime)
 		{
 			const double timeToAutoClear = 14000;
-			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearButtonShowTime) - pauseTime;
+			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearDiceButtonShowTime) - clearDicePauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
-				ClearTheDice();
+				ClearTheDice(diceGroup);
 				rectProgressToClear.Width = 0;
 				return;
 			}
@@ -4769,26 +4838,59 @@ namespace DHDM
 			rectProgressToClear.Width = Math.Max(0, progress * btnClearDice.Width);
 		}
 
-		bool justClickedTheClearDiceButton;
-		private void BtnClearDice_Click(object sender, RoutedEventArgs e)
+		void UpdateClearPlayerDiceButton(object sender, EventArgs e)
 		{
-			justClickedTheClearDiceButton = true;
-			ClearTheDice();
-		}
-		TimeSpan pauseTime;
-		DateTime updateClearPaused;
-
-		private void BtnClearDice_MouseEnter(object sender, MouseEventArgs e)
-		{
-			updateClearPaused = DateTime.Now;
-			updateClearButtonTimer.Stop();
+			UpdateClearDiceButton(DiceGroup.Players, btnClearPlayerDice, rectPlayerProgressToClear, clearPlayerDiceButtonShowTime, clearPlayerDicePauseTime);
 		}
 
-		private void BtnClearDice_MouseLeave(object sender, MouseEventArgs e)
+		void UpdateClearViewerDiceButton(object sender, EventArgs e)
 		{
-			pauseTime += DateTime.Now - updateClearPaused;
-			if (!justClickedTheClearDiceButton)
-				updateClearButtonTimer.Start();
+			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime);
+		}
+
+		bool justClickedTheClearPlayerDiceButton;
+		bool justClickedTheClearViewerDiceButton;
+
+		private void BtnClearPlayerDice_Click(object sender, RoutedEventArgs e)
+		{
+			justClickedTheClearPlayerDiceButton = true;
+			ClearTheDice(DiceGroup.Players);
+		}
+
+		private void BtnClearViewerDice_Click(object sender, RoutedEventArgs e)
+		{
+			justClickedTheClearViewerDiceButton = true;
+			ClearTheDice(DiceGroup.Viewers);
+		}
+
+		TimeSpan clearPlayerDicePauseTime;
+		TimeSpan clearViewerDicePauseTime;
+		DateTime updateClearPlayerDicePaused;
+		DateTime updateClearViewerDicePaused;
+
+		private void BtnClearPlayerDice_MouseEnter(object sender, MouseEventArgs e)
+		{
+			updateClearPlayerDicePaused = DateTime.Now;
+			updateClearPlayerDiceButtonTimer.Stop();
+		}
+
+		private void BtnClearPlayerDice_MouseLeave(object sender, MouseEventArgs e)
+		{
+			clearPlayerDicePauseTime += DateTime.Now - updateClearPlayerDicePaused;
+			if (!justClickedTheClearPlayerDiceButton)
+				updateClearPlayerDiceButtonTimer.Start();
+		}
+		private void BtnClearViewerDice_MouseEnter(object sender, MouseEventArgs e)
+		{
+			updateClearViewerDicePaused = DateTime.Now;
+			updateClearViewerDiceButtonTimer.Stop();
+		}
+
+		private void BtnClearViewerDice_MouseLeave(object sender, MouseEventArgs e)
+		{
+			clearViewerDicePauseTime += DateTime.Now - updateClearViewerDicePaused;
+			if (!justClickedTheClearViewerDiceButton)
+				updateClearViewerDiceButtonTimer.Start();
 		}
 
 
@@ -6565,7 +6667,7 @@ namespace DHDM
 		void ActivatePendingShortcuts(object sender, EventArgs e)
 		{
 			pendingShortcutsTimer.Stop();
-			ActivatePendingShortcuts();
+			ActivatePendingPlayerShortcuts();
 		}
 
 		private void BtnClearSpell_Click(object sender, RoutedEventArgs e)
@@ -6789,7 +6891,7 @@ namespace DHDM
 				spellToCastOnRoll = null;
 				if (isSimpleSpell)
 				{
-					btnRollDice.IsEnabled = false;
+					btnRollPlayerDice.IsEnabled = false;
 					return;  // No need to roll the dice
 				}
 			}
@@ -6813,122 +6915,122 @@ namespace DHDM
 		private void RbSkillCheck_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.SkillCheck;
-			btnRollDice.Content = "Roll Skill Check";
+			btnRollPlayerDice.Content = "Roll Skill Check";
 		}
 
 		private void RbSavingThrow_Click(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.SavingThrow;
-			btnRollDice.Content = "Roll Saving Throw";
+			btnRollPlayerDice.Content = "Roll Saving Throw";
 		}
 
 		private void RbWildMagicD20Check_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.WildMagicD20Check;
-			btnRollDice.Content = "Check Wild Magic";
+			btnRollPlayerDice.Content = "Check Wild Magic";
 		}
 
 		private void RbFlatD20_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.FlatD20;
-			btnRollDice.Content = "Roll d20";
+			btnRollPlayerDice.Content = "Roll d20";
 		}
 
 		private void RbAttack_Checked(object sender, RoutedEventArgs e)
 		{
 			if (!settingAttackRadioButtonInternally)
 				NextDieRollType = DiceRollType.Attack;
-			btnRollDice.Content = "Roll Attack";
+			btnRollPlayerDice.Content = "Roll Attack";
 		}
 
 		private void RbDeathSavingThrow_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.DeathSavingThrow;
-			btnRollDice.Content = "Roll Death Save";
+			btnRollPlayerDice.Content = "Roll Death Save";
 		}
 
 		private void RbInspirationOnly_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.InspirationOnly;
-			btnRollDice.Content = "Roll Inspiration";
+			btnRollPlayerDice.Content = "Roll Inspiration";
 		}
 
 		private void RbHitPointCapacity_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.HPCapacity;
-			btnRollDice.Content = "Roll HP Capacity";
+			btnRollPlayerDice.Content = "Roll HP Capacity";
 		}
 
 		private void RbHealth_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.HealthOnly;
-			btnRollDice.Content = "Roll Health";
+			btnRollPlayerDice.Content = "Roll Health";
 		}
 
 		private void RbDamageOnly_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.DamageOnly;
-			btnRollDice.Content = "Roll Damage";
+			btnRollPlayerDice.Content = "Roll Damage";
 		}
 
 		private void RbPercentageRoll_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.PercentageRoll;
-			btnRollDice.Content = "Roll Percentage";
+			btnRollPlayerDice.Content = "Roll Percentage";
 		}
 
 		private void RbWildMagic_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.WildMagic;
-			btnRollDice.Content = "Roll Wild Magic";
+			btnRollPlayerDice.Content = "Roll Wild Magic";
 		}
 
 		private void RbInitiative_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.Initiative;
-			btnRollDice.Content = "Roll Initiative";
+			btnRollPlayerDice.Content = "Roll Initiative";
 		}
 
 		private void RbNonCombatInitiative_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.NonCombatInitiative;
-			btnRollDice.Content = "Roll Non-combat Initiative";
+			btnRollPlayerDice.Content = "Roll Non-combat Initiative";
 		}
 
 		private void RbBendLuckAdd_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.BendLuckAdd;
-			btnRollDice.Content = "Bend Luck Up (+)";
+			btnRollPlayerDice.Content = "Bend Luck Up (+)";
 		}
 
 		private void RbBendLuckSubtract_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.BendLuckSubtract;
-			btnRollDice.Content = "Bend Luck Down (-)";
+			btnRollPlayerDice.Content = "Bend Luck Down (-)";
 		}
 
 		private void RbLuckRollHigh_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.LuckRollHigh;
-			btnRollDice.Content = "Lucky Roll High";
+			btnRollPlayerDice.Content = "Lucky Roll High";
 		}
 
 		private void RbLuckRollLow_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.LuckRollLow;
-			btnRollDice.Content = "Lucky Roll Low";
+			btnRollPlayerDice.Content = "Lucky Roll Low";
 		}
 
 		private void RbExtra_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.ExtraOnly;
-			btnRollDice.Content = "Roll Extra";
+			btnRollPlayerDice.Content = "Roll Extra";
 		}
 
 		private void RbChaosBolt_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.ChaosBolt;
-			btnRollDice.Content = "Roll Chaos Bolt";
+			btnRollPlayerDice.Content = "Roll Chaos Bolt";
 		}
 
 		private void DamageContextTestAllMenuItem_Click(object sender, RoutedEventArgs e)
@@ -7044,7 +7146,7 @@ namespace DHDM
 		private void RbCastOtherSpell_Checked(object sender, RoutedEventArgs e)
 		{
 			NextDieRollType = DiceRollType.CastSimpleSpell;
-			btnRollDice.Content = "Cast Spell";
+			btnRollPlayerDice.Content = "Cast Spell";
 		}
 
 		private void BtnTestShowSprinkles_Click(object sender, RoutedEventArgs e)
@@ -9225,7 +9327,7 @@ namespace DHDM
 		{
 			SafeInvoke(() =>
 			{
-				ClearTheDice();
+				ClearTheDice(DiceGroup.Players);
 			});
 		}
 
@@ -9456,15 +9558,47 @@ namespace DHDM
 		}
 
 		// TODO: Delete ExecuteCardCommand
-		void ExecuteCardCommand(string command)
-		{
-
-		}
-		void ProcessCardCommand(string command, CardDto cardDto)
+		
+		List<StreamlootsCard> savedCardsForViewerDieRolls = new List<StreamlootsCard>();
+		void ExecuteCardCommand(string command, CardDto cardDto)
 		{
 			if (command.StartsWith("!RollDie"))
 			{
-				string parameters = command.EverythingAfter("(");  //mkm;
+				string parameterStr = command.EverythingAfter("(").EverythingBeforeLast(")");  //mkm;
+				string[] parameters = parameterStr.Split(',');
+				if (parameters.Length == 2)
+				{
+					string dieLabel = parameters[1];
+					string dieStr = parameters[0];
+					string[] dieParts = dieStr.Split('d');
+					if (dieParts.Length == 2)
+					{
+						int quantity;
+						int sides;
+						if (int.TryParse(dieParts[0], out quantity))
+							if (int.TryParse(dieParts[1], out sides))
+							{
+								DiceRoll diceRoll = new DiceRoll(DiceRollType.ExtraOnly);
+								DiceDto diceDto = new DiceDto()
+								{
+									PlayerName = cardDto.Card.UserName,
+									CreatureId = int.MinValue,
+									Sides = sides,
+									Quantity = quantity,
+									Label = $"{cardDto.Card.UserName}'s {dieLabel}",
+									Scale = 1.5,
+									BackColor = "#98003c",
+									FontColor = "#ffffff",
+									Data = cardDto.Card.Guid
+								};
+								savedCardsForViewerDieRolls.Add(cardDto.Card);
+								diceRoll.DiceDtos.Add(diceDto);
+								diceRoll.DiceGroup = DiceGroup.Viewers;
+								diceRoll.RollScope = RollScope.Viewer;
+								RollTheDice(diceRoll);
+							}
+					}
+				}
 			}
 		}
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
@@ -9483,7 +9617,7 @@ namespace DHDM
 				string comment = msg.EverythingAfter("//").Trim();
 				if (comment.StartsWith("!"))
 				{
-					ProcessCardCommand(comment, ea.CardDto);
+					ExecuteCardCommand(comment, ea.CardDto);
 				}
 				else
 					TellDungeonMaster(comment);

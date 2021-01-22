@@ -534,7 +534,7 @@
 									</StackPanel>
 								</StackPanel>
 								<StackPanel Orientation="Horizontal">
-									<Button x:Name="btnRollDice" Click="BtnRollDice_Click" MinHeight="60" Padding="20, 0, 20, 0" MaxWidth="350"  FontSize="33" HorizontalAlignment="Left" >
+									<Button x:Name="btnRollPlayerDice" Click="BtnRollDice_Click" MinHeight="60" Padding="20, 0, 20, 0" MaxWidth="350"  FontSize="33" HorizontalAlignment="Left" >
 										Roll Dice
 									</Button>
 								</StackPanel>
@@ -609,7 +609,7 @@
 								Luck Roll Low
 							</Button>
 						</StackPanel>
-						<StackPanel x:Name="spSpecialThrows" Orientation="Horizontal">
+						<StackPanel x:Name="spSpecialPlayerThrows" Orientation="Horizontal">
 							<TextBlock Text="Special attacks: " Width="Auto" Height="Auto" VerticalAlignment="Center"/>
 							<Button x:Name="btnWildAnimalForm" Margin="8" Padding="8" MinWidth="100" Click="BtnWildAnimalForm_Click" >
 								Wild Animal Form Attack
@@ -620,14 +620,24 @@
 						</StackPanel>
 
 						<StackPanel Orientation="Horizontal">
-							<Button x:Name="btnClearDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 40, 0" Visibility="Hidden" Click="BtnClearDice_Click" MouseEnter="BtnClearDice_MouseEnter" MouseLeave="BtnClearDice_MouseLeave">
+							<Button x:Name="btnClearPlayerDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 40, 0" Visibility="Hidden" Click="BtnClearPlayerDice_Click" MouseEnter="BtnClearPlayerDice_MouseEnter" MouseLeave="BtnClearPlayerDice_MouseLeave">
 								<Grid Width="{Binding RelativeSource={RelativeSource FindAncestor,
                                     AncestorType={x:Type Button}}, Path=Width}" Height="{Binding RelativeSource={RelativeSource FindAncestor,
                                     AncestorType={x:Type Button}}, Path=Height}" IsHitTestVisible="False">
-									<Rectangle x:Name="rectProgressToClear" Fill="#FF1AD9B6" Width="33" HorizontalAlignment="Left" IsHitTestVisible="False"></Rectangle>
-									<TextBlock Text="Clear Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+									<Rectangle x:Name="rectPlayerProgressToClear" Fill="#FF1AD9B6" Width="33" HorizontalAlignment="Left" IsHitTestVisible="False"></Rectangle>
+									<TextBlock Text="Clear Player Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 								</Grid>
 							</Button>
+							
+							<Button x:Name="btnClearViewerDice" Width="240" Height="75" FontSize="33" Margin="0, 20, 40, 0" Visibility="Hidden" Click="BtnClearViewerDice_Click" MouseEnter="BtnClearViewerDice_MouseEnter" MouseLeave="BtnClearViewerDice_MouseLeave">
+								<Grid Width="{Binding RelativeSource={RelativeSource FindAncestor,
+                                    AncestorType={x:Type Button}}, Path=Width}" Height="{Binding RelativeSource={RelativeSource FindAncestor,
+                                    AncestorType={x:Type Button}}, Path=Height}" IsHitTestVisible="False">
+									<Rectangle x:Name="rectViewerProgressToClear" Fill="#FF1AD9B6" Width="33" HorizontalAlignment="Left" IsHitTestVisible="False"></Rectangle>
+									<TextBlock Text="Clear Viewer Dice" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+								</Grid>
+							</Button>
+							
 							<Button x:Name="btnClearSpell" Visibility="Hidden" Width="240" Height="75" FontSize="33" Margin="0, 20, 0, 0" Click="BtnClearSpell_Click">
 								Clear Spell
 							</Button>

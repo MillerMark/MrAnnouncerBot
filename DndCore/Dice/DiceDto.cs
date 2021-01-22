@@ -10,6 +10,7 @@ namespace DndCore
 		public int CreatureId { get; set; }
 		public bool IsMagic { get; set; }
 		public double Modifier { get; set; }
+		public double Scale { get; set; } = 1;
 		public string Label { get; set; }
 		public string Data { get; set; }  // Any string sent down through this property will return when the roll is complete in PlayerRoll.data property.
 		public string PlayerName { get; set; }

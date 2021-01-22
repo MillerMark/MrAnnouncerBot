@@ -12,6 +12,7 @@ using DndCore;
 using Imaging;
 using Microsoft.Extensions.Configuration;
 using SysPath = System.IO.Path;
+using GoogleHelper;
 
 namespace CardMaker
 {
@@ -1672,6 +1673,7 @@ namespace CardMaker
 		{
 			const string d4 = "d4";
 			const string d6 = "d6";
+			const string d8 = "d8";
 			multiplier = 1;
 			dieName = d4;
 			switch (powerLevel)
@@ -1684,29 +1686,45 @@ namespace CardMaker
 					multiplier = 1;
 					dieName = d6;
 					break;
-				case 3: // 5
+				case 3: // 4.5
+					multiplier = 1;
+					dieName = d8;
+					break;
+				case 4: // 5
 					multiplier = 2;
 					dieName = d4;
 					break;
-				case 4: // 7
+				case 5: // 7
 					multiplier = 2;
 					dieName = d6;
 					break;
-				case 5: // 7.5
+				case 6: // 7.5
 					multiplier = 3;
 					dieName = d4;
 					break;
-				case 6: // 10
+				case 7: // 9
+					multiplier = 2;
+					dieName = d8;
+					break;
+				case 8: // 10
 					multiplier = 4;
 					dieName = d4;
 					break;
-				case 7: // 10.5
+				case 9: // 10.5
 					multiplier = 3;
 					dieName = d6;
 					break;
-				case 8: // 14
+				case 10: // 13.5
+					multiplier = 3;
+					dieName = d8;
+					break;
+				case 11: // 14
 					multiplier = 4;
 					dieName = d6;
+					break;
+				case 12: // 18
+					multiplier = 4;
+					dieName = d8;
 					break;
 			}
 		}
@@ -1765,7 +1783,7 @@ namespace CardMaker
 		}
 		void CreateSayAnythingCardsAtPowerLevel(int powerLevel)
 		{
-			int topEnd = Math.Min(powerLevel + 3, 8);
+			int topEnd = Math.Min(powerLevel + 3, 12);
 			for (int i = powerLevel; i <= topEnd; i++)
 			{
 				CreateSayAnythingCard(i, powerLevel);

@@ -346,9 +346,10 @@ class PlayerStatManager implements IAllPlayerStats {
 		//this.createReadyToRollDieSprites('Miles');
 		this.createReadyToRollDieSprites('Lady');
 		this.createReadyToRollDieSprites('Merkin');
-		this.createReadyToRollDieSprites('Slizzie');
-		this.createReadyToRollDieSprites('Stumpy');
+		//this.createReadyToRollDieSprites('Slizzie');
+		//this.createReadyToRollDieSprites('Stumpy');
 		this.createReadyToRollDieSprites('Cutie');
+		this.createReadyToRollDieSprites('Mallory');
 	}
 
 	loadConcentrationSprites(fileName: string, frameCount: number, originX: number, originY: number, animationStyle: AnimationStyle): Sprites {

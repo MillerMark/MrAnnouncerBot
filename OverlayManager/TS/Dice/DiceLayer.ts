@@ -2605,6 +2605,7 @@ class IndividualRoll {
 
 class DiceDto {
 	Quantity: number;
+	Scale: number;
 	Sides: number;
 	CreatureId: number;
 	IsMagic: boolean;
