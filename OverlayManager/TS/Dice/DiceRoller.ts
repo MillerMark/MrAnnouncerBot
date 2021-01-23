@@ -125,6 +125,7 @@ interface IDie {
 	kind: VantageKind;
 	attachedSprites: Array<SpriteProxy>;
 	attachedLabels: Array<TextEffect>;
+	group: DiceGroup
 	origins: Array<Vector>;
 	lastPos: Array<Vector>;
 	isLucky: boolean;
@@ -258,9 +259,9 @@ class DieRoller {
 
 
 
-	clearBeforeRoll() {
+	clearBeforeRoll(diceGroup: DiceGroup) {
 		this.additionalDieRollMessage = '';
-		diceLayer.clearResidualEffects();
+		diceLayer.clearResidualEffects(diceGroup);
 		this.scalingDice = [];
 		this.specialDice = [];
 		this.restoreDieScale();
@@ -317,7 +318,7 @@ class DieRoller {
 					const x: number = pos.x * percentageOnDie + percentageOffDie * 960;
 					const y: number = pos.y * percentageOnDie + percentageOffDie * 540;
 
-					diceLayer.AddEffect(this.diceRollData.onFirstContactEffect, x, y, this.diceRollData.effectScale,
+					diceLayer.AddEffect(die, this.diceRollData.onFirstContactEffect, x, y, this.diceRollData.effectScale,
 						this.diceRollData.effectHueShift, this.diceRollData.effectSaturation,
 						this.diceRollData.effectBrightness, this.diceRollData.effectRotation);
 				}
@@ -357,7 +358,7 @@ class DieRoller {
 							e.target.parentDie.sparks = [];
 						const pos: Vector = this.getScreenCoordinates(e.target.parentDie);
 						if (pos)
-							e.target.parentDie.sparks.push(diceLayer.smallSpark(pos.x, pos.y));
+							e.target.parentDie.sparks.push(diceLayer.smallSpark(e.target.parentDie, pos.x, pos.y));
 						diceSounds.safePlayMp3('Dice/Zap[4]');
 					}
 				}
@@ -818,6 +819,19 @@ class DieRoller {
 
 	static readonly bubbleId: string = 'bubble';
 
+	markBubble(sprite: SpriteProxy) {
+		if (!(sprite.data instanceof DieSpriteData))
+			sprite.data = new DieSpriteData();
+
+		sprite.data.bubbleId = DieRoller.bubbleId;
+	}
+
+	isBubble(sprite: SpriteProxy): boolean {
+		if (sprite.data instanceof DieSpriteData)
+			return sprite.data.bubbleId === DieRoller.bubbleId;
+		return false;
+	}
+
 	popFrozenDice() {
 		for (let i = 0; i < this.dice.length; i++) {
 			const die: IDie = this.dice[i];
@@ -825,7 +839,7 @@ class DieRoller {
 				continue;
 			for (let j = 0; j < die.attachedSprites.length; j++) {
 				const sprite: SpriteProxy = die.attachedSprites[j];
-				if (sprite.data === DieRoller.bubbleId) {
+				if (this.isBubble(sprite)) {
 					sprite.expirationDate = performance.now();
 
 					let hueShift = 0;
@@ -1449,7 +1463,7 @@ class DieRoller {
 
 				const bubble: SpriteProxy = diceLayer.addFreezeBubble(960, 540, hueShift, 100, 100);
 
-				bubble.data = DieRoller.bubbleId;
+				this.markBubble(bubble);
 				die.attachedSprites.push(bubble);
 				diceSounds.safePlayMp3('ice/Freeze[5]');
 				die.origins.push(new Vector(diceLayer.freeze.originX, diceLayer.freeze.originY));
@@ -1511,6 +1525,7 @@ class DieRoller {
 		die.inPlay = true;
 		die.attachedSprites = [];
 		die.attachedLabels = [];
+		die.group = diceGroup;
 		die.origins = [];
 		this.dice.push(die);
 
@@ -1581,7 +1596,7 @@ class DieRoller {
 	}
 
 	addInspirationParticles(die: IDie, playerID: number, hueShiftOffset: number, rotationDegeesPerSecond: number) {
-		die.attachedSprites.push(diceLayer.addInspirationParticles(960, 540, rotationDegeesPerSecond, diceLayer.getHueShift(playerID) + hueShiftOffset));
+		die.attachedSprites.push(diceLayer.addInspirationParticles(die, 960, 540, rotationDegeesPerSecond, diceLayer.getHueShift(playerID) + hueShiftOffset));
 		die.origins.push(diceLayer.inspirationParticles.getOrigin());
 	}
 
@@ -1712,7 +1727,7 @@ class DieRoller {
 				const hueShift: number = Random.between(20, 30);
 				this.addInspirationParticles(die, playerID, hueShift, rotation);
 				this.addInspirationParticles(die, playerID, -hueShift, -rotation);
-				die.attachedSprites.push(diceLayer.addInspirationSmoke(960, 540, Math.floor(Math.random() * 360)));
+				die.attachedSprites.push(diceLayer.addInspirationSmoke(die, 960, 540, Math.floor(Math.random() * 360)));
 				die.origins.push(diceLayer.inspirationSmoke.getOrigin());
 			}
 			if (isMagic) {
@@ -2509,7 +2524,7 @@ class DieRoller {
 						continue;
 
 					if (dieObject.effectKind === DieEffect.Lucky) {
-						diceLayer.addLuckyRing(screenPos.x, screenPos.y);
+						diceLayer.addLuckyRing(thisSpecialDie, screenPos.x, screenPos.y);
 					}
 					if (dieObject.effectKind === DieEffect.Ring) {
 						diceLayer.addMagicRing(screenPos.x, screenPos.y, magicRingHueShift + Random.plusMinusBetween(10, 25));
@@ -3083,7 +3098,7 @@ class DieRoller {
 				die.lastPrintOnLeft = !die.lastPrintOnLeft;
 				const printPos: Vector = this.movePointAtAngle(pos, angle + angleToMovePawPrint, trailingEffect.LeftRightDistanceBetweenPrints * scaleFactor);
 
-				const spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(trailingEffect, printPos.x, printPos.y, angle, spriteScale);
+				const spriteProxy: SpriteProxy = diceLayer.AddTrailingEffect(die, trailingEffect, printPos.x, printPos.y, angle, spriteScale);
 				die.lastPos[index] = pos;
 				return spriteProxy;
 			}
@@ -3423,12 +3438,13 @@ class DieRoller {
 	}
 
 	addBadLuckEffects(die: IDie) {
-		die.attachedSprites.push(diceLayer.addBadLuckRing(960, 540));
+		die.attachedSprites.push(diceLayer.addBadLuckRing(die, 960, 540));
 		die.origins.push(new Vector(diceLayer.badLuckRing.originX, diceLayer.badLuckRing.originY));
 	}
 
 	addGoodLuckEffects(die: IDie) {
-		die.attachedSprites.push(diceLayer.addLuckyRing(960, 540));
+		const sprite: SpriteProxy = diceLayer.addLuckyRing(die, 960, 540);
+		die.attachedSprites.push(sprite);
 		die.origins.push(new Vector(diceLayer.cloverRing.originX, diceLayer.cloverRing.originY));
 	}
 
@@ -3861,7 +3877,7 @@ class DieRoller {
 			return;
 		}
 
-		this.clearBeforeRoll();
+		this.clearBeforeRoll(this.diceRollData.diceGroup);
 
 		let xPositionModifier = 0;
 
