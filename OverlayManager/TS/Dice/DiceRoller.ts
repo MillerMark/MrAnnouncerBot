@@ -2734,7 +2734,7 @@ class DieRoller {
 
 		const viewerFloorX = 10;
 		const viewerFloorY = -4;
-		const viewerFloorZ = 10;
+		const viewerFloorZ = 8.25;
 
 		const dmBottomWallWidth = 9;
 		const dmBottomWallZ = -6;
@@ -3233,7 +3233,7 @@ class DieRoller {
 		}
 	}
 
-	addWallsToScene(wallThickness: number, leftWallWidth: number, leftWallX: number, topWallWidth: number, topWallZ: number, addPlayerWall: boolean, addViewRollFloor: boolean, playerTopWallWidth: number, wallHeight: number, playerTopWallX: number, playerTopWallZ: number, viewerFloorX: number, viewerFloorY: number, viewerFloorZ: number, addDungeonMasterWalls: boolean, dmBottomWallWidth: number, dmBottomWallX: number, dmBottomWallZ: number, dmLeftWallWidth: number, dmLeftWallX: number, dmLeftWallZ: number) {
+	addWallsToScene(wallThickness: number, leftWallWidth: number, leftWallX: number, topWallWidth: number, topWallZ: number, addPlayerWall: boolean, addViewerRollFloor: boolean, playerTopWallWidth: number, wallHeight: number, playerTopWallX: number, playerTopWallZ: number, viewerFloorX: number, viewerFloorY: number, viewerFloorZ: number, addDungeonMasterWalls: boolean, dmBottomWallWidth: number, dmBottomWallX: number, dmBottomWallZ: number, dmLeftWallWidth: number, dmLeftWallX: number, dmLeftWallZ: number) {
 		const leftWallHeight = 68;
 		const topWallHeight = 146;
 
@@ -3279,7 +3279,7 @@ class DieRoller {
 			this.scene.add(playerTopWall);
 		}
 
-		if (addViewRollFloor) {
+		if (addViewerRollFloor) {
 			// @ts-ignore - THREE
 			const viewerRollFloor = new THREE.Mesh(new THREE.BoxGeometry(wallHeight * 2, wallHeight, 1), blueWallMaterial);
 			// @ts-ignore - THREE
@@ -3662,7 +3662,7 @@ class DieRoller {
 			die.rollType = diceDto.DieCountsAs;
 			die.dieType = DiceRollType[DiceRollType.None];
 			if (diceDto.Label)
-				diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor); // So the text matches the die color.
+				diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor, diceDto.Scale); // So the text matches the die color.
 			die.kind = diceDto.Vantage;
 			if (die.kind === VantageKind.Advantage) {
 				//console.log(`die has advantage!`);
@@ -3830,7 +3830,6 @@ class DieRoller {
 
 		this.animationsShouldBeDone = false;
 		this.rollingOnlyAddOnDice = false;
-
 
 		if (diceRollDto.type === DiceRollType.BendLuckAdd || diceRollDto.type === DiceRollType.LuckRollHigh) {
 			this.needToRollAddOnDice(diceRollDto, +1);

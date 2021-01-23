@@ -45,7 +45,7 @@ namespace DHDM
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window, IDungeonMasterApp
+	public partial class MainWindow : Window, IDungeonMasterApp, IDiceRoller
 	{
 		PlateManager plateManager;
 		WeatherManager weatherManager;
@@ -177,7 +177,7 @@ namespace DHDM
 
 			showClearViewerDiceButtonTimer = new DispatcherTimer();
 			showClearViewerDiceButtonTimer.Tick += new EventHandler(ShowClearViewerDiceButton);
-			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(8);
+			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(3);
 
 			stateUpdateTimer = new DispatcherTimer();
 			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
@@ -1528,10 +1528,39 @@ namespace DHDM
 			const string dm = "455518839";
 			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm || userId == kent;
 		}
+		void SetDiceColor(string substring, string username)
+		{
+			string colorStr = substring.Trim();
+			if (string.IsNullOrWhiteSpace(colorStr))
+				return;
+			if (!colorStr.StartsWith("#"))
+			{
+				 return;
+			}
+			if (colorStr.Length != 7)
+				return;
+
+			DndViewer viewer = AllViewers.Get(username);
+			viewer.DieBackColor = colorStr;
+			TellViewers($"{username}, your die back color is now {viewer.DieBackColor}.");
+
+		}
+
+		void ExecuteDragonHumpersChatCommand(ChatMessage chatMessage)
+		{
+			if (chatMessage.Message.ToLower().StartsWith("!dc "))
+			{
+				SetDiceColor(chatMessage.Message.Substring(3), chatMessage.Username);
+			}
+		}
 		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
 			if (IsPlayer(e.ChatMessage.UserId))
 				CharacterSaysSomething(e.ChatMessage.Message);
+			if (e.ChatMessage.Message.StartsWith("!"))
+			{
+				ExecuteDragonHumpersChatCommand(e.ChatMessage);
+			}
 		}
 
 		private static bool CharacterSaysSomething(string message)
@@ -4823,9 +4852,8 @@ namespace DHDM
 			});
 		}
 
-		private void UpdateClearDiceButton(DiceGroup diceGroup, Button btnClearDice, Rectangle rectProgressToClear, DateTime clearDiceButtonShowTime, TimeSpan clearDicePauseTime)
+		private void UpdateClearDiceButton(DiceGroup diceGroup, Button btnClearDice, Rectangle rectProgressToClear, DateTime clearDiceButtonShowTime, TimeSpan clearDicePauseTime, double timeToAutoClear)
 		{
-			const double timeToAutoClear = 14000;
 			TimeSpan timeClearButtonHasBeenVisible = (DateTime.Now - clearDiceButtonShowTime) - clearDicePauseTime;
 			if (timeClearButtonHasBeenVisible.TotalMilliseconds > timeToAutoClear)
 			{
@@ -4840,12 +4868,12 @@ namespace DHDM
 
 		void UpdateClearPlayerDiceButton(object sender, EventArgs e)
 		{
-			UpdateClearDiceButton(DiceGroup.Players, btnClearPlayerDice, rectPlayerProgressToClear, clearPlayerDiceButtonShowTime, clearPlayerDicePauseTime);
+			UpdateClearDiceButton(DiceGroup.Players, btnClearPlayerDice, rectPlayerProgressToClear, clearPlayerDiceButtonShowTime, clearPlayerDicePauseTime, 14000);
 		}
 
 		void UpdateClearViewerDiceButton(object sender, EventArgs e)
 		{
-			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime);
+			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime, 3000);
 		}
 
 		bool justClickedTheClearPlayerDiceButton;
@@ -9559,52 +9587,13 @@ namespace DHDM
 
 		// TODO: Delete ExecuteCardCommand
 		
-		List<StreamlootsCard> savedCardsForViewerDieRolls = new List<StreamlootsCard>();
-		void ExecuteCardCommand(string command, CardDto cardDto)
-		{
-			if (command.StartsWith("!RollDie"))
-			{
-				string parameterStr = command.EverythingAfter("(").EverythingBeforeLast(")");  //mkm;
-				string[] parameters = parameterStr.Split(',');
-				if (parameters.Length == 2)
-				{
-					string dieLabel = parameters[1];
-					string dieStr = parameters[0];
-					string[] dieParts = dieStr.Split('d');
-					if (dieParts.Length == 2)
-					{
-						int quantity;
-						int sides;
-						if (int.TryParse(dieParts[0], out quantity))
-							if (int.TryParse(dieParts[1], out sides))
-							{
-								DiceRoll diceRoll = new DiceRoll(DiceRollType.ExtraOnly);
-								DiceDto diceDto = new DiceDto()
-								{
-									PlayerName = cardDto.Card.UserName,
-									CreatureId = int.MinValue,
-									Sides = sides,
-									Quantity = quantity,
-									Label = $"{cardDto.Card.UserName}'s {dieLabel}",
-									Scale = 1.5,
-									BackColor = "#98003c",
-									FontColor = "#ffffff",
-									Data = cardDto.Card.Guid
-								};
-								savedCardsForViewerDieRolls.Add(cardDto.Card);
-								diceRoll.DiceDtos.Add(diceDto);
-								diceRoll.DiceGroup = DiceGroup.Viewers;
-								diceRoll.RollScope = RollScope.Viewer;
-								RollTheDice(diceRoll);
-							}
-					}
-				}
-			}
-		}
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 			string msg = ea.CardDto.Card.message;
+
+			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
+			viewer.CardsPlayed++;
 
 			int characterId = ea.CardDto.CharacterId;
 			if (characterId != int.MinValue)
@@ -9617,7 +9606,7 @@ namespace DHDM
 				string comment = msg.EverythingAfter("//").Trim();
 				if (comment.StartsWith("!"))
 				{
-					ExecuteCardCommand(comment, ea.CardDto);
+					CardCommands.Execute(comment.Substring(1), ea.CardDto, this, viewer);
 				}
 				else
 					TellDungeonMaster(comment);
@@ -9665,6 +9654,11 @@ namespace DHDM
 			if (radioingInternally)
 				return;
 			ShowHidePlayerUI(false);
+		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			AllViewers.Save();
 		}
 
 		// TODO: Reintegrate wand/staff animations....

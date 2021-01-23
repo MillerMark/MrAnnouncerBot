@@ -319,7 +319,11 @@
     <Compile Include="ActionQueue\BreakSpellConcentrationSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\SpellSavingThrowQueueEntry.cs" />
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
+    <Compile Include="AllViewers.cs" />
+    <Compile Include="CardCommands.cs" />
+    <Compile Include="DndViewer.cs" />
     <Compile Include="ExtensionClasses\ColorExtensionMethods.cs" />
+    <Compile Include="IDiceRoller.cs" />
     <Compile Include="LeapMotion\Finger2d.cs" />
     <Compile Include="LeapMotion\FloatingAttachPoint.cs" />
     <Compile Include="LeapMotion\Hand2d.cs" />
@@ -605,6 +609,10 @@
     <ProjectReference Include="..\GoogleHelper\GoogleHelper.csproj">
       <Project>{25115c30-e684-4018-a8c5-f8a39697e080}</Project>
       <Name>GoogleHelper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Imaging\Imaging.csproj">
+      <Project>{A514DE46-AA88-471B-81A8-2C387DC629F7}</Project>
+      <Name>Imaging</Name>
     </ProjectReference>
     <ProjectReference Include="..\Streamloots\Streamloots.csproj">
       <Project>{f7623e7a-2d21-420c-95fb-406d8d7f50cd}</Project>

@@ -806,13 +806,13 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
 
-	attachLabel(die: IDie, label: string, backgroundColor: string, textColor: string): void {
+	attachLabel(die: IDie, label: string, backgroundColor: string, textColor: string, scale = 1): void {
 		label = label.trim();
 		if (label.startsWith('"') && label.endsWith('"'))  // Remove quotes.
 			label = label.substr(1, label.length - 2);
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 540), label);
-		textEffect.fontSize = 30;
-		textEffect.offsetY = 80;
+		textEffect.fontSize = 30 * scale;
+		textEffect.offsetY = 80 * scale;
 		textEffect.fontColor = textColor;
 		textEffect.outlineColor = backgroundColor;
 		die.attachedLabels.push(textEffect);
