@@ -372,8 +372,8 @@
 		this.lastY = this.y;
 	}
 
-	protected easePoint: EasePoint;
-	protected easeRotation: EaseValue;
+	easePoint: EasePoint;
+	easeRotation: EaseValue;
 
 	ease(startTime: number, fromX: number, fromY: number, toX: number, toY: number, timeSpanMs: number) {
 		this.easePoint = new EasePoint(startTime, startTime + timeSpanMs);

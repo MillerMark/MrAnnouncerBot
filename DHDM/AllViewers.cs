@@ -11,6 +11,11 @@ namespace DHDM
 		static AllViewers()
 		{
 			GoogleSheets.RegisterSpreadsheetID("D&D Viewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
+			LoadViewers();
+		}
+
+		private static void LoadViewers()
+		{
 			KnownViewers = GoogleSheets.Get<DndViewer>();
 			foreach (DndViewer dndViewer in KnownViewers)
 				dndViewer.IsDirty = false;
@@ -29,6 +34,10 @@ namespace DHDM
 				KnownViewers.Add(foundUser);
 			}
 			return foundUser;
+		}
+		public static void Invalidate()
+		{
+			LoadViewers();
 		}
 	}
 }

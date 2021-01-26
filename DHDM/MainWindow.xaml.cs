@@ -177,7 +177,7 @@ namespace DHDM
 
 			showClearViewerDiceButtonTimer = new DispatcherTimer();
 			showClearViewerDiceButtonTimer.Tick += new EventHandler(ShowClearViewerDiceButton);
-			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(3);
+			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(6);
 
 			stateUpdateTimer = new DispatcherTimer();
 			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
@@ -1522,37 +1522,60 @@ namespace DHDM
 			const string karen = "240735151";
 			const string mark = "270998178";
 			const string lara = "496519211";
+			const string maddy = "641091111";
 			const string zephyr = "238257153";
 			const string brendan = "491566796";
 			const string kent = "276243218";
 			const string dm = "455518839";
-			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm || userId == kent;
+			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm || userId == kent || userId == maddy;
 		}
+
 		void SetDiceColor(string substring, string username)
 		{
 			string colorStr = substring.Trim();
 			if (string.IsNullOrWhiteSpace(colorStr))
 				return;
+
 			if (!colorStr.StartsWith("#"))
-			{
-				 return;
-			}
+				return;
+
 			if (colorStr.Length != 7)
 				return;
 
 			DndViewer viewer = AllViewers.Get(username);
 			viewer.DieBackColor = colorStr;
 			TellViewers($"{username}, your die back color is now {viewer.DieBackColor}.");
+		}
 
+		void SetDiceTrailingEffects(string effectName, string username)
+		{
+			DndViewer viewer = AllViewers.Get(username);
+			TrailingEffect foundEffect = AllTrailingEffects.GetSoft(effectName);
+			if (foundEffect == null)
+			{
+				TellViewers($"{username}, could not find an effect starting with \"{effectName}\". Please select one of: {AllTrailingEffects.GetList(", ")}");
+				return;
+			}
+			viewer.TrailingEffects = foundEffect.Name;
+			
+			TellViewers($"{username}, your dice trailing effect is now {viewer.TrailingEffects}.");
 		}
 
 		void ExecuteDragonHumpersChatCommand(ChatMessage chatMessage)
 		{
-			if (chatMessage.Message.ToLower().StartsWith("!dc "))
-			{
-				SetDiceColor(chatMessage.Message.Substring(3), chatMessage.Username);
-			}
+			string message = chatMessage.Message;
+			string lowerMessage = message.ToLower();
+
+			if (lowerMessage.StartsWith("!dc ") && lowerMessage.Length > 3)
+				SetDiceColor(message.Substring(3), chatMessage.Username);
+			else if (lowerMessage.StartsWith("!te ") && lowerMessage.Length > 3)
+				SetDiceTrailingEffects(message.Substring(3).Trim(), chatMessage.Username);
+			else if (lowerMessage == "!te" || lowerMessage == "!te ")
+				TellViewers("Use the !te command to set trailing effects for custom die rolls (triggered by playing cards from streamloots.com/DragonHumpers ). Choose from: " + AllTrailingEffects.GetList(", "));
+			else if (lowerMessage == "!dc" || lowerMessage == "!dc ")
+				TellViewers("Use the !dc command followed by an HTML color string to set your custom die roll color (triggered by playing cards from streamloots.com/DragonHumpers ). Example: !dc #690096");
 		}
+
 		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
 			if (IsPlayer(e.ChatMessage.UserId))
@@ -4873,7 +4896,7 @@ namespace DHDM
 
 		void UpdateClearViewerDiceButton(object sender, EventArgs e)
 		{
-			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime, 3000);
+			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime, 3500);
 		}
 
 		bool justClickedTheClearPlayerDiceButton;
@@ -5645,7 +5668,7 @@ namespace DHDM
 		{
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
-
+			AllViewers.Invalidate();
 			AllInGameCreatures.Invalidate();
 			AllWeaponEffects.Invalidate();
 			AllMagicItems.Invalidate();
@@ -9589,10 +9612,12 @@ namespace DHDM
 		
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
+			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
+			ea.CardDto.Card.FillColor = viewer.DieBackColor;
+			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 			string msg = ea.CardDto.Card.message;
 
-			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
 			viewer.CardsPlayed++;
 
 			int characterId = ea.CardDto.CharacterId;
@@ -9605,9 +9630,7 @@ namespace DHDM
 				string onlyToViewers = msg.EverythingBefore("//").Trim();
 				string comment = msg.EverythingAfter("//").Trim();
 				if (comment.StartsWith("!"))
-				{
 					CardCommands.Execute(comment.Substring(1), ea.CardDto, this, viewer);
-				}
 				else
 					TellDungeonMaster(comment);
 				TellViewers(onlyToViewers);

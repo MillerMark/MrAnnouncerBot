@@ -41,7 +41,21 @@ namespace DndCore
 		{
 			return TrailingEffects.FirstOrDefault(x => x.Name == effectName);
 		}
-		
+
+		public static TrailingEffect GetSoft(string effectName)
+		{
+			if (string.IsNullOrWhiteSpace(effectName))
+				return null;
+
+			effectName = effectName.Trim();
+
+			TrailingEffect trailingEffect = TrailingEffects.FirstOrDefault(x => string.Compare(x.Name, effectName, true) == 0);
+			string lowerEffectName = effectName.ToLower();
+			if (trailingEffect == null)
+				trailingEffect = TrailingEffects.FirstOrDefault(x => x.Name.ToLower().StartsWith(lowerEffectName));
+			return trailingEffect;
+		}
+
 		public static string GetList(string separator)
 		{
 			return string.Join(separator, TrailingEffects.Select(x => x.Name).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray());

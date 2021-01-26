@@ -817,6 +817,8 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	}
 
 	getPlayerIndexFromName(playerName: string): number {
+		if (!playerName)
+			return -1;
 		const lowerName: string = playerName.toLowerCase().trim();
 		for (let i = 0; i < this.players.length; i++) {
 			const player: Character = this.players[i];

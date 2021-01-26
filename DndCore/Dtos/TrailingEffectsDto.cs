@@ -30,8 +30,8 @@ namespace DndCore
 		public string FlipHalfTime { get; set; }
 		public string LeftRightDistanceBetweenPrints { get; set; }
 		public string MinForwardDistanceBetweenPrints { get; set; }
-		public string MedianSoundInterval { get; set; }
-		public string PlusMinusSoundInterval { get; set; }
+		//public string MedianSoundInterval { get; set; }
+		//public string PlusMinusSoundInterval { get; set; }
 		public string OnPrintPlaySound { get; set; }
 		public TrailingEffectsDto()
 		{

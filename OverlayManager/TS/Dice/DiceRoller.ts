@@ -172,7 +172,7 @@ const diceSounds = new DiceSounds('GameDev/Assets/DragonH/SoundEffects');
 
 class DieRoller {
 	constructor(private groupName: string) {
-		
+
 	}
 	//const showDieValues = false;
 	diceRollData: DiceRollData;
@@ -2002,7 +2002,12 @@ class DieRoller {
 				diceLayer.showRollModifier(this.diceRollData.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
 			if (skillSavingModifier !== 0)
 				diceLayer.showRollModifier(skillSavingModifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
-			diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages);
+			if (this.diceRollData.dieTotalMessage) {
+				const centerDice: Vector = this.getCenterDicePosition();
+				diceLayer.showDieTotalMessage(this.diceRollData.totalRoll, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor);
+			}
+			else
+				diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages);
 		}
 
 		if (this.totalBonus > 0 && !this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.SkillCheck) {
@@ -2044,6 +2049,26 @@ class DieRoller {
 
 			this.playAnnouncerCommentary(this.diceRollData.type, d20RollTotal, rollResults.toHitModifier, this.totalDamagePlusModifier, maxDamage, this.diceRollData.damageType, rollResults.damageSummary); return maxDamage;
 		}
+	}
+
+	getCenterDicePosition(): Vector {
+		let x: number = undefined;
+		let y: number = undefined;
+		this.dice.forEach((die: IDie) => {
+			const diePos: Vector = this.getScreenCoordinates(die);
+			if (x === undefined) {
+				x = diePos.x;
+				y = diePos.y;
+			}
+			else {
+				x += diePos.x;
+				y += diePos.y;
+			}
+		});
+		if (x === undefined) {
+			return new Vector(960, 540);
+		}
+		return new Vector(x / this.dice.length, y / this.dice.length);
 	}
 
 	playFinalRollSoundEffects() {
@@ -3112,10 +3137,43 @@ class DieRoller {
 
 			if (this.positionTrailingSprite(die, trailingEffect, j)) {
 				if (trailingEffect.OnPrintPlaySound) {
-					if (trailingEffect.intervalBetweenSounds === 0)
-						trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
-					if (diceSounds.safePlayMp3(trailingEffect.OnPrintPlaySound, trailingEffect.intervalBetweenSounds)) {
-						trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+					const parts: string[] = trailingEffect.OnPrintPlaySound.split(';');
+					for (let i = 0; i < parts.length; i++) {
+						const part: string = parts[i].trim();
+						let soundFileName: string = part;
+						const parenPos: number = part.indexOf('(');
+						let intervalBetweenSounds = 0;
+						if (parenPos > 0) {
+							soundFileName = part.substring(0, parenPos);
+							if (trailingEffect.intervalBetweenSounds.has(soundFileName))
+								intervalBetweenSounds = trailingEffect.intervalBetweenSounds.get(soundFileName);
+
+							if (intervalBetweenSounds === 0)
+							{
+								let parameters: string = part.substring(parenPos + 1).trim();
+								if (parameters.endsWith(')'))
+									parameters = parameters.substring(0, parameters.length - 1);
+
+								const params: string[] = parameters.split(',');
+								if (params.length !== 2)
+									break;
+								const medianSoundInterval: number = +params[0];
+								//console.log('medianSoundInterval: ' + medianSoundInterval);
+								const plusMinusSoundInterval: number = +params[1];
+								//console.log('plusMinusSoundInterval: ' + plusMinusSoundInterval);
+								intervalBetweenSounds = medianSoundInterval + Random.plusMinus(plusMinusSoundInterval);
+								trailingEffect.intervalBetweenSounds.set(soundFileName, intervalBetweenSounds);
+							}
+						}
+						//console.log('soundFileName: ' + soundFileName);
+						//console.log('intervalBetweenSounds: ' + intervalBetweenSounds);
+						if (diceSounds.safePlayMp3(soundFileName, intervalBetweenSounds))
+							trailingEffect.intervalBetweenSounds.set(soundFileName, 0);
+						//if (trailingEffect.intervalBetweenSounds === 0)
+						//	trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
+
+						//if (diceSounds.safePlayMp3(trailingEffect.OnPrintPlaySound, trailingEffect.intervalBetweenSounds)) {
+						//	trailingEffect.intervalBetweenSounds = trailingEffect.MedianSoundInterval + Random.plusMinus(trailingEffect.PlusMinusSoundInterval);
 					}
 				}
 			}

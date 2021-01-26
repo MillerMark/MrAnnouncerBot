@@ -33,5 +33,7 @@ namespace Streamloots
 		}
 
 		public StreamlootsCardData data { get; set; }
+		public string FillColor { get; set; }
+		public string OutlineColor { get; set; }
 	}
 }

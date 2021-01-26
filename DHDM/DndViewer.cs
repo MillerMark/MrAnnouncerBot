@@ -12,6 +12,7 @@ namespace DHDM
 	{
 		string dieBackColor = "#ffffff";
 		string charges;
+		string trailingEffects;
 		int cardsPlayed;
 		string userName;
 
@@ -57,6 +58,19 @@ namespace DHDM
 			}
 		}
 
+		[Column]
+		public string TrailingEffects  // A semicolon-separated list of trailing effects behind the player's die. See the TrailingEffects tab of the DnD spreadsheet for a complete list....
+		{
+			get => trailingEffects;
+			set
+			{
+				if (trailingEffects == value)
+					return;
+				trailingEffects = value;
+				OnPropertyChanged();
+			}
+		}
+
 		string dieTextColor;
 		public string DieTextColor
 		{
@@ -91,7 +105,7 @@ namespace DHDM
 			}
 		}
 
-		private const double MinCardsPlayedToHaveTopReputation = 25;
+		private const double MinCardsPlayedToHaveTopReputation = 100;
 
 		/// <summary>
 		/// Returns a number between 0 and 1, based on number of cards played.

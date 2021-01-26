@@ -14,6 +14,9 @@ namespace DndCore
 		public List<DiceDto> DiceDtos { get; set; } = new List<DiceDto>();
 
 		public string SpellName { get; set; }
+		public string DieTotalMessage { get; set; }
+		public string TextOutlineColor { get; set; }
+		public string TextFillColor { get; set; }
 		public int NumHalos { get; set; }
 		public string OnFirstContactSound { get; set; }
 		public string OnRollSound { get; set; }

@@ -60,10 +60,7 @@ class TrailingEffect {
 		this.LeftRightDistanceBetweenPrints = dto.LeftRightDistanceBetweenPrints;
 		this.Index = dto.Index;
 		this.OnPrintPlaySound = dto.OnPrintPlaySound;
-		this.MedianSoundInterval = dto.MedianSoundInterval;
-		this.PlusMinusSoundInterval = dto.PlusMinusSoundInterval;
 		this.NumRandomSounds = dto.NumRandomSounds;
-		this.intervalBetweenSounds = 0;
 
 		this.Name = dto.Name;
 		this.EffectType = dto.EffectType;
@@ -90,15 +87,14 @@ class TrailingEffect {
 		this.FlipHalfTime = dto.FlipHalfTime;
 	}
 
-	intervalBetweenSounds: number;
+
+	intervalBetweenSounds: Map<string, number> = new Map<string, number>();
 	NumRandomSounds: number;
 	MinForwardDistanceBetweenPrints: number;
 	LeftRightDistanceBetweenPrints: number;
 	Index: number;
 	OnPrintPlaySound: string;
-	MedianSoundInterval: number;
-	PlusMinusSoundInterval: number;
-
+	
 	Name: string;
 	EffectType: string;
 	OnThrowSound: string;
@@ -683,7 +679,7 @@ class DiceLayer {
 		this.allBackLayerEffects.add(this.spirals);
 
 		this.fangs = new Sprites("/Dice/Fang/Fang", 79, fps30, AnimationStyle.Loop, true);
-		this.fangs.name = 'Fang';
+		this.fangs.name = 'Fangs';
 		this.fangs.originX = 87;
 		this.fangs.originY = 61;
 		this.allBackLayerEffects.add(this.fangs);
@@ -1407,6 +1403,41 @@ class DiceLayer {
 		textEffect.fadeOutTime = 800;
 		textEffect.fadeInTime = 200;
 	}
+
+	showDieTotalMessage(totalRoll: number, dieTotalMessage: string, centerPos: Vector, fillColor: string, outlineColor: string) {
+		const deltaX: number = 960 - centerPos.x;
+		const deltaY: number = 540 - centerPos.y;
+		const thrustX: number = deltaX * 0.0006;
+		const thrustY: number = deltaY * 0.0006;
+		const numberTextEffect: TextEffect = this.animations.addText(centerPos, totalRoll.toString(), this.totalRollScoreTime);
+		numberTextEffect.fontColor = fillColor;
+		numberTextEffect.outlineColor = outlineColor;
+		numberTextEffect.elasticIn = true;
+		numberTextEffect.scale = 3;
+		numberTextEffect.opacity = 0.90;
+		numberTextEffect.targetScale = 8;
+		numberTextEffect.fadeOutTime = 800;
+		numberTextEffect.fadeInTime = 200;
+		numberTextEffect.horizontalThrust = thrustX;
+		numberTextEffect.verticalThrust = thrustY;
+
+		const labelOffset = 80;
+		const labelCenter: Vector = new Vector(centerPos.x, centerPos.y + labelOffset);
+		const labelTextEffect: TextEffect = this.animations.addText(labelCenter, dieTotalMessage, this.totalRollScoreTime);
+		labelTextEffect.fontColor = fillColor;
+		labelTextEffect.outlineColor = outlineColor;
+		labelTextEffect.elasticIn = true;
+		labelTextEffect.scale = 0.5;
+		labelTextEffect.opacity = 0.90;
+		labelTextEffect.targetScale = 2;
+		labelTextEffect.fadeOutTime = 800;
+		labelTextEffect.fadeInTime = 200;
+		labelTextEffect.horizontalThrust = thrustX;
+		labelTextEffect.verticalThrust = thrustY;
+
+
+	}
+
 
 	private setTextColorToPlayer(textEffect: TextEffect, playerID = -1) {
 		if (playerID === -1)
@@ -2374,7 +2405,7 @@ class DiceLayer {
 		const dto = JSON.parse(diceRollData);
 		const diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
-		console.log('getDiceRollData: diceRoll.type = ' + diceRoll.type);
+		//console.log('getDiceRollData: diceRoll.type = ' + diceRoll.type);
 		diceRoll.diceGroup = dto.DiceGroup;
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
@@ -2388,6 +2419,9 @@ class DiceLayer {
 		diceRoll.onThrowSound = dto.OnThrowSound;
 		diceRoll.throwPower = dto.ThrowPower;
 		diceRoll.onFirstContactSound = dto.OnFirstContactSound;
+		diceRoll.dieTotalMessage = dto.DieTotalMessage;
+		diceRoll.textOutlineColor = dto.TextOutlineColor;
+		diceRoll.textFillColor = dto.TextFillColor;
 		diceRoll.onFirstContactEffect = dto.OnFirstContactEffect;
 		diceRoll.onRollSound = dto.OnRollSound;
 		diceRoll.minCrit = dto.MinCrit;
@@ -2719,6 +2753,9 @@ class DiceRollData {
 	playerRollOptions: Array<PlayerRollOptions> = new Array<PlayerRollOptions>();
 	bonusRolls: Array<BonusRoll> = null;
 	onFirstContactSound: string;
+	dieTotalMessage: string;
+	textOutlineColor: string;
+	textFillColor: string;
 	critSuccessMessage: string;
 	successMessage: string;
 	critFailMessage: string;
