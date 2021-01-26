@@ -55,7 +55,9 @@ namespace MrAnnouncerBot
 			LoadPersistentData();
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
-			new BotCommand("+", HandleLevelUp);
+            new BotCommand("help", HandleQuestionCommand);
+            new BotCommand("commands", HandleQuestionCommand);
+            new BotCommand("+", HandleLevelUp);
 			new BotCommand("github", HandleGitHubCommand);
 			new BotCommand("vscode", HandleVsCodeCommand);
 			new BotCommand("suppressFanfare", HandleSuppressFanfareCommand);
