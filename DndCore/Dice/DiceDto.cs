@@ -12,9 +12,8 @@ namespace DndCore
 		public double Modifier { get; set; }
 		public double Scale { get; set; } = 1;
 		public string Label { get; set; }
-		public string Data { get; set; }  // Any string sent down through this property will return when the roll is complete in PlayerRoll.data property.
+		public string Data { get; set; }  // Any string sent down through this property will return when the roll is complete in multiplayerSummary's PlayerRoll.data property.
 		public string PlayerName { get; set; }
-
 		public VantageKind Vantage { get; set; } = VantageKind.Normal;
 		public DamageType DamageType { get; set; } = DamageType.None;
 		public DieCountsAs DieCountsAs { get; set; } = DieCountsAs.totalScore;

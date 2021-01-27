@@ -7,6 +7,7 @@ namespace Streamloots
 {
 	public class CardDto
 	{
+		public string CardID { get; set; }
 		public StreamlootsPurchase Purchase { get; set; }
 		public StreamlootsCard Card { get; set; }
 		public int CharacterId { get; set; }
@@ -27,12 +28,15 @@ namespace Streamloots
 
 		public CardDto(StreamlootsCard card)
 		{
+			CardID = Guid.NewGuid().ToString();
 			Card = card;
 			CharacterId = GetCreatureId(card.Target);
 			Command = "ShowCard";
 		}
+
 		public CardDto(StreamlootsPurchase purchase)
 		{
+			CardID = Guid.NewGuid().ToString();
 			Purchase = purchase;
 			Command = "ShowPurchase";
 		}

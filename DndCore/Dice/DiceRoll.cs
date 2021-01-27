@@ -13,6 +13,7 @@ namespace DndCore
 		public string OnFirstContactEffect { get; set; }
 		public List<DiceDto> DiceDtos { get; set; } = new List<DiceDto>();
 
+		public string RollID { get; set; }
 		public string SpellName { get; set; }
 		public string DieTotalMessage { get; set; }
 		public string TextOutlineColor { get; set; }

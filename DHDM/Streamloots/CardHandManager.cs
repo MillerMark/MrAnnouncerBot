@@ -59,6 +59,7 @@ namespace DHDM
 				return player.hueShift;
 			}
 		}
+
 		public void AddCard(int creatureId, StreamlootsCard card)
 		{
 			if (!Hands.TryGetValue(creatureId, out StreamlootsHand existingHand))

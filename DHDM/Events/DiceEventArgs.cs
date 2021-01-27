@@ -26,6 +26,7 @@ namespace DHDM
 				}
 				catch (Exception ex)
 				{
+					System.Diagnostics.Debugger.Break();
 					Console.WriteLine(ex.Message);
 				}
 			DiceData = diceData;

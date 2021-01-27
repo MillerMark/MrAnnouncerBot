@@ -144,6 +144,7 @@ namespace DHDM
 
 		private void InitializeGame()
 		{
+			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
 			plateManager = new PlateManager(obsWebsocket);
 			game = new DndGame();
@@ -9374,11 +9375,19 @@ namespace DHDM
 			UpdateInGameCreatures();
 		}
 
-		public void ClearDice()
+		public void ClearPlayerDice()
 		{
 			SafeInvoke(() =>
 			{
 				ClearTheDice(DiceGroup.Players);
+			});
+		}
+
+		public void ClearViewerDice()
+		{
+			SafeInvoke(() =>
+			{
+				ClearTheDice(DiceGroup.Viewers);
 			});
 		}
 
@@ -9622,17 +9631,17 @@ namespace DHDM
 
 			int characterId = ea.CardDto.CharacterId;
 			if (characterId != int.MinValue)
-			{
 				cardHandManager.AddCard(characterId, ea.CardDto.Card);
-			}
+
 			if (msg.IndexOf("//") >= 0)
 			{
 				string onlyToViewers = msg.EverythingBefore("//").Trim();
 				string comment = msg.EverythingAfter("//").Trim();
 				if (comment.StartsWith("!"))
-					CardCommands.Execute(comment.Substring(1), ea.CardDto, this, viewer);
+					CardCommands.Execute(comment.Substring(1), ea.CardDto, viewer);
 				else
 					TellDungeonMaster(comment);
+
 				TellViewers(onlyToViewers);
 			}
 			else

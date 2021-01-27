@@ -113,6 +113,7 @@ interface IDie {
 	getUpsideValue();
 	name: string;
 	topNumber: number;
+	scale: number;
 	sparks: Array<SpriteProxy>;
 	attachedDamage: boolean;
 	damageStr: string;
@@ -125,7 +126,7 @@ interface IDie {
 	kind: VantageKind;
 	attachedSprites: Array<SpriteProxy>;
 	attachedLabels: Array<TextEffect>;
-	group: DiceGroup
+	group: DiceGroup;
 	origins: Array<Vector>;
 	lastPos: Array<Vector>;
 	isLucky: boolean;
@@ -541,26 +542,26 @@ class DieRoller {
 					if (playerEdgeRolls[playerId] <= topNumber) {
 						this.removeNonVantageDieNow(otherPlayersDie[playerId]);
 						const centerPos: Vector = this.getScreenCoordinates(otherPlayersDie[playerId]);
-						diceLayer.addAdvantageText(centerPos, vantageTextDelay);
+						diceLayer.addAdvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 						playerEdgeRolls[playerId] = topNumber;
 					}
 					else {
 						this.removeNonVantageDieNow(die);
 						const centerPos: Vector = this.getScreenCoordinates(die);
-						diceLayer.addAdvantageText(centerPos, vantageTextDelay);
+						diceLayer.addAdvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 					}
 				}
 				else if (die.kind === VantageKind.Disadvantage) {
 					if (playerEdgeRolls[playerId] >= topNumber) {
 						this.removeNonVantageDieNow(otherPlayersDie[playerId]);
 						const centerPos: Vector = this.getScreenCoordinates(otherPlayersDie[playerId]);
-						diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
+						diceLayer.addDisadvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 						playerEdgeRolls[playerId] = topNumber;
 					}
 					else {
 						this.removeNonVantageDieNow(die);
 						const centerPos: Vector = this.getScreenCoordinates(die);
-						diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
+						diceLayer.addDisadvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 					}
 				}
 				otherPlayersDie[playerId] = die;
@@ -568,15 +569,15 @@ class DieRoller {
 		}
 	}
 
-	flameOn(die: IDie) {
+	flameOn(die: IDie, scale = 1) {
 		const dieObject = die.getObject();
 
 		const screenPos: Vector = this.getScreenCoordinates(dieObject);
 		if (!screenPos)
 			return;
 
-		diceLayer.addFireball(screenPos.x, screenPos.y);
-		diceLayer.attachDamageFire(die, diceLayer.getHueShift(die.playerID) - 15);
+		diceLayer.addFireball(screenPos.x, screenPos.y, scale);
+		diceLayer.attachDamageFire(die, scale, diceLayer.getHueShift(die.playerID) - 15);
 		diceSounds.playFireball();
 	}
 
@@ -591,13 +592,14 @@ class DieRoller {
 		let interval = 200;
 		const timeBetweenDieRemoval = 300;
 		const intervalVariance = 100;
+		const dieScale: number = this.getDieScale();
 		for (let i = 0; i < this.dice.length; i++) {
 			const die: IDie = this.dice[i];
 
 			const topNumber = die.getTopNumber();
 
 			if (topNumber === 1) {
-				this.flameOn(die);
+				this.flameOn(die, dieScale);
 			}
 			else {
 				//handRemoveDie(die, interval);
@@ -648,13 +650,13 @@ class DieRoller {
 						if (edgeRollValue <= topNumber) {
 							this.removeNonVantageDieNow(otherDie);
 							const centerPos: Vector = this.getScreenCoordinates(otherDie);
-							diceLayer.addAdvantageText(centerPos, vantageTextDelay);
+							diceLayer.addAdvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 							edgeRollValue = topNumber;
 						}
 						else {  // Disadvantage
 							this.removeNonVantageDieNow(die);
 							const centerPos: Vector = this.getScreenCoordinates(die);
-							diceLayer.addAdvantageText(centerPos, vantageTextDelay);
+							diceLayer.addAdvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 						}
 					}
 					else if (die.kind === VantageKind.Disadvantage) {
@@ -663,7 +665,7 @@ class DieRoller {
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
 							const centerPos: Vector = this.getScreenCoordinates(otherDie);
-							diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
+							diceLayer.addDisadvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 							//}
 							edgeRollValue = topNumber;
 						}
@@ -672,7 +674,7 @@ class DieRoller {
 							//if (!localDiceRollData.showedVantageMessage) {
 							//	localDiceRollData.showedVantageMessage = true;
 							const centerPos: Vector = this.getScreenCoordinates(die);
-							diceLayer.addDisadvantageText(centerPos, vantageTextDelay);
+							diceLayer.addDisadvantageText(centerPos, vantageTextDelay, false, this.diceRollData.diceGroup);
 							//}
 						}
 					}
@@ -700,7 +702,7 @@ class DieRoller {
 							//	localDiceRollData.showedVantageMessage = true;
 							if (!otherDie.isLucky) {
 								const centerPos: Vector = this.getScreenCoordinates(otherDie);
-								diceLayer.addAdvantageText(centerPos, vantageTextDelay, true);
+								diceLayer.addAdvantageText(centerPos, vantageTextDelay, true, this.diceRollData.diceGroup);
 							}
 							//}
 							edgeRollValue = topNumber;
@@ -711,7 +713,7 @@ class DieRoller {
 							//	localDiceRollData.showedVantageMessage = true;
 							if (!die.isLucky) {
 								const centerPos: Vector = this.getScreenCoordinates(die);
-								diceLayer.addAdvantageText(centerPos, vantageTextDelay, true);
+								diceLayer.addAdvantageText(centerPos, vantageTextDelay, true, this.diceRollData.diceGroup);
 							}
 							//}
 						}
@@ -723,7 +725,7 @@ class DieRoller {
 							//	localDiceRollData.showedVantageMessage = true;
 							if (!otherDie.isLucky) {
 								const centerPos: Vector = this.getScreenCoordinates(otherDie);
-								diceLayer.addDisadvantageText(centerPos, vantageTextDelay, true);
+								diceLayer.addDisadvantageText(centerPos, vantageTextDelay, true, this.diceRollData.diceGroup);
 							}
 							//}
 							edgeRollValue = topNumber;
@@ -734,7 +736,7 @@ class DieRoller {
 							//	localDiceRollData.showedVantageMessage = true;
 							if (!die.isLucky) {
 								const centerPos: Vector = this.getScreenCoordinates(die);
-								diceLayer.addDisadvantageText(centerPos, vantageTextDelay, true);
+								diceLayer.addDisadvantageText(centerPos, vantageTextDelay, true, this.diceRollData.diceGroup);
 							}
 							//}
 						}
@@ -759,65 +761,69 @@ class DieRoller {
 		*/
 
 		let changedMessage = false;
-
 		if (this.diceRollData.type === DiceRollType.ChaosBolt) {
-			for (let i = 0; i < this.dice.length; i++) {
-				const die: IDie = this.dice[i];
-				if (die.rollType === DieCountsAs.damage && die.attachedDamage !== true && die.values === 8) {
-					const topNumber = die.getTopNumber();
-					let message = '';
-					switch (topNumber) {
-						case 1:
-							message = 'Acid';
-							diceLayer.attachDamageAcid(die);
-							break;
-						case 2:
-							message = 'Cold';
-							diceLayer.attachDamageCold(die);
-							break;
-						case 3:
-							message = 'Fire';
-							diceLayer.attachDamageFire(die);
-							break;
-						case 4:
-							message = 'Force';
-							diceLayer.attachDamageForce(die);
-							break;
-						case 5:
-							message = 'Lightning';
-							diceLayer.attachDamageLightning(die);
-							break;
-						case 6:
-							message = 'Poison';
-							diceLayer.attachDamagePoison(die);
-							break;
-						case 7:
-							message = 'Psychic';
-							diceLayer.attachDamagePsychic(die);
-							break;
-						case 8:
-							message = 'Thunder';
-							diceLayer.attachDamageThunder(die);
-							break;
-					}
-					if (message) {
-						if (this.additionalDieRollMessage)
-							this.additionalDieRollMessage += ', ';
-						else
-							this.additionalDieRollMessage = '(';
-						changedMessage = true;
-						this.additionalDieRollMessage += message;
-						const centerPos: Vector = this.getScreenCoordinates(die);
-						diceLayer.addDieTextAfter(centerPos, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000);
-					}
-				}
-			}
-			if (this.additionalDieRollMessage && changedMessage)
-				this.additionalDieRollMessage += ')';
+			changedMessage = this.showChaosBoltLabels(changedMessage);
 		}
 	}
 
 	static readonly bubbleId: string = 'bubble';
+
+	private showChaosBoltLabels(changedMessage: boolean) {
+		for (let i = 0; i < this.dice.length; i++) {
+			const die: IDie = this.dice[i];
+			if (die.rollType === DieCountsAs.damage && die.attachedDamage !== true && die.values === 8) {
+				const topNumber = die.getTopNumber();
+				let message = '';
+				switch (topNumber) {
+					case 1:
+						message = 'Acid';
+						diceLayer.attachDamageAcid(die);
+						break;
+					case 2:
+						message = 'Cold';
+						diceLayer.attachDamageCold(die);
+						break;
+					case 3:
+						message = 'Fire';
+						diceLayer.attachDamageFire(die);
+						break;
+					case 4:
+						message = 'Force';
+						diceLayer.attachDamageForce(die);
+						break;
+					case 5:
+						message = 'Lightning';
+						diceLayer.attachDamageLightning(die);
+						break;
+					case 6:
+						message = 'Poison';
+						diceLayer.attachDamagePoison(die);
+						break;
+					case 7:
+						message = 'Psychic';
+						diceLayer.attachDamagePsychic(die);
+						break;
+					case 8:
+						message = 'Thunder';
+						diceLayer.attachDamageThunder(die);
+						break;
+				}
+				if (message) {
+					if (this.additionalDieRollMessage)
+						this.additionalDieRollMessage += ', ';
+					else
+						this.additionalDieRollMessage = '(';
+					changedMessage = true;
+					this.additionalDieRollMessage += message;
+					const centerPos: Vector = this.getScreenCoordinates(die);
+					diceLayer.addDieTextAfter(centerPos, message, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, 900, 7000, 1, this.diceRollData.diceGroup);
+				}
+			}
+		}
+		if (this.additionalDieRollMessage && changedMessage)
+			this.additionalDieRollMessage += ')';
+		return changedMessage;
+	}
 
 	markBubble(sprite: SpriteProxy) {
 		if (!(sprite.data instanceof DieSpriteData))
@@ -971,7 +977,7 @@ class DieRoller {
 		}
 
 		const centerPos: Vector = this.getScreenCoordinates(die);
-		diceLayer.addDieTextAfter(centerPos, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust);
+		diceLayer.addDieTextAfter(centerPos, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust, this.diceRollData.diceGroup);
 	}
 
 	getRollResults(tallyResults: boolean): RollResults {
@@ -1239,7 +1245,7 @@ class DieRoller {
 						this.removeDie(die, 0, DieEffect.HandGrab);
 						const greatWeaponFightingTextDelay = 900;
 						const centerPos: Vector = this.getScreenCoordinates(die);
-						diceLayer.addDieTextAfter(centerPos, 'Great Weapon Fighting', diceLayer.activePlayerDieColor, diceLayer.activePlayerDieColor, greatWeaponFightingTextDelay);
+						diceLayer.addDieTextAfter(centerPos, 'Great Weapon Fighting', diceLayer.activePlayerDieColor, diceLayer.activePlayerDieColor, greatWeaponFightingTextDelay, 1500, 1, this.diceRollData.diceGroup);
 						die.inPlay = false;
 						this.removeDieEffectsForSingleDie(die);
 					}
@@ -1535,18 +1541,20 @@ class DieRoller {
 		const yVelocityModifier: number = Math.random() * 10 * throwPower;
 		let zVelocityMultiplier = 1;
 
+		const dieScale: number = DieRoller.dieScale * die.scale;
+
 		if (diceGroup === DiceGroup.Viewers) {
 			xPositionModifier = 40; // throw from the right.
-			dieObject.position.y = 10 + index * DieRoller.dieScale;
-			dieObject.position.z = 9;
+			dieObject.position.y = 10 + index * dieScale;
+			dieObject.position.z = 9 + index * dieScale;
 			zVelocityMultiplier = -0.1;
 		}
 		else {  // Players
-			dieObject.position.y = 4 + Math.floor(index / 3) * DieRoller.dieScale;
-			dieObject.position.z = -13 + (index % 3) * DieRoller.dieScale;
+			dieObject.position.y = 4 + Math.floor(index / 3) * dieScale;
+			dieObject.position.z = -13 + (index % 3) * dieScale;
 		}
 
-		dieObject.position.x = xPositionModifier + -15 - (index % 3) * DieRoller.dieScale;
+		dieObject.position.x = xPositionModifier + -15 - (index % 3) * dieScale;
 
 		dieObject.quaternion.x = (Math.random() * 180 - 90) * Math.PI / 180;
 		dieObject.quaternion.z = (Math.random() * 180 - 90) * Math.PI / 180;
@@ -1591,7 +1599,7 @@ class DieRoller {
 
 	attachLabel(die: IDie, textColor: string, backgroundColor: string) {
 		if (die.dieType && die.dieType.startsWith('"')) {
-			diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor);
+			diceLayer.attachLabel(die, die.dieType, textColor, backgroundColor, 1, this.diceRollData.diceGroup);
 		}
 	}
 
@@ -1604,9 +1612,9 @@ class DieRoller {
 		const allDice: IDie[] = [];
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 		const dieScale: number = DieRoller.dieScale * scale;
-		console.log('scale: ' + scale);
-		console.log('DieRoller.dieScale: ' + DieRoller.dieScale);
-		console.log('dieScale: ' + dieScale);
+		//console.log('scale: ' + scale);
+		//console.log('DieRoller.dieScale: ' + DieRoller.dieScale);
+		//console.log('dieScale: ' + dieScale);
 		for (let i = 0; i < quantity; i++) {
 			let die: IDie = null;
 			switch (numSides) {
@@ -1644,6 +1652,7 @@ class DieRoller {
 					die.isD20 = true;
 					break;
 			}
+			die.scale = scale;
 			allDice.push(die);
 			if (die === null) {
 				throw new Error(`Die with ${numSides} sides was not found. Unable to throw dice.`);
@@ -1731,7 +1740,7 @@ class DieRoller {
 				die.origins.push(diceLayer.inspirationSmoke.getOrigin());
 			}
 			if (isMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, die.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 				die.origins.push(diceLayer.magicRingRed.getOrigin());
 			}
 		}
@@ -1944,7 +1953,7 @@ class DieRoller {
 		return num % 2;
 	}
 
-	showSuccessFailMessages(title: string, rawD20RollValue: number) {
+	showSuccessFailMessages(title: string, rawD20RollValue: number, diceGroup = DiceGroup.Players) {
 		if (title)
 			title += ' ';
 		if (!this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.WildMagic &&
@@ -1954,15 +1963,15 @@ class DieRoller {
 			this.diceRollData.type !== DiceRollType.ExtraOnly) {
 			if (this.attemptedRollWasSuccessful)
 				if (rawD20RollValue >= this.diceRollData.minCrit) {
-					diceLayer.showResult(title + this.diceRollData.critSuccessMessage, this.attemptedRollWasSuccessful);
+					diceLayer.showResult(title + this.diceRollData.critSuccessMessage, this.attemptedRollWasSuccessful, diceGroup);
 				}
 				else {
-					diceLayer.showResult(title + this.diceRollData.successMessage, this.attemptedRollWasSuccessful);
+					diceLayer.showResult(title + this.diceRollData.successMessage, this.attemptedRollWasSuccessful, diceGroup);
 				}
 			else if (rawD20RollValue === 1)
-				diceLayer.showResult(title + this.diceRollData.critFailMessage, this.attemptedRollWasSuccessful);
+				diceLayer.showResult(title + this.diceRollData.critFailMessage, this.attemptedRollWasSuccessful, diceGroup);
 			else
-				diceLayer.showResult(title + this.diceRollData.failMessage, this.attemptedRollWasSuccessful);
+				diceLayer.showResult(title + this.diceRollData.failMessage, this.attemptedRollWasSuccessful, diceGroup);
 		}
 	}
 
@@ -1999,15 +2008,15 @@ class DieRoller {
 
 		if (!this.diceRollData.hasMultiPlayerDice && d20RollValue.get(singlePlayerId) > 0) {
 			if (this.diceRollData.modifier !== 0)
-				diceLayer.showRollModifier(this.diceRollData.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
+				diceLayer.showRollModifier(this.diceRollData.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
 			if (skillSavingModifier !== 0)
-				diceLayer.showRollModifier(skillSavingModifier, luckValue.get(singlePlayerId), playerIdForTextMessages);
+				diceLayer.showRollModifier(skillSavingModifier, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
 			if (this.diceRollData.dieTotalMessage) {
 				const centerDice: Vector = this.getCenterDicePosition();
-				diceLayer.showDieTotalMessage(this.diceRollData.totalRoll, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor);
+				diceLayer.showDieTotalMessage(this.diceRollData.totalRoll, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor, this.diceRollData.diceGroup);
 			}
 			else
-				diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages);
+				diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages, this.diceRollData.diceGroup);
 		}
 
 		if (this.totalBonus > 0 && !this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.SkillCheck) {
@@ -2022,22 +2031,22 @@ class DieRoller {
 						this.totalBonus = -this.totalBonus;
 					break;
 			}
-			diceLayer.showBonusRoll(`${bonusRollStr}${this.totalBonus}`, DiceLayer.bonusRollFontColor, DiceLayer.bonusRollDieColor);
+			diceLayer.showBonusRoll(`${bonusRollStr}${this.totalBonus}`, DiceLayer.bonusRollFontColor, DiceLayer.bonusRollDieColor, this.diceRollData.diceGroup);
 		}
 
 		if (totalDamage > 0) {
-			diceLayer.showTotalHealthDamage(this.totalDamagePlusModifier.toString(), this.attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
-			diceLayer.showDamageHealthModifier(this.damageModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
+			diceLayer.showTotalHealthDamage(this.totalDamagePlusModifier.toString(), this.attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup);
+			diceLayer.showDamageHealthModifier(this.damageModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup);
 		}
 		if (totalHealth > 0) {
-			diceLayer.showTotalHealthDamage('+' + this.totalHealthPlusModifier.toString(), this.attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
-			diceLayer.showDamageHealthModifier(this.healthModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor);
+			diceLayer.showTotalHealthDamage('+' + this.totalHealthPlusModifier.toString(), this.attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup);
+			diceLayer.showDamageHealthModifier(this.healthModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup);
 		}
 		if (totalExtra > 0) {
-			diceLayer.showTotalHealthDamage(this.totalExtraPlusModifier.toString(), this.attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
-			diceLayer.showDamageHealthModifier(this.extraModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor);
+			diceLayer.showTotalHealthDamage(this.totalExtraPlusModifier.toString(), this.attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup);
+			diceLayer.showDamageHealthModifier(this.extraModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup);
 		}
-		this.showSuccessFailMessages(title, d20RollValue.get(singlePlayerId));
+		this.showSuccessFailMessages(title, d20RollValue.get(singlePlayerId), this.diceRollData.diceGroup);
 		//console.log('d20RollValue.get(singlePlayerId): ' + d20RollValue.get(singlePlayerId));
 		maxDamage += this.damageModifierThisRoll;
 		if (this.diceRollData.secondRollData)
@@ -2276,6 +2285,7 @@ class DieRoller {
 	lastRollDiceData;
 
 	reportDieRollBackToMainApp(playerId: number) {
+		// Corresponds to DiceStoppedRollingData 
 		this.lastRollDiceData = {
 			'wasCriticalHit': this.wasCriticalHit,
 			'playerID': playerId,
@@ -2293,7 +2303,8 @@ class DieRoller {
 			'savingThrow': this.diceRollData.savingThrow,
 			'bonus': this.totalBonus,
 			'additionalDieRollMessage': this.additionalDieRollMessage,
-			'diceGroup': this.diceRollData.diceGroup
+			'diceGroup': this.diceRollData.diceGroup,
+			'rollId': this.diceRollData.rollId,
 		};
 
 		diceHaveStoppedRolling(JSON.stringify(this.lastRollDiceData));
@@ -2389,11 +2400,11 @@ class DieRoller {
 					this.freezeExistingDice();
 					this.diceRollData.startedBonusDiceRoll = true;
 					if (this.isAttack(this.diceRollData) && this.d20RollValue >= this.diceRollData.minCrit) {
-						diceLayer.indicateBonusRoll('Damage Bonus!');
+						diceLayer.indicateBonusRoll('Damage Bonus!', this.diceRollData.diceGroup);
 						this.wasCriticalHit = true;
 					}
 					else
-						diceLayer.indicateBonusRoll('Bonus Roll!');
+						diceLayer.indicateBonusRoll('Bonus Roll!', this.diceRollData.diceGroup);
 					setTimeout(this.rollBonusDice.bind(this), 2500);
 					if (this.nat20SkillCheckBonusRoll) {
 						this.nat20SkillCheckBonusRoll = false;
@@ -2520,6 +2531,8 @@ class DieRoller {
 		const hiddenDie: IDie[] = [];
 
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
+		
+		const scale = this.getDieScale();
 
 		for (let i = 0; i < this.specialDice.length; i++) {
 			const thisSpecialDie: IDie = this.specialDice[i];
@@ -2541,8 +2554,6 @@ class DieRoller {
 
 					dieObject.needToStartEffect = false;
 
-					//dieObject.effectKind = DieEffect.Burst;  // MKM - delete this.
-
 					// die.dieValue is also available.
 					const screenPos: Vector = this.getScreenCoordinates(thisSpecialDie);
 					if (!screenPos)
@@ -2552,11 +2563,11 @@ class DieRoller {
 						diceLayer.addLuckyRing(thisSpecialDie, screenPos.x, screenPos.y);
 					}
 					if (dieObject.effectKind === DieEffect.Ring) {
-						diceLayer.addMagicRing(screenPos.x, screenPos.y, magicRingHueShift + Random.plusMinusBetween(10, 25));
+						diceLayer.addMagicRing(screenPos.x, screenPos.y, scale, magicRingHueShift + Random.plusMinusBetween(10, 25));
 					}
 					else if (dieObject.effectKind === DieEffect.Fireball) {
 						//diceLayer.addD20Fire(screenPos.x, screenPos.y);
-						diceLayer.addFireball(screenPos.x, screenPos.y);
+						diceLayer.addFireball(screenPos.x, screenPos.y, scale);
 						diceSounds.playFireball();
 					}
 					else if (dieObject.effectKind === DieEffect.Bomb) {
@@ -2564,7 +2575,7 @@ class DieRoller {
 						let saturation = 75;  // Reduce saturation for significant hue shifts 
 						if (hueShift < 15 || hueShift > 345)
 							saturation = 100;
-						diceLayer.addDiceBomb(screenPos.x, screenPos.y, hueShift, saturation, 100);
+						diceLayer.addDiceBomb(screenPos.x, screenPos.y, scale, hueShift, saturation, 100);
 						diceSounds.playDieBomb();
 						hideDieIn(dieObject, 700);
 					}
@@ -2575,12 +2586,12 @@ class DieRoller {
 						diceLayer.addSmokeyPortal(this.specialDice[i], screenPos, dieObject);
 					}
 					else if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-						diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+						diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, scale, Math.floor(Math.random() * 360), 100, 100);
 						//diceLayer.playSteampunkTunnel();
 						//hideDieIn(die, 700);
 					}
 					else if (dieObject.effectKind === DieEffect.HandGrab) {
-						diceLayer.testDiceGrab(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+						diceLayer.grabDiceWithHand(screenPos.x, screenPos.y, scale, Math.floor(Math.random() * 360), 100, 100);
 						//diceSounds.playHandGrab();
 						//hideDieIn(die, 41 * 30);
 					}
@@ -2605,7 +2616,7 @@ class DieRoller {
 							brightnessBase = 70;
 						}
 
-						diceLayer.blowColoredSmoke(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
+						diceLayer.blowColoredSmoke(screenPos.x, screenPos.y, scale, Math.floor(Math.random() * 360), saturation, brightnessBase + Math.random() * 80);
 						this.hideDie(dieObject);
 						hiddenDie.push(this.specialDice[i]);
 						diceSounds.playDiceBlow();
@@ -2616,6 +2627,13 @@ class DieRoller {
 		this.removeDiceFromArray(hiddenDie, this.specialDice);
 		this.removeDiceFromArray(hiddenDie, this.dice);
 		this.clearTheseDice(hiddenDie);
+	}
+
+	private getDieScale() {
+		if (this.diceRollData.diceDtos && this.diceRollData.diceDtos.length > 0) {
+			return this.diceRollData.diceDtos[0].Scale;
+		}
+		return 1;
 	}
 
 	diceRemainingInPlay(): number {
@@ -2874,6 +2892,8 @@ class DieRoller {
 		if (!this.scalingDice || this.scalingDice.length === 0)
 			return;
 
+		const dieScale = this.getDieScale();
+
 		const hiddenDie: IDie[] = [];
 		//let numDiceScaling = 0;
 		if (this.scalingDice && this.scalingDice.length > 0) {
@@ -2902,8 +2922,9 @@ class DieRoller {
 					const screenPos: Vector = this.getScreenCoordinates(thisScalingDie);
 
 					if (dieObject.effectKind === DieEffect.SteamPunkTunnel) {
-						if (screenPos)
-							diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, Math.floor(Math.random() * 360), 100, 100);
+						if (screenPos) {
+							diceLayer.addSteampunkTunnel(screenPos.x, screenPos.y, dieScale, Math.floor(Math.random() * 360), 100, 100);
+						}
 						diceSounds.playSteampunkTunnel();
 					}
 					else if (dieObject.effectKind === DieEffect.HandGrab) {
@@ -2927,12 +2948,12 @@ class DieRoller {
 						}
 
 						if (screenPos)
-							diceLayer.testDiceGrab(screenPos.x, screenPos.y, hueShift, saturation, 100);
+							diceLayer.grabDiceWithHand(screenPos.x, screenPos.y, dieScale, hueShift, saturation, 100);
 						diceSounds.playHandGrab();
 					}
 					else {  // DieEffect.Portal
 						if (screenPos)
-							diceLayer.addPortal(screenPos.x, screenPos.y, this.getRandomRedBlueHueShift(), 100, 100);
+							diceLayer.addPortal(screenPos.x, screenPos.y, dieScale, this.getRandomRedBlueHueShift(), 100, 100);
 						diceSounds.playOpenDiePortal();
 					}
 				}
@@ -3047,7 +3068,7 @@ class DieRoller {
 			//console.log('animationsShouldBeDone = true;');
 			this.diceRollData = null;
 			this.dice = [];
-			setTimeout(this.allDiceShouldBeDestroyedByNow, 3000);
+			setTimeout(this.allDiceShouldBeDestroyedByNow.bind(this), 3000);
 		}
 	}
 
@@ -3101,6 +3122,8 @@ class DieRoller {
 
 			spriteScale = MathEx.clamp(spriteScale, trailingEffect.MinScale, trailingEffect.MaxScale);
 
+			spriteScale *= die.scale;
+
 			scaleFactor = spriteScale / trailingEffect.Scale;
 
 			if (die.lastPos.length <= index)
@@ -3148,8 +3171,7 @@ class DieRoller {
 							if (trailingEffect.intervalBetweenSounds.has(soundFileName))
 								intervalBetweenSounds = trailingEffect.intervalBetweenSounds.get(soundFileName);
 
-							if (intervalBetweenSounds === 0)
-							{
+							if (intervalBetweenSounds === 0) {
 								let parameters: string = part.substring(parenPos + 1).trim();
 								if (parameters.endsWith(')'))
 									parameters = parameters.substring(0, parameters.length - 1);
@@ -3181,7 +3203,7 @@ class DieRoller {
 	}
 
 	// TODO: For goodness sakes, Mark, do something with this.
-	old_positionTrailingSprite(die: IDie, addPrintFunc: (x: number, y: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
+	old_positionTrailingSprite(die: IDie, addPrintFunc: (x: number, y: number, scale: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
 		if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
 			const pos: Vector = this.getScreenCoordinates(die);
 			if (!pos)
@@ -3205,7 +3227,7 @@ class DieRoller {
 					angleToMovePawPrint = -90;
 				die.lastPrintOnLeft = !die.lastPrintOnLeft;
 				const printPos: Vector = this.movePointAtAngle(pos, angle + angleToMovePawPrint, leftRightDistanceBetweenPrints);
-				const spriteProxy: SpriteProxy = addPrintFunc(printPos.x, printPos.y, angle);
+				const spriteProxy: SpriteProxy = addPrintFunc(printPos.x, printPos.y, die.scale, angle);
 				//diceLayer.addPawPrint(pawPrintPos.x, pawPrintPos.y, angle);
 				die.lastPos[index] = pos;
 				return spriteProxy;
@@ -3451,21 +3473,23 @@ class DieRoller {
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 		// @ts-ignore - DiceD10x10
 		const die10 = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
+		die10.scale = 1;
 		die10.playerID = playerID;
 		this.prepareD10x10Die(diceRollData.diceGroup, die10, throwPower, xPositionModifier);
 		die10.rollType = DieCountsAs.totalScore;
 		if (diceRollData.isMagic) {
-			die10.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift));
+			die10.attachedSprites.push(diceLayer.addMagicRing(960, 540, die10.scale, magicRingHueShift));
 			die10.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 
 		// @ts-ignore - DiceD10x01
 		const die01 = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
+		die01.scale = 1;
 		die01.playerID = playerID;
 		this.prepareD10x01Die(diceRollData.diceGroup, die01, throwPower, xPositionModifier);
 		die01.rollType = DieCountsAs.totalScore;
 		if (diceRollData.isMagic) {
-			die01.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+			die01.attachedSprites.push(diceLayer.addMagicRing(960, 540, die01.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 			die01.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 	}
@@ -3488,6 +3512,7 @@ class DieRoller {
 	addD20(diceGroup: DiceGroup, diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID = -1): IDie {
 		// @ts-ignore - DiceD20
 		const die: IDie = new DiceD20({ size: DieRoller.dieScale, backColor: d20BackColor, fontColor: d20FontColor }, this.diceManager);
+		die.scale = 1;
 		die.isD20 = true;
 		this.prepareDie(diceGroup, die, diceRollData.throwPower, xPositionModifier);
 		die.rollType = DieCountsAs.totalScore;
@@ -3580,19 +3605,19 @@ class DieRoller {
 		}
 
 		this.freezeExistingDice();
-		diceLayer.clearTextEffects();
+		diceLayer.clearTextEffects(this.diceRollData.diceGroup);
 
 		const localDiceRollData: DiceRollData = this.getMostRecentDiceRollData();
 
 		if (this.isLuckBent(localDiceRollData))
-			diceLayer.reportAddOnRoll(this.diceRollData.secondRollTitle, this.diceRollData.bentLuckMultiplier);
+			diceLayer.reportAddOnRoll(this.diceRollData.secondRollTitle, this.diceRollData.bentLuckMultiplier, this.diceRollData.diceGroup);
 		else {
 			if (!this.diceRollData.damageHealthExtraDice)
 				localDiceRollData.itsAD20Roll = true;
 			else if (localDiceRollData.type === DiceRollType.LuckRollHigh || localDiceRollData.type === DiceRollType.LuckRollLow)
 				localDiceRollData.itsAD20Roll = true;
 
-			diceLayer.reportAddOnRoll(this.diceRollData.secondRollTitle, this.diceRollData.bentLuckMultiplier);
+			diceLayer.reportAddOnRoll(this.diceRollData.secondRollTitle, this.diceRollData.bentLuckMultiplier, this.diceRollData.diceGroup);
 		}
 
 		diceSounds.safePlayMp3('PaladinThunder');
@@ -3696,14 +3721,14 @@ class DieRoller {
 			//console.log('die.playerName: ' + die.playerName);
 			die.kind = kind;
 			if (this.diceRollData.isMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, die.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 				die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 			}
 			if (this.diceRollData.numHalos > 0) {
 				const angleDelta: number = 360 / this.diceRollData.numHalos;
 				let angle: number = Math.random() * 360;
 				for (let j = 0; j < this.diceRollData.numHalos; j++) {
-					die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
+					die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, die.scale, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
 					die.origins.push(diceLayer.haloSpinRed.getOrigin());
 					angle += angleDelta;
 				}
@@ -3736,7 +3761,7 @@ class DieRoller {
 			die.rollType = diceDto.DieCountsAs;
 			die.dieType = DiceRollType[DiceRollType.None];
 			if (diceDto.Label)
-				diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor, diceDto.Scale); // So the text matches the die color.
+				diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor, diceDto.Scale, this.diceRollData.diceGroup); // So the text matches the die color.
 			die.kind = diceDto.Vantage;
 			if (die.kind === VantageKind.Advantage) {
 				//console.log(`die has advantage!`);
@@ -3745,7 +3770,7 @@ class DieRoller {
 				//console.log(`die has disadvantage!`);
 			}
 			if (diceDto.IsMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, Random.max(360)));
+				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, die.scale, Random.max(360)));
 				die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 			}
 		});

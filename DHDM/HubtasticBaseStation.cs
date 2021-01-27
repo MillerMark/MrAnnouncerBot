@@ -66,10 +66,7 @@ namespace DHDM
 			diceEventArgs.SetDiceData(diceData);
 			OnDiceStoppedRolling(null, diceEventArgs);
 		}
-		static void TellTheDungeonMaster(string message)
-		{
-			OnTellDM(null, new MessageEventArgs(message));
-		}
+		
 		static void AllDiceHaveBeenDestroyed(string diceData)
 		{
 			if (diceEventArgs == null)
@@ -77,6 +74,11 @@ namespace DHDM
 
 			diceEventArgs.SetDiceData(diceData);
 			OnAllDiceDestroyed(null, diceEventArgs);
+		}
+		
+		static void TellTheDungeonMaster(string message)
+		{
+			OnTellDM(null, new MessageEventArgs(message));
 		}
 		public static HubConnection HubConnection
 		{

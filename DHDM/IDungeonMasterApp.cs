@@ -63,7 +63,7 @@ namespace DHDM
 		void PrepareTargetSavingThrow(string savingThrow);
 		void ClearAllConditions(string targetName);
 		void ApplyToTargetedCreatures(string applyCommand);
-		void ClearDice();
+		void ClearPlayerDice();
 		void MoveTarget(string targetingCommand);
 		void SpellScrollsToggle();
 		void InGameUICommand(string command);

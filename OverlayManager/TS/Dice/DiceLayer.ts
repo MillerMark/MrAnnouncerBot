@@ -805,7 +805,7 @@ class DiceLayer {
 		return rings;
 	}
 
-	attachDamageFire(die: IDie, hueShift = 0): void {
+	attachDamageFire(die: IDie, scale = 1, hueShift = 0): void {
 		die.attachedDamage = true;
 		die.attachedSprites.push(this.addDamageFire(die, 960, 540, Random.max(360), hueShift));
 		die.origins.push(this.damageFire.getOrigin());
@@ -815,7 +815,7 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/Fire');
 	}
 
-	attachLabel(die: IDie, label: string, backgroundColor: string, textColor: string, scale = 1): void {
+	attachLabel(die: IDie, label: string, backgroundColor: string, textColor: string, scale = 1, diceGroup = DiceGroup.Players): void {
 		label = label.trim();
 		if (label.startsWith('"') && label.endsWith('"'))  // Remove quotes.
 			label = label.substr(1, label.length - 2);
@@ -824,6 +824,7 @@ class DiceLayer {
 		textEffect.offsetY = 80 * scale;
 		textEffect.fontColor = textColor;
 		textEffect.outlineColor = backgroundColor;
+		textEffect.data = diceGroup;
 		die.attachedLabels.push(textEffect);
 	}
 
@@ -1070,11 +1071,11 @@ class DiceLayer {
 			die.origins.push(this.damageBludgeoningFist.getOrigin());
 		}
 		else if (Random.chancePercent(50)) {
-			die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset, autoRotationDegeesPerSecond, 0));
+			die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, die.scale, rotationOffset, autoRotationDegeesPerSecond, 0));
 			die.origins.push(this.damageBludgeoningWeapon.getOrigin());
 		}
 		else {
-			die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, rotationOffset, autoRotationDegeesPerSecond, 1));
+			die.attachedSprites.push(this.addDamageBludgeoningWeapon(960, 540, die.scale, rotationOffset, autoRotationDegeesPerSecond, 1));
 			die.origins.push(this.damageBludgeoningWeapon.getOrigin());
 		}
 	}
@@ -1206,7 +1207,7 @@ class DiceLayer {
 	addBackgroundRect(x: number, y: number, width: number, height: number, lifespan: number): AnimatedRectangle {
 		const borderThickness = 2;
 		const opacity = 0.95;
-		return this.animations.addRectangle(x, y, width, height, '#f5e0b7', '#ae722c', lifespan, borderThickness, opacity);
+		return this.animations.addRectangle(x, y, width, height, '#f5e0b7', '#ae722c', lifespan, borderThickness, opacity); 
 	}
 
 	setMultiplayerFades(animatedElement: AnimatedElement) {
@@ -1219,6 +1220,7 @@ class DiceLayer {
 		let y = 10;
 		const lineHeight = 70;
 		const backgroundRect: AnimatedRectangle = this.addBackgroundRect(2, 2, 50, 50 /* lineHeight * initiativeSummary.length + margins * 2 */, DiceLayer.multiplePlayerSummaryDuration);
+		backgroundRect.data = DiceGroup.Players;
 		this.setMultiplayerFades(backgroundRect);
 		let lastRollWasHigherThanThreshold = true;
 		if (title) {
@@ -1239,6 +1241,7 @@ class DiceLayer {
 				if (hiddenThreshold !== 0) {
 					const separatorHeight = 20;
 					line = this.addSeparatorHorizontalLine(x, y, 10, '#ff0000', DiceLayer.multiplePlayerSummaryDuration);
+					line.data = DiceGroup.Players;
 					this.setMultiplayerFades(line);
 					y += separatorHeight;
 					backgroundRect.height += separatorHeight;
@@ -1266,6 +1269,7 @@ class DiceLayer {
 
 	showMultiplayerResultTitle(title: string, x: number, y: number): TextEffect {
 		const textEffect: TextEffect = this.animations.addText(new Vector(x, y), title, DiceLayer.multiplePlayerSummaryDuration);
+		textEffect.data = DiceGroup.Players;
 		textEffect.fontColor = '#000000';
 		textEffect.outlineColor = '#ffffff';
 		this.setMultiplayerResultText(textEffect);
@@ -1291,16 +1295,18 @@ class DiceLayer {
 			message += ` (${playerRoll.modifier})`;
 
 		const textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
+		textEffect.data = DiceGroup.Players;
 		textEffect.fontColor = this.getDieColor(playerRoll.id);
 		textEffect.outlineColor = this.getDieFontColor(playerRoll.id);
 		this.setMultiplayerResultText(textEffect);
 		return textEffect;
 	}
 
-	showResult(resultMessage: string, success: boolean): void {
+	showResult(resultMessage: string, success: boolean, diceGroup = DiceGroup.Players): void {
 		if (!resultMessage)
 			return;
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 100), resultMessage, this.resultTextTime);
+		textEffect.data = diceGroup;
 		if (success) {
 			textEffect.fontColor = successFontColor;
 			textEffect.outlineColor = successOutlineColor;
@@ -1317,11 +1323,12 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showTotalHealthDamage(totalHealthDamageStr: string, success: boolean, label: string, fontColor: string, outlineColor: string): void {
+	showTotalHealthDamage(totalHealthDamageStr: string, success: boolean, label: string, fontColor: string, outlineColor: string, diceGroup = DiceGroup.Players): void {
 		let damageTime: number = this.totalDamageTime;
 		if (!success)
 			damageTime = 2 * damageTime / 3;
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 750), `${label}${totalHealthDamageStr}`, damageTime);
+		textEffect.data = diceGroup;
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.elasticIn = true;
@@ -1336,7 +1343,7 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDamageHealthModifier(modifier: number, success: boolean, fontColor: string, outlineColor: string): void {
+	showDamageHealthModifier(modifier: number, success: boolean, fontColor: string, outlineColor: string, diceGroup = DiceGroup.Players): void {
 		if (modifier === 0)
 			return;
 		let totalDamage: string;
@@ -1363,6 +1370,7 @@ class DiceLayer {
 			yPos = 810;
 		}
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, yPos), `(${totalDamage})`, damageTime);
+		textEffect.data = diceGroup;
 		textEffect.targetScale = targetScale;
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
@@ -1375,8 +1383,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showBonusRoll(totalBonusStr: string, dieColor: string = undefined, fontColor: string = undefined): void {
+	showBonusRoll(totalBonusStr: string, dieColor: string = undefined, fontColor: string = undefined, diceGroup = DiceGroup.Players): void {
 		const textEffect: TextEffect = this.animations.addText(new Vector(50, 900), totalBonusStr, this.bonusRollTime);
+		textEffect.data = diceGroup;
 		textEffect.textAlign = 'left';
 		if (dieColor === undefined)
 			dieColor = DiceLayer.bonusRollDieColor;
@@ -1393,8 +1402,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDieTotal(thisRollStr: string, playerId = -1): void {
+	showDieTotal(thisRollStr: string, playerId = -1, diceGroup = DiceGroup.Players): void {
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 540), thisRollStr, this.totalRollScoreTime);
+		textEffect.data = diceGroup;
 		this.setTextColorToPlayer(textEffect, playerId);
 		textEffect.elasticIn = true;
 		textEffect.scale = 10;
@@ -1404,12 +1414,13 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDieTotalMessage(totalRoll: number, dieTotalMessage: string, centerPos: Vector, fillColor: string, outlineColor: string) {
+	showDieTotalMessage(totalRoll: number, dieTotalMessage: string, centerPos: Vector, fillColor: string, outlineColor: string, diceGroup = DiceGroup.Players) {
 		const deltaX: number = 960 - centerPos.x;
 		const deltaY: number = 540 - centerPos.y;
 		const thrustX: number = deltaX * 0.0006;
 		const thrustY: number = deltaY * 0.0006;
 		const numberTextEffect: TextEffect = this.animations.addText(centerPos, totalRoll.toString(), this.totalRollScoreTime);
+		numberTextEffect.data = diceGroup;
 		numberTextEffect.fontColor = fillColor;
 		numberTextEffect.outlineColor = outlineColor;
 		numberTextEffect.elasticIn = true;
@@ -1424,6 +1435,7 @@ class DiceLayer {
 		const labelOffset = 80;
 		const labelCenter: Vector = new Vector(centerPos.x, centerPos.y + labelOffset);
 		const labelTextEffect: TextEffect = this.animations.addText(labelCenter, dieTotalMessage, this.totalRollScoreTime);
+		labelTextEffect.data = diceGroup;
 		labelTextEffect.fontColor = fillColor;
 		labelTextEffect.outlineColor = outlineColor;
 		labelTextEffect.elasticIn = true;
@@ -1434,8 +1446,6 @@ class DiceLayer {
 		labelTextEffect.fadeInTime = 200;
 		labelTextEffect.horizontalThrust = thrustX;
 		labelTextEffect.verticalThrust = thrustY;
-
-
 	}
 
 
@@ -1446,7 +1456,7 @@ class DiceLayer {
 		textEffect.outlineColor = this.getDieFontColor(playerID);
 	}
 
-	showRollModifier(rollModifier: number, luckBend = 0, playerId = -1): void {
+	showRollModifier(rollModifier: number, luckBend = 0, playerId = -1, diceGroup = DiceGroup.Players): void {
 		if (rollModifier === 0 && luckBend === 0)
 			return;
 		let rollModStr: string = rollModifier.toString();
@@ -1463,6 +1473,7 @@ class DiceLayer {
 		}
 
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr}${rollLuckModStr})`, this.rollModifierTime);
+		textEffect.data = diceGroup;
 		this.setTextColorToPlayer(textEffect, playerId);
 		textEffect.elasticIn = true;
 		textEffect.velocityY = -0.1;
@@ -1473,8 +1484,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 500;
 	}
 
-	addDieValueLabel(centerPos: Vector, value: string, highlight = false): void {
+	addDieValueLabel(centerPos: Vector, value: string, highlight = false, diceGroup = DiceGroup.Players): void {
 		const textEffect: TextEffect = this.animations.addText(centerPos, value, 5000);
+		textEffect.data = diceGroup;
 		if (highlight)
 			textEffect.fontColor = '#ff0000';
 		textEffect.scale = 6;
@@ -1484,8 +1496,9 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	indicateBonusRoll(message: string): void {
+	indicateBonusRoll(message: string, diceGroup = DiceGroup.Players): void {
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 800), message, 3000);
+		textEffect.data = diceGroup;
 		textEffect.scale = 6;
 		textEffect.opacity = 0.75;
 		textEffect.targetScale = 10;
@@ -1493,10 +1506,11 @@ class DiceLayer {
 		textEffect.fadeInTime = 800;
 	}
 
-	reportAddOnRoll(message: string, luckMultiplier: number): void {
+	reportAddOnRoll(message: string, luckMultiplier: number, diceGroup = DiceGroup.Players): void {
 		if (!message)
 			return;
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 540), message, 3000);
+		textEffect.data = diceGroup;
 
 		if (luckMultiplier < 0) {
 			// Bad luck
@@ -1516,10 +1530,11 @@ class DiceLayer {
 	}
 
 
-	addDieText(centerPos: Vector, message: string, fontColor: string, outlineColor: string, lifeSpan = 1500, scaleAdjust = 1): void {
+	addDieText(centerPos: Vector, message: string, fontColor: string, outlineColor: string, lifeSpan = 1500, scaleAdjust = 1, diceGroup = DiceGroup.Players): void {
 		if (centerPos === null)
 			return;
 		const textEffect: TextEffect = this.animations.addText(centerPos.add(new Vector(0, 80 * scaleAdjust)), message, lifeSpan);
+		textEffect.data = diceGroup;
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.scale = 3 * scaleAdjust;
@@ -1529,31 +1544,31 @@ class DiceLayer {
 		textEffect.targetScale = 1 * scaleAdjust;
 	}
 
-	addDieTextAfter(centerPos: Vector, message: string, fontColor: string, outlineColor: string, timeout = 0, lifeSpan = 1500, scaleAdjust = 1) {
+	addDieTextAfter(centerPos: Vector, message: string, fontColor: string, outlineColor: string, timeout = 0, lifeSpan = 1500, scaleAdjust = 1, diceGroup = DiceGroup.Players) {
 		if (timeout > 0)
 			setTimeout(() => {
-				this.addDieText(centerPos, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
+				this.addDieText(centerPos, message, fontColor, outlineColor, lifeSpan, scaleAdjust, diceGroup);
 			}, timeout);
 		else
-			this.addDieText(centerPos, message, fontColor, outlineColor, lifeSpan, scaleAdjust);
+			this.addDieText(centerPos, message, fontColor, outlineColor, lifeSpan, scaleAdjust, diceGroup);
 	}
 
-	addDisadvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false): void {
+	addDisadvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false, diceGroup = DiceGroup.Players): void {
 		let message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
 		else
 			message = 'Disadvantage';
-		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
+		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout, diceGroup);
 	}
 
-	addAdvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false): void {
+	addAdvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false, diceGroup = DiceGroup.Players): void {
 		let message: string;
 		if (isLuckyFeat)
 			message = 'Lucky Feat';
 		else
 			message = 'Advantage';
-		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout);
+		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout, diceGroup);
 	}
 
 
@@ -1602,50 +1617,57 @@ class DiceLayer {
 		this.animations.render(this.diceFrontContext, now);
 	}
 
-	addFireball(x: number, y: number): SpriteProxy {
+	addFireball(x: number, y: number, scale = 1): SpriteProxy {
 		const fireBall: SpriteProxy = this.diceFireball.add(x, y, 0);
+		fireBall.scale = scale;
 		fireBall.rotation = 90;
 		return fireBall;
 	}
 
-	addGroundBurstAnimation(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
+	addGroundBurstAnimation(x: number, y: number, scale: number, hueShift: number, saturation = 100, brightness = 100) {
 		DiceLayer.numFiltersOnDieCleanup++;
 		const dieBurst: SpriteProxy = this.diceBurst.addShifted(x, y, 0, hueShift + Random.plusMinus(25), saturation, brightness);
+		dieBurst.scale = scale;
 		dieBurst.rotation = Math.random() * 360;
 		dieBurst.fadeOutTime = 800;
 		dieBurst.expirationDate = performance.now() + 4000;
-		const shockwave: SpriteProxy = this.addShockwave(x, y, hueShift + Random.plusMinus(30), saturation, brightness);
-		const smokeTop: SpriteProxy = this.addDieSmoke(x, y, hueShift + Random.plusMinus(50), saturation, brightness);
+		const shockwave: SpriteProxy = this.addShockwave(x, y, scale, hueShift + Random.plusMinus(30), saturation, brightness);
+		shockwave.scale = scale;
+		const smokeTop: SpriteProxy = this.addDieSmoke(x, y, scale, hueShift + Random.plusMinus(50), saturation, brightness);
+		smokeTop.scale = scale;
 
 		smokeTop.delayStart = 3 * fps30;
 		shockwave.delayStart = 6 * fps30;
 	}
 
-	addSmokeyPortalAnimation(x: number, y: number, hueShift: number, saturation = 100, brightness = 100) {
+	addSmokeyPortalAnimation(x: number, y: number, scale: number, hueShift: number, saturation = 100, brightness = 100) {
 		const smokeyPortalBack: SpriteProxy = this.diceSmokeyPortalBack.addShifted(x, y, 0, hueShift, saturation, brightness);
 		smokeyPortalBack.rotation = Random.max(360);
+		smokeyPortalBack.scale = scale;
 
 		const smokeyPortalTop: SpriteProxy = this.diceSmokeyPortalTop.addShifted(x, y, 0, hueShift, saturation, brightness);
 		smokeyPortalTop.rotation = smokeyPortalBack.rotation;
+		smokeyPortalTop.scale = scale;
 	}
 
-	private addDieSmoke(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
+	private addDieSmoke(x: number, y: number, scale: number, hueShift: number, saturation: number, brightness: number) {
 		DiceLayer.numFiltersOnDieCleanup++;
 		const smokeTop: SpriteProxy = this.diceSmokeRed.addShifted(x, y, 0, hueShift, saturation, brightness);
-
+		smokeTop.scale = scale;
 		smokeTop.rotation = Math.random() * 360;
 		return smokeTop;
 	}
 
-	private addShockwave(x: number, y: number, hueShift: number, saturation: number, brightness: number) {
+	private addShockwave(x: number, y: number, scale: number, hueShift: number, saturation: number, brightness: number) {
 		hueShift = hueShift % 360;
 		DiceLayer.numFiltersOnDieCleanup++;
 		const shockwave: SpriteProxy = this.diceShockwaveRed.addShifted(x, y, 0, hueShift, saturation, brightness);
+		shockwave.scale = scale;
 		shockwave.rotation = Math.random() * 360;
 		return shockwave;
 	}
 
-	addMagicRing(x: number, y: number, hueShift = 0): SpriteProxy {
+	addMagicRing(x: number, y: number, scale = 1, hueShift = 0): SpriteProxy {
 		hueShift = hueShift % 360;
 		let magicRing: SpriteProxy;
 
@@ -1667,31 +1689,36 @@ class DiceLayer {
 			magicRing = this.magicRingMaroon.add(x, y, 0);
 
 		magicRing.rotation = Math.random() * 360;
+		magicRing.scale = scale;
 		return magicRing;
 	}
 
 	addLuckyRing(die: IDie, x: number, y: number): SpriteProxy {
 		const ring: SpriteProxy = this.cloverRing.add(x, y, Math.floor(Math.random() * 120));
+		ring.scale = die.scale;
 		this.initSprite(ring, die);
 		return;
 	}
 
 	addBadLuckRing(die: IDie, x: number, y: number): SpriteProxy {
 		const badLuckRing: SpriteProxy = this.badLuckRing.add(x, y, Math.floor(Math.random() * 120));
+		badLuckRing.scale = die.scale;
 		this.initSprite(badLuckRing, die);
 		return badLuckRing;
 	}
 
-	addFreezeBubble(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1): SpriteProxy {
+	addFreezeBubble(x: number, y: number, scale: number, hueShift = 0, saturationPercent = -1, brightness = -1): SpriteProxy {
 		const freeze: SpriteProxy = this.freeze.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
 		freeze.rotation = Math.random() * 360;
+		freeze.scale = scale;
 		freeze.fadeInTime = 500;
 		return freeze;
 	}
 
-	addFeezePop(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1): SpriteProxy {
+	addFeezePop(x: number, y: number, scale: number, hueShift = 0, saturationPercent = -1, brightness = -1): SpriteProxy {
 		const freezePop = this.freezePop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
 		freezePop.rotation = Math.random() * 360;
+		freezePop.scale = scale;
 		return freezePop;
 	}
 
@@ -1706,7 +1733,7 @@ class DiceLayer {
 	//	return halo;
 	//}
 
-	addHaloSpin(x: number, y: number, hueShift: number, angle: number): SpriteProxy {
+	addHaloSpin(x: number, y: number, scale: number, hueShift: number, angle: number): SpriteProxy {
 		let haloSpin: SpriteProxy;
 
 		if (DiceLayer.numFiltersOnRoll < DiceLayer.maxFiltersOnRoll) {
@@ -1736,6 +1763,7 @@ class DiceLayer {
 		}
 
 		haloSpin.rotation = angle;
+		haloSpin.scale = scale;
 		haloSpin.fadeInTime = 500;
 		haloSpin.fadeOutTime = 500;
 		haloSpin.fadeOnDestroy = true;
@@ -1752,6 +1780,7 @@ class DiceLayer {
 			damageFire = this.damageFireB.add(x, y, -1);
 		this.initSprite(damageFire, die);
 		damageFire.rotation = angle;
+		damageFire.scale = die.scale;
 		damageFire.fadeInTime = 500;
 		damageFire.fadeOutTime = 500;
 		damageFire.fadeOnDestroy = true;
@@ -1762,6 +1791,7 @@ class DiceLayer {
 		const damageCold = this.damageCold.add(x, y, -1);
 		this.initSprite(damageCold, die);
 		damageCold.rotation = angle;
+		damageCold.scale = die.scale;
 		damageCold.fadeInTime = 500;
 		damageCold.fadeOutTime = 500;
 		damageCold.fadeOnDestroy = true;
@@ -1779,6 +1809,7 @@ class DiceLayer {
 
 		this.initSprite(damageNecroticHead, die);
 		damageNecroticHead.rotation = angle;
+		damageNecroticHead.scale = die.scale;
 		damageNecroticHead.autoRotationDegeesPerSecond = autoRotation;
 		damageNecroticHead.initialRotation = angle;
 		damageNecroticHead.fadeInTime = 500;
@@ -1791,6 +1822,7 @@ class DiceLayer {
 		const damageNecroticFog = this.damageNecroticFog.add(x, y, -1);
 		this.initSprite(damageNecroticFog, die);
 		damageNecroticFog.rotation = angle;
+		damageNecroticFog.scale = die.scale;
 		damageNecroticFog.fadeInTime = 500;
 		damageNecroticFog.fadeOutTime = 500;
 		damageNecroticFog.fadeOnDestroy = true;
@@ -1803,6 +1835,7 @@ class DiceLayer {
 			damageAcid = this.damageAcid.add(x, y, 0);
 		else
 			damageAcid = this.damageAcidB.add(x, y, 0);
+		damageAcid.scale = die.scale;
 		this.initSprite(damageAcid, die);
 		damageAcid.rotation = angle;
 		damageAcid.fadeInTime = 500;
@@ -1815,6 +1848,7 @@ class DiceLayer {
 		const damageRadiant = this.damageRadiant.add(x, y, -1);
 		this.initSprite(damageRadiant, die);
 		damageRadiant.rotation = angle;
+		damageRadiant.scale = die.scale;
 		damageRadiant.fadeInTime = 500;
 		damageRadiant.fadeOutTime = 500;
 		damageRadiant.fadeOnDestroy = true;
@@ -1829,6 +1863,7 @@ class DiceLayer {
 			damageForce = this.damageForceB.add(x, y, -1);
 		this.initSprite(damageForce, die);
 		damageForce.rotation = angle;
+		damageForce.scale = die.scale;
 		damageForce.autoRotationDegeesPerSecond = 5;
 		damageForce.initialRotation = angle;
 		damageForce.fadeInTime = 500;
@@ -1841,6 +1876,7 @@ class DiceLayer {
 		const damageBludgeoningMace = this.damageBludgeoningMace.add(x, y, -1);
 		this.initSprite(damageBludgeoningMace, die);
 		damageBludgeoningMace.rotation = angle;
+		damageBludgeoningMace.scale = die.scale;
 		damageBludgeoningMace.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
 		damageBludgeoningMace.initialRotation = angle;
 		damageBludgeoningMace.fadeInTime = 500;
@@ -1859,7 +1895,7 @@ class DiceLayer {
 		const damageBludgeoningFist: SpriteProxy = this.damageBludgeoningFist.addShifted(x, y, -1, hueShift);
 		this.initSprite(damageBludgeoningFist, die);
 		angle += 90;
-		damageBludgeoningFist.scale = 0.8;
+		damageBludgeoningFist.scale = 0.8 * die.scale;
 		damageBludgeoningFist.rotation = angle;
 		damageBludgeoningFist.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
 		damageBludgeoningFist.initialRotation = angle;
@@ -1869,9 +1905,10 @@ class DiceLayer {
 		return damageBludgeoningFist;
 	}
 
-	addDamageBludgeoningWeapon(x: number, y: number, angle: number, autoRotationDegeesPerSecond: number, startingFrame: number): SpriteProxy {
+	addDamageBludgeoningWeapon(x: number, y: number, scale: number, angle: number, autoRotationDegeesPerSecond: number, startingFrame: number): SpriteProxy {
 		const damageBludgeoningWeapon = this.damageBludgeoningWeapon.add(x, y, startingFrame);
 		damageBludgeoningWeapon.rotation = angle;
+		damageBludgeoningWeapon.scale = scale;
 		damageBludgeoningWeapon.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
 		damageBludgeoningWeapon.initialRotation = angle;
 		damageBludgeoningWeapon.fadeInTime = 500;
@@ -1884,6 +1921,7 @@ class DiceLayer {
 		const damageSpinningCloudTrail = this.damageSpinningCloudTrail.add(x, y, startingFrame);
 		this.initSprite(damageSpinningCloudTrail, die);
 		damageSpinningCloudTrail.rotation = angle;
+		damageSpinningCloudTrail.scale = die.scale;
 		damageSpinningCloudTrail.opacity = 0.5;
 		damageSpinningCloudTrail.autoRotationDegeesPerSecond = autoRotationDegeesPerSecond;
 		damageSpinningCloudTrail.initialRotation = angle;
@@ -1897,6 +1935,7 @@ class DiceLayer {
 		const damagePoison = this.damagePoison.addShifted(x, y, -1, hueShift);
 		this.initSprite(damagePoison, die);
 		damagePoison.rotation = angle;
+		damagePoison.scale = die.scale;
 		damagePoison.fadeInTime = 500;
 		damagePoison.fadeOutTime = 500;
 		damagePoison.fadeOnDestroy = true;
@@ -1909,6 +1948,7 @@ class DiceLayer {
 		damagePiercingDagger.autoRotationDegeesPerSecond = autoRotation;
 		damagePiercingDagger.initialRotation = angle;
 		damagePiercingDagger.rotation = angle;
+		damagePiercingDagger.scale = die.scale;
 		damagePiercingDagger.fadeInTime = 500;
 		damagePiercingDagger.fadeOutTime = 500;
 		damagePiercingDagger.fadeOnDestroy = true;
@@ -1921,6 +1961,7 @@ class DiceLayer {
 		damagePiercingThickSword.autoRotationDegeesPerSecond = autoRotation;
 		damagePiercingThickSword.initialRotation = angle;
 		damagePiercingThickSword.rotation = angle;
+		damagePiercingThickSword.scale = die.scale;
 		damagePiercingThickSword.fadeInTime = 500;
 		damagePiercingThickSword.fadeOutTime = 500;
 		damagePiercingThickSword.fadeOnDestroy = true;
@@ -1933,6 +1974,7 @@ class DiceLayer {
 		damagePiercingTooth.autoRotationDegeesPerSecond = autoRotation;
 		damagePiercingTooth.initialRotation = angle;
 		damagePiercingTooth.rotation = angle;
+		damagePiercingTooth.scale = die.scale;
 		damagePiercingTooth.fadeInTime = 500;
 		damagePiercingTooth.fadeOutTime = 500;
 		damagePiercingTooth.fadeOnDestroy = true;
@@ -1945,6 +1987,7 @@ class DiceLayer {
 		damagePiercingTrident.autoRotationDegeesPerSecond = autoRotation;
 		damagePiercingTrident.initialRotation = angle;
 		damagePiercingTrident.rotation = angle;
+		damagePiercingTrident.scale = die.scale;
 		damagePiercingTrident.fadeInTime = 500;
 		damagePiercingTrident.fadeOutTime = 500;
 		damagePiercingTrident.fadeOnDestroy = true;
@@ -1957,6 +2000,7 @@ class DiceLayer {
 		damageSlashingSword.autoRotationDegeesPerSecond = autoRotation;
 		damageSlashingSword.initialRotation = angle;
 		damageSlashingSword.rotation = angle;
+		damageSlashingSword.scale = die.scale;
 		damageSlashingSword.fadeInTime = 500;
 		damageSlashingSword.fadeOutTime = 500;
 		damageSlashingSword.fadeOnDestroy = true;
@@ -1970,6 +2014,7 @@ class DiceLayer {
 		damageSlashingAx.autoRotationDegeesPerSecond = autoRotation;
 		damageSlashingAx.initialRotation = angle;
 		damageSlashingAx.rotation = angle;
+		damageSlashingAx.scale = die.scale;
 		damageSlashingAx.fadeInTime = 500;
 		damageSlashingAx.fadeOutTime = 500;
 		damageSlashingAx.fadeOnDestroy = true;
@@ -1982,19 +2027,21 @@ class DiceLayer {
 		damageSlashingLance.autoRotationDegeesPerSecond = autoRotation;
 		damageSlashingLance.initialRotation = angle;
 		damageSlashingLance.rotation = angle;
+		damageSlashingLance.scale = die.scale;
 		damageSlashingLance.fadeInTime = 500;
 		damageSlashingLance.fadeOutTime = 500;
 		damageSlashingLance.fadeOnDestroy = true;
 		return damageSlashingLance;
 	}
 
-	addHealth(die: IDie, x: number, y: number): SpriteProxy {
+	addHealth(die: IDie, x: number, y: number, scale: number = 1): SpriteProxy {
 		let health: SpriteProxy;
 		if (Random.chancePercent(50))
 			health = this.health.add(x, y, -1);
 		else
 			health = this.healthB.add(x, y, -1);
 		this.initSprite(health, die);
+		health.scale = scale;
 		health.fadeInTime = 500;
 		health.fadeOutTime = 500;
 		health.fadeOnDestroy = true;
@@ -2005,6 +2052,7 @@ class DiceLayer {
 		const damageThunder = this.damageThunder.add(x, y, -1);
 		this.initSprite(damageThunder, die);
 		damageThunder.rotation = angle;
+		damageThunder.scale = die.scale;
 		damageThunder.fadeInTime = 500;
 		damageThunder.fadeOutTime = 500;
 		damageThunder.fadeOnDestroy = true;
@@ -2015,6 +2063,7 @@ class DiceLayer {
 		const superiorityFire = this.superiorityFire.add(x, y, -1);
 		this.initSprite(superiorityFire, die);
 		superiorityFire.rotation = angle;
+		superiorityFire.scale = die.scale;
 		superiorityFire.fadeInTime = 500;
 		superiorityFire.fadeOutTime = 500;
 		superiorityFire.fadeOnDestroy = true;
@@ -2033,6 +2082,7 @@ class DiceLayer {
 			superiorityDragonHead = this.superiorityDragonHeadD.add(x, y, -1);
 		this.initSprite(superiorityDragonHead, die);
 		superiorityDragonHead.rotation = angle;
+		superiorityDragonHead.scale = die.scale;
 		superiorityDragonHead.initialRotation = angle;
 		superiorityDragonHead.autoRotationDegeesPerSecond = autoRotation;
 		superiorityDragonHead.fadeInTime = 500;
@@ -2060,6 +2110,7 @@ class DiceLayer {
 			damagePsychic = this.damagePsychicB.add(x, y, -1);
 		this.initSprite(damagePsychic, die);
 		damagePsychic.rotation = angle;
+		damagePsychic.scale = die.scale;
 		damagePsychic.autoRotationDegeesPerSecond = Random.plusMinusBetween(5, 25);
 		damagePsychic.initialRotation = angle;
 		damagePsychic.fadeInTime = 500;
@@ -2073,6 +2124,7 @@ class DiceLayer {
 		const damageLightningA = this.damageLightningA.add(x, y, -1);
 		this.initSprite(damageLightningA, die);
 		damageLightningA.rotation = angle + Random.plusMinus(10);
+		damageLightningA.scale = die.scale;
 		damageLightningA.autoRotationDegeesPerSecond = autoRotateDegreesPerSecond;
 		damageLightningA.initialRotation = damageLightningA.rotation;
 		damageLightningA.fadeInTime = 500;
@@ -2086,6 +2138,7 @@ class DiceLayer {
 		const damageLightningB = this.damageLightningB.add(x, y, -1);
 		this.initSprite(damageLightningB, die);
 		damageLightningB.rotation = angle + Random.plusMinus(10);
+		damageLightningB.scale = die.scale;
 		damageLightningB.autoRotationDegeesPerSecond = autoRotateDegreesPerSecond;
 		damageLightningB.initialRotation = damageLightningB.rotation;
 		damageLightningB.fadeInTime = 500;
@@ -2098,6 +2151,7 @@ class DiceLayer {
 		const damageLightningC = this.damageLightningC.add(x, y, -1);
 		this.initSprite(damageLightningC, die);
 		damageLightningC.rotation = angle + Random.plusMinus(10);
+		damageLightningC.scale = die.scale;
 		damageLightningC.autoRotationDegeesPerSecond = autoRotateDegreesPerSecond;
 		damageLightningC.initialRotation = damageLightningC.rotation;
 		damageLightningC.fadeInTime = 500;
@@ -2110,6 +2164,7 @@ class DiceLayer {
 		const damageLightningCloud = this.damageLightningCloud.add(x, y, -1);
 		this.initSprite(damageLightningCloud, die);
 		damageLightningCloud.rotation = angle;
+		damageLightningCloud.scale = die.scale;
 		damageLightningCloud.fadeInTime = 500;
 		damageLightningCloud.fadeOutTime = 500;
 		damageLightningCloud.fadeOnDestroy = true;
@@ -2125,6 +2180,7 @@ class DiceLayer {
 		inspirationParticlesProxy.fadeOnDestroy = true;
 		inspirationParticlesProxy.autoRotationDegeesPerSecond = rotationDegeesPerSecond;
 		inspirationParticlesProxy.initialRotation = Math.random() * 360;
+		inspirationParticlesProxy.scale = die.scale;
 		return inspirationParticlesProxy;
 	}
 
@@ -2132,6 +2188,7 @@ class DiceLayer {
 		const inspirationSmokeProxy = this.inspirationSmoke.add(x, y, -1);
 		this.initSprite(inspirationSmokeProxy, die);
 		inspirationSmokeProxy.rotation = angle;
+		inspirationSmokeProxy.scale = die.scale;
 		inspirationSmokeProxy.fadeInTime = 500;
 		inspirationSmokeProxy.fadeOutTime = 1000;
 		inspirationSmokeProxy.fadeOnDestroy = true;
@@ -2139,42 +2196,48 @@ class DiceLayer {
 		return inspirationSmokeProxy;
 	}
 
-	addRipple(x: number, y: number, angle: number, hueShift = 0): ColorShiftingSpriteProxy {
+	addRipple(x: number, y: number, scale: number, angle: number, hueShift = 0): ColorShiftingSpriteProxy {
 		const rippleProxy = this.ripples.addShifted(x, y, 0, hueShift);
 		rippleProxy.rotation = angle;
+		rippleProxy.scale = scale;
 		return rippleProxy;
 	}
 
-	addRaven(x: number, y: number, angle: number) {
+	// TODO: Remove?
+	addRaven(x: number, y: number, scale: number, angle: number) {
 		const ravens: Sprites = this.getRavens();
 		const raven = ravens.addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
 		raven.rotation = angle + 180 + Random.plusMinus(45);
+		raven.scale = scale;
 		return raven;
 	}
 
-	getRavens() {
+	getRavens(): Sprites {
 		const index: number = Math.floor(Math.random() * this.ravens.length);
 		return this.ravens[index];
 	}
 
-	getFireTrails() {
+	getFireTrails(): Sprites {
 		const index: number = Math.floor(Math.random() * this.fireTrails.length);
 		return this.fireTrails[index];
 	}
 
-	getFrostTrails() {
+	getFrostTrails(): Sprites {
 		const index: number = Math.floor(Math.random() * this.frostTrails.length);
 		return this.frostTrails[index];
 	}
 
-	blowColoredSmoke(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
-		this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
+	blowColoredSmoke(x: number, y: number, scale = 1, hueShift = 0, saturationPercent = -1, brightness = -1) {
+		const coloredSmoke: SpriteProxy = this.diceBlowColoredSmoke.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		coloredSmoke.rotation = Math.random() * 360;
+		coloredSmoke.scale = scale;
 	}
 
 	//addD20Fire(x: number, y: number) {
 	//  this.d20Fire.add(x, y).rotation = Math.random() * 360;
 	//}
 
+	// TODO: Remove?
 	addSmoke(x: number, y: number, angle: number) {
 		const hueShift = this.activePlayerHueShift + Random.plusMinus(10);
 		let angleShift = 0;
@@ -2183,8 +2246,11 @@ class DiceLayer {
 		this.smoke.addShifted(x, y, 0, hueShift).rotation = angle + angleShift;
 	}
 
-	addSparkTrail(x: number, y: number, angle: number) {
-		this.sparkTrail.addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35)).rotation = angle + 180 + Random.plusMinus(15);
+	// TODO: Remove?
+	addSparkTrail(x: number, y: number, scale: number, angle: number) {
+		const spark: SpriteProxy = this.sparkTrail.addShifted(x, y, 0, this.activePlayerHueShift + Random.plusMinus(35));
+		spark.rotation = angle + 180 + Random.plusMinus(15);
+		spark.scale = scale;
 	}
 
 	clearResidualEffects(diceGroup: DiceGroup): void {
@@ -2273,8 +2339,11 @@ class DiceLayer {
 		});
 	}
 
-	clearTextEffects() {
-		this.animations.clear();
+	clearTextEffects(diceGroup: DiceGroup) {
+		this.animations.animationProxies.forEach((element: AnimatedElement) => {
+			if (!element.data || element.data === diceGroup)
+				element.fadeOutNow(250);
+		});
 	}
 
 	rgbToHSL(rgb) {
@@ -2335,7 +2404,7 @@ class DiceLayer {
 		}
 		else if (die.playerID >= 0)
 			hueShift = this.getHueShift(die.playerID);
-		this.addGroundBurstAnimation(screenPos.x, screenPos.y, hueShift, saturation, brightness);
+		this.addGroundBurstAnimation(screenPos.x, screenPos.y, die.scale, hueShift, saturation, brightness);
 		diceSounds.playDieBurst();
 		hideDieIn(dieObject, 100);
 	}
@@ -2352,61 +2421,72 @@ class DiceLayer {
 		}
 		else if (die.playerID >= 0)
 			hueShift = this.getHueShift(die.playerID);
-		this.addSmokeyPortalAnimation(screenPos.x, screenPos.y, hueShift + Random.plusMinus(40), saturation, brightness);
+		this.addSmokeyPortalAnimation(screenPos.x, screenPos.y, die.scale, hueShift + Random.plusMinus(40), saturation, brightness);
 		diceSounds.playSmokyPortal();
 		hideDieIn(dieObject, 80 * fps30);
 	}
 
 
-	addSteampunkTunnel(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
+	addSteampunkTunnel(x: number, y: number, scale = 1, hueShift = 0, saturationPercent = -1, brightness = -1) {
 		// no rotation on SteampunkTunnel - shadows expect light source from above.
 
 		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
 			DiceLayer.numFiltersOnDieCleanup++;
-			this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+			this.dieSteampunkTunnel.addShifted(x, y, 0, hueShift, saturationPercent, brightness).scale = scale;
 		}
 		else {
-			this.dieSteampunkTunnel.add(x, y, 0);
+			this.dieSteampunkTunnel.add(x, y, 0).scale = scale;
 		}
 	}
 
-	addSneakAttack(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
+	// TODO: Remove?
+	addSneakAttack(x: number, y: number, scale: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
 		const rotation: number = Math.random() * 360;
 		this.smokeExplosionBottom.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
 		this.smokeExplosionTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = rotation;
 	}
 
-	addDiceBomb(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
-		this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
-		this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = Math.random() * 360;
+	addDiceBomb(x: number, y: number, scale = 1, hueShift = 0, saturationPercent = -1, brightness = -1) {
+		const rotation: number = Math.random() * 360;
+		const bottomSprite: SpriteProxy = this.diceBombBase.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		bottomSprite.rotation = rotation;
+		bottomSprite.scale = scale;
+		const topSprite: SpriteProxy = this.diceBombTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		topSprite.rotation = rotation;
+		topSprite.scale = scale;
 		//this.diceBombBase.add(x, y, 0).rotation = Math.random() * 360;
 		//this.diceBombTop.add(x, y, 0).rotation = Math.random() * 360;
 	}
 
-	addPortal(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
+	addPortal(x: number, y: number, scale = 1, hueShift = 0, saturationPercent = -1, brightness = -1) {
 		if (DiceLayer.numFiltersOnDieCleanup < DiceLayer.maxFiltersOnDieCleanup) {
 			DiceLayer.numFiltersOnDieCleanup += 2;
-			this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
-			this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+			this.dicePortal.addShifted(x, y, 0, hueShift, saturationPercent, brightness).scale = scale;
+			this.dicePortalTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).scale = scale;
 		}
 		else {
-			this.dicePortal.add(x, y, 0);
-			this.dicePortalTop.add(x, y, 0);
+			this.dicePortal.add(x, y, 0).scale = scale;
+			this.dicePortalTop.add(x, y, 0).scale = scale;
 		}
 	}
 
-	testDiceGrab(x: number, y: number, hueShift = 0, saturationPercent = -1, brightness = -1) {
+	grabDiceWithHand(x: number, y: number, scale = 1, hueShift = 0, saturationPercent = -1, brightness = -1) {
 		const handRotation: number = 90 - Math.random() * 180;
-		this.handGrabsDiceBottom.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = handRotation;
-		this.handGrabsDiceTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness).rotation = handRotation;
+		const grabLower: SpriteProxy = this.handGrabsDiceBottom.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		grabLower.rotation = handRotation;
+		grabLower.scale = scale;
+		const grabHigher: SpriteProxy = this.handGrabsDiceTop.addShifted(x, y, 0, hueShift, saturationPercent, brightness);
+		grabHigher.rotation = handRotation;
+		grabHigher.scale = scale;
 	}
 
 	getDiceRollData(diceRollData: string): DiceRollData {
 		const dto = JSON.parse(diceRollData);
 		const diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
-		//console.log('getDiceRollData: diceRoll.type = ' + diceRoll.type);
+
 		diceRoll.diceGroup = dto.DiceGroup;
+		diceRoll.rollId = dto.RollID;
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
@@ -2473,9 +2553,11 @@ class DiceLayer {
 		spark.autoScaleFactorPerSecond = 0.05;
 		spark.opacity = 1;
 		spark.rotation = angle;
+		spark.scale = die.scale;
 		return spark;
 	}
 
+	// TODO: remove this? No one seems to be calling.
 	addSpiral(x: number, y: number, angle: number): SpriteProxy {
 		const spiral = this.spirals.addShifted(x, y, 0, diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		spiral.rotation = Random.between(0, 360);
@@ -2486,6 +2568,7 @@ class DiceLayer {
 		const fangs = this.fangs.addShifted(x, y, Math.round(Math.random() * this.fangs.spriteProxies.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		this.initSprite(fangs, die);
 		fangs.rotation = angle;
+		fangs.scale = die.scale;
 		fangs.expirationDate = performance.now() + 4000;
 		fangs.fadeOutTime = 2000;
 		fangs.fadeInTime = 500;
@@ -2496,6 +2579,7 @@ class DiceLayer {
 	addPawPrint(die: IDie, x: number, y: number, angle: number): SpriteProxy {
 		const pawPrint = this.pawPrints.addShifted(x, y, Math.round(Math.random() * this.pawPrints.spriteProxies.length), diceLayer.activePlayerHueShift + Random.plusMinus(20));
 		pawPrint.rotation = angle;
+		pawPrint.scale = die.scale;
 		pawPrint.expirationDate = performance.now() + 4000;
 		pawPrint.fadeOutTime = 2000;
 		pawPrint.fadeInTime = 500;
@@ -2503,7 +2587,7 @@ class DiceLayer {
 		return pawPrint;
 	}
 
-	AddTrailingEffectFrom(die: IDie, sprites: Sprites, trailingEffect: TrailingEffect, x: number, y: number, angle: number, spriteScale: number): SpriteProxy {
+	addTrailingEffectFrom(die: IDie, sprites: Sprites, trailingEffect: TrailingEffect, x: number, y: number, angle: number, spriteScale: number): SpriteProxy {
 		if (sprites.name === 'Spark')
 			return this.smallSpark(die, x, y, angle);
 
@@ -2518,7 +2602,7 @@ class DiceLayer {
 		hue = Math.round(hue);
 
 		if (sprites.name === 'HaloSpin')
-			return this.addHaloSpin(x, y, hue, angle);
+			return this.addHaloSpin(x, y, die.scale, hue, angle);
 
 		let index = 0;
 		if (trailingEffect.StartIndex === -1)
@@ -2527,6 +2611,7 @@ class DiceLayer {
 			index = trailingEffect.StartIndex;
 
 		const effect: ColorShiftingSpriteProxy = sprites.addShifted(x, y, index, hue);
+		effect.scale = die.scale;
 		if (sprites.animationStyle === AnimationStyle.Loop) {
 			this.initSprite(effect, die);
 		}
@@ -2547,7 +2632,7 @@ class DiceLayer {
 		let sprites: Sprites = this.allBackLayerEffects.getSpritesByName(trailingEffect.EffectType);
 
 		if (sprites)
-			result = this.AddTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
+			result = this.addTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
 
 		if (trailingEffect.EffectType === "GroundBurstTrail") {
 			result.fadeOutTime = 500;
@@ -2556,15 +2641,15 @@ class DiceLayer {
 
 		if (trailingEffect.EffectType === 'Raven') {
 			sprites = this.getRavens();
-			result = this.AddTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
+			result = this.addTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
 		}
 		else if (trailingEffect.EffectType === 'FireTrails') {
 			sprites = this.getFireTrails();
-			result = this.AddTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
+			result = this.addTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
 		}
 		else if (trailingEffect.EffectType === 'FrostTrails') {
 			sprites = this.getFrostTrails();
-			result = this.AddTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
+			result = this.addTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
 			result.fadeInTime = 500;
 			result.fadeOutTime = 500;
 			result.expirationDate = performance.now() + 5000;
@@ -2573,7 +2658,7 @@ class DiceLayer {
 		sprites = this.allFrontLayerEffects.getSpritesByName(trailingEffect.EffectType);
 
 		if (sprites)
-			result = this.AddTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
+			result = this.addTrailingEffectFrom(die, sprites, trailingEffect, x, y, angle, spriteScale);
 
 		return result;
 	}
@@ -2734,6 +2819,7 @@ class BonusRoll {
 
 class DiceRollData {
 	diceGroup: DiceGroup;
+	rollId: string;
 	type: DiceRollType;
 	vantageKind: VantageKind;
 	damageHealthExtraDice: string;

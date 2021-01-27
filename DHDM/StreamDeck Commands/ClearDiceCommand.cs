@@ -8,7 +8,7 @@ namespace DHDM
 	{
 		public void Execute(IDungeonMasterApp dungeonMasterApp, ChatMessage chatMessage)
 		{
-			dungeonMasterApp.ClearDice();
+			dungeonMasterApp.ClearPlayerDice();
 		}
 
 		public bool Matches(string message)
