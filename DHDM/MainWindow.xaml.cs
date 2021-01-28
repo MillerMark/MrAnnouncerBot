@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using System;
+using AvalonEdit;
+using SharedCore;
 using Streamloots;
 using DndCore;
 using System.Collections.Generic;
@@ -150,6 +152,7 @@ namespace DHDM
 			game = new DndGame();
 			weatherManager = new WeatherManager(obsWebsocket, game);
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
+			HookEditorEvents();
 			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
@@ -251,6 +254,22 @@ namespace DHDM
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
 			LoadEverything();
+		}
+
+		void HookEditorEvents()
+		{
+			ShowTooltipCommand.ShowParameterTooltipIfNecessary += ShowTooltipCommand_ShowParameterTooltipIfNecessary;
+			CodeCompletionCommand.ExpansionCompleted += CodeCompletionCommand_ExpansionCompleted;
+		}
+
+		private void CodeCompletionCommand_ExpansionCompleted(object sender, TextAreaEventArgs ea)
+		{
+			InvokeCodeCompletion();
+		}
+
+		private void ShowTooltipCommand_ShowParameterTooltipIfNecessary(object sender, TextAreaEventArgs ea)
+		{
+			ShowParameterTooltipIfNecessary();
 		}
 
 		void RegisterSpreadsheetIDs()

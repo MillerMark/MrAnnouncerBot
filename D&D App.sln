@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streamloots", "Streamloots\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvalonEdit", "AvalonEdit\AvalonEdit.csproj", "{652CB48A-BDDB-409B-A76C-D2093B5F3D17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCore", "SharedCore\SharedCore.csproj", "{28556802-C1A9-41F6-A600-4EBDD0232446}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28556802-C1A9-41F6-A600-4EBDD0232446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28556802-C1A9-41F6-A600-4EBDD0232446}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28556802-C1A9-41F6-A600-4EBDD0232446}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28556802-C1A9-41F6-A600-4EBDD0232446}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

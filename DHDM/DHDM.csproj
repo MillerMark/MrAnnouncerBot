@@ -362,8 +362,6 @@
     <Compile Include="WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />
     <EmbeddedResource Include="CSharp.xml" />
-    <Compile Include="CharacterTriggerProvider.cs" />
-    <Compile Include="CompletionProvider.cs" />
     <Compile Include="ActionQueue\DieRollQueueEntry.cs" />
     <Compile Include="FrmCropPreview.xaml.cs">
       <DependentUpon>FrmCropPreview.xaml</DependentUpon>
@@ -371,45 +369,11 @@
     <Compile Include="FrmSelectInGameCreature.xaml.cs">
       <DependentUpon>FrmSelectInGameCreature.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IDE\Code Completion\ICompletionData Implementors\FunctionCompletionData.cs" />
-    <Compile Include="IDE\Code Completion\Providers\TableColumnCompletionProvider.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\AnchorCommand.cs" />
-    <Compile Include="IDE\Commands\ShowCodeCompletion.cs" />
-    <Compile Include="IDE\Context\CaretIsInComment.cs" />
-    <Compile Include="IDE\Context\InCodeBlock.cs" />
-    <Compile Include="IDE\Context\InComment.cs" />
-    <Compile Include="IDE\Context\InString.cs" />
-    <Compile Include="IDE\Context\OnEmptyLine.cs" />
-    <Compile Include="IDE\Context\RightOfElse.cs" />
-    <Compile Include="IDE\Context\SelectionIsCommented.cs" />
     <Compile Include="InGameCommand.cs" />
-    <Compile Include="MyKeyboard.cs" />
-    <Compile Include="IDE\Context\Core\BaseContext.cs" />
-    <Compile Include="IDE\Commands\Core\CodeEditorCommand.cs" />
-    <Compile Include="IDE\Code Completion\ICompletionData Implementors\TextStringCompletionData.cs" />
-    <Compile Include="IDE\System\KeyboardModifiers.cs" />
-    <Compile Include="IDE\Context\MultilineSelection.cs" />
-    <Compile Include="IDE\Code Completion\Providers\FileCompletionProvider.cs" />
-    <Compile Include="ICompletionProvider.cs" />
-    <Compile Include="IDE\System\CodeUtils.cs" />
-    <Compile Include="IDE\Commands\SelectionEmbedding.cs" />
-    <Compile Include="IDE\Commands\SelectionTrim.cs" />
-    <Compile Include="IDE\Shortcuts\ShortcutBinding.cs" />
-    <Compile Include="IDE\Code Completion\Providers\TextListCompletionProvider.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\ShowTooltipCommand.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\CaretCommand.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\CodeCompletionCommand.cs" />
-    <Compile Include="IDE\Code Completion\ICompletionData Implementors\IdentifierCompletionData.cs" />
     <Compile Include="FrameRateChangeData.cs" />
     <Compile Include="FrmMonsterPicker.xaml.cs">
       <DependentUpon>FrmMonsterPicker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IDE\System\TextDocumentExtensions.cs" />
-    <Compile Include="IDE\Code Templates\Core\CodeTemplate.cs" />
-    <Compile Include="IDE\Code Templates\Core\ExpansionSegment.cs" />
-    <Compile Include="IDE\Code Completion\ICompletionData Implementors\FileCompletionData.cs" />
-    <Compile Include="IDE\Code Completion\ICompletionData Implementors\FolderCompletionData.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\Core\ITextCommand.cs" />
     <Compile Include="Overlays.cs" />
     <Compile Include="ActionQueue\ShortcutQueueEntry.cs" />
     <Compile Include="PlayerStats\DiceStackDto.cs" />
@@ -480,11 +444,6 @@
     <Compile Include="StreamDeck Commands\SpellScrollsToggleCommand.cs" />
     <Compile Include="StreamDeck Commands\StaticCommands.cs" />
     <Compile Include="StreamDeck Commands\StopPlaying.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\Core\PositionSaverCommand.cs" />
-    <Compile Include="IDE\Code Templates\TemplateEngine.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\Core\TextCommandEngine.cs" />
-    <Compile Include="IDE\Code Templates\Text Commands\Core\TextCommandNameAttribute.cs" />
-    <Compile Include="IDE\Code Completion\TextCompletionEngine.cs" />
     <Compile Include="StreamDeck Commands\TalkNpcCommand.cs" />
     <Compile Include="StreamDeck Commands\TargetCommand.cs" />
     <Compile Include="StreamDeck Commands\TargetMoveCommands.cs" />
@@ -592,6 +551,10 @@
       <Project>{DF1E9DF3-204A-4DBF-8B8D-60CA5C0A5BC3}</Project>
       <Name>TimeLineControl</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AvalonEdit\AvalonEdit.csproj">
+      <Project>{652cb48a-bddb-409b-a76c-d2093b5f3d17}</Project>
+      <Name>AvalonEdit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BotCoreNet\BotCoreNet.csproj">
       <Project>{7f1f032d-49c2-433b-8006-ad5b617b11ef}</Project>
       <Name>BotCoreNet</Name>
@@ -615,6 +578,10 @@
     <ProjectReference Include="..\Imaging\Imaging.csproj">
       <Project>{A514DE46-AA88-471B-81A8-2C387DC629F7}</Project>
       <Name>Imaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharedCore\SharedCore.csproj">
+      <Project>{28556802-c1a9-41f6-a600-4ebdd0232446}</Project>
+      <Name>SharedCore</Name>
     </ProjectReference>
     <ProjectReference Include="..\Streamloots\Streamloots.csproj">
       <Project>{f7623e7a-2d21-420c-95fb-406d8d7f50cd}</Project>
