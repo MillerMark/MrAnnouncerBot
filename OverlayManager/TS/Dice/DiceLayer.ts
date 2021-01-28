@@ -1559,7 +1559,7 @@ class DiceLayer {
 			message = 'Lucky Feat';
 		else
 			message = 'Disadvantage';
-		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout, diceGroup);
+		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout, 1500, 1, diceGroup);
 	}
 
 	addAdvantageText(centerPos: Vector, timeout = 0, isLuckyFeat = false, diceGroup = DiceGroup.Players): void {
@@ -1568,7 +1568,7 @@ class DiceLayer {
 			message = 'Lucky Feat';
 		else
 			message = 'Advantage';
-		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout, diceGroup);
+		this.addDieTextAfter(centerPos, message, this.activePlayerDieColor, this.activePlayerDieColor, timeout, 1500, 1, diceGroup);
 	}
 
 
@@ -2255,8 +2255,7 @@ class DiceLayer {
 
 	clearResidualEffects(diceGroup: DiceGroup): void {
 		this.clearSprites(diceGroup);
-
-		this.clearTextEffects();
+		this.clearTextEffects(diceGroup);
 	}
 
 	clearSprites(diceGroup: DiceGroup) {

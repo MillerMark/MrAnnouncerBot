@@ -321,6 +321,7 @@
     <Compile Include="ActionQueue\WildMagicQueueEntry.cs" />
     <Compile Include="AllViewers.cs" />
     <Compile Include="CardCommands.cs" />
+    <Compile Include="ViewerQueueDto.cs" />
     <Compile Include="DndViewer.cs" />
     <Compile Include="ExtensionClasses\ColorExtensionMethods.cs" />
     <Compile Include="IDiceRoller.cs" />
@@ -357,6 +358,7 @@
     <Compile Include="StreamDeck Commands\ShowWeatherCommand.cs" />
     <Compile Include="Streamloots\CardHandManager.cs" />
     <Compile Include="Streamloots\StreamlootsHand.cs" />
+    <Compile Include="ViewerRollDto.cs" />
     <Compile Include="WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />
     <EmbeddedResource Include="CSharp.xml" />

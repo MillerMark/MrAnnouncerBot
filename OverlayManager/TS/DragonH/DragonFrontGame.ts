@@ -235,14 +235,16 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		this.addFloatingText(1760, message, fillColor, outlineColor);
 	}
 
+	static readonly clockFontName: string = 'Baskerville Old Face';
+	static readonly timeFont: string = 'px ' + DragonFrontGame.clockFontName;
+
 	private drawGameTime(context: CanvasRenderingContext2D) {
 		if (!this.dndTimeStr)
 			return;
-		const timeFont = 'px Baskerville Old Face';
 		const verticalMargin = 10;
 		const timeHeight = 32;
 		const dateHeight = 24;
-		context.font = timeHeight + timeFont;
+		context.font = timeHeight + DragonFrontGame.timeFont;
 		const timeWidth: number = context.measureText(this.dndTimeStr.trim()).width;
 		const timeHalfWidth: number = timeWidth / 2;
 		const centerX: number = this.getClockX();
@@ -264,13 +266,13 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		context.globalAlpha = 1;
 		context.textAlign = 'center';
 		centerY += timeHeight;
-		context.font = dateHeight + timeFont;
+		context.font = dateHeight + DragonFrontGame.timeFont;
 		let dateFontScale = 1;
 		let tryFontSize: number = dateHeight * dateFontScale;
 		while (context.measureText(this.dndDateStr).width > this.maxPanelWidth && tryFontSize > 6) {
 			dateFontScale *= 0.95;
 			tryFontSize = dateHeight * dateFontScale;
-			context.font = tryFontSize + timeFont;
+			context.font = tryFontSize + DragonFrontGame.timeFont;
 		}
 		context.fillText(this.dndDateStr, centerX, centerY);
 	}
@@ -1679,15 +1681,28 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	cardCommand(cardStr: string) {
-		const cardDto: CardHandDto = JSON.parse(cardStr);
-		if (cardDto.Command === 'ShowCard')
-			this.cardManager.showCard(cardDto.Card, cardDto.CharacterId);
-		else if (cardDto.Command === 'Update Hands')
-			this.cardManager.updateHands(cardDto.Hands);
-		else if (cardDto.Command === 'Play Cards')
-			this.cardManager.playCards(cardDto.Hands);
-		else if (cardDto.Command === 'Reveal Secret Cards')
-			this.cardManager.revealCards(cardDto.Hands);
+		const cardCommandDto: CardCommandDto = JSON.parse(cardStr);
+		console.log(cardCommandDto);
+		if (cardCommandDto.Command === "UpdateViewerRollQueue") {
+			const viewerRollQueueDto: ViewerQueueDto = JSON.parse(cardStr);
+			this.cardManager.updateViewerRollQueue(viewerRollQueueDto);
+		}
+		else if (cardCommandDto.Command === 'ShowCard') {
+			const cardHandDto: CardHandDto = JSON.parse(cardStr);
+			this.cardManager.showCard(cardHandDto.Card, cardHandDto.CharacterId);
+		}
+		else if (cardCommandDto.Command === 'Update Hands') {
+			const cardHandDto: CardHandDto = JSON.parse(cardStr);
+			this.cardManager.updateHands(cardHandDto.Hands);
+		}
+		else if (cardCommandDto.Command === 'Play Cards') {
+			const cardHandDto: CardHandDto = JSON.parse(cardStr);
+			this.cardManager.playCards(cardHandDto.Hands);
+		}
+		else if (cardCommandDto.Command === 'Reveal Secret Cards') {
+			const cardHandDto: CardHandDto = JSON.parse(cardStr);
+			this.cardManager.revealCards(cardHandDto.Hands);
+		}
 	}
 }
 

@@ -178,7 +178,7 @@ namespace DHDM
 
 			showClearViewerDiceButtonTimer = new DispatcherTimer();
 			showClearViewerDiceButtonTimer.Tick += new EventHandler(ShowClearViewerDiceButton);
-			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(6);
+			showClearViewerDiceButtonTimer.Interval = TimeSpan.FromSeconds(8);
 
 			stateUpdateTimer = new DispatcherTimer();
 			stateUpdateTimer.Tick += new EventHandler(UpdateStateFromTimer);
@@ -4332,6 +4332,7 @@ namespace DHDM
 
 		private void ReportOnDieRoll(DiceEventArgs ea)
 		{
+			// TODO: Let's refactor this, kids.
 			if (ea.StopRollingData == null)
 				return;
 
@@ -4433,6 +4434,7 @@ namespace DHDM
 			}
 			if (rollTitle == "")
 				rollTitle = "Dice roll: ";
+
 			string message = string.Empty;
 			Character singlePlayer = null;
 			if (ea.StopRollingData.multiplayerSummary != null && ea.StopRollingData.multiplayerSummary.Count > 0)
@@ -4455,6 +4457,9 @@ namespace DHDM
 						localDamageStr = "";
 					if (!string.IsNullOrWhiteSpace(message))
 						message += "; ";
+
+					if (ea.StopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
+						return;
 					message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
 				}
 			}
@@ -4485,6 +4490,10 @@ namespace DHDM
 				}
 				if (!ea.StopRollingData.success)
 					damageStr = "";
+
+
+				if (ea.StopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
+					return;
 
 				message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
 			}
@@ -4897,7 +4906,7 @@ namespace DHDM
 
 		void UpdateClearViewerDiceButton(object sender, EventArgs e)
 		{
-			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime, 3500);
+			UpdateClearDiceButton(DiceGroup.Viewers, btnClearViewerDice, rectViewerProgressToClear, clearViewerDiceButtonShowTime, clearViewerDicePauseTime, 14000);
 		}
 
 		bool justClickedTheClearPlayerDiceButton;
@@ -9624,7 +9633,8 @@ namespace DHDM
 			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
 			ea.CardDto.Card.FillColor = viewer.DieBackColor;
 			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
-			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
+			string cardStr = JsonConvert.SerializeObject(ea.CardDto);
+			HubtasticBaseStation.CardCommand(cardStr);
 			string msg = ea.CardDto.Card.message;
 
 			viewer.CardsPlayed++;

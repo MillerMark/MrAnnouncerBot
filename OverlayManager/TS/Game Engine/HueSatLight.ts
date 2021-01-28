@@ -6,10 +6,10 @@ class HueSatLight {
   }
 
   getPerceivedBrightness(): number {
-    let rgb = this.toRgb();
-    let red: number = rgb[0];
-    let green: number = rgb[1];
-    let blue: number = rgb[2];
+    const rgb = this.toRgb();
+    const red: number = rgb[0];
+    const green: number = rgb[1];
+    const blue: number = rgb[2];
 
     return Math.sqrt(red * red * 0.241 + green * green * 0.691 + blue * blue * 0.068);
   }
@@ -23,9 +23,9 @@ class HueSatLight {
   }
 
   toRgb(): [number, number, number] {
-    var red, green, blue;
+    let red, green, blue;
 
-    if (this.saturation == 0) {
+    if (this.saturation === 0) {
       red = green = blue = this.light; // achromatic
     }
     else {
@@ -38,8 +38,8 @@ class HueSatLight {
         return p;
       }
 
-      var q = this.light < 0.5 ? this.light * (1 + this.saturation) : this.light + this.saturation - this.light * this.saturation;
-      var p = 2 * this.light - q;
+      const q = this.light < 0.5 ? this.light * (1 + this.saturation) : this.light + this.saturation - this.light * this.saturation;
+      const p = 2 * this.light - q;
 
       red = hue2rgb(p, q, this.hue + 1 / 3);
       green = hue2rgb(p, q, this.hue);
@@ -50,21 +50,21 @@ class HueSatLight {
   }
 
   toHex(): string {
-    let rgb = this.toRgb();
-    let red: number = rgb[0];
-    let green: number = rgb[1];
-    let blue: number = rgb[2];
+    const rgb = this.toRgb();
+    const red: number = rgb[0];
+    const green: number = rgb[1];
+    const blue: number = rgb[2];
 
     function int2hex(value: number) {
       let hex: string = Math.round(value * 255).toString(16);
-      if (hex.length == 1)
+      if (hex.length === 1)
         hex = '0' + hex;
       return hex;
     }
 
-    var redHex: string = int2hex(red);
-    var greenHex: string = int2hex(green);
-    var blueHex: string = int2hex(blue);
+    const redHex: string = int2hex(red);
+    const greenHex: string = int2hex(green);
+    const blueHex: string = int2hex(blue);
 
     return '#' + redHex + greenHex + blueHex;
   }
@@ -78,16 +78,17 @@ class HueSatLight {
     green /= 255;
     blue /= 255;
 
-    let max = Math.max(red, green, blue);
-    let min = Math.min(red, green, blue);
-    let sum = max + min;
-    let hue, sat, light = sum / 2;
+    const max = Math.max(red, green, blue);
+    const min = Math.min(red, green, blue);
+    const sum = max + min;
+    let hue, sat;
+    const light = sum / 2;
 
-    if (max == min) {
+    if (max === min) {
       hue = sat = 0;   // gray scale
     }
     else {
-      let dif = max - min;
+      const dif = max - min;
       sat = light > 0.5 ? dif / (2 - sum) : dif / sum;
 
       switch (max) {
@@ -114,7 +115,7 @@ class HueSatLight {
 
 	static fromHex(hex: string) {
     // Expand shorthand form (e.g. "08f") to full form (e.g. "0088FF")
-    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
     hex = hex.replace(shorthandRegex, function (m, r, g, b) {
       return r + r + g + g + b + b;
     });

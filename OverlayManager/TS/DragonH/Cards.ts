@@ -58,12 +58,49 @@ class StreamlootsHand {
 	CardsToReveal: StreamlootsCard[];
 }
 
-class CardHandDto {
+class CardCommandDto {
+	Command: string;
+}
+
+class ViewerRollDto {
+	Name: string;
+	RollId: string;
+	RollStr: string;
+	FontColor: string;
+	OutlineColor: string;
+	QueuePosition: number;
+	constructor() {
+
+	}
+}
+
+class ViewerRollQueueEntry extends ViewerRollDto {
+	found = false;
+	textEffect: TextEffect;
+	constructor() {
+		super();
+	}
+
+	initializeFrom(viewerRollDto: ViewerRollDto) {
+		this.Name = viewerRollDto.Name;
+		this.RollId = viewerRollDto.RollId;
+		this.RollStr = viewerRollDto.RollStr;
+		this.FontColor = viewerRollDto.FontColor;
+		this.OutlineColor = viewerRollDto.OutlineColor;
+		this.QueuePosition = viewerRollDto.QueuePosition;
+	}
+}
+
+class ViewerQueueDto extends CardCommandDto {
+	ViewerRollDto: Array<ViewerRollDto>;
+
+}
+
+class CardHandDto extends CardCommandDto {
 	Purchase: StreamlootsPurchase;
 	Card: StreamlootsCard;
 	CharacterId: number;
 	Hands: Array<StreamlootsHand>;
-	Command: string;
 }
 
 class CardManager {
@@ -75,7 +112,7 @@ class CardManager {
 	iGetPlayerX: IGetPlayerX;
 	iGetCreatureX: IGetCreatureX;
 	soundManager: ISoundManager;
-	animations: Animations;
+	parentTextAnimations: Animations;
 
 	constructor() {
 	}
@@ -84,7 +121,7 @@ class CardManager {
 		this.iGetPlayerX = iGetPlayerX;
 		this.soundManager = soundManager;
 		this.iGetCreatureX = iGetCreatureX;
-		this.animations = animations;
+		this.parentTextAnimations = animations;
 	}
 
 	loadResources() {
@@ -245,7 +282,7 @@ class CardManager {
 					if (toX === xPos) {
 						if (foundMap.has(toX))
 							foundMap.set(toX, foundMap.get(toX) + 1);
-						else 
+						else
 							foundMap.set(toX, 1);
 						if (foundMap.get(toX) >= depth)
 							return false;
@@ -272,7 +309,7 @@ class CardManager {
 				xPos = centerX - cardOffset * i;
 				if (this.bigCardPositionAvailable(xPos, depth))
 					return new Vector(xPos, yPos);
-			}	
+			}
 		}
 
 		return new Vector(centerX, yPos);
@@ -485,7 +522,7 @@ class CardManager {
 			verticalThrust = 0.06;
 		}
 
-		const credit: TextEffect = this.animations.addText(new Vector(xPos, yPos + yOffset), UserName, CardManager.creditLifespanMs);
+		const credit: TextEffect = this.parentTextAnimations.addText(new Vector(xPos, yPos + yOffset), UserName, CardManager.creditLifespanMs);
 		credit.verticalThrust = verticalThrust;
 		credit.fontSize = fontSize;
 		credit.fontName = 'Enchanted Land';
@@ -507,7 +544,7 @@ class CardManager {
 		if (characterId === -2147483648)
 			return;
 		const now: number = performance.now();
-		this.animations.animationProxies.forEach((animationProxy: AnimatedElement) => {
+		this.parentTextAnimations.animationProxies.forEach((animationProxy: AnimatedElement) => {
 			if (animationProxy.data === characterId) {
 				const lifeRemaining: number = animationProxy.getLifeRemaining(now);
 				animationProxy.opacity = animationProxy.getAlpha(now);
@@ -873,5 +910,99 @@ class CardManager {
 		element.verticalThrustOverride = 6;
 		element.velocityY = -7;
 		element.velocityX = 4;
+	}
+
+	viewerRollQueueEntries: Array<ViewerRollQueueEntry> = [];
+
+	updateViewerRollQueue(viewerRollQueueDto: ViewerQueueDto) {
+		// Inside a foreach across the list I'm storing here, mark all as not found.
+		this.viewerRollQueueEntries.forEach((existingViewerRoll: ViewerRollQueueEntry) => {
+			existingViewerRoll.found = false;
+		});
+
+		viewerRollQueueDto.ViewerRollDto.forEach((viewerRollDto: ViewerRollDto) => {
+			if (!this.markAsFound(viewerRollDto.RollId, viewerRollDto.QueuePosition))
+				this.addRollToQueue(viewerRollDto);
+		});
+
+		this.removeAnyOrphanViewerRollsInTheQueue();
+
+		// Get everything in the right position.
+		this.moveViewerRollQueueTextsIntoPosition();
+	}
+
+	removeAnyOrphanViewerRollsInTheQueue() {
+		for (let i = this.viewerRollQueueEntries.length - 1; i >= 0; i--) {
+			const existingViewerRoll: ViewerRollQueueEntry = this.viewerRollQueueEntries[i];
+			if (!existingViewerRoll.found) {
+				console.log(`Removing ${existingViewerRoll.RollId}...`);
+				existingViewerRoll.textEffect.fadeOutNow(250);  // Fade it out.
+				this.viewerRollQueueEntries.splice(i, 1);  // Remove this orphan
+			}
+		}
+	}
+
+	markAsFound(rollId: string, queuePosition: number) {
+		let foundRoll = false;
+		this.viewerRollQueueEntries.forEach((viewerRollQueueEntry: ViewerRollQueueEntry) => {
+			if (viewerRollQueueEntry.RollId === rollId) {
+				console.log('found: ' + viewerRollQueueEntry.RollId);
+				viewerRollQueueEntry.found = true;
+				viewerRollQueueEntry.QueuePosition = queuePosition;
+				foundRoll = true;
+			}
+		});
+		return foundRoll;
+	}
+
+	moveViewerRollQueueTextsIntoPosition() {
+		const now: number = performance.now();
+		const timeBetweenMoves = 150;
+		let delay = 0;
+		this.viewerRollQueueEntries.forEach((viewerRollQueueEntry: ViewerRollQueueEntry) => {
+			const textEffect: TextEffect = viewerRollQueueEntry.textEffect;
+			textEffect.ease(now + delay, textEffect.x, textEffect.y, textEffect.x, this.getQueueEntryY(viewerRollQueueEntry.QueuePosition), 400);
+			delay += timeBetweenMoves;
+		});
+	}
+
+	static readonly dieQueueTop: number = 435;
+	static readonly dieQueueBottom: number = 894;
+	static readonly dieQueueHeight: number = CardManager.dieQueueBottom - CardManager.dieQueueTop;
+	static readonly numDieQueueEntries: number = 20;
+	static readonly dieQueueFontSize: number = CardManager.dieQueueHeight / CardManager.numDieQueueEntries;
+
+	addRollToQueue(viewerRollDto: ViewerRollDto) {
+		const viewerRollQueueEntry: ViewerRollQueueEntry = new ViewerRollQueueEntry();
+		viewerRollQueueEntry.found = true;
+		viewerRollQueueEntry.initializeFrom(viewerRollDto);
+
+		const queueEntryText = `${viewerRollQueueEntry.Name} - ${viewerRollQueueEntry.RollStr} `;
+		const viewerName: TextEffect = this.parentTextAnimations.addText(new Vector(1920, this.getQueueEntryY(viewerRollQueueEntry.QueuePosition)), queueEntryText);
+		viewerName.fontSize = CardManager.dieQueueFontSize;
+		viewerName.fontName = DragonFrontGame.clockFontName;
+
+		// brighten the color so we have high contrast against a darker background.
+		const hsl: HueSatLight = HueSatLight.fromHex(viewerRollQueueEntry.FontColor);
+		if (hsl.light < 0.75)
+			hsl.light = 0.75;
+		viewerName.fontColor = hsl.toHex();
+		//viewerName.fontColor = viewerRollQueueEntry.FontColor;
+		//viewerName.outlineColor = viewerRollQueueEntry.OutlineColor;
+		viewerName.outlineThickness = 0;
+		viewerName.scale = 1;
+		viewerName.fadeInTime = 250;
+		viewerName.textAlign = 'right';
+		viewerName.textBaseline = 'alphabetic';
+		console.log(viewerName);
+		//credit.data = viewerRollQueueEntry;
+		viewerRollQueueEntry.textEffect = viewerName;
+
+
+		this.viewerRollQueueEntries.push(viewerRollQueueEntry);
+	}
+
+	getQueueEntryY(queuePosition: number): number {
+		return CardManager.dieQueueBottom - CardManager.dieQueueFontSize * queuePosition;
 	}
 }

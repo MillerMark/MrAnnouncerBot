@@ -143,22 +143,22 @@
 
 
   static addName(statPage: StatPage): any {
-    const nameFontSize: number = 10.5;
+    const nameFontSize = 10.5;
     statPage.addStat('firstName', 68, 128, nameFontSize);
   }
 
   static addAbilities(statPage: StatPage): any {
-    const attributeTop: number = 205;
-    const attributeLeft: number = 44;
-    const attributeDistanceY: number = 91;
-    const modOffset: number = 32;
-    const modFontSize: number = 10;
+    const attributeTop = 205;
+    const attributeLeft = 44;
+    const attributeDistanceY = 91;
+    const modOffset = 32;
+    const modFontSize = 10;
 
     const abilities = Object.keys(Ability).filter((item) => {
       return isNaN(Number(item));
     });
 
-    for (var i = 0; i < abilities.length; i++) {
+    for (let i = 0; i < abilities.length; i++) {
 			statPage.addStat('base' + StatPage.initialCap(abilities[i]), attributeLeft, attributeTop + i * attributeDistanceY, StatPage.bigNumberFontSize);
       statPage.addStat(abilities[i] + 'Mod', attributeLeft, attributeTop + i * attributeDistanceY + modOffset, modFontSize, TextAlign.center, TextDisplay.plusMinus);
     }

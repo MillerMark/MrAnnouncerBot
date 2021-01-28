@@ -1,4 +1,5 @@
-let diceRollerShowFpsWindow: boolean = false;
+let diceRollerShowFpsWindow: boolean = false
+
 
 function hideDieIn(dieObject, ms: number) {
 	dieObject.hideTime = performance.now() + ms;
@@ -2264,6 +2265,7 @@ class DieRoller {
 	}
 
 	animationsShouldBeDone: boolean;
+	throwHasStarted: boolean;
 	static readonly hiddenDieScale: number = 0.01;
 
 	removeRemainingDice(): boolean {
@@ -3062,9 +3064,9 @@ class DieRoller {
 		const stillHaveSpecialDice: boolean = this.specialDice !== null && this.specialDice.length > 0;
 		//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
 
-		if (!this.animationsShouldBeDone && numDiceStillInPlay === 0 && this.allDiceHaveStoppedRolling &&
-			!stillScaling && !stillHaveSpecialDice) {
+		if (this.throwHasStarted && !this.animationsShouldBeDone && numDiceStillInPlay === 0 && this.allDiceHaveStoppedRolling &&!stillScaling && !stillHaveSpecialDice) {
 			this.animationsShouldBeDone = true;
+			this.throwHasStarted = false;
 			//console.log('animationsShouldBeDone = true;');
 			this.diceRollData = null;
 			this.dice = [];
@@ -3928,6 +3930,7 @@ class DieRoller {
 		//return;
 
 		this.animationsShouldBeDone = false;
+		this.throwHasStarted = false;
 		this.rollingOnlyAddOnDice = false;
 
 		if (diceRollDto.type === DiceRollType.BendLuckAdd || diceRollDto.type === DiceRollType.LuckRollHigh) {
@@ -3983,6 +3986,7 @@ class DieRoller {
 		try {
 			// @ts-ignore - DiceManager
 			this.diceManager.prepareValues(this.diceValues);
+			this.throwHasStarted = true;
 		}
 		catch (ex) {
 			console.log('exception on call to this.diceManager.prepareValues: ' + ex);
