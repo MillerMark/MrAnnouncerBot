@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imaging", "Imaging\Imaging.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streamloots", "Streamloots\Streamloots.csproj", "{F7623E7A-2D21-420C-95FB-406D8D7F50CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvalonEdit", "AvalonEdit\AvalonEdit.csproj", "{652CB48A-BDDB-409B-A76C-D2093B5F3D17}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7623E7A-2D21-420C-95FB-406D8D7F50CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{652CB48A-BDDB-409B-A76C-D2093B5F3D17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

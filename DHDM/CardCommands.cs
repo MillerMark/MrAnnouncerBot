@@ -11,6 +11,7 @@ namespace DHDM
 {
 	public static class CardCommands
 	{
+		static bool logDieRollIds = false;
 		static bool waitingForDiceToBeDestroyed;
 		static List<CardDto> savedCardsForViewerDieRolls = new List<CardDto>();
 		static Queue<DiceRoll> viewerRollQueue = new Queue<DiceRoll>();
@@ -43,7 +44,8 @@ namespace DHDM
 		{
 			if (ea.StopRollingData.diceGroup == DiceGroup.Viewers)
 			{
-				History.Log($"HubtasticBaseStation_DiceStoppedRolling - {ea.StopRollingData.rollId.Substring(ea.StopRollingData.rollId.Length - 4)}");
+				if (logDieRollIds)
+					History.Log($"HubtasticBaseStation_DiceStoppedRolling - {ea.StopRollingData.rollId.Substring(ea.StopRollingData.rollId.Length - 4)}");
 				CardDto cardInWaiting = savedCardsForViewerDieRolls.FirstOrDefault(x => x.CardID == ea.StopRollingData.rollId);
 				if (cardInWaiting != null)
 				{
@@ -62,7 +64,8 @@ namespace DHDM
 
 			if (ea.StopRollingData.diceGroup == DiceGroup.Viewers)
 			{
-				History.Log($"HubtasticBaseStation_AllDiceDestroyed - {ea.StopRollingData.rollId.Substring(ea.StopRollingData.rollId.Length - 4)}");
+				if (logDieRollIds)
+					History.Log($"HubtasticBaseStation_AllDiceDestroyed - {ea.StopRollingData.rollId.Substring(ea.StopRollingData.rollId.Length - 4)}");
 
 				DequeueViewerRoll();
 			}
@@ -168,7 +171,8 @@ namespace DHDM
 
 		private static void RollViewerDice(DiceRoll diceRoll)
 		{
-			History.Log($"RollViewerDice - {diceRoll.RollID.Substring(diceRoll.RollID.Length - 4)}");
+			if (logDieRollIds)
+				History.Log($"RollViewerDice - {diceRoll.RollID.Substring(diceRoll.RollID.Length - 4)}");
 			clearDiceNowTimer.Stop();
 			forceDieRollTimer.Start();
 			waitingForDiceToBeDestroyed = true;

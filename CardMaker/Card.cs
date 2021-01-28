@@ -18,6 +18,8 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		string cardReceived;
+		string cardPlayed;
 		double textFontOpacity;
 		double textFontLight;
 		double textFontSat;
@@ -133,6 +135,36 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
+
+
+		[Column]
+		public string CardPlayed
+		{
+			get => cardPlayed;
+			set
+			{
+				if (cardPlayed == value)
+					return;
+				cardPlayed = value;
+				OnPropertyChanged();
+			}
+		}
+
+
+		[Column]
+		public string CardReceived
+		{
+			get => cardReceived;
+			set
+			{
+				if (cardReceived == value)
+					return;
+				cardReceived = value;
+				OnPropertyChanged();
+			}
+		}
+		
+
 
 		[Column]
 		public double TextFontSat

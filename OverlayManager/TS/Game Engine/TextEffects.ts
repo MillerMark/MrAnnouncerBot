@@ -170,7 +170,8 @@ class TextEffect extends ScalableAnimation {
 		context.lineJoin = "round";
 		const x: number = this.x + this.offsetX;
 		const y: number = this.y + this.offsetY;
-		context.strokeText(this.text, x, y);
+		if (context.lineWidth > 0)
+			context.strokeText(this.text, x, y);
 		//console.log(`drawing "${this.text}" at (${x}, ${y})`);
 		context.fillText(this.text, x, y);
 

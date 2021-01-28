@@ -1048,6 +1048,7 @@ namespace CardMaker
 
 				lbCards.SelectedItem = card;
 				spSelectedCard.DataContext = card;
+				spCardEvents.DataContext = card;
 				SetActiveFields(card?.Fields);
 				if (card == null)
 					SetActiveLayerTextOptions(null);
@@ -1062,6 +1063,7 @@ namespace CardMaker
 				bool isValidCard = card != null;
 				btnDeleteCard.IsEnabled = isValidCard;
 				spSelectedCard.Visibility = isValidCard ? Visibility.Visible : Visibility.Collapsed;
+				spCardEvents.Visibility = isValidCard ? Visibility.Visible : Visibility.Collapsed;
 			}
 			finally
 			{

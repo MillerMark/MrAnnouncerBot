@@ -11,6 +11,7 @@ namespace DHDM
 {
 	public class ViewerQueueDto
 	{
+		const int INT_MaxViewersInQueueToSend = 20;
 		public string Command { get; set; } = "UpdateViewerRollQueue";
 		public List<ViewerRollDto> ViewerRollDto { get; set; }
 		public ViewerQueueDto(Queue<DiceRoll> viewerRollQueue)
@@ -32,6 +33,8 @@ namespace DHDM
 					viewerRollDto.QueuePosition = queuePosition;
 					queuePosition++;
 					ViewerRollDto.Add(viewerRollDto);
+					if (queuePosition >= INT_MaxViewersInQueueToSend)
+						return;
 				}
 			}
 		}
