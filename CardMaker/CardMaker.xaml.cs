@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using DndCore;
 using Imaging;
 using Microsoft.Extensions.Configuration;
+using Streamloots;
 using SysPath = System.IO.Path;
 using GoogleHelper;
 
@@ -62,9 +63,12 @@ namespace CardMaker
 
 		public CardMakerMain()
 		{
+			RegisterSpreadsheetIDs();
 			InitializeStreamlootsClient();
 			InitializeCloudinaryClient();
 			InitializeComponent();
+			codeCardPlayed.Load();
+			codeCardReceived.Load();
 			CardData = new CardData();
 			CardData.LoadData();
 			foreach (Card card in CardData.AllKnownCards)
@@ -91,7 +95,7 @@ namespace CardMaker
 		}
 
 		public Deck ActiveDeck
-		{	
+		{
 			get => activeDeck;
 			set
 			{
@@ -1045,6 +1049,21 @@ namespace CardMaker
 			try
 			{
 				ActiveCard = card;
+				if (card != null && !string.IsNullOrWhiteSpace(card.UploadedImageFile))
+					imgUploadedImage.Source = new BitmapImage(new Uri(card.UploadedImageFile));
+				else
+					imgUploadedImage.Source = null;
+
+				if (ActiveCard != null)
+				{
+					codeCardPlayed.SetText(ActiveCard.CardPlayed);
+					codeCardReceived.SetText(ActiveCard.CardReceived);
+				}
+				else
+				{
+					codeCardPlayed.SetText(string.Empty);
+					codeCardReceived.SetText(string.Empty);
+				}
 
 				lbCards.SelectedItem = card;
 				spSelectedCard.DataContext = card;
@@ -1449,9 +1468,10 @@ namespace CardMaker
 			if (!string.IsNullOrWhiteSpace(spellDto.targetingPrompt))
 			{
 				// TODO: Adjust the alert message to include the target field. Shorten Description MaxHeight.
-				Field targetField = new Field(card) {
-					Name = "target", 
-					Label = spellDto.targetingPrompt, 
+				Field targetField = new Field(card)
+				{
+					Name = "target",
+					Label = spellDto.targetingPrompt,
 					Required = spellDto.targetingPrompt.ToLower().IndexOf("optional") < 0,
 					Type = FieldType.LongText
 				};
@@ -1739,7 +1759,7 @@ namespace CardMaker
 			GetSayAnythingDieNameAndMultiplier(actualPowerLevel, out multiplier, out dieName);
 			card.Name = $"Say Anything - {multiplier}{dieName}";
 			card.StylePath = "Say Anything";
-			card.Description = $"Make any player, NPC, or monster think or say anything, up to {multiplier}{dieName} times (dice are rolled when you play this card).";
+			card.Description = $"Make any player, NPC, or monster think or say anything, up to {multiplier}{dieName} times (dice are rolled when you play this card). To make a player say something, enter “!{{name}}: \"Your custom message” into the chat room. To make a player think something, enter “!{{name}}: (Your custom thoughts” into the chat room. For example: “!Fred: (Yummy...”.";
 			card.AdditionalInstructions = "No ads or hate speech - you could get banned!";
 			card.AlertMessage = $"{{{{username}}}} played Say Anything - {multiplier}{dieName}//!RollDie({multiplier}{dieName}, \"Say Anything\")";
 			QuickAddAllLayerDetails(card);
@@ -1860,9 +1880,37 @@ namespace CardMaker
 				.Replace("{spell_DoubleAmmoCount}", spell.DoubleAmmoCount.ToString());
 		}
 
-		private void btnUploadCard_Click(object sender, RoutedEventArgs e)
+		private async void btnUploadCard_Click(object sender, RoutedEventArgs e)
 		{
-			streamlootsClient.AddCard(ActiveCard);
+			if (ActiveCard == null)
+				return;
+			if (!string.IsNullOrWhiteSpace(ActiveCard.StreamlootsCardId))
+				await streamlootsClient.UpdateCard(ActiveCard);
+			else
+			{
+				SetCardViewModel setCardViewModel = await streamlootsClient.AddCard(ActiveCard);
+				ActiveCard.StreamlootsCardId = setCardViewModel._id;
+			}
+		}
+
+		private void codeCardReceived_CodeChanged(object sender, EventArgs e)
+		{
+			if (ChangingDataInternally || ActiveCard == null)
+				return;
+			ActiveCard.CardReceived = codeCardReceived.TextEditor.Text;
+		}
+
+		private void codeCardPlayed_CodeChanged(object sender, EventArgs e)
+		{
+			if (ChangingDataInternally || ActiveCard == null)
+				return;
+			ActiveCard.CardPlayed = codeCardPlayed.TextEditor.Text;
+		}
+
+		void RegisterSpreadsheetIDs()
+		{
+			GoogleSheets.RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
+			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
 		}
 
 		// TODO: Prompt for save if dirty on close!!!

@@ -361,7 +361,6 @@
     <Compile Include="ViewerRollDto.cs" />
     <Compile Include="WeatherManager.cs" />
     <Compile Include="WeatherSceneSettingsDto.cs" />
-    <EmbeddedResource Include="CSharp.xml" />
     <Compile Include="ActionQueue\DieRollQueueEntry.cs" />
     <Compile Include="FrmCropPreview.xaml.cs">
       <DependentUpon>FrmCropPreview.xaml</DependentUpon>

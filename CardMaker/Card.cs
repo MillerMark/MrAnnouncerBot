@@ -18,6 +18,7 @@ namespace CardMaker
 	[TabName("Cards")]
 	public class Card : BaseNameId
 	{
+		string streamlootsCardId;
 		string cardReceived;
 		string cardPlayed;
 		double textFontOpacity;
@@ -163,7 +164,7 @@ namespace CardMaker
 				OnPropertyChanged();
 			}
 		}
-		
+
 
 
 		[Column]
@@ -545,6 +546,20 @@ namespace CardMaker
 			}
 		}
 
+		[Column]
+		public string StreamlootsCardId
+		{
+			get => streamlootsCardId;
+			set
+			{
+				if (streamlootsCardId == value)
+					return;
+				streamlootsCardId = value;
+				OnPropertyChanged();
+			}
+		}
+		
+
 
 		public override string ToString()
 		{
@@ -695,14 +710,34 @@ namespace CardMaker
 					layerDetails.IsSelected = false;
 				}
 		}
+
 		public SetCardWithImageViewModel ToSetCardWithImageViewModel()
 		{
 			SetCardWithImageViewModel setCardWithImageViewModel = new SetCardWithImageViewModel();
+			InitializeSetCardWithImageViewModel(setCardWithImageViewModel);
+			return setCardWithImageViewModel;
+		}
+
+		private void InitializeSetCardWithImageViewModel(SetCardWithImageViewModel setCardWithImageViewModel)
+		{
 			InitializeSetCardUpdateViewModel(setCardWithImageViewModel);
 			if (!string.IsNullOrWhiteSpace(UploadedImageFile))
 				setCardWithImageViewModel.imageUrl = UploadedImageFile;
+		}
 
-			return setCardWithImageViewModel;
+		public UpdateExistingCardViewModel ToUpdateExistingCardViewModel()
+		{
+			if (string.IsNullOrWhiteSpace(StreamlootsCardId))
+			{
+				System.Diagnostics.Debugger.Break();
+				return null;
+			}
+
+			UpdateExistingCardViewModel updateExistingCardViewModel = new UpdateExistingCardViewModel();
+			InitializeSetCardWithImageViewModel(updateExistingCardViewModel);
+			updateExistingCardViewModel._id = StreamlootsCardId;
+
+			return updateExistingCardViewModel;
 		}
 		public SetCardViewModel ToSetCardViewModel()
 		{

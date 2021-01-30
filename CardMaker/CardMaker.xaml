@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:CardMaker"
+		xmlns:AvalonEdit="clr-namespace:AvalonEdit;assembly=AvalonEdit"
 		xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Card Maker" Height="569" Width="1800" MinHeight="795" >
@@ -40,7 +41,7 @@
 			<MenuItem Header="Set Full Range" Click="SetFullRangeForCardGeneration_MenuItem_Click"></MenuItem>
 			<MenuItem Header="Only This Value" Click="OnlyThisValueForCardGeneration_MenuItem_Click"></MenuItem>
 		</ContextMenu>
-		
+
 		<Style TargetType="Slider" x:Key="ctxCardGenSlider" >
 			<Setter Property="ContextMenu" Value="{StaticResource ctxRandomCardGen}"/>
 		</Style>
@@ -53,11 +54,11 @@
 			<MenuItem Header="Set Full Range" Click="SetFullRangeForCardGeneration_MenuItem_Click"></MenuItem>
 			<MenuItem Header="Only This Value" Click="OnlyThisValueForCardGeneration_MenuItem_Click"></MenuItem>
 		</ContextMenu>
-		
+
 		<Style TargetType="Slider" x:Key="ctxCardGenSliderStretch" >
 			<Setter Property="ContextMenu" Value="{StaticResource ctxRandomCardGenStretch}"/>
 		</Style>
-		
+
 	</Window.Resources>
 	<StackPanel Orientation="Vertical">
 		<Menu>
@@ -216,7 +217,7 @@
 				<TabItem Header="Image">
 					<StackPanel x:Name="spSelectedCard" Orientation="Horizontal" Visibility="Visible">
 						<StackPanel x:Name="spCardDetails" Orientation="Vertical" Margin="20, 0, 0, 0">
-							<StackPanel Orientation="Horizontal" Margin="0, 0, 0, 8">
+							<StackPanel Orientation="Horizontal" Margin="0, 5, 0, 8">
 								<TextBlock Text="Card Name: " Width="Auto" Height="Auto" Margin="0, 0, 5, 0" Foreground="#FF3C5EE5"/>
 								<TextBox x:Name="tbxCardName" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" TextChanged="tbxCardName_TextChanged" MinWidth="100"/>
 								<CheckBox x:Name="ckbAvailable" IsChecked="{Binding Path=Available}" Margin="20, 0, 0, 0" Foreground="#FF3C5EE5">
@@ -723,8 +724,22 @@
 				</TabItem>
 				<TabItem Header="Code">
 					<StackPanel x:Name="spCardEvents" Orientation="Horizontal">
-						<TextBox x:Name="tbxCardPlayed" Text="{Binding CardPlayed}"/>
-						<TextBox x:Name="tbxCardReceived" Text="{Binding CardReceived}"/>
+						<StackPanel Orientation="Vertical" Margin="0, 0, 10, 0">
+							<TextBlock Text="Uploaded Image:" Width="Auto" Height="Auto"/>
+							<Image x:Name="imgUploadedImage" Width="280" Height="424"></Image>
+						</StackPanel>
+						<StackPanel Orientation="Vertical" Margin="0, 0, 10, 0">
+							<TextBlock Text="OnCardReceived:" Width="Auto" Height="Auto"/>
+							<AvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="550">
+
+							</AvalonEdit:AvalonEditor>
+						</StackPanel>
+						<StackPanel Orientation="Vertical">
+							<TextBlock Text="OnCardPlayed:" Width="Auto" Height="Auto"/>
+							<AvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="550" >
+
+							</AvalonEdit:AvalonEditor>
+						</StackPanel>
 					</StackPanel>
 				</TabItem>
 			</TabControl>

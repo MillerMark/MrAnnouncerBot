@@ -53,7 +53,7 @@ namespace AvalonEdit
 			{
 				if (command == null)
 				{
-					Type typeToCreate = Type.GetType($"DHDM.{CommandTypeName}");
+					Type typeToCreate = Type.GetType($"{nameof(AvalonEdit)}.{CommandTypeName}");
 					if (typeToCreate == null)
 						return null;
 
@@ -103,6 +103,11 @@ namespace AvalonEdit
 
 		public void ExecuteCommand(TextArea textArea, TextCompletionEngine textCompletionEngine)
 		{
+			if (Command == null)
+			{
+				System.Diagnostics.Debugger.Break();
+				return;
+			}
 			Command.Execute(textCompletionEngine, textArea);
 		}
 

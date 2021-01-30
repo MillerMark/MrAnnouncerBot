@@ -82,6 +82,7 @@
     <Compile Include="ViewModels\SetLootViewModel.cs" />
     <Compile Include="ViewModels\SetViewModel.cs" />
     <Compile Include="ViewModels\Statistics.cs" />
+    <Compile Include="ViewModels\UpdateExistingCardViewModel.cs" />
     <Compile Include="ViewModels\UpdateSetViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

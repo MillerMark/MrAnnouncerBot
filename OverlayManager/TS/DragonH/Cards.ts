@@ -959,10 +959,16 @@ class CardManager {
 		const now: number = performance.now();
 		const timeBetweenMoves = 150;
 		let delay = 0;
+		const lowestOpacity = 0.5;
+		const highestOpacity = 1;
+		const opacityInterval: number = (highestOpacity - lowestOpacity) / CardManager.numDieQueueEntries;
+		let opacity = 1;
 		this.viewerRollQueueEntries.forEach((viewerRollQueueEntry: ViewerRollQueueEntry) => {
 			const textEffect: TextEffect = viewerRollQueueEntry.textEffect;
 			textEffect.ease(now + delay, textEffect.x, textEffect.y, textEffect.x, this.getQueueEntryY(viewerRollQueueEntry.QueuePosition), 400);
 			delay += timeBetweenMoves;
+			textEffect.opacity = opacity;
+			opacity -= opacityInterval;
 		});
 	}
 

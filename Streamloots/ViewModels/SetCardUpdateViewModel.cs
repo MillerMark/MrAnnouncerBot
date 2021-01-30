@@ -55,7 +55,8 @@ namespace Streamloots
 			redemptionSuccessMessage = prototype.redemptionSuccessMessage;
 			rewardFields = prototype.rewardFields;
 		}
-		public void SelfValidate()
+
+		public virtual void SelfValidate()
 		{
 			if (order <= 0)
 				order = 1;

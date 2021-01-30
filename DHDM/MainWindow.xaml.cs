@@ -49,6 +49,7 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp, IDiceRoller
 	{
+		bool _changingInternally;
 		PlateManager plateManager;
 		WeatherManager weatherManager;
 		LeapCalibrator leapCalibrator;
@@ -111,7 +112,7 @@ namespace DHDM
 
 		public MainWindow()
 		{
-			changingInternally = true;
+			ChangingInternally = true;
 			try
 			{
 				InitializeGame();
@@ -124,7 +125,7 @@ namespace DHDM
 			}
 			finally
 			{
-				changingInternally = false;
+				ChangingInternally = false;
 			}
 		}
 
@@ -152,7 +153,6 @@ namespace DHDM
 			game = new DndGame();
 			weatherManager = new WeatherManager(obsWebsocket, game);
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
-			HookEditorEvents();
 			HookGameEvents();
 			realTimeAdvanceTimer = new DispatcherTimer(DispatcherPriority.Send);
 			realTimeAdvanceTimer.Tick += new EventHandler(RealTimeClockHandler);
@@ -249,27 +249,27 @@ namespace DHDM
 			HookEvents();
 
 			SetupSpellsChangedFileWatcher();
-			LoadAvalonEditor();
+			
+			codeEditor.Load();
 
 			actionQueueTimer.Start();
 			lbActionStack.ItemsSource = actionQueue;
 			LoadEverything();
 		}
 
-		void HookEditorEvents()
+		private void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
-			ShowTooltipCommand.ShowParameterTooltipIfNecessary += ShowTooltipCommand_ShowParameterTooltipIfNecessary;
-			CodeCompletionCommand.ExpansionCompleted += CodeCompletionCommand_ExpansionCompleted;
+			if (e.Key == Key.Escape && Modifiers.NoModifiersDown && !codeEditor.CodeCompletionWindowIsUp())
+			{
+				// TODO: Change this if/when we add support for markers.
+				FocusSelectedItem(lstEvents);
+				e.Handled = true;
+			}
 		}
 
-		private void CodeCompletionCommand_ExpansionCompleted(object sender, TextAreaEventArgs ea)
+		private void CodeEditor_CodeChanged(object sender, EventArgs e)
 		{
-			InvokeCodeCompletion();
-		}
-
-		private void ShowTooltipCommand_ShowParameterTooltipIfNecessary(object sender, TextAreaEventArgs ea)
-		{
-			ShowParameterTooltipIfNecessary();
+			CodeChanged();
 		}
 
 		void RegisterSpreadsheetIDs()
@@ -305,21 +305,6 @@ namespace DHDM
 		{
 			CreateDragonHumpersClient();
 		}
-
-		void LoadTextCompletionEngine()
-		{
-			TextCompletionEngine = new TextCompletionEngine(tbxCode);
-			TextCompletionEngine.RequestTextSave += SaveCodeChanges;
-			TextCompletionEngine.ReloadShortcuts();
-		}
-
-		private void LoadAvalonEditor()
-		{
-			LoadAvalonSyntaxHighlighter();
-			LoadTextCompletionEngine();
-		}
-
-		public TextCompletionEngine TextCompletionEngine { get; set; }
 
 		private void HookGameEvents()
 		{
@@ -1550,6 +1535,24 @@ namespace DHDM
 			return userId == karen || userId == mark || userId == lara || userId == zephyr || userId == brendan || userId == dm || userId == kent || userId == maddy;
 		}
 
+		bool ColorStringIsValid(string substring)
+		{
+			if (substring.Length == 3 || substring.Length == 6)
+			{
+				foreach (char character in substring)
+				{
+					if (char.IsDigit(character))
+						continue;
+					char lowerChar = char.ToLower(character);
+					if (lowerChar == 'a' || lowerChar == 'b' || lowerChar == 'c' || lowerChar == 'd' || lowerChar == 'e' || lowerChar == 'f')
+						continue;
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
+
 		void SetDiceColor(string substring, string username)
 		{
 			string colorStr = substring.Trim();
@@ -1557,10 +1560,13 @@ namespace DHDM
 				return;
 
 			if (!colorStr.StartsWith("#"))
-				return;
+				colorStr = "#" + colorStr;
 
-			if (colorStr.Length != 7)
+			if (!ColorStringIsValid(colorStr.Substring(1)))
+			{
+				TellViewers($"{username}, specify die colors with a six-digit hex color string, like this: #47259b");
 				return;
+			}
 
 			DndViewer viewer = AllViewers.Get(username);
 			viewer.DieBackColor = colorStr;
@@ -1577,7 +1583,7 @@ namespace DHDM
 				return;
 			}
 			viewer.TrailingEffects = foundEffect.Name;
-			
+
 			TellViewers($"{username}, your dice trailing effect is now {viewer.TrailingEffects}.");
 		}
 
@@ -6927,15 +6933,15 @@ namespace DHDM
 
 		private void SetEventCode(string code)
 		{
-			changingInternally = true;
+			ChangingInternally = true;
 			try
 			{
-				HideAllCodeChangedStatusUI();
-				TextCompletionEngine.SetText(code);
+				codeEditor.HideAllCodeChangedStatusUI();
+				codeEditor.SetText(code);
 			}
 			finally
 			{
-				changingInternally = false;
+				ChangingInternally = false;
 			}
 		}
 
@@ -7813,18 +7819,21 @@ namespace DHDM
 			FrameRateChangeData.GlobalMaxFiltersOnRoll = num;
 			UpdateOverlayPerformanceOptions();
 		}
-
-		private void TbxCode_KeyDown(object sender, KeyEventArgs e)
+		
+		public bool ChangingInternally
 		{
-
+			get => _changingInternally;
+			set
+			{
+				_changingInternally = value;
+				if (codeEditor != null)
+					if (_changingInternally)
+						codeEditor.BeginUpdate();
+					else
+						codeEditor.EndUpdate();
+			}
 		}
-
-		private void TbxCode_SelectionChanged(object sender, RoutedEventArgs e)
-		{
-			// This is also called whenever the caret moves.
-		}
-
-		bool changingInternally;
+		
 		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			CodeChanged();
@@ -7832,111 +7841,18 @@ namespace DHDM
 
 		private void CodeChanged()
 		{
-			if (changingInternally)
+			if (ChangingInternally)
 				return;
-			changingInternally = true;
+			ChangingInternally = true;
 			try
 			{
-				UpdateSelectedEvent(tbxCode.Text);
+				UpdateSelectedEvent(codeEditor.TextEditor.Text);
 			}
 			finally
 			{
-				changingInternally = false;
+				ChangingInternally = false;
 			}
 		}
-
-		TemplateEngine templateEngine;
-
-		public TemplateEngine TemplateEngine
-		{
-			get
-			{
-				if (templateEngine == null)
-					templateEngine = new TemplateEngine();
-				return templateEngine;
-			}
-		}
-
-		object lastParameterTooltip;
-
-		private Size MeasureString(string candidate)
-		{
-			var formattedText = new FormattedText(
-					candidate,
-					CultureInfo.CurrentCulture,
-					FlowDirection.LeftToRight,
-					new Typeface(tbxCode.FontFamily, tbxCode.FontStyle, tbxCode.FontWeight, tbxCode.FontStretch),
-					tbxCode.FontSize,
-					Brushes.Black,
-					new NumberSubstitution(),
-					1);
-
-			return new Size(formattedText.Width, formattedText.Height);
-		}
-
-		double spaceWidth = 0;
-		int lastLineShownTooltip;
-		void ShowParameterTooltip(object content, int parameterStartOffset)
-		{
-			if (content == null)
-				return;
-			int thisLine = tbxCode.TextArea.Caret.Line;
-			if (content is string && (string)lastParameterTooltip == (string)content)
-				if (lastLineShownTooltip == thisLine)
-					if (TextCompletionEngine.ParameterToolTip.IsOpen)
-						return;
-
-			lastLineShownTooltip = thisLine;
-			lastParameterTooltip = content;
-			if (spaceWidth == 0)
-				spaceWidth = MeasureString("M").Width;
-			double adjustLeft = tbxCode.TextArea.Caret.Offset - parameterStartOffset - 0.5;
-			Rect caret = tbxCode.TextArea.Caret.CalculateCaretRectangle();
-			TextCompletionEngine.ParameterToolTip.HorizontalOffset = Math.Round(caret.Right - adjustLeft * spaceWidth);
-			TextCompletionEngine.ParameterToolTip.VerticalOffset = caret.Bottom + 9;
-			TextCompletionEngine.ParameterToolTip.Content = content;
-			TextCompletionEngine.ParameterToolTip.IsOpen = true;
-			if (TextCompletionEngine.CompletionWindow != null && TextCompletionEngine.CompletionWindow.IsVisible)
-			{
-				TextCompletionEngine.CompletionWindow.Top += TextCompletionEngine.ParameterToolTip.ActualHeight;
-			}
-		}
-
-		void HideParameterTooltip()
-		{
-			TextCompletionEngine.ParameterToolTip.IsOpen = false;
-		}
-
-		bool IsNavKey(Key key)
-		{
-			switch (key)
-			{
-				case Key.End:
-				case Key.Home:
-				case Key.Left:
-				case Key.Up:
-				case Key.Right:
-				case Key.Down:
-				case Key.PageUp:
-				case Key.PageDown:
-					return true;
-			}
-			return false;
-		}
-
-
-
-		int GetParameterNumber()
-		{
-			return tbxCode.Document.GetParameterNumberAtPosition(tbxCode.TextArea.Caret.Offset);
-		}
-
-		int GetParameterStartOffset()
-		{
-			return tbxCode.Document.GetParameterStartOffset(tbxCode.TextArea.Caret.Offset);
-		}
-
-		DispatcherTimer tooltipTimer;
 
 		void FocusSelectedItem(ListBox listBox)
 		{
@@ -7948,146 +7864,13 @@ namespace DHDM
 			else
 				lstEvents.Focus();
 		}
-		bool CodeCompletionWindowIsUp()
-		{
-			if (TextCompletionEngine.CompletionWindow == null)
-				return false;
-
-			return TextCompletionEngine.CompletionWindow.Visibility == Visibility.Visible;
-		}
-
-		private void TbxCode_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Escape && Modifiers.NoModifiersDown && !CodeCompletionWindowIsUp())
-			{
-				// TODO: Change this if/when we add support for markers.
-				FocusSelectedItem(lstEvents);
-				e.Handled = true;
-			}
-			else if (e.Key == Key.Space && Modifiers.NoModifiersDown)
-			{
-				CodeTemplate templateToExpand = TemplateEngine.GetTemplateToExpand(tbxCode);
-				if (templateToExpand != null)
-				{
-					e.Handled = true;
-					TextCompletionEngine.HideCodeCompletionWindow();
-					TemplateEngine.ExpandTemplate(tbxCode, templateToExpand);
-				}
-			}
-			else if (IsNavKey(e.Key) || e.Key == Key.OemComma && Modifiers.NoModifiersDown)
-			{
-				StartTooltipTimer();
-			}
-		}
-
-		private void StartTooltipTimer()
-		{
-			if (tooltipTimer == null)
-			{
-				CreateToolipTimer();
-			}
-			tooltipTimer.Start();
-		}
-
-		private void CreateToolipTimer()
-		{
-			tooltipTimer = new DispatcherTimer();
-			tooltipTimer.Interval = TimeSpan.FromMilliseconds(50);
-			tooltipTimer.Tick += TooltipTimer_Tick;
-		}
-
-		string GetParameterTooltip(int parameterNumber)
-		{
-			DndFunction dndFunction = TextCompletionEngine.GetActiveDndFunction(tbxCode.TextArea);
-			if (dndFunction == null)
-				return null;
-
-			IEnumerable<ParamAttribute> customAttributes = dndFunction.GetType().GetCustomAttributes(typeof(ParamAttribute)).Cast<ParamAttribute>().ToList();
-			if (customAttributes == null)
-				return null;
-
-			ParamAttribute paramAttribute = customAttributes.FirstOrDefault(x => x.Index == parameterNumber);
-			if (paramAttribute == null)
-				return null;
-
-			return paramAttribute.Description;
-		}
-
-		private void TooltipTimer_Tick(object sender, EventArgs e)
-		{
-			tooltipTimer.Stop();
-			SafeInvoke(() =>
-			{
-				ShowParameterTooltipIfNecessary();
-			});
-		}
-
-		public void ShowParameterTooltipIfNecessary()
-		{
-			int parameterNumber = GetParameterNumber();
-			if (parameterNumber > 0)
-			{
-				int parameterStartOffset = GetParameterStartOffset();
-				string parameterTooltip = GetParameterTooltip(parameterNumber);
-				ShowParameterTooltip(parameterTooltip, parameterStartOffset);
-			}
-			else
-				HideParameterTooltip();
-		}
-
-		void ShowStatusSavingCode()
-		{
-			tbStatus.Visibility = Visibility.Visible;
-			iconSaving.Visibility = Visibility.Visible;
-			iconSaved.Visibility = Visibility.Hidden;
-		}
-
-		void ShowStatusCodeIsSaved()
-		{
-			tbStatus.Visibility = Visibility.Hidden;
-			iconSaving.Visibility = Visibility.Hidden;
-			iconSaved.Visibility = Visibility.Visible;
-		}
-
-		void HideAllCodeChangedStatusUI()
-		{
-			tbStatus.Visibility = Visibility.Hidden;
-			iconSaving.Visibility = Visibility.Hidden;
-			iconSaved.Visibility = Visibility.Hidden;
-		}
-
-		private void TbxCode_AvalonTextChanged(object sender, EventArgs e)
-		{
-			if (!changingInternally)
-				ShowStatusSavingCode();
-			CodeChanged();
-		}
-		void LoadAvalonSyntaxHighlighter()
-		{
-			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = "DHDM.CSharp.xml";
-
-			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-			using (System.Xml.XmlReader reader = System.Xml.XmlReader.Create(stream, new System.Xml.XmlReaderSettings()))
-			{
-				tbxCode.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(reader, ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance);
-			}
-		}
-		public void InvokeCodeCompletion()
-		{
-			TextCompletionEngine.InvokeCodeCompletion();
-		}
-
+		
 		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e)
 		{
-			TemplateEngine.ReloadTemplates();
-			TextCompletionEngine.ReloadShortcuts();
+			codeEditor.ReloadTemplates();
+			codeEditor.ReloadShortcuts();
 		}
 
-		private void TbxCode_MouseDown(object sender, MouseButtonEventArgs e)
-		{
-			StartTooltipTimer();
-		}
 		void SaveCodeChanges(object sender, EventArgs e)
 		{
 			if (activeEventData == null)
@@ -8106,7 +7889,7 @@ namespace DHDM
 				if (feature != null)
 					GoogleSheets.SaveChanges(feature, activeEventData.Name);
 			}
-			ShowStatusCodeIsSaved();
+			codeEditor.ShowStatusCodeIsSaved();
 		}
 
 		private void lstKnownSpellsAndFeatures_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -8122,7 +7905,7 @@ namespace DHDM
 		{
 			if (e.Key == Key.Enter && Modifiers.NoModifiersDown)
 			{
-				tbxCode.Focus();
+				codeEditor.TextEditor.Focus();
 				e.Handled = true;
 			}
 			else if (e.Key == Key.Escape && Modifiers.NoModifiersDown)
@@ -8135,7 +7918,7 @@ namespace DHDM
 		private void btnReloadTrailingEffects_Click(object sender, RoutedEventArgs e)
 		{
 			AllTrailingEffects.Invalidate();
-			TextCompletionEngine.RefreshCompletionProviders();
+			codeEditor.RefreshCompletionProviders();
 		}
 
 		private void btnReloadMonsters_Click(object sender, RoutedEventArgs e)
@@ -8176,7 +7959,7 @@ namespace DHDM
 
 		private void btnMonsterFilter_CheckedChanged(object sender, RoutedEventArgs e)
 		{
-			if (!changingInternally)
+			if (!ChangingInternally)
 				FilterMonsters();
 		}
 
