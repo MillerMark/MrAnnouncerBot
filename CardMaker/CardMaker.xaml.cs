@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Streamloots;
 using SysPath = System.IO.Path;
 using GoogleHelper;
+using System.Threading.Tasks;
 
 namespace CardMaker
 {
@@ -72,7 +73,7 @@ namespace CardMaker
 			CardData = new CardData();
 			CardData.LoadData();
 			foreach (Card card in CardData.AllKnownCards)
-				card.LinkedPropertyChanged += Card_LinkedPropertyChanged;
+				HookCardEvents(card);
 
 			if (CardData.AllKnownDecks != null && CardData.AllKnownDecks.Count > 0)
 				SetActiveDeck(CardData.AllKnownDecks[0]);
@@ -295,7 +296,7 @@ namespace CardMaker
 			{
 				cardLayerManager.Clear();
 				ActiveCard = CardData.AddCard(ActiveDeck);
-				ActiveCard.LinkedPropertyChanged += Card_LinkedPropertyChanged;
+				HookCardEvents(ActiveCard);
 				tbxCardName.SelectAll();
 				tbxCardName.Focus();
 			}
@@ -1049,8 +1050,8 @@ namespace CardMaker
 			try
 			{
 				ActiveCard = card;
-				if (card != null && !string.IsNullOrWhiteSpace(card.UploadedImageFile))
-					imgUploadedImage.Source = new BitmapImage(new Uri(card.UploadedImageFile));
+				if (card != null && !string.IsNullOrWhiteSpace(card.StreamlootsImageFileUri))
+					imgUploadedImage.Source = new BitmapImage(new Uri(card.StreamlootsImageFileUri));
 				else
 					imgUploadedImage.Source = null;
 
@@ -1405,6 +1406,7 @@ namespace CardMaker
 		Random random = new Random();
 		private const string userName = "{{username}}";
 		private const string target = "{{target}}";
+		private const string recipient = "{{recipient}}";
 		private void AddGiftSpellCard(SpellDto spellDto)
 		{
 			double placeholderWidth;
@@ -1412,9 +1414,9 @@ namespace CardMaker
 			Card scroll = CreateSpellCard("Gift", spellDto);
 			scroll.Description = GetSpellDescription(spellDto, true);
 			scroll.AdditionalInstructions = "Give this spell scroll to a player, NPC, or monster (enter their name below).";
-			scroll.AlertMessage = $"{userName} gave the {spellDto.name} spell scroll to {target}.";
+			scroll.AlertMessage = $"{userName} gave the {spellDto.name} spell scroll to {recipient}.";
 			scroll.Expires = CardExpires.Never;
-			AddPlayerNpcTargetField(scroll);
+			AddPlayerNpcRecipientField(scroll, "scroll");
 			int randomValue = random.Next(0, 100);
 			if (randomValue < 40)
 			{
@@ -1437,9 +1439,9 @@ namespace CardMaker
 			scroll.ScalePlaceholder(placeholderWidth, placeholderHeight);
 		}
 
-		private static void AddPlayerNpcTargetField(Card card)
+		private static void AddPlayerNpcRecipientField(Card card, string itemName)
 		{
-			card.Fields.Add(new Field() { CardId = card.ID, Label = "Player/NPC to receive this scroll:", Name = "target", ParentCard = card, Required = true });
+			card.Fields.Add(new Field() { CardId = card.ID, Label = $"Player/NPC to receive this {itemName}:", Name = "recipient", ParentCard = card, Required = true });
 		}
 
 		private void AddCastSpellCard(SpellDto spellDto)
@@ -1447,7 +1449,7 @@ namespace CardMaker
 			Card card = CreateSpellCard("Cast", spellDto);
 			card.Description = GetSpellDescription(spellDto, false);
 			card.Expires = CardExpires.Immediately;
-			card.AlertMessage = $"{userName} casts the {spellDto.name} spell.";
+			string alertMessage;
 			const double witchcraftPlaceholderSize = 174;
 			switch (random.Next(0, 4))
 			{
@@ -1467,7 +1469,7 @@ namespace CardMaker
 			card.ScalePlaceholder(witchcraftPlaceholderSize);
 			if (!string.IsNullOrWhiteSpace(spellDto.targetingPrompt))
 			{
-				// TODO: Adjust the alert message to include the target field. Shorten Description MaxHeight.
+				// TODO: Shorten Description MaxHeight.
 				Field targetField = new Field(card)
 				{
 					Name = "target",
@@ -1476,7 +1478,13 @@ namespace CardMaker
 					Type = FieldType.LongText
 				};
 				CardData.AllKnownFields.Add(targetField);
+				alertMessage = $"{userName} casts {spellDto.name}, targeting {target}.";
 			}
+			else
+				alertMessage = $"{userName} casts {spellDto.name}.";
+			card.AlertMessage = alertMessage;
+
+			card.Rarity = Rarity.Legendary;
 		}
 
 		static string RemoveConcentration(string duration, bool isScroll)
@@ -1489,6 +1497,7 @@ namespace CardMaker
 		private Card CreateSpellCard(string actionStr, SpellDto spellDto)
 		{
 			Card card = CardData.AddCard(ActiveDeck);
+			HookCardEvents(card);
 			card.Name = $"{actionStr} {spellDto.name}";
 			card.Text = spellDto.name;
 			card.TextFontSize = 60;
@@ -1504,6 +1513,23 @@ namespace CardMaker
 			// TODO: Linked properties are not working.
 
 			return card;
+		}
+
+		private void HookCardEvents(Card card)
+		{
+			card.LinkedPropertyChanged += Card_LinkedPropertyChanged;
+			card.PropertyChanged += Card_PropertyChanged;
+		}
+
+		private void Card_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (ChangingDataInternally || e.PropertyName == "IsDirty" || e.PropertyName == "Uploaded")
+				return;
+
+			if (!(sender is Card card))
+				return;
+
+			card.Uploaded = false;
 		}
 
 		private void AddLevelSpellsMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1561,18 +1587,8 @@ namespace CardMaker
 		}
 		string GetDieModDescription(string rollKind, int modifier, bool isSecret)
 		{
-			string bonusPenalty;
-			string bonusVerb;
-			if (modifier < 0)
-			{
-				bonusPenalty = "penalty";
-				bonusVerb = "incur";
-			}
-			else
-			{
-				bonusPenalty = "bonus";
-				bonusVerb = "gain";
-			}
+			string bonusVerb = GetBonusVerb(modifier);
+			string bonusPenalty = GetBonusPenaltyNoun(modifier);
 
 			string rollDescription = "roll";
 
@@ -1592,6 +1608,36 @@ namespace CardMaker
 				return $"Give this secret card to a player, NPC, or monster. On their next {rollDescription}, the player holding this card will automatically {bonusVerb} the specified {bonusPenalty}. This is a *secret card* and will not be revealed in the game until it is automatically triggered.";
 			else
 				return $"Give this card to a player, NPC, or monster. When the recipient plays this card later in the game, that player will {bonusVerb} the specified {bonusPenalty} on their {rollDescription}.";
+		}
+
+		private static string GetBonusPenaltyNoun(int modifier)
+		{
+			string bonusPenalty;
+			if (modifier < 0)
+			{
+				bonusPenalty = "penalty";
+			}
+			else
+			{
+				bonusPenalty = "bonus";
+			}
+
+			return bonusPenalty;
+		}
+
+		private static string GetBonusVerb(int modifier)
+		{
+			string bonusVerb;
+			if (modifier < 0)
+			{
+				bonusVerb = "incur";
+			}
+			else
+			{
+				bonusVerb = "gain";
+			}
+
+			return bonusVerb;
 		}
 
 		void QuickAddLayerDetails(Card card, string pngFile)
@@ -1665,22 +1711,18 @@ namespace CardMaker
 		private Card CreateBonusPenaltyCard(string rollKind, int modifier, int powerLevel, bool isSecret = true)
 		{
 			Card card = CardData.AddCard(ActiveDeck);
+			HookCardEvents(card);
 			SetRarity(card, powerLevel, modifier);
 			card.Name = GetDieModTitle(isSecret, rollKind, modifier);
 			card.StylePath = "Die Mods";
 			card.Description = GetDieModDescription(rollKind, modifier, isSecret);
 			QuickAddAllLayerDetails(card);
 			SetDieModLayerVisibilities(card, rollKind, modifier, isSecret);
+			string bonusPenalty = GetBonusPenaltyNoun(modifier);
+			AddPlayerNpcRecipientField(card, bonusPenalty);
 
 			// TODO: Linked properties are not working.
 			return card;
-		}
-
-		string GetSayAnythingDieName(int modifier)
-		{
-			if (modifier < 5)
-				return "d4";
-			return "d6";
 		}
 
 		void SetSayAnythingLayerVisibilities(Card card, string dieName, int multiplier)
@@ -1696,6 +1738,7 @@ namespace CardMaker
 			const string d4 = "d4";
 			const string d6 = "d6";
 			const string d8 = "d8";
+			const string d10 = "d10";
 			multiplier = 1;
 			dieName = d4;
 			switch (powerLevel)
@@ -1716,43 +1759,61 @@ namespace CardMaker
 					multiplier = 2;
 					dieName = d4;
 					break;
-				case 5: // 7
+				case 5: // 5.5
+					multiplier = 1;
+					dieName = d10;
+					break;
+				case 6: // 7
 					multiplier = 2;
 					dieName = d6;
 					break;
-				case 6: // 7.5
+				case 7: // 7.5
 					multiplier = 3;
 					dieName = d4;
 					break;
-				case 7: // 9
+				case 8: // 9
 					multiplier = 2;
 					dieName = d8;
 					break;
-				case 8: // 10
+				case 9: // 10
 					multiplier = 4;
 					dieName = d4;
 					break;
-				case 9: // 10.5
+				case 10: // 10.5
 					multiplier = 3;
 					dieName = d6;
 					break;
-				case 10: // 13.5
+				case 11: // 11
+					multiplier = 2;
+					dieName = d10;
+					break;
+				case 12: // 13.5
 					multiplier = 3;
 					dieName = d8;
 					break;
-				case 11: // 14
+				case 13: // 14
 					multiplier = 4;
 					dieName = d6;
 					break;
-				case 12: // 18
+				case 14: // 16.5
+					multiplier = 3;
+					dieName = d10;
+					break;
+				case 15: // 18
 					multiplier = 4;
 					dieName = d8;
+					break;
+				case 16: // 22
+					multiplier = 4;
+					dieName = d10;
 					break;
 			}
 		}
+
 		private Card CreateSayAnythingCard(int actualPowerLevel, int basePowerLevel)
 		{
 			Card card = CardData.AddCard(ActiveDeck);
+			HookCardEvents(card);
 			SetRarity(card, basePowerLevel, actualPowerLevel);
 			string dieName;
 			int multiplier;
@@ -1805,11 +1866,9 @@ namespace CardMaker
 		}
 		void CreateSayAnythingCardsAtPowerLevel(int powerLevel)
 		{
-			int topEnd = Math.Min(powerLevel + 3, 12);
+			int topEnd = Math.Min(powerLevel + 3, 16);
 			for (int i = powerLevel; i <= topEnd; i++)
-			{
 				CreateSayAnythingCard(i, powerLevel);
-			}
 		}
 
 		private void RollModPowerLevelMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1850,18 +1909,34 @@ namespace CardMaker
 
 		private void btnUploadImage_Click(object sender, RoutedEventArgs e)
 		{
+			SaveAndUploadImage();
+		}
+
+		private void SaveAndUploadImage()
+		{
+			string fullPath = SaveCardImageToFile();
+			ActiveCard.CloudinaryImageUrl = cloudinaryClient.UploadImage(SysPath.GetFileName(fullPath));
+			streamlootsClient.UploadImageFile(ActiveCard, fullPath);
+		}
+
+		private string SaveCardImageToFile()
+		{
 			string fileName = GetFileName(ActiveCard);
 			string fullPath = Path.Combine(imagePath, fileName);
 			cvsLayers.SaveToPng(new Uri(fullPath));
-			ActiveCard.ImageUrl = cloudinaryClient.UploadImage(fileName);
-			streamlootsClient.UploadFile(ActiveCard, fullPath);
-			//Clipboard.SetText(fullPath);
-			//ShowStatus("image path copied to clipboard.");
+			return fullPath;
 		}
 
 		static string GetSpellDescription(SpellDto spellDto, bool isScroll)
 		{
-			string description = spellDto.description.Replace("**", "") + $" Duration: {RemoveConcentration(spellDto.duration, isScroll)}.";
+			string lowerSpellDuration = spellDto.duration.ToLower();
+			string durationStr;
+			if (lowerSpellDuration.Contains("instantaneous") || lowerSpellDuration.Contains("special"))
+				durationStr = string.Empty;
+			else
+				durationStr = $" Duration: {RemoveConcentration(spellDto.duration, isScroll)}.";
+
+			string description = spellDto.description.Replace("**", "") + durationStr;
 			if (description.IndexOf('{') < 0 && description.IndexOf('«') < 0 && description.IndexOf('»') < 0)
 				return description;
 
@@ -1884,6 +1959,10 @@ namespace CardMaker
 		{
 			if (ActiveCard == null)
 				return;
+
+			if (string.IsNullOrWhiteSpace(ActiveCard.StreamlootsImageFileUri))
+				SaveAndUploadImage();
+
 			if (!string.IsNullOrWhiteSpace(ActiveCard.StreamlootsCardId))
 				await streamlootsClient.UpdateCard(ActiveCard);
 			else
@@ -1891,6 +1970,7 @@ namespace CardMaker
 				SetCardViewModel setCardViewModel = await streamlootsClient.AddCard(ActiveCard);
 				ActiveCard.StreamlootsCardId = setCardViewModel._id;
 			}
+			ActiveCard.Uploaded = true;
 		}
 
 		private void codeCardReceived_CodeChanged(object sender, EventArgs e)

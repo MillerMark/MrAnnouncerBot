@@ -193,6 +193,9 @@
 							<MenuItem Header="Power Level 8" Tag="8" Click="SayAnythingPowerLevelMenuItem_Click"/>
 							<MenuItem Header="Power Level 9" Tag="9" Click="SayAnythingPowerLevelMenuItem_Click"/>
 							<MenuItem Header="Power Level 10" Tag="10" Click="SayAnythingPowerLevelMenuItem_Click"/>
+							<MenuItem Header="Power Level 11" Tag="11" Click="SayAnythingPowerLevelMenuItem_Click"/>
+							<MenuItem Header="Power Level 12" Tag="12" Click="SayAnythingPowerLevelMenuItem_Click"/>
+							<MenuItem Header="Power Level 13" Tag="13" Click="SayAnythingPowerLevelMenuItem_Click"/>
 						</ContextMenu>
 					</Button.ContextMenu>
 					<Button.Triggers>
@@ -234,22 +237,22 @@
 
 							<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 								<TextBlock Text="Description: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-								<TextBox x:Name="tbxDescription" Text="{Binding Description}" AcceptsReturn="False" TextChanged="tbxDescription_TextChanged" Width="420" HorizontalAlignment="Left" Height="Auto" TextWrapping="Wrap"/>
+								<TextBox x:Name="tbxDescription" Text="{Binding Description}" AcceptsReturn="False" TextChanged="tbxDescription_TextChanged" Width="Auto" MinWidth="420" MaxWidth="700"  MaxHeight="350" HorizontalAlignment="Left" Height="Auto" TextWrapping="Wrap"/>
 							</StackPanel>
 
 							<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 								<TextBlock Text="Additional Instructions: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-								<TextBox x:Name="tbxAdditionalInstructions" Text="{Binding Path=AdditionalInstructions}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap" Margin="-6, 0, 0, 0"/>
+								<TextBox x:Name="tbxAdditionalInstructions" Text="{Binding Path=AdditionalInstructions}" AcceptsReturn="False" Width="Auto" MinWidth="420" HorizontalAlignment="Left" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
 							</StackPanel>
 
 							<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 								<TextBlock Text="Alert Message: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-								<TextBox x:Name="tbxRedemptionMessage" Text="{Binding Path=AlertMessage}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap" Margin="-6, 0, 0, 0"/>
+								<TextBox x:Name="tbxRedemptionMessage" Text="{Binding Path=AlertMessage}" AcceptsReturn="False" Width="Auto" MinWidth="420" HorizontalAlignment="Left" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
 							</StackPanel>
 
 							<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 								<TextBlock Text="Redemption Success Message: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-								<TextBox x:Name="tbxRedemptionSuccessMessage" Text="{Binding Path=RedemptionSuccessMessage}" AcceptsReturn="False" Width="420" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap" Margin="-6, 0, 0, 0"/>
+								<TextBox x:Name="tbxRedemptionSuccessMessage" Text="{Binding Path=RedemptionSuccessMessage}" AcceptsReturn="False" Width="Auto" MinWidth="420" HorizontalAlignment="Left" Height="Auto" TextChanged="tbxAdditionalInstructions_TextChanged" TextWrapping="Wrap"/>
 							</StackPanel>
 
 							<StackPanel Orientation="Horizontal" Margin="0, 14, 0, 0">

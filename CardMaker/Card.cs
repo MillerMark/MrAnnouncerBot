@@ -518,23 +518,23 @@ namespace CardMaker
 			}
 		}
 
-		string imageUrl;
+		string cloudinaryImageUrl;
 		[Column]
-		public string ImageUrl
+		public string CloudinaryImageUrl
 		{
-			get => imageUrl;
+			get => cloudinaryImageUrl;
 			set
 			{
-				if (imageUrl == value)
+				if (cloudinaryImageUrl == value)
 					return;
-				imageUrl = value;
+				cloudinaryImageUrl = value;
 				OnPropertyChanged();
 			}
 		}
 
 		string uploadedImageFile;
 		[Column]
-		public string UploadedImageFile
+		public string StreamlootsImageFileUri
 		{
 			get => uploadedImageFile;
 			set
@@ -721,8 +721,8 @@ namespace CardMaker
 		private void InitializeSetCardWithImageViewModel(SetCardWithImageViewModel setCardWithImageViewModel)
 		{
 			InitializeSetCardUpdateViewModel(setCardWithImageViewModel);
-			if (!string.IsNullOrWhiteSpace(UploadedImageFile))
-				setCardWithImageViewModel.imageUrl = UploadedImageFile;
+			if (!string.IsNullOrWhiteSpace(StreamlootsImageFileUri))
+				setCardWithImageViewModel.imageUrl = StreamlootsImageFileUri;
 		}
 
 		public UpdateExistingCardViewModel ToUpdateExistingCardViewModel()
@@ -742,9 +742,9 @@ namespace CardMaker
 		public SetCardViewModel ToSetCardViewModel()
 		{
 			SetCardViewModel setCardViewModel = new SetCardViewModel();
-			if (!string.IsNullOrWhiteSpace(UploadedImageFile))
+			if (!string.IsNullOrWhiteSpace(StreamlootsImageFileUri))
 			{
-				setCardViewModel.imageFile = JsonConvert.DeserializeObject<FileViewModel>(UploadedImageFile);
+				setCardViewModel.imageFile = JsonConvert.DeserializeObject<FileViewModel>(StreamlootsImageFileUri);
 			}
 			InitializeSetCardWithImageViewModel(setCardViewModel);
 			return setCardViewModel;
@@ -753,7 +753,7 @@ namespace CardMaker
 		private void InitializeSetCardWithImageViewModel(SetCardViewModel setCardWithImageViewModel)
 		{
 			InitializeSetCardUpdateViewModel(setCardWithImageViewModel);
-			setCardWithImageViewModel.imageUrl = imageUrl;
+			setCardWithImageViewModel.imageUrl = cloudinaryImageUrl;
 		}
 
 		public SetCardUpdateViewModel ToSetCardUpdateViewModel()
@@ -794,7 +794,7 @@ namespace CardMaker
 			{
 				deactivated = false,
 				duration = null,
-				imageUrl = UploadedImageFile,
+				imageUrl = StreamlootsImageFileUri,
 				soundUrl = ID,  // encoding this card's ID in the soundUrl field.
 				muteSound = true,
 				ttsEnabled = false,
@@ -833,6 +833,11 @@ namespace CardMaker
 			}
 			else
 				setCardUpdateViewModel.redemptionLimit = null;
+		}
+
+		public bool HasField(string fieldName)
+		{
+			return Fields.Any(field => field.Name == fieldName);
 		}
 	}
 }

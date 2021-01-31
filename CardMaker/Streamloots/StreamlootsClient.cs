@@ -238,7 +238,12 @@ namespace CardMaker
 				deck.SetId = await AddDeck(deck.Name);
 		}
 
-		public async void UploadFile(Card card, string fullPath)
+		/// <summary>
+		/// Uploads the specified file on disk to Streamloots, and sets the card's UploadedImageFile property to the Streamloots fileUri.
+		/// </summary>
+		/// <param name="card">The card associated with the image.</param>
+		/// <param name="fullPath">The full path to the card image on disk.</param>
+		public async void UploadImageFile(Card card, string fullPath)
 		{
 			await EnsureDeckExistsOnStreamloots(card.ParentDeck);
 			//Image newImage = Image.FromFile(fullPath);
@@ -255,8 +260,7 @@ namespace CardMaker
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/files", formContent);
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			FileViewModel fileData = JsonConvert.DeserializeObject<FileViewModel>(result);
-			card.UploadedImageFile = fileData.fileUri;
-			
+			card.StreamlootsImageFileUri = fileData.fileUri;
 		}
 	}
 }
