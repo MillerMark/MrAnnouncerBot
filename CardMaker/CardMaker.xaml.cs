@@ -1417,26 +1417,29 @@ namespace CardMaker
 			scroll.AlertMessage = $"{userName} gave the {spellDto.name} spell scroll to {recipient}.";
 			scroll.Expires = CardExpires.Never;
 			AddPlayerNpcRecipientField(scroll, "scroll");
-			int randomValue = random.Next(0, 100);
-			if (randomValue < 40)
+			if (!CardStyles.Apply(scroll))
 			{
-				placeholderWidth = 155;
-				placeholderHeight = 152;
-				scroll.StylePath = "Scrolls\\Rods";
+				int randomValue = random.Next(0, 100);
+				if (randomValue < 40)
+				{
+					placeholderWidth = 155;
+					placeholderHeight = 152;
+					scroll.StylePath = "Scrolls\\Rods";
+				}
+				else if (randomValue < 60)
+				{
+					placeholderWidth = 131;
+					placeholderHeight = 130;
+					scroll.StylePath = "Scrolls\\Smooth Light";
+				}
+				else
+				{
+					placeholderWidth = 128;
+					placeholderHeight = 127;
+					scroll.StylePath = "Scrolls\\Tan";
+				}
+				scroll.ScalePlaceholder(placeholderWidth, placeholderHeight);
 			}
-			else if (randomValue < 60)
-			{
-				placeholderWidth = 131;
-				placeholderHeight = 130;
-				scroll.StylePath = "Scrolls\\Smooth Light";
-			}
-			else
-			{
-				placeholderWidth = 128;
-				placeholderHeight = 127;
-				scroll.StylePath = "Scrolls\\Tan";
-			}
-			scroll.ScalePlaceholder(placeholderWidth, placeholderHeight);
 		}
 
 		private static void AddPlayerNpcRecipientField(Card card, string itemName)
@@ -1451,21 +1454,22 @@ namespace CardMaker
 			card.Expires = CardExpires.Immediately;
 			string alertMessage;
 			const double witchcraftPlaceholderSize = 174;
-			switch (random.Next(0, 4))
-			{
-				case 0:
-					card.StylePath = "Witchcraft\\Common";
-					break;
-				case 1:
-					card.StylePath = "Witchcraft\\Rare";
-					break;
-				case 2:
-					card.StylePath = "Witchcraft\\Epic";
-					break;
-				case 3:
-					card.StylePath = "Witchcraft\\Legendary";
-					break;
-			}
+			if (!CardStyles.Apply(card))
+				switch (random.Next(0, 4))
+				{
+					case 0:
+						card.StylePath = "Witchcraft\\Common";
+						break;
+					case 1:
+						card.StylePath = "Witchcraft\\Rare";
+						break;
+					case 2:
+						card.StylePath = "Witchcraft\\Epic";
+						break;
+					case 3:
+						card.StylePath = "Witchcraft\\Legendary";
+						break;
+				}
 			card.ScalePlaceholder(witchcraftPlaceholderSize);
 			if (!string.IsNullOrWhiteSpace(spellDto.targetingPrompt))
 			{
@@ -1475,8 +1479,12 @@ namespace CardMaker
 					Name = "target",
 					Label = spellDto.targetingPrompt,
 					Required = spellDto.targetingPrompt.ToLower().IndexOf("optional") < 0,
-					Type = FieldType.LongText
 				};
+				if (TargetsOne(spellDto))
+					targetField.Type = FieldType.Text;
+				else
+					targetField.Type = FieldType.LongText;
+
 				CardData.AllKnownFields.Add(targetField);
 				alertMessage = $"{userName} casts {spellDto.name}, targeting {target}.";
 			}
@@ -1485,6 +1493,25 @@ namespace CardMaker
 			card.AlertMessage = alertMessage;
 
 			card.Rarity = Rarity.Legendary;
+		}
+
+		private static bool TargetsOne(SpellDto spellDto)
+		{
+			return spellDto.target == "1" || 
+						 spellDto.target == "1 willing" || 
+						 spellDto.target == "1 humanoid" ||
+						 spellDto.target == "1 corpse" || 
+						 spellDto.target == "1 beast" || 
+						 spellDto.target == "1 dead" ||
+						 spellDto.target == "1 dead humanoid" || 
+						 spellDto.target == "1 friendly/charmed beast" ||
+						 spellDto.target == "1 beast or humanoid" ||
+						 spellDto.target == "1 beast or plant (huge or smaller)" ||
+						 spellDto.target == "1 (no undead)" ||
+						 spellDto.target == "1 (medium or smaller)" ||
+						 spellDto.target == "1 (celestial, elemental, fey, or fiend)" ||
+						 spellDto.target == "*|1" ||
+						 spellDto.target == "1 willing beast";
 		}
 
 		static string RemoveConcentration(string duration, bool isScroll)
@@ -1509,8 +1536,6 @@ namespace CardMaker
 				// TODO: Stretch image to fit placeholder
 				card.Placeholder = fileName;
 			}
-
-			// TODO: Linked properties are not working.
 
 			return card;
 		}
@@ -1991,6 +2016,11 @@ namespace CardMaker
 		{
 			GoogleSheets.RegisterSpreadsheetID("DnD", "13g0mcruC1gLcSfkVESIWW9Efrn0MyaKw0hqCiK1Rg8k");
 			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
+		}
+
+		private void SaveSelectedCardStyle_Click(object sender, RoutedEventArgs e)
+		{
+			CardStyles.Save(ActiveCard);
 		}
 
 		// TODO: Prompt for save if dirty on close!!!

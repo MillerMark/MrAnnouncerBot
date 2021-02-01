@@ -658,7 +658,7 @@ namespace CardMaker
 			TextFontHue = color.GetHue();
 			TextFontSat = color.GetSaturation();
 			TextFontLight = color.GetBrightness();
-			TextFontOpacity = color.A / 255;
+			TextFontOpacity = color.A / 255.0;
 		}
 
 		public void SetFontBrush(Brush fontBrush)

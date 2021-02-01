@@ -115,6 +115,7 @@
 							<MenuItem x:Name="cmMoveCardTo" Header="Move Card To" ContextMenuOpening="cmMoveCardTo_ContextMenuOpening" SubmenuOpened="cmMoveCardTo_SubmenuOpened">
 								<MenuItem x:Name="placeHolder" Visibility="Collapsed"></MenuItem>
 							</MenuItem>
+							<MenuItem Header="Save this card style..." Click="SaveSelectedCardStyle_Click" />
 						</ContextMenu>
 					</ListBox.ContextMenu>
 				</ListBox>
@@ -219,7 +220,7 @@
 			<TabControl>
 				<TabItem Header="Image">
 					<StackPanel x:Name="spSelectedCard" Orientation="Horizontal" Visibility="Visible">
-						<StackPanel x:Name="spCardDetails" Orientation="Vertical" Margin="20, 0, 0, 0">
+						<StackPanel x:Name="spCardDetails" Orientation="Vertical" Margin="20, 10, 0, 0">
 							<StackPanel Orientation="Horizontal" Margin="0, 5, 0, 8">
 								<TextBlock Text="Card Name: " Width="Auto" Height="Auto" Margin="0, 0, 5, 0" Foreground="#FF3C5EE5"/>
 								<TextBox x:Name="tbxCardName" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" TextChanged="tbxCardName_TextChanged" MinWidth="100"/>
@@ -237,7 +238,7 @@
 
 							<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
 								<TextBlock Text="Description: " Width="Auto" Height="Auto" Margin="0, 0, 10, 0" Foreground="#FF3C5EE5"/>
-								<TextBox x:Name="tbxDescription" Text="{Binding Description}" AcceptsReturn="False" TextChanged="tbxDescription_TextChanged" Width="Auto" MinWidth="420" MaxWidth="700"  MaxHeight="350" HorizontalAlignment="Left" Height="Auto" TextWrapping="Wrap"/>
+								<TextBox x:Name="tbxDescription" Text="{Binding Description}" AcceptsReturn="False" TextChanged="tbxDescription_TextChanged" Width="Auto" MinWidth="420" MaxWidth="600"  MaxHeight="350" HorizontalAlignment="Left" Height="Auto" TextWrapping="Wrap"/>
 							</StackPanel>
 
 							<StackPanel Orientation="Vertical" Margin="0, 0, 0, 8">
@@ -367,7 +368,7 @@
 							</Button>
 						</StackPanel>
 
-						<StackPanel x:Name="spLayersList" Orientation="Vertical" Margin="20, 0, 0, 0">
+						<StackPanel x:Name="spLayersList" Orientation="Vertical" Margin="20, 10, 0, 0">
 							<Button x:Name="btnCardStylePicker" Content="Card Style" Width="Auto" Padding="8,0,8,0" Height="30" HorizontalAlignment="Left" Margin="0, 0, 0, 8" PreviewMouseDown="btnCardStylePicker_MouseDown" >
 								<Button.ContextMenu>
 									<ContextMenu x:Name="mnuCardStyle" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
@@ -523,7 +524,7 @@
 							</Button>
 						</StackPanel>
 
-						<Grid x:Name="grdLayerDetails" Height="Auto" Width="Auto" Margin="20, 0, 0, 0">
+						<Grid x:Name="grdLayerDetails" Height="Auto" Width="Auto" Margin="20, 10, 0, 0">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto"/>
 								<ColumnDefinition Width="Auto"/>
@@ -676,7 +677,7 @@
 							</Button>
 						</Grid>
 
-						<StackPanel Orientation="Vertical">
+						<StackPanel Orientation="Vertical" Margin="0, 0, 10, 0">
 							<Button x:Name="btnRandomize" Click="btnRandomize_Click" Width="90" Margin="0, 10, 0, 20" HorizontalAlignment="Left">
 								Randomize
 							</Button>

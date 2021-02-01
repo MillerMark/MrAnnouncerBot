@@ -207,6 +207,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CardStyles.cs" />
     <Compile Include="AllLayers.cs" />
     <Compile Include="BaseNameId.cs" />
     <Compile Include="BindingHelper.cs" />
@@ -229,6 +230,7 @@
     <Compile Include="PropertyLink.cs" />
     <Compile Include="Rarity.cs" />
     <Compile Include="ReflectionExtensions.cs" />
+    <Compile Include="SavedCardStyle.cs" />
     <Compile Include="Streamloots\CloudinaryClient.cs" />
     <Compile Include="Streamloots\StreamlootsClient.cs" />
     <Compile Include="WpfExtensionMethods.cs" />
