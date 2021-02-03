@@ -61,9 +61,15 @@ namespace DndCore
 			Type = attackTargetType;
 			SpellType = SpellTargetType.Creatures;
 			if (targetCreature is Character player)
+			{
+				if (PlayerIds == null)
+					PlayerIds = new List<int>();
 				PlayerIds.Add(player.playerID);
+			}
 			else
+			{
 				Creatures.Add(targetCreature);
+			}
 		}
 
 		public Target(CarriedWeapon weapon)

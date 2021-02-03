@@ -10,6 +10,7 @@ using Streamloots;
 using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace CardMaker
 {
@@ -99,7 +100,8 @@ namespace CardMaker
 			ByteArrayContent byteContent = ToSerializedBytes(setData);
 			//string serializedBytes = byteContent.ReadAsStringAsync().GetAwaiter().GetResult();
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/sets", byteContent);
-
+			if (await ErrorsReported(httpResponseMessage))
+				return null;
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<SetViewModel>(result);
 		}
@@ -140,6 +142,17 @@ namespace CardMaker
 			return null;
 		}
 
+		async Task<bool> ErrorsReported(HttpResponseMessage httpResponseMessage, [CallerMemberName] string memberName = "")
+		{
+			if (!httpResponseMessage.IsSuccessStatusCode)
+			{
+				string result = await httpResponseMessage.Content.ReadAsStringAsync();
+				System.Windows.MessageBox.Show(result, $"HTTP Response Error in {memberName}");
+				return true;
+			}
+			return false;
+		}
+
 		public async Task<List<SetCardViewModel>> AddCards(string setId, List<SetCardWithImageViewModel> newCards)
 		{
 			foreach (SetCardWithImageViewModel setCardWithImageViewModel in newCards)
@@ -149,6 +162,10 @@ namespace CardMaker
 
 			ByteArrayContent byteContent = ToSerializedBytes(newCards);
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/sets/{setId}/cards", byteContent);
+
+			if (await ErrorsReported(httpResponseMessage))
+				return null;
+
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			List<SetCardViewModel> cardsAdded = JsonConvert.DeserializeObject<SetCardResult>(result).cards;
 			return cardsAdded;
@@ -161,11 +178,16 @@ namespace CardMaker
 			foreach (UpdateExistingCardViewModel card in cards)
 			{
 				card.SelfValidate();
-				card.SetOrderFrom(cardsInDeck);  // Order cannot be changed (and is required)!
+				if (cardsInDeck.Count > 0)
+					card.SetOrderFrom(cardsInDeck);  // Order cannot be changed (and is required)!
 			}
 
 			ByteArrayContent byteContent = ToSerializedBytes(cards);
 			HttpResponseMessage httpResponseMessage = await client.PutAsync($"https://api.streamloots.com/sets/{setId}/cards", byteContent);
+
+			if (await ErrorsReported(httpResponseMessage))
+				return null;
+
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			List<SetCardViewModel> cardsAdded = JsonConvert.DeserializeObject<SetCardResult>(result).cards;
 			return cardsAdded;
@@ -175,6 +197,8 @@ namespace CardMaker
 		{
 			ByteArrayContent byteContent = ToSerializedBytes(updateData);
 			HttpResponseMessage httpResponseMessage = await client.PutAsync($"https://api.streamloots.com/sets/{setId}", byteContent);
+			if (await ErrorsReported(httpResponseMessage))
+				return;
 			string result = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 		}
 
@@ -258,6 +282,10 @@ namespace CardMaker
 			};
 
 			HttpResponseMessage httpResponseMessage = await client.PostAsync($"https://api.streamloots.com/files", formContent);
+
+			if (await ErrorsReported(httpResponseMessage))
+				return;
+
 			string result = await httpResponseMessage.Content.ReadAsStringAsync();
 			FileViewModel fileData = JsonConvert.DeserializeObject<FileViewModel>(result);
 			card.StreamlootsImageFileUri = fileData.fileUri;

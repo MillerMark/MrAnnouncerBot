@@ -9,7 +9,7 @@ using GoogleHelper;
 
 namespace DndCore
 {
-	public class Creature
+	public abstract class Creature
 	{
 		public event MessageEventHandler RequestMessageToDungeonMaster;
 
@@ -1000,6 +1000,8 @@ namespace DndCore
 			else
 				HitPoints += deltaHealth;
 		}
+
+		public abstract double GetSavingThrowModifier(Ability savingThrowAbility);
 
 		void GetDamageAndAttackType(string damageStr, out DamageType damageType, out AttackKind attackKind)
 		{

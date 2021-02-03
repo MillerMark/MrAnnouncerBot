@@ -772,6 +772,26 @@ namespace DndCore
 				return this.getProficiencyBonusForSavingThrow(Ability.wisdom) + this.wisdomMod + this.tempSavingThrowModWisdom;
 			}
 		}
+
+		public override double GetSavingThrowModifier(Ability savingThrowAbility)
+		{
+			switch (savingThrowAbility)
+			{
+				case Ability.strength:
+					return savingThrowModStrength;
+				case Ability.dexterity:
+					return savingThrowModDexterity;
+				case Ability.constitution:
+					return savingThrowModConstitution;
+				case Ability.intelligence:
+					return savingThrowModIntelligence;
+				case Ability.wisdom:
+					return savingThrowModWisdom;
+				case Ability.charisma:
+					return savingThrowModCharisma;
+			}
+			return 0;
+		}
 		public int ShieldBonus { get; set; }
 
 

@@ -77,19 +77,21 @@ namespace DHDM
 			get
 			{
 				if (dieTextColor == null)
-				{
-					HueSatLight hueSatLight = new HueSatLight(DieBackColor);
-					const string white = "#ffffff";
-					const string black = "#000000";
-					if (hueSatLight.IsDark)
-						dieTextColor = white;
-					else
-						dieTextColor = black;
-				}
+					dieTextColor = GetDieTextColor(DieBackColor);
 				return dieTextColor;
 			}
 		}
-		
+
+		public static string GetDieTextColor(string hexColor)
+		{
+			HueSatLight hueSatLight = new HueSatLight(hexColor);
+			const string white = "#ffffff";
+			const string black = "#000000";
+			if (hueSatLight.IsDark)
+				return white;
+			else
+				return black;
+		}
 
 		[Column]
 		public string DieBackColor

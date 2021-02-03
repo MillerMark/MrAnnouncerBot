@@ -1681,7 +1681,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	cardCommand(cardStr: string) {
-		const cardCommandDto: CardCommandDto = JSON.parse(cardStr);
+		const cardCommandDto: CardBaseCommandDto = JSON.parse(cardStr);
 		console.log(cardCommandDto);
 		if (cardCommandDto.Command === "UpdateViewerRollQueue") {
 			const viewerRollQueueDto: ViewerQueueDto = JSON.parse(cardStr);
@@ -1689,7 +1689,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		}
 		else if (cardCommandDto.Command === 'ShowCard') {
 			const cardHandDto: CardHandDto = JSON.parse(cardStr);
-			this.cardManager.showCard(cardHandDto.Card, cardHandDto.CharacterId);
+			this.cardManager.showCard(cardHandDto.Card, cardHandDto.OwningCharacterId);
 		}
 		else if (cardCommandDto.Command === 'Update Hands') {
 			const cardHandDto: CardHandDto = JSON.parse(cardStr);

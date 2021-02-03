@@ -5,13 +5,16 @@ using DndCore;
 
 namespace Streamloots
 {
-	public class CardDto
+	public class CardDto: CardBaseCommandDto
 	{
-		public string CardID { get; set; }
+		public const string CMD_PlayCardNow = "PlayCardNow";
+		public const string CMD_ShowCard = "ShowCard";
+		public const string CMD_ShowPurchase = "ShowPurchase";
+		public string InstanceID { get; set; }
 		public StreamlootsPurchase Purchase { get; set; }
 		public StreamlootsCard Card { get; set; }
-		public int CharacterId { get; set; }
-		public string Command { get; set; }
+		public int OwningCharacterId { get; set; }
+		public int TargetCharacterId { get; set; }
 
 		int GetCreatureId(string targetName)
 		{
@@ -28,17 +31,21 @@ namespace Streamloots
 
 		public CardDto(StreamlootsCard card)
 		{
-			CardID = Guid.NewGuid().ToString();
+			InstanceID = Guid.NewGuid().ToString();
 			Card = card;
-			CharacterId = GetCreatureId(card.Target);
-			Command = "ShowCard";
+			OwningCharacterId = GetCreatureId(card.Recipient);
+			TargetCharacterId = GetCreatureId(card.Target);
+			if (TargetCharacterId != int.MinValue)
+				Command = CMD_PlayCardNow;
+			else
+				Command = CMD_ShowCard;
 		}
 
 		public CardDto(StreamlootsPurchase purchase)
 		{
-			CardID = Guid.NewGuid().ToString();
+			InstanceID = Guid.NewGuid().ToString();
 			Purchase = purchase;
-			Command = "ShowPurchase";
+			Command = CMD_ShowPurchase;
 		}
 		public CardDto()
 		{

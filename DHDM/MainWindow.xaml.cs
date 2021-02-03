@@ -41,6 +41,7 @@ using ICSharpCode.AvalonEdit.Editing;
 using System.Text.RegularExpressions;
 using LeapTools;
 using TwitchLib.PubSub;
+using System.ComponentModel;
 
 namespace DHDM
 {
@@ -145,12 +146,39 @@ namespace DHDM
 			nextSceneToPlay = null;
 		}
 
+		Character viewerSpellcaster;
+
+		void CreateViewerSpellcaster()
+		{
+			viewerSpellcaster = new Character();
+			viewerSpellcaster.kind = CreatureKinds.Humanoid;
+			viewerSpellcaster.name = "Viewer";
+
+			viewerSpellcaster.race = "Human";
+			viewerSpellcaster.AddClass("Wizard", 7);
+			viewerSpellcaster.alignmentStr = "Chaotic Neutral";
+			viewerSpellcaster.baseArmorClass = 12;
+			viewerSpellcaster.remainingHitDice = "1 d8";
+			viewerSpellcaster.inspiration = "";
+			viewerSpellcaster.initiative = 2;
+			viewerSpellcaster.baseWalkingSpeed = 30;
+			viewerSpellcaster.HitPoints = 50;
+			viewerSpellcaster.tempHitPoints = 0;
+			viewerSpellcaster.maxHitPoints = 50;
+			viewerSpellcaster.proficiencyBonus = 2;
+			viewerSpellcaster.savingThrowProficiency = Ability.intelligence | Ability.charisma;
+			viewerSpellcaster.proficientSkills = Skills.arcana | Skills.sleightOfHand | Skills.deception;
+			viewerSpellcaster.Equip(Weapon.buildShortSword());
+			viewerSpellcaster.Game = game;
+		}
+
 		private void InitializeGame()
 		{
 			CardCommands.RegisterDiceRoller(this);
 			RegisterSpreadsheetIDs();
 			plateManager = new PlateManager(obsWebsocket);
 			game = new DndGame();
+			CreateViewerSpellcaster();
 			weatherManager = new WeatherManager(obsWebsocket, game);
 			DndCore.Validation.ValidationFailed += Validation_ValidationFailed;
 			HookGameEvents();
@@ -249,7 +277,7 @@ namespace DHDM
 			HookEvents();
 
 			SetupSpellsChangedFileWatcher();
-			
+
 			codeEditor.Load();
 
 			actionQueueTimer.Start();
@@ -279,6 +307,7 @@ namespace DHDM
 			GoogleSheets.RegisterSpreadsheetID("DnD Game", "1GhONDxF4NU6sU0cqxwtvTyQ6HKlIGNEYb8Z_lcqeWKY");
 			GoogleSheets.RegisterSpreadsheetID("IDE", "1q-GuDx91etsKO0HzX0MCojq24PGZbPIcTZX-V6arpTQ");
 			GoogleSheets.RegisterSpreadsheetID("DndViewers", "1tTZJy3WNGzc-KGGFEb-416naWlTi6QEs2bqVqPJ7pac");
+			GoogleSheets.RegisterSpreadsheetID("D&D Deck Data", "1vk8ov_AltA9RUdiXFXrwJTQO96lZdMMbKAy-hoFoGmw");
 		}
 
 		private void CreateDhPubSub()
@@ -463,6 +492,8 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			CardCommands.ViewerDieRollComplete += CardCommands_ViewerDieRollComplete;
+			CardCommands.ViewerDieRollStarts += CardCommands_ViewerDieRollStarts;
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
 			Expressions.ExecutionChanged += Expressions_ExecutionChanged;
 			AskFunction.AskQuestion += AskFunction_AskQuestion;  // static event handler.
@@ -877,23 +908,38 @@ namespace DHDM
 				savedRolls = new Dictionary<string, int>();
 			lock (savedRolls)
 			{
-				savedRolls.Clear();
-				if (ea.StopRollingData.individualRolls == null)
-					return;
-
-				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
-				{
-					if (!string.IsNullOrWhiteSpace(individualRoll.type))
-					{
-						if (savedRolls.ContainsKey(individualRoll.type))
-							savedRolls[individualRoll.type] += individualRoll.value;
-						else
-							savedRolls.Add(individualRoll.type, individualRoll.value);
-					}
-				}
+				CalculateDamageFromIndividualRollType(ea.StopRollingData.individualRolls, savedRolls);
 			}
 		}
 
+		private void CalculateDamageFromIndividualRollType(List<IndividualRoll> individualRolls, Dictionary<string, int> results)
+		{
+			results.Clear();
+			if (individualRolls != null)
+				foreach (IndividualRoll individualRoll in individualRolls)
+				{
+					if (!string.IsNullOrWhiteSpace(individualRoll.type))
+					{
+						if (results.ContainsKey(individualRoll.type))
+							results[individualRoll.type] += individualRoll.value;
+						else
+							results.Add(individualRoll.type, individualRoll.value);
+					}
+				}
+		}
+		private void CalculateDamageByType(List<IndividualRoll> Rolls, Dictionary<DamageType, int> results)
+		{
+			results.Clear();
+			if (Rolls == null)
+				return;
+
+			foreach (IndividualRoll Roll in Rolls)
+				if (Roll.damageType != DamageType.None)
+					if (results.ContainsKey(Roll.damageType))
+						results[Roll.damageType] += Roll.value;
+					else
+						results.Add(Roll.damageType, Roll.value);
+		}
 
 		private void Game_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
 		{
@@ -5701,6 +5747,7 @@ namespace DHDM
 
 		private void LoadEverything()
 		{
+			AllKnownCards.Invalidate();
 			List<MagicItem> magicItems = AllMagicItems.MagicItems;
 			DateTime saveTime = game.Clock.Time;
 			AllViewers.Invalidate();
@@ -7819,7 +7866,7 @@ namespace DHDM
 			FrameRateChangeData.GlobalMaxFiltersOnRoll = num;
 			UpdateOverlayPerformanceOptions();
 		}
-		
+
 		public bool ChangingInternally
 		{
 			get => _changingInternally;
@@ -7833,7 +7880,7 @@ namespace DHDM
 						codeEditor.EndUpdate();
 			}
 		}
-		
+
 		private void TbxCode_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			CodeChanged();
@@ -7864,7 +7911,7 @@ namespace DHDM
 			else
 				lstEvents.Focus();
 		}
-		
+
 		private void btnReloadTemplates_Click(object sender, RoutedEventArgs e)
 		{
 			codeEditor.ReloadTemplates();
@@ -9173,7 +9220,7 @@ namespace DHDM
 				case "LastDamage":
 					foreach (InGameCreature inGameCreature in targetedCreatures)
 					{
-						inGameCreature.TakeDamage(ActivePlayer, latestDamage, AttackKind.Any);
+						inGameCreature.TakeDamage(ActivePlayer?.Game, latestDamage, AttackKind.Any);
 					}
 					break;
 				case "LastHealth":
@@ -9428,40 +9475,6 @@ namespace DHDM
 			HubtasticBaseStation.CardCommand(JsonConvert.SerializeObject(ea.CardDto));
 		}
 
-		// TODO: Delete ExecuteCardCommand
-		
-		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
-		{
-			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
-			ea.CardDto.Card.FillColor = viewer.DieBackColor;
-			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
-			string cardStr = JsonConvert.SerializeObject(ea.CardDto);
-			HubtasticBaseStation.CardCommand(cardStr);
-			string msg = ea.CardDto.Card.message;
-
-			viewer.CardsPlayed++;
-
-			int characterId = ea.CardDto.CharacterId;
-			if (characterId != int.MinValue)
-				cardHandManager.AddCard(characterId, ea.CardDto.Card);
-
-			if (msg.IndexOf("//") >= 0)
-			{
-				string onlyToViewers = msg.EverythingBefore("//").Trim();
-				string comment = msg.EverythingAfter("//").Trim();
-				if (comment.StartsWith("!"))
-					CardCommands.Execute(comment.Substring(1), ea.CardDto, viewer);
-				else
-					TellDungeonMaster(comment);
-
-				TellViewers(onlyToViewers);
-			}
-			else
-			{
-				TellAll(msg);
-			}
-		}
-
 		public void NpcScrollsToggle()
 		{
 			System.Diagnostics.Debugger.Break();
@@ -9503,6 +9516,117 @@ namespace DHDM
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			AllViewers.Save();
+		}
+
+		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
+		{
+			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
+			ea.CardDto.Card.FillColor = viewer.DieBackColor;
+			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
+			string cardStr = JsonConvert.SerializeObject(ea.CardDto);
+			HubtasticBaseStation.CardCommand(cardStr);
+			string msg = ea.CardDto.Card.message;
+
+			viewer.CardsPlayed++;
+
+			int characterId = ea.CardDto.OwningCharacterId;
+			if (characterId != int.MinValue)
+				cardHandManager.AddCard(characterId, ea.CardDto.Card);
+
+			bool waitingOnDieRoll = false;
+			if (msg.IndexOf("//") >= 0)
+			{
+				string onlyToViewers = msg.EverythingBefore("//").Trim();
+				string comment = msg.EverythingAfter("//").Trim();
+				if (comment.StartsWith("!"))
+				{
+					waitingOnDieRoll = comment.Contains(CardCommands.CMD_RollDie);
+					CardCommands.Execute(comment.Substring(1), ea.CardDto, viewer);
+				}
+				else
+					TellDungeonMaster(comment);
+
+				TellViewers(onlyToViewers);
+			}
+			else
+			{
+				TellAll(msg);
+			}
+
+			if (!waitingOnDieRoll)
+				TriggerCardPlayedEventIfNecessary(ea);
+		}
+
+		private void TriggerCardPlayedEventIfNecessary(CardEventArgs ea)
+		{
+			int targetCharacterId = ea.CardDto.TargetCharacterId;
+			if (targetCharacterId == int.MinValue || ea.CardDto.Command != CardDto.CMD_PlayCardNow)
+				return;
+			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
+			if (cardEventData != null)
+				TriggerCardPlayedEvent(ea.CardDto.Card.CardName, targetCharacterId, cardEventData);
+		}
+
+		private void TriggerCardPlayedEvent(string cardName, int targetCharacterId, CardEventData cardEventData)
+		{
+			// TODO: Figure out how to store the AttackTargetType in the card itself.
+
+			Creature targetCreature = DndUtils.GetCreatureById(targetCharacterId);
+
+			const string castPrefix = "Cast ";
+			CastedSpell castedSpell = null;
+			if (cardName.StartsWith(castPrefix))
+			{
+				string spellName = cardName.Substring(castPrefix.Length);
+				Spell spell = AllSpells.Get(spellName);
+				if (spell != null)
+					castedSpell = new CastedSpell(spell, viewerSpellcaster);
+			}
+			object customData = null;
+			Expressions.Do(cardEventData.CardPlayed, viewerSpellcaster, new Target(AttackTargetType.Spell, targetCreature), castedSpell, null, customData);
+		}
+
+		private void CardCommands_ViewerDieRollComplete(object sender, ViewerDieRollStoppedEventArgs ea)
+		{
+			Creature targetCreature = DndUtils.GetCreatureById(ea.Card.TargetCharacterId);
+			if (targetCreature != null)
+			{
+				Dictionary<DamageType, int> damage = new Dictionary<DamageType, int>();
+				CalculateDamageByType(ea.StopRollingData.individualRolls, damage);
+				double totalDamage = 0;
+				InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(targetCreature);
+				foreach (DamageType key in damage.Keys)
+					totalDamage += damage[key];
+
+				if (inGameCreature != null)
+					inGameCreature.TakeDamage(game, damage, AttackKind.Magical);
+				else
+					foreach (DamageType key in damage.Keys)
+						targetCreature.TakeDamage(key, AttackKind.Any, damage[key]);
+
+				if (totalDamage > 0)
+				{
+					if (targetCreature is Character player)
+					{
+						DamageHealthChange damageHealthChange = new DamageHealthChange();
+						damageHealthChange.DamageHealth = (int)-totalDamage;
+						damageHealthChange.PlayerIds.Add(ea.Card.TargetCharacterId);
+						HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
+						UpdatePlayerScrollInGame(player);
+						UpdatePlayerScrollUI(player);
+					}
+					else
+						UpdateInGameCreatures();
+
+				}
+			}
+		}
+
+		private void CardCommands_ViewerDieRollStarts(object sender, ViewerDieRollStartedEventArgs ea)
+		{
+			ea.Card.Command = "ShowCard";
+			string cardStr = JsonConvert.SerializeObject(ea.Card);
+			HubtasticBaseStation.CardCommand(cardStr);
 		}
 
 		// TODO: Reintegrate wand/staff animations....

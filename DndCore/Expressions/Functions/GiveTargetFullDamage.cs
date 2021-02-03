@@ -27,17 +27,15 @@ namespace DndCore
 				InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(creature);
 				inGameCreature.StartTakingDamage();
 				if (inGameCreature != null)
-				{
 					foreach (DamageType damageType in latestDamage.Keys)
 					{
 						// TODO: pass in AttackKind with the custom data
 						if (creature.IsVulnerableTo(damageType, AttackKind.Magical))
-							player.Game.TellDungeonMaster($"{inGameCreature.Name} is vulnerable to {damageType} damage.");
+							player?.Game.TellDungeonMaster($"{inGameCreature.Name} is vulnerable to {damageType} damage.");
 						else if (creature.IsResistantTo(damageType, AttackKind.Magical))
-							player.Game.TellDungeonMaster($"{inGameCreature.Name} is resistant to {damageType} damage.");
-						inGameCreature.TakeSomeDamage(player, damageType, AttackKind.Magical, (int)Math.Floor(latestDamage[damageType] * multiplier));
+							player?.Game.TellDungeonMaster($"{inGameCreature.Name} is resistant to {damageType} damage.");
+						inGameCreature.TakeSomeDamage(player?.Game, damageType, AttackKind.Magical, (int)Math.Floor(latestDamage[damageType] * multiplier));
 					}
-				}
 				inGameCreature.FinishTakingDamage();
 				// TODO: Also get players from the target and work with them.
 			}

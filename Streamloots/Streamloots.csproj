@@ -44,7 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CardDto.cs" />
+    <Compile Include="Cards\CardBaseCommandDto.cs" />
+    <Compile Include="Cards\CardDto.cs" />
     <Compile Include="CardEventArgs.cs" />
     <Compile Include="ViewModels\AlertViewModel.cs" />
     <Compile Include="ViewModels\CardStatus.cs" />

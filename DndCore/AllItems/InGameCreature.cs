@@ -334,13 +334,11 @@ namespace DndCore
 			Conditions = Conditions.None;
 		}
 
-		public void TakeDamage(Character player, Dictionary<DamageType, int> latestDamage, AttackKind attackKind)
+		public void TakeDamage(DndGame game, Dictionary<DamageType, int> latestDamage, AttackKind attackKind)
 		{
 			StartTakingDamage();
 			foreach (DamageType damageType in latestDamage.Keys)
-			{
-				TakeSomeDamage(player, damageType, attackKind, latestDamage[damageType]);
-			}
+				TakeSomeDamage(game, damageType, attackKind, latestDamage[damageType]);
 			FinishTakingDamage();
 		}
 
@@ -350,21 +348,21 @@ namespace DndCore
 			foreach (DamageType damageType in latestDamage.Keys)
 			{
 				int damageTaken = DndUtils.HalveValue(latestDamage[damageType]);
-				TakeSomeDamage(player, damageType, attackKind, damageTaken);
+				TakeSomeDamage(player?.Game, damageType, attackKind, damageTaken);
 			}
 			FinishTakingDamage();
 		}
 
-		public void TakeSomeDamage(Character player, DamageType damageType, AttackKind attackKind, int amount)
+		public void TakeSomeDamage(DndGame game, DamageType damageType, AttackKind attackKind, int amount)
 		{
 			double previousHP = TotalHp;
 			Creature.TakeDamage(damageType, attackKind, amount);
 
-			double hpLost = previousHP - TotalHp;
-			if (hpLost == 0)
+			if (game == null)
 				return;
 
-			if (player == null)
+			double hpLost = previousHP - TotalHp;
+			if (hpLost == 0)
 				return;
 
 			string tempHpDetails = string.Empty;
@@ -377,7 +375,7 @@ namespace DndCore
 			else
 				message = $"{Name} just took {hpLost} points of {damageType} damage. HP is now: {Creature.HitPoints}/{Creature.maxHitPoints}{tempHpDetails}";
 
-			player.Game.TellDungeonMaster(message);
+			game.TellDungeonMaster(message);
 		}
 	}
 }

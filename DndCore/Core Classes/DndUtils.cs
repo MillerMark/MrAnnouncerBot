@@ -19,6 +19,18 @@ namespace DndCore
 
 	public static class DndUtils
 	{
+		/// <summary>
+		/// Returns the player or the in game creature based on the specified creatureId.
+		/// </summary>
+		/// <param name="creatureId">The id of the player (non-negative) or in game creature (negative).</param>
+		public static Creature GetCreatureById(int creatureId)
+		{
+			if (creatureId >= 0)
+				return AllPlayers.GetFromId(creatureId);
+			else
+				return AllInGameCreatures.GetByIndex(-creatureId).Creature;
+		}
+
 		public static int GetHueShift(SchoolOfMagic schoolOfMagic)
 		{
 			switch (schoolOfMagic)
@@ -692,7 +704,7 @@ namespace DndCore
 				case TimeMeasure.actions:
 				case TimeMeasure.bonusActions:
 				case TimeMeasure.reaction:
-					
+
 					break;
 			}
 

@@ -16,6 +16,7 @@ namespace Streamloots
 		public string CardName => data.cardName;
 		public string UserName => data.Username;
 		public string Target => data.Target;
+		public string Recipient => data.Recipient;
 		public string Guid { get; set; }
 
 		public string GetField(string fieldName)

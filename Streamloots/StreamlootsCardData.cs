@@ -23,6 +23,14 @@ namespace Streamloots
 			}
 		}
 
+		public string Recipient
+		{
+			get
+			{
+				return GetField("recipient");
+			}
+		}
+
 		public string Username
 		{
 			get

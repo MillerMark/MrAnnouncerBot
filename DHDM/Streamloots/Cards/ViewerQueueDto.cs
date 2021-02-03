@@ -9,13 +9,13 @@ using Newtonsoft.Json;
 
 namespace DHDM
 {
-	public class ViewerQueueDto
+	public class ViewerQueueDto: CardBaseCommandDto
 	{
 		const int INT_MaxViewersInQueueToSend = 20;
-		public string Command { get; set; } = "UpdateViewerRollQueue";
 		public List<ViewerRollDto> ViewerRollDto { get; set; }
 		public ViewerQueueDto(Queue<DiceRoll> viewerRollQueue)
 		{
+			Command = "UpdateViewerRollQueue";
 			ViewerRollDto = new List<ViewerRollDto>();
 
 			int queuePosition = 0;

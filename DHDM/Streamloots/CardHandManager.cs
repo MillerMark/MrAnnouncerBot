@@ -8,6 +8,7 @@ using System.Windows.Media;
 
 namespace DHDM
 {
+	// TODO: Move this type to its own file.
 	public class CardHandDto: CardDto
 	{
 		public List<StreamlootsHand> Hands { get; set; }

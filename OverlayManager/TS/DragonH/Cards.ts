@@ -12,9 +12,7 @@ class CardStateData {
 }
 
 class RevealCardStateData {
-	constructor(public revealCardIndex: number, public xPos: number, public yPos: number, public offscreenY: number, public hueShift: number, public userName: string, public characterId: number, public fillColor: string, public outlineColor: string
-	) {
-
+	constructor(public revealCardIndex: number, public xPos: number, public yPos: number, public offscreenY: number, public hueShift: number, public userName: string, public characterId: number, public fillColor: string, public outlineColor: string) {
 	}
 }
 
@@ -58,8 +56,16 @@ class StreamlootsHand {
 	CardsToReveal: StreamlootsCard[];
 }
 
-class CardCommandDto {
+class CardBaseCommandDto {
 	Command: string;
+}
+
+class CardDto extends CardBaseCommandDto {
+	InstanceID: string;
+	Purchase: StreamlootsPurchase;
+	Card: StreamlootsCard;
+	OwningCharacterId: number;
+	TargetCharacterId: number;
 }
 
 class ViewerRollDto {
@@ -91,15 +97,11 @@ class ViewerRollQueueEntry extends ViewerRollDto {
 	}
 }
 
-class ViewerQueueDto extends CardCommandDto {
+class ViewerQueueDto extends CardBaseCommandDto {
 	ViewerRollDto: Array<ViewerRollDto>;
-
 }
 
-class CardHandDto extends CardCommandDto {
-	Purchase: StreamlootsPurchase;
-	Card: StreamlootsCard;
-	CharacterId: number;
+class CardHandDto extends CardDto {
 	Hands: Array<StreamlootsHand>;
 }
 

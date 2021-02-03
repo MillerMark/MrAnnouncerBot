@@ -620,7 +620,7 @@ namespace DndCore
 			return monster;
 		}
 
-		public double GetSavingThrowModifier(Ability savingThrowAbility)
+		public override double GetSavingThrowModifier(Ability savingThrowAbility)
 		{
 			switch (savingThrowAbility)
 			{
