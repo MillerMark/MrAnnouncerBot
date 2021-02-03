@@ -222,7 +222,7 @@ class DroneGame extends GamePlusQuiz {
 
 		this.droneGateways = new Gateways("Drones/Warp Gate/WarpGate", 73, 45, AnimationStyle.Loop, true);
 
-		const portalFrameRate: number = 40;
+		const portalFrameRate = 40;
 		this.purplePortals = new Sprites("Portal/Purple/Portal", 82, portalFrameRate, AnimationStyle.Loop, true);
 		this.portalBackground = new Sprites("Portal/Black Back/Back", 13, portalFrameRate, AnimationStyle.SequentialStop, true);
 		this.purplePortals.returnFrameIndex = 13;
@@ -297,7 +297,7 @@ class DroneGame extends GamePlusQuiz {
 			myRocket.releaseBee(now, params, userInfo.userId, userInfo.displayName, userInfo.color);
 		}
 		else if (command === "Drone") {
-			let gatewayNum: number = +params;
+			const gatewayNum: number = +params;
 			needToGetCoins(userInfo.userId);
 			if (gatewayNum)
 				this.droneGateways.releaseDrone(now, userInfo.userId, userInfo.displayName, userInfo.color, gatewayNum);
@@ -317,6 +317,9 @@ class DroneGame extends GamePlusQuiz {
 		}
 		else if (command === "ChangeDroneVelocity") {
 			this.changeDroneVelocity(userInfo.userId, params);
+		}
+		else if (command === "FlyTo") {
+			this.flyTo(userInfo.userId, params);
 		}
 		else if (command === "DroneUp") {
 			this.droneUp(userInfo.userId, params);
@@ -345,8 +348,8 @@ class DroneGame extends GamePlusQuiz {
 			Boombox.changeGenre(params);
 		}
 		else if (command.startsWith('Volume')) {
-			var volStr: string = params;
-			if (volStr == '')
+			let volStr: string = params;
+			if (volStr === '')
 				Boombox.reportVolume();
 			else {
 				volStr = volStr.trim();
@@ -604,7 +607,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	getGenreDisplayList(): string {
-		let boombox: Boombox = Boombox.getInstance();
+		const boombox: Boombox = Boombox.getInstance();
 		if (boombox)
 			return boombox.getGenreDisplayList();
 		return '(error - boombox instance not found)';
@@ -625,7 +628,7 @@ class DroneGame extends GamePlusQuiz {
 			numbers = ['0', '0'];
 		}
 		// TODO: If third parameter is "x", kill all thrusters as we toss the meteor.
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+		const userDrone: Drone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 		userDrone.tossMeteor(numbers[0], numbers[1]);
@@ -636,7 +639,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	droneRight(userId: string, params: string) {
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+		const userDrone: Drone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -644,7 +647,7 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	droneLeft(userId: string, params: string) {
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+		const userDrone: Drone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -652,15 +655,32 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	droneUp(userId: string, params: string) {
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+		const userDrone: Drone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
 		userDrone.droneUp(params);
 	}
 
+	flyTo(userId: string, params: string) {
+		const userDrone: Drone = this.getDrone(userId);
+		if (!userDrone)
+			return;
+
+		let numbers: string[] = params.split(',');
+		if (!numbers || numbers.length < 2) {
+			numbers = ['0', '0'];
+		}
+
+		userDrone.flyTo(+numbers[0], +numbers[1]);
+	}
+
+	private getDrone(userId: string): Drone {
+		return this.allDrones.find(userId) as Drone;
+	}
+
 	droneDown(userId: string, params: string) {
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+		const userDrone: Drone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
@@ -668,14 +688,14 @@ class DroneGame extends GamePlusQuiz {
 	}
 
 	changeDroneVelocity(userId: string, params: string) {
-		let userDrone: Drone = <Drone>this.allDrones.find(userId);
+		const userDrone: Drone = this.getDrone(userId);
 		if (!userDrone)
 			return;
 
-		let parameters: string[] = params.split(',');
+		const parameters: string[] = params.split(',');
 		if (parameters.length < 2)
 			return;
-		let now: number = performance.now();
+		const now: number = performance.now();
 		userDrone.changingDirection(now);
 		userDrone.changeVelocity(+parameters[0], +parameters[1], now);
 	}

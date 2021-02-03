@@ -64,7 +64,7 @@ namespace OverlayManager
 			if (message.Length == 0)
 				return null;
 
-			bool secondCharIsNumberOrSpaceOrNull = (message.Length == 1 || message[1] == ' ' || int.TryParse(message[1].ToString(), out int number));
+			bool secondCharIsNumberOrSpaceOrNull = (message.Length == 1 || message[1] == ' ' || message[1] == '-' || int.TryParse(message[1].ToString(), out int number));
 
 			if (secondCharIsNumberOrSpaceOrNull)
 			{
@@ -74,6 +74,7 @@ namespace OverlayManager
 				{
 					case 'd':
 					case 'u':
+					case 'f':
 					case 'l':
 					case 'r':
 					case 't':
@@ -216,6 +217,7 @@ namespace OverlayManager
 			chatCommands.Add(new ChatCommand("d", "DroneDown"));
 			chatCommands.Add(new ChatCommand("l", "DroneLeft"));
 			chatCommands.Add(new ChatCommand("r", "DroneRight"));
+			chatCommands.Add(new ChatCommand("f", "FlyTo"));
 			chatCommands.Add(new ChatCommand("cv", "ChangeDroneVelocity"));
 			chatCommands.Add(new ChatCommand("swat", "Swat"));
 
