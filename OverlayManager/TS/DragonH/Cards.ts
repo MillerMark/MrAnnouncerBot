@@ -218,10 +218,10 @@ class CardManager {
 
 	static readonly creditLifespanMs: number = 3500;
 
-	showCard(card: StreamlootsCard, characterId: number, expireSoon: boolean = true) {
-		let { xPos, yPos } = this.getBigCardCenter(card);
+	showCard(card: StreamlootsCard, characterId: number, expireSoon = true) {
+		const { xPos, yPos } = this.getBigCardCenter(card);
 
-		// TODO: Consider making showCard show the new card as selected, like this:
+		// showCard places the specified card above or below the cards in the hand, like this:
 		//` ![](E259CDC8221A324229E251427533EF88.png)
 		const imageIndex: number = this.knownCards.addImage(this.getCardImageName(card));
 		const sprite: SpriteProxy = this.knownCards.add(960, 540, imageIndex);
@@ -248,7 +248,7 @@ class CardManager {
 		credit.delayStart = 3 * entryTime / 4;
 		credit.data = card.Guid;
 
-		if (!expireSoon) // Add highlight glow...
+		if (!expireSoon) // Add highlight glow for cards that will be shown for a while...
 		{
 			const hueShift: number = HueSatLight.fromHex(card.FillColor).hue * 360;
 			const highlightGlow: SpriteProxy = this.addHighlightedCardGlow(card.Guid, xPos, yPos, hueShift, targetSpin);
@@ -1055,7 +1055,7 @@ class CardManager {
 
 	playHighlightedCard(card: StreamlootsCard, characterId: number) {
 		this.hideCard(card.Guid);
-		let { xPos, yPos } = this.getBigCardCenter(card);
+		const { xPos, yPos } = this.getBigCardCenter(card);
 		const hueSatLight: HueSatLight = HueSatLight.fromHex(card.FillColor);
 		this.playCard(card.CardName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, characterId, card.FillColor, card.OutlineColor);
 	}
@@ -1076,5 +1076,4 @@ class CardManager {
 	highlightCard(card: StreamlootsCard, characterId: number) {
 		this.showCard(card, characterId, false);
 	}
-
 }

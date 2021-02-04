@@ -1751,8 +1751,6 @@ namespace CardMaker
 			SetDieModLayerVisibilities(card, rollKind, modifier, isSecret);
 			string bonusPenalty = GetBonusPenaltyNoun(modifier);
 			AddPlayerNpcRecipientField(card, bonusPenalty);
-
-			// TODO: Linked properties are not working.
 			return card;
 		}
 
