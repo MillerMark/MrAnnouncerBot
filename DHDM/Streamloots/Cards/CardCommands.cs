@@ -108,6 +108,13 @@ namespace DHDM
 
 			HueSatLight hueSatLight = new HueSatLight(viewer.DieBackColor);
 			CorrectHueShifts(diceRoll, hueSatLight);
+			diceRoll.DieTotalMessage = $"{cardDto.Card.UserName}'s {cardDto.Card.CardName}";
+			diceRoll.TextOutlineColor = viewer.DieTextColor;
+			diceRoll.TextFillColor = viewer.DieBackColor;
+			diceRoll.DiceGroup = DiceGroup.Viewers;
+			diceRoll.RollScope = RollScope.Viewer;
+			diceRoll.RollID = cardDto.InstanceID;
+			diceRoll.Viewer = cardDto.Card.UserName;
 
 			for (int i = 0; i < parameters.Length; i += 2)
 			{
@@ -116,15 +123,8 @@ namespace DHDM
 				AddDieStr(diceRoll, cardDto, viewer, dieStr, dieLabel);
 			}
 
-			diceRoll.DieTotalMessage = $"{cardDto.Card.UserName}'s {cardDto.Card.CardName}";
-
-			diceRoll.TextOutlineColor = viewer.DieTextColor;
-			diceRoll.TextFillColor = viewer.DieBackColor;
 			savedCardsForViewerDieRolls.Add(cardDto);
 
-			diceRoll.DiceGroup = DiceGroup.Viewers;
-			diceRoll.RollScope = RollScope.Viewer;
-			diceRoll.RollID = cardDto.InstanceID;
 			return diceRoll;
 		}
 
@@ -155,9 +155,11 @@ namespace DHDM
 			int parenIndex = dieStr.IndexOf("(");
 			DamageType damageType = DamageType.None;
 			DieCountsAs dieCountsAs = DieCountsAs.totalScore;
+			string diePlayerName = cardDto.Card.UserName;
 			double modifier = 0;
+			double scaleOverride = viewer.Reputation + 0.30;
 			if (parenIndex >= 0)
-				ProcessDieDetails(diceRoll, cardDto, ref dieStr, ref dieBackColorOverride, ref dieTextColorOverride, parenIndex, ref damageType, ref dieCountsAs, ref modifier);
+				ProcessDieDetails(diceRoll, cardDto, ref dieStr, ref dieBackColorOverride, ref dieTextColorOverride, parenIndex, ref damageType, ref dieCountsAs, ref modifier, ref diePlayerName, ref scaleOverride);
 
 			string[] dieParts = dieStr.Split('d');
 			if (dieParts.Length == 2)
@@ -174,12 +176,12 @@ namespace DHDM
 				{
 					DiceDto diceDto = new DiceDto()
 					{
-						PlayerName = cardDto.Card.UserName,
+						PlayerName = diePlayerName,
 						CreatureId = int.MinValue,
 						Sides = sides,
 						Quantity = quantity,
 						Label = dieLabel,
-						Scale = viewer.Reputation + 0.25,
+						Scale = scaleOverride,
 						Modifier = modifier,
 						DamageType = damageType,
 						BackColor = dieBackColorOverride,
@@ -192,7 +194,9 @@ namespace DHDM
 			}
 		}
 
-		private static void ProcessDieDetails(DiceRoll diceRoll, CardDto cardDto, ref string dieStr, ref string dieBackColorOverride, ref string dieTextColorOverride, int parenIndex, ref DamageType damageType, ref DieCountsAs dieCountsAs, ref double modifier)
+		private static void ProcessDieDetails(DiceRoll diceRoll, CardDto cardDto, ref string dieStr, ref string dieBackColorOverride, 
+																					ref string dieTextColorOverride, int parenIndex, ref DamageType damageType, ref DieCountsAs dieCountsAs, 
+																					ref double modifier, ref string diePlayerName, ref double scaleOverride)
 		{
 			string dieTypeStr = dieStr.Substring(parenIndex).Trim();
 			dieStr = dieStr.Substring(0, parenIndex);
@@ -207,7 +211,7 @@ namespace DHDM
 					string rollKindStr = dieTypeParts[0];
 					string rollData = dieTypeParts[1];
 					if (rollKindStr == "save")
-						PrepareForSavingThrow(diceRoll, cardDto, rollData, ref dieBackColorOverride, ref dieTextColorOverride, ref modifier);
+						PrepareForSavingThrow(diceRoll, cardDto, rollData, ref dieBackColorOverride, ref dieTextColorOverride, ref modifier, ref diePlayerName, ref scaleOverride);
 					dieCountsAs = DieCountsAs.totalScore;
 				}
 			}
@@ -220,7 +224,8 @@ namespace DHDM
 			}
 		}
 
-		private static void PrepareForSavingThrow(DiceRoll diceRoll, CardDto cardDto, string rollData, ref string dieBackColorOverride, ref string dieTextColorOverride, ref double modifier)
+		private static void PrepareForSavingThrow(DiceRoll diceRoll, CardDto cardDto, string rollData, ref string dieBackColorOverride, 
+																							ref string dieTextColorOverride, ref double modifier, ref string diePlayerName, ref double scaleOverride)
 		{
 			Ability savingThrowAbility = DndUtils.ToAbility(rollData);
 			if (savingThrowAbility == Ability.none)
@@ -228,11 +233,17 @@ namespace DHDM
 
 			// We have a saving throw!
 			Creature targetCreature = DndUtils.GetCreatureById(cardDto.TargetCharacterId);
+			diePlayerName = targetCreature.Name;
+			if (scaleOverride > 1)
+				scaleOverride = 1; // Player dice are always thrown at no more than 100% scale.
 			modifier = targetCreature.GetSavingThrowModifier(savingThrowAbility);
 			dieBackColorOverride = GetDieBackColor(targetCreature);
 			dieTextColorOverride = GetDieTextColor(targetCreature, dieBackColorOverride);
 			diceRoll.SavingThrow = savingThrowAbility;
+			diceRoll.Type = DiceRollType.DamagePlusSavingThrow;
 			diceRoll.HiddenThreshold = INT_ViewerSpellCasterDC;
+			diceRoll.TrailingEffects.Clear();  // No viewer trailing effects on saving throws.
+			diceRoll.DieTotalMessage = "";
 		}
 
 		private static void RollViewerDie(string command, CardDto cardDto, DndViewer viewer)

@@ -16,6 +16,16 @@ namespace Streamloots
 		public int OwningCharacterId { get; set; }
 		public int TargetCharacterId { get; set; }
 
+		public static string GetFileName(string activeCardName)
+		{
+			string fileName = activeCardName;
+			foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+				fileName = fileName.Replace(c, '_');
+			fileName = fileName.Replace(' ', '_');  // Remove spaces.
+			fileName = fileName.Replace("+", "Plus");  // Remove + character.
+			return fileName;
+		}
+
 		int GetCreatureId(string targetName)
 		{
 			if (string.IsNullOrWhiteSpace(targetName))

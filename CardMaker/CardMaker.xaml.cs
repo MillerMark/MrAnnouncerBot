@@ -1740,6 +1740,12 @@ namespace CardMaker
 			SetRarity(card, powerLevel, modifier);
 			card.Name = GetDieModTitle(isSecret, rollKind, modifier);
 			card.StylePath = "Die Mods";
+			string cardName;
+			if (card.Name.StartsWith("Secret "))
+				cardName = "a secret card";
+			else
+				cardName = card.Name;
+			card.AlertMessage = $"{{{{username}}}} gave {cardName} to {{{{recipient}}}}.";
 			card.Description = GetDieModDescription(rollKind, modifier, isSecret);
 			QuickAddAllLayerDetails(card);
 			SetDieModLayerVisibilities(card, rollKind, modifier, isSecret);
@@ -1926,10 +1932,7 @@ namespace CardMaker
 
 		string GetFileName(Card activeCard)
 		{
-			string fileName = activeCard.Name;
-			foreach (char c in SysPath.GetInvalidFileNameChars())
-				fileName = fileName.Replace(c, '_');
-			return fileName + ".png";
+			return CardDto.GetFileName(activeCard.Name) + ".png";
 		}
 
 		private void btnUploadImage_Click(object sender, RoutedEventArgs e)

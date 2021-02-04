@@ -14,6 +14,7 @@ namespace DndCore
 		public List<DiceDto> DiceDtos { get; set; } = new List<DiceDto>();
 
 		public string RollID { get; set; }
+		public string Viewer { get; set; }
 		public string SpellName { get; set; }
 		public string DieTotalMessage { get; set; }
 		public string TextOutlineColor { get; set; }
@@ -218,6 +219,7 @@ namespace DndCore
 					FailMessage = "Miss!";
 					break;
 				case DiceRollType.SavingThrow:
+				case DiceRollType.DamagePlusSavingThrow:
 					CritFailMessage = "COMPLETE FAILURE!";
 					CritSuccessMessage = "Critical Success!";
 					SuccessMessage = "Success!";

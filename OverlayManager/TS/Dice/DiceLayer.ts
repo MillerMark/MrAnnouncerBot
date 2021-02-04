@@ -40,7 +40,9 @@ enum DiceRollType {
 	InspirationOnly,
 	AddOnDice,
 	NonCombatInitiative,
-	HPCapacity
+	HPCapacity,
+	CastSimpleSpell,
+	DamagePlusSavingThrow
 }
 
 //enum SpriteType {
@@ -889,6 +891,7 @@ class DiceLayer {
 			topDieCloud.fadeInTime = 500;
 			topDieCloud.fadeOutTime = 500;
 			topDieCloud.opacity = opacity;
+			topDieCloud.scale = die.scale;
 			topDieCloud.fadeOnDestroy = true;
 
 			die.attachedSprites.push(topDieCloud);
@@ -1323,17 +1326,30 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showTotalHealthDamage(totalHealthDamageStr: string, success: boolean, label: string, fontColor: string, outlineColor: string, diceGroup = DiceGroup.Players): void {
+	showTotalHealthDamage(totalHealthDamageStr: string, success: boolean, label: string, fontColor: string, outlineColor: string, diceGroup = DiceGroup.Players, textCenter: Vector = undefined): void {
 		let damageTime: number = this.totalDamageTime;
 		if (!success)
 			damageTime = 2 * damageTime / 3;
-		const textEffect: TextEffect = this.animations.addText(new Vector(960, 750), `${label}${totalHealthDamageStr}`, damageTime);
+		let velocityMultiplierY = 1;
+		let velocityX = 0;
+		if (textCenter) {
+			if (textCenter.y > 540)
+				velocityMultiplierY = -1.3;
+			if (textCenter.x > 960)
+				velocityX = -0.4;
+			else 
+				velocityX = 0.4;
+		}
+		else 
+			textCenter = new Vector(960, 750);
+		const textEffect: TextEffect = this.animations.addText(textCenter, `${label}${totalHealthDamageStr}`, damageTime);
 		textEffect.data = diceGroup;
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
 		textEffect.elasticIn = true;
 		textEffect.scale = 4;
-		textEffect.velocityY = 0.4;
+		textEffect.velocityX = velocityX;
+		textEffect.velocityY = 0.4 * velocityMultiplierY;
 		textEffect.opacity = 0.90;
 		if (success)
 			textEffect.targetScale = 8;
@@ -2484,8 +2500,10 @@ class DiceLayer {
 		const diceRoll: DiceRollData = new DiceRollData();
 		diceRoll.type = dto.Type;
 
+		// TODO: Keep this in sync with changes in DiceRoll.cs
 		diceRoll.diceGroup = dto.DiceGroup;
 		diceRoll.rollId = dto.RollID;
+		diceRoll.viewer = dto.Viewer;
 		diceRoll.secondRollTitle = dto.SecondRollTitle;
 		diceRoll.vantageKind = dto.VantageKind;
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
@@ -2783,6 +2801,26 @@ class DiceLayer {
 		this.activePlayerDieColor = this.getDieColor(playerID);
 		this.activePlayerHueShift = this.getHueShift(playerID);
 	}
+
+	showSmallerMessageAt(centerDicePos: Vector, message: string, diceGroup: DiceGroup, fontColor: string, outlineColor: string) {
+		const textEffect: TextEffect = this.animations.addText(centerDicePos, message, this.totalDamageTime);
+		textEffect.data = diceGroup;
+		textEffect.targetScale = 3;
+		textEffect.fontColor = fontColor;
+		textEffect.outlineColor = outlineColor;
+		textEffect.elasticIn = true;
+		textEffect.scale = 3;
+		textEffect.velocityY = -0.15;
+		if (centerDicePos.x < 960)
+			textEffect.velocityX = 0.25;
+		else 
+			textEffect.velocityX = -0.25;
+
+		textEffect.opacity = 0.90;
+
+		textEffect.fadeOutTime = 800;
+		textEffect.fadeInTime = 200;
+	}
 }
 
 class IndividualRoll {
@@ -2819,6 +2857,7 @@ class BonusRoll {
 class DiceRollData {
 	diceGroup: DiceGroup;
 	rollId: string;
+	viewer: string;
 	type: DiceRollType;
 	vantageKind: VantageKind;
 	damageHealthExtraDice: string;

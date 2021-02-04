@@ -27,7 +27,7 @@ namespace DndTests
 		[TestMethod]
 		public void TestSenses()
 		{
-			Creature creature = new Creature();
+			Creature creature = new Character();
 			Assert.IsFalse(creature.HasSense(Senses.Darkvision));
 			Assert.IsFalse(creature.HasSense(Senses.Blindsight));
 			creature.blindsightRadius = 10;

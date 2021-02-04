@@ -37,9 +37,11 @@ class StreamlootsCard {
 	videoUrl: string;
 	soundUrl: string;
 	CardName: string;
+	CardImageName: string;
 	UserName: string;
 	FillColor: string;
 	OutlineColor: string;
+	Recipient: string;
 	Target: string;
 	Guid: string;
 	constructor() {
@@ -69,7 +71,8 @@ class CardDto extends CardBaseCommandDto {
 }
 
 class ViewerRollDto {
-	Name: string;
+	Label: string;
+	UserName: string;
 	RollId: string;
 	RollStr: string;
 	FontColor: string;
@@ -88,7 +91,7 @@ class ViewerRollQueueEntry extends ViewerRollDto {
 	}
 
 	initializeFrom(viewerRollDto: ViewerRollDto) {
-		this.Name = viewerRollDto.Name;
+		this.Label = viewerRollDto.Label;
 		this.RollId = viewerRollDto.RollId;
 		this.RollStr = viewerRollDto.RollStr;
 		this.FontColor = viewerRollDto.FontColor;
@@ -108,6 +111,7 @@ class CardHandDto extends CardDto {
 class CardManager {
 	knownCards: Sprites;
 	selectedCardGlow: Sprites;
+	highlightedCardGlow: Sprites;
 	playedCardBackGlow: Sprites;
 	playedCardFrontGlow: Sprites;
 	secretCardBurn: Sprites;
@@ -142,6 +146,12 @@ class CardManager {
 		this.selectedCardGlow.originX = 192;
 		this.selectedCardGlow.originY = 266;
 
+		this.highlightedCardGlow = new Sprites('Cards/HighlightedCard/HighlightedCard', 104, fps30, AnimationStyle.Loop, true);
+		this.highlightedCardGlow.moves = true;
+		this.highlightedCardGlow.disableGravity();
+		this.highlightedCardGlow.originX = 284;
+		this.highlightedCardGlow.originY = 374;
+
 		this.playedCardBackGlow = new Sprites('Cards/Play Card/PlayCardBack', 38, fps30, AnimationStyle.Sequential, true);
 		this.playedCardBackGlow.moves = true;
 		this.playedCardBackGlow.disableGravity();
@@ -165,6 +175,7 @@ class CardManager {
 		this.playedCardBackGlow.updatePositions(nowMs);
 		this.knownCards.updatePositions(nowMs);
 		this.selectedCardGlow.updatePositions(nowMs);
+		this.highlightedCardGlow.updatePositions(nowMs);
 		this.playedCardFrontGlow.updatePositions(nowMs);
 		this.secretCardBurn.updatePositions(nowMs);
 	}
@@ -172,6 +183,7 @@ class CardManager {
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
 		this.playedCardBackGlow.draw(context, nowMs);
 		this.selectedCardGlow.draw(context, nowMs);
+		this.highlightedCardGlow.draw(context, nowMs);
 		this.knownCards.draw(context, nowMs);
 		this.playedCardFrontGlow.draw(context, nowMs);
 		this.secretCardBurn.draw(context, nowMs);
@@ -186,10 +198,10 @@ class CardManager {
 
 	getCardImageName(card: StreamlootsCard): string {
 		if (card.IsSecret)
-			return 'Secret Card';
+			return 'Secret_Card';
 		if (card.PngFileFound)
-			return card.CardName;
-		return 'Not Found';
+			return card.CardImageName;
+		return 'Not_Found';
 	}
 
 	showCardDiagnostic(sprite: SpriteProxy, context: CanvasRenderingContext2D, nowMs: number) {
@@ -206,7 +218,7 @@ class CardManager {
 
 	static readonly creditLifespanMs: number = 3500;
 
-	showCard(card: StreamlootsCard, characterId: number) {
+	showCard(card: StreamlootsCard, characterId: number, expireSoon: boolean = true) {
 		let { xPos, yPos } = this.getBigCardCenter(card);
 
 		// TODO: Consider making showCard show the new card as selected, like this:
@@ -221,14 +233,28 @@ class CardManager {
 		sprite.setInitialScale(initialScale);
 		sprite.autoScaleFactorPerSecond = 1.8;
 		sprite.autoScaleMaxScale = 1;
-		sprite.easeSpin(performance.now(), -degreesToSpin, Random.between(-3, 3), entryTime);
-		sprite.expirationDate = performance.now() + 4800;
+    const targetSpin = Random.between(-3, 3);
+		sprite.easeSpin(performance.now(), -degreesToSpin, targetSpin, entryTime);
+		if (expireSoon)
+			sprite.expirationDate = performance.now() + 4800;
 		sprite.fadeInTime = 600;
 		sprite.fadeOutTime = 1000;
-		console.log('showCard.characterId: ' + characterId);
+		sprite.data = card.Guid;
+		//console.log('showCard.characterId: ' + characterId);
 		const credit: TextEffect = this.addCardPlayedByCredit(xPos, yPos, card.UserName, characterId, card.FillColor, card.OutlineColor);
-		credit.expirationDate = performance.now() + entryTime + CardManager.creditLifespanMs;
+
+		if (expireSoon)
+			credit.expirationDate = performance.now() + entryTime + CardManager.creditLifespanMs;
 		credit.delayStart = 3 * entryTime / 4;
+		credit.data = card.Guid;
+
+		if (!expireSoon) // Add highlight glow...
+		{
+			const hueShift: number = HueSatLight.fromHex(card.FillColor).hue * 360;
+			const highlightGlow: SpriteProxy = this.addHighlightedCardGlow(card.Guid, xPos, yPos, hueShift, targetSpin);
+			highlightGlow.delayStart = entryTime;
+			highlightGlow.fadeInTime = 300;
+		}
 	}
 
 	static readonly cardHeight: number = 424;
@@ -251,9 +277,13 @@ class CardManager {
 	private getBigCardCenter(card: StreamlootsCard) {
 		let xPos = 960;
 		let yPos = 540;
-		const playerIndex: number = this.iGetPlayerX.getPlayerIndexFromName(card.Target);
+
+		let targetName: string = card.Recipient;
+		if (!targetName)
+			targetName = card.Target;
+		const playerIndex: number = this.iGetPlayerX.getPlayerIndexFromName(targetName);
 		if (playerIndex < 0) {
-			const creature: InGameCreature = this.iGetCreatureX.getInGameCreatureByName(card.Target);
+			const creature: InGameCreature = this.iGetCreatureX.getInGameCreatureByName(targetName);
 			if (creature) {
 				xPos = this.iGetCreatureX.getX(creature) + InGameCreatureManager.miniScrollWidth / 2.0;
 				yPos = InGameCreatureManager.NpcScrollHeight + CardManager.yAdjustOverlapScrollBottom + CardManager.cardHeight / 2 + CardManager.bigCardHandMarginBelowInGameCreatureScrolls + CardManager.inHandCardHeight;
@@ -566,6 +596,15 @@ class CardManager {
 		selectionGlow.rotation = angleOffset;
 	}
 
+	private addHighlightedCardGlow(cardGuid: string, xPos: number, yPos: number, hueShift = 0, angleOffset = 0): SpriteProxy {
+		const highlightGlow: SpriteProxy = this.highlightedCardGlow.addShifted(xPos, yPos, -1, hueShift + Random.between(-10, 10));
+		highlightGlow.scale = CardManager.selectedCardScale;
+		highlightGlow.data = cardGuid;
+		highlightGlow.fadeInTime = CardManager.selectionTransitionTime;
+		highlightGlow.rotation = angleOffset;
+		return highlightGlow;
+	}
+
 	private removeExistingSelectionGlow(characterId: number) {
 		const timeBeforeFadeout = 200;
 		this.selectedCardGlow.spriteProxies.forEach((sprite: SpriteProxy) => {
@@ -820,7 +859,7 @@ class CardManager {
 		}
 	}
 
-	private playCard(cardName: string, xPos: number, yPos: number, delayStart: number, hueShift: number, userName: string, characterId: number, fillColor: string, outlineColor: string) {
+	playCard(cardName: string, xPos: number, yPos: number, delayStart: number, hueShift: number, userName: string, characterId: number, fillColor: string, outlineColor: string) {
 		const imageIndex: number = this.knownCards.addImage(cardName);
 		const cardSprite: SpriteProxy = this.addBigCardSprite(this.knownCards, xPos, yPos, imageIndex, 0, delayStart);
 		this.showCardPlayAnimation(cardSprite, delayStart, xPos, yPos, hueShift, userName, characterId, fillColor, outlineColor);
@@ -985,7 +1024,7 @@ class CardManager {
 		viewerRollQueueEntry.found = true;
 		viewerRollQueueEntry.initializeFrom(viewerRollDto);
 
-		const queueEntryText = `${viewerRollQueueEntry.Name} - ${viewerRollQueueEntry.RollStr} `;
+		const queueEntryText = `${viewerRollQueueEntry.Label} - ${viewerRollQueueEntry.RollStr} `;
 		const viewerName: TextEffect = this.parentTextAnimations.addText(new Vector(1920, this.getQueueEntryY(viewerRollQueueEntry.QueuePosition)), queueEntryText);
 		viewerName.fontSize = CardManager.dieQueueFontSize;
 		viewerName.fontName = DragonFrontGame.clockFontName;
@@ -1013,4 +1052,29 @@ class CardManager {
 	getQueueEntryY(queuePosition: number): number {
 		return CardManager.dieQueueBottom - CardManager.dieQueueFontSize * queuePosition;
 	}
+
+	playHighlightedCard(card: StreamlootsCard, characterId: number) {
+		this.hideCard(card.Guid);
+		let { xPos, yPos } = this.getBigCardCenter(card);
+		const hueSatLight: HueSatLight = HueSatLight.fromHex(card.FillColor);
+		this.playCard(card.CardName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, characterId, card.FillColor, card.OutlineColor);
+	}
+
+	hideCard(cardGuid: string) {
+		this.hideElementByGuid(this.knownCards.spriteProxies, cardGuid);
+		this.hideElementByGuid(this.highlightedCardGlow.spriteProxies, cardGuid);
+		this.hideElementByGuid(this.parentTextAnimations.animationProxies, cardGuid);
+	}
+
+	hideElementByGuid(elements: AnimatedElement[], cardGuid: string) {
+		elements.forEach((element: AnimatedElement) => {
+			if (element.data === cardGuid)
+				element.fadeOutNow(250);
+		});      
+  }
+
+	highlightCard(card: StreamlootsCard, characterId: number) {
+		this.showCard(card, characterId, false);
+	}
+
 }

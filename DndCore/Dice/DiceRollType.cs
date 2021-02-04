@@ -24,6 +24,7 @@
 		AddOnDice,
 		NonCombatInitiative,
 		HPCapacity, 
-		CastSimpleSpell
+		CastSimpleSpell,
+		DamagePlusSavingThrow
 	}
 }

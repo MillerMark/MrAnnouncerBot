@@ -207,6 +207,8 @@ namespace DndCore
 					return DiceRollType.WildMagic;
 				case "SavingThrow":
 					return DiceRollType.SavingThrow;
+				case "DamagePlusSavingThrow":
+					return DiceRollType.DamagePlusSavingThrow;
 				case "NonCombatInitiative":
 					return DiceRollType.NonCombatInitiative;
 				case "Initiative":

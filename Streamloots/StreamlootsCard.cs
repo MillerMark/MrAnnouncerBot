@@ -12,7 +12,7 @@ namespace Streamloots
 		public string imageUrl { get; set; }
 		public string videoUrl { get; set; }
 		public string soundUrl { get; set; }
-
+		public string CardImageName { get; set; }
 		public string CardName => data.cardName;
 		public string UserName => data.Username;
 		public string Target => data.Target;
@@ -23,12 +23,15 @@ namespace Streamloots
 		{
 			return data.GetField(fieldName);
 		}
+
 		public void Initialize()
 		{
 			const string cardFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Cards";
-			string pngFileName = System.IO.Path.Combine(cardFolder, $"{CardName}.png");
+			string pngFileName = System.IO.Path.Combine(cardFolder, $"{CardDto.GetFileName(CardName)}.png");
 			PngFileFound = System.IO.File.Exists(pngFileName);
-			if (!PngFileFound)
+			if (PngFileFound)
+				CardImageName = System.IO.Path.GetFileNameWithoutExtension(pngFileName);
+			else
 				System.Diagnostics.Debugger.Break();
 			IsSecret = CardName.StartsWith("Secret ");
 		}

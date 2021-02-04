@@ -450,9 +450,15 @@
 											Cast (no die roll required)
 										</RadioButton>
 										<StackPanel Orientation="Horizontal" Margin="0, -4, 0, 0">
-											<RadioButton x:Name="rbSavingThrow" VerticalAlignment="Center" Click="RbSavingThrow_Click" GroupName="DieRollTypes" >
-												Saving Throw:
-											</RadioButton>
+											<StackPanel Orientation="Vertical">
+												<RadioButton x:Name="rbSavingThrow" VerticalAlignment="Center" Click="RbSavingThrow_Click" GroupName="DieRollTypes" >
+													Saving Throw:
+												</RadioButton>
+												<RadioButton x:Name="rbDamagePlusSavingThrow" VerticalAlignment="Center" Click="rbDamagePlusSavingThrow_Click" GroupName="DieRollTypes" >
+													Damage Plus Saving Throw:
+												</RadioButton>
+											</StackPanel>
+											
 											<ComboBox x:Name="cbAbility" MaxHeight="22" MinWidth="150" 
 												Margin="10,0,0,0" SelectionChanged="CbAbility_SelectionChanged" VerticalAlignment="Center">
 												<ComboBoxItem>Strength</ComboBoxItem>

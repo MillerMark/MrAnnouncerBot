@@ -115,6 +115,7 @@ interface IDie {
 	name: string;
 	topNumber: number;
 	scale: number;
+	modifier: number;
 	sparks: Array<SpriteProxy>;
 	attachedDamage: boolean;
 	damageStr: string;
@@ -2016,6 +2017,9 @@ class DieRoller {
 				const centerDice: Vector = this.getCenterDicePosition();
 				diceLayer.showDieTotalMessage(this.diceRollData.totalRoll, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor, this.diceRollData.diceGroup);
 			}
+			else if (this.diceRollData.diceGroup === DiceGroup.Viewers && this.diceRollData.type === DiceRollType.DamagePlusSavingThrow) {
+				this.showSavingThrowTotalsOverAllDice(this.dice, this.diceRollData.hiddenThreshold, this.diceRollData.diceGroup);
+			}
 			else
 				diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages, this.diceRollData.diceGroup);
 		}
@@ -2035,16 +2039,24 @@ class DieRoller {
 			diceLayer.showBonusRoll(`${bonusRollStr}${this.totalBonus}`, DiceLayer.bonusRollFontColor, DiceLayer.bonusRollDieColor, this.diceRollData.diceGroup);
 		}
 
+		let textCenter: Vector = null;
+		if (this.diceRollData.diceGroup === DiceGroup.Viewers) {
+			if (this.diceRollData.type === DiceRollType.DamagePlusSavingThrow)
+				textCenter = this.getCenterDamageDicePosition();
+			else
+				textCenter = this.getCenterDicePosition();
+		}
+
 		if (totalDamage > 0) {
-			diceLayer.showTotalHealthDamage(this.totalDamagePlusModifier.toString(), this.attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup);
+			diceLayer.showTotalHealthDamage(this.totalDamagePlusModifier.toString(), this.attemptedRollWasSuccessful, 'Damage: ', DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup, textCenter);
 			diceLayer.showDamageHealthModifier(this.damageModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor, this.diceRollData.diceGroup);
 		}
 		if (totalHealth > 0) {
-			diceLayer.showTotalHealthDamage('+' + this.totalHealthPlusModifier.toString(), this.attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup);
+			diceLayer.showTotalHealthDamage('+' + this.totalHealthPlusModifier.toString(), this.attemptedRollWasSuccessful, 'Health: ', DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup, textCenter);
 			diceLayer.showDamageHealthModifier(this.healthModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.diceGroup);
 		}
 		if (totalExtra > 0) {
-			diceLayer.showTotalHealthDamage(this.totalExtraPlusModifier.toString(), this.attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup);
+			diceLayer.showTotalHealthDamage(this.totalExtraPlusModifier.toString(), this.attemptedRollWasSuccessful, '', DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup, textCenter);
 			diceLayer.showDamageHealthModifier(this.extraModifierThisRoll, this.attemptedRollWasSuccessful, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.diceGroup);
 		}
 		this.showSuccessFailMessages(title, d20RollValue.get(singlePlayerId), this.diceRollData.diceGroup);
@@ -2079,6 +2091,54 @@ class DieRoller {
 			return new Vector(960, 540);
 		}
 		return new Vector(x / this.dice.length, y / this.dice.length);
+	}
+
+	getCenterDamageDicePosition(): Vector {
+		let x: number = undefined;
+		let y: number = undefined;
+		let count = 0;
+		this.dice.forEach((die: IDie) => {
+			if (die.damageType !== DamageType.None) {
+				count++;
+				const diePos: Vector = this.getScreenCoordinates(die);
+				if (x === undefined) {
+					x = diePos.x;
+					y = diePos.y;
+				}
+				else {
+					x += diePos.x;
+					y += diePos.y;
+				}
+			}
+		});
+		if (count === 0) {
+			return new Vector(960, 540);
+		}
+		return new Vector(x / count, y / count);
+	}
+
+	getCenterPlayerDicePosition(playerName: string): Vector {
+		let x: number = undefined;
+		let y: number = undefined;
+		let count = 0;
+		this.dice.forEach((die: IDie) => {
+			if (die.playerName === playerName) {
+				count++;
+				const diePos: Vector = this.getScreenCoordinates(die);
+				if (x === undefined) {
+					x = diePos.x;
+					y = diePos.y;
+				}
+				else {
+					x += diePos.x;
+					y += diePos.y;
+				}
+			}
+		});
+		if (count === 0) {
+			return new Vector(960, 540);
+		}
+		return new Vector(x / count, y / count);
 	}
 
 	playFinalRollSoundEffects() {
@@ -2307,6 +2367,7 @@ class DieRoller {
 			'additionalDieRollMessage': this.additionalDieRollMessage,
 			'diceGroup': this.diceRollData.diceGroup,
 			'rollId': this.diceRollData.rollId,
+			'viewer': this.diceRollData.viewer,
 		};
 
 		diceHaveStoppedRolling(JSON.stringify(this.lastRollDiceData));
@@ -2533,7 +2594,7 @@ class DieRoller {
 		const hiddenDie: IDie[] = [];
 
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
-		
+
 		const scale = this.getDieScale();
 
 		for (let i = 0; i < this.specialDice.length; i++) {
@@ -3064,7 +3125,7 @@ class DieRoller {
 		const stillHaveSpecialDice: boolean = this.specialDice !== null && this.specialDice.length > 0;
 		//console.log(`numDiceStillInPlay = ${numDiceStillInPlay}, animationsShouldBeDone = ${animationsShouldBeDone}, allDiceHaveStoppedRolling = ${allDiceHaveStoppedRolling}, stillScaling = ${stillScaling}`);
 
-		if (this.throwHasStarted && !this.animationsShouldBeDone && numDiceStillInPlay === 0 && this.allDiceHaveStoppedRolling &&!stillScaling && !stillHaveSpecialDice) {
+		if (this.throwHasStarted && !this.animationsShouldBeDone && numDiceStillInPlay === 0 && this.allDiceHaveStoppedRolling && !stillScaling && !stillHaveSpecialDice) {
 			this.animationsShouldBeDone = true;
 			this.throwHasStarted = false;
 			//console.log('animationsShouldBeDone = true;');
@@ -3760,6 +3821,7 @@ class DieRoller {
 		allDice.forEach((die: IDie) => {
 			die.playerName = diceDto.PlayerName;
 			die.dataStr = diceDto.Data;
+			die.modifier = diceDto.Modifier;
 			die.rollType = diceDto.DieCountsAs;
 			die.dieType = DiceRollType[DiceRollType.None];
 			if (diceDto.Label)
@@ -3996,6 +4058,75 @@ class DieRoller {
 			diceSounds.safePlayMp3(this.diceRollData.onThrowSound);
 		}
 		//startedRoll = true;
+	}
+
+	getDieModifier(playerName: string): number {
+		for (let i = 0; i < this.dice.length; i++) {
+			const die: IDie = this.dice[i];
+			if (die.playerName === playerName)
+				return die.modifier;
+		}
+		return 0;
+	}
+
+	getDieBackColor(playerName: string): string {
+		for (let i = 0; i < this.diceRollData.diceDtos.length; i++) {
+			const diceDto: DiceDto = this.diceRollData.diceDtos[i];
+			if (diceDto.PlayerName === playerName)
+				return diceDto.BackColor;
+		}
+		return '#ffffff';
+	}
+
+	getDieTextColor(playerName: string): string {
+		for (let i = 0; i < this.diceRollData.diceDtos.length; i++) {
+			const diceDto: DiceDto = this.diceRollData.diceDtos[i];
+			if (diceDto.PlayerName === playerName)
+				return diceDto.FontColor;
+		}
+		return '#000000';
+	}
+
+	showSavingThrowTotalsOverAllDice(dice: IDie[], hiddenThreshold: number, diceGroup: DiceGroup) {
+		const dieTotals: Map<string, number> = new Map<string, number>();
+		dice.forEach((die: IDie) => {
+			if (die.rollType === DieCountsAs.totalScore) {
+				if (!dieTotals.has(die.playerName)) {
+					dieTotals.set(die.playerName, die.getTopNumber());
+				}
+				else {
+					dieTotals.set(die.playerName, dieTotals.get(die.playerName) + die.getTopNumber());
+				}
+			}
+		});
+		dieTotals.forEach((total: number, key: string) => {
+			this.showSavingThrowTotalsOverDice(key, dieTotals.get(key), hiddenThreshold, diceGroup);
+		});
+	}
+
+	showSavingThrowTotalsOverDice(playerName: string, dieTotal: number, hiddenThreshold: number, diceGroup: DiceGroup) {
+
+		const modifier: number = this.getDieModifier(playerName);
+		const grandTotal: number = dieTotal + modifier;
+		let dieTotalStr: string;
+		if (modifier > 0)
+			dieTotalStr = `${grandTotal} (+${modifier})`;
+		else if (modifier < 0)
+			dieTotalStr = `${grandTotal} (${modifier})`;
+		else
+			dieTotalStr = `${dieTotal}`;
+		let message: string;
+		if (dieTotal === 20)  // Nat 20!
+			message = `Critical save!`;
+		else if (dieTotal === 1)  // Complete failure!
+			message = `Complete failure!`;
+		else if (grandTotal >= hiddenThreshold)
+			message = `${dieTotalStr} saves!`;
+		else
+			message = `${dieTotalStr} fails!`;
+		
+		const centerDicePos: Vector = this.getCenterPlayerDicePosition(playerName);
+		diceLayer.showSmallerMessageAt(centerDicePos, message, diceGroup, this.getDieBackColor(playerName), this.getDieTextColor(playerName));
 	}
 }
 

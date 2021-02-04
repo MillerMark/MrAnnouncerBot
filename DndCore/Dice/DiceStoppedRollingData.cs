@@ -8,6 +8,7 @@ namespace DndCore
 	public class DiceStoppedRollingData
 	{
 		public string rollId { get; set; }
+		public string viewer { get; set; }
 		public int playerID { get; set; }
 		public bool success { get; set; }
 		public bool wasCriticalHit { get; set; }

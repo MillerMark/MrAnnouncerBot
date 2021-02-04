@@ -926,6 +926,7 @@ namespace DndCore
 
 							break;
 						case DiceRollType.SavingThrow:
+						case DiceRollType.DamagePlusSavingThrow:
 							if ((int)VantageMods[key].Detail == (int)savingThrow)
 							{
 								if (VantageMods[key].Offset < 0)

@@ -25,8 +25,9 @@ namespace DHDM
 				if (diceRoll.DiceDtos != null && diceRoll.DiceDtos.Count > 0)
 				{
 					DiceDto diceDto = diceRoll.DiceDtos[0];
-					viewerRollDto.Name = diceDto.Label;
+					viewerRollDto.Label = diceDto.Label;
 					viewerRollDto.RollId = diceRoll.RollID;
+					viewerRollDto.UserName = diceRoll.Viewer;
 					viewerRollDto.FontColor = diceDto.BackColor;
 					viewerRollDto.OutlineColor = diceDto.FontColor;
 					viewerRollDto.RollStr = GetRollStr(diceRoll.DiceDtos);

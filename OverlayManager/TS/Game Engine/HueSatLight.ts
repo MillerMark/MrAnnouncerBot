@@ -1,6 +1,7 @@
 ﻿ //` ![](45E77D94A1CD4CD6C4058A46BB98799C.png)
 
 class HueSatLight {
+  // hue, saturation, and light are all between 0 and 1.
   constructor(public hue: number, public saturation: number, public light: number) {
 
   }

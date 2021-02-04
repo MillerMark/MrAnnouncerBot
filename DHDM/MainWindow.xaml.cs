@@ -2164,6 +2164,9 @@ namespace DHDM
 				case DiceRollType.SavingThrow:
 					rbSavingThrow.IsChecked = true;
 					break;
+				case DiceRollType.DamagePlusSavingThrow:
+					rbDamagePlusSavingThrow.IsChecked = true;
+					break;
 				case DiceRollType.FlatD20:
 					rbFlatD20.IsChecked = true;
 					break;
@@ -3204,7 +3207,7 @@ namespace DHDM
 
 		bool CanIncludeVantageDice(DiceRollType type)
 		{
-			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.SkillCheck);
+			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow || type == DiceRollType.SkillCheck);
 		}
 
 		void BeforePlayerRolls(int playerId, DiceRoll diceRoll, ref VantageKind vantageKind)
@@ -3256,7 +3259,7 @@ namespace DHDM
 					diceRoll.SkillCheck = DndUtils.ToSkill(skillStr);
 				}
 			}
-			if (type == DiceRollType.SavingThrow)
+			if (type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow)
 			{
 				ComboBoxItem selectedItem = (ComboBoxItem)cbAbility.SelectedItem;
 				if (selectedItem != null && selectedItem.Content != null)
@@ -3268,7 +3271,7 @@ namespace DHDM
 
 			diceRoll.DamageType = DamageType.None;
 
-			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow)
+			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow)
 			{
 				//if (rbActivePlayer.IsChecked == true)
 				//	diceRoll.RollScope = RollScope.ActivePlayer;
@@ -3348,7 +3351,7 @@ namespace DHDM
 			if (diceRoll.ThrowPower < 0.3)
 				diceRoll.ThrowPower = 0.3;
 
-			if (type == DiceRollType.SavingThrow)
+			if (type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow)
 				diceRoll.SetHiddenThreshold(tbxSaveThreshold.Text);
 			else if (type == DiceRollType.SkillCheck)
 				diceRoll.SetHiddenThreshold(tbxSkillCheckThreshold.Text);
@@ -4313,7 +4316,7 @@ namespace DHDM
 				//
 			}
 
-			if (ea.StopRollingData.type == DiceRollType.SavingThrow)
+			if (ea.StopRollingData.type == DiceRollType.SavingThrow || ea.StopRollingData.type == DiceRollType.DamagePlusSavingThrow)
 			{
 				if (ea.StopRollingData.multiplayerSummary != null)
 				{
@@ -4450,6 +4453,7 @@ namespace DHDM
 						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
 					break;
 				case DiceRollType.SavingThrow:
+				case DiceRollType.DamagePlusSavingThrow:
 					rollTitle = GetAbilityStr(ea.StopRollingData.savingThrow) + " Saving Throw: ";
 					break;
 				case DiceRollType.FlatD20:
@@ -4599,6 +4603,7 @@ namespace DHDM
 			{
 				case DiceRollType.FlatD20:
 				case DiceRollType.SavingThrow:
+				case DiceRollType.DamagePlusSavingThrow:
 				case DiceRollType.SkillCheck:
 				case DiceRollType.DeathSavingThrow:
 					if (success)
@@ -8977,9 +8982,9 @@ namespace DHDM
 		}
 		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
 		{
-			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow)
+			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow || dieRollQueueEntry.RollType == DiceRollType.DamagePlusSavingThrow)
 			{
-				DiceRoll diceRoll = PrepareRoll(DiceRollType.SavingThrow);
+				DiceRoll diceRoll = PrepareRoll(dieRollQueueEntry.RollType);
 				dieRollQueueEntry.PrepareRoll(diceRoll);
 				RollTheDice(diceRoll);
 			}
@@ -9588,6 +9593,10 @@ namespace DHDM
 
 		private void CardCommands_ViewerDieRollComplete(object sender, ViewerDieRollStoppedEventArgs ea)
 		{
+			ea.Card.Command = "DiceRollForCardFinished";
+			string cardStr = JsonConvert.SerializeObject(ea.Card);
+			HubtasticBaseStation.CardCommand(cardStr);
+
 			Creature targetCreature = DndUtils.GetCreatureById(ea.Card.TargetCharacterId);
 			if (targetCreature != null)
 			{
@@ -9622,11 +9631,21 @@ namespace DHDM
 			}
 		}
 
+		// TODO: Automate clean up of any viewer cards blocking the UI with this?
+		DateTime lastViewerRollStartTime;
+
 		private void CardCommands_ViewerDieRollStarts(object sender, ViewerDieRollStartedEventArgs ea)
 		{
-			ea.Card.Command = "ShowCard";
+			lastViewerRollStartTime = DateTime.Now;
+			ea.Card.Command = "RollingDiceForCard";
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);
+		}
+
+		private void rbDamagePlusSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.DamagePlusSavingThrow;
+			btnRollPlayerDice.Content = "Roll Damage with Saving Throw";
 		}
 
 		// TODO: Reintegrate wand/staff animations....
