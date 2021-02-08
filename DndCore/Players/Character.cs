@@ -1860,16 +1860,17 @@ namespace DndCore
 			Spell spellJustCast = AllSpells.Get(spellName);
 			if (spellJustCast == null)
 				return;
-
-			// HACK: Need a CastedSpell for the event. TimeSpellWasCast & SpellSlotLevel will not be correct.
 			CastedSpell castedSpell = new CastedSpell(spellJustCast, this);
+			JustCastSpell(castedSpell);
+		}
+
+		public void JustCastSpell(CastedSpell castedSpell)
+		{
 			Expressions.BeginUpdate();
 			try
 			{
 				foreach (AssignedFeature assignedFeature in features)
-				{
 					assignedFeature.SpellJustCast(this, castedSpell);
-				}
 			}
 			finally
 			{

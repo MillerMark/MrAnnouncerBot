@@ -6,6 +6,7 @@ namespace DndCore
 	[DebuggerDisplay("{SpellCaster?.firstName,nq}: {Spell?.Name,nq}")]
 	public class CastedSpell
 	{
+		public string ID { get; set; }
 		public event EventHandler OnDispel;
 		static CastedSpell()
 		{
@@ -14,6 +15,7 @@ namespace DndCore
 
 		public CastedSpell(Spell spell, Character spellCaster)
 		{
+			ID = Guid.NewGuid().ToString();
 			Target = spellCaster.ActiveTarget;
 			SpellCaster = spellCaster;
 			Spell = spell;

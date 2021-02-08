@@ -24,8 +24,12 @@ namespace DndCore
 
 		public void AddCreature(Creature creature)
 		{
-			Creatures.Add(creature);
+			if (creature is Character player)
+				PlayerIds.Add(player.playerID);
+			else
+				Creatures.Add(creature);
 		}
+
 		public static Target FromMagic(Magic magic)
 		{
 			Target target = new Target();

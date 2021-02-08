@@ -238,14 +238,25 @@ namespace MrAnnouncerBot
 		{
 			try
 			{
-				var response = await httpClient.PostAsync(STR_GetChattersApi, null);
-				var responseString = await response.Content.ReadAsStringAsync();
-				if (responseString == null)
-					return;
+				HttpResponseMessage response = await httpClient.PostAsync(STR_GetChattersApi, null);
 
-				LiveViewers liveViewers = JsonConvert.DeserializeObject<LiveViewers>(responseString);
-				if (liveViewers != null)
-					allViewers.UpdateLiveViewers(liveViewers.chatters.viewers);
+				string responseString = await response.Content.ReadAsStringAsync();
+				if (response.IsSuccessStatusCode)
+				{
+					if (responseString == null)
+						return;
+
+					LiveViewers liveViewers = JsonConvert.DeserializeObject<LiveViewers>(responseString);
+					if (liveViewers != null)
+						allViewers.UpdateLiveViewers(liveViewers.chatters.viewers);
+				}
+				else
+				{
+					// TODO: Respond to errors in responseString
+					//System.Diagnostics.Debugger.Break();
+				}
+
+
 			}
 			catch (Exception ex)
 			{

@@ -209,6 +209,8 @@ namespace DndCore
 					return DiceRollType.SavingThrow;
 				case "DamagePlusSavingThrow":
 					return DiceRollType.DamagePlusSavingThrow;
+				case "OnlyTargetsSavingThrow":
+					return DiceRollType.OnlyTargetsSavingThrow;
 				case "NonCombatInitiative":
 					return DiceRollType.NonCombatInitiative;
 				case "Initiative":

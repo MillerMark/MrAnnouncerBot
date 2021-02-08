@@ -425,14 +425,15 @@ namespace DndCore
 			return Cast(player, spell);
 		}
 
-		public CastedSpell Cast(Character player, Spell spell)
+		public CastedSpell Cast(Character player, Spell spell, CastedSpell castedSpell = null)
 		{
 			if (spell.CastingTime == DndTimeSpan.OneAction || spell.CastingTime == DndTimeSpan.OneBonusAction)
 			{
 				CreatureTakingAction(player);
 			}
 
-			CastedSpell castedSpell = new CastedSpell(spell, player);
+			if (castedSpell == null)
+				castedSpell = new CastedSpell(spell, player);
 			castedSpell.PreparationComplete();
 
 			nextTarget = player.ActiveTarget;
@@ -524,9 +525,19 @@ namespace DndCore
 			return activeSpells.Find(x => x.SpellCaster == character && x.Spell.Name == spellName);
 		}
 
+		public CastedSpell GetActiveSpellById(Character character, string id)
+		{
+			return activeSpells.Find(x => x.SpellCaster == character && x.ID == id);
+		}
+
 		public void RemoveActiveSpell(Character character, string spellName)
 		{
 			activeSpells.RemoveAll(x => x.SpellCaster == character && x.Spell.Name == spellName);
+		}
+
+		public void RemoveActiveSpellById(Character character, string id)
+		{
+			activeSpells.RemoveAll(x => x.SpellCaster == character && x.ID == id);
 		}
 
 		public void CreaturePreparesAttack(Creature creature, Creature target, Attack attack, bool usesMagic)

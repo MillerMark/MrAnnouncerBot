@@ -55,56 +55,113 @@ namespace DndCore
 			else
 				name = signature;
 		}
+
 		public void TriggerDispel(Magic magic)
 		{
-			if (string.IsNullOrWhiteSpace(onDispel))
-				return;
-			Expressions.Do(onDispel, magic.Caster as Character, Target.FromMagic(magic), null, null, magic);
+			TriggerEvent(magic, onDispel);
 		}
 
+		public void TriggerReceived(Magic magic)
+		{
+			TriggerEvent(magic, onReceived);
+		}
+
+		public void TriggerExpire(Magic magic)
+		{
+			TriggerEvent(magic, onExpire);
+		}
+
+		public void TriggerSenderStartsTurn(Magic magic)
+		{
+			TriggerEvent(magic, onSenderStartsTurn);
+		}
+
+		public void TriggerRecipientStartsTurn(Magic magic)
+		{
+			TriggerEvent(magic, onRecipientStartsTurn);
+		}
+
+		public void TriggerRecipientAttacks(Magic magic)
+		{
+			TriggerEvent(magic, onRecipientAttacks);
+		}
+
+		public void TriggerRecipientPreparesAttack(Magic magic)
+		{
+			TriggerEvent(magic, onRecipientPreparesAttack);
+		}
+
+		public void TriggerRecipientSaves(Magic magic)
+		{
+			TriggerEvent(magic, onRecipientSaves);
+		}
+
+		public void TriggerRecipientHitsTarget(Magic magic)
+		{
+			TriggerEvent(magic, onRecipientHitsTarget);
+		}
+		
+		public void TriggerDieRollStopped(Magic magic, DiceStoppedRollingData dice)
+		{
+			TriggerEvent(magic, onDieRollStopped, dice);
+		}
+
+		private void TriggerEvent(Magic magic, string eventCode, DiceStoppedRollingData dice = null)
+		{
+			if (string.IsNullOrWhiteSpace(eventCode))
+				return;
+			Expressions.Do(eventCode, magic.Caster as Character, Target.FromMagic(magic), (CastedSpell)magic.CastedSpell, dice, magic);
+		}
+		
 
 		[Column("name")]
 		public string signature { get; set; }
 
+		
 		[Column]
 		public string description { get; set; }
 
+		
 		[Column]
 		public string duration { get; set; }
 
+		
 		[Column]
 		public string onReceived { get; set; }
 
+		
 		[Column]
 		public string onExpire { get; set; }
 
+		
 		[Column]
-		public string onOwnerStartsTurn { get; set; }
+		public string onSenderStartsTurn { get; set; }
 
+		
 		[Column]
 		public string onRecipientStartsTurn { get; set; }
 
+		
 		[Column]
-		public string onCasting { get; set; }
+		public string onRecipientPreparesAttack { get; set; }
+
 
 		[Column]
-		public string onGetAttackAbility { get; set; }
+		public string onRecipientAttacks { get; set; }
 
+		
 		[Column]
-		public string onCast { get; set; }
+		public string onRecipientSaves { get; set; }
 
-		[Column]
-		public string onPlayerPreparesAttack { get; set; }
-
-		[Column]
-		public string onPlayerAttacks { get; set; }
 
 		[Column]
 		public string onDieRollStopped { get; set; }
 
+		
 		[Column]
-		public string onPlayerHitsTarget { get; set; }
+		public string onRecipientHitsTarget { get; set; }
 
+		
 		[Column]
 		public string onDispel { get; set; }
 

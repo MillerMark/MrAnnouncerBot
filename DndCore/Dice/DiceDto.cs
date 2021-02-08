@@ -44,5 +44,48 @@ namespace DndCore
 			else 
 				DieCountsAs = DieCountsAs.totalScore;
 		}
+
+		public static DiceDto D20FromInGameCreature(InGameCreature inGameCreature, DiceRollType diceRollType)
+		{
+			DieCountsAs dieCountsAs = DieCountsAs.totalScore;
+			double modifier = 0;
+			string label;
+			if (IsSavingThrow(diceRollType))
+			{
+				dieCountsAs = DieCountsAs.savingThrow;
+				label = $"{inGameCreature.Name}'s Save";
+			}
+			else
+				label = inGameCreature.Name;
+
+			return AddD20ForCreature(inGameCreature, label, modifier, dieCountsAs);
+		}
+
+		public static bool IsSavingThrow(DiceRollType diceRollType)
+		{
+			return diceRollType == DiceRollType.SavingThrow || diceRollType == DiceRollType.DamagePlusSavingThrow || diceRollType == DiceRollType.OnlyTargetsSavingThrow;
+		}
+
+		private static DiceDto AddD20ForCreature(InGameCreature inGameCreature, string label, double modifier, DieCountsAs dieCountsAs)
+		{
+			return new DiceDto()
+			{
+				PlayerName = inGameCreature.Name,
+				CreatureId = -inGameCreature.Index,
+				Sides = 20,
+				Quantity = 1,
+				Label = label,
+				Modifier = modifier,
+				DamageType = DamageType.None,
+				BackColor = inGameCreature.BackgroundHex,
+				FontColor = inGameCreature.ForegroundHex,
+				DieCountsAs = dieCountsAs
+			};
+		}
+
+		public static bool IsDamage(DiceRollType type)
+		{
+			return type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow;
+		}
 	}
 }

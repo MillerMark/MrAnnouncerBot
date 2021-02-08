@@ -11,6 +11,7 @@ namespace DndCore
 		health,
 		extra,
 		bonus,
-		bentLuck
+		bentLuck,
+		savingThrow
 	}
 }

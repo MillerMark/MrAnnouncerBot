@@ -8,6 +8,7 @@ var rectangleDrawingSegment = {
 Object.freeze(rectangleDrawingSegment);
 
 class Sprites {
+	static readonly startAtRandomFrame: number = -1;
 	name: string;
 	baseAnimation: Part;
 	spriteWidth: number;

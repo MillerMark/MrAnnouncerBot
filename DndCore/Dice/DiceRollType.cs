@@ -25,6 +25,7 @@
 		NonCombatInitiative,
 		HPCapacity, 
 		CastSimpleSpell,
-		DamagePlusSavingThrow
+		DamagePlusSavingThrow,
+		OnlyTargetsSavingThrow,
 	}
 }

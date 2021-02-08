@@ -67,7 +67,7 @@ class CardDto extends CardBaseCommandDto {
 	Purchase: StreamlootsPurchase;
 	Card: StreamlootsCard;
 	OwningCharacterId: number;
-	TargetCharacterId: number;
+	//TargetCharacterId: number;
 }
 
 class ViewerRollDto {
@@ -217,8 +217,10 @@ class CardManager {
 	}
 
 	static readonly creditLifespanMs: number = 3500;
+	static readonly dealtCardLifespanMs: number = 4800;
+	static readonly dealtCardFadeoutMs: number = 1000;
 
-	showCard(card: StreamlootsCard, characterId: number, expireSoon = true) {
+	dealCard(card: StreamlootsCard, characterId: number, expireSoon = true): SpriteProxy {
 		const { xPos, yPos } = this.getBigCardCenter(card);
 
 		// showCard places the specified card above or below the cards in the hand, like this:
@@ -236,9 +238,9 @@ class CardManager {
     const targetSpin = Random.between(-3, 3);
 		sprite.easeSpin(performance.now(), -degreesToSpin, targetSpin, entryTime);
 		if (expireSoon)
-			sprite.expirationDate = performance.now() + 4800;
+			sprite.expirationDate = performance.now() + CardManager.dealtCardLifespanMs;
 		sprite.fadeInTime = 600;
-		sprite.fadeOutTime = 1000;
+		sprite.fadeOutTime = CardManager.dealtCardFadeoutMs;
 		sprite.data = card.Guid;
 		//console.log('showCard.characterId: ' + characterId);
 		const credit: TextEffect = this.addCardPlayedByCredit(xPos, yPos, card.UserName, characterId, card.FillColor, card.OutlineColor);
@@ -255,6 +257,8 @@ class CardManager {
 			highlightGlow.delayStart = entryTime;
 			highlightGlow.fadeInTime = 300;
 		}
+
+		return sprite;
 	}
 
 	static readonly cardHeight: number = 424;
@@ -859,8 +863,8 @@ class CardManager {
 		}
 	}
 
-	playCard(cardName: string, xPos: number, yPos: number, delayStart: number, hueShift: number, userName: string, characterId: number, fillColor: string, outlineColor: string) {
-		const imageIndex: number = this.knownCards.addImage(cardName);
+	playCard(cardImageName: string, xPos: number, yPos: number, delayStart: number, hueShift: number, userName: string, characterId: number, fillColor: string, outlineColor: string) {
+		const imageIndex: number = this.knownCards.addImage(cardImageName);
 		const cardSprite: SpriteProxy = this.addBigCardSprite(this.knownCards, xPos, yPos, imageIndex, 0, delayStart);
 		this.showCardPlayAnimation(cardSprite, delayStart, xPos, yPos, hueShift, userName, characterId, fillColor, outlineColor);
 	}
@@ -1074,6 +1078,23 @@ class CardManager {
   }
 
 	highlightCard(card: StreamlootsCard, characterId: number) {
-		this.showCard(card, characterId, false);
+		this.dealCard(card, characterId, false);
 	}
+
+	playCardAfterTimeout(sprite: SpriteProxy, card: StreamlootsCard) {
+		const xPos: number = sprite.x + this.knownCards.originX;
+		const yPos: number = sprite.y + this.knownCards.originY;
+		const hueSatLight: HueSatLight = HueSatLight.fromHex(card.FillColor);
+		const cardImageName: string = this.getCardImageName(card);
+		this.playCard(cardImageName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, Character.invalidCreatureId, card.FillColor, card.OutlineColor);		
+	}
+
+	playCardNow(card: StreamlootsCard) {
+		const sprite: SpriteProxy = this.dealCard(card, Character.invalidCreatureId);
+		sprite.fadeOutTime = 50;
+		const dealtCardPauseTimeBeforePlay = 3000;
+		sprite.expirationDate = performance.now() + dealtCardPauseTimeBeforePlay;
+		setTimeout(() => this.playCardAfterTimeout(sprite, card), dealtCardPauseTimeBeforePlay - sprite.fadeOutTime);
+	}
+
 }

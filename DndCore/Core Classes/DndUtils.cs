@@ -28,7 +28,12 @@ namespace DndCore
 			if (creatureId >= 0)
 				return AllPlayers.GetFromId(creatureId);
 			else
-				return AllInGameCreatures.GetByIndex(-creatureId).Creature;
+			{
+				InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
+				if (inGameCreature != null)
+					return inGameCreature.Creature;
+			}
+			return null;
 		}
 
 		public static int GetHueShift(SchoolOfMagic schoolOfMagic)
@@ -65,6 +70,11 @@ namespace DndCore
 		{
 			if (name == null)
 				return "No name";
+
+			// TODO: this should be data driven.
+			if (name.StartsWith("L'il "))
+				return "Cutie";
+
 			int spaceIndex = name.IndexOf(' ');
 			if (spaceIndex < 0)
 				return name;
@@ -79,7 +89,8 @@ namespace DndCore
 				if (i < arguments.Count)
 				{
 					string replaceStr = arguments[i];
-					expression = expression.Replace(searchStr, replaceStr);
+					if (!string.IsNullOrEmpty(searchStr) && replaceStr != null)
+						expression = expression.Replace(searchStr, replaceStr);
 				}
 			}
 			return expression;
@@ -744,6 +755,75 @@ namespace DndCore
 		public static TargetStatus GetTargetStatus(string value)
 		{
 			return GetElement<TargetStatus>(value);
+		}
+
+		/// <summary>
+		/// Converts a scene name with a one-of-many index count at the end (e.g., "DanceParty[3]"), into one of
+		/// "DanceParty1", "DanceParty2", or "DanceParty3". Escape characters ("\") placed before the brackets will 
+		/// be converted into actual brackets.
+		/// </summary>
+		public static string GetRandomSceneIfNecessary(string sceneName)
+		{
+			int bracketStart = sceneName.IndexOf("[");
+			if (sceneName.EndsWith("]") && bracketStart > 0)
+			{
+				if (sceneName.Contains("\\["))
+				{
+					sceneName = sceneName.Replace("\\[", "[").Replace("\\]", "]");
+				}
+				else
+				{
+					string numSceneStr = sceneName.Substring(bracketStart + 1);
+					sceneName = sceneName.Substring(0, bracketStart);
+					numSceneStr = numSceneStr.Substring(0, numSceneStr.Length - 1);
+					if (int.TryParse(numSceneStr, out int numScenes))
+					{
+						int sceneNumber = new Random().Next(numScenes) + 1;
+						sceneName += sceneNumber;
+					}
+				}
+			}
+			return sceneName;
+		}
+
+		public static string ToDamageStr(DamageType damageType)
+		{
+			switch (damageType)
+			{
+				case DamageType.None:
+					return string.Empty;
+				case DamageType.Acid:
+					return "acid";
+				case DamageType.Bludgeoning:
+					return "bludgeoning";
+				case DamageType.Cold:
+					return "cold";
+				case DamageType.Fire:
+					return "fire";
+				case DamageType.Force:
+					return "force";
+				case DamageType.Lightning:
+					return "lightning";
+				case DamageType.Necrotic:
+					return "necrotic";
+				case DamageType.Piercing:
+					return "piercing";
+				case DamageType.Poison:
+					return "poison";
+				case DamageType.Psychic:
+					return "psychic";
+				case DamageType.Radiant:
+					return "radiant";
+				case DamageType.Slashing:
+					return "slashing";
+				case DamageType.Thunder:
+					return "thunder";
+				case DamageType.Superiority:
+					return "superiority";
+				case DamageType.Condition:
+					return "condition";
+			}
+			return string.Empty;
 		}
 	}
 }

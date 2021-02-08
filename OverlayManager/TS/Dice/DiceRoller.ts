@@ -136,7 +136,7 @@ interface IDie {
 	inPlay: boolean;
 	scoreHasBeenTallied: boolean;
 	isD20: boolean;
-	playerID: number;
+	creatureID: number;
 	diceColor: string;
 	hasNotHitFloorYet: boolean;
 	getObject();
@@ -152,7 +152,8 @@ enum DieCountsAs {
 	health,
 	extra,
 	bonus,
-	bentLuck
+	bentLuck,
+	savingThrow
 }
 
 enum DieEffect {
@@ -309,7 +310,7 @@ class DieRoller {
 			diceSounds.safePlayMp3('inspiration');
 		}
 
-		if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration) {
+		if (this.countsAsTotalScore(die) || die.rollType === DieCountsAs.inspiration) {
 			// Move the effect closer to the center of the screen...
 			const percentageOnDie = 0.7;
 			const percentageOffDie: number = 1 - percentageOnDie;
@@ -515,6 +516,8 @@ class DieRoller {
 			return this.diceRollData;
 	}
 
+	static readonly edgeRollNotFound: number = -1;
+
 	removeMultiplayerD20s(): void {
 		this.needToClearD20s = false;
 		const localDiceRollData: DiceRollData = this.getMostRecentDiceRollData();
@@ -528,17 +531,17 @@ class DieRoller {
 		const maxSlots = 60;
 		const midPoint: number = maxSlots / 2;  // Negative player id's will be less than this midpoint. Positive will be higher.
 		for (let j = 0; j < maxSlots; j++) {
-			playerEdgeRolls.push(-1);
+			playerEdgeRolls.push(DieRoller.edgeRollNotFound);
 			otherPlayersDie.push(null);
 		}
 
 		for (let i = 0; i < this.dice.length; i++) {
 			const die: IDie = this.dice[i];
-			const playerId: number = midPoint + die.playerID;
+			const playerId: number = midPoint + die.creatureID;
 			const topNumber = die.getTopNumber();
 
 			if (die.isD20) {
-				if (playerEdgeRolls[playerId] === -1)
+				if (playerEdgeRolls[playerId] === DieRoller.edgeRollNotFound)
 					playerEdgeRolls[playerId] = topNumber;
 				else if (die.kind === VantageKind.Advantage) {
 					if (playerEdgeRolls[playerId] <= topNumber) {
@@ -574,12 +577,12 @@ class DieRoller {
 	flameOn(die: IDie, scale = 1) {
 		const dieObject = die.getObject();
 
-		const screenPos: Vector = this.getScreenCoordinates(dieObject);
+		const screenPos: Vector = this.getScreenCoordinates(die);
 		if (!screenPos)
 			return;
 
 		diceLayer.addFireball(screenPos.x, screenPos.y, scale);
-		diceLayer.attachDamageFire(die, scale, diceLayer.getHueShift(die.playerID) - 15);
+		diceLayer.attachDamageFire(die, scale, diceLayer.getHueShift(die.creatureID) - 15);
 		diceSounds.playFireball();
 	}
 
@@ -614,7 +617,7 @@ class DieRoller {
 	removeD20s(): number {
 		//console.log('removeD20s...');
 		this.needToClearD20s = false;
-		let edgeRollValue = -1;
+		let edgeRollValue = DieRoller.edgeRollNotFound;
 		const localDiceRollData: DiceRollData = this.getMostRecentDiceRollData();
 		const isLuckRollHigh: boolean = localDiceRollData.type === DiceRollType.LuckRollHigh;
 		const isLuckRollLow: boolean = localDiceRollData.type === DiceRollType.LuckRollLow;
@@ -628,7 +631,7 @@ class DieRoller {
 
 		if (isWildMagic || !localDiceRollData.itsAD20Roll)
 			return edgeRollValue;
-		let otherDie = null;
+		let otherDie: IDie = null;
 		const vantageTextDelay = 900;
 		//console.log('diceRollData.appliedVantage: ' + diceRollData.appliedVantage);
 
@@ -646,7 +649,7 @@ class DieRoller {
 				const topNumber = die.getTopNumber();
 
 				if (die.isD20) {
-					if (edgeRollValue === -1)
+					if (edgeRollValue === DieRoller.edgeRollNotFound)
 						edgeRollValue = topNumber;
 					else if (die.kind === VantageKind.Advantage) {
 						if (edgeRollValue <= topNumber) {
@@ -686,7 +689,7 @@ class DieRoller {
 		}
 
 		if (isLuckRoll) {
-			edgeRollValue = -1;
+			edgeRollValue = DieRoller.edgeRollNotFound;
 			otherDie = null;
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
@@ -695,7 +698,7 @@ class DieRoller {
 				const topNumber: number = die.getTopNumber();
 
 				if (die.isD20) {
-					if (edgeRollValue === -1)
+					if (edgeRollValue === DieRoller.edgeRollNotFound)
 						edgeRollValue = topNumber;
 					else if (isLuckRollHigh) {
 						if (edgeRollValue <= topNumber) {
@@ -851,10 +854,10 @@ class DieRoller {
 					sprite.expirationDate = performance.now();
 
 					let hueShift = 0;
-					if (die.playerID >= 0)
-						hueShift = diceLayer.getHueShift(die.playerID);
+					if (die.creatureID >= 0)
+						hueShift = diceLayer.getHueShift(die.creatureID);
 
-					die.attachedSprites[j] = diceLayer.addFeezePop(sprite.x, sprite.y, hueShift, 100, 100);
+					die.attachedSprites[j] = diceLayer.addFeezePop(sprite.x, sprite.y, die.scale, hueShift, 100, 100);
 					die.origins[j] = new Vector(diceLayer.freezePop.originX, diceLayer.freezePop.originY);
 					diceSounds.safePlayMp3('ice/crack[3]');
 				}
@@ -919,12 +922,12 @@ class DieRoller {
 			}
 
 			let modifier = 0;
-			if (die.playerID < 0) {
+			if (die.creatureID < 0) {
 				if (logProgress) {
 					console.log(`It's an in-game creature.`);
 				}
 				for (let i = 0; i < this.diceRollData.diceDtos.length; i++) {
-					if (this.diceRollData.diceDtos[i].CreatureId === die.playerID) {
+					if (this.diceRollData.diceDtos[i].CreatureId === die.creatureID) {
 						if (logProgress) {
 							console.log(`Found modifier.`);
 						}
@@ -934,7 +937,7 @@ class DieRoller {
 				}
 			}
 			else if (diceLayer.players && diceLayer.players.length > 0) {
-				const player: Character = diceLayer.getPlayer(die.playerID);
+				const player: Character = diceLayer.getPlayer(die.creatureID);
 				modifier = this.getModifier(this.diceRollData, player);
 			}
 
@@ -945,7 +948,7 @@ class DieRoller {
 			else
 				critHit = topNumber >= 20;
 			const critFail: boolean = topNumber === 1;
-			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.playerID, die.dataStr, modifier, success, critHit, critFail));
+			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.creatureID, die.dataStr, modifier, success, critHit, critFail));
 			if (logProgress) {
 				console.log(this.diceRollData.multiplayerSummary[0].roll);
 			}
@@ -975,11 +978,11 @@ class DieRoller {
 			return;
 
 		if (!die.playerName) {
-			die.playerName = diceLayer.getPlayerName(die.playerID);
+			die.playerName = diceLayer.getPlayerName(die.creatureID);
 		}
 
 		const centerPos: Vector = this.getScreenCoordinates(die);
-		diceLayer.addDieTextAfter(centerPos, die.playerName, diceLayer.getDieColor(die.playerID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust, this.diceRollData.diceGroup);
+		diceLayer.addDieTextAfter(centerPos, die.playerName, diceLayer.getDieColor(die.creatureID), diceLayer.activePlayerDieFontColor, 0, 8000, scaleAdjust, this.diceRollData.diceGroup);
 	}
 
 	getRollResults(tallyResults: boolean): RollResults {
@@ -994,7 +997,7 @@ class DieRoller {
 		this.diceRollData.totalRoll = 0;
 
 		let singlePlayerId = 0;
-		let playerIdForTextMessages = -1;
+		let playerIdForTextMessages = Character.invalidCreatureId;
 
 		const initializeLocalArrays = (playerID: number) => {
 			if (!totalScores.get(playerID))
@@ -1018,6 +1021,11 @@ class DieRoller {
 				console.log('die.rollType: ' + DieCountsAs[die.rollType]);
 			}
 			switch (die.rollType) {
+				case DieCountsAs.savingThrow:
+					if (logProgress) {
+						console.log(`DieCountsAs.savingThrow (${topNumber})`);
+					}
+					totalScores.set(playerID, totalScores.get(playerID) + topNumber);
 				case DieCountsAs.totalScore:
 					if (logProgress) {
 						console.log(`DieCountsAs.totalScore (${topNumber})`);
@@ -1128,9 +1136,9 @@ class DieRoller {
 				this.attachDieLabel(die);
 			}
 
-			this.diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType));
+			this.diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType, die.rollType, die.creatureID, die.modifier));
 
-			const playerID: number = die.playerID;
+			const playerID: number = die.creatureID;
 			if (logProgress) {
 				console.log('playerID: ' + playerID);
 			}
@@ -1202,13 +1210,13 @@ class DieRoller {
 		return new RollResults(totalScores, toHitModifier, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
 	}
 
-	bonusRollDealsDamage(damageStr: string, description = '', playerID = -1): void {
+	bonusRollDealsDamage(damageStr: string, description = '', playerID = Character.invalidCreatureId): void {
 		const bonusRoll: BonusRoll = this.diceRollData.addBonusRoll(damageStr, description, playerID, DiceLayer.damageDieBackgroundColor, DiceLayer.damageDieFontColor);
 		bonusRoll.dieCountsAs = DieCountsAs.damage;
 	}
 
 	getFirstPlayerId() {
-		let playerID = -1;
+		let playerID = Character.invalidCreatureId;
 		if (this.diceRollData.playerRollOptions.length > 0)
 			playerID = this.diceRollData.playerRollOptions[0].PlayerID;
 		return playerID;
@@ -1271,18 +1279,22 @@ class DieRoller {
 		if (this.diceRollData.type === DiceRollType.SkillCheck) {
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
-				if (die.inPlay && die.rollType === DieCountsAs.totalScore && die.isD20 && die.getTopNumber() === 20) {
+				if (die.inPlay && this.countsAsTotalScore(die) && die.isD20 && die.getTopNumber() === 20) {
 					this.nat20SkillCheckBonusRoll = true;
 					let dieColor: string = diceLayer.activePlayerDieColor;
 					let dieTextColor: string = diceLayer.activePlayerDieFontColor;
-					if (die.playerID >= 0) {
-						dieColor = diceLayer.getDieColor(die.playerID);
-						dieTextColor = diceLayer.getDieFontColor(die.playerID);
+					if (die.creatureID >= 0) {
+						dieColor = diceLayer.getDieColor(die.creatureID);
+						dieTextColor = diceLayer.getDieFontColor(die.creatureID);
 					}
-					this.diceRollData.addBonusRoll('1d20', '', die.playerID, dieColor, dieTextColor, die.playerName);
+					this.diceRollData.addBonusRoll('1d20', '', die.creatureID, dieColor, dieTextColor, die.playerName);
 				}
 			}
 		}
+	}
+
+	private countsAsTotalScore(die: IDie) {
+		return die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.savingThrow;
 	}
 
 	announceWildMagicResult(totalRoll: number) {
@@ -1307,7 +1319,7 @@ class DieRoller {
 			let rollValue = 0;
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
-				if (die.inPlay && (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration))
+				if (die.inPlay && (this.countsAsTotalScore(die) || die.rollType === DieCountsAs.inspiration))
 					rollValue += die.getTopNumber();
 			}
 			this.diceRollData.totalRoll = rollValue + this.diceRollData.modifier;
@@ -1464,12 +1476,12 @@ class DieRoller {
 			this.freezeDie(die);
 			if (die.attachedSprites && die.inPlay) {
 				let hueShift = 0;
-				if (die.playerID >= 0)
-					hueShift = diceLayer.getHueShift(die.playerID);
+				if (die.creatureID >= 0)
+					hueShift = diceLayer.getHueShift(die.creatureID);
 				else
 					hueShift = diceLayer.activePlayerHueShift;
 
-				const bubble: SpriteProxy = diceLayer.addFreezeBubble(960, 540, hueShift, 100, 100);
+				const bubble: SpriteProxy = diceLayer.addFreezeBubble(960, 540, die.scale, hueShift, 100, 100);
 
 				this.markBubble(bubble);
 				die.attachedSprites.push(bubble);
@@ -1610,7 +1622,7 @@ class DieRoller {
 		die.origins.push(diceLayer.inspirationParticles.getOrigin());
 	}
 
-	createDie(diceGroup: DiceGroup, quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, scale = 1, dieType = ''): IDie[] {
+	createDie(diceGroup: DiceGroup, quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, creatureID = Character.invalidCreatureId, scale = 1, dieType = '', hueVariancePercent = 0, modifier = 0): IDie[] {
 		const allDice: IDie[] = [];
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 		const dieScale: number = DieRoller.dieScale * scale;
@@ -1619,6 +1631,15 @@ class DieRoller {
 		//console.log('dieScale: ' + dieScale);
 		for (let i = 0; i < quantity; i++) {
 			let die: IDie = null;
+
+			if (hueVariancePercent !== 0)
+			{
+				const hsl: HueSatLight = HueSatLight.fromHex(backgroundColor);
+				const hueVariance: number = hueVariancePercent / 100.0;
+				hsl.hue = MathEx.clamp(hsl.hue * Random.between(1 - hueVariance, 1 + hueVariance) % 1, 0, 1);
+				backgroundColor = hsl.toHex();
+			}
+
 			switch (numSides) {
 				case 4:
 					// @ts-ignore - DiceD4
@@ -1660,7 +1681,8 @@ class DieRoller {
 				throw new Error(`Die with ${numSides} sides was not found. Unable to throw dice.`);
 			}
 			die.dieType = dieType;
-			die.playerID = playerID;
+			die.creatureID = creatureID;
+			die.modifier = modifier;
 			this.prepareDie(diceGroup, die, throwPower, xPositionModifier);
 			this.attachLabel(die, textColor, backgroundColor);
 			if (die) {
@@ -1725,7 +1747,7 @@ class DieRoller {
 							break;
 					}
 				}
-				else if ((rollType === DieCountsAs.health || rollType === DieCountsAs.totalScore || rollType === DieCountsAs.extra) && damageType === DamageType.Superiority) {
+				else if ((rollType === DieCountsAs.health || rollType === DieCountsAs.totalScore || rollType === DieCountsAs.savingThrow || rollType === DieCountsAs.extra) && damageType === DamageType.Superiority) {
 					diceLayer.attachSuperiority(die);
 				}
 				if (rollType === DieCountsAs.health) {
@@ -1736,31 +1758,62 @@ class DieRoller {
 			if (die.rollType === DieCountsAs.inspiration) {
 				const rotation: number = Random.between(4, 8);
 				const hueShift: number = Random.between(20, 30);
-				this.addInspirationParticles(die, playerID, hueShift, rotation);
-				this.addInspirationParticles(die, playerID, -hueShift, -rotation);
+				this.addInspirationParticles(die, creatureID, hueShift, rotation);
+				this.addInspirationParticles(die, creatureID, -hueShift, -rotation);
 				die.attachedSprites.push(diceLayer.addInspirationSmoke(die, 960, 540, Math.floor(Math.random() * 360)));
 				die.origins.push(diceLayer.inspirationSmoke.getOrigin());
 			}
 			if (isMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, die.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+				die.attachedSprites.push(diceLayer.addMagicRing(die, 960, 540, die.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 				die.origins.push(diceLayer.magicRingRed.getOrigin());
 			}
 		}
 		return allDice;
 	}
 
-	addDie(diceGroup: DiceGroup, dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = -1, dieType = ''): IDie[] {
+	addDie(diceGroup: DiceGroup, dieStr: string, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, playerID = Character.invalidCreatureId, dieType = '', hueVariancePercent = 0): IDie[] {
+		//console.log('dieStr: ' + dieStr);
 		const countPlusDie: string[] = dieStr.split('d');
 		if (countPlusDie.length !== 2)
 			throw new Error(`Issue with die format string: "${dieStr}". Unable to throw dice.`);
 		let quantity = 1;
-		if (countPlusDie[0])
+		if (countPlusDie[0]) {
+			//console.log('countPlusDie[0]: ' + countPlusDie[0]);
 			quantity = +countPlusDie[0];
-		const numSides: number = +countPlusDie[1];
-		return this.createDie(diceGroup, quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, 1, dieType);
+		}
+
+		//console.log('countPlusDie[1]: ' + countPlusDie[1]);
+
+		const numSidesPlusOffsetStr: string = countPlusDie[1];
+		const plusOffset: number = numSidesPlusOffsetStr.indexOf('+');
+		const minusOffset: number = numSidesPlusOffsetStr.indexOf('-');
+		let modifier = 0;
+		let signMultiplier = 1;
+		if (minusOffset > 0)
+			signMultiplier = -1;
+		let modifierOffset = 0;
+
+		if (plusOffset > 0)
+			modifierOffset = plusOffset;
+		else if (minusOffset > 0)
+			modifierOffset = minusOffset;
+
+		let numSidesStr: string;
+		if (modifierOffset > 0) {
+			numSidesStr = numSidesPlusOffsetStr.substring(0, modifierOffset);
+			//console.log('numSidesStr: ' + numSidesStr);
+			const modifierStr: string = numSidesPlusOffsetStr.substring(modifierOffset);
+			modifier = +modifierStr * signMultiplier;
+		}
+		else
+			numSidesStr = numSidesPlusOffsetStr;
+
+		const numSides: number = +numSidesStr;
+
+		return this.createDie(diceGroup, quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, 1, dieType, hueVariancePercent, modifier);
 	}
 
-	addDieFromStr(diceGroup: DiceGroup, playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic = false): IDie[] {
+	addDieFromStr(diceGroup: DiceGroup, playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic = false, hueVariancePercent = 0): IDie[] {
 		let lastDieAdded: IDie[] = null;
 		if (!diceStr)
 			return lastDieAdded;
@@ -1828,7 +1881,7 @@ class DieRoller {
 			if (dieAndModifier.length === 2)
 				modifier += +dieAndModifier[1];
 			const dieStr: string = dieAndModifier[0];
-			lastDieAdded = this.addDie(diceGroup, dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType);
+			lastDieAdded = this.addDie(diceGroup, dieStr, damageType, thisDieCountsAs, thisBackgroundColor, thisFontColor, throwPower, xPositionModifier, isMagic, playerID, dieType, hueVariancePercent);
 		});
 
 		this.damageModifierThisRoll += modifier;
@@ -1847,7 +1900,8 @@ class DieRoller {
 		for (let i = 0; i < this.diceRollData.bonusRolls.length; i++) {
 			const bonusRoll: BonusRoll = this.diceRollData.bonusRolls[i];
 			//console.log('bonusRoll.dieCountsAs: ' + bonusRoll.dieCountsAs);
-			const allDice: IDie[] = this.addDieFromStr(this.diceRollData.diceGroup, bonusRoll.playerID, bonusRoll.diceStr, bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
+			const allDice: IDie[] = this.addDieFromStr(this.diceRollData.diceGroup, bonusRoll.playerID, bonusRoll.diceStr,
+				bonusRoll.dieCountsAs, Random.between(1.2, 2.2), 0, bonusRoll.dieBackColor, bonusRoll.dieTextColor, bonusRoll.isMagic);
 			allDice.forEach((die: IDie) => {
 				die.playerName = bonusRoll.playerName;
 			});
@@ -1874,7 +1928,7 @@ class DieRoller {
 			return;
 		}
 
-		if (this.diceRollData.type === DiceRollType.DamageOnly) {
+		if (this.diceRollData.type === DiceRollType.DamageOnly || this.diceRollData.type === DiceRollType.DamagePlusSavingThrow) {
 			diceSounds.playDamageCommentaryAsync(totalDamage, damageType, damageSummary);
 			return;
 		}
@@ -1961,6 +2015,7 @@ class DieRoller {
 		if (!this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.WildMagic &&
 			this.diceRollData.type !== DiceRollType.PercentageRoll &&
 			this.diceRollData.type !== DiceRollType.DamageOnly &&
+			this.diceRollData.type !== DiceRollType.DamagePlusSavingThrow &&
 			this.diceRollData.type !== DiceRollType.HealthOnly &&
 			this.diceRollData.type !== DiceRollType.ExtraOnly) {
 			if (this.attemptedRollWasSuccessful)
@@ -2008,6 +2063,8 @@ class DieRoller {
 			diceLayer.showMultiplayerResults(title, this.diceRollData.multiplayerSummary, this.diceRollData.hiddenThreshold);
 		}
 
+		//console.log('d20RollValue.get(singlePlayerId): ' + d20RollValue.get(singlePlayerId));
+		//console.log('this.diceRollData.hasMultiPlayerDice: ' + this.diceRollData.hasMultiPlayerDice);
 		if (!this.diceRollData.hasMultiPlayerDice && d20RollValue.get(singlePlayerId) > 0) {
 			if (this.diceRollData.modifier !== 0)
 				diceLayer.showRollModifier(this.diceRollData.modifier, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
@@ -2017,11 +2074,18 @@ class DieRoller {
 				const centerDice: Vector = this.getCenterDicePosition();
 				diceLayer.showDieTotalMessage(this.diceRollData.totalRoll, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor, this.diceRollData.diceGroup);
 			}
-			else if (this.diceRollData.diceGroup === DiceGroup.Viewers && this.diceRollData.type === DiceRollType.DamagePlusSavingThrow) {
+			else if (this.diceRollData.diceGroup === DiceGroup.Viewers && this.diceRollData.type === DiceRollType.DamagePlusSavingThrow || this.diceRollData.type === DiceRollType.OnlyTargetsSavingThrow) {
 				this.showSavingThrowTotalsOverAllDice(this.dice, this.diceRollData.hiddenThreshold, this.diceRollData.diceGroup);
 			}
 			else
 				diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages, this.diceRollData.diceGroup);
+		}
+		else {
+			//console.log('this.diceRollData.diceGroup: ' + DiceGroup[this.diceRollData.diceGroup]);
+			//console.log('this.diceRollData.type: ' + DiceRollType[this.diceRollData.type]);
+			if (this.diceRollData.diceGroup === DiceGroup.Players && this.diceRollData.type === DiceRollType.DamagePlusSavingThrow || this.diceRollData.type === DiceRollType.OnlyTargetsSavingThrow) {
+				this.showSavingThrowTotalsOverAllDice(this.dice, this.diceRollData.hiddenThreshold, this.diceRollData.diceGroup);
+			}
 		}
 
 		if (this.totalBonus > 0 && !this.diceRollData.hasMultiPlayerDice && this.diceRollData.type !== DiceRollType.SkillCheck) {
@@ -2041,7 +2105,7 @@ class DieRoller {
 
 		let textCenter: Vector = null;
 		if (this.diceRollData.diceGroup === DiceGroup.Viewers) {
-			if (this.diceRollData.type === DiceRollType.DamagePlusSavingThrow)
+			if (this.diceRollData.type === DiceRollType.DamagePlusSavingThrow || this.diceRollData.type === DiceRollType.OnlyTargetsSavingThrow)
 				textCenter = this.getCenterDamageDicePosition();
 			else
 				textCenter = this.getCenterDicePosition();
@@ -2346,11 +2410,11 @@ class DieRoller {
 
 	lastRollDiceData;
 
-	reportDieRollBackToMainApp(playerId: number) {
+	reportDieRollBackToMainApp() {
 		// Corresponds to DiceStoppedRollingData 
 		this.lastRollDiceData = {
 			'wasCriticalHit': this.wasCriticalHit,
-			'playerID': playerId,
+			'singleOwnerId': this.diceRollData.singleOwnerId,
 			'success': this.attemptedRollWasSuccessful,
 			'roll': this.diceRollData.totalRoll,
 			'hiddenThreshold': this.diceRollData.hiddenThreshold,
@@ -2367,6 +2431,7 @@ class DieRoller {
 			'additionalDieRollMessage': this.additionalDieRollMessage,
 			'diceGroup': this.diceRollData.diceGroup,
 			'rollId': this.diceRollData.rollId,
+			'spellId': this.diceRollData.spellId,
 			'viewer': this.diceRollData.viewer,
 		};
 
@@ -2376,7 +2441,7 @@ class DieRoller {
 	getFirstCreatureId(diceRollDto: DiceRollData): number {
 		if (diceRollDto.diceDtos && diceRollDto.diceDtos.length > 0)
 			return diceRollDto.diceDtos[0].CreatureId;
-		return Number.MIN_VALUE;
+		return Character.invalidCreatureId;
 	}
 
 	hasMultiPlayerDice(diceRollDto: DiceRollData): boolean {
@@ -2419,21 +2484,21 @@ class DieRoller {
 			this.onFailure();
 		}
 
-		let playerId: number = diceLayer.playerID;
-		if (this.diceRollData.playerRollOptions.length === 1)
-			playerId = this.diceRollData.playerRollOptions[0].PlayerID;
+		//let playerId: number = diceLayer.playerID;
+		//if (this.diceRollData.playerRollOptions.length === 1)
+		//	playerId = this.diceRollData.playerRollOptions[0].PlayerID;
 
-		if (!this.hasMultiPlayerDice(this.diceRollData)) {
-			const creatureId: number = this.getFirstCreatureId(this.diceRollData);
-			if (creatureId !== Number.MIN_VALUE)
-				playerId = creatureId;
-		}
+		//if (!this.hasMultiPlayerDice(this.diceRollData)) {
+		//	const creatureId: number = this.getFirstCreatureId(this.diceRollData);
+		//	if (creatureId !== Number.MIN_VALUE)
+		//		playerId = creatureId;
+		//}
 
 		// Connects to DiceStoppedRollingData in DiceStoppedRollingData.cs:
 		//console.log('diceRollData.type: ' + diceRollData.type);
 		//console.log(diceRollData.multiplayerSummary);
 		//console.log(diceRollData.individualRolls);
-		this.reportDieRollBackToMainApp(playerId);
+		this.reportDieRollBackToMainApp();
 
 		if (DieRoller.removeDiceImmediately)
 			this.removeRemainingDice();
@@ -2626,7 +2691,7 @@ class DieRoller {
 						diceLayer.addLuckyRing(thisSpecialDie, screenPos.x, screenPos.y);
 					}
 					if (dieObject.effectKind === DieEffect.Ring) {
-						diceLayer.addMagicRing(screenPos.x, screenPos.y, scale, magicRingHueShift + Random.plusMinusBetween(10, 25));
+						diceLayer.addMagicRing(thisSpecialDie, screenPos.x, screenPos.y, scale, magicRingHueShift + Random.plusMinusBetween(10, 25));
 					}
 					else if (dieObject.effectKind === DieEffect.Fireball) {
 						//diceLayer.addD20Fire(screenPos.x, screenPos.y);
@@ -2995,7 +3060,7 @@ class DieRoller {
 						let hueShift: number;
 
 						if (DiceLayer.matchOozeToDieColor)
-							if (this.scalingDice[i].rollType !== DieCountsAs.totalScore && this.scalingDice[i].rollType !== DieCountsAs.inspiration)
+							if (this.scalingDice[i].rollType !== DieCountsAs.totalScore && this.scalingDice[i].rollType !== DieCountsAs.savingThrow && this.scalingDice[i].rollType !== DieCountsAs.inspiration)
 								hueShift = 0;
 							else {
 								const hsl: HueSatLight = HueSatLight.fromHex(this.scalingDice[i].diceColor);
@@ -3163,7 +3228,7 @@ class DieRoller {
 	}
 
 	positionTrailingSprite(die: IDie, trailingEffect: TrailingEffect, index = 0): SpriteProxy {
-		if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
+		if (this.countsAsTotalScore(die) || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
 			const pos: Vector = this.getScreenCoordinates(die);
 			if (!pos)
 				return null;
@@ -3267,7 +3332,7 @@ class DieRoller {
 
 	// TODO: For goodness sakes, Mark, do something with this.
 	old_positionTrailingSprite(die: IDie, addPrintFunc: (x: number, y: number, scale: number, angle: number) => SpriteProxy, minForwardDistanceBetweenPrints: number, leftRightDistanceBetweenPrints: number = 0, index: number = 0): SpriteProxy {
-		if (die.rollType === DieCountsAs.totalScore || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
+		if (this.countsAsTotalScore(die) || die.rollType === DieCountsAs.inspiration || die.rollType === DieCountsAs.bentLuck) {
 			const pos: Vector = this.getScreenCoordinates(die);
 			if (!pos)
 				return null;
@@ -3314,7 +3379,7 @@ class DieRoller {
 
 				if (ripple) {
 					ripple.opacity = 0.5;
-					ripple.hueShift = diceLayer.getHueShift(die.playerID) + Random.plusMinus(30);
+					ripple.hueShift = diceLayer.getHueShift(die.creatureID) + Random.plusMinus(30);
 				}
 			}
 
@@ -3535,24 +3600,26 @@ class DieRoller {
 	addD100(diceRollData: DiceRollData, backgroundColor: string, textColor: string, playerID: number, throwPower = 1, xPositionModifier = 0) {
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 		// @ts-ignore - DiceD10x10
-		const die10 = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
+		const die10: IDie = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 		die10.scale = 1;
-		die10.playerID = playerID;
+		die10.creatureID = playerID;
+		die10.group = DiceGroup.Players;
 		this.prepareD10x10Die(diceRollData.diceGroup, die10, throwPower, xPositionModifier);
 		die10.rollType = DieCountsAs.totalScore;
 		if (diceRollData.isMagic) {
-			die10.attachedSprites.push(diceLayer.addMagicRing(960, 540, die10.scale, magicRingHueShift));
+			die10.attachedSprites.push(diceLayer.addMagicRing(die10, 960, 540, die10.scale, magicRingHueShift));
 			die10.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 
 		// @ts-ignore - DiceD10x01
-		const die01 = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
+		const die01: IDie = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 		die01.scale = 1;
-		die01.playerID = playerID;
+		die10.creatureID = playerID;
+		die10.group = DiceGroup.Players;
 		this.prepareD10x01Die(diceRollData.diceGroup, die01, throwPower, xPositionModifier);
 		die01.rollType = DieCountsAs.totalScore;
 		if (diceRollData.isMagic) {
-			die01.attachedSprites.push(diceLayer.addMagicRing(960, 540, die01.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+			die01.attachedSprites.push(diceLayer.addMagicRing(die01, 960, 540, die01.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 			die01.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 		}
 	}
@@ -3572,14 +3639,14 @@ class DieRoller {
 		return localDiceRollData.type === DiceRollType.BendLuckAdd || localDiceRollData.type === DiceRollType.BendLuckSubtract;
 	}
 
-	addD20(diceGroup: DiceGroup, diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, playerID = -1): IDie {
+	addD20(diceGroup: DiceGroup, diceRollData: DiceRollData, d20BackColor: string, d20FontColor: string, xPositionModifier: number, creatureID = Character.invalidCreatureId): IDie {
 		// @ts-ignore - DiceD20
 		const die: IDie = new DiceD20({ size: DieRoller.dieScale, backColor: d20BackColor, fontColor: d20FontColor }, this.diceManager);
 		die.scale = 1;
 		die.isD20 = true;
 		this.prepareDie(diceGroup, die, diceRollData.throwPower, xPositionModifier);
 		die.rollType = DieCountsAs.totalScore;
-		die.playerID = playerID;
+		die.creatureID = creatureID;
 		return die;
 	}
 
@@ -3772,6 +3839,7 @@ class DieRoller {
 
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 
+		console.log('this.diceRollData.diceGroup: ' + this.diceRollData.diceGroup);
 		for (let i = 0; i < numD20s; i++) {
 			const die = this.addD20(this.diceRollData.diceGroup, this.diceRollData, d20BackColor, d20FontColor, xPositionModifier);
 			if (dieLabelOverride)
@@ -3779,19 +3847,19 @@ class DieRoller {
 			else
 				die.dieType = DiceRollType[this.diceRollData.type];
 			this.attachLabel(die, d20FontColor, d20BackColor);
-			die.playerID = playerID;
+			die.creatureID = playerID;
 			die.playerName = diceLayer.getPlayerName(playerID);
 			//console.log('die.playerName: ' + die.playerName);
 			die.kind = kind;
 			if (this.diceRollData.isMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, die.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
+				die.attachedSprites.push(diceLayer.addMagicRing(die, 960, 540, die.scale, magicRingHueShift + Random.plusMinusBetween(10, 25)));
 				die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 			}
 			if (this.diceRollData.numHalos > 0) {
 				const angleDelta: number = 360 / this.diceRollData.numHalos;
 				let angle: number = Math.random() * 360;
 				for (let j = 0; j < this.diceRollData.numHalos; j++) {
-					die.attachedSprites.push(diceLayer.addHaloSpin(960, 540, die.scale, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
+					die.attachedSprites.push(diceLayer.addHaloSpin(die, 960, 540, die.scale, diceLayer.activePlayerHueShift + Random.plusMinus(30), angle));
 					die.origins.push(diceLayer.haloSpinRed.getOrigin());
 					angle += angleDelta;
 				}
@@ -3834,7 +3902,7 @@ class DieRoller {
 				//console.log(`die has disadvantage!`);
 			}
 			if (diceDto.IsMagic) {
-				die.attachedSprites.push(diceLayer.addMagicRing(960, 540, die.scale, Random.max(360)));
+				die.attachedSprites.push(diceLayer.addMagicRing(die, 960, 540, die.scale, Random.max(360)));
 				die.origins.push(new Vector(diceLayer.magicRingRed.originX, diceLayer.magicRingRed.originY));
 			}
 		});
@@ -3864,9 +3932,12 @@ class DieRoller {
 	}
 
 	prepareLegacyRoll(xPositionModifier: number) {
-		let playerID = -1;
+		let playerID = Character.invalidCreatureId;
 		if (this.diceRollData.playerRollOptions.length === 1)
 			playerID = this.diceRollData.playerRollOptions[0].PlayerID;
+
+		const dieHueVariancePercent = 7;
+
 		if (this.diceRollData.type === DiceRollType.WildMagic) {
 			this.diceRollData.modifier = 0;
 			this.diceRollData.itsAD20Roll = false;
@@ -3906,20 +3977,20 @@ class DieRoller {
 			}
 			this.diceRollData.hasMultiPlayerDice = true;
 		}
-		else if (this.diceRollData.type === DiceRollType.DamageOnly) {
+		else if (this.diceRollData.type === DiceRollType.DamageOnly || this.diceRollData.type === DiceRollType.DamagePlusSavingThrow || this.diceRollData.type === DiceRollType.OnlyTargetsSavingThrow) {
 			this.diceRollData.modifier = 0;
 			this.diceRollData.itsAD20Roll = false;
-			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier, undefined, undefined, this.diceRollData.isMagic);
+			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, this.diceRollData.isMagic, dieHueVariancePercent);
 		}
 		else if (this.diceRollData.type === DiceRollType.HealthOnly) {
 			this.diceRollData.modifier = 0;
 			this.diceRollData.itsAD20Roll = false;
-			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.health, this.diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.isMagic);
+			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.health, this.diceRollData.throwPower, xPositionModifier, DiceLayer.healthDieBackgroundColor, DiceLayer.healthDieFontColor, this.diceRollData.isMagic, dieHueVariancePercent);
 		}
 		else if (this.diceRollData.type === DiceRollType.ExtraOnly) {
 			this.diceRollData.modifier = 0;
 			this.diceRollData.itsAD20Roll = false;
-			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.extra, this.diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.isMagic);
+			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.extra, this.diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.isMagic, dieHueVariancePercent);
 		}
 		else if (this.diceRollData.type === DiceRollType.InspirationOnly) {
 			this.diceRollData.modifier = 0;
@@ -3973,7 +4044,7 @@ class DieRoller {
 				this.diceRollData.hasSingleIndividual = this.diceRollData.playerRollOptions.length === 1;
 			}
 			if (this.isAttack(this.diceRollData)) {
-				this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier);
+				this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.damage, this.diceRollData.throwPower, xPositionModifier, diceLayer.activePlayerDieColor, diceLayer.activePlayerDieFontColor, false, dieHueVariancePercent);
 			}
 		}
 		return playerID;
@@ -3981,7 +4052,7 @@ class DieRoller {
 
 	//! Called from Connection.ts
 	pleaseRollDice(diceRollDto: DiceRollData) {
-		//console.log(`pleaseRollDice...`);
+		console.log(`pleaseRollDice...`);
 		DiceLayer.numFiltersOnDieCleanup = 0;
 		DiceLayer.numFiltersOnRoll = 0;
 		//testing = true;
@@ -4088,9 +4159,10 @@ class DieRoller {
 	}
 
 	showSavingThrowTotalsOverAllDice(dice: IDie[], hiddenThreshold: number, diceGroup: DiceGroup) {
+		console.log(`showSavingThrowTotalsOverAllDice`);
 		const dieTotals: Map<string, number> = new Map<string, number>();
 		dice.forEach((die: IDie) => {
-			if (die.rollType === DieCountsAs.totalScore) {
+			if (this.countsAsTotalScore(die)) {
 				if (!dieTotals.has(die.playerName)) {
 					dieTotals.set(die.playerName, die.getTopNumber());
 				}
@@ -4124,7 +4196,7 @@ class DieRoller {
 			message = `${dieTotalStr} saves!`;
 		else
 			message = `${dieTotalStr} fails!`;
-		
+
 		const centerDicePos: Vector = this.getCenterPlayerDicePosition(playerName);
 		diceLayer.showSmallerMessageAt(centerDicePos, message, diceGroup, this.getDieBackColor(playerName), this.getDieTextColor(playerName));
 	}

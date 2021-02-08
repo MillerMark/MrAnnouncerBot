@@ -820,7 +820,7 @@ namespace DndCore
 					foreach (Creature creature in target.Creatures)
 					{
 						if (creature != null)
-						creature.ReceiveMagic(magic);
+							creature.ReceiveMagic(magic);
 					}
 			}
 
@@ -926,6 +926,7 @@ namespace DndCore
 
 							break;
 						case DiceRollType.SavingThrow:
+						case DiceRollType.OnlyTargetsSavingThrow:
 						case DiceRollType.DamagePlusSavingThrow:
 							if ((int)VantageMods[key].Detail == (int)savingThrow)
 							{

@@ -12,9 +12,11 @@ namespace DndCore
 		{
 			Dispel?.Invoke(sender, ea);
 		}
-		// TODO: Leaning toward changing spellName from a string to a Spell or a CastedSpell, so we can hook the Spell's OnDispel event, so we can remove this Magic when the spell is dispelled!
+		
 		public Magic(Creature caster, DndGame game, string magicItemName, CastedSpell castedSpell, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
+			CastedSpellId = castedSpell.ID;
+			Game = game;
 			SpellName = castedSpell?.Spell?.Name;
 			if (string.IsNullOrWhiteSpace(SpellName))
 				SpellName = "{No Spell Name}";
@@ -135,9 +137,13 @@ namespace DndCore
 			TriggerEvent(magicOwner, MagicItem.onReceived);
 		}
 
-		// TODO: Consider changing the data types to Strings!
+		// TODO: Consider changing the Args elements data types to Strings!
 		public object[] Args { get; set; } = new object[NumArgs];
+
 		public List<Creature> Targets { get => targets; set => targets = value; }
 		public string SpellName { get; set; }
+		public DndGame Game { get; set; }
+		public string CastedSpellId { get; set; }
+		public CastedSpell CastedSpell => Game.GetActiveSpellById(Caster as Character, CastedSpellId);
 	}
 }

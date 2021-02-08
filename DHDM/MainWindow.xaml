@@ -457,6 +457,9 @@
 												<RadioButton x:Name="rbDamagePlusSavingThrow" VerticalAlignment="Center" Click="rbDamagePlusSavingThrow_Click" GroupName="DieRollTypes" >
 													Damage Plus Saving Throw:
 												</RadioButton>
+												<RadioButton x:Name="rbOnlyTargetsSavingThrow" VerticalAlignment="Center" Click="rbOnlyTargetsSavingThrow_Click" GroupName="DieRollTypes" >
+													Only Targets Saving Throw
+												</RadioButton>
 											</StackPanel>
 											
 											<ComboBox x:Name="cbAbility" MaxHeight="22" MinWidth="150" 

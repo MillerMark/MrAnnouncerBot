@@ -12,14 +12,16 @@ namespace DndCore
 
 		public string OnFirstContactEffect { get; set; }
 		public List<DiceDto> DiceDtos { get; set; } = new List<DiceDto>();
-
+		
 		public string RollID { get; set; }
+		public string SpellID { get; set; }
 		public string Viewer { get; set; }
 		public string SpellName { get; set; }
 		public string DieTotalMessage { get; set; }
 		public string TextOutlineColor { get; set; }
 		public string TextFillColor { get; set; }
 		public int NumHalos { get; set; }
+		public int SingleOwnerId { get; set; } = int.MinValue;
 		public string OnFirstContactSound { get; set; }
 		public string OnRollSound { get; set; }
 
@@ -149,6 +151,8 @@ namespace DndCore
 			}
 			
 			DiceRoll diceRoll = new DiceRoll(actionShortcut.Type);
+			if (player != null)
+				diceRoll.SingleOwnerId = player.playerID;
 			diceRoll.AdditionalDiceOnHit = actionShortcut.AddDiceOnHit;
 			diceRoll.AdditionalDiceOnHitMessage = actionShortcut.AddDiceOnHitMessage;
 			diceRoll.AddCritFailMessages(actionShortcut.Type);
@@ -219,6 +223,7 @@ namespace DndCore
 					FailMessage = "Miss!";
 					break;
 				case DiceRollType.SavingThrow:
+				case DiceRollType.OnlyTargetsSavingThrow:
 				case DiceRollType.DamagePlusSavingThrow:
 					CritFailMessage = "COMPLETE FAILURE!";
 					CritSuccessMessage = "Critical Success!";
@@ -239,6 +244,8 @@ namespace DndCore
 				HiddenThreshold = 10;
 			else if (Type == DiceRollType.Initiative || Type == DiceRollType.NonCombatInitiative)
 				HiddenThreshold = -100;
+			else if (Type == DiceRollType.DamagePlusSavingThrow || Type == DiceRollType.OnlyTargetsSavingThrow)
+				return;  // HiddenThreshold will be set elsewhere.
 			else if (Type == DiceRollType.DamageOnly || Type == DiceRollType.HealthOnly || Type == DiceRollType.ExtraOnly)
 				HiddenThreshold = 0;
 			else if (double.TryParse(fromText, out double thresholdResult))

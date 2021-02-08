@@ -334,11 +334,11 @@ namespace DndCore
 			Conditions = Conditions.None;
 		}
 
-		public void TakeDamage(DndGame game, Dictionary<DamageType, int> latestDamage, AttackKind attackKind)
+		public void TakeDamage(DndGame game, Dictionary<DamageType, int> latestDamage, AttackKind attackKind, double multiplier = 1)
 		{
 			StartTakingDamage();
 			foreach (DamageType damageType in latestDamage.Keys)
-				TakeSomeDamage(game, damageType, attackKind, latestDamage[damageType]);
+				TakeSomeDamage(game, damageType, attackKind, (int)Math.Floor(latestDamage[damageType] * multiplier));
 			FinishTakingDamage();
 		}
 
@@ -355,6 +355,9 @@ namespace DndCore
 
 		public void TakeSomeDamage(DndGame game, DamageType damageType, AttackKind attackKind, int amount)
 		{
+			if (amount <= 0)
+				return;
+
 			double previousHP = TotalHp;
 			Creature.TakeDamage(damageType, attackKind, amount);
 

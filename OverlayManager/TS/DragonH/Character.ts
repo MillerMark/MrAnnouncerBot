@@ -36,6 +36,7 @@ class SpellGroup {
 
 //! Important!!! - property names must **exactly** match those in Character.ts that are serialized for copyAttributesFrom to work!!! (because it is called with two different data types - the DTO from our C# app && an instance of Character here, so the prop names have to be the same)
 class Character {
+	static readonly invalidCreatureId: number = -2147483648; // int.MinValue in C#
 	SpellData: Array<SpellGroup>;
 	playerID: number;
 	equipment: Array<Item> = new Array<Item>();

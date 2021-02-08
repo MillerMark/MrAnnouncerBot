@@ -8,8 +8,9 @@ namespace DndCore
 	public class DiceStoppedRollingData
 	{
 		public string rollId { get; set; }
+		public string spellId { get; set; }
 		public string viewer { get; set; }
-		public int playerID { get; set; }
+		public int singleOwnerId { get; set; }
 		public bool success { get; set; }
 		public bool wasCriticalHit { get; set; }
 		public string spellName { get; set; }
@@ -36,7 +37,7 @@ namespace DndCore
 		public Character GetSingleRollingPlayer()
 		{
 			if (multiplayerSummary == null)
-				return AllPlayers.GetFromId(playerID);
+				return AllPlayers.GetFromId(singleOwnerId);
 
 			if (multiplayerSummary.Count == 1)
 				return AllPlayers.GetFromId(multiplayerSummary[0].id);

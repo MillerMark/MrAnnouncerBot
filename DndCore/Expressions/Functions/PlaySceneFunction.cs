@@ -24,6 +24,9 @@ namespace DndCore
 			ExpectingArguments(args, 1, 3);
 
 			string sceneName = evaluator.Evaluate<string>(args[0]);
+
+			sceneName = DndUtils.GetRandomSceneIfNecessary(sceneName);
+
 			double delaySec = 0;
 			double returnSec = 0;
 			if (args.Count > 1)

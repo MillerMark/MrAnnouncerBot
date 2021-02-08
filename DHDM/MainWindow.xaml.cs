@@ -902,13 +902,13 @@ namespace DHDM
 					ea.Result = savedRolls[ea.RollName];
 		}
 
-		void SaveNamedResults(DiceEventArgs ea)
+		void SaveNamedResults(DiceStoppedRollingData stopRollingData)
 		{
 			if (savedRolls == null)
 				savedRolls = new Dictionary<string, int>();
 			lock (savedRolls)
 			{
-				CalculateDamageFromIndividualRollType(ea.StopRollingData.individualRolls, savedRolls);
+				CalculateDamageFromIndividualRollType(stopRollingData.individualRolls, savedRolls);
 			}
 		}
 
@@ -927,11 +927,11 @@ namespace DHDM
 					}
 				}
 		}
-		private void CalculateDamageByType(List<IndividualRoll> Rolls, Dictionary<DamageType, int> results)
+		private Dictionary<DamageType, int> CalculateDamageByType(List<IndividualRoll> Rolls)
 		{
-			results.Clear();
+			Dictionary<DamageType, int> results = new Dictionary<DamageType, int>();
 			if (Rolls == null)
-				return;
+				return results;
 
 			foreach (IndividualRoll Roll in Rolls)
 				if (Roll.damageType != DamageType.None)
@@ -939,6 +939,8 @@ namespace DHDM
 						results[Roll.damageType] += Roll.value;
 					else
 						results.Add(Roll.damageType, Roll.value);
+
+			return results;
 		}
 
 		private void Game_RequestMessageToDungeonMaster(object sender, MessageEventArgs ea)
@@ -1503,7 +1505,31 @@ namespace DHDM
 		private void Game_PlayerRequestsRoll(object sender, PlayerRollRequestEventArgs ea)
 		{
 			DiceRoll diceRoll = PrepareRoll(DiceRollType.ExtraOnly);
-			diceRoll.DamageHealthExtraDice = ea.DiceRollStr;
+			if (ea.DiceRollStr == RollTargetSavingThrowsFunction.CMD_RollTargetSavingThrows)
+			{
+				diceRoll.Type = DiceRollType.OnlyTargetsSavingThrow;
+				if (spellToCastOnRoll != null && spellToCastOnRoll.Spell != null)
+				{
+
+					diceRoll.SavingThrow = spellToCastOnRoll.Spell.SavingThrowAbility;
+					if (ActivePlayer != null)
+						diceRoll.HiddenThreshold = ActivePlayer.SpellSaveDC;
+					else
+						diceRoll.HiddenThreshold = 12;
+				}
+				//Get spell saving throw ability.
+				//
+				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				{
+					if (inGameCreature.IsTargeted)
+					{
+						DiceDto diceDto = DiceDto.D20FromInGameCreature(inGameCreature, DiceRollType.SavingThrow);
+						diceRoll.DiceDtos.Add(diceDto);
+					}
+				}
+			}
+			else
+				diceRoll.DamageHealthExtraDice = ea.DiceRollStr;
 			RollTheDice(diceRoll);
 		}
 
@@ -2167,6 +2193,9 @@ namespace DHDM
 				case DiceRollType.DamagePlusSavingThrow:
 					rbDamagePlusSavingThrow.IsChecked = true;
 					break;
+				case DiceRollType.OnlyTargetsSavingThrow:
+					rbOnlyTargetsSavingThrow.IsChecked = true;
+					break;
 				case DiceRollType.FlatD20:
 					rbFlatD20.IsChecked = true;
 					break;
@@ -2318,7 +2347,7 @@ namespace DHDM
 				}
 				PlayerStatsManager.SetReadyRollDice(actionShortcut.PlayerId, true, dieRollDetails);
 			}
-			else if (actionShortcut.Type == DiceRollType.DamageOnly)
+			else if (DiceDto.IsDamage(actionShortcut.Type))
 			{
 				if (actionShortcut.Spell != null)
 				{
@@ -2673,6 +2702,7 @@ namespace DHDM
 		private async Task<bool> ActivateSpellShortcut(PlayerActionShortcut actionShortcut, bool forceRepeat = false)
 		{
 			CastedSpell castedSpell = new CastedSpell(actionShortcut.Spell, ActivePlayer);
+			nextSpellIdWeAreCasting = castedSpell.ID;
 
 			PlayerSpellCastState playerSpellCastState = await GetPlayerSpellCastState(ActivePlayer, castedSpell);
 
@@ -2684,8 +2714,6 @@ namespace DHDM
 
 			if (playerSpellCastState == PlayerSpellCastState.Concentrating)
 				return false;
-
-
 
 			if (castedSpell.Target == null && ActivePlayer != null)
 				castedSpell.Target = ActivePlayer.ActiveTarget;
@@ -2700,14 +2728,15 @@ namespace DHDM
 				CastingSpellSoon(actionShortcut.Spell.CastingTime, actionShortcut);
 				return true;
 			}
-			Spell spell = CastSpellNow(actionShortcut);
-			if (spell != null)
-				tbxDamageDice.Text = spell.DieStr;
+
+			CastSpellNow(actionShortcut, castedSpell);
+			if (castedSpell != null)
+				tbxDamageDice.Text = castedSpell.Spell.DieStr;
 
 			return true;
 		}
 
-		private Spell CastSpellNow(PlayerActionShortcut actionShortcut)
+		private CastedSpell CastSpellNow(PlayerActionShortcut actionShortcut, CastedSpell castedSpell = null)
 		{
 			Character player = GetPlayer(actionShortcut.PlayerId);
 			Spell spell = actionShortcut.Spell;
@@ -2717,7 +2746,11 @@ namespace DHDM
 			{
 				PrepareToCastSpell(spell, actionShortcut.PlayerId);
 				UseRechargeableItem(actionShortcut, matchingSpell);
-				CastedSpell castedSpell = new CastedSpell(spell, player);
+				if (castedSpell == null)
+				{
+					castedSpell = new CastedSpell(spell, player);
+					nextSpellIdWeAreCasting = castedSpell.ID;
+				}
 				castedSpell.CastingWithItem();
 				if (spellCaster == null)
 					spellCaster = player;
@@ -2726,10 +2759,10 @@ namespace DHDM
 			}
 			else
 			{
-				CastActionSpell(actionShortcut, player, spell);
+				castedSpell = CastActionSpell(actionShortcut, player, spell, castedSpell);
 			}
 			spellCaster = player;
-			return spell;
+			return castedSpell;
 		}
 
 		private void UseRechargeableItem(PlayerActionShortcut actionShortcut, KnownSpell matchingSpell)
@@ -2741,13 +2774,16 @@ namespace DHDM
 
 		}
 
-		private void CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell)
+		private CastedSpell CastActionSpell(PlayerActionShortcut actionShortcut, Character player, Spell spell, CastedSpell castedSpell = null)
 		{
 			PrepareToCastSpell(spell, actionShortcut.PlayerId);
 
-			CastedSpell castedSpell = game.Cast(player, spell);
 			if (castedSpell == null)
-				return;
+				castedSpell = game.Cast(player, spell);
+			else
+				game.Cast(player, spell, castedSpell);
+			if (castedSpell == null)
+				return null;
 
 			SetClearSpellVisibility(player);
 
@@ -2760,10 +2796,11 @@ namespace DHDM
 			else
 			{
 				ShowSpellHitOrMissInGame(actionShortcut.PlayerId, SpellHitType.Hit, spell.Name);
-				player.JustCastSpell(spell.Name);
+				player.JustCastSpell(castedSpell);
 			}
 			ShowSpellEffects(actionShortcut, spell, "Spell");
 			ShowSpellCastEffectsInGame(actionShortcut.PlayerId, actionShortcut.Spell.Name);
+			return castedSpell;
 		}
 
 		private async Task<PlayerSpellCastState> GetPlayerSpellCastState(Character player, CastedSpell castedSpell)
@@ -3137,6 +3174,11 @@ namespace DHDM
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 				ChangeFrameRateAndUI(Overlays.Dice, 30);
 			}
+			if (nextSpellIdWeAreCasting != null)
+			{
+				diceRoll.SpellID = nextSpellIdWeAreCasting;
+				nextSpellIdWeAreCasting = null;
+			}
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
@@ -3207,7 +3249,7 @@ namespace DHDM
 
 		bool CanIncludeVantageDice(DiceRollType type)
 		{
-			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow || type == DiceRollType.SkillCheck);
+			return (type == DiceRollType.Attack || type == DiceRollType.ChaosBolt || type == DiceRollType.DeathSavingThrow || type == DiceRollType.FlatD20 || DiceDto.IsSavingThrow(type) || type == DiceRollType.SkillCheck);
 		}
 
 		void BeforePlayerRolls(int playerId, DiceRoll diceRoll, ref VantageKind vantageKind)
@@ -3231,7 +3273,7 @@ namespace DHDM
 			}
 
 			string damageDice = string.Empty;
-			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
+			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(type, diceRollKind, damageDice);
@@ -3259,7 +3301,8 @@ namespace DHDM
 					diceRoll.SkillCheck = DndUtils.ToSkill(skillStr);
 				}
 			}
-			if (type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow)
+
+			if (DiceDto.IsSavingThrow(type))
 			{
 				ComboBoxItem selectedItem = (ComboBoxItem)cbAbility.SelectedItem;
 				if (selectedItem != null && selectedItem.Content != null)
@@ -3271,7 +3314,7 @@ namespace DHDM
 
 			diceRoll.DamageType = DamageType.None;
 
-			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow)
+			if (type == DiceRollType.SkillCheck || type == DiceRollType.FlatD20 || DiceDto.IsSavingThrow(type))
 			{
 				//if (rbActivePlayer.IsChecked == true)
 				//	diceRoll.RollScope = RollScope.ActivePlayer;
@@ -3289,7 +3332,7 @@ namespace DHDM
 						diceRoll.Modifier = modifierResult;
 			}
 
-			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly)
+			if (type == DiceRollType.Attack || type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow)
 			{
 				ComboBoxItem selectedItem = (ComboBoxItem)cbDamage.SelectedItem;
 				if (selectedItem != null && selectedItem.Content != null)
@@ -3304,12 +3347,18 @@ namespace DHDM
 				diceRoll.RollScope = RollScope.ActiveInGameCreature;
 				InGameCreature activeTurnCreature = game.GetActiveTurnCreature() as InGameCreature;
 				if (activeTurnCreature != null)
+				{
 					AllInGameCreatures.AddDiceForCreature(diceRoll.DiceDtos, NextDieStr, activeTurnCreature.Index, type);
+					diceRoll.SingleOwnerId = -activeTurnCreature.Index;
+				}
 			}
 			else if (NextRollScope == RollScope.TargetedInGameCreatures)
 			{
 				diceRoll.RollScope = RollScope.TargetedInGameCreatures;
 				AllInGameCreatures.AddDiceForTargeted(diceRoll.DiceDtos, NextDieStr);
+				List<InGameCreature> targetedCreatures = AllInGameCreatures.Creatures.Where(x => x.IsTargeted).ToList();
+				if (targetedCreatures.Count == 1)
+					diceRoll.SingleOwnerId = -targetedCreatures[0].Index;
 			}
 			else
 			{
@@ -3329,6 +3378,11 @@ namespace DHDM
 						if ((type == DiceRollType.Attack || type == DiceRollType.ChaosBolt) && checkbox.PlayerId != ActivePlayerId)
 							continue;
 
+						if (foundPlayer)
+							diceRoll.SingleOwnerId = int.MinValue;
+						else
+							diceRoll.SingleOwnerId = checkbox.PlayerId;
+
 						string inspirationText = rollInspirationAfterwards && type != DiceRollType.InspirationOnly ? "" : checkbox.TbxInspiration.Text;
 						BeforePlayerRolls(checkbox.PlayerId, diceRoll, ref vantageKind);
 						diceRoll.AddPlayer(checkbox.PlayerId, vantageKind, inspirationText);
@@ -3338,6 +3392,7 @@ namespace DHDM
 
 				if (!foundPlayer)
 				{
+					diceRoll.SingleOwnerId = ActivePlayerId;
 					BeforePlayerRolls(ActivePlayerId, diceRoll, ref diceRollKind);
 					diceRoll.VantageKind = diceRollKind;
 				}
@@ -3351,7 +3406,7 @@ namespace DHDM
 			if (diceRoll.ThrowPower < 0.3)
 				diceRoll.ThrowPower = 0.3;
 
-			if (type == DiceRollType.SavingThrow || type == DiceRollType.DamagePlusSavingThrow)
+			if (DiceDto.IsSavingThrow(type))
 				diceRoll.SetHiddenThreshold(tbxSaveThreshold.Text);
 			else if (type == DiceRollType.SkillCheck)
 				diceRoll.SetHiddenThreshold(tbxSkillCheckThreshold.Text);
@@ -3791,6 +3846,18 @@ namespace DHDM
 			EnqueueAction(wildMagicQueueEntry);
 		}
 
+		void IndividualDiceStoppedRolling(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData.individualRolls?.Count > 0)
+				IndividualDiceStoppedRolling(stopRollingData.singleOwnerId, stopRollingData.individualRolls);
+		}
+
+		void IndividualDiceStoppedRolling(int playerId, List<IndividualRoll> individualRolls)
+		{
+			foreach (IndividualRoll individualRoll in individualRolls)
+				IndividualDiceStoppedRolling(playerId, individualRoll);
+		}
+
 		void IndividualDiceStoppedRolling(int playerId, IndividualRoll individualRoll)
 		{
 			switch (individualRoll.type)
@@ -3801,14 +3868,6 @@ namespace DHDM
 					History.Log("IndividualDiceStoppedRolling: " + individualRoll.type);
 					HandleWildMagicD20Check(playerId, individualRoll);
 					break;
-			}
-		}
-
-		void IndividualDiceStoppedRolling(int playerId, List<IndividualRoll> individualRolls)
-		{
-			foreach (IndividualRoll individualRoll in individualRolls)
-			{
-				IndividualDiceStoppedRolling(playerId, individualRoll);
 			}
 		}
 
@@ -3878,7 +3937,16 @@ namespace DHDM
 			singlePlayer.lastRollWasSuccessful = diceStoppedRollingData.success;
 
 			if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellName))
-				singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
+			{
+				if (!string.IsNullOrWhiteSpace(diceStoppedRollingData.spellId))
+				{
+					CastedSpell activeSpell = singlePlayer.Game.GetActiveSpellById(singlePlayer, diceStoppedRollingData.spellId);
+					if (activeSpell != null)
+						singlePlayer.JustCastSpell(activeSpell);
+				}
+				else
+					singlePlayer.JustCastSpell(diceStoppedRollingData.spellName);
+			}
 			else if (diceStoppedRollingData.type == DiceRollType.Attack)
 			{
 				singlePlayer.AfterPlayerSwingsWeapon();
@@ -3903,7 +3971,7 @@ namespace DHDM
 				}
 			else
 			{
-				Character player = game.GetPlayerFromId(stopRollingData.playerID);
+				Character player = game.GetPlayerFromId(stopRollingData.singleOwnerId);
 				player?.RollHasStopped();
 			}
 		}
@@ -4039,7 +4107,7 @@ namespace DHDM
 
 			SpellHitType spellHitType = stopRollingData.success ? SpellHitType.Hit : SpellHitType.Miss;
 
-			ShowSpellHitOrMissInGame(stopRollingData.playerID, spellHitType, stopRollingData.spellName);
+			ShowSpellHitOrMissInGame(stopRollingData.singleOwnerId, spellHitType, stopRollingData.spellName);
 		}
 		// TODO: Delete lastDamage
 		int lastDamage;
@@ -4060,6 +4128,7 @@ namespace DHDM
 					}
 				case DiceRollType.Attack:
 				case DiceRollType.DamageOnly:
+				case DiceRollType.DamagePlusSavingThrow:
 					latestDamage.Clear();
 					lock (latestDamage)
 					{
@@ -4203,8 +4272,9 @@ namespace DHDM
 					if (player != null && player.concentratedSpell != null)
 					{
 						string focusedSpellName = player.concentratedSpell.Spell.Name;
+						string focusedSpellId = player.concentratedSpell.ID;
 						TellDungeonMaster($"{player.firstName}'s save failed, breaking {player.hisHer} concentration on {focusedSpellName}.");
-						game.RemoveActiveSpell(player, focusedSpellName);
+						game.RemoveActiveSpellById(player, focusedSpellId);
 						player.BreakConcentration();
 					}
 				}
@@ -4229,131 +4299,239 @@ namespace DHDM
 			return result.TrimEnd(',', ' ');
 		}
 
+		void TriggerAfterRollEvents(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData == null)
+				return;
+			if (stopRollingData.individualRolls == null || stopRollingData.individualRolls.Count == 0)
+				return;
+			if (DiceDto.IsSavingThrow(stopRollingData.type))
+			{
+				if (!string.IsNullOrWhiteSpace(stopRollingData.spellName))
+				{
+					Character player = AllPlayers.GetFromId(stopRollingData.singleOwnerId);
+					if (player == null)
+					{
+						History.Log("Error: stopRollingData.singleOwnerId not set!");
+						System.Diagnostics.Debugger.Break();
+						return;
+					}
+
+					if (string.IsNullOrWhiteSpace(stopRollingData.spellId))
+					{
+						History.Log("Error: stopRollingData.spellId not set!");
+						System.Diagnostics.Debugger.Break();
+						return;
+					}
+
+					CastedSpell castedSpell = game.GetActiveSpellById(player, stopRollingData.spellId);
+					Target target = new Target();
+					target.Type = AttackTargetType.Spell;
+					foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
+					{
+						if (individualRoll.dieCountsAs == DieCountsAs.savingThrow)
+						{
+							if (individualRoll.value == 20)  // Nat 20.
+								continue;
+							if (individualRoll.value + individualRoll.modifier >= stopRollingData.hiddenThreshold)  // Saved
+								continue;
+							Creature targetCreature = null;
+							if (individualRoll.creatureId < 0)
+							{
+								InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-individualRoll.creatureId);
+								if (inGameCreature != null)
+									targetCreature = inGameCreature.Creature;
+							}
+							else
+								targetCreature = AllPlayers.GetFromId(individualRoll.creatureId);
+
+							if (targetCreature != null)
+								target.AddCreature(targetCreature);
+						}
+					}
+
+					if ((target.Creatures.Count > 0 || (target.PlayerIds != null && target.PlayerIds.Count > 0)) && castedSpell != null)
+						castedSpell.Spell.TriggerTargetFailsSave(ActivePlayer, target, castedSpell);
+				}
+			}
+		}
+
 		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
-			SaveNamedResults(ea);
+			DiceStoppedRollingData stopRollingData = ea.StopRollingData;
+			SaveNamedResults(stopRollingData);
 
-			//SafeInvoke(() =>
-			//{
-			//	Title = "Dice Stopped Rolling (waiting for destruction)...";
-			//});
+			TriggerAfterRollEffects(stopRollingData);
 
-			Character singlePlayer = ea.StopRollingData.GetSingleRollingPlayer();
-			if (singlePlayer != null)
-			{
-				TriggerAfterRollEffects(ea.StopRollingData, singlePlayer);
-			}
-			else if (ea.StopRollingData.multiplayerSummary != null)
-				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
-				{
-					Character player = game.GetPlayerFromId(playerRoll.id);
-					TriggerAfterRollEffects(ea.StopRollingData, player);
-				}
+			TriggerAfterRollEvents(stopRollingData);
 
 			History.Log("Dice stopped rolling.");
 			await CalculateLatestDamage(ea);
+
+			DynamicallyThrottleFrameRatesIfNecessary();
+
+			SetWaitingToClearDice(stopRollingData.diceGroup);
+
+			if (stopRollingData == null)
+				return;
+
+			StoreLastDamageOrHealth(stopRollingData);
+
+			IndividualDiceStoppedRolling(stopRollingData);
+
+			NotifyPlayersRollHasStopped(stopRollingData);
+
+			ClearDieRollEffects();
+
+			ClearExistingWindupsInGame();
+
+			ReportOnDieRoll(stopRollingData);
+
+			CheckSpellHitResults(stopRollingData);
+
+			EnablePlayerDiceRollButtons(true);
+
+			ShowClearDiceButton(stopRollingData.diceGroup);
+
+			ApplyDamageToTargets(stopRollingData);
+
+			// TODO: This is the old code that enqueued a saving throw for spell attacks. I think we can remove this now...
+			//if (stopRollingData.type == DiceRollType.DamageOnly || stopRollingData.type == DiceRollType.DamagePlusSavingThrow)
+			//{
+			//	if (!string.IsNullOrWhiteSpace(stopRollingData.spellName))
+			//	{
+			//		Spell spell = AllSpells.Get(stopRollingData.spellName);
+			//		if (spell != null && spell.SpellType == SpellType.SavingThrowSpell)
+			//		{
+			//			//EnqueueSpellSavingThrow(spell.Name, spell.SavingThrowAbility, ea.StopRollingData.singleOwnerId);
+			//		}
+			//	}
+			//	// latestDamage
+			//	//
+			//}
+		}
+
+		private void ApplyDamageToTargets(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData.type == DiceRollType.Attack && stopRollingData.success)
+				ApplyDamageToTargets(stopRollingData.damage);
+
+			if (DiceDto.IsSavingThrow(stopRollingData.type))
+				ApplySavingThrowDamage(stopRollingData);
+		}
+
+		private void TriggerAfterRollEffects(DiceStoppedRollingData stopRollingData)
+		{
+			Character singlePlayer = stopRollingData.GetSingleRollingPlayer();
+			if (singlePlayer != null)
+			{
+				TriggerAfterRollEffects(stopRollingData, singlePlayer);
+			}
+			else if (stopRollingData.multiplayerSummary != null)
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
+				{
+					Character player = game.GetPlayerFromId(playerRoll.id);
+					TriggerAfterRollEffects(stopRollingData, player);
+				}
+		}
+
+		private void DynamicallyThrottleFrameRatesIfNecessary()
+		{
 			if (dynamicThrottling)
 			{
 				ChangeFrameRateAndUI(Overlays.Back, 30);
 				ChangeFrameRateAndUI(Overlays.Front, 30);
 			}
+		}
 
-			if (ea.StopRollingData.diceGroup == DiceGroup.Players)
+		private void SetWaitingToClearDice(DiceGroup diceGroup)
+		{
+			if (diceGroup == DiceGroup.Players)
 				waitingToClearPlayerDice = true;
 			else
 				waitingToClearViewerDice = true;
+		}
 
-			if (ea.StopRollingData == null)
-				return;
-
-			if (ea.StopRollingData.type == DiceRollType.DamageOnly)
+		private void StoreLastDamageOrHealth(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData.type == DiceRollType.DamageOnly || stopRollingData.type == DiceRollType.DamagePlusSavingThrow)
 			{
 				// TODO: Store last damage type...
-				lastDamage = ea.StopRollingData.damage;
+				lastDamage = stopRollingData.damage;
 			}
-			else if (ea.StopRollingData.type == DiceRollType.HealthOnly)
+			else if (stopRollingData.type == DiceRollType.HealthOnly)
 			{
-				lastHealth = ea.StopRollingData.health;
-			}
-
-
-			if (ea.StopRollingData.individualRolls?.Count > 0)
-			{
-				IndividualDiceStoppedRolling(ea.StopRollingData.playerID, ea.StopRollingData.individualRolls);
-			}
-
-			NotifyPlayersRollHasStopped(ea.StopRollingData);
-
-			activeTrailingEffects = string.Empty;
-			activeDieRollEffects = string.Empty;
-			ClearExistingWindupsInGame();
-			ReportOnDieRoll(ea);
-			CheckSpellHitResults(ea.StopRollingData);
-
-			EnablePlayerDiceRollButtons(true);
-
-			if (ea.StopRollingData.diceGroup == DiceGroup.Players)
-				ShowClearPlayerDiceButton(null, EventArgs.Empty);
-			else
-				ShowClearViewerDiceButton(null, EventArgs.Empty);
-
-			if (ea.StopRollingData.type == DiceRollType.Attack && ea.StopRollingData.success)
-			{
-				ApplyDamageToTargets(ea.StopRollingData.damage);
-			}
-
-			if (ea.StopRollingData.type == DiceRollType.DamageOnly)
-			{
-				if (!string.IsNullOrWhiteSpace(ea.StopRollingData.spellName))
-				{
-					Spell spell = AllSpells.Get(ea.StopRollingData.spellName);
-					if (spell != null && spell.SpellType == SpellType.SavingThrowSpell)
-					{
-						EnqueueSpellSavingThrow(spell.Name, spell.SavingThrowAbility, ea.StopRollingData.playerID);
-					}
-				}
-				// latestDamage
-				//
-			}
-
-			if (ea.StopRollingData.type == DiceRollType.SavingThrow || ea.StopRollingData.type == DiceRollType.DamagePlusSavingThrow)
-			{
-				if (ea.StopRollingData.multiplayerSummary != null)
-				{
-					List<PlayerRoll> thoseWhoSaved = new List<PlayerRoll>();
-					List<PlayerRoll> thoseWhoCritSaved = new List<PlayerRoll>();
-					List<PlayerRoll> thoseWhoCritFailed = new List<PlayerRoll>();
-					List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
-					foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
-					{
-						if (playerRoll.isCompleteFail)
-							thoseWhoCritFailed.Add(playerRoll);
-						else if (playerRoll.isCrit)
-							thoseWhoCritSaved.Add(playerRoll);
-						else if (playerRoll.success)
-							thoseWhoSaved.Add(playerRoll);
-						else
-							thoseWhoFailed.Add(playerRoll);
-					}
-					ApplyDamageFromLastSavingThrow(thoseWhoSaved, "GiveTargetHalfDamage();", ea.StopRollingData.spellName);
-					ApplyDamageFromLastSavingThrow(thoseWhoFailed, "GiveTargetFullDamage();", ea.StopRollingData.spellName);
-					ApplyDamageFromLastSavingThrow(thoseWhoCritFailed, "GiveTargetDoubleDamage();", ea.StopRollingData.spellName);
-					BreakSpellConcentrationFromLastSavingThrow(thoseWhoFailed);
-					BreakSpellConcentrationFromLastSavingThrow(thoseWhoCritFailed);
-					if (thoseWhoCritSaved.Count > 1)
-						TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and take no damage!");
-					else if (thoseWhoCritSaved.Count == 1)
-						TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and takes no damage!");
-					UpdateInGameCreatures();
-				}
+				lastHealth = stopRollingData.health;
 			}
 		}
 
-		// TODO: Delete this...
-		public enum SavingThrowResult
+		private void ClearDieRollEffects()
 		{
-			Success,
-			Fail
+			activeTrailingEffects = string.Empty;
+			activeDieRollEffects = string.Empty;
+		}
+
+		private void ShowClearDiceButton(DiceGroup diceGroup)
+		{
+			if (diceGroup == DiceGroup.Players)
+				ShowClearPlayerDiceButton(null, EventArgs.Empty);
+			else
+				ShowClearViewerDiceButton(null, EventArgs.Empty);
+		}
+
+		List<int> GetTargetIdsTryingToSave(DiceStoppedRollingData stopRollingData)
+		{
+			List<int> results = new List<int>();
+			if (stopRollingData.individualRolls == null)
+				return results;
+			if (stopRollingData.individualRolls.Count == 0)
+				return results;
+			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
+			{
+				if (individualRoll.damageType == DamageType.None && individualRoll.dieCountsAs == DieCountsAs.savingThrow)
+					results.Add(individualRoll.creatureId);
+			}
+			return results;
+		}
+
+		private void ApplySavingThrowDamage(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData.multiplayerSummary != null)
+				ApplyMultiplayerSavingThrowDamage(stopRollingData);
+			else
+			{
+				List<int> targetCharacterIds = GetTargetIdsTryingToSave(stopRollingData);
+				ApplyDamageFromRoll(stopRollingData, targetCharacterIds);
+			}
+		}
+
+		private void ApplyMultiplayerSavingThrowDamage(DiceStoppedRollingData stopRollingData)
+		{
+			List<PlayerRoll> thoseWhoSaved = new List<PlayerRoll>();
+			List<PlayerRoll> thoseWhoCritSaved = new List<PlayerRoll>();
+			List<PlayerRoll> thoseWhoCritFailed = new List<PlayerRoll>();
+			List<PlayerRoll> thoseWhoFailed = new List<PlayerRoll>();
+			foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
+			{
+				if (playerRoll.isCompleteFail)
+					thoseWhoCritFailed.Add(playerRoll);
+				else if (playerRoll.isCrit)
+					thoseWhoCritSaved.Add(playerRoll);
+				else if (playerRoll.success)
+					thoseWhoSaved.Add(playerRoll);
+				else
+					thoseWhoFailed.Add(playerRoll);
+			}
+			ApplyDamageFromLastSavingThrow(thoseWhoSaved, "GiveTargetHalfDamage();", stopRollingData.spellName);
+			ApplyDamageFromLastSavingThrow(thoseWhoFailed, "GiveTargetFullDamage();", stopRollingData.spellName);
+			ApplyDamageFromLastSavingThrow(thoseWhoCritFailed, "GiveTargetDoubleDamage();", stopRollingData.spellName);
+			BreakSpellConcentrationFromLastSavingThrow(thoseWhoFailed);
+			BreakSpellConcentrationFromLastSavingThrow(thoseWhoCritFailed);
+			if (thoseWhoCritSaved.Count > 1)
+				TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and take no damage!");
+			else if (thoseWhoCritSaved.Count == 1)
+				TellDungeonMaster($"{ToDisplayList(thoseWhoCritSaved)} crit-saved, and takes no damage!");
+			UpdateInGameCreatures();
 		}
 
 		string GetPlayerEmoticon(int playerId)
@@ -4367,9 +4545,9 @@ namespace DHDM
 
 		bool suppressMessagesToCodeRushedChannel;
 
-		void ReportInitiativeResults(DiceEventArgs ea, string title)
+		void ReportInitiativeResults(DiceStoppedRollingData stopRollingData, string title)
 		{
-			if (ea.StopRollingData.multiplayerSummary == null)
+			if (stopRollingData.multiplayerSummary == null)
 			{
 				TellDungeonMaster($"͏͏͏͏͏͏͏͏͏͏͏͏̣{Icons.WarningSign} Unexpected issue - no multiplayer results.");
 				return;
@@ -4383,7 +4561,7 @@ namespace DHDM
 				lastInitiativeResults.Clear();
 				int count = 1;
 				game.ClearInitiativeOrder();
-				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
 				{
 					game.AddCreatureToInitiativeOrder(playerRoll.id);
 					string playerName = DndUtils.GetFirstName(playerRoll.name);
@@ -4391,7 +4569,7 @@ namespace DHDM
 					if (emoticon == "Player ")
 						emoticon = "";
 					int rollValue = playerRoll.modifier + playerRoll.roll;
-					bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
+					bool success = rollValue >= stopRollingData.hiddenThreshold;
 					string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
 					lastInitiativeResults.Add(initiativeLine);
 					TellAll(initiativeLine);
@@ -4404,57 +4582,62 @@ namespace DHDM
 			}
 		}
 
-		private void ReportOnDieRoll(DiceEventArgs ea)
+		private void ReportOnDieRoll(DiceStoppedRollingData stopRollingData)
 		{
-			// TODO: Let's refactor this, kids.
-			if (ea.StopRollingData == null)
+			if (stopRollingData.diceGroup == DiceGroup.Players)
+				ReportOnPlayerDieRoll(stopRollingData);
+		}
+
+		private void ReportOnPlayerDieRoll(DiceStoppedRollingData stopRollingData)
+		{
+			if (stopRollingData == null)
 				return;
 
-			if (ea.StopRollingData.type == DiceRollType.Initiative)
+			if (stopRollingData.type == DiceRollType.Initiative)
 			{
-				ReportInitiativeResults(ea, "Initiative: ");
+				ReportInitiativeResults(stopRollingData, "Initiative: ");
 				return;
 			}
 
-			if (ea.StopRollingData.type == DiceRollType.NonCombatInitiative)
+			if (stopRollingData.type == DiceRollType.NonCombatInitiative)
 			{
-				ReportInitiativeResults(ea, "Non-combat Initiative: ");
+				ReportInitiativeResults(stopRollingData, "Non-combat Initiative: ");
 				return;
 			}
 
-			int rollValue = ea.StopRollingData.roll;
+			int rollValue = stopRollingData.roll;
 
 
-			if (rollValue == 0 && ea.StopRollingData.individualRolls != null && ea.StopRollingData.individualRolls.Count > 0)
+			if (rollValue == 0 && stopRollingData.individualRolls != null && stopRollingData.individualRolls.Count > 0)
 			{
-				foreach (IndividualRoll individualRoll in ea.StopRollingData.individualRolls)
+				foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
 				{
-					rollValue += individualRoll.value;
+					if (stopRollingData.type != DiceRollType.DamagePlusSavingThrow || individualRoll.dieCountsAs == DieCountsAs.damage)
+						rollValue += individualRoll.value;
 				}
 			}
 
-			string additionalMessage = ea.StopRollingData.additionalDieRollMessage;
+			string additionalMessage = stopRollingData.additionalDieRollMessage;
 			if (!String.IsNullOrEmpty(additionalMessage))
 				additionalMessage = " " + additionalMessage;
 			string rollTitle = "";
 			string damageStr = "";
 			string bonusStr = "";
-			if (ea.StopRollingData.bonus > 0)
-				bonusStr = " - bonus: " + ea.StopRollingData.bonus.ToString();
-			string successStr = GetSuccessStr(ea.StopRollingData.success, ea.StopRollingData.type);
-			switch (ea.StopRollingData.type)
+			if (stopRollingData.bonus > 0)
+				bonusStr = " - bonus: " + stopRollingData.bonus.ToString();
+			string successStr = GetSuccessStr(stopRollingData.success, stopRollingData.type);
+			switch (stopRollingData.type)
 			{
 				case DiceRollType.SkillCheck:
-					rollTitle = GetSkillCheckStr(ea.StopRollingData.skillCheck) + " Skill Check: ";
+					rollTitle = GetSkillCheckStr(stopRollingData.skillCheck) + " Skill Check: ";
 					break;
 				case DiceRollType.Attack:
 					rollTitle = "Attack: ";
-					if (ea.StopRollingData.damage > 0)
-						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
+					if (stopRollingData.damage > 0)
+						damageStr = ", Damage: " + stopRollingData.damage.ToString();
 					break;
 				case DiceRollType.SavingThrow:
-				case DiceRollType.DamagePlusSavingThrow:
-					rollTitle = GetAbilityStr(ea.StopRollingData.savingThrow) + " Saving Throw: ";
+					rollTitle = GetAbilityStr(stopRollingData.savingThrow) + " Saving Throw: ";
 					break;
 				case DiceRollType.FlatD20:
 					rollTitle = "Flat D20: ";
@@ -4482,20 +4665,20 @@ namespace DHDM
 					break;
 				case DiceRollType.DamageOnly:
 					rollTitle = "Damage: ";
-					rollValue = ea.StopRollingData.damage;
+					rollValue = stopRollingData.damage;
 					break;
 				case DiceRollType.HealthOnly:
 					rollTitle = "Health: ";
-					rollValue = ea.StopRollingData.health;
+					rollValue = stopRollingData.health;
 					break;
 				case DiceRollType.ExtraOnly:
 					rollTitle = "Extra: ";
-					rollValue = ea.StopRollingData.extra;
+					rollValue = stopRollingData.extra;
 					break;
 				case DiceRollType.ChaosBolt:
 					rollTitle = "Chaos Bolt: ";
-					if (ea.StopRollingData.damage > 0)
-						damageStr = ", Damage: " + ea.StopRollingData.damage.ToString();
+					if (stopRollingData.damage > 0)
+						damageStr = ", Damage: " + stopRollingData.damage.ToString();
 					break;
 				case DiceRollType.Initiative:
 					rollTitle = "Initiative: ";
@@ -4512,19 +4695,19 @@ namespace DHDM
 
 			string message = string.Empty;
 			Character singlePlayer = null;
-			if (ea.StopRollingData.multiplayerSummary != null && ea.StopRollingData.multiplayerSummary.Count > 0)
+			if (stopRollingData.multiplayerSummary != null && stopRollingData.multiplayerSummary.Count > 0)
 			{
-				if (ea.StopRollingData.multiplayerSummary.Count == 1)
-					singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.multiplayerSummary[0].id);
-				foreach (PlayerRoll playerRoll in ea.StopRollingData.multiplayerSummary)
+				if (stopRollingData.multiplayerSummary.Count == 1)
+					singlePlayer = AllPlayers.GetFromId(stopRollingData.multiplayerSummary[0].id);
+				foreach (PlayerRoll playerRoll in stopRollingData.multiplayerSummary)
 				{
 					string playerName = DndUtils.GetFirstName(playerRoll.name);
 					if (playerName != "")
 						playerName = playerName + "'s ";
 
 					rollValue = playerRoll.modifier + playerRoll.roll;
-					bool success = rollValue >= ea.StopRollingData.hiddenThreshold;
-					successStr = GetSuccessStr(success, ea.StopRollingData.type);
+					bool success = rollValue >= stopRollingData.hiddenThreshold;
+					successStr = GetSuccessStr(success, stopRollingData.type);
 					string localDamageStr;
 					if (success)
 						localDamageStr = damageStr;
@@ -4533,7 +4716,7 @@ namespace DHDM
 					if (!string.IsNullOrWhiteSpace(message))
 						message += "; ";
 
-					if (ea.StopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
+					if (stopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
 						return;
 					message += playerName + rollTitle + rollValue.ToString() + successStr + localDamageStr + bonusStr;
 				}
@@ -4542,16 +4725,16 @@ namespace DHDM
 			{
 				SafeInvoke(() =>
 				{
-					Title = $"ea.StopRollingData.playerID = {ea.StopRollingData.playerID}";
+					Title = $"ea.StopRollingData.playerID = {stopRollingData.singleOwnerId}";
 				});
 
-				singlePlayer = AllPlayers.GetFromId(ea.StopRollingData.playerID);
-				string playerName = GetPlayerName(ea.StopRollingData.playerID);
+				singlePlayer = AllPlayers.GetFromId(stopRollingData.singleOwnerId);
+				string playerName = GetPlayerName(stopRollingData.singleOwnerId);
 				if (singlePlayer == null)
 				{
-					if (ea.StopRollingData.playerID < 0)
+					if (stopRollingData.singleOwnerId < 0)
 					{
-						InGameCreature creature = AllInGameCreatures.GetByIndex(-ea.StopRollingData.playerID);
+						InGameCreature creature = AllInGameCreatures.GetByIndex(-stopRollingData.singleOwnerId);
 						if (creature != null)
 							playerName = creature.Name;
 					}
@@ -4563,27 +4746,32 @@ namespace DHDM
 				{
 
 				}
-				if (!ea.StopRollingData.success)
+				if (!stopRollingData.success)
 					damageStr = "";
 
 
-				if (ea.StopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
-					return;
-
-				message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
+				if (stopRollingData.type == DiceRollType.ExtraOnly && rollValue == 0)
+					message = null;
+				else if (stopRollingData.type == DiceRollType.DamagePlusSavingThrow)
+					message = null;
+				else
+					message += playerName + rollTitle + rollValue.ToString() + successStr + damageStr + bonusStr;
 			}
 
 			if (singlePlayer != null)
-				game.DieRollStopped(singlePlayer, rollValue, ea.StopRollingData);
+				game.DieRollStopped(singlePlayer, rollValue, stopRollingData);
 
 			//DieRollStopped
 
-			message += additionalMessage;
-			if (!string.IsNullOrWhiteSpace(message))
+			if (message != null)
 			{
-				if (ea.StopRollingData.type == DiceRollType.WildMagicD20Check && rollValue == 0)
-					message = message.Replace(": 0", ": no ones rolled (safe).");
-				TellAll(message);
+				message += additionalMessage;
+				if (!string.IsNullOrWhiteSpace(message))
+				{
+					if (stopRollingData.type == DiceRollType.WildMagicD20Check && rollValue == 0)
+						message = message.Replace(": 0", ": no ones rolled (safe).");
+					TellAll(message);
+				}
 			}
 		}
 
@@ -5718,6 +5906,7 @@ namespace DHDM
 						foreach (DiceDto diceDto in diceRoll.DiceDtos)
 						{
 							diceDto.Vantage = vantageKind;
+							// TODO: Double-check this DieCountsAs.totalScore assignment - is this correct in all cases? E.g., what about saving throws with advantage?
 							diceDto.DieCountsAs = DieCountsAs.totalScore;
 						}
 
@@ -6833,7 +7022,9 @@ namespace DHDM
 			if (selectedItem == null)
 				return;
 			Spell spell = AllSpells.Get(selectedItem.name, player, lastSpellSlotTested);
-			player.PrepareSpell(new CastedSpell(spell, player));
+			CastedSpell castedSpell = new CastedSpell(spell, player);
+			nextSpellIdWeAreCasting = castedSpell.ID;
+			player.PrepareSpell(castedSpell);
 		}
 
 		private void LstAllSpells_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -7002,18 +7193,36 @@ namespace DHDM
 			UnleashTheNextRoll();
 		}
 
+		void AddSavingThrowsForTargetedCreatures(DiceRoll diceRoll, int hiddenThreshold, Ability savingThrowAbility)
+		{
+			diceRoll.HiddenThreshold = hiddenThreshold;
+			diceRoll.SavingThrow = savingThrowAbility;
+			DiceRollType diceRollType = DiceRollType.SavingThrow;
+			if (diceRoll.Type == DiceRollType.DamageOnly)
+			{
+				diceRollType = DiceRollType.DamagePlusSavingThrow;
+				diceRoll.Type = DiceRollType.DamagePlusSavingThrow;
+			}
+
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				if (inGameCreature.IsTargeted)
+					diceRoll.DiceDtos.Add(DiceDto.D20FromInGameCreature(inGameCreature, diceRollType));
+		}
+
+		string nextSpellIdWeAreCasting = null;
+
 		private async void UnleashTheNextRoll()
 		{
+			bool needToAddSavingThrows = false;
+			int spellSaveDc = 12;
 			PlayerActionShortcut localSpellToCastOnRoll = spellToCastOnRoll;
 			//Title = "Rolling Dice...";
+
+			Spell spellWeAreCasting = null;
 			if (localSpellToCastOnRoll != null)
 			{
-				if (localSpellToCastOnRoll.Spell?.SpellType == SpellType.SavingThrowSpell)
-				{
-					nextSavingThrowAbility = localSpellToCastOnRoll.Spell.SavingThrowAbility;
-					if (ActivePlayer != null)
-						SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
-				}
+				spellWeAreCasting = localSpellToCastOnRoll.Spell;
+
 				try
 				{
 					if (!await ActivateSpellShortcut(localSpellToCastOnRoll))
@@ -7025,7 +7234,7 @@ namespace DHDM
 					Console.WriteLine(ex.Message);
 				}
 
-				bool isSimpleSpell = localSpellToCastOnRoll?.Type == DiceRollType.CastSimpleSpell;
+				bool isSimpleSpell = localSpellToCastOnRoll.Type == DiceRollType.CastSimpleSpell;
 				spellToCastOnRoll = null;
 				if (isSimpleSpell)
 				{
@@ -7033,6 +7242,13 @@ namespace DHDM
 					return;  // No need to roll the dice
 				}
 			}
+
+			if (spellWeAreCasting == null && !string.IsNullOrEmpty(activeSpellName))
+			{
+				spellWeAreCasting = AllSpells.Get(activeSpellName);
+			}
+
+			CheckSpellForSavingThrows(spellWeAreCasting, ref needToAddSavingThrows, ref spellSaveDc);
 
 			if (NextDieRollType != DiceRollType.None)
 			{
@@ -7043,11 +7259,36 @@ namespace DHDM
 					SelectedPlayersAboutToRoll();
 				}
 
-				RollTheDice(PrepareRoll(NextDieRollType), delayMs);
+				DiceRoll diceRoll = PrepareRoll(NextDieRollType);
+				diceRoll.SpellID = nextSpellIdWeAreCasting;
+				if (needToAddSavingThrows)
+				{
+					AddSavingThrowsForTargetedCreatures(diceRoll, spellSaveDc, nextSavingThrowAbility);
+				}
+				RollTheDice(diceRoll, delayMs);
 				NextDieRollType = DiceRollType.None;
 				NextRollScope = RollScope.ActivePlayer;
 				NextDieStr = "";
 			}
+			activeSpellName = null;
+		}
+
+		private void CheckSpellForSavingThrows(Spell spell, ref bool needToAddSavingThrows, ref int spellSaveDc)
+		{
+			if (spell == null)
+				return;
+
+			if (spell.SpellType != SpellType.SavingThrowSpell)
+				return;
+
+			needToAddSavingThrows = true;
+			nextSavingThrowAbility = spell.SavingThrowAbility;
+
+			if (ActivePlayer == null)
+				return;
+
+			spellSaveDc = ActivePlayer.SpellSaveDC;
+			SetSavingThrowThreshold(ActivePlayer.SpellSaveDC);
 		}
 
 		private void RbSkillCheck_Checked(object sender, RoutedEventArgs e)
@@ -8982,7 +9223,7 @@ namespace DHDM
 		}
 		void ExecuteQueuedDieRoll(DieRollQueueEntry dieRollQueueEntry)
 		{
-			if (dieRollQueueEntry.RollType == DiceRollType.SavingThrow || dieRollQueueEntry.RollType == DiceRollType.DamagePlusSavingThrow)
+			if (DiceDto.IsSavingThrow(dieRollQueueEntry.RollType))
 			{
 				DiceRoll diceRoll = PrepareRoll(dieRollQueueEntry.RollType);
 				dieRollQueueEntry.PrepareRoll(diceRoll);
@@ -9539,17 +9780,19 @@ namespace DHDM
 				cardHandManager.AddCard(characterId, ea.CardDto.Card);
 
 			bool waitingOnDieRoll = false;
-			if (msg.IndexOf("//") >= 0)
+			const string CommentDelimiter = "//";
+			if (msg.IndexOf(CommentDelimiter) >= 0)
 			{
-				string onlyToViewers = msg.EverythingBefore("//").Trim();
-				string comment = msg.EverythingAfter("//").Trim();
+				string onlyToViewers = msg.EverythingBefore(CommentDelimiter).Trim();
+				string comment = msg.EverythingAfter(CommentDelimiter).Trim();
 				if (comment.StartsWith("!"))
 				{
-					waitingOnDieRoll = comment.Contains(CardCommands.CMD_RollDie);
+					waitingOnDieRoll = comment.Contains(CardDto.CMD_RollDie);
 					CardCommands.Execute(comment.Substring(1), ea.CardDto, viewer);
+					TellDungeonMaster(onlyToViewers);
 				}
 				else
-					TellDungeonMaster(comment);
+					TellDungeonMaster($"@DragonHumpers, {ea.CardDto.Card.UserName} redeems \"{ea.CardDto.Card.CardName}\": " + comment);
 
 				TellViewers(onlyToViewers);
 			}
@@ -9564,7 +9807,12 @@ namespace DHDM
 
 		private void TriggerCardPlayedEventIfNecessary(CardEventArgs ea)
 		{
-			int targetCharacterId = ea.CardDto.TargetCharacterId;
+			foreach (int targetCharacterId in ea.CardDto.TargetCharacterIds)
+				TriggerCardPlayedEventIfNecessaryForTarget(ea, targetCharacterId);
+		}
+
+		private void TriggerCardPlayedEventIfNecessaryForTarget(CardEventArgs ea, int targetCharacterId)
+		{
 			if (targetCharacterId == int.MinValue || ea.CardDto.Command != CardDto.CMD_PlayCardNow)
 				return;
 			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
@@ -9585,10 +9833,85 @@ namespace DHDM
 				string spellName = cardName.Substring(castPrefix.Length);
 				Spell spell = AllSpells.Get(spellName);
 				if (spell != null)
+				{
 					castedSpell = new CastedSpell(spell, viewerSpellcaster);
+					nextSpellIdWeAreCasting = castedSpell.ID;
+				}
 			}
 			object customData = null;
 			Expressions.Do(cardEventData.CardPlayed, viewerSpellcaster, new Target(AttackTargetType.Spell, targetCreature), castedSpell, null, customData);
+		}
+
+		[Flags]
+		public enum WhatTargetChanged
+		{
+			None = 0,
+			Player = 1,
+			NpcMonster = 2
+		}
+
+		string Plural(int count, string singular, string plural)
+		{
+			if (count == 1)
+				return singular;
+			return plural;
+		}
+
+		string BothAll(int count)
+		{
+			if (count == 2)
+				return "both ";
+			if (count > 2)
+				return "all ";
+			return string.Empty;
+		}
+
+		string GetCombinedPlayerListPhrase(List<string> names)
+		{
+			if (names.Count == 0)
+				return "!Error - no name!";
+
+			if (names.Count == 1)
+				return names[0];
+
+			if (names.Count == 2)
+				return $"{names[0]} and {names[1]}";
+
+			string list = string.Join(", ", names.Take(names.Count - 1));
+			list += $", and {names[names.Count - 1]}";
+			return list;
+		}
+
+		string GetDamageDescription(DamageType damageType, int value, double multiplier = 1)
+		{
+			int damage = (int)Math.Floor(value * multiplier);
+			string damageStr = DndUtils.ToDamageStr(damageType);
+			if (string.IsNullOrWhiteSpace(damageStr))
+				return damage.ToString();
+			return $"{damage} {damageStr}";
+		}
+
+		void ReportDamage(Dictionary<DamageType, int> damage)
+		{
+			string damageStr = GetDamageStr(damage);
+
+			TellAll($"Damage: {damageStr}");
+		}
+
+		private string GetDamageStr(Dictionary<DamageType, int> damage, double multiplier = 1)
+		{
+			List<string> names = new List<string>();
+			foreach (DamageType damageType in damage.Keys)
+				names.Add(GetDamageDescription(damageType, damage[damageType], multiplier));
+
+			string damageStr = string.Empty;
+
+			if (names.Count > 0)
+				if (names.Count == 1)
+					damageStr = names[0];
+				else
+					damageStr = string.Join(" + ", names);
+			return damageStr;
 		}
 
 		private void CardCommands_ViewerDieRollComplete(object sender, ViewerDieRollStoppedEventArgs ea)
@@ -9596,39 +9919,188 @@ namespace DHDM
 			ea.Card.Command = "DiceRollForCardFinished";
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);
+			ApplyDamageFromRoll(ea.StopRollingData, ea.Card.TargetCharacterIds);
+		}
 
-			Creature targetCreature = DndUtils.GetCreatureById(ea.Card.TargetCharacterId);
-			if (targetCreature != null)
+		private void ApplyDamageFromRoll(DiceStoppedRollingData stopRollingData, List<int> targetCharacterIds)
+		{
+			Dictionary<DamageType, int> damage = CalculateDamageByType(stopRollingData.individualRolls);
+			if (damage.Keys.Count <= 0)
+				return;
+
+			ReportDamage(damage);
+
+			WhatTargetChanged whatTargetChanged = WhatTargetChanged.None;
+			Dictionary<SavingThrowResult, List<string>> results = new Dictionary<SavingThrowResult, List<string>>();
+			foreach (int targetId in targetCharacterIds)
 			{
-				Dictionary<DamageType, int> damage = new Dictionary<DamageType, int>();
-				CalculateDamageByType(ea.StopRollingData.individualRolls, damage);
-				double totalDamage = 0;
-				InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(targetCreature);
-				foreach (DamageType key in damage.Keys)
-					totalDamage += damage[key];
+				Creature targetCreature = DndUtils.GetCreatureById(targetId);
+				ApplyRollDamageToCreature(stopRollingData, targetId, targetCreature, results, damage, ref whatTargetChanged);
+			}
 
-				if (inGameCreature != null)
-					inGameCreature.TakeDamage(game, damage, AttackKind.Magical);
-				else
-					foreach (DamageType key in damage.Keys)
-						targetCreature.TakeDamage(key, AttackKind.Any, damage[key]);
+			// TODO: Incorporate this consolidation logic into normal saving throws for multiple people.
+			ReportSavingThrowResults(results, damage);
 
-				if (totalDamage > 0)
+			if (whatTargetChanged.HasFlag(WhatTargetChanged.NpcMonster))
+				UpdateInGameCreatures();
+		}
+
+		int GetDamageTotal(Dictionary<DamageType, int> damage, double multiplier)
+		{
+			double total = 0;
+			foreach (DamageType damageType in damage.Keys)
+			{
+				total += Math.Floor(damage[damageType] * multiplier);
+			}
+			return (int)total;
+		}
+
+		/// <summary>
+		/// Send consolidated reports on the last saving throw for potentially more than one player/NPC.
+		/// </summary>
+		/// <param name="results">A dictionary indexed by SavingThrowResults of player first names.</param>
+		/// <param name="damage"></param>
+		private void ReportSavingThrowResults(Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage)
+		{
+			foreach (SavingThrowResult savingThrowResult in results.Keys)
+			{
+				string combinedPlayerListPhrase = GetCombinedPlayerListPhrase(results[savingThrowResult]);
+				int count = results[savingThrowResult].Count;
+				switch (savingThrowResult)
 				{
-					if (targetCreature is Character player)
-					{
-						DamageHealthChange damageHealthChange = new DamageHealthChange();
-						damageHealthChange.DamageHealth = (int)-totalDamage;
-						damageHealthChange.PlayerIds.Add(ea.Card.TargetCharacterId);
-						HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
-						UpdatePlayerScrollInGame(player);
-						UpdatePlayerScrollUI(player);
-					}
-					else
-						UpdateInGameCreatures();
-
+					case SavingThrowResult.CompleteFailure:
+						TellAll($"{combinedPlayerListPhrase} critically {Plural(count, "fails", "fail")} and {BothAll(count)}{Plural(count, "takes", "take")} double damage ({GetDamageStr(damage, 2)})!");
+						break;
+					case SavingThrowResult.Failure:
+						TellAll($"{combinedPlayerListPhrase} {Plural(count, "fails", "fail")} and {BothAll(count)}{Plural(count, "takes", "take")} full damage ({GetDamageStr(damage, 1)})!");
+						break;
+					case SavingThrowResult.Save:
+						string prefix = $"{combinedPlayerListPhrase} {Plural(count, "saves", "save")} and {BothAll(count)}{Plural(count, "takes", "take")} half damage";
+						string suffix;
+						if (GetDamageTotal(damage, 0.5) == 0)
+							suffix = ", which is zero (when rounding 0.5 down)!";
+						else
+							suffix = $" ({GetDamageStr(damage, 0.5)})!";
+						TellAll(prefix + suffix);
+						break;
+					case SavingThrowResult.CompleteSuccess:
+						TellAll($"{combinedPlayerListPhrase} critically {Plural(count, "saves", "save")} and {BothAll(count)}{Plural(count, "takes", "take")} zero damage!");
+						break;
 				}
 			}
+		}
+
+		public enum SavingThrowResult
+		{
+			CompleteFailure,
+			Failure,
+			Save,
+			CompleteSuccess
+		}
+
+		SavingThrowResult GetSavingThrowResult(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId)
+		{
+			int totalScore = 0;
+			int modifier = 0;
+
+			foreach (IndividualRoll individualRoll in individualRolls)
+			{
+				if (individualRoll.dieCountsAs != DieCountsAs.savingThrow || individualRoll.creatureId != creatureId)
+					continue;
+
+				totalScore += individualRoll.value;
+				if (individualRoll.numSides == 20)
+				{
+					if (individualRoll.value == 20)
+						return SavingThrowResult.CompleteSuccess;
+					if (individualRoll.value == 1)
+						return SavingThrowResult.CompleteFailure;
+				}
+				if (individualRoll.modifier > modifier)
+					modifier = individualRoll.modifier;
+			}
+			if (totalScore + modifier >= hiddenThreshold)
+				return SavingThrowResult.Save;
+			return SavingThrowResult.Failure;
+		}
+
+		double GetSavingThrowDamageMultiplier(SavingThrowResult savingThrowResult)
+		{
+			switch (savingThrowResult)
+			{
+				case SavingThrowResult.CompleteFailure:
+					return 2;  // Homegrown rule - double damage for nat 1s.
+				case SavingThrowResult.Failure:
+					return 1;
+				case SavingThrowResult.Save:
+					return 0.5;
+				case SavingThrowResult.CompleteSuccess:
+					return 0;  // Homegrown rule - zero damage for nat 20s.
+			}
+			return 1;
+		}
+
+		double GetSavingThrowDamage(List<IndividualRoll> individualRolls, int hiddenThreshold, int creatureId, int damageDieTotal, out SavingThrowResult savingThrowResult)
+		{
+			savingThrowResult = GetSavingThrowResult(individualRolls, hiddenThreshold, creatureId);
+			double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
+			return damageDieTotal * multiplier;
+		}
+
+		private void ApplyRollDamageToCreature(DiceStoppedRollingData stopRollingData, int targetId, Creature targetCreature, Dictionary<SavingThrowResult, List<string>> results, Dictionary<DamageType, int> damage, ref WhatTargetChanged whatTargetChanged)
+		{
+			if (targetCreature == null)
+				return;
+			bool showedSavingThrowResultsForPlayer = false;
+			double totalDamage = 0;
+			InGameCreature inGameCreature = AllInGameCreatures.GetByCreature(targetCreature);
+
+			if (inGameCreature != null)
+			{
+				SavingThrowResult savingThrowResult = GetSavingThrowResult(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId);
+				double multiplier = GetSavingThrowDamageMultiplier(savingThrowResult);
+				AddSavingThrowResult(results, targetCreature, savingThrowResult);
+				inGameCreature.TakeDamage(game, damage, AttackKind.Magical, multiplier);
+				whatTargetChanged |= WhatTargetChanged.NpcMonster;
+			}
+			else
+				foreach (DamageType key in damage.Keys)
+				{
+					double damageForPlayer = GetSavingThrowDamage(stopRollingData.individualRolls, stopRollingData.hiddenThreshold, targetId, damage[key], out SavingThrowResult savingThrowResult);
+					if (!showedSavingThrowResultsForPlayer)
+					{
+						showedSavingThrowResultsForPlayer = true;
+						AddSavingThrowResult(results, targetCreature, savingThrowResult);
+					}
+
+					totalDamage += damageForPlayer;
+					targetCreature.TakeDamage(key, AttackKind.Magical, damageForPlayer);
+				}
+
+			if (totalDamage > 0)
+			{
+				if (targetCreature is Character player)
+				{
+					DamageHealthChange damageHealthChange = new DamageHealthChange();
+					damageHealthChange.DamageHealth = (int)-totalDamage;
+					damageHealthChange.PlayerIds.Add(targetId);
+					HubtasticBaseStation.ChangePlayerHealth(JsonConvert.SerializeObject(damageHealthChange));
+					UpdatePlayerScrollInGame(player);
+					UpdatePlayerScrollUI(player);
+					whatTargetChanged |= WhatTargetChanged.Player;
+				}
+				else
+				{
+					whatTargetChanged |= WhatTargetChanged.NpcMonster;
+				}
+			}
+		}
+
+		private static void AddSavingThrowResult(Dictionary<SavingThrowResult, List<string>> results, Creature targetCreature, SavingThrowResult savingThrowResult)
+		{
+			if (!results.ContainsKey(savingThrowResult))
+				results.Add(savingThrowResult, new List<string>());
+			results[savingThrowResult].Add(DndUtils.GetFirstName(targetCreature.Name));
 		}
 
 		// TODO: Automate clean up of any viewer cards blocking the UI with this?
@@ -9646,6 +10118,12 @@ namespace DHDM
 		{
 			NextDieRollType = DiceRollType.DamagePlusSavingThrow;
 			btnRollPlayerDice.Content = "Roll Damage with Saving Throw";
+		}
+
+		private void rbOnlyTargetsSavingThrow_Click(object sender, RoutedEventArgs e)
+		{
+			NextDieRollType = DiceRollType.OnlyTargetsSavingThrow;
+			btnRollPlayerDice.Content = "Only Targets Saving Throw";
 		}
 
 		// TODO: Reintegrate wand/staff animations....
