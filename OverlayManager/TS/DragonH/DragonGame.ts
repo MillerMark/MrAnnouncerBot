@@ -456,7 +456,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 		for (let i = 0; i < this.players.length; i++) {
 			const player: Character = this.players[i];
-			if (player.playerID === playerID)
+			if (player.IntId === playerID)
 				return player;
 		}
 
@@ -809,7 +809,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	getPlayerIndex(playerId: number): number {
 		for (let i = 0; i < this.players.length; i++) {
 			const player: Character = this.players[i];
-			if (player.playerID === playerId) {
+			if (player.IntId === playerId) {
 				return i;
 			}
 		}
@@ -850,7 +850,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 	getPlayerFirstName(playerId: number): string {
 		for (let i = 0; i < this.players.length; i++) {
 			const player: Character = this.players[i];
-			if (player.playerID === playerId) {
+			if (player.IntId === playerId) {
 				return player.firstName;
 			}
 		}

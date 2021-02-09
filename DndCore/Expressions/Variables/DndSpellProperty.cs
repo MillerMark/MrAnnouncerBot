@@ -31,7 +31,7 @@ namespace DndCore
 			}
 		}
 
-		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
 		{
 			if (tokenName.IndexOf(KnownQualifiers.Spell) != 0)
 				return false;
@@ -43,7 +43,7 @@ namespace DndCore
 			return false;
 		}
 
-		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
+		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
 		{
 			if (variableName.IndexOf(KnownQualifiers.Spell) != 0)
 				return null;

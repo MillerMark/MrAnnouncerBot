@@ -186,6 +186,7 @@ namespace DndCore
 					Monster monster = Monster.Clone(AllMonsters.GetByKind(Kind));
 					if (monster != null)
 					{
+						monster.SetIntId(-Index);
 						// TODO: Fix race (or use "Kind") field and use Name for the monster's name.
 						if (!string.IsNullOrWhiteSpace(Name))
 							monster.Name = Name;

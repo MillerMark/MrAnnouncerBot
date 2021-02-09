@@ -25,7 +25,7 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "AddSpellCastEffect";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1, 15);
 			if (player != null)
@@ -43,7 +43,7 @@ namespace DndCore
 			return null;
 		}
 
-		public static void GetVisualEffectParameters(List<string> args, Character player, Target target, CastedSpell spell, out string effectName, out int hue, out int saturation, out int brightness, out double scale, out double rotation, out double autoRotation, out int timeOffset, out int secondaryHue, out int secondarySaturation, out int secondaryBrightness, out int xOffset, out int yOffset, out double velocityX, out double velocityY)
+		public static void GetVisualEffectParameters(List<string> args, Creature player, Target target, CastedSpell spell, out string effectName, out int hue, out int saturation, out int brightness, out double scale, out double rotation, out double autoRotation, out int timeOffset, out int secondaryHue, out int secondarySaturation, out int secondaryBrightness, out int xOffset, out int yOffset, out double velocityX, out double velocityY)
 		{
 			effectName = Expressions.GetStr(args[0], player, target, spell);
 			hue = 0;

@@ -75,7 +75,7 @@ namespace DndCore
 			return expression.Replace("“", "\"").Replace("”", "\"").Trim();
 
 		}
-		public static object Get(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static object Get(string expression, Creature player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return null;
@@ -101,7 +101,7 @@ namespace DndCore
 			}
 		}
 
-		public static T Get<T>(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static T Get<T>(string expression, Creature player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return default(T);
@@ -126,7 +126,7 @@ namespace DndCore
 			}
 		}
 
-		public static void Do(string expression, Character player = null, Target target = null, CastedSpell castedSpell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static void Do(string expression, Creature player = null, Target target = null, CastedSpell castedSpell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return;
@@ -165,7 +165,7 @@ namespace DndCore
 			}
 		}
 
-		public static int GetInt(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static int GetInt(string expression, Creature player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return 0;
@@ -201,7 +201,7 @@ namespace DndCore
 			}
 		}
 
-		public static double GetDouble(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static double GetDouble(string expression, Creature player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return 0;
@@ -255,7 +255,7 @@ namespace DndCore
 			}
 		}
 
-		public static bool GetBool(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static bool GetBool(string expression, Creature player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return false;
@@ -297,7 +297,7 @@ namespace DndCore
 			}
 		}
 
-		public static string GetStr(string expression, Character player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		public static string GetStr(string expression, Creature player = null, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			if (string.IsNullOrWhiteSpace(expression))
 				return string.Empty;
@@ -337,7 +337,7 @@ namespace DndCore
 		}
 
 		static Stack<IDictionary<string, object>> variableStack = new Stack<IDictionary<string, object>>();
-		private static void StartEvaluation(Character player, string callingProc, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
+		private static void StartEvaluation(Creature player, string callingProc, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			//historyStack.Push(history);
 			//history = new List<string>();
@@ -348,7 +348,7 @@ namespace DndCore
 			BeginUpdate();
 		}
 
-		private static void AddPlayerVariables(Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null, object customData = null)
+		private static void AddPlayerVariables(Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null, object customData = null)
 		{
 			variableStack.Push(expressionEvaluator.Variables);
 			expressionEvaluator.Variables = new Dictionary<string, object>()
@@ -361,7 +361,7 @@ namespace DndCore
 			};
 		}
 
-		static void FinishEvaluation(Character player)
+		static void FinishEvaluation(Creature player)
 		{
 			if (variableStack.Count > 0)
 				expressionEvaluator.Variables = variableStack.Pop();
@@ -417,10 +417,10 @@ namespace DndCore
 			return null;
 		}
 
-		static Character GetPlayer(IDictionary<string, object> variables)
+		static Creature GetPlayer(IDictionary<string, object> variables)
 		{
 			if (variables.ContainsKey(STR_Player))
-				return variables[STR_Player] as Character;
+				return variables[STR_Player] as Creature;
 			return null;
 		}
 
@@ -431,7 +431,7 @@ namespace DndCore
 
 		private static void ExpressionEvaluator_EvaluateFunction(object sender, FunctionEvaluationEventArg e)
 		{
-			Character player = GetPlayer(e.Evaluator.Variables);
+			Creature player = GetPlayer(e.Evaluator.Variables);
 			CastedSpell castedSpell = GetCastedSpell(e.Evaluator.Variables);
 			Target target = GetTargetCreature(e.Evaluator.Variables);
 			DiceStoppedRollingData dice = GetDiceStoppedRollingData(e.Evaluator.Variables);
@@ -462,7 +462,7 @@ namespace DndCore
 
 		private static void ExpressionEvaluator_EvaluateVariable(object sender, VariableEvaluationEventArg e)
 		{
-			Character player = GetPlayer(e.Evaluator.Variables);
+			Creature player = GetPlayer(e.Evaluator.Variables);
 			CastedSpell castedSpell = GetCastedSpell(e.Evaluator.Variables);
 			DndVariable variable = variables.FirstOrDefault(x => x.Handles(e.Name, player, castedSpell));
 			if (variable != null)
@@ -551,7 +551,7 @@ namespace DndCore
 		{
 			callDepth++;
 		}
-		public static void EndUpdate(Character player = null)
+		public static void EndUpdate(Creature player = null)
 		{
 			callDepth--;
 			if (player != null && callDepth == 0)

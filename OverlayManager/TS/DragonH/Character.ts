@@ -34,11 +34,14 @@ class SpellGroup {
 	}
 }
 
+class Creature {
+	IntId: number;
+}
+
 //! Important!!! - property names must **exactly** match those in Character.ts that are serialized for copyAttributesFrom to work!!! (because it is called with two different data types - the DTO from our C# app && an instance of Character here, so the prop names have to be the same)
-class Character {
+class Character extends Creature{
 	static readonly invalidCreatureId: number = -2147483648; // int.MinValue in C#
 	SpellData: Array<SpellGroup>;
-	playerID: number;
 	equipment: Array<Item> = new Array<Item>();
 	classes: Array<CharacterClass> = new Array<CharacterClass>();
 	cursesAndBlessings: Array<CurseBlessingDisease> = new Array<CurseBlessingDisease>();
@@ -89,32 +92,32 @@ class Character {
 	proficientSkills: number;
 	doubleProficiency: number;
 
-	tempSavingThrowModStrength: number = 0;
-	tempSavingThrowModDexterity: number = 0;
-	tempSavingThrowModConstitution: number = 0;
-	tempSavingThrowModIntelligence: number = 0;
-	tempSavingThrowModWisdom: number = 0;
-	tempSavingThrowModCharisma: number = 0;
+	tempSavingThrowModStrength = 0;
+	tempSavingThrowModDexterity = 0;
+	tempSavingThrowModConstitution = 0;
+	tempSavingThrowModIntelligence = 0;
+	tempSavingThrowModWisdom = 0;
+	tempSavingThrowModCharisma = 0;
 
-	tempAcrobaticsMod: number = 0;
-	tempAnimalHandlingMod: number = 0;
-	tempArcanaMod: number = 0;
-	tempAthleticsMod: number = 0;
-	tempDeceptionMod: number = 0;
-	tempHistoryMod: number = 0;
-	tempInsightMod: number = 0;
-	tempIntimidationMod: number = 0;
-	tempInvestigationMod: number = 0;
-	tempMedicineMod: number = 0;
-	tempNatureMod: number = 0;
-	tempPerceptionMod: number = 0;
-	tempPerformanceMod: number = 0;
-	tempPersuasionMod: number = 0;
-	tempReligionMod: number = 0;
-	tempSleightOfHandMod: number = 0;
-	tempStealthMod: number = 0;
-	tempSurvivalMod: number = 0;
-	tempArmorClassMod: number = 0;
+	tempAcrobaticsMod = 0;
+	tempAnimalHandlingMod = 0;
+	tempArcanaMod = 0;
+	tempAthleticsMod = 0;
+	tempDeceptionMod = 0;
+	tempHistoryMod = 0;
+	tempInsightMod = 0;
+	tempIntimidationMod = 0;
+	tempInvestigationMod = 0;
+	tempMedicineMod = 0;
+	tempNatureMod = 0;
+	tempPerceptionMod = 0;
+	tempPerformanceMod = 0;
+	tempPersuasionMod = 0;
+	tempReligionMod = 0;
+	tempSleightOfHandMod = 0;
+	tempStealthMod = 0;
+	tempSurvivalMod = 0;
+	tempArmorClassMod = 0;
 	rollInitiative: VantageKind = VantageKind.Normal;
 
 	private _firstName: string;
@@ -134,9 +137,11 @@ class Character {
     savingThrowModCharisma
   */
 
-	copyAttributesFrom(sourceCharacter: any): Character {
-		this.playerID = sourceCharacter.playerID;
+	playerId: number;
 
+	copyAttributesFrom(sourceCharacter: any): Character {
+		this.IntId = sourceCharacter.IntId;
+		this.playerId = this.IntId;
 		this.copySpellDataFrom(sourceCharacter);
 		this.copyClassDataFrom(sourceCharacter);
 
@@ -155,7 +160,7 @@ class Character {
 		this.baseStrength = sourceCharacter.baseStrength;
 		this.baseWisdom = sourceCharacter.baseWisdom;
 		this.ActiveConditions = sourceCharacter.ActiveConditions;
-		console.log('sourceCharacter.ActiveConditions: ' + sourceCharacter.ActiveConditions);
+		//console.log('sourceCharacter.ActiveConditions: ' + sourceCharacter.ActiveConditions);
 		this.weaponProficiency = sourceCharacter.weaponProficiency;
 		this.cursesAndBlessings = sourceCharacter.cursesAndBlessings;
 		this.deathSaveDeath1 = sourceCharacter.deathSaveDeath1;
@@ -636,6 +641,7 @@ class Character {
 	}
 
 	constructor(cloneFrom: any = null) {
+		super();
 		if (cloneFrom) {
 			this.copyAttributesFrom(cloneFrom);
 		}

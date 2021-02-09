@@ -484,11 +484,11 @@ class ConditionManager {
 
 	static readonly numPlayerConditionColumns: number = 1;
 
-	updatePlayerConditions(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, context: CanvasRenderingContext2D, players: Array<Character>): void {
+	updatePlayerConditions(existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, context: CanvasRenderingContext2D, players: Array<Character>): void {
 		if (existingPlayerStats.Conditions === latestPlayerStats.Conditions)
 			return;
 
-		const playerId: number = latestPlayerStats.PlayerId;
+		const playerId: number = latestPlayerStats.CreatureId;
 		const playerIndex: number = this.iGetPlayerX.getPlayerIndex(playerId);
 
 		const scale = this.getConditionScale(context, playerIndex, players);
@@ -509,15 +509,15 @@ class ConditionManager {
 		existingPlayerStats.Conditions = latestPlayerStats.Conditions;
 	}
 
-	restackPlayerConditions(context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, players: Character[], worldView: WorldView = WorldView.Normal) {
+	restackPlayerConditions(context: CanvasRenderingContext2D, existingPlayerStats: CreatureStats, players: Character[], worldView: WorldView = WorldView.Normal) {
 		if (!existingPlayerStats.Conditions)
 			return;
 
-		const playerIndex: number = this.iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
+		const playerIndex: number = this.iGetPlayerX.getPlayerIndex(existingPlayerStats.CreatureId);
 		const targetX: number = this.getNameplateLeftEdge(context, playerIndex, players);
 
 		const scale = this.getConditionScale(context, playerIndex, players);
-		this.stackConditionSprites(existingPlayerStats.PlayerId, targetX, scale, worldView, ConditionManager.numPlayerConditionColumns);
+		this.stackConditionSprites(existingPlayerStats.CreatureId, targetX, scale, worldView, ConditionManager.numPlayerConditionColumns);
 
 	}
 
@@ -533,7 +533,7 @@ class ConditionManager {
 
 	movePlayerConditions(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>, worldView: WorldView = WorldView.Normal) {
 		players.forEach((player, index) => {
-			const conditionSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditions, player.playerID);
+			const conditionSprites: Array<SpriteProxy> = this.getSpritesForCreature(this.conditions, player.IntId);
 			const x: number = this.getNameplateLeftEdge(context, index, players);
 			const scale: number = this.getConditionScale(context, index, players);
 
@@ -547,7 +547,7 @@ class ConditionManager {
 				}
 			}
 
-			this.stackConditionSprites(player.playerID, x, scale, worldView, ConditionManager.numPlayerConditionColumns);
+			this.stackConditionSprites(player.IntId, x, scale, worldView, ConditionManager.numPlayerConditionColumns);
 		});
 	}
 

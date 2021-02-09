@@ -3973,7 +3973,7 @@ class DieRoller {
 					initiativeBonus = 0;
 				else
 					initiativeBonus = player.rollInitiative;
-				this.addD20sForPlayer(player.playerID, xPositionModifier, initiativeBonus, player.inspiration);
+				this.addD20sForPlayer(player.IntId, xPositionModifier, initiativeBonus, player.inspiration);
 			}
 			this.diceRollData.hasMultiPlayerDice = true;
 		}

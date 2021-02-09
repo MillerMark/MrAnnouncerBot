@@ -6,7 +6,7 @@ namespace DndCore
 	public class PlayerShowStateEventArgs : EventArgs
 	{
 
-		public PlayerShowStateEventArgs(Character player, string message, string fillColor, string outlineColor, int delayMs)
+		public PlayerShowStateEventArgs(Creature player, string message, string fillColor, string outlineColor, int delayMs)
 		{
 			DelayMs = delayMs;
 			Player = player;
@@ -18,7 +18,7 @@ namespace DndCore
 		public string Message { get; set; }
 		public string FillColor { get; set; }
 		public string OutlineColor { get; set; }
-		public Character Player { get; set; }
+		public Creature Player { get; set; }
 		public int DelayMs { get; set; }
 	}
 }

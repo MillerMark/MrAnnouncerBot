@@ -21,12 +21,12 @@ namespace DndCore
 			return null;
 		}
 
-		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
 		{
 			return HasElement(tokenName);
 		}
 
-		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
+		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
 		{
 			return GetValue(variableName);
 		}

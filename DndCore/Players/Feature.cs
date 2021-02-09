@@ -143,7 +143,7 @@ namespace DndCore
 			return result;
 		}
 
-		public void Activate(string arguments, Character player, bool forceActivation = false)
+		public void Activate(string arguments, Creature player, bool forceActivation = false)
 		{
 			if (IsActive && !forceActivation)
 				return;
@@ -173,14 +173,14 @@ namespace DndCore
 			OnFeatureActivated(player, new FeatureEventArgs(this));
 		}
 
-		private void TriggerActivate(string arguments, Character player)
+		private void TriggerActivate(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnActivate))
 				Expressions.Do(DndUtils.InjectParameters(OnActivate, Parameters, arguments), player);
 		}
 
-		public void Deactivate(string arguments, Character player, bool forceDeactivation = false)
+		public void Deactivate(string arguments, Creature player, bool forceDeactivation = false)
 		{
 			if (!IsActive && !forceDeactivation)
 				return;
@@ -200,7 +200,7 @@ namespace DndCore
 			OnFeatureDeactivated(player, new FeatureEventArgs(this));
 		}
 
-		private void TriggerDeactivate(string arguments, Character player)
+		private void TriggerDeactivate(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnDeactivate))
@@ -210,34 +210,34 @@ namespace DndCore
 		private void Feature_Expired(object sender, DndTimeEventArgs ea)
 		{
 			if (IsActive)
-				Deactivate(string.Empty, ea.Alarm.Player);
+				Deactivate(string.Empty, ea.Alarm.Creature);
 		}
 
-		public void StartGame(string arguments, Character player)
+		public void StartGame(string arguments, Creature player)
 		{
 			TriggerStartGame(arguments, player);
 		}
 
-		public void ShortcutAvailabilityChange(string arguments, Character player)
+		public void ShortcutAvailabilityChange(string arguments, Creature player)
 		{
 			TriggerShortcutAvailabilityChange(arguments, player);
 		}
 
-		private void TriggerStartGame(string arguments, Character player)
+		private void TriggerStartGame(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnStartGame))
 				Expressions.Do(DndUtils.InjectParameters(OnStartGame, Parameters, arguments), player);
 		}
 
-		private void TriggerShortcutAvailabilityChange(string arguments, Character player)
+		private void TriggerShortcutAvailabilityChange(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnShortcutAvailabilityChange))
 				Expressions.Do(DndUtils.InjectParameters(OnShortcutAvailabilityChange, Parameters, arguments), player);
 		}
 
-		public bool ShouldActivateNow(List<string> args, Character player)
+		public bool ShouldActivateNow(List<string> args, Creature player)
 		{
 			if (string.IsNullOrWhiteSpace(ActivateWhen))
 				return true;
@@ -245,14 +245,14 @@ namespace DndCore
 			return Expressions.GetBool(DndUtils.InjectParameters(ActivateWhen, Parameters, args), player);
 		}
 
-		public void SpellJustCast(string arguments, Character player, CastedSpell spell)
+		public void SpellJustCast(string arguments, Creature player, CastedSpell spell)
 		{
 			if (!IsActive)
 				return;
 			TriggerPlayerCastsSpell(arguments, player, spell);
 		}
 
-		private void TriggerPlayerCastsSpell(string arguments, Character player, CastedSpell spell)
+		private void TriggerPlayerCastsSpell(string arguments, Creature player, CastedSpell spell)
 		{
 			if (Name == "WildMagicSurge")
 			{
@@ -263,53 +263,53 @@ namespace DndCore
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerCastsSpell, Parameters, arguments), player, null, spell);
 		}
 
-		public void AfterPlayerSwings(string arguments, Character player)
+		public void AfterPlayerSwings(string arguments, Creature player)
 		{
 			if (!IsActive)
 				return;
 			TriggerAfterPlayerSwingsWeapon(arguments, player);
 		}
 
-		public void BeforePlayerRolls(string arguments, Character player)
+		public void BeforePlayerRolls(string arguments, Creature player)
 		{
 			if (!IsActive)
 				return;
 			TriggerBeforePlayerRollsDice(arguments, player);
 		}
 
-		private void TriggerAfterPlayerSwingsWeapon(string arguments, Character player)
+		private void TriggerAfterPlayerSwingsWeapon(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(AfterPlayerSwingsWeapon))
 				Expressions.Do(DndUtils.InjectParameters(AfterPlayerSwingsWeapon, Parameters, arguments), player);
 		}
 
-		private void TriggerBeforePlayerRollsDice(string arguments, Character player)
+		private void TriggerBeforePlayerRollsDice(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(BeforePlayerRollsDice))
 				Expressions.Do(DndUtils.InjectParameters(BeforePlayerRollsDice, Parameters, arguments), player);
 		}
 
-		private void TriggerPlayerRaisesWeapon(string arguments, Character player)
+		private void TriggerPlayerRaisesWeapon(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerRaisesWeapon))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerRaisesWeapon, Parameters, arguments), player);
 		}
 
-		public void WeaponRaised(string arguments, Character player)
+		public void WeaponRaised(string arguments, Creature player)
 		{
 			TriggerPlayerRaisesWeapon(arguments, player);
 		}
 
-		public void PlayerStartsTurn(string arguments, Character player)
+		public void PlayerStartsTurn(string arguments, Creature player)
 		{
 			// Always trigger this event even if inactive.
 			TriggerPlayerStartsTurn(arguments, player);
 		}
 
-		private void TriggerPlayerStartsTurn(string arguments, Character player)
+		private void TriggerPlayerStartsTurn(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerStartsTurn))
@@ -318,28 +318,28 @@ namespace DndCore
 
 
 		// TODO: Call when a player rolls a saving throw (to implement DangerSense).
-		public void PlayerSaves(string arguments, Character player)
+		public void PlayerSaves(string arguments, Creature player)
 		{
 			if (!IsActive)
 				return;
 			TriggerPlayerSaves(arguments, player);
 		}
 
-		private void TriggerPlayerSaves(string arguments, Character player)
+		private void TriggerPlayerSaves(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnPlayerSaves))
 				Expressions.Do(DndUtils.InjectParameters(OnPlayerSaves, Parameters, arguments), player);
 		}
 
-		public void RollIsComplete(string arguments, Character player)
+		public void RollIsComplete(string arguments, Creature player)
 		{
 			if (!IsActive)
 				return;
 			TriggerRollComplete(arguments, player);
 		}
 
-		private void TriggerRollComplete(string arguments, Character player)
+		private void TriggerRollComplete(string arguments, Creature player)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.FeatureEvents, Name)) Debugger.Break();
 			if (!string.IsNullOrWhiteSpace(OnRollComplete))

@@ -15,7 +15,7 @@ namespace DndCore
 	[TabName("Players")]
 	public class Character : Creature
 	{
-		public event SpellChangedEventHandler ConcentratedSpellChanged;
+		public override int IntId { get => playerID; }
 
 		// HACK: Don't be mad at this name property storing to the ancestor's field of the exact same name - we are doing this wrapper to support both serialization to Google Sheets as well as JSON to SignalR serialization to legacy TypeScript code.
 		[Indexer]
@@ -68,41 +68,12 @@ namespace DndCore
 				return "";
 			}
 		}
-
-		/* 
-		 * You automatically revert if you fall Unconscious, drop to 0 Hit Points, or die.
-		 * Replaced:
-		 *	Senses
-		 *	Strength, Dexterity, Constitution
-		 *	Speed stats (unless you are a water genasi - in which case you retain your swim speed)
-		 *	
-		 *	Hit Points (and Hit Dice). 
-		 *	   When you revert to your normal form, you return to the number of Hit Points you had before you transformed.
-		 *     However, if you revert as a result of Dropping to 0 Hit Points, any excess damage carries over to your normal form. 
-		 *     For example, if you take 10 damage in animal form and have only 1 hit point left, you revert and take 9 damage. 
-		 *     As long as the excess damage doesn't reduce your normal form to 0 Hit Points, you aren't knocked Unconscious.
-	 
-		 * Use the highest:
-		 *	skill and saving throw Proficiency
-		 
-		 * You can't cast Spells.
-		 * 
-		 */
-		public event PickWeaponEventHandler PickWeapon;
 		public event PickAmmunitionEventHandler PickAmmunition;
-		public event PlayerShowStateEventHandler PlayerShowState;
-		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
-		{
-			PickWeapon?.Invoke(sender, ea);
-		}
 
 		protected virtual void OnPickAmmunition(object sender, PickAmmunitionEventArgs ea)
 		{
 			PickAmmunition?.Invoke(sender, ea);
 		}
-
-		[JsonIgnore]
-		public string NextAnswer { get; set; }
 
 		[JsonIgnore]
 		public string ActiveWeaponName
@@ -164,23 +135,6 @@ namespace DndCore
 
 		[JsonIgnore]
 		public CarriedAmmunition ReadiedAmmunition;
-
-		[JsonIgnore]
-		List<KnownSpell> temporarySpells = new List<KnownSpell>();
-
-		[JsonIgnore]
-		public Queue<SpellEffect> additionalSpellHitEffects = new Queue<SpellEffect>();
-
-		[JsonIgnore]
-		public Queue<SpellEffect> additionalSpellCastEffects = new Queue<SpellEffect>();
-
-		[JsonIgnore]
-		public Queue<SoundEffect> additionalSpellHitSoundEffects = new Queue<SoundEffect>();
-
-		[JsonIgnore]
-		public Queue<SoundEffect> additionalSpellCastSoundEffects = new Queue<SoundEffect>();
-
-		const string STR_RechargeableMaxSuffix = "_max";
 		double _passivePerception = int.MinValue;
 
 		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
@@ -204,40 +158,6 @@ namespace DndCore
 			}
 		}
 
-
-		[JsonIgnore]
-		public List<Rechargeable> rechargeables = new List<Rechargeable>();
-
-		[JsonIgnore]
-		public List<string> additionalDice { get; set; } = new List<string>();
-
-		[JsonIgnore]
-		public string overrideReplaceDamageDice { get; set; } = string.Empty;
-
-		[JsonIgnore]
-		public string additionalDiceThisRoll = string.Empty;
-
-		[JsonIgnore]
-		public int advantageDiceThisRoll = 0;
-
-		[JsonIgnore]
-		public double attackingAbilityModifierBonusThisRoll = 0;
-
-		[JsonIgnore]
-		public Ability attackingAbility = Ability.none;
-
-		[JsonIgnore]
-		public double attackingAbilityModifier = 0; // TODO: Set for spells?
-
-		[JsonIgnore]
-		public AttackKind attackingKind = AttackKind.Any;
-
-		[JsonIgnore]
-		public AttackType attackingType = AttackType.None;
-
-		[JsonIgnore]
-		public int attackOffsetThisRoll = 0;
-
 		[JsonIgnore]
 		public Ability checkingAbilities = Ability.none;
 
@@ -245,22 +165,7 @@ namespace DndCore
 		public Skills checkingSkills = Skills.none;
 
 		[JsonIgnore]
-		public CastedSpell concentratedSpell;
-
-		[JsonIgnore]
 		public List<AssignedFeature> features { get; set; } = new List<AssignedFeature>();
-
-		[JsonIgnore]
-		public int damageOffsetThisRoll = 0;
-
-		[JsonIgnore]
-		public ActiveSpellData spellPrepared;
-
-		[JsonIgnore]
-		public ActiveSpellData spellActivelyCasting;
-
-		[JsonIgnore]
-		public ActiveSpellData spellPreviouslyCasting;
 
 		[JsonIgnore]
 		public bool IsActive { get; set; }
@@ -278,29 +183,18 @@ namespace DndCore
 				return spellPreviouslyCasting;
 			}
 		}
-
-		public bool forceShowSpell = false;
 		public bool deathSaveDeath1 = false;
 		public bool deathSaveDeath2 = false;
 		public bool deathSaveDeath3 = false;
 		public bool deathSaveLife1 = false;
 		public bool deathSaveLife2 = false;
 		public bool deathSaveLife3 = false;
-		public string diceWeAreRolling = string.Empty;
-		public string dieBackColor = "#ffffff";
-		public string dieFontColor = "#000000";
 
 		[JsonIgnore]
 		public string bubbleTextColor = "#000000";
-
-		public string dieRollEffectsThisRoll = string.Empty;
-		public string dieRollMessageThisRoll = string.Empty;
-		public int disadvantageDiceThisRoll = 0;
 		public Skills doubleProficiency = 0;
 		int enemyAdvantage;
 		public int ActionsPerTurn;
-
-		bool evaluatingExpression;
 		public int experiencePoints = 0;
 		public int headshotIndex;
 
@@ -309,19 +203,11 @@ namespace DndCore
 
 		[JsonIgnore]
 		public int _attackNum = 0;
-
-		public int hueShift = 0;
 		public string inspiration = string.Empty;
 		public double load = 0;
 		public double proficiencyBonus = 0;
 		public Skills proficientSkills = 0;
 		public Skills halfProficiency = 0;
-
-		[JsonIgnore]
-		RecalcOptions queuedRecalcOptions = RecalcOptions.None;
-
-		[JsonIgnore]
-		bool reapplyingActiveFeatures;
 
 		public string remainingHitDice = string.Empty;
 
@@ -329,7 +215,20 @@ namespace DndCore
 
 		public Ability savingAgainst = Ability.none;
 		public Ability savingThrowProficiency = 0;
-		public Ability spellCastingAbility = Ability.none;
+
+		public override int GetSpellcastingAbilityModifier()
+		{
+			switch (spellCastingAbility)
+			{
+				case Ability.wisdom: return (int)Math.Floor(wisdomMod);
+				case Ability.charisma: return (int)Math.Floor(charismaMod);
+				case Ability.constitution: return (int)Math.Floor(constitutionMod);
+				case Ability.dexterity: return (int)Math.Floor(dexterityMod);
+				case Ability.intelligence: return (int)Math.Floor(intelligenceMod);
+				case Ability.strength: return (int)Math.Floor(strengthMod);
+			}
+			return 0;
+		}
 
 		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
 		public string SpellCastingAbilityStr
@@ -340,18 +239,10 @@ namespace DndCore
 			}
 		}
 
-
-		[JsonIgnore]
-		CastedSpell spellToCast;
-
-		[JsonIgnore]
-		Dictionary<string, object> states = new Dictionary<string, object>();
-
 		[JsonIgnore]
 		public Creature targetedCreature;
 
 		public int targetedCreatureHitPoints = 0;  // TODO: Implement this + test cases.
-		public bool targetThisRollIsCreature = false;
 		public double tempAcrobaticsMod = 0;
 		public double tempAnimalHandlingMod = 0;
 		public double tempArcanaMod = 0;
@@ -377,19 +268,12 @@ namespace DndCore
 		public double tempStealthMod = 0;
 		public double tempSurvivalMod = 0;
 		public string totalHitDice = string.Empty;
-		public string trailingEffectsThisRoll = string.Empty;
 		public bool usesMagicThisRoll = false;
 
 		// TODO: When magic ammunition is loaded, set this to true before firing!
 		public bool usesMagicAmmunitionThisRoll = false;
 		public bool ammunitionOnFire = false;
 		public double weight = 0;
-
-		[JsonIgnore]
-		public List<CarriedAmmunition> CarriedAmmunition { get; private set; } = new List<CarriedAmmunition>();
-
-		[JsonIgnore]
-		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
 
 		public List<CharacterClass> Classes { get; set; } = new List<CharacterClass>();
 
@@ -687,12 +571,9 @@ namespace DndCore
 		}
 
 		[JsonIgnore]
-		public List<KnownSpell> KnownSpells { get; private set; } = new List<KnownSpell>();
-
-		[JsonIgnore]
 		public int leftMostPriority { get; set; }
 
-		public int level
+		public override int Level
 		{
 			get
 			{
@@ -713,7 +594,6 @@ namespace DndCore
 				return _passivePerception = 10 + wisdomMod + getProficiencyBonusForSkill(Skills.perception);
 			}
 		}
-		public int playerID { get; set; }
 
 		public bool playingNow { get; set; }
 
@@ -1158,121 +1038,12 @@ namespace DndCore
 			return characterClass;
 		}
 
-		public void AddDice(string diceStr)
-		{
-			additionalDice.Add(diceStr);
-			additionalDiceThisRoll = string.Join(",", additionalDice);
-		}
-
-		public void ReplaceDamageDice(string diceStr)
-		{
-			overrideReplaceDamageDice = diceStr;
-		}
-
-		public void AddDieRollEffects(string dieRollEffects)
-		{
-			if (!string.IsNullOrWhiteSpace(dieRollEffectsThisRoll))
-				dieRollEffectsThisRoll += ";";
-			dieRollEffectsThisRoll += dieRollEffects;
-		}
-
-		public void AddDieRollMessage(string dieRollMessage)
-		{
-			dieRollMessageThisRoll = dieRollMessage;
-		}
-
-		public void AddSpell(string spellStr)
-		{
-			if (string.IsNullOrWhiteSpace(spellStr))
-				return;
-			int totalCharges = int.MaxValue;
-			DndTimeSpan chargeResetSpan = DndTimeSpan.Zero;
-			string spellName = spellStr;
-			string itemName = string.Empty;
-			DndTimeSpan rechargesAt = DndTimeSpan.FromSeconds(0);  // midnight;
-			string durationStr = string.Empty;
-			if (spellName.Has("("))
-			{
-				spellName = spellName.EverythingBefore("(");
-				if (HasSpell(spellName))
-					return;
-
-				string parameterStr = spellStr.EverythingBetween("(", ")");
-				var parameters = parameterStr.Split(',');
-
-				for (int i = 0; i < parameters.Length; i++)
-				{
-					var parameter = parameters[i].Trim();
-					if (string.IsNullOrWhiteSpace(parameter))
-						continue;
-
-					if (i == 0)
-						itemName = parameter.EverythingBetween("\"", "\"");
-					else if (i == 1)
-					{
-						var chargeDetails = parameter.Split('/');
-						if (chargeDetails.Length == 2)
-						{
-							// TODO: Add support for both max charges and a variable recharge (e.g., "1d6 + 4") rolled at dawn.
-							int.TryParse(chargeDetails[0], out totalCharges);
-							durationStr = chargeDetails[1];
-							chargeResetSpan = DndTimeSpan.FromDurationStr(durationStr);
-							if (durationStr == "dawn")
-								rechargesAt = DndTimeSpan.FromHours(6);  // 6:00 am
-						}
-					}
-				}
-			}
-			else if (HasSpell(spellName))
-				return;
-			KnownSpell knownSpell = new KnownSpell();
-			knownSpell.SpellName = spellName;
-			knownSpell.RechargesAt = rechargesAt.GetTimeSpan();
-			knownSpell.TotalCharges = totalCharges;
-			knownSpell.ResetSpan = chargeResetSpan;
-			knownSpell.ItemName = itemName;
-			knownSpell.Player = this;
-			if (knownSpell.RechargesAt == TimeSpan.Zero && durationStr.HasSomething())
-			{
-				AddRechargeable(itemName, DndUtils.ToVarName(itemName), totalCharges, durationStr);
-			}
-
-
-			knownSpell.ChargesRemaining = totalCharges;  // setter Requires both ItemName and Player to be valid before setting.
-			KnownSpells.Add(knownSpell);
-		}
-
-		private bool HasSpell(string spellName)
-		{
-			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName) != null ||
-				 temporarySpells.FirstOrDefault(x => x.SpellName == spellName) != null;
-		}
-
-		public void AddSpellsFrom(string spellList)
-		{
-			if (string.IsNullOrWhiteSpace(spellList))
-				return;
-
-			string[] spellsStrs = spellList.Split(';');
-			foreach (var spell in spellsStrs)
-			{
-				AddSpell(spell.Trim());
-			}
-		}
-
 		public void RemoveSpell(string name)
 		{
 			KnownSpell foundSpell = KnownSpells.FirstOrDefault(x => x.SpellName == name);
 			if (foundSpell == null)
 				return;
 			KnownSpells.Remove(foundSpell);
-		}
-
-		public void AddTrailingEffects(string trailingEffects)
-		{
-			if (!string.IsNullOrWhiteSpace(trailingEffectsThisRoll))
-				trailingEffectsThisRoll += ";";
-			trailingEffectsThisRoll += trailingEffects;
 		}
 
 		public CarriedWeapon AddWeapon(string weaponStr)
@@ -1365,25 +1136,6 @@ namespace DndCore
 			// TODO: Implement this!
 		}
 
-		protected virtual void OnConcentratedSpellChanged(object sender, SpellChangedEventArgs e)
-		{
-			ConcentratedSpellChanged?.Invoke(sender, e);
-		}
-
-		public void BreakConcentration()
-		{
-			if (concentratedSpell == null)
-				return;
-
-			if (concentratedSpell.Active)
-			{
-				Game.Dispel(concentratedSpell);
-				concentratedSpell.Dispel();
-			}
-			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.BrokeConcentration));
-			concentratedSpell = null;
-		}
-
 		public CastedSpell CastTest(Spell spell, Creature targetCreature = null)
 		{
 			spellToCast = null;
@@ -1392,40 +1144,6 @@ namespace DndCore
 				spellToCast = Game.Cast(this, spell, targetCreature);
 
 			return spellToCast;
-		}
-
-		public void CastingSpellRequiringConcentration(CastedSpell spell)
-		{
-			if (concentratedSpell?.Spell.Name == spell?.Spell.Name)
-				return;
-			BreakConcentration();
-			spell.Active = true;
-			concentratedSpell = spell;
-			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustCast));
-		}
-
-		public void CheckConcentration(CastedSpell castedSpell)
-		{
-			if (castedSpell.Spell.RequiresConcentration)
-				CastingSpellRequiringConcentration(castedSpell);
-		}
-
-		public void ShowPlayerCasting(CastedSpell castedSpell)
-		{
-			forceShowSpell = true;
-			spellPreviouslyCasting = null;
-			spellPrepared = null;
-			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
-			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
-		}
-
-		public void PrepareSpell(CastedSpell castedSpell)
-		{
-			forceShowSpell = true;
-			spellPreviouslyCasting = null;
-			spellActivelyCasting = null;
-			spellPrepared = ActiveSpellData.FromCastedSpell(castedSpell);
-			OnStateChanged(this, new StateChangedEventArgs("spellPrepared", null, null));
 		}
 
 		public void ClearAllCasting()
@@ -1449,13 +1167,6 @@ namespace DndCore
 			states.Clear();
 		}
 
-		public void CompletingExpressionEvaluation()
-		{
-			evaluatingExpression = false;
-			Recalculate(queuedRecalcOptions);
-			queuedRecalcOptions = RecalcOptions.None;
-		}
-
 		public void DeactivateFeature(string featureNameStr)
 		{
 			AssignedFeature foundFeature = features.FirstOrDefault(x => DndUtils.GetCleanItemName(x.Feature.Name.ToLower()) == DndUtils.GetCleanItemName(featureNameStr).ToLower());
@@ -1463,17 +1174,6 @@ namespace DndCore
 				return;
 
 			foundFeature.Deactivate();
-		}
-
-		public void Dispel(CastedSpell castedSpell)
-		{
-			if (Game != null)
-				Game.Dispel(castedSpell);
-			if (concentratedSpell?.Spell?.Name == castedSpell?.Spell?.Name)
-			{
-				OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustDispelled));
-				concentratedSpell = null;
-			}
 		}
 
 		public void EndAction()
@@ -1655,18 +1355,6 @@ namespace DndCore
 		}
 
 		[JsonIgnore]
-		public int SpellcastingAbilityModifier
-		{
-			get
-			{
-				return GetSpellcastingAbilityModifier();
-			}
-			set
-			{
-			}
-		}
-
-		[JsonIgnore]
 		public string SpellcastingAbilityModifierStr
 		{
 			get
@@ -1679,20 +1367,6 @@ namespace DndCore
 			set
 			{
 			}
-		}
-
-		public int GetSpellcastingAbilityModifier()
-		{
-			switch (spellCastingAbility)
-			{
-				case Ability.wisdom: return (int)Math.Floor(wisdomMod);
-				case Ability.charisma: return (int)Math.Floor(charismaMod);
-				case Ability.constitution: return (int)Math.Floor(constitutionMod);
-				case Ability.dexterity: return (int)Math.Floor(dexterityMod);
-				case Ability.intelligence: return (int)Math.Floor(intelligenceMod);
-				case Ability.strength: return (int)Math.Floor(strengthMod);
-			}
-			return 0;
 		}
 
 		public int GetSpellSaveDC()
@@ -1740,29 +1414,6 @@ namespace DndCore
 			}
 		}
 
-		public object GetState(string key)
-		{
-			if (states.ContainsKey(key))
-				return states[key];
-			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key);
-			if (rechargeable != null)
-				return rechargeable.ChargesUsed;
-
-			rechargeable = rechargeables.FirstOrDefault(x => x.VarName + STR_RechargeableMaxSuffix == key);
-			if (rechargeable != null)
-				return rechargeable.TotalCharges;
-
-			return null;
-		}
-
-		int GetIntState(string key)
-		{
-			object result = GetState(key);
-			if (result == null)
-				return 0;
-			return (int)result;
-		}
-
 		// TODO: Implement TargetIsFlanked when map is built and integrated into the game.
 		[Ask("Target is flanked")]
 		public bool TargetIsFlanked { get; set; }
@@ -1788,16 +1439,6 @@ namespace DndCore
 
 				return VantageKind.Normal;
 			}
-		}
-
-		public void GiveAdvantageThisRoll()
-		{
-			advantageDiceThisRoll++;
-		}
-
-		public void GiveDisadvantageThisRoll()
-		{
-			disadvantageDiceThisRoll++;
 		}
 
 		bool hasDoubleProficiencyBonusForSkill(Skills skill)
@@ -1827,11 +1468,6 @@ namespace DndCore
 		bool hasSavingThrowProficiency(Ability ability)
 		{
 			return (savingThrowProficiency & ability) == ability;
-		}
-
-		public bool HoldsState(string key)
-		{
-			return states.ContainsKey(key);
 		}
 
 		public override void ChangeTempHP(double deltaTempHp)
@@ -1945,33 +1581,9 @@ namespace DndCore
 			}
 		}
 
-		protected virtual void OnRollDiceRequest(object sender, RollDiceEventArgs ea)
-		{
-			RollDiceRequest?.Invoke(sender, ea);
-		}
-
 		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
 		{
 			SpellDispelled?.Invoke(sender, ea);
-		}
-
-		public void AboutToCompleteCast()
-		{
-
-		}
-
-		public void CompleteCast()
-		{
-			CastedSpell spellToComplete = spellToCast;
-			if (spellToComplete == null && !Game.PlayerIsCastingSpell(concentratedSpell, playerID))
-				spellToComplete = concentratedSpell;
-			if (spellToComplete == null)
-				return;
-
-			if (Game != null)
-				Game.CompleteCast(this, spellToComplete);
-
-			spellToCast = null;
 		}
 
 		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
@@ -2019,61 +1631,6 @@ namespace DndCore
 			}
 		}
 
-		public void Recalculate(RecalcOptions recalcOptions)
-		{
-			//if (recalcOptions == RecalcOptions.None)
-			//	return;
-			if (reapplyingActiveFeatures || evaluatingExpression || Expressions.IsUpdating)
-			{
-				queuedRecalcOptions |= recalcOptions;
-				return;
-			}
-
-			if ((recalcOptions & RecalcOptions.TurnBasedState) == RecalcOptions.TurnBasedState)
-			{
-				StartTurnResetState();
-			}
-			else if ((recalcOptions & RecalcOptions.ActionBasedState) == RecalcOptions.ActionBasedState)
-			{
-				ResetPlayerActionBasedState();
-			}
-
-			if ((recalcOptions & RecalcOptions.Resistance) == RecalcOptions.Resistance)
-			{
-				ResetPlayerResistance();
-			}
-
-			// ReapplyActiveFeatures(false);  // Causes perf issue in characters with features that call Recalculate(...)
-		}
-
-		public void RemoveStateVar(string varName)
-		{
-			if (states.ContainsKey(varName))
-				states.Remove(varName);
-		}
-
-		public void ResetPlayerActionBasedState()
-		{
-			ActiveTarget = null;
-			attackingAbility = Ability.none;
-			attackingAbilityModifier = 0;
-			attackingType = AttackType.None;
-			attackingKind = AttackKind.Any;
-			diceWeAreRolling = string.Empty;
-			targetThisRollIsCreature = false;
-			damageOffsetThisRoll = 0;
-			attackOffsetThisRoll = 0;
-			advantageDiceThisRoll = 0;
-			attackingAbilityModifierBonusThisRoll = 0;  // This is only assigned from the expressions evaluator.
-			disadvantageDiceThisRoll = 0;
-		}
-
-		void ResetPlayerResistance()
-		{
-			// TODO: implement this.
-			//damageResistance
-		}
-
 		// TODO: Call after a successful roll.
 		public void ResetPlayerRollBasedState()
 		{
@@ -2089,11 +1646,6 @@ namespace DndCore
 			trailingEffectsThisRoll = string.Empty;
 			dieRollEffectsThisRoll = string.Empty;
 			dieRollMessageThisRoll = string.Empty;
-		}
-
-		public void RollDiceNow()
-		{
-			OnRollDiceRequest(this, new RollDiceEventArgs(diceWeAreRolling));
 		}
 
 		public void RollIsComplete(bool hitWasCritical, List<Creature> targetedCreatures = null)
@@ -2136,47 +1688,6 @@ namespace DndCore
 			baseStrength = strength;
 		}
 
-		public void SetState(string key, object newValue)
-		{
-			if (states.ContainsKey(key))
-			{
-				if (states[key] == newValue)
-					return;
-				object oldState = states[key];
-				states[key] = newValue;
-				OnStateChanged(key, oldState, newValue);
-			}
-			else
-			{
-				Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key);
-				if (rechargeable != null)
-				{
-					int newIntValue = (int)newValue;
-					if (newIntValue == rechargeable.ChargesUsed)
-						return;
-					int oldValue = rechargeable.ChargesUsed;
-					rechargeable.ChargesUsed = newIntValue;
-					OnStateChanged(key, oldValue, newValue, true);
-					return;
-				}
-
-				rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key + STR_RechargeableMaxSuffix);
-				if (rechargeable != null)
-				{
-					int newIntValue = (int)newValue;
-					if (newIntValue == rechargeable.TotalCharges)
-						return;
-					int oldValue = rechargeable.TotalCharges;
-					rechargeable.TotalCharges = newIntValue;
-					OnStateChanged(key + STR_RechargeableMaxSuffix, oldValue, newValue, false); // max value is not considered a rechargeable, as the max value does not change and has no corresponding UI key.
-					return;
-				}
-
-				states.Add(key, newValue);
-				OnStateChanged(key, null, newValue);
-			}
-		}
-
 		public bool SpellIsActive(string spellName)
 		{
 			List<CastedSpell> spells = GetActiveSpells();
@@ -2188,11 +1699,6 @@ namespace DndCore
 		public void StartAction()
 		{
 			ResetPlayerActionBasedState();
-		}
-
-		public void StartingExpressionEvaluation()
-		{
-			evaluatingExpression = true;
 		}
 
 		public void TestStartTurn()
@@ -2299,13 +1805,6 @@ namespace DndCore
 			}
 		}
 
-		public void AddRechargeable(string displayName, string varName, int maxValue, string cycle)
-		{
-			if (maxValue == 0)
-				return;
-			rechargeables.Add(new Rechargeable(displayName, varName, maxValue, cycle));
-		}
-
 		public void AddSpellSlots()
 		{
 			int[] spellSlotLevels = GetSpellSlotLevels();
@@ -2318,12 +1817,6 @@ namespace DndCore
 			AddRechargeable("Spell Slots 7", "SpellSlots7", spellSlotLevels[7], "long rest");
 			AddRechargeable("Spell Slots 8", "SpellSlots8", spellSlotLevels[8], "long rest");
 			AddRechargeable("Spell Slots 9", "SpellSlots9", spellSlotLevels[9], "long rest");
-		}
-
-		public void UseSpellSlot(int spellSlotLevel)
-		{
-			string key = DndUtils.GetSpellSlotLevelKey(spellSlotLevel);
-			SetState(key, GetIntState(key) + 1);
 		}
 
 		public void RechargeAfterShortRest()
@@ -2433,9 +1926,6 @@ namespace DndCore
 		[JsonIgnore]
 		public int NumWildMagicChecks { get; set; }
 
-		[JsonIgnore]
-		public Target ActiveTarget { get; set; }
-
 		public bool ShowingNameplate { get; set; } = true;
 
 		[JsonIgnore]
@@ -2447,27 +1937,6 @@ namespace DndCore
 		[JsonIgnore]
 		public string playerShortcut { get; set; }
 
-		public void SetRemainingChargesOnItem(string itemName, int value)
-		{
-			string varName = DndUtils.ToVarName(itemName);
-			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
-			if (rechargeable != null && rechargeable.ChargesRemaining != value)
-			{
-				int oldChargesUsed = rechargeable.ChargesUsed;
-				rechargeable.SetRemainingCharges(value);
-				OnStateChanged(this, new StateChangedEventArgs(rechargeable.VarName, oldChargesUsed, rechargeable.ChargesUsed, true));
-			}
-		}
-
-		public int GetRemainingChargesOnItem(string itemName)
-		{
-			string varName = DndUtils.ToVarName(itemName);
-			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
-			if (rechargeable != null)
-				return rechargeable.ChargesRemaining;
-			return 0;
-		}
-
 		protected virtual void OnRequestMessageToAll(string message)
 		{
 			RequestMessageToAll?.Invoke(this, new MessageEventArgs(message));
@@ -2475,7 +1944,7 @@ namespace DndCore
 
 		public int GetSpellcastingLevel()
 		{
-			return level;
+			return Level;
 			//foreach (CharacterClass characterClass in Classes)
 			//{
 			//	switch (characterClass.Class)
@@ -2827,9 +2296,6 @@ namespace DndCore
 			AddEvents(CreateFeatureEvents(this));
 			AddEvents(CreateSpellEvents(this));
 		}
-
-		[JsonIgnore]
-		public List<EventCategory> eventCategories = new List<EventCategory>();
 		public void AddEvents(EventCategory eventCategory)
 		{
 			eventCategories.Add(eventCategory);
@@ -2859,65 +2325,6 @@ namespace DndCore
 		{
 			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName);
 		}
-		public void AddSpellHitEffect(string effectName = "",
-			int hue = 0, int saturation = 100, int brightness = 100,
-			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
-			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100, int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
-		{
-			additionalSpellHitEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
-				scale, rotation, autoRotation, timeOffset,
-				secondaryHue, secondarySaturation, secondaryBrightness, xOffset, yOffset, velocityX, velocityY));
-		}
-
-		public void AddSpellCastEffect(string effectName = "",
-			int hue = 0, int saturation = 100, int brightness = 100,
-			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
-			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100, int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
-		{
-			additionalSpellCastEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
-				scale, rotation, autoRotation, timeOffset,
-				secondaryHue, secondarySaturation, secondaryBrightness, xOffset, yOffset, velocityX, velocityY));
-		}
-
-		public void AddSpellHitSoundEffect(string fileName, int timeOffset = 0)
-		{
-			additionalSpellHitSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
-		}
-		public void AddSpellCastSoundEffect(string fileName, int timeOffset = 0)
-		{
-			additionalSpellCastSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
-		}
-
-		public void ClearAdditionalSpellEffects()
-		{
-			additionalSpellHitEffects.Clear();
-			additionalSpellHitSoundEffects.Clear();
-			additionalSpellCastEffects.Clear();
-			additionalSpellCastSoundEffects.Clear();
-		}
-		EventData FindEvent(EventType eventType, string parentName, string eventName)
-		{
-			foreach (EventCategory eventCategory in eventCategories)
-			{
-				EventData foundEvent = eventCategory.FindEvent(eventType, parentName, eventName);
-				if (foundEvent != null)
-					return foundEvent;
-			}
-			return null;
-		}
-		public bool NeedToBreakBeforeFiringEvent(EventType eventType, string parentName, [CallerMemberName] string eventName = "")
-		{
-			const string TriggerMethodPrefix = "Trigger";
-			if (!eventName.StartsWith(TriggerMethodPrefix))
-				return false;
-			string realEventName = "On" + eventName.Substring(TriggerMethodPrefix.Length);
-
-			EventData foundEvent = FindEvent(eventType, parentName, realEventName);
-			if (foundEvent == null)
-				return false;
-
-			return foundEvent.BreakAtStart;
-		}
 
 		public void PreparingSpell()
 		{
@@ -2927,10 +2334,9 @@ namespace DndCore
 		}
 
 		public event CastedSpellEventHandler SpellDispelled;
-		public event RollDiceEventHandler RollDiceRequest;
 		public event MessageEventHandler RequestMessageToAll;
 
-		public static void SetBoolProperty(Character player, string memberName, bool value)
+		public static void SetBoolProperty(Creature player, string memberName, bool value)
 		{
 			if (player == null)
 				return;
@@ -3048,13 +2454,6 @@ namespace DndCore
 			}
 		}
 
-		public Target ChooseWeapon(string weaponFilter = null)
-		{
-			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this, weaponFilter);
-			OnPickWeapon(this, pickWeaponEventArgs);
-			return new Target(pickWeaponEventArgs.Weapon);
-		}
-
 		public CarriedAmmunition ChooseAmmunition(string ammunitionKind)
 		{
 			PickAmmunitionEventArgs pickAmmunitionEventArgs = new PickAmmunitionEventArgs(this, ammunitionKind);
@@ -3065,40 +2464,6 @@ namespace DndCore
 		public bool HasAmmunition(string kind)
 		{
 			return GetAmmunitionCount(kind) > 0;
-		}
-
-		[JsonIgnore]
-		public List<string> Languages { get; set; }
-
-		public void AddLanguage(string language)
-		{
-			if (Languages == null)
-				Languages = new List<string>();
-			if (Languages.Contains(language))
-				return;
-			Languages.AddRange(language.Split(',').Select(x => x.Trim()).Except(Languages).Distinct());
-		}
-
-		public void AddLanguages(string languageStr)
-		{
-			string[] languages = languageStr.Split(',');
-
-			foreach (string language in languages)
-				AddLanguage(language);
-		}
-
-		protected virtual void OnPlayerShowState(object sender, PlayerShowStateEventArgs ea)
-		{
-			PlayerShowState?.Invoke(sender, ea);
-		}
-
-		public void ShowState(string message, string fillColor, string outlineColor, int delayMs = 0)
-		{
-			OnPlayerShowState(this, new PlayerShowStateEventArgs(this, message, fillColor, outlineColor, delayMs));
-		}
-		public void SetNextAnswer(string answer)
-		{
-			NextAnswer = answer;
 		}
 
 		public override double Strength
@@ -3202,14 +2567,15 @@ namespace DndCore
 		{
 			return new CanCastResult(Location, spell.Range);
 		}
-
-		public void AddShortcutToQueue(string shortcutName, bool rollImmediately)
-		{
-			Game.AddShortcutToQueue(this, shortcutName, rollImmediately);
-		}
 		public CharacterClass FirstSpellCastingClass()
 		{
 			return Classes.FirstOrDefault(x => DndUtils.CanCastSpells(x.Name));
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is Character character &&
+						 spellCastingAbility == character.spellCastingAbility;
 		}
 	}
 }

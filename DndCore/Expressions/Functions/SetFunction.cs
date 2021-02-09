@@ -16,7 +16,7 @@ namespace DndCore
 	{
 		public override string Name => "Set";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 2);
 

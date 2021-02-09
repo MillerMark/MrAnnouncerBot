@@ -110,7 +110,7 @@ namespace DndCore
 		{
 			if (string.IsNullOrWhiteSpace(eventCode))
 				return;
-			Expressions.Do(eventCode, magic.Caster as Character, Target.FromMagic(magic), (CastedSpell)magic.CastedSpell, dice, magic);
+			Expressions.Do(eventCode, magic.Caster as Character, Target.FromMagic(magic), magic.CastedSpell, dice, magic);
 		}
 		
 

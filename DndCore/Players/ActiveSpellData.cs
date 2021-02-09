@@ -70,7 +70,7 @@ namespace DndCore
 			bool castingPowerComesFromPlayerLevel = !string.IsNullOrEmpty(spell.BonusThreshold) && spell.BonusThreshold.StartsWith("c");
 
 			ActiveSpellData activeSpellData = new ActiveSpellData(spell.Name,
-				castedSpell.SpellSlotLevel, castedSpell.Level, castedSpell.SpellCaster.level,
+				castedSpell.SpellSlotLevel, castedSpell.Level, castedSpell.SpellCaster.Level,
 				spell.CastingTimeStr, spell.RangeStr, spell.ComponentsStr,
 				spell.DurationStr, spell.SchoolOfMagic, spell.RequiresConcentration,
 				spell.MorePowerfulWhenCastAtHigherLevels, castingPowerComesFromPlayerLevel);

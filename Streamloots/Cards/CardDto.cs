@@ -80,6 +80,8 @@ namespace Streamloots
 		{
 			get
 			{
+				if (Card == null)
+					return false;
 				return Card.message.Contains("!" + CMD_RollDie);
 			}
 		}

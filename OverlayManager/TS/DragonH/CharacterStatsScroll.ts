@@ -862,7 +862,7 @@
 		//console.log('this.state: ' + ScrollState[this.state]);
 
 		let changedActiveCharacter = false;
-		if (!this.activeCharacter || this.activeCharacter.playerID !== playerID) {
+		if (!this.activeCharacter || this.activeCharacter.IntId !== playerID) {
 			//console.log('changing player!!!');
 			this.clearEmphasis();
 			if (newPageIsValid) {
@@ -902,7 +902,7 @@
 	setActiveCharacter(playerID: number): void {
 		for (let i = 0; i < this.characters.length; i++) {
 			const thisCharacter: Character = this.characters[i];
-			if (thisCharacter.playerID === playerID) {
+			if (thisCharacter.IntId === playerID) {
 				this.activeCharacter = thisCharacter;
 				return;
 			}
@@ -912,7 +912,7 @@
 	getCharacter(playerID: number): Character {
 		for (let i = 0; i < this.characters.length; i++) {
 			const thisCharacter: Character = this.characters[i];
-			if (thisCharacter.playerID === playerID) {
+			if (thisCharacter.IntId === playerID) {
 				return thisCharacter;
 			}
 		}

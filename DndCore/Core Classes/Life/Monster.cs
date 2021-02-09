@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using GoogleHelper;
+using Newtonsoft.Json;
 
 namespace DndCore
 {
@@ -9,6 +10,33 @@ namespace DndCore
 	[TabName("Monsters")]
 	public class Monster : Creature
 	{
+		[JsonIgnore]
+		public override int Level => (int)Math.Min(21, Math.Ceiling(challengeRating));
+
+		public override int GetSpellcastingAbilityModifier()
+		{
+			switch (spellCastingAbility)
+			{
+				case Ability.wisdom: return (int)Math.Floor(wisdomMod);
+				case Ability.charisma: return (int)Math.Floor(charismaMod);
+				case Ability.constitution: return (int)Math.Floor(constitutionMod);
+				case Ability.dexterity: return (int)Math.Floor(dexterityMod);
+				case Ability.intelligence: return (int)Math.Floor(intelligenceMod);
+				case Ability.strength: return (int)Math.Floor(strengthMod);
+			}
+			return 0;
+		}
+
+		int _intId;
+
+		[JsonIgnore]
+		public override int IntId { get { return _intId; } }
+
+		public void SetIntId(int id)
+		{
+			_intId = id;
+		}
+
 		[Column]
 		[Indexer]
 		public string Kind { get; set; }

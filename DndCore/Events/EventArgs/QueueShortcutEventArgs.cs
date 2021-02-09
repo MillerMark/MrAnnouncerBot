@@ -5,7 +5,7 @@ namespace DndCore
 {
 	public class QueueShortcutEventArgs : EventArgs
 	{
-		public QueueShortcutEventArgs(Character player, string shortcutName, bool rollImmediately)
+		public QueueShortcutEventArgs(Creature player, string shortcutName, bool rollImmediately)
 		{
 			Player = player;
 			RollImmediately = rollImmediately;
@@ -14,6 +14,6 @@ namespace DndCore
 
 		public string ShortcutName { get; set; }
 		public bool RollImmediately { get; set; }
-		public Character Player { get; set; }
+		public Creature Player { get; set; }
 	}
 }

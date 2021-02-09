@@ -7,10 +7,10 @@ namespace DndCore
 
 	public class DndAlarm
 	{
-		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name, int turnIndex, Character player, object data = null)
+		public DndAlarm(DndTimeClock dndTimeClock, DateTime triggerTime, string name, int turnIndex, Creature creature, object data = null)
 		{
 			TurnIndex = turnIndex;
-			Player = player;
+			Creature = creature;
 			Data = data;
 			Name = name;
 			TriggerTime = triggerTime;
@@ -22,7 +22,7 @@ namespace DndCore
 		public int TurnIndex { get; set; }
 		public string Name { get; set; }
 		public object Data { get; set; }
-		public Character Player { get; set; }
+		public Creature Creature { get; set; }
 		public RoundSpecifier RoundSpecifier { get; set; } = RoundSpecifier.None;
 		
 		public void FireAlarm(DndTimeClock dndTimeClock)

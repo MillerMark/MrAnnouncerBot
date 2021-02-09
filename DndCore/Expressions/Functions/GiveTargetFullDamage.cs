@@ -10,13 +10,13 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "GiveTargetFullDamage";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 0);
 			return ApplyDamage(args, evaluator, player, target, 1);
 		}
 
-		public static object ApplyDamage(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, double multiplier = 1)
+		public static object ApplyDamage(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, double multiplier = 1)
 		{
 			Dictionary<DamageType, int> latestDamage = Expressions.GetCustomData<Dictionary<DamageType, int>>(evaluator.Variables);
 			if (latestDamage == null)

@@ -35,7 +35,7 @@ namespace DndCore
 			}
 		}
 
-		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
 		{
 			if (player == null)
 				return false;
@@ -50,7 +50,7 @@ namespace DndCore
 			return player.HoldsState(tokenName) || tokenName.StartsWith("_"); // ;
 		}
 
-		object AskValue(Character player, string caption, object currentValue, string memberName, string memberTypeName)
+		object AskValue(Creature player, string caption, object currentValue, string memberName, string memberTypeName)
 		{
 			if (askValueEventArgs == null)
 				askValueEventArgs = new AskValueEventArgs(player, caption, memberName, memberTypeName, currentValue);
@@ -67,7 +67,7 @@ namespace DndCore
 			return askValueEventArgs.Value;
 		}
 
-		void CheckValue(Character player, MemberInfo member, ref object value)
+		void CheckValue(Creature player, MemberInfo member, ref object value)
 		{
 			AskAttribute askAttr = member?.Get<AskAttribute>();
 			if (askAttr == null)
@@ -83,7 +83,7 @@ namespace DndCore
 			value = AskValue(player, askCaption, value, member.Name, memberType);
 		}
 
-		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
+		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
 		{
 			if (fieldNames.IndexOf(variableName) >= 0)
 			{

@@ -10,7 +10,7 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "AddSpellCastSound";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1, 2);
 			if (player != null)

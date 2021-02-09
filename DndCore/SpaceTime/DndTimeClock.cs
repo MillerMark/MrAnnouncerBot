@@ -293,14 +293,14 @@ namespace DndCore
 			RemoveExpiredAlarms();
 		}
 
-		private void TriggerAlarm(DndAlarm alarm, Character player = null, RoundSpecifier roundSpecifier = RoundSpecifier.None)
+		private void TriggerAlarm(DndAlarm alarm, Creature player = null, RoundSpecifier roundSpecifier = RoundSpecifier.None)
 		{
 			if (roundSpecifier != alarm.RoundSpecifier)
 				return;
 
 			if (Time == alarm.TriggerTime && alarm.RoundSpecifier != RoundSpecifier.None)
 			{
-				if (player != alarm.Player)
+				if (player != alarm.Creature)
 					return;
 			}
 
@@ -358,7 +358,7 @@ namespace DndCore
 		List<DndAlarm> alarms = new List<DndAlarm>();
 		List<DndDailyAlarm> dailyAlarms = new List<DndDailyAlarm>();
 
-		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Character player = null, object data = null, int turnIndex = -1)
+		public DndAlarm CreateAlarm(TimeSpan fromNow, string name, Creature player = null, object data = null, int turnIndex = -1)
 		{
 			if (fromNow.TotalSeconds <= 0)
 				return null;

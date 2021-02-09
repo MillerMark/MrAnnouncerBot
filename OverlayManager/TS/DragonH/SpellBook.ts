@@ -568,7 +568,7 @@
 		this.lastSpellName = spell.name;
 
 		this.lastSpellSlotLevel = spell.spellSlotLevel;
-		this.lastPlayerId = player.playerID;
+		this.lastPlayerId = player.IntId;
 		let scale = 1;
 		while (scale < 3 && !this.createSpellPage(context, x, y, spell, scale)) {
 			scale += 0.01;

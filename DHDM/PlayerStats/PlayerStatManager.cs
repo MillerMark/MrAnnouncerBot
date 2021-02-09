@@ -16,13 +16,13 @@ namespace DHDM
 		public int ActiveTurnCreatureID { get; set; }  // Negative numbers are for in-game creatures (not players)
 		
 
-		List<PlayerStats> players;
-		public List<PlayerStats> Players
+		List<CreatureStats> players;
+		public List<CreatureStats> Players
 		{
 			get
 			{
 				if (players == null)
-					players = new List<PlayerStats>();
+					players = new List<CreatureStats>();
 				return players;
 			}
 
@@ -40,20 +40,20 @@ namespace DHDM
 		public bool AnyoneIsReadyToRoll => Players.FirstOrDefault(x => x.ReadyToRollDice) != null;
 		
 
-		public PlayerStats GetPlayerStats(int playerId)
+		public CreatureStats GetPlayerStats(int creatureId)
 		{
-			PlayerStats foundPlayer = Players.FirstOrDefault(x => x.PlayerId == playerId);
+			CreatureStats foundPlayer = Players.FirstOrDefault(x => x.CreatureId == creatureId);
 			if (foundPlayer != null)
 				return foundPlayer;
 
-			PlayerStats playerState = new PlayerStats(playerId);
+			CreatureStats playerState = new CreatureStats(creatureId);
 			Players.Add(playerState);
 			return playerState;
 		}
 
 		public void ToggleReadyRollD20(int playerId)
 		{
-			PlayerStats playerStats = GetPlayerStats(playerId);
+			CreatureStats playerStats = GetPlayerStats(playerId);
 			playerStats.DiceStack.Clear();
 			playerStats.AddD20();
 
@@ -65,7 +65,7 @@ namespace DHDM
 
 		public void ToggleCondition(int playerId, Conditions conditions)
 		{
-			PlayerStats playerStats = GetPlayerStats(playerId);
+			CreatureStats playerStats = GetPlayerStats(playerId);
 			if (playerStats.Conditions.HasFlag(conditions))  // Bit is set.
 				playerStats.Conditions &= ~conditions;  // clear the bit
 			else
@@ -74,13 +74,13 @@ namespace DHDM
 
 		public void ClearConditions(int playerId)
 		{
-			PlayerStats playerStats = GetPlayerStats(playerId);
+			CreatureStats playerStats = GetPlayerStats(playerId);
 			playerStats.Conditions = Conditions.None;
 		}
 
 		public void SetReadyRollDice(int playerId, bool newValue, DieRollDetails dieRollDetails)
 		{
-			PlayerStats playerState = GetPlayerStats(playerId);
+			CreatureStats playerState = GetPlayerStats(playerId);
 			playerState.ReadyToRollDice = newValue;
 			playerState.ClearDiceStack();
 			foreach (Roll roll in dieRollDetails.Rolls)
@@ -89,8 +89,7 @@ namespace DHDM
 
 		public void ReadyRollVantage(int playerId, VantageKind vantage)
 		{
-			PlayerStats playerState = GetPlayerStats(playerId);
-
+			CreatureStats playerState = GetPlayerStats(playerId);
 			playerState.ReadyToRollDice = true;
 			if (playerState.DiceStack.Count == 0)
 				playerState.AddD20();
@@ -99,12 +98,12 @@ namespace DHDM
 
 		public List<int> GetReadyToRollPlayerIds()
 		{
-			return Players.Where(x => x.ReadyToRollDice).Select(x => x.PlayerId).ToList();
+			return Players.Where(x => x.ReadyToRollDice).Select(x => x.CreatureId).ToList();
 		}
 		
 		public void ClearReadyToRollState()
 		{
-			foreach (PlayerStats playerStats in Players)
+			foreach (CreatureStats playerStats in Players)
 			{
 				playerStats.ReadyToRollDice = false;
 				playerStats.Vantage = VantageKind.Normal;
@@ -116,7 +115,7 @@ namespace DHDM
 			bool newReadyState = false;
 			if (data == "All")
 				newReadyState = true;
-			foreach (PlayerStats playerStats in Players)
+			foreach (CreatureStats playerStats in Players)
 			{
 				playerStats.ClearDiceStack();
 				playerStats.Vantage = VantageKind.Normal;
@@ -139,25 +138,23 @@ namespace DHDM
 
 		public void ToggleTarget(int playerId)
 		{
-			PlayerStats playerStats = GetPlayerStats(playerId);
-			if (playerStats == null)
-				return;
+			CreatureStats playerStats = GetPlayerStats(playerId);
 			playerStats.IsTargeted = !playerStats.IsTargeted;
 		}
 
 		public void ClearAllTargets()
 		{
-			foreach (PlayerStats playerStats in Players)
+			foreach (CreatureStats playerStats in Players)
 				playerStats.IsTargeted = false;
 		}
 
 		public void TargetAll()
 		{
-			foreach (PlayerStats playerStats in Players)
+			foreach (CreatureStats playerStats in Players)
 				playerStats.IsTargeted = true;
 		}
 
-		public List<PlayerStats> GetTargeted()
+		public List<CreatureStats> GetTargeted()
 		{
 			return Players.Where(x => x.IsTargeted).ToList();
 		}

@@ -9,13 +9,13 @@ namespace DndCore
 	public class DndProcEvaluator : DndFunction
 	{
 		ProcDto proc;
-		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
 		{
 			proc = AllProcs.Get(tokenName);
 			return proc != null;
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			if (proc == null)
 				return null;

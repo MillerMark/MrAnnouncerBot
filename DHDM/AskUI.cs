@@ -11,7 +11,7 @@ namespace DHDM
 		public object Value { get; set; }
 		public string MemberName { get; set; }
 		public string MemberTypeName { get; set; }
-		public Character Player { get; set; }
+		public Creature Player { get; set; }
 		public AskUI()
 		{
 

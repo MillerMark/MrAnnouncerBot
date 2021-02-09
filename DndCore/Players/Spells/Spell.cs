@@ -485,87 +485,87 @@ namespace DndCore
 			//	(OriginalDieStr == null || !OriginalDieStr.Trim().StartsWith("+")));
 		}
 
-		public void TriggerPreparing(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerPreparing(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPreparing, player, target, castedSpell);
 		}
 
-		public void TriggerPreparationComplete(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerPreparationComplete(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPreparationComplete, player, target, castedSpell);
 		}
 
-		public void TriggerTargetFailsSave(Character player, Target target, CastedSpell castedSpell, object customData = null)
+		public void TriggerTargetFailsSave(Creature player, Target target, CastedSpell castedSpell, object customData = null)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnTargetFailsSave, player, target, castedSpell, null, customData);
 		}
 
-		public void TriggerTargetSaves(Character player, Target target, CastedSpell castedSpell, object customData = null)
+		public void TriggerTargetSaves(Creature player, Target target, CastedSpell castedSpell, object customData = null)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnTargetSaves, player, target, castedSpell, null, customData);
 		}
 
-		public void TriggerGetAttackAbility(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerGetAttackAbility(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnGetAttackAbility, player, target, castedSpell);
 		}
 
-		public void TriggerCast(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerCast(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnCast, player, target, castedSpell);
 		}
 
-		public void TriggerValidate(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerValidate(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnValidate, player, target, castedSpell);
 		}
 
-		public void TriggerReceived(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerReceived(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnReceived, player, target, castedSpell);
 		}
 
-		public void TriggerDispel(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerDispel(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnDispel, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerPreparesAttack(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerPlayerPreparesAttack(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPlayerPreparesAttack, player, target, castedSpell);
 		}
 
-		public void TriggerDieRollStopped(Character player, Target target, CastedSpell castedSpell, DiceStoppedRollingData dice)
+		public void TriggerDieRollStopped(Creature player, Target target, CastedSpell castedSpell, DiceStoppedRollingData dice)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnDieRollStopped, player, target, castedSpell, dice);
 		}
 
-		public void TriggerPlayerAttacks(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerPlayerAttacks(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPlayerAttacks, player, target, castedSpell);
 		}
 
-		public void TriggerPlayerHitsTarget(Character player, Target target, CastedSpell castedSpell)
+		public void TriggerPlayerHitsTarget(Creature player, Target target, CastedSpell castedSpell)
 		{
 			if (player.NeedToBreakBeforeFiringEvent(EventType.SpellEvents, Name)) Debugger.Break();
 			Expressions.Do(OnPlayerHitsTarget, player, target, castedSpell);
 		}
-		public Spell Clone(Character player, int spellSlotLevel)
+		public Spell Clone(Creature player, int spellSlotLevel)
 		{
 			Spell result = new Spell();
-			RecalculateDiceAndAmmo(spellSlotLevel, player.level, player.SpellcastingAbilityModifier);
+			RecalculateDiceAndAmmo(spellSlotLevel, player.Level, player.SpellcastingAbilityModifier);
 			result.BonusPerLevel = BonusPerLevel;
 			result.BonusThreshold = BonusThreshold;
 			result.BonusMax = BonusMax;
@@ -612,15 +612,15 @@ namespace DndCore
 			result.Hue2 = Hue2;
 
 			// Override...
-			result.OwnerId = player != null ? player.playerID : -1;
+			result.OwnerId = player != null ? player.IntId : -1;
 			result.SpellSlotLevel = spellSlotLevel;
 
-			result.RecalculateDiceAndAmmo(spellSlotLevel, player.level, player.GetSpellcastingAbilityModifier());
+			result.RecalculateDiceAndAmmo(spellSlotLevel, player.Level, player.GetSpellcastingAbilityModifier());
 
 			return result;
 		}
 
-		public void TriggerSpellReceived(Character recipient, Spell givenSpell, object data1 = null, object data2 = null, object data3 = null, object data4 = null, object data5 = null, object data6 = null, object data7 = null)
+		public void TriggerSpellReceived(Creature recipient, Spell givenSpell, object data1 = null, object data2 = null, object data3 = null, object data4 = null, object data5 = null, object data6 = null, object data7 = null)
 		{
 			DndProperty.GlobalSet("data1", data1);
 			DndProperty.GlobalSet("data2", data2);

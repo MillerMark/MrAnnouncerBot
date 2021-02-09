@@ -13,7 +13,7 @@ namespace AvalonEdit
 	{
 		protected abstract bool ContextIsSatisfied(ExpressionEvaluator evaluator, TextArea textArea);
 
-		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Character player)
+		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
 		{
 			TextArea textArea = Expressions.GetCustomData<TextArea>(evaluator.Variables);
 			if (textArea == null)
@@ -22,7 +22,7 @@ namespace AvalonEdit
 			return ContextIsSatisfied(evaluator, textArea);
 		}
 
-		public override bool Handles(string tokenName, Character player, CastedSpell castedSpell)
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
 		{
 			return tokenName == GetType().Name;
 		}

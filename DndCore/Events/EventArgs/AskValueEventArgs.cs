@@ -12,7 +12,7 @@ namespace DndCore
 		}
 
 		
-		public AskValueEventArgs(Character player, string caption, string memberName, string memberTypeName, object value)
+		public AskValueEventArgs(Creature player, string caption, string memberName, string memberTypeName, object value)
 		{
 			MemberName = memberName;
 			Value = value;
@@ -21,7 +21,7 @@ namespace DndCore
 			Player = player;
 		}
 
-		public Character Player { get; set; }
+		public Creature Player { get; set; }
 		public string Caption { get; set; }
 		public object Value { get; set; }
 		public string MemberTypeName { get; set; }

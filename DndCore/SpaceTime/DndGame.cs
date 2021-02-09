@@ -448,7 +448,7 @@ namespace DndCore
 			return castedSpell;
 		}
 
-		public void CompleteCast(Character spellCaster, CastedSpell castedSpell)
+		public void CompleteCast(Creature spellCaster, CastedSpell castedSpell)
 		{
 			if (castedSpell.Target == null && spellCaster != null)
 				castedSpell.Target = spellCaster.ActiveTarget;
@@ -499,7 +499,7 @@ namespace DndCore
 				return;
 
 			activeSpells.Remove(castedSpell);
-			timeClock.RemoveAlarm(GetSpellAlarmName(castedSpell.Spell, castedSpell.SpellCaster.playerID));
+			timeClock.RemoveAlarm(GetSpellAlarmName(castedSpell.Spell, castedSpell.SpellCaster.IntId));
 			OnSpellDispelled(this, new CastedSpellEventArgs(this, castedSpell));  // Triggers the event.
 			castedSpell.Dispel();  // Sets its Active state to false and evaluates low-level dispel code associated with this spell.
 		}
@@ -636,7 +636,7 @@ namespace DndCore
 			timeClock.Advance(dndTimeSpan);
 		}
 
-		public DndAlarm CreateAlarm(string name, TimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Character player = null)
+		public DndAlarm CreateAlarm(string name, TimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Creature player = null)
 		{
 			DndAlarm dndAlarm = timeClock.CreateAlarm(fromNow, name, player, data);
 			if (alarmHandler != null)
@@ -644,7 +644,7 @@ namespace DndCore
 			return dndAlarm;
 		}
 
-		public DndAlarm CreateAlarm(string name, DndTimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Character player = null)
+		public DndAlarm CreateAlarm(string name, DndTimeSpan fromNow, DndTimeEventHandler alarmHandler = null, object data = null, Creature player = null)
 		{
 			DndAlarm dndAlarm = timeClock.CreateAlarm(fromNow.GetTimeSpan(), name, player, data);
 			if (fromNow.RoundSpecifier != RoundSpecifier.None)
@@ -855,7 +855,8 @@ namespace DndCore
 		{
 			Clock.CheckAlarmsPlayerEndsTurn(character, this);
 		}
-		public void AddShortcutToQueue(Character player, string shortcutName, bool rollImmediately)
+
+		public void AddShortcutToQueue(Creature player, string shortcutName, bool rollImmediately)
 		{
 			QueueShortcutEventArgs ea = new QueueShortcutEventArgs(player, shortcutName, rollImmediately);
 			OnRequestQueueShortcut(this, ea);

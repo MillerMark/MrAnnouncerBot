@@ -6,9 +6,9 @@ namespace DndCore
 	public class PickWeaponEventArgs : EventArgs
 	{
 		public CarriedWeapon Weapon { get; set; }
-		public Character Player { get; set; }
+		public Creature Player { get; set; }
 		public string WeaponFilter { get; set; }
-		public PickWeaponEventArgs(Character player, string weaponFilter)
+		public PickWeaponEventArgs(Creature player, string weaponFilter)
 		{
 			WeaponFilter = weaponFilter;
 			Player = player;

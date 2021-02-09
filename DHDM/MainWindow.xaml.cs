@@ -55,7 +55,7 @@ namespace DHDM
 		WeatherManager weatherManager;
 		LeapCalibrator leapCalibrator;
 		PlayerStatManager allPlayerStats;
-		Dictionary<Character, List<AskUI>> askUIs = new Dictionary<Character, List<AskUI>>();
+		Dictionary<Creature, List<AskUI>> askUIs = new Dictionary<Creature, List<AskUI>>();
 		//protected const string DungeonMasterChannel = "DragonHumpersDm";
 		const string DungeonMasterChannel = "HumperBot";
 		const string DragonHumpersChannel = "DragonHumpers";
@@ -596,11 +596,11 @@ namespace DHDM
 			bool foundAny = false;
 			ea.Target = new Target();
 			ea.Target.PlayerIds = new List<int>();
-			foreach (PlayerStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
-					ea.Target.PlayerIds.Add(playerStats.PlayerId);
+					ea.Target.PlayerIds.Add(playerStats.CreatureId);
 					foundAny = true;
 				}
 			}
@@ -641,9 +641,9 @@ namespace DHDM
 			int numSelected = 0;
 			List<AnswerEntry> result = new List<AnswerEntry>();
 			if (targetStatus.HasFlag(TargetStatus.Friendly))
-				foreach (PlayerStats playerStats in allPlayerStats.Players)
+				foreach (CreatureStats playerStats in allPlayerStats.Players)
 				{
-					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.PlayerId, AllPlayers.GetFromId(playerStats.PlayerId).Name);
+					AnswerEntry answer = new AnswerEntry(result.Count, playerStats.CreatureId, AllPlayers.GetFromId(playerStats.CreatureId).Name);
 					result.Add(answer);
 					if (result.Count < maxSelected && playerStats.IsTargeted)
 					{
@@ -761,7 +761,7 @@ namespace DHDM
 			}
 		}
 
-		void RebuildAskUI(Character player)
+		void RebuildAskUI(Creature player)
 		{
 			wpAskUI.Children.Clear();
 			if (player == null)
@@ -1958,15 +1958,15 @@ namespace DHDM
 			if (!ea.CastedSpell.Active)
 				return;
 
-			ClearSpellWindupsInGame(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
+			ClearSpellWindupsInGame(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.IntId);
 
-			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.playerID);
+			string spellToEnd = DndGame.GetSpellPlayerName(ea.CastedSpell.Spell, ea.CastedSpell.SpellCaster.IntId);
 			EndSpellEffects(spellToEnd);
 
 			if (ea.CastedSpell.Spell.RequiresConcentration && ea.CastedSpell.SpellCaster.concentratedSpell != null && ea.CastedSpell.Spell != ea.CastedSpell.SpellCaster.concentratedSpell.Spell)
 			{
 				ea.CastedSpell.SpellCaster.concentratedSpell = null;
-				PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(ea.CastedSpell.SpellCaster.playerID);
+				CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(ea.CastedSpell.SpellCaster.IntId);
 				playerStats.PercentConcentrationComplete = 100;
 				playerStats.ConcentratedSpell = "";
 				playerStats.ConcentratedSpellDurationSeconds = 0;
@@ -3518,7 +3518,7 @@ namespace DHDM
 			{
 				if (player.concentratedSpell != null)
 				{
-					PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
+					CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
 					if (playerStats != null)
 					{
 						// TODO: Consider adding side-effect to PercentConcentrationComplete property setter to trigger event.
@@ -6326,7 +6326,7 @@ namespace DHDM
 			List<int> results = new List<int>();
 			foreach (Character player in game.Players)
 			{
-				PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
+				CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(player.playerID);
 				if (playerStats != null && playerStats.IsTargeted)
 					results.Add(player.playerID);
 			}
@@ -8731,20 +8731,20 @@ namespace DHDM
 		void ToggleTargetedPlayerConditions(Conditions conditions)
 		{
 			bool toggledAtLeastOne = false;
-			foreach (PlayerStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
 					toggledAtLeastOne = true;
-					PlayerStatsManager.ToggleCondition(playerStats.PlayerId, conditions);
+					PlayerStatsManager.ToggleCondition(playerStats.CreatureId, conditions);
 				}
 			}
 			if (!toggledAtLeastOne)
 			{
 				// Toggle all players...
-				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
+				foreach (CreatureStats playerStats in PlayerStatsManager.Players)
 				{
-					PlayerStatsManager.ToggleCondition(playerStats.PlayerId, conditions);
+					PlayerStatsManager.ToggleCondition(playerStats.CreatureId, conditions);
 				}
 			}
 			UpdateUIForAllPlayerStats();
@@ -8754,21 +8754,21 @@ namespace DHDM
 		void ClearTargetedPlayerConditions()
 		{
 			bool clearedAtLeastOne = false;
-			foreach (PlayerStats playerStats in PlayerStatsManager.Players)
+			foreach (CreatureStats playerStats in PlayerStatsManager.Players)
 			{
 				if (playerStats.IsTargeted)
 				{
 					clearedAtLeastOne = true;
-					PlayerStatsManager.ClearConditions(playerStats.PlayerId);
+					PlayerStatsManager.ClearConditions(playerStats.CreatureId);
 				}
 			}
 
 			if (!clearedAtLeastOne)
 			{
 				// Clear for all players...
-				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
+				foreach (CreatureStats playerStats in PlayerStatsManager.Players)
 				{
-					PlayerStatsManager.ClearConditions(playerStats.PlayerId);
+					PlayerStatsManager.ClearConditions(playerStats.CreatureId);
 				}
 			}
 			UpdateUIForAllPlayerStats();
@@ -8824,17 +8824,17 @@ namespace DHDM
 			UpdateUIForAllPlayerStats();
 			UpdatePlayerStatsInGame();
 		}
-		void UpdateUIForPlayerStats(PlayerStats playerStats)
+		void UpdateUIForPlayerStats(CreatureStats playerStats)
 		{
-			ChangePlayerUIRollingDice(playerStats.PlayerId, playerStats.ReadyToRollDice);
-			SetPlayerVantageUI(playerStats.PlayerId, playerStats.Vantage);
+			ChangePlayerUIRollingDice(playerStats.CreatureId, playerStats.ReadyToRollDice);
+			SetPlayerVantageUI(playerStats.CreatureId, playerStats.Vantage);
 		}
 
 		void UpdateUIForAllPlayerStats()
 		{
 			SafeInvoke(() =>
 			{
-				foreach (PlayerStats playerStats in PlayerStatsManager.Players)
+				foreach (CreatureStats playerStats in PlayerStatsManager.Players)
 				{
 					UpdateUIForPlayerStats(playerStats);
 				}
@@ -9349,9 +9349,9 @@ namespace DHDM
 
 		private void Game_ConcentratedSpellChanged(object sender, SpellChangedEventArgs ea)
 		{
-			if (ea.Player == null)
+			if (ea.Creature == null)
 				return;
-			PlayerStats playerStats = PlayerStatsManager.GetPlayerStats(ea.Player.playerID);
+			CreatureStats playerStats = PlayerStatsManager.GetPlayerStats(ea.Creature.IntId);
 			if (playerStats == null)
 				return;
 
@@ -9507,9 +9507,9 @@ namespace DHDM
 
 		public void MovePlayerTarget(string targetingCommand)
 		{
-			List<PlayerStats> targetedPlayers = PlayerStatsManager.GetTargeted();
-			PlayerStats firstTargeted = targetedPlayers.FirstOrDefault();
-			PlayerStats creatureToTarget;
+			List<CreatureStats> targetedPlayers = PlayerStatsManager.GetTargeted();
+			CreatureStats firstTargeted = targetedPlayers.FirstOrDefault();
+			CreatureStats creatureToTarget;
 
 			if (targetingCommand.Contains("Next"))
 				creatureToTarget = PlayerStatsManager.Players.Next(firstTargeted);

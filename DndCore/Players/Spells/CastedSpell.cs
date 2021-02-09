@@ -13,7 +13,7 @@ namespace DndCore
 			Validation.ValidationFailing += Validation_Failing;
 		}
 
-		public CastedSpell(Spell spell, Character spellCaster)
+		public CastedSpell(Spell spell, Creature spellCaster)
 		{
 			ID = Guid.NewGuid().ToString();
 			Target = spellCaster.ActiveTarget;
@@ -21,7 +21,7 @@ namespace DndCore
 			Spell = spell;
 		}
 		public Spell Spell { get; set; }
-		public Character SpellCaster { get; set; }
+		public Creature SpellCaster { get; set; }
 		public Target Target { get; set; }
 		public CarriedWeapon TargetWeapon
 		{
@@ -131,7 +131,7 @@ namespace DndCore
 			Spell.TriggerDispel(SpellCaster, Target, this);
 		}
 
-		public void Dispel(Character player)
+		public void Dispel(Creature player)
 		{
 			player.Dispel(this);
 		}

@@ -2777,7 +2777,7 @@ class DiceLayer {
 
 		for (let i = 0; i < this.players.length; i++) {
 			const player: Character = this.players[i];
-			if (player.playerID === playerID)
+			if (player.IntId === playerID)
 				return player;
 		}
 

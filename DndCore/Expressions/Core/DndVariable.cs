@@ -7,7 +7,7 @@ namespace DndCore
 {
 	public abstract class DndVariable: DndToken
 	{
-		public abstract object GetValue(string variableName, ExpressionEvaluator evaluator, Character player);
+		public abstract object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player);
 		public abstract List<PropertyCompletionInfo> GetCompletionInfo();
 	}
 }

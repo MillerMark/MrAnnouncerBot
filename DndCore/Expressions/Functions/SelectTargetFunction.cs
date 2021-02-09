@@ -46,21 +46,21 @@ namespace DndCore
 		public override string Name { get; set; } = "SelectTarget";
 
 		TargetEventArgs ea;
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature creature, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1, 3);
-			TargetStatus targetStatus = Expressions.Get<TargetStatus>(args[0], player, target, spell, dice);
+			TargetStatus targetStatus = Expressions.Get<TargetStatus>(args[0], creature, target, spell, dice);
 			ea = new TargetEventArgs();
 			if (args.Count > 1)
 			{
-				ea.MinTargets = Expressions.GetInt(args[1], player, target, spell, dice);
+				ea.MinTargets = Expressions.GetInt(args[1], creature, target, spell, dice);
 				if (args.Count > 2)
 				{
-					ea.MaxTargets = Expressions.GetInt(args[2], player, target, spell, dice);
+					ea.MaxTargets = Expressions.GetInt(args[2], creature, target, spell, dice);
 				}
 			}
 			
-			ea.Player = player;
+			ea.Player = creature as Character;
 			ea.Target = target;
 			
 			ea.ShowUI = true; 

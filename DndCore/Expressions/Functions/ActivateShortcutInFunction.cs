@@ -17,7 +17,7 @@ namespace DndCore
 			ActivateShortcutFunction.OnActivateShortcutRequest(sender, ea);
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 2);
 			char[] trimChars = { '"', ' ' };
@@ -25,7 +25,7 @@ namespace DndCore
 			if (player == null)
 				return null;
 
-			PlayerActionShortcut shortcut = AllActionShortcuts.Get(player.playerID, shortcutName).FirstOrDefault();
+			PlayerActionShortcut shortcut = AllActionShortcuts.Get(player.IntId, shortcutName).FirstOrDefault();
 			if (shortcut == null)
 				return null;
 

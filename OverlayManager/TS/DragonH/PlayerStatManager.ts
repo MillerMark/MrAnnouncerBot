@@ -1,6 +1,6 @@
-﻿interface IPlayerStats {
+﻿interface ICreatureStats {
 	ReadyToRollDice: boolean;
-	PlayerId: number;
+	CreatureId: number;
 	Vantage: VantageKind;
 	Conditions: Conditions;
 	DiceStack: Array<DiceStackDto>;
@@ -18,7 +18,7 @@ interface IAllPlayerStats {
 	RollingTheDiceNow: boolean;
 	HideSpellScrolls: boolean;
 	ActiveTurnCreatureID: number;
-	Players: Array<PlayerStats>;
+	Players: Array<CreatureStats>;
 }
 
 class DiceStackDto {
@@ -42,27 +42,31 @@ class DiceStackDto {
 	}
 }
 
-class PlayerStats implements IPlayerStats {
+class CreatureStats implements ICreatureStats {
 	ReadyToRollDice: boolean;
-	PlayerId: number;
+	CreatureId: number;
 	Vantage: VantageKind;
 	Conditions: Conditions;
 	ConcentratedSpell: string;
 	ConcentratedSpellDurationSeconds: number;
-	PercentConcentrationComplete: number;
+	PercentConcentrationComplete = 0;
 	JustBrokeConcentration: boolean;
 	IsTargeted: boolean;
 	DiceStack: Array<DiceStackDto> = [];
 
-	deserialize(playerStatsDto: IPlayerStats): PlayerStats {
+	deserialize(playerStatsDto: ICreatureStats): CreatureStats {
 		if (!playerStatsDto)
 			return this;
 
-		this.PlayerId = playerStatsDto.PlayerId;
+		this.CreatureId = playerStatsDto.CreatureId;
 		this.Vantage = playerStatsDto.Vantage;
 		this.Conditions = playerStatsDto.Conditions;
 		this.ConcentratedSpell = playerStatsDto.ConcentratedSpell;
 		this.PercentConcentrationComplete = playerStatsDto.PercentConcentrationComplete;
+		//if (this.ConcentratedSpell) {
+		//	console.log('this.ConcentratedSpell: ' + this.ConcentratedSpell);
+		//	console.log(`In deserialize, this.PercentConcentrationComplete = ${playerStatsDto.PercentConcentrationComplete};`);
+		//}
 		this.ConcentratedSpellDurationSeconds = playerStatsDto.ConcentratedSpellDurationSeconds;
 		this.JustBrokeConcentration = playerStatsDto.JustBrokeConcentration;
 		this.IsTargeted = playerStatsDto.IsTargeted;
@@ -75,14 +79,14 @@ class PlayerStats implements IPlayerStats {
 		return this;
 	}
 
-	onlyVantageHasChanged(latestPlayerStats: PlayerStats) {
-		return this.PlayerId === latestPlayerStats.PlayerId &&
+	onlyVantageHasChanged(latestPlayerStats: CreatureStats) {
+		return this.CreatureId === latestPlayerStats.CreatureId &&
 			this.Vantage !== latestPlayerStats.Vantage &&
 			this.ReadyToRollDice === latestPlayerStats.ReadyToRollDice &&
 			this.diceMatch(latestPlayerStats);
 	}
 
-	diceMatch(latestPlayerStats: PlayerStats) {
+	diceMatch(latestPlayerStats: CreatureStats) {
 		return this.dieStacksMatch(latestPlayerStats.DiceStack);
 	}
 
@@ -106,7 +110,7 @@ class PlayerStatManager implements IAllPlayerStats {
 	LatestData: string;
 	RollingTheDiceNow: boolean;
 	HideSpellScrolls: boolean;
-	Players: Array<PlayerStats> = [];
+	Players: Array<CreatureStats> = [];
 	ActiveTurnCreatureID: number;
 	readyToRollFullDragon: Sprites;
 	readyToRollLightningCord: Sprites;
@@ -145,7 +149,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.Players = [];
 		for (let i = 0; i < allPlayerStatsDto.Players.length; i++) {
 			//console.log(allPlayerStatsDto.Players[i]);
-			this.Players.push(new PlayerStats().deserialize(allPlayerStatsDto.Players[i]));
+			this.Players.push(new CreatureStats().deserialize(allPlayerStatsDto.Players[i]));
 		}
 
 		//console.log(this);
@@ -153,17 +157,20 @@ class PlayerStatManager implements IAllPlayerStats {
 	}
 
 	handleCommand(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, soundManager: ISoundManager, mostRecentPlayerStats: PlayerStatManager, players: Array<Character>, conditionManager: ConditionManager) {
+		//console.log(mostRecentPlayerStats);
 		this.LatestData = mostRecentPlayerStats.LatestData;
 		this.LatestCommand = mostRecentPlayerStats.LatestCommand;
 		this.RollingTheDiceNow = mostRecentPlayerStats.RollingTheDiceNow;
 		if (this.HideSpellScrolls !== mostRecentPlayerStats.HideSpellScrolls) {
 			this.HideSpellScrolls = mostRecentPlayerStats.HideSpellScrolls;
+			//console.log(mostRecentPlayerStats);
+			this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players, conditionManager, this.LatestCommand);
 			this.hideOrShowSpellScrolls(iGetPlayerX, players);
 		}
 
 		this.setActiveTurnCreatureID(iGetPlayerX, iNameplateRenderer, context, mostRecentPlayerStats.ActiveTurnCreatureID, players);
 		this.addMissingPlayers(mostRecentPlayerStats);
-		this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players, conditionManager);
+		this.handleCommandForExistingPlayers(iGetPlayerX, iNameplateRenderer, soundManager, context, mostRecentPlayerStats, players, conditionManager, this.LatestCommand);
 		this.cleanUpNonExistantPlayers(mostRecentPlayerStats);
 	}
 
@@ -179,7 +186,7 @@ class PlayerStatManager implements IAllPlayerStats {
 	moveAllTargets(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, context: CanvasRenderingContext2D, players: Array<Character>) {
 
 		players.forEach((player, index) => {
-			const targetSprite: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, player.playerID);
+			const targetSprite: SpriteProxy = this.getSpriteForPlayer(this.playerTargetSprites, player.IntId);
 			if (targetSprite) {
 				const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, index, players) - this.playerTargetSprites.originX;
 
@@ -469,7 +476,7 @@ class PlayerStatManager implements IAllPlayerStats {
 
 	private cleanUpNonExistantPlayers(mostRecentPlayerStats: PlayerStatManager) {
 		for (let i = 0; i < this.Players.length; i++) {
-			const mostRecentPlayerStat: PlayerStats = mostRecentPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
+			const mostRecentPlayerStat: CreatureStats = mostRecentPlayerStats.getPlayerStatsById(this.Players[i].CreatureId);
 			if (!mostRecentPlayerStat) {
 				// At this point, the data sent excludes one of the players we are tracking. Remove it if the command says to do so.
 			}
@@ -487,16 +494,17 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.lastTimeCommandHandled = timeCommandHandled;
 	}
 
-	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: PlayerStatManager, players: Array<Character>, conditionManager: ConditionManager) {
+	private handleCommandForExistingPlayers(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, latestPlayerStats: PlayerStatManager, players: Array<Character>, conditionManager: ConditionManager, command: string) {
 		this.aboutToHandleCommand();
 		for (let i = 0; i < this.Players.length; i++) {
-			const latestPlayerStat: PlayerStats = latestPlayerStats.getPlayerStatsById(this.Players[i].PlayerId);
-			if (latestPlayerStat)
-				this.handleCommandForPlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, this.Players[i], this.LatestCommand, this.LatestData, latestPlayerStat, players, conditionManager);
+			const latestPlayerStat: CreatureStats = latestPlayerStats.getPlayerStatsById(this.Players[i].CreatureId);
+			if (latestPlayerStat) {
+				this.handleCommandForPlayer(iGetPlayerX, iNameplateRenderer, soundManager, context, this.Players[i], command, this.LatestData, latestPlayerStat, players, conditionManager);
+			}
 		}
 	}
 
-	handleCommandForPlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, command: string, data: string, latestPlayerStats: PlayerStats, players: Array<Character>, conditionManager: ConditionManager) {
+	handleCommandForPlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: CreatureStats, command: string, data: string, latestPlayerStats: CreatureStats, players: Array<Character>, conditionManager: ConditionManager) {
 		//console.log('command: ' + command);
 		switch (command) {
 			case 'Update':
@@ -515,9 +523,15 @@ class PlayerStatManager implements IAllPlayerStats {
 		}
 	}
 
-	updateHourglass(iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Character[]) {
+	updateHourglass(iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, existingPlayerStats: CreatureStats, data: string, latestPlayerStats: CreatureStats, players: Character[]) {
 		existingPlayerStats.PercentConcentrationComplete = latestPlayerStats.PercentConcentrationComplete;
-		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, existingPlayerStats.PlayerId);
+		//console.log(`In updateHourglass, existingPlayerStats.PercentConcentrationComplete = ${latestPlayerStats.PercentConcentrationComplete};`);
+		//if (existingPlayerStats.ConcentratedSpell !== latestPlayerStats.ConcentratedSpell) {
+		//	console.log(`spells are different!`);
+		//	console.log(``);
+		//}
+
+		const hourglass: SpriteProxy = this.getSpriteForPlayer(this.concentrationHourglassSand, existingPlayerStats.CreatureId);
 
 		if (hourglass) {
 			//console.log('existingPlayerStats.PercentConcentrationComplete: ' + existingPlayerStats.PercentConcentrationComplete);
@@ -847,7 +861,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		}
 	}
 
-	updatePlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: PlayerStats, data: string, latestPlayerStats: PlayerStats, players: Array<Character>) {
+	updatePlayer(iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, existingPlayerStats: CreatureStats, data: string, latestPlayerStats: CreatureStats, players: Array<Character>) {
 		this.updatePlayerDice(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager);
 		this.updatePlayerTargeting(existingPlayerStats, latestPlayerStats, iGetPlayerX, iNameplateRenderer, soundManager, context, players);
 		this.updateConcentratedSpell(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager, players);
@@ -856,7 +870,7 @@ class PlayerStatManager implements IAllPlayerStats {
 	concentratedSpellNames: Animations = new Animations();
 
 
-	private updatePlayerDice(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX, soundManager: ISoundManager) {
+	private updatePlayerDice(existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, iGetPlayerX: IGetPlayerX, soundManager: ISoundManager) {
 		if (existingPlayerStats.ReadyToRollDice !== latestPlayerStats.ReadyToRollDice) {
 			this.launchOrDescendTheDragons(existingPlayerStats, latestPlayerStats, iGetPlayerX, soundManager);
 		}
@@ -867,34 +881,34 @@ class PlayerStatManager implements IAllPlayerStats {
 			this.makeDiceMatch(iGetPlayerX, existingPlayerStats, latestPlayerStats, soundManager);
 		}
 		if (this.RollingTheDiceNow) {
-			this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, existingPlayerStats.PlayerId, existingPlayerStats.DiceStack);
+			this.dropDieAndBlowUpTheDragons(iGetPlayerX, soundManager, existingPlayerStats.CreatureId, existingPlayerStats.DiceStack);
 		}
 	}
 
-	private makeVantageMatch(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, soundManager: ISoundManager) {
+	private makeVantageMatch(existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, soundManager: ISoundManager) {
 		existingPlayerStats.Vantage = latestPlayerStats.Vantage;
-		this.showOrHideVantageDie(soundManager, existingPlayerStats.PlayerId, existingPlayerStats.Vantage);
+		this.showOrHideVantageDie(soundManager, existingPlayerStats.CreatureId, existingPlayerStats.Vantage);
 	}
 
-	private makeDiceMatch(iGetPlayerX: IGetPlayerX, existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, soundManager: ISoundManager) {
-		this.descendTheDragons(iGetPlayerX, existingPlayerStats.PlayerId, existingPlayerStats.DiceStack);
+	private makeDiceMatch(iGetPlayerX: IGetPlayerX, existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, soundManager: ISoundManager) {
+		this.descendTheDragons(iGetPlayerX, existingPlayerStats.CreatureId, existingPlayerStats.DiceStack);
 		existingPlayerStats.DiceStack = latestPlayerStats.DiceStack;
 		existingPlayerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
 		if (existingPlayerStats.ReadyToRollDice) {
-			this.launchTheDragons(iGetPlayerX, soundManager, existingPlayerStats.PlayerId, existingPlayerStats.Vantage, existingPlayerStats.DiceStack);
+			this.launchTheDragons(iGetPlayerX, soundManager, existingPlayerStats.CreatureId, existingPlayerStats.Vantage, existingPlayerStats.DiceStack);
 		}
 	}
 
-	private launchOrDescendTheDragons(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX, soundManager: ISoundManager) {
+	private launchOrDescendTheDragons(existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, iGetPlayerX: IGetPlayerX, soundManager: ISoundManager) {
 		existingPlayerStats.ReadyToRollDice = latestPlayerStats.ReadyToRollDice;
 		existingPlayerStats.DiceStack = latestPlayerStats.DiceStack;
 		if (existingPlayerStats.ReadyToRollDice) {
 			existingPlayerStats.Vantage = latestPlayerStats.Vantage;
 			existingPlayerStats.DiceStack = latestPlayerStats.DiceStack;
-			this.launchTheDragons(iGetPlayerX, soundManager, existingPlayerStats.PlayerId, existingPlayerStats.Vantage, existingPlayerStats.DiceStack);
+			this.launchTheDragons(iGetPlayerX, soundManager, existingPlayerStats.CreatureId, existingPlayerStats.Vantage, existingPlayerStats.DiceStack);
 		}
 		else {
-			this.descendTheDragons(iGetPlayerX, latestPlayerStats.PlayerId, latestPlayerStats.DiceStack);
+			this.descendTheDragons(iGetPlayerX, latestPlayerStats.CreatureId, latestPlayerStats.DiceStack);
 		}
 	}
 
@@ -959,22 +973,22 @@ class PlayerStatManager implements IAllPlayerStats {
 
 	private addMissingPlayers(mostRecentPlayerStats: PlayerStatManager) {
 		for (let i = 0; i < mostRecentPlayerStats.Players.length; i++) {
-			const existingPlayerStats: PlayerStats = this.getPlayerStatsById(mostRecentPlayerStats.Players[i].PlayerId);
+			const existingPlayerStats: CreatureStats = this.getPlayerStatsById(mostRecentPlayerStats.Players[i].CreatureId);
 			if (!existingPlayerStats) {
-				this.createNewPlayerStats(mostRecentPlayerStats.Players[i].PlayerId);
+				this.createNewPlayerStats(mostRecentPlayerStats.Players[i].CreatureId);
 			}
 		}
 	}
 
 	private createNewPlayerStats(playerId: number) {
-		const newPlayerStats: PlayerStats = new PlayerStats();
-		newPlayerStats.PlayerId = playerId;
+		const newPlayerStats: CreatureStats = new CreatureStats();
+		newPlayerStats.CreatureId = playerId;
 		this.Players.push(newPlayerStats);
 	}
 
-	getPlayerStatsById(playerId: number): PlayerStats {
+	getPlayerStatsById(playerId: number): CreatureStats {
 		for (let i = 0; i < this.Players.length; i++) {
-			if (this.Players[i].PlayerId === playerId)
+			if (this.Players[i].CreatureId === playerId)
 				return this.Players[i];
 		}
 		return null;
@@ -1088,11 +1102,11 @@ class PlayerStatManager implements IAllPlayerStats {
 		return PlayerStatManager.scrollNameTextWidths[frameIndex - PlayerStatManager.spellNameScrollStartIndex] + scrollRollerWidth;
 	}
 
-	updateConcentratedSpell(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, players: Array<Character>) {
+	updateConcentratedSpell(existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, iGetPlayerX: IGetPlayerX & ITextFloater, soundManager: ISoundManager, players: Array<Character>) {
 		if (existingPlayerStats.ConcentratedSpell === latestPlayerStats.ConcentratedSpell)
 			return;
 
-		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId));
+		const x: number = iGetPlayerX.getPlayerX(iGetPlayerX.getPlayerIndex(existingPlayerStats.CreatureId));
 
 		if (existingPlayerStats.ConcentratedSpell) {
 			this.destroyConcentratedSpell(iGetPlayerX, existingPlayerStats, players, x, soundManager);
@@ -1104,13 +1118,14 @@ class PlayerStatManager implements IAllPlayerStats {
 
 		existingPlayerStats.ConcentratedSpell = latestPlayerStats.ConcentratedSpell;
 		existingPlayerStats.ConcentratedSpellDurationSeconds = latestPlayerStats.ConcentratedSpellDurationSeconds;
+		existingPlayerStats.PercentConcentrationComplete = latestPlayerStats.PercentConcentrationComplete;
 	}
 
-	updatePlayerTargeting(existingPlayerStats: PlayerStats, latestPlayerStats: PlayerStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
+	updatePlayerTargeting(existingPlayerStats: CreatureStats, latestPlayerStats: CreatureStats, iGetPlayerX: IGetPlayerX & ITextFloater, iNameplateRenderer: INameplateRenderer, soundManager: ISoundManager, context: CanvasRenderingContext2D, players: Array<Character>) {
 		if (existingPlayerStats.IsTargeted === latestPlayerStats.IsTargeted)
 			return;
 
-		const playerId: number = latestPlayerStats.PlayerId;
+		const playerId: number = latestPlayerStats.CreatureId;
 		const x: number = iGetPlayerX.getPlayerTargetX(iNameplateRenderer, context, iGetPlayerX.getPlayerIndex(playerId), players);
 
 		if (latestPlayerStats.IsTargeted) {
@@ -1129,7 +1144,7 @@ class PlayerStatManager implements IAllPlayerStats {
 		existingPlayerStats.IsTargeted = latestPlayerStats.IsTargeted;
 	}
 
-	private showSpellConcentrationAnimation(latestPlayerStats: PlayerStats, x: number, existingPlayerStats: PlayerStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {
+	private showSpellConcentrationAnimation(latestPlayerStats: CreatureStats, x: number, existingPlayerStats: CreatureStats, players: Character[], iGetPlayerX: IGetPlayerX & ITextFloater) {
 		const spellName: string = latestPlayerStats.ConcentratedSpell;
 		const spellScrollY: number = this.getSpellScrollY();
 		const spellNameFontSize = 36;
@@ -1148,13 +1163,13 @@ class PlayerStatManager implements IAllPlayerStats {
 		const concentrationIconOffsetX: number = fullScrollWidth / 2 - concentrationIconHalfWidth;
 
 		const smoke: SpriteProxy = this.concentrationWhiteSmoke.add(x + hourglassOffset, spellScrollY, -1);
-		smoke.data = existingPlayerStats.PlayerId;
+		smoke.data = existingPlayerStats.CreatureId;
 
 		this.concentrationScrollOpenFire.add(x, spellScrollY, -1);
 
 		const spellNameText: TextEffect = new TextEffect(x + spellNameOffsetX, spellScrollY);
 		spellNameText.text = spellName;
-		spellNameText.data = existingPlayerStats.PlayerId;
+		spellNameText.data = existingPlayerStats.CreatureId;
 		spellNameText.fontName = 'Enchanted Land';
 		spellNameText.fontSize = spellNameFontSize;
 		spellNameText.fontColor = '#410300';
@@ -1162,40 +1177,40 @@ class PlayerStatManager implements IAllPlayerStats {
 		this.concentratedSpellNames.animationProxies.push(spellNameText);
 
 		const hourglassEnds: SpriteProxy = this.concentrationHourglassEnds.add(x + hourglassOffset, spellScrollY, 0);
-		hourglassEnds.data = existingPlayerStats.PlayerId;
+		hourglassEnds.data = existingPlayerStats.CreatureId;
 
 		const concentrationIcon: SpriteProxy = this.concentrationIcon.add(x + concentrationIconOffsetX, spellScrollY, 0);
 		concentrationIcon.autoRotationDegeesPerSecond = CharacterStatsScroll.spinningConcentrationIconDegreesPerSecond;
-		concentrationIcon.data = existingPlayerStats.PlayerId;
+		concentrationIcon.data = existingPlayerStats.CreatureId;
 		concentrationIcon.opacity = 0.5;
 
 		const hourglassSand: ColorShiftingSpriteProxy = this.concentrationHourglassSand.addShifted(x + hourglassOffset, spellScrollY, 0);
-		hourglassSand.data = existingPlayerStats.PlayerId;
+		hourglassSand.data = existingPlayerStats.CreatureId;
 
 		if (players) {
-			const player: Character = players[iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId)];
+			const player: Character = players[iGetPlayerX.getPlayerIndex(existingPlayerStats.CreatureId)];
 			if (player) {
 				hourglassSand.hueShift = player.hueShift;
 			}
 		}
 
 		const spellNameScroll: SpriteProxy = this.concentrationSpellNameScroll.add(x, spellScrollY, 0);
-		spellNameScroll.data = existingPlayerStats.PlayerId;
+		spellNameScroll.data = existingPlayerStats.CreatureId;
 		spellNameScroll.addOnFrameAdvanceCallback((sprite: SpriteProxy) => {
 			if (sprite.frameIndex > scrollStopFrame)
 				sprite.frameIndex = scrollStopFrame;
 		});
 	}
 
-	private destroyConcentratedSpell(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, players: Character[], x: number, soundManager: ISoundManager) {
+	private destroyConcentratedSpell(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: CreatureStats, players: Character[], x: number, soundManager: ISoundManager) {
 		this.showSpellDispelled(iGetPlayerX, existingPlayerStats, players, x);
-		this.startSpellDestructionAnimation(soundManager, existingPlayerStats.PlayerId);
+		this.startSpellDestructionAnimation(soundManager, existingPlayerStats.CreatureId);
 		this.delayBetweenDeletes += 200;
 		//console.log('this.delayBetweenDeletes: ' + this.delayBetweenDeletes);
 	}
 
-	private showSpellDispelled(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: PlayerStats, players: Character[], x: number) {
-		const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.PlayerId);
+	private showSpellDispelled(iGetPlayerX: IGetPlayerX & ITextFloater, existingPlayerStats: CreatureStats, players: Character[], x: number) {
+		const playerIndex: number = iGetPlayerX.getPlayerIndex(existingPlayerStats.CreatureId);
 		const player: Character = players[playerIndex];
 		let outlineColor = '#000000';
 		let fillColor = '#ffffff';
@@ -1236,7 +1251,7 @@ class PlayerStatManager implements IAllPlayerStats {
 			//if (player.ConcentratedSpell)
 			//	console.log('player.ConcentratedSpellDurationSeconds: ' + player.ConcentratedSpellDurationSeconds);
 			if (player.ConcentratedSpell && player.ConcentratedSpellDurationSeconds > 0) {
-				const playerIndex: number = iGetPlayerX.getPlayerIndex(player.PlayerId);
+				const playerIndex: number = iGetPlayerX.getPlayerIndex(player.CreatureId);
 				const character: Character = players[playerIndex];
 				let outlineColor = '#000000';
 				let fillColor = '#ffffff';
@@ -1246,7 +1261,10 @@ class PlayerStatManager implements IAllPlayerStats {
 				}
 
 				const x: number = iGetPlayerX.getPlayerX(playerIndex);
+				//console.log('player.PercentConcentrationComplete: ' + player.PercentConcentrationComplete);
+				//console.log('player.ConcentratedSpellDurationSeconds: ' + player.ConcentratedSpellDurationSeconds);
 				const timeRemainingStr: string = this.getRemainingTimeStr(player.ConcentratedSpellDurationSeconds * (1 - player.PercentConcentrationComplete / 100));
+				//console.log('timeRemainingStr: ' + timeRemainingStr);
 				const floatingText: TextEffect = iGetPlayerX.addFloatingText(x, `${timeRemainingStr} remaining`, fillColor, outlineColor);
 				floatingText.delayStart = delayMs;
 				delayMs += timeBetweenMessages;

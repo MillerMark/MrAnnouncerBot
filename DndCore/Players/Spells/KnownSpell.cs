@@ -23,7 +23,7 @@ namespace DndCore
 		public int TotalCharges { get; set; } = int.MaxValue;
 		public DndTimeSpan ResetSpan { get; set; }
 		public TimeSpan RechargesAt { get; set; }
-		public Character Player { get; set; }
+		public Creature Player { get; set; }
 
 		public KnownSpell()
 		{

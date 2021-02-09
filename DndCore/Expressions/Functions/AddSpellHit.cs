@@ -13,7 +13,7 @@ namespace DndCore
 	{
 		public override string Name { get; set; } = "AddSpellHit";
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1, 3);
 			if (player != null)

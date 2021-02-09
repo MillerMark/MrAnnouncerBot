@@ -1351,6 +1351,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	changePlayerStats(playerStatsDtoStr: string): void {
 		//console.log(playerStatsDtoStr);
 		const newPlayerStats: PlayerStatManager = new PlayerStatManager().deserialize(JSON.parse(playerStatsDtoStr));
+		console.log(newPlayerStats);
 		this.playerStats.handleCommand(this, this, this.context, this.dragonFrontSounds, newPlayerStats, this.players, this.conditionManager);
 		// TODO: transfer stats across.
 	}
@@ -1641,7 +1642,7 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		let playerIndex = 0;
 		for (let i = 0; i < this.players.length; i++) {
 			const player: Character = this.players[i];
-			if (player.playerID === this.activePlayerId) {
+			if (player.IntId === this.activePlayerId) {
 				activePlayer = player;
 				playerIndex = i;
 				continue;

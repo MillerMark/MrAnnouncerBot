@@ -11,6 +11,16 @@ namespace DndCore
 {
 	public abstract class Creature
 	{
+		string _dieBackColor = "#ffffff";
+		string _dieFontColor = "#000000";
+		public virtual string dieBackColor { get => _dieBackColor; set => _dieBackColor = value; }
+		public virtual string dieFontColor { get => _dieFontColor; set => _dieFontColor = value; }
+
+		public abstract int GetSpellcastingAbilityModifier();
+		[JsonIgnore]
+		public abstract int Level { get; }
+		public abstract int IntId { get; }
+
 		public event MessageEventHandler RequestMessageToDungeonMaster;
 
 		public event ConditionsChangedEventHandler ConditionsChanged;
@@ -79,6 +89,9 @@ namespace DndCore
 		public virtual double truesightRadius { get; set; } = 0;
 		public virtual double blindsightRadius { get; set; } = 0;
 
+		[JsonIgnore]
+		public CastedSpell concentratedSpell;
+
 		public Against disadvantages { get; set; } = Against.none;
 		public ObservableCollection<ItemViewModel> equipment = new ObservableCollection<ItemViewModel>();
 
@@ -113,8 +126,8 @@ namespace DndCore
 
 		public double initiative = 0;
 		public CreatureKinds kind = CreatureKinds.None;
-		public Languages languagesSpoken = Languages.None;
-		public Languages languagesUnderstood = Languages.None;
+		public Languages languagesSpoken = DndCore.Languages.None;
+		public Languages languagesUnderstood = DndCore.Languages.None;
 		public double maxHitPoints { get; set; } = 0;
 
 		[JsonIgnore]
@@ -135,12 +148,12 @@ namespace DndCore
 		protected bool needToRecalculateMods;
 		public int offTurnActions = 0;
 		public int onTurnActions = 1;
-		
+
 		public Senses senses { get; set; } = Senses.Hearing | Senses.NormalVision | Senses.Smell;
 		public double swimmingSpeed { get; set; } = 0;
 		public double telepathyRadius { get; set; } = 0; // feet
 		public double tempHitPoints = 0;
-		
+
 		public Creature()
 		{
 			equipment.CollectionChanged += ItemCollectionChanged;
@@ -171,7 +184,7 @@ namespace DndCore
 			}
 			set => calculatedMods = value;
 		}
-		
+
 		[JsonIgnore]
 		public Dictionary<string, Dictionary<string, PropertyMod>> PropertyMods { get; set; } = new Dictionary<string, Dictionary<string, PropertyMod>>();
 
@@ -239,7 +252,7 @@ namespace DndCore
 			get
 			{
 				return CalculateProperty(baseWalkingSpeed);
-			}	
+			}
 			set
 			{
 				baseWalkingSpeed = GetBasePropertyValue(value);
@@ -266,6 +279,21 @@ namespace DndCore
 				activeConditions = value;
 
 				OnConditionsChanged(this, new ConditionsChangedEventArgs(oldConditions, activeConditions));
+			}
+		}
+
+		[JsonIgnore]
+		public Target ActiveTarget { get; set; }
+
+		[JsonIgnore]
+		public int SpellcastingAbilityModifier
+		{
+			get
+			{
+				return GetSpellcastingAbilityModifier();
+			}
+			set
+			{
 			}
 		}
 
@@ -741,7 +769,7 @@ namespace DndCore
 
 		public virtual void PrepareWeaponAttack(PlayerActionShortcut playerActionShortcut)
 		{
-			
+
 		}
 
 		public virtual Attack GetAttack(string attackName)
@@ -859,7 +887,7 @@ namespace DndCore
 			else
 				propMods[id].Set(offset, multiplier);
 		}
-		
+
 		public void RemovePropertyMod(string propertyName, string id)
 		{
 			if (!PropertyMods.ContainsKey(propertyName))
@@ -1073,6 +1101,629 @@ namespace DndCore
 				GetDamageAndAttackType(part.Trim(), out DamageType damage, out AttackKind attackKind);
 				if (damage != DamageType.None)
 					AddDamageVulnerability(damage, attackKind);
+			}
+		}
+		public event SpellChangedEventHandler ConcentratedSpellChanged;
+
+		protected virtual void OnConcentratedSpellChanged(object sender, SpellChangedEventArgs e)
+		{
+			ConcentratedSpellChanged?.Invoke(sender, e);
+		}
+
+		public void BreakConcentration()
+		{
+			if (concentratedSpell == null)
+				return;
+
+			if (concentratedSpell.Active)
+			{
+				Game.Dispel(concentratedSpell);
+				concentratedSpell.Dispel();
+			}
+			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.BrokeConcentration));
+			concentratedSpell = null;
+		}
+
+		public void CastingSpellRequiringConcentration(CastedSpell spell)
+		{
+			if (concentratedSpell?.Spell.Name == spell?.Spell.Name)
+				return;
+			BreakConcentration();
+			spell.Active = true;
+			concentratedSpell = spell;
+			OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustCast));
+		}
+
+		public void CheckConcentration(CastedSpell castedSpell)
+		{
+			if (castedSpell.Spell.RequiresConcentration)
+				CastingSpellRequiringConcentration(castedSpell);
+		}
+
+		[JsonIgnore]
+		public ActiveSpellData spellPrepared;
+
+		[JsonIgnore]
+		public ActiveSpellData spellActivelyCasting;
+
+		[JsonIgnore]
+		public ActiveSpellData spellPreviouslyCasting;
+
+		public bool forceShowSpell = false;
+
+		public void ShowPlayerCasting(CastedSpell castedSpell)
+		{
+			forceShowSpell = true;
+			spellPreviouslyCasting = null;
+			spellPrepared = null;
+			spellActivelyCasting = ActiveSpellData.FromCastedSpell(castedSpell);
+			OnStateChanged(this, new StateChangedEventArgs("spellActivelyCasting", null, null));
+		}
+
+		public void PrepareSpell(CastedSpell castedSpell)
+		{
+			forceShowSpell = true;
+			spellPreviouslyCasting = null;
+			spellActivelyCasting = null;
+			spellPrepared = ActiveSpellData.FromCastedSpell(castedSpell);
+			OnStateChanged(this, new StateChangedEventArgs("spellPrepared", null, null));
+		}
+
+		[JsonIgnore]
+		public List<EventCategory> eventCategories = new List<EventCategory>();
+		EventData FindEvent(EventType eventType, string parentName, string eventName)
+		{
+			foreach (EventCategory eventCategory in eventCategories)
+			{
+				EventData foundEvent = eventCategory.FindEvent(eventType, parentName, eventName);
+				if (foundEvent != null)
+					return foundEvent;
+			}
+			return null;
+		}
+		public bool NeedToBreakBeforeFiringEvent(EventType eventType, string parentName, [CallerMemberName] string eventName = "")
+		{
+			const string TriggerMethodPrefix = "Trigger";
+			if (!eventName.StartsWith(TriggerMethodPrefix))
+				return false;
+			string realEventName = "On" + eventName.Substring(TriggerMethodPrefix.Length);
+
+			EventData foundEvent = FindEvent(eventType, parentName, realEventName);
+			if (foundEvent == null)
+				return false;
+
+			return foundEvent.BreakAtStart;
+		}
+
+		protected bool evaluatingExpression;
+
+		public void StartingExpressionEvaluation()
+		{
+			evaluatingExpression = true;
+		}
+
+		[JsonIgnore]
+		public Queue<SpellEffect> additionalSpellCastEffects = new Queue<SpellEffect>();
+
+		public void AddSpellCastEffect(string effectName = "",
+			int hue = 0, int saturation = 100, int brightness = 100,
+			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
+			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100, int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
+		{
+			additionalSpellCastEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
+				scale, rotation, autoRotation, timeOffset,
+				secondaryHue, secondarySaturation, secondaryBrightness, xOffset, yOffset, velocityX, velocityY));
+		}
+
+		public int hueShift = 0;
+
+		[JsonIgnore]
+		public Queue<SpellEffect> additionalSpellHitEffects = new Queue<SpellEffect>();
+		public void AddSpellHitEffect(string effectName = "",
+			int hue = 0, int saturation = 100, int brightness = 100,
+			double scale = 1, double rotation = 0, double autoRotation = 0, int timeOffset = 0,
+			int secondaryHue = 0, int secondarySaturation = 100, int secondaryBrightness = 100, int xOffset = 0, int yOffset = 0, double velocityX = 0, double velocityY = 0)
+		{
+			additionalSpellHitEffects.Enqueue(new SpellEffect(effectName, hue, saturation, brightness,
+				scale, rotation, autoRotation, timeOffset,
+				secondaryHue, secondarySaturation, secondaryBrightness, xOffset, yOffset, velocityX, velocityY));
+		}
+
+		public void Dispel(CastedSpell castedSpell)
+		{
+			if (Game != null)
+				Game.Dispel(castedSpell);
+			if (concentratedSpell?.Spell?.Name == castedSpell?.Spell?.Name)
+			{
+				OnConcentratedSpellChanged(this, new SpellChangedEventArgs(this, concentratedSpell.Spell.Name, SpellState.JustDispelled));
+				concentratedSpell = null;
+			}
+		}
+
+		[JsonIgnore]
+		protected Dictionary<string, object> states = new Dictionary<string, object>();
+
+		public bool HoldsState(string key)
+		{
+			return states.ContainsKey(key);
+		}
+		public event PlayerShowStateEventHandler PlayerShowState;
+
+		protected virtual void OnPlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		{
+			PlayerShowState?.Invoke(sender, ea);
+		}
+
+		public void ShowState(string message, string fillColor, string outlineColor, int delayMs = 0)
+		{
+			OnPlayerShowState(this, new PlayerShowStateEventArgs(this, message, fillColor, outlineColor, delayMs));
+		}
+
+		public Ability spellCastingAbility = Ability.none;
+
+		protected const string STR_RechargeableMaxSuffix = "_max";
+
+
+		[JsonIgnore]
+		public List<Rechargeable> rechargeables = new List<Rechargeable>();
+
+		public void SetState(string key, object newValue)
+		{
+			if (states.ContainsKey(key))
+			{
+				if (states[key] == newValue)
+					return;
+				object oldState = states[key];
+				states[key] = newValue;
+				OnStateChanged(key, oldState, newValue);
+			}
+			else
+			{
+				Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key);
+				if (rechargeable != null)
+				{
+					int newIntValue = (int)newValue;
+					if (newIntValue == rechargeable.ChargesUsed)
+						return;
+					int oldValue = rechargeable.ChargesUsed;
+					rechargeable.ChargesUsed = newIntValue;
+					OnStateChanged(key, oldValue, newValue, true);
+					return;
+				}
+
+				rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key + STR_RechargeableMaxSuffix);
+				if (rechargeable != null)
+				{
+					int newIntValue = (int)newValue;
+					if (newIntValue == rechargeable.TotalCharges)
+						return;
+					int oldValue = rechargeable.TotalCharges;
+					rechargeable.TotalCharges = newIntValue;
+					OnStateChanged(key + STR_RechargeableMaxSuffix, oldValue, newValue, false); // max value is not considered a rechargeable, as the max value does not change and has no corresponding UI key.
+					return;
+				}
+
+				states.Add(key, newValue);
+				OnStateChanged(key, null, newValue);
+			}
+		}
+
+		public object GetState(string key)
+		{
+			if (states.ContainsKey(key))
+				return states[key];
+			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == key);
+			if (rechargeable != null)
+				return rechargeable.ChargesUsed;
+
+			rechargeable = rechargeables.FirstOrDefault(x => x.VarName + STR_RechargeableMaxSuffix == key);
+			if (rechargeable != null)
+				return rechargeable.TotalCharges;
+
+			return null;
+		}
+		public void SetNextAnswer(string answer)
+		{
+			NextAnswer = answer;
+		}
+
+		[JsonIgnore]
+		public string NextAnswer { get; set; }
+		public string diceWeAreRolling = string.Empty;
+		public event RollDiceEventHandler RollDiceRequest;
+
+		protected virtual void OnRollDiceRequest(object sender, RollDiceEventArgs ea)
+		{
+			RollDiceRequest?.Invoke(sender, ea);
+		}
+
+		public void RollDiceNow()
+		{
+			OnRollDiceRequest(this, new RollDiceEventArgs(diceWeAreRolling));
+		}
+
+		public void RemoveStateVar(string varName)
+		{
+			if (states.ContainsKey(varName))
+				states.Remove(varName);
+		}
+
+		public void ReplaceDamageDice(string diceStr)
+		{
+			overrideReplaceDamageDice = diceStr;
+		}
+
+		[JsonIgnore]
+		protected bool reapplyingActiveFeatures;
+
+		[JsonIgnore]
+		protected RecalcOptions queuedRecalcOptions = RecalcOptions.None;
+
+		public void Recalculate(RecalcOptions recalcOptions)
+		{
+			//if (recalcOptions == RecalcOptions.None)
+			//	return;
+			if (reapplyingActiveFeatures || evaluatingExpression || Expressions.IsUpdating)
+			{
+				queuedRecalcOptions |= recalcOptions;
+				return;
+			}
+
+			if ((recalcOptions & RecalcOptions.TurnBasedState) == RecalcOptions.TurnBasedState)
+			{
+				StartTurnResetState();
+			}
+			else if ((recalcOptions & RecalcOptions.ActionBasedState) == RecalcOptions.ActionBasedState)
+			{
+				ResetPlayerActionBasedState();
+			}
+
+			if ((recalcOptions & RecalcOptions.Resistance) == RecalcOptions.Resistance)
+			{
+				ResetPlayerResistance();
+			}
+
+			// ReapplyActiveFeatures(false);  // Causes perf issue in characters with features that call Recalculate(...)
+		}
+
+		[JsonIgnore]
+		public string overrideReplaceDamageDice { get; set; } = string.Empty;
+		public int disadvantageDiceThisRoll = 0;
+
+		public void GiveDisadvantageThisRoll()
+		{
+			disadvantageDiceThisRoll++;
+		}
+
+		[JsonIgnore]
+		public int advantageDiceThisRoll = 0;
+
+		public void GiveAdvantageThisRoll()
+		{
+			advantageDiceThisRoll++;
+		}
+
+		[JsonIgnore]
+		public double attackingAbilityModifierBonusThisRoll = 0;
+
+		[JsonIgnore]
+		public Ability attackingAbility = Ability.none;
+
+		[JsonIgnore]
+		public double attackingAbilityModifier = 0; // TODO: Set for spells?
+
+		[JsonIgnore]
+		public AttackKind attackingKind = AttackKind.Any;
+
+		[JsonIgnore]
+		public AttackType attackingType = AttackType.None;
+
+		[JsonIgnore]
+		public int attackOffsetThisRoll = 0;
+
+		[JsonIgnore]
+		public int damageOffsetThisRoll = 0;
+		public bool targetThisRollIsCreature = false;
+
+		public void ResetPlayerActionBasedState()
+		{
+			ActiveTarget = null;
+			attackingAbility = Ability.none;
+			attackingAbilityModifier = 0;
+			attackingType = AttackType.None;
+			attackingKind = AttackKind.Any;
+			diceWeAreRolling = string.Empty;
+			targetThisRollIsCreature = false;
+			damageOffsetThisRoll = 0;
+			attackOffsetThisRoll = 0;
+			advantageDiceThisRoll = 0;
+			attackingAbilityModifierBonusThisRoll = 0;  // This is only assigned from the expressions evaluator.
+			disadvantageDiceThisRoll = 0;
+		}
+
+		void ResetPlayerResistance()
+		{
+			// TODO: implement this.
+			//damageResistance
+		}
+
+		public void CompletingExpressionEvaluation()
+		{
+			evaluatingExpression = false;
+			Recalculate(queuedRecalcOptions);
+			queuedRecalcOptions = RecalcOptions.None;
+		}
+
+
+		[JsonIgnore]
+		protected CastedSpell spellToCast;
+
+		public void CompleteCast()
+		{
+			CastedSpell spellToComplete = spellToCast;
+			if (spellToComplete == null && !Game.PlayerIsCastingSpell(concentratedSpell, playerID))
+				spellToComplete = concentratedSpell;
+			if (spellToComplete == null)
+				return;
+
+			if (Game != null)
+				Game.CompleteCast(this, spellToComplete);
+
+			spellToCast = null;
+		}
+		public int playerID { get; set; }
+
+		public void AboutToCompleteCast()
+		{
+
+		}
+		public string trailingEffectsThisRoll = string.Empty;
+
+		public void AddTrailingEffects(string trailingEffects)
+		{
+			if (!string.IsNullOrWhiteSpace(trailingEffectsThisRoll))
+				trailingEffectsThisRoll += ";";
+			trailingEffectsThisRoll += trailingEffects;
+		}
+
+		protected int GetIntState(string key)
+		{
+			object result = GetState(key);
+			if (result == null)
+				return 0;
+			return (int)result;
+		}
+
+		public void UseSpellSlot(int spellSlotLevel)
+		{
+			string key = DndUtils.GetSpellSlotLevelKey(spellSlotLevel);
+			SetState(key, GetIntState(key) + 1);
+		}
+
+		/* 
+		 * You automatically revert if you fall Unconscious, drop to 0 Hit Points, or die.
+		 * Replaced:
+		 *	Senses
+		 *	Strength, Dexterity, Constitution
+		 *	Speed stats (unless you are a water genasi - in which case you retain your swim speed)
+		 *	
+		 *	Hit Points (and Hit Dice). 
+		 *	   When you revert to your normal form, you return to the number of Hit Points you had before you transformed.
+		 *     However, if you revert as a result of Dropping to 0 Hit Points, any excess damage carries over to your normal form. 
+		 *     For example, if you take 10 damage in animal form and have only 1 hit point left, you revert and take 9 damage. 
+		 *     As long as the excess damage doesn't reduce your normal form to 0 Hit Points, you aren't knocked Unconscious.
+	 
+		 * Use the highest:
+		 *	skill and saving throw Proficiency
+		 
+		 * You can't cast Spells.
+		 * 
+		 */
+		public event PickWeaponEventHandler PickWeapon;
+		protected virtual void OnPickWeapon(object sender, PickWeaponEventArgs ea)
+		{
+			PickWeapon?.Invoke(sender, ea);
+		}
+
+		public Target ChooseWeapon(string weaponFilter = null)
+		{
+			PickWeaponEventArgs pickWeaponEventArgs = new PickWeaponEventArgs(this, weaponFilter);
+			OnPickWeapon(this, pickWeaponEventArgs);
+			return new Target(pickWeaponEventArgs.Weapon);
+		}
+
+		public void AddSpellsFrom(string spellList)
+		{
+			if (string.IsNullOrWhiteSpace(spellList))
+				return;
+
+			string[] spellsStrs = spellList.Split(';');
+			foreach (var spell in spellsStrs)
+			{
+				AddSpell(spell.Trim());
+			}
+		}
+
+		[JsonIgnore]
+		public Queue<SoundEffect> additionalSpellHitSoundEffects = new Queue<SoundEffect>();
+
+		public void AddSpellHitSoundEffect(string fileName, int timeOffset = 0)
+		{
+			additionalSpellHitSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
+		}
+
+		[JsonIgnore]
+		public Queue<SoundEffect> additionalSpellCastSoundEffects = new Queue<SoundEffect>();
+		public void AddSpellCastSoundEffect(string fileName, int timeOffset = 0)
+		{
+			additionalSpellCastSoundEffects.Enqueue(new SoundEffect(fileName, timeOffset));
+		}
+
+		public void ClearAdditionalSpellEffects()
+		{
+			additionalSpellHitEffects.Clear();
+			additionalSpellHitSoundEffects.Clear();
+			additionalSpellCastEffects.Clear();
+			additionalSpellCastSoundEffects.Clear();
+		}
+
+		public void AddRechargeable(string displayName, string varName, int maxValue, string cycle)
+		{
+			if (maxValue == 0)
+				return;
+			rechargeables.Add(new Rechargeable(displayName, varName, maxValue, cycle));
+		}
+
+		public void AddLanguage(string language)
+		{
+			if (Languages == null)
+				Languages = new List<string>();
+			if (Languages.Contains(language))
+				return;
+			Languages.AddRange(language.Split(',').Select(x => x.Trim()).Except(Languages).Distinct());
+		}
+
+		public void AddLanguages(string languageStr)
+		{
+			string[] languages = languageStr.Split(',');
+
+			foreach (string language in languages)
+				AddLanguage(language);
+		}
+
+		[JsonIgnore]
+		public List<string> Languages { get; set; }
+
+		public string dieRollMessageThisRoll = string.Empty;
+
+		public void AddDieRollMessage(string dieRollMessage)
+		{
+			dieRollMessageThisRoll = dieRollMessage;
+		}
+
+		public string dieRollEffectsThisRoll = string.Empty;
+
+		public void AddDieRollEffects(string dieRollEffects)
+		{
+			if (!string.IsNullOrWhiteSpace(dieRollEffectsThisRoll))
+				dieRollEffectsThisRoll += ";";
+			dieRollEffectsThisRoll += dieRollEffects;
+		}
+
+		[JsonIgnore]
+		public string additionalDiceThisRoll = string.Empty;
+
+		public void AddDice(string diceStr)
+		{
+			additionalDice.Add(diceStr);
+			additionalDiceThisRoll = string.Join(",", additionalDice);
+		}
+
+		public void AddSpell(string spellStr)
+		{
+			if (string.IsNullOrWhiteSpace(spellStr))
+				return;
+			int totalCharges = int.MaxValue;
+			DndTimeSpan chargeResetSpan = DndTimeSpan.Zero;
+			string spellName = spellStr;
+			string itemName = string.Empty;
+			DndTimeSpan rechargesAt = DndTimeSpan.FromSeconds(0);  // midnight;
+			string durationStr = string.Empty;
+			if (spellName.Has("("))
+			{
+				spellName = spellName.EverythingBefore("(");
+				if (HasSpell(spellName))
+					return;
+
+				string parameterStr = spellStr.EverythingBetween("(", ")");
+				var parameters = parameterStr.Split(',');
+
+				for (int i = 0; i < parameters.Length; i++)
+				{
+					var parameter = parameters[i].Trim();
+					if (string.IsNullOrWhiteSpace(parameter))
+						continue;
+
+					if (i == 0)
+						itemName = parameter.EverythingBetween("\"", "\"");
+					else if (i == 1)
+					{
+						var chargeDetails = parameter.Split('/');
+						if (chargeDetails.Length == 2)
+						{
+							// TODO: Add support for both max charges and a variable recharge (e.g., "1d6 + 4") rolled at dawn.
+							int.TryParse(chargeDetails[0], out totalCharges);
+							durationStr = chargeDetails[1];
+							chargeResetSpan = DndTimeSpan.FromDurationStr(durationStr);
+							if (durationStr == "dawn")
+								rechargesAt = DndTimeSpan.FromHours(6);  // 6:00 am
+						}
+					}
+				}
+			}
+			else if (HasSpell(spellName))
+				return;
+			KnownSpell knownSpell = new KnownSpell();
+			knownSpell.SpellName = spellName;
+			knownSpell.RechargesAt = rechargesAt.GetTimeSpan();
+			knownSpell.TotalCharges = totalCharges;
+			knownSpell.ResetSpan = chargeResetSpan;
+			knownSpell.ItemName = itemName;
+			knownSpell.Player = this;
+			if (knownSpell.RechargesAt == TimeSpan.Zero && durationStr.HasSomething())
+			{
+				AddRechargeable(itemName, DndUtils.ToVarName(itemName), totalCharges, durationStr);
+			}
+
+
+			knownSpell.ChargesRemaining = totalCharges;  // setter Requires both ItemName and Player to be valid before setting.
+			KnownSpells.Add(knownSpell);
+		}
+
+		[JsonIgnore]
+		public List<string> additionalDice { get; set; } = new List<string>();
+
+		[JsonIgnore]
+		public List<KnownSpell> KnownSpells { get; private set; } = new List<KnownSpell>();
+
+		[JsonIgnore]
+		public List<CarriedWeapon> CarriedWeapons { get; private set; } = new List<CarriedWeapon>();
+
+		[JsonIgnore]
+		public List<CarriedAmmunition> CarriedAmmunition { get; private set; } = new List<CarriedAmmunition>();
+
+		public void AddShortcutToQueue(string shortcutName, bool rollImmediately)
+		{
+			Game.AddShortcutToQueue(this, shortcutName, rollImmediately);
+		}
+
+		[JsonIgnore]
+		protected List<KnownSpell> temporarySpells = new List<KnownSpell>();
+
+		public bool HasSpell(string spellName)
+		{
+			return KnownSpells.FirstOrDefault(x => x.SpellName == spellName) != null ||
+				 temporarySpells.FirstOrDefault(x => x.SpellName == spellName) != null;
+		}
+
+		public int GetRemainingChargesOnItem(string itemName)
+		{
+			string varName = DndUtils.ToVarName(itemName);
+			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
+			if (rechargeable != null)
+				return rechargeable.ChargesRemaining;
+			return 0;
+		}
+
+		public void SetRemainingChargesOnItem(string itemName, int value)
+		{
+			string varName = DndUtils.ToVarName(itemName);
+			Rechargeable rechargeable = rechargeables.FirstOrDefault(x => x.VarName == varName);
+			if (rechargeable != null && rechargeable.ChargesRemaining != value)
+			{
+				int oldChargesUsed = rechargeable.ChargesUsed;
+				rechargeable.SetRemainingCharges(value);
+				OnStateChanged(this, new StateChangedEventArgs(rechargeable.VarName, oldChargesUsed, rechargeable.ChargesUsed, true));
 			}
 		}
 	}

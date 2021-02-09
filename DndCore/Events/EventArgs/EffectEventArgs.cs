@@ -21,7 +21,7 @@ namespace DndCore
 		public double VelocityX { get; set; }
 		public double VelocityY { get; set; }
 
-		public EffectEventArgs(List<string> args, Character player, Target target, CastedSpell spell)
+		public EffectEventArgs(List<string> args, Creature player, Target target, CastedSpell spell)
 		{
 			string effectName;
 			int hue, saturation, brightness, timeOffset, secondaryHue, secondarySaturation, secondaryBrightness, offsetX, offsetY;

@@ -34,7 +34,7 @@ namespace DndCore
 			RequestAddWindup?.Invoke(sender, ea);
 		}
 
-		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Character player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
+		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target = null, CastedSpell spell = null, DiceStoppedRollingData dice = null)
 		{
 			ExpectingArguments(args, 1, 18);
 			if (player != null)
@@ -55,7 +55,7 @@ namespace DndCore
 			return null;
 		}
 
-		public static string GetWindupName(Character player, CastedSpell spell)
+		public static string GetWindupName(Creature player, CastedSpell spell)
 		{
 			string spellName = "";
 			if (spell?.Spell != null)
@@ -64,7 +64,7 @@ namespace DndCore
 			return windupName;
 		}
 
-		public static void GetWindupParameters(List<string> args, Character player, Target target, CastedSpell spell, 
+		public static void GetWindupParameters(List<string> args, Creature player, Target target, CastedSpell spell, 
 			out string effectName, out int hue, out int saturation, out int brightness, out double scale, 
 			out double rotation, out double autoRotation, out double degreesOffset, out bool flipHorizontal, 
 			out int xOffset, out int yOffset, out double velocityX, out double velocityY, out double forceX, out double forceY,
