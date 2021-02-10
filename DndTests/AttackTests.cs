@@ -49,6 +49,7 @@ namespace DndTests
 			Assert.AreEqual(DamageType.Slashing, DndUtils.ToDamage("slashing"));
 			Assert.AreEqual(DamageType.Thunder, DndUtils.ToDamage("thunder"));
 			Assert.AreEqual(DamageType.Condition, DndUtils.ToDamage("condition"));
+			Assert.AreEqual(DamageType.Bane, DndUtils.ToDamage("bane"));
 			Assert.AreEqual(DamageType.Acid, DndUtils.ToDamage("acid"));
 			Assert.AreEqual(DamageType.Bludgeoning, DndUtils.ToDamage("bludgeoning"));
 			Assert.AreEqual(DamageType.Acid | DamageType.Bludgeoning, DndUtils.ToDamage("acid, bludgeoning"));

@@ -98,7 +98,7 @@ namespace DndTests
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
 			Character ava = game.AddPlayer(AllPlayers.GetFromId(PlayerID.LilCutie));
-			Monster joe = game.AddMonster(MonsterBuilder.BuildVineBlight("Joe"));
+			Creature joe = game.AddCreature(MonsterBuilder.BuildVineBlight("Joe"));
 			PlayerActionShortcut greatsword = ava.GetShortcut("Greatsword");
 
 			game.EnteringCombat();

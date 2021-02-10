@@ -21,6 +21,18 @@ namespace DndCore
 		public abstract int Level { get; }
 		public abstract int IntId { get; }
 
+		[JsonIgnore]
+		public int SafeId
+		{
+			get
+			{
+				if (this is Character)
+					return Math.Abs(IntId);
+				return -Math.Abs(IntId);  // In game creatures all have negative creature indices.
+			}
+		}
+		
+
 		public event MessageEventHandler RequestMessageToDungeonMaster;
 
 		public event ConditionsChangedEventHandler ConditionsChanged;
@@ -824,8 +836,9 @@ namespace DndCore
 		[JsonIgnore]
 		List<Magic> castedMagic = new List<Magic>();
 
-		void ReceiveMagic(Magic magic)
+		void ReceiveMagic(Magic magic, int delayOffset = 0)
 		{
+			MultiTargetNotificationVariable.Offset = delayOffset;
 			magic.AddTarget(this);
 			receivedMagic.Add(magic);
 			magic.Dispel += ReceivedMagic_Dispelled;
@@ -837,19 +850,25 @@ namespace DndCore
 			Magic magic = new Magic(this, Game, magicItemName, castedSpell, data1, data2, data3, data4, data5, data6, data7, data8);
 			if (target != null)
 			{
+				const int timeBetweenGiftNotification = 150;
+				int delayOffset = 0;
 				if (target.PlayerIds != null)
 					foreach (int playerId in target.PlayerIds)
 					{
 						Character player = Game.GetPlayerFromId(playerId);
 						if (player != null)
-							player.ReceiveMagic(magic);
+						{
+							player.ReceiveMagic(magic, delayOffset);
+							delayOffset += timeBetweenGiftNotification;
+						}
 					}
 				if (target.Creatures != null)
 					foreach (Creature creature in target.Creatures)
-					{
 						if (creature != null)
-							creature.ReceiveMagic(magic);
-					}
+						{
+							creature.ReceiveMagic(magic, delayOffset);
+							delayOffset += timeBetweenGiftNotification;
+						}
 			}
 
 			AddCastedMagic(magic);
@@ -1692,6 +1711,17 @@ namespace DndCore
 		[JsonIgnore]
 		public List<CarriedAmmunition> CarriedAmmunition { get; private set; } = new List<CarriedAmmunition>();
 
+		public string firstName
+		{
+			get
+			{
+				return DndUtils.GetFirstName(name);
+			}
+		}
+
+		[JsonIgnore]
+		public bool lastRollWasSuccessful { get; set; }
+
 		public void AddShortcutToQueue(string shortcutName, bool rollImmediately)
 		{
 			Game.AddShortcutToQueue(this, shortcutName, rollImmediately);
@@ -1725,6 +1755,104 @@ namespace DndCore
 				rechargeable.SetRemainingCharges(value);
 				OnStateChanged(this, new StateChangedEventArgs(rechargeable.VarName, oldChargesUsed, rechargeable.ChargesUsed, true));
 			}
+		}
+
+		public event PickAmmunitionEventHandler PickAmmunition;
+
+		protected virtual void OnPickAmmunition(object sender, PickAmmunitionEventArgs ea)
+		{
+			PickAmmunition?.Invoke(sender, ea);
+		}
+
+		public event CastedSpellEventHandler SpellDispelled;
+
+		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
+		{
+			SpellDispelled?.Invoke(sender, ea);
+		}
+
+		public event MessageEventHandler RequestMessageToAll;
+
+		protected virtual void OnRequestMessageToAll(string message)
+		{
+			RequestMessageToAll?.Invoke(this, new MessageEventArgs(message));
+		}
+
+		/// <summary>
+		/// Sets D & D alarms to trigger recharges for items with recharges, like wands.
+		/// </summary>
+		public void SetTimeBasedEvents()
+		{
+			foreach (KnownSpell knownSpell in KnownSpells)
+			{
+				if (knownSpell.TotalCharges > 0 && knownSpell.TotalCharges != int.MaxValue)
+				{
+					if (knownSpell.ResetSpan.GetTimeSpan().TotalDays == 1)
+					{
+						DndAlarm dndAlarm = Game.Clock.CreateDailyAlarm("Recharge:" + knownSpell.ItemName, knownSpell.RechargesAt.Hours, knownSpell.RechargesAt.Minutes, knownSpell.RechargesAt.Seconds, this);
+						dndAlarm.AlarmFired += DndAlarm_RechargeItem;
+						AddRechargeable(knownSpell.ItemName, DndUtils.ToVarName(knownSpell.ItemName), knownSpell.TotalCharges, "1 day");
+					}
+				}
+			}
+		}
+
+		private void DndAlarm_RechargeItem(object sender, DndTimeEventArgs ea)
+		{
+			if (ea.Alarm.Name.StartsWith("Recharge:"))
+			{
+				string itemName = ea.Alarm.Name.EverythingAfter("Recharge:");
+				KnownSpell item = KnownSpells.FirstOrDefault(x => x.ItemName == itemName);
+				if (item != null)
+				{
+					item.ChargesRemaining = item.TotalCharges;
+				}
+				OnRequestMessageToDungeonMaster($"{firstName}'s {item.ItemName} recharged ({item.TotalCharges}).");
+			}
+		}
+
+		void TriggerMagicSavingThrow()
+		{
+			foreach (Magic magic in receivedMagic)
+				magic.TriggerRecipientSaves(this);
+		}
+
+		public void RollingSavingThrowNow()
+		{
+			TriggerMagicSavingThrow();
+		}
+
+		public void RemoveMagic(Magic magic)
+		{
+			receivedMagic.Remove(magic);
+		}
+		public bool usesMagicThisRoll = false;
+
+		// TODO: When magic ammunition is loaded, set this to true before firing!
+		public bool usesMagicAmmunitionThisRoll = false;
+		public bool ammunitionOnFire = false;
+
+		public int targetedCreatureHitPoints = 0;  // TODO: Implement this + test cases.
+
+		[JsonIgnore]
+		public bool hitWasCritical = false;  // TODO: Implement this + test cases.
+
+
+		// TODO: Call after a successful roll.
+		public void ResetPlayerRollBasedState()
+		{
+			lastRollWasSuccessful = false;
+			usesMagicThisRoll = false;
+			usesMagicAmmunitionThisRoll = false;
+			ammunitionOnFire = false;
+			targetedCreatureHitPoints = 0;
+			hitWasCritical = false;
+			additionalDice = new List<string>();
+			overrideReplaceDamageDice = string.Empty;
+			additionalDiceThisRoll = string.Empty;
+			trailingEffectsThisRoll = string.Empty;
+			dieRollEffectsThisRoll = string.Empty;
+			dieRollMessageThisRoll = string.Empty;
 		}
 	}
 }

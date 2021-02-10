@@ -1659,8 +1659,19 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 	}
 
 	floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string): void {
-		const playerX: number = this.getPlayerX(this.getPlayerIndex(playerId));
-		this.addFloatingText(playerX, message, fillColor, outlineColor);
+		let creatureX: number;
+		let creatureY: number;
+		let speedOverride: number = undefined; 
+		if (playerId >= 0) {
+			creatureY = 1080;
+			creatureX = this.getPlayerX(this.getPlayerIndex(playerId));
+		}
+		else {
+			creatureY = 65;
+			speedOverride = 2;
+			creatureX = this.inGameCreatureManager.getCenterXByIndex(-playerId);
+		}
+		this.addFloatingText(creatureX, message, fillColor, outlineColor, creatureY, speedOverride);
 	}
 
 	showFpsWindow: boolean;

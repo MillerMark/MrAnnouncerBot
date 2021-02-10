@@ -356,7 +356,7 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		this.updateClockFromDto(dto);
 	}
 
-	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string, yPos = 1080): TextEffect {
+	addFloatingText(xPos: number, text: string, fontColor: string, outlineColor: string, yPos = 1080, speedOverride = 6): TextEffect {
 		const textEffect: TextEffect = this.textAnimations.addText(new Vector(xPos, yPos), text, 3500);
 		textEffect.fontColor = fontColor;
 		textEffect.outlineColor = outlineColor;
@@ -366,9 +366,9 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 		textEffect.fadeInTime = 600;
 		textEffect.velocityX = 0;
 		if (yPos > 540)
-			textEffect.velocityY = -6;
-		else 
-			textEffect.velocityY = 6;
+			textEffect.velocityY = -speedOverride;
+		else
+			textEffect.velocityY = speedOverride;
 		textEffect.verticalThrust = 1.3;
 		return textEffect;
 	}

@@ -264,7 +264,7 @@ namespace DndTests
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
-			game.AddMonster(joeTheVineBlight);
+			game.AddCreature(joeTheVineBlight);
 			merkin.CastTest(zzzSaveSpell, joeTheVineBlight);
 			merkin.ReadyRollDice(DiceRollType.DamageOnly, "3d6(fire)", 12);
 			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
@@ -290,7 +290,7 @@ namespace DndTests
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
-			game.AddMonster(joeTheVineBlight);
+			game.AddCreature(joeTheVineBlight);
 			game.EnteringCombat();
 			merkin.CastTest(zzzRangeSpell, joeTheVineBlight);
 			List<CastedSpell> activeSpells = merkin.GetActiveSpells();
@@ -324,7 +324,7 @@ namespace DndTests
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
 			game.AddPlayer(merkin);
-			game.AddMonster(joeVineBlight);
+			game.AddCreature(joeVineBlight);
 			game.EnteringCombat();
 			merkin.CastTest(zzzSaveSpell, joeVineBlight);
 
@@ -393,7 +393,7 @@ namespace DndTests
 			sorcerer.name = "Mark";
 			game.AddPlayer(sorcerer);
 			Monster joe = MonsterBuilder.BuildVineBlight("Joe");
-			game.AddCreature(joe);
+			game.AddCreature((Creature)joe);
 			game.Start();
 
 			PositionCreatures(@"
@@ -477,7 +477,7 @@ namespace DndTests
 			DndGame game = DndGame.Instance;
 			game.GetReadyToPlay();
 			game.AddPlayer(ava);
-			game.AddMonster(joeVineBlight);
+			game.AddCreature(joeVineBlight);
 			DateTime gameStartTime = game.Time;
 
 			game.EnteringCombat();

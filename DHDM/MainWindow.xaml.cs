@@ -362,9 +362,11 @@ namespace DHDM
 				}
 		}
 
-		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		// TODO: Delete playerShowStateDispatchTimers...
+		List<DispatcherTimer> playerShowStateDispatchTimers = new List<DispatcherTimer>();
+		void WaitToShowPlayerState(PlayerShowStateEventArgs ea)
 		{
-			if (ea.DelayMs > 0)
+			Dispatcher.Invoke(() =>
 			{
 				DispatcherTimer delayFloatTextTimer = new DispatcherTimer(DispatcherPriority.Send);
 				delayFloatTextTimer.Interval = TimeSpan.FromMilliseconds(ea.DelayMs);
@@ -372,16 +374,26 @@ namespace DHDM
 				delayFloatTextTimer.Tick += new EventHandler(DelayFloatTextNow);
 				delayFloatTextTimer.Tag = ea;
 				delayFloatTextTimer.Start();
+			});
+		}
+
+
+		private void Game_PlayerShowState(object sender, PlayerShowStateEventArgs ea)
+		{
+			if (ea.DelayMs > 0)
+			{
+				WaitToShowPlayerState(ea);
 				return;
 			}
 
 			string outlineColor = ea.OutlineColor;
 			string fillColor = ea.FillColor;
+			
 			if (outlineColor == "player")
 				outlineColor = ea.Player.dieFontColor;
 			if (fillColor == "player")
 				fillColor = ea.Player.dieBackColor;
-			HubtasticBaseStation.FloatPlayerText(ea.Player.playerID, ea.Message, fillColor, outlineColor);
+			HubtasticBaseStation.FloatPlayerText(ea.Player.IntId, ea.Message, fillColor, outlineColor);
 		}
 
 		void DelayFloatTextNow(object sender, EventArgs e)
@@ -390,6 +402,8 @@ namespace DHDM
 				return;
 
 			dispatcherTimer.Stop();
+
+			playerShowStateDispatchTimers.Remove(dispatcherTimer);
 
 			if (!(dispatcherTimer.Tag is PlayerShowStateEventArgs ea))
 				return;
@@ -934,7 +948,7 @@ namespace DHDM
 				return results;
 
 			foreach (IndividualRoll Roll in Rolls)
-				if (Roll.damageType != DamageType.None)
+				if (Roll.damageType != DamageType.None && Roll.damageType != DamageType.Bane && Roll.damageType != DamageType.Condition && Roll.damageType != DamageType.Superiority)
 					if (results.ContainsKey(Roll.damageType))
 						results[Roll.damageType] += Roll.value;
 					else
@@ -3092,7 +3106,7 @@ namespace DHDM
 			if (diceRoll.DiceGroup == DiceGroup.Players)
 				ResetPlayerState(diceRoll, player);
 		}
-
+		
 		private void ResetPlayerState(DiceRoll diceRoll, Character player)
 		{
 			if (diceRoll.IsOnePlayer)
@@ -3105,6 +3119,26 @@ namespace DHDM
 					player?.ResetPlayerRollBasedState();
 				}
 			}
+		}
+
+		void ProcessAddOnsForDtos(DiceRoll diceRoll)
+		{
+			List<Creature> creatures = GetAllCreaturesFromDiceDtos(diceRoll);
+			foreach (Creature creature in creatures)
+				ProcessAddOns(diceRoll, creature);
+		}
+
+		private static List<Creature> GetAllCreaturesFromDiceDtos(DiceRoll diceRoll)
+		{
+			List<Creature> creatures = new List<Creature>();
+			foreach (DiceDto diceDto in diceRoll.DiceDtos)
+				if (diceDto.CreatureId < 0)
+				{
+					InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-diceDto.CreatureId);
+					if (inGameCreature != null && !creatures.Contains(inGameCreature.Creature))
+						creatures.Add(inGameCreature.Creature);
+				}
+			return creatures;
 		}
 
 		private Character InitializeForPlayerRoll(DiceRoll diceRoll)
@@ -3139,22 +3173,11 @@ namespace DHDM
 					player.AttackingNow(null);
 				}
 
-				if (player != null)
-				{
-					if (!string.IsNullOrWhiteSpace(player.additionalDiceThisRoll))
-					{
-						diceRoll.DamageHealthExtraDice += "," + player.additionalDiceThisRoll;
-					}
-					if (!string.IsNullOrWhiteSpace(player.dieRollEffectsThisRoll))
-					{
-						diceRoll.AddDieRollEffects(player.dieRollEffectsThisRoll);
-					}
-					if (!string.IsNullOrWhiteSpace(player.trailingEffectsThisRoll))
-					{
-						diceRoll.AddTrailingEffects(player.trailingEffectsThisRoll);
-					}
-				}
+				ProcessAddOns(diceRoll, player);
 			}
+
+			ProcessAddOnsForDtos(diceRoll);
+			
 
 			if (diceRoll.IsOnePlayer && player != null)
 			{
@@ -3162,6 +3185,35 @@ namespace DHDM
 			}
 
 			return player;
+		}
+
+		static void AddAdditionalDiceDtos(DiceRoll diceRoll, Creature creature)
+		{
+			if (creature.additionalDice == null)
+				return;
+			foreach (string diceStr in creature.additionalDice)
+				DiceDto.AddDtosFromDieStr(diceRoll.DiceDtos, diceStr, creature.dieBackColor, creature.dieFontColor, creature.SafeId, creature.Name);
+		}
+
+		private static void ProcessAddOns(DiceRoll diceRoll, Creature creature)
+		{
+			if (creature == null)
+				return;
+
+			if (!string.IsNullOrWhiteSpace(creature.additionalDiceThisRoll))
+			{
+				AddAdditionalDiceDtos(diceRoll, creature);
+				//if (diceRoll.SuppressLegacyRoll)
+				//	AddAdditionalDiceDtos(diceRoll, creature);
+				//else
+				//	diceRoll.DamageHealthExtraDice += "," + creature.additionalDiceThisRoll;
+			}
+
+			if (!string.IsNullOrWhiteSpace(creature.dieRollEffectsThisRoll))
+				diceRoll.AddDieRollEffects(creature.dieRollEffectsThisRoll);
+		
+			if (!string.IsNullOrWhiteSpace(creature.trailingEffectsThisRoll))
+				diceRoll.AddTrailingEffects(creature.trailingEffectsThisRoll);
 		}
 
 		DateTime lastDieRollTime;
@@ -4309,8 +4361,8 @@ namespace DHDM
 			{
 				if (!string.IsNullOrWhiteSpace(stopRollingData.spellName))
 				{
-					Character player = AllPlayers.GetFromId(stopRollingData.singleOwnerId);
-					if (player == null)
+					Creature creature = GetCreatureFromId(stopRollingData.singleOwnerId);
+					if (creature == null)
 					{
 						History.Log("Error: stopRollingData.singleOwnerId not set!");
 						System.Diagnostics.Debugger.Break();
@@ -4324,7 +4376,7 @@ namespace DHDM
 						return;
 					}
 
-					CastedSpell castedSpell = game.GetActiveSpellById(player, stopRollingData.spellId);
+					CastedSpell castedSpell = game.GetActiveSpellById(creature, stopRollingData.spellId);
 					Target target = new Target();
 					target.Type = AttackTargetType.Spell;
 					foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
@@ -4356,9 +4408,37 @@ namespace DHDM
 			}
 		}
 
+		private static Creature GetCreatureFromId(int creatureId)
+		{
+			if (creatureId >= 0)
+				return AllPlayers.GetFromId(creatureId);
+			else
+			{
+				InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
+				if (inGameCreature != null)
+					return inGameCreature.Creature;
+			}
+			return null;
+		}
+
+		void ResetRollBasedState(DiceStoppedRollingData stopRollingData)
+		{
+			List<Creature> creatures = new List<Creature>();
+			foreach (IndividualRoll individualRoll in stopRollingData.individualRolls)
+			{
+				Creature creature = GetCreatureFromId(individualRoll.creatureId);
+				if (creature != null && creatures.IndexOf(creature) < 0)
+					creatures.Add(creature);
+			}
+
+			foreach (Creature creature in creatures)
+				creature.ResetPlayerRollBasedState();
+		}
+
 		private async void HubtasticBaseStation_DiceStoppedRolling(object sender, DiceEventArgs ea)
 		{
 			DiceStoppedRollingData stopRollingData = ea.StopRollingData;
+			ResetRollBasedState(stopRollingData);
 			SaveNamedResults(stopRollingData);
 
 			TriggerAfterRollEffects(stopRollingData);
@@ -5855,7 +5935,36 @@ namespace DHDM
 			});
 		}
 
-		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> playerIds)
+		void CreaturesRollingSavingThrow(List<int> creatureIds)
+		{
+			List<Creature> creatures = GetCreaturesFromIds(creatureIds);
+			foreach (Creature creature in creatures)
+				creature.RollingSavingThrowNow();
+		}
+
+		private static List<Creature> GetCreaturesFromIds(List<int> creatureIds)
+		{
+			List<Creature> creatures = new List<Creature>();
+			foreach (int creatureId in creatureIds)
+			{
+				if (creatureId < 0)
+				{
+					InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
+					if (inGameCreature != null && inGameCreature.Creature != null)
+						creatures.Add(inGameCreature.Creature);
+				}
+				else
+				{
+					Character player = AllPlayers.GetFromId(creatureId);
+					if (player != null)
+						creatures.Add(player);
+				}
+			}
+
+			return creatures;
+		}
+
+		public void InstantDice(DiceRollType diceRollType, string dieStr, List<int> creatureIds)
 		{
 			VantageKind vantageKind = VantageKind.Normal;
 			if (dieStr.EndsWith("[adv]"))
@@ -5869,17 +5978,22 @@ namespace DHDM
 				vantageKind = VantageKind.Disadvantage;
 			}
 			NextDieStr = dieStr;
+
+			
+			if (diceRollType == DiceRollType.SavingThrow)
+				CreaturesRollingSavingThrow(creatureIds);
+
 			string who;
-			if (playerIds?.Count == 1 && playerIds[0] < 0)
+			if (creatureIds?.Count == 1 && creatureIds[0] < 0)
 			{
-				InGameCreature creature = AllInGameCreatures.GetByIndex(-playerIds[0]);
+				InGameCreature creature = AllInGameCreatures.GetByIndex(-creatureIds[0]);
 				who = creature.Name;
 				Dispatcher.Invoke(() =>
 				{
 					NextRollScope = RollScope.ActiveInGameCreature;
 				});
 			}
-			else if (IncludesAllPlayers(playerIds))
+			else if (IncludesAllPlayers(creatureIds))
 				who = "all players";
 			else
 				who = GetPlayerName(ActivePlayerId);
@@ -5895,7 +6009,7 @@ namespace DHDM
 			SafeInvoke(() =>
 			{
 				SetRollTypeUI(diceRollType);
-				SetRollScopeForPlayers(playerIds);
+				SetRollScopeForPlayers(creatureIds);
 				DiceRoll diceRoll = PrepareRoll(diceRollType);
 				// TODO: Set Modifier for this roll if it's a d20 for a creature (NextRollScope = RollScope.ActiveInGameCreature;).
 				diceRoll.VantageKind = vantageKind;
@@ -5963,14 +6077,8 @@ namespace DHDM
 			game.GetReadyToPlay();
 			game.Clock.TimeChanged += DndTimeClock_TimeChanged;
 
-			List<Character> players = AllPlayers.GetActive();
-
-			foreach (Character player in players)
-			{
-				player.NumWildMagicChecks = 0;
-				player.RebuildAllEvents();
-				game.AddPlayer(player);
-			}
+			AddPlayersToGame();
+			AddCreaturesToGame();
 
 			game.Clock.SetTime(saveTime);
 			game.Start();
@@ -5983,6 +6091,24 @@ namespace DHDM
 			spAllMonsters.DataContext = AllMonsters.Monsters;
 			SetInGameCreatures();
 			InitializePlayerStats();
+		}
+
+		private void AddPlayersToGame()
+		{
+			List<Character> players = AllPlayers.GetActive();
+
+			foreach (Character player in players)
+			{
+				player.NumWildMagicChecks = 0;
+				player.RebuildAllEvents();
+				game.AddPlayer(player);
+			}
+		}
+
+		private void AddCreaturesToGame()
+		{
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+				game.AddCreature(inGameCreature.Creature);
 		}
 
 		private void SendPlayerData()
@@ -7206,7 +7332,10 @@ namespace DHDM
 
 			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
 				if (inGameCreature.IsTargeted)
+				{
 					diceRoll.DiceDtos.Add(DiceDto.D20FromInGameCreature(inGameCreature, diceRollType));
+					inGameCreature.CreatureRollingSavingThrow();
+				}
 		}
 
 		string nextSpellIdWeAreCasting = null;
@@ -9043,32 +9172,7 @@ namespace DHDM
 					return;
 
 				case "UpdateOnScreenCreatures":
-					// Save current selection/targeting  state...
-					Dictionary<int, TargetSaveData> targetSaveData = new Dictionary<int, TargetSaveData>();
-					foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
-					{
-						TargetSaveData targetData = new TargetSaveData() { IsSelected = inGameCreature.OnScreen, IsTargeted = inGameCreature.IsTargeted };
-						int index = inGameCreature.Index;
-						if (targetSaveData.ContainsKey(index))
-							targetSaveData[index] = targetData;
-						else
-							targetSaveData.Add(index, targetData);
-					}
-
-					AllInGameCreatures.Invalidate();
-
-					// Restore selection/targeting state
-					foreach (int key in targetSaveData.Keys)
-					{
-						InGameCreature creature = AllInGameCreatures.GetByIndex(key);
-						if (creature != null)
-						{
-							creature.OnScreen = targetSaveData[key].IsSelected;
-							creature.IsTargeted = targetSaveData[key].IsTargeted;
-						}
-					}
-
-					UpdateInGameCreatures();
+					UpdateOnScreenCreatures();
 					return;
 				//case "SavingThrow":
 				//	// TODO: Roll saving throws for target monsters against last damage and last damage type.
@@ -9079,6 +9183,46 @@ namespace DHDM
 			}
 			SetInGameCreatures();
 			InitializePlayerStats();
+		}
+
+		private void UpdateOnScreenCreatures()
+		{
+			Dictionary<int, TargetSaveData> targetSaveData = GetTargetSaveData();
+			// TODO: Consider unhooking all the creature event handlers before discarding them.
+			AllInGameCreatures.Invalidate();
+			AddCreaturesToGame();
+
+			RestoreTargetData(targetSaveData);
+			UpdateInGameCreatures();
+		}
+
+		private static void RestoreTargetData(Dictionary<int, TargetSaveData> targetSaveData)
+		{
+			foreach (int key in targetSaveData.Keys)
+			{
+				InGameCreature creature = AllInGameCreatures.GetByIndex(key);
+				if (creature != null)
+				{
+					creature.OnScreen = targetSaveData[key].IsSelected;
+					creature.IsTargeted = targetSaveData[key].IsTargeted;
+				}
+			}
+		}
+
+		private static Dictionary<int, TargetSaveData> GetTargetSaveData()
+		{
+			Dictionary<int, TargetSaveData> targetSaveData = new Dictionary<int, TargetSaveData>();
+			foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+			{
+				TargetSaveData targetData = new TargetSaveData() { IsSelected = inGameCreature.OnScreen, IsTargeted = inGameCreature.IsTargeted };
+				int index = inGameCreature.Index;
+				if (targetSaveData.ContainsKey(index))
+					targetSaveData[index] = targetData;
+				else
+					targetSaveData.Add(index, targetData);
+			}
+
+			return targetSaveData;
 		}
 
 		// TODO: send in a dictionary of damage types and amounts.
@@ -10003,12 +10147,20 @@ namespace DHDM
 			int totalScore = 0;
 			int modifier = 0;
 
+			int baneModifier = 0;
 			foreach (IndividualRoll individualRoll in individualRolls)
 			{
+				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bane)
+				{
+					baneModifier += individualRoll.value;
+					continue;
+				}
 				if (individualRoll.dieCountsAs != DieCountsAs.savingThrow || individualRoll.creatureId != creatureId)
 					continue;
 
 				totalScore += individualRoll.value;
+				// TODO: Support advantage/disadvantage.
+				// TODO: Support Bane die.
 				if (individualRoll.numSides == 20)
 				{
 					if (individualRoll.value == 20)
@@ -10019,7 +10171,7 @@ namespace DHDM
 				if (individualRoll.modifier > modifier)
 					modifier = individualRoll.modifier;
 			}
-			if (totalScore + modifier >= hiddenThreshold)
+			if (totalScore + modifier + baneModifier >= hiddenThreshold)
 				return SavingThrowResult.Save;
 			return SavingThrowResult.Failure;
 		}

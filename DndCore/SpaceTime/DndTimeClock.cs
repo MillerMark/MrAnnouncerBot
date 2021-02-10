@@ -370,9 +370,9 @@ namespace DndCore
 			return dndAlarm;
 		}
 
-		public DndDailyAlarm CreateDailyAlarm(string name, int hours, int minutes = 0, int seconds = 0, Character player = null, object data = null)
+		public DndDailyAlarm CreateDailyAlarm(string name, int hours, int minutes = 0, int seconds = 0, Creature creature = null, object data = null)
 		{
-			DndDailyAlarm dndAlarm = new DndDailyAlarm(this, new DateTime(Time.Year, Time.Month, Time.Day, hours, minutes, seconds), name, player, data);
+			DndDailyAlarm dndAlarm = new DndDailyAlarm(this, new DateTime(Time.Year, Time.Month, Time.Day, hours, minutes, seconds), name, creature, data);
 			dailyAlarms.Add(dndAlarm);
 			dailyAlarms.Sort((x, y) => x.TriggerTime.CompareTo(y.TriggerTime));
 			return dndAlarm;

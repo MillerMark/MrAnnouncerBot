@@ -115,7 +115,6 @@ namespace DndCore
 
 		List<DndMap> maps = new List<DndMap>();
 
-		List<Monster> monsters = new List<Monster>();
 		private static DndGame instance;
 		DndGameEventArgs dndGameEventArgs = new DndGameEventArgs();
 
@@ -190,31 +189,31 @@ namespace DndCore
 			return dndMap;
 		}
 
-		public Monster AddMonster(Monster monster)
+		public Creature AddCreature(Creature creature)
 		{
-			monster.Game = this;
-			monsters.Add(monster);
-			return monster;
+			InitializeNewlyAddedCreature(creature);
+
+			KnownCreatures.Add(creature);
+			return creature;
 		}
 
 		public Character AddPlayer(Character player)
 		{
-			player.Game = this;
-			HookPlayerEvents(player);
+			InitializeNewlyAddedCreature(player);
+
 			player.AddSpellSlots();
-			player.SetTimeBasedEvents();
 			Players.Add(player);
 			return player;
 		}
 
-
-		public List<Creature> KnownCreatures { get; set; } = new List<Creature>();
-
-		public void AddCreature(Creature creature)
+		private void InitializeNewlyAddedCreature(Creature creature)
 		{
-			KnownCreatures.Add(creature);
+			HookCreatureEvents(creature);
+			creature.Game = this;
+			creature.SetTimeBasedEvents();
 		}
 
+		public List<Creature> KnownCreatures { get; set; } = new List<Creature>();
 
 		public List<Creature> AllCreatures
 		{
@@ -226,7 +225,7 @@ namespace DndCore
 
 		// AllCreatures
 
-		private void HookPlayerEvents(Character player)
+		private void HookCreatureEvents(Creature player)
 		{
 			player.PickWeapon += Player_PickWeapon;
 			player.PickAmmunition += Player_PickAmmunition;
@@ -515,27 +514,27 @@ namespace DndCore
 			}
 		}
 
-		public List<CastedSpell> GetActiveSpells(Character character)
+		public List<CastedSpell> GetActiveSpells(Creature character)
 		{
 			return activeSpells.FindAll(x => x.SpellCaster == character);
 		}
 
-		public CastedSpell GetActiveSpell(Character character, string spellName)
+		public CastedSpell GetActiveSpell(Creature character, string spellName)
 		{
 			return activeSpells.Find(x => x.SpellCaster == character && x.Spell.Name == spellName);
 		}
 
-		public CastedSpell GetActiveSpellById(Character character, string id)
+		public CastedSpell GetActiveSpellById(Creature character, string id)
 		{
 			return activeSpells.Find(x => x.SpellCaster == character && x.ID == id);
 		}
 
-		public void RemoveActiveSpell(Character character, string spellName)
+		public void RemoveActiveSpell(Creature character, string spellName)
 		{
 			activeSpells.RemoveAll(x => x.SpellCaster == character && x.Spell.Name == spellName);
 		}
 
-		public void RemoveActiveSpellById(Character character, string id)
+		public void RemoveActiveSpellById(Creature character, string id)
 		{
 			activeSpells.RemoveAll(x => x.SpellCaster == character && x.ID == id);
 		}
@@ -615,7 +614,6 @@ namespace DndCore
 			nextTarget = null;
 			roundReminders.Clear();
 			maps.Clear();
-			monsters.Clear();
 			ActiveMap = null;
 			Players.Clear();
 			KnownCreatures.Clear();

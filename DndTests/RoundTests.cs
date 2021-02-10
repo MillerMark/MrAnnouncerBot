@@ -33,7 +33,7 @@ namespace DndTests
 			Monster joeTheVineBlight = MonsterBuilder.BuildVineBlight("Joe");
 
 			game.AddPlayer(merkin);
-			game.AddMonster(joeTheVineBlight);
+			game.AddCreature(joeTheVineBlight);
 			game.EnteringCombat();
 			DateTime enterCombatTime = game.Time;
 			Assert.AreEqual(1, game.RoundNumber);

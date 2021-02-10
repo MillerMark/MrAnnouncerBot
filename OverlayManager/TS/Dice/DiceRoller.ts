@@ -115,6 +115,7 @@ interface IDie {
 	name: string;
 	topNumber: number;
 	scale: number;
+	scoreMultiplier: number;
 	modifier: number;
 	sparks: Array<SpriteProxy>;
 	attachedDamage: boolean;
@@ -1012,6 +1013,7 @@ class DieRoller {
 
 		const tallyTotals = (playerID: number, die: IDie, topNumber: number) => {
 			initializeLocalArrays(playerID);
+
 			if (logProgress) {
 				console.log(`tallyTotals, Before - totalScores.get(${playerID}): ` + totalScores.get(playerID));
 			}
@@ -1026,9 +1028,10 @@ class DieRoller {
 						console.log(`DieCountsAs.savingThrow (${topNumber})`);
 					}
 					totalScores.set(playerID, totalScores.get(playerID) + topNumber);
+					break;
 				case DieCountsAs.totalScore:
 					if (logProgress) {
-						console.log(`DieCountsAs.totalScore (${topNumber})`);
+						console.log(`DieCountsAs.totalScore ${die.scoreMultiplier} x (${topNumber})`);
 					}
 					if (this.diceRollData.type === DiceRollType.WildMagicD20Check) {
 						if (topNumber === 1)
@@ -1037,7 +1040,7 @@ class DieRoller {
 							totalScores.set(playerID, 0);
 					}
 					else
-						totalScores.set(playerID, totalScores.get(playerID) + topNumber);
+						totalScores.set(playerID, totalScores.get(playerID) + topNumber * die.scoreMultiplier);
 					break;
 				case DieCountsAs.inspiration:
 					if (logProgress) {
@@ -1063,7 +1066,6 @@ class DieRoller {
 					}
 					{
 						const damageType: DamageType = die.damageType || DamageType.None;
-
 						const currentDamage: number = damageMap.get(damageType);
 						if (currentDamage) {
 							//console.log(`New damage for ${DamageType[damageType]}: ${currentDamage + topNumber}`);
@@ -1136,7 +1138,10 @@ class DieRoller {
 				this.attachDieLabel(die);
 			}
 
-			this.diceRollData.individualRolls.push(new IndividualRoll(topNumber, die.values, die.dieType, die.damageType, die.rollType, die.creatureID, die.modifier));
+			if (die.scoreMultiplier === 0)
+				console.error("die.scoreMultiplier === 0");
+
+			this.diceRollData.individualRolls.push(new IndividualRoll(topNumber * die.scoreMultiplier, die.values, die.dieType, die.damageType, die.rollType, die.creatureID, die.modifier));
 
 			const playerID: number = die.creatureID;
 			if (logProgress) {
@@ -1514,6 +1519,9 @@ class DieRoller {
 		if (str === 'superiority')
 			return DamageType.Superiority;
 
+		if (str === 'bane')
+			return DamageType.Bane;
+
 		if (str === 'necrotic')
 			return DamageType.Necrotic;
 
@@ -1622,7 +1630,7 @@ class DieRoller {
 		die.origins.push(diceLayer.inspirationParticles.getOrigin());
 	}
 
-	createDie(diceGroup: DiceGroup, quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, creatureID = Character.invalidCreatureId, scale = 1, dieType = '', hueVariancePercent = 0, modifier = 0): IDie[] {
+	createDie(diceGroup: DiceGroup, quantity: number, numSides: number, damageType: DamageType, rollType: DieCountsAs, backgroundColor: string, textColor: string, throwPower = 1, xPositionModifier = 0, isMagic = false, creatureID = Character.invalidCreatureId, scale = 1, dieType = '', hueVariancePercent = 0, modifier = 0, scoreMultiplier = 1): IDie[] {
 		const allDice: IDie[] = [];
 		const magicRingHueShift: number = Math.floor(Math.random() * 360);
 		const dieScale: number = DieRoller.dieScale * scale;
@@ -1632,8 +1640,7 @@ class DieRoller {
 		for (let i = 0; i < quantity; i++) {
 			let die: IDie = null;
 
-			if (hueVariancePercent !== 0)
-			{
+			if (hueVariancePercent !== 0) {
 				const hsl: HueSatLight = HueSatLight.fromHex(backgroundColor);
 				const hueVariance: number = hueVariancePercent / 100.0;
 				hsl.hue = MathEx.clamp(hsl.hue * Random.between(1 - hueVariance, 1 + hueVariance) % 1, 0, 1);
@@ -1676,6 +1683,7 @@ class DieRoller {
 					break;
 			}
 			die.scale = scale;
+			die.scoreMultiplier = scoreMultiplier;
 			allDice.push(die);
 			if (die === null) {
 				throw new Error(`Die with ${numSides} sides was not found. Unable to throw dice.`);
@@ -1745,15 +1753,23 @@ class DieRoller {
 							diceLayer.attachSuperiority(die);
 							die.damageStr = 'superiority';
 							break;
+						case DamageType.Bane:
+							diceLayer.attachBane(die);
+							break;
 					}
 				}
 				else if ((rollType === DieCountsAs.health || rollType === DieCountsAs.totalScore || rollType === DieCountsAs.savingThrow || rollType === DieCountsAs.extra) && damageType === DamageType.Superiority) {
 					diceLayer.attachSuperiority(die);
 				}
+				else if ((rollType === DieCountsAs.totalScore || rollType === DieCountsAs.savingThrow || rollType === DieCountsAs.extra) && damageType === DamageType.Bane) {
+					diceLayer.attachBane(die);
+				}
+
 				if (rollType === DieCountsAs.health) {
 					diceLayer.attachHealth(die);
 				}
 			}
+			//console.log(`die.rollType = ${DieCountsAs[rollType]};`);
 			die.rollType = rollType;
 			if (die.rollType === DieCountsAs.inspiration) {
 				const rotation: number = Random.between(4, 8);
@@ -1780,6 +1796,12 @@ class DieRoller {
 		if (countPlusDie[0]) {
 			//console.log('countPlusDie[0]: ' + countPlusDie[0]);
 			quantity = +countPlusDie[0];
+		}
+
+		let scoreMultiplier = 1;
+		if (quantity < 0) {
+			scoreMultiplier = -1;
+			quantity = -quantity;
 		}
 
 		//console.log('countPlusDie[1]: ' + countPlusDie[1]);
@@ -1810,10 +1832,11 @@ class DieRoller {
 
 		const numSides: number = +numSidesStr;
 
-		return this.createDie(diceGroup, quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, 1, dieType, hueVariancePercent, modifier);
+		return this.createDie(diceGroup, quantity, numSides, damageType, rollType, backgroundColor, textColor, throwPower, xPositionModifier, isMagic, playerID, 1, dieType, hueVariancePercent, modifier, scoreMultiplier);
 	}
 
 	addDieFromStr(diceGroup: DiceGroup, playerID: number, diceStr: string, dieCountsAs: DieCountsAs, throwPower: number, xPositionModifier = 0, backgroundColor: string = undefined, fontColor: string = undefined, isMagic = false, hueVariancePercent = 0): IDie[] {
+		//console.log('diceStr: ' + diceStr);
 		let lastDieAdded: IDie[] = null;
 		if (!diceStr)
 			return lastDieAdded;
@@ -1850,6 +1873,7 @@ class DieRoller {
 						}
 						else if (rollTypeOverrideLowerCase === 'damage') {
 							thisDieCountsAs = DieCountsAs.damage;
+							console.log(`thisDieCountsAs = DieCountsAs.damage;`);
 							thisBackgroundColor = DiceLayer.damageDieBackgroundColor;
 							thisFontColor = DiceLayer.damageDieFontColor;
 							isMagic = false;
@@ -1866,12 +1890,17 @@ class DieRoller {
 					}
 					else {
 						damageType = this.damageTypeFromStr(damageStr);
-						if (damageType === DamageType.None)
+						if (damageType === DamageType.Condition || damageType === DamageType.Bane)
+							damageType = DamageType.None;
+						else if (damageType === DamageType.None)
 							dieType = damageStr;
 					}
 				}
 				dieSpec = dieSpec.substr(0, parenIndex);
 			}
+
+			if (damageType === DamageType.Bane)
+				isMagic = true;
 
 			if (damageType !== DamageType.None)
 				isMagic = false;  // No magic rings around damage die.
@@ -3602,6 +3631,7 @@ class DieRoller {
 		// @ts-ignore - DiceD10x10
 		const die10: IDie = new DiceD10x10({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 		die10.scale = 1;
+		die10.scoreMultiplier = 1;
 		die10.creatureID = playerID;
 		die10.group = DiceGroup.Players;
 		this.prepareD10x10Die(diceRollData.diceGroup, die10, throwPower, xPositionModifier);
@@ -3614,6 +3644,7 @@ class DieRoller {
 		// @ts-ignore - DiceD10x01
 		const die01: IDie = new DiceD10x01({ size: DieRoller.dieScale, backColor: backgroundColor, fontColor: textColor }, this.diceManager);
 		die01.scale = 1;
+		die01.scoreMultiplier = 1;
 		die10.creatureID = playerID;
 		die10.group = DiceGroup.Players;
 		this.prepareD10x01Die(diceRollData.diceGroup, die01, throwPower, xPositionModifier);
@@ -3643,6 +3674,7 @@ class DieRoller {
 		// @ts-ignore - DiceD20
 		const die: IDie = new DiceD20({ size: DieRoller.dieScale, backColor: d20BackColor, fontColor: d20FontColor }, this.diceManager);
 		die.scale = 1;
+		die.scoreMultiplier = 1;
 		die.isD20 = true;
 		this.prepareDie(diceGroup, die, diceRollData.throwPower, xPositionModifier);
 		die.rollType = DieCountsAs.totalScore;
@@ -3878,10 +3910,12 @@ class DieRoller {
 			diceRollDto.itsAD20Roll = true;
 		}
 
+		//console.log('diceDto.DamageType: ' + DamageType[diceDto.DamageType]);
+
 		if (diceDto.Vantage !== VantageKind.Normal && diceDto.Quantity === 1 && diceDto.Sides === 20) {
 			diceDto.Quantity = 2;
 		}
-		const allDice: IDie[] = this.createDie(diceRollDto.diceGroup, diceDto.Quantity, diceDto.Sides, diceDto.DamageType, diceDto.DieCountsAs, diceDto.BackColor, diceDto.FontColor, this.diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId, diceDto.Scale);
+		const allDice: IDie[] = this.createDie(diceRollDto.diceGroup, diceDto.Quantity, diceDto.Sides, diceDto.DamageType, diceDto.DieCountsAs, diceDto.BackColor, diceDto.FontColor, this.diceRollData.throwPower, xPositionModifier, diceDto.IsMagic, diceDto.CreatureId, diceDto.Scale, '', 0, 0, diceDto.ScoreMultiplier);
 
 		//console.log('addDiceFromDto - diceDto.PlayerName: ' + diceDto.PlayerName);
 		//console.log('diceDto.DamageType: ' + DamageType[diceDto.DamageType].toString());
@@ -3891,6 +3925,7 @@ class DieRoller {
 			die.dataStr = diceDto.Data;
 			die.modifier = diceDto.Modifier;
 			die.rollType = diceDto.DieCountsAs;
+			//console.log(`die.rollType = ${DieCountsAs[diceDto.DieCountsAs]};`);
 			die.dieType = DiceRollType[DiceRollType.None];
 			if (diceDto.Label)
 				diceLayer.attachLabel(die, diceDto.Label, diceDto.FontColor, diceDto.BackColor, diceDto.Scale, this.diceRollData.diceGroup); // So the text matches the die color.
@@ -4109,7 +4144,7 @@ class DieRoller {
 			//console.log(this.dice);
 		}
 
-
+		//console.log('diceRollDto.suppressLegacyRoll: ' + diceRollDto.suppressLegacyRoll);
 		if (!diceRollDto.suppressLegacyRoll) {
 			//console.log('prepareLegacyRoll...');
 			this.prepareLegacyRoll(xPositionModifier);
@@ -4159,7 +4194,6 @@ class DieRoller {
 	}
 
 	showSavingThrowTotalsOverAllDice(dice: IDie[], hiddenThreshold: number, diceGroup: DiceGroup) {
-		console.log(`showSavingThrowTotalsOverAllDice`);
 		const dieTotals: Map<string, number> = new Map<string, number>();
 		dice.forEach((die: IDie) => {
 			if (this.countsAsTotalScore(die)) {
@@ -4190,7 +4224,7 @@ class DieRoller {
 		let message: string;
 		if (dieTotal === 20)  // Nat 20!
 			message = `Critical save!`;
-		else if (dieTotal === 1)  // Complete failure!
+		else if (dieTotal <= 1)  // Complete failure!
 			message = `Complete failure!`;
 		else if (grandTotal >= hiddenThreshold)
 			message = `${dieTotalStr} saves!`;

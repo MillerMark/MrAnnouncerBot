@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace DndCore
 {
@@ -7,6 +8,7 @@ namespace DndCore
 	{
 		public int Quantity { get; set; }
 		public int Sides { get; set; }
+		public int ScoreMultiplier { get; set; }
 		public int CreatureId { get; set; }
 		public bool IsMagic { get; set; }
 		public double Modifier { get; set; }
@@ -24,6 +26,7 @@ namespace DndCore
 		public DiceDto()
 		{
 			Quantity = 1;
+			ScoreMultiplier = 1;
 		}
 		public void SetRollDetails(DiceRollType type, string descriptor)
 		{
@@ -86,6 +89,31 @@ namespace DndCore
 		public static bool IsDamage(DiceRollType type)
 		{
 			return type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow;
+		}
+
+		static DiceDto FromRoll(Roll roll, string dieBackColor, string dieFontColor, int creatureId, string playerName)
+		{
+			// TODO: Set color for creature, set label, set player name.
+			DiceDto result = new DiceDto();
+			result.DamageType = DndUtils.ToDamage(roll.Descriptor);
+			result.Quantity = (int)roll.Count;
+			result.BackColor = dieBackColor;
+			result.FontColor = dieFontColor;
+			result.Label = roll.Label;
+			result.PlayerName = playerName;
+			result.CreatureId = creatureId;
+			result.Sides = roll.Sides;
+			result.ScoreMultiplier = roll.ScoreMultiplier;
+
+
+			return result;
+		}
+
+		public static void AddDtosFromDieStr(List<DiceDto> diceDtos, string diceStr, string dieBackColor, string dieFontColor, int creatureId, string playerName)
+		{
+			DieRollDetails dieRollDetails = DieRollDetails.From(diceStr);
+			foreach (Roll roll in dieRollDetails.Rolls)
+				diceDtos.Add(FromRoll(roll, dieBackColor, dieFontColor, creatureId, playerName));
 		}
 	}
 }

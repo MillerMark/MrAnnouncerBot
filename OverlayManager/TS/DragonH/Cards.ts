@@ -828,7 +828,6 @@ class CardManager {
 	// Called when an in-game creature's x-position is animated and it slides to the left or right.
 	onMoveCreature(creature: InGameCreature, targetX: number, delayMs: number) {
 		targetX += InGameCreatureManager.creatureScrollWidth / 2;
-
 		const heldCards: Array<SpriteProxy> = this.getAllCardsHeldBy(creature);
 
 		const glowCards: Array<SpriteProxy> = this.getAllActiveGlowHeldBy(creature);

@@ -58,7 +58,10 @@ namespace DndCore
 		private void CastedSpell_OnDispel(object sender, EventArgs e)
 		{
 			foreach (Creature creature in Targets)
+			{
 				TriggerEvent(creature, MagicItem.onExpire);
+				creature.RemoveMagic(this);
+			}
 		}
 
 		public Creature Caster { get; set; }
@@ -129,12 +132,22 @@ namespace DndCore
 			List<string> args = GetArgumentList();
 			string expressionToEvaluate = DndUtils.InjectParameters(eventCode, MagicItem.Parameters, args);
 
-			Expressions.Do(expressionToEvaluate, null, null, null, null, creaturePlusModId);
+			Expressions.Do(expressionToEvaluate, magicOwner, null, null, null, creaturePlusModId);
 		}
 
 		public void TriggerOnReceived(Creature magicOwner)
 		{
 			TriggerEvent(magicOwner, MagicItem.onReceived);
+		}
+
+		public void TriggerRecipientSaves(Creature magicOwner)
+		{
+			TriggerEvent(magicOwner, MagicItem.onRecipientSaves);
+		}
+
+		public void TriggerRecipientAttacks(Creature magicOwner)
+		{
+			TriggerEvent(magicOwner, MagicItem.onRecipientAttacks);
 		}
 
 		// TODO: Consider changing the Args elements data types to Strings!

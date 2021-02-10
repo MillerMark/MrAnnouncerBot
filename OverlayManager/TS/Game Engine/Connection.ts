@@ -55,6 +55,7 @@ function triggerEffect(effectData: string) {
 		activeBackGame.triggerEffect(effectData);
 	}
 }
+
 function updateClock(clockData: string) {
 	if (activeBackGame instanceof DragonBackGame) {
 		activeBackGame.updateClock(clockData);
@@ -63,6 +64,7 @@ function updateClock(clockData: string) {
 		activeFrontGame.updateClock(clockData);
 	}
 }
+
 function floatPlayerText(playerId: number, message: string, fillColor: string, outlineColor: string) {
 	if (activeFrontGame instanceof DragonFrontGame) {
 		activeFrontGame.floatPlayerText(playerId, message, fillColor, outlineColor);
@@ -123,7 +125,6 @@ function clearDice(diceGroup: string) {
 }
 
 function rollDice(diceRollData: string) {
-	console.log(`rollDice`);
 	if (diceLayer) {
 		diceLayer.rollDice(diceRollData);
 	}

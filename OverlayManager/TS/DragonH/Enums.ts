@@ -303,6 +303,8 @@ enum DamageType {
   Slashing = 2048,
   Thunder = 4096,
 	Superiority = 8192,
+  Condition = 16384,
+  Bane = 32768
 }
 
 enum WeaponType {

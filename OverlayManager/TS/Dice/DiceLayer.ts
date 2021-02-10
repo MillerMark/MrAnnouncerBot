@@ -231,6 +231,8 @@ class DiceLayer {
 	damageSlashingAx: Sprites;
 	damageThunder: Sprites;
 	superiorityFire: Sprites;
+	baneBack: Sprites;
+	baneFront: Sprites;
 	superiorityDragonHead: Sprites;
 	superiorityDragonHeadB: Sprites;
 	superiorityDragonHeadC: Sprites;
@@ -575,6 +577,17 @@ class DiceLayer {
 		this.damageThunder.originX = 110;
 		this.damageThunder.originY = 108;
 		this.allBackLayerEffects.add(this.damageThunder);
+
+		const baneOriginShiftY = 150;
+		this.baneBack = new Sprites("/Dice/Damage/Bane/BaneBottom", 175, fps30, AnimationStyle.Loop, true);
+		this.baneBack.originX = 51;
+		this.baneBack.originY = 0 + baneOriginShiftY - 67;
+		this.allBackLayerEffects.add(this.baneBack);
+
+		this.baneFront = new Sprites("/Dice/Damage/Bane/BaneTop", 175, fps30, AnimationStyle.Loop, true);
+		this.baneFront.originX = 51;
+		this.baneFront.originY = 0 + baneOriginShiftY;
+		this.allFrontLayerEffects.add(this.baneFront);
 
 		this.superiorityDragonHead = new Sprites("/Dice/Damage/Superiority/SuperiorityDragon", 81, fps20, AnimationStyle.Loop, true);
 		this.superiorityDragonHead.originX = 74;
@@ -1027,6 +1040,47 @@ class DiceLayer {
 		//this.addTopDieCloud(die, 5, Random.between(20, 45), 0.2, 0, 0, 100);
 
 		diceSounds.safePlayMp3('Dice/Damage/DragonRoar');
+	}
+
+	attachBane(die: IDie): void {
+		const numHeads = 3;
+
+		let rotationOffset: number = Random.between(0, 360 / numHeads);
+		const autoRotation: number = Random.plusMinusBetween(20, 45);
+
+		const hsl = this.rgbToHSL(die.diceColor);
+		console.log('die.diceColor: ' + die.diceColor);
+		const saturation: number = hsl.s * 100;
+		const brightness = 1; //(3 * 100 + hsl.l * 100) / 4;
+		console.log('saturation: ' + saturation);
+		const hueShift: number = hsl.h * 360;
+
+		for (let i = 0; i < numHeads; i++) {
+			const randomStartingFrameIndex: number = Math.floor(Random.max(this.baneBack.baseAnimation.frameCount));
+
+			const thisHueShift: number = hueShift + Random.plusMinus(10);
+			die.attachedSprites.push(this.addBane(die, this.baneBack, 960, 540, randomStartingFrameIndex, thisHueShift, saturation, brightness, rotationOffset, autoRotation));
+			die.origins.push(this.baneBack.getOrigin());
+
+			die.attachedSprites.push(this.addBane(die, this.baneFront, 960, 540, randomStartingFrameIndex, thisHueShift, saturation, brightness, rotationOffset, autoRotation));
+			die.origins.push(this.baneFront.getOrigin());
+
+			rotationOffset += 360 / numHeads;
+		}
+
+		//this.addTopDieCloud(die, 5, Random.between(20, 45), 0.2, 0, 0, 100);
+
+		// TODO: Add a Bane sound.
+		diceSounds.safePlayMp3('Dice/Damage/Bane');
+	}
+
+	addBane(die: IDie, sprites: Sprites, x: number, y: number, startingFrameIndex: number, hueShift: number, saturation: number, brightness: number, rotationOffset: number, autoRotation: number): SpriteProxy {
+		const sprite: SpriteProxy = sprites.addShifted(x, y, startingFrameIndex, hueShift, saturation, brightness);
+		sprite.rotation = rotationOffset;
+		sprite.initialRotation = rotationOffset;
+		sprite.autoRotationDegeesPerSecond = autoRotation;
+		this.initSprite(sprite, die);
+		return sprite;
 	}
 
 	attachDamageForce(die: IDie): void {
@@ -2327,6 +2381,8 @@ class DiceLayer {
 		this.clearSpritesByGroup(this.damageSlashingAx, diceGroup);
 		this.clearSpritesByGroup(this.damageSlashingLance, diceGroup);
 		this.clearSpritesByGroup(this.damageThunder, diceGroup);
+		this.clearSpritesByGroup(this.baneBack, diceGroup);
+		this.clearSpritesByGroup(this.baneFront, diceGroup);
 		this.clearSpritesByGroup(this.superiorityFire, diceGroup);
 		this.clearSpritesByGroup(this.superiorityDragonHead, diceGroup);
 		this.clearSpritesByGroup(this.superiorityDragonHeadB, diceGroup);
@@ -2840,6 +2896,7 @@ class IndividualRoll {
 
 class DiceDto {
 	Quantity: number;
+	ScoreMultiplier = 1;
 	Scale: number;
 	Sides: number;
 	CreatureId: number;

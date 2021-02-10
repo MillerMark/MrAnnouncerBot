@@ -10,10 +10,12 @@ namespace DndCore
 		public string Descriptor { get; set; }  // e.g., "necrotic", "fire", "cold", etc.
 		public int Offset { get; set; }
 		public int Sides { get; set; }
+		public int ScoreMultiplier { get; set; }
 		public bool Instant { get; set; }
+		public string Label { get; set; }
 		public Roll()
 		{
-
+			ScoreMultiplier = 1;
 		}
 
 		string OffsetStr
@@ -27,7 +29,7 @@ namespace DndCore
 				return string.Empty;
 			}
 		}
-		
+
 		public override string ToString()
 		{
 			return $"{Count}d{Sides}{OffsetStr}{Descriptor}";
@@ -77,12 +79,19 @@ namespace DndCore
 			else
 				descriptor = string.Empty;
 
+			string label = dieStr.EverythingAfter("[");
+			if (label != null)
+				label = label.EverythingBefore("]").Trim();
+			else
+				label = string.Empty;
+
 			Roll roll = new Roll();
 			roll.Count = count;
 			roll.Sides = sides;
 			roll.Offset = offset;
 			roll.Descriptor = descriptor;
 			roll.Instant = isInstant;
+			roll.Label = label;
 
 			return roll;
 		}

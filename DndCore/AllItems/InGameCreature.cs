@@ -206,6 +206,9 @@ namespace DndCore
 							monster.ImageUrl = ImageUrlOverride;
 						if (!string.IsNullOrWhiteSpace(ImageCropOverride))
 							monster.ImageCropInfo = PictureCropInfo.FromStr(ImageCropOverride);
+
+						monster.dieBackColor = BackgroundHex;
+						monster.dieFontColor = ForegroundHex;
 						creature = monster;
 					}
 				}
@@ -380,6 +383,11 @@ namespace DndCore
 				message = $"{Name} just took {hpLost} points of {damageType} damage. HP is now: {Creature.HitPoints}/{Creature.maxHitPoints}{tempHpDetails}";
 
 			game.TellDungeonMaster(message);
+		}
+
+		public void CreatureRollingSavingThrow()
+		{
+			Creature.RollingSavingThrowNow();
 		}
 	}
 }

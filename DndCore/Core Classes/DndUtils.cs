@@ -822,6 +822,8 @@ namespace DndCore
 					return "superiority";
 				case DamageType.Condition:
 					return "condition";
+				case DamageType.Bane:
+					return "bane";
 			}
 			return string.Empty;
 		}

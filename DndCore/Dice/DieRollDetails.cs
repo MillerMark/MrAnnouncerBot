@@ -104,6 +104,14 @@ namespace DndCore
 		{
 			if (string.IsNullOrEmpty(dieStr))
 				return;
+
+			bool isNegative = false;
+			if (dieStr.StartsWith("-"))  // negatively impacts score
+			{
+				dieStr = dieStr.Substring(1);
+				isNegative = true;
+			}
+
 			string[] parts = dieStr.Split(',');
 			if (parts.Length > 1)
 			{
@@ -112,6 +120,8 @@ namespace DndCore
 				return;
 			}
 			Roll roll = Roll.From(dieStr, spellcastingAbilityModifier);
+			if (isNegative)
+				roll.ScoreMultiplier = -1;
 			AddRoll(roll);
 		}
 

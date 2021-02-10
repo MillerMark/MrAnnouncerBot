@@ -68,12 +68,6 @@ namespace DndCore
 				return "";
 			}
 		}
-		public event PickAmmunitionEventHandler PickAmmunition;
-
-		protected virtual void OnPickAmmunition(object sender, PickAmmunitionEventArgs ea)
-		{
-			PickAmmunition?.Invoke(sender, ea);
-		}
 
 		[JsonIgnore]
 		public string ActiveWeaponName
@@ -199,9 +193,6 @@ namespace DndCore
 		public int headshotIndex;
 
 		[JsonIgnore]
-		public bool hitWasCritical = false;  // TODO: Implement this + test cases.
-
-		[JsonIgnore]
 		public int _attackNum = 0;
 		public string inspiration = string.Empty;
 		public double load = 0;
@@ -241,8 +232,6 @@ namespace DndCore
 
 		[JsonIgnore]
 		public Creature targetedCreature;
-
-		public int targetedCreatureHitPoints = 0;  // TODO: Implement this + test cases.
 		public double tempAcrobaticsMod = 0;
 		public double tempAnimalHandlingMod = 0;
 		public double tempArcanaMod = 0;
@@ -268,11 +257,6 @@ namespace DndCore
 		public double tempStealthMod = 0;
 		public double tempSurvivalMod = 0;
 		public string totalHitDice = string.Empty;
-		public bool usesMagicThisRoll = false;
-
-		// TODO: When magic ammunition is loaded, set this to true before firing!
-		public bool usesMagicAmmunitionThisRoll = false;
-		public bool ammunitionOnFire = false;
 		public double weight = 0;
 
 		public List<CharacterClass> Classes { get; set; } = new List<CharacterClass>();
@@ -1581,11 +1565,6 @@ namespace DndCore
 			}
 		}
 
-		protected virtual void OnSpellDispelled(object sender, CastedSpellEventArgs ea)
-		{
-			SpellDispelled?.Invoke(sender, ea);
-		}
-
 		public override void ReadyRollDice(DiceRollType rollType, string diceStr, int hiddenThreshold = int.MinValue)
 		{
 			CompleteCast();
@@ -1629,23 +1608,6 @@ namespace DndCore
 					Recalculate(queuedRecalcOptions);
 				}
 			}
-		}
-
-		// TODO: Call after a successful roll.
-		public void ResetPlayerRollBasedState()
-		{
-			lastRollWasSuccessful = false;
-			usesMagicThisRoll = false;
-			usesMagicAmmunitionThisRoll = false;
-			ammunitionOnFire = false;
-			targetedCreatureHitPoints = 0;
-			hitWasCritical = false;
-			additionalDice = new List<string>();
-			overrideReplaceDamageDice = string.Empty;
-			additionalDiceThisRoll = string.Empty;
-			trailingEffectsThisRoll = string.Empty;
-			dieRollEffectsThisRoll = string.Empty;
-			dieRollMessageThisRoll = string.Empty;
 		}
 
 		public void RollIsComplete(bool hitWasCritical, List<Creature> targetedCreatures = null)
@@ -1867,44 +1829,6 @@ namespace DndCore
 			return GetIntState(key) < GetIntState(key + STR_RechargeableMaxSuffix);
 		}
 
-		public void SetTimeBasedEvents()
-		{
-			foreach (KnownSpell knownSpell in KnownSpells)
-			{
-				if (knownSpell.TotalCharges > 0 && knownSpell.TotalCharges != int.MaxValue)
-				{
-					if (knownSpell.ResetSpan.GetTimeSpan().TotalDays == 1)
-					{
-						DndAlarm dndAlarm = Game.Clock.CreateDailyAlarm("Recharge:" + knownSpell.ItemName, knownSpell.RechargesAt.Hours, knownSpell.RechargesAt.Minutes, knownSpell.RechargesAt.Seconds, this);
-						dndAlarm.AlarmFired += DndAlarm_RechargeItem;
-						AddRechargeable(knownSpell.ItemName, DndUtils.ToVarName(knownSpell.ItemName), knownSpell.TotalCharges, "1 day");
-					}
-				}
-			}
-		}
-
-		private void DndAlarm_RechargeItem(object sender, DndTimeEventArgs ea)
-		{
-			if (ea.Alarm.Name.StartsWith("Recharge:"))
-			{
-				string itemName = ea.Alarm.Name.EverythingAfter("Recharge:");
-				KnownSpell item = KnownSpells.FirstOrDefault(x => x.ItemName == itemName);
-				if (item != null)
-				{
-					item.ChargesRemaining = item.TotalCharges;
-				}
-				OnRequestMessageToDungeonMaster($"{firstName}'s {item.ItemName} recharged ({item.TotalCharges}).");
-			}
-		}
-
-		public string firstName
-		{
-			get
-			{
-				return DndUtils.GetFirstName(name);
-			}
-		}
-
 		[JsonIgnore]
 		public string heShe { get; set; }
 
@@ -1921,9 +1845,6 @@ namespace DndCore
 		public string HeShe { get; set; }
 
 		[JsonIgnore]
-		public bool lastRollWasSuccessful { get; set; }
-
-		[JsonIgnore]
 		public int NumWildMagicChecks { get; set; }
 
 		public bool ShowingNameplate { get; set; } = true;
@@ -1936,11 +1857,6 @@ namespace DndCore
 
 		[JsonIgnore]
 		public string playerShortcut { get; set; }
-
-		protected virtual void OnRequestMessageToAll(string message)
-		{
-			RequestMessageToAll?.Invoke(this, new MessageEventArgs(message));
-		}
 
 		public int GetSpellcastingLevel()
 		{
@@ -2332,9 +2248,6 @@ namespace DndCore
 			WeaponIsHeavy = false;
 			WeaponIsRanged = false;
 		}
-
-		public event CastedSpellEventHandler SpellDispelled;
-		public event MessageEventHandler RequestMessageToAll;
 
 		public static void SetBoolProperty(Creature player, string memberName, bool value)
 		{
