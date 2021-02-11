@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using DndCore;
 using CloudinaryDotNet.Actions;
+using BotCore;
 
 namespace CardMaker
 {

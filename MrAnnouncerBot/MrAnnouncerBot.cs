@@ -23,6 +23,9 @@ namespace MrAnnouncerBot
 {
 	public partial class MrAnnouncerBot
 	{
+		MySecureString mrAnnouncerGuyClientId;
+		MySecureString mrAnnouncerGuyAccessToken;
+
 		TwitchClient kidzCodeClient;
 		List<Entry> log = new List<Entry>();
 		public static readonly HttpClient httpClient = new HttpClient();
@@ -79,6 +82,8 @@ namespace MrAnnouncerBot
 			lastFanfareDuration = 15;
 
 			InitializeKidzCodeBot();
+			mrAnnouncerGuyClientId = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
+			mrAnnouncerGuyAccessToken = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]);
 		}
 
 		void ChangeScene(string sceneName)
@@ -509,7 +514,7 @@ namespace MrAnnouncerBot
 			{
 				try
 				{
-					showStartURL = await GetActiveShowPointURL(backTrackStr);
+					showStartURL = await Twitch.GetActiveShowPointURL(mrAnnouncerGuyClientId, mrAnnouncerGuyAccessToken, STR_CodeRushedUserId, backTrackStr);
 				}
 				catch (Exception ex)
 				{
@@ -959,6 +964,7 @@ namespace MrAnnouncerBot
 		}
 
 		private const int minUserLevelForSpeechBubbles = 4;
+		
 		// TODO: remove ChatMessage param
 		void SayIt(ChatMessage chatMessage, int playerId, string phrase)
 		{
@@ -1152,106 +1158,9 @@ namespace MrAnnouncerBot
 			}
 		}
 
-		private string GetTimeParseFormatExpressionFromWilBennett(string timeString)
-		{
-			void subst(char ch)
-			{
-				var search = $@"(\d+)(?={ch})"; // 1 or more digits followed by ch. e.g. "1h", "22m"
-				var suffix = $@"\"; // \ch. e.g. "\h", "\m"
-														// Replace the match with ch instead of the digits and \ at the end
-														// e.g. "1h" => "h\h", "22m" => "mm\m"
-				timeString = System.Text.RegularExpressions.Regex.Replace(timeString, search, m => new String(ch, m.Captures[0].Length) + suffix);
-			}
-
-			subst('h');
-			subst('m');
-			subst('s');
-
-			return timeString;
-		}
-
-		private TimeSpan GetTimeSpanFromString(string timeString)
-		{
-			TimeSpan timeSpan;
-			try
-			{
-				// TODO: Maybe give up on ParseExact...
-				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpressionFromWilBennett(timeString), System.Globalization.CultureInfo.CurrentCulture);
-			}
-			catch (Exception ex)
-			{
-				Debugger.Break();
-				timeSpan = TimeSpan.FromSeconds(1);
-			}
-			return timeSpan;
-		}
-
-		async Task<string> GetActiveShowPointURL(string backTrackStr = "")
-		{
-			try
-			{
-				var client = new HttpClient();
-				client.DefaultRequestHeaders.Add("Client-ID", Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
-				client.DefaultRequestHeaders.Add("Authorization", $"Bearer {Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]}");
-				string requestUri = $"https://api.twitch.tv/helix/videos?user_id={STR_CodeRushedUserId}";
-				HttpResponseMessage response = await client.GetAsync(requestUri);
-				string responseBody = await response.Content.ReadAsStringAsync();
-				LiveStreamData<LiveShowData> liveShowData = JsonConvert.DeserializeObject<LiveStreamData<LiveShowData>>(responseBody);
-				if (liveShowData?.data?.Count > 0)  // Thanks to Wil Bennett!
-				{
-					LiveShowData showData = liveShowData.data[0];
-
-					TimeSpan rewindTimeSpan = new TimeSpan();
-
-					if (string.IsNullOrWhiteSpace(backTrackStr))
-					{
-						rewindTimeSpan = new TimeSpan(hours: 0, minutes: 0, seconds: 10);
-					}
-					else
-					{
-						int dollarIndex = backTrackStr.IndexOf("$");
-						if (dollarIndex >= 0)
-						{
-							backTrackStr = backTrackStr.Substring(dollarIndex + 1);
-
-							rewindTimeSpan = GetTimeSpanFromString(backTrackStr);
-						}
-					}
-
-					TimeSpan timeMarker = TimeSpan.MinValue;
-
-					try
-					{
-						timeMarker = GetTimeSpanFromString(showData.duration).Subtract(rewindTimeSpan);
-					}
-					catch (Exception ex)
-					{
-						if (ex != null)
-						{
-
-						}
-						Debugger.Break();
-					}
-
-
-					return showData.url + "?t=" + $"{timeMarker.Hours}h{timeMarker.Minutes}m{timeMarker.Seconds}s";
-				}
-			}
-			catch (Exception ex)
-			{
-				if (ex != null)
-				{
-
-				}
-				Debugger.Break();
-			}
-
-			return null;
-		}
-
 		async void MarkCodeRushIssueStart(OnChatCommandReceivedArgs obj)
 		{
-			startTimeURL = await GetActiveShowPointURL();
+			startTimeURL = await Twitch.GetActiveShowPointURL(mrAnnouncerGuyClientId, mrAnnouncerGuyAccessToken, STR_CodeRushedUserId);
 			issueStartTime = DateTime.Now;
 		}
 

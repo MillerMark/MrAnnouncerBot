@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace MrAnnouncerBot
+namespace BotCore
 {
 	public class LiveShowData
 	{

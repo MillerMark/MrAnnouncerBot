@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using TwitchLib.Api;
 using TwitchLib.Api.V5.Models.Channels;
@@ -199,6 +202,127 @@ namespace BotCore
 		static void TwitchClient_OnConnectionError(object sender, OnConnectionErrorArgs e)
 		{
 			Console.WriteLine(e.Error.Message);
+		}
+
+		private static async Task<LiveStreamData<LiveShowData>> GetLiveStreamData(MySecureString clientId, MySecureString accessToken, string userId)
+		{
+			string responseBody = await GetLiveShowDataStr(clientId, accessToken, userId);
+			LiveStreamData<LiveShowData> liveShowData = JsonConvert.DeserializeObject<LiveStreamData<LiveShowData>>(responseBody);
+			return liveShowData;
+		}
+
+		private static async Task<string> GetLiveShowDataStr(MySecureString clientId, MySecureString accessToken, string userId)
+		{
+			var client = new HttpClient();
+			client.DefaultRequestHeaders.Add("Client-ID", clientId.GetStr());
+			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken.GetStr()}");
+			string requestUri = $"https://api.twitch.tv/helix/videos?user_id={userId}";
+			HttpResponseMessage response = await client.GetAsync(requestUri);
+			string responseBody = await response.Content.ReadAsStringAsync();
+			return responseBody;
+		}
+
+		private static TimeSpan GetTimeMarker(LiveShowData showData, TimeSpan rewindTimeSpan)
+		{
+			TimeSpan timeMarker = TimeSpan.MinValue;
+
+			try
+			{
+				timeMarker = GetTimeSpanFromString(showData.duration).Subtract(rewindTimeSpan);
+			}
+			catch (Exception ex)
+			{
+				if (ex != null)
+				{
+
+				}
+				Debugger.Break();
+			}
+
+			return timeMarker;
+		}
+
+		private static TimeSpan GetRewindTimeSpan(string backTrackStr)
+		{
+			TimeSpan rewindTimeSpan = new TimeSpan();
+
+			if (string.IsNullOrWhiteSpace(backTrackStr))
+			{
+				rewindTimeSpan = new TimeSpan(hours: 0, minutes: 0, seconds: 10);
+			}
+			else
+			{
+				int dollarIndex = backTrackStr.IndexOf("$");
+				if (dollarIndex >= 0)
+				{
+					string backTrackValue = backTrackStr.Substring(dollarIndex + 1);
+
+					rewindTimeSpan = GetTimeSpanFromString(backTrackValue);
+				}
+			}
+
+			return rewindTimeSpan;
+		}
+
+		private static string GetTimeParseFormatExpressionFromWilBennett(string timeString)
+		{
+			void subst(char ch)
+			{
+				var search = $@"(\d+)(?={ch})"; // 1 or more digits followed by ch. e.g. "1h", "22m"
+				var suffix = $@"\"; // \ch. e.g. "\h", "\m"
+														// Replace the match with ch instead of the digits and \ at the end
+														// e.g. "1h" => "h\h", "22m" => "mm\m"
+				timeString = System.Text.RegularExpressions.Regex.Replace(timeString, search, m => new String(ch, m.Captures[0].Length) + suffix);
+			}
+
+			subst('h');
+			subst('m');
+			subst('s');
+
+			return timeString;
+		}
+
+		private static TimeSpan GetTimeSpanFromString(string timeString)
+		{
+			TimeSpan timeSpan;
+			try
+			{
+				// TODO: Maybe give up on ParseExact...
+				timeSpan = TimeSpan.ParseExact(timeString, GetTimeParseFormatExpressionFromWilBennett(timeString), System.Globalization.CultureInfo.CurrentCulture);
+			}
+			catch (Exception ex)
+			{
+				Debugger.Break();
+				timeSpan = TimeSpan.FromSeconds(1);
+			}
+			return timeSpan;
+		}
+
+		public static async Task<string> GetActiveShowPointURL(MySecureString clientId, MySecureString accessToken, string userId, string backTrackStr = "")
+		{
+			try
+			{
+				LiveStreamData<LiveShowData> liveShowData = await GetLiveStreamData(clientId, accessToken, userId);
+				if (liveShowData?.data?.Count > 0)  // Thanks to Wil Bennett!
+				{
+					LiveShowData showData = liveShowData.data[0];
+
+					TimeSpan rewindTimeSpan = GetRewindTimeSpan(backTrackStr);
+					TimeSpan timeMarker = GetTimeMarker(showData, rewindTimeSpan);
+
+					return showData.url + "?t=" + $"{timeMarker.Hours}h{timeMarker.Minutes}m{timeMarker.Seconds}s";
+				}
+			}
+			catch (Exception ex)
+			{
+				if (ex != null)
+				{
+
+				}
+				Debugger.Break();
+			}
+
+			return null;
 		}
 	}
 }

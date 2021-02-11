@@ -943,3 +943,5 @@ OverlayManager/TS/Game Engine/Sprites.ts.rej
 OverlayManager/TS/Dice/DiceRoller.- original - ts
 DHDM/DHDM_p4vcotcg_wpftmp.csproj
 AvalonEdit/AvalonEdit_50zwaxiq_wpftmp.csproj
+core_appsettings.json
+CopyAppSettings.bat

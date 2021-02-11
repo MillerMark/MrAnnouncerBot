@@ -50,6 +50,8 @@ namespace DHDM
 	/// </summary>
 	public partial class MainWindow : Window, IDungeonMasterApp, IDiceRoller
 	{
+		MySecureString dragonHumpersClientId;
+		MySecureString dragonHumpersAccessToken;
 		bool _changingInternally;
 		PlateManager plateManager;
 		WeatherManager weatherManager;
@@ -123,6 +125,10 @@ namespace DHDM
 				//`! !!!                                                                                      !!!
 				//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				StreamlootsBackgroundTask.Start(new MySecureString(Twitch.Configuration["Secrets:StreamlootsId"]));
+				dragonHumpersClientId = new MySecureString(Twitch.Configuration["Secrets:DragonHumpersTwitchClientId"]);
+				dragonHumpersAccessToken = new MySecureString(Twitch.Configuration["Secrets:DragonHumpersTwitchAccessToken"]);
+				//dragonHumpersClientId = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchClientId"]);
+				//dragonHumpersAccessToken = new MySecureString(Twitch.Configuration["Secrets:MrAnnouncerGuyTwitchAccessToken"]);
 			}
 			finally
 			{

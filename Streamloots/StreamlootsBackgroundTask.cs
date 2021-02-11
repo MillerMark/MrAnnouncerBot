@@ -1,4 +1,5 @@
-﻿using DndCore;
+﻿using BotCore;
+using DndCore;
 using System.Linq;
 using System.Threading.Tasks;
 

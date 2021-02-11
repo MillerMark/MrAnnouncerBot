@@ -1,4 +1,5 @@
-﻿using DndCore;
+﻿using BotCore;
+using DndCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

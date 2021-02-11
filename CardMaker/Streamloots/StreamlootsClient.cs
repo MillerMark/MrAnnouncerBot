@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using BotCore;
 
 namespace CardMaker
 {

@@ -15,6 +15,7 @@ using Streamloots;
 using SysPath = System.IO.Path;
 using GoogleHelper;
 using System.Threading.Tasks;
+using BotCore;
 
 namespace CardMaker
 {

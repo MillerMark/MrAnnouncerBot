@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DndCore
+namespace BotCore
 {
 	public class MySecureString
 	{

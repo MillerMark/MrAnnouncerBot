@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace MrAnnouncerBot
+namespace BotCore
 {
 	public class TwitchStreamData
 	{
