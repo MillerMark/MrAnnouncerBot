@@ -71,7 +71,7 @@ namespace OverlayManager
 				hub.Clients.All.ExecuteCommand(targetCommand, args, UserInfo.FromChatMessage(chatMessage, showsWatched));
 
 			if (chatBackMessage != null)
-				Twitch.Chat(chatBackMessage);
+				Twitch.Chat(Twitch.CodeRushedClient, chatBackMessage);
 		}
 	}
 }

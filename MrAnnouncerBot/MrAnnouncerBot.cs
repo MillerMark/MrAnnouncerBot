@@ -55,9 +55,9 @@ namespace MrAnnouncerBot
 			LoadPersistentData();
 			InitZork();
 			new BotCommand("?", HandleQuestionCommand);
-            new BotCommand("help", HandleQuestionCommand);
-            new BotCommand("commands", HandleQuestionCommand);
-            new BotCommand("+", HandleLevelUp);
+			new BotCommand("help", HandleQuestionCommand);
+			new BotCommand("commands", HandleQuestionCommand);
+			new BotCommand("+", HandleLevelUp);
 			new BotCommand("github", HandleGitHubCommand);
 			new BotCommand("vscode", HandleVsCodeCommand);
 			new BotCommand("suppressFanfare", HandleSuppressFanfareCommand);
@@ -137,7 +137,7 @@ namespace MrAnnouncerBot
 
 		private void InitZork()
 		{
-			zork = new ZorkGame(Twitch.Client, STR_ChannelName);
+			zork = new ZorkGame(Twitch.CodeRushedClient, STR_ChannelName);
 			new BotCommand("zork", zork.HandleCommand);
 		}
 
@@ -175,34 +175,35 @@ namespace MrAnnouncerBot
 		{
 			if (useObs)
 				InitializeObsWebSocket();
-			HookupTwitchEvents();
+			HookupTwitchEvents(Twitch.CodeRushedClient);
 		}
 
-		void HookupTwitchEvents()
+		void HookupTwitchEvents(TwitchClient client)
 		{
-			Twitch.Client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
-			Twitch.Client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
-			Twitch.Client.OnMessageReceived += TwitchClient_OnMessageReceived;
-			Twitch.Client.OnUserJoined += TwitchClient_OnUserJoined;
-			Twitch.Client.OnUserLeft += TwitchClient_OnUserLeft;
-			Twitch.Client.OnChannelStateChanged += Client_OnChannelStateChanged;
-			Twitch.Client.OnDisconnected += Client_OnDisconnected;
-			Twitch.Client.OnError += Client_OnError;
-			Twitch.Client.OnHostingStopped += Client_OnHostingStopped;
-			Twitch.Client.OnLog += Client_OnLog;
+			client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
+			client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+			client.OnMessageReceived += TwitchClient_OnMessageReceived;
+			client.OnUserJoined += TwitchClient_OnUserJoined;
+			client.OnUserLeft += TwitchClient_OnUserLeft;
+			client.OnChannelStateChanged += Client_OnChannelStateChanged;
+			client.OnDisconnected += Client_OnDisconnected;
+			client.OnError += Client_OnError;
+			client.OnHostingStopped += Client_OnHostingStopped;
+			client.OnLog += Client_OnLog;
 		}
-		void UnHookTwitchEvents()
+
+		void UnHookTwitchEvents(TwitchClient client)
 		{
-			Twitch.Client.OnJoinedChannel -= TwitchClient_OnJoinedChannel;
-			Twitch.Client.OnChatCommandReceived -= TwitchClient_OnChatCommandReceived;
-			Twitch.Client.OnMessageReceived -= TwitchClient_OnMessageReceived;
-			Twitch.Client.OnUserJoined -= TwitchClient_OnUserJoined;
-			Twitch.Client.OnUserLeft -= TwitchClient_OnUserLeft;
-			Twitch.Client.OnChannelStateChanged -= Client_OnChannelStateChanged;
-			Twitch.Client.OnDisconnected -= Client_OnDisconnected;
-			Twitch.Client.OnError -= Client_OnError;
-			Twitch.Client.OnHostingStopped -= Client_OnHostingStopped;
-			Twitch.Client.OnLog -= Client_OnLog;
+			client.OnJoinedChannel -= TwitchClient_OnJoinedChannel;
+			client.OnChatCommandReceived -= TwitchClient_OnChatCommandReceived;
+			client.OnMessageReceived -= TwitchClient_OnMessageReceived;
+			client.OnUserJoined -= TwitchClient_OnUserJoined;
+			client.OnUserLeft -= TwitchClient_OnUserLeft;
+			client.OnChannelStateChanged -= Client_OnChannelStateChanged;
+			client.OnDisconnected -= Client_OnDisconnected;
+			client.OnError -= Client_OnError;
+			client.OnHostingStopped -= Client_OnHostingStopped;
+			client.OnLog -= Client_OnLog;
 		}
 
 		private void Client_OnLog(object sender, OnLogArgs e)
@@ -689,9 +690,11 @@ namespace MrAnnouncerBot
 			if (newSceneName == "EventReset")
 			{
 				Debugger.Break();
-				UnHookTwitchEvents();
+				UnHookTwitchEvents(Twitch.CodeRushedClient);
+				UnHookTwitchEvents(Twitch.DroneCommandsClient);
 				Twitch.InitializeConnections();
-				HookupTwitchEvents();
+				HookupTwitchEvents(Twitch.CodeRushedClient);
+				HookupTwitchEvents(Twitch.DroneCommandsClient);
 			}
 			Console.WriteLine($"Active Scene: {activeSceneName}");
 		}
@@ -729,7 +732,7 @@ namespace MrAnnouncerBot
 
 		private void Chat(string msg)
 		{
-			Twitch.Chat(TruncateForTwitch(msg));
+			Twitch.Chat(Twitch.CodeRushedClient, TruncateForTwitch(msg));
 		}
 
 		public void Run()

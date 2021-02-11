@@ -2,6 +2,13 @@
 
 namespace DndCore
 {
+	public enum TargetType
+	{
+		None,
+		Friendly,
+		Foe
+	}
+	
 	public class TargetEventArgs : EventArgs
 	{
 		public Target Target { get; set; }
@@ -10,7 +17,7 @@ namespace DndCore
 		public bool ShowUI { get; set; }
 		public int MinTargets { get; set; } = 1;
 		public int MaxTargets { get; set; } = 1;
-
+		public TargetType SuggestedTargetType { get; set; }
 		public TargetStatus TargetStatus { get; set; }
 		public TargetEventArgs()
 		{

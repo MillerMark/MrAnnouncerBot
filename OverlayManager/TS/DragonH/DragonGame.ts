@@ -871,13 +871,13 @@ abstract class DragonGame extends GamePlusQuiz implements IGetPlayerX {
 
 	getCenter(target: any): Vector {
 		let result: Vector;
-		if (target.targetType === TargetType.ScreenPosition)
+		if (target.targetType === VisualTargetType.ScreenPosition)
 			result = new Vector(target.screenPosition.x, target.screenPosition.y);
-		else if (target.targetType === TargetType.ActivePlayer)
+		else if (target.targetType === VisualTargetType.ActivePlayer)
 			result = new Vector(this.activePlayerX, 1080);
-		else if (target.targetType === TargetType.ActiveEnemy)
+		else if (target.targetType === VisualTargetType.ActiveEnemy)
 			result = new Vector(1260, 1080);
-		else if (target.targetType === TargetType.ScrollPosition)
+		else if (target.targetType === VisualTargetType.ScrollPosition)
 			result = new Vector(150, 400);
 		else
 			result = new Vector(960, 540);

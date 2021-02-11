@@ -36,14 +36,17 @@ namespace OverlayManager
 
 		public void HookEvents()
 		{
-			Twitch.Client.OnLog += TwitchClient_OnLog;
-			Twitch.Client.OnConnectionError += TwitchClient_OnConnectionError;
-			Twitch.Client.OnJoinedChannel += TwitchClient_OnJoinedChannel;
-			Twitch.Client.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
-			Twitch.Client.OnMessageReceived += TwitchClient_OnMessageReceived;
-			Twitch.Client.OnWhisperReceived += TwitchClient_OnWhisperReceived;
-			Twitch.Client.OnUserJoined += TwitchClient_OnUserJoined;
-			Twitch.Client.OnUserLeft += TwitchClient_OnUserLeft;
+			Twitch.CodeRushedClient.OnLog += TwitchClient_OnLog;
+			Twitch.CodeRushedClient.OnConnectionError += TwitchClient_OnConnectionError;
+			Twitch.CodeRushedClient.OnJoinedChannel += TwitchClient_OnJoinedChannel;
+			Twitch.CodeRushedClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+			Twitch.CodeRushedClient.OnMessageReceived += TwitchClient_OnMessageReceived;
+			Twitch.CodeRushedClient.OnWhisperReceived += TwitchClient_OnWhisperReceived;
+			Twitch.CodeRushedClient.OnUserJoined += TwitchClient_OnUserJoined;
+			Twitch.CodeRushedClient.OnUserLeft += TwitchClient_OnUserLeft;
+
+			Twitch.DroneCommandsClient.OnChatCommandReceived += TwitchClient_OnChatCommandReceived;
+			Twitch.DroneCommandsClient.OnMessageReceived += TwitchClient_OnMessageReceived;
 		}
 
 		private void TwitchClient_OnUserLeft(object sender, TwitchLib.Client.Events.OnUserLeftArgs e)

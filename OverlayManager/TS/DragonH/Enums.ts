@@ -9,7 +9,7 @@ enum EmitterShape {
 	Rectangular = 2
 }
 
-enum TargetType {
+enum VisualTargetType {
 	ActivePlayer = 0,
 	ActiveEnemy = 1,
 	ScrollPosition = 2,
@@ -304,7 +304,8 @@ enum DamageType {
   Thunder = 4096,
 	Superiority = 8192,
   Condition = 16384,
-  Bane = 32768
+  Bane = 32768,
+  Bless = 65536
 }
 
 enum WeaponType {

@@ -504,7 +504,7 @@ namespace DndCore
 				dto.name = weapon.Name;
 
 			//dto.effectAvailableWhen = weaponEffect.effectAvailableWhen;
-
+			
 			dto.player = player.name;
 			SetDtoFromEffect(dto, weaponEffect);
 			dto.type = DndUtils.DiceRollTypeToStr(DiceRollType.Attack);

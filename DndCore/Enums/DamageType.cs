@@ -22,6 +22,7 @@ namespace DndCore
 		Thunder = 4096,
 		Superiority = 8192,
 		Condition = 16384,
-		Bane = 32768
+		Bane = 32768,
+		Bless = 65536
 	}
 }

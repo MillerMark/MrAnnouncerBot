@@ -471,6 +471,11 @@ namespace DndCore
 			}
 
 			activeSpells.Add(castedSpell);
+			//if (castedSpell.Target == null && castedSpell.NeedsTargets)
+			//	if (castedSpell.Spell.PreferredTarget == SpellTarget.Friends)
+			//		AddTargets(castedSpell, SpellTarget.Friends);
+			//	else if (castedSpell.Spell.PreferredTarget == SpellTarget.Enemies)
+			//		AddTargets(castedSpell, SpellTarget.Enemies);
 			castedSpell.Cast();
 		}
 

@@ -84,7 +84,7 @@ namespace DndUI
 		public static readonly DependencyProperty EffectKindProperty = DependencyProperty.Register(STR_EffectKind, typeof(EffectKind), typeof(EffectBuilder), new FrameworkPropertyMetadata(EffectKind.Animation, new PropertyChangedCallback(OnEffectKindChanged)));
 		bool loadingInternally;
 
-		public TargetType TargetType
+		public VisualTargetType TargetType
 		{
 			get
 			{
@@ -92,14 +92,14 @@ namespace DndUI
 			}
 			set
 			{
-				TargetType activeTargetType = GetVisualEffectTarget();
+				VisualTargetType activeTargetType = GetVisualEffectTarget();
 				if (value == activeTargetType)
 					return;
-				if (value == TargetType.ActiveEnemy)
+				if (value == VisualTargetType.ActiveEnemy)
 					rbActiveEnemy.IsChecked = true;
-				else if (value == TargetType.ActivePlayer)
+				else if (value == VisualTargetType.ActivePlayer)
 					rbActivePlayer.IsChecked = true;
-				else if (value == TargetType.ScreenPosition)
+				else if (value == VisualTargetType.ScreenPosition)
 					rbScreenPos.IsChecked = true;
 				else
 					rbScrollPos.IsChecked = true;
@@ -631,16 +631,16 @@ namespace DndUI
 				return DndCore.Vector.zero;
 		}
 
-		TargetType GetVisualEffectTarget()
+		VisualTargetType GetVisualEffectTarget()
 		{
 			if (rbActivePlayer.IsChecked ?? false)
-				return TargetType.ActivePlayer;
+				return VisualTargetType.ActivePlayer;
 			else if (rbActiveEnemy.IsChecked ?? false)
-				return TargetType.ActiveEnemy;
+				return VisualTargetType.ActiveEnemy;
 			else if (rbScrollPos.IsChecked ?? false)
-				return TargetType.ScrollPosition;
+				return VisualTargetType.ScrollPosition;
 			else
-				return TargetType.ScreenPosition;
+				return VisualTargetType.ScreenPosition;
 		}
 
 		VisualEffectTarget GetTarget()
@@ -753,19 +753,19 @@ namespace DndUI
 
 			switch (visualEffectTarget.targetType)
 			{
-				case TargetType.ActivePlayer:
+				case VisualTargetType.ActivePlayer:
 					rbActivePlayer.IsChecked = true;
 					break;
 
-				case TargetType.ActiveEnemy:
+				case VisualTargetType.ActiveEnemy:
 					rbActiveEnemy.IsChecked = true;
 					break;
 
-				case TargetType.ScrollPosition:
+				case VisualTargetType.ScrollPosition:
 					rbScrollPos.IsChecked = true;
 					break;
 
-				case TargetType.ScreenPosition:
+				case VisualTargetType.ScreenPosition:
 					rbScreenPos.IsChecked = true;
 					break;
 			}
@@ -840,13 +840,13 @@ namespace DndUI
 		void SaveToTarget(VisualEffectTarget visualEffectTarget)
 		{
 			if (rbActivePlayer.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ActivePlayer;
+				visualEffectTarget.targetType = VisualTargetType.ActivePlayer;
 			if (rbActiveEnemy.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ActiveEnemy;
+				visualEffectTarget.targetType = VisualTargetType.ActiveEnemy;
 			if (rbScrollPos.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ScrollPosition;
+				visualEffectTarget.targetType = VisualTargetType.ScrollPosition;
 			if (rbScreenPos.IsChecked ?? false)
-				visualEffectTarget.targetType = TargetType.ScreenPosition;
+				visualEffectTarget.targetType = VisualTargetType.ScreenPosition;
 
 
 			if (rbnPageMain.IsChecked ?? false)

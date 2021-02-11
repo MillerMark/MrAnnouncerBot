@@ -251,6 +251,22 @@ namespace DndCore
 			else if (double.TryParse(fromText, out double thresholdResult))
 				HiddenThreshold = thresholdResult;
 		}
+		public List<int> GetCreatureIds()
+		{
+			List<int> result = new List<int>();
+
+			if (SingleOwnerId != int.MinValue)
+				result.Add(SingleOwnerId);
+			foreach (DiceDto diceDto in DiceDtos)
+				if (!result.Contains(diceDto.CreatureId))
+					result.Add(diceDto.CreatureId);
+
+			foreach (PlayerRollOptions playerRollOptions in PlayerRollOptions)
+				if (!result.Contains(playerRollOptions.PlayerID))
+					result.Add(playerRollOptions.PlayerID);
+			return result;
+			
+		}
 		public bool IsOnePlayer
 		{
 			get

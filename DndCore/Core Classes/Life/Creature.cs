@@ -838,7 +838,7 @@ namespace DndCore
 
 		void ReceiveMagic(Magic magic, int delayOffset = 0)
 		{
-			MultiTargetNotificationVariable.Offset = delayOffset;
+			SystemVariables.Offset = delayOffset;
 			magic.AddTarget(this);
 			receivedMagic.Add(magic);
 			magic.Dispel += ReceivedMagic_Dispelled;
@@ -1817,9 +1817,20 @@ namespace DndCore
 				magic.TriggerRecipientSaves(this);
 		}
 
+		void TriggerMagicAttack()
+		{
+			foreach (Magic magic in receivedMagic)
+				magic.TriggerRecipientAttacks(this);
+		}
+
 		public void RollingSavingThrowNow()
 		{
 			TriggerMagicSavingThrow();
+		}
+
+		public void CreatureAttacksNow()
+		{
+			TriggerMagicAttack();
 		}
 
 		public void RemoveMagic(Magic magic)

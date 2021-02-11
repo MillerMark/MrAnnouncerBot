@@ -18,7 +18,7 @@ namespace DndCore
 		public Vector screenPosition;
 		public Vector targetOffset;
 		public TargetPage targetPage = TargetPage.None;
-		public TargetType targetType;
+		public VisualTargetType targetType;
 
 		public VisualEffectTarget()
 		{
@@ -32,11 +32,11 @@ namespace DndCore
 
 		public VisualEffectTarget(double x, double y) : this()
 		{
-			targetType = TargetType.ScreenPosition;
+			targetType = VisualTargetType.ScreenPosition;
 			screenPosition = new Vector(x, y);
 		}
 
-		public VisualEffectTarget(TargetType targetType, Vector screenPosition, Vector targetOffset) : this()
+		public VisualEffectTarget(VisualTargetType targetType, Vector screenPosition, Vector targetOffset) : this()
 		{
 			this.targetType = targetType;
 			this.screenPosition = screenPosition;

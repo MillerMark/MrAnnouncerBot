@@ -15,8 +15,10 @@ namespace BotCore
 {
 	public static class Twitch
 	{
-		private const string STR_ChannelName = "CodeRushed";
-		private const string STR_TwitchUserName = "MrAnnouncerGuy";
+		private const string STR_CodeRushedChannelName = "CodeRushed";
+		private const string STR_DroneCommandsChannelName = "DroneCommands";
+		private const string STR_CodeRushedChannelUserName = "MrAnnouncerGuy";
+		private const string STR_DroneCommandsChannelUserName = "DroneCommands";
 		static readonly IConfigurationRoot configuration;
 
 		public static void InitializeConnections()
@@ -27,20 +29,35 @@ namespace BotCore
 			//`! !!!                                                                                      !!!
 			//`! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-			UnhookEvents();
-			var oAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
-			var connectionCredentials = new ConnectionCredentials(STR_TwitchUserName, oAuthToken);
-			Client.Initialize(connectionCredentials, STR_ChannelName);
+			UnhookEvents(CodeRushedClient);
+			var codeRushedOAuthToken = Configuration["Secrets:TwitchBotOAuthToken"];
+			var codeRushedConnectionCredentials = new ConnectionCredentials(STR_CodeRushedChannelUserName, codeRushedOAuthToken);
+			CodeRushedClient.Initialize(codeRushedConnectionCredentials, STR_CodeRushedChannelName);
 			try
 			{
-				Client.Connect();
+				CodeRushedClient.Connect();
 				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
-				HookEvents();
+				HookEvents(CodeRushedClient);
 			}
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debugger.Break();
 			}
+
+			var droneCommandsOAuthToken = Configuration["Secrets:DroneCommandsOAuthToken"];
+			var droneCommandsConnectionCredentials = new ConnectionCredentials(STR_DroneCommandsChannelUserName, droneCommandsOAuthToken);
+			DroneCommandsClient.Initialize(droneCommandsConnectionCredentials, STR_DroneCommandsChannelName);
+			try
+			{
+				DroneCommandsClient.Connect();
+				//Client.JoinRoom(STR_ChannelName, "#botcontrol");
+				HookEvents(DroneCommandsClient);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debugger.Break();
+			}
+
 		}
 
 		public static TwitchClient CreateNewClient(string channelName, string userName, string oauthPasswordName)
@@ -71,7 +88,8 @@ namespace BotCore
 		static Twitch()
 		{
 			//Logging = true;
-			Client = new TwitchClient();
+			CodeRushedClient = new TwitchClient();
+			DroneCommandsClient = new TwitchClient();
 			var builder = new ConfigurationBuilder()
 				 .SetBasePath(Directory.GetCurrentDirectory())
 				 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
@@ -82,7 +100,8 @@ namespace BotCore
 
 		public static IConfigurationRoot Configuration { get => configuration; }
 		public static TwitchAPI Api { get; private set; }
-		public static TwitchClient Client { get; private set; }
+		public static TwitchClient CodeRushedClient { get; private set; }
+		public static TwitchClient DroneCommandsClient { get; private set; }
 		public static bool Logging { get; set; }
 		public static string CodeRushedBotApiClientId { get; set; }
 
@@ -127,7 +146,8 @@ namespace BotCore
 		{
 			try
 			{
-				Client.Disconnect();
+				CodeRushedClient.Disconnect();
+				DroneCommandsClient.Disconnect();
 			}
 			catch (Exception ex)
 			{
@@ -141,12 +161,11 @@ namespace BotCore
 				Console.WriteLine($"Exception: {ex.Message}");
 		}
 
-		public static void Chat(string msg)
+		public static void Chat(TwitchClient twitchClient, string msg)
 		{
 			try
 			{
-				Client.SendMessage(STR_ChannelName, msg);
-
+				twitchClient.SendMessage(STR_CodeRushedChannelName, msg);
 			}
 			catch (Exception ex)
 			{
@@ -156,18 +175,19 @@ namespace BotCore
 
 		public static void Whisper(string userName, string msg)
 		{
-			Client.SendWhisper(userName, msg);
+			CodeRushedClient.SendWhisper(userName, msg);
 		}
 
-		static void HookEvents()
+		static void HookEvents(TwitchClient client)
 		{
-			Client.OnLog += TwitchClientLog;
-			Client.OnConnectionError += TwitchClient_OnConnectionError;
+			client.OnLog += TwitchClientLog;
+			client.OnConnectionError += TwitchClient_OnConnectionError;
 		}
-		static void UnhookEvents()
+
+		static void UnhookEvents(TwitchClient client)
 		{
-			Client.OnLog -= TwitchClientLog;
-			Client.OnConnectionError -= TwitchClient_OnConnectionError;
+			client.OnLog -= TwitchClientLog;
+			client.OnConnectionError -= TwitchClient_OnConnectionError;
 		}
 
 		static void TwitchClientLog(object sender, OnLogArgs e)

@@ -128,6 +128,8 @@ namespace DndCore
 			if (string.IsNullOrWhiteSpace(eventCode))
 				return;
 
+			SystemVariables.Creature = magicOwner;
+
 			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner);
 			List<string> args = GetArgumentList();
 			string expressionToEvaluate = DndUtils.InjectParameters(eventCode, MagicItem.Parameters, args);

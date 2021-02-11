@@ -506,6 +506,7 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			GetFriendlyTargets.RequestTarget += GetFriendlyTargets_RequestTarget;
 			CardCommands.ViewerDieRollComplete += CardCommands_ViewerDieRollComplete;
 			CardCommands.ViewerDieRollStarts += CardCommands_ViewerDieRollStarts;
 			Expressions.ExceptionThrown += Expressions_ExceptionThrown;
@@ -948,7 +949,7 @@ namespace DHDM
 				return results;
 
 			foreach (IndividualRoll Roll in Rolls)
-				if (Roll.damageType != DamageType.None && Roll.damageType != DamageType.Bane && Roll.damageType != DamageType.Condition && Roll.damageType != DamageType.Superiority)
+				if (Roll.damageType != DamageType.None && (Roll.damageType != DamageType.Bane || Roll.damageType != DamageType.Bless) && Roll.damageType != DamageType.Condition && Roll.damageType != DamageType.Superiority)
 					if (results.ContainsKey(Roll.damageType))
 						results[Roll.damageType] += Roll.value;
 					else
@@ -3069,6 +3070,14 @@ namespace DHDM
 
 		bool rollInspirationAfterwards;
 
+		void TriggerMagicEvents(DiceRoll diceRoll)
+		{
+			DiceRollType diceRollType = diceRoll.Type;
+			if (diceRollType == DiceRollType.SavingThrow)
+				CreaturesRollingSavingThrow(diceRoll.GetCreatureIds());
+			else if (IsAttack(diceRollType))
+				CreatureAttacks(diceRoll.GetCreatureIds());
+		}
 		public void RollTheDice(DiceRoll diceRoll, int delayMs = 0)
 		{
 			if (delayMs > 0)
@@ -3079,9 +3088,16 @@ namespace DHDM
 				return;
 			}
 			CompleteCast(diceRoll);
+
+			TriggerMagicEvents(diceRoll);
+
 			Character player = null;
 			if (diceRoll.DiceGroup == DiceGroup.Players)
 				player = InitializeForPlayerRoll(diceRoll);
+			else
+			{
+				// TODO: Call ProcessAddOnsForDtos(diceRoll) so players can get benefits of bane/bless for viewer rolls.
+			}
 
 			SafeInvoke(() =>
 			{
@@ -3123,7 +3139,8 @@ namespace DHDM
 
 		void ProcessAddOnsForDtos(DiceRoll diceRoll)
 		{
-			List<Creature> creatures = GetAllCreaturesFromDiceDtos(diceRoll);
+			List<int> creatureIds = diceRoll.GetCreatureIds();
+			List<Creature> creatures = GetAllCreaturesFromIds(creatureIds);
 			foreach (Creature creature in creatures)
 				ProcessAddOns(diceRoll, creature);
 		}
@@ -3141,8 +3158,24 @@ namespace DHDM
 			return creatures;
 		}
 
+		private List<Creature> GetAllCreaturesFromIds(List<int> creatureIds)
+		{
+			List<Creature> creatures = new List<Creature>();
+			foreach (int creatureId in creatureIds)
+				if (creatureId < 0)
+				{
+					InGameCreature inGameCreature = AllInGameCreatures.GetByIndex(-creatureId);
+					if (inGameCreature != null && !creatures.Contains(inGameCreature.Creature))
+						creatures.Add(inGameCreature.Creature);
+				}
+				else
+					creatures.Add(game.GetPlayerFromId(creatureId));
+			return creatures;
+		}
+
 		private Character InitializeForPlayerRoll(DiceRoll diceRoll)
 		{
+			// TODO: Figure out where to trigger the saving throw and attack events.
 			diceRoll.GroupInspiration = tbxGroupInspiration.Text;
 
 			forcedWildMagicThisRoll = false;
@@ -3193,6 +3226,8 @@ namespace DHDM
 				return;
 			foreach (string diceStr in creature.additionalDice)
 				DiceDto.AddDtosFromDieStr(diceRoll.DiceDtos, diceStr, creature.dieBackColor, creature.dieFontColor, creature.SafeId, creature.Name);
+			creature.additionalDice = new List<string>();
+			creature.additionalDiceThisRoll = null;
 		}
 
 		private static void ProcessAddOns(DiceRoll diceRoll, Creature creature)
@@ -3231,6 +3266,7 @@ namespace DHDM
 				diceRoll.SpellID = nextSpellIdWeAreCasting;
 				nextSpellIdWeAreCasting = null;
 			}
+			activeSpellName = null;
 			string serializedObject = JsonConvert.SerializeObject(diceRoll);
 			HubtasticBaseStation.RollDice(serializedObject);
 		}
@@ -4095,8 +4131,8 @@ namespace DHDM
 
 		private static void GetTargets(out VisualEffectTarget chestTarget, out VisualEffectTarget bottomTarget)
 		{
-			chestTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
-			bottomTarget = new VisualEffectTarget(TargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
+			chestTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, -150));
+			bottomTarget = new VisualEffectTarget(VisualTargetType.ActivePlayer, new DndCore.Vector(0, 0), new DndCore.Vector(0, 0));
 		}
 
 		void ShowSpellHitOrMissInGame(int playerId, SpellHitType spellHitType, string spellName)
@@ -5941,6 +5977,12 @@ namespace DHDM
 			foreach (Creature creature in creatures)
 				creature.RollingSavingThrowNow();
 		}
+		void CreatureAttacks(List<int> creatureIds)
+		{
+			List<Creature> creatureAttacks = GetCreaturesFromIds(creatureIds);
+			foreach (Creature creature in creatureAttacks)
+				creature.CreatureAttacksNow();
+		}
 
 		private static List<Creature> GetCreaturesFromIds(List<int> creatureIds)
 		{
@@ -5978,10 +6020,6 @@ namespace DHDM
 				vantageKind = VantageKind.Disadvantage;
 			}
 			NextDieStr = dieStr;
-
-			
-			if (diceRollType == DiceRollType.SavingThrow)
-				CreaturesRollingSavingThrow(creatureIds);
 
 			string who;
 			if (creatureIds?.Count == 1 && creatureIds[0] < 0)
@@ -6036,6 +6074,11 @@ namespace DHDM
 					diceRoll.DamageHealthExtraDice = dieStr;
 				RollTheDice(diceRoll);
 			});
+		}
+
+		private static bool IsAttack(DiceRollType diceRollType)
+		{
+			return diceRollType == DiceRollType.Attack || diceRollType == DiceRollType.ChaosBolt;
 		}
 
 		private void CharacterSheets_PageBackgroundClicked(object sender, RoutedEventArgs e)
@@ -10042,10 +10085,24 @@ namespace DHDM
 			TellAll($"Damage: {damageStr}");
 		}
 
+		bool IsActualDamage(DamageType damageType)
+		{
+			if (damageType == DamageType.None)
+				return false;
+			if (damageType == DamageType.Condition)
+				return false;
+			if (damageType == DamageType.Bane)
+				return false;
+			if (damageType == DamageType.Bless)
+				return false;
+			return true;
+		}
+
 		private string GetDamageStr(Dictionary<DamageType, int> damage, double multiplier = 1)
 		{
 			List<string> names = new List<string>();
 			foreach (DamageType damageType in damage.Keys)
+				if (IsActualDamage(damageType))
 				names.Add(GetDamageDescription(damageType, damage[damageType], multiplier));
 
 			string damageStr = string.Empty;
@@ -10148,6 +10205,8 @@ namespace DHDM
 			int modifier = 0;
 
 			int baneModifier = 0;
+			int blessModifier = 0;
+
 			foreach (IndividualRoll individualRoll in individualRolls)
 			{
 				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bane)
@@ -10155,6 +10214,12 @@ namespace DHDM
 					baneModifier += individualRoll.value;
 					continue;
 				}
+				if (individualRoll.dieCountsAs == DieCountsAs.totalScore && individualRoll.damageType == DamageType.Bless)
+				{
+					blessModifier += individualRoll.value;
+					continue;
+				}
+
 				if (individualRoll.dieCountsAs != DieCountsAs.savingThrow || individualRoll.creatureId != creatureId)
 					continue;
 
@@ -10171,7 +10236,7 @@ namespace DHDM
 				if (individualRoll.modifier > modifier)
 					modifier = individualRoll.modifier;
 			}
-			if (totalScore + modifier + baneModifier >= hiddenThreshold)
+			if (totalScore + modifier + baneModifier + blessModifier >= hiddenThreshold)
 				return SavingThrowResult.Save;
 			return SavingThrowResult.Failure;
 		}
@@ -10284,5 +10349,34 @@ namespace DHDM
 			Melf's Minute Meteors.6				Staff.Weapon	Casting								x										30	150				
 			Melf's Minute Meteors.7				Staff.Magic		Casting								x									 350	150				
 		 */
+
+		private void GetFriendlyTargets_RequestTarget(TargetEventArgs ea)
+		{
+			ea.Target = new Target();
+			ea.Target.PlayerIds = new List<int>();
+			int numTargetsSelected = 0;
+			if (ea.SuggestedTargetType == TargetType.Friendly)
+			{
+				List<CreatureStats> targetedPlayers = allPlayerStats.GetTargeted();
+				foreach (CreatureStats creatureStats in targetedPlayers)
+				{
+					if (numTargetsSelected >= ea.MaxTargets)
+						return;
+					Character character = game.GetPlayerFromId(creatureStats.CreatureId);
+					ea.Target.AddCreature(character);
+					numTargetsSelected++;
+				}
+
+				foreach (InGameCreature inGameCreature in AllInGameCreatures.Creatures)
+					if (inGameCreature.IsTargeted && inGameCreature.IsAlly)
+					{
+						if (numTargetsSelected >= ea.MaxTargets)
+							return;
+						ea.Target.AddCreature(inGameCreature.Creature);
+						numTargetsSelected++;
+					}
+			}
+			
+		}
 	}
 }

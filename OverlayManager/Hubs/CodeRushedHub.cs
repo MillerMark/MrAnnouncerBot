@@ -13,7 +13,7 @@ namespace OverlayManager.Hubs
 	{
 		public void Chat(string message)
 		{
-			Twitch.Chat(message);
+			Twitch.Chat(Twitch.CodeRushedClient, message);
 		}
 
 		public void Whisper(string userName, string message)

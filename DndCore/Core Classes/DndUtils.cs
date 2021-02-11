@@ -824,6 +824,8 @@ namespace DndCore
 					return "condition";
 				case DamageType.Bane:
 					return "bane";
+				case DamageType.Bless:
+					return "bless";
 			}
 			return string.Empty;
 		}

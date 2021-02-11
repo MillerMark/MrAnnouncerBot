@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DndCore
 {
-	public enum TargetType
+	public enum VisualTargetType
 	{
 		ActivePlayer,
 		ActiveEnemy,

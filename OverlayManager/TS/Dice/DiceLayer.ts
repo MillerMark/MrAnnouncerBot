@@ -232,7 +232,9 @@ class DiceLayer {
 	damageThunder: Sprites;
 	superiorityFire: Sprites;
 	baneBack: Sprites;
+	blessBack: Sprites;
 	baneFront: Sprites;
+	blessFront: Sprites;
 	superiorityDragonHead: Sprites;
 	superiorityDragonHeadB: Sprites;
 	superiorityDragonHeadC: Sprites;
@@ -588,6 +590,16 @@ class DiceLayer {
 		this.baneFront.originX = 51;
 		this.baneFront.originY = 0 + baneOriginShiftY;
 		this.allFrontLayerEffects.add(this.baneFront);
+
+		this.blessBack = new Sprites("/Dice/Damage/Bless/BlessBack", 50, fps30, AnimationStyle.Loop, true);
+		this.blessBack.originX = 133;
+		this.blessBack.originY = 135;
+		this.allBackLayerEffects.add(this.blessBack);
+
+		this.blessFront = new Sprites("/Dice/Damage/Bless/BlessFront", 50, fps30, AnimationStyle.Loop, true);
+		this.blessFront.originX = 79;
+		this.blessFront.originY = 75;
+		this.allFrontLayerEffects.add(this.blessFront);
 
 		this.superiorityDragonHead = new Sprites("/Dice/Damage/Superiority/SuperiorityDragon", 81, fps20, AnimationStyle.Loop, true);
 		this.superiorityDragonHead.originX = 74;
@@ -1042,6 +1054,23 @@ class DiceLayer {
 		diceSounds.safePlayMp3('Dice/Damage/DragonRoar');
 	}
 
+	attachBless(die: IDie): void {
+		const hsl = this.rgbToHSL(die.diceColor);
+		const blessBackSprite: SpriteProxy = this.blessBack.addShifted(960, 540, -1, hsl.h);
+		const blessFrontSprite: SpriteProxy = this.blessFront.addShifted(960, 540, -1, hsl.h);
+		blessBackSprite.autoRotationDegeesPerSecond = Random.between(-20, 20);
+		blessFrontSprite.autoRotationDegeesPerSecond = Random.between(-20, 20);
+		this.initSprite(blessFrontSprite, die);
+		this.initSprite(blessBackSprite, die);
+
+		die.attachedSprites.push(blessBackSprite);
+		die.origins.push(this.blessBack.getOrigin());
+
+		die.attachedSprites.push(blessFrontSprite);
+		die.origins.push(this.blessFront.getOrigin());
+		
+	}
+
 	attachBane(die: IDie): void {
 		const numHeads = 3;
 
@@ -1049,11 +1078,9 @@ class DiceLayer {
 		const autoRotation: number = Random.plusMinusBetween(20, 45);
 
 		const hsl = this.rgbToHSL(die.diceColor);
-		console.log('die.diceColor: ' + die.diceColor);
 		const saturation: number = hsl.s * 100;
-		const brightness = 1; //(3 * 100 + hsl.l * 100) / 4;
-		console.log('saturation: ' + saturation);
-		const hueShift: number = hsl.h * 360;
+		const brightness = 100; //(3 * 100 + hsl.l * 100) / 4;
+		const hueShift: number = hsl.h;
 
 		for (let i = 0; i < numHeads; i++) {
 			const randomStartingFrameIndex: number = Math.floor(Random.max(this.baneBack.baseAnimation.frameCount));
@@ -2382,7 +2409,9 @@ class DiceLayer {
 		this.clearSpritesByGroup(this.damageSlashingLance, diceGroup);
 		this.clearSpritesByGroup(this.damageThunder, diceGroup);
 		this.clearSpritesByGroup(this.baneBack, diceGroup);
+		this.clearSpritesByGroup(this.blessBack, diceGroup);
 		this.clearSpritesByGroup(this.baneFront, diceGroup);
+		this.clearSpritesByGroup(this.blessFront, diceGroup);
 		this.clearSpritesByGroup(this.superiorityFire, diceGroup);
 		this.clearSpritesByGroup(this.superiorityDragonHead, diceGroup);
 		this.clearSpritesByGroup(this.superiorityDragonHeadB, diceGroup);

@@ -24,8 +24,14 @@ namespace DndCore
 
 		public void AddCreature(Creature creature)
 		{
+			if (creature == null)
+				return;
 			if (creature is Character player)
+			{
+				if (PlayerIds == null)
+					PlayerIds = new List<int>();
 				PlayerIds.Add(player.playerID);
+			}
 			else
 				Creatures.Add(creature);
 		}
