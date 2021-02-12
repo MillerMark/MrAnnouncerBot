@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace DndCore
 {
+	public delegate void CreaturePlusModIdEventHandler(CreaturePlusModIdEventArgs ea);
+	public delegate void AddModEventHandler(AddModEventArgs ea);
+	public delegate void DispelMagicEventHandler(DispelMagicEventArgs ea);
 	public delegate void MagicEventHandler(object sender, MagicEventArgs ea);
 	public delegate void FeatureEventHandler(object sender, FeatureEventArgs ea);
 	public delegate void GetRollEventHandler(object sender, GetRollEventArgs ea);

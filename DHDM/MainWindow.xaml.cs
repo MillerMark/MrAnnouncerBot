@@ -512,6 +512,9 @@ namespace DHDM
 
 		private void HookEvents()
 		{
+			DispelMagic.RequestDispelMagic += DispelMagic_RequestDispelMagic;
+			AddMod.RequestAddMod += AddMod_RequestAddMod;
+			RevealCard.RequestCardReveal += RevealCard_RequestCardReveal;
 			GetFriendlyTargets.RequestTarget += GetFriendlyTargets_RequestTarget;
 			CardCommands.ViewerDieRollComplete += CardCommands_ViewerDieRollComplete;
 			CardCommands.ViewerDieRollStarts += CardCommands_ViewerDieRollStarts;
@@ -535,6 +538,36 @@ namespace DHDM
 			StreamlootsService.CardRedeemed += StreamlootsService_CardRedeemed;
 			StreamlootsService.CardsPurchased += StreamlootsService_CardsPurchased;
 		}
+
+		private void AddMod_RequestAddMod(AddModEventArgs ea)
+		{
+			//throw new NotImplementedException();
+		}
+
+		private void DispelMagic_RequestDispelMagic(DispelMagicEventArgs ea)
+		{
+			ea.Recipient.Magic.DispelMagic();
+		}
+
+		private void RevealCard_RequestCardReveal(CreaturePlusModIdEventArgs ea)
+		{
+			Magic magic = ea.CreaturePlusModId.Magic;
+
+			if (magic != null)
+			{
+				if (magic.Args.Length > 0)
+				{
+					if (magic.Args[0] is CardDto cardDto)
+					{
+						//cardDto.InstanceID
+						cardHandManager.RevealSecretCard(ea.CreaturePlusModId.Creature.SafeId, cardDto.Card.Guid);
+
+					}
+				}
+			}
+		}
+
+
 
 		private void TriggerEffect_RequestEffectTrigger(object sender, EffectEventArgs ea)
 		{
@@ -3083,7 +3116,10 @@ namespace DHDM
 				CreaturesRollingSavingThrow(diceRoll.GetCreatureIds());
 			else if (IsAttack(diceRollType))
 				CreatureAttacks(diceRoll.GetCreatureIds());
+			else if (diceRollType == DiceRollType.SkillCheck)
+				CreaturesRollingSkillCheck(diceRoll.GetCreatureIds());
 		}
+
 		public void RollTheDice(DiceRoll diceRoll, int delayMs = 0)
 		{
 			if (delayMs > 0)
@@ -5983,6 +6019,14 @@ namespace DHDM
 			foreach (Creature creature in creatures)
 				creature.RollingSavingThrowNow();
 		}
+
+		void CreaturesRollingSkillCheck(List<int> creatureIds)
+		{
+			List<Creature> creatures = GetCreaturesFromIds(creatureIds);
+			foreach (Creature creature in creatures)
+				creature.RollingSkillCheckNow();
+		}
+
 		void CreatureAttacks(List<int> creatureIds)
 		{
 			List<Creature> creatureAttacks = GetCreaturesFromIds(creatureIds);
@@ -9970,7 +10014,10 @@ namespace DHDM
 
 			int characterId = ea.CardDto.OwningCharacterId;
 			if (characterId != int.MinValue)
+			{
+				TriggerCardReceivedEvent(ea);
 				cardHandManager.AddCard(characterId, ea.CardDto.Card);
+			}
 
 			bool waitingOnDieRoll = false;
 			const string CommentDelimiter = "//";
@@ -10016,23 +10063,47 @@ namespace DHDM
 		private void TriggerCardPlayedEvent(string cardName, int targetCharacterId, CardEventData cardEventData)
 		{
 			// TODO: Figure out how to store the AttackTargetType in the card itself.
-
+			CastedSpell castedSpell = GetCastedSpell(cardName);
 			Creature targetCreature = DndUtils.GetCreatureById(targetCharacterId);
+			Target target = GetTarget(targetCreature);
+			object customData = null;
+			Expressions.Do(cardEventData.CardPlayed, viewerSpellcaster, target, castedSpell, null, customData);
+		}
 
+		private CastedSpell GetCastedSpell(string cardName)
+		{
 			const string castPrefix = "Cast ";
 			CastedSpell castedSpell = null;
-			if (cardName.StartsWith(castPrefix))
+			if (!cardName.StartsWith(castPrefix))
+				return castedSpell;
+
+			string spellName = cardName.Substring(castPrefix.Length);
+			Spell spell = AllSpells.Get(spellName);
+			if (spell != null)
 			{
-				string spellName = cardName.Substring(castPrefix.Length);
-				Spell spell = AllSpells.Get(spellName);
-				if (spell != null)
-				{
-					castedSpell = new CastedSpell(spell, viewerSpellcaster);
-					nextSpellIdWeAreCasting = castedSpell.ID;
-				}
+				castedSpell = new CastedSpell(spell, viewerSpellcaster);
+				nextSpellIdWeAreCasting = castedSpell.ID;
 			}
-			object customData = null;
-			Expressions.Do(cardEventData.CardPlayed, viewerSpellcaster, new Target(AttackTargetType.Spell, targetCreature), castedSpell, null, customData);
+
+			return castedSpell;
+		}
+
+		private static Target GetTarget(Creature targetCreature)
+		{
+			Target target = null;
+			if (targetCreature != null)
+				target = new Target(AttackTargetType.Spell, targetCreature);
+			return target;
+		}
+
+		private void TriggerCardReceivedEvent(CardEventArgs ea)
+		{
+			Creature recipientCreature = GetCreatureFromId(ea.CardDto.OwningCharacterId);
+			Target recipientTarget = GetTarget(recipientCreature);
+			SystemVariables.CardRecipient = recipientTarget;
+			SystemVariables.ThisCard = ea.CardDto;
+			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
+			Expressions.Do(cardEventData.CardReceived, viewerSpellcaster, recipientTarget, null, null, recipientCreature);
 		}
 
 		[Flags]

@@ -40,22 +40,21 @@ namespace DndCore
 				object data8 = null;
 
 				if (args.Count > 2)
-					data1 = Expressions.Get(args[2], player, target, spell);
+					data1 = GetData(args[2], player, target, spell);
 				if (args.Count > 3)
-					data2 = Expressions.Get(args[3], player, target, spell);
+					data2 = GetData(args[3], player, target, spell);
 				if (args.Count > 4)
-					data3 = Expressions.Get(args[4], player, target, spell);
+					data3 = GetData(args[4], player, target, spell);
 				if (args.Count > 5)
-					data4 = Expressions.Get(args[5], player, target, spell);
+					data4 = GetData(args[5], player, target, spell);
 				if (args.Count > 6)
-					data5 = Expressions.Get(args[6], player, target, spell);
+					data5 = GetData(args[6], player, target, spell);
 				if (args.Count > 7)
-					data6 = Expressions.Get(args[7], player, target, spell);
+					data6 = GetData(args[7], player, target, spell);
 				if (args.Count > 8)
-					data7 = Expressions.Get(args[8], player, target, spell);
+					data7 = GetData(args[8], player, target, spell);
 				if (args.Count > 9)
-					data8 = Expressions.Get(args[9], player, target, spell);
-
+					data8 = GetData(args[9], player, target, spell);
 
 				//if (target == null)
 				//	target = player.ActiveTarget;
@@ -64,6 +63,14 @@ namespace DndCore
 			}
 
 			return null;
+		}
+
+		private static object GetData(string arg, Creature player, Target target, CastedSpell spell)
+		{
+			arg = arg.Trim();
+			if (arg.StartsWith("\""))
+				return arg;
+			return Expressions.Get(arg, player, target, spell);
 		}
 	}
 }

@@ -73,13 +73,18 @@ namespace DHDM
 			return Cards.Where(x => x.CardName.StartsWith(cardName)).ToList();
 		}
 
+		StreamlootsCard FindCardById(string cardId)
+		{
+			return Cards.FirstOrDefault(x => x.Guid == cardId);
+		}
+
 		public bool RevealSecretCard(string cardId)
 		{
-			string cardName = cardId.Replace('_', ' ');
-			CardsToReveal = FindCardsByName(cardName);
-			if (CardsToReveal.Count == 0)
+			StreamlootsCard card = FindCardById(cardId);
+			if (card == null)
 				return false;
-			Cards.RemoveAll(x => x.CardName.StartsWith(cardName));
+			Cards.Remove(card);
+			CardsToReveal.Add(card);
 			if (SelectedCard != null && CardsToReveal.Contains(SelectedCard))
 				SelectedCard = null;
 			return true;
@@ -107,6 +112,11 @@ namespace DHDM
 		{
 			CardsToPlay.Clear();
 		}
-		
+
+		public void SecretCardsHaveBeenRevealed()
+		{
+			CardsToReveal.Clear();
+		}
+
 	}
 }

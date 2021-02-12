@@ -15,7 +15,7 @@ namespace DndCore
 		
 		public Magic(Creature caster, DndGame game, string magicItemName, CastedSpell castedSpell, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
-			CastedSpellId = castedSpell.ID;
+			CastedSpellId = castedSpell?.ID;
 			Game = game;
 			SpellName = castedSpell?.Spell?.Name;
 			if (string.IsNullOrWhiteSpace(SpellName))
@@ -89,7 +89,7 @@ namespace DndCore
 			
 		}
 
-		void DispelMagic()
+		public void DispelMagic()
 		{
 			MagicItem.TriggerDispel(this);
 			OnDispel(this, new MagicEventArgs(this));
@@ -131,6 +131,7 @@ namespace DndCore
 			SystemVariables.Creature = magicOwner;
 
 			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner);
+			creaturePlusModId.Magic = this;
 			List<string> args = GetArgumentList();
 			string expressionToEvaluate = DndUtils.InjectParameters(eventCode, MagicItem.Parameters, args);
 
@@ -145,6 +146,11 @@ namespace DndCore
 		public void TriggerRecipientSaves(Creature magicOwner)
 		{
 			TriggerEvent(magicOwner, MagicItem.onRecipientSaves);
+		}
+
+		public void TriggerRecipientChecksSkill(Creature magicOwner)
+		{
+			TriggerEvent(magicOwner, MagicItem.onRecipientChecksSkill);
 		}
 
 		public void TriggerRecipientAttacks(Creature magicOwner)

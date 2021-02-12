@@ -10,10 +10,14 @@ namespace DndCore
 	{
 		const string VAR_MultiTargetNotificationOffset = "MultiTargetNotificationOffset";
 		const string VAR_FriendlyTargets = "FriendlyTargets";
+		const string VAR_CardRecipient = "CardRecipient";
+		const string VAR_ThisCard = "ThisCard";
 		const string STR_CreaturePrefix = "Creature_";
 		public static int Offset = 0;
 		public static Target FriendlyTargets = null;
 		public static Creature Creature { get; set; }
+		public static Target CardRecipient { get; set; }
+		public static object ThisCard { get; set; }
 		static Dictionary<string, PropertyInfo> creatureProperties = new Dictionary<string, PropertyInfo>();
 
 
@@ -30,6 +34,8 @@ namespace DndCore
 		{
 			KnownVariables.Add(VAR_MultiTargetNotificationOffset);
 			KnownVariables.Add(VAR_FriendlyTargets);
+			KnownVariables.Add(VAR_CardRecipient);
+			KnownVariables.Add(VAR_ThisCard);
 		}
 
 		public override bool Handles(string tokenName, Creature creature, CastedSpell castedSpell)
@@ -57,6 +63,10 @@ namespace DndCore
 					return Offset;
 				case VAR_FriendlyTargets:
 					return FriendlyTargets;
+				case VAR_CardRecipient:
+					return CardRecipient;
+				case VAR_ThisCard:
+					return ThisCard;
 			}
 
 			if (variableName.StartsWith(STR_CreaturePrefix))

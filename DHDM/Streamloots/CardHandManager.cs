@@ -208,7 +208,10 @@ namespace DHDM
 			{
 				StreamlootsHand hand = Hands[creatureId];
 				if (hand.RevealSecretCard(cardId))
+				{
 					SendCardCommand("Reveal Secret Cards");
+					hand.SecretCardsHaveBeenRevealed();
+				}
 			}
 		}
 	}

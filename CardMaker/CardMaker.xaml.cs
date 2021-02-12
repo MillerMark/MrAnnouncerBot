@@ -1584,6 +1584,19 @@ namespace CardMaker
 			}
 		}
 
+		string GetModType(string rollKind)
+		{
+			switch (rollKind)
+			{
+				case STR_Skill:
+					return "Skill";
+				case STR_Save:
+					return "Saving";
+				case STR_Attack:
+					return "Attack";
+			}
+			return string.Empty;
+		}
 		string GetDieModTitle(bool isSecret, string rollKind, int modifier)
 		{
 			string secret = isSecret ? "Secret " : "";
@@ -1600,17 +1613,11 @@ namespace CardMaker
 				modStr = $"+{modifier}";
 			}
 
-			switch (rollKind)
-			{
-				case STR_Skill:
-					return $"{secret}Skill {bonusPenaltyText} {modStr}";
-				case STR_Save:
-					return $"{secret}Saving {bonusPenaltyText} {modStr}";
-				case STR_Attack:
-					return $"{secret}Attack {bonusPenaltyText} {modStr}";
-			}
-			return string.Empty;
+			string modType = GetModType(rollKind);
+			
+			return $"{secret}{modType} {bonusPenaltyText} {modStr}";
 		}
+
 		string GetDieModDescription(string rollKind, int modifier, bool isSecret)
 		{
 			string bonusVerb = GetBonusVerb(modifier);
@@ -1640,13 +1647,9 @@ namespace CardMaker
 		{
 			string bonusPenalty;
 			if (modifier < 0)
-			{
 				bonusPenalty = "penalty";
-			}
 			else
-			{
 				bonusPenalty = "bonus";
-			}
 
 			return bonusPenalty;
 		}
@@ -1742,10 +1745,23 @@ namespace CardMaker
 			card.Name = GetDieModTitle(isSecret, rollKind, modifier);
 			card.StylePath = "Die Mods";
 			string cardName;
-			if (card.Name.StartsWith("Secret "))
+			if (isSecret)
+			{
 				cardName = "a secret card";
+				int lastIndexOfSpace = card.Name.LastIndexOf(' ');
+				string magicName = "SecretMod";
+				string value = "0";
+				if (lastIndexOfSpace > 0)
+				{
+					value = card.Name.Substring(lastIndexOfSpace).Trim();
+					value = value.TrimStart('+');
+				}
+				string modType = GetModType(rollKind);
+				card.CardReceived = $"GiveMagic(CardRecipient, $\"{magicName}\", ThisCard, \"{modType}\", {value});";
+			}
 			else
 				cardName = card.Name;
+			
 			card.AlertMessage = $"{{{{username}}}} gave {cardName} to {{{{recipient}}}}.";
 			card.Description = GetDieModDescription(rollKind, modifier, isSecret);
 			QuickAddAllLayerDetails(card);

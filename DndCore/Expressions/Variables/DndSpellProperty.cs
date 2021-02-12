@@ -71,27 +71,35 @@ namespace DndCore
 		public override List<PropertyCompletionInfo> GetCompletionInfo()
 		{
 			List<PropertyCompletionInfo> result = new List<PropertyCompletionInfo>();
-			PropertyInfo[] properties = typeof(Spell).GetProperties();
+			AddPropertiesAndFields<Spell>(result);
+			return result;
+		}
+
+		private static void AddPropertiesAndFields<T>(List<PropertyCompletionInfo> result)
+		{
+			PropertyInfo[] properties = typeof(T).GetProperties();
+			string typeName = typeof(T).Name;
+			string prefix;
+			prefix = char.ToLower(typeName[0]) + typeName.Substring(1);
 			foreach (PropertyInfo propertyInfo in properties)
 			{
-				string description = $"Spell Property: {propertyInfo.Name}";
+				string description = $"{typeName} Property: {propertyInfo.Name}";
 				DescriptionAttribute descriptionAttribute = propertyInfo.GetCustomAttribute<DescriptionAttribute>();
 				if (descriptionAttribute != null)
 					description = descriptionAttribute.Description;
 				TypeHelper.GetTypeDetails(propertyInfo.PropertyType, out string enumTypeName, out ExpressionType expressionType);
-				result.Add(new PropertyCompletionInfo() { Name = $"spell_{propertyInfo.Name}", Description = description, EnumTypeName = enumTypeName, Type = expressionType });
+				result.Add(new PropertyCompletionInfo() { Name = $"{prefix}_{propertyInfo.Name}", Description = description, EnumTypeName = enumTypeName, Type = expressionType });
 			}
-			FieldInfo[] fields = typeof(Spell).GetFields();
+			FieldInfo[] fields = typeof(T).GetFields();
 			foreach (FieldInfo fieldInfo in fields)
 			{
-				string description = $"Spell Field: {fieldInfo.Name}";
+				string description = $"{typeName} Field: {fieldInfo.Name}";
 				DescriptionAttribute descriptionAttribute = fieldInfo.GetCustomAttribute<DescriptionAttribute>();
 				if (descriptionAttribute != null)
 					description = descriptionAttribute.Description;
 				TypeHelper.GetTypeDetails(fieldInfo.FieldType, out string enumTypeName, out ExpressionType expressionType);
-				result.Add(new PropertyCompletionInfo() { Name = $"spell_{fieldInfo.Name}", Description = description, EnumTypeName = enumTypeName, Type = expressionType });
+				result.Add(new PropertyCompletionInfo() { Name = $"{prefix}_{fieldInfo.Name}", Description = description, EnumTypeName = enumTypeName, Type = expressionType });
 			}
-			return result;
 		}
 	}
 }

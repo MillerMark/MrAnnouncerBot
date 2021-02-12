@@ -1813,19 +1813,30 @@ namespace DndCore
 
 		void TriggerMagicSavingThrow()
 		{
-			foreach (Magic magic in receivedMagic)
-				magic.TriggerRecipientSaves(this);
+			for (int i = receivedMagic.Count - 1; i >= 0; i--)  // Counting backwards in case we dispel any magic.
+				receivedMagic[i].TriggerRecipientSaves(this);
+		}
+
+		void TriggerMagicSkillCheck()
+		{
+			for (int i = receivedMagic.Count - 1; i >= 0; i--)  // Counting backwards in case we dispel any magic.
+				receivedMagic[i].TriggerRecipientChecksSkill(this);
 		}
 
 		void TriggerMagicAttack()
 		{
-			foreach (Magic magic in receivedMagic)
-				magic.TriggerRecipientAttacks(this);
+			for (int i = receivedMagic.Count - 1; i >= 0; i--)  // Counting backwards in case we dispel any magic.
+				receivedMagic[i].TriggerRecipientAttacks(this);
 		}
 
 		public void RollingSavingThrowNow()
 		{
 			TriggerMagicSavingThrow();
+		}
+
+		public void RollingSkillCheckNow()
+		{
+			TriggerMagicSkillCheck();
 		}
 
 		public void CreatureAttacksNow()

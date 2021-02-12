@@ -153,6 +153,9 @@ namespace DndCore
 		[Column]
 		public string onRecipientSaves { get; set; }
 
+		[Column]
+		public string onRecipientChecksSkill { get; set; }
+
 
 		[Column]
 		public string onDieRollStopped { get; set; }

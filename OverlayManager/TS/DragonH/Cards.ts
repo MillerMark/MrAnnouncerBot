@@ -907,7 +907,7 @@ class CardManager {
 			secretCard.fadeOutNow(350);
 			const revealCard: SpriteProxy = this.knownCards.insert(secretCard.data.xPos, secretCard.data.yPos, secretCard.data.revealCardIndex);
 			revealCard.data = secretCard.data;
-			this.secretCardBurn.add(secretCard.data.xPos, secretCard.data.yPos, 0);
+			this.secretCardBurn.addShifted(secretCard.data.xPos, secretCard.data.yPos, 0, secretCard.data.hueShift - 25);
 			this.soundManager.safePlayMp3('Spells/GunpowderFlare');
 			setTimeout(this.revealStep3.bind(this), timeToShowCard, revealCard);
 		}
@@ -928,12 +928,16 @@ class CardManager {
 		hand.CardsToReveal.forEach((card: StreamlootsCard) => {
 			const { xPos, yPos } = this.getBigCardCenter(card);
 			const secretCardIndex: number = this.knownCards.addImage("Secret Card");
-			const revealCardIndex: number = this.knownCards.addImage(card.CardName);
-			const secretCard: SpriteProxy = this.knownCards.add(xPos, offscreenY, secretCardIndex);
+			const revealCardIndex: number = this.knownCards.addImage(card.CardImageName);
+			const secretCard: ColorShiftingSpriteProxy = this.knownCards.addShifted(xPos, offscreenY, secretCardIndex, 0);
 
 			secretCard.ease(now + delayStart, xPos - originX, offscreenY - originY, xPos - originX, yPos - originY, timeToSpinIn);
 			secretCard.easeSpin(now + delayStart, -70, 0, timeToSpinIn);
 			secretCard.data = new RevealCardStateData(revealCardIndex, xPos, yPos, offscreenY, hueShift, card.UserName, hand.CharacterId, card.FillColor, card.OutlineColor);
+
+			if (secretCard.data instanceof RevealCardStateData)
+				secretCard.hueShift = secretCard.data.hueShift;
+
 			this.playCardDealtSound(delayStart + timeToSpinIn / 2);
 			setTimeout(this.revealStep2.bind(this), delayStart + timeToSpinIn, secretCard);
 
