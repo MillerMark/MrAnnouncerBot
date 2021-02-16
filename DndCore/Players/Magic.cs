@@ -133,6 +133,11 @@ namespace DndCore
 			CreaturePlusModId creaturePlusModId = new CreaturePlusModId(GetModId(), magicOwner);
 			creaturePlusModId.Magic = this;
 			List<string> args = GetArgumentList();
+
+			if (Args.Length > 0 && Args[0] is IGetUserName iGetUserName)  // It's a Card.
+			{
+				SystemVariables.ThisCard = iGetUserName;
+			}
 			string expressionToEvaluate = DndUtils.InjectParameters(eventCode, MagicItem.Parameters, args);
 
 			Expressions.Do(expressionToEvaluate, magicOwner, null, null, null, creaturePlusModId);

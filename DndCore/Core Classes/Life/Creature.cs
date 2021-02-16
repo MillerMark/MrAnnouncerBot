@@ -1262,10 +1262,11 @@ namespace DndCore
 		[JsonIgnore]
 		protected Dictionary<string, object> states = new Dictionary<string, object>();
 
-		public bool HoldsState(string key)
+		public bool HasState(string key)
 		{
 			return states.ContainsKey(key);
 		}
+
 		public event PlayerShowStateEventHandler PlayerShowState;
 
 		protected virtual void OnPlayerShowState(object sender, PlayerShowStateEventArgs ea)
@@ -1341,6 +1342,7 @@ namespace DndCore
 
 			return null;
 		}
+
 		public void SetNextAnswer(string answer)
 		{
 			NextAnswer = answer;

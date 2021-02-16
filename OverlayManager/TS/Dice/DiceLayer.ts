@@ -97,7 +97,7 @@ class TrailingEffect {
 	LeftRightDistanceBetweenPrints: number;
 	Index: number;
 	OnPrintPlaySound: string;
-	
+
 	Name: string;
 	EffectType: string;
 	OnThrowSound: string;
@@ -1068,7 +1068,7 @@ class DiceLayer {
 
 		die.attachedSprites.push(blessFrontSprite);
 		die.origins.push(this.blessFront.getOrigin());
-		
+
 	}
 
 	attachBane(die: IDie): void {
@@ -1292,7 +1292,7 @@ class DiceLayer {
 	addBackgroundRect(x: number, y: number, width: number, height: number, lifespan: number): AnimatedRectangle {
 		const borderThickness = 2;
 		const opacity = 0.95;
-		return this.animations.addRectangle(x, y, width, height, '#f5e0b7', '#ae722c', lifespan, borderThickness, opacity); 
+		return this.animations.addRectangle(x, y, width, height, '#f5e0b7', '#ae722c', lifespan, borderThickness, opacity);
 	}
 
 	setMultiplayerFades(animatedElement: AnimatedElement) {
@@ -1419,10 +1419,10 @@ class DiceLayer {
 				velocityMultiplierY = -1.3;
 			if (textCenter.x > 960)
 				velocityX = -0.4;
-			else 
+			else
 				velocityX = 0.4;
 		}
-		else 
+		else
 			textCenter = new Vector(960, 750);
 		const textEffect: TextEffect = this.animations.addText(textCenter, `${label}${totalHealthDamageStr}`, damageTime);
 		textEffect.data = diceGroup;
@@ -2600,6 +2600,7 @@ class DiceLayer {
 		diceRoll.damageHealthExtraDice = dto.DamageHealthExtraDice;
 		diceRoll.diceDtos = dto.DiceDtos;
 		diceRoll.modifier = dto.Modifier;
+		diceRoll.cardModifiers = dto.CardModifiers;
 		diceRoll.hiddenThreshold = dto.HiddenThreshold;
 		diceRoll.isMagic = dto.IsMagic;
 		diceRoll.suppressLegacyRoll = dto.SuppressLegacyRoll;
@@ -2906,7 +2907,7 @@ class DiceLayer {
 		textEffect.velocityY = -0.15;
 		if (centerDicePos.x < 960)
 			textEffect.velocityX = 0.25;
-		else 
+		else
 			textEffect.velocityX = -0.25;
 
 		textEffect.opacity = 0.90;
@@ -2949,6 +2950,16 @@ class BonusRoll {
 	}
 }
 
+class CardModifier {
+	CreatureId = Character.invalidCreatureId;
+	BlameName: string;
+	Offset = 0;
+	Multiplier = 1;
+	constructor() {
+
+	}
+}
+
 class DiceRollData {
 	diceGroup: DiceGroup;
 	rollId: string;
@@ -2960,6 +2971,7 @@ class DiceRollData {
 	damageHealthExtraDice: string;
 	diceDtos: Array<DiceDto> = [];
 	modifier: number;
+	cardModifiers: Array<CardModifier> = [];
 	minCrit: number;
 	totalRoll: number;
 	hiddenThreshold: number;
@@ -3013,6 +3025,27 @@ class DiceRollData {
 	effectRotation = 0;
 	effectSaturation = 100;
 	onStopRollingSound: string;
+
+	getCardModifier(creatureId: number): number {
+		let totalModifier = 0;
+		if (this.cardModifiers) {
+			// Process addition first...
+			this.cardModifiers.forEach((cardModifier: CardModifier) => {
+				if (cardModifier.CreatureId === creatureId)
+					if (cardModifier.Multiplier === 1)
+						totalModifier += cardModifier.Offset;
+			});
+
+			// Then multiplication...
+			this.cardModifiers.forEach((cardModifier: CardModifier) => {
+				if (cardModifier.CreatureId === creatureId)
+					if (cardModifier.Multiplier !== 1)
+						totalModifier *= cardModifier.Multiplier;
+			});
+		}
+
+		return totalModifier;
+	}
 
 	getFirstBonusRollDescription(): string {
 		if (!this.bonusRolls || this.bonusRolls.length === 0)

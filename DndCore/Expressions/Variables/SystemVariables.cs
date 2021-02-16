@@ -6,29 +6,22 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class SystemVariables : DndVariable
+	public class SystemVariables : DndPropertyAccessor
 	{
 		const string VAR_MultiTargetNotificationOffset = "MultiTargetNotificationOffset";
 		const string VAR_FriendlyTargets = "FriendlyTargets";
 		const string VAR_CardRecipient = "CardRecipient";
 		const string VAR_ThisCard = "ThisCard";
-		const string STR_CreaturePrefix = "Creature_";
+		const string VAR_DiceRoll = "DiceRoll";
 		public static int Offset = 0;
 		public static Target FriendlyTargets = null;
 		public static Creature Creature { get; set; }
 		public static Target CardRecipient { get; set; }
 		public static object ThisCard { get; set; }
-		static Dictionary<string, PropertyInfo> creatureProperties = new Dictionary<string, PropertyInfo>();
+		public static DiceRoll DiceRoll { get; set; }
 
 
 		List<string> KnownVariables = new List<string>();
-
-		static SystemVariables()
-		{
-			PropertyInfo[] creaturePropertyArray = typeof(Creature).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-			foreach (PropertyInfo propertyInfo in creaturePropertyArray)
-				creatureProperties.Add(propertyInfo.Name, propertyInfo);
-		}
 
 		public SystemVariables()
 		{
@@ -36,23 +29,29 @@ namespace DndCore
 			KnownVariables.Add(VAR_FriendlyTargets);
 			KnownVariables.Add(VAR_CardRecipient);
 			KnownVariables.Add(VAR_ThisCard);
+			KnownVariables.Add(VAR_DiceRoll);
 		}
 
 		public override bool Handles(string tokenName, Creature creature, CastedSpell castedSpell)
 		{
-			if (tokenName.StartsWith(STR_CreaturePrefix))
-			{
-				string propertyName = tokenName.Substring(STR_CreaturePrefix.Length);
-				if (creatureProperties.ContainsKey(propertyName))
-					return true;
-			}
-			
-			return KnownVariables.Contains(tokenName);
+			return Handles<Creature>(tokenName) || KnownVariables.Contains(tokenName);
+		}
+
+		void AddCompletionInfo(List<PropertyCompletionInfo> completionInfo, string name, string description, ExpressionType expressionType)
+		{
+			completionInfo.Add(new PropertyCompletionInfo() { Name = name, Description = description, Type = expressionType });
 		}
 
 		public override List<PropertyCompletionInfo> GetCompletionInfo()
 		{
-			return null;
+			List<PropertyCompletionInfo> completionInfo = AddPropertiesAndFields<Creature>();
+			AddCompletionInfo(completionInfo, VAR_MultiTargetNotificationOffset, "The delay offset (in ms) when multiple target events (like Magic's onReceived) are called, typically incremented by about 150ms between each target notification. Can be passed to FloatPlayerText to stagger notification text.", ExpressionType.number);
+			AddCompletionInfo(completionInfo, VAR_FriendlyTargets, "A Target instance holding friendly targeted creatures, from a recent call to GetFriendlyTargets().", ExpressionType.unknown);
+			AddCompletionInfo(completionInfo, VAR_CardRecipient, "The recipient of a recently gifted card (wrapped in a Target), set when a card is given to a player or an NPC/Monster. Useful for passing as the first parameter to a GiveMagic call.", ExpressionType.unknown);
+			AddCompletionInfo(completionInfo, VAR_ThisCard, "The recently received card, set just before calling the card's CardReceived event. Useful for passing as the third parameter to a GiveMagic call.", ExpressionType.unknown);
+			AddCompletionInfo(completionInfo, VAR_DiceRoll, "The pending dice roll, set just before rolling the dice.", ExpressionType.unknown);
+			
+			return completionInfo;
 		}
 
 		public override object GetValue(string variableName, ExpressionEvaluator evaluator, Creature player)
@@ -67,16 +66,11 @@ namespace DndCore
 					return CardRecipient;
 				case VAR_ThisCard:
 					return ThisCard;
+				case VAR_DiceRoll:
+					return DiceRoll;
 			}
 
-			if (variableName.StartsWith(STR_CreaturePrefix))
-			{
-				string propertyName = variableName.Substring(STR_CreaturePrefix.Length);
-				if (creatureProperties.Keys.Contains(propertyName))
-					return creatureProperties[propertyName].GetValue(Creature);
-			}
-
-			return null;
+			return GetValue<Creature>(variableName, Creature);
 		}
 	}
 }

@@ -7,49 +7,12 @@ using CodingSeb.ExpressionEvaluator;
 
 namespace DndCore
 {
-	public class DndCharacterProperty : DndVariable
+	public class DndCharacterProperty : DndPropertyAccessor
 	{
 		public delegate void AskValueEventHandler(object sender, AskValueEventArgs ea);
 		public static event AskValueEventHandler AskingValue;
 		private static AskValueEventArgs askValueEventArgs;
-
-		List<string> propertyNames = null;
-		List<string> fieldNames = null;
 		
-		void GetPropertyNames()
-		{
-			if (propertyNames != null)
-				return;
-			propertyNames = new List<string>();
-			fieldNames = new List<string>();
-			PropertyInfo[] properties = typeof(Character).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-			foreach (PropertyInfo propertyInfo in properties)
-			{
-				propertyNames.Add(propertyInfo.Name);
-			}
-
-			FieldInfo[] fields = typeof(Character).GetFields(BindingFlags.Public | BindingFlags.Instance);
-			foreach (FieldInfo fieldInfo in fields)
-			{
-				fieldNames.Add(fieldInfo.Name);
-			}
-		}
-
-		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
-		{
-			if (player == null)
-				return false;
-
-			GetPropertyNames();
-			if (propertyNames.IndexOf(tokenName) >= 0 | fieldNames.IndexOf(tokenName) >= 0)
-				return true;
-
-			if (KnownQualifiers.StartsWithKnownQualifier(tokenName))
-				return false;
-
-			return player.HoldsState(tokenName) || tokenName.StartsWith("_"); // ;
-		}
-
 		object AskValue(Creature player, string caption, object currentValue, string memberName, string memberTypeName)
 		{
 			if (askValueEventArgs == null)
@@ -108,36 +71,19 @@ namespace DndCore
 
 		public override List<PropertyCompletionInfo> GetCompletionInfo()
 		{
-			List<PropertyCompletionInfo> result = new List<PropertyCompletionInfo>();
-			GetPropertyNames();
-			foreach (string property in propertyNames)
-			{
-				string propertyDescription = $"Active Character Property: {property}";
-				PropertyInfo propertyInfo = typeof(Character).GetProperty(property);
-				if (propertyInfo != null)
-				{
-					DescriptionAttribute descriptionAttribute = propertyInfo.GetCustomAttribute<DescriptionAttribute>();
-					if (descriptionAttribute != null)
-						propertyDescription = descriptionAttribute.Description;
-				}
-				TypeHelper.GetTypeDetails(propertyInfo.PropertyType, out string enumTypeName, out ExpressionType expressionType);
-				result.Add(new PropertyCompletionInfo() { Name = property, Description = propertyDescription, EnumTypeName = enumTypeName, Type = expressionType });
-			}
-			foreach (string fieldName in fieldNames)
-			{
-				string fieldDescription = $"Active Character Field: {fieldName}";
-				FieldInfo fieldInfo = typeof(Character).GetField(fieldName);
-				if (fieldInfo != null)
-				{
-					DescriptionAttribute descriptionAttribute = fieldInfo.GetCustomAttribute<DescriptionAttribute>();
-					if (descriptionAttribute != null)
-						fieldDescription = descriptionAttribute.Description;
-				}
-				TypeHelper.GetTypeDetails(fieldInfo.FieldType, out string enumTypeName, out ExpressionType expressionType);
-				result.Add(new PropertyCompletionInfo() { Name = fieldName, Description = fieldDescription, EnumTypeName = enumTypeName, Type = expressionType });
-			}
-			return result;
-			
+			/* We don't use a prefix for the active character's properties. */
+			return AddPropertiesAndFields<Character>(null, "Active Character", false /* usePrefix */);
+		}
+
+		public override bool Handles(string tokenName, Creature player, CastedSpell castedSpell)
+		{
+			if (!(player is Character))
+				return false;
+
+			if (Handles<Character>(tokenName, false))  // No prefix for active character's properties.
+				return true;
+
+			return player.HasState(tokenName) || tokenName.StartsWith("_");
 		}
 	}
 }

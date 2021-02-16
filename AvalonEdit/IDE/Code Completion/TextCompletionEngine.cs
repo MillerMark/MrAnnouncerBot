@@ -302,7 +302,7 @@ namespace AvalonEdit
 					if (!TypeHelper.Matches(propertyCompletionInfo.Type, expectedProviderDetails.Type))
 						continue;
 				}
-				if (string.IsNullOrWhiteSpace(tokenLeftOfCaret) || propertyCompletionInfo.Name.ToLower().StartsWith(tokenLeftOfCaret))
+				if (string.IsNullOrWhiteSpace(tokenLeftOfCaret) || propertyCompletionInfo.Name.ToLower().StartsWith(tokenLeftOfCaret.ToLower()))
 					completionData.Add(new IdentifierCompletionData(propertyCompletionInfo.Name, propertyCompletionInfo.Description));
 			}
 		}

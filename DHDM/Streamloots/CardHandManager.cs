@@ -8,18 +8,10 @@ using System.Windows.Media;
 
 namespace DHDM
 {
-	// TODO: Move this type to its own file.
-	public class CardHandDto: CardDto
-	{
-		public List<StreamlootsHand> Hands { get; set; }
-		public CardHandDto()
-		{
-			
-		}
-	}
 	public class CardHandManager
 	{
 		public const int IntAllPlayersId = 10000000;
+		const string STR_Cards = "Reveal Secret Cards";
 		// TODO: I need a way to save this state when it changes during the game.
 		public Dictionary<int, StreamlootsHand> Hands { get; private set; } = new Dictionary<int, StreamlootsHand>();
 		public CardHandManager()
@@ -189,6 +181,38 @@ namespace DHDM
 			hand.SelectedCardsHaveBeenPlayed();
 		}
 
+		int updateCount = 0;
+
+		public void BeginUpdate()
+		{
+			updateCount++;
+		}
+
+		public void EndUpdate()
+		{
+			updateCount--;
+			if (updateCount != 0)
+				return;
+
+			if (HasCardsToReveal())
+			{
+				SendCardCommand(STR_Cards);
+				foreach (StreamlootsHand hand in Hands.Values)
+					hand.SecretCardsHaveBeenRevealed();
+			}
+		}
+
+		private bool HasCardsToReveal()
+		{
+			foreach (StreamlootsHand hand in Hands.Values)
+				if (hand.CardsToReveal.Count > 0)
+					return true;
+
+			return false;
+		}
+
+		public bool Updating => updateCount > 0;
+
 		public void RevealSecretCard(int creatureId, string cardId)
 		{
 			if (!Hands.ContainsKey(creatureId) && creatureId != IntAllPlayersId)
@@ -197,19 +221,22 @@ namespace DHDM
 			{
 				bool haveRevealedAnything = false;
 				foreach (StreamlootsHand hand in Hands.Values)
-				{
 					if (hand.RevealSecretCard(cardId))
 						haveRevealedAnything = true;
+
+				if (haveRevealedAnything && !Updating)
+				{
+					SendCardCommand(STR_Cards);
+					foreach (StreamlootsHand hand in Hands.Values)
+						hand.SecretCardsHaveBeenRevealed();
 				}
-				if (haveRevealedAnything)
-					SendCardCommand("Reveal Secret Cards");
 			}
 			else
 			{
 				StreamlootsHand hand = Hands[creatureId];
-				if (hand.RevealSecretCard(cardId))
+				if (hand.RevealSecretCard(cardId) && !Updating)
 				{
-					SendCardCommand("Reveal Secret Cards");
+					SendCardCommand(STR_Cards);
 					hand.SecretCardsHaveBeenRevealed();
 				}
 			}

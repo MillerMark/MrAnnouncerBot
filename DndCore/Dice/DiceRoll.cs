@@ -25,29 +25,6 @@ namespace DndCore
 		public string OnFirstContactSound { get; set; }
 		public string OnRollSound { get; set; }
 
-		public DiceRoll(DiceRollType diceRollType, VantageKind kind = VantageKind.Normal, string damageDice = "")
-		{
-			Type = diceRollType;
-			DamageHealthExtraDice = damageDice;
-			VantageKind = kind;
-			ThrowPower = 1.0;
-			MinCrit = 20;  // Some feats allow for a 19 to crit.
-			//SuccessMessage = "Success!";
-			//FailMessage = "Fail!";
-			//CritFailMessage = "Critical Fail!";
-			//CritSuccessMessage = "Critical Success!";
-			MinDamage = 0;
-			CritFailMessage = "";
-			CritSuccessMessage = "";
-			SuccessMessage = "";
-			FailMessage = "";
-			SkillCheck = Skills.none;
-			SavingThrow = Ability.none;
-			SpellName = "";
-			// TODO: Set DiceGroup to the appropriate group.
-			//DiceGroup = DiceGroup.Viewers;
-		}
-
 		public string CritFailMessage { get; set; }
 		public string CritSuccessMessage { get; set; }
 		public string DamageHealthExtraDice { get; set; }
@@ -66,6 +43,7 @@ namespace DndCore
 		
 		public int MinCrit { get; set; }
 		public double Modifier { get; set; }
+		public List<CardModifier> CardModifiers { get; set; } = new List<CardModifier>();
 		public string SuccessMessage { get; set; }
 		public double ThrowPower { get; set; }
 		public DiceRollType Type { get; set; }
@@ -81,6 +59,30 @@ namespace DndCore
 		public int EffectRotation { get; set; }
 		public double EffectScale { get; set; }
 		public string OnStopRollingSound { get; set; }
+
+		public DiceRoll(DiceRollType diceRollType, VantageKind kind = VantageKind.Normal, string damageDice = "")
+		{
+			Type = diceRollType;
+			DamageHealthExtraDice = damageDice;
+			VantageKind = kind;
+			ThrowPower = 1.0;
+			MinCrit = 20;  // Some feats allow for a 19 to crit.
+										 //SuccessMessage = "Success!";
+										 //FailMessage = "Fail!";
+										 //CritFailMessage = "Critical Fail!";
+										 //CritSuccessMessage = "Critical Success!";
+			MinDamage = 0;
+			CritFailMessage = "";
+			CritSuccessMessage = "";
+			SuccessMessage = "";
+			FailMessage = "";
+			SkillCheck = Skills.none;
+			SavingThrow = Ability.none;
+			SpellName = "";
+			// TODO: Set DiceGroup to the appropriate group.
+			//DiceGroup = DiceGroup.Viewers;
+		}
+
 		public void AddPlayer(int playerId, VantageKind vantageKind, string inspiration)
 		{
 			PlayerRollOptions.Add(new PlayerRollOptions(playerId, vantageKind, inspiration));

@@ -2037,6 +2037,7 @@ namespace DndCore
 				Expressions.EndUpdate(this);
 			}
 		}
+
 		string GetValueStr(object value)
 		{
 			if (value == null)
@@ -2048,17 +2049,14 @@ namespace DndCore
 		{
 			List<string> report = new List<string>();
 			foreach (KeyValuePair<string, object> pair in states)
-			{
 				report.Add($"{pair.Key} = {GetValueStr(pair.Value)}");
-			}
 
 			foreach (Rechargeable rechargeable in rechargeables)
-			{
 				report.Add($"{rechargeable.DisplayName} ({rechargeable.VarName}): {rechargeable.ChargesUsed}/{rechargeable.TotalCharges}");
-			}
 
 			return report;
 		}
+
 		public void TestEvaluateAllExpressions()
 		{
 			foreach (AssignedFeature assignedFeature in features)

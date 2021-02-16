@@ -323,6 +323,7 @@
     <Compile Include="AllViewers.cs" />
     <Compile Include="CardEventData.cs" />
     <Compile Include="Events\ViewerDieRollStartedEventArgs.cs" />
+    <Compile Include="Streamloots\CardHandDto.cs" />
     <Compile Include="Streamloots\Cards\CardCommands.cs" />
     <Compile Include="Events\ViewerDieRollStoppedEventArgs.cs" />
     <Compile Include="Events\Delegates.cs" />

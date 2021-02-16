@@ -1749,7 +1749,6 @@ namespace CardMaker
 			{
 				cardName = "a secret card";
 				int lastIndexOfSpace = card.Name.LastIndexOf(' ');
-				string magicName = "SecretMod";
 				string value = "0";
 				if (lastIndexOfSpace > 0)
 				{
@@ -1757,7 +1756,7 @@ namespace CardMaker
 					value = value.TrimStart('+');
 				}
 				string modType = GetModType(rollKind);
-				card.CardReceived = $"GiveMagic(CardRecipient, $\"{magicName}\", ThisCard, \"{modType}\", {value});";
+				card.CardReceived = $"GiveMagic(CardRecipient, SecretMod, ThisCard, \"{modType}\", {value});";
 			}
 			else
 				cardName = card.Name;

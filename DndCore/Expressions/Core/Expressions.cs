@@ -512,7 +512,7 @@ namespace DndCore
 					continue;
 				if (type.BaseType == typeof(DndFunction))
 					AddFunction((DndFunction)Activator.CreateInstance(type));
-				if (typeof(DndVariable).IsAssignableFrom(type.BaseType) && !type.Name.StartsWith("DndEnumValue"))
+				if (typeof(DndVariable).IsAssignableFrom(type.BaseType) && !type.Name.StartsWith("DndEnumValue") && !type.Name.StartsWith("DndPropertyAccessor"))
 					AddVariable((DndVariable)Activator.CreateInstance(type));
 			}
 			AddEnumVariables();

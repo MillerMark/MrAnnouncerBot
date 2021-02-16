@@ -66,7 +66,7 @@ enum WildMagic {
 }
 
 class RollResults {
-	constructor(public d20RollValue: Map<number, number>, public baneMods: Map<number, number>, public nat20s: Map<number, boolean>, public toHitModifier: number, public singlePlayerId: number, public luckValue: Map<number, number>,
+	constructor(public d20RollValue: Map<number, number>, public baneMods: Map<number, number>, public cardMods: Map<number, number>, public nat20s: Map<number, boolean>, public toHitModifier: number, public singlePlayerId: number, public luckValue: Map<number, number>,
 		public playerIdForTextMessages: number, public skillSavingModifier: number, public totalDamage: number,
 		public totalHealth: number, public totalExtra: number, public maxDamage: number,
 		public damageSummary: Map<DamageType, number>) {
@@ -993,6 +993,7 @@ class DieRoller {
 		const totalScores: Map<number, number> = new Map<number, number>();
 		const nat20s: Map<number, boolean> = new Map<number, boolean>();
 		const baneMods: Map<number, number> = new Map<number, number>();
+		const cardMods: Map<number, number> = new Map<number, number>();
 		const inspirationValue: Map<number, number> = new Map<number, number>();
 		const luckValue: Map<number, number> = new Map<number, number>();
 		const damageMap: Map<DamageType, number> = new Map<DamageType, number>();
@@ -1010,6 +1011,9 @@ class DieRoller {
 
 			if (!baneMods.has(playerID))
 				baneMods.set(playerID, 0);
+
+			if (!cardMods.has(playerID))
+				cardMods.set(playerID, this.diceRollData.getCardModifier(playerID));
 
 			if (!inspirationValue.has(playerID))
 				inspirationValue.set(playerID, 0);
@@ -1195,6 +1199,17 @@ class DieRoller {
 			tallyTotals(playerID, die, topNumber);
 		} // for
 
+		// update totalScores with cardMods...
+		cardMods.forEach((mod: number, creatureId: number) => {
+			if (totalScores.has(creatureId))
+			{
+				//const mod: number = cardMods.get(creatureId);
+				
+				if (mod !== 0)
+					totalScores.set(creatureId, totalScores.get(creatureId) + mod);
+			}
+		});
+
 		let skillSavingModifier = 0;
 		if (this.diceRollData.type === DiceRollType.SkillCheck || this.diceRollData.type === DiceRollType.SavingThrow) {
 			const player: Character = diceLayer.getPlayer(singlePlayerId);
@@ -1247,7 +1262,7 @@ class DieRoller {
 		this.totalHealthPlusModifier = totalHealth + this.healthModifierThisRoll;
 		this.totalExtraPlusModifier = totalExtra + this.extraModifierThisRoll;
 
-		return new RollResults(totalScores, baneMods, nat20s, toHitModifier, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
+		return new RollResults(totalScores, baneMods, cardMods, nat20s, toHitModifier, singlePlayerId, luckValue, playerIdForTextMessages, skillSavingModifier, totalDamage, totalHealth, totalExtra, maxDamage, damageMap);
 	}
 
 	bonusRollDealsDamage(damageStr: string, description = '', playerID = Character.invalidCreatureId): void {
@@ -2117,6 +2132,7 @@ class DieRoller {
 		const d20RollValue: Map<number, number> = rollResults.d20RollValue;
 		const nat20s: Map<number, boolean> = rollResults.nat20s;
 		const baneMods: Map<number, number> = rollResults.baneMods;
+		const cardMods: Map<number, number> = rollResults.cardMods;
 		const singlePlayerId: number = rollResults.singlePlayerId;
 		const luckValue: Map<number, number> = rollResults.luckValue;
 		const playerIdForTextMessages: number = rollResults.playerIdForTextMessages;
@@ -2146,9 +2162,15 @@ class DieRoller {
 
 		let blessBaneValue = 0;
 		if (baneMods.has(singlePlayerId))
-			blessBaneValue = baneMods.get(singlePlayerId)
+			blessBaneValue = baneMods.get(singlePlayerId);
+		let cardModValue = 0;
+		if (cardMods.has(singlePlayerId))
+			cardModValue = cardMods.get(singlePlayerId);
 
-		const rollMod: number = this.diceRollData.modifier + blessBaneValue;
+		const additionalMods: number = blessBaneValue + cardModValue;
+		const rollMod: number = this.diceRollData.modifier;
+		console.log('rollMod: ' + rollMod);
+		console.log('additionalMods: ' + additionalMods);
 
 		if (!this.diceRollData.hasMultiPlayerDice && (d20RollValue.get(singlePlayerId) > 0 || (baneMods.has(singlePlayerId) && baneMods.get(singlePlayerId) !== 0))) {
 			let totalRoll: number = this.diceRollData.totalRoll;
@@ -2157,15 +2179,23 @@ class DieRoller {
 				totalRoll = 20;
 				if (blessBaneValue < 0)
 					blessBaneValue = 0;  // Nat20 defeats a bane!
+
+				if (cardModValue < 0)
+					cardModValue = 0;  // Nat20 defeats a cardModValue!
 			}
 
 			if (rollMod !== 0) {
-				diceLayer.showRollModifier(rollMod, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
+				console.log(`showRollModifier - a`);
+				diceLayer.showRollModifier(rollMod + additionalMods, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
 			}
-			else if (skillSavingModifier !== 0)
-				diceLayer.showRollModifier(skillSavingModifier, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
-			else 
-				this.showBlessBaneMods(blessBaneValue, singlePlayerId, luckValue, playerIdForTextMessages);
+			else if (skillSavingModifier !== 0) {
+				console.log(`showRollModifier - b`);
+				diceLayer.showRollModifier(skillSavingModifier + additionalMods, luckValue.get(singlePlayerId), playerIdForTextMessages, this.diceRollData.diceGroup);
+			}
+			else {
+				console.log(`showRollModifier - c`);
+				this.showBlessBaneMods(additionalMods, singlePlayerId, luckValue, playerIdForTextMessages);
+			}
 
 			if (this.diceRollData.dieTotalMessage) {
 				const centerDice: Vector = this.getCenterDicePosition();

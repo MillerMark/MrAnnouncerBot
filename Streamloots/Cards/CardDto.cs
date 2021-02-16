@@ -5,7 +5,7 @@ using DndCore;
 
 namespace Streamloots
 {
-	public class CardDto: CardBaseCommandDto
+	public class CardDto: CardBaseCommandDto, IGetUserName
 	{
 		public const string CMD_RollDie = "RollDie";
 		public const string CMD_PlayCardNow = "PlayCardNow";
@@ -74,6 +74,11 @@ namespace Streamloots
 			if (creatureByName != null)
 				return -creatureByName.Index;
 			return int.MinValue;
+		}
+
+		public string GetUserName()
+		{
+			return Card.UserName;
 		}
 
 		public bool NeedToRollDice

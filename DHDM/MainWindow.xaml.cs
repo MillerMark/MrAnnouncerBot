@@ -3108,16 +3108,25 @@ namespace DHDM
 		}
 
 		bool rollInspirationAfterwards;
+		
 
 		void TriggerMagicEvents(DiceRoll diceRoll)
 		{
-			DiceRollType diceRollType = diceRoll.Type;
-			if (diceRollType == DiceRollType.SavingThrow)
-				CreaturesRollingSavingThrow(diceRoll.GetCreatureIds());
-			else if (IsAttack(diceRollType))
-				CreatureAttacks(diceRoll.GetCreatureIds());
-			else if (diceRollType == DiceRollType.SkillCheck)
-				CreaturesRollingSkillCheck(diceRoll.GetCreatureIds());
+			cardHandManager.BeginUpdate();
+			try
+			{
+				DiceRollType diceRollType = diceRoll.Type;
+				if (diceRollType == DiceRollType.SavingThrow)
+					CreaturesRollingSavingThrow(diceRoll.GetCreatureIds());
+				else if (IsAttack(diceRollType))
+					CreatureAttacks(diceRoll.GetCreatureIds());
+				else if (diceRollType == DiceRollType.SkillCheck)
+					CreaturesRollingSkillCheck(diceRoll.GetCreatureIds());
+			}
+			finally
+			{
+				cardHandManager.EndUpdate();
+			}
 		}
 
 		public void RollTheDice(DiceRoll diceRoll, int delayMs = 0)
@@ -3129,6 +3138,14 @@ namespace DHDM
 				delayRollTimer.Start();
 				return;
 			}
+
+			RollTheDiceNow(diceRoll);
+		}
+
+		private void RollTheDiceNow(DiceRoll diceRoll)
+		{
+			SystemVariables.DiceRoll = diceRoll;
+
 			CompleteCast(diceRoll);
 
 			TriggerMagicEvents(diceRoll);
@@ -3164,7 +3181,7 @@ namespace DHDM
 			if (diceRoll.DiceGroup == DiceGroup.Players)
 				ResetPlayerState(diceRoll, player);
 		}
-		
+
 		private void ResetPlayerState(DiceRoll diceRoll, Character player)
 		{
 			if (diceRoll.IsOnePlayer)
