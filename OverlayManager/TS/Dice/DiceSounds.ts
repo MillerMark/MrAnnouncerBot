@@ -57,7 +57,6 @@ class DiceSounds extends SoundManager {
 				await this.playSoundFileAsync('Announcer/Numbers/Minus[3]');
 
 			await this.playNumberAsync(Math.abs(d20Modifier));
-			// TODO: Delay???
 		}
 	}
 

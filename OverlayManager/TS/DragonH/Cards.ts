@@ -115,6 +115,7 @@ class CardManager {
 	playedCardBackGlow: Sprites;
 	playedCardFrontGlow: Sprites;
 	secretCardBurn: Sprites;
+	secretCardFlames: Sprites;
 	iGetPlayerX: IGetPlayerX;
 	iGetCreatureX: IGetCreatureX;
 	soundManager: ISoundManager;
@@ -164,11 +165,18 @@ class CardManager {
 		this.playedCardFrontGlow.originX = 276;
 		this.playedCardFrontGlow.originY = 339;
 
-		this.secretCardBurn = new Sprites('Cards/Secret Card Burn/SecretCardBurn', 73, fps30, AnimationStyle.Sequential, true);
+		const anchorOffset = 0;
+		this.secretCardBurn = new Sprites('Cards/Secret Card Burn/SecretCard', 48, fps30, AnimationStyle.Sequential, true);
 		this.secretCardBurn.moves = true;
 		this.secretCardBurn.disableGravity();
-		this.secretCardBurn.originX = 205;
-		this.secretCardBurn.originY = 381;
+		this.secretCardBurn.originX = 140 - anchorOffset;
+		this.secretCardBurn.originY = 212;
+
+		this.secretCardFlames = new Sprites('Cards/Secret Card Burn/SecretCardFlames', 150, fps40, AnimationStyle.Sequential, true);
+		this.secretCardFlames.moves = true;
+		this.secretCardFlames.disableGravity();
+		this.secretCardFlames.originX = 197 - anchorOffset;
+		this.secretCardFlames.originY = 336;
 	}
 
 	update(nowMs: number) {
@@ -178,6 +186,7 @@ class CardManager {
 		this.highlightedCardGlow.updatePositions(nowMs);
 		this.playedCardFrontGlow.updatePositions(nowMs);
 		this.secretCardBurn.updatePositions(nowMs);
+		this.secretCardFlames.updatePositions(nowMs);
 	}
 
 	draw(context: CanvasRenderingContext2D, nowMs: number) {
@@ -187,6 +196,7 @@ class CardManager {
 		this.knownCards.draw(context, nowMs);
 		this.playedCardFrontGlow.draw(context, nowMs);
 		this.secretCardBurn.draw(context, nowMs);
+		this.secretCardFlames.draw(context, nowMs);
 		//this.showCardDiagnostics(context, nowMs);
 	}
 
@@ -907,7 +917,8 @@ class CardManager {
 			secretCard.fadeOutNow(350);
 			const revealCard: SpriteProxy = this.knownCards.insert(secretCard.data.xPos, secretCard.data.yPos, secretCard.data.revealCardIndex);
 			revealCard.data = secretCard.data;
-			this.secretCardBurn.addShifted(secretCard.data.xPos, secretCard.data.yPos, 0, secretCard.data.hueShift - 25);
+			this.secretCardBurn.add(secretCard.data.xPos, secretCard.data.yPos, 0);
+			this.secretCardFlames.addShifted(secretCard.data.xPos, secretCard.data.yPos, 0, secretCard.data.hueShift);
 			this.soundManager.safePlayMp3('Spells/GunpowderFlare');
 			setTimeout(this.revealStep3.bind(this), timeToShowCard, revealCard);
 		}
@@ -935,8 +946,8 @@ class CardManager {
 			secretCard.easeSpin(now + delayStart, -70, 0, timeToSpinIn);
 			secretCard.data = new RevealCardStateData(revealCardIndex, xPos, yPos, offscreenY, hueShift, card.UserName, hand.CharacterId, card.FillColor, card.OutlineColor);
 
-			if (secretCard.data instanceof RevealCardStateData)
-				secretCard.hueShift = secretCard.data.hueShift;
+			//if (secretCard.data instanceof RevealCardStateData)
+			//	secretCard.hueShift = secretCard.data.hueShift;
 
 			this.playCardDealtSound(delayStart + timeToSpinIn / 2);
 			setTimeout(this.revealStep2.bind(this), delayStart + timeToSpinIn, secretCard);
@@ -954,7 +965,7 @@ class CardManager {
 
 	private addPlayCardMotion(element: AnimatedElement, delayStart: number) {
 		element.delayStart = delayStart;
-		element.fadeInTime = 300;
+		element.fadeInTime = 100;
 		element.verticalThrustOverride = 6;
 		element.velocityY = -7;
 		element.velocityX = 4;

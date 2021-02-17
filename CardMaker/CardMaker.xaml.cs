@@ -1443,9 +1443,11 @@ namespace CardMaker
 			}
 		}
 
-		private static void AddPlayerNpcRecipientField(Card card, string itemName)
+		private void AddPlayerNpcRecipientField(Card card, string itemName)
 		{
-			card.Fields.Add(new Field() { CardId = card.ID, Label = $"Player/NPC to receive this {itemName}:", Name = "recipient", ParentCard = card, Required = true });
+			Field field = new Field() { CardId = card.ID, Label = $"Player/NPC to receive this {itemName}:", Name = "recipient", ParentCard = card, Required = true };
+			CardData.AllKnownFields.Add(field);
+			card.Fields.Add(field);
 		}
 
 		private void AddCastSpellCard(SpellDto spellDto)
@@ -2001,18 +2003,22 @@ namespace CardMaker
 		{
 			if (ActiveCard == null)
 				return;
+			await UploadCard(ActiveCard);
+		}
 
-			if (string.IsNullOrWhiteSpace(ActiveCard.StreamlootsImageFileUri))
+		private async Task UploadCard(Card card)
+		{
+			if (string.IsNullOrWhiteSpace(card.StreamlootsImageFileUri))
 				SaveAndUploadImage();
 
-			if (!string.IsNullOrWhiteSpace(ActiveCard.StreamlootsCardId))
-				await streamlootsClient.UpdateCard(ActiveCard);
+			if (!string.IsNullOrWhiteSpace(card.StreamlootsCardId))
+				await streamlootsClient.UpdateCard(card);
 			else
 			{
-				SetCardViewModel setCardViewModel = await streamlootsClient.AddCard(ActiveCard);
-				ActiveCard.StreamlootsCardId = setCardViewModel._id;
+				SetCardViewModel setCardViewModel = await streamlootsClient.AddCard(card);
+				card.StreamlootsCardId = setCardViewModel._id;
 			}
-			ActiveCard.Uploaded = true;
+			card.Uploaded = true;
 		}
 
 		private void codeCardReceived_CodeChanged(object sender, EventArgs e)
@@ -2038,6 +2044,54 @@ namespace CardMaker
 		private void SaveSelectedCardStyle_Click(object sender, RoutedEventArgs e)
 		{
 			CardStyles.Save(ActiveCard);
+		}
+
+
+
+		private void StartingProgress(string caption, int count)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				prgUploading.Value = 0;
+				prgUploading.Maximum = count;
+				tbProgressLabel.Text = caption;
+				spProgress.Visibility = Visibility.Visible;
+			});
+		}
+
+		void UpdateProgress(int value)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				prgUploading.Value = value;
+			});
+		}
+
+		void HideProgress()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				spProgress.Visibility = Visibility.Collapsed;
+				prgUploading.Value = 0;
+			});
+		}
+
+		async void UploadUpdateAllCardsInDeck()
+		{
+			if (ActiveDeck == null)
+				return;
+			int cardsUploadedSoFar = 0;
+			StartingProgress("Uploading cards...", ActiveDeck.Cards.Count);
+			foreach (Card card in ActiveDeck.Cards)
+			{
+				await UploadCard(card);
+				UpdateProgress(cardsUploadedSoFar++);
+			}
+			HideProgress();
+		}
+		private void UploadUpdateAllCardsInDeck_Click(object sender, RoutedEventArgs e)
+		{
+			UploadUpdateAllCardsInDeck();
 		}
 
 		// TODO: Prompt for save if dirty on close!!!

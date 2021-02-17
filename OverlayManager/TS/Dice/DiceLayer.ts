@@ -1554,23 +1554,9 @@ class DiceLayer {
 		textEffect.outlineColor = this.getDieFontColor(playerID);
 	}
 
-	showRollModifier(rollModifier: number, luckBend = 0, playerId = Character.invalidCreatureId, diceGroup = DiceGroup.Players): void {
-		if (rollModifier === 0 && luckBend === 0)
-			return;
-		let rollModStr: string = rollModifier.toString();
-		if (rollModifier > 0)
-			rollModStr = '+' + rollModStr;
-
-		let rollLuckModStr = '';
-		if (luckBend !== 0) {
-			rollLuckModStr = luckBend.toString();
-			if (luckBend > 0)
-				rollLuckModStr = '+' + rollLuckModStr;
-
-			rollLuckModStr = ', ' + rollLuckModStr;
-		}
-
-		const textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr}${rollLuckModStr})`, this.rollModifierTime);
+	showRollModifier(playerId = Character.invalidCreatureId, diceGroup = DiceGroup.Players, allModStrs: Array<string> = null, nat20 = false): void {
+		const rollModStr = this.getModStr(allModStrs, nat20);
+		const textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr})`, this.rollModifierTime);
 		textEffect.data = diceGroup;
 		this.setTextColorToPlayer(textEffect, playerId);
 		textEffect.elasticIn = true;
@@ -1581,6 +1567,56 @@ class DiceLayer {
 		textEffect.fadeOutTime = 800;
 		textEffect.fadeInTime = 500;
 	}
+
+	getModStr(allModStrs: string[], nat20: boolean): string {
+		let totalMod = 0;
+		let rollModStr = '';
+		// rollModStr = this.addMod(rollModStr, rollModifier);
+		allModStrs.forEach((modStr: string) => {
+			if (!nat20 || +modStr > 0) {
+				let prefix = '';
+				if (rollModStr.length > 0)
+					prefix = ' ';
+				rollModStr += `${prefix}${modStr}`;
+				totalMod += +modStr;
+			}
+		});
+
+		if (rollModStr.indexOf(' ') >= 0) {
+			if (totalMod > 0)
+				rollModStr += ` = +${totalMod}`;
+			else
+				rollModStr += ` = ${totalMod}`;
+		}
+		return rollModStr;
+	}
+
+	getModTotal(allModStrs: string[], nat20: boolean): number {
+		let totalMod = 0;
+		allModStrs.forEach((modStr: string) => {
+			if (!nat20 || +modStr > 0) {
+				totalMod += +modStr;
+			}
+		});
+
+		return totalMod;
+	}
+
+	addMod(rollModStr: string, modifier: number): string {
+		if (!rollModStr)
+			rollModStr = '';
+		let prefix = '';
+		if (rollModStr.length > 0)
+			prefix = ' ';
+
+		if (modifier > 0)
+			rollModStr += `${prefix}+${modifier}`;
+		else if (modifier < 0)
+			rollModStr += `${prefix}${modifier}`;
+
+		return rollModStr;
+	}
+
 
 	addDieValueLabel(centerPos: Vector, value: string, highlight = false, diceGroup = DiceGroup.Players): void {
 		const textEffect: TextEffect = this.animations.addText(centerPos, value, 5000);
@@ -1796,7 +1832,7 @@ class DiceLayer {
 		const ring: SpriteProxy = this.cloverRing.add(x, y, Math.floor(Math.random() * 120));
 		ring.scale = die.scale;
 		this.initSprite(ring, die);
-		return;
+		return ring;
 	}
 
 	addBadLuckRing(die: IDie, x: number, y: number): SpriteProxy {
@@ -3026,21 +3062,35 @@ class DiceRollData {
 	effectSaturation = 100;
 	onStopRollingSound: string;
 
-	getCardModifier(creatureId: number): number {
+	getCardModifier(creatureId: number, cardModsList: Map<number, Array<string>>): number {
 		let totalModifier = 0;
+
+		if (!cardModsList.has(creatureId)) {
+			cardModsList.set(creatureId, new Array<string>());
+		}
+
+		const modList: Array<string> = cardModsList.get(creatureId);
+
 		if (this.cardModifiers) {
 			// Process addition first...
 			this.cardModifiers.forEach((cardModifier: CardModifier) => {
 				if (cardModifier.CreatureId === creatureId)
-					if (cardModifier.Multiplier === 1)
+					if (cardModifier.Multiplier === 1) {
 						totalModifier += cardModifier.Offset;
+						if (cardModifier.Offset > 0)
+							modList.push(`+${cardModifier.Offset}`);
+						else if (cardModifier.Offset < 0)
+							modList.push(`${cardModifier.Offset}`);
+					}
 			});
 
 			// Then multiplication...
 			this.cardModifiers.forEach((cardModifier: CardModifier) => {
 				if (cardModifier.CreatureId === creatureId)
-					if (cardModifier.Multiplier !== 1)
+					if (cardModifier.Multiplier !== 1) {
 						totalModifier *= cardModifier.Multiplier;
+						modList.push(`x${cardModifier.Multiplier}`);
+					}
 			});
 		}
 
