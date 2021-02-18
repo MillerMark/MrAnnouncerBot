@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using DndCore;
 
 namespace Streamloots
 {
-	public class StreamlootsCard
+	public class StreamlootsCard : ICard
 	{
 		public bool PngFileFound { get; set; }
 		public bool IsSecret { get; set; }
@@ -14,8 +15,20 @@ namespace Streamloots
 		public string soundUrl { get; set; }
 		public string CardImageName { get; set; }
 		public string CardName => data.cardName;
-		public string UserName => data.Username;
+		string overrideUserName = null;
+		public string UserName
+		{
+			get
+			{
+				if (overrideUserName != null)
+					return overrideUserName;
+				return data.Username;
+			}
+
+			set => overrideUserName = value;
+		}
 		public string Target => data.Target;
+		public string Id => soundUrl;
 		public string Recipient => data.Recipient;
 		public string Guid { get; set; }
 

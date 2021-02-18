@@ -119,6 +119,7 @@ namespace CardMaker
 
 		public Field(Card parentCard)
 		{
+			CardId = parentCard.ID;
 			CreateNewId();
 			ParentCard = parentCard;
 			if (ParentCard != null)

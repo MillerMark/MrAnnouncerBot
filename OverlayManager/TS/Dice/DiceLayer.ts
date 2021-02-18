@@ -1322,7 +1322,7 @@ class DiceLayer {
 		let line: AnimatedLine = null;
 		for (let i = 0; i < rollSummary.length; i++) {
 			const playerRoll: PlayerRoll = rollSummary[i];
-			if (playerRoll.roll + playerRoll.modifier < hiddenThreshold && lastRollWasHigherThanThreshold) {
+			if (playerRoll.roll + playerRoll.modifier + playerRoll.cardModifierTotal < hiddenThreshold && lastRollWasHigherThanThreshold) {
 				if (hiddenThreshold !== 0) {
 					const separatorHeight = 20;
 					line = this.addSeparatorHorizontalLine(x, y, 10, '#ff0000', DiceLayer.multiplePlayerSummaryDuration);
@@ -1373,11 +1373,14 @@ class DiceLayer {
 	showPlayerRoll(playerRoll: PlayerRoll, x: number, y: number): TextEffect {
 		if (!playerRoll.name)
 			playerRoll.name = diceLayer.getPlayerName(playerRoll.id);
-		let message = `${playerRoll.name}: ${playerRoll.roll + playerRoll.modifier}`;
+		const modifier: number = playerRoll.modifier + playerRoll.cardModifierTotal;
+		let message = `${playerRoll.name}: ${playerRoll.roll + modifier}`;
 		if (playerRoll.modifier > 0)
-			message += ` (+${playerRoll.modifier})`;
+			message += ` (+${playerRoll.modifier}${playerRoll.cardModifiersStr})`;
 		else if (playerRoll.modifier < 0)
-			message += ` (${playerRoll.modifier})`;
+			message += ` (${playerRoll.modifier}${playerRoll.cardModifiersStr})`;
+		else if (playerRoll.cardModifierTotal !== 0)
+			message += ` (${playerRoll.cardModifiersStr})`;
 
 		const textEffect: TextEffect = this.animations.addText(new Vector(x, y), message, DiceLayer.multiplePlayerSummaryDuration);
 		textEffect.data = DiceGroup.Players;
@@ -3065,11 +3068,14 @@ class DiceRollData {
 	getCardModifier(creatureId: number, cardModsList: Map<number, Array<string>>): number {
 		let totalModifier = 0;
 
-		if (!cardModsList.has(creatureId)) {
-			cardModsList.set(creatureId, new Array<string>());
-		}
+		if (cardModsList)
+			if (!cardModsList.has(creatureId)) {
+				cardModsList.set(creatureId, new Array<string>());
+			}
 
-		const modList: Array<string> = cardModsList.get(creatureId);
+		let modList: Array<string> = null;
+		if (cardModsList)
+			modList = cardModsList.get(creatureId);
 
 		if (this.cardModifiers) {
 			// Process addition first...
@@ -3077,10 +3083,11 @@ class DiceRollData {
 				if (cardModifier.CreatureId === creatureId)
 					if (cardModifier.Multiplier === 1) {
 						totalModifier += cardModifier.Offset;
-						if (cardModifier.Offset > 0)
-							modList.push(`+${cardModifier.Offset}`);
-						else if (cardModifier.Offset < 0)
-							modList.push(`${cardModifier.Offset}`);
+						if (modList)
+							if (cardModifier.Offset > 0)
+								modList.push(`+${cardModifier.Offset}`);
+							else if (cardModifier.Offset < 0)
+								modList.push(`${cardModifier.Offset}`);
 					}
 			});
 
@@ -3089,7 +3096,8 @@ class DiceRollData {
 				if (cardModifier.CreatureId === creatureId)
 					if (cardModifier.Multiplier !== 1) {
 						totalModifier *= cardModifier.Multiplier;
-						modList.push(`x${cardModifier.Multiplier}`);
+						if (modList)
+							modList.push(`x${cardModifier.Multiplier}`);
 					}
 			});
 		}

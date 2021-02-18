@@ -741,13 +741,13 @@
 						</StackPanel>
 						<StackPanel Orientation="Vertical" Margin="0, 0, 10, 0">
 							<TextBlock Text="OnCardReceived:" Width="Auto" Height="Auto"/>
-							<AvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="850">
+							<AvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="650">
 
 							</AvalonEdit:AvalonEditor>
 						</StackPanel>
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="OnCardPlayed:" Width="Auto" Height="Auto"/>
-							<AvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="850" >
+							<AvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="650" >
 
 							</AvalonEdit:AvalonEditor>
 						</StackPanel>

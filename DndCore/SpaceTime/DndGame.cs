@@ -417,6 +417,7 @@ namespace DndCore
 
 			lastPlayer = creature;
 		}
+
 		public CastedSpell Cast(Character player, Spell spell, Creature targetCreature)
 		{
 			if (targetCreature != null && player.ActiveTarget == null)

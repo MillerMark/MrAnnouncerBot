@@ -2,6 +2,7 @@
 using Streamloots;
 using System.Linq;
 using System.Collections.Generic;
+using DndCore;
 
 namespace DHDM
 {
@@ -43,17 +44,20 @@ namespace DHDM
 			Cards.Add(card);
 		}
 
-		public void PlayCard(StreamlootsCard cardToPlay)
+		public bool PlayCard(StreamlootsCard cardToPlay, Creature creature)
 		{
 			if (cardToPlay == null)
-				return;
+				return false;
 			if (cardToPlay.IsSecret)
 			{
-				HubtasticBaseStation.ShowValidationIssue(CharacterId, DndCore.ValidationAction.Stop, "Cannot play secret cards.");
-				return;
+				HubtasticBaseStation.ShowValidationIssue(CharacterId, ValidationAction.Stop, "Cannot play secret cards.");
+				return false;
 			}
+			
 			Cards.Remove(cardToPlay);
 			CardsToPlay.Add(cardToPlay);
+			TriggerCardPlayed(cardToPlay, creature);
+			return true;
 		}
 
 		public void RevealSecretCard(StreamlootsCard cardToReveal)
@@ -90,10 +94,22 @@ namespace DHDM
 			return true;
 		}
 
-		public void PlaySelectedCard()
+		void TriggerCardPlayed(StreamlootsCard card, Creature creature)
 		{
-			PlayCard(SelectedCard);
-			SelectedCard = null;
+			string cardId = AllKnownCards.GetCardId(card);
+			CardEventData cardEventData = AllKnownCards.Get(cardId);
+			if (string.IsNullOrWhiteSpace(cardEventData.CardPlayed))
+				return;
+
+			SystemVariables.CardRecipient = null;
+			SystemVariables.ThisCard = card;
+			Expressions.Do(cardEventData.CardPlayed, creature, new Target(AttackTargetType.Spell, creature), null, null, null);
+		}
+
+		public void PlaySelectedCard(Creature creature)
+		{
+			if (PlayCard(SelectedCard, creature))
+				SelectedCard = null;
 		}
 
 		public int GetSelectedCardIndex()

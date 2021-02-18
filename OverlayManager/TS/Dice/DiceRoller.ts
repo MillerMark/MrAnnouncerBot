@@ -77,7 +77,7 @@ class RollResults {
 }
 
 class PlayerRoll {
-	constructor(public roll: number, public name: string, public id: number, public data: string, public modifier: number = 0, public success: boolean = false, public isCrit: boolean = false, public isCompleteFail: boolean = false) {
+	constructor(public roll: number, public name: string, public id: number, public data: string, public modifier: number = 0, public success: boolean = false, public isCrit: boolean = false, public isCompleteFail: boolean = false, public cardModifierTotal: number, public cardModifiersStr: string) {
 	}
 }
 
@@ -870,7 +870,7 @@ class DieRoller {
 	}
 
 	modifyTotalRollForTestingPurposes() {
-		//d20RollValue = DieRoller.Nat20; // critical hit.
+		this.d20RollValue = DieRoller.Nat20; // critical hit.
 		//totalRoll = 20;
 		//totalRoll = 35; // age change
 	}
@@ -906,7 +906,7 @@ class DieRoller {
 	//	}
 	//}
 
-	addDieToMultiPlayerSummary(die: IDie, topNumber: number) {
+	addDieToMultiPlayerSummary(die: IDie, topNumber: number, cardModsList: Map<number, Array<string>>) {
 		const logProgress = true;
 		if (this.diceRollData.multiplayerSummary === null)
 			this.diceRollData.multiplayerSummary = [];
@@ -915,7 +915,7 @@ class DieRoller {
 
 		if (playerRoll) {
 			playerRoll.roll += topNumber;
-			playerRoll.success = playerRoll.roll + playerRoll.modifier >= this.diceRollData.hiddenThreshold;
+			playerRoll.success = playerRoll.roll + playerRoll.modifier + playerRoll.cardModifierTotal >= this.diceRollData.hiddenThreshold;
 			if (logProgress) {
 				console.log(`Found playerRoll for ${die.playerName}. Roll: ${playerRoll.roll}`);
 			}
@@ -925,7 +925,26 @@ class DieRoller {
 				console.log(`playerRoll not found for ${die.playerName}.`);
 			}
 
+			let cardModifierTotal = 0;
+
+			if (!cardModsList.has(die.creatureID)) {
+				cardModsList.set(die.creatureID, new Array<string>());
+				cardModifierTotal = this.diceRollData.getCardModifier(die.creatureID, cardModsList);
+			}
+
+			let cardModifiersStr = '';
+			const modList: Array<string> = cardModsList.get(die.creatureID);
+			modList.forEach((modStr) => {
+				cardModifiersStr += modStr;
+			});
+			
+
 			let modifier = 0;
+			
+
+			
+			
+
 			if (die.creatureID < 0) {
 				if (logProgress) {
 					console.log(`It's an in-game creature.`);
@@ -952,7 +971,7 @@ class DieRoller {
 			else
 				critHit = topNumber >= DieRoller.Nat20;
 			const critFail: boolean = topNumber === 1;
-			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.creatureID, die.dataStr, modifier, success, critHit, critFail));
+			this.diceRollData.multiplayerSummary.push(new PlayerRoll(topNumber, die.playerName, die.creatureID, die.dataStr, modifier, success, critHit, critFail, cardModifierTotal, cardModifiersStr));
 			if (logProgress) {
 				console.log(this.diceRollData.multiplayerSummary[0].roll);
 			}
@@ -1175,7 +1194,7 @@ class DieRoller {
 			const topNumber: number = die.getTopNumber();
 
 			if (this.diceRollData.hasMultiPlayerDice) {
-				this.addDieToMultiPlayerSummary(die, topNumber);
+				this.addDieToMultiPlayerSummary(die, topNumber, cardModsList);
 				this.attachDieLabel(die);
 			}
 
@@ -2142,7 +2161,7 @@ class DieRoller {
 		const title = this.getDieRollTitle(this.diceRollData.type);
 
 		if (this.diceRollData.multiplayerSummary) {
-			this.diceRollData.multiplayerSummary.sort((a, b) => (b.roll + b.modifier) - (a.roll + a.modifier));
+			this.diceRollData.multiplayerSummary.sort((a, b) => (b.roll + b.modifier + b.cardModifierTotal) - (a.roll + a.modifier + a.cardModifierTotal));
 			diceLayer.showMultiplayerResults(title, this.diceRollData.multiplayerSummary, this.diceRollData.hiddenThreshold);
 		}
 

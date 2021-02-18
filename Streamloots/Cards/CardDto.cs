@@ -64,6 +64,8 @@ namespace Streamloots
 
 		int GetCreatureId(string targetName)
 		{
+			if (targetName == null)
+				return int.MinValue;
 			string trimmedName = targetName.Trim();
 			if (string.IsNullOrWhiteSpace(trimmedName))
 				return int.MinValue;

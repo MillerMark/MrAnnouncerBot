@@ -169,7 +169,7 @@ namespace CardMaker
 			return card;
 		}
 
-		public Field AddField(Card parentCard)
+		public Field AddNewField(Card parentCard)
 		{
 			if (parentCard == null)
 				throw new ArgumentNullException("parentCard");

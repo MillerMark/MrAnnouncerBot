@@ -168,7 +168,7 @@ namespace DHDM
 			StateHasChanged();
 		}
 
-		public void PlaySelectedCard(int creatureId)
+		public void PlaySelectedCard(int creatureId, Creature creature)
 		{
 			if (!Hands.ContainsKey(creatureId))
 				return;
@@ -176,7 +176,7 @@ namespace DHDM
 			if (hand.SelectedCard == null)
 				return;
 
-			hand.PlaySelectedCard();
+			hand.PlaySelectedCard(creature);
 			SendCardCommand("Play Cards");
 			hand.SelectedCardsHaveBeenPlayed();
 		}

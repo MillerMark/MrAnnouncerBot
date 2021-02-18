@@ -7,12 +7,12 @@ namespace DndCore
 	{
 		private const int NumArgs = 8;
 		public event MagicEventHandler Dispel;
-		
+
 		protected virtual void OnDispel(object sender, MagicEventArgs ea)
 		{
 			Dispel?.Invoke(sender, ea);
 		}
-		
+
 		public Magic(Creature caster, DndGame game, string magicItemName, CastedSpell castedSpell, object data1, object data2, object data3, object data4, object data5, object data6, object data7, object data8)
 		{
 			CastedSpellId = castedSpell?.ID;
@@ -30,6 +30,9 @@ namespace DndCore
 			Args[7] = data8;
 			MagicItemName = magicItemName.Trim();
 			Caster = caster;
+
+			if (MagicItem == null)
+				return;
 
 			// TODO: Should we ever set the Magic's duration to the spell's duration?
 			if (string.IsNullOrWhiteSpace(MagicItem.duration))
@@ -65,7 +68,7 @@ namespace DndCore
 		}
 
 		public Creature Caster { get; set; }
-		
+
 		List<Creature> targets = new List<Creature>();
 		public void AddTarget(Creature target)
 		{
@@ -86,7 +89,7 @@ namespace DndCore
 		// TODO: Call this before we trigger any Magic events.
 		public void SetMagicVariables()
 		{
-			
+
 		}
 
 		public void DispelMagic()
@@ -134,10 +137,17 @@ namespace DndCore
 			creaturePlusModId.Magic = this;
 			List<string> args = GetArgumentList();
 
-			if (Args.Length > 0 && Args[0] is IGetUserName iGetUserName)  // It's a Card.
-			{
-				SystemVariables.ThisCard = iGetUserName;
-			}
+			//if (MagicItem != null)
+			//{
+			//	SystemVariables.CardId = GetParameter<string>("CardId");
+			//	SystemVariables.CardGuid = GetParameter<string>("CardGuid");
+			//	SystemVariables.CardUserName = GetParameter<string>("UserName");
+			//}
+
+			//if (Args.Length > 0 && Args[0] is IGetUserName iGetUserName)  // It's a Card.
+			//{
+			//	SystemVariables.ThisCard = iGetUserName;
+			//}
 			string expressionToEvaluate = DndUtils.InjectParameters(eventCode, MagicItem.Parameters, args);
 
 			Expressions.Do(expressionToEvaluate, magicOwner, null, null, null, creaturePlusModId);
@@ -161,6 +171,17 @@ namespace DndCore
 		public void TriggerRecipientAttacks(Creature magicOwner)
 		{
 			TriggerEvent(magicOwner, MagicItem.onRecipientAttacks);
+		}
+
+		public T GetParameter<T>(string parameterName)
+		{
+			if (MagicItem == null)
+				return default(T);
+			int indexOfParameter = MagicItem.Parameters.IndexOf($"${parameterName}");
+			if (indexOfParameter < 0 || indexOfParameter >= MagicItem.Parameters.Count)
+				return default(T);
+
+			return (T)Args[indexOfParameter];
 		}
 
 		// TODO: Consider changing the Args elements data types to Strings!

@@ -10,10 +10,10 @@ namespace DndCore
 	[Param(2, typeof(int), "valueOffset", "The value of the mod (e.g., -1, 1, 2, 3, etc.).", ParameterIs.Required)]
 	[Param(3, typeof(int), "multiplier", "The multiplier of the mod (e.g., 1, 2, etc.).", ParameterIs.Optional)]
 	[Param(4, typeof(string), "userName", "The name of the user responsible for this mod.", ParameterIs.Optional)]
-	public class AddMod : DndFunction
+	public class AddCardMod : DndFunction
 	{
 		public static event AddModEventHandler RequestAddMod;
-		public override string Name { get; set; } = "AddMod";
+		public override string Name { get; set; } = "AddCardMod";
 
 		public static void OnRequestAddMod(AddModEventArgs ea)
 		{

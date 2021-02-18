@@ -513,7 +513,7 @@ namespace DHDM
 		private void HookEvents()
 		{
 			DispelMagic.RequestDispelMagic += DispelMagic_RequestDispelMagic;
-			AddMod.RequestAddMod += AddMod_RequestAddMod;
+			AddCardMod.RequestAddMod += AddMod_RequestAddMod;
 			RevealCard.RequestCardReveal += RevealCard_RequestCardReveal;
 			GetFriendlyTargets.RequestTarget += GetFriendlyTargets_RequestTarget;
 			CardCommands.ViewerDieRollComplete += CardCommands_ViewerDieRollComplete;
@@ -552,19 +552,11 @@ namespace DHDM
 		private void RevealCard_RequestCardReveal(CreaturePlusModIdEventArgs ea)
 		{
 			Magic magic = ea.CreaturePlusModId.Magic;
+			string cardGuid = magic.GetParameter<string>("CardGuid");
+			if (string.IsNullOrWhiteSpace(cardGuid))
+				return;
 
-			if (magic != null)
-			{
-				if (magic.Args.Length > 0)
-				{
-					if (magic.Args[0] is CardDto cardDto)
-					{
-						//cardDto.InstanceID
-						cardHandManager.RevealSecretCard(ea.CreaturePlusModId.Creature.SafeId, cardDto.Card.Guid);
-
-					}
-				}
-			}
+			cardHandManager.RevealSecretCard(ea.CreaturePlusModId.Creature.SafeId, cardGuid);
 		}
 
 
@@ -3973,7 +3965,7 @@ namespace DHDM
 			if (individualRoll.value == 1)
 			{
 				forcedWildMagicThisRoll = true;
-				PlayScene("DH.WildMagicRoll", 2700);
+				PlayScene("DH.WildMagicRoll", 27000);
 				EnqueueWildMagicRoll(playerId);
 				Character player = game.GetPlayerFromId(playerId);
 				if (player != null)
@@ -4743,7 +4735,7 @@ namespace DHDM
 					string emoticon = GetPlayerEmoticon(playerRoll.id) + " ";
 					if (emoticon == "Player ")
 						emoticon = "";
-					int rollValue = playerRoll.modifier + playerRoll.roll;
+					int rollValue = playerRoll.modifier + playerRoll.cardModifierTotal + playerRoll.roll;
 					bool success = rollValue >= stopRollingData.hiddenThreshold;
 					string initiativeLine = $"͏͏͏͏͏͏͏͏͏͏͏͏̣{twitchIndent}{DndUtils.GetOrdinal(count)}: {emoticon}{playerName}, rolled a {rollValue.ToString()}.";
 					lastInitiativeResults.Add(initiativeLine);
@@ -4880,7 +4872,7 @@ namespace DHDM
 					if (playerName != "")
 						playerName = playerName + "'s ";
 
-					rollValue = playerRoll.modifier + playerRoll.roll;
+					rollValue = playerRoll.modifier + playerRoll.cardModifierTotal + playerRoll.roll;
 					bool success = rollValue >= stopRollingData.hiddenThreshold;
 					successStr = GetSuccessStr(success, stopRollingData.type);
 					string localDamageStr;
@@ -9997,7 +9989,8 @@ namespace DHDM
 					cardHandManager.SelectPreviousCard(creatureId);
 					return;
 				case CardCommandType.PlaySelectedCard:
-					cardHandManager.PlaySelectedCard(creatureId);
+					Creature creature = GetCreatureFromId(creatureId);
+					cardHandManager.PlaySelectedCard(creatureId, creature);
 					return;
 				case CardCommandType.RevealSecretCard:
 					cardHandManager.RevealSecretCard(creatureId, cardId);
@@ -10020,20 +10013,29 @@ namespace DHDM
 
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
+			string msg = ea.CardDto.Card.message;
 			DndViewer viewer = AllViewers.Get(ea.CardDto.Card.UserName);
+
+			if (AllViewers.RandomlyReplaceDragonHumpersViewerWithOthers)
+			{
+				// For testing. Replaces dragonhumpers with random found viewer.
+				ea.CardDto.Card.UserName = viewer.UserName;  
+				msg = msg.Replace("dragonhumpers", viewer.UserName);
+			}
+
 			ea.CardDto.Card.FillColor = viewer.DieBackColor;
 			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
 			string cardStr = JsonConvert.SerializeObject(ea.CardDto);
 			HubtasticBaseStation.CardCommand(cardStr);
-			string msg = ea.CardDto.Card.message;
+			
 
 			viewer.CardsPlayed++;
 
 			int characterId = ea.CardDto.OwningCharacterId;
 			if (characterId != int.MinValue)
 			{
-				TriggerCardReceivedEvent(ea);
 				cardHandManager.AddCard(characterId, ea.CardDto.Card);
+				TriggerCardReceivedEvent(ea);
 			}
 
 			bool waitingOnDieRoll = false;
@@ -10049,7 +10051,7 @@ namespace DHDM
 					TellDungeonMaster(onlyToViewers);
 				}
 				else
-					TellDungeonMaster($"@DragonHumpers, {ea.CardDto.Card.UserName} redeems \"{ea.CardDto.Card.CardName}\": " + comment);
+					TellDungeonMaster($"caulfielder, {viewer.UserName} redeems \"{ea.CardDto.Card.CardName}\": " + comment);
 
 				TellViewers(onlyToViewers);
 			}
@@ -10118,7 +10120,7 @@ namespace DHDM
 			Creature recipientCreature = GetCreatureFromId(ea.CardDto.OwningCharacterId);
 			Target recipientTarget = GetTarget(recipientCreature);
 			SystemVariables.CardRecipient = recipientTarget;
-			SystemVariables.ThisCard = ea.CardDto;
+			SystemVariables.ThisCard = ea.CardDto.Card;
 			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
 			Expressions.Do(cardEventData.CardReceived, viewerSpellcaster, recipientTarget, null, null, recipientCreature);
 		}

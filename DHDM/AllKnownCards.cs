@@ -32,8 +32,13 @@ namespace DHDM
 
 		public static CardEventData Get(CardDto cardDto)
 		{
-			string cardId = cardDto.Card.soundUrl; // Yeah, I know. But trust me. This is the only way to round trip our CardDto.
+			string cardId = GetCardId(cardDto.Card); // Yeah, I know. But trust me. This is the only way to round trip our CardDto.
 			return Get(cardId);
+		}
+
+		public static string GetCardId(StreamlootsCard card)
+		{
+			return card.soundUrl;
 		}
 
 		public static List<CardEventData> Cards

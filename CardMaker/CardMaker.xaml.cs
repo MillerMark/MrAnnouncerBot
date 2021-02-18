@@ -314,7 +314,7 @@ namespace CardMaker
 
 		private void btnAddField_Click(object sender, RoutedEventArgs e)
 		{
-			SetActiveField(CardData.AddField(ActiveCard));
+			SetActiveField(CardData.AddNewField(ActiveCard));
 			tbxFieldName.Focus();
 			tbxFieldName.SelectAll();
 		}
@@ -1445,9 +1445,8 @@ namespace CardMaker
 
 		private void AddPlayerNpcRecipientField(Card card, string itemName)
 		{
-			Field field = new Field() { CardId = card.ID, Label = $"Player/NPC to receive this {itemName}:", Name = "recipient", ParentCard = card, Required = true };
+			Field field = new Field(card) { Label = $"Player/NPC to receive this {itemName}:", Name = "recipient", ParentCard = card, Required = true, IsDirty=true };
 			CardData.AllKnownFields.Add(field);
-			card.Fields.Add(field);
 		}
 
 		private void AddCastSpellCard(SpellDto spellDto)
@@ -1482,6 +1481,7 @@ namespace CardMaker
 					Name = "target",
 					Label = spellDto.targetingPrompt,
 					Required = spellDto.targetingPrompt.ToLower().IndexOf("optional") < 0,
+					IsDirty = true
 				};
 				if (TargetsOne(spellDto))
 					targetField.Type = FieldType.Text;
@@ -1747,22 +1747,26 @@ namespace CardMaker
 			card.Name = GetDieModTitle(isSecret, rollKind, modifier);
 			card.StylePath = "Die Mods";
 			string cardName;
+			string modType = GetModType(rollKind);
+			int lastIndexOfSpace = card.Name.LastIndexOf(' ');
+			string value = "0";
+			if (lastIndexOfSpace > 0)
+			{
+				value = card.Name.Substring(lastIndexOfSpace).Trim();
+				value = value.TrimStart('+');
+			}
+
 			if (isSecret)
 			{
 				cardName = "a secret card";
-				int lastIndexOfSpace = card.Name.LastIndexOf(' ');
-				string value = "0";
-				if (lastIndexOfSpace > 0)
-				{
-					value = card.Name.Substring(lastIndexOfSpace).Trim();
-					value = value.TrimStart('+');
-				}
-				string modType = GetModType(rollKind);
-				card.CardReceived = $"GiveMagic(CardRecipient, SecretMod, ThisCard, \"{modType}\", {value});";
+				card.CardReceived = $"GiveMagic(CardRecipient, \"SecretCardMod\", CardUserName, CardGuid, \"{modType}\", {value});";
 			}
 			else
+			{
 				cardName = card.Name;
-			
+				card.CardPlayed = $"GiveMagic(CardRecipient, \"ActiveCardMod\", CardUserName, CardGuid, \"{modType}\", {value});";
+			}
+
 			card.AlertMessage = $"{{{{username}}}} gave {cardName} to {{{{recipient}}}}.";
 			card.Description = GetDieModDescription(rollKind, modifier, isSecret);
 			QuickAddAllLayerDetails(card);
@@ -1953,19 +1957,19 @@ namespace CardMaker
 
 		private void btnUploadImage_Click(object sender, RoutedEventArgs e)
 		{
-			SaveAndUploadImage();
+			SaveAndUploadImage(ActiveCard);
 		}
 
-		private void SaveAndUploadImage()
+		private void SaveAndUploadImage(Card card)
 		{
-			string fullPath = SaveCardImageToFile();
+			string fullPath = SaveCardImageToFile(card);
 			ActiveCard.CloudinaryImageUrl = cloudinaryClient.UploadImage(SysPath.GetFileName(fullPath));
-			streamlootsClient.UploadImageFile(ActiveCard, fullPath);
+			streamlootsClient.UploadImageFile(card, fullPath);
 		}
 
-		private string SaveCardImageToFile()
+		private string SaveCardImageToFile(Card card)
 		{
-			string fileName = GetFileName(ActiveCard);
+			string fileName = GetFileName(card);
 			string fullPath = Path.Combine(imagePath, fileName);
 			cvsLayers.SaveToPng(new Uri(fullPath));
 			return fullPath;
@@ -2009,7 +2013,7 @@ namespace CardMaker
 		private async Task UploadCard(Card card)
 		{
 			if (string.IsNullOrWhiteSpace(card.StreamlootsImageFileUri))
-				SaveAndUploadImage();
+				SaveAndUploadImage(card);
 
 			if (!string.IsNullOrWhiteSpace(card.StreamlootsCardId))
 				await streamlootsClient.UpdateCard(card);
@@ -2086,6 +2090,10 @@ namespace CardMaker
 			{
 				await UploadCard(card);
 				UpdateProgress(cardsUploadedSoFar++);
+				if (cardsUploadedSoFar % 5 == 0)
+				{
+					
+				}
 			}
 			HideProgress();
 		}
