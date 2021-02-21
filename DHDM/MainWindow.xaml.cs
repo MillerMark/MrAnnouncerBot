@@ -10025,9 +10025,12 @@ namespace DHDM
 
 			ea.CardDto.Card.FillColor = viewer.DieBackColor;
 			ea.CardDto.Card.OutlineColor = viewer.DieTextColor;
-			string cardStr = JsonConvert.SerializeObject(ea.CardDto);
-			HubtasticBaseStation.CardCommand(cardStr);
-			
+			if (!ea.CardDto.Card.message.Contains("!RollDie"))
+			{
+				string cardStr = JsonConvert.SerializeObject(ea.CardDto);
+				HubtasticBaseStation.CardCommand(cardStr);
+			}
+
 
 			viewer.CardsPlayed++;
 
@@ -10213,6 +10216,7 @@ namespace DHDM
 
 		private void CardCommands_ViewerDieRollComplete(object sender, ViewerDieRollStoppedEventArgs ea)
 		{
+			int rollTotal = ea.StopRollingData.roll;
 			ea.Card.Command = "DiceRollForCardFinished";
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);

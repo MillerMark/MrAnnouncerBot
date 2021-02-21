@@ -1559,6 +1559,8 @@ class DiceLayer {
 
 	showRollModifier(playerId = Character.invalidCreatureId, diceGroup = DiceGroup.Players, allModStrs: Array<string> = null, nat20 = false): void {
 		const rollModStr = this.getModStr(allModStrs, nat20);
+		if (!rollModStr)
+			return;
 		const textEffect: TextEffect = this.animations.addText(new Vector(960, 250), `(${rollModStr})`, this.rollModifierTime);
 		textEffect.data = diceGroup;
 		this.setTextColorToPlayer(textEffect, playerId);
