@@ -226,7 +226,7 @@ class CardManager {
 		context.fillText(sprite.data.characterId.toString(), sprite.x + this.knownCards.originX, sprite.y + this.knownCards.originY - CardManager.inHandCardHeight / 2 - 5);
 	}
 
-	static readonly creditLifespanMs: number = 3500;
+	static readonly creditLifespanMs: number = 5500;
 	static readonly dealtCardLifespanMs: number = 4800;
 	static readonly dealtCardFadeoutMs: number = 1000;
 
@@ -245,7 +245,7 @@ class CardManager {
 		sprite.setInitialScale(initialScale);
 		sprite.autoScaleFactorPerSecond = 1.8;
 		sprite.autoScaleMaxScale = 1;
-    const targetSpin = Random.between(-3, 3);
+		const targetSpin = Random.between(-3, 3);
 		sprite.easeSpin(performance.now(), -degreesToSpin, targetSpin, entryTime);
 		if (expireSoon)
 			sprite.expirationDate = performance.now() + CardManager.dealtCardLifespanMs;
@@ -454,6 +454,14 @@ class CardManager {
 
 			if (this.alreadyFoundCard(card.Guid, hand.CharacterId, CardManager.inHandScale)) {
 				foundExistingCards = true;
+				if (hand.Cards.length === 1) {
+					const cardSprite: SpriteProxy = this.getCard(card.Guid, hand.CharacterId, CardManager.selectedCardScale);
+					if (cardSprite) {
+						const existingCredit: TextEffect = <TextEffect>this.getElementByGuid(this.parentTextAnimations.animationProxies, card.Guid);
+						if (!existingCredit || existingCredit.getLifeRemainingMs(performance.now()) < CardManager.creditLifespanMs * 2.0 / 3.0)
+							this.addCardPlayedByCredit(cardSprite.x + this.knownCards.originX * CardManager.selectedCardScale, cardSprite.y + this.knownCards.originY * CardManager.selectedCardScale, hand.SelectedCard.UserName, hand.CharacterId, hand.SelectedCard.FillColor, hand.SelectedCard.OutlineColor);
+					}
+				}
 			}
 			else {
 				const offscreenY: number = this.getOffscreenY(hand);
@@ -553,7 +561,7 @@ class CardManager {
 	private addCardPlayedByCredit(xPos: number, yPos: number, UserName: string, characterId: number, fillColor: string, outlineColor: string): TextEffect {
 		this.hideCreditsFor(characterId);
 
-		const fontSize = 48;
+		const fontSize = 72;
 		const textCardMargin = 8;
 		const halfCardPlusTextOffset: number = CardManager.cardHeight / 2 + fontSize / 2 + textCardMargin;
 
@@ -592,7 +600,7 @@ class CardManager {
 		const now: number = performance.now();
 		this.parentTextAnimations.animationProxies.forEach((animationProxy: AnimatedElement) => {
 			if (animationProxy.data === characterId) {
-				const lifeRemaining: number = animationProxy.getLifeRemaining(now);
+				const lifeRemaining: number = animationProxy.getLifeRemainingMs(now);
 				animationProxy.opacity = animationProxy.getAlpha(now);
 				animationProxy.fadeOutNow(Math.min(200, lifeRemaining));
 				if (animationProxy instanceof TextEffect) {
@@ -915,7 +923,8 @@ class CardManager {
 		const timeToShowCard = 2500;
 		if (secretCard.data instanceof RevealCardStateData) {
 			secretCard.fadeOutNow(350);
-			const revealCard: SpriteProxy = this.knownCards.insert(secretCard.data.xPos, secretCard.data.yPos, secretCard.data.revealCardIndex);
+			const zOrderIndex: number = this.knownCards.spriteProxies.indexOf(secretCard);
+			const revealCard: SpriteProxy = this.knownCards.insertAt(secretCard.data.xPos, secretCard.data.yPos, zOrderIndex, secretCard.data.revealCardIndex);
 			revealCard.data = secretCard.data;
 			this.secretCardBurn.add(secretCard.data.xPos, secretCard.data.yPos, 0);
 			this.secretCardFlames.addShifted(secretCard.data.xPos, secretCard.data.yPos, 0, secretCard.data.hueShift);
@@ -1088,8 +1097,17 @@ class CardManager {
 		elements.forEach((element: AnimatedElement) => {
 			if (element.data === cardGuid)
 				element.fadeOutNow(250);
-		});      
-  }
+		});
+	}
+
+	getElementByGuid(elements: AnimatedElement[], cardGuid: string) {
+		return elements.find((value: AnimatedElement) => value.data === cardGuid; );
+
+		//for (let i = 0; i < elements.length; i++) {
+		//	if (elements[i].data === cardGuid)
+		//		return elements[i];
+		//}
+	}
 
 	highlightCard(card: StreamlootsCard, characterId: number) {
 		this.dealCard(card, characterId, false);
@@ -1100,7 +1118,7 @@ class CardManager {
 		const yPos: number = sprite.y + this.knownCards.originY;
 		const hueSatLight: HueSatLight = HueSatLight.fromHex(card.FillColor);
 		const cardImageName: string = this.getCardImageName(card);
-		this.playCard(cardImageName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, Character.invalidCreatureId, card.FillColor, card.OutlineColor);		
+		this.playCard(cardImageName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, Character.invalidCreatureId, card.FillColor, card.OutlineColor);
 	}
 
 	playCardNow(card: StreamlootsCard) {

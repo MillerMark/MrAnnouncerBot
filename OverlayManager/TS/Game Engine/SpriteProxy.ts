@@ -109,7 +109,7 @@
 		}
 
 		if (endBounds !== 0) {
-			if (this.frameIndex >= endBounds && (!this.expirationDate || this.getLifeRemaining(nowMs) > 0)) {
+			if (this.frameIndex >= endBounds && (!this.expirationDate || this.getLifeRemainingMs(nowMs) > 0)) {
 				this.frameIndex = startIndex;
 				this.cycled(nowMs);
 			}

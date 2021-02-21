@@ -1257,22 +1257,25 @@ class DragonFrontGame extends DragonGame implements INameplateRenderer, ITextFlo
 		let y = 540;
 		let floatingTextY = 1080;
 		let hueShift = 261;
-		console.log('validationIssue.PlayerId: ' + validationIssue.PlayerId);
+		//console.log('validationIssue.PlayerId: ' + validationIssue.PlayerId);
 
 		if (validationIssue.PlayerId >= 0) {
+			scale = 2.0 / 3.0;
+
 			const player: Character = this.getPlayer(validationIssue.PlayerId);
 			hueShift = player.hueShift;
 			x = this.getPlayerX(this.getPlayerIndex(validationIssue.PlayerId));
-			y = 1080 - 300;
+			y = 1080 - 300 * scale;
 		}
 		else {
 			const creature: InGameCreature = this.inGameCreatureManager.getInGameCreatureByIndex(-validationIssue.PlayerId);
 			if (creature) {
+				scale = 0.5;
+
 				const hsl: HueSatLight = HueSatLight.fromHex(creature.BackgroundHex);
 				hueShift = hsl.hue * 360;
 				x = this.inGameCreatureManager.getCenterXByIndex(creature.Index);
 				y = InGameCreatureManager.creatureScrollHeight / 2;
-				scale = 0.5;
 				floatingTextY = 0;
 			}
 		}

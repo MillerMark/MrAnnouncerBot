@@ -10,13 +10,15 @@ namespace DHDM
 {
 	public class CardHandManager
 	{
+		public System.Timers.Timer checkInteractionTimer;
 		public const int IntAllPlayersId = 10000000;
 		const string STR_Cards = "Reveal Secret Cards";
 		// TODO: I need a way to save this state when it changes during the game.
 		public Dictionary<int, StreamlootsHand> Hands { get; private set; } = new Dictionary<int, StreamlootsHand>();
+		Dictionary<int, DateTime> LastInteraction = new Dictionary<int, DateTime>();
 		public CardHandManager()
 		{
-
+			CreateInteractionTimer();
 		}
 
 		void StateHasChanged()
@@ -64,76 +66,128 @@ namespace DHDM
 			}
 			existingHand.SelectedCard = null;
 			existingHand.AddCard(card);
-			existingHand.IsShown = true;
+			ShowHand(creatureId);
 			StateHasChanged();
 		}
+
 		public void ToggleHandVisibility(int creatureId)
 		{
 			if (!Hands.ContainsKey(creatureId))
 			{
-				if (creatureId < 0)
-					foreach (StreamlootsHand streamlootsHand in Hands.Values)
-						if (streamlootsHand.CharacterId < 0)
-							streamlootsHand.IsShown = false;
+				if (IsNpc(creatureId))
+					HideAllNpcHands();
 			}
 			else if (Hands[creatureId].IsShown)
-				Hands[creatureId].IsShown = false;
+				HideHand(creatureId);
 			else if (creatureId < 0)
-			{
-				foreach (StreamlootsHand streamlootsHand in Hands.Values)
-					if (streamlootsHand.CharacterId < 0)
-						streamlootsHand.IsShown = streamlootsHand.CharacterId == creatureId;
-			}
+				HideAllNpcsExcept(creatureId);
 			else
-				Hands[creatureId].IsShown = !Hands[creatureId].IsShown;
+				ShowHand(creatureId);
 
 			StateHasChanged();
 		}
+
+		private void HideHand(int creatureId)
+		{
+			Hands[creatureId].IsShown = false;
+			LastInteraction.Remove(creatureId);
+		}
+
+		void UpdateLastInteraction(int creatureId)
+		{
+			if (checkInteractionTimer == null) // EnC
+				CreateInteractionTimer(); // EnC
+
+			LastInteraction[creatureId] = DateTime.Now;
+		}
+
+		private void CreateInteractionTimer()
+		{
+			checkInteractionTimer = new System.Timers.Timer();
+			checkInteractionTimer.Interval = 2000;
+			checkInteractionTimer.Elapsed += CheckInteractionTimer_Elapsed;
+			checkInteractionTimer.Start();
+		}
+
+		private void CheckInteractionTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			checkInteractionTimer.Stop();
+			try
+			{
+				bool anythingHidden = false;
+				foreach (int creatureId in LastInteraction.Keys.ToList())
+				{
+					TimeSpan timeSinceLastInteraction = DateTime.Now - LastInteraction[creatureId];
+					const double maxIdleToHideHandSeconds = 6.5d;
+					if (timeSinceLastInteraction.TotalSeconds > maxIdleToHideHandSeconds)
+					{
+						HideHand(creatureId);
+						anythingHidden = true;
+					}
+				}
+
+
+				if (anythingHidden)
+					StateHasChanged();
+			}
+			finally
+			{
+				checkInteractionTimer.Start();
+			}
+		}
+
+		private void ShowHand(int creatureId)
+		{
+			Hands[creatureId].IsShown = true;
+			UpdateLastInteraction(creatureId);
+		}
+
+		private void HideAllNpcsExcept(int creatureId)
+		{
+			ShowHand(creatureId);
+			foreach (StreamlootsHand streamlootsHand in Hands.Values)
+				if (streamlootsHand.CharacterId < 0)
+					if (streamlootsHand.CharacterId != creatureId)
+						HideHand(streamlootsHand.CharacterId);
+		}
+
+		private static bool IsNpc(int creatureId)
+		{
+			return creatureId < 0;
+		}
+
+		private void HideAllNpcHands()
+		{
+			foreach (StreamlootsHand streamlootsHand in Hands.Values)
+				if (streamlootsHand.CharacterId < 0)
+					HideHand(streamlootsHand.CharacterId);
+		}
+
 		public void HideAllNpcCards()
 		{
 			foreach (StreamlootsHand streamlootsHand in Hands.Values)
-			{
 				if (streamlootsHand.CharacterId < 0)
-					streamlootsHand.IsShown = false;
-			}
+					HideHand(streamlootsHand.CharacterId);
 			StateHasChanged();
+		}
+
+		public enum CardDirection
+		{
+			Next,
+			Previous
 		}
 
 		public void SelectNextCard(int creatureId)
 		{
-			if (!Hands.ContainsKey(creatureId))
-				return;
-			StreamlootsHand hand = Hands[creatureId];
-			if (hand.Cards.Count == 0)
-				return;
-
-			int selectedCardIndex = hand.GetSelectedCardIndex();
-			if (selectedCardIndex == -1)
-			{
-				hand.SelectedCard = null;
-				foreach (StreamlootsCard card in hand.Cards)
-				{
-					if (!card.IsSecret)
-					{
-						hand.SelectedCard = card;
-						break;
-					}
-				}
-				if (hand.SelectedCard == null)
-					hand.SelectedCard = hand.Cards[0];
-			}
-			else
-			{
-				if (selectedCardIndex < hand.Count - 1)
-					selectedCardIndex++;
-				else
-					selectedCardIndex = 0;
-				hand.SelectedCard = hand.Cards[selectedCardIndex];
-			}
-			StateHasChanged();
+			SelectCard(creatureId, CardDirection.Next);
 		}
 
 		public void SelectPreviousCard(int creatureId)
+		{
+			SelectCard(creatureId, CardDirection.Previous);
+		}
+
+		private void SelectCard(int creatureId, CardDirection direction)
 		{
 			if (!Hands.ContainsKey(creatureId))
 				return;
@@ -141,31 +195,82 @@ namespace DHDM
 			if (hand.Cards.Count == 0)
 				return;
 
+			UpdateLastInteraction(creatureId);
+
 			int selectedCardIndex = hand.GetSelectedCardIndex();
+
 			if (selectedCardIndex == -1)
 			{
 				hand.SelectedCard = null;
-				for (int i = hand.Cards.Count - 1; i >= 0; i--)
+				StreamlootsCard firstCard;
+				if (direction == CardDirection.Next)
 				{
-					StreamlootsCard card = hand.Cards[i];
-					if (!card.IsSecret)
-					{
-						hand.SelectedCard = card;
-						break;
-					}
+					firstCard = hand.Cards.First();
+					SelectFirstAvailableCard(hand);
 				}
-				if (hand.SelectedCard == null)
-					hand.SelectedCard = hand.Cards[hand.Cards.Count - 1];
+				else
+				{
+					firstCard = hand.Cards.Last();
+					SelectLastAvailableCard(hand);
+				}
+				
+				if (hand.SelectedCard == null)  // Only secret cards in the hand.
+					hand.SelectedCard = firstCard;
 			}
 			else
 			{
-				if (selectedCardIndex > 0)
-					selectedCardIndex--;
+				if (direction == CardDirection.Next)
+					selectedCardIndex = GetNextCardIndex(hand, selectedCardIndex);
 				else
-					selectedCardIndex = hand.Count - 1;
+					selectedCardIndex = SelectPreviousCardIndex(hand, selectedCardIndex);
+
 				hand.SelectedCard = hand.Cards[selectedCardIndex];
 			}
 			StateHasChanged();
+		}
+
+		private static int GetNextCardIndex(StreamlootsHand hand, int selectedCardIndex)
+		{
+			if (selectedCardIndex < hand.Count - 1)
+				selectedCardIndex++;
+			else
+				selectedCardIndex = 0;
+			return selectedCardIndex;
+		}
+
+		private static void SelectFirstAvailableCard(StreamlootsHand hand)
+		{
+			for (int i = 0; i < hand.Cards.Count; i++)
+			{
+				StreamlootsCard card = hand.Cards[i];
+				if (!card.IsSecret)
+				{
+					hand.SelectedCard = card;
+					break;
+				}
+			}
+		}
+
+		private static int SelectPreviousCardIndex(StreamlootsHand hand, int selectedCardIndex)
+		{
+			if (selectedCardIndex > 0)
+				selectedCardIndex--;
+			else
+				selectedCardIndex = hand.Count - 1;
+			return selectedCardIndex;
+		}
+
+		private static void SelectLastAvailableCard(StreamlootsHand hand)
+		{
+			for (int i = hand.Cards.Count - 1; i >= 0; i--)
+			{
+				StreamlootsCard card = hand.Cards[i];
+				if (!card.IsSecret)
+				{
+					hand.SelectedCard = card;
+					break;
+				}
+			}
 		}
 
 		public void PlaySelectedCard(int creatureId, Creature creature)
@@ -176,6 +281,7 @@ namespace DHDM
 			if (hand.SelectedCard == null)
 				return;
 
+			UpdateLastInteraction(creatureId);
 			hand.PlaySelectedCard(creature);
 			SendCardCommand("Play Cards");
 			hand.SelectedCardsHaveBeenPlayed();

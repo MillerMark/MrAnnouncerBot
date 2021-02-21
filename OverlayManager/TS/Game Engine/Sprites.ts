@@ -143,6 +143,13 @@ class Sprites {
 		return sprite;
 	}
 
+	insertAt(x: number, y: number, zOrder: number, startingFrameIndex = 0): SpriteProxy {
+		const sprite: SpriteProxy = this.createSprite(startingFrameIndex, x, y);
+		this.spriteProxies.splice(zOrder, 0, sprite);
+		this.applyOverrides(sprite);
+		return sprite;
+	}
+
 	insert(x: number, y: number, startingFrameIndex = 0): SpriteProxy {
 		const sprite: SpriteProxy = this.createSprite(startingFrameIndex, x, y);
 		this.spriteProxies.unshift(sprite);

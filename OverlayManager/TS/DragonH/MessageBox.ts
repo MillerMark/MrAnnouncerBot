@@ -580,7 +580,7 @@ class MessageBox {
 		if (!this.lastAnswer)
 			return;
 
-		if (this.lastAnswer.expirationDate && this.lastAnswer.getLifeRemaining(nowMs) <= 0) {
+		if (this.lastAnswer.expirationDate && this.lastAnswer.getLifeRemainingMs(nowMs) <= 0) {
 			this.lastAnswer = null;
 			return;
 		}

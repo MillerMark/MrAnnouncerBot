@@ -10010,7 +10010,7 @@ namespace DHDM
 		{
 			AllViewers.Save();
 		}
-
+		//
 		private void StreamlootsService_CardRedeemed(object sender, CardEventArgs ea)
 		{
 			string msg = ea.CardDto.Card.message;

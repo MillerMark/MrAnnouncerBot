@@ -252,14 +252,14 @@
 	}
 
 	stillAlive(now: number, frameCount = 0): boolean {
-		return this.getLifeRemaining(now) >= 0 || !this.okayToDie(frameCount);
+		return this.getLifeRemainingMs(now) >= 0 || !this.okayToDie(frameCount);
 	}
 
 	hasLifeRemaining(now: number) {
-		return this.expirationDate === undefined || this.getLifeRemaining(now) > 0;
+		return this.expirationDate === undefined || this.getLifeRemainingMs(now) > 0;
 	}
 
-	getLifeRemaining(now: number) {
+	getLifeRemainingMs(now: number) {
 		let lifeRemaining = 0;
 		if (this.expirationDate) {
 			lifeRemaining = this.expirationDate - now;
@@ -273,7 +273,7 @@
 	}
 
 	fadingOut(now: number): boolean {
-		const lifeRemaining: number = this.getLifeRemaining(now);
+		const lifeRemaining: number = this.getLifeRemainingMs(now);
 		return this.isFadingOut(lifeRemaining);
 	}
 
@@ -296,7 +296,7 @@
 		if (!this.expirationDate)
 			return this.opacity;
 
-		const lifeRemaining: number = this.getLifeRemaining(now);
+		const lifeRemaining: number = this.getLifeRemainingMs(now);
 
 		if (!this.hasLifeRemaining(now))
 			return 0;

@@ -869,10 +869,10 @@ class DieRoller {
 		}
 	}
 
+	hasNat20ForTestingPurposes = false;
+
 	modifyTotalRollForTestingPurposes() {
-		this.d20RollValue = DieRoller.Nat20; // critical hit.
-		//totalRoll = 20;
-		//totalRoll = 35; // age change
+		//this.hasNat20ForTestingPurposes = true;
 	}
 
 	getModifier(diceRollData: DiceRollData, player: Character): number {
@@ -937,13 +937,13 @@ class DieRoller {
 			modList.forEach((modStr) => {
 				cardModifiersStr += modStr;
 			});
-			
+
 
 			let modifier = 0;
-			
 
-			
-			
+
+
+
 
 			if (die.creatureID < 0) {
 				if (logProgress) {
@@ -1110,7 +1110,7 @@ class DieRoller {
 
 					if (this.diceRollData.bentLuckMultiplier < 0 && nat20s.get(playerID))  // Bane (which has a die.scoreMultiplier of -1) cannot impact a nat20.
 						break;
-					
+
 					totalScoringDice.set(playerID, totalScoringDice.get(playerID) + topNumber * this.diceRollData.bentLuckMultiplier);
 					blessBaneLuckMods.set(playerID, blessBaneLuckMods.get(playerID) + topNumber * this.diceRollData.bentLuckMultiplier);
 					break;
@@ -1254,8 +1254,10 @@ class DieRoller {
 		}
 
 		if (!this.diceRollData.hasMultiPlayerDice && totalScoringDice.get(singlePlayerId) > 0) {
-			if (this.diceRollData.type === DiceRollType.SkillCheck && this.totalBonus)
+			if (this.diceRollData.type === DiceRollType.SkillCheck && this.totalBonus) {
 				this.diceRollData.totalRoll += this.totalBonus;
+				totalScoringDice.set(singlePlayerId, totalScoringDice.get(singlePlayerId) + this.totalBonus);
+			}
 		}
 
 		this.modifyTotalRollForTestingPurposes();
@@ -1347,7 +1349,8 @@ class DieRoller {
 		if (this.diceRollData.type === DiceRollType.SkillCheck) {
 			for (let i = 0; i < this.dice.length; i++) {
 				const die: IDie = this.dice[i];
-				if (die.inPlay && this.countsAsTotalScore(die) && die.isD20 && die.getTopNumber() === DieRoller.Nat20) {
+				if (die.inPlay && this.countsAsTotalScore(die) && die.isD20 &&
+					(die.getTopNumber() === DieRoller.Nat20 || this.hasNat20ForTestingPurposes)) {
 					this.nat20SkillCheckBonusRoll = true;
 					let dieColor: string = diceLayer.activePlayerDieColor;
 					let dieTextColor: string = diceLayer.activePlayerDieFontColor;
@@ -2208,14 +2211,14 @@ class DieRoller {
 		this.showSuccessFailMessages(title, singlePlayerTotalScoringDice, this.diceRollData.diceGroup);
 
 		maxDamage += this.damageModifierThisRoll;
-		
+
 		this.announceRollCommentary(singlePlayerTotalScoringDice, maxDamage, rollResults, modTotal);
 		return maxDamage;
 	}
 
 	insertCardModStr(cardModStrs: string[], mod: number) {
 		if (mod > 0) {
-			cardModStrs.splice(0, 0, `+${mod}`); 
+			cardModStrs.splice(0, 0, `+${mod}`);
 		}
 		else if (mod < 0) {
 			cardModStrs.splice(0, 0, `${mod}`);
@@ -4244,6 +4247,7 @@ class DieRoller {
 	//! Called from Connection.ts
 	pleaseRollDice(diceRollDto: DiceRollData) {
 		console.log(`pleaseRollDice...`);
+		this.hasNat20ForTestingPurposes = false;
 		DiceLayer.numFiltersOnDieCleanup = 0;
 		DiceLayer.numFiltersOnRoll = 0;
 		//testing = true;
