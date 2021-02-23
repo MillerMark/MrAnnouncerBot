@@ -43,7 +43,8 @@ enum DiceRollType {
 	HPCapacity,
 	CastSimpleSpell,
 	DamagePlusSavingThrow,
-	OnlyTargetsSavingThrow
+	OnlyTargetsSavingThrow,
+	ViewerRoll
 }
 
 //enum SpriteType {
@@ -1515,12 +1516,17 @@ class DiceLayer {
 		textEffect.fadeInTime = 200;
 	}
 
-	showDieTotalMessage(totalRoll: number, dieTotalMessage: string, centerPos: Vector, fillColor: string, outlineColor: string, diceGroup = DiceGroup.Players) {
+	showDieTotalMessage(totalRoll: number, modifier: number, dieTotalMessage: string, centerPos: Vector, fillColor: string, outlineColor: string, diceGroup = DiceGroup.Players) {
 		const deltaX: number = 960 - centerPos.x;
 		const deltaY: number = 540 - centerPos.y;
 		const thrustX: number = deltaX * 0.0006;
 		const thrustY: number = deltaY * 0.0006;
-		const numberTextEffect: TextEffect = this.animations.addText(centerPos, totalRoll.toString(), this.totalRollScoreTime);
+		let totalRollStr: string = totalRoll.toString();
+		if (modifier > 0)
+			totalRollStr += ` +${modifier}`;
+		else if (modifier < 0)
+			totalRollStr += ` ${modifier}`;
+		const numberTextEffect: TextEffect = this.animations.addText(centerPos, totalRollStr, this.totalRollScoreTime);
 		numberTextEffect.data = diceGroup;
 		numberTextEffect.fontColor = fillColor;
 		numberTextEffect.outlineColor = outlineColor;

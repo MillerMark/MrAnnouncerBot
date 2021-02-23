@@ -513,8 +513,8 @@ namespace DHDM
 		private void HookEvents()
 		{
 			DispelMagic.RequestDispelMagic += DispelMagic_RequestDispelMagic;
-			AddCardMod.RequestAddMod += AddMod_RequestAddMod;
 			RevealCard.RequestCardReveal += RevealCard_RequestCardReveal;
+			AddViewerChargeFunction.RequestAddViewerCharge += AddViewerChargeFunction_RequestAddViewerCharge;
 			GetFriendlyTargets.RequestTarget += GetFriendlyTargets_RequestTarget;
 			CardCommands.ViewerDieRollComplete += CardCommands_ViewerDieRollComplete;
 			CardCommands.ViewerDieRollStarts += CardCommands_ViewerDieRollStarts;
@@ -539,9 +539,10 @@ namespace DHDM
 			StreamlootsService.CardsPurchased += StreamlootsService_CardsPurchased;
 		}
 
-		private void AddMod_RequestAddMod(AddModEventArgs ea)
+		private void AddViewerChargeFunction_RequestAddViewerCharge(object sender, RequestAddViewerChargeEventArgs ea)
 		{
-			//throw new NotImplementedException();
+			int totalChargeCount = AllViewers.AddCharge(ea.UserName, ea.ChargeName, ea.ChargeCount);
+			TellViewers($"{ea.UserName} now has {totalChargeCount} \"{ea.ChargeName}\" charges.");
 		}
 
 		private void DispelMagic_RequestDispelMagic(DispelMagicEventArgs ea)
@@ -1240,12 +1241,14 @@ namespace DHDM
 			dungeonMasterClient.OnChannelStateChanged += DungeonMasterClient_OnChannelStateChanged;
 		}
 
+		int dragonHumpersClientEventHookCount = 0;
 		private void HookTwitchClientDragonHumpersEvents()
 		{
 			if (dhClient == null)
 				return;
 			dhClient.OnMessageReceived += DragonHumpersClient_OnMessageReceived;
 			dhClient.OnDisconnected += DragonHumpersClient_OnDisconnected;
+			dragonHumpersClientEventHookCount++;
 		}
 
 		private void UnhookTwitchClientDragonHumpersEvents()
@@ -1254,6 +1257,7 @@ namespace DHDM
 				return;
 			dhClient.OnMessageReceived -= DragonHumpersClient_OnMessageReceived;
 			dhClient.OnDisconnected -= DragonHumpersClient_OnDisconnected;
+			dragonHumpersClientEventHookCount--;
 		}
 
 		private void UnhookTwitchClientDungeonMasterEvents()
@@ -1720,10 +1724,32 @@ namespace DHDM
 				TellViewers("Use the !dc command followed by an HTML color string to set your custom die roll color (triggered by playing cards from streamloots.com/DragonHumpers ). Example: !dc #690096");
 		}
 
+		void UseViewerCharge(string username)
+		{
+			if (DndViewer.TestingSayAnything)
+				username = "SayAnythingTester";
+			DndViewer viewer = AllViewers.Get(username);
+			int remainingCharges = viewer.UseCharge("Say Anything");
+			if (remainingCharges == 0)
+			{
+				TellViewers($"{viewer.UserName} - you have depleted all your \"Say Anything\" charges!");
+				TellViewers($"Get more Dragon Humpers D&D game cards at https://www.streamloots.com/dragonhumpers");
+			}
+			else if (remainingCharges == 1)
+				TellViewers($"{viewer.UserName} - you have one \"Say Anything\" charge remaining!");
+			else if (remainingCharges == 5)
+				TellViewers($"{viewer.UserName} - you have five \"Say Anything\" charges remaining!");
+			else if (remainingCharges == 10)
+				TellViewers($"{viewer.UserName} - you have ten \"Say Anything\" charges remaining!");
+		}
+
 		private void DragonHumpersClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
 		{
-			if (IsPlayer(e.ChatMessage.UserId))
+			if (IsPlayer(e.ChatMessage.UserId) && (!DndViewer.TestingSayAnything || e.ChatMessage.UserId != "270998178"))
 				CharacterSaysSomething(e.ChatMessage.Message);
+			else if (ViewerCanUseChargeToSaySomething(e.ChatMessage.Username))
+				if (CharacterSaysSomething(e.ChatMessage.Message))
+					UseViewerCharge(e.ChatMessage.Username);
 			if (e.ChatMessage.Message.StartsWith("!"))
 			{
 				ExecuteDragonHumpersChatCommand(e.ChatMessage);
@@ -1762,20 +1788,21 @@ namespace DHDM
 				}
 				message = message.Substring(colonPos + 1).Trim();
 				string speechCommand = null;
-				if (message.StartsWith("\"") || message.StartsWith("“"))
-				{
-					speechCommand = "says";
-					message = message.Trim('"');
-					message = message.Trim('“');
-					message = message.Trim('”');
-				}
-				else if (message.StartsWith("("))
+				if (message.StartsWith("("))
 				{
 					speechCommand = "thinks";
 					message = message.TrimStart('(');
 					if (!message.Contains("("))
 						message = message.TrimEnd(')');
 				}
+				else // if (message.StartsWith("\"") || message.StartsWith("“"))
+				{
+					speechCommand = "says";
+					message = message.Trim('"');
+					message = message.Trim('“');
+					message = message.Trim('”');
+				}
+				
 				if (DateTime.Now.Hour < 15)
 				{
 					ProfanityFilter.ProfanityFilter profanityFilter = new ProfanityFilter.ProfanityFilter();
@@ -1788,6 +1815,16 @@ namespace DHDM
 				}
 			}
 			return false;
+		}
+
+		bool ViewerCanUseChargeToSaySomething(string username)
+		{
+			if (username == "dragonhumpersdm")
+				return false;
+			if (DndViewer.TestingSayAnything)
+				username = "SayAnythingTester";
+			DndViewer viewer = AllViewers.Get(username);
+			return viewer.HasCharges("Say Anything");
 		}
 
 		private void HumperBotClient_OnMessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -2273,6 +2310,7 @@ namespace DHDM
 					rbHealth.IsChecked = true;
 					break;
 				case DiceRollType.ExtraOnly:
+				case DiceRollType.ViewerRoll:
 					rbExtra.IsChecked = true;
 					break;
 				case DiceRollType.ChaosBolt:
@@ -3412,7 +3450,7 @@ namespace DHDM
 			}
 
 			string damageDice = string.Empty;
-			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly)
+			if (DndUtils.IsAttack(type) || type == DiceRollType.DamageOnly || type == DiceRollType.DamagePlusSavingThrow || type == DiceRollType.HealthOnly || type == DiceRollType.ExtraOnly || type == DiceRollType.ViewerRoll)
 				damageDice = tbxDamageDice.Text;
 
 			DiceRoll diceRoll = new DiceRoll(type, diceRollKind, damageDice);
@@ -10218,9 +10256,18 @@ namespace DHDM
 		{
 			int rollTotal = ea.StopRollingData.roll;
 			ea.Card.Command = "DiceRollForCardFinished";
+			
 			string cardStr = JsonConvert.SerializeObject(ea.Card);
 			HubtasticBaseStation.CardCommand(cardStr);
 			ApplyDamageFromRoll(ea.StopRollingData, ea.Card.TargetCharacterIds);
+			CardEventData cardEventData = AllKnownCards.Get(ea.Card);
+			SystemVariables.ViewerDieRollTotal = rollTotal;
+			SystemVariables.CardUserName = ea.Card.GetUserName();
+			if (ea.Card.TargetCharacterIds.Count == 0)
+				TriggerCardPlayedEvent(ea.Card.Card.CardName, int.MinValue, cardEventData);
+			else
+				foreach (int targetCharacterId in ea.Card.TargetCharacterIds)
+					TriggerCardPlayedEvent(ea.Card.Card.CardName, targetCharacterId, cardEventData);
 		}
 
 		private void ApplyDamageFromRoll(DiceStoppedRollingData stopRollingData, List<int> targetCharacterIds)

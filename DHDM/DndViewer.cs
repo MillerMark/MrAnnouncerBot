@@ -10,8 +10,9 @@ namespace DHDM
 	[TabName("Viewers")]
 	public class DndViewer: TrackPropertyChanges
 	{
+		public const bool TestingSayAnything = false;
 		string dieBackColor = "#ffffff";
-		string charges;
+		string chargesStr = null;
 		string trailingEffects;
 		int cardsPlayed;
 		string userName;
@@ -48,15 +49,94 @@ namespace DHDM
 		[Column]
 		public string Charges  // Semicolon-separated list of key/value pairs - SayAnything=3; ...
 		{
-			get => charges;
+			get
+			{
+				if (chargesStr == null)
+					chargesStr = GetChargeStr();
+				return chargesStr;
+			}
 			set
 			{
-				if (charges == value)
+				if (chargesStr == value)
 					return;
-				charges = value;
+				chargesStr = value;
 				OnPropertyChanged();
 			}
 		}
+
+		string GetChargePart(string key, int value)
+		{
+			return $"{key}={value};";
+		}
+
+		string GetChargeStr()
+		{
+			string result = "";
+
+			foreach (string key in charges.Keys)
+				result += GetChargePart(key, charges[key]);
+
+			return result.TrimEnd(';');
+		}
+
+		void RecalculateChargesStr()
+		{
+			Charges = GetChargeStr();
+		}
+
+		Dictionary<string, int> charges = new Dictionary<string, int>();
+
+		/// <summary>
+		/// Adds the specified charge and returns the total charge count for the specified chargeName.
+		/// </summary>
+		/// <param name="chargeName">The name of the charge to add.</param>
+		/// <param name="chargeCount">The number of charges to add.</param>
+		/// <returns>The total charge count for the specified chargeName.</returns>
+		public int AddCharge(string chargeName, int chargeCount)
+		{
+			if (charges.ContainsKey(chargeName))
+				charges[chargeName] += chargeCount;
+			else
+				charges.Add(chargeName, chargeCount);
+
+			RecalculateChargesStr();
+			return charges[chargeName];
+		}
+
+		public bool HasCharges(string chargeName, int chargeCount = 1)
+		{
+			if (!charges.ContainsKey(chargeName))
+				return false;
+
+			return charges[chargeName] >= chargeCount;
+		}
+
+
+		/// <summary>
+		/// Uses the specified number of charges and returns the number of charges remaining. Does not validate if there are 
+		/// sufficient charges available (will simply reduce charges to zero if insufficient charges are available), so call 
+		/// HasCharges to verify the viewer has sufficient charges before calling UseCharge.
+		/// </summary>
+		/// <param name="chargeName">The name of the charge to use.</param>
+		/// <param name="chargeCount">The number of charges to use (default is one charge if not specified).</param>
+		/// <returns>The number of charges remaining.</returns>
+		public int UseCharge(string chargeName, int chargeCount = 1)
+		{
+			if (!charges.ContainsKey(chargeName))
+				return 0;
+
+			if (charges[chargeName] <= chargeCount)
+			{
+				charges.Remove(chargeName);
+				RecalculateChargesStr();
+				return 0;
+			}
+			charges[chargeName] -= chargeCount;
+			RecalculateChargesStr();
+			return charges[chargeName];
+		}
+
+
 
 		[Column]
 		public string TrailingEffects  // A semicolon-separated list of trailing effects behind the player's die. See the TrailingEffects tab of the DnD spreadsheet for a complete list....

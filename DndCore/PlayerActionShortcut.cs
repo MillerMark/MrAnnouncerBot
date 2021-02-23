@@ -237,6 +237,8 @@ namespace DndCore
 					return DiceRollType.InspirationOnly;
 				case "ExtraOnly":
 					return DiceRollType.ExtraOnly;
+				case "ViewerRoll":
+					return DiceRollType.ViewerRoll;
 				case "LuckRollLow":
 					return DiceRollType.LuckRollLow;
 				case "PercentageRoll":

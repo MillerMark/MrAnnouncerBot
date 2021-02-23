@@ -12,13 +12,7 @@ namespace DndCore
 	[Param(4, typeof(string), "userName", "The name of the user responsible for this mod.", ParameterIs.Optional)]
 	public class AddCardMod : DndFunction
 	{
-		public static event AddModEventHandler RequestAddMod;
 		public override string Name { get; set; } = "AddCardMod";
-
-		public static void OnRequestAddMod(AddModEventArgs ea)
-		{
-			RequestAddMod?.Invoke(ea);
-		}
 
 		public override object Evaluate(List<string> args, ExpressionEvaluator evaluator, Creature player, Target target, CastedSpell spell, DiceStoppedRollingData dice = null)
 		{

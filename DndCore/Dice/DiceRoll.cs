@@ -250,6 +250,8 @@ namespace DndCore
 				return;  // HiddenThreshold will be set elsewhere.
 			else if (Type == DiceRollType.DamageOnly || Type == DiceRollType.HealthOnly || Type == DiceRollType.ExtraOnly)
 				HiddenThreshold = 0;
+			else if (Type == DiceRollType.ViewerRoll)
+				HiddenThreshold = 0;
 			else if (double.TryParse(fromText, out double thresholdResult))
 				HiddenThreshold = thresholdResult;
 		}

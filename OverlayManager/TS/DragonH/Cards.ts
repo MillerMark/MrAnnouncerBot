@@ -1084,7 +1084,7 @@ class CardManager {
 		this.hideCard(card.Guid);
 		const { xPos, yPos } = this.getBigCardCenter(card);
 		const hueSatLight: HueSatLight = HueSatLight.fromHex(card.FillColor);
-		this.playCard(card.CardName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, characterId, card.FillColor, card.OutlineColor);
+		this.playCard(card.CardImageName, xPos, yPos, 0, hueSatLight.hue * 360, card.UserName, characterId, card.FillColor, card.OutlineColor);
 	}
 
 	hideCard(cardGuid: string) {

@@ -38,7 +38,7 @@ namespace DndCore
 				DieCountsAs = DieCountsAs.health;
 			else if (descriptor.Contains("inspiration") || type == DiceRollType.InspirationOnly)
 				DieCountsAs = DieCountsAs.inspiration;
-			else if (descriptor.Contains("extra") || type == DiceRollType.ExtraOnly)
+			else if (descriptor.Contains("extra") || type == DiceRollType.ExtraOnly || type == DiceRollType.ViewerRoll)
 				DieCountsAs = DieCountsAs.extra;
 			else if (descriptor.Contains("bent luck") || type == DiceRollType.BendLuckAdd || type == DiceRollType.BendLuckSubtract)
 				DieCountsAs = DieCountsAs.bentLuck;

@@ -27,6 +27,7 @@ namespace DHDM
 		{
 			GoogleSheets.SaveChanges(KnownViewers.ToArray());
 		}
+		 
 		public static DndViewer Get(string userName)
 		{
 			DndViewer foundUser;
@@ -42,9 +43,25 @@ namespace DHDM
 			}
 			return foundUser;
 		}
+
 		public static void Invalidate()
 		{
 			LoadViewers();
+		}
+
+		/// <summary>
+		/// Adds the specified charge to the specified viewer and returns the total charge count for the specified chargeName.
+		/// </summary>
+		/// <param name="viewerName">The name of the viewer to add the charges to.</param>
+		/// <param name="chargeName">The name of the charge to add.</param>
+		/// <param name="chargeCount">The number of charges to add.</param>
+		/// <returns>The total charge count for the specified chargeName.</returns>
+		public static int AddCharge(string viewerName, string chargeName, int chargeCount)
+		{
+			if (DndViewer.TestingSayAnything)
+				viewerName = "SayAnythingTester";
+			DndViewer viewer = Get(viewerName);
+			return viewer.AddCharge(chargeName, chargeCount);
 		}
 	}
 }

@@ -27,5 +27,6 @@
 		CastSimpleSpell,
 		DamagePlusSavingThrow,
 		OnlyTargetsSavingThrow,
+		ViewerRoll
 	}
 }

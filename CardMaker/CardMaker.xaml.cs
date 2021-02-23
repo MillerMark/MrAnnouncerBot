@@ -1776,10 +1776,11 @@ namespace CardMaker
 			return card;
 		}
 
-		void SetSayAnythingLayerVisibilities(Card card, string dieName, int multiplier)
+		void SetSayAnythingLayerVisibilities(Card card, string dieName, int multiplier, int offset)
 		{
 			card.SelectAlternateLayer("Die", dieName);
 			card.SelectAlternateLayer("Times", $"x{multiplier}");
+			card.SelectAlternateLayer("Offset", $"+{offset}");
 			int cardNum = random.Next(9);
 			card.SelectAlternateLayer("CardBack", $"Card {cardNum}");
 		}
@@ -1869,13 +1870,16 @@ namespace CardMaker
 			string dieName;
 			int multiplier;
 			GetSayAnythingDieNameAndMultiplier(actualPowerLevel, out multiplier, out dieName);
-			card.Name = $"Say Anything - {multiplier}{dieName}";
+			int offset = Math.Max(actualPowerLevel / 4 + 1, 1);
+			card.Name = $"Say Anything - {multiplier}{dieName} + {offset}";
 			card.StylePath = "Say Anything";
-			card.Description = $"Make any player, NPC, or monster think or say anything, up to {multiplier}{dieName} times (dice are rolled when you play this card). To make a player say something, enter “!{{name}}: \"Your custom message” into the chat room. To make a player think something, enter “!{{name}}: (Your custom thoughts” into the chat room. For example: “!Fred: (Yummy...”.";
+			card.Description = $"Make any player, NPC, or monster think or say anything, up to {multiplier}{dieName} times (dice are rolled when you play this card). To make a player *say* something, enter “!{{name}}: \"Your custom message” into the chat room. To make a player *think* something, enter “!{{name}}: (Your custom thoughts” into the chat room. For example: “!Fred: (Yummy...”.";
 			card.AdditionalInstructions = "No ads or hate speech - you could get banned!";
-			card.AlertMessage = $"{{{{username}}}} played Say Anything - {multiplier}{dieName}//!RollDie({multiplier}{dieName}, \"Say Anything\")";
+			card.AlertMessage = $"{{{{username}}}} played Say Anything - {multiplier}{dieName}+{offset}//!RollDie({multiplier}{dieName}+{offset}, \"Say Anything\")";
+			card.CardPlayed = "AddViewerCharge(CardUserName, \"Say Anything\", ViewerDieRollTotal);\n" +
+				"TellAll($\"{CardUserName} has Say Anything {ViewerDieRollTotal} times!\");";
 			QuickAddAllLayerDetails(card);
-			SetSayAnythingLayerVisibilities(card, dieName, multiplier);
+			SetSayAnythingLayerVisibilities(card, dieName, multiplier, offset);
 			return card;
 		}
 

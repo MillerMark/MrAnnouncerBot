@@ -104,7 +104,7 @@ namespace DHDM
 			if (parameters.Length < 2)
 				return null;
 
-			DiceRoll diceRoll = new DiceRoll(DiceRollType.ExtraOnly);
+			DiceRoll diceRoll = new DiceRoll(DiceRollType.ViewerRoll);
 			diceRoll.AddTrailingEffects(viewer.TrailingEffects);
 
 			HueSatLight hueSatLight = new HueSatLight(viewer.DieBackColor);
@@ -182,8 +182,18 @@ namespace DHDM
 
 			int quantity;
 			int sides;
-			if (!int.TryParse(dieParts[0], out quantity) || !int.TryParse(dieParts[1], out sides))
+			string sidesStr = dieParts[1];
+			int offset;
+			string offsetStr = "0";
+			if (sidesStr.Contains("+"))
+			{
+				offsetStr = sidesStr.EverythingAfter("+").Trim();
+				sidesStr = sidesStr.EverythingBefore("+").Trim();
+			}
+			if (!int.TryParse(dieParts[0], out quantity) || !int.TryParse(sidesStr, out sides) || !int.TryParse(offsetStr, out offset))
 				return null;
+
+			diceRoll.Modifier = offset;
 			DiceDto diceDto = new DiceDto()
 			{
 				PlayerName = diePlayerName,

@@ -2127,7 +2127,8 @@ class DieRoller {
 			this.diceRollData.type !== DiceRollType.DamageOnly &&
 			this.diceRollData.type !== DiceRollType.DamagePlusSavingThrow &&
 			this.diceRollData.type !== DiceRollType.HealthOnly &&
-			this.diceRollData.type !== DiceRollType.ExtraOnly) {
+			this.diceRollData.type !== DiceRollType.ExtraOnly &&
+			this.diceRollData.type !== DiceRollType.ViewerRoll) {
 			if (this.attemptedRollWasSuccessful)
 				if (rawD20RollValue >= this.diceRollData.minCrit) {
 					diceLayer.showResult(title + this.diceRollData.critSuccessMessage, this.attemptedRollWasSuccessful, diceGroup);
@@ -2178,7 +2179,7 @@ class DieRoller {
 		const singlePlayerRoll = !this.diceRollData.hasMultiPlayerDice;
 		const hasBaneBlessOrLuck = blessBaneLuckMods.has(singlePlayerId) && blessBaneLuckMods.get(singlePlayerId) !== 0;
 		//let overrideModifier: number = 0;
-		console.log('rollMod: ' + rollMod);
+		//console.log('rollMod: ' + rollMod);
 		let modTotal: number = additionalModValue;
 
 		if (singlePlayerRoll && (singlePlayerTotalScoringDice > 0 || hasBaneBlessOrLuck)) {
@@ -2189,6 +2190,7 @@ class DieRoller {
 			this.insertCardModStr(cardModStrs, skillSavingModifier);
 			this.insertCardModStr(cardModStrs, rollMod);
 			//overrideModifier = 
+			console.log('playerIdForTextMessages: ' + playerIdForTextMessages);
 			this.reportDieTotalsAndMods(nat20s, singlePlayerId, playerIdForTextMessages, cardModStrs);
 
 			const nat20: boolean = nat20s.has(singlePlayerId) && nat20s.get(singlePlayerId);
@@ -2206,8 +2208,12 @@ class DieRoller {
 
 		const textCenter: Vector = this.getTextCenter();
 
+		//console.log('totalDamage: ' + totalDamage);
+		//console.log('totalHealth: ' + totalHealth);
+		//console.log('totalExtra: ' + totalExtra);
 		this.reportDamageHealthExtra(totalDamage, textCenter, totalHealth, totalExtra);
 
+		console.log('singlePlayerTotalScoringDice: ' + singlePlayerTotalScoringDice);
 		this.showSuccessFailMessages(title, singlePlayerTotalScoringDice, this.diceRollData.diceGroup);
 
 		maxDamage += this.damageModifierThisRoll;
@@ -2304,7 +2310,8 @@ class DieRoller {
 
 		const nat20: boolean = nat20s.has(singlePlayerId) && nat20s.get(singlePlayerId);
 
-		diceLayer.showRollModifier(playerIdForTextMessages, this.diceRollData.diceGroup, allModStrs, nat20);
+		if (playerIdForTextMessages !== Character.invalidCreatureId)
+			diceLayer.showRollModifier(playerIdForTextMessages, this.diceRollData.diceGroup, allModStrs, nat20);
 
 		this.reportDieTotals(totalRoll, playerIdForTextMessages);
 	}
@@ -2312,14 +2319,23 @@ class DieRoller {
 	private reportDieTotals(totalRoll: number, playerIdForTextMessages: number) {
 		if (this.diceRollData.dieTotalMessage) {
 			const centerDice: Vector = this.getCenterDicePosition();
+			let modifier = 0;
 
-			diceLayer.showDieTotalMessage(totalRoll, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor, this.diceRollData.diceGroup);
+			console.log('this.diceRollData.modifier: ' + this.diceRollData.modifier);
+
+			if (this.diceRollData.diceGroup === DiceGroup.Viewers) {
+				modifier = this.diceRollData.modifier;
+				totalRoll -= modifier;
+			}
+
+			diceLayer.showDieTotalMessage(totalRoll, modifier, this.diceRollData.dieTotalMessage, centerDice, this.diceRollData.textFillColor, this.diceRollData.textOutlineColor, this.diceRollData.diceGroup);
 		}
 		else if (this.diceRollData.diceGroup === DiceGroup.Viewers && this.diceRollData.type === DiceRollType.DamagePlusSavingThrow || this.diceRollData.type === DiceRollType.OnlyTargetsSavingThrow) {
 			this.showSavingThrowTotalsOverAllDice(this.dice, this.diceRollData.hiddenThreshold, this.diceRollData.diceGroup);
 		}
-		else
+		else {
 			diceLayer.showDieTotal(`${this.diceRollData.totalRoll}`, playerIdForTextMessages, this.diceRollData.diceGroup);
+		}
 	}
 
 	getCenterDicePosition(): Vector {
@@ -4184,6 +4200,9 @@ class DieRoller {
 		else if (this.diceRollData.type === DiceRollType.ExtraOnly) {
 			this.diceRollData.modifier = 0;
 			this.diceRollData.itsAD20Roll = false;
+			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.extra, this.diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.isMagic, dieHueVariancePercent);
+		}
+		else if (this.diceRollData.type === DiceRollType.ViewerRoll) {
 			this.addDieFromStr(this.diceRollData.diceGroup, playerID, this.diceRollData.damageHealthExtraDice, DieCountsAs.extra, this.diceRollData.throwPower, xPositionModifier, DiceLayer.extraDieBackgroundColor, DiceLayer.extraDieFontColor, this.diceRollData.isMagic, dieHueVariancePercent);
 		}
 		else if (this.diceRollData.type === DiceRollType.InspirationOnly) {

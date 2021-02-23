@@ -22,6 +22,7 @@ namespace DndCore
 		const string VAR_CardId = "CardId";
 		const string VAR_CardGuid = "CardGuid";
 		const string VAR_DiceRoll = "DiceRoll";
+		const string VAR_ViewerDieRollTotal = "ViewerDieRollTotal";
 		public static int Offset = 0;
 		public static Target FriendlyTargets = null;
 		public static Creature Creature { get; set; }
@@ -47,6 +48,7 @@ namespace DndCore
 		public static string CardUserName { get; set; }
 		public static string CardId { get; set; }
 		public static DiceRoll DiceRoll { get; set; }
+		public static int ViewerDieRollTotal { get; set; }
 
 
 		List<string> KnownVariables = new List<string>();
@@ -61,6 +63,7 @@ namespace DndCore
 			KnownVariables.Add(VAR_CardId);
 			KnownVariables.Add(VAR_CardGuid);
 			KnownVariables.Add(VAR_DiceRoll);
+			KnownVariables.Add(VAR_ViewerDieRollTotal);
 		}
 
 		public override bool Handles(string tokenName, Creature creature, CastedSpell castedSpell)
@@ -82,8 +85,9 @@ namespace DndCore
 			AddCompletionInfo(completionInfo, VAR_ThisCard, "The recently received card, set just before calling the card's CardReceived event. Useful for passing as the third parameter to a GiveMagic call.", ExpressionType.unknown);
 			AddCompletionInfo(completionInfo, VAR_CardUserName, "The name of the user who contributed the card that was just played, set set just before calling the card's CardPlayed or CardReceived events.", ExpressionType.unknown);
 			AddCompletionInfo(completionInfo, VAR_CardId, "The id of the card that was just played or received, set just before calling the card's CardPlayed or CardReceived events.", ExpressionType.unknown);
-			AddCompletionInfo(completionInfo, VAR_CardGuid, "The guid of the card that was just played or received, set just before calling the card's CardPlayed or CardReceived events.", ExpressionType.unknown);
+			AddCompletionInfo(completionInfo, VAR_CardGuid, "The guid of the card that was just played or received, set just before calling the card's CardPlayed or CardReceived events.", ExpressionType.text);
 			AddCompletionInfo(completionInfo, VAR_DiceRoll, "The pending dice roll, set just before rolling the dice.", ExpressionType.unknown);
+			AddCompletionInfo(completionInfo, VAR_ViewerDieRollTotal, "The total of the last viewer die roll.", ExpressionType.number);
 
 			return completionInfo;
 		}
@@ -108,6 +112,8 @@ namespace DndCore
 					return CardGuid;
 				case VAR_DiceRoll:
 					return DiceRoll;
+				case VAR_ViewerDieRollTotal:
+					return ViewerDieRollTotal;
 			}
 
 			return GetValue<Creature>(variableName, Creature);
