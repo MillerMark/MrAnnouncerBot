@@ -24,15 +24,6 @@ namespace CardMaker
 	/// </summary>
 	public partial class CardMakerMain : Window
 	{
-		const string imagePath = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Cards";
-		const string assetsFolder = @"D:\Dropbox\DragonHumpers\Monetization\StreamLoots\Card Factory\Assets";
-		const string spellFolder = @"D:\Dropbox\DX\Twitch\CodeRushed\MrAnnouncerBot\OverlayManager\wwwroot\GameDev\Assets\DragonH\Scroll\Spells\Icons";
-		const string STR_Skill = "Skill";
-		const string STR_Save = "Save";
-		const string STR_Attack = "Attack";
-		const string STR_SharedBackAdornmentsFolder = "Shared Back Layer Adornments";
-		const string STR_TopBackAdornmentsFolder = "Shared Top Layer Adornments";
-
 		Card activeCard;
 		Deck activeDeck;
 		Field activeField;
@@ -162,25 +153,14 @@ namespace CardMaker
 
 		private void AddBackgroundLayers(Card card, string stylePath)
 		{
-			const string backgroundFolderName = STR_SharedBackAdornmentsFolder;
+			const string backgroundFolderName = Folders.SharedBackAdornments;
 			string basePath = SysPath.GetDirectoryName(stylePath);
-			string backFolder = SysPath.Combine(assetsFolder, basePath, backgroundFolderName);
+			string backFolder = SysPath.Combine(Folders.Assets, basePath, backgroundFolderName);
 			if (!Directory.Exists(backFolder))
 				return;
 			string[] pngFiles = Directory.GetFiles(backFolder, "*.png");
 			foreach (string pngFile in pngFiles)
 				AddLayer(card, pngFile).Index -= 100;
-		}
-		private void QuickAddBackgroundLayers(Card card, string stylePath)
-		{
-			const string backgroundFolderName = STR_SharedBackAdornmentsFolder;
-			string basePath = SysPath.GetDirectoryName(stylePath);
-			string backFolder = SysPath.Combine(assetsFolder, basePath, backgroundFolderName);
-			if (!Directory.Exists(backFolder))
-				return;
-			string[] pngFiles = Directory.GetFiles(backFolder, "*.png");
-			foreach (string pngFile in pngFiles)
-				QuickAddLayerDetails(card, pngFile);
 		}
 
 		void AddCardStyleMenuItems(ItemCollection items, string[] directories)
@@ -191,7 +171,7 @@ namespace CardMaker
 				if (folderName.StartsWith("Shared") || folderName.StartsWith("["))
 					continue;
 				CardStyleMenuItem newMenuItem = new CardStyleMenuItem() { Header = folderName };
-				newMenuItem.StylePath = directory.Substring(assetsFolder.Length + 1);
+				newMenuItem.StylePath = directory.Substring(Folders.Assets.Length + 1);
 				items.Add(newMenuItem);
 				string[] subDirectories = Directory.GetDirectories(directory);
 				if (HasMoreStyles(subDirectories))
@@ -203,40 +183,21 @@ namespace CardMaker
 
 		private void AddCoreLayers(Card card, string stylePath)
 		{
-			string[] pngFiles = Directory.GetFiles(SysPath.Combine(assetsFolder, stylePath), "*.png");
+			string[] pngFiles = Directory.GetFiles(SysPath.Combine(Folders.Assets, stylePath), "*.png");
 			foreach (string pngFile in pngFiles)
 				AddLayer(card, pngFile);
 		}
 
-		private void QuickAddCoreLayers(Card card, string stylePath)
-		{
-			string[] pngFiles = Directory.GetFiles(SysPath.Combine(assetsFolder, stylePath), "*.png");
-			foreach (string pngFile in pngFiles)
-				QuickAddLayerDetails(card, pngFile);
-		}
-
 		private void AddForegroundLayers(Card card, string stylePath)
 		{
-			const string foregroundFolderName = STR_TopBackAdornmentsFolder;
+			const string foregroundFolderName = Folders.TopBackAdornments;
 			string basePath = SysPath.GetDirectoryName(stylePath);
-			string foregroundFolder = SysPath.Combine(assetsFolder, basePath, foregroundFolderName);
+			string foregroundFolder = SysPath.Combine(Folders.Assets, basePath, foregroundFolderName);
 			if (!Directory.Exists(foregroundFolder))
 				return;
 			string[] pngFiles = Directory.GetFiles(foregroundFolder, "*.png");
 			foreach (string pngFile in pngFiles)
 				AddLayer(card, pngFile).Index += 100;
-		}
-
-		private void QuickAddForegroundLayers(Card card, string stylePath)
-		{
-			const string foregroundFolderName = STR_TopBackAdornmentsFolder;
-			string basePath = SysPath.GetDirectoryName(stylePath);
-			string foregroundFolder = SysPath.Combine(assetsFolder, basePath, foregroundFolderName);
-			if (!Directory.Exists(foregroundFolder))
-				return;
-			string[] pngFiles = Directory.GetFiles(foregroundFolder, "*.png");
-			foreach (string pngFile in pngFiles)
-				QuickAddLayerDetails(card, pngFile);
 		}
 
 		private void AddImageItem_Click(object sender, RoutedEventArgs e)
@@ -321,7 +282,7 @@ namespace CardMaker
 
 		private void btnCardStylePicker_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			string[] directories = Directory.GetDirectories(assetsFolder);
+			string[] directories = Directory.GetDirectories(Folders.Assets);
 			mnuCardStyle.Items.Clear();
 			AddCardStyleMenuItems(mnuCardStyle.Items, directories);
 		}
@@ -418,7 +379,7 @@ namespace CardMaker
 
 		private void btnLoadSpellImage_PreviewMouseDown(object sender, MouseButtonEventArgs e)
 		{
-			AddImageMenuItems(mnuPickSpell, spellFolder);
+			AddImageMenuItems(mnuPickSpell, Folders.Spells);
 		}
 
 		private void btnRandomize_Click(object sender, RoutedEventArgs e)
@@ -1404,145 +1365,6 @@ namespace CardMaker
 			contextMenu.Items.Add(menuItem);
 		}
 
-		Random random = new Random();
-		private const string userName = "{{username}}";
-		private const string target = "{{target}}";
-		private const string recipient = "{{recipient}}";
-		private void AddGiftSpellCard(SpellDto spellDto)
-		{
-			double placeholderWidth;
-			double placeholderHeight;
-			Card scroll = CreateSpellCard("Gift", spellDto);
-			scroll.Description = GetSpellDescription(spellDto, true);
-			scroll.AdditionalInstructions = "Give this spell scroll to a player, NPC, or monster (enter their name below).";
-			scroll.AlertMessage = $"{userName} gave the {spellDto.name} spell scroll to {recipient}.";
-			scroll.Expires = CardExpires.Never;
-			AddPlayerNpcRecipientField(scroll, "scroll");
-			if (!CardStyles.Apply(scroll))
-			{
-				int randomValue = random.Next(0, 100);
-				if (randomValue < 40)
-				{
-					placeholderWidth = 155;
-					placeholderHeight = 152;
-					scroll.StylePath = "Scrolls\\Rods";
-				}
-				else if (randomValue < 60)
-				{
-					placeholderWidth = 131;
-					placeholderHeight = 130;
-					scroll.StylePath = "Scrolls\\Smooth Light";
-				}
-				else
-				{
-					placeholderWidth = 128;
-					placeholderHeight = 127;
-					scroll.StylePath = "Scrolls\\Tan";
-				}
-				scroll.ScalePlaceholder(placeholderWidth, placeholderHeight);
-			}
-		}
-
-		private void AddPlayerNpcRecipientField(Card card, string itemName)
-		{
-			Field field = new Field(card) { Label = $"Player/NPC to receive this {itemName}:", Name = "recipient", ParentCard = card, Required = true, IsDirty=true };
-			CardData.AllKnownFields.Add(field);
-		}
-
-		private void AddCastSpellCard(SpellDto spellDto)
-		{
-			Card card = CreateSpellCard("Cast", spellDto);
-			card.Description = GetSpellDescription(spellDto, false);
-			card.Expires = CardExpires.Immediately;
-			string alertMessage;
-			const double witchcraftPlaceholderSize = 174;
-			if (!CardStyles.Apply(card))
-				switch (random.Next(0, 4))
-				{
-					case 0:
-						card.StylePath = "Witchcraft\\Common";
-						break;
-					case 1:
-						card.StylePath = "Witchcraft\\Rare";
-						break;
-					case 2:
-						card.StylePath = "Witchcraft\\Epic";
-						break;
-					case 3:
-						card.StylePath = "Witchcraft\\Legendary";
-						break;
-				}
-			card.ScalePlaceholder(witchcraftPlaceholderSize);
-			if (!string.IsNullOrWhiteSpace(spellDto.targetingPrompt))
-			{
-				// TODO: Shorten Description MaxHeight.
-				Field targetField = new Field(card)
-				{
-					Name = "target",
-					Label = spellDto.targetingPrompt,
-					Required = spellDto.targetingPrompt.ToLower().IndexOf("optional") < 0,
-					IsDirty = true
-				};
-				if (TargetsOne(spellDto))
-					targetField.Type = FieldType.Text;
-				else
-					targetField.Type = FieldType.LongText;
-
-				CardData.AllKnownFields.Add(targetField);
-				alertMessage = $"{userName} casts {spellDto.name}, targeting {target}.";
-			}
-			else
-				alertMessage = $"{userName} casts {spellDto.name}.";
-			card.AlertMessage = alertMessage;
-
-			card.Rarity = Rarity.Legendary;
-		}
-
-		private static bool TargetsOne(SpellDto spellDto)
-		{
-			return spellDto.target == "1" || 
-						 spellDto.target == "1 willing" || 
-						 spellDto.target == "1 humanoid" ||
-						 spellDto.target == "1 corpse" || 
-						 spellDto.target == "1 beast" || 
-						 spellDto.target == "1 dead" ||
-						 spellDto.target == "1 dead humanoid" || 
-						 spellDto.target == "1 friendly/charmed beast" ||
-						 spellDto.target == "1 beast or humanoid" ||
-						 spellDto.target == "1 beast or plant (huge or smaller)" ||
-						 spellDto.target == "1 (no undead)" ||
-						 spellDto.target == "1 (medium or smaller)" ||
-						 spellDto.target == "1 (celestial, elemental, fey, or fiend)" ||
-						 spellDto.target == "*|1" ||
-						 spellDto.target == "1 willing beast";
-		}
-
-		static string RemoveConcentration(string duration, bool isScroll)
-		{
-			if (isScroll)
-				duration = duration.Replace("Concentration, ", "");
-			return duration;
-		}
-
-		private Card CreateSpellCard(string actionStr, SpellDto spellDto)
-		{
-			Card card = CardData.AddCard(ActiveDeck);
-			HookCardEvents(card);
-			card.Name = $"{actionStr} {spellDto.name}";
-			card.Text = spellDto.name;
-			card.TextFontSize = 60;
-			string fileName = $"{spellFolder}\\{spellDto.name}.png";
-			if (File.Exists(fileName))
-			{
-
-				// Placeholder for spells is 187x187
-				// TODO: Stretch image to fit placeholder
-				card.Placeholder = fileName;
-			}
-
-			return card;
-		}
-
 		private void HookCardEvents(Card card)
 		{
 			card.LinkedPropertyChanged += Card_LinkedPropertyChanged;
@@ -1569,10 +1391,16 @@ namespace CardMaker
 				return;
 
 			foreach (SpellDto spellDto in availableSpells.ViewerCanCast)
-				AddCastSpellCard(spellDto);
+			{
+				Card card = SpellFactory.AddCastSpellCard(spellDto, CardData, ActiveDeck);
+				HookCardEvents(card);
+			}
 
 			foreach (SpellDto spellDto in availableSpells.ViewerCanGift)
-				AddGiftSpellCard(spellDto);
+			{
+				Card card = SpellFactory.AddGiftSpellCard(spellDto, CardData, ActiveDeck);
+				HookCardEvents(card);
+			}
 		}
 
 		private void btnAddSpells_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -1586,321 +1414,17 @@ namespace CardMaker
 			}
 		}
 
-		string GetModType(string rollKind)
-		{
-			switch (rollKind)
-			{
-				case STR_Skill:
-					return "Skill";
-				case STR_Save:
-					return "Saving";
-				case STR_Attack:
-					return "Attack";
-			}
-			return string.Empty;
-		}
-		string GetDieModTitle(bool isSecret, string rollKind, int modifier)
-		{
-			string secret = isSecret ? "Secret " : "";
-			string bonusPenaltyText;
-			string modStr;
-			if (modifier < 0)
-			{
-				bonusPenaltyText = "Penalty";
-				modStr = modifier.ToString();
-			}
-			else
-			{
-				bonusPenaltyText = "Bonus";
-				modStr = $"+{modifier}";
-			}
-
-			string modType = GetModType(rollKind);
-			
-			return $"{secret}{modType} {bonusPenaltyText} {modStr}";
-		}
-
-		string GetDieModDescription(string rollKind, int modifier, bool isSecret)
-		{
-			string bonusVerb = GetBonusVerb(modifier);
-			string bonusPenalty = GetBonusPenaltyNoun(modifier);
-
-			string rollDescription = "roll";
-
-			switch (rollKind)
-			{
-				case STR_Skill:
-					rollDescription = "skill check";
-					break;
-				case STR_Save:
-					rollDescription = "saving throw";
-					break;
-				case STR_Attack:
-					rollDescription = "attack";
-					break;
-			}
-			if (isSecret)
-				return $"Give this secret card to a player, NPC, or monster. On their next {rollDescription}, the player holding this card will automatically {bonusVerb} the specified {bonusPenalty}. This is a *secret card* and will not be revealed in the game until it is automatically triggered.";
-			else
-				return $"Give this card to a player, NPC, or monster. When the recipient plays this card later in the game, that player will {bonusVerb} the specified {bonusPenalty} on their {rollDescription}.";
-		}
-
-		private static string GetBonusPenaltyNoun(int modifier)
-		{
-			string bonusPenalty;
-			if (modifier < 0)
-				bonusPenalty = "penalty";
-			else
-				bonusPenalty = "bonus";
-
-			return bonusPenalty;
-		}
-
-		private static string GetBonusVerb(int modifier)
-		{
-			string bonusVerb;
-			if (modifier < 0)
-			{
-				bonusVerb = "incur";
-			}
-			else
-			{
-				bonusVerb = "gain";
-			}
-
-			return bonusVerb;
-		}
-
-		void QuickAddLayerDetails(Card card, string pngFile)
-		{
-			string layerName = Path.GetFileNameWithoutExtension(pngFile);
-
-			int closeBracketPos = layerName.IndexOf("]");
-			if (closeBracketPos > 0)
-				layerName = layerName.Substring(closeBracketPos + 1).Trim();
-
-			int caretSymbolPos = layerName.IndexOf("^");
-			if (caretSymbolPos > 0)
-				layerName = layerName.Substring(0, caretSymbolPos).Trim();
-
-			int openParenPos = layerName.IndexOf("(");
-			if (openParenPos > 0)
-				layerName = layerName.Substring(0, openParenPos).Trim();
-			card.GetLayerDetails(layerName);
-		}
-
-		void SetDieModLayerVisibilities(Card card, string rollKind, int modifier, bool isSecret)
-		{
-			if (modifier < 0)
-			{
-				card.SelectAlternateLayer("Penalty", (-modifier).ToString());
-				card.SelectAlternateLayer("Title", $"Penalty {rollKind}");
-				card.SelectAlternateLayer("Icon", "Penalty Skull");
-				card.SelectAlternateLayer("Die", "Penalty");
-				card.HideAllLayersStartingWith("Bonus -");
-			}
-			else
-			{
-				card.SelectAlternateLayer("Bonus", modifier.ToString());
-				card.SelectAlternateLayer("Title", $"Bonus {rollKind}");
-				card.SelectAlternateLayer("Icon", "Bonus Clover");
-				card.SelectAlternateLayer("Die", "Bonus");
-				card.HideAllLayersStartingWith("Penalty -");
-			}
-
-			if (isSecret)
-			{
-				card.HideAllLayersStartingWith("Normal Card Text -");
-				if (modifier < 0)
-					card.SelectAlternateLayer("Secret Text", $"Penalty {rollKind}");
-				else
-					card.SelectAlternateLayer("Secret Text", $"Bonus {rollKind}");
-			}
-			else
-			{
-				card.SelectAlternateLayer("Normal Card Text", rollKind);
-				card.HideAllLayersStartingWith("Secret Text -");
-				card.HideAllLayersStartingWith("Secret Card");
-			}
-
-			int cardNum = random.Next(9);
-			card.SelectAlternateLayer("CardBack", $"Card {cardNum}");
-		}
-
 		private CardImageLayer GetImageLayerFromDetails(LayerDetails details)
 		{
 			return cardLayerManager.CardLayers.FirstOrDefault(x => x.Details == details);
 		}
 
-		void QuickAddAllLayerDetails(Card card)
-		{
-			QuickAddBackgroundLayers(card, card.StylePath);
-			QuickAddCoreLayers(card, card.StylePath);
-			QuickAddForegroundLayers(card, card.StylePath);
-		}
 
-		private Card CreateBonusPenaltyCard(string rollKind, int modifier, int powerLevel, bool isSecret = true)
+
+		void CreateBonusPenaltyCard(string rollKind, int modifier, int powerLevel, bool isSecret = true)
 		{
-			Card card = CardData.AddCard(ActiveDeck);
+			Card card = DieModFactory.CreateBonusPenaltyCard(rollKind, modifier, powerLevel, isSecret, CardData, ActiveDeck);
 			HookCardEvents(card);
-			SetRarity(card, powerLevel, modifier);
-			card.Name = GetDieModTitle(isSecret, rollKind, modifier);
-			card.StylePath = "Die Mods";
-			string cardName;
-			string modType = GetModType(rollKind);
-			int lastIndexOfSpace = card.Name.LastIndexOf(' ');
-			string value = "0";
-			if (lastIndexOfSpace > 0)
-			{
-				value = card.Name.Substring(lastIndexOfSpace).Trim();
-				value = value.TrimStart('+');
-			}
-
-			if (isSecret)
-			{
-				cardName = "a secret card";
-				card.CardReceived = $"GiveMagic(CardRecipient, \"SecretCardMod\", CardUserName, CardGuid, \"{modType}\", {value});";
-			}
-			else
-			{
-				cardName = card.Name;
-				card.CardPlayed = $"GiveMagic(CardRecipient, \"ActiveCardMod\", CardUserName, CardGuid, \"{modType}\", {value});";
-			}
-
-			card.AlertMessage = $"{{{{username}}}} gave {cardName} to {{{{recipient}}}}.";
-			card.Description = GetDieModDescription(rollKind, modifier, isSecret);
-			QuickAddAllLayerDetails(card);
-			SetDieModLayerVisibilities(card, rollKind, modifier, isSecret);
-			string bonusPenalty = GetBonusPenaltyNoun(modifier);
-			AddPlayerNpcRecipientField(card, bonusPenalty);
-			return card;
-		}
-
-		void SetSayAnythingLayerVisibilities(Card card, string dieName, int multiplier, int offset)
-		{
-			card.SelectAlternateLayer("Die", dieName);
-			card.SelectAlternateLayer("Times", $"x{multiplier}");
-			card.SelectAlternateLayer("Offset", $"+{offset}");
-			int cardNum = random.Next(9);
-			card.SelectAlternateLayer("CardBack", $"Card {cardNum}");
-		}
-
-		void GetSayAnythingDieNameAndMultiplier(int powerLevel, out int multiplier, out string dieName)
-		{
-			const string d4 = "d4";
-			const string d6 = "d6";
-			const string d8 = "d8";
-			const string d10 = "d10";
-			multiplier = 1;
-			dieName = d4;
-			switch (powerLevel)
-			{
-				case 1: // 2.5
-					multiplier = 1;
-					dieName = d4;
-					break;
-				case 2: // 3.5
-					multiplier = 1;
-					dieName = d6;
-					break;
-				case 3: // 4.5
-					multiplier = 1;
-					dieName = d8;
-					break;
-				case 4: // 5
-					multiplier = 2;
-					dieName = d4;
-					break;
-				case 5: // 5.5
-					multiplier = 1;
-					dieName = d10;
-					break;
-				case 6: // 7
-					multiplier = 2;
-					dieName = d6;
-					break;
-				case 7: // 7.5
-					multiplier = 3;
-					dieName = d4;
-					break;
-				case 8: // 9
-					multiplier = 2;
-					dieName = d8;
-					break;
-				case 9: // 10
-					multiplier = 4;
-					dieName = d4;
-					break;
-				case 10: // 10.5
-					multiplier = 3;
-					dieName = d6;
-					break;
-				case 11: // 11
-					multiplier = 2;
-					dieName = d10;
-					break;
-				case 12: // 13.5
-					multiplier = 3;
-					dieName = d8;
-					break;
-				case 13: // 14
-					multiplier = 4;
-					dieName = d6;
-					break;
-				case 14: // 16.5
-					multiplier = 3;
-					dieName = d10;
-					break;
-				case 15: // 18
-					multiplier = 4;
-					dieName = d8;
-					break;
-				case 16: // 22
-					multiplier = 4;
-					dieName = d10;
-					break;
-			}
-		}
-
-		private Card CreateSayAnythingCard(int actualPowerLevel, int basePowerLevel)
-		{
-			Card card = CardData.AddCard(ActiveDeck);
-			HookCardEvents(card);
-			SetRarity(card, basePowerLevel, actualPowerLevel);
-			string dieName;
-			int multiplier;
-			GetSayAnythingDieNameAndMultiplier(actualPowerLevel, out multiplier, out dieName);
-			int offset = Math.Max(actualPowerLevel / 4 + 1, 1);
-			card.Name = $"Say Anything - {multiplier}{dieName} + {offset}";
-			card.StylePath = "Say Anything";
-			card.Description = $"Make any player, NPC, or monster think or say anything, up to {multiplier}{dieName} times (dice are rolled when you play this card). To make a player *say* something, enter “!{{name}}: \"Your custom message” into the chat room. To make a player *think* something, enter “!{{name}}: (Your custom thoughts” into the chat room. For example: “!Fred: (Yummy...”.";
-			card.AdditionalInstructions = "No ads or hate speech - you could get banned!";
-			card.AlertMessage = $"{{{{username}}}} played Say Anything - {multiplier}{dieName}+{offset}//!RollDie({multiplier}{dieName}+{offset}, \"Say Anything\")";
-			card.CardPlayed = "AddViewerCharge(CardUserName, \"Say Anything\", ViewerDieRollTotal);\n" +
-				"TellAll($\"{CardUserName} has Say Anything {ViewerDieRollTotal} times!\");";
-			QuickAddAllLayerDetails(card);
-			SetSayAnythingLayerVisibilities(card, dieName, multiplier, offset);
-			return card;
-		}
-
-		private static void SetRarity(Card card, int basePowerLevel, int actualPowerLevel)
-		{
-			int delta = Math.Abs(actualPowerLevel) - basePowerLevel;
-			switch (delta)
-			{
-				case 1:
-					card.Rarity = Rarity.Rare;
-					break;
-				case 2:
-					card.Rarity = Rarity.Epic;
-					break;
-				case 3:
-					card.Rarity = Rarity.Legendary;
-					break;
-				default:
-					card.Rarity = Rarity.Common;
-					break;
-			}
 		}
 
 		void CreateRollModCardsAtPowerLevel(int powerLevel)
@@ -1908,22 +1432,26 @@ namespace CardMaker
 			int topEnd = Math.Min(powerLevel + 3, 10);
 			for (int i = powerLevel; i <= topEnd; i++)
 			{
-				CreateBonusPenaltyCard(STR_Skill, i, powerLevel, false);
-				CreateBonusPenaltyCard(STR_Skill, i, powerLevel);
-				CreateBonusPenaltyCard(STR_Skill, -i, powerLevel);
-				CreateBonusPenaltyCard(STR_Save, i, powerLevel, false);
-				CreateBonusPenaltyCard(STR_Save, i, powerLevel);
-				CreateBonusPenaltyCard(STR_Save, -i, powerLevel);
-				CreateBonusPenaltyCard(STR_Attack, i, powerLevel, false);
-				CreateBonusPenaltyCard(STR_Attack, i, powerLevel);
-				CreateBonusPenaltyCard(STR_Attack, -i, powerLevel);
+				CreateBonusPenaltyCard(DieModFactory.Skill, i, powerLevel, false);
+				CreateBonusPenaltyCard(DieModFactory.Skill, i, powerLevel);
+				CreateBonusPenaltyCard(DieModFactory.Skill, -i, powerLevel);
+				CreateBonusPenaltyCard(DieModFactory.Save, i, powerLevel, false);
+				CreateBonusPenaltyCard(DieModFactory.Save, i, powerLevel);
+				CreateBonusPenaltyCard(DieModFactory.Save, -i, powerLevel);
+				CreateBonusPenaltyCard(DieModFactory.Attack, i, powerLevel, false);
+				CreateBonusPenaltyCard(DieModFactory.Attack, i, powerLevel);
+				CreateBonusPenaltyCard(DieModFactory.Attack, -i, powerLevel);
 			}
 		}
+
 		void CreateSayAnythingCardsAtPowerLevel(int powerLevel)
 		{
 			int topEnd = Math.Min(powerLevel + 3, 16);
 			for (int i = powerLevel; i <= topEnd; i++)
-				CreateSayAnythingCard(i, powerLevel);
+			{
+				Card card = SayAnythingFactory.CreateSayAnythingCard(i, powerLevel, CardData, ActiveDeck);
+				HookCardEvents(card);
+			}
 		}
 
 		private void RollModPowerLevelMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1951,7 +1479,7 @@ namespace CardMaker
 
 		void InitializeCloudinaryClient()
 		{
-			cloudinaryClient = new CloudinaryClient(imagePath, new MySecureString($"cloudinary://812749384489784:{Configuration["Secrets:cloudinaryApiSecret"]}@dragonhumpers"));
+			cloudinaryClient = new CloudinaryClient(Folders.Images, new MySecureString($"cloudinary://812749384489784:{Configuration["Secrets:cloudinaryApiSecret"]}@dragonhumpers"));
 		}
 
 		string GetFileName(Card activeCard)
@@ -1974,37 +1502,9 @@ namespace CardMaker
 		private string SaveCardImageToFile(Card card)
 		{
 			string fileName = GetFileName(card);
-			string fullPath = Path.Combine(imagePath, fileName);
+			string fullPath = Path.Combine(Folders.Images, fileName);
 			cvsLayers.SaveToPng(new Uri(fullPath));
 			return fullPath;
-		}
-
-		static string GetSpellDescription(SpellDto spellDto, bool isScroll)
-		{
-			string lowerSpellDuration = spellDto.duration.ToLower();
-			string durationStr;
-			if (lowerSpellDuration.Contains("instantaneous") || lowerSpellDuration.Contains("special"))
-				durationStr = string.Empty;
-			else
-				durationStr = $" Duration: {RemoveConcentration(spellDto.duration, isScroll)}.";
-
-			string description = spellDto.description.Replace("**", "") + durationStr;
-			if (description.IndexOf('{') < 0 && description.IndexOf('«') < 0 && description.IndexOf('»') < 0)
-				return description;
-
-			Spell spell = Spell.FromDto(spellDto, Spell.GetLevel(spellDto.level), 0, 3);
-
-			return description
-				.Replace("«", "")
-				.Replace("»", "")
-				.Replace("your spell save dc", "a spell save dc of 13")
-				.Replace("{spell_DieStrRaw}", spell.DieStrRaw)
-				.Replace("{spell_DieStr}", spell.DieStr)
-				.Replace("{SpellcastingAbilityModifierStr}", "+3")
-				.Replace("{spell_AmmoCount_word}", spell.AmmoCount_word)
-				.Replace("{spell_AmmoCount_Word}", spell.AmmoCount_Word)
-				.Replace("{spell_AmmoCount}", spell.AmmoCount.ToString())
-				.Replace("{spell_DoubleAmmoCount}", spell.DoubleAmmoCount.ToString());
 		}
 
 		private async void btnUploadCard_Click(object sender, RoutedEventArgs e)
