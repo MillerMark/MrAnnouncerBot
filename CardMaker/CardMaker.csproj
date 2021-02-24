@@ -207,6 +207,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Factory\BaseWeatherSpecialist.cs" />
     <Compile Include="Factory\DieModFactory.cs" />
     <Compile Include="Factory\Core\CardFactory.cs" />
     <Compile Include="CardStyles.cs" />
@@ -222,6 +223,11 @@
     <Compile Include="CardStyleMenuItem.cs" />
     <Compile Include="CooldownUnits.cs" />
     <Compile Include="EnumBooleanConverter.cs" />
+    <Compile Include="Factory\StampedeFactory.cs" />
+    <Compile Include="Factory\StampedeSpecialist.cs" />
+    <Compile Include="Factory\WeatherFactory.cs" />
+    <Compile Include="Factory\WeatherLevel.cs" />
+    <Compile Include="Factory\WeatherSpecialist.cs" />
     <Compile Include="Field.cs" />
     <Compile Include="FieldType.cs" />
     <Compile Include="Factory\Core\Folders.cs" />

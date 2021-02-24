@@ -697,6 +697,12 @@ namespace CardMaker
 					layerDetails.IsVisible = false;
 		}
 
+		public void HideAllLayersExcept(string matchStr)
+		{
+			foreach (LayerDetails layerDetails in allLayers.Details)
+				layerDetails.IsVisible = layerDetails.Name == matchStr;
+		}
+
 		public void SelectAlternateLayer(string layerName, string alternateName)
 		{
 			string visibleLayerName = $"{layerName} - {alternateName}";

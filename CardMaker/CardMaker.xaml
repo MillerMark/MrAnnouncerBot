@@ -108,7 +108,7 @@
 					<TextBox x:Name="tbxDeckName" Text="{Binding Name,UpdateSourceTrigger=PropertyChanged}" TextChanged="tbxDeckName_TextChanged" MinWidth="100"/>
 				</StackPanel>
 				<TextBlock x:Name="tbCards" Text="Cards:" Width="Auto" Height="Auto" Foreground="#FF4C4C4C"/>
-				<ListBox x:Name="lbCards" SelectionChanged="lbCards_SelectionChanged" Width="200" MaxHeight="800" >
+				<ListBox x:Name="lbCards" SelectionChanged="lbCards_SelectionChanged" Width="200" MaxHeight="730" >
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal">
@@ -211,6 +211,70 @@
 							<BeginStoryboard>
 								<Storyboard>
 									<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickSayAnythingModLevel" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
+										<DiscreteObjectKeyFrame KeyTime="0:0:0">
+											<DiscreteObjectKeyFrame.Value>
+												<System:Boolean>True</System:Boolean>
+											</DiscreteObjectKeyFrame.Value>
+										</DiscreteObjectKeyFrame>
+									</ObjectAnimationUsingKeyFrames>
+								</Storyboard>
+							</BeginStoryboard>
+						</EventTrigger>
+					</Button.Triggers>
+				</Button>
+				<Button x:Name="btnAddWeatherCards" Width="125" Margin="0, 10, 0, 0" HorizontalAlignment="Left" >
+					Add Weather Cards...
+					<Button.ContextMenu>
+						<ContextMenu x:Name="mnuPickWeatherLevel" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Power Level 1" Tag="1" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 2" Tag="2" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 3" Tag="3" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 4" Tag="4" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 5" Tag="5" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 6" Tag="6" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 7" Tag="7" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 8" Tag="8" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 9" Tag="9" Click="AddWeatherCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 10" Tag="10" Click="AddWeatherCardMenuItem_Click"/>
+						</ContextMenu>
+					</Button.ContextMenu>
+					<Button.Triggers>
+						<EventTrigger SourceName="btnAddWeatherCards" RoutedEvent="Button.Click">
+							<BeginStoryboard>
+								<Storyboard>
+									<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickWeatherLevel" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
+										<DiscreteObjectKeyFrame KeyTime="0:0:0">
+											<DiscreteObjectKeyFrame.Value>
+												<System:Boolean>True</System:Boolean>
+											</DiscreteObjectKeyFrame.Value>
+										</DiscreteObjectKeyFrame>
+									</ObjectAnimationUsingKeyFrames>
+								</Storyboard>
+							</BeginStoryboard>
+						</EventTrigger>
+					</Button.Triggers>
+				</Button>
+				<Button x:Name="btnAddStampedeCards" Width="125" Margin="0, 10, 0, 0" HorizontalAlignment="Left" >
+					Add Stampede Cards...
+					<Button.ContextMenu>
+						<ContextMenu x:Name="mnuPickStampedeLevel" PlacementRectangle="{Binding RelativeSource={RelativeSource Self}}">
+							<MenuItem Header="Power Level 1" Tag="1" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 2" Tag="2" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 3" Tag="3" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 4" Tag="4" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 5" Tag="5" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 6" Tag="6" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 7" Tag="7" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 8" Tag="8" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 9" Tag="9" Click="AddStampedeCardMenuItem_Click"/>
+							<MenuItem Header="Power Level 10" Tag="10" Click="AddStampedeCardMenuItem_Click"/>
+						</ContextMenu>
+					</Button.ContextMenu>
+					<Button.Triggers>
+						<EventTrigger SourceName="btnAddStampedeCards" RoutedEvent="Button.Click">
+							<BeginStoryboard>
+								<Storyboard>
+									<ObjectAnimationUsingKeyFrames Storyboard.TargetName="mnuPickStampedeLevel" Storyboard.TargetProperty="(ContextMenu.IsOpen)">
 										<DiscreteObjectKeyFrame KeyTime="0:0:0">
 											<DiscreteObjectKeyFrame.Value>
 												<System:Boolean>True</System:Boolean>
@@ -741,13 +805,13 @@
 						</StackPanel>
 						<StackPanel Orientation="Vertical" Margin="0, 0, 10, 0">
 							<TextBlock Text="OnCardReceived:" Width="Auto" Height="Auto"/>
-							<AvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="650">
+							<AvalonEdit:AvalonEditor x:Name="codeCardReceived" ShowSaveBar="False" CodeChanged="codeCardReceived_CodeChanged" Width="550">
 
 							</AvalonEdit:AvalonEditor>
 						</StackPanel>
 						<StackPanel Orientation="Vertical">
 							<TextBlock Text="OnCardPlayed:" Width="Auto" Height="Auto"/>
-							<AvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="650" >
+							<AvalonEdit:AvalonEditor x:Name="codeCardPlayed" ShowSaveBar="False" CodeChanged="codeCardPlayed_CodeChanged" Width="550" >
 
 							</AvalonEdit:AvalonEditor>
 						</StackPanel>

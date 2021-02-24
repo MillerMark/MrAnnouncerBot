@@ -1454,6 +1454,19 @@ namespace CardMaker
 			}
 		}
 
+		void CreateWeatherCardsAtPowerLevel(int powerLevel)
+		{
+			List<Card> weatherCards = WeatherFactory.CreateWeatherCards(powerLevel, CardData, ActiveDeck);
+			foreach (Card card in weatherCards)
+				HookCardEvents(card);
+		}
+		void CreateStampedeCardsAtPowerLevel(int powerLevel)
+		{
+			List<Card> stampedeCards = StampedeFactory.CreateStampedeCards(powerLevel, CardData, ActiveDeck);
+			foreach (Card card in stampedeCards)
+				HookCardEvents(card);
+		}
+
 		private void RollModPowerLevelMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			if (!(sender is MenuItem menuItem))
@@ -1470,6 +1483,24 @@ namespace CardMaker
 			if (!int.TryParse(menuItem.Tag.ToString(), out int powerLevel))
 				return;
 			CreateSayAnythingCardsAtPowerLevel(powerLevel);
+		}
+
+		private void AddWeatherCardMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+			if (!int.TryParse(menuItem.Tag.ToString(), out int powerLevel))
+				return;
+			CreateWeatherCardsAtPowerLevel(powerLevel);
+		}
+
+		private void AddStampedeCardMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!(sender is MenuItem menuItem))
+				return;
+			if (!int.TryParse(menuItem.Tag.ToString(), out int powerLevel))
+				return;
+			CreateStampedeCardsAtPowerLevel(powerLevel);
 		}
 
 		void InitializeStreamlootsClient()
@@ -1596,7 +1627,7 @@ namespace CardMaker
 				UpdateProgress(cardsUploadedSoFar++);
 				if (cardsUploadedSoFar % 5 == 0)
 				{
-					
+
 				}
 			}
 			HideProgress();

@@ -10107,14 +10107,25 @@ namespace DHDM
 
 		private void TriggerCardPlayedEventIfNecessary(CardEventArgs ea)
 		{
-			foreach (int targetCharacterId in ea.CardDto.TargetCharacterIds)
-				TriggerCardPlayedEventIfNecessaryForTarget(ea, targetCharacterId);
+			if (ea.CardDto.TargetCharacterIds.Count == 0)
+			{
+				TriggerCardPlayedEvent(ea);
+			}
+			else
+				foreach (int targetCharacterId in ea.CardDto.TargetCharacterIds)
+					TriggerCardPlayedEventIfNecessaryForTarget(ea, targetCharacterId);
 		}
 
 		private void TriggerCardPlayedEventIfNecessaryForTarget(CardEventArgs ea, int targetCharacterId)
 		{
 			if (targetCharacterId == int.MinValue || ea.CardDto.Command != CardDto.CMD_PlayCardNow)
 				return;
+			
+			TriggerCardPlayedEvent(ea, targetCharacterId);
+		}
+
+		private void TriggerCardPlayedEvent(CardEventArgs ea, int targetCharacterId = int.MinValue)
+		{
 			CardEventData cardEventData = AllKnownCards.Get(ea.CardDto);
 			if (cardEventData != null)
 				TriggerCardPlayedEvent(ea.CardDto.Card.CardName, targetCharacterId, cardEventData);
